@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.2 2001/04/18 17:14:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -138,53 +138,40 @@ winWindowProc (HWND hWnd, UINT message,
 
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
-      xCurrentEvent.u.u.type = ButtonPress;
-      xCurrentEvent.u.u.detail = Button1;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-      return 0;
-
+      return winMouseButtonsHandle (pScreen, ButtonPress, Button1, wParam);
+      
     case WM_LBUTTONUP:
-      xCurrentEvent.u.u.type = ButtonRelease;
-      xCurrentEvent.u.u.detail = Button1;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-      return 0;
+      return winMouseButtonsHandle (pScreen, ButtonRelease, Button1, wParam);
 
     case WM_MBUTTONDBLCLK:
     case WM_MBUTTONDOWN:
-      xCurrentEvent.u.u.type = ButtonPress;
-      xCurrentEvent.u.u.detail = Button2;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-      return 0;
-
+      return winMouseButtonsHandle (pScreen, ButtonPress, Button2, wParam);
+      
     case WM_MBUTTONUP:
-      xCurrentEvent.u.u.type = ButtonRelease;
-      xCurrentEvent.u.u.detail = Button2;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-      return 0;
-
+      return winMouseButtonsHandle (pScreen, ButtonRelease, Button2, wParam);
+      
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
-      xCurrentEvent.u.u.type = ButtonPress;
-      xCurrentEvent.u.u.detail = Button3;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-      return 0;
-
+      return winMouseButtonsHandle (pScreen, ButtonPress, Button3, wParam);
+      
     case WM_RBUTTONUP:
-      xCurrentEvent.u.u.type = ButtonRelease;
-      xCurrentEvent.u.u.detail = Button3;
-      xCurrentEvent.u.keyButtonPointer.time
-	= g_c32LastInputEventTime = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
+      return winMouseButtonsHandle (pScreen, ButtonRelease, Button3, wParam);
+
+    case WM_TIMER:
+      switch (wParam)
+	{
+	case WIN_E3B_TIMER_ID:
+	  /* Send delayed button press */
+	  winMouseButtonsSendEvent (ButtonPress,
+				    pScreenPriv->iE3BCachedPress);
+
+	  /* Kill this timer */
+	  KillTimer (pScreenPriv->hwndScreen, WIN_E3B_TIMER_ID);
+
+	  /* Clear screen privates flags */
+	  pScreenPriv->iE3BCachedPress = 0;
+	  break;
+	}
       return 0;
 
     case WM_MOUSEWHEEL:

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.3 2001/05/01 22:57:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -422,7 +422,7 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
     case 8:
 #if CYGDEBUG
       ErrorF ("winInitVisualsGDI () - Calling miSetVisualTypesAndMasks\n");
-#endif CYGDEBUG /* CYGDEBUG */
+#endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
 				     PseudoColorMask,
 				     pScreenPriv->dwBitsPerRGB,

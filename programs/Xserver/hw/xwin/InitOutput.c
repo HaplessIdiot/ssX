@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.1 2000/08/10 17:40:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.7 2001/05/06 09:22:02 alanh Exp $ */
 
 #include "win.h"
 
@@ -60,6 +60,8 @@ winInitializeDefaultScreens (void)
       g_winScreens[i].pixelWhite = WIN_DEFAULT_WHITEPIXEL;
       g_winScreens[i].dwLineBias = WIN_DEFAULT_LINEBIAS;
       g_winScreens[i].pfb = NULL;
+      g_winScreens[i].fFullScreen = FALSE;
+      g_winScreens[i].iE3BTimeout = WIN_E3B_OFF;
     }
   g_nNumScreens = 1;
 }
@@ -132,6 +134,8 @@ ddxUseMsg (void)
 	  "\t\tDirectDraw4 blitter\t4\n");
   ErrorF ("-fullscreen\n"
 	  "\tRun the specified server engine in fullscreen mode\n");
+  ErrorF ("-emulate3buttons [n]\n"
+	  "\tEmulate 3 button mouse with timeout of n milliseconds\n");
 }
 
 /* See Porting Layer Definition - p. 57 */
@@ -367,6 +371,54 @@ ddxProcessArgument (int argc, char *argv[], int i)
 
       /* Indicate that we have processed this argument */
       return 1;
+    }
+
+  /*
+   * Look for the '-emulate3buttons' argument
+   */
+  if (strcmp(argv[i], "-emulate3buttons") == 0)
+    {
+      int	iArgsProcessed = 1;
+      int	iE3BTimeout = WIN_DEFAULT_E3B_TIME;
+
+      /* Grab the optional timeout value */
+      if (i + 1 < argc
+	  && 1 == sscanf (argv[i + 1], "%d",
+			  &iE3BTimeout))
+        {
+	  /* Indicate that we have processed the next argument */
+	  iArgsProcessed++;
+        }
+      else
+	{
+	  /*
+	   * sscanf () won't modify iE3BTimeout if it doesn't find
+	   * the specified format; however, I want to be explicit
+	   * about setting the default timeout in such cases to
+	   * prevent some programs (me) from getting confused.
+	   */
+	  iE3BTimeout = WIN_DEFAULT_E3B_TIME;
+	}
+
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_nLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_winScreens[j].iE3BTimeout = iE3BTimeout;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_winScreens[g_nLastScreen].iE3BTimeout = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return iArgsProcessed;
     }
 
   return 0;
