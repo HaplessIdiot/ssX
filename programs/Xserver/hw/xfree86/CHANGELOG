@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+  83. Fix clean rule in DRM build (Philip Willoghby).
   82. If MouseKeys is switched on, then the mousekeys autorepeat. (fixes
       #272, Stephen Montgomery-Smith)
   81. Ensure Video is unavailable when no acceleration available in the
@@ -12313,4 +12314,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1538 2001/01/25 11:40:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1539 2001/01/25 15:54:27 paulo Exp $
