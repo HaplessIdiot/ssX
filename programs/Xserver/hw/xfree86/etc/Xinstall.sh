@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.63 2003/12/09 00:26:34 torrey Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.64 2003/12/11 21:08:18 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -49,7 +49,7 @@ SNAPSHOT=y
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.3.99.901
+	VERSION=4.3.99.902
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
