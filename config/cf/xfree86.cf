@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.467 2004/01/28 01:47:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.468 2004/03/17 19:48:24 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -402,6 +402,9 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #if defined(AMD64Architecture)
 # ifndef XF86Server
 #  define XF86Server		YES
+# endif
+# ifndef XF86AFB
+#  define XF86AFB              !DoLoadableServer
 # endif
 /* 1bpp module */
 # ifndef XF1Bpp
