@@ -30,9 +30,11 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.4 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
+
+#define NUM_PALETTE_ENTRIES		256
 
 /* See Porting Layer Definition - p. 30 */
 int
@@ -105,54 +107,120 @@ winExpandDirectColorsNativeGDI (ColormapPtr pmap, int ndef,
   return miExpandDirectColors (pmap, ndef, indefs, outdefs);
 }
 
+/*
+ * Load the palette used by the Shadow DIB
+ */
+static
 Bool
-winCreateDefColormapNativeGDI (ScreenPtr pScreen)
+winGetPaletteDIB (ScreenPtr pScreen, ColormapPtr pcmap)
 {
   winScreenPriv(pScreen);
-  Bool			fReturn = TRUE;
-  VisualPtr		pVisual;
-  ColormapPtr		pcmap = NULL;
   int			i;
-  Pixel			pixel;
-  unsigned short	nRed, nGreen, nBlue;
+  Pixel			pixel; /* Pixel == CARD32 */
+  CARD16		nRed, nGreen, nBlue; /* CARD16 == unsigned short */
+  UINT			uiColorsRetrieved = 0;
+  RGBQUAD		rgbColors[NUM_PALETTE_ENTRIES];
+      
+  /* Get the color table for the DIB */
+  uiColorsRetrieved = GetDIBColorTable (pScreenPriv->hdcShadow,
+					0, NUM_PALETTE_ENTRIES,
+					rgbColors);
+  if (uiColorsRetrieved == 0)
+    {
+      ErrorF ("winGetPaletteDIB () - Could not retrieve DIB color table\n");
+      return FALSE;
+    }
+#if CYGDEBUG
+  ErrorF ("winGetPaletteDIB () - Retrieved %d colors from DIB\n",
+	  uiColorsRetrieved);
+#endif
+
+  /* Alloc each color in the DIB color table */
+  for (i = 0; i < uiColorsRetrieved; ++i)
+    {
+      pixel = i;
+
+      /* Extract the color values for current palette entry */
+      nRed = rgbColors[i].rgbRed << 8;
+      nGreen = rgbColors[i].rgbGreen << 8;
+      nBlue = rgbColors[i].rgbBlue << 8;
+#if CYGDEBUG
+      ErrorF ("winGetPaletteDIB () - Allocating a color: %d; "\
+	      "%d %d %d\n",
+	      pixel, nRed, nGreen, nBlue);
+#endif
+      if (AllocColor (pcmap,
+		      &nRed,
+		      &nGreen,
+		      &nBlue,
+		      &pixel,
+		      0) != Success)
+	{
+	  ErrorF ("winGetPaletteDIB () - AllocColor () failed, pixel %d\n",
+		  i);
+	  return FALSE;
+	}
+
+      pcmap->red[i].co.local.red = nRed;
+      pcmap->red[i].co.local.green = nGreen;
+      pcmap->red[i].co.local.blue = nBlue;
+    }
+
+  /* System is using a colormap */
+  /* Set the black and white pixel indices */
+  pScreen->whitePixel = uiColorsRetrieved - 1;
+  pScreen->blackPixel = 0;
+
+  return TRUE;
+}
+
+/*
+ * Load the standard system palette being used by GDI
+ */
+static
+Bool
+winGetPaletteDD (ScreenPtr pScreen, ColormapPtr pcmap)
+{
+  int			i;
+  Pixel			pixel; /* Pixel == CARD32 */
+  CARD16		nRed, nGreen, nBlue; /* CARD16 == unsigned short */
   UINT			uiSystemPaletteEntries;
-  PALETTEENTRY		*ppeColors = NULL;
+  LPPALETTEENTRY	ppeColors = NULL;
+  HDC			hdc = NULL;
 
-  /* Find the root visual */
-  for (pVisual = pScreen->visuals;
-       pVisual->vid != pScreen->rootVisual;
-       pVisual++);
-
-  /*
-   *  AllocNone for Dynamic visual classes,
-   *  AllocAll for non-Dynamic visual classes.
-   */
-
-  /* Allocate an X colormap, owned by client 0 */
-  if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pcmap,
-		     AllocNone, 0) != Success)
+  /* Get a DC to obtain the default palette */
+  hdc = GetDC (NULL);
+  if (hdc == NULL)
     {
-      ErrorF ("winCreateDefColormapNativeGDI () - CreateColormap failed\n");
+      ErrorF ("winGetPaletteDD () - Couldn't get a DC\n");
       return FALSE;
     }
-  if (pcmap == NULL)
-    {
-      ErrorF ("winCreateDefColormap () - Colormap could not be created\n");
-      return FALSE;
-    }
-  ErrorF ("winCreateDefColormap () - Created a colormap\n");
 
   /* Get the number of entries in the system palette */
-  uiSystemPaletteEntries = GetSystemPaletteEntries (pScreenPriv->hdcScreen,
+  uiSystemPaletteEntries = GetSystemPaletteEntries (hdc,
 						    0, 0, NULL);
-  ErrorF ("winCreateDefColormap () - uiSystemPaletteEntries %d\n",
+  if (uiSystemPaletteEntries == 0)
+    {
+      ErrorF ("winGetPaletteDD () - Unable to determine number of "
+	      "system palette entries\n");
+      return FALSE;
+    }
+
+#if CYGDEBUG
+  ErrorF ("winGetPaletteDD () - uiSystemPaletteEntries %d\n",
 	  uiSystemPaletteEntries);
+#endif
   
   /* Allocate palette entries structure */
   ppeColors = xalloc (uiSystemPaletteEntries * sizeof (PALETTEENTRY));
-  
+  if (ppeColors == NULL)
+    {
+      ErrorF ("winGetPaletteDD () - xalloc () for colormap failed\n");
+      return FALSE;
+    }
+
   /* Get system palette entries */
-  GetSystemPaletteEntries (pScreenPriv->hdcScreen,
+  GetSystemPaletteEntries (hdc,
 			   0, uiSystemPaletteEntries, ppeColors);
 
   /* Allocate an X colormap entry for every system palette entry */
@@ -164,43 +232,141 @@ winCreateDefColormapNativeGDI (ScreenPtr pScreen)
       nRed = ppeColors[i].peRed << 8;
       nGreen = ppeColors[i].peGreen << 8;
       nBlue = ppeColors[i].peBlue << 8;
-
-#if 0
-      ErrorF ("winCreateDefColormap () - Allocating a color: %d; "\
-	      "%d %d %d ",
+#if CYGDEBUG
+      ErrorF ("winGetPaletteDD () - Allocating a color: %d; "\
+	      "%d %d %d\n",
 	      pixel, nRed, nGreen, nBlue);
+#endif
       if (AllocColor (pcmap,
 		      &nRed,
 		      &nGreen,
 		      &nBlue,
 		      &pixel,
 		      0) != Success)
-	break;
-#endif
+	{
+	  ErrorF ("winGetPaletteDD () - AllocColor () failed, pixel %d\n",
+		  i);
+	  free (ppeColors);
+	  ppeColors = NULL;
+	  return FALSE;
+	}
 
       pcmap->red[i].co.local.red = nRed;
       pcmap->red[i].co.local.green = nGreen;
       pcmap->red[i].co.local.blue = nBlue;
     }
 
-  if (uiSystemPaletteEntries == 0)
+  /* System is using a colormap */
+  /* Set the black and white pixel indices */
+  pScreen->whitePixel = uiSystemPaletteEntries - 1;
+  pScreen->blackPixel = 0;
+
+  /* Free colormap */
+  if (ppeColors != NULL)
     {
-      fbInitializeColormap (pcmap);
+      free (ppeColors);
+      ppeColors = NULL;
+    }
+
+  /* Free the DC */
+  if (hdc != NULL)
+    {
+      ReleaseDC (NULL, hdc);
+      hdc = NULL;
+    }
+
+  return TRUE;
+}
+
+/*
+ * Install the standard fb colormap, or the GDI colormap,
+ * depending on the current screen depth.
+ */
+Bool
+winCreateDefColormap (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  VisualPtr		pVisual;
+  ColormapPtr		pcmap = NULL;
+
+#if CYGDEBUG
+  ErrorF ("winCreateDefColormap ()\n");
+#endif
+
+  /* Use standard fb colormaps for non pallettized color modes */
+  if (pScreenInfo->dwDepth > 8)
+    {
+      ErrorF ("winCreateDefColormap () - Deferring to " \
+	      "fbCreateDefColormap ()\n");
+      return fbCreateDefColormap (pScreen);
+    }
+
+  /* Find the root visual */
+#if CYGDEBUG
+  ErrorF ("winCreateDefColormap () - Finding the root visual\n");
+#endif
+  for (pVisual = pScreen->visuals;
+       pVisual->vid != pScreen->rootVisual;
+       pVisual++);
+  ErrorF ("winCreateDefColormap () - Found the root visual %08x, %d\n",
+	  pVisual, pVisual->vid);
+
+  /*
+   *  AllocNone for non-Dynamic visual classes,
+   *  AllocAll for Dynamic visual classes.
+   */
+
+  /*
+   * Dynamic visual classes allow the colors of the color map
+   * to be changed by clients.
+   */
+
+  ErrorF ("winCreateDefColormap () - defColormap: %d\n",
+	  pScreen->defColormap);
+
+  /* Allocate an X colormap, owned by client 0 */
+  if (CreateColormap (pScreen->defColormap, 
+		      pScreen, pVisual, &pcmap,
+		      AllocNone, 0) != Success)
+    {
+      ErrorF ("winCreateDefColormap () - CreateColormap failed\n");
+      return FALSE;
+    }
+  if (pcmap == NULL)
+    {
+      ErrorF ("winCreateDefColormap () - Colormap could not be created\n");
+      return FALSE;
+    }
+
+#if CYGDEBUG
+  ErrorF ("winCreateDefColormap () - Created a colormap\n");
+#endif
+
+  /* Branch on engine type */
+  if (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI)
+    {
+      /* Load the colors being used by the Shadow DIB */
+      if (!winGetPaletteDIB (pScreen, pcmap))
+	{
+	  ErrorF ("winCreateDefColormap () - Couldn't get DIB colors\n");
+	  return FALSE;
+	}
     }
   else
     {
-      /* Set the black and white pixel indices */
-      pScreen->whitePixel = uiSystemPaletteEntries - 1;
-      pScreen->blackPixel = 0;
+      /* Load the colors from the default system palette */
+      if (!winGetPaletteDD (pScreen, pcmap))
+	{
+	  ErrorF ("winCreateDefColormap () - Couldn't get colors for DD\n");
+	  return FALSE;
+	}
     }
-
-  /* Free colormap */
-  free (ppeColors);
 
   /* Install the created colormap */
   (*pScreen->InstallColormap)(pcmap);
 
-  return fReturn;
+  return TRUE;
 }
 
 void

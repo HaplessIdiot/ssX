@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.6 2001/05/31 09:11:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.7 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -81,7 +81,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
       ErrorF ("winAllocateFBShadowDDNL () - Could not allocate bits\n");
       return FALSE;
     }
-  
+
   /*
    * Initialize the framebuffer memory so we don't get a 
    * strange display at startup
@@ -211,7 +211,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   ZeroMemory (&ddpfPrimary, sizeof (ddpfPrimary));
   ddpfPrimary.dwSize = sizeof (ddpfPrimary);
   ddrval = IDirectDrawSurface_GetPixelFormat (pScreenPriv->pddsPrimary4,
-					       &ddpfPrimary);
+					      &ddpfPrimary);
   if (FAILED (ddrval))
     {
       ErrorF ("winAllocateFBShadowDDNL () - Could not get primary "\
@@ -281,7 +281,8 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 	  ddsdShadow.u.lPitch);
 #endif
 
-  /* Grab the pitch, and memory pointer from the surface desc */
+  /* Grab the pitch, and memory pointer from 
+the surface desc */
   pScreenInfo->dwStrideBytes = pScreenInfo->dwPaddedWidth;
   pScreenInfo->dwStride = (pScreenInfo->dwStrideBytes * 8)
     / pScreenInfo->dwDepth;
@@ -493,14 +494,16 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
   dwBlueBits = winCountBits (pScreenPriv->dwBlueMask);
   
   /* Store the maximum number of ones in a color mask as the bitsPerRGB */
-  if (dwRedBits > dwGreenBits && dwRedBits > dwBlueBits)
+  if (dwRedBits == 0 || dwGreenBits == 0 || dwBlueBits == 0)
+    pScreenPriv->dwBitsPerRGB = 8;
+  else if (dwRedBits > dwGreenBits && dwRedBits > dwBlueBits)
     pScreenPriv->dwBitsPerRGB = dwRedBits;
   else if (dwGreenBits > dwRedBits && dwGreenBits > dwBlueBits)
     pScreenPriv->dwBitsPerRGB = dwGreenBits;
   else
     pScreenPriv->dwBitsPerRGB = dwBlueBits;
 
-  ErrorF ("winInitVisualsShadowDDNL () - Masks %08x %08x %08x RGB %d d %d\n",
+  ErrorF ("winInitVisualsShadowDDNL () - Masks %08x %08x %08x BPRGB %d d %d\n",
 	  pScreenPriv->dwRedMask,
 	  pScreenPriv->dwGreenMask,
 	  pScreenPriv->dwBlueMask,
@@ -534,9 +537,9 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
 	      "miSetVisualTypesAndMasks\n");
 #endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
-				     PseudoColorMask,
+				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
-				     PseudoColor,
+				     StaticColor,
 				     pScreenPriv->dwRedMask,
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
@@ -569,13 +572,6 @@ winAdjustVideoModeShadowDDNL (ScreenPtr pScreen)
   HDC			hdc = NULL;
   DWORD			dwDepth;
 
-  /* Are we fullscreen? */
-  if (pScreenInfo->fFullScreen)
-    {
-      /* We don't need to adjust the video mode for fullscreen */
-      return TRUE;
-    }
-
   /* We're in serious trouble if we can't get a DC */
   hdc = GetDC (NULL);
   if (hdc == NULL)
@@ -587,12 +583,29 @@ winAdjustVideoModeShadowDDNL (ScreenPtr pScreen)
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);
 
-  /* Is GDI using a depth different than command line parameter? */
-  if (dwDepth != pScreenInfo->dwDepth)
+  /* DirectDraw can only change the depth in fullscreen mode */
+  if (pScreenInfo->dwDepth == WIN_DEFAULT_DEPTH)
     {
-      /* Warn user if GDI depth is different than depth specified */
-      ErrorF ("winAdjustVideoModeShadowDDNL () - Command line depth: %d, "\
-	      "using depth: %d\n", pScreenInfo->dwDepth, dwDepth);
+      /* No -depth parameter passed, let the user know the depth being used */
+      ErrorF ("winAdjustVideoModeShadowDDNL () - Using Windows display "
+	      "depth of %d bits per pixel\n", dwDepth);
+
+      /* Use GDI's depth */
+      pScreenInfo->dwDepth = dwDepth;
+    }
+  else if (pScreenInfo->fFullScreen
+	   && pScreenInfo->dwDepth != dwDepth)
+    {
+      /* FullScreen, and GDI depth differs from -depth parameter */
+      ErrorF ("winAdjustVideoModeShadowDDNL () - FullScreen, using command "
+	      "line depth: %d\n", pScreenInfo->dwDepth);
+    }
+  else if (dwDepth != pScreenInfo->dwDepth)
+    {
+      /* Windowed, and GDI depth differs from -depth parameter */
+      ErrorF ("winAdjustVideoModeShadowDDNL () - Windowed, command line "
+	      "depth: %d, using depth: %d\n",
+	      pScreenInfo->dwDepth, dwDepth);
 
       /* We'll use GDI's depth */
       pScreenInfo->dwDepth = dwDepth;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.8 2001/05/08 08:14:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.9 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -56,9 +56,6 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwWidth  = WIN_DEFAULT_WIDTH;
       g_ScreenInfo[i].dwHeight = WIN_DEFAULT_HEIGHT;
       g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
-      g_ScreenInfo[i].pixelBlack = WIN_DEFAULT_BLACKPIXEL;
-      g_ScreenInfo[i].pixelWhite = WIN_DEFAULT_WHITEPIXEL;
-      g_ScreenInfo[i].dwLineBias = WIN_DEFAULT_LINEBIAS;
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
@@ -119,21 +116,18 @@ OsVendorInit (void)
 void
 ddxUseMsg (void)
 {
-  ErrorF ("-screen n WxHxD\n"\
-	  "\tSet screen n's width, height, and bit depth\n");
-  ErrorF ("-linebias n\n"\
-	  "\tAdjust thin line pixelization\n");
-  ErrorF ("-blackpixel n\n"\
-	  "\tPixel value for black\n");
-  ErrorF ("-whitepixel n\n"\
-	  "\tPixel value for white\n");
-  ErrorF ("-engine n\n"\
-	  "\tOverride the server's detected engine type:\n"\
-	  "\t\tGDI blitter\t\t1\n"\
-	  "\t\tDirectDraw blitter\t2\n"\
-	  "\t\tDirectDraw4 blitter\t4\n");
+  ErrorF ("-screen n WIDTHxHEIGHT\n"
+	  "\tSet screen n's width and height\n");
+  ErrorF ("-engine n\n"
+	  "\tOverride the server's detected engine type:\n"
+	  "\t\t1 - GDI blitter\t\t1\n"
+	  "\t\t2 - DirectDraw blitter\t2\n"
+	  "\t\t4 - DirectDraw4 blitter\t4\n");
   ErrorF ("-fullscreen\n"
 	  "\tRun the specified server engine in fullscreen mode\n");
+  ErrorF ("-depth n\n"
+	  "\tSpecify a bitdepth to use when running in fullscreen\n"
+	  "\twith a DirectDraw engine.\n");
   ErrorF ("-emulate3buttons [n]\n"
 	  "\tEmulate 3 button mouse with timeout of n milliseconds\n");
 }
@@ -176,12 +170,11 @@ ddxProcessArgument (int argc, char *argv[], int i)
         }
       
       /* Grab the height, width, and depth parameters */
-      if (3 != sscanf (argv[i+2], "%dx%dx%d",
+      if (2 != sscanf (argv[i+2], "%dx%d",
 		       (int*)&g_ScreenInfo[nScreenNum].dwWidth,
-		       (int*)&g_ScreenInfo[nScreenNum].dwHeight,
-		       (int*)&g_ScreenInfo[nScreenNum].dwDepth))
+		       (int*)&g_ScreenInfo[nScreenNum].dwHeight))
         {
-	  /* I see no height, width, and depth here */
+	  /* I see no height and width here */
           ErrorF ("Invalid screen configuration %s\n", argv[i+2]);
           UseMsg ();
 	  return 0;
@@ -191,111 +184,6 @@ ddxProcessArgument (int argc, char *argv[], int i)
         g_iNumScreens = nScreenNum + 1;
       g_iLastScreen = nScreenNum;
       return 3;
-    }
-
-  /*
-   * Look for the '-blackpixel n' argument
-   */
-  if (strcmp (argv[i], "-blackpixel") == 0)     /* -blackpixel n */
-    {
-      Pixel		pix;
-
-      /* Display the usage message if the argument is malformed */
-      if (++i >= argc)
-	{
-	  UseMsg ();
-	  return 0;
-	}
-
-      pix = atoi (argv[i]);
-
-      /* Is this parameter attached to a screen or global? */
-      if (-1 == g_iLastScreen)
-        {
-          int			j;
-
-	  /* Parameter is for all screens */
-          for (j = 0; j < MAXSCREENS; j++)
-            {
-              g_ScreenInfo[j].pixelBlack = pix;
-            }
-        }
-      else
-        {
-	  /* Parameter is for a single screen */
-          g_ScreenInfo[g_iLastScreen].pixelBlack = pix;
-        }
-      return 2;
-    }
-
-  /*
-   * Look for the '-whitepixel n' argument
-   */
-  if (strcmp (argv[i], "-whitepixel") == 0)     /* -whitepixel n */
-    {
-      Pixel		pix;
-
-      /* Display the usage message if the argument is malformed */
-      if (++i >= argc)
-	{
-	  UseMsg ();
-	  return 0;
-	}
-
-      pix = atoi (argv[i]);
-
-      /* Is this parameter attached to a screen or global? */
-      if (-1 == g_iLastScreen)
-        {
-          int			j;
-
-	  /* Parameter is for all screens */
-          for (j = 0; j < MAXSCREENS; j++)
-            {
-              g_ScreenInfo[j].pixelWhite = pix;
-            }
-        }
-      else
-        {
-	  /* Parameter is for a single screen */
-          g_ScreenInfo[g_iLastScreen].pixelWhite = pix;
-        }
-      return 2;
-    }
-
-  /*
-   * Look for the '-linebias n' argument
-   */
-  if (strcmp (argv[i], "-linebias") == 0)
-    {
-      unsigned int	uiLinebias;
-
-      /* Display the usage message if the argument is malformed */
-      if (++i >= argc)
-	{
-	  UseMsg ();
-	  return 0;
-	}
-
-      uiLinebias = atoi (argv[i]);
-
-      /* Is this parameter attached to a screen or global? */
-      if (-1 == g_iLastScreen)
-        {
-          int		j;
-
-	  /* Parameter is for all screens */
-          for (j = 0; j < MAXSCREENS; j++)
-            {
-              g_ScreenInfo[j].dwLineBias = uiLinebias;
-            }
-        }
-      else
-        {
-	  /* Parameter is for a single screen */
-          g_ScreenInfo[g_iLastScreen].dwLineBias = uiLinebias;
-        }
-      return 2;
     }
 
   /*
@@ -419,6 +307,44 @@ ddxProcessArgument (int argc, char *argv[], int i)
 
       /* Indicate that we have processed this argument */
       return iArgsProcessed;
+    }
+
+  /*
+   * Look for the '-depth n' argument
+   */
+  if (strcmp (argv[i], "-depth") == 0)
+    {
+      DWORD		dwDepth = 0;
+      
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      /* Grab the argument */
+      dwDepth = atoi (argv[i]);
+
+      /* Is this parameter attached to a screen or global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int		j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].dwDepth = dwDepth;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].dwDepth = dwDepth;
+	}
+      
+      /* Indicate that we have processed the argument */
+      return 2;
     }
 
   return 0;

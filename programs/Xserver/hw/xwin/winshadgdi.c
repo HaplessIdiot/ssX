@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.7 2001/05/31 09:11:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.8 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -104,11 +104,12 @@ winQueryRGBBitsAndMasks (ScreenPtr pScreen)
   LPDWORD		pdw = NULL;
   DWORD			dwRedBits, dwGreenBits, dwBlueBits;
 
-  /* RGB BPP for 8 bit palletes is always 8 bits per pixel */
+  /* Color masks for 8 bpp are standardized */
   if (GetDeviceCaps (pScreenPriv->hdcScreen, RASTERCAPS) & RC_PALETTE)
     {
-      /*
-       * FIXME: 8bpp doesn't work.
+      /* 
+       * RGB BPP for 8 bit palletes is always 8
+       * and the color masks are always 0.
        */
       pScreenPriv->dwBitsPerRGB = 8;
       pScreenPriv->dwRedMask = 0x0L;
@@ -216,7 +217,7 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   /* Create a DI shadow bitmap with a bit pointer */
   pScreenPriv->hbmpShadow = CreateDIBSection (pScreenPriv->hdcScreen,
 					      (BITMAPINFO *) pbmih,
-					      0,
+					      DIB_RGB_COLORS,
 					      (VOID**) &pScreenInfo->pfb,
 					      NULL,
 					      0);
@@ -250,6 +251,7 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
   ErrorF ("winAllocateFBShadowGDI () - Attempting a shadow blit\n");
 #endif
 
+  /* Do a test blit from the shadow to the screen, I think */
   fReturn = BitBlt (pScreenPriv->hdcScreen,
 		    0, 0,
 		    pScreenInfo->dwWidth, pScreenInfo->dwHeight,
@@ -411,13 +413,13 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       return FALSE;
     }
 
-#if CYGDEBUG
-  ErrorF ("winInitVisualsGDI () - Masks: %08x %08x %08x bpRGB: %d\n",
+  /* Display debugging information */
+  ErrorF ("winInitVisualsGDI () - Masks %08x %08x %08x BPRGB %d d %d\n",
 	  pScreenPriv->dwRedMask,
 	  pScreenPriv->dwGreenMask,
 	  pScreenPriv->dwBlueMask,
-	  pScreenPriv->dwBitsPerRGB);
-#endif
+	  pScreenPriv->dwBitsPerRGB,
+	  pScreenInfo->dwDepth);
 
   /* Create a single visual according to the Windows screen depth */
   switch (pScreenInfo->dwDepth)
@@ -444,9 +446,9 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
       ErrorF ("winInitVisualsGDI () - Calling miSetVisualTypesAndMasks\n");
 #endif /* CYGDEBUG */
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
-				     PseudoColorMask,
+				     StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
-				     PseudoColor,
+				     StaticColor,
 				     pScreenPriv->dwRedMask,
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
@@ -455,6 +457,7 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 	  return FALSE;
 	}
       break;
+
     default:
       ErrorF ("winInitVisualsGDI () - Unknown screen depth\n");
       return FALSE;
@@ -466,12 +469,10 @@ winInitVisualsShadowGDI (ScreenPtr pScreen)
 #endif
 
   /* Set DPI info */
-  pScreenInfo->dwDPIx = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSX);
-  pScreenInfo->dwDPIy = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSY);
+  pScreenInfo->dwDPIx = 100;
+  pScreenInfo->dwDPIy = 100;
 
-#if CYGDEBUG
   ErrorF ("winInitVisualsGDI () - Returning\n");
-#endif
 
   return TRUE;
 }
@@ -497,10 +498,19 @@ winAdjustVideoModeShadowGDI (ScreenPtr pScreen)
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);
 
-  /* Is GDI using a depth different than command line parameter? */
-  if (dwDepth != pScreenInfo->dwDepth)
+  /* GDI cannot change the screen depth */
+  if (pScreenInfo->dwDepth == WIN_DEFAULT_DEPTH)
     {
-      /* Warn user if GDI depth is different than depth specified */
+      /* No -depth parameter passed, let the user know the depth being used */
+      ErrorF ("winAdjustVideoModeShadowGDI () - Using Windows display "
+	      "depth of %d bits per pixel\n", dwDepth);
+
+      /* Use GDI's depth */
+      pScreenInfo->dwDepth = dwDepth;
+    }
+  else if (dwDepth != pScreenInfo->dwDepth)
+    {
+      /* Warn user if GDI depth is different than -depth parameter */
       ErrorF ("winAdjustVideoModeShadowGDI () - Command line depth: %d, "\
 	      "using depth: %d\n", pScreenInfo->dwDepth, dwDepth);
 
