@@ -1,4 +1,4 @@
-/* $TOG: mpbande.c /main/6 1998/02/09 16:21:17 kaleb $ */
+/* $Xorg: mpbande.c,v 1.3 2000/08/17 19:47:49 cpqbld Exp $ */
 /**** module mpbande.c ****/
 /******************************************************************************
 
@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpbande.c,v 3.2 1998/10/04 09:36:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpbande.c,v 3.3 1998/10/05 13:22:41 dawes Exp $ */
 
 #define _XIEC_MPBANDE
 #define _XIEC_PBANDE

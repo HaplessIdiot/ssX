@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.11 2000/03/03 20:50:25 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.12 2000/10/24 22:45:03 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
 
-/* $TOG: shape.c /main/39 1998/02/09 15:25:16 kaleb $ */
+/* $Xorg: shape.c,v 1.3 2000/08/17 19:47:58 cpqbld Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.49 1999/12/03 19:17:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.50 1999/12/13 01:39:40 robin Exp $ */
 
 /*
 
@@ -29,7 +29,7 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $TOG: xf86vmode.c /main/27 1998/02/09 15:25:44 kaleb $ */
+/* $Xorg: xf86vmode.c,v 1.3 2000/08/17 19:47:59 cpqbld Exp $ */
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #define NEED_REPLIES

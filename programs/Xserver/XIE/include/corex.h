@@ -1,4 +1,4 @@
-/* $TOG: corex.h /main/6 1998/02/10 10:27:18 kaleb $ */
+/* $Xorg: corex.h,v 1.3 2000/08/17 19:47:32 cpqbld Exp $ */
 /**** module corex.h ****/
 /******************************************************************************
 
@@ -66,7 +66,7 @@ terms and conditions:
 		Dean Verheiden -- AGE Logic, Inc. April, 1993
 
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/include/corex.h,v 1.3 1998/10/25 12:47:53 dawes Exp $ */
 
 #ifndef _XIEH_COREX
 #define _XIEH_COREX

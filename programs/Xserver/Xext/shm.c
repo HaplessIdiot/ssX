@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.26 2000/04/27 16:26:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.27 2000/08/10 17:40:30 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
-/* $TOG: shm.c /main/27 1998/02/09 15:25:23 kaleb $ */
+/* $Xorg: shm.c,v 1.3 2000/08/17 19:47:58 cpqbld Exp $ */
 
 #include <sys/types.h>
 #ifndef Lynx

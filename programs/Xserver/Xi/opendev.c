@@ -1,4 +1,4 @@
-/* $TOG: opendev.c /main/9 1998/02/09 15:30:00 kaleb $ */
+/* $Xorg: opendev.c,v 1.3 2000/08/17 19:48:02 cpqbld Exp $ */
 
 /************************************************************
 
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/opendev.c,v 3.0 1996/03/29 22:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/opendev.c,v 3.1 1998/10/04 09:37:12 dawes Exp $ */
 
 /***********************************************************************
  *

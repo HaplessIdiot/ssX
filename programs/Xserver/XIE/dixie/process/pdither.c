@@ -1,4 +1,4 @@
-/* $TOG: pdither.c /main/7 1998/02/09 16:10:19 kaleb $ */
+/* $Xorg: pdither.c,v 1.3 2000/08/17 19:47:28 cpqbld Exp $ */
 /**** module pdither.c ****/
 /******************************************************************************
 
@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. May 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pdither.c,v 3.2 1998/10/05 13:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pdither.c,v 3.3 1998/10/25 07:11:34 dawes Exp $ */
 
 #define _XIEC_PDITHER
 
