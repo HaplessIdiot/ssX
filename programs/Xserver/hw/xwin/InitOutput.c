@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.15 2001/07/03 11:18:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.16 2001/07/25 14:30:08 alanh Exp $ */
 
 #include "win.h"
 
@@ -73,6 +73,8 @@ winInitializeDefaultScreens (void)
 	* 25.4;
       g_ScreenInfo[i].dwHeight_mm = (WIN_DEFAULT_HEIGHT / WIN_DEFAULT_DPI)
 	* 25.4;
+      g_ScreenInfo[i].fUseWinKillKey = WIN_DEFAULT_WIN_KILL;
+      g_ScreenInfo[i].fUseUnixKillKey = WIN_DEFAULT_UNIX_KILL;
     }
 }
 
@@ -160,6 +162,10 @@ ddxUseMsg (void)
   ErrorF ("-emulate3buttons [timeout]\n"
 	  "\tEmulate 3 button mouse with an optional timeout in "
 	  "milliseconds\n");
+  ErrorF ("-[no]winkill\n"
+          "\tAlt+F4 exits the XServer\n");
+  ErrorF ("-[no]unixkill\n"
+          "\tCtrl+Alt+Backspace exits the XServer\n");
 }
 
 /* See Porting Layer Definition - p. 57 */
@@ -468,6 +474,110 @@ ddxProcessArgument (int argc, char *argv[], int i)
       
       /* Indicate that we have processed the argument */
       return 2;
+    }
+
+  /*
+   * Look for the '-nowinkill' argument
+   */
+  if (strcmp(argv[i], "-nowinkill") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fUseWinKillKey = FALSE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fUseWinKillKey = FALSE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-winkill' argument
+   */
+  if (strcmp(argv[i], "-winkill") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fUseWinKillKey = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fUseWinKillKey = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-nounixkill' argument
+   */
+  if (strcmp(argv[i], "-nounixkill") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fUseUnixKillKey = FALSE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fUseUnixKillKey = FALSE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-unixkill' argument
+   */
+  if (strcmp(argv[i], "-unixkill") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fUseUnixKillKey = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fUseUnixKillKey = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
     }
 
   return 0;

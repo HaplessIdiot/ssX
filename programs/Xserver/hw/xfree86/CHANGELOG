@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 174. Add support to Cygwin/XFree86 to use CTRL+ALT+BKSPACE as the shutdown
+      signal and fix up command line options to accomodate.
+      (#4838, Alexander Gottwald).
  173. In XDarwin, add ability to change modifiers to use when faking multiple
       mouse buttons (Gregory Parker).
  172. Do not build Cygwin/XFree86 with -ansi as Cygwin's library (newlib) lacks
@@ -13613,4 +13616,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1896 2001/08/03 23:43:38 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1897 2001/08/06 04:14:33 torrey Exp $
