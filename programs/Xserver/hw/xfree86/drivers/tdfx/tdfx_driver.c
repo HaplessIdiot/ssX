@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.98 2003/08/23 15:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.99 2003/08/23 16:09:20 dawes Exp $ */
 
 /*
  * Authors:
@@ -244,8 +244,6 @@ static const char *int10Symbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
-
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddMap",
@@ -270,6 +268,8 @@ static const char *driSymbols[] = {
 };
 
 #endif
+
+#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tdfxSetup);
 
@@ -1092,6 +1092,12 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   pTDFX->writeLong(pTDFX, MISCINIT0, pTDFX->ModeReg.miscinit0);
 #endif
 
+  /* Load the dri module if requested. */
+  if (xf86ReturnOptValBool(pTDFX->Options, OPTION_DRI, FALSE)) {
+    if (xf86LoadSubModule(pScrn, "dri")) {
+      xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
+    }
+  }
 
   return TRUE;
 }

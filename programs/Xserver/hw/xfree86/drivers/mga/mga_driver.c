@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.235 2003/07/01 12:40:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.236 2003/08/23 15:03:02 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -285,7 +285,6 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -328,7 +327,6 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
-#endif
 #endif
 
 #define MGAuseI2C 1
@@ -2402,6 +2400,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
+    }
+
+    /* Load the dri module if requested. */
+    if (xf86ReturnOptValBool(pMga->Options, OPTION_DRI, FALSE)) {
+       if (xf86LoadSubModule(pScrn, "dri")) {
+	  xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
+       }
     }
 
     pMga->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
