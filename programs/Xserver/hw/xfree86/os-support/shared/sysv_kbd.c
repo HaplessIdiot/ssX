@@ -1,7 +1,7 @@
-/* $XConsortium: sysv_kbd.c,v 1.1 94/03/28 21:32:08 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_kbd.c,v 1.1.1.2 1996/01/03 07:20:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
- * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
+ * Copyright 1993 by David Dawes <dawes@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sysv_kbd.c /main/2 1995/11/13 06:15:21 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"

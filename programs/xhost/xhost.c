@@ -1,5 +1,5 @@
 /* $XConsortium: xhost.c,v 11.63 95/04/03 20:56:49 mor Exp $ */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.3 1996/02/09 08:22:49 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.4 1996/08/25 14:14:29 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -85,7 +85,7 @@ typedef long sign32;
 #include <arpa/inet.h>
 	bogus definition of inet_makeaddr() in BSD 4.2 and Ultrix
 #else
-#if !defined(hpux) && !defined(NCR)
+#if !defined(hpux) && !defined(NCR) && !defined(__EMX__)
 extern unsigned long inet_makeaddr();
 #endif
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514im.h,v 1.1 94/03/28 21:04:48 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/8514im.h,v 1.1.1.3 1996/01/03 07:12:13 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: 8514im.h /main/2 1995/11/12 16:53:44 kaleb $ */
 
 #ifndef modulus
 #define	modulus(a,b,d)	if (((d) = (a) % (b)) < 0) (d) += (b)

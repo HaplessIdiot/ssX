@@ -1,4 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:02:03 dpw Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/Imakefile,v 1.1.1.2 1996/01/03 07:12:04 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/11/13 10:10:55 kaleb $
 #include <Server.tmpl>
 
 SRCS = 	xf86bcache.c xf86fcache.c xf86text.c
@@ -20,3 +25,4 @@ NormalLibraryTarget(xf86cache,$(OBJS))
 InstallLinkKitLibrary(xf86cache,$(LINKKITDIR)/lib)
 
 DependTarget()
+

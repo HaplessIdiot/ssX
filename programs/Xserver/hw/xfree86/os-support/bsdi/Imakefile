@@ -1,4 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:28:19 dpw Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 1.1.1.2 1996/01/03 07:20:18 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/11/13 05:55:35 kaleb $
+
 #include <Server.tmpl>
 
 SRCS = bsdi_init.c bsdi_video.c IO_utils.c bsdi_io.c bios_devmem.c \
@@ -25,3 +31,4 @@ ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
 ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
 
 DependTarget()
+

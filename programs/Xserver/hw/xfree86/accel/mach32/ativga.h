@@ -1,4 +1,5 @@
-/* $XConsortium: ativga.h,v 1.1 94/03/28 21:06:36 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/ativga.h,v 1.1.1.2 1996/01/03 07:12:51 dawes Exp $ */
+
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -40,7 +41,7 @@
  *
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  */
-
+/* $XConsortium: ativga.h /main/2 1995/11/12 17:24:18 kaleb $ */
 
 #include <X11/Xfuncproto.h>
 

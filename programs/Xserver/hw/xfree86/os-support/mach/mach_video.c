@@ -1,7 +1,7 @@
-/* $XConsortium: mach_video.c,v 1.1 94/03/28 21:29:32 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_video.c,v 1.1.1.2 1996/01/03 07:20:31 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: mach_video.c /main/2 1995/11/13 06:01:10 kaleb $ */
 
 #include "X.h"
 #include "input.h"

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/20 1996/01/14 16:52:52 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.7 1996/05/13 06:50:46 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.8 1996/08/13 11:36:58 dawes Exp $
  */
 
 /*
@@ -109,19 +109,33 @@ Input (keyboard, screen, event, eightbit)
 	    keysym += XK_Home - XK_KP_Home;
 	}
 
+#define VT52_KEYPAD \
+	if_OPT_VT52_MODE(screen,{ \
+		reply.a_type = ESC; \
+		reply.a_pintro = '?'; \
+		})
+
+#define VT52_CURSOR_KEYS \
+	if_OPT_VT52_MODE(screen,{ \
+		reply.a_type = ESC; \
+		})
+
 	if (IsPFKey(keysym)) {
 		reply.a_type = SS3;
+		reply.a_final = keysym-XK_KP_F1+'P';
+		VT52_CURSOR_KEYS
 		unparseseq(&reply, pty);
-		unparseputc((char)(keysym-XK_KP_F1+'P'), pty);
 		key = TRUE;
         } else if (IsCursorKey(keysym) &&
         	keysym != XK_Prior && keysym != XK_Next) {
        		if (keyboard->flags & CURSOR_APL) {
 			reply.a_type = SS3;
+			reply.a_final = cur[keysym-XK_Home];
+			VT52_CURSOR_KEYS
 			unparseseq(&reply, pty);
-			unparseputc(cur[keysym-XK_Home], pty);
 		} else {
 			reply.a_type = CSI;
+			if_OPT_VT52_MODE(screen,{ reply.a_type = ESC; })
 			reply.a_final = cur[keysym-XK_Home];
 			unparseseq(&reply, pty);
 		}
@@ -130,17 +144,32 @@ Input (keyboard, screen, event, eightbit)
 	 	keysym == XK_Prior || keysym == XK_Next ||
 	 	keysym == DXK_Remove || keysym == XK_KP_Delete ||
 		keysym == XK_KP_Insert) {
-		if ((string = udk_lookup(funcvalue(keysym), &nbytes)) != 0) {
+		int dec_code = funcvalue(keysym);
+		if ((string = udk_lookup(dec_code, &nbytes)) != 0) {
 			while (nbytes-- > 0)
 				unparseputc(*string++, pty);
-		} else {
+		}
+#if OPT_VT52_MODE
+		/*
+		 * Interpret F1-F4 as PF1-PF4 for VT52, VT100
+		 */
+		else if (screen->ansi_level <= 1
+		  && (dec_code >= 11 && dec_code <= 14))
+		{
+			reply.a_type = SS3;
+			VT52_CURSOR_KEYS
+			reply.a_final = dec_code - 11 + 'P';
+			unparseseq(&reply, pty);
+		}
+#endif
+		else {
 			reply.a_type = CSI;
 			reply.a_nparam = 1;
 			if (sunFunctionKeys) {
 				reply.a_param[0] = sunfuncvalue (keysym);
 				reply.a_final = 'z';
 			} else {
-				reply.a_param[0] = funcvalue (keysym);
+				reply.a_param[0] = dec_code;
 				reply.a_final = '~';
 			}
 			if (reply.a_param[0] > 0)
@@ -148,10 +177,21 @@ Input (keyboard, screen, event, eightbit)
 		}
 		key = TRUE;
 	} else if (IsKeypadKey(keysym)) {
+#if OPT_VT52_MODE
+		/*
+		 * DEC keyboards don't have keypad(+), but do have keypad(,)
+		 * instead.  Other (Sun, PC) keyboards commonly have keypad(+),
+		 * but no keypad(,) - it's a pain for users to work around.
+		 */
+		if (!sunFunctionKeys
+		 && keysym == XK_KP_Add)
+			keysym = XK_KP_Separator;
+#endif
 	  	if (keyboard->flags & KYPD_APL)	{
 			reply.a_type   = SS3;
+			reply.a_final = kypd_apl[keysym-XK_KP_Space];
+			VT52_KEYPAD
 			unparseseq(&reply, pty);
-			unparseputc(kypd_apl[keysym-XK_KP_Space], pty);
 		} else
 			unparseputc(kypd_num[keysym-XK_KP_Space], pty);
 		key = TRUE;

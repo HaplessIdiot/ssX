@@ -1,4 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:30:21 dpw Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 1.1.1.2 1996/01/03 07:20:42 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/11/13 06:08:31 kaleb $
+
 #include <Server.tmpl>
 
 SRCS = sco_init.c sco_video.c sco_io.c bios_devmem.c mapVT_noop.c VTsw_sco.c \
@@ -21,3 +27,4 @@ ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
 ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
 
 DependTarget()
+

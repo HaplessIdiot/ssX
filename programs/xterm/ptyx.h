@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.15 1996/08/23 11:06:20 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.16 1996/09/22 05:16:11 dawes Exp $
  */
 
 /*
@@ -188,7 +188,8 @@ typedef Char **ScrnBuf;
 #define	APC	0x9F
 #define	RDEL	0xFF
 
-#define MIN_DECID 100			/* emulate VT100 */
+#define MIN_DECID  52			/* can emulate VT52 */
+#define DFT_DECID 100			/* default VT100 */
 #define MAX_DECID 420			/* ...through VT420 */
 
 #define NMENUFONTS 9			/* entries in fontMenu */
@@ -286,6 +287,7 @@ typedef struct {
 
 #define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
 #define OPT_BLINK_CURS  0 /* FIXME: do this later (96/7/31) */
+#define OPT_VT52_MODE   1 /* true if xterm supports VT52 emulation */
 
 /***====================================================================***/
 
@@ -321,6 +323,12 @@ typedef struct {
 #define MAX_PTRS term->num_ptrs
 #else
 #define MAX_PTRS 2
+#endif
+
+#if OPT_VT52_MODE
+#define if_OPT_VT52_MODE(screen, code) if(screen->ansi_level == 0) code
+#else
+#define if_OPT_VT52_MODE(screen, code) /* nothing */
 #endif
 
 	/* ScrnBuf-level macros */

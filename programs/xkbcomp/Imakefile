@@ -36,3 +36,7 @@ clean::
 
 ComplexProgramTarget(xkbcomp)
 
+#ifdef OS2Architecture
+all::
+	$(CP) ProgramTargetName(xkbcomp) /
+#endif

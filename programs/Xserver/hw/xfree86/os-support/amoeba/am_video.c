@@ -1,7 +1,7 @@
-/* $XConsortium: am_video.c,v 1.1 94/03/28 21:27:41 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_video.c,v 1.1.1.2 1996/01/03 07:20:11 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: am_video.c /main/2 1995/11/13 05:50:11 kaleb $ */
 
 #include "X.h"
 #include "input.h"

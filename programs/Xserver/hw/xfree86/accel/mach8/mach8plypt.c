@@ -1,4 +1,5 @@
-/* $XConsortium: mach8plypt.c,v 1.2 94/04/17 20:31:00 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8plypt.c,v 1.1.1.2 1996/01/03 07:13:59 dawes Exp $ */
+
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -39,9 +40,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 ********************************************************/
-
-
-/* $XConsortium: mach8plypt.c,v 1.2 94/04/17 20:31:00 dpw Exp $ */
+/* $XConsortium: mach8plypt.c /main/4 1995/11/12 18:00:57 kaleb $ */
 
 #include "X.h"
 #include "gcstruct.h"

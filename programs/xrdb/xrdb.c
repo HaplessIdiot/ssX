@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.4 1996/08/25 14:15:32 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.5 1996/09/03 15:13:49 dawes Exp $
  */
 
 /*
@@ -780,8 +780,11 @@ addstring (arg, s)
 #endif
 {
     if(arg->used + strlen(s) + 1 >= arg->room) {
-	if((arg->val = (char *)realloc(arg->val, arg->room + CHUNK_SIZE))
-	   == NULL)
+	if(arg->val)
+	    arg->val = (char *)realloc(arg->val, arg->room + CHUNK_SIZE);
+	else
+	    arg->val = (char *)malloc(arg->room + CHUNK_SIZE);	    
+	if(arg->val == NULL)
 	    fatal("%s: Not enough memory\n", ProgramName);
 	arg->room += CHUNK_SIZE;
     }
@@ -1216,7 +1219,7 @@ Process(scrno, doScreen, execute)
 #else
 	    if((cmd = (char *)
 		malloc(strlen(cpp_program) + strlen(includes.val) +
-		       strlen(defines.val) + 1)) ==
+		       strlen(defines.val) + 2)) ==
 	       NULL)
 		fatal("%s: Out of memory\n", ProgramName);
 	    sprintf(cmd, "%s%s %s", cpp_program, includes.val, defines.val);

@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514bc.c,v 1.1 94/03/28 21:03:08 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/bcach.c,v 1.1.1.3 1996/01/03 07:12:15 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -19,8 +19,8 @@
  * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
- * 
  */
+/* $XConsortium: bcach.c /main/2 1995/11/12 16:53:49 kaleb $ */
 
 /*
  * Extract from s3bcach.c

@@ -1,4 +1,4 @@
-/* $XConsortium: mach8cmap.c,v 1.1 94/03/28 21:10:33 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cmap.c,v 1.1.1.2 1996/01/03 07:13:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,9 +25,8 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
  *
- * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vgaCmap.c,v 1.2 1991/06/27 00:03:01 root Exp
  */
-
+/* $XConsortium: mach8cmap.c /main/2 1995/11/12 18:00:07 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,4 +1,11 @@
-/* $XConsortium: mach8imrd.s,v 1.2 94/03/29 09:51:12 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imrd.s,v 1.1.1.2 1996/01/03 07:13:53 dawes Exp $ */
+
+
+
+
+
+
+/* $XConsortium: mach8imrd.s /main/3 1995/11/12 18:00:45 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageRead routine.
@@ -19,7 +26,6 @@ mach8ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     short		planemask;
 
 ******************************************************************************/
-
 
 #define _MACH8_ASM_
 #include "assyntax.h"

@@ -1,3 +1,48 @@
+XFree86 3.2a (18 November 1996)
+  30. Bump default FreeBSD version to 2.1.6.
+  29. TGUI driver updates for PC98 (Akio Morita).
+  28. Fix trident driver compile problem with VGA2 and VGA16 servers
+      (Takaaki Nomura).
+  27. XAA support for the Trident driver (Alan Hourihane).
+  26. Add VT52 emulation to xterm (Thomas E. Dickey).
+  25. Fix a missing resets to groundstate in xterm (Denis Auroux and
+      Thomas Dickey).
+  24. Improve overflow problem in XAA internal benchmarking
+      (Akio Morita).
+  23. XAA support for the mga driver (Radislaw Kapitan and the Matrox team).
+  22. XAA support for the Cirrus BitBLT and Laguna chips (but not enabled
+      yet) (Harm Hanemaayer).
+  21. XAA support for the ARK driver (Harm Hanemaayer).
+  20. A new acceleration interface (XAA) for the SVGA server (Harm Hanemaayer).
+  19. S3V s3plypt.c changed to use GE, but is slower so still disabled
+      (Harald Koenig).
+  18. Change the S3V GE reset to avoid lockups (Harald Koenig).
+  17. Add WaitIdle() at the end of S3V accel routines to avoid screen
+      corruption from direct fb access while the GE is still active
+      (Harald Koenig).
+  16. Remove unsupported option flags from the S3V server (Harald Koenig).
+  15. Allow large S3 cursors by switching to SW cursor when required
+      (Harald Koenig).
+  14. Fix S3 frame buffer probing and memory leak (Harald Koenig).
+  13. Fix S3 ReadImage with a planemask (when ReadImageNoMem can't be used)
+      (Harald Koenig).
+  12. S3 line and text fixes (Harald Koenig).
+  11. Fix DGA colourmap problems in the W32 server.
+  10. Fix a problem with realloc usage in xrdb for some older OSs
+      (eg, SunOS 4.x) (Wolfgang Rupprecht).
+   9. Fix an xrdb malloc problem (Michael Lipp).
+   8. Fix xload problems on Solaris 2.5 (David Thompson).
+   7. Fix xload problem for most BSD OSs that was introduced in 3.2, and
+      fix some problems in the BSDI-specific code (Matthieu Herrb).
+   6. Modify the external ClockProg support to allow for programmable
+      clocks (ie, no clocks line) (Egbert Eich).
+   5. Fix W32p rev C and rev D PCI ids (Koen Gadeyne).
+   4. Fix a problem which causes a server crash on PANIX/PC98 when using
+      the XFree86-Misc extension (Takaaki Nomura).
+   3. S3 server probe cleanup (Mark Vojkovich).
+   2. Fix XF86Setup compile problem on Solaris (Robin Cutshaw).
+   1. Patches for OS/2 support (Holger Veit).
+
 XFree86 3.2 (26 October 1996)
 1079. Fix a bug in xgc that can cause a SEGV (Takaaki Nomura).
 1078. README and FreeBSD doc updates (Takaaki Nomura).

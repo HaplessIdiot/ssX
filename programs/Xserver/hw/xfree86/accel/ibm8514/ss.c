@@ -1,4 +1,5 @@
-/* $XConsortium: ibm8514ss.c,v 1.2 94/04/17 20:30:39 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ss.c,v 1.1.1.3 1996/01/03 07:12:46 dawes Exp $ */
+
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,7 +53,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 */
-
+/* $XConsortium: ss.c /main/2 1995/11/12 16:55:02 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"
