@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.11tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -29,7 +30,6 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.10tsi Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -419,8 +419,6 @@ static void viaFillGraphicInfo(ScrnInfoPtr pScrn)
         /* Added to pass DRM info to V4L */
 #ifdef XF86DRI
         pVia->graphicInfo.DRMEnabled = pVia->directRenderingEnabled;
-#else
-        pVia->graphicInfo.DRMEnabled = 0;
 #endif
 }
 

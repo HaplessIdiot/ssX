@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/ginfo.h,v 1.3tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -42,7 +42,9 @@ typedef struct {
     CARD32 Cap0_Deinterlace; /* Capture 0 deintrlace mode        */
     CARD32 Cap1_Deinterlace; /* Capture 1 deintrlace mode        */
     CARD32 Cap0_FieldSwap;   /* Capture 0 input field swap       */
+#ifdef XF86DRI
     BOOL  DRMEnabled;               /* kernel module DRM flag           */
+#endif
     BOOL  HasSecondary;             /* True: XServer in SAMM mode       */
     BOOL  IsSecondary;              /* True: In SAMM mode 2nd display   */
     BOOL  Screen1IsLeft;            /* True: Screen1 LeftOf Screen0 ; False: Screen1 RightOf Screen0 */

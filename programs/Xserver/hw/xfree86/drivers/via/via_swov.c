@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.4tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -124,7 +124,31 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
 
             SWFBSIZE = dwPitch*dwHeight;    /*YUYV*/
 
-            if (!pVia->graphicInfo.DRMEnabled)
+#ifdef XF86DRI
+            if (pVia->graphicInfo.DRMEnabled)
+            {
+                DBG_DD(ErrorF("\n//DRM Device : Allocate SWOV memory!!\n"));
+                   
+                if((pVia->swov.drm_SWOV_fd = drmOpen("via",NULL)) < 0) 
+                {
+                    ErrorF("DRM Device for via could not be opened.\n");
+                    return BadAccess;
+                }                 
+    
+                pVia->swov.SWfbRequest.context=1;
+                pVia->swov.SWfbRequest.size=SWFBSIZE*2;
+                pVia->swov.SWfbRequest.type= VIDEO;
+                
+                if ( drmCommandWrite( pVia->swov.drm_SWOV_fd, DRM_VIA_ALLOCMEM,
+				      &pVia->swov.SWfbRequest, sizeof(drmViaMem)) < 0 ) 
+                {
+                    ErrorF("\n//Cannot allocate SWOV memory use DRM module!\n");
+                    return -errno;
+                } 
+                dwAddr = pVia->swov.SWfbRequest.offset;
+            }
+            else
+#endif
             {
 /*                dwNewHight = dwHeight<<1;*/
                 depth = (pScrn->bitsPerPixel + 7 ) >> 3;
@@ -147,31 +171,6 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
                 dwAddr = pVia->swov.SWOVlinear->offset * depth;
                 DBG_DD(ErrorF("SWOV dwAddr = 0x%x!!!! \n",dwAddr));
             }
-
-#ifdef XF86DRI
-            else
-            {
-                DBG_DD(ErrorF("\n//DRM Device : Allocate SWOV memory!!\n"));
-                   
-                if((pVia->swov.drm_SWOV_fd = drmOpen("via",NULL)) < 0) 
-                {
-                    ErrorF("DRM Device for via could not be opened.\n");
-                    return BadAccess;
-                }                 
-    
-                pVia->swov.SWfbRequest.context=1;
-                pVia->swov.SWfbRequest.size=SWFBSIZE*2;
-                pVia->swov.SWfbRequest.type= VIDEO;
-                
-                if ( drmCommandWrite( pVia->swov.drm_SWOV_fd, DRM_VIA_ALLOCMEM,
-				      &pVia->swov.SWfbRequest, sizeof(drmViaMem)) < 0 ) 
-                {
-                    ErrorF("\n//Cannot allocate SWOV memory use DRM module!\n");
-                    return -errno;
-                } 
-                dwAddr = pVia->swov.SWfbRequest.offset;
-            }
-#endif
 
             /* fill in the SW buffer with 0x8000 (YUY2-black color) to clear FB buffer*/
             lpTmpAddr = pVia->FBBase + dwAddr;
@@ -212,36 +211,8 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
 
             HQVFBSIZE = dwPitch * dwHeight;
 
-            if (!pVia->graphicInfo.DRMEnabled)
-            {                
-                if(pVia->swov.SWOVlinear) 
-                {
-	                xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
-	                pVia->swov.SWOVlinear = NULL;
-	                DBG_DD(ErrorF("xfree86 Manager Free Init_SWOVLinear Offscreen Memory Success!!!! \n"));
-                }
-
-                if ( hwDiff->dwThreeHQVBuffer )    /* CLE_C0 */
-                {
-                    if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, HQVFBSIZE*3, 
-                                                                  32, NULL, NULL, NULL)))
-                    {
-	                return BadAlloc;
-                    }
-                }
-                else
-                {
-                    if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, HQVFBSIZE*2, 
-                                                                  32, NULL, NULL, NULL)))
-                    {
-	                    return BadAlloc;
-                    }
-                }
-                dwAddr = pVia->swov.SWOVlinear->offset * depth + SWOVFBSIZE;
-                DBG_DD(ErrorF("HQV dwAddr = 0x%x!!!! \n",dwAddr));
-            }
 #ifdef XF86DRI
-            else
+            if (pVia->graphicInfo.DRMEnabled)
             {
                 DBG_DD(ErrorF("\n//DRM Device : Allocate HQV memory!!\n"));
                 
@@ -269,7 +240,35 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
                 }     
                 dwAddr = pVia->swov.HQVfbRequest.offset;
             }
+            else
 #endif
+            {                
+                if(pVia->swov.SWOVlinear) 
+                {
+	                xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
+	                pVia->swov.SWOVlinear = NULL;
+	                DBG_DD(ErrorF("xfree86 Manager Free Init_SWOVLinear Offscreen Memory Success!!!! \n"));
+                }
+
+                if ( hwDiff->dwThreeHQVBuffer )    /* CLE_C0 */
+                {
+                    if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, HQVFBSIZE*3, 
+                                                                  32, NULL, NULL, NULL)))
+                    {
+	                return BadAlloc;
+                    }
+                }
+                else
+                {
+                    if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, HQVFBSIZE*2, 
+                                                                  32, NULL, NULL, NULL)))
+                    {
+	                    return BadAlloc;
+                    }
+                }
+                dwAddr = pVia->swov.SWOVlinear->offset * depth + SWOVFBSIZE;
+                DBG_DD(ErrorF("HQV dwAddr = 0x%x!!!! \n",dwAddr));
+            }
 
             pVia->swov.overlayRecordV1.dwHQVAddr[0] = dwAddr;
             pVia->swov.overlayRecordV1.dwHQVAddr[1] = dwAddr + HQVFBSIZE;
@@ -367,29 +366,8 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
 
             SWFBSIZE = dwPitch * dwHeight * 1.5;    /* 1.5 bytes per pixel */
 
-            if (!pVia->graphicInfo.DRMEnabled)
-            {
-                depth = (pScrn->bitsPerPixel + 7 ) >> 3;
-                SWOVFBSIZE = SWFBSIZE << 1;  /* ( SWOVFBSIZE = SWFBSIZE*2 )*/
-                
-                if(pVia->swov.SWOVlinear) 
-                {
- 	                xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
- 	                pVia->swov.SWOVlinear = NULL;
-	                DBG_DD(ErrorF("xfree86 Manager Free Init_SWOVLinear Offscreen Memory Success!!!! \n"));
-                }
-
-                if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, SWOVFBSIZE, 
-                                                              32, NULL, NULL, NULL)))
-                {
-	                return BadAlloc;
-                }
-            
-                dwAddr = pVia->swov.SWOVlinear->offset * depth;
-                DBG_DD(ErrorF("SWOV dwAddr = 0x%x!!!! \n",dwAddr));
-            }
 #ifdef XF86DRI
-            else
+            if (pVia->graphicInfo.DRMEnabled)
             {
                 DBG_DD(ErrorF("\n//DRM Device : Allocate SWOV memory!!\n"));
                 if((pVia->swov.drm_SWOV_fd = drmOpen("via",NULL)) < 0) 
@@ -411,7 +389,28 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
 
                 dwAddr = pVia->swov.SWfbRequest.offset;
             }
+            else
 #endif
+            {
+                depth = (pScrn->bitsPerPixel + 7 ) >> 3;
+                SWOVFBSIZE = SWFBSIZE << 1;  /* ( SWOVFBSIZE = SWFBSIZE*2 )*/
+                
+                if(pVia->swov.SWOVlinear) 
+                {
+ 	                xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
+ 	                pVia->swov.SWOVlinear = NULL;
+	                DBG_DD(ErrorF("xfree86 Manager Free Init_SWOVLinear Offscreen Memory Success!!!! \n"));
+                }
+
+                if(!(pVia->swov.SWOVlinear = xf86AllocateOffscreenLinear(pScrn->pScreen, SWOVFBSIZE, 
+                                                              32, NULL, NULL, NULL)))
+                {
+	                return BadAlloc;
+                }
+            
+                dwAddr = pVia->swov.SWOVlinear->offset * depth;
+                DBG_DD(ErrorF("SWOV dwAddr = 0x%x!!!! \n",dwAddr));
+            }
 
             /* fill in the SW buffer with 0x8000 (YUY2-black color) to clear FB buffer
              */
@@ -465,7 +464,36 @@ if (!(pVia->swov.gdwVideoFlagSW & SW_USE_HQV))
 
             HQVFBSIZE = dwPitch * dwHeight * 2;
 
-            if (!pVia->graphicInfo.DRMEnabled)
+#ifdef XF86DRI
+            if (pVia->graphicInfo.DRMEnabled)
+            {
+                DBG_DD(ErrorF("\n//DRM Device : Allocate HQV memory!!\n"));
+                
+                if((pVia->swov.drm_HQV_fd = drmOpen("via",NULL)) < 0) 
+                {
+                    ErrorF("DRM Device for via could not be opened.\n");
+                    return BadAccess;
+                }                 
+            
+                pVia->swov.HQVfbRequest.context=1;
+                
+                if ( hwDiff->dwThreeHQVBuffer )    /* CLE_C0 */
+                    pVia->swov.HQVfbRequest.size=HQVFBSIZE*3;
+                else
+                    pVia->swov.HQVfbRequest.size=HQVFBSIZE*2;
+                    
+                pVia->swov.HQVfbRequest.type= VIDEO;
+
+                if ( drmCommandWrite( pVia->swov.drm_HQV_fd, DRM_VIA_ALLOCMEM,
+				      &pVia->swov.HQVfbRequest, sizeof(drmViaMem)) < 0 ) 
+                {
+                    ErrorF("\n//Cannot allocate HQV memory use DRM module!\n");
+                    return -errno;
+                }     
+                dwAddr = pVia->swov.HQVfbRequest.offset;
+            }
+            else
+#endif
             {
                 if(pVia->swov.SWOVlinear) 
                 {
@@ -494,35 +522,6 @@ if (!(pVia->swov.gdwVideoFlagSW & SW_USE_HQV))
                 dwAddr = pVia->swov.SWOVlinear->offset * depth + SWOVFBSIZE;
                 DBG_DD(ErrorF("HQV dwAddr = 0x%x!!!! \n",dwAddr));
             }
-#ifdef XF86DRI
-            else
-            {
-                DBG_DD(ErrorF("\n//DRM Device : Allocate HQV memory!!\n"));
-                
-                if((pVia->swov.drm_HQV_fd = drmOpen("via",NULL)) < 0) 
-                {
-                    ErrorF("DRM Device for via could not be opened.\n");
-                    return BadAccess;
-                }                 
-            
-                pVia->swov.HQVfbRequest.context=1;
-                
-                if ( hwDiff->dwThreeHQVBuffer )    /* CLE_C0 */
-                    pVia->swov.HQVfbRequest.size=HQVFBSIZE*3;
-                else
-                    pVia->swov.HQVfbRequest.size=HQVFBSIZE*2;
-                    
-                pVia->swov.HQVfbRequest.type= VIDEO;
-
-                if ( drmCommandWrite( pVia->swov.drm_HQV_fd, DRM_VIA_ALLOCMEM,
-				      &pVia->swov.HQVfbRequest, sizeof(drmViaMem)) < 0 ) 
-                {
-                    ErrorF("\n//Cannot allocate HQV memory use DRM module!\n");
-                    return -errno;
-                }     
-                dwAddr = pVia->swov.HQVfbRequest.offset;
-            }
-#endif
 
             pVia->swov.overlayRecordV1.dwHQVAddr[0] = dwAddr;
             pVia->swov.overlayRecordV1.dwHQVAddr[1] = dwAddr + HQVFBSIZE;
@@ -617,17 +616,8 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
             pVia->swov.DPFsrc.dwFlags = 0;
             pVia->swov.DPFsrc.dwFourCC = 0;
 
-            if (!pVia->graphicInfo.DRMEnabled)
-            {                
-                if(pVia->swov.SWOVlinear) 
-                {
-                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
-	            pVia->swov.SWOVlinear = NULL;
-                }       
-                
-            }
 #ifdef XF86DRI
-            else
+            if (pVia->graphicInfo.DRMEnabled)
             {
                 DBG_DD(ErrorF("\n//DRM Device : Free SWOV memory!!\n"));
                 
@@ -639,7 +629,16 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
                 } 
                 drmClose(pVia->swov.drm_SWOV_fd);                    
             }
+            else
 #endif
+            {                
+                if(pVia->swov.SWOVlinear) 
+                {
+                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
+	            pVia->swov.SWOVlinear = NULL;
+                }       
+                
+            }
 
             if (!(pVia->swov.gdwVideoFlagSW & SW_USE_HQV))
             {
@@ -648,17 +647,8 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
             }
 
        case FOURCC_HQVSW :
-            if (!pVia->graphicInfo.DRMEnabled)
-            { 
-                if(pVia->swov.SWOVlinear) 
-                {
-                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
-	            pVia->swov.SWOVlinear = NULL;
-                }          
-                
-            }
 #ifdef XF86DRI
-            else
+            if (pVia->graphicInfo.DRMEnabled)
             {
                 DBG_DD(ErrorF("\n//DRM Device : Free HQV memory!!\n"));
                 
@@ -670,7 +660,16 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
                 } 
                 drmClose(pVia->swov.drm_HQV_fd);                   
             }
+            else
 #endif
+            { 
+                if(pVia->swov.SWOVlinear) 
+                {
+                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
+	            pVia->swov.SWOVlinear = NULL;
+                }          
+                
+            }
 
             pVia->swov.gdwVideoFlagSW = 0;
 /*            if (pVia->swov.gdwVideoFlagTV1 != 0)
@@ -686,17 +685,8 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
             pVia->swov.DPFsrc.dwFlags = 0;
             pVia->swov.DPFsrc.dwFourCC = 0;
 
-            if (!pVia->graphicInfo.DRMEnabled)
-            {
-                if(pVia->swov.SWOVlinear) 
-                {
-                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
-	            pVia->swov.SWOVlinear = NULL;
-                }       
-                
-            }
 #ifdef XF86DRI
-            else
+            if (pVia->graphicInfo.DRMEnabled)
             {
                 DBG_DD(ErrorF("\n//DRM Device : Free SWOV memory!!\n"));
                 
@@ -707,21 +697,7 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
                     return -errno;
                 } 
                 drmClose(pVia->swov.drm_SWOV_fd);                    
-            }
-#endif
 
-            if (!pVia->graphicInfo.DRMEnabled)
-            {
-                if(pVia->swov.SWOVlinear) 
-                {
-                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
-	            pVia->swov.SWOVlinear = NULL;
-                }          
-                
-            }
-#ifdef XF86DRI
-            else
-            {
                 DBG_DD(ErrorF("\n//DRM Device : Free HQV memory!!\n"));
                 
                 if ( drmCommandWrite( pVia->swov.drm_HQV_fd, DRM_VIA_FREEMEM,
@@ -732,8 +708,16 @@ unsigned long VIAVidDestroySurface(ScrnInfoPtr pScrn,  LPDDSURFACEDESC lpDDSurfa
                 } 
                 drmClose(pVia->swov.drm_HQV_fd);                   
             }
+            else
 #endif
-
+            {
+                if(pVia->swov.SWOVlinear) 
+                {
+                    xf86FreeOffscreenLinear(pVia->swov.SWOVlinear);
+	            pVia->swov.SWOVlinear = NULL;
+                }       
+                
+            }
 
             pVia->swov.gdwVideoFlagSW = 0;
             break;
