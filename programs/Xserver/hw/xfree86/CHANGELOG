@@ -1,4 +1,6 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 342. Handle screen blanking in the vesa driver for non-VGA compatible modes
+      (David Dawes).
  341. Separate monitor parameter initialisation out from mode validation,
       and ensure that monitor parameters are initialised before the vbe module
       sets up its mode pool (David Dawes).
@@ -19411,7 +19413,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3449 2005/02/25 18:25:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3450 2005/02/26 01:07:11 dawes Exp $
 
 
 
