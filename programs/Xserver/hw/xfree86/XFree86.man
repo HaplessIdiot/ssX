@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.55 2002/10/12 16:06:43 herrb Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.56 2003/02/20 04:05:13 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -10,12 +10,12 @@ XFree86 is an X server that was originally designed for UNIX and UNIX-like
 operating systems running on Intel x86 hardware.  It now runs on a wider
 range of hardware and OS platforms.
 .PP
-This work is derived from
+This work was originally derived from
 .I "X386\ 1.2"
 which was contributed to X11R5 by Snitily Graphics Consulting Service.
-The current XFree86 release is based on X11R6.3.  The XFree86 X server
-architecture was redesigned for the 4.0 release, and it includes among
-other things a loadable module system donated by Metro Link, Inc.
+The XFree86 X server architecture was redesigned for the 4.0 release,
+and it includes among other things a loadable module system donated by
+Metro Link, Inc.  The current XFree86 release is compatible with X11R6.6.
 .SH CONFIGURATIONS
 .PP
 .I XFree86
