@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.383 2001/11/01 23:35:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.384 2001/11/21 21:31:20 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -291,10 +291,13 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #  define AgpGartDrivers	/**/
 # endif
 
-/* Drivers under development, but not ready for binary releases */
+/*
+ * Drivers under development, but not ready for binary releases, or
+ * drivers included on this platform only for build testing.
+ */
 # ifndef DevelDrivers
 #  if XFree86Devel
-#   define DevelDrivers		imstt
+#   define DevelDrivers		imstt newport
 #  else
 #   define DevelDrivers		/**/
 #  endif
