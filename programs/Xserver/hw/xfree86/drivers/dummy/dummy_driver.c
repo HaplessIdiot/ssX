@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.2 2003/04/23 21:51:35 tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -8,7 +8,6 @@
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
-#include "xf86Bus.h"
 
 /* This is used for module versioning */
 #include "xf86Version.h"
