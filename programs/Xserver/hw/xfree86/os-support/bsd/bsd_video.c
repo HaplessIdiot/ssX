@@ -1,4 +1,5 @@
 /* $XConsortium: bsd_video.c,v 1.1 94/03/28 21:28:12 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +33,10 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#if defined(__NetBSD__) && !defined(MAP_FILE)
+#define MAP_FILE 0
+#endif
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
