@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.103 2003/11/01 19:47:14 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.104 2003/11/02 16:44:25 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,7 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">Development - 2003/11/2 - XFree86 4.3.99.15</A>
+<LI><A HREF="#xterm_dev">Development - 2003/11/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_181">Patch #181 - 2003/10/26 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
@@ -228,8 +228,17 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">Development - 2003/11/2 - XFree86 4.3.99.15</A></H1>
+<H1><A NAME="xterm_dev">Development - 2003/11/12 - XFree86 4.3.99.15</A></H1>
 <ul>
+	<li>compiler-warning fixes (patch by Christian Biere).
+
+	<li>add README.i18n (Tomohiro KUBOTA).
+
+	<li>correct initialization of G1 character set mapping, which used
+	    line-drawing set as a result of confusion between "DEC Supplemental
+	    Graphic" and "DEC Special Graphic" character sets
+	    (see <a href="#xterm_34">patch #34</a> regarding DECSTR).
+
 	<li>correct ifdef in main.c for variable utret (patch by
 	    Bernhard Rosenkraenzer).
 
