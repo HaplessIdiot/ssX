@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.20 2002/10/12 01:38:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.21 2002/10/30 12:52:13 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -788,6 +788,9 @@ do {									\
 #define RADEON_MM_DATA                      0x0004
 #define RADEON_MM_INDEX                     0x0000
 #define RADEON_MPLL_CNTL                    0x000e /* PLL */
+#define RADEON_MPP_TB_CONFIG                0x01c0 /* ? */
+#define RADEON_MPP_GP_CONFIG                0x01c8 /* ? */
+
 
 #define RADEON_N_VIF_COUNT                  0x0248
 
