@@ -389,17 +389,22 @@ void XMesaSetSAREA() {
 }
 
 
-extern void _register_gl_extensions(void); /* silence compiler warning */
+extern void __driRegisterExtensions(void); /* silence compiler warning */
 
-void _register_gl_extensions(void)
+/* This function is called by libGL.so as soon as libGL.so is loaded.
+ * This is where we'd register new extension functions with the dispatcher.
+ */
+void __driRegisterExtensions(void)
 {
-   /* Here is where the 3Dfx driver would register new extensions
-    * with libGL.so.
-    * This function is called as soon as the driver object is dlopened.
-    */
 #if 0
-   /* really, the return code should be checked */
-   _glapi_add_entrypoint("glFooBarEXT", _gloffset_FooBarEXT);
+   /* Example.  Also look in fxdd.c for more details. */
+   {
+      const int _gloffset_FooBarEXT = 555;  /* just an example number! */
+      if (_glapi_add_entrypoint("glFooBarEXT", _gloffset_FooBarEXT)) {
+         void *f = glXGetProcAddressARB("glFooBarEXT");
+         assert(f);
+      }
+   }
 #endif
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.10 2000/02/14 20:31:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.11 2000/02/23 04:47:09 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -56,6 +56,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 static char GLINTKernelDriverName[] = "gamma";
 static char GLINTClientDriverName[] = "gamma";
+
+static void GLINTDestroyContext(ScreenPtr pScreen, drmContext hwContext,
+                                DRIContextType contextStore);
 
 static int 
 GLINTDRIControlInitSingleMX(int drmSubFD, int irq)
@@ -414,8 +417,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->contextSize    = sizeof(GLINTDRIContextRec);
 
     /* setup call backs */
-    pDRIInfo->CreateContext = GLINTCreateContext;
-    pDRIInfo->SwapContext   = GLINTDRISwapContext;
+    pDRIInfo->CreateContext  = GLINTCreateContext;
+    pDRIInfo->DestroyContext = GLINTDestroyContext;
+    pDRIInfo->SwapContext    = GLINTDRISwapContext;
     pDRIInfo->InitBuffers    = GLINTDRIInitBuffers;
     pDRIInfo->MoveBuffers    = GLINTDRIMoveBuffers;
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
@@ -553,7 +557,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	       pGlint->drmBufs->count);
 
     /* tell the generic kernel driver how to handle Gamma DMA */
-    if (!pGlint->irq) {
+    if (pGlint->irq <= 0) {
 	pGlint->irq = drmGetInterruptFromBusID(pGlint->drmSubFD,
 					       ((pciConfigPtr)pGlint->PciInfo
 						->thisCard)->busnum,
@@ -655,6 +659,13 @@ GLINTCreateContext(ScreenPtr pScreen,
 	return FALSE;
 
     return TRUE;
+}
+
+static void
+GLINTDestroyContext(ScreenPtr pScreen,
+                    drmContext hwContext,
+                    DRIContextType contextStore)
+{
 }
 
 Bool

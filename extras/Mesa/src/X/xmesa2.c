@@ -184,9 +184,9 @@ static void get_buffer_size( GLcontext *ctx, GLuint *width, GLuint *height )
 
       /* Needed by PIXELADDR3 macro */
       xmesa->xm_buffer->ximage_width3
-                  = xmesa->xm_buffer->backimage->bytes_per_line / 3;
+                  = xmesa->xm_buffer->backimage->bytes_per_line;
       xmesa->xm_buffer->ximage_origin3
-                  = (bgr_t *) xmesa->xm_buffer->backimage->data
+                  = (GLubyte *) xmesa->xm_buffer->backimage->data
                     + xmesa->xm_buffer->ximage_width3 * (winheight-1);
 
       /* Needed by PIXELADDR4 macro */
@@ -550,21 +550,41 @@ static void dither( GLcontext *ctx, GLboolean enable )
 /**********************************************************************/
 
 
-/* Clear a pixmap color buffer, may be the front or back buffer */
 static void
-clear_pixmap( GLcontext *ctx, GLboolean all,
-              GLint x, GLint y, GLint width, GLint height )
+clear_front_pixmap( GLcontext *ctx, GLboolean all,
+                    GLint x, GLint y, GLint width, GLint height )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    if (all) {
-      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->frontbuffer,
                           xmesa->xm_buffer->cleargc,
                           0, 0,
                           xmesa->xm_buffer->width+1,
                           xmesa->xm_buffer->height+1 );
    }
    else {
-      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->buffer,
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->frontbuffer,
+                          xmesa->xm_buffer->cleargc,
+                          x, xmesa->xm_buffer->height - y - height,
+                          width, height );
+   }
+}
+
+
+static void
+clear_back_pixmap( GLcontext *ctx, GLboolean all,
+                   GLint x, GLint y, GLint width, GLint height )
+{
+   const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+   if (all) {
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->backpixmap,
+                          xmesa->xm_buffer->cleargc,
+                          0, 0,
+                          xmesa->xm_buffer->width+1,
+                          xmesa->xm_buffer->height+1 );
+   }
+   else {
+      XMesaFillRectangle( xmesa->display, xmesa->xm_buffer->backpixmap,
                           xmesa->xm_buffer->cleargc,
                           x, xmesa->xm_buffer->height - y - height,
                           width, height );
@@ -4473,7 +4493,6 @@ static void read_color_span( const GLcontext *ctx,
                   rgba[i][GCOMP] = ptr3[i].g;
                   rgba[i][BCOMP] = ptr3[i].b;
                   rgba[i][ACOMP] = 255;
-                  ptr3++;
                }
             }
 	    break;
@@ -5219,8 +5238,12 @@ void xmesa_update_state( GLcontext *ctx )
 
    /* setup pointers to front and back buffer clear functions */
    /* XXX this bit of code could be moved to a one-time init */
-   xmesa->xm_buffer->front_clear_func = clear_pixmap;
-   if (sizeof(GLushort)!=2 || sizeof(GLuint)!=4) {
+   xmesa->xm_buffer->front_clear_func = clear_front_pixmap;
+   if (xmesa->xm_buffer->backpixmap != XIMAGE) {
+      /* back buffer is a pixmap */
+      xmesa->xm_buffer->back_clear_func = clear_back_pixmap;
+   }
+   else if (sizeof(GLushort)!=2 || sizeof(GLuint)!=4) {
       /* Do this on Crays */
       xmesa->xm_buffer->back_clear_func = clear_nbit_ximage;
    }

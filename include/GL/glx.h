@@ -1,7 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
-/* $XFree86: xc/include/GL/glx.h,v 1.3 2000/01/20 21:46:17 dawes Exp $ */
+/* $XFree86: xc/include/GL/glx.h,v 1.4 2000/02/15 07:13:24 martin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -39,6 +39,13 @@ extern "C" {
 typedef XID GLXContextID;
 typedef XID GLXPixmap;
 typedef XID GLXDrawable;
+/* GLX 1.3 */
+typedef XID GLXFBConfigID;
+typedef XID GLXPfuffer;
+typedef XID GLXWindow;
+typedef XID GLXPbuffer;
+typedef XID GLXFBConfig;
+
 
 /*
 ** GLXContext is a pointer to opaque data.
@@ -69,6 +76,25 @@ extern const char * glXGetClientString (Display *dpy, int name );
 extern const char * glXQueryServerString (Display *dpy, int screen, int name );
 extern const char * glXQueryExtensionsString (Display *dpy, int screen );
 
+/* GLX 1.3 */
+extern GLXFBConfig glXChooseFBConfig (Display *dpy, int screen, const int *attribList, int *nitems);
+extern int glXGetFBConfigAttrib (Display *dpy, GLXFBConfig config, int attribute, int *value);
+extern XVisualInfo * glXGetVisualFromFBConfig (Display *dpy, GLXFBConfig config);
+extern GLXWindow glXCreateWindow (Display *dpy, GLXFBConfig config, Window win, const int *attribList);
+extern void glXDestroyWindow (Display *dpy, GLXWindow window);
+extern GLXPixmap glXCreatePixmap (Display *dpy, GLXFBConfig config,Pixmap pixmap, const int *attribList);
+extern void glXDestroyPixmap (Display *dpy, GLXPixmap pixmap);
+extern GLXPbuffer glXCreatePbuffer (Display *dpy, GLXFBConfig config, const int *attribList);
+extern void glXDestroyPbuffer (Display *dpy, GLXPbuffer pbuf);
+extern void glXQueryDrawable (Display *dpy, GLXDrawable draw, int attribute, unsigned int *value);
+extern GLXContext glXCreateNewContext (Display *dpy, GLXFBConfig config, int renderType, GLXContext shareList, Bool direct);
+extern Bool glXMakeContextCurrent (Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx);
+extern GLXDrawable glXGetCurrentReadDrawable (void);
+extern int glXQueryContext (Display *dpy, GLXContext ctx, int attribute, int *value);
+extern void glXSelectEvent (Display *dpy, GLXDrawable drawable, unsigned long mask);
+extern void glXGetSelectedEvent (Display *dpy, GLXDrawable drawable, unsigned long *mask);
+
+/* Extensions */
 extern Display * glXGetCurrentDisplay (void);
 extern GLXContextID glXGetContextIDEXT (const GLXContext ctx);
 extern GLXDrawable glXGetCurrentDrawableEXT (void);

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.2 2000/02/14 06:27:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.3 2000/02/23 04:47:15 martin Exp $ */
 
 /*
  * Authors:
@@ -36,9 +36,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _I810_H_
 #define _I810_H_
 
-/* Temporarily turn off building in DRI support */
-#undef XF86DRI
-
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
@@ -46,6 +43,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xaa.h"
 #include "xf86Cursor.h"
 
+#undef XF86DRI
 
 
 #ifdef XF86DRI
@@ -70,11 +68,6 @@ typedef void (*I810WriteByteFunc)(I810Ptr pI810, int addr, char value);
 typedef char (*I810ReadByteFunc)(I810Ptr pI810, int addr);
 
 
-#ifdef XF86DRI
-extern void FillPrivateDRI(I810Ptr pI810, I810DRIPtr pI810DRI);
-#endif
-
-
 extern void I810SetTiledMemory(ScrnInfoPtr pScrn, 
 			       int nr, 
 			       unsigned start,
@@ -85,7 +78,6 @@ extern void I810SetTiledMemory(ScrnInfoPtr pScrn,
 /* Linear region allocated in framebuffer.
  */
 typedef struct {
-/*     FBAreaPtr Fbarea;  */
    unsigned long Start;
    unsigned long End;
    unsigned long Size;
@@ -126,15 +118,9 @@ typedef struct {
    unsigned int  LprbStart;
    unsigned int  LprbLen;
 
-   unsigned short IntrHwStatMask;
-   unsigned short IntrEnabled;
-   unsigned short IntrIdentity;
-   unsigned short IntrMask;
-   unsigned short ErrorMask;
+   unsigned int Fence[8];
 
 } I810RegRec, *I810RegPtr;
-
-
 
 typedef struct _I810Rec {
    unsigned char *MMIOBase;
@@ -144,11 +130,15 @@ typedef struct _I810Rec {
    int MaxClock;
 
    unsigned int bufferOffset;	/* for I810SelectBuffer */
-
+   Bool DoneFrontAlloc;
+   BoxRec FbMemBox;
    I810MemRange FrontBuffer;
    I810MemRange BackBuffer;   
    I810MemRange DepthBuffer;
    I810MemRange TexMem;
+   I810MemRange Scratch;
+   I810MemRange BufferMem;
+
 
    int auxPitch;
    int auxPitchBits;
@@ -200,27 +190,29 @@ typedef struct _I810Rec {
    int numVisualConfigs;
    __GLXvisualConfig* pVisualConfigs;
    I810ConfigPrivPtr pVisualConfigsPriv;
+   unsigned long dcacheHandle;
+   unsigned long backHandle;
+   unsigned long zHandle;
+   unsigned long cursorHandle;
+   unsigned long sysmemHandle;
+   Bool agpAcquired;
+   drmHandle buffer_map;
+   drmHandle ring_map;
 #endif
-
-
+   Bool agpAcquired2d;
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
-
-#define DRAW_STATE_CLIPPING 0x1
-#define DRAW_STATE_TRANSPARENT 0x2
-#define DRAW_STATE_CLIP1CHANGED 0x4
 
 #define I810_FRONT 0
 #define I810_BACK 1
 #define I810_DEPTH 2
 
-#define I8102XCUTOFF 135000
-
-
 extern Bool I810DRIScreenInit(ScreenPtr pScreen);
 extern void I810DRICloseScreen(ScreenPtr pScreen);
 extern Bool I810DRIFinishScreenInit(ScreenPtr pScreen);
+extern Bool I810drmInitDma(ScrnInfoPtr pScrn);
+extern Bool I810drmCleanupDma(ScrnInfoPtr pScrn);
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
 #define I810REGPTR(p) (&(I810PTR(p)->ModeReg))
@@ -238,6 +230,7 @@ extern unsigned long I810LocalToPhysical( ScrnInfoPtr pScrn,
 					  unsigned long local );
 extern int I810AllocLow( I810MemRange *result, I810MemRange *pool, int size );
 extern int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size );
+extern Bool I810AllocateFront(ScrnInfoPtr pScrn);
 
 extern void I810SetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 
@@ -287,13 +280,8 @@ extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
    if (n>2 && (I810_DEBUG&DEBUG_ALWAYS_SYNC)) I810Sync( pScrn );	\
    if (pI810->LpRing.space < n*4) I810WaitLpRing( pScrn, n*4, 0);	\
    pI810->LpRing.space -= n*4;						\
-   if (I810_DEBUG & DEBUG_VERBOSE_RING) {				\
-      CARD32 tail = INREG(LP_RING+RING_TAIL);				\
+   if (I810_DEBUG & DEBUG_VERBOSE_RING) 				\
       ErrorF( "BEGIN_LP_RING %d in %s\n", n, __FUNCTION__);		\
-      if (tail != pI810->LpRing.tail) 					\
-	 FatalError("tail %x pI810->LpRing.tail %x\n", 			\
-		    tail, pI810->LpRing.tail);				\
-   }									\
    outring = pI810->LpRing.tail;					\
    ringmask = pI810->LpRing.tail_mask;					\
    virt = pI810->LpRing.virtual_start;			
@@ -324,7 +312,7 @@ extern void I810EmitInvarientState(ScrnInfoPtr pScrn);
 /* To remove all debugging, make sure I810_DEBUG is defined as a
  * preprocessor symbol, and equal to zero.  
  */
-/*  #define I810_DEBUG 0 */
+#define I810_DEBUG 0
 #ifndef I810_DEBUG
 #warning "Debugging enabled - expect reduced performance"
 extern int I810_DEBUG;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.3 2000/02/15 07:13:27 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.4 2000/02/15 19:19:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -49,8 +49,16 @@ static int NoOp(void)
 __GLapi *__glXNewIndirectAPI(void)
 {
     __GLapi *glAPI;
-    const GLuint entries = _glapi_get_dispatch_table_size();
+    GLuint entries;
 
+    /* Have to register dynamic extensions before allocating any
+     * dispatch tables.
+     */
+#if defined(GLX_DIRECT_RENDERING)
+    __glXRegisterExtensions();
+#endif
+
+    entries = _glapi_get_dispatch_table_size();
     glAPI = (__GLapi *) Xmalloc(entries * sizeof(void *));
 
     /* first, set all entries to point to no-op functions */

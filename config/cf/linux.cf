@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.116 2000/02/22 00:59:07 mvojkovi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.117 2000/02/29 03:08:56 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -209,6 +209,16 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #  endif
 #endif
 
+#ifndef HasAgpGart
+#  ifdef i386Architecture
+     /* The AGPGART header file is included in os-support/linux, which
+        allows all drivers that depend on AGP to build properly. */
+#    define HasAgpGart              YES
+#  else
+#    define HasAgpGart              NO
+#  endif
+#endif
+
 /*
  * The Rush extension support.
  */
@@ -400,10 +410,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #define HasVarRun		YES
 #define VarDbDirectory		/var/state
-
-#ifndef HasAgpGart
-#define HasAgpGart		NO
-#endif
 
 #ifndef XF86ExtraCardDrivers
 #define XF86ExtraCardDrivers	v4l

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.273 2000/02/29 03:08:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.274 2000/02/29 15:59:23 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -36,6 +36,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* OS.cf files may set this for OS-specific drivers */
 #ifndef XF86ExtraCardDrivers
 #define XF86ExtraCardDrivers /**/
+#endif
+
+/* OS.cf files may set this for OS-specific drivers */
+#ifndef HasAgpGart
+#define HasAgpGart NO
 #endif
 
 /* The glide driver only works for the loadable server at the moment */

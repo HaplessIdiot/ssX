@@ -1,3 +1,4 @@
+
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -39,6 +40,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+/*  #include "xf86_ansic.h" */
 
 #include "i810.h"
 #include "i810_reg.h"
@@ -86,26 +89,40 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    int pages = pScrn->videoRam / 4; 
    I810Ptr pI810 = I810PTR(pScrn);
    long tom = 0;
+   int gartfd = -1;
 
-   pI810->gartfd = xf86open("/dev/agpgart", O_RDWR, 0);
+   gartfd = xf86open("/dev/agpgart", O_RDWR, 0);
 
-   if (pI810->gartfd == -1) {	
+   if (gartfd == -1) {	
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "unable to open /dev/agpgart\n");
       return FALSE;
    }
 
-   if (xf86ioctl(pI810->gartfd, AGPIOC_ACQUIRE, 0) != 0) {
+   if (xf86ioctl(gartfd, AGPIOC_ACQUIRE, 0) != 0) {
+      if(pI810->agpAcquired2d == TRUE) {
+	 xf86close(gartfd);
+	 return TRUE;
+      }
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "AGPIOC_ACQUIRE failed\n"); 
       return FALSE;
    }
 
+   /* This allows the 2d only Xserver to regen */
+   pI810->agpAcquired2d = TRUE;
+   pI810->gartfd = gartfd;
+   
    if (xf86ioctl(pI810->gartfd, AGPIOC_INFO, &agpinf) != 0) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		 "error doing xf86ioctl(AGPIOC_INFO)\n");
       return FALSE;
    }
-
-
+   
+   if (agpinf.version.major != 0 ||
+      agpinf.version.minor != 99) {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		 "Agp kernel driver version not correct\n");
+      return FALSE;
+   }
    
 
    /* Treat the gart like video memory - we assume we own all that is
@@ -233,19 +250,21 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
 			unsigned size)
 {
    I810Ptr pI810 = I810PTR(pScrn);
+   I810RegPtr i810Reg = &pI810->ModeReg;
    CARD32 val;
 
-   if (nr > 7) {
+   if (nr < 0 || nr > 7) {
       ErrorF("I810SetTiledMemory - fence %d out of range\n", nr);
       return;
    }
+
+   i810Reg->Fence[nr] = 0;
 
    if (start & ~FENCE_START_MASK) {
       ErrorF("I810SetTiledMemory %d: start (%x) is not 512k aligned\n", 
 	     nr, start);
       return;
    }
-
    if (start % size) {
       ErrorF("I810SetTiledMemory %d: start (%x) is not size (%x) aligned\n",
 	     nr, start, size);
@@ -285,5 +304,5 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
       return;
    }
 
-   OUTREG( FENCE+nr*4, val );   
+   i810Reg->Fence[nr] = val;
 }

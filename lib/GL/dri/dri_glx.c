@@ -54,15 +54,15 @@ typedef void *(*CreateScreenFunc)(Display *dpy, int scrn, __DRIscreen *psc,
 
 #ifdef BUILT_IN_DRI_DRIVER
 
-extern void *driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
-                             int numConfigs, __GLXvisualConfig *config);
+extern void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
+                               int numConfigs, __GLXvisualConfig *config);
 
 
 #else /* BUILT_IN_DRI_DRIVER */
 
 
 #ifndef DEFAULT_DRIVER_DIR
-/* this should be defined in the Imakefile */
+/* this is normally defined in the Imakefile */
 #define DEFAULT_DRIVER_DIR "/usr/X11R6/lib/modules/dri"
 #endif
 
@@ -95,12 +95,8 @@ static void *DummyCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
  * Initialize two arrays:  an array of createScreen function pointers
  * and an array of dlopen library handles.  Arrays are indexed by
  * screen number.
- * We use the DRI in order to find the driCreateScreen function
+ * We use the DRI in order to find the __driCreateScreen function
  * exported by each screen on a display.
- *
- * Also, this function calls the driver's _register_gl_extensions()
- * function in order to let the driver hook new extension functions
- * into the libGL dispatcher.
  */
 static void Find_CreateScreenFuncs(Display *dpy,
                                    CreateScreenFunc *createFuncs,
@@ -108,6 +104,8 @@ static void Find_CreateScreenFuncs(Display *dpy,
 {
     const int numScreens = ScreenCount(dpy);
     int scrn;
+
+    __glXRegisterExtensions();
 
     for (scrn = 0; scrn < numScreens; scrn++) {
         int directCapable;
@@ -141,7 +139,7 @@ static void Find_CreateScreenFuncs(Display *dpy,
 
         /*
          * dlopen the driver module and save the pointer to its
-         * driCreateScreen function.
+         * __driCreateScreen function.
          */
         {
             char realDriverName[100];
@@ -150,8 +148,8 @@ static void Find_CreateScreenFuncs(Display *dpy,
             char *libDir = NULL;
 
             if (geteuid() == getuid()) {
-                /* don't allow setuid apps to use DRI_MODULES_DIR */
-                libDir = getenv("DRI_MODULES_DIR");
+                /* don't allow setuid apps to use LIBGL_DRIVERS_DIR */
+                libDir = getenv("LIBGL_DRIVERS_DIR");
             }
             if (!libDir)
                 libDir = DEFAULT_DRIVER_DIR;
@@ -166,7 +164,7 @@ static void Find_CreateScreenFuncs(Display *dpy,
                 continue;
             }
 
-            createScreenFunc = (CreateScreenFunc) dlsym(handle, "driCreateScreen");
+            createScreenFunc = (CreateScreenFunc) dlsym(handle, "__driCreateScreen");
             if (createScreenFunc) {
                 /* success! */
                 createFuncs[scrn] = createScreenFunc;
@@ -178,19 +176,6 @@ static void Find_CreateScreenFuncs(Display *dpy,
                 ErrorMessage(message);
                 dlclose(handle);
             }
-
-            /* Find the driver's _register_gl_extensions() function and
-             * call it if present.  This will let the driver tell libGL.so
-             * about any extension functions it wants to export.
-             */
-            {
-               typedef void *(*RegisterExtFunc)(void);
-               RegisterExtFunc registerExtFunc = (RegisterExtFunc) dlsym(handle, "_register_gl_extensions");
-               if (registerExtFunc) {
-                  (*registerExtFunc)();
-               }
-            }
-
         }
     }
 }
@@ -254,11 +239,11 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
     }
 
 #ifdef BUILT_IN_DRI_DRIVER
-    /* we'll statically bind to the driCreateScreen function */
+    /* we'll statically bind to the __driCreateScreen function */
     {
        int i;
        for (i = 0; i < numScreens; i++) {
-          pdisp->createScreen[i] = driCreateScreen;
+          pdisp->createScreen[i] = __driCreateScreen;
           pdpyp->libraryHandles[i] = NULL;
        }
     }
@@ -270,4 +255,139 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
 }
 
 
+#ifndef BUILT_IN_DRI_DRIVER
+/*
+ * Use the DRI and dlopen/dlsym facilities to find the GL extensions
+ * possible on the given display and screen.
+ */
+static void
+register_extensions_on_screen(Display *dpy, int scrNum)
+{
+   GLboolean verbose = GL_FALSE;  /* for debugging only */
+   int eventBase, errorBase;
+   Bool b, b2;
+   int driMajor, driMinor, driPatch;
+   int driverMajor, driverMinor, driverPatch;
+   char *driverName = NULL;
+
+   /*
+    * Check if the DRI extension is available, check the DRI version,
+    * determine the 3D driver for the screen.
+    */
+   b = XF86DRIQueryExtension(dpy, &eventBase, &errorBase);
+   if (!b) {
+      if (verbose)
+         fprintf(stderr, "XF86DRIQueryExtension failed\n");
+      return;
+   }
+
+   b = XF86DRIQueryDirectRenderingCapable(dpy, scrNum, &b2);
+   if (!b || !b2) {
+      if (verbose)
+         fprintf(stderr, "XF86DRIQueryDirectRenderingCapable failed\n");
+      return;
+   }
+
+   b = XF86DRIQueryVersion(dpy, &driMajor, &driMinor, &driPatch);
+   if (!b) {
+      if (verbose)
+         fprintf(stderr, "XF86DRIQueryVersion failed\n");
+      return;
+   }
+
+   b = XF86DRIGetClientDriverName(dpy, scrNum, &driverMajor, &driverMinor,
+                                  &driverPatch, &driverName);
+   if (!b) {
+      if (verbose)
+         fprintf(stderr, "XF86DRIGetClientDriverName failed\n");
+      return;
+   }
+   else if (verbose) {
+      printf("XF86DRIGetClientDriverName: %d.%d.%d %s\n", driverMajor,
+             driverMinor, driverPatch, driverName);
+   }
+
+   /*
+    * OK, now we know the name of the relevant driver for this screen.
+    * dlopen() the driver library file, get a pointer to the driver's
+    * __driRegisterExtensions() function, and call it if it exists.
+    */
+   {
+      char realDriverName[100];
+      char *libDir = NULL;
+      void *handle;
+
+      if (geteuid() == getuid()) {
+         /* don't allow setuid apps to use LIBGL_DRIVERS_DIR */
+         libDir = getenv("LIBGL_DRIVERS_DIR");
+      }
+      if (!libDir)
+         libDir = DEFAULT_DRIVER_DIR;
+
+      sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
+      /*printf("OPEN %s\n", realDriverName);*/
+      handle = dlopen(realDriverName, RTLD_LAZY);
+      if (handle) {
+         typedef void *(*RegisterExtFunc)(void);
+         RegisterExtFunc registerExtFunc = (RegisterExtFunc) dlsym(handle, "__driRegisterExtensions");
+         if (registerExtFunc) {
+            (*registerExtFunc)();
+         }
+         dlclose(handle);
+      }
+   }
+}
+#endif /* !BUILT_IN_DRI_DRIVER */
+
+
+
+/*
+** Here we'll query the DRI driver for each screen and let each
+** driver register its GL extension functions.  We only have to
+** do this once.  But it MUST be done before we create any contexts
+** (i.e. before any dispatch tables are created) and before
+** glXGetProcAddressARB() returns.
+**
+** Currently called by glXGetProcAddress(), __glXInitialize(), and
+** __glXNewIndirectAPI().
+*/
+void
+__glXRegisterExtensions(void)
+{
+   static GLboolean alreadyCalled = GL_FALSE;
+   if (alreadyCalled)
+      return;
+
+#ifdef BUILT_IN_DRI_DRIVER
+   __driRegisterExtensions();
+#else
+   {
+      int displayNum;
+      for (displayNum = 0; ; displayNum++) {
+         char displayName[200];
+         Display *dpy;
+         snprintf(displayName, 199, ":%d.0", displayNum);
+         dpy = XOpenDisplay(displayName);
+         if (dpy) {
+            const int numScreens = ScreenCount(dpy);
+            int screenNum;
+            for (screenNum = 0; screenNum < numScreens; screenNum++) {
+               register_extensions_on_screen(dpy, screenNum);
+            }
+            XCloseDisplay(dpy);
+         }
+         else {
+            break;
+         }
+      }
+   }
+#endif
+
+   alreadyCalled = GL_TRUE;
+}
+
+
 #endif /* GLX_DIRECT_RENDERING */
+
+
+

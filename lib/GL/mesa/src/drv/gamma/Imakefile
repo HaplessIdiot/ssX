@@ -1,10 +1,14 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.6 2000/02/15 07:13:30 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.7 2000/02/23 04:46:40 martin Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
+
+LinkSourceFile(xmesaP.h, ../../../../../../extras/Mesa/src/X)
+LinkSourceFile(glapi.h, ../../../../../../extras/Mesa/src)
+
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -47,7 +51,10 @@ MESA_INCLUDES = -I. -I.. -I../../include
     GAMMAOBJS = gamma_gl.o gamma_xmesa.o gamma_init.o gamma_matrix.o \
                 gamma_inithw.o gamma_texture.o
 
-	 SRCS = $(DRISRCS) $(DRMSRCS) $(GAMMASRCS)
+XCOMM	 SRCS = $(DRISRCS) $(DRMSRCS) $(GAMMASRCS)
+XCOMM	 OBJS = $(DRIOBJS) $(DRMOBJS) $(GAMMAOBJS)
+
+	 SRCS = $(GAMMASRCS)
 	 OBJS = $(DRIOBJS) $(DRMOBJS) $(GAMMAOBJS)
 
 

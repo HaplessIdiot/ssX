@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.6 2000/02/15 07:13:26 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.7 2000/02/21 18:05:33 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -67,7 +67,8 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
     __GLXdisplayPrivate *priv;
 #endif
 
-    if (getenv("DRI_ALWAYS_INDIRECT")) allowDirect = GL_FALSE;
+    if (getenv("LIBGL_ALWAYS_INDIRECT"))
+	allowDirect = GL_FALSE;
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
 	return NULL;
@@ -397,7 +398,7 @@ void glXUseXFont(Font font, int first, int count, int listBase)
 ** attribute "mask".
 */
 void glXCopyContext(Display *dpy, GLXContext source, GLXContext dest,
-		    GLuint mask)
+		    unsigned long mask)
 {
     xGLXCopyContextReq *req;
     GLXContext gc = __glXGetCurrentContext();
@@ -1492,10 +1493,155 @@ void glXFreeContextEXT(Display *dpy, GLXContext ctx)
 }
 
 
+
+/*
+ * GLX 1.3 functions - these are just stubs for now!
+ */
+
+GLXFBConfig glXChooseFBConfig(Display *dpy, int screen, const int *attribList, int *nitems)
+{
+    (void) dpy;
+    (void) screen;
+    (void) attribList;
+    (void) nitems;
+    return 0;
+}
+
+
+GLXContext glXCreateNewContext(Display *dpy, GLXFBConfig config, int renderType, GLXContext shareList, Bool direct)
+{
+    (void) dpy;
+    (void) config;
+    (void) renderType;
+    (void) shareList;
+    (void) direct;
+    return 0;
+}
+
+
+GLXPbuffer glXCreatePbuffer(Display *dpy, GLXFBConfig config, const int *attribList)
+{
+    (void) dpy;
+    (void) config;
+    (void) attribList;
+    return 0;
+}
+
+
+GLXPixmap glXCreatePixmap(Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attribList)
+{
+    (void) dpy;
+    (void) config;
+    (void) pixmap;
+    (void) attribList;
+    return 0;
+}
+
+
+GLXWindow glXCreateWindow(Display *dpy, GLXFBConfig config, Window win, const int *attribList)
+{
+    (void) dpy;
+    (void) config;
+    (void) win;
+    (void) attribList;
+    return 0;
+}
+
+
+void glXDestroyPbuffer(Display *dpy, GLXPbuffer pbuf)
+{
+    (void) dpy;
+    (void) pbuf;
+}
+
+
+void glXDestroyPixmap(Display *dpy, GLXPixmap pixmap)
+{
+    (void) dpy;
+    (void) pixmap;
+}
+
+
+void glXDestroyWindow(Display *dpy, GLXWindow window)
+{
+    (void) dpy;
+    (void) window;
+}
+
+
+GLXDrawable glXGetCurrentReadDrawable(void)
+{
+    return 0;
+}
+
+
+int glXGetFBConfigAttrib(Display *dpy, GLXFBConfig config, int attribute, int *value)
+{
+    (void) dpy;
+    (void) config;
+    (void) attribute;
+    (void) value;
+    return 0;
+}
+
+
+void glXGetSelectedEvent(Display *dpy, GLXDrawable drawable, unsigned long *mask)
+{
+    (void) dpy;
+    (void) drawable;
+    (void) mask;
+}
+
+
+XVisualInfo *glXGetVisualFromFBConfig(Display *dpy, GLXFBConfig config)
+{
+    (void) dpy;
+    (void) config;
+    return 0;
+}
+
+
+Bool glXMakeContextCurrent(Display *dpy, GLXDrawable draw, GLXDrawable read, GLXContext ctx)
+{
+    (void) dpy;
+    (void) draw;
+    (void) read;
+    (void) ctx;
+    return 0;
+}
+
+
+int glXQueryContext(Display *dpy, GLXContext ctx, int attribute, int *value)
+{
+    (void) dpy;
+    (void) ctx;
+    (void) attribute;
+    (void) value;
+    return 0;
+}
+
+
+void glXQueryDrawable(Display *dpy, GLXDrawable draw, int attribute, unsigned int *value)
+{
+    (void) dpy;
+    (void) draw;
+    (void) attribute;
+    (void) value;
+}
+
+
+void glXSelectEvent(Display *dpy, GLXDrawable drawable, unsigned long mask)
+{
+    (void) dpy;
+    (void) drawable;
+    (void) mask;
+}
+
+
+
 /*
 ** glXGetProcAddress support
 */
-
 
 struct name_address_pair {
    const char *Name;
@@ -1527,7 +1673,6 @@ static struct name_address_pair GLX_functions[] = {
 
    { "glXGetCurrentDisplay", (GLvoid *) glXGetCurrentDisplay },
 
-#if 0  /* enable this when GLX 1.3 is implemented */
    { "glXChooseFBConfig", (GLvoid *) glXChooseFBConfig },
    { "glXCreateNewContext", (GLvoid *) glXCreateNewContext },
    { "glXCreatePbuffer", (GLvoid *) glXCreatePbuffer },
@@ -1544,7 +1689,6 @@ static struct name_address_pair GLX_functions[] = {
    { "glXQueryContext", (GLvoid *) glXQueryContext },
    { "glXQueryDrawable", (GLvoid *) glXQueryDrawable },
    { "glXSelectEvent", (GLvoid *) glXSelectEvent },
-#endif
 
    /* extension functions */
    { "glXGetContextIDEXT", (GLvoid *) glXGetContextIDEXT },
@@ -1574,6 +1718,10 @@ void (*glXGetProcAddressARB(const GLubyte *procName))()
 {
    typedef void (*gl_function)();
    gl_function f;
+
+#if defined(GLX_DIRECT_RENDERING)
+   __glXRegisterExtensions();
+#endif
 
    f = (gl_function) get_glx_proc_address((const char *) procName);
    if (f) {

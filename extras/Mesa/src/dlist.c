@@ -32,6 +32,7 @@
 #include "attrib.h"
 #include "bitmap.h"
 #include "bbox.h"
+#include "blend.h"
 #include "buffers.h"
 #include "clip.h"
 #include "colortab.h"
@@ -691,7 +692,7 @@ static void save_BlendEquation( GLenum mode )
       n[1].e = mode;
    }
    if (ctx->ExecuteFlag) {
-      (*ctx->Exec->BlendEquationEXT)( mode );
+      (*ctx->Exec->BlendEquation)( mode );
    }
 }
 
@@ -712,8 +713,8 @@ static void save_BlendFunc( GLenum sfactor, GLenum dfactor )
 }
 
 
-static void save_BlendFuncSeparateINGR(GLenum sfactorRGB, GLenum dfactorRGB,
-                                       GLenum sfactorA, GLenum dfactorA)
+static void save_BlendFuncSeparateEXT(GLenum sfactorRGB, GLenum dfactorRGB,
+                                      GLenum sfactorA, GLenum dfactorA)
 {
    GET_CURRENT_CONTEXT(ctx);
    Node *n;
@@ -726,7 +727,7 @@ static void save_BlendFuncSeparateINGR(GLenum sfactorRGB, GLenum dfactorRGB,
       n[4].e = dfactorA;
    }
    if (ctx->ExecuteFlag) {
-      (*ctx->Exec->BlendFuncSeparateINGR)( sfactorRGB, dfactorRGB,
+      (*ctx->Exec->BlendFuncSeparateEXT)( sfactorRGB, dfactorRGB,
                                           sfactorA, dfactorA);
    }
 }
@@ -746,7 +747,7 @@ static void save_BlendColor( GLfloat red, GLfloat green,
       n[4].f = alpha;
    }
    if (ctx->ExecuteFlag) {
-      (*ctx->Exec->BlendColorEXT)( red, green, blue, alpha );
+      (*ctx->Exec->BlendColor)( red, green, blue, alpha );
    }
 }
 
@@ -938,17 +939,17 @@ static void save_ColorMaterial( GLenum face, GLenum mode )
 }
 
 
-static void save_ColorTableEXT( GLenum target, GLenum internalFormat,
-                                GLsizei width, GLenum format, GLenum type,
-                                const GLvoid *table )
+static void save_ColorTable( GLenum target, GLenum internalFormat,
+                             GLsizei width, GLenum format, GLenum type,
+                             const GLvoid *table )
 {
    GET_CURRENT_CONTEXT(ctx);
    if (target == GL_PROXY_TEXTURE_1D ||
        target == GL_PROXY_TEXTURE_2D ||
        target == GL_PROXY_TEXTURE_3D) {
       /* execute immediately */
-      (*ctx->Exec->ColorTableEXT)( target, internalFormat, width,
-                                  format, type, table );
+      (*ctx->Exec->ColorTable)( target, internalFormat, width,
+                                format, type, table );
    }
    else {
       GLvoid *image = _mesa_unpack_image(width, 1, 1, format, type, table,
@@ -968,16 +969,16 @@ static void save_ColorTableEXT( GLenum target, GLenum internalFormat,
          FREE(image);
       }
       if (ctx->ExecuteFlag) {
-         (*ctx->Exec->ColorTableEXT)( target, internalFormat, width,
-                                     format, type, table );
+         (*ctx->Exec->ColorTable)( target, internalFormat, width,
+                                   format, type, table );
       }
    }
 }
 
 
-static void save_ColorSubTableEXT( GLenum target, GLsizei start, GLsizei count,
-                                   GLenum format, GLenum type,
-                                   const GLvoid *table)
+static void save_ColorSubTable( GLenum target, GLsizei start, GLsizei count,
+                                GLenum format, GLenum type,
+                                const GLvoid *table)
 {
    GET_CURRENT_CONTEXT(ctx);
    GLvoid *image = _mesa_unpack_image(count, 1, 1, format, type, table,
@@ -997,7 +998,7 @@ static void save_ColorSubTableEXT( GLenum target, GLsizei start, GLsizei count,
       FREE(image);
    }
    if (ctx->ExecuteFlag) {
-      (*ctx->Exec->ColorSubTableEXT)(target, start, count, format, type, table);
+      (*ctx->Exec->ColorSubTable)(target, start, count, format, type, table);
    }
 }
 
@@ -2882,17 +2883,6 @@ static void save_TexImage3D( GLenum target,
 }
 
 
-static void save_TexImage3DEXT( GLenum target,
-                                GLint level, GLenum components,
-                                GLsizei width, GLsizei height, GLsizei depth,
-                                GLint border, GLenum format, GLenum type,
-                                const GLvoid *pixels )
-{
-   save_TexImage3D(target, level, (GLint) components, width, height,
-                   depth, border, format, type, pixels);
-}
-
-
 static void save_TexSubImage1D( GLenum target, GLint level, GLint xoffset,
                                 GLsizei width, GLenum format, GLenum type,
                                 const GLvoid *pixels )
@@ -3402,16 +3392,16 @@ static void execute_list( GLcontext *ctx, GLuint list )
             }
 	    break;
 	 case OPCODE_BLEND_COLOR:
-	    (*ctx->Exec->BlendColorEXT)( n[1].f, n[2].f, n[3].f, n[4].f );
+	    (*ctx->Exec->BlendColor)( n[1].f, n[2].f, n[3].f, n[4].f );
 	    break;
 	 case OPCODE_BLEND_EQUATION:
-	    (*ctx->Exec->BlendEquationEXT)( n[1].e );
+	    (*ctx->Exec->BlendEquation)( n[1].e );
 	    break;
 	 case OPCODE_BLEND_FUNC:
 	    (*ctx->Exec->BlendFunc)( n[1].e, n[2].e );
 	    break;
 	 case OPCODE_BLEND_FUNC_SEPARATE:
-	    (*ctx->Exec->BlendFuncSeparateINGR)(n[1].e, n[2].e, n[3].e, n[4].e);
+	    (*ctx->Exec->BlendFuncSeparateEXT)(n[1].e, n[2].e, n[3].e, n[4].e);
 	    break;
          case OPCODE_CALL_LIST:
 	    /* Generated by glCallList(), don't add ListBase */
@@ -3463,8 +3453,8 @@ static void execute_list( GLcontext *ctx, GLuint list )
             {
                struct gl_pixelstore_attrib save = ctx->Unpack;
                ctx->Unpack = _mesa_native_packing;
-               (*ctx->Exec->ColorTableEXT)( n[1].e, n[2].e, n[3].i, n[4].e,
-                                           n[5].e, n[6].data );
+               (*ctx->Exec->ColorTable)( n[1].e, n[2].e, n[3].i, n[4].e,
+                                         n[5].e, n[6].data );
                ctx->Unpack = save;  /* restore */
             }
             break;
@@ -3472,8 +3462,8 @@ static void execute_list( GLcontext *ctx, GLuint list )
             {
                struct gl_pixelstore_attrib save = ctx->Unpack;
                ctx->Unpack = _mesa_native_packing;
-               (*ctx->Exec->ColorSubTableEXT)( n[1].e, n[2].i, n[3].i,
-                                              n[4].e, n[5].e, n[6].data );
+               (*ctx->Exec->ColorSubTable)( n[1].e, n[2].i, n[3].i,
+                                            n[4].e, n[5].e, n[6].data );
                ctx->Unpack = save;  /* restore */
             }
             break;
@@ -4514,9 +4504,9 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->TexSubImage3D = save_TexSubImage3D;
 
    /* GL_ARB_imaging */
-   /* NOT supported, just call stub functions */
-   table->BlendColor = _mesa_BlendColor;
-   table->BlendEquation = _mesa_BlendEquation;
+   /* Not all are supported */
+   table->BlendColor = save_BlendColor;
+   table->BlendEquation = save_BlendEquation;
    table->ColorSubTable = _mesa_ColorSubTable;
    table->ColorTable = _mesa_ColorTable;
    table->ColorTableParameterfv = _mesa_ColorTableParameterfv;
@@ -4550,17 +4540,21 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->ResetMinmax = _mesa_ResetMinmax;
    table->SeparableFilter2D = _mesa_SeparableFilter2D;
 
-   /* 6. GL_EXT_texture3d */
+   /* GL_EXT_texture3d */
+#if 0
    table->CopyTexSubImage3DEXT = save_CopyTexSubImage3D;
    table->TexImage3DEXT = save_TexImage3DEXT;
    table->TexSubImage3DEXT = save_TexSubImage3D;
+#endif
 
    /* GL_EXT_paletted_texture */
-   table->ColorTableEXT = save_ColorTableEXT;
-   table->ColorSubTableEXT = save_ColorSubTableEXT;
-   table->GetColorTableEXT = _mesa_GetColorTableEXT;
-   table->GetColorTableParameterfvEXT = _mesa_GetColorTableParameterfvEXT;
-   table->GetColorTableParameterivEXT = _mesa_GetColorTableParameterivEXT;
+#if 0
+   table->ColorTableEXT = save_ColorTable;
+   table->ColorSubTableEXT = save_ColorSubTable;
+#endif
+   table->GetColorTableEXT = _mesa_GetColorTable;
+   table->GetColorTableParameterfvEXT = _mesa_GetColorTableParameterfv;
+   table->GetColorTableParameterivEXT = _mesa_GetColorTableParameteriv;
 
    /* GL_EXT_compiled_vertex_array */
    table->LockArraysEXT = _mesa_LockArraysEXT;
@@ -4577,10 +4571,14 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->PolygonOffsetEXT = save_PolygonOffsetEXT;
 
    /* GL_EXT_blend_minmax */
-   table->BlendEquationEXT = save_BlendEquation;
+#if 0
+   table->BlendEquationEXT = save_BlendEquationEXT;
+#endif
 
    /* GL_EXT_blend_color */
-   table->BlendColorEXT = save_BlendColor;
+#if 0 
+   table->BlendColorEXT = save_BlendColorEXT;
+#endif
 
    /* GL_ARB_multitexture */
    table->ActiveTextureARB = save_ActiveTextureARB;
@@ -4618,8 +4616,8 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->MultiTexCoord4sARB = _mesa_MultiTexCoord4sARB;
    table->MultiTexCoord4svARB = _mesa_MultiTexCoord4svARB;
 
-   /* GL_INGR_blend_func_separate */
-   table->BlendFuncSeparateINGR = save_BlendFuncSeparateINGR;
+   /* GL_EXT_blend_func_separate */
+   table->BlendFuncSeparateEXT = save_BlendFuncSeparateEXT;
 
    /* GL_MESA_window_pos */
    table->WindowPos2dMESA = save_WindowPos2dMESA;

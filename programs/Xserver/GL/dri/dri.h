@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.6 2000/02/11 17:25:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.7 2000/02/14 06:27:13 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -69,6 +69,21 @@ typedef int DRIWindowRequests;
 #define DRI_3D_WINDOWS_ONLY  1
 #define DRI_ALL_WINDOWS      2
 
+/*
+ * These functions can be wrapped by the DRI.  Each of these have
+ * generic default funcs (initialized in DRICreateInfoRec) and can be
+ * overridden by the driver in its [driver]DRIScreenInit function.
+ */
+typedef struct {
+    ScreenWakeupHandlerProcPtr   WakeupHandler;
+    ScreenBlockHandlerProcPtr    BlockHandler;
+    PaintWindowBackgroundProcPtr PaintWindowBackground;
+    PaintWindowBorderProcPtr     PaintWindowBorder;
+    CopyWindowProcPtr            CopyWindow;
+    ValidateTreeProcPtr          ValidateTree;
+    PostValidateTreeProcPtr      PostValidateTree;
+} DRIWrappedFuncsRec, *DRIWrappedFuncsPtr;
+
 typedef struct {
     /* driver call back functions */
     Bool	(*CreateContext)(ScreenPtr pScreen,
@@ -92,6 +107,9 @@ typedef struct {
 			       DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc,
 			       CARD32 index);
+
+    /* wrapped functions */
+    DRIWrappedFuncsRec  wrap;
 
     /* device info */
     char*		drmDriverName;
@@ -189,7 +207,7 @@ void DRIWakeupHandler(
 void DRIBlockHandler(
     int screenNum,
     pointer blockData,
-    struct timeval **pTimeout,
+    pointer pTimeout,
     pointer pReadmask);
 void DRISwapContext(
     int drmFD,
@@ -218,7 +236,7 @@ void DRIClipNotify(
     int dy);
 CARD32 DRIGetDrawableIndex(
     WindowPtr pWin);
-void DRILock(ScreenPtr pScreen);
+void DRILock(ScreenPtr pScreen, int flags);
 void DRIUnlock(ScreenPtr pScreen);
 void *DRIGetSAREAPrivate(ScreenPtr pScreen);
 DRIContextPrivPtr

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.10 2000/02/14 06:27:13 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.11 2000/02/15 07:13:32 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -223,11 +223,12 @@ Bool
 DRIFinishScreenInit(ScreenPtr pScreen)
 {
     DRIScreenPrivPtr  pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+    DRIInfoPtr        pDRIInfo = pDRIPriv->pDriverInfo;
     DRIContextFlags   flags    = 0;
     DRIContextPrivPtr pDRIContextPriv;
 
 				/* Set up flags for DRICreateContextPriv */
-    switch (pDRIPriv->pDriverInfo->driverSwapMethod) {
+    switch (pDRIInfo->driverSwapMethod) {
     case DRI_KERNEL_SWAP:    flags = DRI_CONTEXT_2DONLY;    break;
     case DRI_HIDE_X_CONTEXT: flags = DRI_CONTEXT_PRESERVED; break;
     }
@@ -248,7 +249,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
     pDRIPriv->hiddenContextStore    = NULL;
     pDRIPriv->partial3DContextStore = NULL;
 
-    switch(pDRIPriv->pDriverInfo->driverSwapMethod) {
+    switch(pDRIInfo->driverSwapMethod) {
     case DRI_HIDE_X_CONTEXT:
 	/* Server will handle 3D swaps, and hide 2D swaps from kernel.
 	 * Register server context as a preserved context.
@@ -256,7 +257,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	
 	/* allocate memory for hidden context store */
 	pDRIPriv->hiddenContextStore
-	    = (void *)xalloc(pDRIPriv->pDriverInfo->contextSize);
+	    = (void *)xalloc(pDRIInfo->contextSize);
 	if (!pDRIPriv->hiddenContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "failed to allocate hidden context\n");
@@ -266,7 +267,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 
 	/* allocate memory for partial 3D context store */
 	pDRIPriv->partial3DContextStore
-	    = (void *)xalloc(pDRIPriv->pDriverInfo->contextSize);
+	    = (void *)xalloc(pDRIInfo->contextSize);
 	if (!pDRIPriv->partial3DContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "[DRI] failed to allocate partial 3D context\n");
@@ -276,8 +277,8 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	}
 	
 	/* save initial context store */
-	if (pDRIPriv->pDriverInfo->SwapContext) {
-	    (*pDRIPriv->pDriverInfo->SwapContext)(
+	if (pDRIInfo->SwapContext) {
+	    (*pDRIInfo->SwapContext)(
 		pScreen, 
 		DRI_NO_SYNC,
 		DRI_2D_CONTEXT,
@@ -310,23 +311,37 @@ DRIFinishScreenInit(ScreenPtr pScreen)
     }
 
     /* Wrap DRI support */
-    pDRIPriv->WakeupHandler = pScreen->WakeupHandler;
-    pDRIPriv->BlockHandler = pScreen->BlockHandler;
-    pDRIPriv->ValidateTree = pScreen->ValidateTree;
-    pDRIPriv->PostValidateTree = pScreen->PostValidateTree;
-    pScreen->WakeupHandler = DRIWakeupHandler;
-    pScreen->BlockHandler = DRIBlockHandler;
-    pScreen->ValidateTree = DRIValidateTree;
-    pScreen->PostValidateTree = DRIPostValidateTree;
+    if (pDRIInfo->wrap.WakeupHandler) {
+	pDRIPriv->wrap.WakeupHandler = pScreen->WakeupHandler;
+	pScreen->WakeupHandler = pDRIInfo->wrap.WakeupHandler;
+    }
+    if (pDRIInfo->wrap.BlockHandler) {
+	pDRIPriv->wrap.BlockHandler = pScreen->BlockHandler;
+	pScreen->BlockHandler = pDRIInfo->wrap.BlockHandler;
+    }
+    if (pDRIInfo->wrap.ValidateTree) {
+	pDRIPriv->wrap.ValidateTree = pScreen->ValidateTree;
+	pScreen->ValidateTree = pDRIInfo->wrap.ValidateTree;
+    }
+    if (pDRIInfo->wrap.PostValidateTree) {
+	pDRIPriv->wrap.PostValidateTree = pScreen->PostValidateTree;
+	pScreen->PostValidateTree = pDRIInfo->wrap.PostValidateTree;
+    }
 
     /* Potentential optimization:  don't wrap the following routines if
-         pDRIPriv->pDriverInfo->bufferRequests == DRI_NO_WINDOWS */
-    pDRIPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
-    pDRIPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
-    pDRIPriv->CopyWindow = pScreen->CopyWindow;
-    pScreen->PaintWindowBackground = DRIPaintWindow;
-    pScreen->PaintWindowBorder = DRIPaintWindow;
-    pScreen->CopyWindow = DRICopyWindow;
+         pDRIInfo->bufferRequests == DRI_NO_WINDOWS */
+    if (pDRIInfo->wrap.PaintWindowBackground) {
+	pDRIPriv->wrap.PaintWindowBackground = pScreen->PaintWindowBackground;
+	pScreen->PaintWindowBackground = pDRIInfo->wrap.PaintWindowBackground;
+    }
+    if (pDRIInfo->wrap.PaintWindowBorder) {
+	pDRIPriv->wrap.PaintWindowBorder = pScreen->PaintWindowBorder;
+	pScreen->PaintWindowBorder = pDRIInfo->wrap.PaintWindowBorder;
+    }
+    if (pDRIInfo->wrap.CopyWindow) {
+	pDRIPriv->wrap.CopyWindow = pScreen->CopyWindow;
+	pScreen->CopyWindow = pDRIInfo->wrap.CopyWindow;
+    }
     miClipNotify(DRIClipNotify);
 
     DRIDrvMsg(pScreen->myNum, X_INFO, "[DRI] installation complete\n");
@@ -938,8 +953,21 @@ DRIGetDeviceInfo(
 DRIInfoPtr
 DRICreateInfoRec(void)
 {
-    DRIInfoPtr inforec = xalloc(sizeof(DRIInfoRec));
+    DRIInfoPtr inforec = (DRIInfoPtr)xalloc(sizeof(DRIInfoRec));
+    if (!inforec) return NULL;
+
+    /* Initialize defaults */
     inforec->busIdString = NULL;
+
+    /* Wrapped function defaults */
+    inforec->wrap.WakeupHandler         = DRIWakeupHandler;
+    inforec->wrap.BlockHandler          = DRIBlockHandler;
+    inforec->wrap.PaintWindowBackground = DRIPaintWindow;
+    inforec->wrap.PaintWindowBorder     = DRIPaintWindow;
+    inforec->wrap.CopyWindow            = DRICopyWindow;
+    inforec->wrap.ValidateTree          = DRIValidateTree;
+    inforec->wrap.PostValidateTree      = DRIPostValidateTree;
+
     return inforec;
 }
 
@@ -960,7 +988,7 @@ DRIWakeupHandler(
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    DRILock(pScreen);
+    DRILock(pScreen, 0);
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
 	/* hide X context by swapping 2D component here */
 	(*pDRIPriv->pDriverInfo->SwapContext)(pScreen,
@@ -972,13 +1000,13 @@ DRIWakeupHandler(
     }
 
     /* unwrap */
-    pScreen->WakeupHandler = pDRIPriv->WakeupHandler;
+    pScreen->WakeupHandler = pDRIPriv->wrap.WakeupHandler;
 
     /* call lower layers */
     (*pScreen->WakeupHandler)(screenNum, wakeupData, result, pReadmask);
 
     /* rewrap */
-    pDRIPriv->WakeupHandler = pScreen->WakeupHandler;
+    pDRIPriv->wrap.WakeupHandler = pScreen->WakeupHandler;
     pScreen->WakeupHandler = DRIWakeupHandler;
 }
 
@@ -986,20 +1014,20 @@ void
 DRIBlockHandler(
     int screenNum,
     pointer blockData,
-    struct timeval **pTimeout,
+    pointer pTimeout,
     pointer pReadmask)
 {
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
     /* unwrap */
-    pScreen->BlockHandler = pDRIPriv->BlockHandler;
+    pScreen->BlockHandler = pDRIPriv->wrap.BlockHandler;
 
     /* call lower layers */
     (*pScreen->BlockHandler)(screenNum, blockData, pTimeout, pReadmask);
 
     /* rewrap */
-    pDRIPriv->BlockHandler = pScreen->BlockHandler;
+    pDRIPriv->wrap.BlockHandler = pScreen->BlockHandler;
     pScreen->BlockHandler = DRIBlockHandler;
 
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
@@ -1210,13 +1238,13 @@ DRIPaintWindow(
 	}
 
 	/* unwrap */
-	pScreen->PaintWindowBackground = pDRIPriv->PaintWindowBackground;
+	pScreen->PaintWindowBackground = pDRIPriv->wrap.PaintWindowBackground;
 
 	/* call lower layers */
 	(*pScreen->PaintWindowBackground)(pWin, prgn, what);
 
 	/* rewrap */
-	pDRIPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
+	pDRIPriv->wrap.PaintWindowBackground = pScreen->PaintWindowBackground;
 	pScreen->PaintWindowBackground = DRIPaintWindow;
     }
     else {
@@ -1227,13 +1255,13 @@ DRIPaintWindow(
 	}
 
 	/* unwrap */
-	pScreen->PaintWindowBorder = pDRIPriv->PaintWindowBorder;
+	pScreen->PaintWindowBorder = pDRIPriv->wrap.PaintWindowBorder;
 
 	/* call lower layers */
 	(*pScreen->PaintWindowBorder)(pWin, prgn, what);
 
 	/* rewrap */
-	pDRIPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
+	pDRIPriv->wrap.PaintWindowBorder = pScreen->PaintWindowBorder;
 	pScreen->PaintWindowBorder = DRIPaintWindow;
     }
 }
@@ -1269,13 +1297,13 @@ DRICopyWindow(
     }
 
     /* unwrap */
-    pScreen->CopyWindow = pDRIPriv->CopyWindow;
+    pScreen->CopyWindow = pDRIPriv->wrap.CopyWindow;
 
     /* call lower layers */
     (*pScreen->CopyWindow)(pWin, ptOldOrg, prgnSrc);
 
     /* rewrap */
-    pDRIPriv->CopyWindow = pScreen->CopyWindow;
+    pDRIPriv->wrap.CopyWindow = pScreen->CopyWindow;
     pScreen->CopyWindow = DRICopyWindow;
 }
 
@@ -1358,7 +1386,7 @@ DRIValidateTree(
     }
 
     /* Call kernel to release lock */
-    DRM_UNLOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+    DRIUnlock(pScreen);
 
     /* Grab drawable spin lock: a time out between 10 and 30 seconds is
        appropriate, since this should never time out except in the case of
@@ -1367,8 +1395,7 @@ DRIValidateTree(
     DRISpinLockTimeout(&pDRIPriv->pSAREA->drawable_lock, 1, 10000); /* 10 secs */
 
     /* Call kernel flush outstanding buffers and relock */
-    DRM_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext,
-	     DRM_LOCK_QUIESCENT|DRM_LOCK_FLUSH_ALL);
+    DRILock(pScreen, DRM_LOCK_QUIESCENT|DRM_LOCK_FLUSH_ALL);
 
     /* Switch back to our 2D context if the X context is hidden */
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
@@ -1382,13 +1409,13 @@ DRIValidateTree(
     }
 
     /* unwrap */
-    pScreen->ValidateTree = pDRIPriv->ValidateTree;
+    pScreen->ValidateTree = pDRIPriv->wrap.ValidateTree;
 
     /* call lower layers */
     returnValue = (*pScreen->ValidateTree)(pParent, pChild, kind);
 
     /* rewrap */
-    pDRIPriv->ValidateTree = pScreen->ValidateTree;
+    pDRIPriv->wrap.ValidateTree = pScreen->ValidateTree;
     pScreen->ValidateTree = DRIValidateTree;
 
     return returnValue;
@@ -1410,15 +1437,15 @@ DRIPostValidateTree(
     }
     pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    if (pDRIPriv->PostValidateTree) {
+    if (pDRIPriv->wrap.PostValidateTree) {
 	/* unwrap */
-	pScreen->PostValidateTree = pDRIPriv->PostValidateTree;
+	pScreen->PostValidateTree = pDRIPriv->wrap.PostValidateTree;
 
 	/* call lower layers */
 	(*pScreen->PostValidateTree)(pParent, pChild, kind);
 
 	/* rewrap */
-	pDRIPriv->PostValidateTree = pScreen->PostValidateTree;
+	pDRIPriv->wrap.PostValidateTree = pScreen->PostValidateTree;
 	pScreen->PostValidateTree = DRIPostValidateTree;
     }
 
@@ -1464,11 +1491,11 @@ DRIGetDrawableIndex(
 }
 
 void
-DRILock(ScreenPtr pScreen) {
+DRILock(ScreenPtr pScreen, int flags) {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
     if (!lockRefCount)
-      DRM_LIGHT_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
+      DRM_LOCK(pDRIPriv->drmFD, pDRIPriv->pSAREA, pDRIPriv->myContext, flags);
     lockRefCount++;
 }
 

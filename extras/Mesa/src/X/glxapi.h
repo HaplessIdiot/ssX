@@ -55,7 +55,7 @@
 struct _glxapi_table {
    /* GLX 1.0 functions */
    XVisualInfo *(*ChooseVisual)(Display *dpy, int screen, int *list);
-   void (*CopyContext)(Display *dpy, GLXContext src, GLXContext dst, GLuint mask);
+   void (*CopyContext)(Display *dpy, GLXContext src, GLXContext dst, unsigned long mask);
    GLXContext (*CreateContext)(Display *dpy, XVisualInfo *visinfo, GLXContext shareList, Bool direct);
    GLXPixmap (*CreateGLXPixmap)(Display *dpy, XVisualInfo *visinfo, Pixmap pixmap);
    void (*DestroyContext)(Display *dpy, GLXContext ctx);

@@ -138,12 +138,10 @@ struct dd_function_table {
     *** every device driver.                                           ***
     **********************************************************************/
 
-   const char * (*RendererString)(void);
-   /*
-    * Return a string which uniquely identifies this device driver.
-    * The string should contain no whitespace.  Examples: "X11", "OffScreen",
-    * "MSWindows", "SVGA".
-    * NOTE: This function will be obsolete in favor of GetString in the future!
+   const GLubyte * (*GetString)( GLcontext *ctx, GLenum name );
+   /* Return a string as needed by glGetString().
+    * Only the GL_RENDERER token must be implemented.  Otherwise,
+    * NULL can be returned.
     */
 
    void (*UpdateState)( GLcontext *ctx );
@@ -326,17 +324,6 @@ struct dd_function_table {
     *** since Mesa will either set them to NULL or point them at a     ***
     *** fall-back function.                                            ***
     **********************************************************************/
-
-   const char * (*ExtensionString)( GLcontext *ctx );
-   /* Return a space-separated list of extensions for this driver.
-    * NOTE: This function will be obsolete in favor of GetString in the future!
-    */
-
-   const GLubyte * (*GetString)( GLcontext *ctx, GLenum name );
-   /* Return a string as needed by glGetString().
-    * NOTE: This will replace the ExtensionString and RendererString
-    * functions in the future!
-    */
 
    void (*Finish)( GLcontext *ctx );
    /*

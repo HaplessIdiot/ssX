@@ -1,3 +1,6 @@
+3905. DRI megapatch II.  This includes DRI enhancements, 3dfx fixes and
+      updates, updates Mesa to version 3.3 beta, adds new GLX dispatch
+      code and adds i810 2D support (Precision Insight).
 3904. Add SERVER_OVERLAY_VISUALS root window property (Mark Vojkovich).
 3903. Remove unnecessary VGA CRTC unlock/relock in cyrix driver
       (Marc La France).
@@ -9916,4 +9919,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1048 2000/03/01 12:54:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1050 2000/03/02 02:35:17 mvojkovi Exp $

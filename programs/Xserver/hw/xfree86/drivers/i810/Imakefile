@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.1 2000/02/11 17:25:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.2 2000/02/14 06:27:22 martin Exp $
 XCOMM
 XCOMM This is the Imakefile for the i810 driver.  
 XCOMM 
@@ -9,13 +9,13 @@ XCOMM
 #
 # Uncomment these to build with DRI support when available
 #
-#if 0
+#undef BuildXF86DRI
 #if BuildXF86DRI
-DRISRCS = i810_dri.c
-DRIOBJS = i810_dri.o
-DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri
+DRISRCS = i810_dri.c i810_drm.c
+DRIOBJS = i810_dri.o i810_drm.o
+DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
+	-I$(XF86OSSRC)/linux/drm/kernel
 DRIDEFINES = $(GLX_DEFINES)
-#endif
 #endif
 
 SRCS = 	i810_driver.c i810_cursor.c i810_accel.c i810_io.c	\
@@ -70,4 +70,3 @@ InstallDriverSDKNonExecFile(i810_macros.h,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i810_reg.h,$(DRIVERSDKDIR)/drivers/i810)
 
 InstallDriverSDKObjectModule(i810,$(DRIVERSDKMODULEDIR),drivers)
-

@@ -1654,15 +1654,15 @@ struct gl_context {
 	struct gl_constants Const;
 
 	/* Modelview matrix and stack */
-	GLmatrix ModelView;	
+	GLmatrix ModelView;           /* current matrix, not stored on stack */
 	GLuint ModelViewStackDepth;
-	GLmatrix ModelViewStack[MAX_MODELVIEW_STACK_DEPTH];
+	GLmatrix ModelViewStack[MAX_MODELVIEW_STACK_DEPTH - 1];
 
 	/* Projection matrix and stack */
-	GLmatrix ProjectionMatrix;
+	GLmatrix ProjectionMatrix;    /* current matrix, not stored on stack */
 	GLuint ProjectionStackDepth;
-	GLmatrix ProjectionStack[MAX_PROJECTION_STACK_DEPTH];
-	GLfloat NearFarStack[MAX_PROJECTION_STACK_DEPTH][2];
+	GLmatrix ProjectionStack[MAX_PROJECTION_STACK_DEPTH - 1];
+	GLfloat NearFarStack[MAX_PROJECTION_STACK_DEPTH - 1][2];
 
         /* Combined modelview and projection matrix */
         GLmatrix ModelProjectMatrix;
@@ -1674,7 +1674,7 @@ struct gl_context {
 	/* Texture matrix and stack */
 	GLmatrix TextureMatrix[MAX_TEXTURE_UNITS];
 	GLuint TextureStackDepth[MAX_TEXTURE_UNITS];
-	GLmatrix TextureStack[MAX_TEXTURE_UNITS][MAX_TEXTURE_STACK_DEPTH];
+	GLmatrix TextureStack[MAX_TEXTURE_UNITS][MAX_TEXTURE_STACK_DEPTH - 1];
 
 	/* Display lists */
 	GLuint CallDepth;	/* Current recursion calling depth */

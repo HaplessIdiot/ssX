@@ -255,15 +255,34 @@ static GLint gamma_adjust( GLfloat gamma, GLint value, GLint max )
 
 /*
  * Return the true number of bits per pixel for XImages.
- * For example, if we request a 24-bit deep visual we may actually
- * get a 32-bit per pixel XImage.  This function gives us this information.
+ * For example, if we request a 24-bit deep visual we may actually need/get
+ * 32bpp XImages.  This function returns the appropriate bpp.
  * Input:  dpy - the X display
  *         visinfo - desribes the visual to be used for XImages
  * Return:  true number of bits per pixel for XImages
  */
-#ifndef XFree86Server
-static int bits_per_pixel( XMesaDisplay *dpy, XVisualInfo *visinfo )
+#define GET_BITS_PER_PIXEL(xmv) bits_per_pixel(xmv)
+
+#ifdef XFree86Server
+
+static int bits_per_pixel( XMesaVisual xmv )
 {
+   XMesaVisualInfo visinfo = xmv->visinfo;
+   const int depth = visinfo->nplanes;
+   int i;
+   for (i = 0; i < screenInfo.numPixmapFormats; i++) {
+      if (screenInfo.formats[i].depth == depth)
+         return screenInfo.formats[i].bitsPerPixel;
+   }
+   return depth;  /* should never get here, but this should be safe */
+}
+
+#else
+
+static int bits_per_pixel( XMesaVisual xmv )
+{
+   XMesaDisplay *dpy = xmv->display;
+   XMesaVisualInfo visinfo = xmv->visinfo;
    XMesaImage *img;
    int bitsPerPixel;
    /* Create a temporary XImage */
@@ -527,6 +546,26 @@ static GLboolean alloc_shm_back_buffer( XMesaBuffer b )
       return GL_FALSE;
    }
 
+   if (b->backimage) {
+      int height = b->backimage->height;
+      /* Needed by PIXELADDR1 macro */
+      b->ximage_width1 = b->backimage->bytes_per_line;
+      b->ximage_origin1 = (GLubyte *) b->backimage->data
+                        + b->ximage_width1 * (height-1);
+      /* Needed by PIXELADDR2 macro */
+      b->ximage_width2 = b->backimage->bytes_per_line / 2;
+      b->ximage_origin2 = (GLushort *) b->backimage->data
+                        + b->ximage_width2 * (height-1);
+      /* Needed by PIXELADDR3 macro */
+      b->ximage_width3 = b->backimage->bytes_per_line;
+      b->ximage_origin3 = (GLubyte *) b->backimage->data
+                        + b->ximage_width3 * (height-1);
+      /* Needed by PIXELADDR4 macro */
+      b->ximage_width4 = b->backimage->width;
+      b->ximage_origin4 = (GLuint *) b->backimage->data
+                        + b->ximage_width4 * (height-1);
+   }
+
    return GL_TRUE;
 #else
    /* Can't compile XSHM support */
@@ -560,9 +599,9 @@ void xmesa_alloc_back_buffer( XMesaBuffer b )
 
       /* Allocate new back buffer */
 #ifdef XFree86Server
-	{
+      {
 	 /* Allocate a regular XImage for the back buffer. */
-	 b->backimage = XMesaCreateImage(GET_VISUAL_DEPTH(b->xm_visual),
+	 b->backimage = XMesaCreateImage(b->xm_visual->BitsPerPixel,
 					 b->width, b->height, NULL);
 #else
       if (b->shm==0
@@ -971,7 +1010,6 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
                              XMesaWindow window, XMesaColormap cmap )
 {
    unsigned long rmask, gmask, bmask;
-   int bitsPerPixel;
    (void) buffer;
    (void) window;
    (void) cmap;
@@ -1056,14 +1094,11 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
    /*
     * Now check for TrueColor visuals which we can optimize.
     */
-
-   bitsPerPixel = GET_BITS_PER_PIXEL(v);
-
    if (   GET_REDMASK(v)  ==0x0000ff
        && GET_GREENMASK(v)==0x00ff00
        && GET_BLUEMASK(v) ==0xff0000
        && CHECK_BYTE_ORDER(v)
-       && bitsPerPixel==32
+       && v->BitsPerPixel==32
        && sizeof(GLuint)==4
        && v->RedGamma==1.0 && v->GreenGamma==1.0 && v->BlueGamma==1.0) {
       /* common 32 bpp config used on SGI, Sun */
@@ -1073,7 +1108,7 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
        &&   GET_GREENMASK(v)==0x00ff00
        &&   GET_BLUEMASK(v) ==0x0000ff
        && CHECK_BYTE_ORDER(v)
-       && bitsPerPixel==32
+       && v->BitsPerPixel==32
        && sizeof(GLuint)==4
        && v->RedGamma==1.0 && v->GreenGamma==1.0 && v->BlueGamma==1.0) {
       /* common 32 bpp config used on Linux, HP, IBM */
@@ -1083,7 +1118,7 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
        &&   GET_GREENMASK(v)==0x00ff00
        &&   GET_BLUEMASK(v) ==0x0000ff
        && CHECK_BYTE_ORDER(v)
-       && bitsPerPixel==24
+       && v->BitsPerPixel==24
        && sizeof(GLuint)==4
        && v->RedGamma==1.0 && v->GreenGamma==1.0 && v->BlueGamma==1.0) {
       /* common packed 24 bpp config used on Linux */
@@ -1093,7 +1128,7 @@ static void setup_truecolor( XMesaVisual v, XMesaBuffer buffer,
        &&   GET_GREENMASK(v)==0x07e0
        &&   GET_BLUEMASK(v) ==0x001f
        && CHECK_BYTE_ORDER(v)
-       && bitsPerPixel==16
+       && v->BitsPerPixel==16
        && sizeof(GLushort)==2
        && v->RedGamma==1.0 && v->GreenGamma==1.0 && v->BlueGamma==1.0) {
       /* 5-6-5 color weight on common PC VGA boards */
@@ -1149,6 +1184,11 @@ static GLboolean initialize_visual_and_buffer( int client,
       assert(b->xm_visual == v);
    }
 
+   /* Save true bits/pixel */
+   v->BitsPerPixel = GET_BITS_PER_PIXEL(v);
+   assert(v->BitsPerPixel > 0);
+
+
    if (rgb_flag==GL_FALSE) {
       /* COLOR-INDEXED WINDOW:
        * Even if the visual is TrueColor or DirectColor we treat it as
@@ -1192,10 +1232,6 @@ static GLboolean initialize_visual_and_buffer( int client,
    }
 
 
-   /* Save true bits/pixel */
-   v->BitsPerPixel = GET_BITS_PER_PIXEL(v);
-   assert(v->BitsPerPixel > 0);
-
    /*
     * If MESA_INFO env var is set print out some debugging info
     * which can help Brian figure out what's going on when a user
@@ -1207,7 +1243,7 @@ static GLboolean initialize_visual_and_buffer( int client,
       fprintf(stderr, "X/Mesa undithered pf = %u\n", v->undithered_pf);
       fprintf(stderr, "X/Mesa level = %d\n", v->level);
       fprintf(stderr, "X/Mesa depth = %d\n", GET_VISUAL_DEPTH(v));
-      fprintf(stderr, "X/Mesa bits per pixel = %d\n", GET_BITS_PER_PIXEL(v));
+      fprintf(stderr, "X/Mesa bits per pixel = %d\n", v->BitsPerPixel);
    }
 
    if (b && window) {
@@ -1665,7 +1701,7 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
    assert(v);
 
 #ifdef XFree86Server
-   if (GET_VISUAL_DEPTH(v) != ((XMesaDrawable)w)->bitsPerPixel) {
+   if (GET_VISUAL_DEPTH(v) != ((XMesaDrawable)w)->depth) {
 #else
    XGetWindowAttributes( v->display, w, &attr );
 
@@ -1780,14 +1816,18 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
          b->FXisHackUsable = GL_FALSE;
          b->FXwindowHack = GL_FALSE;
        }
-       fprintf(stderr, "voodoo %d, wid %d height %d hack: usable %d active %d\n",
-	      hw, b->width, b->height, b->FXisHackUsable, b->FXwindowHack);
+       /*
+       fprintf(stderr,
+               "voodoo %d, wid %d height %d hack: usable %d active %d\n",
+               hw, b->width, b->height, b->FXisHackUsable, b->FXwindowHack);
+       */
      }
-   } else {
-     fprintf(stderr,"WARNING: This Mesa Library includes the Glide driver but\n");
-     fprintf(stderr,"         you have not defined the MESA_GLX_FX env. var.\n");
-     fprintf(stderr,"         (check the README.3DFX file for more information).\n\n");
-     fprintf(stderr,"         you can disable this message with a 'export MESA_GLX_FX=disable'.\n");
+   }
+   else {
+      fprintf(stderr,"WARNING: This Mesa Library includes the Glide driver but\n");
+      fprintf(stderr,"         you have not defined the MESA_GLX_FX env. var.\n");
+      fprintf(stderr,"         (check the README.3DFX file for more information).\n\n");
+      fprintf(stderr,"         you can disable this message with a 'export MESA_GLX_FX=disable'.\n");
    }
 #endif
 
@@ -2028,7 +2068,8 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
  */
 GLboolean XMesaUnbindContext( XMesaContext c )
 {
-    return GL_TRUE;
+   /* A no-op for XFree86 integration purposes */
+   return GL_TRUE;
 }
 
 
@@ -2096,11 +2137,11 @@ GLboolean XMesaSetFXmode( GLint mode )
    if (fx && fx[0] != 'd') {
       GrHwConfiguration hw;
       if (!grSstQueryHardware(&hw)) {
-         fprintf(stderr, "!grSstQueryHardware\n");
+         /*fprintf(stderr, "!grSstQueryHardware\n");*/
          return GL_FALSE;
       }
       if (hw.num_sst < 1) {
-         fprintf(stderr, "hw.num_sst < 1\n");
+         /*fprintf(stderr, "hw.num_sst < 1\n");*/
          return GL_FALSE;
       }
       if (XMesa) {
@@ -2121,7 +2162,7 @@ GLboolean XMesaSetFXmode( GLint mode )
 	 }
       }
    }
-   fprintf(stderr, "fallthrough\n");
+   /*fprintf(stderr, "fallthrough\n");*/
 #else
    (void) mode;
 #endif

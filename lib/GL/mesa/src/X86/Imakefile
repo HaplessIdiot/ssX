@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.3 1999/06/27 14:07:25 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.4 2000/02/18 16:23:10 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -76,7 +76,7 @@ XCOMM Disabling 3DNow code for the time being
 #endif
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines -DFX $(X86_DEFS) $(MMX_DEFS) $(3DNOW_DEFS)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../dri -I..
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../include -I../../dri -I..
          SRCS = $(X86_SRCS) $(MMX_SRCS) $(3DNOW_SRCS)
          OBJS = $(X86_OBJS) $(MMX_OBJS) $(3DNOW_OBJS)
 

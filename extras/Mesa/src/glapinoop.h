@@ -34,7 +34,7 @@ extern void
 _glapi_noop_enable_warnings(GLboolean enable);
 
 
-extern struct _glapi_table __glapi_noop_table;
+extern void *__glapi_noop_table[];
 
 
 #endif

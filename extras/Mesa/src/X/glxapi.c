@@ -168,7 +168,8 @@ XVisualInfo *glXChooseVisual(Display *dpy, int screen, int *list)
 }
 
 
-void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst, GLuint mask)
+void glXCopyContext(Display *dpy, GLXContext src, GLXContext dst,
+                    unsigned long mask)
 {
    struct _glxapi_table *t = get_dispatch(dpy);
    if (!t)

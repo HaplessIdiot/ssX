@@ -59,7 +59,8 @@
 #include "conf.h"
 #endif
 
-#include <GL/gl.h>
+#include "GL/gl.h"
+#include "GL/glext.h"
 
 
 /*

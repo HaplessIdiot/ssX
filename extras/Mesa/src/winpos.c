@@ -65,8 +65,6 @@
 void
 _mesa_WindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
 {
-   /* KW: Assume that like rasterpos, this must be outside begin/end.
-    */
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH( ctx, "glWindowPosMESA" );
 
@@ -77,41 +75,18 @@ _mesa_WindowPos4fMESA( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
    ctx->Current.RasterPos[3] = w;
 
    ctx->Current.RasterPosValid = GL_TRUE;
+   ctx->Current.RasterDistance = 0.0F;
 
-   /* raster color */
-   if (0 && ctx->Light.Enabled) {
-
-      /* KW: I don't see how this can work - would have to take the
-       *     inverse of the projection matrix or the combined
-       *     modelProjection matrix, transform point and normal, and
-       *     do the lighting.  Those inverses are not used for
-       *     anything else.  This is not an object-space lighting
-       *     issue - what this is trying to do is something like
-       *     clip-space or window-space lighting...
-       *
-       *     Anyway, since the implementation was never correct, I'm
-       *     not fixing it now - just use the unlit color. 
-       */
-
-      /* KW:  As a reprise, we now *do* keep the inverse of the projection
-       *      matrix, so it is not infeasible to try to swim up stream
-       *      in this manner.  I still don't want to implement it,
-       *      however.
-       */
+   /* raster color = current color or index */
+   if (ctx->Visual->RGBAflag) {
+      UBYTE_RGBA_TO_FLOAT_RGBA(ctx->Current.RasterColor, 
+                               ctx->Current.ByteColor);
    }
    else {
-      /* use current color or index */
-      if (ctx->Visual->RGBAflag) {
-	 UBYTE_RGBA_TO_FLOAT_RGBA(ctx->Current.RasterColor, 
-				  ctx->Current.ByteColor);
-      }
-      else {
-	 ctx->Current.RasterIndex = ctx->Current.Index;
-      }
+      ctx->Current.RasterIndex = ctx->Current.Index;
    }
 
-   ctx->Current.RasterDistance = 0.0;
-
+   /* raster texcoord = current texcoord */
    {
       GLuint texSet;
       for (texSet=0; texSet<MAX_TEXTURE_UNITS; texSet++) {

@@ -584,7 +584,7 @@ make_null_texture( GLcontext *ctx, GLenum internalFormat,
     * interesting instead of leaving it indeterminate.
     */
    if (texImage->Data) {
-      static char message[8][32] = {
+      static const char message[8][32] = {
          "   X   X  XXXXX   XXX     X    ",
          "   XX XX  X      X   X   X X   ",
          "   X X X  X      X      X   X  ",
@@ -966,7 +966,7 @@ copytexsubimage_error_check( GLcontext *ctx, GLuint dimensions,
       return GL_TRUE;
    }
 
-   teximage = texUnit->CurrentD[3]->Image[level];
+   teximage = texUnit->CurrentD[dimensions]->Image[level];
    if (!teximage) {
       char message[100];
       sprintf(message, "glCopyTexSubImage%dD(undefined texture)", dimensions);
