@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.68 2001/06/16 22:00:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.69 2001/07/09 23:52:00 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1735,13 +1735,13 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Setup the visuals we support. */
 
     if ((pScrn->bitsPerPixel > 8) && (pNv->riva.Architecture == NV_ARCH_03)) {
-          if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+          if (!miSetVisualTypes(pScrn->depth, TrueColorMask, 8,
                                 pScrn->defaultVisual))
               return FALSE;
     } else {
           if (!miSetVisualTypes(pScrn->depth, 
-                                miGetDefaultVisualMask(pScrn->depth),
-                                pScrn->rgbBits, pScrn->defaultVisual))
+                                miGetDefaultVisualMask(pScrn->depth), 8,
+                                pScrn->defaultVisual))
 	  return FALSE;
      }
 #ifdef NV_USE_FB
