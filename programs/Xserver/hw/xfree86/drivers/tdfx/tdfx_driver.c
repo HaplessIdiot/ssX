@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.53 2000/12/08 20:13:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.54 2000/12/08 21:46:10 alanh Exp $ */
 
 /*
  * Authors:
@@ -1692,9 +1692,8 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
     pTDFX->backOffset = -1;
     pTDFX->depthOffset = -1;
     pTDFX->fbOffset = fifoSize + pTDFX->fifoOffset;
-
   } else {
-    pTDFX->texOffset = pTDFX->fbOffset - texSize + 64*1024;
+    pTDFX->texOffset = pTDFX->fbOffset - texSize;
     pTDFX->texSize = texSize;
   }
 #if	0
@@ -1772,7 +1771,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   allocateMemory(pScrn);
 
 #ifdef XF86DRI
-  if ((pTDFX->backOffset) || (pTDFX->depthOffset)) 
+  if ((pTDFX->backOffset != -1) && (pTDFX->depthOffset != -1)) 
     doDR = TRUE;
 #endif
 
