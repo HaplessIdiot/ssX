@@ -418,11 +418,11 @@ configFiles(XF86ConfFilesPtr fileconf)
         fontPath = NULL;
         pathFrom = X_DEFAULT;
       }
-    } else {
+    } 
+   } else {
       xf86Msg(X_WARNING,
 	    "No FontPath specified.  Using compiled-in default.\n");
       pathFrom = X_DEFAULT;
-    }
    }
   } else {
     /* Use fontpath specified with '-fp' */
@@ -432,8 +432,7 @@ configFiles(XF86ConfFilesPtr fileconf)
     }
     pathFrom = X_CMDLINE;
   }
-  if (fileconf) {
-   if (!fileconf->file_fontpath) {
+  if (!fileconf) {
       /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
        could be static, so we make a copy. */
     char *f = xnfalloc(strlen(defaultFontPath) + 1);
@@ -441,6 +440,17 @@ configFiles(XF86ConfFilesPtr fileconf)
     strcpy (f, defaultFontPath);
     defaultFontPath = xf86ValidateFontPath(f);
     xfree(f);
+  } else {
+   if (fileconf) {
+    if (!fileconf->file_fontpath) {
+      /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
+       could be static, so we make a copy. */
+     char *f = xnfalloc(strlen(defaultFontPath) + 1);
+     f[0] = '\0';
+     strcpy (f, defaultFontPath);
+     defaultFontPath = xf86ValidateFontPath(f);
+     xfree(f);
+    }
    }
   }
 
