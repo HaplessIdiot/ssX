@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/alpha_video.c,v 1.3 2003/03/14 13:46:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/alpha_video.c,v 1.4 2003/03/18 18:24:43 alanh Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,9 +33,13 @@
 #include <sys/param.h>
 #ifndef __NetBSD__
 #  include <sys/sysctl.h>
+#  ifdef __FreeBSD__
+#      include <machine/sysarch.h>
+#   endif
 # else
 #  include <machine/sysarch.h>
 #endif
+
 #include "xf86Axp.h"
 
 #include "xf86_OSlib.h"
@@ -50,6 +54,8 @@
 #ifndef MAP_FAILED
 #define MAP_FAILED ((caddr_t)-1)
 #endif
+
+axpDevice bsdGetAXP(void);
 
 #ifndef __NetBSD__
 extern unsigned long dense_base(void);
