@@ -928,8 +928,11 @@
         +  ftp.gwdg.de:/pub/Xfree86 (ftp://ftp.gwdg.de/pub/Xfree86)
            (source and binaries)
 
-        +  ftp.uni-stuttgart.de:/Pub/X11/Xfree86 (ftp://ftp.uni-
+        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86 (ftp://ftp.uni-
            stuttgart.de/pub/X11/Xfree86) (source and binaries)
+
+        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1 (ftp://fvkma.tu-
+           graz.ac.at/pub/XFree86/3.1.1) (source and binaries)
 
         +  ftp.funet.fi:/pub/X11/XFree86
            (ftp://ftp.funet.fi/pub/X11/XFree86) (source and binaries)
@@ -988,10 +991,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.7 1995/01/15 10:34:19 dawes Exp $
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.8 1995/01/18 06:11:53 dawes Exp $
 
 
 

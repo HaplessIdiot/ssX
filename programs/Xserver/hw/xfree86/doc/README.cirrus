@@ -121,7 +121,8 @@
 
   If graphics redrawing goes wrong, first try the "no_bitblt" option if
   your chip has the BitBLT engine, if that doesn't work, try the
-  "noaccel"; option, which disables all accelerated functions.
+  "noaccel"; option, which disables all accelerated functions. The
+  "no_imageblt" option may be sufficient.
 
   In order to be able to run at a depth of 16bpp and 32bpp, and to
   improve performance at 8bpp, linear addressing must be enabled. This
@@ -129,7 +130,6 @@
   than 16Mb of system memory, on local bus 542x cards and ISA 543x
   cards. You must specify the "linear" option and possibly a Membase
   address. See the following sections for a detailed description.
-
   Lastly, on the 543x, it is advisable to use the "mmio" option in the
   Device section for better acceleration (this might also apply to the
   5429, which has not been tested).
@@ -215,6 +215,16 @@
         does not have), while retaining some acceleration. This will be
         useful for problems related to functions that use the BitBLT
         engine.
+
+     Option "no_imageblt"
+        This option, when used with a 5426/28/29/3x, will have the
+        effect of disabling the use of BitBLT functions that go from
+        system memory to video memory. This is useful for problems
+        relating to image write, such as a little white line at the top
+        left corner of the screen, or a skewed image after a console
+        switch back to the server, which have been observed on some
+        configurations, especially VLB 5426 and 5434 with a fast CPU.
+        Note that this option results in reduced performance.
 
      chipset "clgd54xx"
         Force detection of the given chipset. Useful if you have a
@@ -318,7 +328,6 @@
   The accelerated 256-color driver uses 256 bytes of scratch space in
   video memory, and the hardware cursor also uses 1K. Consequently, a
   1024x1024 virtual resolution should not be used with a 1Mbyte card.
-
   The use of a higher dot clock frequencies has a negative effect on the
   performance of graphics operations, especially BitBlt, when little
   DRAM bandwidth is left for drawing (the amount is displayed during
@@ -328,6 +337,7 @@
   experience blitting slowness, try using the lowest dot clock that is
   acceptable; for example, on a 14" or 15" screen 800x600 with high
   refresh (50 MHz dot clock) is not so bad, with a large virtual screen.
+
   It does not make much sense performance-wise to use the highest clock
   (85 MHz) for 1024x768 at 76 Hz on a 542x; the card will almost come to
   a standstill. A 75 MHz dot clock results in 70 Hz which should be
@@ -394,6 +404,7 @@
   only a gap of two pins at 21 and 22 (or they are both present) and
   there's a pin at 23, the card does probably map beyond 64Mb. If
   there's a little logic near that pin on the card, it's more likely.
+
   With a 543x on the local bus things are simpler (the Cirrus Logic
   windows drivers use it), but it is not quite without problems.
 
@@ -431,31 +442,47 @@
   defined for each depth that you want to run, with seperates Modes and
   virtual screen size. Example (2Mb of video memory):
 
-       Section "screen"
-           SubSection "Display"
-               Depth 8
-               Virtual 1152 900
-               ViewPort 0 0
-               Modes "640x480" "800x600" "1024x768"
-               Option "linear"
-           EndSubSection
-           SubSection "Display"
-               Depth 16
-               Virtual 1152 900
-               ViewPort 0 0
-               Modes "640x480" "800x600" "1024x768"
-               Option "linear"
-           EndSubSection
-           SubSection "Display"
-               Depth 32
-               Virtual 800 600
-               ViewPort 0 0
-               Modes "640x480" "800x600"
-               Option "linear"
-           EndSubSection
-       EndSection
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Section "screen"
+      SubSection "Display"
+          Depth 8
+          Virtual 1152 900
+          ViewPort 0 0
+          Modes "640x480" "800x600" "1024x768"
+          Option "linear"
+      EndSubSection
+      SubSection "Display"
+          Depth 16
+          Virtual 1152 900
+          ViewPort 0 0
+          Modes "640x480" "800x600" "1024x768"
+          Option "linear"
+      EndSubSection
+      SubSection "Display"
+          Depth 32
+          Virtual 800 600
+          ViewPort 0 0
+          Modes "640x480" "800x600"
+          Option "linear"
+      EndSubSection
+  EndSection
 
 
 
@@ -539,7 +566,8 @@
 
      Incorrect little lines (mostly white) appear occasionally
         This may be related to a problem with system-to-video-memory
-        BitBLT operations. Try "no_bitblt" if it annoys you.
+        BitBLT operations. Try the "no_imageblt" option if it annoys
+        you.
 
      Textmode is not properly restored
         This has been reported on some configurations. In XFree86 3.1
@@ -563,7 +591,6 @@
   try contacting the XFree86 team (the current driver maintainer can be
   reached at hhanemaa@cs.ruu.nl), or post in the Usenet newsgroup
   "comp.windows.x.i386unix".
-
 
   7.  Driver changes
 
@@ -591,38 +618,11 @@
 
      o  Support for programmable clocks.
 
-
      o  Support for Memory-Mapped I/O on 543x.
 
      o  Support for dot clocks up to 110 MHz on the 5434.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.5 1995/01/15 10:34:26 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.6 1995/01/18 06:11:57 dawes Exp $
 
 
 

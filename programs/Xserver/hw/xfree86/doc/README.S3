@@ -286,14 +286,14 @@
 
 
        ICD2061A                                ==> ClockChip "icd2061a"
-       ICS9161A (ICD2061A compatible)          ==> ClockChip "icd2061a"
-       DCS2824-0 (ICD2061A compatible)         ==> ClockChip "icd2061a"
+       ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
+       DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
        S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
-       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "s3gendac"
+       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
        S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
-       ICS5342 GENDAC (86c716 compatible)      ==> ClockChip "s3_sdac"
+       ICS5342 GENDAC                          ==> ClockChip "ics5342"
 
        Sierra SC11412                          ==> ClockChip "sc11412"
        ICS2595                                 ==> ClockChip "ics2595"
@@ -361,25 +361,91 @@
   symptom of this not being correct is the HW cursor being chopped off
   when positioned close to the right edge of the screen.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.4 1995/01/15 10:34:20 dawes Exp $
+
+  5.  How to to avoid "snowing" display while graphics operations
+
+
+  For cards with S3 Vision864 chip there is a automatic correction which
+  depends on the pixel clock and the memory clock MCLK at which the S3
+  chip operates. For most clock chips this value can't be read (only the
+  S3 SDAC allows reading the MCLK value su far), so this value has to be
+  estimated and specified by the user (the default is 60 MHz).
+
+  With the new `s3MCLK' entry for your XF86Config file now you can
+  specify e.g.
+
+
+        s3MCLK 55
 
 
 
 
+  for a 55 MHz MCLK which will reduce snowing. Smaller MCLK values will
+  reduce performace a bit so you shouldn't use a too low value (55 or 50
+  should be a good guess in most cases).
+
+  Below is a small shell script which might be usefull to determine the
+  approximate value for MCLK (about +/- 1-2 MHz error). Before running
+  this script you have to add the line
+
+
+        s3MNadjust -31 255
 
 
 
 
+  to the device section in your XF86Config file and restart X Windows.
+  With this option (which is for testing and debugging only) you'll get
+  lots of disasterous display flickering and snowing, so it should be
+  removed again immediately after running the test script below.
+
+  Running this script will use xbench and/or x11perf to run a test to
+  determine the MLCK value, which is printed in MHz. Up to 4 tests are
+  run, so you'll get up to 4 estimates (where the first might be the
+  most accurate one).
+
+  ______________________________________________________________________
+  #!/bin/sh
+
+  exec 2> /dev/null
+
+  scale=2
+
+  calc() {
+    m=`awk 'BEGIN{printf "%.'$scale'f\n",'"( $1 + $2 ) / $3; exit}" `
+    [ -z "$m" ] && m=` echo "scale=$scale; ( $1 + $2 ) / $3" | bc `
+    [ -z "$m" ] && m=` echo "$scale $1 $2 + $3 / pq" | dc `
+    echo $m
+  }
+
+  run_xbench() {
+    r=` ( echo 1; echo 2; echo 3; echo 4 ) | xbench -only $1 | grep rate `
+    [ -z "$r" ] && return
+    cp="$2 $3"
+    set $r
+    calc $3 $cp
+  }
+
+  run_x11perf() {
+    r=` x11perf $1 | grep trep | tr '(/)' '   ' `
+    [ -z "$r" ] && return
+    cp="$2 $3"
+    set $r
+    calc `calc 1000 0 $4` $cp
+  }
+
+  run_x11perf "-rect500 -rop GXxor"     3.86  5.53  #  0 1  #    4.11    5.52  #
+  run_xbench invrects500                4.63  5.48  #  0 1  #    4.69    5.48  #
+
+  run_x11perf "-rect500 -rop GXcopy"  -16.42 13.90  #  0 1  #  -14.99   13.88  #
+  run_xbench fillrects500              -7.81 13.57  #  0 1  #   -8.53   13.58  #
+
+  exit
+  ______________________________________________________________________
 
 
 
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.5 1995/01/18 06:11:56 dawes Exp $
 
 
 
