@@ -1,4 +1,6 @@
 XFree86 3.2x (23 January 1997)
+ 361. Remove some XAA debugging messages (David Bateman).
+ 360. Preliminary I128 bitblt acceleration using XAA (Robin Cutshaw).
  359. NetBSD doc updates (Matthieu Herrb).
  358. Fix a problem with specifying the chipset as "et6000" with the W32
       server (Koen Gadeyne).
