@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.6 1998/04/28 02:51:02 robin Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.7 1998/06/04 16:44:04 hohndel Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_80">Patch #80 - 1998/6/29 - XFree86 3.9Ai</A>
+<LI><A HREF="#xterm_79">Patch #79 - 1998/6/28 - XFree86 3.9Ai</A>
 <LI><A HREF="#xterm_78">Patch #78 - 1998/6/3 - XFree86 3.9Ah and 3.3.2</A>
 <LI><A HREF="#xterm_77">Patch #77 - 1998/5/26 - XFree86 3.9Ah and 3.3.2</A>
 <LI><A HREF="#xterm_76">Patch #76 - 1998/5/8 - XFree86 3.9Ah and 3.3.2</A>
@@ -120,6 +122,74 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_80">Patch #80 - 1998/6/29 - XFree86 3.9Ai</A></H1>
+This fixes a couple of items leftover or introduced by patch 79:
+<ul>
+	<li>take out the logic that suppresses editing-keypad in vt100 mode
+	  (those keys are too valuable to give up for a fine point of
+	  emulation).
+
+	<li>corrected a couple of places in terminfo where I missed using the 
+	  vt220-style editing-keypad codes for Find/Select (mapped to Home/End).
+
+	<li>checked termcap file against terminfo, fix several places where it
+	  was inconsistent.
+</ul>
+
+<H1><A NAME="xterm_79">Patch #79 - 1998/6/28 - XFree86 3.9Ai</A></H1>
+
+This patch fixes several small bugs:
+<ul>
+	<li>use X_EXTRA_LIBS in standalone Makefile.in (patch by Tomas Vanhala).
+ 
+	<li>add new resource 'oldXtermFKeys' which provides backward compatibility
+	  for F1-F4 control sequences with TOG's xterm.
+ 
+	<li>determine the server's default foreground/background Pixel values,
+	  needed if the -flipPixels X server option is used (reported by
+	  David Dawes).
+
+	<li>correct logic for F1-F4 function keys so that they generate VT100
+	  compatible escape sequences in VT220 mode, since that is what the
+	  numeric keypad is supposed to do (reported by Ron Johnson, Jr. 
+	  &lt;ronjohn@communique.net&gt;).
+
+	<li>modify logic for editing keypad to work more like VT220: don't
+	  pass those codes in VT100-mode unless oldXtermFKeys mode is set.
+
+	<li>correct an interaction with the editing-keypad logic that prevented
+	  backarrow key from sending a 127 for the delete key (the 'remove'
+	  escape sequence was being sent instead).
+
+	<li>use return-value from getutid() rather than the parameter, to work on
+	  systems which do not update the latter (patch by Kevin Buhr
+	  &lt;buhr@mozart.stat.wisc.edu&gt;)
+
+	<li>correct scrollbar border color when toggling to/from secure keyboard
+	  mode (patch by Jeff Uphoff &lt;juphoff@tarsier.cv.nrao.edu&gt;)
+
+	<li>modifications to terminfo file:
+<ul>
+	  <li>rename description to xterm-xfree86, adding an entry 'xterm'
+	    which is derived from xterm-xfree86 to simplify customization.
+
+	  <li>change string for kdch1 from \177 to \E[3~, to address complaints
+	    from Debian developers.  (This applies to the key labeled "Delete",
+	    and does not affect the backarrow key).
+
+	  <li>add user-strings u6, u7, u8, u9 to entries to make them work with
+	    Daniel Weaver's "tack" program.
+
+	  <li>modify xterm-24, xterm-bold, xterm-boldso entries to disentangle them from
+	    explicit dependency upon xterm-xfree86.
+
+	  <li>add generic 'xterm-color' entry.
+
+	  <li>minor corrections to xterm-xfree86, xterm-8bit, xterm-r5 and
+	    xterm-r6 entries.
+</ul>
+</ul>
 
 <H1><A NAME="xterm_78">Patch #78 - 1998/6/3 - XFree86 3.9Ah and 3.3.2</A></H1>
 

@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.9 1998/06/28 13:04:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.10 1998/06/29 13:41:15 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -175,7 +175,6 @@ static void UpdateTextInRectangle(TextWidget, XRectangle*);
 static void UpdateTextInLine(TextWidget, int, int, int);
 static void VScroll(Widget, XtPointer, XtPointer);
 static void VJump(Widget, XtPointer, XtPointer);
-static void XawTextScroll(TextWidget, int, int);
 
 /*
  * External
@@ -199,6 +198,7 @@ void _XawTextSetScrollBars(TextWidget);
 void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 			  String*, Cardinal);
 void _XawTextVScroll(TextWidget, int);
+void XawTextScroll(TextWidget, int, int);
 
 /* Not used by other modules, but were extern on previous versions
  * of the library
@@ -415,12 +415,172 @@ static XtResource resources[] = {
 };
 #undef offset
 
+/* 1D Clipping code, that also works with 2D (not included here)
+ *
+ * This should be moved to somewhere else, and the structures/functions
+ * renamed to avoid name clashes..
+ */
+typedef struct _Segment {
+  int x1, x2;
+  struct _Segment *next;
+} Segment;
+
+typedef struct _Scanline {
+  int y;
+  Segment *segment;
+  struct _Scanline *next;
+} Scanline;
+
+static Segment *
+NewSegment(int x1, int x2)
+{
+  Segment *segment;
+
+  if ((segment = (Segment *)XtMalloc(sizeof(Segment))) == NULL)
+      return (NULL);
+
+  segment->x1 = x1;
+  segment->x2 = x2;
+  segment->next = (Segment *)NULL;
+
+  return (segment);
+}
+
+#define DestroySegment(s)	XtFree((char *)(s))
+
+static Scanline *
+NewScanline(int y, int x1, int x2)
+{
+  Scanline *scanline;
+
+  if ((scanline = (Scanline *)XtMalloc(sizeof(Scanline))) == NULL)
+    return (NULL);
+
+  scanline->y = y;
+  if (x1 < x2)
+    scanline->segment = NewSegment(x1, x2);
+  else
+    scanline->segment = (Segment *)0;
+
+  scanline->next = (Scanline *)NULL;
+
+  return (scanline);
+}
+
+#define DestroyScanline(s)			\
+do {						\
+  DestroySegmentList((s)->segment);		\
+  XtFree((char *)(s));				\
+} while(0)
+
+static void
+DestroySegmentList(Segment *segment)
+{
+  Segment *z;
+
+  if (!segment)
+    return;
+
+  while (segment)
+    {
+      z = segment;
+      segment = segment->next;
+      DestroySegment(z);
+    }
+}
+
+static Scanline *
+ScanlineOrSegment(Scanline *dst, Segment *src)
+{
+  Segment *z, *p, ins;
+
+  if (!src || !dst)
+    return (dst);
+
+  if (!dst->segment)
+    {
+      dst->segment = NewSegment(src->x1, src->x2);
+      return (dst);
+    }
+
+  z = p = dst->segment;
+  ins.x1 = src->x1;
+  ins.x2 = src->x2;
+
+  /*CONSTCOND*/
+  while (1)
+    {
+      if (!z)
+	{
+	  Segment *q = NewSegment(ins.x1, ins.x2);
+
+	  if (p == dst->segment)
+	    dst->segment = q;
+	  else
+	    p->next = q;
+	  break;
+	}
+      else if (ins.x2 < z->x1)
+	{
+	  Segment *q = NewSegment(ins.x1, ins.x2);
+
+	  if (p == dst->segment)
+	    {
+	      q->next = dst->segment;
+	      dst->segment = q;
+            }
+	  else
+	    {
+	      p->next = q;
+	      q->next = z;
+            }
+	  break;
+	}
+      else if (ins.x2 <= z->x2)
+	{
+	  z->x1 = XawMin(z->x1, ins.x1);
+	  break;
+        }
+      else if (ins.x1 <= z->x2)
+	{
+	  ins.x1 = XawMin(z->x1, ins.x1);
+	  if (!z->next)
+	    {
+	      z->x1 = ins.x1;
+	      z->x2 = ins.x2;
+	      break;
+            }
+	  else
+	    {
+	      if (z == dst->segment)
+		{
+		  p = dst->segment = dst->segment->next;
+		  DestroySegment(z);
+		  z = dst->segment;
+		  continue;
+                }
+	      else
+		{
+		  p->next = z->next;
+		  DestroySegment(z);
+		  z = p;
+                }
+            }
+        }
+      p = z;
+      z = z->next;
+    }
+
+  return (dst);
+}
+
 #define done(address, type) \
 	{ toVal->size = sizeof(type); toVal->addr = (XPointer)address; }
 
 static XrmQuark QScrollNever, QScrollAlways, QScrollWhenNeeded,
 	  QWrapNever, QWrapLine, QWrapWord,
 	  QResizeNever, QResizeWidth, QResizeHeight, QResizeBoth;
+
 
 /* ARGSUSED */
 static void
@@ -952,7 +1112,7 @@ InsertCursor(Widget w, XawTextInsertState state)
 }
 
 /*
- * Procedure to register a span of text that is no longer valid on the display
+ * Procedure to register a spacn of text that is no longer valid on the display
  * It is used to avoid a number of small, and potentially overlapping, screen
  * updates.
 */
@@ -961,35 +1121,49 @@ _XawTextNeedsUpdating(TextWidget ctx,
 		      XawTextPosition left, XawTextPosition right)
 {
   int i;
+  Segment segment, *tmp;
+  Scanline *scanline;
 
-  if (left < right)
+  if (left > right)
+    return;
+  else if (ctx->text.numranges == 0)
     {
-      for (i = 0; i < ctx->text.numranges; i++)
-	{
-	  if (left <= ctx->text.updateTo[i]
-	      && right >= ctx->text.updateFrom[i])
-	    {
-	      ctx->text.updateFrom[i] = Min(left, ctx->text.updateFrom[i]);
-	      ctx->text.updateTo[i] = Max(right, ctx->text.updateTo[i]);
-	      return;
-	    }
-	}
-
-      ctx->text.numranges++;
-
-      if (ctx->text.numranges > ctx->text.maxranges)
-	{
-	  ctx->text.maxranges = ctx->text.numranges;
-	  i = ctx->text.maxranges * sizeof(XawTextPosition);
-	  ctx->text.updateFrom = (XawTextPosition *)
-	    XtRealloc((char *)ctx->text.updateFrom, (unsigned)i);
-	  ctx->text.updateTo = (XawTextPosition *)
-	    XtRealloc((char *)ctx->text.updateTo, (unsigned)i);
-	}
-
-      ctx->text.updateFrom[ctx->text.numranges - 1] = left;
-      ctx->text.updateTo[ctx->text.numranges - 1] = right;
+      ctx->text.updateFrom[0] = left;
+      ctx->text.updateTo[0] = right;
+      ctx->text.numranges = 1;
+      return;
     }
+
+  scanline = NewScanline(0, (int)left, (int)right);
+
+  for (i = 0; i < ctx->text.numranges; i++)
+    {
+      segment.x1 = (int)ctx->text.updateFrom[i];
+      segment.x2 = (int)ctx->text.updateTo[i];
+      (void)ScanlineOrSegment(scanline, &segment);
+    }
+
+  for (tmp = scanline->segment, i = 0; tmp; tmp = tmp->next, i++)
+    ;
+
+  if (ctx->text.maxranges < i)
+    {
+      ctx->text.maxranges = i;
+      i = ctx->text.maxranges * sizeof(XawTextPosition);
+      ctx->text.updateFrom = (XawTextPosition *)
+        XtRealloc((char *)ctx->text.updateFrom, (unsigned)i);
+      ctx->text.updateTo = (XawTextPosition *)
+        XtRealloc((char *)ctx->text.updateTo, (unsigned)i);
+    }
+  ctx->text.numranges = i;
+
+  for (tmp = scanline->segment, i = 0; tmp; tmp = tmp->next, i++)
+    {
+      ctx->text.updateFrom[i] = tmp->x1;
+      ctx->text.updateTo[i] = tmp->x2;
+    }
+
+  DestroyScanline(scanline);
 }
 
 /*
@@ -1414,7 +1588,7 @@ DoCopyArea(TextWidget ctx, int src_x, int src_y,
  *	vlines	- Numero de linhas a rolar na vertical
  *	hpixels	- Numero de pixels a rolar na horizontal
  */
-static void
+void
 XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 {
   XawTextPosition top;
@@ -2760,11 +2934,19 @@ ClearWindow(Widget w)
 void
 _XawTextClearAndCenterDisplay(TextWidget ctx)
 {
-  int insert_line = LineForPosition(ctx, ctx->text.insertPos);
-  int scroll_by = insert_line - ctx->text.lt.lines / 2;
+  int left_margin = ctx->text.margin.left;
+  Bool visible = IsPositionVisible(ctx, ctx->text.insertPos);
 
-  XawTextScroll(ctx, scroll_by, 0);
-  DisplayTextWindow((Widget)ctx);
+  _XawTextShowPosition(ctx);
+
+  /* Se _XawTextShowPosition nao fez nada */
+  if (visible || left_margin == ctx->text.margin.left)
+    {
+      int insert_line = LineForPosition(ctx, ctx->text.insertPos);
+      int scroll_by = insert_line - (ctx->text.lt.lines >> 1);
+
+      XawTextScroll(ctx, scroll_by, 0);
+    }
 }
 
 /*
@@ -3047,46 +3229,16 @@ _XawTextPrepareToUpdate(TextWidget ctx)
 static void
 FlushUpdate(TextWidget ctx)
 {
-  int i, w;
-  XawTextPosition updateFrom, updateTo;
+  int i;
 
-  if (!XtIsRealized((Widget)ctx))
+  if (XtIsRealized((Widget)ctx))
     {
-      ctx->text.numranges = 0;
-      return;
+      for (i = 0; i < ctx->text.numranges; i++)
+	DisplayText((Widget)ctx,
+		    ctx->text.updateFrom[i], ctx->text.updateTo[i]);
     }
-  while (ctx->text.numranges > 0)
-    {
-      updateFrom = ctx->text.updateFrom[0];
-      w = 0;
-      for (i = 1 ; i < ctx->text.numranges ; i++)
-	{
-	  if (ctx->text.updateFrom[i] < updateFrom)
-	    {
-	      updateFrom = ctx->text.updateFrom[i];
-	      w = i;
-	    }
-	}
-      updateTo = ctx->text.updateTo[w];
-      ctx->text.numranges--;
-      ctx->text.updateFrom[w] = ctx->text.updateFrom[ctx->text.numranges];
-      ctx->text.updateTo[w] = ctx->text.updateTo[ctx->text.numranges];
 
-      for (i = ctx->text.numranges - 1 ; i >= 0 ; i--)
-	{
-	  while (ctx->text.updateFrom[i] <= updateTo
-		 && i < ctx->text.numranges)
-	    {
-	      updateTo = ctx->text.updateTo[i];
-	      ctx->text.numranges--;
-	      ctx->text.updateFrom[i] =
-		ctx->text.updateFrom[ctx->text.numranges];
-	      ctx->text.updateTo[i] =
-		ctx->text.updateTo[ctx->text.numranges];
-	    }
-	}
-      DisplayText((Widget)ctx, updateFrom, updateTo);
-    }
+  ctx->text.numranges = 0;
 }
 
 static int

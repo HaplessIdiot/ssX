@@ -41,7 +41,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.30 1998/03/20 21:06:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.31 1998/06/27 12:54:26 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1416,9 +1416,7 @@ Bool enter;
 
 	if (enter)
 	{
-#ifndef PC98_MGA
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-#endif
 		if (MGAMMIOBase)
 		{
 			xf86MapDisplay(vga256InfoRec.scrnIndex,
