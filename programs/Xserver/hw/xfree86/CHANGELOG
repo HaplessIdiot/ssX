@@ -1,4 +1,7 @@
-XFree86 3.9.17Z (16 February 2000)
+XFree86 3.9.17Z (17 February 2000)
+3803. Xterm patch #128 (#3713, Thomas Dickey).
+3802. Fix a crash in the XKB library code (#3712,
+      Paulo Cesar Pereira de Andrade).
 3801. Set the right max clock for the Voodoo3 3000 (#3707,
       Yoann Vandoorselaere).
 3800. Fix various build problems (David Dawes).
@@ -36,7 +39,7 @@ XFree86 3.9.17Z (16 February 2000)
       BIG5 converter (#3697, Takuya Shiozaki).
 3781. Update README.fonts (#3696, Juliusz Chroboczek).
 3780. Add dot, line, arc accelerations for 24bpp in fb, and cleanup most
-      warnings (#3695, Keith Packard).
+      warnings (#3695, 3711, Keith Packard).
 3779. Make it possible to build the r128 driver with support for fb
       (disabled by default) (#3693, Keith Packard).
 3778. Fix a problem with lnx_ev56 (#3693, Keith Packard).
@@ -9719,4 +9722,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1011 2000/02/16 15:36:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1012 2000/02/16 19:10:34 dawes Exp $

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.98 2000/02/10 18:57:37 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.99 2000/02/13 00:56:11 dawes Exp $
  */
 
 /*
@@ -284,7 +284,6 @@ static XtActionsRec actionsList[] = {
     { "quit",			HandleQuit },
     { "redraw",			HandleRedraw },
     { "delete-is-del",		HandleDeleteIsDEL },
-    { "meta-sends-escape",	HandleMetaEsc },
     { "scroll-back",		HandleScrollBack },
     { "scroll-forw",		HandleScrollForward },
     { "secure",			HandleSecure },
@@ -345,6 +344,7 @@ static XtActionsRec actionsList[] = {
     { "restore",		HandleRestoreSize },
 #endif
 #if OPT_NUM_LOCK
+    { "meta-sends-escape",	HandleMetaEsc },
     { "set-num-lock",		HandleNumLock },
 #endif
 #if OPT_SCO_FUNC_KEYS
@@ -4189,7 +4189,9 @@ static void VTInitialize (
    wnew->screen.jumpscroll = request->screen.jumpscroll;
    wnew->screen.old_fkeys = request->screen.old_fkeys;
    wnew->screen.delete_is_del = request->screen.delete_is_del;
-   init_keyboard_type(keyboardIsLegacy, wnew->screen.old_fkeys);
+   wnew->keyboard.type = wnew->screen.old_fkeys
+   		? keyboardIsLegacy
+		: keyboardIsDefault;
 #ifdef ALLOWLOGGING
    wnew->screen.logfile = request->screen.logfile;
 #endif
@@ -4356,7 +4358,6 @@ static void VTInitialize (
    wnew->cur_foreground = 0;
    wnew->cur_background = 0;
 
-   wnew->keyboard.type = keyboardIsDefault;
    wnew->keyboard.flags = MODE_SRM;
    if (wnew->screen.backarrow_key)
 	   wnew->keyboard.flags |= MODE_DECBKM;

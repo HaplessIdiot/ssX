@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.3 2000/01/21 01:11:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.4 2000/02/14 19:20:26 dawes Exp $ */
 
 #include "fb.h"
 #include "miline.h"
@@ -134,9 +134,11 @@
 
 #include "fbbits.h"
 
+#undef BITSSTORE
+#undef BITSRROP
 #undef BITSMUL
+#undef BITSUNIT
 #undef BITS
-#undef BITSPTR
     
 #undef BRESSOLID
 #undef BRESDASH
