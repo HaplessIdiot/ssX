@@ -28,11 +28,12 @@ development code.  It is <![ %latersnap; [one of]]>
 in a series of snapshot releases leading up the the 4.0 release.  The
 plan is to release a new snapshot every four to six weeks.  The target
 audience for this release is developers and others who are comfortable
-on the bleeding edge.  Most end users will find life easier using our
-latest 3.3.x release.  While we welcome bug reports and feedback about
-this release, we don't have the resources to provide user-level support
-for it.  If you're not comfortable dealing with those sorts of things
-yourself, then the snapshot releases are probably not for you.
+on the bleeding edge.  This release is not targetted at beginners.
+Also, most end users will find life easier using our latest 3.3.x release.
+While we welcome bug reports and feedback about this release, we don't
+have the resources to provide user-level support for it.  If you're not
+comfortable dealing with those sorts of things yourself, then the snapshot
+releases are probably not for you.
 
 This code is very much work in progress.  Many of the interfaces may
 change without notice between now and the 4.0 release.  The
@@ -41,6 +42,9 @@ compared with the 3.3.x versions, and only a small number of drivers have
 been converted so far.  That means that this release does not support a
 wide range of video hardware.  Some of the drivers and new features are
 well developed and reasonably stable, while others are not.
+
+Information on this release's features and their status can be found in
+the <htmlurl name="Release Notes" url="RELNOTES.html">.
 
 <sect>Redistribution of the Snapshots
 <p>
@@ -59,14 +63,18 @@ recommended that you <htmlurl name="join the XFree86 development team"
 url="http://www.xfree86.org:/developer.html">.  That way you will have access
 to the latest source and to other developers.
 
+<sect>How to get XFree86 &relvers;
+<p>
+
 <sect>Reporting Bugs
 <p>
 
 
 
 
+
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.88 1998/04/12 12:43:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.89 1999/07/04 12:21:24 dawes Exp $
 </verb>
 
 </article>

@@ -1,0 +1,111 @@
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+<article>
+
+<title>Release Notes for XFree86&tm; &relvers;
+<author>The XFree86 Project, Inc
+<date>4 July 1999 (this document needs work!)
+
+<abstract>
+
+This document contains some information about the features present
+in XFree86 &relvers; and their status.
+
+</abstract>
+
+<toc>
+
+<p>
+<em>Most of the sections below are currently empty.</em>
+
+<sect>X server
+<p>
+Unlike the 3.3.x versions, there is now a single X server binary (called
+<tt>XFree86</tt>.  This binary can either have one or more video drivers
+linked in statically, or, more usually, dynamically load the video drivers
+and other modules that are needed.
+
+<em>more intro details here</em>
+
+<sect1>Sections for specific drivers go here
+<p>
+
+<sect1>XAA
+<p>
+
+<sect1>Multi-head
+<p>
+
+<sect1>Xinerama
+<p>
+
+<sect1>XVideo extension
+<p>
+
+<sect1>DGA version 2
+<p>
+
+<sect1>DDC
+<p>
+
+<sect1>Other extensions
+<p>
+
+
+<sect>X libraries and clients
+<p>
+
+<sect1>Xaw
+<p>
+
+<sect1>xterm
+<p>
+
+<sect1>xedit
+<p>
+
+
+<sect>Fonts and Internationalisation
+<p>
+
+<sect1>TrueType support
+<p>
+
+<sect1>CID font support
+<p>
+
+<sect1>Unicode support
+<p>
+What is included:
+
+<itemize>
+   <item>ISO 10646-1 extension of ``fixed'' BDF fonts added that cover
+    over 2000 characters including all Latin, Greek, Cyrillic,
+    Armenian, and Gregorian characters, plus numerous scientific
+    and technical symbols (further fonts are under preparation).
+   <item>ISO 10646/Unicode UTF-8 Level 1 support added to xterm
+    (enabled with the <tt>-u8</tt> option).
+</itemize>
+
+Known problems:
+
+<itemize>
+   <item>Xlib does not yet support UTF-8 as a locale, which means that
+    xterm UTF-8 keyboard support is at the moment a temporary hack.
+   <item>ISO 10646-1 cell-spaced fonts such as ``fixed'' work nicely, but
+    mono-spaced and proportional fonts are handled inefficiently
+    by the X protocol, resulting in metrics for 64k glyphs even if
+    only 2000 glyphs are used.
+   <item>ISO 10646 Level 2 combining characters not yet supported by
+    xterm (will be needed for instance for the Thai script).
+</itemize>
+
+
+
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.63 1998/04/12 12:43:42 dawes Exp $
+</verb>
+
+</article>
