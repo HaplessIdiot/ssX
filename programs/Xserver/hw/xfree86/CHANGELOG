@@ -1,4 +1,6 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 198. Fix bug (Bugzilla #315) in _XTextPropertyToTextList() that causes
+      an application crash in some circumstances (Ivan Pascal).
  197. Fixes and updates for XKB keyboard maps:
       - add asciitilde to Swedish 'nodeadkeys' map (Bugzilla #291).
       - add map for true Romanian keyboard (Bugzilla #300, Manfred Pohler).
@@ -17037,7 +17039,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2718 2003/05/29 03:05:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2719 2003/05/29 12:41:54 pascal Exp $
 
 
 
