@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.19 2002/07/30 18:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.20 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  *
@@ -49,7 +49,6 @@
  * authorization from the copyright holder(s) and author(s).
  */
 
-
 #ifndef _LOADERPROCS_H
 #define _LOADERPROCS_H
 
@@ -58,23 +57,22 @@
 #include "fontmod.h"
 
 typedef struct module_desc {
-	struct module_desc *child;
-	struct module_desc *sib;
-	struct module_desc *parent;
-	struct module_desc *demand_next;
-	char *name;
-	char *filename;
-	char *identifier;
-	XID client_id;
-	int in_use;
-	int handle;
-	ModuleSetupProc SetupProc;
-	ModuleTearDownProc TearDownProc;
-	void *TearDownData; /* returned from SetupProc */
-	const char *path;
-	const XF86ModuleVersionInfo *VersionInfo;
+    struct module_desc *child;
+    struct module_desc *sib;
+    struct module_desc *parent;
+    struct module_desc *demand_next;
+    char *name;
+    char *filename;
+    char *identifier;
+    XID client_id;
+    int in_use;
+    int handle;
+    ModuleSetupProc SetupProc;
+    ModuleTearDownProc TearDownProc;
+    void *TearDownData;		/* returned from SetupProc */
+    const char *path;
+    const XF86ModuleVersionInfo *VersionInfo;
 } ModuleDesc, *ModuleDescPtr;
-
 
 /*
  * Extenal API for the loader 
@@ -91,16 +89,15 @@ ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *,
 			    const char **, const char **, pointer,
 			    const XF86ModReqInfo *, int *, int *);
 ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
-void LoadFont (FontModule *);
-void UnloadModule (ModuleDescPtr);
-void UnloadSubModule (ModuleDescPtr);
-void UnloadDriver (ModuleDescPtr);
-void FreeModuleDesc (ModuleDescPtr mod);
-ModuleDescPtr NewModuleDesc (const char *);
-ModuleDescPtr AddSibling (ModuleDescPtr head, ModuleDescPtr new);
+void LoadFont(FontModule *);
+void UnloadModule(ModuleDescPtr);
+void UnloadSubModule(ModuleDescPtr);
+void UnloadDriver(ModuleDescPtr);
+void FreeModuleDesc(ModuleDescPtr mod);
+ModuleDescPtr NewModuleDesc(const char *);
+ModuleDescPtr AddSibling(ModuleDescPtr head, ModuleDescPtr new);
 void LoaderSetPath(const char *path);
 void LoaderSortExtensions(void);
-
 
 void LoaderVReqSymLists(const char **, va_list args);
 void LoaderVReqSymbols(const char *, va_list args);
@@ -118,6 +115,5 @@ void LoaderClearOptions(unsigned long);
 
 /* Options for LoaderSetOptions */
 #define LDR_OPT_ABI_MISMATCH_NONFATAL		0x0001
-
 
 #endif /* _LOADERPROCS_H */

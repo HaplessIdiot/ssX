@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.2 2002/05/31 18:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os.c,v 1.3 2003/08/24 17:37:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
@@ -62,15 +62,13 @@
 #define OSNAME "unknown"
 #endif
 
-
 /* Return the OS name, and run-time OS version */
 
 void
 LoaderGetOS(const char **name, int *major, int *minor, int *teeny)
 {
-	if (name)
-		*name = OSNAME;
-		
-	/* reporting runtime versions isn't supported yet */
-}
+    if (name)
+	*name = OSNAME;
 
+    /* reporting runtime versions isn't supported yet */
+}

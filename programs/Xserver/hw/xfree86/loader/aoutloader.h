@@ -19,13 +19,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.h,v 1.2 1998/07/25 16:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.h,v 1.3 1998/09/20 14:41:03 dawes Exp $ */
 
 #ifndef _AOUTLOADER_H
 #define _AOUTLOADER_H
 extern void *AOUTLoadModule(loaderPtr, int, LOOKUP **);
 extern void AOUTResolveSymbols(void *);
 extern int AOUTCheckForUnresolved(void *);
-extern char *AOUTAddressToSection(void *,unsigned long);
+extern char *AOUTAddressToSection(void *, unsigned long);
 extern void AOUTUnloadModule(void *);
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.25 2001/02/22 23:17:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.26 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  *
@@ -57,18 +57,14 @@
 #if defined(Lynx) && defined(sun)
 #define const /**/
 #endif
-
 #if (defined(__i386__) || defined(__ix86)) && !defined(i386)
 #define i386
 #endif
-
 #include <X11/Xosdefs.h>
 #include <X11/Xfuncproto.h>
 #include <X11/Xmd.h>
-
 /* For LOOKUP definition */
 #include "sym.h"
-
 #define LD_UNKNOWN	-1
 #define LD_ARCHIVE	0
 #define LD_ELFOBJECT	1
@@ -77,12 +73,9 @@
 #define LD_AOUTOBJECT   4
 #define LD_AOUTDLOBJECT	5
 #define LD_ELFDLOBJECT	6
-
 #define LD_PROCESSED_ARCHIVE -1
-
 /* #define UNINIT_SECTION */
 #define HANDLE_IN_HASH_ENTRY
-
 /*
  * COFF Section nmumbers
  */
@@ -90,18 +83,15 @@
 #define N_DATA       2
 #define N_BSS        3
 #define N_COMMENT    4
-
 #define TestFree(a) if (a) { xfree (a); a = NULL; }
-
 #define HASHDIV 10
 #define HASHSIZE (1<<HASHDIV)
-
-typedef struct _elf_reloc   *ELFRelocPtr;
-typedef struct _elf_COMMON  *ELFCommonPtr;
-typedef struct _coff_reloc  *COFFRelocPtr;
+typedef struct _elf_reloc *ELFRelocPtr;
+typedef struct _elf_COMMON *ELFCommonPtr;
+typedef struct _coff_reloc *COFFRelocPtr;
 typedef struct _coff_COMMON *COFFCommonPtr;
-typedef struct AOUT_RELOC   *AOUTRelocPtr;
-typedef struct AOUT_COMMON  *AOUTCommonPtr;
+typedef struct AOUT_RELOC *AOUTRelocPtr;
+typedef struct AOUT_COMMON *AOUTCommonPtr;
 
 typedef struct _LoaderReloc {
     int modtype;
@@ -113,52 +103,52 @@ typedef struct _LoaderReloc {
 
 typedef struct _loader_item *itemPtr;
 typedef struct _loader_item {
-	char	*name ;
-	void	*address ;
-	itemPtr	next ;
-	int	handle ;
-	int	module ;
-	itemPtr	exports;
+    char *name;
+    void *address;
+    itemPtr next;
+    int handle;
+    int module;
+    itemPtr exports;
 #if defined(__powerpc__)
-	/*
-	 * PowerPC file formats require special routines in some circumstances
-	 * to assist in the linking process. See the specific loader for
-	 * more details.
-	 */
-	union {
-		unsigned short	plt[8];		/* ELF */
-		unsigned short	glink[14];	/* XCOFF */
-	} code ;
+    /*
+     * PowerPC file formats require special routines in some circumstances
+     * to assist in the linking process. See the specific loader for
+     * more details.
+     */
+    union {
+	unsigned short plt[8];	/* ELF */
+	unsigned short glink[14];	/* XCOFF */
+    } code;
 #endif
-	} itemRec ;
+} itemRec;
 
 /* The following structures provide an interface to GDB (note that GDB
    has copies of the definitions - if you change anything here make
    sure that the changes are also made to GDB */
 
-typedef	struct {
-	char          *name;       /* Name of this symbol */
-	unsigned int  namelen;     /* Name of this module */
-	void          *addr;	   /* Start address of the .text section */
+typedef struct {
+    char *name;			/* Name of this symbol */
+    unsigned int namelen;	/* Name of this module */
+    void *addr;			/* Start address of the .text section */
 } LDRCommon, *LDRCommonPtr;
 
-typedef	struct x_LDRModuleRec{
-	unsigned int  version;     /* Version of this struct */
-	char          *name;       /* Name of this module */
-	unsigned int  namelen;     /* Length of name */
-	void          *text;	   /* Start address of the .text section */
-	void          *data;	   /* Start address of the .data section */
-	void          *rodata;	   /* Start address of the .rodata section */
-	void          *bss;	   /* Start address of the .bss section */
-        LDRCommonPtr  commons;     /* List of commmon symbols */
-        int           commonslen;  /* Number of common symbols */
-	struct x_LDRModuleRec *next; /* Next module record in chain */
+typedef struct x_LDRModuleRec {
+    unsigned int version;	/* Version of this struct */
+    char *name;			/* Name of this module */
+    unsigned int namelen;	/* Length of name */
+    void *text;			/* Start address of the .text section */
+    void *data;			/* Start address of the .data section */
+    void *rodata;		/* Start address of the .rodata section */
+    void *bss;			/* Start address of the .bss section */
+    LDRCommonPtr commons;	/* List of commmon symbols */
+    int commonslen;		/* Number of common symbols */
+    struct x_LDRModuleRec *next;	/* Next module record in chain */
 } LDRModuleRec, *LDRModulePtr;
 
-extern char		   DebuggerPresent;
-extern LDRModulePtr	   ModList;
-extern LDRCommonPtr	   ldrCommons;
-extern int		   nCommons;
+extern char DebuggerPresent;
+extern LDRModulePtr ModList;
+extern LDRCommonPtr ldrCommons;
+extern int nCommons;
 
 /*
  * The loader uses loader specific alloc/calloc/free functions that
@@ -199,41 +189,41 @@ typedef struct _loader *loaderPtr;
  * _loader_funcs hold the entry points for a module format.
  */
 
-typedef void * (*LoadModuleProcPtr)(loaderPtr modrec, int fd, LOOKUP **);
-typedef void (*ResolveSymbolsProcPtr)(void *);
-typedef int (*CheckForUnresolvedProcPtr)(void *);
-typedef char * (*AddressToSectionProcPtr)(void *, unsigned long);
-typedef void (*LoaderUnloadProcPtr)(void *);
+typedef void *(*LoadModuleProcPtr) (loaderPtr modrec, int fd, LOOKUP **);
+typedef void (*ResolveSymbolsProcPtr) (void *);
+typedef int (*CheckForUnresolvedProcPtr) (void *);
+typedef char *(*AddressToSectionProcPtr) (void *, unsigned long);
+typedef void (*LoaderUnloadProcPtr) (void *);
 
 typedef struct _loader_funcs {
-	LoadModuleProcPtr	LoadModule;
-	ResolveSymbolsProcPtr	ResolveSymbols;
-	CheckForUnresolvedProcPtr CheckForUnresolved;
-	AddressToSectionProcPtr AddressToSection;
-	LoaderUnloadProcPtr	LoaderUnload;
-	LoaderRelocRec		pRelocs; /* type specific relocations */
+    LoadModuleProcPtr LoadModule;
+    ResolveSymbolsProcPtr ResolveSymbols;
+    CheckForUnresolvedProcPtr CheckForUnresolved;
+    AddressToSectionProcPtr AddressToSection;
+    LoaderUnloadProcPtr LoaderUnload;
+    LoaderRelocRec pRelocs;	/* type specific relocations */
 } loader_funcs;
 
 /* Each module loaded has a loaderRec */
 typedef struct _loader {
-	int	handle;		/* Unique id used to remove symbols from
-				   this module when it is unloaded */
-	int	module;		/* Unique id to identify compilation units */
-	char	*name;
-	char	*cname;
-	void	*private;	/* format specific data */
-	loader_funcs	*funcs;	/* funcs for operating on this module */
-	loaderPtr next;
+    int handle;			/* Unique id used to remove symbols from
+				 * this module when it is unloaded */
+    int module;			/* Unique id to identify compilation units */
+    char *name;
+    char *cname;
+    void *private;		/* format specific data */
+    loader_funcs *funcs;	/* funcs for operating on this module */
+    loaderPtr next;
 } loaderRec;
 
 /* Compiled-in version information */
 typedef struct {
-	INT32	xf86Version;
-	INT32	ansicVersion;
-	INT32	videodrvVersion;
-	INT32	xinputVersion;
-	INT32	extensionVersion;
-	INT32	fontVersion;
+    INT32 xf86Version;
+    INT32 ansicVersion;
+    INT32 videodrvVersion;
+    INT32 xinputVersion;
+    INT32 extensionVersion;
+    INT32 fontVersion;
 } ModuleVersions;
 extern ModuleVersions LoaderVersionInfo;
 
@@ -244,6 +234,7 @@ extern unsigned long LoaderOptions;
 void LoaderAddSymbols(int, int, LOOKUP *);
 void LoaderDefaultFunc(void);
 void LoaderDuplicateSymbol(const char *, const int);
+
 #if 0
 void LoaderFixups(void);
 #endif
@@ -259,7 +250,8 @@ void LoaderPrintItem(itemPtr);
 void LoaderPrintSymbol(unsigned long);
 void LoaderDumpSymbols(void);
 char *_LoaderModuleToName(int);
-int _LoaderAddressToSection(const unsigned long, const char **, const char **);
+int _LoaderAddressToSection(const unsigned long, const char **,
+			    const char **);
 int LoaderOpen(const char *, const char *, int, int *, int *, int *);
 int LoaderHandleOpen(int);
 
@@ -278,8 +270,8 @@ LoaderRelocPtr _LoaderGetRelocations(void *);
 /*
  * object to name lookup routines
  */
-char * _LoaderHandleToName(int handle);
-char * _LoaderHandleToCanonicalName(int handle);
+char *_LoaderHandleToName(int handle);
+char *_LoaderHandleToCanonicalName(int handle);
 
 /*
  * Entry points for the different loader types
