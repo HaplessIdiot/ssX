@@ -5,6 +5,7 @@
  * compiler images.  It will have to be edited to reflect these
  * given your local configuration.
  */
+#if 0
 #undef i386Architecture
 #define Arm32Architecture
 
@@ -39,4 +40,6 @@
 
 #define ServerXdmcpDefines	/**/
 
+#define HostCcCmd  cc
+#endif
 #include <cross.rules>

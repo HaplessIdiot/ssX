@@ -90,19 +90,6 @@ Force display type to one of: TV, LCD or VGA. Default: auto detect.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer. Default: off.
-.TP
-.BI "Option \*qNoXVideo\*q \*q" boolean \*q
-Enable or disable use of the video scaler. Default: off.
-.TP
-.BI "Option \*qVESA\*q \*q" boolean \*q
-Force use of VESA BIOS initialization on or off. 
-Default: If option is not set: chipset dependent.
-.TP
-.BI "Option \*qMaxXFBMem\*q \*q" integer \*q
-Amount of video memory to use for X. This option is useful to reserve
-some memory from the top of the video memory for 3D. Under Linux 3D 
-memory is currently handled by the sisfb kernel driver. 
-Default: use all video memory for X.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS

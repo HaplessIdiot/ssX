@@ -420,19 +420,41 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 {
 #ifdef UseMMAP
     unsigned long ret;	
+#ifdef MmapPageAlign
+    unsigned long pagesize;
+    unsigned long new_size;
+    unsigned long new_off;
+    unsigned long new_off_bias;
+#endif
 #define MMAP_PROT	(PROT_READ|PROT_WRITE|PROT_EXEC)
 
 #ifdef DEBUGMEM
     ErrorF("_LoaderFileToMem(%d,%u(%u),%d,%s)",fd,offset,offsetbias,size,label);
 #endif
-
-    ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE,
-			       fd,offset+offsetbias);
-
+# ifdef MmapPageAlign
+    pagesize = getpagesize();
+    new_size = (size + pagesize - 1) / pagesize;
+    new_size *= pagesize;
+    new_off = (offset + offsetbias) / pagesize;
+    new_off *= pagesize;
+    new_off_bias = (offset + offsetbias) - new_off;
+    if ((new_off_bias + size) > new_size) new_size += pagesize;
+    ret = (unsigned long) mmap(0,new_size,MMAP_PROT,MAP_PRIVATE
+#ifdef __x86_64__
+			       | MAP_32BIT
+#endif
+			       ,
+			       fd,new_off);
     if(ret == -1)
 	FatalError("mmap() failed: %s\n", strerror(errno) );
-
+    return (void *)(ret + new_off_bias);
+# else
+    ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE,
+			       fd,offset + offsetbias);
+    if(ret == -1)
+	FatalError("mmap() failed: %s\n", strerror(errno) );
     return (void *)ret;
+# endif
 #else
     char *ptr;
 
@@ -499,11 +521,25 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 void
 _LoaderFreeFileMem(void *addr, int size)
 {
+#if defined (UseMMAP) && defined (MmapPageAlign)
+    unsigned long pagesize = getpagesize();
+    memType i_addr = (memType)addr;
+    unsigned long new_size;
+#endif
 #ifdef DEBUGMEM
     ErrorF("_LoaderFreeFileMem(%x,%d)\n",addr,size);
 #endif
 #ifdef UseMMAP
-    munmap(addr,size);
+# if defined (MmapPageAlign)
+    i_addr /=  pagesize;
+    i_addr *=  pagesize;
+    new_size = (size + pagesize - 1) / pagesize;
+    new_size *= pagesize;
+    if (((memType)addr - i_addr + size) > new_size) new_size += pagesize;
+    munmap((void *)i_addr,new_size);
+# else
+    munmap((void *)addr,size);
+# endif
 #else
     if(size == 0)
 	return;

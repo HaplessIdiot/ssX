@@ -767,7 +767,8 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
    /* Load vbe module */
    if((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL) return FALSE;
    xf86LoaderReqSymLists(I810vbeSymbols, NULL);
-   if((pVbe = VBEInit(pVesa->pInt, pVesa->pEnt->index)) == NULL) return FALSE;
+   if((pVbe = VBEInit(pVesa->pInt, pVesa->pEnt->index)) == NULL)
+       return FALSE;
 
    /* Load ddc module */
    if((pDDCModule = xf86LoadSubModule(pScrn, "ddc")) == NULL) return FALSE;

@@ -36,6 +36,8 @@
  * function prototypes
  */
 
+void verite_savedac (ScrnInfoPtr pScreenInfo);
+void verite_restoredac (ScrnInfoPtr pScreenInfo, RenditionRegPtr reg);
 int verite_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock);
 void verite_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size);
 void verite_movecursor(ScrnInfoPtr pScreenInfo, vu16 x, vu16 y, vu8 xo, vu8 yo);

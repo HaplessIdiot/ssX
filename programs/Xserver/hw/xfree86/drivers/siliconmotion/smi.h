@@ -88,6 +88,7 @@ authorization from the XFree86 Project and Silicon Motion.
 /* Driver data structure; this should contain all needed info for a mode */
 typedef struct
 {
+	Bool    modeInit;
 	CARD16	mode;
 	CARD8	SR17, SR18, SR21, SR31, SR32, SR6A, SR6B, SR81, SRA0;
 	CARD8	CR33, CR33_2, CR3A;

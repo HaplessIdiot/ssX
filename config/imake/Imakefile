@@ -19,21 +19,46 @@ GCC_COMMAND = $(CC) -fmerge-constants -xc /dev/null -S -o /dev/null 2> /dev/null
 GCC_DEFINES = -DHAS_MERGE_CONSTANTS=`if $(GCC_COMMAND); then echo 1; else echo 0; fi`
 DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) $(GCC_DEFINES)
 
+#ifdef CrossCompileDir
+CROSSCOMPILEDIR = CrossCompileDir
+CROSSCOMPILEDEFINES=-DCROSSCOMPILE -DCROSSCOMPILEDIR=\"$(CROSSCOMPILEDIR)\"
+#else
+CROSSCOMPILEDIR =
+CROSSCOMPILEDEFINES=
+BOOTSTRAPDEFINES =
+#endif
+
+DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES) \
+	 $(CROSSCOMPILEDEFINES)
+
 #if defined(MacIIArchitecture) || defined(SequentArchitecture) || defined(i386ScoArchitecture)
 XBSDLIB = /**/
 #endif
 
+#ifdef CrossCompileDir
+# ifdef TargetPreProcessCmd
+CPP = TargetPreProcessCmd 
+# else
+CPP = CrossCompileDir/cc -E -
+# endif
+IMAKEMDEFS_CPPDEFINES = $(DEFINES) -DCROSSCOMPILE_CPP
+CppFileTarget(imakemdep_cpp.h,imakemdep.h,$(IMAKEMDEFS_CPPDEFINES),\
+	NullParameter)
+#endif
+
 #if !defined(OS2Architecture)
-#undef ImakeDependency
-#define ImakeDependency(dummy) @@\
+# undef ImakeDependency
+# define ImakeDependency(dummy) @@\
+imake.o: imakemdep_cpp.h @@\
 Makefile::  ProgramTargetName(imake)
 
-#if CrossCompiling
+# if CrossCompiling
 SimpleHostProgramTarget(imake)
-#else
+# else
 SimpleProgramTarget(imake)
-#endif
+# endif
 InstallDriverSDKNamedProg(imake,imake,$(DRIVERSDKDIR)/config/imake)
+
 #else /* OS2Architecture */
 all::
 

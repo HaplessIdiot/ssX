@@ -96,7 +96,8 @@ static newModes newModeRegs [] = {
   { 640, 480, 0x13, 0x61 },
   { 800, 600, 0x13, 0x61 },
   { 1024, 768, 0x3b, 0x63 },
-  { 1280, 1024, 0x7b, 0x64 }
+  { 1280, 1024, 0x7b, 0x64 },
+  { 1400, 1050, 0x11, 0x7b } 
 };
 
 int
@@ -229,8 +230,23 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ShadowModeActive = ((INB(0x3CF) & 0x81) == 0x81);
 #endif
 	OUTB(0x3CE, FPConfig);
-	LCDActive = (INB(0x3CF) & 0x10);
-	
+	pReg->tridentRegs3CE[FPConfig] = INB(0x3CF);
+	if (pTrident->dspOverride) {
+	    if (pTrident->dspOverride & LCD_ACTIVE) {
+		pReg->tridentRegs3CE[FPConfig] |= 0x10;
+		    LCDActive = TRUE;
+	    } else {
+		pReg->tridentRegs3CE[FPConfig] &= ~0x10;
+		    LCDActive = FALSE;
+	    }
+	    if (pTrident->dspOverride & CRT_ACTIVE)
+		pReg->tridentRegs3CE[FPConfig] |= 0x20;
+	    else
+		pReg->tridentRegs3CE[FPConfig] &= ~0x20;
+	} else {
+	    LCDActive = (pReg->tridentRegs3CE[FPConfig] & 0x10);
+	}
+
 	OUTB(0x3CE, CyberEnhance); 
 #if 0
 	pReg->tridentRegs3CE[CyberEnhance] = INB(0x3CF);
@@ -416,7 +432,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	};
 	
 	/* no stretch */
-	pReg->tridentRegs3CE[BiosReg] = 0;
+	if (pTrident->Chipset != CYBERBLADEXPAI1)
+	    pReg->tridentRegs3CE[BiosReg] = 0;
+	else
+	    pReg->tridentRegs3CE[BiosReg] = 8;
 
 	if (pTrident->CyberStretch) {
 	    pReg->tridentRegs3CE[VertStretch] |= 0x01;
@@ -515,7 +534,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    break;
 	case 32:
 	    pReg->tridentRegs3CE[MiscExtFunc] |= 0x02;
-	    if (pTrident->Chipset != CYBERBLADEE4) {
+	    if (pTrident->Chipset != CYBERBLADEE4
+		&& pTrident->Chipset != CYBERBLADEXPAI1) {
 	        /* Clock Division by 2*/
 	        pReg->tridentRegs3CE[MiscExtFunc] |= 0x08; 
 		clock *= 2;	/* Double the clock */
@@ -523,11 +543,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    offset = pScrn->displayWidth >> 1;
     	    pReg->tridentRegs3x4[PixelBusReg] = 0x09;
 	    pReg->tridentRegsDAC[0x00] = 0xD0;
-	    if (pTrident->Chipset == CYBERBLADEE4) {
+	    if (pTrident->Chipset == CYBERBLADEE4
+		|| pTrident->Chipset == CYBERBLADEXPAI1) {
     		OUTB(vgaIOBase+ 4, New32);
 		pReg->tridentRegs3x4[New32] = INB(vgaIOBase + 5) | 0x80;
 		/* With new mode 32bpp we set the packed flag */
-    	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x20;
+      	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x20; 
 	    }
 	    break;
     }
@@ -623,7 +644,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3C4[SSetup] = INB(0x3C5) | 0x4;
     pReg->tridentRegs3C4[SKey] = 0x00;
     pReg->tridentRegs3C4[SPKey] = 0xC0;
-
+    OUTB(0x3C4,0x12);
+    pReg->tridentRegs3C4[Threshold] = INB(0x3C5);
+    if (pScrn->bitsPerPixel > 16)
+	pReg->tridentRegs3C4[Threshold] =
+	    (pReg->tridentRegs3C4[Threshold] & 0xf0) | 0x2;
+    
      /* restore */
     OUTB(0x3C4, 0x11);
     OUTB(0x3C5, protect);
@@ -680,6 +706,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
+    OUTW_3C4(Threshold);
     OUTW_3C4(SSetup);
     OUTW_3C4(SKey);
     OUTW_3C4(SPKey);
@@ -699,7 +726,8 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	    OUTW_3CE(BiosNewMode1);
 	    OUTW_3CE(BiosNewMode2);
 	};
-	OUTW_3CE(BiosReg);	
+	OUTW_3CE(BiosReg);
+	OUTW_3CE(FPConfig);
     	OUTW_3CE(CyberControl);
     	OUTW_3CE(CyberEnhance);
 	SHADOW_ENABLE(tmp);
@@ -796,6 +824,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
+    INB_3C4(Threshold);
     INB_3C4(SSetup);
     INB_3C4(SKey);
     INB_3C4(SPKey);
@@ -808,10 +837,14 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	CARD8 tmp;
 	INB_3CE(VertStretch);
 	INB_3CE(HorStretch);
-	INB_3CE(BiosMode);
+	if (pTrident->Chipset < CYBERBLADEXPm8) {
+    	    INB_3CE(BiosMode);
+	} else {
 	INB_3CE(BiosNewMode1);
 	INB_3CE(BiosNewMode2);
+	}
 	INB_3CE(BiosReg);	
+	INB_3CE(FPConfig);
     	INB_3CE(CyberControl);
     	INB_3CE(CyberEnhance);
 	SHADOW_ENABLE(tmp);

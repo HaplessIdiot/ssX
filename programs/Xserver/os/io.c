@@ -43,6 +43,7 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+
 ******************************************************************/
 /* $Xorg: io.c,v 1.6 2001/02/09 02:05:23 xorgcvs Exp $ */
 /*****************************************************************
@@ -54,6 +55,9 @@ SOFTWARE.
  *****************************************************************/
 /* $XFree86: xc/programs/Xserver/os/io.c,v 3.31 2001/11/23 19:21:36 dawes Exp $ */
 
+#if 0
+#define DEBUG_COMMUNICATION
+#endif
 #ifdef WIN32
 #include <X11/Xwinsock.h>
 #endif
@@ -503,6 +507,13 @@ ReadRequestFromClient(client)
     }
 #endif
     client->requestBuffer = (pointer)oci->bufptr;
+#ifdef DEBUG_COMMUNICATION
+    {
+	xReq *req = client->requestBuffer;
+	ErrorF("REQUEST: ClientIDX: %i, type: 0x%x data: 0x%x len: %i\n",
+	       client->index,req->reqType,req->data,req->length);
+    }
+#endif
     return needed;
 }
 
@@ -911,9 +922,50 @@ WriteToClient (who, count, buf)
     OsCommPtr oc = (OsCommPtr)who->osPrivate;
     register ConnectionOutputPtr oco = oc->output;
     int padBytes;
-
+#ifdef DEBUG_COMMUNICATION
+    Bool multicount = FALSE;
+#endif
     if (!count)
 	return(0);
+#ifdef DEBUG_COMMUNICATION
+    {
+	char info[128];
+	xError *err;
+	xGenericReply *rep;
+	xEvent *ev;
+	
+	if (!who->replyBytesRemaining) {
+	    switch(buf[0]) {
+	    case X_Reply:
+		rep = (xGenericReply*)buf;
+		if (rep->sequenceNumber == who->sequence) {
+		    snprintf(info,127,"Xreply: type: 0x%x data: 0x%x "
+			     "len: %i seq#: 0x%x", rep->type, rep->data1,
+			     rep->length, rep->sequenceNumber);
+		    multicount = TRUE;
+		}
+		break;
+	    case X_Error:
+		err = (xError*)buf;
+		snprintf(info,127,"Xerror: Code: 0x%x resID: 0x%x maj: 0x%x "
+			 "min: %x", err->errorCode,err->resourceID,
+			 err->minorCode,err->majorCode);
+		break;
+	    default:
+		if ((buf[0] & 0x7f) == KeymapNotify) 
+		    snprintf(info,127,"KeymapNotifyEvent: %i",buf[0]);
+		else {
+		    ev = (xEvent*)buf;
+		    snprintf(info,127,"XEvent: type: 0x%x detail: 0x%x "
+			     "seq#: 0x%x",  ev->u.u.type, ev->u.u.detail,
+			     ev->u.u.sequenceNumber);
+		}
+	    }
+	    ErrorF("REPLY: ClientIDX: %i %s\n",who->index, info);
+	} else
+	    multicount = TRUE;
+    }
+#endif
 
     if (!oco)
     {
@@ -965,8 +1017,19 @@ WriteToClient (who, count, buf)
 	    replyinfo.bytesRemaining = who->replyBytesRemaining = bytesleft;
 	    CallCallbacks((&ReplyCallback), (pointer)&replyinfo);
 	} 	                      
-    } 
-  
+    }
+#ifdef DEBUG_COMMUNICATION
+    else if (multicount) {
+	if (who->replyBytesRemaining) {
+	    who->replyBytesRemaining -= (count + padBytes);
+	} else {
+	    CARD32 replylen;
+	    replylen = ((xGenericReply *)buf)->length;
+	    who->replyBytesRemaining =
+		(replylen * 4) + SIZEOF(xReply) - count - padBytes;
+	}
+    }
+#endif
     if (oco->count + count + padBytes > oco->size)
     {
 	FD_CLR(oc->fd, &OutputPending);
@@ -1039,7 +1102,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	long remain = todo;	/* amount to try this time, <= notWritten */
 	int i = 0;
 	long len;
-
+	
 	/* You could be very general here and have "in" and "out" iovecs
 	 * and write a loop without using a macro, but what the heck.  This
 	 * translates to:

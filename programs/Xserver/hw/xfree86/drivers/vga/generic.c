@@ -104,12 +104,14 @@ DriverRec VGA =
 
 typedef enum {
     OPTION_SHADOW_FB,
-    OPTION_VGA_CLOCKS
+    OPTION_VGA_CLOCKS,
+    OPTION_KGA_UNIVERSAL
 } GenericOpts;
 
 static const OptionInfoRec GenericOptions[] = {
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_VGA_CLOCKS,        "VGAClocks",    OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_KGA_UNIVERSAL,     "KGAUniversal", OPTV_BOOLEAN,   {0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -151,7 +153,7 @@ static const char *shadowfbSymbols[] = {
 };
 
 static const char *int10Symbols[] = {
-    "xf86InitInt10",
+    "xf86ExtendedInitInt10",
     "xf86FreeInt10",
     NULL
 };
@@ -394,6 +396,7 @@ GenericClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 typedef struct _GenericRec
 {
     Bool ShadowFB;
+    Bool KGAUniversal;
     CARD8 * ShadowPtr;
     CARD32 ShadowPitch;
     CloseScreenProcPtr CloseScreen;
@@ -495,8 +498,9 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (xf86LoadSubModule(pScreenInfo, "int10")) {
  	xf86Int10InfoPtr pInt;
  	xf86LoaderReqSymLists(int10Symbols, NULL);
-	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "Initializing int10.\n");
-	pInt = xf86InitInt10(pEnt->index);
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "initializing int10.\n");
+	pInt = xf86ExtendedInitInt10(pEnt->index, SET_BIOS_SCRATCH
+			     | RESTORE_BIOS_SCRATCH);
 	xf86FreeInt10(pInt);
     }
 
@@ -700,8 +704,14 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     if (xf86ReturnOptValBool(pGenericPriv->Options, OPTION_SHADOW_FB, FALSE)) {
 	pGenericPriv->ShadowFB = TRUE;
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\".\n");
+    }
+    if (xf86ReturnOptValBool(pGenericPriv->Options, OPTION_KGA_UNIVERSAL, 
+			     FALSE)) {
+	pGenericPriv->KGAUniversal = TRUE;
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		   "Enabling universal \"KGA\" treatment.\n");
     }
 #ifdef SPECIAL_FB_BYTE_ACCESS
     if (!pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
@@ -766,9 +776,16 @@ static Bool
 GenericSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
 {
     vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
+    GenericPtr pGenericPriv = GenericGetRec(pScreenInfo);
 
     if (!vgaHWInit(pScreenInfo, pMode))
         return FALSE;
+    if (pGenericPriv->KGAUniversal) {
+#define KGA_FLAGS (KGA_FIX_OVERSCAN | KGA_BE_TOT_DEC)
+    vgaHWHBlankKGA(pMode, &pvgaHW->ModeReg, 0, KGA_FLAGS);
+    vgaHWHBlankKGA(pMode, &pvgaHW->ModeReg, 0, KGA_FLAGS); 
+#undef KGA_FLAGS
+    }
     pScreenInfo->vtSema = TRUE;
 
 #ifndef __NOT_YET__
@@ -1372,6 +1389,11 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    fbPictureInit (pScreen, 0, 0);
 #endif
             break;
+	default:
+	    xf86DrvMsg(pScreenInfo->scrnIndex,X_ERROR,
+		       "Depth %i not supported by this driver\n",
+		       pScreenInfo->depth);
+	    break;
     }
 
     if (!Inited)

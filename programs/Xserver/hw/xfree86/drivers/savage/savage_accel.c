@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.13 2001/11/30 12:11:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.14 2001/12/13 18:01:50 eich Exp $ */
 
 /*
  *
@@ -415,7 +415,7 @@ SavageInitAccel(ScreenPtr pScreen)
 #if 1
     xaaptr->SetupForScreenToScreenCopy = SavageSetupForScreenToScreenCopy;
     xaaptr->SubsequentScreenToScreenCopy = SavageSubsequentScreenToScreenCopy;
-    xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
+    xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY | ROP_NEEDS_SOURCE;
 #endif
 
 
@@ -424,7 +424,7 @@ SavageInitAccel(ScreenPtr pScreen)
 #if 1
     xaaptr->SetupForSolidFill = SavageSetupForSolidFill;
     xaaptr->SubsequentSolidFillRect = SavageSubsequentSolidFillRect;
-    xaaptr->SolidFillFlags = NO_PLANEMASK;
+    xaaptr->SolidFillFlags = NO_PLANEMASK | ROP_NEEDS_SOURCE;
 #endif
 
     /* Mono 8x8 pattern fills */

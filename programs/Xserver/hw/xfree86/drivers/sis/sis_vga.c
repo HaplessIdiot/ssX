@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.10 2002/01/10 19:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.8 2001/11/30 12:12:01 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -44,7 +44,7 @@
 #define Pidx    3
 #define PSNidx  4
 #define Fref 14318180
-/* stability constraints for internal VCO -- MAX_VCO also determines
+/* stability constraints for internal VCO -- MAX_VCO also determines 
  * the maximum Video pixel clock */
 #define MIN_VCO Fref
 #define MAX_VCO 135000000
@@ -84,8 +84,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pSiS->scrnOffset = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
 
-    outw(VGA_SEQ_INDEX, 0x8605);
-
+    pReg->sisRegs3C4[0x05] = 0x86;
     pReg->sisRegs3C4[0x06] &= 0x01;
     
     if ((mode->Flags & V_INTERLACE)==0)  {
@@ -203,7 +202,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
     /* Set vclk */  
-    if (SiScompute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
+    if (sis_compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {
         switch  (pSiS->Chipset)  {
             case PCI_CHIP_SIS5597:
             case PCI_CHIP_SIS6326:
@@ -222,7 +221,7 @@ SISInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         }
     }
     else  {
-    /* if SiScompute_vclk cannot handle the request clock try sisCalcClock! */
+    /* if sis_compute_vclk cannot handle the request clock try sisCalcClock! */
         SiSCalcClock(pScrn, clock, 2, vclk);
         switch (pSiS->Chipset)  {
             case PCI_CHIP_SIS5597:
@@ -427,7 +426,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     pSiS->scrnOffset = pScrn->displayWidth * ((pScrn->bitsPerPixel+7)/8);
 
-    outw(VGA_SEQ_INDEX, 0x8605);
+    pReg->sisRegs3C4[0x05] = 0x86;
 
     /* TW: The following MUST be done even with VESA */
     pReg->sisRegs3C4[6] &= ~GENMASK(4:2);
@@ -456,31 +455,31 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     if (!pSiS->UseVESA) {	/* TW: Don't do the following when using VESA (NEW) */
-    	pReg->sisRegs3D4[0x19] = 0;
-    	pReg->sisRegs3D4[0x1A] &= 0xFC;
+    pReg->sisRegs3D4[0x19] = 0;
+    pReg->sisRegs3D4[0x1A] &= 0xFC;
 
-	if (mode->Flags & V_INTERLACE)  {
-	        offset = pSiS->scrnOffset >> 2;
-	        pReg->sisRegs3C4[0x06] |= 0x20;
-	        if (pSiS->Chipset != PCI_CHIP_SIS300)  {
-            	temp = (mode->CrtcHSyncStart >> 3) -
-	                (mode->CrtcHTotal >> 3)/2;
-            	pReg->sisRegs3D4[0x19] = GETVAR8(temp);
-            	pReg->sisRegs3D4[0x1A] |= GETBITS(temp, 9:8);
-        	}
-    	} else  {
-	        offset = pSiS->scrnOffset >> 3;
-	        pReg->sisRegs3C4[0x06] &= ~0x20;
-    	}
+    if (mode->Flags & V_INTERLACE)  {
+        offset = pSiS->scrnOffset >> 2;
+        pReg->sisRegs3C4[0x06] |= 0x20;
+        if (pSiS->Chipset != PCI_CHIP_SIS300)  {
+            temp = (mode->CrtcHSyncStart >> 3) -
+                (mode->CrtcHTotal >> 3)/2;
+            pReg->sisRegs3D4[0x19] = GETVAR8(temp);
+            pReg->sisRegs3D4[0x1A] |= GETBITS(temp, 9:8);
+        }
+    } else  {
+        offset = pSiS->scrnOffset >> 3;
+        pReg->sisRegs3C4[0x06] &= ~0x20;
+    }
 
-    	pReg->sisRegs3C4[0x07] |= 0x10;     	/* enable High Speed DAC */
-    	pReg->sisRegs3C4[0x07] &= 0xFC;
-    	if (clock < 100000)
-        	pReg->sisRegs3C4[0x07] |= 0x03;
-    	else if (clock < 200000)
-        	pReg->sisRegs3C4[0x07] |= 0x02;
-    	else if (clock < 250000)
-        	pReg->sisRegs3C4[0x07] |= 0x01;
+    pReg->sisRegs3C4[0x07] |= 0x10;     	/* enable High Speed DAC */
+    pReg->sisRegs3C4[0x07] &= 0xFC;
+    if (clock < 100000)
+        pReg->sisRegs3C4[0x07] |= 0x03;
+    else if (clock < 200000)
+        pReg->sisRegs3C4[0x07] |= 0x02;
+    else if (clock < 250000)
+        pReg->sisRegs3C4[0x07] |= 0x01;
 
 	pReg->sisRegs3C4[0x0A] = 			/* Extended Vertical Overflow */
             GETBITSTR(mode->CrtcVTotal     -2, 10:10, 0:0) |
@@ -523,7 +522,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 /* TW: !!! now done according to NoAccel setting !!! */
 
     if (!pSiS->UseVESA) {	/* TW: clocks have surely been set by VESA, so don't touch them now */
-   	if (SiScompute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {  /* Set vclk */
+   	if (sis_compute_vclk(clock, &num, &denum, &div, &sbit, &scale)) {  /* Set vclk */
         	pReg->sisRegs3C4[0x2B] = (num -1) & 0x7f;
         	if (div == 2)
             		pReg->sisRegs3C4[0x2B] |= 0x80;
@@ -534,7 +533,7 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
         	pReg->sisRegs3C4[0x2D] = 0x80;
     	}
     	else  {
-    		/* if SiScompute_vclk cannot handle the request clock try sisCalcClock! */
+    		/* if sis_compute_vclk cannot handle the request clock try sisCalcClock! */
         	SiSCalcClock(pScrn, clock, 2, vclk);
         	pReg->sisRegs3C4[0x2B] = (vclk[Midx] - 1) & 0x7f ;
         	pReg->sisRegs3C4[0x2B] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;

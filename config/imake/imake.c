@@ -47,8 +47,6 @@ in this Software without prior written authorization from The Open Group.
  * on the Makefile.
  * Options:
  *		-D	define.  Same as cpp -D argument.
- *		-U	undefine.  Same as cpp -U argument.
- *		-W	warning.  Same as cpp -W argument.
  *		-I	Include directory.  Same as cpp -I argument.
  *		-T	template.  Designate a template other
  *			than Imake.tmpl
@@ -227,10 +225,13 @@ typedef union wait	waitType;
 #  define WIFEXITED(w) waitCode(w)
 # endif
 #endif /* X_NOT_POSIX */
-#include <stdlib.h>
+# include <stdlib.h>
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc(), *realloc();
 #endif /* macII */
+#ifdef X_NOT_STDC_ENV
+extern char	*getenv();
+#endif
 #include <errno.h>
 #ifdef __minix_vmd
 #define USE_FREOPEN		1
@@ -262,8 +263,6 @@ char *malloc(), *realloc();
 #include <unix.h>
 #endif
 
-#include "imakemdep.h"
-
 /*
  * This define of strerror is copied from (and should be identical to)
  * Xos.h, which we don't want to include here for bootstrapping reasons.
@@ -281,22 +280,32 @@ extern int sys_nerr;
 #include <sys/utsname.h>
 #endif
 
-#if !(defined(Lynx) || defined(__Lynx__) || (defined(SVR4) && !defined(sun))) && !defined(__CYGWIN__)
+#if !(defined(Lynx) || defined(__Lynx__) || (defined(SVR4) && !defined(sun))) && !defined (__CYGWIN__)
 #define HAS_MKSTEMP
 #endif
 
+typedef	unsigned char	boolean;
 #define	TRUE		1
 #define	FALSE		0
 
-#ifdef FIXUP_CPP_WHITESPACE
-int	InRule = FALSE;
-# ifdef INLINE_SYNTAX
-int	InInline = 0;
-# endif
+# include "imakemdep.h"
+#ifdef CROSSCOMPILE
+# include "imakemdep_cpp.h"
 #endif
-#ifdef MAGIC_MAKE_VARS
+
+#if defined CROSSCOMPILE || defined FIXUP_CPP_WHITESPACE
+int	InRule = FALSE;
+#endif
+#if defined CROSSCOMPILE || defined INLINE_SYNTAX
+int	InInline = 0;
+#endif
+#if defined CROSSCOMPILE || defined MAGIC_MAKE_VARS
 int xvariable = 0;
 int xvariables[10];
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
 #endif
 
 /*
@@ -304,25 +313,20 @@ int xvariables[10];
  * space.  In addition, the escaped newline may be replaced with a
  * space instead of being deleted.  Blech.
  */
-#ifdef FIXUP_CPP_WHITESPACE
 void KludgeOutputLine(char **), KludgeResetRule(void);
-#else
-# define KludgeOutputLine(arg)
-# define KludgeResetRule()
-#endif
 
-typedef	unsigned char	boolean;
-
-#ifdef USE_CC_E
-# ifndef DEFAULT_CC
-#  define DEFAULT_CC "cc"
-# endif
-#else
-# ifndef DEFAULT_CPP
-#  ifdef CPP_PROGRAM
-#   define DEFAULT_CPP CPP_PROGRAM
-#  else
-#   define DEFAULT_CPP "/lib/cpp"
+#ifndef CROSSCOMPILE 
+# ifdef USE_CC_E
+#  ifndef DEFAULT_CC
+#   define DEFAULT_CC "cc"
+#  endif
+# else
+#  ifndef DEFAULT_CPP
+#   ifdef CPP_PROGRAM
+#    define DEFAULT_CPP CPP_PROGRAM
+#   else
+#    define DEFAULT_CPP "/lib/cpp"
+#   endif
 #  endif
 # endif
 #endif
@@ -361,6 +365,9 @@ void	wrapup(void);
 void	init(void);
 void	AddMakeArg(char *arg);
 void	AddCppArg(char *arg);
+#ifdef CROSSCOMPILE
+char    *CrossCompileCPP(void);
+#endif
 void	SetOpts(int argc, char **argv);
 void	CheckImakefileC(char *masterc);
 void	cppit(char *imakefile, char *template, char *masterc, 
@@ -375,9 +382,18 @@ int     catch(int sig);
 void    catch(int sig);
 #endif
 void    showargs(char **argv);
-boolean optional_include(FILE *inFile, char *defsym, char *fname);
-void    doit(FILE *outfd, char *cmd, char **argv);
+boolean optional_include(FILE *inFile, char *defsym, char *fname);void    doit(FILE *outfd, char *cmd, char **argv);
 boolean define_os_defaults(FILE *inFile);
+#ifdef CROSSCOMPILE
+static void get_cross_compile_dir(FILE *inFile);
+#endif
+#ifdef CROSSCOMPILEDIR
+char *CrossCompileDir = CROSSCOMPILEDIR;
+#else 
+char *CrossCompileDir = "";
+#endif 
+boolean CrossCompiling = FALSE;
+
 
 
 boolean	verbose = FALSE;
@@ -389,11 +405,21 @@ main(int argc, char *argv[])
 	FILE	*tmpfd = NULL;
 	char	makeMacro[ BUFSIZ ];
 	char	makefileMacro[ BUFSIZ ];
-
+	int lenCrossCompileDir = 0;
+	
 	program = argv[0];
 	init();
-	SetOpts(argc, argv);
 
+	lenCrossCompileDir = strlen(CrossCompileDir);
+	if (lenCrossCompileDir) {
+	    if (lenCrossCompileDir > (PATH_MAX - 20))
+	      LogFatal("Cross compile directory path too long %s\n",
+		       CrossCompileDir);
+	    else 
+		CrossCompiling = TRUE;
+	}
+
+	SetOpts(argc, argv);
 	Imakefile = FindImakefile(Imakefile);
 	CheckImakefileC(ImakefileC);
 	if (Makefile) {
@@ -489,7 +515,13 @@ init(void)
 	while (cpp_argv[ cpp_argindex ] != NULL)
 		cpp_argindex++;
 
-#if defined(__NetBSD__)
+#if defined CROSSCOMPILE 
+	if (sys == netBSD) 
+	  if (CrossCompiling) {
+	    LogFatal("fix imake to do crosscompiling for NetBSD\n","");
+	  } else
+#endif
+#if defined(__NetBSD__) || defined CROSSCOMPILE
 	{
 		struct utsname uts;
 		static char argument[512];
@@ -561,7 +593,8 @@ AddCppArg(char *arg)
 void
 SetOpts(int argc, char **argv)
 {
-	errno = 0;
+
+        errno = 0;
 	/*
 	 * Now gather the arguments for make
 	 */
@@ -627,16 +660,23 @@ SetOpts(int argc, char **argv)
 	    } else
 		AddMakeArg(argv[0]);
 	}
-#ifdef USE_CC_E
-	if (!cpp)
-	{
+
+#ifndef CROSSCOMPILE	
+# ifdef USE_CC_E
+	    if (!cpp)
+	    {
 		AddCppArg("-E");
 		cpp = DEFAULT_CC;
-	}
-#else
-	if (!cpp)
+	    }
+# else
+	    if (!cpp)
 		cpp = DEFAULT_CPP;
+# endif
+#else
+	    if (!cpp)
+		cpp = CrossCompileCPP();
 #endif
+
 	cpp_argv[0] = cpp;
 	AddCppArg(ImakefileC);
 }
@@ -785,7 +825,7 @@ doit(FILE *outfd, char *cmd, char **argv)
 #endif
 }
 
-#ifndef WIN32
+#if !defined WIN32
 static void
 parse_utsname(struct utsname *name, char *fmt, char *result, char *msg)
 {
@@ -793,6 +833,9 @@ parse_utsname(struct utsname *name, char *fmt, char *result, char *msg)
   char *ptr = buf;
   int arg;
 
+  if (!name)
+      LogFatal(msg,fmt);
+  
   /* Assemble all the pieces into a buffer. */
   for (arg = 0; fmt[arg] != ' '; arg++)
     {
@@ -869,7 +912,7 @@ trim_version(char *p)
 }
 #endif
 
-#ifdef linux
+#if defined linux
 const char *libc_c=
 "#include <stdio.h>\n"
 "#include <ctype.h>\n"
@@ -936,53 +979,6 @@ const char *libc_c=
 ;
 
 static void
-get_distrib(FILE *inFile)
-{
-  struct stat sb;
-
-  static char* yast = "/sbin/YaST";
-  static char* redhat = "/etc/redhat-release";
-  static char* debian = "/etc/debian_version";
-
-  fprintf (inFile, "%s\n", "#define LinuxUnknown    0");
-  fprintf (inFile, "%s\n", "#define LinuxSuSE       1");
-  fprintf (inFile, "%s\n", "#define LinuxCaldera    2");
-  fprintf (inFile, "%s\n", "#define LinuxCraftworks 3");
-  fprintf (inFile, "%s\n", "#define LinuxDebian     4");
-  fprintf (inFile, "%s\n", "#define LinuxInfoMagic  5");
-  fprintf (inFile, "%s\n", "#define LinuxKheops     6");
-  fprintf (inFile, "%s\n", "#define LinuxPro        7");
-  fprintf (inFile, "%s\n", "#define LinuxRedHat     8");
-  fprintf (inFile, "%s\n", "#define LinuxSlackware  9");
-  fprintf (inFile, "%s\n", "#define LinuxTurbo      10");
-  fprintf (inFile, "%s\n", "#define LinuxWare       11");
-  fprintf (inFile, "%s\n", "#define LinuxYggdrasil  12");
-
-  if (lstat (yast, &sb) == 0) {
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxSuSE");
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName SuSE");
-    return;
-  }
-  if (lstat (redhat, &sb) == 0) {
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxRedHat");
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName RedHat");
-    return;
-  }
-  if (lstat (debian, &sb) == 0) {
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxDebian");
-    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Debian");
-    /* You could also try to get the version of the Debian distrib by looking
-     * at the content of /etc/debian_version */
-    return;
-  }
-  /* what's the definitive way to tell what any particular distribution is? */
-
-  fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxUnknown");
-  fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Unknown");
-  /* would like to know what version of the distribution it is */
-}
-
-static void
 get_libc_version(FILE *inFile)
 {
   char aout[] = "/tmp/imakeXXXXXX";
@@ -1029,13 +1025,82 @@ get_libc_version(FILE *inFile)
   if (len)
     abort ();
 }
+#endif
+
+#if defined CROSSCOMPILE || defined linux
+static void
+get_distrib(FILE *inFile)
+{
+  struct stat sb;
+
+  static char* suse = "/etc/SuSE-release";
+  static char* redhat = "/etc/redhat-release";
+  static char* debian = "/etc/debian_version";
+  
+  fprintf (inFile, "%s\n", "#define LinuxUnknown    0");
+  fprintf (inFile, "%s\n", "#define LinuxSuSE       1");
+  fprintf (inFile, "%s\n", "#define LinuxCaldera    2");
+  fprintf (inFile, "%s\n", "#define LinuxCraftworks 3");
+  fprintf (inFile, "%s\n", "#define LinuxDebian     4");
+  fprintf (inFile, "%s\n", "#define LinuxInfoMagic  5");
+  fprintf (inFile, "%s\n", "#define LinuxKheops     6");
+  fprintf (inFile, "%s\n", "#define LinuxPro        7");
+  fprintf (inFile, "%s\n", "#define LinuxRedHat     8");
+  fprintf (inFile, "%s\n", "#define LinuxSlackware  9");
+  fprintf (inFile, "%s\n", "#define LinuxTurbo      10");
+  fprintf (inFile, "%s\n", "#define LinuxWare       11");
+  fprintf (inFile, "%s\n", "#define LinuxYggdrasil  12");
+
+#ifdef CROSSCOMPILE
+  if (CrossCompiling) {
+      fprintf (inFile, "%s\n",
+	       "#define DefaultLinuxDistribution LinuxUnknown");
+      fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Unknown");
+      return;
+  }
+#endif
+  if (lstat (suse, &sb) == 0) {
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxSuSE");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName SuSE");
+    return;
+  }
+  if (lstat (redhat, &sb) == 0) {
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxRedHat");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName RedHat");
+    return;
+  }
+  if (lstat (debian, &sb) == 0) {
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxDebian");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Debian");
+    /* You could also try to get the version of the Debian distrib by looking
+     * at the content of /etc/debian_version */
+    return;
+  }
+  /* what's the definitive way to tell what any particular distribution is? */
+
+  fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxUnknown");
+  fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Unknown");
+  /* would like to know what version of the distribution it is */
+}
 
 static void
 get_ld_version(FILE *inFile)
 {
-  FILE* ldprog = popen ("ld -v", "r");
+  FILE* ldprog;
   signed char c;
   int ldmajor, ldminor;
+  const char *ld = "ld -v";
+  
+#ifdef CROSSCOMPILE
+  if (CrossCompiling) {
+      char cmd[PATH_MAX];
+      strcpy (cmd, CrossCompileDir);
+      strcat (cmd,"/");
+      strcat (cmd,ld);
+      ldprog = popen (cmd, "r");
+  } else 
+#endif
+      ldprog = popen (ld, "r");
 
   if (ldprog) {
     do {
@@ -1048,6 +1113,7 @@ get_ld_version(FILE *inFile)
 	ldmajor *= 100;
     else
 	ldmajor *= 10;
+	
     fprintf(inFile, "#define DefaultLinuxBinUtilsMajorVersion %d\n", 
 	    ldmajor + ldminor);    
     pclose (ldprog);
@@ -1055,7 +1121,7 @@ get_ld_version(FILE *inFile)
 }
 #endif
 
-#ifdef __FreeBSD__
+#if defined __FreeBSD__
 static void
 get_binary_format(FILE *inFile)
 {
@@ -1065,13 +1131,21 @@ get_binary_format(FILE *inFile)
   FILE *objprog = NULL;
   int iself = 0;
   char buf[10];
+  char cmd[MAX_PATH];
 
   mib[0] = CTL_KERN;
   mib[1] = KERN_OSRELDATE;
   len = sizeof(osrel);
   sysctl(mib, 2, &osrel, &len, NULL, 0);
+  if (CrossCompiling) {
+      strcpy (cmd, CrossCompileDir);
+      strcat (cmd, "/");
+      strcat (cmd,"objformat");
+  } else 
+      strcpy (cmd, "objformat");
+
   if (osrel >= 300004 &&
-      (objprog = popen("objformat", "r")) != NULL &&
+      (objprog = popen(cmd, "r")) != NULL &&
       fgets(buf, sizeof(buf), objprog) != NULL &&
       strncmp(buf, "elf", 3) == 0)
     iself = 1;
@@ -1080,10 +1154,6 @@ get_binary_format(FILE *inFile)
 
   fprintf(inFile, "#define DefaultToElfFormat %s\n", iself ? "YES" : "NO");
 }
-#endif
-
-#ifndef PATH_MAX
-#define PATH_MAX 1024
 #endif
 
 #if defined(sun) && defined(__SVR4)
@@ -1099,6 +1169,18 @@ get_sun_compiler_versions (FILE *inFile)
   struct stat sb;
   FILE* ccproc;
 
+#if defined CROSSCOMPILE
+  if (CrossCompiling) {
+      int len = strlen(CrossCompileDir);
+      len += 3;
+      sunpro_cc = (char *) malloc(len);
+      sunpro_CC = (char *) malloc(len);
+      strcpy(sunpro_cc,CrossCompileDir);
+      strcpy(sunpro_CC,CrossCompileDir);
+      strcat(sunpro_cc,"/cc");
+      strcat(sunpro_CC,"/CC");
+  }
+#endif
   if (lstat (sunpro_cc, &sb) == 0) {
     strcpy (cmd, sunpro_cc);
     strcat (cmd, " -V 2>&1");
@@ -1140,156 +1222,355 @@ get_sun_compiler_versions (FILE *inFile)
 }
 #endif
 
-#ifdef __GNUC__
+#if defined CROSSCOMPILE || defined  __GNUC__
 static void
-get_gcc_version(FILE *inFile)
+get_gcc_version(FILE *inFile, char *name)
 {
-   fprintf (inFile, "#define HasGcc 1\n");
-#if __GNUC__ > 1
-   fprintf (inFile, "#define HasGcc2 1\n");
-#endif
-   fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
-   fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);
+    fprintf (inFile, "#define HasGcc 1\n");
+#ifdef CROSSCOMPILE
+    if (CrossCompiling)
+    {
+	if (gnu_c > 1)
+	    fprintf (inFile, "#define HasGcc2 1\n");
+	fprintf (inFile, "#define GccMajorVersion %d\n", gnu_c);
+	fprintf (inFile, "#define GccMinorVersion %d\n", gnu_c_minor);
 #if defined(HAS_MERGE_CONSTANTS)
-   fprintf (inFile, "#define HasGccMergeConstants %d\n", HAS_MERGE_CONSTANTS);
+	fprintf (inFile, "#define HasGccMergeConstants %d\n", HAS_MERGE_CONSTANTS);
 #endif
+    } else
+#endif
+    {
+#if __GNUC__ > 1
+	fprintf (inFile, "#define HasGcc2 1\n");
+#endif
+	fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
+	fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);
+    }
 }
 #endif
 
-#ifndef __EMX__
-static void
-get_gcc_incdir(FILE *inFile)
+static boolean
+get_gcc(char *cmd)
 {
-  static char* gcc_path[] = {
-#if defined(linux) || defined(__OpenBSD__) || defined (__GNU__)
-    "/usr/bin/cc",	/* for Linux PostIncDir */
-#endif
-    "/usr/local/bin/gcc",
-    "/opt/gnu/bin/gcc"
-  };
   struct stat sb;
-  int i;
+    static char* gcc_path[] = {
+# if defined(linux) || defined(__OpenBSD__) || defined (__GNU__)
+	"/usr/bin/cc",	/* for Linux PostIncDir */
+# endif
+	"/usr/local/bin/gcc",
+	"/opt/gnu/bin/gcc"
+    };
+
+#ifdef CROSSCOMPILE
+    static char* cross_cc_name[] = {
+	"cc",
+	"gcc"
+    };
+
+    if (CrossCompiling) {
+	int i;
+	for (i = 0; i < sizeof (cross_cc_name) / sizeof cross_cc_name[0]; i++){
+	    strcpy (cmd, CrossCompileDir);
+	    strcat (cmd, "/");
+	    strcat (cmd, cross_cc_name[i]);
+	    if (lstat (cmd, &sb) == 0) {
+		return TRUE;
+		break;
+	    }
+	}
+    } else 
+#endif
+      {
+	int i;
+	for (i = 0; i < sizeof (gcc_path) / sizeof gcc_path[0]; i++) {
+	    if (lstat (gcc_path[i], &sb) == 0) {
+		strcpy (cmd, gcc_path[i]);
+		return TRUE;
+	    }
+	}
+      }
+    return FALSE;
+}
+
+#if defined CROSSCOMPILE || !defined __EMX__
+static void
+get_gcc_incdir(FILE *inFile, char* name)
+{
   FILE* gccproc;
   char buf[PATH_MAX];
   char cmd[PATH_MAX];
   char* ptr;
 
+  strcpy(cmd,name);
+  
   buf[0] = '\0';
-  for (i = 0; i < sizeof gcc_path / sizeof gcc_path[0]; i++) {
-    if (lstat (gcc_path[i], &sb) == 0) {
-      strcpy (cmd, gcc_path[i]);
-      strcat (cmd, " --print-libgcc-file-name");
-      if ((gccproc = popen (cmd, "r")) != NULL) {
-	if (fgets (buf, PATH_MAX, gccproc) != NULL) {
+  strcat (cmd, " --print-libgcc-file-name");
+  if ((gccproc = popen (cmd, "r")) != NULL) {
+      if (fgets (buf, PATH_MAX, gccproc) != NULL) {
 	  ptr = strstr (buf, "libgcc.a");
 	  if (ptr) strcpy (ptr, "include");
-	}
-	(void) pclose (gccproc);
-	break;
       }
-    }
+      (void) pclose (gccproc);
   }
-  if (buf[0])
-    fprintf (inFile, "#define DefaultGccIncludeDir \"%s\"\n", buf);
+  
+  if (buf[0]) 
+      fprintf (inFile, "#define DefaultGccIncludeDir \"%s\"\n", buf);
 }
 #endif
 
 boolean
 define_os_defaults(FILE *inFile)
 {
-#if !defined(WIN32) && !defined(__EMX__)
-#if (defined(DEFAULT_OS_NAME) || defined(DEFAULT_OS_MAJOR_REV) || \
+#if defined CROSSCOMPILE || ( !defined(WIN32) && !defined(__EMX__) )
+#ifdef CROSSCOMPILE
+  if ((sys != win32) && (sys != emx))
+#endif
+    {
+# if (defined(DEFAULT_OS_NAME) || defined(DEFAULT_OS_MAJOR_REV) || \
      defined(DEFAULT_OS_MINOR_REV) || defined(DEFAULT_OS_TEENY_REV))
-	struct utsname name;
+	struct utsname *name = NULL;
+	struct utsname uts_name;
 	char buf[SYS_NMLN * 5 + 1];
-
+	
 	/* Obtain the system information. */
-	if (uname(&name) < 0)
-		LogFatal("Cannot invoke uname", "");
-
-# ifdef DEFAULT_OS_NAME
-	parse_utsname(&name, DEFAULT_OS_NAME, buf, 
-		      "Bad DEFAULT_OS_NAME syntax %s");
-#  ifdef DEFAULT_OS_NAME_FROB
-	DEFAULT_OS_NAME_FROB(buf, sizeof buf);
+#ifdef CROSSCOMPILE
+      if (!CrossCompiling)
+#endif
+      {
+	  if (uname(&uts_name) < 0)
+	      LogFatal("Cannot invoke uname", "");
+	  else
+	      name = &uts_name;
+      }
+#if defined CROSSCOMPILE && defined linux
+      else {
+	  strncpy(uts_name.sysname,cross_uts_sysname,SYS_NMLN);
+	  strncpy(uts_name.release,cross_uts_release,SYS_NMLN);
+	  strncpy(uts_name.version,cross_uts_version,SYS_NMLN);
+	  strncpy(uts_name.machine,cross_uts_machine,SYS_NMLN);
+	  name = &uts_name;
+      }
+#endif
+      
+#  if defined DEFAULT_OS_NAME 
+#   if defined CROSSCOMPILE
+      if (!CrossCompiling)
+#   endif
+	{
+	  parse_utsname(name, DEFAULT_OS_NAME, buf, 
+			"Bad DEFAULT_OS_NAME syntax %s");
+#   ifdef DEFAULT_OS_NAME_FROB
+	  DEFAULT_OS_NAME_FROB(buf, sizeof buf);
+#   endif
+	  if (buf[0] != '\0')
+	    fprintf(inFile, "#define DefaultOSName %s\n", buf);
+	}
 #  endif
-	if (buf[0] != '\0')
-		fprintf(inFile, "#define DefaultOSName %s\n", buf);
-# endif
 
-# ifdef DEFAULT_OS_MAJOR_REV
-	parse_utsname(&name, DEFAULT_OS_MAJOR_REV, buf,
-		      "Bad DEFAULT_OS_MAJOR_REV syntax %s");
-#  ifdef DEFAULT_OS_MAJOR_REV_FROB
-	DEFAULT_OS_MAJOR_REV_FROB(buf, sizeof buf);
+#  if defined CROSSCOMPILE
+	if (CrossCompiling && defaultOsName) {
+	  parse_utsname(name, defaultOsName, buf, 
+			"Bad DEFAULT_OS_NAME syntax %s");
+	  if (defaultOsNameFrob)
+	    defaultOsNameFrob(buf, sizeof buf);
+	  if (buf[0] != '\0')
+	    fprintf(inFile, "#define DefaultOSName %s\n", buf);
+	}
 #  endif
-	fprintf(inFile, "#define DefaultOSMajorVersion %s\n",
-		*buf ? trim_version(buf) : "0");
-# endif
 
-# ifdef DEFAULT_OS_MINOR_REV
-	parse_utsname(&name, DEFAULT_OS_MINOR_REV, buf,
-		      "Bad DEFAULT_OS_MINOR_REV syntax %s");
-#  ifdef DEFAULT_OS_MINOR_REV_FROB
-	DEFAULT_OS_MINOR_REV_FROB(buf, sizeof buf);
+#  ifdef DEFAULT_OS_MAJOR_REV
+#   if defined CROSSCOMPILE
+	if (!CrossCompiling) 
+#   endif
+	  {
+	    parse_utsname(name, DEFAULT_OS_MAJOR_REV, buf,
+			  "Bad DEFAULT_OS_MAJOR_REV syntax %s");
+#   ifdef DEFAULT_OS_MAJOR_REV_FROB
+	    DEFAULT_OS_MAJOR_REV_FROB(buf, sizeof buf);
+#   endif
+	    fprintf(inFile, "#define DefaultOSMajorVersion %s\n",
+		    *buf ? trim_version(buf) : "0");
+	  }
 #  endif
-	fprintf(inFile, "#define DefaultOSMinorVersion %s\n",
-		*buf ? trim_version(buf) : "0");
-# endif
 
-# ifdef DEFAULT_OS_TEENY_REV
-	parse_utsname(&name, DEFAULT_OS_TEENY_REV, buf,
-		      "Bad DEFAULT_OS_TEENY_REV syntax %s");
-#  ifdef DEFAULT_OS_TEENY_REV_FROB
-	DEFAULT_OS_TEENY_REV_FROB(buf, sizeof buf);
+#  if defined CROSSCOMPILE
+	if (CrossCompiling && defaultOsMajorRev) {
+	  parse_utsname(name, defaultOsMajorRev, buf, 
+			"Bad defaultOsMajorRev syntax %s");
+	  if (defaultOsMajorRevFrob)
+	    defaultOsMajorRevFrob(buf, sizeof buf);
+	  fprintf(inFile, "#define DefaultOSMajorVersion %s\n",
+		  *buf ? trim_version(buf) : "0");
+	}
 #  endif
-	fprintf(inFile, "#define DefaultOSTeenyVersion %s\n",
-		*buf ? trim_version(buf) : "0");
+
+#  ifdef DEFAULT_OS_MINOR_REV
+#   if defined CROSSCOMPILE
+	if (!CrossCompiling)
+#   endif
+	  {
+	    parse_utsname(name, DEFAULT_OS_MINOR_REV, buf,
+			  "Bad DEFAULT_OS_MINOR_REV syntax %s");
+#   ifdef DEFAULT_OS_MINOR_REV_FROB
+	    DEFAULT_OS_MINOR_REV_FROB(buf, sizeof buf);
+#   endif
+	    fprintf(inFile, "#define DefaultOSMinorVersion %s\n",
+		    *buf ? trim_version(buf) : "0");
+	  }
+#  endif
+
+#  if defined CROSSCOMPILE
+	if (CrossCompiling && defaultOsMinorRev) {
+	  parse_utsname(name, defaultOsMinorRev, buf, 
+			"Bad defaultOsMinorRev syntax %s");
+	  if (defaultOsMinorRevFrob)
+	    defaultOsMinorRevFrob(buf, sizeof buf);
+	  fprintf(inFile, "#define DefaultOSMinorVersion %s\n",
+		  *buf ? trim_version(buf) : "0");
+	}
+#  endif
+
+#  ifdef DEFAULT_OS_TEENY_REV 
+#   if defined CROSSCOMPILE
+	if (!CrossCompiling)
+#   endif
+	  {
+	    parse_utsname(name, DEFAULT_OS_TEENY_REV, buf,
+			  "Bad DEFAULT_OS_TEENY_REV syntax %s");
+#   ifdef DEFAULT_OS_TEENY_REV_FROB
+	    DEFAULT_OS_TEENY_REV_FROB(buf, sizeof buf);
+#   endif
+	    fprintf(inFile, "#define DefaultOSTeenyVersion %s\n",
+		    *buf ? trim_version(buf) : "0");
+	  }
+#  endif
+
+#  if defined CROSSCOMPILE
+	if (CrossCompiling && defaultOsTeenyRev) {
+	  parse_utsname(name, defaultOsTeenyRev, buf, 
+			"Bad defaultOsTeenyRev syntax %s");
+	  if (defaultOsTeenyRevFrob)
+	    defaultOsTeenyRevFrob(buf, sizeof buf);
+	  fprintf(inFile, "#define DefaultOSTeenyVersion %s\n",
+		  *buf ? trim_version(buf) : "0");
+	}
+#  endif
+
+#  ifdef DEFAULT_MACHINE_ARCHITECTURE
+#   if defined CROSSCOMPILE
+	if (!CrossCompiling)
+#   endif
+	  {
+	    parse_utsname(name, DEFAULT_MACHINE_ARCHITECTURE, buf, 
+			  "Bad DEFAULT_MACHINE_ARCHITECTURE %s");
+	    fprintf(inFile, "#ifndef %s\n# define %s\n#endif\n", buf, buf);
+	  }
+#  endif
+
+#  if defined CROSSCOMPILE
+	if (CrossCompiling && defaultMachineArchitecture) {
+	  parse_utsname(name, defaultMachineArchitecture, buf, 
+			"Bad defaultMachineArchitecture syntax %s");
+	  fprintf(inFile, "#ifndef %s\n# define %s\n#endif\n", buf, buf);
+	}
+#  endif
 # endif
-# ifdef DEFAULT_MACHINE_ARCHITECTURE
-	parse_utsname(&name, DEFAULT_MACHINE_ARCHITECTURE, buf, 
-		      "Bad DEFAULT_MACHINE_ARCHITECTURE %s");
-	fprintf(inFile, "#ifndef %s\n# define %s\n#endif\n", buf, buf);
+# if defined CROSSCOMPILE
+      if (CrossCompiling)
+	get_cross_compile_dir(inFile);
+      else
 # endif
-#endif
-#ifdef linux
-    get_distrib (inFile);
-    get_libc_version (inFile);
-    get_ld_version(inFile);
-#endif
-    get_gcc_incdir(inFile);
-#if defined (sun) && defined(SVR4)
-    get_sun_compiler_versions (inFile);
-#endif
-#ifdef __GNUC__
-    get_gcc_version (inFile);
-#endif
-#ifdef __FreeBSD__
-    get_binary_format(inFile);
-#endif
-#else /* WIN32 */
-#ifndef __EMX__
-   OSVERSIONINFO osvi;
-   static char* os_names[] = { "Win32s", "Windows 95", "Windows NT" };
+	  fprintf(inFile, "#define CrossCompiling NO\n");
+# if defined CROSSCOMPILE
+      if (CrossCompiling && sys == LinuX)
+# endif
+# if defined CROSSCOMPILE || defined linux
+#  ifdef CROSSCOMPILE
+	if (sys == LinuX)
+#  endif
+	  get_distrib (inFile);
+# endif
+# if defined linux
+#  if defined CROSSCOMPILE
+      if (!CrossCompiling)
+#  endif
+	  get_libc_version (inFile);
+#  if defined CROSSCOMPILE
+      else {
+	  fprintf(inFile,"#define DefaultLinuxCLibMajorVersion %d\n",
+		  glibc_major);
+	  fprintf(inFile,"#define DefaultLinuxCLibMinorVersion %d\n",
+		  glibc_minor);
+	  fprintf(inFile,"#define DefaultLinuxCLibTeenyVersion 0\n");	  
+      }
+#  endif
+# endif /* linux */
+# if defined CROSSCOMPILE || defined linux
+#  if defined CROSSCOMPILE
+      if (sys == LinuX)
+#  endif
+	  get_ld_version(inFile);
+# endif
+# if defined (sun) && defined(SVR4)
+      get_sun_compiler_versions (inFile);
+# endif
+# if defined CROSSCOMPILE || defined __GNUC__
+#  if defined CROSSCOMPILE
+      if (gnu_c)
+#  endif
+	{
+	  char name[PATH_MAX];
+	  if (get_gcc(name)) {
+	      get_gcc_version (inFile,name);
+#  if defined CROSSCOMPILE || !defined __EMX__
+#   if defined CROSSCOMPILE
+	      if (sys != emx)
+#   endif
+		  get_gcc_incdir(inFile,name);
+#  endif
+	  }
+	}
+# endif
+# if defined __FreeBSD__
+#  if defined CROSSCOMPILE
+      if (sys == freeBSD)
+#  endif
+	  get_binary_format(inFile);
+# endif
+    }
+#endif /* !WIN32 && !__EMX__*/
+#if defined WIN32
+# ifdef CROSSCOMPILE
+  else if (sys == win32 && !CrossCompiling)
+# endif
+    {
+      OSVERSIONINFO osvi;
+      static char* os_names[] = { "Win32s", "Windows 95", "Windows NT" };
 
-   memset(&osvi, 0, sizeof(OSVERSIONINFO));
-   osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-   GetVersionEx (&osvi);
+      memset(&osvi, 0, sizeof(OSVERSIONINFO));
+      osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
+      GetVersionEx (&osvi);
+      
+      fprintf (inFile, "#define DefaultOSName Microsoft %s\n", 
+	       os_names[osvi.dwPlatformId]);
 
-   fprintf (inFile, "#define DefaultOSName Microsoft %s\n", 
-	    os_names[osvi.dwPlatformId]);
-
-   fprintf(inFile, "#define DefaultOSMajorVersion %d\n", osvi.dwMajorVersion);
-   fprintf(inFile, "#define DefaultOSMinorVersion %d\n", osvi.dwMinorVersion);
-   fprintf(inFile, "#define DefaultOSTeenyVersion %d\n", 
-	   osvi.dwBuildNumber & 0xFFFF);
-#else /* EMX */
-   fprintf(inFile, "#define DefaultOSMajorVersion 4\n");
-   fprintf(inFile, "#define DefaultOSMinorVersion 0\n");
-   fprintf(inFile, "#define DefaultOSTeenyVersion 0\n");
-#endif /* EMX */
+      fprintf(inFile, "#define DefaultOSMajorVersion %d\n", osvi.dwMajorVersion);
+      fprintf(inFile, "#define DefaultOSMinorVersion %d\n", osvi.dwMinorVersion);
+      fprintf(inFile, "#define DefaultOSTeenyVersion %d\n", 
+	      osvi.dwBuildNumber & 0xFFFF);
+    } 
 #endif /* WIN32 */
-   return FALSE;
+#ifdef CROSSCOMPILE
+  else if (sys == emx)
+#endif
+#if defined CROSSCOMPILE || defined __EMX__
+    {
+      fprintf(inFile, "#define DefaultOSMajorVersion 4\n");
+      fprintf(inFile, "#define DefaultOSMinorVersion 0\n");
+      fprintf(inFile, "#define DefaultOSTeenyVersion 0\n");
+    }
+#endif /* EMX */
+  return FALSE;
 }
 
 void
@@ -1420,6 +1701,7 @@ CleanCppInput(char *imakefile)
 	if (outFile) {
 	    writetmpfile(outFile, punwritten, pbuf-punwritten, tmpImakefile);
 	    fclose(outFile);
+	    
 	    return tmpImakefile;
 	}
 
@@ -1436,10 +1718,20 @@ CleanCppOutput(FILE *tmpfd, char *tmpfname)
 		if (isempty(input)) {
 			if (blankline++)
 				continue;
-			KludgeResetRule();
+#ifdef CROSSCOMPILE
+			if (fixup_whitespace)
+#endif
+#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
+			    KludgeResetRule();
+#endif
 		} else {
 			blankline = 0;
-			KludgeOutputLine(&input);
+#ifdef CROSSCOMPILE
+			if (fixup_whitespace)
+#endif
+#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
+			    KludgeOutputLine(&input);
+#endif
 			writetmpfile(tmpfd, input, strlen(input), tmpfname);
 		}
 		writetmpfile(tmpfd, "\n", 1, tmpfname);
@@ -1499,32 +1791,37 @@ isempty(char *line)
 		    *pend = '#';
 		    strcpy(pend+1, pend+5);
 		}
-#ifdef MAGIC_MAKE_VARS
-		if (*pend == 'X' && pend[1] == 'V' && pend[2] == 'A' &&
-		    pend[3] == 'R')
-		{
-		    char varbuf[5];
-		    int i;
-
-		    if (pend[4] == 'd' && pend[5] == 'e' && pend[6] == 'f' &&
-			pend[7] >= '0' && pend[7] <= '9')
-		    {
-			i = pend[7] - '0';
-			sprintf(varbuf, "%0.4d", xvariable);
-			strncpy(pend+4, varbuf, 4);
-			xvariables[i] = xvariable;
-			xvariable = (xvariable + 1) % 10000;
-		    }
-		    else if (pend[4] == 'u' && pend[5] == 's' &&
-			     pend[6] == 'e' && pend[7] >= '0' &&
-			     pend[7] <= '9')
-		    {
-			i = pend[7] - '0';
-			sprintf(varbuf, "%0.4d", xvariables[i]);
-			strncpy(pend+4, varbuf, 4);
-		    }
-		}
+#ifdef CROSSCOMPILE
+		if (magic_make_vars) 
 #endif
+		  {
+#if defined CROSSCOMPILE || defined MAGIC_MAKE_VARS
+		    if (*pend == 'X' && pend[1] == 'V' && pend[2] == 'A' &&
+			pend[3] == 'R')
+		    {
+			char varbuf[5];
+			int i;
+			
+			if (pend[4] == 'd' && pend[5] == 'e' && pend[6] == 'f' &&
+			    pend[7] >= '0' && pend[7] <= '9')
+			{
+			    i = pend[7] - '0';
+			    sprintf(varbuf, "%0.4d", xvariable);
+			    strncpy(pend+4, varbuf, 4);
+			    xvariables[i] = xvariable;
+			    xvariable = (xvariable + 1) % 10000;
+			}
+			else if (pend[4] == 'u' && pend[5] == 's' &&
+				 pend[6] == 'e' && pend[7] >= '0' &&
+				 pend[7] <= '9')
+			{
+			    i = pend[7] - '0';
+			    sprintf(varbuf, "%0.4d", xvariables[i]);
+			    strncpy(pend+4, varbuf, 4);
+			}
+		    }
+#endif
+		}
 	    }
 	}
 	while (--pend >= line && (*pend == ' ' || *pend == '\t')) ;
@@ -1587,9 +1884,14 @@ ReadLine(FILE *tmpfd, char *tmpfname)
 			break;
 		}
 		else if (*p1 == '\n') { /* real EOL */
-#ifdef WIN32
+#if defined CROSSCOMPILE || defined WIN32
+# if defined CROSSCOMPILE
+		  if (sys == win32) 
+# endif
+		    {
 			if (p1 > pline && p1[-1] == '\r')
 				p1[-1] = '\0';
+		    }
 #endif
 			*p1++ = '\0';
 			break;
@@ -1621,7 +1923,7 @@ Emalloc(int size)
 	return(p);
 }
 
-#ifdef FIXUP_CPP_WHITESPACE
+#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
 void
 KludgeOutputLine(char **pline)
 {
@@ -1635,13 +1937,18 @@ KludgeOutputLine(char **pline)
 	    	break;
 	    case ' ':	/*May need a tab*/
 	    default:
-# ifdef INLINE_SYNTAX
-		if (*p == '<' && p[1] == '<') { /* inline file close */
-		    InInline--;
-		    InRule = TRUE;
-		    break;
+#ifdef CROSSCOMPILE
+		if (inline_syntax) 
+#endif
+#if defined CROSSCOMPILE || defined INLINE_SYNTAX
+		  {
+		    if (*p == '<' && p[1] == '<') { /* inline file close */
+			InInline--;
+			InRule = TRUE;
+			break;
+		    }
+#endif
 		}
-# endif
 		/*
 		 * The following cases should not be treated as beginning of 
 		 * rules:
@@ -1653,8 +1960,12 @@ KludgeOutputLine(char **pline)
 		    if (quotechar) {
 			if (quotechar == '\\' ||
 			    (*p == quotechar &&
-# ifdef WIN32
-			     quotechar != ')' &&
+# if defined CROSSCOMPILE || defined WIN32
+			     (
+#  if defined CROSSCOMPILE
+			      (sys == win32) &&
+#  endif
+			      quotechar != ')') &&
 # endif
 			     p[-1] != '\\'))
 			    quotechar = '\0';
@@ -1676,19 +1987,26 @@ KludgeOutputLine(char **pline)
 			quotechar = ']';
 			break;
 		    case '=':
-# ifdef REMOVE_CPP_LEADSPACE
-			if (!InRule && **pline == ' ') {
-			    while (**pline == ' ')
-				(*pline)++;
+#ifdef CROSSCOMPILE
+			if (remove_cpp_leadspace) 
+#endif
+#if defined CROSSCOMPILE || defined REMOVE_CPP_LEADSPACE
+			  {
+			    if (!InRule && **pline == ' ') {
+				while (**pline == ' ')
+				    (*pline)++;
+			    }
 			}
-# endif
+#endif
 			goto breakfor;
-# ifdef INLINE_SYNTAX
+#if defined CROSSCOMPILE || defined INLINE_SYNTAX
 		    case '<':
-			if (p[1] == '<') /* inline file start */
-			    InInline++;
+			if (inline_syntax) {
+			    if (p[1] == '<') /* inline file start */
+				InInline++;
+			}
 			break;
-# endif
+#endif
 		    case ':':
 			if (p[1] == '=')
 			    goto breakfor;
@@ -1710,8 +2028,7 @@ KludgeResetRule(void)
 {
 	InRule = FALSE;
 }
-#endif /* FIXUP_CPP_WHITESPACE */
-
+#endif
 char *
 Strdup(char *cp)
 {
@@ -1720,3 +2037,38 @@ Strdup(char *cp)
 	strcpy(new, cp);
 	return new;
 }
+
+#ifdef CROSSCOMPILE
+char*
+CrossCompileCPP(void)
+{
+    char *cpp, *c;
+    int len ;
+    if (crosscompile_use_cc_e)
+	AddCppArg("-E");
+
+    cpp = strrchr(crosscompile_cpp,'/');
+    if (!cpp)
+	cpp = crosscompile_cpp;
+    else
+	cpp++;
+    
+    len = strlen(cpp) + strlen(CrossCompileDir) + 2;
+    c = Emalloc(len);
+
+    (void)snprintf(c, len,"%s/%s",CrossCompileDir,cpp);
+
+    return c;
+}
+
+#endif
+    
+#ifdef CROSSCOMPILE
+static void
+get_cross_compile_dir(FILE *inFile)
+{
+        fprintf(inFile, "#define CrossCompileDir %s\n", 
+		CrossCompileDir);
+        fprintf(inFile, "#define CrossCompiling YES\n");
+}
+#endif

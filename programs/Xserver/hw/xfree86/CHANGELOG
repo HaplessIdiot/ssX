@@ -1,5 +1,65 @@
 XFree86 4.2.99.1 (XX March 2002)
-  62. Fix keyboard beeps on Cygwin/XFree86 (#5211, Harold Hunt).
+ 100. Fix keyboard beeps on Cygwin/XFree86 (#5211, Harold Hunt).
+  99. Fixed i810 crash on vt switch due to call to Sync() while switched away 
+      (Andris Pavenis).
+  98. Fixed MGAG550 HW Cursor (Laure-Amelie Couturie).
+  97. Added Xv support to neomagic driver (Shigehiro Nomura).
+  96. Implemented cross compile environment (Egbert Eich).
+  95. Added AMD x86-64 architecture support (Egbert Eich).
+  94. Fixed memory leaks in xkb code (Egbert Eich).
+  93. Fixed several memory leaks in the config file parser and initialization
+      routines (Egbert Eich).	
+  92. Added CardBus bridge support (Egbert Eich).
+  91. Fixed strdup() define in glx (Egbert Eich).
+  90. Extended xf86misc extension to support changing the mouse device 
+      (Egbert Eich).
+  89. Replaced strdup() in xf86Configure.c with xalloc()/strcpy() to avoid 
+      conflicts when using internal malloc (Egbert Eich).
+  88. Extended memory debugging: Added signal handler to trigger a memory
+      debugger dump on SIGUSR2 when compiled with memleak support 
+      (Egbert Eich).
+  87. Set vtSema to FALSE when suspended by APM to catch calls to 2D accel
+      functions (Egbert Eich).
+  86. Implemented mouse protocol detection by analyzing data stream 
+      (Egbert Eich).
+  85. Added PnP mouse detection for PS/2, ImPS/2 and older MS serial mice 
+      (Egbert Eich).
+  84. Fixed gamma correction code for Trident 9397 (Alan Hourihane).
+  83. Fixed C&T driver to avoid initialization of video in non-linear mode 
+      (Egbert Eich).	
+  82. Changed C&T driver to allow video even if acceleration is disabled
+      (Egbert Eich).
+  81. Attempt to implement a more consistent handling of HW cursor in C&T 
+      driver (Egbert Eich).
+  80. Fixed MGA driver to make HALlib work with VESA framebuffer modes 
+      (Egbert Eich).
+  79. Reworked Rendition driver (Egbert Eich).
+  78. S3 Virge driver: added minimal gap between SyncStart and HDisplay to
+      avoid video lockups (Egbert Eich).
+  77. Fixed memory leaks in S3 Savage driver (Egbert Eich).
+  76. Modified several drivers to do int10 initialization using the
+      VBE functions instead of calling int10 directly (Egbert Eich).
+  75. Fixed video support and mode initialization in Silicon Motion driver,
+      removed wait for v-retrace (Egbert Eich).
+  74. Misc fixes to SiS driver (Thomas Winischhofer).
+  73. Added support for 1400x1050 screen in Trident driver (Egbert Eich).
+  72. Fixed several video issues for Trident CyberBladeXP chips (Egbert Eich).
+  71. Added probe for Tseng ISA chips (Egbert Eich).	
+  70. Added 'KGAUniversal' option to generic vga driver which changes handling
+      left overscan to work also on chips with C&T core (ie all C&T and Intel 
+      graphics chips) (Egbert Eich).	
+  69. Modified int10 code to map area between V_BIOS and SYS_BIOS instead of
+	copying it. Copying causes problems if legacy devices map MMIO
+	registers there (Egbert Eich).
+  68. Implemented an extended int10 init function to allow passing flags 
+	(Egbert Eich).	
+  67. Implemented optional handling of BIOS video mode scratch area in int10
+	code (Egbert Eich).
+  66. Again modified MTRR range splitting (Egbert Eich).
+  65. Added funtions to VBE to save and restore a video mode (Egbert Eich).
+  64. Added missing commas to symbols/us_intl (Hans Lunsing).
+  63. Added Ungherese (qwerty) support (Koblinger Egmont).
+  62. Added Euro symbol for hungarian kbd layout (Koblinger Egmont).
   61. Build with libcurses on Darwin for forward compatibility
       (Jordan Hubbard).
   60. Add Trident CyberBladeXP acceleration (Alan Hourihane).

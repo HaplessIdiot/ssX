@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.24 2002/01/10 19:05:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -126,6 +126,14 @@ typedef struct {
         unsigned char VBPart4[0x1C];
         unsigned short ch7005[0x11];
 } SISRegRec, *SISRegPtr;
+
+typedef struct _sisModeInfoPtr {
+    int width;
+    int height;
+    int bpp;
+    int n;
+    struct _sisModeInfoPtr *next;
+} sisModeInfoRec, *sisModeInfoPtr;
 
 #define SISPTR(p)       ((SISPtr)((p)->driverPrivate))
 #define XAAPTR(p)       ((XAAInfoRecPtr)(SISPTR(p)->AccelInfoPtr))
@@ -267,6 +275,8 @@ typedef struct {
     CARD8 *fonts;
     CARD8 *state, *pstate;
     void *base, *VGAbase;
+    int     xcurrent, ycurrent;
+    sisModeInfoPtr VesaModeList;
 } SISRec, *SISPtr;
 
 typedef struct _ModeInfoData {
@@ -274,13 +284,5 @@ typedef struct _ModeInfoData {
     VbeModeInfoBlock *data;
     VbeCRTCInfoBlock *block;
 } ModeInfoData;
-
-typedef struct _sisModeInfoPtr {
-    int width;
-    int height;
-    int bpp;
-    int n;
-    struct _sisModeInfoPtr *next;
-} sisModeInfoRec, *sisModeInfoPtr;
 
 #endif

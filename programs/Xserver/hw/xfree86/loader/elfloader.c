@@ -48,6 +48,7 @@
 
 #include "compiler.h"
 
+#undef LDTEST
 /*
 #ifndef LDTEST
 #define ELFDEBUG ErrorF
@@ -62,6 +63,7 @@
 
 #if defined (__alpha__) || \
     defined (__ia64__) || \
+    defined (__x86_64__) || \
     (defined (__sparc__) && \
      (defined (__arch64__) || \
       defined (__sparcv9)))
@@ -150,7 +152,8 @@ typedef Elf32_Word Elf_Word;
     defined(__mc68000__) || \
     defined(__alpha__) || \
     defined(__sparc__) || \
-    defined(__ia64__)
+    defined(__ia64__) || \
+    defined(__x86_64__)
 typedef Elf_Rela Elf_Rel_t;
 #else
 typedef Elf_Rel  Elf_Rel_t;
@@ -371,7 +374,8 @@ Elf_Rel_t	*rel;
     defined(__mc68000__) || \
     defined(__alpha__) || \
     defined(__sparc__) || \
-    defined(__ia64__)
+    defined(__ia64__) || \
+    defined(__x86_64__)
     ELFDEBUG(", r_addend 0x%lx", rel->r_addend);
 #endif
     ELFDEBUG("\n");
@@ -407,6 +411,7 @@ ElfCOMMONSize(void)
 	size+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
+    defined(__x86_64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -432,6 +437,7 @@ LOOKUP		*pLookup;
 	size+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
+    defined(__x86_64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -489,6 +495,7 @@ LOOKUP		*pLookup;
 	offset+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
+    defined(__x86_64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -1095,6 +1102,7 @@ long			value;
  * made even if the symbol can't be found (by substituting
  * LoaderDefaultFunc) otherwise, the relocation will be deferred.
  */
+
 static ELFRelocPtr
 Elf_RelocateEntry(elffile, secn, rel, force)
 ELFModulePtr	elffile;
@@ -1110,9 +1118,13 @@ int		force;
 #if defined(__sparc__)
     unsigned char *dest8;	/* address of the 8 bit place being modified */
 #endif
-#if defined(__alpha__)
+#if defined(__alpha__) 
     unsigned int *dest32h;	/* address of the high 32 bit place being modified */
     unsigned long *dest64;
+#endif
+#if  defined(__x86_64__)
+    unsigned long *dest64;
+    int *dest32s;
 #endif
 #if defined(__ia64__)
     unsigned long *dest64;
@@ -1127,7 +1139,8 @@ int		force;
     defined(__mc68000__) || \
     defined(__alpha__) || \
     defined(__sparc__) || \
-    defined(__ia64__)
+    defined(__ia64__) || \
+    defined(__x86_64__)
     ELFDEBUG( "%lx", rel->r_addend );
 #endif
     ELFDEBUG("\n");
@@ -1185,6 +1198,64 @@ int		force;
 
 	    break;
 #endif /* i386 */
+#if defined(__x86_64__)
+	case R_X86_64_32:
+	    dest32=(unsigned int *)(secp+rel->r_offset );
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_X86_32\t");
+	    ELFDEBUG( "dest32=%x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8lx\t", *dest32 );
+	    ELFDEBUG( "r_addend=%lx\t", rel->r_addend);
+#endif
+	    *dest32=symval + rel->r_addend + (*dest32); /* S + A */
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8lx\n", *dest32 );
+#endif
+	    break;
+	case R_X86_64_32S:
+	    dest32s=(int *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_X86_64_32\t");
+	    ELFDEBUG( "dest32s=%x\t", dest32s );
+	    ELFDEBUG( "*dest32s=%8.8lx\t", *dest32s );
+	    ELFDEBUG( "r_addend=%lx\t", rel->r_addend);
+#endif
+	    *dest32s=symval + rel->r_addend + (*dest32s); /* S + A */
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32s=%8.8lx\n", *dest32s );
+#endif
+	    break;
+	case R_X86_64_PC32:
+	    dest32=(unsigned int *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_X86_64_PC32 %s\t",
+			ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
+	    ELFDEBUG( "secp=%x\t", secp );
+	    ELFDEBUG( "symval=%lx\t", symval );
+	    ELFDEBUG( "dest32=%x\t", dest32 );
+	    ELFDEBUG( "*dest32=%8.8lx\t", *dest32 );
+	    ELFDEBUG( "r_addend=%lx\t", rel->r_addend);
+#endif
+	    *dest32 = symval + rel->r_addend + (*dest32)-(Elf_Addr)dest32; /* S + A - P */
+
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest32=%8.8lx\n", *dest32 );
+#endif
+	    break;
+	case R_X86_64_64:
+	    dest64=(unsigned long *)(secp+rel->r_offset);
+#ifdef ELFDEBUG
+	    ELFDEBUG( "R_x86_64_64\t");
+	    ELFDEBUG( "dest64=%x\t", dest64 );
+	    ELFDEBUG( "*dest64=%8.8lx\t", *dest64 );
+	    ELFDEBUG( "r_addend=%lx\t", rel->r_addend);
+#endif
+	    *dest64=symval + rel->r_addend + (*dest64); /* S + A */
+#ifdef ELFDEBUG
+	    ELFDEBUG( "*dest64=%8.8lx\n", *dest64 );
+#endif
+	    break;
+#endif /* __x86_64__ */
 #if defined(__alpha__)
 	case R_ALPHA_NONE:
 	case R_ALPHA_LITUSE:
@@ -2103,6 +2174,7 @@ int		force;
 	    }
     return 0;
 }
+#undef ELFDEBUG
 
 static ELFRelocPtr
 ELFCollectRelocations(elffile, index)
@@ -2512,7 +2584,7 @@ int		*maxalign;
 	    continue;
 	}
 #endif /* i386/alpha */
-#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__) || defined(__ia64__)
+#if defined(__powerpc__) || defined(__mc68000__) || defined(__alpha__) || defined(__sparc__) || defined(__ia64__) || defined (__x86_64__)
 	/* .rela.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".rela.text" ) == 0 ) {
@@ -2706,6 +2778,15 @@ int		*maxalign;
 		) {
 	    continue;
 	}
+#endif
+#if defined (__x86_64__)
+	/* .debug_frame */
+	   if (strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		      ".rela.debug_frame" ) == 0
+	   ||  strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		      ".debug_frame" ) == 0) {
+	       continue;
+	   }
 #endif
 	if (pass)
 	    ErrorF("Not loading %s\n",

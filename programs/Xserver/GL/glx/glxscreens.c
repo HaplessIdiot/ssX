@@ -319,6 +319,7 @@ void __glXScreenReset(void)
       __glXFree(__glXActiveScreens[i].GLXvendor);
       __glXFree(__glXActiveScreens[i].GLXversion);
       __glXFree(__glXActiveScreens[i].GLXextensions);
+      __glXFree(__glXActiveScreens[i].GLextensions);
   }
   xfree(__glXActiveScreens);
   __glXActiveScreens = NULL;

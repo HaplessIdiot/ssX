@@ -17,7 +17,6 @@
 #include "vboard.h"
 #include "vmodes.h"
 #include "vos.h"
-#include "vmisc.h"
 #include "v1kregs.h"
 #include "v1krisc.h"
 #include "v2kregs.h"
@@ -117,11 +116,11 @@ RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
     ErrorF("RENDITION: RENDITIONAccelPreInit called\n");
     sleep(1);
 #endif
-
+#if 1
     if (RENDITIONLoadUcode(pScreenInfo)){
       ErrorF ("RENDITION: AccelPreInit - Warning. Loading of microcode failed!!\n");
     }
-
+#endif
     pRendition->board.fbOffset += MC_SIZE;
 
 #ifdef DEBUG
@@ -211,10 +210,10 @@ RENDITIONAccelXAAInit(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScreenInfo->displayWidth;
-    AvailFBArea.y2 = (((pScreenInfo->videoRam*1024)-
-		      pRendition->board.fbOffset) /
-      ((pScreenInfo->displayWidth * pScreenInfo->bitsPerPixel) / 8));
-
+    AvailFBArea.y2 = (((pScreenInfo->videoRam*1024) -
+		       pRendition->board.fbOffset) /
+		      ((pScreenInfo->displayWidth * pScreenInfo->bitsPerPixel)
+		       / 8));
     xf86InitFBManager(pScreen, &AvailFBArea);
 
     XAAInit(pScreen, pXAAinfo);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.9 2002/01/10 19:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"

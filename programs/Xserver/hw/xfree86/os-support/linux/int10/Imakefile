@@ -29,23 +29,8 @@ DEFINES=-DHAVE_SYSV_IPC
 #define X86EMU_LIBPATH /usr/local/lib
 #endif
 
-#if defined(i386Architecture) || defined(ia64Architecture)
+#if defined(i386Architecture)
 DEFINES =-D_PC
-#endif
-
-/* XXX keep this temporarily for reference */
-#if 0
-#if (XF86INT10_BUILD == X86EMU_GENERIC) 
-
-SRCS = $(SRCS1) xf86x86emu.c generic.c
-OBJS = $(OBJS1) xf86x86emu.o generic.o x86emu.o
-SpecialObjectRule(pci.o, pci.c, -D_X86EMU)
-SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
-SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU -DSHOW_ALL_DEVICES)
-SpecialObjectRule(generic.o, generic.c, -D_X86EMU)
-SpecialObjectRule(xf86x86emu.o, xf86x86emu.c, -D_X86EMU)
-BuildObjectFromLibraryWithPath(X86EMU_LIBPATH,x86emu,x86emu)
-#endif
 #endif
 
 #if defined(XF86INT10_BUILD) && (XF86INT10_BUILD == X86VM)

@@ -66,7 +66,8 @@ typedef struct {
 	/* do the following to pad to 64 bit alignment for alpha and ia64 */
 #if defined(__alpha) || defined(__alpha__) || \
     defined(ia64) || defined(__ia64__) || \
-    defined(__s390x__)
+    defined(__s390x__) || \\
+    defined(x86_64) || defined (__x86_64__)
 	ddUSHORT		unused0;
 	ddUSHORT		unused1;
 #endif

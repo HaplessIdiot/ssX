@@ -1663,14 +1663,13 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 		}
 
 		/* Restore the standard VGA registers */
-		if (xf86IsPrimaryPci(pSmi->PciInfo))
-		{
-			vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_ALL);
-		}
-		else
-		{
-			vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
-		}
+		if (xf86IsPrimaryPci(pSmi->PciInfo)) {
+		    vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_CMAP 
+				 | VGA_SR_FONTS);
+		} 
+
+		if (restore->modeInit)
+		    vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
 
 		if (!SMI_LYNXM_SERIES(pSmi->Chipset))
 		{
@@ -1982,12 +1981,13 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 	
-	/* Save the chip/graphics state */
-	SMI_Save(pScrn);
-	
 	if (!pSmi->pVbe) {
 	    pSmi->pVbe = VBEInit(NULL, pEnt->index);
 	}
+
+	/* Save the chip/graphics state */
+	SMI_Save(pScrn);
+	
 	/* Zero the frame buffer, #258 */
 	memset(pSmi->FBBase, 0, pSmi->videoRAMBytes);
 
@@ -2401,6 +2401,8 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		return(FALSE);
 	}
 
+	new->modeInit = TRUE;
+
 	if (pSmi->rotate)
 	{
 		pSmi->width  = pScrn->virtualY;
@@ -2754,7 +2756,7 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	vgaRegPtr vgaSavePtr = &hwp->SavedReg;
 	SMIRegPtr SMISavePtr = &pSmi->SavedReg;
 	Bool ret;
-
+	
 	ENTER_PROC("SMI_CloseScreen");
 
 	if (pScrn->vtSema)

@@ -199,7 +199,8 @@ NVDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACRestore\n"));
 
     if(primary) restore |= VGA_SR_CMAP | VGA_SR_FONTS;
-
+    else if(pNv->Chipset == NV_CHIP_RIVA_128) 
+	restore |= VGA_SR_CMAP;
     pNv->riva.LoadStateExt(&pNv->riva, nvReg);
 #if defined(__powerpc__)
     restore &= ~VGA_SR_FONTS;

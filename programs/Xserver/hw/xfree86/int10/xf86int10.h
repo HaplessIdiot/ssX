@@ -16,6 +16,9 @@
 #define SEG_ADDR(x) (((x) >> 4) & 0x00F000)
 #define SEG_OFF(x) ((x) & 0x0FFFF)
 
+#define SET_BIOS_SCRATCH     0x1
+#define RESTORE_BIOS_SCRATCH 0x2
+
 /* int10 info structure */
 typedef struct {
     int entityIndex;
@@ -23,6 +26,8 @@ typedef struct {
     pointer cpuRegs;
     CARD16  BIOSseg;
     CARD16  inb40time;
+    char * BIOSScratch;
+    int Flags;
     pointer private;
     struct _int10Mem* mem;
     int num;
@@ -70,6 +75,7 @@ typedef struct {
     
 /* OS dependent functions */
 xf86Int10InfoPtr xf86InitInt10(int entityIndex);
+xf86Int10InfoPtr xf86ExtendedInitInt10(int entityIndex, int Flags);
 void xf86FreeInt10(xf86Int10InfoPtr pInt);
 void *xf86Int10AllocPages(xf86Int10InfoPtr pInt, int num, int *off);
 void xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num);
@@ -93,6 +99,9 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define VRAM_SIZE 0x20000
 #define V_BIOS_SIZE 0x10000
 #define V_BIOS 0xC0000
+#define BIOS_SCRATCH_OFF 0x449
+#define BIOS_SCRATCH_END 0x466
+#define BIOS_SCRATCH_LEN (BIOS_SCRATCH_END - BIOS_SCRATCH_OFF + 1)
 #define HIGH_MEM V_BIOS
 #define HIGH_MEM_SIZE (SYS_BIOS - HIGH_MEM)
 #define SEG_ADR(type, seg, reg)  type((seg << 4) + (X86_##reg))
@@ -137,6 +146,9 @@ xf86Int10InfoPtr getInt10Rec(int entityIndex);
 CARD8 bios_checksum(CARD8 *start, int size);
 void LockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga);
 void UnlockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga);
+#if defined (_PC)
+void xf86Int10SaveRestoreBIOSVars(xf86Int10InfoPtr pInt, Bool save);
+#endif
 int port_rep_inb(xf86Int10InfoPtr pInt,
 		 CARD16 port, CARD32 base, int d_f, CARD32 count);
 int port_rep_inw(xf86Int10InfoPtr pInt,

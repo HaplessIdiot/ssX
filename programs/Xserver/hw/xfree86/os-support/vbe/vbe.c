@@ -15,7 +15,7 @@
 #include "vbe.h"
 #include "Xarch.h"
 
-#define VERSION(x) *((CARD8*)(&x) + 1),(CARD8)(x)
+#define VERSION(x) VBE_VERSION_MAJOR(x),VBE_VERSION_MINOR(x)
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 #define B_O16(x)  (x) 
@@ -40,6 +40,12 @@ static const char *ddcSymbols[] = {
 vbeInfoPtr
 VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
 {
+    return VBEExtendedInit(pInt, entityIndex, 0);
+}
+
+vbeInfoPtr
+VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
+{
     int RealOff;
     pointer page = NULL;
     ScrnInfoPtr pScrn = xf86FindScreenForEntity(entityIndex);
@@ -54,7 +60,7 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
 	    goto error;
 
 	xf86DrvMsg(screen,X_INFO,"initializing int10\n");
-	pInt = xf86InitInt10(entityIndex);
+	pInt = xf86ExtendedInitInt10(entityIndex, Flags);
 	if (!pInt)
 	    goto error;
 	init_int10 = TRUE;
@@ -120,7 +126,7 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     vip->real_mode_base = RealOff;
     vip->num_pages = 1;
     vip->init_int10 = init_int10;
-   
+
     return vip;
 
  error:
@@ -897,4 +903,89 @@ VBEGetVBEpmi(vbeInfoPtr pVbe)
     pmi->tbl_len = pVbe->pInt10->cx;
 
     return (pmi);
+}
+
+vbeModeInfoPtr
+VBEBuildVbeModeList(vbeInfoPtr pVbe, VbeInfoBlock *vbe)
+{
+    vbeModeInfoPtr ModeList = NULL;
+
+    int i = 0;
+    while (vbe->VideoModePtr[i] != 0xffff) {
+	vbeModeInfoPtr m;
+	VbeModeInfoBlock *mode;
+	int id = vbe->VideoModePtr[i++];
+	int bpp;
+
+	if ((mode = VBEGetModeInfo(pVbe, id)) == NULL)
+	    continue;
+
+ 	bpp = mode->BitsPerPixel;
+
+	m = xnfcalloc(sizeof(vbeModeInfoRec),1);
+	m->width = mode->XResolution;
+	m->height = mode->YResolution;
+	m->bpp = bpp;
+	m->n = id;
+	m->next = ModeList;
+
+	xf86DrvMsgVerb(pVbe->pInt10->scrnIndex, X_PROBED, 3,
+		       "BIOS reported VESA mode 0x%x: x:%i y:%i bpp:%i\n",
+		       m->n, m->width, m->height, m->bpp);
+
+	ModeList = m;
+
+	VBEFreeModeInfo(mode);
+    }
+    return ModeList;
+}
+
+unsigned short 
+VBECalcVbeModeIndex(vbeModeInfoPtr m, DisplayModePtr mode, int bpp)
+{
+    while (m) {
+	if (bpp == m->bpp 
+	    && mode->HDisplay == m->width 
+	    && mode->VDisplay == m->height)
+	    return m->n;
+	m = m->next;
+    }
+    return 0;
+}
+
+
+void
+VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
+		  vbeSaveRestoreFunction function)
+{
+    Bool SaveSucc = FALSE;
+
+    if (VBE_VERSION_MAJOR(pVbe->version) > 1
+	&& (function == MODE_SAVE || vbe_sr->pstate)) {
+	if (function == MODE_RESTORE)
+	    memcpy(vbe_sr->state, vbe_sr->pstate, vbe_sr->stateSize);
+	ErrorF("VBESaveRestore\n");
+	if ((VBESaveRestore(pVbe,function,
+			    (pointer)&vbe_sr->state,
+			    &vbe_sr->stateSize,&vbe_sr->statePage))) {
+	    if (function == MODE_SAVE) {
+		SaveSucc = TRUE;
+		vbe_sr->stateMode = -1; /* invalidate */
+		/* don't rely on the memory not being touched */
+		if (vbe_sr->pstate == NULL)
+		    vbe_sr->pstate = xalloc(vbe_sr->stateSize);
+		memcpy(vbe_sr->pstate, vbe_sr->state, vbe_sr->stateSize);
+	    }
+	    ErrorF("VBESaveRestore done with success\n");
+	    return;
+	}
+	ErrorF("VBESaveRestore done\n");
+    } 
+    
+    if (function == MODE_SAVE && !SaveSucc)
+	    (void)VBEGetVBEMode(pVbe, &vbe_sr->stateMode);
+	
+    if (function == MODE_RESTORE && vbe_sr->stateMode != -1)
+	    VBESetVBEMode(pVbe, vbe_sr->stateMode, NULL);
+
 }

@@ -170,7 +170,8 @@ typedef struct _vgaHWRec {
 #define KGA_FIX_OVERSCAN  1   /* overcan correction required */
 #define KGA_ENABLE_ON_ZERO 2  /* if possible enable display at beginning */
                               /* of next scanline/frame                  */
-
+#define KGA_BE_TOT_DEC 4      /* always fix problem by setting blank end */
+			      /* to total - 1                            */
 #define BIT_PLANE 3		/* Which plane we write to in mono mode */
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256

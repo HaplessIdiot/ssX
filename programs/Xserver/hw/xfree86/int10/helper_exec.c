@@ -26,6 +26,9 @@
 static int pciCfg1in(CARD16 addr, CARD32 *val);
 static int pciCfg1out(CARD16 addr, CARD32 val);
 #endif
+#if defined (_PC)
+static void SetResetBIOSVars(xf86Int10InfoPtr pInt, Bool set);
+#endif
 
 #define REG pInt
 
@@ -51,7 +54,10 @@ setup_int(xf86Int10InfoPtr pInt)
     X86_FS = 0;
     X86_GS = 0;
     X86_EFLAGS = X86_IF_MASK | X86_IOPL_MASK;
-
+#if defined (_PC)
+    if (pInt->flags & SET_BIOS_SCRATCH)
+	SetResetBIOSVars(pInt, TRUE);
+#endif
     return xf86BlockSIGIO();
 }
 
@@ -59,15 +65,19 @@ void
 finish_int(xf86Int10InfoPtr pInt, int sig)
 {
     xf86UnblockSIGIO(sig);
-    pInt->ax = (CARD16) X86_EAX;
-    pInt->bx = (CARD16) X86_EBX;
-    pInt->cx = (CARD16) X86_ECX;
-    pInt->dx = (CARD16) X86_EDX;
-    pInt->si = (CARD16) X86_ESI;
-    pInt->di = (CARD16) X86_EDI;
+    pInt->ax = (CARD32) X86_EAX;
+    pInt->bx = (CARD32) X86_EBX;
+    pInt->cx = (CARD32) X86_ECX;
+    pInt->dx = (CARD32) X86_EDX;
+    pInt->si = (CARD32) X86_ESI;
+    pInt->di = (CARD32) X86_EDI;
     pInt->es = (CARD16) X86_ES;
-    pInt->bp = (CARD16) X86_EBP;
-    pInt->flags = (CARD16) X86_FLAGS;
+    pInt->bp = (CARD32) X86_EBP;
+    pInt->flags = (CARD32) X86_FLAGS;
+#if defined (_PC)
+    if (pInt->flags & RESTORE_BIOS_SCRATCH)
+	SetResetBIOSVars(pInt, FALSE);
+#endif
 }
 
 /* general software interrupt handler */
@@ -518,3 +528,54 @@ UnlockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga)
     outb(pInt->ioBase + 0x03C2, vga->save_msr);
     xf86SetCurrentAccess(TRUE, xf86Screens[pInt->scrnIndex]);
 }
+
+#if defined (_PC)
+static void
+SetResetBIOSVars(xf86Int10InfoPtr pInt, Bool set)
+{
+    int pagesize = getpagesize();
+    unsigned char* base = xf86MapVidMem(pInt->scrnIndex,
+					VIDMEM_MMIO, 0, pagesize);
+    int i;
+
+    if (set) {
+	for (i = BIOS_SCRATCH_OFF; i < BIOS_SCRATCH_END; i++)
+	    MEM_WW(pInt, i, *(base + i));
+    } else {
+	for (i = BIOS_SCRATCH_OFF; i < BIOS_SCRATCH_END; i++)
+	    *(base + i) = MEM_RW(pInt, i);
+    }
+    
+    xf86UnMapVidMem(pInt->scrnIndex,base,pagesize);
+}
+
+void
+xf86Int10SaveRestoreBIOSVars(xf86Int10InfoPtr pInt, Bool save)
+{
+    int pagesize = getpagesize();
+    unsigned char* base;
+    int i,j;
+
+    if (!xf86IsEntityPrimary(pInt->entityIndex)
+	|| (!save && !pInt->BIOSScratch))
+	return;
+    
+    base = xf86MapVidMem(pInt->scrnIndex, VIDMEM_MMIO, 0, pagesize);
+    base += BIOS_SCRATCH_OFF;
+    if (save) {
+	if ((pInt->BIOSScratch
+	     = xnfalloc(BIOS_SCRATCH_LEN)))
+	    for (i = 0; i < BIOS_SCRATCH_LEN; i++)
+		*(((char*)pInt->BIOSScratch + i)) = *(base + i);	
+    } else {
+	if (pInt->BIOSScratch) {
+	    for (i = 0; i < BIOS_SCRATCH_LEN; i++)
+		*(base + i) = *(pInt->BIOSScratch + i); 
+	    xfree(pInt->BIOSScratch);
+	    pInt->BIOSScratch = NULL;
+	}
+    }
+    
+    xf86UnMapVidMem(pInt->scrnIndex,base - BIOS_SCRATCH_OFF ,pagesize);
+}
+#endif

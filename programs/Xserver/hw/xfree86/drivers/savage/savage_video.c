@@ -1740,11 +1740,15 @@ static void
 SavageInitOffscreenImages(ScreenPtr pScreen)
 {
     XF86OffscreenImagePtr offscreenImages;
+    SavagePtr psav = SAVPTR(xf86Screens[pScreen->myNum]);
 
     /* need to free this someplace */
-    if(!(offscreenImages = xalloc(sizeof(XF86OffscreenImageRec))))
-	return;
-
+    if (!psav->offscreenImages) {
+	if(!(offscreenImages = xalloc(sizeof(XF86OffscreenImageRec))))
+	    return;
+	psav->offscreenImages = offscreenImages;
+    } else 
+	offscreenImages = psav->offscreenImages;
     offscreenImages[0].image = &Images[0];
     offscreenImages[0].flags = VIDEO_OVERLAID_IMAGES | 
 			       VIDEO_CLIP_TO_VIEWPORT;

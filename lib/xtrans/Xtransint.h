@@ -72,10 +72,12 @@ from The Open Group.
  * message.
  */
 
-#ifndef __EMX__
+#ifndef XTRANSDEBUG
+# ifndef __EMX__
 #  define XTRANSDEBUG 1
-#else
-#define XTRANSDEBUG 1
+# else
+#  define XTRANSDEBUG 1
+# endif
 #endif
 
 #ifdef WIN32

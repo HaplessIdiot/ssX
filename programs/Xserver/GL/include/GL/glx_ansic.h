@@ -93,7 +93,7 @@
 #define __glXMemmove(dest, src, n)	memmove(dest, src, n)
 #define __glXMemcpy(dest, src, n)	memcpy(dest, src, n)
 #define __glXMemset(s, c, n)		memset(s, c, n)
-#define __glXStrdup(str)		strdup(str)
+#define __glXStrdup(str)		xstrdup(str)
 #define __glXStrcpy(dest, src)		strcpy(dest, src)
 #define __glXStrncpy(dest, src, n)	strncpy(dest, src, n)
 #define __glXStrcat(dest, src)		strcat(dest, src)

@@ -231,7 +231,9 @@ typedef enum {
     OPTION_XV_HSYNC,
     OPTION_XV_VSYNC,
     OPTION_XV_BSKEW,
-    OPTION_XV_RSKEW
+    OPTION_XV_RSKEW,
+    OPTION_1400_DISPLAY,
+    OPTION_DISPLAY
 } TRIDENTOpts;
 
 static const OptionInfoRec TRIDENTOptions[] = {
@@ -252,6 +254,8 @@ static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_XV_VSYNC,          "XvVsync",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_XV_BSKEW,          "XvBskew",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_XV_RSKEW,          "XvRskew",      OPTV_INTEGER,   {0}, FALSE },
+    { OPTION_1400_DISPLAY,	"Display1400",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_DISPLAY,		"Display",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -458,6 +462,7 @@ tridentLCD LCD[] = {
     { 3,800,600,40000,0x7f,0x00,0x69,0x7f,0x72,0xf0,0x59,0x0d,0x00,0x08},
     { 2,1024,768,65000,0xa3,0x00,0x84,0x94,0x24,0xf5,0x03,0x09,0x24,0x08},
     { 0,1280,1024,108000,0xce,0x91,0xa6,0x14,0x28,0x5a,0x01,0x04,0x28,0xa8},
+    { 4,1400,1050,122000,0xe6,0xcd,0xba,0x1d,0x38,0x00,0x1c,0x28,0x28,0xf8},
     { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
@@ -1257,6 +1262,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->UsePCIBurst = FALSE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI Burst disbled\n");
     }
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_1400_DISPLAY, FALSE)) {
+	pTrident->displaySize = 1400;
+    }
     if(xf86GetOptValInteger(pTrident->Options, OPTION_VIDEO_KEY,
 						&(pTrident->videoKey))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
@@ -1277,9 +1285,26 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		       " with NoMMIO\n");
 	else {
 	    pTrident->MMIOonly = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO only enabled\n");
 	}
     }
+    
+    pTrident->dspOverride = 0;
+    if ((s = xf86GetOptValString(pTrident->Options, OPTION_DISPLAY))) {
+	if(!xf86NameCmp(s, "CRT")) {
+	    pTrident->dspOverride = CRT_ACTIVE;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"LCD off CRT on\n");
+	} else if (!xf86NameCmp(s, "LCD")) {
+	    pTrident->dspOverride = LCD_ACTIVE;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"LCD on CRT off\n");
+	} else if (!xf86NameCmp(s, "Dual")) {
+	    pTrident->dspOverride = LCD_ACTIVE | CRT_ACTIVE;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"LCD on CRT on\n");
+	} else 
+	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,
+		       "%s is an unknown display option\n",s);
+    }
+    
     if (xf86ReturnOptValBool(pTrident->Options, OPTION_CYBER_SHADOW, FALSE)) {
 	pTrident->CyberShadow = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow enabled\n");
@@ -2034,17 +2059,50 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	dsp1 = INB(0x3CF);
 	OUTB(0x3CE,0x52);
 	mod = INB(0x3CF);
-	for (i = 0; LCD[i].mode != 0xff; i++) {
-	    if (LCD[i].mode == ((mod >> 4) & 3)) {
-		pTrident->lcdMode = i;
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,"%s Panel %ix%i found\n",
+	/*
+	 * Only allow display size override if 1280x1024 is detected 
+	 * Currently 1400x1050 is supported - which is detected as
+	 * 1280x1024
+	 */
+	if (pTrident->displaySize) {
+	    if (((mod >> 4) & 3) == 0) {
+		for (i = 0; LCD[i].mode != 0xff; i++) {
+		    if (pTrident->displaySize == LCD[i].display_x)
+			pTrident->lcdMode = LCD[i].mode;
+		}
+		xf86DrvMsg(pScrn->scrnIndex,
+			   X_CONFIG,"%s Panel %ix%i found\n",
 			   (dsp & 0x80) ? "TFT" :
 			   ((dsp1 & 0x20) ? "DSTN" : "STN"), 
-			   LCD[i].display_x,LCD[i].display_y);
+			   LCD[i].display_x,LCD[i].display_y);		
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex,X_WARNING,
+			   "Display size override only for 1280x1024\n");
+		pTrident->displaySize = 0;
 	    }
 	}
-	OUTB(0x3CE, FPConfig);
-	pTrident->lcdActive = (INB(0x3CF) & 0x10);
+	
+	if (!pTrident->displaySize) {
+	    for (i = 0; LCD[i].mode != 0xff; i++) {
+		if (LCD[i].mode == ((mod >> 4) & 3)) {
+		    pTrident->lcdMode = i;
+		    xf86DrvMsg(pScrn->scrnIndex,
+			       X_PROBED,"%s Panel %ix%i found\n",
+			       (dsp & 0x80) ? "TFT" :
+			       ((dsp1 & 0x20) ? "DSTN" : "STN"), 
+			       LCD[i].display_x,LCD[i].display_y);
+		}
+	    }
+	}
+	if (pTrident->dspOverride) {
+	    if (pTrident->dspOverride & LCD_ACTIVE)
+		pTrident->lcdActive = TRUE;
+	    else
+		pTrident->lcdActive = FALSE;
+	} else {
+	    OUTB(0x3CE, FPConfig);
+	    pTrident->lcdActive = (INB(0x3CF) & 0x10);
+	}
     }
 
     pTrident->MCLK = 0;

@@ -80,7 +80,6 @@ Bool XF86MiscQueryVersion(dpy, majorVersion, minorVersion)
     xXF86MiscQueryVersionReq *req;
 
     XF86MiscCheckExtension (dpy, info, False);
-
     LockDisplay(dpy);
     GetReq(XF86MiscQueryVersion, req);
     req->reqType = info->codes->major_opcode;
@@ -92,6 +91,28 @@ Bool XF86MiscQueryVersion(dpy, majorVersion, minorVersion)
     }
     *majorVersion = rep.majorVersion;
     *minorVersion = rep.minorVersion;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (*majorVersion > 0 || *minorVersion > 5)
+	XF86MiscSetClientVersion(dpy);
+    
+    return True;
+}
+
+Bool
+XF86MiscSetClientVersion(Display *dpy)
+{
+    XExtDisplayInfo *info = find_display(dpy);
+    xXF86MiscSetClientVersionReq *req;
+
+    XF86MiscCheckExtension(dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86MiscSetClientVersion, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86miscReqType = X_XF86MiscSetClientVersion;
+    req->major = XF86MISC_MAJOR_VERSION;
+    req->minor = XF86MISC_MINOR_VERSION;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
@@ -179,11 +200,14 @@ Bool XF86MiscSetMouseSettings(dpy, mouseinfo)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86MiscSetMouseSettingsReq *req;
-
+    int majorVersion, minorVersion;
+    
     XF86MiscCheckExtension (dpy, info, False);
-
+    XF86MiscQueryVersion(dpy, &majorVersion, &minorVersion);
+    
     LockDisplay(dpy);
     GetReq(XF86MiscSetMouseSettings, req);
+    
     req->reqType = info->codes->major_opcode;
     req->xf86miscReqType = X_XF86MiscSetMouseSettings;
     req->mousetype = mouseinfo->type;
@@ -195,7 +219,16 @@ Bool XF86MiscSetMouseSettings(dpy, mouseinfo)
     req->emulate3timeout = mouseinfo->emulate3timeout;
     req->chordmiddle = mouseinfo->chordmiddle;
     req->flags = mouseinfo->flags;
-
+    if (majorVersion > 0 || minorVersion > 5) {
+	int len;
+	if ((len = strlen(mouseinfo->device))) {
+	req->devnamelen =  len + 1;
+	len = (req->devnamelen + 3) >> 2;
+	SetReqLen(req,len,len);
+	Data(dpy, mouseinfo->device, req->devnamelen);
+	}
+    }
+	
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

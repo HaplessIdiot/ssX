@@ -5,6 +5,8 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/02/20 15:51:17 pookie Exp $
 
 XCOMM $XFree86: xc/programs/xrx/plugin/Imakefile,v 1.10 2001/08/19 02:47:50 tsi Exp $
 
+#if HasSharedLibraries
+
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
 
@@ -174,3 +176,5 @@ install:: shr.o
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) shr.o $(DESTDIR)$(SHLIBDIR)/lib$(LIBNAME).so
 	$(RM) $(DESTDIR)$(SHLIBDIR)/lib$(LIBNAME).a
 #endif
+
+#endif /* HasSharedLibraries */

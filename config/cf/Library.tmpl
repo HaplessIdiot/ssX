@@ -46,6 +46,12 @@ XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.14 2001/07/25 14:30:03 alanh Exp $
 # define SeparateSharedCompile YES
 #endif
 
+#ifdef CrossCompileDir
+# ifndef StripPath
+#  define StripPath(x) `echo x|sed "s%.*/%%"`
+# endif
+#endif 
+
 #ifndef CplusplusSource
 # ifndef LibraryCcCmd
 #  if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -62,7 +68,17 @@ XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.14 2001/07/25 14:30:03 alanh Exp $
 #  endif
 # endif
 
+#ifdef CrossCompileDir
+# ifndef CrossLibraryCcCmd
+#  define CrossLibraryCcCmd Concat3(CrossCompileDir,/,StripPath(LibraryCcCmd))
+# endif
+#endif
+
+#ifdef CrossCompileDir
+         CC = CrossLibraryCcCmd
+#else
          CC = LibraryCcCmd
+#endif
   CCOPTIONS = LibraryCCOptions
 STD_DEFINES = LibraryDefines $(PROJECT_DEFINES)
 CDEBUGFLAGS = LibraryCDebugFlags
@@ -72,13 +88,24 @@ CLIBDEBUGFLAGS = LibraryDebugOpt
    PICFLAGS = LargePositionIndependentCFlags
 # endif
 #else
-# ifndef LibraryCplusplusCmd
-#  if DoSharedLib && defined(SharedLibraryCplusplusCmd)
-#   define LibraryCplusplusCmd SharedLibraryCplusplusCmd
-#  else
-#   define LibraryCplusplusCmd CplusplusCmd
+# ifndef CrossCompileDir
+#  ifndef LibraryCplusplusCmd
+#   if DoSharedLib && defined(SharedLibraryCplusplusCmd)
+#    define LibraryCplusplusCmd SharedLibraryCplusplusCmd
+#   else
+#    define LibraryCplusplusCmd CplusplusCmd
+#   endif
+#  endif
+# else 
+#  ifndef CrossLibraryCplusplusCmd
+#   if DoSharedLib && defined(SharedLibraryCplusplusCmd)
+#    define CrossLibraryCplusplusCmd Concat3(CrossCompileDir,/,StripPath(SharedLibraryCplusplusCmd))
+#   else
+#    define CrossLibraryCplusplusCmd Concat3(CrossCompileDir,/,StripPath(CplusplusCmd))
+#   endif
 #  endif
 # endif
+
 # ifndef LibraryCplusplusOptions
 #  if DoSharedLib && defined(SharedLibraryCplusplusOptions)
 #   define LibraryCplusplusOptions SharedLibraryCplusplusOptions
@@ -87,7 +114,11 @@ CLIBDEBUGFLAGS = LibraryDebugOpt
 #  endif
 # endif
 
+#ifdef CrossCompileDir
+          CXX = CrossLibraryCplusplusCmd
+#else
           CXX = LibraryCplusplusCmd
+#endif
    CXXOPTIONS = LibraryCplusplusOptions
   STD_DEFINES = LibraryDefines $(PROJECT_DEFINES)
 CXXDEBUGFLAGS = LibraryCplusplusDebugFlags

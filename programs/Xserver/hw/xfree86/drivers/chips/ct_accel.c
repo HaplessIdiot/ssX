@@ -53,12 +53,6 @@
 /* Our driver specific include file */
 #include "ct_driver.h"
 
-#ifdef DEBUG
-# define DEBUG_P(x) ErrorF(x"\n");
-#else
-# define DEBUG_P(x) /**/
-#endif
-
 #if !defined(UNIXCPP) || defined(ANSICPP)
 #define CATNAME(prefix,subname) prefix##subname
 #else
@@ -78,6 +72,17 @@
 #define CTNAME(subname) CATNAME(CHIPS,subname)
 #endif
 
+#ifdef DEBUG
+# define DEBUG_P(x) ErrorF(x"\n");
+#elif defined X_DEBUG
+# define DEBUG_P(x) snprintf(CTNAME(accel_debug),1024,x"\n");
+#else
+# define DEBUG_P(x) /**/
+#endif
+
+#ifdef X_DEBUG
+static char CTNAME(accel_debug)[1024];
+#endif
 
 #ifdef CHIPS_HIQV
 static void CTNAME(DepthChange)(ScrnInfoPtr pScrn, int depth);
@@ -157,7 +162,6 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
-    BoxRec AvailFBArea;
 
     DEBUG_P("AccelInit");
     cPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
@@ -390,16 +394,6 @@ chips_imagewrite:
         infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
 
-    AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = cAcl->CacheEnd /
-      (pScrn->displayWidth * cAcl->BytesPerPixel);
-
-#ifdef CHIPS_HIQV
-    if (!(cPtr->Flags & ChipsOverlay8plus16))      
-#endif
-	xf86InitFBManager(pScreen, &AvailFBArea); 
 
 #ifdef CHIPS_HIQV
     if (XAAInit(pScreen, infoPtr)) {

@@ -11,7 +11,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/cross/Imakefile,v 1.1 2001/10/10 12:56:58 al
 		 keymap.o keycodes.o keytypes.o compat.o action.o \
 		 symbols.o geometry.o xkbpath.o listing.o \
 		 xkbparse.o parseutils.o utils.o
-        DEPLIBS = $(DEPXKBFILELIB) $(DEPXLIBONLY)
+        DEPLIBS = $(DEPXLIBONLY)
 XCOMM Assumes local libraries installed in /usr/X11R6/lib
 LOCAL_LIBRARIES = -L/usr/X11R6/lib $(XKBFILELIB) $(XLIB)
 

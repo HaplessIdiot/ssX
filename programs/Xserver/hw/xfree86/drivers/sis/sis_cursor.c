@@ -25,7 +25,7 @@
  *       Mitani Hiroshi <hmitani@drl.mei.co.jp>
  *       David Thomas <davtom@dream.org.uk>.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.5 2001/05/07 21:59:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.6 2001/09/28 07:47:22 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -43,7 +43,6 @@ SiSShowCursor(ScrnInfoPtr pScrn)
 {
         unsigned char temp;
 
-        outw(VGA_SEQ_INDEX, 0x8605);    /* Unlock Registers */
         outb(VGA_SEQ_INDEX, 0x06);
         temp = inb(VGA_SEQ_DATA) | 0x40;
         outb(VGA_SEQ_DATA, temp);
@@ -65,7 +64,6 @@ SiSHideCursor(ScrnInfoPtr pScrn)
 {
         unsigned char temp;
 
-        outw(VGA_SEQ_INDEX, 0x8605);    /* Unlock Registers */
         outb(VGA_SEQ_INDEX, 0x06);
         temp = inb(VGA_SEQ_DATA) & 0xBF;
         outb(VGA_SEQ_DATA, temp);
@@ -89,7 +87,6 @@ SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     unsigned char   y_preset = 0;
     int         temp;
 
-    outw(VGA_SEQ_INDEX, 0x8605);    /* Unlock Registers */
 
     if (x < 0) {
         x_preset = (-x);
@@ -154,7 +151,6 @@ SiSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     unsigned char f_red, f_green, f_blue;
     unsigned char b_red, b_green, b_blue;
 
-    outw(VGA_SEQ_INDEX, 0x8605);
 
     f_red   = (fg & 0x00FF0000) >> (16+2);
     f_green = (fg & 0x0000FF00) >> (8+2);
@@ -190,8 +186,6 @@ SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     SISPtr pSiS = SISPTR(pScrn);
     int cursor_addr;
     unsigned char   temp;
-
-    outw(VGA_SEQ_INDEX, 0x8605);
 
     cursor_addr = pScrn->videoRam - 1;
     memcpy((unsigned char *)pSiS->FbBase + cursor_addr * 1024, src, 1024);

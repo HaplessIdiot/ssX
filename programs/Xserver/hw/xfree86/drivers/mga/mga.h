@@ -120,6 +120,7 @@ typedef struct {
     CARD32		Option;
     CARD32		Option2;
     CARD32		Option3;
+    long                Clock;
 } MGARegRec, *MGARegPtr;
 
 /* For programming the second CRTC */
@@ -497,6 +498,9 @@ void MGACRTC2GetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
 void MGACRTC2GetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
  
 double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
+
+double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
+long MGAG450SavePLLFreq(ScrnInfoPtr pScrn);
 void MGAprintDac(ScrnInfoPtr pScrn);
 
 #ifdef USEMGAHAL

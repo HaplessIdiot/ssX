@@ -136,7 +136,6 @@ main(int argc, char *argv[])
     if (argc != 1) Syntax(argv[0]);
     XtAddCallback(toplevel, XtNdieCallback, die, NULL);
     XtAddCallback(toplevel, XtNsaveCallback, save, NULL);
-    
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
 
     /*
@@ -148,12 +147,14 @@ main(int argc, char *argv[])
 
     XtSetArg(arg, XtNiconPixmap, &icon_pixmap);
     XtGetValues(toplevel, &arg, ONE);
+
     if (icon_pixmap == None) {
 	arg.value = (XtArgVal)XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
 				       (char *)clock_bits, clock_width, clock_height);
 	XtSetValues (toplevel, &arg, ONE);
     }
+
     XtSetArg(arg, XtNiconMask, &icon_pixmap);
     XtGetValues(toplevel, &arg, ONE);
     if (icon_pixmap == None) {

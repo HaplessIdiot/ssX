@@ -15,8 +15,9 @@
 
 #include "sis.h"
 #include "sis_dri.h"
+#if 0
 #include "xf86drmSiS.h"
-
+#endif
 #define BR(x)   (0x8200 | (x) << 2)
 #define SiSIdle \
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
