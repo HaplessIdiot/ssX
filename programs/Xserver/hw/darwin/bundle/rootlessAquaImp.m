@@ -1,12 +1,12 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.4 2001/09/19 01:44:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.5 2001/09/20 19:35:11 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
 #include "fakeBoxRec.h"
-#include "quartzShared.h"
+#include "quartzCommon.h"
 
 
 typedef struct {

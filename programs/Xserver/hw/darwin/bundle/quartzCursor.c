@@ -3,20 +3,15 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.6 2001/09/19 01:44:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.7 2001/09/20 19:35:11 torrey Exp $ */
+
+#include "quartzCommon.h"
+#include "quartzCursor.h"
 
 #include "mi.h"
 #include "scrnintstr.h"
 #include "cursorstr.h"
 #include "mipointrst.h"
-
-#include "quartzCursor.h"
-#include "quartzShared.h"
-
-#undef AllocCursor
-#define Cursor QD_Cursor
-#define WindowPtr QD_WindowPtr
-#include <ApplicationServices/ApplicationServices.h>
 
 // Size of the QuickDraw cursor
 #define CURSORWIDTH 16
@@ -29,8 +24,6 @@ typedef struct {
     QueryBestSizeProcPtr    QueryBestSize;
     miPointerSpriteFuncPtr  spriteFuncs;
 } QuartzCursorScreenRec, *QuartzCursorScreenPtr;
-
-extern BOOL serverVisible;
 
 static int darwinCursorScreenIndex = -1;
 static unsigned long darwinCursorGeneration = 0;
@@ -275,7 +268,7 @@ QuartzSetCursor(
     ScreenPriv->latentCursor = pCursor;
 
     // Don't touch Mac OS cursor if X is hidden!
-    if (!serverVisible)
+    if (!quartzServerVisible)
         return;
 
     if (!pCursor) {
@@ -379,7 +372,7 @@ QuartzWarpCursor(
         return;
     }
 
-    if (serverVisible) {
+    if (quartzServerVisible) {
         cgPoint = CGPointMake(x + darwinMainScreenX, y + darwinMainScreenY);
         cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
         if (cgErr != CGDisplayNoErr) {

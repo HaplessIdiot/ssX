@@ -4,7 +4,7 @@
  * Aqua pasteboard <-> X cut buffer
  * Greg Parker     gparker@cs.stanford.edu     March 8, 2001
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzPasteboard.c,v 1.1 2001/03/15 22:24:27 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzPasteboard.c,v 1.2 2001/05/02 01:03:40 torrey Exp $ */
 
 #include "quartzPasteboard.h"
 
@@ -13,8 +13,8 @@
 #include "propertyst.h"
 #include "scrnintstr.h"
 #include "selection.h"
+#include "globals.h"
 
-extern WindowPtr *WindowTable;
 extern Selection *CurrentSelections;
 extern int NumCurrentSelections;
 

@@ -1,16 +1,15 @@
 /*
-  quartz.h
-
-  Quartz-specific functions and definitions
-*/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.4 2001/07/15 01:57:35 torrey Exp $ */
+ * quartz.h
+ *
+ * External interface of the Quartz modes seen by the generic, mode
+ * independent parts of the Darwin X server.
+ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.5 2001/08/01 05:34:06 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
 
-#include "X11/Xproto.h"
 #include "screenint.h"
-#include "darwin.h"
 #include "quartzShared.h"
 #include "quartzPasteboard.h"
 

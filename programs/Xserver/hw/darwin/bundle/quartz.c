@@ -5,7 +5,14 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.15 2001/09/06 05:08:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.16 2001/09/20 19:35:11 torrey Exp $ */
+
+#include "quartzCommon.h"
+#include "quartz.h"
+#include "darwin.h"
+#include "quartzAudio.h"
+#include "quartzCursor.h"
+#include "rootlessAqua.h"
 
 // X headers
 #include "scrnintstr.h"
@@ -17,19 +24,13 @@
 #include <fcntl.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
-// We need CoreGraphics in ApplicationServices, but we leave out
-// QuickDraw, which has symbol conflicts with the basic X includes.
-#define __QD__
-#define __PRINTCORE__
-#include <ApplicationServices/ApplicationServices.h>
-
-#include "darwin.h"
-#include "quartz.h"
-#include "quartzAudio.h"
-#include "quartzCursor.h"
-#include "rootlessAqua.h"
-
-BOOL serverVisible = TRUE;
+// Shared global variables for Quartz modes
+int                     quartzServerVisible = TRUE;
+int                     quartzEventWriteFD = -1;
+int                     quartzStartClients = 1;
+int                     quartzRootless = -1;
+int                     quartzUseSysBeep = 0;
+int                     aquaMenuBarHeight = 0;
 
 // Full screen specific per screen storage structure
 typedef struct {
@@ -74,7 +75,7 @@ static void QuartzFSStoreColors(
         CGPaletteSetColorAtIndex(palette, color, pdefs[i].pixel);
     }
 
-    if (serverVisible)
+    if (quartzServerVisible)
         CGDisplaySetPalette(fsDisplayInfo->displayID, palette);
 }
 
@@ -103,7 +104,7 @@ static void *QuartzPMThread(void *arg)
 
         // computer just woke up
         if (msg.header.msgh_id == 1) {
-            if (serverVisible) {
+            if (quartzServerVisible) {
                 int i;
 
                 for (i = 0; i < screenInfo.numScreens; i++) {
@@ -425,7 +426,7 @@ void QuartzShow(
 {
     int i;
 
-    if (!serverVisible) {
+    if (!quartzServerVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
                 if (!quartzRootless)
@@ -434,7 +435,7 @@ void QuartzShow(
             }
         }
     }
-    serverVisible = TRUE;
+    quartzServerVisible = TRUE;
 }
 
 
@@ -448,7 +449,7 @@ void QuartzHide(void)
 {
     int i;
 
-    if (serverVisible) {
+    if (quartzServerVisible) {
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
                 QuartzSuspendXCursor(screenInfo.screens[i]);
@@ -458,7 +459,7 @@ void QuartzHide(void)
         }
     } 
     QuartzRelease();
-    serverVisible = FALSE;
+    quartzServerVisible = FALSE;
 }
 
 

@@ -6,12 +6,12 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.24 2001/09/19 01:44:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.25 2001/09/20 19:35:11 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
-#import "quartzShared.h"
 #import "XWindow.h"
+#include "quartzCommon.h"
 
 #include <unistd.h>
 #include <stdio.h>
