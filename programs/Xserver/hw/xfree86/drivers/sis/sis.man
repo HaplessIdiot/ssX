@@ -325,12 +325,12 @@ This option allows vertical relocation of TV output.
 The range is from -32 to 32. Not supported on the Chrontel
 7019. Default: 0
 .TP
-.BI "Option \*qTVXScale\*q \*q" integer \*q
+.BI "Option \*qSISTVXScale\*q \*q" integer \*q
 This option allows horizontal zooming of TV output.
 The range is from -16 to 16. Only supported on SiS video
 bridges. Default: 0
 .TP
-.BI "Option \*qTVYScale\*q \*q" integer \*q
+.BI "Option \*qSISTVYScale\*q \*q" integer \*q
 This option allows vertical zooming of TV output in the following
 modes: 640x480, 800x600. On the 315/330 series, also 720x480,
 720x576 and 768x576. The range is from -4 to 3. Only supported on
