@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.20 2003/07/09 15:27:37 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -36,6 +36,7 @@ from The Open Group.
 #include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 
 #include <signal.h>
 #include <X11/X.h>			/* for Family constants */
@@ -1519,9 +1520,20 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
 	    return 1;
 	}
 	auth->data_length = len;
-	auth->data = key;
+	auth->data = copystring(key, len);
+	if (!auth->data) {
+		prefix(inputfilename, lineno);
+		fprintf(stderr, "unable to allocate %d bytes for key\n", len);
+		for (list_cur = list; list_cur != NULL; list_cur = list_next) {
+			list_next = list_cur->next;
+			XauDisposeAuth(list_cur->auth);
+			free(list_cur);
+		}
+		free(key);
+		return 1;
+	}
     }
-
+    free(key);
     /*
      * merge it in; note that merge will deal with allocation
      */
