@@ -20,8 +20,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.13 1999/01/23 09:55:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.14 1999/01/26 05:54:06 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -211,6 +212,7 @@ TGAGetRec(ScrnInfoPtr pScrn)
 
     pScrn->driverPrivate = xnfcalloc(sizeof(TGARec), 1);
     /* Initialise it */
+
 
     return TRUE;
 }
@@ -580,14 +582,33 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
 
     /* Check what sort of TGA card we have */
-    Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-			 pTga->PciTag, (pointer)pTga->IOAddress, 4);
-    pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
-    xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
 
-    /* Adjust framebuffer for card type */
-    pTga->FbAddress += fb_offset_presets[pTga->CardType];
-    
+    /* check what the user has specified in XF86Config */
+    if(pScrn->device->videoRam) {
+      switch(pScrn->device->videoRam) {
+      case 2048:
+	pTga->CardType = TYPE_TGA_8PLANE;
+	break;
+      case 8192:
+	pTga->CardType = TYPE_TGA_24PLANE;
+	break;
+      case 16384:
+	pTga->CardType = TYPE_TGA_24PLUSZ;
+	break;
+      default:
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "%d KB video RAM specified, driver only supports 2048, 8192, or 16384 KB cards\n",
+		   pScrn->device->videoRam);
+	return FALSE;
+      }
+    }
+    else { /* try to divine the amount of RAM */
+      Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+			   pTga->PciTag, (pointer)pTga->IOAddress, 4);
+      pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
+      xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
+    }
+
     switch (pTga->CardType) {
         case TYPE_TGA_8PLANE:
         case TYPE_TGA_24PLANE:
@@ -598,8 +619,14 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	default:
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                  "Card \"0x%02x\" is not recognised\n", pTga->CardType);
-	    return FALSE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Assuming 8 plane TGA with 2MB frame buffer\n");
+	    pTga->CardType = TYPE_TGA_8PLANE;
+	    break;
     }
+    
+    /* Adjust framebuffer for card type */
+    pTga->FbAddress += fb_offset_presets[pTga->CardType];
 
     if (!(((pScrn->depth ==  8) && (pTga->CardType == TYPE_TGA_8PLANE)) ||
 	  ((pScrn->depth == 24) && (pTga->CardType == TYPE_TGA_24PLANE)) ||
@@ -896,16 +923,12 @@ TGAMapMem(ScrnInfoPtr pScrn)
      * for Alpha, we need to map DENSE memory as well, for
      * setting CPUToScreenColorExpandBase.
      */
-#if 0
-    pTga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-				      pTga->PciTag, (pointer)pTga->IOAddress,
-				      0x10000);
-#endif
     pTga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 				      pTga->PciTag,
 				      (pointer)pTga->IOAddress, 0x100000);
     if (pTga->IOBaseDense == NULL)
 	return FALSE;
+
 #endif /* __alpha__ */
 
     pTga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
@@ -947,8 +970,9 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
 #endif
 
 #ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBaseDense, 0x10000);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBaseDense, 0x100000);
     pTga->IOBaseDense = NULL;
+
 #endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pScrn->videoRam);

@@ -24,7 +24,7 @@
  * tgaBTOutIndReg() and tgaBTInIndReg() are used to access 
  * the indirect TGA BT RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/BTramdac.c,v 1.2 1998/07/25 16:55:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/BTramdac.c,v 1.3 1998/08/13 14:45:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,9 +41,11 @@ void
 tgaBTOutIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data)
 {
-  TGAPtr pTga = TGAPTR(pScrn);
+  TGAPtr pTga;
   unsigned char tmp = 0x00;
 
+  pTga = TGAPTR(pScrn);
+  
   TGA_WRITE_REG(reg << 1 | BT485_READ_BIT, TGA_RAMDAC_SETUP_REG);
 
   if (mask != 0x00)
@@ -57,8 +59,10 @@ tgaBTOutIndReg(ScrnInfoPtr pScrn,
 unsigned char
 tgaBTInIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 {
-  TGAPtr pTga = TGAPTR(pScrn);
+  TGAPtr pTga;
   unsigned char ret;
+
+  pTga  = TGAPTR(pScrn);
 
   TGA_WRITE_REG(reg << 1 | BT485_READ_BIT, TGA_RAMDAC_SETUP_REG);
   ret = TGA_READ_REG (TGA_RAMDAC_REG)>>16;
@@ -69,7 +73,9 @@ tgaBTInIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 void
 tgaBTWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
-    TGAPtr pTga = TGAPTR(pScrn);
+    TGAPtr pTga;
+
+    pTga = TGAPTR(pScrn);
     
     TGA_WRITE_REG(BT_WRITE_ADDR << 1 | BT485_WRITE_BIT, TGA_RAMDAC_SETUP_REG);
     TGA_WRITE_REG(index | (BT_WRITE_ADDR<<9), TGA_RAMDAC_REG);
@@ -79,7 +85,9 @@ tgaBTWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
 void
 tgaBTWriteData (ScrnInfoPtr pScrn, unsigned char data)
 {
-    TGAPtr pTga = TGAPTR(pScrn);
+    TGAPtr pTga;
+
+    pTga = TGAPTR(pScrn);
     
     TGA_WRITE_REG(data | (BT_RAMDAC_DATA << 9), TGA_RAMDAC_REG);
 }
@@ -87,7 +95,9 @@ tgaBTWriteData (ScrnInfoPtr pScrn, unsigned char data)
 void
 tgaBTReadAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
-    TGAPtr pTga = TGAPTR(pScrn);
+    TGAPtr pTga;
+
+    pTga = TGAPTR(pScrn);
     
     TGA_WRITE_REG(BT_PIXEL_MASK << 1 | BT485_WRITE_BIT, TGA_RAMDAC_SETUP_REG);
     TGA_WRITE_REG(0xFF | (BT_PIXEL_MASK<<9), TGA_RAMDAC_REG);
@@ -99,7 +109,9 @@ tgaBTReadAddress (ScrnInfoPtr pScrn, CARD32 index)
 unsigned char
 tgaBTReadData (ScrnInfoPtr pScrn)
 {
-    TGAPtr pTga = TGAPTR(pScrn);
+    TGAPtr pTga;
+
+    pTga = TGAPTR(pScrn);
     
     return(TGA_READ_REG(TGA_RAMDAC_REG)>>16);
 }

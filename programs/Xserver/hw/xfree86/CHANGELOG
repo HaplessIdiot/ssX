@@ -1,4 +1,5 @@
 XFree86 3.9P (7 February 1999)
+2246. Some TGA driver speedups and cleanups (#2454, Matt Grossman).
 2245. Fix a lock_display() prototype problem in Xlibint.h that shows up
       when building with -DXTHREADS.
 2244. Allow the driver to override XAA's assignment of Screen functions which
@@ -7263,4 +7264,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.683 1999/02/05 04:49:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.684 1999/02/07 06:18:30 dawes Exp $

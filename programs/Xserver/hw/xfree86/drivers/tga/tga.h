@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.5 1998/08/29 05:43:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.6 1999/01/24 13:32:37 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -47,12 +47,12 @@ typedef struct {
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     IOBase;
+  unsigned char *       FbBase;
 #ifdef __alpha__
     unsigned char *     IOBaseDense;
 #endif
-    unsigned char *	FbBase;
     long		FbMapSize;
-    unsigned int	regOffset;
+    unsigned long	regOffset;
     Bool		NoAccel;
     Bool		Dac6Bit;
     Bool		HWCursor;
