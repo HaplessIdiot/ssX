@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_accel.c,v 1.3 2000/11/14 17:28:12 dawes Exp $ */
 /*
  *      Copyright 2000  Ani Joshi <ajoshi@unixbox.com>
  *
@@ -29,13 +29,13 @@
  */
 
 
-#include "compiler.h"
 #include "Xarch.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 #include "xaa.h"
 #include "xf86PciInfo.h"
+#include "compiler.h"
 
 #include "ark.h"
 #include "ark_reg.h"

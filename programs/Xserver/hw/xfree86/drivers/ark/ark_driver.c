@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.7 2000/11/14 17:28:12 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -417,8 +417,8 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 				pScrn->videoRam = 4096;
 	}
 
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected %d bytes video
-		   ram\n", pScrn->videoRam);
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected %d bytes video ram\n",
+			pScrn->videoRam);
 
 	/* try to detect the RAMDAC */
 	{
