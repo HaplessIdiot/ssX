@@ -98,10 +98,16 @@ SOFTWARE.
 #include "xf86_ansic.h"
 #endif
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+extern void XineramifyXv(void);
+#endif
+
 int  XvScreenIndex = -1;
-unsigned long XvExtensionGeneration;
-unsigned long XvScreenGeneration;
-unsigned long XvResourceGeneration;
+unsigned long XvExtensionGeneration = 0;
+unsigned long XvScreenGeneration = 0;
+unsigned long XvResourceGeneration = 0;
 
 int XvReqCode;
 int XvEventBase;
@@ -124,8 +130,6 @@ extern XID clientErrorValue;
 static void WriteSwappedVideoNotifyEvent(xvEvent *, xvEvent *);
 static void WriteSwappedPortNotifyEvent(xvEvent *, xvEvent *);
 static Bool CreateResourceTypes(void);
-
-static int lastScreenWithAdaptors = 0;
 
 static Bool XvCloseScreen(int, ScreenPtr);
 static Bool XvDestroyPixmap(PixmapPtr);
@@ -151,12 +155,10 @@ static int XvdiSendVideoNotify(XvPortPtr, DrawablePtr, int);
 void 
 XvExtensionInit()
 {
-  int ii;
-  register ExtensionEntry *extEntry;
+  ExtensionEntry *extEntry;
 
   /* LOOK TO SEE IF ANY SCREENS WERE INITIALIZED; IF NOT THEN
      INIT GLOBAL VARIABLES SO THE EXTENSION CAN FUNCTION */
-
   if (XvScreenGeneration != serverGeneration)
     {
       if (!CreateResourceTypes())
@@ -170,21 +172,11 @@ XvExtensionInit()
 	  ErrorF("XvExtensionInit: Unable to allocate screen private index\n");
 	  return;
 	}
-
+#ifdef PANORAMIX
+        XineramaRegisterConnectionBlockCallback(XineramifyXv);
+#endif
       XvScreenGeneration = serverGeneration;
     }
-
-  /* ITS A LITTLE HARD TO UNDERSTAND WHAT THIS DOES, BUT ESSENTIALLY I WANT 
-     ALL SCREEN THAT HAVE ADAPTORS TO HAVE A VALID DEVPRIVATE POINTER AND ANY 
-     THAT DON'T TO HAVE NULL DEVPRIVATE POINTERS; THIS WAY I DON'T HAVE TO 
-     CALL A SPECIAL XV SCREEN INITIALIZE FOR SCREENS WITHOUT ADAPTORS; THERE
-     SHOULD BE AN EASIER WAY TO DO THIS, BUT main.c DOESN'T INITIALIZE THE 
-     DEVPRIVATE POINTERS FOR A NEWLY CREATED SCREEN, NOR ARE THEY INITIALIZED
-     WHEN A NEW SCREEN PRIVATE INDEX IS ALLOCATED */
-
-  for (ii=lastScreenWithAdaptors; ii<screenInfo.numScreens; ii++)
-    screenInfo.screens[ii]->devPrivates[XvScreenIndex].ptr = (pointer)NULL;
-  lastScreenWithAdaptors = screenInfo.numScreens;
 
   if (XvExtensionGeneration != serverGeneration)
     {
@@ -264,8 +256,6 @@ CreateResourceTypes()
 int
 XvScreenInit(ScreenPtr pScreen)
 {
-
-  int ii;
   XvScreenPtr pxvs;
 
   if (XvScreenGeneration != serverGeneration)
@@ -281,20 +271,11 @@ XvScreenInit(ScreenPtr pScreen)
 	  ErrorF("XvScreenInit: Unable to allocate screen private index\n");
 	  return BadAlloc;
 	}
+#ifdef PANORAMIX
+        XineramaRegisterConnectionBlockCallback(XineramifyXv);
+#endif
       XvScreenGeneration = serverGeneration; 
     }
-
-  /* ITS A LITTLE HARD TO UNDERSTAND WHAT THIS DOES, BUT ESSENTIALLY I WANT 
-     ALL SCREEN THAT HAVE ADAPTORS TO HAVE A VALID DEVPRIVATE POINTER AND ANY 
-     THAT DON'T TO HAVE NULL DEVPRIVATE POINTERS; THIS WAY I DON'T HAVE TO 
-     CALL A SPECIAL XV SCREEN INITIALIZE FOR SCREENS WITHOUT ADAPTORS; THERE
-     SHOULD BE AN EASIER WAY TO DO THIS, BUT main.c DOESN'T INITIALIZE THE 
-     DEVPRIVATE POINTERS FOR A NEWLY CREATED SCREEN, NOR ARE THEY INITIALIZED
-     WHEN A NEW SCREEN PRIVATE INDEX IS ALLOCATED */
-
-  for (ii=lastScreenWithAdaptors; ii<screenInfo.numScreens; ii++)
-    screenInfo.screens[ii]->devPrivates[XvScreenIndex].ptr = (pointer)NULL;
-  lastScreenWithAdaptors = screenInfo.numScreens;
 
   if (pScreen->devPrivates[XvScreenIndex].ptr)
     {
@@ -351,7 +332,6 @@ XvCloseScreen(
 static void
 XvResetProc(ExtensionEntry* extEntry)
 {
-  lastScreenWithAdaptors = 0;
 }
 
 int

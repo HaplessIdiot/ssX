@@ -68,6 +68,16 @@ SOFTWARE.
 #include "xf86_ansic.h"
 #endif
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+
+XvAdaptorPtr XineramaAdaptors[MAXSCREENS];
+static int XineramaXvShmPutImage(ClientPtr);
+static int XineramaXvSetPortAttribute(ClientPtr);
+
+#endif
+
 /* INTERNAL */
 
 static int ProcXvQueryExtension(ClientPtr);
@@ -216,12 +226,24 @@ ProcXvDispatch(ClientPtr client)
     case xv_SelectVideoNotify: return(ProcXvSelectVideoNotify(client));
     case xv_SelectPortNotify: return(ProcXvSelectPortNotify(client));
     case xv_StopVideo: return(ProcXvStopVideo(client));
-    case xv_SetPortAttribute: return(ProcXvSetPortAttribute(client));
+    case xv_SetPortAttribute: 
+#ifdef PANORAMIX
+        if(!noPanoramiXExtension)
+	    return(XineramaXvSetPortAttribute(client));
+	else
+#endif
+	    return(ProcXvSetPortAttribute(client));
     case xv_GetPortAttribute: return(ProcXvGetPortAttribute(client));
     case xv_QueryBestSize: return(ProcXvQueryBestSize(client));
     case xv_QueryPortAttributes: return(ProcXvQueryPortAttributes(client));
     case xv_PutImage: return(ProcXvPutImage(client));
-    case xv_ShmPutImage: return(ProcXvShmPutImage(client));
+    case xv_ShmPutImage: 
+#ifdef PANORAMIX
+        if(!noPanoramiXExtension)
+	    return(XineramaXvShmPutImage(client));
+	else
+#endif
+	    return(ProcXvShmPutImage(client));
     case xv_QueryImageAttributes: return(ProcXvQueryImageAttributes(client));
     case xv_ListImageFormats: return(ProcXvListImageFormats(client));
     default:
@@ -819,7 +841,6 @@ ProcXvSetPortAttribute(ClientPtr client)
       client->errorValue = stuff->value;
 
   return status;
-
 }
 
 static int
@@ -1135,6 +1156,7 @@ ProcXvShmPutImage(ClientPtr client)
 
   return status;
 }
+
 
 static int 
 ProcXvQueryImageAttributes(ClientPtr client)
@@ -1777,3 +1799,151 @@ SWriteListImageFormatsReply(
 
   return Success;
 }
+
+
+#ifdef PANORAMIX
+
+static int
+XineramaXvSetPortAttribute(ClientPtr client)
+{
+    REQUEST(xvSetPortAttributeReq);
+    int result, i;
+
+    REQUEST_SIZE_MATCH(xvSetPortAttributeReq);
+
+    FOR_NSCREENS_BACKWARD(i) {
+	if(XineramaAdaptors[i]) {
+	   stuff->port = XineramaAdaptors[i]->base_id;
+	   result = ProcXvSetPortAttribute(client);
+	}
+    }
+    return result;
+}
+
+
+static int 
+XineramaXvShmPutImage(ClientPtr client)
+{
+    REQUEST(xvShmPutImageReq);
+    PanoramiXRes *draw, *gc;
+    Bool send_event = stuff->send_event;
+    Bool isRoot;
+    int result, i, x, y;
+
+    REQUEST_SIZE_MATCH(xvShmPutImageReq);
+
+    if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+        return BadDrawable;
+
+    if(!(gc = (PanoramiXRes *)SecurityLookupIDByType(
+                client, stuff->gc, XRT_GC, SecurityReadAccess)))
+        return BadGC;    
+ 
+    isRoot = (draw->type == XRT_WINDOW) &&
+                (stuff->drawable == WindowTable[0]->drawable.id);
+
+    x = stuff->drw_x;
+    y = stuff->drw_y;
+
+    FOR_NSCREENS_BACKWARD(i) {
+	if(XineramaAdaptors[i]) {
+	   stuff->drawable = draw->info[i].id;
+	   stuff->port = XineramaAdaptors[i]->base_id;
+	   stuff->gc = gc->info[i].id;
+	   stuff->drw_x = x;
+	   stuff->drw_y = y;
+	   if(isRoot) {
+		stuff->drw_x -= panoramiXdataPtr[i].x;
+		stuff->drw_y -= panoramiXdataPtr[i].y;
+	   }
+	   stuff->send_event = (send_event && !i) ? 1 : 0;
+
+	   result = ProcXvShmPutImage(client);
+	   if(result != Success) break;
+	}
+    }
+    return result;
+}
+
+void XineramifyXv(void)
+{
+  ScreenPtr pScreen;
+  XvScreenPtr pxvs;
+  XvAdaptorPtr pAdapt, refAdapt;
+  XvImagePtr refImage;
+  int imageHeads = 0;
+  Bool match, blast;
+  int max_w = 0, max_h = 0;
+  int i, j, k, n;
+
+  /* find which heads can do images */
+  for(i = 0; i < PanoramiXNumScreens; i++) {
+     pScreen = screenInfo.screens[i];
+     XineramaAdaptors[i] = NULL;
+     pxvs = (XvScreenPtr)pScreen->devPrivates[XvScreenIndex].ptr;
+     if(pxvs) {
+        for(j = 0; j < pxvs->nAdaptors; j++) {
+           pAdapt = pxvs->pAdaptors + j;
+           if((pAdapt->type & XvImageMask) && (pAdapt->nImages > 0)) {
+              imageHeads++;
+              XineramaAdaptors[i] = pAdapt;
+              break;  /* assuming only one XvImage capable adaptor per head */
+           }
+        }
+     }
+  }
+
+  if(!imageHeads || !XineramaAdaptors[0]) return;
+
+  /* filter out image types not common on all */
+  refAdapt = XineramaAdaptors[0];
+
+  for(i = 0; i < refAdapt->nEncodings; i++) {
+      if(!strcmp(refAdapt->pEncodings[i].name, "XV_IMAGE")) {
+          max_w = refAdapt->pEncodings[i].width;
+          max_h = refAdapt->pEncodings[i].height;
+	  break;
+      }
+  }
+
+  for(i = 0; i < refAdapt->nImages; i++) {
+     refImage = refAdapt->pImages + i;
+
+     blast = FALSE;
+     for(j = 0; j < PanoramiXNumScreens; j++) {
+	match = FALSE;
+	if((pAdapt = XineramaAdaptors[j])) {
+           for(k = 0; k < pAdapt->nImages; k++) {
+               if(pAdapt->pImages[k].id == refImage->id) {
+                   match = TRUE;
+                   for(n = 0; n < pAdapt->nEncodings; n++) {
+                      if(!strcmp(pAdapt->pEncodings[n].name, "XV_IMAGE")) {
+                          if(max_w > pAdapt->pEncodings[n].width)
+                             max_w = pAdapt->pEncodings[n].width;
+                          if(max_h > pAdapt->pEncodings[n].height)
+                             max_h = pAdapt->pEncodings[n].height;
+                          break;
+                      }
+                   }
+                   break;
+               }
+           }
+	}
+	if(!match) {
+           blast = TRUE;
+           break;
+        }
+     }
+     if(blast) {
+        if(i < (refAdapt->nImages - 1))
+            memcpy(refAdapt->pImages + i, refAdapt->pImages + i + 1,
+                      (refAdapt->nImages - 1 - i) * sizeof(XvImageRec));
+        refAdapt->nImages--;
+     }
+  }
+
+  if(!refAdapt->nImages) /* no image formats in common between heads */
+     refAdapt->type &= ~XvImageMask;
+}
+#endif

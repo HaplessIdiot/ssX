@@ -332,7 +332,7 @@ XineramaDestroyClip(GCPtr pGC)
 
 
 
-static int
+int
 XineramaDeleteResource(pointer data, XID id)
 {
     xfree(data);
