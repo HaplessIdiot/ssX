@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.23 1997/07/29 12:07:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.24 1997/07/31 07:16:12 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -68,9 +68,6 @@ int scrnIndex;
         for (j=0; j<16; j++)
             PCI_DevIOAddrPorts[(i*16)+j] = 0xC000 + (i*0x0100) + (j*4);
 
-    xf86ClearIOPortList(scrnIndex);
-    xf86AddIOPorts(scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-    xf86AddIOPorts(scrnIndex, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
 
     /* Enable I/O access */
     xf86EnableIOPorts(scrnIndex);
@@ -111,7 +108,6 @@ int scrnIndex;
             printf("No PCI !\n");
 #endif
             xf86DisableIOPorts(scrnIndex);
-            xf86ClearIOPortList(scrnIndex);
 	    return (pciConfigPtr *)NULL;
 	}
     }
@@ -225,7 +221,6 @@ int scrnIndex;
 		== (pciConfigPtr)NULL) {
                 outl(PCI_MODE1_ADDRESS_REG, 0x00);
                 xf86DisableIOPorts(scrnIndex);
-                xf86ClearIOPortList(scrnIndex);
 		return (pciConfigPtr *)NULL;
 	    }
 
@@ -239,7 +234,6 @@ int scrnIndex;
     if (pcr._configtype == 1) {
         outl(PCI_MODE1_ADDRESS_REG, 0x00);
 	xf86DisableIOPorts(scrnIndex);
-	xf86ClearIOPortList(scrnIndex);
 	return pci_devp;
     }
 #endif
@@ -315,7 +309,6 @@ int scrnIndex;
                 outb(PCI_MODE2_ENABLE_REG, 0x00);
                 outb(PCI_MODE2_FORWARD_REG, 0x00);
                 xf86DisableIOPorts(scrnIndex);
-                xf86ClearIOPortList(scrnIndex);
 		return (pciConfigPtr *)NULL;
 	    }
 
@@ -328,7 +321,6 @@ int scrnIndex;
     outb(PCI_MODE2_FORWARD_REG, 0x00);
 
     xf86DisableIOPorts(scrnIndex);
-    xf86ClearIOPortList(scrnIndex);
     return pci_devp;
 }
 
@@ -356,10 +348,6 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
     for (i=0; i<16; i++)
         for (j=0; j<16; j++)
             PCI_DevIOAddrPorts[(i*16)+j] = 0xC000 + (i*0x0100) + (j*4);
-
-    xf86ClearIOPortList(scrnIndex);
-    xf86AddIOPorts(scrnIndex, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
-    xf86AddIOPorts(scrnIndex, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
 
     /* Enable I/O access */
     xf86EnableIOPorts(scrnIndex);
@@ -389,7 +377,6 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
             printf("No PCI !\n");
 #endif
             xf86DisableIOPorts(scrnIndex);
-            xf86ClearIOPortList(scrnIndex);
 	    return;
 	}
     }
@@ -403,7 +390,6 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
 	outl(PCI_MODE1_DATA_REG, tmp | (value & mask));
         outl(PCI_MODE1_ADDRESS_REG, 0x00);
 	xf86DisableIOPorts(scrnIndex);
-	xf86ClearIOPortList(scrnIndex);
 	return;
     } else {
 	/* Now try pci config 2 probe (deprecated) */
@@ -425,7 +411,6 @@ xf86writepci(scrnIndex, bus, cardnum, func, reg, mask, value)
 	outb(PCI_MODE2_FORWARD_REG, 0x00);
 
 	xf86DisableIOPorts(scrnIndex);
-	xf86ClearIOPortList(scrnIndex);
 	return;
     }
 }
@@ -1116,8 +1101,6 @@ pciEnableIO(int scrnIndex)
     unsigned pciIOPorts[] = { PCI_MODE1_ADDRESS_REG };
     int numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
 
-    xf86ClearIOPortList(scrnIndex);
-    xf86AddIOPorts(scrnIndex, numPciIOPorts, pciIOPorts);
     xf86EnableIOPorts(scrnIndex);
 #else
     pciConfBase = (unsigned char *) smem_create("PCI-CONF",
@@ -1134,7 +1117,6 @@ pciDisableIO(int scrnIndex)
 {
 #if !(defined(Lynx) && defined(__powerpc__))
     xf86DisableIOPorts(scrnIndex);
-    xf86ClearIOPortList(scrnIndex);
 #else
     smem_create(NULL, (char *) pciConfBase, 0, SM_DETACH);
     smem_remove("PCI-CONF");

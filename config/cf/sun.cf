@@ -1,9 +1,9 @@
-XCOMM platform:  $TOG: sun.cf /main/163 1997/06/08 20:08:23 kaleb $
+XCOMM platform:  $TOG: sun.cf /main/169 1997/08/15 17:02:23 samborn $
 
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.36 1997/07/05 15:14:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.37 1997/07/06 05:30:33 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -34,10 +34,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *    provide appropriate values for the various compiler related
  *    configuration varibles used here.
  * 
- * If you say you have the SunPro C compiler, we assume you have 
- * version 2.0.x of the compiler.  If you have version 3.0.x instead, 
- * define CCompilerMajorVersion as 3 in site.def
- *
  * If you don't tell us which C compiler you have, we assume you have 
  * the SunPro C compiler under Solaris 2.x, and the bundled /bin/cc 
  * under SunOS 4.1.x
@@ -76,11 +72,24 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if HasSunC 
 # ifndef CCompilerMajorVersion
-#  define CCompilerMajorVersion 3
-#  define DefaultCDebugFlags	-xO3
-#  define OptimizedCDebugFlags	-xO3
+#  define CCompilerMajorVersion DefaultSunProCCompilerMajorVersion
 # endif
+# ifndef CCompilerMinorVersion
+#  define CCompilerMinorVersion DefaultSunProCCompilerMinorVersion
+# endif
+XCOMM SunPro C CCompilerMajorVersion./**/CCompilerMinorVersion
 #endif
+
+/* we used to have this here :
+ *
+ * #if HasSunC 
+ * # ifndef CCompilerMajorVersion
+ * #  define CCompilerMajorVersion 3
+ * #  define DefaultCDebugFlags	-xO3
+ * #  define OptimizedCDebugFlags	-xO3
+ * # endif
+ * #endif
+ */
 
 #if HasSunCplusplus
 # ifndef HasCplusplus
@@ -88,9 +97,28 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define OptimizedCplusplusDebugFlags	-xO3
 # endif
 # ifndef CplusplusCompilerMajorVersion
-#  define CplusplusCompilerMajorVersion	4
+#  ifdef DefaultSunProCplusplusCompilerMajorVersion
+#   define CplusplusCompilerMajorVersion DefaultSunProCplusplusCompilerMajorVersion
+#  else
+#   define CplusplusCompilerMajorVersion 3
+#  endif
 # endif
+# ifndef CplusplusCompilerMinorVersion
+#  ifdef DefaultSunProCplusplusCompilerMinorVersion
+#   define CplusplusCompilerMinorVersion DefaultSunProCplusplusCompilerMinorVersion
+#  else
+#   define CplusplusCompilerMinorVersion 0
+#  endif
+# endif
+XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #endif
+
+/* we used to have this here :
+ *
+ * # ifndef CplusplusCompilerMajorVersion
+ * #  define CplusplusCompilerMajorVersion	4
+ * # endif
+ */
 
 #if HasCenterLineC
 # ifndef CcCmd
@@ -154,10 +182,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define CplusplusCmd	/opt/SUNWspro/bin/CC
 #endif
 #ifndef  CplusplusFilt
-# define CplusplusFilt	/opt/SUNWspro/bin/c++filt
+#  define CplusplusFilt  /opt/SUNWspro/bin/c++filt
 #endif
 #ifndef  CplusplusDependIncludes
+#if CplusplusCompilerMajorVersion > 3
+# define CplusplusDependIncludes	-I/opt/SUNWspro/SC4.0/include/CC
+#elif CplusplusCompilerMajorVersion > 2
 # define CplusplusDependIncludes	-I/opt/SUNWspro/SC3.0/include/CC
+#else
+# define CplusplusDependIncludes	-I/opt/SUNWspro/SC2.0.1/include/CC
+#endif
 #endif
 #endif
 

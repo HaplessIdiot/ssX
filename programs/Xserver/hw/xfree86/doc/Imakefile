@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.44 1997/01/25 04:18:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.45 1997/05/24 11:34:31 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -103,7 +103,6 @@ InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
 LinkFile(README.Mach32,READ.Mach32)
 LinkFile(README.Mach64,READ.Mach64)
 LinkFile(README.FreeBSD,READ.FreeBSD)
-LinkFile(README.OpenBSD,README.NetBSD)
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))

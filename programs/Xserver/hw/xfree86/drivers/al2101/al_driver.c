@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/al2101/al_driver.c,v 1.2 1997/05/03 09:17:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/al2101/al_driver.c,v 1.3 1997/06/03 14:11:58 hohndel Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -113,10 +113,6 @@ vgaVideoChipRec AL2101 = {
 
 #define new ((vgaAL2101Ptr)vgaNewVideoState)
 
-static unsigned AL2101_IOPorts[] = {
-	0x3D6, 0x3D7
-};
-
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo alVersRec =
 {
@@ -224,10 +220,6 @@ AL2101Probe()
   /*
    * Set up I/O ports to be used by this card
    */  
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(AL2101_IOPorts) /
-      sizeof(AL2101_IOPorts[0]), AL2101_IOPorts);
 
   if (vga256InfoRec.chipset)
     {

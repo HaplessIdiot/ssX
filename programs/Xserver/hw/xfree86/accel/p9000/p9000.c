@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.52 1997/06/15 12:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.53 1997/07/29 12:07:39 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -214,23 +214,6 @@ Bool p9000NoAccel = FALSE;          /* Disables hardware acceleration */
 
 unsigned char p9000SwapBits[256];
 
-static unsigned p9000_IOPorts[] = {
-  /* VGA Registers */
-  SEQ_INDEX_REG,    SEQ_PORT,         MISC_OUT_REG,     MISC_IN_REG,
-  GRA_I,            GRA_D,            CRT_IC,           CRT_DC,
-  IS1_RC,           ATT_IW,           ATT_R,            VGA_BANK_REG,
-
-  /* BT484/485 Register Defines */  
-  BT_PIXEL_MASK,    BT_READ_ADDR,     BT_WRITE_ADDR,    BT_RAMDAC_DATA,
-  BT_COMMAND_REG_0, BT_CURS_RD_ADDR,  BT_CURS_WR_ADDR,  BT_CURS_DATA ,
-  BT_STATUS_REG,    BT_COMMAND_REG_3, BT_CURS_RAM_DATA, BT_COMMAND_REG_1,
-  BT_COMMAND_REG_2, BT_CURS_Y_LOW,    BT_CURS_Y_HIGH,   BT_CURS_X_LOW, 
-  BT_CURS_X_HIGH,
-};
-
-static int Num_p9000_IOPorts = (sizeof(p9000_IOPorts)/
-				sizeof(p9000_IOPorts[0]));
-
 /* p9000WeightMasks must match p9000weights[], below */
 static short p9000WeightMasks[] = { RGB16_565, RGB16_555, RGB32_888 };
 short p9000WeightMask;
@@ -320,9 +303,6 @@ p9000Probe()
 	       XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
-
-    xf86ClearIOPortList(p9000InfoRec.scrnIndex);
-    xf86AddIOPorts(p9000InfoRec.scrnIndex, Num_p9000_IOPorts, p9000_IOPorts);
 
     if (p9000InfoRec.chipset)
       {

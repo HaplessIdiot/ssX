@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.25 1997/07/10 08:17:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.26 1997/07/29 12:07:49 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1116,6 +1116,14 @@ extern unsigned short _port_tbl[];
 #define	port_convert(x)	_port_tbl[(unsigned short)x]
 #endif 
 
+#if defined(PC98_TGUI) || defined(PC98_MGA)
+#if NeedFunctionPrototypes
+extern void *mmioBase;
+#else
+extern unsigned char *mmioBase;
+#endif
+#endif
+
 asm     void _outl(port,val)
 {
 %reg	port,val;
@@ -1276,7 +1284,7 @@ static void outl(port,val)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    *(volatile unsigned int *)((char *)mmioBase+(port)) = (unsigned int)(val);
 #else
    _outl(port,val);
@@ -1293,7 +1301,7 @@ static void outw(port,val)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    *(volatile unsigned short *)((char *)mmioBase+(port)) = (unsigned short)(val);
 #else
    _outw(port,val);
@@ -1310,7 +1318,7 @@ static void outb(port,val)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    *(volatile unsigned char *)((char *)mmioBase+(port)) = (unsigned char)(val);
 #else
    _outb(port,val);
@@ -1329,7 +1337,7 @@ static int inl(port)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    ret =*(volatile unsigned int *)((char *)mmioBase+(port));
 #else
    ret = _inl(port);
@@ -1349,7 +1357,7 @@ static int inw(port)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    ret =*(volatile unsigned short *)((char *)mmioBase+(port));
 #else
    ret = _inw(port);
@@ -1369,7 +1377,7 @@ static int inb(port)
    port=tmp;
 #endif
 
-#if defined(PC98_NEC)||defined(PC98_PWLB)
+#if defined(PC98_NEC)||defined(PC98_PWLB)||defined(PC98_TGUI)||defined(PC98_MGA)
    ret =*(volatile unsigned char *)((char *)mmioBase+(port));
 #else
    ret = _inb(port);

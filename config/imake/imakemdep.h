@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.25 1997/06/11 12:24:23 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.26 1997/07/05 08:45:12 dawes Exp $ */
 
 
 /* 
@@ -638,6 +638,9 @@ char *cpp_argv[ARGUMENTS] = {
 		buf[1] = 0;						\
 	}								\
     } while (0)
+# else
+   /* OpenBSD - Add DEFAULT_MACHINE_ARCHITECTURE */
+#  define DEFAULT_MACHINE_ARCHITECTURE "m %[^\n]"
 # endif
 #elif defined(__NetBSD__)
 /*

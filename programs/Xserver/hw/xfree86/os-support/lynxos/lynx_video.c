@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.3 1997/04/17 08:17:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.4 1997/07/10 08:17:37 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -193,20 +193,6 @@ void xf86EnableInterrupts()
 unsigned char *ioBase = NULL;
 static int IOEnabled;
 
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	return;
-}
-
-/* ARGSUSED */
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
 
 void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
@@ -234,11 +220,6 @@ int ScreenNum;
         	smem_remove("IOBASE");
         	ioBase = NULL;
         }
-	return;
-}
-
-void xf86DisableIOPrivs()
-{
 	return;
 }
 

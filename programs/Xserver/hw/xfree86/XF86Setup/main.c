@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.10 1997/07/10 08:17:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.11 1997/07/29 12:07:23 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -123,15 +123,17 @@ static char usage_msg[] =
 	"Usage: %s [options] [filename] [--] [arg ...]\n"
 	"Options always available:\n"
 	"   -sync		Use synchronous mode for display server\n"
-	"   -name <name>	Name to use for application\n"
+	"   -name <name>		Name to use for application\n"
+#ifdef PC98
+        "   -egc			Use EGC server\n"
+        "   -pegc		Use PEGC server\n"
+#endif
 	"\n"
 	"Options available only when a filename is specified:\n"
 	"   -display <disp>	Display to use\n"
 	"   -geometry <geom>	Initial geometry for window\n"
 	"   -notk		Don't open a connection to the X server\n"
 	"   -script		Look for filename in script directory\n"
-        "   -egc		Use EGC server (pc98 only\n"
-        "   -pegc		Use PEGC server (pc98 only\n"
 	"\n"
 	"Options available only when a filename is not specified:\n"
 	"   -nodialog      	Don't use Dialog for user interaction\n"

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.6 1997/07/06 13:12:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.7 1997/07/29 12:07:55 hohndel Exp $ */
 
 /*
   TODO (also see apm_accel.c)
@@ -358,15 +358,6 @@ ApmIdent(int n)
 static Bool
 ApmProbe(void)
 {
-  /*
-   * Set up I/O ports to be used by this card.  Only do the second
-   * xf86AddIOPorts() if there are non-standard ports for this
-   * chipset.
-   */
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, 
-                 Num_Apm_ExtPorts, Apm_ExtPorts);
 
   /*
    * First we attempt to figure out if one of the supported chipsets

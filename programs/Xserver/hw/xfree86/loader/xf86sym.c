@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.24 1997/07/06 05:30:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.25 1997/07/29 12:08:05 hohndel Exp $ */
 
 
 
@@ -72,8 +72,6 @@ extern void DPMSSet(CARD16);
 
 LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ReadBIOS)
-   SYMFUNC(xf86ClearIOPortList)
-   SYMFUNC(xf86AddIOPorts)
    SYMFUNC(xf86EnableIOPorts)
    SYMFUNC(xf86DisableIOPorts)
    SYMFUNC(xf86StringToToken)
@@ -267,7 +265,6 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86strtoul)
   SYMFUNC(xf86tan)
   SYMFUNC(xf86tmpfile)
-  SYMFUNC(xf86tmpnam)
   SYMFUNC(xf86tolower)
   SYMFUNC(xf86toupper)
   SYMFUNC(xf86ungetc)

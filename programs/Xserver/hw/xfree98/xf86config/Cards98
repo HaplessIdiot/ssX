@@ -1,4 +1,4 @@
-# $XFree86: $
+# $XFree86: xc/programs/Xserver/hw/xfree98/xf86config/Cards98,v 1.2 1997/07/29 13:59:55 hohndel Exp $
 #
 #
 #
@@ -225,6 +225,9 @@ SEE NEC Trident
 NAME PC9821RaII23/N,W
 SEE NEC Trident
 
+NAME PC9821Ra266/N,W
+SEE NEC Trident
+
 NAME PC9821Rs20/B20
 SEE NEC Trident
 
@@ -299,6 +302,25 @@ SEE MGA Millennium
 NAME PC9821St20
 SEE MGA Millennium
 
+NAME PC9821RvII26/N20
+SEE MGA Millennium
+
+NAME NEC FC-WAB-X2
+SEE MGA Millennium
+
+NAME MGA Mystique
+CHIPSET MGA1064SG
+SERVER MGA
+
+NAME PC9821V166/S
+SEE MGA Mystique
+
+NAME PC9821V200/M,S
+SEE MGA Mystique
+
+NAME PC9821V233/M7,M7V
+SEE MGA Mystique
+
 # NECS3
 
 NAME NEC WAB-A/B
@@ -365,6 +387,7 @@ SERVER PWSKB
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"att20c505"
+LINE    # Ramdac	"bt485"
 LINE    Dacspeed	110
 LINE    Option	"dac_8_bit"
 LINE    # Option	"pw_mux"
@@ -443,6 +466,7 @@ SERVER PWLB
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"att20c505"
+LINE    # Ramdac	"bt485"
 LINE    Dacspeed	110
 LINE    Option	"dac_8_bit"
 LINE    Option	"bt485_curs"

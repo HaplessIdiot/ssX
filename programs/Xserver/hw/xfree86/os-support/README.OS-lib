@@ -173,31 +173,11 @@ int xf86ReadBIOS(unsigned long Base, unsigned long Offset,
 	 */
 }
 
-void xf86ClearIOPortList(int ScreenNum)
-{
-	/*
-	 * Clears any list of I/O ports that the OS-layer may be maintaining.
-	 * Note: the value used for ScreenNum must be the scrnIndex field
-	 * of the screenInfoRec, because this is the only index that is
-	 * guaranteed to be valid and never change during the life of the
-	 * server.  It is not the same as the index of pScreen in ScreenInfo.
-	 */
-}
-
-void xf86AddIOPorts(int ScreenNum, int NumPorts, unsigned *Ports)
-{
-        /*
-	 * Adds NumPorts I/O ports listed in array Ports to a list that
-	 * the OS-layer may be maintaining.  Successive calls to this
-	 * function are cumulative.
-	 */
-}
 
 void xf86EnableIOPorts(int ScreenNum)
 {
         /*
-	 * Enables I/O permissions.  The OS layer can either use a 
-	 * previously created list of I/O ports to be used, or can 
+	 * Enables I/O permissions.  The OS layer should 
 	 * enable all I/O port access.
 	 */
 }
@@ -205,16 +185,7 @@ void xf86EnableIOPorts(int ScreenNum)
 void xf86DisableIOPorts(int ScreenNum)
 {
         /*
-	 * Disables I/O permissions.  Does not clear the list of I/O 
-	 * ports, if any exists.
-	 */
-}
-
-void xf86DisableIOPrivs(void)
-{
-        /*
-	 * Do whatever is necessary to disable I/O permissions after forking
-	 * a child process.
+	 * Disables I/O permissions. 
 	 */
 }
 
@@ -531,7 +502,7 @@ xf86cos(double x)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.4 1997/02/18 10:54:40 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.5 1997/02/18 17:51:46 hohndel Exp $
 
 
 

@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.15 1997/06/25 08:24:54 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.16 1997/07/29 12:07:23 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -459,8 +459,12 @@ set CardReadmes(SVGA-cirrus)	README.cirrus
 set CardReadmes(SVGA-chips)	README.chips
 set CardReadmes(SVGA-et3000)	README.tseng
 set CardReadmes(SVGA-et4000)	README.tseng
+set CardReadmes(SVGA-mga)	README.MGA
+set CardReadmes(SVGA-nv)	README.NV1
 set CardReadmes(SVGA-oak)	README.Oak
 set CardReadmes(SVGA-pvga1)	README.WstDig
+set CardReadmes(SVGA-s3v)	README.S3V
+set CardReadmes(SVGA-sis)	README.SiS
 set CardReadmes(SVGA-tvga8900)	README.trident
 set CardReadmes(SVGA-video7)	README.Video7
 set CardReadmes(SVGA-NONE)	README

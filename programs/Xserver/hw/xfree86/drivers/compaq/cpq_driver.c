@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.4 1997/05/03 09:17:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.5 1997/06/03 14:12:06 hohndel Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  * Copyright 1997 Ming Yu <yum@itp.ac.cn>, Gerry Toll <gtoll@tc.cornell.edu>, 
@@ -222,11 +222,6 @@ COMPAQProbe()
         unsigned char temp, ver;
 	Bool found = FALSE;
 
-	/*
-	 * Set up I/O ports to be used by this card
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
 	if (vga256InfoRec.chipset) {
 		if (StrCaseCmp(vga256InfoRec.chipset, COMPAQIdent(0)))

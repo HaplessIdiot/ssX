@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.3 1996/04/15 11:31:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.4 1996/12/23 06:50:37 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -44,21 +44,6 @@ ULONG action;
 char *ioDrvPath = "/dev/fastio$";
 USHORT callgate[3]={0,0,0};
 
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	return;
-}
-
-/* ARGSUSED */
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-
-}
 
 void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
@@ -147,7 +132,3 @@ HFILE hfd;
 
 }
 
-void xf86DisableIOPrivs()
-{
-	return;
-}

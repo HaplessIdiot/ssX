@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.12 1997/06/03 14:12:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.13 1997/07/29 12:08:01 hohndel Exp $ */
 
 /*
  *
@@ -232,8 +232,7 @@ Bool enter;
    unsigned char tmp;
 
    if (enter){
-      xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-      xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+
       xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
       /* Init the vgaIOBase reg index, depends on mono/color operation */

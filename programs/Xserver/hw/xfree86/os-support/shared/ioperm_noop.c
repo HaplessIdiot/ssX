@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/ioperm_noop.c,v 3.0 1996/11/18 13:12:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/ioperm_noop.c,v 3.1 1996/12/23 06:50:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -27,20 +27,6 @@
  * Amoeba, Minix and 386BSD don't bother with I/O permissions, 
  * or the permissions are implicit with opening/enabling the console.
  */
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	return;
-}
-
-/* ARGSUSED */
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
 
 void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
@@ -54,7 +40,3 @@ int ScreenNum;
 	return;
 }
 
-void xf86DisableIOPrivs()
-{
-	return;
-}

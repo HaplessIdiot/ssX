@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.2 1997/05/03 11:31:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.3 1997/05/18 12:12:13 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -38,14 +38,17 @@
 #define TVGA9000i	7
 #define TVGA9100B	8
 #define TVGA9200CXr	9
-#define TGUI9320LCD	10
-#define TGUI9400CXi	11
-#define TGUI9420	12
-#define TGUI9420DGi	13
-#define TGUI9430DGi	14
-#define TGUI9440AGi	15
+#define TGUI9400CXi	10
+#define TGUI9420	11
+#define TGUI9420DGi	12
+#define TGUI9430DGi	13
+#define TGUI9440AGi	14
+#define TGUI9320LCD	15
 #define TGUI96xx	16
 #define CYBER938x	17
+
+/* Revisions */
+#define TGUI9685	0x21
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */
@@ -64,7 +67,7 @@ int tridentClockLimit[] = {
 	80000,
 	80000,
 	80000,
-	80000,
+	90000,
 	90000,
 	135000,
 };
@@ -84,7 +87,7 @@ int tridentClockLimit16bpp[] = {
 	40000,
 	40000,
 	40000,
-	40000,
+	45000,
 	45000,
 	135000,
 }; 

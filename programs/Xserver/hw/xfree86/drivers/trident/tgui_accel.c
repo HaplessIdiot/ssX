@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.5 1997/05/03 11:31:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.6 1997/06/03 14:12:20 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -38,6 +38,7 @@ extern unsigned char *tguiMMIOBase;
 extern int TGUIRops_alu[16];
 extern int TGUIRops_Pixalu[16];
 extern int GE_OP;
+CARD32 ImageWriteBase[2048];
 #include "trident_driver.h"
 #include "tgui_ger.h"
 #include "tgui_mmio.h"
@@ -49,6 +50,7 @@ extern int GE_OP;
 #define TGUISync			MMIONAME(TGUISync)
 #define TGUIAccelInit			MMIONAME(TGUIAccelInit)
 #define TGUISetupForFillRectSolid	MMIONAME(TGUISetupForFillRectSolid)
+#define TGUI9685SetupForFillRectSolid	MMIONAME(TGUI9685SetupForFillRectSolid)
 #define TGUISubsequentFillRectSolid	MMIONAME(TGUISubsequentFillRectSolid)
 #define TGUISetupForScreenToScreenCopy	MMIONAME(TGUISetupForScreenToScreenCopy)
 #define TGUISubsequentScreenToScreenCopy	MMIONAME(TGUISubsequentScreenToScreenCopy)
@@ -61,11 +63,14 @@ extern int GE_OP;
 #define TGUISubsequentFill8x8Pattern		MMIONAME(TGUISubsequentFill8x8Pattern)
 #define TGUISetupFor8x8PatternColorExpand	MMIONAME(TGUISetupFor8x8PatternColorExpand)
 #define TGUISubsequent8x8PatternColorExpand	MMIONAME(TGUISubsequent8x8PatternColorExpand)
+#define TGUISetupForImageWrite			MMIONAME(TGUISetupForImageWrite)
+#define TGUISubsequentImageWrite		MMIONAME(TGUISubsequentImageWrite)
 
 #endif
 
 void TGUISync();
 void TGUISetupForFillRectSolid();
+void TGUI9685SetupForFillRectSolid();
 void TGUISubsequentFillRectSolid();
 void TGUISetupForScreenToScreenCopy();
 void TGUISubsequentScreenToScreenCopy();
@@ -78,6 +83,8 @@ void TGUISetupForFill8x8Pattern();
 void TGUISubsequentFill8x8Pattern();
 void TGUISetupFor8x8PatternColorExpand();
 void TGUISubsequent8x8PatternColorExpand();
+void TGUISetupForImageWrite();
+void TGUISubsequentImageWrite();
 
 /*
  * The following function sets up the supported acceleration. Call it
@@ -96,7 +103,10 @@ void TGUIAccelInit() {
 
     xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
 
-    xf86AccelInfoRec.SetupForFillRectSolid = TGUISetupForFillRectSolid;
+    if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685))
+	xf86AccelInfoRec.SetupForFillRectSolid = TGUI9685SetupForFillRectSolid;
+    else
+        xf86AccelInfoRec.SetupForFillRectSolid = TGUISetupForFillRectSolid;
     xf86AccelInfoRec.SubsequentFillRectSolid = TGUISubsequentFillRectSolid;
 
     xf86AccelInfoRec.ErrorTermBits = 11;
@@ -118,10 +128,12 @@ void TGUIAccelInit() {
     	xf86AccelInfoRec.SubsequentFill8x8Pattern = TGUISubsequentFill8x8Pattern;
 
 	/* 8x8 Pattern Color Expand */
-    	xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
+	if (TVGAchipset != TGUI96xx) {
+	xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
 					TGUISetupFor8x8PatternColorExpand;
     	xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
 					TGUISubsequent8x8PatternColorExpand;
+	}
     }
 
     /* Color Expansion */
@@ -141,10 +153,17 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
 	TGUISubsequentScreenToScreenColorExpand;
 
+    xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY | NO_PLANEMASK;
+    xf86AccelInfoRec.SetupForImageWrite = TGUISetupForImageWrite;
+    xf86AccelInfoRec.ImageWriteRange = 32 * vga256InfoRec.displayWidth;
+    xf86AccelInfoRec.SubsequentImageWrite = TGUISubsequentImageWrite;
+    xf86AccelInfoRec.ImageWriteBase = (pointer)ImageWriteBase;
+
     xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
 
-    xf86AccelInfoRec.PixmapCacheMemoryStart = vga256InfoRec.virtualY *
-		vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8;
+    xf86AccelInfoRec.PixmapCacheMemoryStart = xf86AccelInfoRec.ImageWriteRange + 
+		(vga256InfoRec.virtualY *
+		vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8);
 
     xf86AccelInfoRec.PixmapCacheMemoryEnd = vga256InfoRec.videoRam * 1024 -
 						(IsCyber ? 4096 : 1024);
@@ -184,8 +203,21 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
+	/* 9680 has a bug and needs this replication ! */
+	if (vgaBitsPerPixel == 8)
+		color = color << 16 | color << 8 | color;
+
 	TGUI_FCOLOUR(color);
 	TGUI_BCOLOUR(color);
+	TGUI_FMIX(TGUIRops_Pixalu[rop]);
+}
+
+void TGUI9685SetupForFillRectSolid(color, rop, planemask)
+    int color, rop;
+    unsigned planemask;
+{
+	TGUI_FPATCOL(color);
+	TGUI_BPATCOL(color);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]);
 }
 /*
@@ -278,6 +310,12 @@ void TGUISetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 {
 	int drawflag = 0;
 
+	/* 9680 has a bug, replication needed ! */
+	if (vgaBitsPerPixel == 8) {
+		fg = fg << 16 | fg << 8 | fg;
+		bg = bg << 16 | bg << 8 | bg;
+	}
+
 	TGUI_FCOLOUR(fg);
         if (bg == -1)
 		drawflag |= TRANS_ENABLE;
@@ -303,11 +341,6 @@ transparency_color)
 {
 	int drawflag = 0;
 
-	if (transparency_color != -1)
-	{
-		TGUI_FCOLOUR(transparency_color);
-		drawflag |= TRANS_ENABLE;
-	}
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PAT2SCR);
 	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + (patternx/8)) >> 6);
@@ -327,6 +360,12 @@ void TGUISetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
     unsigned planemask;
 {
 	int drawflag = 0;
+
+	/* 9680 has a bug, replication needed */
+	if (vgaBitsPerPixel == 8) {
+		fg = fg << 16 | fg << 8 | fg;
+		bg = bg << 16 | bg << 8 | bg;
+	}
 
 	TGUI_FCOLOUR(fg);
         if (bg == -1)
@@ -352,11 +391,16 @@ planemask)
 {
 	int drawflag = 0;
 
+	/* 9680 has bug, needs replication */
+	if (vgaBitsPerPixel == 8) {
+		fg = fg << 16 | fg << 8 | fg;
+		bg = bg << 16 | bg << 8 | bg;
+	}
+
 	TGUI_FCOLOUR(fg);
-	if (bg == -1)
-		drawflag |= TRANS_ENABLE;
-	else
+	if (bg != -1)
 		TGUI_BCOLOUR(bg);
+
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PATMONO | PAT2SCR);
 	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + (patternx/8)) >> 6);
@@ -367,5 +411,30 @@ void TGUISubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
 {
 	TGUI_DEST_XY(x,y);
 	TGUI_DIM_XY(w,h);
+	TGUI_COMMAND(GE_BLT);
+}
+
+void TGUISetupForImageWrite(rop, planemask, transparency_color)
+ 	int rop, transparency_color;
+ 	unsigned planemask;
+{
+	int srcx, srcy;
+
+	srcy = xf86AccelInfoRec.PixmapCacheMemoryStart / vga256InfoRec.displayWidth;
+	srcx = xf86AccelInfoRec.PixmapCacheMemoryStart - 
+		(srcy * vga256InfoRec.displayWidth);
+
+     	xf86AccelInfoRec.ImageWriteBase = (pointer)((char *)vgaLinearBase+
+				xf86AccelInfoRec.PixmapCacheMemoryStart);
+     	TGUI_DRAWFLAG(PAT2SCR);
+     	TGUI_FMIX(TGUIRops_alu[rop]);
+	TGUI_SRC_XY(srcx, srcy);
+}
+ 
+void TGUISubsequentImageWrite(x, y, w, h, skipleft)
+	int x, y, w, h, skipleft;
+{
+ 	TGUI_DEST_XY(x,y);
+ 	TGUI_DIM_XY(w,h);
 	TGUI_COMMAND(GE_BLT);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.15 1997/05/03 09:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.16 1997/06/03 14:12:32 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -47,6 +47,7 @@
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "mi.h"
+#include "mispans.h"
 
 #ifdef VGA256
 /*
@@ -167,7 +168,7 @@ void xf86GCNewLine(pGC, pDrawable)
             	PolyLineFunc = miWideDash;
     }
 
-    if((pGC->fillStyle == FillSolid) && (pGC->lineWidth == 0)) {
+    if((pGC->fillStyle == FillSolid)  && (pGC->lineWidth == 0)) {
       if(pGC->lineStyle == LineSolid) {
   	if(xf86GCInfoRec.PolyLineSolidZeroWidth &&
 #if !defined(NO_ONE_RECT)
@@ -219,6 +220,17 @@ void xf86GCNewLine(pGC, pDrawable)
 
       }
     }
+#if !defined(NO_ONE_RECT) 
+    else if((pGC->fillStyle == FillSolid) && (pGC->lineStyle == LineSolid)
+	&& miSpansEasyRop(pGC->alu)) {
+	if (xf86AccelInfoRec.SubsequentFillRectSolid && devPriv->oneRect &&
+            CHECKPLANEMASK(xf86GCInfoRec.PolyFillRectSolidFlags) &&
+            CHECKROP(xf86GCInfoRec.PolyFillRectSolidFlags) &&
+            CHECKRGBEQUAL(xf86GCInfoRec.PolyFillRectSolidFlags))
+            PolyLineFunc = xf86WideLineSolid1Rect;
+
+    }
+#endif
 
     pGC->ops->Polylines = PolyLineFunc;
     pGC->ops->PolySegment = PolySegmentFunc;

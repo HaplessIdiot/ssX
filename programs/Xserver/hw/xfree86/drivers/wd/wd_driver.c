@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.5 1997/06/03 14:12:26 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.6 1997/06/10 12:30:33 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -184,27 +184,6 @@ static SymTabRec chipsets[] = {
   { -1,		"" },
 };
 
-static unsigned PVGA1_ExtPorts[] = {            /* extra ports for WD90C31 */
-             0x23C0, 0x23C1, 0x23C2, 0x23C3, 0x23C4, 0x23C5 };
-
-static int NumPVGA1_ExtPorts =
-             ( sizeof(PVGA1_ExtPorts) / sizeof(PVGA1_ExtPorts[0]) );
-
-static unsigned PVGA1_ExtPorts_WD90C33[] =    /* extra ports for WD90C33 */
-{ 
-  EXT_REG_ACCESS_PORT,
-  EXT_REG_IO_PORT,  
-  HBITBLT_PORT0,  
-  HBITBLT_PORT1,  
-  LINE_DRAW_K1,
-  LINE_DRAW_K2,
-  LINE_DRAW_ERROR_TERM,
-  COMMAND_BUFFER
-};
-
-static int NumPVGA1_ExtPorts_WD90C33 =
-             ( sizeof(PVGA1_ExtPorts_WD90C33)
-            / sizeof(PVGA1_ExtPorts_WD90C33[0]) );
 
 /*
  * PVGA1lcd24power(int)
@@ -545,12 +524,6 @@ PVGA1Probe()
 {
     int numclocks = 17;
 
-    /*
-     * Set up I/O ports to be used by this card
-     */
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-
     if (vga256InfoRec.chipset) {
 	WDchipset = xf86StringToToken(chipsets, vga256InfoRec.chipset);
         if (WDchipset < 0)
@@ -655,24 +628,6 @@ PVGA1Probe()
 	}
     }
     vga256InfoRec.chipset = xf86TokenToString(chipsets, WDchipset);
-
-    if (WDchipset == WD90C31 || WDchipset == WD90C24)
-	/* enable extra hardware accel registers */
-    {
-        xf86AddIOPorts(vga256InfoRec.scrnIndex,
-                       NumPVGA1_ExtPorts, PVGA1_ExtPorts);
-      	PVGA1EnterLeave(LEAVE);   /* force update of IO ports enable */
-      	PVGA1EnterLeave(ENTER);
-    }
-
-    if (WDchipset == WD90C33)  /* enable extra hardware accel registers */
-    {
-	/* Enable the WD90C33 features */
-        xf86AddIOPorts(vga256InfoRec.scrnIndex,
-                       NumPVGA1_ExtPorts_WD90C33, PVGA1_ExtPorts_WD90C33);
-      	PVGA1EnterLeave(LEAVE);   /* force update of IO ports enable */
-      	PVGA1EnterLeave(ENTER);
-    }
 
 
     /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.32 1997/03/22 09:35:28 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.33 1997/07/29 12:07:53 hohndel Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -65,6 +65,16 @@ extern void Et4000AltICD2061SetClock(
 #if NeedFunctionPrototypes
        long,
        int
+#endif
+);
+
+/* Ch8391clk.c  -->  used in drivers/tseng/tseng_driver.c */
+extern void Chrontel8391CalcClock(
+#if NeedFunctionPrototypes				       
+       long,
+       int *,
+       int *,
+       int *
 #endif
 );
 

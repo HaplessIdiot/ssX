@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.35 1997/07/29 12:07:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.36 1997/08/12 12:01:59 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -262,12 +262,6 @@ i128Probe()
    int maxDisplayWidth, maxDisplayHeight;
    unsigned short ioaddr;
    OFlagSet validOptions;
-   unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA };
-   int Num_PCI_CtrlIOPorts = 2;
-   unsigned PCI_DevIOPorts[16];
-   int Num_PCI_DevIOPorts = 16;
-   unsigned I128_IOPorts[] = { 0x0000, 0x0000 };
-   int Num_I128_IOPorts = 2;
    unsigned char n, m, p, mdc, df;
    float mclk;
    pciConfigPtr pcrp, *pcrpp;
@@ -298,10 +292,6 @@ i128Probe()
        ((pcrp->rsvd2 >>16) == 0x08))
       i128MemoryTypeDram = 1;
 
-   for (i=0; i<11; i++)  /* 11 32bit I/O address registers (0x00-0x28) */
-      PCI_DevIOPorts[i] = iR.iobase + (i*4);
-
-   xf86AddIOPorts(i128InfoRec.scrnIndex, 11, PCI_DevIOPorts);
    xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
    i128io.rbase_g = inl(iR.iobase)        & 0xFFFFFF00;
@@ -377,7 +367,6 @@ i128Probe()
    outl(iR.iobase + 0x20, i128io.config2);
 
    xf86DisableIOPorts(i128InfoRec.scrnIndex);
-   xf86ClearIOPortList(i128InfoRec.scrnIndex);
 
    xf86ProbeFailed = FALSE;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.11 1997/07/06 07:00:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.12 1997/07/10 06:36:16 dawes Exp $ */
 
 
 
@@ -161,7 +161,6 @@ typedef struct _xf86dirent XF86DIRENT;
 #define strtoul(ccp,cpp,i)	xf86strtoul(ccp,cpp,i)
 #define tan(d)			xf86tan(d)
 #define tmpfile()		xf86tmpfile()
-#define tmpnam(cp)		xf86tmpnam(cp)
 #define tolower(i)		xf86tolower(i)
 #define toupper(i)		xf86toupper(i)
 #define ungetc(i,FP)		xf86ungetc(i,FP)

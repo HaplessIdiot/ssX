@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.45 1997/07/10 08:17:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.46 1997/08/15 07:19:21 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -904,6 +904,7 @@ struct pci_vendor_device {
                             { 0x0001, "GLINT 300SX", NF },
                             { 0x0002, "GLINT 500TX", NF },
                             { 0x0003, "GLINT Delta", NF },
+                            { 0x0004, "GLINT Permedia", NF },
 			    { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -932,6 +933,7 @@ struct pci_vendor_device {
                             { 0x04A3, "82434LX/NX pci cache mem controller", NF },
                             { 0x1230, "82371 bus-master IDE controller", NF },
                             { 0x1223, "SAA7116", NF },
+			    { 0x1229, "82557 10/100MBit network controller",NF},
                             { 0x122D, "82437 Triton", NF },
                             { 0x122E, "82471 Triton", NF },
                             { 0x1230, "82438", NF },

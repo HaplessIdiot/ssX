@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/IBMRGBCurs.c,v 1.2 1997/02/16 10:27:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/IBMRGBCurs.c,v 1.1 1997/03/06 23:16:24 hohndel Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -59,9 +59,9 @@ s3IBMRGBRealizeCursor(pScr, pCurs)
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
 
-   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH) {
-      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
-   }
+   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH)
+      return FALSE;
+  
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;

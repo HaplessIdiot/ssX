@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/8 1996/10/23 18:46:36 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga2.c,v 1.1 1997/03/06 23:17:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga2.c,v 1.2 1997/05/03 09:18:54 dawes Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -167,11 +167,6 @@ static Bool
 GENERICProbe()
 {
 
-  /*
-   * Set up I/O ports to be used by this card
-   */
-  xf86ClearIOPortList(vga2InfoRec.scrnIndex);
-  xf86AddIOPorts(vga2InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
   if (vga2InfoRec.chipset)
     {

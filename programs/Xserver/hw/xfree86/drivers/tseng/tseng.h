@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.12 1997/07/29 12:08:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.13 1997/08/12 12:02:06 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -65,6 +65,7 @@ typedef enum {
     TYPE_ET4000W32Pc,
     TYPE_ET4000W32Pd,
     TYPE_ET6000,
+    TYPE_ET6100,
     TYPE_ET6300
 } t_tseng_type;
 
@@ -102,8 +103,7 @@ typedef enum {
     STG1702_DAC,
     STG1703_DAC,
     ET6000_DAC,
-    CH8398_DAC,
-    ET6300_DAC
+    CH8398_DAC
 } t_ramdactype;
 
 extern t_ramdactype TsengRamdacType;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.11 1997/07/26 12:59:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.12 1997/08/12 12:02:01 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -62,10 +62,7 @@ saveI128state()
 {
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
 	if ((i128io.id&0x7) > 1) {
-        	unsigned PCI_DevIOPorts[1];
 
-      		PCI_DevIOPorts[0] = iR.iobase + 0x30;
-                xf86AddIOPorts(i128InfoRec.scrnIndex, 1, PCI_DevIOPorts);
                 xf86EnableIOPorts(i128InfoRec.scrnIndex);
 		iR.vga_ctl = inl(iR.iobase + 0x30);
 
@@ -213,7 +210,6 @@ restoreI128state()
 #endif
 {
 	int i;
-        unsigned PCI_DevIOPorts[3];
 
 	if (i128RamdacType == TI3025_DAC) {
 		i128mem.rbase_g[INDEX_TI] = TI_PLL_CONTROL;		MB;
@@ -312,11 +308,6 @@ restoreI128state()
 		xf86usleep(50000);
 	}
 
-        PCI_DevIOPorts[0] = iR.iobase + 0x1C;
-        PCI_DevIOPorts[1] = iR.iobase + 0x20;
-        PCI_DevIOPorts[2] = iR.iobase + 0x30;
-
-        xf86AddIOPorts(i128InfoRec.scrnIndex, 3, PCI_DevIOPorts);
         xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
@@ -415,7 +406,6 @@ i128Init(mode)
 #endif
 {
 	int pitch_multiplier, iclock;
-      	unsigned PCI_DevIOPorts[2];
 	Bool ret;
 	CARD32 tmp;
 
@@ -425,9 +415,6 @@ i128Init(mode)
 	 * we reset here again in case there was a VT switch
 	 */
 
-	PCI_DevIOPorts[0] = iR.iobase + 0x1C;
-	PCI_DevIOPorts[1] = iR.iobase + 0x20;
-	xf86AddIOPorts(i128InfoRec.scrnIndex, 2, PCI_DevIOPorts);
 	xf86EnableIOPorts(i128InfoRec.scrnIndex);
 	outl(iR.iobase + 0x1C, i128io.config1);
 	outl(iR.iobase + 0x20, i128io.config2);
@@ -491,8 +478,7 @@ i128Init(mode)
 									MB;
 
 	if ((i128io.id&0x7) > 1) {
-      		PCI_DevIOPorts[0] = iR.iobase + 0x30;
-        	xf86AddIOPorts(i128InfoRec.scrnIndex, 1, PCI_DevIOPorts);
+
         	xf86EnableIOPorts(i128InfoRec.scrnIndex);
 
 	   	i128io.vga_ctl &= 0x0000FF00;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.57 1997/06/03 14:11:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.58 1997/07/29 12:07:27 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -467,7 +467,6 @@ agxProbe()
    ErrorF( "%s %s: Graphics chip type \"%s\" (CHIPSET)\n", 
            XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.chipset );
 
-   xf86ClearIOPortList(agxInfoRec.scrnIndex); 
 
    /* probe and auto-config XGA chips */ 
    if( XGA_SERIES(agxChipId) && agxInfoRec.POSbase != 0 ) {
@@ -480,14 +479,11 @@ agxProbe()
       for( i= 0; i <= POS_LAST_IO_REG; i++ )
          agxPOSIOPorts[ i ] = agxInfoRec.POSbase + i;
 
-      xf86AddIOPorts(agxInfoRec.scrnIndex, POS_NUM_IO_REG, agxPOSIOPorts);
-
       xf86EnableIOPorts(agxInfoRec.scrnIndex);
 
       inst = GetXGAInfoBlock(agxInfoRec.instance,&info);
 
       xf86DisableIOPorts(agxInfoRec.scrnIndex);
-      xf86ClearIOPortList(agxInfoRec.scrnIndex); 
 
       if( inst < 0 || inst > 7 ) {
          ErrorF( "%s %s: Unable to probe the XGA POS registers, see README.agx \
@@ -545,8 +541,6 @@ for information on how to manually configure.\n",
    for( i= 0; i <= DA_LAST_IO_REG; i++ )
       agxDAIOPorts[ i ] = agxInfoRec.IObase + i;
 
-   xf86AddIOPorts(agxInfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-   xf86AddIOPorts(agxInfoRec.scrnIndex, DA_NUM_IO_REG, agxDAIOPorts);
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
 
 

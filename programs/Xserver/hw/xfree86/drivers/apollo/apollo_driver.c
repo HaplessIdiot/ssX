@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apollo/apollo_driver.c,v 1.1 1997/03/06 23:14:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apollo/apollo_driver.c,v 1.2 1997/06/03 14:11:59 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -192,8 +192,6 @@ ApolloProbe()
   	Apollo_IOBASE = AP_PORT_BASE;
   }
 
-  xf86ClearIOPortList(monoInfoRec.scrnIndex);
-  xf86AddIOPorts(monoInfoRec.scrnIndex, Num_Apollo_IOPorts, Apollo_IOPorts);
 
   if (monoInfoRec.chipset) {
 	/* Chipset preset */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hercules/herc_driver.c,v 1.1 1997/03/06 23:15:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hercules/herc_driver.c,v 1.2 1997/06/03 14:12:08 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -40,9 +40,6 @@
 #define HGA_MODE	0x3B8
 #define HGA_STATUS	0x3BA
 #define HGA_CONFIG	0x3BF
-static unsigned HGA_IOPorts[] = { HGA_INDEX, HGA_DATA, HGA_MODE, HGA_STATUS,
-				HGA_CONFIG };
-static int Num_HGA_IOPorts = (sizeof(HGA_IOPorts)/sizeof(HGA_IOPorts[0]));
 
 /*
  * Since the conf and mode registers are write only, we need to keep 
@@ -182,11 +179,6 @@ HGA6845Ident(n)
 static Bool
 HGA6845Probe()
 {
-    /*
-     * Set up I/O ports to be used by this card
-     */
-    xf86ClearIOPortList(monoInfoRec.scrnIndex);
-    xf86AddIOPorts(monoInfoRec.scrnIndex, Num_HGA_IOPorts, HGA_IOPorts);
 
     if (monoInfoRec.chipset) {
 	if (xf86strcmp(monoInfoRec.chipset, HGA6845Ident(0)))

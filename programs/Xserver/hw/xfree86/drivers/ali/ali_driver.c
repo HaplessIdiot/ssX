@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.2 1997/05/03 09:17:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.3 1997/06/03 14:11:58 hohndel Exp $
  */
 
 #include "X.h"
@@ -186,10 +186,6 @@ vgaVideoChipRec ALI = {
 
 static int ALIchipset;
 
-/* static unsigned ALI_ExtPorts[] = {0x3D6, 0x3D7}; */
-static unsigned ALI_ExtPorts[] = {0x3CE, 0x3D4, 0x3D6, 0x3D7};
-static int Num_ALI_ExtPorts =
-        (sizeof(ALI_ExtPorts)/sizeof(ALI_ExtPorts[0]));
 
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo aliVersRec =
@@ -330,9 +326,6 @@ ALIProbe()
   /*
    * Set up I/O ports to be used by this card
    */
-  xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-  xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ALI_ExtPorts, ALI_ExtPorts);
 
   if (vga256InfoRec.chipset)
     {

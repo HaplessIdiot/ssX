@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.82 1997/07/29 12:07:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.83 1997/07/31 07:16:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -300,18 +300,6 @@ int mach64VirtX, mach64VirtY;
 
 Bool mach64Use4MbAperture = FALSE;
 Bool mach64DAC8Bit = FALSE;
-
-static unsigned Mach64_IOPorts[] = {
-	/* VGA Registers */
-        0x3B4, 0x3B5, 0x3BA, 0x3C0, 0x3C1, 0x3C2, 0x3C4, 0x3C5, 0x3C6, 0x3C7, 
-	0x3C8, 0x3C9, 0x3CA, 0x3CB, 0x3CC, 0x3CE, 0x3CF, 0x3D4, 0x3D5, 0x3DA,
-	/* ATI VGA Registers */
-	sioATIEXT, sioATIEXT+1,
-	/* Mach64 Registers */
-	0x400,	/* This is enough to ensure access to all registers */
-};
-static int Num_Mach64_IOPorts = (sizeof(Mach64_IOPorts)/
-				 sizeof(Mach64_IOPorts[0]));
 
 short mach64WeightMask;
 
@@ -968,9 +956,6 @@ mach64Probe()
     } else {
 	InitIOAddresses(0x2EC, FALSE);
     }
-
-    xf86ClearIOPortList(mach64InfoRec.scrnIndex);
-    xf86AddIOPorts(mach64InfoRec.scrnIndex, Num_Mach64_IOPorts, Mach64_IOPorts);
 
     xf86EnableIOPorts(mach64InfoRec.scrnIndex);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.8 1997/04/08 13:16:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.9 1997/08/15 07:19:24 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -603,6 +603,16 @@ xf86PackDashPattern(
 #endif
 );
 
+void
+xf86WideLineSolid1Rect (
+#if NeedFunctionPrototypes
+    DrawablePtr	pDrawable,
+    GCPtr 	pGC,
+    int		mode,
+    int 	npt,
+    DDXPointPtr	pPts
+#endif
+);
 
 
 void

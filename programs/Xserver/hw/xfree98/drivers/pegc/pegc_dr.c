@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.3 1997/03/22 09:36:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.4 1997/05/03 09:19:49 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -220,8 +220,6 @@ PEGCIdent(int n)
 static Bool
 PEGCProbe()
 {
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.

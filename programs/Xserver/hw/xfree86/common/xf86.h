@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.64 1997/07/12 11:32:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.65 1997/07/29 12:07:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -244,6 +244,7 @@ typedef struct {
   void           *device;	/* This should be GDevPtr, but it causes
 				   problems with include file order */
 #endif
+  int            hasDirectColor; /* flag, TRUE if DirectColor supported at 16/24/32bpp */  
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {

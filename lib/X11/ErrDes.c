@@ -1,6 +1,6 @@
 /*
- * $XConsortium: ErrDes.c /main/41 1996/10/22 14:18:04 kaleb $
- * $XFree86: xc/lib/X11/ErrDes.c,v 3.3 1996/12/24 02:22:43 dawes Exp $
+ * $TOG: ErrDes.c /main/42 1997/08/17 20:26:34 kaleb $
+ * $XFree86: xc/lib/X11/ErrDes.c,v 3.4 1996/12/24 08:46:43 dawes Exp $
  */
 
 /***********************************************************
@@ -151,6 +151,8 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     XrmString type_str;
     XrmValue result;
     char temp[BUFSIZ];
+    char* tptr;
+    unsigned long tlen;
 
     if (nbytes == 0) return 0;
 
@@ -177,17 +179,12 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 
     if (db)
     {
-	if (strlen(name) + 1 + strlen(type) + 1 <= BUFSIZ) {
-	    sprintf(temp, "%s.%s", name, type);
-	} else {
-	    strncpy(temp, name, BUFSIZ);
-	    temp[BUFSIZ - 1] = '\0';
-	    if (strlen(name) + 2 < BUFSIZ) {
-		strcat(temp, ".");
-		strncat(temp, type, BUFSIZ - strlen(name) - 2);
-	    }
-	}
+	tlen = strlen (name) + strlen (type) + 2;
+	if (tlen <= BUFSIZE) tptr = temp;
+	else tptr = Xmalloc (tlen);
+	sprintf(temp, "%s.%s", name, type);
 	XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
+	if (tptr != temp) Xfree (temp);
     }
     else
 	result.addr = (XPointer)NULL;

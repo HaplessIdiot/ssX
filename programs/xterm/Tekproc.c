@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/120 1996/11/29 10:33:20 swick $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.13 1996/12/23 07:14:19 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.14 1997/05/23 09:19:45 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -865,9 +865,9 @@ static void TekConfigure(w)
 /*ARGSUSED*/
 void
 TekExpose(w, event, region)
-    Widget w;
-    XEvent *event;
-    Region region;
+    Widget w GCC_UNUSED;
+    XEvent *event GCC_UNUSED;
+    Region region GCC_UNUSED;
 {
 	register TScreen *screen = &term->screen;
 
@@ -1269,9 +1269,9 @@ static unsigned char *dashes[TEKNUMLINES] = {
  */
 
 static void TekInitialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+    Widget request, new GCC_UNUSED;
+    ArgList args GCC_UNUSED;
+    Cardinal *num_args GCC_UNUSED;
 {
     /* look for focus related events on the shell, because we need
      * to care about the shell's border being part of our focus.

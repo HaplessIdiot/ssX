@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_mmio.h,v 1.1 1997/03/06 23:17:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_mmio.h,v 1.2 1997/05/03 09:18:45 dawes Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
  *
@@ -53,10 +53,14 @@
 		}
 #define TGUI_FCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + GER_FCOLOUR) = c;
+#define TGUI_FPATCOL(c) \
+		*(unsigned long *)(tguiMMIOBase + GER_FPATCOL) = c;
 #define OLDTGUI_FCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + OLDGER_FCOLOUR) = c;
 #define TGUI_BCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + GER_BCOLOUR) = c;
+#define TGUI_BPATCOL(c) \
+		*(unsigned long *)(tguiMMIOBase + GER_BPATCOL) = c;
 #define OLDTGUI_BCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + OLDGER_BCOLOUR) = c;
 #define TGUI_DRAWFLAG(c) \
@@ -131,6 +135,8 @@
 		}
 #define TGUI_FCOLOUR(c) \
 		outl(GER_BASE+GER_FCOLOUR, c);
+#define TGUI_FPATCOL(c) \
+		outl(GER_BASE+GER_FPATCOL, c);
 #define OLDTGUI_FCOLOUR(c) \
 		{	\
 			outb(GER_INDEX, OLDGER_FCOLOUR); \
@@ -138,6 +144,8 @@
 		}
 #define TGUI_BCOLOUR(c) \
 		outl(GER_BASE+GER_BCOLOUR, c);
+#define TGUI_BPATCOL(c) \
+		outl(GER_BASE+GER_BPATCOL, c);
 #define OLDTGUI_BCOLOUR(c) \
 		{	\
 			outb(GER_INDEX, OLDGER_BCOLOUR); \

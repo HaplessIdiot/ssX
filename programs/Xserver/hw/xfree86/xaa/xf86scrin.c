@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.18 1997/07/05 08:45:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.19 1997/08/15 07:19:25 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -147,10 +147,17 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     BitsPerRGB = xf86weight.green;
 #if PSZ > 8
-    /* Only TrueColor for 16/32bpp */
-    if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
-    1 << TrueColor, BitsPerRGB))
+    if (xf86AccelInfoRec.ServerInfoRec->hasDirectColor) {
+      ErrorF("vgaFinishScreenInit hasDirectColor==TRUE\n");
+      if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
+			     (1 << TrueColor) | (1 << DirectColor), BitsPerRGB) )
 	return FALSE;
+    } else {
+      ErrorF("vgaFinishScreenInit hasDirectColor==FALSE\n");
+      if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth,
+			     1 << TrueColor, BitsPerRGB) )
+	return FALSE;
+    }
 #endif
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
 			 &defaultVisual,((unsigned long)1<<(PSZ-1)), BitsPerRGB))

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.5 1997/07/06 05:30:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.6 1997/08/12 12:02:07 hohndel Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -61,6 +61,7 @@ ByteP ACL_PATTERN_WRAP,
 extern
 WordP ACL_X_COUNT,
       ACL_Y_COUNT;
+LongP ACL_XY_COUNT; /* for combined writes to X and Y count registers */
 
 
 extern

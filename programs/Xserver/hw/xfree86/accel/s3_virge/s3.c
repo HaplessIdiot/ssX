@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.32 1997/07/29 12:07:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.33 1997/07/31 07:16:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -642,12 +642,6 @@ s3Probe()
    pciInfo = s3GetPCIInfo();
    if (pciInfo && pciInfo->MemBase)
       s3MemBase = pciInfo->MemBase;
-#endif
-
-   xf86ClearIOPortList(s3InfoRec.scrnIndex);
-   xf86AddIOPorts(s3InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-#if 0
-   xf86AddIOPorts(s3InfoRec.scrnIndex, Num_S3_IOPorts, S3_IOPorts);
 #endif
 
    /* Enable I/O access */

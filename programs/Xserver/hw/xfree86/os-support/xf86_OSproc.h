@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.10 1997/04/18 09:11:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.11 1997/06/29 07:54:35 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -206,18 +206,6 @@ extern int xf86ReadBIOS(
 	int
 #endif
 );
-extern void xf86ClearIOPortList(
-#if NeedFunctionPrototypes
-	int
-#endif
-);
-extern void xf86AddIOPorts(
-#if NeedFunctionPrototypes
-	int,
-	int,
-	unsigned *
-#endif
-);
 void xf86EnableIOPorts(
 #if NeedFunctionPrototypes
 	int
@@ -226,11 +214,6 @@ void xf86EnableIOPorts(
 void xf86DisableIOPorts(
 #if NeedFunctionPrototypes
 	int
-#endif
-);
-void xf86DisableIOPrivs(
-#if NeedFunctionPrototypes
-	void
 #endif
 );
 extern Bool xf86DisableInterrupts(

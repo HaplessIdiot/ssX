@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sigma/sigma_driver.c,v 1.1 1997/03/06 23:16:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sigma/sigma_driver.c,v 1.2 1997/06/03 14:12:19 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -34,15 +34,6 @@
 
 static int sigma_Current_mode = sigma_Textmode;
 static int sigmaMemBase = SIGMA_DEF_MEM_BASE;
-
-/*
- * Define the SIGMA I/O Ports
- */
-static unsigned SIGMA_IOPorts[] = { SLV_EN1, SLV_W16, SLV_W17, SLV_W18,
-			SLV_BLANK, SLV_ZOOM, SLV_GR0, SLV_GR1,
-			SLV_BANK0, SLV_BANK1, SLV_BANK2, SLV_BANK3,
-			SLV_HIRES /* = MONOEN */, SLV_BOLD /* = WOB */ };
-static int Num_SIGMA_IOPorts = (sizeof(SIGMA_IOPorts)/sizeof(SIGMA_IOPorts[0]));
 
 #define SIGMA_DELAY	{ volatile int delay_dummy=0; delay_dummy++; }
 
@@ -165,11 +156,6 @@ else return(chipsets[n]);
 Bool
 SIGMAProbe()
 {
-  /*
-   * Set up I/O ports to be used by this card
-   */
-  xf86ClearIOPortList(monoInfoRec.scrnIndex);
-  xf86AddIOPorts(monoInfoRec.scrnIndex, Num_SIGMA_IOPorts, SIGMA_IOPorts);
 
   if (monoInfoRec.chipset) {
 	/* Chipset preset */

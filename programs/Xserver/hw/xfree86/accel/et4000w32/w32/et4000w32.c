@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.23 1997/02/11 10:01:52 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.24 1997/05/03 09:16:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -201,8 +201,6 @@ ET4000W32Probe()
      *  Set up those I/O ports not in the ET4000 
      */
     ET4000.ChipEnterLeave(LEAVE);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET4000W32_ExtPorts,
-		   ET4000W32_ExtPorts);
     ET4000W32EnterLeave(ENTER);
 
     if (vga256InfoRec.chipset)

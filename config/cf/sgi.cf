@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: sgi.cf /main/45 1997/06/18 18:01:03 kaleb $
+XCOMM platform:  $TOG: sgi.cf /main/47 1997/08/07 16:53:32 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -121,7 +121,7 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #  else
 #   define sgiCCOptions -xansi
 #  endif
-#  if OSMinorVersion > 1
+#  if OSMinorVersion == 2
 /* if you haven't installed patch 1361, 1403, or 1645 on IRIX 6.2 then you
  * must add "#define HasPosixThreads NO" in your site.def or host.def file
  */
@@ -131,11 +131,11 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #   define ThreadedX HasPosixThreads
 #   define ThreadsLibraries -lpthread
 /* 
- * Add "#define HasSgiThreadsPatch1403 NO" to your site.def or host.def if 
+ * Add "#define HasSgiThreadsPatch1403 YES" to your site.def or host.def if 
  * that's which patch you have.
  */
 #   ifndef HasSgiThreadsPatch1403
-#    define HasSgiThreadsPatch1403 YES
+#    define HasSgiThreadsPatch1403 NO
 #   endif
 #   if (HasSgiThreadsPatch1403) 
 #    define SystemMTDefines -D_POSIX_THREAD_SAFE_FUNCTIONS

@@ -1,10 +1,10 @@
-XCOMM $TOG: sunLib.tmpl /main/45 1997/02/13 13:52:59 kaleb $
+XCOMM $TOG: sunLib.tmpl /main/46 1997/08/15 16:59:42 samborn $
 
 
 
 
 
-XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.8 1997/03/10 10:09:42 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.9 1997/05/11 04:58:49 dawes Exp $
 
 /*
  * SunOS shared library template
@@ -81,8 +81,12 @@ ICONV_INBUF_DEFINE = -DICONV_INBUF_CONST=const
 # if HasCplusplus
 #  if HasGcc2ForCplusplus
 UNSHARED_CXXLIB = -static -lC
-#  else
+#  elif HasSunCplusplus
+#   if CplusplusCompilerMajorVersion > 3
+UNSHARED_CXXLIB = -Bstatic -L/opt/SUNWspro/SC4.0/lib -lC -Bdynamic
+#   else
 UNSHARED_CXXLIB = -Bstatic -lC -Bdynamic -lm -lc -Bstatic
+#   endif
 #  endif
 # endif
 

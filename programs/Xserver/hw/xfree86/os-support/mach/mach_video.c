@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_video.c,v 3.0 1996/11/18 13:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_video.c,v 3.1 1996/12/23 06:50:12 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
@@ -100,7 +100,8 @@ static Bool IOEnabled = FALSE;
 static Bool InitDone = FALSE;
 #endif
 
-void xf86ClearIOPortList(ScreenNum)
+
+void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
 {
 #ifdef MACH386
@@ -112,23 +113,6 @@ int ScreenNum;
 			ScreenEnabled[i] = FALSE;
 		InitDone = TRUE;
 	}
-#endif
-	return;
-}
-
-/* ARGSUSED */
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
-{
-#ifdef MACH386
 	ScreenEnabled[ScreenNum] = TRUE;
 
 	if (IOEnabled)
@@ -159,12 +143,6 @@ int ScreenNum;
 	ioplfd = -1;
 	IOEnabled = FALSE;
 #endif /* MACH386 */
-	return;
-}
-
-void xf86DisableIOPrivs()
-{
-	/* XXXX Don't know what if anything to do here */
 	return;
 }
 

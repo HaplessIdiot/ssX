@@ -35,6 +35,7 @@ fs2	{
 	}
 	font	{
 		primary		JISX0201.1976-0:GR
+		substitute      JISX0201.1976-0:GR
 		vertical_rotate	all
 	}
 }

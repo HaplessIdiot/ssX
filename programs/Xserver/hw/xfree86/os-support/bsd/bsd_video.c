@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.15 1997/05/03 09:19:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.16 1997/06/20 09:24:49 hohndel Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -44,21 +44,6 @@
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-#ifndef __mips__
-#define _386BSD_MMAP_BUG
-#endif
-
-#ifdef _386BSD_MMAP_BUG
-/*
- * Bug prevents multiple mappings, so just map a fixed region between 0xA0000
- * and 0xBFFFF, and return a pointer to the requested Base.
- */
-static int MemMapped = FALSE;
-static pointer MappedPointer = NULL;
-static int MapCount = 0;
-#define MAP_BASE 0xA0000
-#define MAP_SIZE 0x20000
-#endif
 
 static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
@@ -80,7 +65,8 @@ static struct xf86memMap {
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
  * "warn" is TRUE.
  */
-static void checkDevMem(warn)
+static void 
+checkDevMem(warn)
 Bool warn;
 {
 	int fd;
@@ -162,7 +148,8 @@ Bool warn;
 }
 
 
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
+pointer 
+xf86MapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;
 int Region;
 pointer Base;
@@ -197,35 +184,6 @@ unsigned long Size;
 	}
 		
 	/* else, mmap /dev/vga */
-#ifdef _386BSD_MMAP_BUG
-	if ((unsigned long)Base < MAP_BASE ||
-	    (unsigned long)Base >= MAP_BASE + MAP_SIZE)
-	{
-		FatalError("%s: Address 0x%x outside allowable range\n",
-			   "xf86MapVidMem", Base);
-	}
-	if ((unsigned long)Base + Size > MAP_BASE + MAP_SIZE)
-	{
-		FatalError("%s: Size 0x%x too large (Base = 0x%x)\n",
-			   "xf86MapVidMem", Size, Base);
-	}
-	if (!MemMapped)
-	{
-		base = (pointer)mmap(0, MAP_SIZE, PROT_READ|PROT_WRITE,
-				     MAP_FLAGS, xf86Info.screenFd, 0);
-		if (base == (pointer)-1)
-		{
-		    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
-			       strerror(errno));
-		}
-		MappedPointer = base;
-		MemMapped = TRUE;
-	}
-	MapCount++;
-	return((pointer)((unsigned long)MappedPointer +
-			 ((unsigned long)Base - MAP_BASE)));
-
-#else
 #ifndef PC98
 	if ((unsigned long)Base < 0xA0000 || (unsigned long)Base >= 0xC0000)
 #else
@@ -248,15 +206,15 @@ unsigned long Size;
 		       strerror(errno));
 	}
 #if 0
-	xf86memMaps[ScreenNum].offset = (int) Base;
-	xf86memMaps[ScreenNum].memSize = Size;
-	return(base);
-#endif
+       xf86memMaps[ScreenNum].offset = (int) Base;
+       xf86memMaps[ScreenNum].memSize = Size;
+       return(base);
 #endif
 }
 
 #if 0
-void xf86GetVidMemData(ScreenNum, Base, Size)
+void 
+xf86GetVidMemData(ScreenNum, Base, Size)
 int ScreenNum;
 int *Base;
 int *Size;      
@@ -265,8 +223,9 @@ int *Size;
    *Size = xf86memMaps[ScreenNum].memSize;
 }
 #endif
-                             
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
+
+void 
+xf86UnMapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;
 int Region;
 pointer Base;
@@ -278,21 +237,11 @@ unsigned long Size;
 		return;
 	}
 
-#ifdef _386BSD_MMAP_BUG
-	if (MapCount == 0 || MappedPointer == NULL)
-		return;
-
-	if (--MapCount == 0)
-	{
-		munmap((caddr_t)MappedPointer, MAP_SIZE);
-		MemMapped = FALSE;
-	}
-#else
 	munmap((caddr_t)Base, Size);
-#endif
 }
 
-Bool xf86LinearVidMem()
+Bool 
+xf86LinearVidMem()
 {
 	/*
 	 * Call checkDevMem even if already called by xf86MapVidMem() so that
@@ -312,29 +261,6 @@ Bool xf86LinearVidMem()
 static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
-
-void
-xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	if (!InitDone)
-	{
-		int i;
-		for (i = 0; i < MAXSCREENS; i++)
-			ScreenEnabled[i] = FALSE;
-		InitDone = TRUE;
-	}
-	return;
-}
-
-void
-xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
 
 void
 xf86EnableIOPorts(ScreenNum)
@@ -372,17 +298,9 @@ int ScreenNum;
 		if (ScreenEnabled[i])
 			return;
 
-	i386_iopl(TRUE);
+	i386_iopl(FALSE);
 	ExtendedEnabled = FALSE;
 
-	return;
-}
-
-
-void xf86DisableIOPrivs()
-{
-	if (ExtendedEnabled)
-		i386_iopl(FALSE);
 	return;
 }
 
@@ -394,29 +312,6 @@ void xf86DisableIOPrivs()
 static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
-
-void
-xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	if (!InitDone)
-	{
-		int i;
-		for (i = 0; i < MAXSCREENS; i++)
-			ScreenEnabled[i] = FALSE;
-		InitDone = TRUE;
-	}
-	return;
-}
-
-void
-xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
 
 void
 xf86EnableIOPorts(ScreenNum)
@@ -465,17 +360,14 @@ int ScreenNum;
 	return;
 }
 
-void xf86DisableIOPrivs()
-{
-}
-
 #endif /* USE_ARC_MMAP */
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool 
+xf86DisableInterrupts()
 {
 
 #if !defined(__mips__)
@@ -489,7 +381,8 @@ Bool xf86DisableInterrupts()
 	return(TRUE);
 }
 
-void xf86EnableInterrupts()
+void 
+xf86EnableInterrupts()
 {
 
 #if !defined(__mips__)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.8 1996/08/10 13:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.c,v 3.9 1996/12/23 06:33:04 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -201,7 +201,6 @@ hercProbeRamDac(
    hercBrdIO = 0x1e0 - (((hercDACStat&0x07)-1)<<4);
    for( i=0; i<8; i++ )
       agxExtDacPorts[i] = hercBrdIO + i;
-   xf86AddIOPorts(agxInfoRec.scrnIndex, 8, agxExtDacPorts);
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    hercDACSw = hercBrdIO + 4;
    if (xf86Verbose) {

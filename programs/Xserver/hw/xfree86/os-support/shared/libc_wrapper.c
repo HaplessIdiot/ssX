@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.21 1997/07/06 09:02:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.23 1997/07/10 08:17:38 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -50,7 +50,6 @@ int xf86execl(char *, ...);
 #else
 int xf86execl();
 #endif
-extern char* xf86tmpnam();
 
 #define NEED_XF86_TYPES
 #define DONT_DEFINE_WRAPPERS
@@ -780,14 +779,25 @@ xf86setvbuf(XF86FILE* f, char *buf, int mode, INT32 size)
 XF86FILE*
 xf86tmpfile(void)
 {
-	return xf86fopen(xf86tmpnam((char*)0),"w+");
-}
+#ifdef NEED_TMPFILE
+	return xf86fopen(tmpnam((char*)0),"w+");
+#else
+	XF86FILE_priv* fp;
+	FILE *f = tmpfile();
+	if (!f) return 0;
 
-char*
-xf86tmpnam(char* name)
-{
-	return tmpnam(name);
+	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
+	fp->magic = XF86FILE_magic;
+	fp->filehnd = f;
+	fp->fileno = fileno(f);
+	fp->fname = xf86strdup("*tmpfile*"); /* so that it can be xfree()'d */
+#ifdef DEBUG
+	ErrorF("xf86tmpfile() yields FILE %p XF86FILE %p\n",f,fp);
+#endif
+	return (XF86FILE*)fp;
 }
+#endif /* HAS_TMPFILE */
+
 
 int
 xf86ungetc(int c,XF86FILE* f)

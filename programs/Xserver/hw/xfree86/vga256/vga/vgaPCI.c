@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.13 1997/07/29 12:08:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.14 1997/07/31 07:16:16 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -138,7 +138,7 @@ vgaGetPCIInfo()
 	    ErrorF("%s ", chipname);
 	else
 	    ErrorF("Unknown chipset (0x%04x) ", info->ChipType);
-	ErrorF("rev %x", info->ChipRev);
+	ErrorF("rev 0x%x", info->ChipRev);
 
 	if (info->MemBase)
 	    ErrorF(", Memory @ 0x%08x", info->MemBase);

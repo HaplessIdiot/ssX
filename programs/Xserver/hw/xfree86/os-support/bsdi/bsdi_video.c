@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.3 1996/02/04 09:09:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.4 1996/12/23 06:49:51 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -94,53 +94,9 @@ Bool xf86LinearVidMem()
 static unsigned *EnabledPorts[MAXSCREENS];
 static int NumEnabledPorts[MAXSCREENS];
 static Bool ScreenEnabled[MAXSCREENS];
-static Bool NonVGAPorts[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	int i;
-
-	if (!InitDone)
-	{
-		xf86InitPortLists(EnabledPorts, NumEnabledPorts, ScreenEnabled,
-				  NonVGAPorts, MAXSCREENS);
-		InitDone = TRUE;
-		return;
-	}
-	NonVGAPorts[ScreenNum] = FALSE;
-	if (EnabledPorts[ScreenNum] != (unsigned *)NULL)
-		xfree(EnabledPorts[ScreenNum]);
-	EnabledPorts[ScreenNum] = (unsigned *)NULL;
-	NumEnabledPorts[ScreenNum] = 0;
-	return;
-}
-
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	int i;
-
-	if (!InitDone)
-	{
-	    FatalError("xf86AddIOPorts: I/O control lists not initialised\n");
-	}
-	EnabledPorts[ScreenNum] = (unsigned *)xrealloc(EnabledPorts[ScreenNum],
-			(NumEnabledPorts[ScreenNum]+NumPorts)*sizeof(unsigned));
-	for (i = 0; i < NumPorts; i++)
-	{
-		EnabledPorts[ScreenNum][NumEnabledPorts[ScreenNum]+i] =
-								Ports[i];
-		if (Ports[i] < 0x3B0 || Ports[i] > 0x3DF)
-			NonVGAPorts[ScreenNum] = TRUE;
-	}
-	NumEnabledPorts[ScreenNum] += NumPorts;
-	return;
-}
 
 void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
@@ -153,7 +109,7 @@ int ScreenNum;
 	ScreenEnabled[ScreenNum] = TRUE;
 	for (i = 0; i < MAXSCREENS; i++)
 	{
-		if (NonVGAPorts[i] && (ScreenEnabled[i] || i == ScreenNum))
+		if (ScreenEnabled[i] || i == ScreenNum)
 		{
 		    if (ioctl(xf86Info.consoleFd, PCCONENABIOPL, 0) < 0)
 		    {
@@ -164,31 +120,18 @@ int ScreenNum;
 		    return;
 		}
 	}
-	/* If extended I/O was used, but isn't any more */
-	if (ExtendedEnabled)
-	{
-		ioctl(xf86Info.consoleFd, PCCONDISABIOPL, 0);
-		ExtendedEnabled = FALSE;
-	}
-	/* Don't need to do anything for VGA ports because they are always on */
 	return;
 }
 
 void xf86DisableIOPorts(ScreenNum)
 int ScreenNum;
 {
-	int i;
 
 	if (!ScreenEnabled[ScreenNum])
 		return;
 
 	ScreenEnabled[ScreenNum] = FALSE;
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ScreenEnabled[i] && NonVGAPorts[i])
-			break;
-	}
-	if (ExtendedEnabled && i == MAXSCREENS)
+	if (ExtendedEnabled)
 	{
 		ioctl(xf86Info.consoleFd, PCCONDISABIOPL, 0);
 		ExtendedEnabled = FALSE;
@@ -197,15 +140,6 @@ int ScreenNum;
 	return;
 }
 
-void xf86DisableIOPrivs()
-{
-	/* XXXX need to check if this is required and if it has side-effects
-	 * XXXX for the parent */
-
-	if (ExtendedEnabled)
-		ioctl(xf86Info.consoleFd, PCCONDISABIOPL, 0);
-	return;
-}
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */

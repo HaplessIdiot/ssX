@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.13 1996/12/23 06:50:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.14 1997/05/03 09:19:14 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -177,9 +177,12 @@ static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-void xf86ClearIOPortList(ScreenNum)
+
+void xf86EnableIOPorts(ScreenNum)
 int ScreenNum;
 {
+	int i;
+
 	if (!InitDone)
 	{
 		int i;
@@ -188,22 +191,6 @@ int ScreenNum;
 			ScreenEnabled[i] = FALSE;
 		InitDone = TRUE;
 	}
-
-	return;
-}
-
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	return;
-}
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
-{
-	int i;
 
 	ScreenEnabled[ScreenNum] = TRUE;
 
@@ -386,15 +373,6 @@ int ScreenNum;
 }
 
 #endif /* ALWAYS_USE_EXTENDED */
-
-void xf86DisableIOPrivs()
-{
-#ifndef __mc68000__
-	if (ExtendedEnabled)
-		iopl(0);
-#endif
-	return;
-}
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */

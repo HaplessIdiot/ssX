@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.20 1997/05/03 09:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.21 1997/05/27 06:30:54 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -298,16 +298,6 @@ vgaVideoChipRec STUB = {
 #define new ((vgaSTUBPtr)vgaNewVideoState)
 
 /*
- * If your chipset uses non-standard I/O ports, you need to define an
- * array of ports, and an integer containing the array size.  The
- * generic VGA ports are defined in vgaHW.c.
- */
-static unsigned STUB_ExtPorts[] = { };
-static int Num_STUB_ExtPorts =
-	(sizeof(Stub_ExtPorts)/sizeof(Stub_ExtPorts[0]));
-
-
-/*
  * STUBIdent --
  *
  * Returns the string name for supported chipset 'n'.  Most drivers only
@@ -421,16 +411,6 @@ int no;
 static Bool
 STUBProbe()
 {
-	/*
-	 * Set up I/O ports to be used by this card.  Only do the second
-	 * xf86AddIOPorts() if there are non-standard ports for this
-	 * chipset.
-	 */
-	xf86ClearIOPortList(vga256InforRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, 
-		       Num_STUB_ExtPorts, STUB_ExtPorts);
-
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.
