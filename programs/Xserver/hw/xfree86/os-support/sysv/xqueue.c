@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.14 1999/01/26 10:40:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.15 1999/05/22 08:40:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -470,14 +470,14 @@ XqReadInput(InputInfoPtr pInfo)
 	switch (XqueEvents[XqueHead].xq_type) {
 	case XQ_BUTTON:
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
-			    0, 0);
+			    0, 0, 0);
 	    break;
 
 	case XQ_MOTION:
 	    dx = (signed char)XqueEvents[XqueHead].xq_x;
 	    dy = (signed char)XqueEvents[XqueHead].xq_y;
 	    pMse->PostEvent(pInfo, ~(XqueEvents[XqueHead].xq_code) & 0x07,
-			    (int)dx, (int)dy);
+			    (int)dx, (int)dy, 0);
 	    break;
 
 	case XQ_KEY:
@@ -713,18 +713,8 @@ XqueueMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     xf86CollectInputOptions(pInfo, NULL, NULL);
     xf86ProcessCommonOptions(pInfo, pInfo->options);
 
-    /* Check if the device can be opened. */
-    pMse->buttons = 3;	/* XXX ignore the "Buttons" option? */
-    xf86Msg(X_DEFAULT, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
-
-    pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
-					      "Emulate3Buttons", FALSE);
-    pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
-					     50);
-    if (pMse->emulate3Buttons) {
-	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
-		pInfo->name, pMse->emulate3Timeout);
-    }
+    /* Process common mouse options (like Emulate3Buttons, etc). */
+    pMse->CommonOptions(pInfo);
 
     /* Setup the local procs. */
     pInfo->device_control = XqMouseProc;

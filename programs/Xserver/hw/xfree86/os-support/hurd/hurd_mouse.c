@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.1 1999/05/22 08:40:12 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -75,7 +75,7 @@ typedef struct {
  *      Handle the initialization, etc. of a mouse
  */
 static int
-OsMouseProc(DeviceIntPtr pPointer , int what)
+OsMouseProc(DeviceIntPtr pPointer, int what)
 {
     InputInfoPtr pInfo;
     MouseDevPtr pMse;
@@ -116,7 +116,7 @@ OsMouseProc(DeviceIntPtr pPointer , int what)
 	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
 	else {
 	    pMse->buffer = XisbNew(pInfo->fd,
-				   EVENTS_BUFSIZE * sizeof(static kd_event));
+				   EVENTS_BUFSIZE * sizeof(kd_event));
 	    if (!pMse->buffer) {
 		xfree(pMse);
 		xf86CloseSerial(pInfo->fd);
@@ -195,7 +195,7 @@ OsMouseReadInput(InputInfoPtr pInfo)
 	    ErrorF("Bad mouse event (%d)\n",event->type);
 	    continue;
 	}
-	pMse->PostEvent(pInfo, buttons, dx, dy);
+	pMse->PostEvent(pInfo, buttons, dx, dy, 0);
 	++event;
     }
     return;
@@ -228,17 +228,8 @@ OsMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     xf86CloseSerial(pInfo->fd);
     pInfo->fd = -1;
 
-    pMse->buttons = 3;	/* XXX ignore the "Buttons" option? */
-    xf86Msg(X_DEFAULT, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
-
-    pMse->emulate3Buttons = xf86SetBoolOption(pInfo->options,
-					      "Emulate3Buttons", FALSE);
-    pMse->emulate3Timeout = xf86SetIntOption(pInfo->options, "Emulate3Timeout",
-					     50);
-    if (pMse->emulate3Buttons) {
-	xf86Msg(X_CONFIG, "%s: Emulate3Buttons, Emulate3Timeout: %d\n",
-		pInfo->name, pMse->emulate3Timeout);
-    }
+    /* Process common mouse options (like Emulate3Buttons, etc). */
+    pMse->CommonOptions(pInfo);
 
     /* Setup the local procs. */
     pInfo->device_control = OsMouseProc;
