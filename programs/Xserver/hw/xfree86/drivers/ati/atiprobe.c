@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.44 2001/04/19 14:14:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.45 2001/05/18 20:22:28 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -558,7 +558,7 @@ ATIDetectMach64
         outr(BUS_CNTL,
              (bus_cntl & ~(BUS_HOST_ERR_INT_EN | BUS_FIFO_ERR_INT_EN)) |
              (BUS_HOST_ERR_INT | BUS_FIFO_ERR_INT));
-    else
+    else if (Chip < ATI_CHIP_264VT4)
         outr(BUS_CNTL, (bus_cntl & ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT);
 
     gen_test_cntl = inr(GEN_TEST_CNTL);
@@ -969,9 +969,7 @@ ATIFindVGA
 {
     ATIPtr pATI = *ppATI;
 
-    if (*ppVGA)
-        ATIAssignVGA(pVideo, ppVGA, pATI, p8514, ProbeFlags);
-    else
+    if (!*ppVGA)
     {
         /*
          * An ATI PCI adapter has been detected at this point, and its VGA, if
@@ -985,8 +983,10 @@ ATIFindVGA
         if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
             return;
 
-        ATIAssignVGA(pVideo, ppATI, pATI, p8514, ProbeFlags);
+        ppVGA = ppATI;
     }
+
+    ATIAssignVGA(pVideo, ppVGA, pATI, p8514, ProbeFlags);
 }
 
 #endif /* AVOID_CPIO */

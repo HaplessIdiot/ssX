@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.36 2001/05/09 03:12:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.37 2001/05/25 02:44:35 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -110,8 +110,10 @@ ATIMach64PreInit
         pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
     }
 
-    bus_cntl = inr(BUS_CNTL);
-    pATIHW->bus_cntl = (bus_cntl & ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT;
+    pATIHW->bus_cntl = bus_cntl = inr(BUS_CNTL);
+    if (pATI->Chip < ATI_CHIP_264VT4)
+        pATIHW->bus_cntl = (pATIHW->bus_cntl & ~BUS_HOST_ERR_INT_EN) |
+            BUS_HOST_ERR_INT;
     if (pATI->Chip < ATI_CHIP_264VTB)
     {
         pATIHW->bus_cntl &= ~(BUS_FIFO_ERR_INT_EN | BUS_ROM_DIS);
