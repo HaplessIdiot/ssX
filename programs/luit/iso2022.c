@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/iso2022.c,v 1.7 2002/09/18 17:11:50 tsi Exp $ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.8 2002/10/17 01:06:09 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -198,6 +198,7 @@ allocIso2022(void)
         free(is);
         return NULL;
     }
+    is->outbuf_count = 0;
 
     return is;
 }
