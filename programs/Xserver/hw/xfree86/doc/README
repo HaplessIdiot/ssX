@@ -1,4 +1,4 @@
-                        README for XFree86[tm] 4.4.0
+                          README for XFree86® 4.4.0
 
                           The XFree86 Project, Inc
 
@@ -26,11 +26,11 @@ video hardware that isn't supported explicitly can be used with the "vesa"
 driver.  The Releaes Notes has a table showing the drivers provided with
 XFree86 4.4.0, and links to related documentation.
 
-XFree86[tm] is produced by The XFree86 Project, Inc through the work of a
-group of volunteer independent developers.  The XFree86 Project is a non-com-
-mercial organisation and XFree86 would not exist without the invaluable
-development contributions of volunteers from around the world.  This release
-is dedicated to the greater XFree86 community, developers and users alike.
+XFree86® is produced by The XFree86 Project, Inc through the work of a group
+of volunteer independent developers.  The XFree86 Project is a non-commercial
+organisation and XFree86 would not exist without the invaluable development
+contributions of volunteers from around the world.  This release is dedicated
+to the greater XFree86 community, developers and users alike.
 
 2.  Licensing
 
@@ -190,7 +190,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.141 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.142 dawes Exp $
 
 
 $XFree86: $

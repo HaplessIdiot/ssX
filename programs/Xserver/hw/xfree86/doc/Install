@@ -1,4 +1,4 @@
-                 Installation Details for XFree86[tm] 4.4.0
+                   Installation Details for XFree86® 4.4.0
 
                           The XFree86 Project, Inc
 
@@ -380,7 +380,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.19 dawes Exp $
 
 
 $XFree86: $
