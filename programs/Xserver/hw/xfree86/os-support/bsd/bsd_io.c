@@ -43,8 +43,12 @@ int duration;
 {
     	if (loudness && pitch)
 	{
+#ifdef CODRV_SUPPORT
 		struct kbd_sound s;
+#endif
+#ifdef PCCONS_SUPPORT
 		int data[2];
+#endif
 
 	    	switch (xf86Info.consType) {
 

@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:32:50 dpw Exp $
 #include <Server.tmpl>
 
-#if defined(i386SVR4Architecture)
+#if defined(SVR4Architecture)
 BIOS_MOD = bios_V4mmap
 #else
 BIOS_MOD = bios_devmem
@@ -19,7 +19,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-#if !defined(i386SVR4Architecture)
+#if !defined(SVR4Architecture)
 ObjectFromSpecialSource(bios_devmem,../shared/bios_devmem,/**/)
 #endif
 ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
