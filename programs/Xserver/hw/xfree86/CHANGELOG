@@ -1,4 +1,8 @@
 XFree86 4.1.99.1 (xx June 2001)
+  45. Fixing MTRR split code (hopefully) (Egbert Eich).
+  44. Fixing coredump when doing vbeFree() twice: S3 Virge and C&T
+      (Egbert Eich).
+  43. Fixing HWCursor for mga driver in fbdev mode (Egbert Eich).
   42. Make the entire source tree (except GLX) compile under SunOS/SPARC 5.7.
       Functions that have yet to be ported are FatalError()'s.  This is
       temporarily controlled through a BuildXFree86onSparcSunOS #define in
@@ -13385,4 +13389,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1805 2001/05/25 18:40:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1806 2001/05/28 02:42:27 tsi Exp $
