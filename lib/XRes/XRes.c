@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/XRes/XRes.c,v 1.1 2002/03/04 19:34:51 mvojkovi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -142,6 +142,7 @@ Status XResQueryClients (
 
 Status XResQueryClientResources (
     Display *dpy,
+    XID xid,
     int *num_types,
     XResType **types
 )
@@ -161,6 +162,7 @@ Status XResQueryClientResources (
     GetReq (XResQueryClientResources, req);
     req->reqType = info->codes->major_opcode;
     req->XResReqType = X_XResQueryClientResources;
+    req->xid = xid;
     if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
         UnlockDisplay (dpy);
         SyncHandle ();
