@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.31 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
 
 /*
  * Authors:
@@ -175,6 +175,10 @@ typedef struct _I830Rec {
    I830MemRange Dummy;
 #endif
 
+#ifdef I830_XV
+   /* For Xvideo */
+   I830MemRange OverlayMem;
+#endif
 
 #ifdef XF86DRI
    I830MemRange BackBuffer;
@@ -228,6 +232,14 @@ typedef struct _I830Rec {
    I830WriteByteFunc writeStandard;
    I830ReadByteFunc readStandard;
 
+   Bool XvEnabled;			/* false if I830_XV not defined. */
+
+#ifdef I830_XV
+   int colorKey;
+   XF86VideoAdaptorPtr adaptor;
+   Bool overlayOn;
+#endif
+   
    Bool directRenderingDisabled;	/* DRI disabled always. */
    Bool directRenderingEnabled;		/* DRI enabled this generation. */
 

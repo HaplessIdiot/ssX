@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.19 2002/05/10 12:50:05 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.20 2002/09/11 00:29:31 dawes Exp $
 XCOMM
 XCOMM This is the Imakefile for the i810 driver.  
 XCOMM 
@@ -10,6 +10,11 @@ XCOMM
 #define I830Only NO
 #endif
 
+#define I830XvSupport YES
+
+#ifndef I830XvSupport
+#define I830XvSupport NO
+#endif
 
 #ifndef HaveDrmCommand
 #define HaveDrmCommand NO
@@ -32,6 +37,10 @@ DRMCOMMANDDEFINES = -DHAVE_DRM_COMMAND
 DRIDEFINES = $(GLX_DEFINES) $(DRMCOMMANDDEFINES)
 #endif
 
+#if I830XvSupport
+I830SRCS1 = i830_video.c
+I830OBJS1 = i830_video.o
+#endif
 
 
 #if !I830Only
@@ -55,6 +64,9 @@ OBJS = 	i810_driver.o \
 CHIPDEFINES = -DI830_ONLY
 #endif
 
+#if I830XvSupport
+I830XVDEFINES = -DI830_XV
+#endif
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -119,5 +131,6 @@ InstallDriverSDKNonExecFile(i830_dri.c,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i830_dri.h,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i830_driver.c,$(DRIVERSDKDIR)/drivers/i810)
 InstallDriverSDKNonExecFile(i830_memory.c,$(DRIVERSDKDIR)/drivers/i810)
+InstallDriverSDKNonExecFile(i830_video.c,$(DRIVERSDKDIR)/drivers/i810)
 
 InstallDriverSDKObjectModule(i810,$(DRIVERSDKMODULEDIR),drivers)
