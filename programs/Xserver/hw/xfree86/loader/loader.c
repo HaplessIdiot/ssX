@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.55 2001/10/28 03:33:59 tsi Exp $ */
+/* $XFree86: loader.c,v 1.56 2002/02/28 15:23:38 tsi Exp $ */
 
 /*
  *
@@ -471,7 +471,8 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     if(read(fd,ptr,size)!=size)
 	FatalError("\n_LoaderFileToMem() read() failed: %s\n",strerror(errno));
 
-#if defined(linux) && defined(__powerpc__) 
+#if (defined(linux) || defined(__NetBSD__) || defined(__OpenBSD__)) \
+    && defined(__powerpc__) 
     /*
      * Keep the instruction cache in sync with changes in the
      * main memory.
