@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.53 94/04/17 20:26:35 dpw Exp $ */
+/* $XConsortium: extension.c,v 1.54 94/12/02 16:30:12 mor Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -143,6 +143,9 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
         ext->errorBase = 0;
         ext->errorLast = 0;
     }
+#ifdef LBX
+    (void) LbxAddExtension(name, ext->base, ext->eventBase, ext->errorBase);
+#endif
     return(ext);
 }
 
@@ -164,7 +167,11 @@ Bool AddExtensionAlias(alias, ext)
     strcpy(name,  alias);
     ext->aliases[ext->num_aliases] = name;
     ext->num_aliases++;
+#ifdef LBX
+    return LbxAddExtensionAlias(ext->index, alias);
+#else
     return TRUE;
+#endif
 }
 
 unsigned short
@@ -193,6 +200,10 @@ void
 CloseDownExtensions()
 {
     register int i,j;
+
+#ifdef LBX
+    LbxCloseDownExtensions();
+#endif
 
     for (i = NumExtensions - 1; i >= 0; i--)
     {

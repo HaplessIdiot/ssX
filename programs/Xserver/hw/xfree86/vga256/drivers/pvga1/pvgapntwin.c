@@ -1,5 +1,5 @@
 /* $XConsortium: pvgapntwin.c,v 1.2 94/04/17 20:32:39 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.0 1994/07/24 11:57:06 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -112,7 +112,7 @@ pvgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
       switch (WDchipset)
 	{
 	case WD90C31:
-	  wd90c31BitBlt(0, pdstBase,
+	  wd90c31BitBlt((unsigned char *)NULL, pdstBase,
 			0, widthDst,
 			0, 0,
 			pBox->x1, pBox->y1,
@@ -126,7 +126,7 @@ pvgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	  break;
 	  
 	case WD90C33:
-	  wd90c33BitBlt(0, pdstBase,
+	  wd90c33BitBlt((unsigned char *)NULL, pdstBase,
 			0, widthDst,
 			0, 0,
 			pBox->x1, pBox->y1,

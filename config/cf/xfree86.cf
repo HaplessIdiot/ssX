@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.41 1995/01/08 06:55:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.42 1995/01/12 12:00:20 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -389,24 +389,18 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 #endif
 
-/* LBX */
-#if BuildLBX
-#define SitePervasiveExtensionDefines -DLBX
-#if !XF86LinkKit
-#define SiteExtensionLibs $(TOP)/workInProgress/lbx/programs/Xserver/lbx/liblbx.a $(TOP)/workInProgress/lbx/lib/lbxutil/liblbxutil.a
-#define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/lbxutil $(TOP)/workInProgress/lbx/programs/Xserver/lbx
-#else
-#define SiteExtensionLibs lib/liblbx.a lib/liblbxutil.a
+#ifndef BuildLBXCompatible
+#define BuildLBXCompatible NO
 #endif
-#define BigReqDefines /**/
+
+#ifndef BuildLBX
+#define BuildLBX NO
 #endif
 
 #if BuildLBXCompatible
 #if !BuildLBX
-#define SitePervasiveExtensionDefines -DLBX_COMPAT
-#define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/lbxutil $(TOP)/workInProgress/lbx/programs/Xserver/lbx
+#define LbxDefines -DLBX_COMPAT
 #endif
 #endif
-
 
 #include <xf86.rules>

@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.3 1994/11/26 12:48:40 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.4 1994/12/25 12:37:15 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -227,6 +227,7 @@ extern int  StandardReadRequestFromClient();
 extern int  StandardWriteToClient ();
 #endif
 #ifdef LBX
+extern int  UncompressWriteToClient ();
 extern unsigned long  StandardRequestLength ();
 extern int  StandardFlushClient ();
 #endif
@@ -627,6 +628,7 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
     }
     client->public.readRequest = StandardReadRequestFromClient;
     client->public.writeToClient = StandardWriteToClient;
+    client->public.uncompressedWriteToClient = UncompressWriteToClient;
     client->public.requestLength = StandardRequestLength;
     return client;
 }

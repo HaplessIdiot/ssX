@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.11 1994/12/11 10:57:28 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.12 1995/01/10 10:32:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -525,7 +525,7 @@ PVGA1Probe()
 	OFLG_SET(OPTION_INTERN_DISP, &PVGA1.ChipOptionFlags);
 	OFLG_SET(OPTION_EXTERN_DISP, &PVGA1.ChipOptionFlags);
     }
-    if (WDchipset == WD90C31)
+    if (WDchipset == WD90C31 || WDchipset == WD90C33)
 	OFLG_SET(OPTION_NOACCEL, &PVGA1.ChipOptionFlags);
     
     return(TRUE);

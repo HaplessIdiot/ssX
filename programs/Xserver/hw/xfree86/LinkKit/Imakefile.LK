@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.16 1994/12/25 13:45:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.17 1995/01/07 04:02:17 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -46,11 +46,15 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.16 1994/
 #if BuildXKB
       XKBEXT = lib/libxkb.a
 #endif
+#if BuildLBX
+      LBXEXT = lib/liblbx.a lib/liblbxutil.a
+#endif
 #ifdef SiteExtensionLibs
      SITEEXTS = SiteExtensionLibs
 #endif
 
-      OTHEREXTS = lib/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
+      OTHEREXTS = lib/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) \
+                  $(LBXEXT) $(SITEEXTS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = lib/libXau.a
        XDMCPLIB = lib/libXdmcp.a

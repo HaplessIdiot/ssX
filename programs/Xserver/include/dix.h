@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.80 94/04/17 20:25:36 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: dix.h,v 1.82 94/12/02 19:15:52 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.0 1994/12/25 12:36:38 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -171,11 +171,13 @@ typedef struct _Client *ClientPtr; /* also in misc.h */
 #if defined(LBX) || defined(LBX_COMPAT)
 typedef struct _ClientPublic {
     int             (*writeToClient) ();
+    int             (*uncompressedWriteToClient) ();
     unsigned long   (*requestLength) ();
     int             (*readRequest)();
 } ClientPublicRec, *ClientPublicPtr;
 
-#define WriteToClient(client,buf,len)   (((client)->public.writeToClient)(client,buf,len))
+#define WriteToClient(client,len,buf)   (((client)->public.writeToClient)(client,len,buf))
+#define UncompressedWriteToClient(client,len,buf)   (((client)->public.uncompressedWriteToClient)(client,len,buf))
 #define ReadRequestFromClient(client)   ((client)->public.readRequest(client))
 #define RequestLength(r,client,g,p)           (*(client)->public.requestLength) (r,client,g,p)
 #endif /* LBX || LBX_COMPAT */

@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.9 1994/12/02 05:38:28 dawes Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.197 94/12/05 19:30:41 gildea Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.10 1994/12/17 09:32:36 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -823,6 +823,7 @@ install:: LibraryTargetName(libname)					@@\
 #define InstallLinkKitLibrary(lib,dir)
 #endif
 
+
 /*
  * InstallLinkKitNamedLibrary - rule to install Link Kit library.
  *                         (only used for XFree86). This is a no-op
@@ -964,8 +965,8 @@ InstallTarget(install,file,$(INSTDATFLAGS),dest)
  *                         rule so that Imakefiles on non-XFree86 systems
  *                         continue to build Makefiles correctly.
  */
-#ifndef InstallLinkKitNonExecFile            
-#define InstallLinkKitNonExecFile(file,dir)                
+#ifndef InstallLinkKitNonExecFile
+#define InstallLinkKitNonExecFile(file,dir)
 #endif
 
 
@@ -1967,26 +1968,33 @@ target::								@@\
 		*) curdir=$(CURRENT_DIR)/ ;; \				@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
-		case "$$i" in \						@@\
-		../../?*/?*/?*/?*/?*/?*) newtop=../../../.. ;; \	@@\
-		../../?*/?*/?*/?*/?*)	 newtop=../../.. ;; \		@@\
-		../../?*/?*/?*/?*)	 newtop=../.. ;; \		@@\
-		../../?*/?*/?*)		 newtop=.. ;; \			@@\
-		../../?*/?*)		 newtop=. ;; \			@@\
-		../?*/?*/?*/?*/?*)	 newtop=../../../..;; \		@@\
-		../?*/?*/?*)		 newtop=../../..;; \		@@\
-		../?*/?*/?*)		 newtop=../..;; \		@@\
-		../?*/?*)		 newtop=..;; \			@@\
-		../?*)			 newtop=. ;; \			@@\
-		./?*/?*/?*/?*)	newtop=../../../..;; \			@@\
-		./?*/?*/?*)	newtop=../../..;; \			@@\
-		./?*/?*)	newtop=../..;; \			@@\
-		./?*)		newtop=..;; \				@@\
+		itmp="$$i" \						@@\
+		curtmp="$(CURRENT_DIR)" \				@@\
+		toptmp=""; \						@@\
+		case "$$itmp" in \					@@\
+		    ../?*) \ 						@@\
+			while echo "$$itmp" | grep '^../' > /dev/null;\	@@\
+			  do \						@@\
+			     toptmp="/`basename $$curtmp`$$toptmp"; \	@@\
+			     curtmp="`dirname $$curtmp`"; \		@@\
+			     itmp="`echo $$itmp | sed 's;../;;'`"; \	@@\
+			  done \					@@\
+		    ;; \						@@\
+		    ./?*) \						@@\
+			while echo "$$itmp" | grep '^./' > /dev/null;\	@@\
+			  do \						@@\
+			    itmp="`echo $$itmp | sed 's;./;;'`"; \	@@\
+			  done \					@@\
+		    ;; \						@@\
+		esac; \							@@\
+		case "$$itmp" in \					@@\
+		*/?*/?*/?*/?*)	newtop=../../../../..;; \		@@\
 		*/?*/?*/?*)	newtop=../../../..;; \			@@\
 		*/?*/?*)	newtop=../../..;; \			@@\
 		*/?*)		newtop=../..;; \			@@\
 		*)		newtop=..;; \				@@\
 		esac; \							@@\
+		newtop="$$newtop$$toptmp"; \				@@\
 		case "$(TOP)" in \					@@\
 		/?*) imaketop=$(TOP) \					@@\
 		     imakeprefix= ;; \					@@\
@@ -1995,7 +2003,7 @@ target::								@@\
 		*) imaketop=$$newtop/$(TOP) \				@@\
 		   imakeprefix=$$newtop/ ;; \				@@\
 		esac; \							@@\
-		(cd $$i; \						@@\
+		cd $$i; \						@@\
 		RemoveFile(Makefile.bak); \				@@\
 		if [ -f Makefile ]; then \				@@\
 			echo "	$(MV) Makefile Makefile.bak"; \		@@\
@@ -2006,7 +2014,8 @@ target::								@@\
 		if [ "$$executeit" != "no" ]; then \			@@\
 			ImakeSubCmdHelper -DTOPDIR=$$imaketop -DCURDIR=$$curdir$$i; \ @@\
 		fi; \							@@\
-		$(MAKE) $(MFLAGS) Makefiles;) \				@@\
+		$(MAKE) $(MFLAGS) Makefiles; \				@@\
+		cd $$newtop; \						@@\
 	done
 
 #ifdef UseInstalled

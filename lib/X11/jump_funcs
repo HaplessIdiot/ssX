@@ -1,4 +1,4 @@
-# $XFree86: xc/lib/X11/jump_funcs,v 3.1 1994/05/04 14:56:09 dawes Exp $
+# $XFree86: xc/lib/X11/jump_funcs,v 3.2 1994/10/21 11:58:54 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
 00000000 T _XFindContext        libX11         Context
@@ -1098,3 +1098,14 @@
 00000000 T __IceTransGetPeerNetworkId libICE         transport
 00000000 T __XimLcctstombs      libX11         imLcLkup
 00000000 T __XimLcctstowcs      libX11         imLcLkup
+#ifdef HASXDMAUTH
+00000000 T _XdmcpWrap           libX11         Wrap
+00000000 T __XdmcpWrapperToOddParity libX11         Wrap
+00000000 T __XdmcpAuthSetup     libX11         Wraphelp
+00000000 T __XdmcpAuthDoIt      libX11         Wraphelp
+#else
+00000000 T __DUMMY__           libX11         Wrap
+00000000 T __DUMMY__ libX11         Wrap
+00000000 T __DUMMY__     libX11         Wraphelp
+00000000 T __DUMMY__      libX11         Wraphelp
+#endif
