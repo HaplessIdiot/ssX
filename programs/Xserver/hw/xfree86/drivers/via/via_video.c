@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.10 2003/11/03 05:11:47 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -1158,6 +1158,7 @@ viaPutImageG(
                 pPriv->old_drw_w = drw_w;
                 pPriv->old_drw_h = drw_h;
                 pVia->old_dwUseExtendedFIFO = dwUseExtendedFIFO;
+                pVia->Video.VideoStatus |= SW_VIDEO_ON;
 
                 /* add to judge if need to re-create surface */
                 pPriv->old_src_w = src_w;
