@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.24 1997/03/22 09:34:50 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.26 1998/01/01 14:51:35 robin Exp $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.24 1997/03/22 09:34:50 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.26 1998/01/01 14:51:35 robin Exp $
 
 
 #define IHaveModules
@@ -65,7 +65,7 @@ NormalLibraryTarget(s3,$(S3OBJS))
 
 NormalLibraryTarget(s3pio,$(PIOOBJS))
 
-ForceSubdirs($(SUBDIRS))
+MakeSubdirs($(SUBDIRS))
 
 LinkSourceFile(vgaHW.c,../../vga256/vga)
 
