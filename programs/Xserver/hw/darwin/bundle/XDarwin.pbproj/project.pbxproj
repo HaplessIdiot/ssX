@@ -350,7 +350,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XDarwin 1.0.5, ©2001 XFree86 Project, Inc.</string>
+	<string>XDarwin 1.0.6, ©2001 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -362,7 +362,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin 1.0.5</string>
+	<string>XDarwin 1.0.6</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -835,6 +835,8 @@
 		32FEE13C00E07C3E7F000001 = {
 			children = (
 				014C68F200ED7AD67F000001,
+				F5269C2D01D5BC3501000001,
+				F5269C2E01D5BC3501000001,
 				32FEE13E00E07CBE7F000001,
 				32FEE13F00E07CBE7F000001,
 				32FEE14000E07CBE7F000001,
@@ -1008,6 +1010,16 @@
 //F52
 //F53
 //F54
+		F5269C2D01D5BC3501000001 = {
+			isa = PBXFileReference;
+			path = pseudoramiX.c;
+			refType = 4;
+		};
+		F5269C2E01D5BC3501000001 = {
+			isa = PBXFileReference;
+			path = pseudoramiX.h;
+			refType = 4;
+		};
 		F53321390193CB6A01000001 = {
 			isa = PBXFileReference;
 			name = German;
