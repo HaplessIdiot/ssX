@@ -1,4 +1,5 @@
 /* $XConsortium: Display.c,v 1.118 95/06/16 19:25:22 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
