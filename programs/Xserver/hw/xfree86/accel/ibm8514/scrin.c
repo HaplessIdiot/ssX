@@ -78,12 +78,10 @@ extern int defaultColorVisualClass;
 
 static VisualRec visuals[] = {
 /* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
     0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-#endif
     0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
 };
@@ -173,17 +171,10 @@ ibm8514ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateGC = ibm8514CreateGC;
     pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = (void (*)())NoopDDA;
-#ifdef	STATIC_COLOR
-    pScreen->InstallColormap = cfbInstallColormap;
-    pScreen->UninstallColormap = cfbUninstallColormap;
-    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-    pScreen->StoreColors = (void (*)())NoopDDA;
-#else
     pScreen->InstallColormap = ibm8514InstallColormap;
     pScreen->UninstallColormap = ibm8514UninstallColormap;
     pScreen->ListInstalledColormaps = ibm8514ListInstalledColormaps;
     pScreen->StoreColors = ibm8514StoreColors;
-#endif
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, miCopyPlane);

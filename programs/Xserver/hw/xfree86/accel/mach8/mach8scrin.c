@@ -80,12 +80,10 @@ extern int defaultColorVisualClass;
 
 static VisualRec visuals[] = {
 /* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
     0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
     0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-#endif
     0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
     0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
 };
@@ -175,17 +173,10 @@ mach8ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateGC = mach8CreateGC;
     pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = (void (*)())NoopDDA;
-#ifdef	STATIC_COLOR
-    pScreen->InstallColormap = cfbInstallColormap;
-    pScreen->UninstallColormap = cfbUninstallColormap;
-    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-    pScreen->StoreColors = (void (*)())NoopDDA;
-#else
     pScreen->InstallColormap = mach8InstallColormap;
     pScreen->UninstallColormap = mach8UninstallColormap;
     pScreen->ListInstalledColormaps = mach8ListInstalledColormaps;
     pScreen->StoreColors = mach8StoreColors;
-#endif
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, miCopyPlane);
