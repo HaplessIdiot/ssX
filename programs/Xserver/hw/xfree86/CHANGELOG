@@ -1,4 +1,6 @@
 XFree86 3.9.17e (11 February 2000)
+3685. Add xkb support plus new (XFree86-specific) keysym names for the
+      HP "Internet" keyboard (David Dawes).
 3684. Fix a vbe-related build problem on Solaris (David Dawes).
 
 XFree86 3.9.17d (9 February 2000)
@@ -9515,4 +9517,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.979 2000/02/09 13:30:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.980 2000/02/09 20:47:05 dawes Exp $
