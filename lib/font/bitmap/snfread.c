@@ -49,7 +49,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.11 2003/01/12 03:55:46 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.12 2003/11/17 22:20:22 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -62,7 +62,7 @@ from The Open Group.
 #include <stdarg.h>
 
 void
-snfError(char* message, ...)
+snfError(const char* message, ...)
 {
     va_list args;
 
