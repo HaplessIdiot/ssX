@@ -1270,8 +1270,6 @@ SetTip(xf86cfgDevice *device)
 
     XtSetArg(args[0], XtNtip, &tip);
     XtGetValues(device->widget, args, 1);
-    if (tip)
-	XtFree((XtPointer)tip);
 
     switch (device->type) {
 	case MOUSE: {
@@ -1359,7 +1357,7 @@ SetTip(xf86cfgDevice *device)
 	option = (XF86OptionPtr)(option->list.next);
     }
 
-    tip = XtNewString(buffer);
+    tip = buffer;
     XtSetArg(args[0], XtNtip, tip);
     XtSetValues(device->widget, args, 1);
 }
