@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.41 2000/04/17 16:30:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.43 2000/09/29 08:59:49 eich Exp $ */
 
 /*
  *
@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#if defined(UseMMAP) || defined(linux) && defined(__ia64__)
+#if defined(UseMMAP) || (defined(linux) && defined(__ia64__))
 #include <sys/mman.h>
 #endif
 #include <unistd.h>
