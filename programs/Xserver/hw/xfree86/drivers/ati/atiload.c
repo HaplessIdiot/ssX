@@ -98,6 +98,7 @@ const char *ATIramdacSymbols[] =
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
     "xf86InitCursor",
+    "xf86ForceHWCursor",
     NULL
 };
 
