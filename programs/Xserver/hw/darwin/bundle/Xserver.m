@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.18 2001/05/16 06:10:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.19 2001/07/01 02:13:41 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -39,7 +39,9 @@ static NSPortMessage *signalMessage;
 
     serverLock = [[NSLock alloc] init];
     clientTask = nil;
+    serverRunning = NO;
     serverVisible = NO;
+    rootlessMenuBarVisible = YES;
     appQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
@@ -95,6 +97,9 @@ static NSPortMessage *signalMessage;
 {
     NXEvent ev;
     static BOOL mouse1Pressed = NO;
+
+    if (!serverRunning)
+        return NO;
 
     if(([anEvent type]==NSKeyDown) && (![anEvent isARepeat]) &&
        ([anEvent keyCode]==[Preferences keyCode]) &&
@@ -198,7 +203,7 @@ static NSPortMessage *signalMessage;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    // GrP block SIGPIPE
+    // Block SIGPIPE
     // SIGPIPE repeatably killed the (rootless) server when closing a
     // dozen xterms in rapid succession. Those SIGPIPEs should have been
     // sent to the X server thread, which ignores them, but somehow they
@@ -212,14 +217,30 @@ static NSPortMessage *signalMessage;
         sigprocmask(SIG_BLOCK, &set, NULL);
     }
 
+    if (quartzRootless = -1) {
+        // The display mode was not set from the command line.
+        // Show mode pick panel?
+        if ([Preferences modeWindow]) {
+            [modeWindow makeKeyAndOrderFront:nil];
+        } else {
+            // Otherwise use default mode
+            quartzRootless = [Preferences rootless];
+            [self startX];
+        }
+    } else {
+        [self startX];
+    }
+}
+
+// Start the X server thread and the client process
+- (void)startX
+{
+    [modeWindow close];
+
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self
               withObject:nil];
-
-    // If we are going to display a splash screen,
-    // hide the X11 screen immediately
-    if ([Preferences startupHelp])
-        [self sendShowHide:NO];
+    serverRunning = YES;
 
     // Start the X clients if started from GUI
     if (quartzStartClients) {
@@ -272,19 +293,24 @@ static NSPortMessage *signalMessage;
         clientTask = [NSTask launchedTaskWithLaunchPath:path arguments:args];
     }
 
-    // Make sure the menu bar gets drawn
-    [NSApp setWindowsNeedUpdate:YES];
-
-    // Show the X switch window if not using dock icon switching
-    if (![Preferences dockSwitch] && !quartzRootless)
-        [switchWindow orderFront:nil];
-
-    // Display the help splash screen or show the X server
-    if ([Preferences startupHelp]) {
-        [helpWindow makeKeyAndOrderFront:nil];
+    if (quartzRootless) {
+        // There is no help window for rootless; just start
+        [helpWindow close];
+        [self sendShowHide:YES];
     } else {
-        ShowMenuBar();
-        [self closeHelpAndShow:nil];
+        // Show the X switch window if not using dock icon switching
+        if (![Preferences dockSwitch])
+            [switchWindow orderFront:nil];
+
+        if ([Preferences startupHelp]) {
+            // display the full screen mode help
+            [self sendShowHide:NO];
+            [helpWindow makeKeyAndOrderFront:nil];
+        } else {
+            // start running full screen and make sure X is visible
+            ShowMenuBar();
+            [self closeHelpAndShow:nil];
+        }
     }
 }
 
@@ -301,15 +327,32 @@ static NSPortMessage *signalMessage;
     QuartzMessageMainThread(kQuartzServerDied);
 }
 
+// Full screen mode was picked in the mode pick panel
+- (IBAction)startFullScreen:(id)sender
+{
+    [Preferences setModeWindow:[startupModeButton intValue]];
+    [Preferences saveToDisk];
+    quartzRootless = FALSE;
+    [self startX];
+}
+
+// Rootless mode was picked in the mode pick panel
+- (IBAction)startRootless:(id)sender
+{
+    [Preferences setModeWindow:[startupModeButton intValue]];
+    [Preferences saveToDisk];
+    quartzRootless = TRUE;
+    [self startX];
+}
+
 // Close the help splash screen and show the X server
 - (IBAction)closeHelpAndShow:(id)sender
 {
-    int helpVal;
-
-    helpVal = [startupHelpButton intValue];
-    [Preferences setStartupHelp:helpVal];
-    [Preferences saveToDisk];
-
+    if (sender) {
+        int helpVal = [startupHelpButton intValue];
+        [Preferences setStartupHelp:helpVal];
+        [Preferences saveToDisk];
+    }
     [helpWindow close];
 
     serverVisible = YES;
@@ -320,22 +363,31 @@ static NSPortMessage *signalMessage;
 // Show the X server when sent message from GUI
 - (IBAction)showAction:(id)sender
 {
-    [self sendShowHide:YES];
+    if (serverRunning)
+        [self sendShowHide:YES];
 }
 
-// Show or hide the X server
+// Show or hide the X server or menu bar in rootless mode
 - (void)toggle
 {
-    if (serverVisible)
-        [self hide];
-    else
-        [self show];
+    if (quartzRootless) {
+        if (rootlessMenuBarVisible)
+            HideMenuBar();
+        else
+            ShowMenuBar();
+        rootlessMenuBarVisible = !rootlessMenuBarVisible;
+    } else {
+        if (serverVisible)
+            [self hide];
+        else
+            [self show];
+    }
 }
 
 // Show the X server on screen
 - (void)show
 {
-    if (!serverVisible) {
+    if (!serverVisible && serverRunning) {
         [self sendShowHide:YES];
     }
 }
@@ -343,7 +395,7 @@ static NSPortMessage *signalMessage;
 // Hide the X server from the screen
 - (void)hide
 {
-    if (serverVisible) {
+    if (serverVisible && serverRunning) {
         [self sendShowHide:NO];
     }
 }
@@ -452,6 +504,7 @@ static NSPortMessage *signalMessage;
             [NSCursor unhide];
             break;
         case kQuartzServerDied:
+            serverRunning = NO;
             if (appQuitting) {
                 // If we quit before the clients start, they may sit and wait
                 // for the X server to start. Kill them instead.

@@ -3,7 +3,7 @@
  * Startup code for the Quartz Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.4 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.5 2001/06/27 05:13:53 torrey Exp $ */
 
 #include <fcntl.h>
 #include "opaque.h"
@@ -49,15 +49,66 @@ void DarwinHandleGUI(
     argvGlobal = argv;
     envpGlobal = envp;
 
-    // Determine if we need to start X clients    
+    // Determine if we need to start X clients
+    // and what display mode to use
     quartzStartClients = 1;
-    for (i = argc-1; i; i--) {
+    for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-nostartx")) {
-            quartzStartClients = 0;
+            quartzStartClients = 0;    
+        } else if (!strcmp( argv[i], "-fullscreen")) {
+            quartzRootless = 0;
+        } else if (!strcmp( argv[i], "-rootless")) {
+            quartzRootless = 1;
         }
     }
 
     quartz = TRUE;
     main_exit = NSApplicationMain(argc, argv);
     exit(main_exit);
+}
+
+int QuartzProcessArgument( int argc, char *argv[], int i )
+{
+    // fullscreen: CoreGraphics full-screen mode
+    // rootless: Cocoa rootless mode
+    // quartz: Default, either fullscreen or rootless
+
+    if ( !strcmp( argv[i], "-fullscreen" ) ) {
+        ErrorF( "Running full screen in parallel with Mac OS X Quartz window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+    }
+
+    if ( !strcmp( argv[i], "-rootless" ) ) {
+        ErrorF( "Running rootless inside Mac OS X window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+     }
+
+    if ( !strcmp( argv[i], "-quartz" ) ) {
+        ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+    }
+
+    // The Mac OS X front end uses this argument, which we just ignore here.
+    if ( !strcmp( argv[i], "-nostartx" ) ) {
+        return 1;
+    }
+
+    // This command line arg is passed when launched from the Aqua GUI.
+    if ( !strncmp( argv[i], "-psn_", 5 ) ) {
+        return 1;
+    }
+
+    return 0;
 }
