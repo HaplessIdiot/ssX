@@ -1,4 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -751,7 +752,8 @@ mach32EnterLeaveVT(enter, screen_idx)
     PixmapPtr pspix;
     ScreenPtr pScreen = savepScreen;
 
-    pspix = (PixmapPtr)pScreen->devPrivate;
+    if (!xf86Exiting && !xf86Resetting)
+	pspix = (PixmapPtr)pScreen->devPrivate;
 
     if (enter) {
 	if (vgaBase)
