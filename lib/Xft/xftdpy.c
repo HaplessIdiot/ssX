@@ -164,6 +164,25 @@ bail0:
 /*
  * Reduce memory usage in X server
  */
+
+static void
+_XftDisplayValidateMemory (XftDisplayInfo *info)
+{
+    XftFont	    *public;
+    XftFontInt	    *font;
+    unsigned long   glyph_memory;
+
+    glyph_memory = 0;
+    for (public = info->fonts; public; public = font->next)
+    {
+	font = (XftFontInt *) public;
+	glyph_memory += font->glyph_memory;
+    }
+    if (glyph_memory != info->glyph_memory)
+	printf ("Display glyph cache incorrect has %ld bytes, should have %ld\n",
+		info->glyph_memory, glyph_memory);
+}
+
 void
 _XftDisplayManageMemory (Display *dpy)
 {
@@ -179,6 +198,7 @@ _XftDisplayManageMemory (Display *dpy)
 	if (info->glyph_memory > info->max_glyph_memory)
 	    printf ("Reduce global memory from %ld to %ld\n",
 		    info->glyph_memory, info->max_glyph_memory);
+	_XftDisplayValidateMemory (info);
     }
     while (info->glyph_memory > info->max_glyph_memory)
     {
@@ -197,6 +217,8 @@ _XftDisplayManageMemory (Display *dpy)
 	    glyph_memory -= font->glyph_memory;
 	}
     }
+    if (XftDebug () & XFT_DBG_CACHE)
+	_XftDisplayValidateMemory (info);
 }
 
 Bool
