@@ -1387,9 +1387,9 @@ ProcChangeKeyboardControl (client)
 	    if (!noXkbExtension) {
 		XkbEventCauseRec	cause;
 		XkbSetCauseCoreReq(&cause,X_ChangeKeyboardControl,client);
-		keybd->kbdfeed->ctrl.leds = ctrl.leds;
 		XkbSetIndicators(keybd,((led == DO_ALL) ? ~0L : (1L<<(led-1))),
 				 			ctrl.leds, &cause);
+		ctrl.leds = keybd->kbdfeed->ctrl.leds;
 	    }
 #endif
 	    break;

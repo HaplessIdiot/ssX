@@ -1,4 +1,7 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 291. When using XKB and LEDs are switched on/off by external application
+      the keyboard module doesn't change phisycal LEDs state immediately
+      (#4951, Ivan Pascal).
  290. Clean up Cygwin/XFree86 keyboard files (#4949 Harold Hunt).
  289. Add Matrox G550 support (#4947, Luugi Marson, Matrox).
  288. Remove SuperProbe.man definition for manual page 

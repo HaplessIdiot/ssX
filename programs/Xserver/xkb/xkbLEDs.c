@@ -239,11 +239,10 @@ unsigned 			side_affected;
 	XkbUpdateLedAutoState(dev,sli,side_affected,&ed,&changes,cause);
 	affect|= side_affected;
     }
-    XkbSendNotification(dev,&changes,cause);
-    if (ed.reason)
-	XkbSendExtensionDeviceNotify(dev,cause->client,&ed);
     if (changes.state_changes || changes.ctrls.enabled_ctrls_changes)
 	XkbUpdateAllDeviceIndicators(NULL,cause);
+
+    XkbFlushLedEvents(dev,dev,sli,&ed,&changes,cause);
     return;
 }
 
