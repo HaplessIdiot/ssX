@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.12 2003/09/16 00:36:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.13 2003/10/16 23:50:09 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -42,6 +42,7 @@
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"
+#include "opaque.h"
 #include "darwin.h"
 #include "quartz.h"
 #define _APPLEWM_SERVER_
@@ -117,6 +118,7 @@ static io_connect_t root_port;
 
     serverState = server_NotStarted;
     serverLock = [[NSRecursiveLock alloc] init];
+    pendingClients = nil;
     clientPID = 0;
     sendServerEvents = NO;
     serverVisible = NO;
@@ -535,6 +537,19 @@ static io_connect_t root_port;
     if (quartzServerQuitting) {
         [self quitServer];
         [NSApp replyToApplicationShouldTerminate:YES];
+        return;
+    }
+
+    if (pendingClients) {
+        NSEnumerator *enumerator = [pendingClients objectEnumerator];
+        NSString *filename;
+
+        while ((filename = [enumerator nextObject])) {
+            [self runClient:filename];
+        }
+
+        [pendingClients release];
+        pendingClients = nil;
     }
 }
 
@@ -682,6 +697,87 @@ static io_connect_t root_port;
     close(fd[1]);
 
     return YES;
+}
+
+// Start the specified client in its own task
+// FIXME: This should be unified with startXClients
+- (void)runClient:(NSString *)filename
+{
+    const char *command = [filename UTF8String];
+    const char *shell;
+    const char *argv[5];
+    int child1, child2 = 0;
+    int status;
+
+    shell = getenv("SHELL");
+    if (shell == NULL)
+        shell = "/bin/bash";
+
+    /* At least [ba]sh, [t]csh and zsh all work with this syntax. We
+       need to use an interactive shell to force it to load the user's
+       environment. */
+
+    argv[0] = shell;
+    argv[1] = "-i";
+    argv[2] = "-c";
+    argv[3] = command;
+    argv[4] = NULL;
+
+    /* Do the fork-twice trick to avoid having to reap zombies */
+
+    child1 = fork();
+
+    switch (child1) {
+        case -1:                                /* error */
+            break;
+
+        case 0:                                 /* child1 */
+            child2 = fork();
+
+            switch (child2) {
+                int max_files, i;
+                char buf[1024], *tem;
+
+            case -1:                            /* error */
+                _exit(1);
+
+            case 0:                             /* child2 */
+                /* close all open files except for standard streams */
+                max_files = sysconf(_SC_OPEN_MAX);
+                for (i = 3; i < max_files; i++)
+                    close(i);
+
+                /* ensure stdin is on /dev/null */
+                close(0);
+                open("/dev/null", O_RDONLY);
+
+                /* cd $HOME */
+                tem = getenv("HOME");
+                if (tem != NULL)
+                    chdir(tem);
+
+                /* Setup environment */
+                snprintf(buf, sizeof(buf), ":%s", display);
+                setenv("DISPLAY", buf, TRUE);
+                tem = getenv("PATH");
+                if (tem != NULL && tem[0] != NULL)
+                    snprintf(buf, sizeof(buf), "%s:/usr/X11R6/bin", tem);
+                else
+                    snprintf(buf, sizeof(buf), "/bin:/usr/bin:/usr/X11R6/bin");
+                setenv("PATH", buf, TRUE);
+
+                execvp(argv[0], (char **const) argv);
+
+                _exit(2);
+
+            default:                            /* parent (child1) */
+                _exit(0);
+            }
+            break;
+
+        default:                                /* parent */
+            waitpid(child1, &status, 0);
+    }
 }
 
 // Run the X server thread
@@ -909,7 +1005,7 @@ static io_connect_t root_port;
 {
     unsigned msg = [portMessage msgid];
 
-    switch(msg) {
+    switch (msg) {
         case kQuartzServerHidden:
             // Make sure the X server wasn't queued to be shown again while
             // the hide was pending.
@@ -1079,9 +1175,9 @@ static io_connect_t root_port;
         for (i = count - 1; i >= first; i--)
             [windowMenu removeItemAtIndex:i];
     } else {
-        windowSeparator = [windowMenu addItemWithTitle:@""
-                           action:nil
-                           keyEquivalent:@""];
+        windowSeparator = (NSMenuItem *)[windowMenu addItemWithTitle:@""
+                                                    action:nil
+                                                    keyEquivalent:@""];
     }
 
     count = [dockMenu numberOfItems];
@@ -1097,16 +1193,16 @@ static io_connect_t root_port;
         name = [[list objectAtIndex:i] objectAtIndex:0];
         shortcut = [[list objectAtIndex:i] objectAtIndex:1];
 
-        item = [windowMenu addItemWithTitle:name
-                           action:@selector(itemSelected:)
-                           keyEquivalent:shortcut];
+        item = (NSMenuItem *)[windowMenu addItemWithTitle:name
+                                         action:@selector(itemSelected:)
+                                         keyEquivalent:shortcut];
         [item setTarget:self];
         [item setTag:i];
         [item setEnabled:YES];
 
-        item = [dockMenu insertItemWithTitle:name
-                         action:@selector(itemSelected:)
-                         keyEquivalent:shortcut atIndex:i];
+        item = (NSMenuItem *)[dockMenu insertItemWithTitle:name
+                                       action:@selector(itemSelected:)
+                                       keyEquivalent:shortcut atIndex:i];
         [item setTarget:self];
         [item setTag:i];
         [item setEnabled:YES];
@@ -1114,9 +1210,9 @@ static io_connect_t root_port;
 
     if (checkedWindowItem >= 0 && checkedWindowItem < count)
     {
-        item = [windowMenu itemAtIndex:first + checkedWindowItem];
+        item = (NSMenuItem *)[windowMenu itemAtIndex:first + checkedWindowItem];
         [item setState:NSOnState];
-        item = [dockMenu itemAtIndex:checkedWindowItem];
+        item = (NSMenuItem *)[dockMenu itemAtIndex:checkedWindowItem];
         [item setState:NSOnState];
     }
 
@@ -1138,16 +1234,16 @@ static io_connect_t root_port;
 
     if (checkedWindowItem >= 0 && checkedWindowItem < count)
     {
-        item = [windowMenu itemAtIndex:first + checkedWindowItem];
+        item = (NSMenuItem *)[windowMenu itemAtIndex:first + checkedWindowItem];
         [item setState:NSOffState];
-        item = [dockMenu itemAtIndex:checkedWindowItem];
+        item = (NSMenuItem *)[dockMenu itemAtIndex:checkedWindowItem];
         [item setState:NSOffState];
     }
     if (n >= 0 && n < count)
     {
-        item = [windowMenu itemAtIndex:first + n];
+        item = (NSMenuItem *)[windowMenu itemAtIndex:first + n];
         [item setState:NSOnState];
-        item = [dockMenu itemAtIndex:n];
+        item = (NSMenuItem *)[dockMenu itemAtIndex:n];
         [item setState:NSOnState];
     }
     checkedWindowItem = n;
@@ -1165,12 +1261,16 @@ static io_connect_t root_port;
     else if ((menu == windowMenu && [item tag] != 40) || menu == dockMenu) {
         // The special window and dock menu items should not be active unless
         // there is an AppleWM-aware window manager running.
-	return (AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0;
+        return (AppleWMSelectedEvents() & AppleWMControllerNotifyMask) != 0;
     }
     else {
-	return TRUE;
+        return TRUE;
     }
 }
+
+/*
+ * Application Delegate Methods
+ */
 
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
@@ -1220,6 +1320,29 @@ static io_connect_t root_port;
             [NSApp arrangeInFront:nil];
         }
     }
+}
+
+// Called when the user opens a document type that we claim (ie. an X11 executable).
+- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
+{
+    if (serverState == server_Running) {
+        [self runClient:filename];
+        return YES;
+    }
+    else if (serverState == server_NotStarted || serverState == server_Starting) {
+        if ([filename UTF8String][0] != ':') {          // Ignore display names
+            if (!pendingClients) {
+                pendingClients = [[NSMutableArray alloc] initWithCapacity:1];
+            }
+            [pendingClients addObject:filename];
+            return YES;                 // Assume it will launch successfully
+        }
+        return NO;
+    }
+
+    // If the server is quitting or done,
+    // its too late to launch new clients this time.
+    return NO;
 }
 
 @end
@@ -1315,5 +1438,5 @@ static void powerDidChange(
             }
             break;
     }
-    
+
 }
