@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.33 1995/09/22 07:06:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.34 1995/09/23 01:16:17 dawes Exp $
 
 #ifndef OSName
 #define OSName            FreeBSD 2.0.5
@@ -123,7 +123,7 @@ XCOMM operating system:  OSName
 #if CompressManPages
 
 #ifndef CompressManCmd
-# define CompressManCmd		gzip -9n
+# define CompressManCmd		gzip -n
 #endif
    COMPRESSMANCMD = CompressManCmd
 

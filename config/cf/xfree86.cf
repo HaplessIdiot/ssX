@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.68 1995/09/17 06:27:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.69 1995/09/22 07:06:38 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -220,6 +220,9 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.68 1995/09/17 06:27:46 dawes Exp $
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	YES
 #endif
+#ifndef UseKoi8RForCyrillic
+#define UseKoi8RForCyrillic	YES
+#endif
 
 /*
  * Build scanpci?
@@ -397,7 +400,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3120
+#define XFree86Version	3121
 #endif
 
 #ifndef XVendorString

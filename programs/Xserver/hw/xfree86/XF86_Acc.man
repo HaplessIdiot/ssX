@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.35 1995/07/22 09:42:06 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.36 1995/08/13 09:41:38 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -287,6 +287,8 @@ XF86Config file are ignored unless the "no_bios_clocks" option is given
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
 P9000 and AGX servers), the name of the clock chip is given.  
+The only supported value for the W32 server
+is \fB"ics5342"\fP.
 Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
@@ -374,6 +376,13 @@ if the server fails to detect it.
 \fBics5300\fP - (S3) Card has an ICS5300 RAMDAC.  This must be specified
 if the server fails to detect it (the server will recognise this as
 an S3 GENDAC which is OK).
+.sp
+\fBics5341\fP - (W32) Card has an ICS5341 RAMDAC.  This must be specified
+if the server fails to detect it. For pixel clocks higher than 86MHz the
+server tries to use pixel multiplexing which seems to fail on most boards.
+If you don't get a stable picture stick to clocks lower than 86MHz. While
+the ICS5341 RAMDAC is usually recognized as RAMDAC you MUST set it as 
+ClockChip to be able to use the programming capabilities.
 .sp
 \fBics5342\fP - (S3) Card has an ICS5342 RAMDAC.  This must be specified
 if the server fails to detect it (the server will recognise this as
@@ -693,6 +702,8 @@ Leonard N. Zubkoff, \fIlnz@dandelion.com\fP
 Harald Koenig,      \fIkoenig@tat.physik.uni-tuebingen.de\fP
 Bernhard Bender,    \fIbr@elsa.mhs.compuserve.com\fP
 Hans Nasten,        \fInasten@everyware.se\fP
+Dirk Hohndel,       \fIhohndel@XFree86.org\fP
+Joe Moss,           \fIjoe@morton.rain.com\fP
 .fi
 .RS 8
 Development and improvement of the S3 specific code.
@@ -746,6 +757,8 @@ Development of the AGX specific code.
 .PP
 .nf
 Glenn Lai,          \fIglenn@cs.utexas.edu\fP
+Dirk Hohndel,       \fIhohndel@XFree86.org\fP
+Koen Gadeyne,       \fIkmg@barco.be\fP 
 .fi
 .RS 8
 Development of the ET4000/W32 specific code.

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.14 95/01/11 18:27:52 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.17 1995/07/12 15:27:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.18 1995/09/22 07:06:28 dawes Exp $
 
 #define OSName            BSD/OS 2.0
 #define OSVendor          BSDI
@@ -69,15 +69,11 @@ XCOMM xf86site.def
 
 #define StandardDefines	-DCSRG_BASED
 
-#undef  InstallCmd
 #define InstallCmd /usr/bin/install
-#undef	TblCmd
-#define	TblCmd /usr/bin/tbl
-#undef	EqnCmd
-#define	EqnCmd /usr/bin/eqn -Tascii
-          COL = /usr/bin/col
-         NEQN = /usr/bin/eqn -Tascii
-        NROFF = /usr/bin/nroff
+#define	EqnCmd eqn -Tps
+          COL = col
+         NEQN = eqn -Tascii
+        NROFF = nroff
 
 #define DefaultUserPath		:/bin:/usr/bin:/usr/local/bin:$(BINDIR)
 #define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)

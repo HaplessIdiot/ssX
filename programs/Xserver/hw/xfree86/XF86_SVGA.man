@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.22 1995/07/08 13:24:09 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.23 1995/07/17 13:51:49 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -23,8 +23,8 @@ The
 .I XF86_SVGA
 server supports the following popular SuperVGA chipsets in 256 color mode.
 Virtual resolutions up to (approximately) 1152x900 are supported, using
-(up to) 1Mb of display memory.  The Western Digital WD90C33 and some of
-the Cirrus chipsets support
+(up to) 1Mb of display memory.  The Western Digital WD90C33, some of
+the Cirrus chipsets, and the Oak OTI087 support
 up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
 Some of the Cirrus chipsets also support 16bpp and 32bpp (truecolor) modes
 on certain configurations.  Some of the ARK chipsets support 16bpp modes
@@ -85,8 +85,9 @@ Video7:
 HT216-32
 .RE
 .PP
-Accelerated support is included for most of the Cirrus chipsets, and for
-the Western Digital WD90C31 and WD90C33 chipsets.  Accelerated support for the
+Accelerated support is included for most of the Cirrus chipsets,
+the Western Digital WD90C31 and WD90C33 chipsets, and the Oak OTI087 chipset.
+Accelerated support for the
 ET4000/W32 is implemented in a separate server (see \fIXF86_W32(1)\fP).
 Users of boards based on ATI's Mach8, Mach32 and Mach64 chipsets should refer
 to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and \fIXF86_Mach64(1)\fP
@@ -223,12 +224,14 @@ of operation.  This option is experimental.
 accelerated features for the clgd5426, clgd5428, wd90c24, wd90c31 and
 wd90c33 chipsets.
 .sp
-\fBfifo_conservative\fP - for Cirrus chipsets.  This option sets the CRT
+\fBfifo_conservative\fP - for Cirrus chipsets, and oti087.  This option
+sets the CRT
 FIFO threshold to a conservative value for dot clocks above 65MHz.  This
 reduces performance, but may help in eliminating problems with ``streaks''
 on the screen during BitBLT operations
 .sp
-\fBfifo_aggressive\fP - for Cirrus chipsets.  This option sets the CRT
+\fBfifo_aggressive\fP - for Cirrus chipsets, and oti087.  This option
+sets the CRT
 FIFO threshold to an aggressive value for dot clocks above 65MHz.  This
 may increase performance.
 .sp
@@ -246,7 +249,7 @@ Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
 hardware BitBLT.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
-memory. Currently only supported for some Cirrus configurations.
+memory. Currently only supported for some Cirrus and oti087 configurations.
 .sp
 \fBmed_dram, favour_bitblt, sw_cursor, clgd6225_lcd, mmio\fP
 - more Cirrus-specific options. Refer to

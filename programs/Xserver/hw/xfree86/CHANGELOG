@@ -1,4 +1,29 @@
+XFree86 3.1.2b (22 October 1995)
+ 36. Add an "AllowNullPasswd" resource to xdm to make it possible for xdm
+     to login to accounts with a null password.  This is set to "False"
+     by default (Joerg Wunsch).
+ 35. Use dynamically allocated strings in xrdb to avoid overruns that
+     can occur otherwise (Joerg Wunsch).
+ 34. Add ELSA Winner 2000PRO/X-8 to the S3 ELSA probe code (Dirk Hohndel).
+ 33. Fix S3 probe of IBM RGB RAMDACs incorrectly identifying an RGB528
+     or RGB528A as an RGB524 (Dirk Hohndel).
+ 32. Fix incorrect memory probe for S3 964/968 (Dirk Hohndel).
+ 31. Prelim pixmux support for ICS5341 RAMDAC in W32 server (Dirk Hohndel).
+ 30. Support for ICS5341 programmable clock in W32 server (Dirk Hohndel).
+ 29. Add RFC1700-conformant charset names for ISO-8859 locales to
+     locale.alias.
+ 28. Fix LynxOS video mapping problem that shows up when the "fb_debug"
+     option is set in the S3 server (Thomas Mueller).
+ 27. Fix reference to undeclared variable in os/xalloc.c for OSs which
+     don't have MMAP_ANON or MMAP_DEV_ZERO defined (Thomas Mueller).
+ 26. Fix W32 server core dump on LynxOS when run with '-probeonly'
+     and no Clocks line in the XF86Config file (Thomas Mueller).
+ 25. Fix reference to unitialised string in Hercules mono driver
+     (Paul Gortmaker).
+
 XFree86 3.1.2a (23 September 1995)
+ 24. Fix HW cursor masks in Mach32 and Mach64 servers.
+ 23. Add detection of C&T 65548 to SuperProbe.
  22. Fix snow problems with WD90C24 when for clocks higher than MCLK
      (Brad Bosch).
  21. Add XNLS support for KOI8-R (Andrey Chernov).

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.249 95/05/23 21:36:40 matt Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.17 1995/07/08 10:21:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.18 1995/07/22 04:11:42 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -77,6 +77,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.17 1995/07/08 10:21:50 dawes Exp $
 #endif
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	NO
+#endif
+#ifndef UseKoi8RForCyrillic
+#define UseKoi8RForCyrillic	NO
 #endif
 #ifndef BuildPhigs
 #define BuildPhigs		NO
