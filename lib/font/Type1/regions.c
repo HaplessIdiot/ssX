@@ -134,7 +134,7 @@ set.  The flag is used to optimize some paths.
  
 /*SHARED LINE(S) ORIGINATED HERE*/
 /*
-:h4."INFINITY" - A Constant Region Structure of Infinite Extent
+:h4."TT_INFINITY" - A Constant Region Structure of Infinite Extent
  
 Infinity is the complement of a null area:
 Note - removed the refcount = 1 init, replaced with references = 2 3-26-91 PNM
@@ -146,7 +146,7 @@ static struct region infinity = { REGIONTYPE,
                            NULL, NULL,
                            0, 0, 0, 0, 0, NULL, NULL,
                            NULL, 0, NULL, NULL };
-struct region *INFINITY = &infinity;
+struct region *TT_INFINITY = &infinity;
  
 /*
 :h4."EmptyRegion" - A Region Structure with Zero Area

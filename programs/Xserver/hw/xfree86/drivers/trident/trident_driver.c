@@ -1897,6 +1897,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load DDC if needed */
     /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    
     if (!xf86LoadSubModule(pScrn, "ddc")) {
 	if (IsPciCard && UseMMIO) {
     	    TRIDENTDisableMMIO(pScrn);

@@ -85,6 +85,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Needed by the Shadow Framebuffer */
 #include "shadowfb.h"
 
+/* int10 */
+#include "xf86int10.h"
+#include "vbe.h"
+
 /* Needed for Device Data Channel (DDC) support */
 #include "xf86DDC.h"
 
@@ -322,6 +326,11 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    NULL
+};
+
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
@@ -372,7 +381,7 @@ neoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, shadowSymbols,
-			  ddcSymbols, i2cSymbols, NULL);
+			  ddcSymbols, vbeSymbols, i2cSymbols, NULL);
 	/*
 	 * The return value must be non-NULL on success even though there
 	 * is no TearDownProc.
@@ -572,7 +581,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int w;
     int apertureSize;
     char *s;
-
+    Bool ddc_done = FALSE;
+    
     if (flags & PROBE_DETECT) return FALSE;
     
     /* The vgahw module should be loaded here when needed */
@@ -643,6 +653,10 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     }
     ErrorF("\n");
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	nPtr->pVbe =  VBEInit(NULL,nPtr->pEnt->index);
+    }
     
     vgaHWGetIOBase(hwp);
     nPtr->vgaIOBase = hwp->IOBase;
@@ -762,8 +776,18 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
 
     VGAwGR(0x09,0x26);
-    xf86SetDDCproperties(
-	pScrn,xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,nPtr->I2C)));
+
+    if (nPtr->pVbe) {
+	xf86MonPtr pMon;
+	if ((pMon = xf86PrintEDID(vbeDoEDID(nPtr->pVbe))) != NULL)
+	    ddc_done = TRUE;
+	xf86SetDDCproperties(pScrn,pMon);
+    }
+
+    if (ddc_done)
+	xf86SetDDCproperties(
+	    pScrn,xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,nPtr->I2C)));
+    
     VGAwGR(0x09,0x00);
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, bppSupport ))
@@ -877,11 +901,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
       }
     }
 
-    if (nPtr->shadowFB)
-	ErrorF("shadow\n");
-    else
-	ErrorF("no shadow\n");
-    
     if (nPtr->internDisp && nPtr->externDisp)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
 		   "Simultaneous LCD/CRT display mode\n");

@@ -69,6 +69,7 @@ int main(int argc, char** argv)
     char c, cport;
     char* str;
     unsigned int port;
+    int query = 0;
 
     if(argc < 2) {
 	printf("usage: %s Cvvxx [Cvvxx]\n",argv[0]);
@@ -79,7 +80,8 @@ int main(int argc, char** argv)
         printf("             = M|m write vv to MRxx (6555x only)\n");
         printf("             = S|s write vv to SRxx\n");
         printf("             = X|x write vv to XRxx\n");
-        printf("     Both vv and xx are in hexadecimal\n");
+        printf("     xx is in hexadecimal\n");
+	printf("     vv is in hexadecimal or '?' for query\n");
     }    
 
     if(SET_IOPL())
@@ -131,6 +133,9 @@ int main(int argc, char** argv)
 	}
 	index = inb(port);
 	while (c = *str++){
+	    if (c == '?') {
+	      query = 1;
+	    }
 	    if(c >= '0' && c <= '9')
 	    value = (value << 4) | (c - '0');  /*ASCII assumed*/
 	    else if(c >= 'A' && c < 'G')
@@ -139,10 +144,15 @@ int main(int argc, char** argv)
 	    value = (value << 4) | (c - 'a'+10);  /*ASCII assumed*/
 	}		
 	outb(port,value&0xFF);
-        printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF, 
-                           inb(port+1)&0xFF, (value&0xFF00)>>8);
-	outw(port, value);
-	outb(port, index &0xFF);
+	if (query) {
+	    printf("%cR%X: 0x%X\n", cport, value & 0xFF, 
+		   inb(port+1)&0xFF);
+	} else {
+	    printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF, 
+		   inb(port+1)&0xFF, (value&0xFF00)>>8);
+	    outw(port, value);
+	    outb(port, index &0xFF);
+	}
     }
     RESET_IOPL();
     return 0;

@@ -48,6 +48,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xf86Cursor.h"
 
+#include "vbe.h"
+
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
@@ -214,6 +216,7 @@ typedef struct neoRec
     /* proc pointer */
     CloseScreenProcPtr CloseScreen;
     I2CBusPtr I2C;
+    vbeInfoPtr          pVbe;
     unsigned char * ShadowPtr;
     int ShadowPitch;
     void	(*PointerMoved)(int index, int x, int y);
