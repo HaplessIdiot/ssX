@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.125 2001/02/15 17:59:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.127 2001/03/08 17:12:13 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1339,7 +1339,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86MonPtr pMon;
 	vbeInfoPtr pVbe;
-	pVbe = vbeInfoPtr pVbe;
+	pVbe = VBEInit(pTrident->Int10, pTrident->pEnt->index);
 	pMon = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
 	if (pMon) {
