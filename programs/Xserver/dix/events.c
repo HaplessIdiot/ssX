@@ -4426,10 +4426,11 @@ WriteEventsToClient(pClient, count, events)
 	case KeyPress:
 	case KeyRelease:
 	case EnterNotify:
+	case LeaveNotify:
 	    for(i = 0; i < count; i++, xE++) {
 		XE_KBPTR.rootX += panoramiXdataPtr[0].x;
 		XE_KBPTR.rootY += panoramiXdataPtr[0].y;
-		if(XE_KBPTR.event == WindowTable[0]->drawable.id) {
+		if(XE_KBPTR.event == XE_KBPTR.root) {
 		    XE_KBPTR.eventX += panoramiXdataPtr[0].x;
 		    XE_KBPTR.eventY += panoramiXdataPtr[0].y;
 		}
