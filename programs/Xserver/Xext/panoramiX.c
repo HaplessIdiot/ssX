@@ -388,6 +388,23 @@ PanoramiXFindIDByScrnum(RESTYPE type, XID id, int screen)
 		XineramaFindIDByScrnum, &data);
 }
 
+WindowPtr
+PanoramiXChangeWindow(int ScrnNum, WindowPtr pWin)
+{
+    int num = pWin->drawable.pScreen->myNum;
+
+    if(num != ScrnNum) {
+	PanoramiXRes	*win;
+
+	win = PanoramiXFindIDByScrnum(XRT_WINDOW, pWin->drawable.id, num);
+
+        if (win) 
+           pWin = (WindowPtr) LookupIDByType(win->info[ScrnNum].id, RT_WINDOW);
+    }
+  
+    return pWin;
+}
+
 
 /*
  *	PanoramiXExtensionInit():
