@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.cf /main/1 1996/10/31 14:47:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.18 1997/01/27 06:12:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.19 1997/02/23 09:24:42 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -134,10 +134,10 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.18 1997/01/27 06:12:48 dawes 
 #define LibraryCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
 #define ServerCCOptions		-D__ST_MT_ERRNO  -Zmtd -Zsysv-signals
 
-#define ModuleCcCmd	gcc_elf
-#define ModuleAsCmd	as_elf
-#define ModuleLdCmd	ld_elf
-#define ModuleLdFlags	-X -r
+#define ModuleCcCmd		gcc_elf
+#define ModuleAsCmd		as_elf
+#define ModuleLdCmd		ld_elf
+#define ModuleLdCombineFlags	-X -r
 
 #define CplusplusCmd	g++
 #define CplusplusOptions	-Zmtd -Zsysv-signals
