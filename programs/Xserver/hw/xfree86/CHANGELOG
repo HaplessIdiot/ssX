@@ -1,4 +1,9 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 181. Add support for i2c and Maven for the mga driver, providing DDC and
+      DPMS support for the second head (Bugzilla #1098, Ryan Underwood).
+ 180. Fix a synchronization problem with luit's handling of tty settings
+      (Bugzilla #641, Kuang-che Wu).
+ 179. Add XKB map for ur_PK (Urdu) (Bugzilla #1468, Zaeem Arshad).
  178. Fix atimisc driver for unusually small page sizes (Marc La France).
  177. Fix ELF loader for >=2.6.8-pre3 Linux kernels (Marc La France).
  176. Add support for the si_LK.UTF-8 locale (Bugzilla #1465,
@@ -19090,7 +19095,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3311 2004/09/08 14:15:44 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3312 2004/09/08 16:19:35 tsi Exp $
 
 
 
