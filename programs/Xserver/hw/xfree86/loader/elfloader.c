@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.35 2001/01/11 03:36:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.36 2001/04/01 14:00:14 tsi Exp $ */
 
 /*
  *
@@ -1774,19 +1774,79 @@ int		force;
 #endif /* PowerMAX_OS */
 #endif /* __powerpc__ */
 #ifdef __sparc__
-	case R_SPARC_RELATIVE:
-		dest32 = (unsigned int *)(secp + rel->r_offset);
-		*dest32 += (unsigned int)secp + rel->r_addend;
+	case R_SPARC_NONE:	/*  0 */
 		break;
 
-	case R_SPARC_GLOB_DAT:
-	case R_SPARC_32:
+	case R_SPARC_8:		/*  1 */
+		dest8 = (unsigned char *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest8 = symval;
+		break;
+
+	case R_SPARC_16:	/*  2 */
+		dest16 = (unsigned short *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest16 = symval;
+		break;
+
+	case R_SPARC_32:	/*  3 */
+	case R_SPARC_GLOB_DAT:	/* 20 */
+	case R_SPARC_UA32:	/* 23 */
 		dest32 = (unsigned int *)(secp + rel->r_offset);
 		symval += rel->r_addend;
-		*dest32 = symval;
+		((unsigned char *)dest32)[0] = (unsigned char)(symval >> 24);
+		((unsigned char *)dest32)[1] = (unsigned char)(symval >> 16);
+		((unsigned char *)dest32)[2] = (unsigned char)(symval >>  8);
+		((unsigned char *)dest32)[3] = (unsigned char)(symval      );
 		break;
 
-	case R_SPARC_JMP_SLOT:
+	case R_SPARC_DISP8:	/*  4 */
+		dest8 = (unsigned char *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest8 = (symval - (Elf32_Addr) dest8);
+		break;
+
+	case R_SPARC_DISP16:	/*  5 */
+		dest16 = (unsigned short *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest16 = (symval - (Elf32_Addr) dest16);
+		break;
+
+	case R_SPARC_DISP32:	/*  6 */
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest32 = (symval - (Elf32_Addr) dest32);
+		break;
+
+	case R_SPARC_WDISP30:	/*  7 */
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest32 = ((*dest32 & 0xc0000000) |
+			   ((symval - (Elf32_Addr) dest32) >> 2));
+		break;
+
+	case R_SPARC_HI22:	/*  9 */
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest32 = (*dest32 & 0xffc00000) | (symval >> 10);
+		break;
+
+	case R_SPARC_LO10:	/* 12 */
+		dest32 = (unsigned int *)(secp + rel->r_offset);
+		symval += rel->r_addend;
+		*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
+		break;
+
+	case R_SPARC_COPY:	/* 19 */
+		/* Fix your code...  I'd rather dish out an error here
+		 * so people will not link together PIC and non-PIC
+		 * code into a final driver object file.
+		 */
+		ErrorF("Elf_RelocateEntry():"
+		       "  Copy relocs not supported on Sparc.\n");
+		break;
+
+	case R_SPARC_JMP_SLOT:	/* 21 */
 		dest32 = (unsigned int *)(secp + rel->r_offset);
 		/* Before we change it the PLT entry looks like:
 		 *
@@ -1807,64 +1867,9 @@ int		force;
 		__asm __volatile("flush %0 + 0x4" : : "r" (dest32));
 		break;
 
-	case R_SPARC_8:
-		dest8 = (unsigned char *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest8 = symval;
-		break;
-
-	case R_SPARC_16:
-		dest16 = (unsigned short *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest16 = symval;
-		break;
-
-	case R_SPARC_DISP8:
-		dest8 = (unsigned char *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest8 = (symval - (Elf32_Addr) dest8);
-		break;
-
-	case R_SPARC_DISP16:
-		dest16 = (unsigned short *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest16 = (symval - (Elf32_Addr) dest16);
-		break;
-
-	case R_SPARC_DISP32:
+	case R_SPARC_RELATIVE:	/* 22 */
 		dest32 = (unsigned int *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest32 = (symval - (Elf32_Addr) dest32);
-		break;
-
-	case R_SPARC_LO10:
-		dest32 = (unsigned int *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest32 = (*dest32 & ~0x3ff) | (symval & 0x3ff);
-		break;
-
-	case R_SPARC_WDISP30:
-		dest32 = (unsigned int *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest32 = ((*dest32 & 0xc0000000) |
-			   ((symval - (Elf32_Addr) dest32) >> 2));
-		break;
-
-	case R_SPARC_HI22:
-		dest32 = (unsigned int *)(secp + rel->r_offset);
-		symval += rel->r_addend;
-		*dest32 = (*dest32 & 0xffc00000) | (symval >> 10);
-		break;
-
-	case R_SPARC_NONE:
-		break;
-
-	case R_SPARC_COPY:
-		/* Fix your code...  I'd rather dish out an error here
-		 * so people will not link together PIC and non-PIC
-		 * code into a final driver object file.
-		 */
-		ErrorF("Elf_RelocateEntry()  Copy relocs not supported on Sparc.\n");
+		*dest32 += (unsigned int)secp + rel->r_addend;
 		break;
 #endif
 #ifdef __ia64__
