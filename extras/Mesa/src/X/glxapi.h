@@ -1,9 +1,8 @@
-
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2 
+ * Version:  4.0.4
  * 
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -195,6 +194,15 @@ struct _glxapi_table {
    /*** GLX_MESA_set_3dfx_mode ***/
    Bool (*Set3DfxModeMESA)(int mode);
 
+   /*** GLX_NV_vertex_array_range ***/
+   void * (*AllocateMemoryNV)( GLsizei size,
+                               GLfloat readFrequency,
+                               GLfloat writeFrequency,
+                               GLfloat priority );
+   void (*FreeMemoryNV)( GLvoid *pointer );
+
+   /*** GLX_MESA_agp_offset ***/
+   GLuint (*GetAGPOffsetMESA)( const GLvoid *pointer );
 };
 
 

@@ -1,4 +1,3 @@
-
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.4
@@ -671,6 +670,9 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
       case GL_PACK_IMAGE_HEIGHT_EXT:
          *params = ctx->Pack.ImageHeight;
          break;
+      case GL_PACK_INVERT_MESA:
+         *params = ctx->Pack.Invert;
+         break;
       case GL_PERSPECTIVE_CORRECTION_HINT:
 	 *params = ENUM_TO_BOOL(ctx->Hint.PerspectiveCorrection);
 	 break;
@@ -916,6 +918,9 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
          break;
       case GL_UNPACK_IMAGE_HEIGHT_EXT:
          *params = ctx->Unpack.ImageHeight;
+         break;
+      case GL_UNPACK_CLIENT_STORAGE_APPLE:
+         *params = ctx->Unpack.ClientStorage;
          break;
       case GL_VIEWPORT:
 	 params[0] = INT_TO_BOOL(ctx->Viewport.X);
@@ -1387,17 +1392,6 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
          }
          else {
             _mesa_error(ctx, GL_INVALID_ENUM, "glGetBoolean");
-            return;
-         }
-         break;
-
-      /* GL_MESA_sprite_point */
-      case GL_SPRITE_POINT_MESA:
-         if (ctx->Extensions.MESA_sprite_point) {
-            *params = ctx->Point.SpriteMode;
-         }
-         else {
-            _mesa_error( ctx, GL_INVALID_ENUM, "glGetBooleanv" );
             return;
          }
          break;
@@ -1986,6 +1980,9 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
       case GL_PACK_IMAGE_HEIGHT_EXT:
          *params = (GLdouble) ctx->Pack.ImageHeight;
          break;
+      case GL_PACK_INVERT_MESA:
+         *params = (GLdouble) ctx->Pack.Invert;
+         break;
       case GL_PERSPECTIVE_CORRECTION_HINT:
 	 *params = ENUM_TO_DOUBLE(ctx->Hint.PerspectiveCorrection);
 	 break;
@@ -2228,6 +2225,9 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
          break;
       case GL_UNPACK_IMAGE_HEIGHT_EXT:
          *params = (GLdouble) ctx->Unpack.ImageHeight;
+         break;
+      case GL_UNPACK_CLIENT_STORAGE_APPLE:
+         *params = (GLdouble) ctx->Unpack.ClientStorage;
          break;
       case GL_VIEWPORT:
 	 params[0] = (GLdouble) ctx->Viewport.X;
@@ -2699,17 +2699,6 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
          }
          else {
             _mesa_error(ctx, GL_INVALID_ENUM, "glGetDoublev");
-            return;
-         }
-         break;
-
-      /* GL_MESA_sprite_point */
-      case GL_SPRITE_POINT_MESA:
-         if (ctx->Extensions.MESA_sprite_point) {
-            *params = (GLdouble) ctx->Point.SpriteMode;
-         }
-         else {
-            _mesa_error( ctx, GL_INVALID_ENUM, "glGetDoublev" );
             return;
          }
          break;
@@ -3305,6 +3294,9 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
       case GL_PACK_IMAGE_HEIGHT_EXT:
          *params = (GLfloat) ctx->Pack.ImageHeight;
          break;
+      case GL_PACK_INVERT_MESA:
+         *params = (GLfloat) ctx->Pack.Invert;
+         break;
       case GL_PERSPECTIVE_CORRECTION_HINT:
 	 *params = ENUM_TO_FLOAT(ctx->Hint.PerspectiveCorrection);
 	 break;
@@ -3549,6 +3541,9 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
          break;
       case GL_UNPACK_IMAGE_HEIGHT_EXT:
          *params = (GLfloat) ctx->Unpack.ImageHeight;
+         break;
+      case GL_UNPACK_CLIENT_STORAGE_APPLE:
+         *params = (GLfloat) ctx->Unpack.ClientStorage;
          break;
       case GL_VIEWPORT:
 	 params[0] = (GLfloat) ctx->Viewport.X;
@@ -3989,17 +3984,6 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
       case GL_RASTER_POSITION_UNCLIPPED_IBM:
          if (ctx->Extensions.IBM_rasterpos_clip) {
             *params = (GLfloat) ctx->Transform.RasterPositionUnclipped;
-         }
-         else {
-            GET_FLOAT_ERROR;
-            return;
-         }
-         break;
-
-      /* GL_MESA_sprite_point */
-      case GL_SPRITE_POINT_MESA:
-         if (ctx->Extensions.MESA_sprite_point) {
-            *params = (GLfloat) ctx->Point.SpriteMode;
          }
          else {
             GET_FLOAT_ERROR;
@@ -4593,6 +4577,9 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
       case GL_PACK_IMAGE_HEIGHT_EXT:
          *params = ctx->Pack.ImageHeight;
          break;
+      case GL_PACK_INVERT_MESA:
+         *params = ctx->Pack.Invert;
+         break;
       case GL_PERSPECTIVE_CORRECTION_HINT:
 	 *params = (GLint) ctx->Hint.PerspectiveCorrection;
 	 break;
@@ -4835,6 +4822,9 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
          break;
       case GL_UNPACK_IMAGE_HEIGHT_EXT:
          *params = ctx->Unpack.ImageHeight;
+         break;
+      case GL_UNPACK_CLIENT_STORAGE_APPLE:
+         *params = ctx->Unpack.ClientStorage;
          break;
       case GL_VIEWPORT:
          params[0] = (GLint) ctx->Viewport.X;
@@ -5327,17 +5317,6 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
          }
          else {
             _mesa_error(ctx, GL_INVALID_ENUM, "glGetIntegerv");
-            return;
-         }
-         break;
-
-      /* GL_MESA_sprite_point */
-      case GL_SPRITE_POINT_MESA:
-         if (ctx->Extensions.MESA_sprite_point) {
-            *params = (GLint) ctx->Point.SpriteMode;
-         }
-         else {
-            _mesa_error( ctx, GL_INVALID_ENUM, "glGetIntegerv" );
             return;
          }
          break;

@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.3 2002/09/09 21:07:28 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.4 2002/09/09 21:29:58 dawes Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -229,6 +229,7 @@ index_mask( GLcontext *ctx, GLuint mask )
          m = (unsigned long) mask;
       }
       XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->cleargc, m );
+      XMesaSetPlaneMask( xmesa->display, xmesa->xm_buffer->gc, m );
    }
 }
 
