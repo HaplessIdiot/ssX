@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.0 1995/07/01 10:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.1 1995/07/07 15:39:58 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -48,10 +48,9 @@ int clk;
    vgaCRAddr = vgaIOBase + 4;
    vgaCRData = vgaIOBase + 5;
 
-   /* Shouldn't need to do this */
    /* RS2 controlled in CR55 bit 0 */
    outb(vgaCRAddr, 0x55);
-   oldCR55 = inb(vgaCRData);   /* save value in register 55 */
+   oldCR55 = inb(vgaCRData);
    /* set bit 0 of CR55 to 1 to set RS2 to 1 to make sure we are
       talking to correct registers */
    outb(vgaCRData, (oldCR55 & 0xFC) | 0x01);
@@ -69,8 +68,6 @@ int clk;
    outb(0x3C2, tmp | 0x0C);
    outb(vgaCRAddr, 0x042);
    outb(vgaCRData, clk);
-
-   /* we're all done (I think), put things back the way they were */
 
    /* put the value of 0x55 back */
    /* if we don't do this, and the server doesn't set CR55 and assumes it
