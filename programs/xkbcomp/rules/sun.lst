@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/rules/sun.lst,v 3.2 2000/12/06 15:35:35 eich Exp $
 
 ! model
   type4			Sun Type4
@@ -32,7 +32,7 @@
   se			Swedish
   th			Thai
   us			US/ASCII
-  trq			Turkish
+  tr			Turkish
 
 ! variant
   nodeadkeys		Eliminate dead keys from European keyboards

@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/13 1997/08/02 10:11:21 kaleb $
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.14 2000/11/28 19:09:34 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.16 2000/12/06 15:35:34 eich Exp $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -358,10 +358,10 @@ xkb_keymap "ro_microsoft"      {
     };
     xkb_geometry       { include "pc(pc105)"                   };
 };
-xkb_keymap "trq"        {
+xkb_keymap "tr"         {
     xkb_keycodes        { include "xfree86"             };
     xkb_types           { include "default"             };
     xkb_compatibility   { include "default"             };
-    xkb_symbols         { include "en_US(pc105)+trq"    };
+    xkb_symbols         { include "en_US(pc105)+tr"     };
     xkb_geometry        { include "pc(pc102)"           };
 };
