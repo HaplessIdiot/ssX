@@ -1,4 +1,6 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 691. Fix the enabling of the Glint Gamma for use on an Appian Graphics
+      Jeronimo 2000 board which uses two Permedia3's (#5448, Sven Luther).
  690. Fix a problem in the trident driver for older chipsets and using
       16bit clock programming, manifested itself on a Thinkpad 760EL,
       but there are probably lots of others. (Alan Hourihane).
@@ -15925,4 +15927,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2465 2003/01/03 18:54:09 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2466 2003/01/05 18:08:57 alanh Exp $
