@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.10 2001/04/07 20:34:04 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.11 2001/04/15 23:16:01 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -201,7 +201,11 @@ XAADoComposite (
       ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
 	!IS_OFFSCREEN_PIXMAP(pDst->pDrawable)))
 	return FALSE;
-  
+
+    if((pSrc->pDrawable->type != DRAWABLE_PIXMAP) ||
+        IS_OFFSCREEN_PIXMAP(pSrc->pDrawable))
+	return FALSE;
+
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
     xSrc += pSrc->pDrawable->x;
@@ -433,6 +437,10 @@ XAADoGlyphs (CARD8         op,
       ((pDst->pDrawable->type != DRAWABLE_WINDOW) &&
 	!IS_OFFSCREEN_PIXMAP(pDst->pDrawable)))
 	return FALSE;
+
+    if((pSrc->pDrawable->type != DRAWABLE_PIXMAP) ||
+        IS_OFFSCREEN_PIXMAP(pSrc->pDrawable))
+        return FALSE;
 
     if(maskFormat && (maskFormat->depth == 1) && 
        (pSrc->pDrawable->width == 1) && (pSrc->pDrawable->height == 1) &&
