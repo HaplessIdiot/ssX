@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.34 2001/11/27 07:07:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.35 2001/12/01 04:18:06 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -323,6 +323,9 @@ static NSRect aquaMenuBarBox;
 // Start the X server thread and the client process
 - (void)startX
 {
+    NSDictionary *appDictionary;
+    NSString *appVersion;
+
     [modeWindow close];
 
     // Calculate the height of the menu bar so rootless mode can avoid it
@@ -334,6 +337,14 @@ static NSRect aquaMenuBarBox;
                        NSWidth([[NSScreen mainScreen] frame]),
                        aquaMenuBarHeight);
     }
+
+    // Write the XDarwin version to the console log
+    appDictionary = [[NSBundle mainBundle] infoDictionary];
+    appVersion = [appDictionary objectForKey:@"CFBundleShortVersionString"];
+    if (appVersion)
+        NSLog(@"\n%@", appVersion);
+    else
+        NSLog(@"No version");
 
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self
