@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.12 2003/03/25 04:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.13 2003/04/03 16:15:56 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -618,7 +618,7 @@ MiscExtPassMessage(int scrnIndex, const char *msgtype, const char *msgval,
 {
     ScrnInfoPtr pScr = xf86Screens[scrnIndex];
 
-    DEBUG_P("MiscExtGetFilePaths");
+    DEBUG_P("MiscExtPassMessage");
 
     if (*pScr->HandleMessage == NULL)
 	    return BadImplementation;
