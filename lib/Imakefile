@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Imakefile,v 3.78 2004/06/01 00:16:55 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.79 2004/06/30 20:21:37 martin Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -193,10 +193,6 @@ ZLIBDIR = zlib
 REGEXDIR = regex
 #endif
 
-#if BuildXAudio
-XALIBDIR = Xa
-#endif
-
 #if BuildXprintLib
 XPRINTLIBDIR = Xp
 #endif
@@ -247,7 +243,7 @@ LINTSUBDIRS = $(XAULIBDIR) $(XDMCPLIBDIR) $(THRSTUBLIBDIR) $(X11LIBDIR) \
              $(XF86RUSHLIBDIR) $(XMULIBDIR) $(XMUULIBDIR) $(XPMLIBDIR) \
              $(XAW6LIBDIR) $(XAWLIBDIR) $(XINPUTLIBDIR) \
              $(XTSTLIBDIR) $(FSLIBDIR) $(XKBLIBDIR) \
-             $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) $(XPRINTLIBDIR) \
+             $(XKBUILIBDIR) $(LBXUTILDIR) $(XPRINTLIBDIR) \
              $(XVLIBDIR) $(EXPATBUILDDIR) \
              $(GLXLIBDIR) $(GLULIBDIR) $(GLWLIBDIR) \
              $(DPSLIBDIR) $(DPSTKLIBDIR) $(PSRESLIBDIR) $(XINERAMADIR) \
