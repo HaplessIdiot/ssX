@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.8 2000/12/07 20:26:05 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.9 2000/12/21 13:58:55 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -208,7 +208,7 @@ GLboolean XMesaCreateContext( Display *dpy,
 			 FBWindowOriginBot |
 			 gDRIPriv->pprod);
  
-    if (gDRIPriv->numMXDevices == 2) {
+    if (gDRIPriv->numMultiDevices == 2) {
 	cPriv->LBReadMode |= LBScanLineInt2;
 	cPriv->FBReadMode |= FBScanLineInt2;
     	cPriv->FBWindowBase =driScrnPriv->fbWidth*(driScrnPriv->fbHeight/2 - 1);
