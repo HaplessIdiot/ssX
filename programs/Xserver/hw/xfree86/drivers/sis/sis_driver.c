@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.41 2000/02/27 02:45:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.42 2000/03/01 16:01:21 tsi Exp $ */
 
 
 #define PSZ 8
@@ -126,11 +126,13 @@ DriverRec SIS = {
 };
 
 static SymTabRec SISChipsets[] = {
+#if 0
     { PCI_CHIP_SG86C201,	"SIS86c201" },
     { PCI_CHIP_SG86C202,	"SIS86c202" },
     { PCI_CHIP_SG86C205,	"SIS86c205" },
     { PCI_CHIP_SG86C215,	"SIS86c215" },
     { PCI_CHIP_SG86C225,	"SIS86c225" },
+#endif
     { PCI_CHIP_SIS5597, 	"SIS5597" },
     { PCI_CHIP_SIS5597, 	"SIS5598" },
     { PCI_CHIP_SIS530,		"SIS530" },
@@ -142,10 +144,12 @@ static SymTabRec SISChipsets[] = {
 };
 
 static PciChipsets SISPciChipsets[] = {
+#if 0
     { PCI_CHIP_SG86C201,	PCI_CHIP_SG86C201,	RES_SHARED_VGA },
     { PCI_CHIP_SG86C202,	PCI_CHIP_SG86C202,	RES_SHARED_VGA },
     { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
     { PCI_CHIP_SG86C205,	PCI_CHIP_SG86C205,	RES_SHARED_VGA },
+#endif
     { PCI_CHIP_SIS5597,		PCI_CHIP_SIS5597,	RES_SHARED_VGA },
     { PCI_CHIP_SIS530,		PCI_CHIP_SIS530,	RES_SHARED_VGA },
     { PCI_CHIP_SIS6326,		PCI_CHIP_SIS6326,	RES_SHARED_VGA },
