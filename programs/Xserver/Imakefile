@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/232 1996/12/18 16:29:36 lehors $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.73 1996/12/17 20:59:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.74 1996/12/23 06:25:51 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -52,6 +52,8 @@ INSTPGMFLAGS =
 #endif
 #if BuildXIE
       XIEEXT = XIE/dixie/LibraryTargetName(dixie) XIE/mixie/LibraryTargetName(mixie)
+#endif
+#if BuildXIE || BuildXIElib
       XIEDIR = XIE
 #endif
 #if BuildXKB
@@ -65,10 +67,14 @@ INSTPGMFLAGS =
 #endif
 #if BuildDBE
          DBEEXT = dbe/LibraryTargetName(dbe)
+#endif
+#if BuildDBE || BuildDBElib
          DBEDIR = dbe
 #endif
 #if BuildRECORD
          RECORDEXT = record/LibraryTargetName(record)
+#endif
+#if BuildRECORD || BuildRECORDlib
          RECORDDIR = record
 #endif
 #ifdef SiteExtensionLibs
@@ -1129,7 +1135,7 @@ XCOMM
 DDXDIR2 = hw/xfree98
 XF98EGCSUBDIRS = $(STDDIRS) $(DDXDIR2) $(DEPDIRS)
 XF98EGCOBJS = $(XF98COMSRC)/XF86_VGA16.o $(XF98SRC)/vga16/vga16Conf.o \
-                $(XF98SRC)/vga16/misc/vga16misc.o $(XF98MINIT)
+                $(XF98SRC)/vga16/misc/vga16misc.o
 XF98EGCLIBS = $(XF98VGA16DRIVERSRC)/LibraryTargetName(driver16) \
 		$(XF98SRC)/vga16/LibraryTargetName(vga16) $(XF98MLIBS) \
 		NoMFBBareLibs $(OTHEREXTS)
@@ -1405,6 +1411,9 @@ XPSYSLIBS = $(CBRT) $(SYSLIBS) -lw
 #else
 XPSYSLIBS = $(CBRT) $(SYSLIBS)
 #endif
+#if HasParallelMake
+MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
+#endif
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
 InstallProgram(Xprt,$(BINDIR))
 #endif	/* XprtServer */
@@ -1426,7 +1435,6 @@ XNESTOBJS = dix/main.o
 #endif
 XNEST = hw/xnest/LibraryTargetName(xnest)
 XNESTLIBS = PreFbLibs $(XNEST) NoMfbPostFbLibs $(XNEST)
-XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS) $(XNEST)
 XNESTSYSLIBS = $(LDPRELIBS) $(XLIB) $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XNESTDIRS) $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS))

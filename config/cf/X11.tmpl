@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.2 1996/12/23 05:50:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.3 1996/12/24 02:21:52 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -879,7 +879,7 @@ ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
 #endif
 SharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBLIBSRC),SOXTHRSTUBREV,SharedXThrStubRev)
 #else
-UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
+ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -1442,7 +1442,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 
 #ifdef BuildXKBuilib
     XKBUILIBSRC = $(LIBSRC)/xkbui
-UnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC))
+ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef XkbuiLibs
 #define	XkbuiLibs $(XKBUILIB)
 #endif
@@ -1537,7 +1537,7 @@ all::  $(OBJS)								@@\
 MakeFontsDir($(OBJS))							@@\
 									@@\
 clean::									@@\
-	RemoveFiles(*.pcf *.pcf.Z)
+	RemoveFiles(*.pcf *.pcf.Z *.pcf.gz)
 #endif /* MakeFonts */
 
 

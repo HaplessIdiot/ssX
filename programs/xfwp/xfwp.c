@@ -1689,12 +1689,14 @@ void  doProcessReadables(int fd_counter,
 	      // client and xfwp are different byte order
 	      // so swap all fwp 2-byte fields to little endian
 	      */
-      	      swab((char *) prefix.majorVersion, 
-		   (char *) prefix.majorVersion, sizeof(prefix.majorVersion));
-      	      swab((char *) prefix.minorVersion, 
-		   (char *) prefix.minorVersion, sizeof(prefix.minorVersion));
-	      swab((char *) prefix.length, 
-		   (char *) prefix.length, sizeof(prefix.length));
+      	      swab((char *)(long) prefix.majorVersion, 
+		   (char *)(long) prefix.majorVersion,
+		   sizeof(prefix.majorVersion));
+      	      swab((char *)(long) prefix.minorVersion, 
+		   (char *)(long) prefix.minorVersion,
+		   sizeof(prefix.minorVersion));
+	      swab((char *)(long) prefix.length, 
+		   (char *)(long) prefix.length, sizeof(prefix.length));
 	    }
 	    /*
 	    // load the padded reason

@@ -306,8 +306,8 @@ PsPaintWindow(
     box.y2 = pScreen->height;
     REGION_INIT(pScreen, &pWin->clipList, &box, 1);
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    newValues[ABSX] = (pointer)pBgWin->drawable.x;
-    newValues[ABSY] = (pointer)pBgWin->drawable.y;
+    newValues[ABSX] = (pointer)(long)pBgWin->drawable.x;
+    newValues[ABSY] = (pointer)(long)pBgWin->drawable.y;
   }
   else
   {
@@ -332,21 +332,21 @@ PsPaintWindow(
     switch(index)
     {
       case GCFunction:
-        if( (pointer)pGC->alu!=newValues[FUNCTION] )
+        if( (pointer)(long)pGC->alu!=newValues[FUNCTION] )
         {
           gcmask |= index;
           gcval[i++] = newValues[FUNCTION];
         }
         break;
       case GCTileStipXOrigin:
-        if( (pointer)pGC->patOrg.x!=newValues[ABSX] )
+        if( (pointer)(long)pGC->patOrg.x!=newValues[ABSX] )
         {
           gcmask |= index;
           gcval[i++] = newValues[ABSX];
         }
         break;
       case GCTileStipYOrigin:
-        if( (pointer)pGC->patOrg.y!=newValues[ABSY] )
+        if( (pointer)(long)pGC->patOrg.y!=newValues[ABSY] )
         {
           gcmask |= index;
           gcval[i++] = newValues[ABSY];

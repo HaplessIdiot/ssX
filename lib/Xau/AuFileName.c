@@ -1,5 +1,5 @@
 /* $XConsortium: AuFileName.c /main/8 1996/09/28 16:43:20 rws $ */
-/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.0 1996/06/10 09:32:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.1 1996/12/23 06:00:27 dawes Exp $ */
 
 /*
 
@@ -41,7 +41,7 @@ char *
 XauFileName ()
 {
     char *slashDotXauthority = "/.Xauthority";
-    char    *name, *malloc (), *getenv ();
+    char    *name;
     static char	*buf;
     static int	bsize;
 #ifdef WIN32
