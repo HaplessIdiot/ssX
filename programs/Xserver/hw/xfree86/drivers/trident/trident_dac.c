@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.31 2000/11/27 23:00:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.32 2000/11/27 23:07:27 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -314,6 +314,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
 	case CYBERBLADEI1D:
+	case CYBERBLADEAI1:
+	case CYBERBLADEAI1D:
 	case CYBERBLADEE4:
 	case BLADE3D:
 	    OUTB(vgaIOBase + 4, RAMDACTiming);

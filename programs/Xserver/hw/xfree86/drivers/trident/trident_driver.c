@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.110 2000/11/22 08:41:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.111 2000/11/26 10:08:52 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -159,6 +159,8 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBERBLADEI7D,		"cyberbladei7d" },
     { CYBERBLADEI1,		"cyberbladei1" },
     { CYBERBLADEI1D,		"cyberbladei1d" },
+    { CYBERBLADEAI1,		"cyberbladeAi1" },
+    { CYBERBLADEAI1D,		"cyberbladeAi1d" },
     { -1,				NULL }
 };
 
@@ -190,6 +192,8 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBERBLADEI7D,	PCI_CHIP_8420,	RES_SHARED_VGA },
     { CYBERBLADEI1,	PCI_CHIP_8500,	RES_SHARED_VGA },
     { CYBERBLADEI1D,	PCI_CHIP_8520,	RES_SHARED_VGA },
+    { CYBERBLADEAI1,	PCI_CHIP_8600,	RES_SHARED_VGA },
+    { CYBERBLADEAI1D,	PCI_CHIP_8620,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -300,6 +304,8 @@ static int ClockLimit[] = {
 	230000,
 	230000,
 	230000,
+	230000,
+	230000,
 };
 
 static int ClockLimit16bpp[] = {
@@ -328,6 +334,8 @@ static int ClockLimit16bpp[] = {
 	170000,
 	170000,
 	170000,
+	230000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -376,6 +384,8 @@ static int ClockLimit24bpp[] = {
 	115000,
 	115000,
 	115000,
+	115000,
+	115000,
 };
 
 static int ClockLimit32bpp[] = {
@@ -405,6 +415,8 @@ static int ClockLimit32bpp[] = {
 	85000,
 	115000,
 	85000,
+	115000,
+	115000,
 	115000,
 	115000,
 	115000,
@@ -1669,6 +1681,24 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
+	case CYBERBLADEAI1:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+	    ramtype = "SDRAM";
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/Ai1";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    break;
+	case CYBERBLADEAI1D:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+	    ramtype = "SDRAM";
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "CyberBlade/DSTN/Ai1";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    break;
     }
 
     if (!pScrn->progClock) {
@@ -2177,6 +2207,8 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
 	case CYBERBLADEI1D:
+	case CYBERBLADEAI1:
+	case CYBERBLADEAI1D:
 	case CYBER9520:
 	case CYBER9525DVD:
 	case CYBERBLADEE4:
@@ -2476,6 +2508,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	        (pTrident->Chipset == CYBERBLADEI7D) ||
 	        (pTrident->Chipset == CYBERBLADEI1) ||
 	        (pTrident->Chipset == CYBERBLADEI1D) ||
+	        (pTrident->Chipset == CYBERBLADEAI1) ||
+	        (pTrident->Chipset == CYBERBLADEAI1D) ||
 	        (pTrident->Chipset == CYBERBLADEE4) ||
 	        (pTrident->Chipset == BLADE3D))
 		BladeAccelInit(pScreen);
