@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.85 1995/07/02 07:49:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.86 1995/07/03 08:48:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -174,6 +174,7 @@ static SymTabRec s3DacTable[] = {
    { IBMRGB528_DAC,	"ibm_rgb528" },
    { IBMRGB52x_DAC,	"ibm_rgb52x" },
    { ATT20C490_DAC,	"att20c490" },
+   { ATT20C490_DAC,	"ch8391" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
    { S3_SDAC_DAC,	"s3_sdac" },
