@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.48 2002/11/25 22:58:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.49 2003/01/24 17:26:35 tsi Exp $ */
 
 /*
  *
@@ -23,7 +23,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 #include <sys/types.h>
+#ifndef __UNIXOS2__
 #include <sys/mman.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #ifdef __QNX__

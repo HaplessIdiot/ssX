@@ -1,7 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.19 2001/02/16 14:45:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.20 2002/01/25 21:56:20 tsi Exp $ */
 
 /* Standard resource information code */
 
+#ifdef __UNIXOS2__
+# define I_NEED_OS2_H
+#endif
 #include "X.h"
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -11,6 +14,9 @@
 #include "xf86_OSlib.h"
 #include "xf86Resources.h"
 
+#ifdef __UNIXOS2__
+# undef ADDRESS
+#endif
 /* Avoid Imakefile changes */
 #include "bus/Pci.h"
 

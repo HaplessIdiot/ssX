@@ -27,10 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.21 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.22 2002/11/23 21:41:52 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
+
+#ifdef __UNIXOS2__
+# define finite(x) isfinite(x)
+#endif
 
 /*
  * Prototypes

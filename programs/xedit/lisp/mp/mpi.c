@@ -27,9 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.11 2002/11/17 07:51:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.12 2002/11/20 07:44:43 paulo Exp $ */
 
 #include "mp.h"
+
+#ifdef __UNIXOS2__
+# define finite(x) isfinite(x)
+#endif
 
 /*
  * Prototypes

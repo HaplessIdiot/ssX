@@ -3,8 +3,11 @@
  * AGP GART support.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.2 2000/08/25 01:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.3 2001/05/19 00:26:46 dawes Exp $ */
 
+#ifdef __UNIXOS2__
+# define I_NEED_OS2_H
+#endif
 #include "X.h"
 #include "xf86.h"
 #include "xf86Priv.h"

@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.58 2003/03/09 23:39:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.59 2003/03/23 02:01:40 dickey Exp $ */
 
 /***********************************************************
 
@@ -1318,6 +1318,9 @@ pty_search(int *pty)
 	    ptioctl(*pty, XTY_TRACE, 0);
 #endif
 	    return 0;
+	}
+	else {
+	    fprintf(stderr,"Unable to open %s, errno=%d\n",ptydev,errno);
 	}
     }
     return 1;

@@ -1,9 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.14 2001/05/04 19:05:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.15 2001/10/28 03:34:02 tsi Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
  */
 
+#ifdef __UNIXOS2__
+# define I_NEED_OS2_H
+#endif
 #include "X.h"
 #include "input.h"
 #include "scrnintstr.h"

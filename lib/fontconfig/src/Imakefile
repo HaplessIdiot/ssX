@@ -15,8 +15,13 @@ FC_DEFAULT_FONTS=$(FONTDIR)/Type1
 #define DoDebugLib DebugLibFontconfig
 #define DoProfileLib ProfileLibFontconfig
 #define HasSharedData YES
+#if !defined(OS2Architecture)
 #define LibName fontconfig
 SOFONTCONFIGREV=1.0
+#else
+#define LibName fontcfg
+SOFONTCONFIGREV=
+#endif
 #define SoRev SOFONTCONFIGREV
 
 #include <Threads.tmpl>
@@ -46,3 +51,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(fontconfig,$(LIBMANDIR))
 DependTarget()
 
+#if defined(OS2Architecture)
+LinkFile(fontcfg-def.cpp,fontconfig-def.cpp)
+#endif

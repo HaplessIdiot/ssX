@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.15 2002/04/04 14:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.16 2002/12/11 17:23:33 dawes Exp $ */
 /*
  * includes
  */
@@ -105,7 +105,7 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
     pRendition->board.ucode_entry=c;
 
 #ifdef DEBUG
-    ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry); */
+    ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry); 
 #endif
 
     /* Everything's OK */

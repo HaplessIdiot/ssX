@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.68 2002/12/16 03:59:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.69 2002/12/20 04:32:45 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -61,6 +61,10 @@ typedef struct _SeqInfo {
 	    seq.data.list = object->data.array.list;			\
 	    break;							\
     }
+
+#ifdef __UNIXOS2__
+# define finite(x) isfinite(x)
+#endif
 
 #ifdef NEED_SETENV
 extern int setenv(const char *name, const char *value, int overwrite);
