@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.4 2001/05/08 08:14:09 alanh Exp $ */
 
 #include "win.h"
 
@@ -45,6 +45,8 @@ winWindowProc (HWND hWnd, UINT message,
   winPrivScreenPtr      pScreenPriv = NULL;
   winScreenInfo		*pScreenInfo = NULL;
   ScreenPtr		pScreen = NULL;
+  static HWND		hwndLast = NULL;
+  winPrivScreenPtr	pScreenPrivLast;
   xEvent		xCurrentEvent;
   LPCREATESTRUCT	pcs;
   HRESULT		ddrval;
@@ -104,9 +106,45 @@ winWindowProc (HWND hWnd, UINT message,
       /* We can't do anything without privates */
       if (pScreenPriv == NULL)
 	break;
+      
+      /* Has the mouse pointer crossed screens? */
+      if (pScreen != miPointerCurrentScreen ())
+	{
+	  /*
+	   * Tell mi that we are changing the screen that receives
+	   * mouse input events.
+	   */
+	  miPointerSetNewScreen (pScreenInfo->dwScreen,
+				 0, 0);
+	}
 
       /* Sometimes we hide, sometimes we show */
-      if (pScreenPriv->fActive
+      if (hwndLast != NULL && hwndLast != hWnd)
+	{
+	  /* Cursor is now over NC area of another screen */
+	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  if (pScreenPrivLast == NULL)
+	    {
+	      ErrorF ("winWindowProc () - WM_NCMOUSEMOVE - Couldn't obtain "
+		      "last screen privates\n");
+	      return 0;
+	    }
+
+	  /* Show cursor if last screen is still hiding it */
+	  if (!pScreenPrivLast->fCursor)
+	    {
+	      pScreenPrivLast->fCursor = TRUE;
+	      ShowCursor (TRUE);
+	    }
+
+	  /* Hide cursor for our screen if we are not hiding it */
+	  if (pScreenPriv->fCursor)
+	    {
+	      pScreenPriv->fCursor = FALSE;
+	      ShowCursor (FALSE);
+	    }
+	}
+      else if (pScreenPriv->fActive
 	  && pScreenPriv->fCursor)
 	{
 	  /* Hide Windows cursor */
@@ -125,15 +163,46 @@ winWindowProc (HWND hWnd, UINT message,
       miPointerAbsoluteCursor (GET_X_LPARAM(lParam),
 			       GET_Y_LPARAM(lParam),
 			       g_c32LastInputEventTime = GetTickCount ());
+
+      /* Store pointer to last window handle */
+      hwndLast = hWnd;
       return 0;
 
     case WM_NCMOUSEMOVE:
       /* Non-client mouse movement, show Windows cursor */
-      if (!pScreenPriv->fCursor)
+      if (hwndLast != NULL && hwndLast != hWnd)
+	{
+	  /* Cursor is now over NC area of another screen */
+	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  if (pScreenPrivLast == NULL)
+	    {
+	      ErrorF ("winWindowProc () - WM_NCMOUSEMOVE - Couldn't obtain "
+		      "last screen privates\n");
+	      return 0;
+	    }
+
+	  /* Show cursor if last screen is still hiding it */
+	  if (!pScreenPrivLast->fCursor)
+	    {
+	      pScreenPrivLast->fCursor = TRUE;
+	      ShowCursor (TRUE);
+	    }
+
+	  /* Hide cursor for our screen if we are not hiding it */
+	  if (pScreenPriv->fCursor)
+	    {
+	      pScreenPriv->fCursor = FALSE;
+	      ShowCursor (FALSE);
+	    }
+	}
+      else if (!pScreenPriv->fCursor)
 	{
 	  pScreenPriv->fCursor = TRUE;
 	  ShowCursor (TRUE);
 	}
+
+      /* Store pointer to last window handle */
+      hwndLast = hWnd;
       return 0;
 
     case WM_LBUTTONDBLCLK:
@@ -176,6 +245,12 @@ winWindowProc (HWND hWnd, UINT message,
 
     case WM_MOUSEWHEEL:
       return winMouseWheel (pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
+
+    case WM_KILLFOCUS:
+#if CYGDEBUG
+      ErrorF ("winWindowProc () - WM_KILLFOCUS hWnd %08x\n", hWnd);
+#endif
+      return 0;
 
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
@@ -337,7 +412,37 @@ winWindowProc (HWND hWnd, UINT message,
 	}
 
       /* Are we activating or deactivating? */
-      if ((LOWORD(wParam) == WA_ACTIVE
+      if (hwndLast != NULL && hwndLast != hWnd)
+	{
+	  /*
+	   * Activation has transferred between screens.
+	   * This section is processed by the screen receiving
+	   * focus, as it is the only one that notices the difference
+	   * between pScreen and pScreenLast.
+	   */
+	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  if (pScreenPrivLast == NULL)
+	    {
+	      ErrorF ("winWindowProc () - WM_ACTIVATE - Couldn't obtain last "
+		      "screen privates\n");
+	      return 0;
+	    }
+
+	  /* Show cursor if last screen is still hiding it */
+	  if (!pScreenPrivLast->fCursor)
+	    {
+	      pScreenPrivLast->fCursor = TRUE;
+	      ShowCursor (TRUE);
+	    }
+
+	  /* Hide cursor for our screen if we are not hiding it */
+	  if (pScreenPriv->fCursor)
+	    {
+	      pScreenPriv->fCursor = FALSE;
+	      ShowCursor (FALSE);
+	    }
+	}
+      else if ((LOWORD(wParam) == WA_ACTIVE
 	  || LOWORD(wParam) == WA_CLICKACTIVE)
 	  && pScreenPriv->fCursor)
 	{
@@ -352,6 +457,10 @@ winWindowProc (HWND hWnd, UINT message,
 	  pScreenPriv->fCursor = TRUE;
 	  ShowCursor (TRUE);
 	}
+
+      /* Store last active window handle */
+      hwndLast = hWnd;
+
       return 0;
 
     case WM_ACTIVATEAPP:
