@@ -1,6 +1,6 @@
   Information for ARK Logic Chipset Users
   Harm Hanemaayer (H.Hanemaayer@inter.nl.net)
-  4 October 1996
+  17 January 1997
 
   1.  Supported chipsets
 
@@ -16,6 +16,8 @@
 
      ARK1000VL (ark1000vl)
         Older chip, VLB only. More or less compatible with ARK1000PV.
+        It has is not been tested. You may have to disable acceleration
+        and linear addressing.
 
      ARK2000PV (ark2000pv)
         64-bit version of the ARK1000PV. Note that an ARK2000PV equipped
@@ -28,8 +30,7 @@
         on the RAMDAC.
 
      ARK2000MT (ark2000mt)
-        As far as I am aware, this is a new chip, compatible with the
-        AR2000PV.
+        This is a newer chip, compatible with the AR2000PV.
 
   The ARK2000MI is not yet supported.
 
@@ -62,8 +63,8 @@
         limits set correctly (16bpp up to 55 MHz with ARK1000PV, up to
         at least 110 MHz with ARK2000PV). In addition, packed 24bpp is
         supported (up to 36 MHz with ARK1000PV, not yet on the
-        ARK2000PV), and 32bpp is also supported on the ARK2000PV (up to
 
+        ARK2000PV), and 32bpp is also supported on the ARK2000PV (up to
         55 MHz) This RAMDAC should be auto-detected.
 
      stg1700
@@ -105,9 +106,18 @@
 
   3.  Acceleration
 
-  The driver now fully accelerates screen-to-screen BITBLT operations at
-  all color depths (8bpp, 16bpp, 24bpp and 32bpp). If you suspect a
-  problem with this, use the "noaccel" option.
+  The driver takes full advantage of the new XAA (XFree86 Acceleration
+  Architecture) in the SVGA server. In fact the ARK driver was the
+  initial XAA development platform. Most common graphics operations are
+  accelerated, including most types of rectangular and non-rectangular
+  filling, screen-to-screen BitBLTs, line drawing, and text and bitmap
+  expansion. Expect over 300 xstones on a 2MB ARK2000PV/MT.
+
+  At 24bpp, acceleration is less complete, but curiously, greyscale
+  colors permit faster drawing. If you suspect a problem with
+  acceleration, use the "noaccel" option. If text or bitmaps do not seem
+  to be rendered correctly, you could try the "xaa_no_col_exp" option.
+  To disable the pixmap cache, use "no_pixmap_cache".
 
   The hardware cursor is disabled by default. With unmodified mode
   timings, there used to be two horizontal lines and a band following
@@ -119,6 +129,10 @@
   Linear addressing is the default mode of operation. If the server does
   not start correctly, you may want to try the "no_linear" option.
 
+
+  The older ARK1000VL is probably not compatible with acceleration. Use
+  the "noaccel" and "no_linear" options.
+
   4.  Basic configuration
 
   It is recommended that you generate an XF86Config file using the
@@ -129,7 +143,6 @@
   1152x864 modes).
 
   In order to prevent stress on your monitor, it is recommended that you
-
   turn off your monitor during clock probing (X -probeonly), which also
   happens if you start the server with no Clocks line present in the
   Device section of the XF86Config. The following Clocks line can be
@@ -139,8 +152,8 @@
   XF86Config file):
 
 
-      Clocks 25.175 28.3 40 70 50 76 36 44.9
-      Clocks 0 118 77 31.5 110 65 72 93.5
+      Clocks 25.175 28.3 40 72 50 77 36 44.9
+      Clocks 128.43 118.8 80 31.5 110 63.96 74.19 95
 
 
   The higher frequencies have not been tested, there might be a mismatch
@@ -156,12 +169,11 @@
      o  Support for packed-24bpp mode up to 72 MHz on an ARK2000PV with
         ZoomDAC.
 
-     o  There may be more complete accelerated support (such as text and
-        solid fill operations).
+     o  The acceleration may be further optimized and stabilized.
 
      o  Existing problems may be fixed.
 
-     o  Support for the ARK2000MI.
+     o  Support for the ARK2000MI, if it materializes.
 
   6.  Tested configurations.
 
@@ -176,25 +188,26 @@
      Hercules Stingray Pro/V (ARK1000PV + IC Works ZoomDAC)
         Supported at 8bpp, 16bpp and 24bpp. Fixed set of clocks.  The
         same restrictions above exist for the 24bpp mode. Problems with
-        textmode restoration have been reported.
+        textmode restoration have been reported on some OS's.
 
      Hercules Stingray 64/V (ARK2000PV + IC Works ZoomDAC)
         Supported at 8bpp, 16bpp and 32bpp. Fixed set of clocks.
-        Problems with textmode restoration have been reported.
+        Problems with textmode restoration have been reported on some
+        OS's.
+
 
      Hercules Stingray 64 with ARK2000MT + ICS5342 Clockchip/RAMDAC
         This may also apply to other cards with the ICS5342, such as the
         Diamond Stealth 64 Graphics 2001. Use RAMDAC "ics5342".
         Programmable clockchip (don't specify any Clocks lines).
         Supported at 8bpp, 16bpp and 32bpp. 32bpp has been reported not
-        to work. At 16bpp, screen corruption has been reported which
-        might be related to BITBLT operations.
+        to work. This configuration has not been tested with a post-3.2
+        server.
 
   If are having driver-related problems that are not addressed by this
   document, you can try contacting the XFree86 team (the current driver
   maintainer can be reached at H.Hanemaayer@inter.nl.net), or post in
   the Usenet newsgroup comp.windows.x.i386unix.
-
 
   In fact, reports (success or failure) are very welcome, especially on
   configurations that have not been tested. You can do this via the bug
@@ -203,26 +216,13 @@
   beta releases at the XFree86 web site <http://www.xfree86.org>.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.6 1996/12/23 06:46:22 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.7 1997/01/20 12:36:38 dawes Exp $
 
 
 
 
 
   $XConsortium: ark.sgml /main/6 1996/10/28 05:24:04 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

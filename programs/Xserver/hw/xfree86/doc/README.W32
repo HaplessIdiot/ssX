@@ -8,16 +8,18 @@
   XF86_W32 gets phased out, now that the SVGA server with XAA
   acceleration is at least as fast as the W32 server but supports more
   cards and for some even higher color depths. For details about using
-  the XF86_SVGA with W32 cards, look below.
+  the XF86_SVGA with W32 cards, look below. Note that currently not all
+  accelerated cards that are supported by XF86_W32 are supported by
+  XF86_SVGA at this moment (only ET6000 and ET4000W32p to be exact).
 
   XF86_W32 is basically XF86_SVGA with the drawing code completely
   replaced with one based on X11R6's mi/cfb code and modified for the
   ET4000/W32 series.  Even though it accepts the same keywords as
   XF86_SVGA, those not applicable to the ET4000/W32 series are silently
   ignored; e.g., the keyword "SpeedUp" is a no-op.  The server currently
-  supports the w32, w32i, and w32p chips.  For a complete list, see the
-  sign-on message printed by XF86_W32.  The server only supports 256
-  colors.
+  supports the w32, w32i, w32p and et6000 chips.  For a complete list,
+  see the sign-on message printed by XF86_W32.  The server only supports
+  256 colors.
 
   Just as with XF86_SVGA, you can specify a virtual world that has a
   width that is a multiple of four.  The size of the virtual world is
@@ -56,6 +58,12 @@
         the video hardware, including other X servers, before running
         XF86_W32.
 
+     o  In case of an ET6000 card, try specifying chipset "et6000" in
+        the Device Section. The card normally autoprobes from the PCI
+        bus, but on some systems, another on-board VGA card, although
+        disabled, may cause the ET6000 server to want to use the other
+        card.
+
      o  Try XF86_SVGA.  If it works, put the following in your
         XF86Config:
 
@@ -64,9 +72,13 @@
           Ramdac "generic"
 
 
+
+
+
   Note that the built-in power saver (for a "green" monitor) has not
-  been tested.  Also do not expect it to work on a board without a
-  w32p_rev_c or later chip.
+  been tested. Also do not expect it to work on a board without a
+  w32p_rev_c or later chip. This option is currently disabled com-
+  pletely, because it causes video memory corruption.
 
   2.  Using XF86_W32 on a board with an ICS5341 GENDAC
 
@@ -117,6 +129,7 @@
 
 
 
+
   line, but the RAMDAC should be auto-probed correctly.
 
   4.  Using XF86_W32 on an ET6000-based board
@@ -130,7 +143,7 @@
   RAMDAC. So there is no need for a
 
 
-   ClockChip "et6000"
+        ClockChip "et6000"
 
 
 
@@ -182,6 +195,7 @@
   ET4000/W32 VLB board on which the initial development (X_W32) was
   done.
 
+
   X11R6 and The XFree86 Project provide the base code for XF86_W32.
 
   Hercules Computer Technology Inc. lent me (GGL) a 2-M Hercules
@@ -195,7 +209,6 @@
 
   Tseng Labs Europe kindly donated (KMG) an ET6000-based board (a Jazz
   Multimedia G-Force 128), which spurred the development of the ET6000
-
   code.
 
   Numerous testers have given me feedback for X_W32 and later XF86_W32.
@@ -238,13 +251,66 @@
         ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.13 1997/01/18 09:10:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.14 1997/01/20 12:36:36 dawes Exp $
 
 
 
 
 
   $XConsortium: W32.sgml /main/11 1996/10/19 18:03:45 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
