@@ -157,7 +157,7 @@
 
 /* VRAM queue operation command header definitions */
 #define SIS_SPKC_HEADER 	0x16800000L
-#define SIS_BURST_HEADER0	0x368A0000L
+#define SIS_BURST_HEADER0	0x568A0000L
 #define SIS_BURST_HEADER1	0x62100000L
 #define SIS_PACKET_HEARER0 	0x968A0000L
 #define SIS_PACKET_HEADER1	0x62100000L
@@ -198,7 +198,7 @@
 #define SiSGetSwWP() (CARD32)(*(pSiS->cmdQ_SharedWritePort))
 #define SiSGetHwRP() (CARD32)(MMIO_IN32(pSiS->IOBase, Q_READ_PTR))
 
-#define SiSSyncWP    MMIO_OUT32(pSiS->IOBase, Q_WRITE_PTR, (CARD32(*(pSiS->cmdQ_SharedWritePort))));
+#define SiSSyncWP    MMIO_OUT32(pSiS->IOBase, Q_WRITE_PTR, (CARD32)(*(pSiS->cmdQ_SharedWritePort)));
 
 #define SiSSetHwWP(p) \
       *(pSiS->cmdQ_SharedWritePort) = (p);   \
@@ -234,14 +234,12 @@
          CARD32 temppp; \
 	 do { \
 	    temppp = MMIO_IN32(pSiS->IOBase, Q_READ_PTR); \
-            if(temppp < ttt || temppp > pSiS->cmdQueueSize_div2) break; \
-	 } while(1); \
+	 } while(temppp >= ttt && temppp <= pSiS->cmdQueueSize_div2); \
       } else if(ttt == pSiS->cmdQueueSize_div2) { \
          CARD32 temppp; \
 	 do { \
 	    temppp = MMIO_IN32(pSiS->IOBase, Q_READ_PTR); \
-            if(temppp < pSiS->cmdQueueSize_div2 || temppp > pSiS->cmdQueueSize_4_3) break; \
-	 } while(1); \
+	 } while(temppp >= ttt && temppp <= pSiS->cmdQueueSize_4_3); \
       } else if(ttt == pSiS->cmdQueueSize_4_3) { \
          while(MMIO_IN32(pSiS->IOBase, Q_READ_PTR) > ttt) {} \
       }
@@ -361,6 +359,18 @@
          ((CARD32 *)(tt))[0] = (CARD32)(SIS_SPKC_HEADER + DST_PITCH); 	\
          ((CARD32 *)(tt))[1] = (CARD32)((y)<<16 | (x));	 		\
          SiSNILandUpdateSWQueue \
+      }
+
+#define SiSSetupDSTRectBurstHeader(x,y,reg,num) \
+      { \
+         CARD32 ttt = SiSGetSwWP(); \
+	 pointer tt = (char *)pSiS->cmdQueueBase + ttt; \
+	 ((CARD32 *)(tt))[0] = (CARD32)(SIS_SPKC_HEADER + DST_PITCH); 	\
+         ((CARD32 *)(tt))[1] = (CARD32)((y)<<16 | (x));	 		\
+	 ((CARD32 *)(tt))[2] = (CARD32)(SIS_BURST_HEADER0 + reg); 	\
+	 ((CARD32 *)(tt))[3] = (CARD32)(SIS_BURST_HEADER1 + num); 	\
+         SiSUpdateQueue \
+	 SiSSetSwWP(ttt); \
       }
 
 #define SiSSetupDSTColorDepth(bpp) \
@@ -644,6 +654,18 @@
          ((CARD32 *)(tt))[0] = (CARD32)(SIS_SPKC_HEADER + (PATTERN_REG + (num * 4)));	\
          ((CARD32 *)(tt))[1] = (CARD32)(value); 					\
          SiSNILandUpdateSWQueue \
+      }
+
+#define SiSSetupPatternRegBurst(pat1, pat2, pat3, pat4) \
+      { \
+         CARD32 ttt = SiSGetSwWP(); \
+	 pointer tt = (char *)pSiS->cmdQueueBase + ttt; \
+         ((CARD32 *)(tt))[0] = (CARD32)(pat1);	\
+         ((CARD32 *)(tt))[1] = (CARD32)(pat2);	\
+	 ((CARD32 *)(tt))[2] = (CARD32)(pat3);	\
+         ((CARD32 *)(tt))[3] = (CARD32)(pat4);	\
+         SiSUpdateQueue \
+	 SiSSetSwWP(ttt); \
       }
 
 #endif  /* VRAM mode */

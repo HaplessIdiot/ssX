@@ -2,10 +2,10 @@
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
- * Copyright 2002,2003 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  * All Rights Reserved.
  *
- * Formerly and in basic structure based on the mga Xv driver by Mark Vojkovich
+ * Basic structure based on the mga Xv driver by Mark Vojkovich
  * and i810 Xv driver by Jonathan Bian <jonathan.bian@intel.com>.
  *
  * Formerly based on a mostly non-working fragment for the 630 by
@@ -45,7 +45,7 @@
  *  SiS650/740: Full register range, one overlay (used for both CRT1 and CRT2 alt.)
  *  SiSM650/651: Full register range, two overlays (one used for CRT1, one for CRT2)
  *  SiS330: Full register range, one overlay (used for both CRT1 and CRT2 alt.)
- *  SiS660: Full register range, two overlays (one used for CRT1, one for CRT2)
+ *  SiS660: ? Full register range, two overlays (one used for CRT1, one for CRT2) ?
  *
  * Help for reading the code:
  * 315/550/650/740/M650/651/330/660 = SIS_315_VGA
@@ -150,14 +150,14 @@ extern BOOLEAN  SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 #define HEADOFFSET (pSiS->dhmOffset)
 #endif
 
-/* TW: Note on "MIRROR":
- *     When using VESA on machines with an enabled video bridge, this means
- *     a real mirror. CRT1 and CRT2 have the exact same resolution and
- *     refresh rate. The same applies to modes which require the bridge to
- *     operate in slave mode.
- *     When not using VESA and the bridge is not in slave mode otherwise,
- *     CRT1 and CRT2 have the same resolution but possibly a different
- *     refresh rate.
+/* Note on "MIRROR":
+ * When using VESA on machines with an enabled video bridge, this means
+ * a real mirror. CRT1 and CRT2 have the exact same resolution and
+ * refresh rate. The same applies to modes which require the bridge to
+ * operate in slave mode.
+ * When not using VESA and the bridge is not in slave mode otherwise,
+ * CRT1 and CRT2 have the same resolution but possibly a different
+ * refresh rate.
  */
 
 /****************************************************************************
@@ -656,7 +656,7 @@ typedef struct {
 #endif
 
 #if 0
-    /* TW: The following are not used yet */
+    /* The following are not used yet */
     CARD16  SubPictHUSF;        /* Subpicture scaling */
     CARD16  SubpictVUSF;
     CARD8   SubpictIntBit;
@@ -920,12 +920,12 @@ SISResetVideo(ScrnInfoPtr pScrn)
     }
 }
 
-/* TW: Set display mode (single CRT1/CRT2, mirror).
- *     MIRROR mode is only available on chipsets with two overlays.
- *     On the other chipsets, if only CRT1 or only CRT2 are used,
- *     the correct display CRT is chosen automatically. If both
- *     CRT1 and CRT2 are connected, the user can choose between CRT1 and
- *     CRT2 by using the option XvOnCRT2.
+/* Set display mode (single CRT1/CRT2, mirror).
+ * MIRROR mode is only available on chipsets with two overlays.
+ * On the other chipsets, if only CRT1 or only CRT2 are used,
+ * the correct display CRT is chosen automatically. If both
+ * CRT1 and CRT2 are connected, the user can choose between CRT1 and
+ * CRT2 by using the option XvOnCRT2.
  */
 static void
 set_dispmode(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
@@ -973,7 +973,7 @@ set_disptype_regs(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
     if(pPriv->dualHeadMode) crtnum = pSiSEnt->curxvcrtnum;
 #endif 
 
-    /* TW:
+    /*
      *     SR06[7:6]
      *	      Bit 7: Enable overlay 2 on CRT2
      *	      Bit 6: Enable overlay 1 on CRT2
@@ -1249,7 +1249,7 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_sd_result = 0;
 
     /* 300 series require double words for addresses and pitches,
-     * 315 series require word.
+     * 315/330 series require word.
      */
     switch (pSiS->VGAEngine) {
     case SIS_315_VGA:
@@ -1634,9 +1634,9 @@ SISGetPortAttribute(
   } else if(attribute == pSiS->xvDisableGfxLR) {
      *value = (pPriv->disablegfxlr) ? 1 : 0;
   } else if(attribute == pSiS->xvTVXPosition) {
-     *value = SiS_GetTVxposoffset(pScrn); /* pPriv->tvxpos; */
+     *value = SiS_GetTVxposoffset(pScrn);
   } else if(attribute == pSiS->xvTVYPosition) {
-     *value = SiS_GetTVyposoffset(pScrn); /* pPriv->tvypos; */
+     *value = SiS_GetTVyposoffset(pScrn);
   } else if(attribute == pSiS->xvDisableColorkey) {
      *value = (pSiS->disablecolorkeycurrent) ? 1 : 0;
   } else if(attribute == pSiS->xvUseChromakey) {
@@ -1838,9 +1838,9 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
      }
   }
 
-  /* TW: For double scan modes, we need to double the height
-   *     On 315 and 550 (?), we need to double the width as well.
-   *     Interlace mode vice versa.
+  /* For double scan modes, we need to double the height
+   * On 315 and 550 (?), we need to double the width as well.
+   * Interlace mode vice versa.
    */
   if(modeflags & V_DBLSCAN) {
 	   	dstH = origdstH << 1;
@@ -1873,9 +1873,9 @@ calc_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   } else {
         int tmpW = dstW;
 
-	/* TW: It seems, the hardware can't scale below factor .125 (=1/8) if the
-	       pitch isn't a multiple of 256.
-	       TODO: Test this on the 315 series!
+	/* It seems, the hardware can't scale below factor .125 (=1/8) if the
+	   pitch isn't a multiple of 256.
+	   TODO: Test this on the 315 series!
 	 */
 	if((srcPitch % 256) || (srcPitch < 256)) {
 	   if(((dstW * 1000) / srcW) < 125) dstW = tmpW = ((srcW * 125) / 1000) + 1;
@@ -1956,7 +1956,7 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   int origdstH = dstH;
   int modeflags = pOverlay->currentmode2->Flags;
 
-  /* TW: Stretch image due to panel link scaling */
+  /* Stretch image due to panel link scaling */
   if(pSiS->VBFlags & CRT2_LCD) {
      if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
 	if(pSiS->MiscFlags & MISC_PANELLINKSCALER) {
@@ -1965,9 +1965,9 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 	}
      }
   }
-  /* TW: For double scan modes, we need to double the height
-   *     On 315 and 550 (?), we need to double the width as well.
-   *     Interlace mode vice versa.
+  /* For double scan modes, we need to double the height
+   * On 315 and 550 (?), we need to double the width as well.
+   * Interlace mode vice versa.
    */
   if(modeflags & V_DBLSCAN) {
 	   	dstH = origdstH << 1;
@@ -2000,9 +2000,9 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   } else {
         int tmpW = dstW;
 
-	/* TW: It seems, the hardware can't scale below factor .125 (=1/8) if the
-	       pitch isn't a multiple of 256.
-	       TODO: Test this on the 315 series!
+	/* It seems, the hardware can't scale below factor .125 (=1/8) if the
+	   pitch isn't a multiple of 256.
+	   TODO: Test this on the 315 series!
 	 */
 	if((srcPitch % 256) || (srcPitch < 256)) {
 	   if(((dstW * 1000) / srcW) < 125) dstW = tmpW = ((srcW * 125) / 1000) + 1;
@@ -2038,7 +2038,7 @@ calc_scale_factor_2(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 
         if(I < 2) {
             pOverlay->VUSF2 = ((srcH - dstH) << 16) / dstH;
-	    /* TW: Needed for LCD-scaling modes */
+	    /* Needed for LCD-scaling modes */
 	    if(flag && ((mult = (srcH / origdstH)) >= 2))
 	       pOverlay->pitch2 /= mult;
         } else {
@@ -2486,12 +2486,12 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
         right = screenX;
     }
 
-    /* TW: DoubleScan modes require Y coordinates * 2 */
+    /* DoubleScan modes require Y coordinates * 2 */
     if(modeflags & V_DBLSCAN) {
     	 top <<= 1;
 	 bottom <<= 1;
     }
-    /* TW: Interlace modes require Y coordinates / 2 */
+    /* Interlace modes require Y coordinates / 2 */
     if(modeflags & V_INTERLACE) {
     	 top >>= 1;
 	 bottom >>= 1;
@@ -2633,7 +2633,7 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x20);
 }
 
-/* TW: Overlay MUST NOT be switched off while beam is over it */
+/* Overlay MUST NOT be switched off while beam is over it */
 static void
 close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
 {
@@ -2762,10 +2762,10 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    }
 #endif
    
-   /* TW: setup dispmode (MIRROR, SINGLEx) */
+   /* setup dispmode (MIRROR, SINGLEx) */
    set_dispmode(pScrn, pPriv);
-   
-   /* TW: Check if overlay is supported with current mode */
+
+   /* Check if overlay is supported with current mode */
    if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
       if(!(pSiS->MiscFlags & MISC_CRT1OVERLAY)) {
          if(pPriv->overlayStatus) {
@@ -3147,7 +3147,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 #endif
    }
 
-   /* TW: set display mode SR06,32 (CRT1, CRT2 or mirror) */
+   /* set display mode SR06,32 (CRT1, CRT2 or mirror) */
    set_disptype_regs(pScrn, pPriv);
 
    /* set (not only calc) merge line buffer */
@@ -3179,7 +3179,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
       set_line_buf_size_2(&overlay);
 #endif
 
-   /* TW: Do the following in a loop for CRT1 and CRT2 ----------------- */
+   /* Do the following in a loop for CRT1 and CRT2 ----------------- */
 MIRROR:
 
    /* calculate (not set!) scale factor */
@@ -3411,7 +3411,7 @@ SISPutImage(
    pPriv->id = id;
    pPriv->height = height;
 
-   /* TW: Pixel formats:
+   /* Pixel formats:
       1. YU12:  3 planes:       H    V
                Y sample period  1    1   (8 bit per pixel)
 	       V sample period  2    2	 (8 bit per pixel, subsampled)
@@ -3645,7 +3645,7 @@ SISVideoTimerCallback(ScrnInfoPtr pScrn, Time now)
    }
 }
 
-/* TW: Offscreen surface stuff */
+/* Offscreen surface stuff */
 
 static int
 SISAllocSurface (
@@ -3923,14 +3923,14 @@ set_alpha(SISPtr pSiS, CARD8 alpha)
     setvideoregmask(pSiS, Index_VI_Key_Overlay_OP, ((alpha & 0x0f) << 4), 0xf0);
 }
 
-/* TW: Set SubPicture Start Address (yet unused) */
+/* Set SubPicture Start Address (yet unused) */
 static void
 set_subpict_start_offset(SISPtr pSiS, SISOverlayPtr pOverlay, int index)
 {
     CARD32 temp;
     CARD8  data;
 
-    temp = pOverlay->SubPictAddr >> 4; /* TW: 630 <-> 315 shiftValue? */
+    temp = pOverlay->SubPictAddr >> 4; /* 630 <-> 315 shiftValue? */
 
     setvideoreg(pSiS,Index_VI_SubPict_Buf_Start_Low, temp & 0xFF);
     setvideoreg(pSiS,Index_VI_SubPict_Buf_Start_Middle, (temp>>8) & 0xFF);
@@ -3943,14 +3943,14 @@ set_subpict_start_offset(SISPtr pSiS, SISOverlayPtr pOverlay, int index)
     }
 }
 
-/* TW: Set SubPicture Pitch (yet unused) */
+/* Set SubPicture Pitch (yet unused) */
 static void
 set_subpict_pitch(SISPtr pSiS, SISOverlayPtr pOverlay, int index)
 {
     CARD32 temp;
     CARD8  data;
 
-    temp = pOverlay->SubPictPitch >> 4; /* TW: 630 <-> 315 shiftValue? */
+    temp = pOverlay->SubPictPitch >> 4; /* 630 <-> 315 shiftValue? */
 
     setvideoreg(pSiS,Index_VI_SubPict_Buf_Pitch, temp & 0xFF);
     if (pSiS->VGAEngine == SIS_315_VGA) {
@@ -3961,7 +3961,7 @@ set_subpict_pitch(SISPtr pSiS, SISOverlayPtr pOverlay, int index)
     }
 }
 
-/* TW: Calculate and set SubPicture scaling (untested, unused yet) */
+/* Calculate and set SubPicture scaling (untested, unused yet) */
 static void
 set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
                          SISPortPrivPtr pPriv, int index, int iscrt2)
@@ -3978,7 +3978,7 @@ set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
   int srcPitch = pOverlay->SubPictOrigPitch;
   int origdstH = dstH;
 
-  /* TW: Stretch image due to idiotic LCD "auto"-scaling */
+  /* Stretch image due to idiotic LCD "auto"-scaling */
   /* INCOMPLETE and INCORRECT - See set_scale_factor() */
   if ( (pPriv->bridgeIsSlave) && (pSiS->VBFlags & CRT2_LCD) ) {
   	dstH = (dstH * LCDheight) / pOverlay->SCREENheight;
@@ -4055,7 +4055,7 @@ set_subpict_scale_factor(SISOverlayPtr pOverlay, ScrnInfoPtr pScrn,
 				(pOverlay->SubPictwHPre), 0x7f);
 }
 
-/* TW: Set SubPicture Preset (yet unused) */
+/* Set SubPicture Preset (yet unused) */
 static void
 set_subpict_preset(SISPtr pSiS, SISOverlayPtr pOverlay)
 {
@@ -4082,7 +4082,7 @@ enable_subpict_overlay(SISPtr pSiS, Bool enable)
 		0x40);
 }
 
-/* TW: Set overlay for subpicture */
+/* Set overlay for subpicture */
 static void
 set_subpict_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index)
 {
@@ -4096,7 +4096,7 @@ set_subpict_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, i
 }
 
 
-/* TW: Set MPEG Field Preset (yet unused) */
+/* Set MPEG Field Preset (yet unused) */
 static void
 set_mpegfield_preset(SISPtr pSiS, SISOverlayPtr pOverlay)
 {

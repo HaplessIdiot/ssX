@@ -35,8 +35,8 @@
 #define UNLOCK_ALWAYS
 
 #define SISDRIVERVERSIONYEAR    3
-#define SISDRIVERVERSIONMONTH   8
-#define SISDRIVERVERSIONDAY     30
+#define SISDRIVERVERSIONMONTH   9
+#define SISDRIVERVERSIONDAY     2
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -830,7 +830,6 @@ typedef struct {
     CARD32		colorKey;
     CARD32		MiscFlags;
     int			UsePanelScaler;
-    Time		AccelRenderTime;
     FBLinearPtr		AccelLinearScratch;
     void		(*AccelRenderCallback)(ScrnInfoPtr);
     float		zClearVal;
