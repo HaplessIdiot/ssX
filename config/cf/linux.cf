@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.211 2003/10/26 11:40:53 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.212tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -225,6 +225,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 # ifndef HasLibCrypt
 #  define HasLibCrypt		NO
+# endif
+# ifndef HasBasename
+#  define HasBasename		NO
 # endif
 #endif
 

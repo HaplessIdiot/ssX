@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.7 2002/12/16 16:18:52 dawes Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.8tsi Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -29,7 +29,9 @@
 #ifndef MGALIB_INC
 #define MGALIB_INC
 
+#if !defined(linux) || defined(__GLIBC__)
 #include <inttypes.h>
+#endif
 #include "dri_util.h"
 #include "mtypes.h"
 #include "xf86drm.h"
@@ -263,8 +265,8 @@ struct mga_context_t {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   uint64_t swap_ust;
-   uint64_t swap_missed_ust;
+   u_int64_t swap_ust;
+   u_int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;

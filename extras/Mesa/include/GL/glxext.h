@@ -33,6 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -42,12 +43,16 @@ extern "C" {
 #ifndef APIENTRY
 #define APIENTRY
 #endif
+#ifndef GLAPI
+#define GLAPI extern
+#endif
 
 /*************************************************************/
 
 /* Header file version number, required by OpenGL ABI for Linux */
-/* glxext.h last updated 2001/09/26 */
-#define GLX_GLXEXT_VERSION 3
+/* glxext.h last updated 2002/03/22 */
+/* Current version at http://oss.sgi.com/projects/ogl-sample/registry/ */
+#define GLX_GLXEXT_VERSION 5
 
 #ifndef GLX_VERSION_1_3
 #define GLX_WINDOW_BIT                     0x00000001
@@ -111,6 +116,9 @@ extern "C" {
 #ifndef GLX_VERSION_1_4
 #define GLX_SAMPLE_BUFFERS                 100000
 #define GLX_SAMPLES                        100001
+#endif
+
+#ifndef GLX_ARB_get_proc_address
 #endif
 
 #ifndef GLX_ARB_multisample
@@ -253,6 +261,9 @@ extern "C" {
 #ifndef GLX_MESA_release_buffers
 #endif
 
+#ifndef GLX_MESA_agp_offset
+#endif
+
 #ifndef GLX_MESA_set_3dfx_mode
 #define GLX_3DFX_WINDOW_MODE_MESA          0x1
 #define GLX_3DFX_FULLSCREEN_MODE_MESA      0x2
@@ -276,7 +287,6 @@ extern "C" {
 /*************************************************************/
 
 #ifndef GLX_ARB_get_proc_address
-/* XXX Added void parameter to silence many, many warnings (BrianP) */
 typedef void (*__GLXextFuncPtr)(void);
 #endif
 
@@ -348,12 +358,24 @@ typedef void ( * PFNGLXSELECTEVENTPROC) (Display *dpy, GLXDrawable draw, unsigne
 typedef void ( * PFNGLXGETSELECTEDEVENTPROC) (Display *dpy, GLXDrawable draw, unsigned long *event_mask);
 #endif
 
+#ifndef GLX_VERSION_1_4
+#define GLX_VERSION_1_4 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern __GLXextFuncPtr glXGetProcAddress (const GLubyte *);
+#endif /* GLX_GLXEXT_PROTOTYPES */
+typedef __GLXextFuncPtr ( * PFNGLXGETPROCADDRESSPROC) (const GLubyte *procName);
+#endif
+
 #ifndef GLX_ARB_get_proc_address
 #define GLX_ARB_get_proc_address 1
 #ifdef GLX_GLXEXT_PROTOTYPES
 extern __GLXextFuncPtr glXGetProcAddressARB (const GLubyte *);
 #endif /* GLX_GLXEXT_PROTOTYPES */
 typedef __GLXextFuncPtr ( * PFNGLXGETPROCADDRESSARBPROC) (const GLubyte *procName);
+#endif
+
+#ifndef GLX_ARB_multisample
+#define GLX_ARB_multisample 1
 #endif
 
 #ifndef GLX_SGIS_multisample
@@ -413,13 +435,13 @@ typedef void ( * PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (Display *dpy, GLXVideoSou
 #ifdef GLX_GLXEXT_PROTOTYPES
 extern Display * glXGetCurrentDisplayEXT (void);
 extern int glXQueryContextInfoEXT (Display *, GLXContext, int, int *);
-extern GLXContextID glXGetContextIDEXT (GLXContext);
+extern GLXContextID glXGetContextIDEXT (const GLXContext);
 extern GLXContext glXImportContextEXT (Display *, GLXContextID);
 extern void glXFreeContextEXT (Display *, GLXContext);
 #endif /* GLX_GLXEXT_PROTOTYPES */
 typedef Display * ( * PFNGLXGETCURRENTDISPLAYEXTPROC) (void);
 typedef int ( * PFNGLXQUERYCONTEXTINFOEXTPROC) (Display *dpy, GLXContext context, int attribute, int *value);
-typedef GLXContextID ( * PFNGLXGETCONTEXTIDEXTPROC) (GLXContext context);
+typedef GLXContextID ( * PFNGLXGETCONTEXTIDEXTPROC) (const GLXContext context);
 typedef GLXContext ( * PFNGLXIMPORTCONTEXTEXTPROC) (Display *dpy, GLXContextID contextID);
 typedef void ( * PFNGLXFREECONTEXTEXTPROC) (Display *dpy, GLXContext context);
 #endif
@@ -550,18 +572,71 @@ extern Bool glXSet3DfxModeMESA (int);
 typedef Bool ( * PFNGLXSET3DFXMODEMESAPROC) (int mode);
 #endif
 
+#ifndef GLX_MESA_agp_offset
+#define GLX_MESA_agp_offset 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern GLuint glXGetAGPOffsetMESA (const GLvoid *);
+#endif /* GLX_GLXEXT_PROTOTYPES */
+typedef GLuint ( * PFNGLXGETAGPOFFSETMESAPROC) (const GLvoid *);
+#endif
+
+#ifndef GLX_MESA_swap_control
+#define GLX_MESA_swap_control 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern GLint glXSwapIntervalMESA(unsigned interval);
+extern GLint glXGetSwapIntervalMESA( void );
+#endif /* GLX_GLXEXT_PROTOTYPES */
+typedef GLint ( * PFNGLXSWAPINTERVALMESAPROC) (unsigned interval);
+typedef GLint ( * PFNGLXGETSWAPINTERVALMESAPROC) ( void );
+#endif
+
 #ifndef GLX_SGIX_visual_select_group
 #define GLX_SGIX_visual_select_group 1
 #endif
 
-#ifndef GLX_GLX_OML_swap_method
-#define GLX_GLX_OML_swap_method 1
+#ifndef GLX_OML_swap_method
+#define GLX_OML_swap_method 1
 #endif
 
-#ifndef GLX_GLX_OML_sync_control
-#define GLX_GLX_OML_sync_control 1
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || \
+    (defined(linux) && !defined(__GLIBC__)) || \
+    defined(_STDINT_H) || defined(_SYS_INTTYPES_H_) || defined(_INTTYPES_H_)
+#if !defined(linux) || defined(__GLIBC__)
+/* Include ISO C99 integer types for OML_sync_control; need a better test */
+#include <inttypes.h>
 #endif
 
+#ifndef GLX_OML_sync_control
+#define GLX_OML_sync_control 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern Bool glXGetSyncValuesOML (Display *, GLXDrawable, int64_t *, int64_t *, int64_t *);
+extern Bool glXGetMscRateOML (Display *, GLXDrawable, int32_t *, int32_t *);
+extern int64_t glXSwapBuffersMscOML (Display *, GLXDrawable, int64_t, int64_t, int64_t);
+extern Bool glXWaitForMscOML (Display *, GLXDrawable, int64_t, int64_t, int64_t, int64_t *, int64_t *, int64_t *);
+extern Bool glXWaitForSbcOML (Display *, GLXDrawable, int64_t, int64_t *, int64_t *, int64_t *);
+#endif /* GLX_GLXEXT_PROTOTYPES */
+typedef Bool ( * PFNGLXGETSYNCVALUESOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t *ust, int64_t *msc, int64_t *sbc);
+typedef Bool ( * PFNGLXGETMSCRATEOMLPROC) (Display *dpy, GLXDrawable drawable, int32_t *numerator, int32_t *denominator);
+typedef int64_t ( * PFNGLXSWAPBUFFERSMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder);
+typedef Bool ( * PFNGLXWAITFORMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder, int64_t *ust, int64_t *msc, int64_t *sbc);
+typedef Bool ( * PFNGLXWAITFORSBCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_sbc, int64_t *ust, int64_t *msc, int64_t *sbc);
+#endif
+
+#ifndef GLX_MESA_swap_frame_usage
+#define GLX_MESA_swap_frame_usage 1
+#ifdef GLX_GLXEXT_PROTOTYPES
+extern GLint glXBeginFrameTrackingMESA(Display *dpy, GLXDrawable drawable);
+extern GLint glXEndFrameTrackingMESA(Display *dpy, GLXDrawable drawable);
+extern GLint glXGetFrameUsageMESA(Display *dpy, GLXDrawable drawable, GLfloat *usage);
+extern GLint glXQueryFrameTrackingMESA(Display *dpy, GLXDrawable drawable, int64_t *sbc, int64_t *missedFrames, GLfloat *lastMissedUsage);
+#endif /* GLX_GLXEXT_PROTOTYPES */
+typedef GLint ( * PFNGLXBEGINFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable);
+typedef GLint ( * PFNGLXENDFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable);
+typedef GLint ( * PFNGLXGETFRAMEUSAGEMESAPROC) (Display *dpy, GLXDrawable drawable, GLfloat *usage);
+typedef GLint ( * PFNGLXQUERYFRAMETRACKINGMESAPROC) (Display *dpy, GLXDrawable drawable, int64_t *sbc, int64_t *missedFrames, GLfloat *lastMissedUsage);
+#endif
+
+#endif /* C99 version test */
 
 #ifdef __cplusplus
 }

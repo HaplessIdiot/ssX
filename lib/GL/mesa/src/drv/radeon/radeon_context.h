@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.6 2002/12/16 16:18:58 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.7tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -40,7 +40,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+#if !defined(linux) || defined(__GLIBC__)
 #include <inttypes.h>
+#endif
 #include "dri_util.h"
 #include "radeon_common.h"
 #include "texmem.h"
@@ -745,8 +747,8 @@ struct radeon_context {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   uint64_t swap_ust;
-   uint64_t swap_missed_ust;
+   u_int64_t swap_ust;
+   u_int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;
