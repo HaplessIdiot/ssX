@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.10 2001/04/12 20:09:52 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.11 2001/04/16 06:51:46 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -40,8 +40,9 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.10 2001/04/12 20:09:52 torrey Exp $
 /* we don't have a dbm library */
 #define DBMLibrary              /**/
 
-/* our cpp isn't in /lib/cpp */
+/* our cpp isn't in /lib/cpp and it doesn't like -undef */
 #define CppCmd                  /usr/bin/cpp
+#define RawCppCmd               CppCmd
 
 /* we have a gcc compatible compiler, but its not called gcc */
 #define CcCmd                   /usr/bin/cc

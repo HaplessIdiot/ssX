@@ -1,4 +1,7 @@
 XFree86 4.0.99.x (xx April 2001)
+ 467. Fix man page building and installing on Darwin. To be safe we assume
+      the Darwin file system is case insensitive since one common variety is,
+      ie. HFS+ (Torrey Lyons).
  466. Improve interoperability between Aqua pasteboard and X cut buffer with
       XDarwin (Gregory Parker).
  465. Updates for Cygwin/XFree86 (Harold Hunt).
@@ -13131,4 +13134,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1737 2001/05/02 00:45:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1738 2001/05/02 01:03:38 torrey Exp $
