@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.16 2001/01/17 19:43:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.17 2001/01/23 20:16:40 keithp Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -479,8 +479,16 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 	if (condition) {
 	    for (ep = app->input_list[ii]; ep; ep = ep->ie_next)
 		if (condition & ep->ie_condition) {
-		    ep->ie_oq = app->outstandingQueue;
-		    app->outstandingQueue = ep;
+		    /* make sure this input isn't already marked outstanding */
+		    InputEvent	*oq;
+		    for (oq = app->outstandingQueue; oq; oq = oq->ie_oq)
+			if (oq == ep)
+			    break;
+		    if (!oq)
+		    {
+			ep->ie_oq = app->outstandingQueue;
+			app->outstandingQueue = ep;
+		    }
 		}
 	    *found_input = True;
 	}
@@ -526,8 +534,16 @@ ENDILOOP:   ;
 		*found_input = True;
 		for (ep = app->input_list[fdlp->fd]; ep; ep = ep->ie_next)
 		    if (condition & ep->ie_condition) {
-			ep->ie_oq = app->outstandingQueue;
-			app->outstandingQueue = ep;
+			InputEvent	*oq;
+			/* make sure this input isn't already marked outstanding */
+			for (oq = app->outstandingQueue; oq; oq = oq->ie_oq)
+			    if (oq == ep)
+				break;
+			if (!oq)
+			{
+			    ep->ie_oq = app->outstandingQueue;
+			    app->outstandingQueue = ep;
+			}
 		    }
 	    }
 	}
