@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.36 1999/12/27 00:39:54 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.37 2000/02/12 03:39:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -310,6 +310,28 @@ SOFTWARE.
 # define PLENTIFUL_REGISTERS
 
 #endif /* alpha */
+
+
+#if defined(__ia64__)
+# define IMAGE_BYTE_ORDER	LSBFirst
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
+#  define BITMAP_BIT_ORDER      MSBFirst
+# else
+#  define BITMAP_BIT_ORDER      LSBFirst
+# endif
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16)
+#  define BITMAP_SCANLINE_UNIT  8
+# endif
+
+# define GLYPHPADBYTES		4
+# define GETLEFTBITS_ALIGNMENT	1
+# define FAST_CONSTANT_OFFSET_MODE
+# define LARGE_INSTRUCTION_CACHE
+# define PLENTIFUL_REGISTERS
+
+#endif /* ia64 */
 
 #ifdef stellar
 
