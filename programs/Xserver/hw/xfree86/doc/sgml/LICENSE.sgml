@@ -4,11 +4,11 @@
 
 <article>
 <title>Licenses</title>
-<author>The XFree86 Project</author>
-<date>February 2003</date>
+<author>Compiled by The XFree86 Project</a>
+<date>December 2003</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.16 2003/10/26 12:17:17 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.17 2003/12/12 00:40:53 dawes Exp $
 </ident>
 
 <sect>Introduction
