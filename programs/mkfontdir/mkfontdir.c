@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.15 2001/08/16 14:33:53 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.16 2001/08/20 14:00:57 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -465,6 +465,9 @@ LoadScalable (char *dirName, FontTablePtr table)
     char    file_name[MAXFONTFILENAMELEN];
     char    font_name[MAXFONTNAMELEN];
     char    dir_file[MAXFONTFILENAMELEN];
+    /* "+2" is for the space and the final null */
+    char    dir_line[sizeof(file_name)+sizeof(font_name)+2];
+    char    dir_format[20];
     FILE    *file;
     int	    count;
     int	    i;
@@ -480,7 +483,10 @@ LoadScalable (char *dirName, FontTablePtr table)
 	    fclose(file);
 	    return BadFontPath;
 	}
-	while ((count = fscanf(file, "%s %[^\n]\n", file_name, font_name)) != EOF) {
+	(void) sprintf(dir_format, "%%%ds %%%d[^\n]\n",
+		       sizeof(file_name)-1, sizeof(font_name)-1);
+	while (fgets(dir_line, sizeof(dir_line), file) != NULL) {
+	    count = sscanf(dir_line, dir_format, file_name, font_name);
 	    if (count != 2) {
 		fclose(file);
 		fprintf (stderr, "%s: bad format for %s file\n",
