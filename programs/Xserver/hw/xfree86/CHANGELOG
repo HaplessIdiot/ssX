@@ -1,4 +1,15 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 467. Fix bug that caused hardware cursors to disappear on mode switches when
+      silken mouse is disabled (Marc La France).
+ 466. Preliminary changes to keyboard handling for SPARC SunOS
+      (Marc La France).
+ 465. Zero out SPARC SunOS primary framebuffer on exit, like Sun's servers do
+      (Marc La France).
+ 464. More driver name normalisation (Marc La France).
+ 463. Minor speedup for Mach64 acceleration for big-endian architectures
+      (Marc La France).
+ 462. Fix bug that prevented relocation of unassigned PCI I/O bases
+      (Marc La France).
  461. Add Swedish localization of the XDarwin help file (Patrik Montgomery).
  460. Fix use of gethostbyname and getservbyname to _XGethostbyname and
       _XGetservbyname for portability (#5017, Mark W. Snitily, from X11R6.6).
@@ -14126,4 +14137,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2030 2001/11/06 16:11:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2031 2001/11/07 22:43:25 torrey Exp $

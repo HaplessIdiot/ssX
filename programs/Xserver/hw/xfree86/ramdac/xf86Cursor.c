@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.10 2001/05/25 02:44:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.11 2001/08/09 22:23:02 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -335,7 +335,7 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 	xf86SetCursor(pScreen, pCurs, x, y);
 	ScreenPriv->SWCursor = FALSE;
 	ScreenPriv->isUp = TRUE;
-	PointPriv->waitForUpdate = !infoPtr->pScrn->silkenMouse;
+	PointPriv->waitForUpdate = FALSE;
 	return;
     }
 

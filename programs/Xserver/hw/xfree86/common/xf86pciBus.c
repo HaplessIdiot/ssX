@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.45 2001/10/28 03:33:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.46 2001/11/05 09:07:33 alanh Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -121,6 +121,20 @@ getPciClassFlags(pciConfigPtr *pcrpp);
 static void
 pciConvertListToHost(int bus, int dev, int func, resPtr list);
 
+static Bool
+IsBaseUnassigned(CARD32 base)
+{
+    CARD32 mask;
+
+    if (base & PCI_MAP_IO)
+	mask = ~PCI_MAP_IO_ATTR_MASK;
+    else
+	mask = ~PCI_MAP_MEMORY_ATTR_MASK;
+
+    base &= mask;
+    return (!base || (base == mask));
+}
+
 static void
 FindPCIVideoInfo(void)
 {
@@ -221,17 +235,17 @@ FindPCIVideoInfo(void)
 	    }
 
 	    if (PCINONSYSTEMCLASSES(baseclass, subclass)) {
-		if (!pcrp->pci_base0 && info->size[0])
+		if (info->size[0] && IsBaseUnassigned(pcrp->pci_base0))
 		    pcrp->pci_base0 = pciCheckForBrokenBase(pcrp->tag, 0);
-		if (!pcrp->pci_base1 && info->size[1])
+		if (info->size[1] && IsBaseUnassigned(pcrp->pci_base1))
 		    pcrp->pci_base1 = pciCheckForBrokenBase(pcrp->tag, 1);
-		if (!pcrp->pci_base2 && info->size[2])
+		if (info->size[2] && IsBaseUnassigned(pcrp->pci_base2))
 		    pcrp->pci_base2 = pciCheckForBrokenBase(pcrp->tag, 2);
-		if (!pcrp->pci_base3 && info->size[3])
+		if (info->size[3] && IsBaseUnassigned(pcrp->pci_base3))
 		    pcrp->pci_base3 = pciCheckForBrokenBase(pcrp->tag, 3);
-		if (!pcrp->pci_base4 && info->size[4])
+		if (info->size[4] && IsBaseUnassigned(pcrp->pci_base4))
 		    pcrp->pci_base4 = pciCheckForBrokenBase(pcrp->tag, 4);
-		if (!pcrp->pci_base5 && info->size[5])
+		if (info->size[5] && IsBaseUnassigned(pcrp->pci_base5))
 		    pcrp->pci_base5 = pciCheckForBrokenBase(pcrp->tag, 5);
 	    }
 	    
@@ -1073,6 +1087,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 	    p_base = &(pvp->ioBase[res_n]);
 	    p_size = &(pvp->size[res_n]);
 	    p_type = pvp->type[res_n];
+	    PCI_I_RANGE(range, tag, 0, 0xffffffff, ResExcIoBlock);
+	    resSize = xf86AddResToList(resSize, &range, -1);
 	} else return FALSE;
     } else if (prt == 6) {
 	type |= ResMem;
