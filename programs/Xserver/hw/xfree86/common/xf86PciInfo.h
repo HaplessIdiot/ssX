@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.157 2004/02/13 23:58:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.158tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -107,6 +107,7 @@
 #define PCI_VENDOR_NVIDIA		0x10DE
 #define PCI_VENDOR_IMS			0x10E0
 #define PCI_VENDOR_INTEGRAPHICS 	0x10EA
+#define PCI_VENDOR_CREATIVE		0x1102
 #define PCI_VENDOR_ALLIANCE		0x1142
 #define PCI_VENDOR_RENDITION		0x1163
 #define PCI_VENDOR_3DFX			0x121A

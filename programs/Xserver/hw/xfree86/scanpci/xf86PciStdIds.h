@@ -5800,7 +5800,6 @@ static const char pci_device_1101_9400[] = "INI-940";
 static const char pci_device_1101_9401[] = "INI-950";
 static const char pci_device_1101_9500[] = "360P";
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_1102[] = "Creative Labs";
 static const char pci_device_1102_0002[] = "SB Live! EMU10k1";
 #ifdef INIT_SUBSYS_INFO
@@ -5877,7 +5876,6 @@ static const char pci_subsys_1102_7003_1102_0040[] = "SB Audigy MIDI/Game Port";
 static const char pci_device_1102_7004[] = "[SB Live! Value] Input device controller";
 static const char pci_device_1102_8064[] = "SB0100 [SBLive! 5.1 OEM]";
 static const char pci_device_1102_8938[] = "Ectiva EV1938";
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_1103[] = "Triones Technologies, Inc.";
 static const char pci_device_1103_0003[] = "HPT343";
@@ -20359,7 +20357,6 @@ static const pciSubsystemInfo pci_ss_info_10ec_8169_1371_434e =
 #undef pci_ss_info_1371_434e
 #define pci_ss_info_1371_434e pci_ss_info_10ec_8169_1371_434e
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo pci_ss_info_1102_0002_1102_0020 =
 	{0x1102, 0x0020, pci_subsys_1102_0002_1102_0020, 0};
 #undef pci_ss_info_1102_0020
@@ -20448,7 +20445,6 @@ static const pciSubsystemInfo pci_ss_info_1102_7003_1102_0040 =
 	{0x1102, 0x0040, pci_subsys_1102_7003_1102_0040, 0};
 #undef pci_ss_info_1102_0040
 #define pci_ss_info_1102_0040 pci_ss_info_1102_7003_1102_0040
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo pci_ss_info_1103_0004_1103_0001 =
 	{0x1103, 0x0001, pci_subsys_1103_0004_1103_0001, 0};
@@ -29002,7 +28998,6 @@ static const pciSubsystemInfo *pci_ss_list_10ec_8169[] = {
 #define pci_ss_list_1101_9400 NULL
 #define pci_ss_list_1101_9401 NULL
 #define pci_ss_list_1101_9500 NULL
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo *pci_ss_list_1102_0002[] = {
 	&pci_ss_info_1102_0002_1102_0020,
 	&pci_ss_info_1102_0002_1102_0021,
@@ -29044,7 +29039,6 @@ static const pciSubsystemInfo *pci_ss_list_1102_7003[] = {
 #define pci_ss_list_1102_7004 NULL
 #define pci_ss_list_1102_8064 NULL
 #define pci_ss_list_1102_8938 NULL
-#endif
 #define pci_ss_list_1103_0003 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo *pci_ss_list_1103_0004[] = {
@@ -34233,7 +34227,6 @@ static const pciSubsystemInfo *pci_ss_list_1100[] = {
 };
 #endif
 #define pci_ss_list_1101 NULL
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo *pci_ss_list_1102[] = {
 	&pci_ss_info_1102_0010,
 	&pci_ss_info_1102_0020,
@@ -34276,7 +34269,6 @@ static const pciSubsystemInfo *pci_ss_list_1102[] = {
 	&pci_ss_info_1102_8065,
 	NULL
 };
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo *pci_ss_list_1103[] = {
 	&pci_ss_info_1103_0001,
@@ -52273,7 +52265,6 @@ static const pciDeviceInfo pci_dev_info_1101_9500 = {
 	0
 };
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo pci_dev_info_1102_0002 = {
 	0x0002, pci_device_1102_0002,
 #ifdef INIT_SUBSYS_INFO
@@ -52355,7 +52346,6 @@ static const pciDeviceInfo pci_dev_info_1102_8938 = {
 #endif
 	0
 };
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo pci_dev_info_1103_0003 = {
 	0x0003, pci_device_1103_0003,
@@ -71727,7 +71717,6 @@ static const pciDeviceInfo *pci_dev_list_1101[] = {
 	NULL
 };
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_1102[] = {
 	&pci_dev_info_1102_0002,
 	&pci_dev_info_1102_0004,
@@ -71740,7 +71729,6 @@ static const pciDeviceInfo *pci_dev_list_1102[] = {
 	&pci_dev_info_1102_8938,
 	NULL
 };
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_1103[] = {
 	&pci_dev_info_1103_0003,
@@ -76738,9 +76726,7 @@ static const pciVendorInfo pciVendorInfoList[] = {
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1101, pci_vendor_1101, pci_dev_list_1101},
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1102, pci_vendor_1102, pci_dev_list_1102},
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1103, pci_vendor_1103, pci_dev_list_1103},
 #endif
@@ -81698,9 +81684,7 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1101, pci_vendor_1101, pci_ss_list_1101},
 #endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1102, pci_vendor_1102, pci_ss_list_1102},
-#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1103, pci_vendor_1103, pci_ss_list_1103},
 #endif
