@@ -1,4 +1,6 @@
 XFree86 4.0c (13 June 2000)
+ 256. Replace some bitswapping assembler code in XAA with faster C code
+      (Mark Vojkovich).
  255. Rendition driver updates, including:
        - add DirectColor support
        - add SilkenMouse support
@@ -10499,4 +10501,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1177 2000/06/12 10:11:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1178 2000/06/13 02:28:29 dawes Exp $
