@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.16 2002/11/03 20:10:27 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.17 2002/11/15 07:01:32 paulo Exp $
 ;;
 
 (require "syntax")
@@ -318,7 +318,7 @@
 
     ;; if in the same line, reduce now, this must be done because the
     ;; delimiters are identical
-    (indtoken "'([^\\]'|\\\\.)*'"	:expression)
+    (indtoken "'([^\\']|\\\\.)*'"	:expression)
     (indtoken "\"([^\\\"]|\\\\.)*\""	:expression)
 
     (indtoken "\""		:cstring	:nospec t	:begin :string)
