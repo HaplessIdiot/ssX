@@ -145,9 +145,10 @@ ATIProcessOptions
     pATI->OptionSync = Sync;
 
     /* Only set the reference clock if it hasn't already been determined */
-    if (pATI->ReferenceNumerator && pATI->ReferenceDenominator)
+    if (pATI->ReferenceNumerator && pATI->ReferenceDenominator) {
+        xfree(PublicOption);
         return;
-
+    }
     switch ((int)(ReferenceClock / ((double)100000.0)))
     {
         case 143:
@@ -166,4 +167,5 @@ ATIProcessOptions
             pATI->ReferenceDenominator = 1;
             break;
     }
+    xfree(PublicOption);
 }
