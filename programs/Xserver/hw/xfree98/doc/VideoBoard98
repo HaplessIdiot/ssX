@@ -37,7 +37,7 @@ NEC
 |PC9821Ap3            |S3-864   |S3-SDAC|S3-SDAC |2|  o?   | |
 |PC9821Af/U9W E09?    |S3-928   |Bt485  |ICS2494 |2|  o?   | |
 |PC9821An/U8W         |S3-928   |Bt485  |ICS2494 |2|  o?   | |
-|PC9821An/C9T         |MGA2     |       |        | |   X   | |
+|PC9821An/C9T         |MGA2     |       |        |2|   X   | |
 +---------------------+---------+-------+--------+-+-------+-+
 |PC9821Bf/U8W         |CLGD5428 | B/I   |  B/I   |1|   O   |X|
 |PC9821Bp/U8W/U7W     |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
@@ -48,13 +48,14 @@ NEC
 |PC9801BX3/U2/W       |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
 |PC9801BX4/U2         |CLGD5430 | B/I   |  B/I   |1|  o?   |X|
 +---------------------+---------+-------+--------+-+-------+-+
-|PC9821Xt             |MGA2     |       |        | |   X   | |
-|PC9821Xt13           |MGA 2064 |       |        | |   X   | |
-|PC9821St15           |MGA 2064 |       |        | |   X   | |
-|PC9821Xa             |MGA2     |       |        | |   X   | |
+|PC9821Xt             |MGA2     |       |        |4|   X   | |
+|PC9821Xt13           |MGA 2064 |       |        |4|   X   | |
+|PC9821St15           |MGA 2064 |       |        |4|   X   | |
+|PC9821Xa             |MGA2     |       |        |2|   X   | |
 |PC9821Xa7/C,K        |TGUI9680 | B/I   |  B/I   |2|   o   | |
 |PC9821Xa9/C,K        |TGUI9680 | B/I   |  B/I   |2|  o?   | |
 |PC9821Xa10/C,K       |TGUI9680 | B/I   |  B/I   |2|  o?   | |
+|PC9821Xa12/C,K       |TGUI9680 | B/I   |  B/I   |2|  o?   | |
 |PC9821Xa13/C,K       |TGUI9680 | B/I   |  B/I   |2|  o?   | |
 |PC9821Xa13/W         |TGUI9682 | B/I   |  B/I   |2|   X   | |
 |PC9821Xa16/R         |TGUI9680 | B/I   |  B/I   |2|  o?   | |
@@ -81,7 +82,10 @@ NEC
 |PC9821V16/M7         |TGUI9680 | B/I   |  B/I   |2|  o?   | |
 |PC9821V20/M7         |TGUI9680 | B/I   |  B/I   |2|  o?   | |
 +---------------------+---------+-------+--------+-+-------+-+
+|PC9821Ce             |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
+|PC9821Ce2            |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cs             |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
+|PC9821Cs2            |CLGD5428 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cf             |CLGD5430 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cx             |CLGD5430 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cx2            |CLGD5430 | B/I   |  B/I   |1|   O   |X|
@@ -90,6 +94,7 @@ NEC
 |PC9821Cb3            |CLGD5440 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cx13           |CLGD5440 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cu10           |CLGD5440 | B/I   |  B/I   |1|  o?   |X|
+|PC9821Cu10/D         |CLGD5446 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Cr13           |CLGD5440 | B/I   |  B/I   |1|  o?   |X|
 |PC9821Ct16           |CLGD5446 | B/I   |  B/I   |2|   ?   |X|
 +---------------------+---------+-------+--------+-+-------+-+
@@ -185,13 +190,14 @@ Canopus
 |Power Window964LB    |S3-964   |Ti3025 |        |4|   o   |O|
 |Power Window968      |S3-968   |       |        |2|   ?   | |
 |Power Window968      |S3-968   |       |        |4|   ?   | |
-|Power Window9100     |P9100    |       |        | |   X   | |
-|Power Window9130C    |P9100    |       |        | |   X   | |
+|Power Window9100PCI  |P9100    |Bt485  |        |2|   X   | |
+|Power Window9100PCI  |P9100    |RGB525 |        |4|   X   | |
+|Power Window9130C-PCI|P9100    |       |        |4|   X   | |
 |Power WindowT64EL    |S3-T64   | B/I   | B/I    | |   X   | |
 |Power WindowT64S     |S3-T64   | B/I   | B/I    |2|   X   | |
 |Power WindowT64V Card|S3-T64V+ | B/I   | B/I    |2|   X   | |
-|Power Window6410AV   |PM6410   | B/I   | B/I    |1|   X   | |
-|Power Window6410AV   |PM6410   | B/I   | B/I    |2|   X   | |
+|Power Window6410VA   |PM6410   | B/I   | B/I    |1|   X   | |
+|Power Window6410VA   |PM6410   | B/I   | B/I    |2|   X   | |
 +---------------------+---------+-------+--------+-+-------+-+
 
 							    
@@ -213,6 +219,8 @@ MELCO
 |WSN-A2F              |CLGD5434 | B/I   |  B/I   |2|   O   |X|
 |WSN-V2               |S3-T64V+ | B/I   |  B/I   |2|   X   | |
 |WGN-A2               |CLGD5434 | B/I   |  B/I   |2|   O   |X|
+|WGN-A4               |CLGD5434 | B/I   |  B/I   |4|  o?   |X|
+|WGN-V2               |S3-T64V+ | B/I   |  B/I   |2|   X   | |
 |WAP-2EP              |CLGD5434 | B/I   |  B/I   |2|  x?   |X|
 |WAP-4EP              |CLGD5434 | B/I   |  B/I   |4|  x?   |X|
 |WGP-VG2              |S3-ViRGE | B/I   |  B/I   |2|   ?   | |
@@ -257,7 +265,7 @@ MIDORI
 Q-Vision
 +---------------------+---------+-------+--------+-+-------+-+
 |WinNote98            |CLGD5428 | B/I   | B/I    |1|   ?   |X|
-|WinDuo               |Trio64   | B/I   | B/I    |1|   ?   | |
+|WinDuo               |S3-T64   | B/I   | B/I    |2|   ?   | |
 +---------------------+---------+-------+--------+-+-------+-+
 
 
@@ -273,4 +281,11 @@ Hachinohe
 |HighResoStation(note)|         |       |        | |   ?   | |
 +---------------------+---------+-------+--------+-+-------+-+
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.1 1996/08/14 14:37:02 dawes Exp $ */
+
+Sumitomo Kinzoku
++---------------------+---------+-------+--------+-+-------+-+
+|MGA98-PCI/2          |MGA2     |       |        |2|   X   | |
+|MGA98-PCI/4          |MGA2     |       |        |4|   X   | |
++---------------------+---------+-------+--------+-+-------+-+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.2 1996/09/29 13:45:53 dawes Exp $ */

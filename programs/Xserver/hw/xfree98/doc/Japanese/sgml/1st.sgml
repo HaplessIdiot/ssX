@@ -5,7 +5,7 @@
 <!-- Title information -->
 <title> XFree86 PC98 General Information
 <author> The XFree86 Project Inc. / X98 CORE TEAM
-<date> 1996年 9 月  28日
+<date> 1996年 10 月  8日
 
 
 <sect> はじめに<p>
@@ -87,6 +87,7 @@ JSPUNIX、FreeBSD-users-jp ML(FreeBSD user ML)、FreeBSD kit MLで多くの議論、
 	をくださった方々
 	<ITEM>FreeBSD PC98移植チーム
 	<ITEM>NetBSD PC98 Porting staff
+	<ITEM>エー・アイ・ソフト株式会社
 </itemize>
      　　
 

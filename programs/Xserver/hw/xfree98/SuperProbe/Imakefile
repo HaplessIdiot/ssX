@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/SuperProbe/Imakefile,v 3.8 1996/09/15 11:26:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/SuperProbe/Imakefile,v 3.9 1996/09/25 14:35:00 dawes Exp $
 
 
 
@@ -38,7 +38,8 @@ XCOMM $XConsortium: Imakefile /main/3 1996/01/10 11:05:20 kaleb $
 # define OSModule OS_Os2
   CCOPTIONS = -Zmts
 #endif
-#if defined(NetBSDArchitecture) && OSMajorVersion >= 1 && OSMinorVersion >= 1
+#if defined(NetBSDArchitecture) \
+   && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
   IOPERMDEFINES = -DUSE_I386_IOPL
   SYS_LIBRARIES = -li386
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/VGADriverDoc/Imakefile,v 3.2 1995/12/26 09:01:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/VGADriverDoc/Imakefile,v 3.3 1996/02/04 09:15:49 dawes Exp $
 
 
 
@@ -8,15 +8,15 @@ XCOMM $XConsortium: Imakefile /main/2 1995/12/29 11:20:55 kaleb $
 
 all::
 
+#ifndef DontInstallPC98Version
 #if !HasLinuxDoc
 InstallLinkKitNonExecFile(VGADriver.Doc,$(XF98LINKKITDIR)/VGADriverDoc)
-#ifndef DontInstallPC98Version
 InstallNonExecFile(VGADriver.Doc,$(XFREE86DOCDIR))
-#endif
 #endif
 InstallLinkKitNonExecFile(Imakefile.stub,$(XF98LINKKITDIR)/VGADriverDoc)
 InstallLinkKitNonExecFile(stub_driver.c,$(XF98LINKKITDIR)/VGADriverDoc)
 InstallLinkKitNonExecFile(stub_bank.s,$(XF98LINKKITDIR)/VGADriverDoc)
+#endif
 
 LinkSourceFile(Imakefile.stub,$(XF86SRC)/VGADriverDoc)
 LinkSourceFile(VGADriver.Doc,$(XF86SRC)/VGADriverDoc)

@@ -1,6 +1,6 @@
   XFree86 PC98 Dependent Information
   The XFree86 Project Inc. and X98 CORE TEAM著
-  1996年 9 月  28日
+  1996年 10 月  8日
 
   このドキュメントでは、PC98サーバ固有の事項について解説します。 PC-ATと
   共通の事項については、共通のドキュメントを参照してください。このドキュ
@@ -37,7 +37,7 @@
     ベンダー      チップセット                             サーバ
     ------------- --------------------------------------- ----------------
     NEC/EPSON     EGC(640x400x16)                         XF98_EGC
-    NEC           PEGC(640x480x256)                       XF98_NEC480
+    NEC           PEGC(640x400x256,640x480x256)           XF98_NEC480
     NEC           S3 928(As2等), S3 864(As3等)            XF98_NECS3
     NEC           Cirrus CLGD5428/5430(B-Mate,Xe,CanBe等) XF98_NKVNEC
     EPSON         NKV(486MR,MS,MV,586MV等)                XF98_NKVNEC

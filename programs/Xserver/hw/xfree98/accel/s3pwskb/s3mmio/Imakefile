@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/s3mmio/Imakefile,v 3.4 1996/06/29 14:12:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/s3mmio/Imakefile,v 3.5 1996/08/14 14:36:18 dawes Exp $
 
 
 
@@ -34,7 +34,7 @@ NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
 
-NormalLibraryTarget(s3mmio,$(OBJS))
+NormalLibraryTarget(s3pwskbmmio,$(OBJS))
 
 LinkSourceFile(s3Cursor.c,..)
 LinkSourceFile(s3bcach.c,..)
@@ -62,7 +62,7 @@ LinkSourceFile(s3ss.c,..)
 LinkSourceFile(s3text.c,..)
 LinkSourceFile(s3win.c,..)
 
-InstallLinkKitLibrary(s3mmio,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitLibrary(s3pwskbmmio,$(XF98LINKKITDIR)/drivers98)
 
 #ifndef OS2Architecture
 DependTarget()

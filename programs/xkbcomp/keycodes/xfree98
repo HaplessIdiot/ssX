@@ -96,7 +96,7 @@ default xkb_keycodes "pc98" {
     <SPCE> =  60;
     <XFER> =  61;
 
-    <BRK>  =  96;
+    <BRK>  = 104;
     <PRSC> = 105;
     <FK01> = 106;
     <FK02> = 107;

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:56:20 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.5 1996/08/14 14:39:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.6 1996/09/29 13:48:16 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -180,12 +180,15 @@ ObjectFromSpecialAsmSource(fFillCopy,fFill,-DRROP=GXCopy)
 ObjectFromSpecialAsmSource(fFillOr,fFill,-DRROP=GXOr)
 ObjectFromSpecialAsmSource(fFillXor,fFill,-DRROP=GXXor)
 
-InstallLinkKitNonExecFile(vga.h,$(XF98LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(vgaBank.h,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(vga.h,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitNonExecFile(vgaBank.h,$(XF98LINKKITDIR)/drivers98)
+#ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(vga.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vga256.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vgaFasm.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(vgaHW.c,$(XF98LINKKITDIR)/VGADriverDoc)
+InstallLinkKitNonExecFile(vgaPCI.h,$(XF98LINKKITDIR)/include)
+#endif
 
 #ifndef OS2Architecture
 DependTarget()

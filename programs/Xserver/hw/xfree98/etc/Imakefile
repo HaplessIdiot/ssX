@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.12 1996/09/15 11:37:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/etc/Imakefile,v 3.13 1996/10/03 08:47:37 dawes Exp $
 
 
 
@@ -81,7 +81,8 @@ InstallManPage(kbd_mode,$(MANDIR))
 #if BuildScanpci
        SRCS2 = scanpci.c
 
-#if defined(NetBSDArchitecture) && OSMajorVersion >= 1 && OSMinorVersion >= 1
+#if defined(NetBSDArchitecture) \
+    && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
 DEFINES = -DUSE_I386_IOPL
 SYS_LIBRARIES = -li386
 #endif

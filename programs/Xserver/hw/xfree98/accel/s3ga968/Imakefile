@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/Imakefile,v 3.1 1996/08/14 23:41:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/Imakefile,v 3.2 1996/08/20 12:30:46 dawes Exp $
 
 
 
@@ -46,7 +46,7 @@ NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
 
-NormalLibraryTarget(s3,$(OBJS))
+NormalLibraryTarget(s3ga968,$(OBJS))
 
 MakeSubdirs($(SUBDIRS))
 
@@ -100,10 +100,13 @@ LinkSourceFile(s3ss.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3text.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3win.c,$(XF86SRC)/accel/s3)
 
-InstallLinkKitLibrary(s3,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitLibrary(s3ga968,$(XF98LINKKITDIR)/drivers98)
+#ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(confS3.SHsuf,$(XF98LINKKITDIR))
-InstallLinkKitNonExecFile(s3.h,$(XF98LINKKITDIR)/drivers)
-InstallLinkKitNonExecFile(regs3.h,$(XF98LINKKITDIR)/drivers)
+#endif
+InstallLinkKitNonExecFile(s3.h,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitNonExecFile(regs3.h,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitNonExecFile(newmmio.h,$(XF98LINKKITDIR)/drivers98)
 
 #ifndef OS2Architecture
 DependTarget()
