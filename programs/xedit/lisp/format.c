@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.16 2002/02/10 02:50:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.17 2002/02/12 16:07:54 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -416,10 +416,9 @@ parse_arguments(char *format, FmtArgs *arguments,
     if (!test)
 	*code = NOERROR;
     arguments->command = *ptr++;
-    if (islower(arguments->command)) {
-	tmpcmd = toupper(arguments->command);
-	arguments->command = tmpcmd;
-    }
+    tmpcmd = arguments->command;
+    if (islower(tmpcmd))
+	arguments->command = toupper(tmpcmd);
     ++arguments->offset;
 
     return (ptr);
