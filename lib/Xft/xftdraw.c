@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.18 2002/05/13 19:06:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.19 2002/05/24 05:54:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -586,11 +586,11 @@ XftDrawStringUtf8 (XftDraw	*draw,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = ucs4;
+	glyphs[i++] = XftCharIndex (draw->dpy, public, ucs4);
 	string += l;
 	len -= l;
     }
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, len);
+    XftDrawGlyphs (draw, color, public, x, y, glyphs, i);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
