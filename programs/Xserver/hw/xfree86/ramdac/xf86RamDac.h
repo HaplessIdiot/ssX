@@ -3,6 +3,7 @@
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
 
+#include "colormapst.h"
 #include "xf86Cursor.h"
 
 /* Define unique vendor codes for RAMDAC's */
@@ -28,6 +29,14 @@ typedef struct _RamDacHWRegRec {
 
 typedef struct _RamDacRec {
     CARD32 RamDacType;
+
+    void (*LoadPalette)(
+	ScrnInfoPtr pScrn, 
+	int numColors, 
+	int *indices, 
+	LOCO *colors,
+	VisualPtr pVisual
+    );
 
     unsigned char (*ReadDAC)(
 	ScrnInfoPtr pScrn,
