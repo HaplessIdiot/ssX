@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.20 2002/05/31 04:45:12 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.21 2002/05/31 06:52:46 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -40,7 +40,9 @@ SOXFTREV=2.0
 XFTLIBDIR=XftLibDir
 
 TYPE1DIR=XftType1Dir
+#if HasGcc2 || HasGcc3
 WARNINGS=-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs
+#endif
 INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) $(WARNINGS)
 DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
