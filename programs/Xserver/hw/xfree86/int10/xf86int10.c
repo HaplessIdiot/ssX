@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/xf86int10.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.c,v 1.2 2000/02/08 13:13:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -147,7 +147,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EBX = pciSlotBX(pvp); 
 	}
 #ifdef SHOW_ALL_DEVICES
-	else if ((pvp = xf86findPciDeviceVendor(X86_EDX,X86_ECX,X86_ESI,pvp))
+	else if ((pvp = xf86FindPciDeviceVendor(X86_EDX,X86_ECX,X86_ESI,pvp))
 		 != NULL) {
 	    X86_EAX = (X86_EAX & 0x00FF) | (SUCCESSFUL << 8);
 	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
@@ -172,7 +172,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
 	}
 #ifdef SHOW_ALL_DEVICES
-	else if ((pvp = xf86findPciClass(X86_ECX & 0xFF,
+	else if ((pvp = xf86FindPciClass(X86_ECX & 0xFF,
 					 (X86_ECX & 0xff00) >> 8,
 					 (X86_ECX & 0xffff0000) >> 16,
 					 X86_ESI,pvp))!= NULL) {

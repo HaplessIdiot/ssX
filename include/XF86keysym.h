@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.1 2000/02/09 21:59:55 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.2 2000/02/10 00:38:17 dawes Exp $ */
 
 /*
  * ModeLock (not needed since XKB offers this functionality)
@@ -20,5 +20,6 @@
 #define XF86XK_HomePage		0x1008FF18
 #define XF86XK_Mail		0x1008FF19
 #define XF86XK_Start		0x1008FF1A
+#define XF86XK_Search		0x1008FF1B
 
 

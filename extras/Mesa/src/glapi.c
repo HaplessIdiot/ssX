@@ -1,4 +1,4 @@
-/* $Id: glapi.c,v 1.1 2000/02/08 17:17:14 dawes Exp $ */
+/* $Id: glapi.c,v 1.2 2000/02/10 15:48:26 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -42,9 +42,7 @@
 
 
 
-#include <assert.h>
-#include <stdlib.h>  /* to get NULL */
-#include <string.h>
+#include "glheader.h"
 #include "glapi.h"
 #include "glapinoop.h"
 #include "glapioffsets.h"

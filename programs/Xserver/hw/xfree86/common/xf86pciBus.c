@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.3 2000/01/18 21:23:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.5 2000/02/08 13:13:06 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2562,14 +2562,14 @@ getPciClassFlags(pciConfigPtr *pcrpp)
 }
 
 /*
- * xf86findPciVendorDevice() xf86findPciClass(): These functions
+ * xf86FindPciVendorDevice() xf86FindPciClass(): These functions
  * are ment to be used by the pci bios emulation. Some bioses
  * need to see if there are _other_ chips of the same type around
  * so by setting pvp_exclude one pci device can be explicitely
  * _excluded if required.
  */
 pciVideoPtr
-xf86findPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
+xf86FindPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 			char n, pciVideoPtr pvp_exclude)
 {
     pciVideoPtr pvp, *ppvp;
@@ -2585,7 +2585,7 @@ xf86findPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 }
 
 pciVideoPtr
-xf86findPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
+xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 		 char n, pciVideoPtr pvp_exclude)
 {
     pciVideoPtr pvp, *ppvp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.125 2000/02/08 13:13:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.126 2000/02/08 17:19:19 dawes Exp $ */
 
 /*
  *
@@ -264,7 +264,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ChkConflict)
    SYMFUNC(xf86IsPciDevPresent)
    SYMFUNC(xf86FindScreenForEntity)
-   SYMFUNC(xf86findPciDeviceVendor)
+   SYMFUNC(xf86FindPciDeviceVendor)
+   SYMFUNC(xf86FindPciClass)
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.120 1999/12/03 19:17:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.124 2000/02/08 13:13:03 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -112,9 +112,9 @@ Bool xf86IsPciDevPresent(int bus, int dev, int func);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
 Bool xf86NoSharedMem(int screenIndex);
 resPtr xf86FindIntersectOfLists(resPtr l1, resPtr l2);
-pciVideoPtr xf86findPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
+pciVideoPtr xf86FindPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 				    char n, pciVideoPtr pvp_exclude);
-pciVideoPtr xf86findPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
+pciVideoPtr xf86FindPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
 			     char n, pciVideoPtr pvp_exclude);
 void xf86RegisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
 Bool xf86DeregisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
