@@ -112,6 +112,7 @@ typedef struct _SiS_StStruct
 	UCHAR  VB_StTVFlickerIndex;
 	UCHAR  VB_StTVEdgeIndex;
 	UCHAR  VB_StTVYFilterIndex;
+	UCHAR  St_PDC;
 } SiS_StStruct;
 
 typedef struct _SiS_VBModeStruct
@@ -143,12 +144,13 @@ typedef struct _SiS_ExtStruct
 {
 	UCHAR  Ext_ModeID;
 	USHORT Ext_ModeFlag;
-	USHORT Ext_ModeInfo;
+	UCHAR  Ext_ModeOffset;
 	USHORT Ext_VESAID;
 	UCHAR  Ext_RESINFO;
 	UCHAR  VB_ExtTVFlickerIndex;
 	UCHAR  VB_ExtTVEdgeIndex;
 	UCHAR  VB_ExtTVYFilterIndex;
+	UCHAR  VB_ExtTVYFilterIndexROM661;
 	UCHAR  REFindex;
 } SiS_ExtStruct;
 
@@ -161,6 +163,7 @@ typedef struct _SiS_Ext2Struct
 	UCHAR  ModeID;
 	USHORT XRes;
 	USHORT YRes;
+	UCHAR  Ext_PDC;
 } SiS_Ext2Struct;
 
 typedef struct _SiS_Part2PortTblStruct
@@ -178,12 +181,6 @@ typedef struct _SiS_MCLKDataStruct
 	UCHAR  SR28,SR29,SR2A;
 	USHORT CLOCK;
 } SiS_MCLKDataStruct;
-
-typedef struct _SiS_ECLKDataStruct
-{
-	UCHAR  SR2E,SR2F,SR30;
-	USHORT CLOCK;
-} SiS_ECLKDataStruct;
 
 typedef struct _SiS_VCLKDataStruct
 {
@@ -254,10 +251,11 @@ typedef struct _SiS_Private
 	SISIOADDRESS SiS_VidCapt;
 	SISIOADDRESS SiS_VidPlay;
 	USHORT SiS_IF_DEF_LVDS;
+	USHORT SiS_IF_DEF_CH70xx;
+	USHORT SiS_IF_DEF_CONEX;
 	USHORT SiS_IF_DEF_TRUMPION;
 	USHORT SiS_IF_DEF_DSTN;
 	USHORT SiS_IF_DEF_FSTN;
-	USHORT SiS_IF_DEF_CH70xx;
 	USHORT SiS_IF_DEF_HiVision;
 	USHORT SiS_SysFlags;
 	UCHAR  SiS_VGAINFO;
@@ -279,9 +277,11 @@ typedef struct _SiS_Private
 	UCHAR  SiS_DataBusWidth;
 	USHORT SiS_ModeType;
 	USHORT SiS_VBInfo;
+	USHORT SiS_TVMode;
 	USHORT SiS_LCDResInfo;
 	USHORT SiS_LCDTypeInfo;
 	USHORT SiS_LCDInfo;
+	USHORT SiS_LCDInfo661;
 	USHORT SiS_VBType;
 	USHORT SiS_VBExtInfo;
 	USHORT SiS_HiVision;
@@ -342,7 +342,6 @@ typedef struct _SiS_Private
 	const SiS_CRT1TableStruct   *SiS_CRT1Table;
 	const SiS_MCLKDataStruct    *SiS_MCLKData_0;
 	const SiS_MCLKDataStruct    *SiS_MCLKData_1;
-	const SiS_ECLKDataStruct    *SiS_ECLKData;
 	const SiS_VCLKDataStruct    *SiS_VCLKData;
 	const SiS_VBVCLKDataStruct  *SiS_VBVCLKData;
 	const SiS_StResInfoStruct   *SiS_StResInfo;
@@ -386,6 +385,7 @@ typedef struct _SiS_Private
 	const UCHAR *SiS_PALMPhase2;
 	const UCHAR *SiS_PALNPhase2;
 	const UCHAR *SiS_SpecialPhase;
+	const UCHAR *SiS_SpecialPhaseM;
 	const SiS_LCDDataStruct  *SiS_StLCD1024x768Data;
 	const SiS_LCDDataStruct  *SiS_ExtLCD1024x768Data;
 	const SiS_LCDDataStruct  *SiS_St2LCD1024x768Data;
@@ -639,9 +639,6 @@ typedef struct _SiS_Private
 	USHORT  CModeFlag;
 	USHORT  CModeFlag_CRT1;
 	USHORT  CInfoFlag;
-
-	BOOLEAN SiS_CHPALM;
-	BOOLEAN SiS_CHPALN;
 
 	int	LVDSHL;
 	

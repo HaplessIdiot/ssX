@@ -311,7 +311,7 @@
 
 /* TW: The following registers only exist on the 315 series */
 
-/* TW: Bit 16:24 of Y_U_V buf start address (?) */
+/* TW: Bit 16:24 of Y_U_V buf start address */
 #define  Index_VI_Y_Buf_Start_Over		0x6B
 #define  Index_VI_U_Buf_Start_Over		0x6C
 #define  Index_VI_V_Buf_Start_Over		0x6D
