@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.287 2003/07/17 08:19:26 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.288 2003/08/06 14:04:01 eich Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -237,12 +237,9 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #if XserverStaticFontLib
            FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont) $(FREETYPE2LIB)
 #else
-           FONT = $(LDPRELIB) $(XFONTLIB)
+           FONT = $(LDPRELIB) $(XFONTLIB) $(FREETYPE2LIB)
 #endif
-#if FontLibSharedFreeType
-      SERVERFT2 = $(FREETYPE2LIB)
-#endif
-       FONTLIBS = $(FONT) $(XPFBLIBS) $(SERVERFT2)
+       FONTLIBS = $(FONT) $(XPFBLIBS)
 #if UsbMouseSupport 
 #if !HasLibUsb
             USB = $(XF86OSSRC)/bsd/libusb/LibraryTargetName(usb)
