@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.6 1999/11/26 03:26:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.7 1999/12/05 00:22:56 robin Exp $ */
 /*
  * includes
  */
 
 #include "rendition.h"
 #include "v1kregs.h"
+#include "v1krisc.h"
 #include "vloaduc.h"
 #include "vos.h"
 #include "elf.h"
@@ -50,7 +51,7 @@ static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr);
  */
 int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 {
-  renditionPtr pRendition = RENDITIONPTR(pScreenInfo); 
+  /* renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
 
   int num;
   int sz;
@@ -62,6 +63,9 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 #if DEBUG
   ErrorF("RENDITION: Loading microcode %s\n", file_name); 
 #endif
+
+  /* Stop the RISC if it happends to run */
+  v1k_stop (pScreenInfo);
 
   /* open file and read ELF-header */
   if (-1 == (fd=xf86open(file_name, O_RDONLY))) {
@@ -81,6 +85,7 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   /* read in the program header(s) */
   sz=SW16(ehdr.e_phentsize);
   num=SW16(ehdr.e_phnum);
+
   if (0!=sz && 0!=num) {
 	orig_pphdr=pphdr=(Elf32_Phdr *)xalloc(sz*num);
 	if (!pphdr) {
@@ -160,7 +165,7 @@ void loadSection2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Shdr *shdr)
 
 void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 {
-  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  /*  renditionPtr pRendition = RENDITIONPTR(pScreenInfo); */
   vu8 *data;
   vu32 offset=SW32(phdr->p_offset);
   vu32 size=SW32(phdr->p_filesz);
@@ -206,22 +211,27 @@ static int seek_and_read_hdr(int fd, void *ptr, long int offset, int size,
 static void mmve(ScrnInfoPtr pScreenInfo, vu32 size, vu8 *data, vu32 phys_addr)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-  vu32 out;
+  vu8 memend;
   vu32 *dataout;
   vu8 *vmb=pRendition->board.vmem_base;
 
   /* swap bytes 3<>0, 2<>1 */
+  memend=v_in8(pRendition->board.io_base+MEMENDIAN);
   v_out8(pRendition->board.io_base+MEMENDIAN, MEMENDIAN_END);
 
-  out=phys_addr/4;
   dataout=(vu32 *)data;
 
+  /* If RISC happends to be running, be sure it is stopped */
+  v1k_stop(pScreenInfo);
+
   while (size > 0) {
-    v_write_memory32(vmb, out, *dataout);
-	out+=4;
+    v_write_memory32(vmb, phys_addr, *dataout);
+	phys_addr+=4;
 	dataout++;
 	size-=4;
   }
+
+  v_out8(pRendition->board.io_base+MEMENDIAN, memend);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.11 1999/11/19 13:54:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.12 1999/11/26 03:26:01 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -35,6 +35,15 @@
  */
 
 /*
+ * Activate acceleration code or not.
+ *
+ *         WARNING BUGGY !!!
+ * Yes, you activate it on your own risk.
+ */
+#define USE_ACCEL 0
+
+
+/*
  * includes 
  */
 
@@ -42,6 +51,7 @@
 #include "rendition_options.h"
 
 #include "hwcursor.h"
+#include "xf86int10.h"
 
 #include "vtypes.h"
 #include "vboard.h"
@@ -83,6 +93,8 @@ static ModeStatus renditionValidMode(int, DisplayModePtr, Bool, int);
 static Bool renditionMapMem(ScrnInfoPtr pScreenInfo);
 static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo);
 
+static xf86MonPtr renditionDDC(ScrnInfoPtr pScreenInfo);
+static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo);
 
 
 /* 
@@ -153,10 +165,14 @@ static const char *xaaSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC2",
+    "xf86DoEDID_DDC1",
     NULL
 };
 
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    NULL
+};
 
 #ifdef XFree86LOADER
 
@@ -190,7 +206,8 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
         LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols, 
-			  xaaSymbols, ddcSymbols, NULL);
+			  xaaSymbols, ddcSymbols, int10Symbols,
+			  NULL);
         return (pointer)TRUE;
     }
 
@@ -440,6 +457,17 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (pRendition->pEnt->location.type != BUS_PCI)
 	return FALSE;
 
+    /* Initialize the card through int10 interface if needed */
+    if (xf86LoadSubModule(pScreenInfo, "int10")){
+        xf86Int10InfoPtr pInt=NULL;
+
+        xf86LoaderReqSymLists(int10Symbols, NULL);
+
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "Initializing int10\n");
+        pInt = xf86InitInt10(pRendition->pEnt->index);
+        xf86FreeInt10(pInt);
+    }
+
     /* Find the PCI info for this screen */
     pRendition->PciInfo = xf86GetPciInfoForEntity(pRendition->pEnt->index);
     pRendition->pcitag= pciTag(pRendition->PciInfo->bus,
@@ -585,10 +613,16 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       /****************************************/
       /* Reserv memory and load the microcode */
       /****************************************/
-    RENDITIONAccelPreInit (pScreenInfo);
+#if USE_ACCEL
+    if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
+      RENDITIONAccelPreInit (pScreenInfo);
+    }
+    else ErrorF("RENDITION: Skipping acceleration on users request\n");
+#else
+    ErrorF("RENDITION: Skipping acceleration\n");
+#endif
 
     xf86MarkOptionUsedByName(renditionOptions,"NoAccel");
-    renditionUnmapMem(pScreenInfo);
 
     From = X_PROBED;
     xf86DrvMsg(pScreenInfo->scrnIndex, From, "videoRam: %d kBytes\n", videoRam);
@@ -612,6 +646,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     }
     xf86MarkOptionUsedByName(renditionOptions,"SWCursor");
 
+#if USE_ACCEL
     /* Load XAA if needed */
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) {
       if (!xf86LoadSubModule(pScreenInfo, "xaa")) {
@@ -619,16 +654,25 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       }
       xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
+#endif
 
     /* Load DDC module if needed */
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NO_DDC,0)){
       if (!xf86LoadSubModule(pScreenInfo, "ddc")) {
-	return FALSE;
+	ErrorF ("RENDITION: Loading of DDC library failed, skipping DDC-probe\n");
       }
-      xf86LoaderReqSymLists(ddcSymbols, NULL);
+      else {
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	pScreenInfo->monitor->DDC = renditionDDC(pScreenInfo);
+      }
+    }
+    else {
+      ErrorF ("RENDITION: Skipping DDC probe on users request\n");
     }
 
+    /***********************************************/
     /* ensure vgahw private structure is allocated */
+
     if (!vgaHWGetHWRec(pScreenInfo))
         return FALSE;
 
@@ -709,9 +753,11 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
       ErrorF("RENDITION: Software cursor selected\n");
     }
 
-#if DEBUG
+    renditionUnmapMem(pScreenInfo);
+
+#if USE_ACCEL
     ErrorF("PreInit OK...!!!!\n");
-    xf86sleep(1);
+    xf86sleep(2);
 #endif
 
     return TRUE;        /* Tada! */
@@ -722,12 +768,13 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 static void
 renditionSave(ScrnInfoPtr pScreenInfo)
 {
-#if DEBUG
+#if USE_ACCEL
     ErrorF("Save...!!!!\n");
     xf86sleep(1);
 #endif
-    vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg, VGA_SR_ALL);
-#if DEBUG
+    vgaHWSave(pScreenInfo, &VGAHWPTR(pScreenInfo)->SavedReg,VGA_SR_ALL);
+	
+#if USE_ACCEL
     ErrorF("Save OK...!!!!\n");
     xf86sleep(1);
 #endif
@@ -748,6 +795,7 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
     vgaHWProtect(pScreenInfo, FALSE);
 
     v_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
+
 #if DEBUG
     ErrorF("Restore OK...!!!!\n");
     xf86sleep(1);
@@ -1078,8 +1126,10 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* The actual setup of the driver-specific code          */
     /* has to be after cfb*ScreenInit and before cursor init */
     /*********************************************************/
+#if USE_ACCEL
     if (!xf86ReturnOptValBool(renditionOptions, OPTION_NOACCEL,0)) 
       RENDITIONAccelXAAInit (pScreen);
+#endif
 
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
@@ -1215,7 +1265,7 @@ static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
 
   if (1 /* RENDITIONPTR(pScreenInfo)->board.chip==V1000_DEVICE */){
     /* Some V1000 boards are known to have problems with Write-Combining */
-    /* V2x00 also found to have simmilar problems with memcpy & WC ! */
+    /* V2x00 also found to have similar problems with memcpy & WC ! */
     WriteCombine = 0;
   }
   else{
@@ -1258,4 +1308,51 @@ static Bool renditionUnmapMem(ScrnInfoPtr pScreenInfo)
 #ifdef DEBUG0
     ErrorF("Done\n");
 #endif
+}
+
+static xf86MonPtr renditionDDC (ScrnInfoPtr pScreenInfo)
+{
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  vu16 iob=pRendition->board.io_base;
+  vu32 temp;
+
+  xf86MonPtr MonInfo = NULL;
+  temp = v_in32(iob+CRTCCTL); /* Remember original value */
+
+  /* Enable DDC1 */
+  v_out32(iob+CRTCCTL,(temp|
+		       CRTCCTL_ENABLEDDC|
+		       CRTCCTL_VSYNCENABLE|
+		       CRTCCTL_VIDEOENABLE));
+
+  MonInfo = xf86DoEDID_DDC1(pScreenInfo->scrnIndex,
+			    vgaHWddc1SetSpeed,
+			    renditionDDC1Read );
+
+  v_out32(iob+CRTCCTL,temp); /* return the original values */
+
+  xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+	     "DDC Monitor info: %p\n", MonInfo);
+
+  xf86PrintEDID( MonInfo );
+  xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+	     "end of DDC Monitor info\n\n");
+
+  /* xf86SetDDCproperties(pScreenInfo, MonInfo); */
+  return MonInfo;
+}
+
+static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo)
+{
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  vu16 iob=pRendition->board.io_base;
+  vu32 value = 0;
+
+  /* wait for Vsync */
+  while (!(v_in32(iob+CRTCTEST) & CRTCTEST_NOTVBLANK));
+  while (v_in32(iob+CRTCTEST) & CRTCTEST_NOTVBLANK);
+
+  /* Read the value */
+  value = v_in32(iob+CRTCCTL) & CRTCCTL_DDCDATA;
+  return value;
 }
