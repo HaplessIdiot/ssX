@@ -1,4 +1,6 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 812. Fix MGA driver for big endian and EXTRADEBUG compilation (derived from
+      #6132, Rene Rebe).
  811. Turn off the GetDisplayInfo BIOS call by default and add an option 
       to turn it back on in the i810 driver. This fixes some lockup
       problems found with some Dell BIOS' (Alan Hourihane, Alain Poirier).
@@ -18656,7 +18658,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3148 2004/02/19 22:38:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3149 2004/02/20 00:05:56 alanh Exp $
 
 
 
