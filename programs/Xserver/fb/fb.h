@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.10 2000/02/17 14:16:22 dawes Exp $
+ * $Id: fb.h,v 1.11 2000/02/18 16:23:12 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.9 2000/02/16 17:56:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.10 2000/02/17 14:16:22 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -67,6 +67,14 @@
 /* whether to bother to include 24bpp support */
 #ifndef FBNO24BIT
 #define FB_24BIT
+#endif
+
+/*
+ * 24bpp code doesn't work on BE machines yet; I need something to
+ * test on.
+ */
+#if BITMAP_BIT_ORDER == MSBFirst
+#undef FB_24BIT
 #endif
 
 #define FB_STIP_SHIFT	LOG2_BITMAP_PAD

@@ -1,5 +1,5 @@
 /*
- * $Id: fbglyph.c,v 1.5 2000/02/17 14:16:22 dawes Exp $
+ * $Id: fbglyph.c,v 1.6 2000/02/18 16:23:13 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.4 2000/02/14 19:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.5 2000/02/17 14:16:22 dawes Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"
@@ -315,7 +315,9 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
 	switch (dstBpp) {
 	case 8:	    glyph = fbGlyph8; break;
 	case 16:    glyph = fbGlyph16; break;
+#ifdef FB_24BIT
 	case 24:    glyph = fbGlyph24; break;
+#endif
 	case 32:    glyph = fbGlyph32; break;
 	}
     }

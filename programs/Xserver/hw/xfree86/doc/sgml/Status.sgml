@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.10 2000/02/13 03:39:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.11 2000/02/13 03:45:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -582,8 +582,9 @@ dependencies/limitations, other architectures known to work on
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the SiS <!-- 86C205, 86C215, 86C225, -->
-	5597, 5598, 530, 6326, 630, 300, and 540 is provided by the
-	"sis" driver.
+	<!-- 5597, 5598, --> 530, 620, 6326 is provided by the "sis" driver.
+	The 630, 300, and 540 are also supported, but this code is new and
+	there are some problems with it in this version.
 
 <tag>Summary:</tag>
 	Support for the older (CHECK: are they all older than the

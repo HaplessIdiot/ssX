@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.3 2000/02/08 13:13:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.5 2000/02/15 02:00:13 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -143,8 +143,7 @@ printk(const char *fmt, ...)
 {
     va_list argptr;
     va_start(argptr, fmt);
-    ErrorF(fmt, argptr);
-    fflush(stdout);
+    VErrorF(fmt, argptr);
     va_end(argptr);
 }
 

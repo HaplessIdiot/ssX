@@ -40,7 +40,9 @@
 #include "glxint.h"
 #include "glxproto.h"
 #include "glapitable.h"
+#ifdef NEED_GL_FUNCS_WRAPPED
 #include "indirect.h"
+#endif
 
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */

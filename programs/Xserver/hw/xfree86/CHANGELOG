@@ -1,4 +1,25 @@
-XFree86 3.9.17Za (17 February 2000)
+XFree86 3.9.17Za (18 February 2000)
+3822. Disable the 3DNow assembler code for now, to avoid problems with
+      assemblers that don't recognise the instructions (Brian Paul).
+3821. Fix some problems with the Cards file (#3726,
+      Paulo Cesar Pereira de Andrade).
+3820. Eliminate the double mappings added to the r128 driver work around
+      earlier limitations, and add the fix necessary to make the R128
+      work on an Alpha UP1000 box without hanging the AGP bus during fb
+      rendering (#3720, Keith Packard).
+3819. Fix an int10 crash when the BIOS accessed memory beyond the first
+      8kbytes (#3722, Keith Packard).
+3818. Fix PCI memory regions on dense alpha (#3720, Keith Packard).
+3817. Fix an int10 module build problem on big endian machines (#3719,
+      Kostas Gewrgiou).
+3816. Remove "lib" from the GLcore module name (David Dawes).
+3815. Set HasPoll to NO for Linux to work around a problem that Netscape
+      has when libXt uses poll() instead of select() (#3718, Keith Packard).
+3814. Disable 24bpp fb rendering on big endian machines because it doesn't
+      work yet (#3717, Keith Packard).
+3813. Fix an Xlib bug that causes freed memory to be accessed.  This is
+      exposed by Netscape (#3716, Keith Packard).
+3812. Fix a problem in glxUseXFont() when direct rendering (#3715, Brian Paul).
 3811. A rework of Kevin Martin's Mach64 acceleration.  Only solid fills for
       now (Marc La France).
 3810. ATI Mobility fixes (Marc La France).
@@ -9739,4 +9760,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1016 2000/02/18 00:47:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1017 2000/02/18 12:18:58 tsi Exp $

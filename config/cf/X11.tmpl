@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.57 2000/02/13 06:15:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.58 2000/02/14 18:11:44 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1658,7 +1658,7 @@ ProjectUnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),XBuildLibDir)
            XMUSRC = $(LIBSRC)/Xmu
 #if SharedLibXmu
 #ifndef SharedXmuRev
-#define SharedXmuRev 6.0
+#define SharedXmuRev 6.1
 #endif
 SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 #else

@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIc.c,v 1.4 94/03/29 22:51:34 rws Exp $ */
+/* $XConsortium: imLcIc.c /main/6 1996/10/22 14:24:42 kaleb $ */
 /******************************************************************
 
                 Copyright 1992,1993, 1994 by FUJITSU LIMITED
@@ -26,6 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -52,11 +53,17 @@ _XimLocalDestroyIC(xic)
     XIC	 xic;
 {
     Xic	 ic = (Xic)xic;
+
     if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
-	_XimLocalUnSetFocus(ic);
+	((Xim)ic->core.im)->private.local.current_ic = (XIC)NULL;
     }
-    if(ic->private.local.ic_resources)
+    if (ic->core.focus_window)
+	_XUnregisterFilter(ic->core.im->core.display,
+			ic->core.focus_window, _XimLocalFilter, (XPointer)ic);
+    if(ic->private.local.ic_resources) {
 	Xfree(ic->private.local.ic_resources);
+	ic->private.local.ic_resources = NULL;
+    }
     return;
 }
 
@@ -171,6 +178,7 @@ _XimLocalCreateIC(im, values)
 Set_Error :
     if (ic->private.local.ic_resources) {
 	Xfree(ic->private.local.ic_resources);
+	ic->private.local.ic_resources = NULL;
     }
     Xfree(ic);
     return((XIC)NULL);
