@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.26 2002/02/15 21:21:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.27 2002/03/14 20:35:53 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1641,8 +1641,9 @@ static void LoadStateExt
 
     if(!chip->flatPanel) {
        chip->PRAMDAC0[0x00000508/4] = state->vpll;
-       chip->PRAMDAC0[0x00000520/4] = state->vpll2;
        chip->PRAMDAC0[0x0000050C/4] = state->pllsel;
+       if(chip->twoHeads)
+          chip->PRAMDAC0[0x00000520/4] = state->vpll2;
     } else {
        chip->PRAMDAC[0x00000848/4]  = state->scale;
     }
@@ -2038,7 +2039,6 @@ int RivaGetConfig
         default:
             return (-1);
     }
-    chip->flatPanel = pNv->FlatPanel;
     chip->Chipset = pNv->Chipset;
     /*
      * Fill in FIFO pointers.

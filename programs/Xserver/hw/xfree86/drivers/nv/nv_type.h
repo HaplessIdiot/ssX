@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.31 2002/02/05 05:24:18 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.32 2002/02/19 23:36:11 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -32,7 +32,6 @@ typedef struct {
     void        (*SetCursorColors)(ScrnInfoPtr, int, int);
     long        maxPixelClock;
     void        (*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
-    void        (*PreInit)(ScrnInfoPtr);
     void        (*Save)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     void        (*Restore)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     Bool        (*ModeInit)(ScrnInfoPtr, DisplayModePtr);
@@ -80,7 +79,6 @@ typedef struct {
     int                 numDGAModes;
     Bool                DGAactive;
     int                 DGAViewportStatus;
-    void                (*PreInit)(ScrnInfoPtr pScrn);
     void                (*Save)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     void                (*Restore)(ScrnInfoPtr, vgaRegPtr, NVRegPtr, Bool);
     Bool                (*ModeInit)(ScrnInfoPtr, DisplayModePtr);
@@ -113,7 +111,7 @@ typedef struct {
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     XF86VideoAdaptorPtr	overlayAdaptor;
     int			videoKey;
-    Bool		FlatPanel;
+    int			FlatPanel;
     Bool		SecondCRTC;
     int			forceCRTC;
     OptionInfoPtr	Options;

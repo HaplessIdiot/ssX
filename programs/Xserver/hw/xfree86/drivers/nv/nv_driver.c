@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.84 2002/02/06 00:46:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.85 2002/02/19 23:36:11 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -343,7 +343,7 @@ static int pix24bpp = 0;
  */
 static NVRamdacRec DacInit = {
         FALSE, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
-        0, NULL, NULL, NULL, NULL, NULL
+        0, NULL, NULL, NULL, NULL
 }; 
 
 
@@ -781,7 +781,7 @@ nvDoDDCVBE(ScrnInfoPtr pScrn)
  
 
 /* Internally used */
-static xf86MonPtr
+xf86MonPtr
 NVdoDDC(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
@@ -1139,10 +1139,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
     }
 
-    /* Doesn't work */
-    if (xf86ReturnOptValBool(pNv->Options, OPTION_FLAT_PANEL, FALSE)) {
-	pNv->FlatPanel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "using flat panel\n");
+    if (xf86GetOptValBool(pNv->Options, OPTION_FLAT_PANEL, &(pNv->FlatPanel))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "forcing %s usage\n",
+                   pNv->FlatPanel ? "DFP" : "CRTC");
+    } else {
+        pNv->FlatPanel = -1;   /* autodetect later */
     }
 
     if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER, 
@@ -1243,12 +1244,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /*
-     * fill riva structure etc.
-     */
-    (*pNv->PreInit)(pScrn);
-    
-
-    /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
      */
@@ -1268,42 +1263,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	
     pNv->FbMapSize = pScrn->videoRam * 1024;
 
-#if !defined(__powerpc__)
-    /* Read and print the Monitor DDC info */
-    pScrn->monitor->DDC = NVdoDDC(pScrn);
-#endif
-
-#if 0
-    /*
-     * This code was for testing. It will be removed as soon
-     * as this is integrated into the common level.
-     */
-    if ((!pScrn->monitor->nHsync || !pScrn->monitor->nVrefresh)
- 	&& pScrn->monitor->DDC) {
- 	int i;
- 	int h = (!pScrn->monitor->nHsync) ? 0 : -1;
- 	int v = (!pScrn->monitor->nVrefresh) ? 0 : -1;
- 	xf86MonPtr pMon = (xf86MonPtr)pScrn->monitor->DDC;
- 	for (i = 0; i < DET_TIMINGS; i++) {
- 	    if (pMon->det_mon[i].type == DS_RANGES) {
- 		if (h != -1) {
- 		    pScrn->monitor->hsync[h].lo
- 			= pMon->det_mon[i].section.ranges.min_h;
- 		    pScrn->monitor->hsync[h++].hi
- 			= pMon->det_mon[i].section.ranges.max_h;
- 		}
- 		if (v != -1) {
- 		    pScrn->monitor->vrefresh[v].lo
- 			= pMon->det_mon[i].section.ranges.min_v;
- 		    pScrn->monitor->vrefresh[v++].hi
- 			= pMon->det_mon[i].section.ranges.max_v;
- 		}
- 	    }
- 	}
- 	if (h != -1) pScrn->monitor->nHsync = h;
- 	if (v != -1) pScrn->monitor->nVrefresh = v;
-     }     
-#endif
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
      * here.
@@ -1355,7 +1314,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
        clockRanges->interlaceAllowed = FALSE;
     clockRanges->doubleScanAllowed = TRUE;
 
-    if(pNv->FlatPanel) {
+    if(pNv->FlatPanel == 1) {
        clockRanges->interlaceAllowed = FALSE;
        clockRanges->doubleScanAllowed = FALSE;
     }
