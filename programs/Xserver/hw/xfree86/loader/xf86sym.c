@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.216 2002/10/08 22:14:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.217tsi Exp $ */
 
 /*
  *
@@ -99,20 +99,34 @@ extern void* __remqu(long, long);
 #endif
 
 #if defined(__GNUC__)
-extern long __divdf3(long, long) __attribute__ ((weak));
-extern long __divdi3(long, long) __attribute__ ((weak));
-extern long __divsf3(long, long) __attribute__ ((weak));
-extern long __divsi3(long, long) __attribute__ ((weak));
-extern long __moddi3(long, long) __attribute__ ((weak));
-extern long __modsi3(long, long) __attribute__ ((weak));
-extern long __muldf3(long, long) __attribute__ ((weak));
-extern long __muldi3(long, long) __attribute__ ((weak));
-extern long __mulsf3(long, long) __attribute__ ((weak));
-extern long __mulsi3(long, long) __attribute__ ((weak));
-extern long __udivdi3(long, long) __attribute__ ((weak));
-extern long __udivsi3(long, long) __attribute__ ((weak));
-extern long __umoddi3(long, long) __attribute__ ((weak));
-extern long __umodsi3(long, long) __attribute__ ((weak));
+extern long __divdf3(long, long);
+extern long __divdi3(long, long);
+extern long __divsf3(long, long);
+extern long __divsi3(long, long);
+extern long __moddi3(long, long);
+extern long __modsi3(long, long);
+extern long __muldf3(long, long);
+extern long __muldi3(long, long);
+extern long __mulsf3(long, long);
+extern long __mulsi3(long, long);
+extern long __udivdi3(long, long);
+extern long __udivsi3(long, long);
+extern long __umoddi3(long, long);
+extern long __umodsi3(long, long);
+#pragma weak __divdf3
+#pragma weak __divdi3
+#pragma weak __divsf3
+#pragma weak __divsi3
+#pragma weak __moddi3
+#pragma weak __modsi3
+#pragma weak __muldf3
+#pragma weak __muldi3
+#pragma weak __mulsf3
+#pragma weak __mulsi3
+#pragma weak __udivdi3
+#pragma weak __udivsi3
+#pragma weak __umoddi3
+#pragma weak __umodsi3
 #endif
 
 #if defined(__arm__) && defined(__linux__)
