@@ -25,8 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.11 2000/02/12
-23:07:55 dawes Exp $ */
+/* $XFree86$ */
 
 #ifndef _SIS_H
 #define _SIS_H_
