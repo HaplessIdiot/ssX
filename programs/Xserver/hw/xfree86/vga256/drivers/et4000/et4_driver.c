@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.11 1995/05/27 03:16:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.12 1995/06/21 11:55:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -595,7 +595,7 @@ ET4000Save(save)
    * we need this here , cause we MUST disable the ROM SYNC feature
    */
   outb(vgaIOBase + 4, 0x34); temp1 = inb(vgaIOBase + 5);
-  outb(vgaIOBase + 5, temp1 & 0x1F);
+  outb(vgaIOBase + 5, temp1 & 0x0F);
   temp2 = inb(0x3CD); outb(0x3CD, 0x00); /* segment select */
 
   save = (vgaET4000Ptr)vgaHWSave((vgaHWPtr)save, sizeof(vgaET4000Rec));

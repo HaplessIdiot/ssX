@@ -1,4 +1,5 @@
 XFree86 3.1.1Bf (27 June 1995)
+168. Another stab at the ET4000/W32p mouse droppings fix (Glenn Lai).
 167. Back out some LBX fixes that won't be in fix-12.
 
 XFree86 3.1.1Be (25 June 1995)

@@ -1,6 +1,6 @@
 /* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.10 1995/06/14 07:34:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.11 1995/06/21 11:52:45 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -320,7 +320,21 @@ static void *
 ET4000W32Save(mode)
     DisplayModePtr mode;
 {
-    return ET4000.ChipSave(mode);
+    static BOOL first_time = TRUE;
+    static unsigned char fix_626_1995;
+    void *tmp;
+
+    if (first_time)
+    {
+	first_time = FALSE;
+	outb(vgaIOBase + 4, 0x34); fix_626_1995 = inb(vgaIOBase + 5);
+    }
+
+    tmp = ET4000.ChipSave(mode);
+    outb(vgaIOBase + 4, 0x34);
+    outb(vgaIOBase + 5, fix_626_1995);
+
+    return tmp;
 }
 
 
