@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.8 2001/08/31 19:00:02 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.9 2001/10/28 03:34:28 tsi Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -738,7 +738,8 @@ static int
 C_Parse2(C_Parser *parser)
 {
     int ch = C_Parse3(parser);
-    Bool dot = False, E = False, U = False, L = False, sign = False,
+    int L = 0;
+    Bool dot = False, E = False, U = False, F = False, sign = False,
 	octal = False, real = False, hexa = False, first = True, did_get = False;
 
     for (;;) {
@@ -750,7 +751,7 @@ C_Parse2(C_Parser *parser)
 		sign = True;
 		break;
 	    case '.':
-		if (dot || E || L || U || hexa)
+		if (dot || E || L || U || F || hexa)
 		    return (C_Parse2Fail(parser));
 		if (first && !isdigit(C_Peek(parser)))
 		    return ('.');
@@ -765,14 +766,20 @@ C_Parse2(C_Parser *parser)
 		    E = real = True;
 		break;
 	    case 'a': case 'A': case 'b': case 'B': case 'c': case 'C':
-	    case 'd': case 'D': case 'f': case 'F':
+	    case 'd': case 'D':
 		if (dot || E || !hexa)
 		    return (C_Parse2Fail(parser));
 		break;
 	    case 'l': case 'L':
-		if (L)
+		if (L > 1)
 		    return (C_Parse2Fail(parser));
-		L = True;
+		++L;
+		break;
+	    case 'f': case 'F':
+		if (F)
+		    return (C_Parse2Fail(parser));
+		if (!hexa)
+		    F = real = True;
 		break;
 	    case 'u': case 'U':
 		if (U || real)
