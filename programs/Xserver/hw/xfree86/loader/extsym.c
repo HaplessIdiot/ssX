@@ -41,6 +41,11 @@ extern int PanoramiXNumScreens;
 extern PanoramiXData *panoramiXdataPtr;
 extern unsigned long XRT_WINDOW;
 extern unsigned long XRT_PIXMAP;
+extern unsigned long XRT_GC;
+extern unsigned long XRT_COLORMAP;
+extern unsigned long XRC_DRAWABLE;
+extern Bool XineramaRegisterConnectionBlockCallback(void (*func)(void));
+extern int XineramaDeleteResource(pointer, XID);
 #endif
 
 LOOKUP extLookupTab[] = {
@@ -50,11 +55,16 @@ LOOKUP extLookupTab[] = {
  SYMVAR(ShmSegType)
 
 #ifdef PANORAMIX
+ SYMFUNC(XineramaRegisterConnectionBlockCallback)
+ SYMFUNC(XineramaDeleteResource)
  SYMVAR(noPanoramiXExtension)
  SYMVAR(PanoramiXNumScreens)
  SYMVAR(panoramiXdataPtr)
  SYMVAR(XRT_WINDOW)
  SYMVAR(XRT_PIXMAP)
+ SYMVAR(XRT_GC)
+ SYMVAR(XRT_COLORMAP)
+ SYMVAR(XRC_DRAWABLE)
 #endif
 
  { 0, 0 },
