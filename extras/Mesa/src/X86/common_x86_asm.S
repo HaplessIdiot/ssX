@@ -32,7 +32,7 @@
  *
  * Cleaned up and simplified by Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.6 2001/01/17 12:50:11 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.7 2001/02/19 22:19:08 dawes Exp $ */
 
 #include "assyntax.h"
 #include "common_x86_features.h"
@@ -206,5 +206,5 @@ GLNAME( gl_test_os_katmai_exception_support ):
 
 	LEAVE
 	RET
-#endif
 
+#endif

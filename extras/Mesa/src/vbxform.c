@@ -762,7 +762,7 @@ static void fixup_primitives( struct vertex_buffer *VB, struct immediate *IM )
    if (err) {
       /* Occurred somewhere inside the vb.  Don't know/care where/why.
        */
-      gl_error( ctx, GL_INVALID_OPERATION, "begin/end");
+      gl_error( ctx, GL_INVALID_OPERATION, "glBegin/glEnd");
    }
 
    interesting = transition | VERT_END_VB;

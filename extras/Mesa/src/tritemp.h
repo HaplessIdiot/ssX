@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4.1
  * 
- * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -97,6 +97,7 @@
    GLfloat oneOverArea;
    int vMin, vMid, vMax;       /* vertex indexes:  Y(vMin)<=Y(vMid)<=Y(vMax) */
    float bf = ctx->backface_sign;
+   GLboolean tiny;
 
    /* find the order of the 3 vertices along the Y axis */
    {
@@ -153,10 +154,14 @@
          return;
 
       /* check for very tiny triangle */
-      if (area * area < 0.0025F)  /* square it to ensure positive value */
+      if (area * area < 0.0025F) {  /* square it to ensure positive value */
          oneOverArea = 1.0F / 0.0025F;  /* a close-enough value */
-      else
+         tiny = GL_TRUE;
+      }
+      else {
          oneOverArea = 1.0F / area;
+         tiny = GL_FALSE;
+      }
    }
 
 #ifndef DO_OCCLUSION_TEST
@@ -309,26 +314,37 @@
       }
 #endif
 #ifdef INTERP_RGB
-      {
+      if (tiny) {
+         /* This is kind of a hack to eliminate RGB color over/underflow
+          * problems when rendering very tiny triangles.  We're not doing
+          * anything with alpha or specular color at this time.
+          */
+         drdx = drdy = 0.0;  fdrdx = 0;
+         dgdx = dgdy = 0.0;  fdgdx = 0;
+         dbdx = dbdy = 0.0;  fdbdx = 0;
+      }
+      else {
          GLfloat eMaj_dr, eBot_dr;
-         eMaj_dr = (GLint) VB->ColorPtr->data[vMax][0] - (GLint) VB->ColorPtr->data[vMin][0];
-         eBot_dr = (GLint) VB->ColorPtr->data[vMid][0] - (GLint) VB->ColorPtr->data[vMin][0];
+         GLfloat eMaj_dg, eBot_dg;
+         GLfloat eMaj_db, eBot_db;
+         eMaj_dr = (GLint) VB->ColorPtr->data[vMax][0]
+                 - (GLint) VB->ColorPtr->data[vMin][0];
+         eBot_dr = (GLint) VB->ColorPtr->data[vMid][0]
+                 - (GLint) VB->ColorPtr->data[vMin][0];
          drdx = oneOverArea * (eMaj_dr * eBot.dy - eMaj.dy * eBot_dr);
          fdrdx = SignedFloatToFixed(drdx);
          drdy = oneOverArea * (eMaj.dx * eBot_dr - eMaj_dr * eBot.dx);
-      }
-      {
-         GLfloat eMaj_dg, eBot_dg;
-         eMaj_dg = (GLint) VB->ColorPtr->data[vMax][1] - (GLint) VB->ColorPtr->data[vMin][1];
-	 eBot_dg = (GLint) VB->ColorPtr->data[vMid][1] - (GLint) VB->ColorPtr->data[vMin][1];
+         eMaj_dg = (GLint) VB->ColorPtr->data[vMax][1]
+                 - (GLint) VB->ColorPtr->data[vMin][1];
+	 eBot_dg = (GLint) VB->ColorPtr->data[vMid][1]
+                 - (GLint) VB->ColorPtr->data[vMin][1];
          dgdx = oneOverArea * (eMaj_dg * eBot.dy - eMaj.dy * eBot_dg);
          fdgdx = SignedFloatToFixed(dgdx);
          dgdy = oneOverArea * (eMaj.dx * eBot_dg - eMaj_dg * eBot.dx);
-      }
-      {
-         GLfloat eMaj_db, eBot_db;
-         eMaj_db = (GLint) VB->ColorPtr->data[vMax][2] - (GLint) VB->ColorPtr->data[vMin][2];
-         eBot_db = (GLint) VB->ColorPtr->data[vMid][2] - (GLint) VB->ColorPtr->data[vMin][2];
+         eMaj_db = (GLint) VB->ColorPtr->data[vMax][2]
+                 - (GLint) VB->ColorPtr->data[vMin][2];
+         eBot_db = (GLint) VB->ColorPtr->data[vMid][2]
+                 - (GLint) VB->ColorPtr->data[vMin][2];
          dbdx = oneOverArea * (eMaj_db * eBot.dy - eMaj.dy * eBot_db);
          fdbdx = SignedFloatToFixed(dbdx);
 	 dbdy = oneOverArea * (eMaj.dx * eBot_db - eMaj_db * eBot.dx);

@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.4
+ * Version:  3.4.1
  *
- * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -79,41 +79,42 @@ typedef void (*build_f_func)( GLfloat *f,
  *     gains to texture generation, but it is still necessary to cope
  *     with the two different formats.
  */
+#define IDX              0
 #define TAG(x)           x
 #define FIRST_NORMAL     normals->start
+#define CUR_NORMAL       (void) normal
 #define NEXT_NORMAL      STRIDE_F(normal, normals->stride)
+#define CHECK            
 #define LOCAL_VARS
-#define CHECK
-#define IDX              0
 #include "texgen_tmp.h"
 
 
+#define IDX              2
 #define TAG(x)           x##_compacted
 #define FIRST_NORMAL     normals->start
-#define NEXT_NORMAL      ((flags[i]&VERT_NORM) ? (normal=first_normal[i]) : (normal))
-#define CHECK
-#define IDX              2
-#define LOCAL_VARS        \
-   GLfloat (*first_normal)[3] = (GLfloat (*)[3]) FIRST_NORMAL;
-
+#define CUR_NORMAL       ((flags[i]&VERT_NORM) ? normal=normal_ptr : normal)
+#define NEXT_NORMAL      STRIDE_F(normal_ptr, normals->stride)
+#define CHECK            
+#define LOCAL_VARS       const GLfloat *normal_ptr = FIRST_NORMAL;
 #include "texgen_tmp.h"
 
+
+#define IDX              1
 #define TAG(x)           x##_masked
 #define FIRST_NORMAL     normals->start
+#define CUR_NORMAL       (void) normal
 #define NEXT_NORMAL      STRIDE_F(normal, normals->stride)
-#define LOCAL_VARS
 #define CHECK            if (cullmask[i])
-#define IDX              1
+#define LOCAL_VARS       
 #include "texgen_tmp.h"
 
+#define IDX              3
 #define TAG(x)           x##_compacted_masked
 #define FIRST_NORMAL     normals->start
-#define NEXT_NORMAL      ((flags[i]&VERT_NORM) ? normal=first_normal[i] : 0)
+#define CUR_NORMAL       ((flags[i]&VERT_NORM) ? normal=normal_ptr : normal)
+#define NEXT_NORMAL      STRIDE_F(normal_ptr, normals->stride)
 #define CHECK            if (cullmask[i])
-#define IDX              3
-#define LOCAL_VARS       \
-   GLfloat (*first_normal)[3] = (GLfloat (*)[3]) FIRST_NORMAL;
-
+#define LOCAL_VARS       const GLfloat *normal_ptr = FIRST_NORMAL;
 #include "texgen_tmp.h"
 
 
@@ -2216,7 +2217,7 @@ _mesa_texture_combine(const GLcontext *ctx,
                rgba[i][BCOMP] = (GLubyte) MIN2(b, 255);
             }
          }
-         break;
+	 break;
       case GL_DOT3_RGB_EXT:
       case GL_DOT3_RGBA_EXT:
          {
@@ -2228,12 +2229,12 @@ _mesa_texture_combine(const GLcontext *ctx,
 	     */
             RGBshift = 6;
             for (i = 0; i < n; i++) {
-               GLint dot = (S_PROD((GLint)arg0[i][RCOMP] - 128,
-				   (GLint)arg1[i][RCOMP] - 128) +
-			    S_PROD((GLint)arg0[i][GCOMP] - 128,
-				   (GLint)arg1[i][GCOMP] - 128) +
-			    S_PROD((GLint)arg0[i][BCOMP] - 128,
-				   (GLint)arg1[i][BCOMP] - 128)) >> RGBshift;
+               GLint dot = (S_PROD((GLint) arg0[i][RCOMP] - 128,
+                                   (GLint) arg1[i][RCOMP] - 128) +
+                            S_PROD((GLint) arg0[i][GCOMP] - 128,
+                                   (GLint) arg1[i][GCOMP] - 128) +
+                            S_PROD((GLint) arg0[i][BCOMP] - 128,
+                                   (GLint) arg1[i][BCOMP] - 128)) >> RGBshift;
                rgba[i][RCOMP] = (GLubyte) CLAMP(dot, 0, 255);
                rgba[i][GCOMP] = (GLubyte) CLAMP(dot, 0, 255);
                rgba[i][BCOMP] = (GLubyte) CLAMP(dot, 0, 255);

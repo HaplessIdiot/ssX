@@ -489,7 +489,10 @@ OSMesaGetDepthBuffer( OSMesaContext c, GLint *width, GLint *height,
    else {
       *width = c->gl_buffer->Width;
       *height = c->gl_buffer->Height;
-      *bytesPerValue = sizeof(GLdepth);
+      if (c->gl_visual->DepthBits <= 16)
+         *bytesPerValue = sizeof(GLushort);
+      else
+         *bytesPerValue = sizeof(GLuint);
       *buffer = c->gl_buffer->DepthBuffer;
       return GL_TRUE;
    }

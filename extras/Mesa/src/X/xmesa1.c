@@ -2513,7 +2513,7 @@ const char *XMesaGetString( XMesaContext c, int name )
 {
    (void) c;
    if (name==XMESA_VERSION) {
-      return "3.4";
+      return "3.4.1";
    }
    else if (name==XMESA_EXTENSIONS) {
       return "";
