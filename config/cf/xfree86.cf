@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.369 2001/07/24 08:32:59 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.370 2001/08/06 20:51:00 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -136,7 +136,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #ifndef XInputDrivers
 #define XInputDrivers		mouse digitaledge dynapro elographics \
 				microtouch mutouch spaceorb summa \
-				wacom void citron /* magictouch */
+				wacom calcomp void citron /* magictouch */
 #endif
 
 /* <linux/input.h> support mainly for USB support */

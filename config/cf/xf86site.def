@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.173 2001/04/05 19:29:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.174 2001/06/14 21:45:34 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -469,7 +469,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.173 2001/04/05 19:29:36 dawes Exp 
  *
 #define XInputDrivers		mouse digitaledge dynapro elographics \
 				microtouch mutouch spaceorb summa \
-				wacom void citron
+				wacom calcomp void citron
  */
 
 /*
