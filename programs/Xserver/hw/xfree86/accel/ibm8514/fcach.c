@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514fcac.c,v 1.1 94/03/28 21:03:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fcac.c,v 3.1 1994/07/15 06:57:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fcach.c,v 3.2 1994/09/07 15:48:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -32,7 +32,7 @@
 #include	"xf86bcache.h"
 #include	"xf86fcache.h"
 #include	"xf86text.h"
-#include	"ibm8514cach.h"
+#include	"8514cach.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

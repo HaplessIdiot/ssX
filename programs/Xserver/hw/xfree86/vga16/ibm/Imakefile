@@ -1,11 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:34:17 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/Imakefile,v 3.0 1994/05/04 15:03:02 dawes Exp $
 #include <Server.tmpl>
 
 SRCS =	ppcArea.c ppcBitmap.c ppcBStore.c \
 	ppcClip.c ppcCpArea.c ppcCReduce.c \
-	ppcCurs.c ppcDepth.c ppcFillRct.c ppcWindowFS.c \
-	ppcPixmapFS.c ppcGC.c ppcGetSp.c \
+	ppcCurs.c ppcDepth.c ppcFillRct.c ppcWinFS.c \
+	ppcPixFS.c ppcGC.c ppcGetSp.c \
 	ppcImg.c ppcPixmap.c ppcPntWin.c \
 	ppcPolyPnt.c ppcPolyRec.c ppcPushPxl.c ppcQuery.c ppcRot.c \
 	ppcRslvC.c ppcSetSp.c ppcWindow.c emulOpStip.c \
@@ -18,8 +18,8 @@ SRCS =	ppcArea.c ppcBitmap.c ppcBStore.c \
 
 OBJS =	ppcArea.o ppcBitmap.o ppcBStore.o \
 	ppcClip.o ppcCpArea.o ppcCReduce.o \
-	ppcCurs.o ppcDepth.o ppcFillRct.o ppcWindowFS.o \
-	ppcPixmapFS.o ppcGC.o ppcGetSp.o \
+	ppcCurs.o ppcDepth.o ppcFillRct.o ppcWinFS.o \
+	ppcPixFS.o ppcGC.o ppcGetSp.o \
 	ppcImg.o ppcPixmap.o ppcPntWin.o \
 	ppcPolyPnt.o ppcPolyRec.o ppcPushPxl.o ppcQuery.o ppcRot.o \
 	ppcRslvC.o ppcSetSp.o ppcWindow.o emulOpStip.o \

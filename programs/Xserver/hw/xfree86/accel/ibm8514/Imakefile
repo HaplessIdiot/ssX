@@ -1,24 +1,24 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:02:48 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/Imakefile,v 3.0 1994/08/01 12:09:34 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = 	ibm8514.c ibm8514cmap.c ibm8514gc.c ibm8514fs.c ibm8514ss.c \
-	ibm8514gs.c ibm8514win.c ibm8514init.c ibm8514im.c ibm8514bsto.c \
-	ibm8514scri.c ibm8514blt.c ibm8514plyp.c \
-	ibm8514line.c ibm8514seg.c ibm8514frec.c ibm8514text.c \
-	ibm8514font.c ibm8514fcac.c \
-	ibm8514dsln.c ibm8514dssg.c ibm8514ddln.c ibm8514ddsg.c \
-	ibm8514imwr.s ibm8514imrd.s ibm8514imfl.s ibm8514imst.s \
-	ibm8514gtim.c ibm8514fc.c ibm8514bc.c
+SRCS = 	ibm8514.c cmap.c gc.c fs.c ss.c \
+	gs.c win.c init.c im.c bstor.c \
+	scrin.c blt.c plypt.c \
+	line.c seg.c frect.c text.c \
+	font.c fcach.c \
+	dsline.c dsseg.c ddline.c ddseg.c \
+	imwrite.s imread.s imfill.s imstip.s \
+	gtimg.c fc.c bcach.c
 
-OBJS = 	ibm8514.o ibm8514cmap.o ibm8514gc.o ibm8514fs.o ibm8514ss.o \
-	ibm8514gs.o ibm8514win.o ibm8514init.o ibm8514im.o ibm8514bsto.o \
-	ibm8514scri.o ibm8514blt.o ibm8514plyp.o \
-	ibm8514line.o ibm8514seg.o ibm8514frec.o ibm8514text.o \
-	ibm8514font.o ibm8514fcac.o \
-	ibm8514dsln.o ibm8514dssg.o ibm8514ddln.o ibm8514ddsg.o \
-	ibm8514imwr.o ibm8514imrd.o ibm8514imfl.o ibm8514imst.o \
-	ibm8514gtim.o ibm8514fc.o ibm8514bc.o
+OBJS = 	ibm8514.o cmap.o gc.o fs.o ss.o \
+	gs.o win.o init.o im.o bstor.o \
+	scrin.o blt.o plypt.o \
+	line.o seg.o frect.o text.o \
+	font.o fcach.o \
+	dsline.o dsseg.o ddline.o ddseg.o \
+	imwrite.o imread.o imfill.o imstip.o \
+	gtimg.o fc.o bcach.o
 
 DEFINES=-DPSZ=8
 
@@ -34,7 +34,7 @@ NormalLibraryTarget(8514,$(OBJS))
 
 InstallLinkKitLibrary(8514,$(LINKKITDIR)/drivers)
 
-ObjectFromSpecialSource(ibm8514ddln,ibm8514dsln,-DI8514DoubleDash)
-ObjectFromSpecialSource(ibm8514ddsg,ibm8514dssg,-DI8514DoubleDash)
+ObjectFromSpecialSource(ddline,dsline,-DI8514DoubleDash)
+ObjectFromSpecialSource(ddseg,dsseg,-DI8514DoubleDash)
 
 DependTarget()

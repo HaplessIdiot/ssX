@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514im.c,v 1.1 94/03/28 21:04:41 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514im.c,v 3.2 1994/11/26 12:40:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.3 1994/12/10 02:07:35 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -27,7 +27,7 @@
 
 #include "os.h"
 #include "reg8514.h"
-#include "ibm8514im.h"
+#include "8514im.h"
 #include "ibm8514.h"
 
 #define ASM_IMAGE
