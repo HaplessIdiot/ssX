@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.7 1998/07/25 05:57:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.8 2001/06/30 22:41:43 tsi Exp $
 
 /*
  * This is for SCO Open Server 5.0.6A or later.
@@ -29,6 +29,11 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.7 1998/07/25 05:57:16 dawes Exp $
  * Note 2: We also define _SVID3, as this seems to enable more Streams
  * based options which are closer to the "desired" state for X11. A by-
  * product of this is that we get better signals too.
+ *
+ * Note 3: We fool Xfree into thinking we have NCURSES. Thats becuase the
+ * system curses is close enough for Xfree86's purposes. Actually xf86cfg
+ * is poorly constructed, it should not depend on the NCURSES package but
+ * rather on a "capable curses", of which NCURSES is just one.
  */
 
 #define StandardDefines         -Dsco -DSCO -DSYSV -Di386 -DSCO325 -DFD_SETSIZE=256 -D_NO_STATIC -DMAXPATHLEN=1024
@@ -45,6 +50,11 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.7 1998/07/25 05:57:16 dawes Exp $
 # define DefaultCDebugFlags     -O
 # define OptimizedCDebugFlags   -O
 #endif
+
+#define	HasNCurses		YES
+#define NCursesLibName		-lcurses
+
+#define LogDirectory		/var/adm
 
 #ifndef PexDynamicModule
 #define PexDynamicModule        NO
@@ -109,7 +119,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.7 1998/07/25 05:57:16 dawes Exp $
 #define MakeCmd	                make
 #define YaccCmd                 yacc
 
-#define DefaultUserPath         /bin:/usr/bin:$(BINDIR):/usr/bin/X11:/usr/local/bin:/etc
+#define DefaultUserPath         /bin:/usr/bin:$(BINDIR):/usr/bin/X11:/usr/gnu/bin:/usr/local/bin:/etc
 #define DefaultSystemPath       /etc:/bin:/usr/bin:$(BINDIR):/usr/bin/X11
 
 #define ConnectionFlags         -DLOCALCONN -DTCPCONN -DUNIXCONN 
