@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.21 2000/06/06 18:07:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.23 2000/06/23 18:25:58 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -445,6 +445,10 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     OUTB(0x3CE, MiscIntContReg);
     pReg->tridentRegs3CE[MiscIntContReg] = INB(0x3CF) | 0x04;
+
+    /* Fix hashing problem in > 8bpp on 9320 chipset */
+    if (pTrident->Chipset == CYBER9320 && pScrn->bitsPerPixel > 8) 
+    	pReg->tridentRegs3CE[MiscIntContReg] &= ~0x80;
 
     OUTB(vgaIOBase+ 4, PCIReg);
     if (IsPciCard && UseMMIO)
