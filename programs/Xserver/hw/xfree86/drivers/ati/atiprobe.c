@@ -825,6 +825,15 @@ ATIProbe
 #   define              BIOSWord(_n)  (*((CARD16 *)(BIOS + (_n))))
 
 #   define              AddAdapter(_p)                                     \
+
+    if (flags & PROBE_DETECTFBDEV) return FALSE; /* we don't do fbdev */
+
+    /* As the ATI driver doesn't call xf86Match???Instances we need to
+     * manually add support for xf86DoConfigure to the driver
+     * TEMPORARY for 3.9.18 */
+    if (flags & PROBE_DETECTPCI) return FALSE;
+    if (flags & PROBE_DETECTISA) return FALSE;
+
     do                                                                     \
     {                                                                      \
         nATIPtr++;                                                         \
@@ -1505,7 +1514,7 @@ NoVGAWonder:;
         return FALSE;
     }
 
-    if (flags & PROBE_DETECT)
+    if ((flags & PROBE_DETECTISA) || (flags & PROBE_DETECTPCI))
     {
         /*
          * No XF86Config information available, so use the default Chipset of
