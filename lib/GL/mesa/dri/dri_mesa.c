@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.9 2000/09/24 13:51:01 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.10 2000/10/10 20:25:19 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -217,8 +217,8 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 	*/
 
 	/* Delete drawable if no longer referenced by any contexts */
-	(*pdraw->destroyDrawable)(dpy, pdraw->private);
 	__driMesaRemoveDrawable(pdraw);
+	(*pdraw->destroyDrawable)(dpy, pdraw->private);
 	Xfree(pdraw);
 #endif
     }
@@ -552,8 +552,8 @@ static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
                    reference this drawable, so we can destroy the
                    drawable and remove it from the hash table */
 		pdraw = __driMesaFindDrawable(pdp->draw);
-		(*pdraw->destroyDrawable)(dpy, pdraw->private);
 		__driMesaRemoveDrawable(pdraw);
+		(*pdraw->destroyDrawable)(dpy, pdraw->private);
 		Xfree(pdraw);
 	    }
 	}
