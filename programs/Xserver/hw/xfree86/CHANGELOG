@@ -1,3 +1,22 @@
+XFree86 3.1.2Cd (12 February 1996)
+338. Add a version check to the XInput dynamic modules (Frederic Lepied).
+337. Fix keyboard LED initialisation.  This usually shows up as a problem
+     on *BSD where the NumLock LED is on when the server is started.
+336. Update Linux DLL jump files (Harald Koenig).
+335. PC98 updates, including XF98Conf, and the XKB nec geomtery description
+     (X98 core team).
+334. Automatically treat the PS/2 protocol the same as the busmouse protocol
+     on NetBSD (since that's how NetBSD's PS/2 driver works).
+333. Add XInput dynamic loading support for FreeBSD 2.x.
+332. Fix problem with XInput on non-Linux/ELF systems.
+331. xterm fixes, including updates to allow building on R5
+     (Thomas E. Dickey).
+330. Add to the docs a file containing a list of PC98 cards that are
+     supported (X98 core team).
+329. Documentation updates for xterm (Thomas E. Dickey).
+328. Disable the TGUI HW cursor by default (Alan Hourihane).
+327. Add PCI support to SuperProbe (Alan Hourihane).
+
 XFree86 3.1.2Cc (10 February 1996)
 326. Merge in final form of R6.1.
 

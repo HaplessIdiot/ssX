@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.27 1996/01/11 10:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.28 1996/01/30 15:28:27 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1593,12 +1593,12 @@ char **argv;
 #endif
 #ifndef AMOEBA
 #ifdef MINIX
-	if ((mode = fcntl(pty, F_GETFD, 0)) == -1)
+	if ((mode = fcntl(screen->respond, F_GETFD, 0)) == -1)
 		Error(1);
 	mode |= FD_ASYNCHIO;
-	if (fcntl(pty, F_SETFD, mode) == -1)
+	if (fcntl(screen->respond, F_SETFD, mode) == -1)
 		Error(1);
-	nbio_register(pty);
+	nbio_register(screen->respond);
 #else /* !MINIX */
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(screen->respond, F_GETFL, 0)))
@@ -3655,8 +3655,6 @@ SIGNAL_T
 Exit(n)
 	int n;
 {
-	register TScreen *screen = &term->screen;
-        int pty = term->screen.respond;  /* file descriptor of pty */
 #ifdef UTMP
 #ifdef USE_SYSV_UTMP
 #ifdef SVR4
@@ -3698,7 +3696,7 @@ Exit(n)
 	    (void) setutent();
 	    utptr = getutid(&utmp);
 	    /* write it out only if it exists, and the pid's match */
-	    if (utptr && (utptr->ut_pid == screen->pid)) {
+	    if (utptr && (utptr->ut_pid == term->screen.pid)) {
 		    utptr->ut_type = DEAD_PROCESS;
 #ifdef SVR4
 		    utmp.ut_session = getsid(0);
@@ -3727,7 +3725,6 @@ Exit(n)
 	}
 #else	/* not USE_SYSV_UTMP */
 	register int wfd;
-	register int i;
 	struct utmp utmp;
 
 	if (!resource.utmpInhibit && added_utmp_entry &&
@@ -3739,6 +3736,7 @@ Exit(n)
 #ifdef WTMP
 		if (term->misc.login_shell &&
 		    (wfd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+			register int i;
 			(void) strncpy(utmp.ut_line, ttydev +
 			    sizeof("/dev"), sizeof (utmp.ut_line));
 			time(&utmp.ut_time);
@@ -3750,11 +3748,11 @@ Exit(n)
 #endif	/* USE_SYSV_UTMP */
 #endif	/* UTMP */
 #ifndef AMOEBA
-        close(pty); /* close explicitly to avoid race with slave side */
+        close(term->screen.respond); /* close explicitly to avoid race with slave side */
 #endif
 #ifdef ALLOWLOGGING
-	if(screen->logging)
-		CloseLog(screen);
+	if(term->screen.logging)
+		CloseLog(&term->screen);
 #endif
 
 #ifndef AMOEBA

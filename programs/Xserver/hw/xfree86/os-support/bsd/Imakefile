@@ -4,16 +4,20 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/14 19:01:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.6 1996/01/14 13:38:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.7 1996/02/04 09:09:52 dawes Exp $
 
 #include <Server.tmpl>
 
 #ifdef FreeBSDArchitecture
 #ifdef BuildXInputExt
-#if JoystickSupport
+# if BuildDynamicLoading
+SHARED_CFLAGS = PositionIndependentCFlags
+# else
+#  if JoystickSupport
  JOYSTICK_SRC = bsd_jstk.c
  JOYSTICK_OBJ = bsd_jstk.o
-#endif
+#  endif
+# endif
 #endif
 #endif
 
@@ -38,6 +42,15 @@ DEFINES = $(CONSDEFINES) $(APDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+
+#if BuildXInputExt
+# if BuildDynamicLoading
+#  if JoystickSupport
+AllTarget(bsd_jstk.o)
+SpecialObjectRule(bsd_jstk.o,bsd_jstk.c,$(SHARED_CFLAGS))
+#  endif
+# endif
+#endif
 
 ObjectFromSpecialSource(bios_devmem,../shared/bios_devmem,/**/)
 ObjectFromSpecialSource(mapVT_noop,../shared/mapVT_noop,/**/)

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.19 1996/01/24 22:04:59 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.20 1996/01/30 15:28:24 dawes Exp $
  */
 
 /*
@@ -66,10 +66,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #if XtSpecificationRelease >= 6
 #include <X11/Xaw/XawImP.h>
-#include <X11/Xpoll.h>
-#else
-#define Select(n,r,w,e,t) select(0,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval *)t)
-#define XFD_COPYSET(src,dst) bcopy((src)->fds_bits, (dst)->fds_bits, sizeof(fd_set))
 #endif
 
 #include <stdio.h>
@@ -120,9 +116,6 @@ extern XtermWidget term;
 extern XtAppContext app_con;
 extern Widget toplevel;
 extern char *ProgramName;
-extern fd_set Select_mask;
-extern fd_set X_mask;
-extern fd_set pty_mask;
 
 static int LoadNewFont PROTO((TScreen *screen, char *nfontname, char *bfontname, Bool doresize, int fontnum));
 static int finput PROTO((void));
@@ -668,7 +661,10 @@ static void VTExpose PROTO((Widget w, XEvent *event, Region region));
 static void VTResize PROTO((Widget w));
 static void VTDestroy PROTO((Widget w));
 static Boolean VTSetValues PROTO((Widget cur, Widget request, Widget new, ArgList args, Cardinal *num_args));
+
+#if XtSpecificationRelease >= 6
 static void VTInitI18N PROTO((void));
+#endif
 
 static WidgetClassRec xtermClassRec = {
   {
@@ -2846,7 +2842,11 @@ static void VTRealize (w, valuemask, values)
 		InputOutput, CopyFromParent,	
 		*valuemask|CWBitGravity, values);
 
+#if XtSpecificationRelease >= 6
 	VTInitI18N();
+#else
+	term->screen.xic = NULL;
+#endif
 
 	set_cursor_gcs (screen);
 
@@ -2891,6 +2891,7 @@ static void VTRealize (w, valuemask, values)
 	return;
 }
 
+#if XtSpecificationRelease >= 6
 static void VTInitI18N()
 {
     int		i;
@@ -3007,6 +3008,7 @@ static void VTInitI18N()
 
     return;
 }
+#endif
 
 
 static Boolean VTSetValues (cur, request, new, args, num_args)

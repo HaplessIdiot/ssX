@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.10 93/02/25 17:21:28 gildea Exp $
+ *	$XConsortium: data.h /main/12 1996/01/14 16:52:48 kaleb $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -24,6 +24,13 @@
  * SOFTWARE.
  */
 
+#if XtSpecificationRelease >= 6
+#include <X11/Xpoll.h>
+#else
+#define Select(n,r,w,e,t) select(n,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval *)t)
+#define XFD_COPYSET(src,dst) bcopy((src)->fds_bits, (dst)->fds_bits, sizeof(fd_set))
+#endif
+
 extern TekLink *TekRefresh;
 extern XPoint T_box2[];
 extern XPoint T_box3[];
@@ -42,12 +49,10 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Char buffer[];
-extern int Select_mask;
 extern int T_lastx;
 extern int T_lasty;
 extern int Tbcnt;
 extern int Ttoggled;
-extern int X_mask;
 extern int am_slave;
 extern int bcnt;
 #ifdef DEBUG
@@ -55,8 +60,11 @@ extern int debug;
 #endif	/* DEBUG */
 extern int errno;
 extern int max_plus1;
-extern int pty_mask;
 extern int switchfb[];
+
+extern fd_set Select_mask;
+extern fd_set X_mask;
+extern fd_set pty_mask;
 
 extern int waitingForTrackInfo;
 
@@ -69,3 +77,14 @@ extern int TEKgcFontMask;
 
 extern XtermWidget term;
 extern TekWidget tekWidget;
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#else
+#define	XkbBI_Info			0
+#define	XkbBI_MinorError		1
+#define	XkbBI_MajorError		2
+#define	XkbBI_TerminalBell		9
+#define	XkbBI_MarginBell		10
+#define	XkbBI_CursorStuck		11
+#endif
