@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.13 2000/11/14 16:54:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.14 2001/08/01 00:44:42 tsi Exp $ */
 
 #ifndef _FT_H_
 #define _FT_H_
@@ -93,11 +93,6 @@ int FTtoXReturnCode(int);
 int ttf_GetEnglishName(TT_Face, char *, int);
 int ttf_checkForTTCName(char*, char**, int*);
 
-extern void ErrorF(
-#if NeedVarargsPrototypes
-    const char* /*f*/,
-    ...
-#endif
-);
+extern void ErrorF(const char*, ...);
 
 #endif /* _FT_H_ */
