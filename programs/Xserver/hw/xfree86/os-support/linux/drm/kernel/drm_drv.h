@@ -316,7 +316,6 @@ static int DRM(setup)( drm_device_t *dev )
 	if(dev->maplist == NULL) return -ENOMEM;
 	memset(dev->maplist, 0, sizeof(*dev->maplist));
 	INIT_LIST_HEAD(&dev->maplist->head);
-	dev->map_count = 0;
 
 	dev->vmalist = NULL;
 	dev->sigdata.lock = dev->lock.hw_lock = NULL;
@@ -815,9 +814,6 @@ int DRM(release)( struct inode *inode, struct file *filp )
 				break;	/* Got lock */
 			}
 				/* Contention */
-#if 0
-			atomic_inc( &dev->total_sleeps );
-#endif
 			schedule();
 			if ( signal_pending( current ) ) {
 				retcode = -ERESTARTSYS;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.23 2003/01/01 19:22:22 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.24 2003/01/04 20:20:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -884,16 +884,6 @@ xf86parseError (char *format,...)
 {
 	va_list ap;
 
-#if 0
-	fprintf (stderr, "Parse error on line %d of section %s in file %s\n",
-			 configLineNo, configSection, configPath);
-	fprintf (stderr, "\t");
-	va_start (ap, format);
-	vfprintf (stderr, format, ap);
-	va_end (ap);
-
-	fprintf (stderr, "\n");
-#else
 	ErrorF ("Parse error on line %d of section %s in file %s\n\t",
 		 configLineNo, configSection, configPath);
 	va_start (ap, format);
@@ -901,8 +891,6 @@ xf86parseError (char *format,...)
 	va_end (ap);
 
 	ErrorF ("\n");
-#endif
-
 }
 
 void
@@ -910,16 +898,6 @@ xf86parseWarning (char *format,...)
 {
 	va_list ap;
 
-#if 0
-	fprintf (stderr, "Parse warning on line %d of section %s in file %s\n",
-			 configLineNo, configSection, configPath);
-	fprintf (stderr, "\t");
-	va_start (ap, format);
-	vfprintf (stderr, format, ap);
-	va_end (ap);
-
-	fprintf (stderr, "\n");
-#else
 	ErrorF ("Parse warning on line %d of section %s in file %s\n\t",
 		 configLineNo, configSection, configPath);
 	va_start (ap, format);
@@ -927,7 +905,6 @@ xf86parseWarning (char *format,...)
 	va_end (ap);
 
 	ErrorF ("\n");
-#endif
 }
 
 void
@@ -935,23 +912,12 @@ xf86validationError (char *format,...)
 {
 	va_list ap;
 
-#if 0
-	fprintf (stderr, "Data incomplete in file %s\n",
-			 configPath);
-	fprintf (stderr, "\t");
-	va_start (ap, format);
-	vfprintf (stderr, format, ap);
-	va_end (ap);
-
-	fprintf (stderr, "\n");
-#else
 	ErrorF ("Data incomplete in file %s\n\t", configPath);
 	va_start (ap, format);
 	VErrorF (format, ap);
 	va_end (ap);
 
 	ErrorF ("\n");
-#endif
 }
 
 void

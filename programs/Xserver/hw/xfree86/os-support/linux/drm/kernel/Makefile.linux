@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.36 2003/04/23 01:37:13 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.37 2003/04/23 01:48:57 dawes Exp $
 #
 
 #
@@ -82,6 +82,8 @@ I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED)
+
+PROGS = dristat drmstat
 
 CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd
 
@@ -226,6 +228,23 @@ clean cleandir:
 
 $(MODULE_LIST)::
 	make -f Makefile.linux DRM_MODULES=$@ modules
+
+# Build test utilities
+
+PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
+	    -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
+	    -I. -I../../..
+
+DRMSTATLIBS = -L../../.. -L.. -ldrm -lxf86_os \
+	      -L../../../../dummylib -ldummy -lm
+
+programs: $(PROGS)
+
+dristat: dristat.c
+	$(CC) $(PRGCFLAGS) $< -o $@
+
+drmstat: drmstat.c
+	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
 else
 
