@@ -1,4 +1,4 @@
-XCOMM $PI:$
+XCOMM $XFree86$
 
 #include <Threads.tmpl>
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _sis_drm_public_h_
 #define _sis_drm_public_h_
 

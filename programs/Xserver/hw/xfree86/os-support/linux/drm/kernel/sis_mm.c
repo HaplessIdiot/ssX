@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #define __NO_VERSION__
 #include <linux/fb.h>
 #include <linux/sisfb.h>

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _sis_ctx_h_
 #define _sis_ctx_h_
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* modified from tdfx_dri.h */
 
 #ifndef _SIS_DRI_

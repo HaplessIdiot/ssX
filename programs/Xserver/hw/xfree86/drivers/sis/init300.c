@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.4 2000/03/31 20:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.c,v 1.1 2000/08/01 20:52:23 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -1014,7 +1014,7 @@ USHORT CalcRefreshRate(ScrnInfoPtr pScrn, DisplayModePtr mode)
           break;
     
    }
-   while(RefreshRate[Index][i] != NULL)
+   while(RefreshRate[Index][i] != 0)
    {
       if(temp == RefreshRate[Index][i])
       {  

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.10 2000/08/01 19:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.11 2000/08/03 02:30:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -237,8 +237,6 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    return FALSE;
 #endif
 }
-
-   pI810->GttBound = 1;
 
 void I810FreeGARTMemory( ScrnInfoPtr pScrn ) 
 {

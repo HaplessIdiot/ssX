@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "sis_ctx.h"
 #include "sis_mesa.h"
 #include "sis_lock.h"
@@ -170,7 +172,7 @@ sis_init_driver (GLcontext * ctx)
   ctx->Driver.Bitmap = sis_Bitmap;
   
   /* Optimization */
-#if NOT_DONE
+#ifdef NOT_DONE
   ctx->Driver.RasterSetup = sis_ChooseRasterSetupFunc(ctx);
   ctx->Driver.RegisterVB = sis_RegisterVB;
   ctx->Driver.UnregisterVB = sis_UnregisterVB;
@@ -295,7 +297,7 @@ sis_UpdateState (GLcontext * ctx)
 	}
     }
 
-#if NOT_DONE
+#ifdef NOT_DONE
   sis_set_render_vb_tabs(ctx);
 #endif
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* modified from tdfx_dri.c, mga_dri.c */
 
 #include "xf86.h"

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /* CR30 VBInfo = CR31:CR30 */
 #define	SET_SIMU_SCAN_MODE	0x0001
 #define	SWITCH_TO_CRT2		0x0002
