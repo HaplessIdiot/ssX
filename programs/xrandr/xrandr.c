@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.8 2001/07/11 16:40:32 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.9 2002/09/29 23:39:47 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  * Copyright © 2002 Hewlett Pacard Company, Inc.
@@ -195,7 +195,7 @@ main (int argc, char **argv)
   if (rot < 0)
   {
     for (rot = 0; rot < 4; rot++)
-	if (1 << rot == current_rotation)
+	if (1 << rot == (current_rotation & 0xf))
 	    break;
   }
 
@@ -229,9 +229,13 @@ main (int argc, char **argv)
     }
 
     printf("Current reflection - ");
-    if (current_rotation & RR_Reflect_X) printf ("X Axis ");
-    else if (current_rotation & RR_Reflect_Y) printf ("Y Axis");
-    else printf ("none");
+    if (current_rotation & (RR_Reflect_X|RR_Reflect_Y))
+    {
+	if (current_rotation & RR_Reflect_X) printf ("X Axis ");
+	if (current_rotation & RR_Reflect_Y) printf ("Y Axis");
+    }
+    else
+	printf ("none");
     printf ("\n");
     
 
@@ -242,20 +246,27 @@ main (int argc, char **argv)
     printf ("\n");
 
     printf ("Reflections possible - ");
-    if (rotations & RR_Reflect_X) printf ("X Axis ");
-    else if (rotations & RR_Reflect_Y) printf ("Y Axis");
-    else printf ("none");
+    if (rotations & (RR_Reflect_X|RR_Reflect_Y))
+    {
+        if (rotations & RR_Reflect_X) printf ("X Axis ");
+	if (rotations & RR_Reflect_Y) printf ("Y Axis");
+    }
+    else
+	printf ("none");
     printf ("\n");
-
   }
 
   if (verbose) { 
     printf("Setting size to %d, rotation to %s\n",  size, direction[rot]);
 
     printf ("Setting reflection on ");
-    if (reflection & RR_Reflect_X) printf ("X Axis ");
-    else if (reflection & RR_Reflect_Y) printf ("Y Axis");
-    else printf ("neither axis");
+    if (reflection)
+    {
+	if (reflection & RR_Reflect_X) printf ("X Axis ");
+	if (reflection & RR_Reflect_Y) printf ("Y Axis");
+    }
+    else
+	printf ("neither axis");
     printf ("\n");
 
     if (reflection & RR_Reflect_X) printf("Setting reflection on X axis\n");

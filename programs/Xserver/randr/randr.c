@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.12 2001/07/20 19:30:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.13 2002/09/29 23:39:45 keithp Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -162,7 +162,6 @@ Bool RRScreenInit(ScreenPtr pScreen)
     wrap (pScrPriv, pScreen, CloseScreen, RRCloseScreen);
 
     pScrPriv->rotations = RR_Rotate_0;
-    pScrPriv->swaps = 0;
     
     pScrPriv->nSizes = 0;
     pScrPriv->nSizesInUse = 0;
