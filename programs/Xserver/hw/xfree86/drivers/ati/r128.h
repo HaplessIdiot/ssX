@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.15 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.16 2001/10/02 11:44:16 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -445,7 +445,9 @@ do {									\
 
 #endif
 
+#ifdef XF86DRI
 extern drmBufPtr   R128CCEGetBuffer(ScrnInfoPtr pScrn);
+#endif
 extern void        R128CCEFlushIndirect(ScrnInfoPtr pScrn);
 extern void        R128CCEReleaseIndirect(ScrnInfoPtr pScrn);
 extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
