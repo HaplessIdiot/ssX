@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 128. Fix RGB/BGR inversion problem and screen blanking in the glint
+      driver (Alan Hourihane).
  127. Add MIT-SCREEN-SAVER extension docs (Alan Coopersmith).
  126. Fix problems opening /dev/fb0 in fbdevhw layer (#5229, Michel Dänzer).
  125. Update the apm driver (#5227, Loic Grenie).
@@ -14783,4 +14785,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2207 2002/05/07 12:57:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2208 2002/05/07 20:09:53 tsi Exp $

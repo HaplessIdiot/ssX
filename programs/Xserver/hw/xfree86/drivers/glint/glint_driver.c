@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.145 2002/02/27 18:27:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.146 2002/02/27 18:41:04 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -3631,12 +3631,15 @@ GLINTBlockHandler (
     ScreenPtr      pScreen = screenInfo.screens[i];
     ScrnInfoPtr    pScrn = xf86Screens[i];
     GLINTPtr       pGlint = GLINTPTR(pScrn);
+    int sigstate = xf86BlockSIGIO();
 
     if(pGlint->CursorColorCallback) 
 	(*pGlint->CursorColorCallback)(pScrn);
 
     if(pGlint->LoadCursorCallback) 
 	(*pGlint->LoadCursorCallback)(pScrn);
+
+    xf86UnblockSIGIO(sigstate);
 
     pScreen->BlockHandler = pGlint->BlockHandler;
     (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
