@@ -1,5 +1,4 @@
 /* This may look like C code, but it is really -*- C++ -*-  */
-/* $Id: tr_commands.h,v 1.3 2002/12/11 21:13:32 dawes Exp $ */
 
 /*
  * DebugGL

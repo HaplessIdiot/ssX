@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.1
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -32,9 +32,6 @@
  */
 
 
-#ifdef PC_HEADER
-#include "all.h"
-#else
 #include "glheader.h"
 #include "colormac.h"
 #include "convolve.h"
@@ -42,8 +39,6 @@
 #include "image.h"
 #include "mtypes.h"
 #include "state.h"
-#include "swrast/s_span.h" /* XXX SWRAST hack */
-#endif
 
 
 /*

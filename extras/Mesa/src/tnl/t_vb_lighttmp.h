@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.1
  *
  * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
@@ -24,32 +24,32 @@
  *
  *
  * Authors:
- *    Brian Paul <brianp@valinux.com>
- *    Keith Whitwell <keithw@valinux.com>
+ *    Brian Paul
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 
 #if (IDX & LIGHT_FLAGS)
 #  define VSTRIDE (4 * sizeof(GLfloat))
-#  define NSTRIDE (3 * sizeof(GLfloat))
-#  define CHECK_MATERIAL(x)  (flags[x] & VERT_MATERIAL)
-#  define CHECK_END_VB(x)    (flags[x] & VERT_END_VB)
+#  define NSTRIDE nstride /*(3 * sizeof(GLfloat))*/
+#  define CHECK_MATERIAL(x)  (flags[x] & VERT_BIT_MATERIAL)
+#  define CHECK_END_VB(x)    (flags[x] & VERT_BIT_END_VB)
 #  if (IDX & LIGHT_COLORMATERIAL)
 #    define CMSTRIDE STRIDE_F(CMcolor, CMstride)
-#    define CHECK_COLOR_MATERIAL(x) (flags[x] & VERT_RGBA)
-#    define CHECK_VALIDATE(x) (flags[x] & (VERT_RGBA|VERT_MATERIAL))
+#    define CHECK_COLOR_MATERIAL(x) (flags[x] & VERT_BIT_COLOR0)
+#    define CHECK_VALIDATE(x) (flags[x] & (VERT_BIT_COLOR0|VERT_BIT_MATERIAL))
 #    define DO_ANOTHER_NORMAL(x) \
-     ((flags[x] & (VERT_RGBA|VERT_NORM|VERT_END_VB|VERT_MATERIAL)) == VERT_NORM)
+     ((flags[x] & (VERT_BIT_COLOR0|VERT_BIT_NORMAL|VERT_BIT_END_VB|VERT_BIT_MATERIAL)) == VERT_BIT_NORMAL)
 #    define REUSE_LIGHT_RESULTS(x) \
-     ((flags[x] & (VERT_RGBA|VERT_NORM|VERT_END_VB|VERT_MATERIAL)) == 0)
+     ((flags[x] & (VERT_BIT_COLOR0|VERT_BIT_NORMAL|VERT_BIT_END_VB|VERT_BIT_MATERIAL)) == 0)
 #  else
 #    define CMSTRIDE (void)0
 #    define CHECK_COLOR_MATERIAL(x) 0
-#    define CHECK_VALIDATE(x) (flags[x] & (VERT_MATERIAL))
+#    define CHECK_VALIDATE(x) (flags[x] & (VERT_BIT_MATERIAL))
 #    define DO_ANOTHER_NORMAL(x) \
-      ((flags[x] & (VERT_NORM|VERT_END_VB|VERT_MATERIAL)) == VERT_NORM)
+      ((flags[x] & (VERT_BIT_NORMAL|VERT_BIT_END_VB|VERT_BIT_MATERIAL)) == VERT_BIT_NORMAL)
 #    define REUSE_LIGHT_RESULTS(x) \
-      ((flags[x] & (VERT_NORM|VERT_END_VB|VERT_MATERIAL)) == 0)
+      ((flags[x] & (VERT_BIT_NORMAL|VERT_BIT_END_VB|VERT_BIT_MATERIAL)) == 0)
 #  endif
 #else
 #  define VSTRIDE vstride
@@ -79,7 +79,15 @@
 #endif
 
 
+/* define TRACE if to trace lighting code */
 
+
+/*
+ * ctx is the current context
+ * VB is the vertex buffer
+ * stage is the lighting stage-private data
+ * input is the vector of eye or object-space vertex coordinates
+ */
 static void TAG(light_rgba_spec)( GLcontext *ctx,
 				  struct vertex_buffer *VB,
 				  struct gl_pipeline_stage *stage,
@@ -88,12 +96,11 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    struct light_stage_data *store = LIGHT_STAGE_DATA(stage);
    GLfloat (*base)[3] = ctx->Light._BaseColor;
    GLchan sumA[2];
-
    GLuint j;
 
-   GLuint  vstride = input->stride;
+   const GLuint vstride = input->stride;
    const GLfloat *vertex = (GLfloat *)input->data;
-   GLuint  nstride = VB->NormalPtr->stride;
+   const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
 
    GLfloat *CMcolor;
@@ -103,23 +110,19 @@ static void TAG(light_rgba_spec)( GLcontext *ctx,
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
    GLchan (*Fspec)[4] = (GLchan (*)[4]) store->LitSecondary[0].Ptr;
    GLchan (*Bspec)[4] = (GLchan (*)[4]) store->LitSecondary[1].Ptr;
-   GLchan (*spec[2])[4];
 
-   GLuint nr = VB->Count;
-   GLuint *flags = VB->Flag;
+   const GLuint nr = VB->Count;
+   const GLuint *flags = VB->Flag;
    struct gl_material (*new_material)[2] = VB->Material;
-   GLuint *new_material_mask = VB->MaterialMask;
+   const GLuint *new_material_mask = VB->MaterialMask;
 
    (void) flags;
    (void) nstride;
    (void) vstride;
 
-
-   if (MESA_VERBOSE & VERBOSE_LIGHTING)
-      fprintf(stderr, "%s\n", __FUNCTION__ );   
-
-   spec[0] = Fspec;
-   spec[1] = Bspec;
+#ifdef TRACE
+   fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
 
    if (IDX & LIGHT_COLORMATERIAL) {
       if (VB->ColorPtr[0]->Type != GL_FLOAT || 
@@ -309,9 +312,9 @@ static void TAG(light_rgba)( GLcontext *ctx,
    GLfloat (*base)[3] = ctx->Light._BaseColor;
    GLchan sumA[2];
 
-   GLuint  vstride = input->stride;
+   const GLuint vstride = input->stride;
    const GLfloat *vertex = (GLfloat *) input->data;
-   GLuint  nstride = VB->NormalPtr->stride;
+   const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
 
    GLfloat *CMcolor;
@@ -320,14 +323,15 @@ static void TAG(light_rgba)( GLcontext *ctx,
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
    GLchan (*color[2])[4];
-   GLuint *flags = VB->Flag;
+   const GLuint *flags = VB->Flag;
 
    struct gl_material (*new_material)[2] = VB->Material;
-   GLuint *new_material_mask = VB->MaterialMask;
-   GLuint nr = VB->Count;
+   const GLuint *new_material_mask = VB->MaterialMask;
+   const GLuint nr = VB->Count;
 
-   if (MESA_VERBOSE & VERBOSE_LIGHTING)
-      fprintf(stderr, "%s\n", __FUNCTION__ );   
+#ifdef TRACE
+   fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
 
    (void) flags;
    (void) nstride;
@@ -521,23 +525,24 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 
 {
    struct light_stage_data *store = LIGHT_STAGE_DATA(stage);
-   GLuint  nstride = VB->NormalPtr->stride;
+   const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
    GLuint CMstride;
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
-   struct gl_light *light = ctx->Light.EnabledList.next;
-   GLuint *flags = VB->Flag;
+   const struct gl_light *light = ctx->Light.EnabledList.next;
+   const GLuint *flags = VB->Flag;
    GLchan basechan[2][4];
    GLuint j = 0;
    struct gl_material (*new_material)[2] = VB->Material;
-   GLuint *new_material_mask = VB->MaterialMask;
+   const GLuint *new_material_mask = VB->MaterialMask;
    GLfloat base[2][3];
-   GLuint nr = VB->Count;
+   const GLuint nr = VB->Count;
 
-   if (MESA_VERBOSE & VERBOSE_LIGHTING)
-      fprintf(stderr, "%s\n", __FUNCTION__ );   
+#ifdef TRACE
+   fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
 
    (void) input;		/* doesn't refer to Eye or Obj */
    (void) flags;
@@ -607,7 +612,8 @@ static void TAG(light_fast_rgba_single)( GLcontext *ctx,
 	       Bcolor[j][3] = basechan[1][3];
 	    }
 	    COPY_CHAN4(Fcolor[j], basechan[0]);
-	 } else {
+	 }
+         else {
 	    GLfloat n_dot_h = DOT3(normal, light->_h_inf_norm);
 	    GLfloat sum[3];
 	    COPY_3V(sum, base[0]);
@@ -649,22 +655,22 @@ static void TAG(light_fast_rgba)( GLcontext *ctx,
 {
    struct light_stage_data *store = LIGHT_STAGE_DATA(stage);
    GLchan sumA[2];
-   GLuint  nstride = VB->NormalPtr->stride;
+   const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
    GLuint CMstride;
    GLchan (*Fcolor)[4] = (GLchan (*)[4]) store->LitColor[0].Ptr;
    GLchan (*Bcolor)[4] = (GLchan (*)[4]) store->LitColor[1].Ptr;
-   GLuint *flags = VB->Flag;
+   const GLuint *flags = VB->Flag;
    GLuint j = 0;
    struct gl_material (*new_material)[2] = VB->Material;
    GLuint *new_material_mask = VB->MaterialMask;
-   GLuint nr = VB->Count;
-   struct gl_light *light;
+   const GLuint nr = VB->Count;
+   const struct gl_light *light;
 
-   if (MESA_VERBOSE & VERBOSE_LIGHTING)
-      fprintf(stderr, "%s\n", __FUNCTION__ );   
-
+#ifdef TRACE
+   fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
 
    (void) flags;
    (void) input;
@@ -790,20 +796,21 @@ static void TAG(light_ci)( GLcontext *ctx,
 {
    struct light_stage_data *store = LIGHT_STAGE_DATA(stage);
    GLuint j;
-   GLuint vstride = input->stride;
+   const GLuint vstride = input->stride;
    const GLfloat *vertex = (GLfloat *) input->data;
-   GLuint nstride = VB->NormalPtr->stride;
+   const GLuint nstride = VB->NormalPtr->stride;
    const GLfloat *normal = (GLfloat *)VB->NormalPtr->data;
    GLfloat *CMcolor;
    GLuint CMstride;
-   GLuint *flags = VB->Flag;
+   const GLuint *flags = VB->Flag;
    GLuint *indexResult[2];
    struct gl_material (*new_material)[2] = VB->Material;
    GLuint *new_material_mask = VB->MaterialMask;
-   GLuint nr = VB->Count;
+   const GLuint nr = VB->Count;
 
-   if (MESA_VERBOSE & VERBOSE_LIGHTING)
-      fprintf(stderr, "%s\n", __FUNCTION__ );   
+#ifdef TRACE
+   fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
 
    (void) flags;
    (void) nstride;
