@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.18 2003/10/15 16:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.19 2003/10/15 16:58:34 dawes Exp $ */
 
 /*
  *
@@ -52,9 +52,13 @@
 #include "loader.h"
 #include "aoutloader.h"
 
-/*
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
+
+#if LOADERDEBUG
 #define AOUTDEBUG ErrorF
-*/
+#endif
 
 #ifndef MIN
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -224,7 +228,8 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	lookup[l].symName = AOUTGetSymbolName(aoutfile, common->sym);
 	lookup[l].offset = (funcptr) (aoutfile->common + offset);
 #ifdef AOUTDEBUG
-	AOUTDEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName);
+	AOUTDEBUG("Adding %p %s\n", (void *)lookup[l].offset,
+		  lookup[l].symName);
 #endif
 	listCOMMON = common->next;
 	offset += common->sym->n_value;
@@ -300,8 +305,8 @@ static void
 AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
 {
 #ifdef AOUTDEBUG
-    AOUTDEBUG("AOUT_Relocate %p : %08x %s",
-	      destl, *destl, pcrel == 1 ? "rel" : "abs");
+    AOUTDEBUG("AOUT_Relocate %p : %08lx %s",
+	      (void *)destl, *destl, pcrel == 1 ? "rel" : "abs");
 
 #endif
     if (pcrel) {
@@ -311,7 +316,7 @@ AOUT_Relocate(unsigned long *destl, unsigned long val, int pcrel)
 	*destl += val;
     }
 #ifdef AOUTDEBUG
-    AOUTDEBUG(" -> %08x\n", *destl);
+    AOUTDEBUG(" -> %08lx\n", *destl);
 #endif
 }
 
@@ -518,7 +523,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    continue;
 	symname = AOUTGetSymbolName(aoutfile, s);
 #ifdef AOUTDEBUG
-	AOUTDEBUG("AOUT_GetSymbols(): %s %02x %02x %08x\n",
+	AOUTDEBUG("AOUT_GetSymbols(): %s %02x %02x %08lx\n",
 		  symname, s->n_type, s->n_other, s->n_value);
 #endif
 	switch (s->n_type & AOUT_TYPE) {
@@ -547,7 +552,8 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 		/* text symbols start at 0 */
 		lookup[l].offset = (funcptr) (aoutfile->text + s->n_value);
 #ifdef AOUTDEBUG
-		AOUTDEBUG("Adding text %s %08x\n", symname, lookup[l].offset);
+		AOUTDEBUG("Adding text %s %p\n", symname,
+			  (void *)lookup[l].offset);
 #endif
 		l++;
 	    } else {
@@ -561,7 +567,8 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 		lookup[l].offset = (funcptr) (aoutfile->data +
 					      s->n_value - header->a_text);
 #ifdef AOUTDEBUG
-		AOUTDEBUG("Adding data %s %08x\n", symname, lookup[l].offset);
+		AOUTDEBUG("Adding data %s %p\n", symname,
+			  (void *)lookup[l].offset);
 #endif
 		l++;
 	    } else {
@@ -576,7 +583,8 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 					      - (header->a_data
 						 + header->a_text));
 #ifdef AOUTDEBUG
-		AOUTDEBUG("Adding bss %s %08x\n", symname, lookup[l].offset);
+		AOUTDEBUG("Adding bss %s %p\n", symname,
+			  (void *)lookup[l].offset);
 #endif
 		l++;
 	    } else {
@@ -585,7 +593,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	    break;
 	case AOUT_FN:
 #ifdef AOUTDEBUG
-	    if (n->n_type & AOUT_EXT) {
+	    if (s->n_type & AOUT_EXT) {
 		AOUTDEBUG("Ignoring AOUT_FN %s\n", symname);
 	    } else {
 		AOUTDEBUG("Ignoring AOUT_WARN %s\n", symname);
