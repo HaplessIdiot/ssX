@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.66 2000/08/11 05:02:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.67 2000/08/11 21:12:48 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -98,6 +98,7 @@
 #define PCI_VENDOR_SUN		0x108E
 #define PCI_VENDOR_DIAMOND	0x1092
 #define PCI_VENDOR_CMD		0x1095
+#define PCI_VENDOR_APPIAN	0x1097
 #define PCI_VENDOR_VISION	0x1098
 #define PCI_VENDOR_BROOKTREE	0x109E
 #define PCI_VENDOR_SIERRA	0x10A8
@@ -630,6 +631,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_SUN, "Sun"},
     {PCI_VENDOR_DIAMOND, "Diamond"},
     {PCI_VENDOR_CMD, "CMD"},
+    {PCI_VENDOR_APPIAN, "Appian Graphics"},
     {PCI_VENDOR_VISION, "Vision"},
     {PCI_VENDOR_BROOKTREE,	"BrookTree"},
     {PCI_VENDOR_SIERRA, "Sierra"},
@@ -1076,6 +1078,11 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0646,		"646",0 },
 				{0x0670,		"670",0 },
 				{0x0000,		NULL,0}}},
+#endif
+    {PCI_VENDOR_APPIAN, {
+                                {0x3D32,		"Jeronimo 2000 AGP",0 },
+				{0x0000,		NULL,0}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_VISION, {
                                 {0x0001,		"QD 8500",0 },
 				{0x0002,		"QD 8580",0 },
