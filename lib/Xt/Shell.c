@@ -1,4 +1,5 @@
-/* $XConsortium: Shell.c,v 1.165 94/04/17 20:14:47 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.166 94/06/01 15:33:25 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -679,8 +680,10 @@ externaldef(applicationshellwidgetclass) WidgetClass applicationShellWidgetClass
 
 static XtResource sessionResources[]=
 {
+#ifndef XT_NO_SM
  {XtNconnection, XtCConnection, XtRSmcConn, sizeof(SmcConn),
        Offset(session.connection), XtRSmcConn, (XtPointer) NULL},
+#endif
  {XtNsessionID, XtCSessionID, XtRString, sizeof(String),
        Offset(session.session_id), XtRString, (XtPointer) NULL},
  {XtNrestartCommand, XtCRestartCommand, XtRCommandArgArray, sizeof(String*),
@@ -1103,6 +1106,7 @@ static void SessionInitialize(req, new, args, num_args)
     ArgList args;		/* unused */
     Cardinal *num_args;		/* unused */
 {
+#ifndef XT_NO_SM
     SessionShellWidget w = (SessionShellWidget)new;
 
     if (w->session.session_id) w->session.session_id =
@@ -1134,6 +1138,7 @@ static void SessionInitialize(req, new, args, num_args)
 
     if (w->session.connection)
 	SetSessionProperties(w, True, 0L, 0L);
+#endif /* !XT_NO_SM */
 }
 
 static void Resize(w)
@@ -1494,6 +1499,7 @@ static void _popup_set_prop(w)
 					"WM_CLIENT_LEADER", False),
 			    XA_WINDOW, 32, PropModeReplace,
 			    (unsigned char *)(&(p->core.window)), 1);
+#ifndef XT_NO_SM
 	if (p == (Widget) w) {
 	    for ( ; p->core.parent != NULL; p = p->core.parent);
 	    if (XtIsSubclass(p, sessionShellWidgetClass)) {
@@ -1509,6 +1515,7 @@ static void _popup_set_prop(w)
 		}
 	    }
 	}
+#endif /* !XT_NO_SM */
 
 	if (wmshell->wm.window_role)
 	    XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
@@ -1665,6 +1672,7 @@ static void ApplicationDestroy(wid)
 static void SessionDestroy(wid)
     Widget wid;
 {
+#ifndef XT_NO_SM
     SessionShellWidget w = (SessionShellWidget) wid;
 
     StopManagingSession(w, w->session.connection);
@@ -1677,6 +1685,7 @@ static void SessionDestroy(wid)
     FreeStringArray(w->session.environment);
     XtFree(w->session.current_dir);
     XtFree(w->session.program_path);
+#endif /* !XT_NO_SM */
 }
 
 /*
@@ -2382,6 +2391,7 @@ static Boolean SessionSetValues(current, request, new, args, num_args)
     ArgList args;
     Cardinal *num_args;
 {
+#ifndef XT_NO_SM
     SessionShellWidget nw = (SessionShellWidget) new;
     SessionShellWidget cw = (SessionShellWidget) current;
     unsigned long set_mask = 0L;
@@ -2480,6 +2490,7 @@ static Boolean SessionSetValues(current, request, new, args, num_args)
     if ((cw->session.join_session && !nw->session.join_session) ||
 	(cw->session.connection && !nw->session.connection))
 	StopManagingSession(nw, nw->session.connection);
+#endif /* !XT_NO_SM */
 
     return False;
 }
@@ -2575,6 +2586,7 @@ static void XtCallDieCallbacks();
 static void XtCallSaveCallbacks();
 static void XtCallSaveCompleteCallbacks();
 
+#ifndef XT_NO_SM
 static void StopManagingSession(w, connection)
     SessionShellWidget w;
     SmcConn connection; /* connection to close, if any */
@@ -2659,6 +2671,8 @@ static void JoinSession(w)
 }
 #undef XT_MSG_LENGTH
 
+#endif /* !XT_NO_SM */
+
 static String * NewStringArray(str)
     String *str;
 {
@@ -2697,6 +2711,7 @@ static void FreeStringArray(str)
 }
 
 
+#ifndef XT_NO_SM
 static SmProp * CardPack(name, closure)
     char *name;
     XtPointer closure;
@@ -2863,6 +2878,10 @@ static void GetIceEvent(client_data, source, id)
     SessionShellWidget w = (SessionShellWidget) client_data;
     IceProcessMessagesStatus status;
 
+#ifdef MINIX
+    if (!MNX_IceMessagesAvailable(SmcGetIceConnection(w->session.connection)))
+    	return;
+#endif
     status = IceProcessMessages(SmcGetIceConnection(w->session.connection),
 				NULL, NULL);
 
@@ -3003,14 +3022,15 @@ static void XtCallCancelCallbacks(connection, client_data)
 
     if (w->session.checkpoint_state != XtSaveInactive) {
 	w->session.save->cancel_shutdown = True;
-	call_interacts = (w->session.save->interact_style != None);
+	call_interacts = (w->session.save->interact_style !=
+			  SmInteractStyleNone);
     }
 
     XtCallCallbackList((Widget)w, w->session.cancel_callbacks,
 		       (XtPointer) NULL);
 
     if (call_interacts) {
-	w->session.save->interact_style = None;
+	w->session.save->interact_style = SmInteractStyleNone;
 	XtInteractPermission(w->session.connection, (SmPointer) w);
     }
 
@@ -3018,7 +3038,8 @@ static void XtCallCancelCallbacks(connection, client_data)
 	if (w->session.save->save_tokens == 0 &&
 	    w->session.checkpoint_state == XtSaveActive) {
 	    w->session.checkpoint_state = XtSaveInactive;
-	    SmcSaveYourselfDone(w->session.connection, False);
+	    SmcSaveYourselfDone(w->session.connection,
+				w->session.save->save_success);
 	    CleanUpSave(w);
 	}
     }
@@ -3236,3 +3257,4 @@ static String* EditCommand(str, src1, src2)
     return new;
 }
 
+#endif /* !XT_NO_SM */

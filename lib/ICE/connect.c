@@ -1,4 +1,5 @@
 /* $XConsortium: connect.c,v 1.30 94/04/17 20:15:31 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 
@@ -420,6 +421,9 @@ char 	   *errorStringRet;
 
     if (iceConn && _IceWatchProcs)
     {
+#ifdef MINIX
+    _IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 1);
+#endif
 	/*
 	 * Notify the watch procedures that an iceConn was opened.
 	 */

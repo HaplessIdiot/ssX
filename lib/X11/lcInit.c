@@ -1,4 +1,5 @@
 /* $XConsortium: lcInit.c,v 1.2 94/01/20 18:06:58 rws Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -27,12 +28,14 @@
 #include "Xlibint.h"
 #include "Xlcint.h"
 
+#ifndef X11_TINY_LC
 #define USE_GENERIC_LOADER
 #ifdef NOTDEF
 #define USE_UTF_LOADER
 #define USE_EUC_LOADER
 #endif
 #define USE_SJIS_LOADER
+#endif
 
 
 extern XLCd _XlcDefaultLoader(

@@ -1,4 +1,5 @@
-/* $XConsortium: sm_genid.c,v 1.6 94/04/17 20:16:56 gildea Exp $ */
+/* $XConsortium: sm_genid.c,v 1.7 94/05/02 11:14:45 mor Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -49,7 +50,7 @@ extern Time_t time ();
 
 #ifndef WIN32
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -69,6 +70,12 @@ extern Time_t time ();
 #define close closesocket
 
 #endif /* WIN32 */
+
+#ifdef MNX_TCPCONN
+#include <net/gen/netdb.h>
+
+#define TCPCONN
+#endif
 
 
 static char *hex_table[] = {	/* for generating client IDs */
@@ -123,7 +130,7 @@ SmsConn smsConn;
     if (gethostname (hostname, sizeof (hostname)))
 	return (NULL);
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
     {
     struct hostent *tcp_hostent = gethostbyname (hostname);
     char *inet_addr = (char *) inet_ntoa (
