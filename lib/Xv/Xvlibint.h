@@ -51,7 +51,7 @@ SOFTWARE.
 	if ((dpy->bufptr + SIZEOF(xv##name##Req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (xv##name##Req *)(dpy->last_req = dpy->bufptr);\
-	req->reqType = _XvCodes->major_opcode;\
+	req->reqType = info->codes->major_opcode;\
         req->xvReqType = xv_##name; \
         req->length = (SIZEOF(xv##name##Req))>>2;\
 	dpy->bufptr += SIZEOF(xv##name##Req);\
@@ -63,35 +63,10 @@ SOFTWARE.
 	if ((dpy->bufptr + SIZEOF(xv/**/name/**/Req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (xv/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
-	req->reqType = _XvCodes->major_opcode;\
+	req->reqType = info->codes->major_opcode;\
 	req->xvReqType = xv_/**/name;\
 	req->length = (SIZEOF(xv/**/name/**/Req))>>2;\
 	dpy->bufptr += SIZEOF(xv/**/name/**/Req);\
-	dpy->request++
-#endif
-
-
-#if defined(__STDC__) && !defined(UNIXCPP)
-#define XvGetReqExtra(name, n, req) \
-        WORD64ALIGN\
-	if ((dpy->bufptr + SIZEOF(xv##name##Req) + n) > dpy->bufmax)\
-		_XFlush(dpy);\
-	req = (xv##name##Req *)(dpy->last_req = dpy->bufptr);\
-	req->reqType = _XvCodes->major_opcode;\
-	req->xvReqType = xv_##name;\
-	req->length = (SIZEOF(xv##name##Req) + n)>>2;\
-	dpy->bufptr += SIZEOF(xv##name##Req) + n;\
-	dpy->request++
-#else
-#define XvGetReqExtra(name, n, req) \
-        WORD64ALIGN\
-	if ((dpy->bufptr + SIZEOF(xv/**/name/**/Req) + n) > dpy->bufmax)\
-		_XFlush(dpy);\
-	req = (xv/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
-	req->reqType = _XvCodes->major_opcode;\
-	req->xvReqType = xv_/**/name;\
-	req->length = (SIZEOF(xv/**/name/**/Req) + n)>>2;\
-	dpy->bufptr += SIZEOF(xv/**/name/**/Req) + n;\
 	dpy->request++
 #endif
 
