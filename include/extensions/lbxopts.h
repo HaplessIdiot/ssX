@@ -85,7 +85,11 @@ struct iovec {
 };
 
 #else
+#ifndef Lynx
 #include <sys/uio.h>
+#else
+#include <uio.h>
+#endif
 #endif
 
 typedef void *LbxStreamCompHandle;

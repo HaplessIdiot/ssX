@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.3 1996/09/22 05:03:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.4 1996/12/27 06:56:39 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -38,7 +38,6 @@ extern void newmmio_s3EnterLeaveVT();
 extern Bool newmmio_s3Initialize();
 extern void newmmio_s3AdjustFrame();
 extern Bool newmmio_s3SwitchMode();
-extern int s3ChipRev;
 extern Bool s3NewMmio;
 
 /*

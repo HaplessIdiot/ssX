@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h /main/70 1996/11/15 16:00:41 kaleb $
- * $XFree86: xc/include/Xos.h,v 3.19 1996/12/09 11:48:45 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.20 1996/12/23 05:58:08 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -227,7 +227,11 @@ struct timeval {
 #ifdef MINIX
 #include <time.h>
 #else /* !MINIX */
+#ifndef Lynx
 #include <sys/time.h>
+#else
+#include <time.h>
+#endif /* Lynx */
 #endif /* MINIX */
 #endif /* AMOEBA */
 #endif /* _SEQUENT_ */

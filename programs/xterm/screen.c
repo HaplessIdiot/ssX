@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c /main/35 1996/12/01 23:47:05 swick $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.10 1996/12/23 07:14:38 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.11 1997/01/08 20:52:37 dawes Exp $
  */
 
 /*
@@ -439,6 +439,7 @@ Boolean force;			/* ... leading/trailing spaces */
 	   register Char *attrs;
 	   register int col = leftcol;
 	   int maxcol = leftcol + ncols - 1;
+	   int hi_col = maxcol;
 	   int lastind;
 	   int flags;
 	   int fg = 0, bg = 0;
@@ -506,10 +507,12 @@ Boolean force;			/* ... leading/trailing spaces */
 		* apparent).
 	        */
 	       if (screen->highlight_selection
-	        && maxcol >= screen->max_col
-		&& screen->send_mouse_pos != 3)
-	           while (maxcol > 0 && !(attrs[maxcol] & CHARDRAWN))
-                       maxcol--;
+/*	        && maxcol >= screen->max_col */
+		&& screen->send_mouse_pos != 3) {
+		   hi_col = screen->max_col;
+	           while (hi_col > 0 && !(attrs[hi_col] & CHARDRAWN))
+                       hi_col--;
+	       }
 
 	       /* remaining piece should be hilited */
 	       hilite = True;
@@ -530,6 +533,7 @@ Boolean force;			/* ... leading/trailing spaces */
 
 	   for (; col <= maxcol; col++) {
 		if ((attrs[col] != flags)
+		 || (hilite && (col > hi_col))
 #if OPT_ISO_COLORS
 		 || ((flags & FG_COLOR) && (extract_fg(fb[col],attrs[col]) != fg))
 		 || ((flags & BG_COLOR) && (extract_bg(fb[col]) != bg))
@@ -541,6 +545,9 @@ Boolean force;			/* ... leading/trailing spaces */
 		   x += (col - lastind) * FontWidth(screen);
 
 		   lastind = col;
+
+		   if (hilite && (col > hi_col))
+			hilite = False;
 
 		   flags = attrs[col];
 		   if_OPT_ISO_COLORS(screen,{

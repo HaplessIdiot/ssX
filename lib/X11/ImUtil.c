@@ -242,6 +242,10 @@ static void _putbits (src, dstoffset, numbits, dst)
  * 
  */
 
+#if defined(Lynx) && defined(ROUNDUP)
+#undef ROUNDUP
+#endif
+
 #define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad)-1)) / (pad)) * ((pad)>>3))
 
 #define XYNORMALIZE(bp, img) \

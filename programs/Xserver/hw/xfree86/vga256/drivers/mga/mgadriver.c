@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.19 1997/01/12 10:42:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.20 1997/01/14 22:21:19 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -69,7 +69,7 @@
 #include "mga.h"
 
 /* Uncomment the next line to force a 60 MHz MCLK - AT YOUR OWN RISK! */
-/* #define FORCE_FAST_MCLK *
+/* #define FORCE_FAST_MCLK */
 
 extern vgaPCIInformation *vgaPCIInfo;
 
@@ -137,7 +137,7 @@ static void		MGAAdjust();
 static void		MGAFbInit();
 static int		MGAPitchAdjust();
 static int		MGALinearOffset();
-static void		MGADisplayPowerManagement();
+static void		MGADisplayPowerManagementSet();
 
 extern void		MGASetRead();
 extern void		MGASetWrite();
@@ -947,7 +947,9 @@ MGAProbe()
 
 	vgaSetLinearOffsetHook(MGALinearOffset);
 
-	vgaSetDisplayPowerManagementHook(MGADisplayPowerManagement);
+#ifdef DPMSExtension
+	vga256InfoRec.DPMSSet = MGADisplayPowerManagementSet;
+#endif
 
 	return(TRUE);
 }
@@ -1680,11 +1682,12 @@ DisplayModePtr mode;
 }
 
 /*
- * MGADisplayPowerManagement --
+ * MGADisplayPowerManagementSet --
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-static void MGADisplayPowerManagement(PowerManagementMode)
+#ifdef DPMSExtension
+static void MGADisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
 	unsigned char crtcext1;
@@ -1693,20 +1696,21 @@ int PowerManagementMode;
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
-	    /* HSync: On, VSync: on */
+	    /* HSync: On, VSync: On */
 	    break;
 	case DPMSModeStandby:
-	    /* HSync: Off, VSync: on */
+	    /* HSync: Off, VSync: On */
 	    crtcext1 |= 0x10;
 	    break;
 	case DPMSModeSuspend:
-	    /* HSync: On, VSync: off */
+	    /* HSync: On, VSync: Off */
 	    crtcext1 |= 0x20;
 	    break;
 	case DPMSModeOff:
-	    /* HSync: Off, VSync: off */
+	    /* HSync: Off, VSync: Off */
 	    crtcext1 |= 0x30;
 	    break;
 	}
 	outb(0x3DF, crtcext1);
 }
+#endif

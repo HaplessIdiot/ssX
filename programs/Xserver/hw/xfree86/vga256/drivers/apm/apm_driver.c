@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.5 1996/12/27 07:04:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.6 1996/12/28 08:16:36 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -240,9 +240,7 @@ static int apmDisplayableMemory;
 
 static SymTabRec chipsets[] = {
 	{ AP6422,  "AP6422"},
-#if 0
 	{ AT24,    "AT24" },
-#endif
 	{ -1,		"" },
 };
 
@@ -506,7 +504,7 @@ ApmProbe()
 			apmChip = AP6422;
 			break;
 		case '4':
-			apmChip = AP6422;
+			apmChip = AT24;
 			break;
 		default:
 			ApmEnterLeave(LEAVE);

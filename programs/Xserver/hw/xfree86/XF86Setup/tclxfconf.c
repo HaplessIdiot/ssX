@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.12 1996/12/20 06:44:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.13 1996/12/27 06:54:22 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -240,6 +240,11 @@ ScrnInfoPtr	xf86Screens[] = {
 #ifdef XKB
 Bool		noXkbExtension;
 char		*XkbInitialMap;
+#endif
+#ifdef DPMSExtension
+CARD32 DPMSStandbyTime;
+CARD32 DPMSSuspendTime;
+CARD32 DPMSOffTime;
 #endif
 #ifdef XF86VIDMODE
 Bool		xf86VidModeEnabled;
@@ -1030,10 +1035,14 @@ getsection_screen(interp, varname)
 		    StrOrNull(((GDevPtr) vptr->device)->identifier), 0);
             sprintf(tmpbuf, "%ld", ScreenSaverTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "BlankTime", tmpbuf, 0);
-            sprintf(tmpbuf, "%d", vptr->offTime/MILLI_PER_MIN);
-            Tcl_SetVar2(interp, namebuf, "OffTime", tmpbuf, 0);
-            sprintf(tmpbuf, "%d", vptr->suspendTime/MILLI_PER_MIN);
+#ifdef DPMSExtension
+            sprintf(tmpbuf, "%d", DPMSStandbyTime/MILLI_PER_MIN);
+            Tcl_SetVar2(interp, namebuf, "StandbyTime", tmpbuf, 0);
+            sprintf(tmpbuf, "%d", DPMSSuspendTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "SuspendTime", tmpbuf, 0);
+            sprintf(tmpbuf, "%d", DPMSOffTime/MILLI_PER_MIN);
+            Tcl_SetVar2(interp, namebuf, "OffTime", tmpbuf, 0);
+#endif
             if (vptr->tmpIndex >= 0) {
                 sprintf(tmpbuf, "%d", vptr->tmpIndex);
                 Tcl_SetVar2(interp, namebuf, "ScreenNo", tmpbuf, 0);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_Blitter.h,v 1.1 1997/01/12 10:43:03 dawes Exp $ */
 
 
 /* Definitions for the SIS engine communication. */
@@ -33,21 +33,6 @@
 #define sisPATREG		0x08
 #define sisPATFG		0x04
 #define sisPATBG		0x00
-
-#if 0
-#define sisSRCMONO               0x0
-#define sisBGTRANSPARENT         0x22000
-#define sisPATMONO               0x40000L
-#define sisPATSOLID              0x80000L
-#define sisPATSTART0             0x000000L
-#define sisPATSTART1             0x100000L
-#define sisPATSTART2             0x200000L
-#define sisPATSTART3             0x300000L
-#define sisPATSTART4             0x400000L
-#define sisPATSTART5             0x500000L
-#define sisPATSTART6             0x600000L
-#define sisPATSTART7             0x700000L
-#endif
 
 
 /* Macros to do useful things with the SIS BitBLT engine */
@@ -99,6 +84,8 @@
   *(unsigned int *)(sisMMIOBase + BR(9)) = (((y)&0xFFFF)<<16)| \
       ((x)&0xFFFF)
 
+#define sisSETBGCOLOR(bgColor)\
+  *(unsigned int *)(sisMMIOBase + BR(5)) = (bgColor)
 
 #define sisSETBGCOLOR8(bgColor)\
   *(unsigned int *)(sisMMIOBase + BR(5)) = (bgColor&0xFF)
@@ -108,6 +95,10 @@
 
 #define sisSETBGCOLOR24(bgColor)\
   *(unsigned int *)(sisMMIOBase + BR(5)) = (bgColor&0xFFFFFF)
+
+
+#define sisSETFGCOLOR(fgColor)\
+  *(unsigned int *)(sisMMIOBase + BR(4)) = (fgColor)
 
 #define sisSETFGCOLOR8(fgColor)\
   *(unsigned int *)(sisMMIOBase + BR(4)) = (fgColor&0xFF)

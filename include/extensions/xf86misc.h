@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.4 1996/02/22 05:09:21 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.5 1996/03/10 11:51:22 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -12,8 +12,10 @@
 #include <X11/Xfuncproto.h>
 
 #define X_XF86MiscQueryVersion		0
+#ifdef _XF86MISC_SAVER_COMPAT_
 #define X_XF86MiscGetSaver		1
 #define X_XF86MiscSetSaver		2
+#endif
 #define X_XF86MiscGetMouseSettings	3
 #define X_XF86MiscGetKbdSettings	4
 #define X_XF86MiscSetMouseSettings	5
@@ -86,24 +88,6 @@ Bool XF86MiscQueryExtension(
     Display*		/* dpy */,
     int*		/* event_base */,
     int*		/* error_base */
-#endif
-);
-
-Status XF86MiscGetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int*			/* suspendtime */,
-    int*			/* offtime */
-#endif
-);
-
-Status XF86MiscSetSaver(
-#if NeedFunctionPrototypes
-    Display*			/* dpy */,
-    int				/* screen */,
-    int				/* suspendtime */,
-    int				/* offtime */
 #endif
 );
 

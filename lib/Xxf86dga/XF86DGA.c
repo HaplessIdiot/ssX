@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.9 1996/11/20 14:00:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.10 1996/12/09 11:50:06 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -368,7 +368,7 @@ Bool XF86DGAViewPortChanged(dpy, screen, n)
 #include <X11/extensions/xf86dga.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #if defined(ISC) 
 # define HAS_SVR3_MMAP
 # include <sys/types.h>

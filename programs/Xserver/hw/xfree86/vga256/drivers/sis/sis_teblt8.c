@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_teblt8.c,v 1.1 1997/01/12 10:43:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_teblt8.c,v 1.2 1997/01/12 10:52:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1989  X Consortium
@@ -250,7 +250,7 @@ sisMMIOImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			(unsigned char *)vgaLinearBase + sisBLTPatternAddress);
 #ifdef DUMPDATA
 	DumpData(iglyph, h, glyphWidth, 
-		 (unsigned char *)vgaLinearBase + sisBLTPatternAddress);
+		 (unsigned char *)vgaLinearBase + sisBLTPatternAddress, 6);
 #endif
 
 	sisSETCMD(op);    
@@ -519,7 +519,7 @@ sisMMIOPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			(unsigned char *)vgaLinearBase + sisBLTPatternAddress);
 #ifdef DUMPDATA
 	DumpData(iglyph, h, glyphWidth, 
-		 (unsigned char *)vgaLinearBase + sisBLTPatternAddress);
+		 (unsigned char *)vgaLinearBase + sisBLTPatternAddress, 6);
 #endif
 
 	sisSETCMD(op);    
@@ -609,33 +609,35 @@ sisTransferText(nglyph, h, glyphp, glyphwidth, base)
 }
 #endif
 
-DumpData(nglyph, h, glyphwidth, base)
+DumpData(nglyph, h, glyphwidth, base, startWord)
     int nglyph;
     int h;
     int glyphwidth;
     unsigned int *base;
+    int startWord ;
 {
-
+#define DATA_ON "1"
+#define DATA_OFF " "
     int i,j ;
     int show=0;
     for ( j=0;j<h;j++) {
         for(i = 0; i < (((glyphwidth * nglyph + 31 ) & ~31) >> 5); i++) {
-	    if ( i > 6 ) {
+	    if ( i >= startWord ) {
 		int ii ;
 		unsigned int tmp ;
 		show = 1 ;
 		tmp = *base ;
 		for ( ii =0 ; ii< 8 ; ii++ )
-		    ErrorF("%s",(tmp&(0x80L>>ii))?"1":" ");
+		    ErrorF("%s",(tmp&(0x80L>>ii))?DATA_ON:DATA_OFF);
 		tmp >>= 8 ;
 		for ( ii  =0 ; ii< 8 ; ii++ )
-		    ErrorF("%s",(tmp&(0x80L>>ii))?"1":" ");
+		    ErrorF("%s",(tmp&(0x80L>>ii))?DATA_ON:DATA_OFF);
 		tmp >>= 8 ;
 		for ( ii =0 ; ii< 8 ; ii++ )
-		    ErrorF("%s",(tmp&(0x80L>>ii))?"1":" ");
+		    ErrorF("%s",(tmp&(0x80L>>ii))?DATA_ON:DATA_OFF);
 		tmp >>= 8 ;
 		for ( ii =0 ; ii< 8 ; ii++ )
-		    ErrorF("%s",(tmp&(0x80L>>ii))?"1":" ");
+		    ErrorF("%s",(tmp&(0x80L>>ii))?DATA_ON:DATA_OFF);
 	    }
 	    base++;
 	}

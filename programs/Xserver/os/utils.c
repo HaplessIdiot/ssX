@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/127 1996/12/02 10:23:20 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.25 1997/01/12 10:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.26 1997/01/14 22:22:55 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -75,7 +75,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx)
 #include <sys/resource.h>
 #endif
 #include <time.h>
@@ -214,7 +214,11 @@ OsSignal(sig, handler)
 #endif
 
 #ifndef PATH_MAX
+#ifndef Lynx
 #include <sys/param.h>
+#else
+#include <param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN

@@ -65,7 +65,7 @@ extern int errno;
 #endif
 #include "lbxzlib.h"
 #include <sys/types.h>
-#ifndef WIN32
+#if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>
 #endif
 #include "lbxbufstr.h"

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.0 1996/11/18 13:22:25 dawes Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.0 1996/06/29 09:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.0 1996/11/18 13:22:25 dawes Exp $ */
 
 /*
  * Generic accelerated general lines.
@@ -393,8 +393,14 @@ xf86PolyLine(pDrawable, pGC, mode, npt, pptInit)
 		if ((oc1 | oc2) == 0)
 		{
 		    if (UseTwoPointLine) {
+#ifdef POLYSEGMENT
+		        xf86AccelInfoRec.SubsequentTwoPointLine(
+		            x1, y1, x2, y2, bias |
+		            pGC->capStyle == CapNotLast ? 0x100 : 0);
+#else
 		        xf86AccelInfoRec.SubsequentTwoPointLine(
 		            x1, y1, x2, y2, bias);
+#endif
 		        break;
 		    }
 		    if (!(octant & YMAJOR))
@@ -443,6 +449,7 @@ xf86PolyLine(pDrawable, pGC, mode, npt, pptInit)
 		        xf86AccelInfoRec.SubsequentBresenhamLine(x1, y1,
 		            octant, e, e1, e2, len);
 		    }
+		    pbox++;
 		}
 		else
 		{

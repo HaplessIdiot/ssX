@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.59 1997/01/12 10:45:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.60 1997/01/14 22:21:48 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -104,6 +104,8 @@ typedef struct {
 	unsigned char VCLK_O;		/* For MiscOutReg		*/
 	unsigned char VCLK_A;		/* For Programmable Clock (low) */
 	unsigned char VCLK_B;		/* For Programmable Clock (hi)  */
+	unsigned char MCLK_A;		/* For Programmable MCLK	*/
+	unsigned char MCLK_B;		/* For Programmable MCLK	*/
 	unsigned char VLBusReg;		/* For VL Bus and 32bit mode 	*/
 	unsigned char MiscExtFunc;	/* For Misc. Ext. Functions     */
 	unsigned char GraphEngReg;	/* For Graphic Engine Control   */
@@ -514,7 +516,7 @@ TVGA8900Probe()
 			TVGAchipset = TGUI96xx;
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
 		{
-			TVGAchipset = CYBER938x;
+			TVGAchipset = TGUI96xx;
 			IsCyber = TRUE;
 		}
 		else
@@ -751,7 +753,11 @@ TVGA8900Probe()
 				REV = "ProVidia 9692";
 				break;
 			default:
-				REV = "(Unknown - report!)";
+				TVGA8900EnterLeave(LEAVE);
+				FatalError("Please specify either Chipset \"tgui96xx\"\n"
+					   "or Chipset \"cyber938x\" in your XF86Config file\n"
+					   "and report this ID : %d to trident@xfree86.org",
+					   temp);
 				break;
 		}
 		ErrorF("%s %s: Detected a Trident %s.\n",
@@ -761,7 +767,10 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
-		tridentHasAcceleration = TRUE;
+		if (!IsCyber)
+		{
+			tridentHasAcceleration = TRUE;
+		}
 		TVGA8900.ChipHas16bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
 		if (IsCyber)
@@ -775,29 +784,35 @@ TVGA8900Probe()
 			if (temp & 0x80) 
 				LCD = "TFT";
 			else
-				LCD = "STN";
-			outb(0x3CE, 0x31);
+			{
+				outb(0x3CE, 0x43); temp = inb(0x3CF);
+				if (temp & 0x20)
+					LCD = "DSTN";
+				else
+					LCD = "STN";
+			}
+			outb(0x3CE, 0x52);
 			temp = inb(0x3CF);
-			switch ((temp & 0x60)>>5) {
-				case 0:
-					SIZE = " 640x480";
-					CyberLCDHeight = 640;
-					CyberLCDWidth = 480;
-					break;
+			switch ((temp & 0x30)>>4) {
 				case 1:
+					SIZE = " 640x480";
+					CyberLCDHeight = 480;
+					CyberLCDWidth = 640;
+					break;
+				case 3:
 					SIZE = " 800x600";
-					CyberLCDHeight = 800;
-					CyberLCDWidth = 600;
+					CyberLCDHeight = 600;
+					CyberLCDWidth = 800;
 					break;
 				case 2:
 					SIZE = " 1024x768";
-					CyberLCDHeight = 1024;
-					CyberLCDWidth = 768;
-					break;
-				case 3:
-					SIZE = " 1280x1024";
-					CyberLCDHeight = 1280;
+					CyberLCDHeight = 768;
 					CyberLCDWidth = 1024;
+					break;
+				case 0:
+					SIZE = " 1280x1024";
+					CyberLCDHeight = 1024;
+					CyberLCDWidth = 1280;
 					break;
 			}	
 			ErrorF("%s %s: Detected an %s %s Display\n",
@@ -873,24 +888,16 @@ TVGA8900Probe()
 
 	if (tridentTGUIProgrammableClocks) 
 	{
-		int a, b, m, n, k, mclk;
-		unsigned char savereg;
-
 		/* Enable extra IO ports for the TGUI */
 		xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_TGUI_ExtPorts,
 			       TGUI_ExtPorts);
 		TVGA8900EnterLeave(LEAVE); /* force update of IO ports */
 		TVGA8900EnterLeave(ENTER);
 
-		outb(0x3C4, 0x0E); savereg = inb(0x3C5);
-		outb(0x3C5, 0xC2);
-		a = inb(0x43C6);
-		b = inb(0x43C7);
-		m = (a & 0x03) | 0x04;
-		n = ((b & 0x01) << 6) | ((a & 0xFC) >> 2);
-		k = (b & 0x02) >> 1;
-		mclk = ((n+8) * 14.31818) / ((m+2) * pow(2,k));
-		outw(0x3C4, (savereg << 8) | 0x0E);
+		OFLG_SET(OPTION_TGUI_MCLK_66, &TVGA8900.ChipOptionFlags);
+		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
+			ErrorF("%s %s: Forcing MCLK to 66MHz\n", XCONFIG_GIVEN,
+				vga256InfoRec.name);
 
 		OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &TVGA8900.ChipOptionFlags);
 
@@ -1017,9 +1024,9 @@ TVGA8900Probe()
 
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
-		OFLG_SET(OPTION_TGUI_PCI_READ_OFF,
+		OFLG_SET(OPTION_TGUI_PCI_READ_ON,
 			&TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_TGUI_PCI_WRITE_OFF,
+		OFLG_SET(OPTION_TGUI_PCI_WRITE_ON,
 			&TVGA8900.ChipOptionFlags);
 	}
 
@@ -1335,8 +1342,17 @@ TVGA8900Restore(restore)
 
 	if (tridentTGUIProgrammableClocks)
 	{
+		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
+		{
+			outb(0x43C6, restore->MCLK_A);
+			outb(0x43C7, restore->MCLK_B);
+		}
+		/* Was this .....
 		if (TVGAchipset != TGUI9320LCD)
 			outb(0x3C2, restore->VCLK_O);
+		but I think we don't need the != anymore for the 9320.
+		*/
+		outb(0x3C2, restore->VCLK_O);
 		outb(0x43C8, restore->VCLK_A);
 		outb(0x43C9, restore->VCLK_B);
 	}
@@ -1497,6 +1513,8 @@ TVGA8900Save(save)
 			save->VCLK_O = inb(0x3CC);
 			save->VCLK_A = inb(0x43C8);
 			save->VCLK_B = inb(0x43C9);
+			save->MCLK_A = inb(0x43C6);
+			save->MCLK_B = inb(0x43C7);
 		}
 
 #ifndef MONOVGA
@@ -1649,7 +1667,10 @@ TVGA8900Init(mode)
 	new->std.CRTC[19] = offset & 0xFF;
 	outb(vgaIOBase + 4, 0x29);
 	new->AddColReg = inb(vgaIOBase + 5) | ((offset & 0x100) >> 4);
- 	new->CRTHiOrd = ((mode->CrtcVSyncStart & 0x400) >> 4) |
+
+	/* Anything less than a 9440 doesn't have 10 CRTC address bits */
+	if (TVGAchipset >= TGUI9440AGi)
+ 		new->CRTHiOrd = ((mode->CrtcVSyncStart & 0x400) >> 4) |
  			(((mode->CrtcVTotal - 2) & 0x400) >> 3) |
  			((mode->CrtcVSyncStart & 0x400) >> 5) |
  			(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
@@ -1702,14 +1723,16 @@ TVGA8900Init(mode)
 	{
 		outb(vgaIOBase + 4, 0x39);
 		new->PCIReg = inb(vgaIOBase + 5);
-		/* Turn PCI Burst Read and Write ON - By Default ! */
-		new->PCIReg |= 0x06;
-		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_OFF,
+		/* Turn PCI Burst Read and Write OFF - By Default ! */
+		/* Otherwise the Graphics Engine flakes out !	    */
+		/* But we still allow it to be turned on, if poss.  */
+		new->PCIReg &= 0xF9;
+		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_ON,
 					&vga256InfoRec.options))
-			new->PCIReg &= 0xFD;
-		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_OFF,
+			new->PCIReg |= 0x02;
+		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_ON,
 					&vga256InfoRec.options))
-			new->PCIReg &= 0xFB;
+			new->PCIReg |= 0x04;
 	}
 
 	if (TVGAchipset >= TGUI9440AGi)
@@ -1722,13 +1745,10 @@ TVGA8900Init(mode)
 			new->CyberVExp = inb(0x3CF);
 			outb(0x3CE, 0x53);
 			new->CyberHExp = inb(0x3CF);
-			if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options))
-			{
-				/* Don't stretch */
-				new->CyberVExp &= 0xFE; 
-				new->CyberHExp &= 0xFE;
-			}
-			else
+			/* turn off stretch: */
+			new->CyberVExp &= 0xFE; 
+			new->CyberHExp &= 0xFE;
+			if (!OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options))
 			{
 				/* Stretch Width */
 				if (mode->CrtcHDisplay < CyberLCDWidth)
@@ -1737,7 +1757,7 @@ TVGA8900Init(mode)
 				if (mode->CrtcVDisplay < CyberLCDHeight)
 					new->CyberHExp |= 0x01;
 			}
-			if (OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options))
+			if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options))
 			{
 				/* Center */
 				new->CyberVExp |= 0x80;
@@ -1746,8 +1766,8 @@ TVGA8900Init(mode)
 			else
 			{
 				/* Don't Center */
-				new->CyberVExp &= 0xEF;
-				new->CyberHExp &= 0xEF;
+				new->CyberVExp &= 0x7F;
+				new->CyberHExp &= 0x7F;
 			}
 		}
 
@@ -1822,7 +1842,22 @@ TVGA8900Init(mode)
 	if (new->std.NoClock >= 0)
 	{
 		if (tridentTGUIProgrammableClocks)
+		{
 			TGUISetClock(new->std.NoClock);
+			if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
+			{
+				if (IsCyber)
+				{
+					new->MCLK_A = 0xBD;
+					new->MCLK_B = 0x58;
+				}
+				else
+				{
+					new->MCLK_A = 0x8F;
+					new->MCLK_B = 0x00;
+				}
+			}
+		}
 		else
 		{
   			new->NewMode2 = (new->std.NoClock & 0x04) >> 2;

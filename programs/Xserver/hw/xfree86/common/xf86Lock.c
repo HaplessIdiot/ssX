@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.9 1996/12/23 06:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.10 1997/01/14 22:17:34 dawes Exp $ */
 
 /*
  * Explicit support for a server lock file like the ones used for UUCP.
@@ -26,7 +26,11 @@
 #endif
 
 #ifndef PATH_MAX
+#ifndef Lynx
 #include <sys/param.h>
+#else
+#include <param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN

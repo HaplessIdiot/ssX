@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.59 1996/12/23 06:39:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.60 1997/01/05 11:53:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -58,6 +58,11 @@
 #include "mach64im.h"
 #endif
 
+#ifdef DPMSExtension
+#include "opaque.h"
+#include "extensions/dpms.h"
+#endif
+
 #include "xf86_PCI.h"
 
 #define XCONFIG_FLAGS_ONLY
@@ -108,6 +113,7 @@ ScrnInfoRec mach64InfoRec = {
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     mach64AdjustFrame,	/* void (* AdjustFrame)() */
     mach64SwitchMode,	/* Bool (* SwitchMode)() */
+    mach64DPMSSet	,/* void (* DPMSSet)() */
     mach64PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -148,10 +154,10 @@ ScrnInfoRec mach64InfoRec = {
     0,                  /* int s3Madjust */
     0,                  /* int s3Nadjust */
     0,                  /* int s3MClk */
+    0,                  /* int chipID */
+    0,                  /* int chipRev */
     0,                  /* unsigned long VGAbase */
     0,                  /* int s3RefClk */
-    0,                  /* int suspendTime */
-    0,                  /* int offTime */
     -1,                 /* int s3BlankDelay */
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */
@@ -193,7 +199,6 @@ int mach64VirtX, mach64VirtY;
 
 Bool mach64Use4MbAperture = FALSE;
 Bool mach64DAC8Bit = FALSE;
-Bool mach64PowerSaver = FALSE;
 
 static unsigned Mach64_IOPorts[] = {
 	/* VGA Registers */
@@ -1518,7 +1523,9 @@ mach64Probe()
     }
 
     if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
-	mach64PowerSaver = TRUE;
+#ifdef DPMSExtension
+	DPMSEnabled = TRUE;
+#endif
 
 #ifdef XFreeXDGA
     mach64InfoRec.displayWidth = mach64InfoRec.virtualX;
@@ -1848,95 +1855,6 @@ mach64CloseScreen(screen_idx, pScreen)
     return(TRUE);
 }
 
-static OsTimerPtr suspendTimer = NULL, offTimer = NULL;
-extern CARD32 ScreenSaverTime;
-
-/*
- * mach64OffMode -- put the screen into power off mode.
- */
-
-static CARD32
-mach64OffMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-    Bool on = (Bool)arg;
-
-    if (!mach64PowerSaver) return(0);
-
-    if (xf86VTSema) {
-	int crtcGenCntl = regr(CRTC_GEN_CNTL);
-	if (on) {
-	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
-	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
-	} else {
-	    crtcGenCntl |= CRTC_HSYNC_DIS;
-	    crtcGenCntl |= CRTC_VSYNC_DIS;
-	}
-
-	usleep(10000);
-	regw(CRTC_GEN_CNTL, crtcGenCntl);
-   }
-   if (offTimer) {
-      TimerFree(offTimer);
-      offTimer = NULL;
-   }
-   return(0);
-}
-
-/*
- * mach64SuspendMode -- put the screen into suspend mode.
- */
-
-static CARD32
-mach64SuspendMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-    Bool on = (Bool)arg;
-
-    if (!mach64PowerSaver) return(0);
-
-    if (xf86VTSema) {
-	int crtcGenCntl = regr(CRTC_GEN_CNTL);
-	if (on) {
-	    crtcGenCntl &= ~CRTC_HSYNC_DIS;
-	    crtcGenCntl &= ~CRTC_VSYNC_DIS;
-	} else {
-	    crtcGenCntl |= CRTC_HSYNC_DIS;
-	}
-
-	usleep(10000);
-	regw(CRTC_GEN_CNTL, crtcGenCntl);
-
-	if (!on && mach64InfoRec.offTime != 0) {
-	    if (mach64InfoRec.offTime > mach64InfoRec.suspendTime &&
-		mach64InfoRec.offTime > ScreenSaverTime) {
-
-		int timeout;
-
-		/* Setup timeout for mach64OffMode() */
-		if (mach64InfoRec.suspendTime < ScreenSaverTime)
-		   timeout = mach64InfoRec.offTime - ScreenSaverTime;
-		else
-		   timeout = mach64InfoRec.offTime - mach64InfoRec.suspendTime;
-
-		offTimer = TimerSet(offTimer, 0, timeout,
-			        mach64OffMode, (pointer)FALSE);
-	    } else {
-		mach64OffMode(NULL, 0, (pointer)FALSE);
-	    }
-	}
-    }
-    if (suspendTimer) {
-      TimerFree(suspendTimer);
-      suspendTimer = NULL;
-   }
-   return(0);
-}
-
 /*
  * mach64SaveScreen --
  *      blank the screen.
@@ -1950,12 +1868,6 @@ mach64SaveScreen (pScreen, on)
 	SetTimeSinceLastInputEvent();
 
     if (xf86VTSema) {
-
-	/* Turn off Off and Suspend mode */
-	if (mach64PowerSaver && on) {
-	    mach64OffMode(NULL, 0, (pointer)TRUE);
-	    mach64SuspendMode(NULL, 0, (pointer)TRUE);
-	}
 
 	if (on) {
 	    mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
@@ -2004,28 +1916,43 @@ mach64SaveScreen (pScreen, on)
 	    if (mach64RamdacSubType != DAC_ATI68875)
 		outb(ioDAC_REGS+2, 0x00);
 	}
-	if (mach64PowerSaver && !on) {
-	    if (mach64InfoRec.suspendTime != 0) {
-		if (mach64InfoRec.suspendTime > ScreenSaverTime) {
-		    suspendTimer = TimerSet(suspendTimer, 0,
-					    mach64InfoRec.suspendTime -
-					    ScreenSaverTime,
-					    mach64SuspendMode, (pointer)FALSE);
-		} else {
-		    mach64SuspendMode(NULL, 0, (pointer)FALSE);
-		}
-	    } else if (mach64InfoRec.offTime != 0) {
-		if (mach64InfoRec.offTime > ScreenSaverTime) {
-		    offTimer = TimerSet(offTimer, 0,
-					mach64InfoRec.offTime - ScreenSaverTime,
-					mach64OffMode, (pointer)FALSE);
-		} else {
-		    mach64OffMode(NULL, 0, (pointer)FALSE);
-		}
-	    }
-	}
     }
     return(TRUE);
+}
+
+/*
+ * mach64DPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
+ */
+
+void
+mach64DPMSSet(PowerManagementMode)
+    int PowerManagementMode;
+{
+#ifdef DPMSExtension
+    int crtcGenCntl;
+    if (!DPMSEnabled) return;
+    crtcGenCntl = regr(CRTC_GEN_CNTL) & ~(CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
+    switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+	/* HSync: On, VSync: On */
+	break;
+    case DPMSModeStandby:
+	/* HSync: Off, VSync: On */
+	crtcGenCntl |= CRTC_HSYNC_DIS;
+	break;
+    case DPMSModeSuspend:
+	/* HSync: On, VSync: Off */
+	crtcGenCntl |= CRTC_VSYNC_DIS;
+	break;
+    case DPMSModeOff:
+	/* HSync: Off, VSync: Off */
+	crtcGenCntl |= (CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
+	break;
+    }
+    usleep(10000);
+    regw(CRTC_GEN_CNTL, crtcGenCntl);
+#endif
 }
 
 /*

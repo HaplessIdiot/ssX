@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.21 1996/12/18 03:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.22 1996/12/23 06:56:57 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -51,6 +51,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "cirBlitter.h"
 #endif
 #include "cir_inline.h"
+
 
 void CirrusTransferTextWidth8();
 void CirrusTransferTextWidth6();
@@ -118,6 +119,8 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	int shift, line;
 	unsigned dworddata;
 	int destaddr, blitwidth;
+
+
 
 	glyphWidth = FONTMAXBOUNDS(pfont,characterWidth);
 	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -353,7 +356,11 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	void (*PolyGlyph)();
 
-	cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
+
+    /* I don't think that we can use this function in multiple pixel
+       depths modes w/o compiling this file multiple times.  The fix
+       is to not allow CirrusPolyGlyphBlt() be called when bpp > 8. */
+    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase);
 
 	if (!CHECKSCREEN(pdstBase)) {
 		cfbPolyGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,

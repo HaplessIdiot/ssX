@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.37 1996/12/23 06:35:19 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.38 1996/12/28 08:14:15 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -69,10 +69,11 @@ ScrnInfoRec vga256InfoRec = {
   vgaScreenInit,	/* Bool (* Init)() */
   vgaValidMode,		/* int (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
-  (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
-  (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
+  (void (*)())NoopDDA,	/* void (* EnterLeaveMonitor)() */
+  (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
   (void (*)())NoopDDA,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
+  vgaDPMSSet,		/* void (* DPMSSet)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
   8,			/* int depth */
   {0, 0, 0},            /* xrgb weight */
@@ -113,10 +114,10 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int s3Madjust */
   0,			/* int s3Nadjust */
   0,			/* int s3MClk */
+  0,			/* int chipId */
+  0,			/* int chipRev */
   0,			/* unsigned long VGAbase */
   0,			/* int s3RefClk */
-  0,			/* int suspendTime */
-  0,			/* int offTime */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
   NULL,                 /* char* DCConfig */
@@ -174,7 +175,6 @@ void *vgaWriteTop;
 
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
-extern Bool vgaPowerSaver;
 
 int vgaIOBase;
 
@@ -415,8 +415,10 @@ vgaProbe()
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
+#ifdef DPMSExtension
 	if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
-	    vgaPowerSaver = TRUE;
+	    DPMSEnabled = TRUE;
+#endif
 
 	/* if Virtual given: is the virtual size too big? */
 	if (vga256InfoRec.virtualX > 0 &&

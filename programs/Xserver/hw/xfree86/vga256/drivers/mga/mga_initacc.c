@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.1 1996/12/09 11:54:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.2 1997/01/04 12:18:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
@@ -38,6 +38,13 @@ void MGAAccelInit() {
  */
 void MgaSync() 
 {
+    /*
+     * Flush the read cache (SDK 5-2)
+     * It doesn't matter which VGA register we write,
+     * so we pick one that's not used in "Power" mode.
+     */
+    OUTREG8(MGAREG_CRTC_INDEX, 0);
+     
     WAITUNTILFINISHED();
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.3 1997/01/12 10:48:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.4 1997/01/14 22:22:00 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -37,7 +37,11 @@
 #include "mi.h"
 #include "fcntl.h"
 #include "time.h"
+#ifndef Lynx
 #include "sys/time.h"
+#else
+#include <time.h>
+#endif
 
 #include "xf86.h"
 #include "xf86xaa.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.45 1996/12/23 06:43:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.46 1997/01/12 10:41:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -158,6 +158,11 @@ typedef struct {
     DisplayModePtr modes
 #endif
 );
+  void           (* DPMSSet)(
+#if NeedNestedPrototypes
+    int level
+#endif
+);
   void           (* PrintIdent)(
 #if NeedNestedPrototypes
     void
@@ -202,10 +207,10 @@ typedef struct {
   int            s3Madjust;
   int            s3Nadjust;
   int            s3MClk;
+  int            chipID;
+  int            chipRev;
   unsigned long  VGAbase;         /* AGX - 64K aperture memory address    */
   int            s3RefClk;
-  int            suspendTime;
-  int            offTime;
   int            s3BlankDelay;
   int            textClockFreq;
   char          *DCConfig;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.11 1996/12/29 13:49:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.12 1997/01/14 22:17:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,6 +87,7 @@ ScrnInfoRec s3InfoRec =
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
    (void (*)())NoopDDA,		/* void (* AdjustFrame)() */
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
+   s3DPMSSet,			/* void (* DPMSSet)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */
@@ -127,10 +128,10 @@ ScrnInfoRec s3InfoRec =
    0,				/* int s3Madjust */
    0,				/* int s3Nadjust */
    0,				/* int s3MClk */
+   0,				/* int chipID */
+   0,				/* int chipRev */
    0,				/* unsigned long VGAbase */
    0,				/* int s3RefClk */
-   0,				/* int suspendTime */
-   0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
@@ -180,7 +181,6 @@ Bool  s3NewMmio = TRUE;
 Bool  s3PixelMultiplexing = FALSE;
 Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
-Bool  s3PowerSaver = FALSE;
 unsigned char s3LinApOpt;
 unsigned char s3SAM256 = 0x00;
 int s3BankSize;
@@ -567,6 +567,17 @@ s3Probe()
       s3ChipId |= (inb(vgaCRReg) << 8);
       outb(vgaCRIndex, 0x2f);
       s3ChipRev |= (inb(vgaCRReg) << 4);
+   }
+
+   if (s3InfoRec.chipID) {
+      ErrorF("%s %s: S3 chipset override, using chip_id = 0x%02x instead of 0x%02x\n",
+	     XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.chipID, s3ChipId);
+      s3ChipId = s3InfoRec.chipID;
+   }
+   if (s3InfoRec.chipRev) {
+      ErrorF("%s %s: S3 chipset override, using chip_rev = %x instead of %x\n",
+	     XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.chipRev, s3ChipRev);
+      s3ChipRev = s3InfoRec.chipRev;
    }
 
    if (!S3_ANY_SERIES(s3ChipId)) {
@@ -1613,8 +1624,10 @@ redo_mode_lookup:
 	     s3InfoRec.virtualX, s3InfoRec.virtualY);
    }
 
+#ifdef DPMSExtension
    if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
-      s3PowerSaver = TRUE;
+      DPMSEnabled = TRUE;
+#endif
 
    if (! (s3Port59 | s3Port5A)) { /* s3Port59/s3Port5A not yet initialized */
       if (s3InfoRec.MemBase != 0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.2 1996/02/04 08:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.3 1996/12/23 06:31:22 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -27,8 +27,8 @@
 
 #include <fcntl.h>
 #include <conf.h>
-#include <sys/kd.h>
-#include <sys/vt.h>
+#include <kd.h>
+#include <vt.h>
 #include <smem.h>
 
 #include <kernel.h>		/* for PHYSBASE */

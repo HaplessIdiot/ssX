@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.76 1997/01/12 10:42:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.77 1997/01/14 22:19:57 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1215,7 +1215,7 @@ cirrusProbe()
 
 		   /* Read LCD size at R9X [3:2]. */
 	           outb(vgaIOBase + 4, 0x09);
-	           switch (temp = inb(vgaIOBase + 5)) {
+	           switch (((temp = inb(vgaIOBase + 5)) & 0x0C) >> 2) {
 	           case 0x0 :
 	           	size = "640x480";
 	           	cirrusLCDVerticalSize = 480;
@@ -1657,9 +1657,15 @@ cirrusProbe()
          OFLG_SET(OPTION_NO_IMAGEBLT, &CIRRUS.ChipOptionFlags);
      }
 #ifdef CIRRUS_SUPPORT_MMIO
-     if (cirrusChip == CLGD5429 || HAVEALPINE() || HAVE546X())
+     if (cirrusChip == CLGD5429 || HAVEALPINE() || HAVE546X()) {
          OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
+         if (HAVEALPINE() && !(cirrusChip == CLGD7548))
+             OFLG_SET(OPTION_NO_MMIO, &CIRRUS.ChipOptionFlags);
+     }
 #endif
+     if (HAVE754X()) {
+         OFLG_SET(OPTION_LCD_STRETCH, &CIRRUS.ChipOptionFlags);
+     }
 
      /* <scooper>
       *	The Hardware cursor, if the chip is capable, can be turned off using
@@ -2238,8 +2244,11 @@ nolinear:
     /* MMIO is _not_ optional for 546X chips.  But it doesn't hurt anything
        anyway, unless you happen to have about 4GB of RAM */
     /* Register is set in init function. */
-    if (((cirrusChip == CLGD5429 || HAVEALPINE()) &&
-	OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) || HAVE546X()) {
+    if ((cirrusChip == CLGD5429 && OFLG_ISSET(OPTION_MMIO,
+    &vga256InfoRec.options))
+    || ((HAVEALPINE() && !(cirrusChip == CLGD7548)) &&
+    !(OFLG_ISSET(OPTION_NO_MMIO, &vga256InfoRec.options)))
+    || HAVE546X()) {
         cirrusUseMMIO = TRUE;
 	
 	if (cirrusBusType == CIRRUS_BUS_PCI && HAVE546X()) {
@@ -3654,14 +3663,20 @@ cirrusInit(mode)
 	   * for 1024x768 LCDs).
 	   */
 	  new->CR2D &= ~(0x1);	/* Only touch bit 0. */
-	  new->CR2E &= ~(0x20 | 0x8 | 0x2);
+	  new->CR2E &= ~(0x20 | 0x8 | 0x2 | 0x1);
 	  if (cirrusLCDVerticalSize >= 600) {
 	      /* 800x600 or 1024x768 LCD */
 	      /* Clear CR2D bit 0: No automatic (640x480 LCD?) centering. */
-	      if (mode->HDisplay <= 640 && vga256InfoRec.bitsPerPixel <= 8)
-	          new->CR2E |= 0x8;	/* Horizontal expansion. */
-	      if (mode->VDisplay <= 480)
-	          new->CR2E |= 0x1;	/* Vertical expansion. */
+	      if (!OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options)) {
+	          /*
+	           * If the flag to disable stretching is not set,
+	           * enable stetching (horizontal and vertical expansion).
+	           */
+	          if (mode->HDisplay <= 640 && vga256InfoRec.bitsPerPixel <= 8)
+	              new->CR2E |= 0x8;	/* Horizontal expansion. */
+	          if (mode->VDisplay <= 480)
+	              new->CR2E |= 0x1;	/* Vertical expansion. */
+	      }
 	      new->CR2E |= 0x20; /* Enable automatic horizontal centering. */
 	  }
 	  else  {

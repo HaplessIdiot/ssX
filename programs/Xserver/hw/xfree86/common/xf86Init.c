@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.63 1996/12/23 06:43:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.64 1997/01/12 10:41:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -452,9 +452,6 @@ OsVendorInit()
  * DPMSSet --
  *	Device dependent DPMS mode setting hook.  This is called whenever
  *	the DPMS mode is to be changed.
- *
- *	This should hook in to the appropriate driver-level function, which
- *	will be added to the ScrnInfoRec.
  */
 void
 DPMSSet(CARD16 level)
@@ -463,7 +460,7 @@ DPMSSet(CARD16 level)
 
     /* For each screen, set the power saver level */
     for (i = 0; i < screenInfo.numScreens; i++) {
-	 ;
+	(XF86SCRNINFO(screenInfo.screens[i])->DPMSSet)(level);
     }
 
     DPMSPowerLevel = level;
@@ -492,29 +489,21 @@ DPMSGet(CARD16 *level)
     for (i = 0; i < screenInfo.numScreens; i++) {
 	 ;
     }
-
-    DPMSPowerLevel = level;
 }
 #endif
 
 /*
  * DPMSSupported --
  *	Return TRUE if any screen supports DPMS.
- *
- *	This should hook in to the appropriate driver-level function, which
- *	will be added to the ScrnInfoRec.
- *
  */
 Bool
 DPMSSupported(void)
 {
     int i;
-    DPMSSupportStatus supported = DPMSSupportUnknown;
 
     /* For each screen, check if DPMS is supported */
     for (i = 0; i < screenInfo.numScreens; i++) {
-	supported = DPMSNotSupported;
-	if (supported != DPMSNotSupported)
+	if (XF86SCRNINFO(screenInfo.screens[i])->DPMSSet != (void (*)())NoopDDA)
 	    return TRUE;
     }
     return FALSE;

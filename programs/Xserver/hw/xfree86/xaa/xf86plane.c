@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.1 1996/12/18 03:13:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.2 1997/01/14 22:22:09 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -257,7 +257,8 @@ planemask, bitPlane)
      * These checks are ugly, they belong in ValidateGC.
      */
     accel = FALSE;
-    if (CopyPlane1ToNIsAccelerated(pSrcDrawable, pDstDrawable, alu, planemask))
+    if (CopyPlane1ToNIsAccelerated(pSrcDrawable, pDstDrawable, alu, planemask,
+    bgPixel, fgPixel))
 	accel = TRUE;
     
     if (accel) {

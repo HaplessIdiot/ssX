@@ -32,7 +32,7 @@
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-#ifndef WIN32
+#if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>
 #endif
 #include "lbxbufstr.h"

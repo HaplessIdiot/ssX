@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.2 1995/01/12 05:57:08 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.3 1996/10/06 13:18:58 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -47,10 +47,18 @@ from the X Consortium.
 # include	<ctype.h>
 
 #ifndef MINIX
+#ifndef Lynx
 #include	<sys/socket.h>
+#else
+#include	<socket.h>
+#endif
 #include	<netinet/in.h>
 #ifndef X_NO_SYS_UN
+#ifndef Lynx
 #include	<sys/un.h>
+#else
+#include	<un.h>
+#endif
 #endif
 #include	<netdb.h>
 #else /* MINIX */

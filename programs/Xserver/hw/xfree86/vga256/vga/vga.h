@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.21 1997/01/08 20:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.22 1997/01/12 10:45:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -37,6 +37,11 @@
 #include "input.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
+
+#ifdef DPMSExtension
+#include "opaque.h"
+#include "extensions/dpms.h"
+#endif
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 extern void    vgaBitBlt(
@@ -224,11 +229,6 @@ void vgaSetScreenInitHook(Bool (* ChipScrInit)(
 #endif
 	));
 
-/* Allow each driver to provide a VESA Display Power Management
-   Signaling (DPMS) mode setting function */
-void vgaSetDisplayPowerManagementHook(void (* ChipDisplayPowerManagement)());
-extern void (* vgaDisplayPowerManagementFunc)();
-
 /*
  * hooks for communicating with the VideoChip on the VGA
  */
@@ -303,8 +303,6 @@ extern pointer vgaNewVideoState;
 extern pointer vgaBase;              /* the framebuffer himself */
 extern pointer vgaLinearBase;
 
-extern OsTimerPtr vgaSuspendTimer, vgaOffTimer;
-
 typedef struct {
   unsigned char MiscOutReg;     /* */
   unsigned char CRTC[25];       /* Crtc Controller */
@@ -357,11 +355,6 @@ typedef struct {
 #define COLORMAP_SIZE 256
 
 #endif
-
-#define DPMSModeOn	0
-#define DPMSModeStandby	1
-#define DPMSModeSuspend	2
-#define DPMSModeOff	3
 
 #define DACDelay \
 	{ \
@@ -513,6 +506,12 @@ void vgaAdjustFrame(
 Bool vgaSwitchMode(
 #if NeedFunctionPrototypes
     DisplayModePtr mode
+#endif
+);
+
+void vgaDPMSSet(
+#if NeedFunctionPrototypes
+    int PowerManagementMode
 #endif
 );
 

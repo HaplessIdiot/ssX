@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.43 1996/12/09 11:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.44 1996/12/23 06:31:33 dawes Exp $ */
 
 /*
  * Includes
@@ -566,6 +566,11 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9660	SVGA_TYPE(V_TRIDENT,16)	/* Trident GUI9660	*/
 #define CHIP_TVGA9680	SVGA_TYPE(V_TRIDENT,17) /* Trident GUI9680	*/
 #define CHIP_TVGA9682	SVGA_TYPE(V_TRIDENT,18) /* Trident GUI9682	*/
+#define CHIP_TVGA9685	SVGA_TYPE(V_TRIDENT,19) /* Trident GUI9685	*/
+#define CHIP_TVGA9692	SVGA_TYPE(V_TRIDENT,20) /* Trident GUI9692	*/
+#define CHIP_TVGA9382	SVGA_TYPE(V_TRIDENT,21) /* Trident Cyber9382	*/
+#define CHIP_TVGA9385	SVGA_TYPE(V_TRIDENT,22) /* Trident Cyber9385	*/
+#define CHIP_TVGA9385_1	SVGA_TYPE(V_TRIDENT,23) /* Trident Cyber9385-1  */
 #define CHIP_SIS_UNK	SVGA_TYPE(V_SIS,0)	/* SiS unknown		*/
 #define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
 #define CHIP_SIS86C202	SVGA_TYPE(V_SIS,2)	/* SiS SG86C202		*/

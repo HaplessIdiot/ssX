@@ -33,7 +33,7 @@ from the X Consortium.
   under contract to X Consortium, Inc.
  */
 
-/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.5 1997/01/05 12:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.6 1997/01/12 10:49:17 dawes Exp $ */
 
 #if defined(sun) && defined(i386) && defined(SVR4)
 #define __EXTENSIONS__
@@ -50,12 +50,18 @@ from the X Consortium.
  */
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #include <sys/wait.h>
 #include <netdb.h>
 #include <signal.h>
 #include <errno.h>
+#ifndef Lynx
 #include <sys/param.h>
+#endif
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/Xfuncs.h>

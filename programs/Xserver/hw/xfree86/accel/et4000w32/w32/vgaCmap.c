@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.6 1996/11/18 13:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.7 1996/12/23 06:35:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -314,7 +314,6 @@ W32SaveScreen (pScreen, on)
     unsigned char state;
     unsigned char *cmap;
     unsigned char overscan; 
-    extern vgaPowerSaver;
 
     if (on)
 	SetTimeSinceLastInputEvent();
@@ -337,13 +336,15 @@ W32SaveScreen (pScreen, on)
 
 	    set_clu_entry(overscan, cmap);
 
-	    if (vgaPowerSaver && W32pCAndLater)
+#ifdef DPMSExtension
+	    if (DPMSEnabled && W32pCAndLater)
 	    {
 		outb(vgaIOBase + 4, 0x34);
 		GlennsIODelay();
 		outb(vgaIOBase + 5, state);
 		GlennsIODelay();
 	    }
+#endif
 	} else {
 	    state |= 0x21;
 	    W32Blanked = TRUE; 
@@ -356,13 +357,15 @@ W32SaveScreen (pScreen, on)
 	    outb(0x3C0, 0x00);         
 	    GlennsIODelay();
 
-	    if (vgaPowerSaver && W32pCAndLater)
+#ifdef DPMSExtension
+	    if (DPMSEnabled && W32pCAndLater)
 	    {
 		outb(vgaIOBase + 4, 0x34);
 		GlennsIODelay();
 		outb(vgaIOBase + 5, state);
 		GlennsIODelay();
 	    }
+#endif
 	}
     }
     return(TRUE);

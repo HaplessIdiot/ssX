@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.32 1997/01/12 10:42:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.33 1997/01/14 22:18:03 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -193,6 +193,47 @@ int * ctMMIO;
 extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
 extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
 #endif
+
+/* alu to C&T conversion for use with source data */
+int ctAluConv[] =
+{
+    0x00,			       /* dest = 0; GXclear, 0 */
+    0x88,			       /* dest &= src; GXand, 0x1 */
+    0x44,			       /* dest = src & ~dest; GXandReverse, 0x2 */
+    0xCC,			       /* dest = src; GXcopy, 0x3 */
+    0x22,			       /* dest &= ~src; GXandInverted, 0x4 */
+    0xAA,			       /* dest = dest; GXnoop, 0x5 */
+    0x66,			       /* dest = ^src; GXxor, 0x6 */
+    0xEE,			       /* dest |= src; GXor, 0x7 */
+    0x11,			       /* dest = ~src & ~dest;GXnor, 0x8 */
+    0x99,			       /*?? dest ^= ~src ;GXequiv, 0x9 */
+    0x55,			       /* dest = ~dest; GXInvert, 0xA */
+    0xDD,			       /* dest = src|~dest ;GXorReverse, 0xB */
+    0x33,			       /* dest = ~src; GXcopyInverted, 0xC */
+    0xBB,			       /* dest |= ~src; GXorInverted, 0xD */
+    0x77,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
+    0xFF,			       /* dest = 0xFF; GXset, 0xF */
+};
+/* alu to C&T conversion for use with pattern data */
+int ctAluConv2[] =
+{
+    0x00,			       /* dest = 0; GXclear, 0 */
+    0xA0,			       /* dest &= src; GXand, 0x1 */
+    0x50,			       /* dest = src & ~dest; GXandReverse, 0x2 */
+    0xF0,			       /* dest = src; GXcopy, 0x3 */
+    0x0A,			       /* dest &= ~src; GXandInverted, 0x4 */
+    0xAA,			       /* dest = dest; GXnoop, 0x5 */
+    0x5A,			       /* dest = ^src; GXxor, 0x6 */
+    0xFC,			       /* dest |= src; GXor, 0x7 */
+    0x03,			       /* dest = ~src & ~dest;GXnor, 0x8 */
+    0xA5,			       /*?? dest ^= ~src ;GXequiv, 0x9 */
+    0x55,			       /* dest = ~dest; GXInvert, 0xA */
+    0xF5,			       /* dest = src|~dest ;GXorReverse, 0xB */
+    0x0F,			       /* dest = ~src; GXcopyInverted, 0xC */
+    0xAF,			       /* dest |= ~src; GXorInverted, 0xD */
+    0x5F,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
+    0xFF,			       /* dest = 0xFF; GXset, 0xF */
+};
 
 /* Driver data structures. */
 struct {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.19 1996/12/17 20:59:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.20 1996/12/24 08:47:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -17,6 +17,7 @@
 #include "inputstr.h"
 #include "servermd.h"
 #define _XF86MISC_SERVER_
+#define _XF86MISC_SAVER_COMPAT_
 #include "xf86mscstr.h"
 #include "Xfuncproto.h"
 #include "xf86.h"
@@ -27,7 +28,11 @@
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
 #ifndef ESIX
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #else
 #include <lan/socket.h>
 #endif
@@ -115,6 +120,10 @@ ProcXF86MiscQueryVersion(client)
     return (client->noClientException);
 }
 
+/*
+ * This will go away, but remains for now for compatibility with older
+ * clients.
+ */
 static int
 ProcXF86MiscSetSaver(client)
     register ClientPtr client;
@@ -134,12 +143,13 @@ ProcXF86MiscSetSaver(client)
     if (stuff->offTime < 0)
 	return BadValue;
 
-    vptr->suspendTime = stuff->suspendTime * 1000;
-    vptr->offTime = stuff->offTime * 1000;
-
     return (client->noClientException);
 }
 
+/*
+ * This will go away, but remains for now for compatibility with older
+ * clients.
+ */
 static int
 ProcXF86MiscGetSaver(client)
     register ClientPtr client;
@@ -158,8 +168,8 @@ ProcXF86MiscGetSaver(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.suspendTime = vptr->suspendTime / 1000;
-    rep.offTime = vptr->offTime / 1000;
+    rep.suspendTime = 0;
+    rep.offTime = 0;
     
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);

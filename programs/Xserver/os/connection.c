@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/155 1996/12/15 21:27:07 rws $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.23 1996/12/23 07:09:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.24 1996/12/24 02:27:35 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -80,7 +80,11 @@ extern int errno;
 
 #ifndef WIN32
 #ifndef MINIX
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #endif
 
 #ifdef hpux
@@ -128,7 +132,11 @@ extern __const__ int _nfiles;
 #endif
 
 #if !defined(AMOEBA) && !defined(_MINIX) && !defined(__EMX__)
+#ifndef Lynx
 #include <sys/uio.h>
+#else
+#include <uio.h>
+#endif
 #endif
 #endif /* WIN32 */
 #include "misc.h"		/* for typedef of pointer */

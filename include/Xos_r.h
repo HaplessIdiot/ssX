@@ -271,15 +271,25 @@ typedef struct {
 
 #elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 /* SVR4 threads, AIX 4.2.0 and earlier and OSF/1 3.2 and earlier pthreads */
+# if defined(Lynx) && !defined(LINE_MAX)
+#  define LINE_MAX	2048		/* what Xthreads.h does */
+# endif
 typedef struct {
   struct passwd pws;
   char pwbuf[LINE_MAX];
 } _Xgetpwparams;
-# if defined(_POSIX_REENTRANT_FUNCTIONS) || !defined(SVR4)
-#  define _XGetpwuid(u,p) \
+# if defined(_POSIX_REENTRANT_FUNCTIONS) || !defined(SVR4) || defined(Lynx)
+#  ifndef Lynx
+#   define _XGetpwuid(u,p) \
 ((getpwuid_r((u),&(p).pws,(p).pwbuf,sizeof((p).pwbuf)) == -1) ? NULL : &(p).pws)
-#  define _XGetpwnam(u,p) \
+#   define _XGetpwnam(u,p) \
 ((getpwnam_r((u),&(p).pws,(p).pwbuf,sizeof((p).pwbuf)) == -1) ? NULL : &(p).pws)
+#  else /* Lynx */
+#   define _XGetpwuid(u,p) \
+((getpwuid_r(&(p).pws,(u),(p).pwbuf,sizeof((p).pwbuf)) == -1) ? NULL : &(p).pws)
+#   define _XGetpwnam(u,p) \
+((getpwnam_r(&(p).pws,(u),(p).pwbuf,sizeof((p).pwbuf)) == -1) ? NULL : &(p).pws)
+#  endif
 # else /* SVR4 */
 #  define _XGetpwuid(u,p) \
 ((getpwuid_r((u),&(p).pws,(p).pwbuf,sizeof((p).pwbuf)) == NULL) ? NULL : &(p).pws)

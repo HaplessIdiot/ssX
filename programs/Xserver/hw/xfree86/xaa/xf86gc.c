@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.4 1997/01/02 04:38:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.5 1997/01/12 10:48:07 dawes Exp $ */
 
 /***********************************************************
 
@@ -259,13 +259,19 @@ xf86ValidateGC(pGC, changes, pDrawable)
             return;
         if (VTSwitch) {
             last_xf86VTSema = xf86VTSema;
+#if 0
             ErrorF("Switch away detected\n");
+#endif
         }
     	return;
     }
     last_xf86VTSema = xf86VTSema;
-    if (VTSwitch)
+    if (VTSwitch) {
+        xf86InvalidatePixmapCache();
+#if 0
         ErrorF("Switch to graphics mode detected\n");
+#endif
+    }
 
     new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
 		 pGC->lastWinOrg.y != pDrawable->y;
@@ -337,10 +343,6 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	case GCFillStyle:
 	    new_text = TRUE;
 	    new_fillspans = TRUE;
-	    /*
-	     * XXX Why are filled polygons classified as lines?
-	     * Don't they belong to "fillarea"?
-	     */
 	    new_line = TRUE;
 	    new_fillarea = TRUE;
 	    break;
@@ -565,23 +567,11 @@ xf86ValidateGC(pGC, changes, pDrawable)
      * raster-op, planemask and "RGB_EQUAL" restrictions
      * used for selecting accelerated functions.
      */
-    if (new_rrop) {
+    if (new_rrop || (changes & GCBackground)) {
         new_line = TRUE;
         new_text = TRUE;
-        /*
-         * The accelerated text functions rely on cfb fall-back functions.
-         * These are set in the xf86AccelInfoRec, not pGC->ops, so we
-         * must make sure that the cfb text function is initialized.
-         * Same goes for FillRect and FillSpans.
-         * XXX This scheme is flawed. Fall-back function cannot be set
-         * globally, they are GC-specific.
-         */
         new_fillspans = TRUE;
-        if (!match_common)
-            new_cfb_fillspans = TRUE;
         new_fillarea = TRUE;
-        if (!match_common)
-            new_cfb_fillarea = TRUE;
     }
 
     if (new_line || match_common) {

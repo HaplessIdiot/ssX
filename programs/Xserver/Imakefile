@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.81 1997/01/02 04:04:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.82 1997/01/14 22:13:51 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1435,7 +1435,7 @@ XNESTDDXDIR = hw/xnest
 XNESTDDXDIR = hw
 #endif
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
-#if !defined(LynsOSArchitecture) && !defined(Win32Architecture)
+#if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
 XNESTOBJS = 
 #else
 XNESTOBJS = dix/main.o

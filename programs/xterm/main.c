@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.45 1996/12/23 07:14:32 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.46 1997/01/08 20:52:27 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -178,7 +178,7 @@ static Bool IsPts = False;
 #ifdef Lynx
 #define USE_SYSV_TERMIO
 #undef  TIOCSLTC
-#include <sys/termio.h>
+#include <termio.h>
 #endif
 
 #ifdef CSRG_BASED
@@ -298,7 +298,11 @@ static Bool IsPts = False;
 #ifndef USE_POSIX_TERMIOS
 #include <sgtty.h>
 #endif /* USE_POSIX_TERMIOS */
+#ifndef Lynx
 #include <sys/resource.h>
+#else
+#include <resource.h>
+#endif
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
 #ifdef __osf__
@@ -318,7 +322,7 @@ static Bool IsPts = False;
 #define HAS_POSIX_SAVED_IDS
 #endif
 
-#if !defined(MINIX) && !defined(WIN32)
+#if !defined(MINIX) && !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>	/* for NOFILE */
 #endif
 
@@ -3888,7 +3892,11 @@ nonblocking_wait()
 	/* cannot do non-blocking wait */
 	int pid = 0;
 #else	/* defined(USE_SYSV_SIGNALS) && (defined(CRAY) || !defined(SIGTSTP)) */
+#ifndef Lynx
 	union wait status;
+#else
+	int status;
+#endif
 	register int pid;
 
 	pid = wait3 (&status, WNOHANG, (struct rusage *)NULL);

@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.4 1996/12/27 07:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.5 1997/01/08 20:35:41 dawes Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -59,6 +59,9 @@ enum {                            /* Offsets into MMIO space for bitBLT regs */
   OP2_opRDRAM  = 0x0560,
   OP0_opMRDRAM = 0x0524,
   OP1_opMRDRAM = 0x0544,
+  OP2_opMRDRAM = 0x0564,
+  OP0_opSRAM   = 0x0528,
+  OP2_opSRAM   = 0x0568,
   DRAWDEF      = 0x0584,
   BLTDEF       = 0x0586,
   BLTEXT_EX    = 0x0700,
@@ -68,15 +71,17 @@ enum {                            /* Offsets into MMIO space for bitBLT regs */
   HOSTDATA     = 0x0800,
   OP_opBGCOLOR = 0x05E4,
   OP_opFGCOLOR = 0x05E0,
-  bltCONTROL   = 0x0402
+  bltCONTROL   = 0x0402,
+  BITMASK      = 0x05E8
 };
 
-enum { HOSTDATASIZE = 2048 };   /* The HOSTDATA port is 2048 DWORDS */
+enum { HOSTDATASIZE = 2048 };   /* The HOSTDATA port is 2048 BYTES */
  
 enum {                      /* OR these together to form a bitBLT mode */
   HOST2SCR   = 0x1120,      /* CPU/Screen transfer modes */
   SCR2HOST   = 0x2010,
   HOST2PAT   = 0x1102,
+  HOST2SRAM2 = 0x6020,      /* CPU to SRAM2 transfer */
 
   SCR2SCR    = 0x1110,      /* Screen/Screen transfers */
   COLORSRC   = 0x0000,      /* Source is color data */
@@ -87,6 +92,7 @@ enum {                      /* OR these together to form a bitBLT mode */
   PAT2SCR    = 0x1109,      /* Pattern/Screen transfers */
   COLORPAT   = 0x0000,      /* Pattern is color data */
   MONOPAT    = 0x0004,      /* Pattern is mono data (color expansion) */
+  SRAM2PAT2SCR   = 0x1108,  /* SRAM2 is pattern source */
 
   PATeqSRC   = 0x0800,      /* The Pattern and Source operands are the same */
 
@@ -135,12 +141,23 @@ int LgReady(void);
 
 #define LgSETTRANSMASK(X, Y) LgSETPATXY(X, Y)
 
+#define LgSETSRAMDST(offset) \
+  *(unsigned short *)(cirrusMMIOBase + OP0_opSRAM) = (offset);
+
+#define LgSETSRAM2OFFSET(offset) \
+  *(unsigned short *)(cirrusMMIOBase + OP2_opSRAM) = (offset);
+
 #define LgSETMDSTXY(X, Y) \
   *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (((Y) << 16) | (X));
 
 #define LgSETMSRCXY(X, Y) \
   *(unsigned long *)(cirrusMMIOBase + OP1_opMRDRAM) = (((Y) << 16) | (X));
     
+#define LgSETMPATXY(X, Y) \
+  *(unsigned long *)(cirrusMMIOBase + OP2_opMRDRAM) = (((Y) << 16) | (X));
+
+#define LgSETMTRANSMASK(X, Y) LgSETMPATXY(X, Y)
+
 #define LgSETPHASE0(phase) \
   *(unsigned long *)(cirrusMMIOBase + OP0_opRDRAM) = (phase);
 
@@ -175,13 +192,16 @@ int LgReady(void);
   *(unsigned long *)(cirrusMMIOBase + OP_opFGCOLOR) = (color);
 
 #define LgSETPATOFF(xoff, yoff) \
-  *(unsigned short *)(cirrusMMIOBase + PATOFF) = ((yoff) << 8) | (xoff));
+  *(unsigned short *)(cirrusMMIOBase + PATOFF) = (((yoff) << 8) | (xoff));
 
 #define LgSETSWIZZLE() \
   *(unsigned short *)(cirrusMMIOBase + bltCONTROL) |= 0x0400;
 
 #define LgCLEARSWIZZLE() \
   *(unsigned short *)(cirrusMMIOBase + bltCONTROL) &= ~0x0400;
+
+#define LgSETBITMASK(m) \
+  *(unsigned int *)(cirrusMMIOBase + BITMASK) = m;
 
 
 #endif  /* __CIR_BLITLG_H */

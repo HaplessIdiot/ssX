@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.1 1996/02/04 09:01:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.2 1996/12/23 06:35:43 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -49,7 +49,6 @@ static PixmapPtr ppix = NULL;
 extern int i128DisplayWidth;
 extern pointer vgaBase;
 extern pointer i128VideoMem;
-extern Bool i128PowerSaver;
 extern struct i128mem i128mem;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;

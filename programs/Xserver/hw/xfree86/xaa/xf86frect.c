@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.6 1997/01/12 10:48:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.7 1997/01/14 22:22:03 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.6 1997/01/12 10:48:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.7 1997/01/14 22:22:03 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -111,6 +111,21 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     /* No bullshit please. */
     if (nrectFill <= 0)
         return;
+
+    /*
+     * The cfb code at one point (in cfbigblt8.c) cheats by not
+     * doing a ValidateGC when changing the foreground color.
+     * To repair the damage we must explictly check any color
+     * restrictions here.
+     */
+    if (pGC->fillStyle == FillSolid &&
+    (xf86GCInfoRec.PolyFillRectSolidFlags & RGB_EQUAL) &&
+    ((pGC->fgPixel & 0xFF) != ((pGC->fgPixel & 0xFF00) >> 8) ||
+    (pGC->fgPixel & 0xFF) != ((pGC->fgPixel & 0xFF0000) >> 16))) {
+        (*xf86GCInfoRec.PolyFillRectSolidFallBack)(pDrawable, pGC,
+            nrectFill, prectInit);
+        return;
+    }
 
     /*
      * cfb does "priv = cfbGetGCPrivate(pGC);" here. But since we compile
@@ -493,6 +508,49 @@ xf86miFillRectStippledFallBack(pDrawable, pGC, nBox, pBox)
         (rectHeight) = _rectBotY - (rectTopY);				 \
     }
 
+static void RotatePattern(pattern, xoffset, yoffset)
+    unsigned char *pattern;
+    int xoffset;
+    int yoffset;
+{
+    int y;
+    y = yoffset;
+    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
+        pattern[0] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[1] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[2] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[3] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[4] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[5] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[6] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[7] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+    }
+    else {
+        pattern[0] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[1] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[2] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[3] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[4] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[5] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[6] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        y = (y + 1) & 7;
+        pattern[7] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+    }
+}
+
 void
 xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
     DrawablePtr pDrawable;
@@ -641,17 +699,48 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 
-	    if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS)
-	    && (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
-	         * Special case; pattern data is passed in function arguments.
+	         * pattern data is passed in function arguments.
 	         */
-	        patternx = pci->pattern0;
-	        patterny = pci->pattern1;
+	        if (xf86AccelInfoRec.Flags &
+	        HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
+	            /*
+	             * This is the sweet and easy case.
+	             * Actually, if screen origin is also set,
+	             * the origin offset could be passed here also
+	             * since it will remain constant, but that would
+	             * require extra arguments in the Setup function.
+	             */
+	            patternx = pci->pattern0;
+	            patterny = pci->pattern1;
+	        }
+	        else
+	            if (xf86AccelInfoRec.Flags
+	            & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+	                /*
+	                 * Programmed bits but no programmed origin,
+	                 * but screen origin so that we only need to
+	                 * rotate once.
+	                 */
+	                unsigned int pattern[2];
+	                pattern[0] = pci->pattern0;
+	                pattern[1] = pci->pattern1;
+	                RotatePattern((unsigned char *)&pattern,
+	                    (- adjLeftX) & 7,
+	                    (- adjTopY) & 7);
+	                patternx = pattern[0];
+	                patterny = pattern[1];
+	            }
+	            /* Otherwise, rotate every time. */
 	    }
             else {
-                /* Video memory location of pattern data. */
-	        patternx = pci->x;
+                /*
+                 * Video memory location of pattern data.
+                 * Note that the x-coordinate is defined in "bit" or
+                 * "stencil" units for a monochrome pattern.
+                 */
+	        patternx = pci->x * xf86AccelInfoRec.BitsPerPixel;
 	        patterny = pci->y;
 	        if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
 	            /*
@@ -720,6 +809,25 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
 		            patternx, patterny, rectX1, rectY1, rectWidth,
 		            rectHeight);
 		    else
+	            if (xf86AccelInfoRec.Flags
+	            & HARDWARE_PATTERN_PROGRAMMED_BITS) {
+	                /*
+	                 * Programmed bits but no programmed origin,
+	                 * and no screen origin.
+	                 * Rotate the bit pattern.
+	                 */
+	                unsigned int pattern[2];
+	                pattern[0] = pci->pattern0;
+	                pattern[1] = pci->pattern1;
+	                RotatePattern((unsigned char *)&pattern,
+	                    (rectX1 - adjLeftX) & 7,
+	                    (rectY1 - adjTopY) & 7);
+		        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
+		            pattern[0], pattern[1],
+		            rectX1, rectY1, rectWidth,
+		            rectHeight);
+	            }
+	            else
 		        xf86AccelInfoRec.Subsequent8x8PatternColorExpand(
 		            patternx + ((rectY1 - adjTopY) & 7) * 64,
 		            patterny + ((rectX1 - adjLeftX) & 7),

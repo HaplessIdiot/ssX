@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.2 1997/01/02 04:38:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.3 1997/01/14 22:22:05 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -266,6 +266,7 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
     } /* endif new_cfb_line */
     if (xf86GCInfoRec.PolyLineSolidZeroWidth &&
         pGC->lineStyle == LineSolid &&
+        pGC->fillStyle == FillSolid &&
         pGC->lineWidth == 0 &&
 #if !defined(NO_ONE_RECT)
 	(!(xf86GCInfoRec.PolyLineSolidZeroWidthFlags & ONE_RECT_CLIPPING)
@@ -358,19 +359,21 @@ no_new_cfb_text:
 	if (xf86GCInfoRec.PolyGlyphBltNonTE
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.PolyGlyphBltNonTEFlags)
-	    && CHECKROP(xf86GCInfoRec.PolyGlyphBltNonTEFlags))
+            && CHECKROP(xf86GCInfoRec.PolyGlyphBltNonTEFlags)
+            && CHECKRGBEQUAL(xf86GCInfoRec.PolyGlyphBltNonTEFlags))
 	    PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltNonTE;
 	if (xf86GCInfoRec.ImageGlyphBltNonTE
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
-	    && CHECKROP(xf86GCInfoRec.ImageGlyphBltNonTEFlags))
+            && CHECKROP(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
+            && CHECKRGBEQUALBOTH(xf86GCInfoRec.ImageGlyphBltNonTEFlags))
 	    ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltNonTE;
     } else {	/* TERMINALFONT(pGC->font) */
 	if (xf86GCInfoRec.PolyGlyphBltTE
 	    && pGC->fillStyle == FillSolid
 	    && CHECKPLANEMASK(xf86GCInfoRec.PolyGlyphBltTEFlags)
 	    && CHECKROP(xf86GCInfoRec.PolyGlyphBltTEFlags)
-	    && CHECKRGBEQUALBOTH(xf86GCInfoRec.PolyGlyphBltTEFlags))
+            && CHECKRGBEQUAL(xf86GCInfoRec.PolyGlyphBltTEFlags))
 	    PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltTE;
 	if (xf86GCInfoRec.ImageGlyphBltTE
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltTEFlags)
@@ -529,16 +532,6 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 	if (!CHECKROP(xf86GCInfoRec.PolyFillRectTiledFlags))
 	    break;
 	PolyFillRectFunc = xf86GCInfoRec.PolyFillRectTiled;
-	/* We need to set fall backs also. */
-	if (!devPriv->pRotatedPixmap)
-	    xf86AccelInfoRec.FillRectTiledFallBack = cfbFillRectTileOdd;
-	else {
-	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		xf86AccelInfoRec.FillRectTiledFallBack = cfbFillRectTile32Copy;
-	    else
-		xf86AccelInfoRec.FillRectTiledFallBack =
-		    cfbFillRectTile32General;
-	}
 	break;
     case FillStippled:
     	if (!xf86GCInfoRec.PolyFillRectStippled)

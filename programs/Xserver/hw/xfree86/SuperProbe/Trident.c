@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.9 1996/09/22 05:01:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.10 1996/12/23 06:31:39 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -51,6 +51,7 @@ int *Chipset;
 {
         Bool result = FALSE;
 	Byte chip, old, old1, val;
+	unsigned char temp;
 	int i = 0;
 
 	if (!NoPCI)
@@ -70,13 +71,34 @@ int *Chipset;
 				*Chipset = CHIP_TVGA9440;
 				break;
 			case PCI_CHIP_9660:
-				*Chipset = CHIP_TVGA9660;
-				break;
-			case PCI_CHIP_9680:
-				*Chipset = CHIP_TVGA9680;
-				break;
-			case PCI_CHIP_9682:
-				*Chipset = CHIP_TVGA9682;
+				outp(0x3C4, 0x09);
+				temp = inp(0x3C5);
+				switch (temp) {
+					case 0x00:
+						*Chipset = CHIP_TVGA9660;
+						break;
+					case 0x01:
+						*Chipset = CHIP_TVGA9680;
+						break;
+					case 0x10:
+						*Chipset = CHIP_TVGA9682;
+						break;
+					case 0x21:
+						*Chipset = CHIP_TVGA9685;
+						break;
+					case 0x30:
+						*Chipset = CHIP_TVGA9385;
+						break;
+					case 0x38:
+						*Chipset = CHIP_TVGA9385_1;
+						break;
+					case 0x40:
+						*Chipset = CHIP_TVGA9382;
+						break;
+					case 0x50:
+						*Chipset = CHIP_TVGA9692;
+						break;
+				}
 				break;
 			default:
 				Chip_data = chip;
@@ -153,7 +175,34 @@ int *Chipset;
 			*Chipset = CHIP_TVGA9420D;
 			break;
 		case 0xD3:
-			*Chipset = CHIP_TVGA9660;
+			outp(0x3C4, 0x09);
+			temp = inp(0x3C5);
+			switch (temp) {
+				case 0x00:
+					*Chipset = CHIP_TVGA9660;
+					break;
+				case 0x01:
+					*Chipset = CHIP_TVGA9680;
+					break;
+				case 0x10:
+					*Chipset = CHIP_TVGA9682;
+					break;
+				case 0x21:
+					*Chipset = CHIP_TVGA9685;
+					break;
+				case 0x30:
+					*Chipset = CHIP_TVGA9385;
+					break;
+				case 0x38:
+					*Chipset = CHIP_TVGA9385_1;
+					break;
+				case 0x40:
+					*Chipset = CHIP_TVGA9382;
+					break;
+				case 0x50:
+					*Chipset = CHIP_TVGA9692;
+					break;
+			}
 			break;
 		case 0xE3:
 			*Chipset = CHIP_TVGA9440;

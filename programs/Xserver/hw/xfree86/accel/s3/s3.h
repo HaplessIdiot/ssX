@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.46 1996/12/28 08:14:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.47 1997/01/14 22:16:50 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -164,8 +164,8 @@ typedef struct {
 } s3VideoChipRec, *s3VideoChipPtr;
 
 extern ScrnInfoRec s3InfoRec;
-extern short s3ChipId;
-extern int s3ChipRev;
+extern unsigned short s3ChipId;
+extern unsigned int s3ChipRev;
 
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN
@@ -377,6 +377,11 @@ Bool s3SaveScreen(
 Bool s3SwitchMode(
 #if NeedFunctionPrototypes
     DisplayModePtr 
+#endif
+);
+void s3DPMSSet(
+#if NeedFunctionPrototypes
+    int PowerManagementMode
 #endif
 );
 void s3AdjustFrame(

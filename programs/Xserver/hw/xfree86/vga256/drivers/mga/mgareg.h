@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgareg.h,v 3.2 1996/11/18 13:18:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgareg.h,v 3.3 1996/12/27 07:05:33 dawes Exp $ */
 
 /*
  * mga register file 
@@ -177,6 +177,10 @@
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
 #define MGWDWG_TRANSC		( 0x01 << 30 )
+
+/* MMIO VGA registers */
+#define MGAREG_CRTC_INDEX	0x1fd4
+#define MGAREG_CRTC_DATA	0x1fd5
 
 /* MGA registers in PCI config space */
 #define PCI_MGA_INDEX		0x44

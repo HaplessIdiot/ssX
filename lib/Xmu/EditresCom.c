@@ -1,4 +1,4 @@
-/* $XConsortium: EditresCom.c,v 1.33 94/04/17 20:16:05 rws Exp $ */
+/* $XConsortium: EditresCom.c /main/34 1995/12/11 00:19:42 gildea $ */
 
 /*
 
@@ -208,7 +208,7 @@ Boolean *cont;
 	}
 
 	XtGetSelectionValue(w, res_comm, res_editor_command,
-			    GetCommand, (XtPointer) ident, time);
+			    GetCommand, (XtPointer)(long) ident, time);
     }
 }
 
@@ -222,6 +222,10 @@ Boolean *cont;
  *                 length - length of request.
  *	Returns: the event, or NULL.
  */
+
+#if defined(Lynx) && defined(ERROR_MESSAGE)
+#undef ERROR_MESSAGE
+#endif
 
 #define ERROR_MESSAGE ("Client: Improperly formatted protocol request")
 
@@ -415,7 +419,7 @@ Atom *selection, *type;
 unsigned long *length;
 int * format;
 {
-    ResIdent ident = (ResIdent) data;
+    ResIdent ident = (ResIdent)(long) data;
     EditresEvent * event;
 
     if ( (*type != res_editor_protocol) || (*format != EDITRES_FORMAT) )

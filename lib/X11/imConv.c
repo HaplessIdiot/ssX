@@ -134,7 +134,7 @@ static int codeset_size = sizeof(codeset) / sizeof(codeset[0]);
 
 #define sCyrillic 6
 static struct CodesetRec koi8codeset = {
-    0x06l, "\033%/1\177\210koi8-r\002", get_koi8  /* KIO8-R (Cyrillic) */
+    0x06l, "\033%/1\200\210koi8-r\002", get_koi8  /* KIO8-R (Cyrillic) */
 };
 
 static unsigned char

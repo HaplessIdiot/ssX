@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.5 1997/01/12 10:48:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.6 1997/01/14 22:22:08 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -231,6 +231,12 @@ void xf86InitPixmapCacheSlots()
         xf86CacheInfo[i].bg_color = 0;
         xf86CacheInfo[i].flags = 0;
     }
+}
+
+void xf86InvalidatePixmapCache() {
+   int i;
+   for (i = 0; i <= MaxSlot; i++)
+       xf86CacheInfo[i].id == -1;
 }
 
 int xf86CacheTile(pix)
@@ -875,8 +881,7 @@ static void DoCacheTile(pix)
 	     * below, and if there is a pattern origin offset, we'll
 	     * only write one version).
 	     */
-	    if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS)
-	    && (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
 	         * Easy, just put the 8x8 stipple data into two ints.
 	         * No need to use the pixmap cache slot at all.

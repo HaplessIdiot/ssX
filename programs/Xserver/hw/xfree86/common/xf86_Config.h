@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.57 1996/11/24 09:55:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.58 1996/12/23 06:43:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -45,9 +45,6 @@
 #undef MONO
 #endif
 
-#define DEFAULT_SUSPEND_TIME	(15*60)		/* 15 minutes */
-#define DEFAULT_OFF_TIME	(30*60)		/* 30 minutes */
-
 typedef struct {
   int           num;                  /* returned number */
   char          *str;                 /* private copy of the return-string */
@@ -80,6 +77,8 @@ typedef struct {
    int s3Madjust;
    int s3Nadjust;
    int s3MClk;
+   int chipID;
+   int chipRev;
    unsigned long VGAbase;      /* VGA ot XGA 64K aperature base address */
    int s3RefClk;
    int s3BlankDelay;
@@ -282,9 +281,10 @@ static SymTabRec ModeTab[] = {
 #define MONITOR		1082
 #define SCREENNO	1083
 #define BLANKTIME	1084
-#define SUSPENDTIME	1085
-#define OFFTIME		1086
-#define DEFBPP		1087
+#define STANDBYTIME	1085
+#define SUSPENDTIME	1086
+#define OFFTIME		1087
+#define DEFBPP		1088
 
 #ifdef INIT_CONFIG
 static SymTabRec ScreenTab[] = {
@@ -294,6 +294,7 @@ static SymTabRec ScreenTab[] = {
   { MONITOR,	"monitor" },
   { SCREENNO,	"screenno" },
   { BLANKTIME,	"blanktime" },
+  { STANDBYTIME,"standbytime" },
   { SUSPENDTIME,"suspendtime" },
   { OFFTIME,	"offtime" },
   { SUBSECTION,	"subsection" },
@@ -390,6 +391,8 @@ static SymTabRec KeyMapTab[] = {
 #define CLOCKCHIP	27
 #define S3MNADJUST	28
 #define S3MCLK		29
+#define CHIPID		30
+#define CHIPREV		31
 #define VGABASEADDR    100
 #define S3REFCLK       101
 #define S3BLANKDELAY   102
@@ -421,6 +424,8 @@ SymTabRec DeviceTab[] = {
   { S3MNADJUST,	"s3mnadjust" },
   { S3MCLK,	"s3mclk" },
   { S3MCLK,	"mclk" },
+  { CHIPID,	"chipid" },
+  { CHIPREV,	"chiprev" },
   { VGABASEADDR,"vgabase" },
   { S3REFCLK,	"s3refclk" },
   { S3BLANKDELAY,"s3blankdelay" },

@@ -1,5 +1,5 @@
 /* $XConsortium: sm_genid.c /main/22 1996/12/04 10:22:25 lehors $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.5 1996/12/09 11:49:16 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.6 1996/12/23 05:59:06 dawes Exp $ */
 
 /*
 
@@ -54,7 +54,11 @@ extern Time_t time ();
 #ifndef WIN32
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #include <netinet/in.h>
 #define XOS_USE_NO_LOCKING
 #define X_INCLUDE_NETDB_H

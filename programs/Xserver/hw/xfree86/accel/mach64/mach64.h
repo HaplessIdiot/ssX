@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.12 1996/10/18 15:00:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.13 1996/12/23 06:39:08 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -177,6 +177,11 @@ void mach64AdjustFrame(
 Bool mach64SwitchMode(
 #if NeedFunctionPrototypes
     DisplayModePtr mode
+#endif
+);
+void mach64DPMSSet(
+#if NeedFunctionPrototypes
+    int PowerManagementMode
 #endif
 );
 /* mach64cmap.c */

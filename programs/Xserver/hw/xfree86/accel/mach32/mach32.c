@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.60 1996/12/19 10:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.61 1996/12/23 06:38:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -89,11 +89,12 @@ ScrnInfoRec mach32InfoRec = {
     mach32Probe,      	/* Bool (* Probe)() */
     mach32Initialize,	/* Bool (* Init)() */
     mach32ValidMode,	/* int (* ValidMode)() */
-    mach32EnterLeaveVT,/* void (* EnterLeaveVT)() */
-    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
-    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
+    mach32EnterLeaveVT, /* void (* EnterLeaveVT)() */
+    (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
+    (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
     mach32AdjustFrame,	/* void (* AdjustFrame)() */
     mach32SwitchMode,	/* Bool (* SwitchMode)() */
+    (void (*)())NoopDDA,/* void (* DPMSSet)() */
     mach32PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -134,10 +135,10 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int s3Madjust */
     0,			/* int s3Nadjust */
     0,			/* int s3MClk */
+    0,			/* int chipID */
+    0,			/* int chipRev */
     0,			/* unsigned long VGAbase */
     0,			/* int s3RefClk */
-    0,			/* int suspendTime */
-    0,			/* int offTime */
     -1,			/* int s3BlankDelay */
     0,			/* int textClockFreq */
     NULL,               /* char* DCConfig */

@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.4 1996/08/24 12:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.5 1996/12/27 06:54:17 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -78,14 +78,6 @@ XF86Misc_Init(interp)
 
 	Tcl_CreateCommand(interp, "xf86misc_getbasevals",
 		TCL_XF86MiscQueryExtension, (ClientData) NULL,
-		(void (*)()) NULL);
-
-	Tcl_CreateCommand(interp, "xf86misc_getsaver",
-		TCL_XF86MiscGetSaver, (ClientData) NULL,
-		(void (*)()) NULL);
-
-	Tcl_CreateCommand(interp, "xf86misc_setsaver",
-		TCL_XF86MiscSetSaver, (ClientData) NULL,
 		(void (*)()) NULL);
 
 	Tcl_CreateCommand(interp, "xf86misc_getkeyboard",
@@ -202,84 +194,6 @@ TCL_XF86MiscQueryExtension(clientData, interp, argc, argv)
 	}
 
 	sprintf(interp->result, "%d %d", eventBase, errorBase);
-	return TCL_OK;
-}
-
-/*
-   Implements the xf86misc_getsaver command which
-   returns (in interp->result) a list containing the
-   powersaver timeouts
-*/
-
-int
-TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
-    ClientData	clientData;
-    Tcl_Interp	*interp;
-    int		argc;
-    char	*argv[];
-{
-	int suspendtime, offtime;
-	Tk_Window tkwin;
-
-        if (argc != 1) {
-                Tcl_SetResult(interp, "Usage: xf86misc_getsaver", TCL_STATIC);
-                return TCL_ERROR;
-        }
-
-	if ((tkwin = Tk_MainWindow(interp)) == (Tk_Window) NULL)
-		return TCL_ERROR;
-	if (!XF86MiscGetSaver(Tk_Display(tkwin), Tk_ScreenNumber(tkwin),
-			&suspendtime, &offtime)) {
-		Tcl_AppendResult(interp,
-			"Unable to get screen saver timeouts",
-			(char *) NULL);
-		return TCL_ERROR;
-	} else {
-		sprintf(interp->result, "%d %d", suspendtime, offtime);
-		return TCL_OK;
-	}
-}
-
-/*
-   Implements the xf86misc_setsaver command which
-   sets the powersaver timeouts
-*/
-
-int
-TCL_XF86MiscSetSaver(clientData, interp, argc, argv)
-    ClientData	clientData;
-    Tcl_Interp	*interp;
-    int		argc;
-    char	*argv[];
-{
-	int suspendtime, offtime;
-	Tk_Window tkwin;
-
-        if (argc != 3) {
-                Tcl_SetResult(interp,
-			"Usage: xf86misc_setsaver <suspendtime> <offtime>",
-			TCL_STATIC);
-                return TCL_ERROR;
-        }
-
-	if ((tkwin = Tk_MainWindow(interp)) == (Tk_Window) NULL)
-		return TCL_ERROR;
-	suspendtime = atoi(argv[1]);
-	offtime = atoi(argv[2]);
-
-	XSync(Tk_Display(tkwin), False);
-	savErrorFunc = XSetErrorHandler(miscError);
-	errorOccurred = 0;
-	XF86MiscSetSaver(Tk_Display(tkwin), Tk_ScreenNumber(tkwin),
-			suspendtime, offtime);
-	XSync(Tk_Display(tkwin), False);
-	XSetErrorHandler(savErrorFunc);
-	if (errorOccurred) {
-		Tcl_AppendResult(interp,
-			"Unable to set screen saver timeouts: ",
-			errMsgBuf, (char *) NULL);
-		return TCL_ERROR;
-	}
 	return TCL_OK;
 }
 

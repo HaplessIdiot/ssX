@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.10 1996/12/09 11:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.11 1996/12/27 07:02:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -79,7 +79,6 @@ extern pointer s3MmioMem;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
-extern Bool s3PowerSaver;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int xf86Verbose;
@@ -560,106 +559,6 @@ s3CloseScreen(screen_idx, pScreen)
    return (TRUE);
 }
 
-static OsTimerPtr suspendTimer = NULL, offTimer = NULL;
-extern CARD32 ScreenSaverTime;
-
-/*
- * s3OffMode -- put the screen into power off mode.
- */
-
-static CARD32
-s3OffMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-   unsigned char sync;
-   Bool on = (Bool)arg;
-
-   if (!s3PowerSaver) return(0);
-
-   if (xf86VTSema) {
-      /* the server is running on the current vt */
-      /* so just go for it */
-
-      outb(vgaCRIndex, 0x17);
-      sync = inb(vgaCRReg);
-
-      if (on) {
-	 sync |= 0x80;			/* enable sync   */
-      } else {
-	 sync &= ~0x80;			/* disable sync */
-      }
-
-      usleep(10000);
-      outb(vgaCRReg, sync);
-   }
-   if (offTimer) {
-      TimerFree(offTimer);
-      offTimer = NULL;
-   }
-   return(0);
-}
-
-/*
- * s3SuspendMode -- put the screen into suspend mode.
- */
-
-static CARD32
-s3SuspendMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-   unsigned char extsync;
-   Bool on = (Bool)arg;
-
-   if (!s3PowerSaver) return(0);
-
-   if (xf86VTSema) {
-      /* the server is running on the current vt */
-      /* so just go for it */
-
-      /* We assume that the screen is already blanked */
-      outw(0x3C4, 0x0608);		/* unlock SRD */
-      outb(0x3C4, 0x0D);
-      extsync = inb(0x3C5);
-
-      if (on) {
-	 extsync &= 0x0F;			/* enable both syncs */
-      } else {
-	 extsync = (extsync & 0x0F) | 0x10;	/* turn off hsync only */
-      }
-      usleep(10000);
-      outw(0x3C4, (extsync << 8) | 0x0D);
-      outw(0x3C4, 0x0008);		/* lock SRD */
-
-      if (!on && s3InfoRec.offTime != 0) {
-	 if (s3InfoRec.offTime > s3InfoRec.suspendTime &&
-	     s3InfoRec.offTime > ScreenSaverTime) {
-
-	    int timeout;
-
-	    /* Setup timeout for s3OffMode() */
-	    if (s3InfoRec.suspendTime < ScreenSaverTime)
-	       timeout = s3InfoRec.offTime - ScreenSaverTime;
-	    else
-	       timeout = s3InfoRec.offTime - s3InfoRec.suspendTime;
-
-	    offTimer = TimerSet(offTimer, 0, timeout,
-			        s3OffMode, (pointer)FALSE);
-	 } else {
-	    s3OffMode(NULL, 0, (pointer)FALSE);
-	 }
-      }
-   }
-   if (suspendTimer) {
-      TimerFree(suspendTimer);
-      suspendTimer = NULL;
-   }
-   return(0);
-}
-
 /*
  * s3SaveScreen -- blank the screen.
  */
@@ -687,37 +586,48 @@ s3SaveScreen(pScreen, on)
 	 scrn |= 0x20;			/* blank screen */
       }
 
-      /* Turn off Off and Suspend mode */
-      if (s3PowerSaver && on) {
-	 s3OffMode(NULL, 0, (pointer)TRUE);
-	 s3SuspendMode(NULL, 0, (pointer)TRUE);
-      }
-
       outw(0x3C4, 0x0100);              /* syncronous reset */
       outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
       outw(0x3C4, 0x0300);              /* end reset */
-
-      if (s3PowerSaver && !on) {
-	 if (s3InfoRec.suspendTime != 0) {
-	    if (s3InfoRec.suspendTime > ScreenSaverTime) {
-	       suspendTimer = TimerSet(suspendTimer, 0,
-				       s3InfoRec.suspendTime - ScreenSaverTime,
-				       s3SuspendMode, (pointer)FALSE);
-	    } else {
-	      s3SuspendMode(NULL, 0, (pointer)FALSE);
-	    }
-	 } else if (s3InfoRec.offTime != 0) {
-	    if (s3InfoRec.offTime > ScreenSaverTime) {
-	       offTimer = TimerSet(offTimer, 0,
-				   s3InfoRec.offTime - ScreenSaverTime,
-				   s3OffMode, (pointer)FALSE);
-	    } else {
-	       s3OffMode(NULL, 0, (pointer)FALSE);
-	    }
-	 }
-      }
    }
    return (TRUE);
+}
+
+/*
+ * s3DPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
+ */
+
+void
+s3DPMSSet(PowerManagementMode)
+    int PowerManagementMode;
+{
+#ifdef DPMSExtension
+  unsigned char extsync;
+  outw(0x3C4, 0x0608);		/* unlock SRD */
+  outb(0x3C4, 0x0D);
+  extsync = inb(0x3C5) & ~0x30;
+  switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+      /* HSync: On, VSync: On */
+      break;
+    case DPMSModeStandby:
+      /* HSync: Off, VSync: On */
+      extsync |= 0x10;
+      break;
+    case DPMSModeSuspend:
+      /* HSync: On, VSync: Off */
+      extsync |= 0x20;
+      break;
+    case DPMSModeOff:
+      /* HSync: Off, VSync: Off */
+      extsync |= 0x30;
+      break;
+    }
+  usleep(10000);
+  outw(0x3C4, (extsync << 8) | 0x0D);
+  outw(0x3C4, 0x0008);		/* lock SRD */
+#endif
 }
 
 static debugcache = 0;

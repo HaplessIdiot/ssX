@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.40 1996/12/28 08:16:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.41 1997/01/08 20:34:46 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -4030,10 +4030,6 @@ ATIRestore(void *data)
         (void) inb(GENS1(vgaIOBase));   /* Reset flip-flop */
         outb(ATTRX, 0x20U);             /* Turn on PAS */
 
-        /* Reset a few timers */
-        TimerFree(vgaSuspendTimer);
-        TimerFree(vgaOffTimer);
-        vgaSuspendTimer = vgaOffTimer = NULL;
         SetTimeSinceLastInputEvent();
 
         if ((xf86Verbose > 2) && (restore->mode))
@@ -4156,10 +4152,6 @@ ATISave(void *data)
         (void) inb(GENS1(vgaIOBase));   /* Reset flip-flop */
         outb(ATTRX, 0x20U);             /* Turn on PAS */
 
-        /* Reset a few timers */
-        TimerFree(vgaSuspendTimer);
-        TimerFree(vgaOffTimer);
-        vgaSuspendTimer = vgaOffTimer = NULL;
         SetTimeSinceLastInputEvent();
 
         return (void *) save;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.34 1996/12/19 10:02:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.35 1996/12/23 06:49:01 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -210,10 +210,10 @@ extern int errno;
  
 # include <termio.h>
 # include <sys/ioctl.h>
-# include <sys/param.h>
+# include <param.h>
 # include <signal.h>
-# include <sys/kd.h>
-# include <sys/vt.h>
+# include <kd.h>
+# include <vt.h>
 # include <sys/stat.h>
 
 # include <errno.h>

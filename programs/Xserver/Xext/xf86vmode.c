@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.28 1996/12/24 08:47:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.29 1996/12/28 08:11:02 dawes Exp $ */
 
 /*
 
@@ -51,7 +51,11 @@ from Kaleb S. KEITHLEY
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
 #ifndef ESIX
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #else
 #include <lan/socket.h>
 #endif

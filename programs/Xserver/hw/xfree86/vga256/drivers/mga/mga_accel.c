@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.4 1997/01/08 20:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.5 1997/01/14 22:21:18 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -544,11 +544,11 @@ void MGANAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     if( !(w * h) ) return;
 #endif
        
-    OUTREG(MGAREG_CXBNDRY, ((x + w - 1) << 16) | (x + skipleft));
+    OUTREG(MGAREG_CXBNDRY, ((x + w - 1) << 16) | ((x + skipleft) & 0xffff));
     w = (w + 31) & ~31;     /* SCANLINE_PAD_DWORD */
     OUTREG(MGAREG_AR0, (w * h) - 1);
     OUTREG(MGAREG_AR3, 0);            /* we need it here for stability */
-    OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | (x & 0xffff));
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
@@ -637,8 +637,8 @@ MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
         mga_localcmd |= MGADWG_AUTOLINE_CLOSE; /* yep */
 
     OUTREG(MGAREG_DWGCTL, mga_localcmd);
-    OUTREG(MGAREG_XYSTRT, ( y1 << 16 ) | x1);
-    OUTREG(MGAREG_XYEND + MGAREG_EXEC, ( y2 << 16 ) | x2);
+    OUTREG(MGAREG_XYSTRT, ( y1 << 16 ) | (x1 & 0xffff));
+    OUTREG(MGAREG_XYEND + MGAREG_EXEC, ( y2 << 16 ) | (x2 & 0xffff));
 
     /* do some work whilst the chipset is busy */
 

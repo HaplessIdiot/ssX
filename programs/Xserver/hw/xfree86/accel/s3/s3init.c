@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.108 1997/01/08 20:33:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.109 1997/01/14 22:16:56 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -99,8 +99,8 @@ extern void crtswitch(short);
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
-short s3ChipId = 0;
-int  s3ChipRev = 0;
+unsigned short s3ChipId = 0;
+unsigned int  s3ChipRev = 0;
 
 #define	cebank() do {							\
    	if (S3_801_928_SERIES(s3ChipId)) {				\

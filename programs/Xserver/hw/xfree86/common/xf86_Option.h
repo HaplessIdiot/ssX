@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.62 1996/12/23 06:43:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.63 1997/01/14 22:17:35 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -28,8 +28,10 @@
 
 /*
  * Structures and macros for handling option flags.
+ *
+ * MAX_OFLAGS should be a multiple of 8
  */
-#define MAX_OFLAGS	192
+#define MAX_OFLAGS	224
 #define FLAGBITS	sizeof(unsigned long)
 typedef struct {
 	unsigned long flag_bits[MAX_OFLAGS/FLAGBITS];
@@ -131,7 +133,7 @@ typedef struct {
 #define OPTION_CSYNC		90 /* Composite sync */
 #define OPTION_SECONDARY	91 /* Use secondary address (HGC1280) */
 #define OPTION_PCI_HACK		92 /* (S3) */
-#define OPTION_POWER_SAVER	93 /* Power-down screen saver */
+#define OPTION_POWER_SAVER	93 /* Enable DPMS Power Saving */
 #define OPTION_OVERRIDE_BIOS	94 /* Override BIOS for Mach64 */
 #define OPTION_NO_BLOCK_WRITE	95 /* No block write mode for Mach64 */
 #define OPTION_BLOCK_WRITE	96 /* Block write mode for Mach64 */
@@ -199,16 +201,24 @@ typedef struct {
 #define OPTION_PC98TGUI		 170 /* SELECT NEC TGUI9660 */
 /* #endif */
 
-#define OPTION_TGUI_PCI_READ_OFF 171 /* Trident TGUI PCI burst read */
-#define OPTION_TGUI_PCI_WRITE_OFF 172 /* Trident TGUI PCI burst write */
+#define OPTION_TGUI_PCI_READ_ON  171 /* Trident TGUI PCI burst read */
+#define OPTION_TGUI_PCI_WRITE_ON 172 /* Trident TGUI PCI burst write */
+#define OPTION_TGUI_MCLK_66	 173 /* Run the TGUI at 66MHz MCLK */
 
 /* more Memory options */
 #define OPTION_FPM_VRAM		190 /* (s3v) */
 #define OPTION_EDO_VRAM		191 /* (s3v) */
+#define OPTION_NO_MMIO		192 /* Disable MMIO (Cirrus 543x/4x) */
 
 /* XAA options */
 #define OPTION_XAA_BENCHMARK	200 /* Perform start-up benchmarks */
 #define OPTION_XAA_NO_COL_EXP	201 /* Disable color expansion. */
+
+/*
+ *  MAX flag value is 223.  If larger is needed, remember to update
+ *  MAX_OFLAGS at the top of this file.
+ */
+
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -273,6 +283,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "fifo_moderate",    OPTION_FIFO_MODERATE },
   { "fifo_aggressive",	OPTION_FIFO_AGGRESSIVE },
   { "mmio",		OPTION_MMIO },
+  { "no_mmio",		OPTION_NO_MMIO },
   { "linear",		OPTION_LINEAR },
   { "slow_vram",	OPTION_SLOW_VRAM },
   { "s3_slow_vram",	OPTION_SLOW_VRAM },
@@ -286,8 +297,9 @@ OptFlagRec xf86_OptionTab[] = {
   { "pci_burst_off",	OPTION_PCI_BURST_OFF },
   { "w32_interleave_on",OPTION_W32_INTERLEAVE_ON },
   { "w32_interleave_off",OPTION_W32_INTERLEAVE_OFF },
-  { "tgui_pci_read_off",OPTION_TGUI_PCI_READ_OFF },
-  { "tgui_pci_write_off",OPTION_TGUI_PCI_WRITE_OFF },
+  { "tgui_pci_read_on", OPTION_TGUI_PCI_READ_ON },
+  { "tgui_pci_write_on",OPTION_TGUI_PCI_WRITE_ON },
+  { "tgui_mclk_66",	OPTION_TGUI_MCLK_66 },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },

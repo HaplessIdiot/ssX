@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.6 1996/10/18 14:58:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.7 1996/12/24 08:47:28 dawes Exp $ */
 
 /*
 
@@ -27,7 +27,11 @@ Copyright (c) 1995, 1996  XFree86 Inc
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
 #ifndef ESIX
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #else
 #include <lan/socket.h>
 #endif

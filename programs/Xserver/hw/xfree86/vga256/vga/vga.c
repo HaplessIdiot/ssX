@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.68 1997/01/05 11:59:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.69 1997/01/08 20:51:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -120,6 +120,7 @@ ScrnInfoRec vga256InfoRec = {
   (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
   vgaAdjustFrame,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
+  vgaDPMSSet,		/* void (* DPMSSet)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
 #ifdef MONOVGA
   1,			/* int depth */
@@ -193,10 +194,10 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int s3Madjust */
   0,			/* int s3Nadjust */
   0,			/* int s3MClk */
+  0,			/* int chipID */
+  0,			/* int chipRev */
   0,			/* unsigned long VGAbase */
   0,			/* int s3RefClk */
-  0,			/* int suspendTime */
-  0,			/* int offTime */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
   NULL,			/* char* DCConfig */
@@ -270,7 +271,6 @@ Bool vgaWriteFlag;
 Bool vgaUse2Banks;
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
-extern Bool vgaPowerSaver;
 extern Bool clgd6225Lcd;
 Bool vgaUseLinearAddressing;
 int vgaPhysLinearBase;
@@ -620,11 +620,18 @@ vgaProbe()
 	OFLG_SET(OPTION_CLGD6225_LCD, &vgaOptionFlags);
 	OFLG_SET(OPTION_NO_PCI_PROBE, &vgaOptionFlags);
 	OFLG_SET(OPTION_CLKDIV2, &vgaOptionFlags);
+	/* For XAA */
+	OFLG_SET(OPTION_XAA_BENCHMARK, &vgaOptionFlags);
+	OFLG_SET(OPTION_XAA_NO_COL_EXP, &vgaOptionFlags);
+	OFLG_SET(OPTION_NO_PIXMAP_CACHE, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 
+#ifdef DPMSExtension
 	if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
-	    vgaPowerSaver = TRUE;
+	    DPMSEnabled = TRUE;
+#endif
+
 	if (OFLG_ISSET(OPTION_CLGD6225_LCD, &vga256InfoRec.options))
 	    clgd6225Lcd = TRUE;
 

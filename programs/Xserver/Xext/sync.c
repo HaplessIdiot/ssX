@@ -1,5 +1,5 @@
 /* $XConsortium: sync.c /main/13 1996/12/16 16:51:55 rws $ */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.1 1996/05/06 05:55:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.2 1996/12/23 06:29:02 dawes Exp $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium
@@ -2446,7 +2446,7 @@ SyncExtensionInit()
  */
 
 
-#if !defined(WIN32) && !defined(MINIX)
+#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
 #include <sys/time.h>
 #endif
 

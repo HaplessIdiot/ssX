@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.153 1997/01/08 20:33:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.154 1997/01/14 22:16:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -103,6 +103,7 @@ ScrnInfoRec s3InfoRec =
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
    (void (*)())NoopDDA,		/* void (* AdjustFrame)() */
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
+   vgaDPMSSet,			/* void (* DPMSSet)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */
@@ -143,10 +144,10 @@ ScrnInfoRec s3InfoRec =
    0,				/* int s3Madjust */
    0,				/* int s3Nadjust */
    0,				/* int s3MClk */
+   0,				/* int chipID */
+   0,				/* int chipRev */
    0,				/* unsigned long VGAbase */
    0,				/* int s3RefClk */
-   0,				/* int suspendTime */
-   0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
@@ -257,6 +258,7 @@ static SymTabRec s3ChipTable[] = {
    { S3_ViRGE_VX,	"ViRGE/VX" },
    { S3_TRIO64UVP,	"Trio64UV+" },
    { S3_AURORA64VP,	"Aurora64V+" },
+   { S3_TRIO64V2,	"Trio64V2" },
    { -1,		"" },
 };
 
@@ -271,7 +273,6 @@ Bool  s3PixelMultiplexing = FALSE;
 Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
 Bool  s3PCIHack = FALSE;
-Bool  s3PowerSaver = FALSE;
 unsigned char s3LinApOpt;
 unsigned char s3SAM256 = 0x00;
 int s3BankSize;
@@ -770,6 +771,17 @@ s3Probe()
       s3ChipRev |= (inb(vgaCRReg) << 4);      
    }
 
+   if (s3InfoRec.chipID) {
+      ErrorF("%s %s: S3 chipset override, using chip_id = 0x%02x instead of 0x%02x\n",
+	     XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.chipID, s3ChipId);
+      s3ChipId = s3InfoRec.chipID;
+   }
+   if (s3InfoRec.chipRev) {
+      ErrorF("%s %s: S3 chipset override, using chip_rev = %x instead of %x\n",
+	     XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.chipRev, s3ChipRev);
+      s3ChipRev = s3InfoRec.chipRev;
+   }
+
    if (!S3_ANY_SERIES(s3ChipId)) {
       ErrorF("%s %s: Unknown S3 chipset: chip_id = 0x%02x rev. %x\n", 
 	     XCONFIG_PROBED,s3InfoRec.name,s3ChipId,s3ChipRev);
@@ -827,13 +839,13 @@ s3Probe()
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64UVP_SERIES(s3ChipId)) {
-	    chipname = "Trio64UV+";
+	    chipname = "Trio64UV+ (preliminary support; please report)";
 	 } else if (S3_AURORA64VP_SERIES(s3ChipId)) {
-	    chipname = "Aurora64V+";
+	    chipname = "Aurora64V+ (preliminary support; please report)";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
 	    chipname = "Trio64V+";
 	 } else if (S3_TRIO64V2_SERIES(s3ChipId /* , s3ChipRev */)) {
-	    chipname = "Trio64V2";
+	    chipname = "Trio64V2 (preliminary support (135MHz only); please report)";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    chipname = "Trio64";
 	 }
@@ -1984,8 +1996,10 @@ redo_mode_lookup:
 
    if (OFLG_ISSET(OPTION_PCI_HACK, &s3InfoRec.options))
       s3PCIHack = TRUE;
+#ifdef DPMSExtension
    if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
-      s3PowerSaver = TRUE;
+      DPMSEnabled = TRUE;
+#endif
 
    if (! (s3Port59 | s3Port5A)) { /* s3Port59/s3Port5A not yet initialized */
       if (s3InfoRec.MemBase != 0) {
@@ -2009,6 +2023,13 @@ redo_mode_lookup:
       s3InfoRec.displayWidth = s3DisplayWidth;
       s3InfoRec.directMode = XF86DGADirectPresent;
 #endif
+
+#ifdef DPMSExtension
+      /* Only supported at the moment for Trio, 864/964 and later. */
+      if (S3_x64_SERIES(s3ChipId))
+	s3InfoRec.DPMSSet = s3DPMSSet;
+#endif
+
    in_s3Probe = FALSE;
    return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.4 1997/01/12 10:48:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.5 1997/01/14 22:22:13 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1244,7 +1244,10 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
 
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
-    bitmapwidth = (w + 31) & ~31;
+    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+        bitmapwidth = ((w + 31) & ~31) * 3;
+    else
+        bitmapwidth = (w + 31) & ~31;
     endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
 
     offset = 0;

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c /main/72 1996/12/27 15:40:56 rws $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.13 1996/12/23 07:09:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.14 1996/12/31 07:08:46 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -66,7 +66,11 @@ extern int errno;
 #include "Xmd.h"
 #include <errno.h>
 #if !defined(AMOEBA) && !defined(MINIX) && !defined(__EMX__) && !defined(WIN32)
+#ifndef Lynx
 #include <sys/uio.h>
+#else
+#include <uio.h>
+#endif
 #endif
 #include "X.h"
 #define NEED_REPLIES

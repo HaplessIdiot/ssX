@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.6 1997/01/08 20:34:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.7 1997/01/14 22:17:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3190,26 +3190,10 @@ static Bool IBMRGB52x_Probe(int type)
                }
 	       break;
 	    case 2:
-	       if ( (ibm_id & 0xff) == 0xf0) {
-	         if(type == IBMRGB528_DAC) {
-	           ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
-		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-	           return TRUE;
-		 }
-	       }
-	       else if ( (ibm_id & 0xff) == 0xe0) {
-	          if(type == IBMRGB528_DAC) {
-	            ErrorF("%s %s: Detected an IBM RGB528A ramdac rev. %x\n",
-		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);	
-		    return TRUE;
-		  }
-	       }
-	       else {
-	          if(type == IBMRGB524_DAC) {
-	            ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
-		      XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
-		    return TRUE;
-		  }
+	       if(type == IBMRGB524_DAC) {
+		  ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
+			 XCONFIG_PROBED, s3InfoRec.name, ibm_id&0xff);
+		  return TRUE;
 	       }
 	       break;
 	    case 0x102:

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.14 1996/07/08 10:36:54 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.15 1996/10/16 14:44:57 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -173,7 +173,7 @@ static int child_pid;
 static void inputReady ();
 
 #ifdef Lynx
-static
+static void
 RestoreConsole()
 {
     int fd;

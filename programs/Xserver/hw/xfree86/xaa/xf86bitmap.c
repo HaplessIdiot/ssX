@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.4 1997/01/12 10:48:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.5 1997/01/14 22:22:01 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -62,7 +62,7 @@ extern unsigned char *byte_reversed;
  * If necessary, the left edge of the bitmap is written first so that
  * the rest can be drawn with byte-aligned source access.
  *
- * TRIPLE_BITS_AT_24BPP is supported for scanline screen-to-screen color
+ * TRIPLE_BITS_24BPP is supported for scanline screen-to-screen color
  * expansion, and for CPU-to-screen with SCANLINE_PAD_DWORD.
  */
 
@@ -217,7 +217,7 @@ srcy, bg, fg, rop, planemask)
         /* Handle the left edge (skipleft pixels wide). */ 
         skipleft = 8 - (srcx & 7);
         if (skipleft == 8)
-        skipleft = 0;
+            skipleft = 0;
         if (skipleft) {
 	    /* Draw left edge. */
 	    int done;
@@ -249,7 +249,14 @@ srcy, bg, fg, rop, planemask)
     srcp = srcwidth * srcy + (srcx >> 3) + src;
 
     /* Number of bytes to be written for each bitmap scanline. */
-    bytewidth = (w + 7) / 8;
+    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+        /*
+         * This is a hack. DrawTextScanline3 expects the third
+         * argument to be in pixel units, rather than bytes.
+         */
+        bytewidth = w;
+    else
+        bytewidth = (w + 7) / 8;
 
     if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
         int i;
@@ -257,9 +264,14 @@ srcy, bg, fg, rop, planemask)
             if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
                 (*DrawBitmapScanlineFunc)(
                     (unsigned int *)base, (unsigned int *)srcp, bytewidth);
-            else
+            else {
                 base = (unsigned char *)(*DrawBitmapScanlineFunc)(
                     (unsigned int *)base, (unsigned int *)srcp, bytewidth);
+                if (base >= (unsigned char *)
+                xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                    base = (unsigned char *)
+                        xf86AccelInfoRec.CPUToScreenColorExpandBase;
+            }
             srcp += srcwidth;
         }
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
@@ -372,9 +384,20 @@ srcy, bg, fg, rop, planemask)
     bytewidth = (w + 7) / 8;
     if ((srcx & 7) != 0)
         bytewidth++;
+
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
-    bitmapwidth = ((bytewidth + 3) / 4) * 32;
+    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+        bitmapwidth = ((bytewidth + 3) / 4) * 32 * 3;
+    else
+        bitmapwidth = ((bytewidth + 3) / 4) * 32;
+
+    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+        /*
+         * This is a hack. DrawTextScanline3 expects the third
+         * argument to be in pixel units, rather than bytes.
+         */
+        bytewidth = w;
 
     endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
     offset = 0;
@@ -390,8 +413,14 @@ srcy, bg, fg, rop, planemask)
 	    (*DrawBitmapScanlineFunc)((unsigned int *)
 	        (xf86AccelInfoRec.ScratchBufferBase + offset),
 	        (unsigned int *)srcp, bytewidth);
-	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
-	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 + (srcx & 7));
+	if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	        (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 +
+	        (srcx & 7) * 3);
+	else
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	        (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 +
+	        (srcx & 7));
 	srcp += srcwidth;
         /*
          * There is a number of buffers -- while the first one is being
@@ -406,58 +435,6 @@ srcy, bg, fg, rop, planemask)
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
         xf86AccelInfoRec.Sync();
 }
-
-
-/*
- * Fill 32-bits wide stipples using color expansion.
- * Not yet implemented.
- *
- * Ideally, all stipples should be written with color expansion.
- */
-
-#if 0
-
-void
-xf86FillRectStippled(pDrawable, pGC, nBox, pBoxInit)
-    DrawablePtr pDrawable;
-    register GCPtr pGC;
-    int		nBox; 		/* number of rectangles to fill */
-    BoxPtr	pBoxInit;  	/* Pointer to first rectangle to fill */
-{
-    BoxPtr pBox;
-    int stippleHeight;
-    unsigned int *src;
-    void (*FillStipple)();
-    pBox = pBoxInit;
-    stippleHeight = stipple->drawable.height;
-    src = (unsigned int *)stipple->devPrivate.ptr;
-    if (xf86AccelInfoRec.SetupForCPUToScreenColorExpand) {
-        FillStipple = FillStippleCPUToScreen;
-        if (pGC->fillStyle == FillOpaqueStippled)
-            xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-                pGC->bgPixel, pGC->fgPixel);
-        else
-            xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-                -1, pGC->fgPixel);
-    }
-    else
-    if (xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand)
-        FillStipple = FillStippleScanlineScreenToScreen;
-    else {
-    	ErrorF("Color expansion incompatible with stipple function.\n");
-    	return;
-    }
-         
-    while (nBox > 0) {
-        (*FillStipple)(
-            pBox->x1, pBox->y1, pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
-            src, stippleHeight, int bgPixel, int fgPixel);
-	pBox++;
-	nBox--;
-    }
-}
-
-#endif
 
 /*
  * Two-pass color expand solid fill for 24bpp pixels with the coprocessor

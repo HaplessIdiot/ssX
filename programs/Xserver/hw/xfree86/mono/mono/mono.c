@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.26 1996/09/14 13:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.27 1996/12/23 06:48:46 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -103,6 +103,7 @@ ScrnInfoRec monoInfoRec = {
   (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)(int) */
   monoAdjustFrame,	/* void (* AdjustFrame)(int,int) */
   (Bool (*)())NoopDDA,	/* Bool (* SwitchMode)() */
+  (void (*)())NoopDDA,	/* void (* DPMSSet)() */
   monoPrintIdent,	/* void (* PrintIdent)() */
   1,			/* int depth */
   {0, 0, 0},            /* xrgb weight */
@@ -144,10 +145,10 @@ ScrnInfoRec monoInfoRec = {
   0,			/* int s3Madjust */
   0,			/* int s3Nadjust */
   0,			/* int s3MClk */
+  0,			/* int chipID */
+  0,			/* int chipRev */
   0,			/* unsigned long VGAbase */
   0,			/* int s3RefClk */
-  0,			/* int suspendTime */
-  0,			/* int offTime */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
 #ifdef XFreeXDGA

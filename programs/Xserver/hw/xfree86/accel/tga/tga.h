@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.2 1996/10/17 15:18:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.3 1996/12/27 07:03:43 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -147,6 +147,11 @@ Bool tgaSaveScreen(
 Bool tgaSwitchMode(
 #if NeedFunctionPrototypes
     DisplayModePtr 
+#endif
+);
+void tgaDPMSSet(
+#if NeedFunctionPrototypes
+    int PowerManagementMode
 #endif
 );
 void tgaAdjustFrame(

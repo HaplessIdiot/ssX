@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.2 1996/12/27 07:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.3 1997/01/12 10:42:25 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -18,6 +18,12 @@
 #define ctSRCSYSTEM             0x400
 #define ctSRCMONO               0x1000
 #define ctBGTRANSPARENT         0x22000
+#define ctCOLORTRANSENABLE      0x4000
+#define ctCOLORTRANSDISABLE     0x0
+#define ctCOLORTRANSDST         0x8000
+#define ctCOLORTRANSROP         0x0
+#define ctCOLORTRANSEQUAL       0x10000L
+#define ctCOLORTRANSNEQUAL      0x0
 #define ctPATMONO               0x40000L
 #define ctPATSOLID              0x80000L
 #define ctPATSTART0             0x000000L

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.46 1997/01/05 11:59:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.47 1997/01/08 20:51:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -154,7 +154,6 @@ static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
 
 int vgaRamdacMask = 0x3F;
-Bool vgaPowerSaver = FALSE;
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
@@ -302,108 +301,6 @@ vgaProtect(on)
 #endif /* !defined(PC98_NEC480) && !defined(PC98_EGC) */
 }
 
-OsTimerPtr vgaSuspendTimer = NULL, vgaOffTimer = NULL;
-extern CARD32 ScreenSaverTime;
-
-
-/* Allow each driver to provide a VESA Display Power Management
-   Signaling (DPMS) mode setting function */
-
-void (* vgaDisplayPowerManagementFunc)() = (void (*)())NoopDDA;
-
-void vgaSetDisplayPowerManagementHook(
-	void (* ChipDisplayPowerManagement)())
-{
-  vgaDisplayPowerManagementFunc = ChipDisplayPowerManagement;
-}
-
-
-/*
- * vgaOffMode -- put the screen into power off mode.
- */
-
-static CARD32
-vgaOffMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-   unsigned char sync2;
-   Bool on = (Bool)arg;
-
-   if (!vgaPowerSaver) return(0);
-
-   if (xf86VTSema) {
-      /* the server is running on the current vt */
-      /* so just go for it */
-
-     if (vgaDisplayPowerManagementFunc != (void (*)())NoopDDA)
-       (*vgaDisplayPowerManagementFunc)(on ? DPMSModeOn : DPMSModeOff);
-     else
-       {
-	 outb(vgaIOBase + 4, 0x17);
-	 sync2 = inb(vgaIOBase + 5);
-
-	 if (on) {
-	   sync2 |= 0x80;			/* enable sync   */
-	 } else {
-	   sync2 &= ~0x80;			/* disable sync */
-	 }
-	 
-	 usleep(10000);
-	 outb(vgaIOBase + 5, sync2);
-       }
-   }
-   TimerFree(vgaOffTimer);
-   vgaOffTimer = NULL;
-   return(0);
-}
-
-/*
- * vgaSuspendMode -- put the screen into suspend mode.
- */
-
-static CARD32
-vgaSuspendMode(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
-{
-   Bool on = (Bool)arg;
-
-   if (!vgaPowerSaver) return(0);
-
-   if (xf86VTSema) {
-      /* the server is running on the current vt */
-      /* so just go for it */
-
-     if (vgaDisplayPowerManagementFunc != (void (*)())NoopDDA)
-       (*vgaDisplayPowerManagementFunc)(on ? DPMSModeOn : DPMSModeSuspend);
-
-      if (!on && vga256InfoRec.offTime != 0) {
-	 if (vga256InfoRec.offTime > vga256InfoRec.suspendTime &&
-	     vga256InfoRec.offTime > ScreenSaverTime) {
-
-	    int timeout;
-
-	    /* Setup timeout for vgaOffMode() */
-	    if (vga256InfoRec.suspendTime < ScreenSaverTime)
-	       timeout = vga256InfoRec.offTime - ScreenSaverTime;
-	    else
-	       timeout = vga256InfoRec.offTime - vga256InfoRec.suspendTime;
-
-	    vgaOffTimer = TimerSet(vgaOffTimer, 0, timeout,
-	       vgaOffMode, (pointer)FALSE);
-	 } else {
-	    vgaOffMode(NULL, 0, (pointer)FALSE);
-	 }
-      }
-   }
-   TimerFree(vgaSuspendTimer);
-   vgaSuspendTimer = NULL;
-   return(0);
-}
-
 /*
  * vgaSaveScreen -- blank the screen.
  */
@@ -432,36 +329,9 @@ vgaSaveScreen(pScreen, on)
 	 scrn |= 0x20;			/* blank screen */
       }
 
-      /* Turn off Off and Suspend mode */
-      if (vgaPowerSaver && on) {
-	 vgaOffMode(NULL, 0, (pointer)TRUE);
-	 vgaSuspendMode(NULL, 0, (pointer)TRUE);
-      }
-
       (*vgaSaveScreenFunc)(SS_START);
       outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
       (*vgaSaveScreenFunc)(SS_FINISH);
-
-      if (vgaPowerSaver && !on) {
-	 if (vga256InfoRec.suspendTime != 0) {
-	    if (vga256InfoRec.suspendTime > ScreenSaverTime) {
-	       vgaSuspendTimer = TimerSet(vgaSuspendTimer, 0,
-					  vga256InfoRec.suspendTime -
-					  ScreenSaverTime,
-					  vgaSuspendMode, (pointer)FALSE);
-	    } else {
-	      vgaSuspendMode(NULL, 0, (pointer)FALSE);
-	    }
-	 } else if (vga256InfoRec.offTime != 0) {
-	    if (vga256InfoRec.offTime > ScreenSaverTime) {
-	       vgaOffTimer = TimerSet(vgaOffTimer, 0,
-				      vga256InfoRec.offTime - ScreenSaverTime,
-				      vgaOffMode, (pointer)FALSE);
-	    } else {
-	       vgaOffMode(NULL, 0, (pointer)FALSE);
-	    }
-	 }
-      }
    }
 #else /* PC98_EGC || PC98_NEC480 */
   if (on)
@@ -476,6 +346,45 @@ vgaSaveScreen(pScreen, on)
     }
 #endif /* PC98_EGC || PC98_NEC480 */
    return (TRUE);
+}
+
+/*
+ * vgaDPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
+ *
+ * This generic VGA function can only set the Off and On modes.  If the
+ * Standby and Suspend modes are to be supported, a chip specific replacement
+ * for this function must be written.
+ */
+
+void
+vgaDPMSSet(PowerManagementMode)
+    int PowerManagementMode;
+{
+#ifdef DPMSExtension
+    unsigned char crtc17;
+    if (!DPMSEnabled) return;
+    outb(vgaIOBase + 4, 0x17);
+    crtc17 = inb(vgaIOBase + 5);
+    switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+	/* HSync: On, VSync: On */
+	crtc17 |= 0x80;
+	break;
+    case DPMSModeStandby:
+	/* HSync: Off, VSync: On -- Not Supported */
+	break;
+    case DPMSModeSuspend:
+	/* HSync: On, VSync: Off -- Not Supported */
+	break;
+    case DPMSModeOff:
+	/* HSync: Off, VSync: Off */
+	crtc17 &= ~0x80;
+	break;
+    }
+    usleep(10000);
+    outb(vgaIOBase + 5, crtc17);
+#endif
 }
 
 /*

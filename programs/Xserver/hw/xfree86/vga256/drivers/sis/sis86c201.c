@@ -25,11 +25,12 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.15 1996/12/28 08:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.16 1997/01/12 10:43:01 dawes Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
 
+/*#define USE_XAA*/
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
@@ -589,7 +590,7 @@ SISProbe()
 	OFLG_SET(OPTION_NOLINEAR_MODE, &SIS.ChipOptionFlags);
 	OFLG_SET(OPTION_NO_BITBLT, &SIS.ChipOptionFlags);
 	OFLG_SET(OPTION_NO_IMAGEBLT, &SIS.ChipOptionFlags);
-
+	OFLG_SET(OPTION_NOACCEL, &SIS.ChipOptionFlags);
 #else
 	/* Set to 130MHz at 16 colours */
 	vga256InfoRec.maxClock = 130000;
@@ -628,7 +629,7 @@ sisPCIMMIOBase()
     else 
 	return -1;
 }
-void (*oldCopyWindow)();
+
 /*
  * SISScrnInit --
  *
@@ -781,6 +782,9 @@ SISFbInit()
 	}
 
 	if (sisUseMMIO) {
+	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) 
+	       SISAccelInit();
+	   else {
 	    switch (vgaBitsPerPixel) {
 	      case 8:
 
@@ -926,7 +930,7 @@ SISFbInit()
 	    }
 	    vgaSetScreenInitHook(SISScrnInit);
 	}
-		
+       }		
 
 #endif /* MONOVGA */
 }

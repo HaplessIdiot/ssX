@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.1 1997/01/02 04:38:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.2 1997/01/12 10:48:05 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -35,6 +35,7 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* CopyAreaFallBack() */
     NULL,	/* cfbBitBltDispatch() */
     NULL,	/* CopyPlane1toNFallBack() */
+    NULL,	/* PolyFillRectSolidFallBack() */
 };
 
 xf86AccelInfoRecType xf86AccelInfoRec = {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.12 1996/09/22 05:02:06 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.13 1996/12/23 06:35:18 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -343,7 +343,6 @@ W32SaveScreen (pScreen, on)
     unsigned char state;
     unsigned char *cmap;
     unsigned char overscan; 
-    extern vgaPowerSaver;
 
     if (on)
 	SetTimeSinceLastInputEvent();
@@ -367,13 +366,15 @@ W32SaveScreen (pScreen, on)
 
 	    write_color(overscan, cmap);
 
-	    if (vgaPowerSaver && W32pCAndLater)
+#ifdef DPMSExtension
+	    if (DPMSEnabled && W32pCAndLater)
 	    {
 		outb(vgaIOBase + 4, 0x34);
 		GlennsIODelay();
 		outb(vgaIOBase + 5, state);
 		GlennsIODelay();
 	    }
+#endif
 	}
 	else
 	{
@@ -388,13 +389,15 @@ W32SaveScreen (pScreen, on)
 	    outb(0x3C0, 0x00);         
 	    GlennsIODelay();
 
-	    if (vgaPowerSaver && W32pCAndLater)
+#ifdef DPMSExtension
+	    if (DPMSEnabled && W32pCAndLater)
 	    {
 		outb(vgaIOBase + 4, 0x34);
 		GlennsIODelay();
 		outb(vgaIOBase + 5, state);
 		GlennsIODelay();
 	    }
+#endif
 	}
     }
     return(TRUE);

@@ -33,9 +33,6 @@ can confirm a problem using the lastest version, please do so.
   (which would point towards a problem in NonTE text color expansion).
   These functions are currently disabled.
 
-- At 24bpp, the cursor in an rxvt has a wrong color, and when selecting
-  text the colors are wrong. This looks like a missing RGB_EQUAL check.
-
 - Color expanded (monochrome) 8x8 pattern is may not be working correctly
   yet in all cases (not fully tested).
 
@@ -52,8 +49,8 @@ can confirm a problem using the lastest version, please do so.
 - The pattern fill primitives are taken to have the same graphics operation
   restrictions (planemask, rop etc) as ScreenToScreenCopy.
 
-- The support for TRIPLE_BITS_24BPP has improved, but it has not yet been
-  tested.
+- The support for TRIPLE_BITS_24BPP has improved, but it has not yet
+  been fully tested.
 
 - For color expansion implementation of stipples the graphics operation
   restriction of color expansion are not honoured, but instead the
@@ -64,6 +61,41 @@ back-trace ('backtrace').
 
 Change Log:
 
+208. Respect CapStyle when using TwoPointLine for a non-clipped segment.
+207. Fix line clipping when hardware clipping is used with multiple
+     clipping regions (Xavier Ducoin).
+206. Add a hack to counter cfb cheating in PolyGlyphBlt when it does not
+     call ValidateGC when changing the foreground color to fill in the
+     background (affecting RGB_EQUAL).
+205. Remove left-over fall-back tile function setting code in xf86gcmisc.c
+     that may have caused problems.
+204. At ValidateGC time, take note of background color changes for
+     evaluation of RGB_EQUAL restrictions.
+203. Add support for a monochrome pattern with PROGRAMMED_BITS that
+     needs to be rotated in software, so that all possible monochrome
+     pattern variations are now supported.
+202. Add NO_TEXT_COLOR_EXPANSION flag.
+201. Fix bitmap (CopyPlane1ToN) color expansion acceleration at 24bpp with
+     TRIPLE_BITS_24BPP defined.
+200. Fix support for ScanlineScreenToScreenColorExpand with
+     TRIPLE_BITS_24BPP defined.
+199. Fix the case of a monochrome 8x8 pattern stored in video memory.
+     The code was not consistently assuming that the patternx
+     coordinate is in units of "bits" (David Bateman).
+198. Invalidate the pixmap cache when VT-switching back (suggested by
+     Andrew Vanderstock).
+197. If color expansion is used for stipples, say so in the start-up
+     messages.
+196. Indicate in start-up messages whether 8x8 pattern fill is actually
+     usable.
+195. Better RGB_EQUAL checks for text acceleration with TRIPLE_BITS_24BPP
+     (David Bateman).
+194. Do not accelerate lines with non-FillSolid fill style. Stippled lines
+     were rendered incorrectly as solid lines.
+
+XFree86 3.2r
+193. Check RGB_EQUAL for text acceleration with TRIPLE_BITS_24BPP
+     (David Bateman).
 192. Honour RGB_EQUAL when deciding CopyPlane1To24 acceleration in
      xf86plane.c.
 191. Fix bugs in handling of left edge in CPU-to-screen color expansion
@@ -606,6 +638,14 @@ Flags
     expansion data is processed by the graphics chip in the same way as
     accelerated graphics commands (it uses the command FIFO).
 
+    NO_TEXT_COLOR_EXPANSION
+
+    Do not use color expansion to accelerate text. Define this if
+    color expansion is slower than plain framebuffer for text (which
+    might happen with scanline screen-to-screen color expansion,
+    when there is little video memory bandwidth but the CPU to
+    framebuffer bandwidth is decent).
+
 Sync()
 
     This function should be defined if BACKGROUND_OPERATIONS is enabled
@@ -749,7 +789,8 @@ SetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
     address where the pattern is stored, which will be on an 8 byte
     boundary relative to the start of a scanline. Otherwise, patternx
     and patterny can be ignored. The pattern x-coordinate will be in
-    units of "bits".
+    units of "bits", that is, a byte offset of one relative to the
+    start of the scanline is represented by a patternx value of 8.
 
     If HARDWARE_PATTERN_PROGRAMMED_BITS is set, patternx and patterny
     are overloaded as follows: patternx holds the first 4 lines (32
@@ -768,10 +809,15 @@ Subsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
     can be ignored; otherwise, patternx and patterny indicate the
     video memory address where the pattern is stored. Any rotating
     issues are handled by the generic code by generating pre-rotated
-    copies of the pattern.
+    copies of the pattern. Again patternx is in "bit" or "stencil"
+    units.
 
     If HARDWARE_PATTERN_PROGRAMMED_ORIGIN is set, patternx and
     patterny hold the origin (x and y offsets into the pattern).
+    HARDWARE_PATTERN_SCREEN_ORIGIN may be defined additionally;
+    in that case, the following is true: patternx and patterny will
+    be the same for all "Subsequent" calls. You may only need to
+    program the origin in the first Subsequent call.
 
 ColorExpandFlags
 
@@ -819,7 +865,7 @@ ColorExpandFlags
 	transferred so that 24bpp grayscale colors can used with color
 	expansion in 8bpp coprocessor mode. Each bit is expanded to 3
 	bits when writing the monochrome data. When definining this
-        flags, also define RGB_EQUAL.
+        flag, also define RGB_EQUAL.
 
     VIDEO_SOURCE_GRANULARITY_PIXEL
     VIDEO_SOURCE_GRANULARITY_BYTE
@@ -851,8 +897,8 @@ ColorExpandFlags
 	This indicates that when the left-edge clipping parameter is
         specified, the x coordinate is allowed to be negative (while
         being on-screen when the parameter is actually added to it).
-        At the moment, this flag is a requirement for color expansion
-        acceleration of (large) stipples.
+        At the moment, this flag is a requirement for CPU-to-screen
+        color expansion acceleration of (large) stipples.
 
     Note that the regular graphics operations flags for raster-op,
     planemask and color restrictions are also valid. NO_TRANSPARENCY
@@ -913,7 +959,8 @@ SubsequentScanlineScreenToScreenColorExpand(srcaddr)
     ScratchBufferBase must be defined. Being able to support
     COP_FRAMEBUFFER_CONCURRENCY is a win here. The srcaddr is the
     linear framebuffer address in (non-expanded) pixel units. The real
-    address is (srcaddr / 8).
+    address is (srcaddr / 8). When TRIPLE_BITS_24BPP is defined,
+    srcaddr is in non-expanded 8bpp pixel units.
 
     In addition, PingPongBuffers defines the number of alternating
     buffers used. The default is two. Depending on the implementation

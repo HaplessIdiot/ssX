@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.5 1997/01/12 10:48:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.6 1997/01/14 22:22:10 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -235,6 +235,7 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     xf86GCInfoRec.OffScreenCopyWindowFallBack = cfbCopyWindow;
     xf86GCInfoRec.CopyAreaFallBack = cfbCopyArea;
+    xf86GCInfoRec.PolyFillRectSolidFallBack = cfbPolyFillRect;
     /*
      * Even though the BitBlt helper function is almost identical
      * for cfb8/16/24/32, the right one must be used.

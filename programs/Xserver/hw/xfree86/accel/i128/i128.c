@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.19 1996/12/23 06:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.20 1996/12/28 08:14:27 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -58,6 +58,7 @@ ScrnInfoRec i128InfoRec =
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
    i128AdjustFrame,		/* void (* AdjustFrame)() */
    i128SwitchMode,		/* Bool (* SwitchMode)() */
+   (void (*)())NoopDDA,		/* void (* DPMSSet)() */
    i128PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */
@@ -98,10 +99,10 @@ ScrnInfoRec i128InfoRec =
    0,				/* int s3Madjust */
    0,				/* int s3Nadjust */
    0,				/* int s3MClk */
-   0,				/* unsigned long VGABase */
+   0,				/* int chipID */
+   0,				/* int chipRev */
+   0,				/* unsigned long VGAbase */
    0,				/* int s3RefClk */
-   0,				/* int suspendTime */
-   0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
@@ -149,7 +150,6 @@ static Bool ti3025ClockSelect();
 ScreenPtr i128savepScreen;
 Bool  i128DAC8Bit = FALSE;
 Bool  i128DACSyncOnGreen = FALSE;
-Bool  i128PowerSaver = FALSE;
 int i128DisplayWidth;
 int i128Weight;
 int i128AdjustCursorXPos = 0;
@@ -645,8 +645,10 @@ i128Probe()
 	     i128InfoRec.virtualX, i128InfoRec.virtualY);
    }
 
+#ifdef DPMSExtension
    if (OFLG_ISSET(OPTION_POWER_SAVER, &i128InfoRec.options))
-      i128PowerSaver = TRUE;
+      DPMSEnabled = TRUE;
+#endif
 
    /* Free PCI information */
    xf86cleanpci();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.1 1997/01/12 10:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_accel.c,v 3.2 1997/01/14 22:18:01 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -71,7 +71,8 @@ void _ctAccelInit() {
 	HARDWARE_PATTERN_MOD_64_OFFSET | HARDWARE_PATTERN_BIT_ORDER_MSBFIRST;
 #ifdef CHIPS_HIQV
     /* I believe this is possible for the HiQV architecture */
-    xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
+    xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY |
+	HARDWARE_PATTERN_TRANSPARENCY;
 #endif
 
     /*
@@ -83,7 +84,18 @@ void _ctAccelInit() {
     /* 
      * Setup a Screen to Screen copy (BitBLT) primitive
      */  
+#ifndef CHIPS_HIQV
     xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK | NO_TRANSPARENCY;
+#else
+    xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
+    /* A Chips and Technologies application notes says that some
+     * 65550 have a bug that prevents 16bpp transparency. It probably
+     * applies to 24 bpp as well (Someone with a 65550 care to check?).
+     * Hence for now only allow transparency at 8 bpp. 
+     */
+    if (vga256InfoRec.bitsPerPixel != 8)
+	xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+#endif
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
 	CTNAME(SetupForScreenToScreenCopy);
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
@@ -128,6 +140,8 @@ void _ctAccelInit() {
         break;
     }
 
+
+#ifndef CHIPS_HIQV /* Disable colour expansion and pattern for 65550 !! */
     /*
      * Setup the functions that perform monochrome colour expansion
      */
@@ -168,10 +182,8 @@ void _ctAccelInit() {
 	(unsigned int *)ctBltDataWindow;
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 64 * 1024;
 
-#if 0  /* Disable. Won't work with the current XAA */
-/* #ifndef CHIPS_HIQV */
+    /* HiQV chips support 24bpp pattern tile. But XAA has problems with it */
     if (vga256InfoRec.bitsPerPixel != 24) {
-#endif
         xf86AccelInfoRec.SetupForFill8x8Pattern =
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
@@ -182,14 +194,22 @@ void _ctAccelInit() {
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CTNAME(Subsequent8x8PatternColorExpand);
 #endif
-#if 0  /* Disable. Won't work with the current XAA */
-/* #ifndef CHIPS_HIQV */
     }
-#endif
+#endif /* Disable for CHIPS_HIQV */
 
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
         ctCacheEnd);
+
+#ifdef CHIPS_HIQV
+    /* This just disables a few features that might cause troubles for
+     * the 65550. After testing they might be renabled.
+     */
+    xf86AccelInfoRec.Flags &= ~COP_FRAMEBUFFER_CONCURRENCY;
+    xf86AccelInfoRec.Flags &= ~HARDWARE_PATTERN_TRANSPARENCY;
+    xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+#endif
+
 }
 
 void CTNAME(Sync)() {
@@ -359,6 +379,22 @@ transparency_color)
 	CommandFlags |= ctRIGHT2LEFT;
     else
 	CommandFlags |= ctLEFT2RIGHT;
+#ifdef CHIPS_HIQV
+    if (transparency_color != -1) {
+	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSDST;
+        switch (vga256InfoRec.bitsPerPixel) {
+        case 8:
+	    ctSETBGCOLOR8(transparency_color);
+	    break;
+        case 16:
+	    ctSETBGCOLOR16(transparency_color);
+	    break;
+        case 24:
+	    ctSETBGCOLOR24(transparency_color);
+	    break;
+        }
+    }
+#endif
     ctBLTWAIT;
     ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
     ctSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel,
@@ -694,6 +730,22 @@ transparency_color)
     patternaddr = (patterny * vga256InfoRec.displayWidth + 
 		   (patternx & ~0x3F)) * vgaBytesPerPixel;
     patternyrot = (patternx & 0x3F) >> 3;
+#ifdef CHIPS_HIQV
+    if (transparency_color != -1) {
+	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSDST;
+        switch (vga256InfoRec.bitsPerPixel) {
+        case 8:
+	    ctSETBGCOLOR8(transparency_color);
+	    break;
+        case 16:
+	    ctSETBGCOLOR16(transparency_color);
+	    break;
+        case 24:
+	    ctSETBGCOLOR24(transparency_color);
+	    break;
+        }
+    }
+#endif
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
     ctSETPITCH(8 * vgaBytesPerPixel,
@@ -705,6 +757,8 @@ void CTNAME(SubsequentFill8x8Pattern)(patternx, patterny, x, y, w, h)
     int x, y, w, h;
 {
     unsigned int destaddr;
+    ErrorF("CHIPS: SubsequentFill8x8Pattern(%d, %d, %d, %d, %d, %d)\n",
+	   patternx, patterny, x, y, w, h);
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -772,10 +826,8 @@ void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     int x, y, w, h;
 {
     int destaddr;
-#if 0
     ErrorF("CHIPS: Subsequent8x8PatternColorExpand(%d, %d, %d, %d, %d, %d)\n",
 	   patternx, patterny, x, y, w, h);
-#endif
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);

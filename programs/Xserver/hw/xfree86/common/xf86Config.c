@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.110 1996/12/29 13:50:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.111 1997/01/05 11:58:04 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -37,6 +37,10 @@ extern char *getenv();
 #include "input.h"
 #include "servermd.h"
 #include "scrnintstr.h"
+
+#ifdef DPMSExtension
+#include "opaque.h"
+#endif
 
 #define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"
@@ -1824,6 +1828,8 @@ configDeviceSection()
   devp->s3Madjust = 0;
   devp->s3Nadjust = 0;
   devp->s3MClk = 0;
+  devp->chipID = 0;
+  devp->chipRev = 0;
   devp->s3RefClk = 0;
   devp->s3BlankDelay = -1;
   devp->DCConfig = NULL;
@@ -2074,6 +2080,16 @@ configDeviceSection()
     case S3MCLK:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("MCLK value in MHz expected");
       devp->s3MClk = (int)(val.realnum * 1000.0 + 0.5);
+      break;
+
+    case CHIPID:
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("ChipID expected");
+      devp->chipID = val.num;
+      break;
+
+    case CHIPREV:
+      if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("ChipRev expected");
+      devp->chipRev = val.num;
       break;
 
     case VGABASEADDR:
@@ -2621,8 +2637,6 @@ configScreenSection()
     screen->whiteColour.red = 0x3F;
     screen->whiteColour.green = 0x3F;
     screen->whiteColour.blue = 0x3F;
-    screen->suspendTime = DEFAULT_SUSPEND_TIME * MILLI_PER_SECOND;
-    screen->offTime = DEFAULT_OFF_TIME * MILLI_PER_SECOND;
   }
   screen->clocks = 0;
 
@@ -2715,6 +2729,8 @@ configScreenSection()
           screen->s3Madjust = device_list[i].s3Madjust;
           screen->s3Nadjust = device_list[i].s3Nadjust;
 	  screen->s3MClk = device_list[i].s3MClk;
+	  screen->chipID = device_list[i].chipID;
+	  screen->chipRev = device_list[i].chipRev;
 	  screen->s3RefClk = device_list[i].s3RefClk;
 	  screen->s3BlankDelay = device_list[i].s3BlankDelay;
 	  screen->textClockFreq = device_list[i].textClockValue;
@@ -2765,16 +2781,28 @@ configScreenSection()
 	defaultScreenSaverTime = ScreenSaverTime = val.num * MILLI_PER_MIN;
       break;
 
+    case STANDBYTIME:
+      if (xf86GetToken(NULL) != NUMBER)
+	xf86ConfigError("Screensaver standby time expected");
+#ifdef DPMSExtension
+      DPMSStandbyTime = val.num * MILLI_PER_MIN;
+#endif
+      break;
+
     case SUSPENDTIME:
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver suspend time expected");
-      screen->suspendTime = val.num * MILLI_PER_MIN;
+#ifdef DPMSExtension
+      DPMSSuspendTime = val.num * MILLI_PER_MIN;
+#endif
       break;
 
     case OFFTIME:
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver off time expected");
-      screen->offTime = val.num * MILLI_PER_MIN;
+#ifdef DPMSExtension
+      DPMSOffTime = val.num * MILLI_PER_MIN;
+#endif
       break;
 
     default:

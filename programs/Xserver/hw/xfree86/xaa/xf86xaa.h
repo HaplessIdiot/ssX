@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.3 1997/01/02 04:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.5 1997/01/14 22:22:17 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -23,6 +23,7 @@
 #define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x20000
 #define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40000
 #define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80000
+#define NO_TEXT_COLOR_EXPANSION		0x100000
 
 /* Graphics operation flags */
 
@@ -328,6 +329,14 @@ typedef struct {
         unsigned long	bitPlane,
         int		bg,
         int		fg
+#endif
+    );
+    void (*PolyFillRectSolidFallBack)(
+#if NeedNestedPrototypes
+	DrawablePtr	pDrawable,
+	GCPtr		pGC,
+        int		nrectFill,
+        xRectangle	*prectInit
 #endif
     );
 } xf86GCInfoRecType;

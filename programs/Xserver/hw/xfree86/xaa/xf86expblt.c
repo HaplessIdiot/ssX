@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.6 1997/01/05 11:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.7 1997/01/14 22:22:02 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -164,18 +164,18 @@ static __inline__ unsigned int reverse_bitorder(data) {
     { unsigned data2; \
 	data2 = mapping[(data & 0xFF00) >> 8] >> 8; \
 	data2 |= mapping[(data & 0xFF0000) >> 16] << 16; \
-	*(dest + 1) = data2; \
+	*(dest) = data2; \
     }
 #define WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, mapping) \
     { unsigned data2; \
 	data2 = mapping[(data & 0xFF0000) >> 16] >> 16; \
 	data2 |= mapping[(data & 0xFF000000) >> 24] << 8; \
-	*(dest + 2) = data2; \
+	*(dest) = data2; \
     }
 #define WRITE_IN_BITORDER3_MACRO(dest, data, mapping) \
 	WRITE_IN_BITORDER3_FIRSTWORD_MACRO(dest, data, mapping) \
-	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest, data, mapping) \
-	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest, data, mapping)
+	WRITE_IN_BITORDER3_SECONDWORD_MACRO(dest + 1, data, mapping) \
+	WRITE_IN_BITORDER3_THIRDWORD_MACRO(dest + 2, data, mapping)
 
 #ifdef MSBFIRST
 #define BYTE_EXPAND byte_reversed_expand3

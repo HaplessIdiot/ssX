@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.3 1997/01/03 08:35:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.5 1997/01/14 22:19:59 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -107,7 +107,7 @@
     (cirrusChip == CLGD5446)
 
 #define CHIPHASFGCOLORREGISTERSIDEEFFECT() \
-    (cirrusChip <= CLGD5429)	/* At least the 5426/28. */
+    (cirrusChip <= CLGD5429 || HAVE754X())	/* At least the 5426/28. */
 
 #define CHIPHASPATTERNOFFSET() \
     (cirrusChip == CLGD5446)
@@ -189,24 +189,37 @@ void CirrusAccelInit() {
     if (CHIPHASCPUFRAMEBUFFERCONCURRENCY())
         xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;	/* 5446 */
     xf86AccelInfoRec.Sync = CirrusSync;
-    xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
-    if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHASPACKED24FILL())
+
+
+    /* If the chip has honest-to-goodness solid color fill, great.  Else,
+       we'll try to use color expansion pattern fill in place of solid
+       color fill.  To do this pattern fill, we'll need some extra space
+       laying around.  Probably about 8 bytes (for an 8x8 monochrome 
+       pattern) should be enough. */
+      xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
+      if (vga256InfoRec.bitsPerPixel == 24 && !CHIPHASPACKED24FILL())
         xf86GCInfoRec.PolyFillRectSolidFlags |= RGB_EQUAL;
-    xf86AccelInfoRec.SetupForFillRectSolid = CirrusSetupForFillRectSolid;
-    switch (vga256InfoRec.bitsPerPixel) {
-    case 8 :
-        xf86AccelInfoRec.SubsequentFillRectSolid = Cirrus8SubsequentFillRectSolid;
+
+      xf86AccelInfoRec.SetupForFillRectSolid = CirrusSetupForFillRectSolid;
+      switch (vga256InfoRec.bitsPerPixel) {
+      case 8 :
+        xf86AccelInfoRec.SubsequentFillRectSolid = 
+	  Cirrus8SubsequentFillRectSolid;
         break;
-    case 16 :
-        xf86AccelInfoRec.SubsequentFillRectSolid = Cirrus16SubsequentFillRectSolid;
+      case 16 :
+        xf86AccelInfoRec.SubsequentFillRectSolid = 
+	  Cirrus16SubsequentFillRectSolid;
         break;
-    case 24 :
-        xf86AccelInfoRec.SubsequentFillRectSolid = Cirrus24SubsequentFillRectSolid;
+      case 24 :
+        xf86AccelInfoRec.SubsequentFillRectSolid = 
+	  Cirrus24SubsequentFillRectSolid;
         break;
-    case 32 :
-        xf86AccelInfoRec.SubsequentFillRectSolid = Cirrus32SubsequentFillRectSolid;
+      case 32 :
+        xf86AccelInfoRec.SubsequentFillRectSolid = 
+	  Cirrus32SubsequentFillRectSolid;
         break;
-    }
+      }
+
     xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
     if (!CHIPHASTRANSPARENCYCOMPARE() || vga256InfoRec.bitsPerPixel > 16)
         /*
@@ -231,19 +244,24 @@ void CirrusAccelInit() {
         xf86AccelInfoRec.SubsequentScreenToScreenCopy = Cirrus32SubsequentScreenToScreenCopy;
         break;
     }
+
     if (vga256InfoRec.bitsPerPixel != 24) {
         xf86AccelInfoRec.SetupForFill8x8Pattern = CirrusSetupFor8x8PatternFill;
         xf86AccelInfoRec.SubsequentFill8x8Pattern = CirrusSubsequent8x8PatternFill;
     }
+
     /* Color expansion. */
     if (vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL()) {
+
         xf86AccelInfoRec.ColorExpandFlags =
             CPU_TRANSFER_PAD_DWORD |
             BIT_ORDER_IN_BYTE_MSBFIRST | VIDEO_SOURCE_GRANULARITY_DWORD;
+
         if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD())
             xf86AccelInfoRec.ColorExpandFlags |= SCANLINE_PAD_DWORD;
         else
             xf86AccelInfoRec.ColorExpandFlags |= SCANLINE_PAD_BYTE;
+
         if (vga256InfoRec.bitsPerPixel == 24)
             /*
              * The 5436 (and 46?), which support 24bpp color expansion,
@@ -256,6 +274,7 @@ void CirrusAccelInit() {
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CirrusSubsequent8x8PatternColorExpand;
 #endif
+
 	if (CHIPHASDWORDCOLOREXPANSIONSCANLINEPAD()) {
 	    /*
 	     * Modern chip with 32-bit scanline alignment. Compatible
@@ -283,8 +302,12 @@ void CirrusAccelInit() {
             xf86GCInfoRec.ImageGlyphBltTE = CirrusMMIOImageGlyphBlt;
             xf86GCInfoRec.PolyGlyphBltTE = CirrusMMIOPolyGlyphBlt;
 #else
-            xf86GCInfoRec.ImageGlyphBltTE = CirrusImageGlyphBlt;
-            xf86GCInfoRec.PolyGlyphBltTE = CirrusPolyGlyphBlt;
+	    xf86GCInfoRec.ImageGlyphBltTE = CirrusImageGlyphBlt;
+	    /* I think that the PolyGlyphBltTE function works only
+	       in 8bpp modes.  --Corey 1/17/97 */
+	    if (vga256InfoRec.bitsPerPixel == 8) {
+	      xf86GCInfoRec.PolyGlyphBltTE = CirrusPolyGlyphBlt;
+	    }
 #endif
             xf86GCInfoRec.ImageGlyphBltTEFlags = NO_PLANEMASK;
             xf86GCInfoRec.PolyGlyphBltTEFlags = NO_PLANEMASK;
@@ -296,14 +319,19 @@ void CirrusAccelInit() {
                 CirrusSetupForScanlineScreenToScreenColorExpand;
             xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
                 CirrusSubsequentScanlineScreenToScreenColorExpand;
-            xf86AccelInfoRec.ScratchBufferAddr = cirrusBufferSpaceAddr;
-            xf86AccelInfoRec.ScratchBufferSize = cirrusBufferSpaceSize;
+
+	    xf86AccelInfoRec.ScratchBufferAddr = cirrusBufferSpaceAddr;
+	    xf86AccelInfoRec.ScratchBufferSize = cirrusBufferSpaceSize;
         }
+
         xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
             CirrusSetupForScreenToScreenColorExpand;
         xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
             CirrusSubsequentScreenToScreenColorExpand;
     }
+    /* end of colexp functions */
+
+
     if (CHIPHASAUTOSTART()) {
         cirrusUseAutoStart = TRUE;
         if (CHIPHASPCIRETRYSUPPORT())
@@ -311,6 +339,10 @@ void CirrusAccelInit() {
     }
     if (CHIPHASSOLIDCOLORFILL())
         cirrusUseSolidColorFill = TRUE;
+
+    /* Initialize the PixMap cache.  We're free to tell XAA the region
+       of video memory (linearly) that's okay to use for PixMap caches.
+       */
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
         vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
         vga256InfoRec.videoRam * 1024 - 1024 - cirrusBufferSpaceSize);
@@ -345,27 +377,31 @@ void CirrusSync() {
 #endif
 }
 
+
+
 void CirrusSetupForFillRectSolid(color, rop, planemask)
     int color, rop, planemask;
 {
     int bltmode;
+
     if (vga256InfoRec.bitsPerPixel >= 24 &&
-    (vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL())) {
-        if (!cirrusUseSolidColorFill) {
-            SETBACKGROUNDCOLOR32(color);
-        }
-        SETFOREGROUNDCOLOR32(color);
+	(vga256InfoRec.bitsPerPixel != 24 || CHIPHASPACKED24FILL())) {
+      if (!cirrusUseSolidColorFill) {
+	SETBACKGROUNDCOLOR32(color);
+      }
+      SETFOREGROUNDCOLOR32(color);
     }
     else {
-        if (!cirrusUseSolidColorFill) {
-            SETBACKGROUNDCOLOR16(color);
-        }
-        SETFOREGROUNDCOLOR16(color);
+      if (!cirrusUseSolidColorFill) {
+	SETBACKGROUNDCOLOR16(color);
+      }
+      SETFOREGROUNDCOLOR16(color);
     }
-#if 0
-    if (!cirrusUseSolidColorFill)
-#endif
-        SETSRCADDR(0);
+
+
+    
+    SETSRCADDR(0);
+
     switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
         bltmode = COLOREXPAND | PATTERNCOPY;
@@ -385,6 +421,7 @@ void CirrusSetupForFillRectSolid(color, rop, planemask)
         bltmode = COLOREXPAND | PATTERNCOPY | PIXELWIDTH32;
         break;
     }
+
     if (cirrusUseSolidColorFill) {
         SETBLTMODEANDROP(bltmode, SOLIDCOLORFILL, cirrus_rop[rop]);
     }
@@ -392,6 +429,8 @@ void CirrusSetupForFillRectSolid(color, rop, planemask)
         SETBLTMODEANDROP(bltmode, 0, cirrus_rop[rop]);
     }
 }
+
+
 
 void Cirrus8SubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
@@ -403,10 +442,12 @@ void Cirrus8SubsequentFillRectSolid(x, y, w, h)
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w, h);			/* 8 */
+
 #if 0
     if (!cirrusUseSolidColorFill)
-        SETSRCADDR(0);				/* 20 */
+        SETSRCADDR(0);	                        /* 20 */
 #endif
+
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
@@ -422,10 +463,12 @@ void Cirrus16SubsequentFillRectSolid(x, y, w, h)
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 2, h);		/* 10 */
+
 #if 0
     if (!cirrusUseSolidColorFill)
-        SETSRCADDR(0);				/* 20 */
+        SETSRCADDR(0);	                        /* 20 */
 #endif
+
     SETDESTADDR(destaddr);			/* 10 */
     if (!cirrusUseAutoStart)
         STARTBLT();
@@ -441,10 +484,12 @@ void Cirrus24SubsequentFillRectSolid(x, y, w, h)
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 3, h);		/* 8 */
+
 #if 0
     if (!cirrusUseSolidColorFill)
-        SETSRCADDR(0);				/* 20 */
+        SETSRCADDR(0);	                        /* 20 */
 #endif
+
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
@@ -460,10 +505,12 @@ void Cirrus32SubsequentFillRectSolid(x, y, w, h)
     else
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 4, h);		/* 8 */
+
 #if 0
     if (!cirrusUseSolidColorFill)
-        SETSRCADDR(0);				/* 20 */
+        SETSRCADDR(0);	                        /* 20 */
 #endif
+
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
@@ -721,6 +768,7 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
         }
         loadbg = TRUE;
     }
+
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
     (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
         if (loadbg) {
@@ -734,6 +782,7 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
         }
         SETFOREGROUNDCOLOR16(fg);
     }
+
     switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
         bltmode |= COLOREXPAND;
@@ -822,6 +871,7 @@ rop, planemask)
         }
         loadbg = TRUE;
     }
+
     if (cirrusChip == CLGD5434 || vga256InfoRec.bitsPerPixel == 32 ||
     (vga256InfoRec.bitsPerPixel == 24 || CHIPHASPACKED24FILL())) {
         if (loadbg) {
@@ -835,6 +885,7 @@ rop, planemask)
         }
         SETFOREGROUNDCOLOR16(fg);
     }
+
     switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
         bltmode |= COLOREXPAND;
@@ -854,6 +905,7 @@ rop, planemask)
         bltmode |= COLOREXPAND | PIXELWIDTH32;
         break;
     }
+
     SETBLTMODEANDROP(bltmode, 0, cirrus_rop[rop]);
     scanline_width = BPPADJUST(w);
     scanline_destaddr = y * vga256InfoRec.displayWidth + x;

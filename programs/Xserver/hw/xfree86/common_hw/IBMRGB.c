@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.4 1996/05/06 05:57:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.5 1996/12/23 06:44:09 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -231,6 +231,11 @@ int s3IBMRGB_Probe()
       
       if (id == id2 && rev == rev2) {  /* IBM RGB52x found */
 	 ret = (id<<8) | rev;
+
+	 /* check for 128bit VRAM -> RGB528 */
+	 outb(IBMRGB_INDEX_LOW, IBMRGB_misc1);
+	 if ((inb(IBMRGB_INDEX_DATA) & 0x03) == 0x03)  /* 128bit DAC found */
+	    ret |= 1<<16;
       }
       else {
 	 outb(IBMRGB_INDEX_LOW, IBMRGB_rev);

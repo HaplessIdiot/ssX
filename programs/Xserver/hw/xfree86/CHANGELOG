@@ -1,3 +1,67 @@
+XFree86 3.2s (18 January 1997)
+ 282. Fix a problem with xdm's sessreg and utmp on Linux (Leonard N. Zubkoff).
+ 281. Fix a plane-enable bug for Cirrus 754x (Corin Anderson).
+ 280. Don't use teblt code for depths other than 8 for Cirrus 754x
+      chips (Corin Anderson).
+ 279. Implement programmable pattern offset using XAA, add support for
+      plane masks and fix sum bugs for Cirrus Laguna chips (Corin Anderson).
+ 278. Don't check the PCI command FIFO for Cirrus Laguna chips
+      (Corin Anderson).
+ 277. Add XAA support to the SiS driver.  The old code can be reverted
+      to at runtime with the "noaccel" option (Xavier Ducoin).
+ 276. Add recognition of XAA options as valid options for the SVGA
+      server (Alan Hourihane).
+ 275. Add "please report" messages when S3 Trio64V2, Trio64UV+ or
+      Aurora64V+ chips are detected (Harald Koenig).
+ 274. Add undocumented options to XF86Config to allow a numerical ChipID
+      and ChipRev to be specified (used by the S3 and S3V servers)
+      (Harald Koenig).
+ 273. Attempt to fix false detection of RGB524 ramdac as RGB528
+      (Harald Koenig).
+ 272. Make sure x coordinate doesn't overflow into the y coordinate
+      for some MGA operations (Xavier Ducoin and Radislaw Kapitan).
+ 271. Don't write high order CRTC vertical bits for Trident chips earlier
+      than TGUI9440AGi (Alan Hourihane).
+ 270. Fix an error in koi8-r charset switching code (Andrey Chernov).
+ 269. Disable acceleration for TGUI Cyber chips (Alan Hourihane).
+ 268. Fix register access in Cirrus 754x LCD size detection (Harm Hanemaayer).
+ 267. Add support for the "no_stretch" option for Cirrus 754x chips
+      (Harm Hanemaayer).
+ 266. Enable MMIO by default for Cirrus 543x/4x chips, and add a "no_mmio"
+      option to allow it to be disabled (Harm Hanemaayer).
+ 265. Disable PCI burst mode on the TGUI by default, but allow it to be
+      turned on with options (Alan Hourihane).
+ 264. Update max clocks for the TGUI 96xx chips (Alan Hourihane).
+ 263. Fix centre/stretch TGUI LCD problems (Alan Hourihane).
+ 262. Add Option "tgui_mclk_66" to force MCLK to 66 MHz (Alan Hourihane).
+ 261. Fix TGUI Cyber detection problems (Alan Hourihane).
+ 260. Flush MGA "direct access read cache" in MgaSync(), which fixes
+      problems reading directly from the framebuffer after accelerated
+      operations (Radislaw Kapitan).
+ 259. XAA updates (see xaa/NOTES for details) (Harm Hanemaayer).
+ 258. Updates for LynxOS 2.5.0 (Thomas Mueller).
+ 257. Fix xterm text highlighting when the window it partly off-screen
+      (Thomas E. Dickey).
+ 256. Remove the GetSaver/SetSaver functionality from the client
+      side of the XFree86-Misc extension, but leave dummy support in
+      the server side for now to avoid breaking old clients
+      (Leonard N. Zubkoff).
+ 255. Implement hw-specific DPMS support for servers/drivers which already
+      had an old implementation, adding support for Standby mode where
+      possible, and adding a StandbyTime keyword for the XF86Config
+      file (Leonard N. Zubkoff).
+ 254. Fix some problems with the original DPMS extension behaviour
+      (Leonard N. Zubkoff).
+ 253. Possible speedup for S3V polypoint code (Harald Koenig).
+ 252. Disable C&T 65550 acceleration features that weren't present
+      in 3.2 (David Bateman).
+ 251. Fix a C&T 24bpp pattern fill problem (David Bateman).
+ 250. Make the XAA C&T code independent of the old acceleration code
+      (David Bateman).
+ 249. Recognise the Alliance AT24, but treat the same way as a 6442
+      (Joe Moss).
+ 248. Add detection for newer TGUI chipsets to SuperProbe (Alan Hourihane).
+
 XFree86 3.2r (14 January 1997)
  247. Use some extra XAA flags in the MGA acceleration (Radislaw Kapitan).
  246. XAA updates (see xaa/NOTES for details) (Harm Hanemaayer).

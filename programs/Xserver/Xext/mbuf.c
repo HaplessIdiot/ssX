@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: mbuf.c /main/25 1996/12/02 10:19:23 lehors $ */
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.1 1996/05/06 05:55:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.2 1996/12/23 06:28:59 dawes Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -46,7 +46,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "gcstruct.h"
 #include "inputstr.h"
 #include "multibufst.h"
-#if !defined(WIN32) && !defined(MINIX)
+#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
 #include <sys/time.h>
 #endif
 

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c /main/45 1996/12/02 10:23:13 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.10 1995/03/11 14:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.11 1996/12/23 07:09:59 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -62,7 +62,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx)
 #include <sys/resource.h>
 #endif
 

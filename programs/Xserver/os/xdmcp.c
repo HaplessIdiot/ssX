@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c /main/34 1996/12/02 10:23:29 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.7 1996/01/05 13:20:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.8 1996/12/23 07:10:01 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -30,8 +30,12 @@
 #endif
 #include "Xos.h"
 #if !defined(MINIX) && !defined(WIN32)
+#ifndef Lynx
 #include <sys/param.h>
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
 #include <netinet/in.h>
 #include <netdb.h>
 #else

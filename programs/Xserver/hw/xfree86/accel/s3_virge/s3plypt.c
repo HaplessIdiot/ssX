@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.4 1996/12/27 07:02:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.5 1997/01/14 22:17:24 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -128,6 +128,7 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    BLOCK_CURSOR;
 
    if (npt > 7) { /* 16 (fifo) - 7 (No. of cmds) - 2 (buffer in WaitQueue) */
+      int nwait=0;
       WaitQueue(3);
       SETB_PAT_FG_CLR(s3_clr);
       SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC | s3_rop);
@@ -141,7 +142,10 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
          for (ppt = (int *)pptInit, i = npt; --i >= 0;) {
             pt = *ppt++;
             if (!isClipped(pt, c1, c2)) {
-               WaitQueue(1);
+	       if (nwait-- == 0) {
+		  nwait = 7;
+		  WaitQueue(8);
+	       }
                SETB_RDEST_XY((short)intToX(pt) + pDrawable->x, (short)intToY(pt) + pDrawable->y);
             }
         }
