@@ -1,5 +1,8 @@
-XFree86 3.9.18Za (5 March 2000)
-3796. Rage 128 documentation update (Kevin Martin).
+XFree86 3.9.18Za (6 March 2000)
+3798. Rage 128 documentation update (Kevin Martin).
+3797. Fix an unresolved reference to VErrorF from the int10 module
+      (David Dawes).
+3796. Reduce some of the noise in the server startup messages (David Dawes).
 3795. Static library objects don't use THREADS_CFLAGS (#3790, Matthieu Herrb).
 3934. Fix a fatal error related to shared memory pixmaps in Xinerama (#3788,
       Mark Vojkovich).
@@ -9972,4 +9975,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1065 2000/03/05 16:59:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1066 2000/03/06 13:57:38 martin Exp $
