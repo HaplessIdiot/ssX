@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.4 2001/06/07 15:33:43 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.5 2001/06/07 17:54:01 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -182,6 +182,19 @@ XRRScreenSize *XRRSizes(XRRScreenConfiguration *config, int *nsizes)
 {
    *nsizes = config->nsizes;
   return config->sizes;
+}
+
+Time XRRTimes (XRRScreenConfiguration *config, Time *config_timestamp)
+{
+    *config_timestamp = config->config_timestamp;
+    return config->timestamp;
+}
+
+SizeID XRRCurrentConfig (XRRScreenConfiguration *config, VisualGroupID *visual_group, Rotation *rotation)
+{
+    *visual_group = (VisualGroupID) config->current_visual_group;
+    *rotation = (Rotation) config->current_rotation;
+    return (SizeID) config->current_size;
 }
 
 int XRRRootToScreen(Display *dpy, Window root)

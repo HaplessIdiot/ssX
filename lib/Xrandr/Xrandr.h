@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.4 2001/06/07 15:33:43 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.5 2001/06/07 17:54:02 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -100,6 +100,8 @@ Rotation XRRRotations(XRRScreenConfiguration *config, Rotation *current_rotation
 
 Time XRRTimes (XRRScreenConfiguration *config, Time *config_timestamp);
 
+SizeID XRRCurrentConfig (XRRScreenConfiguration *config, VisualGroupID *visual_group, Rotation *rotation);
+    
 int XRRRootToScreen(Display *dpy, Window root);
 
 #endif /* _XRANDR_H_ */
