@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.26 2002/11/15 07:27:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.27 2002/11/17 07:51:29 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -38,7 +38,7 @@
  * the current code in write.c will print it as #<ERROR> */
 #define LABEL_BIT_COUNT		8
 #define LABEL_BIT_MASK		0xff
-#define MAX_LABEL_VALUE		((1 << (sizeof(long) * 8 - 9)) - 1)
+#define MAX_LABEL_VALUE		((1L << (sizeof(long) * 8 - 9)) - 1)
 #define READLABEL(label)						\
     (LispObj*)(((label) << LABEL_BIT_COUNT) | READLABEL_MASK)
 #define READLABELP(object)						\
