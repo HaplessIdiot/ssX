@@ -1,5 +1,5 @@
 /* $XConsortium: xsm.h,v 1.36 95/01/03 17:22:47 mor Exp $ */
-/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.3 1995/01/27 05:02:16 dawes Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.4 1995/01/27 10:38:33 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -49,10 +49,6 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif /* PATH_MAX */
 
-/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(__STDC__) && defined(ISC)
-extern FILE *fdopen(int, char const *);
-#endif
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
 #include <stdio.h>
@@ -186,7 +182,7 @@ extern char *Strstr();
 #endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(ISC) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern FILE *fdopen(int, char const *);
 #endif
 
