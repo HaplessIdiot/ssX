@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.7 2003/10/31 17:19:33 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -7543,7 +7543,7 @@ Bool VIAGetBIOSTable(VIABIOSInfoPtr pBIOSInfo)
             xfree(pBIOS);
             xfree(pViaModeTable->BIOSDate);
             xfree(pViaModeTable->Modes);
-            ErrorF("Too much modes for Refresh Table!!\n");
+            ErrorF("Too many modes for Refresh Table!!\n");
             return FALSE;
         }
 
@@ -7556,7 +7556,7 @@ Bool VIAGetBIOSTable(VIABIOSInfoPtr pBIOSInfo)
                 xfree(pBIOS);
                 xfree(pViaModeTable->BIOSDate);
                 xfree(pViaModeTable->Modes);
-                ErrorF("Too much refresh modes for Refresh Table!!\n");
+                ErrorF("Too many refresh modes for Refresh Table!!\n");
                 return FALSE;
             }
 
@@ -11706,7 +11706,7 @@ Bool VIASetModeForMHS(VIABIOSInfoPtr pBIOSInfo)
         }
         else
             xf86DestroyI2CDevRec(dev,TRUE);
-        ErrorF("Not Support TV resolution!!\n");
+        ErrorF("TV resolution not supported!!\n");
     }
 
     if (!pBIOSInfo->A2) {
