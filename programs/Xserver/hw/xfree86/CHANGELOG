@@ -1,4 +1,6 @@
 XFree86 3.9.17d (1 February 2000)
+3617. Modularize the mouse driver (Alan Hourihane).
+3616. Fix Cyber9388 detection in trident driver (Alan Hourihane).
 3615. Implement some of the (installed) path restructuring that was
       discussed back in April 1999 (David Dawes).
 3614. Remove duplicated code in XKB and InputMethod processing (#3396,
