@@ -3641,55 +3641,55 @@ SiS_GetPanelID(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
   if(HwInfo->jChipType < SIS_315H) {
 
-    tempax = SiS_GetReg(SiS_Pr->SiS_P3c4,0x18);
-    tempbx = tempax & 0x0F;
-    if(!(tempax & 0x10)){
-      if(SiS_Pr->SiS_IF_DEF_LVDS == 1){
-        tempbx = 0;
-        temp = SiS_GetReg(SiS_Pr->SiS_P3c4,0x38);
-        if(temp & 0x40) tempbx |= 0x08;
-        if(temp & 0x20) tempbx |= 0x02;
-        if(temp & 0x01) tempbx |= 0x01;
-        temp = SiS_GetReg(SiS_Pr->SiS_P3c4,0x39);
-        if(temp & 0x80) tempbx |= 0x04;
-      } else {
-        return 0;
-      }
-    }
-    tempbx = PanelTypeTable300[tempbx];
-    tempbx |= LCDSync;
-    temp = tempbx & 0x00FF;
-    SiS_SetReg(SiS_Pr->SiS_P3d4,0x36,temp);
-    temp = (tempbx & 0xFF00) >> 8;
-    SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,~(LCDSyncBit|LCDRGB18Bit),temp);
+     tempax = SiS_GetReg(SiS_Pr->SiS_P3c4,0x18);
+     tempbx = tempax & 0x0F;
+     if(!(tempax & 0x10)){
+        if(SiS_Pr->SiS_IF_DEF_LVDS == 1){
+           tempbx = 0;
+           temp = SiS_GetReg(SiS_Pr->SiS_P3c4,0x38);
+           if(temp & 0x40) tempbx |= 0x08;
+           if(temp & 0x20) tempbx |= 0x02;
+           if(temp & 0x01) tempbx |= 0x01;
+           temp = SiS_GetReg(SiS_Pr->SiS_P3c4,0x39);
+           if(temp & 0x80) tempbx |= 0x04;
+        } else {
+           return 0;
+        }
+     }
+     tempbx = PanelTypeTable300[tempbx];
+     tempbx |= LCDSync;
+     temp = tempbx & 0x00FF;
+     SiS_SetReg(SiS_Pr->SiS_P3d4,0x36,temp);
+     temp = (tempbx & 0xFF00) >> 8;
+     SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,~(LCDSyncBit|LCDRGB18Bit),temp);
 
   } else {
 
-    tempax = tempah = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1a);
-    tempax &= 0x1e;
-    tempax >>= 1;
-    if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
-       if(tempax == 0) {
+     tempax = tempah = SiS_GetReg(SiS_Pr->SiS_P3c4,0x1a);
+     tempax &= 0x1e;
+     tempax >>= 1;
+     if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
+        if(tempax == 0) {
            /* TODO: Include HUGE detection routine
 	            (Probably not worth bothering)
 	    */
            return 0;
-       }
-       temp = tempax & 0xff;
-       tempax--;
-       tempbx = PanelTypeTable310LVDS[tempax];
-    } else {
-       tempbx = PanelTypeTable31030x[tempax];
-       temp = tempbx & 0xff;
-    }
-    SiS_SetReg(SiS_Pr->SiS_P3d4,0x36,temp);
-    tempbx = (tempbx & 0xff00) >> 8;
-    temp = tempbx & 0xc1;
-    SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,~(LCDSyncBit|LCDRGB18Bit),temp);
-    if(SiS_Pr->SiS_IF_DEF_LVDS == 0) {
-       temp = tempbx & 0x04;
-       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x39,0xfb,temp);
-    }
+        }
+        temp = tempax & 0xff;
+        tempax--;
+        tempbx = PanelTypeTable310LVDS[tempax];
+     } else {
+        tempbx = PanelTypeTable31030x[tempax];
+        temp = tempbx & 0xff;
+     }
+     SiS_SetReg(SiS_Pr->SiS_P3d4,0x36,temp);
+     tempbx = (tempbx & 0xff00) >> 8;
+     temp = tempbx & 0xc1;
+     SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,~(LCDSyncBit|LCDRGB18Bit),temp);
+     if(SiS_Pr->SiS_IF_DEF_LVDS == 0) {
+        temp = tempbx & 0x04;
+        SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x39,0xfb,temp);
+     }
 
   }
   return 1;
@@ -3733,17 +3733,17 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
    pSiS->SiS_Pr->CFlags = mode->Flags;
 
    if(pSiS->SiS_Pr->CFlags & V_INTERLACE) {
-         pSiS->SiS_Pr->CVDisplay >>= 1;
-	 pSiS->SiS_Pr->CVSyncStart >>= 1;
-	 pSiS->SiS_Pr->CVSyncEnd >>= 1;
-	 pSiS->SiS_Pr->CVTotal >>= 1;
+      pSiS->SiS_Pr->CVDisplay >>= 1;
+      pSiS->SiS_Pr->CVSyncStart >>= 1;
+      pSiS->SiS_Pr->CVSyncEnd >>= 1;
+      pSiS->SiS_Pr->CVTotal >>= 1;
    }
    if(pSiS->SiS_Pr->CFlags & V_DBLSCAN) {
-         /* pSiS->SiS_Pr->CDClock <<= 1; */
-	 pSiS->SiS_Pr->CVDisplay <<= 1;
-	 pSiS->SiS_Pr->CVSyncStart <<= 1;
-	 pSiS->SiS_Pr->CVSyncEnd <<= 1;
-	 pSiS->SiS_Pr->CVTotal <<= 1;
+      /* pSiS->SiS_Pr->CDClock <<= 1; */
+      pSiS->SiS_Pr->CVDisplay <<= 1;
+      pSiS->SiS_Pr->CVSyncStart <<= 1;
+      pSiS->SiS_Pr->CVSyncEnd <<= 1;
+      pSiS->SiS_Pr->CVTotal <<= 1;
    }
 
    pSiS->SiS_Pr->CHBlankStart = pSiS->SiS_Pr->CHDisplay;
@@ -3849,21 +3849,26 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
    }	
    
    if(pSiS->SiS_Pr->CFlags & V_DBLSCAN) 
-   	pSiS->SiS_Pr->CModeFlag |= DoubleScanMode;
-   if((pSiS->SiS_Pr->CVDisplay >= 1024)	|| 
-      (pSiS->SiS_Pr->CVTotal >= 1024)   || 
+      pSiS->SiS_Pr->CModeFlag |= DoubleScanMode;
+
+   if((pSiS->SiS_Pr->CVDisplay >= 1024)	||
+      (pSiS->SiS_Pr->CVTotal >= 1024)   ||
       (pSiS->SiS_Pr->CHDisplay >= 1024))
-	pSiS->SiS_Pr->CModeFlag |= LineCompareOff;
+      pSiS->SiS_Pr->CModeFlag |= LineCompareOff;
+
    if(pSiS->SiS_Pr->CFlags & V_CLKDIV2)
-        pSiS->SiS_Pr->CModeFlag |= HalfDCLK;
+      pSiS->SiS_Pr->CModeFlag |= HalfDCLK;
 
    pSiS->SiS_Pr->CInfoFlag = 0x0007;
+
    if(pSiS->SiS_Pr->CFlags & V_NHSYNC)
-   	pSiS->SiS_Pr->CInfoFlag |= 0x4000;
-   if(pSiS->SiS_Pr->CFlags & V_NVSYNC) 
-   	pSiS->SiS_Pr->CInfoFlag |= 0x8000;
-   if(pSiS->SiS_Pr->CFlags & V_INTERLACE)	
-	pSiS->SiS_Pr->CInfoFlag |= InterlaceMode;
+      pSiS->SiS_Pr->CInfoFlag |= 0x4000;
+
+   if(pSiS->SiS_Pr->CFlags & V_NVSYNC)
+      pSiS->SiS_Pr->CInfoFlag |= 0x8000;
+
+   if(pSiS->SiS_Pr->CFlags & V_INTERLACE)
+      pSiS->SiS_Pr->CInfoFlag |= InterlaceMode;
 
    pSiS->SiS_Pr->UseCustomMode = TRUE;
 #ifdef TWDEBUG
@@ -3921,15 +3926,15 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfo
    /* Initialize our pointers */
    if(pSiS->VGAEngine == SIS_300_VGA) {
 #ifdef SIS300
-	InitTo300Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
+      InitTo300Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
 #else
-	return NULL;
+      return NULL;
 #endif
    } else if(pSiS->VGAEngine == SIS_315_VGA) {
 #ifdef SIS315H
-       	InitTo310Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
+      InitTo310Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
 #else
-	return NULL;
+      return NULL;
 #endif
    } else return NULL;
 

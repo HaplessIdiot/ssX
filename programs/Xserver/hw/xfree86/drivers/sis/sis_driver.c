@@ -2555,7 +2555,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
            (unsigned long)pSiS->RelIO);
 
     /* Initialize SiS Port Reg definitions for externally used
-     * BIOS emulation (init.c/init301.c) functions.
+     * init.c/init301.c functions.
      */
     SiSRegInit(pSiS->SiS_Pr, pSiS->RelIO + 0x30);
 
@@ -2779,8 +2779,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pScrn->rgbBits = 6;
     }
 
-    pSiS->ddc1Read = SiSddc1Read;
-
     from = X_DEFAULT;
 
     /* Unlock registers */
@@ -2795,8 +2793,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISDUALHEAD
        if(pSiSEnt) {
           if(pSiSEnt->BIOS)  {
-	  	pSiS->BIOS = pSiSEnt->BIOS;
-		pSiS->sishw_ext.pjVirtualRomBase = pSiS->BIOS;
+	     pSiS->BIOS = pSiSEnt->BIOS;
+	     pSiS->sishw_ext.pjVirtualRomBase = pSiS->BIOS;
           }
        }
 #endif
@@ -2839,17 +2837,17 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		romptr = pSiS->BIOS[0x14] | (pSiS->BIOS[0x15] << 8);
 		if(romptr > (BIOS_SIZE - 5)) continue;
 		for(i = 0; (i < 13) && (!found); i++) {
-                    if(strncmp(sis_sig[i], (char *)&pSiS->BIOS[romptr], strlen(sis_sig[i])) == 0) {
-                        if(sis_nums[i] == pSiS->sishw_ext.jChipType) {
-			   found = TRUE;
-                           break;
-			} else {
-			   if((pSiS->sishw_ext.jChipType != SIS_740) && (pSiS->sishw_ext.jChipType != SIS_760)) {
-			      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                   if(strncmp(sis_sig[i], (char *)&pSiS->BIOS[romptr], strlen(sis_sig[i])) == 0) {
+                      if(sis_nums[i] == pSiS->sishw_ext.jChipType) {
+			 found = TRUE;
+                         break;
+		      } else {
+			 if((pSiS->sishw_ext.jChipType != SIS_740) && (pSiS->sishw_ext.jChipType != SIS_760)) {
+			    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   	"Ignoring BIOS for SiS %s at 0x%lx\n", sis_sig[i], segstart);
-			   }
-			}
-                    }
+			 }
+		      }
+                   }
                 }
 		if(found) break;
              }
@@ -3042,10 +3040,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
          * XXX Should check that the config file value matches one of the
          * PCI base address values.
          */
-        pSiS->IOAddress = pSiS->pEnt->device->IOBase;
-        from = X_CONFIG;
+       pSiS->IOAddress = pSiS->pEnt->device->IOBase;
+       from = X_CONFIG;
     } else {
-        pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
+       pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
@@ -3054,23 +3052,29 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Register the PCI-assigned resources. */
     if(xf86RegisterResources(pSiS->pEnt->index, NULL, ResExclusive)) {
-        SISErrorLog(pScrn, "xf86RegisterResources() found resource conflicts\n");
+       SISErrorLog(pScrn, "xf86RegisterResources() found resource conflicts\n");
 #ifdef SISDUALHEAD
-	if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
+       if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
 #endif
-	if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
-	sisRestoreExtRegisterLock(pSiS,srlockReg,crlockReg);
-	SISFreeRec(pScrn);
-        return FALSE;
+       if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
+       sisRestoreExtRegisterLock(pSiS,srlockReg,crlockReg);
+       SISFreeRec(pScrn);
+       return FALSE;
     }
 
     from = X_PROBED;
-    if(pSiS->pEnt->device->videoRam != 0)  {
-       pScrn->videoRam = pSiS->pEnt->device->videoRam;
-       from = X_CONFIG;
+    if(pSiS->pEnt->device->videoRam != 0) {
+       if(pSiS->Chipset == PCI_CHIP_SIS6326) {
+          pScrn->videoRam = pSiS->pEnt->device->videoRam;
+          from = X_CONFIG;
+       } else {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	  	"Option \"VideoRAM\" ignored\n");
+       }
     }
 
     pSiS->RealVideoRam = pScrn->videoRam;
+
     if((pSiS->Chipset == PCI_CHIP_SIS6326)
 			&& (pScrn->videoRam > 4096)
 			&& (from != X_CONFIG)) {
@@ -3078,9 +3082,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         xf86DrvMsg(pScrn->scrnIndex, from,
 	       "SiS6326: Detected %d KB VideoRAM, limiting to %d KB\n",
                pSiS->RealVideoRam, pScrn->videoRam);
-    } else
+    } else {
         xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d KB\n",
                pScrn->videoRam);
+    }
 
     if((pSiS->Chipset == PCI_CHIP_SIS6326) &&
        (pScrn->videoRam > 4096)) {
