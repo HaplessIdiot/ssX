@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h,v 1.64 95/01/05 19:50:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.4 1994/12/29 10:21:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.5 1995/01/28 16:15:34 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -101,8 +101,12 @@ pragma on(alloca);
 #endif /* defined(__HIGHC__) */
 
 
-#if defined(__GNUC__) && !defined(alloca)
+#ifdef __GNUC__
+#ifndef alloca
 #define alloca __builtin_alloca
+#endif /* !alloca */
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else
 
 /*

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.22 1995/01/28 17:03:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.23 1995/03/06 14:47:49 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -92,6 +92,8 @@ typedef struct {
 #define OPTION_SYNC_ON_GREEN	54 /* Set Sync-On-Green in RAMDAC */
 #define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
 #define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
+#define OPTION_TI3026_CURS	56 /* Use 3026 RAMDAC cursor (default) */
+#define OPTION_NO_TI3026_CURS	57 /* Override 3026 RAMDAC cursor use */
 
 /* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -136,11 +138,12 @@ typedef struct {
 #define CLOCK_OPTION_SC11412     3 /* use SC11412 programmable clocks */
 #define CLOCK_OPTION_S3GENDAC    4 /* use S3 Gendac programmable clocks */
 #define CLOCK_OPTION_TI3025      5 /* use TI3025 programmable clocks */
-#define CLOCK_OPTION_ICS2595     6 /* use TI3025 programmable clocks */
+#define CLOCK_OPTION_ICS2595     6 /* use ICS2595 programmable clocks */
 #define CLOCK_OPTION_CIRRUS      7 /* use Cirrus programmable clocks */
 #define CLOCK_OPTION_CH8391      8 /* use Chrontel 8391 programmable clocks */
 #define CLOCK_OPTION_ICS5342     9 /* use ICS 5342 programmable clocks */
 #define CLOCK_OPTION_S3TRIO     10 /* use S3 Trio32/64 programmable clocks */
+#define CLOCK_OPTION_TI3026     11 /* use TI3026 programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -189,6 +192,8 @@ OptFlagRec xf86_OptionTab[] = {
   { "bt485_curs",	OPTION_BT485_CURS },
   { "ti3020_curs",	OPTION_TI3020_CURS },
   { "no_ti3020_curs",	OPTION_NO_TI3020_CURS },
+  { "ti3026_curs",	OPTION_TI3026_CURS },
+  { "no_ti3026_curs",	OPTION_NO_TI3026_CURS },
   { "dac_8_bit",	OPTION_DAC_8_BIT },
   { "sync_on_green",    OPTION_SYNC_ON_GREEN },
   { "bt482_curs",	OPTION_BT482_CURS },
@@ -245,6 +250,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio32",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
+  { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */
   { "ch8391",		CLOCK_OPTION_CH8391 }, 	  /* Chrontel 8391  */

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.4 1995/03/11 14:21:06 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.5 1995/03/18 11:12:36 dawes Exp $ */
 /*
  * handles connections
  */
@@ -204,10 +204,9 @@ OldListenRec *old_listen;
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
-#ifdef NO_SYSCONF
+#ifdef XNO_SYSCONF
 #undef _SC_OPEN_MAX
 #endif
-
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else

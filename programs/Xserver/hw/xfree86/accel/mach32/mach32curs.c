@@ -1,6 +1,6 @@
 /*
  * $XConsortium: mach32curs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.1 1994/09/11 00:48:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.3 1995/01/28 16:58:41 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -459,8 +459,10 @@ mach32QueryBestSize(class, pwidth, pheight, pScr)
 	switch(class) {
 
 	case CursorShape:
-		*pwidth = 64;
-		*pheight = 64;
+		if (*pwidth > 64)
+		    *pwidth = 64;
+		if (*pheight > 64)
+		    *pheight = 64;
 		break;
 	default:
 		mfbQueryBestSize(class, pwidth, pheight, pScr);

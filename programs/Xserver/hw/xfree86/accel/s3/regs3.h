@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.10 1994/11/06 09:50:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.12 1995/01/28 17:01:30 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -84,16 +84,18 @@
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 #define S3_866_SERIES(chip)     ((chip&0xfff0)==0x80e0)
 #define S3_868_SERIES(chip)     ((chip&0xfff0)==0x90e0)
-#define S3_968_SERIES(chip)     ((chip&0xfff0)==0xb0e0)
+#define S3_968_SERIES(chip)     ((chip&0xfff0)==0xf0e0)
+#undef S3_964_SERIES
+#define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))
 #define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
-#define S3_x68_SERIES(chip)     ((chip&0xffe0)==0x90e0)  /* ((S3_868_SERIES(chip) || S3_968_SERIES(chip)) */
-#define S3_x6x_SERIES(chip)     ((chip&0xefe0)==0x80e0)  /* ((S3_x66_SERIES(chip) || S3_x68_SERIES(chip)) */
+#define S3_x68_SERIES(chip)     ((chip&0x9ff0)==0x90e0)  /* ((S3_868_SERIES(chip) || S3_968_SERIES(chip)) */
+#define S3_x6x_SERIES(chip)     ((chip&0x8ff0)==0x80e0)  /* ((S3_x66_SERIES(chip) || S3_x68_SERIES(chip)) */
 #define S3_TRIO32_SERIES(chip)  ((chip&0xfff0)==0x10e0)
 #define S3_TRIO64_SERIES(chip)  ((chip&0xfff0)==0x11e0)
 #define S3_TRIOxx_SERIES(chip)  ((chip&0xfef0)==0x10e0)  /* (S3_TRIO32_SERIES(chip) || S3_TRIO64_SERIES(chip) */
 #define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) ||  S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))
-#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip))
+#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || S3_x68_SERIES(chip))
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86KbdLnx.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.4 1994/12/11 10:54:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.5 1995/01/28 15:57:41 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -308,7 +308,7 @@ static unsigned char at2lnx[] =
 	0x4f,	/* KEY_KP_1 */		0x50,	/* KEY_KP_2 */
 	0x51,	/* KEY_KP_3 */		0x52,	/* KEY_KP_0 */
 	0x53,	/* KEY_KP_Decimal */	0x54,	/* KEY_SysReqest */
-	0x55,	/* unused */		0x56,	/* KEY_Less */
+	0x00,	/* 0x55 */		0x56,	/* KEY_Less */
 	0x57,	/* KEY_F11 */		0x58,	/* KEY_F12 */
 	0x66,	/* KEY_Home */		0x67,	/* KEY_Up */
 	0x68,	/* KEY_PgUp */		0x69,	/* KEY_Left */
@@ -319,16 +319,29 @@ static unsigned char at2lnx[] =
 	0x61,	/* KEY_RCtrl */		0x77,	/* KEY_Pause */
 	0x63,	/* KEY_Print */		0x62,	/* KEY_KP_Divide */
 	0x64,	/* KEY_AltLang */	0x65,	/* KEY_Break */
-	0x00,	/* ??????????? */	0x00,	/* ??????????? */
-	0x7A,	/* FOCUS_PF11 */	0x00,	/* ??????????? */
-	0x7B,	/* FOCUS_PF12 */	0x00,	/* ??????????? */
-	0x00,	/* ??????????? */	0x00,	/* ??????????? */
+	0x00,	/* KEY_LMeta */		0x00,	/* KEY_RMeta */
+	0x7A,	/* KEY_Menu/FOCUS_PF11*/0x00,	/* 0x6e */
+	0x7B,	/* FOCUS_PF12 */	0x00,	/* 0x70 */
+	0x00,	/* 0x71 */		0x00,	/* 0x72 */
 	0x59,	/* FOCUS_PF2 */		0x78,	/* FOCUS_PF9 */
-	0x00,	/* ??????????? */	0x00,	/* ??????????? */
+	0x00,	/* 0x75 */		0x00,	/* 0x76 */
 	0x5A,	/* FOCUS_PF3 */		0x5B,	/* FOCUS_PF4 */
 	0x5C,	/* FOCUS_PF5 */		0x5D,	/* FOCUS_PF6 */
 	0x5E,	/* FOCUS_PF7 */		0x5F,	/* FOCUS_PF8 */
-	0x7C,	/* JAP_86 */		0x79	/* FOCUS_PF10 */
+	0x7C,	/* JAP_86 */		0x79,	/* FOCUS_PF10 */
+	0x00,	/* 0x7f */
+	/* the following are for ServerNumLock handling */
+	0x47,	/* KEY_SN_KP_7 */	0x48,	/* KEY_SN_KP_8 */
+	0x49,	/* KEY_SN_KP_9 */	0x4b,	/* KEY_SN_KP_4 */
+	0x4c,	/* KEY_SN_KP_5 */	0x4d,	/* KEY_SN_KP_6 */
+	0x4f,	/* KEY_SN_KP_1 */	0x50,	/* KEY_SN_KP_2 */
+	0x51,	/* KEY_SN_KP_3 */	0x52,	/* KEY_SN_KP_0 */
+	0x53,	/* KEY_SN_KP_Decimal */	0x66,	/* KEY_SN_Home */
+	0x67,	/* KEY_SN_Up */		0x68,	/* KEY_SN_Prior */
+	0x69,	/* KEY_SN_Left */	0x5d,	/* KEY_SN_Begin */
+	0x6a,	/* KEY_SN_Right */	0x6b,	/* KEY_SN_End */
+	0x6c,	/* KEY_SN_Down */	0x6d,	/* KEY_SN_Next */
+	0x6e,	/* KEY_SN_Ins */	0x6f	/* KEY_SN_Del */
 };
 #define NUM_AT2LNX (sizeof(at2lnx) / sizeof(at2lnx[0]))
 
@@ -345,9 +358,6 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
 	0,	/* modeswitch unshifted */
 	0	/* modeswitch shifted */
   };
-
-  for (k = map, i = GLYPHS_PER_KEY * NUM_KEYCODES; i--; )
-	  *k++ = NoSymbol;
 
   /*
    * Read the mapping from the kernel.
@@ -378,8 +388,11 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
     {
       unsigned short kval;
 
+      *k = NoSymbol;
+
       kbe.kb_table = tbl[j];
-      if (ioctl(xf86Info.consoleFd, KDGKBENT, &kbe))
+      if (kbe.kb_index == 0 ||
+	  ioctl(xf86Info.consoleFd, KDGKBENT, &kbe))
 	continue;
 
       kval = KVAL(kbe.kb_value);

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.9 1995/01/26 02:20:57 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -23,25 +23,28 @@
  *
  * Author:  Simon P. Cooper, <scooper@vizlab.rutgers.edu>
  *
- * cir_cursor.c,v 1.3 1994/09/11 06:18:55 scooper Exp
+ * cir_cursor.c,v 1.7 1994/09/21 09:43:01 scooper Exp
  */
 
-#include <X.h>
+#define CIRRUS_DEBUG_CURSOR
+
+#include "X.h"
 #include "Xproto.h"
-#include <misc.h>
-#include <input.h>
-#include <cursorstr.h>
-#include <regionstr.h>
-#include <scrnintstr.h>
-#include <servermd.h>
-#include <windowstr.h>
+#include "misc.h"
+#include "input.h"
+#include "cursorstr.h"
+#include "regionstr.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#include "windowstr.h"
 #include "xf86.h"
-#include <mipointer.h>
+#include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "cir_driver.h"
+#include "cirBlitter.h"
 
 static Bool cirrusRealizeCursor();
 static Bool cirrusUnrealizeCursor();
@@ -75,7 +78,7 @@ cirrusCursorInit(pm, pScr)
   if (cirrusCursGeneration != serverGeneration)
     {
       if (!(miPointerInitialize(pScr, &cirrusPointerSpriteFuncs,
-				&xf86PointerScreenFuncs, FALSE)))	
+				&xf86PointerScreenFuncs, FALSE)))
 	return FALSE;
     }
   cirrusCursGeneration = serverGeneration;
@@ -136,7 +139,7 @@ cirrusRealizeCursor(pScr, pCurs)
 
    wsrc = ((bits->width + 0x1f) >> 4) & ~0x1;		/* words per line */
    wdst = (cirrusCur.width >> 4);
-   
+
    for (i = 0; i < h; i++)
      {
        for (j = 0; j < wdst; j++)
@@ -163,7 +166,7 @@ cirrusRealizeCursor(pScr, pCurs)
 	       *(curp+off) = 0x0;
 	     }
 	   curp++;
-	 }		       
+	 }
      }
 
    return TRUE;
@@ -185,18 +188,143 @@ cirrusUnrealizeCursor(pScr, pCurs)
    return TRUE;
 }
 
-static void 
+cirrusLoadCursorToCard (pScr, pCurs, x, y)
+     ScreenPtr pScr;
+     CursorPtr pCurs;
+     int x, y;
+{
+  int   index = pScr->myNum;
+  int   l, w, winw, count, rshift, lshift;
+  unsigned long *pDstM, *pSrcM;
+  unsigned long dAddr;
+
+  if (!xf86VTSema)
+      return;
+
+  /* check for blitter operation: must not meddle with ram when blitter is
+     running...
+   */
+
+  if (cirrusBLTisBusy)
+    WAITUNTILFINISHED ();
+      
+  /* Calculate the number of words to transfer to the board */
+  count = ((cirrusCur.cur_size == 0) ? 256 : 1024) >> 2;
+
+  /* Onboard address to start writing the cursor backwards */
+  dAddr = cirrusCur.cur_addr;
+    
+  CIRRUSSETSINGLE(dAddr);
+
+  pDstM = (unsigned long *)(CIRRUSSINGLEBASE() + dAddr);
+  pDstM += count - 1;
+
+  pSrcM = (unsigned long *)pCurs->bits->devPriv[index];
+  pSrcM += count - 1;
+
+  if (x > 0) x = 0;
+  if (y > 0) y = 0;
+  
+  if (x == 0 && y == 0)
+    {
+      for (l=count;l;l--)
+	{
+	  *pDstM-- = *pSrcM--;
+	}
+      
+    }
+  else
+    {
+      unsigned long *pDstS = pDstM - 32;
+      unsigned long *pSrcS = pSrcM - 32;
+      int t = -y;
+      
+      winw = cirrusCur.width >> 5;
+      
+      if (x == 0)
+	{
+	  for (l=0; l < cirrusCur.height; l++)
+	    {
+	      for (w=0; w < winw; w++)
+		{
+		  if (l<t)
+		    {
+		      *pDstM-- = 0;
+		      *pDstS-- = 0;
+		    }
+		  else
+		    {
+		      *pDstM-- = *pSrcM--;
+		      *pDstS-- = *pSrcS--;
+		    }
+		}		      
+	    }
+	}
+      else
+	{
+	  unsigned char *bpDstS = (unsigned char *)pDstS + 3;
+	  unsigned char *bpDstM = (unsigned char *)pDstM + 3;
+	  unsigned char *bpSrcS = (unsigned char *)pSrcS + 3;
+	  unsigned char *bpSrcM = (unsigned char *)pSrcM + 3;
+	  int bskip = (-x) >> 3;
+	  
+	  lshift = (-x) & 0x7;
+	  rshift = 8 - lshift;
+	  winw <<= 2;
+	  
+	  for (l=0; l < cirrusCur.height; l++)
+	    {
+	      unsigned char leftoverM = 0;
+	      unsigned char leftoverS = 0;
+	      unsigned char temp;
+       
+	      if (l<t)
+		{
+		  for (w=0; w < winw; w++)
+		    {
+		      *bpDstM-- = 0;
+		      *bpDstS-- = 0;
+		    }
+		}
+	      else
+		{
+		  for (w=0; w < winw; w++)
+		    {
+		      if (w < bskip)
+			{
+			  *bpDstM-- = 0;
+			  *bpDstS-- = 0;
+			}
+		      else
+			{
+			  temp = *bpSrcM--;
+			  *bpDstM-- = (temp << lshift) | leftoverM;
+			  leftoverM = temp >> rshift;
+			  
+			  temp = *bpSrcS--;
+			  *bpDstS-- = (temp << lshift) | leftoverS;
+			  leftoverS = temp >> rshift;
+			}
+		    }
+		  bpSrcM -= bskip;
+		  bpSrcS -= bskip;
+		}
+	      
+	    }
+	}
+    }
+}
+
+static void
 cirrusLoadCursor(pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int x, y;
 {
    int   index = pScr->myNum;
-   int   i, yline, count;
+   int   i, count;
    unsigned long *pDst, *pSrc;
    unsigned long dAddr;
-   unsigned char tmp;
-   int cpos;
 
    if (!xf86VTSema)
       return;
@@ -204,42 +332,23 @@ cirrusLoadCursor(pScr, pCurs, x, y)
    if (!pCurs)
       return;
 
+   /* Remember the cursor currently loaded into this cursor slot */
+   cirrusCur.pCurs = pCurs;
+
    cirrusHideCursor ();
 
    /* Select the cursor index */
    outw (0x3C4, (cirrusCur.cur_select << 8) | 0x13);
-   
-   /* check for blitter operation: must not meddle with ram when blitter is
-    * running ...
-    */
 
-   /* Onboard address to write the cursor to */
-   dAddr = cirrusCur.cur_addr;
+   cirrusLoadCursorToCard (pScr, pCurs, x, y);
 
-   setwritebank(dAddr >> 14);
-   pDst = (unsigned long *)(((unsigned char *)vgaBase) +
-			    0x8000 + (dAddr & 0x3fff));
-   
-   pSrc = (unsigned long *)pCurs->bits->devPriv[index];
-
-   /* Calculate the number of words to transfer to the board */
-   count = ((cirrusCur.cur_size == 0) ? 256 : 1024) >> 2;
-
-   for (i=count;i;i--)
-     {
-       *pDst++ = *pSrc++;
-     }
-
-   cirrusRecolorCursor (pScr, pCurs); 
+   cirrusRecolorCursor (pScr, pCurs, 1);
 
    /* position cursor */
-   cirrusMoveCursor (0, x, y);
+   cirrusMoveCursor (pScr, x, y);
 
    /* Turn it on */
    cirrusShowCursor ();
-
-   /* Save which cursor we currently have loaded (for cirrusRestoreCursor) */
-   cirrusCur.pCurs = pCurs;
 }
 
 static void
@@ -276,13 +385,42 @@ cirrusMoveCursor(pScr, x, y)
      ScreenPtr pScr;
      int   x, y;
 {
+
+  if (!xf86VTSema)
+      return;
+
   x -= vga256InfoRec.frameX0 + cirrusCur.hotX;
   y -= vga256InfoRec.frameY0 + cirrusCur.hotY;
+
+  if (x < 0 || y < 0)
+    {
+      cirrusLoadCursorToCard (pScr, cirrusCur.pCurs, x, y);
+      cirrusCur.skewed = 1;
+    }
+  else if (cirrusCur.skewed)
+    {
+      cirrusLoadCursorToCard (pScr, cirrusCur.pCurs, 0, 0);
+      cirrusCur.skewed = 0;
+    }
+  
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+
+  if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
+      y *= 2;
+
+  if (XF86SCRNINFO(pScr)->modes->CrtcHAdjusted) {
+      /* 5434 palette-clock doubling mode; cursor is squashed but */
+      /* get at least the position right. */
+      x /= 2;
+      if (XF86SCRNINFO(pScr)->modes->CrtcVAdjusted)
+          y /= 2;
+  }
 
   /* Your eyes do not deceive you - the low order bits form part of the
    * the INDEX
    */
-      
+
   outw (0x3C4, (x << 5) | 0x10);
   outw (0x3C4, (y << 5) | 0x11);
 }
@@ -294,35 +432,59 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
      Bool displayed;
 {
    unsigned short red, green, blue;
+   int shift;
+   int i;
+   VisualPtr pVisual;
    unsigned char sr12;
-   
-   outb (0x3c4, 0x12);  	/* SR12 allows access to DAC extended colors */
+
+   if (!xf86VTSema)
+       return;
+
+   /* Find the PseudoColour or TrueColor visual for the colour mapping
+    * function
+    */
+
+   for (i = 0, pVisual = pScr->visuals; i < pScr->numVisuals; i++, pVisual++)
+     {
+       if ((pVisual->class == PseudoColor) || (pVisual->class == TrueColor))
+	 break;
+     }
+
+   if (i == pScr->numVisuals)
+     {
+       ErrorF ("CIRRUS: Failed to find a visual for mapping hardware cursor colours\n");
+       return;
+     }
+
+   shift = 16 - pVisual->bitsPerRGBValue;
+
+   outb (0x3c4, 0x12);          /* SR12 allows access to DAC extended colors */
    sr12 = inb (0x3c5);
                                 /* Disable the cursor and allow access to
-				   the hidden DAC registers */
+                                   the hidden DAC registers */
    outb (0x3c5, (sr12 & 0xfe) | 0x02);
-   
+
    red   = pCurs->backRed;
    green = pCurs->backGreen;
    blue  = pCurs->backBlue;
-   
-   pScr->ResolveColor (&red, &green, &blue, pScr->visuals);
 
-   outb (0x3c8, 0x00);		/* DAC color 256 */
-   outb (0x3c9, red);
-   outb (0x3c9, green);
-   outb (0x3c9, blue);
+   pScr->ResolveColor (&red, &green, &blue, pVisual);
+
+   outb (0x3c8, 0x00);          /* DAC color 256 */
+   outb (0x3c9, (red>>shift));
+   outb (0x3c9, (green>>shift));
+   outb (0x3c9, (blue>>shift));
 
    red   = pCurs->foreRed;
    green = pCurs->foreGreen;
    blue  = pCurs->foreBlue;
-   
-   pScr->ResolveColor (&red, &green, &blue, pScr->visuals);
 
-   outb (0x3c8, 0x0f);		/* DAC color 257 */
-   outb (0x3c9, red);
-   outb (0x3c9, green);
-   outb (0x3c9, blue);
+   pScr->ResolveColor (&red, &green, &blue, pVisual);
+
+   outb (0x3c8, 0x0f);          /* DAC color 257 */
+   outb (0x3c9, (red>>shift));
+   outb (0x3c9, (green>>shift));
+   outb (0x3c9, (blue>>shift));
 
                                /* Restore the state of SR12 */
    outw (0x3c4, (sr12 <<8) | 0x12);
@@ -337,7 +499,7 @@ cirrusWarpCursor(pScr, x, y)
   xf86Info.currentScreen = pScr;
 }
 
-void 
+void
 cirrusQueryBestSize(class, pwidth, pheight)
      int class;
      short *pwidth;
@@ -348,8 +510,10 @@ cirrusQueryBestSize(class, pwidth, pheight)
       switch (class)
 	{
 	case CursorShape:
-	  *pwidth  = cirrusCur.width;
-	  *pheight = cirrusCur.height;
+	  if (*pwidth > cirrusCur.width)
+	    *pwidth  = cirrusCur.width;
+	  if (*pheight > cirrusCur.height)
+	    *pheight = cirrusCur.height;
 	  break;
 
 	default:

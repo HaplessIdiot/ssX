@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.18 1995/01/20 04:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.20 1995/01/28 17:01:37 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -185,6 +185,7 @@ extern Bool s3ATT498PixMux;
 #define ATT22C498_DAC     11
 #define S3_TRIO32_DAC     12
 #define S3_TRIO64_DAC     13
+#define TI3026_DAC        14
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -192,6 +193,7 @@ extern Bool s3ATT498PixMux;
 				 s3RamdacType == TI3025_DAC)
 #define DAC_IS_TI3020		(s3RamdacType == TI3020_DAC)
 #define DAC_IS_TI3025		(s3RamdacType == TI3025_DAC)
+#define DAC_IS_TI3026		(s3RamdacType == TI3026_DAC)
 #define DAC_IS_ATT20C498	(s3RamdacType == ATT20C498_DAC)
 #define DAC_IS_ATT22C498	(s3RamdacType == ATT22C498_DAC)
 #define DAC_IS_ATT498		(DAC_IS_ATT20C498 || DAC_IS_ATT22C498)
@@ -848,6 +850,55 @@ void s3TiRecolorCursor(
 #endif
 );
 void s3TiLoadCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr,
+    int,
+    int 
+#endif
+);
+void s3OutTi3026IndReg(
+#if NeedFunctionPrototypes
+    unsigned char,
+    unsigned char,
+    unsigned char 
+#endif
+);
+unsigned char s3InTi3026IndReg(
+#if NeedFunctionPrototypes
+    unsigned char 
+#endif
+);
+Bool s3Ti3026RealizeCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr 
+#endif
+);
+void s3Ti3026CursorOn(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void s3Ti3026CursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void s3Ti3026MoveCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    int,
+    int 
+#endif
+);
+void s3Ti3026RecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr 
+#endif
+);
+void s3Ti3026LoadCursor(
 #if NeedFunctionPrototypes
     ScreenPtr,
     CursorPtr,

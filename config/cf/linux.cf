@@ -1,14 +1,18 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.11 95/01/23 18:32:03 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.21 1995/01/27 10:28:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.22 1995/01/28 15:40:22 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
 #define OSMajorVersion		1
-#define OSMinorVersion		0
-#define OSTeenyVersion		0
+#define OSMinorVersion		2
+#define OSTeenyVersion		1
 
 #ifndef UseElfFormat
+#if OSMajorVersion > 1 || (OSMajorVersion == 1 && OSMinorVersion > 1)
+#define UseElfFormat		YES
+#else
 #define UseElfFormat		NO
+#endif
 #endif
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -36,6 +40,21 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.21 1995/01/27 10:28:02 dawe
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 
+/* Assume default tools are for ELF for versions 1.2 and later */
+#if OSMajorVersion > 1 || (OSMajorVersion == 1 && OSMinorVersion > 1)
+#if UseElfFormat
+#define CcCmd			gcc
+#define AsCmd			as
+#define LdCmd			ld -m elf_i386
+#define AsmDefines		-D__ELF__
+#define CplusplusCmd		g++
+#else
+#define CcCmd			gcc -b i486-linuxaout
+#define AsCmd			/usr/i486-linuxaout/bin/as
+#define LdCmd			/usr/i486-linuxaout/bin/ld -m i386linux
+#define AsmDefines		-DUSE_GAS
+#endif
+#else
 #if UseElfFormat
 #define CcCmd			gcc -b i486-linuxelf
 #define AsCmd			/usr/i486-linuxelf/bin/as
@@ -47,6 +66,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.21 1995/01/27 10:28:02 dawe
 #define AsCmd			as
 #define LdCmd			ld
 #define AsmDefines		-DUSE_GAS
+#endif
 #endif
 #define CppCmd			/lib/cpp
 #define YaccCmd			bison -y

@@ -1,5 +1,5 @@
 /* $XConsortium: sysv_video.c,v 1.1 94/03/28 21:33:15 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.1 1995/03/08 10:17:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -221,6 +221,79 @@ int Region;
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
+#ifdef ALWAYS_USE_EXTENDED
+
+static Bool ScreenEnabled[MAXSCREENS];
+static Bool ExtendedEnabled = FALSE;
+static Bool InitDone = FALSE;
+
+void
+xf86ClearIOPortList(ScreenNum)
+int ScreenNum;
+{
+	if (!InitDone)
+	{
+		int i;
+		for (i = 0; i < MAXSCREENS; i++)
+			ScreenEnabled[i] = FALSE;
+		InitDone = TRUE;
+	}
+	return;
+}
+
+void
+xf86AddIOPorts(ScreenNum, NumPorts, Ports)
+int ScreenNum;
+int NumPorts;
+unsigned *Ports;
+{
+	return;
+}
+
+void
+xf86EnableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = TRUE;
+
+	if (ExtendedEnabled)
+		return;
+
+	if (SET_IOPL() < 0)
+	{
+		FatalError("%s: Failed to set IOPL for extended I/O\n",
+			   "xf86EnableIOPorts");
+	}
+	ExtendedEnabled = TRUE;
+
+	return;
+}
+	
+void
+xf86DisableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = FALSE;
+
+	if (!ExtendedEnabled)
+		return;
+
+	for (i = 0; i < MAXSCREENS; i++)
+		if (ScreenEnabled[i])
+			return;
+
+	RESET_IOPL();
+	ExtendedEnabled = FALSE;
+
+	return;
+}
+
+#else /* !ALWAYS_USE_EXTENDED */
+
 #define DISABLED	0
 #define NON_EXTENDED	1
 #define EXTENDED	2
@@ -424,6 +497,7 @@ int ScreenNum;
 	}
 	return;
 }
+#endif /* ALWAYS_USE_EXTENDED */
 
 void xf86DisableIOPrivs()
 {

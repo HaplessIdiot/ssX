@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.6 1994/11/30 20:36:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.7 1995/01/28 15:47:29 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -311,6 +311,72 @@ int *RamDac;
 	outp(0x3C6, old3);                  /* restore index register value */
 
 	wrinx(CRTC_IDX, 0x55, old2);
+	outp(0x3C6, old1);
+
+	wrinx(CRTC_IDX, 0x39, lock2);
+	wrinx(CRTC_IDX, 0x38, lock1);
+
+	return(Found);
+}
+
+static Bool S3_TVP3026Check(RamDac)
+int *RamDac;
+{
+	Byte old1, old2, old3, old4, old5;
+	Byte lock1, lock2;
+	Bool Found = FALSE;
+
+	/*
+	 * TI ViewPoint TVP3026 support - Harald Koenig
+	 *
+	 * The 3026 has 16 direct registers accessed through standard
+	 * VGA registers 0x3C8, 0x3C9, 0x3C6, and 0x3C7.  Bits 0,1 of
+	 * CR55 are used to map these four register to sets of four 
+	 * direct 3026 registers each.  The 00 register set includes 
+	 * the index register and the 10 register set includes the 
+	 * data register which are used to address indirect registers 
+	 * 0x00-0x3F and 0xFF.  Indirect register 0x3F is the 
+	 * chip ID register which will always return 0x26.
+	 */
+
+	lock1 = rdinx(CRTC_IDX, 0x38);
+	lock2 = rdinx(CRTC_IDX, 0x39);
+	wrinx(CRTC_IDX, 0x38, 0x48);
+	wrinx(CRTC_IDX, 0x39, 0xA5);
+
+	old1 = inp(0x3C6);
+	old2 = rdinx(CRTC_IDX, 0x55);
+	old5 = rdinx(CRTC_IDX, 0x45);
+
+	
+	wrinx(CRTC_IDX, 0x45, old5 & ~0x20);
+	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00);   /* 00 four registers */
+	old3 = inp(0x3C8);             /* read current index register value */
+
+	outp(0x3C8, 0x3F);     /* write ID register index to index register */
+	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x02);   /* 10 four registers */
+	old4 = inp(0x3C6);     /* read ID register from data register       */
+	if (old4 == 0x26) {
+	    outp(0x3C6, ~old4);  /* check if ID register is read only */
+	    if (inp(0x3C6) != old4) {
+	        outp(0x3C6, old4);
+	    }
+	    else {
+		Found = TRUE;
+		*RamDac = DAC_TVP3026 | DAC_6_8_PROGRAM;
+		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
+		if (Width8Check())
+		{
+			*RamDac |= DAC_8BIT;
+		}
+	    }
+	}
+
+	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00);   /* 00 four registers */
+	outp(0x3C8, old3);                  /* restore index register value */
+
+	wrinx(CRTC_IDX, 0x55, old2);
+	wrinx(CRTC_IDX, 0x45, old5);
 	outp(0x3C6, old1);
 
 	wrinx(CRTC_IDX, 0x39, lock2);
@@ -636,6 +702,11 @@ int *RamDac;
 	}
 	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_928D))
 	{
+	    if (S3_TVP3026Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
 	    if (S3_TVP3020Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);

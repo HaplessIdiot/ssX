@@ -1,3 +1,31 @@
+XFree86 3.1.1e (9 April 1995)
+ 57. Fix return value of QueryBestSize() for HW cursors.
+ 56. Fix cirrus display error when scrolling without BitBLT engine
+     (Harm Hanemaayer).
+ 55. Sanity check to prevent cirrus crash with negative size rectangle
+     fill (Harm Hanemaayer).
+ 54. Cirrus MMIO improvements, including support for 5429 (Harm Hanemaayer).
+ 53. More balanced cirrus FIFO settings to resolve display refresh errors
+     during drawing operations at high dot clocks (Harm Hanemaayer).
+ 52. Support for clocks up to 135MHz for CL-GD5434 revision E and later
+     (Harm Hanemaayer).
+ 51. Fix memory leak in cirrus text drawing (Harm Hanemaayer).
+ 50. Updates for Linux ELF support (H.J. Lu).
+ 49. Fix mail directory path in xbiff.
+ 48. Fix S3 interlace mode problem for boards with programmable clocks
+     (Harald Koenig).
+ 47. Fix core dump from vgahelp when started with no args (Christos Zoulas).
+ 46. Fix 968 detection in SuperProbe, and add Ti3026 detection (Harald Koenig).
+ 45. Preliminary S3 968 and Ti3026 support (Harald Koenig).
+ 44. Added similar code for SYSV regarding I/O permission, but not enabled
+     (yet) by default.
+ 43. Modify Linux I/O permission code to use IOPL rather than TSS bitmap
+     in all cases (Orest Zborowski and Harm Hanemaayer).
+ 42. Fix lack of keysyms for numerical keypad when ServerNumLock is enabled
+     on Linux (Orest Zborowski).
+ 41. Update _SC_OPEN_MAX code.
+ 40. Fix ALLOCATE_LOCAL() not using alloca() with gcc.
+
 XFree86 3.1.1d (21 March 1995)
  39. Preliminary mode checking for the VGAHelp extension.
  38. Add timeout for 3 button emulation (Mike Hench).

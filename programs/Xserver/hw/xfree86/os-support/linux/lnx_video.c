@@ -114,7 +114,80 @@ Bool xf86LinearVidMem()
 /*
  * Linux handles regular (<= 0x3ff) ports with the TSS I/O bitmap, and
  * extended ports with the iopl() system call.
+ *
+ * For testing, it's useful to enable only the ports we need, but for
+ * production purposes, it's faster to enable all ports.
  */
+#define ALWAYS_USE_EXTENDED
+
+#ifdef ALWAYS_USE_EXTENDED
+
+static Bool ScreenEnabled[MAXSCREENS];
+static Bool ExtendedEnabled = FALSE;
+static Bool InitDone = FALSE;
+
+void xf86ClearIOPortList(ScreenNum)
+int ScreenNum;
+{
+	if (!InitDone)
+	{
+		int i;
+
+		for (i = 0; i < MAXSCREENS; i++)
+			ScreenEnabled[i] = FALSE;
+		InitDone = TRUE;
+	}
+
+	return;
+}
+
+void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
+int ScreenNum;
+int NumPorts;
+unsigned *Ports;
+{
+	return;
+}
+
+void xf86EnableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = TRUE;
+
+	if (ExtendedEnabled)
+		return;
+
+	if (iopl(3))
+		FatalError("%s: Failed to set IOPL for I/O\n",
+			   "xf86EnableIOPorts");
+	ExtendedEnabled = TRUE;
+
+	return;
+}
+
+void xf86DisableIOPorts(ScreenNum)
+int ScreenNum;
+{
+	int i;
+
+	ScreenEnabled[ScreenNum] = FALSE;
+
+	if (!ExtendedEnabled)
+		return;
+
+	for (i = 0; i < MAXSCREENS; i++)
+		if (ScreenEnabled[i])
+			return;
+
+	iopl(0);
+	ExtendedEnabled = FALSE;
+
+	return;
+}
+
+#else /* !ALWAYS_USE_EXTENDED */
 
 static unsigned *EnabledPorts[MAXSCREENS];
 static int NumEnabledPorts[MAXSCREENS];
@@ -250,6 +323,8 @@ int ScreenNum;
 	}
 	return;
 }
+
+#endif /* ALWAYS_USE_EXTENDED */
 
 void xf86DisableIOPrivs()
 {

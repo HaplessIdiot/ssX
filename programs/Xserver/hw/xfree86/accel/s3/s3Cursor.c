@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.13 1995/01/21 14:07:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.15 1995/01/28 17:01:40 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -70,6 +70,11 @@ extern void s3TiCursorOn();
 extern void s3TiCursorOff();
 extern void s3TiLoadCursor();
 extern void s3TiMoveCursor();
+extern Bool s3Ti3026RealizeCursor();
+extern void s3Ti3026CursorOn();
+extern void s3Ti3026CursorOff();
+extern void s3Ti3026LoadCursor();
+extern void s3Ti3026MoveCursor();
 
 static miPointerSpriteFuncRec s3PointerSpriteFuncs =
 {
@@ -93,6 +98,14 @@ static miPointerSpriteFuncRec s3TiPointerSpriteFuncs =
    s3UnrealizeCursor,
    s3SetCursor,
    s3TiMoveCursor,
+};
+
+static miPointerSpriteFuncRec s3Ti3026PointerSpriteFuncs =
+{
+   s3Ti3026RealizeCursor,
+   s3UnrealizeCursor,
+   s3SetCursor,
+   s3Ti3026MoveCursor,
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -134,6 +147,10 @@ s3CursorInit(pm, pScr)
          if (!(miPointerInitialize(pScr, &s3TiPointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
+      } else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options)) {
+         if (!(miPointerInitialize(pScr, &s3Ti3026PointerSpriteFuncs,
+				   &xf86PointerScreenFuncs, FALSE)))
+            return FALSE;
       } else if (s3InfoRec.bitsPerPixel == 32 
 		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
 	 useSWCursor = TRUE;
@@ -159,6 +176,8 @@ s3ShowCursor()
       s3BtCursorOn();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
       s3TiCursorOn();
+   else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+      s3Ti3026CursorOn();
    /* Nothing to do for integrated cursor */
 }
 
@@ -172,6 +191,8 @@ s3HideCursor()
       s3BtCursorOff();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
       s3TiCursorOff();
+   else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+      s3Ti3026CursorOff();
    /* Nothing to do for integrated cursor */
 }
 
@@ -394,6 +415,8 @@ s3SetCursor(pScr, pCurs, x, y, generateEvent)
          s3BtLoadCursor(pScr, pCurs, x, y);
       else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
          s3TiLoadCursor(pScr, pCurs, x, y);
+      else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+         s3Ti3026LoadCursor(pScr, pCurs, x, y);
       else
          s3LoadCursor(pScr, pCurs, x, y);
    } else
@@ -416,6 +439,8 @@ s3RestoreCursor(pScr)
       s3BtLoadCursor(pScr, s3SaveCursors[index], x, y);
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
       s3TiLoadCursor(pScr, s3SaveCursors[index], x, y);
+   else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+      s3Ti3026LoadCursor(pScr, s3SaveCursors[index], x, y);
    else
       s3LoadCursor(pScr, s3SaveCursors[index], x, y);
 }
@@ -434,6 +459,8 @@ s3RepositionCursor(pScr)
       s3BtMoveCursor(pScr, x, y);
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
       s3TiMoveCursor(pScr, x, y);
+   else if (OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options))
+      s3Ti3026MoveCursor(pScr, x, y);
    else {
       /* Wait for vertical retrace */
       VerticalRetraceWait();
@@ -647,8 +674,10 @@ s3QueryBestSize(class, pwidth, pheight, pScreen)
    if (*pwidth > 0) {
       switch (class) {
          case CursorShape:
-	    *pwidth = 64;
-	    *pheight = 64;
+	    if (*pwidth > 64)
+	       *pwidth = 64;
+	    if (*pheight > 64)
+	       *pheight = 64;
 	    break;
          default:
 	    mfbQueryBestSize(class, pwidth, pheight, pScreen);

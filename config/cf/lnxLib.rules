@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.10 1995/01/27 10:28:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.11 1995/01/28 15:40:25 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -15,6 +15,24 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.10 1995/01/27 10:28:04 dawes Exp $
 
 #if UseElfFormat
 
+/*
+ *	#define BaseShLibReqs	-lc
+ *
+ * I don't want to use this since the normal ELF executables should
+ * be linked with libc.so. If it is not, i.e., static, the variables in
+ * libc.so which is loaded in because of the other shared libraries
+ * may have different values than the ones in the static ELF
+ * executables. That happens if the binaries are linked with libg.a
+ * or libc_p.a.
+ *
+ * If an ELF executable linked with libg.a or libc_p.a loads a shared
+ * object which needs libc.so via dlopen (), I think it should fail.
+ * It is a very bad idea. The moral story is DON'T USE dlopen () IN
+ * ELF EXECUTABLES LINKED WITH libg.a OR libc_p.a. H.J.
+ *
+ */
+#define BaseShLibReqs
+
 #ifndef SharedDataSeparation
 #define SharedDataSeparation NO
 #endif
@@ -28,13 +46,16 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.10 1995/01/27 10:28:04 dawes Exp $
 #define ShLibIncludeFile <lnxLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags --shared
+#define SharedLibraryLoadFlags -shared
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -fPIC
 #endif
 #ifndef PositionIndependentCplusplusFlags
 #define PositionIndependentCplusplusFlags -fPIC
+#endif
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags -Wl,-rpath,/usr/X11R6/lib
 #endif
 
 /*
@@ -72,7 +93,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
 	(cd down; T=`echo $@ | sed 's/\.[^\.]*$$//'`; \
-		$(LD) -o up/$@~ $(SHLIBLDFLAGS) --soname $$T solist $(REQUIREDLIBS))	@@\
+		$(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$T solist $(REQUIREDLIBS) BaseShLibReqs) @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
