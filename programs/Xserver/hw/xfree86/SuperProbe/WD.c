@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/WD.c,v 3.2 1995/01/28 15:47:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/WD.c,v 3.3 1996/02/04 08:57:17 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -134,7 +134,7 @@ int *Chipset;
 					}
 					wrinx(CRTC_IDX, 0x34, old3);
 				}
-				else if (!testinx2(0x3C4, 0x10, 0x04))
+				else if (!testinx2(SEQ_IDX, 0x10, 0x04))
 				{
 					*Chipset = CHIP_WD_90C10;
 				}
@@ -142,7 +142,7 @@ int *Chipset;
 				{
 					*Chipset = CHIP_WD_90C11;
 				}
-				wrinx(0x3C4, 0x06, old1);
+				wrinx(SEQ_IDX, 0x06, old1);
 			}
 			wrinx(CRTC_IDX, 0x29, old2);
 		}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.12 1996/09/01 04:47:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.13 1996/09/14 13:11:29 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -20,7 +20,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  * 
- * Written by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
+ * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  * Modified for Diamond Stealth64 Graphics 2001 by Leon Bottou
  *   (bottou@laforia.ibp.fr).
  */
@@ -38,9 +38,6 @@
  *	The driver does not support the older ARK1000VL yet, althought it
  * 	may work if you let the driver think it is an ARK1000PV.
  *
- * This initial driver supports 8bpp only, the default max dotclock
- * is 80 MHz.
- *
  * The ARK chips use an external clock generator and RAMDAC. The
  * driver supports either 16 fixed external clock frequencies or the
  * ICS5342 programmable clock chip. Cards that have an unsupported
@@ -52,8 +49,10 @@
  * PCI. If this gives problems, banked operation can be selected with
  * the "nolinear" option in the Device section of the XF86Config file.
  *
- * With linear addressing enabled, 16bpp is supported given a
- * suitable RAMDAC and clock availability, as would 32bpp on the ARK2000PV.
+ * With linear addressing enabled, 16bpp and 24bpp are supported given a
+ * suitable RAMDAC and clock availability, as is 32bpp on the ARK2000PV.
+ *
+ * ScreenCopy is accelerated at all supported pixel depths.
  */
 
 /*
@@ -102,6 +101,7 @@
  */
  
 /* #define ARK_8BPP_MULTIPLEXING_SUPPORTED */
+/* #define ARK_PACKED_24BPP_ON_16BIT_DAC_SUPPORTED */
 
 
 /*
@@ -146,10 +146,13 @@
 #include "vga256.h"
 #endif
 
+#include "ark_driver.h"
 #include "ark_cursor.h"
+#include "ark_cop.h"
 
 extern vgaHWCursorRec vgaHWCursor;
-
+extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
+extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
 
 
 /*
@@ -217,6 +220,9 @@ void     ArkSetRead();
 void     ArkSetWrite();
 void     ArkSetReadWrite();
 
+static Bool ArkScreenInit();
+
+
 /*
  * This data structure defines the driver itself.  The data structure is
  * initialized with the functions that make up the driver and some data 
@@ -243,7 +249,7 @@ vgaVideoChipRec ARK = {
 	/*
 	 * This is the size of the mapped memory window, usually 64k.
 	 */
-	0x10000,		
+	0x20000,	/* Extended to cover MMIO space at 0xB8000. */
 	/*
 	 * This is the size of a video memory bank for this chipset.
 	 */
@@ -353,15 +359,13 @@ static int Num_Ark_ExtPorts =
 #define VESA	0
 #define PCI	1
 
-static int arkChip, arkBus, arkRamdac;
+int arkChip;
+static int arkBus, arkRamdac;
 static int arkDacPathWidth, arkMultiplexingThreshold;
 static int arkUse8bitColorComponents;
 static int arkDisplayableMemory;
-
-#define ARK1000VL	0
-#define ARK1000PV	1
-#define ARK2000PV	2
-#define ARK2000MT	3	/* not tested */
+static int arkUseCOP;
+unsigned char *arkMMIOBase = NULL;
 
 static SymTabRec chipsets[] = {
 	{ ARK1000VL,	"ark1000vl" },
@@ -515,8 +519,9 @@ int no;
 static Bool
 ArkProbe()
 {
-	int maxclock8bpp, maxclock16bpp, maxclock32bpp;
+	int maxclock8bpp, maxclock16bpp, maxclock24bpp, maxclock32bpp;
 	char *clockprobed = XCONFIG_GIVEN;
+	int DRAM_bandwidth, bandwidth_limit;
 
 	/*
 	 * Set up I/O ports to be used by this card.  Only do the second
@@ -644,6 +649,7 @@ ArkProbe()
 
 	maxclock8bpp = 0;
 	maxclock16bpp = 0;
+	maxclock24bpp = 0;
 	maxclock32bpp = 0;
 	arkDacPathWidth = 8;
 	arkMultiplexingThreshold = 999999;
@@ -656,6 +662,7 @@ ArkProbe()
 			vga256InfoRec.dacSpeed = 80000;
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 		maxclock16bpp = maxclock8bpp / 2;
+		maxclock24bpp = maxclock8bpp / 3;
 		break;
 	case ATT498 :	/* Industry-standard 16-bit DAC. */
 	case STG1700 :	/* Same limits as 498. */
@@ -692,7 +699,7 @@ ArkProbe()
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		maxclock8bpp = vga256InfoRec.dacSpeed;
 #else
-		maxclock8bpp = ARK_DEFAULT_MAX_RAW_CLOCK_IN_KHZ;
+		maxclock8bpp = 110000;
 #endif
 		if (arkChip == ARK1000PV) {
 			/* Uses only 8-bit path to 16-bit RAMDAC. */
@@ -700,6 +707,8 @@ ArkProbe()
 				maxclock16bpp = 67500;
 			else	/* 110 MHz rated. */
 				maxclock16bpp = 55000;
+			maxclock24bpp = maxclock8bpp / 3;
+			maxclock32bpp = maxclock8bpp / 4;
 			break;
 		}
 		/* ARK2000PV, 16-bit path to RAMDAC. */
@@ -707,6 +716,9 @@ ArkProbe()
 			maxclock16bpp = 135000;
 		else	/* 110 MHz rated. */
 			maxclock16bpp = 110000;
+#ifdef ARK_PACKED_24BPP_ON_16BIT_DAC_SUPPORTED
+		maxclock24bpp = maxclock16bpp * 2 / 3;	/* Packed mode. */
+#endif
 		maxclock32bpp = maxclock16bpp / 2;
 		arkDacPathWidth = 16;
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
@@ -749,13 +761,17 @@ ArkProbe()
 		break;
 	}
 	/* Adjust max dot clocks according to chip PCLK limits. */
-	if (arkChip == ARK1000PV) {
+	if (arkDacPathWidth == 8) {
 		if (maxclock8bpp > 120000)
 			maxclock8bpp = 120000;
 		if (maxclock16bpp > 60000)
 			maxclock16bpp = 60000;
+		if (maxclock24bpp > 40000)
+			maxclock24bpp = 40000;
+		if (maxclock32bpp > 30000)
+			maxclock32bpp = 30000;
 	}
-	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
+	if (arkDacPathWidth == 16) {
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		if (maxclock8bpp > 240000)
 			maxclock8bpp = 240000;
@@ -765,6 +781,8 @@ ArkProbe()
 #endif
 		if (maxclock16bpp > 120000)
 			maxclock16bpp = 120000;
+		if (maxclock24bpp > 80000)
+			maxclock24bpp = 80000;
 		if (maxclock32bpp > 60000)
 			maxclock32bpp = 60000;
 	}
@@ -831,28 +849,30 @@ ArkProbe()
 	 * It would be nice to know the memory clock to adjust
 	 * the max clocks according to DRAM bandwidth. For now
 	 * just interpret the "S3MClk" value if given in the
-	 * XF86Config file.
+	 * XF86Config file; otherwise assume 60 MHz.
 	 */
-	if (vga256InfoRec.s3MClk != 0) {
-		int DRAM_bandwidth, bandwidth_limit;
+	if (vga256InfoRec.s3MClk != 0)
 		DRAM_bandwidth = vga256InfoRec.s3MClk * 2;
-		if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
-		    && vga256InfoRec.videoRam >= 2048)
-			/* 64-bit DRAM bus. */
-			DRAM_bandwidth *= 2;
-	         /*
-	          * Calculate highest acceptable DRAM bandwidth in Mbytes/s
-	          * to be taken up by screen refresh. Satisfies
-	          *	total bandwidth >= refresh bandwidth * 1.1
-	          */
-		bandwidth_limit = (DRAM_bandwidth * 100) / 110;
-		if (maxclock8bpp > bandwidth_limit)
-			maxclock8bpp = bandwidth_limit;
-		if (maxclock16bpp > bandwidth_limit / 2)
-			maxclock16bpp = bandwidth_limit / 2;
-		if (maxclock32bpp > bandwidth_limit / 4)
-			maxclock32bpp = bandwidth_limit / 4;
-	}
+	else
+		DRAM_bandwidth = 120000;	/* Assume 60 MHz, 120 MB/s */
+	if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
+	    && vga256InfoRec.videoRam >= 2048)
+		/* 64-bit DRAM bus. */
+		DRAM_bandwidth *= 2;
+	/*
+	 * Calculate highest acceptable DRAM bandwidth in Mbytes/s
+	 * to be taken up by screen refresh. Satisfies
+	 * total bandwidth >= refresh bandwidth * 1.1
+	 */
+	bandwidth_limit = (DRAM_bandwidth * 100) / 110;
+	if (maxclock8bpp > bandwidth_limit)
+		maxclock8bpp = bandwidth_limit;
+	if (maxclock16bpp > bandwidth_limit / 2)
+		maxclock16bpp = bandwidth_limit / 2;
+	if (maxclock24bpp > bandwidth_limit / 3)
+		maxclock24bpp = bandwidth_limit / 3;
+	if (maxclock32bpp > bandwidth_limit / 4)
+		maxclock32bpp = bandwidth_limit / 4;
 	/*
 	 * Set the raw clock dividing factor. For 16bpp with an
 	 * 8-bit DAC path, the raw clock is double the pixel clock.
@@ -864,8 +884,13 @@ ArkProbe()
 			ARK.ChipClockScaleFactor = 2;
 			maxclock16bpp *= 2;
 		}
+		if (vgaBitsPerPixel == 24) {
+			ARK.ChipClockScaleFactor = 3;
+			maxclock24bpp *= 3;
+		}
 		if (vgaBitsPerPixel == 32) {
-			/* Unlikely to happen (currently can't). */
+			/* This would apply to the Hercules Stingray Pro/V */
+			/* with ARK1000PV + ZoomDac. */
 			ARK.ChipClockScaleFactor = 4;
 			maxclock32bpp *= 4;
 		}
@@ -876,6 +901,13 @@ ArkProbe()
 			ARK.ChipClockScaleFactor = 2;
 			maxclock32bpp *= 2;
 		}
+#ifdef ARK_PACKED_24BPP_ON_16BIT_DAC_SUPPORTED
+		if (vgaBitsPerPixel == 24) {
+			ARK.ChipClockScaleFactor = 3 / 2;
+			maxclock24bpp *= 3;
+			maxclock24bpp /= 2;
+		}
+#endif
 		/*
 		 * A problem arises with "multiplexing" at 8bpp.
 		 * The scaling factor would have to be 0.5, and
@@ -887,6 +919,8 @@ ArkProbe()
 		vga256InfoRec.maxClock = maxclock8bpp;
 	if (vgaBitsPerPixel == 16)
 		vga256InfoRec.maxClock = maxclock16bpp;
+	if (vgaBitsPerPixel == 24)
+		vga256InfoRec.maxClock = maxclock24bpp;
 	if (vgaBitsPerPixel == 32)
 		vga256InfoRec.maxClock = maxclock32bpp;
 
@@ -913,8 +947,9 @@ ArkProbe()
 		ARK.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 		if (maxclock16bpp > 0)
 			ARK.ChipHas16bpp = TRUE;
-		if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
-		    && maxclock32bpp > 0)
+		if (maxclock24bpp > 0)
+			ARK.ChipHas24bpp = TRUE;
+		if (maxclock32bpp > 0)
 			ARK.ChipHas32bpp = TRUE;
 	}
 
@@ -927,6 +962,9 @@ ArkProbe()
 	 */
   	vga256InfoRec.bankedMono = FALSE;
  	OFLG_SET(OPTION_NOLINEAR_MODE, &ARK.ChipOptionFlags);
+	OFLG_SET(OPTION_NOACCEL, &ARK.ChipOptionFlags);
+	OFLG_SET(OPTION_SW_CURSOR, &ARK.ChipOptionFlags);
+	OFLG_SET(OPTION_HW_CURSOR, &ARK.ChipOptionFlags);
 #ifndef MONOVGA
 #ifdef XFreeXDGA
 	vga256InfoRec.directMode = XF86DGADirectPresent;
@@ -944,6 +982,8 @@ static void
 ArkFbInit()
 {
 	int offscreen_available;
+
+	vgaSetScreenInitHook(ArkScreenInit);
 
 	if (xf86Verbose && ARK.ChipUseLinearAddressing)
 		ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X (%s)\n",
@@ -964,9 +1004,9 @@ ArkFbInit()
     	/*
     	 * Currently, the hardware cursor is not supported at 8bpp
     	 * due to a framebuffer code architecture issue.
+    	 * At 16bpp, it seems to be buggy. Only allow if specified.
     	 */
-	if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)
-	    && vgaBitsPerPixel != 8) {
+	if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
 		if (offscreen_available < 256)
 			ErrorF("%s %s: %s: Not enough off-screen video"
 				" memory for hardware cursor\n",
@@ -991,6 +1031,39 @@ ArkFbInit()
 					XCONFIG_PROBED, vga256InfoRec.name,
 					vga256InfoRec.chipset);
 		}
+	}
+
+	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+		if (xf86Verbose)
+			ErrorF("%s %s: %s: Using coprocessor\n",
+				XCONFIG_PROBED, vga256InfoRec.name,
+				vga256InfoRec.chipset, offscreen_available);
+		arkUseCOP = TRUE;
+		/*
+		 * We only accelerate GXcopy ScreenCopy.
+		 * This function is called from vga256DoBitbltCopy
+		 * in vgabltC.c in the vga256 framebuffer code.
+		 */
+		vga256LowlevFuncs.vgaBitblt = ArkBitBlt;
+		if (vgaBitsPerPixel == 16) {
+			cfb16TEOps1Rect.CopyArea = Ark16CopyArea;
+			cfb16NonTEOps1Rect.CopyArea = Ark16CopyArea;
+			cfb16TEOps.CopyArea = Ark16CopyArea;
+			cfb16NonTEOps.CopyArea = Ark16CopyArea;
+		}
+		if (vgaBitsPerPixel == 24) {
+			cfb24TEOps1Rect.CopyArea = Ark24CopyArea;
+			cfb24NonTEOps1Rect.CopyArea = Ark24CopyArea;
+			cfb24TEOps.CopyArea = Ark24CopyArea;
+			cfb24NonTEOps.CopyArea = Ark24CopyArea;
+		}
+		if (vgaBitsPerPixel == 32) {
+			cfb24TEOps1Rect.CopyArea = Ark32CopyArea;
+			cfb24NonTEOps1Rect.CopyArea = Ark32CopyArea;
+			cfb24TEOps.CopyArea = Ark32CopyArea;
+			cfb24NonTEOps.CopyArea = Ark32CopyArea;
+		}
+		/* CopyWindow is hooked in the "ScreenInit" hook. */
 	}
 }
 
@@ -1168,6 +1241,36 @@ vgaArkPtr restore;
 	 */
 	vgaHWRestore((vgaHWPtr)restore);
 
+	/*
+	 * The following code is intended to be executed after a
+	 * graphics mode is set, to set up the accelerator. It's
+	 * rather misplaced here.
+	 */
+	if (arkUseCOP && arkMMIOBase == NULL) {
+		arkMMIOBase = (unsigned char *)vgaBase + 0x18000;
+
+		SETCOLORMIXSELECT(0x0303);	/* Copy source. */
+		SETWRITEPLANEMASK(0xFFFF);
+		if (vgaBitsPerPixel == 24) {
+			SETSTENCILPITCH(vga256InfoRec.virtualX * 3);
+			SETSOURCEPITCH(vga256InfoRec.virtualX * 3);
+			SETDESTPITCH(vga256InfoRec.virtualX * 3);
+		}
+		else
+		if (vgaBitsPerPixel == 32 && arkChip == ARK1000PV) {
+			/* 32bpp with 16bpp COP pixel units. */
+			SETSTENCILPITCH(vga256InfoRec.virtualX * 2);
+			SETSOURCEPITCH(vga256InfoRec.virtualX * 2);
+			SETDESTPITCH(vga256InfoRec.virtualX * 2);
+		}
+		else {
+			SETSTENCILPITCH(vga256InfoRec.virtualX);
+			SETSOURCEPITCH(vga256InfoRec.virtualX);
+			SETDESTPITCH(vga256InfoRec.virtualX);
+		}
+		SETBITMAPCONFIG(LINEARSTENCILADDR | LINEARSOURCEADDR |
+			LINEARDESTADDR);
+	}
 }
 
 /*
@@ -1300,6 +1403,15 @@ DisplayModePtr mode;
 			mode->CrtcHSkew <<= 1;
 			mode->CrtcHAdjusted = TRUE;
 		}
+	if (ARK.ChipClockScaleFactor == 3)
+		if (!mode->CrtcHAdjusted) {
+			mode->CrtcHDisplay *= 3;
+			mode->CrtcHSyncStart *= 3;
+			mode->CrtcHSyncEnd *= 3;
+			mode->CrtcHTotal *= 3;
+			mode->CrtcHSkew *= 3;
+			mode->CrtcHAdjusted = TRUE;
+		}
 	if (ARK.ChipClockScaleFactor == 4)
 		if (!mode->CrtcHAdjusted) {
 			mode->CrtcHDisplay <<= 2;
@@ -1348,6 +1460,11 @@ DisplayModePtr mode;
 			/* 16bpp at pixel rate. */
 			dac16 = 1;
 		/* Note: with an 8-bit DAC, 16bpp is Clock * 2. */
+#ifdef ARK_PACKED_24BPP_ON_16BIT_DAC_SUPPORTED
+		if (vga256InfoRec.bitsPerPixel == 24)
+			/* packed 24bpp, 2 pixels in 3 clocks. */
+			dac16 = 1;
+#endif
 		if (vga256InfoRec.bitsPerPixel == 32)
 			/* 32bpp at Clock * 2. */
 			dac16 = 1;
@@ -1380,6 +1497,8 @@ DisplayModePtr mode;
 		new->SR11 |= 0x06;
 	if (vga256InfoRec.bitsPerPixel == 16)
 		new->SR11 |= 0x0A;
+	if (vga256InfoRec.bitsPerPixel == 24)
+		new->SR11 |= 0x06;
 	if (vga256InfoRec.bitsPerPixel == 32)
 		if (arkChip == ARK2000PV || arkChip == ARK2000MT)
 			new->SR11 |= 0x0E;
@@ -1389,9 +1508,9 @@ DisplayModePtr mode;
 			 * there may be a DAC that can skip the fourth
 			 * byte of each pixel, making 640x400 possible
 			 * with a raw clock of 100 MHz. So program
-			 * the COP for 8bpp.
+			 * the COP for 16bpp.
 			 */
-			new->SR11 |= 0x06;
+			new->SR11 |= 0x0A;
 
 	/*
 	 * Enable VESA Super VGA memory organisation.
@@ -1531,6 +1650,13 @@ DisplayModePtr mode;
 		if (vgaBitsPerPixel == 16 && xf86weight.green == 6)
 			/* 5-6-5 RGB. */
 			new->DACCOMMAND = 0xC0;
+		if (vgaBitsPerPixel == 24)
+			/*
+			 * 8-8-8 truecolor; there seems to be a one-byte
+			 * framebuffer displacement resulting in wrong colors.
+			 * This may be a peculiarity of the DAC.
+			 */
+			new->DACCOMMAND = 0xE0;
 	}
 	if (arkRamdac == ATT498 || arkRamdac == ZOOMDAC) {
 		new->DACCOMMAND = 0x00;
@@ -1544,6 +1670,10 @@ DisplayModePtr mode;
 		if (vgaBitsPerPixel == 16 && arkDacPathWidth == 8)
 			/* Only 5-6-5 supported. */
 			new->DACCOMMAND = 0x60;
+		if (vgaBitsPerPixel == 24 && arkDacPathWidth == 16)
+			new->DACCOMMAND = 0xB0;	/* Packed. */
+		if (vgaBitsPerPixel == 24 && arkDacPathWidth == 8)
+			new->DACCOMMAND = 0x70;
 		if (vgaBitsPerPixel == 32 && arkDacPathWidth == 16)
 			new->DACCOMMAND = 0x50;
 	}
@@ -1627,7 +1757,37 @@ DisplayModePtr mode;
 		new->SR2B = rdinx(0x3C4, 0x2B);
 	}
 
+	/*
+	 * This is a misplaced hack that is required to let
+	 * the Restore function know that the accelerator will
+	 * have to be initialized in the next Restore.
+	 */
+	arkMMIOBase = NULL;
+
 	return TRUE;
+}
+
+
+/*
+   ArkScreenInit
+   Hook the various graphics operations.
+*/
+static Bool
+ArkScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
+     register ScreenPtr pScreen;
+     pointer pbits;		/* pointer to screen bitmap */
+     int xsize, ysize;		/* in pixels */
+     int dpix, dpiy;		/* dots per inch */
+     int width;			/* pixel width of frame buffer */
+{
+  /*
+   * Note: At 8bpp the vga256 code already accelerates this function
+   * using vgaLowlevFuncs.
+   */
+  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+  && vgaBitsPerPixel != 8)
+	  pScreen->CopyWindow = ArkCopyWindow;
+  return TRUE;
 }
 
 /*

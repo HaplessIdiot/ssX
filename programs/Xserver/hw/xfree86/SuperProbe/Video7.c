@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Video7.c,v 3.2 1995/01/28 15:47:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Video7.c,v 3.3 1996/02/04 08:57:16 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -56,8 +56,8 @@ int *Chipset;
 	Ports[1] = CRTC_REG;
 	EnableIOPorts(NUMPORTS, Ports);
 
-	old = rdinx(0x3C4, 0x06);
-	wrinx(0x3C4, 0x06, 0xEA);		/* enable extensions */
+	old = rdinx(SEQ_IDX, 0x06);
+	wrinx(SEQ_IDX, 0x06, 0xEA);		/* enable extensions */
 	old1 = rdinx(CRTC_IDX, 0x0C);
 	wrinx(CRTC_IDX, 0x0C, 0x55);
 	id = rdinx(CRTC_IDX, 0x1F);
@@ -68,7 +68,7 @@ int *Chipset;
 		 * It's Video7
 		 */
 		result = TRUE;
-		id = (rdinx(SEQ_IDX, 0x8F) << 8) | rdinx(0x3C4, 0x8E);
+		id = (rdinx(SEQ_IDX, 0x8F) << 8) | rdinx(SEQ_IDX, 0x8E);
 		if ((id >= 0x7000) && (id <= 0x70FF))
 		{
 			*Chipset = CHIP_V7_FWRITE;
@@ -111,7 +111,7 @@ int *Chipset;
 			*Chipset = CHIP_V7_UNKNOWN;
 		}
 	}
-	wrinx(0x3C4, 6, old);		/* disable extensions */
+	wrinx(SEQ_IDX, 6, old);		/* disable extensions */
 	DisableIOPorts(NUMPORTS, Ports);
 	return(result);
 }

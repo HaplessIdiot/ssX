@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/NCR.c,v 3.2 1995/01/28 15:47:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/NCR.c,v 3.3 1996/02/04 08:56:52 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -55,7 +55,7 @@ int *Chipset;
 	if (testinx2(SEQ_IDX, 0x05, 0x05))
 	{
 		old = rdinx(SEQ_IDX, 0x05);
-		wrinx(0x3C4, 0x05, 0x00);
+		wrinx(SEQ_IDX, 0x05, 0x00);
 		if (!testinx2(SEQ_IDX, 0x10, 0xFF))
 		{
 			wrinx(SEQ_IDX, 0x05, 0x01);

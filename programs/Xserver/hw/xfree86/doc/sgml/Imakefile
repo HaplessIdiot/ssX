@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/16 15:35:18 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.16 1996/08/20 12:29:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.17 1996/09/03 04:12:36 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -60,6 +60,7 @@ LinuxDocReadmeTarget(SVR4)
 #endif
 
 /* Hardware docs */
+LinuxDocReadmeTarget(DECtga)
 LinuxDocReadmeTarget(Mach64)
 LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)

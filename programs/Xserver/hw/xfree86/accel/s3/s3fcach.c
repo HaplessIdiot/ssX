@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.21 1996/08/20 12:26:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.22 1996/09/01 04:15:31 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -312,6 +312,7 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
      CacheFont8Ptr fentry;
      GCPtr pGC;
      BoxPtr pBox;
+     int numRects;
 {
    BLOCK_CURSOR;
    WaitQueue16_32(6,8);

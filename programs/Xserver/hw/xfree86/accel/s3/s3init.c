@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.98 1996/09/01 04:15:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.99 1996/09/01 12:29:53 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -36,6 +36,7 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#include "xf86_HWlib.h"
 #include "vga.h"
 
 #include "s3.h"
@@ -2653,7 +2654,9 @@ s3Init(mode)
 	 else
 	    outb(vgaCRReg, 0x09);  /* who uses this ? */
       }
-      else 
+      else if (DAC_IS_ATT498 && S3_805_I_SERIES(s3ChipId))
+	 outb(vgaCRReg, 0x00);
+      else
 	 outb(vgaCRReg, 0x09);
       break;
    case 8:
@@ -2782,7 +2785,7 @@ s3Init(mode)
 
       if (s3NewMmio) {      
 	 outb (vgaCRIndex, 0x58);
-	 outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);  /* window size for linear mode */
+	 outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256);  /* window size for linear mode */
       }
 
       n = 255;
@@ -2994,7 +2997,7 @@ s3Init(mode)
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 
 	  */
-	 int i,j,last,tmp,cr55,cr67;
+	 int i,last,tmp,cr55,cr67;
 	 int port, bit;
 
 #define VerticalRetraceWait() \

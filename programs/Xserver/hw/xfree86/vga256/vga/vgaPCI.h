@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.11 1996/09/03 04:14:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.12 1996/09/14 13:13:35 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -29,6 +29,7 @@
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
 
@@ -66,14 +67,17 @@
 #define PCI_CHIP_GD7541		0x1204
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
+#define PCI_CHIP_GD7548		0x0038
 
 /* Trident */
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
+#if 0
 #define PCI_CHIP_9680		0x9680
 #define PCI_CHIP_9682		0x9682
+#endif
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
@@ -92,6 +96,9 @@
 
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6422		0x6422
+
+/* 3Dlabs */
+#define PCI_CHIP_300SX		0x0001
 
 /* S3 */
 #define PCI_CHIP_TRIO		0x8811
@@ -183,6 +190,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD7541,	"GD7541"},
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{PCI_CHIP_GD7543,	"GD7543"},
+				{PCI_CHIP_GD7548,	"GD7548"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},
@@ -190,9 +198,11 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_9320,		"TGUI 9320"},
 				{PCI_CHIP_9420,		"TGUI 9420"},
 				{PCI_CHIP_9440,		"TGUI 9440"},
-				{PCI_CHIP_9660,		"TGUI 9660"},
+				{PCI_CHIP_9660,		"TGUI 9660/9680/9682"},
+#if 0
 				{PCI_CHIP_9680,		"TGUI 9680"},
 				{PCI_CHIP_9682,		"TGUI 9682"},
+#endif
 				{0x0000,		NULL}}},
     {PCI_VENDOR_MATROX,	"Matrox", {
 				{0x0000,		NULL}}},
@@ -215,6 +225,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor", {
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_3DLABS, "3Dlabs", {
+				{PCI_CHIP_300SX,	"GLINT 300SX"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{
 				{PCI_CHIP_TRIO,		"Trio32/64"},

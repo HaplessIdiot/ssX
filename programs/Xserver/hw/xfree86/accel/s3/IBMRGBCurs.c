@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.4 1996/02/05 11:21:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.5 1996/06/10 09:14:36 dawes Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -278,7 +278,6 @@ s3IBMRGBLoadCursor(pScr, pCurs, x, y)
      CursorPtr pCurs;
      int x, y;
 {
-   extern int s3hotX, s3hotY;
    int   index = pScr->myNum;
    register int   i;
    unsigned char *ram, *p, tmp, tmp2, tmpcurs;

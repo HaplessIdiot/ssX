@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.144 1996/09/14 13:09:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.145 1996/09/15 11:18:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -349,7 +349,7 @@ s3PrintIdent()
 	 
   ErrorF("      ");
   for (i = 0; s3Drivers[i]; i++)
-    for (j = 0; id = (s3Drivers[i]->ChipIdent)(j); j++, n++)
+    for (j = 0; (id = (s3Drivers[i]->ChipIdent)(j)); j++, n++)
     {
       if (n)
       {
@@ -381,7 +381,6 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
 #define BIOS_BSIZE 1024
 #define BIOS_BASE  0xc0000
 
-   long addr = BIOSbase>0 ? BIOSbase : BIOS_BASE;
    static unsigned char bios[BIOS_BSIZE];
    static int init=0;
    int i,j,l1,l2;
@@ -620,7 +619,7 @@ s3GetPCIInfo()
    if (!pcrpp)
       return NULL;
 
-   while (pcrp = pcrpp[i]) {
+   while ((pcrp = pcrpp[i])) {
       if (pcrp->_vendor == PCI_S3_VENDOR_ID) {
 	 found = TRUE;
 	 switch (pcrp->_device) {
@@ -691,7 +690,7 @@ s3GetPCIInfo()
       /* map allocated 64MB blocks */
       for (j=0; j<64; j++) map_64m[j] = 0;
       map_64m[63] = 1;  /* don't use the last 64MB area */
-      for (j=0; pcrp = pcrpp[j]; j++) {
+      for (j=0; (pcrp = pcrpp[j]); j++) {
 	 if (i != j) {
 	    map_64m[ (pcrp->_base0 >> 26) & 0x3f] = 1;
 	    map_64m[((pcrp->_base0+0x3ffffff) >> 26) & 0x3f] = 1;
@@ -775,7 +774,7 @@ Bool
 s3Probe()
 {
    DisplayModePtr pMode, pEnd;
-   unsigned char config, tmp, tmp1;
+   unsigned char config, tmp;
    int i, j, numClocks;
    int tx, ty;
    OFlagSet validOptions;
@@ -807,7 +806,6 @@ s3Probe()
    Bool pixMuxLimitedWidths = TRUE;
    Bool pixMuxInterlaceOK = TRUE;
    Bool pixMuxWidthOK = TRUE;
-   int idx = 0;
    S3PCIInformation *pciInfo = NULL;
 
 #if !defined(PC98) || defined(PC98_GA968)
@@ -1400,7 +1398,7 @@ s3Probe()
        || S3_805_I_SERIES(s3ChipId)) {
       /* First probe for Ti3026 */
       if (s3RamdacType == UNKNOWN_DAC) {
-	 unsigned char saveCR55, saveCR45, saveCR43, saveID, saveTIndx, saveTIdata;
+	 unsigned char saveCR55, saveCR45, saveCR43, saveID, saveTIndx;
 
 	 outb(vgaCRIndex, 0x43);
 	 saveCR43 = inb(vgaCRReg);
@@ -1649,7 +1647,7 @@ s3Probe()
       if (s3RamdacType == UNKNOWN_DAC) {
 	 int ibm_id;
 	 
-	 if (ibm_id = s3IBMRGB_Probe()) {
+	 if ((ibm_id = s3IBMRGB_Probe())) {
 	    s3IBMRGB_Init();
 	    switch(ibm_id >> 8) {
 	    case 1:
@@ -1935,7 +1933,7 @@ s3Probe()
 	       reason = "a \"normal\" RAMDAC";
 	    break;
 	 case ATT20C490_DAC:
-	    /* XXXX Is this right (??) */
+	    /* XXXX Is this right ( ??? ) */
 	    if (s3Bpp > 2)
 	       reason = "an ATT20C490 RAMDAC";
 	    break;
@@ -2526,7 +2524,7 @@ s3Probe()
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions) ||
 	      OFLG_ISSET(CLOCK_OPTION_ICS5342,  &s3InfoRec.clockOptions)) {
       unsigned char saveCR55;
-      int i,m,n,n1,n2, mclk;
+      int m,n,n1,n2, mclk;
       
       s3ClockSelectFunc = s3GendacClockSelect;
       
@@ -2563,7 +2561,7 @@ s3Probe()
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
       unsigned char sr8;
-      int i,m,n,n1,n2, mclk;
+      int m,n,n1,n2, mclk;
 
       s3ClockSelectFunc = s3GendacClockSelect;
       numClocks = 3;
@@ -4224,7 +4222,6 @@ IBMRGBClockSelect(freq)
 
 {
    Bool result = TRUE;
-   unsigned char tmp;
  
    UNLOCK_SYS_REGS;
    
@@ -4453,7 +4450,7 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 	    /* set V_PIXMUX if s3UsingPixMux and the mode can do pimux */
 
 	    if (s3UsingPixMux && !ModeCantPixmux)
-		pMode->Flags != V_PIXMUX;
+		pMode->Flags |= V_PIXMUX;
 
 	    /*
 	     * If switching between pixmux and non-pixmux isn't allowed, the

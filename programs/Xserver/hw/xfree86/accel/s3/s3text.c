@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.12 1996/08/20 12:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.13 1996/09/01 04:15:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -46,7 +46,7 @@
 extern unsigned char s3SwapBits[256];
 
 
-__inline__ s3SimpleStipple(x, y, width, height, pb, pwidth)
+__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth)
 int x, y;
 int  width, height, pwidth;
 unsigned char *pb;
@@ -84,15 +84,16 @@ unsigned char *pb;
  * with no tiling and starting from (0,0) in the source bitmap. - Jon.
  */
 __inline__ static void
-s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
+    BoxPtr pBox;		/* clipping box */
 {
-    int width, height;
+    int width, height, d;
     int nbyLine;			/* bytes per line of padded pixmap */
     FontPtr pfont;
     register int i;
@@ -122,35 +123,52 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while(nglyph--)
     {
 	pci = *ppci++;
-	pglyph = FONTGLYPHBITS(pglyphBase, pci);
 	gWidth = GLYPHWIDTHPIXELS(pci);
 	gHeight = GLYPHHEIGHTPIXELS(pci);
-	if (gWidth && gHeight)
-	{
-	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
-	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
-
-	    if (nbyGlyphWidth == nbyPadGlyph
+	if (gWidth && gHeight) 	{
+	   if (   x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	       && x + pci->metrics.leftSideBearing            <  pBox->x2
+	       && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	       && y - pci->metrics.ascent                     <  pBox->y2 ) {
+	     
+	      pglyph = FONTGLYPHBITS(pglyphBase, pci);
+	      nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
+	      nbyPadGlyph = PixmapBytePad(gWidth, 1);
+	     
+	      if (nbyGlyphWidth == nbyPadGlyph
 #if GLYPHPADBYTES != 4
-	        && (((int) pglyph) & 3) == 0
+		  && (((int) pglyph) & 3) == 0
 #endif
-		)
-	    {
-		pb = pglyph;
-	    }
-	    else
-	    {
-		for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
-		    for (j = 0; j < nbyGlyphWidth; j++)
-			*pb++ = *pglyph++;
-		pb = pbits;
-	    }
+		  )
+		 {
+		    pb = pglyph;
+		 }
+	      else
+		 {
+		    for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
+		       for (j = 0; j < nbyGlyphWidth; j++)
+			  *pb++ = *pglyph++;
+		    pb = pbits;
+		 }
+	     
+	      if (y - pci->metrics.ascent + gHeight-1 >=  pBox->y2 ) {
+		 gHeight -= (y - pci->metrics.ascent + gHeight-1) - (pBox->y2-1);
+	      }
+	      if (y - pci->metrics.ascent < pBox->y1) {
+		 d = pBox->y1 - (y - pci->metrics.ascent);
+		 pb += d * nbyPadGlyph;
+		 gHeight -= d;
+	      }
+	      else { 
+		 d = 0;
+	      }
 
-	    s3SimpleStipple(x + pci->metrics.leftSideBearing,
-			    y - pci->metrics.ascent,
-			    gWidth, gHeight, pb, nbyPadGlyph);
-	}
-
+	      s3SimpleStipple(x + pci->metrics.leftSideBearing,
+			      y - pci->metrics.ascent + d,
+			      gWidth, gHeight, pb, nbyPadGlyph);
+	   }
+        }
+	
 	x += pci->metrics.characterWidth;
     }
     DEALLOCATE_LOCAL(pbits);
@@ -267,7 +285,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
       SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
 		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
+		     FONTGLYPHS(pGC->font), pBox);
 
    }
 
@@ -396,7 +414,7 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
       SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
       		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
+		     FONTGLYPHS(pGC->font), pBox);
 
    }
 

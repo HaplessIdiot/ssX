@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.25 1996/08/18 01:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.26 1996/09/14 13:11:45 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -235,6 +235,7 @@ enum {CLGD5420 = 0,
       CLGD7541,
       CLGD7542,
       CLGD7543,
+      CLGD7548,
       LASTCLGD
       };
 

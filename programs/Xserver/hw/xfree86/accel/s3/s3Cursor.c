@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.26 1996/06/29 09:06:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.27 1996/08/20 12:26:51 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -46,6 +46,7 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "mfb.h"
+#include "mi.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
@@ -313,7 +314,7 @@ s3LoadCursor(pScr, pCurs, x, y)
      int x, y;
 {
    int   index = pScr->myNum;
-   int   i, j;
+   int   i;
    int   n, bytes_remaining, xpos, ypos, ram_loc;
    unsigned short *ram;
    unsigned char tmp;

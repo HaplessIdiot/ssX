@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.7 1996/06/29 09:07:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.8 1996/08/20 12:27:02 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -77,6 +77,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "windowstr.h"
 
+#include "mi.h"
+#include "mispans.h"
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfb24.h"

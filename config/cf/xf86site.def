@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.81 1996/08/21 13:04:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.82 1996/09/01 04:12:54 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -103,6 +103,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.81 1996/08/21 13:04:21 dawes Exp $
 #ifdef AlphaArchitecture
 #define XF86S3Server		YES
 #define XF86Mach64Server	YES
+#define XF86P9000Server		YES
+#define XF86TGAServer		YES
 #endif
 
 #ifdef i386Architecture
@@ -167,6 +169,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.81 1996/08/21 13:04:21 dawes Exp $
 #endif
 #ifndef XF86I128Server
 #define XF86I128Server		NO
+#endif
+#ifndef XF86TGAServer
+#define XF86TGAServer		NO
 #endif
 
 /*

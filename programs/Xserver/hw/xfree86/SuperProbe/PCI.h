@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.10 1996/09/01 04:14:59 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.11 1996/09/14 13:06:26 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -221,6 +221,7 @@ void xf86writepci(
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
+#define PCI_VENDOR_3DLABS	0x3D3D
 
 
 /* ATI */
@@ -247,6 +248,7 @@ void xf86writepci(
 #define PCI_CHIP_P9100		0x9100
 
 /* Cirrus Logic */
+#define PCI_CHIP_GD7548		0x0038
 #define PCI_CHIP_GD5430		0x00A0
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
@@ -292,6 +294,9 @@ void xf86writepci(
 #define PCI_CHIP_1000PV		0xA091
 #define PCI_CHIP_2000PV		0xA099
 #define PCI_CHIP_2000MT		0xA0A1
+
+/* 3Dlabs */
+#define PCI_CHIP_3DLABS_300SX      0x0001
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16

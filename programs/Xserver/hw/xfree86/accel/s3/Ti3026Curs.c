@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.2 1995/12/02 05:04:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.3 1996/02/04 09:04:43 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -328,10 +328,9 @@ s3Ti3026LoadCursor(pScr, pCurs, x, y)
      CursorPtr pCurs;
      int x, y;
 {
-   extern int s3hotX, s3hotY;
    int   index = pScr->myNum;
    register int   i;
-   unsigned char *ram, *p, tmp, tmp1, tmpcurs;
+   unsigned char *ram, *p, tmp, tmpcurs;
    extern int s3InitCursorFlag;
 
    if (!xf86VTSema)

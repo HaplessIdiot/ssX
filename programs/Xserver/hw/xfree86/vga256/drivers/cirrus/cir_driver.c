@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.62 1996/09/01 04:47:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.63 1996/09/14 13:11:43 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -167,7 +167,7 @@ int cirrusLgCursorXOffset;  /* Used by 546X chips */
 #define CLGD7543_ID 0x0c
 
 #define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235)
-#define Is_754x(x)  ((x) >= CLGD7541 && (x) <= CLGD7543)
+#define Is_754x(x)  ((x) >= CLGD7541 && (x) <= CLGD7548)
 
 /* <scooper>
  * The following will need updating for other chips in the cirrus
@@ -449,6 +449,7 @@ static int cirrusClockLimit[] = {
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
+  80100,	/* 7548 */
 #else 
   /* Clock limits for 256-color mode. */
   50200,	/* 5420 */
@@ -479,6 +480,7 @@ static int cirrusClockLimit[] = {
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
+  80100,	/* 7548 */
 #endif
 };
 
@@ -500,6 +502,7 @@ static int cirrusClockLimit16bpp[] = {
   40100,	/* 7541 */
   40100,	/* 7542 */
   40100,	/* 7543 */
+  40100,	/* 7548 (probably too low) */
 };
 
 static int cirrusClockLimit32bpp[] = {
@@ -515,6 +518,7 @@ static int cirrusClockLimit32bpp[] = {
   0,		/* 7541 */
   0,		/* 7542 */
   0,		/* 7543 */
+  0,		/* 7548 (might support 32bpp) */
 };
 
 #define new ((vgacirrusPtr)vgaNewVideoState)
@@ -538,6 +542,7 @@ static SymTabRec chipsets[] = {
   { CLGD7541,	"clgd7541" },
   { CLGD7542,	"clgd7542" },
   { CLGD7543,	"clgd7543" },
+  { CLGD7548,	"clgd7548" },
   { -1,		"" },
 };
 
@@ -935,6 +940,9 @@ cirrusProbe()
 		 switch (vgaPCIInfo->ChipType) {
 		 case PCI_CHIP_GD5462:
 		   cirrusChip = CLGD5462;
+		   break;
+		 case PCI_CHIP_GD7548:
+		   cirrusChip = CLGD7548;
 		   break;
 		 }
 		 

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.51 1996/08/16 12:28:20 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.52 1996/08/24 12:50:20 dawes Exp $ 
 .TH XF86_Accel 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -626,6 +626,10 @@ Hercules Terminator 64 cards.
 \fBfast_vram\fP - (S3) Adjusts the VRAM timings for faster VRAM access.
 There will be display errors and pixel garbage if your card can't support
 it.
+.sp
+\fBslow_dram\fP - (W32) Adjusts the DRAM refresh for cards with
+slow DRAM. Try this if your monitor goes into power save mode with the
+W32 server and older W32 cards.
 .sp
 \fBslow_dram_refresh\fP - (S3) Adjusts the DRAM refresh for cards with
 slow DRAM to avoid lines of corrupted pixels when switching modes.

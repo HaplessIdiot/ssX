@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.7 1996/02/12 11:12:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.8 1996/04/15 11:29:14 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -101,7 +101,8 @@ int *Chipset;
 	outp(SEQ_REG, 0);
 	val = inp(SEQ_REG);
 	outp(SEQ_REG, (old1 ^ 0x02));
-	wrinx(0x3C4, 0x0B, old);
+	wrinx(SEQ_IDX, 0x0B, old);
+	wrinx(SEQ_IDX, 0x0E, old1);
 	if ((val & 0x0F) == 2)
 	{
 		result = TRUE;

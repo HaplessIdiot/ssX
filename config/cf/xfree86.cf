@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.103 1996/08/26 14:07:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.104 1996/09/01 04:12:55 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -77,6 +77,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF86I128Server		NO
 #endif
 
+#ifndef XF86TGAServer
+# define XF86TGAServer		NO
+#endif
+
 #if XF86S3Server
 # define XF86S3Dir		s3
 #else
@@ -129,6 +133,12 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF86I128Dir		i128
 #else
 # define XF86I128Dir		/**/
+#endif
+
+#if XF86TGAServer
+# define XF86TGADir		tga
+#else
+# define XF86TGADir		/**/
 #endif
 
 #ifndef XF98GANBWAPServer
@@ -204,10 +214,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 #undef XF86AccelServerDirs
-#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir XF86I128Dir
+#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir XF86I128Dir XF86TGADir
 
 #undef XF86AccelServer
-#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86Mach64Server || XF86P9000Server || XF86AGXServer || XF86W32Server || XF86I128Server
+#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86Mach64Server || XF86P9000Server || XF86AGXServer || XF86W32Server || XF86I128Server || XF86TGAServer
 # define XF86AccelServer	YES
 #else
 # define XF86AccelServer	NO
@@ -261,7 +271,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 /* This doesn't do everything (yet) */
 #ifndef XF86S3Drivers
-# if !defined(AlphaArchitecture) && !defined(i386IscArchitecture)
+# if !defined(AlphaArchitecture)
 #  define XF86S3Drivers		newmmio mmio_928 s3_generic
 # else
 #  define XF86S3Drivers		mmio_928 s3_generic newmmio

@@ -1,4 +1,3 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.11 1996/09/15 11:18:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -24,10 +23,15 @@
  * 
  */
 
+/* $XFree86$ */
+
 /*
  * Modified by Amancio Hasty and Jon Tombs
+ * 
+ * Adapted to the I128 chipset by Robin Cutshaw
+ *
+ * Adapted for the DEC TGA by Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
-/* $XConsortium: s3cmap.c /main/7 1995/12/09 15:56:12 kaleb $ */
 
 
 #include "X.h"
@@ -36,19 +40,13 @@
 #include "colormapst.h"
 #include "windowstr.h"
 #include "compiler.h"
-#include "cfb.h"
 
-#include "s3.h"
-#include "regs3.h"
-
-#ifdef XFreeXDGA
-#include "scrnintstr.h"
-#include "servermd.h"
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
-#endif
+#include "tga.h"
+#include "tga_regs.h"
+#include "tga_presets.h"
 
 extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
+extern struct tgamem tgamem;
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -56,11 +54,10 @@ static ColormapPtr InstalledMaps[MAXSCREENS];
 
 /* current colormap for each screen */
 
-LUTENTRY currents3dac[256];
-extern int currents3dac_border;
+LUTENTRY currenttgadac[256];
 
 int
-s3ListInstalledColormaps(pScreen, pmaps)
+tgaListInstalledColormaps(pScreen, pmaps)
      ScreenPtr pScreen;
      Colormap *pmaps;
 {
@@ -75,25 +72,26 @@ s3ListInstalledColormaps(pScreen, pmaps)
 }
 
 void
-s3RestoreDACvalues()
+tgaRestoreDACvalues()
 {
    int i;
 
    if (xf86VTSema) {
       BLOCK_CURSOR;
-      outb(DAC_W_INDEX, 0);
+      BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
+      TGA_WRITE_REG(BT485_DATA_PAL, TGA_RAMDAC_SETUP_REG);
 
       for (i=0; i < 256; i++) {
-	 outb(DAC_DATA, currents3dac[i].r);
-	 outb(DAC_DATA, currents3dac[i].g);
-	 outb(DAC_DATA, currents3dac[i].b);
+	TGA_WRITE_REG(currenttgadac[i].r|(BT485_DATA_PAL<<8),TGA_RAMDAC_REG);
+	TGA_WRITE_REG(currenttgadac[i].g|(BT485_DATA_PAL<<8),TGA_RAMDAC_REG);
+	TGA_WRITE_REG(currenttgadac[i].b|(BT485_DATA_PAL<<8),TGA_RAMDAC_REG);
       }
       UNBLOCK_CURSOR;
    }
 }
 
 int
-s3GetInstalledColormaps(pScreen, pmap)
+tgaGetInstalledColormaps(pScreen, pmap)
      ScreenPtr        pScreen;
      ColormapPtr      *pmap;
 {
@@ -103,15 +101,14 @@ s3GetInstalledColormaps(pScreen, pmap)
 
 
 void
-s3StoreColors(pmap, ndef, pdefs)
+tgaStoreColors(pmap, ndef, pdefs)
      ColormapPtr pmap;
      int   ndef;
      xColorItem *pdefs;
 {
    int   i;
    xColorItem directDefs[256];
-   extern Bool s3DAC8Bit;
-   int border_changed = 0;
+   extern Bool tgaDAC8Bit;
 
    if (pmap != InstalledMaps[pmap->pScreen->myNum])
       return;
@@ -124,67 +121,34 @@ s3StoreColors(pmap, ndef, pdefs)
    for (i = 0; i < ndef; i++) {
       unsigned char r, g, b;
 
-      if (s3DAC8Bit) {
-         r = currents3dac[pdefs[i].pixel].r =
+      if (tgaDAC8Bit) {
+         r = currenttgadac[pdefs[i].pixel].r =
 	    xf86rGammaMap[pdefs[i].red   >> 8];
-         g = currents3dac[pdefs[i].pixel].g =
+         g = currenttgadac[pdefs[i].pixel].g =
 	    xf86gGammaMap[pdefs[i].green >> 8];
-         b = currents3dac[pdefs[i].pixel].b =
+         b = currenttgadac[pdefs[i].pixel].b =
 	    xf86bGammaMap[pdefs[i].blue  >> 8];
       } else {
-         r = currents3dac[pdefs[i].pixel].r =
+         r = currenttgadac[pdefs[i].pixel].r =
 	    xf86rGammaMap[pdefs[i].red   >> 8] >> 2;
-         g = currents3dac[pdefs[i].pixel].g =
+         g = currenttgadac[pdefs[i].pixel].g =
 	    xf86gGammaMap[pdefs[i].green >> 8] >> 2;
-         b = currents3dac[pdefs[i].pixel].b =
+         b = currenttgadac[pdefs[i].pixel].b =
 	    xf86bGammaMap[pdefs[i].blue  >> 8] >> 2;
       }
-      if (xf86VTSema 
-#ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
-#endif
-         ) {
-	 outb(DAC_W_INDEX, pdefs[i].pixel);
-	 outb(DAC_DATA, r);
-	 outb(DAC_DATA, g);
-	 outb(DAC_DATA, b);
+      if (xf86VTSema) {
+	 BT485_WRITE(pdefs[i].pixel, BT485_ADDR_PAL_WRITE); 
+	 TGA_WRITE_REG(BT485_DATA_PAL, TGA_RAMDAC_SETUP_REG);
+	 TGA_WRITE_REG(r|(BT485_DATA_PAL<<8), TGA_RAMDAC_REG);
+	 TGA_WRITE_REG(g|(BT485_DATA_PAL<<8), TGA_RAMDAC_REG);
+	 TGA_WRITE_REG(b|(BT485_DATA_PAL<<8), TGA_RAMDAC_REG); 
       }
-      if (pdefs[i].pixel == currents3dac_border) 
-	 border_changed = 1;
-   }
-   if (border_changed) {
-      int ilow=255, sum;
-      int low=currents3dac[ilow].r + currents3dac[ilow].g + currents3dac[ilow].b;
-
-      /* looking for lowest/black LUT entry */
-      for (i=0; low>0 && i<256; i++) {
-	 sum = currents3dac[i].r + currents3dac[i].g + currents3dac[i].b;
-	 if (sum < low) {
-	    low = sum;
-	    ilow = i; 
-	 }
-      }
-      currents3dac_border = ilow;
-      if (xf86VTSema 
-#ifdef XFreeXDGA
-	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
-#endif
-         ) {
-         i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
-         outb(0x3C0, 0x11 | 0x20);
-      
-         /* change AR11 border color ... */
-         i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
-         outb(0x3C0, 0x11 | 0x20);
-         outb(0x3C0, currents3dac_border);
-      }
-      ((vgaHWPtr)vgaNewVideoState)->Attribute[0x11] = currents3dac_border;
    }
    UNBLOCK_CURSOR;
 }
 
 void
-s3InstallColormap(pmap)
+tgaInstallColormap(pmap)
      ColormapPtr pmap;
 {
    ColormapPtr oldmap = InstalledMaps[pmap->pScreen->myNum];
@@ -208,11 +172,8 @@ s3InstallColormap(pmap)
    prgb = (xrgb *) ALLOCATE_LOCAL(entries * sizeof(xrgb));
    defs = (xColorItem *) ALLOCATE_LOCAL(entries * sizeof(xColorItem));
 
-#ifdef XFreeXDGA
-   if (xf86VTSema || !(s3InfoRec.directMode & XF86DGAHasColormap))
-#endif
-      if (oldmap != NOMAPYET)
-         WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
+   if (oldmap != NOMAPYET)
+      WalkTree(pmap->pScreen, TellLostMap, &oldmap->mid);
 
    InstalledMaps[pmap->pScreen->myNum] = pmap;
 
@@ -229,17 +190,19 @@ s3InstallColormap(pmap)
       defs[i].flags = DoRed | DoGreen | DoBlue;
    }
 
-   s3StoreColors(pmap, entries, defs);
+   tgaStoreColors(pmap, entries, defs);
 
    WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
-   s3RenewCursorColor(pmap->pScreen);
+#ifdef WORKWORKWORK
+   tgaRenewCursorColor(pmap->pScreen);
+#endif
    DEALLOCATE_LOCAL(ppix);
    DEALLOCATE_LOCAL(prgb);
    DEALLOCATE_LOCAL(defs);
 }
 
 void
-s3UninstallColormap(pmap)
+tgaUninstallColormap(pmap)
      ColormapPtr pmap;
 {
    ColormapPtr defColormap;
@@ -258,12 +221,12 @@ s3UninstallColormap(pmap)
 
 /* This is for the screen saver */
 void
-s3RestoreColor0(pScreen)
+tgaRestoreColor0(pScreen)
      ScreenPtr pScreen;
 {
    Pixel pix = 0;
    xrgb  rgb;
-   extern Bool s3DAC8Bit;
+   extern Bool tgaDAC8Bit;
    
    if (InstalledMaps[pScreen->myNum] == NOMAPYET)
       return;
@@ -271,15 +234,34 @@ s3RestoreColor0(pScreen)
    QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);
 
    BLOCK_CURSOR;
-   outb(DAC_W_INDEX, 0);
-   if (s3DAC8Bit) {
-      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 8]);
-      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 8]);
-      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 8]);
+   BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
+   TGA_WRITE_REG(BT485_DATA_PAL, TGA_RAMDAC_SETUP_REG);
+   if (tgaDAC8Bit) {
+	TGA_WRITE_REG(xf86rGammaMap[rgb.red >> 8]|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
+	TGA_WRITE_REG(xf86gGammaMap[rgb.green >> 8]|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
+	TGA_WRITE_REG(xf86bGammaMap[rgb.blue >> 8]|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
    } else {
-      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 8] >> 2);
-      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 8] >> 2);
-      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 8] >> 2);
+	TGA_WRITE_REG((xf86rGammaMap[rgb.red >> 8] >> 2)|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
+	TGA_WRITE_REG((xf86gGammaMap[rgb.green >> 8] >> 2)|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
+	TGA_WRITE_REG((xf86bGammaMap[rgb.blue >> 8] >> 2)|(BT485_DATA_PAL << 8),
+						TGA_RAMDAC_REG);
    }
    UNBLOCK_CURSOR;
+}
+
+void
+tgaUnblankScreen(pScreen)
+	ScreenPtr	pScreen;
+{
+}
+
+void
+tgaBlankScreen(pScreen)
+	ScreenPtr	pScreen;
+{
 }

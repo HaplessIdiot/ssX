@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.54 1996/09/14 13:09:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.55 1996/09/15 11:18:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -236,7 +236,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    long i;
 	    long *poker;
 	    unsigned long pVal;
-	    unsigned char reg53tmp = 0;
 	    Bool CachedFrameBuffer = FALSE;
 
 	    pVal = 0x12345678;
@@ -485,6 +484,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    ErrorF("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
 		       XCONFIG_GIVEN, s3InfoRec.name);
 	    ErrorF("\t\tplease specify Chipset \"mmio_928\"\n");
+	    /* disable mmio and LB, try to avoid crashing the PC */
+	    outb(vgaCRIndex, 0x53);
+            outb(vgaCRReg, 0x00);
+            outb(vgaCRIndex, 0x58);
+            outb(vgaCRReg, 0x00);
 	 }
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
@@ -546,7 +550,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       outb (vgaCRReg, tmp | 0x18);	/* old and new mmio enabled */
      
       outb (vgaCRIndex, 0x58);
-      outb (vgaCRReg, s3LinApOpt & ~0x4 | s3SAM256);  /* window size for linear mode */
+      outb (vgaCRReg, (s3LinApOpt & ~0x4) | s3SAM256);  /* window size for linear mode */
 
       *(volatile int *)s3VideoMem = 0x12345678;
       if ((ltmp = *(volatile int *)s3VideoMem) != 0x12345678)

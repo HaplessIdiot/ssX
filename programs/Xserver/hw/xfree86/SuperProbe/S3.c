@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.9 1996/04/15 11:29:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.10 1996/08/11 12:37:20 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -50,9 +50,9 @@ Bool Probe_S3(Chipset)
 int *Chipset;
 {
 	Bool result = FALSE;
-	Byte chip, old, tmp, rev;
+	Byte chip, old, cr38, cr39, cr42, tmp, rev;
 	int i = 0;
-
+	struct pci_config_reg *pcrp2;
 	if (!NoPCI)
 	{
 	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
@@ -91,6 +91,37 @@ int *Chipset;
 			case PCI_CHIP_968:
 			        PCIProbed = TRUE;
 				*Chipset = CHIP_S3_968;
+
+				/* probe for 3Dlabs chip in same PCI slot for ELSA Gloria */
+				Ports[0] = CRTC_IDX;
+				Ports[1] = CRTC_REG;
+				EnableIOPorts(NUMPORTS, Ports);
+				cr38 = rdinx(CRTC_IDX, 0x38);
+				cr39 = rdinx(CRTC_IDX, 0x38);
+				wrinx(CRTC_IDX, 0x38, 0x48);
+				wrinx(CRTC_IDX, 0x39, 0xa0);
+				cr42 = rdinx(CRTC_IDX, 0x42);
+				wrinx(CRTC_IDX, 0x42, cr42 | 0x08);
+				xf86scanpci();
+				if ((pcrp2 = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+				   if (pcrp2->_vendor == PCI_VENDOR_3DLABS) {
+				      switch (pcrp2->_device) {
+				      case PCI_CHIP_3DLABS_300SX:
+					 *Chipset = CHIP_S3_968_3DLABS_300SX;
+					 break;
+				      default:
+					 *Chipset = CHIP_S3_968_3DLABS_UNK;
+					 break;
+				      }
+				   }
+				}				      
+
+				wrinx(CRTC_IDX, 0x42, cr42);
+				wrinx(CRTC_IDX, 0x38, cr38);
+				wrinx(CRTC_IDX, 0x39, cr39);
+				DisableIOPorts(NUMPORTS, Ports);
+				xf86scanpci();
+
 				break;
 			case PCI_CHIP_ViRGE:
 			        PCIProbed = TRUE;

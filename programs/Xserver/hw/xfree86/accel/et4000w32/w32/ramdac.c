@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.10 1996/03/29 22:15:38 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.11 1996/08/13 11:29:27 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -41,6 +41,8 @@
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
 				/* current colormap for each screen */
+
+static BOOL generic_ramdac;
 
 static SymTabRec W32DacTable[] = {
    { NORMAL_DAC,         "normal" },
@@ -601,9 +603,15 @@ static void check_ramdac()
        	          vgaRamdacMask = 0xff;
                   W32Dac8Bit = TRUE;
        	          break;
+            case Sierra1502X_DAC:
+		  generic_ramdac = TRUE;   /* avoids RAMDAC code from using */
+		  			   /* ATT-specific extensions */
+                  RamdacShift = 10;
+                  vgaRamdacMask = 0x3f;
+                  W32Dac8Bit = FALSE;
+	    	  break;
             case NORMAL_DAC: 
             case ATT20C47xA_DAC:
-            case Sierra1502X_DAC:
             case ATT20C497_DAC:
             case ATT20C493_DAC:
             case ATT20C492_DAC:
@@ -702,7 +710,6 @@ static void check_ramdac()
 }
 
 
-static BOOL generic_ramdac;
 
 void setup_et6000_ramdac()
 {

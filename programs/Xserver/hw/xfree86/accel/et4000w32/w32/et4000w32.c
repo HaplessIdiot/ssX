@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.18 1996/08/13 11:29:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.19 1996/09/14 13:08:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -291,6 +291,7 @@ ET4000W32Probe()
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000W32.ChipOptionFlags);
 #ifndef MONOVGA
     OFLG_SET(OPTION_FAST_DRAM, &ET4000W32.ChipOptionFlags);
+    OFLG_SET(OPTION_SLOW_DRAM, &ET4000W32.ChipOptionFlags);
 #endif
 
     if (vga256InfoRec.videoRam == 0)

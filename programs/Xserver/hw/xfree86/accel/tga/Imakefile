@@ -1,0 +1,36 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SRCS = 	tga.c tgainit.c tgacmap.c tgacurs.c tgaBtCurs.c tgafcache.c \
+	tgascrin.c tgabcache.c tgaim.c
+
+OBJS = 	tga.o tgainit.o tgacmap.o tgacurs.o tgaBtCurs.o tgafcache.o \
+	tgascrin.o tgabcache.o tgaim.o
+
+INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(INCLUDESRC) \
+	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) \
+	   -I$(XF86HWSRC) -I$(FONTINCSRC) -I$(XF86OSSRC) \
+	   -I$(XF86SRC)/accel/cache
+
+DEFINES = -DPSZ=8
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS))
+#endif
+
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(tga,$(OBJS))
+
+MakeSubdirs($(SUBDIRS))
+
+#ifndef OS2Architecture
+DependTarget()
+#endif
+
+DependSubdirs($(SUBDIRS))

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.21 1996/09/03 04:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.22 1996/09/14 13:10:34 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -435,6 +435,7 @@ struct pci_vendor_device {
                             { 0x000F, "DEFPA (FDDI PCI)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1013, "Cirrus Logic", {
+                            { 0x0038, "GD 7548", NF },
                             { 0x00A0, "GD 5430", NF },
                             { 0x00A4, "GD 5434-4", NF },
                             { 0x00A8, "GD 5434-8", NF },
@@ -461,9 +462,11 @@ struct pci_vendor_device {
                             { 0x9320, "TGUI 9320", NF },
                             { 0x9420, "TGUI 9420", NF },
                             { 0x9440, "TGUI 9440", NF },
-                            { 0x9660, "TGUI 9660", NF },
+                            { 0x9660, "TGUI 9660/9680/9682", NF },
+#if 0
                             { 0x9680, "TGUI 9680", NF },
                             { 0x9682, "TGUI 9682", NF },
+#endif
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1025, "ALI", {
                             { 0x1435, "M1435", NF },
@@ -630,6 +633,9 @@ struct pci_vendor_device {
         { 0x1DE1, "Tekram", {
                             { 0xDC29, "DC290", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x3D3D, "3Dlabs", {
+                            { 0x0001, "GLINT 300SX", NF },
+			    { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {

@@ -1,3 +1,27 @@
+XFree86 3.1.2Gc (22 September 1996)
+821. ARK driver updates, including basic BitBlt acceleration, improved
+     ramdac support, experimental 24bpp support, and max dot clocks take
+     the memory clock into consideration (Harm Hanemaayer).
+820. Minor xdm and xterm changes to allow them to compile on FreeBSD 1.1.5.
+819. Fix Trident probe in SuperProbe so that it doesn't corrupt ET6000
+     display (Koen Gadeyne).
+818. Fix Sierra 1502X RAMDAC handling in the W32 server (Dirk Hohndel).
+817. TGA server for Alpha machines.  Not accelerated at this stage
+     (Alan Hourihane).
+816. SuperProbe update for ELSA Gloria (Harald Koenig).
+815. Fix/add 15/16bpp support for S3 805i with AT&T 20C498 (Hermann Lauer).
+814. Improve S3 clipped text performance (Harald Koenig).
+813. Fix a typo in xkbcomp/rules/xfree86 (Joe Moss).
+812. Add detection for the Cirrus 7548, and treat it like the other 754x
+     chips (Harm Hanemaayer).
+811. Change xterm valid-response code in DECRQSS from 0 to 1 to match a
+     real VT420 terminal (Thomas E. Dickey).
+810. Add a resource 'decTerminalID' to control the reporting level of
+     xterm (e.g., VT100, VT220), and use it to implement/corerrect the
+     DA1, DA2 and DECRPTUI reports (Thomas E. Dickey).
+809. Fix xterm restoration of color for bold/underline color mode
+     (Thomas E. Dickey).
+
 XFree86 3.1.2Gb (15 September 1996)
 808. Update PC98 Imakefiles (Michio "Karl" Jinbo).
 807. Fixes for problems with the PC98 TGUI server (Michio "Karl" Jinbo).

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.33 1996/08/24 12:52:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.34 1996/09/03 04:12:06 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -82,6 +82,7 @@ all::
 
 #if !BuildLinuxDocText
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
+            README.DECtga \
             README.chips README.cirrus README.Video7 README.P9000 README.agx \
             README.S3 README.W32 README.Oak README.Mach64 README.ark
 

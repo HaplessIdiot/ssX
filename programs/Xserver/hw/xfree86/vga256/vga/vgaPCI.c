@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.7 1996/09/14 13:13:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.8 1996/09/15 11:22:35 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -52,8 +52,13 @@ vgaGetPCIInfo()
 	    info->MemBase = 0;
 	    info->IOBase = 0;
 
+	    /*
+	     * It should be possible to move this out into the Cirrus
+	     * driver now.
+	     */
 	    if (info->Vendor == PCI_VENDOR_CIRRUS &&
-		(info->ChipType == PCI_CHIP_GD5462)) {
+		(info->ChipType == PCI_CHIP_GD5462) ||
+		(info->ChipType == PCI_CHIP_GD7548)) {
 	      info->IOBase = pcrp->_base0;
 	      info->MemBase = pcrp->_base1;
 

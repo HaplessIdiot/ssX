@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.9 1996/08/20 12:27:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.10 1996/09/01 04:15:32 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -678,7 +678,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-	   if (pci = DoCacheTile(pPix)) {
+	   if ((pci = DoCacheTile(pPix))) {
 	      while (n--) {
 		 int w, h;
 		 w = pboxClipped->x2 - pboxClipped->x1;
@@ -711,7 +711,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-	   if (pci = DoCacheOpStipple(pPix)) {
+	   if ((pci = DoCacheOpStipple(pPix))) {
 	      while (n--) {
 	         int w, h;
 	         w = pboxClipped->x2 - pboxClipped->x1;
@@ -745,7 +745,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
 	   pboxClipped = pboxClippedBase;
-	   if (pci = DoCacheOpStipple(pPix)) {
+	   if ((pci = DoCacheOpStipple(pPix))) {
 	      while (n--) {
       	         int w, h;
 	         w = pboxClipped->x2 - pboxClipped->x1;

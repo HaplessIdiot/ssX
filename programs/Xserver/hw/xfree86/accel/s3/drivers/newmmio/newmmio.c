@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.1 1996/09/01 04:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.2 1996/09/14 13:09:44 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -88,7 +88,6 @@ NEWMMIO_Probe()
 	 /* don't allow "newmmio" for S3 chips which don't support it 
 	    even when specified in the config file, so fall through
 	    for more sanity checks... */
-	 ;
       }
    }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.2 1996/02/20 14:35:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.3 1996/03/05 05:42:38 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -437,6 +437,10 @@ static void ArkMoveCursor(pScr, x, y)
  * Adapted from accel/s3/s3Cursor.c.
  */
 
+#if 0
+int vgaGetInstalledColormaps();
+#endif
+
 static void ArkRecolorCursor(pScr, pCurs, displayed)
 	ScreenPtr pScr;
 	CursorPtr pCurs;
@@ -462,7 +466,7 @@ static void ArkRecolorCursor(pScr, pCurs, displayed)
 	 * vga256/vga/vgacmap.c, disable hw cursor at 8bpp.
 	 */
 		/* Was s3GetInstalledColormaps. */
-		cfbListInstalledColormaps(pScr, &pmap);
+		vgaGetInstalledColormaps(pScr, &pmap);
 		sourceColor.red = pCurs->foreRed;
 		sourceColor.green = pCurs->foreGreen;
 		sourceColor.blue = pCurs->foreBlue;
@@ -503,6 +507,7 @@ static void ArkRecolorCursor(pScr, pCurs, displayed)
 		wrinx(0x3C4, 0x29, packedcolbg);	/* Low byte. */
 		wrinx(0x3C4, 0x2A, packedcolbg >> 8);	/* High byte. */
 		break;
+	case 24: /* 24bpp may not work */
 	case 32:
 		wrinx(0x3C4, 0x26, pCurs->foreBlue >> 8);	/* Byte 0. */
 		wrinx(0x3C4, 0x27, pCurs->foreGreen >> 8);	/* Byte 1. */

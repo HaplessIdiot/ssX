@@ -1,0 +1,132 @@
+  Information for DEC 21030 Users (aka TGA)
+  The XFree86 Project, Inc.
+  21 September 1996
+
+  1.  DEC 21030
+
+
+     o  The DEC 21030 is now supported by XFree86 in this first release
+        of XFree86 3.2. This server is still experimental but seems to
+        work well.
+
+     o  Current Known Problems
+
+
+        1. VT switching isn't elegant enough. Once the Xserver has
+           started you can switch to another VT using the standard key
+           sequence, but when switching back to the Xserver's VT the
+           screen is not restored. Executing `xrefresh' from your window
+           manager or xterm should clear this up.
+
+        2. If you have PEX fonts installed, the Xserver will coredump.
+           Only workaround for the moment is to delete the PEX font
+           files.
+
+        3. Only one modeline is accepted, this will be the first viable
+           one that matches other criteria.
+
+        4. Due to 3. Virtual Resolutions is not supported either.
+
+        5. VideoRam is currently limited to 2MB and is not changeable.
+
+        6. The 8plane 21030 is currently the only supported chipset. I
+           don't have access to the 24plane or the 24plane3D chip.
+
+
+     o  The following options may be specified for the 21030 driver:
+
+        Option "dac_8_bit"
+           Turn on 8Bit BT485 RamDac.
+
+        Option "dac_6_bit"
+           Turn on 6Bit BT485 RamDac.
+
+        MemBase "0x???????"
+           This setting has to be used, Check /proc/pci for the 21030
+           and look for the "Prefetchable 32 bit memory at 0x???????"
+           and enter this as your MemBase setting.
+
+        Option "hw_cursor"
+           Not yet available, but will turn on 21030's hardware cursor.
+
+        Option "bt485_curs"
+           Not yet available, but will turn on the BT485 RamDac's
+           cursor.
+
+     o  No acceleration features of the 21030 have been taken advantage
+        of yet!
+
+  2.  Additional Notes
+
+  The code for the 21030 as yet - has only been tested on DEC's UDB box,
+  better known as the Multia in other environments, in a Linux
+  environment.
+
+
+
+  3.  Known modelines
+
+  Use these ModeLines as a starting point and tune them, although you
+  can use xvidtune to adjust these parameters, it may not be as flexible
+  as manually editing them for the best display.
+
+  ENSURE YOUR MONITOR IS CAPABLE OF THESE RESOLUTIONS BEFORE USING
+  !!!!!!!
+
+
+  ModeLine "1280x1024@72hz" 130    1280 1312 1472 1696 1024 1027 1030 1063
+  ModeLine "1280x1024@66hz" 120    1280 1312 1472 1696 1024 1027 1030 1063
+  ModeLine "1280x1024@60hz" 108    1280 1324 1508 1708 1024 1027 1030 1056
+  ModeLine "1152x900@72hz"  104    1152 1216 1328 1504 900  906  916  960
+  ModeLine "1152x900@66hz"  92.98  1152 1172 1304 1504 900  902  906  937
+  ModeLine "1024x768@70hz"  75     1024 1048 1184 1328 768  771  777  806
+  ModeLine "1024x768@72hz"  74.37  1024 1040 1168 1296 768  769  775  797
+  ModeLine "1024x768@60hz"  65     1024 1080 1144 1344 768  775  784  810
+  ModeLine "800x600"        50     800  856  976  1040 600  601  607  636
+  ModeLine "800x600"        40     800  840  968  1056 600  601  605  628
+  ModeLine "640x480"        31     640  664  704  832  480  489  492  520
+  ModeLine "640x480"        25.175 640  664  688  700  480  490  492  525
+
+
+
+
+  $XFree86$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

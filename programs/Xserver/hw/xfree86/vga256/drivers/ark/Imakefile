@@ -3,12 +3,12 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 13:58:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.3 1996/01/24 22:03:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/Imakefile,v 3.4 1996/02/04 09:12:34 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = ark_driver.c ark_bank.s ark_cursor.c
+SRCS = ark_driver.c ark_bank.s ark_cursor.c ark_bitblt.c ark_blt16.c
 
-OBJS = ark_driver.o ark_bank.o ark_cursor.o
+OBJS = ark_driver.o ark_bank.o ark_cursor.o ark_bitblt.o ark_blt16.o
 
 DEFINES = -DPSZ=8
 
@@ -30,9 +30,12 @@ NormalAsmObjectRule()
 NormalRelocatableTarget(ark_drv,$(OBJS))
 
 InstallLinkKitNonExecFile(ark_driver.c,$(LINKKITDIR)/drivers/vga256/ark)
+InstallLinkKitNonExecFile(ark_driver.h,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_bank.s,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_cursor.c,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(ark_cursor.h,$(LINKKITDIR)/drivers/vga256/ark)
+InstallLinkKitNonExecFile(ark_bitblt.c,$(LINKKITDIR)/drivers/vga256/ark)
+InstallLinkKitNonExecFile(ark_blt16.c,$(LINKKITDIR)/drivers/vga256/ark)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/ark)
 
 DependTarget()

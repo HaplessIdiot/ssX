@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.3 1996/08/27 03:13:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.4 1996/09/14 13:09:32 dawes Exp $ */
 /***************************************************************************
  * 
  * typedefs and macros for old and new MMIO mode, Trio64V+ and 868/968
@@ -270,16 +270,16 @@ typedef struct {
 #define SET_CMD(cmd)		S3_OUTW(CMD, cmd)
 
 #define SET_SCISSORS_RB(x,y) {\
-	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | x); \
-	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | y); \
+	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (x)); \
+	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (y)); \
 }
 #define SET_MULT_MISC(val) 	S3_OUTW(MULTIFUNC_CNTL, MULT_MISC | (val))
 
 #define SET_SCISSORS(x1,y1,x2,y2) {\
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | y1);\
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | x1);\
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | x2);\
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | y2);\
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | (y1));\
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | (x1));\
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (x2));\
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (y2));\
 }
 #define SET_ERR_TERM(err)	S3_OUTW(ERR_TERM, err)
 
