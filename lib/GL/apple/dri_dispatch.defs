@@ -3,7 +3,7 @@
 ;; dri_dispatch.defs
 
 ;; $Id$
-;; $XFree86: xc/lib/GL/apple/dri_dispatch.defs,v 1.3 2003/10/13 00:30:54 torrey Exp $
+;; $XFree86: xc/lib/GL/apple/dri_dispatch.defs,v 1.4 2003/11/25 00:23:03 torrey Exp $
 
 ;; Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
 ;; Copyright (c) 2003 Torrey T. Lyons. All rights reserved.
@@ -620,6 +620,23 @@
 (void CompressedTexSubImage2DARB 383 "GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid * data")
 (void CompressedTexSubImage1DARB 384 "GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid * data")
 (void GetCompressedTexImageARB 385 "GLenum target, GLint level, void * img")
+(void SecondaryColor3bEXT 386 "GLbyte red, GLbyte green, GLbyte blue")
+(void SecondaryColor3bvEXT 387 "const GLbyte * v")
+(void SecondaryColor3dEXT 388 "GLdouble red, GLdouble green, GLdouble blue")
+(void SecondaryColor3dvEXT 389 "const GLdouble * v")
+(void SecondaryColor3fEXT 390 "GLfloat red, GLfloat green, GLfloat blue")
+(void SecondaryColor3fvEXT 391 "const GLfloat * v")
+(void SecondaryColor3iEXT 392 "GLint red, GLint green, GLint blue")
+(void SecondaryColor3ivEXT 393 "const GLint * v")
+(void SecondaryColor3sEXT 394 "GLshort red, GLshort green, GLshort blue")
+(void SecondaryColor3svEXT 395 "const GLshort * v")
+(void SecondaryColor3ubEXT 396 "GLubyte red, GLubyte green, GLubyte blue")
+(void SecondaryColor3ubvEXT 397 "const GLubyte * v")
+(void SecondaryColor3uiEXT 398 "GLuint red, GLuint green, GLuint blue")
+(void SecondaryColor3uivEXT 399 "const GLuint * v")
+(void SecondaryColor3usEXT 400 "GLushort red, GLushort green, GLushort blue")
+(void SecondaryColor3usvEXT 401 "const GLushort * v")
+(void SecondaryColorPointerEXT 402 "GLint size, GLenum type, GLsizei stride, const GLvoid * pointer")
 (GLboolean AreProgramsResidentNV -1 "GLsizei n, const GLuint * ids, GLboolean * residences")
 (void BindProgramNV -1 "GLenum target, GLuint id")
 (void DeleteProgramsNV -1 "GLsizei n, const GLuint * ids")
