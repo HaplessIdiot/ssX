@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.1 2001/05/28 02:42:31 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/Imakefile,v 1.2 2001/08/17 22:08:15 tsi Exp $
 XCOMM
 XCOMM Copyright 2001 The XFree86 Project, Inc.  All Rights Reserved.
 XCOMM
@@ -54,10 +54,10 @@ VTSW_OBJ = VTsw_noop.o
 
 SRCS = sun_bios.c sun_init.c $(IO_SRC) $(KBD_SRCS) $(PROWORKS_INOUT_SRC) \
        sun_mouse.c sun_vid.c agp_noop.c libc_wrapper.c kmod_noop.c pm_noop.c \
-       posix_tty.c sigiostubs.c stdPci.c stdResource.c $(VTSW_SRC)
+       posix_tty.c sigiostubs.c stdPci.c stdResource.c $(VTSW_SRC) kbd.c
 OBJS = sun_bios.o sun_init.o $(IO_OBJ) $(KBD_OBJS) $(PROWORKS_INOUT_OBJ) \
        sun_mouse.o sun_vid.o agp_noop.o libc_wrapper.o kmod_noop.o pm_noop.o \
-       posix_tty.o sigiostubs.o stdPci.o stdResource.o $(VTSW_OBJ)
+       posix_tty.o sigiostubs.o stdPci.o stdResource.o $(VTSW_OBJ) kbd.o
 
 INCLUDES = -I. -I$(XF86OSSRC) -I$(XF86COMSRC) \
 	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/Xext \
@@ -81,5 +81,6 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(sysv_io.c,../sysv)
 LinkSourceFile(sysv_kbd.c,../shared)
+LinkSourceFile(kbd.c,../shared)
 
 DependTarget()
