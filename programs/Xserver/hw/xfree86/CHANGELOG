@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+1272. Import X.Org's X11R6.5.1 (David Dawes)
 1271. Change identification of Trident 8400(CyberBlade/i7) so that it is not
       a Cyber chipset (integrated Desktop version) (Alan Hourihane).
 1270. Use the wsmouse protocol in XFree86 -configure if wsmouse is available
@@ -12258,4 +12259,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1526 2001/01/16 23:51:06 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1527 2001/01/17 11:17:36 alanh Exp $
