@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.6 2001/08/15 16:25:21 paulo Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.7 2002/01/23 00:38:47 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -1574,11 +1574,17 @@ field describes the way multiple screens are positioned.  There are
 a number of different ways that this information can be provided:
 .RS 7
 .TP 4
+.I  "x y"
+.TP 4
 .BI "Absolute  " "x y"
-This says that the upper left corner's coordinates are
+These both specify that the upper left corner's coordinates are
 .RI ( x , y ).
-If the coordinates are omitted or if no positioning information
-is given, (0,0) is assumed.
+The
+.B Absolute
+keyword is optional.  Some older versions of XFree86 (4.2 and earlier) don't
+recognise the
+.B Absolute
+keyword, so it's safest to just specificy the coorindates without it.
 .TP 4
 .BI "RightOf   \*q" screen-id \*q
 .TP 4
@@ -1589,7 +1595,14 @@ is given, (0,0) is assumed.
 .BI "Below     \*q" screen-id \*q
 .TP 4
 .BI "Relative  \*q" screen-id \*q " x y"
-These give the screen's location relative to another screen.
+These give the screen's location relative to another screen.  The first four
+position the screen immediately to the right, left, above or below the
+other screen.  When positioning to the right or left, the top edges are
+aligned.  When positioning above or below, the left edges are aligned.
+The
+.B Relative
+form specifies the offset of the screen's origin (upper left corner)
+relative to the origin of another screen.
 .RE
 .TP 7
 .BI "InputDevice  \*q" idev-id "\*q \*q" option \*q " ..."
@@ -1604,8 +1617,8 @@ section being referenced.  Multiple
 fields may be specified, each in double quotes.  The options permitted
 here are any that may also be given in the
 .B InputDevice
-sections.  Normally only session-specific input device options would
-be used here.  The most commonly used options are:
+sections.  Normally only session-specific input device options would be
+used here.  The most commonly used options are:
 .PP
 .RS 11
 .nf

@@ -1,5 +1,9 @@
-XFree86 4.2.99.1 (XX February 2002)
-  52. SunOS changes to xedit;s lisp interpreter (Marc La France).
+XFree86 4.2.99.1 (XX March 2002)
+  54. Recognise the "Absolute" keyword that was documented in the
+      XF86Config man page (David Dawes).
+  53. Fix the man page information about Absolute screen positioning in
+      the ServerLayout section (David Dawes).
+  52. SunOS changes to xedit's lisp interpreter (Marc La France).
   51. Support the Ti 3026 ramdac with 3DLabs Permedia found on some
       AccelStar boards (Alan Hourihane). 
   50. Move int10 softbooting furthur up in the glint driver to post
@@ -14665,4 +14669,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2183 2002/02/27 18:40:55 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2184 2002/03/01 16:43:17 tsi Exp $
