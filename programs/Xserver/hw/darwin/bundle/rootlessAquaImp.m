@@ -1,7 +1,7 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.9 2001/11/09 00:12:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.10 2001/12/22 05:28:35 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
@@ -25,8 +25,10 @@ typedef struct {
 
 int AquaDisplayCount()
 {
+    aquaNumScreens = [[NSScreen screens] count];
+
     if (noPseudoramiXExtension) {
-        return [[NSScreen screens] count];
+        return aquaNumScreens;
     } else {
         return 1; // only PseudoramiX knows about the rest
     }

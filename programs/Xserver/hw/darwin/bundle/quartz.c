@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.22 2001/12/05 06:19:20 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.23 2001/12/22 05:28:35 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -34,6 +34,7 @@ int                     quartzServerVisible = TRUE;
 int                     quartzScreenIndex = 0;
 int                     aquaMenuBarHeight = 0;
 int                     noPseudoramiXExtension = TRUE;
+int                     aquaNumScreens = 0;
 
 // Full screen specific per screen storage structure
 typedef struct {
