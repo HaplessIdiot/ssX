@@ -1,4 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -143,11 +144,12 @@ extern int cirrusBankShift;
 #define CLGD5424    2
 #define CLGD5426    3
 #define CLGD5428    4
-#define CLGD6205    5
-#define CLGD6215    6
-#define CLGD6225    7
-#define CLGD6235    8
-#define CLGD543x    9
+#define CLGD5429    5
+#define CLGD6205    6
+#define CLGD6215    7
+#define CLGD6225    8
+#define CLGD6235    9
+#define CLGD543x    10
 #define LASTCLGD    CLGD543x
 
 #define CIRRUS_SLOWBUS 0

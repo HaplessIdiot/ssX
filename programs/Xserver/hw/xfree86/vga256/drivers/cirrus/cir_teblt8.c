@@ -1,4 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
+/* $XFree86$ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -31,13 +32,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-
 /*
  * Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl).
  *
  * We accelerate straightforward text writing for fonts with widths up to 16
- * pixels. Added CirrusPolyGlyphBlt for transparent text.
+ * pixels.
  */
  
 
@@ -105,10 +104,20 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	glyphWidth = FONTMAXBOUNDS(pfont,characterWidth);
 	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 
-#if 0	
-	ErrorF("CirrusImageGlyphBlt: glyphWidthBytes = %d, glyphWidth = %d\n",
-		glyphWidthBytes, glyphWidth);
-#endif		
+	cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
+	widthDst *= 4;		/* Convert to bytes. */
+
+	glyphWidth = FONTMAXBOUNDS(pfont,characterWidth);
+	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
+
+	/* We only accelerate fonts 16 or less pixels wide. */
+	/* Let cfb handle writing into offscreen pixmap. */
+	if (glyphWidthBytes != 4 || glyphWidth > 16 || !CHECKSCREEN(pdstBase)
+	|| !xf86VTSema) {
+	        cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	        	pglyphBase);
+		return;	        
+	}
 
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
 
@@ -130,28 +139,14 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	return;
     }
 
-	/* We only accelerate fonts 16 or less pixels wide. */
-	if (glyphWidthBytes != 4 || glyphWidth > 16) {
-#if 0		/* There seems to be a problem using speedup. */
-		/* Use speedup. */
-	        speedupcfbTEGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
-#else
-	        cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
-#endif
-		return;	        
-	}
-
-
     if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
 	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
 
-    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
-    widthDst *= 4;	/* Convert to bytes. */
-
-#if 0
-	ErrorF("CirrusImageGlyphBlt: widthDst = %d, size = (%d, %d), bg = %d, fg = %d\n",
-		widthDst, glyphWidth * nglyph, h, pGC->bgPixel, pGC->fgPixel);
-#endif		
+	/* Collect list of pointers to glyph bitmaps. */
+	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
+	for (i = 0; i < nglyph; i++ ) {
+		glyphp[i] = (unsigned long *)FONTGLYPHBITS(pglyphBase, *ppci++);
+	}
 
 	destaddr = y * widthDst + x;
 	SETDESTADDR(destaddr);
@@ -174,12 +169,6 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	 * are less efficiently handled.
 	 */
 
-	/* Collect list of pointers to glyph bitmaps. */
-	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
-	for (i = 0; i < nglyph; i++ ) {
-		glyphp[i] = (unsigned long *)FONTGLYPHBITS(pglyphBase, *ppci++);
-	}
-
 	/* Write bitmap to video memory (for BitBlt engine to process). */
 	/* Gather bytes until we have a dword to write. Doubleword is   */
 	/* LSByte first, and MSBit first in each byte, as required for  */
@@ -205,156 +194,6 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	
 	DEALLOCATE_LOCAL(glyphp);
 }
-
-
-#if 0
-
-void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
-    DrawablePtr pDrawable;
-    GC 		*pGC;
-    int 	xInit, yInit;
-    unsigned int nglyph;
-    CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
-{
-    FontPtr		pfont = pGC->font;
-    unsigned long	*pdstBase;
-    int			widthDst;
-    int			widthGlyph;
-    int			h;
-    int			x, y;
-    BoxRec		bbox;		/* for clipping */
-
-    	int glyphWidth;		/* Character width in pixels. */
-    	int glyphWidthBytes;	/* Character width in bytes (padded). */
-	int i;
-	/* Characters are padded to 4 bytes. */
-	unsigned long **glyphp;
-	int shift, line;
-	unsigned dworddata;
-	int destaddr, blitwidth;
-	void (*PolyGlyph)();
-
-	PolyGlyph = NULL;
-	if (pGC->fillStyle != FillSolid)
-		PolyGlyph = miPolyGlyphBlt;
-
-        if (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-            FONTMINBOUNDS(pGC->font,leftSideBearing) > 32 ||
-	    FONTMINBOUNDS(pGC->font,characterWidth) < 0)
-		PolyGlyph = miPolyGlyphBlt;
-
-	/* Special raster ops that don't seem to work. */
-	if (pGC->alu == GXset || pGC->alu == GXcopyInverted)
-		PolyGlyph = cfbPolyGlyphRop8;
-
-	if (PolyGlyph != NULL) {
-		(*PolyGlyph)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
-			pglyphBase);
-		return;
-	}
-
-	glyphWidth = FONTMAXBOUNDS(pfont,characterWidth);
-	glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
-
-    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
-
-    if ((h | glyphWidth) == 0) return;
-
-    x = xInit + FONTMAXBOUNDS(pfont,leftSideBearing) + pDrawable->x;
-    y = yInit - FONTASCENT(pfont) + pDrawable->y;
-    bbox.x1 = x;
-    bbox.x2 = x + (glyphWidth * nglyph);
-    bbox.y1 = y;
-    bbox.y2 = y + h;
-
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
-    {
-      case rgnPART:
-        if (pGC->alu == GXcopy)
-        	PolyGlyph = cfbPolyGlyphBlt8;
-        else
-        	PolyGlyph = cfbPolyGlyphRop8;
-	(*PolyGlyph)(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
-      case rgnOUT:
-	return;
-    }
-
-	/* We only accelerate fonts 16 or less pixels wide. */
-	if (glyphWidthBytes != 4 || glyphWidth > 16) {
-	        if (pGC->alu == GXcopy)
-        		PolyGlyph = cfbPolyGlyphBlt8;
-	        else
-        		PolyGlyph = cfbPolyGlyphRop8;
-		(*PolyGlyph)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
-			pglyphBase);
-		return;	        
-	}
-
-
-    if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
-	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
-
-    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
-    widthDst *= 4;	/* Convert to bytes. */
-
-	destaddr = y * widthDst + x;
-	SETDESTADDR(destaddr);
-	SETDESTPITCH(widthDst);
-	SETSRCADDR(0);
-	SETSRCPITCH(0);
-	blitwidth = glyphWidth * nglyph;
-	SETWIDTH(blitwidth);
-	SETHEIGHT(h);
-
-	SETBACKGROUNDCOLOR(pGC->bgPixel);
-	SETFOREGROUNDCOLOR(pGC->fgPixel);
-	SETTRANSPARENCYCOLOR(pGC->bgPixel);
-
-	SETBLTMODE(SYSTEMSRC | COLOREXPAND | TRANSPARENCYCOMPARE);
-	SETROP(cirrus_rop[pGC->alu]);
-	STARTBLT();
-
-	/* Problem: must synthesize bitmap. The current code works reasonably
-	 * efficiently for 6 and 8 pixel wide fonts, other widths (up to 16)
-	 * are less efficiently handled.
-	 */
-
-	/* Collect list of pointers to glyph bitmaps. */
-	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
-	for (i = 0; i < nglyph; i++ ) {
-		glyphp[i] = (unsigned long *)FONTGLYPHBITS(pglyphBase, *ppci++);
-	}
-
-	/* Write bitmap to video memory (for BitBlt engine to process). */
-	/* Gather bytes until we have a dword to write. Doubleword is   */
-	/* LSByte first, and MSBit first in each byte, as required for  */
-	/* the blit data. */
-
-	switch (glyphWidth) {
-	case 8 :
-		/* 8 pixel wide font, easier and faster. */
-		CirrusTransferTextWidth8(nglyph, h, glyphp);
-		break;
-	case 6 :
-		CirrusTransferTextWidth6(nglyph, h, glyphp);
-		break;
-	default :
-		CirrusTransferText(nglyph, h, glyphp, glyphWidth, vgaBase);
-		break;
-	}
-
-	WAITUNTILFINISHED();
-
-	SETBACKGROUNDCOLOR(0x0f);
-	SETFOREGROUNDCOLOR(0);
-	
-	DEALLOCATE_LOCAL(glyphp);
-}
-
-#endif
-
 
 
 /*
@@ -375,35 +214,33 @@ void CirrusTransferTextWidth8(nglyph, h, glyphp)
 	line = 0;
 	while (line < h) {
 		i = 0;
-		/* Unroll loop. */
-		while (shift == 0 && nglyph - i >= 8) {
-			/* This only gets used if the text width is a */
-			/* multiple of 4 characters. Should do 'alignment' */
-			/* for shift values 8, 16 and 24, and then this. */
-			dworddata = byte_reversed[glyphp[i][line]];
-			dworddata += byte_reversed[glyphp[i + 1][line]] << 8;
-			dworddata += byte_reversed[glyphp[i + 2][line]] << 16;
-			dworddata += byte_reversed[glyphp[i + 3][line]] << 24;
-			*(unsigned long *)vgaBase = dworddata;
-			dworddata = byte_reversed[glyphp[i + 4][line]];
-			dworddata += byte_reversed[glyphp[i + 5][line]] << 8;
-			dworddata += byte_reversed[glyphp[i + 6][line]] << 16;
-			dworddata += byte_reversed[glyphp[i + 7][line]] << 24;
-			*(unsigned long *)vgaBase = dworddata;
-			i += 8;
-			dworddata = 0;
-		}
-
 		while (i < nglyph) {
-			dworddata += byte_reversed[glyphp[i][line]] << shift;
-			shift += 8;
+			if (shift == 0 && nglyph - i >= 8) {
+				/* Unroll loop. */
+				dworddata = byte_reversed[glyphp[i][line]];
+				dworddata += byte_reversed[glyphp[i + 1][line]] << 8;
+				dworddata += byte_reversed[glyphp[i + 2][line]] << 16;
+				dworddata += byte_reversed[glyphp[i + 3][line]] << 24;
+				*(unsigned long *)vgaBase = dworddata;
+				dworddata = byte_reversed[glyphp[i + 4][line]];
+				dworddata += byte_reversed[glyphp[i + 5][line]] << 8;
+				dworddata += byte_reversed[glyphp[i + 6][line]] << 16;
+				dworddata += byte_reversed[glyphp[i + 7][line]] << 24;
+				*(unsigned long *)vgaBase = dworddata;
+				i += 8;
+				dworddata = 0;
+			}
+			else {
+				dworddata += byte_reversed[glyphp[i][line]] << shift;
+				shift += 8;
+				i++;
+			}
 			if (shift == 32) {
 				/* Write the dword. */
 				*(unsigned long *)vgaBase = dworddata;
 				shift = 0;
 				dworddata = 0;
 			}
-			i++;
 		}
 		line++;
 	}
@@ -505,7 +342,7 @@ void CirrusTransferTextWidth6(nglyph, h, glyphp)
 }
 
 
-#if 0
+#if 0	/* Replaced by assembler routine in cir_textblt.s. */
 
 void CirrusTransferText(nglyph, h, glyphp, glyphwidth, base)
 	int nglyph;

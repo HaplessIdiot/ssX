@@ -1,4 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -85,13 +86,14 @@ Bool cirrusUseBLTEngine = FALSE;
 #define CLGD5424_ID 0x25
 #define CLGD5426_ID 0x24
 #define CLGD5428_ID 0x26
+#define CLGD5429_ID 0x27
 #define CLGD6205_ID 0x02
 #define CLGD6215_ID 0x22  /* Hmmm... looks like a 5420 or 5422 */
 #define CLGD6225_ID 0x32
 #define CLGD6235_ID 0x06
 #define CLGD543x_ID 0x29
 
-#define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235_ID)
+#define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235)
 
 				/* For now, only save a couple of the */
 				/* extensions. */
@@ -215,6 +217,7 @@ int cirrusClockLimit[] = {
   80100,	/* 5424 */
   85500,	/* 5426 */
   85500,	/* 5428 */
+  85500,	/* 5429 */
 
 /* just guessing.... dwex */
   75200,	/* 6205 */
@@ -261,7 +264,7 @@ cirrusIdent(n)
      int n;
 {
   static char *chipsets[] = {"clgd5420", "clgd5422", "clgd5424", "clgd5426",
-			     "clgd5428",
+			     "clgd5428", "clgd5429",
 			     "clgd6205", "clgd6215", "clgd6225", "clgd6235",
 			     "clgd543x"
 			    };
@@ -511,6 +514,9 @@ cirrusProbe()
 	     case CLGD5428_ID:
 	       cirrusChip = CLGD5428;
 	       break;
+	     case CLGD5429_ID:
+	       cirrusChip = CLGD5429;
+	       break;
 
 	     /* 
 	      * LCD driver chips...  the +1 options are because
@@ -662,7 +668,7 @@ cirrusProbe()
 		"available videoram reduced by 1k to allow for scratch space");
      }
      /* 
-      * Banking granularity is 16k for the 5426 or 5428
+      * Banking granularity is 16k for the 5426, 5428 or 5429
       * when allowing access to 2MB, and 4k otherwise 
       */
      if (vga256InfoRec.videoRam > 1024)
@@ -711,6 +717,7 @@ cirrusProbe()
      OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
      OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
      OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
+     OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
      return(TRUE);
 }
 
@@ -733,21 +740,12 @@ cirrusFbInit()
   cirrusBusType = CIRRUS_FASTBUS;
 
   cirrusUseBLTEngine = FALSE;
-  if ((cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
-  cirrusChip == CLGD543x))
+  if ((cirrusChip == CLGD5426 || cirrusChip == CLGD5428 || 
+  cirrusChip == CLGD5429 || cirrusChip == CLGD543x))
       {
       cirrusUseBLTEngine = TRUE;
-#if 0
-      /* Don't use the BitBLT engine on the 5426 and 5428 when using */
-      /* the second megabyte. */
-      if ((vga256InfoRec.virtualX * vga256InfoRec.virtualY + 256 >
-      1024 * 1024) && cirrusChip != CLGD543x)
-          {
+      if (OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
           cirrusUseBLTEngine = FALSE;
-          ErrorF("%s %s: BitBLT engine functions disabled for 2 Mbyte operation\n",
-            XCONFIG_PROBED, cirrusIdent(cirrusChip));
-          }
-#endif
       }
 
   /*
@@ -755,7 +753,8 @@ cirrusFbInit()
    * "fast_dram" or "slow_dram" option is defined.
    */
   if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
-      cirrusChip == CLGD5428 || cirrusChip == CLGD543x)
+      cirrusChip == CLGD5428 || cirrusChip == CLGD5429 || 
+      cirrusChip == CLGD543x)
       {
       outb(0x3c4, 0x1f);
       ErrorF("%s %s: Internal memory clock register value is 0x%02x\n",
@@ -796,10 +795,6 @@ cirrusFbInit()
     cfbLowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;
     cfbLowlevFuncs.fillRectSolidCopy = CirrusFillRectSolidCopy;
     cfbLowlevFuncs.fillBoxSolid = CirrusFillBoxSolid;
-    cfbLowlevFuncs.fillRectTransparentStippled32 =
-    	CirrusFillRectTransparentStippled32;
-    cfbLowlevFuncs.fillRectOpaqueStippled32 =
-    	CirrusFillRectOpaqueStippled32;
 
     /* Hook special op. fills (and tiles): */
     cfbTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
@@ -838,9 +833,13 @@ cirrusFbInit()
         cfbNonTEOps.CopyPlane = CirrusCopyPlane;
 #endif        
 
-        cfbLowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
-        cfbTEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-        cfbTEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	/* Disable accelerated text blit functions for the 543x chips, */
+	/* which require exclusively 32-bit transfers. */
+	if (cirrusChip != CLGD543x) {
+	    cfbLowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
+	    cfbTEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+	    cfbTEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	}
 #if 0
         cfbTEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
         cfbTEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
@@ -960,8 +959,9 @@ cirrusRestore(restore)
        outb(0x3C5,restore->SRE);
        }
 
-  if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 || cirrusChip == CLGD5428
-  || cirrusChip == CLGD543x)
+  if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 || 
+      cirrusChip == CLGD5428 || cirrusChip == CLGD5429 || 
+      cirrusChip == CLGD543x)
        {
        /* Restore the Performance Tuning Register on these 4 chips only. */
        outb(0x3C4,0x16);
@@ -1054,8 +1054,9 @@ cirrusSave(save)
   outb(0x3C4,0x0F);
   save->SRF = inb(0x3C5);
 
-  if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426
-  || cirrusChip == CLGD5428 || cirrusChip == CLGD543x)
+  if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 || 
+      cirrusChip == CLGD5428 || cirrusChip == CLGD5429 || 
+      cirrusChip == CLGD543x)
        {
        /* Save the Performance Tuning Register on these 4 chips only. */
         outb(0x3C4,0x16);
@@ -1172,13 +1173,14 @@ cirrusInit(mode)
  
      if (cirrusChip == CLGD5422 || cirrusChip == CLGD5424 || 
 	 cirrusChip == CLGD5426	|| cirrusChip == CLGD5428 ||
-	 cirrusChip == CLGD543x) 
+	 cirrusChip == CLGD5429 || cirrusChip == CLGD543x) 
 	 {
          new->SRF |= 0x20;	/* Enable 64 byte FIFO. */
          }
 
      if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
-         cirrusChip == CLGD5428 || cirrusChip == CLGD543x)
+         cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||  
+	 cirrusChip == CLGD543x)
          {
 
 	 /* Now set the CRT FIFO threshold (in 4 byte words). */
@@ -1188,6 +1190,13 @@ cirrusInit(mode)
 	 /* We have an option for conservative, or aggressive setting. */
 	 /* The default is something in between. */
 
+	 if (cirrusChip == CLGD543x)
+	     {
+	     /* Use 0 (effectively 16). */
+	     if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options))
+	         new->SR16 |= 8;	/* Use 24. */
+	     }
+         else
 	 if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options))
 	     {
 	     if (!(mode->Flags & V_INTERLACE))	/* For interlaced, use 0. */

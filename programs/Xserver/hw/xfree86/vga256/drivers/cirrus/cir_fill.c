@@ -1,4 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -202,13 +203,14 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	       * - If the chip has no bitblt engine (i.e. 5420/2/4).
 	       * - If we have a bitblt engine, but the card is local bus
 	       *   and the width is big enough, with different cut-off
-	       *   points for the 5426 and 5428.
+	       *   points for the 5426, 5428, and 5429.
 	       *   For 5434 (speculative), the bitblt engine is used.
 	       */
 	      if (!HAVEBITBLTENGINE() ||
 	          (cirrusBusType == CIRRUS_FASTBUS &&
 	          ((cirrusChip == CLGD5426 && w >= 200) ||
-	           (cirrusChip == CLGD5428 && w >= 250)))) {
+	           (cirrusChip == CLGD5428 && w >= 250) ||
+		   (cirrusChip == CLGD5429 && w >= 250)))) {
                   bits = 0xffffffff;
                   CirrusColorExpand32bitFill(pBox->x1, pBox->y1, w, h,
         	      &bits, 1, 0, 0, pixel1, pixel1, widthDst);

@@ -1,4 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -193,7 +194,7 @@ static unsigned char rightbitmask[8] = {
  * It has to reverse the per-byte bit ordering because the Cirrus color
  * expansion works that way.
  *
- * This function should work on all chipsets, i.e. 5420 up to 5428.
+ * This function should work on all chipsets, i.e. 5420 up to 5429.
  * On local bus and fast processor, it can be significantly faster than the
  * 5426 bitblt engine for large solid fills.
  *

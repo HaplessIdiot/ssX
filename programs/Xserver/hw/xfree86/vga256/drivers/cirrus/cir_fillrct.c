@@ -29,6 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
+/* $XFree86$ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -55,6 +56,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "cfbrrop.h"
 #include "mergerop.h"
 #include "cfbfuncs.h"
+#include "xf86.h"
+#include "vga.h"
+#include "vgaBank.h"	/* For CHECKSCREEN. */
 
 #include "cir_driver.h"
 
@@ -83,7 +87,17 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     void	    (*BoxFill)();
     int		    n;
     int		    xorg, yorg;
+    unsigned long   *pdstBase;
+    int		    widthDst;
     RROP_DECLARE
+
+    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
+
+    if (!xf86VTSema || !CHECKSCREEN(pdstBase))
+    {
+        cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+        return;
+    }
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
@@ -126,14 +140,14 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 							pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
-	    BoxFill = cfbLowlevFuncs.fillRectTransparentStippled32;
+	    BoxFill = CirrusFillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
-	    BoxFill = cfbLowlevFuncs.fillRectOpaqueStippled32;
+	    BoxFill = CirrusFillRectOpaqueStippled32;
 	break;
 #endif
     }

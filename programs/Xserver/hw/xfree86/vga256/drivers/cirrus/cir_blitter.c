@@ -1,4 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -28,7 +29,7 @@
 
 /*
  * This file contains all low-level functions that use the BitBLT engine
- * on the 5426/5428/5434 (except for those that involve system memory,
+ * on the 5426/5428/5429/5434 (except for those that involve system memory,
  * they are in cir_im.c).
  */
  
@@ -84,7 +85,7 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   extern int CirrusMemTop;
 
   if (!HAVE543X() && fillHeight > 1024) {
-      /* Split into two for 5426 & 5428. */
+      /* Split into two for 5426, 5428 & 5429. */
       CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
           fillWidth, 1024, dstPitch, rop, patternword1, patternword2);
       CirrusBLTColorExpand8x8PatternFill(dstAddr + dstPitch * 1024,
@@ -150,7 +151,7 @@ void CirrusBLT8x8PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   extern int CirrusMemTop;
 
   if (!HAVE543X() && h > 1024) {
-      /* Split into two for 5426 & 5428. */
+      /* Split into two for 5426, 5428, & 5429. */
       CirrusBLT8x8PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
       CirrusBLT8x8PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
           pattern, destpitch, rop);
@@ -204,7 +205,7 @@ void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   extern int CirrusMemTop;
 
   if (!HAVE543X() && h > 1024) {
-      /* Split into two for 5426 & 5428. */
+      /* Split into two for 5426, 5428 & 5429. */
       CirrusBLT16x16PatternFill(dstAddr, w, 1024, pattern, destpitch, rop);
       CirrusBLT16x16PatternFill(dstAddr + destpitch * 1024, w, h - 1024,
           pattern, destpitch, rop);
