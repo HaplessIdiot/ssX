@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tvga_dac.c,v 1.3 1999/10/26 22:46:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tvga_dac.c,v 1.4 2001/09/12 13:39:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,7 +63,8 @@ TVGAInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        	pReg->tridentRegs3C4[OldMode2] = 0x10;
        	OUTB(0x3C4, 0x0B); INB(0x3C5); /* Back to New Mode */
    	pReg->tridentRegs3x4[Underline] = 0x40;
-	pReg->tridentRegs3x4[CRTCMode] = 0xA3;
+	if (pTrident->Chipset < TGUI9440AGi)
+	    pReg->tridentRegs3x4[CRTCMode] = 0xA3;
     }
 
     if (pScrn->videoRam > 512)
@@ -169,7 +170,8 @@ TVGARestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3C4(ConfPort2);
     if (pScrn->bitsPerPixel >= 8) {
        OUTW_3x4(Underline);
-       OUTW_3x4(CRTCMode);
+       if (pTrident->Chipset < TGUI9440AGi)
+           OUTW_3x4(CRTCMode);
     }
     OUTW_3x4(AddColReg);
     OUTW_3CE(MiscExtFunc);
@@ -215,7 +217,8 @@ TVGASave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 
     if (pScrn->bitsPerPixel >= 8) {
         INB_3x4(Underline);
-        INB_3x4(CRTCMode);
+        if (pTrident->Chipset < TGUI9440AGi)
+            INB_3x4(CRTCMode);
     }
     INB_3x4(LinearAddReg);
     INB_3x4(FIFOControl);
