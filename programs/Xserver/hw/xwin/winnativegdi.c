@@ -27,6 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
+/* $XFree86$ */
 
 #include "win.h"
 
