@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.3 1994/06/11 06:11:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.4 1994/06/12 16:35:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -672,12 +672,15 @@ s3Probe()
         OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
 
+   /* Move this down, and only force when s3UsingPixMux is TRUE */
+#if 0
    /* pixmux on Bt485 requires use of Bt's cursor */
    if (s3Bt485PixMux && !OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
       OFLG_SET(OPTION_BT485_CURS, &s3InfoRec.options);
       ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
 	     XCONFIG_PROBED, s3InfoRec.name);
    }
+#endif
 
    if (DAC_IS_ATT498 && OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options))
       s3ATT498PixMux = TRUE;
@@ -736,7 +739,7 @@ s3Probe()
       if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
 	 nonMuxMaxClock = 67500;	/* Doubling only works in mux mode */
 	 nonMuxMaxMemory = 1024;	/* Can't access more without mux */
-	 allowPixMuxSwitching = TRUE;
+	 allowPixMuxSwitching = FALSE;
 	 pixMuxLimitedWidths = FALSE;
 	 pixMuxMinWidth = 1024;
       } else if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
@@ -921,6 +924,14 @@ s3Probe()
 		   XCONFIG_PROBED, s3InfoRec.name);
 	 s3UsingPixMux = TRUE;
       }
+   }
+
+   /* pixmux on Bt485 requires use of Bt's cursor */
+   if (s3Bt485PixMux && s3UsingPixMux &&
+       !OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
+      OFLG_SET(OPTION_BT485_CURS, &s3InfoRec.options);
+      ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
    }
 
    if (s3UsingPixMux && !allowPixMuxSwitching) {

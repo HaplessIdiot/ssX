@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.3 1994/05/31 08:09:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.4 1994/06/11 06:11:22 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -682,10 +682,13 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp | 0x08);
 
-         /* set s3 reg65 for some unknown reason                        */
-         outb(vgaCRIndex, 0x65);
-         tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp | 0x20);
+	 /* Setting the for the SPEA Mercury affects clocks > 120MHz */
+	 if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+            /* set s3 reg65 for some unknown reason                        */
+            outb(vgaCRIndex, 0x65);
+            tmp = inb(vgaCRReg);
+            outb(vgaCRReg, tmp | 0x20);
+	 }
 
          /*
           * set output clocking to 4:1 multiplexing
