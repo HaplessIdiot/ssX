@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.329 2000/12/01 00:24:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.330 2000/12/01 17:43:02 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -266,6 +266,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XF86Server
 #  define XF86Server            YES
 # endif
+/* 24/32bpp conversion module */
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
 /* shadow fb module */
 # ifndef XFShadowFB
 #  define XFShadowFB            YES
@@ -288,7 +292,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # endif
 
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers      	XF86OSCardDrivers XF86ExtraCardDrivers
+#  define XF86CardDrivers      	newport XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 

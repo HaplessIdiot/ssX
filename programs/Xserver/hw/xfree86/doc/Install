@@ -1,4 +1,4 @@
-                 Installation Details for XFree86[tm] 4.0.1
+                 Installation Details for XFree86[tm] 4.0.2
 
                           The XFree86 Project, Inc
 
@@ -19,11 +19,11 @@ balls" identified by the .tgz suffix).  Along with the binaries we provide a
 customized version of the GNU tar utility called "extract" and an installa-
 tion script.  We recommend that these be used to install the binaries.
 
-2.  Downloading the XFree86 4.0.1 binaries
+2.  Downloading the XFree86 4.0.2 binaries
 
-We, The XFree86 Project, provide XFree86 4.0.1 binaries for a range of oper-
+We, The XFree86 Project, provide XFree86 4.0.2 binaries for a range of oper-
 ating systems at our ftp site
-<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.1/binaries/>.  Often during
+<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.2/binaries/>.  Often during
 releases, our ftp site is heavily loaded.  Instead of downloading directly
 from us we recommend that instead you use one of our mirror sites.  Another
 advantage of using our mirror sites is that some of them support http access
@@ -108,9 +108,9 @@ NOTES:
 If you miss some and want to install them later, go to the Manual Installa-
 tion (section 4., page 1) section.
 
-3.  Installing XFree86 4.0.1 using the Xinstall.sh script
+3.  Installing XFree86 4.0.2 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.0.1 binaries be installed using the
+We strongly recommend that our XFree86 4.0.2 binaries be installed using the
 Xinstall.sh script that we provide.  There are a lot of steps in the manual
 installation process, and those steps can vary according to the platform and
 hardware setup.  There is a description of the manual installation process
@@ -227,7 +227,7 @@ later that you need it, you can create it easily by running:
 
 The next step is to configure the X server.  That is covered in detail in an
 as-yet unwritten document :-(.  In the meantime, there are two ways to create
-a basic X server configuration file for XFree86 4.0.1.  One is to run the
+a basic X server configuration file for XFree86 4.0.2.  One is to run the
 xf86config utility.  Another is to use the new -configure X server option:
 
      XFree86 -configure
@@ -241,9 +241,9 @@ old XF86_* and/or XF98_* X server binaries from /usr/X11R6/bin.
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-4.  Installing XFree86 4.0.1 manually
+4.  Installing XFree86 4.0.2 manually
 
-This section describes how to manually install the XFree86 4.0.1 binary dis-
+This section describes how to manually install the XFree86 4.0.2 binary dis-
 tributions.  You should only use this method if you know what you're doing.
 The information here covers some common cases, but not every possible case.
 

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.40 2000/11/16 19:44:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.41 2000/12/01 17:08:36 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1462,11 +1462,12 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	} else xf86DrvMsg(scrnIndex, X_ERROR,
 			  "Too little space for H/W cursor.\n");
 	
+	if (!nPtr->noAccel && nPtr->noMMIO)
 	  xf86DrvMsg(pScrn->scrnIndex,X_INFO,
 		     "Acceleration disabled when not using MMIO\n");
 
 	/* Setup the acceleration primitives */
-	if (!nPtr->noAccel || nPtr->noMMIO) {
+	if (!nPtr->noAccel && !nPtr->noMMIO) {
 	    nAcl->cacheStart = currentaddr - freespace;
 	    nAcl->cacheEnd = currentaddr;
 	    freespace = 0;
@@ -1495,7 +1496,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Acceleration Initialized\n");
 	} 
-	if (!nPtr->noAccel && nPtr->noMMIO)
 
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.1 2000/11/15 01:36:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.2 2000/11/16 03:22:18 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -16,6 +16,13 @@ OBJS =	darwin.o \
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb -I$(SERVERSRC)/cfb \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os \
            -I$(INCLUDESRC) -I$(FONTINCSRC)
+
+#if defined(XFree86CustomVersion)
+CUSTOMVERSION = XFree86CustomVersion
+CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
+#endif
+
+DEFINES = $(CUSTOMVERDEF)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(darwin,$(OBJS))

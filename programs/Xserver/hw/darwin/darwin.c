@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.1 2000/11/15 01:36:13 dawes Exp $ */
 
 #define NDEBUG 1
 
@@ -22,6 +22,8 @@
 #include "mibstore.h"
 #include "mipointer.h"
 #include "micmap.h"
+#include "site.h"
+#include "xf86Version.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -69,6 +71,44 @@ static PixmapFormatRec formats[] = {
         { 24,   32,     BITMAP_SCANLINE_PAD }
 };
 const int NUMFORMATS = sizeof(formats)/sizeof(formats[0]);
+
+#ifndef OSNAME
+#define OSNAME " Darwin"
+#endif
+#ifndef OSVENDOR
+#define OSVENDOR ""
+#endif
+#ifndef PRE_RELEASE
+#define PRE_RELEASE (XF86_VERSION_BETA || XF86_VERSION_ALPHA)
+#endif
+
+static void
+DarwinPrintBanner()
+{
+#if PRE_RELEASE
+  ErrorF("\n"
+    "This is a pre-release version of XFree86, and is not supported in any\n"
+    "way.  Bugs may be reported to XFree86@XFree86.Org and patches submitted\n"
+    "to fixes@XFree86.Org.  Before reporting bugs in pre-release versions,\n"
+    "please check the latest version in the XFree86 CVS repository\n"
+    "(http://www.XFree86.Org/cvs)\n");
+#endif
+  ErrorF("\nXFree86 Version%s", XF86_VERSION);
+#ifdef XF86_CUSTOM_VERSION
+  ErrorF("(%s) ", XF86_CUSTOM_VERSION);
+#endif
+  ErrorF("/ X Window System\n");
+  ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
+         X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
+  ErrorF("Release Date: %s\n", XF86_DATE);
+  ErrorF("\tIf the server is older than 6-12 months, or if your hardware is\n"
+	 "\tnewer than the above date, look for a newer version before\n"
+	 "\treporting problems.  (See http://www.XFree86.Org/FAQ)\n");
+  ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
+#if defined(BUILDERSTRING)
+  ErrorF("%s \n",BUILDERSTRING);
+#endif
+}
 
 static Bool DarwinSaveScreen(ScreenPtr pScreen, int on)
 {	// FIXME
@@ -623,8 +663,8 @@ static void *DarwinHIDThread(void *arg);
  * Register the keyboard and mouse devices
  */
 void InitInput( int  argc, char **argv )
-{	static int initialized = 0;
-	if (!initialized) {
+{
+	if (serverGeneration == 1) {
 		int fd[2];
 
 		assert( pipe(fd) == 0 );
@@ -644,14 +684,6 @@ EvGlobals *     evg;
 mach_port_t     masterPort;
 mach_port_t     notificationPort;
 IONotificationPortRef NotificationPortRef;
-
-static void InitIOKit(void)
-{
-    kern_return_t           kr;
-
-    kr = IOMasterPort(bootstrap_port, &masterPort);
-    kern_assert( kr );
-}
 
 static void ClearEvent(NXEvent * ep)
 {
@@ -891,44 +923,44 @@ void SetupFBandHID(void)
 
 
 /*
- * InitOutput --
+ * InitOutput
  *	Initialize screenInfo for all actually accessible framebuffers.
- *
- * FIXME: why does this get called multiple times when a session is starting? 
  */
 void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
-{	int i;
-	static int initialized = 0;
-//	static PixmapFormatRec darwinFormat;
+{
+    int i;
 
-	// perform one-time-only initialization
-	if ( !initialized ) {
-		initialized = 1;
-		// do our appkit or darwin device driver work to open and map a screen
-		InitIOKit();
-		SetupFBandHID();
-	}
+    pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+    pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+    pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+    pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
 
-	pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-	pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-	pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-	pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+    // list how we want common pixmap formats to be padded
+    pScreenInfo->numPixmapFormats = NUMFORMATS;
+    for (i = 0; i < NUMFORMATS; i++)
+        pScreenInfo->formats[i] = formats[i];
 
-        // list how we want common pixmap formats to be padded
-        pScreenInfo->numPixmapFormats = NUMFORMATS;
-        for (i = 0; i < NUMFORMATS; i++)
-            pScreenInfo->formats[i] = formats[i];
-
-
-	AddScreen( DarwinAddScreen, argc, argv );
+    AddScreen( DarwinAddScreen, argc, argv );
 }
 
 void OsVendorFatalError( void )
-{	ErrorF( "   OsVendorFatalError\n" ); 
+{	ErrorF( "   OsVendorFatalError\n" );
 }
 
+/*
+ * OSVendorInit
+ *  One-time initialization of Darwin support.
+ *  Connect to framebuffer and HID system.
+ */
 void OsVendorInit(void)
 {
+    kern_return_t           kr;
+
+    kr = IOMasterPort(bootstrap_port, &masterPort);
+    kern_assert( kr );
+
+    DarwinPrintBanner();
+    SetupFBandHID();
 }
 
 /*
@@ -999,7 +1031,7 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return 2;
     }
 
-     if ( !strcmp( argv[i], "-refresh" ) ) {
+    if ( !strcmp( argv[i], "-refresh" ) ) {
     	if ( i == argc-1 ) {
             FatalError( "-refresh must be followed by a number" );
         }
@@ -1012,7 +1044,12 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return 2;
     }
 
-   return 0;
+    if (!strcmp( argv[i], "-showconfig" ) || !strcmp( argv[i], "-version" )) {
+        DarwinPrintBanner();
+        exit(0);
+    }
+
+    return 0;
 }
 
 /*
@@ -1034,6 +1071,7 @@ void ddxUseMsg( void )
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
     ErrorF("-depth <8,15,24> : use this bit depth.\n");
     ErrorF("-refresh <rate> : use a monitor refresh rate of <rate> Hz.\n");
+    ErrorF("-version : show the server version\n");
     ErrorF("\n");
 }
 

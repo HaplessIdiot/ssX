@@ -2,7 +2,7 @@
 
           VA Linux Systems, Inc. Professional Services - Graphics.
 
-                               24 October 2000
+                              20 November 2000
 
 1.  Preamble
 
@@ -183,9 +183,9 @@ See the DRI Compilation Guide for information on compiling the DRI kernel
 modules.
 
 XFree86 4.0.1 added automatic kernel module loading to the X server.  On
-Linux, the X server uses modprobe to load kernel modules.  The DRM kernel
-modules should be in /lib/modules/KERNEL-VERSION/misc/ for automatic loading
-to work.
+Linux, the X server uses modprobe to load kernel modules.  In Linux 2.4.x the
+DRM kernel modules should be kept in /lib/modules/2.4.x/ker-
+nel/driver/char/drm/ for automatic loading to work.
 
 Optionally, DRM kernel modules can be loaded manually with insmod prior to
 starting the X server.
@@ -261,7 +261,11 @@ may require four times the memory used for a simple 2D display.
 
 If your graphics card doesn't have a lot of memory (less than 16MB, for exam-
 ple), you may have to reduce your screen size and/or color depth in order to
-use 3D features.
+use 3D features.  Reducing the screen resolution will also leave more space
+for texture images, possibly improving 3D performance.  If, for example, you
+play Quake3 at 1024x768 but start your display at 1600x1200 you might con-
+sider restarting X at 1024x768 in order to maximize your texture memory
+space.
 
 The documentation included with your card should have information about maxi-
 mum screen size when using 3D.
@@ -295,11 +299,12 @@ A simple GLUT/OpenGL program may be compiled and linked as follows:
 The -I option is used to specify where the GL/glut.h (and possibly the
 GL/gl.h and GL/glu.h) header file may be found.
 
-The -L options specify where the libglut.so, libGLU.so and X libraries are
-located.
+The -L options specify where the libglut.so and the X libraries are located.
+libGL.so and libGLU.so should be in /usr/lib, as specified by the
+Linux/OpenGL ABI standard.
 
 The -lglut -lGLU -lGL arguments specify that the application should link with
-the GLUT, GLU and GL libraries.
+the GLUT, GLU and GL libraries, in that order.
 
 8.3  Running your OpenGL program
 
@@ -316,13 +321,15 @@ trouble shooting section.
 8.4  libOSMesa.so
 
 OSMesa (Off-Screen Mesa) is an interface and driver for rendering 3D images
-into a user-allocated block of memory rather than an on-screen window.
+into a user-allocated block of memory rather than an on-screen window.  It
+was originally developed for Mesa before Mesa became part of the XFree86/DRI
+project.  It can now be used with the XFree86/DRI libGL.so as well.
 
-libOSMesa.so implements the OSMesa interface and must be linked with your
+libOSMesa.so implements the OSMesa interface and it must be linked with your
 application if you want to use the OSMesa functions.  You must also link with
 libGL.so.  For example:
 
-             gcc osdemo.c -L/usr/X11R6/lib -lOSMesa -lGLU -lGL -o osdemo
+             gcc osdemo.c -lOSMesa -lGLU -lGL -o osdemo
 
 In stand-alone Mesa this interface was compiled into the monolithic libGL.so
 (formerly libMesaGL.so) library.  In XFree86 4.0.1 and later this interface
@@ -352,9 +359,9 @@ unaccelerated rendering is being used.
 If you see that indirect rendering is being used when direct rendering was
 expected, proceed to the troubleshooting section.
 
-glxinfo also lists all of the GLX-enhanced visuals available.  Here you can
-determine which visuals may have depth buffers, stencil buffers, accumulation
-buffers, etc.
+glxinfo also lists all of the GLX-enhanced visuals available so you can
+determine which visuals are double-bufferd, have depth (Z) buffers, stencil
+buffers, accumulation buffers, etc.
 
 8.6  Environment Variables
 
@@ -546,8 +553,8 @@ The Screen section should then reference the Voodoo3 device:
              EndSection
 
 The kernel module for the Voodoo3 is named tdfx.o and should be installed in
-/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
-Xserver if needed.
+/lib/modules/2.4.x/kernel/driver/char/drm/.  It will be automatically loaded
+by the Xserver if needed.
 
 The DRI 3D driver for the Voodoo3 hould be in /usr/X11R6/lib/mod-
 ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
@@ -557,7 +564,7 @@ ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
    o If you try to run an OpenGL application and see an error message similar
      to
 
-                        gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
+                gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
 
      it means that you have the wrong version of the Glide library for your
      hardware.
@@ -664,8 +671,8 @@ The Screen section should then reference the Voodoo3 device:
              EndSection
 
 The kernel module for the Voodoo5 is named tdfx.o and should be installed in
-/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
-Xserver if needed.
+/lib/modules/2.4.x/kernel/driver/char/drm/.  It will be automatically loaded
+by the Xserver if needed.
 
 The DRI 3D driver for the Voodoo5 hould be in /usr/X11R6/lib/mod-
 ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
@@ -759,8 +766,8 @@ The Screen section should then reference the i810 device:
              EndSection
 
 The kernel module for the i810 is named i810.o and should be installed in
-/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
-Xserver if needed.
+/lib/modules/2.4.x/kernel/driver/char/drm/.  It will be automatically loaded
+by the Xserver if needed.
 
 The DRI 3D driver for the i810 should be in /usr/X11R6/lib/mod-
 ules/dri/i810_dri.so.  This will be automatically loaded by libGL.so.
@@ -834,22 +841,68 @@ To use a 32bpp screen mode, use this Screen section instead:
              EndSection
 
 The kernel module for the G200/G400 is named mga.o and should be installed in
-/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
-Xserver if needed.
+/lib/modules/2.4.x/kernel/driver/char/drm/.  It will be automatically loaded
+by the Xserver if needed.
 
 The DRI 3D driver for the G200/G400 should be in /usr/X11R6/lib/mod-
 ules/dri/mga_dri.so.  This will be automatically loaded by libGL.so.
 
 10.4.3  Performance
 
-No data at this time.
+Software rendering will be used under any of the following conditions:
 
-10.4.4  Known Problems
+   o Using glDrawBuffer(GL_FRONT_AND_BACK).
 
-   o Multitexture is currently disabled on the G400 to work around a hardware
-     lockup bug.  This should be restored in a subsequent release.
+   o Using point, line, or triangle smoothing.
 
-   o 32bpp mode has not been tested on the G400 at this time.
+   o Using glLogicOp.
+
+   o Using glPolygonStipple or glLineStipple.
+
+   o Using 1D or 3D textures.
+
+   o Using the accumulation buffer.
+
+10.4.4  IRQ Assignment
+
+There have been problems in the past with the MGA driver being very sluggish
+when the DRI is enabled (to the point of being unusable.)  This is caused by
+the graphics card not having an interrupt assigned to it.  The current DRI
+trunk will attempt to detect this condition and bail outgracefully.
+
+The solution to the above problem is to assign an interrupt to your graphics
+card.  This is something you must turn on in your system BIOS configuration.
+Please consult your system BIOS manual for instructions on how to enable an
+interrupt for your graphics card.
+
+10.4.5  MGA HAL lib
+
+MGAHALlib.a is a binary library Matrox has provided for use under Linux to
+expose functionality for which they can not provide documentation.  (For
+example TV-Out requires MacroVision be enabled on the output.)  This binary
+library also sets the pixel/memory clocks to the optimial settings for your
+Matrox card.
+
+Currently the MGAHAL library is required for the G450 to work.  You can down-
+load this from the driver section on Matrox's website: www.matrox.com/mga
+
+Here modifications to the DRI build instructions which make the mga ddx
+driver use the MGAHAL library:
+
+            1.Put the following define in your host.def file
+                 #define UseMatroxHal YES
+            2. Place mgaHALlib.a in the following directory
+                 xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/
+
+You can use DualHead on the G400/G450 DH cards by creating two device sec-
+tions which both point to the same BusID.  For most AGP devices the BusID
+will be "PCI:1:0:0".  Configure your screen section as you would normally
+configure XFree86 4.x Multihead.  It should be noted that currently the sec-
+ond head does not support direct rendering.
+
+10.4.6  Known Problems
+
+None.
 
 10.5  ATI Rage 128
 
@@ -894,8 +947,8 @@ The Screen section should then reference the Rage 128 device:
              EndSection
 
 The kernel module for the Rage 128 is named r128.o and should be installed in
-/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
-Xserver if needed.
+/lib/modules/2.4.x/kernel/driver/char/drm/.  It will be automatically loaded
+by the Xserver if needed.
 
 The DRI 3D driver for the Rage 128 should be in /usr/X11R6/lib/mod-
 ules/dri/r128_dri.so.  This will be automatically loaded by libGL.so.
@@ -940,14 +993,12 @@ GLXPixmap rendering is only supported for indirect rendering contexts.  This
 is a common OpenGL limitation.  Attempting to use a direct rendering context
 with a GLXPixmap will result in an X protocol error.
 
-11.3  Signal Handling
+11.3  Debugging
 
-There are several understood, but unresolved problems relating to hardware
-locking and signal handling.  Hitting CTRL-z to suspend a 3D application can
-sometimes cause the X server to lock-up if executing device driver code at
-that moment.  Also, using a debugger to step through OpenGL/Mesa device
-driver functions code could cause a lock-up.  These problems will be fixed in
-the future.
+Debugging DRI drivers with gdb can be difficult because of the locking
+involved.  When debugging OpenGL applications, you should avoid stepping
+inside the GL functions.  If you're trying to debug a DRI driver it's recom-
+mended that you do so remotely, from a second system.
 
 11.4  Scheduling
 
@@ -1027,7 +1078,7 @@ forge.net/resources/resources.html
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.12 2000/11/16 18:36:25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.13 2000/12/01 14:28:55 dawes Exp $
 
 
 $XFree86$

@@ -1,4 +1,4 @@
-                     README for XFree86 4.0.1 on NetBSD
+                     README for XFree86 4.0.2 on NetBSD
 
 Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver, Matthieu Herrb
 
@@ -15,10 +15,10 @@ See the Copyright Notice.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-ftp://ftp.XFree86.org/pub/XFree86/4.0.1
+ftp://ftp.XFree86.org/pub/XFree86/4.0.2
 
 Binaries for NetBSD 1.3 and later are available from:
-ftp://ftp.XFree86.org/pub/XFree86/4.0.1/binaries/NetBSD
+ftp://ftp.XFree86.org/pub/XFree86/4.0.2/binaries/NetBSD
 
 A list of mirror sites is provided by ftp://ftp.XFree86.org/pub/XFree86/MIR-
 RORS
@@ -35,7 +35,7 @@ if you have comments or suggestions about this file and we'll revise it.
 
 3.  New OS dependent features
 
-See the Release Notes for non-OS dependent new features in XFree86 4.0.1.
+See the Release Notes for non-OS dependent new features in XFree86 4.0.2.
 
 3.1  New OS dependent features in 4.0.1
 
@@ -93,7 +93,7 @@ Only standard PS/2 mice are supported by this driver. Newest PS/2 mice that
 send more than three bytes at a time (especially Intellimouse, or MouseMan+
 with a ``3D'' roller) are not supported yet.
 
-XFree86 4.0.1 also has support for the mouse driver included in the new
+XFree86 4.0.2 also has support for the mouse driver included in the new
 wscons console driver introduced by NetBSD 1.4. Specify ``wsmouse'' as the
 protocol and ``/dev/wsmouse0'' as the device in /etc/XF86Config if you're
 using NetBSD 1.4 with wscons.
@@ -200,14 +200,14 @@ By default NetBSD include the BSD 4.4 kernel security feature that disable
 access to the /dev/mem device when in multi-users mode. But XFree86 servers
 can take advantage (or require) linear access to the display memory.
 
-Most XFree86 4.0.1 card drivers require linear memory access.  There are two
+Most XFree86 4.0.2 card drivers require linear memory access.  There are two
 ways to allow XFree86 to access linear memory:
 
 The first way is to disable the kernel security feature by adding ``option
 INSECURE'' in the kernel configuration file and build a new kernel.
 
 The second way is to install the aperture driver, included in source form in
-xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar in the XFree86 4.0.1 source
+xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar in the XFree86 4.0.2 source
 distribution. Unpack it in a new directory of your choice by running:
 
        sh apNetBSD.shar

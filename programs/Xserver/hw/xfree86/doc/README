@@ -1,4 +1,4 @@
-                        README for XFree86[tm] 4.0.1
+                        README for XFree86[tm] 4.0.2
 
                           The XFree86 Project, Inc
 
@@ -10,9 +10,9 @@
      supports several UNIX(R) and UNIX-like (such as Linux, the BSDs and
      Solaris x86) operating systems on Intel and other platforms.
 
-1.  What is XFree86 4.0.1?
+1.  What is XFree86 4.0.2?
 
-XFree86 4.0.1 is a the upgrade to the first full release in the new XFree86 4
+XFree86 4.0.2 is a the upgrade to the first full release in the new XFree86 4
 series.  Release 4 is a major re-design of the basic architectural underpin-
 nings of XFree86's implementation of the original X Consortium's X Server.
 This re-design allows for a modular interaction between the hardware drivers
@@ -24,7 +24,7 @@ installing the new driver module and updating the configuration file.
 The road to XFree86 Release 4 began as an architectural concept in mid 1997,
 with the serious framework being implemented in code the beginning of 1998.
 There were several snapshots on the road to 4.0 which are now part of the 4.0
-base release.  The 4.0.1 version is an upgrade to 4.0, which include more
+base release.  The 4.0.2 version is an upgrade to 4.0.1, which include more
 hardware ports, code enhancements and bug fixes.
 
 Release 4 also included the long-awaited integration of the DRI (Direct Ren-
@@ -118,29 +118,29 @@ Once your work is finished (coded, debugged and documented) please send your
 fix to <fixes@XFree86.org>.  This will ensure that they are included in
 future releases. And thanks!  You make this truly an Open group.
 
-4.  How to get XFree86 4.0.1
+4.  How to get XFree86 4.0.2
 
-XFree86 4.0.1 can be found at the XFree86 ftp server
-<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.1/>, and at mirrors of this
+XFree86 4.0.2 can be found at the XFree86 ftp server
+<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.2/>, and at mirrors of this
 server.  Information about obtaining and installing binary distributions of
 this release can be found in the Installation Document.  Information about
 obtaining the release in source form is given below.
 
-The source for version 4.0.1 is split into three tarballs: X401src-1.tgz,
-X401src-2.tgz, X401src-3.tgz.  The first contains everything except the fonts
+The source for version 4.0.2 is split into three tarballs: X402src-1.tgz,
+X402src-2.tgz, X402src-3.tgz.  The first contains everything except the fonts
 and general X11 documentation.  It is sufficient for building XFree86 is you
 already have a set of fonts.  The second contains the fonts and the source
 for the general X11 documentation.  The third contains the general X11 docu-
 mentation in hardcopy format.
 
-A source patch relative to version 4.0 is also available.  Because of its
-size, it is split into two parts.  The patch files are 4.0-4.0.1.diff1.gz and
-4.0-4.0.1.diff2.gz.  These patches should be applied to a clean 4.0 source
-tree, working from the directory containing the xc/ directory.  The patches
-should be applied by running:
+A source patch relative to version 4.0.1 is also available.  Because of its
+size, it is split into two parts.  The patch files are 4.0.1-4.0.2.diff1.gz
+and 4.0.1-4.0.2.diff2.gz.  These patches should be applied to a clean 4.0.1
+source tree, working from the directory containing the xc/ directory.  The
+patches should be applied by running:
 
-     gunzip < 4.0-4.0.1.diff1.gz | patch -p0 -E
-     gunzip < 4.0-4.0.1.diff2.gz | patch -p0 -E
+     gunzip < 4.0.1-4.0.2.diff1.gz | patch -p0 -E
+     gunzip < 4.0.1-4.0.2.diff2.gz | patch -p0 -E
 
 The contrib part of the distribution has been folded into the main source
 tree, so a separate contrib tarball is no longer required.
