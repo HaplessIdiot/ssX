@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.28 1994/09/23 13:38:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.29 1994/09/24 15:12:52 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1086,17 +1086,26 @@ s3Init(mode)
 	    if (mode->Flags & V_DBLCLK) {
 	       /* Set VCLK = DCLCK/2 */
 	       /* And set up a 32 bit interleaved bus */
-	       tmp |= 0x11;
+	       if (s3Bpp == 1)
+		  tmp |= 0x11;
+	       else
+		  tmp |= 0x10; /* 16bpp */
             } else {
 	       if (s3Bpp == 1)
 		  tmp |= 0x12;
+	       else if (s3Bpp == 2)
+		  tmp |= 0x11;
 	       else
-		  tmp |= 0x10;
+		  tmp |= 0x10;	/* for 20SV, Stealth needs 0x10 ? */
             }
 	    outb(vgaCRReg, tmp);
+
+	    /* blank_delay = 0 (at least for Miro Crystal 20SV) */
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, 0);
          }
 
-	 /* Setting the for the SPEA Mercury affects clocks > 120MHz */
+	 /* Setting this for the SPEA Mercury affects clocks > 120MHz */
 	 if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
             /* set s3 reg65 for some unknown reason                        */
             outb(vgaCRIndex, 0x65);
@@ -1107,11 +1116,11 @@ s3Init(mode)
          /*
           * set output clocking to 4:1 multiplexing
           */
-	 if (s3InfoRec.bitsPerPixel == 32)             /* 24bpp */
+	 if (s3InfoRec.depth == 24)                    /* 24bpp */
 	    tmp = 0x10;
-	 else if (s3InfoRec.bitsPerPixel == 16)        /* 5-6-5 */
+	 else if (s3InfoRec.depth == 16)               /* 5-6-5 */
 	    tmp = 0x38;
-	 else if (s3InfoRec.bitsPerPixel == 15)        /* 5-5-5 */
+	 else if (s3InfoRec.depth == 15)               /* 5-5-5 */
 	    tmp = 0x30;
 	 else
 	    tmp = 0x40;                                /* 8bpp */
@@ -1158,11 +1167,11 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp & 0xF7);
 
-	 if (s3InfoRec.bitsPerPixel == 32)		/* 24bpp */
+	 if (s3InfoRec.depth == 24)			/* 24bpp */
 	    tmp = 0x10;
-	 else if (s3InfoRec.bitsPerPixel == 16)		/* 5-6-5 */
+	 else if (s3InfoRec.depth == 16)		/* 5-6-5 */
 	    tmp = 0x3c;					/* 1:1 MUX */
-	 else if (s3InfoRec.bitsPerPixel == 15)		/* 5-5-5 */
+	 else if (s3InfoRec.depth == 15)		/* 5-5-5 */
 	    tmp = 0x34;					/* 1:1 MUX */
 	 else
 	    tmp = 0x00;
@@ -1297,22 +1306,26 @@ s3Init(mode)
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R2);
 	       outb(vgaCRIndex, 0x66);
 	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x00);
+               if (mode->Flags & V_DBLCLK)
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x00);
+               else
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x01);
 	    } else if (s3InfoRec.bitsPerPixel == 16) {      /* 5-6-5 */
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
 	       outb(vgaCRIndex, 0x66);
 	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x01);
-	    } else if (s3InfoRec.bitsPerPixel == 15) {      /* 5-5-5 */
-	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x01);
+               if (mode->Flags & V_DBLCLK)
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x01);
+               else
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x02);
 	    } else {
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R8);
 	       outb(vgaCRIndex, 0x66);
 	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xf8) | 0x02);
+               if (mode->Flags & V_DBLCLK)
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x02);
+               else
+	          outb(vgaCRReg, (tmp & 0xf8) | 0x03);
 	    }
 	 } else {
 	    /*
@@ -1323,8 +1336,6 @@ s3Init(mode)
 	    if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V1_R2);
 	    } else if (s3InfoRec.bitsPerPixel == 16) {      /* 5-6-5 */
-	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
-	    } else if (s3InfoRec.bitsPerPixel == 15) {      /* 5-5-5 */
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
 	    } else {
 	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
@@ -1338,7 +1349,7 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
-	 if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
+	 if (s3InfoRec.depth == 24) {                          /* 24bpp */
             if (DAC_IS_TI3025) {
                s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_WEIRD_MODE_3);
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_WEIRD_MODE_3);
@@ -1347,7 +1358,7 @@ s3Init(mode)
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D24P64);
             }
             s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
-	 } else if (s3InfoRec.bitsPerPixel == 16) {      /* 5-6-5 */
+	 } else if (s3InfoRec.depth == 16) {                    /* 5-6-5 */
             if (DAC_IS_TI3025) {
                s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_WEIRD_MODE_2);
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_WEIRD_MODE_2);
@@ -1356,7 +1367,7 @@ s3Init(mode)
                s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D16P64);
             }
             s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
-	 } else if (s3InfoRec.bitsPerPixel == 15) {      /* 5-5-5 */
+	 } else if (s3InfoRec.depth == 15) {                     /* 5-5-5 */
             s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_555);
             s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D15P64);
             s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);

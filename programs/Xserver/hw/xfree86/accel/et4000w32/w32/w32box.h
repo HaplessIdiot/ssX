@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.0 1994/09/11 00:42:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.1 1994/09/19 13:42:34 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -51,13 +51,13 @@ glenn@cs.utexas.edu)
     *ACL_SOURCE_ADDRESS			= W32Foreground; \
     *MBP0				= W32Foreground; \
     *(LongP)W32Buffer			= COLOR; \
-    if (W32) \
+    if (W32OrW32i) \
     { \
 	*(LongP)(W32Buffer + 4)		= COLOR; \
 	*ACL_SOURCE_WRAP		= 0x12; \
 	*ACL_SOURCE_Y_OFFSET		= 0x3; \
     } \
-    else /* w32i or w32p */ \
+    else /* w32p */ \
 	*ACL_SOURCE_WRAP		= 0x02; \
     *ACL_ROUTING_CONTROL                = 0x0; \
     *ACL_XY_DIRECTION			= 0; \

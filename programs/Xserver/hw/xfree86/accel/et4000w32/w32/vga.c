@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.1 1994/09/13 15:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.2 1994/09/19 13:42:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,7 +49,7 @@
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern Bool miDCInitialize();
-extern Bool vgaW32SaveScreen();
+extern Bool W32SaveScreen();
 
 ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool configured */
@@ -432,7 +432,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     return(FALSE);
 
   pScreen->CloseScreen = vgaCloseScreen;
-  pScreen->SaveScreen = vgaW32SaveScreen;
+  pScreen->SaveScreen = W32SaveScreen;
   pScreen->InstallColormap = vgaInstallColormap;
   pScreen->UninstallColormap = vgaUninstallColormap;
   pScreen->ListInstalledColormaps = vgaListInstalledColormaps;

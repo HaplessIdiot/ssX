@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.0 1994/09/11 00:42:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.1 1994/09/19 13:42:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,6 +49,41 @@ vgaListInstalledColormaps(pScreen, pmaps)
 }
 
 
+static void
+set_overscan(overscan)
+    int overscan;
+{
+    inb(0x3da);
+    GlennsIODelay();
+    outb(0x3c0, 0x11);
+    GlennsIODelay();
+    outb(0x3c0, overscan);
+    GlennsIODelay();
+    inb(0x3da);
+    GlennsIODelay();
+    outb(0x3c0, 0x20);
+    GlennsIODelay();
+} 
+
+
+static void
+set_clu_entry(entry, cmap)
+    int entry;
+    unsigned char *cmap;
+{
+    outb(0x3c8, entry);
+    GlennsIODelay();
+    outb(0x3c9, cmap[0]);
+    GlennsIODelay();
+    outb(0x3c9, cmap[1]);
+    GlennsIODelay();
+    outb(0x3c9, cmap[2]);
+    GlennsIODelay();
+} 
+
+
+static char black_cmap[] = {0x0, 0x0, 0x0};
+
 void
 vgaStoreColors(pmap, ndef, pdefs)
      ColormapPtr	pmap;
@@ -60,6 +95,7 @@ vgaStoreColors(pmap, ndef, pdefs)
     xColorItem	directDefs[256];
     Bool          new_overscan = FALSE;
     unsigned char overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
+    unsigned char old_overscan; 
     unsigned char tmp_overscan;
    
     extern RamdacShift;
@@ -79,6 +115,7 @@ vgaStoreColors(pmap, ndef, pdefs)
     {
         if (pdefs[i].pixel == overscan)
 	{
+	    old_overscan = overscan; 
 	    new_overscan = TRUE;
 	}
         cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
@@ -86,7 +123,7 @@ vgaStoreColors(pmap, ndef, pdefs)
         cmap[1] = pdefs[i].green >> RamdacShift;
         cmap[2] = pdefs[i].blue  >> RamdacShift;
 
-        if (xf86VTSema)
+        if (xf86VTSema && (!W32pBlanked || pdefs[i].pixel != overscan))
 	{
 	    outb(0x3C8, pdefs[i].pixel);
 	    GlennsIODelay();
@@ -131,6 +168,7 @@ vgaStoreColors(pmap, ndef, pdefs)
 	        }
 	        else
 	        {
+/* CHANGE to SUMMATION--GGLGGL */ 
 	            if ((cmap[0] < tmp[0]) && 
 		        (cmap[1] < tmp[1]) && (cmap[2] < tmp[2]))
 	            {
@@ -144,8 +182,11 @@ vgaStoreColors(pmap, ndef, pdefs)
 	        overscan = tmp_overscan;
 	    }
 	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
-            if (xf86VTSema && !W32pBlanked)
+            if (xf86VTSema)
 	    {
+		if (W32pBlanked)
+		    set_clu_entry(overscan, black_cmap);
+
 	        (void)inb(vgaIOBase + 0x0A);
 		GlennsIODelay();
 	        outb(0x3C0, OVERSCAN);
@@ -156,6 +197,12 @@ vgaStoreColors(pmap, ndef, pdefs)
 		GlennsIODelay();
 	        outb(0x3C0, 0x20);
 		GlennsIODelay();
+
+		if (W32pBlanked)
+		{
+		    cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[old_overscan * 3];
+		    set_clu_entry (old_overscan, cmap);
+		}
 	    }
         }
     }
@@ -232,4 +279,78 @@ vgaUninstallColormap(pmap)
     return;
 
   (*pmap->pScreen->InstallColormap) (defColormap);
+}
+
+
+extern vgaPowerSaver;
+
+  
+int W32pBlanked = FALSE;
+
+
+/*
+ *      Disable the video on the frame buffer to save the screen.
+ *      The power saver is for w32p_rev_c and later only. 
+ */
+Bool
+W32SaveScreen (pScreen, on)
+     ScreenPtr     pScreen;
+     Bool          on;
+{
+  unsigned char   state, state2;
+  unsigned char *cmap;
+  unsigned char overscan; 
+
+  if (on)
+    SetTimeSinceLastInputEvent();
+  if (xf86VTSema) {
+    outb(vgaIOBase + 4, 0x34);
+    state2 = inb(vgaIOBase + 5);
+  
+    if (on) {
+      state2 &= ~0x21;
+	if (W32p)
+	{
+	    W32pBlanked = FALSE; 
+
+	    overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
+	    cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[overscan * 3];
+
+	    inb(vgaIOBase + 0x0A);
+	    GlennsIODelay();
+	    outb(0x3C0, 0x20);         
+	    GlennsIODelay();
+
+	    set_clu_entry(overscan, cmap);
+	}
+    } else {
+      state2 |= 0x21;
+	if (W32p)
+	{
+	    W32pBlanked = TRUE; 
+    
+	    overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
+	    set_clu_entry(overscan, black_cmap);
+
+	    inb(vgaIOBase + 0x0A);
+	    GlennsIODelay();
+	    outb(0x3C0, 0x00);         
+	    GlennsIODelay();
+	}
+    }
+    
+    /*
+     * turn off screen if necessary
+     */
+
+    if (vgaPowerSaver && W32pCAndLater) {
+      outb(vgaIOBase + 4, 0x34);
+      GlennsIODelay();
+      outb(vgaIOBase + 5, state2);
+      GlennsIODelay();
+    }
+
+  }
+
+  return(TRUE);
 }

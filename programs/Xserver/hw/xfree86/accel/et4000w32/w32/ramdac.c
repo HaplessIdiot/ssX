@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.0 1994/09/19 13:42:26 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -28,7 +28,7 @@ glenn@cs.utexas.edu)
 *******************************************************************************/
 
 /*
- *  For a description of the following, see AT&T's data sheet for ATT20C490/491
+ *  For a description of the following, see ATT's data sheet for ATT20C490/491
  *  and ATT20C492/493--GGL
  */
 
@@ -36,12 +36,14 @@ glenn@cs.utexas.edu)
 #include "compiler.h"
 
 #define RMR 0x3c6
-#define READ_ADDRESS 0x3c8 
+#define READ 0x3c7
+#define WRITE 0x3c8
+#define RAM 0x3c9
 
 static void write_cr(cr)
     int cr;
 {
-    inb(READ_ADDRESS);
+    inb(WRITE);
     GlennsIODelay();
     inb(RMR);
     GlennsIODelay();
@@ -53,7 +55,7 @@ static void write_cr(cr)
     GlennsIODelay();
     outb(RMR, cr);
     GlennsIODelay();
-    inb(READ_ADDRESS);
+    inb(WRITE);
     GlennsIODelay();
 }
 
@@ -62,7 +64,7 @@ static int read_cr()
 {
     unsigned int cr;
 
-    inb(READ_ADDRESS);
+    inb(WRITE);
     GlennsIODelay();
     inb(RMR);
     GlennsIODelay();
@@ -74,7 +76,7 @@ static int read_cr()
     GlennsIODelay();
     cr = inb(RMR);
     GlennsIODelay();
-    inb(READ_ADDRESS);
+    inb(WRITE);
     return cr;
 }
 
@@ -105,22 +107,79 @@ static check_ramdac()
     if (inb(RMR) != 0xff)
     {
 	CRSaved = FALSE;
-	return;			/* 47xA */
+	ErrorF("Ramdac:  ATT20C47xA\n");
+	return;
     }
 
     write_cr(0xe0);
     if ((read_cr() >> 5) != 0x7)
-	return;			/* 497 */
+    {
+	ErrorF("Ramdac:  ATT20C497\n");
+	return;
+    }
 
     write_cr(0x60);
     if ((read_cr() >> 5) == 0)
     {
 	write_cr(0x2);	
 	if ((read_cr() & 0x2) != 0)
-	    RamdacShift = 8;	/* 490 */
-	else; 			/* 493 */
+	{
+	    ErrorF("Ramdac:  ATT20C490\n");
+	    RamdacShift = 8;
+	}
+	else
+	    ErrorF("Ramdac:  ATT20C493\n");
     }
-    else;			/* 491/492 */
+    else
+    {
+	/* I'm NOT preserving the RAMDAC state here */ 
+	int r, g, b, rr, gg, bb;
+
+	outb(READ, 0xff);
+	GlennsIODelay();
+	r = inb(RAM);
+	GlennsIODelay();
+	g = inb(RAM);
+	GlennsIODelay();
+	b = inb(RAM);
+	GlennsIODelay();
+	
+	outb(WRITE, 0xff);
+	GlennsIODelay();
+	outb(RAM, 0xff);
+	GlennsIODelay();
+	outb(RAM, 0xff);
+	GlennsIODelay();
+	outb(RAM, 0xff);
+	GlennsIODelay();
+	
+	outb(READ, 0xff);
+	GlennsIODelay();
+	rr = inb(RAM);
+	GlennsIODelay();
+	gg = inb(RAM);
+	GlennsIODelay();
+	bb = inb(RAM);
+	GlennsIODelay();
+
+	/* Take a shortcut here */
+	if (rr == 0xff)
+	{
+	    ErrorF("Ramdac:  ATT20C491\n");
+	    RamdacShift = 8;
+	}
+	else
+	    ErrorF("Ramdac:  ATT20C492\n");
+
+	outb(WRITE, 0xff);
+	GlennsIODelay();
+	outb(RAM, r);
+	GlennsIODelay();
+	outb(RAM, g);
+	GlennsIODelay();
+	outb(RAM, b);
+	GlennsIODelay();
+    }
 }
 
 

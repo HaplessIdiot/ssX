@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.2 1994/09/19 13:42:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.3 1994/09/20 12:45:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -143,7 +143,7 @@ ET4000W32Ident(n)
 
 
 /*
- *  Detect the amount of memory installed
+ *  Detect the amount of memory installed.  NOT used for the moment--GGL.
  */
 static Bool
 w32_fails_memory_check(i)
@@ -205,25 +205,31 @@ ET4000W32Probe()
 {
     static char *et4000w32_id = NULL;
     char *et4000 = "et4000";
-    char *save_chipset = NULL;
+    char *save_chipset;
+    int save_videoram;
     int i;
 
     if (et4000w32_id)
 	return TRUE;
 
-    if (strcmp(vga256InfoRec.chipset, "et4000") == 0)
-	return FALSE;
-
     if (save_chipset = vga256InfoRec.chipset)
+    {
+	if (strcmp(save_chipset, et4000) == 0)
+	    return FALSE;
 	vga256InfoRec.chipset = et4000;
+    }
+
+    save_videoram = vga256InfoRec.videoRam;
 
     if (!ET4000.ChipProbe())
     {
 	vga256InfoRec.chipset = save_chipset;
+	vga256InfoRec.videoRam = save_videoram;
 	return FALSE;
     }
 
     vga256InfoRec.chipset = save_chipset; 
+    vga256InfoRec.videoRam = save_videoram;
 
     /*
      *  Set up those I/O ports not in the ET4000 
@@ -287,17 +293,39 @@ ET4000W32Probe()
 	   strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
     W32OrW32i = W32 || W32i;
     W32p = !W32OrW32i;
+    W32pCAndLater = W32p && strcmp(et4000w32_id, "et4000w32p_rev_a") != 0
+			 && strcmp(et4000w32_id, "et4000w32p_rev_b") != 0;
+/*  Problematic with current code setup--GGL 
 
-    if (!vga256InfoRec.videoRam)
+    if (vga256InfoRec.videoRam == 0)
 	if (w32_fails_memory_check(&i))
 	{
-	    vga256InfoRec.videoRam = 0;
-	    et4000w32_id = NULL;
 	    ET4000W32EnterLeave(LEAVE);
-	    return FALSE;
+	    FatalError("Memory check failed\n");
 	}
 	else
 	    vga256InfoRec.videoRam = i;
+*/
+
+    if (vga256InfoRec.videoRam == 0)
+    {
+	outb(vgaIOBase + 0x04, 0x37);
+	switch (inb(vgaIOBase + 0x05) & 0x9)
+	{
+	    case 0: i = 2048; break;
+	    case 1: i = 4096; break;
+	    case 8: i = 512; break;
+	    case 9: i = 1024;
+		    if (!W32)
+		    {
+			outb(vgaIOBase+0x04, 0x32);
+			if (inb(vgaIOBase+0x05) & 0x80)
+			    i = 2048;
+		    }
+		    break;
+	}
+	vga256InfoRec.videoRam = i; 
+    }
 
     vga256InfoRec.videoRam -= 1;
 
@@ -362,6 +390,8 @@ static Bool
 ET4000W32Init(mode)
     DisplayModePtr mode;
 {
+    int i;
+
     static et4000w32_initted = FALSE;
 
     if (!ET4000.ChipInit(mode))
@@ -372,7 +402,6 @@ ET4000W32Init(mode)
 
     W32Buffer			= (ByteP)vgaBase + 96 * 1024;
     ACL				= W32Buffer + 16384;
-
 #define MMR_BASE (W32Buffer + 0x7f00)  
     MBP0                        = (LongP) (MMR_BASE);
     MBP1                        = (LongP) (MMR_BASE + 0x4);

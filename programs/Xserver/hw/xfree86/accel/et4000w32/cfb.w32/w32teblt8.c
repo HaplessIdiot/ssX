@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.0 1994/09/11 00:41:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32teblt8.c,v 3.1 1994/09/19 13:42:12 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -91,9 +91,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int			widthGlyphs;
     long		text_buffer, text1, text2, line_hop;
     LongP		p;
-#define MAX_X_RESOLUTION 4096
-    glyphPointer	ggl_ptrs[MAX_X_RESOLUTION];
-    void		(*w32p_text)();
+    void		(*w32_text)();
 
     cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
 
@@ -126,60 +124,63 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	return;
     }
-
+  
+    bytes = (widthGlyph + 7) >> 3;
     dst = y * (widthDst << 2) + x;
-
-    /* Could have messed up w32i performance to help w32.  Check later--GGL */
     if (W32OrW32i)
     {
-	for (i = 0; i < nglyph; i++)
-	     ggl_ptrs[i] = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
-
 	W32_INIT_IMAGE_TEXT(PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-			   (widthDst << 2) - 1, widthGlyph, 1)
-	bytes = (widthGlyph + 7) >> 3;
+			    line_hop - 1, widthGlyph, h)
 	switch (bytes)
 	{
 	    case 1:
-		W32ImageText1(dst, widthGlyph, h, nglyph, dst_pitch, ggl_ptrs);
+		w32_text = W32ImageText1;
 		break;
 	    case 2:
-		W32ImageText2(dst, widthGlyph, h, nglyph, dst_pitch, ggl_ptrs);
+		w32_text = W32ImageText2;
 		break;
 	    case 3:
-		W32ImageText3(dst, widthGlyph, h, nglyph, dst_pitch, ggl_ptrs);
+		w32_text = W32ImageText3;
 		break;
 	    case 4:
-		W32ImageText4(dst, widthGlyph, h, nglyph, dst_pitch, ggl_ptrs);
+		w32_text = W32ImageText4;
 		break;
+	}
+	for (j = 0; j < nglyph; j++)
+	{
+	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+	    *MBP2 = dst;
+	    (*w32_text)(h, char1);
+	    dst += widthGlyph;
 	}
     }
     else /* w32p */
     {
 	W32P_INIT_IMAGE_TEXT(PFILL(pGC->fgPixel), PFILL(pGC->bgPixel),
-			    line_hop - 1, widthGlyph, h)
-	switch ((widthGlyph + 7) >> 3)
+			     line_hop - 1, widthGlyph, h)
+	switch (bytes)
 	{
 	    case 1:
-		w32p_text = W32pImageText1;
+		w32_text = W32pImageText1;
 		break;
 	    case 2:
-		w32p_text = W32pImageText2;
+		w32_text = W32pImageText2;
 		break;
 	    case 3:
-		w32p_text = W32pImageText3;
+		w32_text = W32pImageText3;
 		break;
 	    case 4:
-		w32p_text = W32pImageText4;
+		w32_text = W32pImageText4;
 		break;
 	}
 	for (i = 0; i < nglyph; i++)
 	{
 	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 	    *ACL_DESTINATION_ADDRESS = dst;
-	    (*w32p_text)(h, char1);
+	    (*w32_text)(h, char1);
 	    dst += widthGlyph;
 	}
     }
+
 }
 #endif /* PSZ == 8 */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.0 1994/09/11 00:42:26 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -43,12 +43,12 @@ glenn@cs.utexas.edu)
 
 #define W32_INIT_STIPPLE(BK_OP, OP, MASK, FOREGROUND, BACKGROUND, DST_OFFSET) \
 { \
-    if (W32) \
+    if (W32OrW32i) \
     { \
 	*ACL_FOREGROUND_RASTER_OPERATION= W32OpTable[OP]; \
     } \
     else \
-    { /* The following works only for the w32p--undebugged */ \
+    { /* The following works only for the w32p */ \
 	*ACL_FOREGROUND_RASTER_OPERATION= \
 	    (0xf0 & W32OpTable[OP]) | (0x0f & 0xaa); \
 	*ACL_PATTERN_WRAP		= 0x02; \

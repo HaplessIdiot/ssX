@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.0 1994/09/11 00:42:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.1 1994/09/19 13:42:30 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -121,6 +121,7 @@ extern Bool W32;
 extern Bool W32i;
 extern Bool W32OrW32i;
 extern Bool W32p;
+extern Bool W32pCAndLater;
 extern Bool FrameBuffer; /* Is the operation on the frame buffer? */  
 
 extern long W32Foreground;
@@ -219,7 +220,7 @@ void figure(char*);
 
 #define START_ACL_CPU(dst) \
 { \
-    if (W32) \
+    if (W32OrW32i) \
 	*(MBP2) = dst; \
     else \
 	*(ACL_DESTINATION_ADDRESS) = dst; \

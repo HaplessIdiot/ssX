@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.39 1994/09/23 13:38:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.40 1994/09/24 15:12:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -889,10 +889,14 @@ s3Probe()
 	    break;
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
+	    /*
+	     * Currently: 16bpp for SPEA Mercury (928 + Bt485)
+	     *            16bpp, 32bpp for 946 + Bt485
+	     */
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
 	       if (s3Bpp > 2)
 		  reason = "Bt485 and ATT20C505 RAMDACs";
-	    } else {
+	    } else if (!S3_964_SERIES(s3ChipId)) {
 	       if (s3Bpp > 1)
 		  reason = "Bt485 and ATT20C505 RAMDACs";
 	    }

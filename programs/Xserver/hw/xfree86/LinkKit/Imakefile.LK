@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.10 1994/09/11 07:41:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.11 1994/09/13 15:07:40 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -70,11 +70,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.10 1994/
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-#if  SystemV4 || defined(BSD386Architecture) || defined(i386BsdArchitecture) || defined(NetBSDArchitecture) || defined(FreeBSDArchitecture) || defined(MinixArchitecture)
         SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS) $(GCCLIB)
-#else
-        SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS) $(GCCLIB)
-#endif
            CBRT = lib/libcbrt.a
 
        IRULESRC = $(CONFIGDIR)

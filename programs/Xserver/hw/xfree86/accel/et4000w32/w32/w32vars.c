@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.0 1994/09/11 00:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.1 1994/09/19 13:42:37 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -82,6 +82,7 @@ Bool W32;
 Bool W32i;
 Bool W32OrW32i;
 Bool W32p;
+Bool W32pCAndLater;
 Bool FrameBuffer;
 
 ByteP W32BytePtr;
