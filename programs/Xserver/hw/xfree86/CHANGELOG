@@ -1,4 +1,6 @@
-XFree86 4.3.99.4 (xx April 2003)
+XFree86 4.3.99.5 (xx May 2003)
+
+XFree86 4.3.99.4 (10 May 2003)
  168. Prevent a SIGFPE with the glint/pm3 driver when attempting to display
       an XVideo image less than 8 pixels wide (Måns Rullgård).
  167. Support for building a DRI enabled server on OpenBSD (Wilbern Cobb,
@@ -16950,7 +16952,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2690 2003/05/08 09:25:37 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2691 2003/05/09 03:01:42 dawes Exp $
 
 
 
