@@ -121,6 +121,10 @@ typedef struct {
     int			MaxClock;
     int			Flags;			/* HW config flags */
     long		FbMapSize;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
     Bool		NoAccel;
     Bool		HWCursor;
     Bool		UsePCIRetry;
@@ -193,5 +197,8 @@ Bool SiSHWCursorInit(ScreenPtr pScreen);
 void SiSIODump(ScrnInfoPtr pScreen);
 void SiSInitializeAccelerator(ScrnInfoPtr pScrn);
 void SiSSetup(ScrnInfoPtr pScrn);
+
+extern Bool	SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+extern void	SISAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 #endif
