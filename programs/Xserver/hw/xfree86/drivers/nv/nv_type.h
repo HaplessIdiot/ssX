@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.48 2004/08/26 22:38:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.49 2004/11/30 23:50:26 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -68,6 +68,7 @@ typedef struct _riva_hw_state
     U032 timingH;
     U032 timingV;
     U032 displayV;
+    U032 crtcSync;
 } RIVA_HW_STATE, *NVRegPtr;
 
 
@@ -158,6 +159,8 @@ typedef struct {
     int                 fpWidth;
     int                 fpHeight;
     CARD32              fpSyncs;
+    Bool                usePanelTweak;
+    int                 PanelTweak;
 
     CARD32              dmaPut;
     CARD32              dmaCurrent;
