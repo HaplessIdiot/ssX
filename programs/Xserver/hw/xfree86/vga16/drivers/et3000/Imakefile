@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/09/28 17:25:03 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et3000/Imakefile,v 3.1 1996/12/24 02:25:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/et3000/Imakefile,v 3.2 1996/12/27 07:04:36 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -25,11 +25,15 @@ SubdirLibraryRule($(OBJS))
 #endif
 NormalLibraryObjectRule()
 
-NormalRelocatableTarget(et3_drv, $(OBJS))
+NormalRelocatableTarget(et3_4bpp, $(OBJS))
 
 LinkSourceFile(et3_driver.c,$(VGADRIVERSRC)/et3000)
 ObjectFromSpecialAsmSource(et3_bank,$(VGADRIVERSRC)/et3000/bank,NullParameter)
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/et3000)
+
+#if DoLoadableServer
+InstallDynamicModule(et3_4bpp.o,$(MODULEDIR))
+#endif
 
 DependTarget()
