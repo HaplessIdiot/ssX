@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.25 2002/01/04 21:22:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.26 2002/01/25 21:56:02 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -710,6 +710,13 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+    if (pI128->PciInfo->subsysVendor == 0x105D)
+        xf86DrvMsg(pScrn->scrnIndex, from, "Subsystem Vendor: \"Number Nine\"\n");
+    else if (pI128->PciInfo->subsysVendor == 0x10F0)
+        xf86DrvMsg(pScrn->scrnIndex, from, "Subsystem Vendor: \"Peritek\"\n");
+    else
+        xf86DrvMsg(pScrn->scrnIndex, from, "Subsystem Vendor: \"%x\"\n",
+    	    pI128->PciInfo->subsysVendor);
 
     iobase = (pI128->PciInfo->ioBase[5] & 0xFFFFFF00) + hwp->PIOOffset;
     pI128->RegRec.iobase = iobase;
