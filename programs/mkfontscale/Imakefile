@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/mkfontscale/Imakefile,v 1.1 2002/06/05 19:46:04 dawes Exp $
+XCOMM $XFree86: xc/programs/mkfontscale/Imakefile,v 1.2 2002/06/07 21:29:24 dawes Exp $
 
 LOCAL_LIBRARIES = $(XFONTENCLIB) $(FREETYPE2LIB)
         DEPLIBS = $(DEPXFONTENCLIB) $(DEPFREETYPE2LIB)
@@ -9,8 +9,13 @@ SRCS = mkfontscale.c list.c
 
 OBJS = mkfontscale.o list.o
 
-INCLUDES = $(FREETYPE2INCLUDES)
-DEFINES = $(FREETYPE2DEFINES)
+#if !HasSnprintf
+SNPRINTF_DEFINES  = -DNEED_SNPRINTF
+SNPRINTF_INCLUDES = -I$(LIBSRC)/misc
+#endif
+
+INCLUDES = $(FREETYPE2INCLUDES) $(SNPRINTF_INCLUDES)
+DEFINES = $(FREETYPE2DEFINES) $(SNPRINTF_DEFINES)
 
 ComplexProgramTarget(mkfontscale)
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.19 2002/09/08 02:29:49 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.21 2002/10/06 17:11:40 paulo Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -13,8 +13,11 @@ XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.19 2002/09/08 02:29:49 paul
 #define LibHeaders	NO
 
 #if !HasSnprintf
-SNPRINTF_DEFS  = -DNEED_SNPRINTF
-MISC_INCLUDES  = -I$(LIBSRC)/misc
+#ifndef UseInstalled
+LinkSourceFile(snprintf.c, $(LIBSRC)/misc)
+#endif
+  SNPRINTF_SRCS = snprintf.c
+  SNPRINTF_OBJS = snprintf.o
 #endif
 
 #if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
@@ -38,8 +41,8 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
     SETENV_OBJS = env.o
  SETENV_DEFINES = -DNEED_SETENV
 #endif
-       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS) $(SETENV_SRCS)
-       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS) $(SETENV_OBJS)
+       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS) $(SETENV_SRCS) $(SNPRINTF_SRCS)
+       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS) $(SETENV_OBJS) $(SNPRINTF_OBJS)
     SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES) $(SETENV_DEFINES)
 
 #define IHaveSubdirs

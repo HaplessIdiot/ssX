@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.66 2002/11/25 16:19:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.67 2002/12/12 04:12:01 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -819,6 +819,9 @@ CARD32
 pciCfgMech1Read(PCITAG tag, int offset)
 {
   unsigned long rv = 0xffffffff;
+#ifdef DEBUGPCI
+  ErrorF("pciCfgMech1Read(tag=%08x,offset=%08x)\n", tag, offset);
+#endif
 
 #if defined(__powerpc__)
   signal(SIGBUS, buserr);
@@ -831,7 +834,12 @@ pciCfgMech1Read(PCITAG tag, int offset)
 #if defined(__powerpc__)
   signal(SIGBUS, SIG_DFL);
   if (buserr_detected)
+  {
+#ifdef DEBUGPCI
+    ErrorF("pciCfgMech1Read() BUS ERROR\n");
+#endif
     return(0xffffffff);
+  }
   else
 #endif
     return(rv);
@@ -840,6 +848,11 @@ pciCfgMech1Read(PCITAG tag, int offset)
 void
 pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 {
+#ifdef DEBUGPCI
+  ErrorF("pciCfgMech1Write(tag=%08x,offset=%08x,val=%08x)\n",
+        tag, offset,val);
+#endif
+
 #if defined(__powerpc__)
   signal(SIGBUS, SIG_IGN);
 #endif

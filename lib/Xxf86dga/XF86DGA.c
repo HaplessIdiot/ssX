@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.20 2002/05/31 18:45:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.21 2002/10/16 00:37:33 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -358,14 +358,14 @@ Bool XF86DGAViewPortChanged(
 
 # include <sys/mmap.h>
 #else
-# if !defined(Lynx)
-#  if !defined(__UNIXOS2__)
-#   include <sys/mman.h>
-#  endif
-# else
+# if defined(Lynx) && defined(NO_MMAP)
 #  include <sys/types.h>
 #  include <errno.h>
 #  include <smem.h>
+# else
+#  if !defined(__UNIXOS2__)
+#   include <sys/mman.h>
+#  endif
 # endif
 #endif
 #include <sys/wait.h>
@@ -547,7 +547,7 @@ MapPhysAddress(unsigned long address, unsigned long size)
    }
    if (rc != 0)
 	return NULL;
-#elif defined (Lynx)
+#elif defined(Lynx) && defined(NO_MMAP)
     vaddr = (void *)smem_create("XF86DGA", (char *)offset, 
 				size + delta, SM_READ|SM_WRITE);
 #else
@@ -622,15 +622,19 @@ XF86DGADirectVideo(
 	mp = sp->map;
 
     if (enable & XF86DGADirectGraphics) {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__UNIXOS2__)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
+	&& !(defined(Lynx) && defined(NO_MMAP)) \
+	&& !defined(__UNIXOS2__)
 	if (mp && mp->vaddr)
 	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ | PROT_WRITE);
 #endif
     } else {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__UNIXOS2__)
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
+	&& !(defined(Lynx) && defined(NO_MMAP)) \
+	&& !defined(__UNIXOS2__)
 	if (mp && mp->vaddr)
 	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ);
-#elif defined(Lynx)
+#elif defined(Lynx) && defined(NO_MMAP)
 	/* XXX this doesn't allow enable after disable */
 	smem_create(NULL, mp->vaddr, mp->size + mp->delta, SM_DETACH);
 	smem_remove("XF86DGA");

@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.89 2002/10/03 21:32:19 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -152,7 +152,7 @@ main(int argc, char *argv[])
     int Verbose = 0;
     int i = 0;
     int force = 0;
-    char c;
+    int c;
 
     xf86Info.pciFlags = PCIProbe1;
 
