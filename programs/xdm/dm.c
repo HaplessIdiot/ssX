@@ -1,4 +1,5 @@
 /* $XConsortium: dm.c,v 1.70 94/04/17 20:03:36 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -152,7 +153,11 @@ char	**argv;
 	InitErrorLog ();
 
     /* Clean up any old Authorization files */
+#ifdef MINIX
+    sprintf(cmdbuf, "/usr/bin/rm -f %s/A*", authDir);
+#else
     sprintf(cmdbuf, "/bin/rm -f %s/A*", authDir);
+#endif
     system(cmdbuf);
 
 #ifdef XDMCP
@@ -709,9 +714,17 @@ CloseOnFork ()
 
     for (fd = 0; fd <= max; fd++)
 	if (FD_ISSET (fd, &CloseMask))
+	{
+#ifdef MINIX
+	    nbio_unregister(fd);
+#endif
 	    close (fd);
+        }
     FD_ZERO (&CloseMask);
     max = 0;
+#ifdef MINIX
+    { extern int chooserFd; nbio_unregister(chooserFd); }
+#endif
 }
 
 static int  pidFd;

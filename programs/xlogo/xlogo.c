@@ -1,5 +1,6 @@
 /*
  * $XConsortium: xlogo.c,v 1.20 94/04/17 20:24:10 converse Exp $
+ * $XFree86$
  *
 Copyright (c) 1989  X Consortium
 
@@ -145,3 +146,10 @@ static void quit(w, event, params, num_params)
 	die(w, NULL, NULL);
     }
 }
+
+#ifdef MINIX
+SmcCloseStatus SmcCloseConnection(SmcConn smcConn, int count, char **reasonMsgs)
+{
+	return SmcClosedNow;
+}
+#endif

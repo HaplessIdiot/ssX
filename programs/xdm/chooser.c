@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c,v 1.20 94/06/03 16:34:39 mor Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.1 1994/05/22 00:02:06 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.2 1994/06/09 10:56:14 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -79,8 +79,20 @@ in this Software without prior written authorization from the X Consortium.
 #include    <sys/sioctl.h>
 #endif
 #endif
+#ifndef MINIX
 #include    <sys/socket.h>
 #include    <netinet/in.h>
+#else /* MINIX */
+#include <net/hton.h>
+#include <net/netlib.h>
+#include <net/gen/in.h>
+#include <net/gen/netdb.h>
+#include <net/gen/tcp.h>
+#include <net/gen/tcp_io.h>
+#include <net/gen/udp.h>
+#include <net/gen/udp_io.h>
+#include <sys/nbio.h>
+#endif /* !MINIX */
 #include    <sys/ioctl.h>
 #if defined(STREAMSCONN)
 #if defined(NCR)
@@ -106,10 +118,21 @@ in this Software without prior written authorization from the X Consortium.
 # include <sync/queue.h>
 # include <sync/sema.h>
 #endif
+#ifndef MINIX
 # include <net/if.h>
+#endif
 #endif /* hpux */
 
+#ifndef MINIX
 #include    <netdb.h>
+#endif
+
+#ifdef MINIX
+static char read_buffer[XDM_MAX_MSGLEN+sizeof(udp_io_hdr_t)];
+static int read_inprogress;
+static int read_size;
+static void read_cb(nbio_ref_t ref, int res, int err);
+#endif
 
 Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
 
@@ -450,10 +473,42 @@ ReceivePacket (closure, source, id)
     int		    saveHostname = 0;
     struct sockaddr addr;
     int		    addrlen;
+#ifdef MINIX
+    int r;
+#endif
+
+#ifdef MINIX
+    if (read_inprogress) abort();
+    if (read_size == 0)
+    {
+    	r= read(socketFD, read_buffer, sizeof(read_buffer));
+    	if (r == -1 && errno == EINPROGRESS)
+    	{
+    		read_inprogress= 1;
+    		nbio_inprogress(socketFD, ASIO_READ, 1 /* read */,
+    			0 /* write */, 0 /* exception */);
+    	}
+    	else if (r <= 0)
+    	{
+    		fprintf(stderr, "chooser: read error: %s\n", r == 0 ?
+    			"EOF" : strerror(errno));
+		return;
+	}
+    }
+#endif
 
     addrlen = sizeof (addr);
+#ifdef MINIX
+    if (!MNX_XdmcpFill (socketFD, &buffer, &addr, &addrlen,
+    	read_buffer, read_size))
+    {
+	return;
+    }
+    read_size= 0;
+#else
     if (!XdmcpFill (socketFD, &buffer, &addr, &addrlen))
 	return;
+#endif
     if (!XdmcpReadHeader (&buffer, &header))
 	return;
     if (header.version != XDM_PROTOCOL_VERSION)
@@ -529,6 +584,8 @@ RegisterHostaddr (addr, len, type)
  * The special name "BROADCAST" looks up all the broadcast
  *  addresses on the local host.
  */
+
+#ifndef MINIX
 
 /* Handle variable length ifreq in BNR2 and later */
 #ifdef AF_LINK
@@ -686,6 +743,50 @@ RegisterHostname (name)
     }
 }
 
+#else /* MINIX */
+
+RegisterHostname (name)
+    char    *name;
+{
+    struct hostent	*hostent;
+    struct sockaddr_in	in_addr;
+
+    if (!strcmp (name, BROADCAST_HOSTNAME))
+    {
+	    in_addr.sin_addr.s_addr= htonl(0xFFFFFFFF);
+	    in_addr.sin_port = htons (XDM_UDP_PORT);
+	    RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
+			      BROADCAST_QUERY);
+    }
+    else
+    {
+
+	/* address as hex string, e.g., "12180022" (depreciated) */
+	if (strlen(name) == 8 &&
+	    FromHex(name, (char *)&in_addr.sin_addr, strlen(name)) == 0)
+	{
+	    in_addr.sin_family = AF_INET;
+	}
+	/* Per RFC 1123, check first for IP address in dotted-decimal form */
+	else if ((in_addr.sin_addr.s_addr = inet_addr(name)) != -1)
+	    in_addr.sin_family = AF_INET;
+	else
+	{
+	    hostent = gethostbyname (name);
+	    if (!hostent)
+		return;
+	    if (hostent->h_addrtype != AF_INET || hostent->h_length != 4)
+	    	return;
+	    in_addr.sin_family = hostent->h_addrtype;
+	    memmove( &in_addr.sin_addr, hostent->h_addr, 4);
+	}
+	in_addr.sin_port = htons (XDM_UDP_PORT);
+	RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
+			  QUERY);
+    }
+}
+#endif /* !MINIX */
+
 static ARRAYofARRAY8	AuthenticationNames;
 
 RegisterAuthenticationName (name, namelen)
@@ -709,6 +810,12 @@ InitXDMCP (argv)
     XdmcpHeader	header;
     int	i;
     int optlen;
+#ifdef MINIX
+    char *udp_device;
+    nwio_udpopt_t udpopt;
+    int flags;
+    nbio_ref_t ref;
+#endif
 
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) BROADCAST_QUERY;
@@ -730,8 +837,37 @@ InitXDMCP (argv)
 	return 0;
     t_bind( socketFD, NULL, NULL );
 #else
+#ifdef MINIX
+    udp_device= getenv("UDP_DEVICE");
+    if (udp_device == NULL)
+    	udp_device= UDP_DEVICE;
+    if ((socketFD = open(udp_device, O_RDWR)) == -1)
+    	return 0;
+    udpopt.nwuo_flags= NWUO_SHARED | NWUO_LP_SEL | NWUO_EN_LOC |
+	NWUO_EN_BROAD | NWUO_RP_ANY | NWUO_RA_ANY | NWUO_RWDATALL |
+	NWUO_DI_IPOPT;
+    if (ioctl(socketFD, NWIOSUDPOPT, &udpopt) == -1)
+    {
+    	close(socketFD);
+    	return 0;
+    }
+    if ((flags= fcntl(socketFD, F_GETFD)) == -1)
+    {
+    	close(socketFD);
+    	return 0;
+    }
+    if (fcntl(socketFD, F_SETFD, flags | FD_ASYNCHIO) == -1)
+    {
+    	close(socketFD);
+    	return 0;
+    }
+    nbio_register(socketFD);
+    ref.ref_int= socketFD;
+    nbio_setcallback(socketFD, ASIO_READ, read_cb, ref);
+#else /* !MINIX */
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
+#endif /* MINIX */
 #endif
 #ifndef STREAMSCONN
 #ifdef SO_BROADCAST
@@ -769,6 +905,11 @@ Choose (h)
 	char		*xdm;
 #if defined(STREAMSCONN)
         struct  t_call  call, rcv;
+#endif
+#ifdef MINIX
+	char		*tcp_device;
+	nwio_tcpconf_t	tcpconf;
+	nwio_tcpcl_t	tcpcl;
 #endif
 
 	xdm = (char *) app_resources.xdmAddress->data;
@@ -815,6 +956,31 @@ Choose (h)
 	    exit (REMANAGE_DISPLAY);
 	}
 #else
+#ifdef MINIX
+	tcp_device= getenv("TCP_DEVICE");
+	if (tcp_device == NULL)
+		tcp_device= TCP_DEVICE;
+	if ((fd= open(tcp_device, O_RDWR)) == -1)
+	{
+	    fprintf (stderr, "Cannot open '%s': %s\n", tcp_device,
+	    	strerror(errno));
+	    exit (REMANAGE_DISPLAY);
+	}
+	tcpconf.nwtc_flags= NWTC_EXCL | NWTC_LP_SEL | NWTC_SET_RA | NWTC_SET_RP;
+	tcpconf.nwtc_remport= in_addr.sin_port;
+	tcpconf.nwtc_remaddr= in_addr.sin_addr.s_addr;
+	if (ioctl(fd, NWIOSTCPCONF, &tcpconf) == -1)
+	{
+	    fprintf (stderr, "NWIOSTCPCONF failed: %s\n", strerror(errno));
+	    exit (REMANAGE_DISPLAY);
+	}
+	tcpcl.nwtcl_flags= 0;
+	if (ioctl(fd, NWIOTCPCONN, &tcpcl) == -1)
+	{
+	    fprintf (stderr, "NWIOTCPCONN failed: %s\n", strerror(errno));
+	    exit (REMANAGE_DISPLAY);
+	}
+#else /* !MINIX */
 	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
 	{
 	    fprintf (stderr, "Cannot create response socket\n");
@@ -825,6 +991,7 @@ Choose (h)
 	    fprintf (stderr, "Cannot connect to xdm\n");
 	    exit (REMANAGE_DISPLAY);
 	}
+#endif /* MINIX */
 #endif
 	buffer.data = (BYTE *) buf;
 	buffer.size = sizeof (buf);
@@ -1040,3 +1207,22 @@ CvtStringToARRAY8 (args, num_args, fromVal, toVal)
     toVal->addr = (caddr_t) &dest;
     toVal->size = sizeof (ARRAY8Ptr);
 }
+
+#ifdef MINIX
+static void read_cb(nbio_ref_t ref, int res, int err)
+{
+	if (!read_inprogress)
+		abort();
+	if (res > 0)
+	{
+		read_size= res;
+	}
+	else
+    	{
+    		fprintf(stderr, "chooser: read error: %s\n", res == 0 ?
+    			"EOF" : strerror(err));
+		read_size= 0;
+	}
+	read_inprogress= 0;
+}
+#endif

@@ -1,4 +1,5 @@
 /* $XConsortium: toc.c,v 2.57 93/12/06 15:19:08 kaleb Exp $
+ * $XFree86$
  *
  *
  *			  COPYRIGHT 1987
@@ -31,6 +32,10 @@
 #include "toc.h"
 #include "tocutil.h"
 #include <sys/stat.h>
+
+#ifdef MINIX
+#define S_IWRITE S_IWUSR
+#endif
 
 static int IsDir(name)
 char *name;

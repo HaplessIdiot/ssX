@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * bring down X when you are finished.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.0 1994/04/28 12:45:01 dawes Exp $ */
 
 #include <stdio.h>
 #include "dm.h"
@@ -60,7 +60,7 @@ extern int errno;
 /*
  * HP-UX does have vfork, but A/UX doesn't
  */
-#if (defined(SYSV) || defined(macII)) && !defined(hpux)
+#if (defined(SYSV) || defined(macII)) && !defined(hpux) || defined(MINIX)
 #define vfork() fork()
 #endif
 

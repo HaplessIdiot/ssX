@@ -1,5 +1,5 @@
 /* $XConsortium: util.c,v 1.17 94/04/17 20:03:48 rws Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.0 1994/04/28 12:44:59 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.1 1994/06/26 13:11:48 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -53,7 +53,7 @@ from the X Consortium.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if defined(__osf__) || defined(linux)
+#if defined(__osf__) || defined(linux) || defined(MINIX)
 #define setpgrp setpgid
 #endif
 
@@ -225,7 +225,15 @@ CleanUpChild ()
 #endif
 #else
 	setpgrp (0, getpid ());
+#ifdef MINIX /* actually POSIX */
+	{
+		sigset_t ss; 
+		sigemptyset(&ss);
+		sigprocmask(SIG_SETMASK, &ss, NULL);
+	}
+#else
 	sigsetmask (0);
+#endif
 #endif
 #ifdef SIGCHLD
 	(void) Signal (SIGCHLD, SIG_DFL);

@@ -1,5 +1,5 @@
 /* $XConsortium: command.c,v 2.47 94/05/14 19:10:18 rws Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.0 1994/04/28 12:46:03 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.1 1994/05/22 06:57:22 dawes Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -41,6 +41,16 @@
 #ifdef _IBMR2
 #include <sys/select.h>
 #endif
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+
+typedef struct
+{
+	long fds_bits[2];
+} fd_set;
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 /* number of user input events to queue before malloc */

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: access.c,v 1.15 94/04/17 20:03:32 hersh Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -41,9 +42,13 @@ in this Software without prior written authorization from the X Consortium.
 # include   <X11/X.h>
 # include   <stdio.h>
 # include   <ctype.h>
+#ifndef MINIX
 # include   <netinet/in.h>
 # include   <netdb.h>
 # include   <sys/socket.h>
+#else /* MINIX */
+# include   <net/gen/netdb.h>
+#endif /* !MINIX */
 
 #define ALIAS_CHARACTER	    '%'
 #define NEGATE_CHARACTER    '!'

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.19 94/04/17 20:39:48 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.0 1994/05/22 00:00:08 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -56,6 +56,12 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #include <X11/Shell.h>
 #include <ctype.h>
+
+#ifdef MINIX
+#define USE_FILE
+#define FILE_NAME "/dev/log"
+#define read(n,b,s) nbio_read(n,b,s)
+#endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
@@ -219,6 +225,11 @@ OpenConsole ()
 
     if (input)
     {
+#ifdef MINIX
+	fcntl(fileno (input), F_SETFD,
+		fcntl(fileno (input), F_GETFD) | FD_ASYNCHIO);
+	nbio_register(fileno (input));
+#endif
 	input_id = XtAddInput (fileno (input), (XtPointer) XtInputReadMask,
 			       inputReady, (XtPointer) text);
     }
@@ -230,6 +241,9 @@ CloseConsole ()
 {
     if (input) {
 	XtRemoveInput (input_id);
+#ifdef MINIX
+	nbio_unregister(fileno (input));
+#endif
 	fclose (input);
     }
 #ifdef USE_PTY
@@ -400,6 +414,11 @@ inputReady (w, source, id)
     n = read (*source, buffer, sizeof (buffer) - 1);
     if (n <= 0)
     {
+#ifdef MINIX
+	if (n == -1 && errno == EAGAIN)
+		return;
+	nbio_unregister(fileno (input));
+#endif
 	fclose (input);
 	XtRemoveInput (*id);
     }

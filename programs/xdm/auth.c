@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.2 1994/06/09 10:56:10 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.3 1994/06/22 05:04:43 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -43,13 +43,17 @@ from the X Consortium.
 #include <X11/X.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef MINIX
 #include <sys/socket.h>
+#endif
 #ifndef ESIX
 # include <sys/ioctl.h>
 #endif /* !ESIX */
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
+#ifndef MINIX
 # include <netinet/in.h>
+#endif
 #endif
 #ifdef DNETCONN
 # include <netdnet/dn.h>
@@ -81,7 +85,12 @@ from the X Consortium.
 # include <sync/queue.h>
 # include <sync/sema.h>
 #endif
+#ifndef MINIX
 #include <net/if.h>
+#else
+#include <net/netlib.h>
+#include <net/gen/netdb.h>
+#endif /* !MINIX */
 
 #if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
 #define SYSV_SIOCGIFCONF
@@ -1001,6 +1010,9 @@ writeLocalAuth (file, auth, name)
     char	*name;
 {
     int	fd;
+#ifdef MINIX
+    char *tcp_device;
+#endif
 
     Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
@@ -1012,7 +1024,14 @@ writeLocalAuth (file, auth, name)
     t_close (fd);
 #endif
 #ifdef TCPCONN
+#ifdef MINIX
+    tcp_device= getenv("TCP_DEVICE");
+    if (tcp_device == NULL)
+    	tcp_device= TCP_DEVICE;
+    fd = open(tcp_device, O_RDWR);
+#else
     fd = socket (AF_INET, SOCK_STREAM, 0);
+#endif
     DefineSelf (fd, file, auth);
     close (fd);
 #endif
