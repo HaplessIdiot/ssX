@@ -67,7 +67,7 @@ xf86InitInt10(int entityIndex)
     char *base_high;
     int pagesize;
     legacyVGARec vga;
-    
+
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
     if (int10skip(xf86Screens[screen],entityIndex))
 	return NULL;
@@ -161,7 +161,6 @@ xf86InitInt10(int entityIndex)
 #endif
     
     if (xf86IsEntityPrimary(entityIndex)) {
-	int size;
 	int cs = ((CARD16*)0)[(0x10<<1)+1];
 	CARD8 *bios_base = (unsigned char *)(cs << 4);
 	
