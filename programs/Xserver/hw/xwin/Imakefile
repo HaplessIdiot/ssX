@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.5 2001/04/18 17:14:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.6 2001/04/25 19:44:02 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -9,7 +9,7 @@ SHMDEF = -DHAS_SHM
 
 MMAPDEF = -DHAS_MMAP
 
-SRCSA =	InitInput.c \
+SRCS =	InitInput.c \
 	InitOutput.c \
 	stubs.c \
 	wingc.c \
@@ -37,7 +37,7 @@ SRCSA =	InitInput.c \
 	winkeybd.c \
 	winmouse.c
 
-OBJSA =	InitInput.o \
+OBJS =	InitInput.o \
 	InitOutput.o \
 	stubs.o \
 	wingc.o \
@@ -72,21 +72,8 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
 
 DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
 
-#if BuildDPMS
-SRCSB =	dpmsstubs.c
-OBJSB =	dpmsstubs.o
-#endif
-
-SRCS =	$(SRCSA) $(SRCSB) $(SRCSC)
-OBJS =	$(OBJSA) $(OBJSB) $(OBJSC)
-
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 SpecialCObjectRule(stubs,$(ICONFIGFILES),$(EXT_DEFINES))
-
-#if BuildDPMS
-LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)
-SpecialCObjectRule(dpmsstubs,$(ICONFIGFILES),$(EXT_DEFINES))
-#endif
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(Xwin,$(OBJS))

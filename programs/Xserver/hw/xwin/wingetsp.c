@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
@@ -65,8 +65,8 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
   bmih.biClrUsed = 0;
   bmih.biClrImportant = 0;
 
-  fprintf (stderr, "winGetSpans () - pDrawable: %08x\n",
-	   pDrawable);
+  ErrorF ("winGetSpans () - pDrawable: %08x\n",
+	  pDrawable);
 
   /* Calculate the number of bytes in each scanline */
   iScanlineBytes = 4 * ((pDrawable->width * pDrawable->depth + 31) / 32);
@@ -74,10 +74,9 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
   /* Calculate the number of bytes in the bitmap */
   iBitmapBytes = iScanlineBytes * pDrawable->height;
 
-  /*
-    fprintf (stderr, "winGetSpans () - iBitmapBytes: %d\n",
-    iBitmapBytes);
-  */
+#if 0
+    ErrorF ("winGetSpans () - iBitmapBytes: %d\n", iBitmapBytes);
+#endif
   
   /* Loop through spans */
   for (iIdx = 0; iIdx < nSpans; ++iIdx)
@@ -89,9 +88,9 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       GetDIBits (hdcMem, ((PixmapPtr)pDrawable)->devPrivate.ptr,
 		 pPoint->y, 1, pDst, &bmih, 0);
 
-      fprintf (stderr, "(%dx%dx%d) (%d,%d) w: %d\n",
-	       pDrawable->width, pDrawable->height, pDrawable->depth,
-	       pPoint->x, pPoint->y, *pWidth);
+      ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
+	      pDrawable->width, pDrawable->height, pDrawable->depth,
+	      pPoint->x, pPoint->y, *pWidth);
 
       /* Calculate offset of next bit destination */
       pDst += 4 * ((*pWidth + 31) / 32);

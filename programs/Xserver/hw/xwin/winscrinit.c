@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.7 2001/05/14 16:52:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.8 2001/05/31 09:11:19 alanh Exp $ */
 
 #include "win.h"
 
@@ -214,7 +214,7 @@ winScreenInit (int index,
 	       ScreenPtr pScreen,
 	       int argc, char **argv)
 {
-  winScreenInfoPtr      pScreenInfo = &g_winScreens[index];
+  winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
 
   /* Allocate privates for this screen */
@@ -601,7 +601,7 @@ winFinishScreenInitNativeGDI (int index,
 			      ScreenPtr pScreen,
 			      int argc, char **argv)
 {
-  winScreenInfoPtr      pScreenInfo = &g_winScreens[index];
+  winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   PictFormatPtr         formats = NULL;
   int                   nformats = 0;
   Bool                  fReturn = FALSE;
@@ -780,7 +780,7 @@ winFinishScreenInitNativeGDI (int index,
   pScreen->blockData = (pointer) 0;
   pScreen->wakeupData = (pointer) 0;
 
-  fprintf (stderr, "winScreenInit () - calling miInitVisuals()\n");
+  ErrorF ("winScreenInit () - calling miInitVisuals()\n");
   if (!winInitVisualsNativeGDI (pScreen))
     {
       ErrorF ("winScreenInit () - winInitVisuals returned FALSE\n");
@@ -802,7 +802,7 @@ winFinishScreenInitNativeGDI (int index,
   ErrorF ("winScreenInit () - nDepths: %d, nRootDepth: %d, nVisuals: %d\n",
 	  nDepths, nRootDepth, nVisuals);
   
-  fprintf (stderr, "winScreenInit () - calling miSetZeroLineBias()\n");
+  ErrorF ("winScreenInit () - calling miSetZeroLineBias()\n");
   miSetZeroLineBias (pScreen, pScreenInfo->dwLineBias);
 
   miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);

@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  75. Fix some build issues on Cygwin/XFree86 (#4736, #4737, Suhaib Siddiqi).
+  74. Some Cygwin/XFree86 cleanups (#4735, Harold Hunt).
   73. Fix XAA's incorrect acceleration of X-Render's repeated sources and 
       masks (Mark Vojkovich).
   72. Disable PCI resource conflict checking for Linux/Alpha (Jay Estabrook).
@@ -13443,4 +13445,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1824 2001/06/02 15:21:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1825 2001/06/03 19:52:48 mvojkovi Exp $

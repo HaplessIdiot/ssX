@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfont.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
@@ -36,7 +36,7 @@
 Bool
 winRealizeFontNativeGDI (ScreenPtr pScreen, FontPtr pFont)
 {
-  fprintf (stderr, "winRealizeFont()\n");
+  ErrorF ("winRealizeFont()\n");
   return TRUE;
 }
 
@@ -45,6 +45,6 @@ winRealizeFontNativeGDI (ScreenPtr pScreen, FontPtr pFont)
 Bool
 winUnrealizeFontNativeGDI (ScreenPtr pScreen, FontPtr pFont)
 {
-  fprintf (stderr, "winUnrealizeFont()\n");
+  ErrorF ("winUnrealizeFont()\n");
   return TRUE;
 }

@@ -22,17 +22,17 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.7 2001/05/06 09:22:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.8 2001/05/08 08:14:09 alanh Exp $ */
 
 #include "win.h"
 
-int		g_nNumScreens;
-winScreenInfo	g_winScreens[MAXSCREENS];
-int		g_nLastScreen = -1;
+int		g_iNumScreens;
+winScreenInfo	g_ScreenInfo[MAXSCREENS];
+int		g_iLastScreen = -1;
 ColormapPtr	g_cmInstalledMaps[MAXSCREENS];
 int		g_fdMessageQueue = WIN_FD_INVALID;
-int		g_winScreenPrivateIndex = -1;
-unsigned long	g_winGeneration = 0;
+int		g_iScreenPrivateIndex = -1;
+unsigned long	g_ulServerGeneration = 0;
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
@@ -52,18 +52,18 @@ winInitializeDefaultScreens (void)
 
   for (i = 0; i < MAXSCREENS; i++)
     {
-      g_winScreens[i].dwScreen = i;
-      g_winScreens[i].dwWidth  = WIN_DEFAULT_WIDTH;
-      g_winScreens[i].dwHeight = WIN_DEFAULT_HEIGHT;
-      g_winScreens[i].dwDepth  = WIN_DEFAULT_DEPTH;
-      g_winScreens[i].pixelBlack = WIN_DEFAULT_BLACKPIXEL;
-      g_winScreens[i].pixelWhite = WIN_DEFAULT_WHITEPIXEL;
-      g_winScreens[i].dwLineBias = WIN_DEFAULT_LINEBIAS;
-      g_winScreens[i].pfb = NULL;
-      g_winScreens[i].fFullScreen = FALSE;
-      g_winScreens[i].iE3BTimeout = WIN_E3B_OFF;
+      g_ScreenInfo[i].dwScreen = i;
+      g_ScreenInfo[i].dwWidth  = WIN_DEFAULT_WIDTH;
+      g_ScreenInfo[i].dwHeight = WIN_DEFAULT_HEIGHT;
+      g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
+      g_ScreenInfo[i].pixelBlack = WIN_DEFAULT_BLACKPIXEL;
+      g_ScreenInfo[i].pixelWhite = WIN_DEFAULT_WHITEPIXEL;
+      g_ScreenInfo[i].dwLineBias = WIN_DEFAULT_LINEBIAS;
+      g_ScreenInfo[i].pfb = NULL;
+      g_ScreenInfo[i].fFullScreen = FALSE;
+      g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
     }
-  g_nNumScreens = 1;
+  g_iNumScreens = 1;
 }
 
 DWORD
@@ -177,9 +177,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
       
       /* Grab the height, width, and depth parameters */
       if (3 != sscanf (argv[i+2], "%dx%dx%d",
-		       (int*)&g_winScreens[nScreenNum].dwWidth,
-		       (int*)&g_winScreens[nScreenNum].dwHeight,
-		       (int*)&g_winScreens[nScreenNum].dwDepth))
+		       (int*)&g_ScreenInfo[nScreenNum].dwWidth,
+		       (int*)&g_ScreenInfo[nScreenNum].dwHeight,
+		       (int*)&g_ScreenInfo[nScreenNum].dwDepth))
         {
 	  /* I see no height, width, and depth here */
           ErrorF ("Invalid screen configuration %s\n", argv[i+2]);
@@ -187,9 +187,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
         }
 
-      if (nScreenNum >= g_nNumScreens)
-        g_nNumScreens = nScreenNum + 1;
-      g_nLastScreen = nScreenNum;
+      if (nScreenNum >= g_iNumScreens)
+        g_iNumScreens = nScreenNum + 1;
+      g_iLastScreen = nScreenNum;
       return 3;
     }
 
@@ -210,20 +210,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
       pix = atoi (argv[i]);
 
       /* Is this parameter attached to a screen or global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
         {
           int			j;
 
 	  /* Parameter is for all screens */
           for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[j].pixelBlack = pix;
+              g_ScreenInfo[j].pixelBlack = pix;
             }
         }
       else
         {
 	  /* Parameter is for a single screen */
-          g_winScreens[g_nLastScreen].pixelBlack = pix;
+          g_ScreenInfo[g_iLastScreen].pixelBlack = pix;
         }
       return 2;
     }
@@ -245,20 +245,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
       pix = atoi (argv[i]);
 
       /* Is this parameter attached to a screen or global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
         {
           int			j;
 
 	  /* Parameter is for all screens */
           for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[j].pixelWhite = pix;
+              g_ScreenInfo[j].pixelWhite = pix;
             }
         }
       else
         {
 	  /* Parameter is for a single screen */
-          g_winScreens[g_nLastScreen].pixelWhite = pix;
+          g_ScreenInfo[g_iLastScreen].pixelWhite = pix;
         }
       return 2;
     }
@@ -280,20 +280,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
       uiLinebias = atoi (argv[i]);
 
       /* Is this parameter attached to a screen or global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
         {
           int		j;
 
 	  /* Parameter is for all screens */
           for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[j].dwLineBias = uiLinebias;
+              g_ScreenInfo[j].dwLineBias = uiLinebias;
             }
         }
       else
         {
 	  /* Parameter is for a single screen */
-          g_winScreens[g_nLastScreen].dwLineBias = uiLinebias;
+          g_ScreenInfo[g_iLastScreen].dwLineBias = uiLinebias;
         }
       return 2;
     }
@@ -327,20 +327,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	}
 
       /* Is this parameter attached to a screen or global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
 	{
 	  int		j;
 
 	  /* Parameter is for all screens */
 	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_winScreens[j].dwEnginePreferred = dwEngine;
+	      g_ScreenInfo[j].dwEnginePreferred = dwEngine;
 	    }
 	}
       else
 	{
 	  /* Parameter is for a single screen */
-	  g_winScreens[g_nLastScreen].dwEnginePreferred = dwEngine;
+	  g_ScreenInfo[g_iLastScreen].dwEnginePreferred = dwEngine;
 	}
       
       /* Indicate that we have processed the argument */
@@ -353,20 +353,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
   if (strcmp(argv[i], "-fullscreen") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
 	{
 	  int			j;
 
 	  /* Parameter is for all screens */
 	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_winScreens[j].fFullScreen = TRUE;
+	      g_ScreenInfo[j].fFullScreen = TRUE;
 	    }
 	}
       else
 	{
 	  /* Parameter is for a single screen */
-	  g_winScreens[g_nLastScreen].fFullScreen = TRUE;
+	  g_ScreenInfo[g_iLastScreen].fFullScreen = TRUE;
 	}
 
       /* Indicate that we have processed this argument */
@@ -401,20 +401,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	}
 
       /* Is this parameter attached to a screen or is it global? */
-      if (-1 == g_nLastScreen)
+      if (-1 == g_iLastScreen)
 	{
 	  int			j;
 
 	  /* Parameter is for all screens */
 	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_winScreens[j].iE3BTimeout = iE3BTimeout;
+	      g_ScreenInfo[j].iE3BTimeout = iE3BTimeout;
 	    }
 	}
       else
 	{
 	  /* Parameter is for a single screen */
-	  g_winScreens[g_nLastScreen].iE3BTimeout = TRUE;
+	  g_ScreenInfo[g_iLastScreen].iE3BTimeout = TRUE;
 	}
 
       /* Indicate that we have processed this argument */
@@ -453,7 +453,7 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
     }
 
   /* Initialize each screen */
-  for (i = 0; i < g_nNumScreens; i++)
+  for (i = 0; i < g_iNumScreens; i++)
     {
       if (-1 == AddScreen (winScreenInit, argc, argv))
 	{

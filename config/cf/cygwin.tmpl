@@ -1,10 +1,12 @@
 XCOMM $XConsortium: WinLib.tmpl,v 1.1 94/01/08 18:32:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.3 2001/02/13 19:19:11 dawes Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.4 2001/04/18 17:13:58 dawes Exp $
 
+#define SharedX11Reqs
 #define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXReqs $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS)
 #define SharedXtReqs $(LDPRELIB) $(SMLIB) $(ICELIB) $(XLIBONLY)
 #define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
-#define SharedXaw6Reqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXaw6Reqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedXiReqs $(LDPRELIB) $(XLIB)
@@ -36,6 +38,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB) $(XPMLIB)
+#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
 

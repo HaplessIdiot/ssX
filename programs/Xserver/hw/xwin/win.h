@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.6 2001/05/08 08:14:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.7 2001/05/31 09:11:19 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -107,11 +107,6 @@
 #define WIN_24BPP_MASK_RED	0x00FF0000
 #define WIN_24BPP_MASK_GREEN	0x0000FF00
 #define WIN_24BPP_MASK_BLUE	0x000000FF
-
-/*
- * We need symbols for the scan codes of keys.
- */
-#include "../xfree86/common/atKeynames.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -305,25 +300,26 @@ typedef struct
 } winPrivScreenRec, *winPrivScreenPtr;
 
 extern ColormapPtr		g_cmInstalledMaps[];
-extern winScreenInfo		g_winScreens[];
+extern winScreenInfo		g_ScreenInfo[];
 extern char			*g_pcDisplay;
 extern miPointerScreenFuncRec	g_winPointerCursorFuncs;
 extern DWORD			g_dwEvents;
 extern int			g_fdMessageQueue;
-extern int			g_winScreenPrivateIndex;
-extern unsigned long		g_winGeneration;
+extern int			g_iScreenPrivateIndex;
+extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
 
 /*
  * Screen privates macros
  */
-#define winGetScreenPriv(pScreen) ((winPrivScreenPtr) \
-				   (pScreen)->devPrivates[g_winScreenPrivateIndex].ptr)
+#define winGetScreenPriv(pScreen) \
+	((winPrivScreenPtr) (pScreen)->devPrivates[g_iScreenPrivateIndex].ptr)
 
-#define winSetScreenPriv(pScreen,v) ((pScreen)->devPrivates[g_winScreenPrivateIndex].ptr = \
-				     (pointer) v)
+#define winSetScreenPriv(pScreen,v) \
+	((pScreen)->devPrivates[g_iScreenPrivateIndex].ptr = (pointer) v)
 
-#define winScreenPriv(pScreen) winPrivScreenPtr pScreenPriv = winGetScreenPriv(pScreen)
+#define winScreenPriv(pScreen) \
+	winPrivScreenPtr pScreenPriv = winGetScreenPriv(pScreen)
 
 /*
  * Window privates macros
