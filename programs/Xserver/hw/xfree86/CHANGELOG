@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 472. Xterm patches #163, #164 (Thomas Dickey): mostly bug fixes.
  471. Fix race condition in XDarwin causing occasional hangs or crashes when
       quitting from the menu (Torrey T. Lyons).
  470. Cygwin/XFree86 updates (#5035, #5036, Harold Hunt).
@@ -14144,4 +14145,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2036 2001/11/12 08:47:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2037 2001/11/12 19:22:14 torrey Exp $
