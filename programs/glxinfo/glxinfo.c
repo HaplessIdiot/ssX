@@ -20,7 +20,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.7 2001/08/17 13:27:57 dawes Exp$ */
+/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.9 2002/11/07 12:25:52 alanh Exp $ */
 
 /*
  * This program is a work-alike of the IRIX glxinfo program.
@@ -34,8 +34,6 @@
  *
  * Brian Paul  26 January 2000
  */
-
-#define DO_GLU  /* may want to remove this for easier XFree86 building? */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
