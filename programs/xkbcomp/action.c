@@ -31,6 +31,7 @@
 
 #include "keycodes.h"
 #include "vmod.h"
+#include "misc.h"
 #include "action.h"
 
 static Bool	actionsInitialized;
@@ -39,7 +40,7 @@ static ExprDef	constFalse;
 
 /***====================================================================***/
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 stringToAction(char *str,unsigned *type_rtrn)
 #else
@@ -106,7 +107,7 @@ stringToAction(str,type_rtrn)
     return True;
 }
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 stringToField(char *str,unsigned *field_rtrn)
 #else
@@ -157,7 +158,7 @@ stringToField(str,field_rtrn)
     return True;
 }
 
-char *
+static char *
 #if NeedFunctionPrototypes
 fieldText(unsigned field)
 #else

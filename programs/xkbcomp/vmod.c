@@ -1,4 +1,4 @@
-/* $XConsortium: vmod.c,v 1.3 94/04/08 15:25:30 erik Exp $ */
+/* $XConsortium: vmod.c /main/6 1996/01/14 16:48:30 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,7 +28,6 @@
 #define	DEBUG_VAR debugFlags
 #include <stdio.h>
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "misc.h"
@@ -39,9 +38,13 @@
 #include "vmod.h"
 
 void
+#if NeedFunctionPrototypes
+InitVModInfo(VModInfo *info,XkbDescPtr xkb)
+#else
 InitVModInfo(info,xkb)
     VModInfo *	info;
     XkbDescPtr	xkb;
+#endif
 {
     ClearVModInfo(info,xkb);
     info->errorCount= 0;
@@ -49,20 +52,26 @@ InitVModInfo(info,xkb)
 }
 
 void
+#if NeedFunctionPrototypes
+ClearVModInfo(VModInfo *info,XkbDescPtr xkb)
+#else
 ClearVModInfo(info,xkb)
     VModInfo *	info;
     XkbDescPtr	xkb;
+#endif
 {
 register int i;
 
-    XkbAllocNames(xkb,XkbVirtualModNamesMask);
-    XkbAllocServerMap(xkb,XkbVirtualModsMask,0);
+    if (XkbAllocNames(xkb,XkbVirtualModNamesMask,0,0)!=Success)
+	return;
+    if (XkbAllocServerMap(xkb,XkbVirtualModsMask,0)!=Success)
+	return;
     info->xkb= xkb;
     info->newlyDefined= info->defined= info->available= 0;
     if (xkb && xkb->names) {
 	register int bit;
 	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	    if (xkb->names->vmods[i]!=(Atom)NullStringToken)
+	    if (xkb->names->vmods[i]!=None)
 		info->defined|= bit;
 	}
     }
@@ -72,42 +81,49 @@ register int i;
 /***====================================================================***/
 
 Bool
+#if NeedFunctionPrototypes
+HandleVModDef(VModDef *stmt,unsigned mergeMode,VModInfo *info)
+#else
 HandleVModDef(stmt,mergeMode,info)
     VModDef *	stmt;
     unsigned	mergeMode;
     VModInfo * 	info;
+#endif
 {
 register int 	i,bit,nextFree;
 ExprResult 	mod;
 XkbServerMapPtr	srv;
 XkbNamesPtr	names;
+Atom		stmtName;
     
     srv= info->xkb->server;
     names= info->xkb->names;
+    stmtName= XkbInternAtom(info->xkb->dpy,XkbAtomGetString(NULL,stmt->name),
+    									False);
     for (i=0,bit=1,nextFree= -1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if (info->defined&bit) {
-	    if (names->vmods[i]==(stmt->name)) {	/* already defined */
+	    if (names->vmods[i]==stmtName) {	/* already defined */
 		info->available|= bit;
 		if (stmt->value==NULL)
 		    return True;
 		else {
-		    char *str1,*str2;
-		    if (!ExprResolveModIndex(stmt->value,&mod,NULL,NULL)) {
-			str1= stText(stmt->name);
-			uAction("Declaration of %s ignored\n",str1);
+		    char *str1,*str2 = "";
+		    if (!ExprResolveModMask(stmt->value,&mod,NULL,NULL)) {
+			str1= XkbAtomText(NULL,stmt->name,XkbMessage);
+			ACTION1("Declaration of %s ignored\n",str1);
 			return False;
 		    }
 		    if (mod.uval==srv->vmods[i])
 			return True;
 
-		    str1= stText(stmt->name);
-		    uWarning("Virtual modifier %s multiply defined\n",str1);
-		    str1= XkbModIndexText(srv->vmods[i],XkbCFile);
+		    str1= XkbAtomText(NULL,stmt->name,XkbMessage);
+		    WARN1("Virtual modifier %s multiply defined\n",str1);
+		    str1= XkbModMaskText(srv->vmods[i],XkbCFile);
 		    if (mergeMode==MergeOverride) {
 			str2= str1;
-			str1= XkbModIndexText(mod.uval,XkbCFile);
+			str1= XkbModMaskText(mod.uval,XkbCFile);
 		    }
-		    uAction("Using %s, ignoring %s\n",str1,str2);
+		    ACTION2("Using %s, ignoring %s\n",str1,str2);
 		    if (mergeMode==MergeOverride)
 			srv->vmods[i]= mod.uval;
 		    return True;
@@ -118,31 +134,41 @@ XkbNamesPtr	names;
 	    nextFree= i;
     }
     if (nextFree<0) {
-	uError("Too many virtual modifiers defined (maximum 16)\n");
-	uAction("Exiting\n");
+	ERROR1("Too many virtual modifiers defined (maximum %d)\n",
+						XkbNumVirtualMods);
+	ACTION("Exiting\n");
 	return False;
     }
     info->defined|= (1<<nextFree);
     info->newlyDefined|= (1<<nextFree);
     info->available|= (1<<nextFree);
-    names->vmods[nextFree]= stmt->name;
+    names->vmods[nextFree]= stmtName;
     if (stmt->value==NULL)
 	return True;
-    if (ExprResolveModIndex(stmt->value,&mod,NULL,NULL)) {
+    if (ExprResolveModMask(stmt->value,&mod,NULL,NULL)) {
 	srv->vmods[nextFree]= mod.uval;
 	return True;
     }
-    uAction("Declaration of %s ignored\n",stText(stmt->name));
+    ACTION1("Declaration of %s ignored\n",
+    				XkbAtomText(NULL,stmt->name,XkbMessage));
     return False;
 }
 
 int
+#if NeedFunctionPrototypes
+LookupVModIndex(	XPointer	priv,
+			Atom 		elem,
+			Atom 		field,
+			unsigned 	type,
+			ExprResult *	val_rtrn)
+#else
 LookupVModIndex(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
 {
 register int	i;
 register char *	fieldStr;
@@ -150,15 +176,14 @@ register char *	modStr;
 XkbDescPtr	xkb;
 
     xkb= (XkbDescPtr)priv;
-    if ((xkb==NULL)||(xkb->names==NULL)||(elem!=NullStringToken)||
-		     				(type!=TypeInt)) {
+    if ((xkb==NULL)||(xkb->names==NULL)||(elem!=None)||(type!=TypeInt)) {
 	return False;
     }
-    fieldStr= stGetString(field);
+    fieldStr= XkbAtomGetString(xkb->dpy,field);
     if (fieldStr==NULL)
 	return False;
     for (i=0;i<XkbNumVirtualMods;i++) {
-	modStr= stGetString(xkb->names->vmods[i]);
+	modStr= XkbAtomGetString(xkb->dpy,xkb->names->vmods[i]);
 	if ((modStr!=NULL)&&(uStrCaseCmp(fieldStr,modStr)==0)) {
 	    val_rtrn->uval= i;
 	    return True;
@@ -168,41 +193,57 @@ XkbDescPtr	xkb;
 }
 
 int
+#if NeedFunctionPrototypes
+LookupVModMask(	XPointer 	priv,
+		Atom 		elem,
+		Atom 		field,
+		unsigned 	type,
+		ExprResult *	val_rtrn)
+#else
 LookupVModMask(priv,elem,field,type,val_rtrn)
     XPointer 		priv;
-    StringToken		elem;
-    StringToken		field;
+    Atom		elem;
+    Atom		field;
     unsigned		type;
     ExprResult *	val_rtrn;
+#endif
 {
     if (LookupVModIndex(priv,elem,field,type,val_rtrn)) {
 	register unsigned ndx= val_rtrn->uval;
-	val_rtrn->uval= (1<<(8+ndx));
+	val_rtrn->uval= (1<<(XkbNumModifiers+ndx));
 	return True;
     }
     return False;
 }
 
 int
+#if NeedFunctionPrototypes
+FindKeypadVMod(XkbDescPtr xkb)
+#else
 FindKeypadVMod(xkb)
     XkbDescPtr	xkb;
+#endif
 {
-StringToken name;
+Atom name;
 ExprResult rtrn;
 
-    name= stGetToken("NumLock");
+    name= XkbInternAtom(xkb->dpy,"NumLock",False);
     if ((xkb)&&
-	LookupVModIndex((XPointer)xkb,NullStringToken,name,TypeInt,&rtrn)) {
+	LookupVModIndex((XPointer)xkb,None,name,TypeInt,&rtrn)) {
 	return rtrn.ival;
     }
     return -1;
 }
 
 Bool
+#if NeedFunctionPrototypes
+ResolveVirtualModifier(ExprDef *def,ExprResult *val_rtrn,VModInfo *info)
+#else
 ResolveVirtualModifier(def,val_rtrn,info)
     ExprDef *		def;
     ExprResult *	val_rtrn;
     VModInfo *		info;
+#endif
 {
 XkbNamesPtr	names;
 
@@ -210,8 +251,11 @@ XkbNamesPtr	names;
     if (def->op==ExprIdent) {
 	register int i,bit;
 	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
+	    char *str1,*str2;
+	    str1= XkbAtomGetString(info->xkb->dpy,names->vmods[i]);
+	    str2= XkbAtomGetString(NULL,def->value.str);
 	    if ((info->available&bit)&&
-		(stCaseCompare(names->vmods[i],def->value.str)==Equal)) {
+		(uStrCaseCmp(str1,str2)==Equal)) {
 		val_rtrn->uval= i;
 		return True;
 	    }
@@ -220,8 +264,8 @@ XkbNamesPtr	names;
     if (ExprResolveInteger(def,val_rtrn,NULL,NULL)) {
 	if (val_rtrn->uval<XkbNumVirtualMods)
 	    return True;
-	uError("Illegal virtual modifier %d (must be 0..15 inclusive)\n",
-							val_rtrn->uval);
+	ERROR2("Illegal virtual modifier %d (must be 0..%d inclusive)\n",
+					val_rtrn->uval,XkbNumVirtualMods-1);
     }
     return False;
 }

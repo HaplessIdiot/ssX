@@ -1,5 +1,5 @@
 /* $XConsortium: xkbscan.c /main/8 1996/02/05 06:00:09 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.3 1996/02/09 10:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.4 1996/08/13 11:33:05 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -358,7 +358,7 @@ yyGetIdent(first)
 #endif
 {
 int ch,i,found;
-int	rtrn;
+int	rtrn = IDENT;
 
     buf[0] = first; nInBuf = 1;
     while ( ((ch=getc(yyin))!=EOF) && (isalnum(ch)||(ch=='_')) ) {

@@ -1,5 +1,5 @@
 /* $XConsortium: XGrDvBut.c /main/7 1995/12/05 11:22:35 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xi/XGrDvBut.c,v 3.0 1996/08/25 13:52:48 dawes Exp $ */
 
 /************************************************************
 
@@ -59,7 +59,6 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
-#include "XIint.h"
 #include "XIint.h"
 
 int

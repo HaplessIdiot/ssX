@@ -384,6 +384,18 @@ extern	Bool	AddListing(
 #endif
 );
 
+extern Bool AddMatchingFiles(
+#if NeedFunctionPrototypes
+    char *	/* head_in */
+#endif
+);
+
+extern	int AddMapOnly(
+#if NeedFunctionPrototypes
+    char *	/* map */
+#endif
+);
+
 extern	int GenerateListing(
 #if NeedFunctionPrototypes
     char *	/* filename */

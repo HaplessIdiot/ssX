@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: maskbits.h,v 1.33 94/04/17 20:28:13 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.0 1994/08/11 06:57:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.1 1996/08/25 14:13:50 dawes Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -255,15 +255,10 @@ extern PixelType mask[];
                         | ( ( ( x ) & (unsigned long)0x00FF0000 ) >> 0x08 ) \
                         | ( ( ( x ) & (unsigned long)0xFF000000 ) >> 0x18 ) )
 #else /* PPW == 64 */
-#define LONG2CHARS( x ) \
-      ( ( ( ( x ) & (unsigned long)0x00000000000000FF) << 0x18 ) \
-      | ( ( ( x ) & (unsigned long)0x000000000000FF00) << 0x08 ) \
-      | ( ( ( x ) & (unsigned long)0x0000000000FF0000) >> 0x08 ) \
-      | ( ( ( x ) & (unsigned long)0x00000000FF000000) >> 0x18 ) \
-      | ( ( ( x ) & (unsigned long)0x000000FF00000000) << 0x18 ) \
-      | ( ( ( x ) & (unsigned long)0x0000FF0000000000) << 0x08 ) \
-      | ( ( ( x ) & (unsigned long)0x00FF000000000000) >> 0x08 ) \
-      | ( ( ( x ) & (unsigned long)0xFF00000000000000) >> 0x18 ) )
+#define LONG2CHARS( x ) ( ( ( ( x ) & 0x000000FF000000FFUL) << 0x18 ) \
+		        | ( ( ( x ) & 0x0000FF000000FF00UL) << 0x08 ) \
+		        | ( ( ( x ) & 0x00FF000000FF0000UL) >> 0x08 ) \
+		        | ( ( ( x ) & 0xFF000000FF000000UL) >> 0x18 ) )
 #endif /* PPW */
 #endif /* BITMAP_BIT_ORDER */
 

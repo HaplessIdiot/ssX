@@ -1,3 +1,15 @@
+XFree86 3.1.2Eo (26 August 1996)
+716. Disable 24bpp packed mode in S3 server because it doesn't work properly
+     yet (Harald Koenig).
+715. Don't use newmmio S3 driver by default on Alpha architecture (need to
+     specify it explicitly in XF86Config) (Harald Koenig).
+714. Fix some incorrect printf-style arguments in xkbcomp (Thomas E. Dickey).
+713. Fix compiler warnings, including uninitialised variables, missing
+     prototypes, etc (Thomas E. Dickey).
+712. XF86Setup updates (Joe Moss).
+711. Fix for some potential buffer overrun problems in libXt and libX11 that
+     can lead to security holes.
+
 XFree86 3.1.2En (25 August 1996)
 710. Build/install the xkbui library regardless of whether XF86Setup is
      being built.

@@ -253,7 +253,7 @@ char *			mapName;
     if (dirsToStrip>0) {
 	char *tmp,*last;
 	int	i;
-	for (i=0,tmp=fileName;(i<dirsToStrip)&&tmp;i++) {
+	for (i=0,tmp=last=fileName;(i<dirsToStrip)&&tmp;i++) {
 	    last= tmp;
 	    tmp= strchr(tmp,'/');
 	    if (tmp!=NULL)
@@ -269,7 +269,7 @@ char *			mapName;
 
 /***====================================================================***/
 
-int
+static int
 #if NeedFunctionPrototypes
 AddDirectory(char *head,char *ptrn,char *rest,char *map)
 #else
@@ -287,12 +287,10 @@ AddDirectory(head,ptrn,rest,map)
     DIR			*dirp;
     struct dirent	*file;
 #endif
-    char		fileName[PATH_MAX];
-    Bool		status;
     int			nMatch;
 
     if (map==NULL) {
-	char *tmp;
+	char *tmp = ptrn;
 	if ((rest==NULL)&&(ptrn!=NULL)&&(strchr(ptrn,'/')==NULL)) {
 	    tmp= ptrn;
 	    map= strchr(ptrn,'(');
@@ -369,8 +367,7 @@ AddMatchingFiles(head_in)
     char *	head_in;
 #endif
 {
-char 	*str,*head,*ptrn,*rest;
-int	len;
+char 	*str,*head,*ptrn,*rest = 0;
 
     if (head_in==NULL)
 	return 0;

@@ -1,5 +1,5 @@
 /* $XConsortium: xkbcomp.c /main/10 1996/02/05 14:08:51 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.3 1996/02/09 10:18:19 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.4 1996/08/13 11:32:59 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -96,7 +96,7 @@ static	char *		errorPrefix= NULL;
 #define	M(m)	fprintf(stderr,(m))
 #define	M1(m,a)	fprintf(stderr,(m),(a))
 
-void
+static void
 #if NeedFunctionPrototypes
 Usage(int argc,char *argv[])
 #else
@@ -191,7 +191,7 @@ setVerboseFlags(str)
     return;
 }
 
-Bool
+static Bool
 #if NeedFunctionPrototypes
 parseArgs(int argc,char *argv[])
 #else
@@ -369,9 +369,9 @@ register int i,tmp;
 		}
 	    }
 	    else {
-		char *tmp;
-		for (tmp=argv[i];(*tmp!='\0');tmp++) {
-		    switch (*tmp) {
+		char *tmp2;
+		for (tmp2=argv[i];(*tmp2!='\0');tmp2++) {
+		    switch (*tmp2) {
 			case 'c': case 'C':
 			    optionalParts|= XkmCompatMapMask;
 			    break;
@@ -392,7 +392,7 @@ register int i,tmp;
 				WARN1("Illegal component for %s option\n",
 								argv[i-1]);
 				ACTION1("Ignoring unknown specifier \"%c\"\n",
-								(unsigned int)*tmp);
+								(unsigned int)*tmp2);
 			    }
 			    break;
 		    }
@@ -625,7 +625,7 @@ register int i,tmp;
     return True;
 }
 
-Display *
+static Display *
 #if NeedFunctionPrototypes
 GetDisplay(char *program,char *dpyName)
 #else
@@ -882,7 +882,7 @@ Status		status;
 	ok= 0;
     }
     if (ok) {
-	FILE *out;
+	FILE *out = stdout;
 	if ((inDpy!=outDpy)&&
 	    (XkbChangeKbdDisplay(outDpy,&result)!=Success)) {
 	    WSGO2("Error converting keyboard display from %s to %s\n",
@@ -892,7 +892,6 @@ Status		status;
 	if (outputFile!=NULL) {
 	    if (uStringEqual(outputFile,"-")) {
 		static char *of= "stdout";
-		out= stdout;
 		outputFile= of;
 	    }
 	    else {
