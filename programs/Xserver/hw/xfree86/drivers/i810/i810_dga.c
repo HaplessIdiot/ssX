@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dga.c,v 1.1 2000/06/22 17:44:03 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -33,6 +33,7 @@
 #include "i810.h"
 #include "i810_reg.h"
 #include "dgaproc.h"
+#include "vgaHW.h"
 
 static Bool I810_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 					int *, int *, int *);
@@ -71,34 +72,26 @@ I810DGAInit(ScreenPtr pScreen)
    DisplayModePtr pMode, firstMode;
    int Bpp = pScrn->bitsPerPixel >> 3;
    int num = 0;
-   Bool oneMore;
 
    pMode = firstMode = pScrn->modes;
 
    while(pMode) {
 
-	if(0 /*pScrn->displayWidth != pMode->HDisplay*/) {
-	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
-	    oneMore = TRUE;
-	} else {
-	    newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
-	    oneMore = FALSE;
-	}
+       newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
 
-	if(!newmodes) {
+       if(!newmodes) {
 	   xfree(modes);
 	   return FALSE;
 	}
 	modes = newmodes;
-
-SECOND_PASS:
 
 	currentMode = modes + num;
 	num++;
 
 	currentMode->mode = pMode;
 	currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-	currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
+        if(pI810->AccelInfoRec)
+	    currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
 	if(pMode->Flags & V_DBLSCAN)
 	   currentMode->flags |= DGA_DOUBLESCAN;
 	if(pMode->Flags & V_INTERLACE)
@@ -112,38 +105,23 @@ SECOND_PASS:
 	currentMode->visualClass = (Bpp == 1) ? PseudoColor : TrueColor;
 	currentMode->viewportWidth = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
-	currentMode->xViewportStep = 1;
+	currentMode->xViewportStep = (Bpp == 3) ? 2 : 1;
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
 	currentMode->offset = 0;
 	currentMode->address = pI810->FbBase;
 
-	if(oneMore) { /* first one is narrow width */
-	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pMode->HDisplay;
-	    currentMode->imageHeight =  pMode->VDisplay;
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-					currentMode->viewportHeight;
-	    oneMore = FALSE;
-	    goto SECOND_PASS;
-	} else {
-	    currentMode->bytesPerScanline = 
+        currentMode->bytesPerScanline = 
 			((pScrn->displayWidth * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pScrn->displayWidth;
-	    currentMode->imageHeight =  pMode->VDisplay;
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
+        currentMode->imageWidth = pI810->FbMemBox.x2;
+        currentMode->imageHeight =  pI810->FbMemBox.y2;
+        currentMode->pixmapWidth = currentMode->imageWidth;
+        currentMode->pixmapHeight = currentMode->imageHeight;
+        currentMode->maxViewportX = currentMode->imageWidth - 
 					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
+        /* this might need to get clamped to some maximum */
+        currentMode->maxViewportY = currentMode->imageHeight -
 					currentMode->viewportHeight;
-	}	    
 
 	pMode = pMode->next;
 	if(pMode == firstMode)
@@ -157,31 +135,28 @@ SECOND_PASS:
 }
 
 
+static DisplayModePtr I810SavedDGAModes[MAXSCREENS];
+
 static Bool
 I810_SetMode(
    ScrnInfoPtr pScrn,
    DGAModePtr pMode
 ){
-   static int OldDisplayWidth[MAXSCREENS];
    int index = pScrn->pScreen->myNum;
    I810Ptr pI810 = I810PTR(pScrn);
 
    if(!pMode) { /* restore the original mode */
-	/* put the ScreenParameters back */
-	
-	pScrn->displayWidth = OldDisplayWidth[index];
-	
-        I810SwitchMode(index, pScrn->currentMode, 0);
-	pI810->DGAactive = FALSE;
+        if(pI810->DGAactive) {
+	    pScrn->currentMode = I810SavedDGAModes[index];
+            I810SwitchMode(index, pScrn->currentMode, 0);
+	    I810AdjustFrame(index, 0, 0, 0);
+	    pI810->DGAactive = FALSE;
+	}
    } else {
-	if(!pI810->DGAactive) {  /* save the old parameters */
-	    OldDisplayWidth[index] = pScrn->displayWidth;
-
+	if(!pI810->DGAactive) {
+	    I810SavedDGAModes[index] = pScrn->currentMode;
 	    pI810->DGAactive = TRUE;
 	}
-
-	pScrn->displayWidth = pMode->bytesPerScanline / 
-			      (pMode->bitsPerPixel >> 3);
 
         I810SwitchMode(index, pMode->mode, 0);
    }
@@ -205,9 +180,15 @@ I810_SetViewport(
    int flags
 ){
    I810Ptr pI810 = I810PTR(pScrn);
+   vgaHWPtr hwp = VGAHWPTR(pScrn);
 
    I810AdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   pI810->DGAViewportStatus = 0;  /* I810AdjustFrame loops until finished */
+
+   /* wait for retrace */
+   while((hwp->readST01(hwp) & 0x08));
+   while(!(hwp->readST01(hwp) & 0x08));
+
+   pI810->DGAViewportStatus = 0; 
 }
 
 static void 

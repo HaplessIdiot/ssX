@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.29 2000/09/09 03:22:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.30 2000/09/17 01:36:27 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -156,10 +156,6 @@ static const char *fbSymbols[] = {
    NULL
 };
 
-static const char *xf8_32bppSymbols[] = {
-   "xf86Overlay8Plus32Init",
-   NULL
-};
 
 static const char *miscSymbols[] = {
    "GetTimeInMillis",
@@ -286,7 +282,6 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
       LoaderRefSymLists(vgahwSymbols, 
 			fbSymbols, 
 			xaaSymbols, 
-			xf8_32bppSymbols, 
 			ramdacSymbols,
 			miscSymbols, 
 #ifdef XF86DRI
@@ -1545,7 +1540,7 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
    else {
        /* make sure there is enough for two DVD sized YUV buffers */
 	pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
-	if (pScrn->displayWidth < 1024)
+	if (pScrn->displayWidth <= 1024)
 	    pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
 	cache_lines = pI810->FbMemBox.y2 - pScrn->virtualY;
    }
@@ -1687,8 +1682,6 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    xf86SetBlackWhitePixels(pScreen);
 
-   I810DGAInit(pScreen);
-
 #ifdef XF86DRI
    if (!pI810->directRenderingEnabled) {
       pI810->DoneFrontAlloc = FALSE;
@@ -1697,6 +1690,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       I810AllocateFront(pScrn);
    }
 #endif
+
+   I810DGAInit(pScreen);
 
    if (!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
