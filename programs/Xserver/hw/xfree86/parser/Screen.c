@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.12 2000/04/04 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.13 2000/10/20 14:59:03 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -553,7 +553,7 @@ xf86validateScreen (XF86ConfigPtr p)
 				return (FALSE);
 			}
 
-			adaptor->al_adaptor->va_fwdref = screen->scrn_identifier;
+			adaptor->al_adaptor->va_fwdref = xf86configStrdup(screen->scrn_identifier);
 			adaptor = adaptor->list.next;
 		}
 

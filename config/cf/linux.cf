@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.143 2000/11/14 23:58:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.144 2000/11/27 00:10:00 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -492,7 +492,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define StandardCppDefines	StandardDefines
 
 #define HasVarRun		YES
-#define VarDbDirectory		/var/lib
+#define VarDbDirectory		$(VARDIR)/lib
 
 #ifndef XF86OSCardDrivers
 # define XF86OSCardDrivers	v4l

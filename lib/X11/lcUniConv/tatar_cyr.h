@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcUniConv/tatar_cyr.h,v 1.1 2000/10/27 20:26:10 dawes Exp $ */
 
 /*
  * TATAR-CYR
@@ -32,13 +32,13 @@ static const unsigned short tatar_cyr_2uni[128] = {
 };
 
 static int
-tatar_cyr_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)
+tatar_cyr_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
 {
   unsigned char c = *s;
   if (c < 0xa0)
-    *pwc = (wchar_t) c;
+    *pwc = (ucs4_t) c;
   else
-    *pwc = (wchar_t) tatar_cyr_2uni[c-0xa0];
+    *pwc = (ucs4_t) tatar_cyr_2uni[c-0xa0];
   return 1;
 }
 
@@ -98,7 +98,7 @@ static const unsigned char tatar_cyr_page22[1] = {
 };
 
 static int
-tatar_cyr_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)
+tatar_cyr_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)
 {
   unsigned char c = 0;
   if (wc < 0x0080) {

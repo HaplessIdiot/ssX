@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.7 2000/07/07 20:06:56 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.8 2000/11/14 18:20:31 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -123,7 +123,7 @@ XCOMM Not implemented and will always fail.
 #define StandardCppDefines	StandardDefines
 
 #define HasVarRun		YES
-#define VarDbDirectory		/var/state
+#define VarDbDirectory		$(VARDIR)/state
 
 XCOMM i386Architecture
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt

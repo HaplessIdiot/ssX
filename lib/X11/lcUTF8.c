@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.5 2000/06/30 18:27:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.6 2000/10/27 18:30:49 dawes Exp $ */
 
 /*
  * This file contains:
@@ -99,14 +99,14 @@ close_converter(conv)
 }
 
 /* Replacement character for invalid multibyte sequence or wide character. */
-#define BAD_WCHAR ((wchar_t) 0xfffd)
+#define BAD_WCHAR ((ucs4_t) 0xfffd)
 #define BAD_CHAR '?'
 
 /***************************************************************************/
 /* Part I: Conversion routines CompoundText/CharSet <--> Unicode/UTF-8.
  *
  * Note that this code works in any locale. We store Unicode values in
- * `wchar_t' variables, but don't pass them to the user.
+ * `ucs4_t' variables, but don't pass them to the user.
  *
  * This code has to support all character sets that are used for CompoundText,
  * nothing more, nothing less. See the table in lcCT.c.
@@ -119,34 +119,32 @@ close_converter(conv)
  * libX11 shared library share the "text" and read-only "data" sections.
  */
 
-typedef wchar_t original_wchar_t;
-typedef unsigned int local_wchar_t;
-#define wchar_t local_wchar_t
+typedef unsigned int ucs4_t;
 #define conv_t XlcConv
 
 typedef struct _Utf8ConvRec {
     const char *name;
     XrmQuark xrm_name;
 #if NeedFunctionPrototypes
-    int (* cstowc) (XlcConv, wchar_t *, unsigned char const *, int);
+    int (* cstowc) (XlcConv, ucs4_t *, unsigned char const *, int);
 #else
     int (* cstowc) ();
 #endif
 #if NeedFunctionPrototypes
-    int (* wctocs) (XlcConv, unsigned char *, wchar_t, int);
+    int (* wctocs) (XlcConv, unsigned char *, ucs4_t, int);
 #else
     int (* wctocs) ();
 #endif
 } Utf8ConvRec, *Utf8Conv;
 
 /*
- * int xxx_cstowc (XlcConv conv, wchar_t *pwc, unsigned char const *s, int n)
+ * int xxx_cstowc (XlcConv conv, ucs4_t *pwc, unsigned char const *s, int n)
  * converts the byte sequence starting at s to a wide character. Up to n bytes
  * are available at s. n is >= 1.
  * Result is number of bytes consumed (if a wide character was read),
  * or 0 if invalid, or -1 if n too small.
  *
- * int xxx_wctocs (XlcConv conv, unsigned char *r, wchar_t wc, int n)
+ * int xxx_wctocs (XlcConv conv, unsigned char *r, ucs4_t wc, int n)
  * converts the wide character wc to the character set xxx, and stores the
  * result beginning at r. Up to n bytes may be written at r. n is >= 1.
  * Result is number of bytes written, or 0 if invalid, or -1 if n too small.
@@ -403,7 +401,7 @@ cstoutf8(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend) {
-	wchar_t wc;
+	ucs4_t wc;
 	int consumed;
 	int count;
 
@@ -535,7 +533,7 @@ charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
     XlcSide *sidep;
     XlcConv conv;
     unsigned char *r;
-    wchar_t wc;
+    ucs4_t wc;
     int n;
 {
     int count;
@@ -597,7 +595,7 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
     while (src < srcend && dst < dstend) {
 	Utf8Conv chosen_charset = NULL;
 	XlcSide chosen_side = XlcNONE;
-	wchar_t wc;
+	ucs4_t wc;
 	int consumed;
 	int count;
 
@@ -700,7 +698,7 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
     while (src < srcend && dst < dstend) {
 	Utf8Conv chosen_charset = NULL;
 	XlcSide chosen_side = XlcNONE;
-	wchar_t wc;
+	ucs4_t wc;
 	int consumed;
 	int count;
 
@@ -800,7 +798,7 @@ utf8tostr(conv, from, from_left, to, to_left, args, num_args)
 
     while (src < srcend) {
 	unsigned char c;
-	wchar_t wc;
+	ucs4_t wc;
 	int consumed;
 
 	consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
@@ -813,7 +811,7 @@ utf8tostr(conv, from, from_left, to, to_left, args, num_args)
 	    c = BAD_CHAR;
 	    unconv_num++;
 	} else {
-	    if ((wc & ~(wchar_t)0xff) != 0) {
+	    if ((wc & ~(ucs4_t)0xff) != 0) {
 		c = BAD_CHAR;
 		unconv_num++;
 	    } else
@@ -916,9 +914,6 @@ _XlcAddUtf8Converters(lcd)
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNString, open_utf8tostr);
 }
 
-#undef wchar_t
-#define wchar_t original_wchar_t
-
 /***************************************************************************/
 /* Part II: An UTF-8 locale loader.
  *
@@ -953,7 +948,7 @@ utf8towcs(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	local_wchar_t wc;
+	ucs4_t wc;
 	int consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
 	if (consumed == RET_TOOFEW(0))
 	    break;

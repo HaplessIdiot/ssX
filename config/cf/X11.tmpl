@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.80 2000/11/09 01:35:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.81 2000/11/14 00:07:00 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1024,9 +1024,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef XPrintDir
 #define XPrintDir ServerConfigDir
 #endif
-#ifndef VarDirectory
-#define VarDirectory /var/X11
-#endif
 #ifndef EtcX11Directory
 #define EtcX11Directory /etc/X11
 #endif
@@ -1128,9 +1125,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
         MODULEDIR = ModuleDir
    TOP_X_INCLUDES = TopXInclude
 
-#ifdef VarDirectory
-           VARDIR = VarDirectory
-#endif
 #ifdef EtcX11Directory
         ETCX11DIR = EtcX11Directory
 #endif

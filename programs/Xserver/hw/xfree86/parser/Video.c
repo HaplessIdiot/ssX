@@ -25,7 +25,7 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.3 1999/05/30 14:04:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Video.c,v 1.4 2000/10/20 14:59:03 alanh Exp $ */
 
 /* View/edit this file with tab stops set to 4 */
 
@@ -256,6 +256,7 @@ xf86freeVideoAdaptorList (XF86ConfVideoAdaptorPtr ptr)
 		TestFree (ptr->va_board);
 		TestFree (ptr->va_busid);
 		TestFree (ptr->va_driver);
+		TestFree (ptr->va_fwdref);
 		xf86freeVideoPortList (ptr->va_port_lst);
 		xf86optionListFree (ptr->va_option_lst);
 		prev = ptr;
