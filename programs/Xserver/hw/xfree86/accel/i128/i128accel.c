@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.14 1998/04/07 18:30:15 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.15 1998/04/09 02:35:56 robin Exp $ */
 
 /*
  * Copyright 1997-1998 by Robin Cutshaw <robin@XFree86.Org>
@@ -626,6 +626,7 @@ i128AccelInit()
 				 USE_TWO_POINT_LINE |
 				 LINE_PATTERN_MSBFIRST_MSBJUSTIFIED |
 				 TWO_POINT_LINE_NOT_LAST |
+				 MICROSOFT_ZERO_LINE_BIAS |
 				 PIXMAP_CACHE
 #ifdef DELAYED_SYNC
 				 | DELAYED_SYNC
