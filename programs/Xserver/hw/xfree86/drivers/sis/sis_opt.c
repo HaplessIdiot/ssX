@@ -46,6 +46,7 @@ typedef enum {
     OPTION_FAST_VRAM,
     OPTION_NOHOSTBUS,
 /*  OPTION_SET_MEMCLOCK,   */
+    OPTION_NORENDER,
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
     OPTION_ROTATE,
@@ -146,6 +147,7 @@ static const OptionInfoRec SISOptions[] = {
 /*  { OPTION_SET_MEMCLOCK,      	"SetMClk",                OPTV_FREQ,      {0}, -1    },  */
     { OPTION_FAST_VRAM,         	"FastVram",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_NOHOSTBUS,         	"NoHostBus",              OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_NORENDER,        		"NoRenderAccleration",    OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
@@ -275,6 +277,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     /* But beware: sisfb does not know about this!!! */
     pSiS->cmdQueueSize = 512*1024;
 #endif
+    pSiS->doRender = TRUE;
     pSiS->HWCursor = TRUE;
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
@@ -366,6 +369,12 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     if(pSiS->Chipset == PCI_CHIP_SIS6326) {
          pSiS->newFastVram = 1;
+    }
+
+    if(pSiS->sishw_ext.jChipType == SIS_315H ||
+       pSiS->sishw_ext.jChipType == SIS_315) {
+         /* Cursor engine seriously broken */
+         pSiS->HWCursor = FALSE;
     }
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
@@ -461,6 +470,16 @@ SiSOptions(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "2D Acceleration disabled\n");
 #endif
 
+    }
+
+    /* NoRenderAcceleration
+     * Disables RENDER acceleration (315/330 series only)
+     */
+    if((pSiS->VGAEngine == SIS_315_VGA) && (!pSiS->NoAccel)) {
+       if(xf86ReturnOptValBool(pSiS->Options, OPTION_NORENDER, FALSE)) {
+          pSiS->doRender = FALSE;
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "RENDER Acceleration disabled\n");
+       }
     }
 
     /* SWCursor

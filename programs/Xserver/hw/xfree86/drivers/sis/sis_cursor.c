@@ -843,13 +843,17 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	         sis301SwitchToMONOCursor310();
 	      }
 	   }
+	} else if(pSiS->Chipset == PCI_CHIP_SIS315H) {
+	   if(pSiS->VBFlags & DISPTYPE_CRT1) {
+	      SISWaitRetraceCRT1(pScrn);
+	   }
 	}
     }
 
     sis310SetCursorAddress(cursor_addr);
     sis310SetCursorPatternSelect(0);
     if(status1) sis310SetCursorStatus(status1)
-    
+
     if(pSiS->VBFlags & CRT2_ENABLE) {
        if(pSiS->ChipFlags & SiSCF_XabreCore) {
           sis301SetCursorAddress330(cursor_addr2)

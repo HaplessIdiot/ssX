@@ -1959,11 +1959,15 @@ SiSInitPCIetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    case SIS_630:
    case SIS_730:
       /* Set - PCI LINEAR ADDRESSING ENABLE (0x80)
-       *     - PCI IO ENABLE  (0x20)
+       *     - RELOCATED VGA IO  (0x20)
        *     - MMIO ENABLE (0x1)
        */
       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
-      /* Enable 2D (0x42) & 3D accelerator (0x18) */
+      /*  - Enable 2D (0x40)
+       *  - Enable 3D (0x02)
+       *  - Enable 3D Vertex command fetch (0x10) ?
+       *  - Enable 3D command parser (0x08) ?
+       */
       SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x5A);
       break;
    case SIS_315H:
@@ -1975,12 +1979,20 @@ SiSInitPCIetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    case SIS_660:
    case SIS_760:
       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
-      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x5A);
+      /*  - Enable 2D (0x40)
+       *  - Enable 3D (0x02)
+       *  - Enable 3D vertex command fetch (0x10)
+       *  - Enable 3D command parser (0x08)
+       *  - Enable 3D G/L transformation engine (0x80)
+       */
+      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0xDA);
       break;
    case SIS_550:
       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
       /* No 3D engine ! */
-      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x42);
+      /*  - Enable 2D (0x40)
+       */
+      SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x1E,0x40);
    }
 }
 

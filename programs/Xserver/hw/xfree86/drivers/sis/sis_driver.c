@@ -7913,13 +7913,16 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 	      MMIO_OUT32(pSiS->IOBase, 0x85c4, 0);
 	      /* Enable VRAM Command Queue mode */
 	      switch(pSiS->cmdQueueSize) {
-    		case 1*1024*1024: SR26 = (0x40 | 0x04); break;
-    		case 2*1024*1024: SR26 = (0x40 | 0x08); break;
-    		case 4*1024*1024: SR26 = (0x40 | 0x0C); break;
+    		case 1*1024*1024: SR26 = (0x40 | 0x04 | 0x01); break;
+    		case 2*1024*1024: SR26 = (0x40 | 0x08 | 0x01); break;
+    		case 4*1024*1024: SR26 = (0x40 | 0x0C | 0x01); break;
 		default:
-		case    512*1024: SR26 = (0x40 | 0x00);
+		                  pSiS->cmdQueueSize = 512 * 1024;
+		case    512*1024: SR26 = (0x40 | 0x00 | 0x01);
 	      }
     	      outSISIDXREG(SISSR, 0x26, SR26);
+	      SR26 &= 0xfe;
+	      outSISIDXREG(SISSR, 0x26, SR26);
 	      pSiS->cmdQ_SharedWritePort_2D = (unsigned long)(MMIO_IN32(pSiS->IOBase, 0x85c8));
               *(pSiS->cmdQ_SharedWritePort) = pSiS->cmdQ_SharedWritePort_2D;
               MMIO_OUT32(pSiS->IOBase, 0x85c4, pSiS->cmdQ_SharedWritePort_2D);
