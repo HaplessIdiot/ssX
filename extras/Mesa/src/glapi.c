@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -1478,11 +1478,13 @@ get_static_proc_offset(const char *funcName)
 static GLvoid *
 get_static_proc_address(const char *funcName)
 {
-   GLint i = get_static_proc_offset(funcName);
-   if (i >= 0)
-      return static_functions[i].Address;
-   else
-      return NULL;
+   GLint i;
+   for (i = 0; static_functions[i].Name; i++) {
+      if (strcmp(static_functions[i].Name, funcName) == 0) {
+         return static_functions[i].Address;
+      }
+   }
+   return NULL;
 }
 
 

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/drawpix.c,v 1.6 2000/09/26 15:56:31 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -125,7 +125,6 @@ simple_DrawPixels( GLcontext *ctx, GLint x, GLint y,
        && !ctx->Pixel.MinMaxEnabled
        && !ctx->Pixel.HistogramEnabled
        && ctx->Pixel.IndexShift==0 && ctx->Pixel.IndexOffset==0
-       && ctx->Pixel.MapColorFlag==0
        && ctx->Texture.ReallyEnabled == 0
        && unpack->Alignment==1
        && !unpack->SwapBytes
@@ -218,7 +217,8 @@ simple_DrawPixels( GLcontext *ctx, GLint x, GLint y,
        * skip "skipRows" rows and skip "skipPixels" pixels/row.
        */
 
-      if (format==GL_RGBA && type==GL_UNSIGNED_BYTE) {
+      if (format==GL_RGBA && type==GL_UNSIGNED_BYTE
+          && ctx->Pixel.MapColorFlag==0) {
          if (ctx->Visual->RGBAflag) {
             GLubyte *src = (GLubyte *) pixels
                + (skipRows * rowLength + skipPixels) * 4;
@@ -255,7 +255,8 @@ simple_DrawPixels( GLcontext *ctx, GLint x, GLint y,
          }
          return GL_TRUE;
       }
-      else if (format==GL_RGB && type==GL_UNSIGNED_BYTE) {
+      else if (format==GL_RGB && type==GL_UNSIGNED_BYTE
+               && ctx->Pixel.MapColorFlag==0) {
          if (ctx->Visual->RGBAflag) {
             GLubyte *src = (GLubyte *) pixels
                + (skipRows * rowLength + skipPixels) * 3;
@@ -291,7 +292,8 @@ simple_DrawPixels( GLcontext *ctx, GLint x, GLint y,
          }
          return GL_TRUE;
       }
-      else if (format==GL_LUMINANCE && type==GL_UNSIGNED_BYTE) {
+      else if (format==GL_LUMINANCE && type==GL_UNSIGNED_BYTE
+               && ctx->Pixel.MapColorFlag==0) {
          if (ctx->Visual->RGBAflag) {
             GLubyte *src = (GLubyte *) pixels
                + (skipRows * rowLength + skipPixels);
@@ -349,7 +351,8 @@ simple_DrawPixels( GLcontext *ctx, GLint x, GLint y,
          }
          return GL_TRUE;
       }
-      else if (format==GL_LUMINANCE_ALPHA && type==GL_UNSIGNED_BYTE) {
+      else if (format==GL_LUMINANCE_ALPHA && type==GL_UNSIGNED_BYTE
+               && ctx->Pixel.MapColorFlag==0) {
          if (ctx->Visual->RGBAflag) {
             GLubyte *src = (GLubyte *) pixels
                + (skipRows * rowLength + skipPixels)*2;
@@ -707,6 +710,11 @@ draw_rgba_pixels( GLcontext *ctx, GLint x, GLint y,
    GLdepth zspan[MAX_WIDTH];
    GLboolean quickDraw;
 
+   if (!_mesa_is_legal_format_and_type(format, type)) {
+      gl_error(ctx, GL_INVALID_ENUM, "glDrawPixels(format or type)");
+      return;
+   }
+
    /* Try an optimized glDrawPixels first */
    if (simple_DrawPixels(ctx, x, y, width, height, format, type, pixels))
       return;
@@ -814,6 +822,7 @@ _mesa_DrawPixels( GLsizei width, GLsizei height,
          return;
       }
 
+      RENDER_START(ctx);
       switch (format) {
 	 case GL_STENCIL_INDEX:
 	    draw_stencil_pixels( ctx, x, y, width, height, type, pixels );
@@ -842,8 +851,8 @@ _mesa_DrawPixels( GLsizei width, GLsizei height,
 	    break;
 	 default:
 	    gl_error( ctx, GL_INVALID_ENUM, "glDrawPixels(format)" );
-            return;
       }
+      RENDER_FINISH(ctx);
    }
    else if (ctx->RenderMode==GL_FEEDBACK) {
       if (ctx->Current.RasterPosValid) {

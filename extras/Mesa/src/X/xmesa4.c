@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa4.c,v 1.6 2000/09/26 15:56:39 tsi Exp $ */
 
 /*
  * Mesa/X11 interface, part 4.
@@ -1539,8 +1539,8 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
 
    (void) kernel1;
 
-   if (ctx->Polygon.SmoothFlag)     return NULL;
-   if (ctx->Texture.Enabled)        return NULL;
+   if (ctx->Polygon.SmoothFlag)     return (triangle_func)NULL;
+   if (ctx->Texture.ReallyEnabled)  return (triangle_func)NULL;
 
    if (xmesa->xm_buffer->buffer==XIMAGE) {
       if (   ctx->Light.ShadeModel==GL_SMOOTH
@@ -1570,9 +1570,9 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
                return (depth==8) ? smooth_DITHER8_z_triangle
                                         : smooth_DITHER_z_triangle;
             case PF_LOOKUP:
-               return (depth==8) ? smooth_LOOKUP8_z_triangle : NULL;
+               return (depth==8) ? smooth_LOOKUP8_z_triangle : (triangle_func)NULL;
             default:
-               return NULL;
+               return (triangle_func)NULL;
          }
       }
       if (   ctx->Light.ShadeModel==GL_FLAT
@@ -1602,9 +1602,9 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
                return (depth==8) ? flat_DITHER8_z_triangle
                                         : flat_DITHER_z_triangle;
             case PF_LOOKUP:
-               return (depth==8) ? flat_LOOKUP8_z_triangle : NULL;
+               return (depth==8) ? flat_LOOKUP8_z_triangle : (triangle_func)NULL;
             default:
-               return NULL;
+               return (triangle_func)NULL;
          }
       }
       if (   ctx->RasterMask==0   /* no depth test */
@@ -1631,9 +1631,9 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
                return (depth==8) ? smooth_DITHER8_triangle
                                         : smooth_DITHER_triangle;
             case PF_LOOKUP:
-               return (depth==8) ? smooth_LOOKUP8_triangle : NULL;
+               return (depth==8) ? smooth_LOOKUP8_triangle : (triangle_func)NULL;
             default:
-               return NULL;
+               return (triangle_func)NULL;
          }
       }
 
@@ -1661,13 +1661,13 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
                return (depth==8) ? flat_DITHER8_triangle
                                         : flat_DITHER_triangle;
             case PF_LOOKUP:
-               return (depth==8) ? flat_LOOKUP8_triangle : NULL;
+               return (depth==8) ? flat_LOOKUP8_triangle : (triangle_func)NULL;
             default:
-               return NULL;
+               return (triangle_func)NULL;
          }
       }
 
-      return NULL;
+      return (triangle_func)NULL;
    }
    else {
       /* draw to pixmap */
@@ -1684,6 +1684,6 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
          return flat_pixmap_triangle;
       }
 #endif
-      return NULL;
+      return (triangle_func)NULL;
    }
 }

@@ -52,7 +52,7 @@
 #endif
 
 #ifdef USE_X86_ASM
-#include "X86/common_x86asm.h"
+#include "X86/common_x86_asm.h"
 #endif
 
 clip_func gl_clip_tab[5];
@@ -201,12 +201,12 @@ void gl_init_transformation( void )
    init_dotprod_masked();
 
 #ifdef DEBUG
-   gl_test_all_transform_functions ("default");
-   gl_test_all_normal_transform_functions ("default");
+   gl_test_all_transform_functions( "default" );
+   gl_test_all_normal_transform_functions( "default" );
 #endif
 
 #ifdef USE_X86_ASM
-   gl_init_all_x86_asm ();
+   gl_init_all_x86_transform_asm();
 #endif
 }
 

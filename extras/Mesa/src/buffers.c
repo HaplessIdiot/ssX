@@ -1,7 +1,8 @@
+/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/buffers.c,v 1.4 2000/09/26 15:56:29 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -208,15 +209,19 @@ clear_color_buffers(GLcontext *ctx)
       if (bufferBit & ctx->Color.DrawDestMask) {
          if (bufferBit == FRONT_LEFT_BIT) {
             (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_LEFT);
+            (void) (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer, GL_FRONT_LEFT);
          }
          else if (bufferBit == FRONT_RIGHT_BIT) {
             (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_FRONT_RIGHT);
+            (void) (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer, GL_FRONT_RIGHT);
          }
          else if (bufferBit == BACK_LEFT_BIT) {
             (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_LEFT);
+            (void) (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer, GL_BACK_LEFT);
          }
          else {
             (void) (*ctx->Driver.SetDrawBuffer)( ctx, GL_BACK_RIGHT);
+            (void) (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer, GL_BACK_RIGHT);
          }
          
          if (ctx->Color.SWmasking) {
@@ -228,8 +233,9 @@ clear_color_buffers(GLcontext *ctx)
       }
    }
 
-   /* restore default dest buffer */
+   /* restore default read/draw buffers */
    (void) (*ctx->Driver.SetDrawBuffer)( ctx, ctx->Color.DriverDrawBuffer );
+   (void) (*ctx->Driver.SetReadBuffer)( ctx, ctx->ReadBuffer, ctx->Pixel.DriverReadBuffer );
 }
 
 
@@ -287,6 +293,8 @@ _mesa_Clear( GLbitfield mask )
       }
 #endif
 
+      RENDER_START(ctx);
+
       /* do software clearing here */
       if (newMask) {
          if (newMask & ctx->Color.DrawDestMask)   clear_color_buffers(ctx);
@@ -301,6 +309,8 @@ _mesa_Clear( GLbitfield mask )
            && ctx->Color.ColorMask[ACOMP]) {
          _mesa_clear_alpha_buffers( ctx );
       }
+
+      RENDER_FINISH(ctx);
 
 #ifdef PROFILE
       ctx->ClearTime += gl_time() - t0;

@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/types.h,v 1.7 2000/09/26 15:56:34 tsi Exp $ */
 
 #ifndef TYPES_H
 #define TYPES_H
@@ -449,7 +449,7 @@ struct gl_enable_attrib {
    GLboolean RescaleNormals;
    GLboolean Scissor;
    GLboolean Stencil;
-   GLuint Texture;
+   GLuint Texture[MAX_TEXTURE_UNITS];
    GLuint TexGen[MAX_TEXTURE_UNITS];
 };
 
@@ -828,8 +828,8 @@ struct gl_texture_object {
  * Texture units are new with the multitexture extension.
  */
 struct gl_texture_unit {
-   GLuint Enabled;
-   GLuint ReallyEnabled;
+   GLuint Enabled;              /* bitmask of TEXTURE0_1D, _2D, _3D, _CUBE */
+   GLuint ReallyEnabled;        /* 0 or one of TEXTURE0_1D, _2D, _3D, _CUBE */
 
    GLenum EnvMode;	   /* GL_MODULATE, GL_DECAL, GL_BLEND, GL_COMBINE_EXT */
    GLenum LastEnvMode;
@@ -886,9 +886,7 @@ struct gl_texture_attrib {
    GLuint CurrentUnit;			/* Current texture unit */
    GLuint CurrentTransformUnit;		/* Current texture xform unit */
 
-   /* Bitwise-OR of TEXTURE_XD values */
-   GLuint Enabled;		/* Enabled by the user */
-   GLuint ReallyEnabled;	/* Really enabled (w.r.t. completeness, etc) */
+   GLuint ReallyEnabled;     /* Really enabled (w.r.t. completeness, etc) */
 	
    GLuint LastEnabled;	/* Decide whether enabled has really changed */
 
@@ -1963,6 +1961,10 @@ struct gl_context {
 
    /* Dither disable via MESA_NO_DITHER env var */
    GLboolean NoDither;
+
+#ifdef DEBUG
+   GLboolean Rendering;
+#endif
 };
 
 
@@ -2071,7 +2073,44 @@ do {								\
 
 #define Elements(x) sizeof(x)/sizeof(*(x))
 
+
+#ifdef DEBUG
+
+#define RENDER_START(CTX)			\
+   do {						\
+      assert(!(CTX)->Rendering);		\
+      (CTX)->Rendering = GL_TRUE;		\
+      if ((CTX)->Driver.RenderStart) {		\
+         (*(CTX)->Driver.RenderStart)(CTX);	\
+      }						\
+   } while (0)
+
+#define RENDER_FINISH(CTX)			\
+   do {						\
+      assert((CTX)->Rendering);			\
+      (CTX)->Rendering = GL_FALSE;		\
+      if ((CTX)->Driver.RenderFinish) {		\
+         (*(CTX)->Driver.RenderFinish)(CTX);	\
+      }						\
+   } while (0)
+
+#else
+
+#define RENDER_START(CTX)			\
+   do {						\
+      if ((CTX)->Driver.RenderStart) {		\
+         (*(CTX)->Driver.RenderStart)(CTX);	\
+      }						\
+   } while (0)
+
+#define RENDER_FINISH(CTX)			\
+   do {						\
+      if ((CTX)->Driver.RenderFinish) {		\
+         (*(CTX)->Driver.RenderFinish)(CTX);	\
+      }						\
+   } while (0)
+
 #endif
 
 
-
+#endif /* TYPES_H */

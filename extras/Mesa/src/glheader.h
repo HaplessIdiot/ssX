@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.10 2000/10/20 12:57:21 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.11 2000/10/26 17:57:48 dawes Exp $ */
 
 
 #ifndef GLHEADER_H
@@ -137,10 +137,10 @@
 #if defined(_WIN32) && !defined(_WINDEF_) && !defined(_GNU_H_WINDOWS32_BASE) && !defined(OPENSTEP) && !defined(__CYGWIN__)
 #if 0
 #	define CALLBACK GLCALLBACK
-#endif
-typedef int (GLAPIENTRY *PROC)();
 typedef void *HGLRC;
 typedef void *HDC;
+#endif
+typedef int (GLAPIENTRY *PROC)();
 typedef unsigned long COLORREF;
 #endif
 

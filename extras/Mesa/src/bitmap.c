@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -60,6 +60,8 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
    if (!bitmap) {
       return;  /* NULL bitmap is legal, a no-op */
    }
+
+   RENDER_START(ctx);
 
    /* Set bitmap drawing color */
    if (ctx->Visual->RGBAflag) {
@@ -127,6 +129,8 @@ render_bitmap( GLcontext *ctx, GLint px, GLint py,
    }
 
    gl_flush_pb(ctx);
+
+   RENDER_FINISH(ctx);
 }
 
 

@@ -55,7 +55,7 @@
 #include "mmath.h"
 #include "fxdrv.h"
 #include "vertices.h"
-#include "X86/common_x86asm.h"
+#include "X86/common_x86_asm.h"
 
 
 #if 0 && defined(__i386__)
@@ -143,7 +143,7 @@ if (mask & PLANE) {						\
 
 #define CLIP_POINT( e )				\
    if (mask[e])					\
-      *out++ = e 
+      *out++ = e
 
 #define CLIP_LINE( e1, e0 )						\
 do {									\
@@ -230,11 +230,11 @@ do {									\
 
 
 
-struct fx_fast_tab 
+struct fx_fast_tab
 {
    void (*build_vertices)( struct vertex_buffer *VB, GLuint do_clip );
 
-   void (*clip[GL_POLYGON+1])( struct vertex_buffer *VB, 
+   void (*clip[GL_POLYGON+1])( struct vertex_buffer *VB,
 			       GLuint start,
 			       GLuint count,
 			       GLuint parity );
@@ -257,7 +257,7 @@ struct fx_fast_tab
 #define CLIP_G  CLIP_GCOORD
 #define CLIP_B  CLIP_BCOORD
 #define CLIP_A  CLIP_ACOORD
-#define CLIP_S0 4		
+#define CLIP_S0 4
 #define CLIP_T0 5
 #define CLIP_S1 6
 #define CLIP_T1 7
@@ -380,11 +380,11 @@ void fxDDFastPath( struct vertex_buffer *VB )
 
 	 tab->clip[prim]( VB, 0, VB->EltPtr->count, 0 );   /* clip */
 
-	 tab->project_clipped_vertices( fxVB->verts->f, 
-					fxVB->last_vert->f, 
-					mat, 16 * 4, 
+	 tab->project_clipped_vertices( fxVB->verts->f,
+					fxVB->last_vert->f,
+					mat, 16 * 4,
 					VB->ClipMask );
-	 
+
 	 ctx->CVA.elt_mode = gl_reduce_prim[prim];
 	 VB->EltPtr = &(FX_DRIVER_DATA(VB)->clipped_elements);
 
@@ -393,9 +393,9 @@ void fxDDFastPath( struct vertex_buffer *VB )
 	 VB->ClipOrMask = tmp;
       }
    } else {
-      tab->project_vertices(  fxVB->verts->f, 
-			      fxVB->last_vert->f, 
-			      mat, 16 * 4 );  
+      tab->project_vertices(  fxVB->verts->f,
+			      fxVB->last_vert->f,
+			      mat, 16 * 4 );
 
       fxDDRenderElementsDirect( VB );           /* render using orig list */
    }
@@ -405,7 +405,7 @@ void fxDDFastPath( struct vertex_buffer *VB )
    mat[MAT_TY]=ty;
 #endif
 
-   /* This indicates that there is no cached data to reuse.  
+   /* This indicates that there is no cached data to reuse.
     */
    VB->pipeline->data_valid = 0;
    VB->pipeline->pipeline_valid = 0;

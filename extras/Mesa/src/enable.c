@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -284,12 +284,14 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
       case GL_POINT_SMOOTH:
 	 if (ctx->Point.SmoothFlag!=state) {
             ctx->Point.SmoothFlag = state;
+	    ctx->TriangleCaps ^= DD_POINT_SMOOTH;
             ctx->NewState |= NEW_RASTER_OPS;
          }
 	 break;
       case GL_POLYGON_SMOOTH:
 	 if (ctx->Polygon.SmoothFlag!=state) {
             ctx->Polygon.SmoothFlag = state;
+	    ctx->TriangleCaps ^= DD_TRI_SMOOTH;
             ctx->NewState |= NEW_RASTER_OPS;
          }
 	 break;
@@ -349,48 +351,39 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
       case GL_TEXTURE_1D:
          if (ctx->Visual->RGBAflag) {
 	    const GLuint curr = ctx->Texture.CurrentUnit;
-	    const GLuint flag = TEXTURE0_1D << (curr * 4);
             struct gl_texture_unit *texUnit = &ctx->Texture.Unit[curr];
 	    ctx->NewState |= NEW_TEXTURE_ENABLE;
             if (state) {
 	       texUnit->Enabled |= TEXTURE0_1D;
-	       ctx->Enabled |= flag;
 	    }
             else {
                texUnit->Enabled &= ~TEXTURE0_1D;
-               ctx->Enabled &= ~flag;
             }
          }
          break;
       case GL_TEXTURE_2D:
          if (ctx->Visual->RGBAflag) {
 	    const GLuint curr = ctx->Texture.CurrentUnit;
-	    const GLuint flag = TEXTURE0_2D << (curr * 4);
             struct gl_texture_unit *texUnit = &ctx->Texture.Unit[curr];
 	    ctx->NewState |= NEW_TEXTURE_ENABLE;
             if (state) {
 	       texUnit->Enabled |= TEXTURE0_2D;
-	       ctx->Enabled |= flag;
 	    }
             else {
                texUnit->Enabled &= ~TEXTURE0_2D;
-               ctx->Enabled &= ~flag;
             }
          }
 	 break;
       case GL_TEXTURE_3D:
          if (ctx->Visual->RGBAflag) {
 	    const GLuint curr = ctx->Texture.CurrentUnit;
-	    const GLuint flag = TEXTURE0_3D << (curr * 4);
             struct gl_texture_unit *texUnit = &ctx->Texture.Unit[curr];
 	    ctx->NewState |= NEW_TEXTURE_ENABLE;
             if (state) {
 	       texUnit->Enabled |= TEXTURE0_3D;
-	       ctx->Enabled |= flag;
 	    }
             else {
                texUnit->Enabled &= ~TEXTURE0_3D;
-               ctx->Enabled &= ~flag;
             }
          }
          break;
@@ -510,35 +503,24 @@ void _mesa_set_enable( GLcontext *ctx, GLenum cap, GLboolean state )
          if (ctx->Extensions.HaveTextureCubeMap) {
             if (ctx->Visual->RGBAflag) {
                const GLuint curr = ctx->Texture.CurrentUnit;
-               const GLuint flag = TEXTURE0_CUBE << (curr * 4);
                struct gl_texture_unit *texUnit = &ctx->Texture.Unit[curr];
                ctx->NewState |= NEW_TEXTURE_ENABLE;
                if (state) {
                   texUnit->Enabled |= TEXTURE0_CUBE;
-                  ctx->Enabled |= flag;
                }
                else {
                   texUnit->Enabled &= ~TEXTURE0_CUBE;
-                  ctx->Enabled &= ~flag;
                }
             }
          }
          else {
-            if (state)
-               gl_error(ctx, GL_INVALID_ENUM, "glEnable");
-            else
-               gl_error(ctx, GL_INVALID_ENUM, "glDisable");
+            gl_error(ctx, GL_INVALID_ENUM, state ? "glEnable" : "glDisable");
             return;
          }
 	 break;
 
       default:
-	 if (state) {
-	    gl_error( ctx, GL_INVALID_ENUM, "glEnable" );
-	 }
-	 else {
-	    gl_error( ctx, GL_INVALID_ENUM, "glDisable" );
-	 }
+         gl_error(ctx, GL_INVALID_ENUM, state ? "glEnable" : "glDisable");
          return;
    }
 

@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.4
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -193,9 +193,6 @@ static void TAG(fog_ci_vertices)( struct vertex_buffer *VB,
 
 
 
-
-
-
 static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 				    GLuint side,
 				    GLubyte flag)
@@ -226,7 +223,6 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
    VB->ColorPtr = VB->Color[0];
    out = (GLubyte (*)[4])VB->Color[side]->start;
 
-
    if (VB->EyePtr->size > 2) {
       switch (ctx->Fog.Mode) {
       case GL_LINEAR:
@@ -234,12 +230,17 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 	 for ( i = 0 ; i < n ; i++, STRIDE_F(v, stride), in += in_stride) {
 	    CULLCHECK {
 	       GLfloat f = (end - ABSF(v[2])) * d;
-	       if (f >= 1.0) continue;
-	       if (f < 0) {
+               if (f >= 1.0) {
+                  out[i][0] = in[0];
+                  out[i][1] = in[1];
+                  out[i][2] = in[2];
+               }
+	       else if (f <= 0.0) {
 		  CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][0], rFog);
 		  CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][1], gFog);
 		  CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][2], bFog);
-	       } else {
+	       }
+               else {
 		  t = f * UBYTE_COLOR_TO_FLOAT_COLOR(in[0]) + (1.0F-f)*rFog;
 		  CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][0], t);
 	       
@@ -293,27 +294,40 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 	 return;
       }
    }
-   else if (ctx->Fog.Mode == GL_LINEAR)
-   {
-      /* 2-vector vertices */
-      GLubyte r,g,b;
-      GLfloat f = ctx->Fog.End * (ctx->Fog.End - ctx->Fog.Start);
-      CLAMP_FLOAT_COLOR( f );
-      f = 1.0 - f;
-      rFog *= f;
-      bFog *= f;
-      gFog *= f;
+   else {
+      /* All vertex Z coordinates are zero */
+      if (ctx->Fog.Mode == GL_LINEAR) {
+         /* 2-vector vertices */
+         GLubyte r,g,b;
+         GLfloat f = ctx->Fog.End * (ctx->Fog.End - ctx->Fog.Start);
+         CLAMP_FLOAT_COLOR( f );
+         f = 1.0 - f;
+         rFog *= f;
+         bFog *= f;
+         gFog *= f;
 
-      CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(r, rFog);
-      CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(g, gFog);
-      CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(b, bFog);
+         CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(r, rFog);
+         CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(g, gFog);
+         CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(b, bFog);
 
-      for (i = 0 ; i < n ; i++) {
-	 /* CULLCHECK */ {
-	    out[i][0] = r;
-	    out[i][1] = g;
-	    out[i][2] = b;
-	 }
+         for (i = 0 ; i < n ; i++) {
+            /* CULLCHECK */ {
+               out[i][0] = r;
+               out[i][1] = g;
+               out[i][2] = b;
+            }
+         }
+      }
+      else {
+         /* EXP or EXP2 mode */
+         /* f = exp(d*z*z) or f = exp(d*|z|) is one.  Copy in color to out */
+	 for ( i = 0 ; i < n ; i++, STRIDE_F(v,stride), in += in_stride) {
+            /* CULLCHECK */ {
+               out[i][0] = in[0];
+               out[i][1] = in[1];
+               out[i][2] = in[2];
+            }
+         }
       }
    }
 }

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/readpix.c,v 1.6 2000/09/26 15:56:33 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -705,6 +705,8 @@ _mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
                                  format, type, &ctx->Pack, pixels))
       return;
 
+   RENDER_START(ctx);
+
    switch (format) {
       case GL_COLOR_INDEX:
          read_index_pixels(ctx, x, y, width, height, type, pixels, &ctx->Pack);
@@ -732,4 +734,6 @@ _mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
       default:
 	 gl_error( ctx, GL_INVALID_ENUM, "glReadPixels(format)" );
    }
+
+   RENDER_FINISH(ctx);
 }

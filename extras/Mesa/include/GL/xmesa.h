@@ -1,4 +1,3 @@
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -88,7 +87,7 @@ extern struct Library *XLibBase;
 
 
 #define XMESA_MAJOR_VERSION 3
-#define XMESA_MINOR_VERSION 3
+#define XMESA_MINOR_VERSION 4
 
 
 

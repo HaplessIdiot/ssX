@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/katmai_xform_raw3.S,v 1.4 2000/09/26 15:56:40 tsi Exp $ */
 
 #include "assyntax.h"
 
@@ -6,9 +6,9 @@
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...
   * - for 40-50% more performance in the SSE-functions, the
-  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !	
+  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !
   */
-	
+
    SEG_TEXT
 
 
@@ -34,9 +34,9 @@
 /*
  *	Offsets for transform_func arguments
  *
- *	typedef void (*transform_func)( GLvector4f *to_vec, 
- *	                                const GLfloat m[16], 
- *	                                const GLvector4f *from_vec, 
+ *	typedef void (*transform_func)( GLvector4f *to_vec,
+ *	                                const GLfloat m[16],
+ *	                                const GLvector4f *from_vec,
  *	                                const GLubyte *clipmask,
  *	                                const GLubyte flag );
  */
@@ -84,10 +84,10 @@ GLNAME( gl_katmai_transform_points3_general_raw ):
 
 
 ALIGNTEXT32
-    MOVUPS    ( REGOFF(0, EDX), XMM0 )	/* m0  | m1  | m2  | m3 */
-    MOVUPS    ( REGOFF(16, EDX), XMM1 )	/* m4  | m5  | m6  | m7 */
-    MOVUPS    ( REGOFF(32, EDX), XMM2 )	/* m8  | m9  | m10 | m11 */
-    MOVUPS    ( REGOFF(48, EDX), XMM3 )	/* m12 | m13 | m14 | m15 */
+    MOVAPS    ( REGOFF(0, EDX), XMM0 )	/* m0  | m1  | m2  | m3 */
+    MOVAPS    ( REGOFF(16, EDX), XMM1 )	/* m4  | m5  | m6  | m7 */
+    MOVAPS    ( REGOFF(32, EDX), XMM2 )	/* m8  | m9  | m10 | m11 */
+    MOVAPS    ( REGOFF(48, EDX), XMM3 )	/* m12 | m13 | m14 | m15 */
 
 
 ALIGNTEXT32
@@ -107,7 +107,7 @@ LLBL(K_GTPGR_top):
     ADDPS     ( XMM6, XMM4 )
     ADDPS     ( XMM3, XMM4 )
 
-    MOVUPS    ( XMM4, REGOFF(0, EDI) )
+    MOVAPS    ( XMM4, REGOFF(0, EDI) )
 
 LLBL(K_GTPGR_skip):
     ADD_L     ( CONST(16), EDI )
@@ -240,7 +240,7 @@ LLBL(K_GTP3DNRR_finish):
     RET
 #undef FRAME_OFFSET
 
-    
+
 
 ALIGNTEXT4
 GLOBL GLNAME(gl_katmai_transform_points3_perspective_raw)
@@ -279,7 +279,7 @@ ALIGNTEXT32
     MOVSS    ( M(10), XMM3 )			/* m10 */
     MOVSS    ( M(14), XMM4 )			/* m14 */
     XORPS    ( XMM6, XMM6 )			/* 0 */
-    
+
 ALIGNTEXT32
 LLBL(K_GTP3PR_top):
     MOVLPS   ( S(0), XMM0 )			/* oy | ox */
@@ -347,7 +347,7 @@ ALIGNTEXT32
     MOVLPS( M(0), XMM0 )			/* m1  | m0 */
     MOVLPS( M(4), XMM1 )			/* m5  | m4 */
     MOVLPS( M(12), XMM2 )			/* m13 | m12 */
-	
+
 ALIGNTEXT32
 LLBL(K_GTP3P2DR_top):
     MOVSS    ( S(0), XMM3 )			/* ox */
@@ -360,7 +360,7 @@ LLBL(K_GTP3P2DR_top):
     ADDPS    ( XMM4, XMM3 )
     ADDPS    ( XMM2, XMM3 )
     MOVLPS   ( XMM3, D(0) )
-	
+
     MOVSS    ( S(2), XMM3 )
     MOVSS    ( XMM3, D(2) )
 
@@ -412,14 +412,14 @@ ALIGNTEXT32
 	MOVSS    ( M(5), XMM2 )			/* m5 */
 	UNPCKLPS ( XMM2, XMM1 )			/* m5 | m0 */
 	MOVLPS   ( M(12), XMM2 )		/* m13 | m12 */
-	
+
 ALIGNTEXT32
 LLBL(K_GTP3P2DNRR_top):
 	MOVLPS( S(0), XMM0 )			/* oy | ox */
 	MULPS( XMM1, XMM0 )			/* oy*m5 | ox*m0 */
 	ADDPS( XMM2, XMM0 )			/* +m13 | +m12 */
 	MOVLPS( XMM0, D(0) )			/* ->D(1) | ->D(0) */
-	
+
 	MOVSS( S(2), XMM0 )
 	MOVSS( XMM0, D(2) )
 
@@ -470,12 +470,12 @@ GLNAME(gl_katmai_transform_points3_3d_raw):
 
 
 ALIGNTEXT32
-	MOVUPS( M(0), XMM0 )			/* m2  | m1  | m0 */
-	MOVUPS( M(4), XMM1 )			/* m6  | m5  | m4 */
-	MOVUPS( M(8), XMM2 )			/* m10 | m9  | m8 */
-	MOVUPS( M(12), XMM3 )			/* m14 | m13 | m12 */
+	MOVAPS( M(0), XMM0 )			/* m2  | m1  | m0 */
+	MOVAPS( M(4), XMM1 )			/* m6  | m5  | m4 */
+	MOVAPS( M(8), XMM2 )			/* m10 | m9  | m8 */
+	MOVAPS( M(12), XMM3 )			/* m14 | m13 | m12 */
 
-ALIGNTEXT32	
+ALIGNTEXT32
 LLBL(K_GTP3P3DR_top):
 	MOVSS( S(0), XMM4 )
 	SHUFPS( CONST(0x0), XMM4, XMM4 )	/* ox | ox | ox */
@@ -508,5 +508,3 @@ LLBL(K_GTP3P3DR_finish):
 	POP_L( ESI )
 	RET
 #undef FRAME_OFFSET
-
-

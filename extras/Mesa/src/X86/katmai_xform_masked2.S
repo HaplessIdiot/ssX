@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/katmai_xform_masked2.S,v 1.4 2000/09/26 15:56:40 tsi Exp $ */
 
 #include "assyntax.h"
 
@@ -6,9 +6,9 @@
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...
   * - for 40-50% more performance in the SSE-functions, the
-  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !	
+  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !
   */
-	
+
    SEG_TEXT
 
 
@@ -34,9 +34,9 @@
 /*
  *	Offsets for transform_func arguments
  *
- *	typedef void (*transform_func)( GLvector4f *to_vec, 
- *	                                const GLfloat m[16], 
- *	                                const GLvector4f *from_vec, 
+ *	typedef void (*transform_func)( GLvector4f *to_vec,
+ *	                                const GLfloat m[16],
+ *	                                const GLvector4f *from_vec,
  *	                                const GLubyte *clipmask,
  *	                                const GLubyte flag );
  */
@@ -68,13 +68,13 @@ GLNAME( gl_katmai_transform_points2_general_masked ):
 
     MOV_L( ARG_MATRIX, EDX ) 			/* ptr to matrix */
     MOV_L( ARG_CLIP, EBP )			/* ptr to clip mask array */
-	
+
     MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
 
     TEST_L( ECX, ECX )
     JZ( LLBL(K_GTP2GM_finish) )			/* count was zero; go to finish */
-	
+
     MOV_L( REGOFF(V4F_STRIDE, ESI), EAX ) 	/* stride */
     OR_L( CONST(VEC_SIZE_4), REGOFF(V4F_FLAGS, EDI) ) 	/* set dest flags */
 
@@ -89,15 +89,15 @@ GLNAME( gl_katmai_transform_points2_general_masked ):
 
 
 ALIGNTEXT32
-    MOVUPS( M(0), XMM0 )			/* m3  | m2  | m1  | m0 */
-    MOVUPS( M(4), XMM1 )			/* m7  | m6  | m5  | m4 */
-    MOVUPS( M(12), XMM2 )			/* m15 | m14 | m13 | m12 */
+    MOVAPS( M(0), XMM0 )			/* m3  | m2  | m1  | m0 */
+    MOVAPS( M(4), XMM1 )			/* m7  | m6  | m5  | m4 */
+    MOVAPS( M(12), XMM2 )			/* m15 | m14 | m13 | m12 */
 
 ALIGNTEXT32
 LLBL(K_GTP2GM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP2GM_skip) )
-	
+
     MOVSS( S(0), XMM3 )				/* ox */
     SHUFPS( CONST(0x0), XMM3, XMM3 )		/* ox | ox | ox | ox */
     MULPS( XMM0, XMM3 )				/* ox*m3 | ox*m2 | ox*m1 | ox*m0 */
@@ -107,8 +107,8 @@ LLBL(K_GTP2GM_top):
 
     ADDPS( XMM4, XMM3 )
     ADDPS( XMM2, XMM3 )
-    MOVUPS( XMM3, D(0) )	
-	
+    MOVAPS( XMM3, D(0) )
+
 LLBL(K_GTP2GM_skip):
     INC_L     ( EBP )
     ADD_L     ( CONST(16), EDI )
@@ -145,7 +145,7 @@ GLNAME( gl_katmai_transform_points2_identity_masked ):
 
     MOV_L( ARG_CLIP, EBP )			/* ptr to clip mask array */
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
-	
+
     MOV_L( REGOFF(V4F_STRIDE, ESI), EAX ) 	/* stride */
     OR_L( CONST(VEC_SIZE_2), REGOFF(V4F_FLAGS, EDI) ) 	/* set dest flags */
 
@@ -165,12 +165,12 @@ ALIGNTEXT32
 LLBL(K_GTP2IM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP2IM_skip) )
-	
+
     MOV_L( S(0), EDX )
     MOV_L( EDX, D(0) )
     MOV_L( S(1), EDX )
     MOV_L( EDX, D(1) )
-	
+
 LLBL(K_GTP2IM_skip):
     INC_L     ( EBP )
     ADD_L     ( CONST(16), EDI )
@@ -202,7 +202,7 @@ GLNAME(gl_katmai_transform_points2_3d_no_rot_masked):
 
     MOV_L( ARG_MATRIX, EDX ) 			/* ptr to matrix */
     MOV_L( ARG_CLIP, EBP )			/* ptr to clip mask array */
-	
+
     MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
 
@@ -256,7 +256,7 @@ LLBL(K_GTP23DNRM_finish):
     RET
 #undef FRAME_OFFSET
 
-    
+
 ALIGNTEXT4
 GLOBL GLNAME(gl_katmai_transform_points2_perspective_masked)
 GLNAME(gl_katmai_transform_points2_perspective_masked):
@@ -272,7 +272,7 @@ GLNAME(gl_katmai_transform_points2_perspective_masked):
 
     MOV_L( ARG_MATRIX, EDX ) 			/* ptr to matrix */
     MOV_L( ARG_CLIP, EBP )			/* ptr to clip mask array */
-	
+
     MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
 
@@ -297,18 +297,18 @@ ALIGNTEXT32
     UNPCKLPS ( XMM2, XMM1 )			/* -  | -  | m5  | m0  */
     MOVSS    ( M(14), XMM3 )			/* m14 */
     XORPS    ( XMM0, XMM0 )			/* 0 | 0 | 0 | 0 */
-    
+
 ALIGNTEXT32
 LLBL(K_GTP23PM_top):
     TEST_B   ( BL, REGIND(EBP) )
     JNZ      ( LLBL(K_GTP23PM_skip) )
-	
+
     MOVLPS( S(0), XMM4 )			/* oy | ox */
     MULPS( XMM1, XMM4 )				/* oy*m5 | ox*m0 */
     MOVLPS( XMM4, D(0) )			/* ->D(1) | ->D(0) */
     MOVSS( XMM3, D(2) )				/* ->D(2) */
     MOVSS( XMM0, D(3) )				/* ->D(3) */
-	
+
 LLBL(K_GTP23PM_skip):
     INC_L( EBP )
     ADD_L( CONST(16), EDI )
@@ -341,7 +341,7 @@ GLNAME(gl_katmai_transform_points2_2d_masked):
 
     MOV_L( ARG_MATRIX, EDX ) 			/* ptr to matrix */
     MOV_L( ARG_CLIP, EBP )			/* ptr to clip mask array */
-	
+
     MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
 
@@ -364,7 +364,7 @@ ALIGNTEXT32
     MOVLPS( M(0), XMM0 )			/* m1  | m0 */
     MOVLPS( M(4), XMM1 )			/* m5  | m4 */
     MOVLPS( M(12), XMM2 )			/* m13 | m12 */
-	
+
 ALIGNTEXT32
 LLBL(K_GTP23P2DM_top):
     TEST_B( BL, REGIND(EBP) )
@@ -381,7 +381,7 @@ LLBL(K_GTP23P2DM_top):
     ADDPS( XMM4, XMM3 )
     ADDPS( XMM2, XMM3 )
     MOVLPS( XMM3, D(0) )			/* ->D(1) | ->D(0) */
-	
+
 LLBL(K_GTP23P2DM_skip):
     INC_L    ( EBP )
     ADD_L    ( CONST(16), EDI )
@@ -414,7 +414,7 @@ GLNAME(gl_katmai_transform_points2_2d_no_rot_masked):
 
 	MOV_L( ARG_MATRIX, EDX )			/* ptr to matrix */
 	MOV_L( ARG_CLIP, EBP )				/* ptr to clip mask array */
-	
+
 	MOV_L( REGOFF(V4F_COUNT, ESI), ECX )		/* source count */
 	MOV_B( ARG_FLAG, BL )				/* clip mask flags */
 
@@ -438,7 +438,7 @@ ALIGNTEXT32
 	MOVSS    ( M(5), XMM2 )				/* m5 */
 	UNPCKLPS ( XMM2, XMM1 )				/* m5 | m0 */
 	MOVLPS   ( M(12), XMM2 )			/* m13 | m12 */
-	
+
 ALIGNTEXT32
 LLBL(K_GTP23P2DNRM_top):
 	TEST_B( BL, REGIND(EBP) )
@@ -448,7 +448,7 @@ LLBL(K_GTP23P2DNRM_top):
 	MULPS( XMM1, XMM0 )				/* oy*m5 | ox*m0 */
 	ADDPS( XMM2, XMM0 )				/* +m13 | +m12 */
 	MOVLPS( XMM0, D(0) )				/* ->D(1) | ->D(0) */
-	
+
 LLBL(K_GTP23P2DNRM_skip):
 	INC_L( EBP )
 	ADD_L( CONST(16), EDI )
@@ -481,7 +481,7 @@ GLNAME(gl_katmai_transform_points2_3d_masked):
 
 	MOV_L( ARG_MATRIX, EDX )		/* ptr to matrix */
 	MOV_L( ARG_CLIP, EBP ) 			/* ptr to clip mask array */
-	
+
 	MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
 	MOV_B( ARG_FLAG, BL ) 			/* clip mask flags */
 
@@ -501,11 +501,11 @@ GLNAME(gl_katmai_transform_points2_3d_masked):
 	ADD_L( EDI, ECX ) 			/* count += dest ptr */
 
 ALIGNTEXT32
-	MOVUPS( M(0), XMM0 )			/* m2  | m1  | m0 */
-	MOVUPS( M(4), XMM1 )			/* m6  | m5  | m4 */
-	MOVUPS( M(12), XMM2 )			/* m14 | m13 | m12 */
+	MOVAPS( M(0), XMM0 )			/* m2  | m1  | m0 */
+	MOVAPS( M(4), XMM1 )			/* m6  | m5  | m4 */
+	MOVAPS( M(12), XMM2 )			/* m14 | m13 | m12 */
 
-ALIGNTEXT32	
+ALIGNTEXT32
 LLBL(K_GTP23P3DM_top):
 	TEST_B( BL, REGIND(EBP) )
 	JNZ( LLBL(K_GTP23P3DM_skip) )
@@ -524,7 +524,7 @@ LLBL(K_GTP23P3DM_top):
 	MOVLPS( XMM3, D(0) )			/* ->D(1) | ->D(0) */
 	UNPCKHPS( XMM3, XMM3 )
 	MOVSS( XMM3, D(2) )			/* ->D(2) */
-	
+
 LLBL(K_GTP23P3DM_skip):
 	INC_L( EBP )
 	ADD_L( CONST(16), EDI )

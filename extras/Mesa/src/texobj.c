@@ -1,3 +1,4 @@
+/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -22,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/texobj.c,v 1.6 2000/09/26 15:56:33 tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -62,6 +63,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 
    if (obj) {
       /* init the non-zero fields */
+      _glthread_INIT_MUTEX(obj->Mutex);
       obj->RefCount = 1;
       obj->Name = name;
       obj->Dimensions = dimensions;
@@ -157,6 +159,20 @@ void gl_free_texture_object( struct gl_shared_state *shared,
 
 
 /*
+ * This is helpful to diagnose incomplete texture problems.
+ */
+#if 0
+static void
+incomplete(const struct gl_texture_object *t, const char *why)
+{
+   printf("Texture Obj %d incomplete because: %s\n", t->Name, why);
+}
+#else
+#define incomplete(a, b)
+#endif
+
+
+/*
  * Examine a texture object to determine if it is complete or not.
  * The t->Complete flag will be set to GL_TRUE or GL_FALSE accordingly.
  */
@@ -170,6 +186,7 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
 
    /* Always need level zero image */
    if (!t->Image[baseLevel]) {
+      incomplete(t, "Image[baseLevel] == NULL");
       t->Complete = GL_FALSE;
       return;
    }
@@ -213,6 +230,7 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
           t->NegZ[baseLevel]->Width2 != w ||
           t->NegZ[baseLevel]->Height2 != h) {
          t->Complete = GL_FALSE;
+         incomplete(t, "Non-quare cubemap image");
          return;
       }
    }
@@ -228,6 +246,7 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
 
       if (minLevel > maxLevel) {
          t->Complete = GL_FALSE;
+         incomplete(t, "minLevel > maxLevel");
          return;
       }
 
@@ -236,10 +255,12 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
          if (t->Image[i]) {
             if (t->Image[i]->Format != t->Image[baseLevel]->Format) {
                t->Complete = GL_FALSE;
+               incomplete(t, "Format[i] != Format[baseLevel]");
                return;
             }
             if (t->Image[i]->Border != t->Image[baseLevel]->Border) {
                t->Complete = GL_FALSE;
+               incomplete(t, "Border[i] != Border[baseLevel]");
                return;
             }
          }
@@ -256,10 +277,12 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
             if (i >= minLevel && i <= maxLevel) {
                if (!t->Image[i]) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "1D Image[i] == NULL");
                   return;
                }
                if (t->Image[i]->Width2 != width ) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "1D Image[i] bad width");
                   return;
                }
             }
@@ -282,14 +305,17 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
             if (i >= minLevel && i <= maxLevel) {
                if (!t->Image[i]) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "2D Image[i] == NULL");
                   return;
                }
                if (t->Image[i]->Width2 != width) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "2D Image[i] bad width");
                   return;
                }
                if (t->Image[i]->Height2 != height) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "2D Image[i] bad height");
                   return;
                }
                if (width==1 && height==1) {
@@ -315,19 +341,23 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
             }
             if (i >= minLevel && i <= maxLevel) {
                if (!t->Image[i]) {
+                  incomplete(t, "3D Image[i] == NULL");
                   t->Complete = GL_FALSE;
                   return;
                }
                if (t->Image[i]->Width2 != width) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "3D Image[i] bad width");
                   return;
                }
                if (t->Image[i]->Height2 != height) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "3D Image[i] bad height");
                   return;
                }
                if (t->Image[i]->Depth2 != depth) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "3D Image[i] bad depth");
                   return;
                }
             }
@@ -353,6 +383,7 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
                    !t->PosY[i]  || !t->NegY[i] ||
                    !t->PosZ[i]  || !t->NegZ[i]) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "CubeMap Image[i] == NULL");
                   return;
                }
                /* check that all six images have same size */
@@ -362,6 +393,7 @@ _mesa_test_texobj_completeness( const GLcontext *ctx,
                    t->PosZ[i]->Width2!=width || t->PosZ[i]->Height2!=height ||
                    t->NegZ[i]->Width2!=width || t->NegZ[i]->Height2!=height) {
                   t->Complete = GL_FALSE;
+                  incomplete(t, "CubeMap Image[i] bad size");
                   return;
                }
             }
@@ -589,6 +621,8 @@ _mesa_BindTexture( GLenum target, GLuint texName )
    /* Pass BindTexture call to device driver */
    if (ctx->Driver.BindTexture) {
       (*ctx->Driver.BindTexture)( ctx, target, newTexObj );
+      /* Make sure the Driver.UpdateState() function gets called! */
+      ctx->NewState |= NEW_TEXTURING;
    }
 
    if (oldTexObj->Name > 0) {

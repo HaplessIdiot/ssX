@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/state.c,v 1.5 2000/09/26 15:56:33 tsi Exp $ */
 
 /*
  * This file initializes the immediate-mode dispatch table (which may
@@ -777,7 +777,7 @@ static void update_fog_mode( GLcontext *ctx )
    int old_mode = ctx->FogMode;
 
    if (ctx->Fog.Enabled) {
-      if (ctx->Texture.Enabled)
+      if (ctx->Texture.ReallyEnabled)
          ctx->FogMode = FOG_FRAGMENT;
       else if (ctx->Hint.Fog == GL_NICEST)
          ctx->FogMode = FOG_FRAGMENT;
@@ -921,8 +921,9 @@ void gl_update_state( GLcontext *ctx )
       gl_update_client_state( ctx );
 
    if ((ctx->NewState & NEW_TEXTURE_ENABLE) &&
-       (ctx->Enabled & ENABLE_TEX_ANY) != ctx->Texture.Enabled)
+       (ctx->Enabled & ENABLE_TEX_ANY) != ctx->Texture.ReallyEnabled) {
       ctx->NewState |= NEW_TEXTURING | NEW_RASTER_OPS;
+   }
 
    if (ctx->NewState & NEW_TEXTURE_ENV) {
       if (ctx->Texture.Unit[0].EnvMode == ctx->Texture.Unit[0].LastEnvMode &&
@@ -932,21 +933,23 @@ void gl_update_state( GLcontext *ctx )
       ctx->Texture.Unit[1].LastEnvMode = ctx->Texture.Unit[1].EnvMode;
    }
 
-   if (ctx->NewState & NEW_TEXTURE_MATRIX) {
-      ctx->Enabled &= ~(ENABLE_TEXMAT0|ENABLE_TEXMAT1);
+   /* Update ctx->Enabled's ENABLE_TEXMATn flags */
+   if (ctx->NewState & (NEW_TEXTURE_MATRIX | NEW_TEXTURE_ENABLE)) {
+      ctx->Enabled &= ~(ENABLE_TEXMAT0 | ENABLE_TEXMAT1);
 
       for (i=0; i < MAX_TEXTURE_UNITS; i++) {
 	 if (ctx->TextureMatrix[i].flags & MAT_DIRTY_ALL_OVER) {
 	    gl_matrix_analyze( &ctx->TextureMatrix[i] );
 	    ctx->TextureMatrix[i].flags &= ~MAT_DIRTY_DEPENDENTS;
-
-	    if (ctx->Texture.Unit[i].Enabled &&
-		ctx->TextureMatrix[i].type != MATRIX_IDENTITY)
-	       ctx->Enabled |= ENABLE_TEXMAT0 << i;
 	 }
+         if (ctx->Texture.Unit[i].Enabled &&
+             ctx->TextureMatrix[i].type != MATRIX_IDENTITY) {
+            ctx->Enabled |= ENABLE_TEXMAT0 << i;
+         }
       }
    }
 
+   /* Update ctx->Enabled's ENABLE_TEXGENn and ENABLE_TEXn flags */
    if (ctx->NewState & (NEW_TEXTURING | NEW_TEXTURE_ENABLE)) {
       ctx->Texture.NeedNormals = GL_FALSE;
       gl_update_dirty_texobjs(ctx);
@@ -973,9 +976,11 @@ void gl_update_state( GLcontext *ctx )
 	       }
 	    }
 	 }
+         else {
+            ctx->Texture.Unit[i].ReallyEnabled = 0;
+         }
       }
-
-      ctx->Texture.Enabled = ctx->Enabled & ENABLE_TEX_ANY;
+      ctx->Enabled = (ctx->Enabled & ~ENABLE_TEX_ANY) | ctx->Texture.ReallyEnabled;
       ctx->NeedNormals = (ctx->Light.Enabled || ctx->Texture.NeedNormals);
    }
 
@@ -1186,8 +1191,9 @@ void gl_update_state( GLcontext *ctx )
 	 }
 	 ctx->NeedEyeNormals = ctx->NeedEyeCoords;
       }
-      if (ctx->Texture.Enabled || ctx->RenderMode==GL_FEEDBACK) {
-	 if (ctx->Texture.NeedEyeCoords) ctx->NeedEyeCoords = GL_TRUE;
+      if (ctx->Texture.ReallyEnabled || ctx->RenderMode==GL_FEEDBACK) {
+	 if (ctx->Texture.NeedEyeCoords)
+            ctx->NeedEyeCoords = GL_TRUE;
 	 if (ctx->Texture.NeedNormals)
 	    ctx->NeedNormals = ctx->NeedEyeNormals = GL_TRUE;
       }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X86/katmai_xform_masked4.S,v 1.4 2000/09/26 15:56:40 tsi Exp $ */
 
 #include "assyntax.h"
 
@@ -6,9 +6,9 @@
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...
   * - for 40-50% more performance in the SSE-functions, the
-  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !	
+  *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !
   */
-	
+
    SEG_TEXT
 
 
@@ -34,9 +34,9 @@
 /*
  *	Offsets for transform_func arguments
  *
- *	typedef void (*transform_func)( GLvector4f *to_vec, 
- *	                                const GLfloat m[16], 
- *	                                const GLvector4f *from_vec, 
+ *	typedef void (*transform_func)( GLvector4f *to_vec,
+ *	                                const GLfloat m[16],
+ *	                                const GLvector4f *from_vec,
  *	                                const GLubyte *clipmask,
  *	                                const GLubyte flag );
  */
@@ -68,7 +68,7 @@ GLNAME( gl_katmai_transform_points4_general_masked ):
 
 	MOV_L( ARG_MATRIX, EDX ) 			/* ptr to matrix */
 	MOV_L( ARG_CLIP, EBP )				/* ptr to clip mask array */
-	
+
 	MOV_L( REGOFF(V4F_COUNT, ESI), ECX )		/* source count */
 	MOV_B( ARG_FLAG, BL )				/* clip mask flags */
 
@@ -88,16 +88,16 @@ GLNAME( gl_katmai_transform_points4_general_masked ):
 	ADD_L( EDI, ECX ) 				/* count += dest ptr */
 
 ALIGNTEXT32
-	MOVUPS( M(0), XMM0 )				/* m3  | m2  | m1  | m0 */
-	MOVUPS( M(4), XMM1 )				/* m7  | m6  | m5  | m4 */
-	MOVUPS( M(8), XMM2 )				/* m11 | m10 | m9  | m8 */
-	MOVUPS( M(12), XMM3 )				/* m15 | m14 | m13 | m12 */
-	
+	MOVAPS( M(0), XMM0 )				/* m3  | m2  | m1  | m0 */
+	MOVAPS( M(4), XMM1 )				/* m7  | m6  | m5  | m4 */
+	MOVAPS( M(8), XMM2 )				/* m11 | m10 | m9  | m8 */
+	MOVAPS( M(12), XMM3 )				/* m15 | m14 | m13 | m12 */
+
 ALIGNTEXT32
 LLBL(K_GTP4GM_top):
 	TEST_B( BL, REGIND(EBP) )
 	JNZ( LLBL(K_GTP4GM_skip) )
-	
+
 	MOVSS( S(0), XMM4 )				/* ox */
 	SHUFPS( CONST(0x0), XMM4, XMM4 )		/* ox | ox | ox | ox */
 	MULPS( XMM0, XMM4 )				/* ox*m3 | ox*m2 | ox*m1 | ox*m0 */
@@ -117,7 +117,7 @@ LLBL(K_GTP4GM_top):
 	ADDPS( XMM5, XMM4 )				/* ox*m3+oy*m7 | ... */
 	ADDPS( XMM6, XMM4 )				/* ox*m3+oy*m7+oz*m11 | ... */
 	ADDPS( XMM7, XMM4 )				/* ox*m3+oy*m7+oz*m11+ow*m15 | ... */
-	MOVUPS( XMM4, D(0) )				/* ->D(3) | ->D(2) | ->D(1) | ->D(0) */
+	MOVAPS( XMM4, D(0) )				/* ->D(3) | ->D(2) | ->D(1) | ->D(0) */
 
 LLBL(K_GTP4GM_skip):
 	INC_L     ( EBP )
@@ -169,7 +169,7 @@ GLNAME( gl_katmai_transform_points4_identity_masked ):
 	ADD_L( EDI, ECX ) 				/* count += dest ptr */
 
 	MOV_L( EAX, ARG_SOURCE )
-	
+
 	CMP_L( ESI, EDI )
 	JE( LLBL(K_GTP4IM_finish) )
 
@@ -219,7 +219,7 @@ GLNAME(gl_katmai_transform_points4_3d_no_rot_masked):
 
 	MOV_L( ARG_MATRIX, EDX )			/* ptr to matrix */
 	MOV_L( ARG_CLIP, EBP )				/* ptr to clip mask array */
-	
+
 	MOV_L( REGOFF(V4F_COUNT, ESI), ECX )		/* source count */
 	MOV_B( ARG_FLAG, BL )				/* clip mask flags */
 
@@ -246,12 +246,12 @@ ALIGNTEXT32
 	MOVSS( M(10), XMM1 )			/* m10 */
 	MOVLPS( M(12), XMM2 )			/* m13 | m12 */
 	MOVSS( M(14), XMM3 )			/* m14 */
-		
+
 ALIGNTEXT32
 LLBL(K_GTP43DNRM_top):
 	TEST_B( BL, REGIND(EBP) )
 	JNZ( LLBL(K_GTP43DNRM_skip) )
-	
+
 	MOVLPS( S(0), XMM4 )			/* oy | ox */
 	MULPS( XMM0, XMM4 )			/* oy*m5 | ox*m0 */
 	MOVSS( S(3), XMM5 )			/* ow */
@@ -299,7 +299,7 @@ GLNAME(gl_katmai_transform_points4_3d_masked):
 
 	MOV_L( ARG_MATRIX, EDX ) 		/* ptr to matrix */
 	MOV_L( ARG_CLIP, EBP ) 			/* ptr to clip mask array */
-	
+
 	MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
 	MOV_B( ARG_FLAG, BL ) 			/* clip mask flags */
 
@@ -320,16 +320,16 @@ GLNAME(gl_katmai_transform_points4_3d_masked):
 
 
 ALIGNTEXT32
-	MOVUPS( M(0), XMM0 )			/* m3  | m2  | m1  |  m0 */
-	MOVUPS( M(4), XMM1 )			/* m7  | m6  | m5  |  m4 */
-	MOVUPS( M(8), XMM2 )			/* m11 | m10 | m9  |  m8 */
-	MOVUPS( M(12), XMM3 )			/* m15 | m14 | m13 | m12 */
-		
-ALIGNTEXT32	
+	MOVAPS( M(0), XMM0 )			/* m3  | m2  | m1  |  m0 */
+	MOVAPS( M(4), XMM1 )			/* m7  | m6  | m5  |  m4 */
+	MOVAPS( M(8), XMM2 )			/* m11 | m10 | m9  |  m8 */
+	MOVAPS( M(12), XMM3 )			/* m15 | m14 | m13 | m12 */
+
+ALIGNTEXT32
 LLBL(K_GTP43P3DM_top):
 	TEST_B( BL, REGIND(EBP) )
 	JNZ( LLBL(K_GTP43P3DM_skip) )
-	
+
 	MOVSS( S(0), XMM4 )				/* ox */
 	SHUFPS( CONST(0x0), XMM4, XMM4 )		/* ox | ox | ox | ox */
 	MULPS( XMM0, XMM4 )				/* ox*m3 | ox*m2 | ox*m1 | ox*m0 */
@@ -349,11 +349,11 @@ LLBL(K_GTP43P3DM_top):
 	ADDPS( XMM5, XMM4 )				/* ox*m3+oy*m7 | ... */
 	ADDPS( XMM6, XMM4 )				/* ox*m3+oy*m7+oz*m11 | ... */
 	ADDPS( XMM7, XMM4 )				/* ox*m3+oy*m7+oz*m11+ow*m15 | ... */
-	MOVUPS( XMM4, D(0) )				/* ->D(3) | ->D(2) | ->D(1) | ->D(0) */
+	MOVAPS( XMM4, D(0) )				/* ->D(3) | ->D(2) | ->D(1) | ->D(0) */
 
 	MOVSS( S(3), XMM4 )				/* ow */
 	MOVSS( XMM4, D(3) )				/* ->D(3) */
-	
+
 LLBL(K_GTP43P3DM_skip):
 	INC_L( EBP )
 	ADD_L( CONST(16), EDI )
