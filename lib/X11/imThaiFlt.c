@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.11 2001/12/14 19:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.12 2002/10/09 00:01:33 dawes Exp $ */
 
 /*
 **++ 
@@ -1221,7 +1221,7 @@ XPointer	client_data;
 {
     Xic		    ic = (Xic)client_data;
     KeySym 	    symbol;
-    int 	    count;
+    int 	    wcount;
     int 	    isc_mode; /* Thai Input Sequence Check mode */
     unsigned char   previous_char; /* Last inputted Thai char */
 #if 0
@@ -1229,8 +1229,9 @@ XPointer	client_data;
     KeySym	    lsym,usym;
     int		    state;
     XicThaiPart     *thai_part;
-#endif
     char	    buf[10];
+#endif
+    wchar_t	    wbuf[10];
     int	            i;
 
     if ((ev->type != KeyPress)
@@ -1239,7 +1240,8 @@ XPointer	client_data;
 
     if (!IC_IscMode(ic)) InitIscMode(ic);
 
-    count = XmbLookupString((XIC)ic, &ev->xkey, buf, sizeof(buf), &symbol, NULL);
+    wcount = XwcLookupString((XIC)ic, &ev->xkey,
+                            wbuf, sizeof(wbuf)/sizeof(wbuf[0]), &symbol, NULL);
 
     if ((ev->xkey.state & (AllMods & ~ShiftMask)) ||
          ((symbol >> 8 == 0xFF) &&
@@ -1303,24 +1305,26 @@ XPointer	client_data;
      */
     isc_mode = IC_IscMode(ic);
     if (!(previous_char = IC_GetPreviousChar(ic))) previous_char = ' ';
-    if (!THAI_isaccepted(buf[0], previous_char, isc_mode)) {
+    if (!THAI_isaccepted(ucs2tis(wbuf[0]), previous_char, isc_mode)) {
         /* reject character */
         XBell(ev->xkey.display, BellVolume);
         return True;
     }
     /* Remember the last character inputted. */
-    IC_SavePreviousChar(ic, buf[count-1]);
-    for (i=0; i<count; i++)
-        ic->private.local.composed->mb[i] = buf[i];
-    ic->private.local.composed->mb[count] = '\0';
+    IC_SavePreviousChar(ic, ucs2tis(wbuf[wcount-1]));
+    for (i=0; i<wcount; i++)
+        ic->private.local.composed->wc[i] = wbuf[i];
+    ic->private.local.composed->wc[wcount] = '\0';
 
-    _Xlcmbstowcs(ic->core.im->core.lcd, ic->private.local.composed->wc,
-		 ic->private.local.composed->mb, count);
+    _Xlcwcstombs(ic->core.im->core.lcd, ic->private.local.composed->mb,
+		 ic->private.local.composed->wc, 10);
 
     _Xlcmbstoutf8(ic->core.im->core.lcd, ic->private.local.composed->utf8,
-		  ic->private.local.composed->mb, count);
+		  ic->private.local.composed->mb, 10);
 
-    if (!((buf[0] > 0 && buf[0] <= 0x1f) || (buf[0] == 0) || (buf[0] == 0x7f)))
+    previous_char = ucs2tis(wbuf[0]);
+    if (!((previous_char > 0 && previous_char <= 0x1f) ||
+          (previous_char == 0) || (previous_char == 0x7f)))
         ic->private.local.composed->keysym = NoSymbol;
     else
         ic->private.local.composed->keysym = symbol;
