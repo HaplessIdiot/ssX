@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.7 2000/12/27 23:37:36 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.8 2001/03/01 20:37:25 paulo Exp $
 !!
 
 *Form.background:			gray85
@@ -187,10 +187,19 @@ lines		-1,0,0,0,0,-1
 *card.fromHoriz:		keyboard
 *monitor.fromHoriz:		card
 
-*commands.mouse.tip:		Add mouse
-*commands.keyboard.tip:		Add keyboard
-*commands.card.tip:		Add video card
-*commands.monitor.tip:		Add monitor
+*commands.mouse*new.label:	Add new mouse
+*commands.keyboard*new.label:	Add new keyboard
+*commands.card*new.label:	Add new video card
+*commands.monitor*new.label:	Add new monitor
+*commands.mouse*configure.label:	Configure mouse(s)
+*commands.keyboard*configure.label:	Configure keyboard(s)
+*commands.card*configure.label:		Configure video card(s)
+*commands.monitor*configure.label:	Configure monitor(s)
+
+*commands.MenuButton.translations: \
+<Enter>:	highlight()\n\
+<Leave>:	reset()\n\
+Any<BtnDown>:	highlight() set() PopupMenu()
 
 *hpane.showGrip:		False
 *hpane.expert.label:		Expert Mode
