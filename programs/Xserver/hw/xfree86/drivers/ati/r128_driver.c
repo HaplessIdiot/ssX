@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.7 2000/11/29 22:01:09 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.8 2000/12/04 19:21:52 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1525,13 +1525,6 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Acceleration disabled, not initializing the DRI\n");
 	    info->directRenderingEnabled = FALSE;
-#if 1
-	} else if (info->HasPanelRegs) {
-	    /* FIXME: Disable 3D support for FPs until it is tested  */
-	    xf86DrvMsg(scrnIndex, X_WARNING,
-		       "DRI disabled on Mobility 128 by default\n");
-	    info->directRenderingEnabled = FALSE;
-#endif
 	} else if (maxy <= pScrn->virtualY * 4) {
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Static buffer allocation failed -- "
