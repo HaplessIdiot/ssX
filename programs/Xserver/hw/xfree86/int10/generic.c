@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.19 2001/04/30 14:34:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.21 2001/05/15 10:19:41 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -286,25 +286,26 @@ xf86InitInt10(int entityIndex)
 		else 
 		    xf86DrvMsg(screen,X_INFO,
 			       "No legacy BIOS found -- trying PCI\n");
-	    } 
 	} 
 	if (!done) {
 	    int pci_entity;
 	    
-	    if (bios->bus == PCI) {
+	    if (bios.bus == BUS_PCI) {
 		xf86DrvMsg(screen,X_CONFIG,"Looking for BIOS at PCI:%i%i%i\n",
 			   bios.location.pci.bus,bios.location.pci.dev,
 			   bios.location.pci.func);		
-		pci_entity = xf86GetPciEntity(bios->location.pci.bus,
-					      bios->location.pci.dev,
-					      bios->location.pci.func);
-	    else 
+		pci_entity = xf86GetPciEntity(bios.location.pci.bus,
+					      bios.location.pci.dev,
+					      bios.location.pci.func);
+	    } else 
 		pci_entity = pInt->entityIndex;
 
-	    !mapPciRom(pci_entity, vbiosMem)) {
-	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (5)\n");
-	    goto error1;
-	}
+	    if (!mapPciRom(pci_entity, vbiosMem)) {
+		    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (5)\n");
+		    goto error1;
+	    }
+	} 
+
     }
 
     pInt->BIOSseg = V_BIOS >> 4;
