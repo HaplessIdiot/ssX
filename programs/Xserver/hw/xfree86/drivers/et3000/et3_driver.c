@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.24 1997/02/28 08:21:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/et3000/et3_driver.c,v 1.1 1997/03/06 23:15:46 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -111,7 +111,8 @@ vgaVideoChipRec ET3000 = {
   FALSE,
   FALSE,
   NULL,
-  1,
+  1,     /* ClockMulFactor */
+  1      /* ClockDivFactor */
 };
 
 #define new ((vgaET3000Ptr)vgaNewVideoState)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.4 1997/04/08 10:13:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.5 1997/04/17 08:17:17 hohndel Exp $ */
 
 /*
  *
@@ -8,7 +8,6 @@
 
 /*
  * The accel file for the ViRGE driver.  
- * Right now, it accelerates bitblts and filled rects.
  * 
  * Created 20/03/97 by Sebastien Marineau
  * Revision: 
@@ -26,6 +25,11 @@
  * [0.5] 14/04/97: Further optimisations, implemented option "pci_retry" which
  *                 relies on PCI bus to do WaitQueues(). Added support for
  *                 32bpp bitblits and solid rects using GE in 16bpp mode.
+ * [0.6] 20/04/97: Fix bug for bitblits of width 49..56. Added new MACROs
+ *                 to write to registers, now the most used ViRGE drawing 
+ *                 are cached in memory and only rewritten when they change. 
+ * [0.7] 21/04/97: Add support for FilledTrapezoid. Right now, this passes
+ *                 xtest but they may not match cfb for larger polygons. 
  *
  * Note: we use a few macros to query the state of the coprocessor. 
  * WaitIdle() waits until the GE is idle.
@@ -36,6 +40,7 @@
  *       framebuffer writes left in the FIFO. 
  */
 
+#include <math.h>
 #include "vga256.h"
 #include "xf86.h"
 #include "vga.h"
@@ -55,8 +60,24 @@ static int s3vSavedCmd = 0;
 static int s3vSavedRectCmdForLine = 0;
 static int s3vSyncForLineBug = 0;
 static int s3vLineHWClipSet = 0;
-static int s3vNeedResetClip = TRUE;
 
+/* These are variables which hold cached values for some virge registers.
+ * The important thing to remember is that these registers must be always be 
+ * set using the "caching" version of the macros.
+ */
+static unsigned int s3vCached_CMD_SET;
+static unsigned int s3vCached_CLIP_LR;
+static unsigned int s3vCached_CLIP_TB;
+static unsigned int s3vCached_MONO_PATTERN0;
+static unsigned int s3vCached_MONO_PATTERN1;
+static unsigned int s3vCached_PAT_FGCLR;
+static unsigned int s3vCached_PAT_BGCLR;
+static unsigned int s3vCached_RWIDTH_HEIGHT;
+
+/* Temporary to see if caching works */
+static int s3vCacheHit = 0, s3vCacheMiss = 0;
+
+/* Forward declaration of fucntions used in the driver */
 void S3VAccelSync();
 void S3VAccelInit();
 void S3VAccelInit32();
@@ -79,7 +100,7 @@ void S3VSetClippingRectangle();
 void S3VSubsequentFillTrapezoidSolid();
 void S3VWriteImageTransferArea();
 Bool S3VROPHasSrc();
-
+Bool S3VROPHasDst();
 
 
 
@@ -96,7 +117,7 @@ S3VAccelInit()
     if (vgaBitsPerPixel == 8) {
       s3vPriv.PlaneMask = 0xff;
       s3vAccelCmd |= DST_8BPP;
-      s3vPriv.bltbug_width1 = 57;
+      s3vPriv.bltbug_width1 = 49;
       s3vPriv.bltbug_width2 = 64;
       }
     else if (vgaBitsPerPixel == 16) {
@@ -119,8 +140,7 @@ S3VAccelInit()
          BACKGROUND_OPERATIONS |
          COP_FRAMEBUFFER_CONCURRENCY | 
          NO_SYNC_AFTER_CPU_COLOR_EXPAND |
-         HARDWARE_CLIP_LINE |
-         TWO_POINT_LINE_NOT_LAST ; 
+         DELAYED_SYNC ; 
 
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_MONO_TRANSPARENCY |
          HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |  
@@ -184,9 +204,10 @@ S3VAccelInit()
 /*    xf86AccelInfoRec.SubsequentTwoPointLine = 
             S3VSubsequentTwoPointLine;
     xf86AccelInfoRec.SetClippingRectangle = 
-            S3VSetClippingRectangle;   
+            S3VSetClippingRectangle;   */
     xf86AccelInfoRec.SubsequentFillTrapezoidSolid = 
-            S3VSubsequentFillTrapezoidSolid; */
+            S3VSubsequentFillTrapezoidSolid;
+
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -205,6 +226,9 @@ S3VAccelInit()
      s3vPriv.Bpp = vgaBitsPerPixel / 8;
      s3vPriv.Bpl = s3vPriv.Width * s3vPriv.Bpp;
      s3vPriv.ScissB = (vga256InfoRec.videoRam * 1024 - 1024) / s3vPriv.Bpl;
+     if (s3vPriv.ScissB > 2047)
+         s3vPriv.ScissB = 2047;
+
 
 } 
 
@@ -263,6 +287,9 @@ S3VAccelInit32()
     s3vPriv.Bpp = vgaBitsPerPixel / 8;
     s3vPriv.Bpl = s3vPriv.Width * s3vPriv.Bpp;
     s3vPriv.ScissB = (vga256InfoRec.videoRam * 1024 - 1024) / s3vPriv.Bpl;
+    if (s3vPriv.ScissB > 2047)
+        s3vPriv.ScissB = 2047;
+
 }
 
 
@@ -273,18 +300,14 @@ S3VAccelSync()
 
     WaitCommandEmpty(); 
     WaitIdleEmpty(); 
-    if (s3vNeedResetClip){
-       s3vNeedResetClip = FALSE;
-       SETB_CLIP_L_R(0, s3vPriv.Width);
-       SETB_CLIP_T_B(0, s3vPriv.ScissB);
-    }
+    CACHE_SETB_CLIP_L_R(0, s3vPriv.Width);
+    CACHE_SETB_CLIP_T_B(0, s3vPriv.ScissB);
 
 /* Workaround for possible bug when pattern fills follow lines */
     if(s3vSyncForLineBug){
-        /* WaitQueue(4); */
-        SETB_CMD_SET(s3vAccelCmd | CMD_BITBLT | ROP_D | CMD_AUTOEXEC);
-        SETB_RSRC_XY(0,0);
+        CACHE_SETB_CMD_SET(s3vAccelCmd | CMD_BITBLT | ROP_D | CMD_AUTOEXEC);
         SETB_RWIDTH_HEIGHT(0,1);
+        SETB_RSRC_XY(0,0);
         SETB_RDEST_XY(0,0);
         WaitIdleEmpty(); 
         s3vSyncForLineBug = FALSE;
@@ -316,10 +339,24 @@ unsigned char tmp;
     SETB_DEST_SRC_STR(s3vPriv.Bpl, s3vPriv.Bpl); 
     SETB_SRC_BASE(0);
     SETB_DEST_BASE(0);   
-    SETB_CLIP_L_R(0, s3vPriv.Width);
-    SETB_CLIP_T_B(0, s3vPriv.ScissB);
-    s3vNeedResetClip = FALSE;
-    
+
+    /* Now write some default rgisters and reset cached values */
+    s3vCached_CLIP_LR = -1;
+    s3vCached_CLIP_TB = -1;
+    CACHE_SETB_CLIP_L_R(0, s3vPriv.Width);
+    CACHE_SETB_CLIP_T_B(0, s3vPriv.ScissB);
+    s3vCached_MONO_PATTERN0 = 0;
+    s3vCached_MONO_PATTERN1 = 0;
+    CACHE_SETB_MONO_PAT0(~0);
+    CACHE_SETB_MONO_PAT1(~0);   
+
+    s3vCached_RWIDTH_HEIGHT = -1;
+    s3vCached_PAT_FGCLR = -1;
+    s3vCached_PAT_BGCLR = -1;
+    s3vCached_CMD_SET = -1;
+
+    ErrorF("ViRGE register cache hits: %d misses: %d\n",s3vCacheHit, s3vCacheMiss);    
+    s3vCacheHit = 0; s3vCacheMiss = 0;
 }
 
 
@@ -341,7 +378,8 @@ transparency_color)
     int cmd = s3vAccelCmd;
  
     if((planemask & s3vPriv.PlaneMask) != s3vPriv.PlaneMask) {     
-        cmd |= (CMD_AUTOEXEC | s3vAlu_pat[rop] | CMD_BITBLT | MIX_MONO_PATT);
+        cmd |= (CMD_AUTOEXEC | s3vAlu_pat[rop] | CMD_BITBLT | 
+            MIX_MONO_PATT);
         }
     else {
         cmd |= (CMD_AUTOEXEC | s3vAlu[rop] | CMD_BITBLT);
@@ -351,22 +389,38 @@ transparency_color)
     s3vSavedCmd = cmd;
    
     WaitQueue(4);
-    SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
-    SETB_CMD_SET(cmd);
-    SETB_MONO_PAT0(~0);
-    SETB_MONO_PAT1(~0);   
+    CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+    CACHE_SETB_CMD_SET(cmd);
+    CACHE_SETB_MONO_PAT0(~0);
+    CACHE_SETB_MONO_PAT1(~0);   
 }
 
 void 
 S3VSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
 int x1, y1, x2, y2, w, h;
 {
+    int new_width;
 
-    WaitQueue(3);
-    SETB_RWIDTH_HEIGHT(w - 1, h);
-    SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? x1 : (x1 + w -1), 
+    if(vgaBitsPerPixel == 8 && S3VROPHasDst(s3vSavedCmd)) {
+        new_width = S3VCheckBltWidth(w);  /* Check for blit bug */
+        WaitQueue(5);
+        if(new_width != w) {
+            CACHE_SETB_CMD_SET(s3vSavedCmd | CMD_HWCLIP);
+            CACHE_SETB_CLIP_L_R(x2, x2 + w -1); 
+            }
+        else 
+            CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+        }
+    else {
+        new_width = w;
+        WaitQueue(4);
+        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+        }
+                                  
+    SETB_RWIDTH_HEIGHT(new_width - 1, h);
+    SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1), 
         (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
-    SETB_RDEST_XY( (s3vSavedCmd & CMD_XP) ? x2 : (x2 + w - 1),
+    SETB_RDEST_XY( (s3vSavedCmd & CMD_XP) ? x2 : (x2 + new_width - 1),
         (s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1));
 
 }
@@ -394,7 +448,7 @@ transparency_color)
     s3vSavedCmd = cmd;
    
     WaitQueue(1);
-    SETB_CMD_SET(cmd);
+    CACHE_SETB_CMD_SET(cmd);
 
 }
 
@@ -456,10 +510,10 @@ int cmd = s3vAccelCmd;
 
     s3vSavedRectCmdForLine = cmd;
     WaitQueue(4);
-    SETB_CMD_SET(cmd);
-    SETB_MONO_PAT0(~0);
-    SETB_MONO_PAT1(~0);
-    SETB_PAT_FG_CLR(color);
+    CACHE_SETB_CMD_SET(cmd);
+    CACHE_SETB_MONO_PAT0(~0);
+    CACHE_SETB_MONO_PAT1(~0);
+    CACHE_SETB_PAT_FG_CLR(color);
 
 }
     
@@ -502,11 +556,11 @@ int cmd = s3vAccelCmd;
     cmd |= s3vAlu_sp[rop];
  
     WaitQueue(4);
-    SETB_CMD_SET(cmd);
-    SETB_MONO_PAT0(0xaaaaaaaa);
-    SETB_MONO_PAT1(0xaaaaaaaa);
-    SETB_PAT_FG_CLR(color & 0xffff);
-    SETB_PAT_BG_CLR((color >> 16) & 0xffff);
+    CACHE_SETB_CMD_SET(cmd);
+    CACHE_SETB_MONO_PAT0(0xaaaaaaaa);
+    CACHE_SETB_MONO_PAT1(0xaaaaaaaa);
+    CACHE_SETB_PAT_FG_CLR(color & 0xffff);
+    CACHE_SETB_PAT_BG_CLR((color >> 16) & 0xffff);
 }
 
 void 
@@ -570,11 +624,11 @@ unsigned planemask;
         }
     if((planemask & s3vPriv.PlaneMask) != s3vPriv.PlaneMask) {
         WaitQueue(4);
-        SETB_MONO_PAT0(~0);
-        SETB_MONO_PAT1(~0);   
-        SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+        CACHE_SETB_MONO_PAT0(~0);
+        CACHE_SETB_MONO_PAT1(~0);   
+        CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
         }
-    SETB_CMD_SET(cmd);
+    CACHE_SETB_CMD_SET(cmd);
 
 }
 
@@ -584,16 +638,11 @@ int x, y, w, h, skipleft;
 {
 
     WaitQueue(3);
-    if(skipleft != 0) { 
-        SETB_CLIP_L_R(x + skipleft, s3vPriv.Width); 
-        s3vNeedResetClip = TRUE;
-        }
-    else {
-        s3vNeedResetClip = FALSE;
-        SETB_CLIP_L_R(0, s3vPriv.Width); 
-        } 
+    if(skipleft != 0)  
+        CACHE_SETB_CLIP_L_R(x + skipleft, s3vPriv.Width); 
+    else
+        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
     SETB_RWIDTH_HEIGHT(w - 1, h);
-    WaitIdle();
     SETB_RDEST_XY(x, y);   
 }
 
@@ -661,16 +710,16 @@ unsigned planemask;
 
 
     WaitQueue(6);
-    SETB_MONO_PAT0(patternx);
-    SETB_MONO_PAT1(patterny);
-    SETB_CMD_SET(cmd);
+    CACHE_SETB_MONO_PAT0(patternx);
+    CACHE_SETB_MONO_PAT1(patterny);
+    CACHE_SETB_CMD_SET(cmd);
     if (bg != -1){
-        SETB_PAT_FG_CLR(fg);
-        SETB_PAT_BG_CLR(bg);
+        CACHE_SETB_PAT_FG_CLR(fg);
+        CACHE_SETB_PAT_BG_CLR(bg);
         }
     else {
-        SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
-        SETB_PAT_BG_CLR(0);
+        CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+        CACHE_SETB_PAT_BG_CLR(0);
         if(vgaBitsPerPixel == 8) 
             SETB_SRC_FG_CLR(fg | (fg << 8));
         else  
@@ -691,7 +740,6 @@ int x, y, w, h;
     if(s3vSavedCmd != NEED_MONO_FILL) {  /* Opaque case, no planemask */
         WaitQueue(3);
         SETB_RWIDTH_HEIGHT(w - 1, h);
-        SETB_RSRC_XY(0, 0);   
         SETB_RDEST_XY(x, y);
         }
 
@@ -702,14 +750,11 @@ int x, y, w, h;
 
         WaitQueue(3);
         SETB_RWIDTH_HEIGHT(new_width - 1, h);
-        if (new_width != w) {
-             SETB_CLIP_L_R(x, x + w -1); 
-             s3vNeedResetClip = TRUE;
-             }
+        if (new_width != w) 
+             CACHE_SETB_CLIP_L_R(x, x + w -1); 
         else {
-             SETB_CLIP_L_R(0, s3vPriv.Width);
-             s3vNeedResetClip = FALSE;
-             } 
+             CACHE_SETB_CLIP_L_R(0, s3vPriv.Width);
+             }
         SETB_RDEST_XY(x, y);
         S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);
         }  
@@ -768,7 +813,7 @@ int trans_col;
     cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_COLOR_PATT | CMD_XP | CMD_YP); 
 
     WaitQueue(1);
-    SETB_CMD_SET(cmd);
+    CACHE_SETB_CMD_SET(cmd);
 }
 
 
@@ -791,13 +836,10 @@ int x, y, w, h;
         dwords_to_transfer = h * ((new_width + 31) / 32) ;
 
         WaitQueue(3);
-        if (new_width != w) {
-             s3vNeedResetClip = TRUE;
-             SETB_CLIP_L_R(x, x + w -1); 
-             }
+        if (new_width != w)
+             CACHE_SETB_CLIP_L_R(x, x + w -1); 
         else {
-             SETB_CLIP_L_R(0, s3vPriv.Width); 
-             s3vNeedResetClip = FALSE;
+             CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
              }
         SETB_RWIDTH_HEIGHT(new_width - 1, h);
         SETB_RDEST_XY(x, y);
@@ -872,14 +914,13 @@ int x1, x2, y1, y2, bias;
 
     if(s3vLineHWClipSet) {
         WaitQueue(2);
-        SETB_CLIP_L_R(0, s3vPriv.Width); 
-        SETB_CLIP_T_B(0, s3vPriv.ScissB); 
+        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+        CACHE_SETB_CLIP_T_B(0, s3vPriv.ScissB); 
         s3vLineHWClipSet = FALSE;
-        s3vNeedResetClip = FALSE;
         }
   
     WaitQueue(1);  
-    SETB_CMD_SET(s3vSavedRectCmdForLine); 
+    CACHE_SETB_CMD_SET(s3vSavedRectCmdForLine); 
     s3vSyncForLineBug = TRUE;
  
 }
@@ -889,24 +930,78 @@ void S3VSetClippingRectangle(x1, y1, x2, y2)
 int x1, y1, x2, y2;
 {
     WaitQueue(2);
-    SETB_CLIP_L_R(x1, x1 + x2); 
-    SETB_CLIP_T_B(y1, y1+ y2);   
+    CACHE_SETB_CLIP_L_R(x1, x1 + x2); 
+    CACHE_SETB_CLIP_T_B(y1, y1+ y2);   
     s3vLineHWClipSet = TRUE;
-    s3vNeedResetClip = TRUE;
 }
 
 
-/* Trapezoid solid fills. Does not do anything at the moment */
+/* Trapezoid solid fills. XAA passes the coordinates of the top start
+ * and end points, and the slopes of the left and right vertexes. We
+ * use this info to generate the bottom points. We use a mixture of
+ * floating-point and fixed point logic; the biases are done in fixed
+ * point. Essentially, these were determined experimentally. The function
+ * passes xtest, but I suspect that it will not match cfb for large polygons.
+ *
+ * Remaining bug: no planemask support, have to tell XAA somehow.
+ */
 
 void
 S3VSubsequentFillTrapezoidSolid(y, h, left, dxl, dyl, el, right, dxr, dyr, er)
 int y, h, left, dxl, dyl, el, right, dxr, dyr, er;
 {
+int l_xdelta, r_xdelta;
+double lendx, rendx, dl_delta, dr_delta;
+int lbias, rbias;
+unsigned int cmd = s3vAccelCmd;
+double l_sgn = -1.0, r_sgn = -1.0;
 
-ErrorF("Filled trap. called: y %d h %d left %d dxl %d dyl %d el %d\n",
-y, h, left, dxl, dyl, el);
-ErrorF("Filled trap. called: right %d dxr %d dyr %d er %d \n",
-right, dxr, dyr, er); 
+    cmd |= (CMD_POLYFILL | CMD_AUTOEXEC | MIX_MONO_PATT) ;
+    cmd |= (s3vSavedRectCmdForLine & (0xff << 17));
+   
+    l_xdelta = -(dxl << 20)/ dyl;
+    r_xdelta = -(dxr << 20)/ dyr;
+
+    dl_delta = -(double) dxl / (double) dyl;
+    dr_delta = -(double) dxr / (double) dyr;
+    if (dl_delta < 0.0) l_sgn = 1.0;
+    if (dr_delta < 0.0) r_sgn = 1.0;
+   
+    lendx = l_sgn * ((double) el / (double) dyl) + left + ((h - 1) * dxl) / (double) dyl;
+    rendx = r_sgn * ((double) er / (double) dyr) + right + ((h - 1) * dxr) / (double) dyr;
+
+    /* We now have four cases */
+
+    if (fabs(dl_delta) > 1.0) {  /* XMAJOR line */
+        if (dxl > 0) { lbias = ((1 << 20) - h); }
+        else { lbias = 0; }
+        }
+    else {
+        if (dxl > 0) { lbias = ((1 << 20) - 1) + l_xdelta / 2; }
+        else { lbias = 0; }
+        }
+
+    if (fabs(dr_delta) > 1.0) {   /* XMAJOR line */
+        if (dxr > 0) { rbias = (1 << 20); }
+        else { rbias = ((1 << 20) - 1); }
+        }
+    else {
+        if (dxr > 0) { rbias = (1 << 20); }
+        else { rbias = ((1 << 20) - 1); }
+        }
+
+    WaitQueue(8);
+    CACHE_SETP_CMD_SET(cmd);
+    SETP_PRDX(r_xdelta);
+    SETP_PLDX(l_xdelta);
+    SETP_PRXSTART(((int) (rendx * (double) (1 << 20))) + rbias);
+    SETP_PLXSTART(((int) (lendx * (double) (1 << 20))) + lbias);
+
+    SETP_PYSTART(y + h - 1);
+    SETP_PYCNT((h) | 0x30000000);
+
+    CACHE_SETB_CMD_SET(s3vSavedRectCmdForLine);
+
 }
 
 
@@ -928,11 +1023,11 @@ unsigned int *image_transfer;
     blocks = dwords / 8192;
     left_to_do = dwords - blocks * 8192;
     for(j = 0; j < blocks ; j ++) {
-        image_transfer = (int *) &IMG_TRANS;
+        image_transfer = (unsigned int *) &IMG_TRANS;
         for(i = 0; i < 8192; i++)
             *image_transfer++ = value;
     }
-    image_transfer = (int *) &IMG_TRANS;
+    image_transfer = (unsigned int *) &IMG_TRANS;
     for(i = 0; i < left_to_do; i++)
         *image_transfer++ = value;
 

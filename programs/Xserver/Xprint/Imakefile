@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.3 1997/04/08 10:09:52 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.4 1997/04/14 07:04:59 hohndel Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -100,7 +100,7 @@ NormalLintTarget($(SRCS))
 SpecialCObjectRule(ddxInit,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(EXT_DEFINES))
 #if XprtServer && (PrintOnlyServer || defined(PrintServerExtensions))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT)
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT -UGLXEXT)
 #endif
 
 #ifdef OS2Architecture

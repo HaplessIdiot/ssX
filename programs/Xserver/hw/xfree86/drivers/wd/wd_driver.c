@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.1 1997/03/06 23:17:28 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/wd/wd_driver.c,v 1.2 1997/03/11 11:10:59 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -155,7 +155,8 @@ vgaVideoChipRec WD = {
   FALSE,
   FALSE,
   NULL,
-  1,
+  1,     /* ClockMulFactor */
+  1      /* ClockDivFactor */
 };
 
 #define new ((vgaPVGA1Ptr)vgaNewVideoState)

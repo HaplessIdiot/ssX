@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.6 1997/02/24 17:46:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.7 1997/03/10 10:11:11 hohndel Exp $ */
 
 /*
 
@@ -66,10 +66,6 @@ extern char *getenv();
 #define XK_LATIN1
 #include "keysymdef.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
-#endif
-
 #ifndef PEX_DEFAULT_FONTPATH
 #define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEX"
 #endif
@@ -93,6 +89,9 @@ extern char *getenv();
 #endif
 #endif
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 /* A convenient shorthand. */
 #ifndef XFree86LOADER
 typedef struct dirent	 ENTRY;

@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.2 1997/03/17 07:18:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.3 1997/03/22 09:36:25 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -139,7 +139,8 @@ vgaVideoChipRec PEGC = {
 	FALSE,		/* 24bpp */
 	FALSE,		/* 32bpp */
 	NULL,
-	1,
+	1,              /* ClockMulFactor */
+	1               /* ClockDIvFactor */
 };
 
 unsigned short *vramwindow_r;

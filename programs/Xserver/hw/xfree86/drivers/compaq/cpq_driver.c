@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.2 1997/03/11 11:10:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/compaq/cpq_driver.c,v 1.3 1997/04/08 10:12:39 hohndel Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  * Copyright 1997 Ming Yu <yum@itp.ac.cn>, Gerry Toll <gtoll@tc.cornell.edu>, 
@@ -117,7 +117,8 @@ vgaVideoChipRec COMPAQ = {
 	FALSE,                                /* 24bpp */
 	FALSE,                                /* 32bpp */
 	NULL,                                 /* Builtin Mode List */
-	1,                                    /* Clock Scale Factor */
+	1,                                    /* ClockMulFactor */
+	1                                     /* ClockDivFactor */
 };
 
 #define new ((vgaCOMPAQPtr)vgaNewVideoState)

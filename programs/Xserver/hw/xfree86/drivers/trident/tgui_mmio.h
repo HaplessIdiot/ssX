@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_mmio.h,v 3.2 1997/02/10 16:41:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_mmio.h,v 1.1 1997/03/06 23:17:05 hohndel Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
  *
@@ -91,6 +91,10 @@
 		*(unsigned char *)(tguiMMIOBase + addr) = c;
 #define TGUI_COMMAND(c) \
 		{ \
+		if (TVGAchipset >= TGUI96xx) { \
+			TGUI_SRCCLIP_XY(0,0); \
+			TGUI_DSTCLIP_XY(4095,2047); \
+		} \
 		TGUI_OPERMODE(GE_OP); \
 		TGUISync(); \
 		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c; \
@@ -189,7 +193,11 @@
 		outw(GER_BASE+addr, c);
 #define TGUI_COMMAND(c) \
 		{ \
-		TGUI_OPERMODE(GE_OP); \
+		if (TVGAchipset >= TGUI96xx) { \
+			outl(GER_BASE+GER_SRCCLIP_XY,XY_MERGE(0,0)); \
+			outl(GER_BASE+GER_DSTCLIP_XY,XY_MERGE(4095,2047)); \
+		} \
+		outw(GER_BASE+GER_OPERMODE,GE_OP); \
 		TGUISync(); \
 		outb(GER_BASE+GER_COMMAND, c); \
 		}

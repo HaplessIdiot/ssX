@@ -1,5 +1,9 @@
-/* $XConsortium: XExtInt.c,v 1.35 94/04/17 20:17:59 rws Exp $ */
-/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.0 1995/12/23 09:36:55 dawes Exp $ */
+/* $TOG: XExtInt.c /main/32 1997/04/04 10:06:55 barstow $ */
+
+
+
+
+/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.1 1996/08/25 13:52:33 dawes Exp $ */
 
 /************************************************************
 
@@ -102,7 +106,7 @@ static char *XInputErrorList[] = {
 	"BadDevice, invalid or uninitialized input device", /* BadDevice */
 	"BadEvent, invalid event type",			    /* BadEvent	*/	
 	"BadMode, invalid mode parameter",		    /* BadMode	*/
-	"DeviceBusy, device already in use",		    /* DeviceBusy */
+	"DeviceBusy, device is busy",			    /* DeviceBusy */
 	"BadClass, invalid event class",		    /* BadClass	*/	
 };
 

@@ -1,5 +1,88 @@
-XFree86 3.9b (30 April 1997)
- 711. Restore changes accidentally backed out of xfree86.cf in 3.9a.
+XFree86 3.9b (3 May 1997)
+ 750. Some fix-trackers from TOG, includes:
+        lib/Xi: missing error message (#352 -- we already had this fix)
+        lib/X11: long font paths can garbage heap (#353)
+        fix potential memory leak in xinput ProcXGetDeviceMotionEvents (#354)
+        fix unmatched quotes in comments (and other stuff?!?) (#355)
+        config updates (#356)
+        lib/X11: when IMS dies the library closes all open IMs (#357)
+        lib/X11: When doing XSetICValues and IMS returns ERROR, library core
+          dump (#358).
+ 749. Clean up the GLX for the static-linked servers (#351, Henry Worth).
+ 748. Fix SCO Open Server build problem (#348, J. Kean Johnston). 
+ 747. Add an option to allow VClk1 to be used as the programmable clock
+      with C&T 65550 and 65554 chips (#346, David Bateman, Daniel Bischof,
+      Andreas Hietmann and Thomas Landgraf).
+ 746. Remove trailing ',' at the end of InfoRec initialisations, which
+      was hiding potential compiler warnings (#343, Koen Gadeyne).
+ 745. Replace the ChipClockScaleFactor field with ChipClockMulFactor and
+      ChipClockDivFactor to allow for non-integer factors required in
+      some cases (#343, Koen Gadeyne).
+ 744. Fix some 'make' problems that show up on NetBSD and OpenBSD, and clean
+      up BSD 4.4 -specific make stuff in the config/cf directory
+      (#342, #344, Matthieu Herrb).
+ 743. Add better error/warning messages for the aperture driver code for
+      NetBSD/OpenBSD (#341, Matthieu Herrb).
+ 742. Block choosing interleave mode for the Mystique, and set maxPixelClock
+      for the Mystique (#338, Radoslaw Kapitan).
+ 741. Add ability to set MCLK for the mga driver in XF86Config (#338, #339,
+      Radoslaw Kapitan).
+ 740. Fix some problems with XAA DELAYED_SYNC and the software cursor and
+      backing store -- new wrappers are added (#337, Sebastien Marineau).
+ 739. Re-enable HW cursor for Millennium, and implement looping over
+      MGAIdent when checking the Chipset (#336, Radoslaw Kapitan).
+ 738. Remove some assumptions about burst modes from the C&T ImageWrite
+      function (#335, David Bateman).
+ 737. Matrox Mystique driver support, which should work fine with
+      acceleration disabled (#334, Guy Desbief).
+ 736. Fix for double-height MGA hw cursor when using interlaced modes
+      (#333, Radoslaw Kapitan).
+ 735. Explicit syncing of the blitter at the end of the C&T XAA primitives
+      is no longer needed since delayed syncing is off by default
+      (#332, David Bateman).
+ 734. Use the source pitch for colour CPU to screen operations in the C&T
+      driver (#332, David Bateman).
+ 733. Fix writing the 16bpp planemask to the chip in the C&T driver
+      (#332, David Bateman).
+ 732. Stop reserving 1kb of video memory when the accelerator is disabled
+      for the Tseng driver (#331, Stuart Lamble).
+ 731. Fix Trident 96xx/Cyber series for snow on the screen and fix
+      acceleration issues (#330, #349, Alan Hourihane).
+ 730. C&T doc updates (#329, David Bateman).
+ 729. Fix a bitblt bug for 8bpp, widths 49..56 in the s3v driver (#328,
+      Sebastien Marineau).
+ 728. Add filled trapezoid support to the s3v driver (#328,
+      Sebastien Marineau).
+ 727. Add caching of often-used ViRGE registers (#328, Sebastien Marineau).
+ 726. Add hw cursor support for the SVGA s3v driver (#328, Sebastien Marineau).
+ 725. Add a new kind of XAA pixmap cache slot which is used to hold mono
+      8x8 patterns for chips which have PROGRAMMED_BITS (#327,
+      Sebastien Marineau).
+ 724. Fix XAA pixmap cache invalidation after a VT swicth (#327,
+      Sebastien Marineau).
+ 723. Fix lockup problem in SVGA s3v driver, and some cleanups (#326,
+      Harald Koenig).
+ 722. Fix MGA hw cursor not displaying after switching resolutions
+      (#325, Radoslaw Kapitan).
+ 721. Fix text colour problems for ViRGE/VX, a rectfill and bitblt bug
+      for virtual width == 2048, and avoid some more bad hardware lines in
+      the S3V server (#324, Harald Koenig).
+ 720. Move chipset independent hw-cursor stub from mga_dac3026.c to
+      mga_hwcurs.c (#322, Radoslaw Kapitan).
+ 719. Fix a build problem in osPexFont.c, and add a ModuleInit function
+      for libxf86cache.a (#321, Michael Rohleder).
+ 718. Fix a 32bpp Millennium DAC initialisation typo (#318, Radoslaw Kapitan).
+ 717. Loader support for m68k (#317, #323, Alan Hourihane).
+ 716. Fix copyright and remove RCS idents in xf86_ldext.h (#316,
+      Matthieu Herrb).
+ 715. Fix some NonTE text problems, and back out change #690 (#315,
+      David Bateman).
+ 714. Add initialisation of GlxInitVisualsPtr to loadmod.c (#313, Henry Worth).
+ 713. Don't build libX11 for BuildServers only unless building the Xnest
+      server (#312, Marc Aurele La France).
+ 712. Remove extraneous line in xf86text.c (#311, Harald Nordgard Hansen).
+ 711. Restore changes accidentally backed out of xfree86.cf in 3.9a
+      (includes #310, #313, #320, #326).
  710. Open /dev/tty0 instead of /dev/console on Linux to find the first
       free VT.
 
@@ -4410,4 +4493,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.454 1997/04/18 09:11:14 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.455 1997/04/28 11:13:16 dawes Exp $

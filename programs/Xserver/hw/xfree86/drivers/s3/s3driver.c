@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.2 1997/03/17 07:18:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.3 1997/03/22 09:35:49 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -201,7 +201,8 @@ vgaVideoChipRec s3InfoRec = {
   FALSE,	/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,			/* DisplayModePtr ChipBuiltinModes */
-  1			/* int ChipClockScaleFactor */
+  1,			/* int ChipClockMulFactor */
+  1			/* int ChipClockDivFactor */
 };
 
 short s3alu[16] =

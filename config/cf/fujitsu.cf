@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf /main/8 1996/12/04 10:10:25 swick $
+XCOMM platform:  $TOG: fujitsu.cf /main/9 1997/04/17 14:11:44 barstow $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -20,6 +20,34 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion)
 #define StandardCppDefines -D__uxp__ -DSVR4 -DANSICPP
 
 #define CppCmd             /usr/ccs/lib/cpp
+
+#ifndef  ArCmdBase
+# define ArCmdBase	/usr/ccs/bin/ar
+#endif
+#ifndef  AsCmd
+# define AsCmd		/usr/ccs/bin/as
+#endif
+#ifndef  CcCmd
+# define CcCmd		/usr/ccs/bin/cc
+#endif
+#ifndef  CplusplusCmd
+# define CplusplusCmd	/opt/uxpcplus/bin/CC
+#endif
+#ifndef  CplusplusFilt
+# define CplusplusFilt	/opt/uxpcplus/bin/c++filt
+#endif
+#ifndef  CplusplusDependIncludes
+# define CplusplusDependIncludes	-I/opt/uxpcplus/include/CC
+#endif
+#ifndef  LdCmd
+# define LdCmd		/usr/ccs/bin/ld
+#endif
+#ifndef  LexCmd
+# define LexCmd		/usr/ccs/bin/lex
+#endif
+#ifndef  YaccCmd
+# define YaccCmd	/usr/ccs/bin/yacc
+#endif
 
 #define BuildLibPathVar	   LD_LIBRARY_PATH
 #define SystemV4	   YES

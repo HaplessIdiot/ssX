@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/Imakefile,v 3.3 1997/02/20 10:01:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/Imakefile,v 3.4 1997/02/25 14:20:04 hohndel Exp $
 
 
 
@@ -8,9 +8,9 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:20:30 rws $
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = 	xf86bcache.c xf86fcache.c xf86text.c
+SRCS = 	xf86bcache.c xf86fcache.c xf86text.c xf86icache.c
 
-OBJS = 	xf86bcache.o xf86fcache.o xf86text.o
+OBJS = 	xf86bcache.o xf86fcache.o xf86text.o xf86icache.o
 
 DEFINES = -DPSZ=8
 

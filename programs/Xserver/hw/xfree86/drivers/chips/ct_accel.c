@@ -1,7 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.3 1997/04/12 13:45:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.4 1997/04/17 08:17:06 hohndel Exp $ */
 
-
-#define CT_EXTRA_WAIT
 
 #include "vga256.h"
 #include "compiler.h"
@@ -69,8 +67,8 @@ static unsigned int old_planemask;
             old_planemask = mask&0xFFFF; \
 	    {   int i; \
 	        for (i = 0; i < 64; i++) { \
-		    xf86memset((unsigned char *)vgaLinearBase + addr + i * 2, \
-			   mask, 2); \
+		    xf86memcpy((unsigned char *)vgaLinearBase + addr + i * 2, \
+			   &mask, 2); \
 	        } \
 	    } \
 	} \
@@ -425,9 +423,6 @@ void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
 	    ctSETPITCH(0, dispw);
 	  }
       }
-#ifdef CT_EXTRA_WAIT
-    ctBLTWAIT;
-#endif
 }
 #endif
 
@@ -441,9 +436,6 @@ void CTNAME(SubsequentFillRectSolid)(x, y, w, h)
     ctSETROP(CommandFlags);
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-#ifdef CT_EXTRA_WAIT
-    ctBLTWAIT;
-#endif
 }
 
 /*
@@ -540,9 +532,6 @@ void CTNAME(SubsequentScreenToScreenCopy)(x1, y1, x2, y2, w, h)
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel );
-#ifdef CT_EXTRA_WAIT
-    ctBLTWAIT;
-#endif
 }
 
 static unsigned int scanlinewidth;
@@ -985,7 +974,6 @@ void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
     void *src;
     unsigned int planemask;
 {
-    volatile unsigned long *pHOSTDATA;
     unsigned long *pdSrc;
     unsigned char *pbSrc;
     int dwords, dwordTotal;
@@ -1011,15 +999,14 @@ void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
 	ctSETPATSRCADDR(ctBLTPatternAddress);
 	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
     }
-    ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
+    ctSETPITCH(srcwidth, vga256InfoRec.displayWidth * vgaBytesPerPixel);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 
     while (h--) {
 	dwords = dwordTotal;
 	pdSrc = (unsigned long *)pbSrc;
-	pHOSTDATA = (unsigned long *)ctBltDataWindow;
 	    while (dwords--)
-		*pHOSTDATA++ = *pdSrc++;
+		*(unsigned int *)ctBltDataWindow = *pdSrc++;
 	pbSrc += srcwidth;
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.3 1997/04/08 10:13:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.4 1997/04/17 08:17:20 hohndel Exp $ */
 
 /* Header file for ViRGE server */
 
@@ -15,7 +15,7 @@ typedef struct {
    unsigned char Clock;
    unsigned char s3DacRegs[0x101];
    unsigned char CR31, CR32, CR33, CR34, CR36, CR3A, CR3B, CR3C, CR42, CR43;
-   unsigned char CR51, CR53, CR58;   
+   unsigned char CR51, CR53, CR54, CR58;   
    unsigned char CR59, CR5A, CR5D,CR5E;
    unsigned char CR61, CR63, CR65, CR66, CR67, CR68, CR69; /* Video attrib. */
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
@@ -61,7 +61,11 @@ typedef struct {
 
 /* Function prototypes */
 
-S3PCIInformation * s3GetPCIInfo();
+S3PCIInformation * s3vGetPCIInfo();
+extern Bool S3VCursorInit();
+extern void S3VRestoreCursor();
+extern void S3VWarpCursor();
+extern void S3VQueryBestSize();
 
 
 /* Various defines which are used to pass flags between the Setup and 
@@ -106,6 +110,15 @@ static __inline__ int S3VCheckLSPN(int w, int dir)
    return w;
 }
 
+/* And this adjusts color bitblts widths to work around GE bugs */
+
+static __inline__ int S3VCheckBltWidth(int w)
+{
+   if (w >= s3vPriv.bltbug_width1 && w <= s3vPriv.bltbug_width2) {
+      w = s3vPriv.bltbug_width2 + 1;
+   }
+   return w;
+}
 
 /* This next function determines if the Source operand is present in the
  * given ROP. The rule is that both the lower and upper nibble of the rop
@@ -123,6 +136,25 @@ int shifted_rop;
         | ((rop & 0x0f) == 0x05) | ((rop & 0x0f) == 0x00)) &
        (((rop & 0xf0) == 0xa0) | ((rop & 0xf0) == 0xf0) 
         | ((rop & 0xf0) == 0x50) | ((rop & 0xf0) == 0x00)))
+            return FALSE;
+    else 
+            return TRUE;
+}
+
+/* This next function determines if the Destination operand is present in the
+ * given ROP. The rule is that both the lower and upper nibble of the rop
+ * have to be neither 0x00, 0x03, 0x0c or 0x0f. 
+ */
+
+static __inline__ Bool S3VROPHasDst(shifted_rop)
+int shifted_rop;
+{
+    int rop = (shifted_rop & (0xff << 17)) >> 17;
+
+    if ((((rop & 0x0f) == 0x0c) | ((rop & 0x0f) == 0x0f) 
+        | ((rop & 0x0f) == 0x03) | ((rop & 0x0f) == 0x00)) &
+       (((rop & 0xf0) == 0xc0) | ((rop & 0xf0) == 0xf0) 
+        | ((rop & 0xf0) == 0x30) | ((rop & 0xf0) == 0x00)))
             return FALSE;
     else 
             return TRUE;

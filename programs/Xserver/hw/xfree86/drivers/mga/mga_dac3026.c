@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.1 1997/04/10 11:34:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.2 1997/04/12 13:45:23 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -28,100 +28,60 @@
  */
 
 
-#define NEED_EVENTS
-#include <X.h>
-#include "Xproto.h"
-#include <misc.h>
-#include <input.h>
-#include <cursorstr.h>
-#include <regionstr.h>
-#include <scrnintstr.h>
-#include <servermd.h>
-#include <windowstr.h>
 #include "xf86.h"
-#include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "mipointer.h"
-
+#include "xf86_HWlib.h"
 #include "vga.h"
 #include "vgaPCI.h"
 
+#include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
 
 /*
  * exported functions
  */
-Bool MGA3026Init();
-void MGA3026Restore();
-void *MGA3026Save();
-void MGATi3026SetMCLK();
-Bool MGACursorInit();
-void MGARestoreCursor();
-void MGAWarpCursor();
-void MGAQueryBestSize();
+void	MGA3026RamdacInit();
+Bool	MGA3026Init();
+void	MGA3026Restore();
+void*	MGA3026Save();
 
 /*
  * implementation
  */
  
-#define MAX_CURS_HEIGHT 64   /* 64 scan lines */
-#define MAX_CURS_WIDTH  64   /* 64 pixels     */
-
-static int MGACursorHotX;
-static int MGACursorHotY;
-static int MGACursorWidth;
-static int MGACursorHeight;
-static int MGACursorGeneration = -1;
-static CursorPtr MGACursorpCurs;
-static Bool MGAInitCursorFlag ;
-static unsigned char mgaSwapBits[256];
-
-static Bool MGATi3026RealizeCursor();
-static Bool MGATi3026UnrealizeCursor();
-static void MGATi3026SetCursor();
-static void MGATi3026MoveCursor();
-static void MGATi3026LoadCursor();
-
-extern miPointerScreenFuncRec xf86PointerScreenFuncs;
-extern xf86InfoRec xf86Info;
-
-static miPointerSpriteFuncRec MGAPointerSpriteFuncs =
-{
-   MGATi3026RealizeCursor,
-   MGATi3026UnrealizeCursor,
-   MGATi3026SetCursor,
-   MGATi3026MoveCursor,
-};
-
 /*
  * indexes to ti3026 registers (the order is important)
  */
 static unsigned char MGADACregs[] = {
-	0x0F, 0x18, 0x19, 0x1A, 0x1C, 0x1D, 0x1E, 0x2A, 0x2B, 0x30,
-	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x06
+	0x0F, 0x18, 0x19, 0x1A, 0x1C,   0x1D, 0x1E, 0x2A, 0x2B, 0x30,
+	0x31, 0x32, 0x33, 0x34, 0x35,   0x36, 0x37, 0x38, 0x39, 0x3A,
+	0x06
 };
 
 /*
  * initial values of ti3026 registers
  */
 static unsigned char MGADACbpp8[] = {
-	0x06, 0x80,    0, 0x25, 0x00, 0x00, 0x0C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,    0, 0x00, 0x00
-	
+	0x06, 0x80,    0, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
+	   0
 };
 static unsigned char MGADACbpp16[] = {
-	0x07, 0x05,    0, 0x15, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+	0x07, 0x05,    0, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
+	   0
 };
 static unsigned char MGADACbpp24[] = {
-	0x07, 0x16,    0, 0x25, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+	0x07, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
+	   0
 };
 static unsigned char MGADACbpp32[] = {
-	0x07, 0x06,    0, 0x05, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+	0x07, 0x06,    0, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
+	   0
 };
 
 /*
@@ -144,53 +104,15 @@ typedef struct {
  */
 
 /*
- * indirect registers
- */
-static unsigned char inTi3026(reg)
-unsigned char reg;
-{
-	unsigned char val;
-	
-	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
-
-	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-	val = INREG8(RAMDAC_OFFSET + TVP3026_DATA);
-
-	return val;
-}
-
-static void outTi3026(reg, mask, val)
-unsigned char reg, mask, val;
-{
-	unsigned char tmp;
-
-	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
-
-	if (mask != 0x00)
-		tmp = inTi3026(reg) & mask;
-	else
-		tmp = 0;
-	
-	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-	OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, tmp | val);
-}
-
-/*
  * direct registers
  */
 static unsigned char inTi3026dreg(reg)
 unsigned char reg;
 {
-	unsigned char val;
-	
 	if (!MGAMMIOBase)
 		FatalError("MGA: IO registers not mapped\n");
 
-	val = INREG8(RAMDAC_OFFSET + reg);
-
-	return val;
+	return INREG8(RAMDAC_OFFSET + reg);
 }
 
 static void outTi3026dreg(reg, val)
@@ -200,6 +122,25 @@ unsigned char reg, val;
 		FatalError("MGA: IO registers not mapped\n");
 
 	OUTREG8(RAMDAC_OFFSET + reg, val);
+}
+
+/*
+ * indirect registers
+ */
+static unsigned char inTi3026(reg)
+unsigned char reg;
+{
+	outTi3026dreg(TVP3026_INDEX, reg);
+	return inTi3026dreg(TVP3026_DATA);
+}
+
+static void outTi3026(reg, mask, val)
+unsigned char reg, mask, val;
+{
+	unsigned char tmp = mask? (inTi3026(reg) & mask) : 0;
+
+	outTi3026dreg(TVP3026_INDEX, reg);
+	outTi3026dreg(TVP3026_DATA, tmp | val);
 }
 
 /*
@@ -311,7 +252,7 @@ MGATi3026CalcClock ( f_out, f_max, m, n, p )
  *   January 11, 1997 - [aem] Andrew E. Mileski
  *   Written and tested.
  */
-void
+static void
 MGATi3026SetMCLK( f_out )
 	long f_out;
 {
@@ -570,7 +511,7 @@ DisplayModePtr mode;
 		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
 		break;
 	case 32:
-		initDAC = MGADACbpp8;
+		initDAC = MGADACbpp32;
 		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
 		break;
 	default:
@@ -602,6 +543,7 @@ DisplayModePtr mode;
 
 	newVS->ExtVga[0] = 0;
 	newVS->ExtVga[5] = 0;
+	initDAC[20] = 0;
 	
 	if (mode->Flags & V_INTERLACE)
 	{
@@ -609,6 +551,9 @@ DisplayModePtr mode;
 		newVS->ExtVga[5] = (hs + he - ht) >> 1;
 		wd <<= 1;
 		vt &= 0xFFFE;
+		
+		/* enable interlaced cursor */
+		initDAC[20] |= 0x20;
 	}
 
 	newVS->ExtVga[0]	|= (wd & 0x300) >> 4;
@@ -842,315 +787,168 @@ vgaMGAPtr save;
  *                                   (plane 0) maps to cursor colors 0 and 1
  */
 
-static Bool
-MGATi3026RealizeCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
+#define MAX_CURS_HEIGHT 64   /* 64 scan lines */
+#define MAX_CURS_WIDTH  64   /* 64 pixels     */
+
+static pointer
+MGA3026RealizeCursor(pSource, pMask, w, h)
+    unsigned char *pSource, *pMask;
+    int w, h;
 {
-   register int i, j;
-   unsigned char *pServMsk;
-   unsigned char *pServSrc;
-   int   index = pScr->myNum;
-   pointer *pPriv = &pCurs->bits->devPriv[index];
-   int   wsrc, h;
-   unsigned char *ram, *plane0, *plane1;
-   CursorBitsPtr bits = pCurs->bits;
+    register int i, j;
+    unsigned char *ram, *plane0, *plane1;
+    
+    ram = (unsigned char *)xalloc(1024);
+    plane0 = ram;
+    plane1 = ram+512;
+    
+    if (!ram)
+        return NULL;
 
-   if (pCurs->bits->refcnt > 1)
-      return TRUE;
-
-   ram = (unsigned char *)xalloc(1024);
-   *pPriv = (pointer) ram;
-   plane0 = ram;
-   plane1 = ram+512;
-
-   if (!ram)
-      return FALSE;
-
-   pServSrc = (unsigned char *)bits->source;
-   pServMsk = (unsigned char *)bits->mask;
-
-   h = bits->height;
-   if (h > MGACursorHeight)
-      h = MGACursorHeight;
-
-   wsrc = PixmapBytePad(bits->width, 1);	/* bytes per line */
-
-   for (i = 0; i < MGACursorHeight; i++) {
-      for (j = 0; j < MGACursorWidth / 8; j++) {
-	 unsigned char mask, source;
-
-	 if (i < h && j < wsrc) {
-	    source = *pServSrc++;
-	    mask = *pServMsk++;
-
-	    source = mgaSwapBits[source];
-	    mask = mgaSwapBits[mask];
-
-	    if (j < MGACursorWidth / 8) {
-	       *plane0++ = source & mask;
-	       *plane1++ = mask;
-	    }
-	 } else {
-	    *plane0++ = 0x00;
-	    *plane1++ = 0x00;
-	 }
-      }
-      /*
-       * if we still have more bytes on this line (j < wsrc),
-       * we have to ignore the rest of the line.
-       */
-       while (j++ < wsrc) pServMsk++,pServSrc++;
-   }
-   return TRUE;
+    for (i = 0; i < MAX_CURS_HEIGHT; i++) {
+        for (j = 0; j < MAX_CURS_WIDTH / 8; j++) {
+            unsigned char mask, source;
+            
+            if (i < h && j < w) {
+                source = byte_reversed[*pSource++];
+                mask = byte_reversed[*pMask++];
+                *plane0++ = source & mask;
+                *plane1++ = mask;
+            } else {
+                *plane0++ = 0x00;
+                *plane1++ = 0x00;
+            }
+        }
+        /*
+         * if we still have more bytes on this line (j < w),
+         * we have to ignore the rest of the line.
+         */
+        while (j++ < w) pSource++,pMask++;
+    }
+    return ram;
 }
-
-static Bool
-MGATi3026UnrealizeCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-{
-   pointer priv;
-
-   if (pCurs->bits->refcnt <= 1 &&
-       (priv = pCurs->bits->devPriv[pScr->myNum]))
-      xfree(priv);
-   return TRUE;
-}
-
 
 /*
- * This function should display a new cursor at a new position.
+ * LoadCursor(src)
+ * src - pointer returned by RealizeCursor
  */
+static void
+MGA3026LoadCursor(src)
+    unsigned char *src;
+{
+    register int i;
+    
+    outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
+    /* reset cursor RAM load address A7..A0 */
+    outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
+
+    /* 
+     * Output the cursor data.  The realize function has put the planes into
+     * their correct order, so we can just blast this out.
+     */
+    for (i = 0; i < 1024; i++) 
+        outTi3026dreg(TVP3026_CUR_RAM, (*src++));    
+}
+
+static void
+MGA3026QueryCursorSize(pwidth, pheight)
+    unsigned short *pwidth, *pheight;
+{
+    *pwidth = MAX_CURS_WIDTH;
+    *pheight = MAX_CURS_HEIGHT;
+}
+
+static Bool
+MGA3026CursorState()
+{
+    return (inTi3026(TVP3026_CURSOR_CTL) & 0x03);
+}
 
 static void 
-MGATi3026SetCursor(pScr, pCurs, x, y, generateEvent)
-	ScreenPtr pScr;
-	CursorPtr pCurs;
-	int x, y;
-	Bool generateEvent;
+MGA3026CursorOn()
 {
-
-   if (!pCurs)
-       return;
-    
-    MGACursorHotX = pCurs->bits->xhot;
-    MGACursorHotY = pCurs->bits->yhot;
-    
-    MGATi3026LoadCursor(pScr, pCurs, x, y);
-}
-
-static void 
-MGATi3026CursorOn()
-{
-   /* Enable cursor - X11 mode */
-   outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
+    /* Enable cursor - X11 mode */
+    outTi3026(TVP3026_CURSOR_CTL, 0x6c, 0x13);
 }
 
 static void
-MGATi3026CursorOff()
+MGA3026CursorOff()
 {
-   /* Disable cursor */
-   outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
+    /* Disable cursor */
+    outTi3026(TVP3026_CURSOR_CTL, 0xfc, 0x00);
 }
 
 static void
-MGATi3026MoveCursor(pScr, x, y)
-     ScreenPtr pScr;
-     int   x, y;
+MGA3026MoveCursor(x, y)
+    int x, y;
 {
-   unsigned char tmp;
-
-   if (!xf86VTSema)
-      return;
+    x += 64;
+    y += 64;
+    if (x < 0 || y < 0)
+        return;
+        
+    /* Output position - "only" 12 bits of location documented */
    
-   x -= vga256InfoRec.frameX0 ;
-   x += 64 - MGACursorHotX;
-   if (x < 0)
-      return;
-
-   y -= vga256InfoRec.frameY0;
-   y += 64 - MGACursorHotY;
-   if (y < 0)
-      return;
-
-
-   /* Output position - "only" 12 bits of location documented */
-   
-   outTi3026dreg(TVP3026_CUR_XLOW, x & 0xFF);
-   outTi3026dreg(TVP3026_CUR_XHI, (x >> 8) & 0x0F);
-   outTi3026dreg(TVP3026_CUR_YLOW, y & 0xFF);
-   outTi3026dreg(TVP3026_CUR_YHI, (y >> 8) & 0x0F);
-
+    outTi3026dreg(TVP3026_CUR_XLOW, x & 0xFF);
+    outTi3026dreg(TVP3026_CUR_XHI, (x >> 8) & 0x0F);
+    outTi3026dreg(TVP3026_CUR_YLOW, y & 0xFF);
+    outTi3026dreg(TVP3026_CUR_YHI, (y >> 8) & 0x0F);
 }
 
 static void
-MGATi3026RecolorCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
+MGA3026RecolorCursor(red0, green0, blue0, red1, green1, blue1)
+    int red0, green0, blue0, red1, green1, blue1;
 {
-   unsigned char tmp;
+    /* The TI 3026 cursor is always 8 bits so shift 8, not 10 */
 
-   /* The TI 3026 cursor is always 8 bits so shift 8, not 10 */
-
-   /* Background color */
-   outTi3026dreg(TVP3026_CUR_COL_ADDR, 1);
-   outTi3026dreg(TVP3026_CUR_COL_DATA, (pCurs->backRed >> 8) & 0xFF);
-   outTi3026dreg(TVP3026_CUR_COL_DATA, (pCurs->backGreen >> 8) &0xFF);
-   outTi3026dreg(TVP3026_CUR_COL_DATA,  (pCurs->backBlue >> 8) & 0xFF);
+    /* Background color */
+    outTi3026dreg(TVP3026_CUR_COL_ADDR, 1);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (red0 >> 8) & 0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (green0 >> 8) &0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (blue0 >> 8) & 0xFF);
 
     /* Foreground color */
-   outTi3026dreg(TVP3026_CUR_COL_ADDR, 2);
-   outTi3026dreg(TVP3026_CUR_COL_DATA, (pCurs->foreRed >> 8) & 0xFF);
-   outTi3026dreg(TVP3026_CUR_COL_DATA, (pCurs->foreGreen >> 8) &0xFF);
-   outTi3026dreg(TVP3026_CUR_COL_DATA,  (pCurs->foreBlue >> 8) & 0xFF);
-
+    outTi3026dreg(TVP3026_CUR_COL_ADDR, 2);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (red1 >> 8) & 0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (green1 >> 8) &0xFF);
+    outTi3026dreg(TVP3026_CUR_COL_DATA, (blue1 >> 8) & 0xFF);
 }
 
-static void 
-MGATi3026LoadCursor(pScr, pCurs, x, y)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-     int x, y;
+void
+MGA3026RamdacInit()
 {
-   int   index = pScr->myNum;
-   register int   i;
-   unsigned char *ram, *p, tmp, tmpcurs;
+    MGAdac.isHwCursor      = TRUE;
+    MGAdac.RealizeCursor   = MGA3026RealizeCursor;
+    MGAdac.LoadCursor      = MGA3026LoadCursor;
+    MGAdac.QueryCursorSize = MGA3026QueryCursorSize;
+    MGAdac.CursorState     = MGA3026CursorState;
+    MGAdac.CursorOn        = MGA3026CursorOn;
+    MGAdac.CursorOff       = MGA3026CursorOff;
+    MGAdac.MoveCursor      = MGA3026MoveCursor;
+    MGAdac.RecolorCursor   = MGA3026RecolorCursor;
 
-   if (!xf86VTSema)
-      return;
-
-   if (!pCurs)
-      return;
-
-   /* Remember the cursor currently loaded into this cursor slot. */
-   MGACursorpCurs = pCurs;
-   
-   /* turn the cursor off */
-   if ((tmpcurs = inTi3026(TVP3026_CURSOR_CTL)) & 0x03)
-      MGATi3026CursorOff();
-
-   /* load colormap */
-   MGATi3026RecolorCursor(pScr, pCurs);
-
-
-   outTi3026(TVP3026_CURSOR_CTL, 0xf3, 0x00); /* reset A9,A8 */
-   /* reset cursor RAM load address A7..A0 */
-   outTi3026dreg(TVP3026_WADR_PAL, 0x00); 
-
-   /* 
-    * Output the cursor data.  The realize function has put the planes into
-    * their correct order, so we can just blast this out.
-    */
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
-   p = ram;
-   for (i = 0; i < 1024; i++,p++) 
-      outTi3026dreg(TVP3026_CUR_RAM, (*p));
-
-   /* position cursor */
-   MGATi3026MoveCursor(0, x, y);
-
-   /* turn the cursor on */
-   if ( (tmpcurs & 0x03) || MGAInitCursorFlag  )
-      MGATi3026CursorOn();
-
-   if (MGAInitCursorFlag)
-      MGAInitCursorFlag = FALSE;
-
-   return;
-}
-
-
-/*
- * This is a high-level init function, called once; it passes a local
- * miPointerSpriteFuncRec with additional functions that we need to provide.
- * It is called by the SVGA server.
- */
-#define	reorder(a,b)	b = \
-	(a & 0x80) >> 7 | \
-	(a & 0x40) >> 5 | \
-	(a & 0x20) >> 3 | \
-	(a & 0x10) >> 1 | \
-	(a & 0x08) << 1 | \
-	(a & 0x04) << 3 | \
-	(a & 0x02) << 5 | \
-	(a & 0x01) << 7;
-
-Bool MGACursorInit(pm, pScr)
-	char *pm;
-	ScreenPtr pScr;
-{
-    int i ;
-
-    MGACursorHotX = 0;
-    MGACursorHotY = 0;
-    MGACursorWidth = MAX_CURS_WIDTH;
-    MGACursorHeight = MAX_CURS_HEIGHT;
-   
-    if (MGACursorGeneration != serverGeneration) {
-	if (!(miPointerInitialize(pScr, &MGAPointerSpriteFuncs,
-				 &xf86PointerScreenFuncs, FALSE)))
-	    return FALSE;
-       
-	pScr->RecolorCursor = MGATi3026RecolorCursor;
-	MGACursorGeneration = serverGeneration;
+    switch( MGABios.RamdacType & 0xff )
+    {
+    case 1: MGAdac.maxPixelClock = 220000;
+            break;
+    case 2: MGAdac.maxPixelClock = 250000;
+            break;
+    default:
+            MGAdac.maxPixelClock = 175000;
+            break;
     }
 
-   /*
-    * Define the MGA cursor mode. Always 64x64 size !
-    */
-   MGAInitCursorFlag = TRUE ;
+    /* Set MCLK based on amount of memory */
+    if ( vga256InfoRec.videoRam < 4096 )
+        MGAdac.MemoryClock = MGABios.ClkBase * 10;
+    else if ( vga256InfoRec.videoRam < 8192 )
+        MGAdac.MemoryClock = MGABios.Clk4MB * 10;
+    else
+        MGAdac.MemoryClock = MGABios.Clk8MB * 10;
 
-   for (i = 0; i < 256; i++) {
-       reorder (i, mgaSwapBits[i]);
-   }
-
-	return TRUE;
-}
-/*
- * This function should redisplay a cursor that has been
- * displayed earlier. It is called by the SVGA server.
- */
-
-void MGARestoreCursor(pScr)
-	ScreenPtr pScr;
-{
-	int x, y;
-
-	miPointerPosition(&x, &y);
-
-	MGATi3026LoadCursor(pScr, MGACursorpCurs, x, y);
-}
-/*
- * This doesn't do very much. It just calls the mi routine. It is called
- * by the SVGA server.
- */
-
-void MGAWarpCursor(pScr, x, y)
-	ScreenPtr pScr;
-	int x, y;
-{
-	miPointerWarpCursor(pScr, x, y);
-	xf86Info.currentScreen = pScr;
-}
-/*
- * This function is called by the SVGA server. It returns the
- * size of the hardware cursor that we support when asked for.
- * It is called by the SVGA server.
- */
-
-void MGAQueryBestSize(class, pwidth, pheight, pScreen)
-	int class;
-	unsigned short *pwidth;
-	unsigned short *pheight;
-	ScreenPtr pScreen;
-{
- 	if (*pwidth > 0) {
- 		if (class == CursorShape) {
-			*pwidth = MGACursorWidth;
-			*pheight = MGACursorHeight;
-		}
-		else
-		    (void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
-	}
+    /* or get it from XF86Config */
+    if (vga256InfoRec.MemClk)
+        MGAdac.MemoryClock = vga256InfoRec.MemClk;
+        
+    MGATi3026SetMCLK( MGAdac.MemoryClock );
 }

@@ -1,11 +1,11 @@
-XCOMM	$XConsortium: locale.alias /main/21 1996/12/25 23:52:56 kaleb $
+XCOMM	$TOG: locale.alias /main/22 1997/04/18 07:56:01 barstow $
 XCOMM
 XCOMM	This file contains alias name of locale.
 XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86$
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.4 1996/12/28 11:14:13 dawes Exp $
 XCOMM
 POSIX			C
 POSIX-UTF2		C
@@ -168,7 +168,7 @@ ko			ko_KR.eucKR
 ko_KR			ko_KR.eucKR
 ko_KR.EUC		ko_KR.eucKR
 ko_KR.euc		ko_KR.eucKR
-XCOMM most locales in FreeBSD 2.1.[56] don't work, allow use of generic latin-1
+XCOMM most locales in FreeBSD 2.1.[56] do not work, allow use of generic latin-1
 lt_LN.ISO_8859-1	lt_LN.ISO8859-1
 mk			mk_MK.ISO8859-5
 mk_MK			mk_MK.ISO8859-5

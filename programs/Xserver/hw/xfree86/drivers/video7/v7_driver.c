@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.21 1997/02/28 08:22:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/video7/v7_driver.c,v 1.1 1997/03/06 23:17:21 hohndel Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -235,7 +235,8 @@ vgaVideoChipRec VIDEO7 = {
 	FALSE,	/* 24bpp */
 	FALSE,	/* 32bpp */
 	NULL,
-	1,
+	1,      /* ClockMulFactor */
+	1       /* ClockDivFactor */
 };
 
 #define VIDEO7_MAX_CLOCK_IN_KHZ 90000

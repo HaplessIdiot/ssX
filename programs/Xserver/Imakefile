@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.106 1997/03/27 08:29:16 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.107 1997/04/10 10:05:57 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -48,10 +48,14 @@ INSTPGMFLAGS =
 #endif
 
 #if BuildGlxExt && !GlxModule
-        GLXLIB = glxStub/LibraryTargetName(ServerGl) 
-        GLXDIR = glxStub 
+  #if GlxStubLib 
+      GLXLIB = glxStub/LibraryTargetName(ServerGlx) 
+      GLXDIR = glxStub 
+  #else
+      GLXLIB = GlxStaticServerLib
+      GLXDIR = 
+  #endif
 #endif
-
 
 #if BuildXInputExt
       XINPUTEXT = Xi/LibraryTargetName(xinput)
@@ -456,11 +460,16 @@ XF86LLIBS  = $(XF86LINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86OSLIB) \
  
 XF68INIT   = $(XF68COMSRC)/xf86Init.o $(XF68CONFIGSRC)/xf86IniExt.o
 XF68MINIT  = $(XF68COMSRC)/xf86Init_m.o $(XF68CONFIGSRC)/xf86MIniExt.o
+XF68LINIT  = $(XF68COMSRC)/xf86Init_L.o $(XF68CONFIGSRC)/xf86IniExt.o
 XF68CONFIG = $(XF68CONFIGSRC)/xf86_Option.o
 XF68COMLIB = $(XF68COMSRC)/LibraryTargetName(xf86)
 XF68OSLIB  = $(XF68OSSRC)/LibraryTargetName(xf86_os)
+#if DoLoadableServer
+XF68OSDOBJ = $(XF86OSSRC)/misc/xf86dummy.o
+#endif
 XF68LIBS   = $(XF68INIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
 XF68MLIBS  = $(XF68MINIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
+XF68LLIBS  = $(XF68LINIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
  
 XF98INIT       = $(XF98COMSRC)/xf86Init.o $(XF98CONFIGSRC)/xf86IniExt.o
 XF98MINIT      = $(XF98COMSRC)/xf86Init_m.o $(XF98CONFIGSRC)/xf86MIniExt.o
@@ -1570,6 +1579,34 @@ InstallLinkKitNonExecFile(TGA.def,$(LINKKITDIR))
 #endif
 #endif
 
+#if XF68LoaderServer
+XCOMM
+XCOMM XFree68 Loadable Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+DDXDIR1  = hw/xfree68
+XF68LOADERSUBDIRS = $(STDDIRS) $(DDXDIR1) $(DEPDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
+XF68LOADEROBJS = $(XF68COMSRC)/XF68_LOADER.o
+XF68LOADERLIB = $(XF68SRC)/loader/LibraryTargetName(loader)
+XF68LOADERLIBS = $(XF68LLIBS) $(XF68COMLIB) $(XF68LOADERLIB) \
+                 $(XF68OSLIB) PreFbLibs $(OTHEREXTS) NoMfbPostFbLibs
+XF68LOADERSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF68LOADERSUBDIRS) $(XF68LOADEROBJS) $(XF68LOADERLIBS) $(XF68LOADERSYSLIBS))
+#endif
+#if HasGnuMake
+$(XF68LOADEROBJS) $(XF68LOADERLIBS) $(XF68LOADERSYSLIBS):: $(XF68LOADERSUBDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+SetUIDServerTarget(XF68_LOADER,$(XF68LOADERSUBDIRS),$(XF68LOADEROBJS),$(XF68LOADERLIBS),$(XF68LOADERSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF68_LOADER
+#endif
+#endif        /* XF68LoaderServer */
 
 #if XF68FBDevServer
 XCOMM

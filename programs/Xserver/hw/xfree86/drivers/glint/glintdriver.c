@@ -8,7 +8,7 @@
  *
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/glint/glintdriver.c,v 3.32 1997/02/28 08:21:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glintdriver.c,v 1.1 1997/03/07 00:29:35 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -179,7 +179,8 @@ vgaVideoChipRec GLINT = {
 	 * to pixel clocks.	 This is rarely used, and in most cases, set
 	 * it to 1.
 	 */
-	1,
+	1,    /* ClockMulfactor */
+	1     /* ClockDivfactor */
 };
 
 #ifdef XFree86LOADER

@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.1 1997/03/06 23:16:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.2 1997/04/17 08:17:25 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -170,7 +170,8 @@ vgaVideoChipRec SIS = {
   TRUE,		/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,
-  1,
+  1,            /* ClockMulFactor */
+  1             /* ClockDivFactor */
 };
 
 #define new ((vgaSISPtr)vgaNewVideoState)

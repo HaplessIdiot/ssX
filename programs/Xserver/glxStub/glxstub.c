@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/glxStub/glxstub.c,v 1.2 1997/04/12 15:34:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/glxStub/glxstub.c,v 1.3 1997/04/18 09:11:05 hohndel Exp $ */
 
 /*
  * Copyright 1997  The XFree86 Project
@@ -23,6 +23,9 @@
  * 
  */
 
+#include "X.h"
+#include "misc.h"
+#include "dixstruct.h"
 
 /*
  *  Stubs for systems that don't support loadable modules.
@@ -39,14 +42,14 @@ GlxExtensionInit(INITARGS)
 int
 GlxInitVisuals (
 #if NeedFunctionPrototypes
-    VisualPtr * 	/*visualp*/,
-    DepthPtr * 		/*depthp*/,
-    int * 		/*nvisualp*/,
-    int * 		/*ndepthp*/,
-    int * 		/*rootDepthp*/,
-    VisualID * 		/*defaultVisp*/,
-    unsigned long 	/*sizes*/,
-    int 		/*bitsPerRGB*/
+    VisualPtr * 	visualp,
+    DepthPtr * 	depthp,
+    int * 		nvisualp,
+    int * 		ndepthp,
+    int * 		rootDepthp,
+    VisualID * 	defaultVisp,
+    unsigned long 	sizes,
+    int 		bitsPerRGB
 #endif
 ) {}
 

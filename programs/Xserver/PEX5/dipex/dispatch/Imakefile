@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:54:48 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.6 1997/02/18 18:55:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/Imakefile,v 3.7 1997/02/25 14:19:07 hohndel Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -71,6 +71,7 @@ PEX_DI_LIBNAME = libdidipex.a
 SubdirLibraryRule($(OBJS))
 UnsharedLibraryTarget(didipex,$(OBJS),unshared,..)
 #else
+SubdirLibraryRule($(OBJS))
 NormalLibraryTarget(didipex,$(OBJS))
 #endif
 LintLibraryTarget(dsp,$(SRCS))

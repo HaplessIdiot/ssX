@@ -1,4 +1,4 @@
-/* $XConsortium: imDefFlt.c,v 1.4 94/03/26 16:57:39 rws Exp $ */
+/* $TOG: imDefFlt.c /main/9 1997/04/28 16:39:25 barstow $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -43,14 +43,15 @@ _XimTriggerCheck(im, ev, len, keylist)
 {
     register long	 i;
     KeySym	 	 keysym;
-    char	 	 buf[BUFSIZE];
+    CARD32	 	 buf32[BUFSIZE/4];
+    char	 	*buf = (char *)buf32;
     int			 modifier;
     int			 modifier_mask;
     CARD32		 min_len = sizeof(CARD32)   /* sizeof keysym */
 				 + sizeof(CARD32)   /* sizeof modifier */
 				 + sizeof(CARD32);  /* sizeof modifier mask */
 
-    im->methods->lookup_string(ev, buf, BUFSIZE, &keysym, NULL);
+    XLookupString(ev, buf, BUFSIZE, &keysym, NULL);
     if (!keysym)
 	return -1;
 
@@ -326,7 +327,7 @@ _XimRegisterFilter(ic)
     Xic		 ic;
 {
     _XimRegisterKeyPressFilter(ic);
-    if (IS_FORWARD_EVENT(ic, KeyRelease))
+    if (IS_FORWARD_EVENT(ic, KeyReleaseMask))
 	_XimRegisterKeyReleaseFilter(ic);
     return;
 }
@@ -335,8 +336,6 @@ Public void
 _XimUnregisterFilter(ic)
     Xic		 ic;
 {
-    Xim		 im = (Xim)ic->core.im;
-
     _XimUnregisterKeyPressFilter(ic);
     _XimUnregisterKeyReleaseFilter(ic);
     return;
@@ -346,7 +345,7 @@ Public void
 _XimReregisterFilter(ic)
     Xic		 ic;
 {
-    if (IS_FORWARD_EVENT(ic, KeyRelease))
+    if (IS_FORWARD_EVENT(ic, KeyReleaseMask))
 	_XimRegisterKeyReleaseFilter(ic);
     else
 	_XimUnregisterKeyReleaseFilter(ic);
@@ -371,7 +370,7 @@ _XimFilterServerDestroy (d, w, ev, client_data)
 	    return True;
 	}
 #endif /* XIM_CONNECTABLE */
-	_XimServerDestroy();
+	_XimServerDestroy(im);
     }
     return True;
 }

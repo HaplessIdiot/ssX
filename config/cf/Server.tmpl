@@ -4,7 +4,7 @@
  */
 
 XCOMM $XConsortium: Server.tmpl /main/14 1996/04/30 14:37:27 mw $
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.6 1997/02/18 17:47:46 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.7 1997/04/10 10:05:17 hohndel Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -83,6 +83,12 @@ EXT_DEFINES = ExtensionDefines
 GLX_DEFINES = GlxDefines -DGLX_MODULE
 #else
 GLX_DEFINES = GlxDefines
+#endif
+ 
+#ifndef GlxStaticServerLib
+#define GlxStubLib    YES
+#else
+#define GlxStubLib    NO
 #endif
 
 #ifdef XFree86Version

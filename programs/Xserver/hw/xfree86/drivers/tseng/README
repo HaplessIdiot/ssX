@@ -38,9 +38,12 @@ that is present in the current 3.2A code, albeit disabled. At this point,
 this method sometimes causes a complete (hardware) system hang. This happens
 when the ET4000 expects more data than it is getting. Probably a programming
 error, either in the ET4000 code, or the XAA code. Someone needs to fix
-this: it is much faster than scanline-screen-to-screen color expansion. ANd
+this: it is much faster than scanline-screen-to-screen color expansion. And
 it may also provide a useful workaround for the scanline color expansion
-problems. It should work: it works in the XF86_W32 server...
+problems. It should work: it works in the XF86_W32 server... The problems
+could have been due to a bug in XAA that also caused problems on other chips
+when using non-TE fonts. Since this bug is now fixed, CPU-to-screen color
+expansion may even work now.
 
 * linear mode support for cards BEFORE the ET4000W32p rev C. There are
 some subtle differences with the newer cards here, and someone with such a
@@ -395,4 +398,4 @@ mode.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.4 1997/04/08 10:13:26 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.5 1997/04/14 07:05:24 hohndel Exp $

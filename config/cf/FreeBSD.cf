@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.62tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.63 1997/03/27 18:37:20 hohndel Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -256,18 +256,7 @@ install.man::                                                           @@\
 #endif
 
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 1)
-
-#define MakeHasPosixVariableSubstitutions	YES
-
-/*
- * ForceSubdirs - force make to build subdirectories
- */
-#define ForceSubdirs(dirs)						@@\
-dirs: .EXEC								@@\
-	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
-	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
-									@@\
-.EXEC:
+#define HasBsdMake	YES
 #endif
 
 #ifndef StaticLibrary

@@ -1,5 +1,11 @@
 $TOG: README /main/65 1997/02/26 18:15:54 kaleb $
 
+
+
+
+
+$XFree86$
+
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
 
@@ -46,6 +52,7 @@ Imake.tmpl provides defaults for the following variables:
 	FortranDebugFlags	flags for Fortran debug info
 	FortranFlags		Fortran compiler flags
 	HasBSD44Sockets		boolean for system has BSD4.4 sockets
+	HasBsdMake		use the 4.4BSD variant of the make program?
 	HasBsearch		boolean for libc has bsearch()
 	HasBrokenCCForLink	boolean for brain damaged cc driver
 	HasCenterLineC		boolean for system has CenterLine C compiler
@@ -58,6 +65,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasGcc			boolean for system has GNU gcc compiler
 	HasGcc2			boolean for system has GNU gcc 2.x compiler
 	HasGcc2ForCplusplus	use gcc 2 for C++ programs?
+	HasGnuMake		use the GNU make program?
 	HasKrb5			system has Kerberos version 5 support?
 	HasLargeTmp		boolean for system has /tmp space
 	HasLatex		system has LaTeX document preparation software

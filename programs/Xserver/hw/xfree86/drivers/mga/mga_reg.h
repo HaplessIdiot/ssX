@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.1 1997/04/10 11:34:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.2 1997/04/14 07:05:21 hohndel Exp $ */
 
 
 
@@ -27,6 +27,8 @@
 #ifndef _MGA_REG_H_
 #define _MGA_REG_H_
 
+#define	MGAINDEX2064		0x0
+#define	MGAINDEX1064		0x1
 #define	MGAREG_DWGCTL		0x1c00
 #define	MGAREG_MACCESS		0x1c04
 /* the following is a mystique only register */
@@ -196,8 +198,8 @@
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
 #define MGADWG_TRANSC		( 0x01 << 30 )
-#define MGAREG_MISC_WRITE	0x1fc2
-#define MGAREG_MISC_READ	0x1fcc
+#define MGAREG_MISC_WRITE	0x3c2
+#define MGAREG_MISC_READ	0x3cc
 #define MGAREG_MISC_IOADSEL	(0x1 << 0)
 #define MGAREG_MISC_RAMMAPEN	(0x1 << 1)
 #define MGAREG_MISC_CLK_SEL_VGA25	(0x0 << 2)
@@ -334,10 +336,12 @@
 
 #define MGA1064_GEN_CTL		0x1d
 #define MGA1064_MISC_CTL	0x1e
+#define MGA1064_MISC_CTL_DAC_POW_DN   		( 0x01 << 0 )
 #define MGA1064_MISC_CTL_VGA   		( 0x01 << 1 )
+#define MGA1064_MISC_CTL_DIS_CON   		( 0x03 << 1 )
 #define MGA1064_MISC_CTL_MAFC   		( 0x02 << 1 )
 #define MGA1064_MISC_CTL_VGA8   		( 0x01 << 3 )
-#define MGA1064_MISC_CTL_DAC_POW_UP   		( 0x01 << 4 )
+#define MGA1064_MISC_CTL_DAC_RAM_CS   		( 0x01 << 4 )
 
 #define MGA1064_GEN_IO_CTL	0x2a
 #define MGA1064_GEN_IO_DATA	0x2b
