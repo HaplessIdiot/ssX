@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.1 2000/11/02 16:55:41 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario
  *	      and VA Linux Systems, Inc., Sunnyvale, California.
@@ -864,15 +864,7 @@ static void RADEONMMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->SubsequentSolidFillRect		= RADEONSubsequentSolidFillRect;
 
 				/* Screen-to-screen Copy */
-				/* Transparency uses the wrong colors for
-				   24 bpp mode -- the transparent part is
-				   correct, but the opaque color is wrong.
-				   This can be seen with netscape's I-bar
-				   cursor when editing in the URL location
-				   box. */
-    a->ScreenToScreenCopyFlags		= ((pScrn->bitsPerPixel == 24)
-					   ? NO_TRANSPARENCY
-					   : 0);
+    a->ScreenToScreenCopyFlags		= 0;
     a->SetupForScreenToScreenCopy	= RADEONSetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy	= RADEONSubsequentScreenToScreenCopy;
 
