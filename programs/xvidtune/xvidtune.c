@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.21 1996/01/17 12:55:02 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.22 1996/10/16 14:45:23 dawes Exp $ */
 
 /*
 
@@ -1372,6 +1372,76 @@ static void RestoreAction (w, e, vector, count)
 	ApplyCB (w, NULL, NULL);
 }
 
+
+static void ShowAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    ShowCB(w, NULL, NULL);
+}
+
+static void MoveLeftAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)HSyncStart, NULL);
+}
+
+static void MoveRightAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)-HSyncStart, NULL);
+}
+
+static void NarrowerAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)HTotal, NULL);
+}
+
+static void WiderAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)-HTotal, NULL);
+}
+
+static void MoveUpAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)VSyncStart, NULL);
+}
+
+static void MoveDownAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)-VSyncStart, NULL);
+}
+
+static void TallerAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)-VTotal, NULL);
+}
+
+static void ShorterAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+    AdjustCB(w, (XtPointer)VTotal, NULL);
+}
+
+static void NextModeAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+	SwitchCB(w, 1, NULL);
+}
+
+static void PrevModeAction(w, e, vector, count)
+    Widget w; XEvent* e; String* vector; Cardinal* count;
+{
+	SwitchCB(w, -1, NULL);
+}
+
+
+
+
 static void usage()
 {
     fprintf(stderr, "Usage: xvidtune [option]\n");
@@ -1392,7 +1462,18 @@ int main (argc, argv)
     int suspendTime, offTime;
 
     static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction },
-				      { "xvidtune-restore", RestoreAction } };
+				      { "xvidtune-restore", RestoreAction },
+				      { "xvidtune-show", ShowAction },
+				      {	"xvidtune-moveleft", MoveLeftAction },
+				      {	"xvidtune-moveright", MoveRightAction },
+				      {	"xvidtune-wider", WiderAction },
+				      {	"xvidtune-narrower", NarrowerAction },
+				      {	"xvidtune-moveup", MoveUpAction },
+				      {	"xvidtune-movedown", MoveDownAction },
+				      {	"xvidtune-taller", TallerAction },
+				      {	"xvidtune-shorter", ShorterAction },
+				      {	"xvidtune-nextmode", NextModeAction },
+				      {	"xvidtune-prevmode", PrevModeAction } };
 
     Top = top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
 		NULL, applicationShellWidgetClass, 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.2 1997/12/05 22:01:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_dac.c,v 1.3 1997/12/20 14:20:52 hohndel Exp $ */
 /*
  * Copyright 1997 The XFree86 Project, Inc
  *
@@ -61,8 +61,6 @@ PM2DAC_CalculateMNPCForClock
     unsigned long	f;
     long		freqerr, lowestfreqerr = INITIALFREQERR;
     unsigned long  	clock,actualclock = 0;
-
-    if (glintInfoRec.bitsPerPixel > 8) reqclock *= 2;
 
     for (n = 2; n <= 14; n++) {
         for (m = 2; m != 0; m++) { /* this is a char, so this counts to 255 */

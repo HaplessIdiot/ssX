@@ -1,4 +1,4 @@
-/* $TOG: Convert.c /main/75 1997/05/15 17:28:31 kaleb $ */
+/* $TOG: Convert.c /main/76 1997/12/29 16:22:16 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Convert.c,v 3.0 1996/05/06 05:54:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Convert.c,v 3.1 1997/05/17 12:52:08 dawes Exp $ */
 
 /*
 
@@ -917,7 +917,13 @@ XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
     XtAppContext app = XtDisplayToApplicationContext(dpy);
 
     LOCK_APP(app);
-    cP = GetConverterEntry( app, converter );
+    if ((cP = GetConverterEntry(app, converter)) == NULL) {
+	XtAppSetTypeConverter(XtDisplayToApplicationContext(dpy),
+			      "_XtUnk1", "_XtUnk2", 
+			      converter, NULL, 0,
+			      XtCacheAll, NULL);
+	cP = GetConverterEntry(app, converter);
+    }
     retval = CallConverter(dpy, converter, args, num_args, from, to, 
 			    cache_ref_return, cP);
     UNLOCK_APP(app);

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.22 1997/10/13 17:16:58 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.23 1997/12/28 21:28:43 hohndel Exp $
  */
 
 /*
@@ -904,6 +904,8 @@ Size_t dcslen;
 					strcat(reply, ";1");
 				if (term->flags & UNDERLINE)
 					strcat(reply, ";4");
+				if (term->flags & BLINK)
+					strcat(reply, ";5");
 				if (term->flags & INVERSE)
 					strcat(reply, ";7");
 				if (term->flags & INVISIBLE)

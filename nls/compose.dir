@@ -1,8 +1,10 @@
-XCOMM $XConsortium: compose.dir /main/4 1996/10/23 07:15:50 kaleb $
+XCOMM $XConsortium: compose.dir /main/5 1996/12/25 23:53:00 kaleb $
 XCOMM
 XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
+XCOMM
+XCOMM $XFree86$
 XCOMM
 iso8859-1/Compose	C
 iso8859-1/Compose	da_DK.ISO8859-1
@@ -22,6 +24,7 @@ iso8859-1/Compose	fr_CH.ISO8859-1
 iso8859-1/Compose	is_IS.ISO8859-1
 iso8859-1/Compose	it_IT.ISO8859-1
 iso8859-1/Compose	it_CH.ISO8859-1
+iso8859-1/Compose	lt_LN.ISO8859-1
 iso8859-1/Compose	nl_NL.ISO8859-1
 iso8859-1/Compose	nl_BE.ISO8859-1
 iso8859-1/Compose	no_NO.ISO8859-1
@@ -39,3 +42,4 @@ iso8859-2/Compose	sk_SK.ISO8859-2
 iso8859-2/Compose	sl_CS.ISO8859-2
 iso8859-2/Compose	sl_SI.ISO8859-2
 iso8859-2/Compose	sr_SP.ISO8859-2
+iso8859-4/Compose	lt_LT.ISO8859-4

@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.8 1997/11/16 06:17:46 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.9 1997/11/22 06:50:18 dawes Exp $
 XCOMM
 POSIX			C
 POSIX-UTF2		C
@@ -188,6 +188,14 @@ XCOMM Lithuania, which by default uses Latin-4.
 lt_LN.ISO_8859-1	lt_LN.ISO8859-1
 #endif
 lt			lt_LT.ISO8859-4
+lt_LT.88594		lt_LT.ISO8859-4
+lt_LT.88594.en		lt_LT.ISO8859-4
+lt_LT.iso88594		lt_LT.ISO8859-4
+lt_LT.ISO-8859-4	lt_LT.ISO8859-4
+lt_LT.ISO_8859-4	lt_LT.ISO8859-4
+lt_LT.utf8		lt_LT.utf
+lt_LT.UTF-8		lt_LT.utf
+lt_LT.ISO_10646		lt_LT.utf
 lv			lv_LV.ISO8859-4
 mk			mk_MK.ISO8859-5
 mk_MK			mk_MK.ISO8859-5

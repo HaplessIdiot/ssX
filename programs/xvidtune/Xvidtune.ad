@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.9 1995/07/17 12:47:45 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.10 1995/07/19 12:46:12 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -169,4 +169,13 @@ DEALINGS IN THE SOFTWARE.\n\n
 *Blank2Dec-button.label: -
 
 *translations:	#override <Key>r: xvidtune-restore()\n\
+			  <Key>p: xvidtune-show()\n\
+			  <Key>j: xvidtune-moveleft()\n\
+			  <Key>k: xvidtune-moveright()\n\
+			  <Key>m: xvidtune-movedown()\n\
+			  <Key>i: xvidtune-moveup()\n\
+			  <Key>a: xvidtune-narrower()\n\
+			  <Key>s: xvidtune-wider()\n\
+			  <Key>x: xvidtune-shorter()\n\
+			  <Key>z: xvidtune-taller()\n\
 			  <Key>q: xvidtune-quit()

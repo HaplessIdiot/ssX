@@ -31,6 +31,8 @@ from the X Consortium.
 #ifndef _XFWP_H
 #define _XFWP_H
 
+#include <X11/Xos.h> /* struct timeval */
+
 #define FALSE		0
 #define TRUE		1
 

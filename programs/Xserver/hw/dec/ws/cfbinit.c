@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.7 94/04/17 20:29:53 dpw Exp $ */
+/* $TOG: cfbinit.c /main/11 1998/01/07 16:07:16 kaleb $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium
@@ -248,6 +248,9 @@ fbInitProc(index, pScreen, argc, argv)
     static ws_map_control mc;
     VisualPtr	    pVisual;
     ColormapPtr	    pCmap;
+#ifdef __alpha
+    Pixel	    blackPixel, whitePixel;
+#endif
 /* for initializing color map entries */
     unsigned short blackred      = 0x0000;
     unsigned short blackgreen    = 0x0000; 
@@ -400,31 +403,67 @@ fbInitProc(index, pScreen, argc, argv)
 
     }
 
-    if (!(*screenInit) (pScreen, dd->pixmap, wsp->screenDesc->width,
-	wsp->screenDesc->height, dpix, dpiy, dd->fb_width, dd->bits_per_pixel, dd->depth))
+    if (!(*screenInit) (pScreen, 
+#ifndef __alpha
+	dd->pixmap, 
+#else
+	(pointer)(((char*)dd->pixmap) - 4096),
+#endif
+	wsp->screenDesc->width,
+	wsp->screenDesc->height, 
+	dpix, dpiy, 
+	dd->fb_width, dd->bits_per_pixel, dd->depth))
     {
 	return FALSE;
     }
-    /* copy of cfbCreateDefColormap, except variable colors */
-    for (pVisual = pScreen->visuals;
-	 pVisual->vid != pScreen->rootVisual;
-	 pVisual++)
-	;
-
-    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pCmap,
-		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
-		       0)
-	!= Success)
-	return FALSE;
-    if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
-		    &(pScreen->whitePixel), 0) != Success) ||
-	(AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
-		    &(pScreen->blackPixel), 0) != Success))
+ 
+    if (dd->depth == 1)
     {
-	return FALSE;
+        mfbCreateDefColormap(pScreen);
     }
-    (*pScreen->InstallColormap)(pCmap);
+    else
+    {
+	/* copy of cfbCreateDefColormap, except variable colors */
+	for (pVisual = pScreen->visuals;
+	     pVisual->vid != pScreen->rootVisual;
+	     pVisual++)
+	    ;
 
+	if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pCmap,
+			   (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
+			   0)
+	    != Success)
+	    return FALSE;
+#ifndef __alpha
+	if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
+			&(pScreen->whitePixel), 0) != Success) ||
+	    (AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
+			&(pScreen->blackPixel), 0) != Success))
+	{
+	    return FALSE;
+	}
+#else
+	/* 
+	 * It could be argued that this is unnecessary because the DEC
+	 * is little-endian and you get what you need, but it does
+	 * eliminate a warning from the compiler.
+	 */
+	whitePixel = blackPixel = 0;
+	if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
+			&whitePixel, 0) != Success) ||
+	    (AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
+			&blackPixel, 0) != Success))
+	{
+	    return FALSE;
+	}
+	else
+	{
+	    pScreen->whitePixel = whitePixel;
+	    pScreen->blackPixel = blackPixel;
+	}
+#endif
+	(*pScreen->InstallColormap)(pCmap);
+    }
     planemask_addr = dd->plane_mask;
     
     /* Wrap screen close routine to avoid memory leak */
