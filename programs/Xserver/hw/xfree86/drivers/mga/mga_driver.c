@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.216 2002/02/14 23:10:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.217 2002/02/20 17:17:50 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1379,7 +1379,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pMga->DualHeadEnabled = FALSE;
     if (xf86IsEntityShared(pScrn->entityList[0])) {/* dual-head mode requested*/
+#ifdef USEMGAHAL
 	if (pMga->HALLoaded || !MGA_DH_NEEDS_HAL(pMga)) {
+#else
+	if (!MGA_DH_NEEDS_HAL(pMga)) {
+#endif
 	    pMga->DualHeadEnabled = TRUE;
 	} else if (xf86IsPrimInitDone(pScrn->entityList[0])) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -2223,7 +2227,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Can we trust HALlib to set the memory configuration
      * registers correctly?
      */
+#ifdef USEMGAHAL
     else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) &&
+#else
+    else if ((pMga->softbooted || pMga->Primary) &&
+#endif
 	     (pMga->Chipset != PCI_CHIP_MGA2064) &&
 	     (pMga->Chipset != PCI_CHIP_MGA2164) &&
 	     (pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {
