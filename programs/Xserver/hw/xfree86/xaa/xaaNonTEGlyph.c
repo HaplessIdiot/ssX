@@ -103,7 +103,7 @@ EXPNAME(XAANonTEGlyphRendererScanline)(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int bufferNo = 0;
-    CARD32* base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
+    CARD32* base;
 
     (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(
 				pScrn, fg, -1, rop, planemask);
@@ -111,11 +111,11 @@ EXPNAME(XAANonTEGlyphRendererScanline)(
 				pScrn, xText, y, wText, h, 0);
 
     while(h--) {
+	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	NonTEGlyphFunc(base, glyphp, startline++, wText, skipleft);
 	(*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    bufferNo = 0;
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
     }
 
     SET_SYNC_FLAG(infoRec);
