@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.113 1997/01/23 11:01:40 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.116 1997/02/17 09:45:51 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,10 +58,14 @@ extern char *getenv();
 #include "xfsconf.h"
 #endif
 
+#ifndef XF86SETUP
 #ifdef XFree86LOADER
 #include <vga.h>
 extern vgaVideoChipPtr vgaDrivers[];
 int xf86xaaloaded = FALSE;
+#endif
+#else
+#define xf86memset(a,b,c) memset(a,b,c)
 #endif
 
 #ifdef XINPUT
@@ -2422,6 +2426,7 @@ configMonitorSection()
 #endif
 }
 
+#ifndef XF86SETUP
 #ifdef XFree86LOADER
 void
 addChipRec(rec)
@@ -2439,6 +2444,7 @@ addChipRec(rec)
 	i++;
     }
 }
+#endif
 #endif
 
 static CONFIG_RETURN_TYPE

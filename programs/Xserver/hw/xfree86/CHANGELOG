@@ -1,4 +1,5 @@
 XFree86 3.2Af (17 February 1997)
+ 459. Better fix for XF86Setup compile problems (David Dawes).
  458. Fix XF86Setup/Imakefile (#45, Harald Nordgard Hansen).
  457. Fix xdm/Imakefile for ISC (Michael Rohleder).
  456. Fix problem with S3V and W32 modules (Dirk Hohndel).
