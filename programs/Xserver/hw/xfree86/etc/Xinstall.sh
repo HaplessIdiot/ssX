@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.83 2005/02/02 21:56:19 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.84 2005/02/04 02:55:26 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -114,7 +114,7 @@ SNAPSHOT=y
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.4.99.22
+	VERSION=4.4.99.901
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
@@ -883,6 +883,22 @@ FindDistName()
 				;;
 			5.10*)
 				Message="No Solaris/x86 binaries available for this version.  Try Solaris-9."
+				;;
+			*)
+				Message="No Solaris/x86 binaries available for this version."
+				;;
+			esac
+			;;
+		sparc)
+			case "$OsVersion" in
+			5.9*)
+				DistName="Solaris-sparc-9"
+				;;
+			5.8*|5.10*)
+				Message="No Solaris/sparc binaries available for this version.  Try Solaris-sparc-9."
+				;;
+			*)
+				Message="No Solaris/sparc binaries available for this version."
 				;;
 			esac
 			;;
