@@ -1562,7 +1562,9 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 #ifdef SIS300
   UCHAR  *ROMAddr = HwInfo->pjVirtualRomBase;
 #endif
+#ifdef SIS315H
   UCHAR  *myptr = NULL;
+#endif  
   USHORT temp,modeflag,resinfo=0;
   const unsigned char SiS300SeriesLCDRes[] =
          { 0,  1,  2,  3,  7,  4,  5,  8,
@@ -1647,6 +1649,7 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
   if(HwInfo->jChipType < SIS_661) {
      temp &= ~0xe;
   } else {
+#ifdef SIS315H
      if(!(temp & 0x10)) {
         if(temp & 0x08) temp |= LCDPass11;
      }
@@ -1657,6 +1660,7 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
            if(myptr[2] & 0x01) temp |= LCDDualLink;
         }
      }
+#endif
   }
   SiS_Pr->SiS_LCDInfo = temp;
 
