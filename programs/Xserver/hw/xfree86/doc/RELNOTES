@@ -53,7 +53,8 @@
         a client program to get direct access to the video card's
         memory.  This is currently only implemented for the S3 and
         Mach64 servers and the Cirrus and Trident drivers of the SVGA
-        server.
+        server.  For details of the client-side API, see the file
+        README.DGA.
 
      o  An implementation of the XInput extension is now included.  It
         has support for the following devices:
@@ -61,7 +62,6 @@
         +  Joystick (Linux and FreeBSD only at the moment)
 
         +  Wacom tablet (Wacom IV protocol only)
-
 
 
         +  Elographics touchscreen
@@ -478,7 +478,7 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.13 1995/12/28 02:21:20 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.14 1995/12/28 03:49:33 dawes Exp $
 
 
 
@@ -526,4 +526,5 @@
 
 
 
-\n$XFree86$
+
+$XFree86$

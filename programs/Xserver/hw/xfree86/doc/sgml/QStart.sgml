@@ -53,7 +53,7 @@ This guide is for them.
 	you basically have three steps you need to do:
 	<itemize>
 	 <item>Run <tt>xf86config</tt> and answer the questions
-	 <item>Fixup the generated XF86Config
+	 <item>Fix up the generated XF86Config
 	</itemize>
 	Why did I list only two steps, after I said there were three?
 	Well, that's because after doing the first two (and step two
@@ -340,7 +340,7 @@ This guide is for them.
 
 <sect1>	The middle button doesn't work.
 <p>
-	There's no easy answer to this one.  It's alot of trial
+	There's no easy answer to this one.  It's a lot of trial
 	and error.  You need to make sure you're running the right
 	protocol for your mouse.
 
@@ -380,7 +380,7 @@ This guide is for them.
 <!-- Lots of things still need to be added -->
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.0 1995/12/23 11:16:30 dawes Exp $
 </verb>
 
 </article>

@@ -305,7 +305,7 @@ few little adjustments to your system:
 <sect1>Copy Motif files<p>
 
   You must create symbolic links for the Motif libraries and 
-  utilites in the /usr/X11R6 directory tree.
+  utilities in the /usr/X11R6 directory tree.
   <tscreen><verb>
       ln -s /usr/bin/X11/uil /usr/X11R6/bin
       ln -s /usr/lib/libUil.a /usr/X11R6/lib
@@ -370,6 +370,6 @@ few little adjustments to your system:
   <tt>/usr/X11R6/lib/X11/config</tt>.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.2 1995/07/15 16:06:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.3 1995/11/16 11:05:53 dawes Exp $
 </verb>
 </article>

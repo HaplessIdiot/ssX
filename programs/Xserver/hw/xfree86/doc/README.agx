@@ -18,7 +18,7 @@
 
 
   The current driver has a number of acceleration routines: solid and
-  dashed zero-width lines (except AGX-014), bitblt fill's, tiles, and
+  dashed zero-width lines (except AGX-014), bitblt fills, tiles, and
   stipples, solid arc and polygon fills, character glyphs and font cache
   for 8-bit characters.
 
@@ -70,7 +70,7 @@
         graphics chips that differ significantly, architecturally, from
         that XGA and are undoubtedly less than optimal. In particular
         some of the general per-operation overhead to set-up the
-        graphics context should be moved to the ValidatGC() routines.
+        graphics context should be moved to the ValidateGC() routines.
 
      o  Complete HW cursor support, most of the code is done (or
         borrowed from other servers). There just remains a little setup
@@ -129,6 +129,7 @@
 
         "normal"
            normal VGA style RAMDAC (6-bit DAC), default if none
+
            specified. Most boards should work with this parm, but some
            capabilities will be unavailable. Only 8bpp is available.
 
@@ -191,6 +192,8 @@
            Composite sync on green for RAMDAC's that support this
            feature (BT481/481 and AT&T20c490). However, whether any
            boards have necessary traces and glue logic is doubtful.
+
+
 
 
      Chipset:
@@ -324,9 +327,9 @@
      little makes it disappear. The Hercules manual indicates this also
      happens with the MS-Windows drivers.
 
+
      The server requires at least a 64KB scratchpad (16KB for XGA's).
      Additional memory is useful for font cache and a larger scratchpad.
-
 
      AGX Clocks:
         Probing is supported, but of course the usual warnings and
@@ -352,12 +355,16 @@
 
         The AGX-015 2MB Hercules Graphite VL Pro with an ICS1494M
         9251-516 clock chip has probed clock values of:
+
                        25.18  28.80  32.70  36.00  40.00  45.00  50.40  64.70
                        70.10  76.10  80.60  86.30  90.40  95.90 100.70 109.40
 
+
      Actual values according to Hercules are:
+
                     25.175 28.322 32.512 36.000 40.00 44.90 50.35 65.00
                     70.00  75.00  80.00  85.00  90.00 95.00 100.0 108.0
+
 
      These are the values to be used in the clock statement if specify-
      ing the "normal", "bt481", or "herc_small_dac" RAMDAC in your
@@ -386,11 +393,12 @@
 
      Modes:
         One difference I've noted from the Mach8, is that the AGX's CRTC
+
         doesn't like the start of the horizontal sync to be equal to
-        horz blank start (vert sync may have the same problem, I need to
-        test some more). Interlaced and +/-sync flags are supported but
-        have had very little testing. For interlaced modes make sure the
-        number of lines is an odd number.
+        horiz blank start (vert sync may have the same problem, I need
+        to test some more). Interlaced and +/-sync flags are supported
+        but have had very little testing. For interlaced modes make sure
+        the number of lines is an odd number.
 
         The doublescan flag is now supported, however the minimum clock
         supported is generally 25MHz, so resolutions of less than
@@ -403,6 +411,7 @@
         For the Hercules HG720 (2MB VLB AGX-015, with BT481 and
         AT&T20C5050 RAMDACs), I use the following XF86Config "Device"
         section:
+
                      Section "Device"
                          Identifier "HG720"
                          VendorName "Hercules"
@@ -416,8 +425,10 @@
                          Option     "no_wait_state"
                      EndSection
 
+
      For the Spider Black Widow Plus (2MB VLB AGX-016, with Sierra
      SC15021 RAMDAC):
+
                   Section "Device"
                       Identifier "SBWP"
                       VendorName "Spider"
@@ -432,6 +443,7 @@
                   EndSection
 
 
+
   6.  Xga configuration
 
   This server now has tested support for XGA-2 compatible boards (aka.
@@ -444,6 +456,8 @@
   override or disable probing, a minimum of the Instance, COPbase, and
   MEMbase must be specified in the XF86Config device section for the XGA
   card. MCA probing is not supported.
+
+
 
 
      Instance       nn
@@ -511,6 +525,7 @@
      DACspeed      nnnn
         Can be used to override the servers default maximum Pixel Clock
         for XGA-2 of 80Mhz.  The limit can be raised as high as 90Mhz,
+
         or set to lower values.
 
   An alternate way to determine the POS register values is with the
@@ -538,24 +553,9 @@
   is not known whether the clockprobing will work. Some XGA-1 chips may
   support 16bpp.
 
+
   $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.13 1995/07/21 14:41:00 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.14 1995/12/28 03:49:35 dawes Exp $
 
 
 

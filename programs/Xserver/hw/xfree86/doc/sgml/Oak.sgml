@@ -91,7 +91,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
     The use of very high dot-clocks has a REAL negative effect on the
     performance of the boards, due to its limited 80Mbit/sec, higher
     dot clocks limit its ability to draw data into the
-    frambuffer. Thus expect better performance of a 72Mhz based mode
+    framebuffer. Thus expect better performance of a 72Mhz based mode
     than on a 78Mhz based one (for example) where more bandwidth is
     required for screen refresh.
   
@@ -119,7 +119,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.3 1995/01/28 16:02:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.4 1995/07/19 12:43:27 dawes Exp $
 $XConsortium: Oak.sgml,v 1.1 95/01/23 15:05:36 kaleb Exp $
 </verb>
 

@@ -59,7 +59,8 @@ our usual support address.
   <item>A new extension called XFree86-DGA is now provided.  This allows
 	a client program to get direct access to the video card's memory.
 	This is currently only implemented for the S3 and Mach64 servers
-	and the Cirrus and Trident drivers of the SVGA server.
+	and the Cirrus and Trident drivers of the SVGA server.  For details
+	of the client-side API, see the file README.DGA.
   <item>An implementation of the XInput extension is now included.  It
 	has support for the following devices:
 	<itemize>
@@ -422,7 +423,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.12 1995/12/28 01:59:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.13 1995/12/28 02:21:20 dawes Exp $
 </verb>
 
 </article>

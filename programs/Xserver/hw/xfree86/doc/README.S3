@@ -456,7 +456,7 @@
         8/15/16/24 bpp
 
         Note: clock doubling doesn't work, yet, therefore the maximum
-        useable dot clock is limited to about 120MHz.
+        usable dot clock is limited to about 120MHz.
 
 
 
@@ -833,7 +833,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.30 1995/12/02 05:05:44 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.31 1995/12/28 03:49:34 dawes Exp $
 
 
 
@@ -856,4 +856,5 @@
 
 
 
-\n$XFree86$
+
+$XFree86$

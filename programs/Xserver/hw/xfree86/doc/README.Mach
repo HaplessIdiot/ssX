@@ -91,7 +91,7 @@
   ically provide only two buttons.  Thus this feature still is useful
   for just using F1, F2, and F3 for accessing three mouse buttons.
 
-  3.  ACKNOWLEDGEMENT
+  3.  ACKNOWLEDGMENT
 
   Elliot Dresselhaus did the initial work of converting the SCO only
   driver to work under Mach2.5.  Ernest Hua added support for Mach's
@@ -129,6 +129,7 @@
   release.  (Note the Mt.Xinu system uses a later "generation" of
   application programs.  Lastly, the environment used internally at CMU
   is still different from what is distributed externally.  This
+
   environment supports AFS and Kerberos and ...)  The CMU Tahoe
   environment uses a gcc 1.36 compiler with a bsd derived cpp (not
   __STDC__); the Mt.Xinu system uses gcc 1.37.
@@ -137,6 +138,7 @@
   environment distributed with Mach 2.5.  It should be possible to build
   XFree86 using any application environment and with either Mach 2.5 or
   Mach 3.0.  Please let us know of any difficulties.
+
 
        ++Some changes are necessary to the Original Tahoe environment to build++
        ++X11R6.  A few "new" functions are called and were thus added to      ++
@@ -163,18 +165,16 @@
 
 
 
+
   The normal XFree86 distribution makes all the servers in bin/ setuid
   root; this is not necessary.  In Mach, access to I/O privileges is not
   controlled by root; rather it is controlled by /dev/iopl.  What is
   necessary for Mach is that the X servers be able to open /dev/iopl for
   read/write.  There are many ways to achieve this effect.
 
+
   $XConsortium: Mach.sgml,v 1.3 95/01/27 16:14:25 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.5 1995/07/21 14:40:44 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.6 1995/12/28 03:49:30 dawes Exp $
 
 
 

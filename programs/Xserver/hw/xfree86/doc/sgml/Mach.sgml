@@ -92,7 +92,7 @@ Note: whereas most notebooks these days do have an integral mouse, they
 typically provide only two buttons.  Thus this feature still is useful
 for just using F1, F2, and F3 for accessing three mouse buttons.<p>
 
-<sect>ACKNOWLEDGEMENT<p>
+<sect>ACKNOWLEDGMENT<p>
 
 <bf>Elliot Dresselhaus</bf> did the initial work of converting the SCO only
 driver to work under Mach2.5.  <bf/Ernest Hua/ added support for Mach's
@@ -172,7 +172,7 @@ read/write.  There are many ways to achieve this effect.
 
 <verb>
 $XConsortium: Mach.sgml,v 1.3 95/01/27 16:14:25 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.4 1995/01/28 16:01:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.5 1995/07/21 14:40:44 dawes Exp $
 </verb>
 
 </article>

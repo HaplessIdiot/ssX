@@ -747,5 +747,5 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.11 1995/06/18 13:52:58 dawes Exp $
-$XConsortium: Devices,v 1.6 95/01/23 15:34:12 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.12 1995/11/02 00:28:32 dawes Exp $
+# $XConsortium: Devices,v 1.6 95/01/23 15:34:12 kaleb Exp $

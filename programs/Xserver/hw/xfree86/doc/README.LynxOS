@@ -388,8 +388,8 @@
 
   6.1.  Copy Motif files
 
-  You must create symbolic links for the Motif libraries and utilites in
-  the /usr/X11R6 directory tree.
+  You must create symbolic links for the Motif libraries and utilities
+  in the /usr/X11R6 directory tree.
 
 
 
@@ -480,7 +480,7 @@
   /usr/X11R6/lib/X11/config.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.3 1995/11/16 11:05:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.4 1995/12/28 03:49:29 dawes Exp $
 
 
 
@@ -526,4 +526,5 @@
 
 
 
-\n$XFree86$
+
+$XFree86$

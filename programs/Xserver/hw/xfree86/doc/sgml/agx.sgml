@@ -30,7 +30,7 @@
 <p>  
      The current driver has a number of acceleration routines:
      solid and dashed zero-width lines (except AGX-014), bitblt
-     fill's, tiles, and stipples, solid arc and polygon fills, 
+     fills, tiles, and stipples, solid arc and polygon fills, 
      character glyphs and font cache for 8-bit characters.
 <p>
      Boards that have had some testing include ISA and VLB 
@@ -81,7 +81,7 @@
         graphics chips that differ significantly, architecturally, from
         that XGA and are undoubtedly less than optimal. In particular
         some of the general per-operation overhead to set-up the
-        graphics context should be moved to the ValidatGC() routines.<p>
+        graphics context should be moved to the ValidateGC() routines.<p>
 
 <item>  Complete HW cursor support, most of the code is done (or
         borrowed from other servers). There just remains a little
@@ -419,7 +419,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
           One difference I've noted from the Mach8, is that the AGX's
           CRTC doesn't like the start of the horizontal sync to be 
-          equal to horz blank start (vert sync may have the same problem, 
+          equal to horiz blank start (vert sync may have the same problem, 
           I need to test some more). Interlaced and +/-sync flags are
           supported but have had very little testing. For interlaced
           modes make sure the number of lines is an odd number.
@@ -595,7 +595,7 @@ Set or clear CPU access wait state, default is the POST setting.
 
 <verb>
 $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.12 1995/07/19 12:43:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.13 1995/07/21 14:41:00 dawes Exp $
 </verb>
 
 </article>

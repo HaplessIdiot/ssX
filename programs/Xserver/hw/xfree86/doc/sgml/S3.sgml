@@ -425,7 +425,7 @@ chances are good it might work for you, too.
 	8/15/16/24 bpp
 
 	Note: clock doubling doesn't work, yet, therefore the maximum
-	useable dot clock is limited to about 120MHz.
+	usable dot clock is limited to about 120MHz.
 
 <tag>S3 964, IBM RGB 514/524/525/528 RAMDAC &amp; Clockchip</tag>
 	<itemize>
@@ -716,7 +716,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.29 1995/11/16 11:05:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.30 1995/12/02 05:05:44 dawes Exp $
 </verb>
 
 </article>

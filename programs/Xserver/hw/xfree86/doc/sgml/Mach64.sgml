@@ -220,13 +220,6 @@ Mach64 X server.  They include:
 <item> Some RAMDACs are incorrectly reported by the BIOS.  This can be
        handled by explicitly specifying the RAMDAC in the XF86Config
        file.
-<item> The Mach64 CT chips are not supported.  They will be in a
-       future release.
-<item> PCI Plug-n-Play capabilities of the card are not handled.  With
-       P-n-P the location of the I/O registers are not determined
-       until boot time.  Newer cards, such as those with the Mach64 CT
-       chip, offer this option.  This will be supported in a future
-       version.
 <item> ISA cards with more than 12Mb of main memory cannot use the
        server due to the requirement of a video memory aperture.  This
        a major project.
@@ -238,7 +231,7 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.6 1995/12/02 05:05:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.7 1995/12/26 06:54:09 dawes Exp $
 </verb>
 
 </article>

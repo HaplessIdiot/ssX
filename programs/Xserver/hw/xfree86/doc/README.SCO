@@ -856,4 +856,4 @@
 
 
 
-\n$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.14 1995/09/23 01:42:44 dawes Exp $
