@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.104 2003/03/19 18:02:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.105 2003/03/26 05:12:12 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1904,7 +1904,8 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pNv->FbAddress;
     pScrn->fbOffset = 0;
 
-    NVInitVideo(pScreen);
+    if(pNv->Rotate == 0)
+       NVInitVideo(pScreen);
 
     pScreen->SaveScreen = NVSaveScreen;
 
