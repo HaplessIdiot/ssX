@@ -7,13 +7,16 @@
             SUPERCLASS = NSObject; 
         }, 
         {
-            ACTIONS = {close = id; saveChanges = id; setKey = id; }; 
+            ACTIONS = {close = id; pickFile = id; saveChanges = id; setKey = id; }; 
             CLASS = Preferences; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 displayNumber = id; 
                 fakeButton = id; 
                 keyField = id; 
+                keymapFileField = id; 
+                loadKeymapFileButton = id; 
+                pickKeymapFileButton = id; 
                 splashStartupHelpButton = id; 
                 startupHelpButton = id; 
                 systemBeepButton = id; 
