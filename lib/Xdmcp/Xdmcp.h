@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.6tsi Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.7 2003/07/09 15:27:29 tsi Exp $ */
 
 #ifndef _XDMCP_H_
 #define _XDMCP_H_
@@ -26,6 +26,17 @@ _XFUNCPROTOBEGIN
 
 #define XDM_PROTOCOL_VERSION	1
 #define XDM_UDP_PORT		177
+
+/* IANA has assigned FF0X:0:0:0:0:0:0:12B as the permanently assigned 
+ * multicast addresses for XDMCP, where X in the prefix may be replaced
+ * by any valid scope identifier, such as 1 for Node-Local, 2 for Link-Local,
+ * 5 for Site-Local, and so on.  We set the default here to the Link-Local
+ * version to most closely match the old IPv4 subnet broadcast behavior.
+ * Both xdm and X -query allow specifying a different address if a different
+ * scope is defined.
+ */
+#define XDM_DEFAULT_MCAST_ADDR6	"ff02:0:0:0:0:0:0:12b"
+
 #define XDM_MAX_MSGLEN		8192
 #define XDM_MIN_RTX		2
 #define XDM_MAX_RTX		32

@@ -1,4 +1,7 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 612. Update XDMCP to use the IPv6 multicast address that has been assigned
+      by IANA.  Draft XDMCP 1.1 specs updated accordingly (Bugzilla #895,
+      Alan Coopersmith).
  611. Add 'defined(VT_ACTIVATE)' to the test for platforms that support VT
       switching (based on Bugzilla #894, Robert Millan).
  610. Make several tests for glibc features glibc-specific rather than
@@ -18234,7 +18237,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2982 2003/11/21 06:01:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2983 2003/11/22 04:45:15 dawes Exp $
 
 
 
