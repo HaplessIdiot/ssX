@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.5 1999/09/27 06:30:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.6 1999/10/20 16:56:37 tsi Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -2344,7 +2344,8 @@ miInitializeBanking(
 
         pScreenPriv->pBanks[iBank] =
             RECTS_TO_REGION(pScreen, pRect - pRects, pRects, 0);
-        if (!pScreenPriv->pBanks[iBank])
+        if (!pScreenPriv->pBanks[iBank] ||
+            REGION_NAR(pScreenPriv->pBanks[iBank]))
         {
             we = 1;
             break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.9 1999/04/25 10:02:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.10 1999/05/30 14:04:25 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -468,7 +468,7 @@ parseMonitorSection (void)
 			while ((token = xf86GetToken (NULL)) == COMMA)
 			{
 				if (ptr->mon_n_vrefresh == CONF_MAX_HSYNC)
-					Error ("Sorry. Too many verticle refresh intervals.", NULL);
+					Error ("Sorry. Too many vertical refresh intervals.", NULL);
 				if (xf86GetToken (NULL) != NUMBER)
 					Error (VERTREFRESH_MSG, NULL);
 				ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo = val.realnum;

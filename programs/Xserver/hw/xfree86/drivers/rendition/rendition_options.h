@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition_options.h,v 1.2 1999/10/14 04:43:14 dawes Exp $ */
 
 #ifndef __RENDITION_OPTION_H__
 #define __RENDITION_OPTION_H__
@@ -14,7 +14,7 @@ typedef enum {
 
 
 
-#if DO_NOT_ACTIVATE
+#ifdef DO_NOT_ACTIVATE
 /*********************************/
       For reference only <DI>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.6 1999/10/13 04:21:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.7 1999/10/26 15:58:17 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -181,6 +181,13 @@ typedef struct _ATIRec
     CARD8 UseSmallApertures;
 
     /*
+     * Definitions related to MMIO register apertures.
+     */
+    pointer pMMIO, pBlock[2];
+    unsigned long PageSize, MMIOBase;
+    unsigned long Block0Base, Block1Base;
+
+    /*
      * Banking interface.
      */
     miBankInfoRec BankInfo;
@@ -204,6 +211,8 @@ typedef struct _ATIRec
      * LCD panel data.
      */
     int LCDPanelID, LCDClock, LCDHorizontal, LCDVertical;
+    int LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
+    int LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
     int LCDVBlendFIFOSize;
 
     /*
