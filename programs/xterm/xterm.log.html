@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.55 2000/06/17 00:27:35 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.56 2000/06/20 05:08:51 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,11 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_144">Patch #144 - 2000/8/23 - XFree86 4.0.1b</A>
+<LI><A HREF="#xterm_143">Patch #143 - 2000/8/19 - XFree86 4.0.1b</A>
+<LI><A HREF="#xterm_142">Patch #142 - 2000/8/18 - XFree86 4.0.1b</A>
+<LI><A HREF="#xterm_141">Patch #141 - 2000/7/14 - XFree86 4.0.1b</A>
+<LI><A HREF="#xterm_140">Patch #140 - 2000/7/23 - XFree86 4.0.1</A>
 <LI><A HREF="#xterm_139">Patch #139 - 2000/6/17 - XFree86 4.0d</A>
 <LI><A HREF="#xterm_138">Patch #138 - 2000/6/15 - XFree86 4.0c</A>
 <LI><A HREF="#xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A>
@@ -183,6 +188,81 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_144">Patch #144 - 2000/8/23 - XFree86 4.0.1b</A></H1>
+<ul>
+	<li>remove a spurious assignment in ScreenWrite() from Robert Brady's
+	  patch which set a null at the "end" of the buffer to be written. 
+	  That made the autowrap feature write a blank in the first column for
+	  the non-UTF-8 configuration, rather than the actual character
+	  (reported by Alan Citterman &lt;alan@mticket.com&gt;).
+</ul>
+
+<H1><A NAME="xterm_143">Patch #143 - 2000/8/19 - XFree86 4.0.1b</A></H1>
+<ul>
+	<li>add a check to ensure that <code>-class</code> command-line option
+	  is not confused with <code>-c</code> (reported by Paul Townsend
+	  &lt;aab@aab.cc.purdue.edu&gt;).
+</ul>
+
+<H1><A NAME="xterm_142">Patch #142 - 2000/8/18 - XFree86 4.0.1b</A></H1>
+<ul>
+	<li>correction to precompose scripts, so 0061 + 0300 will now be really
+	  be displayed as 00C0 (patch by Robert Brady
+	  &lt;robert@susu.org.uk&gt;).
+
+	<li>correct macro ClassSelects() in button.c, used to hide ifdef's for
+	  OPT_WIDE_CHARS in patch #141 (reported by Andreas Paul
+	  &lt;paula@informatik.tu-muenchen.de&gt;).
+
+	<li>change wcwidth.h to include stddef.h rather than wchar.h, which is
+	  not present on OpenBSD and FreeBSD (reported by Christian
+	  Weisgerber and Bram Moolenaar).
+
+	<li>newer config.sub and config.guess, from lynx 2.8.4dev.7
+</ul>
+
+<H1><A NAME="xterm_141">Patch #141 - 2000/8/14 - XFree86 4.0.1b</A></H1>
+<ul>
+	<li>Most of this patch is an integration of Robert Brady's patch #11
+	  for doublewidth and combining characters, from
+	  http://www.ecs.soton.ac.uk/~rwb197/xterm/.  In this context,
+	  doublewidth refers to 16-bit character sets which may have glyphs
+	  occupying two cells.
+
+	<li>add command-line option <code>-class</code>, which allows one
+	  to override xterm's resource class.  Also add resource file
+	  <code>UXTerm.ad</code>, which simplifies using xterm for both
+	  8-bit character sets and UTF-8.
+
+	<li>fixes/improvements to OPT_TCAP_QUERY logic (patches by Bram
+	  Moolenaar, Steve Wall).
+</ul>
+
+<H1><A NAME="xterm_140">Patch #140 - 2000/7/23 - XFree86 4.0.1</A></H1>
+<ul>
+	<li>modify Makefile.in to circumvent GNU make's built-in suffix rule
+	  for ".sh" which confuses install.sh with the "make install" target
+	  (report/patch by Paul Gilmartin).
+
+	<li>implement an experimental control sequence which an application may
+	  use to query the terminal to determine what sequence of characters it
+	  would send for a given function key.  This is ifdef'd with
+	  OPT_TCAP_QUERY (request by Bram Moolenaar).
+
+	<li>add /usr/local to search path in CF_X_ATHENA configure macro
+	  to build with Xaw3d on OpenBSD (patch by Christian Weisgerber).
+
+	<li>add missing <code>#undef HAVE_TERMIO_C_ISPEED</code> to
+	  xtermcfg.hin, omitted in patch #133 fix for IRIX 6.5 baudrate (report
+	  by Alain Filbois &lt;Alain.Filbois@loria.fr&gt;).
+
+	<li>correct a few errors in xterm.man:  font in filename example for
+	  Tektronix emulation, and description of -nul/+nul command-line
+	  options (report by Eric Fischer &lt;enf@pobox.com&gt;).
+
+	<li>update config.guess and config.sub (from tin and lynx)
+</ul>
 
 <H1><A NAME="xterm_139">Patch #139 - 2000/6/17 - XFree86 4.0d</A></H1>
 <ul>

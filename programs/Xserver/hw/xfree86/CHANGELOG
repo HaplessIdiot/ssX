@@ -1,4 +1,14 @@
 XFree86 4.0.1c (25 August 2000)
+ 544. Xterm patch #144 (#4109, Thomas Dickey).
+ 543. Xterm patch #143 (#4104, Thomas Dickey).
+ 542. Xterm patch #142 (#4102, Thomas Dickey).
+ 541. Xterm patch #141 (#4085, Thomas Dickey).
+ 540. Xterm patch #140 (Thomas Dickey).
+ 539. Xaw bug fix (#4084, Paulo Cesar Pereira de Andrade).
+ 538. Add support for the NeoMagic NM2230 MagicMedia 256AV+ to the neomagic
+      driver (#4083, Andrew C Aitchison).
+ 537. Fix generic Xom to select the same font for measuring text escapement
+      as is used for drawing (#4082, Owen Taylor).
  536. Resync DRI code/drivers with the DRI CVS (VA Linux).
  535. Engine polling changes in r128 driver (David Mosberger).
  534. Fix linear memory mapping in ATI driver (Marc La France).
@@ -11039,4 +11049,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1279 2000/08/24 22:20:12 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1280 2000/08/25 13:42:33 dawes Exp $

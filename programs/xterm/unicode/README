@@ -1,4 +1,4 @@
--- $XFree86: xc/programs/xterm/unicode/README,v 1.1 1999/06/12 15:37:23 dawes Exp $
+-- $XFree86: xc/programs/xterm/unicode/README,v 1.2 2000/06/13 02:28:44 dawes Exp $
 -- Thomas E. Dickey
 
 These are some scripts and datafiles used for generating tables used in the
@@ -16,3 +16,8 @@ convmap.pl is used to generate ../keysym2ucs.c, e.g.,
 	./convmap.plp >../keysym2ucs.c
 
 keysym.map is input data for convmap.pl
+
+
+The make-precompose.sh script makes the precompose.c file, which is used to
+handle canonical composition. This also needs UnicodeData-Latest.txt. It uses
+precompose.c.head and precompose.c.tail as templates.

@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.32 2000/05/18 16:30:03 dawes Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.33 2000/06/13 02:28:37 dawes Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -154,7 +154,7 @@ AC_CACHE_VAL(cf_cv_dcl_$1,[
 #include <errno.h> ],
     [long x = (long) $1],
     [eval 'cf_cv_dcl_'$1'=yes'],
-    [eval 'cf_cv_dcl_'$1'=no]')
+    [eval 'cf_cv_dcl_'$1'=no'])
 ])
 
 eval 'cf_result=$cf_cv_dcl_'$1
@@ -256,7 +256,7 @@ int main() {
 		[cf_cv_good_bcopy=unknown])
 		])
 	],[cf_cv_good_bcopy=no])
-	if test $cf_cv_good_bcopy = yes ; then
+	if test "$cf_cv_good_bcopy" = yes ; then
 		AC_DEFINE(USE_OK_BCOPY)
 	else
 		AC_DEFINE(USE_MY_MEMMOVE)
@@ -907,7 +907,7 @@ dnl $1=uppercase($2)
 AC_DEFUN([CF_UPPER],
 [
 changequote(,)dnl
-$1=`echo $2 | tr '[a-z]' '[A-Z]'`
+$1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 changequote([,])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1115,7 +1115,8 @@ cf_x_athena_lib=""
 for cf_path in default \
 	/usr/contrib/X11R6 \
 	/usr/contrib/X11R5 \
-	/usr/lib/X11R5
+	/usr/lib/X11R5 \
+	/usr/local
 do
 
 	if test -z "$cf_x_athena_include" ; then

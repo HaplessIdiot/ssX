@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.37 2000/06/14 00:16:19 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.38 2000/06/20 05:08:51 dawes Exp $ */
 
 /***********************************************************
 
@@ -88,6 +88,7 @@ SOFTWARE.
 #include <data.h>
 #include <error.h>
 #include <menu.h>
+#include <main.h>
 
 #include <sys/termio.h>
 
@@ -304,15 +305,15 @@ static XtResource application_resources[] = {
 #undef offset
 
 static char *fallback_resources[] = {
-    "XTerm*SimpleMenu*menuLabel.vertSpace: 100",
-    "XTerm*SimpleMenu*HorizontalMargins: 16",
-    "XTerm*SimpleMenu*Sme.height: 16",
-    "XTerm*SimpleMenu*Cursor: left_ptr",
-    "XTerm*mainMenu.Label:  Main Options (no app-defaults)",
-    "XTerm*vtMenu.Label:  VT Options (no app-defaults)",
-    "XTerm*fontMenu.Label:  VT Fonts (no app-defaults)",
+    "*SimpleMenu*menuLabel.vertSpace: 100",
+    "*SimpleMenu*HorizontalMargins: 16",
+    "*SimpleMenu*Sme.height: 16",
+    "*SimpleMenu*Cursor: left_ptr",
+    "*mainMenu.Label:  Main Options (no app-defaults)",
+    "*vtMenu.Label:  VT Options (no app-defaults)",
+    "*fontMenu.Label:  VT Fonts (no app-defaults)",
 #if OPT_TEK4014
-    "XTerm*tekMenu.Label:  Tek Options (no app-defaults)",
+    "*tekMenu.Label:  Tek Options (no app-defaults)",
 #endif
     NULL
 };
@@ -342,6 +343,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
 {"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-class",	NULL,		XrmoptionSkipArg,	(caddr_t) NULL},
 {"-cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+cm",		"*colorMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "off"},
@@ -464,6 +466,7 @@ static struct _options {
 { "-fn fontname",          "normal text font" },
 { "-iconic",               "start iconic" },
 { "-name string",          "client instance, icon, and title strings" },
+{ "-class string",         "class string (XTerm)" },
 { "-title string",         "title string" },
 { "-xrm resourcestring",   "additional resource specifications" },
 { "-/+132",                "turn on/off column switch inhibiting" },
@@ -833,6 +836,7 @@ main (int argc, char **argv, char **envp)
 	Widget form_top, menu_top;
 	register TScreen *screen;
 	int mode;
+	char *my_class = DEFCLASS;
 
 	/* Do these first, since we may not be able to open the display */
 	ProgramName = argv[0];
@@ -842,6 +846,12 @@ main (int argc, char **argv, char **envp)
 			Version();
 		if (abbrev(argv[1], "-help"))
 			Help();
+		for (n = 1; n < argc; n++) {
+			if (strlen(argv[n]) > 2
+			 && abbrev(argv[n], "-class"))
+				if ((my_class = argv[++n]) == 0)
+					Help();
+		}
 	}
 
 	/* XXX: for some obscure reason EMX seems to lose the value of
@@ -887,7 +897,7 @@ main (int argc, char **argv, char **envp)
 	/* Init the Toolkit. */
 	{
 	    XtSetErrorHandler(xt_error);
-	    toplevel = XtAppInitialize (&app_con, "XTerm",
+	    toplevel = XtAppInitialize (&app_con, my_class,
 					optionDescList,
 					XtNumber(optionDescList),
 					&argc, argv, fallback_resources,
@@ -986,6 +996,8 @@ main (int argc, char **argv, char **envp)
 		debug = TRUE;
 		continue;
 #endif	/* DEBUG */
+	     case 'c':	/* -class */
+		break;
 	     case 'e':
 		if (argc <= 1) Syntax (*argv);
 		command_to_exec = ++argv;
