@@ -21,6 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
+/* $XFree86: $ */
 
 #include <X11/Xosdefs.h>
 #include <X11/Xfuncs.h>

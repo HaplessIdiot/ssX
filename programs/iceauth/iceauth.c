@@ -25,6 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Original Author of "xauth" : Jim Fulton, MIT X Consortium
  * Modified into "iceauth"    : Ralph Mor, X Consortium
  */
+/* $XFree86: $ */
 
 #include "iceauth.h"
 
