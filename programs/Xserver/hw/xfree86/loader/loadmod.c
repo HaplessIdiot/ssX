@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.33 1999/01/14 13:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.34 1999/01/15 02:12:39 dawes Exp $ */
 
 /*
  *
@@ -1028,29 +1028,12 @@ RemoveChild (ModuleDescPtr child)
 		return;
 
 	parent = child->parent;
-#define DEBUG
-#ifdef DEBUG
-	ErrorF("Before: child: %s, parent: %s\n", child->name, child->parent->name);
-	mdp = parent->child;
-	while (mdp) {
-		ErrorF("Before: kid: %s\n", mdp->name);
-		mdp = mdp->sib;
-	}
-#endif
 	if (parent->child == child) {
 		parent->child = child->sib;
-#ifdef DEBUG
-	ErrorF("After: child: %s, parent: %s\n", child->name, child->parent->name);
-	mdp = parent->child;
-	while (mdp) {
-		ErrorF("After: kid: %s\n", mdp->name);
-		mdp = mdp->sib;
-	}
-#endif
 		return;
 	}
 
-    prevsib = parent->child;
+	prevsib = parent->child;
 	mdp = prevsib->sib;
 	while (mdp && mdp != child) {
 		prevsib = mdp;
@@ -1058,14 +1041,6 @@ RemoveChild (ModuleDescPtr child)
 	}
 	if (mdp == child)
 		prevsib->sib = child->sib;
-#ifdef DEBUG
-	ErrorF("After: child: %s, parent: %s\n", child->name, child->parent->name);
-	mdp = parent->child;
-	while (mdp) {
-		ErrorF("After: kid: %s\n", mdp->name);
-		mdp = mdp->sib;
-	}
-#endif
 	return;
 }
 
