@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.6 2002/11/15 07:01:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.7 2002/12/04 05:27:58 paulo Exp $ */
 
 #ifndef Lisp_stream_h
 #define Lisp_stream_h
@@ -37,6 +37,8 @@
 
 void LispStreamInit(void);
 
+LispObj *Lisp_DeleteFile(LispBuiltin*);
+LispObj *Lisp_RenameFile(LispBuiltin*);
 LispObj *Lisp_InputStreamP(LispBuiltin*);
 LispObj *Lisp_OpenStreamP(LispBuiltin*);
 LispObj *Lisp_OutputStreamP(LispBuiltin*);

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/stream.lsp,v 1.1 2002/11/30 23:13:14 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/stream.lsp,v 1.2 2002/12/04 05:28:01 paulo Exp $
 ;;
 
 ;; most format tests from the cltl second edition samples
@@ -146,6 +146,43 @@
 (defun equalp-eval (expect form)
     (compare-eval #'equalp expect form))
 
+(defun bool-test (expect function &rest arguments
+		  &aux result (error t) unused error-value)
+    (multiple-value-setq
+	(unused error-value)
+	(ignore-errors
+	    (setq result (apply function arguments))
+	    (setq error nil)
+	)
+    )
+    (if error
+	(format t "ERROR: (~S~{ ~S~}) => ~S~%" function arguments error-value)
+	(or (eq (null result) (null expect))
+	    (format t "(~S~{ ~S~}) => should be ~A not ~A~%"
+		function arguments expect result
+	    )
+	)
+    )
+)
+
+(defun bool-eval (expect form &rest arguments
+		  &aux result (error t) unused error-value)
+    (multiple-value-setq
+	(unused error-value)
+	(ignore-errors
+	    (setq result (eval form))
+	    (setq error nil)
+	)
+    )
+    (if error
+	(format t "ERROR: ~S => ~S~%" form error-value)
+	(or (eq (null result) (null expect))
+	    (format t "~S => should be ~A not ~A~%"
+		form expect result
+	    )
+	)
+    )
+)
 
 
 ;; format				- function
@@ -488,8 +525,8 @@
     (eql-test #\o #'read-char-no-hang is)
     (eql-test #\g #'read-char-no-hang is)
     (eql-test #\Newline #'read-char-no-hang is)
-    (eql-test nil #'read-char-no-hang is)
-    (eql-test nil #'read-char-no-hang is)
+    (eq-test nil #'read-char-no-hang is)
+    (eq-test nil #'read-char-no-hang is)
     (equal-test "mouse" #'write-line "mouse" is)
     (wait-for-cat)
     (eql-test #\m #'read-char-no-hang is)
@@ -498,7 +535,7 @@
     (eql-test #\s #'read-char-no-hang is)
     (eql-test #\e #'read-char-no-hang is)
     (eql-test #\Newline #'read-char-no-hang is)
-    (eql-test nil #'read-char-no-hang is)
+    (eq-test nil #'read-char-no-hang is)
     (eq-test t #'close is)
     (error-test #'read-char-no-hang is)
     (error-test #'read-char-no-hang is nil)
@@ -546,9 +583,9 @@ line 2"))
 (setq circle '#1=(1 #1#))
 (eq-test circle #'write circle :circle t :stream os)
 (equal-test "#1=(1 #1#)" #'get-output-stream-string os)
-(eq-test #\Space #'write #\Space :stream os)
+(eql-test #\Space #'write #\Space :stream os)
 (equal-test "#\\Space" #'get-output-stream-string os)
-(eq-test #\Space #'write #\Space :escape nil :stream os)
+(eql-test #\Space #'write #\Space :escape nil :stream os)
 (equal-test " " #'get-output-stream-string os)
 (eq-test t #'close os)
 (eq-test nil #'output-stream-p os)
@@ -614,7 +651,7 @@ more text" #'get-output-stream-string os)
     (progn
 	(eq-test nil #'terpri w-os)
 	(eq-test object #'write object :stream w-os :escape t)
-	(eq-test #\Space #'write-char #\Space w-os))
+	(eql-test #\Space #'write-char #\Space w-os))
     (equal-test (get-output-stream-string p-os)
 	#'get-output-stream-string w-os))
 (close p-os)
@@ -669,3 +706,59 @@ more text" #'get-output-stream-string os)
 (equal-test "<ex>" #'get-output-stream-string os)
 (error-test #'write-string #\a)
 (close os)
+
+
+;; open					- function
+(setq name #P"delete-me.text")
+(bool-eval t '(setq file (open name :direction :output)))
+(equal-test "some text" #'write-line "some text" file)
+(close file)
+(equal-test "delete-me.text" #'file-namestring (truename name))
+(setq file (open name :direction :output :if-exists :rename))
+(equal-test "other text" #'write-line "other text" file)
+(close file)
+(equal-test "delete-me.text" #'file-namestring (truename name))
+;; Clisp returns the pathname if the file exists
+#+xedit (eq-test t #'delete-file name)
+#+clisp (bool-test t #'delete-file name)
+#+xedit (eq-test t #'delete-file "delete-me.text~")
+#+clisp (bool-test t #'delete-file "delete-me.text%")
+(equal-test nil #'delete-file name)
+(equal-test nil #'directory name)
+(equal-test nil #'directory
+    #+xedit "delete-me.text~"
+    #+clisp "delete-me.text%")
+
+;; delete-file				- function
+(eq-eval nil
+    '(with-open-file (s "delete-me.text" :direction :output :if-exists :error)))
+(eq-test t #'pathnamep (setq p (probe-file "delete-me.text")))
+(bool-test t #'delete-file p)
+(eq-test nil #'probe-file "delete-me.text")
+(bool-eval t
+    '(with-open-file (s "delete-me.text" :direction :output :if-exists :error)
+       (delete-file s)))
+(bool-test nil #'probe-file "delete-me.text")
+
+;; rename-file				- function
+(setq name "foo.bar")
+(bool-eval t '(setq file (open name :direction :output :if-exists :error)))
+(eq-test t #'close file)
+(setq result (multiple-value-list (rename-file name "bar.foo")))
+(eql-test 3 #'length result)
+(eq-test t #'pathnamep (first result))
+(eq-test t #'pathnamep (second result))
+(eq-test t #'pathnamep (third result))
+(equal-test (third result) #'truename "bar.foo")
+(eq-test nil #'directory name)
+(eq-test nil #'directory (second result))
+(equal-test (list (third result)) #'directory (third result))
+(error-test #'truename name)
+(error-test #'truename (second result))
+(eq-test nil #'probe-file name)
+(bool-test t #'probe-file (first result))
+(eq-test nil #'probe-file (second result))
+(bool-test t #'probe-file (third result))
+(bool-test t #'delete-file "bar.foo")
+(eq-test nil #'delete-file (third result))
+(eq-test nil #'delete-file (second result))

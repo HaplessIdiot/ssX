@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.4 2002/11/25 02:35:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.5 2002/11/26 04:06:30 paulo Exp $
 ;;
 
 ;; basic lisp function tests
@@ -750,10 +750,6 @@
 
 
 
-;; TODO format
-
-
-
 ;; funcall				- function
 (eql-test 6 #'funcall #'+ 1 2 3)
 (eql-test 1 #'funcall #'car '(1 2 3))
@@ -952,12 +948,6 @@
 (equal-test (list pack1) #'package-use-list pack2)
 (eq-test pack1 #'symbol-package 'pack1::test)
 (eq-test pack2 #'symbol-package 'pack2::test)
-
-
-
-;; TODO make-pathname	(pathnames are broken)
-
-
 
 ;; make-string				- function
 (equal-test "55555" #'make-string 5 :initial-element #\5)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.18 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.19 2002/12/04 05:27:58 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -63,11 +63,11 @@
 
 extern char **environ;
 
-LispObj *Oopen, *Oclose, *Kif_does_not_exist;
+LispObj *Oopen, *Oclose, *Otruename;
 
-LispObj *Kprobe, *Kinput, *Koutput, *Kio, *Knew_version, *Krename,
-	 *Krename_and_delete, *Koverwrite, *Kappend, *Ksupersede,
-	 *Kcreate;
+LispObj *Kif_does_not_exist, *Kprobe, *Kinput, *Koutput, *Kio,
+	*Knew_version, *Krename, *Krename_and_delete, *Koverwrite,
+	*Kappend, *Ksupersede, *Kcreate;
 
 /*
  * Implementation
@@ -77,8 +77,9 @@ LispStreamInit(void)
 {
     Oopen		= STATIC_ATOM("OPEN");
     Oclose		= STATIC_ATOM("CLOSE");
-    Kif_does_not_exist	= KEYWORD("IF-DOES-NOT-EXIST");
+    Otruename		= STATIC_ATOM("TRUENAME");
 
+    Kif_does_not_exist	= KEYWORD("IF-DOES-NOT-EXIST");
     Kprobe		= KEYWORD("PROBE");
     Kinput		= KEYWORD("INPUT");
     Koutput		= KEYWORD("OUTPUT");
@@ -90,6 +91,91 @@ LispStreamInit(void)
     Kappend		= KEYWORD("APPEND");
     Ksupersede		= KEYWORD("SUPERSEDE");
     Kcreate		= KEYWORD("CREATE");
+}
+
+LispObj *
+Lisp_DeleteFile(LispBuiltin *builtin)
+/*
+ delete-file filename
+ */
+{
+    GC_ENTER();
+    LispObj *filename;
+
+    filename = ARGUMENT(0);
+
+    if (STRINGP(filename)) {
+	filename = APPLY1(Oparse_namestring, filename);
+	GC_PROTECT(filename);
+    }
+    else if (STREAMP(filename)) {
+	if (filename->data.stream.type != LispStreamFile)
+	    LispDestroy("%s: %s is not a FILE-STREAM",
+			STRFUN(builtin), STROBJ(filename));
+	filename = filename->data.stream.pathname;
+    }
+    else {
+	CHECK_PATHNAME(filename);
+    }
+    GC_LEAVE();
+
+    return (LispUnlink(THESTR(CAR(filename->data.pathname))) ? NIL : T);
+}
+
+LispObj *
+Lisp_RenameFile(LispBuiltin *builtin)
+/*
+ rename-file filename new-name
+ */
+{
+    int code;
+    GC_ENTER();
+    char *from, *to;
+    LispObj *old_truename, *new_truename;
+
+    LispObj *filename, *new_name;
+
+    new_name = ARGUMENT(1);
+    filename = ARGUMENT(0);
+
+    if (STRINGP(filename)) {
+	filename = APPLY1(Oparse_namestring, filename);
+	GC_PROTECT(filename);
+    }
+    else if (STREAMP(filename)) {
+	if (filename->data.stream.type != LispStreamFile)
+	    LispDestroy("%s: %s is not a FILE-STREAM",
+			STRFUN(builtin), STROBJ(filename));
+	filename = filename->data.stream.pathname;
+    }
+    else {
+	CHECK_PATHNAME(filename);
+    }
+    old_truename = APPLY1(Otruename, filename);
+    GC_PROTECT(old_truename);
+
+    if (STRINGP(new_name)) {
+	new_name = APPLY3(Oparse_namestring, new_name, NIL, filename);
+	GC_PROTECT(new_name);
+    }
+    else {
+	CHECK_PATHNAME(new_name);
+    }
+
+    from = THESTR(CAR(filename->data.pathname));
+    to = THESTR(CAR(new_name->data.pathname));
+    code = LispRename(from, to);
+    if (code)
+	LispDestroy("%s: rename(%s, %s): %s",
+		    STRFUN(builtin), from, to, strerror(errno));
+    GC_LEAVE();
+
+    new_truename = APPLY1(Otruename, new_name);
+    RETURN_COUNT = 2;
+    RETURN(0) = old_truename;
+    RETURN(1) = new_truename;
+
+    return (new_name);
 }
 
 LispObj *
@@ -179,12 +265,13 @@ Lisp_Open(LispBuiltin *builtin)
     }
     else if (STREAMP(filename)) {
 	if (filename->data.stream.type != LispStreamFile)
-	    LispDestroy("%s: only FILE-STREAM accepted, not %s",
+	    LispDestroy("%s: %s is not a FILE-STREAM",
 			STRFUN(builtin), STROBJ(filename));
 	filename = filename->data.stream.pathname;
     }
-    else if (!PATHNAMEP(filename))
-	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(filename));
+    else {
+	CHECK_PATHNAME(filename);
+    }
 
     if (odirection != UNSPEC) {
 	direction = -1;
@@ -271,8 +358,8 @@ Lisp_Open(LispBuiltin *builtin)
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(external_format));
     }
 
-    /* string representation of path-name */
-    string = THESTR(CAR(filename->data.quote));
+    /* string representation of pathname */
+    string = THESTR(CAR(filename->data.pathname));
     mode = 0;
 
     /* check what to do, if file already exist */
@@ -290,7 +377,7 @@ Lisp_Open(LispBuiltin *builtin)
 		/* Add an ending '~' at the end of the backup file */
 		char tmp[PATH_MAX + 1];
 
-		strcpy(string, tmp);
+		strcpy(tmp, string);
 		if (strlen(tmp) + 1 > PATH_MAX)
 		    LispDestroy("%s: backup name for %s too long",
 				STRFUN(builtin),
