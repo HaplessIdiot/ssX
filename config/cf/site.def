@@ -21,7 +21,7 @@ XCOMM site:  $TOG: site.sample /main/r64_final/1 1998/02/05 16:28:49 kaleb $
  * .cf file, not overridden in site.def.                                   *
  *                                                                         *
  ***************************************************************************/
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.22 1998/10/02 06:15:06 dawes Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.23 2000/03/31 22:55:15 dawes Exp $
 
 /* if you want host-specific customization, this is one way to do it */
 /*
@@ -86,6 +86,13 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.22 1998/10/02 06:15:06 dawes Ex
 #ifndef ProjectRoot
 #define ProjectRoot /usr/X11R6
 #endif
+
+/*
+ * On some platforms, some things may be installed outside of ProjectRoot
+ * by default.  To disable this, uncomment the following line.
+ *
+#define NothingOutsideProjectRoot YES
+ */
 
 /*
  * Set EtcX11Directory if you want config file links installed under
