@@ -25,6 +25,7 @@
  *	DESCRIPTION
  *		Sample Color Name Database
  *
+ * $XFree86$
  */
 
 
