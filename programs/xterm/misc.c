@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.217 2004/05/12 21:36:57 tom Exp $ */
+/* $XTermId: misc.c,v 1.219 2004/05/16 23:20:55 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.85 2004/04/28 00:41:00 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.86 2004/05/13 00:41:21 dickey Exp $ */
 
 /*
  *
@@ -629,7 +629,8 @@ WMFrameWindow(XtermWidget termw)
 static int
 dabbrev_prev_char(int *xp, int *yp, TScreen * screen)
 {
-    char *linep;
+    Char *linep;
+
     while (*yp >= 0) {
 	linep = BUF_CHARS(screen->allbuf, *yp);
 	if (--*xp >= 0)
@@ -678,7 +679,8 @@ dabbrev_expand(TScreen * screen)
     static int x, y;
     static char *dabbrev_hint = 0, *lastexpansion = 0;
 
-    char *expansion, *copybuffer;
+    char *expansion;
+    Char *copybuffer;
     size_t hint_len;
     int del_cnt, buf_cnt, i;
 
@@ -712,7 +714,7 @@ dabbrev_expand(TScreen * screen)
 
     del_cnt = strlen(lastexpansion) - hint_len;
     buf_cnt = del_cnt + strlen(expansion) - hint_len;
-    if (!(copybuffer = (char *) malloc(buf_cnt)))
+    if (!(copybuffer = (Char *) malloc(buf_cnt)))
 	return 0;
     for (i = 0; i < del_cnt; i++) {	/* delete previous expansion */
 	copybuffer[i] = screen->dabbrev_erase_char;
