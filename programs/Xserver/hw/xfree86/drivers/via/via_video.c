@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.14 2003/12/31 05:44:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.15 2004/01/05 00:34:17 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -476,7 +476,11 @@ viaSetupImageVideoG(ScreenPtr pScreen)
         gviaPortPriv[i]->xv_portnum = i;
 
         /* gotta uninit this someplace */
+#ifdef XFREE86_44
         REGION_NULL(pScreen, &gviaPortPriv[i]->clip);
+#else
+	REGION_INIT(pScreen, &gviaPortPriv[i]->clip, NullBox, 1);
+#endif
     } /* End of for */
     viaResetVideo(pScrn);
     return adaptPtr[0];
