@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.16 1996/12/23 06:57:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.17 1996/12/28 08:17:17 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -475,9 +475,10 @@ int mode;
  *
  */
 static int
-COMPAQValidMode(mode, verbose)
+COMPAQValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

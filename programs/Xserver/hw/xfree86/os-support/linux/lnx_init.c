@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.6 1996/09/14 13:10:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.7 1996/12/23 06:50:00 dawes Exp geert $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -80,10 +80,18 @@ void xf86OpenConsole()
 	}
 	else 
 	{
+#ifdef __mc68000__
+	    if ((fd = open("/dev/tty0",O_WRONLY,0)) < 0) 
+#else
 	    if ((fd = open("/dev/console",O_WRONLY,0)) < 0) 
+#endif
 	    {
 		FatalError(
+#ifdef __mc68000__
+		    "xf86OpenConsole: Cannot open /dev/tty0 (%s)\n",
+#else
 		    "xf86OpenConsole: Cannot open /dev/console (%s)\n",
+#endif
 		    strerror(errno));
 	    }
 	    if ((ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0) ||
@@ -124,11 +132,13 @@ void xf86OpenConsole()
 	/* change ownership of the vt */
 	chown(vtname, getuid(), getgid());
 
+#ifndef __mc68000__
 	/*
 	 * the current VT device we're running on is not "console", we want
 	 * to grab all consoles too
 	 */
 	chown("/dev/console", getuid(), getgid());
+#endif
 	chown("/dev/tty0", getuid(), getgid());
 
 	/*

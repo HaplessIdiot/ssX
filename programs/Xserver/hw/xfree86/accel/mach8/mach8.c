@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.33 1996/12/23 06:39:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.34 1997/01/18 06:54:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -65,7 +65,8 @@ extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 static int mach8ValidMode(
 #if NeedFunctionPrototypes 
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 );
 
@@ -835,9 +836,10 @@ mach8ClockSelect(no)
  *
  */
 static int
-mach8ValidMode(mode, verbose)
+mach8ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

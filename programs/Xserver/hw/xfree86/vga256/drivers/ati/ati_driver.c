@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.41 1997/01/08 20:34:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.42 1997/01/18 06:56:15 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -331,7 +331,7 @@ static Bool   ATIProbe      FunctionPrototype((void));
 static char * ATIIdent      FunctionPrototype((int));
 static void   ATIEnterLeave FunctionPrototype((const Bool));
 static Bool   ATIInit       FunctionPrototype((DisplayModePtr));
-static int    ATIValidMode  FunctionPrototype((DisplayModePtr, const Bool));
+static int    ATIValidMode  FunctionPrototype((DisplayModePtr, const Bool,int));
 static void * ATISave       FunctionPrototype((void *));
 static void   ATIRestore    FunctionPrototype((void *));
 static void   ATIAdjust     FunctionPrototype((int, int));
@@ -5175,7 +5175,7 @@ ATISaveScreen(const Bool start)
  * xf86CheckMode has already done some basic consistency checks.
  */
 static int
-ATIValidMode(DisplayModePtr mode, const Bool verbose)
+ATIValidMode(DisplayModePtr mode, const Bool verbose, int flag)
 {
         if ((mode->HDisplay >= 2056) || (mode->HTotal >= 2088))
         {

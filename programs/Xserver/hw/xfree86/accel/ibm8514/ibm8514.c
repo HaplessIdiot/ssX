@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.28 1996/12/23 06:37:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.29 1997/01/18 06:54:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -57,7 +57,8 @@ extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 static int ibm8514ValidMode(
 #if NeedFunctionPrototypes 
     DisplayModePtr,
-    Bool
+    Bool,
+    int
 #endif
 );
 
@@ -442,9 +443,10 @@ ibm8514SaveScreen (pScreen, on)
  *
  */
 static int
-ibm8514ValidMode(mode, verbose)
+ibm8514ValidMode(mode, verbose, flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 return MODE_OK;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.17 1996/12/23 06:57:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.18 1996/12/28 08:18:09 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -633,9 +633,10 @@ NCRAdjust(x, y)
  *     Check to see if the mode can be supported on this chip
  */
 static int
-NCRValidMode(mode, verbose)
+NCRValidMode(mode, verbose,flag)
 DisplayModePtr mode;
 Bool verbose;
+int flag;
 {
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 /*
