@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.44 1996/12/23 06:31:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.45 1997/01/18 06:53:41 dawes Exp $ */
 
 /*
  * Includes
@@ -167,6 +167,7 @@ Bool Probe_Video7 __STDCARGS((int *));
 Bool Probe_Genoa __STDCARGS((int *));
 Bool Probe_Trident __STDCARGS((int *));
 Bool Probe_SiS __STDCARGS((int *));
+Bool Probe_Matrox __STDCARGS((int *));
 Bool Probe_Oak __STDCARGS((int *));
 Bool Probe_Cirrus __STDCARGS((int *));
 Bool Probe_Cirrus54 __STDCARGS((int *));
@@ -233,6 +234,7 @@ extern Chip_Descriptor RealTek_Descriptor;
 extern Chip_Descriptor S3_Descriptor;
 extern Chip_Descriptor Trident_Descriptor;
 extern Chip_Descriptor SiS_Descriptor;
+extern Chip_Descriptor Matrox_Descriptor;
 extern Chip_Descriptor Tseng_Descriptor;
 extern Chip_Descriptor UMC_Descriptor;
 extern Chip_Descriptor Video7_Descriptor;
@@ -398,8 +400,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_SIS		22
 #define V_ARK		23
 #define V_ALLIANCE	24
+#define V_MATROX	25
 
-#define NUM_VENDORS	24
+#define NUM_VENDORS	25
 #define CHPS_PER_VENDOR	34
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
@@ -575,6 +578,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
 #define CHIP_SIS86C202	SVGA_TYPE(V_SIS,2)	/* SiS SG86C202		*/
 #define CHIP_SIS86C205	SVGA_TYPE(V_SIS,3)	/* SiS SG86C205		*/
+#define CHIP_MATROX_UNK	SVGA_TYPE(V_MATROX,0)	/* Matrox unknown	*/
+#define CHIP_MGA2064W	SVGA_TYPE(V_MATROX,1)	/* Matrox Millennium	*/
+#define CHIP_MGA2085PX	SVGA_TYPE(V_MATROX,2)	/* Matrox Atlas		*/
 #define CHIP_TSENG_UNK	SVGA_TYPE(V_TSENG,0)	/* Tseng unknown	*/
 #define CHIP_ET3000	SVGA_TYPE(V_TSENG,1)	/* Tseng ET3000		*/
 #define CHIP_ET4000	SVGA_TYPE(V_TSENG,2)	/* Tseng ET4000		*/

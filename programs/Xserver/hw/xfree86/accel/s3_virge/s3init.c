@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.14 1997/01/18 06:55:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.15 1997/01/20 12:35:51 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -43,7 +43,17 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-void s3InitSTREAMS( void );
+/* void s3InitSTREAMS( int, int ); */
+
+#define VerticalRetraceWait() \
+{ \
+   outb(vgaCRIndex, 0x17); \
+   if ( inb(vgaCRReg) & 0x80 ) { \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+       }\
+}
 
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
@@ -126,12 +136,17 @@ s3CleanUp(void)
    if ( ( s3InfoRec.bitsPerPixel == 32 || 
           s3InfoRec.bitsPerPixel == 24 ) &&
           s3MmioMem != NULL ) {
+	  			/* temp - KJB */
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 0;
+	      /*  ((y * s3DisplayWidth + (x & ~3)) * s3Bpp) */ /* & ~3 */;
+	      			/* end temp */
+       VerticalRetraceWait();
  				/* Reset fifo thresh's and ratio. */
        ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0xC000;
        
        outb(vgaCRIndex, 0x67);
        tmp = inb(vgaCRReg);
-       WaitIdleEmpty();
+       /* WaitIdleEmpty(); */
  				/* Disable STREAMS processor */
        outb( vgaCRReg, tmp & ~0x0C );
    }	
@@ -495,12 +510,13 @@ s3Init(mode)
    if ( ( s3InfoRec.bitsPerPixel == 32 || 
           s3InfoRec.bitsPerPixel == 24 ) &&
           s3MmioMem != NULL ) {
+       VerticalRetraceWait();
  				/* Reset fifo thresh's and ratio. */
        ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0xC000;
        
        outb(vgaCRIndex, 0x67);
        tmp = inb(vgaCRReg);	   
-       WaitIdleEmpty(); /*cep*/
+       /* WaitIdleEmpty(); *cep*/
  				/* Disable STREAMS processor */
        outb( vgaCRReg, tmp & ~0x0C );
    }	
@@ -620,8 +636,17 @@ s3Init(mode)
 	 outb(vgaCRReg, tmp);
       }
 
-      outb(vgaCRIndex, 0x67);
+      outb(vgaCRIndex, 0x67);	
+      		/* KJB - temp */
+      tmp = inb(vgaCRReg) & 0xf;
+      outb(vgaCRReg, 0x50 | tmp);  /* ask S3 why this is needed for ViRGE/VX ... */
+      #if 0
       outb(vgaCRReg, 0x50);  /* ask S3 why this is needed for ViRGE/VX ... */
+	/* KJB - temp */
+      usleep(10000);
+      outb(vgaCRIndex, 0x67);
+	/* KJB - temp */
+      #endif
       outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
 
       outb(0x3c4, 0x15);
@@ -994,8 +1019,9 @@ s3Init(mode)
       outb(vgaCRIndex, 0x67);
       outb(vgaCRReg, tmp);
    }
-
-   s3InitSTREAMS();
+			/* Start the STREAMS processor, only active */
+			/* for 24 or 32 bpp modes. */
+   /* s3InitSTREAMS( mode->HDisplay, mode->VDisplay ); KJB */
 
    if (s3MmioMem != NULL)
       s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
@@ -1092,12 +1118,17 @@ InitLUT()
 }
 
 /*
- * s3InitSTREAMS()
+ * s3InitSTREAMS( mode )
  *
  * Enables and sets up the STREAMS processor for 24/32 bpp
  */
 void
-s3InitSTREAMS()
+s3InitSTREAMS( mode )
+   DisplayModePtr mode;
+#if 0
+   int	RequestWidth;
+   int	RequestHeight;
+#endif
 {
 
    unsigned char tmp;
@@ -1107,7 +1138,9 @@ s3InitSTREAMS()
     if ( ( s3InfoRec.bitsPerPixel == 32 || 
            s3InfoRec.bitsPerPixel == 24 ) &&
            s3MmioMem != NULL ) {
- 
+ 				 
+	   			/* Wait for VSYNC */
+       VerticalRetraceWait();
        outb(vgaCRIndex, 0x67);
        tmp = inb(vgaCRReg);
  				/* Enable full STREAMS processor */
@@ -1140,8 +1173,10 @@ s3InitSTREAMS()
                                 /* 4 bytes for 32 bpp. */
        if ( s3InfoRec.bitsPerPixel == 24 ) {
          ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = s3InfoRec.virtualX * 3;
+         /*((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = mode->HDisplay * 3;*/
          } else {
          ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = s3InfoRec.virtualX * 4;
+         /*((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = mode->HDisplay * 4;*/
          }
  				/* Choose fbaddr0 as stream source. */
        ((mmtr)s3MmioMem)->streams_regs.regs.double_buffer = 0x0;
@@ -1161,15 +1196,21 @@ s3InitSTREAMS()
  				/* Vertical accum. initial value. */
        ((mmtr)s3MmioMem)->streams_regs.regs.dda_vert = 0x0;
  				/* X and Y start coords + 1. */
-       ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord = /* 0x00010001; */
-         (s3InfoRec.frameX0 + 1) << 16 | (s3InfoRec.frameY0 + 1);
+       ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord =  0x00010001;
+/*         (s3InfoRec.frameX0 + 1) << 16 | (s3InfoRec.frameY0 + 1);  KJB - temp */
  				/* Specify window Width -1 and Height of */
  				/* stream. */
  				/* ScreenHeight ??? */
 				/* Set the STREAM source to the frame. */
        ((mmtr)s3MmioMem)->streams_regs.regs.prim_window_size = 
+       #if 0  	/* temp - KJB */
            (s3InfoRec.frameX1 - s3InfoRec.frameX0) << 16 | 
            (s3InfoRec.frameY1 - s3InfoRec.frameY0 + 1);
+	   
+	   ( (RequestWidth << 16) | (RequestHeight + 1) );
+	#else
+	   (mode->HDisplay-1) << 16 | (mode->VDisplay);
+	#endif
 				/* Book says 0x07ff07ff. */ 
        ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord = 0x07ff07ff;
  
@@ -1196,8 +1237,8 @@ s3InitSTREAMS()
 void
 s3InitEnvironment()
 {
-
-  s3InitSTREAMS();
+		   /* Set up the STREAMS processor */
+   /* s3InitSTREAMS( s3InfoRec.width, s3InfoRec.height ); KJB */
 
    /* Current mixes, src, foreground active */
 

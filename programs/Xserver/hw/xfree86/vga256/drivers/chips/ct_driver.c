@@ -1153,8 +1153,7 @@ CHIPSProbe()
       return ctProbe();
 
 #ifdef DPMSExtension
-    /* Only use DPMS modes if a monitor is detected */
-    if ((ctDPMSSupport) && ( !(ctMonitor & 0x2)))
+    if (ctDPMSSupport)
 	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
 #endif
 
@@ -1976,17 +1975,35 @@ Bool ctProbe()
 	      }
     }
 
-  /* Test wether linear addressing is possible on 65530 */
-  /* on the 65530 only the A19 select sceme can be used */
-  /* for linear addressing since MEMR/MEMW are both used*/
-  /* A19 however is used if video memory is > 512 Mb    */   
-  if (ctISA && vga256InfoRec.videoRam > 512)
-    ctLinearSupport = FALSE;
+  if(CHIPSchipset == CT_530)
+    {
+      /* linear mode is no longer default on ct65530 since it */
+      /* requires additional hardware which some manufacturers*/
+      /* might not provide.                                   */
+      if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+	ctLinearSupport = FALSE;
+	
+      /* Test wether linear addressing is possible on 65530 */
+      /* on the 65530 only the A19 select scheme can be used*/
+      /* for linear addressing since MEMW is used on ISA bus*/
+      /* systems.                                           */
+      /* A19 however is used if video memory is > 512 Mb    */   
+      if (ctISA && vga256InfoRec.videoRam > 512){
+	ErrorF("%s %s: CHIPS: user selected linear fb not supported by HW!\n",
+	    XCONFIG_GIVEN, vga256InfoRec.name);
+	ctLinearSupport = FALSE;
+      }
+    }
 
     /* linear base */
     if (ctLinearSupport) {
       unsigned char mask;
-      if(ctISA)
+      if(CHIPSchipset == CT_535){
+	  mask = (vga256InfoRec.videoRam > 512)? 0xF8 :0xFC;
+	  if(ctISA)
+	    mask &= 0x7F;
+	}
+      else if(ctISA)
 	mask = 0x0F;
       else {
 	mask = 0xFF;
@@ -1998,15 +2015,20 @@ Bool ctProbe()
       }
     if (vga256InfoRec.MemBase) {
 	CHIPS.ChipLinearBase = vga256InfoRec.MemBase;
-	if(CHIPSchipset > CT_530)
+	if(CHIPSchipset == CT_535)
+	  CHIPS.ChipLinearBase &= (mask << 17);
+	else if(CHIPSchipset > CT_535)
 	  CHIPS.ChipLinearBase &= (mask << 20);
 	ErrorF("%s %s: CHIPS: base address is set at 0x%X.\n",
 	    XCONFIG_GIVEN, vga256InfoRec.name, CHIPS.ChipLinearBase);
     } else { 
       if (CHIPSchipset <= CT_530){
-	ErrorF("%s %s: CHIPS: specify base address for this chipset.\n",
+	ErrorF("%s %s: CHIPS: base address assumed at 0xC00000!\n",
 	    XCONFIG_GIVEN, vga256InfoRec.name);
-	ctLinearSupport = FALSE;
+	CHIPS.ChipLinearBase = 0xC00000;
+      } else if (CHIPSchipset == CT_535) {
+	outb(0x3D6, 0x8);
+	CHIPS.ChipLinearBase = ((mask & inb(0x3D7)) << 17);	
       } else if (ctPCI) {
 	    CHIPS.ChipLinearBase = ctPCIMemBase(ctisHiQV32);
 	    /* If no valid PCI device was found then disable linear
@@ -3011,11 +3033,13 @@ CHIPSInit655xx(mode)
 	/* enable linear addressing  */
 	new->Port_3D6[0x0B] &= 0xFD;   /* dual page clear                */
 	new->Port_3D6[0x0B] |= 0x10;   /* linear mode on                 */
- 	if(CHIPSchipset > CT_530)
+ 	if(CHIPSchipset == CT_535)
+ 	  new->Port_3D6[0x08] = (unsigned char)(CHIPS.ChipLinearBase >> 17);
+ 	else if(CHIPSchipset > CT_535)
  	  new->Port_3D6[0x08] = (unsigned char)(CHIPS.ChipLinearBase >> 20);
 	else {
         /* Its probably set correctly by BIOS anyway. Leave it alone      */
-	/* 65525 - 65535 require XR04[6] set for greater than 512k of     */
+	/* 65525 - 65530 require XR04[6] set for greater than 512k of     */
         /* ram. We only correct obvious bugs; VL probably uses MEMR/MEMW  */
 	  if(ctISA)
 	    new->Port_3D6[0x04] &= ~0x40;  /* A19 sceme       */

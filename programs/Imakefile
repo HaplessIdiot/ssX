@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/83 1996/12/18 16:29:30 lehors $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.14 1996/08/13 11:27:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.15 1996/12/23 06:25:44 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -54,7 +54,7 @@ SUBDIRS = $(XSSRCDIR)
 SUBDIRS = \
 	appres bdftopcf bitmap $(SCREENSAVESRCDIR) editres fsinfo \
 	fslsfonts fstobdf \
-	iceauth mkfontdir oclock $(PROXYMGRSRCDIR) \
+	iceauth mkfontdir oclock setxkbmap $(PROXYMGRSRCDIR) \
 	$(RGBSRCDIR) $(RSTARTSRCDIR) $(SMPROXYSRCDIR) $(TWMSRCDIR) x11perf \
 	xauth xclipboard xclock xcmsdb $(XCONSOLESRCDIR) $(XDMSRCDIR) \
 	xdpyinfo $(XF86DGASRCDIR) xfd $(XFSSRCDIR) $(XFINDPROXYSRCDIR) \
@@ -62,6 +62,7 @@ SUBDIRS = \
 	$(XHOSTSRCDIR) xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xlogo \
 	xlsatoms xlsclients xlsfonts xmag $(XMHSRCDIR) xmodmap xprop \
 	xrdb xrefresh $(XRXSRCDIR) xset xsetroot $(XSMSRCDIR) xstdcmap \
+	xsetmode xsetpointer \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XSSRCDIR) $(XASSRCDIR) \
 	$(LBXPROXYSRCDIR) $(SCRIPTSDIR)

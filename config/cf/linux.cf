@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.56 1997/01/02 04:04:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.57 1997/01/20 12:23:37 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -272,6 +272,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef StaticLibrary
 #define StaticLibrary(libpath,libname) -Wl,-Bstatic Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
 #endif
+
+#define HasGnuMake	YES
+
+#define MakeNamedTargetSubdir(dir,flags,subname)\
+	$(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
 
 #include <lnxLib.rules>
 #include <xfree86.cf>

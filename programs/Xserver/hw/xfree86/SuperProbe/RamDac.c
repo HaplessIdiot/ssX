@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.25 1996/12/09 11:51:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.26 1996/12/23 06:31:34 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -53,6 +53,7 @@ static Bool S3_STG1700Check __STDCARGS((int *));
 static Bool S3_GENDACCheck __STDCARGS((int *));
 static void CheckMach32 __STDCARGS((int, int *));
 static void CheckMach64 __STDCARGS((int, int *));
+static void CheckMatrox __STDCARGS((int, int *));
 
 #ifdef __STDC__
 static void ReadPelReg(Byte Index, Byte *Pixel)
@@ -1032,6 +1033,15 @@ int *RamDac;
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
+	}
+	else if (SVGA_VENDOR(Chipset) == V_MATROX) 
+	{
+		if (Chipset == CHIP_MGA2085PX)
+			*RamDac = DAC_BT485;
+		if (Chipset == CHIP_MGA2064W)
+			*RamDac = DAC_TVP3026;
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
 	}
 	else if ( (SVGA_VENDOR(Chipset) == V_TRIDENT) && 
 		   (Chipset >= CHIP_TVGA9000I) )

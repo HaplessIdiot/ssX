@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.16 1996/12/09 12:03:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.17 1996/12/23 06:31:16 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -57,6 +57,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &UMC_Descriptor,
     &Trident_Descriptor,
     &SiS_Descriptor,
+    &Matrox_Descriptor,
     &ATI_Descriptor,
     &Ahead_Descriptor,
     &NCR_Descriptor,

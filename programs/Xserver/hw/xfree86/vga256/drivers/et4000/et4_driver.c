@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
- *          ET6000 support by Koen Gadeyne
+ *          ET6000 and ET4000W32 16/24/32 bpp support by Koen Gadeyne
  *          DPMS support by Harald Nordgård Hansen
  */
 /* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
@@ -502,6 +502,7 @@ TsengDetectMem()
     {
       case 0x03:  /* MDRAM */
         ramtype=0;
+        /* FIXME!!! 8*32kb granularity fails to recognize 2.25 MB of memory (detects 2.5 instead) */
         vga256InfoRec.videoRam = ((inb(ET6Kbase+0x47) & 0x07) + 1) * 8*32; /* number of 8 32kb banks  */
         if (inb(ET6Kbase+0x45) & 0x04)
         {
@@ -1575,7 +1576,6 @@ ET4000Init(mode)
            new->SegMapComp = 0x00;
       }
     }
-#endif
   
   /*
    * 16/24/32 bpp handling.
@@ -1585,6 +1585,7 @@ ET4000Init(mode)
      tseng_set_ramdac_bpp(mode, new, BytesPerPix);
      row_offset *= BytesPerPix;
    }
+#endif
    
   /*
    * Horizontal overflow settings: for modes with > 2048 pixels per line

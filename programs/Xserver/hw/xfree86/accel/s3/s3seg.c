@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.12 1996/12/23 06:42:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.13 1997/01/08 20:34:04 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -247,10 +247,18 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	       x1t = max(x1, pbox->x1);
 	       x2t = min(x2, pbox->x2);
 	       if (x1t != x2t) {
+#if 0
 		  WaitQueue(4);
 		  SET_CURPT((short)x1t, (short)y1);
 		  SET_MAJ_AXIS_PCNT((short)(x2t - x1t - 1));
-		  SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
+		  SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
+			WRTDATA);
+#else
+    		  WaitQueue(5);
+    		  SET_CURPT((short)x1t, (short)y1);
+    		  SET_AXIS_PCNT(x2t - x1t - 1,0);
+    		  SET_CMD(CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
+#endif
 	       }
 	       nbox--;
 	       pbox++;

@@ -18,26 +18,26 @@ color) ET4000/W32 and ET6000 server, refer to
 
 <sect> ET4000 driver features <p>
 
-The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).
-hi- and truecolor modes are not supported.
+The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors) on
+all chips older than ET4000W32p rev C (ET4000, W32i, W32p rev A and B). hi-
+and truecolor modes are not supported on these chips.
 
-As opposed to the separate XF86_W32 server, there is no support for special
-RAMDACs in the SVGA server yet. This means that W32 cards with 16-bit
-RAMDAC/clockchip combinations (most ET4000W32p-based cards fall in that
-category) will not be able to use the features that allow higher pixel
-clocks and higher color depths.
+On W32p rev C and D however, all color depths are supported on the supported
+RAMDACs (currently ICS5341 and Chrontel CH8398). These modes are also
+accelerated. 24bpp sometimes gives wrong colors aty this moment. This can be
+overcome by fiddling with the mode timings (shifting the image left or
+right).
 
-As such, those cards will be limited in a similar manner as the older cards,
-i.e. to a maximum pixel clock of 90 MHz, whilst they actually are able to go
-up to 135 MHz. As a result, 1280x1024 modes will only be possible when using
-interlacing, and non-interlaced modes are limited to about 1024x768 at 75 Hz
-refresh.
+There is support for special RAMDACs in the SVGA server. This means that
+W32p cards with 16-bit RAMDAC/clockchip combinations (most ET4000W32p-based
+cards fall in that category) now support the features that allow higher
+pixel clocks (including pixel multiplexing) and higher color depths.
 
-Similarly, cards with a fully programmable clockchip will not allow you to
-use the clockchip. Only the standard set of fixed clocks is available.
-
-Most of the limitations outlined above will be addressed in a future
-release.
+Cards with a RAMDAC that is not yet supported will be limited in a similar
+manner as the older cards, i.e. to a maximum pixel clock of 86 MHz, whilst
+they actually might be able to go up to 135 MHz. As a result, 1280x1024
+modes will only be possible when using interlacing, and non-interlaced modes
+are limited to about 1024x768 at 75 Hz refresh.
 
 
 Linear memory mode (especially important for some DGA clients) is supported
@@ -55,9 +55,11 @@ yet for W32i, but that's being worked on). This is based on the new XFree86
 acceleration interface. See also
 <htmlurl name="README.W32" url="W32.html">.
 
-Acceleration does not work together with linear memory mode, and the server
-disables linear memory mode if acceleration isn't disabled in the Device
-section.
+Acceleration does not work together with linear memory mode on some cards,
+and will produce a mostly black screen. If this happens in 8bpp (256 color)
+mode, disabling acceleration or disabling linear memory mode will get rid of
+that problem. If this happens in a 16, 24 or 32 bpp mode, disabling
+acceleration is the only way out.
 
 To disable acceleration, put the following in the Device section of your
 <tt>XF86Config</tt>:
@@ -446,10 +448,23 @@ Occasional erroneous pixels in text, pixel dust when moving window-frame
 <tag>
 Textmode is not properly restored
 </tag>
-        This has been reported on some configurations. Sometimes Chipset
+        This has been reported on some configurations. Sometimes a Chipset
         line will fix this. Normally you should be able to restore the
         textmode font using a utility that sets it (<tt>setfont</tt>,
         <tt>runx</tt>, <tt>restorefont</tt> on Linux).
+<tag>
+Mostly black screen when using accelerated driver features
+</tag>
+        There can be several causes for this.
+        
+        One is if the amount of memory is not detected correctly. If the
+        server's autodetection mechanism detects too much memory,
+        accelarated features will not work. Define the amount of memory in
+        the <tt>XF86Config</tt> file. This seems to happen sometimes on some
+        2.25 MB ET6000 cards, where the server detects 2.5 MB instead.
+        
+        If that doesn't help, disabling acceleration (option
+        <tt>"noaccel"</tt>) is the only solution.
 <tag>
 Problems with DMA hardware (floppy, tape)
 </tag>
@@ -484,7 +499,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.14 1997/01/25 03:22:25 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.15 1997/01/27 06:57:53 dawes Exp $ 
 
 
 

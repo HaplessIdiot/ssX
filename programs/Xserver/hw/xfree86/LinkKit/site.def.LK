@@ -4,7 +4,7 @@ XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.24 1996/11/20 14:01:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.25 1996/12/23 06:30:47 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -124,7 +124,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.24 1996/1
 #define XF86AGXServer		YES
 
 /* The W32 server */
-#define XF86W32Server		YES
+#define XF86W32Server		NO
 
 /* The I128 server */
 #define XF86I128Server		YES
@@ -165,10 +165,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.24 1996/1
 				cirrus ncr77c22 mga oak al2101 ali cl64xx \
 				video7 chips ark mx realtek apm generic
 
-#define XF86Vga16Drivers	et4000 et3000 ncr77c22 ati sis tvga8900 oak \
+#define XF86Vga16Drivers	/*et4000*/ et3000 ncr77c22 ati sis tvga8900 oak \
 				cl64xx generic 
 
-#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
+#define XF86Vga2Drivers		/*et4000*/ et3000 pvga1 gvga ati sis tvga8900 \
 				cirrus ncr77c22 oak cl64xx generic
 
 #define XF86MonoDrivers		hgc1280 sigma apollo hercules

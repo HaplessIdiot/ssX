@@ -153,7 +153,7 @@ void _ctAccelInit() {
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD 
 #if 0
-        | LEFT_EDGE_CLIPPING;
+        | LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
 #else
         ;
 #endif
@@ -414,11 +414,11 @@ void CTNAME(SubsequentScreenToScreenCopy)(x1, y1, x2, y2, w, h)
         destaddr = y2 * vga256InfoRec.displayWidth;
     }
     if (CommandFlags & ctRIGHT2LEFT) {
-	srcaddr += x1 + w - 1;
-	destaddr += x2 + w - 1;
+	srcaddr = ( srcaddr + x1 + w ) * vgaBytesPerPixel - 1 ;
+	destaddr = ( destaddr + x2 + w ) * vgaBytesPerPixel - 1;
     } else {
-	srcaddr += x1;
-	destaddr += x2;
+	srcaddr = (srcaddr + x1) * vgaBytesPerPixel;
+	destaddr = (destaddr + x2) * vgaBytesPerPixel;
     }
 #else
     if (CommandFlags & ctTOP2BOTTOM) {
@@ -429,16 +429,16 @@ void CTNAME(SubsequentScreenToScreenCopy)(x1, y1, x2, y2, w, h)
 	destaddr = (y2 + h - 1) * vga256InfoRec.displayWidth;
     }
     if (CommandFlags & ctLEFT2RIGHT) {
-	srcaddr += x1;
-	destaddr += x2;
+	srcaddr = (srcaddr + x1) * vgaBytesPerPixel;
+	destaddr = (destaddr + x2) * vgaBytesPerPixel;
     } else {
-	srcaddr += x1 + w - 1;
-	destaddr += x2 + w - 1;
+	srcaddr = ( srcaddr + x1 + w ) * vgaBytesPerPixel - 1 ;
+	destaddr = ( destaddr + x2 + w ) * vgaBytesPerPixel - 1;
     }
 #endif
     ctBLTWAIT;
-    ctSETSRCADDR(srcaddr * vgaBytesPerPixel );
-    ctSETDSTADDR(destaddr * vgaBytesPerPixel );
+    ctSETSRCADDR(srcaddr);
+    ctSETDSTADDR(destaddr);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel );
 }
 
@@ -701,13 +701,14 @@ void CTNAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     int x, y, w, h, skipleft;
 {
     int destaddr;
-    destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+    destaddr = (y * vga256InfoRec.displayWidth + x + skipleft) * 
+               vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
     ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft));
 #endif
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, (w - skipleft) * vgaBytesPerPixel);
 }
 
 static int patternyrot;

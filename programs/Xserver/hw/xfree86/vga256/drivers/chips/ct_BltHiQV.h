@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.3 1997/01/12 10:42:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.4 1997/01/18 06:56:20 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -37,9 +37,9 @@
 #define ctSRCFG                 0x000000L	/* Where is this for the 65550?? */
 
 /* The Monochrome expansion register setup */
-#define ctCLIPLEFT(clip)        (clip&0x3F)
-#define ctCLIPRIGHT(clip)       ((clip&0x3F) << 8)
-#define ctSRCDISCARD(clip)      ((clip&0x3F) << 16)
+#define ctCLIPLEFT(clip)        ((clip)&0x3F)
+#define ctCLIPRIGHT(clip)       (((clip)&0x3F) << 8)
+#define ctSRCDISCARD(clip)      (((clip)&0x3F) << 16)
 #define ctBITALIGN              0x1000000L
 #define ctBYTEALIGN             0x2000000L
 #define ctWORDALIGN             0x3000000L
@@ -66,43 +66,43 @@
 #endif
 
 #define ctSETROP(op) \
-  *(unsigned int *)(ctMMIOBase + BR(0x4)) = op
+  *(unsigned int *)(ctMMIOBase + BR(0x4)) = (op)
 
 #define ctSETMONOCTL(op) \
-  *(unsigned int *)(ctMMIOBase + BR(0x3)) = op
+  *(unsigned int *)(ctMMIOBase + BR(0x3)) = (op)
 
 #define ctSETSRCADDR(srcAddr) \
-  *(unsigned int *)(ctMMIOBase + BR(0x6)) = srcAddr&0x7FFFFFL
+  *(unsigned int *)(ctMMIOBase + BR(0x6)) = (srcAddr)&0x7FFFFFL
 
 #define ctSETDSTADDR(dstAddr) \
-  *(unsigned int *)(ctMMIOBase + BR(0x7)) = dstAddr&0x7FFFFFL
+  *(unsigned int *)(ctMMIOBase + BR(0x7)) = (dstAddr)&0x7FFFFFL
 
 #define ctSETPITCH(srcPitch,dstPitch) \
-  *(unsigned int *)(ctMMIOBase + BR(0x0)) = ((dstPitch&0xFFFF)<<16)| \
-      (srcPitch&0xFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x0)) = (((dstPitch)&0xFFFF)<<16)| \
+      ((srcPitch)&0xFFFF)
 
 #define ctSETHEIGHTWIDTHGO(Height,Width)\
-  *(unsigned int *)(ctMMIOBase + BR(0x8)) = ((Height&0xFFFF)<<16)| \
-      (Width&0xFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x8)) = (((Height)&0xFFFF)<<16)| \
+      ((Width)&0xFFFF)
 
 #define ctSETPATSRCADDR(srcAddr)\
-  *(unsigned int *)(ctMMIOBase + BR(0x5)) = srcAddr&0x1FFFFFL
+  *(unsigned int *)(ctMMIOBase + BR(0x5)) = (srcAddr)&0x1FFFFFL
 
 #define ctSETBGCOLOR8(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = (bgColor&0xFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFF)
 
 #define ctSETBGCOLOR16(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = (bgColor&0xFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFFFF)
 
 #define ctSETBGCOLOR24(bgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x1)) = (bgColor&0xFFFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x1)) = ((bgColor)&0xFFFFFF)
 
 #define ctSETFGCOLOR8(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = (fgColor&0xFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFF)
 
 #define ctSETFGCOLOR16(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = (fgColor&0xFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFFFF)
 
 #define ctSETFGCOLOR24(fgColor)\
-  *(unsigned int *)(ctMMIOBase + BR(0x2)) = (fgColor&0xFFFFFF)
+  *(unsigned int *)(ctMMIOBase + BR(0x2)) = ((fgColor)&0xFFFFFF)
 

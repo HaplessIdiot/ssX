@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.6 1997/01/14 22:17:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.7 1997/01/18 06:55:18 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -464,6 +464,11 @@ void s3CleanUp(
 #endif
 );
 Bool s3Init(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+);
+void s3InitSTREAMS(
 #if NeedFunctionPrototypes
     DisplayModePtr
 #endif

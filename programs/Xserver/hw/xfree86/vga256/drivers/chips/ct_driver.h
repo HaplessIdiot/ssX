@@ -154,13 +154,13 @@ extern void ctMMIOAccelInit();
 extern void ctHiQVAccelInit();
 
 
-#define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + x)
-#define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + x)
+#define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + (x))
+#define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + (x))
 
 /* To aid debugging of 32 bit register access we make the following defines */
 #if defined(DEBUG) & defined(CT_HW_DEBUG)
 extern void ctHWDebug();
-#define HW_DEBUG(x) ctHWDebug(x)
+#define HW_DEBUG(x) ctHWDebug((x))
 #else
 #define HW_DEBUG(x)
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.6 1997/01/03 07:59:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.7 1997/01/14 22:21:56 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -41,6 +41,10 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I../vga256/vga \
            -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
 
+
+#if HasGnuMake
+$(DONES): $(SUBDIRS)
+#endif
 
 NormalDepLibraryTarget(xaa,$(OBJS) $(SUBDIRS) $(DONES),$(OBJS))
 NormalLibraryObjectRule()

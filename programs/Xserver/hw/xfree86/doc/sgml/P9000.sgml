@@ -203,6 +203,7 @@ have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
 into your <tt>XF86Config</tt> file.
 
 <sect1>Diamond Viper PCI <p>
+
 For Diamond Viper PCI owners, you'll need to use <tt>scanpci</tt>
 to find the values to fill in for <tt>MemBase</tt> and <tt>IOBase</tt> in the
 <tt>Device</tt> section of <tt>XF86Config</tt>.  These values will change
@@ -232,7 +233,7 @@ and <tt>0xa0000000</tt> as the <tt>memBase</tt>.
 
 Eventually we would like to autodetect the <tt>IOBase</tt> and
 <tt>memBase</tt>, but this doesn't yet work.
-
+  
 <sect>Orchid P9000 and random clones <p>
 The Orchid P9000 and other cards based on the Weitek board design
 (such as the STAR 2000) should now work.  Talk to
@@ -473,7 +474,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.17 1997/01/24 09:32:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.18 1997/01/25 03:22:03 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.13 1997/01/19 12:50:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.14 1997/01/20 12:35:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -368,7 +368,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	ErrorF("new mmio linear mode doesn't work ltmp %x\n",ltmp);
    }
    /* end BL */
-
+   				    
+   			/* new - KJB */
+   s3InitSTREAMS( s3InfoRec.modes );
    s3InitEnvironment();
    AlreadyInited = TRUE;
 
@@ -657,7 +659,9 @@ s3SwitchMode(mode)
       }
    }
 
-   if (s3Init(mode)) {
+   if (s3Init(mode)) {	  
+   			/* new - KJB */
+      s3InitSTREAMS(mode);
       s3ModeSwitched = TRUE;
 #if notyet
       s3Restore(vgaNewVideoState);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.10 1996/03/10 12:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.11 1996/12/23 06:40:57 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
