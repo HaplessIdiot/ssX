@@ -30,9 +30,16 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.16 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.17 2002/10/17 08:18:22 alanh Exp $ */
 
 #include "win.h"
+
+
+/*
+ * External global variables
+ */
+
+extern const GUID _IID_IDirectDraw2;
 
 
 /*
@@ -257,6 +264,17 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
       IDirectDraw2_RestoreDisplayMode (pScreenPriv->pdd);
       IDirectDraw2_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
+    }
+
+  /* Delete tray icon, if we have one */
+  if (!pScreenInfo->fNoTrayIcon)
+    winDeleteNotifyIcon (pScreenPriv);
+
+  /* Free the exit confirmation dialog box, if it exists */
+  if (g_hDlgExit != NULL)
+    {
+      DestroyWindow (g_hDlgExit);
+      g_hDlgExit = NULL;
     }
 
   /* Kill our window */

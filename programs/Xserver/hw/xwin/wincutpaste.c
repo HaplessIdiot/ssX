@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincutpaste.c,v 1.1 2001/06/25 08:12:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincutpaste.c,v 1.2 2001/09/07 08:41:54 alanh Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,6 +45,7 @@
 
 #include "X.h"
 #include "Xos.h"
+#include "regionstr.h"
 #include "miscstruct.h"
 #include "keysym.h"
 #include <X11/Xlib.h>

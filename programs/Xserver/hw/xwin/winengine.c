@@ -33,6 +33,13 @@
 
 
 /*
+ * External global variables
+ */
+
+extern const GUID _IID_IDirectDraw4;
+
+
+/*
  * Detect engines supported by current Windows version
  * DirectDraw version and hardware
  */

@@ -25,56 +25,38 @@
  *or other dealings in this Software without prior written authorization
  *from the XFree86 Project.
  *
- * Authors:	Harold L Hunt II
+ * Authors:     Earle F. Philhower, III
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.5 2002/10/17 08:18:22 alanh Exp $ */
+/* $XFree86$ */
 
-#include "win.h"
 
-/* See Porting Layer Definition - p. 6 */
-void
-winBlockHandler (int nScreen,
-		 pointer pBlockData,
-		 pointer pTimeout,
-		 pointer pReadMask)
-{
-  winScreenPriv((ScreenPtr)pBlockData);
-  MSG			msg;
+/*
+ * Structures
+ */
 
-  /* Signal threaded modules to begin */
-  if (pScreenPriv != NULL && !pScreenPriv->fServerStarted)
-    {
-      int		iReturn;
-      
-      ErrorF ("winBlockHandler - Releasing pmServerStarted\n");
+typedef struct {
+  long		flags;	/* marks which fields in this structure are defined */
+  Bool		input;	/* does this application rely on the window manager to
+		   get keyboard input? */
+  int		initial_state;	/* see below */
+  Pixmap	icon_pixmap;	/* pixmap to be used as icon */
+  Window	icon_window; 	/* window to be used as icon */
+  int		icon_x, icon_y; 	/* initial position of icon */
+  Pixmap	icon_mask;	/* icon mask bitmap */
+  XID		window_group;	/* id of related window group */
+  /* this structure may be extended in the future */
+} WinXWMHints;
 
-      /* Flag that modules are to be started */
-      pScreenPriv->fServerStarted = TRUE;
 
-      /* Unlock the mutex for threaded modules */
-      iReturn = pthread_mutex_unlock (&pScreenPriv->pmServerStarted);
-      if (iReturn != 0)
-	{
-	  ErrorF ("winBlockHandler - pthread_mutex_unlock () failed: %d\n",
-		  iReturn);
-	  goto winBlockHandler_ProcessMessages; 
-	}
+/*
+ * Function prototypes
+ */
 
-      ErrorF ("winBlockHandler - pthread_mutex_unlock () returned\n");
-    }
+int
+winMultiWindowGetWMHints (WindowPtr pWin, WinXWMHints *hints);
 
-winBlockHandler_ProcessMessages:
+int
+winMultiWindowGetClassHint (WindowPtr pWin, char **res_name, char **res_class);
 
-  /* Process all messages on our queue */
-  while (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
-    {
-      if ((g_hDlgDepthChange == 0
-	   || !IsDialogMessage (g_hDlgDepthChange, &msg))
-	  && (g_hDlgExit == 0
-	      || !IsDialogMessage (g_hDlgExit, &msg)))
-	{
-	  DispatchMessage (&msg);
-	}
-    }
-    winReorderWindowsMultiWindow ((ScreenPtr)pBlockData);
-}
+int
+winMultiWindowGetWindowRole (WindowPtr pWin, char **res_role);

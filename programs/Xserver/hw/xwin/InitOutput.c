@@ -51,7 +51,9 @@ FILE		*g_pfLog = NULL;
 DWORD		g_dwEnginesSupported = 0;
 HINSTANCE	g_hInstance = 0;
 HWND		g_hDlgDepthChange = NULL;
+HWND		g_hDlgExit = NULL;
 Bool		g_fCalledSetLocale = FALSE;
+Bool		g_fCalledXInitThreads = FALSE;
 
 
 /*
@@ -151,6 +153,7 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].fClipboard = FALSE;
       g_ScreenInfo[i].fLessPointer = FALSE;
       g_ScreenInfo[i].fScrollbars = FALSE;
+      g_ScreenInfo[i].fNoTrayIcon = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
       g_ScreenInfo[i].dwWidth_mm = (dwWidth / WIN_DEFAULT_DPI)
 	* 25.4;
@@ -327,6 +330,12 @@ ddxUseMsg (void)
 	  "\tIn windowed mode, allow screens bigger than the Windows desktop.\n"
 	  "\tMoreover, if the window has decorations, one can now resize\n"
 	  "\tit.\n");
+
+  ErrorF ("-[no]trayicon\n"
+          "\tDo not create a tray icon.  Default is to create one\n"
+	  "\ticon per screen.  You can globally disable tray icons with\n"
+	  "\t-notrayicon, then enable it for specific screens with\n"
+	  "\t-trayicon for those screens.\n");
 
   ErrorF ("-clipupdates num_boxes\n"
 	  "\tUse a clipping region to constrain shadow update blits to\n"
@@ -761,6 +770,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
       return 1;
     }
 
+
+
   /*
    * Look for the '-clipboard' argument
    */
@@ -1099,6 +1110,58 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	{
 	  /* Parameter is for a single screen */
 	  g_ScreenInfo[g_iLastScreen].fUseUnixKillKey = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-notrayicon' argument
+   */
+  if (strcmp (argv[i], "-notrayicon") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fNoTrayIcon = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fNoTrayIcon = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-trayicon' argument
+   */
+  if (strcmp (argv[i], "-trayicon") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fNoTrayIcon = FALSE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fNoTrayIcon = FALSE;
 	}
 
       /* Indicate that we have processed this argument */
