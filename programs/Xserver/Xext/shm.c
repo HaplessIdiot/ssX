@@ -28,6 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.23 94/04/17 20:32:56 dpw Exp $ */
+/* $XFree86$ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -121,11 +122,52 @@ static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
     } \
 }
 
+
+#if defined(__FreeBSD__) || defined(__NetBSD__)
+#include <sys/signal.h>
+
+static Bool badSysCall = FALSE;
+
+static void
+SigSysHandler(signo)
+int signo;
+{
+    badSysCall = TRUE;
+}
+
+static Bool CheckForShmSyscall()
+{
+    void (*oldHandler)();
+    int shmid = -1;
+
+    /* If no SHM support in the kernel, the bad syscall will generate SIGSYS */
+    oldHandler = signal(SIGSYS, SigSysHandler);
+
+    badSysCall = FALSE;
+    shmid = shmget(IPC_PRIVATE, 4096, IPC_CREAT);
+    /* Clean up */
+    if (shmid != -1)
+    {
+	shmctl(shmid, IPC_RMID, (struct shmid_ds *)NULL);
+    }
+    signal(SIGSYS, oldHandler);
+    return(!badSysCall);
+}
+#endif
+    
 void
 ShmExtensionInit()
 {
     ExtensionEntry *extEntry;
     int i;
+
+#if defined(__FreeBSD__) || defined(__NetBSD__)
+    if (!CheckForShmSyscall())
+    {
+	ErrorF("MIT-SHM extension disabled due to lack of kernel support\n");
+	return;
+    }
+#endif
 
     sharedPixmaps = xTrue;
     pixmapFormat = shmPixFormat[0];
