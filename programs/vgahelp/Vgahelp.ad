@@ -62,12 +62,35 @@
 *Flags-label.label: Flags (hex):
 *Flags-text.borderWidth: 1
 *Flags-text*editType: edit
+!Removed Edit capability -- Jon
+*Flags-text*sensitive: False
+*Fetch-button.fromHoriz: Quit-button
+*Apply-button.fromHoriz: Fetch-button
+*Test-button.fromHoriz: Apply-button
+*Restore-button.fromHoriz: Test-button
+*Show-button.fromHoriz: Restore-button
 *Quit-button.label: Quit
 *Fetch-button.label: Fetch
-*Fetch-button.fromHoriz: Quit-button
-*Apply-button.label: Apply
-*Test-button.fromHoriz: Apply-button
-*Test-button.label: Test
-*Apply-button.fromHoriz: Fetch-button
 *Show-button.label: Show
-*Show-button.fromHoriz: Test-button
+*Restore-button.label: Restore
+*Test-button.label: Test
+*Apply-button.label: Apply
+*Abort.label: Abort Test Now
+*testingMessage.label: Mode test current in progress\n\n     Please wait
+*WarnLabel.label: WARNING     WARNING    WARNING    WARNING    WARNING\
+    WARNING\n\n\
+THE INCORRECT OF THIS PROGRAM CAN DO PERMENANT DAMAGE TO YOUR MONITOR\n\
+AND/OR VIDEO CARD.  IF YOU ARE NOT SURE WHAT YOU ARE DOING HIT CANCEL\n\
+NOW. OTHERWISE HIT OK TO CONTINUE\n\
+\n\
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,\n\
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n\
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n\
+IN NO EVENT SHALL Kaleb S. KEITHLEY (or his employer) OR \n\
+The XFree86 Project Inc. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n\
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n\
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n\
+DEALINGS IN THE SOFTWARE.\n\n
+
+
+	

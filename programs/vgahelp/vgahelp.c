@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.3 1995/04/09 13:54:55 dawes Exp $ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.4 1995/06/04 13:32:31 dawes Exp $ */
 
 /*
 
@@ -44,6 +44,19 @@ from Kaleb S. KEITHLEY.
 
 int MajorVersion, MinorVersion;
 int EventBase, ErrorBase;
+int dot_clock, mode_flags;
+
+/* Mode flags -- ignore flags not in V_FLAG_MASK */
+#define V_FLAG_MASK	0x1FF;
+#define V_PHSYNC	0x001 
+#define V_NHSYNC	0x002
+#define V_PVSYNC	0x004
+#define V_NVSYNC	0x008
+#define V_INTERLACE	0x010 
+#define V_DBLSCAN	0x020
+#define V_CSYNC		0x040
+#define V_PCSYNC	0x080
+#define V_NCSYNC	0x100
 
 typedef enum { HDisplay, HSyncStart, HSyncEnd, HTotal,
 	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, fields_num } fields;
@@ -62,6 +75,7 @@ static struct _AppResources {
     ScrollData	field[fields_num];
     Bool	ad_installed;
     int		orig[fields_num];
+    int		old[fields_num];
 } AppRes = {
     {
 	{ HDisplay, },
@@ -109,7 +123,6 @@ static Bool GetModeLine (dpy, scrn)
     int scrn;
 {
     XVGAHelpModeLine mode_line;
-    int dot_clock;
     fields i;
 
     if (!XVGAHelpGetModeLine (dpy, scrn, &dot_clock, &mode_line))
@@ -123,7 +136,8 @@ static Bool GetModeLine (dpy, scrn)
     AppRes.field[VSyncStart].val = mode_line.vsyncstart;
     AppRes.field[VSyncEnd].val = mode_line.vsyncend;
     AppRes.field[VTotal].val = mode_line.vtotal;
-    AppRes.field[Flags].val = mode_line.flags;
+    mode_flags = mode_line.flags;
+    AppRes.field[Flags].val = mode_flags & V_FLAG_MASK;
     for (i = HDisplay; i < fields_num; i++) 
 	AppRes.orig[i] = AppRes.field[i].val;
     return TRUE;
@@ -222,10 +236,13 @@ static void ApplyCB (w, client, call)
     mode_line.vsyncstart = AppRes.field[VSyncStart].val;
     mode_line.vsyncend = AppRes.field[VSyncEnd].val;
     mode_line.vtotal = AppRes.field[VTotal].val;
+    /* Don't read flags from widget */
+#if 0
     XtVaGetValues (AppRes.field[Flags].textwidget,
 		XtNstring, &string, NULL);
     (void) sscanf (string, "%x", &i);
-    mode_line.flags = i;
+#endif
+    mode_line.flags = mode_flags;
     
    hitError = 0;
 
@@ -263,6 +280,19 @@ fields i;
 
 }
 
+static void RestoreCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+    fields i;
+    for (i = HDisplay; i < fields_num; i++) {
+	AppRes.field[i].val = AppRes.orig[i];
+	SetLabel(i);
+    }
+    SetScrollbars ();
+}
+
+
 static void FetchCB (w, client, call)
     Widget w;
     XtPointer client, call;
@@ -275,6 +305,8 @@ static void FetchCB (w, client, call)
     }   
 }
 
+static XtIntervalId TOid;
+
 static void TestTO (client, id)
     XtPointer client;
     XtIntervalId* id;
@@ -283,19 +315,34 @@ static void TestTO (client, id)
     for (i = HDisplay; i < fields_num; i++)
 	AppRes.field[i].val = AppRes.orig[i];
 
+    ApplyCB ((Widget) client, NULL, NULL);
+
+    for (i = HDisplay; i < fields_num; i++)
+	AppRes.field[i].val = AppRes.old[i];
     SetScrollbars ();
 
-    ApplyCB ((Widget) client, NULL, NULL);
     XtPopdown(testing_popup);
+}
+
+static void TestTOCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+  XtRemoveTimeOut(TOid);
+  TestTO(w, (XtIntervalId *) NULL);
 }
 
 static void TestCB (w, client, call)
     Widget w;
     XtPointer client, call;
 {
+    fields i;
+    for (i = HDisplay; i < fields_num; i++)
+	AppRes.old[i] = AppRes.field[i].val;
+
     XtPopup(testing_popup, XtGrabExclusive /*XtGrabNone*/);
     XSync(XtDisplay(w), False);   
-    XtAppAddTimeOut (XtWidgetToApplicationContext (w),
+    TOid = XtAppAddTimeOut (XtWidgetToApplicationContext (w),
 		5000, TestTO, (XtPointer) w);
 
     ApplyCB (w, client, call);
@@ -305,8 +352,9 @@ static void ShowCB(w, client, call)
     Widget w;
     XtPointer client, call;
 {
-    printf("\"%dx%d\"\t%d %d %d %d\t%d %d %d %d [FLAGS!!!]\n",
+    printf("\"%dx%d\"\t%.2f\t%d %d %d %d\t%d %d %d %d",
 	   AppRes.field[HDisplay].val, AppRes.field[VDisplay].val,
+	   (float)dot_clock/1000.0,
 	   AppRes.field[HDisplay].val,
 	   AppRes.field[HSyncStart].val,
 	   AppRes.field[HSyncEnd].val,
@@ -315,6 +363,17 @@ static void ShowCB(w, client, call)
 	   AppRes.field[VSyncStart].val,
 	   AppRes.field[VSyncEnd].val,
 	   AppRes.field[VTotal].val);
+    /* Print out the flags (if any) */
+    if (mode_flags & V_PHSYNC) printf(" +hsync");
+    if (mode_flags & V_NHSYNC) printf(" -hsync");
+    if (mode_flags & V_PVSYNC) printf(" +vsync");
+    if (mode_flags & V_NVSYNC) printf(" -vsync");
+    if (mode_flags & V_INTERLACE) printf(" interlace");
+    if (mode_flags & V_CSYNC) printf(" composite");
+    if (mode_flags & V_PCSYNC) printf(" +csync");
+    if (mode_flags & V_PCSYNC) printf(" -csync");
+    if (mode_flags & V_DBLSCAN) printf(" doublescan");
+    printf("\n");
 }
 
 
@@ -602,12 +661,69 @@ static void CreateTyp (form, findex, w1name, w2name, w3name)
     AppRes.field[findex].scrollwidget = wids[2];
 }
 
+
+static void AckWarn (w, client, call)
+    Widget w;
+    XtPointer client, call; 
+{
+    XtPopdown((Widget) client);
+    XtDestroyWidget((Widget) client);
+}
+
+static void displayWarning(top)
+    Widget top;
+{
+    Widget w, popup, popupBox;
+    int x, y;
+
+    x =  DisplayWidth(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 3;
+    y =  DisplayHeight(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 3;
+
+    popup = XtVaCreatePopupShell("Warning", 
+			    transientShellWidgetClass, top,
+			    XtNtitle, "WARNING",
+			    XtNx, x,
+			    XtNy, y,
+			    NULL);
+
+    popupBox = XtVaCreateManagedWidget(
+               "WarningBox",
+               boxWidgetClass,
+               popup,
+               NULL);
+
+    w = XtVaCreateManagedWidget( "WarnLabel",
+                                     labelWidgetClass,
+				     popupBox,
+                                     NULL);
+
+    w = XtVaCreateManagedWidget( "WarnOK",
+                                     commandWidgetClass,
+				     popupBox,
+                                     XtNlabel, "OK",
+                                     NULL);
+
+    XtAddCallback (w, XtNcallback, AckWarn, (XtPointer)popup);
+
+    w = XtVaCreateManagedWidget( "WarnCancel",
+                                     commandWidgetClass,
+				     popupBox,
+                                     XtNlabel, "Cancel",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, QuitCB, (XtPointer)NULL);
+
+    XtPopup(popup, XtGrabExclusive);
+    
+}
+
+
+
 static void CreateHierarchy(top)
     Widget top;
 {
     char buf[5];
     Widget form, forms[10];
-    Widget wids[5];
+    Widget wids[6];
     Widget boxW,messageW, popdownW, w;   
     XawTextBlock text;
     XtTranslations trans;
@@ -664,7 +780,7 @@ static void CreateHierarchy(top)
                                      "Thiner",
                                      commandWidgetClass,
                                      forms[3],
-                                     XtNlabel, "Thiner",
+                                     XtNlabel, "Narrower",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)HTotal);
     CreateTyp (forms[4], VDisplay, "VDisplay-label", "VDisplay-text", NULL);
@@ -741,11 +857,16 @@ static void CreateHierarchy(top)
     wids[3] = XtCreateWidget ("Test-button", commandWidgetClass, 
 		forms[9], NULL, 0);
     XtAddCallback (wids[3], XtNcallback, TestCB, NULL);
-   
-    wids[4] = XtCreateWidget ("Show-button", commandWidgetClass, 
+
+    wids[4] = XtCreateWidget ("Restore-button", commandWidgetClass, 
 		forms[9], NULL, 0);
-    XtAddCallback (wids[4], XtNcallback, ShowCB, NULL);   
-    XtManageChildren (wids, 5);
+    XtAddCallback (wids[4], XtNcallback, RestoreCB, NULL);
+
+    wids[5] = XtCreateWidget ("Show-button", commandWidgetClass, 
+		forms[9], NULL, 0);
+    XtAddCallback (wids[5], XtNcallback, ShowCB, NULL);
+
+    XtManageChildren (wids, 6);
 
     XtManageChildren (forms, 10);
     XtManageChild (form);
@@ -753,6 +874,7 @@ static void CreateHierarchy(top)
     SetScrollbars ();
     x = DisplayWidth(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 2;
     y = DisplayHeight(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 2;
+
     invalid_mode_popup = XtVaCreatePopupShell("invalidMode", 
 			    transientShellWidgetClass, top,
 			    XtNtitle, "Invalid Mode requested",
@@ -766,14 +888,26 @@ static void CreateHierarchy(top)
 			    XtNx, x - 20,
 			    XtNy, y - 40,
 			    NULL);
+    boxW = XtVaCreateManagedWidget(
+                                   "TestingBox",
+                                   boxWidgetClass,
+                                   testing_popup,
+                                   NULL);
 
     w = XtVaCreateManagedWidget(
 		   "testingMessage",
                    labelWidgetClass,
-                   testing_popup,
-                   XtNlabel, 
-	           "Mode test current in progress\n\n     Please wait",
+                   boxW,
                    NULL);
+
+    w = XtVaCreateManagedWidget(
+                               "Abort",
+                                commandWidgetClass,
+                                boxW,
+                                NULL);
+
+    XtAddCallback (w, XtNcallback, (XtCallbackProc) TestTOCB,
+		  (XtPointer) NULL);
 
     boxW = XtVaCreateManagedWidget(
                                    "invalidBox",
@@ -880,7 +1014,10 @@ int main (argc, argv)
     (void) XSetWMProtocols (dpy, XtWindow (top), &wm_delete_window, 1);
 
     XtMapWidget (top);
-
+    displayWarning(top);
+    /* really we should run our on event despaching  here until the
+     * warning has been read...
+     */
     XtAppMainLoop (app);
 
     return 0;
