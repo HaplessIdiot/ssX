@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.12.2.7 1998/07/18 17:53:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.23 1998/07/25 16:56:31 dawes Exp $ */
 
 
 
@@ -245,17 +245,17 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ioctl(a,b,c)		xf86ioctl(a,b,c)
 #define read(a,b,c)		xf86read(a,b,c)
 #define write(a,b,c)		xf86write(a,b,c)
-#undef O_RDONLY
 #define O_RDONLY		XF86_O_RDONLY
-#undef O_WRONLY
 #define O_WRONLY		XF86_O_WRONLY
-#undef O_RDWR
 #define O_RDWR			XF86_O_RDWR
-#undef O_CREAT
 #define O_CREAT			XF86_O_CREAT
 #ifndef __EMX__
 #define errno			xf86errno
 #endif
+
+/* Some ANSI macros */
+#undef FILENAME_MAX
+#define FILENAME_MAX		1024
 
 #endif /* XFree86LOADER */
 

@@ -49,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 #ifndef MI_LIGHT_H
 #define MI_LIGHT_H
@@ -145,7 +146,6 @@ SOFTWARE.
  ****/
 #define		NORMALIZE_VECTOR(vector, length)	\
 {							\
-    double sqrt(double);				\
     ddFLOAT  *v;					\
     v = (ddFLOAT *) (vector);				\
     DOT_PRODUCT(v, v, (length));			\

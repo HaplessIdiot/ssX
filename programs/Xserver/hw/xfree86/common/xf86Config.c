@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.134.2.42 1998/07/19 13:21:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.148 1998/07/25 16:54:58 dawes Exp $ */
 
 
 /*
@@ -759,9 +759,24 @@ static SymTabRec MouseTab[] = {
   { PROT_PS2,			"ps/2" },
   { PROT_MMHIT,			"mmhittab" },
   { PROT_GLIDEPOINT,		"glidepoint" },
-  { PROT_MSINTELLIMOUSE,	"intellimouse" },
+  { PROT_IMSERIAL,		"intellimouse" },
+  { PROT_THINKING,		"thinkingmouse" },
+  { PROT_IMPS2,			"imps/2" },
+  { PROT_THINKINGPS2,		"thinkingmouseps/2" },
+  { PROT_MMANPLUSPS2,		"mousemanplusps/2" },
+  { PROT_GLIDEPOINTPS2,		"glidepointps/2" },
+  { PROT_NETPS2,		"netmouseps/2" },
+  { PROT_NETSCROLLPS2,		"netscrollps/2" },
+  { PROT_SYSMOUSE,		"sysmouse" },
+  { PROT_AUTO,			"auto" },
   { -1,				"" },
 };
+
+#define ISSERIALPROT(m) \
+	((m) == PROT_MS || (m) == PROT_MSC || (m) == PROT_MM ||	\
+	 (m) == PROT_LOGI || (m) == PROT_LOGIMAN || (m) == PROT_MMHIT || \
+	 (m) == PROT_GLIDEPOINT || (m) == PROT_IMSERIAL || \
+	 (m) == PROT_THINKING || (m) == PROT_AUTO)
 
 /* XXXSTU The interface in xf86XInput.c also needs to change to match this.
  * This function is also used for the (*device_config)() function */
@@ -782,6 +797,11 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   mouse_dev->mseProc         = NULL;
   mouse_dev->mseDevice       = NULL;
   mouse_dev->mseType         = -1;
+  mouse_dev->mseModel        = 0;
+  mouse_dev->resolution      = 0;
+  mouse_dev->buttons         = MSE_DFLTBUTTONS;
+  mouse_dev->negativeZ       = 0;
+  mouse_dev->positiveZ       = 0;
 
   if ( pointerconf->pntr_protocol ) {
 #if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
@@ -877,6 +897,15 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
     }
     mouse_dev->sampleRate = pointerconf->pntr_samplerate;
   }
+
+  if (pointerconf->pntr_resolution) {
+    if (pointerconf->pntr_resolution <= 0) {
+      xf86ConfigError("Resolution must be a positive value");
+    } else {
+      mouse_dev->resolution = pointerconf->pntr_resolution;
+    }
+  }
+
 #endif /* !OSMOUSE_ONLY */
   if( pointerconf->pntr_emulate3Buttons ) {
     if( pointerconf->pntr_chordMiddle ) {
@@ -935,6 +964,41 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
 #endif /* OSMOUSE_ONLY */
 
+  if (pointerconf->pntr_buttons) {
+    if (pointerconf->pntr_buttons <= 0
+        || pointerconf->pntr_buttons > MSE_MAXBUTTONS) {
+      xf86ConfigError("Number of buttons (1..12) expected");
+    } else {
+      mouse_dev->buttons = pointerconf->pntr_buttons;
+    }
+  }
+
+  if (pointerconf->pntr_positiveZ) {
+    switch (pointerconf->pntr_positiveZ) {
+    case CONF_ZAXIS_MAPTOX:
+      mouse_dev->negativeZ = mouse_dev->positiveZ = MSE_MAPTOX;
+      break;
+    case CONF_ZAXIS_MAPTOY:
+      mouse_dev->negativeZ = mouse_dev->positiveZ = MSE_MAPTOY;
+      break;
+    default:	/* number */
+      if (pointerconf->pntr_negativeZ <= 0
+	  || pointerconf->pntr_negativeZ > MSE_MAXBUTTONS
+	  || pointerconf->pntr_positiveZ <= 0
+	  || pointerconf->pntr_positiveZ > MSE_MAXBUTTONS) {
+	xf86ConfigError("Button number (1..12) expected");
+      } else {
+	mouse_dev->negativeZ = 1 << (pointerconf->pntr_negativeZ - 1);
+	mouse_dev->positiveZ = 1 << (pointerconf->pntr_positiveZ - 1);
+	if (pointerconf->pntr_negativeZ > mouse_dev->buttons)
+	  mouse_dev->buttons = pointerconf->pntr_negativeZ;
+	if (pointerconf->pntr_positiveZ > mouse_dev->buttons)
+	  mouse_dev->buttons = pointerconf->pntr_positiveZ;
+      }
+      break;
+    }
+  }
+    
   /*
    * If mseProc is set and mseType isn't, then using Xqueue or OSmouse.
    * Otherwise, a mouse device is required.
@@ -947,20 +1011,40 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
     Bool formatFlag = FALSE;
     xf86Msg(X_CONFIG, "Mouse: type: %s, device: %s",
 	    pointerconf->pntr_protocol, mouse_dev->mseDevice);
-    if (mouse_dev->mseType != PROT_BM && mouse_dev->mseType != PROT_PS2) {
+    if (ISSERIALPROT(mouse_dev->mseType)) {
       formatFlag = TRUE;
       xf86ErrorF(", baudrate: %d", mouse_dev->baudRate);
     }
     if (mouse_dev->sampleRate) {
-      xf86ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
+      xf86ErrorF("%ssamplerate: %d", formatFlag ? ",\n\t" : ", ",
                  mouse_dev->sampleRate);
       formatFlag = !formatFlag;
     }
+    if (mouse_dev->resolution) {
+      xf86ErrorF("%sresolution: %d", formatFlag ? ",\n\t" : ", ",
+                 mouse_dev->resolution);
+      if (formatFlag)
+	formatFlag = FALSE;
+    }
     if (mouse_dev->emulate3Buttons)
       xf86ErrorF("%s3 button emulation (timeout: %dms)",
-                 formatFlag ? ",\n       " : ", ", mouse_dev->emulate3Timeout);
+                 formatFlag ? ",\n\t" : ", ", mouse_dev->emulate3Timeout);
     if (mouse_dev->chordMiddle)
-      xf86ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
+      xf86ErrorF("%sChorded middle button", formatFlag ? ",\n\t" : ", ");
+    switch (mouse_dev->negativeZ) {
+    case 0: /* none */
+      break;
+    case MSE_MAPTOX:
+      xf86ErrorF("%szaxis mapping: X", formatFlag ? ",\n\t" : ", ");
+      break;
+    case MSE_MAPTOY:
+      xf86ErrorF("%szaxis mapping: Y", formatFlag ? ",\n\t" : ", ");
+      break;
+    default: /* buttons */
+      xf86ErrorF("%szaxis mapping: (-)%d (+)%d", formatFlag ? ",\n\t" : ", ",
+		 pointerconf->pntr_negativeZ, pointerconf->pntr_positiveZ);
+      break;
+    }
     xf86ErrorF("\n");
   }
   return TRUE;

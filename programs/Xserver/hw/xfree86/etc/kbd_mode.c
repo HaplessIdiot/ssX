@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.4 1996/03/10 11:26:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/kbd_mode.c,v 3.5 1996/12/23 06:47:13 dawes Exp $ */
 
 
 /* Keyboard mode control program for 386BSD */
@@ -20,6 +20,7 @@
 #include "scrnintstr.h"
 
 #include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 static int fd;

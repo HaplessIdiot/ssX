@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.1.2.8 1998/06/11 16:01:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.2 1998/07/25 16:55:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -27,6 +27,7 @@ typedef struct _MouseDevRec {
     int			mseFd;
     char *		mseDevice;
     MouseProtocol	mseType;
+    int			mseModel;
     int			baudRate;
     int			oldBaudRate;
     int			sampleRate;
@@ -34,6 +35,7 @@ typedef struct _MouseDevRec {
     int			threshold;	/* acceleration */
     int			num;
     int			den;
+    int			buttons;	/* # of buttons */
     int			emulateState;	/* automata state for 2 button mode */
     Bool		emulate3Buttons;
     int			emulate3Timeout;/* Timeout for 3 button emulation */
@@ -42,6 +44,15 @@ typedef struct _MouseDevRec {
 					 * mouse dev */
     int			truebuttons;	/* Arg to maintain before
 					 * emulate3buttons timer callback */
+    int			resolution;
+    int			negativeZ;
+    int			positiveZ;
+#ifndef MOUSE_PROTOCOL_IN_KERNEL
+    int			protoBufTail;
+    unsigned char	protoBuf[8];
+    unsigned char	protoPara[7];
+    unsigned char	inSync;		/* driver in sync with datastream */
+#endif
     /* xqueue part */
     int			xquePending;	/* was xqueFd, but nothing uses that */
     int			xqueSema;
@@ -55,6 +66,14 @@ typedef struct _MouseDevRec {
 #else
 #define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
+
+/* Mouse device private record */
+
+#define MSE_MAPTOX	-1
+#define MSE_MAPTOY	-2
+#define MSE_MAXBUTTONS	12
+#define MSE_DFLTBUTTONS	 3
+
 
 /* PCI probe flags */
 

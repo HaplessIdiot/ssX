@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.1.2.8 1998/01/30 07:31:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.2 1998/07/25 16:57:13 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -47,9 +47,18 @@ static xf86ConfigSymTabRec PointerTab[] =
 	{CLEARDTR, "cleardtr"},
 	{CLEARRTS, "clearrts"},
 	{CHORDMIDDLE, "chordmiddle"},
+	{PRESOLUTION, "resolution"},
 	{DEVICE_NAME, "devicename"},
 	{ALWAYSCORE, "alwayscore"},
-	{BUTTONS, "buttons"},
+	{PBUTTONS, "buttons"},
+	{ZAXISMAPPING, "zaxismapping"},
+	{-1, ""},
+};
+
+static xf86ConfigSymTabRec ZMapTab[] =
+{
+	{XAXIS, "x"},
+	{YAXIS, "y"},
 	{-1, ""},
 };
 
@@ -85,7 +94,7 @@ parsePointerSection (void)
 		case CHORDMIDDLE:
 			ptr->pntr_chordMiddle = TRUE;
 			break;
-		case BUTTONS:
+		case PBUTTONS:
 			if (xf86GetToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Buttons");
 			ptr->pntr_buttons = val.num;
@@ -95,11 +104,41 @@ parsePointerSection (void)
 				Error (NUMBER_MSG, "BaudRate");
 			ptr->pntr_baudrate = val.num;
 			break;
+		case SAMPLERATE:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (NUMBER_MSG, "SampleRate");
+			ptr->pntr_samplerate = val.num;
+			break;
+		case PRESOLUTION:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (NUMBER_MSG, "Resolution");
+			ptr->pntr_resolution = val.num;
+			break;
 		case CLEARDTR:
 			ptr->pntr_clearDtr = TRUE;
 			break;
 		case CLEARRTS:
 			ptr->pntr_clearRts = TRUE;
+			break;
+		case ZAXISMAPPING:
+			switch (xf86GetToken(ZMapTab)) {
+			case NUMBER:
+				ptr->pntr_negativeZ = val.num;
+				if (xf86GetToken (NULL) != NUMBER)
+					Error (NUMBER_MSG, "ZAxisMapping");
+				ptr->pntr_positiveZ = val.num;
+			case XAXIS:
+				ptr->pntr_positiveZ = CONF_ZAXIS_MAPTOX;
+				ptr->pntr_negativeZ = CONF_ZAXIS_MAPTOX;
+				break;
+			case YAXIS:
+				ptr->pntr_positiveZ = CONF_ZAXIS_MAPTOY;
+				ptr->pntr_negativeZ = CONF_ZAXIS_MAPTOY;
+				break;
+			default:
+				Error (NUMBER_MSG, "ZAxisMapping");
+				break;
+			}
 			break;
 		case ALWAYSCORE:
 			ptr->pntr_alwaysCore = TRUE;
@@ -144,10 +183,26 @@ printPointerSection (FILE * cf, XF86ConfPointerPtr ptr)
 		fprintf (cf, "\tBaudRate     %d\n", ptr->pntr_baudrate);
 	if (ptr->pntr_samplerate)
 		fprintf (cf, "\tSampleRate   %d\n", ptr->pntr_samplerate);
+	if (ptr->pntr_resolution)
+		fprintf (cf, "\tResolution   %d\n", ptr->pntr_resolution);
 	if (ptr->pntr_clearDtr)
 		fprintf (cf, "\tClearDTR\n");
 	if (ptr->pntr_clearRts)
 		fprintf (cf, "\tClearRTS\n");
+	switch (ptr->pntr_positiveZ) {
+	case 0:
+		break;
+	case CONF_ZAXIS_MAPTOX:
+		fprintf (cf, "\tZAxisMapping X\n");
+		break;
+	case CONF_ZAXIS_MAPTOY:
+		fprintf (cf, "\tZAxisMapping Y\n");
+		break;
+	default:
+		fprintf (cf, "\tZAxisMapping %d %d\n",
+			ptr->pntr_negativeZ, ptr->pntr_positiveZ);
+		break;
+	}
 	if (ptr->pntr_alwaysCore)
 		fprintf (cf, "\tAlwaysCore\n");
 }

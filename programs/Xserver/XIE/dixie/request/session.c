@@ -1,5 +1,4 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.7.2.4 1998/07/04 13:32:19 dawes Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -72,6 +71,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc  March, 1993
 
 *****************************************************************************/
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.8 1998/07/25 08:05:07 dawes Exp $ */
 
 #define _XIEC_SESSION
 
@@ -82,7 +82,6 @@ terms and conditions:
 #include "misc.h"		/* includes os.h, which type FatalError	*/
 #include "dixstruct.h" 		/* this picks up ClientPtr definition	*/
 #include "extnsionst.h"		/* defines things like ExtensionEntry	*/
-#include <stdio.h>		/* needed if we do any printf's		*/
 
 #include "XIE.h"		
 #include "XIEproto.h"		/* Xie protocol specification		*/
@@ -92,10 +91,6 @@ terms and conditions:
 
 #include <memory.h>
 #include <technq.h>		/* extern def for technique_init	*/
-
-#ifdef XFree86LOADER
-#include "xf86Module.h"
-#endif
 
 /* function declarations */
 static	int	XieDispatch(),	/* dispatcher for XIE opcodes */
@@ -348,49 +343,5 @@ static void XieReset (extEntry)
 	   STRIPS, BYTES);
 #endif  
 }
-
-#ifdef XFree86LOADER
-
-MODULEINITPROTO(xieModuleInit);
-static MODULESETUPPROTO(xieSetup);
-
-ExtensionModule XieExt =
-{
-    XieInit,
-    xieExtName,
-    NULL
-};
-
-static XF86ModuleVersionInfo VersRec =
-{
-        "xie",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        0x00010001,				/* 1.1 */
-        ABI_CLASS_EXTENSION,
-        ABI_EXTENSION_VERSION,
-        {0,0,0,0}
-};
-
-void
-xieModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = xieSetup;
-    *teardown = NULL;
-}
-
-static pointer
-xieSetup(pointer module, pointer opts, int *errmaj, int *errmin)
-{
-    LoadExtension(&XieExt);
-
-    /* Need a non-NULL return value to indicate success */
-    return (pointer)1;
-}
-#endif /* XFree86LOADER */
 
 /**** End of session.c ****/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.73.2.46 1998/07/19 13:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.77 1998/07/25 16:55:07 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -976,6 +976,9 @@ xf86PrintBanner()
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
+#ifdef XFree86LOADER
+  ErrorF("Module Loader included\n");
+#endif
 }
 
 static void

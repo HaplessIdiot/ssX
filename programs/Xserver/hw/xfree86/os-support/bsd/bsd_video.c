@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.16.2.5 1998/06/05 16:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.21 1998/07/25 16:56:34 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -555,6 +555,7 @@ xf86EnableInterrupts()
 	return;
 }
 
+#ifdef __NetBSD__
 /***************************************************************************/
 /* Set TV output mode                                                      */
 /***************************************************************************/
@@ -603,6 +604,7 @@ xf86SetRGBOut()
     }
     return;
 }
+#endif
 
 
 #if 0

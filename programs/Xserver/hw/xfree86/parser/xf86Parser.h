@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.1.2.16 1998/07/18 17:53:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -105,19 +105,24 @@ typedef struct
 }
 XF86ConfKeyboardRec, *XF86ConfKeyboardPtr;
 
+#define CONF_ZAXIS_MAPTOX	-1
+#define CONF_ZAXIS_MAPTOY	-2
+
 typedef struct
 {
 	char *pntr_protocol;
 	char *pntr_device;
 	int pntr_buttons;
-	int pntr_emulate3buttons;
 	int pntr_baudrate;
 	int pntr_samplerate;
+	int pntr_resolution;
 	int pntr_emulate3Buttons;
 	int pntr_emulate3Timeout;
 	int pntr_chordMiddle;
 	int pntr_clearDtr;
 	int pntr_clearRts;
+	int pntr_negativeZ;
+	int pntr_positiveZ;
 	int pntr_alwaysCore;
 }
 XF86ConfPointerRec, *XF86ConfPointerPtr;

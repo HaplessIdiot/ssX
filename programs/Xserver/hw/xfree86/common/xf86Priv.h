@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.25.2.15 1998/07/18 17:53:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.27 1998/07/25 16:55:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -121,6 +121,9 @@ void xf86MouseProtocol(DeviceIntPtr device, unsigned char *rBuf,  int nBytes);
 #ifdef XINPUT
 void xf86MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 #endif
+
+/* xf86PnPMouse.c */
+int xf86GetPnPMouseProtocol(MouseDevPtr mouse);
 
 /* xf86Kbd.c */ 
 

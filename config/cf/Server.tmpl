@@ -4,7 +4,7 @@
  */
 
 XCOMM $XConsortium: Server.tmpl /main/14 1996/04/30 14:37:27 mw $
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.8.2.1 1998/06/03 15:49:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.11 1998/07/25 05:57:15 dawes Exp $
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
@@ -42,21 +42,8 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
 #endif
 #endif /* SetUIDServerTarget */
 
-/*
- * ExtensionsModules  - compile server extensions as modules.
- */
-#ifndef ExtensionsModules
-#define ExtensionsModules	DoLoadableServer
-#endif
-
-#ifndef PexModule
-#define PexModule		ExtensionsModules
-#endif
-#ifndef XieModule
-#define XieModule		ExtensionsModules
-#endif
 #ifndef GlxModule
-#define GlxModule		ExtensionsModules
+#define GlxModule		DoLoadableServer
 #endif
 
          CC = ServerCcCmd

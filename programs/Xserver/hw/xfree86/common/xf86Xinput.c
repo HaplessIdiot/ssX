@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.30.2.9 1998/06/21 15:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.34 1998/07/25 16:55:16 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -1457,11 +1457,4 @@ xf86eqSwitchScreen(ScreenPtr pScreen, Bool fromDIX)
 	xf86EventQueue.pDequeueScreen = pScreen;
 }
 
-void
-xf86eqSwitchScreen(ScreenPtr pScreen, Bool fromDIX)
-{
-    xf86EventQueue.pEnqueueScreen = pScreen;
-    if (fromDIX)
-	xf86EventQueue.pDequeueScreen = pScreen;
-}
 /* end of xf86Xinput.c */

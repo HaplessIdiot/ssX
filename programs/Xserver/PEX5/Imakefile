@@ -1,6 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/11 1996/12/02 10:18:28 lehors $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.7.2.1 1998/06/03 15:49:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.10 1998/07/25 07:36:01 dawes Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -19,7 +20,12 @@ XCOMM $XFree86: xc/programs/Xserver/PEX5/Imakefile,v 3.7.2.1 1998/06/03 15:49:23
      SUBDIRS = dipex ddpex ospex
 #endif
 
-#if PexModule 
+#if DoLoadableServer
+
+MSRCS = pexmodule.c
+MOBJS = pexmodule.o
+
+SRCS = $(MSRCS)
 
 OBJS = \
 	dipex/dispatch/?*.o \
@@ -30,7 +36,8 @@ OBJS = \
 	ddpex/mi/level3/?*.o \
 	ddpex/mi/level4/?*.o \
 	ddpex/mi/shared/?*.o \
-	ospex/?*.o
+	ospex/?*.o \
+	$(MOBJS)
 
 DONES = \
 	dipex/dispatch/DONE \
@@ -43,11 +50,15 @@ DONES = \
 	ddpex/mi/shared/DONE \
 	ospex/DONE
 
+INCLUDES = -Iinclude -I$(XINCLUDESRC) -I$(SERVERSRC)/include
+
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
-DepLibraryModuleTarget(pex5,$(SUBDIRS) $(DONES),$(OBJS))
+ModuleObjectRule()
+
+DepLibraryModuleTarget(pex5,$(SUBDIRS) $(DONES) $(MOBJS),$(OBJS))
 InstallLibraryModule(pex5,$(MODULEDIR))
 ForceSubdirs($(SUBDIRS))
 
@@ -55,6 +66,7 @@ ForceSubdirs($(SUBDIRS))
 MakeSubdirs($(SUBDIRS)) 
 #endif
 
+DependTarget()
 
 DependSubdirs($(SUBDIRS))
 MakeLintLibSubdirs($(SUBDIRS))

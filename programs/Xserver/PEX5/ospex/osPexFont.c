@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.10 1998/07/25 03:10:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.11 1998/07/25 07:36:51 dawes Exp $ */
 
 /*
 
@@ -49,19 +49,20 @@ SOFTWARE.
 
 */
 
-#ifndef XFree86LOADER
-#ifdef WIN32
+#ifndef XFree86LOADER /* { */
+#ifdef WIN32 /* { */
 #define _WILLWINSOCK_
-#endif
+#endif /* } */
 #include <X11/Xos.h>
-#ifndef X_NOT_STDC_ENV
+#ifndef X_NOT_STDC_ENV /* { */
 #include <stdlib.h>
 #else
 extern char *getenv();
-#endif
+#endif /* } */
 
 #include <stdio.h>
-#endif
+#endif /* } XFree86LOADER */
+
 #include "mipex.h"
 #include "miFont.h"
 #include "PEXErr.h"
@@ -72,65 +73,69 @@ extern char *getenv();
 #define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEX"
 #endif
 
-#ifndef XFree86LOADER
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
+#ifndef XFree86LOADER /* { */
+
+#ifndef X_NOT_POSIX /* { */
+#ifdef _POSIX_SOURCE /* { */
 #include <limits.h>
-#else
+#else /* } { */
 #define _POSIX_SOURCE
 #include <limits.h>
 #undef _POSIX_SOURCE
-#endif
-#endif /* X_NOT_POSIX */
-#ifndef PATH_MAX
-#ifdef WIN32
+#endif /* } */
+#endif /* } X_NOT_POSIX */
+#ifndef PATH_MAX /* { */
+#ifdef WIN32 /* { */
 #define PATH_MAX 512
 #else
 #include <sys/param.h>
-#endif
-#ifndef PATH_MAX
-#ifdef MAXPATHLEN
+#endif /* } */
+#ifndef PATH_MAX /* { */
+#ifdef MAXPATHLEN /* { */
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
-#endif
-#endif
-#endif /* PATH_MAX */
+#endif /* } */
+#endif /* } */
+#endif /* } PATH_MAX */
 
-#ifndef WIN32
+#endif /* } XFree86LOADER */
 
-#ifndef X_NOT_POSIX
+#ifndef WIN32 /* { */
+
+#ifndef XFree86LOADER /* { */
+
+#ifndef X_NOT_POSIX /* { */
 #include <dirent.h>
 #else
-#ifdef SYSV
+#ifdef SYSV /* { */
 #include <dirent.h>
 #else
-#ifdef USG
+#ifdef USG /* { */
 #include <dirent.h>
 #else
 #include <sys/dir.h>
-#ifndef dirent
+#ifndef dirent /* { */
 #define dirent direct
-#endif
-#endif
-#endif
-#endif
-#endif
+#endif /* } */
+#endif /* } */
+#endif /* } */
+#endif /* } */
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
-/* A convenient shorthand. */
-#ifndef XFree86LOADER
 typedef struct dirent	 ENTRY;
-#else
+
+#else /* } XFree86LOADER { */
+
+#include "xf86_ansic.h"
 /* XXX This should be taken care of elsewhere */
 typedef struct _xf86dirent ENTRY;
-#endif
+
+#endif /* } XFree86LOADER */
+
 #define FileName(file) file->d_name
 
 
-#else  /* WIN32 */
+#else  /* } WIN32 { */
 
 #define BOOL wBOOL
 #define ATOM wATOM
@@ -139,7 +144,7 @@ typedef struct _xf86dirent ENTRY;
 #undef ATOM
 #define FileName(file) file.cFileName
 
-#endif
+#endif /* } */
 
 extern void CopyISOLatin1Lowered();
 extern int get_lowered_truncated_entry();

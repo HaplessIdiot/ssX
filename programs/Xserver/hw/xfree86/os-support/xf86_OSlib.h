@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.41.2.8 1998/06/09 14:40:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.51 1998/07/25 16:56:30 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -31,6 +31,40 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+
+/*
+ * The ARM32 code here carries the following copyright:
+ *
+ * Copyright 1997
+ * Digital Equipment Corporation. All rights reserved.
+ * This software is furnished under license and may be used and copied only in 
+ * accordance with the following terms and conditions.  Subject to these
+ * conditions, you may download, copy, install, use, modify and distribute
+ * this software in source and/or binary form. No title or ownership is
+ * transferred hereby.
+ *
+ * 1) Any source code used, modified or distributed must reproduce and retain
+ *    this copyright notice and list of conditions as they appear in the
+ *    source file.
+ *
+ * 2) No right is granted to use any trade name, trademark, or logo of Digital 
+ *    Equipment Corporation. Neither the "Digital Equipment Corporation"
+ *    name nor any trademark or logo of Digital Equipment Corporation may be
+ *    used to endorse or promote products derived from this software without
+ *    the prior written permission of Digital Equipment Corporation.
+ *
+ * 3) This software is provided "AS-IS" and any express or implied warranties,
+ *    including but not limited to, any implied warranties of merchantability,
+ *    fitness for a particular purpose, or non-infringement are disclaimed.
+ *    In no event shall DIGITAL be liable for any damages whatsoever, and in
+ *    particular, DIGITAL shall not be liable for special, indirect,
+ *    consequential, or incidental damages or damages for lost profits, loss
+ *    of revenue or loss of use, whether such damages arise in contract, 
+ *    negligence, tort, under statute, in equity, at law or otherwise, even
+ *    if advised of the possibility of such damage. 
+ *
+ */
+
 /* $XConsortium: xf86_OSlib.h /main/22 1996/10/27 11:06:31 kaleb $ */
 
 /*
@@ -146,7 +180,7 @@ extern void xf86usleep(unsigned long);
 #  define POSIX_TTY
 # endif /* SCO */
 
-# ifdef SVR4
+# if defined(SVR4) || defined(SCO325)
 #  include <sys/mman.h>
 #  if !(defined(sun) && defined (i386) && defined (SVR4))
 #    define DEV_MEM "/dev/pmem"
@@ -262,6 +296,13 @@ extern int errno;
 # include <termios.h>
 # define POSIX_TTY
 
+/* LynxOS 2.5.1 has these */
+# ifdef LED_NUMLOCK
+#  define LED_CAP	LED_CAPSLOCK
+#  define LED_CAP	LED_NUMLOCK
+#  define LED_SCR	LED_SCROLLOCK
+# endif
+
 #endif /* Lynx */
 
 /**************************************************************************/
@@ -322,6 +363,10 @@ extern int errno;
       };
 #    endif /* PCVT_SUPPORT && SYSCONS_SUPPORT */
 #   endif /* PCVT_SUPPORT */
+#   if defined(__FreeBSD__)
+#    undef MOUSE_GETINFO
+#    include <machine/mouse.h>
+#   endif
     /* Include these definitions in case ioctl_pc.h didn't get included */
 #   ifndef CONSOLE_X_MODE_ON
 #    define CONSOLE_X_MODE_ON _IO('t',121)
@@ -332,6 +377,25 @@ extern int errno;
 #   ifndef CONSOLE_X_BELL
 #    define CONSOLE_X_BELL _IOW('t',123,int[2])
 #   endif
+#   ifndef CONSOLE_X_TV_ON
+#    define CONSOLE_X_TV_ON _IOW('t',155,int)
+#    define XMODE_RGB   0
+#    define XMODE_NTSC  1
+#    define XMODE_PAL   2
+#    define XMODE_SECAM 3
+#   endif
+#   ifndef CONSOLE_X_TV_OFF
+#    define CONSOLE_X_TV_OFF _IO('t',156)
+#   endif
+#ifndef CONSOLE_GET_LINEAR_INFO
+#    define CONSOLE_GET_LINEAR_INFO         _IOR('t',157,struct map_info)
+#endif
+#ifndef CONSOLE_GET_IO_INFO 
+#    define CONSOLE_GET_IO_INFO             _IOR('t',158,struct map_info)
+#endif
+#ifndef CONSOLE_GET_MEM_INFO 
+#    define CONSOLE_GET_MEM_INFO            _IOR('t',159,struct map_info)
+#endif
 #  endif /* __bsdi__ */
 # endif /* !LINKKIT */
 

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.114.2.9 1998/07/05 14:36:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.135 1998/07/26 02:32:57 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -141,10 +141,10 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) 
-   OTHERSTDEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT)
+   LOADABLEEXTS = $(PEXLIBS) $(XIEEXT) $(MISCEXT) $(DBEEXT) $(RECORDEXT)
         MISCEXT = Xext/LibraryTargetName(ext)
-      OTHEREXTS = Xext/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
-                  $(LBXEXT) $(RECORDEXT) $(SITEEXTS)
+      OTHEREXTS = Xext/extmod/LibraryTargetName(exts) $(XKBEXT) $(XINPUTEXT) \
+                  $(LBXEXT) $(SITEEXTS)
 #else
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS) $(GLXLIB)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
@@ -628,7 +628,7 @@ $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 #endif
 #if DoLoadableServer
 #if XF86Server
-ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(OTHERSTDEXTS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
+ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(LOADABLEEXTS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
 #endif
 #else
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))

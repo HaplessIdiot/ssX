@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_PnPMouse.c,v 1.2 1998/03/21 00:12:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PnPMouse.c,v 1.1 1998/07/25 16:55:13 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -28,11 +28,9 @@
 #include "inputstr.h"
 #include "scrnintstr.h"
 
-#include "compiler.h"
-
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
 #ifdef ISC
 #define TIOCMGET	0x5415
@@ -65,63 +63,63 @@ typedef struct {
 
 /* PnP EISA/product IDs */
 static symtab_t pnpprod[] = {
-    { "KML0001",	P_THINKING },	/* Kensignton ThinkingMouse */
-    { "MSH0001",	P_IMSERIAL },	/* MS IntelliMouse */
-    { "MSH0004",	P_IMSERIAL },	/* MS IntelliMouse TrackBall */
-    { "KYEEZ00",	P_MS },		/* Genius EZScroll */
-    { "KYE0001",	P_MS },		/* Genius PnP Mouse */
-    { "KYE0003",	P_IMSERIAL },	/* Genius NetMouse */
-    { "LGI800C",	P_IMSERIAL },	/* Logitech MouseMan (4 button model) */
-    { "LGI8050",	P_IMSERIAL },	/* Logitech MouseMan+ */
-    { "LGI8051",	P_IMSERIAL },	/* Logitech FirstMouse+ */
-    { "LGI8001",	P_LOGIMAN },	/* Logitech serial */
+    { "KML0001",  PROT_THINKING },	/* Kensignton ThinkingMouse */
+    { "MSH0001",  PROT_IMSERIAL },	/* MS IntelliMouse */
+    { "MSH0004",  PROT_IMSERIAL },	/* MS IntelliMouse TrackBall */
+    { "KYEEZ00",  PROT_MS },		/* Genius EZScroll */
+    { "KYE0001",  PROT_MS },		/* Genius PnP Mouse */
+    { "KYE0003",  PROT_IMSERIAL },	/* Genius NetMouse */
+    { "LGI800C",  PROT_IMSERIAL },	/* Logitech MouseMan (4 button model) */
+    { "LGI8050",  PROT_IMSERIAL },	/* Logitech MouseMan+ */
+    { "LGI8051",  PROT_IMSERIAL },	/* Logitech FirstMouse+ */
+    { "LGI8001",  PROT_LOGIMAN },	/* Logitech serial */
 
-    { "PNP0F00",	P_BM },		/* MS bus */
-    { "PNP0F01",	P_MS },		/* MS serial */
-    { "PNP0F02",	P_BM },		/* MS InPort */
-    { "PNP0F03",	P_PS2 },	/* MS PS/2 */
+    { "PNP0F00",  PROT_BM },		/* MS bus */
+    { "PNP0F01",  PROT_MS },		/* MS serial */
+    { "PNP0F02",  PROT_BM },		/* MS InPort */
+    { "PNP0F03",  PROT_PS2 },		/* MS PS/2 */
     /*
      * EzScroll returns PNP0F04 in the compatible device field; but it
      * doesn't look compatible... XXX
      */
-    { "PNP0F04",	P_MSC },	/* MouseSystems */ 
-    { "PNP0F05",	P_MSC },	/* MouseSystems */ 
+    { "PNP0F04",  PROT_MSC },		/* MouseSystems */ 
+    { "PNP0F05",  PROT_MSC },		/* MouseSystems */ 
 #if notyet
-    { "PNP0F06",	P_??? },	/* Genius Mouse */ 
-    { "PNP0F07",	P_??? },	/* Genius Mouse */ 
+    { "PNP0F06",  PROT_??? },		/* Genius Mouse */ 
+    { "PNP0F07",  PROT_??? },		/* Genius Mouse */ 
 #endif
-    { "PNP0F08",	P_LOGIMAN },	/* Logitech serial */
-    { "PNP0F09",	P_MS },		/* MS BallPoint serial */
-    { "PNP0F0A",	P_MS },		/* MS PnP serial */
-    { "PNP0F0B",	P_MS },		/* MS PnP BallPoint serial */
-    { "PNP0F0C",	P_MS },		/* MS serial comatible */
-    { "PNP0F0D",	P_BM },		/* MS InPort comatible */
-    { "PNP0F0E",	P_PS2 },	/* MS PS/2 comatible */
-    { "PNP0F0F",	P_MS },		/* MS BallPoint comatible */
+    { "PNP0F08",  PROT_LOGIMAN },	/* Logitech serial */
+    { "PNP0F09",  PROT_MS },		/* MS BallPoint serial */
+    { "PNP0F0A",  PROT_MS },		/* MS PnP serial */
+    { "PNP0F0B",  PROT_MS },		/* MS PnP BallPoint serial */
+    { "PNP0F0C",  PROT_MS },		/* MS serial comatible */
+    { "PNP0F0D",  PROT_BM },		/* MS InPort comatible */
+    { "PNP0F0E",  PROT_PS2 },		/* MS PS/2 comatible */
+    { "PNP0F0F",  PROT_MS },		/* MS BallPoint comatible */
 #if notyet
-    { "PNP0F10",	P_??? },	/* TI QuickPort */
+    { "PNP0F10",  PROT_??? },		/* TI QuickPort */
 #endif
-    { "PNP0F11",	P_BM },		/* MS bus comatible */
-    { "PNP0F12",	P_PS2 },	/* Logitech PS/2 */
-    { "PNP0F13",	P_PS2 },	/* PS/2 */
+    { "PNP0F11",  PROT_BM },		/* MS bus comatible */
+    { "PNP0F12",  PROT_PS2 },		/* Logitech PS/2 */
+    { "PNP0F13",  PROT_PS2 },		/* PS/2 */
 #if notyet
-    { "PNP0F14",	P_??? },	/* MS Kids Mouse */
+    { "PNP0F14",  PROT_??? },		/* MS Kids Mouse */
 #endif
-    { "PNP0F15",	P_BM },		/* Logitech bus */ 
+    { "PNP0F15",  PROT_BM },		/* Logitech bus */ 
 #if notyet
-    { "PNP0F16",	P_??? },	/* Logitech SWIFT */
+    { "PNP0F16",  PROT_??? },		/* Logitech SWIFT */
 #endif
-    { "PNP0F17",	P_LOGIMAN },	/* Logitech serial compat */
-    { "PNP0F18",	P_BM },		/* Logitech bus compatible */
-    { "PNP0F19",	P_PS2 },	/* Logitech PS/2 compatible */
+    { "PNP0F17",  PROT_LOGIMAN },	/* Logitech serial compat */
+    { "PNP0F18",  PROT_BM },		/* Logitech bus compatible */
+    { "PNP0F19",  PROT_PS2 },		/* Logitech PS/2 compatible */
 #if notyet
-    { "PNP0F1A",	P_??? },	/* Logitech SWIFT compatible */
-    { "PNP0F1B",	P_??? },	/* HP Omnibook */
-    { "PNP0F1C",	P_??? },	/* Compaq LTE TrackBall PS/2 */
-    { "PNP0F1D",	P_??? },	/* Compaq LTE TrackBall serial */
-    { "PNP0F1E",	P_??? },	/* MS Kidts Trackball */
+    { "PNP0F1A",  PROT_??? },		/* Logitech SWIFT compatible */
+    { "PNP0F1B",  PROT_??? },		/* HP Omnibook */
+    { "PNP0F1C",  PROT_??? },		/* Compaq LTE TrackBall PS/2 */
+    { "PNP0F1D",  PROT_??? },		/* Compaq LTE TrackBall serial */
+    { "PNP0F1E",  PROT_??? },		/* MS Kids Trackball */
 #endif
-    { NULL,		-1 },
+    { NULL,	  -1 },
 };
 
 static int
