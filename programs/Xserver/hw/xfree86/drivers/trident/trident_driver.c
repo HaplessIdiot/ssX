@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.131 2001/04/09 09:46:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.132 2001/04/09 23:36:06 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1380,12 +1380,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 
     	TRIDENTEnableMMIO(pScrn);
-	/*
-	 * PC-9821 PCI Trident Card Magic Setup!!
-	 */
-	if (IsPciCard && xf86IsPc98()) {
-	  PC98TRIDENTInit(pScrn);
-	}
     }
 
     OUTB(0x3C4, RevisionID); revision = INB(0x3C5);
@@ -2417,6 +2411,14 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Save the current state */
     TRIDENTSave(pScrn);
+
+    /*
+     * Some Trident chip on PC-9821 needs setup,
+     * because VGA chip is not initialized by VGA BIOS.
+     */
+    if (IsPciCard && xf86IsPc98()) {
+	 PC98TRIDENTInit(pScrn);
+    }
 
     /* Initialise the first mode */
     if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
