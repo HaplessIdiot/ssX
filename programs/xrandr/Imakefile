@@ -1,0 +1,12 @@
+XCOMM $XFree86: $
+
+DEFINES=$(RANDRDEFINES)
+DEPLIBS=$(DEPXRANDRLIB) $(DEPXLIB)
+LOCAL_LIBRARIES=$(XRANDRLIB) $(XLIB)
+
+SRCS=xrandr.c
+OBJS=xrandr.o
+
+ComplexProgramTarget(xrandr)
+LinkBuildBinary(ProgramTargetName(xrandr))
+
