@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.5 1994/08/31 04:22:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.6 1994/09/03 02:51:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -102,8 +102,8 @@ ScrnInfoRec mach8InfoRec = {
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "Mach8",            /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     mach8ValidTokens,	/* int *validTokens */
     MACH8_PATCHLEVEL,	/* char *patchlevel */
     0,			/* int IObase */

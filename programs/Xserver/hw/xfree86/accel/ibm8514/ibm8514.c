@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.4 1994/08/01 12:09:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.5 1994/09/03 02:50:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -94,8 +94,8 @@ ScrnInfoRec ibm8514InfoRec = {
     -1,			/* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "ibm8514",          /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     ibm8514ValidTokens,	/* int *validTokens */
     IBM8514_PATCHLEVEL,	/* char *patchlevel */
     0,			/* int IObase */
