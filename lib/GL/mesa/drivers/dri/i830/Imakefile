@@ -1,17 +1,17 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i830/Imakefile,v 1.5tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i830/Imakefile,v 1.1 2004/04/08 10:07:35 alanh Exp $
 
 #include <Threads.tmpl>
 
 #if GlxUseBuiltInDRIDriver
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
 #define DoNormalLib SharedLibGlxWithoutPIC
 #define DoSharedLib !SharedLibGlxWithoutPIC
-#define DoExtrasLib NO
+#define DoExtraLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
 #endif
