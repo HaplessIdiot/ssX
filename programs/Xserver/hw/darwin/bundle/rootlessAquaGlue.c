@@ -7,16 +7,17 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.3 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.4 2001/09/20 19:35:11 torrey Exp $ */
 
-#include "regionstr.h"
-#include "scrnintstr.h"
-
+#include "quartzCommon.h"
 #include "darwin.h"
-#include "quartz.h"
+//#include "quartz.h"
 #include "rootlessAqua.h"
 #include "rootlessAquaImp.h"
 #include "rootless.h"
+
+#include "regionstr.h"
+#include "scrnintstr.h"
 #include "globals.h" // dixScreenOrigins[]
 
 
@@ -169,6 +170,11 @@ Bool
 AquaAddScreen(int index, ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    QuartzScreenPtr displayInfo = QUARTZ_PRIV(pScreen);
+    CGRect cgRect;
+    CGDisplayCount numDisplays;
+    CGDisplayErr cgErr;
+    CGDirectDisplayID cgID;
 
     dfb->pixelInfo.pixelType = kIORGBDirectPixels;
     AquaScreenInit(index, &dfb->x, &dfb->y, &dfb->width, &dfb->height,
@@ -179,6 +185,23 @@ AquaAddScreen(int index, ScreenPtr pScreen)
 
     // No frame buffer - it's all in window pixmaps.
     dfb->framebuffer = NULL; // malloc(dfb.pitch * dfb.height);
+
+    // We need to find which CGDirectDisplayID corresponds to this screen.
+    // It would be nice if there was a more reliable way....
+    cgRect = CGRectMake(dfb->x, dfb->y, dfb->width, dfb->height);
+    cgErr = CGGetDisplaysWithRect(cgRect, 0, NULL, &numDisplays);
+    if (cgErr != CGDisplayNoErr || numDisplays == 0) {
+        ErrorF("Could not find CGDirectDisplayID for screen %dx%d @ (%d,%d).\n",
+               dfb->width, dfb->height, dfb->x, dfb->y);
+        return FALSE;
+    } else if (numDisplays > 1) {
+        ErrorF("More than one screen occupies %dx%d @ (%d,%d).\n",
+               dfb->width, dfb->height, dfb->x, dfb->y);
+        ErrorF("If you notice cursor problems, turn off video mirroring.\n");
+    }
+
+    CGGetDisplaysWithRect(cgRect, 1, &cgID, &numDisplays);
+    displayInfo->displayID = cgID;
 
     return TRUE;
 }
