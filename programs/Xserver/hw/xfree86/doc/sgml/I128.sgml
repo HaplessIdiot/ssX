@@ -7,7 +7,7 @@
 <author>The XFree86 Project Inc.
 <date>3 November 2000
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.5 2000/11/06 22:03:28 dawes Exp $
 </ident>
 
 <toc>
@@ -93,7 +93,7 @@ Robin Cutshaw, <email>robin@XFree86.Org</email>
 and special help from:
 
 <itemize>
-<item>Galen Brooks, <email>galen@nine.com</email>
+<item>Galen Brooks, <email>galen@interlabs.com</email>
 </itemize>
 
 </article>
