@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.109 2001/04/04 18:25:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.110 2001/04/04 22:55:10 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3047,5 +3047,35 @@ clean::									@@\
 	fi								@@\
 									@@\
 InstallDoc(name,deps)
+#endif
+
+
+/*
+ * Rule for maintainers to use to updated generated copies of fonts in the
+ * source tree.  Use with care.
+ */
+
+#ifndef UpdateDerivedFont
+#define UpdateDerivedFont(src,dst)					@@\
+update.fonts:: src							@@\
+	-@if [ -f dst ]; then \						@@\
+	    if [ "$(FORCEUPDATE)" = yes ]; then \			@@\
+		if [ "$(FOLLOWLINK)" = no ]; then \			@@\
+			(set -x; $(RM) dst); \				@@\
+		fi; \							@@\
+		set -x; cp src dst; \					@@\
+	    else \							@@\
+		grep -v "XFree86:" src > __tmp1__; \			@@\
+		grep -v "XFree86:" dst > __tmp2__; \			@@\
+		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \	@@\
+		else \							@@\
+			if [ "$(FOLLOWLINK)" = no ]; then \		@@\
+				(set -x; $(RM) dst); \			@@\
+			fi; \						@@\
+			set -x; cp src dst; \					@@\
+		fi; \							@@\
+	    fi; \							@@\
+	fi								@@\
+	@$(RM) __tmp1__ __tmp2__
 #endif
 

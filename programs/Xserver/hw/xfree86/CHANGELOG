@@ -1,4 +1,9 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 330. Add an update.fonts target/rule for maintainer use to update
+      the latin1 fonts in the source tree that are derived from the
+      ISO10646-1 masters (David Dawes).
+ 329. Update UCS misc fonts, which includes the addition of the missing
+      4 DEC VT100 graphics characters from Unicode 3.2 (#4533, Markus Kuhn).
  328. Handle build-time generation of 8 bit fonts from the UCS versions,
       rework the way this is organised, and allow some better control over
       which fonts are built/installed (David Dawes).
@@ -12802,4 +12807,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1662 2001/04/04 13:09:37 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1663 2001/04/04 22:57:31 dawes Exp $
