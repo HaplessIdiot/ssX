@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.239 2001/02/15 20:31:46 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.240 2001/03/05 20:18:17 dawes Exp $ */
 
 
 /*
@@ -774,14 +774,12 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     Bool value;
     MessageType from;
 
-    if(flagsconf == NULL)
-	return TRUE;
     /*
      * Merge the ServerLayout and ServerFlags options.  The former have
      * precedence over the latter.
      */
     optp = NULL;
-    if (flagsconf->flg_option_lst)
+    if (flagsconf && flagsconf->flg_option_lst)
 	optp = xf86optionListDup(flagsconf->flg_option_lst);
     if (layoutopts) {
 	tmp = xf86optionListDup(layoutopts);

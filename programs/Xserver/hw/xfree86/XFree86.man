@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.49 2001/03/15 19:27:29 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.50 2001/03/28 14:35:14 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -222,7 +222,7 @@ section is used.
 .TP 8
 .B \-logfile \fIfilename\fP
 Use the file called
-.I filenameg
+.I filename
 as the X server log file.  The default log file is
 .B __logdir__/XFree86.\fIn\fP.log
 on most platforms, where

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.90 2001/03/13 16:43:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.91 2001/03/24 21:54:16 herrb Exp $ */
 /*
  * PCI Probe
  *
@@ -506,7 +506,7 @@
 #define PCI_CHIP_AT24		0x6424
 #define PCI_CHIP_AT3D		0x643D
 
-/* 3Dfx Interactive */
+/* 3dfx Interactive */
 #define PCI_CHIP_VOODOO_GRAPHICS 0x0001
 #define PCI_CHIP_VOODOO2	0x0002
 #define PCI_CHIP_BANSHEE	0x0003
@@ -710,7 +710,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_RICOH,	"Ricoh"},
     {PCI_VENDOR_ZEINET,	"Zeinet"},
     {PCI_VENDOR_LITEON,	"Lite-On"},
-    {PCI_VENDOR_3DFX,	"3Dfx Interactive"},
+    {PCI_VENDOR_3DFX,	"3dfx Interactive"},
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs"},
     {PCI_VENDOR_ENSONIQ, "Ensoniq"},
     {PCI_VENDOR_ROCKWELL, "Rockwell"},
