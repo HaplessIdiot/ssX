@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.23 2002/11/01 06:08:36 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.24 2003/01/29 18:06:06 martin Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -878,14 +878,6 @@ R128PutImage(
   RegionPtr clipBoxes, pointer data
 ){
    R128InfoPtr info = R128PTR(pScrn);
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-   unsigned char *R128MMIO = info->MMIO;
-   CARD32 config_cntl = INREG(R128_CONFIG_CNTL);
-
-   /* We need to disable byte swapping, or the data gets mangled */
-   OUTREG(R128_CONFIG_CNTL, config_cntl &
-	  ~(APER_0_BIG_ENDIAN_16BPP_SWAP | APER_0_BIG_ENDIAN_32BPP_SWAP));
-#endif
    R128PortPrivPtr pPriv = (R128PortPrivPtr)data;
    INT32 xa, xb, ya, yb;
    int pitch, new_size, offset, s1offset, s2offset, s3offset;
@@ -894,6 +886,14 @@ R128PutImage(
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
    CARD32 tmp;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+   unsigned char *R128MMIO = info->MMIO;
+   CARD32 config_cntl = INREG(R128_CONFIG_CNTL);
+
+   /* We need to disable byte swapping, or the data gets mangled */
+   OUTREG(R128_CONFIG_CNTL, config_cntl &
+	  ~(APER_0_BIG_ENDIAN_16BPP_SWAP | APER_0_BIG_ENDIAN_32BPP_SWAP));
+#endif
 
    /*
     * s1offset, s2offset, s3offset - byte offsets to the Y, U and V planes
