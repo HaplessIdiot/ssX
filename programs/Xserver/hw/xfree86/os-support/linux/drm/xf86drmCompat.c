@@ -26,8 +26,9 @@
  *   Jens Owen <jens@tungstengraphics.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmCompat.c,v 1.2 2003/09/28 20:16:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmCompat.c,v 1.3tsi Exp $ */
 
+#include <sys/types.h>		/* for int64_t & friends */
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
@@ -75,7 +76,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "drm.h"
 #include "mga_drm.h"
 #include "r128_drm.h"
-#include <inttypes.h>		/* for int64_t & friends */
 #include "radeon_drm.h"
 #ifndef __FreeBSD__
 #include "sis_drm.h"
