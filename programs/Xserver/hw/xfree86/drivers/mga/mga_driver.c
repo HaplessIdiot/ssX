@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.193 2001/04/05 17:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.194 2001/04/05 21:29:15 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2812,13 +2812,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	  /* Detecting for type of display */
 	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_TV) {
-	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "TV detected\n");
+	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "TV detected\n");
 	  }
 	  if (pMga->pMgaHwInfo->ulCapsFirstOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
-	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Digital Screen detected\n");
+	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Digital Screen detected\n");
 	  }
 	  if (pMga->pMgaHwInfo->ulCapsSecondOutput & MGAHWINFOCAPS_OUTPUT_DIGITAL) {
-	  	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Digital Screen detected\n");
+	  	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Digital Screen detected\n");
 	  }
 
 	  /* Now copy these to the entitystructure */
