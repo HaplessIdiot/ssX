@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.11 2000/09/26 15:57:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.12 2000/12/01 14:28:59 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -124,7 +124,7 @@ typedef struct {
   unsigned int srcbaseaddr;
   unsigned int dstbaseaddr;
   unsigned char ExtVga[2];
-  unsigned char dactable[512];
+  unsigned int dactable[512];
 } TDFXRegRec, *TDFXRegPtr;
 
 typedef struct TextureData_t {
