@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.23 2003/07/18 15:39:53 tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.24tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -339,17 +339,17 @@ change_host(Display *dpy, char *name, Bool add)
 	return 0;
 #endif
     }
-    if (!strncmp("inet6:", lname, 6)) {
+    else if (!strncmp("inet6:", lname, 6)) {
 #if (defined(TCPCONN) || defined(STREAMSCONN)) && \
     defined(IPv6) && defined(AF_INET6)
 	family = FamilyInternet6;
-	name += 7;
+	name += 6;
 #else
 	fprintf (stderr, "%s: not compiled for IPv6\n", ProgramName);
 	return 0;
 #endif
     }
-    if (!strncmp("dnet:", lname, 5)) {
+    else if (!strncmp("dnet:", lname, 5)) {
 #ifdef DNETCONN
 	family = FamilyDECnet;
 	name += 5;
@@ -358,7 +358,7 @@ change_host(Display *dpy, char *name, Bool add)
 	return 0;
 #endif
     }
-    if (!strncmp("nis:", lname, 4)) {
+    else if (!strncmp("nis:", lname, 4)) {
 #ifdef SECURE_RPC
 	family = FamilyNetname;
 	name += 4;
@@ -367,7 +367,7 @@ change_host(Display *dpy, char *name, Bool add)
 	return 0;
 #endif
     }
-    if (!strncmp("krb:", lname, 4)) {
+    else if (!strncmp("krb:", lname, 4)) {
 #ifdef K5AUTH
 	family = FamilyKrb5Principal;
 	name +=4;
@@ -376,7 +376,7 @@ change_host(Display *dpy, char *name, Bool add)
 	return 0;
 #endif
     }
-    if (!strncmp("local:", lname, 6)) {
+    else if (!strncmp("local:", lname, 6)) {
 	family = FamilyLocalHost;
     }
     if (family == FamilyWild && (cp = strchr(lname, ':'))) {

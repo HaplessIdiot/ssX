@@ -41,7 +41,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.5 2001/10/28 03:32:39 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpNotifyPdm.c,v 1.6tsi Exp $ */
 
 #include <X11/extensions/Print.h>
 #include <X11/Xlibint.h>
@@ -131,16 +131,18 @@ _XpGetSelectionServer (
 
 	    /*
 	     * remove ".scr" portion from "host:disp.scr" strings.
+	     * Use strrchr to find : separating host from display
+	     * to allow IPv6 numeric addresses with embedded colons.
 	     */
-	    if (( tstrptr = strchr( tstr1, ':' ) ))
+	    if (( tstrptr = strrchr( tstr1, ':' ) ))
 		if (( tstrptr = strchr( tstrptr, '.' ) ))
 		    *tstrptr = '\0';
 
-	    if (( tstrptr = strchr( tstr2, ':' ) ))
+	    if (( tstrptr = strrchr( tstr2, ':' ) ))
 		if (( tstrptr = strchr( tstrptr, '.' ) ))
 		    *tstrptr = '\0';
 
-	    if (( tstrptr = strchr( tstr3, ':' ) ))
+	    if (( tstrptr = strrchr( tstr3, ':' ) ))
 		if (( tstrptr = strchr( tstrptr, '.' ) ))
 		    *tstrptr = '\0';
 

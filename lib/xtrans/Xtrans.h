@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.19 2003/07/09 15:27:29 tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.20tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -56,7 +56,14 @@ from The Open Group.
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xos.h>
+
+#ifndef WIN32
+#ifndef Lynx
 #include <sys/socket.h>
+#else
+#include <socket.h>
+#endif
+#endif
 
 
 /*
