@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiIm.c,v 1.3 2000/06/14 18:20:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiIm.c,v 1.4 2000/11/28 17:25:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -51,7 +51,8 @@ Private XIMMethodsRec      Xim_im_thai_methods = {
     _XimLocalGetIMValues,      /* get_values */
     _XimThaiCreateIC,          /* create_ic */
     _XimLcctstombs,            /* ctstombs */
-    _XimLcctstowcs             /* ctstowcs */
+    _XimLcctstowcs,            /* ctstowcs */
+    _XimLcctstoutf8            /* ctstoutf8 */
 };
 
 #define THAI_LANGUAGE_NAME 	"th"
@@ -104,7 +105,11 @@ _XimThaiOpenIM(im)
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCompoundText, lcd, XlcNWideChar)))
 	goto Open_Error;
     private->ctow_conv = conv;
-    
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCompoundText, lcd, XlcNUtf8String)))
+	goto Open_Error;
+    private->ctoutf8_conv = conv;
+
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNMultiByte)))
 	goto Open_Error;
     private->cstomb_conv = conv;
@@ -112,6 +117,10 @@ _XimThaiOpenIM(im)
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNWideChar)))
 	goto Open_Error;
     private->cstowc_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNUtf8String)))
+	goto Open_Error;
+    private->cstoutf8_conv = conv;
 
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
 	goto Open_Error;
@@ -171,6 +180,10 @@ _XimThaiIMFree(im)
 	_XlcCloseConverter(im->private.local.ctow_conv);
 	im->private.local.ctow_conv = NULL;
     }
+    if (im->private.local.ctoutf8_conv) {
+	_XlcCloseConverter(im->private.local.ctoutf8_conv);
+	im->private.local.ctoutf8_conv = NULL;
+    }
     if (im->private.local.cstomb_conv) {
 	_XlcCloseConverter(im->private.local.cstomb_conv);
 	im->private.local.cstomb_conv = NULL;
@@ -178,6 +191,10 @@ _XimThaiIMFree(im)
     if (im->private.local.cstowc_conv) {
 	_XlcCloseConverter(im->private.local.cstowc_conv);
 	im->private.local.cstowc_conv = NULL;
+    }
+    if (im->private.local.cstoutf8_conv) {
+	_XlcCloseConverter(im->private.local.cstoutf8_conv);
+	im->private.local.cstoutf8_conv = NULL;
     }
     return;
 }

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcStd.c,v 1.3 1999/05/09 10:50:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -313,4 +313,53 @@ _Xwcsncmp(wstr1, wstr2, len)
 	return 0;
 
     return *wstr1 - *wstr2;
+}
+
+
+int
+_Xlcmbstoutf8(lcd, ustr, str, len)
+    XLCd lcd;
+    char *ustr;
+    const char *str;
+    int len;
+{
+    XlcConv conv;
+    XPointer from, to;
+    int from_left, to_left, ret;
+
+    if (lcd == NULL) {
+	lcd = _XlcCurrentLC();
+	if (lcd == NULL)
+	    return -1;
+    }
+
+    conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNUtf8String);
+    if (conv == NULL)
+	return -1;
+
+    from = (XPointer) str;
+    from_left = strlen(str);
+    to = (XPointer) ustr;
+    to_left = len;
+
+    if (_XlcConvert(conv, &from, &from_left, &to, &to_left, NULL, 0) < 0)
+	ret = -1;
+    else {
+	ret = len - to_left;
+	if (ustr && to_left > 0)
+	    ustr[ret] = '\0';
+    }
+
+    _XlcCloseConverter(conv);
+
+    return ret;
+}
+
+int
+_Xmbstoutf8(ustr, str, len)
+    char *ustr;
+    const char *str;
+    int len;
+{
+    return _Xlcmbstoutf8((XLCd) NULL, ustr, str, len);
 }

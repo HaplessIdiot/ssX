@@ -24,46 +24,113 @@
  *			   	mopi@osa.ilab.toshiba.co.jp
  * Bug fixes: Bruno Haible	XFree86 Inc.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcRM.c,v 1.3 2000/02/12 05:43:16 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <stdio.h>
 
-typedef struct _StateRec {
-    XLCd lcd;
-    XlcConv conv;
-} StateRec, *State;
+/*
+ * Default implementation of methods for Xrm parsing.
+ */
 
+/* ======================= Unibyte implementation ======================= */
+
+/* Only for efficiency, to speed up things. */
+
+/* This implementation must keep the locale, for lcname. */
+typedef struct _UbStateRec {
+    XLCd	lcd;
+} UbStateRec, *UbState;
+
+/* Sets the state to the initial state.
+   Initiates a sequence of calls to mbchar. */
 static void
-mbinit(state)
-    XPointer state;
+ub_mbinit(
+    XPointer state)
 {
-    _XlcResetConverter(((State) state)->conv);
 }
 
 /* Transforms one multibyte character, and return a 'char' in the same
    parsing class. Returns the number of consumed bytes in *lenp. */
 static char
-mbchar(state, str, lenp)
-    XPointer state;
-    char *str;
-    int *lenp;
+ub_mbchar(
+    XPointer state,
+    const char *str,
+    int	*lenp)
 {
-    XlcConv conv = ((State) state)->conv;
-    char *from;
+    *lenp = 1;
+    return *str;
+}
+
+/* Terminates a sequence of calls to mbchar. */
+static void
+ub_mbfinish(
+    XPointer state)
+{
+}
+
+/* Returns the name of the state's locale, as a static string. */
+static const char *
+ub_lcname(
+    XPointer state)
+{
+    return ((UbState) state)->lcd->core->name;
+}
+
+/* Frees the state, which was allocated by _XrmDefaultInitParseInfo. */
+static void
+ub_destroy(
+    XPointer state)
+{
+    _XCloseLC(((UbState) state)->lcd);
+    Xfree((char *) state);
+}
+
+static const XrmMethodsRec ub_methods = {
+    ub_mbinit,
+    ub_mbchar,
+    ub_mbfinish,
+    ub_lcname,
+    ub_destroy
+};
+
+/* ======================= Multibyte implementation ======================= */
+
+/* This implementation uses an XlcConv from XlcNMultiByte to XlcNWideChar. */
+typedef struct _MbStateRec {
+    XLCd	lcd;
+    XlcConv	conv;
+} MbStateRec, *MbState;
+
+/* Sets the state to the initial state.
+   Initiates a sequence of calls to mbchar. */
+static void
+mb_mbinit(
+    XPointer state)
+{
+    _XlcResetConverter(((MbState) state)->conv);
+}
+
+/* Transforms one multibyte character, and return a 'char' in the same
+   parsing class. Returns the number of consumed bytes in *lenp. */
+static char
+mb_mbchar(
+    XPointer state,
+    const char *str,
+    int	*lenp)
+{
+    XlcConv conv = ((MbState) state)->conv;
+    const char *from;
     wchar_t *to, wc;
     int cur_max, i, from_left, to_left, ret;
 
-    cur_max = XLC_PUBLIC(((State) state)->lcd, mb_cur_max);
-    if (cur_max == 1) {
-	*lenp = 1;
-	return *str;
-    }
+    cur_max = XLC_PUBLIC(((MbState) state)->lcd, mb_cur_max);
 
     from = str;
+    /* Determine from_left. Avoid overrun error which could occur if
+       from_left > strlen(str). */
     from_left = cur_max;
-    /* Avoid overrun error which could occur if from_left > strlen(str). */
     for (i = 0; i < cur_max; i++)
 	if (str[i] == '\0') {
 	    from_left = i;
@@ -87,55 +154,70 @@ mbchar(state, str, lenp)
     return (wc >= 0 && wc <= 0x7f ? wc : 0x7f);
 }
 
+/* Terminates a sequence of calls to mbchar. */
 static void
-mbfinish(state)
-    XPointer state;
+mb_mbfinish(
+    XPointer state)
 {
 }
 
-static char *
-lcname(state)
-    XPointer state;
+/* Returns the name of the state's locale, as a static string. */
+static const char *
+mb_lcname(
+    XPointer state)
 {
-    return ((State) state)->lcd->core->name;
+    return ((MbState) state)->lcd->core->name;
 }
 
+/* Frees the state, which was allocated by _XrmDefaultInitParseInfo. */
 static void
-destroy(state)
-    XPointer state;
+mb_destroy(
+    XPointer state)
 {
-    _XlcCloseConverter(((State) state)->conv);
-    _XCloseLC(((State) state)->lcd);
+    _XlcCloseConverter(((MbState) state)->conv);
+    _XCloseLC(((MbState) state)->lcd);
     Xfree((char *) state);
 }
 
-static XrmMethodsRec rm_methods = {
-    mbinit,
-    mbchar,
-    mbfinish,
-    lcname,
-    destroy
-} ;
+static const XrmMethodsRec mb_methods = {
+    mb_mbinit,
+    mb_mbchar,
+    mb_mbfinish,
+    mb_lcname,
+    mb_destroy
+};
+
+/* ======================= Exported function ======================= */
 
 XrmMethods
-_XrmDefaultInitParseInfo(lcd, rm_state)
-    XLCd lcd;
-    XPointer *rm_state;
+_XrmDefaultInitParseInfo(
+    XLCd lcd,
+    XPointer *rm_state)
 {
-    State state;
+    if (XLC_PUBLIC(lcd, mb_cur_max) == 1) {
+	/* Unibyte case. */
+	UbState state = (UbState) Xmalloc(sizeof(UbStateRec));
+	if (state == NULL)
+	    return (XrmMethods) NULL;
 
-    state = (State) Xmalloc(sizeof(StateRec));
-    if (state == NULL)
-	return (XrmMethods) NULL;
+	state->lcd = lcd;
 
-    state->lcd = lcd;
-    state->conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar);
-    if (state->conv == NULL) {
-	Xfree((char *) state);
-	return (XrmMethods) NULL;
+	*rm_state = (XPointer) state;
+	return &ub_methods;
+    } else {
+	/* Multibyte case. */
+	MbState state = (MbState) Xmalloc(sizeof(MbStateRec));
+	if (state == NULL)
+	    return (XrmMethods) NULL;
+
+	state->lcd = lcd;
+	state->conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar);
+	if (state->conv == NULL) {
+	    Xfree((char *) state);
+	    return (XrmMethods) NULL;
+	}
+
+	*rm_state = (XPointer) state;
+	return &mb_methods;
     }
-    
-    *rm_state = (XPointer) state;
-    
-    return &rm_methods;
 }

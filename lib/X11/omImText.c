@@ -72,7 +72,7 @@ _XmbGenericDrawImageString(dpy, d, oc, gc, x, y, text, length)
     XOC oc;
     GC gc;
     int x, y;
-    char *text;
+    _Xconst char *text;
     int length;
 #endif
 {
@@ -91,10 +91,29 @@ _XwcGenericDrawImageString(dpy, d, oc, gc, x, y, text, length)
     XOC oc;
     GC gc;
     int x, y;
-    wchar_t *text;
+    _Xconst wchar_t *text;
     int length;
 #endif
 {
     _XomGenericDrawImageString(dpy, d, oc, gc, x, y, XOMWideChar,
+			       (XPointer) text, length);
+}
+
+void
+#if NeedFunctionPrototypes
+_Xutf8GenericDrawImageString(Display *dpy, Drawable d, XOC oc, GC gc, int x,
+			     int y, _Xconst char *text, int length)
+#else
+_Xutf8GenericDrawImageString(dpy, d, oc, gc, x, y, text, length)
+    Display *dpy;
+    Drawable d;
+    XOC oc;
+    GC gc;
+    int x, y;
+    _Xconst char *text;
+    int length;
+#endif
+{
+    _XomGenericDrawImageString(dpy, d, oc, gc, x, y, XOMUtf8String,
 			       (XPointer) text, length);
 }

@@ -116,7 +116,7 @@ _XmbGenericTextExtents(XOC oc, _Xconst char *text, int length,
 #else
 _XmbGenericTextExtents(oc, text, length, overall_ink, overall_logical)
     XOC oc;
-    char *text;
+    _Xconst char *text;
     int length;
     XRectangle *overall_ink;
     XRectangle *overall_logical;
@@ -133,12 +133,29 @@ _XwcGenericTextExtents(XOC oc, _Xconst wchar_t *text, int length,
 #else
 _XwcGenericTextExtents(oc, text, length, overall_ink, overall_logical)
     XOC oc;
-    wchar_t *text;
+    _Xconst wchar_t *text;
     int length;
     XRectangle *overall_ink;
     XRectangle *overall_logical;
 #endif
 {
     return _XomGenericTextExtents(oc, XOMWideChar, (XPointer) text, length,
+				  overall_ink, overall_logical);
+}
+
+int
+#if NeedFunctionPrototypes
+_Xutf8GenericTextExtents(XOC oc, _Xconst char *text, int length,
+			 XRectangle *overall_ink, XRectangle *overall_logical)
+#else
+_Xutf8GenericTextExtents(oc, text, length, overall_ink, overall_logical)
+    XOC oc;
+    _Xconst char *text;
+    int length;
+    XRectangle *overall_ink;
+    XRectangle *overall_logical;
+#endif
+{
+    return _XomGenericTextExtents(oc, XOMUtf8String, (XPointer) text, length,
 				  overall_ink, overall_logical);
 }

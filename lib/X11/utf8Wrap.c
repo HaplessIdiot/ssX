@@ -46,13 +46,36 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
+/*
+ * Copyright 2000 by Bruno Haible
+ *
+ * Permission to use, copy, modify, distribute, and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation, and that the name of Bruno Haible not
+ * be used in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.  Bruno Haible
+ * makes no representations about the suitability of this software for
+ * any purpose.  It is provided "as is" without express or implied
+ * warranty.
+ *
+ * Bruno Haible DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
+ * NO EVENT SHALL Bruno Haible BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+ * OR PERFORMANCE OF THIS SOFTWARE.
+ */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 
 #if NeedFunctionPrototypes
 void
-XmbDrawText(
+Xutf8DrawText(
     Display            *dpy,
     Drawable            d,
     GC                  gc,
@@ -62,7 +85,7 @@ XmbDrawText(
     int                 nitems)
 #else
 void
-XmbDrawText(dpy, d, gc, x, y, text_items, nitems)
+Xutf8DrawText(dpy, d, gc, x, y, text_items, nitems)
     Display            *dpy;
     Drawable            d;
     GC                  gc;
@@ -86,17 +109,17 @@ XmbDrawText(dpy, d, gc, x, y, text_items, nitems)
 	if (p->font_set)
 	    fs = p->font_set;
 	x += p->delta;
-	esc = (*fs->methods->mb_draw_string) (dpy, d, fs, gc, x, y,
-					      p->chars, p->nchars);
+	esc = (*fs->methods->utf8_draw_string) (dpy, d, fs, gc, x, y,
+						p->chars, p->nchars);
 	if (!esc)
-	    esc = fs->methods->mb_escapement (fs, p->chars, p->nchars);
+	    esc = fs->methods->utf8_escapement (fs, p->chars, p->nchars);
 	x += esc;
     }
 }
 
 #if NeedFunctionPrototypes
 void
-XmbDrawString(
+Xutf8DrawString(
     Display            *dpy,
     Drawable            d,
     XFontSet            font_set,
@@ -107,24 +130,24 @@ XmbDrawString(
     int                 text_len)
 #else
 void
-XmbDrawString(dpy, d, font_set, gc, x, y, text, text_len)
+Xutf8DrawString(dpy, d, font_set, gc, x, y, text, text_len)
     Display            *dpy;
     Drawable            d;
     XFontSet            font_set;
     GC                  gc;
     int                 x, y;
-    _Xconst char       *text;
+    _Xconst char        *text;
     int                 text_len;
 #endif
 {
-    (void)(*font_set->methods->mb_draw_string) (dpy, d, font_set, gc, x, y,
-						(char *)text, text_len);
+    (void)(*font_set->methods->utf8_draw_string) (dpy, d, font_set, gc, x, y,
+						  (char *)text, text_len);
 }
 
 
 #if NeedFunctionPrototypes
 void
-XmbDrawImageString(
+Xutf8DrawImageString(
     Display            *dpy,
     Drawable            d,
     XFontSet            font_set,
@@ -135,7 +158,7 @@ XmbDrawImageString(
     int                 text_len)
 #else
 void
-XmbDrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
+Xutf8DrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
     Display            *dpy;
     Drawable            d;
     XFontSet            font_set;
@@ -145,31 +168,31 @@ XmbDrawImageString(dpy, d, font_set, gc, x, y, text, text_len)
     int                 text_len;
 #endif
 {
-    (*font_set->methods->mb_draw_image_string) (dpy, d, font_set, gc, x, y,
-						(char *)text, text_len);
+    (*font_set->methods->utf8_draw_image_string) (dpy, d, font_set, gc, x, y,
+						  (char *)text, text_len);
 }
 
 #if NeedFunctionPrototypes
 int 
-XmbTextEscapement(
+Xutf8TextEscapement(
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len)
 #else
 int 
-XmbTextEscapement(font_set, text, text_len)
+Xutf8TextEscapement(font_set, text, text_len)
     XFontSet        font_set;
     _Xconst char   *text;
     int             text_len;
 #endif
 {
-    return (*font_set->methods->mb_escapement) (font_set,
-						(char *)text, text_len);
+    return (*font_set->methods->utf8_escapement) (font_set,
+						  (char *)text, text_len);
 }
 
 #if NeedFunctionPrototypes
 int
-XmbTextExtents(
+Xutf8TextExtents(
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len,
@@ -177,7 +200,7 @@ XmbTextExtents(
     XRectangle     *overall_logical_extents)
 #else
 int
-XmbTextExtents(font_set, text, text_len,
+Xutf8TextExtents(font_set, text, text_len,
 	       overall_ink_extents, overall_logical_extents)
     XFontSet        font_set;
     _Xconst char   *text;
@@ -186,15 +209,15 @@ XmbTextExtents(font_set, text, text_len,
     XRectangle     *overall_logical_extents;
 #endif
 {
-    return (*font_set->methods->mb_extents) (font_set,
-					     (char *)text, text_len,
-					     overall_ink_extents,
-					     overall_logical_extents);
+    return (*font_set->methods->utf8_extents) (font_set,
+					       (char *)text, text_len,
+					       overall_ink_extents,
+					       overall_logical_extents);
 }
 
 #if NeedFunctionPrototypes
 Status
-XmbTextPerCharExtents(
+Xutf8TextPerCharExtents(
     XFontSet        font_set,
     _Xconst char   *text,
     int             text_len,
@@ -206,7 +229,7 @@ XmbTextPerCharExtents(
     XRectangle     *max_logical_extents)
 #else
 Status
-XmbTextPerCharExtents(font_set, text, text_len,
+Xutf8TextPerCharExtents(font_set, text, text_len,
 		      ink_extents_buffer, logical_extents_buffer,
 		      buffer_size, num_chars,
 		      max_ink_extents, max_logical_extents)
@@ -221,7 +244,7 @@ XmbTextPerCharExtents(font_set, text, text_len,
     XRectangle     *max_logical_extents;
 #endif
 {
-    return (*font_set->methods->mb_extents_per_char)
+    return (*font_set->methods->utf8_extents_per_char)
 	     (font_set, (char *)text, text_len, 
 	      ink_extents_buffer, logical_extents_buffer,
 	      buffer_size, num_chars, max_ink_extents, max_logical_extents);

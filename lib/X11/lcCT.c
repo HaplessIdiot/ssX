@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.17 2000/05/18 16:29:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.18 2000/10/27 18:30:48 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -50,8 +50,8 @@
  * Static representation of a character set that can be used in Compound Text.
  */
 typedef struct _CTDataRec {
-    _Xconst char *name;
-    _Xconst char *encoding;	/* Compound Text encoding, ESC sequence */
+    const char *name;
+    const char *encoding;	/* Compound Text encoding, ESC sequence */
 } CTDataRec, *CTData;
 
 static CTDataRec default_ct_data[] =
@@ -174,14 +174,14 @@ static CTDataRec default_ct_data[] =
  * Parses the header of a Compound Text segment, i.e. the charset designator.
  */
 static unsigned int
-_XlcParseCT(text, length, extra_data)
-    _Xconst char **text;
-    int *length;
-    unsigned int *extra_data;
+_XlcParseCT(
+    const char **text,
+    int *length,
+    unsigned int *extra_data)
 {
     unsigned int ret = 0, dummy, *data = extra_data;
     unsigned char ch;
-    register _Xconst unsigned char *str = (_Xconst unsigned char *) *text;
+    const unsigned char *str = (const unsigned char *) *text;
 
     if (data == NULL)
        data = &dummy;
@@ -277,11 +277,11 @@ _XlcParseCT(text, length, extra_data)
  * Used by _XlcCreateDefaultCharSet.
  */
 Bool
-_XlcParseCharSet(charset)
-    XlcCharSet charset;
+_XlcParseCharSet(
+    XlcCharSet charset)
 {
     unsigned int type, final_byte;
-    _Xconst char *ptr = charset->ct_sequence;
+    const char *ptr = charset->ct_sequence;
     int length;
     int char_size = 1;
     
@@ -359,10 +359,10 @@ typedef struct _CTInfoRec {
 static CTInfo ct_list = NULL;
 
 static CTInfo
-_XlcGetCTInfo(text, type, final_byte)
-   _Xconst char *text;
-   unsigned int type;
-   unsigned char final_byte;
+_XlcGetCTInfo(
+   const char *text,
+   unsigned int type,
+   unsigned char final_byte)
 {
    CTInfo ct_info;
 
@@ -381,13 +381,13 @@ _XlcGetCTInfo(text, type, final_byte)
 }
 
 XlcCharSet
-_XlcAddCT(name, ct_sequence)
-    _Xconst char *name;
-    _Xconst char *ct_sequence;
+_XlcAddCT(
+    const char *name,
+    const char *ct_sequence)
 {
     CTInfo ct_info;
     XlcCharSet charset;
-    _Xconst char *ct_ptr = ct_sequence;
+    const char *ct_ptr = ct_sequence;
     int length;
     unsigned int type, final_byte;
 
@@ -445,10 +445,10 @@ _XlcAddCT(name, ct_sequence)
 }
 
 static CTInfo
-_XlcGetCTInfoFromCharSet(charset)
-    register XlcCharSet charset;
+_XlcGetCTInfoFromCharSet(
+    XlcCharSet charset)
 {
-    register CTInfo ct_info;
+    CTInfo ct_info;
 
     for (ct_info = ct_list; ct_info; ct_info = ct_info->next)
 	if (ct_info->charset == charset)
@@ -480,10 +480,10 @@ typedef enum { resOK, resNotCTSeq, resNotInList } CheckResult;
 */  
 
 static CheckResult
-_XlcCheckCTSequence(state, ctext, ctext_len)
-    State state;
-    _Xconst char **ctext;
-    int *ctext_len;
+_XlcCheckCTSequence(
+    State state,
+    const char **ctext,
+    int *ctext_len)
 {
     XlcCharSet charset;
     CTInfo ct_info;
@@ -529,8 +529,8 @@ _XlcCheckCTSequence(state, ctext, ctext_len)
 }
 
 static void
-init_state(conv)
-    XlcConv conv;
+init_state(
+    XlcConv conv)
 {
     State state = (State) conv->state;
     static XlcCharSet GL_charset = NULL;
@@ -550,24 +550,24 @@ init_state(conv)
 /* from XlcNCompoundText to XlcNCharSet */
 
 static int
-cttocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cttocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
-    register State state = (State) conv->state;
-    register unsigned char ch;
+    State state = (State) conv->state;
+    unsigned char ch;
     CheckResult ret;
     XlcCharSet charset = NULL;
-    _Xconst char *ctptr;
+    const char *ctptr;
     char *bufptr;
     int ctext_len, buf_len;
 
-    ctptr = (char *) *from;
+    ctptr = (const char *) *from;
     bufptr = (char *) *to;
     ctext_len = *from_left;
     buf_len = *to_left;
@@ -615,33 +615,35 @@ cttocs(conv, from, from_left, to, to_left, args, num_args)
 /* from XlcNCharSet to XlcNCompoundText */
 
 static int
-cstoct(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstoct(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
     XlcSide side;
     unsigned char min_ch, max_ch;
-    register unsigned char ch;
-    int length;
+    unsigned char ch;
+    int length, unconv_num;
     CTInfo ct_info;
     XlcCharSet charset;
-    char *csptr, *ctptr;
+    const char *csptr;
+    char *ctptr;
     int csstr_len, ct_len;
 
+    /* One argument is required, of type XlcCharSet. */
     if (num_args < 1)
 	return -1;
-    
-    csptr = *((char **) from);
+
+    csptr = *((const char **) from);
     ctptr = *((char **) to);
     csstr_len = *from_left;
     ct_len = *to_left;
-    
+
     charset = (XlcCharSet) args[0];
 
     ct_info = _XlcGetCTInfoFromCharSet(charset);
@@ -732,21 +734,22 @@ cstoct(conv, from, from_left, to, to_left, args, num_args)
 /* from XlcNString to XlcNCharSet */
 
 static int
-strtocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+strtocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
-    register char *src, *dst;
+    const char *src;
+    char *dst;
     unsigned char side;
-    register int length;
+    int length;
 
-    src = (char *) *from;
+    src = (const char *) *from;
     dst = (char *) *to;
 
     length = min(*from_left, *to_left);
@@ -769,17 +772,18 @@ strtocs(conv, from, from_left, to, to_left, args, num_args)
 /* from XlcNCharSet to XlcNString */
 
 static int
-cstostr(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstostr(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
-    char *csptr, *string_ptr;
+    const char *csptr;
+    char *string_ptr;
     int csstr_len, str_len;
     unsigned char ch;
     int unconv_num = 0;
@@ -788,7 +792,7 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
 	state->GR_charset != (XlcCharSet) args[0]))
 	return -1;
     
-    csptr = *((char **) from);
+    csptr = *((const char **) from);
     string_ptr = *((char **) to);
     csstr_len = *from_left;
     str_len = *to_left;
@@ -815,10 +819,10 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
 
 
 static XlcConv
-create_conv(methods)
-    XlcConvMethods methods;
+create_conv(
+    XlcConvMethods methods)
 {
-    register XlcConv conv;
+    XlcConv conv;
 
     conv = (XlcConv) Xmalloc(sizeof(XlcConvRec) + sizeof(StateRec));
     if (conv == NULL)
@@ -834,8 +838,8 @@ create_conv(methods)
 }
 
 static void
-close_converter(conv)
-    XlcConv conv;
+close_converter(
+    XlcConv conv)
 {
     /* conv->state is allocated together with conv, free both at once.  */
     Xfree((char *) conv);
@@ -846,14 +850,14 @@ static XlcConvMethodsRec cttocs_methods = {
     close_converter,
     cttocs,
     init_state
-} ;
+};
 
 static XlcConv
-open_cttocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cttocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(&cttocs_methods);
 }
@@ -863,14 +867,14 @@ static XlcConvMethodsRec cstoct_methods = {
     close_converter,
     cstoct,
     init_state
-} ;
+};
 
 static XlcConv
-open_cstoct(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstoct(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(&cstoct_methods);
 }
@@ -880,14 +884,14 @@ static XlcConvMethodsRec strtocs_methods = {
     close_converter,
     strtocs,
     init_state
-} ;
+};
 
 static XlcConv
-open_strtocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_strtocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(&strtocs_methods);
 }
@@ -897,14 +901,14 @@ static XlcConvMethodsRec cstostr_methods = {
     close_converter,
     cstostr,
     init_state
-} ;
+};
 
 static XlcConv
-open_cstostr(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstostr(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(&cstostr_methods);
 }

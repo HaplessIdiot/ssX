@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/omTextEsc.c,v 1.2 1999/05/09 10:50:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omTextEsc.c,v 1.3 2000/08/25 21:51:00 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -287,7 +287,7 @@ _XmbGenericTextEscapement(XOC oc, _Xconst char *text, int length)
 #else
 _XmbGenericTextEscapement(oc, text, length)
     XOC oc;
-    char *text;
+    _Xconst char *text;
     int length;
 #endif
 {
@@ -300,9 +300,23 @@ _XwcGenericTextEscapement(XOC oc, _Xconst wchar_t *text, int length)
 #else
 _XwcGenericTextEscapement(oc, text, length)
     XOC oc;
-    wchar_t *text;
+    _Xconst wchar_t *text;
     int length;
 #endif
 {
     return _XomGenericTextEscapement(oc, XOMWideChar, (XPointer) text, length);
+}
+
+int
+#if NeedFunctionPrototypes
+_Xutf8GenericTextEscapement(XOC oc, _Xconst char *text, int length)
+#else
+_Xutf8GenericTextEscapement(oc, text, length)
+    XOC oc;
+    _Xconst char *text;
+    int length;
+#endif
+{
+    return _XomGenericTextEscapement(oc, XOMUtf8String, (XPointer) text,
+				     length);
 }

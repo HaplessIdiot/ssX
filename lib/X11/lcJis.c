@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcJis.c,v 1.4 1998/10/03 08:41:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcJis.c,v 1.5 2000/02/12 02:54:13 dawes Exp $ */
 
 /*
  * A Japanese JIS locale.
@@ -50,12 +50,12 @@ typedef struct _StateRec {
 } StateRec, *State;
 
 static void
-init_state(conv)
-    XlcConv conv;
+init_state(
+    XlcConv conv)
 {
-    register State state = (State) conv->state;
-    register XLCdGenericPart *gen = XLC_GENERIC_PART(state->lcd);
-    register CodeSet codeset;
+    State state = (State) conv->state;
+    XLCdGenericPart *gen = XLC_GENERIC_PART(state->lcd);
+    CodeSet codeset;
 
     codeset = gen->initial_state_GL;
     if (codeset && codeset->charset_list)
@@ -65,17 +65,17 @@ init_state(conv)
 	state->GR_charset = *codeset->charset_list;
 
     if (state->GL_charset == NULL)
-	if (codeset = *gen->codeset_list)
+	if ((codeset = *gen->codeset_list) != NULL)
 	    state->GL_charset = *codeset->charset_list;
 }
 
 static int
-compare(src, encoding, length)
-    register char *src;
-    register char *encoding;
-    register int length;
+compare(
+    const char *src,
+    const char *encoding,
+    int length)
 {
-    char *start = src;
+    const char *start = src;
 
     while (length-- > 0) {
 	if (*src++ != *encoding++)
@@ -88,32 +88,34 @@ compare(src, encoding, length)
 }
 
 static int
-mbtocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+mbtocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
     XLCd lcd = state->lcd;
-    register char *src, *dst;
-    unsigned char ch, *mb_parse_table;
+    const char *src;
+    char *dst;
+    unsigned char *mb_parse_table;
     ParseInfo *parse_list, parse_info;
     XlcCharSet charset;
     int length, number, encoding_len = 0;
-    register int i;
+    int i;
 
-    src = *((char **) from);
+    src = *((const char **) from);
     dst = *((char **) to);
 
-    if (mb_parse_table = XLC_GENERIC(lcd, mb_parse_table)) {
+    mb_parse_table = XLC_GENERIC(lcd, mb_parse_table);
+    if (mb_parse_table != NULL) {
 	number = mb_parse_table[(unsigned char) *src];
 	if (number > 0) {
 	    parse_list = XLC_GENERIC(lcd, mb_parse_list) + number - 1;
-	    for ( ; parse_info = *parse_list; parse_list++) {
+	    for ( ; (parse_info = *parse_list) != NULL; parse_list++) {
 		encoding_len = compare(src, parse_info->encoding, *from_left);
 		if (encoding_len > 0) {
 		    switch (parse_info->type) {
@@ -184,14 +186,14 @@ end:
 }
 
 static int
-mbstocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+mbstocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     XlcCharSet charset = NULL;
     XPointer tmp_args[2], save_from = *from;
@@ -220,13 +222,13 @@ mbstocs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static CodeSet
-wc_parse_codeset(lcd, wcstr)
-    XLCd lcd;
-    wchar_t *wcstr;
+wc_parse_codeset(
+    XLCd lcd,
+    const wchar_t *wcstr)
 {
-    register CodeSet *codeset;
+    CodeSet *codeset;
     unsigned long wc_encoding;
-    register int num;
+    int num;
 
     wc_encoding = *wcstr & XLC_GENERIC(lcd, wc_encode_mask);
     num = XLC_GENERIC(lcd, codeset_num);
@@ -241,22 +243,22 @@ wc_parse_codeset(lcd, wcstr)
 }
 
 static int
-wcstocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+wcstocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
     XLCd lcd = state->lcd;
-    wchar_t *wcptr;
-    register char *bufptr;
-    register wchar_t wch;
+    const wchar_t *wcptr;
+    char *bufptr;
+    wchar_t wch;
     char *tmpptr;
-    register int length;
+    int length;
     CodeSet codeset;
     unsigned long wc_encoding;
     int wcstr_len, buf_len;
@@ -264,7 +266,7 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
     if (from == NULL || *from == NULL)
 	return 0;
 
-    wcptr = *((wchar_t **) from);
+    wcptr = *((const wchar_t **) from);
     bufptr = *((char **) to);
     wcstr_len = *from_left;
     buf_len = *to_left;
@@ -317,13 +319,13 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static CodeSet
-GetCodeSetFromCharSet(lcd, charset)
-    XLCd lcd;
-    XlcCharSet charset;
+GetCodeSetFromCharSet(
+    XLCd lcd,
+    XlcCharSet charset)
 {
-    register CodeSet *codeset = XLC_GENERIC(lcd, codeset_list);
-    register XlcCharSet *charset_list;
-    register int codeset_num, num_charsets;
+    CodeSet *codeset = XLC_GENERIC(lcd, codeset_list);
+    XlcCharSet *charset_list;
+    int codeset_num, num_charsets;
 
     codeset_num = XLC_GENERIC(lcd, codeset_num);
 
@@ -340,27 +342,27 @@ GetCodeSetFromCharSet(lcd, charset)
 }
 
 static int
-cstombs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstombs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
-    register char *csptr;
-    register char *bufptr;
+    const char *csptr;
+    char *bufptr;
     int csstr_len;
-    register int buf_len;
+    int buf_len;
     int num, encoding_len = 0;
     CodeSet codeset;
     XlcCharSet charset;
     EncodingType type;
     int cvt_length;
 
-    csptr = *((char **) from);
+    csptr = *((const char **) from);
     bufptr = *((char **) to);
     csstr_len = *from_left;
     buf_len = *to_left;
@@ -444,27 +446,27 @@ cstombs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static int
-cstowcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstowcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     State state = (State) conv->state;
     XLCd lcd = state->lcd;
-    register char *csptr;
+    const char *csptr;
     wchar_t *bufptr;
     int csstr_len;
-    register int buf_len;
-    register wchar_t wch;
+    int buf_len;
+    wchar_t wch;
     unsigned long code_mask, wc_encoding;
     int num, length, wc_shift_bits;
     CodeSet codeset;
 
-    csptr = *((char **) from);
+    csptr = *((const char **) from);
     bufptr = *((wchar_t **) to);
     csstr_len = *from_left;
     buf_len = *to_left;
@@ -509,8 +511,8 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
 
 
 static void
-close_converter(conv)
-    XlcConv conv;
+close_converter(
+    XlcConv conv)
 {
     if (conv->state) {
 	Xfree((char *) conv->state);
@@ -520,9 +522,9 @@ close_converter(conv)
 }
 
 static XlcConv
-create_conv(lcd, methods)
-    XLCd lcd;
-    XlcConvMethods methods;
+create_conv(
+    XLCd lcd,
+    XlcConvMethods methods)
 {
     XlcConv conv;
     State state;
@@ -559,14 +561,14 @@ static XlcConvMethodsRec mbstocs_methods = {
     close_converter,
     mbstocs,
     NULL
-} ;
+};
 
 static XlcConv
-open_mbstocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_mbstocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &mbstocs_methods);
 }
@@ -575,14 +577,14 @@ static XlcConvMethodsRec wcstocs_methods = {
     close_converter,
     wcstocs,
     NULL
-} ;
+};
 
 static XlcConv
-open_wcstocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &wcstocs_methods);
 }
@@ -591,14 +593,14 @@ static XlcConvMethodsRec mbtocs_methods = {
     close_converter,
     mbtocs,
     NULL
-} ;
+};
 
 static XlcConv
-open_mbtocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_mbtocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &mbtocs_methods);
 }
@@ -607,14 +609,14 @@ static XlcConvMethodsRec cstombs_methods = {
     close_converter,
     cstombs,
     NULL
-} ;
+};
 
 static XlcConv
-open_cstombs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstombs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &cstombs_methods);
 }
@@ -623,30 +625,30 @@ static XlcConvMethodsRec cstowcs_methods = {
     close_converter,
     cstowcs,
     NULL
-} ;
+};
 
 static XlcConv
-open_cstowcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstowcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &cstowcs_methods);
 }
 
 #ifdef STDCVT
 static int
-stdc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+stdc_mbstowcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
-    char *src = *((char **) from);
+    const char *src = *((const char **) from);
     wchar_t *dst = *((wchar_t **) to);
     int src_left = *from_left;
     int dst_left = *to_left;
@@ -683,16 +685,16 @@ stdc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static int
-stdc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+stdc_wcstombs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
-    wchar_t *src = *((wchar_t **) from);
+    const wchar_t *src = *((const wchar_t **) from);
     char *dst = *((char **) to);
     int src_left = *from_left;
     int dst_left = *to_left;
@@ -727,16 +729,17 @@ stdc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static int
-stdc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+stdc_wcstocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
-    wchar_t wch, *src = *((wchar_t **) from);
+    const wchar_t *src = *((const wchar_t **) from);
+    wchar_t wch;
     XlcCharSet charset = NULL;
     XPointer tmp_args[2], tmp_from, save_from = *from;
     char tmp[32];
@@ -787,14 +790,14 @@ stdc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
 #define FreeLocalBuf(ptr)	if (ptr != local_buf) Xfree(ptr)
 
 static int
-stdc_cstowcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+stdc_cstowcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     XLCd lcd = ((State) conv->state)->lcd;
     DefineLocalBuf;
@@ -825,14 +828,14 @@ static XlcConvMethodsRec stdc_mbstowcs_methods = {
     close_converter,
     stdc_mbstowcs,
     NULL
-} ;
+};
 
 static XlcConv
-open_stdc_mbstowcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_stdc_mbstowcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &stdc_mbstowcs_methods);
 }
@@ -841,14 +844,14 @@ static XlcConvMethodsRec stdc_wcstombs_methods = {
     close_converter,
     stdc_wcstombs,
     NULL
-} ;
+};
 
 static XlcConv
-open_stdc_wcstombs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_stdc_wcstombs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &stdc_wcstombs_methods);
 }
@@ -857,14 +860,14 @@ static XlcConvMethodsRec stdc_wcstocs_methods = {
     close_converter,
     stdc_wcstocs,
     NULL
-} ;
+};
 
 static XlcConv
-open_stdc_wcstocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_stdc_wcstocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &stdc_wcstocs_methods);
 }
@@ -873,25 +876,27 @@ static XlcConvMethodsRec stdc_cstowcs_methods = {
     close_converter,
     stdc_cstowcs,
     NULL
-} ;
+};
 
 static XlcConv
-open_stdc_cstowcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_stdc_cstowcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &stdc_cstowcs_methods);
 }
 #endif /* STDCVT */
 
 XLCd
-_XlcJisLoader(name)
-    _Xconst char *name;
+_XlcJisLoader(
+    const char *name)
 {
     XLCd lcd;
+#ifdef STDCVT
     XLCdGenericPart *gen;
+#endif
 
     lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == NULL)

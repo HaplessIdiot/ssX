@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.5 2000/02/29 03:09:03 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.6 2000/11/28 17:25:08 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -106,12 +106,10 @@ typedef struct _XlcCharSetRec {
 typedef struct _XlcConvRec *XlcConv;
 
 typedef XlcConv (*XlcOpenConverterProc)(
-#if NeedFunctionPrototypes
-    XLCd		/* from_lcd */,
-    char*		/* from_type */,
-    XLCd		/* to_lcd */,
-    char*		/* to_type */
-#endif
+    XLCd		from_lcd,
+    const char*		from_type,
+    XLCd		to_lcd,
+    const char*		to_type
 );
 
 typedef void (*XlcCloseConverterProc)(
@@ -187,22 +185,16 @@ extern char *_XGetLCValues(
 );
 
 extern XlcCharSet _XlcGetCharSet(
-#if NeedFunctionPrototypes
-    _Xconst char*	/* name */
-#endif
+    const char*		name
 );
 
 extern XlcCharSet _XlcGetCharSetWithSide(
-#if NeedFunctionPrototypes
-    _Xconst char*	/* encoding_name */,
-    XlcSide		/* side */
-#endif
+    const char*		encoding_name,
+    XlcSide		side
 );
 
 extern Bool _XlcAddCharSet(
-#if NeedFunctionPrototypes
-    XlcCharSet		/* charset */
-#endif
+    XlcCharSet		charset
 );
 
 extern char *_XlcGetCSValues(
@@ -213,63 +205,49 @@ extern char *_XlcGetCSValues(
 );
 
 extern XlcConv _XlcOpenConverter(
-#if NeedFunctionPrototypes
-    XLCd		/* from_lcd */,
-    char*		/* from_type */,
-    XLCd		/* to_lcd */,
-    char*		/* to_type */
-#endif
+    XLCd		from_lcd,
+    const char*		from_type,
+    XLCd		to_lcd,
+    const char*		to_type
 );
 
 extern void _XlcCloseConverter(
-#if NeedFunctionPrototypes
-    XlcConv		/* conv */
-#endif
+    XlcConv		conv
 );
 
 extern int _XlcConvert(
-#if NeedFunctionPrototypes
-    XlcConv		/* conv */,
-    XPointer*		/* from */,
-    int*		/* from_left */,
-    XPointer*		/* to */,
-    int*		/* to_left */,
-    XPointer*		/* args */,
-    int			/* num_args */
-#endif
+    XlcConv		conv,
+    XPointer*		from,
+    int*		from_left,
+    XPointer*		to,
+    int*		to_left,
+    XPointer*		args,
+    int			num_args
 );
 
 extern void _XlcResetConverter(
-#if NeedFunctionPrototypes
-    XlcConv		/* conv */
-#endif
+    XlcConv		conv
 );
 
 extern Bool _XlcSetConverter(
-#if NeedFunctionPrototypes
-    XLCd			/* from_lcd */,
-    char*			/* from_type */,
-    XLCd			/* to_lcd */,
-    char*			/* to_type */,
-    XlcOpenConverterProc	/* open_converter */
-#endif
+    XLCd			from_lcd,
+    const char*			from_type,
+    XLCd			to_lcd,
+    const char*			to_type,
+    XlcOpenConverterProc	open_converter
 );
 
 extern void _XlcGetResource(
-#if NeedFunctionPrototypes
-    XLCd		/* lcd */,
-    char*		/* category */,
-    char*		/* class */,
-    char***		/* value */,
-    int*		/* count */
-#endif
+    XLCd		lcd,
+    const char*		category,
+    const char*		_class,
+    char***		value,
+    int*		count
 );
 
 extern char *_XlcFileName(
-#if NeedFunctionPrototypes
-    XLCd		/* lcd */,
-    char*		/* category */
-#endif
+    XLCd		lcd,
+    const char*		category
 );
 
 extern int _Xwcslen(
@@ -285,19 +263,19 @@ extern wchar_t *_Xwcscpy(
 #endif
 );
 
+/* Compares two ISO 8859-1 strings, ignoring case of ASCII letters.
+   Like strcasecmp in an ASCII locale. */
 extern int _XlcCompareISOLatin1(
-#if NeedFunctionPrototypes
-    char*		/* str1 */,
-    char*		/* str2 */
-#endif
+    const char*		str1,
+    const char*		str2
 );
 
+/* Compares two ISO 8859-1 strings, at most len bytes of each, ignoring
+   case of ASCII letters. Like strncasecmp in an ASCII locale. */
 extern int _XlcNCompareISOLatin1(
-#if NeedFunctionPrototypes
-    char*		/* str1 */,
-    char*		/* str2 */,
-    int			/* len */
-#endif
+    const char*		str1,
+    const char*		str2,
+    int			len
 );
 
 _XFUNCPROTOEND

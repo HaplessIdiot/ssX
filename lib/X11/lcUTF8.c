@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.7 2000/11/28 16:10:24 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.8 2000/11/28 17:25:08 dawes Exp $ */
 
 /*
  * This file contains:
@@ -77,9 +77,9 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XlcGeneric.h"
 
 static XlcConv
-create_conv(lcd, methods)
-    XLCd lcd;
-    XlcConvMethods methods;
+create_conv(
+    XLCd lcd,
+    XlcConvMethods methods)
 {
     XlcConv conv;
 
@@ -94,8 +94,8 @@ create_conv(lcd, methods)
 }
 
 static void
-close_converter(conv)
-    XlcConv conv;
+close_converter(
+    XlcConv conv)
 {
     Xfree((char *) conv);
 }
@@ -212,9 +212,8 @@ typedef struct {
 #include "lcUniConv/jisx0208.h"
 #include "lcUniConv/jisx0212.h"
 #include "lcUniConv/ksc5601.h"
-#ifdef notdef
 #include "lcUniConv/big5.h"
-#endif
+#include "lcUniConv/big5_emacs.h"
 
 static Utf8ConvRec all_charsets[] = {
     /* The ISO10646-1/UTF-8 entry occurs twice, once at the beginning
@@ -265,11 +264,11 @@ static Utf8ConvRec all_charsets[] = {
     { "ISO8859-16", NULLQUARK,
 	iso8859_16_mbtowc, iso8859_16_wctomb
     },
-    { "ISO8859-9E", NULLQUARK,
-	iso8859_9e_mbtowc, iso8859_9e_wctomb
-    },
     { "JISX0201.1976-0", NULLQUARK,
 	jisx0201_mbtowc, jisx0201_wctomb
+    },
+    { "TIS620.2533-1", NULLQUARK,
+	tis620_mbtowc, tis620_wctomb
     },
     { "GB2312.1980-0", NULLQUARK,
 	gb2312_mbtowc, gb2312_wctomb
@@ -283,9 +282,6 @@ static Utf8ConvRec all_charsets[] = {
     { "KSC5601.1987-0", NULLQUARK,
 	ksc5601_mbtowc, ksc5601_wctomb
     },
-    { "TIS620.2533-1", NULLQUARK,
-	tis620_mbtowc, tis620_wctomb
-    },
     { "KOI8-R", NULLQUARK,
 	koi8_r_mbtowc, koi8_r_wctomb
     },
@@ -294,6 +290,9 @@ static Utf8ConvRec all_charsets[] = {
     },
     { "KOI8-C", NULLQUARK,
 	koi8_c_mbtowc, koi8_c_wctomb
+    },
+    { "TATAR-CYR", NULLQUARK,
+	tatar_cyr_mbtowc, tatar_cyr_wctomb
     },
     { "ARMSCII-8", NULLQUARK,
 	armscii_8_mbtowc, armscii_8_wctomb
@@ -316,6 +315,9 @@ static Utf8ConvRec all_charsets[] = {
     { "GEORGIAN-PS", NULLQUARK,
 	georgian_ps_mbtowc, georgian_ps_wctomb
     },
+    { "ISO8859-9E", NULLQUARK,
+	iso8859_9e_mbtowc, iso8859_9e_wctomb
+    },
     { "MICROSOFT-CP1251", NULLQUARK,
 	microsoft_cp1251_mbtowc, microsoft_cp1251_wctomb
     },
@@ -325,14 +327,12 @@ static Utf8ConvRec all_charsets[] = {
     { "MICROSOFT-CP1256", NULLQUARK,
 	microsoft_cp1256_mbtowc, microsoft_cp1256_wctomb
     },
-    { "TATAR-CYR", NULLQUARK,
-	tatar_cyr_mbtowc, tatar_cyr_wctomb
+    { "BIG5-0", NULLQUARK,
+	big5_0_mbtowc, big5_0_wctomb
     },
-#ifdef notdef
-    { "BIG-5", NULLQUARK,
-	big5_mbtowc, big5_wctomb
+    { "BIG5-1", NULLQUARK,
+	big5_1_mbtowc, big5_1_wctomb
     },
-#endif
 
     /* The ISO10646-1/UTF-8 entry occurs twice, once at the beginning
        (for lookup speed), once at the end (as a fallback).  */
@@ -352,7 +352,7 @@ static Utf8ConvRec all_charsets[] = {
 #define ucs2_conv_index     (charsets_table_size - 1)
 
 static void
-init_all_charsets()
+init_all_charsets (void)
 {
     Utf8Conv convptr;
     int i;
@@ -370,14 +370,14 @@ init_all_charsets()
 /* from XlcNCharSet to XlcNUtf8String */
 
 static int
-cstoutf8(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstoutf8(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     XlcCharSet charset;
     char *name;
@@ -450,11 +450,11 @@ static XlcConvMethodsRec methods_cstoutf8 = {
 };
 
 static XlcConv
-open_cstoutf8(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstoutf8(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     lazy_init_all_charsets();
     return create_conv(from_lcd, &methods_cstoutf8);
@@ -463,9 +463,9 @@ open_cstoutf8(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNUtf8String to XlcNCharSet */
 
 static XlcConv
-create_tocs_conv(lcd, methods)
-    XLCd lcd;
-    XlcConvMethods methods;
+create_tocs_conv(
+    XLCd lcd,
+    XlcConvMethods methods)
 {
     XlcConv conv;
     CodeSet *codeset_list;
@@ -525,8 +525,8 @@ create_tocs_conv(lcd, methods)
 }
 
 static void
-close_tocs_converter(conv)
-    XlcConv conv;
+close_tocs_converter(
+    XlcConv conv)
 {
     Xfree((char *) conv);
 }
@@ -538,14 +538,14 @@ close_tocs_converter(conv)
  * *sidep is set to the character set side (XlcGL or XlcGR).
  */
 static int
-charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
-    Utf8Conv *preferred;
-    Utf8Conv *charsetp;
-    XlcSide *sidep;
-    XlcConv conv;
-    unsigned char *r;
-    ucs4_t wc;
-    int n;
+charset_wctocs(
+    Utf8Conv *preferred,
+    Utf8Conv *charsetp,
+    XlcSide *sidep,
+    XlcConv conv,
+    unsigned char *r,
+    ucs4_t wc,
+    int n)
 {
     int count;
     Utf8Conv convptr;
@@ -576,14 +576,14 @@ charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
 }
 
 static int
-utf8tocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+utf8tocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     Utf8Conv *preferred_charsets;
     XlcCharSet last_charset = NULL;
@@ -667,11 +667,11 @@ static XlcConvMethodsRec methods_utf8tocs = {
 };
 
 static XlcConv
-open_utf8tocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_utf8tocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tocs_conv(from_lcd, &methods_utf8tocs);
 }
@@ -679,14 +679,14 @@ open_utf8tocs(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNUtf8String to XlcNChar */
 
 static int
-utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+utf8tocs1(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     Utf8Conv *preferred_charsets;
     XlcCharSet last_charset = NULL;
@@ -771,11 +771,11 @@ static XlcConvMethodsRec methods_utf8tocs1 = {
 };
 
 static XlcConv
-open_utf8tocs1(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_utf8tocs1(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tocs_conv(from_lcd, &methods_utf8tocs1);
 }
@@ -783,14 +783,14 @@ open_utf8tocs1(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNUtf8String to XlcNString */
 
 static int
-utf8tostr(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+utf8tostr(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     unsigned char const *src;
     unsigned char const *srcend;
@@ -847,11 +847,11 @@ static XlcConvMethodsRec methods_utf8tostr = {
 };
 
 static XlcConv
-open_utf8tostr(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_utf8tostr(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_utf8tostr);
 }
@@ -859,14 +859,14 @@ open_utf8tostr(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNString to XlcNUtf8String */
 
 static int
-strtoutf8(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+strtoutf8(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     unsigned char const *src;
     unsigned char const *srcend;
@@ -904,19 +904,19 @@ static XlcConvMethodsRec methods_strtoutf8 = {
 };
 
 static XlcConv
-open_strtoutf8(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_strtoutf8(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_strtoutf8);
 }
 
 /* Support for the input methods. */
 XPointer
-_Utf8GetConvByName( name )
-    char *name;
+_Utf8GetConvByName(
+    const char *name)
 {
     XrmQuark xrm_name;
     Utf8Conv convptr;
@@ -937,9 +937,9 @@ _Utf8GetConvByName( name )
 /* from XlcNUcsChar to XlcNChar  needed for input methods */
 
 static XlcConv
-create_ucstocs_conv(lcd, methods)
-    XLCd lcd;
-    XlcConvMethods methods;
+create_ucstocs_conv(
+    XLCd lcd,
+    XlcConvMethods methods)
 {
 
     if (XLC_PUBLIC_PART(lcd)->codeset &&
@@ -969,14 +969,14 @@ create_ucstocs_conv(lcd, methods)
 }
 
 static int
-charset_wctocs_exactly(preferred, charsetp, sidep, conv, r, wc, n)
-    Utf8Conv *preferred;
-    Utf8Conv *charsetp;
-    XlcSide *sidep;
-    XlcConv conv;
-    unsigned char *r;
-    ucs4_t wc;
-    int n;
+charset_wctocs_exactly(
+    Utf8Conv *preferred,
+    Utf8Conv *charsetp,
+    XlcSide *sidep,
+    XlcConv conv,
+    unsigned char *r,
+    ucs4_t wc,
+    int n)
 {
     int count;
     Utf8Conv convptr;
@@ -996,14 +996,14 @@ charset_wctocs_exactly(preferred, charsetp, sidep, conv, r, wc, n)
 }
 
 static int
-ucstocs1(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+ucstocs1(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     ucs4_t const *src = (ucs4_t const *) *from;
     unsigned char *dst = (unsigned char *) *to;
@@ -1046,19 +1046,19 @@ static XlcConvMethodsRec methods_ucstocs1 = {
 };
 
 static XlcConv
-open_ucstocs1(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_ucstocs1(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_ucstocs_conv(from_lcd, &methods_ucstocs1);
 }
 
 /* Registers UTF-8 converters for a non-UTF-8 locale. */
 void
-_XlcAddUtf8Converters(lcd)
-    XLCd lcd;
+_XlcAddUtf8Converters(
+    XLCd lcd)
 {
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNUtf8String, open_cstoutf8);
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNCharSet, open_utf8tocs);
@@ -1077,14 +1077,14 @@ _XlcAddUtf8Converters(lcd)
 /* from XlcNMultiByte to XlcNWideChar */
 
 static int
-utf8towcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+utf8towcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     unsigned char const *src;
     unsigned char const *srcend;
@@ -1132,11 +1132,11 @@ static XlcConvMethodsRec methods_utf8towcs = {
 };
 
 static XlcConv
-open_utf8towcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_utf8towcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_utf8towcs);
 }
@@ -1144,14 +1144,14 @@ open_utf8towcs(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNWideChar to XlcNMultiByte */
 
 static int
-wcstoutf8(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+wcstoutf8(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     wchar_t const *src;
     wchar_t const *srcend;
@@ -1197,11 +1197,11 @@ static XlcConvMethodsRec methods_wcstoutf8 = {
 };
 
 static XlcConv
-open_wcstoutf8(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstoutf8(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_wcstoutf8);
 }
@@ -1209,14 +1209,14 @@ open_wcstoutf8(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNString to XlcNWideChar */
 
 static int
-our_strtowcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+our_strtowcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     unsigned char const *src;
     unsigned char const *srcend;
@@ -1249,11 +1249,11 @@ static XlcConvMethodsRec methods_strtowcs = {
 };
 
 static XlcConv
-open_strtowcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_strtowcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_strtowcs);
 }
@@ -1261,14 +1261,14 @@ open_strtowcs(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNWideChar to XlcNString */
 
 static int
-our_wcstostr(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+our_wcstostr(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     wchar_t const *src;
     wchar_t const *srcend;
@@ -1311,11 +1311,11 @@ static XlcConvMethodsRec methods_wcstostr = {
 };
 
 static XlcConv
-open_wcstostr(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstostr(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_wcstostr);
 }
@@ -1323,14 +1323,14 @@ open_wcstostr(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNCharSet to XlcNWideChar */
 
 static int
-cstowcs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+cstowcs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     XlcCharSet charset;
     char *name;
@@ -1393,11 +1393,11 @@ static XlcConvMethodsRec methods_cstowcs = {
 };
 
 static XlcConv
-open_cstowcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_cstowcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     lazy_init_all_charsets();
     return create_conv(from_lcd, &methods_cstowcs);
@@ -1406,14 +1406,14 @@ open_cstowcs(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNWideChar to XlcNCharSet */
 
 static int
-wcstocs(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+wcstocs(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     Utf8Conv *preferred_charsets;
     XlcCharSet last_charset = NULL;
@@ -1487,11 +1487,11 @@ static XlcConvMethodsRec methods_wcstocs = {
 };
 
 static XlcConv
-open_wcstocs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstocs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tocs_conv(from_lcd, &methods_wcstocs);
 }
@@ -1499,14 +1499,14 @@ open_wcstocs(from_lcd, from_type, to_lcd, to_type)
 /* from XlcNWideChar to XlcNChar */
 
 static int
-wcstocs1(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+wcstocs1(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     Utf8Conv *preferred_charsets;
     XlcCharSet last_charset = NULL;
@@ -1581,11 +1581,11 @@ static XlcConvMethodsRec methods_wcstocs1 = {
 };
 
 static XlcConv
-open_wcstocs1(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstocs1(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tocs_conv(from_lcd, &methods_wcstocs1);
 }
@@ -1593,14 +1593,14 @@ open_wcstocs1(from_lcd, from_type, to_lcd, to_type)
 /* trivial, no conversion */
 
 static int
-identity(conv, from, from_left, to, to_left, args, num_args)
-    XlcConv conv;
-    XPointer *from;
-    int *from_left;
-    XPointer *to;
-    int *to_left;
-    XPointer *args;
-    int num_args;
+identity(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
 {
     unsigned char const *src;
     unsigned char const *srcend;
@@ -1633,11 +1633,11 @@ static XlcConvMethodsRec methods_identity = {
 };
 
 static XlcConv
-open_identity(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_identity(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_conv(from_lcd, &methods_identity);
 }
@@ -1649,9 +1649,9 @@ open_identity(from_lcd, from_type, to_lcd, to_type)
 #define BUFFSIZE 20
 
 static XlcConv
-create_tofontcs_conv(lcd, methods)
-    XLCd lcd;
-    XlcConvMethods methods;
+create_tofontcs_conv(
+    XLCd lcd,
+    XlcConvMethods methods)
 {
     XlcConv conv;
     int i, num, k, count;
@@ -1723,28 +1723,28 @@ create_tofontcs_conv(lcd, methods)
 }
 
 static XlcConv
-open_wcstofcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_wcstofcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tofontcs_conv(from_lcd, &methods_wcstocs);
 }
 
 static XlcConv
-open_utf8tofcs(from_lcd, from_type, to_lcd, to_type)
-    XLCd from_lcd;
-    char *from_type;
-    XLCd to_lcd;
-    char *to_type;
+open_utf8tofcs(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
 {
     return create_tofontcs_conv(from_lcd, &methods_utf8tocs);
 }
 
 XLCd
-_XlcUtf8Loader(name)
-    _Xconst char *name;
+_XlcUtf8Loader(
+    const char *name)
 {
     XLCd lcd;
 

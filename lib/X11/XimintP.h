@@ -35,7 +35,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                  miyamoto@jrd.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/XimintP.h,v 1.3 2000/06/14 18:20:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XimintP.h,v 1.4 2000/11/28 17:25:08 dawes Exp $ */
 
 #ifndef _XIMINTP_H
 #define _XIMINTP_H
@@ -102,10 +102,13 @@ typedef Bool (*XimTransCallDispatcher)(
  * private part of IM
  */
 typedef struct _XimProtoPrivateRec {
+    /* The first fields are identical with XimCommonPrivateRec. */
     XlcConv			 ctom_conv;
     XlcConv			 ctow_conv;
+    XlcConv			 ctoutf8_conv;
     XlcConv			 cstomb_conv;
     XlcConv			 cstowc_conv;
+    XlcConv			 cstoutf8_conv;
     XlcConv			 ucs_conv;
 
     Window			 im_window;

@@ -23,19 +23,12 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.4 2000/02/12 02:54:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.5 2000/02/29 03:09:04 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
 #include "XlcPublic.h"
-
-/* EXTERNS */
-/* lcCt.c */
-extern Bool _XlcParseCharSet(
-#if NeedFunctionPrototypes
-    XlcCharSet /* charset */
-#endif
-);
+#include "XlcPubI.h"
 
 #if NeedVarargsPrototypes
 char *
@@ -81,8 +74,8 @@ typedef struct _XlcCharSetListRec {
 static XlcCharSetList charset_list = NULL;
 
 XlcCharSet
-_XlcGetCharSet(name)
-    _Xconst char *name;
+_XlcGetCharSet(
+    const char *name)
 {
     XlcCharSetList list;
     XrmQuark xrm_name;
@@ -98,9 +91,9 @@ _XlcGetCharSet(name)
 }
 
 XlcCharSet
-_XlcGetCharSetWithSide(encoding_name, side)
-    _Xconst char *encoding_name;
-    XlcSide side;
+_XlcGetCharSetWithSide(
+    const char *encoding_name,
+    XlcSide side)
 {
     XlcCharSetList list;
     XrmQuark xrm_encoding_name;
@@ -117,8 +110,8 @@ _XlcGetCharSetWithSide(encoding_name, side)
 }
 
 Bool
-_XlcAddCharSet(charset)
-    XlcCharSet charset;
+_XlcAddCharSet(
+    XlcCharSet charset)
 {
     XlcCharSetList list;
 
@@ -152,10 +145,10 @@ static XlcResource resources[] = {
 };
 
 static char *
-get_values(charset, args, num_args)
-    register XlcCharSet charset;
-    register XlcArgList args;
-    register int num_args;
+get_values(
+    XlcCharSet charset,
+    XlcArgList args,
+    int num_args)
 {
     if (resources[0].xrm_name == NULLQUARK)
 	_XlcCompileResourceList(resources, XlcNumber(resources));
@@ -165,12 +158,12 @@ get_values(charset, args, num_args)
 }
 
 XlcCharSet
-_XlcCreateDefaultCharSet(name, ct_sequence)
-    _Xconst char *name;
-    _Xconst char *ct_sequence;
+_XlcCreateDefaultCharSet(
+    const char *name,
+    const char *ct_sequence)
 {
     XlcCharSet charset;
-    _Xconst char *colon;
+    const char *colon;
 
     charset = (XlcCharSet) Xmalloc(sizeof(XlcCharSetRec));
     if (charset == NULL)

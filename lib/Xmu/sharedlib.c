@@ -21,6 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #if defined(SUNSHLIB) && !defined(SHAREDCODE)
 
@@ -63,5 +64,6 @@ DeclareAtom(XA_TARGETS)
 DeclareAtom(XA_TEXT)
 DeclareAtom(XA_TIMESTAMP)
 DeclareAtom(XA_USER)
+DeclareAtom(XA_UTF8_STRING)
 
 #endif /* SUNSHLIB */

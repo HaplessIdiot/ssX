@@ -28,7 +28,7 @@ from The Open Group.
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcDynamic.c,v 1.2 2000/02/12 02:54:11 dawes Exp $ */
 
 /*
  * A dynamically loaded locale.
@@ -43,6 +43,7 @@ from The Open Group.
 #include <dlfcn.h>
 
 #include "Xlibint.h"
+#include "Xlcint.h"
 
 #ifndef XLOCALEDIR
 #define XLOCALEDIR "/usr/lib/X11/locale"
@@ -51,8 +52,8 @@ from The Open Group.
 #define LCLIBNAME    "xi18n.so"
 
 XLCd
-_XlcDynamicLoader(name)
-    char *name;
+_XlcDynamicLoader(
+    const char *name)
 {
     char libpath[1024];
     XLCdMethods _XlcGenericMethods;
@@ -62,11 +63,11 @@ _XlcDynamicLoader(name)
     sprintf(libpath,"%s/%s/%s",
 		XLOCALEDIR,name,LCLIBNAME);
     nlshandler = dlopen(libpath,LAZY);
-    _XlcGenericMethods = (XLCdMethods)dlsym(nlshandler,
-				"genericMethods");
+    _XlcGenericMethods = (XLCdMethods)dlsym(nlshandler,"genericMethods");
     lcd = _XlcCreateLC(name,_XlcGenericMethods);
-    
 
     return lcd;
 }
+#else
+typedef int dummy;
 #endif /* USE_DYNAMIC_LOADER */

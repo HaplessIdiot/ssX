@@ -23,16 +23,14 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.17 1999/05/09 10:50:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.18 2000/01/29 18:58:17 dawes Exp $ */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
 
 /************************************************************************/
 
@@ -77,27 +75,32 @@ extern char *getenv();
 
 #define NUM_LOCALEDIR	64
 
+/* Splits a NUL terminated line into constituents, at colons and newline
+   characters. Leading whitespace is removed from constituents. The
+   constituents are stored at argv[0..argsize-1]. The number of stored
+   constituents (<= argsize) is returned. The line is destructively
+   modified. */
 static int
-parse_line(line, argv, argsize)
-    char *line;
-    char **argv;
-    int argsize;
+parse_line(
+    char *line,
+    char **argv,
+    int argsize)
 {
     int argc = 0;
     char *p = line;
 
-    while(argc < argsize){
-	while(isspace(*p)){
+    while (argc < argsize) {
+	while (isspace(*p)) {
 	    ++p;
 	}
-	if(*p == '\0'){
+	if (*p == '\0') {
 	    break;
 	}
 	argv[argc++] = p;
-	while(*p != ':' && *p != '\n' && *p != '\0'){
+	while (*p != ':' && *p != '\n' && *p != '\0') {
 	    ++p;
 	}
-	if(*p == '\0'){
+	if (*p == '\0') {
 	    break;
 	}
 	*p++ = '\0';
@@ -106,31 +109,25 @@ parse_line(line, argv, argsize)
     return argc;
 }
 
-/* parse the colon separated list in path into argv */
-int
-_XlcParsePath(path, argv, argsize)
-    char *path;
-    char **argv;
-    int argsize;
+/* Splits a colon separated list of directories, and returns the constituent
+   paths (without trailing slash). At most argsize constituents are stored
+   at argv[0..argsize-1]. The number of stored constituents is returned. */
+static int
+_XlcParsePath(
+    char *path,
+    char **argv,
+    int argsize)
 {
     char *p = path;
-    int i, n;
+    int n, i;
 
-#if 0
-    while((p = strchr(p, LC_PATHDELIM)) != NULL){
-	*p = ' ';	/* place space on delimter */
-    }
-#endif
     n = parse_line(path, argv, argsize);
-    if(n == 0){
-	return 0;
-    }
-    for(i = 0; i < n; ++i){
+    for (i = 0; i < n; ++i) {
 	int len;
 	p = argv[i];
 	len = strlen(p);
-	if(p[len - 1] == '/'){
-	    /* eliminate slash */
+	if (len > 0 && p[len - 1] == '/') {
+	    /* eliminate trailing slash */
 	    p[len - 1] = '\0';
 	}
     }
@@ -142,15 +139,15 @@ _XlcParsePath(path, argv, argsize)
 #endif
 
 static void
-xlocaledir(buf, buf_len)
-    char *buf;
-    int buf_len;
+xlocaledir(
+    char *buf,
+    int buf_len)
 {
     char *dir, *p = buf;
     int len = 0;
 
     dir = getenv("XLOCALEDIR");
-    if(dir != NULL){
+    if (dir != NULL) {
 	len = strlen(dir);
 	strncpy(p, dir, buf_len);
 	if (len < buf_len) {
@@ -167,89 +164,88 @@ xlocaledir(buf, buf_len)
     buf[buf_len-1] = '\0';
 }
 
-enum { LtoR, RtoL };
+/* Mapping direction */
+typedef enum {
+  LtoR,		/* Map first field to second field */
+  RtoL		/* Map second field to first field */
+} MapDirection;
 
 static char *
-resolve_name(lc_name, file_name, direction)
-    char *lc_name;
-    char *file_name;
-    int direction;	/* mapping direction */
+resolve_name(
+    const char *lc_name,
+    char *file_name,
+    MapDirection direction)
 {
     FILE *fp;
     char buf[XLC_BUFSIZE], *name = NULL;
 
     fp = _XFopenFile (file_name, "r");
-    if(fp == (FILE *)NULL){
+    if (fp == NULL)
 	return NULL;
-    }
 
-    while(fgets(buf, XLC_BUFSIZE, fp) != NULL){
+    while (fgets(buf, XLC_BUFSIZE, fp) != NULL) {
 	char *p = buf;
 	int n;
 	char *args[2], *from, *to;
 #ifdef __EMX__  /* Take out CR under OS/2 */
 	int len;
 
-	len=strlen(p);
-	if (len>1) {
-	  if (*(p+len-2) == '\r' && *(p+len-1) == '\n') {
+	len = strlen(p);
+	if (len > 1) {
+	    if (*(p+len-2) == '\r' && *(p+len-1) == '\n') {
 		*(p+len-2) = '\n';
 		*(p+len-1) = '\0';
-	  }
+	    }
 	}
 #endif
-	while(isspace(*p)){
+	while (isspace(*p)) {
 	    ++p;
 	}
-	if(iscomment(*p)){
+	if (iscomment(*p)) {
 	    continue;
 	}
 	n = parse_line(p, args, 2);		/* get first 2 fields */
-	if(n != 2){
+	if (n != 2) {
 	    continue;
 	}
-	if(direction == LtoR){
+	if (direction == LtoR) {
 	    from = args[0], to = args[1];	/* left to right */
-	}else{
+	} else {
 	    from = args[1], to = args[0];	/* right to left */
 	}
-	if(! strcmp(from, lc_name)){
+	if (! strcmp(from, lc_name)) {
 	    name = Xmalloc(strlen(to) + 1);
-	    if(name != NULL){
+	    if (name != NULL) {
 		strcpy(name, to);
 	    }
 	    break;
 	}
     }
-    if(fp != (FILE *)NULL){
-	fclose(fp);
-    }
+    fclose(fp);
     return name;
 }
 
-/*
-#define	isupper(ch)	('A' <= (ch) && (ch) <= 'Z')
-#define	tolower(ch)	((ch) - 'A' + 'a')
-*/
-static char *
-lowercase(dst, src)
-    char *dst;
-    char *src;
-{
-    char *s, *t;
+#define	c_tolower(ch)	((ch) >= 'A' && (ch) <= 'Z' ? (ch) - 'A' + 'a' : (ch))
 
-    for(s = src, t = dst; *s; ++s, ++t){
-	*t = isupper(*s) ? tolower(*s) : *s;
-    }
+static char *
+lowercase(
+    char *dst,
+    const char *src)
+{
+    const char *s;
+    char *t;
+
+    for (s = src, t = dst; *s; ++s, ++t)
+	*t = c_tolower(*s);
     *t = '\0';
     return dst;
 }
 
 /************************************************************************/
 char *
-_XlcFileName(lcd, category)
-    XLCd lcd;
-    char *category;
+_XlcFileName(
+    XLCd lcd,
+    const char *category)
 {
     char *siname;
     char cat[XLC_BUFSIZE], dir[XLC_BUFSIZE];
@@ -257,16 +253,15 @@ _XlcFileName(lcd, category)
     char *args[NUM_LOCALEDIR];
     char *file_name = NULL;
 
-    if(lcd == (XLCd)NULL){
+    if (lcd == (XLCd)NULL)
 	return NULL;
-    }
 
     siname = XLC_PUBLIC(lcd, siname);
 
     lowercase(cat, category);
     xlocaledir(dir,XLC_BUFSIZE);
     n = _XlcParsePath(dir, args, NUM_LOCALEDIR);
-    for(i = 0; i < n; ++i){
+    for (i = 0; i < n; ++i) {
 	char buf[PATH_MAX], *name;
 
 	name = NULL;
@@ -275,20 +270,20 @@ _XlcFileName(lcd, category)
 	    sprintf(buf, "%s/%s.dir", args[i], cat);
 	    name = resolve_name(siname, buf, RtoL);
 	}
-	if(name == NULL){
+	if (name == NULL) {
 	    continue;
 	}
-	if(*name == '/'){
+	if (*name == '/') {
 	    /* supposed to be absolute path name */
 	    file_name = name;
-	}else{
+	} else {
 	    file_name = Xmalloc(2 + (args[i] ? strlen (args[i]) : 0) +
 				(name ? strlen (name) : 0));
 	    if (file_name != NULL)
 		sprintf(file_name, "%s/%s", args[i], name);
 	    Xfree(name);
 	}
-	if(isreadable(file_name)){
+	if (isreadable(file_name)) {
 	    break;
 	}
 	Xfree(file_name);
@@ -304,9 +299,9 @@ _XlcFileName(lcd, category)
 #endif
 
 int
-_XlcResolveLocaleName(lc_name, pub)
-    char* lc_name;
-    XLCdPublicPart* pub;
+_XlcResolveLocaleName(
+    const char* lc_name,
+    XLCdPublicPart* pub)
 {
     char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
     char *dst;
@@ -317,13 +312,13 @@ _XlcResolveLocaleName(lc_name, pub)
 
     xlocaledir (dir, PATH_MAX);
     n = _XlcParsePath(dir, args, NUM_LOCALEDIR);
-    for(i = 0; i < n; ++i){
+    for (i = 0; i < n; ++i) {
 	if ((2 + (args[i] ? strlen (args[i]) : 0) + 
 	    strlen (locale_alias)) < PATH_MAX) {
 	    sprintf (buf, "%s/%s", args[i], locale_alias);
 	    name = resolve_name (lc_name, buf, LtoR);
 	}
-	if(name != NULL){
+	if (name != NULL) {
 	    break;
 	}
     }
@@ -383,7 +378,7 @@ _XlcResolveI18NPath(buf, buf_len)
     char *buf;
     int buf_len;
 {
-    if(buf != NULL){
+    if (buf != NULL) {
 	xlocaledir(buf, buf_len);
     }
     return 1;

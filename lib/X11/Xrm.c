@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.12 1999/05/09 10:50:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.13 1999/05/30 03:03:19 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -450,36 +450,43 @@ static void PrintQuarkList(quarks, stream)
 
 #endif /* DEBUG */
 
-/*ARGSUSED*/
-static void mbnoop(state)
-    XPointer state;
+
+/*
+ * Fallback methods for Xrm parsing.
+ * Simulate a C locale. No state needed here.
+ */
+
+static void
+c_mbnoop(
+    XPointer state)
 {
 }
 
-/*ARGSUSED*/
-static char mbchar(state, str, lenp)
-    XPointer state;
-    char *str;
-    int *lenp;
+static char
+c_mbchar(
+    XPointer state,
+    const char *str,
+    int *lenp)
 {
     *lenp = 1;
     return *str;
 }
 
-/*ARGSUSED*/
-static char *lcname(state)
-    XPointer state;
+static const char *
+c_lcname(
+    XPointer state)
 {
     return "C";
 }
 
-static RConst XrmMethodsRec mb_methods = {
-    mbnoop,
-    mbchar,
-    mbnoop,
-    lcname,
-    mbnoop
+static const XrmMethodsRec mb_methods = {
+    c_mbnoop,	/* mbinit */
+    c_mbchar,	/* mbchar */
+    c_mbnoop,	/* mbfinish */
+    c_lcname,	/* lcname */
+    c_mbnoop	/* destroy */
 };
+
 
 static XrmDatabase NewDatabase()
 {
@@ -492,7 +499,7 @@ static XrmDatabase NewDatabase()
 	db->mbstate = (XPointer)NULL;
 	db->methods = _XrmInitParseInfo(&db->mbstate);
 	if (!db->methods)
-	    db->methods = (XrmMethods)&mb_methods;
+	    db->methods = &mb_methods;
     }
     return db;
 }
@@ -2650,10 +2657,11 @@ static void DestroyNTable(table)
     Xfree((char *)table);
 }
 
-char *XrmLocaleOfDatabase(db)
+const char *
+XrmLocaleOfDatabase(db)
     XrmDatabase db;
 {
-    char* retval;
+    const char* retval;
     _XLockMutex(&db->linfo);
     retval = (*db->methods->lcname)(db->mbstate);
     _XUnlockMutex(&db->linfo);

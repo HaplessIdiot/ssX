@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcPubWrap.c,v 1.2 1997/11/22 12:50:11 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -63,8 +63,8 @@ _XGetLCValues(lcd, va_alist)
 }
 
 void
-_XlcDestroyLC(lcd)
-    XLCd lcd;
+_XlcDestroyLC(
+    XLCd lcd)
 {
     XLCdPublicMethods methods = (XLCdPublicMethods) lcd->methods;
 
@@ -72,9 +72,9 @@ _XlcDestroyLC(lcd)
 }
 
 XLCd
-_XlcCreateLC(name, methods)
-    _Xconst char *name;
-    XLCdMethods methods;
+_XlcCreateLC(
+    const char *name,
+    XLCdMethods methods)
 {
     XLCdPublicMethods pub_methods = (XLCdPublicMethods) methods;
     XLCd lcd;

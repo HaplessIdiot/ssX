@@ -113,13 +113,13 @@ check_vertical_fonttype(name)
 #define FONTSCOPE     2
 
 FontData
-_XomGetFontDataFromFontSet(fs,str,len,len_ret,is2b,type)
-FontSet fs;
-unsigned char *str;
-int len;
-int *len_ret;
-int is2b;     
-int type;          /* VMAP , VROTATE , else */
+_XomGetFontDataFromFontSet(fs, str,len, len_ret, is2b, type)
+    FontSet fs;
+    unsigned char *str;
+    int len;
+    int *len_ret;
+    int is2b;     
+    int type;          /* VMAP , VROTATE , else */
 {
     unsigned long value;
     int num,i,hit,csize;
@@ -435,18 +435,29 @@ _XomInitConverter(oc, type)
     XOMTextType type;
 {
     XOCGenericPart *gen = XOC_GENERIC(oc);
-    XlcConv conv;
+    XlcConv *convp;
     char *conv_type;
+    XlcConv conv;
     XLCd lcd;
 
-    if (type == XOMWideChar) {
-	conv = gen->wcs_to_cs;
+    switch (type) {
+    case XOMWideChar:
+	convp = &gen->wcs_to_cs;
 	conv_type = XlcNWideChar;
-    } else {
-	conv = gen->mbs_to_cs;
+	break;
+    case XOMMultiByte:
+	convp = &gen->mbs_to_cs;
 	conv_type = XlcNMultiByte;
+	break;
+    case XOMUtf8String:
+	convp = &gen->utf8_to_cs;
+	conv_type = XlcNUtf8String;
+	break;
+    default:
+	return (XlcConv) NULL;
     }
 
+    conv = *convp;
     if (conv) {
 	_XlcResetConverter(conv);
 	return conv;
@@ -461,10 +472,6 @@ _XomInitConverter(oc, type)
 	    return (XlcConv) NULL;
     }
 
-    if (type == XOMWideChar)
-	gen->wcs_to_cs = conv;
-    else
-	gen->mbs_to_cs = conv;
-
+    *convp = conv;
     return conv;
 }

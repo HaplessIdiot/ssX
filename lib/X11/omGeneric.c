@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.14 2000/02/29 03:09:04 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.16 2000/10/06 12:31:02 eich Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -57,19 +57,29 @@
 #define	POINT_SIZE_FIELD	 8
 #define	CHARSET_ENCODING_FIELD	14
 
-extern int _XmbDefaultTextEscapement(), _XwcDefaultTextEscapement();
-extern int _XmbDefaultTextExtents(), _XwcDefaultTextExtents();
-extern Status _XmbDefaultTextPerCharExtents(), _XwcDefaultTextPerCharExtents();
-extern int _XmbDefaultDrawString(), _XwcDefaultDrawString();
-extern void _XmbDefaultDrawImageString(), _XwcDefaultDrawImageString();
+extern int _XmbDefaultTextEscapement(), _XwcDefaultTextEscapement(),
+	   _Xutf8DefaultTextEscapement();
+extern int _XmbDefaultTextExtents(), _XwcDefaultTextExtents(),
+	   _Xutf8DefaultTextExtents();
+extern Status _XmbDefaultTextPerCharExtents(), _XwcDefaultTextPerCharExtents(),
+	      _Xutf8DefaultTextPerCharExtents();
+extern int _XmbDefaultDrawString(), _XwcDefaultDrawString(),
+	   _Xutf8DefaultDrawString();
+extern void _XmbDefaultDrawImageString(), _XwcDefaultDrawImageString(),
+	    _Xutf8DefaultDrawImageString();
 
-extern int _XmbGenericTextEscapement(), _XwcGenericTextEscapement();
-extern int _XmbGenericTextExtents(), _XwcGenericTextExtents();
-extern Status _XmbGenericTextPerCharExtents(), _XwcGenericTextPerCharExtents();
-extern int _XmbGenericDrawString(), _XwcGenericDrawString();
-extern void _XmbGenericDrawImageString(), _XwcGenericDrawImageString();
+extern int _XmbGenericTextEscapement(), _XwcGenericTextEscapement(),
+	   _Xutf8GenericTextEscapement();
+extern int _XmbGenericTextExtents(), _XwcGenericTextExtents(),
+	   _Xutf8GenericTextExtents();
+extern Status _XmbGenericTextPerCharExtents(), _XwcGenericTextPerCharExtents(),
+	      _Xutf8GenericTextPerCharExtents();
+extern int _XmbGenericDrawString(), _XwcGenericDrawString(),
+	   _Xutf8GenericDrawString();
+extern void _XmbGenericDrawImageString(), _XwcGenericDrawImageString(),
+	    _Xutf8GenericDrawImageString();
 
-extern void _XlcDbg_printValue();
+extern void _XlcDbg_printValue (const char *str, char **value, int num);
 
 /* For VW/UDC start */
 
@@ -543,8 +553,8 @@ get_font_name(oc, pattern)
 
 /* For VW/UDC start*/
 
-static char
-*get_rotate_fontname(font_name)
+static char *
+get_rotate_fontname(font_name)
     char *font_name;
 {
     char *pattern = NULL, *ptr = NULL;
@@ -1506,6 +1516,9 @@ destroy_oc(oc)
     if (gen->wcs_to_cs)
 	_XlcCloseConverter(gen->wcs_to_cs);
 
+    if (gen->utf8_to_cs)
+	_XlcCloseConverter(gen->utf8_to_cs);
+
 /* For VW/UDC start */ /* Change 1996.01.8 */
     destroy_fontdata(gen,dpy); 
 /*
@@ -1597,7 +1610,12 @@ static XOCMethodsRec oc_default_methods = {
     _XwcDefaultTextExtents,
     _XwcDefaultTextPerCharExtents,
     _XwcDefaultDrawString,
-    _XwcDefaultDrawImageString
+    _XwcDefaultDrawImageString,
+    _Xutf8DefaultTextEscapement,
+    _Xutf8DefaultTextExtents,
+    _Xutf8DefaultTextPerCharExtents,
+    _Xutf8DefaultDrawString,
+    _Xutf8DefaultDrawImageString
 };
 
 static XOCMethodsRec oc_generic_methods = {
@@ -1613,7 +1631,12 @@ static XOCMethodsRec oc_generic_methods = {
     _XwcGenericTextExtents,
     _XwcGenericTextPerCharExtents,
     _XwcGenericDrawString,
-    _XwcGenericDrawImageString
+    _XwcGenericDrawImageString,
+    _Xutf8GenericTextEscapement,
+    _Xutf8GenericTextExtents,
+    _Xutf8GenericTextPerCharExtents,
+    _Xutf8GenericDrawString,
+    _Xutf8GenericDrawImageString
 };
 
 typedef struct _XOCMethodsListRec {
@@ -1910,9 +1933,9 @@ add_data(om)
 extern FontScope _XlcParse_scopemaps();
 
 FontData
-read_EncodingInfo(count,value)
-int count;
-char **value;
+read_EncodingInfo(count, value)
+    int count;
+    char **value;
 {
     FontData font_data,ret;
     char *buf, *bufptr,*scp;
@@ -1952,11 +1975,11 @@ char **value;
     return(ret);
 }
 
-static CodeRange read_vrotate(count,value,type,vrotate_num)
-int count;
-char **value;
-int *type;
-int *vrotate_num;
+static CodeRange read_vrotate(count, value, type, vrotate_num)
+    int count;
+    char **value;
+    int *type;
+    int *vrotate_num;
 {
     CodeRange   range;
     if(!strcmp(value[0],"all")){
@@ -1974,10 +1997,10 @@ int *vrotate_num;
     }
 }
 
-static void read_vw(lcd,font_set,num)
-XLCd    lcd;
-OMData  font_set;
-int num;
+static void read_vw(lcd, font_set,num)
+    XLCd    lcd;
+    OMData  font_set;
+    int num;
 {
     char **value, buf[BUFSIZ];
     int count;

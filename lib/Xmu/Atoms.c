@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Atoms.c,v 3.3 1998/09/05 06:36:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Atoms.c,v 3.4 1998/10/03 09:06:20 dawes Exp $ */
 
 /*
  * This file contains routines to cache atoms, avoiding multiple
@@ -88,6 +88,7 @@ DeclareAtom(XA_TARGETS,			"TARGETS"		)
 DeclareAtom(XA_TEXT,			"TEXT"			)
 DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
 DeclareAtom(XA_USER,			"USER"			)
+DeclareAtom(XA_UTF8_STRING,		"UTF8_STRING"		)
 
 /******************************************************************
 

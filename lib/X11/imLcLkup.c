@@ -29,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.2 1999/05/09 10:50:36 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -156,21 +156,76 @@ _XimLocalWcLookupString(xic, ev, buffer, wlen, keysym, status)
     return (ret);
 }
 
+Public int
+_XimLocalUtf8LookupString(xic, ev, buffer, bytes, keysym, status)
+    XIC		  xic;
+    XKeyEvent	 *ev;
+    char	 *buffer;
+    int		  bytes;
+    KeySym	 *keysym;
+    Status	 *status;
+{
+    Xic		 ic = (Xic)xic;
+    int		 ret;
+
+    if(ev->type != KeyPress) {
+	if(status) *status = XLookupNone;
+	return(0);
+    }
+    if(ev->keycode == 0) { /* Composed Event */
+	ret = strlen(ic->private.local.composed->utf8);
+	if(ret > bytes) {
+	    if(status) *status = XBufferOverflow;
+	    return (ret);
+	}
+	memcpy(buffer, ic->private.local.composed->utf8, ret);
+	if(keysym) *keysym = ic->private.local.composed->ks;
+	if (ret > 0) {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupBoth;
+	    } else {
+		if(status) *status = XLookupChars;
+	    }
+	} else {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupKeySym;
+	    } else {
+		if(status) *status = XLookupNone;
+	    }
+	}
+	return (ret);
+    } else { /* Throughed Event */
+	ret = _XimLookupUTF8Text(ic, ev, buffer, bytes, keysym, NULL);
+	if(ret > 0) {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupBoth;
+	    } else {
+		if(status) *status = XLookupChars;
+	    }
+	} else {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupKeySym;
+	    } else {
+		if(status) *status = XLookupNone;
+	    }
+	}
+    }
+    return (ret);
+}
+
 #ifndef MAXINT
 #define MAXINT		(~((unsigned int)1 << ((8 * sizeof(int)) - 1)))
 #endif /* !MAXINT */
 
-Public int
-_XimLcctstombs(xim, from, from_len, to, to_len, state)
-    XIM		 xim;
+Private int
+_XimLcctsconvert(conv, from, from_len, to, to_len, state)
+    XlcConv	 conv;
     char	*from;
     int		 from_len;
     char	*to;
     int		 to_len;
     Status	*state;
 {
-    Xim		 im = (Xim)xim;
-    XlcConv	 conv = im->private.local.ctom_conv;
     int		 from_left;
     int		 to_left;
     int		 from_savelen;
@@ -243,6 +298,19 @@ _XimLcctstombs(xim, from, from_len, to, to_len, state)
 	}
     }
     return to_cnvlen;
+}
+
+Public int
+_XimLcctstombs(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
+    char	*from;
+    int		 from_len;
+    char	*to;
+    int		 to_len;
+    Status	*state;
+{
+    return _XimLcctsconvert(((Xim)xim)->private.local.ctom_conv,
+			    from, from_len, to, to_len, state);
 }
 
 Public int
@@ -328,4 +396,17 @@ _XimLcctstowcs(xim, from, from_len, to, to_len, state)
 	}
     }
     return to_cnvlen;
+}
+
+Public int
+_XimLcctstoutf8(xim, from, from_len, to, to_len, state)
+    XIM		 xim;
+    char	*from;
+    int		 from_len;
+    char	*to;
+    int		 to_len;
+    Status	*state;
+{
+    return _XimLcctsconvert(((Xim)xim)->private.local.ctoutf8_conv,
+			    from, from_len, to, to_len, state);
 }

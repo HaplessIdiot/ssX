@@ -1,5 +1,6 @@
-.\" $XConsortium: Framework.ms,v 1.3 94/04/18 15:48:49 rws Exp $
+.\" $TOG: Framework.ms /main/6 1997/11/04 18:03:10 kaleb $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''
@@ -65,8 +66,8 @@ in this Software without prior written authorization from the X Consortium.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBSample Implementation Frame Work\fP''\fBX11, Release 6\fP'
-.OH '\fBSample Implementation Frame Work\fP''\fBX11, Release 6\fP'
+.EH '\fBSample Implementation Frame Work\fP''\fBX11, Release 6.4\fP'
+.OH '\fBSample Implementation Frame Work\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -1000,7 +1001,7 @@ int _XlcNCompareISOLatin1(\fIstr1\fP, \fIstr2\fP, \fIlen\fP)
 .LP
 The 
 .PN _XlcCompareIsoLatin1 
-function to compares two ISO-8859-1 strings.  Bytes representing lower 
+function to compares two ISO-8859-1 strings.  Bytes representing ASCII lower 
 case letters are converted to upper case before making the comparison.  
 The value returned is an integer less than, equal to, or greater than 
 zero, depending on whether ``\fIstr1\fP'' is lexicographicly less than, 

@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.32 2000/10/24 18:07:36 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.33 2000/11/28 17:25:07 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -677,8 +677,10 @@ SRCS3 = \
 	OMWrap.c \
 	lcWrap.c \
 	mbWMProps.c \
+	utf8WMProps.c \
 	mbWrap.c \
 	wcWrap.c \
+	utf8Wrap.c \
 	FilterEv.c \
 	RegstFlt.c \
 	locking.c \
@@ -758,8 +760,10 @@ OBJS3 = \
 	OMWrap.o \
 	lcWrap.o \
 	mbWMProps.o \
+	utf8WMProps.o \
 	mbWrap.o \
 	wcWrap.o \
+	utf8Wrap.o \
 	FilterEv.o \
 	RegstFlt.o \
 	locking.o \
@@ -768,13 +772,8 @@ OBJS3 = \
 	ximtrans.o \
 	$(XKBOBJS) $(LCOBJS) $(MISCOBJS)
 
-#ifdef RsArchitecture
-LCDEPSYMSRCS = aixlcLoad.c
-#endif
-
 LCSRCS = \
 	SetLocale.c \
-	$(LCDEPSYMSRCS) \
 	imCallbk.c \
 	imConv.c \
 	imDefFlt.c \
@@ -832,18 +831,8 @@ LCSRCS = \
 	omTextPer.c \
 	omXChar.c
 
-/*
-#if defined(SunArchitecture) && defined(HasSharedLibraries)
-LCDEPOBJS = XsunDL.o
-#endif
-*/
-#ifdef RsArchitecture
-LCDEPOBJS = aixlcLoad.o
-#endif
-
 LCOBJS = \
 	SetLocale.o \
-	$(LCDEPOBJS) \
 	imCallbk.o \
 	imConv.o \
 	imDefFlt.o \

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/omText.c,v 1.2 1999/05/09 10:50:42 dawes Exp $ */
 /*
  * Copyright 1995 by FUJITSU LIMITED
  * This is source code modified by FUJITSU LIMITED under the Joint
@@ -357,7 +357,7 @@ _XmbGenericDrawString(dpy, d, oc, gc, x, y, text, length)
     XOC oc;
     GC gc;
     int x, y;
-    char *text;
+    _Xconst char *text;
     int length;
 #endif
 {
@@ -376,10 +376,29 @@ _XwcGenericDrawString(dpy, d, oc, gc, x, y, text, length)
     XOC oc;
     GC gc;
     int x, y;
-    wchar_t *text;
+    _Xconst wchar_t *text;
     int length;
 #endif
 {
     return _XomGenericDrawString(dpy, d, oc, gc, x, y, XOMWideChar,
+				 (XPointer) text, length);
+}
+
+int
+#if NeedFunctionPrototypes
+_Xutf8GenericDrawString(Display *dpy, Drawable d, XOC oc, GC gc, int x, int y,
+			_Xconst char *text, int length)
+#else
+_Xutf8GenericDrawString(dpy, d, oc, gc, x, y, text, length)
+    Display *dpy;
+    Drawable d;
+    XOC oc;
+    GC gc;
+    int x, y;
+    _Xconst char *text;
+    int length;
+#endif
+{
+    return _XomGenericDrawString(dpy, d, oc, gc, x, y, XOMUtf8String,
 				 (XPointer) text, length);
 }

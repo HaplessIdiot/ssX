@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imLcIc.c,v 1.2 2000/02/18 16:23:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -89,24 +89,29 @@ _XimLocalSetFocus(xic)
     return;
 }
 
-Private char *
-_XimLocalMbReset(xic)
+Private void
+_XimLocalReset(xic)
     XIC	 xic;
 {
     Xic	 ic = (Xic)xic;
     ic->private.local.composed = (DefTree *)NULL;
     ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
-    return((char *)NULL);
+}
+
+Private char *
+_XimLocalMbReset(xic)
+    XIC	 xic;
+{
+    _XimLocalReset(xic);
+    return (char *)NULL;
 }
 
 Private wchar_t *
 _XimLocalWcReset(xic)
     XIC	 xic;
 {
-    Xic	 ic = (Xic)xic;
-    ic->private.local.composed = (DefTree *)NULL;
-    ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
-    return((wchar_t *)NULL);
+    _XimLocalReset(xic);
+    return (wchar_t *)NULL;
 }
 
 Private XICMethodsRec Local_ic_methods = {
@@ -117,8 +122,10 @@ Private XICMethodsRec Local_ic_methods = {
     _XimLocalGetICValues,	/* get_values */
     _XimLocalMbReset,		/* mb_reset */
     _XimLocalWcReset,		/* wc_reset */
+    _XimLocalMbReset,		/* utf8_reset */
     _XimLocalMbLookupString,	/* mb_lookup_string */
     _XimLocalWcLookupString,	/* wc_lookup_string */
+    _XimLocalUtf8LookupString	/* utf8_lookup_string */
 };
 
 Public XIC

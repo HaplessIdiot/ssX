@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.4 2000/06/13 02:28:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.5 2000/11/28 17:25:08 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -1037,6 +1037,10 @@ _XimProtoIMFree(im)
 	_XlcCloseConverter(im->private.proto.ctow_conv);
 	im->private.proto.ctow_conv = NULL;
     }
+    if (im->private.proto.ctoutf8_conv) {
+	_XlcCloseConverter(im->private.proto.ctoutf8_conv);
+	im->private.proto.ctoutf8_conv = NULL;
+    }
     if (im->private.proto.cstomb_conv) {
 	_XlcCloseConverter(im->private.proto.cstomb_conv);
 	im->private.proto.cstomb_conv = NULL;
@@ -1044,6 +1048,10 @@ _XimProtoIMFree(im)
     if (im->private.proto.cstowc_conv) {
 	_XlcCloseConverter(im->private.proto.cstowc_conv);
 	im->private.proto.cstowc_conv = NULL;
+    }
+    if (im->private.proto.cstoutf8_conv) {
+	_XlcCloseConverter(im->private.proto.cstoutf8_conv);
+	im->private.proto.cstoutf8_conv = NULL;
     }
 
 #ifdef XIM_CONNECTABLE
@@ -1549,7 +1557,8 @@ Private XIMMethodsRec     im_methods = {
     _XimProtoGetIMValues,       /* get_values */
     _XimProtoCreateIC,          /* create_ic */
     _Ximctstombs,		/* ctstombs */
-    _Ximctstowcs		/* ctstowcs */
+    _Ximctstowcs,		/* ctstowcs */
+    _Ximctstoutf8		/* ctstoutf8 */
 };
 
 Private Bool
@@ -1611,6 +1620,7 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
     int		 len;
     XlcConv	 ctom_conv;
     XlcConv	 ctow_conv;
+    XlcConv	 ctoutf8_conv;
     XlcConv	 conv;
     XimProtoPrivateRec *private = &im->private.proto;
 
@@ -1620,6 +1630,9 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
 	    return False;
 	if (!(ctow_conv = _XlcOpenConverter(lcd,
 				 XlcNCompoundText, lcd, XlcNWideChar)))
+	    return False;
+	if (!(ctoutf8_conv = _XlcOpenConverter(lcd,
+				 XlcNCompoundText, lcd, XlcNUtf8String)))
 	    return False;
     }
 
@@ -1632,6 +1645,9 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
 		    return False;
 		if (!(ctow_conv = _XlcOpenConverter(lcd,
 				 XlcNCompoundText, lcd, XlcNWideChar)))
+		    return False;
+		if (!(ctoutf8_conv = _XlcOpenConverter(lcd,
+				 XlcNCompoundText, lcd, XlcNUtf8String)))
 		    return False;
 		break;
 	    } else {
@@ -1653,6 +1669,8 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
 
     private->ctom_conv = ctom_conv;
     private->ctow_conv = ctow_conv;
+    private->ctoutf8_conv = ctoutf8_conv;
+
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNMultiByte)))
 	return False;
     private->cstomb_conv = conv;
@@ -1660,6 +1678,10 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
     if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNWideChar)))
 	return False;
     private->cstowc_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNCharSet, lcd, XlcNUtf8String)))
+	return False;
+    private->cstoutf8_conv = conv;
 
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
 	return False;

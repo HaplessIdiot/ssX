@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 /* 2000 Modifier: Ivan Pascal	The XFree86 Project.
  */
-/* $XFree86: xc/lib/X11/imConv.c,v 1.26 2000/10/27 18:30:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.27 2000/11/28 17:25:08 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -66,9 +66,7 @@ typedef int (*ucstocsConvProc)(
 );
 
 XPointer _Utf8GetConvByName(
-#if NeedFunctionPrototypes
-    _Xconst char *
-#endif
+    const char *	name
 );
 
 struct SubstRec {
@@ -229,16 +227,16 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
             from_len = BUF_SIZE - to_len;
             to_len = nbytes;
             args[0] = (XPointer) charset;
-	    if ((count = _XlcConvert(private->cstomb_conv,
-                                     &from, &from_len, &to, &to_len,
-				     args, 1 )) != 0) {
+	    if (_XlcConvert(private->cstomb_conv,
+                            &from, &from_len, &to, &to_len,
+			    args, 1 ) != 0) {
 		count = 0;
 	    } else {
                 count = nbytes - to_len;
 	    }
 	}
     }
-    /* 
+    /* FIXME:
      * we should make sure that if the character is a Latin1 character
      * and it's on the right side, and we're in a non-Latin1 locale
      * that this is a valid Latin1 character for this locale.
@@ -299,21 +297,92 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
             to_len = nbytes;
             args[0] = (XPointer) charset;
 
-	    if ((count = _XlcConvert(private->cstowc_conv,
-                                     &from, &from_len, &to, &to_len,
-				     args, 1 )) != 0) {
+	    if (_XlcConvert(private->cstowc_conv,
+                            &from, &from_len, &to, &to_len,
+			    args, 1 ) != 0) {
 		count = 0;
 	    } else {
                 count = nbytes - to_len;
 	    }
 	}
     } else
-	/* 
+	/* FIXME:
 	 * we should make sure that if the character is a Latin1 character
 	 * and it's on the right side, and we're in a non-Latin1 locale
 	 * that this is a valid Latin1 character for this locale.
 	 */
 	buffer[0] = look[0];
 
+    return count;
+}
+
+int
+_XimLookupUTF8Text(ic, event, buffer, nbytes, keysym, status)
+    Xic			 ic;
+    XKeyEvent*		event;
+    char*		buffer;
+    int			nbytes;
+    KeySym*		keysym;
+    XComposeStatus*	status;
+{
+    int count;
+    KeySym symbol;
+    Status	dummy;
+    Xim	im = (Xim)ic->core.im;
+    XimCommonPrivateRec* private = &im->private.common;
+    unsigned char look[BUF_SIZE];
+    ucs4_t ucs4;
+
+    /* force a latin-1 lookup for compatibility */
+    count = XLOOKUPSTRING(event, (char *)buffer, nbytes, &symbol, status);
+    if (keysym != NULL) *keysym = symbol;
+    if ((nbytes == 0) || (symbol == NoSymbol)) return count;
+
+    if (count > 1) {
+	memcpy(look, (char *)buffer,count);
+	look[count] = '\0';
+	if ((count = im->methods->ctstoutf8(ic->core.im,
+				(char*) look, count, 
+				buffer, nbytes, &dummy)) < 0) {
+	    count = 0;
+	}
+    } else if ((count == 0) || 
+	       (count == 1 && (symbol > 0x7f && symbol < 0xff00))) {
+
+        XPointer from = (XPointer) &ucs4;
+        XPointer to =   (XPointer) look;
+        int from_len = 1;
+        int to_len = BUF_SIZE;
+        XPointer args[1];
+        XlcCharSet charset;
+        args[0] = (XPointer) &charset;
+        ucs4 = (ucs4_t) KeySymToUcs4(symbol);
+        if (!ucs4)
+            return 0;
+
+	if ((count = _XlcConvert(private->ucs_conv,
+                                 &from, &from_len, &to, &to_len,
+                                 args, 1 )) != 0) {
+	    count = 0;
+	} else {
+            from = (XPointer) look;
+            to =   (XPointer) buffer;
+            from_len = BUF_SIZE - to_len;
+            to_len = nbytes;
+            args[0] = (XPointer) charset;
+	    if (_XlcConvert(private->cstoutf8_conv,
+                            &from, &from_len, &to, &to_len,
+			    args, 1 ) != 0) {
+		count = 0;
+	    } else {
+                count = nbytes - to_len;
+	    }
+	}
+    }
+    /* FIXME:
+     * we should make sure that if the character is a Latin1 character
+     * and it's on the right side, and we're in a non-Latin1 locale
+     * that this is a valid Latin1 character for this locale.
+     */
     return count;
 }
