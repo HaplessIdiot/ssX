@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #include <Threads.tmpl>
 
@@ -9,13 +10,6 @@
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
-#endif
-
-#if defined(LinuxArchitecture)
-OS_SUBDIR = linux
-#endif
-#if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
-OS_SUBDIR = bsd
 #endif
 
 #ifdef i386Architecture
@@ -34,8 +28,7 @@ OS_SUBDIR = bsd
 		-I$(TOP)/include -I$(TOP)/include/GL \
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/mga \
-		-I../../../include -I../.. -I../../X -I../common \
-	        -I$(XF86OSSRC)/$(OS_SUBDIR)/drm/kernel
+		-I../../../include -I../.. -I../../X -I../common
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include
