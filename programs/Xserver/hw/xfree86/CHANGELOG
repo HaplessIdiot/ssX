@@ -1,4 +1,12 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 338. Print a warning if more than one renderer is registered for a font type
+      (#5305, Juliusz Chroboczek).
+ 337. Fix a double free() that can cause a crash in XCloseIM() (based one
+      #5303, Mo DeJong).
+ 336. Allow xman's MANCONF definition to be specified in the Imakefile
+      (based on #5302, Mike Harris).
+ 335. Config typo and update for Linux on Hitachi SuperH architecture (#5301,
+      ISHIKAWA Mutsumi).
  334. Add a "DefaultRefresh" option to the vesa driver (David Dawes).
  333. Fix build problem when calling GNU make with "--" prefixed options
       (#5291, Toomas (toomas at tklabor.ee)).
@@ -15192,4 +15200,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2303 2002/09/19 00:22:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2304 2002/09/19 02:56:59 dawes Exp $
