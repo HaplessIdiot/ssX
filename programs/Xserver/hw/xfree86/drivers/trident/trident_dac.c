@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.74 2003/10/08 15:48:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.75 2003/10/30 13:38:01 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1154,6 +1154,18 @@ TridentHWCursorInit(ScreenPtr pScreen)
 					       fbarea->box.y1 * width) *
 					       pScrn->bitsPerPixel / 8,
 					       1024);
+    }
+
+    if ((pTrident->Chipset != CYBER9397DVD) &&
+      			    (pTrident->Chipset < CYBERBLADEE4)) {
+	/* Can't deal with an offset more than 4MB */
+	if (pTrident->CursorOffset > 4096*1024) {
+	    pTrident->CursorOffset = 0;
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Hardware cursor disabled"
+		   " due to cursor offset constraints.\n");
+		return FALSE;
+	}
     }
 
     infoPtr = xf86CreateCursorInfoRec();
