@@ -1,3 +1,35 @@
+XFree86 3.1.2Gp (18 October 1996)
+1030. Fix the cursor colour not being correctly set in 15/16/32bpp modes
+      on the CT, ET, VT and GT chips (Kevin Martin).
+1029. Change Mach64 block_write behaviour.  Assume that block write mode is
+      initialised by the BIOS, but still allow it to be turned on or off
+      explicitly in the XF86Config (Kevin Martin).
+1028. Set the extended display FIFO LWM bit on the Mach64 CT-D (Kevin Martin).
+1027. Fix the retrace wait in mach64AdjustFrame() (Kevin Martin).
+1026. Delete Mach64 doublescan modes for chipsets that don't support any
+      accelerated doublescan modes (Kevin Martin).
+1025. Set Mach64 display FIFO setting to the values supplied by ATI for
+      various chipset/memory type/memory size/bpp combinations (Kevin Martin).
+1024. Fix some MGA accel problems (Radoslaw Kapitan).
+1023. FreeBSD and NetBSD doc updates (Takaaki Nomura).
+1022. Fix some Mach32 16bit font display problems (Bryan Feir).
+1021. Add support for the ICS1562 clockchip used by the DEC TGA (Harald
+      Koenig).
+1020. Make WaitQueue wait for three more free slots than requested to
+      allow a safety margin in case of coding bugs (the ViRGE will lock
+      up the PCI bus when the FIFO is full) (Harald Koenig).
+1019. S3V fixes for some XTEST errors, and remove debug and unused code
+      (Harald Koenig).
+1018. Preliminary support for the Trident Cyber 938x chipset (Alan Hourihane).
+1017. Update the max clock for the Cirrus 754x with LCD enabled, and
+      deal more gracefully when a clock line is encountered (Harm Hanemaayer).
+1016. Add/implement XF86DGAGetViewPortSize() and add an extra argument
+      to XF86DGAViewPortChanged() which indicates the number of pages
+      being used when multi-buffering (Harm Hanemaayer).
+1015. Move the setting of the XF86DGADirectColormap flag into
+      XF86DGAInstallColormap() so that apps which use this function but
+      don't explicitly set the flag will work correctly.
+
 XFree86 3.1.2Go (17 October 1996)
 1014. Add xterm-r6 entries to the xterm termcap and terminfo files.  These
       are compatible with the standard X11R6 version of xterm.

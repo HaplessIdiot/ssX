@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/37 1996/02/02 16:08:31 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.12 1996/09/14 13:05:42 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.13 1996/10/16 14:29:16 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -602,7 +602,7 @@ XProtoError.XFree86-Misc.6: XF86MiscModInDevClientNotLocal
 XRequest.XFree86-DGA.0: XF86DGAQueryVersion
 XRequest.XFree86-DGA.1: XF86DGAGetVideoLL
 XRequest.XFree86-DGA.2: XF86DGADirectVideo
-XRequest.XFree86-DGA.3: XF86DGAGetViewPort
+XRequest.XFree86-DGA.3: XF86DGAGetViewPortSize
 XRequest.XFree86-DGA.4: XF86DGASetViewPort
 XRequest.XFree86-DGA.5: XF86DGAGetVidPage
 XRequest.XFree86-DGA.6: XF86DGASetVidPage

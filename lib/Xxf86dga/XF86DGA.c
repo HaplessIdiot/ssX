@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.6 1996/10/16 14:30:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.7 1996/10/17 15:13:21 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -162,22 +162,22 @@ Bool XF86DGADirectVideoLL(dpy, screen, enable)
     return True;
 }
 
-Bool XF86DGAGetViewPort(dpy, screen, x, y)
+Bool XF86DGAGetViewPortSize(dpy, screen, width, height)
     Display* dpy;
     int screen;
-    int *x, *y;
+    int *width, *height;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    xXF86DGAGetViewPortReply rep;
-    xXF86DGAGetViewPortReq *req;
+    xXF86DGAGetViewPortSizeReply rep;
+    xXF86DGAGetViewPortSizeReq *req;
     int i;
 
     XF86DGACheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
-    GetReq(XF86DGAGetViewPort, req);
+    GetReq(XF86DGAGetViewPortSize, req);
     req->reqType = info->codes->major_opcode;
-    req->dgaReqType = X_XF86DGAGetViewPort;
+    req->dgaReqType = X_XF86DGAGetViewPortSize;
     req->screen = screen;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
@@ -185,8 +185,8 @@ Bool XF86DGAGetViewPort(dpy, screen, x, y)
 	return False;
     }
 
-    *x = rep.x;
-    *y = rep.y;
+    *width = rep.width;
+    *height = rep.height;
 	
     UnlockDisplay(dpy);
     SyncHandle();
@@ -319,9 +319,10 @@ Bool XF86DGAQueryDirectVideo(dpy, screen, flags)
     return True;
 }
 
-Bool XF86DGAViewPortChanged(dpy, screen)
+Bool XF86DGAViewPortChanged(dpy, screen, n)
     Display *dpy;
     int screen;
+    int n;
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86DGAViewPortChangedReply rep;
@@ -334,6 +335,7 @@ Bool XF86DGAViewPortChanged(dpy, screen)
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAViewPortChanged;
     req->screen = screen;
+    req->n = n;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
