@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.227tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.228tsi Exp $ */
 
 /*
  *
@@ -898,6 +898,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmctl)
 #ifdef HAS_GLIBC_SIGSETJMP
    SYMFUNC(xf86setjmp)
+   SYMFUNC(xf86setjmp0)
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
    SYMFUNCALIAS("xf86setjmp1",__sigsetjmp)
 #else
@@ -905,6 +906,7 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 #else
    SYMFUNCALIAS("xf86setjmp",setjmp)
+   SYMFUNCALIAS("xf86setjmp0",setjmp)
    SYMFUNC(xf86setjmp1)
 #endif
    SYMFUNCALIAS("xf86longjmp",longjmp)
