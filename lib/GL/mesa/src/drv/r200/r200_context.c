@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.c,v 1.4 2003/09/28 20:15:23 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.c,v 1.5 2003/12/08 22:45:30 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -544,7 +544,7 @@ r200MakeCurrent( __DRIcontextPrivate *driContextPriv,
 	 (r200ContextPtr) driContextPriv->driverPrivate;
 
       if (R200_DEBUG & DEBUG_DRI)
-	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, newCtx->glCtx);
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)newCtx->glCtx);
 
       if ( newCtx->dri.drawable != driDrawPriv ) {
 	 newCtx->dri.drawable = driDrawPriv;
@@ -586,7 +586,7 @@ r200UnbindContext( __DRIcontextPrivate *driContextPriv )
    r200ContextPtr rmesa = (r200ContextPtr) driContextPriv->driverPrivate;
 
    if (R200_DEBUG & DEBUG_DRI)
-      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, rmesa->glCtx);
+      fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)rmesa->glCtx);
 
    r200VtxfmtUnbindContext( rmesa->glCtx );
    return GL_TRUE;

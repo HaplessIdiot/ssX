@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.12 2003/05/08 09:25:35 herrb Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.13 2003/09/28 20:15:36 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -346,7 +346,7 @@ tdfxInitContext( __DRIdrawablePrivate *driDrawPriv, tdfxContextPtr fxMesa )
    FxI32 result[2];
 
    if ( TDFX_DEBUG & DEBUG_VERBOSE_DRI ) {
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, fxMesa );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)fxMesa );
    }
 
 #if DEBUG_LOCKING
@@ -461,7 +461,7 @@ tdfxDestroyContext( __DRIcontextPrivate *driContextPriv )
    tdfxContextPtr fxMesa = (tdfxContextPtr) driContextPriv->driverPrivate;
 
    if ( TDFX_DEBUG & DEBUG_VERBOSE_DRI ) {
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, fxMesa );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)fxMesa );
    }
 
    if ( fxMesa ) {
@@ -503,7 +503,7 @@ tdfxUnbindContext( __DRIcontextPrivate *driContextPriv )
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
 
    if ( TDFX_DEBUG & DEBUG_VERBOSE_DRI ) {
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, driContextPriv );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)driContextPriv );
    }
 
    if ( driContextPriv && (tdfxContextPtr) driContextPriv == fxMesa ) {
@@ -521,7 +521,7 @@ tdfxMakeCurrent( __DRIcontextPrivate *driContextPriv,
                  __DRIdrawablePrivate *driReadPriv )
 {
    if ( TDFX_DEBUG & DEBUG_VERBOSE_DRI ) {
-      fprintf( stderr, "%s( %p )\n", __FUNCTION__, driContextPriv );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, (void *)driContextPriv );
    }
 
    if ( driContextPriv ) {

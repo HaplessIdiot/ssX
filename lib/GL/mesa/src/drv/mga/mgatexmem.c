@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.8 2003/09/28 20:15:18 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatexmem.c,v 1.9 2003/12/02 13:02:38 alanh Exp $ */
 
 #include "glheader.h"
 
@@ -115,7 +115,7 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
 
    if (texImage->Data == NULL) {
       fprintf(stderr, "null texture image data tObj %p level %d\n",
-	      t->base.tObj, level);
+	      (void *)t->base.tObj, level);
       return;
    }
 

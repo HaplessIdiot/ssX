@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.5 2003/09/28 20:15:23 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.6 2003/12/02 13:02:39 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -409,7 +409,7 @@ void r200CopyBuffer( const __DRIdrawablePrivate *dPriv )
    rmesa = (r200ContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( R200_DEBUG & DEBUG_IOCTL ) {
-      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, rmesa->glCtx );
+      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, (void *)rmesa->glCtx );
    }
 
    R200_FIREVERTICES( rmesa );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_arrays.c,v 1.3 2003/02/23 23:59:01 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_arrays.c,v 1.4 2003/09/28 20:15:23 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -70,7 +70,7 @@ static void emit_ubyte_rgba3( GLcontext *ctx,
 
    if (R200_DEBUG & DEBUG_VERTS)
       fprintf(stderr, "%s count %d stride %d out %p\n",
-	      __FUNCTION__, count, stride, out);
+	      __FUNCTION__, count, stride, (void *)out);
 
    for (i = 0; i < count; i++) {
       out->red   = *data;
@@ -234,7 +234,7 @@ static void emit_vec12( GLcontext *ctx,
 
    if (R200_DEBUG & DEBUG_VERTS)
       fprintf(stderr, "%s count %d stride %d out %p data %p\n",
-	      __FUNCTION__, count, stride, out, data);
+	      __FUNCTION__, count, stride, (void *)out, data);
 
    if (stride == 12)
       COPY_DWORDS( out, data, count*3 );

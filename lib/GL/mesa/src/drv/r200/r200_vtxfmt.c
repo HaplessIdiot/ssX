@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt.c,v 1.4 2003/05/06 23:52:08 daenzer Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt.c,v 1.5 2003/09/28 20:15:25 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -557,7 +557,7 @@ static void wrap_buffer( void )
    for (i = 0 ; i < nrverts; i++) {
       if (R200_DEBUG & DEBUG_VERTS) {
 	 int j;
-	 fprintf(stderr, "re-emit vertex %d to %p\n", i, rmesa->vb.dmaptr);
+	 fprintf(stderr, "re-emit vertex %d to %p\n", i, (void *)rmesa->vb.dmaptr);
 	 if (R200_DEBUG & DEBUG_VERBOSE)
 	    for (j = 0 ; j < rmesa->vb.vertex_size; j++) 
 	       fprintf(stderr, "\t%08x/%f\n", *(int*)&tmp[i][j], tmp[i][j]);
