@@ -44,6 +44,8 @@
 #include "resource.h"
 
 #define XINERAMA_IMAGE_BUFSIZE (256*1024)
+#define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
+                              CWDontPropagate | CWOverrideRedirect | CWCursor )
 
 extern ScreenInfo *GlobalScrInfo;
 extern WindowPtr *WindowTable;
@@ -103,6 +105,12 @@ int PanoramiXCreateWindow(ClientPtr client)
 		client, stuff->parent, XRT_WINDOW, SecurityWriteAccess)))
         return BadWindow;
 
+    if(stuff->class == CopyFromParent)
+	stuff->class = parent->u.win.class;
+
+    if((stuff->class == InputOnly) && (stuff->mask & (~INPUTONLY_LEGAL_MASK)))
+        return BadMatch;
+
     if ((Mask)stuff->mask & CWBackPixmap) {
 	pback_offset = Ones((Mask)stuff->mask & (CWBackPixmap - 1));
 	tmp = *((CARD32 *) &stuff[1] + pback_offset);
@@ -136,6 +144,7 @@ int PanoramiXCreateWindow(ClientPtr client)
 
     newWin->type = XRT_WINDOW;
     newWin->u.win.visibility = VisibilityNotViewable;
+    newWin->u.win.class = stuff->class;
     newWin->info[0].id = stuff->wid;
     for(j = 1; j < PanoramiXNumScreens; j++)
         newWin->info[j].id = FakeClientID(client->index);
@@ -194,6 +203,10 @@ int PanoramiXChangeWindowAttributes(ClientPtr client)
     if (!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->window, XRT_WINDOW, SecurityWriteAccess)))
         return BadWindow;
+
+    if((win->u.win.class == InputOnly) && 
+       (stuff->valueMask & (~INPUTONLY_LEGAL_MASK)))
+        return BadMatch;
 
     if ((Mask)stuff->valueMask & CWBackPixmap) {
 	pback_offset = Ones((Mask)stuff->valueMask & (CWBackPixmap - 1));
@@ -2108,12 +2121,12 @@ int PanoramiXCreateColormap(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xCreateColormapReq);
 
-    if(!stuff->visual || (stuff->visual > 255)) 
-	return BadValue;
-
     if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->window, XRT_WINDOW, SecurityReadAccess)))
 	return BadWindow;    
+
+    if(!stuff->visual || (stuff->visual > 255)) 
+	return BadValue;
 
     if(!(newCmap = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes))))
         return BadAlloc;
