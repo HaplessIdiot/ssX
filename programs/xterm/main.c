@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.132 2001/06/18 19:09:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.133 2001/07/25 15:05:30 dawes Exp $ */
 
 
 /* main.c */
@@ -2504,12 +2504,16 @@ spawn (void)
 		 * necessary.  ENXIO is what is normally returned if there is
 		 * no controlling terminal, but some systems (e.g. SunOS 4.0)
 		 * seem to return EIO.  Solaris 2.3 is said to return EINVAL.
+		 * Cygwin returns ENOENT.
 		 */
 		no_dev_tty = FALSE;
 		if (tty < 0) {
 			if (tty_got_hung || errno == ENXIO || errno == EIO ||
 #ifdef ENODEV
 			    errno == ENODEV ||
+#endif
+#ifdef __CYGWIN__
+			    errno == ENOENT ||
 #endif
 			    errno == EINVAL || errno == ENOTTY || errno == EACCES) {
 				no_dev_tty = TRUE;
