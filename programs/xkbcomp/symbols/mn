@@ -2,7 +2,7 @@
 // Author Sanlig Badral <badral@chinggis.com>
 // 2002/12/7 Version 1.0
 
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/mn,v 1.1 2003/01/04 02:57:14 dawes Exp $
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {
@@ -37,7 +37,7 @@ xkb_symbols "basic" {
               [ 9,                percent,          	bracketleft      	]};
   key <AE10> {[ 0,                parenright,       	bracketright   		],
               [ 0,                question,       	bracketright   		]};
-  key <AE11> {[ minu,             underscore,    	X                    	],
+  key <AE11> {[ minus,            underscore,    	X                    	],
               [ Cyrillic_ie,   	  Cyrillic_IE,        	X                    	]};
   key <AE12> {[ equal,            plus,                 L                      	],
               [ Cyrillic_shcha,   Cyrillic_SHCHA,   	L       		]};
@@ -162,7 +162,7 @@ xkb_symbols "mn(basic)" {
               [ 9,                percent          	]};
   key <AE10> {[ 0,                parenright       	],
               [ 0,                question       	]};
-  key <AE11> {[ minu,             underscore    	],
+  key <AE11> {[ minus,            underscore    	],
               [ Cyrillic_ie,   	  Cyrillic_IE        	]};
   key <AE12> {[ equal,            plus                  ],
               [ Cyrillic_shcha,   Cyrillic_SHCHA   	]};
