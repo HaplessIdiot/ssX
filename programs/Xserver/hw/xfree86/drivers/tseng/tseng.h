@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.14 1997/08/26 10:01:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.15 1997/09/09 10:27:48 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -44,7 +44,7 @@ typedef struct {
   unsigned char ET6KRasCas;      /* ET6000 0x44 -- ram delays configuration */
   unsigned char ET6KDispFeat;    /* ET6000 0x46 -- display feature register */
   unsigned char ET6KVidCtrl1;    /* ET6000 0x58 -- used for 15/16 bpp modes */
-  unsigned char ET6KMclkM, ET6KMclkN; /* ET6000 memory clock values */
+  unsigned char MClkM, MClkN;    /* memory clock values */
   unsigned char IMAPortCtrl;     /* IMA port control register (0x217B index 0xF7) */
   GenDACstate gendac;
   unsigned char ATTdac_cmd;      /* command register for ATT 49x DACs */
@@ -84,6 +84,7 @@ extern t_tseng_type et4000_type;
 extern unsigned char tseng_save_divide; /* saves state of hibit */
 extern unsigned long ET6Kbase;
 
+extern int tseng_bytesperpixel;
 
 extern SymTabRec TsengDacTable[];
 
@@ -103,7 +104,8 @@ typedef enum {
     STG1702_DAC,
     STG1703_DAC,
     ET6000_DAC,
-    CH8398_DAC
+    CH8398_DAC,
+    MUSIC4910_DAC
 } t_ramdactype;
 
 extern t_ramdactype TsengRamdacType;
@@ -112,7 +114,8 @@ void Check_Tseng_Ramdac();
 #define DAC_IS_ATT49x ( (TsengRamdacType == ATT20C490_DAC) \
                      || (TsengRamdacType == ATT20C491_DAC) \
                      || (TsengRamdacType == ATT20C492_DAC) \
-                     || (TsengRamdacType == ATT20C493_DAC) )
+                     || (TsengRamdacType == ATT20C493_DAC) \
+                     || (TsengRamdacType == MUSIC4910_DAC) )
 
 #define DAC_is_GenDAC ( (TsengRamdacType == ICS5341_DAC) \
                      || (TsengRamdacType == ICS5301_DAC) )
@@ -173,8 +176,13 @@ Bool Tseng_ET6000ClockSelect(int freq);
 Bool Tseng_GenDACClockSelect(int freq);
 Bool Tseng_STG1703ClockSelect(int freq);
 Bool Tseng_ICD2061AClockSelect(int freq);
-void tseng_set_dacspeed(int bytesperpixel);
-void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose);
-void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int bytesperpixel);
+void tseng_set_dacspeed();
+void tseng_validate_mode(DisplayModePtr mode, Bool verbose);
+void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs);
+
+#if !defined(__GNUC__) || defined(NO_INLINE)
+#undef __inline__
+#define __inline__ /**/
+#endif
 
 #endif

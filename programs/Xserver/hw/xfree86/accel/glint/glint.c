@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.19 1997/12/14 10:03:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.20 1997/12/20 14:20:50 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -259,6 +259,7 @@ extern void glintIBMSetCursorPosition();
 extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
 
+extern int Shiftbpp();
 Bool glintDoubleBufferMode = FALSE;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern Bool xf86Exiting, xf86Resetting;
@@ -1540,12 +1541,9 @@ void
 glintAdjustFrame(x, y)
     int x, y;
 {
-#if 0
 	if (IS_3DLABS_PM_FAMILY(coprotype)) {
-		GLINT_WRITE_REG((y*glintInfoRec.displayWidth+x)/
-			(64 / glintInfoRec.bitsPerPixel), PMScreenBase);
+		GLINT_WRITE_REG(Shiftbpp((y*glintInfoRec.displayWidth+x)>>1), PMScreenBase);
 	}
-#endif
 #ifdef XFreeXDGA
 	if (glintInfoRec.directMode & XF86DGADirectGraphics) {
 		while ( (GLINT_READ_REG(VTGVLineNumber) >= 1) &&

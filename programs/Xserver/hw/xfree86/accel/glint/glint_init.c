@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.14 1997/12/05 22:01:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.15 1997/12/20 14:20:50 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -199,8 +199,7 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
     crtcRegs->h_sync_end	= Shiftbpp(h_front_porch + h_sync_width);
     crtcRegs->h_sync_start	= Shiftbpp(h_front_porch);
     crtcRegs->h_blank_end	= Shiftbpp(mode->CrtcHTotal-mode->CrtcHDisplay);
-    crtcRegs->screenstride	= (glintInfoRec.displayWidth - mode->CrtcHDisplay)
-				/ (64 / glintInfoRec.bitsPerPixel);
+    crtcRegs->screenstride	= Shiftbpp(glintInfoRec.displayWidth>>1);
 
     crtcRegs->v_limit		= mode->CrtcVTotal;
     crtcRegs->v_sync_end	= v_front_porch + v_sync_width + 1;
@@ -405,13 +404,9 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 
 	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	PMVideoControl);
 	GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHgEnd);
+	GLINT_WRITE_REG(0,			PMScreenBase);
 	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
-#if 1
-	GLINT_WRITE_REG((crtcRegs->h_limit - 
-				crtcRegs->h_blank_end)>>1, PMScreenStride);
-#else
 	GLINT_WRITE_REG(crtcRegs->screenstride, PMScreenStride);
-#endif
 	GLINT_WRITE_REG(crtcRegs->h_limit-1,    PMHTotal);
 	GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHbEnd);
 	GLINT_WRITE_REG(crtcRegs->h_sync_start-1,   PMHsStart);
@@ -606,7 +601,6 @@ void permediapreinit(void)
 {
   GLINT_WRITE_REG(0x00,       Aperture0);
   GLINT_WRITE_REG(0x00,       Aperture1);
-  GLINT_WRITE_REG(0x00,	      PMScreenBase);
   GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
   GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
 }

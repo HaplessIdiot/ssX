@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.18 1997/10/25 13:51:24 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.19 1997/12/05 22:01:59 hohndel Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -13,6 +13,10 @@
 
 #ifndef HAVE_X11_DECKEYSYM_H
 #define HAVE_X11_DECKEYSYM_H 1
+#endif
+
+#ifndef DFT_TERMTYPE
+#define DFT_TERMTYPE "xterm"
 #endif
 
 #endif

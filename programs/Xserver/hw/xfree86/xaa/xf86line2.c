@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.4 1997/04/18 09:12:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.4 1997/04/18 09:12:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
 
 /*
  * Accelerated general lines for chips that cannot hardware accelerate
@@ -314,6 +314,9 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 			        	SET_SYNC_FLAG;
 			    }
 			    else
+#if 0
+	/* Newer chipsets have block fill which negates this */
+	/* We may lose on older chipsets, but what the heck! */
                             if ((usevline == VLINE_FRAMEBUFFER)
                             && length > 30) {
 				SYNC_CHECK;
@@ -321,8 +324,9 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		                xf86AccelInfoRec.VerticalLineGXcopyFallBack(
   		                    pGC->alu, 0, pGC->fgPixel, addrl, nlwidth,
 		                    x1, y1t, length);
-		            }
-		            else {
+		            } else
+#endif
+		            {
 			      if (needs_setup) {
 				xf86AccelInfoRec.SetupForFillRectSolid(
 				     pGC->fgPixel, pGC->alu, pGC->planemask);

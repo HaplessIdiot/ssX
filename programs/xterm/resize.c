@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.22 1997/06/11 12:24:57 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.23 1997/08/26 10:01:58 hohndel Exp $
  */
 
 /*
@@ -154,6 +154,10 @@ extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
 #ifndef IUCLC
 #define IUCLC	0
 #endif
+#endif
+
+#ifndef DFT_TERMTYPE
+#define DFT_TERMTYPE "xterm"
 #endif
 
 #ifndef GCC_UNUSED
@@ -376,7 +380,7 @@ main (argc, argv)
 	tty = fileno(ttyfp);
 #ifdef USE_TERMCAP
 	if(!(env = getenv("TERM")) || !*env) {
-	    env = "xterm";
+	    env = DFT_TERMTYPE;
 	    if(SHELL_BOURNE == shell_type)
 		setname = "TERM=xterm;\nexport TERM;\n";
 	    else
@@ -388,7 +392,7 @@ main (argc, argv)
 #endif /* USE_TERMCAP */
 #ifdef USE_TERMINFO
 	if(!(env = getenv("TERM")) || !*env) {
-		env = "xterm";
+		env = DFT_TERMTYPE;
 		if(SHELL_BOURNE == shell_type)
 			setname = "TERM=xterm;\nexport TERM;\n";
 		else	setname = "setenv TERM xterm;\n";

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.24 1997/08/15 07:19:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.25 1997/11/01 15:05:00 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1271,11 +1271,11 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	    rootWin = WindowTable[pScreen->myNum];
 	    scratchpixptr = (unsigned char *)ALLOCATE_LOCAL(
 		PixmapBytePad(pix->drawable.width,
-	        rootWin->drawable.bitsPerPixel) * pix->drawable.height);
+	        rootWin->drawable.depth) * pix->drawable.height);
             scratchpix = GetScratchPixmapHeader(
                 pScreen, pix->drawable.width, pix->drawable.height,
                 rootWin->drawable.depth, rootWin->drawable.bitsPerPixel,
-                PixmapBytePad(pix->drawable.width, rootWin->drawable.bitsPerPixel),
+                PixmapBytePad(pix->drawable.width, rootWin->drawable.depth),
                 scratchpixptr);
 	    ptSrc.x = 0;
 	    ptSrc.y = 0;

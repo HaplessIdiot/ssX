@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.17 1997/10/13 17:16:55 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.18 1997/12/05 22:01:55 hohndel Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -1545,6 +1545,7 @@ EditorButton(event)
 
 
 /*ARGSUSED*/
+#if OPT_TEK4014
 void HandleGINInput (w, event, param_list, nparamsp)
     Widget w GCC_UNUSED;
     XEvent *event GCC_UNUSED;
@@ -1567,6 +1568,7 @@ void HandleGINInput (w, event, param_list, nparamsp)
 	Bell (XkbBI_MinorError,0);
     }
 }
+#endif /* OPT_TEK4014 */
 
 
 /* ARGSUSED */

@@ -1,3 +1,28 @@
+XFree86 3.9Ab (28 December 1997)
+1533. Reorganize the accleration code in the tseng driver. Fix tseng XAA init
+      problem (#1303, Koen Gadeyne).
+1532. Add support for changing the MClk from the XF86Config file for
+      W32p cards with ICS5341 RAMDAC and for the ET6000 family (#1302,
+      Koen Gadeyne).
+1531. Add option to build xterm without tek4014 emulation. Add option to
+      build xterm with default TERM value other than "xterm". Apply some
+      minor bugfixes to OS/2 version. Fix configure help message and missing
+      quotes in memmove/bcopy configure test (#1297, Thomas Dickey, Darren
+      Heibert).
+1530. Add support for clock setting of the new trident chips (#1294,
+      Alan Hourihane).
+1529. XAA vertical line speedup (#1293, Alan Hourihane).
+1528. Add panning for Permedia and Permedia 2 (#1292, Alan Hourihane).
+1527. Add a few more messages to tseng driver and clean up the use of
+      the different bytes-per-pixel variables. Add "showcache" option
+      (#1300,1301, Koen Gadeyne).
+1526. Fix XAA pixmap cache bug with 16bpp and RGB=555 or 32bpp (#1295,
+      Walter Gadeyne).
+1525. Fix ImageWrite for Tseng (and re-enable it) (#1296, Koen Gadeyne).
+1524. Fix horizontal lines in Tseng driver (#1291, George Krajcsovits).
+1523. Support MUSIC MU9C4910 RAMDAC in Tseng driver (#1290, Koen Gadeyne).
+1522. Fix bad color in hardware linedraw for Tseng (#1290, Koen Gadeyne).
+
 XFree86 3.9Aa (20 December 1997)
 1521. Fix border colours for Trident server (#1289, Alan Hourihane).
 1520. Major update to Mach64 server. Proper identification of the different
@@ -5789,4 +5814,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.558 1997/12/14 10:03:52 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.559 1997/12/20 14:20:46 hohndel Exp $
