@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.8 2002/12/10 00:00:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.9 2002/12/15 06:10:15 torrey Exp $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
@@ -41,7 +41,9 @@
 
 typedef struct {
     io_connect_t        fbService;
-    StdFBShmem_t        *cursorShmem;
+    StdFBShmem_t       *cursorShmem;
+    unsigned char      *framebuffer;
+    unsigned char      *shadowPtr;
 } XFIOKitScreenRec, *XFIOKitScreenPtr;
 
 #define XFIOKIT_SCREEN_PRIV(pScreen) \

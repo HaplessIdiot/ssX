@@ -1,4 +1,5 @@
 XFree86 4.3.99.1 (xx March 2003)
+ 977. Add shadowfb support to XDarwin IOKit mode (Torrey T. Lyons).
  976. Change most of os-support/ to respect VIDMEM_READONLY (Marc La France).
  975. Fix compatibility problem between modules generated without the recent
       setjmp/longjmp work and a server generated using glibc <= 2.2.*
@@ -16558,4 +16559,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2593 2003/03/12 16:40:23 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2594 2003/03/14 13:45:58 tsi Exp $
