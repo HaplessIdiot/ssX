@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_text.c,v 1.6 2000/12/09 04:48:45 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/do_text.c,v 1.7 2001/01/17 23:45:12 dawes Exp $ */
 
 #include "x11perf.h"
 #include <stdio.h>
@@ -422,21 +422,13 @@ InitAAText(XParms xp, Parms p, int reps)
 	return 0;
     }
 
-    if (aafont->core)
-    {
-	printf ("FreeType font '%s' not available, benchmark omitted\n",
-		p->font);
-	XftFontClose (xp->d, aafont);
-	return 0;
-    }
-    
     aadraw = XftDrawCreate (xp->d, xp->w, 
 			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
 			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
 
     if (!aadraw) 
     {
-	printf ("Render extension not supported in window\n");
+	printf ("Cannot create XftDraw object\n");
 	XftFontClose (xp->d, aafont);
 	return 0;
     }

@@ -484,6 +484,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasFreetype2
 #define HasFreetype2		NO
 #endif
+/* If the system has the Fontconfig library */
+#ifndef HasFontconfig
+#define HasFontconfig		NO
+#endif
+/* If the system has the libxml2 library */
+#ifndef HasLibxml2
+#define HasLibxml2		NO
+#endif
 #if HasKrbIV
 #ifndef KrbIVIncludes
 #define KrbIVIncludes /**/
