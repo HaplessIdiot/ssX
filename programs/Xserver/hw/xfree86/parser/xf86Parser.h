@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.23 2000/10/24 22:45:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.24 2000/11/02 19:10:58 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -338,11 +338,21 @@ typedef struct
 }
 XF86ConfLayoutRec, *XF86ConfLayoutPtr;
 
+typedef struct 
+{ 
+	GenericListRec list; 
+	char *vs_name;
+	char *vs_identifier;
+	XF86OptionPtr vs_option_lst;
+}
+XF86ConfVendSubRec, *XF86ConfVendSubPtr;
+
 typedef struct
 {
 	GenericListRec list;
 	char *vnd_identifier;
 	XF86OptionPtr vnd_option_lst;
+	XF86ConfVendSubPtr vnd_sub_lst;
 	char *vnd_comment;
 }
 XF86ConfVendorRec, *XF86ConfVendorPtr;

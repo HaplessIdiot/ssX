@@ -35,12 +35,77 @@
 
 extern LexRec val;
 
+static xf86ConfigSymTabRec VendorSubTab[] =
+{
+	{ENDSUBSECTION, "endsubsection"},
+	{IDENTIFIER, "identifier"},
+	{OPTION, "option"},
+	{-1, ""},
+};
+
+#define CLEANUP xf86freeVendorSubList
+
+XF86ConfVendSubPtr
+xf86parseVendorSubSection (void)
+{
+	parsePrologue (XF86ConfVendSubPtr, XF86ConfVendSubRec)
+
+	while ((token = xf86getToken (VendorSubTab)) != ENDSUBSECTION)
+	{
+		switch (token)
+		{
+		case IDENTIFIER:
+			if (xf86getToken (NULL) != STRING)
+				Error (QUOTE_MSG, "Identifier");
+			ptr->vs_identifier = val.str;
+			break;
+		case OPTION:
+			{
+				char *name;
+				if ((token = xf86getToken (NULL)) != STRING)
+					Error (BAD_OPTION_MSG, NULL);
+				name = val.str;
+				if ((token = xf86getToken (NULL)) == STRING)
+				{
+					ptr->vs_option_lst =
+						xf86addNewOption (ptr->vs_option_lst,
+							name, val.str);
+				}
+				else
+				{
+					ptr->vs_option_lst =
+						xf86addNewOption (ptr->vs_option_lst,
+								name, NULL);
+					xf86unGetToken (token);
+				}
+			}
+			break;
+
+		case EOF_TOKEN:
+			Error (UNEXPECTED_EOF_MSG, NULL);
+			break;
+		default:
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
+			break;
+		}
+	}
+
+#ifdef DEBUG
+	printf ("Vendor subsection parsed\n");
+#endif
+
+	return ptr;
+}
+
+#undef CLEANUP
+
 static xf86ConfigSymTabRec VendorTab[] =
 {
 	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{OPTION, "option"},
+	{SUBSECTION, "subsection"},
 	{-1, ""},
 };
 
@@ -86,6 +151,14 @@ xf86parseVendorSection (void)
 				}
 			}
 			break;
+		case SUBSECTION:
+			if (xf86getToken (NULL) != STRING)
+				Error (QUOTE_MSG, "SubSection");
+			{
+				HANDLE_LIST (vnd_sub_lst, xf86parseVendorSubSection,
+							XF86ConfVendSubPtr);
+			}
+			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
@@ -111,6 +184,7 @@ xf86parseVendorSection (void)
 void
 xf86printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 {
+    XF86ConfVendSubPtr pptr;
 	XF86OptionPtr optr;
 
 	while (ptr)
@@ -128,6 +202,20 @@ xf86printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 				fprintf (cf, " \"%s\"", optr->opt_val);
 			fprintf (cf, "\n");
 		}
+		for (pptr = ptr->vnd_sub_lst; pptr; pptr = pptr->list.next)
+		{
+			fprintf (cf, "\tSubSection \"Vendor\"\n");
+			if (pptr->vs_identifier)
+					fprintf (cf, "\tIdentifier \"%s\"\n", pptr->vs_identifier);
+			for (optr = pptr->vs_option_lst; optr; optr = optr->list.next)
+			{
+				fprintf (cf, "\tOption     \"%s\"", optr->opt_name);
+				if (optr->opt_val)
+						fprintf (cf, " \"%s\"", optr->opt_val);
+				fprintf (cf, "\n");
+			}
+			fprintf (cf, "\tEndSubSection\n");
+		}
 		fprintf (cf, "EndSection\n\n");
 		ptr = ptr->list.next;
 	}
@@ -141,6 +229,21 @@ xf86freeVendorList (XF86ConfVendorPtr p)
 	TestFree (p->vnd_identifier);
 	xf86optionListFree (p->vnd_option_lst);
 	xf86conffree (p);
+}
+
+void
+xf86freeVendorSubList (XF86ConfVendSubPtr ptr)
+{
+	XF86ConfVendSubPtr prev;
+
+	while (ptr)
+	{
+		TestFree (ptr->vs_identifier);
+		xf86optionListFree (ptr->vs_option_lst);
+		prev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree (prev);
+	}
 }
 
 XF86ConfVendorPtr

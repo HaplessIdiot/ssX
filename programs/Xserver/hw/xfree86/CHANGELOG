@@ -1,4 +1,6 @@
 XFree86 4.0.1e (3 November 2000)
+ 861. Add support for SubSection in the Vendor Section of the config file
+      (Stuart Anderson)
  860. Fix a typo introduced in a recent update to the 'no' xkb symbols
       file (#4218, Pablo Saratxaga, 4219, Harald Nordgård-Hansen).
  859. Parser symbol update (#4217, Paulo Cesar Pereira de Andrade).
@@ -11416,4 +11418,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1371 2000/11/02 17:00:25 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1372 2000/11/02 19:10:47 dawes Exp $
