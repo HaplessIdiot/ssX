@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.73 2003/08/13 19:12:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.74 2003/08/24 17:36:55 dawes Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1820,8 +1820,8 @@ xf86GetPciBridgeInfo(void)
 		    break;
 		}
 
-		if (pBusInfo && pBusInfo->funcs->pciGetBridgeBusses)
-		    (*pBusInfo->funcs->pciGetBridgeBusses)(secondary,
+		if (pBusInfo && pBusInfo->funcs->pciGetBridgeBuses)
+		    (*pBusInfo->funcs->pciGetBridgeBuses)(secondary,
 							   &primary,
 							   &secondary,
 							   &subordinate);
@@ -1959,8 +1959,8 @@ xf86GetPciBridgeInfo(void)
 		    break;
 		}
 
-		if (pBusInfo && pBusInfo->funcs->pciGetBridgeBusses)
-		    (*pBusInfo->funcs->pciGetBridgeBusses)(secondary,
+		if (pBusInfo && pBusInfo->funcs->pciGetBridgeBuses)
+		    (*pBusInfo->funcs->pciGetBridgeBuses)(secondary,
 							   &primary,
 							   &secondary,
 							   &subordinate);
@@ -2147,8 +2147,8 @@ xf86GetPciBridgeInfo(void)
 
 		if (pBusInfo) {
 		    PciBus->primary = PciBus->secondary = secondary;
-		    if (pBusInfo->funcs->pciGetBridgeBusses)
-			(*pBusInfo->funcs->pciGetBridgeBusses)
+		    if (pBusInfo->funcs->pciGetBridgeBuses)
+			(*pBusInfo->funcs->pciGetBridgeBuses)
 			    (secondary,
 			     &PciBus->primary,
 			     &PciBus->secondary,

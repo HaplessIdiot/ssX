@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atii2c.c,v 1.1 2003/07/24 22:08:28 tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -373,7 +373,7 @@ ATII2CFreeScreen
     ATII2CPtr pATII2C;
     int nI2CBus;
 
-    nI2CBus = xf86I2CGetScreenBusses(iScreen, &ppI2CBus);
+    nI2CBus = xf86I2CGetScreenBuses(iScreen, &ppI2CBus);
     while (--nI2CBus >= 0)
     {
         pI2CBus = ppI2CBus[nI2CBus];

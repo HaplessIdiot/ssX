@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.14 2003/05/05 21:18:41 tsi Exp $ */
 
 #if 1
 #include "misc.h"
@@ -750,7 +750,7 @@ xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too)
     if (b) {
 	I2CBusPtr *p;
 
-	/* Remove this from the list of active I2C busses. */
+	/* Remove this from the list of active I2C buses */
 
 	for (p = &I2CBusList; *p != NULL; p = &(*p)->NextBus) 
 	    if (*p == b) {
@@ -794,7 +794,7 @@ xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too)
 Bool
 xf86I2CBusInit(I2CBusPtr b) 
 {
-    /* I2C busses must be identified by a unique scrnIndex 
+    /* I2C buses must be identified by a unique scrnIndex 
      * and name. If scrnIndex is unspecified (a negative value), 
      * then the name must be unique throughout the server. 
      */
@@ -867,7 +867,7 @@ xf86I2CFindBus(int scrnIndex, char *name)
  * responsible for freeing the array.
  */
 int
-xf86I2CGetScreenBusses(int scrnIndex, I2CBusPtr **pppI2CBus)
+xf86I2CGetScreenBuses(int scrnIndex, I2CBusPtr **pppI2CBus)
 {
     I2CBusPtr pI2CBus;
     int n = 0;

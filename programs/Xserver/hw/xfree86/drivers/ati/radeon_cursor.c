@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.23 2003/02/24 20:34:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.24 2003/04/07 15:29:21 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -64,7 +64,7 @@ static CARD32 mono_cursor_color[] = {
 #define CURSOR_HEIGHT	64
 
 /*
- * The cursor bits are always 32bpp.  On MSBFirst busses,
+ * The cursor bits are always 32bpp.  On MSBFirst buses,
  * configure byte swapping to swap 32 bit units when writing
  * the cursor image.  Byte swapping must always be returned
  * to its previous value before returning.

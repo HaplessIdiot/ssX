@@ -701,7 +701,7 @@ peak out at about 225 MB/sec, with 2 or 4 MDRAMs.
 
 Whatever you may have read in press releases, the ET6000 has a 32-bit memory
 bus (not 128 bits; that's only the accelerator data path within the chip, if
-anything). That means that, with their 16-bit busses, 2 MDRAM chips already
+anything). That means that, with their 16-bit buses, 2 MDRAM chips already
 use the full bus capacity. Having 4 memory chips on an ET6000 board will not
 give you extra memory bandwidth.
 
@@ -923,7 +923,7 @@ Problems with DMA hardware (floppy, tape)
 	This will cause a very small slowdown of accelerated operations.
 	
 	The <tt>"pci_retry"</tt> option applies not only to the PCI bus
-        systems, but has a similar effect on other busses.
+        systems, but has a similar effect on other buses.
 <tag>
 "Cannot read colourmap from VGA.  Will restore with default"
 </tag>
@@ -1048,7 +1048,7 @@ incomplete):
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.33 2001/08/10 16:38:16 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.34 2003/04/28 17:39:49 eich Exp $ 
 
 
 
