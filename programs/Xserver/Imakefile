@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.155 1999/04/04 08:46:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.156 1999/04/17 09:08:14 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -548,6 +548,9 @@ XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
 XF86HWLIB  = $(XF86HWSRC)/LibraryTargetName(common_hw)
+#ifdef NewInput
+XF86MOUSELIB = $(XF86SRC)/input/mouse/mouse_drv.o
+#endif
 #if XF86XAA
 XF86XAALIB = $(XF86SRC)/xaa/LibraryTargetName(xaa)
 #endif
@@ -596,7 +599,7 @@ XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
 	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
 #endif
-XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB) 
+XF86LIBS  = $(XF86INIT) $(XF86MOUSELIB) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB) 
 #if DoLoadableServer
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
 XF86MAINLIBS = PreFbLibsNoFont $(FONTBASE) $(OTHEREXTS) $(XF86COMLIB) \

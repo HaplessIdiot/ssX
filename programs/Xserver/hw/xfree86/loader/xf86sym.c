@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.88 1999/04/27 12:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.89 1999/05/04 09:35:26 dawes Exp $ */
 
 /*
  *
@@ -32,6 +32,7 @@
 #include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
+#include "xf86OSmouse.h"
 #define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
 #include "xf86Parser.h"
@@ -201,6 +202,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86MemToBus)
    SYMFUNC(xf86OpenSerial)
    SYMFUNC(xf86SetSerial)
+   SYMFUNC(xf86SetSerialSpeed)
    SYMFUNC(xf86ReadSerial)
    SYMFUNC(xf86WriteSerial)
    SYMFUNC(xf86CloseSerial)
@@ -208,6 +210,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WaitForInput)
    SYMFUNC(xf86SerialSendBreak)
    SYMFUNC(xf86FlushInput)
+#ifdef NEW_INPUT
+   SYMFUNC(xf86OSMouseInit)
+#endif
 
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */
@@ -322,6 +327,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CaughtSignal)
    SYMFUNC(xf86GetVidModeAllowNonLocal)
    SYMFUNC(xf86GetVidModeEnabled)
+   SYMFUNC(xf86GetAllowMouseOpenFail)
    SYMFUNC(xf86GetClocks)
    SYMFUNC(xf86LoadSubModule)
    SYMFUNC(xf86LoaderReqSymLists)
