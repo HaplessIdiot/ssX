@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.1 1995/03/11 14:02:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.rules,v 3.2 1996/01/24 21:51:54 dawes Exp $
 
 /*
  * OS2/EMX shared library rules (DLL version)
@@ -181,3 +181,12 @@ LibraryTargetName(libname): deplist					@@\
 #ifndef InstallSharedLibraryData
 #define InstallSharedLibraryData(libname,rev,dest)
 #endif /* InstallSharedLibraryData */
+
+#ifndef InstallLibrary
+#define	InstallLibrary(libname,dest)					@@\
+install:: LibraryTargetName(libname)					@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(libname,.lib) $(DESTDIR)dest @@\
+	RanLibrary($(RANLIBINSTFLAGS) $(DESTDIR)dest/LibraryTargetName(libname))
+#endif /* InstallLibrary */

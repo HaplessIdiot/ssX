@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/01/29 18:47:57 gildea $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.12 1996/02/19 09:47:35 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.13 1996/02/22 05:08:59 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -52,7 +52,7 @@ InstallNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(BINDIR))
 InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
 InstallNamedProg(xmkmf.cmd,xmkmf.cmd,$(BINDIR))
-InstallNamedProg(xmake.cmd,xmake.cmd,$(BINDIR))
+InstallNamedProg(xmake.cmd,make.cmd,$(BINDIR))
 InstallLinkKitNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(LINKKITDIR)/config/util)
 InstallLinkKitNamedProg(indir.cmd,indir.cmd,$(LINKKITDIR)/config/util)
 InstallLinkKitNamedProg(os2inst.cmd,os2inst.cmd,$(LINKKITDIR)/config/util)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.17 1996/01/24 21:51:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.18 1996/02/20 14:31:29 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -325,6 +325,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.17 1996/01/24 21:51:48 dawes Exp $
 # ifdef i386
 #  define i386Architecture
 #  undef i386
+# endif
+# ifdef PC98
+#  define PANIX98Architecture
+#  undef PC98
 # endif
 # define SVR4Architecture
 # define MacroIncludeFile <svr4.cf>

@@ -1,4 +1,5 @@
-/* $XConsortium: TMparse.c,v 1.140 94/04/17 20:14:53 kaleb Exp $ */
+/* $XConsortium: TMparse.c,v 1.142 94/06/03 16:27:01 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -368,9 +369,14 @@ static EventKey events[] = {
 
 };
 
+#ifndef __EMX__
+#define IsNewline(str) ((str) == '\n')
+#else
+#define IsNewline(str) ((str) == '\n' || (str) == '\r')
+#endif
 
 #define ScanFor(str, ch) \
-    while ((*(str) != (ch)) && (*(str) != '\0') && (*(str) != '\n')) (str)++
+    while ((*(str) != (ch)) && (*(str) != '\0') && !IsNewline(*(str))) (str)++
 
 #define ScanNumeric(str)  while ('0' <= *(str) && *(str) <= '9') (str)++
 
@@ -379,9 +385,13 @@ static EventKey events[] = {
            ('a' <= *(str) && *(str) <= 'z') || \
            ('0' <= *(str) && *(str) <= '9')) (str)++
 
+#ifndef __EMX__
 #define ScanWhitespace(str) \
     while (*(str) == ' ' || *(str) == '\t') (str)++
-
+#else
+#define ScanWhitespace(str) \
+    while (*(str) == ' ' || *(str) == '\t' || *(str) == '\r') (str)++
+#endif
 
 static Boolean initialized = FALSE;
 static XrmQuark QMeta;
@@ -520,34 +530,6 @@ static Cardinal LookupTMEventType(eventStr,error)
     UNLOCK_PROCESS;
     return (Cardinal) i;
 }
-
-/***********************************************************************
- * _XtLookupTableSym
- * Given a table and string, it fills in the value if found and returns
- * status
- ***********************************************************************/
-
-static Boolean _XtLookupTableSym(table, name, valueP)
-    NameValueTable	table;
-    String name;
-    Value *valueP;
-{
-/* ||| should implement via hash or something else faster than linear search */
-
-    register int i;
-    register XrmQuark signature = StringToQuark(name);
-
-    for (i=0; table[i].name != NULL; i++)
-	if (table[i].signature == signature) {
-	    *valueP = table[i].value;
-	    return TRUE;
-	}
-
-    return FALSE;
-}
-
-
-
 
 static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
 
@@ -973,7 +955,7 @@ static String ParseKeySym(str, closure, event,error)
     if (*str == '\\') {
 	str++;
 	keySymName[0] = *str;
-	if (*str != '\0' && *str != '\n') str++;
+	if (*str != '\0' && !IsNewline(*str)) str++;
 	keySymName[1] = '\0';
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
@@ -992,7 +974,7 @@ static String ParseKeySym(str, closure, event,error)
 		&& *str != ':'
 		&& *str != ' '
 		&& *str != '\t'
-                && *str != '\n'
+                && !IsNewline(*str)
                 && (*str != '(' || *(str+1) <= '0' || *(str+1) >= '9')
 		&& *str != '\0') str++;
 	(void) memmove(keySymName, start, str-start);
@@ -1025,6 +1007,8 @@ static String ParseTable(str, closure, event,error)
     Boolean* error;
 {
     register String start = str;
+    register XrmQuark signature;
+    NameValueTable table = (NameValueTable) closure;
     char tableSymName[100];
 
     event->event.eventCode = 0L;
@@ -1037,15 +1021,17 @@ static String ParseTable(str, closure, event,error)
     }
     (void) memmove(tableSymName, start, str-start);
     tableSymName[str-start] = '\0';
-    if (! _XtLookupTableSym((NameValueTable)closure, tableSymName, 
-            (Value *)&event->event.eventCode)) {
-	Syntax("Unknown Detail Type:  ",tableSymName);
-        *error = TRUE;
-        return PanicModeRecovery(str);
-    }
-    event->event.eventCodeMask = ~0L;
+    signature = StringToQuark(tableSymName);
+    for (; table->signature != NULLQUARK; table++)
+	if (table->signature == signature) {
+	    event->event.eventCode = table->value;
+	    event->event.eventCodeMask = ~0L;
+	    return str;
+	}
 
-    return str;
+    Syntax("Unknown Detail Type:  ", tableSymName);
+    *error = TRUE;
+    return PanicModeRecovery(str);
 }
 
 /*ARGSUSED*/
@@ -1082,7 +1068,7 @@ static String ParseAtom(str, closure, event,error)
 		&& *str != ':'
 		&& *str != ' '
 		&& *str != '\t'
-                && *str != '\n'
+                && !IsNewline(*str)
 		&& *str != '\0') str++;
 	if (str-start >= 999) {
 	    Syntax( "Atom name must be less than 1000 characters long.", "" );
@@ -1170,7 +1156,7 @@ static String ParseQuotedStringEvent(str, event,error)
 	str++;
     s[0] = *str;
     s[1] = '\0';
-    if (*str != '\0' && *str != '\n') str++;
+    if (*str != '\0' && !IsNewline(*str)) str++;
     event->event.eventType = KeyPress;
     event->event.eventCode = StringToKeySym(s, error);
     if (*error) return PanicModeRecovery(str);
@@ -1531,7 +1517,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
 
     *eventSeqP = NULL;
 
-    while ( *str != '\0' && *str != '\n') {
+    while ( *str != '\0' && !IsNewline(*str)) {
 	static Event	nullEvent =
              {0, 0,0L, 0, 0L, 0L,_XtRegularMatch,FALSE};
 	EventPtr	event;
@@ -1540,7 +1526,7 @@ static String ParseEventSeq(str, eventSeqP, actionsP,error)
 
 	if (*str == '"') {
 	    str++;
-	    while (*str != '"' && *str != '\0' && *str != '\n') {
+	    while (*str != '"' && *str != '\0' && !IsNewline(*str)) {
                 event = XtNew(EventRec);
                 event->event = nullEvent;
                 event->state = /* (StatePtr) -1 */ NULL;
@@ -1669,7 +1655,7 @@ static String ParseString(str, strP)
 		&& *str != '\t'
 		&& *str != ','
 		&& *str != ')'
-                && *str != '\n'
+                && !IsNewline(*str)
 		&& *str != '\0') str++;
 	*strP = XtMalloc((unsigned)(str-start+1));
 	(void) memmove(*strP, start, str-start);
@@ -1695,7 +1681,7 @@ static String ParseParamSeq(str, paramSeqP, paramNumP)
     register Cardinal i;
 
     ScanWhitespace(str);
-    while (*str != ')' && *str != '\0' && *str != '\n') {
+    while (*str != ')' && *str != '\0' && !IsNewline(*str)) {
 	String newStr;
 	str = ParseString(str, &newStr);
 	if (newStr != NULL) {
@@ -1771,7 +1757,7 @@ static String ParseActionSeq(parseTree, str, actionsP, error)
     ActionPtr *nextActionP = actionsP;
 
     *actionsP = NULL;
-    while (*str != '\0' && *str != '\n') {
+    while (*str != '\0' && !IsNewline(*str)) {
 	register ActionPtr	action;
 	XrmQuark quark;
 
@@ -1788,7 +1774,7 @@ static String ParseActionSeq(parseTree, str, actionsP, error)
 	*nextActionP = action;
 	nextActionP = &action->next;
     }
-    if (*str == '\n') str++;
+    if (IsNewline(*str)) str++;
     ScanWhitespace(str);
     return str;
 }
@@ -1802,7 +1788,11 @@ static void ShowProduction(currentProduction)
     int len = 499;
     char *eol, production[500];
 
-    eol = strchr(currentProduction, '\n');
+#ifdef __EMX__
+    eol = strchr(currentProduction, '\r');
+    if (!eol) /* try '\n' as well below */
+#endif
+        eol = strchr(currentProduction, '\n');
     if (eol) len = MIN(499, eol - currentProduction);
     (void) memmove(production, currentProduction, len);
     production[len] = '\0';
@@ -1944,7 +1934,7 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
 	else if (!strcmp(operation,"override"))
 	  opType = XtTableOverride;
 	ScanWhitespace(str);
-	if (*str == '\n') {
+	if (IsNewline(*str)) {
 	    str++;
 	    ScanWhitespace(str);
 	}

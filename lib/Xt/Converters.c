@@ -1,4 +1,5 @@
 /* $XConsortium: Converters.c,v 1.101 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -80,6 +81,14 @@ extern int errno;
 #define Const const
 #else
 #define Const /**/
+#endif
+
+#ifdef __EMX__
+#define IsNewline(str) ((str) == '\n' || (str) == '\r')
+#define IsWhitespace(str) ((str)== ' ' || (str) == '\t' || (str) == '\r')
+#else
+#define IsNewline(str) ((str) == '\n')
+#define IsWhitespace(str) ((str)== ' ' || (str) == '\t')
 #endif
 
 static Const String XtNwrongParameters = "wrongParameters";
@@ -249,7 +258,11 @@ static Boolean IsInteger(string, value)
     int val = 0;
     char ch;
     /* skip leading whitespace */
+#ifndef __EMX__
     while ((ch = *string) == ' ' || ch == '\t') string++;
+#else
+    while ((ch = *string) == ' ' || ch == '\t' || ch == '\r') string++;
+#endif
     while (ch = *string++) {
 	if (ch >= '0' && ch <= '9') {
 	    val *= 10;
@@ -257,11 +270,11 @@ static Boolean IsInteger(string, value)
 	    foundDigit = True;
 	    continue;
 	}
-	if (ch == ' ' || ch == '\t') {
+	if (IsWhitespace(ch)) {
 	    if (!foundDigit) return False;
 	    /* make sure only trailing whitespace */
 	    while (ch = *string++) {
-		if (ch != ' ' && ch != '\t')
+		if (!IsWhitespace(ch))
 		    return False;
 	    }
 	    break;
@@ -1621,7 +1634,7 @@ Boolean XtCvtStringToCommandArgArray(dpy, args, num_args, fromVal, toVal,
 
     while (*src != '\0') {
 	/* skip whitespace */
-	while (*src == ' ' || *src == '\t' || *src == '\n')
+	while (IsWhitespace(*src) || IsNewline(*src))
 	    src++;
 	/* test for end of string */
 	if (*src == '\0')
@@ -1630,9 +1643,9 @@ Boolean XtCvtStringToCommandArgArray(dpy, args, num_args, fromVal, toVal,
 	/* start new token */
 	tokens++;
 	start = src;
-	while (*src != '\0' && *src != ' ' && *src != '\t' && *src != '\n') {
+	while (*src != '\0' && !IsWhitespace(*src) && !IsNewline(*src)) {
 	    if (*src == '\\' &&
-		(*(src+1) == ' ' || *(src+1) == '\t' || *(src+1) == '\n')) {
+		(IsWhitespace(*(src+1)) || IsNewline(*(src+1)))) {
 		len = src - start;
 		if (len) {
 		    /* copy preceeding part of token */

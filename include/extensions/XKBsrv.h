@@ -32,6 +32,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbAllocClientMap		SrvXkbAllocClientMap
 #define XkbAllocServerMap		SrvXkbAllocServerMap
 #define XkbChangeTypesOfKey		SrvXkbChangeTypesOfKey
+#define XkbAddKeyType			SrvXkbAddKeyType
 #define XkbCopyKeyType			SrvXkbCopyKeyType
 #define XkbCopyKeyTypes			SrvXkbCopyKeyTypes
 #define XkbFreeClientMap		SrvXkbFreeClientMap
@@ -61,6 +62,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbLatchGroup			SrvXkbLatchGroup
 #define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
 #define	XkbChangeKeycodeRange		SrvXkbChangeKeycodeRange
+#define XkbApplyVirtualModChanges	SrvXkbApplyVirtualModChanges
+#define XkbUpdateActionVirtualMods	SrvXkbUpdateActionVirtualMods
+#define XkbUpdateKeyTypeVirtualMods	SrvXkbUpdateKeyTypeVirtualMods
 #endif
 
 #include <X11/extensions/XKBstr.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.3 1996/01/28 07:28:29 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.4 1996/02/22 05:09:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -48,7 +48,7 @@
 #define KTYPE_XQUEUE		4
 
 #define MF_CLEAR_DTR		1
-#define MF_CLEAR_CTS		2
+#define MF_CLEAR_RTS		2
 #define MF_REOPEN		128
 
 #ifndef _XF86MISC_SERVER_

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.19 1996/02/04 08:55:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.20 1996/03/04 04:54:11 dawes Exp $ */
 
 /*
 
@@ -485,10 +485,10 @@ ProcXF86VidModeModModeLine(client)
     int len;
 
     if (xf86Verbose) {
-	ErrorF("ModModeLine - scrn: %d hdsp: %d hbeg: %d hend: %d httl: %d",
+	ErrorF("ModModeLine - scrn: %d hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->screen, stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d",
+	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
 		stuff->vtotal, stuff->flags);
     }
@@ -531,7 +531,7 @@ ProcXF86VidModeModModeLine(client)
 		(INT32 *)ALLOCATE_LOCAL(mptr->PrivSize * sizeof(INT32));
 	if (stuff->privsize) {
 	    if (xf86Verbose)
-		ErrorF("ModModeLine - Request includes privates");
+		ErrorF("ModModeLine - Request includes privates\n");
 	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(INT32));
 	} else
 	    memcpy(modetmp.Private, mptr->Private,
@@ -590,7 +590,7 @@ ProcXF86VidModeModModeLine(client)
     (vptr->SwitchMode)(mptr);
 
     if (xf86Verbose)
-	ErrorF("ModModeLine - Succeeded");
+	ErrorF("ModModeLine - Succeeded\n");
     return(client->noClientException);
 }
 

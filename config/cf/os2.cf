@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.7 1996/02/09 08:17:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -31,7 +31,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.7 1996/02/09 08:17:44 dawes E
 
 /* more directories */
 #define AdmDir		$(LIBDIR)/adm
-#define XAppLoadDir	$(LIBDIR)/app_defs
         DESTDIR = $(X11ROOT)
 
 /* for the man pages */
@@ -52,10 +51,8 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.7 1996/02/09 08:17:44 dawes E
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
-/* the xf86 standard keyboard support seems to be badly broken, so we
- * must use XKB
- */
 #define BuildXKB		YES
+#define BuildImplibs		YES
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
@@ -105,6 +102,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.7 1996/02/09 08:17:44 dawes E
 #define LibraryCCOptions	-Zmtd -Zsysv-signals
 #define ServerCCOptions		-Zmtd -Zsysv-signals
 
+#define MakeCmd x11make 
 #define AsCmd	gcc -S
 #define GccGasOption	-DGCCUSESGAS
 #define AsmDefines	-DUSE_GAS

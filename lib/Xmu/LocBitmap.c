@@ -1,4 +1,5 @@
 /* $XConsortium: LocBitmap.c,v 1.19 94/04/17 20:16:10 rws Exp $ */
+/* $XFree86$ */
 
 /*
  
@@ -169,7 +170,12 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 
 	switch (i) {
 	  case 1:
+#ifndef __EMX__
 	    if (!(name[0] == '/' || (name[0] == '.') && name[1] == '/')) 
+#else
+	    if (!(name[0] == '/' || (name[0] == '.' && name[1] == '/') ||
+		  (isalpha(name[0]) && name[1] == ':')))
+#endif
 	      continue;
 	    fn = (char *) name;
 	    try_plain_name = False;
@@ -193,6 +199,9 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 
 	data = NULL;
 	pixmap = None;
+#ifdef __EMX__
+	fn = (char*)__XOS2RedirRoot(fn);
+#endif
 	if (XmuReadBitmapDataFromFile (fn, &width, &height, &data,
 				       &xhot, &yhot) == BitmapSuccess) {
 	    pixmap = XCreatePixmapFromBitmapData (dpy, root, (char *) data,

@@ -1099,4 +1099,5 @@ EXPORTS
 	XkbComputeShapeTop @ 1148
 	XkbFindOverlayForKey @ 1149
 	XkbAllocGeomKeyAliases @ 1150
+	XkbSetGeometry @ 1151
 

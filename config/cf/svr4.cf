@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.19 1995/12/17 04:58:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.20 1996/01/05 13:06:47 dawes Exp $
 /*
  * A default OS name
  */
@@ -78,7 +78,9 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.19 1995/12/17 04:58:17 dawes Exp $
 #ifndef YaccCmd
 #define	YaccCmd	/usr/ccs/bin/yacc
 #endif
+#ifndef MkdirHierCmd
 #define MkdirHierCmd mkdir -p
+#endif
 
 #ifndef SunArchitecture
 #if (OSMinorVersion == 0)

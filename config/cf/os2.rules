@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.7 1996/02/09 08:17:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.8 1996/02/19 09:47:25 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -112,7 +112,8 @@ ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
-InstallProgram(program,$(BINDIR))
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
 
 #if 0
 #define ComplexProgramTargetNoMan(program)				@@\
@@ -169,8 +170,8 @@ clean::									@@\
 target:: ProgramTargetName($(IMAKE))					@@\
 									@@\
 ProgramTargetName($(IMAKE)):						@@\
-	@\indir $(IMAKESRC) if exist Makefile $(MAKE) SHELL= all	@@\
-	@\indir $(IMAKESRC) if not exist Makefile $(MAKE) SHELL= -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	@\indir $(IMAKESRC) if exist Makefile $(MAKE) SHELL= MAKE=x11make all		@@\
+	@\indir $(IMAKESRC) if not exist Makefile $(MAKE) SHELL= MAKE=x11make -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 #endif
 
 #ifndef UseInstalled
@@ -178,7 +179,7 @@ ProgramTargetName($(IMAKE)):						@@\
 depend:: ProgramTargetName($(DEPEND))					@@\
 									@@\
 ProgramTargetName($(DEPEND)):						@@\
-	@\indir $(DEPENDSRC) $(MAKE) SHELL= 
+	@\indir $(DEPENDSRC) $(MAKE) SHELL= MAKE=x11make 
 #endif
 
 #define	DependTarget()							@@\
@@ -201,7 +202,7 @@ depend::								@@\
 dirs: DONE								@@\
 									@@\
 DONE:									@@\
-	@for %i in (dirs) do \indir %i $(MAKE) SHELL= $(MFLAGS) PassCDebugFlags all @@\
+	@for %i in (dirs) do \indir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) PassCDebugFlags all @@\
 	touch DONE							@@\
 									@@\
 clean::									@@\
@@ -218,7 +219,7 @@ target::								@@\
 #define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
 Concat(SUBST,name) = dirs						@@\
 name::									@@\
-	@for %i in ($(subst /,\,$(Concat(SUBST,name)))) do \indir %i $(MAKE) SHELL= $(MFLAGS) flags subname
+	@for %i in ($(subst /,\,$(Concat(SUBST,name)))) do \indir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) flags subname
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
@@ -293,19 +294,19 @@ clean::									@@\
  * it is just the SHELL variable that is messed up that forces me to
  * modify this rule
  */
-#define ConfigTargetLong(target,dep,script,args,extra)                  @@\
-all:: Configure                                                         @@\
-                                                                        @@\
-Configure:: target.o                                                    @@\
-                                                                        @@\
-target.c: script dep                                                    @@\
-	$(MAKE) SHELL= $(MFLAGS) extra Concat(Build,target)             @@\
-                                                                        @@\
-Concat(Build,target):                                                   @@\
-	$(RM) target.c                                                  @@\
-	script args                                                     @@\
-                                                                        @@\
-clean::                                                                 @@\
+#define ConfigTargetLong(target,dep,script,args,extra)			@@\
+all:: Configure								@@\
+									@@\
+Configure:: target.o							@@\
+									@@\
+target.c: script dep							@@\
+	$(MAKE) SHELL= MAKE=x11make $(MFLAGS) extra Concat(Build,target)			@@\
+									@@\
+Concat(Build,target):							@@\
+	$(RM) target.c							@@\
+	script args							@@\
+									@@\
+clean::									@@\
 	$(RM) target.c
 
 /*
