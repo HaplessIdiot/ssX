@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.10 2001/04/03 17:00:11 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.11 2001/04/04 02:00:31 dawes Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "hp" {
@@ -188,6 +188,6 @@ xkb_symbols "rapidaccess" {
     key <I17>	{	[ XF86Launch2		]	};
     key <I30>	{	[ XF86Launch3		]	};
     key <I2E>	{	[ XF86Launch4		]	};
-    key <I26>	{	[ XF86Launch5		]	};
+    key <I26>	{	[ Help			]	};
 };
 
