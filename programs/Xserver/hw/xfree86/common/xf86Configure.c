@@ -348,6 +348,7 @@ configureScreenSection (int screennum)
 	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
     	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
 	display->disp_depth = depths[i];
+	display->disp_black.red = display->disp_white.red = -1;
 	ptr->scrn_display_lst = (XF86ConfDisplayPtr)xf86addListItem(
 				     (glp)ptr->scrn_display_lst, (glp)display);
     }
