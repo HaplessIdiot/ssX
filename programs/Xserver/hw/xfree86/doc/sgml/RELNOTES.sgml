@@ -9,7 +9,7 @@
 <date>12 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.132 2005/03/12 23:15:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.133 2005/03/15 21:05:52 dawes Exp $
 </ident>
 
 <abstract>
@@ -1500,7 +1500,7 @@ in the <htmlurl name="README.fonts" url="fonts.html"> document.
 The XFree86 4.x server comes with a TrueType backend, known as the
 "FreeType" backend, based on the FreeType library.  The functionality
 of the former X-TrueType was merged into the FreeType backend by the
-After X-TT Project for the XFree86 4.4.0 releaes, and the old X-TrueType
+After X-TT Project for the XFree86 4.4.0 release, and the old X-TrueType
 backend has been dropped as of XFree86 4.5.0.
 
 <sect1>CID font support
@@ -1743,7 +1743,7 @@ Charles Dobson,
 DRI Project,
 Emmanuel Dreyfus,
 Boris Dusek,
-Georgina Economou,
+Georgina O. Economou,
 Egbert Eich,
 Bernd Ernesti,
 Chris Evans,
