@@ -116,6 +116,8 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, CARD8 *a, CARD8 *b)
 		/* first 4bits are rest of M, 1bit for K value */
 		*b = (((q & 0xFE) >> 1) | (r << 4));
 	}
+	xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,3,"Found Clock %6.2f n=%i m=%i"
+		       " k=%i\n",clock/1000.,p,q,r);
 }
 
 static void
