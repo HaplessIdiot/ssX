@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.151 2000/02/13 03:36:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.153 2000/02/23 19:16:43 alanh Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -348,18 +348,25 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
 #ifdef XFree86LOADER
     /* Load all modules specified explicitly in the config file */
-    if ((modulelist = xf86ModulelistFromConfig(&optionlist)))
+    if ((modulelist = xf86ModulelistFromConfig(&optionlist))) {
       xf86LoadModules(modulelist, optionlist);
+      xfree(modulelist);
+      xfree(optionlist);
+    }
 
     /* Load all driver modules specified in the config file */
-    if ((modulelist = xf86DriverlistFromConfig()))
+    if ((modulelist = xf86DriverlistFromConfig())) {
       xf86LoadModules(modulelist, NULL);
+      xfree(modulelist);
+    }
 
     /* Setup the builtin input drivers */
     xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
     /* Load all input driver modules specified in the config file. */
-    if ((modulelist = xf86InputDriverlistFromConfig()))
+    if ((modulelist = xf86InputDriverlistFromConfig())) {
       xf86LoadModules(modulelist, NULL);
+      xfree(modulelist);
+    }
 
     /*
      * It is expected that xf86AddDriver()/xf86AddInputDriver will be
@@ -1429,15 +1436,12 @@ ddxProcessArgument(int argc, char **argv, int i)
 #endif
     return 1;
   }
-#ifdef XFree86LOADER
-  /* Currently doesn't work without modules */
   if (!strcmp(argv[i], "-configure"))
   {
     xf86DoConfigure = TRUE;
     xf86AllowMouseOpenFail = TRUE;
     return 1;
   }
-#endif
   /* OS-specific processing */
   return xf86ProcessArgument(argc, argv, i);
 }
@@ -1466,6 +1470,7 @@ ddxUseMsg()
     ErrorF("-xf86config file       specify a configuration file, relative to the\n");
     ErrorF("                       XF86Config search path, only root can use absolute\n");
   }
+  ErrorF("-configure             probe for devices and write an XF86Config\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose [n]           verbose startup messages\n");
   ErrorF("-logverbose [n]        verbose log messages\n");

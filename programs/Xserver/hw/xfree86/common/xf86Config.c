@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.208 2000/02/14 19:20:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.209 2000/02/18 00:47:35 dawes Exp $ */
 
 
 /*
@@ -242,6 +242,8 @@ xf86ModulelistFromConfig(pointer **optlist)
     optarray[count] = NULL;
     if (optlist)
 	*optlist = optarray;
+    else
+	xfree(optarray);
     return modulearray;
 }
 
@@ -304,6 +306,48 @@ xf86DriverlistFromConfig()
 	    }
     }
     return modulearray;
+}
+
+
+char **
+xf86DriverlistFromCompile(void)
+{
+    static char drivernames[] = DRIVERS;
+    static char **driverlist = NULL;
+    char *cp;
+    int count;
+
+    if (driverlist)
+	return driverlist;
+
+    /* Count the number needed */
+    count = 0;
+    cp = drivernames;
+    while (*cp) {
+	while (*cp && isspace(*cp)) cp++;
+	if (!*cp) break;
+	count++;
+	while (*cp && !isspace(*cp)) cp++;
+    }
+
+    if (!count)
+	return NULL;
+
+    /* Now allocate the array of pointers to 0-terminated driver names */
+    driverlist = (char **)xnfalloc((count + 1) * sizeof(char *));
+    count = 0;
+    cp = drivernames;
+    while (*cp) {
+	while (*cp && isspace(*cp)) cp++;
+	if (!*cp) break;
+	driverlist[count] = cp;
+	count++;
+	while (*cp && !isspace(*cp)) cp++;
+	if (!*cp) break;
+	*cp++ = 0;
+    }
+    driverlist[count] = NULL;
+    return driverlist;
 }
 
 
@@ -376,6 +420,48 @@ xf86InputDriverlistFromConfig()
 	    }
     }
     return modulearray;
+}
+
+
+char **
+xf86InputDriverlistFromCompile(void)
+{
+    static char drivernames[] = IDRIVERS;
+    static char **driverlist = NULL;
+    char *cp;
+    int count;
+
+    if (driverlist)
+	return driverlist;
+
+    /* Count the number needed */
+    count = 0;
+    cp = drivernames;
+    while (*cp) {
+	while (*cp && isspace(*cp)) cp++;
+	if (!*cp) break;
+	count++;
+	while (*cp && !isspace(*cp)) cp++;
+    }
+
+    if (!count)
+	return NULL;
+
+    /* Now allocate the array of pointers to 0-terminated driver names */
+    driverlist = (char **)xnfalloc((count + 1) * sizeof(char *));
+    count = 0;
+    cp = drivernames;
+    while (*cp) {
+	while (*cp && isspace(*cp)) cp++;
+	if (!*cp) break;
+	driverlist[count] = cp;
+	count++;
+	while (*cp && !isspace(*cp)) cp++;
+	if (!*cp) break;
+	*cp++ = 0;
+    }
+    driverlist[count] = NULL;
+    return driverlist;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.14 2000/02/05 23:06:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.16 2000/02/23 19:16:42 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -33,6 +33,7 @@
 #include "loaderProcs.h"
 #endif
 #include "xf86.h"
+#include "xf86Config.h"
 #include "xf86Priv.h"
 #include "xf86PciInfo.h"
 #include "xf86Parser.h"
@@ -231,7 +232,7 @@ configureScreenSection (char *driver)
 
     for (i=0;i<4;i++)
     {
-	unsigned char *modename;
+	char *modename;
 	XF86ConfDisplayPtr display;
 	display = xf86confmalloc(sizeof(XF86ConfDisplayRec));
     	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
@@ -559,19 +560,10 @@ DoConfigure()
     XF86ConfigPtr xf86config = NULL;
     char **vlist, **ilist, **vl, **il;
 
-#ifdef XFree86LOADER
-    /* Find the list of video driver modules. */
-    const char *vsubdirs[] = {
-	"drivers",
-	NULL
-    };
-    const char *isubdirs[] = {
-	"input",
-	NULL
-    };
+    vlist = xf86DriverlistFromCompile();
+    ilist = xf86InputDriverlistFromCompile();
 
-    vlist = LoaderListDirs(vsubdirs, NULL);
-    ilist = LoaderListDirs(isubdirs, NULL);
+#ifdef XFree86LOADER
     if (vlist) {
 	ErrorF("List of video driver modules:\n");
 	for (vl = vlist; *vl; vl++)
@@ -590,7 +582,7 @@ DoConfigure()
     /* Load all the drivers that were found. */
     xf86LoadModules(vlist, NULL);
     xf86LoadModules(ilist, NULL);
-#endif
+#endif /* XFree86LOADER */
 
     /* Disable PCI devices */
     xf86AccessInit();
@@ -789,11 +781,6 @@ DoConfigure()
     ErrorF("Your home directory. Then type 'XFree86 -xf86config XF86Config.new'\n");
 
 bail:
-#ifdef XFree86LOADER
-    LoaderFreeDirList(vlist);
-    LoaderFreeDirList(ilist);
-#endif /* XFree86LOADER */
-
     OsCleanup();
     AbortDDX();
     fflush(stderr);

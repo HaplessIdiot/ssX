@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.3 1999/04/05 07:13:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.4 1999/05/05 14:29:51 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc
  */
@@ -18,7 +18,9 @@ extern XF86ConfigPtr xf86configptr;
  */
 char ** xf86ModulelistFromConfig(pointer **);
 char ** xf86DriverlistFromConfig(void);
+char ** xf86DriverlistFromCompile(void);
 char ** xf86InputDriverlistFromConfig(void);
+char ** xf86InputDriverlistFromCompile(void);
 Bool xf86BuiltinInputDriver(const char *);
 Bool xf86HandleConfigFile(void);
 

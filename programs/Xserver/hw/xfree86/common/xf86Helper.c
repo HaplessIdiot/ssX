@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.75 2000/02/15 23:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.77 2000/02/23 19:16:43 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1448,6 +1448,8 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     static int	      count[MAXDRIVERS];
     confScreenPtr screensecptr;
     int i,j;
+
+    *driversectlist = NULL;
     
     if (xf86DoProbe) return 1;
   
@@ -1605,6 +1607,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	            instances[allocatedInstances - 1].claimed = FALSE;
 	            instances[allocatedInstances - 1].foundHW = TRUE;
 		    instances[allocatedInstances - 1].chip = id->numChipset;
+		    numFound++;
 	        }
 	    }
         }
@@ -1620,6 +1623,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    instances[allocatedInstances - 1].claimed = FALSE;
 		    instances[allocatedInstances - 1].foundHW = TRUE;
 		    instances[allocatedInstances - 1].chip = id->numChipset;
+		    numFound++;
 		}
 	    }
 	}
@@ -1641,6 +1645,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 			instances[allocatedInstances - 1].chip
 			    = id->numChipset;
 			instances[allocatedInstances - 1].foundHW = TRUE;
+			numFound++;
 			break;
 		    }
 		}
@@ -1656,7 +1661,11 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	xfree(instances);
 	return 0;
     }
-    if (xf86DoProbe) return 1;
+
+    if (xf86DoProbe) {
+	xfree(instances);
+	return numFound;
+    }
 
     if (xf86DoConfigure && xf86DoConfigurePass1) {
 	pciVideoPtr ConfCard;
@@ -1678,6 +1687,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    }
 	}
 	FoundPciCards += actualcards;
+	xfree(instances);
 	return actualcards;
     }
 
@@ -1817,6 +1827,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
      * Of the claimed instances, check that another driver hasn't already
      * claimed its slot.
      */
+    numFound = 0;
     for (i = 0; i < allocatedInstances && numClaimedInstances > 0; i++) {
 	
 	if (!instances[i].claimed)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.8 2000/02/15 02:00:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.10 2000/02/21 18:09:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1397,14 +1397,15 @@ getValidBIOSBase(PCITAG tag, int num)
 void
 xf86PciProbe(void)
 {
-    void (* DataSetupFunc)(SymTabPtr *, pciVendorDeviceInfo **,
-			   pciVendorCardInfo **);
+    typedef void DataSetupFuncType(SymTabPtr *, pciVendorDeviceInfo **,
+				   pciVendorCardInfo **);
+    DataSetupFuncType *DataSetupFunc;
 #ifdef XFree86LOADER
     /* 
      * we need to get the pointer to the pci data structures initialized
      */
 
-    DataSetupFunc = LoaderSymbol("xf86SetupPciData");
+    DataSetupFunc = (DataSetupFuncType *)LoaderSymbol("xf86SetupPciData");
 #else
     DataSetupFunc = xf86SetupScanPci;
 #endif

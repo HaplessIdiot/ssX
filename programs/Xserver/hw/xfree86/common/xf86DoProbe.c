@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.6 2000/02/03 20:31:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.7 2000/02/18 17:16:25 tsi Exp $ */
 /*
  * finish setting up the server
  * Load the driver modules and call their probe functions.
@@ -15,7 +15,8 @@
 #include "os.h"
 #ifdef XFree86LOADER
 #include "loaderProcs.h"
-#endif
+#include "xf86Config.h"
+#endif /* XFree86LOADER */
 #include "xf86.h"
 #include "xf86Priv.h"
 
@@ -32,18 +33,9 @@ DoProbe()
 
 #ifdef XFree86LOADER
     /* Find the list of video driver modules. */
-    char **list, **l;
-    const char *subdirs[] = {
-	"drivers",
-	NULL
-    };
-    const char *patlist[] = {
-	"(.*)_drv\\.so",
-	"(.*)_drv\\.o",
-	NULL
-    };
+    char **list = xf86DriverlistFromCompile();
+    char **l;
 
-    list = LoaderListDirs(subdirs, NULL);
     if (list) {
 	ErrorF("List of video driver modules:\n");
 	for (l = list; *l; l++)
@@ -61,37 +53,28 @@ DoProbe()
 
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
-	probeResultISA = probeResultPCI = probeResultFBDEV = FALSE;
-	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResultISA =
-		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTISA);
-	    ErrorF("Probe ISA capabilities in driver `%s' returns %s\n",
-		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultISA));
-	}
-	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResultPCI =
-		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTPCI);
-	    ErrorF("Probe PCI capabilities in driver `%s' returns %s\n",
-		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultPCI));
-	}
-	if (xf86DriverList[i]->Probe != NULL) {
-	    probeResultFBDEV =
-		xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DETECTFBDEV);
-	    ErrorF("Probe FBDEV capabilities in driver `%s' returns %s\n",
-		xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultFBDEV));
-	}
+	if (xf86DriverList[i]->Probe == NULL) continue;
+
+	probeResultPCI =
+	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], PROBE_DETECTPCI);
+	ErrorF("Probe PCI capabilities in driver `%s' returns %s\n",
+	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultPCI));
+	probeResultISA =
+	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], PROBE_DETECTISA);
+	ErrorF("Probe ISA capabilities in driver `%s' returns %s\n",
+	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultISA));
+	probeResultFBDEV =
+	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], PROBE_DETECTFBDEV);
+	ErrorF("Probe FBDEV capabilities in driver `%s' returns %s\n",
+	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResultFBDEV));
 
 	/* If we have a result, then call driver's Identify function */
 	if (probeResultISA || probeResultPCI || probeResultFBDEV) {
 	    if (xf86DriverList[i]->Identify != NULL) {
-		xf86DriverList[i]->Identify(0);
+		(*xf86DriverList[i]->Identify)(0);
 	    }
 	}
     }
-
-#ifdef XFree86LOADER
-    LoaderFreeDirList(list);
-#endif /* XFree86LOADER */
 
     OsCleanup();
     AbortDDX();
