@@ -1,4 +1,23 @@
 XFree86 4.3.99.2 (xx March 2003)
+  57. Fix the Xinstall.sh script so that it can handle being run from a
+      directory with white space in its path name (#A.1690, Eric Branlund).
+  56. Allow AGPGART support to be enabled for OpenBSD (#A.1684, Brian Feldman).
+  55. Make the mouse driver check the SendDragEvents option (based on #A.1682,
+      Juuso Åberg).
+  54. Fix a double allocation in _XTextPropertyToTextList() (#A.1681,
+      Lubos Lunak).
+  53. Fix a typo that causes the 'yu' keymap to emit a lower case 'L' in
+      both shift states (#A.1675, Nikola Smolenski).
+  52. Allow the remote shell command for xon to be specified from the
+      command line.  This allows ssh to be used (for example) (#A.1657,
+      Mike Urban).
+  51. Fix segfaults that can happen when using composition of RENDER and
+      non-RENDER fonts (#A.1656, Wu Jian Feng).
+  50. Add convenient ways to enter "double quote" and "cedilla" with the
+      en_US.UTF-8 compose rules (Alexandre Oliva).
+  49. Improve support for Wacom Cintiq boards (#A.1547, Sebastian Rittau).
+  48. Add support for Kensington's "ValuMouse" to the mouse driver (#A.1494,
+      Roy Wood).
   47. Workaround for a crash that happens if a scalable font has a bitmap
       entry in fonts.dir (#5687, Juliusz Chroboczek).
   46. Single/dual rasterizer quiescence patch for the glint/gamma DRI driver
@@ -16631,4 +16650,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2612 2003/04/03 16:41:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2613 2003/04/03 16:58:51 dawes Exp $
