@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.6 1999/10/26 15:58:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.7 1999/11/02 16:16:39 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -31,8 +31,7 @@
 /*
  * ATIValidMode --
  *
- * This checks for hardware-related limits on mode timings.  This assumes
- * xf86CheckMode has already done some basic consistency checks.
+ * This checks for hardware-related limits on mode timings.
  */
 int
 ATIValidMode
@@ -47,10 +46,17 @@ ATIValidMode
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
     Bool        InterlacedSeen;
     int         VDisplay, VTotal, HBlankWidth;
-    int         HAdjust, VAdjust, VScan;
+    int         HAdjust, VScan, VInterlace;
 
     if (flags & MODECHECK_FINAL)
     {
+        /*
+         * This is the final check before the common layer accepts a mode.
+         * pScreenInfo->displayWidth is set to the proposed virtual pitch
+         * should the mode be accepted.  The only check needed here is for
+         * 18800's and 28800's, which don't support interlaced modes if the
+         * pitch is over half the chipset's maximum pitch.
+         */
         if (pATI->MaximumInterlacedPitch)
         {
             /*
@@ -72,6 +78,10 @@ ATIValidMode
         return MODE_OK;
     }
 
+    /*
+     * The following is done for every mode in the monitor section that
+     * survives the common layer's basic checks.
+     */
     if (pMode->VScan <= 1)
         VScan = 1;
     else
@@ -82,51 +92,79 @@ ATIValidMode
 
     if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
     {
-        if ((pMode->HDisplay > pATI->LCDHorizontal) ||
-            (pMode->VDisplay > pATI->LCDVertical))
+        if ((pMode->CrtcHDisplay > pATI->LCDHorizontal) ||
+            (pMode->CrtcVDisplay > pATI->LCDVertical))
             return MODE_PANEL;
 
-        if (!pATI->OptionDevel)
+        if (!pATI->OptionSync)
             return MODE_OK;
 
-        /* Adjust effective timings for monitor checks */
+        /*
+         * Adjust effective timings for monitor checks.  Here the modeline
+         * clock is ignored.  Horizontal timings are scaled by the stretch
+         * ratio used for the displayed area.  The vertical porch is scaled by
+         * the native resolution's aspect ratio.  This seems rather arbitrary,
+         * and it is, but it does make all applicable VESA modes sync on a
+         * panel after stretching.  This has the unfortunate, but necessary,
+         * side-effect of changing the mode's horizontal sync and vertical
+         * refresh rates.  With some exceptions, this tends to increase the
+         * mode's horizontal sync rate, and decrease its vertical refresh rate.
+         */
         pMode->SynthClock = pATI->LCDClock;
 
-        HAdjust = pATI->LCDHorizontal - pMode->HDisplay;
-        pMode->CrtcHDisplay = pATI->LCDHorizontal;
-        pMode->CrtcHBlankStart = pATI->LCDHorizontal;
-        pMode->CrtcHSyncStart += HAdjust;
-        pMode->CrtcHSyncEnd += HAdjust;
-        pMode->CrtcHBlankEnd += HAdjust;
-        pMode->CrtcHTotal += HAdjust;
+        pMode->CrtcHTotal = pMode->CrtcHBlankEnd =
+            ATIDivide(pMode->CrtcHTotal * pATI->LCDHorizontal,
+                pMode->CrtcHDisplay, -3, 1) << 3;
+        pMode->CrtcHSyncEnd =
+            ATIDivide(pMode->CrtcHSyncEnd * pATI->LCDHorizontal,
+                pMode->CrtcHDisplay, -3, 1) << 3;
+        pMode->CrtcHSyncStart =
+            ATIDivide(pMode->CrtcHSyncStart * pATI->LCDHorizontal,
+                pMode->CrtcHDisplay, -3, -1) << 3;
+        pMode->CrtcHDisplay = pMode->CrtcHBlankStart = pATI->LCDHorizontal;
+
+        pMode->CrtcVTotal = pMode->CrtcVBlankEnd =
+            ATIDivide((pMode->CrtcVTotal - pMode->CrtcVDisplay) *
+                pATI->LCDVertical, pATI->LCDHorizontal, 0, 1) +
+                pATI->LCDVertical;
+        pMode->CrtcVSyncEnd =
+            ATIDivide((pMode->CrtcVSyncEnd - pMode->CrtcVDisplay) *
+                pATI->LCDVertical, pATI->LCDHorizontal, 0, 1) +
+                pATI->LCDVertical;
+        pMode->CrtcVSyncStart =
+            ATIDivide((pMode->CrtcVSyncStart - pMode->CrtcVDisplay) *
+                pATI->LCDVertical, pATI->LCDHorizontal, 0, -1) +
+                pATI->LCDVertical;
+        pMode->CrtcVDisplay = pMode->CrtcVBlankStart = pATI->LCDVertical;
 
         /*
-         * Perhaps this should be changed to not ignore the doublescanning or
-         * multiscanning specified by the user.
+         * The CRTC only stretches the mode's displayed area, not its porches.
+         * Reverse-engineer the mode's timings back into the user specified
+         * values so that the stretched mode is produced when the CRTC is
+         * eventually programmed.  The reverse-engineered mode is then checked
+         * against CRTC limits below.
          */
-        VScan = pATI->LCDVertical / pMode->VDisplay;
-        switch (pATI->NewHW.crtc)
-        {
-            case ATI_CRTC_VGA:
-                if (VScan > 64)
-                    VScan = 64;
-                break;
+        pMode->Clock = pATI->LCDClock;
 
-            case ATI_CRTC_MACH64:
-                if (VScan > 2)
-                    VScan = 2;
-                break;
+        HAdjust = pATI->LCDHorizontal - pMode->HDisplay;
+#       define ATIReverseHorizontal(_x) \
+            (pMode->_x - HAdjust)
 
-            default:
-                break;
-        }
-        VAdjust = pATI->LCDVertical - (pMode->VDisplay * VScan);
-        pMode->CrtcVDisplay = pATI->LCDVertical;
-        pMode->CrtcVBlankStart = pATI->LCDVertical;
-        pMode->CrtcVSyncStart = (pMode->VSyncStart * VScan) + VAdjust;
-        pMode->CrtcVSyncEnd = (pMode->VSyncEnd * VScan) + VAdjust;
-        pMode->CrtcVBlankEnd = (pMode->VTotal * VScan) + VAdjust;
-        pMode->CrtcVTotal = pMode->CrtcVBlankEnd;
+        pMode->HSyncStart = ATIReverseHorizontal(CrtcHSyncStart);
+        pMode->HSyncEnd = ATIReverseHorizontal(CrtcHSyncEnd);
+        pMode->HTotal = ATIReverseHorizontal(CrtcHTotal);
+
+        VInterlace = GetBits(pMode->Flags, V_INTERLACE) + 1;
+#       define ATIReverseVertical(_y) \
+            ((((pMode->_y - pATI->LCDVertical) * VInterlace) / VScan) + \
+             pMode->VDisplay)
+
+        pMode->VSyncStart = ATIReverseVertical(CrtcVSyncStart);
+        pMode->VSyncEnd = ATIReverseVertical(CrtcVSyncEnd);
+        pMode->VTotal = ATIReverseVertical(CrtcVTotal);
+
+#       undef ATIReverseHorizontal
+#       undef ATIReverVertical
     }
 
     HBlankWidth = (pMode->HTotal >> 3) - (pMode->HDisplay >> 3);

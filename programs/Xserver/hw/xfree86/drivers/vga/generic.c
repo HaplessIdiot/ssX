@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.30 1999/06/20 05:23:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.31 1999/10/13 16:49:37 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -420,7 +420,8 @@ static DisplayModeRec GenericDefaultMode =
     0,                                  /* ... xf86SetCrtcForModes() */
     0, 0, 0, 0, 0, 0,
     FALSE, FALSE,                       /* These are unadjusted timings */
-    0, NULL                             /* PrivSize & Private */
+    0, NULL,                            /* PrivSize & Private */
+    0.0, 0.0                            /* HSync & VRefresh */
 };
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.9 1999/11/02 16:16:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.10 1999/11/04 02:12:42 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1252,7 +1252,7 @@ ATIPreInit
         if (pATI->PCIInfo &&
             (pATI->Block0Base = pATI->PCIInfo->memBase[2]))
             pATI->Block0Base += 0x0400U;
-            
+
         /* Possibly set up for linear aperture */
         if ((pScreenInfo->depth >= 8) && pATI->OptionLinear)
         {
@@ -1268,7 +1268,7 @@ ATIPreInit
             {
                 if (pATI->Chip == ATI_CHIP_88800CX)
                     IOValue2 = ~((unsigned long)((1 << 23) - 1));
-                else if (pATI->Chip >= ATI_CHIP_88800GXE) 
+                else if (pATI->Chip >= ATI_CHIP_88800GXE)
                     IOValue2 = ~((unsigned long)((1 << 24) - 1));
                 else if (pATI->VideoRAM >= 4096)
                     IOValue2 = ~((unsigned long)((1 << 23) - 1));

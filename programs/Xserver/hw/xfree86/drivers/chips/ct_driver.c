@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.67 1999/10/13 16:49:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.68 1999/10/26 15:58:19 tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -354,7 +354,9 @@ static DisplayModeRec ChipsPALMode = {
 	FALSE,		/* CrtcHAdjusted */
 	FALSE,		/* CrtcVAdjusted */
 	0,		/* PrivSize */
-	NULL		/* Private */
+	NULL,		/* Private */
+	0.0,		/* HSync */
+	0.0		/* VRefresh */
 };
 
 /*
@@ -396,7 +398,9 @@ static DisplayModeRec ChipsSECAMMode = {
 	FALSE,		/* CrtcHAdjusted */
 	FALSE,		/* CrtcVAdjusted */
 	0,		/* PrivSize */
-	NULL		/* Private */
+	NULL,		/* Private */
+	0.0,		/* HSync */
+	0.0		/* VRefresh */
 };
 
 
@@ -436,7 +440,9 @@ static DisplayModeRec ChipsNTSCMode = {
 	FALSE,		/* CrtcHAdjusted */
 	FALSE,		/* CrtcVAdjusted */
 	0,		/* PrivSize */
-	NULL		/* Private */
+	NULL,		/* Private */
+	0.0,		/* HSync */
+	0.0		/* VRefresh */
 };
 #endif
 

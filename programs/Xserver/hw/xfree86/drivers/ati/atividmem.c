@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.5 1999/09/27 06:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.6 1999/11/02 16:16:40 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -191,7 +191,7 @@ ATIMapApertures
         {
             if (pVideo &&
                 ((pATI->Block0Base < 0x000A0000U) ||
-                 (pATI->Block0Base > (0x000B0000U - 0x00000400U)))) 
+                 (pATI->Block0Base > (0x000B0000U - 0x00000400U))))
                 pATI->pMMIO = xf86MapPciMem(pScreenInfo->scrnIndex,
                     VIDMEM_MMIO, ((pciConfigPtr)(pVideo->thisCard))->tag,
                     pATI->MMIOBase, pATI->PageSize);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.1 1999/07/06 11:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.2 1999/09/25 14:37:22 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -38,6 +38,7 @@ typedef enum
     ATI_OPTION_LINEAR,
     ATI_OPTION_PROBE_CLOCKS,
     ATI_OPTION_SHADOW_FB,
+    ATI_OPTION_SYNC,    /* Temporary and undocumented */
     ATI_OPTION_MAX      /* Must be last */
 } ATIOptionType;
 
@@ -63,6 +64,7 @@ ATIProcessOptions
         {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
         {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
         {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
     };
 
@@ -73,6 +75,7 @@ ATIProcessOptions
 #   define Linear      Option[ATI_OPTION_LINEAR].value.bool
 #   define ProbeClocks Option[ATI_OPTION_PROBE_CLOCKS].value.bool
 #   define ShadowFB    Option[ATI_OPTION_SHADOW_FB].value.bool
+#   define Sync        Option[ATI_OPTION_SYNC].value.bool
 
     /* Pick up XF86Config options */
     xf86CollectOptions(pScreenInfo, NULL);
@@ -81,6 +84,7 @@ ATIProcessOptions
     Linear = TRUE;
     if (pATI->BusType >= ATI_BUS_PCI)
         ShadowFB = TRUE;
+    Sync = TRUE;
 
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, Option);
 
@@ -101,4 +105,5 @@ ATIProcessOptions
     pATI->OptionLinear = Linear;
     pATI->OptionProbeClocks = ProbeClocks;
     pATI->OptionShadowFB = ShadowFB;
+    pATI->OptionSync = Sync;
 }
