@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.4 2001/01/17 22:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.5 2001/08/06 20:51:20 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -362,8 +362,7 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
     MarkWindowProcPtr MarkWindow = pWin->drawable.pScreen->MarkWindow;
     ScreenPtr pScreen;
 
-    /* To avoid "unused" warnings for pScreen. */
-    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
+    pScreen = pWin->drawable.pScreen;
 
     /* single layered systems are easy */
     if (ppLayerWin) *ppLayerWin = pWin;
@@ -449,8 +448,7 @@ miHandleValidateExposures(pWin)
     ScreenPtr pScreen;
     WindowExposuresProcPtr WindowExposures;
 
-    /* To avoid "unused" warnings for pScreen. */
-    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
+    pScreen = pWin->drawable.pScreen;
 
     pChild = pWin;
     WindowExposures = pChild->drawable.pScreen->WindowExposures;
@@ -1161,8 +1159,7 @@ miSegregateChildren(WindowPtr pWin, RegionPtr pReg, int depth)
     ScreenPtr pScreen;
     WindowPtr pChild;
 
-    /* To avoid "unused" warnings for pScreen. */
-    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
+    pScreen = pWin->drawable.pScreen;
 
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
     {
