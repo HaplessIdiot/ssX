@@ -68,14 +68,17 @@ in this Software without prior written authorization from the X Consortium.
  *	    RGB_GRAY_MAP
  */
 
-Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace,
-				  retain)
-    Display		*dpy;		/* specifies server connection */
-    int			screen;		/* specifies screen number */
-    VisualID		visualid;	/* specifies the visual */
-    unsigned int	depth;		/* specifies the visual */
-    Bool		replace;	/* specifies whether to replace */
-    Bool		retain;		/* specifies whether to retain */
+Status
+XmuVisualStandardColormaps(Display *dpy, int screen, VisualID visualid,
+			   unsigned int depth, Bool replace, Bool retain)
+     /*
+      * dpy			- specifies server connection
+      * screen			- specifies screen number
+      * visualid		- specifies the visual
+      * depth			- specifies the visual
+      * replace	specifies	- whether to replace
+      * retain			- specifies whether to retain
+      */
 {
     Status		status;
     int			n;
@@ -160,7 +163,7 @@ Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace,
 					   XA_RGB_DEFAULT_MAP, replace,
 					   retain);
 	if (! status) break;
-	/* fall through */
+	/*FALLTHROUGH*/
 
       case StaticGray:
 

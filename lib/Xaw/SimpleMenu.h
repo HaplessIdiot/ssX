@@ -50,13 +50,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Shell.h>
 #include <X11/Xmu/Converters.h>
 
-/****************************************************************
- *
+/*
  * SimpleMenu widget
- *
- ****************************************************************/
+ */
 
-/* SimpleMenu Resources:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -80,7 +78,7 @@ in this Software without prior written authorization from the X Consortium.
  sensitive	     Sensitive		Boolean		True
  topMargin           VerticalMargins    Dimension       VerticalSpace
  width		     Width		Dimension	0
- x		     Position		Position	0n
+ x		     Position		Position	0
  y		     Position		Position	0
 
 */
@@ -113,48 +111,58 @@ extern WidgetClass simpleMenuWidgetClass;
 
 #define XawRDisplayList "XawDisplayList"
 
-/************************************************************
- *
- * Public Functions.
- *
- ************************************************************/
+/*
+ * Public Functions
+ */
 
 _XFUNCPROTOBEGIN
 
-/*	Function Name: XawSimpleMenuAddGlobalActions
- *	Description: adds the global actions to the simple menu widget.
- *	Arguments: app_con - the appcontext.
- *	Returns: none.
+/*
+ * Function:
+ *	XawSimpleMenuAddGlobalActions
+ *
+ * Parameters:
+ *	app_con - appcontext
+ *
+ * Description:
+ *	Adds the global actions to the simple menu widget.
  */
+void XawSimpleMenuAddGlobalActions
+(
+ XtAppContext		app_con
+ );
 
-extern void XawSimpleMenuAddGlobalActions(
-#if NeedFunctionPrototypes
-    XtAppContext	/* app_con */
-#endif
-);
- 
-/*	Function Name: XawSimpleMenuGetActiveEntry
- *	Description: Gets the currently active (set) entry.
- *	Arguments: w - the smw widget.
- *	Returns: the currently set entry or NULL if none is set.
+/*
+ * Function:
+ *	XawSimpleMenuGetActiveEntry
+ *
+ * Parameters:
+ *	w - smw widget
+ *
+ * Description:
+ *	Gets the currently active (set) entry.
+ *
+ * Returns:
+ *	The currently set entry or NULL if none is set
  */
+Widget XawSimpleMenuGetActiveEntry
+(
+ Widget			w
+ );
 
-extern Widget XawSimpleMenuGetActiveEntry(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
-);
-
-/*	Function Name: XawSimpleMenuClearActiveEntry
- *	Description: Unsets the currently active (set) entry.
- *	Arguments: w - the smw widget.
- *	Returns: none.
+/*
+ * Function:
+ *	XawSimpleMenuClearActiveEntry
+ *
+ * Parameters:
+ *	w - smw widget
+ *
+ * Description:
+ *	Unsets the currently active (set) entry.
  */
-
-extern void XawSimpleMenuClearActiveEntry(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
+void XawSimpleMenuClearActiveEntry
+(
+ Widget			w
 );
 
 _XFUNCPROTOEND

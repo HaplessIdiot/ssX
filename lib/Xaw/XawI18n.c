@@ -58,13 +58,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/IntrinsicP.h>
 #include "XawI18n.h"
 
-#if NeedFunctionPrototypes
-wchar_t _Xaw_atowc(
-    unsigned char c)
-#else
-wchar_t _Xaw_atowc(c)
-    unsigned char c;
-#endif
+wchar_t
+_Xaw_atowc(int c)
 {
     wchar_t  wc;
     char str[2];
@@ -73,16 +68,19 @@ wchar_t _Xaw_atowc(c)
     str[1] = '\0';
 
     mbtowc(&wc, str, 1);
-    return wc;
+  return (wc);
 }
 
 #ifdef NCR
-int _Xaw_iswspace(wchar_t w)
+int
+_Xaw_iswspace(wchar_t w)
 {
     int ret = 0;
     wchar_t s = _Xaw_atowc(' ');
+
     if (s == w)
 	ret = 1;
-    return ret;
+
+  return (ret);
 }
 #endif

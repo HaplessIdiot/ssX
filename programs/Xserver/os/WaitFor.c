@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $TOG: WaitFor.c /main/57 1997/11/25 14:35:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.17 1998/08/13 14:46:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.18 1998/08/14 13:35:51 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -84,13 +84,17 @@ extern int errno;
 #include "opaque.h"
 
 /* modifications by raphael */
-int mffs(fd_mask mask) {
-    register i;
-    if ( ! mask ) return 0;
+int
+mffs(fd_mask mask)
+{
+    int i;
+
+    if (!mask) return 0;
     i = 1;
-    while (! (mask & 1)) {
-		i++;
-		mask = mask >> 1;
+    while (!(mask & 1))
+    {
+	i++;
+	mask >>= 1;
     }
     return i;
 }
@@ -363,9 +367,7 @@ WaitForSomething(pClientsReady)
 	}
 	else
 	{
-#ifdef WIN32
 	    fd_set tmp_set;
-#endif
 	    if (AnyClientsWriteBlocked && XFD_ANYSET (&clientsWritable))
 	    {
 		NewOutputPending = TRUE;
@@ -377,12 +379,8 @@ WaitForSomething(pClientsReady)
 
 	    XFD_ANDSET(&devicesReadable, &LastSelectMask, &EnabledDevices);
 	    XFD_ANDSET(&clientsReadable, &LastSelectMask, &AllClients); 
-#ifndef WIN32
-	    if (LastSelectMask.fds_bits[0] & WellKnownConnections.fds_bits[0]) 
-#else
 	    XFD_ANDSET(&tmp_set, &LastSelectMask, &WellKnownConnections);
 	    if (XFD_ANYSET(&tmp_set))
-#endif
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)&LastSelectMask);
 #ifdef DPMSExtension
@@ -452,7 +450,7 @@ WaitForSomething(pClientsReady)
 		    pClientsReady[nready++] = client_index;
 		}
 #ifndef WIN32
-		clientsReadable.fds_bits[i] &= ~(((fd_mask)1) << curclient);
+		clientsReadable.fds_bits[i] &= ~(((fd_mask)1L) << curclient);
 	    }
 #else
 	    FD_CLR(curclient, &clientsReadable);
@@ -521,7 +519,7 @@ WaitForSomething(pClientsReady)
 		    int client_priority, curclient, client_index;
 
 		    curclient = ffs (clientsReadable[i]) - 1;
-		    client_index = ConnectionTranslation[curclient + (i << 5)];
+		    client_index = ConnectionTranslation[curclient + (i * (sizeof(fd_mask)*8))];
 		    dbprintf(("%d has input\n", curclient));
 #ifdef XSYNC
 		    client_priority = clients[client_index]->priority;
@@ -536,7 +534,7 @@ WaitForSomething(pClientsReady)
 		    {
 		        pClientsReady[nready++] = client_index;
 		    }
-		    clientsReadable[i] &= ~(((FdMask)1) << curclient);
+		    clientsReadable[i] &= ~(((FdMask)1L) << curclient);
 		}
 	    }
 	    break;

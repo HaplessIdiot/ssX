@@ -1,5 +1,5 @@
 /* $XConsortium: util.c,v 1.18 94/11/21 18:33:11 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.6 1996/06/29 09:10:32 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.7 1996/10/03 08:49:48 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -222,8 +222,8 @@ CleanUpChild ()
 #ifdef CSRG_BASED
 	setsid();
 #else
-#if defined(SYSV) || defined(SVR4)
-#if !(defined(SVR4) && defined(i386)) || defined(SCO325)
+#if defined(SYSV) || defined(SVR4) || defined(__GNU__)
+#if !(defined(SVR4) && defined(i386)) || defined(SCO325) || defined(__GNU__)
 	setpgrp ();
 #endif
 #else

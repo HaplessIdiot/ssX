@@ -43,14 +43,7 @@ in this Software without prior written authorization from the X Consortium.
 #define _SmeBSB_h
 
 #include <X11/Xmu/Converters.h>
-
 #include <X11/Xaw/Sme.h>
-
-/****************************************************************
- *
- * SmeBSB object
- *
- ****************************************************************/
 
 /* BSB Menu Entry Resources:
 
@@ -69,7 +62,7 @@ in this Software without prior written authorization from the X Consortium.
  sensitive	     Sensitive		Boolean		True
  vertSpace           VertSpace          int             25
  width		     Width		Dimension	0
- x		     Position		Position	0n
+ x		     Position		Position	0
  y		     Position		Position	0
 
 */

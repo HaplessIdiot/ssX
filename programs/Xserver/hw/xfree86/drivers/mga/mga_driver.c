@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.33 1998/07/25 16:55:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.34 1998/08/02 05:16:58 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1028,32 +1028,24 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
                pScrn->videoRam);
 	
     pMga->FbMapSize = pScrn->videoRam * 1024;
-	
-#if 0
-/* XXX HACK */
-MGAMapMem(pScrn);
-#endif
 
-    /*
-     * fill MGAdac struct
-     * Warning: currently, it should be after RAM counting
-     */
+
+    /* Setup the chipset and ramdac specific function pointers */
     switch (pMga->Chipset) {
     case PCI_CHIP_MGA2064:
     case PCI_CHIP_MGA2164:
     case PCI_CHIP_MGA2164_AGP:
-	MGA3026RamdacInit(pScrn);
+	MGA2064SetupChipFuncs(pScrn);
 	break;
-#if !NO_MYSTIQUE
     case PCI_CHIP_MGA1064:
-	MGA1064RamdacInit(pScrn);
+#if !NO_MYSTIQUE
+	MGA1064SetupChipFuncs(pScrn);
+#endif
 	break;
-#endif
+    default: return FALSE;
     }
-#if 0
-/* XXX HACK */
-MGAUnmapMem(pScrn);
-#endif
+	
+    (*pMga->PreInit)(pScrn);
 
     /* XXX Set HW cursor use */
 
@@ -1429,27 +1421,9 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
 static void
 MGASave(ScrnInfoPtr pScrn)
 {
-    MGAPtr pMga;
-    vgaRegPtr vgaReg;
-    MGARegPtr mgaReg;
+    MGAPtr pMga = MGAPTR(pScrn);
 
-    pMga = MGAPTR(pScrn);
-    vgaReg = &VGAHWPTR(pScrn)->SavedReg;
-    mgaReg = &pMga->SavedReg;
-
-    switch (pMga->Chipset)
-    {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Save(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-#if !NO_MYSTIQUE
-    case PCI_CHIP_MGA1064:
-	MGA1064Save(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-#endif
-    }
+    (*pMga->Save)(pScrn);
 }
 
 
@@ -1462,58 +1436,9 @@ MGASave(ScrnInfoPtr pScrn)
 static Bool
 MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    int ret;
-    vgaHWPtr hwp;
-    vgaRegPtr vgaReg;
-    MGAPtr pMga;
-    MGARegPtr mgaReg;
+    MGAPtr pMga = MGAPTR(pScrn);
 
-    hwp = VGAHWPTR(pScrn);
-    vgaHWUnlock(hwp);
-
-    /* Initialise the ModeReg values */
-    if (!vgaHWInit(pScrn, mode))
-	return FALSE;
-    pScrn->vtSema = TRUE;
-
-    pMga = MGAPTR(pScrn);
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	ret = MGA3026Init(pScrn, mode);
-	break;
-#if !NO_MYSTIQUE
-    case PCI_CHIP_MGA1064:                               
-	ret = MGA1064Init(pScrn, mode);
-	break;
-#endif
-    }
-    if (!ret)
-	return FALSE;
-
-    /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
-    vgaReg = &hwp->ModeReg;
-    mgaReg = &pMga->ModeReg;
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Restore(pScrn, vgaReg, mgaReg, FALSE);
-	break;
-#if !NO_MYSTIQUE
-    case PCI_CHIP_MGA1064:                               
-	MGA1064Restore(pScrn, vgaReg, mgaReg, FALSE);
-	break;
-#endif
-    }
-    MGAStormSync(pScrn);
-    /* XXX Does this belong here? */
-    MGAStormEngineInit(pScrn);
-    vgaHWProtect(pScrn, FALSE);
-
-    return TRUE;
+    return((*pMga->ModeInit)(pScrn, mode));
 }
 
 /*
@@ -1522,32 +1447,9 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 static void 
 MGARestore(ScrnInfoPtr pScrn)
 {
-    vgaHWPtr hwp;
-    vgaRegPtr vgaReg;
-    MGAPtr pMga;
-    MGARegPtr mgaReg;
+    MGAPtr pMga = MGAPTR(pScrn);
 
-    hwp = VGAHWPTR(pScrn);
-    pMga = MGAPTR(pScrn);
-    vgaReg = &hwp->SavedReg;
-    mgaReg = &pMga->SavedReg;
-
-    vgaHWProtect(pScrn, TRUE);
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	MGA3026Restore(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-#if !NO_MYSTIQUE
-    case PCI_CHIP_MGA1064:                               
-	MGA1064Restore(pScrn, vgaReg, mgaReg, TRUE);
-	break;
-#endif
-    }
-    MGAStormSync(pScrn);
-    MGAStormEngineInit(pScrn);
-    vgaHWProtect(pScrn, FALSE);
+    (*pMga->Restore)(pScrn);
 }
 
 
@@ -1680,7 +1582,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (pScrn->bitsPerPixel == 8) {
 	/* Another VGA dependency to remove */
-	vgaHandleColormaps(pScreen, pScrn);
+	MGAHandleColormaps(pScreen, pScrn);
     } else {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;

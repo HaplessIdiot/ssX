@@ -27,58 +27,121 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/StrToBS.c,v 1.2 1998/06/28 08:59:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToBS.c,v 1.3 1998/06/28 12:32:31 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include "Converters.h"
 #include "CharSet.h"
 
-#define	done(address, type) \
-	{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
+/*
+ * Prototypes
+ */
+static void InitializeQuarks(void);
 
-/* ARGSUSED */
-void
-XmuCvtStringToBackingStore (args, num_args, fromVal, toVal)
-    XrmValue	*args;		/* unused */
-    Cardinal	*num_args;	/* unused */
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
+/*
+ * Initialization
+ */
+static XrmQuark QnotUseful, QwhenMapped, Qalways, Qdefault;
+static Boolean haveQuarks;
+
+/*
+ * Implementation
+ */
+static void
+InitializeQuarks(void)
 {
-    char	lowerString[32];
+  if (!haveQuarks)
+    {
+      char name[11];
+
+      XmuNCopyISOLatin1Lowered(name, XtEnotUseful, sizeof(name));
+      QnotUseful = XrmStringToQuark(name);
+      XmuNCopyISOLatin1Lowered(name, XtEwhenMapped, sizeof(name));
+      QwhenMapped = XrmStringToQuark(name);
+      XmuNCopyISOLatin1Lowered(name, XtEalways, sizeof(name));
+      Qalways = XrmStringToQuark(name);
+      XmuNCopyISOLatin1Lowered(name, XtEdefault, sizeof(name));
+      Qdefault = XrmStringToQuark(name);
+      haveQuarks = True;
+    }
+}
+
+/*ARGSUSED*/
+void
+XmuCvtStringToBackingStore(XrmValue *args, Cardinal *num_args,
+			   XrmValuePtr fromVal, XrmValuePtr toVal)
+{
     XrmQuark	q;
+  char name[11];
     static int	backingStoreType;
-    static XrmQuark XtQEnotUseful, XtQEwhenMapped, XtQEalways, XtQEdefault;
-    static int haveQuarks = 0;
 
     if (*num_args != 0)
         XtWarning("String to BackingStore conversion needs no extra arguments");
-    if (!haveQuarks) {
-	XmuCopyISOLatin1Lowered (lowerString, XtEnotUseful);
-	XtQEnotUseful = XrmStringToQuark(lowerString);
-	XmuCopyISOLatin1Lowered (lowerString, XtEwhenMapped);
-	XtQEwhenMapped = XrmStringToQuark(lowerString);
-	XmuCopyISOLatin1Lowered (lowerString, XtEalways);
-	XtQEalways = XrmStringToQuark(lowerString);
-	XmuCopyISOLatin1Lowered (lowerString, XtEdefault);
-	XtQEdefault = XrmStringToQuark(lowerString);
-	haveQuarks = 1;
-    }
-    XmuNCopyISOLatin1Lowered (lowerString, (char *) fromVal->addr,
-			      sizeof(lowerString));
-    q = XrmStringToQuark (lowerString);
-    if (q == XtQEnotUseful) {
+
+  InitializeQuarks();
+  XmuNCopyISOLatin1Lowered(name, (char *)fromVal->addr, sizeof(name));
+
+  q = XrmStringToQuark (name);
+  if (q == QnotUseful)
 	backingStoreType = NotUseful;
-	done (&backingStoreType, int);
-    } else if (q == XtQEwhenMapped) {
+  else if (q == QwhenMapped)
     	backingStoreType = WhenMapped;
-	done (&backingStoreType, int);
-    } else if (q == XtQEalways) {
+  else if (q == Qalways)
 	backingStoreType = Always;
-	done (&backingStoreType, int);
-    } else if (q == XtQEdefault) {
+  else if (q == Qdefault)
     	backingStoreType = Always + WhenMapped + NotUseful;
-	done (&backingStoreType, int);
-    } else {
-        XtStringConversionWarning((char *) fromVal->addr, "BackingStore");
+  else
+    {
+      XtStringConversionWarning((char *)fromVal->addr, XtRBackingStore);
+      return;
     }
+  toVal->size = sizeof(int);
+  toVal->addr = (XPointer)&backingStoreType;
+}
+
+/*ARGSUSED*/
+Boolean
+XmuCvtBackingStoreToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
+			   XrmValuePtr fromVal, XrmValuePtr toVal,
+			   XtPointer *data)
+{
+  static String buffer;
+  Cardinal size;
+
+  switch (*(int *)fromVal->addr)
+    {
+    case NotUseful:
+      buffer = XtEnotUseful;
+      break;
+    case WhenMapped:
+      buffer = XtEwhenMapped;
+      break;
+    case Always:
+      buffer = XtEalways;
+      break;
+    case (Always + WhenMapped + NotUseful):
+      buffer = XtEdefault;
+      break;
+    default:
+      XtWarning("Cannot convert BackingStore to String");
+      toVal->addr = NULL;
+      toVal->size = 0;
+      return (False);
+    }
+
+  size = strlen(buffer) + 1;
+  if (toVal->addr != NULL)
+    {
+      if (toVal->size < size)
+	{
+	  toVal->size = size;
+	  return (False);
+	}
+      strcpy((char *)toVal->addr, buffer);
+    }
+  else
+    toVal->addr = (XPointer)buffer;
+  toVal->size = sizeof(String);
+
+  return (True);
 }

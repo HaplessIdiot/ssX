@@ -1,5 +1,5 @@
 /* $XConsortium: CvtCache.c,v 1.8 94/04/17 20:15:56 rws Exp $ */
-/* $XFree86: xc/lib/Xmu/CvtCache.c,v 3.0 1996/06/10 10:59:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtCache.c,v 3.1 1998/06/28 12:32:27 dawes Exp $ */
 
 /*
  
@@ -43,17 +43,31 @@ extern char *malloc();
 #include <stdlib.h>
 #endif
 
-static XmuDisplayQueue *dq = NULL;
-static int _CloseDisplay(), _FreeCCDQ();
+/*
+ * Prototypes
+ */
+static int _CloseDisplay(XmuDisplayQueue*, XmuDisplayQueueEntry*);
+static int _FreeCCDQ(XmuDisplayQueue*);
+static void _InitializeCvtCache(XmuCvtCache*);
 
+/*
+ * From LocBitmap.c
+ */
+void _XmuStringToBitmapFreeCache(register XmuCvtCache*);
+void _XmuStringToBitmapInitCache(register XmuCvtCache*);
+
+/*
+ * Initialization
+ */
+static XmuDisplayQueue *dq = NULL;
 
 
 /*
  * internal utility callbacks
  */
 
-static int _FreeCCDQ (q)
-    XmuDisplayQueue *q;
+static int
+_FreeCCDQ(XmuDisplayQueue *q)
 {
     XmuDQDestroy (dq, False);
     dq = NULL;
@@ -61,12 +75,10 @@ static int _FreeCCDQ (q)
 }
 
 
-static int _CloseDisplay (q, e)
-    XmuDisplayQueue *q;
-    XmuDisplayQueueEntry *e;
+static int
+_CloseDisplay(XmuDisplayQueue *q, XmuDisplayQueueEntry *e)
 {
     XmuCvtCache *c;
-    extern void _XmuStringToBitmapFreeCache();
 
     if (e && (c = (XmuCvtCache *)(e->data))) {
 	_XmuStringToBitmapFreeCache (c);
@@ -76,11 +88,9 @@ static int _CloseDisplay (q, e)
     return 0;
 }
 
-static void _InitializeCvtCache (c)
-    register XmuCvtCache *c;
+static void
+_InitializeCvtCache(register XmuCvtCache *c)
 {
-    extern void _XmuStringToBitmapInitCache();
-
     _XmuStringToBitmapInitCache (c);
     /* insert calls to init any cached memory */
 }
@@ -90,8 +100,8 @@ static void _InitializeCvtCache (c)
  * XmuCCLookupDisplay - return the cache entry for the indicated display;
  * initialize the cache if necessary
  */
-XmuCvtCache *_XmuCCLookupDisplay (dpy)
-    Display *dpy;
+XmuCvtCache *
+_XmuCCLookupDisplay(Display *dpy)
 {
     XmuDisplayQueueEntry *e;
 

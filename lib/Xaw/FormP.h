@@ -55,31 +55,22 @@ SOFTWARE.
 
 #include <X11/Xaw/Form.h>
 
-#ifndef XAW_DL_DEFINED
-#define XAW_DL_DEFINED
 typedef struct _XawDL XawDisplayList;
-#endif
 
 #define XtREdgeType "EdgeType"
 
-typedef enum {LayoutPending, LayoutInProgress, LayoutDone} LayoutState;
-#define XtInheritLayout ((Boolean (*)())_XtInherit)
+typedef enum {
+  LayoutPending,
+  LayoutInProgress,
+  LayoutDone
+} LayoutState;
+
+#define XtInheritLayout							\
+((Boolean (*)(FormWidget, unsigned int, unsigned int, Bool))_XtInherit)
 
 typedef struct {
-    Boolean	(*layout)(/* FormWidget, Dimension, Dimension */);
+  Boolean(*layout)(FormWidget, unsigned int, unsigned int, Bool);
 } FormClassPart;
-
-/*
- * Layout(
- *	FormWidget w	- the widget whose children are to be configured
- *	Dimension w, h	- bounding box of layout to be calculated
- *
- *  Stores preferred geometry in w->form.preferred_{width,height}.
- *  If w->form.resize_in_layout is True, then a geometry request
- *  may be made for the preferred bounding box if necessary.
- *
- *  Returns True if a geometry request was granted, False otherwise.
- */
 
 typedef struct _FormClassRec {
     CoreClassPart	core_class;
@@ -93,13 +84,14 @@ extern FormClassRec formClassRec;
 typedef struct _FormPart {
     /* resources */
     int		default_spacing;    /* default distance between children */
-    /* private state */
+
+    /* private */
     Dimension	old_width, old_height; /* used as a 'reference' value    */
     int		no_refigure;	    /* no re-layout while > 0		 */
     Boolean	needs_relayout;	    /* next time no_refigure == 0	 */
     Boolean	resize_in_layout;   /* should layout() do geom request?  */
     Dimension	preferred_width, preferred_height; /* cached from layout */
-    Boolean     resize_is_no_op;    /* Causes resize to take not action. */
+  Boolean resize_is_no_op;		/* Causes resize to take not action */
     XawDisplayList *display_list;
 } FormPart;
 
@@ -111,40 +103,19 @@ typedef struct _FormRec {
 } FormRec;
 
 typedef struct _FormConstraintsPart {
-/*
- * Constraint Resources.
- */
-    XtEdgeType	top, bottom,	/* where to drag edge on resize		*/
-		left, right;
+  /* resources */
+  XtEdgeType top, bottom, left, right;	/* where to drag edge on resize */
     int		dx;		/* desired horiz offset			*/
     int		dy;		/* desired vertical offset		*/
     Widget	horiz_base;	/* measure dx from here if non-null	*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
-    Boolean	allow_resize;	/* TRUE if child may request resize	*/
+  Boolean allow_resize;		/* True if child may request resize */
 
-/*
- * Private contstraint resources.
- */
-
-  /*
-   * Note: these variables are used to store a size known to be 'good'
-   * and that is used to avoid integer rounding problems when resizing
-   * widgets.
-   */
+  /* private */
     short	virtual_width, virtual_height;
-
-/*
- * Temporary Storage for children's new possible possition.
- */
-
     Position new_x, new_y;
-
     LayoutState	layout_state;	/* temporary layout state		*/
     Boolean	deferred_resize; /* was resized while no_refigure is set */
-
-  /*
-   * Note: used like virtual_width and virtual_height
-   */
     short virtual_x, virtual_y;
 } FormConstraintsPart;
 

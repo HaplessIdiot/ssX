@@ -87,8 +87,6 @@ extern int errno;
 #endif
 
 extern void MarkClientException();
-extern int ConnectionTranslation[];
-extern int ConnectionOutputTranslation[];
 
 static int timesThisConnection = 0;
 static ConnectionInputPtr FreeInputs = (ConnectionInputPtr)NULL;
@@ -935,7 +933,8 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 void
 FlushAllOutput()
 {
-    register int index, base, mask;
+    register int index, base;
+    register fd_mask mask;
     OsCommPtr oc;
     register ClientPtr client;
 
@@ -957,7 +956,7 @@ FlushAllOutput()
 	{
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
-	    if ((index = ConnectionOutputTranslation[(base << 5) + index]) == 0)
+	    if ((index = ConnectionOutputTranslation[(base * (sizeof(fd_mask)*8)) + index]) == 0)
 		continue;
 	    client = clients[index];
 	    if (client->clientGone)

@@ -51,46 +51,46 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* 
- * TextSinkP.h - Private definitions for TextSink object
- * 
- */
-
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
 
-/***********************************************************************
- *
+/*
  * TextSink Object Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/TextSink.h>
-#include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
-#include <X11/Xaw/TextSrcP.h>	/* This source works with the Text Source. */
+#include <X11/Xaw/TextP.h>	/* This source works with the Text widget */
+#include <X11/Xaw/TextSrcP.h>	/* This source works with the Text Source */
 
-/************************************************************
- *
- * New fields for the TextSink object class record.
- *
- ************************************************************/
+typedef void (*_XawSinkDisplayTextProc)
+     (Widget, int, int, XawTextPosition, XawTextPosition, Bool);
 
-typedef void (*_XawSinkDisplayTextProc)(Widget, int, int, XawTextPosition,
-					XawTextPosition, Bool);
-typedef void (*_XawSinkInsertCursorProc)(Widget, int, int, XawTextInsertState);
-typedef void (*_XawSinkClearToBackgroundProc)(Widget, int, int, unsigned int,
-					      unsigned int);
-typedef void (*_XawSinkFindPositionProc)(Widget, XawTextPosition, int, int,
-					 Bool, XawTextPosition*, int*, int*);
-typedef void (*_XawSinkFindDistanceProc)(Widget, XawTextPosition, int,
-					 XawTextPosition, int*,
+typedef void (*_XawSinkInsertCursorProc)
+     (Widget, int, int, XawTextInsertState);
+
+typedef void (*_XawSinkClearToBackgroundProc)
+     (Widget, int, int, unsigned int, unsigned int);
+
+typedef void (*_XawSinkFindPositionProc)
+     (Widget, XawTextPosition, int, int, Bool, XawTextPosition*, int*, int*);
+
+typedef void (*_XawSinkFindDistanceProc)
+     (Widget, XawTextPosition, int, XawTextPosition, int*,
 					 XawTextPosition*, int*);
-typedef void (*_XawSinkResolveProc)(Widget, XawTextPosition, int, int,
-				    XawTextPosition*);
-typedef int  (*_XawSinkMaxLinesProc)(Widget, unsigned int);
-typedef int  (*_XawSinkMaxHeightProc)(Widget, int);
-typedef void (*_XawSinkSetTabsProc)(Widget, int, short*);
-typedef void (*_XawSinkGetCursorBoundsProc)(Widget, XRectangle*);
+
+typedef void (*_XawSinkResolveProc)
+     (Widget, XawTextPosition, int, int, XawTextPosition*);
+
+typedef int  (*_XawSinkMaxLinesProc)
+     (Widget, unsigned int);
+
+typedef int  (*_XawSinkMaxHeightProc)
+     (Widget, int);
+
+typedef void (*_XawSinkSetTabsProc)
+     (Widget, int, short*);
+
+typedef void (*_XawSinkGetCursorBoundsProc)
+     (Widget, XRectangle*);
 
 typedef struct _TextSinkClassPart {
   _XawSinkDisplayTextProc	DisplayText;
@@ -105,7 +105,7 @@ typedef struct _TextSinkClassPart {
   _XawSinkGetCursorBoundsProc	GetCursorBounds;
 } TextSinkClassPart;
 
-/* Full class record declaration */
+/* Full class record */
 typedef struct _TextSinkClassRec {
     ObjectClassPart     object_class;
     TextSinkClassPart	text_sink_class;
@@ -113,37 +113,26 @@ typedef struct _TextSinkClassRec {
 
 extern TextSinkClassRec textSinkClassRec;
 
-/* New fields for the TextSink object record */
+/* New fields for the TextSink object */
 typedef struct {
     /* resources */
-    Pixel foreground;		/* Foreground color. */
-    Pixel background;		/* Background color. */
+  Pixel foreground;		/* Foreground color */
+  Pixel background;		/* Background color */
 
-    /* private state. */
-    Position *tabs;		/* The tab stops as pixel values. */
-    short    *char_tabs;	/* The tabs stops as character values. */
+  /* private */
+  Position *tabs;		/* The tab stops as pixel values */
+  short *char_tabs;		/* The tabs stops as character values */
     int      tab_count;		/* number of items in tabs */
 
     /* more resources */
     Pixel cursor_color;
 } TextSinkPart;
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
+/* Full instance record */
 typedef struct _TextSinkRec {
   ObjectPart    object;
   TextSinkPart	text_sink;
 } TextSinkRec;
-
-/************************************************************
- *
- * Private declarations.
- *
- ************************************************************/
 
 #define XtInheritDisplayText	   ((_XawSinkDisplayTextProc)_XtInherit)
 #define XtInheritInsertCursor	   ((_XawSinkInsertCursorProc)_XtInherit)

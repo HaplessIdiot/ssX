@@ -25,12 +25,11 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.6 1998/06/28 14:20:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.7 1998/06/29 13:41:15 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/CharSet.h>
 #include "Private.h"
@@ -53,9 +52,9 @@ typedef struct _XawPixmapLoaderInfo {
 /*
  * Private Methods
  */
-static Boolean BitmapLoader(XawParams*, Screen*, Colormap, int,
+static Bool BitmapLoader(XawParams*, Screen*, Colormap, int,
 			    Pixmap*, Pixmap*, Dimension*, Dimension*);
-static Boolean GradientLoader(XawParams*, Screen*, Colormap, int,
+static Bool GradientLoader(XawParams*, Screen*, Colormap, int,
 			      Pixmap*, Pixmap*, Dimension*, Dimension*);
 static XawPixmap *_XawFindPixmap(String, Screen*, Colormap, int);
 static void _XawCachePixmap(XawPixmap*, Screen*, Colormap, int);
@@ -76,10 +75,10 @@ static Cardinal num_loader_info;
 /*
  * Implementation
  */
-Boolean
-XawPixmapsInitialize()
+Bool
+XawPixmapsInitialize(void)
 {
-  Boolean first_time = True;
+  static Boolean first_time = True;
 
   if (!first_time)
     return (False);
@@ -219,7 +218,7 @@ XawParseParamsString(String name)
 void
 XawFreeParamsStruct(XawParams *params)
 {
-  int i;
+  unsigned int i;
 
   if (!params)
     return;
@@ -257,8 +256,8 @@ XawFindArgVal(XawParams *params, String name)
 XawPixmap *
 XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
 {
-  int index;
-  Boolean success;
+  int idx;
+  Bool success;
   XawPixmap *xaw_pixmap;
   Pixmap pixmap, mask;
   Dimension width, height;
@@ -275,14 +274,14 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
   if ((xaw_params = XawParseParamsString(name)) == NULL)
     return (NULL);
 
-  index = _XawFindPixmapLoaderIndex(xaw_params->type, xaw_params->ext);
-  if (index < 0)
+  idx = _XawFindPixmapLoaderIndex(xaw_params->type, xaw_params->ext);
+  if (idx < 0)
     {
       if (xaw_params->ext)
 	{
 	  /* Try again, without extension */
-	  index = _XawFindPixmapLoaderIndex(xaw_params->type, NULL);
-	  if (index < 0)
+	  idx = _XawFindPixmapLoaderIndex(xaw_params->type, NULL);
+	  if (idx < 0)
 	    return (NULL);
 	}
       else
@@ -293,7 +292,7 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
   fprintf(stderr, "(*) Loading pixmap \"%s\": ", name);
 #endif
 
-  success = loader_info[index]->loader(xaw_params, screen, colormap, depth,
+  success = loader_info[idx]->loader(xaw_params, screen, colormap, depth,
 				       &pixmap, &mask, &width, &height);
   if (success)
     {
@@ -315,7 +314,7 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
   return (success ? xaw_pixmap : NULL);
 }
 
-Boolean
+Bool
 XawAddPixmapLoader(String type, String ext, XawPixmapLoader loader)
 {
   XawPixmapLoaderInfo *info;
@@ -360,13 +359,14 @@ XawAddPixmapLoader(String type, String ext, XawPixmapLoader loader)
 		  sizeof(XawPixmapLoaderInfo) * num_loader_info);
     }
   loader_info[num_loader_info - 1] = info;
+
   return (True);
 }
 
 static int
 _XawFindPixmapLoaderIndex(String type, String ext)
 {
-  int i;
+  Cardinal i;
 
   if (!loader_info)
     return (-1);
@@ -378,7 +378,7 @@ _XawFindPixmapLoaderIndex(String type, String ext)
 	  || (type && strcmp(type, loader_info[i]->type))
 	  || (ext && strcmp(ext, loader_info[i]->ext)))
 	continue;
-      return (i);
+      return ((int)i);
     }
 
   return (-1);
@@ -492,7 +492,7 @@ _XawGetCache(XawCache *xaw, Screen *screen, Colormap colormap, int depth)
 			  sizeof(XtPointer) * xaw->num_elems);
 	    }
 	  pcache->value = (long)screen;
-	  pcache->elems = (XtPointer *)NULL;
+	  pcache->elems = NULL;
 	  pcache->num_elems = 0;
 	  xaw->elems[xaw->num_elems - 1] = (XtPointer)pcache;
 	  s_cache = (XawCache *)xaw->elems[xaw->num_elems - 1];
@@ -518,7 +518,7 @@ _XawGetCache(XawCache *xaw, Screen *screen, Colormap colormap, int depth)
 			  sizeof(XtPointer) * s_cache->num_elems);
 	    }
 	  pcache->value = (long)colormap;
-	  pcache->elems = (XtPointer *)NULL;
+	  pcache->elems = NULL;
 	  pcache->num_elems = 0;
 	  s_cache->elems[s_cache->num_elems - 1] = (XtPointer)pcache;
 	  c_cache = (XawCache *)s_cache->elems[s_cache->num_elems - 1];
@@ -545,7 +545,7 @@ _XawGetCache(XawCache *xaw, Screen *screen, Colormap colormap, int depth)
 			  sizeof(XtPointer) * c_cache->num_elems);
 	    }
 	  pcache->value = (long)depth;
-	  pcache->elems = (XtPointer *)NULL;
+	  pcache->elems = NULL;
 	  pcache->num_elems = 0;
 	  c_cache->elems[c_cache->num_elems - 1] = (XtPointer)pcache;
 	  d_cache = (XawCache *)c_cache->elems[c_cache->num_elems - 1];
@@ -649,7 +649,7 @@ _XawCachePixmap(XawPixmap *pixmap,
     qsort(x_cache->elems, x_cache->num_elems, sizeof(XtPointer), qcmp_x_cache);
 }
 
-static Boolean
+static Bool
 BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	     Pixmap *pixmap_return, Pixmap *mask_return,
 	     Dimension *width_return, Dimension *height_return)
@@ -661,7 +661,7 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   unsigned char *data = NULL;
   int hotX, hotY;
   XawArgVal *argval;
-  Boolean retval = False;
+  Bool retval = False;
   static char *path =
     "%H/%T/%N:/usr/X11R6/include/X11/%T/%N:/usr/include/X11/%T/%N:%N";
   static SubstitutionRec sub[] = {
@@ -726,7 +726,7 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 
 #define VERTICAL   1
 #define HORIZONTAL 2
-static Boolean
+static Bool
 GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	       Pixmap *pixmap_return, Pixmap *mask_return,
 	       Dimension *width_return, Dimension *height_return)
@@ -821,8 +821,8 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	  (void)XAllocColor(DisplayOfScreen(screen), colormap, &color);
 	  XSetForeground(DisplayOfScreen(screen), gc, color.pixel);
 	}
-      XFillRectangle(DisplayOfScreen(screen), pixmap, gc, x, y,
-		     x + inc, y + inc);
+      XFillRectangle(DisplayOfScreen(screen), pixmap, gc, (int)x, (int)y,
+		     (unsigned int)(x + inc), (unsigned int)(y + inc));
       red   += ired;
       green += igreen;
       blue  += iblue;

@@ -1,5 +1,5 @@
 /* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.3 1996/10/03 08:49:47 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.4 1996/10/06 13:18:56 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -740,7 +740,7 @@ StorePid ()
     int		oldpid;
 
     if (pidFile[0] != '\0') {
-	pidFd = open (pidFile, 2);
+	pidFd = open (pidFile, O_RDWR);
 	if (pidFd == -1 && errno == ENOENT)
 	    pidFd = open (pidFile, O_RDWR|O_CREAT, 0666);
 	if (pidFd == -1 || !(pidFilePtr = fdopen (pidFd, "r+")))

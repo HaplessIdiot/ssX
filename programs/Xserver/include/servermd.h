@@ -52,7 +52,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.26 1997/11/16 06:42:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.27 1998/07/26 02:33:03 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -362,7 +362,7 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__))) || defined(__OS2ELF__)
+#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__))) || defined(__OS2ELF__) || (defined(__GNU__) && defined(__i386__))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

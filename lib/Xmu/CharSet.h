@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.3 1998/06/28 12:32:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.4 1998/06/28 13:04:23 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -64,6 +64,13 @@ void XmuNCopyISOLatin1Lowered
  char		*dst_return,
  _Xconst char	*src,
  int		 size
+ );
+
+void XmuNCopyISOLatin1Uppered
+(
+ char		*dst_return,
+ _Xconst char	*src,
+ int		size
  );
 
 _XFUNCPROTOEND

@@ -1,5 +1,5 @@
 /* $XConsortium: FSlibos.h /main/23 1996/11/13 14:43:51 lehors $ */
-/* $XFree86: xc/lib/FS/FSlibos.h,v 3.1 1996/01/05 13:10:19 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibos.h,v 3.2 1996/12/23 05:58:50 dawes Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -90,21 +90,29 @@ in this Software without prior written authorization from the X Consortium.
 #define OPEN_MAX NOFILE
 #else
 #ifndef __EMX__
+#ifdef __GNU__
+#define OPEN_MAX (sysconf(_SC_OPEN_MAX))
+#else /* !__GNU__ */
 #define OPEN_MAX NOFILES_MAX
-#else
+#endif /* __GNU__ */
+#else /* __EMX__ */
 #define OPEN_MAX 256
-#endif
+#endif /* __EMX__ */
 #endif
 #endif
 #endif
 #endif
 #endif
 
+#ifdef __GNU__
+#define FS_OPEN_MAX 256
+#else /*!__GNU__*/
 #if OPEN_MAX > 256
 #define FS_OPEN_MAX 256
 #else
 #define FS_OPEN_MAX OPEN_MAX
 #endif
+#endif /*__GNU__*/
 
 #endif /* FS_OPEN_MAX */
 

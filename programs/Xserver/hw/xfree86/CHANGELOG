@@ -1,3 +1,22 @@
+XFree86 3.9Nb (15 August 1998)
+1747. Some editres, xedit and xgc updates (#1788, 1842,
+      Paulo Cesar Pereira de Andrade).
+1746. Lots of Xaw/Xmu updates (including ansification of Xaw and Xmu) --
+      see the Changelog in xc/lib/Xaw for further details (#1776, 1788, 1842,
+      Paulo Cesar Pereira de Andrade).
+1745. Add colourmap code to the mga driver that uses MMIO (#1896,
+      Mark Vojkovich).
+1744. Change the mga driver to use function pointers for handling
+      chipset and ramdac specific operations rather than using case
+      statements (#1896, Mark Vojkovich).
+1743. Support for GNU/Hurd (#1895, UCHIYAMA Yasushi).
+1742. Remove the implicit assumption in some areas that O_RDONLY is 0
+      (#1894, UCHIYAMA Yasushi).
+1741. Merge in Metro Link's version of the 64 bit select fixes for the
+      X server and lbxproxy (#1893, Stuart Anderson).
+1740. Set DlLibrary to be empty for OpenBSD, and remove formatted man pages
+      on 'make clean' for OpenBSD and NetBSD (#1892, Matthieu Herrb).
+
 XFree86 3.9Na (14 August 1998)
 1739. Rework the way the maximum number of server client connections
       is determined, and experimentally increase MAXCLIENTS to 256.
@@ -6287,4 +6306,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.608 1998/08/13 14:45:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.609 1998/08/14 13:35:46 dawes Exp $

@@ -1,5 +1,5 @@
 /* $XConsortium: CloseHook.c,v 1.9 94/04/17 20:15:51 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/CloseHook.c,v 3.0 1996/06/10 10:59:19 dawes Exp $ */
 
 /* 
 Copyright (c) 1989  X Consortium
@@ -88,10 +88,13 @@ typedef struct _DisplayEntry {
     struct _CallbackRec *calling;	/* currently being called back */
 } DisplayEntry;
 
+/*
+ * Prototypes
+ */
+static DisplayEntry *_FindDisplayEntry(Display*, DisplayEntry**);
+static Bool _MakeExtension(Display*, int*);
 
 static DisplayEntry *elist = NULL;
-static Bool _MakeExtension();
-static DisplayEntry *_FindDisplayEntry();
 
 
 /*
@@ -113,10 +116,8 @@ static DisplayEntry *_FindDisplayEntry();
  * it returns an untyped pointer that can be used with Remove or Lookup, but
  * not dereferenced.
  */
-CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
-    Display *dpy;
-    XmuCloseHookProc func;		/* function to call on close display */
-    XPointer arg;			/* arg to pass */
+CloseHook
+XmuAddCloseDisplayHook(Display *dpy, XmuCloseHookProc func, XPointer arg)
 {
     DisplayEntry *de;
     CallbackRec *cb;
@@ -159,11 +160,9 @@ CloseHook XmuAddCloseDisplayHook (dpy, func, arg)
  * Remove - get rid of a callback.  If handle is non-null, use that to compare
  * entries.  Otherwise, remove first instance of the function/argument pair.
  */
-Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
-    Display *dpy;
-    CloseHook handle;			/* value from XmuAddCloseDisplayHook */
-    XmuCloseHookProc func;		/* function to call on close display */
-    XPointer arg;			/* arg to pass */
+Bool
+XmuRemoveCloseDisplayHook(Display *dpy, CloseHook handle,
+			  XmuCloseHookProc func, XPointer arg)
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
     register CallbackRec *h, *prev;
@@ -199,11 +198,9 @@ Bool XmuRemoveCloseDisplayHook (dpy, handle, func, arg)
  * non-NULL, look for an entry that matches it; otherwise look for an entry 
  * with the same function/argument pair.
  */
-Bool XmuLookupCloseDisplayHook (dpy, handle, func, arg)
-    Display *dpy;
-    CloseHook handle;			/* value from XmuAddCloseDisplayHook */
-    XmuCloseHookProc func;		/* function to call on close display */
-    XPointer arg;			/* arg to pass */
+Bool
+XmuLookupCloseDisplayHook(Display *dpy, CloseHook handle,
+			  XmuCloseHookProc func, XPointer arg)
 {
     DisplayEntry *de = _FindDisplayEntry (dpy, NULL);
     register CallbackRec *h;
@@ -233,9 +230,8 @@ Bool XmuLookupCloseDisplayHook (dpy, handle, func, arg)
  * the preceeding link so that the display can be unlinked without having
  * back pointers.
  */
-static DisplayEntry *_FindDisplayEntry (dpy, prevp)
-    register Display *dpy;
-    DisplayEntry **prevp;
+static DisplayEntry *
+_FindDisplayEntry(register Display *dpy, DisplayEntry **prevp)
 {
     register DisplayEntry *d, *prev;
 
@@ -290,9 +286,8 @@ static int _DoCallbacks (dpy, codes)
 /*
  * _MakeExtension - create an extension for this display; done once per display
  */
-static Bool _MakeExtension (dpy, extensionp)
-    Display *dpy;
-    int *extensionp;
+static Bool
+_MakeExtension(Display *dpy, int *extensionp)
 {
     XExtCodes *codes;
 

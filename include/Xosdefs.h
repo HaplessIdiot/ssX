@@ -2,7 +2,7 @@
  * O/S-dependent (mis)feature macro definitions
  *
  * $XConsortium: Xosdefs.h /main/16 1996/09/28 16:17:29 rws $
- * $XFree86: xc/include/Xosdefs.h,v 3.10 1996/01/10 05:34:46 dawes Exp $
+ * $XFree86: xc/include/Xosdefs.h,v 3.11 1996/12/23 05:58:09 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -125,4 +125,9 @@ in this Software without prior written authorization from the X Consortium.
 #define X_LOCALE
 #endif
 
+#ifdef __GNU__
+#define PATH_MAX 4096
+#define MAXPATHLEN 4096
+#endif
 #endif /* _XOSDEFS_H_ */
+

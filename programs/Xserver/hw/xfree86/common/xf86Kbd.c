@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.14.4.4 1998/06/04 17:35:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.16 1998/07/25 16:55:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -239,14 +239,14 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
   keymap_t      keymap;
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ */
+#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ */
   char          type;
   int           i, j;
   KeySym        *pMap;
   
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
   if (xf86Info.kbdType == KB_84)
@@ -258,7 +258,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pMap = map;
 #endif
 
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
    * ( ttymap(1) !!!! )
@@ -281,7 +281,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 	if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
       }
   }
-#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ */
+#endif /* !Lynx && !AMOEBA && !MINIX && !__OSF__ && !__EMX__ && !__mips__ && !__arm32__ && !__GNU__ */
 
   /*
    * Apply the special key mapping specified in XF86Config 
@@ -387,7 +387,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
     }
   
-#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__)
+#if !defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && !defined(__arm32__) && !defined(__GNU__)
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
 #else

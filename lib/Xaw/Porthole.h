@@ -55,8 +55,6 @@ in this Software without prior written authorization from the X Consortium.
  * 
  *****************************************************************************/
 
-					/* external declarations */
-
 extern WidgetClass portholeWidgetClass;
 typedef struct _PortholeClassRec *PortholeWidgetClass;
 typedef struct _PortholeRec      *PortholeWidget;

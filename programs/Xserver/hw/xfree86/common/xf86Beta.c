@@ -1,6 +1,6 @@
 /* Copyright 1996, The XFree86 Project, Inc */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.5 1998/07/25 16:54:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.6 1998/07/26 09:56:12 dawes Exp $ */
 
 /*
  * This is for publicly released beta server binaries.
@@ -255,13 +255,13 @@ xf86CheckBeta(int extraDays, char *key)
 #else /* ! (SYSV || linux) */
     {
       int realuid = getuid();
-#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__GNU__)
       setruid(0);
 #endif
       seteuid(realuid);
       WRITE_BETA_FILE
       seteuid(0);
-#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__GNU__)
       setruid(realuid);
 #endif
     }

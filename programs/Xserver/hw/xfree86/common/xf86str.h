@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.1.2.51 1998/07/19 13:21:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.2 1998/07/25 16:55:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -469,6 +469,7 @@ typedef enum {
  * mouse protocol types
  */
 typedef enum {
+    PROT_OSMOUSE = -1,
     PROT_MS			= 0,	/* Microsoft */
     PROT_MSC,				/* Mouse Systems Corp */
     PROT_MM,				/* MMseries */

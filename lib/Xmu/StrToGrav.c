@@ -32,8 +32,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/CharSet.h>
 
 #define done(address, type) \
-        { (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
+{ (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
+/*
+ * Initialization
+ */
 static struct _namepair {
     XrmQuark quark;
     char *name;
@@ -60,44 +63,86 @@ static struct _namepair {
 
 /*
  * This function is deprecated as of the addition of 
- * XtCvtStringToGravity in R6.
+ * XtCvtStringToGravity in R6
  */
-
-void XmuCvtStringToGravity (args, num_args, fromVal, toVal)
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
+void
+XmuCvtStringToGravity(XrmValuePtr args, Cardinal *num_args,
+		      XrmValuePtr fromVal, XrmValuePtr toVal)
 {
-    static Boolean haveQuarks = FALSE;
-    char lowerName[40];
+  static Boolean haveQuarks = False;
+  char name[10];
     XrmQuark q;
-    char *s;
     struct _namepair *np;
 
     if (*num_args != 0)
         XtWarningMsg("wrongParameters","cvtStringToGravity","XtToolkitError",
                   "String to Gravity conversion needs no extra arguments",
-                  (String *) NULL, (Cardinal *)NULL);
+		 (String *)NULL, (Cardinal *)NULL);
 
-    if (!haveQuarks) {
-	for (np = names; np->name; np++) {
-	    np->quark = XrmPermStringToQuark (np->name);
-	}
-	haveQuarks = TRUE;
+  if (!haveQuarks)
+    {
+      for (np = names; np->name; np++)
+	np->quark = XrmPermStringToQuark(np->name);
+      haveQuarks = True;
     }
 
-    s = (char *) fromVal->addr;
-    if (strlen(s) < sizeof lowerName) {
-	XmuCopyISOLatin1Lowered (lowerName, s);
-	q = XrmStringToQuark (lowerName);
+  XmuNCopyISOLatin1Lowered(name, (char *)fromVal->addr, sizeof(name));
+  q = XrmStringToQuark(name);
 
-	for (np = names; np->name; np++) {
-	    if (np->quark == q) {
-		done (&np->gravity, XtGravity);
+  for (np = names; np->name; np++)
+    {
+      if (np->quark == q)
+	{
+	  done(&np->gravity, XtGravity);
 		return;
 	    }
 	}
+
+  XtStringConversionWarning((char *)fromVal->addr, XtRGravity);
+}
+
+/*ARGSUSED*/
+Boolean
+XmuCvtGravityToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		      XrmValue *fromVal, XrmValue *toVal, XtPointer *data)
+{
+  static char *buffer;
+  Cardinal size;
+  struct _namepair *np;
+  XtGravity gravity;
+
+  gravity = *(XtGravity *)fromVal->addr;
+  buffer = NULL;
+  for (np = names; np->name; np++)
+    if (np->gravity == gravity)
+      {
+	buffer = np->name;
+	break;
+      }
+
+  if (!buffer)
+    {
+      XtAppWarning(XtDisplayToApplicationContext(dpy),
+		   "Cannot convert Gravity to String");
+      toVal->addr = NULL;
+      toVal->size = 0;
+
+      return (False);
     }
-    XtStringConversionWarning((char *) fromVal->addr, XtRGravity);
+
+  size = strlen(buffer) + 1;
+  if (toVal->addr != NULL)
+    {
+      if (toVal->size <= size)
+	{
+	  toVal->size = size;
+	  return (False);
+	}
+      strcpy((char *)toVal->addr, buffer);
+    }
+  else
+    toVal->addr = (XPointer)buffer;
+  toVal->size = size;
+
+  return (True);
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: osdep.h /main/10 1996/08/30 14:22:08 kaleb $ */
-/* $XFree86: xc/programs/xfs/os/osdep.h,v 3.2 1996/10/03 08:50:15 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osdep.h,v 3.3 1996/12/23 07:11:20 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -82,6 +82,9 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #else
 #include <sys/param.h>
+#ifdef __GNU__
+#define OPEN_MAX (sysconf(_SC_OPEN_MAX))
+#endif /*__GNU__*/
 #ifndef OPEN_MAX
 #if defined(NOFILE) && !defined(NOFILES_MAX)
 #define OPEN_MAX NOFILE
@@ -93,11 +96,15 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 
+#ifdef __GNU__
+#define MAXSOCKS 128
+#else /*__GNU__*/
 #if OPEN_MAX <= 128		/* 128 is value of MAXCLIENTS */
 #define MAXSOCKS (OPEN_MAX - 1)
 #else
 #define MAXSOCKS 128
 #endif
+#endif /*__GNU__*/
 
 #ifndef NULL
 #define NULL 0

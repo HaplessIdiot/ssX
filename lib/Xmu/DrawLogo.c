@@ -39,12 +39,8 @@ in this Software without prior written authorization from the X Consortium.
  *  the logo line up as well as possible considering rasterization.
  */
 void
-XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
-    Display *dpy;
-    Drawable drawable;
-    GC gcFore, gcBack;
-    int x, y;
-    unsigned int width, height;
+XmuDrawLogo(Display *dpy, Drawable drawable, GC gcFore, GC gcBack,
+	    int x, int y, unsigned int width, unsigned int height)
 {
     unsigned int size;
     int thin, gap, d31;

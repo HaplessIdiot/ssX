@@ -40,40 +40,32 @@ in this Software without prior written authorization from the X Consortium.
 
 typedef XPointer CloseHook;
 
-typedef int (*XmuCloseHookProc)(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    XPointer	/* data */
-#endif 
-);
+typedef int (*XmuCloseHookProc)(Display *dpy, XPointer data);
 
 _XFUNCPROTOBEGIN
 
-extern CloseHook XmuAddCloseDisplayHook(
-#if NeedFunctionPrototypes
-    Display *	/* dpy */,
-    XmuCloseHookProc	/* proc */,
-    XPointer	/* arg */
-#endif
-);
+CloseHook XmuAddCloseDisplayHook
+(
+ Display		*dpy,
+ XmuCloseHookProc	proc,
+ XPointer		arg
+ );
 
-extern Bool XmuLookupCloseDisplayHook(
-#if NeedFunctionPrototypes
-    Display *	/* dpy */,
-    CloseHook	/* handle */,
-    XmuCloseHookProc	/* proc */,
-    XPointer	/* arg  */
-#endif
-);
+Bool XmuLookupCloseDisplayHook
+(
+ Display		*dpy,
+ CloseHook		handle,
+ XmuCloseHookProc	proc,
+ XPointer		arg
+ );
 
-extern Bool XmuRemoveCloseDisplayHook(
-#if NeedFunctionPrototypes
-    Display *	/* dpy */,
-    CloseHook	/* handle */,
-    XmuCloseHookProc	/* proc */,
-    XPointer	/* arg */
-#endif
-);
+Bool XmuRemoveCloseDisplayHook
+(
+ Display		*dpy,
+ CloseHook		handle,
+ XmuCloseHookProc	proc,
+ XPointer		arg
+ );
 
 _XFUNCPROTOEND
 

@@ -54,13 +54,7 @@ SOFTWARE.
 
 #include <X11/Constraint.h>
 
-/***********************************************************************
- *
- * Form Widget
- *
- ***********************************************************************/
-
-/* Parameters:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -114,8 +108,6 @@ SOFTWARE.
 #define XtCEdge "Edge"
 #define XtCWidget "Widget"
 
-#ifndef _XawEdgeType_e
-#define _XawEdgeType_e
 typedef enum {
     XawChainTop,		/* Keep this edge a constant distance from
 				   the top of the form */
@@ -126,17 +118,8 @@ typedef enum {
     XawChainRight,		/* Keep this edge a constant distance from
 				   the right of the form */
     XawRubber			/* Keep this edge a proportional distance
-				   from the edges of the form*/
+				   from the edges of the form */
 } XawEdgeType;
-#endif /* _XawEdgeType_e */
-
-/*
- * Unfortunatly I missed this definition for R4, so I cannot
- * protect it with XAW_BC, it looks like this particular problem is
- * one that we will have to live with for a while.
- *
- * Chris D. Peterson - 3/23/90.
- */
 
 #define XtEdgeType XawEdgeType
 
@@ -145,6 +128,12 @@ typedef enum {
 #define XtChainLeft XawChainLeft
 #define XtChainRight XawChainRight
 #define XtRubber XawRubber
+
+#define XtEchainLeft		"chainLeft"
+#define XtEchainRight		"chainRight"
+#define XtEchainTop		"chainTop"
+#define XtEchainBottom		"chainBottom"
+#define XtErubber		"rubber"
 
 #ifndef XawNdisplayList
 #define XawNdisplayList "displayList"
@@ -165,16 +154,11 @@ extern WidgetClass formWidgetClass;
 
 _XFUNCPROTOBEGIN
 
-extern void XawFormDoLayout(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-#if NeedWidePrototypes
-    /* Boolean */ int	/* do_layout */
-#else
-    Boolean		/* do_layout */
-#endif
-#endif
-);
+void XawFormDoLayout
+(
+ Widget		w,
+ Bool		do_layout
+ );
 
 _XFUNCPROTOEND
  

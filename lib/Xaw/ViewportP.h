@@ -57,7 +57,9 @@ SOFTWARE.
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/FormP.h>
 
-typedef struct {int empty;} ViewportClassPart;
+typedef struct {
+  XtPointer extension;
+} ViewportClassPart;
 
 typedef struct _ViewportClassRec {
     CoreClassPart	core_class;
@@ -71,16 +73,17 @@ extern ViewportClassRec viewportClassRec;
 
 typedef struct _ViewportPart {
     /* resources */
-    Boolean forcebars;		/* Whether we should always display */
-				/* the selected scrollbars. */
-    Boolean allowhoriz;		/* Whether we allow horizontal scrollbars. */
-    Boolean allowvert;		/* Whether we allow vertical scrollbars. */
-    Boolean usebottom;		/* True iff horiz bars appear at bottom. */
-    Boolean useright;		/* True iff vert bars appear at right. */
+  Boolean forcebars;		/* Whether we should always display
+				   the selected scrollbars */
+  Boolean allowhoriz;		/* Whether we allow horizontal scrollbars */
+  Boolean allowvert;		/* Whether we allow vertical scrollbars */
+  Boolean usebottom;		/* True if horiz bars appear at bottom */
+  Boolean useright;		/* True if vert bars appear at right */
     XtCallbackList report_callbacks;	/* when size/position changes */
-    /* private state */
+
+  /* private */
     Widget clip, child;		/* The clipping and (scrolled) child widgets */
-    Widget  horiz_bar, vert_bar;/* What scrollbars we currently have. */
+  Widget horiz_bar, vert_bar;	/* What scrollbars we currently have */
 } ViewportPart;
 
 typedef struct _ViewportRec {
@@ -92,10 +95,7 @@ typedef struct _ViewportRec {
 } ViewportRec;
 
 typedef struct {
-    /* resources */
-
-    /* private state */
-    Boolean		reparented; /* True if child has been re-parented */
+  Bool reparented;		/* True if child has been re-parented */
 } ViewportConstraintsPart;
 
 typedef struct _ViewportConstraintsRec {

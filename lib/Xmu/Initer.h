@@ -37,27 +37,20 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/Xfuncproto.h>
 
-typedef void (*XmuInitializerProc)(
-#if NeedFunctionPrototypes
-    XtAppContext	/* app_context */,
-    XPointer		/* data */
-#endif
-);
+typedef void (*XmuInitializerProc)(XtAppContext app_context, XPointer data);
 
 _XFUNCPROTOBEGIN
 
-extern void XmuCallInitializers(
-#if NeedFunctionPrototypes
-    XtAppContext	/* app_context */
-#endif
-);
+void XmuCallInitializers
+(
+ XtAppContext		app_context
+ );
 
-extern void XmuAddInitializer(
-#if NeedFunctionPrototypes
-    XmuInitializerProc	/* func */,
-     XPointer	/* data */
-#endif
-);
+void XmuAddInitializer
+(
+ XmuInitializerProc	func,
+ XPointer		data
+ );
 
 _XFUNCPROTOEND
 

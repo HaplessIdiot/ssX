@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * 
  * Repeater Widget (subclass of Command)
  * 
- * This widget is a push button that repeatedly fires when held down.
+ * This widget is a push button that repeatedly fires when held down
  * 
  * Parameters:
  * 
@@ -53,7 +53,6 @@ in this Software without prior written authorization from the X Consortium.
  * 
  *****************************************************************************/
 
-					/* new instance and class names */
 #define XtNdecay "decay"
 #define XtCDecay "Decay"
 #define XtNinitialDelay "initialDelay"
@@ -68,7 +67,6 @@ in this Software without prior written authorization from the X Consortium.
 #define XtCStopCallback "StopCallback"
 
 
-					/* external declarations */
 extern WidgetClass repeaterWidgetClass;
 
 typedef struct _RepeaterClassRec *RepeaterWidgetClass;

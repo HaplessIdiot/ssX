@@ -56,13 +56,11 @@ SOFTWARE.
 
 #include <X11/Xmu/Converters.h>
 
-/***********************************************************************
- *
+/*
  * Box Widget (subclass of CompositeClass)
- *
- ***********************************************************************/
+ */
 
-/* Parameters:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -82,8 +80,6 @@ SOFTWARE.
 
 */
 
-
-/* New fields */
 #ifndef _XtStringDefs_h_
 #define XtNhSpace "hSpace"
 #define XtNvSpace "vSpace"
@@ -102,7 +98,6 @@ SOFTWARE.
 #endif
 
 /* Class record constants */
-
 extern WidgetClass boxWidgetClass;
 
 typedef struct _BoxClassRec *BoxWidgetClass;

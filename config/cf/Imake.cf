@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.39 1998/04/25 12:31:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.40 1998/06/27 12:53:22 hohndel Exp $
 /*
  * To add support for another platform:
  * 
@@ -645,8 +645,14 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.39 1998/04/25 12:31:33 dawes Exp $
 #endif /* minix */
 
 #ifdef MACH
+#ifdef __GNU__
+#define MacroIncludeFile <gnu.cf>
+#define MacroFile gnu.cf
+#define GNUMachArchitecture
+#else
 #define MacroIncludeFile <mach.cf>
 #define MacroFile mach.cf
+#endif
 #undef MACH
 #ifdef	i386
 #define i386MachArchitecture

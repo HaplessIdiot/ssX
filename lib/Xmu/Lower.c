@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.3 1998/06/28 12:32:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.4 1998/06/28 13:04:23 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
@@ -54,6 +54,17 @@ in this Software without prior written authorization from the X Consortium.
  (c) + (XK_oslash - XK_Ooblique) :					 \
  (c))
 
+#define XmuToupper(c)							 \
+((c) >= XK_A && (c) <= XK_Z ?						 \
+ (c) : (c) >= XK_a && (c) <= XK_z ?					 \
+ (c) - (XK_a - XK_A) : (c) >= XK_Agrave && (c) <= XK_Odiaeresis ?	 \
+ (c) - (XK_agrave - XK_Agrave) : (c) > XK_slash && (c) <= XK_Thorn ?	 \
+ (c) - (XK_oslash - XK_Ooblique) :					 \
+ (c))
+
+/*
+ * Implementation
+ */
 void
 XmuCopyISOLatin1Lowered(char *dst, _Xconst char *src)
 {
@@ -74,16 +85,7 @@ XmuCopyISOLatin1Uppered(char *dst, _Xconst char *src)
   for (dest = (unsigned char *)dst, source = (unsigned char *)src;
        *source;
        source++, dest++)
-    {
-      if ((*source >= XK_a) && (*source <= XK_z))
-	*dest = *source - (XK_a - XK_A);
-      else if ((*source >= XK_agrave) && (*source <= XK_odiaeresis))
-	*dest = *source - (XK_agrave - XK_Agrave);
-      else if ((*source >= XK_slash) && (*source <= XK_thorn))
-	*dest = *source - (XK_oslash - XK_Ooblique);
-      else
-	*dest = *source;
-    }
+    *dest = XmuToupper(*source);
   *dest = '\0';
 }
 
@@ -108,9 +110,24 @@ XmuNCopyISOLatin1Lowered(char *dst, _Xconst char *src, register int size)
   if (size > 0)
     {
       for (dest = (unsigned char *)dst, source = (unsigned char *)src;
-	   *source && size > 0;
+	   *source && size > 1;
 	   source++, dest++, size--)
 	*dest = XmuTolower(*source);
+      *dest = '\0';
+    }
+}
+
+void
+XmuNCopyISOLatin1Uppered(char *dst, _Xconst char *src, register int size)
+{
+  register unsigned char *dest, *source;
+
+  if (size > 0)
+    {
+      for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+	   *source && size > 1;
+	   source++, dest++, size--)
+	*dest = XmuToupper(*source);
       *dest = '\0';
     }
 }
@@ -151,4 +168,3 @@ XmuSnprintf(str, size, fmt, va_alist)
 
   return (retval);
 }
-

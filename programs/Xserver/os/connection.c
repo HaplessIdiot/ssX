@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.29 1998/08/13 14:46:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.30 1998/08/14 13:35:51 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -846,11 +846,7 @@ EstablishNewConnections(clientUnused, closure)
     ClientPtr clientUnused;
     pointer closure;
 {
-#ifndef WIN32
-    fd_mask readyconnections;     /* mask of listeners that are ready */
-#else
     fd_set  readyconnections;     /* set of listeners that are ready */
-#endif
     int curconn;                  /* fd of listener that's ready */
     register int newconn;         /* fd of new client */
     CARD32 connect_time;
@@ -861,15 +857,9 @@ EstablishNewConnections(clientUnused, closure)
 
 #ifndef AMOEBA
     XFD_ANDSET (&tmask, (fd_set*)closure, &WellKnownConnections);
-#ifndef WIN32
-    readyconnections = tmask.fds_bits[0];
-    if (!readyconnections)
-	return TRUE;
-#else
     XFD_COPYSET(&tmask, &readyconnections);
     if (!XFD_ANYSET(&readyconnections))
 	return TRUE;
-#endif
     connect_time = GetTimeInMillis();
     /* kill off stragglers */
     for (i=1; i<currentMaxClients; i++)
@@ -890,17 +880,20 @@ EstablishNewConnections(clientUnused, closure)
     readyconnections = 1;
 #endif /* AMOEBA */
 #ifndef WIN32
-    while (readyconnections) 
-#else
-    for (i = 0; i < XFD_SETCOUNT(&readyconnections); i++) 
-#endif
+    for (i = 0; i < howmany(XFD_SETSIZE, NFDBITS); i++)
     {
+      while (readyconnections.fds_bits[i])
+#else
+      for (i = 0; i < XFD_SETCOUNT(&readyconnections); i++) 
+#endif
+      {
 	XtransConnInfo trans_conn, new_trans_conn;
 	int status;
 
 #ifndef WIN32
-	curconn = ffs (readyconnections) - 1;
-	readyconnections &= ~(1 << curconn);
+	curconn = ffs (readyconnections.fds_bits[i]) - 1;
+	readyconnections.fds_bits[i] &= ~(1L << curconn);
+	curconn += (i * (sizeof(fd_mask)*8));
 #else
 	curconn = XFD_FD(&readyconnections, i);
 #endif
@@ -925,7 +918,10 @@ EstablishNewConnections(clientUnused, closure)
 	    ErrorConnMax(new_trans_conn);
 	    _XSERVTransClose(new_trans_conn);
 	}
+      }
+#ifndef WIN32
     }
+#endif
     return TRUE;
 }
 
@@ -1067,13 +1063,13 @@ CheckConnections()
         while (mask)
     	{
 	    curoff = ffs (mask) - 1;
- 	    curclient = curoff + (i << 5);
+	    curclient = curoff + (i * (sizeof(fd_mask)*8));
             FD_ZERO(&tmask);
             FD_SET(curclient, &tmask);
             r = Select (curclient + 1, &tmask, NULL, NULL, &notime);
             if (r < 0)
 		CloseDownClient(clients[ConnectionTranslation[curclient]]);
-	    mask &= ~(1 << curoff);
+	    mask &= ~(1L << curoff);
 	}
     }	
 #else

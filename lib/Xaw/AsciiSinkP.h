@@ -51,35 +51,21 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* 
- * asciiSinkP.h - Private definitions for asciiSink object
- * 
- */
-
 #ifndef _XawAsciiSinkP_h
 #define _XawAsciiSinkP_h
 
-/***********************************************************************
- *
+/*
  * AsciiSink Object Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/TextSinkP.h> 
 #include <X11/Xaw/AsciiSink.h> 
 
-/************************************************************
- *
- * New fields for the AsciiSink object class record.
- *
- ************************************************************/
-
+/* New fields for the AsciiSink object class record */
 typedef struct _AsciiSinkClassPart {
-  int foo;
+  XtPointer extension;
 } AsciiSinkClassPart;
 
 /* Full class record declaration */
-
 typedef struct _AsciiSinkClassRec {
     ObjectClassPart     object_class;
     TextSinkClassPart	text_sink_class;
@@ -90,24 +76,19 @@ extern AsciiSinkClassRec asciiSinkClassRec;
 
 /* New fields for the AsciiSink object record */
 typedef struct {
-    /* public resources */
+  /* resources */
     XFontStruct *font;          /* Font to draw in. */
     Boolean echo;
     Boolean display_nonprinting;
 
-    /* private state */
+  /* private */
     GC normgc, invgc, xorgc;
     XawTextPosition cursor_position;
     XawTextInsertState laststate;
     short cursor_x, cursor_y;	/* Cursor Location. */
 } AsciiSinkPart;
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
+/* Full instance record declaration */
 typedef struct _AsciiSinkRec {
     ObjectPart          object;
     TextSinkPart	text_sink;
@@ -115,4 +96,3 @@ typedef struct _AsciiSinkRec {
 } AsciiSinkRec;
 
 #endif /* _XawAsciiSinkP_h */
-

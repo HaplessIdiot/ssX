@@ -39,11 +39,10 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern int XmuCursorNameToIndex(
-#if NeedFunctionPrototypes
-    _Xconst char*	/* name */
-#endif
-);
+int XmuCursorNameToIndex
+(
+ _Xconst char	*name
+ );
 
 _XFUNCPROTOEND
 

@@ -51,26 +51,19 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* 
- * LabelP.h - Private definitions for Label widget
- * 
- */
-
 #ifndef _XawLabelP_h
 #define _XawLabelP_h
 
-/***********************************************************************
- *
+/*
  * Label Widget Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/SimpleP.h>
 
 /* New fields for the Label widget class record */
-
-typedef struct {int foo;} LabelClassPart;
+typedef struct {
+  XtPointer extension;
+} LabelClassPart;
 
 /* Full class record declaration */
 typedef struct _LabelClassRec {
@@ -109,13 +102,9 @@ typedef struct {
     unsigned int lbm_width, lbm_height;	 /* size of pixmap */
 } LabelPart;
 
-
-/****************************************************************
- *
+/*
  * Full instance record declaration
- *
- ****************************************************************/
-
+ */
 typedef struct _LabelRec {
     CorePart	core;
     SimplePart	simple;

@@ -40,10 +40,12 @@ in this Software without prior written authorization from the X Consortium.
  * property if possible.
  */
 
-void XmuDeleteStandardColormap(dpy, screen, property)
-    Display	*dpy;		/* specifies the X server to connect to */
-    int		screen;		/* specifies the screen of the display */
-    Atom	property;	/* specifies the standard colormap property */
+void
+XmuDeleteStandardColormap(Display *dpy, int screen, Atom property)
+     /* dpy;		- specifies the X server to connect to
+      * screen		- specifies the screen of the display
+      * property	- specifies the standard colormap property
+      */
 {
     XStandardColormap	*stdcmaps, *s;
     int			count = 0;

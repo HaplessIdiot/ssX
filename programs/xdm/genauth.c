@@ -1,5 +1,5 @@
 /* $XConsortium: genauth.c,v 1.23 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.3 1995/11/02 00:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.4 1996/01/24 22:04:37 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -87,7 +87,7 @@ long	sum[2];
     int	    i;
     int     ret_status = 0;
 
-    fd = open (name, 0);
+    fd = open (name, O_RDONLY);
     if (fd < 0) {
 	LogError("Cannot open randomFile \"%s\", errno = %d\n", name, errno);
 	return 0;

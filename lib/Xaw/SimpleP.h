@@ -54,16 +54,13 @@ SOFTWARE.
 
 #include <X11/Xaw/Simple.h>
 
-#ifndef XAW_DL_DEFINED
-#define XAW_DL_DEFINED
 typedef struct _XawDL XawDisplayList;
-#endif
 
 typedef struct {
-    Boolean	(*change_sensitive)(/* widget */);
+  Bool	(*change_sensitive)(Widget);
 } SimpleClassPart;
 
-#define XtInheritChangeSensitive ((Boolean (*)())_XtInherit)
+#define XtInheritChangeSensitive	((Bool (*)(Widget))_XtInherit)
 
 typedef struct _SimpleClassRec {
     CoreClassPart	core_class;
@@ -76,11 +73,11 @@ typedef struct {
     /* resources */
     Cursor	cursor;
     Pixmap	insensitive_border;
-    String      cursor_name;	/* cursor specified by name. */
-
-    Pixel       pointer_fg, pointer_bg;	/* Pointer colors. */
+  String cursor_name;			/* cursor specified by name */
+  Pixel  pointer_fg, pointer_bg;	/* Pointer colors */
     Boolean     international;
-    /* private state */
+
+  /* private */
     XawDisplayList *display_list;
 } SimplePart;
 

@@ -57,6 +57,8 @@ main (argc, argv)
 
     ProcessCommandLine (argc, argv);
 
+    InitConnectionLimits();
+
     AdjustProcVector();
 
     InitializeGlobals ();

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.24 1998/03/20 21:08:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.25 1998/06/27 12:55:04 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -109,7 +109,7 @@ SOFTWARE.
 #  include <net/if.h>
 # endif
 #else
-#if defined(SVR4) ||  (defined(SYSV) && defined(i386)) || defined(MINIX)
+#if defined(SVR4) ||  (defined(SYSV) && defined(i386)) || defined(MINIX) || defined(__GNU__)
 # include <sys/utsname.h>
 #endif
 #if defined(SYSV) &&  defined(i386)
@@ -122,9 +122,14 @@ SOFTWARE.
 #ifdef ESIX
 # include <lan/if.h>
 #else
+#ifdef __GNU__
+#undef SIOCGIFCONF
+#include <netdb.h>
+#else /*!__GNU__*/
 #ifndef MINIX
 # include <net/if.h>
 #endif
+#endif /*__GNU__ */
 #endif
 #endif /* hpux */
 #endif /* !AMOEBA */

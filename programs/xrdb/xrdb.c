@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
- * $XFree86: xc/programs/xrdb/xrdb.c,v 3.8 1997/05/25 14:41:24 dawes Exp $
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.9 1997/09/30 04:51:05 hohndel Exp $
  */
 
 /*
@@ -904,7 +904,7 @@ main (argc, argv)
     }							/* end for */
 
 #ifndef WIN32
-    while ((i = open("/dev/null", 0)) < 3)
+    while ((i = open("/dev/null", O_RDONLY)) < 3)
 	; /* make sure later freopen won't clobber things */
     (void) close(i);
 #endif

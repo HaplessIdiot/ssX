@@ -39,20 +39,18 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern int XmuPrintDefaultErrorMessage(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    XErrorEvent*	/* event */,
-    FILE*		/* fp */
-#endif
-);
+int XmuPrintDefaultErrorMessage
+(
+ Display		*dpy,
+ XErrorEvent		*event,
+ FILE			*fp
+ );
 
-extern int XmuSimpleErrorHandler(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    XErrorEvent*	/* errorp */
-#endif
-);
+int XmuSimpleErrorHandler
+(
+ Display		*dpy,
+ XErrorEvent		*errorp
+ );
 
 _XFUNCPROTOEND
 

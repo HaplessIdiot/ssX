@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.4 1998/06/28 11:23:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.5 1998/06/28 11:30:06 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -33,6 +33,17 @@
 #define XawMax(a, b) ((a) > (b) ? (a) : (b))
 #define XawMin(a, b) ((a) < (b) ? (a) : (b))
 #define XawAbs(a)    ((a) < 0 ? -(a) : (a))
+
+#define XawStackAlloc(size, stk_buffer)		\
+((size) <= sizeof(stk_buffer)			\
+ ? (XtPointer)(stk_buffer)			\
+ : XtMalloc((unsigned)(size)))
+
+#define XawStackFree(pointer, stk_buffer)	\
+do {						\
+  if ((pointer) != (XtPointer)(stk_buffer))	\
+    XtFree((char *)pointer);			\
+} while (0)
 
 #ifndef XtX
 #define XtX(w)            (((RectObj)w)->rectangle.x)
@@ -52,30 +63,27 @@
 
 #define XAW_PRIV_VAR_PREFIX '$'
 
-typedef Boolean (*XawParseBooleanProc)(Widget, String, XEvent*, Boolean*);
+typedef Bool (*XawParseBooleanProc)(Widget, String, XEvent*, Bool*);
 
 typedef struct _XawActionVarList XawActionVarList;
 typedef struct _XawActionResList XawActionResList;
 
 /* Boolean expressions */
-extern Boolean XawParseBoolean(Widget, String, XEvent*, Boolean*);
-extern Boolean XawBooleanExpression(Widget, String, XEvent*);
+Bool XawParseBoolean(Widget, String, XEvent*, Bool*);
+Bool XawBooleanExpression(Widget, String, XEvent*);
 
 /* actions */
-extern void XawPrintActionErrorMsg(String, Widget, String*, Cardinal*);
-extern XawActionResList *XawGetActionResList(WidgetClass);
-extern XawActionVarList *XawGetActionVarList(Widget);
+void XawPrintActionErrorMsg(String, Widget, String*, Cardinal*);
+XawActionResList *XawGetActionResList(WidgetClass);
+XawActionVarList *XawGetActionVarList(Widget);
 
-extern void XawSetValuesAction(Widget, XEvent*, String*, Cardinal*);
-extern void XawGetValuesAction(Widget, XEvent*, String*, Cardinal*);
-extern void XawDeclareAction(Widget, XEvent*, String*, Cardinal*);
-extern void XawCallProcAction(Widget, XEvent*, String*, Cardinal*);
+void XawSetValuesAction(Widget, XEvent*, String*, Cardinal*);
+void XawGetValuesAction(Widget, XEvent*, String*, Cardinal*);
+void XawDeclareAction(Widget, XEvent*, String*, Cardinal*);
+void XawCallProcAction(Widget, XEvent*, String*, Cardinal*);
 
 /* display lists */
-#ifndef XAW_DL_DEFINED
-#define XAW_DL_DEFINED
-typedef struct _XawDL XawDisplayList;
-#endif
+typedef struct _XawDL _XawDisplayList;
 typedef struct _XawDLClass XawDLClass, XawDisplayListClass;
 
 typedef void (*XawDisplayListProc)(Widget, XtPointer, XtPointer,
@@ -88,17 +96,17 @@ typedef void (*XawDLArgsDestructor)(Display*, String, XtPointer,
 				    String*, Cardinal*);
 typedef void (*XawDLDataDestructor)(Display*, String, XtPointer);
 
-void XawRunDisplayList(Widget, XawDisplayList*, XEvent*, Region);
-void XawDisplayListInitialize();
+void XawRunDisplayList(Widget, _XawDisplayList*, XEvent*, Region);
+void XawDisplayListInitialize(void);
 
-XawDisplayList *XawCreateDisplayList(String, Screen*, Colormap, int);
-void XawDestroyDisplayList(XawDisplayList*);
-String XawDisplayListString(XawDisplayList*);
+_XawDisplayList *XawCreateDisplayList(String, Screen*, Colormap, int);
+void XawDestroyDisplayList(_XawDisplayList*);
+String XawDisplayListString(_XawDisplayList*);
 XawDLClass *XawGetDisplayListClass(String);
 XawDLClass *XawCreateDisplayListClass(String,
 				      XawDLArgsInitProc, XawDLArgsDestructor,
 				      XawDLDataInitProc, XawDLDataDestructor);
-Boolean XawDeclareDisplayListProc(XawDLClass*, String, XawDisplayListProc);
+Bool XawDeclareDisplayListProc(XawDLClass*, String, XawDisplayListProc);
 
 /* pixmaps */
 typedef struct _XawArgVal {
@@ -122,15 +130,18 @@ typedef struct _XawPixmap {
   Dimension height;
 } XawPixmap;
 
-typedef Boolean (*XawPixmapLoader)(XawParams*, Screen*, Colormap, int,
+typedef Bool (*XawPixmapLoader)(XawParams*, Screen*, Colormap, int,
 				   Pixmap*, Pixmap*,
 				   Dimension*, Dimension*);
-extern Boolean XawPixmapsInitialize();
-extern Boolean XawAddPixmapLoader(String, String, XawPixmapLoader);
-extern XawPixmap *XawLoadPixmap(String, Screen*, Colormap, int);
-extern XawPixmap *XawPixmapFromXPixmap(Pixmap, Screen*, Colormap, int);
-extern XawParams *XawParseParamsString(String name);
-extern void XawFreeParamsStruct(XawParams *params);
-extern XawArgVal *XawFindArgVal(XawParams *params, String name);
+Bool XawPixmapsInitialize(void);
+Bool XawAddPixmapLoader(String, String, XawPixmapLoader);
+XawPixmap *XawLoadPixmap(String, Screen*, Colormap, int);
+XawPixmap *XawPixmapFromXPixmap(Pixmap, Screen*, Colormap, int);
+XawParams *XawParseParamsString(String name);
+void XawFreeParamsStruct(XawParams *params);
+XawArgVal *XawFindArgVal(XawParams *params, String name);
+
+/* misc */
+void XawTypeToStringWarning(Display*, String);
 
 #endif /* _XawPrivate_h */

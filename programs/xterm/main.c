@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.73 1998/07/04 14:48:27 robin Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.74 1998/07/17 12:05:23 dawes Exp $ */
 
 
 /* main.c */
@@ -206,6 +206,14 @@ static Bool IsPts = False;
 #define _SVID3
 #endif
 
+#ifdef __GNU__
+#define USE_POSIX_TERMIOS
+#define USE_SYSV_PGRP
+#define WTMP
+#define HAS_BSD_GROUPS
+#define USE_TTY_GROUP
+#endif
+
 #ifndef __CYGWIN32__
 #include <sys/ioctl.h>
 #endif
@@ -257,6 +265,11 @@ static Bool IsPts = False;
 
 #if defined(__sgi) && OSMAJORVERSION >= 5
 #undef TIOCLSET				/* defined, but not useable */
+#endif
+
+#ifdef __GNU__
+#undef TIOCLSET
+#undef TIOCSLTC
 #endif
 
 #ifdef SYSV /* { */
@@ -351,7 +364,7 @@ static Bool IsPts = False;
 #define HAS_SAVED_IDS_AND_SETEUID
 #endif
 
-#if !defined(MINIX) && !defined(WIN32) && !defined(Lynx)
+#if !defined(MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(__GNU__)
 #include <sys/param.h>	/* for NOFILE */
 #endif
 

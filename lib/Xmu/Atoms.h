@@ -89,40 +89,35 @@ extern AtomPtr
 
 _XFUNCPROTOBEGIN
 
-extern char *XmuGetAtomName(
-#if NeedFunctionPrototypes
-    Display *	/* dpy */,
-    Atom	/* atom */
-#endif
+char *XmuGetAtomName
+(
+ Display	*dpy,
+ Atom		atom
+ );
+
+Atom XmuInternAtom
+(
+ Display	*dpy,
+ AtomPtr	atom_ptr
+ );
+
+void XmuInternStrings
+(
+ Display	*dpy,
+ String		*names,
+ Cardinal    	count,
+ Atom		*atoms_return
 );
 
-extern Atom XmuInternAtom(
-#if NeedFunctionPrototypes
-    Display *	/* dpy */,
-    AtomPtr	/* atom_ptr */
-#endif
-);
+AtomPtr XmuMakeAtom
+(
+ _Xconst char	*name
+ );
 
-extern void XmuInternStrings(
-#if NeedFunctionPrototypes
-    Display *		/* dpy */,
-    String *		/* names */,
-    Cardinal    	/* count */,
-    Atom *		/* atoms_return */
-#endif
-);
-
-extern AtomPtr XmuMakeAtom(
-#if NeedFunctionPrototypes
-    _Xconst char *		/* name	*/
-#endif
-);
-
-extern char *XmuNameOfAtom(
-#if NeedFunctionPrototypes
-    AtomPtr	/* atom_ptr */
-#endif
-);
+char *XmuNameOfAtom
+(
+ AtomPtr	atom_ptr
+ );
 
 _XFUNCPROTOEND
 

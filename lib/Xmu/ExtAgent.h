@@ -31,15 +31,13 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern void
-XmuRegisterExternalAgent(
-#if NeedFunctionPrototypes
-    Widget /* w */,
-    XtPointer /* data */,
-    XEvent* /* event */,
-    Boolean* /* cont */
-#endif
-);
+extern void XmuRegisterExternalAgent
+(
+ Widget		w,
+ XtPointer	data,
+ XEvent		*event,
+ Boolean	*cont
+ );
 
 _XFUNCPROTOEND
 

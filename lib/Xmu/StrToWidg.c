@@ -43,17 +43,16 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/ObjectP.h>
 
 #define	done(address, type) \
-	{ toVal->size = sizeof(type); \
-	  toVal->addr = (XPointer) address; \
+{						\
+  toVal->size = sizeof(type);			\
+  toVal->addr = (XPointer)address;		\
 	  return; \
-	}
+}
 
-/* ARGSUSED */
-void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
-    XrmValuePtr args;		/* parent */
-    Cardinal    *num_args;      /* 1 */
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
+/*ARGSUSED*/
+void
+XmuCvtStringToWidget(XrmValuePtr args, Cardinal *num_args,
+		     XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static Widget widget, *widgetP, parent;
     XrmName name = XrmStringToName(fromVal->addr);
@@ -65,43 +64,49 @@ void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
 
     parent = *(Widget*)args[0].addr;
     /* try to match names of normal children */
-    if (XtIsComposite(parent)) {
+  if (XtIsComposite(parent))
+    {
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
-	     i; i--, widgetP++) {
-	    if ((*widgetP)->core.xrm_name == name) {
+	   i; i--, widgetP++)
+	if ((*widgetP)->core.xrm_name == name)
+	  {
 		widget = *widgetP;
 		done(&widget, Widget);
 	    }
 	}
-    }
+
     /* try to match names of popup children */
     i = parent->core.num_popups;
-    for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
-	if ((*widgetP)->core.xrm_name == name) {
+  for (widgetP = parent->core.popup_list; i; i--, widgetP++)
+    if ((*widgetP)->core.xrm_name == name)
+      {
 	    widget = *widgetP;
 	    done(&widget, Widget);
 	}
-    }
+
     /* try to match classes of normal children */
-    if (XtIsComposite(parent)) {
+  if (XtIsComposite(parent))
+    {
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
-	     i; i--, widgetP++) {
-	    if ((*widgetP)->core.widget_class->core_class.xrm_class == name) {
+	   i; i--, widgetP++)
+	if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
+	  {
 		widget = *widgetP;
 		done(&widget, Widget);
 	    }
 	}
-    }
+
     /* try to match classes of popup children */
     i = parent->core.num_popups;
-    for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
-	if ((*widgetP)->core.widget_class->core_class.xrm_class == name) {
+  for (widgetP = parent->core.popup_list; i; i--, widgetP++)
+    if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
+      {
 	    widget = *widgetP;
 	    done(&widget, Widget);
 	}
-    }
+
     XtStringConversionWarning(fromVal->addr, XtRWidget);
     toVal->addr = NULL;
     toVal->size = 0;
@@ -129,14 +134,10 @@ void XmuCvtStringToWidget(args, num_args, fromVal, toVal)
 
 
 /*ARGSUSED*/
-Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal, 
-				converter_data)
-     Display *dpy;
-     XrmValue *args;		/* parent */
-     Cardinal *num_args;	/* 1 */
-     XrmValue *fromVal;
-     XrmValue *toVal;
-     XtPointer *converter_data;
+Boolean
+XmuNewCvtStringToWidget(Display *dpy, XrmValue *args, Cardinal *num_args,
+			XrmValue *fromVal, XrmValue *toVal,
+			XtPointer *converter_data)
 {
     Widget *widgetP, parent;
     XrmName name = XrmStringToName(fromVal->addr);
@@ -150,35 +151,71 @@ Boolean XmuNewCvtStringToWidget(dpy, args, num_args, fromVal, toVal,
 
     parent = *(Widget*)args[0].addr;
     /* try to match names of normal children */
-    if (XtIsComposite(parent)) {
+  if (XtIsComposite(parent))
+    {
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
-	     i; i--, widgetP++) {
+	   i; i--, widgetP++)
 	    if ((*widgetP)->core.xrm_name == name)
 		newDone(Widget, *widgetP);
 	}
-    }
+
     /* try to match names of popup children */
     i = parent->core.num_popups;
-    for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
+  for (widgetP = parent->core.popup_list; i; i--, widgetP++)
 	if ((*widgetP)->core.xrm_name == name)
 	    newDone(Widget, *widgetP);
-    }
+
     /* try to match classes of normal children */
-    if (XtIsComposite(parent)) {
+  if (XtIsComposite(parent))
+    {
 	i = ((CompositeWidget)parent)->composite.num_children;
 	for (widgetP = ((CompositeWidget)parent)->composite.children;
-	     i; i--, widgetP++) {
+	   i; i--, widgetP++)
 	    if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
 		newDone(Widget, *widgetP);
 	}
-    }
+
     /* try to match classes of popup children */
     i = parent->core.num_popups;
-    for (widgetP = parent->core.popup_list; i; i--, widgetP++) {
+  for (widgetP = parent->core.popup_list; i; i--, widgetP++)
 	if ((*widgetP)->core.widget_class->core_class.xrm_class == name)
 	    newDone(Widget, *widgetP);
-    }
+
     XtDisplayStringConversionWarning(dpy, (String)fromVal->addr, XtRWidget);
-    return False;
+  return (False);
+}
+
+/*ARGSUSED*/
+Boolean
+XmuCvtWidgetToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
+		     XrmValuePtr fromVal, XrmValuePtr toVal,
+		     XtPointer *data)
+{
+  static String buffer;
+  Cardinal size;
+  Widget widget;
+
+  widget = *(Widget *)fromVal->addr;
+
+  if (widget)
+    buffer = XrmQuarkToString(widget->core.xrm_name);
+  else
+    buffer = "(null)";
+
+  size = strlen(buffer) + 1;
+  if (toVal->addr != NULL)
+    {
+      if (toVal->size < size)
+	{
+	  toVal->size = size;
+	  return (False);
+	}
+      strcpy((char *)toVal->addr, buffer);
+    }
+  else
+    toVal->addr = (XPointer)buffer;
+  toVal->size = sizeof(String);
+
+  return (True);
 }

@@ -58,24 +58,29 @@ SOFTWARE.
 #include <X11/Xaw/SimpleP.h>
 
 typedef struct {
-     /* public */
+  /* resources */
     Pixel	  foreground;	/* thumb foreground color */
     XtOrientation orientation;	/* horizontal or vertical */
     XtCallbackList scrollProc;	/* proportional scroll */
     XtCallbackList thumbProc;	/* jump (to position) scroll */
     XtCallbackList jumpProc;	/* same as thumbProc but pass data by ref */
-    Pixmap	  thumb;	/* thumb color */
+  Pixmap thumb;			/* thumb pixmap */
     Cursor	  upCursor;	/* scroll up cursor */
     Cursor	  downCursor;	/* scroll down cursor */
     Cursor	  leftCursor;	/* scroll left cursor */
     Cursor	  rightCursor;	/* scroll right cursor */
     Cursor	  verCursor;	/* scroll vertical cursor */
     Cursor	  horCursor;	/* scroll horizontal cursor */
-    float	  top;		/* What percent is above the win's top */
-    float	  shown;	/* What percent is shown in the win */
+#ifdef notyet
+  double top;			/* What percent is above the win's top */
+  double shown;			/* What percent is shown in the win */
+#else
+  float top;
+  float shown;
+#endif
     Dimension	  length;	/* either height or width */
     Dimension	  thickness;	/* either width or height */
-    Dimension	  min_thumb;	/* minium size for the thumb. */
+  Dimension min_thumb;		/* minium size for the thumb */
 
      /* private */
     Cursor	  inactiveCursor; /* The normal cursor for scrollbar */
@@ -83,7 +88,6 @@ typedef struct {
     GC		  gc;		/* a (shared) gc */
     Position	  topLoc;	/* Pixel that corresponds to top */
     Dimension	  shownLength;	/* Num pixels corresponding to shown */
-
 } ScrollbarPart;
 
 typedef struct _ScrollbarRec {
@@ -92,7 +96,9 @@ typedef struct _ScrollbarRec {
     ScrollbarPart	scrollbar;
 } ScrollbarRec;
 
-typedef struct {int empty;} ScrollbarClassPart;
+typedef struct {
+  XtPointer extension;
+} ScrollbarClassPart;
 
 typedef struct _ScrollbarClassRec {
     CoreClassPart		core_class;

@@ -29,26 +29,52 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
+#include "SysUtil.h"
 #include "Converters.h"
 
-#define done(address, type) \
-        { (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
-
-void XmuCvtStringToLong (args, num_args, fromVal, toVal)
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
+void
+XmuCvtStringToLong(XrmValuePtr args, Cardinal *num_args,
+		   XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static long l;
 
     if (*num_args != 0)
-        XtWarningMsg("wrongParameters","cvtStringToLong","XtToolkitError",
-                  "String to Long conversion needs no extra arguments",
-                  (String *) NULL, (Cardinal *)NULL);
-    if (sscanf((char *)fromVal->addr, "%ld", &l) == 1) {
-        done(&l, long);
-    } else {
-        XtStringConversionWarning((char *) fromVal->addr, XtRLong);
+    XtWarning("String to Long conversion needs no extra arguments");
+  if (sscanf((char *)fromVal->addr, "%ld", &l) == 1)
+    {
+      toVal->size = sizeof(long);
+      toVal->addr = (XPointer)&l;
     }
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtRLong);
+}
+
+/*ARGSUSED*/
+Boolean
+XmuCvtLongToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
+		   XrmValuePtr fromVal, XrmValuePtr toVal, XtPointer *data)
+{
+  static char buffer[32];
+  int size;
+
+  if (*num_args != 0)
+    XtWarning("Long to String conversion needs no extra arguments");
+
+  XmuSnprintf(buffer, sizeof(buffer), "%ld", *(long *)fromVal->addr);
+
+  size = strlen(buffer) + 1;
+  if (toVal->addr != NULL)
+    {
+      if (toVal->size < size)
+	{
+	  toVal->size = size;
+	  return (False);
+    }
+      strcpy((char *)toVal->addr, buffer);
+    }
+  else
+    toVal->addr = (XPointer)buffer;
+  toVal->size = sizeof(String);
+
+  return (True);
 }

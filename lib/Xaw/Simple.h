@@ -53,12 +53,6 @@ SOFTWARE.
 
 #include <X11/Xmu/Converters.h>
 
-/****************************************************************
- *
- * Simple widgets
- *
- ****************************************************************/
-
 /* Resources:
 
  Name		     Class		RepType		Default Value

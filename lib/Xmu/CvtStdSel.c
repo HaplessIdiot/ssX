@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c /main/42 1996/12/04 10:26:05 lehors $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.9 1997/01/18 06:52:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.10 1998/06/28 12:32:28 dawes Exp $ */
 
 /*
  
@@ -99,7 +99,17 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 
-static char *get_os_name ()
+/*
+ * Prototypes
+ */
+static char *get_os_name(void);
+static Bool isApplicationShell(Widget);
+
+/*
+ * Implementation
+ */
+static char *
+get_os_name(void)
 {
 #ifdef OS_NAME
 	return XtNewString(OS_NAME);
@@ -167,8 +177,8 @@ static char *get_os_name ()
  * go that far.  Then, we test whether it is an applicationShellWidget
  * class by looking for an explicit class name.  Seems pretty safe.
  */
-static Bool isApplicationShell(w)
-    Widget w;
+static Bool
+isApplicationShell(Widget w)
 {
     register WidgetClass c;
 
@@ -181,14 +191,10 @@ static Bool isApplicationShell(w)
     return False;
 }
 
-Boolean XmuConvertStandardSelection(w, time, selection, target,
-				    type, value, length, format)
-    Widget w;
-    Time time;
-    Atom *selection, *target, *type;
-    XPointer *value;
-    unsigned long *length;
-    int *format;
+Boolean
+XmuConvertStandardSelection(Widget w, Time time, Atom *selection, Atom *target,
+			    Atom *type, XtPointer *value,
+			    unsigned long *length, int *format)
 {
     Display *d = XtDisplay(w);
     if (*target == XA_TIMESTAMP(d)) {

@@ -27,20 +27,19 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-
 #ifndef _TemplateP_h
 #define _TemplateP_h
 
 #include <X11/Xaw/Template.h>
+
 /* include superclass private header file */
 #include <X11/CoreP.h>
 
 /* define unique representation types not found in <X11/StringDefs.h> */
-
 #define XtRTemplateResource "TemplateResource"
 
 typedef struct {
-    int empty;
+  XtPointer extension;
 } TemplateClassPart;
 
 typedef struct _TemplateClassRec {
@@ -53,7 +52,8 @@ extern TemplateClassRec templateClassRec;
 typedef struct {
     /* resources */
     char* resource;
-    /* private state */
+  /* private */
+  char *private;
 } TemplatePart;
 
 typedef struct _TemplateRec {

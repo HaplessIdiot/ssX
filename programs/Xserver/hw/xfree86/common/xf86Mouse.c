@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.36 1998/04/26 17:03:36 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.2 1998/07/25 16:55:11 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -171,7 +171,7 @@ unsigned short xf86MouseCflags[NUM_PROTOCOLS] =
 	(CS8 | CSTOPB          | CREAD | CLOCAL | HUPCL ),   /* sysmouse */
 	0						     /* auto */
 };
-#endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
+
 
 
 /*
@@ -189,7 +189,7 @@ xf86MouseSupported(mousetype)
     }
     return(xf86SupportedMouseTypes[mousetype]);
 }
-
+#endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 /*
  * xf86SetupMouse --
  *	Sets up the mouse parameters

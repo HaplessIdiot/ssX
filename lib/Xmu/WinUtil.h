@@ -40,26 +40,23 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern Window XmuClientWindow(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Window 	/* win */
-#endif
-);
+Window XmuClientWindow
+(
+ Display	*dpy,
+ Window 	win
+ );
 
-extern Bool XmuUpdateMapHints(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Window	/* win */,
-    XSizeHints*	/* hints */
-#endif
-);
+Bool XmuUpdateMapHints
+(
+ Display	*dpy.
+ Window		win,
+ XSizeHints	*hints
+ );
 
-extern Screen *XmuScreenOfWindow(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Window 	/* w */
-#endif
+Screen *XmuScreenOfWindow
+(
+ Display	*dpy,
+ Window 	w
 );
 
 _XFUNCPROTOEND

@@ -42,7 +42,11 @@ in this Software without prior written authorization from the X Consortium.
 #else
 extern char *malloc();
 #endif
-static Status lookup();
+
+/*
+ * Prototypes
+ */
+static Status lookup(Display*, int, VisualID, Atom, XStandardColormap*, Bool);
 
 /*
  * To create a standard colormap if one does not currently exist, or
@@ -69,15 +73,19 @@ static Status lookup();
  * RGB_BEST_MAP on a display whose colormap size is 16.
  */
 
-Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
-				 replace, retain)
-    Display		*dpy;		/* specifies X server connection */
-    int			screen; 	/* specifies screen of display */
-    VisualID		visualid;	/* specifies the visual type */
-    unsigned int	depth;		/* specifies  the visual type */
-    Atom		property;	/* a standard colormap property */
-    Bool		replace;	/* specifies whether to replace */
-    Bool		retain;		/* specifies whether to retain */
+Status
+XmuLookupStandardColormap(Display *dpy, int screen, VisualID visualid,
+			  unsigned int depth, Atom property,
+			  Bool replace, Bool retain)
+     /*
+      * dpy		- specifies X server connection
+      * screen 		- specifies screen of display
+      * visualid	- specifies the visual type
+      * depth		- specifies  the visual type
+      * property	- a standard colormap property
+      * replace		- specifies whether to replace
+      * retain		- specifies whether to retain
+      */
 {
     Display		*odpy;		/* original display connection */
     XStandardColormap	*colormap;	
@@ -191,13 +199,17 @@ Status XmuLookupStandardColormap(dpy, screen, visualid, depth, property,
  * is true.
  */
 
-static Status lookup(dpy, screen, visualid, property, new, replace)
-    Display		*dpy;		/* specifies display connection */
-    int			screen;		/* specifies screen number */
-    VisualID		visualid;	/* specifies visualid for std map */
-    Atom		property;	/* specifies colormap property name */
-    XStandardColormap	*new;		/* specifies a standard colormap */
-    Bool		replace;	/* specifies whether to replace */
+static Status
+lookup(Display *dpy, int screen, VisualID visualid, Atom property,
+       XStandardColormap *cnew, Bool replace)
+     /*
+      * dpy		- specifies display connection
+      * screen		- specifies screen number
+      * visualid	- specifies visualid for std map
+      * property	- specifies colormap property name
+      * cnew		- specifies a standard colormap
+      * replace		- specifies whether to replace
+      */
 {
     register int	i;
     int			count;
@@ -207,8 +219,8 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
     /* The property does not already exist */
 
     if (! XGetRGBColormaps(dpy, win, &stdcmaps, &count, property)) {
-	if (new)
-	    XSetRGBColormaps(dpy, win, new, 1, property);
+	if (cnew)
+	    XSetRGBColormaps(dpy, win, cnew, 1, property);
 	return 0;
     }
 
@@ -217,8 +229,8 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
     if (property != XA_RGB_DEFAULT_MAP) {
 	if (replace) {
 	    XmuDeleteStandardColormap(dpy, screen, property);
-	    if (new)
-		XSetRGBColormaps(dpy, win, new, 1, property);
+	    if (cnew)
+		XSetRGBColormaps(dpy, win, cnew, 1, property);
 	}
 	XFree((char *)stdcmaps);
 	return 1;
@@ -232,7 +244,7 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
     /* No RGB_DEFAULT_MAP property matches the given visualid */
 
     if (i == count) {
-	if (new) {
+	if (cnew) {
 	    XStandardColormap	*m, *maps;
 
 	    s = (XStandardColormap *) malloc((unsigned) ((count+1) * sizeof
@@ -250,16 +262,16 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 		m->visualid   = maps->visualid;
 		m->killid     = maps->killid;
 	    }
-	    m->colormap   = new->colormap;
-	    m->red_max    = new->red_max;
-	    m->red_mult   = new->red_mult;
-	    m->green_max  = new->green_max;
-	    m->green_mult = new->green_mult;
-	    m->blue_max   = new->blue_max;
-	    m->blue_mult  = new->blue_mult;
-	    m->base_pixel = new->base_pixel;
-	    m->visualid   = new->visualid;
-	    m->killid     = new->killid;
+	    m->colormap   = cnew->colormap;
+	    m->red_max    = cnew->red_max;
+	    m->red_mult   = cnew->red_mult;
+	    m->green_max  = cnew->green_max;
+	    m->green_mult = cnew->green_mult;
+	    m->blue_max   = cnew->blue_max;
+	    m->blue_mult  = cnew->blue_mult;
+	    m->base_pixel = cnew->base_pixel;
+	    m->visualid   = cnew->visualid;
+	    m->killid     = cnew->killid;
 
 	    XSetRGBColormaps(dpy, win, s, ++count, property);
 	    free((char *) s);
@@ -279,8 +291,8 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 
 	if (count == 1) {
 	    XmuDeleteStandardColormap(dpy, screen, property);
-	    if (new)
-		XSetRGBColormaps(dpy, win, new, 1, property);
+	    if (cnew)
+		XSetRGBColormaps(dpy, win, cnew, 1, property);
 	}
 	else {
 	    XStandardColormap	*map;
@@ -295,7 +307,7 @@ static Status lookup(dpy, screen, visualid, property, new, replace)
 	    else if (s->killid != None)
 		XKillClient(dpy, s->killid);
 
-	    map = (new) ? new : stdcmaps + --count;
+	    map = (cnew) ? cnew : stdcmaps + --count;
 
 	    s->colormap   = map->colormap;
 	    s->red_max    = map->red_max;
