@@ -2,7 +2,7 @@
  *	$Xorg: input.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/input.c,v 3.60 2002/10/05 17:57:12 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/input.c,v 3.61 2002/12/08 22:31:49 dickey Exp $ */
 
 /*
  * Copyright 1999-2001,2002 by Thomas E. Dickey
@@ -454,7 +454,7 @@ Input(TKeyboard * keyboard,
 		   "\n",
 		   keysym));
 	}
-	if (event->state & ControlMask
+	if ((event->state & ControlMask) != 0
 	    && keysym == XK_KP_Separator) {
 	    keysym = XK_KP_Subtract;
 	    TRACE(("...Input control/keypad(,), change keysym to "

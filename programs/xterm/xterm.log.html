@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.87 2002/10/13 23:09:43 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.88 2002/12/08 22:31:49 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_170">Patch #170 - 2002/10/13 - XFree86 4.2.1</A>
 <LI><A HREF="#xterm_169">Patch #169 - 2002/10/5 - XFree86 4.2.1</A>
@@ -216,6 +217,61 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A></H1>
+<ul>
+	<li>fixes to make repainting of 256-color example work properly
+	  (reports by Abigail Brady and Scott A Crosby).
+	  <ul>
+	   <li>set flag in <code>AllocateAnsiColor()</code> to ensure the color
+	     is allocated once only.
+	   <li>fix check in <code>ScrnRefresh</code>, which was comparing
+	     background colors only if the ANSI foreground colors also were set.
+	  </ul>
+
+	<li>merge <code>Error()</code> calls and some <code>exit()</code> calls
+	  into <code>SysError()</code>, and change that to add the brief
+	  explanation for each error code which is provided in the manpage. 
+	  Change a few <code>SysError()</code>, calls to avoid using code 1, to
+	  avoid confusion with exit status from places that do not use
+	  <code>SysError()</code>.
+
+	<li>simplify logic used to open a debug logfile as the standard error.
+
+	<li>modify the <code>-e</code> option so that if it fails, xterm will
+	  check if only one argument follows, e.g., it was quoted, and then
+	  retry using <code>sh&nbsp;-e</code>.
+
+	<li>modify parsing of DECUDK string parameter to allow a comma between
+	  pairs of hexadecimal digits (Ray Neuman &lt;raymond@one.com.au&gt;
+	  reports that "real" terminals accept this; perhaps they simply
+	  ignore unexpected characters).
+
+	<li>fix a few problems with the <code>$TERMCAP</code> string generated
+	  by <code>resize</code>:
+	  <ul>
+	   <li>for Bourne shell, add an <code>export</code> command.
+	     This was missing as far back as X11R5.
+	   <li>escape exclamation marks, used in xterm's reset string.
+	   <li>translate literal <code>\177\</code> to "^?".
+	  </ul>
+
+	<li>improve configure check for <code>tgetent()</code> to work when
+	  <code>$TERMCAP</code> has been set to a specific entry.
+
+	<li>modify <code>minstall.sh</code> to use "%" rather than "@",
+	  to avoid problems with AFS (report by Zdenek Sekera).
+
+	<li>list fatal error codes from <code>error.h</code> in the manpage,
+	  remove unused codes in <code>error.h</code>.
+
+	<li>use more explicit wording for manpage list of color resources,
+	  since at least one user confused the generic names such as "black"
+	  with the names in rgb.txt (the latter are now used).
+
+	<li>minor fix to description of 1003 mouse mode in ctlseqs.ms
+	  (Larry Riedel).
+</ul>
 
 <H1><A NAME="xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A></H1>
 <ul>
