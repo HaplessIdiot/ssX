@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.17 2001/09/27 10:30:11 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.18 2001/11/15 23:15:55 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -286,7 +286,7 @@ InstallTarget(install,Concat3(lib,libname,.dll),$(INSTLIBFLAGS),$(BINDIR))
 all:: binary								@@\
 	MakeDir($(BUILDBINDIR))						@@\
 	RemoveFile($(BUILDBINDIR)/binary)				@@\
-	$(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/binary $(BUILDBINDIR)
+	cd $(BUILDBINDIR) && $(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/binary .
 #endif /* LinkBuildBinary */
 
 
