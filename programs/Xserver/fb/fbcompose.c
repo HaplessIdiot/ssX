@@ -2328,44 +2328,44 @@ fbStore_external (FbCompositeOperand *op, CARD32 value)
 
 FbAccessMap fbAccessMap[] = {
     /* 32bpp formats */
-    PICT_a8r8g8b8,	fbFetch_a8r8g8b8,	fbFetch_a8r8g8b8,	fbStore_a8r8g8b8,
-    PICT_x8r8g8b8,	fbFetch_x8r8g8b8,	fbFetch_x8r8g8b8,	fbStore_x8r8g8b8,
-    PICT_a8b8g8r8,	fbFetch_a8b8g8r8,	fbFetch_a8b8g8r8,	fbStore_a8b8g8r8,
-    PICT_x8b8g8r8,	fbFetch_x8b8g8r8,	fbFetch_x8b8g8r8,	fbStore_x8b8g8r8,
+    { PICT_a8r8g8b8,	fbFetch_a8r8g8b8,	fbFetch_a8r8g8b8,	fbStore_a8r8g8b8 },
+    { PICT_x8r8g8b8,	fbFetch_x8r8g8b8,	fbFetch_x8r8g8b8,	fbStore_x8r8g8b8 },
+    { PICT_a8b8g8r8,	fbFetch_a8b8g8r8,	fbFetch_a8b8g8r8,	fbStore_a8b8g8r8 },
+    { PICT_x8b8g8r8,	fbFetch_x8b8g8r8,	fbFetch_x8b8g8r8,	fbStore_x8b8g8r8 },
 
     /* 24bpp formats */
-    PICT_r8g8b8,	fbFetch_r8g8b8,		fbFetch_r8g8b8,		fbStore_r8g8b8,
-    PICT_b8g8r8,	fbFetch_b8g8r8,		fbFetch_b8g8r8,		fbStore_b8g8r8,
+    { PICT_r8g8b8,	fbFetch_r8g8b8,		fbFetch_r8g8b8,		fbStore_r8g8b8 },
+    { PICT_b8g8r8,	fbFetch_b8g8r8,		fbFetch_b8g8r8,		fbStore_b8g8r8 },
 
     /* 16bpp formats */
-    PICT_r5g6b5,	fbFetch_r5g6b5,		fbFetch_r5g6b5,		fbStore_r5g6b5,
-    PICT_b5g6r5,	fbFetch_b5g6r5,		fbFetch_b5g6r5,		fbStore_b5g6r5,
+    { PICT_r5g6b5,	fbFetch_r5g6b5,		fbFetch_r5g6b5,		fbStore_r5g6b5 },
+    { PICT_b5g6r5,	fbFetch_b5g6r5,		fbFetch_b5g6r5,		fbStore_b5g6r5 },
 
-    PICT_a1r5g5b5,	fbFetch_a1r5g5b5,	fbFetch_a1r5g5b5,	fbStore_a1r5g5b5,
-    PICT_x1r5g5b5,	fbFetch_x1r5g5b5,	fbFetch_x1r5g5b5,	fbStore_x1r5g5b5,
-    PICT_a1b5g5r5,	fbFetch_a1b5g5r5,	fbFetch_a1b5g5r5,	fbStore_a1b5g5r5,
-    PICT_x1b5g5r5,	fbFetch_x1b5g5r5,	fbFetch_x1b5g5r5,	fbStore_x1b5g5r5,
+    { PICT_a1r5g5b5,	fbFetch_a1r5g5b5,	fbFetch_a1r5g5b5,	fbStore_a1r5g5b5 },
+    { PICT_x1r5g5b5,	fbFetch_x1r5g5b5,	fbFetch_x1r5g5b5,	fbStore_x1r5g5b5 },
+    { PICT_a1b5g5r5,	fbFetch_a1b5g5r5,	fbFetch_a1b5g5r5,	fbStore_a1b5g5r5 },
+    { PICT_x1b5g5r5,	fbFetch_x1b5g5r5,	fbFetch_x1b5g5r5,	fbStore_x1b5g5r5 },
 
     /* 8bpp formats */
-    PICT_a8,		fbFetch_a8,		fbFetcha_a8,		fbStore_a8,
-    PICT_r3g3b2,	fbFetch_r3g3b2,		fbFetch_r3g3b2,		fbStore_r3g3b2,
-    PICT_b2g3r3,	fbFetch_b2g3r3,		fbFetch_b2g3r3,		fbStore_b2g3r3,
-    PICT_a2r2g2b2,	fbFetch_a2r2g2b2,	fbFetch_a2r2g2b2,	fbStore_a2r2g2b2,
-    PICT_c8,		fbFetch_c8,		fbFetch_c8,		fbStore_c8,
-    PICT_g8,		fbFetch_c8,		fbFetch_c8,		fbStore_g8,
+    { PICT_a8,		fbFetch_a8,		fbFetcha_a8,		fbStore_a8 },
+    { PICT_r3g3b2,	fbFetch_r3g3b2,		fbFetch_r3g3b2,		fbStore_r3g3b2 },
+    { PICT_b2g3r3,	fbFetch_b2g3r3,		fbFetch_b2g3r3,		fbStore_b2g3r3 },
+    { PICT_a2r2g2b2,	fbFetch_a2r2g2b2,	fbFetch_a2r2g2b2,	fbStore_a2r2g2b2 },
+    { PICT_c8,		fbFetch_c8,		fbFetch_c8,		fbStore_c8 },
+    { PICT_g8,		fbFetch_c8,		fbFetch_c8,		fbStore_g8 },
 
     /* 4bpp formats */
-    PICT_a4,		fbFetch_a4,		fbFetcha_a4,		fbStore_a4,
-    PICT_r1g2b1,	fbFetch_r1g2b1,		fbFetch_r1g2b1,		fbStore_r1g2b1,
-    PICT_b1g2r1,	fbFetch_b1g2r1,		fbFetch_b1g2r1,		fbStore_b1g2r1,
-    PICT_a1r1g1b1,	fbFetch_a1r1g1b1,	fbFetch_a1r1g1b1,	fbStore_a1r1g1b1,
-    PICT_a1b1g1r1,	fbFetch_a1b1g1r1,	fbFetch_a1b1g1r1,	fbStore_a1b1g1r1,
-    PICT_c4,		fbFetch_c4,		fbFetch_c4,		fbStore_c4,
-    PICT_g4,		fbFetch_c4,		fbFetch_c4,		fbStore_g4,
+    { PICT_a4,		fbFetch_a4,		fbFetcha_a4,		fbStore_a4 },
+    { PICT_r1g2b1,	fbFetch_r1g2b1,		fbFetch_r1g2b1,		fbStore_r1g2b1 },
+    { PICT_b1g2r1,	fbFetch_b1g2r1,		fbFetch_b1g2r1,		fbStore_b1g2r1 },
+    { PICT_a1r1g1b1,	fbFetch_a1r1g1b1,	fbFetch_a1r1g1b1,	fbStore_a1r1g1b1 },
+    { PICT_a1b1g1r1,	fbFetch_a1b1g1r1,	fbFetch_a1b1g1r1,	fbStore_a1b1g1r1 },
+    { PICT_c4,		fbFetch_c4,		fbFetch_c4,		fbStore_c4 },
+    { PICT_g4,		fbFetch_c4,		fbFetch_c4,		fbStore_g4 },
 
     /* 1bpp formats */
-    PICT_a1,		fbFetch_a1,		fbFetcha_a1,		fbStore_a1,
-    PICT_g1,		fbFetch_g1,		fbFetch_g1,		fbStore_g1,
+    { PICT_a1,		fbFetch_a1,		fbFetcha_a1,		fbStore_a1 },
+    { PICT_g1,		fbFetch_g1,		fbFetch_g1,		fbStore_g1 },
 };
 #define NumAccessMap (sizeof fbAccessMap / sizeof fbAccessMap[0])
 
@@ -2443,7 +2443,7 @@ fbCompositeGeneral (CARD8	op,
     FbCompositeOperand	src[3],msk[3],dst[3],*pmsk;
     FbCompositeOperand	*srcPict, *srcAlpha;
     FbCompositeOperand	*dstPict, *dstAlpha;
-    FbCompositeOperand	*mskPict, *mskAlpha;
+    FbCompositeOperand	*mskPict = 0, *mskAlpha = 0;
     FbCombineFunc	f;
     int			w;
 

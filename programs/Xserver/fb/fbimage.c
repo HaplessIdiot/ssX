@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.6 2000/05/06 21:09:33 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.7 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 #ifdef XFree86LOADER
@@ -197,7 +197,7 @@ fbPutXYImage (DrawablePtr	pDrawable,
     int		nbox;
     BoxPtr	pbox;
     int		x1, y1, x2, y2;
-    FbBits	fgand, fgxor, bgand, bgxor;
+    FbBits	fgand = 0, fgxor = 0, bgand = 0, bgxor = 0;
 
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
 

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.7 2000/05/06 21:09:34 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.9 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -134,7 +134,7 @@ fbPixmapToRegion(PixmapPtr pPix)
     register RegionPtr	pReg;
     FbBits		*pw, w;
     register int	ib;
-    int			width, h, base, rx1, crects;
+    int			width, h, base, rx1 = 0, crects;
     FbBits		*pwLineEnd;
     int			irectPrevStart, irectLineStart;
     register BoxPtr	prectO, prectN;
