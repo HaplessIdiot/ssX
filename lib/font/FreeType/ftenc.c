@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.14 1999/10/13 04:20:49 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.15 2000/04/05 18:13:23 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -23,17 +23,16 @@ THE SOFTWARE.
 */
 
 /* TrueType-dependent encoding code */
-#ifndef FONTMODULE
-#include <string.h>
-#else
-#include "xf86_ansic.h"
-#endif
-
 #include "fontmisc.h"		/* defines xalloc and friends */
 #include "fontenc.h"
 #include "ttconfig.h"
 #include "freetype.h"
 #include "ft.h"
+#ifndef FONTMODULE
+#include <string.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 
 static int find_cmap(int, int, int, TT_Face, TT_CharMap *);

@@ -21,11 +21,13 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbarc.c,v 1.3 2000/02/23 20:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbarc.c,v 1.4 2000/04/05 18:13:31 dawes Exp $ */
 
 #include "fb.h"
 #include "mizerarc.h"
-#include <xf86_ansic.h>
+#ifdef IN_MODULE
+#include "xf86_ansic.h"
+#endif
 
 typedef void	(*FbArc) (FbBits    *dst, 
 			  FbStride  dstStride, 

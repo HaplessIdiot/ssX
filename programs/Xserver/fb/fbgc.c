@@ -21,10 +21,12 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.6 2000/02/23 20:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.7 2000/04/05 18:13:34 dawes Exp $ */
 
 #include "fb.h"
-#include <xf86_ansic.h>
+#ifdef IN_MODULE
+#include "xf86_ansic.h"
+#endif
 
 const GCFuncs fbGCFuncs = {
     fbValidateGC,
