@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.121 2004/01/06 22:47:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.122 2004/01/10 22:31:53 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1512,13 +1512,15 @@ static void NVBacklightEnable(NVPtr pNv,  Bool on)
        (pNv->Chipset == 0x10DE0329))
     {
        /* NV17,18,34 Apple iMac, iBook, PowerBook */
-       CARD32 tmp;
-       tmp = pNv->PMC[0x10F0/4] & 0x7FFFFFFF;
-       pNv->PMC[0x10F0/4] = tmp;
-       tmp = pNv->PCRTC0[0x081C/4] & 0xFFFFFFFC;
-       if(on)
-           tmp |= 0x1;
-       pNv->PCRTC0[0x081C/4] = tmp;
+      CARD32 tmp_pmc, tmp_pcrt;
+      tmp_pmc = pNv->PMC[0x10F0/4] & 0x7FFFFFFF;
+      tmp_pcrt = pNv->PCRTC0[0x081C/4] & 0xFFFFFFFC;
+      if(on) {
+          tmp_pmc |= (1 << 31);
+          tmp_pcrt |= 0x1;
+      }
+      pNv->PMC[0x10F0/4] = tmp_pmc;
+      pNv->PCRTC0[0x081C/4] = tmp_pcrt;
     }
 #endif
 }
