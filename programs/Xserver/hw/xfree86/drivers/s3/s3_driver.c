@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -150,7 +150,8 @@ typedef enum {
 
 static OptionInfoRec S3Options[] = {
 	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE },
-	{ OPTION_SWCURS, "swcursor", OPTV_BOOLEAN, {0}, FALSE }
+	{ OPTION_SWCURS, "swcursor", OPTV_BOOLEAN, {0}, FALSE },
+	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
 RamDacSupportedInfoRec IBMRamdacs[] = {
