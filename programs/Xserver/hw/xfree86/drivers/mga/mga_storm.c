@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.57 1999/08/15 13:00:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.58 1999/08/22 05:57:35 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -160,6 +160,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
     /* all should be able to use this now with the bug fixes */
     pMga->AccelFlags |= USE_LINEAR_EXPANSION;
+
+#if PSZ == 24
+    pMga->AccelFlags |= MGA_NO_PLANEMASK;
+#endif
 
     if(pMga->HasSDRAM) {
 	pMga->Atype = pMga->AtypeNoBLK = MGAAtypeNoBLK;
@@ -324,7 +328,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
     }
 
-    if((PSZ == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
+    if(pMga->AccelFlags & MGA_NO_PLANEMASK) {
 	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;

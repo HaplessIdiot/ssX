@@ -9,7 +9,7 @@
 <date>22 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.13 1999/08/21 14:08:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.14 1999/08/28 09:00:55 dawes Exp $
 </ident>
 
 <abstract>
@@ -32,6 +32,10 @@ snapshot.  More detailed information can be found in the sections that follow.
   <item>A driver for NVIDIA chipsets is now included.  The driver is called
 	``nv''.  Some very basic information can be found in the nv(4) man
 	page.
+  <item>The default xdm config file now has a line to disable listening for
+	XDMCP requests.  This is fine when xdm is only managing a local
+	X server.  The line must be commented out when xdm is used to manage
+	external X servers (e.g., X terminals).
 </itemize>
 
 <sect>X server

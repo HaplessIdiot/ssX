@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.145 1999/08/01 07:56:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.146 1999/08/28 09:00:20 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -219,7 +219,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.145 1999/08/01 07:56:50 dawes Exp 
  * modules will be built.
  *
 #define XF86CardDrivers		mga glint nv tga s3virge sis rendition \
-				neomagic \
+				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
 				ati vga XF86ExtraCardDrivers

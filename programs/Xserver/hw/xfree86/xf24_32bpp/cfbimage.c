@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbimage.c,v 1.1 1999/01/23 09:56:14 dawes Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -25,10 +25,10 @@ cfb24_32GetImage (
 ){
     if(!w || !h) return;
 
-    if((pDraw->bitsPerPixel != 24) || (format != ZPixmap)) {
+    if(pDraw->bitsPerPixel != 24) {
 	cfb32GetImage(pDraw, sx, sy, w, h, format, planemask, pdstLine);
 	return;
-    } else {
+    } else if (format == ZPixmap) {
 	BoxRec box;
 	DDXPointRec ptSrc;
 	RegionRec rgnDst;
@@ -53,7 +53,8 @@ cfb24_32GetImage (
                     &ptSrc, planemask, 0);
         REGION_UNINIT(pScreen, &rgnDst);
         FreeScratchPixmapHeader(pPixmap);
-    }
+    } else
+	miGetImage(pDraw, sx, sy, w, h, format, planemask, pdstLine);
 }
 
 
