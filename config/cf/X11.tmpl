@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.133 2001/11/02 23:29:24 dawes Exp $
+XCOMM $XFree86: X11.tmpl,v 1.134 2001/11/16 00:52:26 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1573,7 +1573,7 @@ ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
    XTHRSTUBLIBSRC = $(LIBSRC)/XThrStub
 #if SharedLibXThrStub
 #ifndef SharedXThrStubRev
-#define SharedXThrStubRev 6.0
+#define SharedXThrStubRev 6.1
 #endif
 SharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBLIBSRC),SOXTHRSTUBREV,SharedXThrStubRev)
 #else

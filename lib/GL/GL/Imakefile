@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.7 2001/04/03 02:29:31 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.8 2001/10/04 18:28:20 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -219,7 +219,7 @@ REQUIREDLIBS = $(BASEREQUIREDLIBS) $(OTHERREQUIREDLIBS)
        POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS)
 
 #if LocalThreads
-  THREADOBJS = $(THREADS_LIBS)
+  THREADOBJS = $(LDPRELIB) $(XTHRSTUBLIB)
 #endif
 
 #include <Library.tmpl>
