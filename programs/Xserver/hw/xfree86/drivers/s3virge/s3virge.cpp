@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.4 1999/08/22 13:04:27 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.5 2000/03/03 01:05:42 dawes Exp $
 .TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
@@ -26,7 +26,7 @@ visuals are supported for the other depths.
 .SH SUPPORTED HARDWARE
 The
 .B s3virge
-driver supports PCI video cards based on the following S3 chips:
+driver supports PCI and AGP video cards based on the following S3 chips:
 .TP 12
 .B ViRGE
 86C325
@@ -48,10 +48,17 @@ driver supports PCI video cards based on the following S3 chips:
 .TP 12
 .B ViRGE MX+
 86C280
+.TP 12
+.B Trio 3D
+86C365
+.TP 12
+.B Trio 3D/2X
+86C362, 86C368
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
-driver.
+driver.  All options names are case and white space insensitive when
+parsed by the server, for exmaple,  "virge vx" and "VIRGEvx" are equivalent.
 .PP
 The driver auto-detects the chipset type, but the following
 .B ChipSet
@@ -62,18 +69,34 @@ section, and will override the auto-detection:
 .RS 4
 "virge", "86c325", "virge vx", "86c988", "virge dx", "86c375",
 "virge gx", "86c385", "virge gx2", "86c357", "virge mx", "86c260",
-"virge mx+", "86c280".
+"virge mx+", "86c280", "trio 3d", "86c365", "trio 3d/2x", "86c362",
+"86c368".
 .RE
+
 .PP
 The following Cursor
 .B Options
 are supported:
 .TP
-.BI "Option ""HWCursor"" """ boolean """
+.BI "Option ""HWCursor"" [""" boolean """]
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""SWCursor"" """ boolean """
+.BI "Option ""SWCursor"" [""" boolean """]
 Inverse of "HWCursor".  Default: off.
+
+.PP
+The following display
+.B Options
+are supported:
+.TP
+.BI "Option ""ShadowFB"" [""" boolean """]
+Use shadow framebuffer.  Disables HW acceleration.  Default: off.
+.TP
+.BR "Option ""Rotate"" """ cw " | " ccw """
+Rotate the screen CW - clockwise or CCW - counter clockwise.
+Disables HW Acceleration and HW Cursor, uses ShadowFB.
+Default: no rotation.
+
 .PP
 The following video memory
 .B Options
@@ -82,10 +105,13 @@ are supported:
 .BI "Option ""slow_edodram"""
 Switch the standard ViRGE to 2-cycle edo mode. Try this
 if you encounter pixel corruption on the ViRGE. Using this option will
-cause a large decrease in performance.  Default: off
+cause a large decrease in performance.  Default: off.
 .TP
 .BI "Option ""fpm_vram"""
 Switch the ViRGE/VX to fast page mode vram mode.  Default: off.
+.TP
+.BR "Option ""slow_dram " | " fast_dram"""
+Change Trio 3D and 3D/2X memory options.  Default: Use BIOS defaults.
 .TP
 .BR "Option ""early_ras_precharge " | " late_ras_precharge"""
 adjust memory parameters.  One
@@ -99,8 +125,16 @@ is in kHz, and
 .I integer
 <= 100000.  Default: probe the memory clock value,
 and use it at server start.
+.TP
+.BI "Option ""set_refclk"" """ integer """
+sets the ref clock for ViRGE MX, where
+.I integer
+is in kHz.  Default: probe the memory clock value,
+and use it at server start.
+
+
 .PP
-The following acceleration and graphic engine
+The following acceleration and graphics engine
 .B Options
 are supported:
 .TP
@@ -133,11 +167,11 @@ The following PCI bus
 .B Options
 are supported:
 .TP
-.BI "Option ""pci_burst"" """ boolean """
+.BI "Option ""pci_burst"" [""" boolean """]
 will enable PCI burst mode. This should work on all but a
 few broken PCI chipsets, and will increase performance.  Default: off.
 .TP
-.BI "Option ""pci_retry"" """ boolean """
+.BI "Option ""pci_retry"" [""" boolean """]
 will allow the driver to rely on PCI Retry to program the 
 ViRGE registers. 
 .B "pci_burst"
@@ -163,8 +197,9 @@ The following additional
 .B Options
 are supported:
 .TP
-.BI "Option ""ShowCache"" """ boolean """
-Enable or disable viewing offscreen memory.  Default: off.
+.BI "Option ""ShowCache"" [""" boolean """]
+Enable or disable viewing offscreen cache memory.  A
+development debug option.  Default: off.
 
 .SH SEE ALSO
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)

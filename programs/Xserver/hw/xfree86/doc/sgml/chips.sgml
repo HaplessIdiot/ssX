@@ -6,12 +6,12 @@
 
 <!-- Title information -->
 <title> Information for Chips and Technologies Users
-<author> David Bateman (<it>dbateman@eng.uts.edu.au</it>),
-         Egbert Eich (<it>Egbert.Eich@Physik.TH-Darmstadt.DE</it>)
+<author> David Bateman (<email>dbateman@club-internet.fr</email>),
+         Egbert Eich (<email>eich@xfree86.org</email>)
 <date> 19th July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.28 1999/08/28 09:00:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.29 1999/08/28 11:18:16 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -860,8 +860,8 @@ video processor beyond it capabilities won't cause damage.
   If you are having driver-related problems that are not addressed by this
   document, or if you have found bugs in accelerated functions, you can
   try contacting the XFree86 team (the current driver maintainer can be
-  reached at <it>dbateman@eng.uts.edu.au</it> or 
-  <it>Egbert.Eich@Physik.TH-Darmstadt.DE)</it>,
+  reached at <email>dbateman@club-internet.fr</email> or 
+  <email>eich@xfree86.org</email>),
   or post in the Usenet newsgroup "<it>comp.windows.x.i386unix</it>".
 
 <sect> Disclaimer <p>

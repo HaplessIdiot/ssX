@@ -1,7 +1,7 @@
 /* $XConsortium: ct_driver.h /main/3 1996/10/27 11:49:29 kaleb $ */
 /*
- * Modified 1996 by Egbert Eich <Egbert.Eich@Physik.TH-Darmstadt.DE>
- * Modified 1996 by David Bateman <dbateman@ee.uts.edu.au>
+ * Modified 1996 by Egbert Eich <eich@xfree86.org>
+ * Modified 1996 by David Bateman <dbateman@club-internet.fr>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.22 1999/07/19 13:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.25 2000/02/08 13:13:12 eich Exp $ */
 
 
 #ifndef _CT_DRIVER_H_

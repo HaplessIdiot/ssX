@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.18 1999/09/25 14:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.20 2000/01/02 00:18:21 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -766,6 +766,7 @@ CreatePmap:
 	}
 	xfree(newPix);
     } else {
+	shmdesc->refcnt++;
 	AddResource(stuff->pid, ShmPixType, shmdesc);
 	AddResource(stuff->pid, XRT_PIXMAP, newPix);
     }

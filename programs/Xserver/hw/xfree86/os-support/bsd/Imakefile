@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.39 2000/02/13 03:36:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.40 2000/02/29 03:09:25 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -68,13 +68,28 @@ APMSRC = pm_noop.c
 APMOBJ = pm_noop.o
 #endif
 
+#if defined(i386Architecture) || defined(ia64Architecture)
+RES_SRC=stdResource.c
+RES_OBJ=stdResource.o
+#else
+RES_SRC=bsdResource.c
+RES_OBJ=bsdResource.o
+#endif
+
+#if defined(AlphaArchitecture)
+AXP_SRC=bsd_ev56.c
+AXP_OBJ=bsd_ev56.o
+#endif
+
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       stdResource.c stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC)
+       $(RES_SRC) stdPci.c vidmem.c $(JOYSTICK_SRC) sigio.c $(APMSRC) \
+       $(AXP_SRC)
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       stdResource.o stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ)
+       $(RES_OBJ) stdPci.o vidmem.o $(JOYSTICK_OBJ) sigio.o $(APMOBJ) \
+       $(AXP_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi -I$(APINCLUDES) \
@@ -91,6 +106,10 @@ APINCLUDES = $(APDIR)/include
 
 DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES) $(RESDEFINES) \
 	  $(MTRRDEFINES) $(USBMOUSEDEFINES)
+
+#if defined(AlphaArchitecture)
+SpecialObjectRule(bsd_ev56.o, bsd_ev56.c, -mcpu=ev56)
+#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

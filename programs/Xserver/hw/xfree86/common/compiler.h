@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.54 2000/02/17 17:06:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.57 2000/03/03 01:06:37 mvojkovi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -370,7 +370,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #include <stdlib.h>
 #include <asm/types.h>
 #include <asm/system.h>
-#include <asm/io.h>
+#include <sys/io.h>
 #include <asm/unaligned.h>
   
 #define ldq_u(p)        __uldq(p)
@@ -383,19 +383,13 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define mem_barrier()        __asm__ __volatile__ ("mf" ::: "memory")
 #define write_mem_barrier()  __asm__ __volatile__ ("mf" ::: "memory")
 
-#undef inb
-#undef inw
-#undef inl
 #undef outb
 #undef outw
 #undef outl
  
-#define inb(a)		__inb(a)
-#define inw(a)		__inw(a)
-#define inl(a)		__inl(a)
-#define outb(a,b)	__outb(b,a)
-#define outw(a,b)	__outw(b,a)
-#define outl(a,b)	__outl(b,a) 
+#define outb(a,b)	_outb(b,a)
+#define outw(a,b)	_outw(b,a)
+#define outl(a,b)	_outl(b,a) 
 
 #elif (defined(linux) || defined(Lynx)) && defined(__sparc__)
 
