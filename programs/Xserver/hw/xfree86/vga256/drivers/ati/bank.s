@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 2.0tsi 1994.06.07 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.0 1994/06/18 16:28:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -35,10 +35,10 @@
  * by Doug Evans, dje@sspiff.UUCP.
  * ALL DISCLAIMERS APPLY TO MY ADDITIONS AS WELL.
  *
- * Changes to enhance support for the old V3 boards
+ * Changes to enhance support for V3, Mach32 and Mach64 boards
  * by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  * ALL DISCLAIMERS APPLY TO THESE CHANGES ALSO.
- * 
+ *
  * V3 boards use a 18800 chip and are single-banked.  Bank selection is done
  * with bits 1-4 of extended register 1CE, index B2.
  *
@@ -52,6 +52,14 @@
  * D3-D1 = Page select bits 2-0
  * D0    = Reserved (18800-1)
  * D0    = Read page select bit 3 (28800)
+ *
+ * Also, for those boards with more than 1M of video memory (such as some
+ * Mach32's and Mach64's), additional page select bits are defined in Extended
+ * Register 1CE, Index AE, as follows:
+ *
+ * D7-D4 = Reserved
+ * D3-D2 = Read page select bits 5-4
+ * D1-D0 = Page select bits 5-4
  */
 
 #include "assyntax.h"
@@ -69,22 +77,113 @@
  * We have a mirror for the segment register because an I/O read costs so much
  * more time, that is better to keep the value of it in memory.  However, this
  * won't do for a V3 board because there are other bits in the segment select
- * register to worry about.
+ * register to worry about.  Also, the driver needs to reset this mirror during
+ * mode save and restore functions.
  */
-
+	GLOBL	GLNAME(ATIB2Reg)
+GLNAME(ATIB2Reg):
 Segment:
 	D_BYTE 0
- 
+
 /*
  * The functions ...
  */
 
 	SEG_TEXT
 
+/*
+ * Start with the functions used with 28800+ chips.  This includes all the
+ * Mach's.
+ */
 
 	ALIGNTEXT4
 	GLOBL	GLNAME(ATISetRead)
 GLNAME(ATISetRead):
+	SHL_L	(CONST(12),EAX)
+	SHR_W	(CONST(12),AX)
+	MOV_B	(CONTENT(Segment),AH)
+	AND_B	(CONST(0x1E),AH)
+	ROR_B	(CONST(3),AL)
+	OR_B	(AL,AH)
+	MOV_B	(AH,CONTENT(Segment))
+	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_B	(CONST(0xB2),AL)
+	OUT_W
+	SHR_L	(CONST(6),EAX)
+	AND_B	(CONST(0x0C),AH)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_B
+	INC_W	(DX)
+	IN_B
+	AND_B	(CONST(0xF3),AL)
+	OR_B	(AL,AH)
+	DEC_W	(DX)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_W
+	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATISetWrite)
+GLNAME(ATISetWrite):
+	SHL_L	(CONST(12),EAX)
+	SHR_W	(CONST(12),AX)
+	MOV_B	(CONTENT(Segment),AH)
+	AND_B	(CONST(0xE1),AH)
+	SHL_B	(CONST(1),AL)
+	OR_B	(AL,AH)
+	MOV_B	(AH,CONTENT(Segment))
+	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_B	(CONST(0xB2),AL)
+	OUT_W
+	SHR_L	(CONST(8),EAX)
+	AND_B	(CONST(0x03),AH)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_B
+	INC_W	(DX)
+	IN_B
+	AND_B	(CONST(0xFC),AL)
+	OR_B	(AL,AH)
+	DEC_W	(DX)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_W
+	RET
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATISetReadWrite)
+GLNAME(ATISetReadWrite):
+	SHL_L	(CONST(12),EAX)
+	SHR_W	(CONST(12),AX)
+	MOV_B	(AL,AH)
+	SHL_B	(CONST(1),AH)
+	ROR_B	(CONST(3),AL)
+	OR_B	(AL,AH)
+	MOV_B   (AH,CONTENT(Segment))
+	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
+	MOV_B	(CONST(0xB2),AL)
+	OUT_W
+	SHR_L	(CONST(8),EAX)
+	AND_B	(CONST(0x03),AH)
+	MOV_B	(AH,AL)
+	SHL_B	(CONST(2),AL)
+	OR_B	(AL,AH)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_B
+	INC_W	(DX)
+	IN_B
+	AND_B	(CONST(0xF0),AL)
+	OR_B	(AL,AH)
+	DEC_W	(DX)
+	MOV_B	(CONST(0xAE),AL)
+	OUT_W
+	RET
+
+/*
+ * The functions used for 18800-1 chips.
+ */
+
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATIV4V5SetRead)
+GLNAME(ATIV4V5SetRead):
 	AND_L	(CONST(0x0F),EAX)
 	MOV_B	(CONTENT(Segment),AH)
 	AND_B	(CONST(0x1E),AH)
@@ -92,13 +191,13 @@ GLNAME(ATISetRead):
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
 	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
-  	MOV_B	(CONST(0xB2),AL)
+	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
 
-        ALIGNTEXT4
-	GLOBL	GLNAME(ATISetWrite)
-GLNAME(ATISetWrite):
+	ALIGNTEXT4
+	GLOBL	GLNAME(ATIV4V5SetWrite)
+GLNAME(ATIV4V5SetWrite):
 	AND_L	(CONST(0x0F),EAX)
 	MOV_B	(CONTENT(Segment),AH)
 	AND_B	(CONST(0xE1),AH)
@@ -106,23 +205,27 @@ GLNAME(ATISetWrite):
 	OR_B	(AL,AH)
 	MOV_B	(AH,CONTENT(Segment))
 	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
-  	MOV_B	(CONST(0xB2),AL)
+	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
-	
+
 	ALIGNTEXT4
-	GLOBL	GLNAME(ATISetReadWrite)
-GLNAME(ATISetReadWrite):
+	GLOBL	GLNAME(ATIV4V5SetReadWrite)
+GLNAME(ATIV4V5SetReadWrite):
 	AND_L	(CONST(0x0F),EAX)
 	MOV_B	(AL,AH)
 	SHL_B	(CONST(1),AH)
 	ROR_B	(CONST(3),AL)
 	OR_B	(AL,AH)
-        MOV_B   (AH,CONTENT(Segment))
+	MOV_B   (AH,CONTENT(Segment))
 	MOV_W	(CONTENT(GLNAME(ATIExtReg)),DX)
-  	MOV_B	(CONST(0xB2),AL)
+	MOV_B	(CONST(0xB2),AL)
 	OUT_W
 	RET
+
+/*
+ * The function(s) used for 18800 chips.
+ */
 
 	ALIGNTEXT4
 	GLOBL	GLNAME(ATIV3SetRead)
