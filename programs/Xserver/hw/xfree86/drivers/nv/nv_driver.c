@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.96 2002/12/12 00:48:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.97 2003/01/01 02:21:17 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -467,8 +467,8 @@ NVProbe(DriverPtr drv, int flags)
                case 0x0280:
                case 0x0300:
                case 0x0310:
-               case 0x0340:
-               case 0x0350:
+               case 0x0320:
+               case 0x0330:
                    NVChipsets[numUsed].token = token;
                    NVChipsets[numUsed].name = "Unknown NVIDIA chip";
                    NVPciChipsets[numUsed].numChipset = token;
@@ -1247,8 +1247,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case 0x0300:
 	case 0x0310:
-	case 0x0340:
-	case 0x0350:
+	case 0x0320:
+	case 0x0330:
 	case 0x0200:
 	case 0x0250:
 	case 0x0280:
