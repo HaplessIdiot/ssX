@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/svga/Imakefile,v 1.2 1997/09/19 11:24:39 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/svga/Imakefile,v 1.3 1997/11/01 15:05:08 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -46,7 +46,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XF86SRC) \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/xaa \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(XF86SRC)/vga256/enhanced
+	   -I$(XF86SRC)/config -I$(XF86SRC)/vga256/enhanced
 #endif
 
 #if MakeHasPosixVariableSubstitutions

@@ -28,6 +28,7 @@
 NAME EGC16
 CHIPSET EGC
 SERVER EGC
+VENDOR PC9801シリーズ標準
 LINE    Chipset "vga"
 
 # PEGC
@@ -35,6 +36,7 @@ LINE    Chipset "vga"
 NAME PEGC
 CHIPSET PEGC
 SERVER PEGC
+VENDOR PC9821(98Mate)シリーズ標準
 LINE    VideoRam	512
 LINE    Clocks	31.5
 LINE    # Virtual resolution for 640x400
@@ -45,6 +47,7 @@ LINE    # Clocks	28.322
 NAME GA-98NBI
 CHIPSET CL-GD5434
 SERVER GANBWAP
+VENDOR Ｉ・Ｏデータ機器
 LINE    ClockChip	"cirrus"
 LINE    Option	"ga98nb1"
 LINE    # Option	"mmio"
@@ -53,6 +56,7 @@ LINE    # Option	"sw_cursor"
 NAME GA-98NBII
 CHIPSET CL-GD5434
 SERVER GANBWAP
+VENDOR Ｉ・Ｏデータ機器
 LINE    ClockChip	"cirrus"
 LINE    Option	"ga98nb2"
 LINE    # Option	"mmio"
@@ -61,6 +65,7 @@ LINE    # Option	"sw_cursor"
 NAME GA-98NBIV
 CHIPSET CL-GD5434
 SERVER GANBWAP
+VENDOR Ｉ・Ｏデータ機器
 LINE    ClockChip	"cirrus"
 LINE    Option	"ga98nb4"
 LINE    # Option	"mmio"
@@ -69,6 +74,7 @@ LINE    # Option	"sw_cursor"
 NAME WAP-2000/4000
 CHIPSET CL-GD5434
 SERVER GANBWAP
+VENDOR メルコ
 LINE    Option	"wap"
 LINE    # Option	"epsonmemwin"
 
@@ -77,6 +83,7 @@ LINE    # Option	"epsonmemwin"
 NAME PCNKV/PCNKV2/NEC_CIRRUS
 CHIPSET CL-GD5428/5429/5430
 SERVER NKVNEC
+VENDOR PC9821B?(98Fellow)内蔵アクセラレータ
 LINE    # Option	"fast_dram"
 LINE    VideoRam    1024
 
@@ -183,12 +190,14 @@ SEE PCNKV/PCNKV2/NEC_CIRRUS
 NAME WAB-S
 CHIPSET CL-GD5426/5428
 SERVER WABS
+VENDOR メルコ
 LINE    VideoRam	1024
 LINE    # VideoRam	2048
 
 NAME WAB-1000/2000
 CHIPSET CL-GD5428
 SERVER WABS
+VENDOR メルコ
 LINE    VideoRam	1024
 LINE    # VideoRam	2048
 
@@ -200,6 +209,7 @@ SEE WAB-1000/2000
 NAME WAB-EP
 CHIPSET CL-GD5428
 SERVER WABEP
+VENDOR メルコ
 LINE    Option	"med_dram"
 
 # WSNA
@@ -207,6 +217,7 @@ LINE    Option	"med_dram"
 NAME WSN-A2F
 CHIPSET CL-GD5434
 SERVER WSNA
+VENDOR メルコ
 LINE    Option	"med_dram"
 
 # TGUI
@@ -214,6 +225,7 @@ LINE    Option	"med_dram"
 NAME NEC Trident
 CHIPSET TGUI9680/9682
 SERVER TGUI
+VENDOR PC9821X?(Xmate)内蔵アクセラレータ
 LINE    Option	"noaccel"
 LINE    # Option	"Linear"
 LINE    # Option	"med_dram"
@@ -235,12 +247,15 @@ NAME PC9821RsII26/B40
 SEE NEC Trident
 
 NAME PC9821V13/M7
+VENDOR PC9821V(ValueStar)内蔵アクセラレータ
 SEE NEC Trident
 
 NAME PC9821V16/M7
+VENDOR PC9821V(ValueStar)内蔵アクセラレータ
 SEE NEC Trident
 
 NAME PC9821V20/M7
+VENDOR PC9821V(ValueStar)内蔵アクセラレータ
 SEE NEC Trident
 
 NAME PC9821Xa7/C,K
@@ -273,6 +288,7 @@ SEE NEC Trident
 NAME GA-DRV/98
 CHIPSET TGUI9680
 SERVER TGUI
+VENDOR Ｉ・Ｏデータ機器
 LINE    Option	"noaccel"
 LINE    # Option	"med_dram"
 LINE    # Option	"hw_cursor"
@@ -282,6 +298,7 @@ LINE    # Option	"hw_cursor"
 NAME MGA Millennium
 CHIPSET MGA2064W
 SERVER MGA
+VENDOR PC9821X?(Xmate)内蔵アクセラレータ
 LINE    Option	"noaccel"
 
 NAME PC9821Xt13
@@ -316,9 +333,11 @@ NAME PC9821V166/S
 SEE MGA Mystique
 
 NAME PC9821V200/M,S
+VENDOR PC9821V(ValueStar)内蔵アクセラレータ
 SEE MGA Mystique
 
 NAME PC9821V233/M7,M7V
+VENDOR PC9821V(ValueStar)内蔵アクセラレータ
 SEE MGA Mystique
 
 # NECS3
@@ -326,6 +345,7 @@ SEE MGA Mystique
 NAME NEC WAB-A/B
 CHIPSET S3 928
 SERVER NECS3
+VENDOR PC9821A?(98MATE)内蔵アクセラレータ
 LINE    Chipset	"s3_generic"
 LINE    Dacspeed	110
 LINE    Ramdac	"sc15025"
@@ -350,6 +370,7 @@ SEE NEC WAB-A/B
 NAME NEC 864
 CHIPSET S3 864
 SERVER NECS3
+VENDOR PC9821A?(98MATE)内蔵アクセラレータ
 LINE    Chipset	"s3_generic"
 LINE    Option	"necwab"
 LINE    Ramdac	"s3_sdac"
@@ -372,6 +393,7 @@ SEE NEC 864
 NAME PowerWindow 928/801
 CHIPSET S3 928
 SERVER PWSKB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"sc15025"
@@ -384,6 +406,7 @@ LINE    ClockChip	"icd2061a"
 NAME PowerWindow 928II
 CHIPSET S3 928
 SERVER PWSKB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"att20c505"
@@ -399,6 +422,7 @@ LINE    ClockChip	"icd2061a"
 NAME PowerWindow 805i
 CHIPSET S3 805
 SERVER PWSKB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    Ramdac	"s3gendac"
 LINE    Dacspeed	110
@@ -411,6 +435,7 @@ LINE    ClockChip	"s3_sdac"
 NAME PowerWindow 928G
 CHIPSET S3 928
 SERVER PWSKB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"sc15025"
@@ -423,6 +448,7 @@ LINE    ClockChip	"icd2061a"
 NAME PCSKB/PCSKB2
 CHIPSET S3 911/924
 SERVER PWSKB
+VENDOR エプソン
 LINE    Chipset	"s3_generic"
 LINE    Ramdac	"sc15025"
 LINE    Dacspeed	110
@@ -435,6 +461,7 @@ LINE    Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
 NAME PCSKB3/PCSKB4/PCPKB4
 CHIPSET S3 928
 SERVER PWSKB
+VENDOR エプソン
 LINE    Chipset	"s3_generic"
 LINE    Ramdac	"sc15025"
 LINE    # Ramdac	"att20c498"
@@ -450,6 +477,7 @@ LINE    Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
 NAME PowerWindow 928GLB
 CHIPSET S3 928
 SERVER PWLB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"sc15025"
@@ -463,6 +491,7 @@ LINE    ClockChip	"icd2061a"
 NAME PowerWindow 928IILB
 CHIPSET S3 928
 SERVER PWLB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    Ramdac	"att20c505"
@@ -479,6 +508,7 @@ LINE    ClockChip	"icd2061a"
 NAME PowerWindow 964LB
 CHIPSET S3 964
 SERVER PWLB
+VENDOR カノープス
 LINE    Chipset	"s3_generic"
 LINE    Option	"pw_localbus"
 LINE    Option	"number_nine"
@@ -491,6 +521,7 @@ LINE    VideoRam	4096
 NAME GA-968V4/PCI
 CHIPSET S3 968
 SERVER GA968
+VENDOR Ｉ・Ｏデータ機器
 LINE    Chipset	"s3_generic"
 LINE    # Chipset	"mmio_928"
 LINE    VideoRam	4096

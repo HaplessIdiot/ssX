@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.2 1997/02/24 17:46:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.3 1997/02/25 14:21:11 hohndel Exp $ */
 
 
 
@@ -29,7 +29,6 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include "sym.h"
 #include "loader.h"
 
 #define HASHDIV 8

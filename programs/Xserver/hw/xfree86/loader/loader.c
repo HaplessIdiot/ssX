@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.14 1997/06/03 14:12:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.15 1997/06/25 08:25:04 hohndel Exp $ */
 
 
 
@@ -41,7 +41,6 @@
 #include "coff.h"
 
 #include "os.h"
-#include "sym.h"
 #include "loader.h"
 #include "xf86.h"
 #include "xf86Priv.h"
