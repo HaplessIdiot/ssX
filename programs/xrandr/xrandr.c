@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.6 2001/06/11 01:40:14 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.7 2001/06/17 15:18:39 herrb Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  * Copyright © 2001 Compaq Computer Corporation
@@ -53,6 +53,7 @@ usage(void)
   fprintf(stderr, "  -q                or --query\n");
   fprintf(stderr, "  -s <size>         or --size <size>\n");
   fprintf(stderr, "  -v                or --verbose\n");
+  fprintf(stderr, "                    or --screen <screen>\n");
   
   exit(1);
   /*NOTREACHED*/
@@ -78,6 +79,7 @@ main (int argc, char **argv)
   int		size = -1;
   int		dirind = 0;
   int		setit = 0;
+  int		screen = -1;
 
   program_name = argv[0];
   if (argc == 1) query = 1;
@@ -99,6 +101,12 @@ main (int argc, char **argv)
       size = atoi (argv[i]);
       if (size < 0) usage();
       setit = 1;
+      continue;
+    }
+    if (!strcmp ("--screen", argv[i])) {
+      if (++i>=argc) usage ();
+      screen = atoi (argv[i]);
+      if (screen < 0) usage();
       continue;
     }
     if (!strcmp ("-q", argv[i]) || !strcmp ("--query", argv[i])) {
@@ -128,7 +136,16 @@ main (int argc, char **argv)
       fprintf (stderr, "Can't open display %s\n", display_name);
       exit (1);
   }
-  root = DefaultRootWindow (dpy);
+  if (screen < 0)
+    screen = DefaultScreen (dpy);
+  if (screen >= ScreenCount (dpy)) {
+    fprintf (stderr, "Invalid screen number %d (display has %d)\n",
+	     screen, ScreenCount (dpy));
+    exit (1);
+  }
+
+  root = RootWindow (dpy, screen);
+
   sc = XRRGetScreenInfo (dpy, root);
 
   if (sc == NULL) 
