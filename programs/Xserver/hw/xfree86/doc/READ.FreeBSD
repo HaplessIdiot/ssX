@@ -602,18 +602,13 @@
         the Linux distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.20 1996/10/26 09:38:47 dawes Exp $
-
-
-
-
-  $XConsortium: READ.FreeBSD /main/15 1996/10/28 05:42:39 kaleb $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.21 1996/12/23 06:45:54 dawes Exp $
 
 
 
 
 
-
+  $XConsortium: FreeBSD.sgml /main/12 1996/10/28 05:43:08 kaleb $
 
 
 
@@ -623,4 +618,45 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.24 1996/10/26 10:34:51 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

@@ -279,8 +279,13 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.12 1996/05/10 06:58:31 dawes Exp $
-  $XConsortium: README.ati /main/15 1996/05/11 14:50:11 kaleb $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.13 1996/12/23 06:46:23 dawes Exp $
+
+
+
+
+
+  $XConsortium: ati.sgml /main/9 1996/10/19 18:03:54 kaleb $
 
 
 
@@ -323,4 +328,5 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.23 1996/05/10 12:07:54 dawes Exp $
+
+$XFree86$

@@ -230,19 +230,13 @@
   specific code.  You can reach me (Brad Bosch) at brad@Lachman.com.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.4 1996/02/04 09:08:31 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.5 1996/12/23 06:46:20 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.WstDig /main/8 1996/02/21 17:43:59 kaleb $
-
-
-
-
-
-
+  $XConsortium: WstDig.sgml /main/5 1996/02/21 17:46:29 kaleb $
 
 
 
@@ -263,4 +257,10 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.WstDig,v 3.12 1996/02/05 11:22:40 dawes Exp $
+
+
+
+
+
+
+$XFree86$

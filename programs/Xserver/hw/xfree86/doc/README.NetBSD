@@ -1,6 +1,6 @@
   README for XFree86 3.2 on NetBSD and OpenBSD
-  Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
-  Matthieu Herrb
+  Rich  Murphey, David Dawes, Marc  Wandschneider, Mark
+  Weaver, Matthieu Herrb
   Last modified on: 24 October 1996
 
   1.  What and Where is XFree86?
@@ -895,16 +895,32 @@
         machines in preparing the FreeBSD binary release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.41 1996/10/26 09:38:51 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.42 1996/12/23 06:46:06 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.NetBSD /main/31 1996/10/28 05:42:51 kaleb $
+  $XConsortium: NetBSD.sgml /main/26 1996/10/28 05:43:20 kaleb $
 
 
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.51 1996/10/26 10:34:55 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

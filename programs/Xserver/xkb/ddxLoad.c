@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/20 1996/12/02 10:23:54 lehors $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.14 1996/10/17 15:22:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.15 1996/12/23 07:10:08 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +25,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -129,6 +130,10 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
     if (xkm_output_dir[strlen(xkm_output_dir)] != '/') /* hi IBM, Digital */
 	(void) strcat (xkm_output_dir, "/");
     if (XkbBaseDirectory!=NULL) {
+#ifdef __EMX__
+        char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+        int i;
+#endif
 	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
 		+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
 		+strlen(ERROR_PREFIX)+strlen(POST_ERROR_MSG1)
@@ -141,12 +146,23 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 #endif
 	    return False;
 	}
+#ifndef __EMX__
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
+#else
+	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
+	sprintf(cmd,"%s\\xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
+		tmpbase,
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
+		xkm_output_dir,outFile);
+	ErrorF("Command line for XKB is %s\n",cmd);
+#endif
     }
     else {
 	if ((xkbDebugFlags>9?2:1)+(map?strlen(map)+3:0)+strlen(PRE_ERROR_MSG)
@@ -212,6 +228,9 @@ char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
 #ifdef WIN32
 char tmpname[32];
 #endif    
+#ifdef __EMX__
+char *tmpbase;
+#endif
     if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
 	extern char *display;
 	sprintf(keymap,"server-%s",display);
@@ -226,7 +245,13 @@ char tmpname[32];
     strcpy(tmpname, "\\temp\\xkb_XXXXXX");
     (void) mktemp(tmpname);
 #endif
+#ifdef __EMX__
+    char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+#endif
     if (XkbBaseDirectory!=NULL) {
+#ifdef __EMX__
+	int i;
+#endif
 	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
 		+strlen(PRE_ERROR_MSG)+strlen(ERROR_PREFIX)
 		+strlen(POST_ERROR_MSG1)+strlen(xkm_output_dir)
@@ -239,6 +264,7 @@ char tmpname[32];
 	    return False;
 	}
 #ifndef WIN32
+#ifndef __EMX__
 	sprintf(buf,
 	   "%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,
@@ -246,6 +272,16 @@ char tmpname[32];
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap);
+#else
+	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
+	sprintf(buf,
+	  "%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
+		tmpbase,
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		tmpbase,
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
+		xkm_output_dir,keymap);
+#endif
 #else
 	sprintf(buf,
       "%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\" < %s",

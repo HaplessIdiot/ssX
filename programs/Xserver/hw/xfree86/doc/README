@@ -1093,13 +1093,13 @@
   files you need to take from the archive.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.65 1996/11/18 13:11:42 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.66 1996/12/23 06:46:09 dawes Exp $
 
 
 
 
-  $XConsortium: README /main/33 1996/10/28 05:42:43 kaleb $
 
+  $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
 
 
 
@@ -1121,52 +1121,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.65 1996/11/20 14:01:27 dawes Exp $
+$XFree86$

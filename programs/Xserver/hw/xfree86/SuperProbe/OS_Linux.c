@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.8 1996/12/09 11:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.9 1996/12/23 06:31:21 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -59,13 +59,6 @@
 #else
 #define BUS_BASE 0
 #define JENSEN_SHIFT(x) (x)
-#endif
-
-#ifdef __alpha__
-extern unsigned long _bus_base(void) __attribute__((const));
-#define BUS_BASE _bus_base()
-#else
-#define BUS_BASE 0
 #endif
 
 static int VT_fd = -1;

@@ -836,19 +836,13 @@
         with 1MB memory).
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.17 1996/10/26 09:38:57 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.18 1996/12/23 06:46:25 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.cirrus /main/17 1996/10/28 05:43:00 kaleb $
-
-
-
-
-
-
+  $XConsortium: cirrus.sgml /main/12 1996/10/28 05:43:32 kaleb $
 
 
 
@@ -857,4 +851,10 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.27 1996/10/26 10:34:58 dawes Exp $
+
+
+
+
+
+
+$XFree86$

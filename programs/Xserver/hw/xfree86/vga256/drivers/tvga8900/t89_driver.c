@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.52 1996/12/20 06:45:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.53 1996/12/23 06:58:45 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -887,23 +887,6 @@ TVGA8900Probe()
 	vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 #endif /* MONOVGA */
-
-#ifdef MONOVGA
-	if ( (TVGAchipset == TVGA8900C) ||
-	     (TVGAchipset == TVGA8900B) ||
-	     (TVGAchipset == TVGA8800CS) ||
-	     (TVGAchipset == TVGA9000) ||
-	     (TVGAchipset == TVGA9000i) )
-	{
-		if (vga256InfoRec.displayWidth > 1152)
-		{
-			TVGA8900EnterLeave(LEAVE);
-			FatalError("%s %s: Chipset supports a max. width"
-				   " of 1152, Adjust Virtual in XF86Config.\n",
-				   XCONFIG_PROBED, vga256InfoRec.name);
-		}
-	}
-#endif
 
 	if (TVGAchipset >= TGUI9440AGi)
 	{

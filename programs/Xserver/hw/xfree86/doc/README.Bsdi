@@ -351,19 +351,13 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.17 1996/10/16 14:41:10 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.18 1996/12/23 06:45:50 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Bsdi /main/12 1996/10/27 11:47:58 kaleb $
-
-
-
-
-
-
+  $XConsortium: Bsdi.sgml /main/8 1996/10/27 11:05:51 kaleb $
 
 
 
@@ -395,4 +389,10 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.22 1996/10/17 15:18:46 dawes Exp $
+
+
+
+
+
+
+$XFree86$

@@ -262,19 +262,13 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.9 1996/10/20 13:33:12 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.10 1996/12/23 06:45:59 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.Linux /main/12 1996/10/28 04:47:04 kaleb $
-
-
-
-
-
-
+  $XConsortium: Linux.sgml /main/6 1996/10/28 04:47:37 kaleb $
 
 
 
@@ -300,4 +294,39 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.16 1996/10/20 13:39:14 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86$

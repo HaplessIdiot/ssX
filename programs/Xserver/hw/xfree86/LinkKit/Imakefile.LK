@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.34 1996/12/17 20:59:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.35 1996/12/23 06:30:44 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -224,9 +224,6 @@ DDXDIR1 = $(VGADRIVERSRC)
 XF86SVGASUBDIRS = $(VGADRIVERSRC)
 XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o $(XAAOBJS)
 XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) $(XAALIBS) \
-	       $(DRIVERSRC)/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs
-XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o
-XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
 	       $(DRIVERSRC)/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 VGADRIVERS = XF86SvgaDrivers

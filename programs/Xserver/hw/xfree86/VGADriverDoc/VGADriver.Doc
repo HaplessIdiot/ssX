@@ -1,5 +1,6 @@
   How to add an (S)VGA driver to XFree86
-  Copyright (c) 1993, 1994 David E. Wexelblat <dwex@XFree86.org>
+  Copyright (c) 1993, 1994 David E. Wexelblat
+  <dwex@XFree86.org>
   Issue 1.3 - May 29, 1994
 
   1.  Introduction
@@ -61,7 +62,6 @@
   over and above the generic VGA, you will know what information you
   need to obtain from the databook for the new chipset.  Once you have
   this information, you are ready to begin work on your new driver.
-
 
 
   3.  Directory Tree Structure
@@ -1034,18 +1034,13 @@
         (714) 932-4900
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.10 1996/10/23 13:10:05 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.11 1996/12/23 06:46:16 dawes Exp $
 
 
 
 
-  $XConsortium: VGADriver.Doc /main/8 1996/10/28 05:12:05 kaleb $
 
-  $XConsortium: VGADriv.sgml /main/6 1996/01/10 11:12:02 kaleb $
-
-
-
-
+  $XConsortium: VGADriv.sgml /main/9 1996/10/28 05:13:22 kaleb $
 
 
 
@@ -1056,4 +1051,8 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.21 1996/10/23 13:37:45 dawes Exp $
+
+
+
+
+$XFree86$

@@ -560,18 +560,13 @@
   support 16bpp.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.16 1996/08/10 13:06:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.17 1996/12/23 06:46:21 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.agx /main/13 1996/10/19 18:02:19 kaleb $
-
-
-
-
-
+  $XConsortium: agx.sgml /main/9 1996/10/19 18:03:50 kaleb $
 
 
 
@@ -595,4 +590,7 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.31 1996/08/10 13:38:27 dawes Exp $
+
+
+
+$XFree86$

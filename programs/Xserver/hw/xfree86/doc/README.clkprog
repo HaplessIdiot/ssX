@@ -72,7 +72,13 @@
   Klemm <pfk@rz.uni-jena.de>
 
 
-  $XConsortium: README.clkprog /main/8 1996/02/21 17:44:20 kaleb $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.6 1996/12/23 06:46:26 dawes Exp $
+
+
+
+
+
+  $XConsortium: clkprog.sgml /main/3 1996/02/21 17:46:48 kaleb $
 
 
 
@@ -124,4 +130,5 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.clkprog,v 3.13 1996/11/20 14:01:28 dawes Exp $
+
+$XFree86$

@@ -776,13 +776,13 @@
   lynx.cf but it has never been tested.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.10 1996/10/23 13:09:58 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.11 1996/12/23 06:46:00 dawes Exp $
 
 
 
 
 
-  $XConsortium: README.LynxOS /main/10 1996/10/28 05:12:41 kaleb $
+  $XConsortium: LynxOS.sgml /main/10 1996/10/28 05:13:07 kaleb $
 
 
 
@@ -791,4 +791,4 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.LynxOS,v 3.11 1996/10/23 13:37:19 dawes Exp $
+$XFree86$
