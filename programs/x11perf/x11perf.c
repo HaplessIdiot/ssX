@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ****************************************************************************/
-/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.4 2001/01/17 23:45:12 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.5 2001/07/25 15:05:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -645,6 +645,7 @@ CalibrateTest(XParms xp, Test *test, int seconds, double *usecperobj)
 	(*test->proc) (xp, &test->parms, reps);
 	HardwareSync(xp);
 	usecs = ElapsedTime(syncTime);
+	(*test->passCleanup) (xp, &test->parms);
 	(*test->cleanup) (xp, &test->parms);
 	DestroyClipWindows(xp, test->clips);
 	CheckAbort ();
@@ -741,6 +742,8 @@ DestroyPerfGCs(XParms xp)
 {
     XFreeGC(xp->d, xp->fggc);
     XFreeGC(xp->d, xp->bggc);
+    XFreeGC(xp->d, xp->ddfggc);
+    XFreeGC(xp->d, xp->ddbggc);
 }
 
 static unsigned long 
@@ -1306,12 +1309,17 @@ main(int argc, char *argv[])
 	} /* if doit */
     } /* ForEachTest */
 
+    XFreeGC(xparms.d, tgc);
     XDestroyWindow(xparms.d, xparms.w);
-
+    XFree(vinfolist);
+    if (drawToFakeServer)
+      XFreePixmap(xparms.d, tileToQuery);
     /* Restore ScreenSaver to original state. */
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
     XCloseDisplay(xparms.d);
+    free(saveargv);
+    free(doit);
     exit(0);
 }
 

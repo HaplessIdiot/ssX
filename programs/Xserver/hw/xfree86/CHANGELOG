@@ -1,5 +1,14 @@
 XFree86 4.1.99.2 (xx October 2001)
- 438. Fix Maltese entry in xkbcomp/keymap/xfree86 (#4921, Nerijus Baliunas).
+ 445. Big5 encoding fix (#4957, Juliusz Chroboczek).
+ 444. Use DDC sync and DPMS info (#4955, Andrew C Aitchison).
+ 443. Update the i810 XVideo support to double the maximum image width
+      to 1440 (#4933, Philip Pokorny).
+ 442. Fix several memory leaks in x11perf (#4931, Ernie Coskrey, from X11R6.6).
+ 441. Bypass startup VT #1 switching hack for FreeBSD/syscons unless running
+      on a pre-3.1 version of FreeBSD (#4926, Huver).
+ 440. Catch bogus flat panel dimensions in the ati/r128 driver (#4907,
+      Michel Dänzer).
+ 439. Fix Maltese entry in xkbcomp/keymap/xfree86 (#4921, Nerijus Baliunas).
  438. Fix a locale.alias typo (#4920, Nerijus Baliunas).
  437. Documents Options for the Matrox and Neomagic drivers, and makes
       HW/SWcursor generic options (#5021, Dr. Andrew C. Aitchison).
@@ -263,7 +272,7 @@ XFree86 4.1.99.2 (xx October 2001)
       (#4942, Tomohiro Kubota).
  285. Add Big Endian support (PowerPC) to radeon driver (#4934, Ani Joshi).
  284. Fix support for legacy Windows TrueType fonts in Big5 encoding
-      (#4938, Juliusz Chroboczek).
+      (#4938, Joe Man).
  283. Support Radeon 7500, 8500 and Rage128ProII (#4941, ATI Technologies).
  282. Support Trident TGUI96xx and greater with Xv (Alan Hourihane).
  281. XDarwin fixes for Xinerama in Quartz modes:
@@ -14089,4 +14098,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2018 2001/11/03 19:04:06 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2019 2001/11/03 21:24:17 dawes Exp $

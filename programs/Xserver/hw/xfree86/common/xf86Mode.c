@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.40 2001/05/10 10:17:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.41 2001/07/19 02:22:49 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -14,6 +14,8 @@
 #include "mibank.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+
+#include "xf86DDC.h"
 
 /*
  * xf86GetNearestClock --
@@ -668,6 +670,36 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 	return MODE_ERROR;
     }
 
+#ifdef DEBUG
+    ErrorF("xf86CheckModeForMonitor(%p %s, %p %s)\n",
+	   mode, mode->name, monitor, monitor->id);
+#endif
+
+    if (monitor->DDC) {
+	xf86MonPtr DDC = (xf86MonPtr)(monitor->DDC);
+	struct detailed_monitor_section* detMon;
+	struct monitor_ranges *mon_range;
+	int i;
+
+	mon_range = NULL;
+	for (i=0; i<4; i++) {
+	  detMon = &DDC->det_mon[i];
+	  if(detMon->type == DS_RANGES) {
+	    mon_range = &detMon->section.ranges;
+	  }
+	}
+	if (mon_range) {
+	  /* mode->Clock in kHz, DDC in MHz */
+	  if ( mon_range->max_clock<2550 && mode->Clock/1000.0 > mon_range->max_clock ) {
+
+	    xf86Msg(X_INFO, "(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
+		   mode->name, monitor->id,
+		   mode->Clock/1000.0, mon_range->max_clock);
+	    return MODE_CLOCK_HIGH;
+	  }
+	}
+    }
+
     /* Some basic mode validity checks */
     if (0 >= mode->HDisplay || mode->HDisplay > mode->HSyncStart ||
 	mode->HSyncStart >= mode->HSyncEnd || mode->HSyncEnd >= mode->HTotal)
@@ -758,6 +790,11 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 		"called with invalid parameters\n");
 	return MODE_ERROR;
     }
+
+#ifdef DEBUG
+    ErrorF("xf86InitialCheckModeForDriver(%p, %p %s, %p, 0x%x, %d, %d, %d)\n",
+	   scrp, mode, mode->name , clockRanges, strategy, maxPitch,  virtualX, virtualY);
+#endif
 
     /* Some basic mode validity checks */
     if (0 >= mode->HDisplay || mode->HDisplay > mode->HSyncStart ||
@@ -1097,6 +1134,15 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     ClockRangePtr cp;
     ClockRangesPtr storeClockRanges;
 
+#ifdef DEBUG
+    ErrorF("xf86ValidateModes(%p, %p, %p, %p,\n\t\t  %p, %d, %d, %d, %d, %d, %d, %d, %d, 0x%x)\n",
+	   scrp, availModes, modeNames, clockRanges,
+	   linePitches, minPitch, maxPitch, pitchInc,
+	   minHeight, maxHeight, virtualX, virtualY,
+	   apertureSize, strategy
+	   );
+#endif
+
     /* Some sanity checking */
     if (scrp == NULL || scrp->name == NULL || !scrp->monitor ||
 	(!scrp->progClock && scrp->numClocks == 0)) {
@@ -1118,6 +1164,63 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if ((virtualX > 0) != (virtualY > 0)) {
 	ErrorF("xf86ValidateModes: called with invalid virtual resolution\n");
 	return -1;
+    }
+
+    /* Probe monitor so that we can enforce/warn about its limits */
+    if (scrp->monitor->DDC) {
+      MonPtr monitor = scrp->monitor;
+      xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC);
+      struct detailed_monitor_section* detMon;
+      struct monitor_ranges *mon_range;
+      int i;
+
+      mon_range = NULL;
+      for (i=0; i<4; i++) {
+	detMon = &DDC->det_mon[i];
+	if(detMon->type == DS_RANGES) {
+	  mon_range = &detMon->section.ranges;
+	}
+      }
+      if (mon_range) {
+#if DEBUG
+	ErrorF("DDC - Max clock %d, Hsync %d-%d kHz - Vrefresh %d-%d Hz\n",
+	       mon_range->max_clock, mon_range->min_h, mon_range->max_h, mon_range->min_v, mon_range->max_v );
+#endif
+#define DDC_SYNC_TOLERANCE SYNC_TOLERANCE
+	if (monitor->nHsync == 0) {
+	  monitor->nHsync = 1;
+	  monitor->hsync[0].lo = mon_range->min_h;
+	  monitor->hsync[0].hi = mon_range->max_h;
+	  xf86DrvMsg(scrp->scrnIndex, X_PROBED, "Hsync range %g-%gkHz\n",
+		     monitor->hsync[0].lo, monitor->hsync[0].hi );  
+	} else {
+	  for (i=0; i<monitor->nHsync; i++) {
+	    if ( (1.0-DDC_SYNC_TOLERANCE)*mon_range->min_h > monitor->hsync[i].lo ||
+		 (1.0+DDC_SYNC_TOLERANCE)*mon_range->max_h < monitor->hsync[i].hi )
+	      {
+		xf86DrvMsg(scrp->scrnIndex, X_WARNING, "config file hsync range %g-%gkHz not within DDC hsync range %d-%dkHz\n",
+			   monitor->hsync[i].lo, monitor->hsync[i].hi, mon_range->min_h, mon_range->max_h);
+	      }
+	  }
+	}
+
+	if (monitor->nVrefresh == 0) {
+	  monitor->nVrefresh = 1;
+	  monitor->vrefresh[0].lo = mon_range->min_v;
+	  monitor->vrefresh[0].hi = mon_range->max_v;
+	  xf86DrvMsg(scrp->scrnIndex, X_PROBED, "vrefresh range %g-%gHz\n",
+		     monitor->vrefresh[0].lo, monitor->vrefresh[0].hi);  
+	} else {
+	  for (i=0; i<monitor->nVrefresh; i++) {
+	    if ( (1.0-DDC_SYNC_TOLERANCE)*mon_range->min_v > monitor->vrefresh[0].lo ||
+		 (1.0+DDC_SYNC_TOLERANCE)*mon_range->max_v < monitor->vrefresh[0].hi )
+	      {
+		xf86DrvMsg(scrp->scrnIndex, X_WARNING, "config file vrefresh range %g-%gHz not within DDC vrefresh range %d-%dHz\n",
+			   monitor->vrefresh[i].lo, monitor->vrefresh[i].hi, mon_range->min_v, mon_range->max_v);
+	      }
+	  }
+	}
+      } /* if (mon_range) */
     }
 
     /*
@@ -1292,6 +1395,11 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    status = xf86InitialCheckModeForDriver(scrp, p, clockRanges,
 						   strategy, maxPitch,
 						   virtualX, virtualY);
+
+	    if (status == MODE_OK) {
+	      status = xf86CheckModeForMonitor(p, scrp->monitor);
+	    }
+
 	    if (status == MODE_OK) {
 		new = xnfalloc(sizeof(DisplayModeRec));
 		*new = *p;

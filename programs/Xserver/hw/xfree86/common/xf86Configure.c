@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.63 2001/08/21 19:23:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.64 2001/08/25 00:09:00 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -770,6 +770,10 @@ configureDDCMonitorSection (int screennum)
 			ConfiguredMonitor->det_mon[i].section.ranges.max_v;
 		break;
 	}
+    }
+
+    if (ConfiguredMonitor->features.dpms) {
+      ptr->mon_option_lst = xf86addNewOption(ptr->mon_option_lst, "DPMS", NULL);
     }
 
     return ptr;

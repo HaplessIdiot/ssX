@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.116 2001/08/21 19:23:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.117 2001/10/28 03:33:18 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -880,7 +880,7 @@ xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 
 /*
  * Set the DPI from the command line option.  XXX should allow it to be
- * calculated from the witdhmm/heightmm values.
+ * calculated from the widthmm/heightmm values.
  */
 
 #undef MMPERINCH

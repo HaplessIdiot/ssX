@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.18 2001/06/15 21:22:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.19 2001/09/27 08:25:04 alanh Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -81,8 +81,9 @@ static void I810BlockHandler(int, pointer, pointer, pointer);
 
 static Atom xvBrightness, xvContrast, xvColorKey;
 
-#define IMAGE_MAX_WIDTH		720
-#define IMAGE_MAX_HEIGHT	576
+#define IMAGE_MAX_WIDTH		1440
+#define IMAGE_FAST_WIDTH	720
+#define IMAGE_MAX_HEIGHT	1080
 #define Y_BUF_SIZE		(IMAGE_MAX_WIDTH * IMAGE_MAX_HEIGHT)
 
 #define OVERLAY_UPDATE(p)	OUTREG(0x30000, p | 0x80000000);
@@ -754,6 +755,13 @@ I810DisplayVideo(
 	break;
     }
 
+    /* wide video formats (>720 pixels) are special */
+    if( swidth > IMAGE_FAST_WIDTH ) {
+	overlay->OV0CONF = 1; /* one 1440 pixel line buffer */ 
+    } else {
+	overlay->OV0CONF = 0; /* two 720 pixel line buffers */
+    }
+
     overlay->SHEIGHT = height | (height << 15);
     overlay->DWINPOS = (dstBox->y1 << 16) | dstBox->x1;
     overlay->DWINSZ = ((dstBox->y2 - dstBox->y1) << 16) | 
@@ -1083,8 +1091,8 @@ I810QueryImageAttributes(
 ){
     int size, tmp;
 
-    if(*w > 720) *w = 720;
-    if(*h > 576) *h = 576;
+    if(*w > IMAGE_MAX_WIDTH) *w = IMAGE_MAX_WIDTH;
+    if(*h > IMAGE_MAX_HEIGHT) *h = IMAGE_MAX_HEIGHT;
 
     *w = (*w + 1) & ~1;
     if(offsets) offsets[0] = 0;

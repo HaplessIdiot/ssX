@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_simple.c,v 1.4 2000/11/29 08:58:20 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/do_simple.c,v 1.5 2001/01/17 23:45:12 dawes Exp $ */
 
 #ifndef VMS
 #include <X11/Xatom.h>
@@ -106,5 +106,6 @@ DoGetProperty(XParms xp, Parms p, int reps)
 		False, AnyPropertyType, &actual_type, &actual_format,
 		&actual_length, &bytes_remaining, &prop);
 	CheckAbort ();
+	XFree(prop);
     }
 }
