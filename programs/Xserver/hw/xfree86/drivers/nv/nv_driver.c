@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.23 1999/11/26 21:46:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.24 1999/12/13 02:26:21 robin Exp $ */
 
 #include "nv_include.h"
 
@@ -1577,7 +1577,7 @@ NVSave(ScrnInfoPtr pScrn)
     vgaRegPtr vgaReg = &pVga->SavedReg;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVSave\n"));
-    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE|VGA_SR_FONTS);
+    vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP|VGA_SR_MODE|VGA_SR_FONTS);
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
 }
 
