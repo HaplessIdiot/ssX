@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.19 2000/08/11 19:10:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.20 2000/11/14 17:33:00 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -32,6 +32,13 @@
  *
  * Many thanks to Dave Fleck from Wacom for the help provided to
  * build this driver.
+ *
+ * Modified for Linux USB by MATSUMURA Namihiko.
+ * Daniel Egger, Germany. <egger@suse.de>,
+ * Frederic Lepied <lepied@xfree86.org>.
+ * Brion Vibber <brion@pobox.com>,
+ * Aaron Optimizer Digulla <digulla@hepe.com> 
+ *
  */
 
 /*
@@ -49,7 +56,19 @@
  *
  */
 
-static const char identification[] = "$Identification: 19 $";
+static const char identification[] = "$Identification: 20 $";
+
+#ifdef LINUX_INPUT
+#include <asm/types.h>
+#include <linux/input.h>
+
+#ifndef O_NDELAY
+#ifndef O_NONBLOCK
+#define O_NONBLOCK      04000
+#endif
+#define O_NDELAY	O_NONBLOCK
+#endif
+#endif
 
 #include <xf86Version.h>
 
@@ -291,6 +310,7 @@ typedef struct _WacomCommonRec
     WacomDeviceState	wcmDevStat[2];	/* device state for each tool */
     int			wcmInitNumber;  /* magic number for the init phasis */
     unsigned int	wcmLinkSpeed;   /* serial link speed */
+    Bool		(*wcmOpen)(LocalDevicePtr /*local*/); /* function used to open the line (serial or USB) */
 } WacomCommonRec, *WacomCommonPtr;
 
 /******************************************************************************
@@ -800,7 +820,13 @@ xf86WcmConfig(LocalDevicePtr    *array,
 	    break;
 
 	case USB:
-	    /*  local->read_input=xf86WcmReadUSBInput; */
+#ifdef LINUX_INPUT
+	    local->read_input=xf86WcmReadUSBInput;
+	    common->wcmOpen=xf86WcmUSBOpen;
+	    ErrorF("%s Wacom reading USB link\n", XCONFIG_GIVEN);
+#else
+	    ErrorF("The USB version of the driver isn't available for your platform\n");
+#endif
 	    break;
 	    
 	case EOF:
@@ -1735,15 +1761,15 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    if (common->wcmMaxZ == 512) {
 		z = z*4 + ((common->wcmData[0] & ZAXIS_BIT) >> 1);
 
-		if (common->wcmData[6] & ZAXIS_SIGN_BIT) {
-		    z /= 2;
+		if (!(common->wcmData[6] & ZAXIS_SIGN_BIT)) {
+		    z += 256;
 		}
 		DBG(10, ErrorF("graphire pressure(%c)=%d\n",
 			       (common->wcmData[6] & ZAXIS_SIGN_BIT) ? '-' : '+', z));
 	    }
 	    else {
-		if (common->wcmData[6] & ZAXIS_SIGN_BIT) {
-		    z /= 2;
+		if (!(common->wcmData[6] & ZAXIS_SIGN_BIT)) {
+		    z += (common->wcmMaxZ / 2);
 		}
 	    }
 	    
@@ -2055,6 +2081,237 @@ xf86WcmReadInput(LocalDevicePtr         local)
     DBG(7, ErrorF("xf86WcmReadInput END   local=0x%x priv=0x%x index=%d\n",
 		  local, priv, common->wcmIndex));
 }
+
+#ifdef LINUX_INPUT
+/*
+ ***************************************************************************
+ *
+ * xf86WcmReadUSBInput --
+ *	Read the new events from the device, and enqueue them.
+ *
+ ***************************************************************************
+ */
+static void
+xf86WcmReadUSBInput(LocalDevicePtr         local)
+{
+    WacomDevicePtr	priv = (WacomDevicePtr) local->private;
+    WacomCommonPtr	common = priv->common;
+    int device = common->wcmIndex;
+    int serial;
+    int is_proximity;
+    int x;
+    int y;
+    int pressure;
+    int buttons;
+    int tilt_x;
+    int tilt_y;
+    int wheel;
+
+    ssize_t              len;
+    int                  idx;
+    struct input_event * event;
+    char                 eventbuf[BUFFER_SIZE];
+#define MOD_BUTTONS(bit, value) \
+    { int _b=bit, _v=value; buttons = (((_v) != 0) ? (buttons | _b) : (buttons & ~ _b)); }
+
+    SYSCALL(len = read(local->fd, eventbuf, BUFFER_SIZE));
+
+    if (len <= 0) {
+	ErrorF("Error reading wacom device : %s\n", strerror(errno));
+	return;
+    }
+    
+    for (event=(struct input_event *)eventbuf;
+	 event<(struct input_event *)(eventbuf+len); event++) {
+	DBG(10, ErrorF("event->type=%d\n", event->type));
+	
+	switch (event->type) {
+	case EV_ABS:
+	    switch (event->code) {
+	    case ABS_X:
+		x = event->value;
+		break;
+
+	    case ABS_Y:
+		y = event->value;
+		break;
+
+	    case ABS_TILT_X:
+		tilt_x = event->value;
+		break;
+
+	    case ABS_TILT_Y:
+		tilt_y = event->value;
+		break;
+
+	    case ABS_PRESSURE:
+		pressure = event->value;
+		break;
+
+	    case ABS_DISTANCE:
+		/* This is not sent by the driver */
+		break;
+	    }
+	    break; /* EV_ABS */
+
+	case EV_REL:
+	    switch (event->code) {
+	    case REL_WHEEL:
+		/* FIXME */
+		break;
+	    }
+	    break; /* EV_REL */
+
+	case EV_KEY:
+	    switch (event->code) {
+	    case BTN_TOOL_PEN:
+		device = STYLUS_ID;
+		is_proximity = (event->value != 0);
+		break;
+
+	    case BTN_TOOL_RUBBER:
+		device = ERASER_ID;
+		is_proximity = (event->value != 0);
+		break;
+
+	    case BTN_TOOL_MOUSE:
+		device = CURSOR_ID;
+		is_proximity = (event->value != 0);
+		break;
+
+	    case BTN_TOUCH:
+		MOD_BUTTONS (1, event->value);
+		break;
+
+	    case BTN_STYLUS:
+		MOD_BUTTONS (2, event->value);
+		break;
+
+	    case BTN_STYLUS2:
+		MOD_BUTTONS (4, event->value);
+		break;
+
+	    case BTN_LEFT:
+		MOD_BUTTONS (1, event->value);
+		break;
+
+	    case BTN_RIGHT:
+		MOD_BUTTONS (2, event->value);
+		break;
+
+	    case BTN_MIDDLE:
+		MOD_BUTTONS (4, event->value);
+		break;
+	    }
+	    break; /* EV_KEY */
+	} 
+
+#if 0
+    if ((priv->oldX !=  -1) &&
+	(ABS(x - priv->oldX) <= common->wcmSuppress) &&
+	(ABS(y - priv->oldY) <= common->wcmSuppress) &&
+	(ABS(pressure - priv->oldZ) < 3) &&
+	(ABS(tilt_x - priv->oldTiltX) < 3) &&
+	(ABS(tilt_y - priv->oldTiltY) < 3)) {
+	DBG(10, ErrorF("filtered\n"));
+	continue;
+    }
+#endif
+    
+    for (idx=0; idx<common->wcmNumDevices; idx++) {
+	WacomDevicePtr dev;
+	int            id;
+	
+	dev = common->wcmDevices[idx]->private;
+	id  = DEVICE_ID (dev->flags);
+
+	/* Find the device the current events are meant for */
+	if (id == device) {
+	    xf86WcmSendEvents(common->wcmDevices[idx],
+			device,
+			serial,
+			(device == STYLUS_ID || device == ERASER_ID),
+			!!(buttons),
+			is_proximity,
+			x, y, pressure, buttons,
+			tilt_x, tilt_y, wheel
+			);
+	}
+    }
+    priv->oldX = x;
+    priv->oldY = y;
+    priv->oldZ = pressure;
+    priv->oldTiltX = tilt_x;
+    priv->oldTiltY = tilt_y;
+    } 
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86WcmUSBOpen --
+ *
+ ***************************************************************************
+ */
+static Bool
+xf86WcmUSBOpen(LocalDevicePtr	local)
+{
+    int			err = 0;
+    WacomDevicePtr	priv = (WacomDevicePtr)local->private;
+    WacomCommonPtr	common = priv->common;
+    
+    SYSCALL(local->fd = open(common->wcmDevice, O_RDONLY|O_NDELAY, 0));
+    if (local->fd == -1) {
+	ErrorF("Error opening %s : %s\n", common->wcmDevice, strerror(errno));
+	return !Success;
+    }
+
+    DBG(2, ErrorF("setup is max X=%d max Y=%d resol X=%d resol Y=%d\n",
+		  common->wcmMaxX, common->wcmMaxY, common->wcmResolX,
+		  common->wcmResolY));
+  
+    /* send the tilt mode command after setup because it must be enabled */
+    /* after multi-mode to take precedence */
+    if (HANDLE_TILT(common)) {
+      /* Unfortunately, the USB driver doesn't allow to send this
+       * command to the tablet. Any other solutions ? */
+	DBG(2, ErrorF("Sending tilt mode order\n"));
+    }
+  
+    {
+	if (common->wcmSuppress < 0) {
+	    common->wcmSuppress = 0;
+	} else {
+	    if (common->wcmSuppress > 100) {
+		common->wcmSuppress = 99;
+	    }
+	}
+	/* Cannot send WC_SUPPRESS to the table. Will have to do
+	 * this manually. */
+    }
+    
+    priv->topX = 0;
+    priv->bottomX = common->wcmMaxX;
+    priv->topY = 0;
+    priv->bottomY = common->wcmMaxY;
+
+    if (xf86Verbose)
+	ErrorF("%s Wacom tablet maximum X=%d maximum Y=%d "
+	       "X resolution=%d Y resolution=%d suppress=%d%s\n",
+	       XCONFIG_PROBED, common->wcmMaxX, common->wcmMaxY,
+	       common->wcmResolX, common->wcmResolY, common->wcmSuppress,
+	       HANDLE_TILT(common) ? " Tilt" : "");
+  
+    if (err < 0) {
+        ErrorF("ERROR: %d\n", err);
+	SYSCALL(close(local->fd));
+	return !Success;
+    }
+
+    return Success;
+}
+
+#endif /* LINUX_INPUT */
 
 /*
  ***************************************************************************
@@ -2523,7 +2780,7 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
     if (local->fd < 0) {
         if (common->wcmInitNumber > 2 ||
 	    priv->initNumber == common->wcmInitNumber) {
-	    if (xf86WcmOpen(local) != Success) {
+	    if (common->wcmOpen(local) != Success) {
 	        if (local->fd >= 0) {
 		    SYSCALL(close(local->fd));
 	        }
@@ -3025,6 +3282,7 @@ xf86WcmAllocate(char *  name,
     common->wcmThreshold = INVALID_THRESHOLD; /* button 1 threshold for some tablet models */
     common->wcmInitNumber = 0;	        /* magic number for the init phasis */
     common->wcmLinkSpeed = 9600;        /* serial link speed */
+    common->wcmOpen = xf86WcmOpen;		/* function used to open the line (serial or USB) */
     return local;
 }
 
@@ -3303,8 +3561,14 @@ xf86WcmInit(InputDriverPtr	drv,
 	common->wcmFlags |= TILT_FLAG;
     }
 
-    if (xf86SetBoolOption(local->options, "Usb", 0)) {
-	/*local->read_input = xf86WcmReadUSBInput;*/
+    if (xf86SetBoolOption(local->options, "USB", 0)) {
+#ifdef LINUX_INPUT
+	local->read_input=xf86WcmReadUSBInput;
+	common->wcmOpen=xf86WcmUSBOpen;
+	xf86Msg(X_CONFIG, "%s: reading USB link\n", dev->identifier);
+#else
+	ErrorF("The USB version of the driver isn't available for your platform\n");
+#endif
     }
 
     if (xf86SetBoolOption(local->options, "KeepShape", 0)) {

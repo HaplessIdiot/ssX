@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.18 2000/10/27 18:30:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.19 2000/11/28 18:49:39 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -110,21 +110,8 @@ static CTDataRec default_ct_data[] =
     { "ISO10646-1",         /* UTF-8               196   */ "\033%G"  },
 
     /* Encodings without ISO-IR assigned escape sequence */
-    { "KOI8-R:GR",           "\033%/1\200\210koi8-r\002"},
-    { "KOI8-U:GR",           "\033%/1\200\211koi8-u\002"},
-    { "KOI8-C:GR",           "\033%/1\200\210koi8-c\002"},
-    { "TATAR-CYR:GR",        "\033%/1\200\210tatar-cyr\002"},
-    { "ARMSCII-8:GR",        "\033%/1\200\210armscii-8\002"},
-    { "IBM-CP1133:GR",       "\033%/1\200\210ibm-cp1133\002"},
-    { "MULELAO-1:GR",        "\033%/1\200\210mulelao-1\002"},
-    { "VISCII1.1-1:GR",      "\033%/1\200\210viscii1.1-1\002"},
-    { "TCVN-5712:GR",        "\033%/1\200\210tcvn-5712\002"},
-    { "GEORGIAN-ACADEMY:GR", "\033%/1\200\210georgian-academy\002"},
-    { "GEORGIAN-PS:GR",      "\033%/1\200\210georgian-ps\002"},
-    { "ISO8859-9E:GR",       "\033%/1\200\210iso8859-9e\002"},
-    { "MICROSOFT-CP1251:GR", "\033%/1\200\210microsoft-cp1251\002"},
-    { "MICROSOFT-CP1255:GR", "\033%/1\200\210microsoft-cp1255\002"},
-    { "MICROSOFT-CP1256:GR", "\033%/1\200\210microsoft-cp1256\002"},
+    /* must be defined in XLC_LOCALE files */
+
     /* Backward compatibility with XFree86 3.x */
     { "ISO8859-14:GR",       "\033%/1\200\213iso8859-14\002"},
     { "ISO8859-15:GR",       "\033%/1\200\213iso8859-15\002"},

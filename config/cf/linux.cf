@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.147 2000/11/30 23:29:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.148 2000/12/01 13:20:31 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -197,6 +197,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 # ifndef HasLibCrypt
 #  define HasLibCrypt		NO
+# endif
+#endif
+
+/* <linux/input.h> support mainly for USB support */
+#ifndef HasLinuxInput
+# if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
+#  define HasLinuxInput YES
 # endif
 #endif
 

@@ -4,7 +4,7 @@ XCOMM	This file contains locale database file name
 XCOMM	The first word is the locale database file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.dir,v 1.16 2000/11/06 19:24:02 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.dir,v 1.17 2000/11/27 17:45:54 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -122,7 +122,6 @@ iso8859-1/XLC_LOCALE	is_IS.ISO8859-1
 iso8859-15/XLC_LOCALE	is_IS.ISO8859-15
 iso8859-1/XLC_LOCALE	it_CH.ISO8859-1
 iso8859-1/XLC_LOCALE	it_IT.ISO8859-1
-nunacom-8/XLC_LOCALE	iu_CA.NUNACOM-8
 ja/XLC_LOCALE		ja_JP.eucJP
 ja.SJIS/XLC_LOCALE	ja_JP.SJIS
 ja.JIS/XLC_LOCALE	ja_JP.JIS7
@@ -200,7 +199,7 @@ zh/XLC_LOCALE		zh_CN.eucCN
 zh/XLC_LOCALE		zh_CN.GB2312
 zh_TW.big5/XLC_LOCALE	zh_TW.big5
 zh_TW.big5/XLC_LOCALE	zh_TW.Big5
-zh_TW.cns11643/XLC_LOCALE	zh_TW.eucTW
+zh_TW/XLC_LOCALE	zh_TW.eucTW
 XCOMM Note: The UTF-8 locales don't work correctly yet. Work in progress.
 en_US.UTF-8/XLC_LOCALE	af_ZA.UTF-8
 en_US.UTF-8/XLC_LOCALE	ar_AA.UTF-8
@@ -457,7 +456,6 @@ iso8859-1/XLC_LOCALE:	is_IS.ISO8859-1
 iso8859-15/XLC_LOCALE:	is_IS.ISO8859-15
 iso8859-1/XLC_LOCALE:	it_CH.ISO8859-1
 iso8859-1/XLC_LOCALE:	it_IT.ISO8859-1
-nunacom-8/XLC_LOCALE:	iu_CA.NUNACOM-8
 ja/XLC_LOCALE:		ja_JP.eucJP
 ja.SJIS/XLC_LOCALE:	ja_JP.SJIS
 ja.JIS/XLC_LOCALE:	ja_JP.JIS7
@@ -534,7 +532,7 @@ zh/XLC_LOCALE:		zh_CN.eucCN
 zh/XLC_LOCALE:		zh_CN.GB2312
 zh_TW.big5/XLC_LOCALE:	zh_TW.big5
 zh_TW.big5/XLC_LOCALE:	zh_TW.Big5
-zh_TW.cns11643/XLC_LOCALE:	zh_TW.eucTW
+zh_TW/XLC_LOCALE:	zh_TW.eucTW
 XCOMM Note: The UTF-8 locales don't work correctly yet. Work in progress.
 en_US.UTF-8/XLC_LOCALE:	af_ZA.UTF-8
 en_US.UTF-8/XLC_LOCALE:	ar_AA.UTF-8

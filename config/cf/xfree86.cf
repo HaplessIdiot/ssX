@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.328 2000/11/29 15:51:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.329 2000/12/01 00:24:30 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -49,6 +49,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				elographics magellan citron \
 				microtouch mutouch spaceorb summa wacom void
 #endif
+#endif
+
+/* <linux/input.h> support mainly for USB support */
+#ifndef HasLinuxInput
+# define HasLinuxInput NO
 #endif
 
 /* OS.cf files may set this for OS-specific drivers */
