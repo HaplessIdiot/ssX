@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xcursorgen/xcursorgen.c,v 1.5 2002/10/16 15:35:17 tsi Exp $ */
+/* $XFree86: xc/programs/xcursorgen/xcursorgen.c,v 1.6 2002/10/21 18:36:45 keithp Exp $ */
 /*
  * xcursorgen.c
  *
@@ -132,11 +132,18 @@ premultiply_data (png_structp png, png_row_infop row_info, png_bytep data)
 
   for (i = 0; i < row_info->rowbytes; i += 4)
     {
-      unsigned char *b = &data[i];
-      unsigned int  alpha = b[3];
-      b[0] = (b[0] * alpha) / 255;
-      b[1] = (b[1] * alpha) / 255;
-      b[2] = (b[2] * alpha) / 255;
+	unsigned char  *base = &data[i];
+	unsigned char  blue = base[0];
+	unsigned char  green = base[1];
+	unsigned char  red = base[2];
+	unsigned char  alpha = base[3];
+	XcursorPixel   p;
+
+	red = (unsigned) red * (unsigned) alpha / 255;
+	green = (unsigned) green * (unsigned) alpha / 255;
+	blue = (unsigned) blue * (unsigned) alpha / 255;
+	p = (alpha << 24) | (red << 16) | (green << 8) | (blue << 0);
+	memcpy (base, &p, sizeof (XcursorPixel));
     }
 }
 
