@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.8 1999/12/11 19:25:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.16 2000/05/29 21:47:37 mvojkovi Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -193,6 +193,9 @@ xf86XVQueryOffscreenImages(
    int *num
 );
    
+XF86VideoAdaptorPtr xf86XVAllocateVideoAdaptorRec(ScrnInfoPtr pScrn);
+
+void xf86XVFreeVideoAdaptorRec(XF86VideoAdaptorPtr ptr);
 
 /*** These are DDX layer privates ***/
 

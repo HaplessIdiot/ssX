@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.16 1999/12/17 02:45:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.25 2000/05/31 00:42:26 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -156,6 +156,19 @@ xf86XVListGenericAdaptors(
     }
     return num;
 }
+
+XF86VideoAdaptorPtr
+xf86XVAllocateVideoAdaptorRec(ScrnInfoPtr pScrn)
+{
+    return xcalloc(1, sizeof(XF86VideoAdaptorRec));
+}
+
+void
+xf86XVFreeVideoAdaptorRec(XF86VideoAdaptorPtr ptr)
+{
+    xfree(ptr);
+}
+
 
 Bool
 xf86XVScreenInit(
