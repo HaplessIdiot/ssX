@@ -32,7 +32,7 @@
    promote the sale, use or other dealings in this Software without
    prior written authorization.
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.1 2003/11/01 08:13:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzKeyboard.c,v 1.2 2004/01/19 01:22:47 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -72,6 +72,7 @@ const static struct {
     {60,  XK_Shift_R},
     {61,  XK_Alt_R},
     {62,  XK_Control_R},
+    {63,  XK_Meta_R},
 
     {122, XK_F1},
     {120, XK_F2},
