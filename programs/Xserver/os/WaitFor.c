@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.20 1998/10/04 09:39:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.21 1999/03/07 11:40:48 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -250,11 +250,14 @@ WaitForSomething(pClientsReady)
 #ifdef DPMSExtension
 	    if (DPMSEnabled)
 	    {
-		if (standbyTimeout > 0 && timeout > standbyTimeout)
+		if (standbyTimeout > 0 
+		    && (timeout <= 0 || timeout > standbyTimeout))
 		    timeout = standbyTimeout;
-		if (suspendTimeout > 0 && timeout > suspendTimeout)
+		if (suspendTimeout > 0 
+		    && (timeout <= 0 || timeout > suspendTimeout))
 		    timeout = suspendTimeout;
-		if (offTimeout > 0 && timeout > offTimeout)
+		if (offTimeout > 0 
+		    && (timeout <= 0 || timeout > offTimeout))
 		    timeout = offTimeout;
 	    }
 #endif
