@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.6 1997/01/23 11:04:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.8 1997/04/08 13:16:52 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -24,6 +24,46 @@ xf86DoBitBlt(
     DDXPointPtr		pptSrc,
     unsigned int 	planemask,
     int			bitplane
+#endif
+);
+
+void
+xf86DoImageWrite(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pSrc, 
+    DrawablePtr	    pDst,
+    int		    alu,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc,
+    unsigned int    planemask,
+    int		    bitPlane
+#endif
+);
+
+void
+xf86DoImageWrite24bpp(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pSrc, 
+    DrawablePtr	    pDst,
+    int		    alu,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc,
+    unsigned int    planemask,
+    int		    bitPlane
+#endif
+);
+
+void
+xf86ImageWrite(
+#if NeedFunctionPrototypes
+    int x,
+    int y,
+    int w,
+    int h,
+    void *src,
+    int srcwidth,
+    int rop,
+    unsigned planemask
 #endif
 );
 

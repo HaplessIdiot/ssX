@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.22 1997/06/20 09:24:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.23 1997/06/25 08:25:10 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -560,7 +560,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     	        pci->x += 64 - mod64;
     	    }
     	}
-        xf86AccelInfoRec.ImageWrite(x, y, 64, 1, buf, 64 * bytespp,
+        xf86ImageWrite(x, y, 64, 1, buf, 64 * bytespp,
             GXcopy, 0xFFFFFFFF);
         DEALLOCATE_LOCAL(buf2);
         DEALLOCATE_LOCAL(buf);
@@ -569,7 +569,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
     /* Make it two copies. */
     xf86memcpy(buf + 64 * bytespp, buf, 64 * bytespp);
     /* Write to video memory. */
-    xf86AccelInfoRec.ImageWrite(x, y, 128, 1, buf, 128 * bytespp,
+    xf86ImageWrite(x, y, 128, 1, buf, 128 * bytespp,
         GXcopy, 0xFFFFFFFF);
     /* Make 7 horizontally rotated versions. */
     for (i = 1; i < 8; i++) {
@@ -581,7 +581,7 @@ static void Write8x8Pattern(pci, w, h, pSrc, srcwidth)
                 i * bytespp);
         }
         xf86memcpy(buf2 + 64 * bytespp, buf2, 64 * bytespp);
-        xf86AccelInfoRec.ImageWrite(x, y + i, 128, 1, buf2,
+        xf86ImageWrite(x, y + i, 128, 1, buf2,
             128 * bytespp, GXcopy, 0xFFFFFFFF);
     }
     DEALLOCATE_LOCAL(buf2);
@@ -711,7 +711,7 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
         if (xf86AccelInfoRec.PatternFlags
         & HARDWARE_PATTERN_PROGRAMMED_ORIGIN) {
             /* Special case; we need just one copy. */
-            xf86AccelInfoRec.ImageWrite(x, y,
+            xf86ImageWrite(x, y,
                 64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, 1, buf,
                 64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, GXcopy,
                 0xFFFFFFFF);
@@ -722,7 +722,7 @@ static void WriteRotatedMonoPatterns(x, y, pattern)
             xf86memcpy(buf + j * 8, buf + j, 8 - j);
             xf86memcpy(buf + j * 8 + 8 - j, buf, j);
         }
-        xf86AccelInfoRec.ImageWrite(x, y + i,
+        xf86ImageWrite(x, y + i,
             64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, 1, buf,
             64 / (xf86AccelInfoRec.BitsPerPixel / 8) + 1, GXcopy, 0xFFFFFFFF);
         if (i < 7) {
@@ -1068,7 +1068,7 @@ static void DoCacheTile(pix)
 
 REGULAR_TILE:
 
-    xf86AccelInfoRec.ImageWrite(pci->x, pci->y, pci->pix_w, pci->pix_h,
+    xf86ImageWrite(pci->x, pci->y, pci->pix_w, pci->pix_h,
          pix->devPrivate.ptr, pix->devKind, GXcopy, 0xFFFFFFFF);
 
     DoCacheExpandPixmap(pci);

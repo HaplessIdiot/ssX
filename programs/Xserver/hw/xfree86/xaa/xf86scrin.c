@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.17 1997/06/03 14:12:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.18 1997/07/05 08:45:17 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -181,12 +181,12 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      * depend on PSZ, and xf86initacl.c is compiled only once.
      * They must be set before xf86InitializeAcceleration.
      */
-    if (!xf86AccelInfoRec.ImageWriteFallBack) {
-        xf86AccelInfoRec.ImageWriteFallBack = xf86ImageWriteFallBack;
-    }
-    if (!xf86AccelInfoRec.ImageWrite) {
-        xf86AccelInfoRec.ImageWrite = xf86ImageWriteFallBack;
-    }
+#ifdef VGA256
+    xf86AccelInfoRec.ImageWriteFallBack = vga256DoBitblt;
+#else    
+    xf86AccelInfoRec.ImageWriteFallBack = cfbDoBitblt;
+#endif
+
 #if PSZ != 24
     if (!xf86AccelInfoRec.WriteBitmapFallBack)
         xf86AccelInfoRec.WriteBitmapFallBack = xf86WriteBitmapFallBack;

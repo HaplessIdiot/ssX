@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.2 1997/06/10 12:30:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/newmmio.h,v 1.3 1997/06/25 08:25:03 hohndel Exp $ */
 
 /*
  *
@@ -212,6 +212,7 @@ typedef struct {
 #define SET_RD_MASK(msk)	((mmtr)s3MmioMem)->pk_enh_regs.regs.rd_mask  = (msk)
 #define SET_FRGD_COLOR(col)	((mmtr)s3MmioMem)->pk_enh_regs.regs.frgd_color = (col)
 #define SET_BKGD_COLOR(col)	((mmtr)s3MmioMem)->pk_enh_regs.regs.bkgd_color = (col)
+#define SET_COLOR_CMP(col)	((mmtr)s3MmioMem)->pk_enh_regs.regs.color_cmp = (col)
 #define SET_FRGD_MIX(fmix)	((mmtr)s3MmioMem)->enh_regs.regs.fore_mix = (fmix)
 #define SET_BKGD_MIX(bmix)	((mmtr)s3MmioMem)->enh_regs.regs.back_mix = (bmix)
 #define SET_PIX_CNTL(val)	((mmtr)s3MmioMem)->pk_enh_regs.regs.pix_mult = (val) | (MULT_MISC2 << 16)
@@ -257,14 +258,6 @@ typedef struct {
 
 #define WaitQueue16_32(n16,n32) 		\
 	if(s3Bpp <= 2) { WaitQueue(n16); }	\
-	else if (n32 < 8) { 			\
-	       WaitQueue(n32+1); 		\
-	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
-	} else { 				\
-	       WaitQueue(1); 			\
-	       SET_MULT_MISC(CMD_REG_WIDTH); 	\
-	       WaitQueue(n32); 			\
-	}
-
+	else { 	WaitQueue(n32); }			
 
 #endif /* _NEWMMIO_H_ */

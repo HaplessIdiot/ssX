@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.9 1997/04/17 09:16:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.10 1997/05/03 09:19:29 dawes Exp $ */
 
 
 #include "windowstr.h"
@@ -96,8 +96,10 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* SubsequentScanlineCPUToScreenColorExpand() */
     NULL,	/* SetupForScanlineScreenToScreenColorExpand() */
     NULL,	/* SubsequentScanlineScreenToScreenColorExpand() */
-    NULL,	/* ImageWrite() */
-    NULL,	/* ImageWriteFallBack() (could be moved elsewhere) */
+    NULL,	/* DoImageWrite() */
+    NULL,	/* SetupForImageWrite() */
+    NULL,	/* SubsequentImageWrite() */
+    NULL,	/* ImageWriteFallBack() */
     NULL,	/* VerticalLineGXcopyFallBack() */
     NULL,	/* BresenhamLineFallBack() */
     NULL,	/* xf86GetLongWidthAndPointer() */
@@ -124,5 +126,9 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     0,		/* PixmapCacheMemoryStart */
     0,		/* PixmapCacheMemoryEnd */
     0,		/* LinePatternMaxLength */
-    NULL	/* LinePatternBuffer */
+    NULL,	/* LinePatternBuffer */
+    0, 		/* PatternFlags */
+    NULL,	/* ImageWriteBase */
+    0,		/* ImageWriteRange */
+    0		/* ImageWriteFlags */
 };

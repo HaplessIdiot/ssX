@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.21 1997/07/29 12:08:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.22 1997/08/12 12:02:10 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -652,6 +652,27 @@ xf86InitializeAcceleration(pScreen)
 	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
 
+
+    if(xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_BASE_FIXED)
+	xf86AccelInfoRec.ImageWriteRange = 0;
+    else /* change to dwords */
+	xf86AccelInfoRec.ImageWriteRange >>= 2;
+
+    if(!xf86AccelInfoRec.DoImageWrite &&
+	xf86AccelInfoRec.SetupForImageWrite && 
+	xf86AccelInfoRec.SubsequentImageWrite &&
+	xf86AccelInfoRec.ImageWriteBase) {
+
+	/* In the case when we offer 32 bit pixmaps with 24 bit
+	   framebuffers, we'll have to add additional logic here */
+  
+	xf86AccelInfoRec.DoImageWrite = xf86DoImageWrite;
+           
+	if (xf86Verbose && xf86AccelInfoRec.DoImageWrite)
+           ErrorF("%s %s: XAA: Accelerated image transfers\n",
+	           XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
+
+    }
 
 do_not_touch_xf86AccelInfoRec:
 

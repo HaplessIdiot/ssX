@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.15 1997/04/18 09:13:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.16 1997/05/03 09:19:40 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -18,8 +18,8 @@
 #define NO_TEXT_COLOR_EXPANSION		0x100000
 #define HORIZONTAL_TWOPOINTLINE		0x400000
 #define LINE_PATTERN_POWER_OF_2_ONLY		0x800000
-#define LINE_PATTERN_MSBFIRST_INCREASING	0x1000000
-#define LINE_PATTERN_MSBFIRST_DECREASING	0x2000000
+#define LINE_PATTERN_MSBFIRST_MSBJUSTIFIED	0x1000000
+#define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x2000000
 #define DELAYED_SYNC				0x4000000
 
 /* AccelInfoRec hardware pattern flags */
@@ -45,6 +45,7 @@
 #define NO_TRANSPARENCY		0x10
 #define NO_CAP_NOT_LAST		0x20
 #define TRANSPARENCY_GXCOPY     0x40
+#define NO_GXCOPY		0x80	/* for ImageWrite */
 
 /* Color expansion flags */
 
@@ -63,6 +64,10 @@
 #define BIT_ORDER_IN_BYTE_MSBFIRST	0x200000
 #define LEFT_EDGE_CLIPPING		0x400000
 #define LEFT_EDGE_CLIPPING_NEGATIVE_X   0x800000
+
+/* Image Write Flags */
+#define IMAGE_WRITE_32_to_24_CONVERSION	0x1000000
+
 
 /* Highest level, GC ops and some ScreenRec fall-backs. */
 
@@ -898,28 +903,41 @@ typedef struct {
 	int srcaddr	/* Linear pixel (bit) address. */
 #endif
     );
-    void (*ImageWrite)(
+    void (*DoImageWrite)(
+#if NeedFunctionPrototypes
+    	DrawablePtr	pSrc, 
+    	DrawablePtr	pDst,
+    	int		alu,
+    	RegionPtr	prgnDst,
+    	DDXPointPtr	pptSrc,
+    	unsigned int	planemask,
+	int		bitplane
+#endif
+);
+    void (*SetupForImageWrite)(
+#if NeedNestedPrototypes
+        int rop,
+        unsigned planemask,
+	int transparency_color
+#endif
+    );
+   void (*SubsequentImageWrite)(
 #if NeedNestedPrototypes
         int x,
         int y,
         int w,
         int h,
-        void *src,
-        int srcwidth,
-        int rop,
-        unsigned planemask
+	int skipleft
 #endif
     );
     void (*ImageWriteFallBack)(
 #if NeedNestedPrototypes
-        int x,
-        int y,
-        int w,
-        int h,
-        void *src,
-        int srcwidth,
-        int rop,
-        unsigned planemask
+    	DrawablePtr	pSrc, 
+    	DrawablePtr	pDst,
+    	int		alu,
+    	RegionPtr	prgnDst,
+    	DDXPointPtr	pptSrc,
+    	unsigned int	planemask
 #endif
     );
     void (*VerticalLineGXcopyFallBack)(
@@ -1013,6 +1031,9 @@ typedef struct {
     int LinePatternMaxLength;
     void *LinePatternBuffer;
     int PatternFlags;
+    unsigned int *ImageWriteBase;
+    int ImageWriteRange;
+    int ImageWriteFlags;
 } xf86AccelInfoRecType;
 
 extern xf86AccelInfoRecType xf86AccelInfoRec;

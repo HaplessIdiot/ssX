@@ -848,18 +848,19 @@ SetupForDashedLine(fg, bg, rop, planemask, size)
     line command.  By the time this function is called, the bit pattern
     will already reside in the LinePatternBuffer.  The packing order in
     the buffer is determined by one of the following flags:
-	LINE_PATTERN_MSBFIRST_INCREASING
-	LINE_PATTERN_MSBFIRST_DECREASING
+	LINE_PATTERN_MSBFIRST_MSBJUSTIFIED
+	LINE_PATTERN_MSBFIRST_LSBJUSTIFIED
     One and only one of these flags must be set.  A LinePatternBuffer must
     be allocated and its length (in bits) recorded as LinePatternMaxLength
     in order to use hardware dashed lines.
 
 SubsequentDashedBresenhamLine(x1, y1, octant, err, e1, e2, length, offset)
+SubsequentDashedTwoPointLine(x1, y1, x2, y2, bias, offset)
 
-    Draw a dashed line using Bresenham's algorithm. The first arguments
-    are identical to those of SubsequentBresenhamLine.  The only difference
-    is the offset argument which specifies the offset into the bit pattern
-    the first pixel of this line must start on.
+    Draw a dashed line. The first arguments are identical to those of
+    SubsequentBresenhamLine and SubsequentTwoPointLine.  The only 
+    difference is the offset argument which specifies the offset into 
+    the bit pattern the first pixel of this line must start on.
 
 LinePatternMaxLength
 LinePatternBuffer
@@ -871,11 +872,51 @@ LinePatternBuffer
     allocated by the driver and should be long enough to hold
     LinePatternMaxLength bits padded out to a DWORD.
 
-ImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
+SetupForImageWrite(rop, planemask, transparency_color)
 
-    This hasn't been formalized yet. It used only to upload a tile
-    to the pixmap cache (usually there's not much benefit compared
-    to the unaccelerated version).
+    This sets up for multiple pixmap (image) transfers using the
+    transfer window defined by ImageWriteBase and ImageWriteRange.
+    Currently, DWORD padding is required. CPU_TRANSFER_BASE_FIXED
+    is supported but is often only faster than the non-accelerated 
+    versions for rops other than GXcopy.
+
+    If the transparency_color is not -1, then it defines the
+    transparent "masking" color.  If your hardware cannot do
+    transparent image transfers then you should set NO_TRANSPARENCY
+    in the ImageWriteFlags.
+
+SubsequentImageWrite(x, y, w, h, skipleft)
+
+    This sets up for an individual image transfer and is  
+    analogous to the SubsequentCPUToScreenColorExpand function.
+    If the driver supports left edge clipping, then the skipleft
+    parameter specifies the number of pixels to be skipped on the
+    left edge (0 - 3).  This is used in cases of unfavorable source
+    alignment.
+
+ImageWriteFlags
+    
+    In addition to the regular planemask/rop restrictions, the
+    following flags are defined (with meaning similar to the color 
+    expand flags).
+
+    	LEFT_EDGE_CLIPPING
+    	LEFT_EDGE_CLIPPING_NEGATIVE_X
+    	NO_TRANSPARENCY
+	CPU_TRANSFER_BASE_FIXED
+
+    Additionally, a NO_GXCOPY flag can be set to indicate that
+    ImageWrites should only be used for the more complicated rops.
+    This is useful in the case where accelerator assisted image transfers
+    are not faster than the unaccelerated versions for simple copies. 
+
+ImageWriteBase
+ImageWriteRange
+
+    This is often, but not necessarily, the same window defined by the 
+    CPUToScreenColorExpandBase and Range.  ImageWrites may be
+    suboptimal if this range is not at least as large as the 
+    framebuffer width.
 
 SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
 
@@ -1837,4 +1878,4 @@ Mach64 server provided a baseline for what to implement first.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.13 1997/04/08 10:14:11 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.14 1997/07/06 05:31:03 dawes Exp $

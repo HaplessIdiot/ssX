@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.1 1997/03/27 08:31:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.2 1997/04/18 09:12:18 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -84,7 +84,7 @@ Author: Keith Packard
 #include	"xf86.h"
 #include	"xf86xaa.h"
 #include	"xf86local.h"
-
+#include 	"xf86Priv.h"
 
 RegionPtr
 xf86CopyArea(pSrcDrawable, pDstDrawable,
@@ -96,32 +96,23 @@ xf86CopyArea(pSrcDrawable, pDstDrawable,
     int width, height;
     int dstx, dsty;
 {
-    if (pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW) {
-        return (*xf86GCInfoRec.cfbBitBltDispatch)(
-            pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty,
-            xf86DoBitBlt, 0L);
-    }
-    /*
-     * It would be a win to catch blits from a pixmap to a window here,
-     * so that any optimized ImageWrite can be used.
-     */
-    /* Like this?
-
     if(pDstDrawable->type == DRAWABLE_WINDOW) {
 	if(pSrcDrawable->type == DRAWABLE_WINDOW)
             return (*xf86GCInfoRec.cfbBitBltDispatch)(
             	pSrcDrawable, pDstDrawable,
             	pGC, srcx, srcy, width, height, dstx, dsty,
             	xf86DoBitBlt, 0L);
-	else if(xf86AccelInfo.ImageWrite) 
+	else if(xf86AccelInfoRec.DoImageWrite &&
+	  	CHECKPLANEMASK(xf86AccelInfoRec.ImageWriteFlags) &&
+              	CHECKROP(xf86AccelInfoRec.ImageWriteFlags) &&
+              	CHECKRGBEQUAL(xf86AccelInfoRec.ImageWriteFlags) &&
+	      	!((xf86AccelInfoRec.ImageWriteFlags & NO_GXCOPY) && 
+	       	 (pGC->alu == GXcopy))) 
             return (*xf86GCInfoRec.cfbBitBltDispatch)(
             	pSrcDrawable, pDstDrawable,
             	pGC, srcx, srcy, width, height, dstx, dsty,
-            	xf86DoImageWrite, 0L);
+            	xf86AccelInfoRec.DoImageWrite, 0L);
     }
-    */
 
     SYNC_CHECK;
 
@@ -409,4 +400,227 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
         SET_SYNC_FLAG;
 }
+
+
+
+static void MoveDWORDS_FixedBase(dest, src, dwords)
+   register unsigned int* dest;
+   register unsigned int* src;
+   register int dwords;
+{
+     while(dwords & ~0x03) {
+	 *dest = *src;
+	 *dest = *(src + 1);
+	 *dest = *(src + 2);
+	 *dest = *(src + 3);	
+	 dwords -= 4;
+	 src += 4;
+     }
+     switch(dwords) {
+	case 0:	return;
+	case 1: *dest = *src;
+		return;
+	case 2: *dest = *src;
+		*dest = *(src + 1);
+		return;
+	case 3: *dest = *src;
+		*dest = *(src + 1);
+ 		*dest = *(src + 2);
+		return;
+    }
+}
+
+static void MoveDWORDS(dest, src, dwords)
+   register unsigned int* dest;
+   register unsigned int* src;
+   register int dwords;
+{
+     while(dwords & ~0x03) {
+	*dest = *src;
+	*(dest + 1) = *(src + 1);
+	*(dest + 2) = *(src + 2);
+	*(dest + 3) = *(src + 3);
+	src += 4;
+	dest += 4;
+	dwords -= 4;
+     }	
+     switch(dwords) {
+	case 0:	return;
+	case 1: *dest = *src;
+		return;
+	case 2: *dest = *src;
+		*(dest + 1) = *(src + 1);
+		return;
+	case 3: *dest = *src;
+		*(dest + 1) = *(src + 1);
+ 		*(dest + 2) = *(src + 2);
+		return;
+    }
+}
+
+/* 
+     xf86DoImageWrite transfers 8, 16, 24 and 32 bpp image data
+  to the image transfer window with dword scanline padding.
+*/
+	
+
+void
+xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
+    unsigned int    planemask;
+    int		    bitPlane;
+{
+    int srcwidth, skipleft, dwords;
+    int x,w,h;
+    unsigned char* psrcBase;			/* start of image */
+    register unsigned char* srcPntr;		/* index into the image */
+    int Bpp = xf86bpp >> 3; 
+    BoxPtr pbox = REGION_RECTS(prgnDst);
+    int nbox = REGION_NUM_RECTS(prgnDst);
+
+    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
+
+    xf86AccelInfoRec.SetupForImageWrite(alu, planemask, -1);
+
+    for(; nbox; pbox++, pptSrc++, nbox--) {
+	x = pbox->x1;
+	w = pbox->x2 - pbox->x1;
+	h = pbox->y2 - pbox->y1;
+
+        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
+
+	if((skipleft = (int)srcPntr & 0x03)) {
+	    if(!(xf86AccelInfoRec.ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
+		skipleft = 0;
+		goto BAD_ALIGNMENT;
+	    }
+
+	    if(Bpp == 3)
+		skipleft = 4 - skipleft;
+	    else
+	    	skipleft /= Bpp;
+
+	    if((x < skipleft) && !(xf86AccelInfoRec.ImageWriteFlags &
+				 LEFT_EDGE_CLIPPING_NEGATIVE_X)) {
+		skipleft = 0;
+		goto BAD_ALIGNMENT;
+	    }
+	    x -= skipleft;	     
+	    w += skipleft;
+	
+	    if(Bpp == 3)
+	    	srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
+	    else   
+	    	srcPntr = (unsigned char*)((int)srcPntr & ~0x03);     
+	}
+	
+BAD_ALIGNMENT:
+
+	switch(Bpp) {
+	   case 1:	dwords = (w + 3) >> 2;
+			break;
+	   case 2:	dwords = (w + 1) >> 1;
+			break;
+	   case 3:	dwords = ((w + 1) * 3) >> 2;
+			break;
+	   default:	dwords = w;
+			break;
+	}
+
+	xf86AccelInfoRec.SubsequentImageWrite(x,pbox->y1,w,h,skipleft);
+
+	if(dwords <= xf86AccelInfoRec.ImageWriteRange) {
+           if(srcwidth == (dwords << 2)) {
+	   	int decrement = xf86AccelInfoRec.ImageWriteRange/dwords;
+
+	   	while(h > decrement) {
+	    	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
+	 		(unsigned int*)srcPntr, dwords * decrement);
+	   	    srcPntr += (srcwidth * decrement);
+		    h -= decrement;
+	   	}
+	   	if(h) {
+	     	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
+	 		(unsigned int*)srcPntr, dwords * h);
+	   	}
+	    } else {
+    	    	while(h--) {
+	    	    MoveDWORDS(xf86AccelInfoRec.ImageWriteBase,
+	 		(unsigned int*)srcPntr, dwords);
+	   	    srcPntr += srcwidth;
+     	    	}
+	    }
+	} else {
+    	    while(h--) {
+	   	MoveDWORDS_FixedBase(xf86AccelInfoRec.ImageWriteBase, 
+			(unsigned int*)srcPntr, dwords);
+	   	srcPntr += srcwidth;
+	    }
+	}
+    }
+
+    if(!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+    	xf86AccelInfoRec.Sync();
+}
+
+
+extern WindowPtr *WindowTable;
+
+void xf86ImageWrite(x, y, w, h, src, srcwidth, rop, planemask)
+    int x;
+    int y;
+    int w;
+    int h;
+    void *src;
+    int srcwidth;
+    int rop;
+    unsigned planemask;
+{
+    ScreenPtr pScreen;
+    PixmapPtr pix;
+    WindowPtr rootWin;
+    BoxRec box;
+    DDXPointRec ptSrc;
+    RegionRec rgnDst;
+    pScreen = screenInfo.screens[xf86ScreenIndex];
+    rootWin = WindowTable[pScreen->myNum];
+    pix = GetScratchPixmapHeader(pScreen, w, h, rootWin->drawable.depth,
+        rootWin->drawable.bitsPerPixel, srcwidth, src);
+    ptSrc.x = 0;
+    ptSrc.y = 0;
+    box.x1 = x;
+    box.y1 = y;
+    box.x2 = x + w;
+    box.y2 = y + h;
+    REGION_INIT(pScreen, &rgnDst, &box, 1);
+
+
+/* These checks will need to be more robust if xf86pcache.c ever wants
+   to send something other than GXCopy w/out planemask to xf86ImageWrite 
+	(MArk) */ 
+
+    if(xf86AccelInfoRec.DoImageWrite &&
+	!(xf86AccelInfoRec.ImageWriteFlags & NO_GXCOPY)) {
+           (*xf86AccelInfoRec.DoImageWrite)((DrawablePtr)pix,
+	 	(DrawablePtr)rootWin, rop, &rgnDst, &ptSrc, planemask, 0L);
+    } else {
+    	SYNC_CHECK;
+    	(*xf86AccelInfoRec.ImageWriteFallBack)((DrawablePtr)pix,
+	 	(DrawablePtr)rootWin, rop, &rgnDst, &ptSrc, planemask);
+    }
+    REGION_UNINIT(pScreen, &rgnDst);
+    FreeScratchPixmapHeader(pix);
+}
+
+
+
+
+
+
+
+
+
 

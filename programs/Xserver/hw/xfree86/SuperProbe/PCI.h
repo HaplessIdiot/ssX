@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.23 1997/05/22 14:22:22 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.24 1997/07/06 05:30:44 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -223,6 +223,7 @@ void xf86writepci(
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
@@ -294,6 +295,11 @@ void xf86writepci(
 #define PCI_CHIP_PM6410		0x3210
 #define PCI_CHIP_PM6422		0x6422
 #define PCI_CHIP_PMAT24		0x6424
+
+/* Rendition */
+#define PCI_CHIP_V1000		0x0001
+#define PCI_CHIP_V2000		0x0002 /* just guessing */
+
 
 /* SIGMA DESIGNS */
 #define PCI_CHIP_SD_REALMAGIG64GX	0x6401

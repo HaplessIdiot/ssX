@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.2 1997/04/08 10:12:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/laguna_acl.c,v 1.3 1997/04/13 13:57:18 hohndel Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -161,9 +161,10 @@ void LagunaAccelInit() {
 
   /* PixMap caching and CPU-to-screen transfers. */
   /* THe '62 had some host-to-screen transfer problems. */
+/*
   if (cirrusChip != CLGD5462)
     xf86AccelInfoRec.ImageWrite = LagunaImageWrite;
-
+*/
   xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
       vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
       vga256InfoRec.videoRam * 1024 - 1024);

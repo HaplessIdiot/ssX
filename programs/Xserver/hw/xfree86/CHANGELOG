@@ -1,4 +1,16 @@
+XFree86 3.9n (15 August 1997)
+1195. Add incomplete Rendition detection code to SuperProbe (Dirk Hohndel).
+1194. Add Rendition detection to PCI code (#881, Marc Langenbach, Dirk Hohndel).
+1193. Fix to only build *.dir file for xkbcomp on make install (#880, 
+      Michael Rohleder).
+1192. Add ImageWrites for s3/svga (#879, Mark Vojkovich).
+1191. Rename dashed pattern flags (#878, Mark Vojkovich).
+1190. Add ImageWrite support for XAA (#877, Mark Vojkovich).
+1189. Add MGA2164 define to vgaPCI.h (#876, Takaaki Nomura).
+1188. Extend the frame buffer test in glint_dump_regs (Stefan Dirsch).
+
 XFree86 3.9m (13 August 1997)
+1187. Add printing support to xterm (#870, Thomas E. Dickey).
 1186. Fix denial of service attack through xdm double freeing memory (#875,
       Kaleb Keithley).
 1185. Fix Solaris build problem (#874, Takaaki Nomura).
@@ -5245,4 +5257,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.520 1997/08/13 05:32:11 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.521 1997/08/13 05:38:59 hohndel Exp $

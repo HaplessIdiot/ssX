@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.5 1997/06/25 08:25:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.6 1997/07/29 12:08:09 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.5 1997/06/25 08:25:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dline.c,v 3.6 1997/07/29 12:08:09 hohndel Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -107,7 +107,7 @@ int xf86PackDashPattern(GCPtr pGC)
 
     DashPtr = (unsigned char*)pGC->dash;
        
-    if(xf86AccelInfoRec.Flags & LINE_PATTERN_MSBFIRST_INCREASING) {
+    if(xf86AccelInfoRec.Flags & LINE_PATTERN_MSBFIRST_MSBJUSTIFIED) {
 	register CARD32* PatPtr = 
 		(CARD32*)xf86AccelInfoRec.LinePatternBuffer + 
 		((xf86AccelInfoRec.LinePatternMaxLength - 1) >> 5);
@@ -154,7 +154,7 @@ CONCATENATE:
 
 	if(bits) 
 	   *PatPtr <<= (32 - bits);	
-    } else {  /* LINE_PATTERN_MSBFIRST_DECREASING */
+    } else {  /* LINE_PATTERN_MSBFIRST_LSBJUSTIFIED */
 	register CARD32* PatPtr;	
 	register unsigned char value;
 	register int bits;

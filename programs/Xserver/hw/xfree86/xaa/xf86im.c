@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.2 1997/01/12 10:48:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.3 1997/03/27 08:31:28 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -27,8 +27,6 @@
 /*
  * Contents:
  *
- * xf86ImageWriteFallBack()
- *     Low-level ImageWrite fall-back, uses cfb.
  * xf86WriteBitmapFallBack()
  *     Low-level WriteBitmap fall-back, uses cfb CopyPlane1toN.
  *     Not defined for 24bpp.
@@ -61,58 +59,10 @@
 #include "xf86local.h"
 #include "xf86Priv.h"
 
-
-/*
- * This is a low-level fall-back for ImageWrite, which calls cfb.
- * It is used when no hardware ImageWrite function is available.
- * It's used when writing a tile to the pixmap cache.
- */
-
 extern WindowPtr *WindowTable;
 
-void xf86ImageWriteFallBack(x, y, w, h, src, srcwidth, rop, planemask)
-    int x;
-    int y;
-    int w;
-    int h;
-    void *src;
-    int srcwidth;
-    int rop;
-    unsigned planemask;
-{
-    ScreenPtr pScreen;
-    PixmapPtr pix;
-    WindowPtr rootWin;
-    BoxRec box;
-    DDXPointRec ptSrc;
-    RegionRec rgnDst;
-    pScreen = screenInfo.screens[xf86ScreenIndex];
-    rootWin = WindowTable[pScreen->myNum];
-    pix = GetScratchPixmapHeader(pScreen, w, h, rootWin->drawable.depth,
-        rootWin->drawable.bitsPerPixel, srcwidth, src);
-    ptSrc.x = 0;
-    ptSrc.y = 0;
-    box.x1 = x;
-    box.y1 = y;
-    box.x2 = x + w;
-    box.y2 = y + h;
-    REGION_INIT(pScreen, &rgnDst, &box, 1);
-
-    SYNC_CHECK;
-
-#ifdef VGA256
-    vga256DoBitblt((DrawablePtr)pix, (DrawablePtr)rootWin, rop, &rgnDst, &ptSrc,
-        planemask);
-#else    
-    cfbDoBitblt((DrawablePtr)pix, (DrawablePtr)rootWin, rop, &rgnDst, &ptSrc,
-        planemask);
-#endif
-    REGION_UNINIT(pScreen, &rgnDst);
-    FreeScratchPixmapHeader(pix);
-}
-
 /*
- * In a similar vein, this is for expanding a monochrome bitmap.
+ * This is for expanding a monochrome bitmap.
  */
 
 void xf86WriteBitmapFallBack(x, y, w, h, src, srcwidth, srcx, srcy,

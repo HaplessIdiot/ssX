@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.44 1997/07/06 05:30:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.45 1997/07/10 08:17:26 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -874,6 +874,9 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1159, "Mutech", {
                             { 0x0001, "MV1000", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+	{ 0x1163, "Rendition", {
+			    { 0x0001, "V1000", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1179, "Toshiba", {
                             { 0x0000, (char *)NULL, NF } } },

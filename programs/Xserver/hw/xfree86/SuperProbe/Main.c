@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.23 1997/05/18 12:12:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.24 1997/07/06 05:30:44 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -67,6 +67,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &Cirrus64_Descriptor,
     &Tseng_Descriptor,
     &RealTek_Descriptor,
+    &Rendition_Descriptor,
     &Primus_Descriptor,
     &Yamaha_Descriptor,
     &Oak_Descriptor,

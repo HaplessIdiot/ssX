@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.32 1997/07/06 05:31:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.33 1997/07/19 05:43:18 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -31,6 +31,7 @@
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_NVIDIA	0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
@@ -94,6 +95,7 @@
 #define PCI_CHIP_MGA2085	0x0518
 #define PCI_CHIP_MGA2064	0x0519
 #define PCI_CHIP_MGA1064	0x051a
+#define PCI_CHIP_MGA2164	0x051b
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
@@ -124,6 +126,9 @@
 #define PCI_CHIP_AP6410		0x3210
 #define PCI_CHIP_AP6422		0x6422
 #define PCI_CHIP_AT24		0x6424
+
+/* Rendition */
+#define PCI_CHIP_V1000		0x0001
 
 /* 3Dlabs */
 #define PCI_CHIP_300SX		0x0001
@@ -286,7 +291,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
 				{PCI_CHIP_AT24,		"ProMotion AT24"},
 				{0x0000,		NULL}}},
-    {PCI_VENDOR_3DLABS, "3Dlabs", {
+    {PCI_VENDOR_RENDITION, "Rendition", {
+				{PCI_CHIP_V1000,	"Verite 1000"},
+				{0x0000,		NULL}}},
+     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},
 				{PCI_CHIP_500TX,	"GLINT 500TX"},
 				{PCI_CHIP_DELTA,	"GLINT Delta"},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.2 1997/01/02 04:38:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.3 1997/01/12 10:48:08 dawes Exp $ */
 
 
 #ifdef VGA256
@@ -36,7 +36,6 @@
 #define xf86FillRectStippledFallBack XF86NAME(xf86FillRectStippledFallBack)
 #define xf86FillRectOpaqueStippledFallBack XF86NAME(xf86FillRectOpaqueStippledFallBack)
 /* xf86im.c */
-#define xf86ImageWriteFallBack XF86NAME(xf86ImageWriteFallBack)
 #define xf86WriteBitmapFallBack XF86NAME(xf86WriteBitmapFallBack)
 #define xf86cfbGetLongWidthAndPointer XF86NAME(xf86cfbGetLongWidthAndPointer)
 /* xf86cpplane.c */

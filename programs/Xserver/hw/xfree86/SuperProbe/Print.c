@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.58 1997/07/06 05:30:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.59 1997/07/19 05:43:10 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -102,6 +102,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Primus */	{ "Primus P2000" },
 /* Realtek */	{ "Realtek (chipset unknown)",
 		  "Realtek RT-3103", "Realtek RT-3105", "Realtek RT-3106" },
+/* Rendition */ { "Rendition V1000", "Rendition V2000" },
 /* S3 */	{ "S3 (chipset unknown)",
 		  "S3 86C911", "S3 86C924",
 		  "S3 86C801, A or B-step", 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.3 1997/01/12 10:48:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86maploc.h,v 3.4 1997/04/10 11:34:58 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -139,20 +139,6 @@ xf86FillRectOpaqueStippledFallBack(
     GCPtr	    pGC,
     int		    nBox,
     BoxPtr	    pBox
-#endif
-);
-
-void
-xf86ImageWriteFallBack(
-#if NeedFunctionPrototypes
-    int x,
-    int y,
-    int w,
-    int h,
-    void *src,
-    int srcwidth,
-    int rop,
-    unsigned planemask
 #endif
 );
 
