@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.11 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.12 2002/09/26 02:56:52 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -268,8 +268,8 @@ miClipPictureReg (RegionPtr	pRegion,
 	    pRbox->y1 = BOUND(v);
 	if (pRbox->y2 > (v = pCbox->y2 + dy))
 	    pRbox->y2 = BOUND(v);
-	if (pRbox->x1 > pRbox->x2 ||
-	    pRbox->y1 > pRbox->y2)
+	if (pRbox->x1 >= pRbox->x2 ||
+	    pRbox->y1 >= pRbox->y2)
 	{
 	    REGION_EMPTY(pScreen, pRegion);
 	}
@@ -341,6 +341,13 @@ miComputeCompositeRegion (RegionPtr	pRegion,
     v = yDst + height;
     pRegion->extents.y2 = BOUND(v);
     pRegion->data = 0;
+    /* Check for empty operation */
+    if (pRegion->extents.x1 >= pRegion->extents.x2 ||
+	pRegion->extents.y1 >= pRegion->extents.y2)
+    {
+	REGION_EMPTY (pDst->pDrawable->pScreen, pRegion);
+	return TRUE;
+    }
     /* clip against src */
     if (!miClipPictureSrc (pRegion, pSrc, xDst - xSrc, yDst - ySrc))
     {
