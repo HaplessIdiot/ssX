@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.8 1996/06/30 04:42:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.9 1996/07/08 10:33:09 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -126,6 +126,7 @@ vgaVideoChipRec SIS = {
   0,
   0,
   TRUE,
+  FALSE,
   TRUE,
   NULL,
   1,
