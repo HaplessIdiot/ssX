@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.5 2003/03/26 20:43:52 tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.6 2003/06/08 15:41:13 herrb Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
@@ -34,9 +34,10 @@
 #endif
 
 #include "font.h"
-#include "freetype/freetype.h"
-#include "freetype/ftsnames.h"
-#include "freetype/ttnameid.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
 #include "ft.h"
 
 #ifndef LSBFirst

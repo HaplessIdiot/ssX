@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.23 2003/07/17 08:19:25 eich Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.24 2003/10/19 18:53:49 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <string.h>
@@ -35,12 +35,13 @@ THE SOFTWARE.
 
 #include "fontmisc.h"
 #include "fontenc.h"
-#include "freetype/freetype.h"
-#include "freetype/ttnameid.h"
-#include "freetype/tttables.h"
-#include "freetype/t1tables.h"
-#include "freetype/ftbdf.h"
-#include "freetype/ftxf86.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_TRUETYPE_IDS_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_TYPE1_TABLES_H
+#include FT_BDF_H
+#include FT_XFREE86_H
 #include "ft.h"
 
 static int find_cmap(int, int, int, FT_Face, FT_CharMap *);

@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.35 2003/10/28 18:01:48 tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.36 2003/11/02 04:30:56 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -42,22 +42,23 @@ THE SOFTWARE.
 #include "fntfilst.h"
 #include "fontutil.h"
 #include "FSproto.h"
-#include "freetype/freetype.h"
-#include "freetype/ftsizes.h"
-#include "freetype/ttnameid.h"
-#include "freetype/tttables.h"
-#include "freetype/t1tables.h"
-#include "freetype/ftxf86.h"
-#include "freetype/ftbbox.h"
-#include "freetype/internal/tttypes.h"
-#include "extras/freetype2/src/truetype/ttobjs.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_SIZES_H
+#include FT_TRUETYPE_IDS_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_TYPE1_TABLES_H
+#include FT_XFREE86_H
+#include FT_BBOX_H
+#include FT_INTERNAL_TRUETYPE_TYPES_H
+#include "ttobjs.h"
 /*
  *  If you want to use FT_Outline_Get_CBox instead of 
  *  FT_Outline_Get_BBox, define here.
  */
 /* #define USE_GET_CBOX */
 #ifdef USE_GET_CBOX
-#include "freetype/ftoutln.h"
+#include FT_OUTLINE_H
 #endif
 
 #include "fontenc.h"

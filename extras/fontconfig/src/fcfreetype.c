@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcfreetype.c,v 1.12 2002/09/26 00:17:28 keithp Exp $
+ * $XFree86: xc/extras/fontconfig/src/fcfreetype.c,v 1.1.1.1 2003/06/04 02:57:52 dawes Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,11 +26,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "fcint.h"
-#include <freetype/freetype.h>
-#include <freetype/internal/ftobjs.h>
-#include <freetype/tttables.h>
-#include <freetype/ftsnames.h>
-#include <freetype/ttnameid.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_INTERNAL_OBJECTS_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
 
 /*
  * Keep Han languages separated by eliminating languages
