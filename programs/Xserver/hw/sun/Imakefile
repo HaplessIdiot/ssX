@@ -1,4 +1,6 @@
 XCOMM $TOG: Imakefile /main/48 1997/11/13 15:48:43 msr $
+XCOMM $XFree86$
+
 #include <Server.tmpl>
 
 SRCS1 =	sunInit.c \
