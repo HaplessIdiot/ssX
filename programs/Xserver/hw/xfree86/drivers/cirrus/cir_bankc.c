@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 #include "compiler.h"
 
 #define GRX	0x3ce

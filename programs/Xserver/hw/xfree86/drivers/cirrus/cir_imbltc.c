@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 /* just a few dummies to resolve symbols on the PowerPC
  * until we translate the x86 assembler back to C code
  */
