@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.21 2000/04/12 14:44:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.22 2000/05/03 00:44:23 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -802,28 +802,25 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->WriteBitmapFlags =
 		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
     }
-    
+
     /**** TE Glyphs ****/
 
-    if(infoRec->TEGlyphRenderer) {
+    if (infoRec->TEGlyphRenderer) {
 	XAAMSG("\tDriver provided TEGlyphRenderer replacement\n");
-    } else if(HaveColorExpansion) {
-	infoRec->TEGlyphRendererFlags = 
-			infoRec->CPUToScreenColorExpandFillFlags;
+    } else if (HaveColorExpansion) {
+	infoRec->TEGlyphRendererFlags =
+	    infoRec->CPUToScreenColorExpandFillFlags;
 
-        if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
-	    if(infoRec->CPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST) {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED)
-		    infoRec->TEGlyphRenderer = 
+	if (infoRec->TEGlyphRendererFlags & TRIPLE_BITS_24BPP) {
+	    if (infoRec->TEGlyphRendererFlags & BIT_ORDER_IN_BYTE_MSBFIRST) {
+		if (infoRec->TEGlyphRendererFlags & CPU_TRANSFER_BASE_FIXED)
+		    infoRec->TEGlyphRenderer =
 			XAATEGlyphRenderer3MSBFirstFixedBase;
 		else
 		    infoRec->TEGlyphRenderer = XAATEGlyphRenderer3MSBFirst;
 	    } else {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED)
-		    infoRec->TEGlyphRenderer = 
+		if (infoRec->TEGlyphRendererFlags & CPU_TRANSFER_BASE_FIXED)
+		    infoRec->TEGlyphRenderer =
 			XAATEGlyphRenderer3LSBFirstFixedBase;
 		else
 		    infoRec->TEGlyphRenderer = XAATEGlyphRenderer3LSBFirst;
@@ -836,44 +833,37 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		       " without solid fills\n");
 	    }
 	} else {
-	    if(infoRec->CPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST) {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED)
-		    infoRec->TEGlyphRenderer = 
+	    if (infoRec->TEGlyphRendererFlags & BIT_ORDER_IN_BYTE_MSBFIRST) {
+		if (infoRec->TEGlyphRendererFlags & CPU_TRANSFER_BASE_FIXED)
+		    infoRec->TEGlyphRenderer =
 			XAATEGlyphRendererMSBFirstFixedBase;
 		else
 		    infoRec->TEGlyphRenderer = XAATEGlyphRendererMSBFirst;
 	    } else {
-		if(infoRec->CPUToScreenColorExpandFillFlags & 
-					CPU_TRANSFER_BASE_FIXED)
-		    infoRec->TEGlyphRenderer = 
+		if (infoRec->TEGlyphRendererFlags & CPU_TRANSFER_BASE_FIXED)
+		    infoRec->TEGlyphRenderer =
 			XAATEGlyphRendererLSBFirstFixedBase;
 		else
 		    infoRec->TEGlyphRenderer = XAATEGlyphRendererLSBFirst;
 	    }
 	}
 
-	if(!HaveSolidFillRect &&
-	   (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
-	   infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
+	if (!HaveSolidFillRect &&
+	    (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
+	    infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
 	    XAAMSG("WARNING:  TEGlyphRenderer cannot support TRANPARENCY_ONLY"
 		   " without solid fills\n");
 	}
 
-    } else if(HaveScanlineColorExpansion) {
-	infoRec->TEGlyphRendererFlags = 
-		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
+    } else if (HaveScanlineColorExpansion) {
+	infoRec->TEGlyphRendererFlags =
+	    infoRec->ScanlineCPUToScreenColorExpandFillFlags;
 
-        if (infoRec->ScanlineCPUToScreenColorExpandFillFlags &
-					TRIPLE_BITS_24BPP) {
-	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST)
-		infoRec->TEGlyphRenderer = 
-		    XAATEGlyphRendererScanline3MSBFirst;
+	if (infoRec->TEGlyphRendererFlags & TRIPLE_BITS_24BPP) {
+	    if (infoRec->TEGlyphRendererFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+		infoRec->TEGlyphRenderer = XAATEGlyphRendererScanline3MSBFirst;
 	    else
-		infoRec->TEGlyphRenderer = 
-		    XAATEGlyphRendererScanline3LSBFirst;
+		infoRec->TEGlyphRenderer = XAATEGlyphRendererScanline3LSBFirst;
 
 	    if (!HaveSolidFillRect &&
 		(infoRec->TEGlyphRendererFlags & RGB_EQUAL)) {
@@ -882,18 +872,15 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		       " without solid fills\n");
 	    }
 	} else {
-	    if(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
-					BIT_ORDER_IN_BYTE_MSBFIRST)
-		infoRec->TEGlyphRenderer = 
-		    XAATEGlyphRendererScanlineMSBFirst;
+	    if (infoRec->TEGlyphRendererFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+		infoRec->TEGlyphRenderer = XAATEGlyphRendererScanlineMSBFirst;
 	    else
-		infoRec->TEGlyphRenderer = 
-		    XAATEGlyphRendererScanlineLSBFirst;
+		infoRec->TEGlyphRenderer = XAATEGlyphRendererScanlineLSBFirst;
 	}
 
-	if(!HaveSolidFillRect &&
-	   (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
-	   infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
+	if (!HaveSolidFillRect &&
+	    (infoRec->TEGlyphRendererFlags & TRANSPARENCY_ONLY)) {
+	    infoRec->TEGlyphRendererFlags &= ~TRANSPARENCY_ONLY;
 	    XAAMSG("WARNING:  TEGlyphRenderer cannot support TRANPARENCY_ONLY"
 		   " without solid fills\n");
 	}
