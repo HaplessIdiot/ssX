@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.8 1999/10/13 20:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.9 2000/02/18 12:19:15 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -72,6 +72,7 @@ const char *ATIChipNames[] =
     "ATI unknown Mach64",
     "ATI Rage 128 GL",
     "ATI Rage 128 Pro",
+    "ATI Rage 128 Mobility",
     "ATI unknown Rage 128"
 };
 
@@ -502,6 +503,10 @@ ATIChipID
         case OldChipID('S', 'L'):  case NewChipID('S', 'L'):
         case OldChipID('S', 'M'):  case NewChipID('S', 'M'):
             return ATI_CHIP_RAGE128PRO;
+
+        case OldChipID('L', 'E'):  case NewChipID('L', 'E'):
+        case OldChipID('L', 'F'):  case NewChipID('L', 'F'):
+            return ATI_CHIP_RAGE128MOBILITY;
 
         default:
             /*

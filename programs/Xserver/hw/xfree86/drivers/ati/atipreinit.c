@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.17 2000/03/22 03:08:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.18 2000/03/22 21:19:32 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1493,11 +1493,18 @@ ATIPreInit
         pATI->OptionLinear = FALSE;
     }
 
-    if (pATI->OptionAccel && !pATI->Block0Base)
+    if (pATI->OptionAccel)
     {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Acceleration not supported in this configuration.\n");
-        pATI->OptionAccel = FALSE;
+        if (!pATI->Block0Base)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Acceleration not supported in this configuration.\n");
+            pATI->OptionAccel = FALSE;
+        }
+        else
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                "MMIO write caching %sabled.\n",
+                pATI->OptionMMIOCache ? "en" : "dis");
     }
 
     if (pATI->Adapter >= ATI_ADAPTER_MACH32)

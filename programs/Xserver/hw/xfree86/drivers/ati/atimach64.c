@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.14 2000/03/24 19:17:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.15 2000/03/25 05:24:51 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -44,6 +44,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include "ati.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "atiio.h"
@@ -54,11 +55,11 @@
 #include "extensions/dpms.h"
 
 /*
- * Only 32-bit MMIO is needed here.
+ * Note:  Only 32-bit MMIO is needed here.
  */
 
-#define inm(_Register)                                         \
-    MMIO_IN32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)],  \
+#define inm(_Register)                                        \
+    MMIO_IN32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
               (_Register) & MM_IO_SELECT)
 
 /*
@@ -112,15 +113,37 @@ ATIMach64PollEngineStatus
         pATI->nAvailableFIFOEntries = Count;
 }
 
+/*
+ * MMIO cache definitions.
+ */
+#define CacheByte(___Register) pATI->MMIOCached[CacheSlotOf(___Register) >> 3]
+#define CacheBit(___Register)  (0x80U >> (CacheSlotOf(___Register) & 0x07U))
 
-#define outm(_Register, _Value)                                    \
-    do                                                             \
-    {                                                              \
-        while (!pATI->nAvailableFIFOEntries--)                     \
-            ATIMach64PollEngineStatus(pATI);                       \
-        MMIO_OUT32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
-                   (_Register) & MM_IO_SELECT, _Value);            \
-        pATI->EngineIsBusy = TRUE;                                 \
+#define RegisterIsCached(__Register) \
+    (CacheByte(__Register) & CacheBit(__Register))
+#define CacheRegister(__Register) \
+    CacheByte(__Register) |= CacheBit(__Register)
+#define UnCacheRegister(__Register) \
+    CacheByte(__Register) &= ~CacheBit(__Register)
+
+#define CacheSlot(__Register)  pATI->MMIOCache[CacheSlotOf(__Register)]
+
+/* This would be quite a bit slower as a function */
+#define outm(_Register, _Value)                                        \
+    do                                                                 \
+    {                                                                  \
+        CARD32 _IOValue = (_Value);                                    \
+                                                                       \
+        if (!RegisterIsCached(_Register) ||                            \
+            (_IOValue != CacheSlot(_Register)))                        \
+        {                                                              \
+            while (!pATI->nAvailableFIFOEntries--)                     \
+                ATIMach64PollEngineStatus(pATI);                       \
+            MMIO_OUT32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
+                (_Register) & MM_IO_SELECT, _IOValue);                 \
+            CacheSlot(_Register) = _IOValue;                           \
+            pATI->EngineIsBusy = TRUE;                                 \
+        }                                                              \
     } while (0)
 
 #define ATIMach64WaitForFIFO(_n)                               \
@@ -588,7 +611,7 @@ ATIMach64Calculate
 /*
  * ATIMach64Set --
  *
- * This function is called to load a Mach64's accelerator CRTC.
+ * This function is called to load a Mach64's accelerator CRTC and draw engine.
  */
 void
 ATIMach64Set
@@ -636,6 +659,9 @@ ATIMach64Set
     /* Load draw engine */
     if (pATI->OptionAccel)
     {
+        /* Clobber MMIO cache */
+        memset(pATI->MMIOCached, 0, sizeof(pATI->MMIOCached));
+
         pATI->EngineIsBusy = TRUE;      /* Force engine poll */
         ATIMach64WaitForIdle();
 
@@ -707,6 +733,35 @@ ATIMach64Set
         outm(CONTEXT_MASK, pATIHW->context_mask);
 
         ATIMach64WaitForIdle();
+
+        if (pATI->OptionMMIOCache)
+        {
+            /*
+             * Enable write caching for selected MMIO registers.  This can only
+             * be done for those registers whose value does not change without
+             * driver intervention.
+             */
+
+            CacheRegister(SRC_CNTL);
+
+            CacheRegister(HOST_CNTL);
+
+            CacheRegister(PAT_REG0);
+            CacheRegister(PAT_REG1);
+            CacheRegister(PAT_CNTL);
+
+            CacheRegister(SC_LEFT_RIGHT);
+            CacheRegister(SC_TOP_BOTTOM);
+
+            CacheRegister(DP_BKGD_CLR);
+            CacheRegister(DP_FRGD_CLR);
+            CacheRegister(DP_WRITE_MASK);
+            CacheRegister(DP_MIX);
+
+            CacheRegister(CLR_CMP_CLR);
+            CacheRegister(CLR_CMP_MSK);
+            CacheRegister(CLR_CMP_CNTL);
+        }
     }
 }
 
@@ -842,6 +897,128 @@ ATIMach64Sync
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     ATIMach64WaitForIdle();
+
+    if (pATI->OptionMMIOCache)
+    {
+        /*
+         * For debugging purposes, attempt to verify that each cached register
+         * should actually be cached.
+         */
+        if (RegisterIsCached(SRC_CNTL) &&
+            (CacheSlot(SRC_CNTL) != inm(SRC_CNTL)))
+        {
+            UnCacheRegister(SRC_CNTL);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "SRC_CNTL write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(HOST_CNTL) &&
+            (CacheSlot(HOST_CNTL) != inm(HOST_CNTL)))
+        {
+            UnCacheRegister(HOST_CNTL);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "HOST_CNTL write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(PAT_REG0) &&
+            (CacheSlot(PAT_REG0) != inm(PAT_REG0)))
+        {
+            UnCacheRegister(PAT_REG0);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "PAT_REG0 write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(PAT_REG1) &&
+            (CacheSlot(PAT_REG1) != inm(PAT_REG1)))
+        {
+            UnCacheRegister(PAT_REG1);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "PAT_REG1 write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(PAT_CNTL) &&
+            (CacheSlot(PAT_CNTL) != inm(PAT_CNTL)))
+        {
+            UnCacheRegister(PAT_CNTL);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "PAT_CNTL write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(SC_LEFT_RIGHT) &&
+            (CacheSlot(SC_LEFT_RIGHT) !=
+             (SetWord(inm(SC_RIGHT), 1) | SetWord(inm(SC_LEFT), 0))))
+        {
+            UnCacheRegister(SC_LEFT_RIGHT);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "SC_LEFT_RIGHT write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(SC_TOP_BOTTOM) &&
+            (CacheSlot(SC_TOP_BOTTOM) !=
+             (SetWord(inm(SC_BOTTOM), 1) | SetWord(inm(SC_TOP), 0))))
+        {
+            UnCacheRegister(SC_TOP_BOTTOM);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "SC_TOP_BOTTOM write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(DP_BKGD_CLR) &&
+            (CacheSlot(DP_BKGD_CLR) != inm(DP_BKGD_CLR)))
+        {
+            UnCacheRegister(DP_BKGD_CLR);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "DP_BKGD_CLR write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(DP_FRGD_CLR) &&
+            (CacheSlot(DP_FRGD_CLR) != inm(DP_FRGD_CLR)))
+        {
+            UnCacheRegister(DP_FRGD_CLR);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "DP_FRGD_CLR write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(DP_WRITE_MASK) &&
+            (CacheSlot(DP_WRITE_MASK) != inm(DP_WRITE_MASK)))
+        {
+            UnCacheRegister(DP_WRITE_MASK);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "DP_WRITE_MASK write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(DP_MIX) &&
+            (CacheSlot(DP_MIX) != inm(DP_MIX)))
+        {
+            UnCacheRegister(DP_MIX);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "DP_MIX write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(CLR_CMP_CLR) &&
+            (CacheSlot(CLR_CMP_CLR) != inm(CLR_CMP_CLR)))
+        {
+            UnCacheRegister(CLR_CMP_CLR);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "CLR_CMP_CLR write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(CLR_CMP_MSK) &&
+            (CacheSlot(CLR_CMP_MSK) != inm(CLR_CMP_MSK)))
+        {
+            UnCacheRegister(CLR_CMP_MSK);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "CLR_CMP_MSK write cache disabled!\n");
+        }
+
+        if (RegisterIsCached(CLR_CMP_CNTL) &&
+            (CacheSlot(CLR_CMP_CNTL) != inm(CLR_CMP_CNTL)))
+        {
+            UnCacheRegister(CLR_CMP_CNTL);
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "CLR_CMP_CNTL write cache disabled!\n");
+        }
+
+    }
 
     /*
      * For VTB's and later, the first CPU read of the framebuffer will return
@@ -1243,8 +1420,6 @@ ATIMach64SubsequentMono8x8PatternFillRect
 Bool
 ATIMach64AccelInit
 (
-    ScrnInfoPtr   pScreenInfo,
-    ScreenPtr     pScreen,
     ATIPtr        pATI,
     XAAInfoRecPtr pXAAInfo
 )
