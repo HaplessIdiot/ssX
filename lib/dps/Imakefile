@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.13 2001/04/07 19:41:50 alanh Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.14 2002/05/31 18:45:48 dawes Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -191,8 +191,10 @@ PSOPSCFILES = \
     psXops.c\
     psl2ops.c
 
-XCOMM hv: HEADERS must be here, otherwise IncSubdir-triggered BuildIncludes 
-XCOMM will fail on systems without ln cmd
+/*
+ * hv: HEADERS must be here, otherwise IncSubdir-triggered BuildIncludes 
+ * will fail on systems without ln cmd
+ */
 HEADERS = psops.h dpsops.h
 
 all:: $(HEADERS)
