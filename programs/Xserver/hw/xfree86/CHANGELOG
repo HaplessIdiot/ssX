@@ -1,4 +1,12 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 235. Fixes and updates for XKB keyboard maps:
+      - add programmers variant to the Turkish keyboard map (Nilgün Belma
+        Bugüner)
+      - add a variant of the Romanian keyboard map for German keyboard
+        (Manfred Pohler)
+      - add layout for BTC 9001AH keyboard (Nick Kurshev)
+      - add Uzbek keymap description (Bugzilla #391, Mashrab Kuvatov)
+      - update geometry files (Alexander Pohoyda)
  234. Added fonttosfnt, a utility that generates bitmap-only TTFs. It is
       capable of reading most font formats (Bugzilla #389, 
       Juliusz Chroboczek). 
@@ -17120,7 +17128,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2741 2003/06/18 16:17:35 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2743 2003/06/20 15:49:50 eich Exp $
 
 
 
