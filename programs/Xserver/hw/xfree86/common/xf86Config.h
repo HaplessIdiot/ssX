@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.7 2003/10/08 14:58:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.8 2004/02/13 23:58:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -66,11 +66,11 @@ typedef enum _ConfigStatus {
 /*
  * prototypes
  */
-char ** xf86ModulelistFromConfig(pointer **);
-char ** xf86DriverlistFromConfig(void);
-char ** xf86DriverlistFromCompile(void);
-char ** xf86InputDriverlistFromConfig(void);
-char ** xf86InputDriverlistFromCompile(void);
+const char ** xf86ModulelistFromConfig(pointer **);
+const char ** xf86DriverlistFromConfig(void);
+const char ** xf86DriverlistFromCompile(void);
+const char ** xf86InputDriverlistFromConfig(void);
+const char ** xf86InputDriverlistFromCompile(void);
 Bool xf86BuiltinInputDriver(const char *);
 ConfigStatus xf86HandleConfigFile(Bool);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.81 2003/10/29 04:17:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.82 2004/04/03 22:26:23 dawes Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -760,7 +760,7 @@ DoConfigure()
     char *home = NULL;
     char *filename = NULL;
     XF86ConfigPtr xf86config = NULL;
-    char **vlist, **vl;
+    const char **vlist, **vl;
     int *dev2screen;
 
     vlist = xf86DriverlistFromCompile();

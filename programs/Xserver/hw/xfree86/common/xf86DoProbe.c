@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.14 2003/10/29 04:17:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.15 2004/02/13 23:58:36 dawes Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -76,8 +76,8 @@ DoProbe()
 
 #ifdef XFree86LOADER
     /* Find the list of video driver modules. */
-    char **list = xf86DriverlistFromCompile();
-    char **l;
+    const char **list = xf86DriverlistFromCompile();
+    const char **l;
 
     if (list) {
 	ErrorF("List of video driver modules:\n");

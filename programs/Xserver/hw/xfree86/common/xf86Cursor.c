@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.37 2003/11/07 22:20:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.38 2004/02/13 23:58:36 dawes Exp $ */
 /*
  * Copyright (c) 1994-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -315,7 +315,9 @@ xf86ZoomViewport(ScreenPtr pScreen, int zoom)
       mode = mode->next;
     else
       mode = mode->prev;
-  } while (mode != pScr->currentMode && !(mode->type & M_T_USERDEF));
+  } while (mode != pScr->currentMode && (!(mode->type & M_T_USERDEF) ||
+					 mode->HDisplay > pScreen->width ||
+					 mode->VDisplay > pScreen->height));
 
   (void)xf86SwitchMode(pScreen, mode);
 }

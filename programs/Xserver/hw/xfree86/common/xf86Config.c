@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.277 2003/10/15 22:51:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.278 2004/06/01 01:23:49 dawes Exp $ */
 
 
 /*
@@ -329,11 +329,11 @@ xf86ValidateFontPath(char *path)
  * use the datastructure that the parser provides and pick out the parts
  * that we need at this point
  */
-char **
+const char **
 xf86ModulelistFromConfig(pointer **optlist)
 {
     int count = 0;
-    char **modulearray;
+    const char **modulearray;
     pointer *optarray;
     XF86LoadPtr modp;
     
@@ -386,12 +386,12 @@ xf86ModulelistFromConfig(pointer **optlist)
 }
 
 
-char **
+const char **
 xf86DriverlistFromConfig()
 {
     int count = 0;
     int j;
-    char **modulearray;
+    const char **modulearray;
     screenLayoutPtr slp;
     
     /*
@@ -469,11 +469,11 @@ xf86BuiltinInputDriver(const char *name)
 }
 
 
-char **
+const char **
 xf86InputDriverlistFromConfig()
 {
     int count = 0;
-    char **modulearray;
+    const char **modulearray;
     IDevPtr idp;
     
     /*
@@ -536,7 +536,7 @@ xf86InputDriverlistFromConfig()
  * consistent probe order.  For the loader server, we also look for vendor-
  * provided modules, pre-pending them to our own list.
  */
-static char **
+static const char **
 GenerateDriverlist(char * dirname, char * drivernames)
 {
     char *cp, **driverlist;
@@ -625,14 +625,14 @@ GenerateDriverlist(char * dirname, char * drivernames)
     }
 #endif /* XFree86LOADER */
 
-    return driverlist;
+    return (const char **)driverlist;
 }
 
 
-char **
+const char **
 xf86DriverlistFromCompile(void)
 {
-    static char **driverlist = NULL;
+    static const char **driverlist = NULL;
     static Bool generated = FALSE;
 
     /* This string is modified in-place */
@@ -647,10 +647,10 @@ xf86DriverlistFromCompile(void)
 }
 
 
-char **
+const char **
 xf86InputDriverlistFromCompile(void)
 {
-    static char **driverlist = NULL;
+    static const char **driverlist = NULL;
     static Bool generated = FALSE;
 
     /* This string is modified in-place */

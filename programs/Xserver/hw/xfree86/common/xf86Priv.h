@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.83 2004/01/27 01:31:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.84 2004/02/13 23:58:38 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
@@ -214,7 +214,7 @@ void xf86LogInit(void);
 void xf86CloseLog(void);
 
 /* xf86Init.c */
-Bool xf86LoadModules(char **list, pointer *optlist);
+Bool xf86LoadModules(const char **list, pointer *optlist);
 int xf86SetVerbosity(int verb);
 int xf86SetLogVerbosity(int verb);
 

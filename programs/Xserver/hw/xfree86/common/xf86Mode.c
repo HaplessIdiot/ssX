@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.70 2004/02/13 23:58:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.71 2004/06/04 14:52:50 alanh Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1770,7 +1770,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    p = xnfcalloc(1, sizeof(DisplayModeRec));
 	    p->prev = last;
 	    p->name = xnfalloc(strlen(r->name) + 1);
-	    if (!userModes)
+	    if (!userModes && last && strcmp(last->name, r->name) != 0)
 		p->type = M_T_USERDEF;
 	    strcpy(p->name, r->name);
 	    if (p->prev)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.218 2004/06/23 17:04:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.219 2004/10/23 15:29:29 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -167,6 +167,8 @@ static void xf86PrintMarkers(void);
 static void xf86RunVtInit(void);
 
 static Bool autoconfig = FALSE;
+static Bool noHardware = FALSE;
+static Bool noVT = FALSE;
 
 #ifdef DO_CHECK_BETA
 static int extraDays = 0;
@@ -180,11 +182,8 @@ extern void os2ServerVideoAccess();
 void (*xf86OSPMClose)(void) = NULL;
 
 #ifdef XFree86LOADER
-static char *baseModules[] = {
-	"bitmap",
-	"pcidata",
-	NULL
-};
+static const char **baseModules = NULL;
+static int numBaseModules = 0;
 #endif
 
 /* Common pixmap formats */
@@ -331,8 +330,10 @@ PostConfigInit(void)
 
     xf86OSPMClose = xf86OSPMOpen();
     
-    /* Run an external VT Init program if specified in the config file */
-    xf86RunVtInit();
+    if (!noVT) {
+	/* Run an external VT Init program if specified in the config file */
+	xf86RunVtInit();
+    }
 
     /* Do this after XF86Config is read (it's normally in OsInit()) */
     OsInitColors();
@@ -344,10 +345,10 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   int                    i, j, k, scr_index;
   static unsigned long   generation = 0;
 #ifdef XFree86LOADER
-  char                   **modulelist;
+  const char             **modulelist;
   pointer                *optionlist;
 #endif
-  char                   **driverlist;
+  const char             **driverlist;
   screenLayoutPtr	 layout;
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
@@ -402,7 +403,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	xf86Msg(X_ERROR, "Error parsing the config file\n");
 	return;
       case CONFIG_NOFILE:
-	autoconfig = TRUE;
+	/* For now, don't enable autoconfig when -nohw is enabled. */
+	if (!noHardware)
+	    autoconfig = TRUE;
 	break;
       }
     }
@@ -451,24 +454,42 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
 	
     /* Force load mandatory base modules */
+
+    numBaseModules = 1;
+    baseModules = xnfalloc(sizeof(*baseModules) * (numBaseModules + 1));
+    baseModules[0] = "bitmap";
+    if (!noHardware) {
+	numBaseModules++;
+	baseModules = xnfrealloc(baseModules,
+				 sizeof(*baseModules) * (numBaseModules + 1));
+	baseModules[numBaseModules - 1] = "pcidata";
+    }
+    baseModules[numBaseModules] = NULL;
+
     if (!xf86LoadModules(baseModules, NULL))
 	FatalError("Unable to load required base modules, Exiting...\n");
     
 #endif
 
-    xf86OpenConsole();
+    if (!noVT)
+	xf86OpenConsole();
 
-    /* Enable full I/O access */
-    xf86EnableIO();
+    if (!noHardware) {
+	/* Enable full I/O access */
+	xf86EnableIO();
 
-    /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
-    xf86BusProbe();
+	/*
+	 * Do a general bus probe.
+	 * This will be a PCI probe for x86 platforms.
+	 */
+	xf86BusProbe();
 
-    if (xf86DoProbe)
-	DoProbe();
+	if (xf86DoProbe)
+	    DoProbe();
 
-    if (xf86DoConfigure)
-	DoConfigure();
+	if (xf86DoConfigure)
+	    DoConfigure();
+    }
 
     if (autoconfig) {
 	if (!xf86AutoConfig()) {
@@ -480,8 +501,10 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
 retry:
 
-    /* Initialise the resource broker */
-    xf86ResourceBrokerInit();
+    if (!noHardware) {
+	/* Initialise the resource broker */
+	xf86ResourceBrokerInit();
+    }
 
     /*
      * Do whatever is needed to setup the initial driver list.  Don't
@@ -581,12 +604,14 @@ retry:
 	}
     }
 
-    /*
-     * Locate bus slot that had register IO enabled at server startup
-     */
+    if (!noHardware) {
+	/*
+	 * Locate bus slot that had register IO enabled at server startup
+	 */
 
-    xf86AccessInit();
-    xf86FindPrimaryDevice();
+	xf86AccessInit();
+	xf86FindPrimaryDevice();
+    }
 
     /*
      * Now call each of the Probe functions.  Each successful probe will
@@ -680,8 +705,10 @@ retry:
       return;
     }
 
-    xf86PostProbe();
-    xf86EntityInit();
+    if (!noHardware) {
+	xf86PostProbe();
+	xf86EntityInit();
+    }
 
     /*
      * Sort the drivers to match the requested ording.  Using a slow
@@ -996,7 +1023,7 @@ retry:
   if (serverGeneration != 1) {
     xf86Resetting = TRUE;
     /* All screens are in the same state, so just check the first */
-    if (!xf86Screens[0]->vtSema) {
+    if (!noVT && !xf86Screens[0]->vtSema) {
 #ifdef HAS_USL_VTS
       ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ);
 #endif
@@ -1349,7 +1376,8 @@ ddxGiveUp()
     DGAShutdown();
 #endif
 
-    xf86CloseConsole();
+    if (!noVT)
+	xf86CloseConsole();
 
     xf86CloseLog();
 
@@ -1383,9 +1411,10 @@ AbortDDX()
    */
 #ifdef HAS_USL_VTS
   /* Need the sleep when starting X from within another X session */
-  sleep(1);
+  if (!noVT)
+    sleep(1);
 #endif
-  if (xf86Screens) {
+  if (xf86Screens && !noVT) {
       if (xf86Screens[0]->vtSema)
 	  xf86EnterServerState(SETUP);
       for (i = 0; i < xf86NumScreens; i++)
@@ -1769,6 +1798,16 @@ ddxProcessArgument(int argc, char **argv, int i)
   {
     DoScanPci(argc, argv, i);
   }
+  if (!strcmp(argv[i], "-nohw"))
+  {
+    noHardware = TRUE;
+    return 1;
+  }
+  if (!strcmp(argv[i], "-novt"))
+  {
+    noVT = TRUE;
+    return 1;
+  }
   if (!strcmp(argv[i], "-probe"))
   {
     xf86DoProbe = TRUE;
@@ -1818,6 +1857,8 @@ ddxUseMsg()
   ErrorF("-autoconfig            automatic configuration, even when a config file exits\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-scanpci               execute the scanpci module and exit\n");
+  ErrorF("-nohw                  disable video hardware and hardware probing\n");
+  ErrorF("-novt                  disable console/VT use\n");
   ErrorF("-verbose [n]           verbose startup messages\n");
   ErrorF("-logverbose [n]        verbose log messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
@@ -1987,7 +2028,7 @@ xf86RunVtInit(void)
  * xf86LoadModules iterates over a list that is being passed in.
  */             
 Bool
-xf86LoadModules(char **list, pointer *optlist)
+xf86LoadModules(const char **list, pointer *optlist)
 {
     int errmaj, errmin;
     pointer opt;
