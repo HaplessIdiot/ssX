@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.43 2002/03/12 23:28:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.44tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -2540,7 +2540,7 @@ LispNewBigRational(LispMac *mac, mpr *r)
 LispObj *
 LispNewPackage(LispMac *mac, LispObj *name, LispObj *nicknames)
 {
-    LispObj *package = LispNew(mac, package, nicknames);
+    LispObj *package = LispNew(mac, NIL, nicknames);
     LispPackage *pack = LispCalloc(mac, 1, sizeof(LispPackage));
 
     package->type = LispPackage_t;

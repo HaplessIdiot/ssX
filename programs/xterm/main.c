@@ -1,4 +1,4 @@
-#ifndef lint
+#if !defined(lint) && 0
 static char *rid="$Xorg: main.c,v 1.7 2001/02/09 02:06:02 xorgcvs Exp $";
 #endif /* lint */
 
@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.145 2002/01/07 18:35:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.147tsi Exp $ */
 
 
 /* main.c */
@@ -2942,7 +2942,9 @@ spawn (void)
 		 */
 		TRACE_CHILD
 #if defined(_POSIX_SOURCE) || defined(SVR4) || defined(__convex__) || defined(SCO325) || defined(__QNX__)
-		int pgrp = setsid();	/* variable may not be used... */
+#if !defined(USE_SYSV_PGRP)
+		int pgrp = setsid();
+#endif
 #else
 		int pgrp = getpid();
 #endif

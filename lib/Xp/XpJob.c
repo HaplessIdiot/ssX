@@ -34,9 +34,9 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpJob.c,v 1.3 2000/09/26 15:56:57 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpJob.c,v 1.4tsi Exp $ */
 
-#if defined(sun) && defined(i386) && defined(SVR4)
+#if defined(sun) && defined(i386) && defined(SVR4) && !defined(__EXTENSIONS__)
 #define __EXTENSIONS__
 #endif
 
@@ -101,7 +101,9 @@ XpStartJob (
 	char            *joa;		/* job owner attribute */
  	char *PwName;
 #ifndef WIN32
+#ifdef X_NEEDS_PWPARAMS
 	_Xgetpwparams pwparams;
+#endif
 	struct passwd *pw;
 	pw = _XGetpwuid(getuid(),pwparams);
 

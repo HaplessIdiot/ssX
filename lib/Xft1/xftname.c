@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.10 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftname.c,v 1.2tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -46,7 +46,7 @@ XftNameUnparse (XftPattern *pat, char *dest, int len)
 	free (name);
 	return FcFalse;
     }
-    strcpy (dest, name);
+    strcpy (dest, (void *) name);
     free (name);
     return FcTrue;
 }

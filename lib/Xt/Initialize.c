@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.18 2001/08/22 22:52:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.19tsi Exp $ */
 
 /*
 
@@ -233,7 +233,9 @@ String _XtGetUserName(dest, len)
     } else
 	*dest = '\0';
 #else
+#ifdef X_NEEDS_PWPARAMS
     _Xgetpwparams pwparams;
+#endif
     struct passwd *pw;
     char* ptr;
 
@@ -275,7 +277,9 @@ static String GetRootDirName(
     else
 	*dest = '\0';
 #else
+#ifdef X_NEEDS_PWPARAMS
     _Xgetpwparams pwparams;
+#endif
     struct passwd *pw;
     static char *ptr;
 
