@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.23tsi Exp $ */
+/* $XFree86$ */
 /*
  * Basic hardware and memory detection
  *
@@ -490,7 +490,7 @@ sis550Setup(ScrnInfoPtr pScrn)
 	  pciconfig = (pciReadByte(0x00000800, 0xcd) >> 1) & 0x03;
 	  if(pciconfig == 0x01)      pScrn->videoRam += 32768;
 	  else if(pciconfig == 0x03) pScrn->videoRam += 65536;
-	  
+
 	  if((pScrn->videoRam < 32768) || (pScrn->videoRam > 131072)) {
 	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	     	"Illegal video Ram size (%d) detected, using BIOS setting\n",

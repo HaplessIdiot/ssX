@@ -10234,6 +10234,50 @@ SiS_HandleDDC(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
 }
 
 #ifdef LINUX_XF86
+
+static BOOLEAN
+checkedid1(unsigned char *buffer)
+{
+   /* Check header */
+   if((buffer[0] != 0x00) ||
+      (buffer[1] != 0xff) ||
+      (buffer[2] != 0xff) ||
+      (buffer[3] != 0xff) ||
+      (buffer[4] != 0xff) ||
+      (buffer[5] != 0xff) ||
+      (buffer[6] != 0xff) ||
+      (buffer[7] != 0x00))
+      return FALSE;
+
+   /* Check EDID version and revision */
+   if((buffer[0x12] != 1) || (buffer[0x13] > 4)) return FALSE;
+
+   /* Check week of manufacture for sanity */
+   if(buffer[0x10] > 53) return FALSE;
+
+   /* Check year of manufacture for sanity */
+   if(buffer[0x11] > 40) return FALSE;
+
+   return TRUE;
+}
+
+static BOOLEAN
+checkedid2(unsigned char *buffer)
+{
+   USHORT year = buffer[6] | (buffer[7] << 8);
+
+   /* Check EDID version */
+   if((buffer[0] & 0xf0) != 0x20) return FALSE;
+
+   /* Check week of manufacture for sanity */
+   if(buffer[5] > 53) return FALSE;
+
+   /* Check year of manufacture for sanity */
+   if((year != 0) && ((year < 1990) || (year > 2030))) return FALSE;
+
+   return TRUE;
+}
+
 /* Sense the LCD parameters (CR36, CR37) via DDC */
 /* SiS30x(B) only */
 USHORT
@@ -10278,17 +10322,17 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    retry = 2;
    do {
       if(SiS_ReadDDC(SiS_Pr, DDCdatatype, buffer)) {
-         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO, 
-	 	"CRT2: DDC read failed (attempt %d), %s\n", 
+         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
+	 	"CRT2: DDC read failed (attempt %d), %s\n",
 		(3-retry), (retry == 1) ? "giving up" : "retrying");
 	 retry--;
 	 if(retry == 0) return 0xFFFF;
       } else break;
    } while(1);
-   
-#ifdef TWDEBUG   
+
+#ifdef TWDEBUG
    for(i=0; i<256; i+=16) {
-       xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO,
+       xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
        	"%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
 	buffer[i],    buffer[i+1], buffer[i+2], buffer[i+3],
 	buffer[i+4],  buffer[i+5], buffer[i+6], buffer[i+7],
@@ -10302,8 +10346,14 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    switch(DDCdatatype) {
    case 1:							/* Analyze EDID V1 */
       /* Catch a few clear cases: */
+      if(!(checkedid1(buffer))) {
+         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
+	 	"CRT2: EDID corrupt\n");
+	 return 0;
+      }
+
       if(!(buffer[0x14] & 0x80)) {
-         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED, 
+         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
 	        "CRT2: Attached display expects analog input (0x%02x)\n",
 		buffer[0x14]);
       	 return 0;
@@ -10485,8 +10535,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	          (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VSyncEnd[i])  ||
 	          (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    ||
 	          (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      ||
-	          ( ((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162000)) ||
-		    ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108000)) ) ||
+	          (SiS_Pr->CP_Clock[i] > 108000)  		       ||
 		  (buffer[base+17] & 0x80)) {
 
 	          SiS_Pr->CP_DataValid[i] = FALSE;
@@ -10550,6 +10599,13 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    case 3:							/* Analyze EDID V2 */
    case 4:
       index = 0;
+
+      if(!(checkedid2(buffer))) {
+         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
+	 	"CRT2: EDID corrupt\n");
+	 return 0;
+      }
+
       if((buffer[0x41] & 0x0f) == 0x03) {
          index = 0x42 + 3;
          xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
@@ -10644,7 +10700,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
       if(buffer[0x7e] & 0x20) {			    /* skip Luminance Table (if provided) */
          lumsize = buffer[0x80] & 0x1f;
 	 if(buffer[0x80] & 0x80) lumsize *= 3;
-	 lumsize++;
+	 lumsize++;  /* luminance header byte */
 	 index += lumsize;
       }
       index += (((buffer[0x7e] & 0x1c) >> 2) * 8);   /* skip Frequency Ranges */
@@ -10672,7 +10728,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
       if(paneltype == Panel_Custom) {
          index += (numcodes * 4);
 	 numcodes = buffer[0x7f] & 0x07;
-	 for(i=0; i<numcodes; i++) {
+	 for(i=0; i<numcodes; i++, index += 18) {
 	    xres = buffer[index+2] | ((buffer[index+4] & 0xf0) << 4);
             yres = buffer[index+5] | ((buffer[index+7] & 0xf0) << 4);
 
@@ -10706,8 +10762,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	       (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VSyncEnd[i])  ||
 	       (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    ||
 	       (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      ||
-	       ( ((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162000)) ||
-		 ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108000)) ) ||
+	       (SiS_Pr->CP_Clock[i] > 108000)			    ||
 	       (buffer[index + 17] & 0x80)) {
 
 	       SiS_Pr->CP_DataValid[i] = FALSE;
@@ -10810,16 +10865,16 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
       SiS_Pr->SiS_DDC_DeviceAddr = 0xa0;	/* EDID V1 */
       DDCdatatype = 1;
    } else {
-   	xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO,
+   	xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
 		"Do DDC answer\n");
    	return 0;				/* no DDC support (or no device attached) */
    }
-   
+
    /* Read the entire EDID */
    retry = 2;
    do {
       if(SiS_ReadDDC(SiS_Pr, DDCdatatype, buffer)) {
-         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_INFO, 
+         xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
 	 	"CRT2: DDC read failed (attempt %d), %s\n", 
 		(3-retry), (retry == 1) ? "giving up" : "retrying");
 	 retry--;
@@ -10832,10 +10887,15 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
     */
    switch(DDCdatatype) {
    case 1:
+      if(!(checkedid1(buffer))) {
+          xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
+	  	"CRT2: EDID corrupt\n");
+      	  return 0;
+      }
       if(buffer[0x14] & 0x80) {			/* Display uses digital input */
           xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
 	  	"CRT2: Attached display expects digital input\n");
-      	  return 0;  	
+      	  return 0;
       }
       SiS_Pr->CP_Vendor = buffer[9] | (buffer[8] << 8);
       SiS_Pr->CP_Product = buffer[10] | (buffer[11] << 8);
@@ -10843,6 +10903,11 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
       break;
    case 3:
    case 4:
+      if(!(checkedid2(buffer))) {
+          xf86DrvMsg(pSiS->pScrn->scrnIndex, X_PROBED,
+	  	"CRT2: EDID corrupt\n");
+      	  return 0;
+      }
       if( ((buffer[0x41] & 0x0f) != 0x01) &&  	/* Display does not support analog input */
           ((buffer[0x41] & 0x0f) != 0x02) &&
 	  ((buffer[0x41] & 0xf0) != 0x10) &&
