@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.8 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.9 2001/09/23 06:10:55 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -12,6 +12,7 @@
 #include "scrnintstr.h"
 #include "cursorstr.h"
 #include "mipointrst.h"
+#include "globals.h"
 
 // Size of the QuickDraw cursor
 #define CURSORWIDTH 16
@@ -354,7 +355,9 @@ static void QuartzCrossScreen(ScreenPtr pScreen, Bool entering)
 
 /*
  * QuartzWarpCursor
- *  Change the cursor position without generating an event or motion history
+ *  Change the cursor position without generating an event or motion history.
+ *  The input coordinates (x,y) are in pScreen-local X11 coordinates.
+ *  
  */
 static void
 QuartzWarpCursor(
@@ -362,8 +365,6 @@ QuartzWarpCursor(
     int                     x,
     int                     y)
 {
-    CGDisplayErr            cgErr;
-    CGPoint                 cgPoint;
     static int              neverMoved = TRUE;
 
     if (neverMoved) {
@@ -374,9 +375,26 @@ QuartzWarpCursor(
     }
 
     if (quartzServerVisible) {
-        cgPoint = CGPointMake(x + darwinMainScreenX, y + darwinMainScreenY);
-        cgErr = CGDisplayMoveCursorToPoint(QUARTZ_PRIV(pScreen)->displayID,
-                                           cgPoint);
+        CGDisplayErr        cgErr;
+        CGPoint             cgPoint;
+        CGDirectDisplayID   cgID = QUARTZ_PRIV(pScreen)->displayID;
+        CGRect              cgRect = CGDisplayBounds(cgID);
+
+        // Convert (x,y) to CoreGraphics screen-local CG coordinates.
+        // This is necessary because the X11 screen and CG screen may not
+        // coincide. (e.g. X11 screen may be moved to dodge the menu bar)
+
+        // Make point in X11 global coordinates
+        cgPoint = CGPointMake(x + dixScreenOrigins[pScreen->myNum].x,
+                              y + dixScreenOrigins[pScreen->myNum].y);
+        // Shift to CoreGraphics global screen coordinates
+        cgPoint.x += darwinMainScreenX;
+        cgPoint.y += darwinMainScreenY;
+        // Shift to CoreGraphics screen-local coordinates
+        cgPoint.x -= cgRect.origin.x;
+        cgPoint.y -= cgRect.origin.y;
+
+        cgErr = CGDisplayMoveCursorToPoint(cgID, cgPoint);
         if (cgErr != CGDisplayNoErr) {
             ErrorF("Could not set cursor position with error code 0x%x.\n",
                     cgErr);
