@@ -754,8 +754,6 @@ XFree86 Project has been provided from its proceeds.
 	name="AIB Software Corporation">, Herndon, VA
   <item>Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
   <item>American Micro Group
-  <item><url url="http://www.attgis.com/"  
-	name="AT&amp;T Global Information Services"> (formerly NCR)
   <item><url url="http://www.atitech.ca/"  
 	name="ATI Technologies Inc">
   <item>Andrew Burgess
@@ -792,6 +790,8 @@ XFree86 Project has been provided from its proceeds.
 	name="Morse Telecommunications">, Long Beach, NY
   <item>MIRO Computer Products AG, Braunschweig, Germany
   <item>Rich &amp; Amy Murphey
+  <item><url url="http://www.ncr.com/"  
+	name="NCR Corp">
   <item>Brett Neumeier
   <item>Number Nine, Lexington, MA
   <item>Kazuyuki Okamoto, Japan
@@ -1017,7 +1017,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.75 1997/01/27 20:34:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.76 1997/03/03 10:19:18 hohndel Exp $
 
 
 
