@@ -6,12 +6,12 @@
 <date>25 November 2002
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Config.sgml,v 1.1 2002/12/10 03:52:56 dawes Exp $
 </ident>
 
 <abstract>
 This document describes how to configure XFree86 XKB from a user's point
-a few. It convers basic configuration syntax and gives also a few examples.
+a few. It converts basic configuration syntax and gives also a few examples.
 </abstract>
 
 <toc>
@@ -28,7 +28,7 @@ need to touch any of xkb configuration files.
 <p>
 The easiest and the most natural way how to specify a keyboard mapping is
 tu use <tt>rules</tt> component. As its name suggests it describes a number of general
-rules how to combine all bits and pieces into a valid and usefull keyboard 
+rules how to combine all bits and pieces into a valid and useful keyboard 
 mapping. All you need to do is to select a suitable rules file and then to
 feed it with a few parameters that will adjust the keyboard behaviour to
 fulfill your needs.
@@ -51,7 +51,7 @@ which is located in xkb configuration subdirectory <tt>rules</tt> (for example
 
 <sect1>Basic Configuration
 <p>
-Let's say you want to configure a PC style american keyboard with 104
+Let's say you want to configure a PC style America keyboard with 104
 keys as described in <tt>xfree86.lst</tt>. It can be done by simply writing
 several lines from below to you XFree86 configuration file (often
 found as <tt>/etc/X11/XF86Config-4</tt> or <tt>/etc/X11/XF86Config</tt>):
@@ -174,7 +174,7 @@ symbols
 <item><em>geometry</em> - a description of physical keyboard geometry
 
 <item><em>compatibility maps</em> - a specification of what action should
-each key produce in order to preserve compatiblity with XKB-unware clients
+each key produce in order to preserve compatibility with XKB-unware clients
 </itemize>
 
 <sect1>Example Configuration
@@ -214,7 +214,7 @@ to allow iso9995 group shifting.
 It is the formerly used way to configure xkb. The user included a special
 keymap file which specified the direct xkb configuration. This method
 has been obsoleted by previously described rules files which are far
-more flexible and allow simplier and more intuitive syntax. It is
+more flexible and allow simpler and more intuitive syntax. It is
 preserved merely for compatibility reasons. Avoid using it if it is possible.
 <p>
 

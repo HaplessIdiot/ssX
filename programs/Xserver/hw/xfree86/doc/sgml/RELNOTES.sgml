@@ -9,7 +9,7 @@
 <date>23 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.75 2003/02/24 16:33:39 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.76 2003/02/25 05:05:33 dawes Exp $
 </ident>
 
 <abstract>
@@ -158,7 +158,7 @@ don't have enough space to cover them all here.
 <item> The XFree86 server's hot keys (including those for switching
 	modes and virtual terminals) can now be configured via XKB.
 	Previously they were hard coded.  An X server configuration
-	option has been added to allow the VT swithing hot keys to be
+	option has been added to allow the VT switching hot keys to be
 	disabled.
 
 </itemize>
@@ -593,7 +593,7 @@ EndSection
 	The new option <tt>AllowDeactivateGrabs</tt> allows deactivating
 	any active grab with the key sequence <tt>Ctrl+Alt+Keypad-Divide</tt>
 	and the new option <tt>AllowClosedownGrabs</tt> allows closing the
-	conection to the grabbing client with the key sequence
+	connection to the grabbing client with the key sequence
 	<tt>Ctrl+Alt+Keypad-Multiply</tt>. Note that these options are off
 	by default as they allow users to remove the grab used by screen
 	saver/locker programs.

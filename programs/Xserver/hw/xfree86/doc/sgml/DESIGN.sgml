@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.50 2003/01/22 18:04:47 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.51 2003/02/19 01:02:47 dawes Exp $
 </ident>
 
 
@@ -5497,7 +5497,7 @@ be catered for the by the helpers.
       pitch being used.  It also prints out two lines for each mode being
       used.  The first line includes the mode's pixel clock, horizontal sync
       rate, refresh rate, and whether it is interlaced, doublescanned and/or
-      multiscanned.  The second line is the mode's Modeline.
+      multi-scanned.  The second line is the mode's Modeline.
 
       This function is normally called after calling
       &s.code;xf86SetCrtcForModes()&e.code;.

@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.41 2003/01/04 04:20:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.42 2003/01/20 03:43:07 dawes Exp $
 </ident>
 
 <abstract>
@@ -559,7 +559,7 @@ of the panel's native resolution.
 This is quite evident when the panel has ``odd-ball'' dimensions, such as
 1400x1050, a resolution not commonly possible on CRTs or projection
 equipment.<p>
-Also, the display of independant images on the panel and CRT is not currently
+Also, the display of independent images on the panel and CRT is not currently
 implemented, and might never be, pending resolution of the previous item.<p>
 </itemize>
 Support for the following will be added in a future release:

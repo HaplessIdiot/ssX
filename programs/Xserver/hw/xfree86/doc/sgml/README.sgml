@@ -16,7 +16,7 @@
 <date>25 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.129 2003/02/24 17:09:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.130 2003/02/25 18:31:36 dawes Exp $
 </ident>
 
 <abstract>
@@ -58,7 +58,7 @@ XFree86 &relvers; is a pre-release snapshot of XFree86 &nextfullrelvers;.
 This snapshot is release candidate &rcnum; for version &nextfullrelvers;.
 ]]>
 Pre-release snapshots are provided for beta testing.  You should only install
-snapshots if you're confortable dealing with possibly unstable beta-level
+snapshots if you're comfortable dealing with possibly unstable beta-level
 software.  If you find problems with this snapshot, you are encouraged
 to report your findings to the public XFree86 mailing list:
 <email>XFree86@XFree86.org</email>.
@@ -102,7 +102,7 @@ prohibit vendors and others redistributing binaries of this snapshot
 release, we don't recommend including them in production releases.
 ]]>
 
-<sect>Pointers to aditional information
+<sect>Pointers to additional information
 <p>
 
 The documentation for this release can be found online at the <url

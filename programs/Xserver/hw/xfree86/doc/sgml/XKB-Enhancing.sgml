@@ -6,7 +6,7 @@
 <date>25 November 2002
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/XKB-Enhancing.sgml,v 1.1 2002/12/10 03:52:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -63,7 +63,7 @@ main modules:
      naming conventions for symbolic names (always four bytes long): 
      <itemize>
        <item> names which express some traditional meaning like 
-       <tt>&lt;SPCE&gt;</tt> (stands for spacebar) or 
+       <tt>&lt;SPCE&gt;</tt> (stands for space bar) or 
        <item> names which express some relative positioning on a keyboard, for 
        example <tt>&lt;AE01&gt;</tt> (an exclamation mark on US keyboards), on 
        the right there are keys <tt>&lt;AE02&gt;</tt>, <tt>&lt;AE03&gt;</tt> 
@@ -194,7 +194,7 @@ syntax of xkb configuration files.
 <p>
 <sect1>Predefined XKB Symbol Sets
 <p>
-If you are about to define some european symbol map extension, you might
+If you are about to define some European symbol map extension, you might
 want to use on of four predefined latin alphabet layouts.
 <!--
     TODO: more details
@@ -366,16 +366,16 @@ create a new one.
 <p>
 When the XKB software deals with a separate type description it gets
 a complete list of modifiers that should be taken into account from the 
-<tt>'modifers=&lt;list of modifiers&gt;'</tt> list and expects that a set
+<tt>'modifiers=&lt;list of modifiers&gt;'</tt> list and expects that a set
 of <tt>'map[&lt;combination of modifiers&gt;]=&lt;list of modifiers&gt;'</tt>
 instructions that contain the mapping for each combination of modifiers 
-mentioned in that list. Modifiers that are not explitly listed are NOT taken 
+mentioned in that list. Modifiers that are not explicitly listed are NOT taken 
 into account
 when the resulting shift level is computed.
-If some combination is ommited the program (subroutine) should choose the first
-level for this combination (a quite resonable behavior).
+If some combination is omitted the program (subroutine) should choose the first
+level for this combination (a quite reasonable behavior).
 <p>
-Lets consider an example with two modifers <tt>ModOne</tt> and <tt>ModTwo</tt>:
+Lets consider an example with two modifiers <tt>ModOne</tt> and <tt>ModTwo</tt>:
 <tscreen><verb>
 type "..." {
     modifiers = ModOne+ModTwo;
@@ -384,7 +384,7 @@ type "..." {
 };
 </verb></tscreen>
 In this case the map statements for <tt>ModTwo</tt> only and 
-<tt>ModOne+ModTwo</tt> are ommited.  It means that if the <tt>ModTwo</tt> is 
+<tt>ModOne+ModTwo</tt> are omitted.  It means that if the <tt>ModTwo</tt> is 
 active the subroutine can't found explicit mapping for such combination an will 
 use the <em>default level</em> i.e. Level1.
 <p>
@@ -408,14 +408,14 @@ level. But in the second case the capitalization will be applied to the symbol
 chosen accordingly to he first modifier - and this can be the symbol from the
 first as well as from the second level.
 <p>
-Usually, all modifiers introduced in <tt>'modifers=&lt;list of 
+Usually, all modifiers introduced in <tt>'modifiers=&lt;list of 
 modifiers&gt;'</tt> list are used for shift level calculation and then 
 discarded. Sometimes this is not desirable. If you want to use a modifier
 for shift level calculation but you don't want to discard it, you may
 list in '<tt>preserve[&lt;combination of modifiers&gt;]=&lt;list of 
 modifiers&gt;'</tt>. That means, for a given combination all listed modifiers
 will be preserved. If the Lock modifier is preserved then the resulting
-symbol is passed to internal capitalization routine regardles whether
+symbol is passed to internal capitalization routine regardless whether
 it has been used for a shift level calculation or not.
 <p>
 Any key type description can use both real and virtual modifiers. Since real 
@@ -432,16 +432,16 @@ type definitions.
 <p>
 Once you are finished with your symbol map you need to add it
 to rules file. The rules file describes how all the
-five basic keycodes, types, compat, symbos and geometry components
-should be composed to give a senceful resulting xkb configuration.
+five basic keycodes, types, compat, symbols and geometry components
+should be composed to give a sensible resulting xkb configuration.
 <p>
 The main advantage of rules over formerly used keymaps is a possibility
-to simply parametrize (once) fixed patterns of configurations and thus
+to simply parameterize (once) fixed patterns of configurations and thus
 to elegantly allow substitutions of various local configurations
 into predefined templates.
 <p>
 A pattern in a rules file (often located in 
-<tt>/usr/lib/X11/xkb/rules</tt>) can be parametrized with four other arguments:
+<tt>/usr/lib/X11/xkb/rules</tt>) can be parameterized with four other arguments:
 <tt>Model</tt>, <tt>Layout</tt>, <tt>Variant</tt> and <tt>Options</tt>.
 For most cases parameters <tt>model</tt> and <tt>layout</tt> should
 be sufficient for choosing a functional keyboard mapping.
@@ -477,8 +477,8 @@ Each rule defines what certain combination of values on the left side
 of equal sign ('<tt>=</tt>') results in. For example a (keyboard) model 
 <tt>macintosh_old</tt> instructs xkb to take definitions of keycodes
 from file <tt>keycodes/macintosh</tt> while the rest of models
-(represented by a wildcard '<tt>*</tt>') instructs it to take them from
-file <tt>keycodes/xfree86</tt>. The wildcard represents all possible
+(represented by a wild card '<tt>*</tt>') instructs it to take them from
+file <tt>keycodes/xfree86</tt>. The wild card represents all possible
 values on the left side which were not found in any of the previous rules.
 The more specialized (more complete) rules have higher precedence than general 
 ones, i.e. the more general rules supply reasonable default values.
@@ -490,7 +490,7 @@ side. For example <tt>+&percnt;l&percnt;(v)</tt> expands into <tt>+cz(bksl)</tt>
 respective values on the left side were <tt>cz</tt> layout in its <tt>bksl</tt> 
 variant. More, if the layout resp. variant  parameter is followed by a pair of 
 brackets ('<tt>[</tt>', '<tt>]</tt>') it means that xkb should <em>place the 
-layout resp. variant into specified xkb group</em>. If the brackets are ommited
+layout resp. variant into specified xkb group</em>. If the brackets are omitted
 the first group is the default value.
 <p>
 So the second block of rules enhances symbol definitions for some particular 

@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 9 November 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.28 2003/02/16 17:19:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.29 2003/02/16 17:21:11 dawes Exp $
 </ident>
 
 <toc>
@@ -59,7 +59,7 @@ this file and we'll revise it.
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
 non-OS dependent new features in XFree86 &relvers;.
 
-<sect1>New OS dependant features in 4.3
+<sect1>New OS related features in 4.3
 <p>
 <itemize>
 <item>Support for some VGA cards on OpenBSD/alpha
