@@ -3,7 +3,7 @@
  *
  * Warning, there be crufty dragons here.
  */
-/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.43tsi Exp $ */
+/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.43 2003/05/21 22:59:11 dickey Exp $ */
 
 /*
 
@@ -276,7 +276,7 @@ static XtResource resources[] =
 #endif
 };
 
-static int Tinput(void);
+static IChar Tinput(void);
 static int getpoint(void);
 static void TCursorBack(void);
 static void TCursorDown(void);
@@ -396,8 +396,9 @@ static void
 Tekparse(void)
 {
     register TScreen *screen = &term->screen;
-    register int c = 0, x, y;
-    Char ch;
+    int x, y;
+    IChar c = 0;
+    IChar ch;
     int nextstate;
 
     for (;;) {
@@ -728,8 +729,9 @@ Tekparse(void)
 	    TRACE(("case: do osc escape\n"));
 	    {
 		Char buf2[512];
-		int c2, len = 0;
-		while ((c2 = Tinput()) != BEL) {
+		IChar c2;
+		int len = 0;
+		while ((c2 = input()) != BEL) {
 		    if (!isprint(c2 & 0x7f)
 			|| len + 2 >= (int) sizeof(buf2))
 			break;
@@ -752,10 +754,11 @@ static int Tselect_mask;
 static fd_set Tselect_mask;
 #endif /* VMS */
 
-static int
+static IChar
 Tinput(void)
 {
     register TScreen *screen = &term->screen;
+    register int i;
     register TekLink *tek;
 
     if (Tpushback > Tpushb)
@@ -830,7 +833,9 @@ Tinput(void)
 
 #else /* VMS */
 		XFD_COPYSET(&Select_mask, &Tselect_mask);
-		if (Select(max_plus1, &Tselect_mask, NULL, NULL, NULL) < 0) {
+		if ((i = Select(max_plus1,
+				&Tselect_mask, NULL, NULL,
+				NULL)) < 0) {
 		    if (errno != EINTR)
 			SysError(ERROR_TSELECT);
 		    continue;

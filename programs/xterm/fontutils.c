@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.37 2003/03/09 23:39:13 dickey Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.38 2003/05/19 00:47:32 dickey Exp $
  */
 
 /************************************************************
@@ -487,8 +487,11 @@ is_double_width_font(XFontStruct * fs)
 {
     return (2 * fs->min_bounds.width == fs->max_bounds.width);
 }
+#else
+#define is_double_width_font(fs) 0
+#endif
 
-#ifdef XRENDERFONT
+#if OPT_WIDE_CHARS && defined(XRENDERFONT) && defined(HAVE_TYPE_FCCHAR32)
 #define HALF_WIDTH_TEST_STRING "1234567890"
 
 /* '1234567890' in Chinese characters in UTF-8 */
@@ -543,12 +546,8 @@ is_double_width_font_xft(Display * dpy, XftFont * font)
      */
     return ((2 * gi1.xOff == gi2.xOff) || (gi1.xOff == gi2.xOff));
 }
-#endif
 #else
-#define is_double_width_font(fs) 0
-#ifdef XRENDERFONT
 #define is_double_width_font_xft(dpy, xftfont) 0
-#endif
 #endif
 
 #define EmptyFont(fs) (fs != 0 \

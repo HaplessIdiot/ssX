@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.96 2003/05/19 00:47:33 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.97 2003/05/21 22:59:14 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_dev">current development</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_177">Patch #177 - 2003/3/23 - XFree86 4.3.0</A>
@@ -224,6 +225,61 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_dev">current development</A></H1>
+<ul>
+	<li>modify <code>scroll-back</code> and <code>scroll-forw</code>
+	    actions to accept an adjustment value, e.g.,
+	    <pre>
+	      <code>scroll-back(1, page-2)</code></pre>
+	    to scroll back by 2 lines less than a page (patch by Greg
+	    Klanderman).
+
+	<li>use color resource setting from Debian package for xterm VT100 widget,
+	    since the choice of blues provides better contrast.
+
+	<li>remove color resources from <code>XTerm.ad</code>, leaving them
+	    only in <code>XTerm-col.ad</code> (prompted by Debian package for
+	    xterm).
+
+	<li>correct configure script option --enable-pty-handshake (report by
+	    Paul Gilmartin).
+
+	<li>add <code>visualBellDelay</code> resource to modify the length of
+	    time used for visual bell, for very slow displays or very fast
+	    computers (reports by Ingo van Lil and Doug Toppin).
+
+	<li>correct logic for initializing dynamic highlight color (patch by
+	    Jess Thrysoee).
+
+	<li>add a check for non-zero size in call to <code>XCopyArea()</code>
+	    to accommodate a Solaris bug.
+
+	<li>correct typo in example for character classes in xterm manpage
+	   (Debian #198910).
+
+	<li>link xterm with bind_on_load option on Darwin to work around a
+	   deadlock in the dynamic loader when a signal is received while
+	   the dynamic loader is looking up symbols (patches by Rob Braun,
+	   Torrey Lyons).
+
+	<li>modify configure script to avoid using "head -1".
+
+	<li>update config.guess, config.sub
+
+	<li>modify ifdef's to work around inclusion of types FcChar32 and
+	   XftCharSpec with FreeType 2.0 (see <a href="#xterm_175">patch #175</a>).
+
+	<li>modify the predictable version of the generated logfile name (see
+	   <a href="#xterm_171">patch #171</a>) to append the process-id rather
+	   than a random value.
+
+	<li>resync with XFree86 CVS:
+	<ul>
+	   <li>Enable SCO function keys in xterm
+	   <li>Make Delete key send DEL by default on SCO in xterm
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A></H1>
 <ul>
@@ -1801,9 +1857,9 @@ xc/programs/Xserver/hw/xfree86).
 	  codes, but the ones for the Sun keycodes are what cmdtool and
 	  shelltool actually send.
 
-	<li>add <code>colorRV</code> and <code>colorRVMode</code> resources to allow specifying a
-	  color to use for reverse video, similar to the existing UL, BD, and BL
-	  modes.
+	<li>add <code>colorRV</code> and <code>colorRVMode</code> resources to
+	  allow specifying a color to use for reverse video, similar to the
+	  existing UL, BD, and BL modes.
 
 	<li>add <code>alwaysUseMods</code> resource, to override check if
 	  <code>alt</code> or <code>meta</code> modifiers are used in

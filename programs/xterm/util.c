@@ -2,7 +2,7 @@
  *	$Xorg: util.c,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/util.c,v 3.74 2003/03/09 23:39:14 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/util.c,v 3.75 2003/05/19 00:47:33 dickey Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -964,24 +964,26 @@ copy_area(TScreen * screen,
 	  int dest_x,
 	  int dest_y)
 {
-    /* wait for previous CopyArea to complete unless
-       multiscroll is enabled and active */
-    if (screen->incopy && screen->scrolls == 0)
-	CopyWait(screen);
-    screen->incopy = -1;
+    if (width != 0 && height != 0) {
+	/* wait for previous CopyArea to complete unless
+	   multiscroll is enabled and active */
+	if (screen->incopy && screen->scrolls == 0)
+	    CopyWait(screen);
+	screen->incopy = -1;
 
-    /* save for translating Expose events */
-    screen->copy_src_x = src_x;
-    screen->copy_src_y = src_y;
-    screen->copy_width = width;
-    screen->copy_height = height;
-    screen->copy_dest_x = dest_x;
-    screen->copy_dest_y = dest_y;
+	/* save for translating Expose events */
+	screen->copy_src_x = src_x;
+	screen->copy_src_y = src_y;
+	screen->copy_width = width;
+	screen->copy_height = height;
+	screen->copy_dest_x = dest_x;
+	screen->copy_dest_y = dest_y;
 
-    XCopyArea(screen->display,
-	      VWindow(screen), VWindow(screen),
-	      NormalGC(screen),
-	      src_x, src_y, width, height, dest_x, dest_y);
+	XCopyArea(screen->display,
+		  VWindow(screen), VWindow(screen),
+		  NormalGC(screen),
+		  src_x, src_y, width, height, dest_x, dest_y);
+    }
 }
 
 /*
@@ -1199,6 +1201,11 @@ ChangeColors(XtermWidget tw, ScrnColors * pNew)
 	XSetWindowBackground(screen->display, VWindow(screen),
 			     tw->core.background_pixel);
     }
+#if OPT_HIGHLIGHT_COLOR
+    if (COLOR_DEFINED(pNew, HIGHLIGHT_BG)) {
+	screen->highlightcolor = COLOR_VALUE(pNew, HIGHLIGHT_BG);
+    }
+#endif
 
     if (COLOR_DEFINED(pNew, MOUSE_FG) || (COLOR_DEFINED(pNew, MOUSE_BG))) {
 	if (COLOR_DEFINED(pNew, MOUSE_FG))
@@ -1212,12 +1219,6 @@ ChangeColors(XtermWidget tw, ScrnColors * pNew)
 		       screen->mousecolor, screen->mousecolorback);
 	XDefineCursor(screen->display, VWindow(screen),
 		      screen->pointer_cursor);
-
-#if OPT_HIGHLIGHT_COLOR
-	if (COLOR_DEFINED(pNew, HIGHLIGHT_BG)) {
-	    screen->highlightcolor = COLOR_VALUE(pNew, HIGHLIGHT_BG);
-	}
-#endif
 
 #if OPT_TEK4014
 	if (tek)
@@ -1427,7 +1428,7 @@ xtermXftDrawString(XftDraw * draw,
 		   int fwidth,
 		   int *deltax)
 {
-#if OPT_WIDE_CHARS
+#if OPT_WIDE_CHARS && defined(HAVE_TYPE_XFTCHARSPEC)
     static XftCharSpec *sbuf;
     static unsigned slen;
     int n;

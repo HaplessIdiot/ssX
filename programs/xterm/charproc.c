@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.143tsi Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.145 2003/07/07 15:34:30 eich Exp $ */
 
 /*
 
@@ -441,6 +441,7 @@ static XtResource resources[] =
     Ires(XtNnMarginBell, XtCColumn, screen.nmarginbell, N_MARGINBELL),
     Ires(XtNprinterControlMode, XtCPrinterControlMode,
 	 screen.printer_controlmode, 0),
+    Ires(XtNvisualBellDelay, XtCVisualBellDelay, screen.visualBellDelay, 100),
     Ires(XtNsaveLines, XtCSaveLines, screen.savelines, SAVELINES),
     Ires(XtNscrollLines, XtCScrollLines, screen.scrolllines, SCROLLLINES),
     Sres("font1", "Font1", screen.menu_font_names[fontMenu_font1], NULL),
@@ -533,15 +534,15 @@ static XtResource resources[] =
     COLOR_RES("1", screen.Acolors[COLOR_1], DFT_COLOR("red3")),
     COLOR_RES("2", screen.Acolors[COLOR_2], DFT_COLOR("green3")),
     COLOR_RES("3", screen.Acolors[COLOR_3], DFT_COLOR("yellow3")),
-    COLOR_RES("4", screen.Acolors[COLOR_4], DFT_COLOR("blue3")),
+    COLOR_RES("4", screen.Acolors[COLOR_4], DFT_COLOR("DodgerBlue1")),
     COLOR_RES("5", screen.Acolors[COLOR_5], DFT_COLOR("magenta3")),
     COLOR_RES("6", screen.Acolors[COLOR_6], DFT_COLOR("cyan3")),
     COLOR_RES("7", screen.Acolors[COLOR_7], DFT_COLOR("gray90")),
-    COLOR_RES("8", screen.Acolors[COLOR_8], DFT_COLOR("gray30")),
+    COLOR_RES("8", screen.Acolors[COLOR_8], DFT_COLOR("gray50")),
     COLOR_RES("9", screen.Acolors[COLOR_9], DFT_COLOR("red")),
     COLOR_RES("10", screen.Acolors[COLOR_10], DFT_COLOR("green")),
     COLOR_RES("11", screen.Acolors[COLOR_11], DFT_COLOR("yellow")),
-    COLOR_RES("12", screen.Acolors[COLOR_12], DFT_COLOR("blue")),
+    COLOR_RES("12", screen.Acolors[COLOR_12], DFT_COLOR("SteelBlue1")),
     COLOR_RES("13", screen.Acolors[COLOR_13], DFT_COLOR("magenta")),
     COLOR_RES("14", screen.Acolors[COLOR_14], DFT_COLOR("cyan")),
     COLOR_RES("15", screen.Acolors[COLOR_15], DFT_COLOR("white")),
@@ -4291,8 +4292,7 @@ static void
 VTResize(Widget w)
 {
     if (XtIsRealized(w))
-	ScreenResize(&term->screen, term->core.width, term->core.height,
-		     &term->flags);
+	ScreenResize(&term->screen, term->core.width, term->core.height, &term->flags);
 }
 
 #define okDimension(src,dst) ((src <= 32767) && ((dst = src) == src))
@@ -4671,6 +4671,7 @@ VTInitialize(Widget wrequest,
 
     wnew->screen.ansi_level = (wnew->screen.terminal_id / 100);
     init_Bres(screen.visualbell);
+    init_Ires(screen.visualBellDelay);
     init_Bres(screen.poponbell);
     init_Ires(misc.limit_resize);
 #if OPT_NUM_LOCK
@@ -5113,8 +5114,9 @@ VTRealize(Widget w,
 
     /* use ForgetGravity instead of SouthWestGravity because translating
        the Expose events for ConfigureNotifys is too hard */
-    values->bit_gravity = term->misc.resizeGravity == NorthWestGravity ?
-	NorthWestGravity : ForgetGravity;
+    values->bit_gravity = ((term->misc.resizeGravity == NorthWestGravity)
+			   ? NorthWestGravity
+			   : ForgetGravity);
     term->screen.fullVwin.window = XtWindow(term) =
 	XCreateWindow(XtDisplay(term), XtWindow(XtParent(term)),
 		      term->core.x, term->core.y,
