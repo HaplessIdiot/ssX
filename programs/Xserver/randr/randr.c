@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.15 2002/10/10 01:18:32 tsi Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.16 2002/10/14 18:01:42 keithp Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -344,9 +344,6 @@ TellChanged (WindowPtr pWin, pointer value)
 	se.widthInMillimeters = 0;
 	se.heightInMillimeters = 0;
     }    
-    fprintf(stderr, "size = %ld\n, widthmm = %d, heightmm=%d\n",
-	    (unsigned long)sizeof(se),
-	    se.widthInMillimeters, se.heightInMillimeters);
     for (pRREvent = *pHead; pRREvent; pRREvent = pRREvent->next) 
     {
 	client = pRREvent->client;
@@ -736,7 +733,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	goto sendReply;
     }
     
-    ErrorF ("Requested SizeID %d\n", stuff->sizeID);
     /*
      * Search for the requested size
      */
@@ -746,8 +742,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	pSize = &pScrPriv->pSizes[i];
 	if (pSize->referenced && pSize->id == stuff->sizeID)
 	{
-	    ErrorF ("Found requested id at %d - %dx%d\n",
-		    i, pSize->width, pSize->height);
 	    break;
 	}
     }
