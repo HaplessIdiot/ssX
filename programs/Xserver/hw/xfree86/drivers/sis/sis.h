@@ -35,8 +35,8 @@
 #define UNLOCK_ALWAYS
 
 #define SISDRIVERVERSIONYEAR    3
-#define SISDRIVERVERSIONMONTH   9
-#define SISDRIVERVERSIONDAY     30
+#define SISDRIVERVERSIONMONTH   10
+#define SISDRIVERVERSIONDAY     3
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -593,7 +593,6 @@ typedef struct {
     xf86CursorInfoPtr   CursorInfoPtr;
     XAAInfoRecPtr       AccelInfoPtr;
     CloseScreenProcPtr  CloseScreen;
-    unsigned int        (*ddc1Read)(ScrnInfoPtr);
     Bool        	(*ModeInit)(ScrnInfoPtr pScrn, DisplayModePtr mode);
     void        	(*SiSSave)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        	(*SiSSave2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
@@ -603,8 +602,6 @@ typedef struct {
     void        	(*SiSRestore2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        	(*SiSRestore3)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void        	(*SiSRestoreLVDSChrontel)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
-    void        	(*SetThreshold)(ScrnInfoPtr pScrn, DisplayModePtr mode,
-                                unsigned short *Low, unsigned short *High);
     void        	(*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
                 		int *indicies, LOCO *colors, VisualPtr pVisual);
 
@@ -713,8 +710,6 @@ typedef struct {
     BOOL		SiSXinerama;		/* Do we use Xinerama mode? */
 #endif
     SISFBLayout         CurrentLayout;		/* Current framebuffer layout */
-    Bool                (*i2cInit)(ScrnInfoPtr);/* I2C stuff (unused) */
-    I2CBusPtr           I2C;
     USHORT              SiS_DDC2_Index;
     USHORT              SiS_DDC2_Data;
     USHORT              SiS_DDC2_Clk;
