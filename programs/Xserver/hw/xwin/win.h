@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.15 2001/08/06 11:02:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.16 2001/08/16 08:23:36 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -557,6 +557,14 @@ winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y);
 
 void
 winCrossScreen (ScreenPtr pScreen, Bool fEntering);
+
+
+/*
+ * winerror.c
+ */
+
+void
+OSVenderVErrorF (const char *pszFormat, va_list va_args);
 
 
 /*

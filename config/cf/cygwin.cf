@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.25 2001/07/31 15:09:48 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.26 2001/08/03 23:43:37 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -147,7 +147,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.25 2001/07/31 15:09:48 ala
 #else
 # define StandardCppDefines      StandardDefines
 #endif
-#define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT
+#define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT -DDDXOSVERRORF
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
 #define ServerExtraDefines      -DGCCUSESGAS XFree86ServerDefines
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN
