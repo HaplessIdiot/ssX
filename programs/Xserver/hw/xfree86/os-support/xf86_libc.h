@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.26 1998/08/02 05:17:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.27 1998/09/06 07:32:04 dawes Exp $ */
 
 
 
@@ -201,6 +201,8 @@ typedef struct _xf86dirent XF86DIRENT;
 /* Some X headers defined this away too */
 #undef assert
 #define assert(a)		((void)0)
+
+#define HUGE_VAL		xf86HUGE_VAL;
 
 #define hypot(x,y)		xf86hypot(x,y)
 
