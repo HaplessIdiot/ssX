@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.16 2000/02/29 22:11:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.17 2000/03/01 16:01:10 tsi Exp $ */
 
 /*
  * Authors:
@@ -243,6 +243,12 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(i740Setup);
@@ -284,7 +290,7 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols,
+			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
 			  0 /* ddcsymbols */, 0 /* i2csymbols */, 0 /* shadowSymbols */,
 			  0 /* fbdevsymbols */, NULL);
 
@@ -377,10 +383,10 @@ I740Probe(DriverPtr drv, int flags) {
 				  devSections, numDevSections,
 				  drv, &usedChips);
 
-  if (numUsed > 0)
-  if (flags & PROBE_DETECT)
+  if (numUsed > 0) {
+   if (flags & PROBE_DETECT)
     foundScreen = TRUE;
-  else for (i=0; i<numUsed; i++) {
+   else for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
 
     if (pEnt->active) {
@@ -406,8 +412,9 @@ I740Probe(DriverPtr drv, int flags) {
       xf86ConfigActivePciEntity(pScrn, usedChips[i], I740PciChipsets, 0, 0, 0, 0, 0);
     }
     xfree(pEnt);
+   }
+   xfree(usedChips);
   }
-  if (numUsed) xfree(usedChips);
 
   /* Look for Real3D based chips */
   numUsed = xf86MatchPciInstances(I740_NAME, PCI_VENDOR_REAL3D,
@@ -415,10 +422,10 @@ I740Probe(DriverPtr drv, int flags) {
 				  devSections, numDevSections,
 				  drv, &usedChips);
 
-  if (numUsed > 0)
-  if (flags & PROBE_DETECT)
+  if (numUsed > 0) {
+   if (flags & PROBE_DETECT)
     foundScreen = TRUE;
-  else for (i=0; i<numUsed; i++) {
+   else for (i=0; i<numUsed; i++) {
     pEnt = xf86GetEntityInfo(usedChips[i]);
 
     if (pEnt->active) {
@@ -444,8 +451,9 @@ I740Probe(DriverPtr drv, int flags) {
       xf86ConfigActivePciEntity(pScrn, usedChips[i], I740PciChipsets, 0, 0, 0, 0, 0);
     }
     xfree(pEnt);
+   }
+   xfree(usedChips);
   }
-  if (numUsed) xfree(usedChips);
 
   if (devSections)
     xfree(devSections);

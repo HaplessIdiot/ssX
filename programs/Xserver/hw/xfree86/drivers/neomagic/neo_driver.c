@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.16 2000/02/27 02:45:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.17 2000/03/01 16:01:14 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -460,10 +460,10 @@ NEOProbe(DriverPtr drv, int flags)
 					devSections,numDevSections,
 					drv, &usedChips);
 
-	if (numUsed > 0)
-	if (flags & PROBE_DETECT)
+	if (numUsed > 0) {
+	  if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
-	else for (i = 0; i < numUsed; i++) {
+	  else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv,0);
@@ -482,19 +482,19 @@ NEOProbe(DriverPtr drv, int flags)
 	    foundScreen = TRUE;
 	    xf86ConfigActivePciEntity(pScrn, usedChips[i], NEOPCIchipsets,
 				      NULL, NULL, NULL, NULL, NULL);
+	  }
+	  xfree(usedChips);
 	}
-	if (numUsed > 0)
-	    xfree(usedChips);
     }
     /* Isa Bus */
 
     numUsed = xf86MatchIsaInstances(NEO_NAME,NEOChipsets,NEOISAchipsets,
 				     drv,neoFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if (numUsed > 0)
-    if (flags & PROBE_DETECT)
+    if (numUsed > 0) {
+      if (flags & PROBE_DETECT)
 	foundScreen = TRUE;
-    else for (i = 0; i < numUsed; i++) {
+      else for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
 
 	pScrn = xf86AllocateScreen(drv,0);
@@ -513,9 +513,9 @@ NEOProbe(DriverPtr drv, int flags)
 	foundScreen = TRUE;
 	xf86ConfigActiveIsaEntity(pScrn, usedChips[i], NEOISAchipsets,
 				  NULL, NULL, NULL, NULL, NULL);
+      }
+      xfree(usedChips);
     }
-    if (numUsed > 0)
-	xfree(usedChips);
 
     xfree(devSections);
     return foundScreen;

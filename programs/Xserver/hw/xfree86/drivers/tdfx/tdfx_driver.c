@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.28 2000/03/02 16:07:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.29 2000/03/06 22:41:19 dawes Exp $ */
 
 /*
  * Authors:
@@ -254,6 +254,12 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -328,7 +334,7 @@ tdfxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols,
+			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
 #endif

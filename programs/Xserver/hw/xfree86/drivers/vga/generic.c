@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.40 2000/02/27 02:45:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.41 2000/03/01 16:01:29 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -253,10 +253,10 @@ GenericProbe(DriverPtr drv, int flags)
 					GenericChipsets, GenericPCIchipsets, 
 					devSections,numDevSections,
 					drv, &usedChips);
-  	if (numUsed > 0)
-  	if (flags & PROBE_DETECT)
-    	    foundScreen = TRUE;
-	else {
+	if (numUsed > 0) {
+	  if (flags & PROBE_DETECT)
+	    foundScreen = TRUE;
+	  else {
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
@@ -276,6 +276,8 @@ GenericProbe(DriverPtr drv, int flags)
 		xf86ConfigActivePciEntity(pScrn,usedChips[i],GenericPCIchipsets,
 					  NULL,NULL,NULL,NULL,NULL);
 	    }
+	  }
+	  xfree(usedChips);
 	}
     }
 
@@ -284,7 +286,7 @@ GenericProbe(DriverPtr drv, int flags)
 				     GenericISAchipsets,drv,
 				     VGAFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if(numUsed > 0) {
+    if (numUsed > 0) {
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
 	else for (i = 0; i < numUsed; i++) {
@@ -306,6 +308,7 @@ GenericProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],GenericISAchipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
+	xfree(usedChips);
     }
     if (devSections)
 	xfree(devSections);

@@ -1,6 +1,13 @@
 XFree86 3.9.18Za (6 March 2000)
-3949. Fixed the unresolved VBE symbols and a crash related to referencing
-      vgahw symbols before the module is loaded (Kevin Martin).
+3952. Fix some "ambiguous" else statements in some of the driver Probe()
+      functions (David Dawes).
+3951. Don't make the VBEInit call in the chips driver dependent on the loader
+      server (David Dawes).
+3950. Register vbe symbols as "referenced" with the loader in drivers that
+      use them (David Dawes).
+3949. Fixed the unresolved VBE symbols in the r128 driver and a crash
+      related to referencing vgahw symbols before the module is loaded
+      (Kevin Martin).
 3948. Fix a -configure crash in the tdfx driver (David Dawes).
 3947. Fix a mouse driver bug that prevented the X server from seeing the
       mouse button 4 and above when three button emulation is enabled
@@ -9994,4 +10001,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1068 2000/03/06 22:59:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1069 2000/03/06 23:17:38 martin Exp $

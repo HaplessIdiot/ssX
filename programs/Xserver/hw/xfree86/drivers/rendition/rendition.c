@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.28 2000/03/01 00:25:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.29 2000/03/01 16:01:17 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -305,7 +305,12 @@ renditionProbe(DriverPtr drv, int flags)
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
 
-        if (numUsed > 0)
+	if (devSections)
+	    xfree(devSections);
+	devSections = NULL;
+	if (numUsed <= 0)
+	    return FALSE;
+
         if (flags & PROBE_DETECT)
             foundScreen = TRUE;
         else for (c=0; c<numUsed; c++) {
@@ -328,10 +333,8 @@ renditionProbe(DriverPtr drv, int flags)
             xf86ConfigActivePciEntity(pScrn, usedChips[c],
                     renditionPCIchipsets, NULL, NULL, NULL, NULL, NULL);
         }
-        if (numUsed > 0)
-            xfree(usedChips);
     }
-    xfree(devSections);
+    xfree(usedChips);
     return foundScreen;
 }
 
