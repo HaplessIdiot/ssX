@@ -1463,7 +1463,7 @@ XFree86 Video Timings HOWTO
      #
      # Do `modeplot -?' to see the control options.
      #
-     # ($Id: VideoModes.doc,v 3.15 1997/10/26 13:25:04 dawes Exp $)
+     # ($Id: VideoModes.doc,v 3.16 1997/11/16 12:39:07 dawes Exp $)
 
      # Monitor description. Bandwidth in MHz, horizontal frequencies in kHz
      # and vertical frequencies in Hz.
@@ -1502,7 +1502,7 @@ XFree86 Video Timings HOWTO
      The modeplot tool was created by Eric S. Raymond <esr@thyrsus.com> based on
      analysis and scratch code by Martin Lottermoser <Martin.Lottermoser@mch.sni.de>
 
-     This is modeplot $Revision: 3.15 $
+     This is modeplot $Revision: 3.16 $
      EOF
 	       exit;;
 	  esac
@@ -1600,8 +1600,7 @@ XFree86 Video Timings HOWTO
 		HFL = F1 * HR
 		VFL = F2 * VR
 
-As a rough guide, take F1 = 1.30 and F2 = 1.05 (see
-
+As a rough guide, take F1 = 1.30 and F2 = 1.05 (see frame (section 8., page 12)
 "Computing Frame Sizes").
 
 Now take a particular sync frequency, HSF.  Given the assumptions just pre-
@@ -1643,6 +1642,7 @@ tions. This is based on (*) and the second assumption:
 By drawing such lines for all resolutions one is interested in, one can immedi-
 ately read off the possible relations between resolution, clock rate and
 refresh rate of which the monitor is capable. Note that these lines do not
+depend on monitor properties, but they do depend on the second assumption.
 
 
 
@@ -1654,8 +1654,6 @@ refresh rate of which the monitor is capable. Note that these lines do not
 XFree86 Video Timings HOWTO
 
 
-
-depend on monitor properties, but they do depend on the second assumption.
 
 The modeplot tool provides you with an easy way to do this.  Do modeplot -? to
 see its control options. A typical invocation looks like this:
@@ -1691,13 +1689,15 @@ using gnuplot to make mode diagrams and did the mathematical analysis behind
 modeplot.  The distributed modeplot was redesigned and generalized by ESR from
 Martin's original gnuplot code for one case.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.12 1997/08/12 12:02:04 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.14 1997/11/16 10:52:47 dawes Exp $
 
 
 
 
 
      $XConsortium: VidModes.sgml /main/7 1996/02/21 17:46:17 kaleb $
+
+
 
 
 

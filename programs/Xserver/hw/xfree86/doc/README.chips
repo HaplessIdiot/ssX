@@ -12,7 +12,7 @@
 		    David Bateman (dbateman@ee.uts.edu.au),
 		    Egbert Eich (Egbert.Eich@Physik.TH-Darmstadt.DE)
 
-			       1st September 1997
+			       28th October 1997
 
 
 
@@ -218,6 +218,11 @@ Device section).
 	    This disables use of the hardware cursor provided by the chip.  Try
 	    this if the cursor seems to have problems.
 
+      Option "hw_cursor" (Chips 65545 and later)
+	    This enforces the use of the hardware cursor, even for cases that
+	    are known to cause problems on some machines. Note that it is over-
+	    ridden by the "sw_cursor" option.
+
       Option "STN"
 	    The server is unable to differentiate between SS STN and TFT dis-
 	    plays. This forces it to identify the display as a SS STN rather
@@ -252,11 +257,6 @@ Device section).
 	    the display with the left hand edge of the screen. Using this
 	    option the mode can be centered in the screen. This option is
 	    reported to have problems with some machines at 16/24bpp, the
-	    effect of which is that the right-hand edge of the mode will be
-	    pushed off the screen.
-
-      Option "hw_clocks" (Chips 65535 and later)
-	    On chips 65535 and later, the default is to use the programmable
 
 
 
@@ -269,6 +269,11 @@ Device section).
 
 
 
+	    effect of which is that the right-hand edge of the mode will be
+	    pushed off the screen.
+
+      Option "hw_clocks" (Chips 65535 and later)
+	    On chips 65535 and later, the default is to use the programmable
 	    clock for all clocks. It is possible to use the fixed clocks sup-
 	    ported by the chip instead by using this option. Typically this
 	    will give you some or all of the clocks 25.175, 28.322, 31.000 and
@@ -318,11 +323,6 @@ Device section).
 
       Chipset "ct65546" (or some other chip)
 	    It is possible that the chip could be misidentified, particular due
-	    to interactions with other drivers in the server. It is possible to
-	    force the server to identify a particular chip with this option.
-
-      Option "sync_on_green" (Chips 65550/54/55 and 68554)
-	    Composite sync on green. Possibly useful if you wish to use an old
 
 
 
@@ -335,6 +335,11 @@ Device section).
 
 
 
+	    to interactions with other drivers in the server. It is possible to
+	    force the server to identify a particular chip with this option.
+
+      Option "sync_on_green" (Chips 65550/54/55 and 68554)
+	    Composite sync on green. Possibly useful if you wish to use an old
 	    workstation monitor. The 65550/54 internal RAMDAC's support this
 	    mode of operation, but whether a particular machine does depends on
 	    the manufacturer.
@@ -384,11 +389,6 @@ you'll needed to considered several points
 	    True-Color modes. These are implemented in the current server. The
 	    clocks in the 6554x series of chips are internally divided by 2 for
 	    16bpp and 3 for 24bpp, allowing one modeline to be used at all
-	    depths.  The effect of this is that the maximum dot clock visible
-	    to the user is a half or a third of the value at 8bpp. The 6555x
-	    series of chips doesn't need to use additional clock cycles to dis-
-	    play higher depths, and so the same modeline can be used at all
-	    depths, without needing to divide the clocks.  Also 16/24 bpp modes
 
 
 
@@ -401,6 +401,11 @@ you'll needed to considered several points
 
 
 
+	    depths.  The effect of this is that the maximum dot clock visible
+	    to the user is a half or a third of the value at 8bpp. The 6555x
+	    series of chips doesn't need to use additional clock cycles to dis-
+	    play higher depths, and so the same modeline can be used at all
+	    depths, without needing to divide the clocks.  Also 16/24 bpp modes
 	    will need 2 or 3 times respectively more video ram.
 
       * Frame Acceleration
@@ -417,8 +422,8 @@ you'll needed to considered several points
 
       * H/W Acceleration
 	    The H/W cursor will need 1kB for the 6554x and 4kb for the 65550.
-	    On the 64300 chips the H/W cursors is stored in registers and so no
-	    allowance is needed for the H/W cursor. In addition to this many
+	    On the 64300 chips the H/W cursors are stored in registers and so
+	    no allowance is needed for the H/W cursor. In addition to this many
 	    graphics operations are speeded up using a "pixmap cache". Leaving
 	    too little memory available for the cache will only have a detri-
 	    mental effect on the graphics performance.
@@ -449,11 +454,6 @@ the manufacturer has used the panel timings to get a standard EGA mode to work
 on flat panel, and these same timings don't work for an SVGA mode. For these
 machines the "use_modeline" and/or possibly the "fix_panel_size" option might
 be needed. Some machines that are known to need these options include.
-
-
-
-
-
 
 
 
@@ -614,10 +614,11 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
       I can't get a 320x240 mode to occupy the whole 640x480 LCD
 	    There is a bug in the 6554x's H/W cursor for modes that are doubled
 	    vertically. The lower half of the screen is not accessible.  The
-	    servers solution to this problem is not to do doubling vertically.
-	    Which results in the 320x240 mode only expanded to 640x360. If this
-	    is a problem, a work around is to use the "sw_cursor" option. The
-	    server will then allow the mode to occupy the whole 640x480 LCD.
+	    servers solution to this problem is not to do doubling vertically
+	    when using the hardware cursor, which results in the 320x240 mode
+	    only expanded to 640x360. If this is a problem, a work around is to
+	    use the "sw_cursor" option. The server will then allow the mode to
+	    occupy the whole 640x480 LCD.
 
       After a suspend/resume my screen is messed up
 	    During a suspend/resume, the BIOS controls what is read and written
@@ -652,7 +653,6 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	    fied. Many LCD displays are incapable of using a 24bpp mode. Also
 	    you need at least a 65540 to use 16/24bpp, and the amount of memory
 	    used by the mode will be doubled/tripled. The correct options to
-	    start the server with these modes are
 
 
 
@@ -665,13 +665,20 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 
 
 
+	    start the server with these modes are
+
 			startx -- -bpp 16		5-6-5 RGB ('64K color', XGA)
 			startx -- -bpp 16 -weight 555	5-5-5 RGB ('Hicolor')
 			startx -- -bpp 24		8-8-8 RGB truecolor
 
 
-	    Note that there is currently no "-bpp 32" mode in the Xserver,
-	    although the 65550 is capable of this.
+	    or with the HiQV series of chips (6555x or 68554) you might try
+
+			startx -- -bpp 32		8-8-8 RGB truecolor
+
+
+	    This 32bpp mode is not highly accelerated due to limitations of the
+	    hardware, but might be useful in some cases.
 
 A general problem with the server that can manifested in many way such as draw-
 ing errors, wavy screens, etc is related to the programmable clock. Many poten-
@@ -712,13 +719,6 @@ and Technologies during the development of this software.
 
 Major Contributors (In no particular order)
 
-   o Nozomi Ytow
-
-   o Egbert Eich
-
-   o David Bateman
-
-
 
 
 
@@ -730,6 +730,12 @@ Major Contributors (In no particular order)
  Information for Chips and Technologies Users
 
 
+
+   o Nozomi Ytow
+
+   o Egbert Eich
+
+   o David Bateman
 
    o Xavier Ducoin
 
@@ -748,13 +754,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting bugs
 and extensively testing this server before its inclusion in XFree 3.2
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.17 1997/09/09 10:27:42 hohndel Exp $
-
-
-
-
-
-
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.18 1997/11/01 15:04:40 hohndel Exp $
 
 
 
