@@ -230,9 +230,9 @@ xf86FindPCIVideoInfo(void)
 
 	    i = 0; 
 	    info = xf86PciVideoInfo[k];
-	    while (xf86PCIVendorNameInfo[k].token) {
-		if (xf86PCIVendorNameInfo[k].token == info->vendor) 
-		    vendorname = (char *)xf86PCIVendorNameInfo[k].name;
+	    while (xf86PCIVendorNameInfo[i].token) {
+		if (xf86PCIVendorNameInfo[i].token == info->vendor) 
+		    vendorname = (char *)xf86PCIVendorNameInfo[i].name;
 		i++;
 	    }
 	    i = 0;
