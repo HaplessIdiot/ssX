@@ -269,11 +269,12 @@ of the <tt>XF86Config</tt> file are:
    <tag/Clocks/		any values between 25 and 135 corresponding to the
 			clocks for the mode entries being used
    <tag/Option/		<descrip>
-			<tag/``sw_cursor''/
+			<tag/&dquot;sw_cursor&dquot;/
 			   use software cursor
-			<tag/``sync_on_green''/
-			   generate sync pulses on the green ch
-			<tag/``noaccel''/
+			<tag/&dquot;sync_on_green&dquot;/
+			   generate sync pulses on the green signal.  Most
+			   (all?) P9000 based boards don't support this.
+			<tag/&dquot;noaccel&dquot;/
 			   do not do hardware acceleration if
 				it's causing problems for you
 			</descrip>
@@ -344,7 +345,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.0 1994/12/20 11:33:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.1 1994/12/26 11:03:32 dawes Exp $
 </verb>
 
 </article>

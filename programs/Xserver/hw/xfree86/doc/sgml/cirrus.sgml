@@ -34,7 +34,7 @@ chipsets by Cirrus Logic are supported:
         recent laptops, and bears some similarity to old Cirrus
         chipsets (5410/AVGA2). The driver may also work for other
         64xx chips. The configuration identifiers for this driver are
-	"<tt>cl6420</tt>" and "cl6440".
+	"<tt>cl6420</tt>" and <tt>"cl6440"</tt>.
 <tag>CL-GD5424</tag>
 	Basically VLB version of the 5422, but resembles the
 	5426 in some respects.
@@ -111,14 +111,14 @@ file, within the <tt>Screen</tt> subsections of the depths to which they are
 applicable (you can enable options for all depths by specifying them in the
 Device section).
 <descrip>
-<tag>Option ``noaccel''</tag>
+<tag>Option &dquot;noaccel&dquot;</tag>
 	This option will disable the use of any accelerated functions. This
 	is likely to help with some problems related to DRAM timing,
 	high dot clocks, and bugs in accelerated functions, at the cost
 	of performance (which will still be reasonable on VLB).
-<tag>Option ``fast_dram'' (5424, 5426, 5428, 5429, 543x) <newline>
- Option ``med_dram'' <newline>
- Option ``slow_dram'' <newline>
+<tag>Option &dquot;fast_dram&dquot; (5424, 5426, 5428, 5429, 543x) <newline>
+ Option &dquot;med_dram&dquot; <newline>
+ Option &dquot;slow_dram&dquot; <newline>
 </tag>
 	The <tt>"fast_dram"</tt> option will cause the driver to set the
 	internal
@@ -179,14 +179,14 @@ Device section).
 	high dot clocks), it is best not to use the "<tt>fast_dram</tt>"
 	option.
 <tag>
-Option ``no_bitblt''
+Option &dquot;no_bitblt&dquot;
 </tag>
 	This option, when used with a 5426/28/29/3x, will have the effect of
         disabling the use of the BitBLT engine (which the 5424 does not
         have), while retaining some acceleration. This will be useful for
         problems related to functions that use the BitBLT engine.
 <tag>
-chipset ``clgd54xx''
+chipset &dquot;clgd54xx&dquot;
 </tag>
 	Force detection of the given chipset. Useful if you have a supported
         chipset that is not properly detected, or if you have an unsupported
@@ -201,20 +201,20 @@ videoram 1024 (or another value)
         memory, or if the memory detection goes wrong. It must be specified
 	in the Device section.
 <tag>
-Option ``fifo_conservative'' (5424/6/8/9/30)
+Option &dquot;fifo_conservative&dquot; (5424/6/8/9/30)
 </tag>
 	This option will set the CRT FIFO threshold to a conservative value
 	for high dot clocks (&gt;= 65 MHz), reducing performance but hopefully
 	alleviating problems with `streaks' on the screen (especially when
 	a BitBLT operation is in progress).
 <tag>
-Option ``fifo_aggressive'' (5424/6/8/9/30)
+Option &dquot;fifo_aggressive&dquot; (5424/6/8/9/30)
 </tag>
 	This option will set the CRT FIFO threshold to an aggressive value;
 	it will be the same as that used for lower dot clocks. It improves
 	performance at high dot clocks.
 <tag>
-Option ``no_2mb_banksel'' (542x)
+Option &dquot;no_2mb_banksel&dquot; (542x)
 </tag>
 	This option will cause the driver not to set the `DRAM bank select'
 	bit to enable the upper megabyte of memory on a 2Mbyte card. This
@@ -222,7 +222,7 @@ Option ``no_2mb_banksel'' (542x)
 	to 256Kx4/16 DRAMs, when using a virtual screen configuration that
 	uses more than 1Mbyte of memory.
 <tag>
-Option ``probe_clocks''
+Option &dquot;probe_clocks&dquot;
 </tag>
 	This option will force probing of dot clocks on the card. This
         should not be necessary, since the clocks are fixed and the same for
@@ -243,7 +243,7 @@ Option ``probe_clocks''
 	65.0  72.2  75.0  80.0  85.2
 </verb>
 <tag>
-Clockchip ``cirrus''
+Clockchip &dquot;cirrus&dquot;
 </tag>
 	This enables programmable clocks. It must be specified in the
 	Device section. With this option, the clocks the modes use will
@@ -253,7 +253,7 @@ Clockchip ``cirrus''
 	and tested frequencies (like the default clocks) are guaranteed
 	to be stable.
 <tag>
-Option ``linear''
+Option &dquot;linear&dquot;
 </tag>
 	This enables linear addressing, which is the mapping of the entire
         framebuffer to a high address beyond system memory, so that SVGA
@@ -267,7 +267,7 @@ Membase 0x00e00000 (or a different address)
         framebuffer. It must be specified in the Device section. It is
 	required for most linear addressing configurations.
 <tag>
-Option ``favour_bitblt'' (5426)
+Option &dquot;favour_bitblt&dquot; (5426)
 </tag>
 	This option will, when the BitBLT engine is enabled, favour its use
         over framebuffer color expansion functions that are normally faster. 
@@ -275,18 +275,18 @@ Option ``favour_bitblt'' (5426)
         system (e.g. running gcc and other programs at the same time) in
 	certain situations.
 <tag>
-Option ``mmio'' (543x)
+Option &dquot;mmio&dquot; (543x)
 </tag>
 	This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x/5429, which is a bit faster. It also enables
 	additional acceleration using memory-mapped I/O.
 <tag>
-Option ``sw_cursor'' (542x/3x)
+Option &dquot;sw_cursor&dquot; (542x/3x)
 </tag>
 	This disables use of the hardware cursor provided by the chip. Try
         this if the cursor seems to have problems.
 <tag>
-Option ``clgd6225_lcd''
+Option &dquot;clgd6225_lcd&dquot;
 </tag>
 	Provides a work-around for problems on the LCD screen of some
 	62x5 laptop chipsets with maximum white colors.
@@ -555,7 +555,7 @@ New features in XFree86 3.1.1:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.2 1995/01/04 04:40:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.3 1995/01/10 10:26:48 dawes Exp $
 </verb>
 
 </article>
