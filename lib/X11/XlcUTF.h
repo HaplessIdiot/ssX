@@ -25,6 +25,8 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
+/* $XFree86$ */
+
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 #include <X11/Xos.h>
