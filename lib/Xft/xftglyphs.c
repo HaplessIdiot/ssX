@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.3 2000/12/03 19:03:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -376,9 +376,8 @@ XftFreeTypeGlyphExists (Display		*dpy,
 {
 #ifdef FREETYPE2
     if (font->encoded)
-	return FT_Get_Char_Index (font->face, (FT_ULong) glyph) != 0;
-    else
-	return glyph && glyph <= font->face->num_glyphs;
+	glyph = (XftChar32) FT_Get_Char_Index (font->face, (FT_ULong) glyph);
+    return glyph && glyph <= font->face->num_glyphs;
 #else
     return False;
 #endif
