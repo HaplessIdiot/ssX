@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.190 2001/04/05 17:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.191 2001/05/06 00:49:53 mvojkovi Exp $ */
 
 /*
  *
@@ -409,6 +409,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsScreenPrimary)
    SYMFUNC(xf86RegisterRootWindowProperty)
    SYMFUNC(xf86IsUnblank)
+   SYMFUNC(xf86AddModuleInfo)
+   SYMFUNC(xf86DeleteModuleInfo)
 
 #ifdef __sparc__
    /* xf86sbusBus.c */

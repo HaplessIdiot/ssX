@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.40 2001/03/06 18:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.41 2001/03/07 16:21:05 paulo Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -63,6 +63,7 @@
 #include "mousePriv.h"
 #include "mipointer.h"
 
+static const OptionInfoRec *MouseAvailableOptions(void *unused);
 static InputInfoPtr MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags);
 #if 0
 static void MouseUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
@@ -87,6 +88,65 @@ InputDriverRec MOUSE = {
 	/*MouseUnInit,*/NULL,
 	NULL,
 	0
+};
+
+typedef enum {
+    OPTION_ALWAYS_CORE,
+    OPTION_SEND_CORE_EVENTS,
+    OPTION_CORE_POINTER,
+    OPTION_SEND_DRAG_EVENTS,
+    OPTION_HISTORY_SIZE,
+    OPTION_DEVICE,
+    OPTION_PROTOCOL,
+    OPTION_BUTTONS,
+    OPTION_EMULATE_3_BUTTONS,
+    OPTION_EMULATE_3_TIMEOUT,
+    OPTION_CHORD_MIDDLE,
+    OPTION_FLIP_XY,
+    OPTION_INV_X,
+    OPTION_INV_Y,
+    OPTION_Z_AXIS_MAPPING,
+    OPTION_SAMPLE_RATE,
+    OPTION_RESOLUTION,
+    OPTION_CLEAR_DTR,
+    OPTION_CLEAR_RTS,
+    OPTION_BAUD_RATE,
+    OPTION_DATA_BITS,
+    OPTION_STOP_BITS,
+    OPTION_PARITY,
+    OPTION_FLOW_CONTROL,
+    OPTION_VTIME,
+    OPTION_VMIN,
+} MouseOpts;
+
+static const OptionInfoRec MouseOptions[] = {
+    { OPTION_ALWAYS_CORE,	"AlwaysCore",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SEND_CORE_EVENTS,	"SendCoreEvents", OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CORE_POINTER,	"CorePointer",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SEND_DRAG_EVENTS,	"SendDragEvents", OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_HISTORY_SIZE,	"HistorySize",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_DEVICE,		"Device",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_PROTOCOL,		"Protocol",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_BUTTONS,		"Buttons",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_EMULATE_3_BUTTONS,	"Emulate3Buttons",OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_EMULATE_3_TIMEOUT,	"Emulate3Timeout",OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_CHORD_MIDDLE,	"ChordMiddle",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FLIP_XY,		"FlipXY",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_INV_X,		"InvX",		  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_INV_Y,		"InvY",		  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_Z_AXIS_MAPPING,	"ZAxisMapping",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_SAMPLE_RATE,	"SampleRate",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_RESOLUTION,	"Resolution",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_CLEAR_DTR,		"ClearDTR",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CLEAR_RTS,		"ClearRTS",	  OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_BAUD_RATE,		"BaudRate",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_DATA_BITS,		"DataBits",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_STOP_BITS,		"StopBits",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_PARITY,		"Parity",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_FLOW_CONTROL,	"FlowControl",	  OPTV_STRING,	{0}, FALSE },
+    { OPTION_VTIME,		"VTime",	  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_VMIN,		"VMin",		  OPTV_INTEGER,	{0}, FALSE },
+    { -1,			NULL,		  OPTV_NONE,	{0}, FALSE }
 };
 
 /*
@@ -197,6 +257,13 @@ static MouseProtocolRec mouseProtocols[] = {
     /* end of list */
     { NULL,			MSE_NONE,	NULL,		PROT_UNKNOWN }
 };
+
+/*ARGSUSED*/
+static const OptionInfoRec *
+MouseAvailableOptions(void *unused)
+{
+    return (MouseOptions);
+}
 
 static MouseProtocolID
 ProtocolNameToID(const char *name)
@@ -1767,7 +1834,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 
     sigstate = xf86BlockSIGIO ();
 
-    if ((id = stateTab[pMse->emulateState][4][0]) != 0) {ErrorF("0\n");
+    if ((id = stateTab[pMse->emulateState][4][0]) != 0) {
         xf86PostButtonEvent(pInfo->dev, 0, abs(id), (id >= 0), 0, 0);
         pMse->emulateState = stateTab[pMse->emulateState][4][2];
     } else {
@@ -1905,6 +1972,14 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz, int dw)
 }
 
 #ifdef XFree86LOADER
+ModuleInfoRec MouseInfo = {
+    1,
+    "MOUSE",
+    NULL,
+    0,
+    MouseAvailableOptions,
+};
+
 static void
 xf86MouseUnplug(pointer	p)
 {
@@ -1915,6 +1990,16 @@ xf86MousePlug(pointer	module,
 	    int		*errmaj,
 	    int		*errmin)
 {
+    static Bool Initialised = FALSE;
+
+    if (!Initialised) {
+	Initialised = TRUE;
+#ifndef REMOVE_LOADER_CHECK_MODULE_INFO
+	if (xf86LoaderCheckSymbol("xf86AddModuleInfo"))
+#endif
+	xf86AddModuleInfo(&MouseInfo, module);
+    }
+
     xf86AddInputDriver(&MOUSE, module, 0);
 
     return module;

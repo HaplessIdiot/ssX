@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.74 2001/04/03 22:51:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.75 2001/04/20 16:00:47 alanh Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -200,6 +200,7 @@ InstallGenManPage(XF86Config,$(FILEMANDIR),$(FILEMANSUFFIX))
 
 InstallNamedNonExec($(XF86CONFIG),XF86Config.eg,$(LIBDIR))
 InstallNamedNonExec($(XF98CONFIG),XF86Config.98,$(LIBDIR))
+InstallNamedNonExec(Options,Options,$(LIBDIR))
 
 InstallDriverSDKNamedNonExec($(XF86CONFIG),XF86Config.eg,$(DRIVERSDKDIR))
 
