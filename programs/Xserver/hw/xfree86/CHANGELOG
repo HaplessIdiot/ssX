@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 555. Deal with Creative SBlive devices that mis-identify themselves as
+      "prehistoric" VGA's (Marc La France).
  554. Allow -configure to setup Unknown Vendor/Boards removing the requirement
       of xf86PciInfo information (Alan Hourihane).
  553. Hardware alpha blended cursors in the "nv" driver, new PCI IDs, and
@@ -15638,4 +15640,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2407 2002/11/26 23:54:31 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2408 2002/11/27 11:42:57 alanh Exp $
