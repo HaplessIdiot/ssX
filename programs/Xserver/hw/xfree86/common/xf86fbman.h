@@ -48,7 +48,33 @@ typedef struct {
    DevUnion			*devPrivates;
 } FBManager, *FBManagerPtr;
 
+typedef struct {
+    FBAreaPtr (*AllocateOffscreenArea)(
+		ScreenPtr pScreen, 
+		int w, int h,
+		int granularity,
+		MoveAreaCallbackProcPtr moveCB,
+		RemoveAreaCallbackProcPtr removeCB,
+		pointer privData);
+    void      (*FreeOffscreenArea)(FBAreaPtr area);
+    Bool      (*ResizeOffscreenArea)(FBAreaPtr area, int w, int h);
+    Bool      (*QueryLargestOffscreenArea)(
+		ScreenPtr pScreen,
+		int *width, int *height,
+		int granularity,
+		int preferences,
+		int priority);
+    Bool      (*RegisterFreeBoxCallback)( 
+		ScreenPtr pScreen,  
+		FreeBoxCallbackProcPtr FreeBoxCallback,
+		pointer devPriv);
+} FBManagerFuncs, *FBManagerFuncsPtr;
 
+
+Bool xf86RegisterOffscreenManager(
+    ScreenPtr pScreen, 
+    FBManagerFuncsPtr funcs
+);
 
 Bool
 xf86InitFBManagerRegion(
