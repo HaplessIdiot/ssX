@@ -693,8 +693,8 @@ Region junk;
     else
         FindCornerItems(w, event, &ul_item, &lr_item);
 
-    if (*Superclass->core_class.expose)
-      (*Superclass->core_class.expose)(w, event, junk);
+    if (Superclass->core_class.expose)
+      (Superclass->core_class.expose)(w, event, junk);
     
     for (item = ul_item; (item <= lr_item && item < lw->list.nitems) ; item++)
       if (ItemInRectangle(w, ul_item, lr_item, item))
