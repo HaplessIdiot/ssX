@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.5 2004/01/06 22:47:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.6 2004/03/13 22:07:06 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -984,8 +984,8 @@ void NVLoadStateExt (
        pNv->PRAMIN[0x0829] = 0x00000000;
        pNv->PRAMIN[0x082A] = 0x00000000;
        pNv->PRAMIN[0x082B] = 0x00000000;
-       pNv->PRAMIN[0x083C] = 0x00000000;
-       pNv->PRAMIN[0x083D] = 0x00000000;
+       pNv->PRAMIN[0x082C] = 0x00000000;
+       pNv->PRAMIN[0x082D] = 0x00000000;
        pNv->PRAMIN[0x0830] = 0x0208005F;
        pNv->PRAMIN[0x0831] = 0x00000000;
        pNv->PRAMIN[0x0832] = 0x00001200;
@@ -996,8 +996,8 @@ void NVLoadStateExt (
        pNv->PRAMIN[0x0839] = 0x02000000;
        pNv->PRAMIN[0x083A] = 0x00000000;
        pNv->PRAMIN[0x083B] = 0x00000000;
-       pNv->PRAMIN[0x084C] = 0x00000000;
-       pNv->PRAMIN[0x084D] = 0x00000000;
+       pNv->PRAMIN[0x083C] = 0x00000000;
+       pNv->PRAMIN[0x083D] = 0x00000000;
        pNv->PRAMIN[0x0840] = 0x02080077;
        pNv->PRAMIN[0x0841] = 0x00000000;
        pNv->PRAMIN[0x0842] = 0x00001200;
