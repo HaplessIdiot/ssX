@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.5 1999/08/21 13:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.6 2001/01/17 22:36:57 dawes Exp $ */
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
@@ -118,6 +118,11 @@ extern int LoadGlyphs(ClientPtr /*client*/,
 
 extern void DeleteClientFontStuff(ClientPtr /*client*/);
 
+/* Quartz support on Mac OS X pulls in the QuickDraw
+   framework whose InitFonts function conflicts here. */
+#ifdef __DARWIN__
+#define InitFonts Darwin_X_InitFonts
+#endif
 extern void InitFonts(void);
 
 extern int GetDefaultPointSize(void);

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.7 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.8 2001/01/21 21:19:38 tsi Exp $ */
 
 #ifndef RESOURCE_H
 #define RESOURCE_H 1
@@ -168,11 +168,9 @@ extern XID FakeClientID(
 /* Quartz support on Mac OS X uses the CarbonCore
    framework whose AddResource function conflicts here. */
 #ifdef __DARWIN__
-#define AddResource(a,b,c) AddResourceX(a,b,c)
-extern Bool AddResourceX(
-#else
-extern Bool AddResource(
+#define AddResource Darwin_X_AddResource
 #endif
+extern Bool AddResource(
 #if NeedFunctionPrototypes
     XID /*id*/,
     RESTYPE /*type*/,
