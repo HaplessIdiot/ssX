@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.1 1997/07/29 13:25:54 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -244,7 +244,9 @@ ATIPrintMode(DisplayModePtr mode)
     for (TokenEntry = TokenTab;  TokenEntry->flag;  TokenEntry++)
         if (mode_flags & TokenEntry->flag)
         {
+/*** build fix, can't resolve TimingTab (dhh)
             ErrorF(" %s", xf86TokenToString(TimingTab, TokenEntry->token));
+***/
             mode_flags &= ~TokenEntry->flag;
             if (!mode_flags)
                         break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.2 1997/04/13 13:57:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_teblt8.c,v 1.3 1998/01/24 16:58:00 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -292,7 +292,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* Gather bytes until we have a dword to write. Doubleword is   */
 	/* LSByte first, and MSBit first in each byte, as required for  */
 	/* the blit data. */
-#ifdef i386
+#ifdef __i386__
 	if (ISSPECIALWIDTH(glyphWidth))
 		CirrusTransferText32bitSpecial(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());
@@ -300,14 +300,14 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		/* The new 542x databook says to use DWORD transfers. */
 		CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());
-#else /* !i386 */
+#else /* !__i386__ */
        /*
 	* Cirrus TransferText handles all cases, but it uses 16 bit xfers
 	* It really should be rewritten (in C) to use 32 bit xfers ala
 	* cir_textblt.s....
 	*/
        CirrusTransferText(nglyph, h, glyphp, glyphWidth, CIRRUSBASE());
-#endif /* !i386 */
+#endif /* !__i386__ */
 
 	WAITUNTILFINISHED();
 

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.27 1998/01/24 01:53:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.28 1998/01/24 19:15:12 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -612,7 +612,7 @@ MGAProbe()
 	 *	OK. It's MGA
 	 */
 	 
-	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
+	MGAPciTag = pciTag(pcr->_bus, pcr->_cardnum, pcr->_func);
 
 	/* ajv changes to reflect actual values. see sdk pp 3-2. */
 	/* these masks just get rid of the crap in the lower bits */
