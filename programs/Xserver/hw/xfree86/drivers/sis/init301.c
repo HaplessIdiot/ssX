@@ -3810,7 +3810,7 @@ SiS_GetCRT2ResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mode
            if(xres == 720) xres = 640;
 	} else {
 	   if(SiS_Pr->SiS_VBType & VB_NoLCD) {           /* 301BDH */
-	        if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
+	        if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToHiVisionTV)) {
                    if(xres == 720) xres = 640;
 		}
 		if(SiS_Pr->SiS_SetFlag & SetDOSMode) {
@@ -3822,11 +3822,7 @@ SiS_GetCRT2ResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,USHORT Mode
 	           }
 	        }
 	   } else {
-	      if(SiS_Pr->SiS_VBInfo & (SetCRT2ToAVIDEO |           /* (Allow 720 for VGA2) */
-	      			       SetCRT2ToSVIDEO |
-	                               SetCRT2ToSCART  | 
-				       SetCRT2ToLCD    | 
-				       SetCRT2ToHiVisionTV)) {
+	      if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToHiVisionTV)) {
 	         if(xres == 720) xres = 640;
 	      }
 	      if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
