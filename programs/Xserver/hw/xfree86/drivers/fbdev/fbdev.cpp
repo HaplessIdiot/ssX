@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.2 1999/04/11 13:10:56 dawes Exp $ 
-.TH FBDEV __drivermansuffix__ "Version 3.9.15"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.3 1999/07/10 12:17:30 dawes Exp $ 
+.TH FBDEV __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 fbdev \- video driver for framebuffer device
 .SH SYNOPSIS
