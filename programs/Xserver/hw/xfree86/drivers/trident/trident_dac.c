@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.70 2003/01/05 18:09:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.71 2003/03/17 09:32:51 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1198,4 +1198,3 @@ void TridentLoadPalette(
 	DACDelay(hwp);
     }
 }
-

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.30 2002/11/25 14:05:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.31 2002/12/22 18:54:43 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -67,7 +67,7 @@ static void tridentSetVideoContrast(TRIDENTPtr pTrident,int value);
 static void tridentSetVideoParameters(TRIDENTPtr pTrident, int brightness, 
 				      int saturation, int hue);
 void tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame);
-static void WaitForSync(ScrnInfoPtr pScrn);
+static void WaitForVBlank(ScrnInfoPtr pScrn);
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
@@ -255,6 +255,8 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     int red, green, blue;
     int tmp;
 
+    OUTW(vgaIOBase + 4, 0x848E);
+
     if (pTrident->Chipset >= CYBER9388) {
     	OUTW(vgaIOBase + 4, 0x80B9); 
     	OUTW(vgaIOBase + 4, 0x00BE); 
@@ -326,8 +328,6 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     	tridentSetVideoParameters(pTrident,pPriv->Brightness,pPriv->Saturation,
                             pPriv->HUE);
     }
-
-    OUTW(vgaIOBase + 4, 0x848E);
 }
 
 
@@ -449,9 +449,8 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 
   if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
-	 OUTW(vgaIOBase + 4, 0x0091);
-	 WaitForSync(pScrn);
-	 OUTW(vgaIOBase + 4, 0x848E);
+	OUTW(vgaIOBase + 4, 0x848E);
+	OUTW(vgaIOBase + 4, 0x0091);
      }
      if(pPriv->linear) {
 	xf86FreeOffscreenLinear(pPriv->linear);
@@ -858,6 +857,7 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, 0xFFBC);
     	OUTW(vgaIOBase + 4, 0xFFBD);
     	OUTW(vgaIOBase + 4, 0x04BE); 
+	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
     } else {
 	
@@ -866,6 +866,7 @@ TRIDENTDisplayVideo(
     	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
 				? ((width+2) >> 2) : ((width+2) >> 6)) << 8) |0x96);
 
+	WaitForVBlank(pScrn);
     	OUTW(vgaIOBase + 4, 0x948E);
 	OUTB(0x83C8, 0x00);
 	OUTB(0x83C6, 0x95);
@@ -1101,10 +1102,8 @@ TRIDENTStopSurface(
     if(pPriv->isOn) {
 	TRIDENTPtr pTrident = TRIDENTPTR(surface->pScrn);
     	int vgaIOBase = VGAHWPTR(surface->pScrn)->IOBase;
-
-	OUTW(vgaIOBase + 4, 0x0091);
-	WaitForSync(surface->pScrn);
  	OUTW(vgaIOBase + 4, 0x848E);
+	OUTW(vgaIOBase + 4, 0x0091);
 	pPriv->isOn = FALSE;
     }
 
@@ -1249,9 +1248,8 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
     if(pPriv->videoStatus & TIMER_MASK) {
 	if(pPriv->videoStatus & OFF_TIMER) {
 	    if(pPriv->offTime < time) {
-		OUTW(vgaIOBase + 4, 0x0091);
-		WaitForSync(pScrn);
   		OUTW(vgaIOBase + 4, 0x848E);
+		OUTW(vgaIOBase + 4, 0x0091);
 		pPriv->videoStatus = FREE_TIMER;
 		pPriv->freeTime = time + FREE_DELAY;
 	    }
@@ -1399,7 +1397,7 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
 }
     
 static void
-WaitForSync(ScrnInfoPtr	pScrn)
+WaitForVBlank(ScrnInfoPtr pScrn)
 {
     register vgaHWPtr hwp = VGAHWPTR(pScrn);
 

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.175 2002/09/19 13:22:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.176 2003/02/11 03:41:38 dawes Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -235,7 +235,9 @@ typedef enum {
     OPTION_FP_DELAY,
     OPTION_1400_DISPLAY,
     OPTION_DISPLAY,
-    OPTION_GB
+    OPTION_GB,
+    OPTION_TV_CHIPSET,
+    OPTION_TV_SIGNALMODE
 } TRIDENTOpts;
 
 static const OptionInfoRec TRIDENTOptions[] = {
@@ -260,6 +262,8 @@ static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_1400_DISPLAY,	"Display1400",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_DISPLAY,		"Display",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_GB,		"GammaBrightness",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_TV_CHIPSET,        "TVChipset",    OPTV_ANYSTR,    {0}, FALSE },
+    { OPTION_TV_SIGNALMODE,     "TVSignal",     OPTV_INTEGER,   {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -458,7 +462,7 @@ tridentLCD LCD[] = {
     { 3,800,600,40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72,0x08},
     { 2,1024,768,65000,0xa3,/*0x6*/0x98,0x8f,0xa0,0x24,0xf5,0x0f,0x24,0x0a,0x08},
     { 0,1280,1024,108000,0xce,0x81,0xa6,0x9a,0x27,0x50,0x00,0x03,0x26,0xa8},
-    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 #else
 tridentLCD LCD[] = { 
@@ -467,7 +471,7 @@ tridentLCD LCD[] = {
     { 2,1024,768,65000,0xa3,0x00,0x84,0x94,0x24,0xf5,0x03,0x09,0x24,0x08},
     { 0,1280,1024,108000,0xce,0x91,0xa6,0x14,0x28,0x5a,0x01,0x04,0x28,0xa8},
     { 4,1400,1050,122000,0xe6,0xcd,0xba,0x1d,0x38,0x00,0x1c,0x28,0x28,0xf8},
-    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    { 0xff,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 #endif
 #endif
@@ -1446,10 +1450,29 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    } else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
 			   "value for Option \"Rotate\"\n", s);
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   "Valid options are \"CW\" or \"CCW\"\n");
 	    }
 	}
+    }
+
+    pTrident->TVChipset = 0;
+    if ((s = xf86GetOptValString(pTrident->Options, OPTION_TV_CHIPSET))) {
+	if(!xf86NameCmp(s, "VT1621")) {
+	    pTrident->TVChipset = 1;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"Using VIA VT1621 TV chip\n");
+	} else if (!xf86NameCmp(s, "CH7005")) {
+	    pTrident->TVChipset = 2;
+	    xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,"Using Chrontel CH7005 TV chip\n");
+	} else 
+	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,
+		       "%s is an unknown TV chipset option\n",s);
+    }
+    /* Default : NTSC */
+    pTrident->TVSignalMode=0;
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_TV_SIGNALMODE,
+						&pTrident->TVSignalMode)) {
+	ErrorF("TV SignalMode set to %d\n",pTrident->TVSignalMode);
     }
 
     /* FIXME ACCELERATION */
@@ -2569,6 +2592,9 @@ TRIDENTSave(ScrnInfoPtr pScrn)
     	TridentSave(pScrn, tridentReg);
     else
     	TVGASave(pScrn, tridentReg);
+
+    if (pTrident->TVChipset != 0)
+       VIA_SaveTVDepentVGAReg(pScrn);
 }
 
 
@@ -2678,6 +2704,9 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (xf86IsPc98())
 	PC98TRIDENTEnable(pScrn);
 
+    if (pTrident->TVChipset != 0)
+       VIA_TVInit(pScrn);
+	
     return TRUE;
 }
 
@@ -2706,6 +2735,9 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP |
 				(IsPrimaryCard ? VGA_SR_FONTS : 0));
+
+    if (pTrident->TVChipset != 0)
+       VIA_RestoreTVDependVGAReg(pScrn);
 
     vgaHWProtect(pScrn, FALSE);
 }

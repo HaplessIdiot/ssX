@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.18 2002/10/08 22:14:11 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -295,13 +295,13 @@ BladeSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 	BLADE_OUT(0x2168, transparency_color & 0xffffff);
 	pTrident->BltScanDirection |= 1<<6;
     }
-#endif
  
     REPLICATE(planemask);
-    if (planemask != -1) {
+    if (planemask != (unsigned int)-1) {
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
+#endif
     BLADE_OUT(0x2148, XAACopyROP[rop]);
 }
 
@@ -483,11 +483,13 @@ BladeSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     BLADE_OUT(0x2160, color);
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+#if 0
     REPLICATE(planemask);
     if (planemask != -1) {
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
+#endif
 }
 
 static void
@@ -559,11 +561,13 @@ BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     	BLADE_OUT(0x2160, fg);
     	BLADE_OUT(0x2164, bg);
     }
+#if 0
     REPLICATE(planemask);
     if (planemask != -1) {
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
+#endif
 }
 
 static void
@@ -610,11 +614,13 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     BLADE_OUT(0x2178, bg);
     }
     pTrident->BltScanDirection = 0;
+#if 0
     REPLICATE(planemask);
     if (planemask != -1) {
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
+#endif
 }
 
 static void 
@@ -683,11 +689,13 @@ static void BladeSetupForImageWrite(
 
     BLADE_OUT(0x2148, XAACopyROP[rop]);
     pTrident->BltScanDirection = 0;
+#if 0
     REPLICATE(planemask);
     if (planemask != -1) {
 	BLADE_OUT(0x2184, ~planemask);
 	pTrident->BltScanDirection |= 1<<5;
     }
+#endif
 }
 
 static void BladeSubsequentImageWriteRect(
