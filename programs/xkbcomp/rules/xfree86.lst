@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.68 2003/06/30 13:23:11 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.69 2003/08/09 14:30:49 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -82,6 +82,7 @@
   mx2750	Memorex MX2750
   microsoftinet	Microsoft Internet Keyboard
   microsoftpro	Microsoft Natural Keyboard Pro / Microsoft Internet Keyboard Pro
+  microsoftprooem Microsoft Natural Keyboard Pro OEM
   microsoftprose Microsoft Internet Keyboard Pro, Swedish
   microsoftoffice Microsoft Office Keyboard
   oretec	Oretec MCK-800 MM/Internet keyboard

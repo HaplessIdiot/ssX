@@ -487,6 +487,12 @@
     </model>
     <model>
       <configItem>
+        <name>microsoftprooem</name>
+        <description>Microsoft Natural Keyboard Pro OEM</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>microsoftprose</name>
         <description>Microsoft Internet Keyboard Pro, Swedish</description>
         <description xml:lang="ru">Microsoft Internet Keyboard Pro, шведская</description>

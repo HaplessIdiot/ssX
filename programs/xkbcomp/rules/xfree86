@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.67 2003/08/04 04:22:13 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.68 2003/08/09 14:30:49 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -110,7 +110,8 @@
               ltcd logicdit logicdp logicdpa logicdpa2 logicdo logicfn \
               logicdn logidak logiik itouch logiitc logiik logiink itouchin \
               mx1998 mx2500 mx2750 \
-              microsoftinet microsoftpro microsoftprose microsoftoffice \
+              microsoftinet microsoftpro microsoftprooem microsoftprose \
+              microsoftoffice \
               oretec \
               propeller \
               qtronix \
