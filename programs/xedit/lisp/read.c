@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -75,7 +75,7 @@ char *LispCharNames[] = {
 };
 
 static LispObj lispdot = {LispAtom_t};
-static LispObj *DOT = &lispdot;
+LispObj *DOT = &lispdot;
 
 /*
  * Implementation
@@ -352,7 +352,7 @@ LispReadQuote(LispMac *mac)
 {
     LispObj *quote = LispRead(mac);
 
-    if (quote == NULL || quote == EOLIST) {
+    if (INVALID_P(quote)) {
 	if (mac->discard)
 	    return (NULL);
 	LispDestroy(mac, "READ: illegal quoted object");
@@ -366,7 +366,7 @@ LispReadKeyword(LispMac *mac)
 {
     LispObj *keyword = LispRead(mac);
 
-    if (keyword == NULL || keyword == EOLIST || !SYMBOL_P(keyword)) {
+    if (INVALID_P(keyword) || !SYMBOL_P(keyword)) {
 	if (mac->discard)
 	    return (NULL);
 	LispDestroy(mac, "READ: illegal keyword");
@@ -380,7 +380,7 @@ LispReadBackquote(LispMac *mac)
 {
     LispObj *backquote = LispRead(mac);
 
-    if (backquote == NULL || backquote == EOLIST) {
+    if (INVALID_P(backquote)) {
 	if (mac->discard)
 	    return (NULL);
 	LispDestroy(mac, "READ: illegal back-quoted object");
@@ -397,17 +397,21 @@ LispReadCommaquote(LispMac *mac)
 
     if (atlist == EOF)
 	LispDestroy(mac, "READ: unexpected end of input");
-    else if (atlist != '@')
+    else if (atlist != '@' && atlist != '.')
 	LispUnget(mac, atlist);
 
     comma = LispRead(mac);
-    if (comma == NULL || comma == EOLIST) {
+    if (comma == DOT) {
+	atlist = '@';
+	comma = LispRead(mac);
+    }
+    if (INVALID_P(comma)) {
 	if (mac->discard)
 	    return (NULL);
 	LispDestroy(mac, "READ: illegal comma-quoted object");
     }
 
-    return (COMMA(comma, atlist == '@'));
+    return (COMMA(comma, atlist == '@' || atlist == '.'));
 }
 
 /*
@@ -586,6 +590,7 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 		break;
 	    case 'E': case 'S': case 'F': case 'D': case 'L':
 		type = *ptr;
+		*ptr = 'E';
 		break;
 	    default:
 		return (ATOM(str));	/* syntax error */
@@ -635,11 +640,14 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 	}
     }
 
+    errno = 0;
     /* number is an integer or ratio */
     integer = strtol(str, NULL, radix);
 
     /* if does not fit in a long */
-    if (errno == ERANGE) {
+    if (errno == ERANGE &&
+	(*str == '-' && integer == LONG_MIN) ||
+	(*str != '-' && integer == LONG_MAX)) {
 	iop = LispMalloc(mac, sizeof(mpi));
 	mpi_init(iop);
 	mpi_setstr(iop, str, radix);
@@ -654,12 +662,13 @@ LispParseNumber(LispMac *mac, char *str, int radix)
     if (ratio) {
 	long denominator;
 
+	errno = 0;
 	denominator = strtol(ratio, NULL, radix);
 	if (denominator == 0)
 	    LispDestroy(mac, "READ: divide by zero");
 
 	/* if denominator won't fit in a long */
-	if (errno == ERANGE) {
+	if (denominator == LONG_MAX && errno == ERANGE) {
 	    rop = LispMalloc(mac, sizeof(mpr));
 	    mpr_init(rop);
 	    if (iop) {
@@ -761,7 +770,7 @@ LispReadFunction(LispMac *mac)
     if (mac->discard)
 	return (function);
 
-    if (function == NULL || function == EOLIST) 
+    if (INVALID_P(function)) 
 	LispDestroy(mac, "READ: illegal function object");
     else if (CONS_P(function)) {
 	if (!SYMBOL_P(CAR(function)) ||
@@ -931,7 +940,7 @@ LispReadEval(LispMac *mac)
     if (mac->discard)
 	return (code);
 
-    if (code == NULL || code == EOLIST)
+    if (INVALID_P(code))
 	LispDestroy(mac, "READ: invalid eval code");
 
     return (EVAL(code));
@@ -947,7 +956,7 @@ LispReadComplex(LispMac *mac)
     if (mac->discard)
 	return (arguments);
 
-    if (arguments == NULL || arguments == EOLIST || !CONS_P(arguments))
+    if (INVALID_P(arguments) || !CONS_P(arguments))
 	LispDestroy(mac, "READ: invalid complex-number specification");
 
     if (mac->protect.length + 2 >= mac->protect.space)
@@ -972,7 +981,7 @@ LispReadPathname(LispMac *mac)
     if (mac->discard)
 	return (path);
 
-    if (path == NULL || path == EOLIST)
+    if (INVALID_P(path))
 	LispDestroy(mac, "READ: invalid pathname specification");
 
     if (mac->protect.length + 2 >= mac->protect.space)
@@ -999,8 +1008,7 @@ LispReadStruct(LispMac *mac)
     if (mac->discard)
 	return (arguments);
 
-    if (arguments == NULL || arguments == EOLIST ||
-	!CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
+    if (INVALID_P(arguments) || !CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
 	LispDestroy(mac, "READ: invalid structure specification");
 
     if (mac->protect.length + 2 >= mac->protect.space)
@@ -1037,7 +1045,7 @@ LispReadArray(LispMac *mac, long dimensions)
     if (mac->discard)
 	return (data);
 
-    if (data == NULL || data == EOLIST)
+    if (INVALID_P(data))
 	LispDestroy(mac, "READ: invalid array specification");
 
     if (mac->protect.length + 4 >= mac->protect.space)
@@ -1089,7 +1097,7 @@ LispReadFeature(LispMac *mac, int with)
     if (mac->discard)
 	return (feature);
 
-    if (feature == NULL || feature == EOLIST)
+    if (INVALID_P(feature))
 	LispDestroy(mac, "READ: invalid feature specification");
 
     status = LispEvalFeature(mac, feature);
@@ -1103,11 +1111,6 @@ LispReadFeature(LispMac *mac, int with)
 		LispMoreProtects(mac);
 	    result = LispRead(mac);
 	    mac->protect.objects[mac->protect.length++] = result;
-
-	    mac->discard = 1;
-	    LispRead(mac);
-	    mac->discard = 0;
-	    mac->protect.length = protect;
 
 	    return (result);
 	}

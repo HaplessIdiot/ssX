@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.21 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.29 2002/01/31 04:33:27 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -108,7 +108,6 @@ static INLINE void LispDoAddVar(LispMac*, LispObj*, LispObj*);
 /* create environment for function call */
 static void LispMakeEnvironment(LispMac*, LispObj*, LispObj*, char*, int);
 
-static char *LispIntToOpaqueType(LispMac*, int);
 static LispObj *LispEvalBackquote(LispMac*, LispObj*);
 
 	/* if no properties remaining, free atom->property,
@@ -116,9 +115,6 @@ static LispObj *LispEvalBackquote(LispMac*, LispObj*);
 static void LispCheckAtomProperty(LispMac*, LispAtom*);
 
 static LispObj *LispDoGetAtomProperty(LispMac*, LispAtom*, LispObj*, int);
-
-void LispSnprint(LispMac*, LispObj*, char*, int);
-void LispSnprintObj(LispMac*, LispObj*, char**, int*, int);
 
 void LispCheckMemLevel(LispMac*);
 
@@ -450,17 +446,15 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 	char string[128];
 	va_list ap;
 
-	if (!mac->newline)
-	    write(2, "\n", 1);
-	write(2, Error, sizeof(Error) - 1);
+	if (Stderr->column)
+	    LispFputc(Stderr, '\n');
+	LispFputs(Stderr, Error);
 	va_start(ap, fmt);
 	vsnprintf(string, sizeof(string), fmt, ap);
 	va_end(ap);
-	write(2, string, strlen(string));
-	write(2, "\n", 1);
-
-	mac->column = 0;
-	mac->newline = 1;
+	LispFputs(Stderr, string);
+	LispFputc(Stderr, '\n');
+	LispFflush(Stderr);
 
 	if (mac->debugging) {
 	    LispDebugger(mac, LispDebugCallWatch, NIL, NIL);
@@ -486,7 +480,8 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 
     if (!mac->running) {
 	static char Fatal[] = "*** Fatal: nowhere to longjmp.\n";
-	write(2, Fatal, sizeof(Fatal));
+
+	LispFputs(Stderr, Fatal);
 	abort();
     }
 
@@ -499,15 +494,14 @@ LispMessage(LispMac *mac, char *fmt, ...)
     va_list ap;
     char string[128];
 
-#if 0
-    if (!mac->newline)
-	write(2, "\n", 1);
-#endif
+    if (Stderr->column)
+	LispFputc(Stderr, '\n');
     va_start(ap, fmt);
     vsnprintf(string, sizeof(string), fmt, ap);
     va_end(ap);
-    write(2, string, strlen(string));
-    write(2, "\n", 1);
+    LispFputs(Stderr, string);
+    LispFputc(Stderr, '\n');
+    LispFflush(Stderr);
 }
 
 void
@@ -517,14 +511,15 @@ LispWarning(LispMac *mac, char *fmt, ...)
     char string[128];
     static char Warning[] = "*** Warning: ";
 
-    if (!mac->newline)
-	write(2, "\n", 1);
-    write(2, Warning, sizeof(Warning) - 1);
+    if (Stderr->column)
+	LispFputc(Stderr, '\n');
+    LispFputs(Stderr, Warning);
     va_start(ap, fmt);
     vsnprintf(string, sizeof(string), fmt, ap);
     va_end(ap);
-    write(2, string, strlen(string));
-    write(2, "\n", 1);
+    LispFputs(Stderr, string);
+    LispFputc(Stderr, '\n');
+    LispFflush(Stderr);
 }
 
 void
@@ -549,7 +544,6 @@ LispTopLevel(LispMac *mac)
 
     mac->discard = 0;
     mac->destroyed = 0;
-    mac->princ = mac->justsize = 0;
 
     if (CONS_P(mac->input)) {
 	LispUngetInfo **info, *unget = mac->unget[0];
@@ -574,8 +568,6 @@ LispTopLevel(LispMac *mac)
     mac->env.lex = mac->env.base = mac->env.length = mac->env.head = 0;
     mac->dyn.length = 0;
     mac->protect.length = 0;
-
-    LispFflush(Stdout);
 }
 
 void
@@ -999,7 +991,7 @@ LispRegisterOpaqueType(LispMac *mac, char *desc)
     return (opaque->type = ++mac->opaque);
 }
 
-static char *
+char *
 LispIntToOpaqueType(LispMac *mac, int type)
 {
     int i;
@@ -2274,20 +2266,8 @@ LispAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 LispObj *
 LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 {
+    LispAtom *name;
     LispObj **entry, **first;
-    LispAtom *name = atom->data.atom;
-
-    if (name->dyn) {
-	for (first = mac->dyn.pairs, entry = first + mac->dyn.length - 1;
-	     entry > first; entry -= 2)
-	    if (*entry == atom)
-		return (*(entry - 1) = obj);
-
-	for (first = mac->spc.pairs, entry = first + mac->spc.length - 1;
-	     entry > first; --entry)
-	    if (*entry == atom)
-		return (name->property.value = obj);
-    }
 
     for (first = mac->env.pairs + mac->env.lex,
 	 entry = mac->env.pairs + mac->env.head - 1;
@@ -2295,10 +2275,19 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 	if (*entry == atom)
 	    return (*(entry - 1) = obj);
 
-    for (first = mac->glb.pairs, entry = first + mac->glb.length - 1;
-	 entry > first; --entry)
-	if (*entry == atom)
-	    return (name->property.value = obj);
+    name = atom->data.atom;
+
+    if (name->dyn) {
+	for (first = mac->dyn.pairs, entry = first + mac->dyn.length - 1;
+	     entry > first; entry -= 2)
+	    if (*entry == atom)
+		return (*(entry - 1) = obj);
+
+	return (name->property.value = obj);
+    }
+
+    if (name->property.object)
+	return (name->property.value = obj);
 
     LispSetAtomObjectProperty(mac, name, obj);
 
@@ -2588,9 +2577,6 @@ LispEndBlock(LispMac *mac, LispBlock *block)
 		--mac->debug_level;
 	    }
 	}
-	else
-	    LispDestroy(mac, "this should never happen: "
-			"mac->debug_level < block->debug_level");
 	mac->debug_step = block->debug_step;
     }
 }
@@ -2650,7 +2636,8 @@ LispEvalBackquote(LispMac *mac, LispObj *arg)
 		    obj = obj->data.comma.eval;
 		}
 		else {
-		    if (NCONSTANT_P(obj = obj->data.comma.eval))
+		    obj = obj->data.comma.eval;
+		    if (NCONSTANT_P(obj))
 			obj = EVAL(obj);
 		}
 	    }
@@ -2843,20 +2830,7 @@ if (NCONSTANT_P(var)) {						\
 	if (SYMBOL_P(spec)) {
 	    atom = spec->data.atom;
 	    if (atom->string[0] == '&') {
-		if (atom == mac->key_atom) {
-		    nkey = ncvt = 0;
-		    keyp = CDR(list);
-		    for (karg = arg; CONS_P(karg); karg = CDR(karg))
-			++nkey;
-		    if (nkey & 1)
-			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
-				    fname);
-		    nkey >>= 1;
-		    karg = arg;
-		    key = 1;
-		    continue;
-		}
-		else if (atom == mac->rest_atom) {
+		if (atom == mac->rest_atom) {
 		    restp = CDR(list);
 		    rest = 1;
 		    /* this assumes no errors in arguments specification */
@@ -2868,6 +2842,19 @@ if (NCONSTANT_P(var)) {						\
 		}
 		else if (atom == mac->optional_atom) {
 		    optional = 1;
+		    continue;
+		}
+		else if (atom == mac->key_atom) {
+		    nkey = ncvt = 0;
+		    keyp = CDR(list);
+		    for (karg = arg; CONS_P(karg); karg = CDR(karg))
+			++nkey;
+		    if (nkey & 1)
+			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
+				    fname);
+		    nkey >>= 1;
+		    karg = arg;
+		    key = 1;
 		    continue;
 		}
 		else if (atom == mac->aux_atom) {
@@ -3478,806 +3465,42 @@ LispRunSetf(LispMac *mac, LispObj *setf, LispObj *place, LispObj *value)
     return (result);
 }
 
-void
-LispSnprintObj(LispMac *mac, LispObj *obj, char **str, int *len, int paren)
-{
-    int sz = 0;
-
-    if (*len < 1)
-	return;
-    switch (obj->type) {
-	case LispNil_t:
-	    sz = snprintf(*str, *len, "NIL");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispTrue_t:
-	    sz = snprintf(*str, *len, "T");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispOpaque_t:
-	    sz = snprintf(*str, *len, "#0x%08x-%s", (int)obj->data.opaque.data,
-			  LispIntToOpaqueType(mac, obj->data.opaque.type));
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispAtom_t:
-	    sz = snprintf(*str, *len, "%s", STRPTR(obj));
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispString_t:
-	    sz = snprintf(*str, *len, "\"%s\"", STRPTR(obj));
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispCharacter_t:
-	    sz = snprintf(*str, *len, "#\\");
-	    if ((*len -= sz) <= 0)
-		return;
-	    *str += sz;
-	    if (obj->data.integer >= 0 && obj->data.integer <= ' ')
-		sz = snprintf(*str, *len, "%s",
-			      LispCharNames[obj->data.integer]);
-	    else if (obj->data.integer == 0177)
-		sz = snprintf(*str, *len, "Rubout");
-	    else if (obj->data.integer > 0xff)
-		sz = snprintf(*str, *len, "U%04X", (int)obj->data.integer);
-	    else
-		sz = snprintf(*str, *len, "%c", (int)obj->data.integer);
-	    *str += sz;
-	    *len -= sz;
-	    break;
-	case LispReal_t: {
-	    char stk[32], *ptr;
-
-	    if (fabs(obj->data.real) < 1e7 &&
-		(obj->data.real == 0 || fabs(obj->data.real) > 1e-7)) {
-		ptr = stk + snprintf(stk, sizeof(stk), "%0.8f", obj->data.real) - 1;
-		if (*ptr == '0') {
-		    while (*ptr == '0' && ptr > stk + 1)
-			--ptr;
-		    if (*ptr == '.')
-			++ptr;
-		    *++ptr = '\0';
-		}
-	    }
-	    else {
-		char *epos;
-
-		snprintf(stk, sizeof(stk), "%1.8E", obj->data.real);
-
-		/* remove plus sign */
-		if (obj->data.real > 0 && (ptr = strchr(stk, '+')) != NULL)
-		    memmove(ptr, ptr + 1, strlen(ptr));
-
-		/* remove padding 0s */
-		epos = strchr(stk, 'E');
-		if (epos) {
-		    if (epos[1] == '0')
-			memmove(epos + 1, epos + 2, strlen(epos + 1));
-		    ptr = epos - 1;
-		    if (*ptr == '0') {
-			while (*ptr == '0' && ptr > stk + 1)
-			    --ptr;
-			if (*ptr == '.')
-			    ++ptr;
-			memmove(++ptr, epos, strlen(epos) + 1);
-		    }
-		}
-	    }
-	    sz = snprintf(*str, *len, "%s", stk);
-	    *len -= sz;
-	    *str += sz;
-	}   break;
-	case LispInteger_t:
-	    sz = snprintf(*str, *len, "%ld", obj->data.integer);
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispRatio_t:
-	    sz = snprintf(*str, *len, "%ld/%ld", obj->data.ratio.numerator,
-			  obj->data.ratio.denominator);
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispBigInteger_t:
-	    sz = snprintf(*str, *len, "#<BIG-INTEGER>");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispBigRatio_t:
-	    sz = snprintf(*str, *len, "#<BIG-RATIONAL>");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispComplex_t:
-	    sz = snprintf(*str, *len, "#<COMPLEX-NUMBER>");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispCons_t: {
-	    LispObj *car, *cdr;
-
-	    car = CAR(obj);
-	    cdr = CDR(obj);
-	    if (!cdr || cdr->type == LispNil_t) {
-		if (paren) {
-		    sz = snprintf(*str, *len, "(");
-		    if ((*len -= sz) <= 0)
-			return;
-		    *str += sz;
-		}
-		LispSnprintObj(mac, car, str, len, car->type == LispCons_t);
-		if (*len <= 0)
-		    return;
-		if (paren) {
-		    sz = snprintf(*str, *len, ")");
-		    if ((*len -= sz) <= 0)
-			return;
-		    *str += sz;
-		}
-	    }
-	    else {
-		if (paren) {
-		    sz = snprintf(*str, *len, "(");
-		    if ((*len -= sz) <= 0)
-			return;
-		    *str += sz;
-		}
-		LispSnprintObj(mac, car, str, len, car->type == LispCons_t);
-		if (*len <= 0)
-		    return;
-		if (cdr->type != LispCons_t) {
-		    sz = snprintf(*str, *len, " . ");
-		    if ((*len -= sz) <= 0)
-			return;
-		    *str += sz;
-		    LispSnprintObj(mac, cdr, str, len, 0);
-		}
-		else {
-		    sz = snprintf(*str, *len, " ");
-		    if ((*len -= sz) <= 0)
-			return;
-		    *str += sz;
-		    LispSnprintObj(mac, cdr, str, len, car->type != LispCons_t &&
-				   cdr->type != LispCons_t);
-		    if (*len <= 0)
-			return;
-		}
-		if (paren) {
-		    sz = snprintf(*str, *len, ")");
-		    *len -= sz;
-		    *str += sz;
-		}
-	    }
-	}    break;
-	case LispQuote_t:
-	    sz = snprintf(*str, *len, "'");
-	    *len -= sz;
-	    *str += sz;
-	    LispSnprintObj(mac, obj->data.quote, str, len, 1);
-	    break;
-	case LispKeyword_t:
-	    sz = snprintf(*str, *len, ":%s", STRPTR(obj->data.quote));
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispBackquote_t:
-	    sz = snprintf(*str, *len, "`");
-	    *len -= sz;
-	    *str += sz;
-	    LispSnprintObj(mac, obj->data.quote, str, len, 1);
-	    break;
-	case LispComma_t:
-	    if (obj->data.comma.atlist)
-		sz = snprintf(*str, *len, ",@");
-	    else
-		sz = snprintf(*str, *len, ",");
-	    *len -= sz;
-	    *str += sz;
-	    LispSnprintObj(mac, obj->data.comma.eval, str, len, 1);
-	    break;
-	case LispArray_t:
-	    if (obj->data.array.rank == 0) {
-		sz = snprintf(*str, *len, "#0A");
-		*len -= sz;
-		*str += sz;
-		LispSnprintObj(mac, obj->data.quote, str, len, 1);
-		break;
-	    }
-	    else if (obj->data.array.rank == 1)
-		sz = snprintf(*str, *len, "#(");
-	    else
-		sz = snprintf(*str, *len, "#%dA(", obj->data.array.rank);
-	    if ((*len -= sz) <= 0)
-		return;
-	    *str += sz;
-	    if (!obj->data.array.zero) {
-		if (obj->data.array.rank == 1) {
-		    LispObj *ary;
-		    long count;
-
-		    for (ary = obj->data.array.dim, count = 1;
-			 ary != NIL; ary = CDR(ary))
-			count *= (int)FIXNUM_VALUE(CAR(ary));
-		    for (ary = obj->data.array.list; count > 0;
-			ary = CDR(ary), count--) {
-			LispSnprintObj(mac, CAR(ary), str, len, 0);
-			if (*len <= 0)
-			    return;
-			if (count - 1 > 0) {
-			    sz = snprintf(*str, *len, " ");
-			    if ((*len -= sz) <= 0)
-				return;
-			    *str += sz;
-			}
-		    }
-		}
-		else {
-		    LispObj *ary;
-		    int i, k, rank, *dims, *loop;
-
-		    rank = obj->data.array.rank;
-		    dims = LispMalloc(mac, sizeof(int) * rank);
-		    loop = LispCalloc(mac, 1, sizeof(int) * (rank - 1));
-
-		    /* fill dim */
-		    for (i = 0, ary = obj->data.array.dim; ary != NIL;
-			 i++, ary = CDR(ary))
-			dims[i] = (int)FIXNUM_VALUE(CAR(ary));
-
-		    i = 0;
-		    ary = obj->data.array.list;
-		    while (loop[0] < dims[0]) {
-			for (; i < rank - 1; i++) {
-			    sz = snprintf(*str, *len, "(");
-			    if ((*len -= sz) <= 0)
-				goto snprint_array_done;
-			    *str += sz;
-			}
-			--i;
-			for (;;) {
-			    ++loop[i];
-			    if (i && loop[i] >= dims[i])
-				loop[i] = 0;
-			    else
-				break;
-			    --i;
-			}
-			for (k = 0; k < dims[rank - 1] - 1; k++, ary = CDR(ary)) {
-			    LispSnprintObj(mac, CAR(ary), str, len, 0);
-			    if (*len <= 0)
-				goto snprint_array_done;
-			    sz = snprintf(*str, *len, " ");
-			    if ((*len -= sz) <= 0)
-				goto snprint_array_done;
-			    *str += sz;
-			}
-			LispSnprintObj(mac, CAR(ary), str, len, 1);
-			if (*len <= 0)
-			    goto snprint_array_done;
-			ary = CDR(ary);
-			for (k = rank - 1; k > i; k--) {
-			    sz = snprintf(*str, *len, ")");
-			    if ((*len -= sz) <= 0)
-				goto snprint_array_done;
-			    *str += sz;
-			}
-			if (loop[0] < dims[0]) {
-			    sz = snprintf(*str, *len, " ");
-			    if ((*len -= sz) <= 0)
-				goto snprint_array_done;
-			    *str += sz;
-			}
-		    }
-
-snprint_array_done:
-		    LispFree(mac, dims);
-		    LispFree(mac, loop);
-		}
-	    }
-	    sz = snprintf(*str, *len, ")");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispStruct_t: {
-	    LispObj *def = obj->data.struc.def;
-	    LispObj *field = obj->data.struc.fields;
-
-	    sz = snprintf(*str, *len, "S#(%s", STRPTR(CAR(def)));
-	    if ((*len -= sz) <= 0)
-		return;
-	    *str += sz;
-	    def = CDR(def);
-	    for (; def != NIL; def = CDR(def), field = CDR(field)) {
-		sz = snprintf(*str, *len, " :%s ", SYMBOL_P(CAR(def)) ?
-			      STRPTR(CAR(def)) : STRPTR(CAR(CAR(def))));
-		if ((*len -= sz) <= 0)
-		    return;
-		*str += sz;
-		LispSnprintObj(mac, CAR(field), str, len, 1);
-		if (*len <= 0)
-		    return;
-	    }
-	    sz = snprintf(*str, *len, ")");
-	    *len -= sz;
-	    *str += sz;
-	}   break;
-	case LispStream_t:
-	    if (obj->data.stream.type == LispStreamFile)
-		sz = snprintf(*str, *len, "#<FILE-STREAM>");
-	    else if (obj->data.stream.type == LispStreamString)
-		sz = snprintf(*str, *len, "#<STRING-STREAM>");
-	    else if (obj->data.stream.type == LispStreamStandard)
-		sz = snprintf(*str, *len, "%s",
-			      STRPTR(obj->data.stream.pathname));
-	    else if (obj->data.stream.type == LispStreamPipe)
-		sz = snprintf(*str, *len, "#<PIPE-STREAM>");
-	    *len -= sz;
-	    *str += sz;
-	    break;
-	case LispPathname_t:
-	    sz = snprintf(*str, *len, "#P");
-	    *len -= sz;
-	    *str += sz;
-	    LispSnprintObj(mac, CAR(obj->data.quote), str, len, 1);
-	default:
-	    break;
-    }
-}
-
 char *
-LispStrObj(LispMac *mac, LispObj *obj)
+LispStrObj(LispMac *mac, LispObj *object)
 {
-    static char string[32];
+    static int first = 1;
+    static char buffer[34];
+    static LispObj stream;
+    static LispString string;
 
-    LispSnprint(mac, obj, string, sizeof(string) - 1);
-    return (string);
-}
+    if (first) {
+	stream.type = LispStream_t;
+	stream.data.stream.source.string = &string;
+	stream.data.stream.pathname = NIL;
+	stream.data.stream.type = LispStreamString;
+	stream.data.stream.readable = 0;
+	stream.data.stream.writable = 1;
 
-void
-LispSnprint(LispMac *mac, LispObj *obj, char *str, int len)
-{
-    char *s = str;
-    int l = len;
+	string.string = buffer;
+	string.fixed = 1;
+	string.space = sizeof(buffer);
+	first = 0;
+    }
 
-    if (!obj || !str || len <= 0)
-	LispDestroy(mac, "internal error, at SPRINT");
-    LispSnprintObj(mac, obj, &str, &len, 1);
-    if (len <= 0) {
-    /* this is a internal function, so I assume that str has enough space */
-	if (*s == '(')
-	    strcpy(s + l - 5, "...)");
+    string.length = string.output = 0;
+
+    LispDoWriteObject(mac, &stream, object, 1);
+
+    /* make sure string is nul terminated */
+    (void)LispGetSstring(&string);
+    if (string.length > 32) {
+	if (buffer[0] == '(')
+	    strcpy(buffer + 27, "...)");
 	else
-	    strcpy(s + l - 4, "...");
-    }
-}
-
-int
-LispPrintString(LispMac *mac, LispObj *stream, char *str)
-{
-    int len, ch;
-    char *prt, *ptr, *pquote, *pslash;
-
-    if (!mac->princ) {
-	len = LispPrintf(mac, stream, "%c", '"');
-	for (prt = str, pquote = strchr(prt, '"'), pslash = strchr(prt, '\\');
-	     pquote || pslash;
-	     prt = ptr, pquote = pquote ? strchr(prt, '"') : NULL,
-			pslash = pslash ? strchr(prt, '\\') : NULL) {
-	    if (pquote && pslash)
-		ptr = pquote < pslash ? pquote : pslash;
-	    else
-		ptr = pquote ? pquote : pslash;
-	    ch = ptr == pquote ? '"' : '\\';
-	    *ptr = '\0';
-	    len += LispPrintf(mac, stream, "%s", prt);
-	    len += LispPrintf(mac, stream, "%c%c", '\\', ch);
-	    *ptr = ch;
-	    ++ptr;
-	}
-	len += LispPrintf(mac, stream, "%s", prt);
-	len += LispPrintf(mac, stream, "%c", '"');
-    }
-    else
-	len = LispPrintf(mac, stream, "%s", str);
-
-    return (len);
-}
-
-int
-LispPrintf(LispMac *mac, LispObj *stream, char *fmt, ...)
-{
-    va_list ap;
-    int size, n;
-    LispFile *file = NULL;
-    unsigned char stk[1024], *ptr = stk;
-
-    if (stream == NIL)
-	file = Stdout;
-    else {
-	if (!stream->data.stream.writable)
-	    LispDestroy(mac, "stream is unwritable");
-	if (stream->data.stream.type != LispStreamString) {
-	    if (stream->data.stream.type == LispStreamPipe)
-		file = OPSTREAMP(stream);
-	    else
-		file = stream->data.stream.source.file;
-	}
+	    strcpy(buffer + 28, "...");
     }
 
-    va_start(ap, fmt);
-
-    size = sizeof(stk);
-    n = vsnprintf((char*)stk, size, fmt, ap);
-    if (n < 0 || n >= size) {
-	while (1) {
-	    unsigned char *tmp;
-
-	    va_end(ap);
-	    if (n > size)
-		size = n + 1;
-	    else
-		size *= 2;
-	    if ((tmp = realloc(ptr == stk ? NULL : ptr, size)) == NULL) {
-		free(ptr);
-		LispDestroy(mac, "out of memory");
-	    }
-	    ptr = tmp;
-	    va_start(ap, fmt);
-	    n = vsnprintf((char*)ptr, size, fmt, ap);
-	    if (n >= 0 && n < size)
-		break;
-	}
-    }
-    size = strlen((char*)ptr);
-
-    if (!mac->justsize) {
-	if (file)
-	    LispFwrite(file, ptr, size);
-	else {
-	    while (SSTREAMP(stream)->output + size >= SSTREAMP(stream)->space) {
-		unsigned char *tmp =
-		    realloc(SSTREAMP(stream)->string,
-			    SSTREAMP(stream)->space + pagesize);
-
-		if (tmp == NULL) {
-		    if (ptr != stk)
-			free(ptr);
-		    LispDestroy(mac, "out of memory");
-		}
-		SSTREAMP(stream)->string = tmp;
-		SSTREAMP(stream)->space += pagesize;
-	    }
-	    strcpy((char*)SSTREAMP(stream)->string +
-		   SSTREAMP(stream)->output, (char*)ptr);
-	    SSTREAMP(stream)->output += size;
-	    if (SSTREAMP(stream)->length < SSTREAMP(stream)->output)
-		SSTREAMP(stream)->length = SSTREAMP(stream)->output;
-	}
-    }
-    if (ptr != stk)
-	free(ptr);
-
-    va_end(ap);
-
-    return (size);
-}
-
-int
-LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
-{
-    int sz, len = 0;
-    char stk[64], *ptr;
-
-    switch (obj->type) {
-	case LispNil_t:
-	    len += LispPrintf(mac, stream, "NIL");
-	    break;
-	case LispTrue_t:
-	    len += LispPrintf(mac, stream, "T");
-	    break;
-	case LispOpaque_t:
-	    len += LispPrintf(mac, stream, "#0x%08x-%s",
-			      (int)obj->data.opaque.data,
-			      LispIntToOpaqueType(mac, obj->data.opaque.type));
-	    break;
-	case LispAtom_t:
-	    len += LispPrintf(mac, stream, "%s", STRPTR(obj));
-	    break;
-	case LispString_t:
-	    len += LispPrintString(mac, stream, STRPTR(obj));
-	    break;
-	case LispCharacter_t:
-	    if (!mac->princ)
-		len += LispPrintf(mac, stream, "#\\");
-	    if (obj->data.integer >= 0 && obj->data.integer <= ' ')
-		len += LispPrintf(mac, stream, "%s",
-				  LispCharNames[obj->data.integer]);
-	    else if (obj->data.integer == 0177)
-		len += LispPrintf(mac, stream, "Rubout");
-	    else if (obj->data.integer > 0xff)
-		len += LispPrintf(mac, stream, "U%04X", (int)obj->data.integer);
-	    else
-		len += LispPrintf(mac, stream, "%c", obj->data.integer);
-	    break;
-	case LispReal_t:
-	    /* this should format floating point numbers as expected by lisp
-	     * implementations */
-	    if (fabs(obj->data.real) < 1e7 &&
-		(obj->data.real == 0.0 || fabs(obj->data.real) > 1e-7)) {
-		ptr = stk + snprintf(stk, sizeof(stk), "%0.8f", obj->data.real) - 1;
-		if (*ptr == '0') {
-		    while (*ptr == '0' && ptr > stk + 1)
-			--ptr;
-		    if (*ptr == '.')
-			++ptr;
-		    *++ptr = '\0';
-		}
-		/* -0.0 */
-		if (obj->data.real == 0.0 && stk[0] != '0')
-		    memmove(stk, stk + 1, strlen(stk));
-	    }
-	    else {
-		char *epos;
-
-		snprintf(stk, sizeof(stk), "%1.8E", obj->data.real);
-
-		/* remove plus sign */
-		if (obj->data.real > 0 && (ptr = strchr(stk, '+')) != NULL)
-		    memmove(ptr, ptr + 1, strlen(ptr));
-
-		/* remove padding 0s */
-		epos = strchr(stk, 'E');
-		if (epos) {
-		    if (epos[1] == '0')
-			memmove(epos + 1, epos + 2, strlen(epos + 1));
-		    ptr = epos - 1;
-		    if (*ptr == '0') {
-			while (*ptr == '0' && ptr > stk + 1)
-			    --ptr;
-			if (*ptr == '.')
-			    ++ptr;
-			memmove(++ptr, epos, strlen(epos) + 1);
-		    }
-		}
-	    }
-	    len += LispPrintf(mac, stream, "%s", stk);
-	    break;
-	case LispInteger_t:
-	    len += LispPrintf(mac, stream, "%ld", obj->data.integer);
-	    break;
-	case LispRatio_t:
-	    len += LispPrintf(mac, stream, "%ld/%ld", obj->data.ratio.numerator,
-			      obj->data.ratio.denominator);
-	    break;
-	case LispBigInteger_t:
-	    sz = mpi_getsize(obj->data.mp.integer, 10);
-	    if (sz + 2 > sizeof(stk))
-		ptr = LispMalloc(mac, sz + 2);
-	    else
-		ptr = stk;
-	    mpi_getstr(ptr, obj->data.mp.integer, 10);
-	    len += LispPrintf(mac, stream, "%s", ptr);
-	    if (ptr != stk)
-		LispFree(mac, ptr);
-	    break;
-	case LispBigRatio_t:
-	    sz = mpi_getsize(mpr_num(obj->data.mp.ratio), 10) + 1 +
-		 mpi_getsize(mpr_den(obj->data.mp.ratio), 10) + 1;
-	    if (sz + 2 > sizeof(stk))
-		ptr = LispMalloc(mac, sz + 2);
-	    else
-		ptr = stk;
-	    mpr_getstr(ptr, obj->data.mp.ratio, 10);
-	    len += LispPrintf(mac, stream, "%s", ptr);
-	    if (ptr != stk)
-		LispFree(mac, ptr);
-	    break;
-	case LispComplex_t:
-	    len = LispPrintf(mac, stream, "#C(");
-	    len += LispPrintObj(mac, stream, obj->data.complex.real, 0);
-	    len += LispPrintf(mac, stream, " ");
-	    len += LispPrintObj(mac, stream, obj->data.complex.imag, 0);
-	    len += LispPrintf(mac, stream, ")");
-	    break;
-	case LispCons_t: {
-	    LispObj *car, *cdr;
-
-	    car = CAR(obj);
-	    cdr = CDR(obj);
-	    if (!cdr || cdr->type == LispNil_t) {
-		if (paren)
-		    len += LispPrintf(mac, stream, "(");
-		len += LispPrintObj(mac, stream, car, car->type == LispCons_t);
-		if (paren)
-		    len += LispPrintf(mac, stream, ")");
-	    }
-	    else {
-		if (paren)
-		    len += LispPrintf(mac, stream, "(");
-		LispPrintObj(mac, stream, car, car->type == LispCons_t);
-		if (cdr->type != LispCons_t) {
-		    len += LispPrintf(mac, stream, " . ");
-		    len += LispPrintObj(mac, stream, cdr, 0);
-		}
-		else {
-		    len += LispPrintf(mac, stream, " ");
-		    len += LispPrintObj(mac, stream, cdr,
-					car->type != LispCons_t &&
-					cdr->type != LispCons_t);
-		}
-		if (paren)
-		    len += LispPrintf(mac, stream, ")");
-	    }
-	}    break;
-	case LispQuote_t:
-	    len += LispPrintf(mac, stream, "'");
-	    len += LispPrintObj(mac, stream, obj->data.quote, 1);
-	    break;
-	case LispKeyword_t:
-	    len += LispPrintf(mac, stream, ":%s", STRPTR(obj->data.quote));
-	    break;
-	case LispBackquote_t:
-	    len += LispPrintf(mac, stream, "`");
-	    len += LispPrintObj(mac, stream, obj->data.quote, 1);
-	    break;
-	case LispComma_t:
-	    if (obj->data.comma.atlist)
-		len += LispPrintf(mac, stream, ",@");
-	    else
-		len += LispPrintf(mac, stream, ",");
-	    len += LispPrintObj(mac, stream, obj->data.comma.eval, 1);
-	    break;
-	case LispArray_t:
-	    if (obj->data.array.rank == 0) {
-		len += LispPrintf(mac, stream, "#0A");
-		len += LispPrintObj(mac, stream, obj->data.array.list, 1);
-		break;
-	    }
-	    else if (obj->data.array.rank == 1)
-		len += LispPrintf(mac, stream, "#(");
-	    else
-		len += LispPrintf(mac, stream, "#%dA(", obj->data.array.rank);
-
-	    if (!obj->data.array.zero) {
-		if (obj->data.array.rank == 1) {
-		    LispObj *ary;
-		    long count;
-
-		    for (ary = obj->data.array.dim, count = 1;
-			 ary != NIL; ary = CDR(ary))
-			count *= (int)FIXNUM_VALUE(CAR(ary));
-		    for (ary = obj->data.array.list; count > 0;
-			 ary = CDR(ary), count--) {
-			len += LispPrintObj(mac, stream, CAR(ary), 0);
-			if (count - 1 > 0)
-			    len += LispPrintf(mac, stream, " ");
-		    }
-		}
-		else {
-		    LispObj *ary;
-		    int i, k, rank, *dims, *loop;
-
-		    rank = obj->data.array.rank;
-		    dims = LispMalloc(mac, sizeof(int) * rank);
-		    loop = LispCalloc(mac, 1, sizeof(int) * (rank - 1));
-
-		    /* fill dim */
-		    for (i = 0, ary = obj->data.array.dim; ary != NIL;
-			 i++, ary = CDR(ary))
-			dims[i] = (int)FIXNUM_VALUE(CAR(ary));
-
-		    i = 0;
-		    ary = obj->data.array.list;
-		    while (loop[0] < dims[0]) {
-			for (; i < rank - 1; i++)
-			    len += LispPrintf(mac, stream, "(");
-			--i;
-			for (;;) {
-			    ++loop[i];
-			    if (i && loop[i] >= dims[i])
-				loop[i] = 0;
-			    else
-				break;
-			    --i;
-			}
-			for (k = 0; k < dims[rank - 1] - 1; k++, ary = CDR(ary)) {
-			    len += LispPrintObj(mac, stream, CAR(ary), 1);
-			    len += LispPrintf(mac, stream, " ");
-			}
-			len += LispPrintObj(mac, stream, CAR(ary), 0);
-			ary = CDR(ary);
-			for (k = rank - 1; k > i; k--)
-			    len += LispPrintf(mac, stream, ")");
-			if (loop[0] < dims[0])
-			    len += LispPrintf(mac, stream, " ");
-		    }
-		    LispFree(mac, dims);
-		    LispFree(mac, loop);
-		}
-	    }
-	    len += LispPrintf(mac, stream, ")");
-	    break;
-	case LispStruct_t: {
-	    LispObj *def = obj->data.struc.def;
-	    LispObj *field = obj->data.struc.fields;
-
-	    len += LispPrintf(mac, stream, "S#(%s", STRPTR(CAR(def)));
-	    def = CDR(def);
-	    for (; def != NIL; def = CDR(def), field = CDR(field)) {
-		len += LispPrintf(mac, stream, " :%s ",
-				  SYMBOL_P(CAR(def)) ?
-				      STRPTR(CAR(def)) :
-				      STRPTR(CAR(CAR(def))));
-		len += LispPrintObj(mac, stream, CAR(field), 1);
-	    }
-	    len += LispPrintf(mac, stream, ")");
-	}   break;
-	case LispLambda_t:
-	    switch (obj->data.lambda.type) {
-		case LispLambda:
-		    len += LispPrintf(mac, stream, "#<LAMBDA ");
-		    break;
-		case LispFunction:
-		    len += LispPrintf(mac, stream, "#<FUNCTION %s ",
-				      STRPTR(obj->data.lambda.name));
-		    break;
-		case LispMacro:
-		    len += LispPrintf(mac, stream, "#<MACRO %s ",
-				      STRPTR(obj->data.lambda.name));
-		    break;
-		case LispSetf:
-		    len += LispPrintf(mac, stream, "#<SETF %s ",
-				      STRPTR(obj->data.lambda.name));
-		    break;
-	    }
-	    len += LispPrintObj(mac, stream, obj->data.lambda.code, 0);
-	    len += LispPrintf(mac, stream, ">");
-	    break;
-	case LispStream_t:
-	    len += LispPrintf(mac, stream, "#<");
-	    if (obj->data.stream.type == LispStreamFile)
-		len += LispPrintf(mac, stream, "FILE-STREAM ");
-	    else if (obj->data.stream.type == LispStreamString)
-		len += LispPrintf(mac, stream, "STRING-STREAM ");
-	    else if (obj->data.stream.type == LispStreamStandard)
-		len += LispPrintf(mac, stream, "STANDARD-STREAM ");
-	    else if (obj->data.stream.type == LispStreamPipe)
-		len += LispPrintf(mac, stream, "PIPE-STREAM ");
-
-	    if (!obj->data.stream.readable && !obj->data.stream.writable)
-		len += LispPrintf(mac, stream, "CLOSED");
-	    else {
-		if (obj->data.stream.readable)
-		    len += LispPrintf(mac, stream, "READ");
-		if (obj->data.stream.writable) {
-		    if (obj->data.stream.readable)
-			len += LispPrintf(mac, stream, "-");
-		    len += LispPrintf(mac, stream, "WRITE");
-		}
-	    }
-	    len += LispPrintf(mac, stream, " ");
-	    if (obj->data.stream.type == LispStreamString)
-		len += LispPrintf(mac, stream, "\"%s\"",
-				       (char*)SSTREAMP(obj)->string);
-	    else {
-		len += LispPrintObj(mac, stream, obj->data.stream.pathname, 1);
-		/* same address/size for pipes */
-		len += LispPrintf(mac, stream, " 0x%08x",
-				      (int)obj->data.stream.source.file);
-	    }
-	    len += LispPrintf(mac, stream, ">");
-	    break;
-	case LispPathname_t:
-	    len += LispPrintf(mac, stream, "#P");
-	    len += LispPrintObj(mac, stream, CAR(obj->data.quote), 1);
-	    break;
-    }
-
-    return (len);
+    return (buffer);
 }
 
 void
@@ -4286,15 +3509,13 @@ LispPrint(LispMac *mac, LispObj *obj, LispObj *stream, int newline)
     if (!obj || !stream)
 	LispDestroy(mac, "internal error, at PRINT");
     if (stream != NIL && !STREAM_P(stream))
-	LispDestroy(mac, "%s is not a stream", LispStrObj(mac, stream));
-    if (newline && !mac->newline) {
-	LispPrintf(mac, stream, "\n");
-	mac->column = 0;
-    }
-    /* XXX maybe should check for newlines in object */
-    mac->column = LispPrintObj(mac, stream, obj, 1);
-    mac->newline = 0;
-    LispFflush(Stdout);
+	LispDestroy(mac, "%s is not a stream", STROBJ(stream));
+    if (newline && LispGetColumn(mac, stream))
+	LispWriteChar(mac, stream, '\n');
+    LispWriteObject(mac, stream, obj);
+    if (stream == NIL || (stream->data.stream.type == LispStreamStandard &&
+	stream->data.stream.source.file == Stdout))
+	LispFflush(Stdout);
 }
 
 void
@@ -4359,21 +3580,20 @@ LispMachine(LispMac *mac)
 	if (sigsetjmp(mac->jmp, 1) == 0) {
 	    mac->running = 1;
 	    if (mac->interactive && mac->prompt) {
-		LispFprintf(Stdout, "%s", mac->prompt);
+		LispFputs(Stdout, mac->prompt);
 		LispFflush(Stdout);
 	    }
 	    if ((cod = LispRead(mac)) != NULL) {
 		if (cod == EOLIST)
 		    LispDestroy(mac, "object cannot start with #\\)");
+		else if (cod == DOT)
+		    LispDestroy(mac, "dot allowed only on lists");
 		obj = EVAL(cod);
 		if (mac->interactive) {
 		    LispPrint(mac, obj, NIL, 1);
 		    LispUpdateResults(mac, cod, obj);
-		    if (!mac->newline) {
-			LispPrintf(mac, NIL, "\n");
-			mac->newline = 1;
-			mac->column = 0;
-		    }
+		    if (LispGetColumn(mac, NIL))
+			LispWriteChar(mac, NIL, '\n');
 		}
 	    }
 	    signal(SIGINT, mac->sigint);
@@ -4434,6 +3654,8 @@ LispExecute(LispMac *mac, char *str)
 	    if ((obj = LispRead(mac)) != NULL) {
 		if (obj == EOLIST)
 		    LispDestroy(mac, "EXECUTE: object cannot start with #\\)");
+		else if (obj == DOT)
+		    LispDestroy(mac, "dot allowed only on lists");
 		mac->protect.objects[length] = obj;
 		result = EVAL(obj);
 	    }
@@ -4634,8 +3856,6 @@ LispBegin(int argc, char *argv[])
     mac->mem.mem_level = 0;
 
     mac->prompt = "> ";
-    mac->newline = 1;
-    mac->column = 0;
 
     mac->errexit = !mac->interactive;
 

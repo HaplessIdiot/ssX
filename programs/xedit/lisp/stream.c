@@ -27,11 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
 #include "pathname.h"
+#include "write.h"
 #include "private.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -478,6 +479,8 @@ Lisp_Read(LispMac *mac, LispBuiltin *builtin)
     result = LispRead(mac);
     if (result == EOLIST)
 	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));
+    else if (result == DOT)
+	LispDestroy(mac, "dot allowed only on lists");
     if (input_stream != NIL)
 	LispPopInput(mac, input_stream);
 
@@ -528,18 +531,7 @@ Lisp_WriteChar(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(character));
     ch = character->data.integer;
 
-    LispPrintf(mac, output_stream, "%c", ch);
-
-    if (output_stream == NIL) {
-	if (ch == '\n') {
-	    mac->newline = 1;
-	    mac->column = 0;
-	}
-	else {
-	    mac->newline = 0;
-	    ++mac->column;
-	}
-    }
+    LispWriteChar(mac, output_stream, ch);
 
     return (character);
 }
@@ -688,7 +680,7 @@ Lisp_WriteLine(LispMac *mac, LispBuiltin *builtin)
  write-line string &optional output-stream &key start end
  */
 {
-    return (LispWriteString(mac, builtin, 1));
+    return (LispWriteString_(mac, builtin, 1));
 }
 
 LispObj *
@@ -697,7 +689,7 @@ Lisp_WriteString(LispMac *mac, LispBuiltin *builtin)
  write-string string &optional output-stream &key start end
  */
 {
-    return (LispWriteString(mac, builtin, 0));
+    return (LispWriteString_(mac, builtin, 0));
 }
 
 LispObj *
@@ -804,7 +796,7 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not an output string stream",
 		    STRFUN(builtin), STROBJ(string_output_stream));
 
-    result = STRING((char*)SSTREAMP(string_output_stream)->string);
+    result = STRING(LispGetSstring(SSTREAMP(string_output_stream)));
 
     /* reset string */
     SSTREAMP(string_output_stream)->string[0] = '\0';

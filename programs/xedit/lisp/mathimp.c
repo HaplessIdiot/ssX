@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -1028,19 +1028,9 @@ cx_canonicalize(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
 static INLINE int
 fi_fi_add_overflow(long op1, long op2)
 {
-    return (
-	/* if signs equal or (MINSLONG as operator and another operator not 0)
-	   and... */
-	!(((op1 < 0) ^ (op2 < 0)) &&
-	  ((op1 != MINSLONG || !op2) &&
-	   (op2 != MINSLONG || !op1))) &&
-	(
-	    /* both greater than zero and will overflow */
-	    (op1 > 0 && ((op1 & FI_MASK) || (op2 & FI_MASK))) ||
-	    /* or both smaller than zero and will overflow */
-	    (op1 < 0 && ((~op1 & FI_MASK) || (~op2 & FI_MASK)))
-	)
-    );
+    long op = op1 + op2;
+
+    return (op1 > 0 ? op2 > op : op2 < op);
 }
 
 /*
@@ -1049,19 +1039,9 @@ fi_fi_add_overflow(long op1, long op2)
 static INLINE int
 fi_fi_sub_overflow(long op1, long op2)
 {
-    return (
-	/* if signs differ or (MINSLONG as operator and another operator not 0)
-	   and... */
-	(((op1 < 0) ^ (op2 < 0)) &&
-	  ((op1 != MINSLONG || !op2) &&
-	   (op2 != MINSLONG || !op1))) &&
-	(
-	    /* op1 greater than zero and will overflow */
-	    (op1 > 0 && ((op1 & FI_MASK) || (~op2 & FI_MASK))) ||
-	    /* or op1 smaller than zero and will overflow */
-	    (op1 < 0 && ((~op1 & FI_MASK) || (op2 & FI_MASK)))
-	)
-    );
+    long op = op1 - op2;
+
+    return (((op1 < 0) ^ (op2 < 0)) && ((op < 0) ^ (op1 < 0)));
 }
 
 /*
@@ -1070,11 +1050,19 @@ fi_fi_sub_overflow(long op1, long op2)
 static INLINE int
 fi_fi_mul_overflow(long op1, long op2)
 {
+#ifndef LONG64
+    double op = (double)op1 * (double)op2;
+
+    return (op > 2147483647.0 || op < -2147483647.0);
+#else
     int shift, sign;
     long mask;
 
     if (op1 == 0 || op1 == 1 || op2 == 0 || op2 == 1)
 	return (0);
+
+    if (op1 == MINSLONG || op2 == MINSLONG)
+	return (1);
 
     sign = (op1 < 0) ^ (op2 < 0);
 
@@ -1082,9 +1070,6 @@ fi_fi_mul_overflow(long op1, long op2)
 	op1 = -op1;
     if (op2 < 0)
 	op2 = -op2;
-
-    if (op1 == MINSLONG || op2 == MINSLONG)
-	return (1);
 
     for (shift = 0, mask = FI_MASK; shift < LONGSBITS; shift++, mask >>= 1)
 	if (op1 & mask)
@@ -1095,6 +1080,7 @@ fi_fi_mul_overflow(long op1, long op2)
 	    break;
 
     return (shift < LONGSBITS);
+#endif
 }
 
 /************************************************************************
@@ -1588,11 +1574,8 @@ abs_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 static INLINE void
 abs_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 {
-    if (XFF(accum) < 0.0) {
+    if (XFF(accum) < 0.0)
 	XFF(accum) = -XFF(accum);
-	if (!finite(XFF(accum)))
-	    XERROR("floating point overflow");
-    }
 }
 
 static INLINE void
@@ -1657,8 +1640,6 @@ static INLINE void
 neg_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 {
     XFF(accum) = -XFF(accum);
-    if (!finite(XFF(accum)))
-	XERROR("floating point overflow");
 }
 
 static INLINE void
@@ -2069,18 +2050,7 @@ add_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 
 	mpi_init(bigi);
 	mpi_seti(bigi, XFI(accum));
-	if (XFI(ope) > 0)
-	    mpi_addi(bigi, bigi, XFI(ope));
-	else if (XFI(ope) != MINSLONG)
-	    mpi_subi(bigi, bigi, -XFI(ope));
-	else {
-	    mpi iop;
-
-	    mpi_init(&iop);
-	    mpi_seti(&iop, XFI(ope));
-	    mpi_add(bigi, bigi, &iop);
-	    mpi_clear(&iop);
-	}
+	mpi_addi(bigi, bigi, XFI(ope));
 	XBI(accum) = bigi;
 	XTYPE(accum) = BI;
 	XMEM(XBI(accum));
@@ -2097,18 +2067,7 @@ sub_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 
 	mpi_init(bigi);
 	mpi_seti(bigi, XFI(accum));
-	if (XFI(ope) > 0)
-	    mpi_subi(bigi, bigi, XFI(ope));
-	else if (XFI(ope) != MINSLONG)
-	    mpi_addi(bigi, bigi, -XFI(ope));
-	else {
-	    mpi iop;
-
-	    mpi_init(&iop);
-	    mpi_seti(&iop, XFI(ope));
-	    mpi_sub(bigi, bigi, &iop);
-	    mpi_clear(&iop);
-	}
+	mpi_subi(bigi, bigi, XFI(ope));
 	XBI(accum) = bigi;
 	XTYPE(accum) = BI;
 	XMEM(XBI(accum));
@@ -2146,9 +2105,12 @@ div_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE int
 cmp_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    long cmp = XFI(accum) - XFI(ope);
+    if (XFI(accum) > XFI(ope))
+	return (1);
+    else if (XFI(accum) < XFI(ope))
+	return (-1);
 
-    return (cmp < 0 ? -1 : cmp > 0 ? 1 : 0);
+    return (0);
 }
 
 
@@ -3449,10 +3411,7 @@ cmp_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    if (XFI(ope) >= 0)
-	mpi_addi(XBI(accum), XBI(accum), XFI(ope));
-    else
-	mpi_subi(XBI(accum), XBI(accum), -XFI(ope));
+    mpi_addi(XBI(accum), XBI(accum), XFI(ope));
     if (mpi_fiti(XBI(accum))) {
 	long value = mpi_geti(XBI(accum));
 
@@ -3465,10 +3424,7 @@ add_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 sub_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    if (XFI(ope) >= 0)
-	mpi_subi(XBI(accum), XBI(accum), XFI(ope));
-    else
-	mpi_addi(XBI(accum), XBI(accum), XFI(ope));
+    mpi_subi(XBI(accum), XBI(accum), XFI(ope));
     if (mpi_fiti(XBI(accum))) {
 	long value = mpi_geti(XBI(accum));
 

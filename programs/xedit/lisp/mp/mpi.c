@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.2 2002/01/31 04:33:29 paulo Exp $ */
 
 #include "mp.h"
 
@@ -40,6 +40,9 @@ static void mpi_addsub(mpi *rop, mpi *op1, mpi *op2, int sub);
 	/* logical functions implementation */
 static INLINE BNS mpi_logic(BNS op1, BNS op2, BNS op);
 static void mpi_log(mpi *rop, mpi *op1, mpi *op2,  BNS op);
+
+	/* internal mpi_seti, whithout memory allocation */
+static void _mpi_seti(mpi *rop, long si);
 
 /*
  * Initialization
@@ -111,12 +114,43 @@ mpi_seti(mpi *rop, long si)
     rop->size = size;
 
     /* store data in small mp integer */
-    for (digs = rop->digs; size >= 0; size--, digs++) {
-	*digs = (BNS)ui;
-	ui >>= BNSBITS;
-    }
+    rop->digs[0] = (BNS)ui;
+    if (size > 1)
+	rop->digs[1] = (BNS)(ui >> BNSBITS);
+    rop->size = size;
 
     /* adjust result sign */
+    rop->sign = sign;
+}
+
+static void
+_mpi_seti(mpi *rop, long si)
+{
+    unsigned long ui;
+    BNS *digs;
+    int sign = si < 0;
+    int size;
+
+    if (si == MINSLONG) {
+	ui = MINSLONG;
+	size = 2;
+    }
+    else {
+	if (sign)
+	    ui = -si;
+	else
+	    ui = si;
+	if (ui < CARRY)
+	    size = 1;
+	else
+	    size = 2;
+    }
+
+    rop->digs[0] = (BNS)ui;
+    if (size > 1)
+	rop->digs[1] = (BNS)(ui >> BNSBITS);
+    rop->size = size;
+
     rop->sign = sign;
 }
 
@@ -311,11 +345,8 @@ mpi_addi(mpi *rop, mpi *op1, long op2)
     BNS digs[2];
     mpi op;
 
-    op.sign = op2 < 0;
     op.digs = (BNS*)digs;
-    op.digs[0] = op2 & SMASK;
-    op.digs[1] = (unsigned long)(op2 & LMASK) >> BNSBITS;
-    op.size = op.digs[1] ? 2 : 1;
+    _mpi_seti(&op, op2);
 
     mpi_addsub(rop, op1, &op, 0);
 }
@@ -332,11 +363,8 @@ mpi_subi(mpi *rop, mpi *op1, long op2)
     BNS digs[2];
     mpi op;
 
-    op.sign = op2 < 0;
     op.digs = (BNS*)digs;
-    op.digs[0] = op2 & SMASK;
-    op.digs[1] = (unsigned long)(op2 & LMASK) >> BNSBITS;
-    op.size = op.digs[1] ? 2 : 1;
+    _mpi_seti(&op, op2);
 
     mpi_addsub(rop, op1, &op, 1);
 }
@@ -471,12 +499,8 @@ mpi_muli(mpi *rop, mpi *op1, long op2)
     BNS digs[2];
     mpi op;
 
-    op.alloc = 0;
-    op.sign = op2 < 0;
     op.digs = (BNS*)digs;
-    op.digs[0] = op2 & SMASK;
-    op.digs[1] = (unsigned long)(op2 & LMASK) >> BNSBITS;
-    op.size = op.digs[1] ? 2 : 1;
+    _mpi_seti(&op, op2);
 
     mpi_mul(rop, op1, &op);
 }
@@ -720,12 +744,8 @@ mpi_divqri(mpi *qrop, mpi *num, long den)
     mpi dop, rrop;
     long remainder;
 
-    dop.alloc = 0;
-    dop.sign = den < 0;
     dop.digs = (BNS*)ddigs;
-    dop.digs[0] = den & SMASK;
-    dop.digs[1] = (unsigned long)(den & LMASK) >> BNSBITS;
-    dop.size = dop.digs[1] ? 2 : 1;
+    _mpi_seti(&dop, den);
 
     memset(&rrop, '\0', sizeof(mpi));
     mpi_init(&rrop);
@@ -744,12 +764,8 @@ mpi_divi(mpi *rop, mpi *num, long den)
     BNS ddigs[2];
     mpi dop;
 
-    dop.alloc = 0;
-    dop.sign = den < 0;
     dop.digs = (BNS*)ddigs;
-    dop.digs[0] = den & SMASK;
-    dop.digs[1] = (unsigned long)(den & LMASK) >> BNSBITS;
-    dop.size = dop.digs[1] ? 2 : 1;
+    _mpi_seti(&dop, den);
 
     mpi_divqr(rop, NULL, num, &dop);
 }
@@ -1416,8 +1432,8 @@ mpi_swap(mpi *op1, mpi *op2)
 int
 mpi_fiti(mpi *op)
 {
-    return (op->size <= 2 && (op->sign || op->digs[0] ||
-			      ((BNI)(op->digs[1]) << BNSBITS) != MINSLONG));
+    return (op->size <= 2 &&
+	    (op->digs[0] | ((BNI)(op->digs[1]) << BNSBITS)) != MINSLONG);
 }
 
 long

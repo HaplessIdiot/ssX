@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.1 2002/01/30 21:00:57 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -46,6 +46,8 @@
  */
 struct _LispFile {
     unsigned char *buffer;
+    int column;			/* output column number */
+    int escape;			/* when set, print unquoted objects, (princ) */
     int descriptor;
     int length;			/* number of bytes used */
     int offset;			/* read/write offset */
@@ -56,6 +58,17 @@ struct _LispFile {
     int buffered : 1;
     int available : 1;		/* unget field holds a char */
     int nonblock : 1;		/* in nonblock mode */
+};
+
+struct _LispString {
+    unsigned char *string;
+    int column;			/* output column number */
+    int escape;			/* when set, print unquoted objects, (princ) */
+    int fixed;			/* if set, don't try to reallocate string */
+    int space;			/* number of bytes alocated */
+    int length;			/* number of bytes used */
+    int input;			/* input offset, for read operations */
+    int output;			/* output offset, for write operations */
 };
 
 /*
@@ -80,6 +93,12 @@ int LispFputs(LispFile*, char*);
 int LispFread(LispFile*, void*, int);
 int LispFwrite(LispFile*, void*, int);
 
-int LispFprintf(LispFile*, char*, ...);
+	/* functions that readwrite using the LispString structure */
+int LispSgetc(LispString*);
+int LispSputc(LispString*, int);
+int LispSputs(LispString*, char*);
+int LispSwrite(LispString*, void*, int);
+
+char *LispGetSstring(LispString*);
 
 #endif /* Lisp_io_h */
