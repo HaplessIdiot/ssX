@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.9 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -102,8 +102,6 @@ extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
 extern void QuartzReallySetCursor();
-static NSArray * arrayWithStringsAndNumbers(int nitems, const char **items,
-                                            const char *numbers);
 static void childDone(int sig);
 static void powerDidChange(void *x, io_service_t y, natural_t messageType,
                            void *messageArgument);
@@ -924,17 +922,18 @@ static io_connect_t root_port;
 
         case kQuartzSetWindowMenu:
         {
-            NSArray *list = (NSArray *)
-                                [[[portMessage components] lastObject] bytes];
-            [self setWindowMenu:list];
+            NSArray *list;
+            [[[portMessage components] lastObject] getBytes:&list];
+            [self setX11WindowList:list];
             [list release];
             break;
         }
 
         case kQuartzSetWindowMenuCheck:
         {
-            const int *n = [[[portMessage components] lastObject] bytes];
-            [self setWindowMenuCheck:[NSNumber numberWithInt:*n]];
+            int n;
+            [[[portMessage components] lastObject] getBytes:&n];
+            [self setX11WindowCheck:[NSNumber numberWithInt:n]];
             break;
         }
 
@@ -944,8 +943,9 @@ static io_connect_t root_port;
 
         case kQuartzSetCanQuit:
         {
-            const int *n = [[[portMessage components] lastObject] bytes];
-            quitWithoutQuery = (BOOL) *n;
+            int n;
+            [[[portMessage components] lastObject] getBytes:&n];
+            quitWithoutQuery = (BOOL) n;
             break;
         }
 
@@ -970,8 +970,22 @@ static io_connect_t root_port;
     }
 }
 
+// User selected an X11 window from a menu
+- (void)itemSelected:sender
+{
+    xEvent xe;
+
+    [NSApp activateIgnoringOtherApps:YES];
+
+    // Notify the client of the change through the X server thread
+    xe.u.u.type = kXDarwinControllerNotify;
+    xe.u.clientMessage.u.l.longs0 = AppleWMWindowMenuItem;
+    xe.u.clientMessage.u.l.longs1 = [sender tag];
+    [self sendXEvent:&xe];
+}
+
 // Set the Apple-WM specifiable part of the window menu
-- (void)setWindowMenu:(NSArray *)list
+- (void)setX11WindowList:(NSArray *)list
 {
     NSMenuItem *item;
     int first, count, i;
@@ -979,54 +993,60 @@ static io_connect_t root_port;
 
     /* Work backwards so we don't mess up the indices */
     first = [windowMenu indexOfItem:windowSeparator] + 1;
-    count = [windowMenu numberOfItems];
-    for (i = count - 1; i >= first; i--)
-	[windowMenu removeItemAtIndex:i];
+    if (first > 0) {
+        count = [windowMenu numberOfItems];
+        for (i = count - 1; i >= first; i--)
+            [windowMenu removeItemAtIndex:i];
+    } else {
+        windowSeparator = [windowMenu addItemWithTitle:@""
+                           action:nil
+                           keyEquivalent:@""];
+    }
 
-    count = [dockMenu indexOfItem:dockSeparator];
+    count = [dockMenu numberOfItems];
     for (i = 0; i < count; i++)
-	[dockMenu removeItemAtIndex:0];
+        [dockMenu removeItemAtIndex:0];
 
     count = [list count];
 
     for (i = 0; i < count; i++)
     {
-	NSString *name, *shortcut;
+        NSString *name, *shortcut;
 
-	name = [[list objectAtIndex:i] objectAtIndex:0];
-	shortcut = [[list objectAtIndex:i] objectAtIndex:1];
+        name = [[list objectAtIndex:i] objectAtIndex:0];
+        shortcut = [[list objectAtIndex:i] objectAtIndex:1];
 
-	item = [windowMenu addItemWithTitle:name
-		action:@selector (item_selected:) keyEquivalent:shortcut];
-	[item setTarget:self];
-	[item setTag:i];
-	[item setEnabled:YES];
+        item = [windowMenu addItemWithTitle:name
+                           action:@selector(itemSelected:)
+                           keyEquivalent:shortcut];
+        [item setTarget:self];
+        [item setTag:i];
+        [item setEnabled:YES];
 
-	item = [dockMenu insertItemWithTitle:name
-		action:@selector (item_selected:) keyEquivalent:shortcut
-		atIndex:i];
-	[item setTarget:self];
-	[item setTag:i];
-	[item setEnabled:YES];
+        item = [dockMenu insertItemWithTitle:name
+                         action:@selector(itemSelected:)
+                         keyEquivalent:shortcut atIndex:i];
+        [item setTarget:self];
+        [item setTag:i];
+        [item setEnabled:YES];
     }
 
     if (checkedWindowItem >= 0 && checkedWindowItem < count)
     {
-	item = [windowMenu itemAtIndex:first + checkedWindowItem];
-	[item setState:NSOnState];
-	item = [dockMenu itemAtIndex:checkedWindowItem];
-	[item setState:NSOnState];
+        item = [windowMenu itemAtIndex:first + checkedWindowItem];
+        [item setState:NSOnState];
+        item = [dockMenu itemAtIndex:checkedWindowItem];
+        [item setState:NSOnState];
     }
 
     // Notify the client of the change through the X server thread
     xe.u.u.type = kXDarwinControllerNotify;
-    xe.u.clientMessage.u.l.longs0 = 1;
-    xe.u.clientMessage.u.l.longs1 = AppleWMWindowMenuNotify;
+    xe.u.clientMessage.u.l.longs0 = AppleWMWindowMenuNotify;
     [self sendXEvent:&xe];
 }
 
 // Set the checked item on the Apple-WM specifiable window menu
-- (void)setWindowMenuCheck:(NSNumber *)nn
+- (void)setX11WindowCheck:(NSNumber *)nn
 {
     NSMenuItem *item;
     int first, count;
@@ -1037,17 +1057,17 @@ static io_connect_t root_port;
 
     if (checkedWindowItem >= 0 && checkedWindowItem < count)
     {
-	item = [windowMenu itemAtIndex:first + checkedWindowItem];
-	[item setState:NSOffState];
-	item = [dockMenu itemAtIndex:checkedWindowItem];
-	[item setState:NSOffState];
+        item = [windowMenu itemAtIndex:first + checkedWindowItem];
+        [item setState:NSOffState];
+        item = [dockMenu itemAtIndex:checkedWindowItem];
+        [item setState:NSOffState];
     }
     if (n >= 0 && n < count)
     {
-	item = [windowMenu itemAtIndex:first + n];
-	[item setState:NSOnState];
-	item = [dockMenu itemAtIndex:n];
-	[item setState:NSOnState];
+        item = [windowMenu itemAtIndex:first + n];
+        [item setState:NSOnState];
+        item = [dockMenu itemAtIndex:n];
+        [item setState:NSOnState];
     }
     checkedWindowItem = n;
 }
@@ -1083,7 +1103,7 @@ static io_connect_t root_port;
 // NSPort is not thread safe.
 void QuartzMessageMainThread(unsigned msg, void *data, unsigned length)
 {
-    if (msg == kQuartzPostEvent) {
+    if (length > 0) {
         NSData *eventData = [NSData dataWithBytes:data length:length];
         NSArray *eventArray = [NSArray arrayWithObject:eventData];
         NSPortMessage *newMessage =
@@ -1099,54 +1119,34 @@ void QuartzMessageMainThread(unsigned msg, void *data, unsigned length)
     }
 }
 
-static NSArray *
-arrayWithStringsAndNumbers(int nitems, const char **items,
-                           const char *numbers)
-{
-    NSMutableArray *array, *subarray;
-    NSString *string;
-    NSString *number;
-    int i;
-
-    /* (Can't autorelease on the X server thread) */
-
-    array = [[NSMutableArray alloc] initWithCapacity:nitems];
-
-    for (i = 0; i < nitems; i++)
-    {
-        subarray = [[NSMutableArray alloc] initWithCapacity:2];
-
-        string = [[NSString alloc] initWithUTF8String:items[i]];
-        [subarray addObject:string];
-        [string release];
-
-        if (numbers[i] != 0)
-        {
-            number = [[NSString alloc] initWithFormat:@"%d", numbers[i]];
-            [subarray addObject:number];
-            [number release];
-        }
-        else
-            [subarray addObject:@""];
-
-        [array addObject:subarray];
-        [subarray release];
-    }
-
-    return array;
-}
-
 void
 QuartzSetWindowMenu(int nitems, const char **items,
                     const char *shortcuts)
 {
-    NSArray *array;
+    NSMutableArray *array;
+    int i;
 
-    array = arrayWithStringsAndNumbers(nitems, items, shortcuts);
+    array = [[NSMutableArray alloc] initWithCapacity:nitems];
 
-    /* Send the array of strings over to the main thread */
+    for (i = 0; i < nitems; i++) {
+        NSMutableArray *subarray = [NSMutableArray arrayWithCapacity:2];
+        NSString *string = [NSString stringWithUTF8String:items[i]];
 
-    QuartzMessageMainThread(kQuartzSetWindowMenu, array, sizeof(NSArray *));
+        [subarray addObject:string];
+
+        if (shortcuts[i] != 0) {
+            NSString *number = [NSString stringWithFormat:@"%d",
+                                         shortcuts[i]];
+            [subarray addObject:number];
+        } else
+            [subarray addObject:@""];
+
+        [array addObject:subarray];
+    }
+
+    /* Send the array of strings over to the main thread. */
+    /* Will we released in main thread. */
+    QuartzMessageMainThread(kQuartzSetWindowMenu, &array, sizeof(NSArray *));
 }
 
 // Handle SIGCHLD signals
