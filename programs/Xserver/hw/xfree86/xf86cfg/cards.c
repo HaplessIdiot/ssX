@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.3 2001/07/06 02:04:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.5 2001/07/06 22:03:16 paulo Exp $
  */
 
 #define CARDS_PRIVATE
@@ -94,11 +94,11 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	    break;
 
     if (!xf86PCIVendorInfoData[i].VendorID) {
-	printf("    WARNING No such vendor 0x%x\n", opts->vendor);
+	ErrorF("    WARNING No such vendor 0x%x\n", opts->vendor);
 	++*err;
 	if (chips) {
 	    while (chips->name) {
-		printf("    WARNING Cannot verify chipset %s\n", chips->name);
+		ErrorF("    WARNING Cannot verify chipset %s\n", chips->name);
 		++chips;
 		++*err;
 	    }
@@ -109,7 +109,7 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
     }
 
     if (!chips) {
-	printf("    WARNING No chipsets specified.\n");
+	ErrorF("    WARNING No chipsets specified.\n");
 	++*err;
 	return;
     }
@@ -122,14 +122,14 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
 	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID) {
 		if (strcmp(chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName)) {
-		    printf("    ERROR chipset strings don't match: \"%s\" \"%s\"\n",
+		    ErrorF("    ERROR chipset strings don't match: \"%s\" \"%s\"\n",
 			   chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName);
 		    *err += 2;
 		}
 		break;
 	    }
 	if (!xf86PCIVendorInfoData[i].Device[j].DeviceName) {
-	    printf("    WARNING chipset \"%s\" not in list.\n", chips->name);
+	    ErrorF("    WARNING chipset \"%s\" not in list.\n", chips->name);
 	    ++*err;
 	}
 	else
@@ -139,7 +139,7 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 
     for (j = 0; j < count; j++) {
 	if (!chipsets_supported[j]) {
-	    printf("    NOTICE chipset \"%s\" not listed as supported.\n",
+	    ErrorF("    NOTICE chipset \"%s\" not listed as supported.\n",
 		   xf86PCIVendorInfoData[i].Device[j].DeviceName);
 	    ++*err;	/* Not really an error? */
 	}

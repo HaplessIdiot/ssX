@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.1 2001/07/06 02:04:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.3 2001/07/07 01:48:01 paulo Exp $
  */
 
 #ifdef USE_MODULES
@@ -422,7 +422,7 @@ xf86cfgCheckModule(void)
 	    vers = initdata->vers;
 	    if (vers && strcmp(*ploaderList, vers->modname)) {
 		/* This was a problem at some time for some video drivers */
-		printf("  WARNING file/module name mismatch: \"%s\" \"%s\"\n",
+		ErrorF("  WARNING file/module name mismatch: \"%s\" \"%s\"\n",
 		       *ploaderList, vers->modname);
 		++error_level;
 	    }
