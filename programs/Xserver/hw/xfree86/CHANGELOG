@@ -1,4 +1,12 @@
 XFree86 4.3.99.3 (xx April 2003)
+  94. Rework the Linux drm kernel module build to leverage off the standard
+      kernel build system.  This is based on suggestions and examples from
+      David Woodhouse.  This approach has the advantage that the build
+      requirements of a wider range of standard kernels are now supported
+      transparently, but the disadvantage of some extra complexity to handle
+      building against clean vendor-distributed kernel source trees.
+      This has been tested with some recent Red Hat and SuSE distributions
+      (David Dawes).
   93. Update Italian keyboard map (Bugzilla #109, Sebastiano Vigna).
   92. Add keys missed in multi-layout keyboard maps: LSGT key in Belgian map
       and 'old','phonetic' variants in Armenian map (Ivan Pascal).
@@ -16726,4 +16734,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2629 2003/04/12 10:53:46 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2630 2003/04/12 12:32:21 pascal Exp $
