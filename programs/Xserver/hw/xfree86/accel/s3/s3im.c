@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.29 1996/09/14 13:09:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.30 1996/10/21 05:27:22 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1186,13 +1186,13 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 					     & MSKBIT(np)) | (*ptmp << np);
 		    }
 		    else if( pw >= 8 ) {
-			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)
-						      | (*pnt << (np+pw));
+			pix = ((*pnt >> x2) & MSKBIT(np)) 
+			   | ((*ptmp & MSKBIT(pw)) << np) | (*pnt << (np+pw));
 		    }
 		    else {
 			pix = (*ptmp >> x2) & MSKBIT(np);
 			while( np < 16 && np < dstw ) {
-			    pix |= *ptmp << np;
+			    pix |= (*ptmp & MSKBIT(pw)) << np;
 			    np += pw;
 			}
 		    }

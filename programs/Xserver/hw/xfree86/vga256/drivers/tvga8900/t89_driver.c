@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.46 1996/10/16 14:43:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.47 1996/10/18 15:03:59 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1084,7 +1084,10 @@ TVGA8900FbInit()
 	if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options))
 		tridentUseLinear = FALSE;
 
-	if (xf86LinearVidMem() && tridentUseLinear) 
+	if (!xf86LinearVidMem())
+		tridentUseLinear = FALSE;
+
+	if (tridentUseLinear) 
 		ErrorF("%s %s: Using Linear Frame Buffer at 0x0%x, Size %dMB\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			TVGA8900.ChipLinearBase, 

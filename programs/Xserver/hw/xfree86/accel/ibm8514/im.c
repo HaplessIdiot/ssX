@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.5 1995/01/28 15:51:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.6 1996/02/04 09:01:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -455,13 +455,13 @@ ibm8514ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 						 & MSKBIT(np)) | (*ptmp << np);
 		    }
 		    else if( pw >= 8 ) {
-			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)
-						      | (*pnt << (np+pw));
+			pix = ((*pnt >> x2) & MSKBIT(np))
+			   | ((*ptmp & MSKBIT(pw)) << np) | (*pnt << (np+pw));
 		    }
 		    else {
 			pix = (*ptmp >> x2) & MSKBIT(np);
 			while( np < 16 && np < dstw ) {
-			    pix |= *ptmp << np;
+			    pix |= (*ptmp & MSKBIT(pw)) << np;
 			    np += pw;
 			}
 		    }

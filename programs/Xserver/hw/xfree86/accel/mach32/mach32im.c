@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.8 1995/05/07 11:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.9 1996/02/04 09:02:33 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1012,13 +1012,13 @@ mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 						 & MSKBIT(np)) | (*ptmp << np);
 		    }
 		    else if( pw >= 8 ) {
-			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)
-						      | (*pnt << (np+pw));
+			pix = ((*pnt >> x2) & MSKBIT(np)) 
+			   | ((*ptmp & MSKBIT(pw)) << np) | (*pnt << (np+pw));
 		    }
 		    else {
 			pix = (*ptmp >> x2) & MSKBIT(np);
 			while( np < 16 && np < dstw ) {
-			    pix |= *ptmp << np;
+			    pix |= (*ptmp & MSKBIT(pw)) << np;
 			    np += pw;
 			}
 		    }
