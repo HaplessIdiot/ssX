@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.128 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.129 2002/05/05 18:54:01 herrb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -347,8 +347,11 @@ xf86PostKbdEvent(unsigned key)
     case KEY_Prefix1:
 #if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
       if (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
-	  || xf86Info.consType == PCVT ||
-	  (xf86Info.consType == WSCONS && xf86Info.kbdEvents != xf86WSKbdEvents)) {
+	  || xf86Info.consType == PCVT
+#ifdef WSCONS_SUPPORT
+	  || (xf86Info.consType == WSCONS && xf86Info.kbdEvents != xf86WSKbdEvents)
+#endif
+      ) {
 #endif
         xf86Info.scanPrefix = scanCode;  /* special prefixes */
         return;
@@ -362,9 +365,12 @@ xf86PostKbdEvent(unsigned key)
   else if (
 #ifdef CSRG_BASED
            (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
-	    || xf86Info.consType == PCVT ||
-	      (xf86Info.consType == WSCONS && xf86Info.kbdEvents !=
-	      xf86WSKbdEvents)) &&
+	    || xf86Info.consType == PCVT
+#ifdef WSCONS_SUPPORT
+	      || (xf86Info.consType == WSCONS && xf86Info.kbdEvents !=
+	      xf86WSKbdEvents)
+#endif
+	      ) &&
 #endif
            (xf86Info.scanPrefix == KEY_Prefix0)) {
     xf86Info.scanPrefix = 0;
