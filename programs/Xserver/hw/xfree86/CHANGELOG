@@ -1,4 +1,6 @@
 XFree86 3.9.17b (23 January 2000)
+3579. Add a "Status" document that lists and compares the driver status of
+      4.0 and 3.3.x (needs a lot more input) (David Dawes).
 3578. Fix a problem with the EmulateTimeout line in the file generated
       by xf86config, and have xf86config create /etc/X11 if it doesn't
       already exist (David Dawes).
@@ -9327,4 +9329,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.949 2000/01/23 04:50:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.950 2000/01/23 05:23:59 dawes Exp $

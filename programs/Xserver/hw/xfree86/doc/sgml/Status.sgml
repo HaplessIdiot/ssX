@@ -1,0 +1,414 @@
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
+<article>
+
+<title>Driver Status for XFree86&trade; &relvers;
+<author>The XFree86 Project, Inc
+<date>23 January 2000
+
+<ident>
+$XFree86$
+</ident>
+
+<abstract>
+
+This document provides information about the status of the driver and
+hardware support in XFree86 &relvers; compared with that in XFree86
+&legacyvers;.  Please send updates for this document to
+<email>dawes@xfree86.org</email>
+
+</abstract>
+
+<toc>
+
+<sect>Introduction
+<p>
+This document contains one section per vendor (organised alphabetically)
+for each chipset family that is supported in XFree86 &legacyvers; or
+XFree86 &relvers;.  It includes information about the status of the
+drivers and the hardware they support, including a comparison of the
+level of support between versions &legacyvers; and &relvers;.
+
+NOTE: Status information needs to be checked carefully and expanded
+where possible.  E.g., include information about acceleration, multi-head,
+known problems, hardware known to work on, platform
+dependencies/limitations, other architectures known to work on
+(e.g., Alpha, PPC), etc.
+
+<sect>3Dfx
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support (including acceleration) for Voodoo Banshee and Voodoo
+	3.  Support is provided by the XF86_SVGA server with the tdfx
+	driver).
+
+<tag>&relvers;:</tag>
+	Support for Voodoo 1 and Voodoo 2 via glide on platforms where
+	glide is available (Linux and FreeBSD(?)).  Support is provided by
+	the "glide" driver (requires Glide 2x).
+
+	Support (including acceleration) for Voodoo Banshee and Voodoo 3.
+	Support is provided by the "tdfx" driver.
+
+<tag>Summary:</tag>
+	All hardware supported in &legacyvers; is also supported in &relvers;.
+
+</descrip>
+
+<sect>3Dlabs
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support (including acceleration) for GLINT 500TX (with IBM RGB526
+	ramdac), GLINT MX plus Delta or Gamma (with IBM RGB526 and RGB640
+	ramdacs), Permedia with IBM RGB526 ramdac, Permedia 2, 2a, 2v.
+	Support is provided by the XF86_3DLabs server.
+
+
+<tag>&relvers;:</tag>
+	Support (including acceleration) for Permedia, Permedia 2, 2v
+	(and 2a??) GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
+	coproc.  Support is provided by the "glint" driver.
+
+<tag>Summary:</tag>
+	All hardware supported in &legacyvers; is also supported in &relvers;.
+
+</descrip>
+
+<sect>Alliance
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support (including acceleration) for the AT24, AP6422, AT3D.
+	Support is provided by the XF86_SVGA server with the apm driver.
+
+<tag>&relvers;:</tag>
+	Support (including acceleration?) for the AT25 and AT3D.  This
+	support is provided by the "apm" driver.  This driver currently
+	has no native support for the AP6422 and AT24.  The driver status
+	is uncertain.  Test reports are required.
+
+<tag>Summary:</tag>
+	The AT24 and AP6422 are supported in &legacyvers; but not in
+	&relvers;.  The AT25 is supported in &relvers; but not in
+	&legacyvers;.  The status of the driver in &relvers; is uncertain.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+</descrip>
+
+<sect>ARK Logic
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>ATI
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....  Acceleration currently only for the Rage 128
+	chips.
+
+</descrip>
+
+<sect>Avance Logic
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for the AL2101, ALI2228, ALI2301, ALI2302, ALI2308,
+	ALI2401 chipsets.  The status of this support is unknown because
+	we don't have any recent test reports.
+
+<tag>&relvers;:</tag>
+	No native support for any chipsets.  NEED TO CHECK IF
+	fbdev OR SIMILAR WILL WORK FOR THEM.
+
+</descrip>
+
+<sect>Chips and Technologies
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Cirrus Logic
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Compaq/Digital
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Cyrix
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Epson
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Genoa
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>IBM
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Intel
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Matrox
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>MX (???)
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>NCR
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Neomagic
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>NVIDIA
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Number Nine
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Oak
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Paradise/Western Digital
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>RealTek
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Rendition/Micron
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>S3
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Silicon Integrated Systems (SiS)
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Silicon Motion, Inc
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Trident Microsystems
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Tseng Labs
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Video 7
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+<sect>Weitek
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support for ...
+
+<tag>&relvers;:</tag>
+	Support for ....
+
+</descrip>
+
+</article>
