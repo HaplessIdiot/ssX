@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.4 1999/07/18 08:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.5 2000/02/11 22:36:03 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -29,6 +29,10 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
 /*
  * Read BIOS via mmap()ing DEV_MEM
  */
@@ -54,7 +58,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	/* Base is assumed to be page-aligned. */
 	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
 					MAP_SHARED, fd, (off_t)Base);
-	if ((int)ptr == -1)
+	if (ptr == MAP_FAILED)
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed (%s)\n",
 			DEV_MEM, strerror(errno));
@@ -126,7 +130,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	base = mmap((caddr_t)0, JENSEN_SHIFT(mlen), PROT_READ,
 		    MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
 
-	if (base == (caddr_t)-1UL)
+	if (base == MAP_FAILED)
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: Failed to mmap %s (%s)\n",
 			DEV_MEM, strerror(errno));
