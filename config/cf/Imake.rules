@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.65 2000/03/05 16:59:00 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.66 2000/03/21 19:56:55 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1251,7 +1251,7 @@ install.man::								@@\
 #endif /* InstallGenManPageAliases */
 
 #ifndef BuildInstallHtmlManPage
-#if BuildRman
+#if BuildHtmlManPages
 #define BuildInstallHtmlManPage(file,dest,suffix)			@@\
 AllTarget(dest.suffix.html)						@@\
 									@@\
@@ -1266,7 +1266,7 @@ InstallNamedTarget(install.man,dest.suffix.html,$(INSTMANFLAGS),$(DOCHTMLDIR),de
 #endif
 
 #ifndef InstallHtmlManPageAliases
-#if BuildRman
+#if BuildHtmlManPages
 #define InstallHtmlManPageAliases(file,aliases,suffix)			@@\
 install.man:: file.suffix.html						@@\
 	@for i in aliases; do (set -x; \				@@\
@@ -1278,6 +1278,17 @@ install.man:: file.suffix.html						@@\
 #define InstallHtmlManPageAliases(file,aliases,suffix) /**/
 #endif
 #endif
+
+#ifndef HtmlManIndex
+#if BuildHtmlManPages
+#define HtmlManIndex							@@\
+html_index::								@@\
+	$(HTMLINDEXCMD) $(DESTDIR)$(DOCHTMLDIR)
+#else
+#define HtmlManIndex	html_index::
+#endif
+#endif
+
 
 /*
  * ManKeywordsTarget - generate the database used by "man -k".

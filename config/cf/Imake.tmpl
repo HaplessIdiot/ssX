@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.70 2000/03/07 14:31:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.71 2000/03/21 19:56:56 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -647,6 +647,12 @@ TCLIBDIR = TclLibDir
 #define BuildHtmlManPages YES
 #else
 #define BuildHtmlManPages NO
+#endif
+#endif
+
+#ifndef HtmlIndexCmd
+#if BuildHtmlManPages
+#define HtmlIndexCmd $(MKHTMLINDEX)
 #endif
 #endif
 
@@ -1665,6 +1671,11 @@ IncludesSubdirs($(SUBDIRS))
 /* must be after all install.man rules that install anything */
 #if MakeManKeywords		/* typically only at top level */
 install.man:: man_keywords
+#endif
+
+/* must be after all install.man rules that install anything */
+#if MakeHtmlManIndex		/* typically only at top level */
+install.man:: html_index
 #endif
 
 #ifndef IHaveSubdirs
