@@ -1,3 +1,7 @@
+XFree86 3.1.1Be (25 June 1995)
+165. Fix a few LinkKit problems.
+164. Fix LBXProxyOnly build.
+
 XFree86 3.1.1Bd (24 June 1995)
 163. Add a BuildLBXProxyOnly Imake config option to allow building lbxproxy
      from a self-contained cut-down source tree.
