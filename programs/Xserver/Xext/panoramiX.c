@@ -19,12 +19,13 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.12 1999/09/25 14:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.19 2000/03/28 22:37:34 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
+#include "Xarch.h"
 #include "misc.h"
 #include "cursor.h"
 #include "cursorstr.h"

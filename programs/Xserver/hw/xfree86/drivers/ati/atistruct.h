@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.12 2000/03/03 04:47:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.13 2000/03/22 03:08:25 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,7 +26,10 @@
 
 #include "atibank.h"
 #include "aticlock.h"
+#include "atiregs.h"
 #include "xaa.h"
+
+#define CacheSlotOf(____Register) ((____Register) / UnitOf(DWORD_SELECT))
 
 /*
  * This is probably as good a place as any to put this note, as it applies to
@@ -220,6 +223,12 @@ typedef struct _ATIRec
     CARD32 dst_cntl;    /* For SetupFor/Subsequent communication */
 
     /*
+     * MMIO cache.
+     */
+    CARD32 MMIOCache[CacheSlotOf(DWORD_SELECT) + 1];
+    CARD8  MMIOCached[(CacheSlotOf(DWORD_SELECT) + 8) >> 3];
+
+    /*
      * Clock-related definitions.
      */
     int ClockNumberToProgramme, ReferenceNumerator, ReferenceDenominator;
@@ -288,6 +297,7 @@ typedef struct _ATIRec
     CARD8 OptionCSync;          /* Use composite sync */
     CARD8 OptionDevel;          /* Intentionally undocumented */
     CARD8 OptionLinear;         /* Use linear fb aperture when available */
+    CARD8 OptionMMIOCache;      /* Cache MMIO writes */
     CARD8 OptionProbeClocks;    /* Force probe for fixed clocks */
     CARD8 OptionShadowFB;       /* Use shadow frame buffer */
     CARD8 OptionSync;           /* Temporary */

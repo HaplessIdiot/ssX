@@ -1,8 +1,11 @@
 XFree86 4.0a (xx March 2000)
+  43. By default, cache writes to selected Mach64 MMIO registers and allow this
+      cache to be disabled (Marc La France).
+  42. Add detection of Rage128 Mobility to ATI driver (Marc La France).
   41. Fix a Xinerama GetImage bug that showed up in 24+32 (Mark Vojkovich).
   40. Fix XAA transparent blits.  They are broken in 4.0 (Mark Vojkovich).
   39. Fix typo in mioverlay that broke resize gravity (Mark Vojkovich).
-  38. Fix PCI/AGP bridge I/O window detection (Marc La France).
+  38. Fix PCI/AGP bridge I/O and memory window detection (Marc La France).
   37. Add Mach64 solid zero-width line acceleration, except for 24bpp
       (Kevin Martin, Marc La France).
   36. Add Mach64 mono 8x8 pattern fill acceleration (Kevin Martin,
@@ -10104,4 +10107,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1104 2000/03/25 20:33:51 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1108 2000/03/28 22:40:34 mvojkovi Exp $

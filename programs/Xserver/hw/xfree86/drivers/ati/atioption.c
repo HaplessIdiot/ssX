@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.5 2000/01/30 17:52:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.6 2000/02/18 12:19:27 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,7 +26,6 @@
 #include "atibus.h"
 #include "atioption.h"
 #include "atistruct.h"
-#include "atiutil.h"
 
 /*
  * Recognised XF86Config options.
@@ -37,6 +36,7 @@ typedef enum
     ATI_OPTION_CRT,
     ATI_OPTION_CSYNC,
     ATI_OPTION_LINEAR,
+    ATI_OPTION_MMIO_CACHE,
     ATI_OPTION_PROBE_CLOCKS,
     ATI_OPTION_SHADOW_FB
 } ATIPublicOptionType;
@@ -53,6 +53,7 @@ static OptionInfoRec ATIPublicOptions[] =
     {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
     {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
     {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_MMIO_CACHE,   "mmio_cache",     OPTV_BOOLEAN, {0, }, FALSE},
     {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
     {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
     {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
@@ -101,6 +102,7 @@ ATIProcessOptions
 #   define CSync       PublicOption[ATI_OPTION_CSYNC].value.bool
 #   define Devel       PrivateOption[ATI_OPTION_DEVEL].value.bool
 #   define Linear      PublicOption[ATI_OPTION_LINEAR].value.bool
+#   define CacheMMIO   PublicOption[ATI_OPTION_MMIO_CACHE].value.bool
 #   define ProbeClocks PublicOption[ATI_OPTION_PROBE_CLOCKS].value.bool
 #   define ShadowFB    PublicOption[ATI_OPTION_SHADOW_FB].value.bool
 #   define Sync        PrivateOption[ATI_OPTION_SYNC].value.bool
@@ -110,7 +112,7 @@ ATIProcessOptions
 
     /* Set non-zero defaults */
     if (pATI->Adapter >= ATI_ADAPTER_MACH64)
-        Accel = Linear = TRUE;
+        Accel = Linear = CacheMMIO = TRUE;
     if (pATI->BusType >= ATI_BUS_PCI)
         ShadowFB = TRUE;
     Sync = TRUE;
@@ -135,6 +137,7 @@ ATIProcessOptions
     pATI->OptionCSync = CSync;
     pATI->OptionDevel = Devel;
     pATI->OptionLinear = Linear;
+    pATI->OptionMMIOCache = CacheMMIO;
     pATI->OptionProbeClocks = ProbeClocks;
     pATI->OptionShadowFB = ShadowFB;
     pATI->OptionSync = Sync;

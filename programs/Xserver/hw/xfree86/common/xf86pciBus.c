@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.13 2000/03/05 23:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.14 2000/03/27 05:10:02 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1426,7 +1426,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
     PciBusPtr *pnPciBus = &PciBusBase;
     int MaxBus = 0;
     int i;
-    CARD32 io_base, io_limit;
+    memType base, limit;
     
     if (pciInfo == NULL) return NULL;
     
@@ -1459,54 +1459,49 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->subclass = sub_class;
 		PciBus->brcontrol = pcrp->pci_bridge_control;
 		if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
-		    io_base = (pcrp->pci_upper_io_base << 16) |
+		    base = (pcrp->pci_upper_io_base << 16) |
 			((pcrp->pci_io_base & 0xf0u) << 8);
-		    io_limit = (pcrp->pci_upper_io_limit << 16) |
+		    limit = (pcrp->pci_upper_io_limit << 16) |
 			((pcrp->pci_io_limit & 0xf0u) << 8) | 0x0fff;
 		    /*
 		     * Deal with bridge ISA mode (256 wide ranges spaced 1K
 		     * apart, but only in the first 64K).
 		     */
 		    if (pcrp->pci_bridge_control & PCI_PCI_BRIDGE_ISA_EN) {
-			while ((io_base <= (CARD16)(-1)) &&
-			       (io_base <= io_limit)) {
+			while ((base <= (CARD16)(-1)) && (base <= limit)) {
 			    PCI_I_RANGE(range, pcrp->tag,
-				io_base, io_base + (CARD8)(-1),
+				base, base + (CARD8)(-1),
 				ResIo | ResBlock | ResExclusive);
 			    PciBus->io = xf86AddResToList(PciBus->io,
 				&range, -1);
-			    io_base += 0x0400;
+			    base += 0x0400;
 			}
 		    }
-		    if (io_base <= io_limit) {
-			PCI_I_RANGE(range, pcrp->tag, io_base, io_limit,
+		    if (base <= limit) {
+			PCI_I_RANGE(range, pcrp->tag, base, limit,
 			    ResIo | ResBlock | ResExclusive);
 			PciBus->io = xf86AddResToList(PciBus->io, &range, -1);
 		    }
 		}
 		if  (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
-		    if (pcrp->pci_mem_base <= pcrp->pci_mem_limit) {
-			PCI_M_RANGE(range,pcrp->tag,pcrp->pci_mem_base << 16,
-				    (pcrp->pci_mem_limit << 16) | 0xfffff,
+                    base = pcrp->pci_mem_base & 0xfff0u;
+                    limit = pcrp->pci_mem_limit & 0xfff0u;
+		    if (base <= limit) {
+			PCI_M_RANGE(range, pcrp->tag,
+				    base << 16, (limit << 16) | 0x0fffff,
 				    ResMem | ResBlock | ResExclusive);
 			PciBus->mem = xf86AddResToList(NULL, &range, -1);
 		    }
-		    if (pcrp->pci_prefetch_mem_base
-			<= pcrp->pci_prefetch_mem_limit) {
-#if !defined(LONG64) && !defined(WORD64)		    
-			PCI_M_RANGE(range,pcrp->tag,
-				    pcrp->pci_prefetch_mem_base << 16, 
-				    (pcrp->pci_prefetch_mem_limit << 16)
-				    | 0xfffff,
-				    ResMem | ResBlock | ResExclusive);
-#else
-			PCI_M_RANGE(range, pcrp->tag,
-				    pcrp->pci_prefetch_mem_base << 16 
-				    | ((memType)pcrp->pci_prefetch_upper_mem_base << 32),
-				    (pcrp->pci_prefetch_mem_limit << 16) | 0xfffff 
-				    | ((memType)pcrp->pci_prefetch_upper_mem_limit << 32),
-				    ResMem | ResBlock | ResExclusive);
+                    base = pcrp->pci_prefetch_mem_base & 0xfff0u;
+                    limit = pcrp->pci_prefetch_mem_limit & 0xfff0u;
+#if defined(LONG64) || defined(WORD64)
+		    base |= (memType)pcrp->pci_prefetch_upper_mem_base << 16;
+		    limit |= (memType)pcrp->pci_prefetch_upper_mem_limit << 16;
 #endif
+		    if (base <= limit) {
+			PCI_M_RANGE(range, pcrp->tag,
+				    base << 16, (limit << 16) | 0xfffff,
+				    ResMem | ResBlock | ResExclusive);
 			PciBus->pmem = xf86AddResToList(NULL, &range, -1);
 		    }
 		}

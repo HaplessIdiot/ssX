@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.4 2000/02/18 12:19:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.5 2000/03/22 03:08:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -38,7 +38,6 @@ extern void ATIMach64Set         FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIMach64SaveScreen  FunctionPrototype((ATIPtr, int));
 extern void ATIMach64SetDPMSMode FunctionPrototype((ATIPtr, int));
 
-extern Bool ATIMach64AccelInit   FunctionPrototype((ScrnInfoPtr, ScreenPtr,
-                                                    ATIPtr, XAAInfoRecPtr));
+extern Bool ATIMach64AccelInit   FunctionPrototype((ATIPtr, XAAInfoRecPtr));
 
 #endif /* ___ATIMACH64_H___ */
