@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.6 2001/04/05 17:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.8 2003/06/24 16:09:40 eich Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -247,6 +247,20 @@ InputDriverRec CITRON = {
 	0
 };
 
+static char *UserStrNames[] =
+{
+	"NAME",
+	"REV",
+	"RECEIVERBOARD",
+	"TOUCH",
+	"DISPLAY",
+	"INVERTER",
+	"MECHANICS",
+	"PAR1",
+	"PAR2",
+	NULL
+};
+
 #ifdef XFree86LOADER
 
 
@@ -273,21 +287,6 @@ static XF86ModuleVersionInfo VersionRec =
 	ABI_XINPUT_VERSION,
 	MOD_CLASS_XINPUT,
 	{0, 0, 0, 0}				/* signature of the version info structure */
-};
-
-
-static char *UserStrNames[] =
-{
-	"NAME",
-	"REV",
-	"RECEIVERBOARD",
-	"TOUCH",
-	"DISPLAY",
-	"INVERTER",
-	"MECHANICS",
-	"PAR1",
-	"PAR2",
-	NULL
 };
 
 /* ************************************************************************
