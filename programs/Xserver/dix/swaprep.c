@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/swaprep.c,v 3.2 1996/04/15 11:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/swaprep.c,v 3.3 1998/10/04 09:38:14 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -53,6 +53,7 @@ SOFTWARE.
 #include "fontstruct.h"
 #include "scrnintstr.h"
 #include "swaprep.h"
+#include "globals.h"
 
 static void SwapFontInfo(
 #if NeedFunctionPrototypes
@@ -1320,6 +1321,7 @@ SwapConnSetupInfo(pInfo, pInfoTBase)
     DepthPtr	pDepth;
     char	*pInfoT;
     xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
+    int         numScreens;
 
     pInfoT = pInfoTBase;
     SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
@@ -1338,7 +1340,16 @@ SwapConnSetupInfo(pInfo, pInfoTBase)
     pInfo += i;
     pInfoT += i;
 
-    for(i = 0; i < screenInfo.numScreens; i++)
+#ifndef PANORAMIX
+    numScreens = screenInfo.numScreens;
+#else
+    if (noPanoramiXExtension)
+	numScreens = screenInfo.numScreens;
+    else
+	numScreens = pConnSetup->numRoots;
+#endif
+
+    for(i = 0; i < numScreens; i++)
     {
 	pScreen = screenInfo.screens[i];
 	SwapWinRoot((xWindowRoot *)pInfo, (xWindowRoot *)pInfoT);
