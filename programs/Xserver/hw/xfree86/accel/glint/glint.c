@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.24 1998/03/20 21:05:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.25 1998/03/27 23:23:09 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -36,7 +36,10 @@
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
+#include "xf86_ansic.h"
+#if 0
 #include "xf86_OSlib.h"
+#endif
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86Version.h"
