@@ -23,13 +23,15 @@ The recommended way of getting the XFree86 4.3.99.901 source is to get it
 directly from the XFree86 CVS repository.  There are several ways of doing
 that, and they are described at our CVS web page
 <URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
-"xf-4_3_99_901", and the tag for the maintenance branch for this release is
-"xf-4_4-branch".
+"xf-4_3_99_901".
 
-The source for the XFree86 4.3.99.901 snapshot is available from the XFree86
-CVS repository.  See See http://www.xfree86.org/cvs/ for details.  The tag
-for this snapshot is "xf-4_3_99_901".  To get the current development ver-
-sion, don't specify any tag.
+Alternatively you can download the source for the XFree86 4.3.99.901 snapshot
+as a tarball from ftp://ftp.xfree86.org/pub/XFree86/devel-
+snaps/XFree86-4.3.99.901.tar.bz2.  This can be extracted by running:
+
+     bzip2 -d < XFree86-4.3.99.901.tar.bz2 | tar vxf -
+
+All methods will produce one main source directory called xc.
 
 2.  Configuring the source before building
 
@@ -208,7 +210,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.12 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.13 dawes Exp $
 
 
 $XFree86: $
