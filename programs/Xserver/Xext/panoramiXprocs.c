@@ -494,7 +494,9 @@ int PanoramiXConfigureWindow(ClientPtr client)
 	}
     }
 
-    FOR_NSCREENS_BACKWARD(j) {
+    /* have to go forward or you get expose events before 
+	ConfigureNotify events */
+    FOR_NSCREENS_FORWARD(j) {
 	stuff->window = win->info[j].id;
 	if(sib)
 	    *((CARD32 *) &stuff[1] + sib_offset) = sib->info[j].id;
