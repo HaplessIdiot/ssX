@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 453. Add CyberBladeXPAi1 recognition to the trident driver (#A.658, 
+      Jani Jaakkola).
  452. Fix typo in PCI bus scanning that caused a hang when there was more than
       one PCI bus (#A.652, Uwe Dannowski).
  451. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
@@ -14109,4 +14111,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2025 2001/11/05 05:28:26 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2026 2001/11/05 09:07:31 alanh Exp $
