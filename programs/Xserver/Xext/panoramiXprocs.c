@@ -1770,9 +1770,6 @@ int PanoramiXGetImage(ClientPtr client)
     Mask		plane, planemask;
     int			linesDone, nlines, linesPerBuf;
     long		widthBytesLine, length;
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    long		widthBytesLineProto, lengthProto;
-#endif
 
     REQUEST(xGetImageReq);
 
@@ -1836,10 +1833,7 @@ int PanoramiXGetImage(ClientPtr client)
 	widthBytesLine = PixmapBytePad(w, pDraw->depth);
 	length = widthBytesLine * h;
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	widthBytesLineProto = PixmapBytePadProto(w, pDraw->depth);
-	lengthProto 	    = widthBytesLineProto * h;
-#endif
+
     } else {
 	widthBytesLine = BitmapBytePad(w);
 	plane = ((Mask)1) << (pDraw->depth - 1);
@@ -1847,18 +1841,9 @@ int PanoramiXGetImage(ClientPtr client)
 	length = widthBytesLine * h *
 		 Ones(planemask & (plane | (plane - 1)));
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	widthBytesLineProto = BitmapBytePadProto(w);
-	lengthProto = (length / widthBytesLine) * widthBytesLineProto;
-#endif
     }
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    xgi.length = (lengthProto + 3) >> 2;
-#else
     xgi.length = (length + 3) >> 2;
-#endif
-
 
     if (widthBytesLine == 0 || h == 0)
 	linesPerBuf = 0;
@@ -1889,14 +1874,6 @@ int PanoramiXGetImage(ClientPtr client)
 	    XineramaGetImageData(drawables, x, y + linesDone, w, nlines,
 			format, planemask, pBuf, widthBytesLine, isRoot);
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	    if ( widthBytesLine != widthBytesLineProto ) {
-		char *linePtr = pBuf;
-		for(i = 0; i < nlines; i++, linePtr += widthBytesLine) {
-		    (void)WriteToClient(client, widthBytesLineProto, linePtr);
-		}
-	    } else
-#endif
 		(void)WriteToClient(client,
 				    (int)(nlines * widthBytesLine),
 				    pBuf);
@@ -1915,15 +1892,7 @@ int PanoramiXGetImage(ClientPtr client)
 					nlines, format, plane, pBuf,
 					widthBytesLine, isRoot);
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	    if ( widthBytesLine != widthBytesLineProto ) {
-		char *linePtr = pBuf;
-		for(i = 0; i < nlines; i++, linePtr += widthBytesLine) {
-		    (void)WriteToClient(client, widthBytesLineProto, linePtr);
-		}
-	    } else
-#endif
-		(void)WriteToClient(client,
+		    (void)WriteToClient(client,
 				    (int)(nlines * widthBytesLine),
 				    pBuf);
 
