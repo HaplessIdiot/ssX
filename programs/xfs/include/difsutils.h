@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xfs/include/difsutils.h,v 1.4 2001/06/25 20:40:18 paulo Exp $
+ * $XFree86: xc/programs/xfs/include/difsutils.h,v 1.5tsi Exp $
  */
 
 /************************************************************
@@ -61,8 +61,6 @@ extern int client_auth_generation (ClientPtr client);
 #endif
 extern int set_font_authorizations (char **authorizations, int *authlen, ClientPtr client);
 extern int strncmpnocase (char *first, char *second, int n);
-extern pointer Xalloc (unsigned long m);
-extern pointer Xrealloc (pointer n, unsigned long m);
 extern void BlockHandler (OSTimePtr pTimeout, pointer pReadmask);
 extern void ClientWakeup (ClientPtr client);
 extern void CopyISOLatin1Lowered (unsigned char *dest, unsigned char *source, int length);
@@ -73,6 +71,13 @@ extern void RemoveBlockAndWakeupHandlers (BlockHandlerProcPtr blockHandler, Difs
 extern void SetDefaultPointSize (int ps);
 extern void WakeupHandler (int result, unsigned long * pReadmask);
 extern void Xfree (unsigned long *n);
+extern pointer Xalloc (unsigned long m);
+extern pointer Xrealloc (pointer n, unsigned long m);
 extern pointer Xcalloc (unsigned long n);
+#if !defined(LONG64) && !defined(WORD64)
+extern pointer Xllalloc (unsigned long long m);
+extern pointer Xllrealloc (pointer n, unsigned long long m);
+extern pointer Xllcalloc (unsigned long long n);
+#endif
 
 #endif /* _DIFSUTILS_H */
