@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.24 2005/01/28 19:57:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.25 2005/01/31 18:20:34 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -101,11 +101,11 @@ InstallDriverSDKLibraryModule(drm,$(DRIVERSDKMODULEDIR),linux)
 
 #include "../../shared/drm/Imakefile.inc"
 
-LinkSourceFileListToSubdir(includes,$(SRCS_SCRIPTS),$(DRMSCRIPTSDIR),$(DRM_COPY_DIR))
 LinkSourceFileListToSubdir(includes,$(SRCS_SHARED),$(DRMSHAREDDIR),$(DRM_COPY_DIR))
+LinkSourceFileListToSubdir(includes,$(SRCS_SCRIPTS_LINUX),$(DRMSCRIPTSDIR),$(DRM_COPY_DIR))
 LinkSourceFileListToSubdir(includes,$(SRCS_LINUX),$(DRMLINUXDIR),$(DRM_COPY_DIR))
 
-INSTALL_LIST = $(INSTALL_SHARED) $(INSTALL_SCRIPTS) $(INSTALL_LINUX)
+INSTALL_LIST = $(INSTALL_SHARED) $(INSTALL_LINUX)
 
-InstallMultiple($(INSTALL_LIST),$(DRMINSTSRCDIR))
+InstallMultiple($(INSTALL_LIST),$(DRMLINUXINSTSRCDIR))
 

@@ -1,4 +1,5 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 318. Install BSD DRM source (David Dawes).
  317. Various build fixes (Frank Giessler, Bugzilla #1542).
  316. Fix SEGV in linux/int10 that can occur under certain builds of glibc
       2.3.4 (J. Scott Berg, Marc La France).
@@ -19365,7 +19366,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3425 2005/02/07 01:15:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3426 2005/02/07 01:38:24 tsi Exp $
 
 
 

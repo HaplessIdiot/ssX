@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.3 2005/01/31 18:41:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/Imakefile.inc,v 1.4 2005/02/01 01:13:18 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -105,6 +105,29 @@ SRCS_DRM_LINUX = \
 	drm_stub.h \
 	drm_vm.h
 
+SRCS_DRM_BSD = \
+	drmP.h \
+	drm_agpsupport.h \
+	drm_auth.h \
+	drm_bufs.h \
+	drm_context.h \
+	drm_dma.h \
+	drm_drawable.h \
+	drm_drv.h \
+	drm_fops.h \
+	drm_ioctl.h \
+	drm_irq.h \
+	drm_linux_list.h \
+	drm_lock.h \
+	drm_memory.h \
+	drm_memory_debug.h \
+	drm_os_freebsd.h \
+	drm_os_netbsd.h \
+	drm_pci.h \
+	drm_scatter.h \
+	drm_sysctl.h \
+	drm_vm.h
+
 SRCS_GAMMA_LINUX = \
 	gamma.h \
 	gamma_context.h \
@@ -153,6 +176,9 @@ SRCS_R128_SHARED = \
 SRCS_R128_LINUX = \
 	r128_drv.c
 
+SRCS_R128_BSD = \
+	r128_drv.c
+
 SRCS_MACH64_SHARED = \
 	mach64_drv.h \
 	mach64_irq.c \
@@ -162,6 +188,9 @@ SRCS_MACH64_SHARED = \
 	mach64_state.c
 
 SRCS_MACH64_LINUX = \
+	mach64_drv.c
+
+SRCS_MACH64_BSD = \
 	mach64_drv.c
 
 SRCS_SAVAGE_LINUX = \
@@ -200,6 +229,10 @@ SRCS_RADEON_LINUX = \
 	ati_pcigart.h \
 	radeon_drv.c
 
+SRCS_RADEON_BSD = \
+	ati_pcigart.h \
+	radeon_drv.c
+
 SRCS_SIS_SHARED = \
 	sis.h \
 	sis_drm.h \
@@ -209,6 +242,9 @@ SRCS_SIS_SHARED = \
 	sis_mm.c
 
 SRCS_SIS_LINUX = \
+	sis_drv.c
+
+SRCS_SIS_BSD = \
 	sis_drv.c
 
 SRCS_MGA_SHARED = \
@@ -224,10 +260,16 @@ SRCS_MGA_SHARED = \
 SRCS_MGA_LINUX = \
 	mga_drv.c
 
+SRCS_MGA_BSD = \
+	mga_drv.c
+
 SRCS_TDFX_SHARED = \
 	tdfx.h
 
 SRCS_TDFX_LINUX = \
+	tdfx_drv.c
+
+SRCS_TDFX_BSD = \
 	tdfx_drv.c
 
 SRCS_FFB_LINUX = \
@@ -239,8 +281,11 @@ SRCS_FFB_LINUX = \
 SRCS_BUILD_SHARED = \
 	drm_pciids.txt
 
-SRCS_BUILD_SCRIPTS = \
+SRCS_SCRIPTS_LINUX = \
 	create_linux_pci_lists.sh
+
+SRCS_SCRIPTS_BSD = \
+	create_bsd_pci_lists.sh
 
 SRCS_BUILD_LINUX = \
 	Config.in \
@@ -248,15 +293,17 @@ SRCS_BUILD_LINUX = \
 	Makefile \
 	Makefile.kernel
 
-DRMINSTSRCDIR = $(INSTSRCDIR)/drm/linux/kernel
+SRCS_BUILD_BSD = \
+	Makefile
+
+DRMLINUXINSTSRCDIR = $(INSTSRCDIR)/drm/
+DRMBSDINSTSRCDIR = $(INSTSRCDIR)/drm/bsd/kernel
 
 SRCS_SHARED = $(SRCS_DRM_SHARED) $(SRCS_GAMMA_SHARED) $(SRCS_I810_SHARED) \
 	$(SRCS_R128_SHARED) $(SRCS_MACH64_SHARED) $(SRCS_SAVAGE_SHARED) \
 	$(SRCS_VIA_SHARED) $(SRCS_RADEON_SHARED) $(SRCS_SIS_SHARED) \
 	$(SRCS_MGA_SHARED) $(SRCS_TDFX_SHARED) $(SRCS_FFB_SHARED) \
 	$(SRCS_BUILD_SHARED)
-
-SRCS_SCRIPTS = $(SRCS_BUILD_SCRIPTS)
 
 SRCS_LINUX = $(SRCS_DRM_LINUX) $(SRCS_GAMMA_LINUX) $(SRCS_I810_LINUX) \
 	$(SRCS_R128_LINUX) $(SRCS_MACH64_LINUX) $(SRCS_SAVAGE_LINUX) \
@@ -271,10 +318,15 @@ SRCS_BSD = $(SRCS_DRM_BSD) $(SRCS_GAMMA_BSD) $(SRCS_I810_BSD) \
 	$(SRCS_BUILD_BSD)
 
 
-INSTALL_SCRIPTS = $(SRCS_SCRIPTS:%=DRMCopySubdir/%)
+BSD_SUBDIRS = mga mach64 r128 radeon sis tdfx
+SRCS_BSD_SUBS = $(BSD_SUBDIRS:%=%/Makefile)
+
 INSTALL_SHARED = $(SRCS_SHARED:%=DRMCopySubdir/%)
-INSTALL_LINUX = $(SRCS_LINUX:%=DRMCopySubdir/%)
-INSTALL_BSD = $(SRCS_BSD:%=DRMCopySubdir/%)
+INSTALL_LINUX = $(SRCS_LINUX:%=DRMCopySubdir/%) \
+		$(SRCS_SCRIPTS_LINUX:%=DRMCopySubdir/%)
+INSTALL_BSD = $(SRCS_BSD:%=DRMCopySubdir/%) \
+		$(SRCS_SCRIPTS_BSD:%=DRMCopySubdir/%)
+INSTALL_BSD_SUBS = $(SRCS_BSD_SUBS:%=DRMCopySubdir/%)
 
 DRMSCRIPTSDIR = $(DRMSRCDIR)/scripts
 DRMSHAREDDIR = $(DRMSRCDIR)/shared

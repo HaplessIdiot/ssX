@@ -1,12 +1,17 @@
+# $XFree86$
+
 SHARED=		../shared
-SHAREDFILES=	drm.h \
-		drm_sarea.h \
+I951SHAREDFILES= \
 		i915.h \
 		i915_dma.c \
 		i915_drm.h \
 		i915_drv.h \
 		i915_irq.c \
 		i915_mem.c \
+
+SHAREDFILES=	drm.h \
+		drm_sarea.h \
+		drm_pciids.txt \
 		mach64.h \
 		mach64_dma.c \
 		mach64_drm.h \
@@ -54,18 +59,36 @@ SHAREDFILES=	drm.h \
 		via_3d_reg.h \
 		via_dma.c
 
-SUBDIR = i915 mach64 mga r128 radeon sis tdfx
+SCRIPT=		../scripts
+SCRIPTFILES=	create_bsd_pci_lists.sh
 
+# SUBDIR = i915 mach64 mga r128 radeon sis tdfx
+SUBDIR = mga r128 radeon sis tdfx
+
+.if exists(${SHARED})
 CLEANFILES+= ${SHAREDFILES}
+.endif
+
+.if exists(${SCRIPT})
+CLEANFILES+= ${SCRIPTFILES}
+.endif
 
 .include <bsd.obj.mk>
 
-depend: drm_pciids.h ${SHAREDFILES}
-all: drm_pciids.h ${SHAREDFILES}
+depend: drm_pciids.h ${SHAREDFILES} ${SCRIPTFILES}
+all: drm_pciids.h ${SHAREDFILES} ${SCRIPTFILES}
 
-drm_pciids.h: ${SHARED}/drm_pciids.txt
-	sh ../scripts/create_bsd_pci_lists.sh < ${SHARED}/drm_pciids.txt
+drm_pciids.h: drm_pciids.txt ${SCRIPTFILES}
+	sh create_bsd_pci_lists.sh < drm_pciids.txt
 
+.if exists(${SHARED})
+CLEANFILES+= ${SHAREDFILES}
 ${SHAREDFILES}:
 	ln -sf ${SHARED}/$@ $@
+.endif
 
+.if exists(${SCRIPT})
+CLEANFILES+= ${SCRIPTFILES}
+${SCRIPTFILES}:
+	ln -sf ${SCRIPT}/$@ $@
+.endif
