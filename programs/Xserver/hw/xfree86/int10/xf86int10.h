@@ -156,7 +156,7 @@ void reset_int_vect(xf86Int10InfoPtr pInt);
 void set_return_trap(xf86Int10InfoPtr pInt);
 Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);
 Bool int10_check_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem);
-
+Bool initPrimary(ScrnInfoPtr pScrn, int entityIndex);
 #ifdef DEBUG
 void dprint(unsigned long start, unsigned long size);
 #endif
