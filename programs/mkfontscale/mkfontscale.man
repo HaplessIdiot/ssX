@@ -1,23 +1,25 @@
-.\" $XFree86: xc/programs/mkfontscale/mkfontscale.man,v 1.1 2002/06/05 19:46:04 dawes Exp $
+.\" $XFree86: xc/programs/mkfontscale/mkfontscale.man,v 1.2 2002/09/27 01:55:07 dawes Exp $
 .\"
 .TH MKFONTSCALE 1 __vendorversion__
 .SH NAME
 mkfontscale \- create an index of scalable font files for X
-
 .SH SYNOPSIS
 .B mkfontscale
 [
-.B \-e
+.B \-o 
+.I filename
+]
+[
+.B \-e 
 .I encoding
 ] \|.\|.\|. [
-.B \-f
+.B \-f 
 .I fuzz
 ] [
 .B \-\-
 ] [
 .I directory
 ] \|.\|.\|.
-
 .SH DESCRIPTION
 For each directory argument,
 .I mkfontscale
@@ -33,9 +35,19 @@ file should be checked and possibly manually edited before being used
 as input for the
 .BR mkfontdir (1)
 program.
-
 .SH OPTIONS
-
+.TP
+.BI \-o " filename"
+send program output to
+.IR filename ;
+default is
+.BR fonts.scale .
+If
+.I filename
+is relative, it is created in the directory being processed.  If it is
+the special value 
+.BR \- ,
+output is written to standard output.
 .TP
 .BI \-e " encoding"
 add
@@ -49,16 +61,13 @@ percent.  Defaults to 2%.
 .TP
 .B \-\- 
 end of options.
-
 .SH SEE ALSO
 X(__miscmansuffix__), Xserver(1), mkfontdir(1), ttmkfdir(1), xfs(1), xset(1)
-
 .SH NOTES
 .B Mkfontscale
 will overwrite any
 .B fonts.scale
 file even if it has been hand-edited.
-
 .SH AUTHOR
 .B Mkfontscale
 was written by Juliusz Chroboczek <jch@xfree86.org> for the XFree86
