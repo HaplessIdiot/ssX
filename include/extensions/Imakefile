@@ -1,14 +1,15 @@
 XCOMM $XConsortium: Imakefile,v 1.37 94/04/07 15:03:02 rws Exp $
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.1 1995/02/12 02:31:32 dawes Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.2 1995/06/08 06:19:44 dawes Exp $
 
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
 
 #ifdef XFree86Version
 XF86VIDMODEHEADERS = xf86vmode.h xf86vmstr.h
+XF86DGAHEADERS = xf86dga.h xf86dgastr.h
 #endif
 
 #if BuildExtraExtensionLibrary
-EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS)
+EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS)
 #endif
 
 

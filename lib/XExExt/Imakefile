@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/XExExt/Imakefile,v 3.2 1995/06/08 06:20:45 dawes Exp $
+XCOMM $XFree86: xc/lib/XExExt/Imakefile,v 3.3 1995/08/13 09:40:57 dawes Exp $
 #define DoNormalLib NormalLibXExExt
 #define DoSharedLib SharedLibXExExt
 #define DoDebugLib DebugLibXExExt
@@ -19,6 +19,8 @@ SCRNSAVOBJ = XScrnSaver.o
 #ifdef XFree86Version
 VIDMODESRCS = XF86VMode.c
 VIDMODEOBJS = XF86VMode.o
+XF86DGASRCS = XF86DGA.c
+XF86DGAOBJS = XF86DGA.o
 #endif
 
 #if Malloc0ReturnsNull
@@ -27,8 +29,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
       DEFINES = $(ALLOC_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
-         SRCS = $(SCRNSAVSRC) $(VIDMODESRCS)
-         OBJS = $(SCRNSAVOBJ) $(VIDMODEOBJS)
+         SRCS = $(SCRNSAVSRC) $(VIDMODESRCS) $(XF86DGASRCS)
+         OBJS = $(SCRNSAVOBJ) $(VIDMODEOBJS) $(XF86DGAOBJS)
      LINTLIBS = $(LINTXLIB)
 
 #include <Library.tmpl>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.0 1995/12/02 05:07:33 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -13,7 +13,7 @@
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmd.h>
-#include <X11/extensions/xf86vmode.h>
+#include <X11/extensions/xf86dga.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@
 
 
 
-#define MINMAJOR 1
+#define MINMAJOR 0
 #define MINMINOR 0
 
 
@@ -47,13 +47,13 @@ main(int argc, char *argv[])
      }
 
 
-    if (!XF86VidModeQueryVersion(dis, &MajorVersion, &MinorVersion))
+    if (!XF86DGAQueryVersion(dis, &MajorVersion, &MinorVersion))
  { 
         fprintf(stderr, "Unable to query video extension version\n");
         return 2;
  }
 
-    if (!XF86VidModeQueryExtension(dis, &EventBase, &ErrorBase)) {
+    if (!XF86DGAQueryExtension(dis, &EventBase, &ErrorBase)) {
         fprintf(stderr, "Unable to query video extension information\n");
         return 2;
     }
@@ -62,7 +62,7 @@ main(int argc, char *argv[])
     if (MajorVersion < MINMAJOR ||
         (MajorVersion == MINMAJOR && MinorVersion < MINMINOR)) {
         fprintf(stderr,
-                "Xserver is running an old XFree86-VidModeExtension version"
+                "Xserver is running an old XFree86-DGA version"
                 " (%d.%d)\n", MajorVersion, MinorVersion);
         fprintf(stderr, "Minimum required version is %d.%d\n",
                 MINMAJOR, MINMINOR);
@@ -116,17 +116,17 @@ main(int argc, char *argv[])
     * Lets go live
     */
 
-   XF86VidModeGetVideo(dis, DefaultScreen(dis), &addr, &width, &bank, &ram);
+   XF86DGAGetVideo(dis, DefaultScreen(dis), &addr, &width, &bank, &ram);
    fprintf(stderr, "%x addr:%X, width %d, bank size %d\n", True,
 	   addr, width, bank);
 
-   XF86VidModeDirectVideo(dis, DefaultScreen(dis),
-			   XF86VidModeDirectGraphics|
-			   XF86VidModeDirectMouse|
-			   XF86VidModeDirectKeyb);
+   XF86DGADirectVideo(dis, DefaultScreen(dis),
+			   XF86DGADirectGraphics|
+			   XF86DGADirectMouse|
+			   XF86DGADirectKeyb);
 
 
-   XF86VidModeSetViewPort(dis, DefaultScreen(dis), 0, 0);
+   XF86DGASetViewPort(dis, DefaultScreen(dis), 0, 0);
 
    banks = (ram * 1024)/bank;
    while (1) {
@@ -144,7 +144,7 @@ main(int argc, char *argv[])
 	 fprintf(stderr,"KeyPress [%d]: %s\n", event.xkey.keycode, buf);
 
          for (i = 0; i < banks; i++) {
-		XF86VidModeSetVidPage(dis, DefaultScreen(dis), i);
+		XF86DGASetVidPage(dis, DefaultScreen(dis), i);
 		memset(addr, buf[0], bank);
 	 }
 	 break;
@@ -177,7 +177,7 @@ main(int argc, char *argv[])
    /*
     * back to the X server
     */
-   XF86VidModeDirectVideo(dis, DefaultScreen(dis), 0);
+   XF86DGADirectVideo(dis, DefaultScreen(dis), 0);
    fprintf(stderr, "back now in X\n");
 
    /* and give back control */

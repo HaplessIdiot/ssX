@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.4 1995/06/08 06:41:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.5 1995/06/08 12:55:44 dawes Exp $ */
 
 #include "misc.h"
 
@@ -124,6 +124,9 @@ extern void     LbxExtensionInit();
 extern void	XF86VidModeExtensionInit();
 #endif
 #endif
+#ifdef XFreeXDGA
+extern void XFree86DGAExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -194,6 +197,9 @@ InitExtensions(argc, argv)
 #ifdef XFREE86
 #ifdef XF86VIDMODE
     XFree86VidModeExtensionInit();
+#endif
+#ifdef XFreeXDGA
+    XFree86DGAExtensionInit();
 #endif
 #endif
 }

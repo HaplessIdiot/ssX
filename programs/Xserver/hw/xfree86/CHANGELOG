@@ -1,4 +1,21 @@
 XFree86 3.1.2Ab (9 December 1995)
+117. FreeBSD support for the DGA extension.
+116. Split the DGA code out into a separate extension (called XFree86-DGA)
+     (Kaleb Keithley).
+115. Fix some compiler warnings when compiling on LynxOS (Thomas Mueller).
+114. Fix some byte swapping problems in XFree86-VidModeExtension
+     (Thomas Mueller).
+113. Add preliminary STG1703 support to the W32 server. No clock
+     programming and no pixmux yet (Dirk Hohndel).
+112. Add new options "pci_burst_on" and "pci_burst_off" to SVGA and
+     W32 server. They will allow to solve display problems on many
+     ET4000/W32p based cards (Dirk Hohndel).
+111. Add new clock selection scheme to SVGA and W32 server, so that
+     32 clocks are used. The first 16 are the same as before, the
+     second 16 use CS3 (Dirk Hohndel).
+110. Add STG1703 detection to SuperProbe for ET4000/W32 based cards (Dirk
+     Hohndel).
+109. Fix extension version checking in xvidtune.
 108. Modify xterm to call XSupportsLocale() before initialising I18N
      support (William Volkman).
 107. Fix S3 support for clocks up to 135MHz in 8 bpp for S3 868 cards
@@ -11,7 +28,7 @@ XFree86 3.1.2Ab (9 December 1995)
 102. Modify the Mach64 server to use the membase address it reads from
      the configuration registers.
 101. Fix cursor colour problem at 16, 32bpp with the Mach64 server.
-100. Preliminary support for Mach64 CT.
+100. Support for the Mach64 CT.
 
 XFree86 3.1.2Aa (2 December 1995)
  99. Fix for xterm behaving badly when TERM is set to "vt100" (Joerg Wunsch).
