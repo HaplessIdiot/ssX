@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.43 2003/10/21 02:11:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.44 2003/10/21 02:17:52 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2038,6 +2038,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 	  * Tiling can't be enabled.  Check if there's enough memory for DRI
 	  * without tiling.
 	  */
+	 pI830->disableTiling = TRUE;
 	 I830ResetAllocations(pScrn, 0);
 	 if (I830Allocate2DMemory(pScrn, ALLOCATE_DRY_RUN | ALLOC_INITIAL) &&
 	     I830Allocate3DMemory(pScrn, ALLOCATE_DRY_RUN | ALLOC_NO_TILING)) {
@@ -3092,9 +3093,13 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    if (pI830->directRenderingEnabled)
       pI830->directRenderingEnabled = I830DRIScreenInit(pScreen);
 
-   if (pI830->directRenderingEnabled)
-      if (!(pI830->directRenderingEnabled = I830Allocate3DMemory(pScrn, 0)))
+   if (pI830->directRenderingEnabled) {
+      pI830->directRenderingEnabled =
+	 I830Allocate3DMemory(pScrn,
+			      pI830->disableTiling ? ALLOC_NO_TILING : 0);
+      if (!pI830->directRenderingEnabled)
 	  I830DRICloseScreen(pScreen);
+   }
 
 #else
    pI830->directRenderingEnabled = FALSE;
