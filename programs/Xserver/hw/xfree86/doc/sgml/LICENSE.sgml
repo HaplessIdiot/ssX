@@ -5,10 +5,10 @@
 <article>
 <title>Licenses</title>
 <author>Compiled by The XFree86 Project</author>
-<date>20 February 2004</date>
+<date>22 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.30 2004/02/18 03:28:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.31 2004/02/20 18:17:04 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -158,86 +158,86 @@ contributors to XFree86 have adopted this license.
 <!-- copyright holders are listed in alphabetical order by company name
 or individual's last name -->
 
-Copyright <it>&lt;date&gt;</it> <it>&lt;Copyright Holder&gt;</it>
+Copyright (C) <it>&lt;date&gt;</it> <it>&lt;Copyright Holder&gt;</it>
 
-Copyright 1984-1989, 1994 Adobe Systems Incorporated.<newline>
+Copyright (C) 1984-1989, 1994 Adobe Systems Incorporated.<newline>
 Copyright (C) 2003 Eric Anholt<newline>
-Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.<newline>
-Copyright (c) 1988 AT&amp;T.  All Rights Reserved.<newline>
-Copyright 1992 by Robert Baron<newline>
-Copyright 1996-1998 by David Bateman &lt;dbateman@ee.uts.edu.au&gt;<newline>
-Copyright 1988 Bitstream, Inc., Cambridge, Massachusetts, USA<newline>
-Copyright 2001 by Stephen Blackheath<newline>
-Copyright 1993 by Jon Block &lt;block@frc.com&gt;<newline>
-Copyright &copy; 2000 Compaq Computer Corporation, Inc.<newline>
-Copyright 1998 by Concurrent Computer Corporation<newline>
-Copyright 1994-2000 by Robin Cutshaw<newline>
-Copyright 1992, 1993, 2002 by David Dawes<newline>
-Copyright 2000 by Egbert Eich<newline>
-Copyright 2002 by Paul Elliott<newline>
-Copyright 1987-1994 by Digital Equipment Corporation<newline>
-Copyright 1988 by Evans & Sutherland Computer Corporation. All Rights Reserved<newline>
-Copyright 1992, 1993, 1994 by FUJITSU LIMITED<newline>
-Copyright 2003 by Bryan W. Headley.<newline>
-Copyright 2000 by Richard A. Hecker, California, United States<newline>
-Copyright &copy; 2002 Hewlett Packard Company, Inc.<newline>
-Copyright (c) 1997 Matthieu Herrb<newline>
-(c) 2000 Christian Herzog<newline>
-Copyright 1999 by David Holland<newline>
-Copyright 1992-2004 by Alan Hourihane<newline>
-(c) 2000 Roland Jansen<newline>
-Copyright 2001 by J. Kean Johnston<newline>
-Copyright 2000, 2001 Ani Joshi<newline>
-Copyright 2000 by Rainer Keller<newline>
-Copyright 1999-2003 by Peter Kunzmann, Citron GmbH, Germany.<newline>
-Copyright 1994 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
-Copyright 1996 by Steven Lang<newline>
-Copyright 1995, 1999 by Patrick Lecoanet, France.<newline>
-Copyright 2001 by Patrick LERDA<newline>
-Copyright &copy; 2000 Tuomas J. Lukka<newline>
-Copyright 2000-2001 by Sven Luther &lt;luther@dpt-info.u-strasbg.fr&gt;<newline>
-Copyright (c) 2002, 2003 Torrey T. Lyons. All Rights Reserved.<newline>
-Copyright 1996, 1998 by Sebastien Marineau<newline>
-Copyright 1984-1989, 1991, 1993 Massachusetts Institute of Technology<newline>
-Copyright 1993 by David McCullough<newline>
-Copyright 1995-1998 Metro Link, Inc.<newline>
-Copyright &copy; MontaVista Software Inc.<newline>
-Copyright 1993, 1996, 1999 by Thomas Mueller<newline>
-Copyright 1992 by Rich Murphey<newline>
-Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA<newline>
-Copyright 1989-1995 Network Computing Devices;<newline>
-Copyright 1990, 1991 by Nippon Telegraph and Telephone Corporation<newline>
-Copyright 1990, 1991 by NTT Software Corporation<newline>
-Copyright 1998 by Number Nine Visual Technology, Inc.<newline>
-Copyright 1990, 1991 by OMRON Corporation<newline>
-Copyright 1991 by the Open Software Foundation<newline>
-Copyright &copy; 1998-2002 Keith Packard<newline>
-Copyright 1997 Takis Psarogiannakopoulos, Cambridge, UK<newline>
-Copyright (c) 1993 Quarterdeck Office Systems<newline>
-Copyright 2002 by Red Hat Inc.<newline>
-Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.<newline>
-Copyright 1989 Dale Schumacher<newline>
-Copyright (c) 1993-1997 by Silicon Graphics Computer Systems, Inc.<newline>
+Copyright (C) 2002 Apple Computer, Inc. All Rights Reserved.<newline>
+Copyright (C) 1988 AT&amp;T.  All Rights Reserved.<newline>
+Copyright (C) 1992 by Robert Baron<newline>
+Copyright (C) 1996-1998 by David Bateman &lt;dbateman@ee.uts.edu.au&gt;<newline>
+Copyright (C) 1988 Bitstream, Inc., Cambridge, Massachusetts, USA<newline>
+Copyright (C) 2001 by Stephen Blackheath<newline>
+Copyright (C) 1993 by Jon Block &lt;block@frc.com&gt;<newline>
+Copyright (C) 2000 Compaq Computer Corporation, Inc.<newline>
+Copyright (C) 1998 by Concurrent Computer Corporation<newline>
+Copyright (C) 1994-2000 by Robin Cutshaw<newline>
+Copyright (C) 1992, 1993, 2002 by David Dawes<newline>
+Copyright (C) 2000 by Egbert Eich<newline>
+Copyright (C) 2002 by Paul Elliott<newline>
+Copyright (C) 1987-1994 by Digital Equipment Corporation<newline>
+Copyright (C) 1988 by Evans & Sutherland Computer Corporation. All Rights Reserved<newline>
+Copyright (C) 1992, 1993, 1994 by FUJITSU LIMITED<newline>
+Copyright (C) 2003 by Bryan W. Headley.<newline>
+Copyright (C) 2000 by Richard A. Hecker, California, United States<newline>
+Copyright (C) 2002 Hewlett Packard Company, Inc.<newline>
+Copyright (C) 1997 Matthieu Herrb<newline>
+Copyright (C) 2000 Christian Herzog<newline>
+Copyright (C) 1999 by David Holland<newline>
+Copyright (C) 1992-2004 by Alan Hourihane<newline>
+Copyright (C) 2000 Roland Jansen<newline>
+Copyright (C) 2001 by J. Kean Johnston<newline>
+Copyright (C) 2000, 2001 Ani Joshi<newline>
+Copyright (C) 2000 by Rainer Keller<newline>
+Copyright (C) 1999-2003 by Peter Kunzmann, Citron GmbH, Germany.<newline>
+Copyright (C) 1994 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org<newline>
+Copyright (C) 1996 by Steven Lang<newline>
+Copyright (C) 1995, 1999 by Patrick Lecoanet, France.<newline>
+Copyright (C) 2001 by Patrick LERDA<newline>
+Copyright (C) 2000 Tuomas J. Lukka<newline>
+Copyright (C) 2000-2001 by Sven Luther &lt;luther@dpt-info.u-strasbg.fr&gt;<newline>
+Copyright (C) 2002, 2003 Torrey T. Lyons. All Rights Reserved.<newline>
+Copyright (C) 1996, 1998 by Sebastien Marineau<newline>
+Copyright (C) 1984-1989, 1991, 1993 Massachusetts Institute of Technology<newline>
+Copyright (C) 1993 by David McCullough<newline>
+Copyright (C) 1995-1998 Metro Link, Inc.<newline>
+Copyright (C) MontaVista Software Inc.<newline>
+Copyright (C) 1993, 1996, 1999 by Thomas Mueller<newline>
+Copyright (C) 1992 by Rich Murphey<newline>
+Copyright (C) 1993, 1994 NCR Corporation - Dayton, Ohio, USA<newline>
+Copyright (C) 1989-1995 Network Computing Devices;<newline>
+Copyright (C) 1990, 1991 by Nippon Telegraph and Telephone Corporation<newline>
+Copyright (C) 1990, 1991 by NTT Software Corporation<newline>
+Copyright (C) 1998 by Number Nine Visual Technology, Inc.<newline>
+Copyright (C) 1990, 1991 by OMRON Corporation<newline>
+Copyright (C) 1991 by the Open Software Foundation<newline>
+Copyright (C) 1998-2002 Keith Packard<newline>
+Copyright (C) 1997 Takis Psarogiannakopoulos, Cambridge, UK<newline>
+Copyright (C) 1993 Quarterdeck Office Systems<newline>
+Copyright (C) 2002 by Red Hat Inc.<newline>
+Copyright (C) 1990,91 by Thomas Roell, Dinkelscherben, Germany.<newline>
+Copyright (C) 1989 Dale Schumacher<newline>
+Copyright (C) 1993-1997 by Silicon Graphics Computer Systems, Inc.<newline>
 Copyright (C) 2002 Manish Singh<newline>
-Copyright 1993, 1994 by Sony Corporation<newline>
-Copyright 1988 SRI<newline>
-Copyright 1987, 1988, 1991, 1992, 2000 by Sun Microsystems, Inc.  All Rights Reserved.<newline>
-Copyright &copy; 1999, 2000 SuSE, Inc.<newline>
-Copyright 2002 by SuSE Linux AG<newline>
+Copyright (C) 1993, 1994 by Sony Corporation<newline>
+Copyright (C) 1988 SRI<newline>
+Copyright (C) 1987, 1988, 1991, 1992, 2000 by Sun Microsystems, Inc.  All Rights Reserved.<newline>
+Copyright (C) 1999, 2000 SuSE, Inc.<newline>
+Copyright (C) 2002 by SuSE Linux AG<newline>
 Copyright (C) 1993-2004 by The XFree86 Project, Inc.<newline>
-Copyright 1999-2001 by Thomas Thanner, Citron GmbH, Germany.<newline>
-Copyright 1992, 1993 by TOSHIBA Corp.<newline>
-Copyright 1992 by Jim Tsillas<newline>
-Copyright 1997, 1998 by UCHIYAMA Yasushi<newline>
-Copyright (c) 1990, 1991 UNIX System Laboratories, Inc. All Rights Reserved.<newline>
-Copyright 1994, 1996 by Holger Veit<newline>
-Copyright 1992 Vrije Universiteit, The Netherlands<newline>
-Copyright 1993 by David Wexelblat<newline>
+Copyright (C) 1999-2001 by Thomas Thanner, Citron GmbH, Germany.<newline>
+Copyright (C) 1992, 1993 by TOSHIBA Corp.<newline>
+Copyright (C) 1992 by Jim Tsillas<newline>
+Copyright (C) 1997, 1998 by UCHIYAMA Yasushi<newline>
+Copyright (C) 1990, 1991 UNIX System Laboratories, Inc. All Rights Reserved.<newline>
+Copyright (C) 1994, 1996 by Holger Veit<newline>
+Copyright (C) 1992 Vrije Universiteit, The Netherlands<newline>
+Copyright (C) 1993 by David Wexelblat<newline>
 Copyright (C) 2001-2004 Thomas Winischhofer, Vienna, Austria.<newline>
-Copyright (c) 1993 by Thomas Wolfram, Berlin, Germany.<newline>
-Copyright 1996 X Consortium, Inc.<newline>
-Copyright 1998 by Kazutaka YOKOTA<newline>
-Copyright 1992 by Orest Zborowski<newline>
+Copyright (C) 1993 by Thomas Wolfram, Berlin, Germany.<newline>
+Copyright (C) 1996 X Consortium, Inc.<newline>
+Copyright (C) 1998 by Kazutaka YOKOTA<newline>
+Copyright (C) 1992 by Orest Zborowski<newline>
 
 
 Permission to use, copy, modify, and distribute this software and its
@@ -263,17 +263,17 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 This is the license that The Open Group applied after the post X11R6.4
 license restoration.
 
-(c) Copyright 1991, 1996 Digital Equipment Corp.<newline>
-(c) Copyright 1996 Fujitsu Limited<newline>
-(c) Copyright 1996 Hewlett-Packard Company<newline>
-(c) Copyright 1996 Hitachi, Ltd.<newline>
-(c) Copyright 1996 International Business Machines Corp.<newline>
-Copyright 1990, Network Computing Devices<newline>
-(c) Copyright 1996 Novell, Inc.<newline>
-Copyright 1987, 1996, 2002 Sun Microsystems, Inc.  All rights reserved.<newline>
-Copyright 1990, Tektronix Inc.<newline>
-Copyright 1985-1998 The Open Group<newline>
-Copyright (c) 2000  The XFree86 Project, Inc.<newline>
+Copyright (C) 1991, 1996 Digital Equipment Corp.<newline>
+Copyright (C) 1996 Fujitsu Limited<newline>
+Copyright (C) 1996 Hewlett-Packard Company<newline>
+Copyright (C) 1996 Hitachi, Ltd.<newline>
+Copyright (C) 1996 International Business Machines Corp.<newline>
+Copyright (C) 1990, Network Computing Devices<newline>
+Copyright (C) 1996 Novell, Inc.<newline>
+Copyright (C) 1987, 1996, 2002 Sun Microsystems, Inc.  All rights reserved.<newline>
+Copyright (C) 1990, Tektronix Inc.<newline>
+Copyright (C) 1985-1998 The Open Group<newline>
+Copyright (C) 2000  The XFree86 Project, Inc.<newline>
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -333,7 +333,7 @@ X Window System is a trademark of X Consortium, Inc.
 <p>
 Copyright (C) 2000, 2001 - Nokia Home Communications<newline>
 Copyright (C) 1998, 1999 - The XFree86 Project Inc.<newline>
-Copyright &copy 2000 VA Linux Systems, Inc.<newline>
+Copyright (C) 2000 VA Linux Systems, Inc.<newline>
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -387,12 +387,12 @@ CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
 
 <sect1>Digital Equipment Corporation (1)
 <p>
-Copyright 1987, 1988, 1989, 1990 by Digital Equipment Corporation, Maynard,
+Copyright (C) 1987, 1988, 1989, 1990 by Digital Equipment Corporation, Maynard,
 Massachusetts<newline>
-Copyright 1998, 1989 by Hewlett-Packard Company, Palo Alto, California.<newline>
-Copyright 1990, 1991 Network Computing Devices<newline>
-Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.<newline>
-Copyright 1988 by Wyse Technology, Inc., San Jose, Ca<newline>
+Copyright (C) 1998, 1989 by Hewlett-Packard Company, Palo Alto, California.<newline>
+Copyright (C) 1990, 1991 Network Computing Devices<newline>
+Copyright (C) 1993 by Sun Microsystems, Inc. Mountain View, CA.<newline>
+Copyright (C) 1988 by Wyse Technology, Inc., San Jose, Ca<newline>
 
 All Rights Reserved
 
@@ -568,9 +568,9 @@ included with end user documentation and/or advertising material.
 <sect1>3-Clause BSD License (the revised BSD license)
 <p>
 
-Copyright (c) 2001, Andy Ritger aritger@nvidia.com.<newline>
+Copyright (C) 2001, Andy Ritger aritger@nvidia.com.<newline>
 Copyright (C) 1999,2000 by Eric Sunshine &lt;sunshine@sunshineco.com&gt;<newline>
-Copyright Theodore Ts'o, 1994, 1995, 1996, 1997, 1998, 1999.<newline>
+Copyright (C) Theodore Ts'o, 1994, 1995, 1996, 1997, 1998, 1999.<newline>
 Copyright (C) 2001-2004 Thomas Winischhofer<newline>
 
 All Rights Reserved.
