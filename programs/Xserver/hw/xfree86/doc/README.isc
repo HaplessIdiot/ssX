@@ -11,11 +11,11 @@
 
                                Michael Rohleder
 
-                                 23 March 1998
+                                 06 March 1999
 
 
 
-1.  X11R6/XFree86[tm] on Interactive Unix
+1.  X11R6/XFree86 on Interactive Unix
 
 This document provides some additional information about compiling and using
 X11R6 and XFree86 on your Interactive Unix, also referred to as ISC.
@@ -350,15 +350,6 @@ Please add the following at the bottom of math.h, before the last #endif
 
    o Compiling ...
 
-     If you want to include support for linear addressing into the server bina-
-     ries, you have to define
-
-          #define HasSVR3mmapDrv        YES
-
-
-     in xf86site.def.  This is necessary to get the correct setup to be defined
-     for the build.
-
      You need the mmap-2.2.3 driver installed on your system.  If you don't
      have the mmap-2.2.3 driver installed, you could use the driver source in
      the file
@@ -375,6 +366,8 @@ Please add the following at the bottom of math.h, before the last #endif
      /usr/include/sys/mmap.h for compiling the X11R6/XFree86 source tree, with
      linear addressing enabled.
 
+          The new loadable X Server is not tested to work without linear addressing.
+
    o Using ...
 
      To use the linear address-mapping of the framebuffer you need the mmap
@@ -387,8 +380,15 @@ Please add the following at the bottom of math.h, before the last #endif
 
      in your XF86Config.   Check the appropriate manual pages for details.
      Maybe you need also the MemBase specified in XF86Config. Please refer to
-     the appropriate README of your Card/Server, for How to use...  Note that
-     the P9000 server will not work at all unless linear addressing is
+     the appropriate README of your Card/Server, for How to use...
+
+     I could only test these cards on Interactive UNIX
+
+        o Spea/V7 Vega - clgd5428 - VLB - (old)
+
+          with 32MB MainMemory installed I couldn't use it.  My tests with dif-
+          ferent mappings into the address space results in no Graphics dis-
+          played or a spontaneous reboot.
 
 
 
@@ -401,17 +401,7 @@ Please add the following at the bottom of math.h, before the last #endif
 
 
 
-     available.
-
-     I could only test these cards against the linear addressing.
-
-        o Spea/V7 Vega - clgd5428 - VLB
-
-          with 32MB MainMemory installed I couldn't use it.  My tests with dif-
-          ferent mappings into the address space results in no Graphics dis-
-          played or a spontaneous reboot.
-
-        o ATI GUP      - mach32   - VLB
+        o ATI GUP      - mach32   - VLB - (old)
 
           with 32MB MainMemory installed I could map the CardMemory at MemBase
           0x07c00000. I could work with all clients until I try to activate a
@@ -446,6 +436,12 @@ Please add the following at the bottom of math.h, before the last #endif
 
           With the current XF86_S3 I don't encounter any problem.
 
+        o Diamond FireGL 1000
+
+                       3Dlabs GLINT Permedia rev 1
+                       3Dlabs GLINT Delta rev 1
+
+
 
 6.  XKeyboard Extension
 
@@ -453,6 +449,10 @@ Please add the following at the bottom of math.h, before the last #endif
 
      Here is a sample XKeyboard Definition to include inside the Keyboard Sec-
      tion of your XF86Config File.
+
+
+
+
 
 
 
@@ -492,10 +492,10 @@ xf86site.def Please note, this Extension should be disabled when building the
 Loader Server.
 
 
-8.  Sample Definitions
+8.  Default Definitions
 
-This is my current host.def, if I build the sources. (So no more changes were
-necessary in xf86site.def, either it isn't to bad to have a look inside it ;-)
+These are default options defined inside isc.cf.  You can redefine them inside
+host.def.
 
 
 
@@ -533,60 +533,60 @@ necessary in xf86site.def, either it isn't to bad to have a look inside it ;-)
 
 
 
-     #ifdef BeforeVendorCF
+     /* Disable the use of /var/X11 */
+     #ifndef HasVarDirectory
+     #define HasVarDirectory       NO
+     #endif
 
-     /* ISC 4.1Mu - build only for 4.1
-     #define IscCompileVersion       410
-     */
-
-     /* Optimization for Pentium CPU with gcc-2.8.1 */
-     /*                                             */
-     #define DefaultGcc2i386Opt    -O2 -march=pentium -mpentium -Wall -Wno-implicit-int -fno-strength-reduce
+     /* Use mmap Driver                                                   */
+     #ifndef HasSVR3mmapDrv
+     # define HasSVR3mmapDrv       YES
+     #endif
 
      /* Use inline Math from linux ;-) package inline-math-2.6.tar.gz */
      /* should be available on your favorite linux ftp                */
+     #ifndef UseInlineMath
      # define UseInlineMath        YES
+     #endif
 
      /* Use cbrt from liboptm.a (Interactive icc Compiler) */
-     /*
-     */
+     #ifndef HasCbrt
      # define HasCbrt         YES
+     #endif
 
      /* Use GNUs MallocLibrary (and the Location for the Lib)             */
+     #ifndef UseGnuMalloc
      # define UseGnuMalloc         YES
-     # define GnuMallocLibrary     -L/usr/local/lib -lgnumalloc
+     #endif
 
-     /* Build Xvfb                                                        */
-     # define XVirtualFramebufferServer YES
-
-     /* Use mmap Driver                                                   */
-     # define HasSVR3mmapDrv       YES
+     /* Install Zlib Headers - used in lib/zlib/Imakefile */
+     #ifndef OsNeedZlibHeaders
+     # define OsNeedZlibHeaders    YES
+     #endif
 
      /* Expand Manual Pages (needs S5L)                                   */
+     #ifndef ExpandManNames
      # define ExpandManNames       YES
+     #endif
 
-     /* Has LinuxDoc (and the Location for LinuxDoc / only HTML and Text) */
-     # define HasLinuxDoc          YES
-     # define BuildLinuxDocHtml    YES
-     # define BuildAllDocs         YES
-     # define LinuxDocDir          /usr/local/lib/linuxdoc-sgml
+     /* if you have groff or the TextProcessingWorkbench - don't preformat*/
+     #ifndef FormattedManPages
+     # define FormattedManPages      NO
+     #endif
 
-     /* Install Config's for xdm, xfs, and xinit */
-     # define InstallXinitConfig    YES
-     # define InstallXdmConfig      YES
-     # define InstallFSConfig               YES
+     #ifndef HasSgmlFmt  /* HasLinuxDoc */
+     # define HasSgmlFmt             YES
+     #endif
 
-     #define BuildChooser          YES
-
-     /* for the new XF86Setup Util */
+     /* XF86Setup Util */
+     #ifndef HasTk
      #define HasTk            YES
      #define HasTcl           YES
+     #endif
 
-     #endif /* BeforeVendorCF */
-
-
-
-
+     #ifndef HasPosixRegex         /* Need extra/regex since 3.9Ns */
+     #define HasPosixRegex         NO
+     #endif
 
 
 
@@ -597,6 +597,15 @@ necessary in xf86site.def, either it isn't to bad to have a look inside it ;-)
 
  Information for ISC Users                                                   10
 
+
+
+     #ifndef DoLoadableServer
+     #define DoLoadableServer        YES
+     #endif
+
+     #ifndef CpuOption
+     #define CpuOption   -mpentium
+     #endif
 
 
 9.  Installation
@@ -621,7 +630,7 @@ to install the compressed nroff versions of the manual pages into
 
 to install the server binary LinkKit into /usr/X11R6/lib/Server.
 
-            You could tune the Kernel using the command-file
+            You should tune the Kernel using the command-file
 
             /usr/X11R6/lib/X11/etc/xf86install
 
@@ -630,6 +639,52 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
             to use inside sysadm. You could also install
             some additional Fonts and Terminal files.
 
+This is now a menu driven config tool for XFree86 on IUS For the first setup
+you should go from 1 to x step by step.  Here is its main screen
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Information for ISC Users                                                   11
+
+
+
+     X11R6 XFree86 Version (version)
+     -------------------------------------------------------------------------------
+
+
+
+                         Check dependencies:                   1
+                         Make XFree86 Label                    2
+                         Install Remove script                 3
+                         Setup node.d + sdevice.d Files        4
+                         Tune Kernel Variables                 5
+                         Tune PseudoTerminals                  6
+                         Install xterm terminal entries        7
+                         Install VGA font                      8
+                         Save current KernelConfig             9
+
+                         Exit                                  X
+
+
+     Your Choice [1-9]?<enter>:
+
 You also should increase MAXUMEM to its maximum, else programs may die with:
 
      X Error of failed request:  BadAlloc (insufficient resources for operation)
@@ -637,6 +692,9 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
        Serial number of failed request:  37791
        Current serial number in output stream:  37822
        Widget hierarchy of resource: unknown
+
+
+You could do this automtically with menu entry no. 5.
 
 
 10.  Using ...
@@ -653,18 +711,6 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
 
         o LeftAlt  Meta
 
-
-
-
-
-
-
-
-
- Information for ISC Users                                                   11
-
-
-
         o RightAlt ModeShift
 
         o RightCtl Compose
@@ -672,6 +718,18 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
      in your XF86Config - Section "Keyboard"
 
    o xpcterm:
+
+
+
+
+
+
+
+
+
+ Information for ISC Users                                                   12
+
+
 
      if you want to get the German 'Umlaut' inside your ISC X11R4 client xpc-
      term when you are using the ega/vga font. Set up the user's .Xdefaults to
@@ -720,23 +778,22 @@ You also should increase MAXUMEM to its maximum, else programs may die with:
 
 
 
-
-
-
-
-
-
-
- Information for ISC Users                                                   12
-
-
-
           The case are the new gzipped fonts, but the Warning isn't serious.
 
         o If you start a server you may see the following message:
 
                        _XSERVTransOpen: transport open failed for named/enigma:0
                        _XSERVTransMakeAllCOTSServerListeners: failed to open listener for named
+
+
+
+
+
+
+
+
+
+ Information for ISC Users                                                   13
 
 
 
@@ -750,7 +807,7 @@ All thanks should go to the members of the XFree86 Team for their great work
 and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.19 1998/04/05 00:45:56 robin Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.20 1999/03/28 15:32:33 dawes Exp $
 
 
 
@@ -793,7 +850,16 @@ tribute to this excellent piece of free software.
 
 
 
- Information for ISC Users                                                   13
+
+
+
+
+
+
+
+
+
+ Information for ISC Users                                                   14
 
 
 
@@ -867,7 +933,7 @@ tribute to this excellent piece of free software.
 
 
 
-1.  X11R6/XFree86[tm] on Interactive Unix  .................................. 1
+1.  X11R6/XFree86 on Interactive Unix  ...................................... 1
 
 2.  Things needed for compiling the sources ................................. 1
 
@@ -887,13 +953,13 @@ tribute to this excellent piece of free software.
 
 7.  Multibuffer Extension  .................................................. 8
 
-8.  Sample Definitions  ..................................................... 8
+8.  Default Definitions  .................................................... 8
 
 9.  Installation  .......................................................... 10
 
-10. Using ...  ............................................................. 10
+10. Using ...  ............................................................. 11
 
-11. Acknowledgements  ...................................................... 12
+11. Acknowledgements  ...................................................... 13
 
 
 

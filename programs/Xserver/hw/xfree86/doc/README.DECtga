@@ -7,11 +7,11 @@
 
 
 
-		   Information for DEC 21030 Users (aka TGA)
+                   Information for DEC 21030 Users (aka TGA)
 
-			   The XFree86 Project, Inc.
+                           The XFree86 Project, Inc.
 
-			       17th October 1996
+                               17th October 1996
 
 
 
@@ -24,29 +24,29 @@
 
 
        1.  Only one modeline is accepted, this will be the first viable one
-	   that matches other criteria.
+           that matches other criteria.
 
        2.  Due to the above, Virtual Resolutions is not supported either.
 
        3.  VideoRam is currently limited to 2MB.
 
        4.  The 8plane 21030 is currently the only supported chipset. I don't
-	   have access to the 24plane or the 24plane3D chip.
+           have access to the 24plane or the 24plane3D chip.
 
 
    o The following options may be specified for the 21030 driver:
 
-	   Option "dac_8_bit"
-		 Turn on 8Bit BT485 RamDac.
+           Option "dac_8_bit"
+                 Turn on 8Bit BT485 RamDac.
 
-	   Option "dac_6_bit"
-		 Turn on 6Bit BT485 RamDac.
+           Option "dac_6_bit"
+                 Turn on 6Bit BT485 RamDac.
 
-	   MemBase "0x???????"
-		 If the server does not detect the base address of the 21030,
-		 then Check /proc/pci for the 21030 and look for the "Prefetch-
-		 able 32 bit memory at 0x???????" and enter this as your Mem-
-		 Base setting.
+           MemBase "0x???????"
+                 If the server does not detect the base address of the 21030,
+                 then Check /proc/pci for the 21030 and look for the "Prefetch-
+                 able 32 bit memory at 0x???????" and enter this as your Mem-
+                 Base setting.
 
    o No acceleration features of the 21030 have been taken advantage of yet!
 
@@ -61,13 +61,13 @@ known as the Multia, in a Linux environment.
 
 
 
-Information for DEC 21030 Users (aka TGA)
+Information for DEC 21030 Users (aka TGA)                                     1
 
 
 
 
 
-Information for DEC 21030 Users (aka TGA)
+Information for DEC 21030 Users (aka TGA)                                     2
 
 
 
@@ -137,7 +137,7 @@ Information for DEC 21030 Users (aka TGA)
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -193,7 +193,7 @@ Information for DEC 21030 Users (aka TGA)
 
 
 
-				       i
+                                       i
 
 
 

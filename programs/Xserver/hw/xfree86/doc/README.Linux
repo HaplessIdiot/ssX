@@ -7,11 +7,11 @@
 
 
 
-			  Information for Linux Users
+                          Information for Linux Users
 
-			 Orest Zborowski, Dirk Hohndel
+                         Orest Zborowski, Dirk Hohndel
 
-			       20 October, 1996
+                               20 October, 1996
 
 
 
@@ -61,13 +61,13 @@ Each binary distribution of XFree86 3.X comes with a detailed installation doc-
 ument relevant to that release. The most up-to-date information is kept there,
 
 
-Information for Linux Users
+Information for Linux Users                                                   1
 
 
 
 
 
-Information for Linux Users
+Information for Linux Users                                                   2
 
 
 
@@ -133,7 +133,7 @@ at startup. These bindings are either the default map in place when the kernel
 
 
 
-Information for Linux Users
+Information for Linux Users                                                   3
 
 
 
@@ -199,7 +199,7 @@ XFree86-3.1.2, this binary does not rely on a recent libncurses being installed
 
 
 
-Information for Linux Users
+Information for Linux Users                                                   4
 
 
 
@@ -241,8 +241,8 @@ The PEX and XIE extensions are now supported as external modules.  If you want
 to have access to these extensions, add the following lines to the Module sec-
 tion of XF86Config:
 
-	load	"pex5.so"
-	load	"xie.so"
+        load    "pex5.so"
+        load    "xie.so"
 
 
 8.  Compiling XFree86
@@ -265,7 +265,7 @@ mance).
 
 
 
-Information for Linux Users
+Information for Linux Users                                                   5
 
 
 
@@ -331,7 +331,7 @@ dows.x.i386unix newsgroup.
 
 
 
-Information for Linux Users
+Information for Linux Users                                                   6
 
 
 
@@ -401,7 +401,7 @@ Information for Linux Users
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -457,7 +457,7 @@ Information for Linux Users
 
 
 
-				       i
+                                       i
 
 
 

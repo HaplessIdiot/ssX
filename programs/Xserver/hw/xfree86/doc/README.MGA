@@ -7,11 +7,11 @@
 
 
 
-	       Information for Matrox Millennium/Mystique Users
+               Information for Matrox Millennium/Mystique Users
 
-			   The XFree86 Project Inc.
+                           The XFree86 Project Inc.
 
-				  16 May 1997
+                                  16 May 1997
 
 
 
@@ -33,74 +33,74 @@ appropriate bug report sheet.
    o Basic support for the Matrox Millennium video adapter
 
 
-	o uses linear frame buffer
+        o uses linear frame buffer
 
-	o it should be possible to reach resolutions up to 1920x1024
+        o it should be possible to reach resolutions up to 1920x1024
 
-	o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
-	  per pixel (256 pseudo colour, "high colour", "packed true colour",
-	  "true colour").
+        o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+          per pixel (256 pseudo colour, "high colour", "packed true colour",
+          "true colour").
 
-	o supports VESA Display Power Management Signaling (DPMS)
+        o supports VESA Display Power Management Signaling (DPMS)
 
-	o supports RGB Sync-on-Green
+        o supports RGB Sync-on-Green
 
-	o supports DGA
+        o supports DGA
 
-	o has the following accelerations:
+        o has the following accelerations:
 
-	     o lines
+             o lines
 
-	     o most bitblts
+             o most bitblts
 
-	     o filled rectangles
+             o filled rectangles
 
-	     o cached pixmaps
+             o cached pixmaps
 
-	     o many more...
-
-
-
-Information for Matrox Millennium/Mystique Users
+             o many more...
 
 
 
+Information for Matrox Millennium/Mystique Users                              1
 
 
-Information for Matrox Millennium/Mystique Users
 
 
 
-	  The Millenium server is fairly well accelerated, and is one of the
-	  fastest XFree86 3.3 Xservers. Future work will concentrate on fixing
-	  remaining bugs.
+Information for Matrox Millennium/Mystique Users                              2
+
+
+
+          The Millenium server is fairly well accelerated, and is one of the
+          fastest XFree86 3.3 Xservers. Future work will concentrate on fixing
+          remaining bugs.
 
 
    o Basic support for the Matrox Mystique video adapter
 
-	o uses linear frame buffer
+        o uses linear frame buffer
 
-	o it should be possible to reach resolutions up to 1280x1024
+        o it should be possible to reach resolutions up to 1280x1024
 
-	o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
-	  per pixel (256 pseudo colour, "high colour", "packed true colour",
-	  "true colour").
+        o it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+          per pixel (256 pseudo colour, "high colour", "packed true colour",
+          "true colour").
 
-	o supports VESA Display Power Management Signaling (DPMS)
+        o supports VESA Display Power Management Signaling (DPMS)
 
-	o has the following accelerations (may be with some bugs):
+        o has the following accelerations (may be with some bugs):
 
-	     o lines
+             o lines
 
-	     o most bitblts
+             o most bitblts
 
-	     o filled rectangles
+             o filled rectangles
 
-	     o cached pixmaps
+             o cached pixmaps
 
-	     o NOTE: If acceleration do not work properly, you had rather to
-	       insert: Option "noaccel" line in the Device section of XF86Con-
-	       fig file. It will be slower but will work better.
+             o NOTE: If acceleration do not work properly, you had rather to
+               insert: Option "noaccel" line in the Device section of XF86Con-
+               fig file. It will be slower but will work better.
 
 
 3.  Future Features (in order from highest to lowest priority)
@@ -133,7 +133,7 @@ This driver only supports:
 
 
 
-Information for Matrox Millennium/Mystique Users
+Information for Matrox Millennium/Mystique Users                              3
 
 
 
@@ -199,7 +199,7 @@ the latest news, new sources, etc.
 
 
 
-Information for Matrox Millennium/Mystique Users
+Information for Matrox Millennium/Mystique Users                              4
 
 
 
@@ -269,7 +269,7 @@ Information for Matrox Millennium/Mystique Users
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -325,7 +325,7 @@ Information for Matrox Millennium/Mystique Users
 
 
 
-				       i
+                                       i
 
 
 

@@ -7,11 +7,11 @@
 
 
 
-		     Information for Solaris for x86 Users
+                     Information for Solaris for x86 Users
 
-				 David Holland
+                                 David Holland
 
-				25 October 1996
+                                25 October 1996
 
 
 
@@ -19,7 +19,7 @@
 
 XFree86 3.2 is a port of X11R6.1 that supports several versions of Intel-based
 Unix.  It is derived from X386 1.2 which was the X server distributed with
-X11R5.	this release consists of many new features and performance improvements
+X11R5.  this release consists of many new features and performance improvements
 as well as many bug fixes.  The release is available as source patches against
 the X Consortium code, as well as binary distributions for many architectures.
 
@@ -61,13 +61,13 @@ documented below.
 First, if you are running a Solaris 2.4 x86 system, and you want VT's, you will
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         1
 
 
 
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         2
 
 
 
@@ -75,9 +75,9 @@ have to create the necessary devices first, so become root.
 
 First verify the chanmux device driver's major number is 100:
 
-	  # grep -i chanmux /etc/name_to_major
-	  chanmux 100
-	  #
+          # grep -i chanmux /etc/name_to_major
+          chanmux 100
+          #
 
 
 If the number after 'chanmux' is anything but 100, I would suggest you immedi-
@@ -89,14 +89,14 @@ them.
 However, if it is 100, then as root type the following commands to create the
 maximum allowable number of virtual terminals.
 
-	  # cd /dev
-	  # mknod vt01 c 100 1
-	  # mknod vt02 c 100 2
-	  # mknod vt03 c 100 3
-	  # mknod vt04 c 100 4
-	  # mknod vt05 c 100 5
-	  # mknod vt06 c 100 6
-	  # mknod vt07 c 100 7
+          # cd /dev
+          # mknod vt01 c 100 1
+          # mknod vt02 c 100 2
+          # mknod vt03 c 100 3
+          # mknod vt04 c 100 4
+          # mknod vt05 c 100 5
+          # mknod vt06 c 100 6
+          # mknod vt07 c 100 7
 
 
 There is no need for a reconfiguration boot.
@@ -133,7 +133,7 @@ The keys used for VT switching are as follows:
 
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         3
 
 
 
@@ -199,7 +199,7 @@ number of ioctl() calls are broken.
 
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         4
 
 
 
@@ -244,7 +244,7 @@ Information for Solaris for x86 Users
       ify the terminal device to run the Xserver on.  The correct device is
       vt00 so your xinit command would look like so:
 
-		     xinit -- vt00
+                     xinit -- vt00
 
 
       If you have made the virtual terminal devices you do not need to specify
@@ -265,7 +265,7 @@ Information for Solaris for x86 Users
 
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         5
 
 
 
@@ -331,7 +331,7 @@ the Solaris distribution need to be made to davidh@use.com, or danson@lgc.com.
 
 
 
-Information for Solaris for x86 Users
+Information for Solaris for x86 Users                                         6
 
 
 
@@ -401,7 +401,7 @@ Information for Solaris for x86 Users
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -457,7 +457,7 @@ Information for Solaris for x86 Users
 
 
 
-				       i
+                                       i
 
 
 

@@ -7,11 +7,11 @@
 
 
 
-			 Mach64 X Server Release Notes
+                         Mach64 X Server Release Notes
 
-		      Kevin E. Martin (martin@cs.unc.edu)
+                      Kevin E. Martin (martin@cs.unc.edu)
 
-				23 January 1997
+                                23 January 1997
 
 
 
@@ -22,52 +22,52 @@ based cards.  On most cards, higher dot clocks and additional depths are avail-
 able (see the table below).  What determines this support is the RAMDAC on your
 card.
 
-      RAMDAC	  Max Dot Clock   BPP	Max Resolution	 Video RAM Required
-     --------	  -------------   ---	--------------	 ------------------
-     ATI68860	      135MHz	   8	  1280x1024		2Mb
-     ATI68860	      135MHz	  16	  1280x1024		4Mb
-     ATI68860	       80MHz	  32	   1024x768		4Mb
+      RAMDAC      Max Dot Clock   BPP   Max Resolution   Video RAM Required
+     --------     -------------   ---   --------------   ------------------
+     ATI68860         135MHz       8      1280x1024             2Mb
+     ATI68860         135MHz      16      1280x1024             4Mb
+     ATI68860          80MHz      32       1024x768             4Mb
 
-     ATI68875	       80MHz	  32	   1024x768		4Mb
+     ATI68875          80MHz      32       1024x768             4Mb
 
-     CH8398	      135MHz	   8	  1280x1024		2Mb
-     CH8398	       80MHz	  16	   1024x768		2Mb
-     CH8398	       40MHz	  32	    800x600		2Mb
+     CH8398           135MHz       8      1280x1024             2Mb
+     CH8398            80MHz      16       1024x768             2Mb
+     CH8398            40MHz      32        800x600             2Mb
 
-     STG1702	      135MHz	   8	  1280x1024		2Mb
-     STG1702	       80MHz	  16	   1024x768		2Mb
-     STG1702	       50MHz	  32	    800x600		2Mb
+     STG1702          135MHz       8      1280x1024             2Mb
+     STG1702           80MHz      16       1024x768             2Mb
+     STG1702           50MHz      32        800x600             2Mb
 
-     STG1703	      135MHz	   8	  1280x1024		2Mb
-     STG1703	       80MHz	  16	   1024x768		2Mb
-     STG1703	       50MHz	  32	    800x600		2Mb
+     STG1703          135MHz       8      1280x1024             2Mb
+     STG1703           80MHz      16       1024x768             2Mb
+     STG1703           50MHz      32        800x600             2Mb
 
-     AT&T20C408       135MHz	   8	  1280x1024		2Mb
-     AT&T20C408        80MHz	  16	   1024x768		2Mb
-     AT&T20C408        40MHz	  32	    800x600		2Mb
+     AT&T20C408       135MHz       8      1280x1024             2Mb
+     AT&T20C408        80MHz      16       1024x768             2Mb
+     AT&T20C408        40MHz      32        800x600             2Mb
 
-     3D Rage II (Int) 170MHz	   8	  1600x1200		4Mb
-     3D Rage II (Int) 170MHz	  16	  1600x1200		4Mb
-     3D Rage II (Int) 135MHz	  32	   1024x768		4Mb
+     3D Rage II (Int) 170MHz       8      1600x1200             4Mb
+     3D Rage II (Int) 170MHz      16      1600x1200             4Mb
+     3D Rage II (Int) 135MHz      32       1024x768             4Mb
 
-     Internal	      135MHz	   8	  1280x1024		2Mb
-     Internal	       80MHz	  16	   1024x768		2Mb
-     Internal	       40MHz	  32	    800x600		2Mb
+     Internal         135MHz       8      1280x1024             2Mb
+     Internal          80MHz      16       1024x768             2Mb
+     Internal          40MHz      32        800x600             2Mb
 
-     IBM RGB514       220MHz	   8	  1600x1200		2Mb
-     IBM RGB514       220MHz	  16	  1600x1200		4Mb
-     IBM RGB514       135MHz	  32	   1024x768		4Mb
+     IBM RGB514       220MHz       8      1600x1200             2Mb
+     IBM RGB514       220MHz      16      1600x1200             4Mb
+     IBM RGB514       135MHz      32       1024x768             4Mb
 
-     All Others[*]     80MHz	   8	  1280x1024		2Mb
-
-
-Mach64 X Server Release Notes
+     All Others[*]     80MHz       8      1280x1024             2Mb
 
 
+Mach64 X Server Release Notes                                                 1
 
 
 
-Mach64 X Server Release Notes
+
+
+Mach64 X Server Release Notes                                                 2
 
 
 
@@ -79,7 +79,7 @@ memory.
 
 The RAMDAC is reported when you run the Mach64 X server with the "-probeonly"
 command line option.  The RAMDAC reported should be correct for all Mach64
-cards.	It can also be specified in the XF86Config file, but this is not recom-
+cards.  It can also be specified in the XF86Config file, but this is not recom-
 mended unless the RAMDAC reported in the probeonly output is incorrect.  Before
 specifying the RAMDAC in your XF86Config file visually verify which RAMDAC is
 on your Mach64 card.  If the RAMDAC reported in the probeonly output is defi-
@@ -101,7 +101,7 @@ be added in a future release.
 
 The Mach64 X server requires the video memory aperture to function properly.
 This means that ISA Mach64 cards in systems with more than 12Mb of main memory
-will not work.	If you have a PCI based Mach64 card or a VLB based Mach64 card,
+will not work.  If you have a PCI based Mach64 card or a VLB based Mach64 card,
 then the Mach64 X server will work with any amount of main memory.
 
 Accelerated doublescan modes are supported on VT, GT and 3D Rage II based
@@ -133,7 +133,7 @@ caches and a hardware cursor.
 
 
 
-Mach64 X Server Release Notes
+Mach64 X Server Release Notes                                                 3
 
 
 
@@ -141,14 +141,14 @@ Mach64 X Server Release Notes
      --------------   ---   ---------
        1280x1024       8       4Mb
        1280x1024      16       4Mb
-	1024x767      32       4Mb
+        1024x767      32       4Mb
 
        1280x1024       8       2Mb
-	1024x767      16       2Mb
-	 800x600[*]   32       2Mb
+        1024x767      16       2Mb
+         800x600[*]   32       2Mb
 
-	1024x767       8       1Mb
-	 800x600[*]   16       1Mb
+        1024x767       8       1Mb
+         800x600[*]   16       1Mb
 
 [*] - With a 2MB video card, the only way to use the font and pixmap caches is
 to have a virtual resolution of 1024x480 with a 640x480 mode.  I suggest using
@@ -174,7 +174,7 @@ By default, the Mach64 X server will determine the RAMDAC type from the BIOS.
 If you wish to override the default RAMDAC type (not recommended unless the
 BIOS incorrectly reports your RAMDAC type), you can specify the RAMDAC type in
 the XF86Config file with the "Ramdac" entry.  The Mach64 X server will also
-program the clocks based on the clock chip read from the BIOS.	If you wish to
+program the clocks based on the clock chip read from the BIOS.  If you wish to
 override the default clock chip type (not recommended unless the BIOS incor-
 rectly reports your clock chip type), you may specify the clock chip in the
 XF86Config file with the "ClockChip" entry.  If, however, you wish to use the
@@ -184,13 +184,13 @@ the BIOS.  The "Clocks" lines in the XF86Config file are normally ignored by
 the Mach64 X server unless the "no_bios_clocks" option is given.
 
       Option "sw_cursor"
-	    This option allows you to use the software cursor instead of the
-	    hardware cursor.
+            This option allows you to use the software cursor instead of the
+            hardware cursor.
 
       Option "hw_cursor"
-	    This option turns on the hardware cursor.  This should not be nec-
-	    essary since the hardware cursor is used by default unless the
-	    "sw_cursor" option is specified.
+            This option turns on the hardware cursor.  This should not be nec-
+            essary since the hardware cursor is used by default unless the
+            "sw_cursor" option is specified.
 
 
 
@@ -199,63 +199,63 @@ the Mach64 X server unless the "no_bios_clocks" option is given.
 
 
 
-Mach64 X Server Release Notes
+Mach64 X Server Release Notes                                                 4
 
 
 
       Option "composite"
-	    This option will set the composite sync for monitors that require
-	    this.
+            This option will set the composite sync for monitors that require
+            this.
 
       Option "dac_8_bit"
-	    This option enables 8 bits per RGB value.  Note that this does not
-	    work with the Chrontel 8398 RAMDAC.  This options is not necessary
-	    since 8 bits per RGB value is the default for the Mach64 X server
-	    for all Mach64 cards except those with the Chrontel 8398 RAMDAC.
+            This option enables 8 bits per RGB value.  Note that this does not
+            work with the Chrontel 8398 RAMDAC.  This options is not necessary
+            since 8 bits per RGB value is the default for the Mach64 X server
+            for all Mach64 cards except those with the Chrontel 8398 RAMDAC.
 
       Option "dac_6_bit"
-	    This option enables 6 bits per RGB value.
+            This option enables 6 bits per RGB value.
 
       Option "override_bios"
-	    This option allows you to specify a video mode that the video
-	    card's BIOS believes to be illegal.  Some BIOSs have incorrect max-
-	    imum resolution and/or dot clock limitations.  Use this option with
-	    extreme care.  It is possible to specify a video mode that can dam-
-	    age your card or monitor.
+            This option allows you to specify a video mode that the video
+            card's BIOS believes to be illegal.  Some BIOSs have incorrect max-
+            imum resolution and/or dot clock limitations.  Use this option with
+            extreme care.  It is possible to specify a video mode that can dam-
+            age your card or monitor.
 
       Option "no_block_write"
-	    This option allows you to turn off block write mode.  Block write
-	    mode only works on certain types of VRAM cards.  This option has no
-	    effect on DRAM based cards.  If you see noise on the screen that
-	    can be captured via xmag, then it is probably a problem with block
-	    write mode being turned on when it should not.  This ``noise'' usu-
-	    ally looks like bits of windows/menus repeated on the screen.
+            This option allows you to turn off block write mode.  Block write
+            mode only works on certain types of VRAM cards.  This option has no
+            effect on DRAM based cards.  If you see noise on the screen that
+            can be captured via xmag, then it is probably a problem with block
+            write mode being turned on when it should not.  This ``noise'' usu-
+            ally looks like bits of windows/menus repeated on the screen.
 
       Option "block_write"
-	    This option allows you to turn on block write mode.  Block write
-	    mode only works on certain types of VRAM cards, and this option has
-	    no effect on DRAM based cards.  If you want to override the probed
-	    default, you can use this option.  Note that this may result in
-	    ``noise'' appearing on the screen.
+            This option allows you to turn on block write mode.  Block write
+            mode only works on certain types of VRAM cards, and this option has
+            no effect on DRAM based cards.  If you want to override the probed
+            default, you can use this option.  Note that this may result in
+            ``noise'' appearing on the screen.
 
       Option "power_saver"
-	    This option allows the server to use the power saving features of
-	    certain "green" monitors instead of blanking when the screen saver
-	    is activated.  This option is still experimental.
+            This option allows the server to use the power saving features of
+            certain "green" monitors instead of blanking when the screen saver
+            is activated.  This option is still experimental.
 
       Option "no_program_clocks"
-	    This option allows you to disable the clock programming.  Normally
-	    the Mach64 server will program the clocks based on the clock chip
-	    type unless this option is given.  With this option, the clocks are
-	    either read from the BIOS or, if the "no_bios_clocks" option is
-	    set, set from the Clocks line.
+            This option allows you to disable the clock programming.  Normally
+            the Mach64 server will program the clocks based on the clock chip
+            type unless this option is given.  With this option, the clocks are
+            either read from the BIOS or, if the "no_bios_clocks" option is
+            set, set from the Clocks line.
 
       Option "no_bios_clocks"
-	    This option allows you to override the clocks read from the video
-	    card's BIOS and use the clocks specified in the Clocks line in your
-	    XF86Config file.  Normally the Mach64 server will ignore both the
-	    BIOS clocks and the clocks specified in the Clocks line unless the
-	    "no_program_clocks" options is set (see above).
+            This option allows you to override the clocks read from the video
+            card's BIOS and use the clocks specified in the Clocks line in your
+            XF86Config file.  Normally the Mach64 server will ignore both the
+            BIOS clocks and the clocks specified in the Clocks line unless the
+            "no_program_clocks" options is set (see above).
 
 
 
@@ -265,65 +265,63 @@ Mach64 X Server Release Notes
 
 
 
-Mach64 X Server Release Notes
+Mach64 X Server Release Notes                                                 5
 
 
 
       Option "no_font_cache"
-	    This option allows you to disable the font cache.  By default the
-	    font cache is turned on if the horizontal resolution is 1024 pixels
-	    or greater and there is enough off-screen video memory to hold the
-	    cache.
+            This option allows you to disable the font cache.  By default the
+            font cache is turned on if the horizontal resolution is 1024 pixels
+            or greater and there is enough off-screen video memory to hold the
+            cache.
 
       Option "no_pixmap_cache"
-	    This option allows you to disable the pixmap cache.  By default the
-	    pixmap cache is turned on if the horizontal resolution is 1024 pix-
-	    els or greater and there is enough off-screen video memory to hold
-	    the cache.
+            This option allows you to disable the pixmap cache.  By default the
+            pixmap cache is turned on if the horizontal resolution is 1024 pix-
+            els or greater and there is enough off-screen video memory to hold
+            the cache.
 
       MemBase baseaddress
-	    This entry specifies the video memory aperture address.  By default
-	    the aperture address is automatically determined and this option
-	    should not be necessary.  If the Mach64 X server is dying with a
-	    seg. fault, then the memory aperture might not be correctly deter-
-	    mined.  To fix this try setting the aperture address to another
-	    location.
+            This entry specifies the video memory aperture address.  By default
+            the aperture address is automatically determined and this option
+            should not be necessary.  If the Mach64 X server is dying with a
+            seg. fault, then the memory aperture might not be correctly deter-
+            mined.  To fix this try setting the aperture address to another
+            location.
 
       ClockChip "type"
-	    This entry specifies the clock chip type.  The following values are
-	    valid for type:
+            This entry specifies the clock chip type.  The following values are
+            valid for type:
 
-	       o ati18818
+               o ati18818
 
-	       o att20c408
+               o att20c408
 
-	       o ch8398
+               o ch8398
 
-	       o ibm_rgb514
+               o ibm_rgb514
 
-	       o ics2595
+               o ics2595
 
-	       o stg1703
+               o stg1703
 
       Ramdac "type"
-	    This entry specifies the RAMDAC type.  The following values are
-	    valid for type:
+            This entry specifies the RAMDAC type.  The following values are
+            valid for type:
 
-	       o ati68860
+               o ati68860
 
-	       o ati68860b
+               o ati68860b
 
-	       o ati68860c
+               o ati68860c
 
-	       o ati68875
+               o ati68875
 
-	       o att20c408
+               o att20c408
 
-	       o ch8398
+               o ch8398
 
-	       o ibm_rgb514
-
-
+               o ibm_rgb514
 
 
 
@@ -331,17 +329,19 @@ Mach64 X Server Release Notes
 
 
 
-Mach64 X Server Release Notes
+
+
+Mach64 X Server Release Notes                                                 6
 
 
 
-	       o internal
+               o internal
 
-	       o stg1702
+               o stg1702
 
-	       o stg1703
+               o stg1703
 
-	       o tlc34075
+               o tlc34075
 
 
 4.  Known Problems and Bug Reports
@@ -371,7 +371,7 @@ ming to support the new Mach64 chips, RAMDACs and clock chips that appear on
 them.  The most recent release is most likely to support your video card.
 
 Second, please check the RELNOTES and README files (as well as the other docu-
-mentation available with the release).	Third, make sure you do not have any
+mentation available with the release).  Third, make sure you do not have any
 Ramdac, ClockChip or Clocks lines in your XF86Config file (all of these are
 automatically detected by the Mach64 X server).
 
@@ -397,7 +397,7 @@ Thanks!
 
 
 
-Mach64 X Server Release Notes
+Mach64 X Server Release Notes                                                 7
 
 
 
@@ -463,7 +463,7 @@ Mach64 X Server Release Notes
 
 
 
-Mach64 X Server Release Notes
+Mach64 X Server Release Notes                                                 8
 
 
 
@@ -533,7 +533,7 @@ Mach64 X Server Release Notes
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -589,7 +589,7 @@ Mach64 X Server Release Notes
 
 
 
-				       i
+                                       i
 
 
 

@@ -7,18 +7,18 @@
 
 
 
-		  Information for S3 ViRGE and ViRGE/VX Users
+                  Information for S3 ViRGE and ViRGE/VX Users
 
-			   The XFree86 Project Inc.
+                           The XFree86 Project Inc.
 
-				22 January 1997
+                                22 January 1997
 
 
 
 1.  Supported hardware
 
 The current XF86_S3V server supports S3 ViRGE (86C325) and S3 ViRGE/VX (86C988)
-chips.	32bpp TrueColor and External RAMDACs for ViRGE/VX are not yet sup-
+chips.  32bpp TrueColor and External RAMDACs for ViRGE/VX are not yet sup-
 ported.  It has been tested with ViRGE cards with 2 and 4MB DRAM and with a
 220MHz ViRGE/VX card with 2MB VRAM up to 1600x1200 with 8/15/16bpp.
 
@@ -61,13 +61,13 @@ There will be updated drivers in the coming XFree86 beta releases.
 
 
 
- Information for S3 ViRGE and ViRGE/VX Users
+ Information for S3 ViRGE and ViRGE/VX Users                                  1
 
 
 
 
 
- Information for S3 ViRGE and ViRGE/VX Users
+ Information for S3 ViRGE and ViRGE/VX Users                                  2
 
 
 
@@ -133,7 +133,7 @@ and:
 
 
 
- Information for S3 ViRGE and ViRGE/VX Users
+ Information for S3 ViRGE and ViRGE/VX Users                                  3
 
 
 
@@ -203,7 +203,7 @@ and:
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -259,7 +259,7 @@ and:
 
 
 
-				       i
+                                       i
 
 
 
