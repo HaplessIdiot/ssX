@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 103. Fix missing symbol "ServerGrabCallback" (Mark Vojkovich).
  102. Fix XAA problems with CPU-to-screen colour expansion (Marc La France).
  101. For panel support in the ATI driver, add an entry to the monitor
       section's mode list for the panel's native resolution (Marc La France).
