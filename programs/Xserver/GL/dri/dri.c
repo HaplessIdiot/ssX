@@ -289,7 +289,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
         /* For swap methods of DRI_SERVER_SWAP and DRI_HIDE_X_CONTEXT
          * setup signal handler for receiving swap requests from kernel
 	 */
-	if (drmInstallSIGIOHandler(pDRIPriv->drmFD, DRISwapContext)) {
+	if (!drmInstallSIGIOHandler(pDRIPriv->drmFD, DRISwapContext)) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "[drm] failed to setup DRM signal handler\n");
 	    if (pDRIPriv->hiddenContextStore)
