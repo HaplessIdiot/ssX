@@ -1,3 +1,5 @@
+3982. Attempt to add support for Matrox SDRAM G400s (Mark Vojkovich).
+3981. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
 3980. Change loader search order to look in more specific subdirectories first,
       thereby avoiding loading 3.3.* module versions (Marc La France).
 3979. Fix some problems with layers forgetting that SwitchMode is an
