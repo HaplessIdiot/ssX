@@ -22,6 +22,8 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
+
 /*
  * This file should contain only those objects which must be predefined.
  */
