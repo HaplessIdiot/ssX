@@ -1,4 +1,4 @@
-/* XFree86$ */
+/* $XFree86$ */
 
 /*
  * Definitions for video memory allocator in cir_alloc.c.
