@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.11 2002/05/22 17:15:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.14 2002/08/02 18:48:56 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,7 +35,7 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
 {
     XftDisplayInfo  *info, **prev;
 
-    info = _XftDisplayInfoGet (dpy);
+    info = _XftDisplayInfoGet (dpy, FcFalse);
     if (!info)
 	return 0;
     
@@ -65,7 +65,7 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
 
 
 XftDisplayInfo *
-_XftDisplayInfoGet (Display *dpy)
+_XftDisplayInfoGet (Display *dpy, FcBool createIfNecessary)
 {
     XftDisplayInfo	*info, **prev;
     XRenderPictFormat	pf;
@@ -87,6 +87,9 @@ _XftDisplayInfoGet (Display *dpy)
 	    return info;
 	}
     }
+    if (!createIfNecessary)
+	return 0;
+
     info = (XftDisplayInfo *) malloc (sizeof (XftDisplayInfo));
     if (!info)
 	goto bail0;
@@ -212,7 +215,7 @@ _XftDisplayValidateMemory (XftDisplayInfo *info)
 void
 _XftDisplayManageMemory (Display *dpy)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, False);
     unsigned long   glyph_memory;
     XftFont	    *public;
     XftFontInt	    *font;
@@ -250,7 +253,7 @@ _XftDisplayManageMemory (Display *dpy)
 Bool
 XftDefaultHasRender (Display *dpy)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
 
     if (!info)
 	return False;
@@ -260,7 +263,7 @@ XftDefaultHasRender (Display *dpy)
 Bool
 XftDefaultSet (Display *dpy, FcPattern *defaults)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
 
     if (!info)
 	return False;
@@ -390,7 +393,7 @@ bail0:
 static FcResult
 _XftDefaultGet (Display *dpy, const char *object, int screen, FcValue *v)
 {
-    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy);
+    XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
     FcResult	    r;
 
     if (!info)
