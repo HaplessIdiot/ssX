@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.208 2003/10/08 14:58:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.209 2003/10/17 20:02:12 alanh Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -657,7 +657,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* XXX Should this be before or after loading dependent modules? */
     if (xf86ProbeOnly)
     {
-      OsCleanup();
+      OsCleanup(TRUE);
       AbortDDX();
       fflush(stderr);
       exit(0);

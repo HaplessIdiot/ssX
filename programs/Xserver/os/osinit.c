@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.28 2003/04/27 21:31:09 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.29 2003/09/09 03:20:41 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -231,9 +231,12 @@ OsInit(void)
 }
 
 void
-OsCleanup(void)
+OsCleanup(Bool terminating)
 {
 #ifdef SERVER_LOCK
-    UnlockServer();
+    if (terminating)
+    {
+	UnlockServer();
+    }
 #endif
 }

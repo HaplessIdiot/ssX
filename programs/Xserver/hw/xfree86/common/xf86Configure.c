@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.79 2003/10/07 22:00:51 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.80 2003/10/08 14:58:27 dawes Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -992,7 +992,7 @@ DoConfigure()
     ErrorF("To test the server, run 'XFree86 -xf86config %s'\n\n", filename);
 
 bail:
-    OsCleanup();
+    OsCleanup(TRUE);
     AbortDDX();
     fflush(stderr);
     exit(0);

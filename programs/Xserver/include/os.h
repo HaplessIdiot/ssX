@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.51 2003/09/25 13:26:27 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.52 2003/10/18 17:09:30 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -218,9 +218,11 @@ extern void TimerCancel(OsTimerPtr /* pTimer */);
 extern void TimerFree(OsTimerPtr /* pTimer */);
 
 extern void SetScreenSaverTimer(void);
+extern void FreeScreenSaverTimer(void);
 
 #ifdef DPMSExtension
 extern void SetDPMSTimers(void);
+extern void FreeDPMSTimers(void);
 #endif
 
 extern SIGVAL AutoResetServer(int /*sig*/);
@@ -274,7 +276,7 @@ extern int OsLookupColor(
 
 extern void OsInit(void);
 
-extern void OsCleanup(void);
+extern void OsCleanup(Bool);
 
 extern void OsVendorFatalError(void);
 

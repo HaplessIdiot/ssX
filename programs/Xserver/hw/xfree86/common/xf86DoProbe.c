@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.12 2003/08/24 17:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoProbe.c,v 1.13 2003/09/09 03:20:36 dawes Exp $ */
 /*
  * Copyright (c) 1999-2002 by The XFree86 Project, Inc.
  *
@@ -98,7 +98,7 @@ DoProbe()
 	}
     }
 
-    OsCleanup();
+    OsCleanup(TRUE);
     AbortDDX();
     fflush(stderr);
     exit(0);

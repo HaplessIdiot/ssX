@@ -76,7 +76,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * authorization from the copyright holder(s) and author(s).
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.2 2003/09/09 03:23:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.3 2003/09/09 03:30:27 dawes Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -391,7 +391,7 @@ static void AbortServer(void) __attribute__((noreturn));
 static void
 AbortServer(void) 
 {
-    OsCleanup();
+    OsCleanup(TRUE);
     AbortDDX();
     fflush(stderr);
     if (CoreDump)
