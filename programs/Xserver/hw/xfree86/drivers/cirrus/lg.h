@@ -1,8 +1,16 @@
-/* (c) 1998 Corin Anderson
-   Inspired by cir.h
+/*
+ * Common strutures and function for CL-GD546x -- The Laguna family
+ *
+ * lg.h
+ *
+ * (c) 1998 Corin Anderson.
+ *          corina@the4cs.com
+ *          Tukwila, WA
+ *
+ *  Inspired by cir.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.1 1998/11/01 12:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.2 1998/11/15 04:30:24 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -60,9 +68,6 @@ typedef struct {
 #endif
     unsigned char *	FbBase;
     long		FbMapSize;
-    unsigned char *     HWCursorBits;
-    Bool		CursorIsSkewed;
-    unsigned char *	CursorBits;
     int			MinClock;
     int			MaxClock;
     Bool		NoAccel;
@@ -76,10 +81,23 @@ typedef struct {
     CloseScreenProcPtr  CloseScreen;
 
 /* Difference from Cirrus start here */
+    CARD32              HWCursorAddr;
+    int                 HWCursorImageX;
+    int                 HWCursorImageY;
+    int                 HWCursorTileWidth;
+    int                 HWCursorTileHeight;
+    Bool		CursorIsSkewed;
+
     int                 lineDataIndex;
+
+    int                 memInterleave;
 
     LgRegRec		SavedReg;
     LgRegRec		ModeReg;
+
+    CARD32              oldBitmask;
+    Bool                blitTransparent;
+    int                 blitYDir;
 #if 0
     CARD32		BltScanDirection;
     CARD32		FilledRectCMD;
@@ -95,6 +113,10 @@ typedef struct {
   int width;         /* Tile width.  0 = 128 byte  1 = 256 byte */
 } LgLineDataRec, *LgLineDataPtr;
 
+
+/* lg_driver.c */
+extern LgLineDataRec LgLineData[];
+
 /* cir_driver.c */
 extern SymTabRec CIRChipsets[];
 
@@ -103,5 +125,13 @@ Bool	CIRUnmapMem(ScrnInfoPtr pScrn);
 
 /* CirrusClk.c */
 extern CARD16 CirrusSetClock(ScrnInfoPtr pScrn, int freq);
+
+/* lg_xaa.c */
+extern Bool LgXAAInit(ScreenPtr pScreen);
+
+/* lg_hwcurs.c */
+extern Bool LgHWCursorInit(ScreenPtr pScreen);
+extern void LgHideCursor(ScrnInfoPtr pScrn);
+extern void LgShowCursor(ScrnInfoPtr pScrn);
 
 #endif /* LG_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.5 1998/11/01 12:35:52 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.6 1998/11/15 04:30:20 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -60,10 +60,25 @@ static cirrusClockRec cirrusClockTab[] = {
   { 0x46, 0x14 },		/* 100.226 */
   { 0x53, 0x16 },		/* 108.035 */
   { 0x5C, 0x18 },		/* 110.248 */
+
+  { 0x6D, 0x1A },		/* 120.050 */
+  { 0x58, 0x14 },		/* 125.998 */
+  { 0x6D, 0x18 },		/* 130.055 */
+  { 0x42, 0x0E },		/* 134.998 */
+ 
+  { 0x69, 0x14 },               /* 150.341 */
+  { 0x5E, 0x10 },               /* 168.239 */
+  { 0x5C, 0x0E },               /* 188.182 */
+  { 0x67, 0x0E },               /* 210.682 */
+  { 0x60, 0x0C },               /* 229.091 */
 };
 
 #define NU_FIXED_CLOCKS (sizeof(cirrusClockTab)/sizeof(cirrusClockTab[0]))
 
+#define IS_546x(c) (PCI_CHIP_GD5462 == c || \
+		    PCI_CHIP_GD5464 == c || \
+		    PCI_CHIP_GD5464BD == c || \
+		    PCI_CHIP_GD5465 == c)
 
 
 /*
@@ -76,11 +91,11 @@ static cirrusClockRec cirrusClockTab[] = {
  */
 
 static Bool
-CirrusFindClock(vgaHWPtr hwp, int freq, int max_clock,
+CirrusFindClock(vgaHWPtr hwp, CIRPtr pCir, int freq, int max_clock,
                 int *num_out, int *den_out,
                 Bool *usemclk_out) {
 	int n, i;
-	int num, den;
+	int num = 0, den = 0;
 	int ffreq, mindiff = 0;
 	int mclk;
 
@@ -109,6 +124,7 @@ CirrusFindClock(vgaHWPtr hwp, int freq, int max_clock,
 		int d;
 		for (d = 0x14; d < 0x3f; d++) {
 			int c, diff;
+			
 			/* Avoid combinations that can be unstable. */
 			if ((VCOVAL(n, d) < MIN_VCO) || (VCOVAL(n, d) > max_clock))
 				continue;
@@ -122,28 +138,32 @@ CirrusFindClock(vgaHWPtr hwp, int freq, int max_clock,
 			}
 		}
 	}
-	return FALSE;
+
+	if (0 == num || 0 == den)
+	  return FALSE;
 
 foundclock:
 	*num_out = num;
 	*den_out = den;
 
-	/* Calculate the MCLK. */
+	if (!IS_546x(pCir->Chipset)) {
+	  /* Calculate the MCLK. */
 #if 1
-	mclk = 14318 * (hwp->readSeq(hwp, 0x1F) & 0x3F) / 8;	/* XXX */
+	  mclk = 14318 * (hwp->readSeq(hwp, 0x1F) & 0x3F) / 8;	/* XXX */
 #else
-	outb(0x3c4, 0x0f);				/* XXX */
-	mclk = 14318 * (inb(0x3c5) & 0x3f) / 8;		/* XXX */
+	  outb(0x3c4, 0x0f);				/* XXX */
+	  mclk = 14318 * (inb(0x3c5) & 0x3f) / 8;	/* XXX */
 #endif
-	/*
-	 * Favour MCLK as VLCK if it matches as good as the found clock,
-	 * or if it is within 0.2 MHz of the request clock. A VCLK close
-	 * to MCLK can cause instability.
-	 */
-	if (abs(mclk - freq) <= mindiff + 10 || abs(mclk - freq) <= 200)
-		*usemclk_out = TRUE;
-	else
-		*usemclk_out = FALSE;
+	  /*
+	   * Favour MCLK as VLCK if it matches as good as the found clock,
+	   * or if it is within 0.2 MHz of the request clock. A VCLK close
+	   * to MCLK can cause instability.
+	   */
+	  if (abs(mclk - freq) <= mindiff + 10 || abs(mclk - freq) <= 200)
+	    *usemclk_out = TRUE;
+	  else
+	    *usemclk_out = FALSE;
+	}
 
 	return TRUE;
 }
@@ -158,8 +178,17 @@ CirrusSetClock(ScrnInfoPtr pScrn, int freq)
 
 	ErrorF("CirrusSetClock\n");
 
-	if(!CirrusFindClock(hwp, freq, pCir->MaxClock, &num, &den, &usemclk))
+	if(!CirrusFindClock(hwp, pCir, freq, pCir->MaxClock, 
+			    &num, &den, &usemclk))
 		return 0;
+
+	if (IS_546x(pCir->Chipset)) {
+	  /* The numerator and denominator registers are switched 
+	     around in the Laguna chips. */
+	  int t = den;
+	  den = num;
+	  num = t;
+	}	  
 
 	ErrorF("CirrusSetClock: nom=%x den=%x usemclk=%x\n",
 		num, den, usemclk);
@@ -177,5 +206,5 @@ CirrusSetClock(ScrnInfoPtr pScrn, int freq)
 	outb(0x3c5, den);
 #endif
 
-	return (den << 8) | num;
+	return (num << 8) | den;
 }

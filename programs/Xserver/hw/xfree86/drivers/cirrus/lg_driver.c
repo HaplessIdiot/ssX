@@ -1,6 +1,11 @@
 /*
  * Driver for CL-GD546x -- The Laguna family
+ *
+ * lg_driver.c
+ *
  * (c) 1998 Corin Anderson.
+ *          corina@the4cs.com
+ *          Tukwila, WA
  *
  * This driver is derived from the cir_driver.c module.
  * Original authors and contributors list include:
@@ -8,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.1 1998/11/01 12:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.2 1998/11/15 04:30:24 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -112,7 +117,7 @@ static int gd5462_MaxClocks[] = { 170000, 170000, 135100, 135100,  85500 };
 static int gd5464_MaxClocks[] = { 170000, 250000, 170000, 170000, 135100 };
 static int gd5465_MaxClocks[] = { 170000, 250000, 170000, 170000, 135100 };
 
-static LgLineDataRec LgLineData[] = {
+LgLineDataRec LgLineData[] = {
   {5, 640, 0},       /* We're rather use skinny tiles, so put all of */
   {8, 1024, 0},      /* them at the head of the table */
   {10, 1280, 0},
@@ -141,6 +146,7 @@ static int LgLinePitches[4][11] = {
 static Bool
 LgGetRec(ScrnInfoPtr pScrn)
 {
+    LgPtr pLg;
     /*
      * Allocate a LgRec, and hook it into pScrn->driverPrivate.
      * pScrn->driverPrivate is initialised to NULL, so we can check if
@@ -151,7 +157,9 @@ LgGetRec(ScrnInfoPtr pScrn)
 
     pScrn->driverPrivate = xnfcalloc(sizeof(LgRec), 1);
 
-    /* Initialise it */
+    /* Initialize it */
+    pLg = LGPTR(pScrn);
+    pLg->oldBitmask = 0x00000000;
 
     return TRUE;
 }
@@ -452,6 +460,17 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
         vgaHWProtect(pScrn, FALSE);
 	from = X_PROBED;
     }
+    if (2048 == pScrn->videoRam) {
+      /* Two-way interleaving */
+      pLg->memInterleave = 0x40;
+    } else if (4096 == pScrn->videoRam || 8192 == pScrn->videoRam) {
+      /* Four-way interleaving */
+      pLg->memInterleave = 0x80;
+    } else {
+      /* One-way interleaving */
+      pLg->memInterleave = 0x00;
+    }
+
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
 	
@@ -791,10 +810,11 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     lineData = &LgLineData[pLg->lineDataIndex];
 
+    pLg->ModeReg.TILE = lineData->tilesPerLine & 0x3F;
+
     if (8 == pScrn->bitsPerPixel) {
       pLg->ModeReg.FORMAT = 0x0000;
       
-      pLg->ModeReg.TILE = lineData->tilesPerLine;
       pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
 	(lineData->width << 6);
       pLg->ModeReg.CONTROL = 0x0000 | (lineData->width << 11);
@@ -831,7 +851,6 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       /* !!! Assume 5-6-5 RGB mode (for now...) */
       pLg->ModeReg.FORMAT = 0x1400;
       
-      pLg->ModeReg.TILE = lineData->tilesPerLine;
       pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
 	(lineData->width << 6);
       pLg->ModeReg.CONTROL = 0x2000 | (lineData->width << 11);
@@ -861,7 +880,6 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       
       pLg->ModeReg.FORMAT = 0x2400;
       
-      pLg->ModeReg.TILE = lineData->tilesPerLine;
       pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
 	(lineData->width << 6);
       pLg->ModeReg.CONTROL = 0x4000 | (lineData->width << 11);
@@ -894,7 +912,6 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       
       pLg->ModeReg.FORMAT = 0x3400;
       
-      pLg->ModeReg.TILE = lineData->tilesPerLine;
       pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
 	(lineData->width << 6);
       pLg->ModeReg.CONTROL = 0x6000 | (lineData->width << 11);
@@ -924,6 +941,9 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       /* ??? What could it be?  Use some sane numbers. */
     }
 
+    /* Setup the appropriate memory interleaving */
+    pLg->ModeReg.DTTC |= (pLg->memInterleave << 8);
+    pLg->ModeReg.TILE |= pLg->memInterleave & 0xC0;
 
     if (PCI_CHIP_GD5465 == pLg->Chipset) {
       /* The tile control information in the DTTC is also mirrored
@@ -1233,19 +1253,15 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     if(!pLg->NoAccel) { /* Initialize XAA functions */
-#if 0
        if(!LgXAAInit(pScreen))
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
               "Could not initialize XAA\n");
-#endif
     }
 
     if (pLg->HWCursor) { /* Initialize HW cursor layer */
-#if 0
         if(!LgHWCursorInit(pScreen))
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                 "Hardware cursor initialization failed\n");
-#endif
     }
 
     /* Initialise default colourmap */
@@ -1381,9 +1397,14 @@ Bool
 LgEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    LgPtr pLg = LGPTR(pScrn);
 #ifdef LG_DEBUG
     ErrorF("LgEnterVT\n");
 #endif
+
+    /* Disable HW cursor */
+    if (pLg->HWCursor)
+      LgHideCursor(pScrn);
 
     /* Should we re-save the text mode on each VT enter? */
     return LgModeInit(pScrn, pScrn->currentMode);
@@ -1403,9 +1424,14 @@ LgLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    LgPtr pLg = LGPTR(pScrn);
 #ifdef LG_DEBUG
     ErrorF("LgLeaveVT\n");
 #endif
+
+    /* Enable HW cursor */
+    if (pLg->HWCursor)
+      LgShowCursor(pScrn);
 
     LgRestore(pScrn);
     vgaHWLock(hwp);
@@ -1428,19 +1454,21 @@ LgCloseScreen(int scrnIndex, ScreenPtr pScreen)
     LgPtr pLg = LGPTR(pScrn);
 
     LgRestore(pScrn);
+
+    if (pLg->HWCursor)
+      LgHideCursor(pScrn);
+
     vgaHWLock(hwp);
 
     CIRUnmapMem(pScrn);
-#if 0
+
     if (pLg->AccelInfoRec)
 	XAADestroyInfoRec(pLg->AccelInfoRec);
     pLg->AccelInfoRec = NULL;
-#endif
-#if 0
+
     if (pLg->CursorInfoRec)
     	xf86DestroyCursorInfoRec(pLg->CursorInfoRec);
     pLg->CursorInfoRec = NULL;
-#endif
 
     pScrn->vtSema = FALSE;
 

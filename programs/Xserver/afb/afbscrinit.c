@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.0.6.3 1998/06/08 15:12:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.4 1998/07/25 08:50:27 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -195,9 +195,9 @@ afbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->CreateGC = afbCreateGC;
 	pScreen->CreateColormap = afbInitializeColormap;
 	pScreen->DestroyColormap = (void (*)())NoopDDA;
-	pScreen->InstallColormap = (void (*)())NoopDDA;
-	pScreen->UninstallColormap = (void (*)())NoopDDA;
-	pScreen->ListInstalledColormaps = (int (*)())NoopDDA;
+	pScreen->InstallColormap = afbInstallColormap;
+	pScreen->UninstallColormap = afbUninstallColormap;
+	pScreen->ListInstalledColormaps = afbListInstalledColormaps;
 	pScreen->StoreColors = (void (*)())NoopDDA;
 	pScreen->ResolveColor = afbResolveColor;
 	pScreen->BitmapToRegion = afbPixmapToRegion;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.1.2.1 1998/06/27 14:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -58,6 +58,7 @@ SOFTWARE.
 #include "mistruct.h"
 #include "mi.h" /* GJA */
 #include "mfb.h"
+#include "micmap.h"
 
 #include "compiler.h"	/* rvb */
 #include "vgaVideo.h"
@@ -66,8 +67,8 @@ SOFTWARE.
 #include "windowstr.h"
 #include "ppc.h"
 
-extern int defaultColorVisualClass;
-
+#if 0
+/* XXX This remains to remind of the PC98 difference */
 static VisualRec vgaVisuals[] = {
 /* StaticColor needs to be first so is can be used as the default */
 /* vid class     bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
@@ -83,18 +84,7 @@ static VisualRec vgaVisuals[] = {
 {   0, PseudoColor, 6, 1 << VGA_MAXPLANES, VGA_MAXPLANES, 0, 0, 0, 0, 0, 0 },
 #endif
 } ;
-
-#define NUM_VISUALS  (sizeof vgaVisuals/sizeof (VisualRec))
-
-static unsigned long int vgaDepthVIDs[NUM_VISUALS];
-
-static DepthRec vgaDepths[] = {
-/*	depth		numVid	vids */
-    {	1,		0,	NULL	},
-    {	VGA_MAXPLANES,	NUM_VISUALS,	vgaDepthVIDs }
-} ;
-
-#define NUM_DEPTHS  (sizeof vgaDepths/sizeof (DepthRec))
+#endif
 
 int
 xf4bppNeverCalled()
@@ -197,38 +187,19 @@ xf4bppScreenInit( pScreen, pbits, virtx, virty, dpix, dpiy, width )
     int dpix, dpiy;
     int width;
 {
-  int defvisual,i;
+  Bool ret;
+  VisualPtr visuals;
+  DepthPtr depths;
+  int nvisuals;
+  int ndepths;
+  int rootdepth;
+  VisualID defaultVisual;
 
-  switch ( defaultColorVisualClass )
-    {
-    case StaticColor:
-    case PseudoColor:
-    case StaticGray:
-    case GrayScale:
-      defvisual = defaultColorVisualClass;
-      break;
-    case TrueColor:
-    case DirectColor:
-    ErrorF("(!!) VGA16: Visual Class %d is not supported, using StaticColor.\n",
-			defaultColorVisualClass );
-    default:
-      defvisual = StaticColor;
-    }
-
-  /* Initialize the list of vids used for depth 4 */
-  for(i=0; i<NUM_VISUALS; i++)
-	vgaDepthVIDs[i]=vgaVisuals[i].vid=FakeClientID(0);
-
-  /* Determine the default Visual */
-  for(i=0; i<NUM_VISUALS; i++)
-	if (vgaVisuals[i].class == defvisual)
-	    {
-	    defvisual=vgaVisuals[i].vid;
-	    break;
-	    }
-  /* should never needs this, but just to be safe */
-  if(i == NUM_VISUALS)
-	defvisual=vgaVisuals[0].vid;
+  rootdepth = 0;
+  ret = miInitVisuals(&visuals, &depths, &nvisuals, &ndepths, &rootdepth,
+		      &defaultVisual, (unsigned long)1 << 8, 6, -1);
+  if (!ret)
+	return FALSE;
 
   pScreen-> id = 0;
   pScreen->defColormap = FakeClientID(0);
@@ -263,6 +234,10 @@ xf4bppScreenInit( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen-> CreateGC = xf4bppCreateGC;
   pScreen-> CreateColormap = xf4bppInitializeColormap;
   pScreen-> DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
+  pScreen-> InstallColormap = miInstallColormap;
+  pScreen-> UninstallColormap = miUninstallColormap;
+  pScreen-> ListInstalledColormaps = miListInstalledColormaps;
+  pScreen-> StoreColors = (void (*)())NoopDDA;
   pScreen-> ResolveColor = xf4bppResolveColor;
   pScreen-> BitmapToRegion = mfbPixmapToRegion;
 
@@ -270,8 +245,8 @@ xf4bppScreenInit( pScreen, pbits, virtx, virty, dpix, dpiy, width )
 	return FALSE;
 
   if (!miScreenInit(pScreen, pbits, virtx, virty, dpix, dpiy, width,
-	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, defvisual /* See above */,
-	NUM_VISUALS, vgaVisuals))
+	rootdepth, ndepths, depths, defaultVisual /* See above */,
+	nvisuals, visuals))
      return FALSE;
   pScreen->BackingStoreFuncs = ppcBSFuncRec;
 

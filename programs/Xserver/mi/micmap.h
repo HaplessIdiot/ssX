@@ -1,7 +1,13 @@
-/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.1.2.1 1998/07/19 13:22:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.2 1998/07/26 02:33:07 dawes Exp $ */
 
 #ifndef _MICMAP_H_
 #define _MICMAP_H_
+
+extern ColormapPtr miInstalledMaps[MAXSCREENS];
+
+int miListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);
+void miInstallColormap(ColormapPtr pmap);
+void miUninstallColormap(ColormapPtr pmap);
 
 void miResolveColor(unsigned short *, unsigned short *, unsigned short *,
 			VisualPtr);

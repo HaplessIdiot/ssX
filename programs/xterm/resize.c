@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.27 1998/06/04 16:44:01 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.28 1998/10/25 07:12:47 dawes Exp $
  */
 
 /*
@@ -536,10 +536,8 @@ main (int argc, char **argv)
 			 setname, termcap);
 #endif /* USE_TERMCAP */
 #ifdef USE_TERMINFO
-#ifndef SVR4
 		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
 			setname, cols, rows);
-#endif /* !SVR4 */
 #endif	/* USE_TERMINFO */
 
 	} else {		/* not Bourne shell */
@@ -550,10 +548,8 @@ main (int argc, char **argv)
 			 setname, termcap);
 #endif /* USE_TERMCAP */
 #ifdef USE_TERMINFO
-#ifndef SVR4
 		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
 			setname, cols, rows);
-#endif /* !SVR4 */
 #endif	/* USE_TERMINFO */
 	}
 	exit(0);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.0.6.3 1998/06/08 15:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.4 1998/07/26 01:53:45 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -198,9 +198,9 @@ ilbmScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->CreateGC = ilbmCreateGC;
 	pScreen->CreateColormap = ilbmInitializeColormap;
 	pScreen->DestroyColormap = (void (*)())NoopDDA;
-	pScreen->InstallColormap = (void (*)())NoopDDA;
-	pScreen->UninstallColormap = (void (*)())NoopDDA;
-	pScreen->ListInstalledColormaps = (int (*)())NoopDDA;
+	pScreen->InstallColormap = ilbmInstallColormap;
+	pScreen->UninstallColormap = ilbmUninstallColormap;
+	pScreen->ListInstalledColormaps = ilbmListInstalledColormaps;
 	pScreen->StoreColors = (void (*)())NoopDDA;
 	pScreen->ResolveColor = ilbmResolveColor;
 	pScreen->BitmapToRegion = ilbmPixmapToRegion;

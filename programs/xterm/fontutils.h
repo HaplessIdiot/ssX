@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/xterm/fontutils.h,v 1.2 1998/10/25 04:31:23 dawes Exp $
  */
 
 /************************************************************
@@ -42,5 +42,9 @@ authorization.
 extern int xtermLoadFont (TScreen *screen, char *nfontname, char *bfontname, Bool doresize, int fontnum);
 extern void xtermUpdateFontInfo (TScreen *screen, Bool doresize);
 extern void xtermSetCursorBox (TScreen *screen);
+
+#if OPT_DEC_CHRSET
+extern char *xtermSpecialFont(unsigned atts, unsigned chrset);
+#endif
 
 #endif /* included_fontutils_h */

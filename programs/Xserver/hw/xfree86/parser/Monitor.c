@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.1.2.9 1998/07/18 17:53:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.2 1998/07/25 16:57:13 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -472,7 +472,7 @@ parseMonitorSection (void)
 			xf86UnGetToken (token);
 			break;
 		case GAMMA:
-			if( xf86GetToken (NULL) != NUMBER || val.realnum<0.1 || val.realnum>10)
+			if( xf86GetToken (NULL) != NUMBER )
 			{
 				Error (INVALID_GAMMA_MSG, NULL);
 			}
@@ -480,27 +480,20 @@ parseMonitorSection (void)
 			{
 				ptr->mon_gamma_red = ptr->mon_gamma_green =
 					ptr->mon_gamma_blue = val.realnum;
+				if( xf86GetToken (NULL) == NUMBER )
+				{
+					ptr->mon_gamma_green = val.realnum;
 					if( xf86GetToken (NULL) == NUMBER )
 					{
-						if( val.realnum<0.1 || val.realnum>10 )
-						{
-							Error (INVALID_GAMMA_MSG, NULL);
-						}
-						else
-						{
-							ptr->mon_gamma_green = val.realnum;
-							if( xf86GetToken (NULL) == NUMBER )
-							{
-								ptr->mon_gamma_blue = val.realnum;
-							}
-							else
-							{
-								Error (INVALID_GAMMA_MSG, NULL);
-							}
-						}
+						ptr->mon_gamma_blue = val.realnum;
 					}
 					else
-						xf86UnGetToken (token);
+					{
+						Error (INVALID_GAMMA_MSG, NULL);
+					}
+				}
+				else
+					xf86UnGetToken (token);
 			}
 			break;
 		case OPTION:

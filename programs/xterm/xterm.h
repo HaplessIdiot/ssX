@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.29 1998/07/04 14:48:30 robin Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.30 1998/10/25 07:12:54 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application.
  *
@@ -36,8 +36,8 @@
 
 #ifndef X_NOT_STDC_ENV
 #define HAVE_STDLIB_H 1
-#else
 #define DECL_ERRNO 1
+#else
 #define size_t int
 #define time_t long
 #endif
@@ -167,6 +167,9 @@ extern void RevIndex (TScreen *screen, int amount);
 extern void xterm_DECDHL (Bool top);
 extern void xterm_DECSWL (void);
 extern void xterm_DECDWL (void);
+#if OPT_DEC_CHRSET
+extern GC xterm_DoubleGC(unsigned chrset, unsigned flags, GC old_gc);
+#endif
 
 /* input.c */
 extern void Input (TKeyboard *keyboard, TScreen *screen, XKeyEvent *event, Bool eightbit);

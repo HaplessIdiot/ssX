@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.1.2.6 1998/06/05 16:23:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.2 1998/07/25 16:57:15 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -557,8 +557,8 @@ NameCompare (const char *s1, const char *s2)
 {
 	char c1, c2;
 
-	if (*s1 == 0)
-		if (*s2 == 0)
+	if (!s1 || *s1 == 0)
+		if (!s2 || *s2 == 0)
 			return (0);
 		else
 			return (1);

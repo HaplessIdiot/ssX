@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.68 1998/10/10 15:25:48 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.69 1998/10/25 07:12:40 dawes Exp $
  */
 
 /*
@@ -4419,7 +4419,7 @@ ShowCursor(void)
 		}
 	}
 
-	TRACE(("%s @%d, calling drawXtermText\n", __FILE__, __LINE__))
+	TRACE(("%s @%d, ShowCursor calling drawXtermText\n", __FILE__, __LINE__))
 
 	drawXtermText(screen, flags, currentGC,
 		x = CurCursorX(screen, screen->cur_row, screen->cur_col),
@@ -4485,11 +4485,11 @@ HideCursor(void)
 	if (c == 0)
 		c = ' ';
 
-	TRACE(("%s @%d, calling drawXtermText\n", __FILE__, __LINE__))
+	TRACE(("%s @%d, HideCursor calling drawXtermText\n", __FILE__, __LINE__))
 	drawXtermText(screen, flags, currentGC,
-		CursorX(screen, screen->cursor_col),
+		CurCursorX(screen, screen->cursor_row, screen->cursor_col),
 		CursorY(screen, screen->cursor_row),
-		curXtermChrSet(screen->cur_row),
+		curXtermChrSet(screen->cursor_row),
 		&c, 1);
 
 	screen->cursor_state = OFF;

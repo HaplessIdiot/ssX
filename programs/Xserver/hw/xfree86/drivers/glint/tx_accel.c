@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.6 1998/10/04 14:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.7 1998/10/05 13:23:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -36,6 +36,13 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
+#include "cfb16.h"
+#include "cfb32.h"
+
+#include "miline.h"
 
 #include "glint_regs.h"
 #include "glint.h"
@@ -72,10 +79,6 @@ static void TXFillColorExpandSpans(ScrnInfoPtr pScrn, int fg, int bg, int rop,
    				unsigned int planemask, int n, DDXPointPtr ppt,
    				int *pwidth, int fSorted, int xorg, int yorg,
    				PixmapPtr pPix);
-static void TXSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
-				unsigned int planemask);
-static void TXSubsequentSolidHorVertLine(ScrnInfoPtr pScrn, int x1, int y1,
-				int len, int dir);
 static void TXWritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
    				unsigned char *src, int srcwidth, int rop,
    				unsigned int planemask, int trans,
@@ -96,6 +99,23 @@ static void TXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int xBack, int wBack,
     				unsigned int planemask);
 static void TXLoadCoord(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 				int a, int d);
+static void TXSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
+				unsigned int planemask);
+static void TXSubsequentHorVertLine(ScrnInfoPtr pScrn, int x1, int y1,
+				int len, int dir);
+static void TXSubsequentSolidBresenhamLine8bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void TXSubsequentSolidBresenhamLine16bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void TXSubsequentSolidBresenhamLine32bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void TXPolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+   				int mode, int npt, DDXPointPtr pPts);
+static void TXPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+ 				int nseg, xSegment *pSeg);
 
 #define MAX_FIFO_ENTRIES	1023
 
@@ -195,8 +215,23 @@ TXAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillRect = TXSubsequentFillRectSolid;
 
     infoPtr->SolidLineFlags = 0;
+    infoPtr->PolySegmentThinSolidFlags = 0;
+    infoPtr->PolylinesThinSolidFlags = 0;
     infoPtr->SetupForSolidLine = TXSetupForSolidLine;
-    infoPtr->SubsequentSolidHorVertLine = TXSubsequentSolidHorVertLine;
+    infoPtr->SubsequentSolidHorVertLine = TXSubsequentHorVertLine;
+    switch(pScrn->bitsPerPixel) {
+	case 8:		infoPtr->SubsequentSolidBresenhamLine = 
+				TXSubsequentSolidBresenhamLine8bpp;
+			break;
+	case 16:	infoPtr->SubsequentSolidBresenhamLine = 
+				TXSubsequentSolidBresenhamLine16bpp;
+			break;
+	case 32:	infoPtr->SubsequentSolidBresenhamLine = 
+				TXSubsequentSolidBresenhamLine32bpp;
+			break;
+    }
+    infoPtr->PolySegmentThinSolid = TXPolySegmentThinSolidWrapper;
+    infoPtr->PolylinesThinSolid = TXPolylinesThinSolidWrapper;
 
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY |
 				       ONLY_LEFT_TO_RIGHT_BITBLT;
@@ -355,58 +390,6 @@ TXSubsequentFillRectSolid(
 
     TXLoadCoord(pScrn, x, y, x+w, h, 0, 1);
     GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode,Render);
-}
-
-static void
-TXSetupForSolidLine(
-	ScrnInfoPtr pScrn, 
-	int color, int rop, 
-	unsigned int planemask
-){
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-	
-    CHECKCLIPPING;
-    if (rop == GXcopy) {
-        GLINT_WAIT(6);
-        GLINT_WRITE_REG(color, GLINTColor);
-    	REPLICATE(color);
-	GLINT_WRITE_REG(color, FBBlockColor);
-	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-        GLINT_WRITE_REG(0, dXDom);
-    } else {
-        GLINT_WAIT(4);
-        GLINT_WRITE_REG(color, GLINTColor);
-	GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
-    }
-    DO_PLANEMASK(planemask);
-    LOADROP(rop);
-}
-
-static void
-TXSubsequentSolidHorVertLine(
-	ScrnInfoPtr pScrn,
-	int x1, int y1, 
-	int len, int dir
-){
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-
-    if ((len < 16) && (pGlint->ROP == GXcopy)) {
-    GLINT_WAIT(5);
-    if (dir == DEGREES_0) {
-    TXLoadCoord(pScrn, x1, y1, x1+len, 1, 0, 1);
-    } else {
-    TXLoadCoord(pScrn, x1, y1, x1+1, len, 0, 1);
-    }
-    GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
-    } else {
-    GLINT_WAIT(6);
-    if (dir == DEGREES_0) {
-    TXLoadCoord(pScrn, x1, y1, pGlint->startxsub, len, 1, 0);
-    } else {
-    TXLoadCoord(pScrn, x1, y1, pGlint->startxsub, len, 0, 1);
-    }
-    GLINT_WRITE_REG (PrimitiveLine, Render);
-    }
 }
 
 static void
@@ -1045,3 +1028,177 @@ TXWritePixmap(
     }  
     SET_SYNC_FLAG(infoRec);
 }
+
+static void 
+TXPolylinesThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             mode,
+   int             npt,
+   DDXPointPtr     pPts
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
+}
+
+static void 
+TXPolySegmentThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             nseg,
+   xSegment        *pSeg
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolySegment(pDraw, pGC, nseg, pSeg);
+}
+
+static void
+TXSetupForSolidLine(ScrnInfoPtr pScrn, int color,
+					 int rop, unsigned int planemask)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    CHECKCLIPPING;
+    GLINT_WAIT(5);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(color, GLINTColor);
+    if (rop == GXcopy) {
+  	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+    } else {
+  	GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
+    }
+    LOADROP(rop);
+}
+
+static void
+TXSubsequentHorVertLine(ScrnInfoPtr pScrn,int x,int y,int len,int dir)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+  
+    GLINT_WAIT(6);
+    if (dir == DEGREES_0) {
+        TXLoadCoord(pScrn, x, y, 0, len, 1, 0);
+    } else {
+        TXLoadCoord(pScrn, x, y, 0, len, 0, 1);
+    }
+
+    GLINT_WRITE_REG(PrimitiveLine, Render);
+}
+
+static void 
+TXSubsequentSolidBresenhamLine8bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1;
+	} else {
+	    dy = 1;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1;
+	} else {
+	    dxdom = 1;
+	}
+
+        TXLoadCoord(pScrn, x, y, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+
+    cfbBresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 2, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
+static void 
+TXSubsequentSolidBresenhamLine16bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1;
+	} else {
+	    dy = 1;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1;
+	} else {
+	    dxdom = 1;
+	}
+
+        TXLoadCoord(pScrn, x, y, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfb16GetGCPrivate(pGlint->CurrentGC);
+
+    cfb16BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 1, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
+static void 
+TXSubsequentSolidBresenhamLine32bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1;
+	} else {
+	    dy = 1;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1;
+	} else {
+	    dxdom = 1;
+	}
+
+        TXLoadCoord(pScrn, x, y, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfb32GetGCPrivate(pGlint->CurrentGC);
+
+    cfb32BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+

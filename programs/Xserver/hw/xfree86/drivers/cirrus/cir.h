@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.5 1998/10/06 04:39:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.6 1998/11/15 04:30:21 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -56,9 +56,6 @@ typedef struct {
 #endif
     unsigned char *	FbBase;
     long		FbMapSize;
-    unsigned char *     HWCursorBits;
-    Bool		CursorIsSkewed;
-    unsigned char *	CursorBits;
     int			MinClock;
     int			MaxClock;
     Bool		NoAccel;
@@ -72,6 +69,10 @@ typedef struct {
     CloseScreenProcPtr  CloseScreen;
     
 /* Difference from Laguna start here */
+    unsigned char *     HWCursorBits;
+    Bool		CursorIsSkewed;
+    unsigned char *	CursorBits;
+
     CIRRegRec		SavedReg;
     CIRRegRec		ModeReg;
 

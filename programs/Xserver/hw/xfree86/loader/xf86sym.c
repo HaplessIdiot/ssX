@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.45 1998/10/06 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.46 1998/11/15 04:30:36 dawes Exp $ */
 
 /*
  *
@@ -661,7 +661,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86ScreenIndex)
    SYMVAR(xf86PixmapIndex)
    SYMVAR(xf86Screens)
-   SYMVAR(InstalledMaps)
    SYMVAR(byte_reversed)
 
 #ifdef DPMSExtension

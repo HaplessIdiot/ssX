@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.3 1998/08/19 07:49:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaCmap.c,v 1.4 1998/09/20 06:01:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,7 +52,7 @@ vgaListInstalledColormaps(pScreen, pmaps)
   /* By the time we are processing requests, we can guarantee that there
    * is always a colormap installed */
   
-  *pmaps = InstalledMaps[pScreen->myNum]->mid;
+  *pmaps = miInstalledMaps[pScreen->myNum]->mid;
   return(1);
 }
 
@@ -64,13 +64,13 @@ vgaGetInstalledColormaps(pScreen, pmaps)
   /* By the time we are processing requests, we can guarantee that there
    * is always a colormap installed */
   
-  *pmaps = InstalledMaps[pScreen->myNum];
+  *pmaps = miInstalledMaps[pScreen->myNum];
   return(1);
 }
 
 int vgaCheckColorMap(ColormapPtr pmap)
 {
-  return (pmap != InstalledMaps[pmap->pScreen->myNum]);
+  return (pmap != miInstalledMaps[pmap->pScreen->myNum]);
 }
 
 
@@ -221,7 +221,7 @@ void
 vgaInstallColormap(pmap)
      ColormapPtr	pmap;
 {
-  ColormapPtr oldmap = InstalledMaps[pmap->pScreen->myNum];
+  ColormapPtr oldmap = miInstalledMaps[pmap->pScreen->myNum];
   int         entries;
   Pixel *     ppix;
   xrgb *      prgb;
@@ -246,7 +246,7 @@ vgaInstallColormap(pmap)
   if ( oldmap != NOMAPYET)
     WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
-  InstalledMaps[pmap->pScreen->myNum] = pmap;
+  miInstalledMaps[pmap->pScreen->myNum] = pmap;
 
   for ( i=0; i<entries; i++) ppix[i] = i;
 
@@ -278,13 +278,13 @@ vgaUninstallColormap(pmap)
 
   ColormapPtr defColormap;
   
-  if ( pmap != InstalledMaps[pmap->pScreen->myNum] )
+  if ( pmap != miInstalledMaps[pmap->pScreen->myNum] )
     return;
 
   defColormap = (ColormapPtr) LookupIDByType( pmap->pScreen->defColormap,
 					      RT_COLORMAP);
 
-  if (defColormap == InstalledMaps[pmap->pScreen->myNum])
+  if (defColormap == miInstalledMaps[pmap->pScreen->myNum])
     return;
 
   (*pmap->pScreen->InstallColormap) (defColormap);

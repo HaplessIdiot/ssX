@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.44 1998/10/05 13:21:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.45 1998/11/15 04:29:52 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -576,6 +576,20 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.44 1998/10/05 13:21:46 dawes Exp $
 #  define Mc68020Architecture
 #  undef mc68000
 # endif /* mc68000 */
+# ifdef __powerpc__
+#  define PpcArchitecture
+#  undef __powerpc__
+# endif
+# ifdef sparc
+#  define SparcArchitecture
+#  undef sparc
+# endif
+# ifdef __sparc__
+#  ifndef SparcArchitecture
+#   define SparcArchitecture
+#  endif
+#  undef __sparc__
+# endif
 #endif /* linux */
 
 #if (defined(__Lynx__) || defined(Lynx)) && (defined(i386) || defined(__i386__) || defined(__x86__) || defined(__powerpc__) || defined(__sparc__) || defined(sparc))

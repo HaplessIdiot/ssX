@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.12 1998/10/11 10:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.13 1998/11/15 04:30:26 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -129,10 +129,10 @@ static SymTabRec GLINTChipsets[] = {
 
 static PciChipsets GLINTPciChipsets[] = {
     { PCI_VENDOR_TI_CHIP_PERMEDIA2,	 PCI_VENDOR_TI_CHIP_PERMEDIA2,	    RES_SHARED_VGA },
-    { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    RES_SHARED_VGA },
+    { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    RES_NONE },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, RES_SHARED_VGA },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,  RES_SHARED_VGA },
-    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   RES_SHARED_VGA },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   RES_NONE },
     { PCI_VENDOR_3DLABS_CHIP_500TX,	 PCI_VENDOR_3DLABS_CHIP_500TX,	    RES_NONE },
     { PCI_VENDOR_3DLABS_CHIP_MX,	 PCI_VENDOR_3DLABS_CHIP_MX,	    RES_NONE },
     { -1,				 -1,				    -1 }
@@ -804,21 +804,13 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Process the options */
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, GLINTOptions);
 
-    /* Set the bits per RGB for 8bpp mode */
-#if 0
-    if (pScrn->depth == 8) {
-	/* XXX This is here just to test options. */
-	/* Default to 8 */
-#endif
-	pScrn->rgbBits = 8;
-	if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS,
-				 &pScrn->rgbBits)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
+    /* Default to 8bits per RGB */
+    pScrn->rgbBits = 8;
+    if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS, &pScrn->rgbBits)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
-	}
-#if 0
     }
-#endif
+
     from = X_DEFAULT;
     if (xf86IsOptionSet(GLINTOptions, OPTION_MEM_CLK)) {
 	from = X_CONFIG;
@@ -1953,7 +1945,6 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
         GLINTRestore(pScrn);
         vgaHWLock(hwp);
         GLINTUnmapMem(pScrn);
-        vgaHWFreeHWRec(pScrn);
     }
     if(pGlint->AccelInfoRec)
 	XAADestroyInfoRec(pGlint->AccelInfoRec);
@@ -1990,31 +1981,39 @@ GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     if (mode->Flags & V_INTERLACE)
 	return(MODE_NO_INTERLACE);
     
-#if 0 /* This is a Permedia2 restriction that 24bpp imposes */
-    if (mode->HDisplay % 8) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	  "HDisplay %d not divisible by 8, fixing...\n", mode->HDisplay);
-	mode->HDisplay -= (mode->HDisplay % 8);
-    }
+    if (pScrn->bitsPerPixel == 24) {
+	/* A restriction on the PM2 where a black strip on the left hand
+	 * side appears if not aligned properly */
+        switch (pGlint->Chipset) {
+        case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+          if (mode->HDisplay % 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	      "HDisplay %d not divisible by 8, fixing...\n", mode->HDisplay);
+	    mode->HDisplay -= (mode->HDisplay % 8);
+          }
 	
-    if (mode->HSyncStart % 8) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	  "HSyncStart %d not divisible by 8, fixing...\n", mode->HSyncStart);
-	mode->HSyncStart -= (mode->HSyncStart % 8);
-    }
+          if (mode->HSyncStart % 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	     "HSyncStart %d not divisible by 8, fixing...\n", mode->HSyncStart);
+	    mode->HSyncStart -= (mode->HSyncStart % 8);
+          }
 
-    if (mode->HSyncEnd % 8) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	  "HSyncEnd %d not divisible by 8, fixing...\n", mode->HSyncEnd);
-	mode->HSyncEnd -= (mode->HSyncEnd % 8);
-    }
+          if (mode->HSyncEnd % 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	      "HSyncEnd %d not divisible by 8, fixing...\n", mode->HSyncEnd);
+	    mode->HSyncEnd -= (mode->HSyncEnd % 8);
+          }
 
-    if (mode->HTotal % 8) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-	  "HTotal %d not divisible by 8, fixing...\n", mode->HTotal);
-	mode->HTotal -= (mode->HTotal % 8);
+          if (mode->HTotal % 8) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	      "HTotal %d not divisible by 8, fixing...\n", mode->HTotal);
+	    mode->HTotal -= (mode->HTotal % 8);
+          }
+          break;
+	}
     }
-#endif
 
     return(MODE_OK);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.33 1998/11/01 12:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.34 1998/11/15 04:30:30 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1089,31 +1089,30 @@ MGANAME(SubsequentDashedTwoPointLine)(
 ){
     MGAPtr pMga = MGAPTR(pScrn);
 
+    WAITFIFO(4);
     if((pMga->AccelFlags & NICE_DASH_PATTERN) && (y1 == y2)) {
-    	WAITFIFO(4);
     	OUTREG(MGAREG_DWGCTL, pMga->NiceDashCMD);
 	if(x2 < x1) {
 	   if(flags & OMIT_LAST) x2++;
    	   OUTREG(MGAREG_SHIFT, ((-y1 & 0x07) << 4) | 
 				((7 - phase - x1) & 0x07)); 
-   	   OUTREG(MGAREG_FXBNDRY, ((x1 + 1) << 16) | x2);
+   	   OUTREG(MGAREG_FXBNDRY, ((x1 + 1) << 16) | (x2 & 0xffff));
     	} else {
  	   if(!flags) x2++;
    	   OUTREG(MGAREG_SHIFT, (((1 - y1) & 0x07) << 4) | 
 				((phase - x1) & 0x07)); 
-     	   OUTREG(MGAREG_FXBNDRY, (x2 << 16) | x1);
+     	   OUTREG(MGAREG_FXBNDRY, (x2 << 16) | (x1 & 0xffff));
 	}	
     	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y1 << 16) | 1);
-	return;
+    } else {
+	OUTREG(MGAREG_SHIFT, (pMga->StyleLen << 16 ) | 
+				(pMga->StyleLen - phase)); 
+	OUTREG(MGAREG_DWGCTL, pMga->DashCMD | ((flags & OMIT_LAST) ? 
+			MGADWG_AUTOLINE_OPEN : MGADWG_AUTOLINE_CLOSE));
+	OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
+	OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
     }
 
-    WAITFIFO(4);
-    OUTREG(MGAREG_SHIFT, (pMga->StyleLen << 16 ) | (pMga->StyleLen - phase)); 
-    OUTREG(MGAREG_DWGCTL, pMga->DashCMD | 
-	((flags & OMIT_LAST) ? MGADWG_AUTOLINE_OPEN : MGADWG_AUTOLINE_CLOSE));
-    OUTREG(MGAREG_XYSTRT, (y1 << 16) | (x1 & 0xFFFF));
-    OUTREG(MGAREG_XYEND + MGAREG_EXEC, (y2 << 16) | (x2 & 0xFFFF));
-   
     if(pMga->AccelFlags & CLIPPER_ON) {
         WAITFIFO(3);
         OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);     /* (maxX << 16) | minX */ 

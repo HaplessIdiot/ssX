@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.4.2.5 1998/07/19 13:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.11 1998/07/25 16:56:18 dawes Exp $ */
 
 /*
  *
@@ -123,6 +123,7 @@ LOOKUP miLookupTab[] = {
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
    SYMVAR(miPointerScreenIndex)
+   SYMVAR(miInstalledMaps)
 
   { 0, 0 },
 
