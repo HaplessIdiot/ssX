@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.57 1998/03/20 21:05:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.58 1998/03/27 23:23:22 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -104,6 +104,7 @@ ScrnInfoRec p9000InfoRec = {
 #ifdef DPMSExtension
     p9000DPMSSet,	/* void (* DPMSSet)() */
 #endif
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},		/* xrgb weight */
@@ -174,6 +175,7 @@ ScrnInfoRec p9000InfoRec = {
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 ScreenPtr p9000savepScreen;
+static CloseScreenProcPtr saveCloseScreen;
 
 Bool p9000BlockCursor, p9000ReloadCursor;
 int p9000hotX, p9000hotY;
@@ -739,6 +741,7 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 		       p9000InfoRec.virtualX))
     return(FALSE);
   
+  saveCloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = p9000CloseScreen;
   pScreen->SaveScreen = p9000SaveScreen;
   
@@ -982,7 +985,8 @@ p9000CloseScreen(screen_idx, pScreen)
   xf86Exiting = TRUE;
   if (xf86VTSema) 
     p9000EnterLeaveVT(LEAVE, screen_idx);
-  return(TRUE);
+  pScreen->CloseScreen = saveCloseScreen;
+  return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyPnt.c,v 3.5 1997/03/13 15:11:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyPnt.c,v 3.6 1998/03/20 21:07:09 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,7 +70,7 @@ SOFTWARE.
 */
 /* $XConsortium: ppcPolyPnt.c /main/5 1996/02/21 17:58:07 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.178 1998/03/27 23:23:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.179 1998/04/05 00:45:51 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -113,8 +113,7 @@ extern int s3ValidTokens[];
 
 #endif /* defined(XFree86LOADER) */
 
-ScrnInfoRec s3InfoRec =
-{
+ScrnInfoRec s3InfoRec = {
    s3Probe,			/* Bool (* Probe)() */
    FALSE,			/* Bool configured */
    -1,				/* int tmpIndex */
@@ -127,6 +126,7 @@ ScrnInfoRec s3InfoRec =
    (void (*)())NoopDDA,		/* void (* AdjustFrame)() */
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
    vgaDPMSSet,			/* void (* DPMSSet)() */
+   (void (*)())NoopDDA,		/* void (* APMNotify)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */

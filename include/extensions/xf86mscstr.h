@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.5 1997/01/18 06:51:27 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.6 1998/03/27 23:22:57 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -153,4 +153,16 @@ typedef struct _XF86MiscSetKbdSettings {
 } xXF86MiscSetKbdSettingsReq;
 #define sz_xXF86MiscSetKbdSettingsReq	20
 
+typedef struct _XF86MiscAPMNotify {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscAPMNotify */
+    CARD16	length B16;
+    CARD32      event B32;
+} xXF86MiscAPMNotifyReq;
+#define sz_xXF86MiscAPMNotifyReq	8
+
 #endif /* _XF86MISCSTR_H_ */
+
+
+
+

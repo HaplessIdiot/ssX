@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.9 1997/10/25 13:50:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.10 1998/01/24 16:58:38 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -26,19 +26,7 @@
 #ifndef __COMPILER_DEPENDANCIES__
 #define __COMPILER_DEPENDANCIES__
 
-#ifdef __GNUC__
-#define APPEND_STRING(a,b) a##b
-#else
-#define APPEND_STRING(a,b) /**/a\
-b/**/
-#endif
-
-#ifdef XFree86LOADER
-#define MOVE( src, dst, length ) xf86memcpy( dst, src, length)
-#else
 #define MOVE( src, dst, length ) memcpy( dst, src, length)
-#endif
-
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define ABS(x) (((x)>0)?(x):-(x))
@@ -46,7 +34,6 @@ b/**/
 #include "misc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
-#include "../vga/vgaBank.h"
 
 #ifdef UNBANKED_VGA16
 
@@ -74,6 +61,8 @@ b/**/
 #define VDECRW(x) {(x)--;}
 
 #else /* UNBANKED_VGA16 */
+
+#include "../vga/vgaBank.h"
 
 /* GJA -- This are equivalents of the SETR... macros, but omitting
  * the vgaReadFlag/vgaWriteFlag. We know for sure that they are always
@@ -119,10 +108,6 @@ b/**/
 #define VDECRW(x) {(x)--; VCHECKRWU(x); }
 #endif /* ! UNBANKED_VGA16 */
 
-#define VMAPR(x) x
-#define VMAPW(x) x
-#define VMAPRW(x) x
-  
 #ifdef lint
 /* So that lint doesn't complain about constructs it doesn't understand */
 #ifdef volatile

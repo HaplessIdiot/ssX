@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.37 1998/03/20 21:05:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.38 1998/03/27 23:23:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -102,6 +102,7 @@ ScrnInfoRec ibm8514InfoRec = {
     (void (*)())NoopDDA,/* void (* AdjustFrame)() */
     (Bool (*)())NoopDDA,/* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     ibm8514PrintIdent,  /* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */
@@ -241,6 +242,7 @@ static int ibm8514ScreenMode;
 
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 
 static unsigned ibm8514_IOPorts[] = {
 	DAC_MASK, DAC_R_INDEX, DAC_W_INDEX, DAC_DATA, DISP_STAT,
@@ -372,6 +374,7 @@ ibm8514Initialize (scr_index, pScreen, argc, argv)
 			   ibm8514InfoRec.virtualX))
 	return(FALSE);
 
+    saveCloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = ibm8514CloseScreen;
     pScreen->SaveScreen = ibm8514SaveScreen;
     pScreen->InstallColormap = ibm8514InstallColormap;
@@ -482,10 +485,11 @@ ibm8514CloseScreen(screen_idx, pScreen)
          * 7-Jan-94 CEG: The server is not running on the current vt.
          * Free the screen snapshot taken when the server vt was left.
 	 */
-        (savepScreen->DestroyPixmap)(ppix);
+        (*pScreen->DestroyPixmap)(ppix);
         ppix = NULL;
     }
-    return(TRUE);
+    pScreen->CloseScreen = saveCloseScreen;
+    return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyRec.c,v 3.1 1996/12/23 06:53:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyRec.c,v 3.2 1997/03/13 15:11:21 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -70,7 +70,6 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPolyRec.c /main/4 1996/02/21 17:58:11 kaleb $ */
 
-#include "../mfb/mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"

@@ -30,6 +30,9 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.0tsi Exp $ */
+
 /*******************************************************************
 **
 **    *********************************************************
@@ -202,6 +205,7 @@ InitializeRasterDriver(
      */
     mfbScreenInit(pScreen, pPriv->pBits, maxDim, maxDim, maxRes,
 		  maxRes, maxDim);
+    miInitializeBackingStore(pScreen);
     pScreen->blackPixel = 1;
     pScreen->whitePixel = 0;
     if(mfbCreateDefColormap(pScreen) == FALSE)
@@ -210,6 +214,7 @@ InitializeRasterDriver(
     /*
     cfbScreenInit(pScreen, pPriv->pBits, maxWidth, maxHeight, maxXres,
 		  maxYres, maxWidth);
+    miInitializeBackingStore(pScreen);
     scalingScreenInit(pScreen);
     */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcClip.c,v 3.1 1996/12/23 06:52:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcClip.c,v 3.2 1997/03/13 15:11:07 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,7 +70,7 @@ SOFTWARE.
 */
 /* $XConsortium: ppcClip.c /main/4 1996/02/21 17:57:21 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
@@ -78,6 +78,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "region.h"
 #include "pixmapstr.h"
+#include "ppc.h"
 
 void
 ppcDestroyClip(pGC)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.1 1998/03/20 21:04:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbscrinit.c,v 3.2 1998/04/05 16:42:03 robin Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -211,7 +211,6 @@ afbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->CloseScreen = afbCloseScreen;
 	pScreen->CreateScreenResources = afbCreateScreenResources;
 	pScreen->BackingStoreFuncs = afbBSFuncRec;
-	miInitializeBackingStore(pScreen);
 
 	pScreen->devPrivates[afbScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;

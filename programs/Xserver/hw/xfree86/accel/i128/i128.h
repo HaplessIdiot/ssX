@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.6 1998/01/24 16:56:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.7 1998/04/07 18:30:15 robin Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -42,6 +42,7 @@
 #include "colormapst.h"
 #include "miscstruct.h"
 #include "scrnintstr.h"
+#include "mibstore.h"
 #include "mipointer.h"
 #include "cursorstr.h"
 #include "windowstr.h"

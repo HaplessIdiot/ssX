@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.72 1998/03/27 23:23:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.73 1998/04/26 17:03:35 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -180,6 +180,11 @@ typedef struct {
     int level
 #endif
 );
+  void           (* APMNotify)(
+#if NeedNestedPrototypes
+  int event
+#endif
+);
   void           (* PrintIdent)(
 #if NeedNestedPrototypes
     void
@@ -311,6 +316,7 @@ typedef enum {
 #define MAGIC_ADD_XINPUT_DEVICE         12      /* register xinput device */
 #define MAGIC_SETUP_PROC		13      /* Where to pass the options */
 #define MAGIC_TEARDOWN_PROC		14      /* cleanup before unloading */
+#define MAGIC_LOAD_FONT			15
 
 #define LD_RESOLV_IFDONE		0	/* only check if no more 
 						   delays pending */

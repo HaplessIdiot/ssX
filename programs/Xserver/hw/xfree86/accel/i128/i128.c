@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.41 1998/03/20 21:05:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.43 1998/03/29 22:50:24 robin Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -53,8 +53,7 @@ int i128ValidMode(
 ); 
 
 
-ScrnInfoRec i128InfoRec =
-{
+ScrnInfoRec i128InfoRec = {
    i128Probe,			/* Bool (* Probe)() */
    FALSE,			/* Bool configured */
    -1,				/* int tmpIndex */
@@ -67,6 +66,7 @@ ScrnInfoRec i128InfoRec =
    i128AdjustFrame,		/* void (* AdjustFrame)() */
    i128SwitchMode,		/* Bool (* SwitchMode)() */
    (void (*)())NoopDDA,		/* void (* DPMSSet)() */
+   (void (*)())NoopDDA,		/* void (* APMNotify)() */
    i128PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
    {5, 6, 5},			/* xrgb weight */

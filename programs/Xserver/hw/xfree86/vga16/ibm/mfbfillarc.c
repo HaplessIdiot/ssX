@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbfillarc.c,v 3.2 1997/03/13 15:10:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbfillarc.c,v 3.3 1998/03/20 21:07:06 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -30,8 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* $XConsortium: mfbfillarc.c /main/4 1996/02/21 17:56:37 kaleb $ */
 
-#define BANKING_MODS
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -43,8 +42,8 @@ in this Software without prior written authorization from the X Consortium.
 #include "mifillarc.h"
 #include "OScompiler.h"	/* GJA */
 #include "wm3.h"	/* GJA */
-
-extern void miPolyFillArc();
+#include "ppc.h"
+#include "mi.h"
 
 static void
 v16FillEllipseSolid(pDraw, arc, rop)
@@ -76,8 +75,6 @@ v16FillEllipseSolid(pDraw, arc, rop)
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
-/*    BANK_FLAG(addrlt) */
-
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
     xorg += pDraw->x;
@@ -98,27 +95,27 @@ v16FillEllipseSolid(pDraw, arc, rop)
 	if (((xpos & 0x1f) + slw) < 32)
 	{
 	    maskpartialbits(xpos, slw, startmask);
-	    UPDRW(VMAPRW(addrl),startmask);
+	    UPDRW(addrl,startmask);
 	    if (miFillArcLower(slw))
 	    {
 		addrl = addrlb + (xpos >> 5);
 		VSETRW(addrl);
-		UPDRW(VMAPRW(addrl),startmask);
+		UPDRW(addrl,startmask);
 	    }
 	    continue;
 	}
 	maskbits(xpos, slw, startmask, endmask, nlmiddle);
 	if (startmask)
 	{
-	    UPDRW(VMAPRW(addrl),startmask); addrl++; VCHECKRWO(addrl);
+	    UPDRW(addrl,startmask); addrl++; VCHECKRWO(addrl);
 	}
 	n = nlmiddle;
 	while (n--) {
-	    UPDRW(VMAPRW(addrl),~0); addrl++; VCHECKRWO(addrl);
+	    UPDRW(addrl,~0); addrl++; VCHECKRWO(addrl);
 	}
 	if (endmask)
 	{
-	    UPDRW(VMAPRW(addrl),endmask);
+	    UPDRW(addrl,endmask);
 	}
 	if (!miFillArcLower(slw))
 	    continue;
@@ -126,15 +123,15 @@ v16FillEllipseSolid(pDraw, arc, rop)
 	VSETRW(addrl);
 	if (startmask)
 	{
-	    UPDRW(VMAPRW(addrl),startmask); addrl++; VCHECKRWO(addrl);
+	    UPDRW(addrl,startmask); addrl++; VCHECKRWO(addrl);
 	}
 	n = nlmiddle;
 	while (n--) {
-	    UPDRW(VMAPRW(addrl),~0); addrl++; VCHECKRWO(addrl);
+	    UPDRW(addrl,~0); addrl++; VCHECKRWO(addrl);
 	}
 	if (endmask)
 	{
-	    UPDRW(VMAPRW(addrl),endmask);
+	    UPDRW(addrl,endmask);
 	}
     }
 }
@@ -148,22 +145,22 @@ v16FillEllipseSolid(pDraw, arc, rop)
 	if (((xl & 0x1f) + width) < 32) \
 	{ \
 	    maskpartialbits(xl, width, startmask); \
-	    UPDRW(VMAPRW(addrl),startmask); \
+	    UPDRW(addrl,startmask); \
 	} \
 	else \
 	{ \
 	    maskbits(xl, width, startmask, endmask, nlmiddle); \
 	    if (startmask) \
 	    { \
-		UPDRW(VMAPRW(addrl),startmask); addrl++; VCHECKRWO(addrl);\
+		UPDRW(addrl,startmask); addrl++; VCHECKRWO(addrl);\
 	    } \
 	    n = nlmiddle; \
 		while (n--) { \
-		    UPDRW(VMAPRW(addrl),~0); addrl++; VCHECKRWO(addrl);\
+		    UPDRW(addrl,~0); addrl++; VCHECKRWO(addrl);\
 		} \
 	    if (endmask) \
 	    { \
-		UPDRW(VMAPRW(addrl),endmask); \
+		UPDRW(addrl,endmask); \
 	    } \
 	} \
     }
@@ -213,8 +210,6 @@ v16FillArcSliceSolidCopy(pDraw, pGC, arc, rop)
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
-/*    BANK_FLAG(addrlt) */
-
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
@@ -245,7 +240,7 @@ v16FillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     }
 }
 
-void
+static void
 v16PolyFillArcSolid(pDraw, pGC, narcs, parcs)
     register DrawablePtr pDraw;
     GCPtr	pGC;
@@ -299,8 +294,6 @@ v16PolyFillArc(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    extern int xf86VTSema;
-
     if ( !xf86VTSema || (pGC->fillStyle != FillSolid) ) {
 	miPolyFillArc(pDraw, pGC, narcs, parcs);
     } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.6 1997/03/13 15:11:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.7 1998/06/04 16:43:34 hohndel Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -43,7 +43,7 @@
 */
 /* $XConsortium: offscreen.c /main/4 1996/02/21 17:56:55 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "compiler.h"
 #include "vgaVideo.h"
@@ -67,7 +67,8 @@
  * provide a stable interface to the rest of the system.
  */
 
-int do_rop(src,dst,alu,planes)
+static int
+do_rop(src,dst,alu,planes)
 int src,dst,alu;
 const unsigned long planes;
 { 
@@ -123,7 +124,7 @@ register int x1 ;
 int y1 ;
 register int w, h ;
 {
-	int x,y,tmp1,tmp2;
+	int x,y;
 
 	switch ( alu ) {
 		case GXclear:		/* 0x0 Zero 0 */
@@ -160,7 +161,6 @@ const int alu ;
 const unsigned long int planes ;
 {
 	int dx,dy;
-	int src, dst;
 
 	for ( dy = 0 ; dy < h ; dy++ ) {
 		for ( dx = 0 ; dx < w ; dx++ ) {
@@ -188,140 +188,6 @@ int RowIncrement ;
 			data[dy*RowIncrement+dx] = SAVEDSCREEN(pWin,x+dx,y+dy);
 		}
 	}
-}
-
-/* for file vgaLine.c */
-
-/* X increasing */
-static void fast_x_line_right( et, e1, e2, len, y_increment, addr, alu, color,
-	planes )
-register int et ;
-const int e1 ;
-const int e2 ;
-unsigned int len ;
-const int y_increment ;
-register unsigned volatile char *addr ;
-const int alu, color, planes ;
-{
-
-	while ( len ) {
-		DO_ROP(color, *addr, alu, planes);
-		if ( et < 0 ) {
-			et += e1 ;
-		}
-		else {
-			et += e2 ;
-			addr += y_increment ;
-		}
-		addr++;
-		len--;
-	}
-}
-
-/* X decreasing */
-static void fast_x_line_left( et, e1, e2, len, y_increment, addr, alu, color,
-	planes )
-register int et ;
-const int e1 ;
-const int e2 ;
-unsigned int len ;
-const int y_increment ;
-register unsigned volatile char *addr ;
-const int alu, color, planes ;
-{
-
-	while ( len ) {	
-		DO_ROP(color, *addr, alu, planes);
-		if ( et < 0 ) {
-			et += e1 ;
-		}
-		else {
-			et += e2 ;
-			addr += y_increment ;
-		}
-		addr--;
-		len--;
-	}
-}
-
-/* X increasing */
-static void fast_y_line_right( et, e1, e2, len, y_increment, addr, alu, color,
-	planes )
-register int et ;
-const int e1 ;
-const int e2 ;
-unsigned int len ;
-const int y_increment ;
-register unsigned volatile char *addr ;
-const int alu, color, planes ;
-{
-
-	while ( len ) {
-		DO_ROP(color, *addr, alu, planes);
-		addr += y_increment ;
-		if ( et < 0 ) {
-			et += e1 ;
-		} else {
-			et += e2 ;
-			addr++;
-		}
-		len--;
-	}
-}
-
-
-/* X decreasing */
-static void fast_y_line_left( et, e1, e2, len, y_increment, addr, alu, color,
-	planes )
-register int et ;
-const int e1 ;
-const int e2 ;
-unsigned int len ;
-const int y_increment ;
-register unsigned volatile char *addr ;
-const int alu, color, planes ;
-{
-	while ( len ) {
-		DO_ROP(color, *addr, alu, planes);
-		addr += y_increment ;
-		if ( et < 0 ) {
-			et += e1 ;
-		} else {
-			et += e2 ;
-			addr--;
-		}
-		len--;
-	}
-}
-
-void offBresLine( pWin, color, alu, planes, signdx, signdy,
-		  axis, x, y, et, e1, e2, len )
-WindowPtr pWin; /* GJA */
-unsigned long int color ;
-int alu ;
-unsigned long int planes ;
-int signdx, signdy ;
-int axis, x, y ;
-int et, e1, e2 ;
-unsigned long int len ;
-{
-if ( !( planes & VGA_ALLPLANES ) ) {
-	return ;
-} else if ( len == 1 ) {
-	offFillSolid( pWin, color, alu, planes, x, y, 1, 1 ) ;
-	return ;
-}
-
-/* Call the real workers */
-(* ( ( signdx > 0 ) ? ( axis ? fast_y_line_right : fast_x_line_right )
-		    : ( axis ? fast_y_line_left  : fast_x_line_left ) ) )
-			( et, e1, e2, (unsigned int)len,
-			  ( signdy > 0 ?   (BYTES_PER_LINE(pWin)<<3)
-				       : - (BYTES_PER_LINE(pWin)<<3) ),
-			  &SAVEDSCREEN( pWin, x, y ), alu,
-			  (const int)color, (const int)planes ) ;
-
-return ;
 }
 
 /* For file vgaSolid.c */
@@ -370,7 +236,7 @@ register const unsigned char * const data ;
 	lineptr = data + (y * paddedByteWidth);
 	cptr = lineptr + (x >> 3) ;
 	bits = *cptr ;
-	if ( shift = x & 7 )
+	if ((shift = x & 7))
 		bits = SCRLEFT8( bits, shift ) |
 			SCRRIGHT8( cptr[1], ( 8 - shift ) ) ;
 	if ( ( wrap = x + 8 - Width ) > 0 ) {
@@ -396,7 +262,6 @@ int alu, planes, fg;
 {
 	int dy, dx, i;
 	int byte;
-	int color;
 
 	for ( dy = 0 ; dy < h ; dy++ ) {
 		for ( dx = 0; dx <= w - 8 ; dx += 8 ) {

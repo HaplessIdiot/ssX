@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.8 1998/03/20 21:07:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.9 1998/06/04 16:43:34 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -91,7 +91,7 @@ SOFTWARE.
 
 /* $XConsortium: ppcGC.c /main/6 1996/02/21 17:57:38 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xproto.h"
 #include "windowstr.h"
@@ -115,7 +115,6 @@ SOFTWARE.
 
 #include "vgaVideo.h"
 
-extern int ibmAllowBackingStore ;
 extern int mfbGCPrivateInterest;
 #define ppcGCInterestValidateMask \
 ( GCLineStyle | GCLineWidth | GCJoinStyle | GCBackground | GCForeground \
@@ -152,12 +151,8 @@ static ppcPrivGC vgaPrototypeGCPriv = {
 		}, /* ppcReducedRrop	colorRrop  */
 	-1,	/* short lastDrawableType */
 	-1,	/* short lastDrawableDepth */
-	(void (*)())NoopDDA, /* GJA -- void (* cacheIGBlt)() */
-	(void (*)())NoopDDA, /* GJA -- void (* cachePGBlt) () */
 	0	/* pointer devPriv */
 } ;
-
-void v16ImageGlyphBlt(), v16PolyFillArc(), v16ZeroPolyArc();
 
 static GCOps vgaGCOps = {
 	ppcSolidWindowFS,	/*  void (* FillSpans)() */
@@ -190,11 +185,8 @@ Bool
 ppcCreateGC( pGC )
 register GCPtr pGC ;
 {
-	ppcScrnPriv *devScrnPriv = (ppcScrnPriv *) /* GJA */
-		pGC->pScreen->devPrivate ;
 	ppcPrivGC *pPriv ;
 	GCOps *pOps ;
-	static DDXPointRec zeroOrg = { 0, 0 }; /* GJA */
 
 	if ( pGC->depth == 1 )
 		{
@@ -257,18 +249,18 @@ ppcDestroyGC( pGC )
     return ;
 }
 
-Mask
+static Mask
 ppcChangePixmapGC( pGC, changes )
 register GC *pGC ;
 register Mask changes ;
 {
 register ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
-register unsigned long int index ; /* used for stepping through bitfields */
+register unsigned long int idx ; /* used for stepping through bitfields */
 register Mask bsChanges = 0 ;
 
 #define LOWBIT( x ) ( x & - x ) /* Two's complement */
-while ( index = LOWBIT( changes ) ) {
-    switch ( index ) {
+while ((idx = LOWBIT(changes))) {
+    switch ( idx ) {
 
 	case GCLineStyle:
 	case GCLineWidth:
@@ -284,17 +276,17 @@ while ( index = LOWBIT( changes ) ) {
 	    pGC->ops->LineHelper = ( pGC->joinStyle == JoinMiter )
 			    ? miMiter : miNotMiter ;
 #endif
-	    changes &= ~ index ; /* i.e. changes &= ~ GCJoinStyle */
+	    changes &= ~ idx ; /* i.e. changes &= ~ GCJoinStyle */
 	    break ;
 
 	case GCBackground:
 	    if ( pGC->fillStyle != FillOpaqueStippled ) {
-		changes &= ~ index ; /* i.e. changes &= ~GCBackground */
+		changes &= ~ idx ; /* i.e. changes &= ~GCBackground */
 		break ;
 	    } /* else Fall Through */
 	case GCForeground:
 	    if ( pGC->fillStyle == FillTiled ) {
-		changes &= ~ index ; /* i.e. changes &= ~GCForeground */
+		changes &= ~ idx ; /* i.e. changes &= ~GCForeground */
 		break ;
 	    } /* else Fall Through */
 	case GCFunction:
@@ -318,7 +310,7 @@ while ( index = LOWBIT( changes ) ) {
 
 	default:
 	    ErrorF( "ppcChangePixmapGC: Unexpected GC Change\n" ) ;
-	    changes &= ~ index ; /* Remove it anyway */
+	    changes &= ~ idx ; /* Remove it anyway */
 	    break ;
 	}
 }
@@ -343,8 +335,6 @@ ppcValidateGC( pGC, changes, pDrawable )
     DrawablePtr		pDrawable ;
 {
     register ppcPrivGCPtr devPriv ;
-    ppcScrnPriv *devScrnPriv = (ppcScrnPriv *) /* GJA */
-		pGC->pScreen->devPrivate ;
     WindowPtr pWin ;
     Mask bsChanges = 0 ;
 
@@ -352,8 +342,8 @@ ppcValidateGC( pGC, changes, pDrawable )
 
     if ( pDrawable->type != devPriv->lastDrawableType ) {
 	devPriv->lastDrawableType = pDrawable->type ;
-	bsChanges |= vgaChangeGCtype( pGC, devPriv ) ;
-	changes = ~0 ;
+	vgaChangeGCtype( pGC, devPriv ) ;
+	changes = (unsigned)~0 ;
     }
 
     if ( pDrawable->depth == 1 ) {

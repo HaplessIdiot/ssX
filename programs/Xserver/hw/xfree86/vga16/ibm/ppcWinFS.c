@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.5 1998/01/24 16:58:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.6 1998/03/20 21:07:11 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -46,7 +46,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcWinFS.c /main/3 1996/02/21 17:58:39 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"

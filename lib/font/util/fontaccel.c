@@ -37,6 +37,7 @@ from the X Consortium.
 #include    "fontmisc.h"
 #include    "fontstruct.h"
 
+Bool
 FontComputeInfoAccelerators(pFontInfo)
     FontInfoPtr pFontInfo;
 {

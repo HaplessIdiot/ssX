@@ -55,7 +55,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.7 1997/10/25 13:50:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.8 1997/11/16 06:18:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1987 by the Regents of the University of California
@@ -507,6 +507,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
     if (sunNoGX == FALSE) {
 	miSetZeroLineBias(pScreen, GXZEROLINEBIAS);
     }
+    miInitializeBackingStore(pScreen);
     CGScreenInit (pScreen);
     if (!sunScreenInit (pScreen))
 	return FALSE;

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules /main/13 1996/09/28 16:11:01 rws $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.31 1997/06/22 10:16:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.32 1997/09/09 10:27:35 hohndel Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -16,10 +16,12 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.31 1997/06/22 10:16:47 dawes Exp $
 #if UseElfFormat
 
 #if (LinuxCLibMajorVersion >= 5 && LinuxCLibMinorVersion >= 4) || LinuxCLibMajorVersion >= 6
-#undef SpecialMalloc
+#ifndef SpecialMalloc
 #define SpecialMalloc NO
-#undef UseInternalMalloc
+#endif
+#ifndef UseInternalMalloc
 #define UseInternalMalloc NO
+#endif
 #endif
 
 #if LinuxCLibMajorVersion <= 5

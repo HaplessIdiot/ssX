@@ -21,12 +21,16 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE. */
 
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.2 1998/04/28 13:48:42 robin Exp $ */
 
 #include <string.h>
 
 #include "freetype.h"
 #include "ft.h"
+
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#endif
 
 /* Reencoding functions and search for a suitable CharMap. */
 
@@ -583,7 +587,7 @@ ttf_pick_cmap(char *name, int length, TT_Face face,
     charset[len]=0;
 
     /* check for a subset specification */
-    if(q=strchr(charset,(int)'['))
+    if(q=(char *)strchr(charset,(int)'['))
       *q=0;
   }
 

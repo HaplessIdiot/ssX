@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.11 1998/03/20 21:05:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.12 1998/03/27 23:22:59 hohndel Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -30,6 +30,7 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "regionstr.h"
+#include "mibstore.h"
 #include "mipointer.h"
 #include "cursorstr.h"
 #include "gcstruct.h"
@@ -56,9 +57,8 @@
 extern char *fb_dev_name;	/* os-support/linux/lnx_init.c */
 
 
-static int *fbdevPrivateIndexP;
-static void (*fbdevBitBlt)();
 static int (*CreateDefColormap)(ScreenPtr);
+static CloseScreenProcPtr CloseScreen;
 
 extern int mfbCreateDefColormap(ScreenPtr);
 
@@ -303,6 +303,7 @@ static pointer fbdevVirtBase = NULL;
 
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+extern WindowPtr *WindowTable;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
@@ -752,8 +753,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 		fbtype = "mfb";
 		mfbScreenInit(pScreen, fbdevVirtBase, xsize, ysize, dxres,
 			      dyres, width);
-		fbdevPrivateIndexP = NULL;
-		fbdevBitBlt = mfbDoBitblt;
 		CreateDefColormap = mfbCreateDefColormap;
 		break;
 
@@ -770,8 +769,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			    fbtype = "iplan2p2";
 			    ipl2p2ScreenInit(pScreen, fbdevVirtBase, xsize,
 					     ysize, dxres, dyres, width);
-			    fbdevPrivateIndexP=&ipl2p2ScreenPrivateIndex;
-			    fbdevBitBlt=ipl2p2DoBitblt;
 			    CreateDefColormap=iplCreateDefColormap;
 			    break;
 #endif
@@ -781,8 +778,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			    fbtype = "iplan2p4";
 			    ipl2p4ScreenInit(pScreen, fbdevVirtBase, xsize,
 					     ysize, dxres, dyres, width);
-			    fbdevPrivateIndexP=&ipl2p4ScreenPrivateIndex;
-			    fbdevBitBlt=ipl2p4DoBitblt;
 			    CreateDefColormap=iplCreateDefColormap;
 			    break;
 #endif
@@ -792,8 +787,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			    fbtype = "iplan2p8";
 			    ipl2p8ScreenInit(pScreen, fbdevVirtBase, xsize,
 			    		     ysize, dxres, dyres, width);
-			    fbdevPrivateIndexP=&ipl2p8ScreenPrivateIndex;
-			    fbdevBitBlt=ipl2p8DoBitblt;
 			    CreateDefColormap=iplCreateDefColormap;
 			    break;
 #endif
@@ -855,8 +848,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 		    fbtype = "ilbm";
 		    ilbmScreenInit(pScreen, fbdevVirtBase, xsize, ysize, dxres,
 				   dyres, width);
-		    fbdevPrivateIndexP = &ilbmScreenPrivateIndex;
-		    fbdevBitBlt = ilbmDoBitblt;
 		    CreateDefColormap = ilbmCreateDefColormap;
 		} else
 #endif /* CONFIG_ILBM */
@@ -916,8 +907,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 		    fbtype = "afb";
 		    afbScreenInit(pScreen, fbdevVirtBase, xsize, ysize, dxres,
 				  dyres, width);
-		    fbdevPrivateIndexP = &afbScreenPrivateIndex;
-		    fbdevBitBlt = afbDoBitblt;
 		    CreateDefColormap = afbCreateDefColormap;
 		} else
 #endif /* CONFIG_AFB */
@@ -933,8 +922,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			fbtype = "cfb8";
 			cfbScreenInit(pScreen, fbdevVirtBase, xsize, ysize,
 				      dxres, dyres, width);
-			fbdevPrivateIndexP = NULL;
-			fbdevBitBlt = cfbDoBitblt;
 			CreateDefColormap = cfbCreateDefColormap;
 			break;
 #endif
@@ -944,8 +931,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			fbtype = "cfb16";
 			cfb16ScreenInit(pScreen, fbdevVirtBase, xsize, ysize,
 					dxres, dyres, width);
-			fbdevPrivateIndexP = &cfb16ScreenPrivateIndex;
-			fbdevBitBlt = cfb16DoBitblt;
 			CreateDefColormap = cfbCreateDefColormap;
 			break;
 #endif
@@ -955,8 +940,6 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 			fbtype = "cfb32";
 			cfb32ScreenInit(pScreen, fbdevVirtBase, xsize, ysize,
 					dxres, dyres, width);
-			fbdevPrivateIndexP = &cfb32ScreenPrivateIndex;
-			fbdevBitBlt = cfb32DoBitblt;
 			CreateDefColormap = cfbCreateDefColormap;
 			break;
 #endif
@@ -973,6 +956,8 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 
     ErrorF("%s %s: Using %s driver\n", XCONFIG_PROBED, fbdevInfoRec.name,
 	   fbtype);
+    miInitializeBackingStore(pScreen);
+    CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = fbdevCloseScreen;
     pScreen->SaveScreen = (SaveScreenProcPtr)fbdevSaveScreen;
 
@@ -995,6 +980,13 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
     return(TRUE);
 }
 
+static int
+fbdevNewSerialNumber(WindowPtr pWin, pointer data)
+{
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    return WT_WALKCHILDREN;
+}
+
 /*
  *  fbdevEnterLeaveVT -- Grab/ungrab the current VT completely.
  */
@@ -1003,19 +995,15 @@ static void fbdevEnterLeaveVT(Bool enter, int screen_idx)
 {
     BoxRec pixBox;
     RegionRec pixReg;
-    DDXPointRec pixPt;
     PixmapPtr pspix;
     ScreenPtr pScreen = savepScreen;
 
     if (!xf86Resetting && !xf86Exiting) {
 	pixBox.x1 = 0; pixBox.x2 = pScreen->width;
 	pixBox.y1 = 0; pixBox.y2 = pScreen->height;
-	pixPt.x = 0; pixPt.y = 0;
-	(pScreen->RegionInit)(&pixReg, &pixBox, 1);
-	if (fbdevPrivateIndexP)
-	    pspix = (PixmapPtr)pScreen->devPrivates[*fbdevPrivateIndexP].ptr;
-	else
-	    pspix = (PixmapPtr)pScreen->devPrivate;
+	(*pScreen->RegionInit)(&pixReg, &pixBox, 1);
+	pspix = (*pScreen->GetScreenPixmap)(pScreen);
+	WalkTree(pScreen, fbdevNewSerialNumber, 0);
     }
 
     if (enter) {
@@ -1028,11 +1016,11 @@ static void fbdevEnterLeaveVT(Bool enter, int screen_idx)
 	if (!xf86Resetting)
 	    if (pspix->devPrivate.ptr != fbdevVirtBase && ppix) {
 		pspix->devPrivate.ptr = fbdevVirtBase;
-		(*fbdevBitBlt)(&ppix->drawable, &pspix->drawable, GXcopy,
-			       &pixReg, &pixPt, ~0);
+		(*pScreen->BackingStoreFuncs.RestoreAreas)(ppix, &pixReg, 0, 0,
+			WindowTable[pScreen->myNum]);
 	    }
 	if (ppix) {
-	    (pScreen->DestroyPixmap)(ppix);
+	    (*pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
 	}
 
@@ -1070,11 +1058,11 @@ static void fbdevEnterLeaveVT(Bool enter, int screen_idx)
 	 *  Copy the screen to that pixmap
 	 */
 	if (!xf86Exiting) {
-	    ppix = (pScreen->CreatePixmap)(pScreen, pScreen->width,
+	    ppix = (*pScreen->CreatePixmap)(pScreen, pScreen->width,
 	    				   pScreen->height, pScreen->rootDepth);
 	    if (ppix) {
-		(*fbdevBitBlt)(&pspix->drawable, &ppix->drawable, GXcopy,
-			       &pixReg, &pixPt, ~0);
+		(*pScreen->BackingStoreFuncs.SaveAreas)(ppix, &pixReg, 0, 0,
+			WindowTable[pScreen->myNum]);
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
 	}
@@ -1127,9 +1115,12 @@ static Bool fbdevCloseScreen(int screen_idx, ScreenPtr screen)
 	 *  7-Jan-94 CEG: The server is not running on the current vt.
 	 *  Free the screen snapshot taken when the server vt was left.
 	 */
-	(savepScreen->DestroyPixmap)(ppix);
+	(*savepScreen->DestroyPixmap)(ppix);
 	ppix = NULL;
     }
+
+    pScreen->CloseScreen = CloseScreen;
+    (*CloseScreen)(screen_idx, screen);
     return(TRUE);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.5 1996/12/23 06:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.6 1997/03/13 15:11:32 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -91,7 +91,7 @@ SOFTWARE.
 
 /* $XConsortium: vgaGC.c /main/6 1996/02/21 17:58:54 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xproto.h"
 #include "windowstr.h"
@@ -111,11 +111,7 @@ SOFTWARE.
 
 #include "ppc.h"
 
-extern int mfbGCPrivateIndex;
-
-void v16ZeroPolyArc(), v16PolyFillArc(); /* GJA */
-
-Mask
+void
 vgaChangeGCtype( pGC, devPriv )
 register GC *pGC ;
 register ppcPrivGCPtr devPriv ;
@@ -147,12 +143,11 @@ register GC *pGC ;
 register Mask changes ;
 {
 register ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr) ;
-register unsigned long int index ; /* used for stepping through bitfields */
-register Mask bsChanges = 0 ;
+register unsigned long int idx ; /* used for stepping through bitfields */
 
 #define LOWBIT( x ) ( x & - x ) /* Two's complement */
-    while ( index = LOWBIT( changes ) ) {
-	switch ( index ) {
+    while ((idx = LOWBIT(changes))) {
+	switch ( idx ) {
 
 	  case GCLineStyle:
 	  case GCLineWidth:
@@ -214,17 +209,17 @@ register Mask bsChanges = 0 ;
 	    else
 #endif
 		pGC->ops->PolyRectangle = miPolyRectangle;
-	    changes &= ~ index ; /* i.e. changes &= ~ GCJoinStyle */
+	    changes &= ~ idx ; /* i.e. changes &= ~ GCJoinStyle */
 	    break ;
 
 	  case GCBackground:
 	    if ( pGC->fillStyle != FillOpaqueStippled ) {
-		changes &= ~ index ; /* i.e. changes &= ~GCBackground */
+		changes &= ~ idx ; /* i.e. changes &= ~GCBackground */
 		break ;
 	    } /* else Fall Through */
 	  case GCForeground:
 	    if ( pGC->fillStyle == FillTiled ) {
-		changes &= ~ index ; /* i.e. changes &= ~GCForeground */
+		changes &= ~ idx ; /* i.e. changes &= ~GCForeground */
 		break ;
 	    } /* else Fall Through */
 	  case GCFunction:
@@ -249,7 +244,7 @@ register Mask bsChanges = 0 ;
 
 	default:
 	    ErrorF("vgaChangeWindowGC: Unexpected GC Change\n") ;
-	    changes &= ~ index ; /* Remove it anyway */
+	    changes &= ~ idx ; /* Remove it anyway */
 	    break ;
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.6 1997/03/13 15:11:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.7 1998/03/20 21:07:10 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,7 +71,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcSetSp.c /main/5 1996/02/21 17:58:32 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xmd.h"
 
@@ -86,7 +86,6 @@ SOFTWARE.
 
 #include "OScompiler.h"
 #include "ppc.h"
-extern int mfbGCPrivateIndex ;
 
 /* SetScanline -- copies the bits from psrc to the drawable starting at
  * (xStart, y) and continuing to (xEnd, y).  xOrigin tells us where psrc 
@@ -212,8 +211,6 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
     int			yMax ;
     int			alu ;
     int			pm ;
-
-    extern void mfbSetSpans() ;
 
     /* allow for 1-deep windows on nfb machines (eg apa8, aed) */
     if ( ( pDrawable->depth == 1 ) && ( pDrawable->type == DRAWABLE_PIXMAP ) ) {

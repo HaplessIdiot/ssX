@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.5 1996/12/23 06:52:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.6 1997/03/13 15:10:51 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,7 +30,7 @@
  * Uses private imageFill a bunch of times
  */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "pixmap.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixFS.c,v 3.5 1998/01/24 16:58:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixFS.c,v 3.6 1998/03/20 21:07:09 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -46,7 +46,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPixFS.c /main/3 1996/02/21 17:57:57 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"
@@ -84,7 +84,8 @@ MaxRectsPerBand * nSpans.
 */
 /* A mod definition that goes smoothly into the negative.
  */
-int mod(n1,n2)
+static int
+modulo(n1,n2)
 int n1, n2;
 {
       int tmp;
@@ -183,7 +184,7 @@ register wrap ;
 
 cptr = lineptr + ( x >> 3 ) ;
 bits = *cptr ;
-if ( shift = x & 7 )
+if ((shift = x & 7))
       bits = SCRLEFT8( bits, shift ) | SCRRIGHT8( cptr[1], ( 8 - shift ) ) ;
 if ( ( wrap = x + 8 - patternWidth ) > 0 ) {
       bits &= SCRLEFT8( 0xFF, wrap ) ;
@@ -287,10 +288,10 @@ int fSorted ;
 	     + ( ppt->y * ( (int) ( ( (PixmapPtr) pDrawable )->devKind ) ) )
 	     + ppt->x ;
         psrcT = (unsigned char *)pTile->devPrivate.ptr
-	      + ( mod( ppt->y - ySrc, pTile->drawable.height ) * tlwidth ) ;
+	      + ( modulo( ppt->y - ySrc, pTile->drawable.height ) * tlwidth ) ;
 	x = ppt->x ;
 
-        xoff = mod( x - xSrc, tileWidth) ;
+        xoff = modulo( x - xSrc, tileWidth) ;
         for ( width = *pwidth ; width ; psrc++, width -= count, xoff+=count ) {
  
             if ( xoff >= tileWidth ) xoff -= tileWidth;
@@ -385,9 +386,9 @@ int fSorted ;
 	     + ( ppt->y * ( (int) ( (PixmapPtr) pDrawable )->devKind ) )
 	     + ppt->x ;
         psrcT = (unsigned char *)pTile->devPrivate.ptr
-            + ( mod( ppt->y - ySrc, pTile->drawable.height ) * tlwidth ) ;
+            + ( modulo( ppt->y - ySrc, pTile->drawable.height ) * tlwidth ) ;
  
-        xoff = mod( ppt->x - xSrc, tileWidth) ;
+        xoff = modulo( ppt->x - xSrc, tileWidth) ;
  
         for ( width = *pwidth ; width ; psrc++, width -= count, xoff+=count ) {
  
@@ -484,9 +485,9 @@ int fSorted ;
 	     + ( ppt->y * ( (int) ( (PixmapPtr) pDrawable )->devKind ) )
 	     + ppt->x ;
         psrcT = (unsigned char *) pTile->devPrivate.ptr
-        + ( mod( ppt->y - ySrc, pTile->drawable.height) * pTile->devKind ) ;
+        + ( modulo( ppt->y - ySrc, pTile->drawable.height) * pTile->devKind ) ;
  
-        psrc = psrcT + mod( ppt->x - xSrc, tileWidth ) ;
+        psrc = psrcT + modulo( ppt->x - xSrc, tileWidth ) ;
 	for ( i = *pwidth ; i-- ; pdst++, psrc++ ) {
 	    if ( psrc >= ( psrcT + tileWidth ) )
 		psrc = psrcT ;

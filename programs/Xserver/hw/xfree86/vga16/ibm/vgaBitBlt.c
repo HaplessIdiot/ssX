@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.8 1997/03/13 15:11:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.9 1997/03/18 10:05:29 hohndel Exp $ */
 /* GJA -- span move routines */
 
 
 
 /* $XConsortium: vgaBitBlt.c /main/8 1996/10/27 11:06:39 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "OScompiler.h"
 #include "vgaReg.h"
@@ -39,10 +39,10 @@
 #define WSHIFT8 0x3
 #define WMASK8 0x07
 /* NOTE: lmask[8] matters. It must be different from lmask[0] */
-unsigned char lmasktab[] = {
+static unsigned char lmasktab[] = {
 	0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF
 } ;
-unsigned char rmasktab[] = {
+static unsigned char rmasktab[] = {
 	0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01, 0x00
 } ;
 
@@ -102,6 +102,35 @@ unsigned char rmasktab[] = {
 	dst = (_odst & ~(mask)) | (_ndst & (mask)); \
 	}
 
+static void aligned_blit(
+#if NeedFunctionPrototypes
+    WindowPtr, int, int, int, int, int, int, int, int
+#endif
+);
+
+static void aligned_blit_center(
+#if NeedFunctionPrototypes
+    WindowPtr, int, int, int, int, int, int, int
+#endif
+);
+
+static void shift(
+#if NeedFunctionPrototypes
+    WindowPtr, int, int, int, int, int, int, int
+#endif
+);
+
+static void shift_thin_rect(
+#if NeedFunctionPrototypes
+    WindowPtr, int, int, int, int, int, int, int
+#endif
+);
+
+static void shift_center(
+#if NeedFunctionPrototypes
+    WindowPtr, int, int, int, int, int, int, int
+#endif
+);
 
 void vga16BitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h)
 WindowPtr pWin; /* GJA */
@@ -111,7 +140,6 @@ int writeplanes; /* planes */
 int x0, y0, x1, y1, w, h;
 {
     int plane, bit;
-    extern int xf86VTSema;
 
     if ( !w || !h ) return;
 
@@ -146,6 +174,7 @@ int x0, y0, x1, y1, w, h;
 
 /* Copy a span a number of places to the right.
  */
+static void
 shift(pWin,x0,x1,y0,y1,w,h,alu)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
@@ -178,6 +207,7 @@ int alu;
 }
 
 /* The whole rectangle is so thin that it fits in one byte written */
+static void
 shift_thin_rect(pWin,x0,x1,y0,y1,w,h,alu)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
@@ -250,6 +280,7 @@ int alu;
   }
 }
 
+static void
 shift_center(pWin,x0,x1,y0,y1,w,h,alu)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
@@ -393,6 +424,7 @@ int alu;
 
 /* Copy a rectangle.
  */
+static void
 aligned_blit(pWin,x0,x1,y0,y1,w,h,alu,planes)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
@@ -513,6 +545,7 @@ int planes;
   }
 }
 
+static void
 aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
@@ -605,7 +638,8 @@ int alu;
   }
 }
 #else	/* PC98_EGC */
-void
+
+static void
 egc_fast_blt (pWin, alu, writeplanes, x0, y0, x1, y1, w, h)
 WindowPtr pWin;	
 const	int alu, writeplanes ;
@@ -725,9 +759,9 @@ for ( ; h-- ; ) {
 	}
 	outw ( EGC_ADD , x_direction | src_off | dst_off << 4 );
 	if ( x_direction ) {
-		wcopyl ( src_x, dst_x, k ) ;
+		wcopyl ( src_x, dst_x, k, VIDBASE(pWin) ) ;
 	} else {
-		wcopyr ( src_x, dst_x, k ) ;
+		wcopyr ( src_x, dst_x, k, VIDBASE(pWin) ) ;
 	}
 src += y_interval ;
 dst += y_interval ;
@@ -745,8 +779,6 @@ int readplanes; /* unused */
 int writeplanes; /* planes */
 int x0, y0, x1, y1, w, h;
 {
-	extern int xf86VTSema;
-
 	if ( !xf86VTSema ) {
 		offBitBlt( pWin, alu, readplanes, writeplanes,
 			   x0, y0, x1, y1, w, h );

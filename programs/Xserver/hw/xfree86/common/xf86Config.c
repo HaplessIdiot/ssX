@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.145 1998/04/26 16:04:45 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.146 1998/06/04 16:43:19 hohndel Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -123,12 +123,16 @@ ModuleDescPtr loader_discard;
 int loader_errmaj, loader_errmin;
 
 #define ConfigLoadDriver(a,b,c,d)\
+    do { \
 	loader_discard = LoadDriver (a,b,c,d, &loader_errmaj, &loader_errmin); \
-	if (loader_discard) FreeModuleDesc (loader_discard);
+	if (loader_discard) FreeModuleDesc (loader_discard); \
+    } while(0)
 
 #define ConfigLoadModule(a,b,c)\
+    do { \
 	loader_discard = LoadModule (a,b,c, &loader_errmaj, &loader_errmin); \
-	if (loader_discard) FreeModuleDesc (loader_discard);
+	if (loader_discard) FreeModuleDesc (loader_discard); \
+    } while(0)
 
 #endif
 
@@ -1193,6 +1197,7 @@ XF86OptionPtr	options;
   case 4:
     if( xf86issvgatype ) {
       ConfigLoadDriver("libvga16", xf86ModulePath, handle, options);
+      ConfigLoadDriver("libvga2", xf86ModulePath, handle, options);
       ConfigLoadDriver("libvga256", xf86ModulePath, handle, options);
     }
     break;
@@ -1667,6 +1672,7 @@ configFrameBuffers()
   case 4:
     if( xf86issvgatype ) {
         ConfigLoadModule("libvga16", xf86ModulePath, NULL);
+        ConfigLoadModule("libvga2", xf86ModulePath, NULL);
         ConfigLoadModule("libvga256", xf86ModulePath, NULL);
     }
     break;
@@ -4280,6 +4286,7 @@ configDynamicModuleSection()
 	    case 4:
 		if( xf86issvgatype ) {
 		    ConfigLoadDriver("libvga16", xf86ModulePath, handle);
+		    ConfigLoadDriver("libvga2", xf86ModulePath, handle);
 		    ConfigLoadDriver("libvga256", xf86ModulePath, handle);
 		}
 		break;
@@ -4387,6 +4394,7 @@ configDynamicModuleSection()
     case 4:
     	    if( xf86issvgatype ) {
 		ConfigLoadModule("libvga16", xf86ModulePath);
+		ConfigLoadModule("libvga2", xf86ModulePath);
 	        ConfigLoadModule("libvga256", xf86ModulePath);
 	    }
     	    break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.5 1997/03/13 15:10:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbresd.c,v 3.6 1998/06/04 16:43:34 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,7 +48,7 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbbresd.c /main/5 1996/02/21 17:56:34 kaleb $ */
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "maskbits.h"

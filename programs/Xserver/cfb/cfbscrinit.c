@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.12 1998/03/20 21:05:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.13 1998/04/05 16:42:04 robin Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -137,6 +137,7 @@ cfbCreateScreenResources(pScreen)
 }
 #endif
 
+Bool
 cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
@@ -173,10 +174,7 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
     pScreen->BackingStoreFuncs = cfbBSFuncRec;
-    miInitializeBackingStore (pScreen);
     pScreen->GetScreenPixmap = cfbGetScreenPixmap;
     pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     return TRUE;

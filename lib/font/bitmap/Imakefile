@@ -1,18 +1,31 @@
-XCOMM $XConsortium: Imakefile,v 1.8 93/09/04 19:48:32 rws Exp $
+XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
 #include <Server.tmpl>
 
-        INCLUDES = -I$(FONTINCSRC) -I../include
          HEADERS = 
 #ifdef FontFormatDefines
      FORMAT_DEFS = FontFormatDefines
 #endif
+#if GzipFontCompression
+       GZIP_DEFS = -DX_GZIP_FONT_COMPRESSION
+#endif
+
+#if DoLoadableServer
+XFMODSRC = bitmapmod.c
+XFMODOBJ = bitmapmod.o
+INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include -I$(XTOP)/include -I$(XF86COMSRC)
+#else
+INCLUDES = -I$(FONTINCSRC) -I../include
+#endif
+
             SRCS = bdfread.c bdfutils.c bitmap.c bitmaputil.c bitscale.c \
 		   bitmapfunc.c pcfread.c pcfwrite.c snfread.c \
-		   fontink.c
+		   fontink.c $(XFMODSRC)
 
             OBJS = bdfread.o bdfutils.o bitmap.o bitmaputil.o bitscale.o \
 		   bitmapfunc.o pcfread.o pcfwrite.o snfread.o \
-		   fontink.o
+		   fontink.o $(XFMODOBJ)
+
+SpecialCObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -20,3 +33,7 @@ NormalLintTarget($(SRCS))
 
 DependTarget()
 
+#if DoLoadableServer
+NormalLibraryTarget(bitmap,?*.o)
+InstallDynamicModule(LibraryTargetName(bitmap),$(MODULEDIR))
+#endif

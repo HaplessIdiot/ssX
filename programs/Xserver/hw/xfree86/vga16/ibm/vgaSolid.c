@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaSolid.c,v 3.5 1996/12/23 06:53:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaSolid.c,v 3.6 1997/03/13 15:11:34 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -46,7 +46,7 @@ SOFTWARE.
 
 /* $XConsortium: vgaSolid.c /main/5 1996/02/21 17:59:06 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "OScompiler.h"
 #include "vgaVideo.h"
@@ -208,8 +208,6 @@ unsigned int read_write_modify = FALSE ;
 unsigned int invert_existing_data = FALSE ;
 
 {	/* Start GJA */
-	extern int xf86VTSema;
-
 	if ( !xf86VTSema ) {
 		offFillSolid( pWin, color, alu, planes, x0, y0, lx, ly );
 		return;
@@ -293,7 +291,7 @@ SetVideoGraphics( Set_ResetIndex, color & VGA_ALLPLANES ) ;
 SetVideoGraphics( Data_RotateIndex, data_rotate_value ) ;
 
 /* Do Left Edge */
-if ( tmp = x0 & 07 ) {
+if ((tmp = x0 & 07)) {
 	tmp2 = SCRRIGHT8( ( (unsigned) 0xFF ), tmp ) ;
 	/* Catch The Cases Where The Entire Region Is Within One Byte */
 	if ( ( lx -= 8 - tmp ) < 0 ) {
@@ -349,7 +347,7 @@ if ( ROW_OFFSET( lx ) ) {
 }
 
 /* Do Right Edge */
-if ( tmp = BIT_OFFSET( lx ) ) { /* x0 Now Is Byte Aligned */
+if ((tmp = BIT_OFFSET(lx))) { /* x0 Now Is Byte Aligned */
 	/* Set The Bit Mask */
 	SetVideoGraphics( Bit_MaskIndex,
 		(tmp2 = SCRLEFT8( 0xFF, ( 8 - tmp ) ) ) ) ;
@@ -461,8 +459,6 @@ unsigned int read_write_modify = FALSE ;
 unsigned int invert_existing_data = FALSE ;
 
 {	/* Start GJA */
-	extern int xf86VTSema;
-
 	if ( !xf86VTSema ) {
 		offFillSolid( pWin, color, alu, planes, x0, y0, lx, ly );
 		return;

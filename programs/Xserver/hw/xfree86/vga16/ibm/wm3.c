@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.5 1996/12/23 06:53:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.c,v 3.6 1997/03/13 15:11:36 hohndel Exp $ */
 
 
 
@@ -6,14 +6,15 @@
 
 /* $XConsortium: wm3.c /main/5 1996/02/21 17:59:21 kaleb $ */
 
-#include "../mfb/mfbmap.h"
 #include <sys/types.h>
+#include "mfbmap.h"
 #include "compiler.h"
 #include "vgaReg.h"
 #include "vgaVideo.h"
 #include "X.h"
 #include "gcstruct.h"
 #include "wm3.h"
+#include "ppc.h"
 
 /* Ferraro is wrong. GJA */
 #define COPY (0 << 3)
@@ -21,6 +22,7 @@
 #define OR   (2 << 3)
 #define XOR  (3 << 3)
 
+int
 wm3_set_regs(pGC)
 GC *pGC;
 {

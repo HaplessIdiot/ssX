@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.5 1997/03/13 15:11:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPntWin.c,v 3.6 1998/01/24 16:58:39 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,8 +71,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPntWin.c /main/5 1996/02/21 17:58:04 kaleb $ */
 
-#define BANKING_MODS
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 
 #include "windowstr.h"
@@ -87,8 +86,20 @@ SOFTWARE.
 #include "OScompiler.h"	/* GJA */
 
 /* NOTE: These functions only work for visuals up to 31-bits deep */
-void ppcPaintWindowSolid();
-void ppcPaintWindowTile();
+static void ppcPaintWindowSolid(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    RegionPtr,
+    int 
+#endif
+);
+static void ppcPaintWindowTile(
+#if NeedFunctionPrototypes
+    WindowPtr,
+    RegionPtr,
+    int 
+#endif
+);
 
 void
 ppcPaintWindow(pWin, pRegion, what)
@@ -143,7 +154,7 @@ ppcPaintWindow(pWin, pRegion, what)
     miPaintWindow(pWin, pRegion, what);
 }
 
-void
+static void
 ppcPaintWindowSolid(pWin, pRegion, what)
     register WindowPtr pWin;
     register RegionPtr pRegion;
@@ -177,7 +188,7 @@ ppcPaintWindowSolid(pWin, pRegion, what)
     return ;
 }
 
-void
+static void
 ppcPaintWindowTile(pWin, pRegion, what)
     register WindowPtr pWin;
     register RegionPtr pRegion;

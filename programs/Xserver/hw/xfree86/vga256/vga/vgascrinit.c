@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.5 1996/12/23 06:59:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.6 1998/04/05 16:42:21 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -81,10 +81,7 @@ vga256FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
     pScreen->BackingStoreFuncs = vga256BSFuncRec;
-    miInitializeBackingStore (pScreen);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = cfbCreateScreenResources;
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.6 1997/11/22 06:50:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.7 1997/11/22 11:10:19 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -899,6 +899,12 @@ vfbScreenInit(index, pScreen, argc, argv)
 
     if (!ret) return FALSE;
 
+    miInitializeBackingStore(pScreen);
+
+    /*
+     * Circumvent the backing store that was just initialised.  This amounts
+     * to a truely bizarre way of initialising SaveDoomedAreas and friends.
+     */
     pScreen->CreateGC = vfbMultiDepthCreateGC;
     pScreen->GetImage = vfbMultiDepthGetImage;
     pScreen->GetSpans = vfbMultiDepthGetSpans;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 3.1 1996/12/23 06:52:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcDepth.c,v 3.2 1997/03/13 15:11:11 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,10 +30,11 @@
  *
  */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "ppc.h"
 
 Bool
 ppcDepthOK(pDraw,depth)

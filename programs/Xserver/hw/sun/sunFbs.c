@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.7 94/04/17 20:29:37 dpw Exp $ */
+/* $XConsortium: sunFbs.c /main/9 1995/10/05 07:36:47 kaleb $ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium
@@ -68,6 +68,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * express or implied warranty.
  */
 
+/* $XFree86: xc/programs/Xserver/hw/sun/subFbs.c,v 1.0tsi Exp $ */
+
 /****************************************************************/
 /* Modified from  sunCG4C.c for X11R3 by Tom Jarmolowski	*/
 /****************************************************************/
@@ -103,7 +105,7 @@ pointer sunMemoryMap (len, off, fd)
     mapsize = ((int) len + pagemask) & ~pagemask;
     addr = 0;
 
-#ifndef _MAP_NEW
+#if !defined(__bsdi__) && !defined(_MAP_NEW)
     if ((addr = (caddr_t) valloc (mapsize)) == NULL) {
 	Error ("Couldn't allocate frame buffer memory");
 	(void) close (fd);
@@ -206,18 +208,18 @@ Bool sunScreenInit (pScreen)
 #endif
 {
     SetupScreen(pScreen);
-#ifndef XKB
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-#endif
     extern miPointerScreenFuncRec   sunPointerScreenFuncs;
 
     pPrivate->installedMap = 0;
     pPrivate->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = closeScreen;
     pScreen->SaveScreen = sunSaveScreen;
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     /*
      *	Block/Unblock handlers
      */
@@ -229,6 +231,8 @@ Bool sunScreenInit (pScreen)
     if (pScreen == autoRepeatScreen) {
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
+    }
+#ifdef XKB
     }
 #endif
     if (!sunCursorInitialize (pScreen))
@@ -277,6 +281,7 @@ Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
 	    sunFbs[scrn].info.fb_width,
 	    sunFbs[scrn].info.fb_depth))
 	    return FALSE;
+    miInitializeBackingStore(pScrn);
     /* sunCGScreenInit() if cfb... */
     if (init2)
 	(*init2)(pScrn);

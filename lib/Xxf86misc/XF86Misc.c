@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.4 1997/01/18 06:52:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.5 1998/03/27 23:22:58 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -222,6 +222,27 @@ Bool XF86MiscSetKbdSettings(dpy, kbdinfo)
     req->rate = kbdinfo->rate;
     req->delay = kbdinfo->delay;
     req->servnumlock = kbdinfo->servnumlock;
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86MiscAPMNotify(dpy, event)
+    Display* dpy;
+    int event;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86MiscAPMNotifyReq *req;
+    int i;
+
+    XF86MiscCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86MiscAPMNotify, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86miscReqType = X_XF86MiscAPMNotify;
+    req->event = event;
 
     UnlockDisplay(dpy);
     SyncHandle();

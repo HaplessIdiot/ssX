@@ -44,7 +44,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.5 1998/01/24 16:56:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.6 1998/04/05 16:42:12 robin Exp $ */
 
 
 #include "X.h"
@@ -310,9 +310,6 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			 rootdepth, ndepths, depths, defaultVisual,
 			 nvisuals, visuals);
-  if (Rstatus) {
-	miInitializeBackingStore(pScreen);
-  }
   switch (rootdepth)
     {
     case 8:

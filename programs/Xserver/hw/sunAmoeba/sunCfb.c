@@ -68,6 +68,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * express or implied warranty.
  */
 
+/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sunCfb.c,v 1.0tsi Exp $ */
+
 /****************************************************************/
 /* Modified from  sunCG4C.c for X11R3 by Tom Jarmolowski	*/
 /****************************************************************/
@@ -463,6 +465,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
+    miInitializeBackingStore(pScreen);
     CGScreenInit (pScreen);
     if (!sunScreenInit (pScreen))
 	return FALSE;

@@ -4,7 +4,7 @@
 
 /* This is sun.h modified for LynxOS */
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.3 1996/12/27 06:51:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.4 1997/06/03 14:11:09 hohndel Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -177,6 +177,7 @@ extern int gettimeofday();
 #define PSZ 8
 #endif
 
+#include "mi/mibstore.h"
 #include "mi/mipointer.h"
 
 extern int monitorResolution;

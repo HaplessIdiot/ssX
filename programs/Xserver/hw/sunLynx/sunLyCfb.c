@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyCfb.c,v 3.0 1996/09/29 12:47:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyCfb.c,v 3.1 1996/12/27 06:51:36 dawes Exp $ */
 
 /*
  * This is sunCfb.c modified for LynxOS
@@ -365,6 +365,7 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 	    sunFbs[screen].info.fb_width,
 	    sunFbs[screen].info.fb_depth))
 	return FALSE;
+    miInitializeBackingStore(pScreen);
     if (sunNoGX == FALSE) {
 	miSetZeroLineBias(pScreen, GXZEROLINEBIAS);
     }

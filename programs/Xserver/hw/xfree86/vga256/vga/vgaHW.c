@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.64 1998/01/24 16:58:47 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.65 1998/03/22 12:57:34 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -383,6 +383,21 @@ vgaDPMSSet(PowerManagementMode)
   outw(0x3C4, 0x0300);	/* End Reset */
 #endif
 }
+
+/*
+ * vgaAPMNotify -- This is the APMNotify Hook for the vga drivers
+ * as default we don't do anything - driver can implement it's own
+ * handler if it should do something when an APM event occurs.
+ */
+void
+vgaAPMNotify(APMEvent)
+int APMEvent;
+{
+  if(xf86Verbose)
+    ErrorF("APM Event: %x\n",APMEvent);
+  return;
+}
+
 
 /*
  * vgaHWSaveScreen

@@ -1,5 +1,5 @@
 /* $XConsortium: bufio.c,v 1.8 94/04/17 20:17:00 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/bufio.c,v 3.0 1994/12/17 09:41:39 dawes Exp $ */
 
 /*
 
@@ -170,6 +170,7 @@ BufFileOpenWrite (fd)
     return f;
 }
 
+int
 BufFileRead (f, b, n)
     BufFilePtr	f;
     char	*b;

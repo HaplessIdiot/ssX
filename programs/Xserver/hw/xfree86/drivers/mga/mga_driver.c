@@ -35,9 +35,13 @@
  *		Leonard N. Zubkoff
  *			lnz@dandelion.com
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
+ *
+ *		Doug Merritt
+ *			doug@netcom.com
+ *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.29 1998/01/24 21:42:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.30 1998/03/20 21:06:53 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1090,11 +1094,22 @@ MGALinearOffset()
 	    ydstorg_modulo <<= 1;
 	}
 	MGAydstorg = offset / BytesPerPixel;
-	while ((offset % offset_modulo) != 0 ||
-	       (MGAydstorg % ydstorg_modulo) != 0)
-	{
-	    offset++;
-	    MGAydstorg = offset / BytesPerPixel;
+	/*
+	 * When this was unconditional, it caused a line of horizontal garbage
+	 * at the middle right of the screen at the 4Meg boundary in 32bpp
+	 * (and presumably any other modes that use more than 4M). But it's
+	 * essential for 24bpp (it may not matter either way for 8bpp & 16bpp,
+	 * I'm not sure; I didn't notice problems when I checked with and
+	 * without.)
+	 * DRM Doug Merritt 12/97, submitted to XFree86 6/98 (oops)
+	 */
+	if (BytesPerPixel < 4) {
+		while ((offset % offset_modulo) != 0 ||
+		       (MGAydstorg % ydstorg_modulo) != 0)
+		{
+		    offset++;
+		    MGAydstorg = offset / BytesPerPixel;
+		}
 	}
 
 	return MGAydstorg * BytesPerPixel;

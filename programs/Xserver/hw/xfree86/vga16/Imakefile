@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:52 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.17 1997/04/12 13:45:53 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.19 1998/01/01 14:51:37 robin Exp $
 
 
 #define IHaveModules
@@ -12,19 +12,18 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.17 1997/04/12
 
 #define IHaveSubdirs
 
-SUBDIRS = ibm mfb
+SUBDIRS = ibm
 
-SRCS = ibm/?*.c mfb/?*.c
+SRCS = ibm/?*.c
 
-OBJS = ibm/?*.o mfb/?*.o
+OBJS = ibm/?*.o
 
-DONES = ibm/DONE mfb/DONE
+DONES = ibm/DONE
 
 INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 
 ibm/DONE:	ibm
-mfb/DONE:	mfb
 
 #ifdef OS2Architecture
 all:: DONE

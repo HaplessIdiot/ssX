@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.89 1998/03/20 21:05:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.90 1998/03/27 23:23:20 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996,1997 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -148,6 +148,7 @@ ScrnInfoRec mach64InfoRec = {
     mach64AdjustFrame,	/* void (* AdjustFrame)() */
     mach64SwitchMode,	/* Bool (* SwitchMode)() */
     mach64DPMSSet	,/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach64PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -295,6 +296,7 @@ short mach64WeightMask;
 static mach64CRTCRegRec mach64CRTCRegs;
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 static int mach64HWCursorSave = -1;
 unsigned ioCONFIG_CHIP_ID;
 unsigned ioCONFIG_CNTL;
@@ -1809,7 +1811,7 @@ mach64Initialize (scr_index, pScreen, argc, argv)
 		return(FALSE);
 
     savepScreen = pScreen;
-
+    saveCloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = mach64CloseScreen;
     pScreen->SaveScreen = mach64SaveScreen;
 
@@ -2036,26 +2038,15 @@ mach64CloseScreen(screen_idx, pScreen)
     /* 7-Jan-94 CEG: The server is not running on the current vt.
      * Free the screen snapshot taken when the server vt was left.
      */
-	    (savepScreen->DestroyPixmap)(ppix);
+	    (*pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
     }
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
 	mach64ClearSavedCursor(screen_idx);
 
-    switch (mach64InfoRec.bitsPerPixel) {
-    case 8:
-        cfbCloseScreen(screen_idx, savepScreen);
-	break;
-    case 16:
-        cfb16CloseScreen(screen_idx, savepScreen);
-	break;
-    case 32:
-        cfb32CloseScreen(screen_idx, savepScreen);
-	break;
-    }
-
     savepScreen = NULL;
-    return(TRUE);
+    pScreen->CloseScreen = saveCloseScreen;
+    return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

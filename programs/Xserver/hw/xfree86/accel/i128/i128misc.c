@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.11 1998/04/26 16:04:42 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.12 1998/06/04 16:43:18 hohndel Exp $ */
 
 #include "servermd.h"
 
@@ -47,6 +47,7 @@ extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 extern ScreenPtr i128savepScreen;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr CloseScreen;
 extern int i128DisplayWidth;
 extern pointer vgaBase;
 extern pointer i128VideoMem;
@@ -106,16 +107,18 @@ i128Initialize(scr_index, pScreen, argc, argv)
 		ScreenInitFunc = &xf86XAAScreenInit32bpp;
    }
 
-   if (!ScreenInitFunc(pScreen,
+   if (!(*ScreenInitFunc)(pScreen,
 	     (pointer) i128VideoMem,
 	     i128InfoRec.virtualX, i128InfoRec.virtualY,
 	     displayResolution, displayResolution,
 	     i128DisplayWidth))
 	return (FALSE);
 
+   miInitializeBackingStore(pScreen);
+
+   CloseScreen = pScreen->CloseScreen;
    pScreen->CloseScreen = i128CloseScreen;
    pScreen->SaveScreen = i128SaveScreen;
-
 
    switch (i128InfoRec.bitsPerPixel) {
       case 8:
@@ -236,10 +239,11 @@ i128CloseScreen(screen_idx, pScreen)
        * 7-Jan-94 CEG: The server is not running on the current vt.
        * Free the screen snapshot taken when the server vt was left.
        */
-      (i128savepScreen->DestroyPixmap)(ppix);
+      (*pScreen->DestroyPixmap)(ppix);
       ppix = NULL;
    }
-   return (TRUE);
+   pScreen->CloseScreen = CloseScreen;
+   return (*CloseScreen)(screen_idx, pScreen);
 }
 
 /*

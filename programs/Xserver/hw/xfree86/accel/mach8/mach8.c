@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.42 1998/03/20 21:05:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.43 1998/03/27 23:23:21 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -116,6 +116,7 @@ ScrnInfoRec mach8InfoRec = {
     mach8Adjust,	/* void (* AdjustFrame)() */
     mach8SwitchMode,	/* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     mach8PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */
@@ -322,6 +323,7 @@ static struct mach8vmodedef  mach8ScreenMode;
 
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 
 static unsigned mach8_IOPorts[] = {
 	/* 8514 Registers */
@@ -701,6 +703,7 @@ mach8Initialize (scr_index, pScreen, argc, argv)
 			   mach8InfoRec.virtualX))
 	return(FALSE);
 
+    saveCloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = mach8CloseScreen;
     pScreen->SaveScreen = mach8SaveScreen;
     pScreen->InstallColormap = mach8InstallColormap;
@@ -819,10 +822,11 @@ mach8CloseScreen(screen_idx, pScreen)
          * 7-Jan-94 CEG: The server is not running on the current vt.
          * Free the screen snapshot taken when the server vt was left.
 	 */
-        (savepScreen->DestroyPixmap)(ppix);
+        (*pScreen->DestroyPixmap)(ppix);
         ppix = NULL;
     }
-    return(TRUE);
+    pScreen->CloseScreen = saveCloseScreen;
+    return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

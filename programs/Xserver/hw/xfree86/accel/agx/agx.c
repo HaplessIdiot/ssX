@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.62 1998/03/27 23:23:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.63 1998/04/05 16:42:11 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -97,6 +97,7 @@ ScrnInfoRec agxInfoRec = {
     agxAdjustFrame, 	/* void (* AdjustFrame)() */
     agxSwitchMode,      /* Bool (* SwitchMode)() */
     (void (*)())NoopDDA,/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     agxPrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {0, 0, 0},          /* xrgb weight */
@@ -169,6 +170,7 @@ pointer vgaNewVideoState = NULL;
 static Bool LUTissaved = FALSE;
 ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 
 static unsigned agxDAIOPorts[ DA_NUM_IO_REG ] = {0, };
 static unsigned agxPOSIOPorts[ POS_NUM_IO_REG ] = {0, };
@@ -1381,6 +1383,7 @@ agxInit (scr_index, pScreen, argc, argv)
 		      agxDisplayWidth))
       return(FALSE);
 
+   saveCloseScreen = pScreen->CloseScreen;
    pScreen->CloseScreen = agxCloseScreen;
    pScreen->SaveScreen = agxSaveScreen;
 
@@ -1719,14 +1722,15 @@ agxCloseScreen(screen_idx, pScreen)
       /* 7-Jan-94 CEG: The server is not running on the current vt.
        * Free the screen snapshot taken when the server vt was left.
        */
-      (savepScreen->DestroyPixmap)(ppix);
+      (*pScreen->DestroyPixmap)(ppix);
       ppix = NULL;
    }
 #if 0 
    savepScreen = NULL;
    agxClearSavedCursor(screen_idx);
 #endif
-   return(TRUE);
+   pScreen->CloseScreen = saveCloseScreen;
+   return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

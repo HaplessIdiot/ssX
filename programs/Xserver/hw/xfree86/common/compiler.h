@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.29 1998/01/24 16:57:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.30 1998/03/22 12:47:29 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,6 +25,8 @@
 
 #ifndef _COMPILER_H
 #define _COMPILER_H
+
+#include "Xfuncproto.h"
 
 #ifndef __STDC__
 # ifdef signed

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.7 1997/03/13 15:11:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.8 1998/06/04 16:43:35 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -57,12 +57,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * P. Shupak 12/31/87
  */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "screenint.h"
 #include "scrnintstr.h"
 #include "colormapst.h"	/* GJA */
 #include "OScompiler.h"
+#include "ppc.h"
 
 /*
  * New colormap routines that can support multiple Visual types.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.18 1998/04/05 16:42:19 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.19 1998/04/27 03:14:53 robin Exp $ */
 
 
 
@@ -56,6 +56,8 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_IOFBF    2
 #define XF86_IOLBF    3
 
+#include <sys/stat.h> /* Need OS's struct stat */
+
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
 #ifdef XFree86LOADER
@@ -93,11 +95,15 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ferror(FP)		xf86ferror(FP)
 #define fflush(FP)		xf86fflush(FP)
 #define fgetc(FP)		xf86fgetc(FP)
+#undef getc
+#define getc(FP)		xf86getc(FP)
 #define fgetpos(FP,fpp)		xf86fgetpos(FP,fpp)
 #define fgets(cp,i,FP)		xf86fgets(cp,i,FP)
 #define floor(d)		xf86floor(d)
 #define fmod(d1,d2)		xf86fmod(d1,d2)
 #define fopen(ccp1,ccp2)	xf86fopen(ccp1,ccp2)
+#define fileno(FP)		xf86fileno(FP)
+#define printf			xf86printf
 #define fprintf			xf86fprintf
 #define fputc(i,FP)		xf86fputc(i,FP)
 #define fputs(ccp,FP)		xf86fputs(ccp,FP)
@@ -153,18 +159,22 @@ typedef struct _xf86dirent XF86DIRENT;
 #define setvbuf(FP,cp,i,I)	xf86setvbuf(FP,cp,i,I)
 #define sin(d)			xf86sin(d)
 #define sprintf			xf86sprintf
+#undef sqrt
 #define sqrt(d)			xf86sqrt(d)
 #define sscanf			xf86sscanf
+#define strcasecmp(s1,s2)	xf86strcasecmp(s1,s2)
 #define strcat(cp,ccp)		xf86strcat(cp,ccp)
 #define strcmp(ccp1,ccp2)	xf86strcmp(ccp1,ccp2)
 #define strcpy(cp,ccp)		xf86strcpy(cp,ccp)
 #define strcspn(ccp1,ccp2)	xf86strcspn(ccp1,ccp2)
 #define strerror(i)		xf86strerror(i)
 #define strlen(ccp)		xf86strlen(ccp)
+#define strncat(dest,src,n)	xf86strncat(dest,src,n)
 #define strncmp(ccp1,ccp2,I)	xf86strncmp(ccp1,ccp2,I)
 #define strncpy(cp,ccp,I)	xf86strncpy(cp,ccp,I)
 #define strpbrk(ccp1,ccp2)	xf86strpbrk(ccp1,ccp2)
 #define strrchr(ccp,i)		xf86strrchr(ccp,i)
+#define strchr(ccp,i)		xf86strchr(ccp,i)
 #define strspn(ccp1,ccp2)	xf86strspn(ccp1,ccp2)
 #define strstr(ccp1,ccp2)	xf86strstr(ccp1,ccp2)
 #define strtod(ccp,cpp)		xf86strtod(ccp,cpp)
@@ -180,6 +190,22 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #define vfprintf		xf86vfprintf
 #define vsprintf		xf86vsprintf
+
+/* Needed for libfont */
+#define creat			xf86creat
+#define fcntl			xf86fcntl
+#define hypot(x,y)		xf86hypot(x,y)
+#define time(tp)		xf86time(tp)
+#define stat(path,statbuf)	xf86stat(path,statbuf)
+#define fstat(fd,statbuf)	xf86fstat(fd,statbuf)
+#define mkdir(path,mode)	xf86mkdir(path,mode)
+#define chmod(path,mode)	xf86chmod(path,mode)
+#define umask(mode)		xf86umask(mode)
+#define lseek(fd,offset,whence)	xf86lseek(fd,offset,whence)
+#define alarm(seconds)		xf86alarm(seconds)
+#define sleep(usec)		xf86sleep(usec)
+#define unlink(name)		xf86unlink(name)
+#define qsort			xf86qsort
 
 /* non-ANSI C functions */
 #define opendir(cp)		xf86opendir(cp)
@@ -219,8 +245,8 @@ typedef struct _xf86dirent XF86DIRENT;
 /*
  * XXX Basic I/O functions BAD,BAD,BAD!
  */
-#define open(a,b,c)     xf86open(a,b,c)
-#define close(a)        xf86close(a)
+#define open			xf86open
+#define close		        xf86close
 #define ioctl(a,b,c)    xf86ioctl(a,b,c)
 #define read(a,b,c)     xf86read(a,b,c)
 #define write(a,b,c)    xf86write(a,b,c)

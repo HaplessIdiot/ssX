@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.32 1998/03/21 22:40:13 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.33 1998/04/26 18:32:00 robin Exp $ */
 
 
 
@@ -81,6 +81,7 @@ extern int LoaderCheckUnresolved();
 #ifdef DPMSExtension
 extern void DPMSSet(CARD16);
 #endif
+extern void xf86APMNotify(CARD32);
 extern Bool (*GlxInitVisualsPtr)();
 
 #if defined (PowerMAX_OS)
@@ -184,6 +185,7 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
 #endif
+   SYMFUNC(xf86APMNotify)
 #ifdef XQUEUE
    SYMFUNC(xf86XqueKbdProc)
    SYMFUNC(xf86XqueMseProc)
@@ -330,6 +332,7 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86labs)
   SYMFUNC(xf86log)
   SYMFUNC(xf86log10)
+  SYMFUNC(xf86hypot)
   SYMFUNC(xf86malloc)
   SYMFUNC(xf86memchr)
   SYMFUNC(xf86memcmp)
@@ -360,15 +363,18 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86sqrt)
   SYMFUNC(xf86sscanf)
   SYMFUNC(xf86strcat)
+  SYMFUNC(xf86strcasecmp)
   SYMFUNC(xf86strcmp)
   SYMFUNC(xf86strcpy)
   SYMFUNC(xf86strcspn)
   SYMFUNC(xf86strerror)
   SYMFUNC(xf86strlen)
+  SYMFUNC(xf86strncat)
   SYMFUNC(xf86strncmp)
   SYMFUNC(xf86strncpy)
   SYMFUNC(xf86strpbrk)
   SYMFUNC(xf86strrchr)
+  SYMFUNC(xf86strchr)
   SYMFUNC(xf86strspn)
   SYMFUNC(xf86strstr)
   SYMFUNC(xf86strtod)
@@ -380,6 +386,7 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86tolower)
   SYMFUNC(xf86toupper)
   SYMFUNC(xf86ungetc)
+  SYMFUNC(xf86printf)
   SYMFUNC(xf86vfprintf)
   SYMFUNC(xf86vsprintf)
   

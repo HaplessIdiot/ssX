@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbimggblt.c,v 3.2 1997/03/13 15:10:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbimggblt.c,v 3.3 1998/03/20 21:07:07 hohndel Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -50,8 +50,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: mfbimggblt.c /main/5 1996/02/21 17:56:44 kaleb $ */
 
-#define BANKING_MODS
-#include "../mfb/mfbmap.h"
+#include	"mfbmap.h"
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -64,15 +63,14 @@ SOFTWARE.
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"maskbits.h"
+#include	"mi.h"
 
-#include "ppcGCstr.h"	/* GJA */
+#include "ppc.h"	/* GJA */
 #include "vgaReg.h"	/* GJA */
 #include "compiler.h"	/* rvb */
 #include "vgaVideo.h"	/* GJA */
 #include "wm3.h"	/* GJA */
 #include "OScompiler.h"	/* GJA */
-
-void ppcAreaFill(); /* GJA -- HACK */
 
 extern void QueryGlyphExtents();
 
@@ -113,7 +111,18 @@ xoff, pdst, pglyph, and tmpSrc seem like the right things, though.
 */
 
 /* Forward declarations -- GJA */
-void doImageGlyphBlt();
+static void doImageGlyphBlt(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GC *,
+    int,
+    int,
+    unsigned int,
+    CharInfoPtr *,
+    unsigned char *,
+    ExtentInfoRec *
+#endif
+);
 
 void
 v16ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
@@ -129,7 +138,6 @@ v16ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			   in the general case, NOT necessarily
 			   the same as the string's bounding box
 			*/
-    extern int xf86VTSema;
 
     /* GJA -- I agree, this ALL should be moved to GC validation. */
     if ( (pDrawable->type != DRAWABLE_WINDOW) || (pGC->alu != GXcopy) ||
@@ -198,7 +206,7 @@ v16ImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
 }
 
-void
+static void
 doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
     DrawablePtr pDrawable;
     GC 		*pGC;
@@ -237,14 +245,6 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
     register int endmask;
 
     register int nFirst;/* bits of glyph in current longword */
-    void (* oldFillArea)();
-			/* we might temporarily usurp this
-			   field in devPriv */
-    int oldfillStyle; /* GJA */
-    int oldfg; /* GJA */
-    volatile int dummy; /* GJA -- HACK */
-
-
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -260,8 +260,6 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
-
-/*    BANK_FLAG(pdstBase) */
 
     x += xorg;
     y += yorg;
@@ -330,7 +328,7 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	        while (h--)
 	        {
 		    getleftbits(pglyph, w, tmpSrc);
-		    UPDRW(VMAPRW(pdst),(SCRRIGHT(tmpSrc, xoff) & startmask));
+		    UPDRW(pdst,(SCRRIGHT(tmpSrc, xoff) & startmask));
 		    pglyph += widthGlyph;
 		    pdst += widthDst; VCHECKRWO(pdst);
 	        }
@@ -343,9 +341,9 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	        while (h--)
 	        {
 		    getleftbits(pglyph, w, tmpSrc);
-		    UPDRW(VMAPRW(pdst),(SCRRIGHT(tmpSrc, xoff) & startmask));
+		    UPDRW(pdst,(SCRRIGHT(tmpSrc, xoff) & startmask));
                     VCHECKRWONEXT(pdst);
-		    UPDRW(VMAPRW(&(pdst[1])),(SCRLEFT(tmpSrc, nFirst) & endmask));
+		    UPDRW(&(pdst[1]),(SCRLEFT(tmpSrc, nFirst) & endmask));
 		    pglyph += widthGlyph;
 		    pdst += widthDst; VCHECKRWO(pdst);
 	        }
@@ -501,7 +499,7 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 		    while (h--)
 		    {
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
-			UPDRW(VMAPRW(pdst),(SCRRIGHT(tmpSrc, xoff) & startmask));
+			UPDRW(pdst,(SCRRIGHT(tmpSrc, xoff) & startmask));
 			pglyph += widthGlyph;
 			pdst += widthDst; VCHECKRWO(pdst);
 		    }
@@ -513,9 +511,9 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 		    while (h--)
 		    {
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
-			UPDRW(VMAPRW(pdst),(SCRRIGHT(tmpSrc, xoff) & startmask));
+			UPDRW(pdst,(SCRRIGHT(tmpSrc, xoff) & startmask));
                         VCHECKRWONEXT(pdst);
-			UPDRW(VMAPRW(&(pdst[1])),(SCRLEFT(tmpSrc, nFirst) & endmask));
+			UPDRW(&(pdst[1]),(SCRLEFT(tmpSrc, nFirst) & endmask));
 			pglyph += widthGlyph;
 			pdst += widthDst; VCHECKRWO(pdst);
 		    }

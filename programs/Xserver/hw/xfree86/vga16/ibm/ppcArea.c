@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcArea.c,v 3.4 1996/12/23 06:52:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcArea.c,v 3.5 1997/03/13 15:11:03 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -29,7 +29,7 @@
  * Tom Paquin 8/87 
  */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "gcstruct.h"

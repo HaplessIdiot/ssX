@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyFbs.c,v 3.1 1996/10/03 08:31:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyFbs.c,v 3.2 1996/12/27 06:51:37 dawes Exp $ */
 
 /*
  * This is sunFbs.c modified for LynxOS
@@ -321,6 +321,7 @@ Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
 	    sunFbs[scrn].info.fb_width,
 	    sunFbs[scrn].info.fb_depth))
 	    return FALSE;
+    miInitializeBackingStore(pScrn);
     /* sunCGScreenInit() if cfb... */
     if (init2)
 	(*init2)(pScrn);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.39 1998/03/20 21:07:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.40 1998/03/27 23:23:42 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -253,6 +253,7 @@ static OFlagSet monoOptionFlags;
 /* Pointer to the Screen while VT is switched out */
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 
 /* Banking functions etc. are saved and set to NoopDDA
  * while VT is switched out */
@@ -501,10 +502,13 @@ monoScreenInit (index, pScreen, argc, argv)
 			monoScanLineWidth))
 	return(FALSE);
 
+    miInitializeBackingStore(pScreen);
+
     pScreen->blackPixel = 0;
     pScreen->whitePixel = 1;
     XF86FLIP_PIXELS();
 
+    saveCloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = monoCloseScreen;
     pScreen->SaveScreen  = monoSaveScreenFunc;
   
@@ -659,10 +663,11 @@ monoCloseScreen(screen_idx, pScreen)
 	 * 7-Jan-94 CEG: The server is not running on the current vt.
 	 * Free the screen snapshot taken when the server vt was left.
 	 */
-	(savepScreen->DestroyPixmap)(ppix);
+	(*pScreen->DestroyPixmap)(ppix);
 	ppix = NULL;
     }
-    return(TRUE);
+    pScreen->CloseScreen = saveCloseScreen;
+    return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

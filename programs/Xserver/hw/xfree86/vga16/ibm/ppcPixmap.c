@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.5 1997/10/25 13:50:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.6 1998/06/04 16:43:35 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,13 +71,13 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPixmap.c /main/5 1996/02/21 17:58:00 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "pixmapstr.h"
 #include "servermd.h"
-#include "mfb.h"
 
 #include "OScompiler.h"
 #include "ibmTrace.h"
+#include "ppc.h"
 
 PixmapPtr
 ppcCreatePixmap( pScreen, width, height, depth )
@@ -138,82 +138,4 @@ ppcCopyPixmap(pSrc)
     pDst->devPrivate.ptr = (pointer)(pDst + 1);
     MOVE( (char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size ) ;
     return pDst;
-}
-
-/* 
-   see doc in server/ddx/mfb/mfbpixmap.c
-*/
-void
-ppcPadPixmap(pPixmap)
-    PixmapPtr pPixmap ;
-{
-    TRACE(("ppcPadPixmap(pPixmap=0x%x)\n", pPixmap)) ;
-if ( pPixmap->drawable.depth == 1 )
-	mfbPadPixmap( pPixmap ) ;
-}
-
-/* ppcdebugging routine -- 
-*/
-#ifdef DEBUG
-void ppcDumpPixmap(pPix)
-PixmapPtr pPix ;
-{ 
-unsigned char *psrc, *pline ;
-int i, j ;
-pline = pPix->devPrivate.ptr ;
-for ( i = 0 ; i < pPix->drawable.height ; i++ )
-	{
-	psrc = pline ;
-	for ( j = 0 ; j < pPix->drawable.width ; j++ )
-		{
-		ErrorF("%02x ",*psrc++) ;
-		}
-	ErrorF("\n") ;
-	pline = pline + pPix->devKind ;
-	}
-return ;
-}
-#endif
-
-/* Rotates deep pixmap pPix by w pixels to the right on the screen. Assumes 
- * that words are 32 bits wide, and that the least significant bit appears on 
- * the left.
- */
-void ppcRotatePixmap(pPix, rw)
-    PixmapPtr	pPix ;
-    register int rw ;
-{
-    unsigned char *pTempSrc, *pTempDst, *pRealDst ;
-    int		depth, h, i, wid, loc ;
-
-    TRACE(("ppcRotatePixmap(pPix=0x%x, rw=%d)\n", pPix, rw)) ;
-    if (pPix == NullPixmap)
-        return ;
-    depth = pPix->drawable.depth ;
-    if ( depth == 1 ) {
-	mfbXRotatePixmap(pPix,rw) ;
-	return ;
-    }
-    if ( depth > 8 ) {
-	ErrorF("ppcRotatePixmap: too deep (%d)\n",depth) ;
-	return ;
-    }
-
-    wid = pPix->drawable.width ;
-    rw %= wid ;
-    h = pPix->drawable.height ;
-    pTempDst = (unsigned char *) ALLOCATE_LOCAL(wid) ;
-    pTempSrc = pRealDst = (unsigned char *) pPix->devPrivate.ptr ;
-    while ( h-- ) {
-	for ( i = 0 ; i < wid ; i++ ) {
-		loc = i + rw ;
-		if ( loc >= wid )
-		     loc -= wid ;
-		pTempDst[loc] = *pTempSrc++ ;
-	}
-	MOVE( (char *) pTempDst, (char *) pRealDst, wid) ;
-	pRealDst += wid ;
-    }
-    DEALLOCATE_LOCAL(pTempDst) ;
-    return ;
 }

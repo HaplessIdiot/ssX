@@ -37,6 +37,9 @@ routines (malloc/free).
  
 */
 
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 #include "objects.h"	/* get #define for abort() */
 
 static combine();

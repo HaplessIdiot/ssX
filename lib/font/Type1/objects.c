@@ -64,6 +64,9 @@ a macro for "strcpy" that diverts it to "my_strcpy".
                                /* moved these includes from above the    */
                                /*   was included first (it contains com- */
                                /*   piler defines).  dsr 081291          */
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"

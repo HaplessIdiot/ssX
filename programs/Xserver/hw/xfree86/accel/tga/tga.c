@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.28 1998/04/26 16:04:43 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.29 1998/06/04 16:43:18 hohndel Exp $ */
 
 #include <stdio.h> 
 #include "X.h"
@@ -82,6 +82,7 @@ ScrnInfoRec tgaInfoRec = {
     tgaAdjustFrame,	/* void (* AdjustFrame)() */
     tgaSwitchMode,	/* Bool (* SwitchMode)() */
     tgaDPMSSet,		/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     tgaPrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -156,6 +157,7 @@ unsigned char tgaSwapBits[256];
 pointer tga_reg_base;
 int tgahotX, tgahotY;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr savedCloseScreen;
 int tga_type;
 int tgaDisplayWidth;
 pointer tgaVideoMem = NULL;
@@ -517,9 +519,12 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 			tgaInfoRec.displayWidth))
 		return(FALSE);
 
+	miInitializeBackingStore(pScreen);
+
 	pScreen->whitePixel = (Pixel) 1;
 	pScreen->blackPixel = (Pixel) 0;
 	XF86FLIP_PIXELS();
+	savedCloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = tgaCloseScreen;
 	pScreen->SaveScreen = tgaSaveScreen;
 
@@ -665,7 +670,6 @@ tgaEnterLeaveVT(enter, screen_idx)
  *      called to ensure video is enabled when server exits.
  */
 
-/*ARGSUSED*/
 Bool
 tgaCloseScreen(screen_idx, pScreen)
     int        screen_idx;
@@ -684,7 +688,7 @@ tgaCloseScreen(screen_idx, pScreen)
     /* 7-Jan-94 CEG: The server is not running on the current vt.
      * Free the screen snapshot taken when the server vt was left.
      */
-	    (savepScreen->DestroyPixmap)(ppix);
+	    (*pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
     }
 
@@ -692,17 +696,9 @@ tgaCloseScreen(screen_idx, pScreen)
     tgaClearSavedCursor(screen_idx);
 #endif
 
-    switch (tgaInfoRec.bitsPerPixel) {
-    case 8:
-        cfbCloseScreen(screen_idx, savepScreen);
-	break;
-    case 32:
-        cfb32CloseScreen(screen_idx, savepScreen);
-	break;
-    }
-
     savepScreen = NULL;
-    return(TRUE);
+    pScreen->CloseScreen = savedCloseScreen;
+    return (*savedCloseScreen)(screen_idx, pScreen);
 }
 
 /*

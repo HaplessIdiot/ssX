@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.113 1998/06/04 16:43:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.114 1998/06/05 02:57:14 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
@@ -33,6 +33,7 @@
 #include "pixmapstr.h"
 #include "regionstr.h"
 #include "cursor.h"
+#include "mibstore.h"
 #include "mipointer.h"
 #include "cursorstr.h"
 #include "gcstruct.h"
@@ -111,6 +112,7 @@ ScrnInfoRec vga256InfoRec = {
   vgaAdjustFrame,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
   vgaDPMSSet,		/* void (* DPMSSet)() */
+  vgaAPMNotify,         /* void (* APMNotify)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
   8,			/* int depth */
   {0, 0, 0},            /* xrgb weight */
@@ -290,13 +292,6 @@ pointer vgaLinearOrig = NULL;
 vgaPCIInformation *vgaPCIInfo = NULL;
 Bool vgaDAC8BitComponents = FALSE;
 
-Bool (*vgaCloseScreenFunc)(
-#if NeedFunctionPrototypes
-    int,
-    ScreenPtr
-#endif
-);
-
 void (* vgaEnterLeaveFunc)(
 #if NeedFunctionPrototypes
     Bool
@@ -369,6 +364,7 @@ int vgaIOBase;
 static ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
 static pointer pspixbits = NULL;
+static CloseScreenProcPtr vgaCloseScreenFunc;
 extern WindowPtr *WindowTable;
 static Bool (* saveInitFunc)();
 static void * (* saveSaveFunc)();
@@ -1239,69 +1235,23 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
     	    return(FALSE);
-#endif
     	break;
+#else
+	return FALSE;
+#endif
     case 4:
 #if !defined(PC98) || defined(PC98_EGC)
-        /*
-	 * for some reason this function is void and cannot fail
-	 */
-  	Init16Output(pScreen,
+  	if (!Init16Output(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth);
-#endif
+		     vga256InfoRec.displayWidth))
+	    return FALSE;
     	break;
-#ifndef XFree86LOADER
-    case 8:
-  	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInitvga256(pScreen,
-		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
-							vgaVirtBase),
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-	        return(FALSE);
-	break;
-    case 16:
-  	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit16bpp(pScreen,
-		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
-							vgaVirtBase),
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-	        return(FALSE);
-	break;
-    case 24:
-  	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit24bpp(pScreen,
-		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
-							vgaVirtBase),
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-	        return(FALSE);
-	break;
-    case 32:
-  	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	if (!xf86XAAScreenInit32bpp(pScreen,
-		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : 
-							vgaVirtBase),
-		     vga256InfoRec.virtualX,
-		     vga256InfoRec.virtualY,
-		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
-	        return(FALSE);
-	break;
-    default:
-	break;
-#else  /* XFree86LOADER */
+#else
+	return FALSE;
+#endif
     default:
   	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
 #ifdef XFree86LOADER		/* { */
@@ -1360,8 +1310,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     		  return(FALSE);
 #endif /* XFree86LOADER */	/* } */
 	break;
-#endif  /* XFree86LOADER */
     }
+
+  miInitializeBackingStore(pScreen);
 
   pScreen->whitePixel = 1;
   pScreen->blackPixel = 0;

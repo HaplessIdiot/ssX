@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.27 1998/03/27 23:22:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.28 1998/03/28 07:08:09 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -62,6 +62,7 @@ static DISPATCH_PROC(ProcXF86MiscQueryVersion);
 static DISPATCH_PROC(ProcXF86MiscSetKbdSettings);
 static DISPATCH_PROC(ProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(ProcXF86MiscSetSaver);
+static DISPATCH_PROC(ProcXF86MiscAPMNotify);
 static DISPATCH_PROC(SProcXF86MiscDispatch);
 static DISPATCH_PROC(SProcXF86MiscGetKbdSettings);
 static DISPATCH_PROC(SProcXF86MiscGetMouseSettings);
@@ -70,6 +71,7 @@ static DISPATCH_PROC(SProcXF86MiscQueryVersion);
 static DISPATCH_PROC(SProcXF86MiscSetKbdSettings);
 static DISPATCH_PROC(SProcXF86MiscSetMouseSettings);
 static DISPATCH_PROC(SProcXF86MiscSetSaver);
+static DISPATCH_PROC(SProcXF86MiscAPMNotify);
 
 static unsigned char XF86MiscReqCode = 0;
 
@@ -476,6 +478,20 @@ ProcXF86MiscSetKbdSettings(client)
 }
 
 static int
+ProcXF86MiscAPMNotify(client)
+    register ClientPtr client;
+{
+    register int n;
+
+    REQUEST(xXF86MiscAPMNotifyReq);
+    if(stuff->event < 1 || stuff->event > MAX_APM_EVENT)
+      return BadValue;
+    REQUEST_SIZE_MATCH(xXF86MiscAPMNotifyReq);
+    xf86APMNotify(stuff->event);
+    return (client->noClientException);    
+} 
+
+static int
 ProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -492,6 +508,11 @@ ProcXF86MiscDispatch (client)
 	return ProcXF86MiscGetMouseSettings(client);
     case X_XF86MiscGetKbdSettings:
 	return ProcXF86MiscGetKbdSettings(client);
+    case X_XF86MiscAPMNotify:
+        if (LocalClient(client))
+	  return ProcXF86MiscAPMNotify(client);
+	else
+	  return miscErrorBase + XF86MiscModInDevClientNotLocal; /* change !*/
     default:
 	if (!xf86MiscModInDevEnabled)
 	    return miscErrorBase + XF86MiscModInDevDisabled;
@@ -600,6 +621,18 @@ SProcXF86MiscSetKbdSettings(client)
 }
 
 static int
+SProcXF86MiscAPMNotify(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86MiscAPMNotifyReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86MiscAPMNotifyReq);
+    swapl(&stuff->event, n);
+    return ProcXF86MiscAPMNotify(client);
+}
+
+static int
 SProcXF86MiscDispatch (client)
     register ClientPtr	client;
 {
@@ -616,6 +649,11 @@ SProcXF86MiscDispatch (client)
 	return SProcXF86MiscGetMouseSettings(client);
     case X_XF86MiscGetKbdSettings:
 	return SProcXF86MiscGetKbdSettings(client);
+    case X_XF86MiscAPMNotify:
+        if (LocalClient(client))
+        return SProcXF86MiscAPMNotify(client);
+	else
+	  return miscErrorBase + XF86MiscModInDevClientNotLocal; /* change !*/
     default:
 	if (!xf86MiscModInDevEnabled)
 	    return miscErrorBase + XF86MiscModInDevDisabled;

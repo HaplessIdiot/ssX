@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbhrzvert.c,v 3.3 1996/12/23 06:52:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbhrzvert.c,v 3.4 1997/03/13 15:10:56 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,7 +49,7 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbhrzvert.c /main/3 1996/02/21 17:56:41 kaleb $ */
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 
 #include "gc.h"
@@ -66,6 +66,8 @@ SOFTWARE.
 /* horizontal solid line
    abs(len) > 1
 */
+
+void
 v16HorzS(addrl, nlwidth, x1, y1, len)
 register PixelType *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
@@ -116,6 +118,7 @@ int len;		/* length of line */
    it's OK to use it.
 */
 
+void
 v16VertS(addrl, nlwidth, x1, y1, len)
 register PixelType *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcFillRct.c,v 3.2 1997/03/13 15:11:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcFillRct.c,v 3.3 1998/03/20 21:07:08 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,7 +49,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcFillRct.c /main/5 1996/02/21 17:57:35 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -59,11 +59,11 @@ SOFTWARE.
 #include "regionstr.h"
 #include "scrnintstr.h"
 
-#include "mfb.h"
 #include "maskbits.h"
 
+#include "ppc.h"
+
 #define MODEQ(a, b) ((a) %= (b))
-void mfbPaintOddSize();
 
 /* 
     filled rectangles.

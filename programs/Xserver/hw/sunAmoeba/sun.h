@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.37 94/04/01 17:54:37 dpw Exp $ */
+/* $XConsortium: sun.h /main/3 1996/10/31 14:15:43 kaleb $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -12,6 +12,8 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  */
+
+/* $XFree86: xc/programs/Xserver/hw/sunAmoeba/sun.h,v 1.0tsi Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
@@ -133,6 +135,7 @@ extern int gettimeofday();
 #define PSZ 8
 #endif
 
+#include "mi/mibstore.h"
 #include "mi/mipointer.h"
 
 extern int monitorResolution;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.5 1996/12/23 06:52:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.6 1997/03/13 15:11:04 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -82,7 +82,7 @@ SOFTWARE.
 */
 /* $XConsortium: ppcBStore.c /main/5 1996/02/21 17:57:06 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "servermd.h"
 #include "regionstr.h"
@@ -93,6 +93,7 @@ SOFTWARE.
 #include "mibstore.h"
 
 #include "ppc.h"
+#include "vgaVideo.h"
 
 #include "ibmTrace.h"
 
@@ -178,6 +179,6 @@ ppcRestoreAreas( pPixmap, prgnRestore, xorg, yorg, pWin )
 		 + ( ( pBox->y1 - yorg ) * pPixmap->devKind )
 		 + ( pBox->x1 - xorg ),
 		 pPixmap->devKind,
-		 GXcopy, ~0 ) ;
+		 GXcopy, VGA_ALLPLANES ) ;
     return ;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGCstr.h,v 3.1 1996/12/23 06:53:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGCstr.h,v 3.2 1998/03/20 21:07:09 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -70,8 +70,6 @@ typedef struct {
     ppcReducedRrop	colorRrop ;
     short lastDrawableType ;	/* was last drawable a window or a pixmap? */
     short lastDrawableDepth ;	/* was last drawable 1 or 8 planes? */
-    void (* cachedIGBlt)();	/* cached image glyph blit routine */
-    void (* cachedPGBlt)();	/* cached poly glyph blit routine */
     pointer devPriv ;		/* Private area for device specific stuff */
     } ppcPrivGC ;
 typedef ppcPrivGC *ppcPrivGCPtr ;

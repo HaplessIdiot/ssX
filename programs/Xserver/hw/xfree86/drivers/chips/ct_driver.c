@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.21 1998/03/20 21:06:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.22 1998/03/28 06:35:58 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -100,6 +100,8 @@
 #include "vga256.h"
 #include "xf86xaa.h"
 #include "ct_driver.h"
+
+#include "extensions/apm.h"
 
 /* Chips&Technologies internal specific variables */
 
@@ -409,6 +411,7 @@ static Bool ctClockFind(unsigned char, int, ctClockPtr);
 static void ctClockLoad(unsigned char, ctClockPtr);
 static void ctScaleClock(Bool, int *);
 static int  ctSetMonitor(void);
+static void ctAPMNotify(int);
 #else
 static Bool CHIPSProbe();
 static char *CHIPSIdent();
@@ -493,6 +496,10 @@ vgaVideoChipRec CHIPS =
 };
 
 #define new ((vgaCHIPSPtr)vgaNewVideoState)
+#ifdef APMTextModeOnSuspend
+vgaCHIPSRec ctAPMsuspend;
+#endif
+vgaCHIPSPtr ctAPMresume = NULL;
 
 static unsigned CHIPS_ExtPorts[] =
 {
@@ -1437,6 +1444,7 @@ CHIPSProbe()
     if (ctDPMSSupport)
 	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
 #endif
+    vga256InfoRec.APMNotify = ctAPMNotify;
 
     if (ctAccelSupport && 
 	!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
@@ -3171,7 +3179,9 @@ CHIPSSave(void *arg)
     int i;
     unsigned char tmp;
     vgaCHIPSPtr save = (vgaCHIPSPtr) arg;
-
+#if 0
+    static int firstTime = 1;
+#endif    
 #ifdef DEBUG
     ErrorF("CHIPSSave\n");
 #endif
@@ -3241,6 +3251,12 @@ CHIPSSave(void *arg)
 
     /* get mode */
     save->XMode = ctXMode;
+#ifdef APMTextModeOnSuspend
+    if(firstTime){
+      ctAPMsuspend = *save;
+      firstTime = 0;
+    }
+#endif
     return ((void *)save);
 }
 
@@ -4991,4 +5007,34 @@ CHIPSPitchAdjust()
 	 XCONFIG_PROBED, vga256InfoRec.name, newpitch);
 #endif
   return newpitch;
+}
+
+static void
+ctAPMNotify(Event)
+int Event;
+{
+  static Bool suspended = FALSE;
+
+  switch(Event){
+  case XF86_APM_SYS_SUSPEND:
+  case XF86_APM_USER_SUSPEND:
+  case XF86_APM_CRITICAL_SUSPEND:   /* maybe not ?*/
+    if(!ctXMode) break;
+    ctAPMresume = CHIPSSave(ctAPMresume);
+#ifdef APMTextModeOnSuspend
+    CHIPSRestore(&ctAPMsuspend);
+#endif
+    suspended = TRUE;
+    break;
+  case XF86_APM_NORMAL_RESUME:
+  case XF86_APM_CRITICAL_RESUME:
+    if(!suspended) break;
+    CHIPSEnterLeave(ENTER);
+    CHIPSRestore(ctAPMresume);
+    suspended = FALSE;
+    break;
+  default:
+    break;
+  }
+  return;
 }

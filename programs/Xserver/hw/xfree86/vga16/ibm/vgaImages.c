@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.6 1996/12/23 06:53:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaImages.c,v 3.7 1997/03/13 15:11:33 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,7 +23,7 @@
 */
 /* $XConsortium: vgaImages.c /main/5 1996/02/21 17:58:58 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 
 #include "OScompiler.h"
@@ -39,8 +39,6 @@
 #undef FALSE
 #define TRUE 1
 #define FALSE 0
-
-extern void vgaFillSolid() ;
 
 void
 vgaDrawColorImage( pWin, x, y, w, h, data, RowIncrement, alu, planes )
@@ -65,8 +63,6 @@ register unsigned char tmp1;
 #endif
 
 {	/* Start GJA */
-	extern int xf86VTSema;
-
 	if ( !xf86VTSema ) {
 		offDrawColorImage( pWin, x, y, w, h, data, RowIncrement, alu, planes );
 		return;
@@ -368,8 +364,6 @@ int pad ;
 unsigned char tmpc;
 
 {	/* Start GJA */
-	extern int xf86VTSema;
-
 	if ( !xf86VTSema ) {
 		offReadColorImage( pWin, x, y, lx, ly, data, RowIncrement );
 		return;
@@ -415,7 +409,7 @@ if ( center_width < 0 ) {
 	      masterSrc += BYTES_PER_LINE(pWin) ) {
 		src = masterSrc ; VSETRW(src);
 		tmp = read8Z( src ) ; VINCRW(src);
-		if ( dx = skip )
+		if ((dx = skip))
 			tmp >>= ( dx << 2 ) ;
 		else
 		if ( lx < 8 ) {			/* kludge -- GJA */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbres.c,v 3.4 1996/12/23 06:52:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbbres.c,v 3.5 1997/03/13 15:10:52 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,7 +49,7 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbbres.c /main/5 1996/02/21 17:56:30 kaleb $ */
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "maskbits.h"
@@ -84,7 +84,6 @@ int len;                /* length of line */
     PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 
     register int e3 = e2-e1;
-    PixelType        tmp;
 
     /* point to longword containing first point */
     addrl = mfbScanline(addrlbase, x1, y1, nlwidth);

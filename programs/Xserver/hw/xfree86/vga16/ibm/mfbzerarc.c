@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.2 1997/03/13 15:11:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbzerarc.c,v 3.3 1998/03/20 21:07:07 hohndel Exp $ */
 
 /************************************************************
 
@@ -36,8 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * The Computer Journal, November 1967, Volume 10, Number 3, pp. 282-289
  */
 
-#define BANKING_MODS
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -49,8 +48,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "mizerarc.h"
 #include "OScompiler.h"	/* GJA */
 #include "wm3.h"	/* GJA */
+#include "ppc.h"
+#include "mi.h"
 
-extern void miPolyArc(), miZeroPolyArc();
 /*
  * Note, LEFTMOST must be the bit leftmost in the actual screen
  * representation.  This depends on both BITMAP_BIT_ORDER and
@@ -76,13 +76,13 @@ extern void miPolyArc(), miZeroPolyArc();
 { \
     register int *tmpaddr = &((addr)[(off)>>5]); \
     VSETRW(tmpaddr); \
-    UPDRW(VMAPRW(tmpaddr),SCRRIGHT (LEFTMOST, ((off) & 0x1f))); \
+    UPDRW(tmpaddr,SCRRIGHT (LEFTMOST, ((off) & 0x1f))); \
 }
 #define PixelateBlack(addr,off) \
 { \
     register int *tmpaddr = &((addr)[(off)>>5]); \
     VSETRW(tmpaddr); \
-    UPDRW(VMAPRW(tmpaddr),~(SCRRIGHT (LEFTMOST, ((off) & 0x1f)))); \
+    UPDRW(tmpaddr,~(SCRRIGHT (LEFTMOST, ((off) & 0x1f)))); \
 }
 
 #define Pixelate(base,off) \
@@ -90,7 +90,7 @@ extern void miPolyArc(), miZeroPolyArc();
     paddr = base + ((off)>>5); \
     pmask = SCRRIGHT(LEFTMOST, (off) & 0x1f); \
     VSETRW(paddr); \
-    UPDRW(VMAPW(paddr),(pixel & pmask)); \
+    UPDRW(paddr,(pixel & pmask)); \
 }
 
 #define DoPix(bit,base,off) if (mask & bit) Pixelate(base,off);
@@ -116,7 +116,7 @@ v16ZeroArcSS(pDraw, pGC, arc)
 	RROP_BLACK)
 	pixel = 0;
     else
-	pixel = ~0L;
+	pixel = ~0UL;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
@@ -130,8 +130,6 @@ v16ZeroArcSS(pDraw, pGC, arc)
 	addrl = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-
-/*    BANK_FLAG(addrl) */
 
     do360 = miZeroArcSetup(arc, &info, TRUE);
     yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
@@ -222,7 +220,7 @@ v16ZeroArcSS(pDraw, pGC, arc)
     }
 }
 
-void
+static void
 v16ZeroPolyArcSS(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -262,8 +260,6 @@ v16ZeroPolyArc(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    extern int xf86VTSema;
-
     if ( !xf86VTSema ) {
 	miZeroPolyArc(pDraw, pGC, narcs, parcs);
     } else {

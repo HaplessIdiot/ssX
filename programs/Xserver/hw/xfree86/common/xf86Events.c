@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.50 1998/02/07 08:58:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.51 1998/03/27 23:23:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,6 +52,7 @@
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
+#include "extensions/apm.h"
 
 #ifdef XINPUT
 #include "XI.h"
@@ -1506,3 +1507,29 @@ int etype;
   keybd->public.processInputProc(xE, keybd, 1);
 }
 #endif
+
+/*
+ * APM hook
+ */
+void 
+xf86APMNotify(APMevent)
+int APMevent;
+{
+  int j;
+  switch(APMevent){
+  case XF86_APM_NORMAL_RESUME:
+  case XF86_APM_CRITICAL_RESUME:
+    /* Turn screen saver off when switching back */
+    SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
+#ifdef DPMSExtension
+    if (DPMSEnabled)
+      DPMSSet(DPMSModeOn);
+#endif
+    break;
+  default:
+    break;
+  }
+  for (j = 0; j < screenInfo.numScreens; j++)
+    (XF86SCRNINFO(screenInfo.screens[j])->APMNotify)(APMevent);  
+}
+

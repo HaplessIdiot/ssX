@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.5 1996/12/23 06:53:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaStipple.c,v 3.6 1997/03/13 15:11:35 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,7 +23,7 @@
 */
 /* $XConsortium: vgaStipple.c /main/5 1996/02/21 17:59:10 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "pixmapstr.h"
 #include "OScompiler.h"
@@ -49,7 +49,7 @@ register wrap ;
 
 cptr = lineptr + ( x >> 3 ) ;
 bits = *cptr ;
-if ( shift = x & 7 )
+if ((shift = x & 7))
 	bits = SCRLEFT8( bits, shift ) | SCRRIGHT8( cptr[1], ( 8 - shift ) ) ;
 if ( ( wrap = x + 8 - patternWidth ) > 0 ) {
 	bits &= SCRLEFT8( 0xFF, wrap ) ;
@@ -88,8 +88,6 @@ return bits ;
 }
 #endif
 
-extern void vgaFillSolid() ;
-
 /* GJA --
  * Basically, in the code below, we will draw a stipple in the usual
  * three parts: left edge, center and right edge.
@@ -124,7 +122,7 @@ unsigned char bitmask;
 #endif
 
 /* Do Left Edge */
-if ( tmp1 = x & 07 ) {
+if ((tmp1 = x & 07)) {
 	tmp2 = SCRRIGHT8( ( (unsigned) 0xFF ), tmp1 ) ;
 	/* Catch The Cases Where The Entire Region Is Within One Byte */
 	if ( ( w -= 8 - tmp1 ) < 0 ) {
@@ -178,7 +176,7 @@ else {
 	NeedValX = xshift ;
 }
 
-if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
+if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	int SavNeedX = NeedValX ;
 
 #ifndef	PC98_EGC
@@ -224,7 +222,7 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 }
 
 /* Do Right Edge */
-if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
+if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 	/* Set The Bit Mask */
 #ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, SCRLEFT8( 0xFF, ( 8 - tmp1 ) ) ) ;
@@ -295,7 +293,7 @@ unsigned char bitmask;
 #endif
 
 /* Do Left Edge */
-if ( tmp1 = x & 07 ) {
+if ((tmp1 = x & 07)) {
 	tmp2 = SCRRIGHT8( ( (unsigned) 0xFF ), tmp1 ) ;
 	/* Catch The Cases Where The Entire Region Is Within One Byte */
 	if ( ( w -= 8 - tmp1 ) < 0 ) {
@@ -359,7 +357,7 @@ else {
 	NeedValX = xshift ;
 }
 
-if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
+if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	int SavNeedX = NeedValX ;
 
 #ifndef	PC98_EGC
@@ -413,7 +411,7 @@ if ( byte_cnt = ROW_OFFSET( w ) ) { /* Fill The Center Of The Box */
 }
 
 /* Do Right Edge */
-if ( tmp1 = BIT_OFFSET( w ) ) { /* x Now Is Byte Aligned */
+if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 	/* Set The Bit Mask */
 #ifndef	PC98_EGC
 	SetVideoGraphics( Bit_MaskIndex, SCRLEFT8( 0xFF, ( 8 - tmp1 ) ) ) ;
@@ -591,7 +589,7 @@ switch ( rasterOp ) {
 return ( color & VGA_ALLPLANES ) | data_rotate_value | invert_existing_data ;
 }
 
-void
+static void
 vgaDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes )
 WindowPtr pWin; /* GJA */
 unsigned char *data;

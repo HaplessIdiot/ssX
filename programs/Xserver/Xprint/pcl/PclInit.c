@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.4 1996/12/31 07:05:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.5 1997/01/14 22:14:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -155,32 +155,12 @@ Bool
 PclCloseScreen(int index,
 	       ScreenPtr pScreen)
 {
-    Bool status = Success;
     PclScreenPrivPtr pPriv = pScreen->devPrivates[PclScreenPrivateIndex].ptr;
 
-/*
-    if( pPriv->CloseScreen != (Bool (*)())NULL )
-      {
-	  pScreen->CloseScreen = pPriv->CloseScreen;
-	  status = pScreen->CloseScreen( index, pScreen );
-	  pScreen->CloseScreen = PclCloseScreen;
-      }
-*/
-
-    /*
-     * Finish cleaning up cfb (code taken from cfbCloseScreen)
-     */
-#ifdef XP_PCL_COLOR
-#ifdef CFB_NEED_SCREEN_PRIVATE
-    xfree( pScreen->devPrivates[cfbScreenPrivateIndex].ptr );
-#else
-    xfree( pScreen->devPrivate );
-#endif
-#endif
-
+    pScreen->CloseScreen = pPriv->CloseScreen;
     xfree( pPriv );
     
-    return status;
+    return (*pScreen->CloseScreen)(index, pScreen);
 }
 
 Bool
@@ -238,13 +218,13 @@ InitializePclDriver(ndx, pScreen, argc, argv)
 		  maxRes );
 #endif /* XP_PCL_COLOR */
 
+    miInitializeBackingStore ( pScreen );
+
     pScreen->defColormap = FakeClientID(0);
     pScreen->blackPixel = 1;
     pScreen->whitePixel = 0;
 
-/*
     pPriv->CloseScreen = pScreen->CloseScreen;
-*/
     pScreen->CloseScreen = PclCloseScreen;
     
     pScreen->QueryBestSize = (QueryBestSizeProcPtr)PclQueryBestSize;

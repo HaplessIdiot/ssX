@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 3.1 1996/12/23 06:52:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 3.2 1997/03/13 15:11:06 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -24,7 +24,7 @@
 
 /* $XConsortium: ppcCReduce.c /main/3 1996/02/21 17:57:17 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"
@@ -38,7 +38,7 @@
  * P. Shupak 1/88
  */
 
-void 
+static void 
 ppcReduceGeneral( alu, pm, fg, bg, fillStyle, drawableDepth, returnLoc )
 register int		alu ;
 register unsigned long	pm ;
@@ -217,24 +217,6 @@ returnLoc->fgPixel   = fg ;
 returnLoc->bgPixel   = bg ;
 returnLoc->alu       = alu ;
 returnLoc->fillStyle = fillStyle ;
-
-return ;
-}
-
-void 
-ppcReduceColorRrop( initialLoc, drawableDepth, returnLoc )
-ppcReducedRrop	*initialLoc ;
-int		drawableDepth ;
-ppcReducedRrop	*returnLoc ;
-{
-
-ppcReduceGeneral( initialLoc->alu,
-		  initialLoc->planemask,
-		  initialLoc->fgPixel,
-		  initialLoc->bgPixel,
- 		  initialLoc->fillStyle,
-		  drawableDepth,
-		  returnLoc ) ;
 
 return ;
 }

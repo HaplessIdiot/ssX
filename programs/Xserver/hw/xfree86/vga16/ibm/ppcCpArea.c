@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.9 1997/03/18 10:05:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.10 1998/03/20 21:07:08 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "servermd.h"
 #include "misc.h"
@@ -71,7 +71,7 @@ extern int mfbGCPrivateIndex;
 /*
  * Graft in the DoBitblt from cfb. It does everything correctly.
  */
-
+static void
 vga16DoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_ldext.h,v 3.3 1997/05/03 09:17:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_ldext.h,v 3.4 1997/05/06 09:46:19 dawes Exp $ */
 /*
  * Copyright (C) 1997 Matthieu Herrb
  *
@@ -27,6 +27,7 @@
 #ifndef MAGIC_DONE
 #  define MAGIC_DONE 0
 #  define MAGIC_LOAD_EXTENSION 8
+#  define MAGIC_LOAD_FONT 15
 #endif
 
 #if NeedFunctionPrototypes
@@ -35,6 +36,7 @@
 #define INITARGS /*nothing*/
 #endif
 typedef void (*InitExtension)(INITARGS);
+typedef void (*InitFont)(INITARGS);
 
 typedef struct ExtensionModule {
     InitExtension initFunc;
@@ -42,6 +44,11 @@ typedef struct ExtensionModule {
     Bool *disablePtr;
 } ExtensionModule;
 
+typedef struct FontModule {
+    InitFont initFunc;
+} FontModule;
+
 extern ExtensionModule extension[];
+extern FontModule font[];
 
 #endif

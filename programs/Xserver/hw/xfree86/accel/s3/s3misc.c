@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.71 1997/07/29 12:07:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.72 1997/11/22 00:00:12 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -78,6 +78,7 @@ static Bool s3TryAddress(
 
 extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr saveCloseScreen;
 extern Bool  s3Localbus;
 extern Bool  s3VLB;
 extern Bool  s3LinearAperture;
@@ -825,6 +826,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
    (void)s3CursorInit(0, pScreen);
 
+   saveCloseScreen = pScreen->CloseScreen;
    pScreen->CloseScreen = s3CloseScreen;
    pScreen->SaveScreen = s3SaveScreen;
 
@@ -970,10 +972,11 @@ s3CloseScreen(screen_idx, pScreen)
        * 7-Jan-94 CEG: The server is not running on the current vt.
        * Free the screen snapshot taken when the server vt was left.
        */
-      (s3savepScreen->DestroyPixmap)(ppix);
+      (*pScreen->DestroyPixmap)(ppix);
       ppix = NULL;
    }
-   return (TRUE);
+   pScreen->CloseScreen = saveCloseScreen;
+   return (*saveCloseScreen)(screen_idx, pScreen);
 }
 
 /*

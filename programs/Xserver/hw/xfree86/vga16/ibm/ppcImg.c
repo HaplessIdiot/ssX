@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.7 1997/03/13 15:11:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.8 1998/01/24 16:58:39 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -24,7 +24,7 @@
 
 /* $XConsortium: ppcImg.c /main/4 1996/02/21 17:57:53 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "misc.h"
 #include "gcstruct.h"
@@ -43,8 +43,7 @@
 /* GETBITSPERPIXEL -- Find out how many bits per pixel are supported at
  * this depth -- another helper function
  */
-static
-int
+static int
 GetBitsPerPixel( depth ) 
     int	depth ;
 {
@@ -103,7 +102,7 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 	    sy += pDraw->y ;
 /*	} */
 	if ( ( ( ( 1 << pDraw->depth ) - 1 ) & planeMask )
-		 != ( 1 << pDraw->depth ) - 1 ) {
+		 != (unsigned)( 1 << pDraw->depth ) - 1 ) {
 	    pGC = GetScratchGC( depth, pDraw->pScreen ) ;
 	    pPixmap = (PixmapPtr)
 	      (* pDraw->pScreen->CreatePixmap)( pDraw->pScreen, w, h, depth ) ;

@@ -1,20 +1,16 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.9 1996/12/28 08:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.10 1998/06/04 16:43:35 hohndel Exp $ */
 
 
 
 
 
 /* $XConsortium: vga16.h /main/5 1996/02/21 17:58:47 kaleb $ */
-/*
- * some header files need to be included here to make
- * the prototypes happy.
- */
-#include <windowstr.h>
-#include <gcstruct.h>
-#include <colormapst.h>
-#include <fontstruct.h>
+#include "windowstr.h"
+#include "gcstruct.h"
+#include "colormapst.h"
+#include "fontstruct.h"
 #ifndef MFB_OPEQ_WHITE
-#include <mfb.h>	/* GJA -- for PixelType */
+#include "mfb.h"	/* GJA -- for PixelType */
 #endif
 
 /* ppcArea.c */
@@ -26,33 +22,7 @@ void ppcAreaFill(
     GCPtr 
 #endif
 );
-/* ppcBitmap.c */
-void ppcQuickBlt(
-#if NeedFunctionPrototypes
-    int *,
-    int *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int 
-#endif
-);
-void ppcRotBitmapRight(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    int 
-#endif
-);
-void ppcRotBitmapDown(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    int 
-#endif
-);
+
 /* ppcBStore.c */
 void ppcSaveAreas(
 #if NeedFunctionPrototypes
@@ -72,6 +42,7 @@ void ppcRestoreAreas(
     WindowPtr 
 #endif
 );
+
 /* ppcClip.c */
 void ppcDestroyClip(
 #if NeedFunctionPrototypes
@@ -92,6 +63,7 @@ void ppcCopyClip(
     GCPtr 
 #endif
 );
+
 /* ppcCpArea.c */
 RegionPtr vga16CopyArea(
 #if NeedFunctionPrototypes
@@ -106,25 +78,8 @@ RegionPtr vga16CopyArea(
     int 
 #endif
 );
+
 /* ppcCReduce.c */
-void ppcReduceGeneral(
-#if NeedFunctionPrototypes
-    int,
-    unsigned long,
-    unsigned long,
-    unsigned long,
-    int,
-    int,
-    ppcReducedRrop *
-#endif
-);
-void ppcReduceColorRrop(
-#if NeedFunctionPrototypes
-    ppcReducedRrop *,
-    int,
-    ppcReducedRrop *
-#endif
-);
 void ppcGetReducedColorRrop(
 #if NeedFunctionPrototypes
     GC *,
@@ -132,19 +87,7 @@ void ppcGetReducedColorRrop(
     ppcReducedRrop *
 #endif
 );
-/* ppcCurs.c */
-Bool ppcRealizeCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr,
-    CursorPtr 
-#endif
-);
-Bool ppcUnrealizeCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr,
-    CursorPtr 
-#endif
-);
+
 /* ppcDepth.c */
 Bool ppcDepthOK(
 #if NeedFunctionPrototypes
@@ -152,6 +95,7 @@ Bool ppcDepthOK(
     int 
 #endif
 );
+
 /* ppcFillRct.c */
 void ppcPolyFillRect(
 #if NeedFunctionPrototypes
@@ -161,6 +105,7 @@ void ppcPolyFillRect(
     xRectangle *
 #endif
 );
+
 /* ppcWindowFS.c */
 void ppcSolidWindowFS(
 #if NeedFunctionPrototypes
@@ -202,13 +147,8 @@ void ppcTileWindowFS(
     int 
 #endif
 );
+
 /* ppcPixmapFS.c */
-int mod(
-#if NeedFunctionPrototypes
-    int,
-    int 
-#endif
-);
 void ppcSolidPixmapFS(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -249,6 +189,7 @@ void ppcTilePixmapFS(
     int 
 #endif
 );
+
 /* ppcGC.c */
 Bool ppcCreateGC(
 #if NeedFunctionPrototypes
@@ -260,12 +201,6 @@ void ppcDestroyGC(
     GC *
 #endif
 );
-Mask ppcChangePixmapGC(
-#if NeedFunctionPrototypes
-    GC *,
-    Mask 
-#endif
-);
 void ppcValidateGC(
 #if NeedFunctionPrototypes
     GCPtr,
@@ -273,6 +208,7 @@ void ppcValidateGC(
     DrawablePtr 
 #endif
 );
+
 /* ppcGetSp.c */
 void ppcGetSpans(
 #if NeedFunctionPrototypes
@@ -284,6 +220,7 @@ void ppcGetSpans(
     char *
 #endif
 );
+
 /* ppcImg.c */
 void ppcGetImage(
 #if NeedFunctionPrototypes
@@ -297,6 +234,7 @@ void ppcGetImage(
     char * 
 #endif
 );
+
 /* ppcLine.c */
 void ppcScrnZeroLine(
 #if NeedFunctionPrototypes
@@ -324,6 +262,7 @@ void ppcScrnZeroSegs(
     xSegment *
 #endif
 );
+
 /* ppcPixmap.c */
 PixmapPtr ppcCreatePixmap(
 #if NeedFunctionPrototypes
@@ -338,17 +277,7 @@ PixmapPtr ppcCopyPixmap(
     PixmapPtr 
 #endif
 );
-void ppcPadPixmap(
-#if NeedFunctionPrototypes
-    PixmapPtr 
-#endif
-);
-void ppcRotatePixmap(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    int 
-#endif
-);
+
 /* ppcPntWin.c */
 void ppcPaintWindow(
 #if NeedFunctionPrototypes
@@ -357,20 +286,7 @@ void ppcPaintWindow(
     int 
 #endif
 );
-void ppcPaintWindowSolid(
-#if NeedFunctionPrototypes
-    WindowPtr,
-    RegionPtr,
-    int 
-#endif
-);
-void ppcPaintWindowTile(
-#if NeedFunctionPrototypes
-    WindowPtr,
-    RegionPtr,
-    int 
-#endif
-);
+
 /* ppcPolyPnt.c */
 void ppcPolyPoint(
 #if NeedFunctionPrototypes
@@ -381,6 +297,7 @@ void ppcPolyPoint(
     xPoint *
 #endif
 );
+
 /* ppcPolyRec.c */
 void ppcPolyRectangle(
 #if NeedFunctionPrototypes
@@ -390,18 +307,7 @@ void ppcPolyRectangle(
     xRectangle *
 #endif
 );
-/* ppcPushPxl.c */
-void ppcPushPixels(
-#if NeedFunctionPrototypes
-    GCPtr,
-    PixmapPtr,
-    DrawablePtr,
-    int,
-    int,
-    int,
-    int 
-#endif
-);
+
 /* ppcQuery.c */
 void ppcQueryBestSize(
 #if NeedFunctionPrototypes
@@ -411,74 +317,7 @@ void ppcQueryBestSize(
     ScreenPtr
 #endif
 );
-/* ppcRot.c */
-void ppcRotZ8mapUp(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr,
-    int 
-#endif
-);
-void ppcRotZ8mapLeft(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr,
-    int 
-#endif
-);
-void ppcClipZ8Pixmap(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr 
-#endif
-);
-PixmapPtr ppcClipBitmap(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    int,
-    int 
-#endif
-);
-void ppcRotBitmapUp(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr,
-    int 
-#endif
-);
-void ppcRotBitmapLeft(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr,
-    int 
-#endif
-);
-void ppcClipZ1Pixmap(
-#if NeedFunctionPrototypes
-    PixmapPtr,
-    PixmapPtr 
-#endif
-);
-void ppcEndWorldHunger(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-void ppcRefinanceNationalDebt(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-void ppcEndWarForever(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-void ppcPayServerHackersWhatTheyreWorth(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+
 /* ppcRslvC.c */
 void vga16ResolveColor(
 #if NeedFunctionPrototypes
@@ -498,6 +337,7 @@ Bool vga16CreateDefColormap(
     ScreenPtr 
 #endif
 );
+
 /* ppcSetSp.c */
 void ppcSetSpans(
 #if NeedFunctionPrototypes
@@ -510,15 +350,9 @@ void ppcSetSpans(
     int 
 #endif
 );
+
 /* ppcWindow.c */
 void ppcCopyWindow(
-#if NeedFunctionPrototypes
-    WindowPtr,
-    DDXPointRec,
-    RegionPtr 
-#endif
-);
-void ppcCopyWindowForXYhardware(
 #if NeedFunctionPrototypes
     WindowPtr,
     DDXPointRec,
@@ -539,17 +373,7 @@ Bool ppcUnrealizeWindow(
     int 
 #endif
 );
-Bool ppcRealizeWindow(
-#if NeedFunctionPrototypes
-    WindowPtr 
-#endif
-);
 Bool ppcDestroyWindow(
-#if NeedFunctionPrototypes
-    WindowPtr 
-#endif
-);
-Bool ppcCreateWindow(
 #if NeedFunctionPrototypes
     WindowPtr 
 #endif
@@ -559,6 +383,7 @@ Bool ppcCreateWindowForXYhardware(
     WindowPtr 
 #endif
 );
+
 /* emulOpStip.c */
 void ppcOpaqueStipple(
 #if NeedFunctionPrototypes
@@ -576,6 +401,7 @@ void ppcOpaqueStipple(
     int 
 #endif
 );
+
 /* emulRepAre.c */
 void ppcReplicateArea(
 #if NeedFunctionPrototypes
@@ -590,6 +416,7 @@ void ppcReplicateArea(
     ScreenPtr 
 #endif
 );
+
 /* emulTile.c */
 void ppcTileRect(
 #if NeedFunctionPrototypes
@@ -605,8 +432,9 @@ void ppcTileRect(
     int 
 #endif
 );
+
 /* vgaGC.c */
-Mask vgaChangeGCtype(
+void vgaChangeGCtype(
 #if NeedFunctionPrototypes
     GC *,
     ppcPrivGCPtr 
@@ -618,8 +446,9 @@ Mask vgaChangeWindowGC(
     Mask 
 #endif
 );
+
 /* vgaBitBlt.c */
-void vgaBitBlt(
+void vga16BitBlt(
 #if NeedFunctionPrototypes
     WindowPtr,
     int,
@@ -633,6 +462,7 @@ void vgaBitBlt(
     int 
 #endif
 );
+
 /* vgaImages.c */
 void vgaDrawColorImage(
 #if NeedFunctionPrototypes
@@ -658,6 +488,7 @@ void vgaReadColorImage(
     int 
 #endif
 );
+
 /* vgaLine.c */
 void vgaHorzLine(
 #if NeedFunctionPrototypes
@@ -698,20 +529,8 @@ void vgaBresLine(
     unsigned long int 
 #endif
 );
+
 /* vgaStipple.c */
-void vgaDrawMonoImage(
-#if NeedFunctionPrototypes
-    WindowPtr,
-    unsigned char *,
-    int,
-    int,
-    int,
-    int,
-    unsigned long int,
-    int,
-    unsigned long int 
-#endif
-);
 void vgaFillStipple(
 #if NeedFunctionPrototypes
     WindowPtr,
@@ -727,6 +546,7 @@ void vgaFillStipple(
     const int 
 #endif
 );
+
 /* vgaSolid.c */
 void vgaFillSolid(
 #if NeedFunctionPrototypes
@@ -740,15 +560,8 @@ void vgaFillSolid(
     const int 
 #endif
 );
+
 /* offscreen.c */
-int do_rop(
-#if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    const unsigned long 
-#endif
-);
 void offBitBlt(
 #if NeedFunctionPrototypes
     WindowPtr,
@@ -785,23 +598,6 @@ void offReadColorImage(
     int,
     unsigned char *,
     int 
-#endif
-);
-void offBresLine(
-#if NeedFunctionPrototypes
-    WindowPtr,
-    unsigned long int,
-    int,
-    unsigned long int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    unsigned long int 
 #endif
 );
 void offFillSolid(
@@ -844,6 +640,7 @@ void offFillStipple(
     const int 
 #endif
 );
+
 /* mfbimggblt.c */
 void v16ImageGlyphBlt(
 #if NeedFunctionPrototypes
@@ -856,37 +653,21 @@ void v16ImageGlyphBlt(
     unsigned char *
 #endif
 );
-void doImageGlyphBlt(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GC *,
-    int,
-    int,
-    unsigned int,
-    CharInfoPtr *,
-    unsigned char *,
-    ExtentInfoRec *
-#endif
-);
+
 /* wm3.c */
 int wm3_set_regs(
 #if NeedFunctionPrototypes
     GC *
 #endif
 );
+
 /* ppcIO.c */
 int NeverCalled(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-Bool vgaScreenClose(
-#if NeedFunctionPrototypes
-    int,
-    ScreenPtr 
-#endif
-);
-void Init16Output(
+Bool Init16Output(
 #if NeedFunctionPrototypes
     ScreenPtr,
     pointer,
@@ -897,15 +678,8 @@ void Init16Output(
     int
 #endif
 );
+
 /* mfbfillarc.c */
-void v16PolyFillArcSolid(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    xArc *
-#endif
-);
 void v16PolyFillArc(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -916,14 +690,6 @@ void v16PolyFillArc(
 );
 
 /* mfbzerarc.c */
-void v16ZeroPolyArcSS(
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    xArc *
-#endif
-);
 void v16ZeroPolyArc(
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -936,40 +702,6 @@ void v16ZeroPolyArc(
 extern Bool xf86VTSema;
 
 /* mfbline.c */
-/* internal */ void DoV16SegmentSS (
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    register xSegment *
-#endif
-);
-/* internal */ void DoV16LineSS (
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int	,
-    int	,
-    DDXPointPtr
-#endif
-);
-/* internal */ void DoV16SegmentSD (
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    register xSegment *
-#endif
-);
-/* internal */ void DoV16LineSD (
-#if NeedFunctionPrototypes
-    DrawablePtr,
-    GCPtr,
-    int,
-    int,
-    DDXPointPtr
-#endif
-);
 void v16SegmentSS (
 #if NeedFunctionPrototypes
     DrawablePtr,
@@ -1039,7 +771,7 @@ void v16BresD(
 );
 
 /* mfbhrzvert.c */
-int v16HorzS(
+void v16HorzS(
 #if NeedFunctionPrototypes
 	register PixelType *,
 	register int,
@@ -1048,7 +780,7 @@ int v16HorzS(
 	int
 #endif
 );
-int v16VertS(
+void v16VertS(
 #if NeedFunctionPrototypes
 	register PixelType *,
 	register int,
@@ -1057,3 +789,38 @@ int v16VertS(
 	register int
 #endif
 );
+
+#ifdef PC98_EGC
+
+/* egc_asm.s */
+unsigned char getbits_x(
+#if NeedFunctionPrototypes
+	int,
+	unsigned int,
+	pointer,
+	unsigned int
+#endif
+);
+void wcopyr(
+#if NeedFunctionPrototypes
+	pointer,
+	pointer,
+	int,
+	pointer
+#endif
+);
+void wcopyl(
+#if NeedFunctionPrototypes
+	pointer,
+	pointer,
+	int,
+	pointer
+#endif
+);
+unsigned long int read8Z(
+#if NeedFunctionPrototypes
+	pointer
+#endif
+);
+
+#endif /* PC98_EGC */

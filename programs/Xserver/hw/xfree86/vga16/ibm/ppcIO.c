@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.9 1997/03/27 18:39:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.10 1998/04/05 16:42:19 robin Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -50,7 +50,7 @@ SOFTWARE.
 */
 /* $XConsortium: ppcIO.c /main/8 1996/02/21 17:57:49 kaleb $ */
 
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 #include "resource.h"
 #include "scrnintstr.h"
@@ -67,16 +67,9 @@ SOFTWARE.
 #include "mistruct.h"
 #include "mi.h"
 
-extern Bool xf86FlipPixels;
-#define XF86FLIP_PIXELS() \
-	if (xf86FlipPixels) { \
-		pScreen->whitePixel = (pScreen->whitePixel) ? 0 : 1; \
-		pScreen->blackPixel = (pScreen->blackPixel) ? 0 : 1; \
-	}
+extern int defaultColorVisualClass;
 
-extern ScreenRec vgaScreenRec ; /* Forward Declaration Here */
-
-VisualRec vgaVisuals[] = {
+static VisualRec vgaVisuals[] = {
 /* StaticColor needs to be first so is can be used as the default */
 /* vid class     bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
 #ifdef	PC98
@@ -94,9 +87,9 @@ VisualRec vgaVisuals[] = {
 
 #define NUM_VISUALS  (sizeof vgaVisuals/sizeof (VisualRec))
 
-unsigned long int vgaDepthVIDs[NUM_VISUALS];
+static unsigned long int vgaDepthVIDs[NUM_VISUALS];
 
-DepthRec vgaDepths[] = {
+static DepthRec vgaDepths[] = {
 /*	depth		numVid	vids */
     {	1,		0,	NULL	},
     {	VGA_MAXPLANES,	NUM_VISUALS,	vgaDepthVIDs }
@@ -104,13 +97,14 @@ DepthRec vgaDepths[] = {
 
 #define NUM_DEPTHS  (sizeof vgaDepths/sizeof (DepthRec))
 
+int
 NeverCalled()
 {
 	ErrorF("NeverCalled was nevertheless called\n");
 	abort();
 }
 
-BSFuncRec ppcBSFuncRec = {
+static BSFuncRec ppcBSFuncRec = {
     ppcSaveAreas,
     ppcRestoreAreas,
     (BackingStoreSetClipmaskRgnProcPtr) 0,
@@ -119,9 +113,9 @@ BSFuncRec ppcBSFuncRec = {
 };
 
 /*ARGSUSED*/
-Bool
-vgaScreenClose( index, pScreen )
-int	index;
+static Bool
+vgaScreenClose( idx, pScreen )
+int	idx;
 ScreenPtr pScreen;
 {
 	pScreen->defColormap = 0 ;
@@ -129,8 +123,8 @@ ScreenPtr pScreen;
 }
 
 
-GCPtr sampleGCperDepth[MAXFORMATS+1] = { 0 };
-PixmapPtr samplePixmapPerDepth[1] = { 0 };
+static GCPtr sampleGCperDepth[MAXFORMATS+1] = { 0 };
+static PixmapPtr samplePixmapPerDepth[1] = { 0 };
 
 /* GJA -- Took this from miscrinit.c.
  * We want that devKind contains the distance in bytes between two scanlines.
@@ -154,7 +148,7 @@ typedef struct
  * possible private-requesting modules have been inited; we create the
  * screen pixmap here.
  */
-Bool
+static Bool
 v16CreateScreenResources(pScreen)
     ScreenPtr pScreen;
 {
@@ -196,15 +190,14 @@ v16CreateScreenResources(pScreen)
 }
 
 
-void
+Bool
 Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
     ScreenPtr pScreen;
-    pointer pbits; /* We assume that this is equal to vgaBase */
+    pointer pbits;
     int virtx, virty;
     int dpix, dpiy;
     int width;
 {
-  extern int defaultColorVisualClass;
   int defvisual,i;
 
   switch ( defaultColorVisualClass )
@@ -242,7 +235,6 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen->defColormap = FakeClientID(0);
   pScreen-> whitePixel = VGA_WHITE_PIXEL;
   pScreen-> blackPixel = VGA_BLACK_PIXEL;
-  XF86FLIP_PIXELS();
   pScreen-> rgf = 0;
   *(pScreen-> GCperDepth) = *(sampleGCperDepth);
   *(pScreen-> PixmapPerDepth) = *(samplePixmapPerDepth);
@@ -262,30 +254,31 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen-> CreatePixmap = ppcCreatePixmap;
   pScreen-> DestroyPixmap = mfbDestroyPixmap;
   pScreen-> SaveDoomedAreas = (SaveDoomedAreasProcPtr)NoopDDA;
-  pScreen-> RestoreAreas = (RegionPtr(*)())ppcRestoreAreas;
+  pScreen-> RestoreAreas = (RestoreAreasProcPtr)NoopDDA;
   pScreen-> ExposeCopy = (ExposeCopyProcPtr)NoopDDA;
-  pScreen-> TranslateBackingStore = (RegionPtr(*)())NoopDDA;
-  pScreen-> ClearBackingStore = (RegionPtr(*)())NoopDDA;
+  pScreen-> TranslateBackingStore = (TranslateBackingStoreProcPtr)NoopDDA;
+  pScreen-> ClearBackingStore = (ClearBackingStoreProcPtr)NoopDDA;
   pScreen-> DrawGuarantee = (DrawGuaranteeProcPtr)NoopDDA;
   pScreen-> RealizeFont = mfbRealizeFont;
   pScreen-> UnrealizeFont = mfbUnrealizeFont;
   pScreen-> CreateGC = ppcCreateGC;
-  pScreen-> CreateColormap = (Bool (*)())vga16InitializeColormap;
-  pScreen-> DestroyColormap = (void (*)())NoopDDA;
+  pScreen-> CreateColormap = vga16InitializeColormap;
+  pScreen-> DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
   pScreen-> ResolveColor = vga16ResolveColor;
   pScreen-> BitmapToRegion = mfbPixmapToRegion;
 
   if (!mfbAllocatePrivates(pScreen, (int*)NULL, (int*)NULL))
-	return ;
+	return FALSE;
 
-  miScreenInit(pScreen, pbits, virtx, virty, 75, 75, width,
+  if (!miScreenInit(pScreen, pbits, virtx, virty, dpix, dpiy, width,
 	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, defvisual /* See above */,
-	NUM_VISUALS, vgaVisuals);
+	NUM_VISUALS, vgaVisuals))
+     return FALSE;
   pScreen->BackingStoreFuncs = ppcBSFuncRec;
-  miInitializeBackingStore(pScreen);
 
   /* GJA -- Now we override the supplied default: */
   pScreen -> CreateScreenResources = v16CreateScreenResources;
 
   mfbRegisterCopyPlaneProc(pScreen,miCopyPlane); /* GJA -- R4->R5 */
+  return TRUE;
 }

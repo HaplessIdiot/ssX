@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.4 1997/03/13 15:10:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.5 1998/03/20 21:07:07 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,7 +48,7 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbline.c /main/4 1996/02/21 17:56:48 kaleb $ */
-#include "../mfb/mfbmap.h"
+#include "mfbmap.h"
 #include "X.h"
 
 #include "gcstruct.h"
@@ -93,8 +93,13 @@ outsideness, and a method similar to Pike's layers for doing the
 actual clipping.
 
 */
-
 #ifdef POLYSEGMENT
+static void DoV16SegmentSS(
+#if NeedFunctionPrototypes
+    DrawablePtr, GCPtr, int, xSegment*
+#endif
+);
+
 void
 v16SegmentSS (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
@@ -102,8 +107,6 @@ v16SegmentSS (pDrawable, pGC, nseg, pSeg)
     int		nseg;
     register xSegment	*pSeg;
 {
-    extern int xf86VTSema;
-
     if ( ! xf86VTSema ) {
 	miPolySegment(pDrawable, pGC, nseg, pSeg);
     } else {
@@ -112,6 +115,12 @@ v16SegmentSS (pDrawable, pGC, nseg, pSeg)
 }
 
 #else
+static void DoV16LineSS(
+#if NeedFunctionPrototypes
+    DrawablePtr, GCPtr, int, int, DDXPointPtr
+#endif
+);
+
 void
 v16LineSS (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -120,8 +129,6 @@ v16LineSS (pDrawable, pGC, mode, npt, pptInit)
     int		npt;		/* number of points */
     DDXPointPtr pptInit;
 {
-    extern int xf86VTSema;
-
     if ( ! xf86VTSema ) {
 	miZeroLine(pDrawable, pGC, mode, npt, pptInit);
     } else {
@@ -130,7 +137,7 @@ v16LineSS (pDrawable, pGC, mode, npt, pptInit)
 }
 #endif
 
-void
+static void
 #ifdef POLYSEGMENT
 DoV16SegmentSS (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
@@ -158,7 +165,9 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc2;		/* outcode of point 2 */
 
     PixelType *addrlBase;	/* pointer to start of drawable */
+#ifndef POLYSEGMENT
     PixelType *addrl;		/* address of destination pixmap */
+#endif
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -493,6 +502,12 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
  */
 
 #ifdef POLYSEGMENT
+static void DoV16SegmentSD(
+#if NeedFunctionPrototypes
+    DrawablePtr, GCPtr, int, xSegment*
+#endif
+);
+
 void
 v16SegmentSD (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
@@ -500,8 +515,6 @@ v16SegmentSD (pDrawable, pGC, nseg, pSeg)
     int		nseg;
     register xSegment	*pSeg;
 {
-    extern int xf86VTSema;
-
     if ( ! xf86VTSema ) {
 	miPolySegment(pDrawable, pGC, nseg, pSeg);
     } else {
@@ -510,6 +523,12 @@ v16SegmentSD (pDrawable, pGC, nseg, pSeg)
 }
 
 #else
+static void DoV16LineSD(
+#if NeedFunctionPrototypes
+    DrawablePtr, GCPtr, int, int, DDXPointPtr
+#endif
+);
+
 void
 v16LineSD (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -518,17 +537,15 @@ v16LineSD (pDrawable, pGC, mode, npt, pptInit)
     int		npt;		/* number of points */
     DDXPointPtr pptInit;
 {
-    extern int xf86VTSema;
-
     if ( ! xf86VTSema ) {
 	miZeroDashLine(pDrawable, pGC, mode, npt, pptInit);
     } else {
-	DO_WM3(pGC,DoV16LineSS (pDrawable, pGC, mode, npt, pptInit));
+	DO_WM3(pGC,DoV16LineSD (pDrawable, pGC, mode, npt, pptInit));
     }
 }
 #endif
 
-void
+static void
 #ifdef POLYSEGMENT
 DoV16SegmentSD (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;

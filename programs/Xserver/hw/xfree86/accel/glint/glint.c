@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.29 1998/04/26 16:04:38 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.30 1998/06/04 16:43:15 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -33,6 +33,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "mibstore.h"
 
 #include "xf86Procs.h"
 #include "xf86Priv.h"
@@ -115,6 +116,7 @@ ScrnInfoRec glintInfoRec = {
     glintAdjustFrame,	/* void (* AdjustFrame)() */
     glintSwitchMode,	/* Bool (* SwitchMode)() */
     glintDPMSSet,	/* void (* DPMSSet)() */
+    (void (*)())NoopDDA,/* void (* APMNotify)() */
     glintPrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
     {5, 6, 5},          /* xrgb weight */
@@ -259,6 +261,7 @@ unsigned char glintSwapBits[256];
 pointer glint_reg_base;
 int glinthotX, glinthotY;
 static PixmapPtr ppix = NULL;
+static CloseScreenProcPtr CloseScreen;
 int glintDisplayWidth;
 volatile pointer glintVideoMem = NULL;
 volatile pointer GLINTMMIOBase;
@@ -447,6 +450,33 @@ glintProbe()
 		{
 			ErrorF("%s %s: found GLINT Permedia 2 at card #%d func #%d with "
 			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
+		}
+	case PCI_CHIP_3DLABS_PERMEDIA2V:
+		glintcopro = PCI_MAKE_TAG(pcrp->_bus, pcrp->_cardnum, pcrp->_func);
+		basecopro = pcrp->_base0;
+		pcrpglint = pcrp;
+		/* Hack alert !!!
+		 * we simply treat the 2v as 2 for now
+		 */
+		coprotype = PCI_CHIP_3DLABS_PERMEDIA2;
+		if( cardnum == -1 )
+			cardnum = pcrp->_cardnum;
+		else if( cardnum != pcrp->_cardnum )
+		{
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
+			glintdelta = 0;
+			pcrpdelta = NULL;
+			cardnum = pcrp->_cardnum;
+		}
+		if( xf86Verbose ) 
+		{
+			ErrorF("%s %s: found GLINT Permedia 2v at card #%d func #%d with "
+			       "base 0x%x\n\t!!!! THIS WILL BE TREATED AS PERMEDIA 2 "
+			       "which may not work !!!!",
+			       XCONFIG_PROBED, glintInfoRec.name,
 			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
@@ -1107,6 +1137,8 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 			glintInfoRec.displayWidth))
 		return(FALSE);
 
+	miInitializeBackingStore(pScreen);
+
 	pScreen->whitePixel = (Pixel) 1;
 	pScreen->blackPixel = (Pixel) 0;
 
@@ -1169,6 +1201,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	} else 
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
 
+	CloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = glintCloseScreen;
 	pScreen->SaveScreen = glintSaveScreen;
 
@@ -1329,7 +1362,7 @@ glintCloseScreen(int screen_idx, ScreenPtr pScreen)
     /* 7-Jan-94 CEG: The server is not running on the current vt.
      * Free the screen snapshot taken when the server vt was left.
      */
-	    (savepScreen->DestroyPixmap)(ppix);
+	    (*pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
     }
 
@@ -1337,24 +1370,9 @@ glintCloseScreen(int screen_idx, ScreenPtr pScreen)
     glintClearSavedCursor(screen_idx);
 #endif
 
-    switch (glintInfoRec.bitsPerPixel) {
-    case 8:
-        cfbCloseScreen(screen_idx, savepScreen);
-	break;
-    case 16:
-	cfb16CloseScreen(screen_idx, savepScreen);
-	break;
-    case 24:
-        cfb24CloseScreen(screen_idx, savepScreen);
-	break;
-    case 32:
-        cfb32CloseScreen(screen_idx, savepScreen);
-	break;
-    }
-
     savepScreen = NULL;
-
-    return(TRUE);
+    pScreen->CloseScreen = CloseScreen;
+    return (*CloseScreen)(screen_idx, pScreen);
 }
 
 /*

@@ -37,13 +37,16 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
  
 :h3.Include Files
 */
+#include "trig.h"
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"
 #include "pictures.h"
 #include "fonts.h"
 #include "arith.h"
-#include "trig.h"
 
 static void FindFfcn();
 static void FindIfcn();

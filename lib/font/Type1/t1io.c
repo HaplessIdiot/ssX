@@ -37,6 +37,9 @@
 #endif
  
 #include <fcntl.h>
+#ifdef XFree86LOADER
+#include <xf86_libc.h>
+#endif
 #include "t1stdio.h"
 #include "t1hdigit.h"
 #ifdef WIN32

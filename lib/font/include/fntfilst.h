@@ -1,5 +1,5 @@
 /* $XConsortium: fntfilst.h,v 1.8 94/04/17 20:17:29 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/include/fntfilst.h,v 3.0 1995/11/16 11:03:45 dawes Exp $ */
 
 /*
 
@@ -40,6 +40,9 @@ in this Software without prior written authorization from the X Consortium.
 #include "fontstruct.h"
 #include "fntfil.h"
 #include "fontxlfd.h"
+#ifdef XFree86LOADER
+#include <xf86_ansic.h>
+#endif
 
 typedef struct _FontName {
     char	*name;

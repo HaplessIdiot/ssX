@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.26 1998/04/27 13:18:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.27 1998/06/04 16:43:42 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -272,10 +272,6 @@ xf86FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version. Before we do that, we replace
-     * the cfb backing store functions with our wrapper versions.
-     */
     xf86BSFuncRec.SaveAreas = xf86GCInfoRec.SaveAreasWrapper;
     xf86BSFuncRec.RestoreAreas = xf86GCInfoRec.RestoreAreasWrapper;
 #ifdef CFB_NEED_SCREEN_PRIVATE
@@ -283,9 +279,7 @@ xf86FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
-    /* "Last call for boarding!  Last call." :-) */
     pScreen->BackingStoreFuncs = xf86BSFuncRec;
-    miInitializeBackingStore (pScreen);
     pScreen->GetScreenPixmap = cfbGetScreenPixmap;
     pScreen->SetScreenPixmap = cfbSetScreenPixmap;
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.5 1997/04/12 13:47:00 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/mfb/Imakefile,v 3.6 1998/03/27 23:23:56 hohndel Exp $
 
 
 
@@ -11,8 +11,8 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:34:39 rws $
 
 #if DoLoadableServer
 XF86INCL = -I$(XF86COMSRC) -I$(XF86SRC)
-XFMODSRC = mfbmodule.c
-XFMODOBJ = mfbmodule.o
+XFMODSRC = vgamodule.c
+XFMODOBJ = vgamodule.o
 #endif
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -93,8 +93,8 @@ ObjectMapIncludeFromSpecialSource(mfbtegblt,MfbSourceDir/mfbtegblt,/**/)
 ObjectMapIncludeFromSpecialSource(mfbtile,MfbSourceDir/mfbtile,/**/)
 ObjectMapIncludeFromSpecialSource(mfbwindow,MfbSourceDir/mfbwindow,/**/)
 ObjectMapIncludeFromSpecialSource(mfbzerarc1,MfbSourceDir/mfbzerarc,/**/)
-LinkSourceFile(mfbmap.h,$(XF86SRC)/vga16/mfb)
-LinkSourceFile(mfbmodule.c,$(XF86SRC)/vga16/mfb)
+LinkSourceFile(mfbmap.h,$(XF86SRC)/vga2/mfb)
+LinkSourceFile(vgamodule.c,$(XF86SRC)/vga16/ibm)
 
 ObjectFromSpecialSource(mfbseg1,mfbline1,-DPOLYSEGMENT)
 

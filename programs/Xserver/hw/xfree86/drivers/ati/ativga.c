@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.2 1998/03/20 21:06:42 hohndel Exp $ */
 /*
  * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -293,9 +293,9 @@ ATIVGARestore(ATIHWPtr restore)
         PutReg(CRTX(vgaIOBase), Index, restore->std.CRTC[Index]);
 
     /* Load attribute controller */
-    (void) inb(GENS1(vgaIOBase));       /* Reset flip-flop */
     for (Index = 0;  Index < NumberOf(restore->std.Attribute);  Index++)
     {
+        (void) inb(GENS1(vgaIOBase));   /* Reset flip-flop & add delay */
         outb(ATTRX, Index);
         outb(ATTRX, restore->std.Attribute[Index]);
     }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.74 1998/01/24 16:57:25 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.75 1998/04/05 00:45:53 robin Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,7 +30,7 @@ extern int atoi();
 #endif
 
 #if !defined(AMOEBA) && !defined(MINIX)
-#if defined(MetroLink) && defined(Lynx) || defined(ISC)
+#if defined(Lynx) || defined(ISC)
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.8 1997/10/25 13:49:57 hohndel Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.9 1998/03/27 23:22:57 hohndel Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -10,6 +10,7 @@
 #define _XF86MISC_H_
 
 #include <X11/Xfuncproto.h>
+#include "X11/extensions/apm.h"
 
 #define X_XF86MiscQueryVersion		0
 #ifdef _XF86MISC_SAVER_COMPAT_
@@ -20,6 +21,7 @@
 #define X_XF86MiscGetKbdSettings	4
 #define X_XF86MiscSetMouseSettings	5
 #define X_XF86MiscSetKbdSettings	6
+#define X_XF86MiscAPMNotify  	        7
 
 #define XF86MiscNumberEvents		0
 
@@ -131,6 +133,13 @@ Status XF86MiscSetKbdSettings(
 #if NeedFunctionPrototypes
     Display*			/* dpy */,
     XF86MiscKbdSettings*	/* keyboard info */
+#endif
+);
+
+Bool XF86MiscAPMNotify(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int 	                /* event */
 #endif
 );
 

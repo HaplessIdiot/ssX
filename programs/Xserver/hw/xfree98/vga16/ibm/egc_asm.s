@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/egc_asm.s,v 3.3 1996/05/13 08:33:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/egc_asm.s,v 3.4 1996/12/23 07:08:12 dawes Exp $ */
 
 #include "assyntax.h"
 
@@ -121,7 +121,7 @@ GLNAME(wcopyr):
 	MOV_L(REGOFF(12,ESP),ESI)
 	MOV_L(REGOFF(16,ESP),EDI)
 	MOV_L(REGOFF(20,ESP),ECX)
-	MOV_L(GLNAME(vgaBase),EAX)
+	MOV_L(REGOFF(24,ESP),EAX)
 	CMP_L(EAX,EDI)
 	JGE(wcopyr_0)
 	ADD_L(CONST(2),EDI)
@@ -143,7 +143,7 @@ GLNAME(wcopyl):
 	PUSH_L(EDI)
 	MOV_L(REGOFF(12,ESP),ESI)
 	MOV_L(REGOFF(20,ESP),ECX)
-	MOV_L(GLNAME(vgaBase),EDI)
+	MOV_L(REGOFF(24,ESP),EDI)
 	MOV_L(ECX,EDX)
 	DEC_L(EDX)
 	SHL_L(CONST(1),EDX)
