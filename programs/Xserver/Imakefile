@@ -1120,27 +1120,45 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
 DDXDIR1 = hw/darwin
+DDXDIR2 = hw/darwin/bundle
 DARWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-DARWINOBJS = 
+DARWINOBJS = $(DDXDIR1)/xfIOKitStartup.o
 DARWINLIBS = PreFbLibs $(DDXDIR1)/LibraryTargetName(darwin) $(CFB16) $(CFB32) $(CFB8) PostFbLibs
 DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 
-#define ServerToInstall Xdarwin
-
 #if DarwinQuartzSupport
 
-/* We need the IOKit framework. For Quartz support, we also need
+/*
+ * We need the IOKit framework. For Quartz support, we also need
  * CoreGraphics in ApplicationServices, HIToolbox in Carbon, and Cocoa.
  */
 QUARTZSYSLIBS = -framework ApplicationServices -framework Carbon -framework Cocoa -ObjC
+QUARTZOBJS = $(DDXDIR2)/quartzStartup.o
+XDARWINAPPDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
 
-SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS), \
-	$(DARWINLIBS) $(DDXDIR1)/bundle/LibraryTargetName(XQuartz), \
+/*
+ * IOKit X server
+ */
+SetUIDServerTarget(XDarwinIOKit,$(DARWINDIRS),$(DARWINOBJS), \
+	$(DARWINLIBS),$(DARWINSYSLIBS))
+
+/*
+ * Quartz mode X server
+ * (installed in its application bundle)
+ */
+SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(QUARTZOBJS), \
+	$(DARWINLIBS) $(DDXDIR2)/LibraryTargetName(XQuartz), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
+
+install::
+	mkdir -p $(XDARWINAPPDIR)
+	mv $(DESTDIR)$(BINDIR)/XDarwin $(XDARWINAPPDIR)/XDarwin
 
 #else /* !DarwinQuartzSupport */
 
-SetUIDServerTarget(Xdarwin,$(DARWINDIRS),$(DARWINOBJS), \
+#define ServerToInstall XDarwin
+
+SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
 	$(DARWINLIBS),$(DARWINSYSLIBS))
 
 #endif /* DarwinQuartzSupport */

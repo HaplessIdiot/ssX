@@ -1,20 +1,23 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.2 2001/03/15 22:24:27 torrey Exp $
 
 #include <Server.tmpl>
 
 SRCS =	Preferences.m \
         XApplication.m \
         Xserver.m \
+        quartz.c \
         quartzCocoa.m \
         quartzPasteboard.c
 
 OBJS =	Preferences.o \
         XApplication.o \
         Xserver.o \
+        quartz.o \
         quartzCocoa.o \
         quartzPasteboard.o
 
-INCLUDES = -I. -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+           -I$(FONTINCSRC)
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion
@@ -22,15 +25,21 @@ CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
 DEFINES = $(CUSTOMVERDEF)
-XDARWINBINDIR = XDarwin.app/Contents/MacOS/
+XDARWINBINDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
+QUARTZSYSLIBS = -framework IOKit -framework ApplicationServices \
+		-framework Cocoa -framework Carbon
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(XQuartz,$(OBJS))
 
+AllTarget(quartzStartup.o)
+
+InstallScript(XDarwin,$(DESTDIR)$(BINDIR))
+install::
+	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwin X)
+
 install::
 	pbxbuild install -target XDarwin
-	-(cd $(DESTDIR)$(BINDIR); mkdir -p $(XDARWINBINDIR); mv Xdarwin $(XDARWINBINDIR))
-	InstallProgram(Xdarwin, $(DESTDIR)$(BINDIR))
 
 clean::
 	pbxbuild "clean" -target XDarwin

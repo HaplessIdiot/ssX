@@ -28,6 +28,7 @@
 		0157A37D002CF6D7CE6F79C2 = {
 			children = (
 				0157A37E002CF6D7CE6F79C2,
+				43B962E200617B93416877C2,
 			);
 			isa = PBXVariantGroup;
 			name = Credits.rtf;
@@ -177,11 +178,10 @@
 				018F40F3003E1916CE6F79C2,
 				021D6BA9003E1BACCE6F79C2,
 				018F40F6003E1974CE6F79C2,
-				018F40F8003E1979CE6F79C2,
-				018F40FA003E197ECE6F79C2,
 				018F40FC003E1983CE6F79C2,
 				018F40FE003E1988CE6F79C2,
 				018F4100003E19E4CE6F79C2,
+				02A1FEA6006D34BE416877C2,
 			);
 			isa = PBXGroup;
 			name = "X Server";
@@ -228,9 +228,20 @@
 			path = darwin.h;
 			refType = 4;
 		};
+		02A1FEA6006D34BE416877C2 = {
+			isa = PBXFileReference;
+			path = xfIOKitStartup.c;
+			refType = 4;
+		};
+		02A1FEA8006D38F0416877C2 = {
+			isa = PBXFileReference;
+			path = quartzStartup.c;
+			refType = 4;
+		};
 		02E03CA000348209CE6F79C2 = {
 			children = (
 				02E03CA100348209CE6F79C2,
+				43B962E300617B93416877C2,
 			);
 			isa = PBXVariantGroup;
 			name = XDarwinHelp.html;
@@ -255,8 +266,7 @@
 		};
 		06EB6C3B004099E7CE6F79C2 = {
 			isa = PBXFileReference;
-			name = quartzShared.h;
-			path = ../quartzShared.h;
+			path = quartzShared.h;
 			refType = 4;
 		};
 		080E96DDFE201D6D7F000001 = {
@@ -275,6 +285,7 @@
 		089C165CFE840E0CC02AAC07 = {
 			children = (
 				089C165DFE840E0CC02AAC07,
+				43B962E100617B49416877C2,
 			);
 			isa = PBXVariantGroup;
 			name = InfoPlist.strings;
@@ -324,9 +335,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Xdarwin</string>
+	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XFree86 Version 4.0.2</string>
+	<string>XFree86 Version 4.1</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -540,6 +551,7 @@
 		29B97318FDCFA39411CA2CEA = {
 			children = (
 				29B97319FDCFA39411CA2CEA,
+				43B962E000617B49416877C2,
 			);
 			isa = PBXVariantGroup;
 			name = MainMenu.nib;
@@ -576,10 +588,13 @@
 		};
 		43B962CE00617089416877C2 = {
 			children = (
+				018F40F8003E1979CE6F79C2,
+				018F40FA003E197ECE6F79C2,
 				43B962CF00617089416877C2,
 				43B962D000617089416877C2,
 				43B962D100617089416877C2,
 				06EB6C3B004099E7CE6F79C2,
+				02A1FEA8006D38F0416877C2,
 			);
 			isa = PBXGroup;
 			name = "Quartz Support";
@@ -598,6 +613,30 @@
 		43B962D100617089416877C2 = {
 			isa = PBXFileReference;
 			path = quartzPasteboard.h;
+			refType = 4;
+		};
+		43B962E000617B49416877C2 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		43B962E100617B49416877C2 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/InfoPlist.strings;
+			refType = 4;
+		};
+		43B962E200617B93416877C2 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/Credits.rtf;
+			refType = 4;
+		};
+		43B962E300617B93416877C2 = {
+			isa = PBXFileReference;
+			name = Japanese;
+			path = Japanese.lproj/XDarwinHelp.html;
 			refType = 4;
 		};
 		618092480041B0E4CE6F79C2 = {
