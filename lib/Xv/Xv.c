@@ -91,10 +91,9 @@ XvQueryExtension(
 
   /* READ THE REPLY */
 
-  if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) 
+  if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) 
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadExtension);
     }
 
@@ -103,6 +102,8 @@ XvQueryExtension(
   *p_requestBase = _XvCodes->major_opcode;
   *p_eventBase = _XvCodes->first_event;
   *p_errorBase = _XvCodes->first_error;
+
+  POSTAMBLE;
 
   return Success;
 }
@@ -138,16 +139,14 @@ XvQueryAdaptors(
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) 
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadReply);
     }
 
   size = rep.length << 2;
   if ( (buffer = (char *)Xmalloc ((unsigned) size)) == NULL)
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadAlloc);
     }
   _XRead (dpy, buffer, size);
@@ -160,8 +159,7 @@ XvQueryAdaptors(
   if ((pas=(XvAdaptorInfo *)Xmalloc(size))==NULL)
     {
       Xfree(buffer);
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadAlloc);
     }
 
@@ -193,8 +191,7 @@ XvQueryAdaptors(
 	{
 	  XvFreeAdaptorInfo(pas);
 	  Xfree(buffer);
-	  UnlockDisplay(dpy);
-	  SyncHandle();
+	  POSTAMBLE;
 	  return(XvBadAlloc);
 	}
       (void)strncpy(name, u.string, size);
@@ -210,8 +207,7 @@ XvQueryAdaptors(
 	{
 	  XvFreeAdaptorInfo(pas);
 	  Xfree(buffer);
-	  UnlockDisplay(dpy);
-	  SyncHandle();
+	  POSTAMBLE;
 	  return(XvBadAlloc);
 	}
 
@@ -295,16 +291,14 @@ XvQueryEncodings(
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) 
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadReply);
     }
 
   size = rep.length << 2;
   if ( (buffer = (char *)Xmalloc ((unsigned) size)) == NULL)
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadAlloc);
     }
   _XRead (dpy, buffer, size);
@@ -317,8 +311,7 @@ XvQueryEncodings(
   if ( (pes = (XvEncodingInfo *)Xmalloc(size)) == NULL)
     {
       Xfree(buffer);
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadAlloc);
     }
 
@@ -348,8 +341,7 @@ XvQueryEncodings(
       if ( (name = (char *)Xmalloc(size+1)) == NULL)
 	{
 	  Xfree(buffer);
-	  UnlockDisplay(dpy);
-	  SyncHandle();
+	  POSTAMBLE;
 	  return(XvBadAlloc);
 	}
       strncpy(name, u.string, size);
@@ -673,8 +665,7 @@ XvGetPortAttribute (dpy, port, attribute, p_value)
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) 
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadReply);
     }
 
@@ -712,8 +703,7 @@ XvQueryBestSize(dpy, port, motion, vid_w, vid_h, drw_w, drw_h,
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) 
     {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return(XvBadReply);
     }
 
@@ -743,8 +733,7 @@ XvQueryPortAttributes(Display *dpy, XvPortID port, int *num)
   /* READ THE REPLY */
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return ret;
   }
 
@@ -794,8 +783,7 @@ XvImageFormatValues * XvListImageFormats (
   /* READ THE REPLY */
 
   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
-      UnlockDisplay(dpy);
-      SyncHandle();
+      POSTAMBLE;
       return NULL;
   }
 
@@ -863,9 +851,8 @@ XvImage * XvCreateImage (
 
    /* READ THE REPLY */
 
-   if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
-      UnlockDisplay(dpy);
-      SyncHandle();
+   if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+      POSTAMBLE;
       return NULL;
    }
 
