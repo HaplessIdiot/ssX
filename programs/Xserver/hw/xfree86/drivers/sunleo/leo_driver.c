@@ -21,7 +21,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.8 2001/10/01 13:44:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.9 2003/10/30 17:37:12 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -67,7 +67,7 @@ void LeoSync(ScrnInfoPtr pScrn);
 #define LEO_MINOR_VERSION 0
 #define LEO_PATCHLEVEL 0
 
-/* 
+/*
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
@@ -239,7 +239,7 @@ LeoProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchSbusInstances(LEO_NAME, SBUS_DEVICE_LEO,
 		   devSections, numDevSections,
 		   drv, &usedChips);
-				    
+
     xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
@@ -254,7 +254,7 @@ LeoProbe(DriverPtr drv, int flags)
 	 */
 	if(pEnt->active) {
 	    ScrnInfoPtr pScrn;
-	    
+
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 
@@ -265,8 +265,8 @@ LeoProbe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = LeoProbe;
 	    pScrn->PreInit	 = LeoPreInit;
 	    pScrn->ScreenInit	 = LeoScreenInit;
-  	    pScrn->SwitchMode	 = LeoSwitchMode;
-  	    pScrn->AdjustFrame	 = LeoAdjustFrame;
+	    pScrn->SwitchMode	 = LeoSwitchMode;
+	    pScrn->AdjustFrame	 = LeoAdjustFrame;
 	    pScrn->EnterVT	 = LeoEnterVT;
 	    pScrn->LeaveVT	 = LeoLeaveVT;
 	    pScrn->FreeScreen	 = LeoFreeScreen;
@@ -296,7 +296,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -309,7 +309,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pLeo = GET_LEO_FROM_SCRN(pScrn);
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -331,7 +331,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     deal with depth
     *********************/
-    
+
     if (!xf86SetDepthBpp(pScrn, 32, 0, 32, Support32bppFb)) {
 	return FALSE;
     } else {
@@ -355,7 +355,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     memcpy(pLeo->Options, LeoOptions, sizeof(LeoOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pLeo->Options);
-    
+
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -397,7 +397,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     from = X_DEFAULT;
 
     /* determine whether we use hardware or software cursor */
-    
+
     pLeo->HWCursor = TRUE;
     if (xf86GetOptValBool(pLeo->Options, OPTION_HW_CURSOR, &pLeo->HWCursor))
 	from = X_CONFIG;
@@ -405,7 +405,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	pLeo->HWCursor = FALSE;
     }
-    
+
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pLeo->HWCursor ? "HW" : "SW");
 
@@ -413,7 +413,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 	pLeo->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-        
+
     if (xf86LoadSubModule(pScrn, "cfb32") == NULL) {
 	LeoFreeRec(pScrn);
 	return FALSE;
@@ -427,7 +427,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     set up clock and mode stuff
     *********************/
-    
+
     pScrn->progClock = TRUE;
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
@@ -460,7 +460,7 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     extern Bool LeoAccelInit(ScreenPtr pScreen, LeoPtr pLeo);
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -538,13 +538,13 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-    /* Initialize HW cursor layer. 
+    /* Initialize HW cursor layer.
        Must follow software cursor initialization*/
-    if (pLeo->HWCursor) { 
+    if (pLeo->HWCursor) {
 	extern Bool LeoHWCursorInit(ScreenPtr pScreen);
 
 	if(!LeoHWCursorInit(pScreen)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
@@ -585,7 +585,7 @@ LeoSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+static void
 LeoAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */

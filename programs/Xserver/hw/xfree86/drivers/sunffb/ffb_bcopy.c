@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_bcopy.c,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_bcopy.c,v 1.2 2000/05/23 04:47:44 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_regs.h"
@@ -66,7 +66,7 @@ CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst
 			     FFB_ROP_NEW,
 			     FFB_DRAWOP_BCOPY, pFfb->fg_cache,
 			     FFB_FBC_DEFAULT);
-	
+
 	/* need to blit rectangles in different orders, depending on the direction of copy
            so that an area isnt overwritten before it is blitted */
 	if (pptSrc->y < pbox->y1 && nbox > 1) {
@@ -86,15 +86,15 @@ CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst
 		} else {
 			/* keep ordering in each band, reverse order of bands */
 			pboxBase = pboxNext = pbox+nbox-1;
-			
+
 			while (pboxBase >= pbox) { /* for each band */
 				/* find first box in band */
 				while (pboxNext >= pbox && pboxBase->y1 == pboxNext->y1)
 					pboxNext--;
-		
+
 				pboxTmp = pboxNext + 1;			/* first box in band */
 				pptTmp = pptSrc + (pboxTmp - pbox);	/* first point in band */
-		
+
 				while (pboxTmp <= pboxBase) { /* for each box in band */
 					FFBFifo(pFfb, 6);
 					FFB_WRITE64(&ffb->by, pptTmp->y, pptTmp->x);
@@ -103,7 +103,7 @@ CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst
 						      (pboxTmp->y2 - pboxTmp->y1),
 						      (pboxTmp->x2 - pboxTmp->x1));
 					++pboxTmp;
-					++pptTmp;	
+					++pptTmp;
 				}
 				pboxBase = pboxNext;
 			}
@@ -133,7 +133,7 @@ CreatorDoHWBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst
 			/* dont need to change order of anything */
 			pptTmp = pptSrc;
 			pboxTmp = pbox;
-	    
+
 			while (nbox--) {
 				FFBFifo(pFfb, 6);
 				FFB_WRITE64(&ffb->by, pptTmp->y, pptTmp->x);
@@ -188,7 +188,7 @@ CreatorDoVertBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnD
 			/* find first box in band */
 			while (pboxNext >= pbox && pboxBase->y1 == pboxNext->y1)
 				pboxNext--;
-		
+
 			pboxTmp = pboxNext + 1;			/* first box in band */
 			pptTmp = pptSrc + (pboxTmp - pbox);	/* first point in band */
 			while (pboxTmp <= pboxBase) {
@@ -246,7 +246,7 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 
 	cfbGetByteWidthAndPointer (pSrc, widthSrc, psrcBase)
 	cfbGetByteWidthAndPointer (pDst, widthDst, pdstBase)
-	
+
 	careful = ((pSrc == pDst) ||
 		  ((pSrc->type == DRAWABLE_WINDOW) &&
 		   (pDst->type == DRAWABLE_WINDOW)));
@@ -290,12 +290,12 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
 							 (pptTmp->x << psz_shift)),
-				        	        (pdstBase +
+							(pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
 							 (pboxTmp->x1 << psz_shift)),
-					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-				        	        (pboxTmp->y2 - pboxTmp->y1),
-					                -widthSrc, -widthDst);
+							(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+							(pboxTmp->y2 - pboxTmp->y1),
+							-widthSrc, -widthDst);
 				} else {
 					if (use_prefetch) {
 						FFBFifo(pFfb, 1);
@@ -307,12 +307,12 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
 							 (pptTmp->x << psz_shift)),
-				        	        (pdstBase +
+							(pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
 							 (pboxTmp->x1 << psz_shift)),
-					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-				        	        (pboxTmp->y2 - pboxTmp->y1),
-					                -widthSrc, -widthDst);
+							(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+							(pboxTmp->y2 - pboxTmp->y1),
+							-widthSrc, -widthDst);
 				}
 			}
 		} else {
@@ -325,10 +325,10 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 				while (pboxNext >= pbox &&
 				       pboxBase->y1 == pboxNext->y1)
 					pboxNext--;
-		
+
 				pboxTmp = pboxNext+1;			/* first box in band */
 				pptTmp = pptSrc + (pboxTmp - pbox);	/* first point in band */
-		
+
 				FFBLOG(("[%08x:%08x:%08x:%08x:%08x:%08x] ",
 					pptTmp->x, pptTmp->y, pboxTmp->x1, pboxTmp->y1,
 					pboxTmp->x2, pboxTmp->y2));
@@ -343,17 +343,17 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 							 ((pptTmp->y + pboxTmp->y2 - pboxTmp->y1 - 1) *
 							  widthSrc) +
 							 (pptTmp->x << psz_shift)),
-				        	        (pdstBase +
+							(pdstBase +
 							 ((pboxTmp->y2 - 1) * widthDst) +
 							 (pboxTmp->x1 << psz_shift)),
-					                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-				        	        (pboxTmp->y2 - pboxTmp->y1),
-					                -widthSrc, -widthDst);
+							(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+							(pboxTmp->y2 - pboxTmp->y1),
+							-widthSrc, -widthDst);
 					++pboxTmp;
-					++pptTmp;	
+					++pptTmp;
 				}
 				pboxBase = pboxNext;
-			
+
 			}
 		}
 	} else {
@@ -388,12 +388,12 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 						VISmoveImageRL ((psrcBase +
 								 (pptTmp->y * widthSrc) +
 								 (pptTmp->x << psz_shift)),
-						                (pdstBase +
+								(pdstBase +
 								 (pboxTmp->y1 * widthDst) +
 								 (pboxTmp->x1 << psz_shift)),
-						                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-			        	        		(pboxTmp->y2 - pboxTmp->y1),
-						                widthSrc, widthDst);
+								(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+								(pboxTmp->y2 - pboxTmp->y1),
+								widthSrc, widthDst);
 					} else {
 						if (use_prefetch) {
 							FFBFifo(pFfb, 1);
@@ -404,12 +404,12 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 						VISmoveImageLR ((psrcBase +
 								 (pptTmp->y * widthSrc) +
 								 (pptTmp->x << psz_shift)),
-						                (pdstBase +
+								(pdstBase +
 								 (pboxTmp->y1 * widthDst) +
 								 (pboxTmp->x1 << psz_shift)),
-				                		(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-					        	        (pboxTmp->y2 - pboxTmp->y1),
-						                widthSrc, widthDst);
+								(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+								(pboxTmp->y2 - pboxTmp->y1),
+								widthSrc, widthDst);
 					}
 				}
 				pboxBase = pboxNext;
@@ -428,12 +428,12 @@ CreatorDoBitblt(DrawablePtr pSrc, DrawablePtr pDst, int alu, RegionPtr prgnDst,
 				VISmoveImageLR ((psrcBase +
 						 (pptTmp->y * widthSrc) +
 						 (pptTmp->x << psz_shift)),
-				                (pdstBase +
+						(pdstBase +
 						 (pboxTmp->y1 * widthDst) +
 						 (pboxTmp->x1 << psz_shift)),
-				                (pboxTmp->x2 - pboxTmp->x1) << psz_shift,
-			        	        (pboxTmp->y2 - pboxTmp->y1),
-				                widthSrc, widthDst);
+						(pboxTmp->x2 - pboxTmp->x1) << psz_shift,
+						(pboxTmp->y2 - pboxTmp->y1),
+						widthSrc, widthDst);
 				pboxTmp++;
 				pptTmp++;
 			}
@@ -457,7 +457,7 @@ CreatorCopyArea(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable,
 	RegionPtr ret;
 	unsigned char *dptr, *sptr, *sfb;
 	int garbage, all_planes;
-	
+
 	cfbGetByteWidthAndPointer (pDstDrawable, garbage, dptr);
 	cfbGetByteWidthAndPointer (pSrcDrawable, garbage, sptr);
 	if (pSrcDrawable->bitsPerPixel == 8) {

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_accel.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_accel.c,v 1.3 2001/03/03 22:41:34 tsi Exp $ */
 
 #define	PSZ	32
 
@@ -113,7 +113,7 @@ LeoCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 
 void LeoVtChange (ScreenPtr pScreen, int enter)
 {
-	LeoPtr pLeo = LeoGetScreenPrivate (pScreen); 
+	LeoPtr pLeo = LeoGetScreenPrivate (pScreen);
 	LeoCommand0 *lc0 = pLeo->lc0;
 	LeoDraw *ld0 = pLeo->ld0;
 
@@ -125,14 +125,14 @@ void LeoVtChange (ScreenPtr pScreen, int enter)
 	ld0->fg = 0;
 	ld0->vclipmin = 0;
 	ld0->vclipmax = (pLeo->psdp->width - 1) | ((pLeo->psdp->height - 1) << 16);
-	
+
 	while (lc0->csr & LEO_CSR_BLT_BUSY);
-	
+
 	lc0->extent = (pLeo->psdp->width - 1) | ((pLeo->psdp->height - 1) << 11);
 	lc0->fill = 0;
-	
+
 	while (lc0->csr & LEO_CSR_BLT_BUSY);
-	
+
 	lc0->addrspace = LEO_ADDRSPC_OBGR;
 	ld0->rop = LEO_ATTR_RGBE_ENABLE|LEO_ROP_NEW;
 }
@@ -151,7 +151,7 @@ Bool LeoAccelInit (ScreenPtr pScreen, LeoPtr pLeo)
 		LeoWindowPrivateIndex = AllocateWindowPrivateIndex ();
 		LeoGeneration = serverGeneration;
 	}
-	
+
 	/* Allocate private structures holding pointer to both videoRAM and control registers.
 	   We do not have to map these by ourselves, because the XServer did it for us; we
 	   only copy the pointers to out structures. */
@@ -181,14 +181,14 @@ Bool LeoAccelInit (ScreenPtr pScreen, LeoPtr pLeo)
 	pLeo->vclipmax = (pLeo->psdp->width - 1) | ((pLeo->psdp->height - 1) << 16);
 	pLeo->width = pLeo->psdp->width;
 	pLeo->height = pLeo->psdp->height;
-	
+
 	while (lc0->csr & LEO_CSR_BLT_BUSY);
-	
+
 	lc0->extent = (pLeo->psdp->width - 1) | ((pLeo->psdp->height - 1) << 11);
 	lc0->fill = 0;
-	
+
 	while (lc0->csr & LEO_CSR_BLT_BUSY);
-	
+
 	lc0->addrspace = LEO_ADDRSPC_OBGR;
 	ld0->rop = LEO_ATTR_RGBE_ENABLE|LEO_ROP_NEW;
 

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.3 2001/05/04 19:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunbw2/bw2_driver.c,v 1.4 2003/10/30 17:37:11 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -64,7 +64,7 @@ void BW2Sync(ScrnInfoPtr pScrn);
 #define BW2_MINOR_VERSION 0
 #define BW2_PATCHLEVEL 0
 
-/* 
+/*
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
@@ -227,7 +227,7 @@ BW2Probe(DriverPtr drv, int flags)
     numUsed = xf86MatchSbusInstances(BW2_NAME, SBUS_DEVICE_BW2,
 		   devSections, numDevSections,
 		   drv, &usedChips);
-				    
+
     xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
@@ -242,7 +242,7 @@ BW2Probe(DriverPtr drv, int flags)
 	 */
 	if(pEnt->active) {
 	    ScrnInfoPtr pScrn;
-	    
+
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 
@@ -253,8 +253,8 @@ BW2Probe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = BW2Probe;
 	    pScrn->PreInit	 = BW2PreInit;
 	    pScrn->ScreenInit	 = BW2ScreenInit;
-  	    pScrn->SwitchMode	 = BW2SwitchMode;
-  	    pScrn->AdjustFrame	 = BW2AdjustFrame;
+	    pScrn->SwitchMode	 = BW2SwitchMode;
+	    pScrn->AdjustFrame	 = BW2AdjustFrame;
 	    pScrn->EnterVT	 = BW2EnterVT;
 	    pScrn->LeaveVT	 = BW2LeaveVT;
 	    pScrn->FreeScreen	 = BW2FreeScreen;
@@ -284,7 +284,7 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -297,7 +297,7 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pBw2 = GET_BW2_FROM_SCRN(pScrn);
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -319,7 +319,7 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     deal with depth
     *********************/
-    
+
     if (!xf86SetDepthBpp(pScrn, 0, 0, 0, NoDepth24Support)) {
 	return FALSE;
     } else {
@@ -362,7 +362,7 @@ BW2PreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     set up clock and mode stuff
     *********************/
-    
+
     pScrn->progClock = TRUE;
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
@@ -393,7 +393,7 @@ BW2ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     Bw2Ptr pBw2;
     int ret;
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -488,7 +488,7 @@ BW2SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+static void
 BW2AdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */
@@ -535,7 +535,7 @@ BW2CloseScreen(int scrnIndex, ScreenPtr pScreen)
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(pBw2->psdp, pBw2->fb,
 		     (pBw2->psdp->width * pBw2->psdp->height / 8));
-    
+
     pScreen->CloseScreen = pBw2->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_gc.h,v 1.1 2000/05/18 23:21:40 dawes Exp $ */
 
 #ifndef LEOGC_H
 #define LEOGC_H
@@ -50,8 +50,8 @@ extern void LeoFillSpansSolid (DrawablePtr pDrawable, GCPtr pGC,
 			       int *pwidth, int fSorted);
 
 extern void LeoFillSpansStippled (DrawablePtr pDrawable, GCPtr pGC,
-			          int n, DDXPointPtr ppt,
-			          int *pwidth, int fSorted);
+				  int n, DDXPointPtr ppt,
+				  int *pwidth, int fSorted);
 
 extern void LeoPolyGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 				 unsigned int nglyph, CharInfoPtr *ppci, pointer pGlyphBase);
@@ -62,7 +62,7 @@ extern void LeoTEGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 extern void LeoPolyTEGlyphBlt (DrawablePtr pDrawable, GCPtr pGC, int x, int y,
 				   unsigned int nglyph, CharInfoPtr *ppci, pointer pGlyphBase);
 
-extern void LeoFillPoly1RectGeneral(DrawablePtr pDrawable, GCPtr pGC, int shape, 
+extern void LeoFillPoly1RectGeneral(DrawablePtr pDrawable, GCPtr pGC, int shape,
 			int mode, int count, DDXPointPtr ptsIn);
 
 extern void LeoZeroPolyArcSS8General(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);
@@ -70,7 +70,7 @@ extern void LeoZeroPolyArcSS8General(DrawablePtr pDraw, GCPtr pGC, int narcs, xA
 extern void LeoTile32FSGeneral(DrawablePtr pDrawable, GCPtr pGC, int nInit,
 			       DDXPointPtr pptInit, int *pwidthInit, int fSorted);
 
-extern void LeoPolyFillArcSolidGeneral(DrawablePtr pDrawable, GCPtr pGC, 
+extern void LeoPolyFillArcSolidGeneral(DrawablePtr pDrawable, GCPtr pGC,
 				       int narcs, xArc *parcs);
 
 extern int LeoCheckFill (GCPtr pGC, DrawablePtr pDrawable);

@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.8 2004/05/04 16:21:42 tsi Exp $ */
 
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
@@ -304,7 +304,7 @@ CreatorChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
 			} else
 				pPrivWin->fastBorder = FALSE;
 			break;
-			
+
 		case CWBorderPixel:
 			pPrivWin->fastBorder = FALSE;
 			break;
@@ -344,7 +344,7 @@ CreatorPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 			return;
 		case BackgroundPixmap:
 			if (stipple) {
-				CreatorFillBoxStipple ((DrawablePtr)pWin, 
+				CreatorFillBoxStipple ((DrawablePtr)pWin,
 						       (int)REGION_NUM_RECTS(pRegion),
 						       REGION_RECTS(pRegion),
 						       stipple);
@@ -438,7 +438,7 @@ CreatorPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 	}
 }
 
-static void 
+static void
 CreatorCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
 	ScreenPtr pScreen = pWin->drawable.pScreen;
@@ -521,7 +521,7 @@ CreatorSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg, Wind
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec));
 	if (!pPtsInit)
 		return;
-    
+
 	pBox = REGION_RECTS(prgnSave);
 	pPt = pPtsInit;
 	while (--i >= 0) {
@@ -571,7 +571,7 @@ CreatorRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg, int yorg
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i*sizeof(DDXPointRec));
 	if (!pPtsInit)
 		return;
-    
+
 	pBox = REGION_RECTS(prgnRestore);
 	pPt = pPtsInit;
 	while (--i >= 0) {
@@ -673,7 +673,7 @@ CreatorGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h, unsigned in
 			}
 			return;
 		}
-		pPixmap = GetScratchPixmapHeader(pScreen, w, h, 
+		pPixmap = GetScratchPixmapHeader(pScreen, w, h,
 						 pDrawable->depth, pDrawable->bitsPerPixel,
 						 PixmapBytePad(w,pDrawable->depth), (pointer)pdstLine);
 		if (!pPixmap)
@@ -704,7 +704,7 @@ CreatorVtChange (ScreenPtr pScreen, int enter)
 	ffb_fbcPtr ffb = pFfb->regs;
 
 	pFfb->rp_active = 1;
-	FFBWait(pFfb, ffb);	
+	FFBWait(pFfb, ffb);
 	pFfb->fifo_cache = -1;
 	pFfb->fbc_cache = (FFB_FBC_WB_A | FFB_FBC_WM_COMBINED |
 			   FFB_FBC_RB_A | FFB_FBC_SB_BOTH| FFB_FBC_XE_OFF |
@@ -805,7 +805,7 @@ Bool FFBAccelInit (ScreenPtr pScreen, FFBPtr pFfb)
 			return FALSE;
 		CreatorGeneration = serverGeneration;
 	}
-	
+
 	if (!AllocateGCPrivate(pScreen, CreatorGCPrivateIndex, sizeof(CreatorPrivGCRec)))
 		return FALSE;
 	if (!AllocateWindowPrivate(pScreen, CreatorWindowPrivateIndex, 0))
@@ -934,7 +934,7 @@ Bool FFBAccelInit (ScreenPtr pScreen, FFBPtr pFfb)
 	FFB_WRITE64_2(&ffb->bh, pFfb->psdp->height, pFfb->psdp->width);
 	pFfb->rp_active = 1;
 	FFBWait(pFfb, ffb);
-	
+
 	/* Fixup the FBC/PPC caches to deal with actually using
 	 * a WID for every ROP.
 	 */

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.8 2004/06/10 17:28:12 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -65,7 +65,7 @@ void TCXSync(ScrnInfoPtr pScrn);
 #define TCX_MINOR_VERSION 0
 #define TCX_PATCHLEVEL 0
 
-/* 
+/*
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
@@ -235,7 +235,7 @@ TCXProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchSbusInstances(TCX_NAME, SBUS_DEVICE_TCX,
 		   devSections, numDevSections,
 		   drv, &usedChips);
-				    
+
     xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
@@ -250,7 +250,7 @@ TCXProbe(DriverPtr drv, int flags)
 	 */
 	if(pEnt->active) {
 	    ScrnInfoPtr pScrn;
-	    
+
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 
@@ -261,8 +261,8 @@ TCXProbe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = TCXProbe;
 	    pScrn->PreInit	 = TCXPreInit;
 	    pScrn->ScreenInit	 = TCXScreenInit;
-  	    pScrn->SwitchMode	 = TCXSwitchMode;
-  	    pScrn->AdjustFrame	 = TCXAdjustFrame;
+	    pScrn->SwitchMode	 = TCXSwitchMode;
+	    pScrn->AdjustFrame	 = TCXAdjustFrame;
 	    pScrn->EnterVT	 = TCXEnterVT;
 	    pScrn->LeaveVT	 = TCXLeaveVT;
 	    pScrn->FreeScreen	 = TCXFreeScreen;
@@ -293,7 +293,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -306,7 +306,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pTcx = GET_TCX_FROM_SCRN(pScrn);
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -341,7 +341,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     deal with depth
     *********************/
-    
+
     if (!xf86SetDepthBpp(pScrn, 0, 0, 0,
 			 lowDepth ? NoDepth24Support : Support32bppFb)) {
 	return FALSE;
@@ -382,12 +382,12 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->depth > 8) {
 	rgb weight = {10, 11, 11};
 	rgb mask = {0xff, 0xff00, 0xff0000};
-                                       
+
 	if (!xf86SetWeight(pScrn, weight, mask)) {
 	    return FALSE;
 	}
     }
-                                                                           
+
     if (!xf86SetDefaultVisual(pScrn, -1))
 	return FALSE;
     else if (pScrn->depth > 8) {
@@ -398,7 +398,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
 		       xf86GetVisualName(pScrn->defaultVisual));
 	    return FALSE;
 	}
-    }                                                                                                  
+    }
 
     /*
      * The new cmap code requires this to be initialised.
@@ -413,7 +413,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* determine whether we use hardware or software cursor */
-    
+
     from = X_PROBED;
     pTcx->HWCursor = FALSE;
     if (hwCursor) {
@@ -426,7 +426,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTcx->HWCursor = FALSE;
 	}
     }
-    
+
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTcx->HWCursor ? "HW" : "SW");
 
@@ -443,7 +443,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     set up clock and mode stuff
     *********************/
-    
+
     pScrn->progClock = TRUE;
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
@@ -475,7 +475,7 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     int ret;
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -578,13 +578,13 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-    /* Initialize HW cursor layer. 
+    /* Initialize HW cursor layer.
        Must follow software cursor initialization*/
-    if (pTcx->HWCursor) { 
+    if (pTcx->HWCursor) {
 	extern Bool TCXHWCursorInit(ScreenPtr pScreen);
 
 	if(!TCXHWCursorInit(pScreen)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
@@ -628,7 +628,7 @@ TCXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+static void
 TCXAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */
@@ -695,7 +695,7 @@ TCXCloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
     if (pTcx->thc)
 	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb, 8192);
-    
+
     if (pTcx->HWCursor)
 	xf86SbusHideOsHwCursor (pTcx->psdp);
 

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.6 2004/06/10 17:28:12 tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -65,7 +65,7 @@ void CG3Sync(ScrnInfoPtr pScrn);
 #define CG3_MINOR_VERSION 0
 #define CG3_PATCHLEVEL 0
 
-/* 
+/*
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
@@ -228,7 +228,7 @@ CG3Probe(DriverPtr drv, int flags)
     numUsed = xf86MatchSbusInstances(CG3_NAME, SBUS_DEVICE_CG3,
 		   devSections, numDevSections,
 		   drv, &usedChips);
-				    
+
     xfree(devSections);
     if (numUsed <= 0)
 	return FALSE;
@@ -243,7 +243,7 @@ CG3Probe(DriverPtr drv, int flags)
 	 */
 	if(pEnt->active) {
 	    ScrnInfoPtr pScrn;
-	    
+
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 
@@ -254,8 +254,8 @@ CG3Probe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = CG3Probe;
 	    pScrn->PreInit	 = CG3PreInit;
 	    pScrn->ScreenInit	 = CG3ScreenInit;
-  	    pScrn->SwitchMode	 = CG3SwitchMode;
-  	    pScrn->AdjustFrame	 = CG3AdjustFrame;
+	    pScrn->SwitchMode	 = CG3SwitchMode;
+	    pScrn->AdjustFrame	 = CG3AdjustFrame;
 	    pScrn->EnterVT	 = CG3EnterVT;
 	    pScrn->LeaveVT	 = CG3LeaveVT;
 	    pScrn->FreeScreen	 = CG3FreeScreen;
@@ -285,7 +285,7 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
      * not at the start of each server generation.  This means that
      * only things that are persistent across server generations can
      * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
      * are too, and should be used for data that must persist across
      * server generations.
      *
@@ -298,7 +298,7 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pCg3 = GET_CG3_FROM_SCRN(pScrn);
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -320,7 +320,7 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     deal with depth
     *********************/
-    
+
     if (!xf86SetDepthBpp(pScrn, 0, 0, 0, NoDepth24Support)) {
 	return FALSE;
     } else {
@@ -363,7 +363,7 @@ CG3PreInit(ScrnInfoPtr pScrn, int flags)
     /*********************
     set up clock and mode stuff
     *********************/
-    
+
     pScrn->progClock = TRUE;
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
@@ -394,7 +394,7 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     Cg3Ptr pCg3;
     int ret;
 
-    /* 
+    /*
      * First get the ScrnInfoRec
      */
     pScrn = xf86Screens[pScreen->myNum];
@@ -436,7 +436,7 @@ CG3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     miSetPixmapDepths ();
-	
+
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
@@ -496,7 +496,7 @@ CG3SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  * displayed location in the video memory.
  */
 /* Usually mandatory */
-static void 
+static void
 CG3AdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */
@@ -543,7 +543,7 @@ CG3CloseScreen(int scrnIndex, ScreenPtr pScreen)
     pScrn->vtSema = FALSE;
     xf86UnmapSbusMem(pCg3->psdp, pCg3->fb,
 		     (pCg3->psdp->width * pCg3->psdp->height));
-    
+
     pScreen->CloseScreen = pCg3->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;
