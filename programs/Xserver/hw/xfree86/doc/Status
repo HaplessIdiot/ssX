@@ -593,9 +593,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 
       Summary:
             The following (older) chipsets are supported in 3.3.6 and not in
-            4.2.0: TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL,
-            TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr, TGUI9400CXi,
-            TGUI9420, and TGUI9430DGi.
+            4.2.0: TVGA8200LX, TVGA8800CS, TGUI9420, TGUI9430DGi.
 
             The TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i,
             TVGA9100B, TVGA9200CXr, TGUI9400CXi, TGUI9440AGi, TGUI9660,
@@ -659,4 +657,4 @@ architectures known to work on (e.g., Alpha, PPC), etc.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.37 2002/01/16 20:38:45 dawes Exp $
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.29 2002/01/16 20:51:04 dawes Exp $

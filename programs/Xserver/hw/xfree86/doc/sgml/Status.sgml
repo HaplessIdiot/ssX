@@ -9,7 +9,7 @@
 <date>16 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.36 2002/01/12 11:24:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.37 2002/01/16 20:38:45 dawes Exp $
 </ident>
 
 <abstract>
@@ -702,9 +702,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>Summary:</tag>
 	The following (older) chipsets are supported in &legacyvers; and
-	not in &relvers;: TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C,
-	TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
-	TGUI9400CXi, TGUI9420, and TGUI9430DGi.
+	not in &relvers;: TVGA8200LX, TVGA8800CS, TGUI9420, TGUI9430DGi.
 
 	The TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i,
 	TVGA9100B, TVGA9200CXr, TGUI9400CXi, TGUI9440AGi, TGUI9660,
