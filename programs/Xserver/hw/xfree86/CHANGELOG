@@ -1,4 +1,6 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 258. Add tentative support for newer iterations of HP's zx1 chipsets
+      (Marc La France).
  257. Automatic configuration updates, including:
        - Modify the parser/config support to allow multiple configuration
          sources to be combined.
@@ -19251,7 +19253,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3376 2005/01/07 17:19:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3377 2005/01/07 23:03:10 dawes Exp $
 
 
 
