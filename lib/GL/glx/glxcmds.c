@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.34 2004/04/26 00:23:36 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.35tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1329,7 +1329,7 @@ XVisualInfo *GLX_PREFIX(glXChooseVisual)(Display *dpy, int screen, int *attribLi
     for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
 	if ( fbconfigs_compatible( & test_config, modes )
 	     && ((best_config == NULL)
-		 || (fbconfig_compare( (const __GLcontextModes * const * const)&modes, &best_config ) < 0)) ) {
+		 || (fbconfig_compare( (const __GLcontextModes * const *)&modes, &best_config ) < 0)) ) {
 	    best_config = modes;
 	}
     }

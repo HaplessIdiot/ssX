@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright (C) 2004 The X.Org fundation
  * 
@@ -50,7 +51,7 @@ FILE *s_popen(char *cmd, const char *type)
 {
   pid_t pid;
   int pfd[2];
-  int rpipe = 0, wpipe = 0, i;
+  int rpipe = 0, i;
   char **argv;
   char *ptr;
   char *cmdcpy;
@@ -103,8 +104,6 @@ FILE *s_popen(char *cmd, const char *type)
 
   if(type[0] == 'r')
     rpipe = 1;
-  else
-    wpipe = 1;
 
   if (pipe(pfd) < 0)
   {

@@ -33,7 +33,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/create.c,v 1.6 2004/09/15 16:00:37 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/create.c,v 1.7tsi Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -1235,14 +1235,14 @@ PutImagePixels(image, width, height, pixelindex, pixels)
 		dst = (char *) &px;
 		px = 0;
 		nbytes = ibu >> 3;
-		for (i = nbytes; --i >= 0;)
+		for (i = nbytes; i-- > 0;)
 		    *dst++ = *src++;
 		XYNORMALIZE(&px, image);
 		_putbits((char *) &pixel, (x % ibu), 1, (char *) &px);
 		XYNORMALIZE(&px, image);
 		src = (char *) &px;
 		dst = &data[XYINDEX(x, y, image)];
-		for (i = nbytes; --i >= 0;)
+		for (i = nbytes; i-- > 0;)
 		    *dst++ = *src++;
 	    }
     } else {
@@ -1259,14 +1259,14 @@ PutImagePixels(image, width, height, pixelindex, pixels)
 		dst = (char *) &px;
 		px = 0;
 		nbytes = (ibpp + 7) >> 3;
-		for (i = nbytes; --i >= 0;)
+		for (i = nbytes; i-- > 0;)
 		    *dst++ = *src++;
 		ZNORMALIZE(&px, image);
 		_putbits((char *) &pixel, (x * ibpp) & 7, ibpp, (char *) &px);
 		ZNORMALIZE(&px, image);
 		src = (char *) &px;
 		dst = &data[ZINDEX(x, y, image)];
-		for (i = nbytes; --i >= 0;)
+		for (i = nbytes; i-- > 0;)
 		    *dst++ = *src++;
 	    }
     }
@@ -1778,14 +1778,14 @@ PutPixel1(ximage, x, y, pixel)
     dst = (char *)&px;
     px = 0;
     nbytes = ximage->bitmap_unit >> 3;
-    for (i = nbytes; --i >= 0; ) *dst++ = *src++;
+    for (i = nbytes; i-- > 0; ) *dst++ = *src++;
     XYNORMALIZE(&px, ximage);
     i = ((x + ximage->xoffset) % ximage->bitmap_unit);
     _putbits ((char *)&pixel, i, 1, (char *)&px);
     XYNORMALIZE(&px, ximage);
     src = (char *) &px;
     dst = &ximage->data[XYINDEX(x, y, ximage)];
-    for (i = nbytes; --i >= 0; )
+    for (i = nbytes; i-- > 0; )
 	*dst++ = *src++;
 
     return 1;
@@ -1816,14 +1816,14 @@ PutPixel(ximage, x, y, pixel)
     dst = (char *) &px;
     px = 0;
     nbytes = (ibpp + 7) >> 3;
-    for (i = nbytes; --i >= 0;)
+    for (i = nbytes; i-- > 0;)
 	*dst++ = *src++;
     ZNORMALIZE(&px, ximage);
     _putbits((char *) &pixel, (x * ibpp) & 7, ibpp, (char *) &px);
     ZNORMALIZE(&px, ximage);
     src = (char *) &px;
     dst = &ximage->data[ZINDEX(x, y, ximage)];
-    for (i = nbytes; --i >= 0;)
+    for (i = nbytes; i-- > 0;)
 	*dst++ = *src++;
 
     return 1;
