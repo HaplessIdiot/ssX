@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_accel.c,v 1.5 2001/01/29 15:15:44 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_accel.c,v 1.6 2002/01/25 21:55:56 tsi Exp $ */
 /*
  *      Copyright 2000  Ani Joshi <ajoshi@unixbox.com>
  *
@@ -41,7 +41,7 @@
 #include "ark_reg.h"
 
 
-int curx, cury, cmd_flags;
+static int curx, cury, cmd_flags;
 
 
 static void ARKSync(ScrnInfoPtr pScrn)
