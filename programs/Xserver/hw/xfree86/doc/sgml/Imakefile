@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.56 2000/03/03 20:02:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.57 2000/03/03 23:12:34 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -13,8 +13,8 @@ SGMLDEPENDS = defs.ent
 	      DESIGN.sgml \
 	      mouse.sgml fonts.sgml \
 	      isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml \
-              ati.sgml chips.sgml DECtga.sgml r128.sgml rendition.sgml \
-	      s3virge.sgml SiS.sgml
+              ati.sgml chips.sgml DECtga.sgml i740.sgml i810.sgml \
+	      r128.sgml rendition.sgml s3virge.sgml SiS.sgml
 
 #ifdef DEADDOCS
 LinuxDocReadmeTarget(Bsdi)
@@ -56,7 +56,9 @@ LinuxDocReadmeTarget(DECtga)
 LinuxDocReadmeTarget(epson)
 LinuxDocReadmeTarget(fbdev)
 LinuxDocReadmeTarget(I128)
+#endif
 LinuxDocReadmeTarget(i740)
+#ifdef OUTOFDATE
 LinuxDocReadmeTarget(neomagic)
 LinuxDocReadmeTarget(Mach32)
 LinuxDocReadmeTarget(Mach64)
