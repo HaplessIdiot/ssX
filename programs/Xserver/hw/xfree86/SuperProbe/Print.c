@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.48 1997/02/16 10:27:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.49 1997/03/07 00:29:02 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -121,7 +121,11 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 ViRGE/VX",
 		  "S3 Aurora64V+",
 		  "S3 Trio64UV+",
-		  "S3 Trio64V2",
+		  "S3 Trio64V2/DX",
+		  "S3 Trio64V2/GX",
+		  "S3 ViRGE/DX",
+		  "S3 ViRGE/GX",
+		  "S3 PLATO/PX",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",

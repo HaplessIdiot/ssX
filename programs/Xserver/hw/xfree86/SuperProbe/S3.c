@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.16 1997/02/16 10:27:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.17 1997/03/07 00:29:05 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -50,14 +50,22 @@ Bool Probe_S3(Chipset)
 int *Chipset;
 {
 	Bool result = FALSE;
-	Byte chip, old, cr38, cr39, cr42, tmp, rev;
+	Byte chip, cr38, cr39, cr42, tmp, rev;
 	int i = 0;
 	struct pci_config_reg *pcrp2;
 	if (!NoPCI)
 	{
 	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
 		if (pcrp->_vendor == PCI_VENDOR_S3)
-		{
+		{ 
+		        Ports[0] = CRTC_IDX;
+			Ports[1] = CRTC_REG;
+			EnableIOPorts(NUMPORTS, Ports);
+			cr38 = rdinx(CRTC_IDX, 0x38);
+			cr39 = rdinx(CRTC_IDX, 0x39);
+			wrinx(CRTC_IDX, 0x38, 0x48);
+			wrinx(CRTC_IDX, 0x39, 0xa5);
+
 			switch (pcrp->_device)
 			{
 			case PCI_CHIP_TRIO:
@@ -93,13 +101,6 @@ int *Chipset;
 				*Chipset = CHIP_S3_968;
 
 				/* probe for 3Dlabs chip in same PCI slot for ELSA Gloria */
-				Ports[0] = CRTC_IDX;
-				Ports[1] = CRTC_REG;
-				EnableIOPorts(NUMPORTS, Ports);
-				cr38 = rdinx(CRTC_IDX, 0x38);
-				cr39 = rdinx(CRTC_IDX, 0x39);
-				wrinx(CRTC_IDX, 0x38, 0x48);
-				wrinx(CRTC_IDX, 0x39, 0xa0);
 				cr42 = rdinx(CRTC_IDX, 0x42);
 				wrinx(CRTC_IDX, 0x42, cr42 | 0x08);
 				xf86scanpci();
@@ -115,11 +116,6 @@ int *Chipset;
 				      }
 				   }
 				}				      
-
-				wrinx(CRTC_IDX, 0x42, cr42);
-				wrinx(CRTC_IDX, 0x39, cr39);
-				wrinx(CRTC_IDX, 0x38, cr38);
-				DisableIOPorts(NUMPORTS, Ports);
 				xf86scanpci();
 
 				break;
@@ -131,6 +127,13 @@ int *Chipset;
 				 * the GLINT
 				 */
 				S3_Descriptor.check_coproc = TRUE;
+				break;
+			case PCI_CHIP_ViRGE_DXGX:
+			        PCIProbed = TRUE;
+				if (rdinx(CRTC_IDX, 0x6f) & 1)
+				   *Chipset = CHIP_S3_ViRGE_GX;
+				else
+				   *Chipset = CHIP_S3_ViRGE_DX;
 				break;
 			case PCI_CHIP_ViRGE_VX:
 			        PCIProbed = TRUE;
@@ -144,6 +147,13 @@ int *Chipset;
 			        PCIProbed = TRUE;
 				*Chipset = CHIP_S3_Trio64UVP;
 				break;
+			case PCI_CHIP_TRIO64V2_DXGX:
+			        PCIProbed = TRUE;
+				if (rdinx(CRTC_IDX, 0x6f) & 1)
+				   *Chipset = CHIP_S3_Trio64V2_GX;
+				else
+				   *Chipset = CHIP_S3_Trio64V2_DX;
+				break;
 #if 0  /* use port probing then... */
 			default:
 			        PCIProbed = TRUE;
@@ -152,6 +162,10 @@ int *Chipset;
 				break;
 #endif
 			}
+
+			wrinx(CRTC_IDX, 0x39, cr39);
+			wrinx(CRTC_IDX, 0x38, cr38);
+			DisableIOPorts(NUMPORTS, Ports);
 			if (PCIProbed)
 			   return(TRUE);
 		}
@@ -163,7 +177,8 @@ int *Chipset;
 	Ports[0] = CRTC_IDX;
 	Ports[1] = CRTC_REG;
 	EnableIOPorts(NUMPORTS, Ports);
-	old = rdinx(CRTC_IDX, 0x38);
+	cr38 = rdinx(CRTC_IDX, 0x38);
+	cr39 = rdinx(CRTC_IDX, 0x39);
 	wrinx(CRTC_IDX, 0x38, 0x00);
 	if (!testinx2(CRTC_IDX, 0x35, 0x0F))
 	{
@@ -171,6 +186,7 @@ int *Chipset;
 		if (testinx2(CRTC_IDX, 0x35, 0x0F))
 		{
 			result = TRUE;
+			wrinx(CRTC_IDX, 0x39, 0xa5);
 			rev = rdinx(CRTC_IDX, 0x30);
 			switch (rev & 0xF0)
 			{
@@ -295,32 +311,43 @@ int *Chipset;
 				*Chipset = CHIP_S3_964;
 				break;
 			case 0xE0: {
-			   Byte chip_id_high, chip_id_low, chip_rev;
-			   chip_id_high = rdinx(CRTC_IDX, 0x2d);
-			   chip_id_low  = rdinx(CRTC_IDX, 0x2e);
-			   chip_rev     = rdinx(CRTC_IDX, 0x2f);
-			   if      (chip_id_low==0x80) 
+			   int chip_id, chip_rev;
+			   chip_id  = rdinx(CRTC_IDX, 0x2d) << 8;
+			   chip_id |= rdinx(CRTC_IDX, 0x2e);
+			   chip_rev = rdinx(CRTC_IDX, 0x2f);
+			   if      (chip_id == 0x8880)
 			      *Chipset = CHIP_S3_866;
-			   else if (chip_id_low==0x90) 
+			   else if (chip_id == 0x8890) 
 			      *Chipset = CHIP_S3_868;
-			   else if (chip_id_low==0x10) 
+			   else if (chip_id == 0x8810) 
 			      *Chipset = CHIP_S3_Trio32;
-			   else if (chip_id_low==0x11)
-			      if ((chip_rev&0x40) == 0x40)
+			   else if (chip_id == PCI_CHIP_TRIO)
+			      if ((chip_rev&0x40)  ==  0x40)
 				 *Chipset = CHIP_S3_Trio64V;
 			      else
 				 *Chipset = CHIP_S3_Trio64;
-			   else if (chip_id_low==0xf0) 
+			   else if (chip_id == PCI_CHIP_968) 
 			      *Chipset = CHIP_S3_968;
-			   else if (chip_id_low==0x31) 
+			   else if (chip_id == PCI_CHIP_ViRGE) 
 			      *Chipset = CHIP_S3_ViRGE;
-			   else if (chip_id_low==0x01)
-			      *Chipset = CHIP_S3_Trio64V2;
+			   else if (chip_id == PCI_CHIP_ViRGE_VX) 
+			      *Chipset = CHIP_S3_ViRGE_VX;
+			   else if (chip_id == PCI_CHIP_PLATO_PX) 
+			      *Chipset = CHIP_S3_PLATO_PX;
+			   else if (chip_id == PCI_CHIP_TRIO64V2_DXGX)
+			      if (rdinx(CRTC_IDX, 0x6f) & 1)
+				 *Chipset = CHIP_S3_Trio64V2_GX;
+			      else
+				 *Chipset = CHIP_S3_Trio64V2_DX;
+			   else if (chip_id == 0x8a01)
+			      if (rdinx(CRTC_IDX, 0x6f) & 1)
+				 *Chipset = CHIP_S3_ViRGE_GX;
+			      else
+				 *Chipset = CHIP_S3_ViRGE_DX;
 			   else {
 			      Chip_data = rev;
-			      Chip_data = (Chip_data << 8) | chip_id_high;
-			      Chip_data = (Chip_data << 8) | chip_id_low;
-			      Chip_data = (Chip_data << 8) | chip_rev;
+			      Chip_data = (Chip_data << 16) | chip_id;
+			      Chip_data = (Chip_data <<  8) | chip_rev;
 			      *Chipset = CHIP_S3_UNKNOWN;
 			   }
 			   break;				 
@@ -332,7 +359,8 @@ int *Chipset;
 			}
 		}
 	}
-	wrinx(CRTC_IDX, 0x38, old);
+	wrinx(CRTC_IDX, 0x39, cr39);
+	wrinx(CRTC_IDX, 0x38, cr38);
 	DisableIOPorts(NUMPORTS, Ports);
 	return(result);
 }

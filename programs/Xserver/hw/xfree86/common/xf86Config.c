@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.122 1997/03/04 10:38:53 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.123 1997/03/07 00:29:19 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -93,7 +93,7 @@ static int    configLineNo = 0;           /* linenumber */
 static char   *configBuf,*configRBuf;     /* buffer for lines */
 static char   *configPath;                /* path to config file */
 static char   *fontPath = NULL;           /* font path */
-static char   *modulePath = NULL;	  /* module path */
+       char   *xf86ModulePath = NULL;	  /* module path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
 static char   DCerr;  
@@ -1065,8 +1065,10 @@ xf86Config (vtopen)
   if (device_list)
     xfree(device_list);
 #endif
-  if (modulePath)
-      xfree(modulePath);
+#if 0
+  if (xf86ModulePath)
+      xfree(xf86ModulePath);
+#endif
   
 #if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
@@ -1253,25 +1255,25 @@ configFilesSection()
 	xf86ConfigError("Module path expected");
       l = FALSE;
       str = prependRoot(val.str);
-      if (modulePath == NULL) {
-	modulePath = (char *)xalloc(1);
-	  modulePath[0] = '\0';
+      if (xf86ModulePath == NULL) {
+	xf86ModulePath = (char *)xalloc(1);
+	  xf86ModulePath[0] = '\0';
 	  k = strlen(str) + 1;
 	}
       else
 	{
-          k = strlen(modulePath) + strlen(str) + 1;
-          if (modulePath[strlen(modulePath)-1] != ',') 
+          k = strlen(xf86ModulePath) + strlen(str) + 1;
+          if (xf86ModulePath[strlen(xf86ModulePath)-1] != ',') 
 	    {
 	      k++;
 	      l = TRUE;
 	    }
 	}
-      modulePath = (char *)xrealloc(modulePath, k);
+      xf86ModulePath = (char *)xrealloc(xf86ModulePath, k);
       if (l)
-        strcat(modulePath, ",");
+        strcat(xf86ModulePath, ",");
 
-      strcat(modulePath, str);
+      strcat(xf86ModulePath, str);
       xfree(val.str);
       break;
 
@@ -2477,26 +2479,26 @@ configDynamicModuleSection()
 		xf86ConfigError("Dynamic module expected");
 	    else {
 #if defined(DYNAMIC_MODULE) || defined(XFree86LOADER)
-		if (!modulePath) {
+		if (!xf86ModulePath) {
 		    static Bool firstTime = TRUE;
 
-		    modulePath = (char*)xcalloc(1, strlen(DEFAULT_MODULE_PATH)+1);
-		    strcpy(modulePath, DEFAULT_MODULE_PATH);
+		    xf86ModulePath = (char*)xcalloc(1, strlen(DEFAULT_MODULE_PATH)+1);
+		    strcpy(xf86ModulePath, DEFAULT_MODULE_PATH);
 		
 		    if (xf86Verbose && firstTime) {
-			ErrorF("%s no ModulePath specified using default: %s\n",
+			ErrorF("%s no xf86ModulePath specified using default: %s\n",
 			       XCONFIG_PROBED, DEFAULT_MODULE_PATH);
 			firstTime = FALSE;
 		    }
 		}
 #ifndef XFree86LOADER
-		xf86LoadModule(val.str, modulePath);
+		xf86LoadModule(val.str, xf86ModulePath);
 #else
-		LoadModule(val.str, modulePath);
+		LoadModule(val.str, xf86ModulePath);
 #endif
 #else
 		ErrorF("Dynamic modules not supported. \"%s\" not loaded\n",
-		       modulePath);
+		       xf86ModulePath);
 #endif
 	    }
 	    break;
@@ -2547,58 +2549,62 @@ configDynamicModuleSection()
     switch( xf86bpp )
     {
     case 1:
-    	    if( xf86issvgatype )
-		LoadModule("libvga2.a", modulePath);
+    	    if( xf86issvgatype ) {
+		LoadModule("libvga2.a", xf86ModulePath);
+	        LoadModule("libvga256.a", xf86ModulePath);
+	    }
 	    if( xf86ismonotype )
-		LoadModule("libmono.a", modulePath);
+		LoadModule("libmono.a", xf86ModulePath);
     	    break;
     case 4:
-    	    if( xf86issvgatype )
-		LoadModule("libvga16.a", modulePath);
+    	    if( xf86issvgatype ) {
+		LoadModule("libvga16.a", xf86ModulePath);
+	        LoadModule("libvga256.a", xf86ModulePath);
+	    }
     	    break;
     case 8:
     	    if( xf86issvgatype )
-		LoadModule("libvga256.a", modulePath);
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
+		LoadModule("libvga256.a", xf86ModulePath);
+	    LoadModule("libmfb.a", xf86ModulePath);
+	    LoadModule("libcfb.a", xf86ModulePath);
 	    if( xf86xaaloaded )
-	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaavga256.o", xf86ModulePath);
 	    break;
     case 15:
     case 16:
     	    if( xf86issvgatype )
-		LoadModule("libvga256.a", modulePath);
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb16.a", modulePath);
+		LoadModule("libvga256.a", xf86ModulePath);
+	    LoadModule("libmfb.a", xf86ModulePath);
+	    LoadModule("libcfb.a", xf86ModulePath);
+	    LoadModule("libcfb16.a", xf86ModulePath);
 	    if( xf86xaaloaded )
 	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa16.o", modulePath);
+	        LoadModule("xaavga256.o", xf86ModulePath);
+	        LoadModule("xaa16.o", xf86ModulePath);
 	    }
 	    break;
     case 24:
     	    if( xf86issvgatype )
-		LoadModule("libvga256.a", modulePath);
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb24.a", modulePath);
+		LoadModule("libvga256.a", xf86ModulePath);
+	    LoadModule("libmfb.a", xf86ModulePath);
+	    LoadModule("libcfb.a", xf86ModulePath);
+	    LoadModule("libcfb24.a", xf86ModulePath);
 	    if( xf86xaaloaded )
 	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa24.o", modulePath);
+	        LoadModule("xaavga256.o", xf86ModulePath);
+	        LoadModule("xaa24.o", xf86ModulePath);
 	    }
 	    break;
     case 32:
     	    if( xf86issvgatype )
-		LoadModule("libvga256.a", modulePath);
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb32.a", modulePath);
+		LoadModule("libvga256.a", xf86ModulePath);
+	    LoadModule("libmfb.a", xf86ModulePath);
+	    LoadModule("libcfb.a", xf86ModulePath);
+	    LoadModule("libcfb32.a", xf86ModulePath);
 	    if( xf86xaaloaded )
 	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa32.o", modulePath);
+	        LoadModule("xaavga256.o", xf86ModulePath);
+	        LoadModule("xaa32.o", xf86ModulePath);
 	    }
 	    break;
     default:
@@ -2840,7 +2846,7 @@ configScreenSection()
       screen->depth = val.num;
 #else
       ErrorF("The DefaultColorDepth keyword has been moved to the");
-      ErrorF("Section \"Module\".");
+      ErrorF("Section \"Module\".\n");
 #endif
       break;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.44 1997/02/28 08:20:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.1 1997/03/06 23:15:02 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -159,8 +159,9 @@ typedef struct {
     unsigned char msr;
     unsigned char fcr;
     unsigned char xr02;
-    unsigned char xr54;
+    unsigned char xr03;
     unsigned char xr33;
+    unsigned char xr54;
     unsigned char fr03;
     int Clock;
 } ctClockReg, *ctClockPtr;
@@ -259,7 +260,6 @@ typedef struct {
     unsigned char Port_3D6[0xFF];   /* Chips & Technologies Registers */
     unsigned char Port_3D0[0x80];
     unsigned char Port_3D4[0x80];   /* Storage for the CT specific CRT regs */
-    unsigned long BltReg[0xD];	    /* Storage for the HiQV BitBLT registers */
     ctClockReg ctClock;
     Bool XMode;
     unsigned char Port_3DA;         /* Read at Port 3CA */
@@ -2336,7 +2336,7 @@ ctEnterLeave(enter)
  	    if (initialize)
  	        xr02 = inb(0x3D7) & 0x18;
 	    temp = inb(0x3D7);
-	    outb(0x3D7,(temp & 0xE7));
+	    outb(0x3D7,(temp & ~0x18));
 	    outb(0x3D6, 0x14);
 	    if (initialize)
 		xr14 = inb(0x3D7) & 0x20;
@@ -2348,8 +2348,8 @@ ctEnterLeave(enter)
 	  {
 	    outb(0x3D6,0x03);
 	    if(initialize)
-	      xr03 = inb(0x3D7) & 0x02;
-	    outb(0x3D7,xr03 | 0x02);
+	      xr03 = inb(0x3D7) & 0x0A;
+	    outb(0x3D7,xr03 | 0x0A);
 	  }
 
 	/* enable HW cursor */
@@ -2393,19 +2393,19 @@ ctEnterLeave(enter)
  	/* group protection attribute controller access */
 	    outb(0x3D6, 0x15);
 	    outb(0x3D7, xr15);
-            outb(0x3D6, 0x03);
+            outb(0x3D6, 0x02);
 	    temp = inb(0x3D7);
- 	    outb(0x3D7, (temp & 0xFD) | xr03);
+ 	    outb(0x3D7, (temp & ~0x18) | xr02);
 	    outb(0x3D6, 0x14);
 	    temp = inb(0x3D7);
-	    outb(0x3D7, (temp & 0xDF) | xr14);
+	    outb(0x3D7, (temp & ~0x20) | xr14);
 
 	/* reset 32 bit register access */
 	if(CHIPSchipset > CT_540)
 	  {
- 	    outb(0x3D6, 0x02);
+ 	    outb(0x3D6, 0x03);
 	    temp = inb(0x3D7);
- 	    outb(0x3D7, (temp & 0xE7) | xr02);
+ 	    outb(0x3D7, (temp & ~0x0A) | xr03);
 	  }
 
       /* disable IO ports */
@@ -2731,15 +2731,6 @@ CHIPSSave(save)
 	    ErrorF("CS%X - %X\n", i, save->Port_3D4[i]);
 #endif
 	}
-/*
- * Save the contents of the BitBLT registers for the 65550, if needed
- */
-	if (ctUseMMIO) {
-	    for (i = 0x0; i < 0x9; i++) {
-		save->BltReg[i] = *(volatile unsigned int *)
-		    (ctMMIOBase + ctMMIO[i]);
-	    }
-	}
     } else {
 	for (i = 0; i < 0x7D; i++) { /* don't touch XR7D and XR7F on WINGINE */
 	    outb(0x3D6, i);
@@ -2747,15 +2738,6 @@ CHIPSSave(save)
 #ifdef DEBUG
 	    ErrorF("XS%X - %X\n", i, save->Port_3D6[i]);
 #endif
-	}
-	if(!ctUseMMIO){ 
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(i); save->BltReg[i] = inl(DR(i));
-	  };
-	} else {
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(ctMMIO[i]); save->BltReg[i] = MMIOmeml(ctMMIO[i]);
-	  };
 	}
     }
 
@@ -4323,13 +4305,6 @@ ctRestore(restore)
 
     if (ctisHiQV32) {
       
-      /* save BltRegs */
-	if (ctUseMMIO) {
-	    for (i = 0x0; i < 0x9; i++) {
-		*(unsigned int *)(ctMMIOBase + ctMMIO[i]) = restore->BltReg[i];
-	    }
-	}
-
 	/* set extended regs */
 	for (i = 0; i < 0x43; i++) {
 	    outb(0x3D6, i);
@@ -4393,16 +4368,6 @@ ctRestore(restore)
 		outb(ctCRvalue, restore->Port_3D4[i]);
 	}
     } else {
-      /* save BitBlt regs. */
-	if(!ctUseMMIO){
-	  for(i=0;i<0xD;i++){
-	     HW_DEBUG(i); outl(DR(i), restore->BltReg[i]);
-	   };
-	} else {
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(ctMMIO[i]); MMIOmeml(ctMMIO[i]) = restore->BltReg[i];
-	  }	
-	}
 	/* set extended regs. */
 	for (i = 0; i < 0x30; i++) {
 	    outb(0x3D6, i);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.66 1997/02/17 12:35:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.67 1997/03/11 13:05:41 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -32,7 +32,7 @@
  * MAX_OFLAGS should be a multiple of 8
  */
 #define MAX_OFLAGS	224
-#define FLAGBITS	sizeof(unsigned long)
+#define FLAGBITS	(8 * sizeof(unsigned long))
 typedef struct {
 	unsigned long flag_bits[MAX_OFLAGS/FLAGBITS];
 } OFlagSet;
@@ -242,6 +242,7 @@ typedef struct {
 #define CLOCK_OPTION_ET6000     19 /* use ET6000 built-in programmable clock */
 #define CLOCK_OPTION_ICS1562    20 /* used for TGA server */
 #define CLOCK_OPTION_S3AURORA   21 /* use S3 Aurora64V+ programmable clocks */
+#define CLOCK_OPTION_S3TRIO64V2 22 /* use S3 Trio64V2 or ViRGE/DX/GX 170MHz clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -425,6 +426,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio32",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "s3_aurora64",	CLOCK_OPTION_S3AURORA },  /* S3 Aurora64V+ */
+  { "s3_trio64v2",	CLOCK_OPTION_S3TRIO64V2 },/* S3 Trio64V2 and ViRGE/DX/GX */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
   { "ti3030",		CLOCK_OPTION_TI3026 },    /* TI3030 is TI3026 compatible */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.10 1997/01/25 04:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.11 1997/03/18 10:32:07 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -75,6 +75,7 @@ extern unsigned char (* dacInTi3026IndReg)(unsigned char);
 static Bool NORMAL_Probe(void);
 static Bool S3_TRIO32_Probe(void);
 static Bool S3_TRIO64_Probe(void);
+static Bool S3_TRIO64V2_Probe(void);
 static Bool TI3026_Probe(void);
 static Bool TI3030_Probe(void);
 static Bool TI3020_Probe(void);
@@ -238,7 +239,9 @@ s3RamdacInfo s3Ramdacs[] = {
 			SS2410_Restore,SS2410_Save,SS2410_Init},
 /* 22 */	{"sc1148x", 110000, SC1148x_Probe, MISC_HI_COLOR_PreInit,
 			SC1148x_Restore,SC1148x_Save,SC1148x_Init},
-/* 23 */	{NULL, 0, Null_Probe, Null_PreInit,Null_Restore,Null_Save,
+/* 23 */	{"s3_trio64v2", 170000, S3_TRIO64V2_Probe, S3_TRIO_PreInit, 	
+			S3_TRIO_Restore,S3_TRIO_Save,S3_TRIO_Init},
+/* 24 */	{NULL, 0, Null_Probe, Null_PreInit,Null_Restore,Null_Save,
 			Null_Init}
 }; 
 
@@ -2445,6 +2448,8 @@ static Bool S3_TRIO_Probe(int type)
    if (S3_TRIOxx_SERIES(s3ChipId)) {
 	 if (S3_TRIO32_SERIES(s3ChipId))
 		found = S3_TRIO32_DAC;
+	 else if (S3_TRIO64V2_SERIES(s3ChipId))
+		found = S3_TRIO64V2_DAC;
 	 else 
 		found = S3_TRIO64_DAC;
    }
@@ -2464,7 +2469,24 @@ static Bool S3_TRIO_Probe(int type)
 	 if (S3_AURORA64VP_SERIES(s3ChipId) &&
 	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	    OFLG_SET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3AURORA, &s3InfoRec.clockOptions);
+	    clockchip_probed = XCONFIG_PROBED;
+	 }
+      }
+      else if (S3_TRIO64V2_SERIES(s3ChipId)) {
+	 if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions)) {
+	    ErrorF("%s %s: for Trio64V2 chips you shouldn't specify any Clockchip\n"
+		   "\t other than \"s3_trio64v2\" or maybe \"s3_trio64\"\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	    /* Clear the other clock options */
+	    OFLG_ZERO(&s3InfoRec.clockOptions);
+	 }
+	 if (S3_TRIO64V2_SERIES(s3ChipId) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions);
 	    clockchip_probed = XCONFIG_PROBED;
 	 }
       }
@@ -2485,6 +2507,11 @@ static Bool S3_TRIO_Probe(int type)
    }
   
    return (found == type);
+}
+
+static Bool S3_TRIO64V2_Probe()
+{
+    return S3_TRIO_Probe(S3_TRIO64V2_DAC);
 }
 
 static Bool S3_TRIO64_Probe()
@@ -2527,9 +2554,15 @@ static int S3_TRIO_PreInit()
    
 	s3InfoRec.maxClock = s3InfoRec.dacSpeed;
     } else if (s3Bpp < 4)
-	 s3InfoRec.maxClock = 80000;
+       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+	  s3InfoRec.maxClock = 110000;
+       else
+	  s3InfoRec.maxClock = 80000;
     else
-	 s3InfoRec.maxClock = 50000;
+       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+	  s3InfoRec.maxClock = 60000;
+       else
+	  s3InfoRec.maxClock = 50000;
  
 
     /* If there is an internal clock, set s3ClockSelectFunc, maxRawClock
@@ -2537,7 +2570,10 @@ static int S3_TRIO_PreInit()
 	clocks, pass the job to OtherClocksSetup() */
     s3ClockSelectFunc = s3GendacClockSelect;
     numClocks = 3;
-    maxRawClock = 135000;
+    if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+       maxRawClock = 170000;
+    else
+       maxRawClock = 135000;
       
     outb(0x3c4, 0x08);
     sr8 = inb(0x3c5);
@@ -2568,6 +2604,10 @@ static int S3_TRIO_PreInit()
 	  ErrorF("%s %s: Using Aurora64 programmable clock (MCLK %1.3f MHz, SR27=%02x, SR28=%02x)\n"
 		 ,clockchip_probed, s3InfoRec.name
 		 ,mclk / 1000.0, sr27, sr28);
+       else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+	  ErrorF("%s %s: Using Trio64V2 programmable clock (MCLK %1.3f MHz)\n"
+		 ,clockchip_probed, s3InfoRec.name
+		 ,mclk / 1000.0);
        else
 	  ErrorF("%s %s: Using Trio32/64 programmable clock (MCLK %1.3f MHz)\n"
 		 ,clockchip_probed, s3InfoRec.name
@@ -4348,7 +4388,9 @@ s3GendacClockSelect(freq)
 	 if (S3_TRIOxx_SERIES(s3ChipId)) {
 	    if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &s3InfoRec.clockOptions))
 	       (void) S3AuroraSetClock(freq, 2); /* can't fail */
-	    else
+	    else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+	       (void) S3Trio64V2SetClock(freq, 2); /* can't fail */
+	    else 
 	       (void) S3TrioSetClock(freq, 2); /* can't fail */
 	 }
 	 else {

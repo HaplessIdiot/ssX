@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.3 1997/03/11 11:10:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.4 1997/03/11 13:05:51 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -295,8 +295,16 @@ ModuleInit(data,magic)
 	* data = (pointer)&TRIDENT;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
+#ifdef PC98_TGUI
+    case 2:
+	* data = (pointer)"libtrident.a";
+	* magic= MAGIC_LOAD;
+	break;
+#endif
     default:
+#ifndef PC98_TGUI
         xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
+#endif
         * magic= MAGIC_DONE;
 	break;
     }

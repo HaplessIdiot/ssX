@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ELSA.h,v 3.10 1996/12/23 06:41:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ELSA.h,v 1.1 1997/03/06 23:16:31 hohndel Exp $ */
 
 
 /*
@@ -118,7 +118,8 @@ extern int s3DetectELSA(
 			char **pserno,
 			int *max_pix_clock, 
 			int *max_mem_clock,
-			int *hwconf
+			int *hwconf,
+			char **modes
 #endif
 			);
 

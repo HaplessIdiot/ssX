@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.19 1997/02/16 10:27:06 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.20 1997/03/07 00:29:01 hohndel Exp $ */ 
 /*
  * PCI Probe
  *
@@ -296,7 +296,8 @@ void xf86writepci(
 #define PCI_CHIP_TRIO		0x8811
 #define PCI_CHIP_AURORA64VP	0x8812
 #define PCI_CHIP_TRIO64UVP	0x8814
-#define PCI_CHIP_TRIO64V2	0x8901
+#define PCI_CHIP_TRIO64V2_DXGX	0x8901
+#define PCI_CHIP_PLATO_PX	0x8902
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0
@@ -306,6 +307,7 @@ void xf86writepci(
 #define PCI_CHIP_968		0x88F0
 #define PCI_CHIP_ViRGE		0x5631
 #define PCI_CHIP_ViRGE_VX	0x883D
+#define PCI_CHIP_ViRGE_DXGX	0x8A01
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091

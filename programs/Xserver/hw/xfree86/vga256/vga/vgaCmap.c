@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.15 1996/12/23 06:59:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.16 1997/03/11 13:07:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,6 +42,7 @@
 #define NOMAPYET        (ColormapPtr) 0
 
 extern Bool clgd6225Lcd;
+extern Bool nv1VGABodge;
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
 				/* current colormap for each screen */
@@ -214,11 +215,13 @@ vgaStoreColors(pmap, ndef, pdefs)
 	       )
 	    {
 #ifndef PC98_EGC
+	      if(!nv1VGABodge) {
 	        (void)inb(vgaIOBase + 0x0A);
 	        outb(0x3C0, OVERSCAN);
 	        outb(0x3C0, overscan);
 	        (void)inb(vgaIOBase + 0x0A);
 	        outb(0x3C0, 0x20);
+	      }
 #endif
 	    }
         }

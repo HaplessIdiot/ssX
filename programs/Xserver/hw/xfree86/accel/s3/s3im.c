@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.39 1997/01/05 11:54:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.40 1997/01/08 20:33:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -118,8 +118,6 @@ static void s3ImageFillBanked (
 static char old_bank = -1;
 extern char s3Mbanks;
 extern ScrnInfoRec s3InfoRec;
-int s3Bpp;
-int s3BppDisplayWidth;
 Pixel s3BppPMask;
 
 void

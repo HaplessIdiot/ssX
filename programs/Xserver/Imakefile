@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.101 1997/03/11 13:04:58 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.102 1997/03/17 07:17:35 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -763,6 +763,7 @@ XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o \
              $(S3DRIVERSRC)/mmio_928/mmio_928.o \
              $(S3DRIVERSRC)/s3_generic/s3_generic.o
 XF86S3LIBS = $(XF86ACCELSRC)/s3/LibraryTargetName(s3) \
+             $(XF86ACCELSRC)/s3/LibraryTargetName(s3pio) \
              $(XF86ACCELSRC)/s3/s3newmmio/LibraryTargetName(s3newmmio) \
              $(XF86ACCELSRC)/s3/s3mmio/LibraryTargetName(s3mmio) $(XF86LIBS) \
              CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)

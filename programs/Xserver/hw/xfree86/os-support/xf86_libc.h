@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.3 1997/02/25 18:45:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.4 1997/03/17 07:18:15 hohndel Exp $ */
 
 
 
@@ -85,6 +85,7 @@ typedef struct _xf86dirent *XF86DIRENT;
 #define sqrt(a)		xf86sqrt(a)
 #define cos(a)		xf86cos(a)
 #define ffs(a)          xf86ffs(a)
+#define fabs(a)         xf86fabs(a)
 
 /*
  * FILE is not really compatible accross operating systems

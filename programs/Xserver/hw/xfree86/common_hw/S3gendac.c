@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.22 1997/01/24 01:02:49 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.23 1997/01/26 04:31:42 dawes Exp $ */ 
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -121,6 +121,14 @@ long freq;
 int clk;
 {
    return commonSetClock(freq, clk, 1, 1, 31, 0, 3, PLL_S3TRIO, 135000, 270000);
+}
+
+int
+S3Trio64V2SetClock(freq, clk)
+long freq;
+int clk;
+{
+   return commonSetClock(freq, clk, 1, 1, 31, 0, 3, PLL_S3TRIO, 170000, 340000);
 }
 
 int

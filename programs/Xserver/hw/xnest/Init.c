@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/7 1996/12/02 10:21:37 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.10 1997/01/12 10:48:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.11 1997/02/27 16:45:50 hohndel Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -35,7 +35,7 @@ is" without express or implied warranty.
 #include "XNGC.h"
 #include "XNFont.h"
 
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 /*
  * when building the loader, we add some code that tries to 
  * switch bit ordering based on xf86bpp; since Xnest doesn't

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.47 1997/01/14 22:16:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.48 1997/01/18 06:54:59 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -239,6 +239,8 @@ extern int s3_968_DashBug;
 #define ATT20C490_DAC     20
 #define	SS2410_DAC	  21
 #define SC1148x_M2_DAC    22
+#define S3_TRIO64V2_DAC   23
+
 
 #define SC1148x_M3_DAC    SC1148x_M2_DAC
 
@@ -294,7 +296,8 @@ extern s3RamdacInfo s3Ramdacs[];
 #define DAC_IS_GENDAC           (s3RamdacType == S3_GENDAC_DAC)
 #define DAC_IS_TRIO32           (s3RamdacType == S3_TRIO32_DAC)
 #define DAC_IS_TRIO64           (s3RamdacType == S3_TRIO64_DAC)
-#define DAC_IS_TRIO             (DAC_IS_TRIO32 || DAC_IS_TRIO64)
+#define DAC_IS_TRIO64V2         (s3RamdacType == S3_TRIO64V2_DAC)
+#define DAC_IS_TRIO             (DAC_IS_TRIO32 || DAC_IS_TRIO64 || DAC_IS_TRIO64V2)
 #define DAC_IS_IBMRGB524        (s3RamdacType == IBMRGB524_DAC)
 #define DAC_IS_IBMRGB525        (s3RamdacType == IBMRGB525_DAC)
 #define DAC_IS_IBMRGB528        (s3RamdacType == IBMRGB528_DAC)

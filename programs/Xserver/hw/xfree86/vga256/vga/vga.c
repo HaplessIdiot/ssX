@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.85 1997/03/17 07:18:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.86 1997/03/18 10:05:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1480,9 +1480,11 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
             else
             {
                 /* Set the bank, then clear it */
+#if !defined(__alpha__)
 		if (xf86bpp == 4)
 			vgaPhysPtr=vga16SetWrite(vgaVirtPtr);
 		else
+#endif
 			vgaPhysPtr=vgaSetWrite(vgaVirtPtr);
             }
             xf86memset(vgaPhysPtr,pScreen->blackPixel,vgaSegmentSize);

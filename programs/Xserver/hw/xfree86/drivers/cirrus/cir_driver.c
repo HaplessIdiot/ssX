@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.86 1997/02/28 08:20:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.1 1997/03/06 23:15:24 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -681,8 +681,30 @@ ModuleInit(data,magic)
         * data = (pointer)&CIRRUS;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
+#ifdef PC98
+    case 2:
+#ifdef PC98_GANB_WAP
+	* data = (pointer)"libganbwap.a";
+#endif
+#ifdef PC98_NKVNEC
+	* data = (pointer)"libnkvnec.a";
+#endif
+#ifdef PC98_WAB
+	* data = (pointer)"libwabs.a";
+#endif
+#ifdef PC98_WABEP
+	* data = (pointer)"libwabep.a";
+#endif
+#ifdef PC98_WSNA
+	* data = (pointer)"libwsna.a";
+#endif
+	* magic= MAGIC_LOAD;
+	break;
+#endif /* PC98 */
     default:
+#ifndef PC98
         xf86issvgatype = TRUE; /* later load the correct libvgaxx.a */
+#endif
         * magic= MAGIC_DONE;
         break;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.3 1996/11/24 09:54:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.4 1996/12/27 07:02:16 dawes Exp $ */
 /*
  * regs3v.h
  *
@@ -39,22 +39,25 @@
 				   outb(vgaCRReg, 0xa5); } while (0)
 
 
-#define S3_ViRGE_SERIES(chip)     ((chip&0xfff0)==0x31e0)
-#define S3_ViRGE_VX_SERIES(chip)  ((chip&0xfff0)==0x3de0)
+#define S3_ViRGE_SERIES(chip)      (chip==PCI_ViRGE)
+#define S3_ViRGE_VX_SERIES(chip)   (chip==PCI_ViRGE_VX)
+#define S3_ViRGE_DXGX_SERIES(chip) (chip==PCI_ViRGE_DXGX)
 #define S3_ANY_ViRGE_SERIES(chip) (    S3_ViRGE_SERIES(chip)		\
-				    || S3_ViRGE_VX_SERIES(chip))
-#define S3_ANY_SERIES(chip)       (    S3_ViRGE_SERIES(chip)		\
-				    || S3_ViRGE_VX_SERIES(chip))
+				    || S3_ViRGE_VX_SERIES(chip)		\
+				    || S3_ViRGE_DXGX_SERIES(chip))
+#define S3_ANY_SERIES(chip)       (    S3_ANY_ViRGE_SERIES(chip)  )
 
 /* PCI data */
 #define PCI_S3_VENDOR_ID	0x5333
 #define PCI_ViRGE		0x5631
 #define PCI_ViRGE_VX		0x883D
+#define PCI_ViRGE_DXGX		0x8A01
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
 #define S3_ViRGE		 1
 #define S3_ViRGE_VX		 2
+#define S3_ViRGE_DXGX		 3
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.22 1996/12/23 06:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.23 1997/03/07 00:30:19 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -124,8 +124,10 @@
 #define PCI_CHIP_TRIO		0x8811
 #define PCI_CHIP_AURORA64VP	0x8812
 #define PCI_CHIP_TRIO64UVP	0x8814
-#define PCI_CHIP_TRIO		0x8811
+#define PCI_CHIP_TRIO64V2_DXGX	0x8901
+#define PCI_CHIP_PLATO_PX	0x8902
 #define PCI_CHIP_VIRGE_VX	0x883D
+#define PCI_CHIP_VIRGE_DXGX	0x8A01
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0
@@ -271,7 +273,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_TRIO,		"Trio32/64"},
 				{PCI_CHIP_AURORA64VP,	"Aurora64V+"},
 				{PCI_CHIP_TRIO64UVP,	"Trio64UV+"},
+				{PCI_CHIP_TRIO64V2_DXGX,"Trio64V2/DX or /GX"},
+				{PCI_CHIP_PLATO_PX,	"PLATO/PX"},
 				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
+				{PCI_CHIP_VIRGE_DXGX,	"ViRGE/DX or /GX"},
 				{PCI_CHIP_868,		"868"},
 				{PCI_CHIP_928,		"928"},
 				{PCI_CHIP_864_0,	"864"},

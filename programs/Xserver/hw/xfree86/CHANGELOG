@@ -1,3 +1,16 @@
+XFree86 3.2Ap (22 March 1997)
+ 592. Fix screen problems with C&T at 24bpp (#182, Nozomi Ytow).
+ 591. Add NV1 acceleration (#181, David McKay).
+ 590. Add Trio64V2 170/110/60MHz support to S3 server (#180, Harald Koenig).
+ 589. Automagic loading of modules for old S3 server (#178,179 Harald Koenig).
+ 588. Automagic loading of modules for PC98 servers (#177, Takaaki Nomura).
+ 587. Fixes to blitter and hw cursor handling in C&T driver (#176, David
+      Bateman, Egbert Eich).
+ 586. Add Elsa handling to S3/SVGA and Trio64V2/DX/GX, ViRGE/DX/GX and PLATO/PX
+      to SuperProbe, scanpci, S3, S3V and S3/SVGA servers (#174,175, 
+      Harald Koenig).
+ 585. Build fix for Xprt, Xnest and Xvfb (#172, Takaaki Nomura).
+
 XFree86 3.2Ao (18 March 1997)
  584. Fix/add IBM RGB528 support and add ELSA eeprom detection (only
       for IBM ramdacs right now) (#170, Harald Koenig).
@@ -4193,4 +4206,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.433 1997/03/18 10:30:51 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.434 1997/03/18 11:36:34 hohndel Exp $

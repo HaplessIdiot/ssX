@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.5 1997/01/18 06:55:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.6 1997/02/18 22:26:20 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -31,6 +31,44 @@
 
 #include "s3.h"
 #include "regs3.h"
+#include "xf86Version.h"
+
+extern char *xf86ModulePath;
+
+XF86ModuleVersionInfo newmmioVersRec =
+{
+	"newmmio.o", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+
 
 static Bool NEWMMIO_Probe();
 static char *NEWMMIO_Ident();
@@ -102,6 +140,7 @@ NEWMMIO_Probe()
        && !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
       s3InfoRec.chipset = NEWMMIO_Ident(0);
       s3NewMmio = TRUE;
+      LoadModule("libs3newmmio.a", xf86ModulePath);
       return(TRUE);
    } else {
       return(FALSE);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.54 1997/03/11 11:12:04 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.55 1997/03/11 13:07:57 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -117,6 +117,7 @@
  * vga.c/vgaHW.c/vgaCmap.c).
  */
 Bool clgd6225Lcd= FALSE;
+Bool nv1VGABodge= FALSE;
 
 /* DAC indices for white and black */
 #define WHITE_VALUE 0x3F
@@ -317,6 +318,7 @@ vgaSaveScreen(pScreen, on)
    if (xf86VTSema) {
       /* the server is running on the current vt */
       /* so just go for it */
+     if(nv1VGABodge) return;
 
       outb(0x3C4,1);
       scrn = inb(0x3C5);

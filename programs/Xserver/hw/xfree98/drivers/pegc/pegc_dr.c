@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.1 1997/03/11 14:31:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/pegc/pegc_dr.c,v 1.2 1997/03/17 07:18:41 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -182,8 +182,11 @@ ModuleInit(data,magic)
         * data = (pointer)&PEGC;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
+    case 2:
+        * data = (pointer)"libpegc.a";
+        * magic= MAGIC_LOAD;
+	break;
     default:
-	xf86issvgatype = TRUE;
         * magic= MAGIC_DONE;
 	break;
     }

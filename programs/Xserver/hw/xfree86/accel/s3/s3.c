@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.160 1997/02/17 09:45:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.161 1997/02/25 14:20:32 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -43,6 +43,7 @@
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "xf86_Config.h"
+#include "xf86Version.h"
 #include "s3linear.h"
 #include "s3Bt485.h"
 #include "Ti302X.h"
@@ -210,6 +211,17 @@ ScrnInfoRec s3InfoRec =
 #endif
 };
 
+XF86ModuleVersionInfo s3VersRec =
+{
+	"libs3.a", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
 ScrnInfoRec *
 ServerInit()
 {
@@ -232,11 +244,31 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
+	* data = (pointer) &s3VersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
         * data = (pointer) &s3InfoRec;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
-    case 1:
-        * data = (pointer) "libmfb.a";
+    case 2:        
+        * data = (pointer) "s3Conf.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 3:
+        * data = (pointer) "s3_generic.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 4:
+        * data = (pointer) "mmio_928.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 5:
+        * data = (pointer) "newmmio.o";
+        * magic= MAGIC_LOAD;
+        break;
+    case 6:
+        * data = (pointer) "libxf86cache.a";
         * magic= MAGIC_LOAD;
         break;
     default:
@@ -420,6 +452,9 @@ static Bool in_s3Probe = TRUE; /* s3ValidMode helpers */
 static Bool not_safe = TRUE;
 static int TempVirtualX, TempVirtualY;
 
+int s3Bpp;
+int s3BppDisplayWidth;
+
 #ifdef PC98
 extern Bool	BoardInit();
 extern int	pc98BoardType;
@@ -579,14 +614,20 @@ s3GetPCIInfo()
 	 case PCI_ViRGE_VX:
 	    info.ChipType = S3_ViRGE_VX;
 	    break;
+	 case PCI_ViRGE_DXGX:
+	    info.ChipType = S3_ViRGE_DXGX;
+	    break;
 	 case PCI_AURORA64VP:
 	    info.ChipType = S3_AURORA64VP;
 	    break;
 	 case PCI_TRIO64UVP:
 	    info.ChipType = S3_TRIO64UVP;
 	    break;
-	 case PCI_TRIO64V2:
+	 case PCI_TRIO64V2_DXGX:
 	    info.ChipType = S3_TRIO64V2;
+	    break;
+	 case PCI_PLATO_PX:
+	    info.ChipType = S3_PLATO_PX;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
@@ -853,10 +894,12 @@ s3Probe()
 
    s3ChipRev = s3ChipId & 0x0f;
    if (s3ChipId >= 0xe0) {
+      outb(vgaCRIndex, 0x2d);
+      s3ChipId = inb(vgaCRReg) << 8;
       outb(vgaCRIndex, 0x2e);
-      s3ChipId |= (inb(vgaCRReg) << 8);
+      s3ChipId |= inb(vgaCRReg);
       outb(vgaCRIndex, 0x2f);
-      s3ChipRev |= (inb(vgaCRReg) << 4);      
+      s3ChipRev = inb(vgaCRReg);
    }
 
    if (s3InfoRec.chipID) {
@@ -932,10 +975,18 @@ s3Probe()
 	    chipname = "Aurora64V+ (preliminary support; please report)";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
 	    chipname = "Trio64V+";
-	 } else if (S3_TRIO64V2_SERIES(s3ChipId /* , s3ChipRev */)) {
-	    chipname = "Trio64V2 (preliminary support (135MHz only); please report)";
+	 } else if (S3_TRIO64V2_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x39);
+	    outb(vgaCRReg, 0xa5);
+	    outb(vgaCRIndex, 0x6f);
+	    if (inb(vgaCRReg) & 1)
+	       chipname = "Trio64V2/GX";
+	    else
+	       chipname = "Trio64V2/DX";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    chipname = "Trio64";
+	 } else if (S3_PLATO_PX_SERIES(s3ChipId)) {
+	    chipname = "PLATO/PX (preliminary support; please report)";
 	 }
 	 ErrorF("%s %s: chipset:   %s rev. %x\n",
                 XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
@@ -1277,7 +1328,9 @@ s3Probe()
 	 if (S3_911_SERIES(s3ChipId)) {
 	    s3InfoRec.videoRam = 1024;
 	 } else {
-	    switch ((config & 0xE0) >> 5) {	/* look at bits 6 and 7 */
+	    if (S3_PLATO_PX_SERIES(s3ChipId))
+	       s3InfoRec.videoRam = (8-((config & 0xE0) >> 5)) * 512;
+	    else switch ((config & 0xE0) >> 5) {	/* look at bits 6 and 7 */
 	       case 0:
 	         s3InfoRec.videoRam = 4096;
 		 break;

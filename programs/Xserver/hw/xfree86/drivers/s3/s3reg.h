@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.1 1997/03/06 23:16:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.2 1997/03/10 10:12:12 hohndel Exp $ */
 /*
  * regs3.h
  * 
@@ -64,44 +64,45 @@
 #define S3_8XX_9XX_SERIES(chip) (S3_911_SERIES(chip)||S3_801_928_SERIES(chip))
 #define S3_864_SERIES(chip)     ((chip&0xf0)==0xc0)
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
-#define S3_866_SERIES(chip)     ((chip&0xfff0)==0x80e0)
-#define S3_868_SERIES(chip)     ((chip&0xfff0)==0x90e0)
-#define S3_86x_SERIES(chip)	((chip&0xf0)==0xc0 || (chip&0xeff0)==0x80e0)
+
+#define S3_866_SERIES(chip)     (chip==0x8880)
+#define S3_868_SERIES(chip)     (chip==0x8890)
+#define S3_86x_SERIES(chip)	((chip&0xf0)==0xc0 || (chip&0xffef)==0x8880)
 #undef S3_864_SERIES
 #define S3_864_SERIES(chip)	S3_86x_SERIES(chip)
-#define S3_968_SERIES(chip)     ((chip&0xfff0)==0xf0e0)
+#define S3_968_SERIES(chip)     (chip==0x88f0)
 #define S3_964_ONLY(chip)	S3_964_SERIES(chip)
 #undef S3_964_SERIES
 #define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))
 #define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
-#define S3_x68_SERIES(chip)     ((chip&0x9ff0)==0x90e0)  
-#define S3_x6x_SERIES(chip)     ((chip&0x8ff0)==0x80e0)  
-#define S3_TRIO32_SERIES(chip)  ((chip&0xfff0)==0x10e0)
-#define S3_TRIO64_SERIES(chip)  ((chip&0xfff0)==0x11e0 || 	\
-				S3_TRIO64UVP_SERIES(chip) || 	\
-				S3_AURORA64VP_SERIES(chip) ||	\
-				S3_TRIO64V2_SERIES(chip))
+#define S3_x68_SERIES(chip)     ((chip&0xff9f)==0x8890)  /* ((S3_868_SERIES(chip) || S3_968_SERIES(chip)) */
+#define S3_x6x_SERIES(chip)     ((chip&0xff8f)==0x8880)  /* ((S3_x66_SERIES(chip) || S3_x68_SERIES(chip)) */
+#define S3_TRIO32_SERIES(chip)  (chip==0x8810)
+#define S3_TRIO64_SERIES(chip)  (chip==0x8811 || S3_TRIO64UVP_SERIES(chip) || S3_AURORA64VP_SERIES(chip) || S3_TRIO64V2_SERIES(chip))
 #define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && (s3ChipRev & 0x400))
-#define S3_AURORA64VP_SERIES(chip)  ((chip&0xfff0)==0x12e0)
-#define S3_TRIO64UVP_SERIES(chip)  ((chip&0xfff0)==0x14e0)
-#define S3_TRIO64V2_SERIES(chip)  ((chip&0xfff0)==0x1e0)
+#define S3_AURORA64VP_SERIES(chip)  (chip==0x8812)
+#define S3_TRIO64UVP_SERIES(chip)  (chip==0x8814)
+#define S3_TRIO64V2_SERIES(chip)  (chip==0x8901)
 #define S3_TRIOxx_SERIES(chip)  (S3_TRIO32_SERIES(chip) || \
 				 S3_TRIO64_SERIES(chip) || \
 				 S3_TRIO64UVP_SERIES(chip))
-#define S3_ViRGE_SERIES(chip)   ((chip&0xfff0)==0x31e0)
-#define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) || \
-				S3_TRIOxx_SERIES(chip))
+#define S3_ViRGE_SERIES(chip)      (chip==0x8831)
+#define S3_ViRGE_VX_SERIES(chip)   (chip==PCI_ViRGE_VX)
+#define S3_ViRGE_DXGX_SERIES(chip) (chip==PCI_ViRGE_DXGX)
+#define S3_ANY_ViRGE_SERIES(chip) (    S3_ViRGE_SERIES(chip)		\
+				    || S3_ViRGE_VX_SERIES(chip)		\
+				    || S3_ViRGE_DXGX_SERIES(chip))
+#define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) ||  S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))
-#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || 		\
-				S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || \
-				S3_x68_SERIES(chip))
+#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || S3_x68_SERIES(chip))
 
 /* PCI data */
 #define PCI_S3_VENDOR_ID	0x5333
 #define PCI_TRIO_32_64		0x8811
-#define PCI_AURORA64VP          0x8812
-#define PCI_TRIO64UVP           0x8814
-#define PCI_TRIO64V2            0x8901
+#define PCI_AURORA64VP		0x8812
+#define PCI_TRIO64UVP		0x8814
+#define PCI_TRIO64V2_DXGX	0x8901
+#define PCI_PLATO_PX		0x8902
 #define PCI_928			0x88B0
 #define PCI_864_0		0x88C0
 #define PCI_864_1		0x88C1
@@ -111,6 +112,7 @@
 #define PCI_968			0x88F0
 #define PCI_ViRGE		0x5631
 #define PCI_ViRGE_VX		0x883d
+#define PCI_ViRGE_DXGX		0x8A01
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
@@ -126,13 +128,14 @@
 #define S3_968			10
 #define S3_TRIO32		11
 #define S3_TRIO64		12
-#define S3_TRIO64VPLUS		13
-#define S3_ViRGE		14 
-#define S3_ViRGE_VX		15 
-#define S3_TRIO64UVP            16
-#define S3_AURORA64VP           17
-#define S3_TRIO64V2             18
-
+#define S3_TRIO64VP		13
+#define S3_TRIO64UVP		14
+#define S3_AURORA64VP		15
+#define S3_TRIO64V2		16
+#define S3_PLATO_PX		17
+#define S3_ViRGE		18
+#define S3_ViRGE_VX		19
+#define S3_ViRGE_DXGX		20
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

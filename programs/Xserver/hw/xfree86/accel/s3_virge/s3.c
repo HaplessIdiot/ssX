@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.22 1997/03/03 15:55:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.23 1997/03/10 10:11:43 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -281,6 +281,7 @@ static SymTabRec s3ChipTable[] = {
    { S3_UNKNOWN,	"unknown" },
    { S3_ViRGE,		"ViRGE" },
    { S3_ViRGE_VX,	"ViRGE/VX" },
+   { S3_ViRGE_DXGX,	"ViRGE/DX or /GX" },
    { -1,		"" },
 };
 
@@ -423,6 +424,9 @@ s3GetPCIInfo()
 	    break;
 	 case PCI_ViRGE_VX:
 	    info.ChipType = S3_ViRGE_VX;
+	    break;
+	 case PCI_ViRGE_DXGX:
+	    info.ChipType = S3_ViRGE_DXGX;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
@@ -680,10 +684,12 @@ s3Probe()
 
    s3ChipRev = s3ChipId & 0x0f;
    if (s3ChipId >= 0xe0) {
+      outb(vgaCRIndex, 0x2d);
+      s3ChipId = inb(vgaCRReg) << 8;
       outb(vgaCRIndex, 0x2e);
-      s3ChipId |= (inb(vgaCRReg) << 8);
+      s3ChipId |= inb(vgaCRReg);
       outb(vgaCRIndex, 0x2f);
-      s3ChipRev |= (inb(vgaCRReg) << 4);
+      s3ChipRev = inb(vgaCRReg);
    }
 
    if (s3InfoRec.chipID) {
@@ -774,7 +780,7 @@ s3Probe()
    /* ViRGE is always PCI (or VLB if ever?!),  ViRGE/VX is only PCI */
    s3Localbus = TRUE;
 
-   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
+   if (S3_ViRGE_SERIES(s3ChipId) && s3ChipRev < 0x06) {
       if (config & 0x02) {
 	 if (xf86Verbose)
 	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);

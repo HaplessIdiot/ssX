@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.1 1997/03/06 23:16:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.2 1997/03/17 07:18:06 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -190,16 +190,25 @@ Bool S3Probe()
 
    s3ChipRev = s3ChipId & 0x0f;
    if (s3ChipId >= 0xe0) {
+      outb(vgaCRIndex, 0x2d);
+      s3ChipId = inb(vgaCRReg) << 8;
       outb(vgaCRIndex, 0x2e);
-      s3ChipId |= (inb(vgaCRReg) << 8);
+      s3ChipId |= inb(vgaCRReg);
       outb(vgaCRIndex, 0x2f);
-      s3ChipRev |= (inb(vgaCRReg) << 4);      
+      s3ChipRev = inb(vgaCRReg);
    }
 
    /* Harald's ChipId and Revision spoofing code goes here. It
 	probably should be an SVGA server feature too. */
 
    /* We complain (and bail) when we have no idea what S3 chip it is */
+
+   if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
+      ErrorF("%s %s: S3 ViRGE chipset: please load \"s3_virge\" module\n", 
+	     XCONFIG_PROBED,vga256InfoRec.name,s3ChipId,s3ChipRev);
+      S3EnterLeave(LEAVE);
+      return(FALSE);
+   }
 
    if (!S3_ANY_SERIES(s3ChipId)) {
       ErrorF("%s %s: Unknown S3 chipset: chip_id = 0x%02x rev. %x\n", 

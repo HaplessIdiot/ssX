@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.43 1997/02/25 14:21:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.44 1997/02/28 08:20:33 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -258,7 +258,6 @@ typedef struct {
     unsigned char Port_3D6[0xFF];   /* Chips & Technologies Registers */
     unsigned char Port_3D0[0x80];
     unsigned char Port_3D4[0x80];   /* Storage for the CT specific CRT regs */
-    unsigned long BltReg[0xD];	    /* Storage for the HiQV BitBLT registers */
     ctClockReg ctClock;
     Bool XMode;
     unsigned char Port_3DA;         /* Read at Port 3CA */
@@ -2714,15 +2713,6 @@ CHIPSSave(save)
 	    ErrorF("CS%X - %X\n", i, save->Port_3D4[i]);
 #endif
 	}
-/*
- * Save the contents of the BitBLT registers for the 65550, if needed
- */
-	if (ctUseMMIO) {
-	    for (i = 0x0; i < 0x9; i++) {
-		save->BltReg[i] = *(volatile unsigned int *)
-		    (ctMMIOBase + ctMMIO[i]);
-	    }
-	}
     } else {
 	for (i = 0; i < 0x7D; i++) { /* don't touch XR7D and XR7F on WINGINE */
 	    outb(0x3D6, i);
@@ -2730,15 +2720,6 @@ CHIPSSave(save)
 #ifdef DEBUG
 	    ErrorF("XS%X - %X\n", i, save->Port_3D6[i]);
 #endif
-	}
-	if(!ctUseMMIO){ 
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(i); save->BltReg[i] = inl(DR(i));
-	  };
-	} else {
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(ctMMIO[i]); save->BltReg[i] = MMIOmeml(ctMMIO[i]);
-	  };
 	}
     }
 
@@ -4306,13 +4287,6 @@ ctRestore(restore)
 
     if (ctisHiQV32) {
       
-      /* save BltRegs */
-	if (ctUseMMIO) {
-	    for (i = 0x0; i < 0x9; i++) {
-		*(unsigned int *)(ctMMIOBase + ctMMIO[i]) = restore->BltReg[i];
-	    }
-	}
-
 	/* set extended regs */
 	for (i = 0; i < 0x43; i++) {
 	    outb(0x3D6, i);
@@ -4376,16 +4350,6 @@ ctRestore(restore)
 		outb(ctCRvalue, restore->Port_3D4[i]);
 	}
     } else {
-      /* save BitBlt regs. */
-	if(!ctUseMMIO){
-	  for(i=0;i<0xD;i++){
-	     HW_DEBUG(i); outl(DR(i), restore->BltReg[i]);
-	   };
-	} else {
-	  for (i=0;i<0xD;i++){
-	    HW_DEBUG(ctMMIO[i]); MMIOmeml(ctMMIO[i]) = restore->BltReg[i];
-	  }	
-	}
 	/* set extended regs. */
 	for (i = 0; i < 0x30; i++) {
 	    outb(0x3D6, i);

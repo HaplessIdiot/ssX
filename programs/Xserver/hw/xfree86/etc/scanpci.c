@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.36 1997/03/07 00:29:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.37 1997/03/07 07:45:31 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -690,6 +690,8 @@ struct pci_vendor_device {
                             { 0x8811, "Trio32/64", NF },
                             { 0x8812, "Aurora64V+", NF },
                             { 0x8814, "Trio64UV+", NF },
+                            { 0x8901, "Trio64V2/DX or /GX", NF },
+                            { 0x8902, "PLATO/PX", NF },
                             { 0x8880, "868", NF },
                             { 0x88B0, "928", NF },
                             { 0x88C0, "864-0", NF },
@@ -699,6 +701,7 @@ struct pci_vendor_device {
                             { 0x88F0, "968", NF },
 			    { 0x5631, "ViRGE", NF },
 			    { 0x883D, "ViRGE/VX", NF },
+			    { 0x8A01, "ViRGE/DX or /GX", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x8086, "Intel", {
                             { 0x0482, "82375EB pci-eisa bridge", NF },
