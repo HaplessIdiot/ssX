@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.c,v 1.5 2000/04/04 19:25:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.c,v 1.6 2001/01/06 20:19:13 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -570,10 +570,10 @@ int42_handler(xf86Int10InfoPtr pInt)
 	break;
 
     default:
-	/* Various extensions */
+	/* Various extensions                                 */
 	/* Enter:  Various                                    */
 	/* Leave:  Various                                    */
-	/* Ignored */
+	/* Ignored                                            */
 	break;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.4 2001/01/06 20:58:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.5 2001/01/21 21:19:18 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,6 +24,7 @@
 #ifdef XFree86LOADER
 
 #include "ati.h"
+#include "aticursor.h"
 #include "atiload.h"
 #include "atistruct.h"
 
@@ -79,6 +80,9 @@ ATILoadModules
         "XAACreateInfoRec",
         "XAADestroyInfoRec",
         "XAAInit",
+        "xf86InitCursor",
+        "xf86CreateCursorInfoRec",
+        "xf86DestroyCursorInfoRec",
         NULL);
 
     /* Load shadow frame buffer code if needed */
@@ -94,6 +98,19 @@ ATILoadModules
 
         /* Require more XAA symbols */
         xf86LoaderReqSymbols("XAACreateInfoRec", "XAADestroyInfoRec", NULL);
+    }
+
+    /* Load ramdac module if needed */
+    if (pATI->Cursor > ATI_CURSOR_SOFTWARE)
+    {
+        if (!ATILoadModule(pScreenInfo, "ramdac", "xf86InitCursor"))
+            return FALSE;
+
+        /* Require more ramdac symbols */
+        xf86LoaderReqSymbols(
+            "xf86CreateCursorInfoRec",
+            "xf86DestroyCursorInfoRec",
+            NULL);
     }
 
     /* Load depth-specific entry points */

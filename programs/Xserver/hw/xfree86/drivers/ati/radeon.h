@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.14 2001/03/03 22:26:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.15 2001/03/21 17:02:22 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -414,19 +414,19 @@ extern void        RADEONCPReleaseIndirect(ScrnInfoPtr pScrn);
 
 #define RADEONCP_START(pScrn, info)					\
 do {									\
-    int ret = drmRadeonStartCP(info->drmFD);				\
-    if (ret) {								\
+    int _ret = drmRadeonStartCP(info->drmFD);				\
+    if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP start %d\n", __FUNCTION__, ret);		\
+		   "%s: CP start %d\n", __FUNCTION__, _ret);		\
     }									\
 } while (0)
 
 #define RADEONCP_STOP(pScrn, info)					\
 do {									\
-    int ret = drmRadeonStopCP(info->drmFD);				\
-    if (ret) {								\
+    int _ret = drmRadeonStopCP(info->drmFD);				\
+    if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP stop %d\n", __FUNCTION__, ret);		\
+		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
     }									\
     RADEONEngineRestore(pScrn);						\
 } while (0)
@@ -434,10 +434,10 @@ do {									\
 #define RADEONCP_RESET(pScrn, info)					\
 do {									\
     if (RADEONCP_USE_RING_BUFFER(info->CPMode)) {			\
-	int ret = drmRadeonResetCP(info->drmFD);			\
-	if (ret) {							\
+	int _ret = drmRadeonResetCP(info->drmFD);			\
+	if (_ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
-		       "%s: CP reset %d\n", __FUNCTION__, ret);		\
+		       "%s: CP reset %d\n", __FUNCTION__, _ret);	\
 	}								\
     }									\
 } while (0)

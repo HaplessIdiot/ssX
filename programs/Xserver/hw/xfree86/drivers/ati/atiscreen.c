@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.16 2001/01/21 21:19:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.18 2001/02/15 18:04:55 eich Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -22,7 +22,9 @@
  */
 
 #include "ati.h"
+#include "atiaccel.h"
 #include "aticonsole.h"
+#include "aticursor.h"
 #include "atidac.h"
 #include "atidga.h"
 #include "atimode.h"
@@ -227,15 +229,16 @@ ATIScreenInit
     (void)ATIDGAInit(pScreenInfo, pScreen, pATI);
 
     /* Setup acceleration */
-    if (!ATIModeAccelInit(pScreenInfo, pScreen, pATI))
+    if (!ATIInitializeAcceleration(pScreenInfo, pScreen, pATI))
         return FALSE;
 
     /* Initialise backing store */
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 
-    /* Initialise software cursor */
-    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+    /* Initialise cursor */
+    if (!ATIInitializeCursor(pScreen, pATI))
+        return FALSE;
 
     /* Create default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -308,6 +311,12 @@ ATICloseScreen
     }
 
     pATI->Closeable = FALSE;
+
+    if (pATI->pCursorInfo)
+    {
+        xf86DestroyCursorInfoRec(pATI->pCursorInfo);
+        pATI->pCursorInfo = NULL;
+    }
 
     ATILeaveGraphics(pScreenInfo, pATI);
 

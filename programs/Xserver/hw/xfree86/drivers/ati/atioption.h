@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.4 2000/10/11 22:52:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.5 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -36,11 +36,19 @@ typedef enum
     ATI_OPTION_ACCEL,
     ATI_OPTION_CRT,
     ATI_OPTION_CSYNC,
+    ATI_OPTION_HWCURSOR,
+
+#ifndef AVOID_CPIO
+
     ATI_OPTION_LINEAR,
+
+#endif /* AVOID_CPIO */
+
     ATI_OPTION_MMIO_CACHE,
     ATI_OPTION_PROBE_CLOCKS,
     ATI_OPTION_REFERENCE_CLOCK,
-    ATI_OPTION_SHADOW_FB
+    ATI_OPTION_SHADOW_FB,
+    ATI_OPTION_SWCURSOR
 } ATIPublicOptionType;
 
 extern OptionInfoRec       ATIPublicOptions[];

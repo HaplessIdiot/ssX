@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.9 2001/01/11 03:36:54 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.10 2001/03/21 16:14:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -66,14 +66,14 @@ static void r128DDGetBufferSize( GLcontext *ctx,
 static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
 {
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
-   static GLubyte buffer[128];
+   static char buffer[128];
 
    switch ( name ) {
    case GL_VENDOR:
       return (GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER:
-      sprintf( (void *)buffer, "Mesa DRI Rage128 " R128_DATE );
+      sprintf( buffer, "Mesa DRI Rage128 " R128_DATE );
 
       /* Append any chipset-specific information.
        */
@@ -88,13 +88,13 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
        */
       switch ( rmesa->r128Screen->AGPMode ) {
       case 1:
-	 strncat( (pointer)buffer, " AGP 1x", 7 );
+	 strncat( buffer, " AGP 1x", 7 );
 	 break;
       case 2:
-	 strncat( (pointer)buffer, " AGP 2x", 7 );
+	 strncat( buffer, " AGP 2x", 7 );
 	 break;
       case 4:
-	 strncat( (pointer)buffer, " AGP 4x", 7 );
+	 strncat( buffer, " AGP 4x", 7 );
 	 break;
       }
 
@@ -102,7 +102,7 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
        */
 #ifdef USE_X86_ASM
       if ( gl_x86_cpu_features ) {
-	 strncat( (pointer)buffer, " x86", 4 );
+	 strncat( buffer, " x86", 4 );
       }
 #endif
 #ifdef USE_MMX_ASM
@@ -112,15 +112,15 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
 #endif
 #ifdef USE_3DNOW_ASM
       if ( cpu_has_3dnow ) {
-	 strncat( (pointer)buffer, "/3DNow!", 7 );
+	 strncat( buffer, "/3DNow!", 7 );
       }
 #endif
 #ifdef USE_KATMAI_ASM
       if ( cpu_has_xmm ) {
-	 strncat( (pointer)buffer, "/SSE", 4 );
+	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return buffer;
+      return (GLubyte *)buffer;
 
    default:
       return NULL;

@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.4 2001/01/17 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.5 2001/03/23 01:27:09 paulo Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -252,9 +252,9 @@ XkbError:
 	}
 
 	XkbSetRulesDflts(rules, model, layout, variants, options);
-	XkbInitKeyboardDeviceStruct(pDev, &names, &keySyms, modmap,
+	XkbInitKeyboardDeviceStruct((pointer)pDev, &names, &keySyms, modmap,
 				    xnestBell, xnestChangeKeyboardControl);
-	XkbDDXChangeControls(pDev, &xkb->ctrls, &xkb->ctrls);
+	XkbDDXChangeControls((pointer)pDev, xkb->ctrls, xkb->ctrls);
 	XkbFreeKeyboard(xkb, 0, False);
       }
 #endif

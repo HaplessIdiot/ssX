@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.43 2001/01/06 20:19:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.44 2001/02/27 23:05:01 alanh Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -559,10 +559,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
     else
       mask1 = PCIGETIO(mask1);
   else
-    if (addr1 & PCI_MAP_ROM_DECODE_ENABLE)
       mask1 = PCIGETROM(mask1);
-    else
-      mask1 = 0;
   if (mask1 == 0)
     return 0;
   bits = 0;

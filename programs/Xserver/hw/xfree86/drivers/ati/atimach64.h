@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.9 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.h,v 1.10 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,6 +28,7 @@
 #include "atiproto.h"
 
 #include "xaa.h"
+#include "xf86Cursor.h"
 
 #define ATIMach64MaxX    8191
 #define ATIMach64MaxY   32767
@@ -43,5 +44,7 @@ extern void ATIMach64SaveScreen  FunctionPrototype((ATIPtr, int));
 extern void ATIMach64SetDPMSMode FunctionPrototype((ATIPtr, int));
 
 extern Bool ATIMach64AccelInit   FunctionPrototype((ATIPtr, XAAInfoRecPtr));
+
+extern Bool ATIMach64CursorInit  FunctionPrototype((xf86CursorInfoPtr));
 
 #endif /* ___ATIMACH64_H___ */

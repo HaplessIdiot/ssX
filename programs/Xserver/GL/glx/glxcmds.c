@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.6 2001/03/21 16:29:36 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -64,7 +64,6 @@ static __GLimports imports = {
     __glXImpFclose,
     __glXImpFprintf,
     __glXImpGetDrawablePrivate,
-    NULL,
     NULL
 };
 

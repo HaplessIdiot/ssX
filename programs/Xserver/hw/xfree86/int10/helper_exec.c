@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.12 2001/01/06 20:19:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.14 2001/02/15 19:37:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -274,19 +274,15 @@ x_inb(CARD16 port)
 {
     CARD8 val;
 
-    if (port >= 0x0100) {
-	val = inb(port);
-#ifdef PRINT_PORT
-	ErrorF(" inb(%#x) = %2.2x\n", port, val);
-#endif
-    } else if (port == 0x40) {
+    if (port == 0x40) {
 	Int10Current->inb40time++;
 	val = (CARD8)(Int10Current->inb40time >>
 		      ((Int10Current->inb40time & 1) << 3));
 #ifdef PRINT_PORT
 	ErrorF(" inb(%#x) = %2.2x\n", port, val);
 #endif
-    } else {		/* Don't interfere with mainboard */
+#ifdef __NOT_YET__
+    } else if (port < 0x0100) {		/* Don't interfere with mainboard */
 	val = 0;
 	xf86DrvMsgVerb(Int10Current->scrnIndex, X_NOT_IMPLEMENTED, 2,
 	    "inb 0x%4.4x\n", port);
@@ -294,6 +290,12 @@ x_inb(CARD16 port)
 	    dump_registers(Int10Current);
 	    stack_trace(Int10Current);
 	}
+#endif /* __NOT_YET__ */
+    } else {
+	val = inb(port);
+#ifdef PRINT_PORT
+	ErrorF(" inb(%#x) = %2.2x\n", port, val);
+#endif
     }
     return val;
 }
@@ -323,14 +325,9 @@ x_inw(CARD16 port)
 void
 x_outb(CARD16 port, CARD8 val)
 {
-    if (port >= 0x0100) {
-#ifdef PRINT_PORT
-	ErrorF(" outb(%#x, %2.2x)\n", port, val);
-#endif
-	outb(port, val);
-    } else if ((port == 0x43) && (val == 0)) {
+    if ((port == 0x43) && (val == 0)) {
 	/*
-	 * Emulate a PC's timer.  Such timers typically have a resolution of
+	 * Emulate a PC's timer 0.  Such timers typically have a resolution of
 	 * some .838 usec per tick, but this can only provide 1 usec per tick.
 	 * (Not that this matters much, given inherent emulation delays.)  Use
 	 * the bottom bit as a byte select.  See inb(0x40) above.
@@ -341,13 +338,20 @@ x_outb(CARD16 port, CARD8 val)
 #ifdef PRINT_PORT
 	ErrorF(" outb(%#x, %2.2x)\n", port, val);
 #endif
-    } else {			/* Don't interfere with mainboard */
+#ifdef __NOT_YET__
+    } else if (port < 0x0100) {		/* Don't interfere with mainboard */
 	xf86DrvMsgVerb(Int10Current->scrnIndex, X_NOT_IMPLEMENTED, 2,
 	    "outb 0x%4.4x,0x%2.2x\n", port, val);
 	if (xf86GetVerbosity() > 3) {
 	    dump_registers(Int10Current);
 	    stack_trace(Int10Current);
 	}
+#endif /* __NOT_YET__ */
+    } else {
+#ifdef PRINT_PORT
+	ErrorF(" outb(%#x, %2.2x)\n", port, val);
+#endif
+	outb(port, val);
     }
 }
 
