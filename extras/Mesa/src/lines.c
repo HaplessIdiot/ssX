@@ -968,6 +968,23 @@ static void aa_multitex_rgba_line( GLcontext *ctx,
                                    GLuint vert0, GLuint vert1, GLuint pvert )
 {
 #define INTERP_RGBA 1
+#define INTERP_STUV0 1
+#define INTERP_STUV1 1
+#define PLOT(x, y)							\
+   {									\
+      PB_WRITE_MULTITEX_PIXEL( pb, (x), (y), z,				\
+            red, green, blue, coverage,					\
+            s, t, u, s1, t1, u1 );					\
+   }
+#include "lnaatemp.h"
+}
+
+
+/* As above but with separate specular */
+static void aa_multitex_spec_line( GLcontext *ctx,
+                                   GLuint vert0, GLuint vert1, GLuint pvert )
+{
+#define INTERP_RGBA 1
 #define INTERP_SPEC 1
 #define INTERP_STUV0 1
 #define INTERP_STUV1 1
@@ -1052,6 +1069,8 @@ _mesa_print_line_function(GLcontext *ctx)
       printf("aa_tex_rgba_line\n");
    else if (ctx->Driver.LineFunc == aa_multitex_rgba_line)
       printf("aa_multitex_rgba_line\n");
+   else if (ctx->Driver.LineFunc == aa_multitex_spec_line)
+      printf("aa_multitex_spec_line\n");
    else if (ctx->Driver.LineFunc == aa_ci_line)
       printf("aa_ci_line\n");
    else if (ctx->Driver.LineFunc == null_line)
@@ -1086,12 +1105,16 @@ void gl_set_line_function( GLcontext *ctx )
          /* antialiased lines */
          if (rgbmode) {
             if (ctx->Texture.ReallyEnabled) {
-               if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D
-                  || ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR)
+               if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D) {
                   /* Multitextured! */
-                  ctx->Driver.LineFunc = aa_multitex_rgba_line;
-               else
+                  if (ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR)
+                     ctx->Driver.LineFunc = aa_multitex_spec_line;
+                  else
+                     ctx->Driver.LineFunc = aa_multitex_rgba_line;
+               }
+               else {
                   ctx->Driver.LineFunc = aa_tex_rgba_line;
+               }
             } else {
                ctx->Driver.LineFunc = aa_rgba_line;
             }
