@@ -661,8 +661,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
  	xf86SetOperatingState(vga2mem, pNv->pEnt->index, ResDisableOpr);
     }
 
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-    pScrn->racIoFlags  = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racIoFlags  = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
