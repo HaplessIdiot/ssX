@@ -1,4 +1,5 @@
 /* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -1647,7 +1648,7 @@ EstablishNewConnections(clientUnused, closure)
 	}
 #endif /* TCP_NODELAY */
     /* ultrix reads hang on Unix sockets, hpux reads fail, AIX fails too */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu) && !defined(SCO))
 	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
