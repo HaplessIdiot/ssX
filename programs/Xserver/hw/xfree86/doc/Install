@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              20 December 2002
+                              24 February 2003
 
                                   Abstract
 
@@ -18,7 +18,9 @@ Solaris, etc) are packaged in a platform-independent gzipped tar format (aka
 "tarballs" identified by the .tgz suffix).  Along with the binaries we pro-
 vide a customized version of the GNU tar utility called "extract" and an
 installation script.  We recommend that these be used to install the bina-
-ries.
+ries.  (The source for this customized version of GNU tar can be found in the
+XFree86 CVS repository's "utils" module, and from our ftp site
+<URL:ftp://ftp.xfree86.org/pub/XFree86/misc/utils-1.1.0.tgz>.)
 
 2.  Downloading the XFree86 4.3.0 binaries
 
@@ -378,7 +380,7 @@ Once that's done, the main part of the installation can be done:
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.15 2002/12/21 03:37:08 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.17 2003/02/24 17:09:16 dawes Exp $
 
 
 $XFree86: $

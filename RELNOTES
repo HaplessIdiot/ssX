@@ -100,7 +100,7 @@ here.
      XFree86 server, providing support for resizing the root window at run-
      time.
 
-   o  The Mesa version used for OpenGL[tm] and DRI driver support has been
+   o  The Mesa version used for OpenGL® 1.3 and DRI driver support has been
      updated to 4.0.4.
 
    o  The XFree86 server's hot keys (including those for switching modes and
@@ -1036,7 +1036,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.74 2003/02/24 03:41:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.76 2003/02/25 05:05:33 dawes Exp $
 
 
 $XFree86: $

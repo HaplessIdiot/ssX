@@ -355,7 +355,13 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No MX chips are supported in 4.3.0.
 
-20.  NCR
+20.  National Semiconductor
+
+      4.3.0:
+            Support for the SC1x00, GX1, and GX2 is provided by the "nsc"
+            driver.
+
+21.  NCR
 
       3.3.6:
             Support for the old NCR 77C22 and 77C22E chips is provided by the
@@ -369,7 +375,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No NCR chips are supported in 4.3.0.
 
-21.  NeoMagic
+22.  NeoMagic
 
       3.3.6:
             Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
@@ -385,7 +391,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             All hardware supported in 3.3.6 is also supported in 4.3.0.  The
             NM2230 and later chips are supported only in 4.3.0.
 
-22.  NVIDIA
+23.  NVIDIA
 
       3.3.6:
             Support (accelerated) for the NV1, Riva 128, 128ZX, TNT, TNT2
@@ -402,7 +408,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             in 4.3.0.  Support for the newer chips listed above (starting
             with the GeForce2) is available only in 4.3.0.
 
-23.  Number Nine
+24.  Number Nine
 
       3.3.6:
             Support (accelerated) for the Imagine 128, Ticket 2 Ride, Revolu-
@@ -415,7 +421,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             All hardware supported in 3.3.6 is also supported in 4.3.0.
 
-24.  Oak Technologies, Inc.
+25.  Oak Technologies, Inc.
 
       3.3.6:
             Support for the OTI067, OTI077, and OTI087 (the latter with some
@@ -429,7 +435,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Oak chips are supported in 4.3.0.
 
-25.  Paradise/Western Digital
+26.  Paradise/Western Digital
 
       3.3.6:
             Support for the Paradise PVGA1 and the Western Digital WD90C00,
@@ -445,7 +451,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Paradise/Western Digital chips are supported in 4.3.0.
 
-26.  RealTek
+27.  RealTek
 
       3.3.6:
             Support for the RealTek RTG3106 is provided by the XF86_SVGA
@@ -460,7 +466,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No RealTek chips are supported in 4.3.0.
 
-27.  Rendition/Micron
+28.  Rendition/Micron
 
       3.3.6:
             Support for the Verite 1000, 2100 and 2200 is provided by the
@@ -473,7 +479,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             All hardware supported in 3.3.6 is also supported in 4.3.0.
 
-28.  S3
+29.  S3
 
       3.3.6:
             Support (accelerated) for the S3 911, 924, 801, 805, 928, 864,
@@ -507,7 +513,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             the 964 and 968 that do not use the RAMDAC chips listed above.
             The SuperSavage chipset is supported only in 4.3.0.
 
-29.  Silicon Graphics, Inc. (SGI)
+30.  Silicon Graphics, Inc. (SGI)
 
       3.3.6:
             No SGI hardware is supported in 3.3.6.
@@ -519,7 +525,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             SGI hardware is supported only in 4.3.0.
 
-30.  Silicon Integrated Systems (SiS)
+31.  Silicon Integrated Systems (SiS)
 
       3.3.6:
             Support (accelerated) for the SiS 86C201, 86C202, 86C205, 86C215,
@@ -527,16 +533,17 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             by the XF86_SVGA server with the sis driver.
 
       4.3.0:
-            Support (accelerated) for the SiS
-             530, 620, 6326 is provided by the "sis" driver.  The 630, 300,
-            and 540 are also supported, but this code is new and there are
-            some problems with it in this version.
+            Support (accelerated) for the SiS 6326, 530, 620, 300, 540, 630,
+            730, 315, 550, 650, 740 is provided by the "sis" driver. The
+            Xabre (SiS 330) might be supported by this is completely
+            untested.
 
       Summary:
             Support for the 86C201, 86C202, 86C205, 86C215, 86C225, 5597 and
-            5598 is currently only available in 3.3.6.
+            5598 is currently only available in 3.3.6.  Support for some
+            newer chipsets is only available in 4.3.0.
 
-31.  Silicon Motion, Inc.
+32.  Silicon Motion, Inc.
 
       3.3.6:
             Support (accelerated) for the Lynx, LynxE, Lynx3D, LynxEM,
@@ -551,7 +558,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             All hardware supported in 3.3.6 is also supported in 4.3.0.
 
-32.  Sun Microsystems
+33.  Sun Microsystems
 
       3.3.6:
             No Sun hardware is supported in 3.3.6.
@@ -568,7 +575,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             Sun hardware is supported only in 4.3.0.
 
-33.  Trident Microsystems
+34.  Trident Microsystems
 
       3.3.6:
             Support (accelerated where the chip supports it) for the
@@ -608,7 +615,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             The CyberBlade/Ai1, CyberBlade/DSTN/Ai1, CyberBlade/e4,
             CyberBladeXP, and BladeXP are supported only in 4.3.0.
 
-34.  Tseng Labs
+35.  Tseng Labs
 
       3.3.6:
             Support for the ET3000 is provided by the XF86_SVGA server with
@@ -627,7 +634,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             All cards supported by 3.3.6 are also supported by 4.3.0 except
             for the old ET3000.
 
-35.  Video 7
+36.  Video 7
 
       3.3.6:
             Support for the Video 7 chipset is provided by the XF86_SVGA
@@ -642,7 +649,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Video 7 chips are supported in 4.3.0.
 
-36.  Weitek
+37.  Weitek
 
       3.3.6:
             Support (accelerated) for the P9000 is provided by the XF86_P9000
@@ -656,7 +663,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.3.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.40 2003/02/24 03:41:21 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.42 2003/02/25 05:05:33 dawes Exp $
 
 
 $XFree86: $
