@@ -1,3 +1,6 @@
+XFree86 4.0.99.x (xx April 2001)
+ 381. Bug fixes for Xv support using a Permedia3 chip (#4564, Sven Luther).
+
 XFree86 4.0.99.3 (11 April 2001)
  380. Xterm patches #151, #152, #153, #154 (Thomas Dickey):
        - improve select/paste of COMPOUND_TEXT and UTF8_STRING (Juliusz
@@ -12960,4 +12963,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1688 2001/04/16 21:05:37 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1689 2001/04/17 09:32:11 dickey Exp $
