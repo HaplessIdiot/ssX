@@ -14,7 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/ttcalc.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/ttcalc.c,v 1.8tsi Exp $ */
 
 #include "ttcalc.h"
 #include "ttdebug.h"
@@ -248,6 +248,9 @@
   }
 
 
+#if !defined(TT_MAKE_OPTION_SINGLE_OBJECT) || \
+    !defined(TT_CONFIG_OPTION_NO_INTERPRETER)
+
   LOCAL_FUNC
   void  Sub64( TT_Int64*  x, TT_Int64*  y, TT_Int64*  z )
   {
@@ -260,6 +263,8 @@
     z->lo = lo;
     z->hi = hi;
   }
+
+#endif
 
 
   LOCAL_FUNC
