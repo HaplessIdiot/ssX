@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.2 1999/05/14 14:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.3 1999/05/16 06:55:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -41,15 +41,16 @@ typedef enum {
  * layer.
  */
 
+typedef void (*PostEventProc)(InputInfoPtr pInfo, int buttons, int dx, int dy);
+
 typedef struct _MouseDevRec {
-    DeviceProc		mseProc;	/* procedure for initializing */
-    void		(*mseEvents)(struct _MouseDevRec *);
-					/* proc for processing events */
+    PtrCtrlProcPtr	Ctrl;
+    PostEventProc	PostEvent;
     DeviceIntPtr	device;
     int			mseFd;
     const char *	mseDevice;
     const char *	protocol;
-    ProtocolID		protocolID;
+    int			protocolID;
     int			class;
     Bool		automatic;
     int			mseModel;
@@ -80,17 +81,8 @@ typedef struct _MouseDevRec {
     unsigned char	protoPara[8];
     unsigned char	inSync;		/* driver in sync with datastream */
     pointer		mousePriv;	/* private area */
-#if 0
-    /* xqueue part */
-    int			xquePending;	/* was xqueFd, but nothing uses that */
-    int			xqueSema;
-#endif
     InputInfoPtr	pInfo;
 } MouseDevRec, *MouseDevPtr;
-
-#ifndef XINPUT
-#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
-#endif
 
 /* Mouse device private record */
 

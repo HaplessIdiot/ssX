@@ -69,7 +69,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.3 1999/01/26 10:40:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.4 1999/05/07 02:56:22 dawes Exp $ */
 
 #include "X.h"
 
@@ -113,6 +113,7 @@ xf86SetKbdLeds(int leds)
 	ioctl(xf86Info.consoleFd, KDSETLED, leds);
 }
 
+#ifndef NEW_INPUT
 void
 xf86MouseInit(MouseDevPtr mouse)
 {
@@ -140,3 +141,4 @@ xf86MouseOn(MouseDevPtr mouse)
 
 	return(mouse->mseFd);
 }
+#endif

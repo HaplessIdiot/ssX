@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.5 1999/01/26 10:40:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.6 1999/05/07 02:56:20 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -104,6 +104,7 @@ xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
+#ifndef NEW_INPUT
 void
 xf86MouseInit(MouseDevPtr mouse)
 {
@@ -131,3 +132,4 @@ xf86MouseOn(MouseDevPtr mouse)
 
 	return(mouse->mseFd);
 }
+#endif

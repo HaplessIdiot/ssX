@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.6 1999/01/26 10:40:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.7 1999/05/07 02:56:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -65,6 +65,7 @@ xf86SetKbdLeds(int leds)
 #endif
 }
 
+#ifndef NEW_INPUT
 void
 xf86MouseInit(MouseDevPtr mouse)
 {
@@ -91,3 +92,4 @@ xf86MouseOn(MouseDevPtr mouse)
 
 	return(mouse->mseFd);
 }
+#endif

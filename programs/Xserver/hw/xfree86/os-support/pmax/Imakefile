@@ -1,20 +1,28 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.2 1998/07/25 16:56:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/Imakefile,v 1.3 1999/04/04 00:20:58 dawes Exp $
 
 #include <Server.tmpl>
 
+#if NewInput
+MOUSESRC = bsd_mouse.c
+MOUSEOBJ = bsd_mouse.o
+#else
+MOUSESRC = std_mouse.c std_mseEv.c
+MOUSEOBJ = std_mouse.o std_mseEv.o
+#endif
+
 SRCS =  pmax_devs.c pmax_init.c pmax_map.c pmax_pci.c pmax_ppc.c \
 	bios_V4mmap.c VTsw_usl.c sysv_kbd.c std_kbdEv.c \
-	posix_tty.c std_mouse.c std_mseEv.c xqueue.c ioperm_noop.c \
+	posix_tty.c $(MOUSESRC) xqueue.c ioperm_noop.c \
 	libc_wrapper.c stdResource.c
 
 OBJS =  pmax_devs.o pmax_init.o pmax_map.o pmax_pci.o pmax_ppc.o \
 	bios_V4mmap.o VTsw_usl.o sysv_kbd.o std_kbdEv.o \
-	posix_tty.o std_mouse.o std_mseEv.o xqueue.o ioperm_noop.o \
+	posix_tty.o $(MOUSESRC) xqueue.o ioperm_noop.o \
 	libc_wrapper.o stdResource.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I. \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I../sysv
 
 RESDEFINES = -DUSESTDRES
 
@@ -28,8 +36,10 @@ LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(sysv_kbd.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
+#if !NewInput
 LinkSourceFile(std_mouse.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
+#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 
