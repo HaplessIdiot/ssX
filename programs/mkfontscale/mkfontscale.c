@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.4 2003/02/13 03:04:07 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.5 2003/04/20 19:04:44 herrb Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -270,11 +270,40 @@ os2Width(int width)
         return "ultraexpanded";
 }
 
+static char *widths[] = {
+    "ultracondensed", "extracondensed", "condensed", "semicondensed",
+    "normal", "semiexpanded", "expanded", "extraexpanded", "ultraexpanded" 
+};
+
+#define NUMWIDTHS (sizeof(widths) / sizeof(widths[0]))
+
+static char*
+nameWidth(char *name)
+{
+    char buf[500];
+    int i;
+    int n = strlen(name);
+
+    if(n >= 499) return NULL;
+    for(i = 0; i < n; i++)
+        buf[i] = tolower(name[i]);
+    buf[i] = '\0';
+
+    for(i = 0; i < NUMWIDTHS; i++)
+        if(strstr(buf, widths[i]))
+            return widths[i];
+    return NULL;
+}
+
 static char*
 t1Weight(char *weight)
 {
     if(!weight)
         return NULL;
+    if(strcmp(weight, "Thin") == 0)
+        return "thin";
+    if(strcmp(weight, "Light") == 0)
+        return "light";
     if(strcmp(weight, "Regular") == 0)
         return "medium";
     if(strcmp(weight, "Normal") == 0)
@@ -291,6 +320,8 @@ t1Weight(char *weight)
         return "semibold";
     else if(strcmp(weight, "Bold") == 0)
         return "bold";
+    else if(strcmp(weight, "Black") == 0)
+        return "black";
     else {
         fprintf(stderr, "Unknown Type 1 weight \"%s\"\n", weight);
         return NULL;
@@ -541,6 +572,9 @@ doDirectory(char *dirname_given)
             if(strstr(full_name, "Slanted"))
                 slant = "o";
         }
+
+        if(!sWidth)
+            sWidth = nameWidth(full_name);
 
         if(!foundry) foundry = "misc";
         if(!family) {
