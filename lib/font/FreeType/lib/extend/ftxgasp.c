@@ -20,6 +20,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "tttypes.h"
 #include "ttobjs.h"
 #include "tttables.h"

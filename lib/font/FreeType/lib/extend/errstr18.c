@@ -6,6 +6,8 @@
 /*  TT_ErrToString: translate error codes to character strings              */
 /*                                                                          */
 /****************************************************************************/
+
+/* $XFree86: $ */
   
 #include "errstr18.h"
 #include "freetype.h"

@@ -42,6 +42,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "freetype.h"
 #include "tttypes.h"
 #include "tterror.h"

@@ -20,6 +20,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
  /* You must include this file after "freetype.h" */
 
 #ifndef FTXGASP_H

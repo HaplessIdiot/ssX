@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+  
 /* Simple debugging component. Temporary */
 
 #include "ttdebug.h"

@@ -15,6 +15,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttcalc.h"
 #include "tterror.h"
 #include "tttables.h"

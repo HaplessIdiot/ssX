@@ -21,6 +21,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttengine.h"
 #include "ttlists.h"
 #include "tterror.h"

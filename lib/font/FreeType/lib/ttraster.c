@@ -40,6 +40,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttraster.h"
 #include "tterror.h"
 #include "tttypes.h"

@@ -20,6 +20,8 @@
  *
  ******************************************************************/
 
+/* $XFree86: $ */
+  
 #include "ttengine.h"
 #include "ttcache.h"
 #include "ttmemory.h"
