@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.24 1999/12/13 02:26:21 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.25 1999/12/13 23:42:57 robin Exp $ */
 
 #include "nv_include.h"
 
@@ -198,6 +198,12 @@ static const char *fbdevHWSymbols[] = {
     NULL
 };
 
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
+
 
 #ifdef XFree86LOADER
 
@@ -314,7 +320,7 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
          */
         LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
                           ramdacSymbols, shadowSymbols,
-                          fbdevHWSymbols, NULL);
+                          fbdevHWSymbols, int10Symbols, NULL);
 
         /*
          * The return value must be non-NULL on success even though there
@@ -644,6 +650,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /* Initialize the card through int10 interface if needed */
     if ( xf86LoadSubModule(pScrn, "int10")){
         xf86Int10InfoPtr pInt;
+
+	xf86LoaderReqSymLists(int10Symbols, NULL);
 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pNv->pEnt->index);
