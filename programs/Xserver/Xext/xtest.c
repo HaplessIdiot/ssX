@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.6 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.7 2001/12/14 19:58:51 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -58,6 +58,11 @@ static unsigned char XTestReqCode;
 #ifdef XINPUT
 extern int DeviceValuator;
 #endif /* XINPUT */
+
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
 
 static void XTestResetProc(
 #if NeedFunctionPrototypes
@@ -378,6 +383,33 @@ ProcXTestFakeInput(client)
 	    client->errorValue = ev->u.u.detail;
 	    return BadValue;
 	}
+
+#ifdef PANORAMIX
+	if (!noPanoramiXExtension) {
+	    ScreenPtr pScreen = root->drawable.pScreen;
+	    BoxRec    box;
+	    int       i;
+	    int       x = ev->u.keyButtonPointer.rootX + panoramiXdataPtr[0].x;
+	    int       y = ev->u.keyButtonPointer.rootY + panoramiXdataPtr[0].y;
+	    if (!POINT_IN_REGION(root, &XineramaScreenRegions[pScreen->myNum],
+				 x, y, &box)) {
+		FOR_NSCREENS(i) {
+		    if (i == pScreen->myNum) continue;
+		    if (POINT_IN_REGION(pScreen,
+					&XineramaScreenRegions[i],
+					x, y, &box)) {
+			root = WindowTable[i];
+			x   -= panoramiXdataPtr[i].x;
+			y   -= panoramiXdataPtr[i].y;
+			ev->u.keyButtonPointer.rootX = x;
+			ev->u.keyButtonPointer.rootY = y;
+			break;
+		    }
+		}
+	    }
+	}
+#endif
+
 	if (ev->u.keyButtonPointer.rootX < 0)
 	    ev->u.keyButtonPointer.rootX = 0;
 	else if (ev->u.keyButtonPointer.rootX >= root->drawable.width)
@@ -386,7 +418,15 @@ ProcXTestFakeInput(client)
 	    ev->u.keyButtonPointer.rootY = 0;
 	else if (ev->u.keyButtonPointer.rootY >= root->drawable.height)
 	    ev->u.keyButtonPointer.rootY = root->drawable.height - 1;
+
+#ifdef PANORAMIX
+	if ((!noPanoramiXExtension
+	     && root->drawable.pScreen->myNum != XineramaGetCursorScreen())
+	    || (noPanoramiXExtension && root != GetCurrentRootWindow()))
+
+#else
 	if (root != GetCurrentRootWindow())
+#endif
 	{
 	    NewCurrentScreen(root->drawable.pScreen,
 			     ev->u.keyButtonPointer.rootX,
