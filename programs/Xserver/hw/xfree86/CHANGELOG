@@ -1,4 +1,22 @@
 XFree86 4.X.Ya (?? January 2001)
+  73. Updates to the xprop utility, including:
+       - Move to ANSI C, use const where possible.
+       - Print WM_NAME and WM_ICON_NAME properties in the locale encoding.
+       - Allow multiple "-remove" commands on the same command line.
+       - Better error message when "-remove" is applied to a font.
+       - New option "-set" that permits the changing of individual window
+         properties.
+      (#4402, Bruno Haible).
+  72. Remove schumacher-clean compatibility aliases, since the fonts are
+      really ASCII and not iso8859-1 (#4401, Bruno Haible).
+  71. Allow drivers to provide their own substitute for the xf86I2CWriteRead
+      function (#4399, Vladimir Dergachev).
+  70. Cirrus driver updates, including:
+       - Add a call to fbPictureInit() in the Laguna driver.
+       - Fix warning (missing a symbol from VBE) when starting the Alpine
+         driver.
+       - Fix MMIO acceleration for the CL-GD5480
+      (#4395, Itai Nahshon).
   69. Fix Neomagic 2200 screen corruption (Egbert Eich).
   68. Disable RENDER extension support in the ATI(misc) driver when mibank
       and/or shadowfb is used (Marc La France).
@@ -12275,4 +12293,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1530 2001/01/22 19:46:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1531 2001/01/22 20:12:48 dawes Exp $
