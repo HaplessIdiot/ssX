@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $TOG: WaitFor.c /main/57 1997/11/25 14:35:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.14 1997/11/22 06:50:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.15 1997/12/14 02:55:40 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -203,8 +203,6 @@ WaitForSomething(pClientsReady)
 #endif
 	) {
 #ifdef DPMSExtension
-
-#ifdef DPMSExtension
 	    if (ScreenSaverTime > 0)
 #endif
 		timeout = (ScreenSaverTime -
@@ -223,7 +221,7 @@ WaitForSomething(pClientsReady)
 
 	    if (timeout <= 0
 #ifdef DPMSExtension
-		 && ScreenSaverTime > 0)
+		 && ScreenSaverTime > 0
 #endif /* DPMSExtension */
 	    ) {
 		INT32 timeSinceSave;
