@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:47:57 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.4 1994/09/11 11:15:24 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.5 1994/10/30 02:59:24 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -51,7 +51,7 @@ InstallLinkKitNonExecFile(cir_fillrct.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_cursor.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_blitter.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_alloc.c,$(LINKKITDIR)/drivers/vga256/cirrus)
-InstallLinkKitNonExecFile(cir_bitblt16.c,$(LINKKITDIR)/drivers/vga256/cirrus)
+InstallLinkKitNonExecFile(cir_blt16.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_blitter.h,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_span.h,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_alloc.h,$(LINKKITDIR)/drivers/vga256/cirrus)
