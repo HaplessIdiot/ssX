@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __NV_INCLUDE_H__
 #define __NV_INCLUDE_H__
 

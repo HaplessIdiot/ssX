@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
 

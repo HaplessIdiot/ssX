@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __NV_CONST_H__
 #define __NV_CONST_H__
 
