@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.12 2000/10/11 15:42:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.13 2000/10/11 15:57:53 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -479,6 +479,14 @@ TridentSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     if (!pTrident->UseGERetry)
     	TridentSync(pScrn);
 }
+static void MoveBYTES(
+   register CARD8* dest,
+   register CARD8* src,
+   register int bytes )
+{
+     while(bytes--)
+	*dest++ = *src++;
+}
 
 static void MoveDWORDS(
    register CARD32* dest,
@@ -645,8 +653,10 @@ TridentSubsequentScanlineCPUToScreenColorExpandFill(
 	int skipleft
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int bpp = pScrn->bitsPerPixel >> 3;
-    pTrident->dwords = (w + 31) >> 5;
+    if (pTrident->Chipset == PROVIDIA9685) 
+    	pTrident->dwords = (w + 31) >> 5;
+    else
+    	pTrident->dwords = (w + 7) >> 3;
     pTrident->h = h;
     pTrident->y = y;
     pTrident->x = x;
@@ -664,9 +674,15 @@ TridentSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     XAAInfoRecPtr infoRec;
     infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
 
+    if (pTrident->Chipset == PROVIDIA9685) {
     MoveDWORDS((CARD32 *)pTrident->FbBase, 
 		(CARD32 *)pTrident->XAAScanlineColorExpandBuffers[0], 
 			pTrident->dwords);
+    } else {
+    MoveBYTES((CARD8 *)pTrident->FbBase, 
+		(CARD8 *)pTrident->XAAScanlineColorExpandBuffers[0], 
+			pTrident->dwords);
+    }
 
     pTrident->h--;
     if (!pTrident->UseGERetry)
