@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.52 2003/05/14 05:27:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.53 2003/10/16 23:50:07 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -645,13 +645,16 @@ void OsVendorInit(void)
     // Find the full path to the keymapping file.
     if ( darwinKeymapFile ) {
         char *tempStr = DarwinFindLibraryFile(darwinKeymapFile, "Keyboards");
-        if ( !tempStr )
-            FatalError("Could not find keymapping file %s.\n",
-                       darwinKeymapFile);
+        if ( !tempStr ) {
+            ErrorF("Could not find keymapping file %s.\n", darwinKeymapFile);
+        } else {
+            ErrorF("Using keymapping provided in %s.\n", tempStr);
+        }
         darwinKeymapFile = tempStr;
-        ErrorF("Using keymapping provided in %s.\n", darwinKeymapFile);
-    } else {
-        ErrorF("Reading keymapping from the kernel.\n");
+    }
+
+    if ( !darwinKeymapFile ) {
+        ErrorF("Reading keymap from the system.\n");
     }
 }
 
