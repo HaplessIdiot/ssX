@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.6 1999/08/29 13:29:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.7 1999/09/27 06:29:37 dawes Exp $ */
 
 #undef DEBUG
 #define FASTER
@@ -218,6 +218,8 @@ static void
 A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 				unsigned int planemask, int transparency_color)
 {
+  unsigned char tmp;
+
   APMDECL(pScrn);
 
   DPRINTNAME(SetupForScreenToScreenCopy);
@@ -226,7 +228,8 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
     /*
      * This is just an attempt, because Daryll is tampering with MY registers.
      */
-    WRXB(0xDB, (RDXB(0xDB) & 0xF4) |  0x0A);
+    tmp = (RDXB(0xDB) & 0xF4) |  0x0A;
+    WRXB(0xDB, tmp);
     ApmWriteSeq(0x1B, 0x20);
     ApmWriteSeq(0x1C, 0x2F);
     pApm->apmLock = FALSE;

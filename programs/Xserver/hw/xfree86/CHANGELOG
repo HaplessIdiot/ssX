@@ -1,4 +1,6 @@
 XFree86 3.9.16Z (xx December 1999)
+3400. Fix problem with compilation of static server on SVR4.0
+      (#3497,3514 Takaaki Nomura).
 3399. Fix where using bitsPerPixel from screen pixmap to use drawable,
       fix default visual class search for fallback visual, fix pixmap
       privates allocation, change screen init sequence so that the
@@ -9191,4 +9193,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.895 1999/12/27 01:14:13 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.896 1999/12/27 01:26:23 robin Exp $

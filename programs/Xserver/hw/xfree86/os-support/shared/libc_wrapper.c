@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.54 1999/12/14 01:33:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.55 1999/12/27 00:39:48 robin Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -183,7 +183,7 @@ void
 xf86qsort(void *base, xf86size_t nmemb, xf86size_t size,
 	  int (*comp)(const void *, const void *))
 {
-	return qsort(base, nmemb, size, comp);
+	qsort(base, nmemb, size, comp);
 }
 
 /* string functions */
