@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.5 2000/12/14 23:03:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.6 2000/12/20 00:20:49 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -217,7 +217,7 @@ typedef struct _XftCoreFont {
     char		*xlfd;
 } XftCoreFont;
 
-XftCoreFont *_XftCoreFonts;
+static XftCoreFont *_XftCoreFonts;
 
 XFontStruct*
 XftCoreOpen (Display *dpy, XftPattern *pattern)

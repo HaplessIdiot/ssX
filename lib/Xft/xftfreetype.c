@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.6 2000/12/20 00:20:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.7 2000/12/22 02:25:41 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -33,7 +33,7 @@ typedef struct _XftFtEncoding {
     FT_Encoding	encoding;
 } XftFtEncoding;
 
-XftFtEncoding	xftFtEncoding[] = {
+static XftFtEncoding xftFtEncoding[] = {
     { "iso10646-1",	    ft_encoding_unicode, },
     { "iso8859-1",	    ft_encoding_unicode, },
     { "adobe-fontspecific", ft_encoding_symbol,  },
@@ -162,7 +162,7 @@ typedef struct _XftFtFile {
     int			charmap;
 } XftFtFile;
 
-XftFtFile   *_XftFtFiles;
+static XftFtFile *_XftFtFiles;
 
 static XftFtFile *
 _XftFreeTypeOpenFile (char *file, int id)
@@ -277,7 +277,7 @@ typedef struct _XftFtGlyphSet {
     XftFontStruct	    font;
 } XftFtGlyphSet;
 
-XftFtGlyphSet	*_XftFtGlyphSets;
+static XftFtGlyphSet *_XftFtGlyphSets;
 
 XftFontStruct *
 XftFreeTypeOpen (Display *dpy, XftPattern *pattern)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.5 2000/12/14 23:03:56 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.6 2000/12/20 00:20:49 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -32,7 +32,7 @@ typedef struct _XftObjectType {
     XftType	type;
 } XftObjectType;
 
-const XftObjectType _XftObjectTypes[] = {
+static const XftObjectType _XftObjectTypes[] = {
     { XFT_FAMILY,	XftTypeString, },
     { XFT_STYLE,	XftTypeString, },
     { XFT_SLANT,	XftTypeInteger, },

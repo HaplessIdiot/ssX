@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.9 2000/12/20 00:28:43 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.10 2000/12/22 02:25:41 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -54,16 +54,29 @@ struct _XftFontStruct {
 
 _XFUNCPROTOBEGIN
 
+/* xftdir.c */
+Bool
+XftDirScan (XftFontSet *set, const char *dir);
+
 /* xftfreetype.c */
+XftPattern *
+XftFreeTypeQuery (const char *file, int id, int *count);
+
+Bool
+XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
+
 XftFontStruct *
 XftFreeTypeOpen (Display *dpy, XftPattern *pattern);
 
 void
 XftFreeTypeClose (Display *dpy, XftFontStruct *font);
 
+XftFontStruct *
+XftFreeTypeGet (XftFont *font);
+
 Bool
-XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
-    
+XftInitFtLibrary(void);
+
 /* xftglyphs.c */
 void
 XftGlyphLoad (Display		*dpy,

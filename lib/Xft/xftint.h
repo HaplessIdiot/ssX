@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.17 2000/12/20 00:28:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.18 2000/12/22 02:25:41 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -280,10 +280,6 @@ XftEditPrint (XftEdit *edit);
 void
 XftSubstPrint (XftSubst *subst);
 
-/* xftdir.c */
-Bool
-XftDirScan (XftFontSet *set, const char *dir);
-
 /* xftdpy.c */
 int
 XftDefaultParseBool (char *v);
@@ -316,12 +312,7 @@ XftDrawCorePrepare (XftDraw	*draw,
 int
 _XftFontDebug (void);
     
-/* xftfreetype.c */
-XftPattern *
-XftFreeTypeQuery (const char *file, int id, int *count);
-
 /* xftfs.c */
-/* xftglyphs.c */
 /* xftgram.y */
 int
 XftConfigparse (void);
@@ -370,7 +361,7 @@ XftEditDestroy (XftEdit *e);
 
 /* xftinit.c */
 Bool
-XftInitFtLibrary (void);
+XftInit (char *config);
 
 /* xftlex.l */
 extern int	XftConfigLineno;
@@ -386,9 +377,6 @@ Bool
 XftConfigPushInput (char *s, Bool complain);
 
 /* xftlist.c */
-XftObjectSet *
-_XftObjectSetVapBuild (const char *first, va_list *vap);
-
 Bool
 XftListValueCompare (XftValue	v1,
 		     XftValue	v2);
