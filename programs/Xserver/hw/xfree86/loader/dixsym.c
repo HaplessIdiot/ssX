@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.52 2002/10/11 01:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.53tsi Exp $ */
 
 
 /*
@@ -213,6 +213,10 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AllocateWindowPrivateIndex)
   SYMFUNC(AllocateScreenPrivateIndex)
   SYMFUNC(AllocateColormapPrivateIndex)
+#ifdef PIXPRIV
+   SYMFUNC(AllocatePixmapPrivateIndex)
+   SYMFUNC(AllocatePixmapPrivate)
+#endif
   /* resource.c */
   SYMFUNC(AddResource)
   SYMFUNC(ChangeResourceValue)
