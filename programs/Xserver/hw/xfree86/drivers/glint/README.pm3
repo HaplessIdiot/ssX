@@ -1,0 +1,55 @@
+STATUS as of Sat, 10 Jun 2000 13:43:50 +0200.
+
+Known problems :
+
+  * Dual head : worked with 4.0a, but got broken in 4.0b
+  * Depth 8 with 8bpp : Tested only upto 1280x1024 as my monitor don't support
+    higher modes.
+  * Depth 15, 16 with 16 bpp : Modes above 1024x768 show a partial overlap
+    of the screen on the right.
+  * Depth 24 with 32 bpp : left half of the screen is repeated on the
+    right half.
+  * 2D Accel : only clipping pseudo accel is working. 
+  * Video overlay : not supported by pm3 yet.
+
+Unaccelerated video modes :
+
+  * [OK] Depths 8 is working upto 1280x1024 (didn't test higher modes).
+  * [PROBLEM] Depth 15 and 16 are working up to 1024x768 modes. Higher modes
+    show a partial overlap of the screen on the right.
+  * [PROBLEM] Depth 24, 32 bpp : the screen is repeated in the second half 
+  * [NEED HELP] Dot clock is 300MHz. I see pm2 is lowering dotclock for
+    24 & 32 bpp. I did the same for now, but don't know if it is the right.
+
+Hardware features :
+
+  * [OK] HW cursor & ShadowFb works.
+
+Video Overlay : 
+
+  * [NOTHING DONE] Video Overlay is untested. nothing has been done here.
+
+2D Accels :
+
+  * [NEED MORE WORK] only clipping pseudo accel is enabled, it makes a
+    difference in some case, as for example the Gnome logout anim.
+    True accels need more work, especially accel engine setup need to be 
+    done with pm3 values.
+
+Dual head :
+
+  * [NEW PROBLEM] Dual head got broken in 4.0b. Culprit is the pci slot
+    claiming code in GLINTProbe, around line 700 of glint_driver.c
+  * [OK] Dual head did working fine, just, i didn't know how to make
+    enlightenment use both heads (:0.0 and :0.1). 3.3.6 twm has also
+    problems with this, should use 4.0 twm instead maybe.
+  * [SOLUTION] I need to make a XF86Config with orientation of various screens.
+
+  * [NEED TESTING ON NON J2000 BOARD] Second head of Jeronimo 2000 is not
+    initialized by the bios, So memory timings need to be set. I set them only
+    if subsysVendor & subsysCard are matching J2000. Need feedback of other
+    dual pm3 boards.
+
+
+
+/* $XFree86$ */
