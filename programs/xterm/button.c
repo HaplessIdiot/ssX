@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.63 2001/09/09 01:07:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.64 2002/01/05 22:05:02 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -976,7 +976,7 @@ static void _GetSelection(
       default:		   cutbuffer = -1;
     }
     TRACE(("Cutbuffer: %d, target: %lu\n", cutbuffer,
-	   (unsigned long)targets[0]));
+	   targets ? (unsigned long)targets[0] : 0));
     if (cutbuffer >= 0) {
 	int inbytes;
 	unsigned long nbytes;
@@ -997,28 +997,30 @@ static void _GetSelection(
 	    targets = _SelectionTargets(w);
 	}
 
-	target = targets[0];
+	if (targets != 0) {
+	    target = targets[0];
 
-	if (targets[1] == None) { /* last target in list */
-	    params++;
-	    num_params--;
-	    targets = _SelectionTargets(w);
-	} else {
-	    targets = &(targets[1]);
+	    if (targets[1] == None) { /* last target in list */
+		params++;
+		num_params--;
+		targets = _SelectionTargets(w);
+	    } else {
+		targets = &(targets[1]);
+	    }
+
+	    if (num_params) {
+		list = XtNew(struct _SelectionList);
+		list->params = params;
+		list->count = num_params;
+		list->targets = targets;
+		list->time = ev_time;
+	    } else list = NULL;
+
+	    XtGetSelectionValue(w, selection,
+				target,
+				SelectionReceived,
+				(XtPointer)list, ev_time);
 	}
-
-	if (num_params) {
-	    list = XtNew(struct _SelectionList);
-	    list->params = params;
-	    list->count = num_params;
-	    list->targets = targets;
-	    list->time = ev_time;
-	} else list = NULL;
-
-	XtGetSelectionValue(w, selection,
-			    target,
-			    SelectionReceived,
-			    (XtPointer)list, ev_time);
     }
 }
 
