@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.10 1997/01/23 11:04:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.11 1997/03/27 08:31:29 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -580,9 +580,6 @@ xf86InitializeAcceleration(pScreen)
                         XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
             }
         }
-
-        xf86InitWrappers();
-        
 
 do_not_touch_xf86AccelInfoRec:
 

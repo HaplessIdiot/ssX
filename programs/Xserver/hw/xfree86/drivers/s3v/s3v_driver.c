@@ -163,7 +163,7 @@ S3VPRIV s3vPriv;
 /* And other glabal vars to hold vga base regs and MMIO base mem pointer */
 
 int vgaCRIndex, vgaCRReg;
-pointer s3MmioMem = NULL;   /* MMIO base address */
+pointer s3vMmioMem = NULL;   /* MMIO base address */
 
 
 #ifdef XFree86LOADER
@@ -395,8 +395,8 @@ unsigned char tmp;
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO to restore STREAMS context */
       if(s3vPriv.STREAMSRunning) S3VRestoreSTREAMS(restore->STREAMS);
-      ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = restore->MMPR0;
-      ((mmtr)s3MmioMem)->memport_regs.regs.streams_timeout = restore->MMPR2; 
+      ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = restore->MMPR0;
+      ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout = restore->MMPR2; 
       outb(vgaCRReg, tmp);  /* Restore CR53 for MMIO */
       }
 
@@ -501,8 +501,8 @@ int i;
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, tmp | 0x08);  /* Enable NEWMMIO to save STREAMS context */
       S3VSaveSTREAMS(save->STREAMS);
-      save->MMPR0 = ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control;
-      save->MMPR2 = ((mmtr)s3MmioMem)->memport_regs.regs.streams_timeout;
+      save->MMPR0 = ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control;
+      save->MMPR2 = ((mmtr)s3vMmioMem)->memport_regs.regs.streams_timeout;
       outb(vgaCRReg, tmp);   /* Restore CR53 to original for MMIO */
       }
 
@@ -673,10 +673,10 @@ unsigned char config1, config2;
 
    /* And map MMIO memory, abort if we cannot */
 
-   s3MmioMem = xf86MapVidMem(vga256InfoRec.scrnIndex, MMIO_REGION, 
+   s3vMmioMem = xf86MapVidMem(vga256InfoRec.scrnIndex, MMIO_REGION, 
       (pointer)(vga256InfoRec.MemBase + S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 
-   if(s3MmioMem == NULL) 
+   if(s3vMmioMem == NULL) 
       FatalError("S3 ViRGE: Cannot map MMIO registers!\n");
    
    /* Determine if we need to use the STREAMS processor */
@@ -775,7 +775,7 @@ unsigned char tmp;
       }
    else {          /* Change start address for STREAMS case */
       VerticalRetraceWait();
-      ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 =
+      ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 =
       ((y * vga256InfoRec.displayWidth + (x & ~3)) * vgaBitsPerPixel / 8);
       }
 
@@ -1075,28 +1075,28 @@ S3VSaveSTREAMS(streams)
 int * streams;
 {
 
-   streams[0] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_cntl;
-   streams[1] = ((mmtr)s3MmioMem)->streams_regs.regs.col_chroma_key_cntl;
-   streams[2] = ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_cntl;
-   streams[3] = ((mmtr)s3MmioMem)->streams_regs.regs.chroma_key_upper_bound;
-   streams[4] = ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stretch;
-   streams[5] = ((mmtr)s3MmioMem)->streams_regs.regs.blend_cntl;
-   streams[6] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0;
-   streams[7] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr1;
-   streams[8] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride;
-   streams[9] = ((mmtr)s3MmioMem)->streams_regs.regs.double_buffer;
-   streams[10] = ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr0;
-   streams[11] = ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr1;
-   streams[12] = ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stride;
-   streams[13] = ((mmtr)s3MmioMem)->streams_regs.regs.opaq_overlay_cntl;
-   streams[14] = ((mmtr)s3MmioMem)->streams_regs.regs.k1;
-   streams[15] = ((mmtr)s3MmioMem)->streams_regs.regs.k2;
-   streams[16] = ((mmtr)s3MmioMem)->streams_regs.regs.dda_vert;
-   streams[17] = ((mmtr)s3MmioMem)->streams_regs.regs.streams_fifo;
-   streams[18] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord;
-   streams[19] = ((mmtr)s3MmioMem)->streams_regs.regs.prim_window_size;
-   streams[20] = ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord;
-   streams[21] = ((mmtr)s3MmioMem)->streams_regs.regs.second_window_size;
+   streams[0] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_cntl;
+   streams[1] = ((mmtr)s3vMmioMem)->streams_regs.regs.col_chroma_key_cntl;
+   streams[2] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_cntl;
+   streams[3] = ((mmtr)s3vMmioMem)->streams_regs.regs.chroma_key_upper_bound;
+   streams[4] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stretch;
+   streams[5] = ((mmtr)s3vMmioMem)->streams_regs.regs.blend_cntl;
+   streams[6] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0;
+   streams[7] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr1;
+   streams[8] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_stride;
+   streams[9] = ((mmtr)s3vMmioMem)->streams_regs.regs.double_buffer;
+   streams[10] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr0;
+   streams[11] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr1;
+   streams[12] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stride;
+   streams[13] = ((mmtr)s3vMmioMem)->streams_regs.regs.opaq_overlay_cntl;
+   streams[14] = ((mmtr)s3vMmioMem)->streams_regs.regs.k1;
+   streams[15] = ((mmtr)s3vMmioMem)->streams_regs.regs.k2;
+   streams[16] = ((mmtr)s3vMmioMem)->streams_regs.regs.dda_vert;
+   streams[17] = ((mmtr)s3vMmioMem)->streams_regs.regs.streams_fifo;
+   streams[18] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_start_coord;
+   streams[19] = ((mmtr)s3vMmioMem)->streams_regs.regs.prim_window_size;
+   streams[20] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_start_coord;
+   streams[21] = ((mmtr)s3vMmioMem)->streams_regs.regs.second_window_size;
 
 }
 
@@ -1113,27 +1113,27 @@ int * streams;
  * when saved have some reserved bits set.
  */
 
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_cntl = 0x06000000;
-   ((mmtr)s3MmioMem)->streams_regs.regs.col_chroma_key_cntl = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_cntl = 0x03000000;
-   ((mmtr)s3MmioMem)->streams_regs.regs.chroma_key_upper_bound = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stretch = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.blend_cntl = 0x01000000;
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr1 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_stream_stride = streams[8];
-   ((mmtr)s3MmioMem)->streams_regs.regs.double_buffer = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr0 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_fbaddr1 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_stream_stride = 0x01;
-   ((mmtr)s3MmioMem)->streams_regs.regs.opaq_overlay_cntl = 0x40000000;
-   ((mmtr)s3MmioMem)->streams_regs.regs.k1 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.k2 = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.dda_vert = 0x00;
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord = 0x00010001;
-   ((mmtr)s3MmioMem)->streams_regs.regs.prim_window_size = streams[19];
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord = 0x07ff07ff1;
-   ((mmtr)s3MmioMem)->streams_regs.regs.second_window_size = 0x00010001;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_cntl = 0x06000000;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.col_chroma_key_cntl = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_cntl = 0x03000000;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.chroma_key_upper_bound = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stretch = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.blend_cntl = 0x01000000;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr0 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_fbaddr1 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_stream_stride = streams[8];
+   ((mmtr)s3vMmioMem)->streams_regs.regs.double_buffer = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr0 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_fbaddr1 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_stream_stride = 0x01;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.opaq_overlay_cntl = 0x40000000;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.k1 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.k2 = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.dda_vert = 0x00;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_start_coord = 0x00010001;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.prim_window_size = streams[19];
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_start_coord = 0x07ff07ff1;
+   ((mmtr)s3vMmioMem)->streams_regs.regs.second_window_size = 0x00010001;
 
 
 }
@@ -1149,7 +1149,7 @@ S3VDisableSTREAMS()
 unsigned char tmp;
 
    VerticalRetraceWait();
-   ((mmtr)s3MmioMem)->memport_regs.regs.fifo_control = 0xC000;
+   ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = 0xC000;
    outb(vgaCRIndex, 0x67);
    tmp = inb(vgaCRReg);
                          /* Disable STREAMS processor */

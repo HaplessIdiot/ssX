@@ -40,7 +40,7 @@
 #endif
 
 
-void
+void static
 xf86FillPolygonWrapper(pDrawable, pGC, shape, mode, count, ptsIn)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -64,7 +64,7 @@ xf86FillPolygonWrapper(pDrawable, pGC, shape, mode, count, ptsIn)
 }
 
 
-void
+void static
 xf86PolyRectangleWrapper(pDrawable, pGC, nRectsInit, pRectsInit)
     DrawablePtr  pDrawable;	
     GCPtr        pGC;    	
@@ -76,7 +76,7 @@ xf86PolyRectangleWrapper(pDrawable, pGC, nRectsInit, pRectsInit)
      miPolyRectangle(pDrawable, pGC, nRectsInit, pRectsInit);
 }
 
-void
+void static
 xf86PolyArcWrapper(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -91,7 +91,7 @@ xf86PolyArcWrapper(pDraw, pGC, narcs, parcs)
     	miPolyArc(pDraw, pGC, narcs, parcs);
 }
 
-void
+void static
 xf86PolyLinesWrapper(pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -119,7 +119,7 @@ xf86PolyLinesWrapper(pDrawable, pGC, mode, npt, pptInit)
 }
 
 
-void
+void static
 xf86PolySegmentWrapper(pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -138,7 +138,7 @@ xf86PolySegmentWrapper(pDrawable, pGC, nseg, pSeg)
 
 }
 
-void
+void static
 xf86ImageGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GC 		*pGC;
@@ -152,7 +152,7 @@ xf86ImageGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
      miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 }
 
-void
+void static
 xf86PolyGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GC 		*pGC;
@@ -166,7 +166,7 @@ xf86PolyGlyphBltWrapper(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
      miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 }
 
-void
+void static
 xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GC		*pGC;
@@ -220,7 +220,7 @@ xf86FillSpansWrapper(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 
-void 
+void  static
 xf86PolyFillArcWrapper(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
@@ -241,7 +241,7 @@ xf86PolyFillArcWrapper(pDraw, pGC, narcs, parcs)
 	     
 }
 
-void 
+void  static
 xf86PolyFillRectWrapper(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
@@ -258,7 +258,7 @@ xf86PolyFillRectWrapper(pDrawable, pGC, nrectFill, prectInit)
 }
 
 
-RegionPtr 
+RegionPtr  static
 xf86CopyAreaWrapper(pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty)
     register DrawablePtr pSrcDrawable;
@@ -277,7 +277,7 @@ xf86CopyAreaWrapper(pSrcDrawable, pDstDrawable,
 
 
 
-void xf86InitWrappers()
+void XF86NAME(xf86InitWrappers)()
 {
     if(!xf86GCInfoRec.FillPolygonWrapper)
 	xf86GCInfoRec.FillPolygonWrapper = xf86FillPolygonWrapper;

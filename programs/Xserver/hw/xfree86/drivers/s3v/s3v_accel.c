@@ -29,9 +29,9 @@
 #include "regs3v.h"
 #include "s3v_driver.h"
 
-extern pointer s3MmioMem;
 extern S3VPRIV s3vPriv;
 
+extern pointer s3vMmioMem;
 int s3vAccelCmd = 0;
 
 

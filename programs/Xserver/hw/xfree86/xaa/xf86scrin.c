@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.13 1997/02/25 16:05:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.14 1997/03/07 00:30:23 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -210,7 +210,7 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     xf86AccelInfoRec.FullPlanemask = PMSK;
 
     xf86InitializeAcceleration(pScreen);
-
+    XF86NAME(xf86InitWrappers)();
     if (serverGeneration == 1 && OFLG_ISSET(OPTION_XAA_BENCHMARK,
     &(xf86AccelInfoRec.ServerInfoRec->options)))
         xf86Bench();
