@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.15 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.16 2003/07/31 21:41:26 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -791,6 +791,140 @@ static void NVQueryBestSize
     *p_h = drw_h; 
 }
 
+static void NVCopyData420
+(
+    unsigned char *src1,
+    unsigned char *src2,
+    unsigned char *src3,
+    unsigned char *dst1,
+    int            srcPitch,
+    int            srcPitch2,
+    int            dstPitch,
+    int            h,
+    int            w
+)
+{
+   CARD32 *dst;
+   CARD8 *s1, *s2, *s3;
+   int i, j;
+
+   w >>= 1;
+
+   for(j = 0; j < h; j++) {
+        dst = (CARD32*)dst1;
+        s1 = src1;  s2 = src2;  s3 = src3;
+        i = w;
+        while(i > 4) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+           dst[0] = (s1[0] << 24) | (s1[1] << 8) | (s3[0] << 16) | s2[0];
+           dst[1] = (s1[2] << 24) | (s1[3] << 8) | (s3[1] << 16) | s2[1];
+           dst[2] = (s1[4] << 24) | (s1[5] << 8) | (s3[2] << 16) | s2[2];
+           dst[3] = (s1[6] << 24) | (s1[7] << 8) | (s3[3] << 16) | s2[3];
+#else
+           dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+           dst[1] = s1[2] | (s1[3] << 16) | (s3[1] << 8) | (s2[1] << 24);
+           dst[2] = s1[4] | (s1[5] << 16) | (s3[2] << 8) | (s2[2] << 24);
+           dst[3] = s1[6] | (s1[7] << 16) | (s3[3] << 8) | (s2[3] << 24);
+#endif
+           dst += 4; s2 += 4; s3 += 4; s1 += 8;
+           i -= 4;
+        }
+
+        while(i--) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+           dst[0] = (s1[0] << 24) | (s1[1] << 8) | (s3[0] << 16) | s2[0];
+#else
+           dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+#endif
+           dst++; s2++; s3++;
+           s1 += 2;
+        }
+
+        dst1 += dstPitch;
+        src1 += srcPitch;
+        if(j & 1) {
+            src2 += srcPitch2;
+            src3 += srcPitch2;
+        }
+   }
+}
+
+
+static void NVMoveDWORDS(
+   CARD32* dest,
+   CARD32* src,
+   int dwords )
+{
+     while(dwords & ~0x03) {
+        *dest = *src;
+        *(dest + 1) = *(src + 1);
+        *(dest + 2) = *(src + 2);
+        *(dest + 3) = *(src + 3);
+        src += 4;
+        dest += 4;
+        dwords -= 4;
+     }
+     if(!dwords) return;
+     *dest = *src;
+     if(dwords == 1) return;
+     *(dest + 1) = *(src + 1);
+     if(dwords == 2) return;
+     *(dest + 2) = *(src + 2);
+}
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+static void NVMoveDWORDSSwapped(
+   CARD32* dest,
+   CARD8* src,
+   int dwords )
+{
+     while(dwords--) {
+        *dest++ = (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3];
+        src += 4;
+     }
+}
+#endif
+
+static void NVCopyData422
+(
+  unsigned char *src,
+  unsigned char *dst,
+  int            srcPitch,
+  int            dstPitch,
+  int            h,
+  int            w
+)
+{
+    w >>= 1;  /* pixels to DWORDS */
+    while(h--) {
+        NVMoveDWORDS((CARD32*)dst, (CARD32*)src, w);
+        src += srcPitch;
+        dst += dstPitch;
+    }
+}
+
+static void NVCopyDataRGB
+(
+  unsigned char *src,
+  unsigned char *dst,
+  int            srcPitch,
+  int            dstPitch,
+  int            h,
+  int            w
+)
+{
+    while(h--) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+        NVMoveDWORDSSwapped((CARD32*)dst, (CARD8*)src, w);
+#else
+        NVMoveDWORDS((CARD32*)dst, (CARD32*)src, w);
+#endif
+        src += srcPitch;
+        dst += dstPitch;
+    }
+}
+
+
 /*
  * PutImage
  */
@@ -959,7 +1093,7 @@ static int NVPutImage
            s2offset = s3offset;
            s3offset = tmp;
         }
-        xf86XVCopyYUV12ToPacked(buf + (top * srcPitch) + left,
+        NVCopyData420(buf + (top * srcPitch) + left,
 				buf + s2offset, buf + s3offset,
 				dst_start, srcPitch, srcPitch2,
 				dstPitch, nlines, npixels);
@@ -974,18 +1108,17 @@ static int NVPutImage
         buf += (top * srcPitch) + left;
         dst_start += left + (top * dstPitch);
 
-        xf86XVCopyPacked(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+        NVCopyData422(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     case FOURCC_RGB:
-        /* xf86XVCopyPacked expects 16 bit values so we double our pixels */
-        npixels = (right - left) << 1;
+        npixels = right - left;
         nlines = bottom - top;
 
         left <<= 2;
         buf += (top * srcPitch) + left;
         dst_start += left + (top * dstPitch);
 
-        xf86XVCopyPacked(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+        NVCopyDataRGB(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     default:
         return BadImplementation;
