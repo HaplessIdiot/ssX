@@ -1,4 +1,9 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 304. Fix xf86cfg to handle drivers (like 'ati') with no options
+      (Bugzilla #1539, David Laight).
+ 303. Assorted XFree86 driver man page updates (Bugzilla #1538, Nicolas Joly).
+ 302. Updates for building on NetBSD-current (#7386, Matthais Scheler,
+      Izumi Tsutsui, submitted by Bernd Ernesti).
  301. Modify getconfig's version handling to work with versions of perl
       that do not have v-strings (David Dawes).
  300. Clean up Xprt, Xnest, Xvfb and Xdmx links (Marc La France).
@@ -19337,7 +19342,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3412 2005/01/31 22:54:47 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3413 2005/02/01 00:01:15 dawes Exp $
 
 
 

@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.78tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.79 2004/12/16 22:15:48 tsi Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -908,16 +908,36 @@ char *cpp_argv[ARGUMENTS] = {
  */
 #  define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
 #  define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
-#  define DEFAULT_OS_TEENY_REV   "r %*d.%*d%[A-Z]" 
+#  define DEFAULT_OS_TEENY_REV   "r %s" 
 #  define DEFAULT_OS_TEENY_REV_FROB(buf, size)				\
     do {								\
-	int	teeny = 0;						\
-	char	*ptr = (buf);						\
+	int	major, minor, teeny = 0;				\
+	char	*ptr = (buf), *endptr;					\
 									\
-	while (*ptr >= 'A' && *ptr <= 'Z') /* sanity check */		\
-	    teeny = teeny * 26 + (int)(*ptr++ - 'A');			\
+	major = (int)strtol(ptr, &endptr, 10);				\
+	if (ptr == endptr || *endptr++ != '.')				\
+	    goto error;							\
 									\
-	snprintf((buf), (size), "%d", teeny + 1);			\
+	ptr = endptr;							\
+	minor = (int)strtol(ptr, &endptr, 10);				\
+	if (ptr == endptr)						\
+	    goto error;							\
+	ptr = endptr;							\
+									\
+	if (major > 2 || (major == 2 && minor >= 99)) {			\
+		if (*ptr++ == '.') {					\
+			teeny = (int)strtol(ptr, &endptr, 10);		\
+			if (ptr == endptr)				\
+				goto error;				\
+		}							\
+	} else {							\
+		while (*ptr >= 'A' && *ptr <= 'Z') /* sanity check */	\
+		    teeny = teeny * 26 + (int)(*ptr++ - 'A');		\
+		teeny++;						\
+	}								\
+									\
+error:									\
+	snprintf((buf), (size), "%d", teeny);				\
     } while (0)
 #  define DEFAULT_OS_NAME        "smr %[^\n]"
 #  define DEFAULT_OS_NAME_FROB(buf, size)				\
