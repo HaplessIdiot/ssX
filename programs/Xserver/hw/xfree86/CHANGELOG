@@ -1,4 +1,5 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 526. Xterm patches #180, 181 (Thomas Dickey).
  525. Update libfreetype-xtt2 to version 1.0d:
        - Fixed server crash caused by loading fonts for which encoding file
          does not exist.
@@ -18043,7 +18044,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2904 2003/10/26 12:17:15 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2905 2003/10/27 00:26:55 dawes Exp $
 
 
 
