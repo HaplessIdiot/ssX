@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/configure.in,v 3.49 2001/09/09 01:07:25 dickey Exp $
+dnl $XFree86: xc/programs/xterm/configure.in,v 3.50 2001/10/08 01:08:10 dickey Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -549,8 +549,12 @@ AC_SUBST(EXTRAOBJS)
 
 ###	remove from CPPFLAGS the optional features we define in xtermcfg.h
 for cf_def in \
+	ALLOWLOGGING \
+	OPT_WIDE_CHARS \
 	SCROLLBAR_RIGHT \
-	OPT_WIDE_CHARS
+	USE_TTY_GROUP \
+	USE_UTEMPTER \
+	XRENDERFONT
 do
 	CPPFLAGS=`echo "$CPPFLAGS" | sed -e s/-D$cf_def//`
 done
