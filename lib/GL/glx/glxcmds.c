@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.27 2003/11/17 03:10:42 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.28 2003/12/08 00:53:59 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -319,12 +319,23 @@ GetGLXPrivScreenConfig( Display *dpy, int scrn, __GLXdisplayPrivate ** ppriv,
 }
 
 
+/**
+ * \todo It should be possible to move the allocate of \c client_state_private
+ * later in the function for direct-rendering contexts.  Direct-rendering
+ * contexts don't need to track client state, so they don't need that memory
+ * at all.
+ * 
+ * \todo Eliminate \c __glXInitVertexArrayState.  Replace it with a new
+ * function called \c __glXAllocateClientState that allocates the memory and
+ * does all the initialization (including the pixel pack / unpack).
+ */
 static
 GLXContext AllocateGLXContext( Display *dpy )
 {
      GLXContext gc;
      int bufSize;
      CARD8 opcode;
+    __GLXattribute *state;
 
     if (!dpy)
         return NULL;
@@ -342,6 +353,15 @@ GLXContext AllocateGLXContext( Display *dpy )
     }
     memset(gc, 0, sizeof(struct __GLXcontextRec));
 
+    state = Xmalloc(sizeof(struct __GLXattributeRec));
+    if (state == NULL) {
+	/* Out of memory */
+	Xfree(gc);
+	return NULL;
+    }
+    gc->client_state_private = state;
+    memset(gc->client_state_private, 0, sizeof(struct __GLXattributeRec));
+
     /*
     ** Create a temporary buffer to hold GLX rendering commands.  The size
     ** of the buffer is selected so that the maximum number of GLX rendering
@@ -352,6 +372,7 @@ GLXContext AllocateGLXContext( Display *dpy )
     bufSize = (XMaxRequestSize(dpy) * 4) - sz_xGLXRenderReq;
     gc->buf = (GLubyte *) Xmalloc(bufSize);
     if (!gc->buf) {
+	Xfree(gc->client_state_private);
 	Xfree(gc);
 	return NULL;
     }
@@ -360,8 +381,8 @@ GLXContext AllocateGLXContext( Display *dpy )
     /* Fill in the new context */
     gc->renderMode = GL_RENDER;
 
-    gc->state.storePack.alignment = 4;
-    gc->state.storeUnpack.alignment = 4;
+    state->storePack.alignment = 4;
+    state->storeUnpack.alignment = 4;
 
     __glXInitVertexArrayState(gc);
 
@@ -534,6 +555,7 @@ void __glXFreeContext(__GLXcontext *gc)
     if (gc->extensions) XFree((char *) gc->extensions);
     __glFreeAttributeState(gc);
     XFree((char *) gc->buf);
+    XFree((char *) gc->client_state_private);
     XFree((char *) gc);
     
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.7 2002/02/22 21:32:54 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/indirect_init.c,v 1.8 2003/09/28 20:15:03 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -444,6 +444,10 @@ __GLapi *__glXNewIndirectAPI(void)
     glAPI->ResetMinmax = __indirect_glResetMinmax;
     glAPI->SeparableFilter2D = __indirect_glSeparableFilter2D;
 
+    /* 1.4 */
+    glAPI->MultiDrawArraysEXT = __indirect_glMultiDrawArrays;
+    glAPI->MultiDrawElementsEXT = __indirect_glMultiDrawElements;
+
     /* ARB 1. GL_ARB_multitexture */
     glAPI->ActiveTextureARB = __indirect_glActiveTextureARB;
     glAPI->ClientActiveTextureARB = __indirect_glClientActiveTextureARB;
@@ -515,6 +519,39 @@ __GLapi *__glXNewIndirectAPI(void)
     /* 25. GL_SGIS_multisample */
     glAPI->SampleMaskSGIS = __indirect_glSampleMaskSGIS;
     glAPI->SamplePatternSGIS = __indirect_glSamplePatternSGIS;
+
+    /* 145. GL_EXT_secondary_color / GL 1.4 */
+    glAPI->SecondaryColor3bEXT       = __indirect_glSecondaryColor3b;
+    glAPI->SecondaryColor3bvEXT      = __indirect_glSecondaryColor3bv;
+    glAPI->SecondaryColor3sEXT       = __indirect_glSecondaryColor3s;
+    glAPI->SecondaryColor3svEXT      = __indirect_glSecondaryColor3sv;
+    glAPI->SecondaryColor3iEXT       = __indirect_glSecondaryColor3i;
+    glAPI->SecondaryColor3ivEXT      = __indirect_glSecondaryColor3iv;
+    glAPI->SecondaryColor3ubEXT      = __indirect_glSecondaryColor3ub;
+    glAPI->SecondaryColor3ubvEXT     = __indirect_glSecondaryColor3ubv;
+    glAPI->SecondaryColor3usEXT      = __indirect_glSecondaryColor3us;
+    glAPI->SecondaryColor3usvEXT     = __indirect_glSecondaryColor3usv;
+    glAPI->SecondaryColor3uiEXT      = __indirect_glSecondaryColor3ui;
+    glAPI->SecondaryColor3uivEXT     = __indirect_glSecondaryColor3uiv;
+    glAPI->SecondaryColor3fEXT       = __indirect_glSecondaryColor3f;
+    glAPI->SecondaryColor3fvEXT      = __indirect_glSecondaryColor3fv;
+    glAPI->SecondaryColor3dEXT       = __indirect_glSecondaryColor3d;
+    glAPI->SecondaryColor3dvEXT      = __indirect_glSecondaryColor3dv;
+    glAPI->SecondaryColorPointerEXT  = __indirect_glSecondaryColorPointer;
+
+    /* 149. GL_EXT_fog_coord / GL 1.4 */
+    glAPI->FogCoordfEXT       = __indirect_glFogCoordf;
+    glAPI->FogCoordfvEXT      = __indirect_glFogCoordfv;
+    glAPI->FogCoorddEXT       = __indirect_glFogCoordd;
+    glAPI->FogCoorddvEXT      = __indirect_glFogCoorddv;
+    glAPI->FogCoordPointerEXT = __indirect_glFogCoordPointer;
+
+    /* 173. GL_EXT_blend_func_separate / GL 1.4 */
+    glAPI->BlendFuncSeparateEXT = __indirect_glBlendFuncSeparate;
+
+    /* 262. GL_NV_point_sprite / GL 1.4 */
+    glAPI->PointParameteriNV = __indirect_glPointParameteri;
+    glAPI->PointParameterivNV = __indirect_glPointParameteriv;
 
     /* 268. GL_EXT_stencil_two_side */
     glAPI->ActiveStencilFaceEXT = __indirect_glActiveStencilFaceEXT;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/size.h,v 1.3 2001/03/21 16:04:39 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/size.h,v 1.4 2003/09/28 20:15:04 alanh Exp $ */
 #ifndef _size_h_
 #define _size_h_
 
@@ -67,5 +67,6 @@ extern GLint __glTexImage3D_size(GLenum format, GLenum type, GLsizei w, GLsizei 
 extern GLint __glTexParameterfv_size(GLenum e);
 extern GLint __glTexParameteriv_size(GLenum e);
 extern GLint __glPointParameterfvARB_size(GLenum e);
+extern GLint __glPointParameteriv_size(GLenum e);
 
 #endif /* _size_h_ */

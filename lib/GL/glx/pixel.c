@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.7 2002/10/30 12:51:26 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.8 2003/09/28 20:15:04 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -89,11 +89,12 @@ static void FillBitmap(__GLXcontext *gc, GLint width, GLint height,
 		       GLenum format, const GLvoid *userdata,
 		       GLubyte *destImage)
 {
-    GLint rowLength = gc->state.storeUnpack.rowLength;
-    GLint alignment = gc->state.storeUnpack.alignment;
-    GLint skipPixels = gc->state.storeUnpack.skipPixels;
-    GLint skipRows = gc->state.storeUnpack.skipRows;
-    GLint lsbFirst = gc->state.storeUnpack.lsbFirst;
+    const __GLXattribute * state = gc->client_state_private;
+    GLint rowLength = state->storeUnpack.rowLength;
+    GLint alignment = state->storeUnpack.alignment;
+    GLint skipPixels = state->storeUnpack.skipPixels;
+    GLint skipRows = state->storeUnpack.skipRows;
+    GLint lsbFirst = state->storeUnpack.lsbFirst;
     GLint elementsLeft, bitOffset, currentByte, nextByte, highBitMask;
     GLint lowBitMask, i;
     GLint components, groupsPerRow, rowSize, padding, elementsPerRow;
@@ -165,13 +166,14 @@ void __glFillImage(__GLXcontext *gc, GLint dim, GLint width, GLint height,
 		   GLint depth, GLenum format, GLenum type,
 		   const GLvoid *userdata, GLubyte *newimage, GLubyte *modes)
 {
-    GLint rowLength = gc->state.storeUnpack.rowLength;
-    GLint imageHeight = gc->state.storeUnpack.imageHeight;
-    GLint alignment = gc->state.storeUnpack.alignment;
-    GLint skipPixels = gc->state.storeUnpack.skipPixels;
-    GLint skipRows = gc->state.storeUnpack.skipRows;
-    GLint skipImages = gc->state.storeUnpack.skipImages;
-    GLint swapBytes = gc->state.storeUnpack.swapEndian;
+    const __GLXattribute * state = gc->client_state_private;
+    GLint rowLength = state->storeUnpack.rowLength;
+    GLint imageHeight = state->storeUnpack.imageHeight;
+    GLint alignment = state->storeUnpack.alignment;
+    GLint skipPixels = state->storeUnpack.skipPixels;
+    GLint skipRows = state->storeUnpack.skipRows;
+    GLint skipImages = state->storeUnpack.skipImages;
+    GLint swapBytes = state->storeUnpack.swapEndian;
     GLint components, elementSize, rowSize, padding, groupsPerRow, groupSize;
     GLint elementsPerRow, imageSize, rowsPerImage, h, i, j, k;
     const GLubyte *start, *iter, *itera, *iterb, *iterc;
@@ -283,11 +285,12 @@ static void EmptyBitmap(__GLXcontext *gc, GLint width, GLint height,
 			GLenum format, const GLubyte *sourceImage,
 			GLvoid *userdata)
 {
-    GLint rowLength = gc->state.storePack.rowLength;
-    GLint alignment = gc->state.storePack.alignment;
-    GLint skipPixels = gc->state.storePack.skipPixels;
-    GLint skipRows = gc->state.storePack.skipRows;
-    GLint lsbFirst = gc->state.storePack.lsbFirst;
+    const __GLXattribute * state = gc->client_state_private;
+    GLint rowLength = state->storePack.rowLength;
+    GLint alignment = state->storePack.alignment;
+    GLint skipPixels = state->storePack.skipPixels;
+    GLint skipRows = state->storePack.skipRows;
+    GLint lsbFirst = state->storePack.lsbFirst;
     GLint components, groupsPerRow, rowSize, padding, elementsPerRow;
     GLint sourceRowSize, sourcePadding, sourceSkip;
     GLubyte *start, *iter;
@@ -394,12 +397,13 @@ void __glEmptyImage(__GLXcontext *gc, GLint dim, GLint width, GLint height,
 		    GLint depth, GLenum format, GLenum type,
 		    const GLubyte *sourceImage, GLvoid *userdata)
 {
-    GLint rowLength = gc->state.storePack.rowLength;
-    GLint imageHeight = gc->state.storePack.imageHeight;
-    GLint alignment = gc->state.storePack.alignment;
-    GLint skipPixels = gc->state.storePack.skipPixels;
-    GLint skipRows = gc->state.storePack.skipRows;
-    GLint skipImages = gc->state.storePack.skipImages;
+    const __GLXattribute * state = gc->client_state_private;
+    GLint rowLength = state->storePack.rowLength;
+    GLint imageHeight = state->storePack.imageHeight;
+    GLint alignment = state->storePack.alignment;
+    GLint skipPixels = state->storePack.skipPixels;
+    GLint skipRows = state->storePack.skipRows;
+    GLint skipImages = state->storePack.skipImages;
     GLint components, elementSize, rowSize, padding, groupsPerRow, groupSize;
     GLint elementsPerRow, sourceRowSize, sourcePadding, h, i;
     GLint imageSize, rowsPerImage;

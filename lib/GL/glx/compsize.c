@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/compsize.c,v 1.4 2002/02/22 21:32:52 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/compsize.c,v 1.5 2003/09/28 20:15:01 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -80,6 +80,7 @@ GLint __glElementsPerGroup(GLenum format, GLenum type)
       case GL_422_REV_EXT:
       case GL_422_AVERAGE_EXT:
       case GL_422_REV_AVERAGE_EXT:
+      case GL_YCBCR_422_APPLE:
       case GL_LUMINANCE_ALPHA:
 	return 2;
       case GL_RGBA:
@@ -250,9 +251,6 @@ GLint __glTexGeniv_size(GLenum e)
 GLint __glTexParameterfv_size(GLenum e)
 {
     switch (e) {
-      case GL_TEXTURE_BORDER_COLOR:
-	return 4;
-
       case GL_TEXTURE_WRAP_S:
       case GL_TEXTURE_WRAP_T:
       case GL_TEXTURE_WRAP_R:
@@ -276,6 +274,15 @@ GLint __glTexParameterfv_size(GLenum e)
       case GL_TEXTURE_COMPARE_MODE:
       case GL_TEXTURE_COMPARE_FUNC:
 
+      /* GL_SGIS_generate_mipmap / GL 1.4 */
+      case GL_GENERATE_MIPMAP:
+
+      /* GL_ARB_depth_texture / GL 1.4 */
+      case GL_DEPTH_TEXTURE_MODE:
+
+      /* GL_EXT_texture_lod_bias / GL 1.4 */
+      case GL_TEXTURE_LOD_BIAS:
+
       /* GL_SGIX_shadow_ambient / GL_ARB_shadow_ambient */
       case GL_TEXTURE_COMPARE_FAIL_VALUE_ARB:
 
@@ -287,7 +294,25 @@ GLint __glTexParameterfv_size(GLenum e)
       case GL_TEXTURE_MAX_CLAMP_S_SGIX:
       case GL_TEXTURE_MAX_CLAMP_T_SGIX:
       case GL_TEXTURE_MAX_CLAMP_R_SGIX:
-	return 1;
+
+      /* GL_EXT_texture_filter_anisotropic */
+      case GL_TEXTURE_MAX_ANISOTROPY_EXT:
+
+      /* GL_SGIX_clipmap */
+      case GL_TEXTURE_CLIPMAP_CENTER_SGIX:
+      case GL_TEXTURE_CLIPMAP_OFFSET_SGIX:
+	return 2;
+
+      /* GL_SGIX_clipmap */
+      case GL_TEXTURE_CLIPMAP_VIRTUAL_DEPTH_SGIX:
+	return 3;
+
+      case GL_TEXTURE_BORDER_COLOR:
+
+      /* GL_SGIX_texture_scale_bias */
+      case GL_POST_TEXTURE_FILTER_BIAS_SGIX:
+      case GL_POST_TEXTURE_FILTER_SCALE_SGIX:
+	return 4;
 
       default:
 	return 0;
@@ -303,29 +328,41 @@ GLint __glTexEnvfv_size(GLenum e)
 {
     switch (e) {
       case GL_TEXTURE_ENV_MODE:
-	return 1;
+
+      /* GL_ARB_texture_env_combine / GL_EXT_texture_env_combine / GL 1.3 */
+      case GL_COMBINE_RGB:
+      case GL_COMBINE_ALPHA:
+      case GL_SOURCE0_RGB:
+      case GL_SOURCE1_RGB:
+      case GL_SOURCE2_RGB:
+      case GL_SOURCE0_ALPHA:
+      case GL_SOURCE1_ALPHA:
+      case GL_SOURCE2_ALPHA:
+      case GL_OPERAND0_RGB:
+      case GL_OPERAND1_RGB:
+      case GL_OPERAND0_ALPHA:
+      case GL_OPERAND1_ALPHA:
+      case GL_OPERAND2_RGB:
+      case GL_OPERAND2_ALPHA:
+      case GL_RGB_SCALE:
+      case GL_ALPHA_SCALE:
+
+      /* GL_EXT_texture_lod_bias / GL 1.4 */
+      case GL_TEXTURE_LOD_BIAS:
+
+      /* GL_ARB_point_sprite / GL_NV_point_sprite */
+      case GL_COORD_REPLACE_NV:
+
+      /* GL_NV_texture_env_combine4 */
+      case GL_SOURCE3_RGB_NV:
+      case GL_SOURCE3_ALPHA_NV:
+      case GL_OPERAND3_RGB_NV:
+      case GL_OPERAND3_ALPHA_NV:
+        return 1;
+
       case GL_TEXTURE_ENV_COLOR:
 	return 4;
-      /* GL_EXT_texture_env_combine */
-      case GL_COMBINE_RGB_EXT:
-      case GL_COMBINE_ALPHA_EXT:
-      case GL_SOURCE0_RGB_EXT:
-      case GL_SOURCE1_RGB_EXT:
-      case GL_SOURCE2_RGB_EXT:
-      case GL_SOURCE0_ALPHA_EXT:
-      case GL_SOURCE1_ALPHA_EXT:
-      case GL_SOURCE2_ALPHA_EXT:
-      case GL_OPERAND0_RGB_EXT:
-      case GL_OPERAND1_RGB_EXT:
-      case GL_OPERAND0_ALPHA_EXT:
-      case GL_OPERAND1_ALPHA_EXT:
-      case GL_OPERAND2_RGB_EXT:
-      case GL_OPERAND2_ALPHA_EXT:
-      case GL_RGB_SCALE_EXT:
-      case GL_ALPHA_SCALE:
-      /* GL_EXT_texture_lod_bias */
-      case GL_TEXTURE_LOD_BIAS_EXT:
-        return 1;
+
       default:
 	return 0;
     }
@@ -459,14 +496,23 @@ GLint __glConvolutionParameteriv_size(GLenum pname)
 GLint __glPointParameterfvARB_size(GLenum e)
 {
     switch (e) {
-      case GL_POINT_DISTANCE_ATTENUATION_ARB:
-	return 3;
-      case GL_POINT_SIZE_MIN_ARB:
-      case GL_POINT_SIZE_MAX_ARB:
-      case GL_POINT_FADE_THRESHOLD_SIZE_ARB:
+      case GL_POINT_SIZE_MIN:
+      case GL_POINT_SIZE_MAX:
+      case GL_POINT_FADE_THRESHOLD_SIZE:
+
+      /* GL_NV_point_sprite */
+      case GL_POINT_SPRITE_R_MODE_NV:
         return 1;
+
+      case GL_POINT_DISTANCE_ATTENUATION:
+	return 3;
+
       default:
         return -1;
     }
 }
 
+GLint __glPointParameteriv_size(GLenum e)
+{
+    return __glPointParameterfvARB_size(e);
+}

@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 778. Fix Multitexture problems with vertex arrays and indirect rendering
+      (Bugzilla #1092, DRI Project).
+ 777. Fix SecondaryColor & FogColor when indirect rendering (Bugzilla #1091, 
+      DRI Project).
  776. Fix build failures on Mac OS X 10.1.x (Torrey T. Lyons).
  775. Fix a timing problem in the nsc driver that prevents the display from
       working in some cases (Bugzilla #840, Hansruedi Glauser, Alan Hourihane).
@@ -18592,7 +18596,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3118 2004/01/27 17:31:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3119 2004/01/28 16:46:44 torrey Exp $
 
 
 

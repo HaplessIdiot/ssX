@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.17 2003/11/12 00:10:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.18 2003/11/29 01:31:20 dawes Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -360,9 +360,55 @@ typedef struct __GLXpixelStoreModeRec {
     GLuint alignment;
 } __GLXpixelStoreMode;
 
+/* The next 3 structures are deprecated.  Client state is no longer tracked
+ * using them.  They only remain to maintain the layout / structure offset of
+ * __GLXcontextRec.  In XFree86 5.0 they will be removed altogether.
+ */
+
+typedef struct __GLXvertexArrayPointerStateRecDEPRECATED {
+    GLboolean enable;
+    void (*proc)(const void *);
+    const GLubyte *ptr;
+    GLsizei skip;
+    GLint size;
+    GLenum type;
+    GLsizei stride;
+} __GLXvertexArrayPointerStateDEPRECATED;
+
+typedef struct __GLXvertArrayStateRecDEPRECATED {
+    __GLXvertexArrayPointerStateDEPRECATED vertex;
+    __GLXvertexArrayPointerStateDEPRECATED normal;
+    __GLXvertexArrayPointerStateDEPRECATED color;
+    __GLXvertexArrayPointerStateDEPRECATED index;
+    __GLXvertexArrayPointerStateDEPRECATED texCoord[__GLX_MAX_TEXTURE_UNITS];
+    __GLXvertexArrayPointerStateDEPRECATED edgeFlag;
+    GLint maxElementsVertices;
+    GLint maxElementsIndices;
+    GLint activeTexture;
+} __GLXvertArrayStateDEPRECATED;
+
+typedef struct __GLXattributeRecDEPRECATED {
+	GLuint mask;
+
+	/*
+	** Pixel storage state.  Most of the pixel store mode state is kept
+	** here and used by the client code to manage the packing and
+	** unpacking of data sent to/received from the server.
+	*/
+	__GLXpixelStoreMode storePack, storeUnpack;
+
+	/*
+	** Vertex Array storage state.  The vertex array component
+	** state is stored here and is used to manage the packing of
+	** DrawArrays data sent to the server.
+	*/
+	__GLXvertArrayStateDEPRECATED vertArray;
+} __GLXattributeDEPRECATED;
+
 typedef struct __GLXvertexArrayPointerStateRec {
     GLboolean enable;
     void (*proc)(const void *);
+    void (*mtex_proc)(GLenum, const void *);
     const GLubyte *ptr;
     GLsizei skip;
     GLint size;
@@ -374,6 +420,8 @@ typedef struct __GLXvertArrayStateRec {
     __GLXvertexArrayPointerState vertex;
     __GLXvertexArrayPointerState normal;
     __GLXvertexArrayPointerState color;
+    __GLXvertexArrayPointerState secondaryColor;
+    __GLXvertexArrayPointerState fogCoord;
     __GLXvertexArrayPointerState index;
     __GLXvertexArrayPointerState texCoord[__GLX_MAX_TEXTURE_UNITS];
     __GLXvertexArrayPointerState edgeFlag;
@@ -496,7 +544,7 @@ struct __GLXcontextRec {
     /*
     ** Client side attribs.
     */
-    __GLXattribute state;
+    __GLXattributeDEPRECATED stateDEPRECATED;
     __GLXattributeMachine attributes;
 
     /*
@@ -567,6 +615,15 @@ struct __GLXcontextRec {
     ** context is not current to any drawable.
     */
     GLXDrawable currentReadable;
+
+   /** 
+    * Pointer to client-state data that is private to libGL.  This is only
+    * used for indirect rendering contexts.
+    *
+    * No internal API version change was made for this change.  Client-side
+    * drivers should NEVER use this data or even care that it exists.
+    */
+   void * client_state_private;
 };
 
 #define __glXSetError(gc,code) \
