@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.19 1997/07/06 07:00:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.20 1997/07/06 07:25:08 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -120,7 +120,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define HAVE_VFSCANF
 #endif
 
-#if defined(CSRG_BASED) || defined(SVR4)
+#if defined(CSRG_BASED) || defined(SVR4) || defined(linux)
 #define SETBUF_RETURNS_VOID
 #endif
 
