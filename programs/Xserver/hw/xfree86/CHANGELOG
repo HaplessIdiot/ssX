@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 589. Move IOKit-specific global variables out of generic XDarwin code
+      (Torrey T. Lyons).
  588. Add a new interface for registration of core font renderers that allows
       priorities to be assigned.  This allows multiple renderers for the
       same extension to be registered, with the one with the highest priority
@@ -15702,4 +15704,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2436 2002/12/09 17:19:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2437 2002/12/09 17:30:01 dawes Exp $

@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.46 2002/10/12 00:32:43 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.47 2002/11/15 00:55:10 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -67,7 +67,7 @@
  */
 int                     darwinScreensFound = 0;
 int                     darwinScreenIndex = 0;
-DarwinInputRec          hid;
+io_connect_t            darwinParamConnect = 0;
 int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 int                     quartzMouseAccelChange = 1;
@@ -201,26 +201,25 @@ static Bool DarwinAddScreen(
     if (! ret)
         return FALSE;
 
-    bitsPerRGB = dfb->pixelInfo.bitsPerComponent;
+    bitsPerRGB = dfb->bitsPerComponent;
 
     // reset the visual list
     miClearVisualTypes();
 
     // setup a single visual appropriate for our pixel type
-    // Note: Darwin kIORGBDirectPixels = X TrueColor, not DirectColor
-    if (dfb->pixelInfo.pixelType == kIORGBDirectPixels) {
+    if (dfb->colorType == TrueColor) {
         if (!miSetVisualTypes( dfb->colorBitsPerPixel, TrueColorMask,
-                                bitsPerRGB, TrueColor )) {
+                               bitsPerRGB, TrueColor )) {
             return FALSE;
         }
-    } else if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
+    } else if (dfb->colorType == PseudoColor) {
         if (!miSetVisualTypes( dfb->colorBitsPerPixel, PseudoColorMask,
-                                bitsPerRGB, PseudoColor )) {
+                               bitsPerRGB, PseudoColor )) {
             return FALSE;
         }
-    } else if (dfb->pixelInfo.pixelType == kIOFixedCLUTPixels) {
+    } else if (dfb->colorType == StaticColor) {
         if (!miSetVisualTypes( dfb->colorBitsPerPixel, StaticColorMask,
-                                bitsPerRGB, StaticColor )) {
+                               bitsPerRGB, StaticColor )) {
             return FALSE;
         }
     } else {
@@ -255,15 +254,9 @@ static Bool DarwinAddScreen(
                 visual->offsetRed = bitsPerRGB * 2;
                 visual->offsetGreen = bitsPerRGB;
                 visual->offsetBlue = 0;
-#if TRUE
                 visual->redMask = ((1<<bitsPerRGB)-1) << visual->offsetRed;
                 visual->greenMask = ((1<<bitsPerRGB)-1) << visual->offsetGreen;
                 visual->blueMask = ((1<<bitsPerRGB)-1) << visual->offsetBlue;
-#else
-                visual->redMask = dfb->pixelInfo.componentMasks[0];
-                visual->greenMask = dfb->pixelInfo.componentMasks[1];
-                visual->blueMask = dfb->pixelInfo.componentMasks[2];
-#endif
             }
         }
     }
@@ -303,7 +296,7 @@ static Bool DarwinAddScreen(
      * to Darwin/x86 in 8-bit mode.
      */
     if( (dfb->colorBitsPerPixel == 8) &&
-                (dfb->pixelInfo.pixelType == kIOFixedCLUTPixels) )
+                (dfb->colorType == StaticColor) )
     {
         pmap = miInstalledMaps[pScreen->myNum];
         visual = pmap->pVisual;
@@ -347,7 +340,7 @@ static void DarwinChangePointerControl(
         return;
 
     acceleration = ctrl->num / ctrl->den;
-    kr = IOHIDSetMouseAcceleration( hid.paramConnect, acceleration );
+    kr = IOHIDSetMouseAcceleration( darwinParamConnect, acceleration );
     if (kr != KERN_SUCCESS)
         ErrorF( "Could not set mouse acceleration with kernel return = 0x%x.\n", kr );
 }

@@ -4,7 +4,7 @@
   IOKit specific functions and definitions
 */
 /*
- * Copyright (c) 2001 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,14 +28,27 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.6 2001/12/22 05:28:34 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.7 2002/03/28 02:21:08 torrey Exp $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
 
+#include <pthread.h>
+#include <IOKit/graphics/IOFramebufferShared.h>
 #include "X11/Xproto.h"
 #include "screenint.h"
 #include "darwin.h"
+
+typedef struct {
+    io_connect_t        fbService;
+    StdFBShmem_t        *cursorShmem;
+} XFIOKitScreenRec, *XFIOKitScreenPtr;
+
+#define XFIOKIT_SCREEN_PRIV(pScreen) \
+    ((XFIOKitScreenPtr)pScreen->devPrivates[xfIOKitScreenIndex].ptr)
+
+extern int xfIOKitScreenIndex; // index into pScreen.devPrivates
+extern io_connect_t xfIOKitInputConnect;
 
 Bool XFIOKitAddScreen(int index, ScreenPtr pScreen);
 Bool XFIOKitSetupScreen(int index, ScreenPtr pScreen);
@@ -44,4 +57,4 @@ void XFIOKitInitOutput(int argc, char **argv);
 void XFIOKitGiveUp(void);
 void XFIOKitBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);
 
-#endif
+#endif	/* _XFIOKIT_H */

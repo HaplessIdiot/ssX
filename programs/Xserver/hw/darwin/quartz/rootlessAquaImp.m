@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.3 2002/08/28 06:41:26 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
@@ -61,8 +61,7 @@ int AquaDisplayCount()
 
 
 void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
-                    int *rowBytes, unsigned long *bps, unsigned long *spp,
-                    int *bpp)
+                    int *rowBytes, int *bps, int *spp, int *bpp)
 {
     *bps = 8;
     *spp = 3;

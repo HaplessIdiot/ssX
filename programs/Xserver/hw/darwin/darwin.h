@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,37 +23,29 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.13 2002/11/19 23:01:30 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.14 2002/11/20 23:51:58 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
 
-#include <pthread.h>
-#include <IOKit/graphics/IOFramebufferShared.h>
+#include <IOKit/IOTypes.h>
 #include "inputstr.h"
 #include "screenint.h"
 #include "extensions/XKB.h"
 #include "quartz/quartzShared.h"
 
 typedef struct {
-    io_connect_t        fbService;
     void                *framebuffer;
     int                 x;
     int                 y;
     int                 width;
     int                 height;
     int                 pitch;
+    int                 colorType;
     int                 bitsPerPixel;
     int                 colorBitsPerPixel;
-    IOPixelInformation  pixelInfo;
-    StdFBShmem_t        *cursorShmem;
+    int                 bitsPerComponent;
 } DarwinFramebufferRec, *DarwinFramebufferPtr;
-
-typedef struct {
-    pthread_t           thread;
-    io_connect_t        connect;
-    io_connect_t        paramConnect;  
-} DarwinInputRec;
 
 
 void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
@@ -89,7 +81,7 @@ int DarwinModifierStringToNXKey(const char *string);
  */
 extern int              darwinScreenIndex; // index into pScreen.devPrivates
 extern int              darwinScreensFound;
-extern DarwinInputRec   hid;
+extern io_connect_t     darwinParamConnect;
 extern int              darwinEventFD;
 extern Bool             quartz;
 
