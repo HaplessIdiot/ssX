@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast_setup/Imakefile,v 1.5 2002/06/02 01:21:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast_setup/Imakefile,v 1.7tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -14,7 +14,7 @@ SUBDIRS = module
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
 #define MesaSwrastSetupBuildDir /**/
-#if !BuildModuleInSubdir || !defined(IHaveModules)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 #include "../../../../../../lib/GL/mesa/src/swrast_setup/Imakefile.inc"
 #else
 #include "../../../../../../../lib/GL/mesa/src/swrast_setup/Imakefile.inc"

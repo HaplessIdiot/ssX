@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.15 2002/02/22 21:32:52 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.16tsi Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -111,10 +111,10 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
      ASM_OBJS = glapi_sparc.o
      ASM_DEFS = -DUSE_SPARC_ASM
 #endif
-#endif
 
 #if GlxBuiltInXMesa
   XMESA_DEFINES = -DGLX_BUILT_IN_XMESA
+#endif
 #endif
 
          SRCS = $(GLX_SRCS) $(ASM_SRCS)

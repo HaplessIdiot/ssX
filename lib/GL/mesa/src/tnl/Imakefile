@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile,v 1.5tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile,v 1.6tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -12,7 +12,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile,v 1.5tsi Exp $
  * driver modules.
  */
 
-#if GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib
+#if BuildOSMesaLib || (BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa))
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx

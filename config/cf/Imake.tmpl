@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.135 2002/11/18 22:47:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.136tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -50,6 +50,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #if defined(HasGcc2) && !defined(HasGcc)
 # define HasGcc HasGcc2
+#endif
+
+#ifndef HasCenterLineC
+#define HasCenterLineC NO
+#endif
+#ifndef HasCenterLineCplusplus
+#define HasCenterLineCplusplus NO
 #endif
 
 #ifndef HasClearmake
@@ -283,6 +290,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef MakeDllModules
 #define MakeDllModules NO
 #endif
+#ifndef StripInstalledPrograms
+#define StripInstalledPrograms NO	/* leave symbol table just in case */
+#endif
+#ifndef StaticNeedsPicForShared
+#define StaticNeedsPicForShared NO
+#endif
 
 #include <Imake.rules>
 
@@ -479,6 +492,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif /* ByteOrder */
 #ifndef HasFortran
 #define HasFortran		NO
+#endif
+#ifndef HasGcc2ForCplusplus
+#define HasGcc2ForCplusplus	NO
 #endif
 #ifndef HasCplusplus
 #if HasGcc2ForCplusplus
@@ -731,9 +747,6 @@ TCLIBDIR = TclLibDir
 #define NeedWidePrototypes	YES	/* mix and match ANSI-C, non-ANSI */
 #endif
 
-#ifndef StripInstalledPrograms
-#define StripInstalledPrograms NO	/* leave symbol table just in case */
-#endif
 #ifndef UseCCMakeDepend			/* use slow cc -E script */
 #define UseCCMakeDepend NO
 #endif
@@ -1023,17 +1036,8 @@ TCLIBDIR = TclLibDir
 #ifndef HasGcc
 #define HasGcc HasGcc2
 #endif
-#ifndef HasGcc2ForCplusplus
-#define HasGcc2ForCplusplus NO
-#endif
 #ifndef HasBrokenCCForLink
 #define HasBrokenCCForLink NO
-#endif
-#ifndef HasCenterLineC
-#define HasCenterLineC NO
-#endif
-#ifndef HasCenterLineCplusplus
-#define HasCenterLineCplusplus NO
 #endif
 #ifndef CcCmd
 #if HasGcc2

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.16 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.17tsi Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -266,6 +266,9 @@ LispCharOp(LispBuiltin *builtin, int operation)
 	    break;
 	case CHAR_LOWERP:
 	    result = islower(value) ? T : NIL;
+	    break;
+	default:
+	    result = NIL;
 	    break;
     }
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.14 2002/05/31 18:12:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.15tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -15,7 +15,7 @@ SUBDIRS = module
 #define NeedToLinkMesaSrc
 #define MesaXBuildDir /**/
 #define MesaInXServer
-#if !BuildModuleInSubdir || !defined(IHaveModules)
+#if !defined(IHaveModules) || !BuildModuleInSubdir
 #include "../../../../../../lib/GL/mesa/src/X/Imakefile.inc"
 #else
 #include "../../../../../../../lib/GL/mesa/src/X/Imakefile.inc"
@@ -68,7 +68,7 @@ MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
 
-#if BuildModuleInSubdir && defined(IHaveModules)
+#if defined(IHaveModules) && BuildModuleInSubdir
 LinkSourceFile(xf86glx.c,..)
 LinkSourceFile(xf86glx_util.c,..)
 #endif

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.2 2002/05/31 16:12:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.3tsi Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -179,7 +179,7 @@ LinkSourceFile(stipsprc32.s,LinkDirectory)
 #endif
 #endif
 
-#if BuildModuleInSubdir && defined(IHaveModules)
+#if defined(IHaveModules) && BuildModuleInSubdir
 LinkSourceFile(cfbmodule.c,..)
 #endif
 

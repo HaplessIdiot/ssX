@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/action.c,v 3.9 2002/06/05 00:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/action.c,v 3.10tsi Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -980,11 +980,13 @@ HandleDeviceValuator(	XkbDescPtr 	xkb,
 			ExprDef *	array_ndx,
 			ExprDef *	value)
 {
+#if 0
 ExprResult			rtrn;
 XkbDeviceValuatorAction *	act;
 
     act= (XkbDeviceValuatorAction *)action;
     /*  XXX - Not yet implemented */
+#endif
     return False;
 }
 
