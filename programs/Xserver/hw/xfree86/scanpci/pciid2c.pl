@@ -55,7 +55,7 @@
 #
 # Author: David Dawes
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/pciid2c.pl,v 1.3 2003/08/24 17:37:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/pciid2c.pl,v 1.4 2004/02/13 23:58:51 dawes Exp $
 #
 
 if (@ARGV[0]) {
@@ -176,7 +176,7 @@ print "/* \$$proj\$ */
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
+ * \"Software\"), to deal in the Software without restriction, including
  * without limitation the rights to use, copy, modify, merge, publish,
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject
@@ -192,9 +192,9 @@ print "/* \$$proj\$ */
  *       license and disclaimer information.
  *
  *   3.  The end-user documentation included with the redistribution,
- *       if any, must include the following acknowledgment: "This product
+ *       if any, must include the following acknowledgment: \"This product
  *       includes software developed by The XFree86 Project, Inc
- *       (http://www.xfree86.org/) and its contributors", in the same
+ *       (http://www.xfree86.org/) and its contributors\", in the same
  *       place and form as other third-party acknowledgments.  Alternately,
  *       this acknowledgment may appear in the software itself, in the
  *       same form and location as other such third-party acknowledgments.
