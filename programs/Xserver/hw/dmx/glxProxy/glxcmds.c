@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.3tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1604,12 +1604,14 @@ int __glXGetVisualConfigs(__GLXclientState *cl, GLbyte *pc)
 	buf[p++] = pGlxVisual->transparentAlpha;
 	buf[p++] = GLX_TRANSPARENT_INDEX_VALUE_EXT;
 	buf[p++] = pGlxVisual->transparentIndex;
+#if 0
 	buf[p++] = GLX_SAMPLES_SGIS;
 	buf[p++] = pGlxVisual->multiSampleSize;
 	buf[p++] = GLX_SAMPLE_BUFFERS_SGIS;
 	buf[p++] = pGlxVisual->nMultiSampleBuffers;
 	buf[p++] = GLX_VISUAL_SELECT_GROUP_SGIX;
 	buf[p++] = pGlxVisual->visualSelectGroup;
+#endif
 
 	WriteToClient(client, __GLX_SIZE_CARD32 * __GLX_TOTAL_CONFIG, 
 		(char *)buf);
@@ -2854,6 +2856,7 @@ int __glXGetFBConfigs(__GLXclientState *cl, GLbyte *pc)
 	buf[p++] = pFBConfig->visualSelectGroup;
 
 	if (client->swapped) {
+	    __GLX_DECLARE_SWAP_VARIABLES;
 	    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 	    __GLX_SWAP_INT_ARRAY((int *)buf, 2*numAttribs);
 	}

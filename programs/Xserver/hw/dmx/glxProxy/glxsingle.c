@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxsingle.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxsingle.c,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -391,6 +391,7 @@ int __glXForwardAllWithReply( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardSingleReqSwap( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -414,6 +415,7 @@ int __glXForwardSingleReqSwap( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardPipe0WithReplySwap( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -437,6 +439,7 @@ int __glXForwardPipe0WithReplySwap( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardPipe0WithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -461,6 +464,7 @@ int __glXForwardPipe0WithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardPipe0WithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -485,6 +489,7 @@ int __glXForwardPipe0WithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardPipe0WithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -509,6 +514,7 @@ int __glXForwardPipe0WithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardAllWithReplySwap( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -533,6 +539,7 @@ int __glXForwardAllWithReplySwap( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardAllWithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -557,6 +564,7 @@ int __glXForwardAllWithReplySwapsv( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardAllWithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);
@@ -581,6 +589,7 @@ int __glXForwardAllWithReplySwapiv( __GLXclientState *cl, GLbyte *pc )
 int __glXForwardAllWithReplySwapdv( __GLXclientState *cl, GLbyte *pc )
 {
    xGLXSingleReq *req = (xGLXSingleReq *)pc;
+   __GLX_DECLARE_SWAP_VARIABLES;
    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
    __GLX_SWAP_SHORT(&req->length);

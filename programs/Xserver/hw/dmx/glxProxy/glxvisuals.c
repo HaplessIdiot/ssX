@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -66,15 +67,17 @@ int glxVisualsMatch( __GLXvisualConfig *v1, __GLXvisualConfig *v2 )
 	   (v1->auxBuffers == v2->auxBuffers) &&
 	   (v1->level == v2->level) &&
 	   (v1->visualRating == v2->visualRating) &&
+#if 0
+	   (v1->multiSampleSize == v2->multiSampleSize) &&
+	   (v1->nMultiSampleBuffers == v2->nMultiSampleBuffers) &&
+	   (v1->visualSelectGroup == v2->visualSelectGroup) &&
+#endif
 	   (v1->transparentPixel == v2->transparentPixel) &&
 	   (v1->transparentRed == v2->transparentRed) &&
 	   (v1->transparentGreen == v2->transparentGreen) &&
 	   (v1->transparentBlue == v2->transparentBlue) &&
 	   (v1->transparentAlpha == v2->transparentAlpha) &&
-	   (v1->transparentIndex == v2->transparentIndex) &&
-	   (v1->multiSampleSize == v2->multiSampleSize) &&
-	   (v1->nMultiSampleBuffers == v2->nMultiSampleBuffers) &&
-	   (v1->visualSelectGroup == v2->visualSelectGroup)         ) {
+	   (v1->transparentIndex == v2->transparentIndex) ) {
 
 	      return(1);
 

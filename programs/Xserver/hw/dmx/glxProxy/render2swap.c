@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/render2swap.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/render2swap.c,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -75,6 +75,7 @@ void __glXDispSwap_Map1f(GLbyte *pc)
     GLfloat u1, u2, *points;
     GLenum target;
     GLint compsize;
+    __GLX_DECLARE_SWAP_VARIABLES;
     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 0);
@@ -104,6 +105,7 @@ void __glXDispSwap_Map2f(GLbyte *pc)
     GLfloat u1, u2, v1, v2, *points;
     GLenum target;
     GLint compsize;
+    __GLX_DECLARE_SWAP_VARIABLES;
     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 0);
@@ -141,6 +143,7 @@ void __glXDispSwap_Map1d(GLbyte *pc)
     GLint order, k, compsize;
     GLenum target;
     GLdouble u1, u2, *points;
+    __GLX_DECLARE_SWAP_VARIABLES;
     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_DOUBLE(pc + 0);
@@ -183,6 +186,7 @@ void __glXDispSwap_Map2d(GLbyte *pc)
     GLdouble u1, u2, v1, v2, *points;
     GLint uorder, vorder, ustride, vstride, k, compsize;
     GLenum target;
+    __GLX_DECLARE_SWAP_VARIABLES;
     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_DOUBLE(pc + 0);
@@ -232,6 +236,7 @@ void __glXDispSwap_CallLists(GLbyte *pc)
 {
     GLenum type;
     GLsizei n;
+    __GLX_DECLARE_SWAP_VARIABLES;
     __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 4);

@@ -1,4 +1,6 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 279. Re-instate DMX builds;  Fix glxProxy builds;  By default, disable
+      glxProxy in XFree86 builds pending further work (Marc La France).
  278. Add an input driver for ELO Graphics 2500U USB touchscreens
       (Fred Gleason).
  277. Make sure that all module ABI revs are bumped for Xllalloc and friends
@@ -19293,7 +19295,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3390 2005/01/21 02:03:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3391 2005/01/21 14:03:48 tsi Exp $
 
 
 
