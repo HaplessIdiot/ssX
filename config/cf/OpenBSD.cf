@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.6 1997/05/12 13:27:50 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.7 1997/05/21 15:16:57 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -168,8 +168,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * To use the NetBSD Aperture driver
  */
 #if defined(i386Architecture)
-#ifndef HasNetBSDApertureDrv
-#define HasNetBSDApertureDrv	YES
+#ifndef HasNetBSDApertureDriver
+#define HasNetBSDApertureDriver	YES
 #endif
 #endif
 
