@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.94 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.95 2000/09/13 07:57:54 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1431,12 +1431,28 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    }
 	    break;
-	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	    maxheight = 2048;
 	    maxwidth = 2048;
 	    pGlint->RefClock = 14318;
 	    pGlint->VGAcore = TRUE; /* chip has a vga core */
+	    pGlint->RamDacRec = RamDacCreateInfoRec();
+	    pGlint->RamDacRec->ReadDAC = Permedia2vInIndReg;
+	    pGlint->RamDacRec->WriteDAC = Permedia2vOutIndReg;
+	    pGlint->RamDacRec->ReadAddress = Permedia2ReadAddress;
+	    pGlint->RamDacRec->WriteAddress = Permedia2WriteAddress;
+	    pGlint->RamDacRec->ReadData = Permedia2ReadData;
+	    pGlint->RamDacRec->WriteData = Permedia2WriteData;
+	    if(!RamDacInit(pScrn, pGlint->RamDacRec)) {
+		RamDacDestroyInfoRec(pGlint->RamDacRec);
+		return FALSE;
+	    }
+	    break;
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    maxheight = 4096;
+	    maxwidth = 4096;
+	    pGlint->RefClock = 14318;
+	    pGlint->VGAcore = TRUE;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
 	    pGlint->RamDacRec->ReadDAC = Permedia2vInIndReg;
 	    pGlint->RamDacRec->WriteDAC = Permedia2vOutIndReg;
@@ -1596,24 +1612,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			break;
 		}
 	}
-	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ) {
-		switch (pScrn->bitsPerPixel) {
-		    case 8:
-			pGlint->MaxClock = 300000;
-			break;
-		    case 16:
-			pGlint->MaxClock = 300000;
-			break;
-		    case 24:
-			/* Not sure about the 24 & 32 bpp clocks, ... */
-			pGlint->MaxClock = 150000;
-			break;
-		    case 32:
-			/* Not sure about the 24 & 32 bpp clocks, ... */
-			pGlint->MaxClock = 150000;
-			break;
-		}
-	}
+	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
+	    pGlint->MaxClock = 300000;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
 	       pGlint->MaxClock / 1000);
@@ -1638,7 +1638,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* Select valid modes from those available */
-    if (pGlint->NoAccel) {
+    if ((pGlint->NoAccel) ||
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)) {
 	/*
 	 * XXX Assuming min pitch 256, max <maxwidth>
 	 * XXX Assuming min height 128, max <maxheight>
@@ -1745,7 +1746,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	pGlint->pprod = partprodPermedia[pScrn->displayWidth >> 5];
@@ -2307,9 +2307,23 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	   	 return FALSE;
 	}
 	/* Timing problem with PM3 & PM2V chips dont like being blasted */
-        if ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) && 
-            (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V))
+	/* This solves the dual head problem but trahses the console font. */
+
+	if (pGlint->Chipset = PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+	    /* Graphics Index VGA register don't work in mmio mode
+	     * for the Permedia3 chip, it thrashes the console font. 
+	     * Let's keep the IO functions for this instead ... */
+	    vgaHWWriteIndexProcPtr writeGr = hwp->writeGr;
+	    vgaHWReadIndexProcPtr readGr = hwp->readGr;
     	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
+	    hwp->writeGr = writeGr;
+	    hwp->readGr = readGr;
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		"SVEN : Permedia 3 don't use mmio for VGA Graphics Index.\n");
+	}
+	else if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
+    	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
+
     	vgaHWGetIOBase(hwp);
     }
 
@@ -2681,6 +2695,7 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
 
     base = ((y * pScrn->displayWidth + x) >> 1) >> pGlint->BppShift;
     if (pScrn->bitsPerPixel == 24) base *= 3;
+    if (pScrn->bitsPerPixel == 32) base *= 4;
  
     switch (pGlint->Chipset)
     {
@@ -2725,6 +2740,9 @@ GLINTEnterVT(int scrnIndex, int flags)
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	Permedia2VideoEnterVT(pScrn);
     }
+
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
+	pGlint->PM3_VideoControl = GLINT_READ_REG(PMVideoControl);
 
     if (!pGlint->NoAccel) {
     	switch (pGlint->Chipset) {
@@ -2777,6 +2795,12 @@ GLINTLeaveVT(int scrnIndex, int flags)
     GLINTRestore(pScrn);
     if (pGlint->VGAcore)
     	vgaHWLock(VGAHWPTR(pScrn));
+    
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
+	GLINT_SLOW_WRITE_REG(0, PMVideoControl);
+	/* Don't know why the follwong is wrong, should be ok ?
+	GLINT_SLOW_WRITE_REG(pGlint->PM3_VideoControl, PMVideoControl);
+	*/
 
     if (xf86IsPc98())
        outb(0xfac, 0x00);

@@ -1,3 +1,4 @@
+ 702. Fix 32bpp on the Permedia3 (Sven Luther).
  701. Fix to xterm InsertChar() to handle cases where cur_col + n
       ends up past the end of the line (Andreas Schwab).
  700. Added keyboard layouts for PowerMac (Olaf Hering).
@@ -11149,4 +11150,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1312 2000/09/17 23:20:19 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1314 2000/09/19 12:46:09 eich Exp $

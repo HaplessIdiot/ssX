@@ -19,7 +19,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Sven Luther, <luther@dpt-info.u-strasbg.fr>
+ * Authors: Sven Luther, <luther@dpt-info.u-strasbg.fr>
+ *	    Thomas Witzel, <twitzel@nmr.mgh.harvard.edu>
+ *
  *
  *
  *
@@ -27,7 +29,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.4 2000/07/09 21:02:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.5 2000/09/11 16:58:56 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -37,6 +39,7 @@
 #include "xf86Pci.h"
 
 #include "glint_regs.h"
+#include "pm3_regs.h"
 #include "glint.h"
 
 #define DEBUG 0
@@ -68,14 +71,13 @@ Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint)
 	GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
 	GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
 	GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
-	GLINT_SLOW_WRITE_REG(0x00000069, PM3LocalMemRefresh);
+	GLINT_SLOW_WRITE_REG(0x00000061, PM3LocalMemRefresh);
+	GLINT_SLOW_WRITE_REG(0x00000000, PM3LocalMemPowerDown);
     }
-    else {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	    "Unknown Glint Permedia3 board detected.\n\t"
-	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
-	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
-    }
+    else xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	"Unknown Glint Permedia3 board detected.\n\t"
+	"subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
+	pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
     TRACE_EXIT("Permedia3PreInit");
 }
 
@@ -199,7 +201,7 @@ PM3DAC_CalculateClock
 	    	freq = ((2* refclock * f) / (pre * (1 << post)));
 		if ((reqclock > freq - freqerr)&&(reqclock < freq + freqerr)){
 		    freqerr = (reqclock > freq) ? 
-					reqclock - freq : freq - reqclock;
+			reqclock - freq : freq - reqclock;
 		    *feedback = f;
 		    *prescale = pre;
 		    *postscale = post;
@@ -228,7 +230,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->glintRegs[PM3LocalMemCaps >> 3] = 0x02e311B8;
 	pReg->glintRegs[PM3LocalMemTimings >> 3] = 0x07424905;
 	pReg->glintRegs[PM3LocalMemControl >> 3] = 0x0c000003;
-	pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000069;
+	pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000061;
     }
 
     pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
@@ -274,8 +276,34 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* The hw cursor needs /VSYNC to recognize vert retrace. We'll stick
        both sync lines to active high here and if needed invert them
        using the RAMDAC's RDSyncControl below. */
-    pReg->glintRegs[PMVideoControl >> 3] =
-	(1 << 5) | (1 << 3) | 1;
+    /* We need to set the pixelsize (bit 19 & 20) also ... */
+    switch (pScrn->bitsPerPixel)
+    {
+	case 8:
+	    pReg->glintRegs[PM3ByAperture1Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_8BIT;
+	    pReg->glintRegs[PM3ByAperture2Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_8BIT;
+    	    pReg->glintRegs[PMVideoControl >> 3] =
+		1 | (1 << 3) | (1 << 5) | (0 << 19);
+	    break;
+	case 16:
+	    pReg->glintRegs[PM3ByAperture1Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_16BIT;
+	    pReg->glintRegs[PM3ByAperture2Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_16BIT;
+    	    pReg->glintRegs[PMVideoControl >> 3] =
+		1 | (1 << 3) | (1 << 5) | (1 << 19);
+	    break;
+	case 32:
+	    pReg->glintRegs[PM3ByAperture1Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_32BIT;
+	    pReg->glintRegs[PM3ByAperture2Mode >> 3] =
+		PM3ByApertureMode_PIXELSIZE_32BIT;
+    	    pReg->glintRegs[PMVideoControl >> 3] =
+		1 | (1 << 3) | (1 << 5) | (2 << 19);
+	    break;
+    }
 
     pReg->glintRegs[VClkCtl >> 3] = (GLINT_READ_REG(VClkCtl) & 0xFFFFFFFC);
     pReg->glintRegs[PMScreenBase >> 3] = 0; 
@@ -288,11 +316,31 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	unsigned char m,n,p;
     	unsigned long clockused;
 	
-    	clockused = PM3DAC_CalculateClock(mode->Clock,pGlint->RefClock,
-								&m,&n,&p);
-	pReg->DacRegs[PM2VDACRDDClk0PreScale] = m;
-	pReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = n;
-	pReg->DacRegs[PM2VDACRDDClk0PostScale] = p;
+	/* Let's program the KClk to 100Mhz and set the S & M Clk too. */
+/*	clockused = PM3DAC_CalculateClock(100000,
+	    pGlint->RefClock, &m,&n,&p);
+	pReg->DacRegs[PM3RD_KClkPreScale] = m;
+	pReg->DacRegs[PM3RD_KClkFeedbackScale] = n;
+	pReg->DacRegs[PM3RD_KClkPostScale] = p;
+	pReg->DacRegs[PM3RD_KClkControl] =
+	    PM3RD_KClkControl_STATE_RUN |
+	    PM3RD_KClkControl_SOURCE_PLL |
+	    PM3RD_KClkControl_ENABLE;
+	pReg->DacRegs[PM3RD_MClkControl] =
+	    PM3RD_MClkControl_STATE_RUN |
+	    PM3RD_MClkControl_SOURCE_KCLK |
+	    PM3RD_MClkControl_ENABLE;
+	pReg->DacRegs[PM3RD_SClkControl] =
+	    PM3RD_SClkControl_STATE_RUN |
+	    PM3RD_SClkControl_SOURCE_HALF_KCLK |
+	    PM3RD_SClkControl_ENABLE;
+*/
+	/* Let's program the dot clock */
+    	clockused = PM3DAC_CalculateClock(mode->Clock,
+	    pGlint->RefClock, &m,&n,&p);
+	pReg->DacRegs[PM3RD_DClk0PreScale] = m;
+	pReg->DacRegs[PM3RD_DClk0FeedbackScale] = n;
+	pReg->DacRegs[PM3RD_DClk0PostScale] = p;
     }
 
     pReg->DacRegs[PM2VDACRDIndexControl] = 0x00;
@@ -405,6 +453,20 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->DacRegs[PM2VDACRDDClk0PreScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PreScale);
     glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0FeedbackScale);
     glintReg->DacRegs[PM2VDACRDDClk0PostScale] = Permedia2vInIndReg(pScrn, PM2VDACRDDClk0PostScale);
+    /* save KClk, MClk and SClk settings */
+ /*   glintReg->DacRegs[PM3RD_KClkControl] =
+	Permedia2vInIndReg(pScrn,PM3RD_KClkControl);
+    glintReg->DacRegs[PM3RD_MClkControl] =
+	Permedia2vInIndReg(pScrn,PM3RD_MClkControl);
+    glintReg->DacRegs[PM3RD_SClkControl] =
+	Permedia2vInIndReg(pScrn,PM3RD_SClkControl);
+    glintReg->DacRegs[PM3RD_KClkPreScale] =
+	Permedia2vInIndReg(pScrn,PM3RD_KClkPreScale);
+    glintReg->DacRegs[PM3RD_KClkFeedbackScale] =
+	Permedia2vInIndReg(pScrn,PM3RD_KClkFeedbackScale);
+    glintReg->DacRegs[PM3RD_KClkPostScale] =
+	Permedia2vInIndReg(pScrn,PM3RD_KClkPostScale);
+*/
 }
 
 void
@@ -482,10 +544,25 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 
     temp = Permedia2vInIndReg(pScrn, PM2VDACIndexClockControl) & 0xFC;
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PreScale, 0x00, 
-				glintReg->DacRegs[PM2VDACRDDClk0PreScale]);
+	glintReg->DacRegs[PM2VDACRDDClk0PreScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0FeedbackScale, 0x00, 
-				glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale]);
+	glintReg->DacRegs[PM2VDACRDDClk0FeedbackScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDDClk0PostScale, 0x00, 
-				glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
+	glintReg->DacRegs[PM2VDACRDDClk0PostScale]);
     Permedia2vOutIndReg(pScrn, PM2VDACIndexClockControl, 0x00, temp|0x03);
+    /* retsore the KClk, MClk and SClk settings */
+ /*   Permedia2vOutIndReg(pScrn, PM3RD_KClkPreScale, 0x00,
+	glintReg->DacRegs[PM3RD_KClkPreScale]);
+    Permedia2vOutIndReg(pScrn, PM3RD_KClkFeedbackScale, 0x00,
+	glintReg->DacRegs[PM3RD_KClkFeedbackScale]);
+    Permedia2vOutIndReg(pScrn, PM3RD_KClkPostScale, 0x00,
+	glintReg->DacRegs[PM3RD_KClkPostScale]);
+    Permedia2vOutIndReg(pScrn, PM3RD_KClkControl, 0x00,
+	glintReg->DacRegs[PM3RD_KClkControl]);
+  */  /* Should we wait for KClk to be locked here ? */
+   /* Permedia2vOutIndReg(pScrn, PM3RD_MClkControl, 0x00,
+	glintReg->DacRegs[PM3RD_MClkControl]);
+    Permedia2vOutIndReg(pScrn, PM3RD_SClkControl, 0x00,
+	glintReg->DacRegs[PM3RD_SClkControl]);
+*/
 }

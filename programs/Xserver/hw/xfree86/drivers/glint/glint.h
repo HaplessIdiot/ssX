@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.31 2000/06/17 16:32:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.32 2000/09/11 16:58:56 alanh Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -142,6 +142,9 @@ typedef struct {
     I2CBusPtr		DDCBus, VSBus;
     CARD8*		XAAScanlineColorExpandBuffers[2];
     CARD32		RasterizerSwap;
+    int			PM3_Config2D;
+    int			PM3_Render2D;
+    int			PM3_VideoControl;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
@@ -213,7 +216,9 @@ void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 /* pm3_accel.c */
 Bool Permedia3AccelInit(ScreenPtr pScreen);
+/*
 void Permedia3Sync(ScrnInfoPtr pScrn);
+*/
 void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
 /* End of pm3 stuff */
 

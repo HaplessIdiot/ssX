@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.6 2000/06/13 23:34:38 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.7 2000/06/14 02:13:09 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH GLINT __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -18,9 +18,15 @@ is an XFree86 driver for 3Dlabs & Texas Instruments GLINT/Permedia based video
 cards. The driver is rather fully accelerated, and provides support for the
 following framebuffer depths: 8, 15 (may give bad results with FBDev support),
 16, 24 (32 bpp recommended, 24 bpp has problems), 30, and an 8+24 overlay mode.
-.B Glint permedia 3
-only support depth 8 (tested upto 1280x1024) and 15/16
-(ok upto 1024x768, partial screen overlap on the right at 1280x1024) and acceleration is not yet fully supported.
+For the
+.B Glint Permedia 3
+, the driver supports unaccelerated modes of depth 8 (bpp 8), 15 and 16 (bpp 16)
+and 24 (bppi 32) in single headed mode.
+2D Acceleration is working, but there are some visual artifacts with the
+ScreenToScreenCopy accel.
+Dual head (on the Appian J2000 board) is working, but the console screen will
+get corrupted, blind typing still works though.
+See the README.pm3 file for more details.
 .SH SUPPORTED HARDWARE
 The
 .B glint
@@ -110,17 +116,6 @@ If you have a card of the same name, turn this on.  Default: off.
 The driver will try to auto-detect the memory clock for all chips.  If it's not
 detected correctly, the actual value (in MHz) should be specified with this
 option.
-.SH Known problems with the Glint Permedia 3 chip
-The
-.B Glint Permedia 3
-chip is newly supported since the 4.0.1 release but is still work in progress.
-The driver supports already unaccelerated modes at depth 8 (tested upto
-1280x1024) and depth 15 and 16 (ok upto 1024x768)
-Depth 24 and Depth 15 and 16 with modes higher than 1024x768 are showing a
-partial overlap of the right part of the screen.
-Acceleration only support clipping pseudo acceleration.
-Dual head for the Appian J2000 board was working but got broken since 4.0b,
-since now the driver claims all chip of the board.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS

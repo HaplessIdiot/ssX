@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.19 2000/05/10 20:01:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.20 2000/09/11 16:58:56 alanh Exp $ */
 
 /*
  * glint register file 
@@ -92,10 +92,6 @@
 #define   SCLK_SEL_MASK		(3 << 10)
 #define   SCLK_SEL_MCLK_HALF	(3 << 10)
 #define ByDMAControl							0x00D8
-
-/* GLINT R3 & Permedia3 Region 0 Bypass Controls */
-#define PM3ByAperture1Mode						0x0300
-#define PM3ByAperture2Mode						0x0328
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl							0x1000
@@ -198,17 +194,6 @@
 #define PMBypassWriteMask						0x1100
 #define PMFramebufferWriteMask					        0x1140
 #define PMCount								0x1180
-
-/* Permedia 3 & GLINT R3 Memory Control */
-#define PM3MemCounter							0x1000
-#define PM3MemBypassWriteMask						0x1008
-#define PM3MemScratch							0x1010
-#define PM3LocalMemCaps							0x1018
-#define PM3LocalMemTimings						0x1020
-#define PM3LocalMemControl						0x1028
-#define PM3LocalMemRefresh						0x1030
-#define PM3LocalMemPowerDown						0x1038
-#define PM3RemoteMemControl						0x1100
 
 /* Framebuffer Registers */
 #define FBMemoryCtl							0x1800
@@ -494,8 +479,6 @@
 #define GMultGLINT1							0x0d10
 #define GMultGLINT2							0x0d18
 
-
-
 /************************
  * GLINT Core Registers *
  ************************/
@@ -504,7 +487,7 @@
 #define GLINT_TAG_ADDR(major,offset)	(0x8000 | GLINT_TAG((major),(offset)))
 
 #define UNIT_DISABLE							0
-#define UNIT_ENABLE								1
+#define UNIT_ENABLE							1
 
 #define StartXDom							GLINT_TAG_ADDR(0x00,0x00)
 #define dXDom								GLINT_TAG_ADDR(0x00,0x01)
