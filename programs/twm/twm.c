@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.9 2001/10/23 21:12:34 herrb Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.10 2001/12/02 15:57:03 herrb Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -95,7 +95,7 @@ ScreenInfo **ScreenList;	/* structures for each screen */
 ScreenInfo *Scr = NULL;		/* the cur and prev screens */
 int PreviousScreen;		/* last screen that we were on */
 int FirstScreen;		/* TRUE ==> first screen of display */
-Bool TimeToYield = FALSE;	/* TRUE ==> exit requested */
+volatile Bool TimeToYield = FALSE;	/* TRUE ==> exit requested */
 Bool PrintErrorMessages = False;	/* controls error messages */
 static int RedirectError;	/* TRUE ==> another window manager running */
 static int TwmErrorHandler ( Display *dpy, XErrorEvent *event );	/* for settting RedirectError */
