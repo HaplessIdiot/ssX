@@ -1681,10 +1681,12 @@ HandleButtonRelease()
 	      case F_FORCEMOVE:
 		ButtonPressed = -1;
 		break;
+	      case F_WARPTOSCREEN:
+		XUngrabPointer(dpy, CurrentTime);
+		/* fall through */
 	      case F_CIRCLEUP:
 	      case F_CIRCLEDOWN:
 	      case F_REFRESH:
-	      case F_WARPTOSCREEN:
 		PopDownMenu();
 		break;
 	      default:

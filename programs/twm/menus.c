@@ -2023,7 +2023,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		InstallWindowColormaps (0, tmp_win);
 		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
 		SetBorder (tmp_win, True);
-		SetFocus (tmp_win, eventp->xbutton.time);
+		if (!tmp_win->wmhints || tmp_win->wmhints->input)
+		    SetFocus (tmp_win, eventp->xbutton.time);
 		Scr->FocusRoot = FALSE;
 		Scr->Focus = tmp_win;
 	    }
