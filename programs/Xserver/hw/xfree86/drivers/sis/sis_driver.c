@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.183 2004/02/26 15:58:43 twini Exp $ */
 /*
  * SiS driver main code
  *
@@ -3458,7 +3458,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->IOAddress = pSiS->PciInfo->memBase[1] & 0xFFFFFFF0;
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX (size %dK)\n",
+    xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX (size %ldK)\n",
            (unsigned long)pSiS->IOAddress, pSiS->mmioSize);
     pSiS->sishw_ext.bIntegratedMMEnabled = TRUE;
 
