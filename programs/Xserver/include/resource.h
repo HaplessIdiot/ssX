@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.4 2000/01/02 00:24:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.5 2000/08/10 17:40:39 dawes Exp $ */
 
 /* $TOG: resource.h /main/24 1998/02/09 14:29:47 kaleb $ */
 /***********************************************************
@@ -165,7 +165,14 @@ extern XID FakeClientID(
 #endif
 );
 
+/* Quartz support on Mac OS X uses the CarbonCore
+   framework whose AddResource function conflicts here. */
+#ifdef __DARWIN__
+#define AddResource(a,b,c) AddResourceX(a,b,c)
+extern Bool AddResourceX(
+#else
 extern Bool AddResource(
+#endif
 #if NeedFunctionPrototypes
     XID /*id*/,
     RESTYPE /*type*/,

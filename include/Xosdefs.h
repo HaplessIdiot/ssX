@@ -21,7 +21,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/include/Xosdefs.h,v 3.13 1998/10/02 07:38:51 dawes Exp $ */
+/* $XFree86: xc/include/Xosdefs.h,v 3.14 1998/12/20 11:56:46 dawes Exp $ */
 
 #ifndef _XOSDEFS_H_
 #define _XOSDEFS_H_
@@ -114,6 +114,10 @@ in this Software without prior written authorization from The Open Group.
 
 #ifdef __EMX__
 #define USGISH
+#define NULL_NOT_ZERO
+#endif
+
+#ifdef __DARWIN__
 #define NULL_NOT_ZERO
 #endif
 
