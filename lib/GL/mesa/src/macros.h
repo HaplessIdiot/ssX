@@ -75,7 +75,7 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-
+#ifndef XFree86LOADER
 #include <math.h>
 #include <string.h>
 
@@ -85,6 +85,7 @@
 #  define ASSERT(X)   assert(X)
 #else
 #  define ASSERT(X)
+#endif
 #endif
 
 
