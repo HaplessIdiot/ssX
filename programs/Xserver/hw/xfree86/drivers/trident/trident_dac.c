@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.36 2000/12/08 09:05:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.37 2000/12/14 19:29:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -268,9 +268,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3x4[0x7] |= (vgaReg->CRTC[0x7] & 0x52);
 	
 	/* disable stretching, enable centering */
-	pReg->tridentRegs3CE[VertStretch] &= 0xFE;
+	pReg->tridentRegs3CE[VertStretch] &= 0xFC;
 	pReg->tridentRegs3CE[VertStretch] |= 0x80;
-	pReg->tridentRegs3CE[HorStretch] &= 0xFE;
+	pReg->tridentRegs3CE[HorStretch] &= 0xFC;
 	pReg->tridentRegs3CE[HorStretch] |= 0x80;
 	
 	{
@@ -313,6 +313,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pTrident->CyberShadow) {
 	    pReg->tridentRegs3CE[CyberControl] &= 0x7E;
 	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Forcing Shadow off\n");
+	}
+	if (pTrident->CyberStretch) {
+	    pReg->tridentRegs3CE[VertStretch] |= 0x01;
+	    pReg->tridentRegs3CE[HorStretch] |= 0x01;
+	    xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"Enabling StretchMode\n");
 	}
     }
 
