@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.175 2000/12/06 15:35:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.176 2000/12/07 20:26:25 dawes Exp $ */
 
 /*
  *
@@ -54,6 +54,7 @@
 #include "xf86Priv.h"
 #include "vbe.h"
 #include "xf86sbusBus.h"
+#include "compiler.h"
 
 #ifdef __FreeBSD__
 /* XXX used in drmOpen(). This should change to use a less os-specific
