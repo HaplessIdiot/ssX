@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.53 2001/11/28 21:53:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.54 2001/12/08 16:01:52 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -170,13 +170,18 @@ typedef struct {
 #endif
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
+    Bool		PCIMode;
     DRIInfoPtr		pDRIInfo;
     int			drmSubFD;
     drmBufMapPtr        drmBufs;         /* Map of DMA buffers */
+    drmRegion		agp;
+    drmRegion		buffers;
     int			numVisualConfigs;
     __GLXvisualConfig*	pVisualConfigs;
     GLINTConfigPrivPtr	pVisualConfigsPriv;
     GLINTRegRec		DRContextRegs;
+    int			DRIctx;
+    unsigned char 	*buf2D;
 #endif
     OptionInfoPtr	Options;
     Bool		PM3_UsingSGRAM;

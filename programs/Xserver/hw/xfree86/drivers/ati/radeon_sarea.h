@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.2 2001/03/21 17:02:22 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -62,11 +62,14 @@
 #define RADEON_UPLOAD_TEX2IMAGES	0x00004000
 #define RADEON_UPLOAD_CLIPRECTS		0x00008000 /* handled client-side */
 #define RADEON_REQUIRE_QUIESCENCE	0x00010000
-#define RADEON_UPLOAD_ALL		0x0001ffff
+#define RADEON_UPLOAD_ZBIAS		0x00020000
+#define RADEON_UPLOAD_ALL		0x0002ffff
+#define RADEON_UPLOAD_CONTEXT_ALL       0x000201ff
 
 #define RADEON_FRONT			0x1
 #define RADEON_BACK			0x2
 #define RADEON_DEPTH			0x4
+#define RADEON_STENCIL                  0x8
 
 /* Primitive types
  */
@@ -103,7 +106,7 @@
 #define RADEON_NR_TEX_REGIONS		64
 #define RADEON_LOG_TEX_GRANULARITY	16
 
-#define RADEON_MAX_TEXTURE_LEVELS	11
+#define RADEON_MAX_TEXTURE_LEVELS	12
 #define RADEON_MAX_TEXTURE_UNITS	3
 
 /* Blits have strict offset rules.  All blit offset must be aligned on

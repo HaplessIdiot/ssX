@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.10 2001/02/16 13:24:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.11 2001/10/31 22:50:27 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -256,7 +256,6 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
             pNewVisualPriv[i] = visualPrivates[i];
         }
     }
-
 
     /* Count the number of RGB and CI visual configs */
     numRGBconfigs = 0;
@@ -639,8 +638,10 @@ GLboolean __MESA_resizeBuffers(__GLdrawableBuffer *buffer,
 	GLcontext *ctx = buf->xm_buf->xm_context->gl_ctx;
 	XMesaForceCurrent(buf->xm_buf->xm_context);
 	(*ctx->CurrentDispatch->ResizeBuffersMESA)();
-        if (MESA_CC)
-           XMesaForceCurrent(MESA_CC->xm_ctx);
+        if (MESA_CC) {
+	   XMesaContext xmesa = (XMesaContext) MESA_CC->DriverCtx;
+           XMesaForceCurrent(xmesa);
+	}
     }
 
     return (*buf->fbresize)(buffer, x, y, width, height, glPriv, bufferMask);
@@ -680,67 +681,71 @@ __GLinterface *__MESA_createContext(__GLimports *imports,
 				    __GLcontextModes *modes,
 				    __GLinterface *shareGC)
 {
-    __GLcontext *gl_ctx;
-    XMesaContext m_share = NULL;
-    XMesaVisual xm_vis;
+    __GLcontext *gl_ctx = NULL;
+    __GLcontext *m_share = NULL;
     __GLXcontext *glxc = (__GLXcontext *)imports->other;
+    XMesaVisual xm_vis;
 
-    gl_ctx = (__GLcontext *)__glXMalloc(sizeof(__GLcontext));
-    if (!gl_ctx)
-	return NULL;
+    if (shareGC) 
+       m_share = (__GLcontext *)shareGC;
 
-    gl_ctx->iface.imports = *imports;
-
-    gl_ctx->iface.exports.destroyContext = __MESA_destroyContext;
-    gl_ctx->iface.exports.loseCurrent = __MESA_loseCurrent;
-    gl_ctx->iface.exports.makeCurrent = __MESA_makeCurrent;
-    gl_ctx->iface.exports.shareContext = __MESA_shareContext;
-    gl_ctx->iface.exports.copyContext = __MESA_copyContext;
-    gl_ctx->iface.exports.forceCurrent = __MESA_forceCurrent;
-    gl_ctx->iface.exports.notifyResize = __MESA_notifyResize;
-    gl_ctx->iface.exports.notifyDestroy = __MESA_notifyDestroy;
-    gl_ctx->iface.exports.notifySwapBuffers = __MESA_notifySwapBuffers;
-    gl_ctx->iface.exports.dispatchExec = __MESA_dispatchExec;
-    gl_ctx->iface.exports.beginDispatchOverride = __MESA_beginDispatchOverride;
-    gl_ctx->iface.exports.endDispatchOverride = __MESA_endDispatchOverride;
-
-    if (shareGC) m_share = ((__GLcontext *)shareGC)->xm_ctx;
     xm_vis = find_mesa_visual(glxc->pScreen->myNum, glxc->pGlxVisual->vid);
     if (xm_vis) {
-	gl_ctx->xm_ctx = XMesaCreateContext(xm_vis, m_share);
-    } else {
-	__glXFree(gl_ctx);
-	gl_ctx = NULL;
+       XMesaContext xmshare = m_share ? m_share->DriverCtx : 0;
+       XMesaContext xmctx = XMesaCreateContext(xm_vis, xmshare);
+       gl_ctx = xmctx ? xmctx->gl_ctx : 0;
     }
+
+    if (!gl_ctx)
+       return NULL;
+	
+    gl_ctx->imports = *imports;
+    gl_ctx->exports.destroyContext = __MESA_destroyContext;
+    gl_ctx->exports.loseCurrent = __MESA_loseCurrent;
+    gl_ctx->exports.makeCurrent = __MESA_makeCurrent;
+    gl_ctx->exports.shareContext = __MESA_shareContext;
+    gl_ctx->exports.copyContext = __MESA_copyContext;
+    gl_ctx->exports.forceCurrent = __MESA_forceCurrent;
+    gl_ctx->exports.notifyResize = __MESA_notifyResize;
+    gl_ctx->exports.notifyDestroy = __MESA_notifyDestroy;
+    gl_ctx->exports.notifySwapBuffers = __MESA_notifySwapBuffers;
+    gl_ctx->exports.dispatchExec = __MESA_dispatchExec;
+    gl_ctx->exports.beginDispatchOverride = __MESA_beginDispatchOverride;
+    gl_ctx->exports.endDispatchOverride = __MESA_endDispatchOverride;
 
     return (__GLinterface *)gl_ctx;
 }
 
 GLboolean __MESA_destroyContext(__GLcontext *gc)
 {
-    XMesaDestroyContext(gc->xm_ctx);
-    __glXFree(gc);
+    XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
+    XMesaDestroyContext( xmesa );
     return GL_TRUE;
 }
 
 GLboolean __MESA_loseCurrent(__GLcontext *gc)
 {
+    XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
     MESA_CC = NULL;
     __glXLastContext = NULL;
-    return XMesaLoseCurrent(gc->xm_ctx);
+    return XMesaLoseCurrent(xmesa);
 }
 
-GLboolean __MESA_makeCurrent(__GLcontext *gc, __GLdrawablePrivate *glPriv)
+GLboolean __MESA_makeCurrent(__GLcontext *gc, __GLdrawablePrivate *oldglPriv)
 {
+    /* We don't use oldglPriv - kept for backwards compatibility */
+    __GLdrawablePrivate *glPriv = gc->imports.getDrawablePrivate( gc );
     __MESA_buffer buf = (__MESA_buffer)glPriv->private;
+    XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
 
     MESA_CC = gc;
-    return XMesaMakeCurrent(gc->xm_ctx, buf->xm_buf);
+    return XMesaMakeCurrent(xmesa, buf->xm_buf);
 }
 
 GLboolean __MESA_shareContext(__GLcontext *gc, __GLcontext *gcShare)
 {
     /* NOT_DONE */
+    /* XXX I don't see where/how this could ever be called */
     ErrorF("__MESA_shareContext\n");
     return GL_FALSE;
 }
@@ -748,15 +753,17 @@ GLboolean __MESA_shareContext(__GLcontext *gc, __GLcontext *gcShare)
 GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 			     GLuint mask)
 {
-    /* NOT_DONE */
-    ErrorF("__MESA_copyContext\n");
-    return GL_FALSE;
+    XMesaContext xm_dst = (XMesaContext) dst->DriverCtx;
+    const XMesaContext xm_src = (const XMesaContext) src->DriverCtx;
+    _mesa_copy_context(xm_src->gl_ctx, xm_dst->gl_ctx, mask);
+    return GL_TRUE;
 }
 
 GLboolean __MESA_forceCurrent(__GLcontext *gc)
 {
+    XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
     MESA_CC = gc;
-    return XMesaForceCurrent(gc->xm_ctx);
+    return XMesaForceCurrent(xmesa);
 }
 
 GLboolean __MESA_notifyResize(__GLcontext *gc)

@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.5 2001/08/18 02:51:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.6 2002/02/14 23:10:07 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -37,17 +37,18 @@
 
 #include "tdfx_context.h"
 #include "tdfx_dd.h"
+#include "tdfx_lock.h"
 #include "tdfx_vb.h"
-#include "tdfx_pipeline.h"
 #include "tdfx_pixels.h"
 
 #include "enums.h"
-#include "pb.h"
-#if defined(USE_X86_ASM) || defined(USE_3DNOW_ASM) || defined(USE_KATMAI_ASM)
+#include "swrast/swrast.h"
+#if defined(USE_X86_ASM)
 #include "X86/common_x86_asm.h"
 #endif
 
-#define TDFX_DATE	"20010501"
+
+#define TDFX_DATE	"20020221"
 
 
 /* These are used in calls to FX_grColorMaskv() */
@@ -65,42 +66,48 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
    tdfxContextPtr fxMesa = (tdfxContextPtr) ctx->DriverCtx;
 
    switch ( name ) {
-   case GL_VENDOR:
-      return (GLubyte *)"VA Linux Systems, Inc.";
+   case GL_RENDERER:
+   {
+      /* The renderer string must be per-context state to handle
+       * multihead correctly.
+       */
+      char *buffer = fxMesa->rendererString;
+      char hardware[100];
 
-   case GL_RENDERER: {
-      static char buffer[128];
-      char hardware[128];
+      LOCK_HARDWARE(fxMesa);
+      strcpy( hardware, fxMesa->Glide.grGetString(GR_HARDWARE) );
+      UNLOCK_HARDWARE(fxMesa);
 
-      strcpy( hardware, FX_grGetString( fxMesa, GR_HARDWARE ) );
+      strcpy( buffer, "Mesa DRI " );
+      strcat( buffer, TDFX_DATE );
+      strcat( buffer, " " );
 
       if ( strcmp( hardware, "Voodoo3 (tm)" ) == 0 ) {
-	 strcpy( hardware, "Voodoo3" );
+	 strcat( buffer, "Voodoo3" );
       }
       else if ( strcmp( hardware, "Voodoo Banshee (tm)" ) == 0 ) {
-	 strcpy( hardware, "VoodooBanshee" );
+	 strcat( buffer, "VoodooBanshee" );
       }
       else if ( strcmp( hardware, "Voodoo4 (tm)" ) == 0 ) {
-	 strcpy( hardware, "Voodoo4" );
+	 strcat( buffer, "Voodoo4" );
       }
       else if ( strcmp( hardware, "Voodoo5 (tm)" ) == 0 ) {
-	 strcpy( hardware, "Voodoo5" );
+	 strcat( buffer, "Voodoo5" );
       }
       else {
-	 /* Unexpected result: replace spaces with hyphens */
+	 /* unexpected result: replace spaces with hyphens */
 	 int i;
-	 for ( i = 0 ; hardware[i] ; i++ ) {
+	 for ( i = 0 ; hardware[i] && i < 60 ; i++ ) {
 	    if ( hardware[i] == ' ' || hardware[i] == '\t' )
 	       hardware[i] = '-';
 	 }
+         strcat( buffer, hardware );
       }
-      /* Now make the GL_RENDERER string */
-      sprintf( buffer, "Mesa DRI %s " TDFX_DATE, hardware );
 
       /* Append any CPU-specific information.
        */
 #ifdef USE_X86_ASM
-      if ( gl_x86_cpu_features ) {
+      if ( _mesa_x86_cpu_features ) {
 	 strncat( buffer, " x86", 4 );
       }
 #endif
@@ -114,41 +121,35 @@ static const GLubyte *tdfxDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, "/3DNow!", 7 );
       }
 #endif
-#ifdef USE_KATMAI_ASM
+#ifdef USE_SSE_ASM
       if ( cpu_has_xmm ) {
 	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return (GLubyte *)buffer;
+      return (const GLubyte *) buffer;
    }
-
+   case GL_VENDOR:
+      return "VA Linux Systems, Inc.";
    default:
       return NULL;
    }
 }
 
 
-/* Return buffer size information.
+/* Return uptodate buffer size information.
  */
 static void tdfxDDGetBufferSize( GLcontext *ctx,
 				 GLuint *width, GLuint *height )
 {
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
 
+   LOCK_HARDWARE( fxMesa );
    *width = fxMesa->width;
    *height = fxMesa->height;
+   UNLOCK_HARDWARE( fxMesa );
 }
 
 
-static GLint tdfxDDGetParameteri( const GLcontext *ctx, GLint param )
-{
-   switch ( param ) {
-   case DD_HAVE_HARDWARE_FOG:
-      return 1;
-   default:
-      return 0;
-   }
-}
 
 /*
  * Return the current value of the occlusion test flag and
@@ -240,10 +241,10 @@ static GLboolean tdfxDDGetIntegerv( GLcontext *ctx, GLenum pname,
 
 
 #define VISUAL_EQUALS_RGBA(vis, r, g, b, a)        \
-   ((vis->RedBits == r) &&                         \
-    (vis->GreenBits == g) &&                       \
-    (vis->BlueBits == b) &&                        \
-    (vis->AlphaBits == a))
+   ((vis.redBits == r) &&                         \
+    (vis.greenBits == g) &&                       \
+    (vis.blueBits == b) &&                        \
+    (vis.alphaBits == a))
 
 void tdfxDDInitDriverFuncs( GLcontext *ctx )
 {
@@ -254,48 +255,74 @@ void tdfxDDInitDriverFuncs( GLcontext *ctx )
    ctx->Driver.GetString		= tdfxDDGetString;
    ctx->Driver.GetBufferSize		= tdfxDDGetBufferSize;
    ctx->Driver.Error			= NULL;
-   ctx->Driver.GetParameteri		= tdfxDDGetParameteri;
 
+   /* Pixel path fallbacks.
+    */
+   ctx->Driver.Accum                    = _swrast_Accum;
+   ctx->Driver.Bitmap                   = _swrast_Bitmap;
+   ctx->Driver.CopyPixels               = _swrast_CopyPixels;
+   ctx->Driver.DrawPixels               = _swrast_DrawPixels;
+   ctx->Driver.ReadPixels               = _swrast_ReadPixels;
+   ctx->Driver.ResizeBuffersMESA        = _swrast_alloc_buffers;
+
+   /* Accelerated paths
+    */
    if ( VISUAL_EQUALS_RGBA(ctx->Visual, 8, 8, 8, 8) )
    {
       ctx->Driver.DrawPixels		= tdfx_drawpixels_R8G8B8A8;
       ctx->Driver.ReadPixels		= tdfx_readpixels_R8G8B8A8;
-      ctx->Driver.CopyPixels		= NULL;
-      ctx->Driver.Bitmap		= NULL;
    }
    else if ( VISUAL_EQUALS_RGBA(ctx->Visual, 5, 6, 5, 0) )
    {
-      ctx->Driver.DrawPixels		= NULL;
       ctx->Driver.ReadPixels		= tdfx_readpixels_R5G6B5;
-      ctx->Driver.CopyPixels		= NULL;
-      ctx->Driver.Bitmap		= NULL;
    }
-   else
-   {
-      ctx->Driver.DrawPixels		= NULL;
-      ctx->Driver.ReadPixels		= NULL;
-      ctx->Driver.CopyPixels		= NULL;
-      ctx->Driver.Bitmap		= NULL;
-   }
-
-   ctx->Driver.RegisterVB		= tdfxDDRegisterVB;
-   ctx->Driver.UnregisterVB		= tdfxDDUnregisterVB;
-   ctx->Driver.ResetVB			= NULL;
-   ctx->Driver.ResetCvaVB		= NULL;
-
-   if ( !getenv( "TDFX_NO_FAST" ) ) {
-      ctx->Driver.BuildPrecalcPipeline	= tdfxDDBuildPrecalcPipeline;
-   } else {
-      ctx->Driver.BuildPrecalcPipeline	= NULL;
-   }
-   ctx->Driver.BuildEltPipeline		= NULL;
-
-   ctx->Driver.OptimizeImmediatePipeline = NULL;
-   ctx->Driver.OptimizePrecalcPipeline	= NULL;
 
    ctx->Driver.GetBooleanv		= tdfxDDGetBooleanv;
    ctx->Driver.GetDoublev		= tdfxDDGetDoublev;
    ctx->Driver.GetFloatv		= tdfxDDGetFloatv;
    ctx->Driver.GetIntegerv		= tdfxDDGetIntegerv;
    ctx->Driver.GetPointerv		= NULL;
+}
+
+
+/*
+ * These are here for lack of a better place.
+ */
+
+void
+FX_grColorMaskv(GLcontext *ctx, const GLboolean rgba[4])
+{
+   tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
+   LOCK_HARDWARE(fxMesa);
+   if (ctx->Visual.redBits == 8) {
+      /* 32bpp mode */
+      ASSERT( fxMesa->Glide.grColorMaskExt );
+      fxMesa->Glide.grColorMaskExt(rgba[RCOMP], rgba[GCOMP],
+                                   rgba[BCOMP], rgba[ACOMP]);
+   }
+   else {
+      /* 16 bpp mode */
+      /* we never have an alpha buffer */
+      fxMesa->Glide.grColorMask(rgba[RCOMP] || rgba[GCOMP] || rgba[BCOMP],
+                                GL_FALSE);
+   }
+   UNLOCK_HARDWARE(fxMesa);
+}
+
+void
+FX_grColorMaskv_NoLock(GLcontext *ctx, const GLboolean rgba[4])
+{
+   tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
+   if (ctx->Visual.redBits == 8) {
+      /* 32bpp mode */
+      ASSERT( fxMesa->Glide.grColorMaskExt );
+      fxMesa->Glide.grColorMaskExt(rgba[RCOMP], rgba[GCOMP],
+                                   rgba[BCOMP], rgba[ACOMP]);
+   }
+   else {
+      /* 16 bpp mode */
+      /* we never have an alpha buffer */
+      fxMesa->Glide.grColorMask(rgba[RCOMP] || rgba[GCOMP] || rgba[BCOMP],
+                                GL_FALSE);
+   }
 }

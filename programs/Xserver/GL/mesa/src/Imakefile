@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.17 2001/03/21 16:41:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.18 2001/04/26 16:54:47 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
 
-      SUBDIRS = X
+      SUBDIRS = math array_cache swrast swrast_setup tnl X
 
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
@@ -16,25 +16,29 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.17 2001/03/21 16:4
 #if DoLoadableServer
         MSRCS = GLcoremodule.c
         MOBJS = GLcoremodule.o
-
-        XOBJS = X/?*.o
 #endif
 
-         SRCS = $(COREMESASRCS) $(MSRCS)
+        XOBJS = X/?*.o
+
+         SRCS = $(COREMESABASESRCS) $(MSRCS)
          OBJS = $(COREMESAOBJS) $(MOBJS)
 
      INCLUDES = -I$(INCLUDESRC) -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-		-I$(MESASRCDIR)/src -I$(SERVERSRC)/include
+		-I$(MESASRCDIR)/include -I$(GLXLIBSRC)/include \
+		-I$(MESASRCDIR)/src \
+		-I$(SERVERSRC)/include
 
       DEFINES = $(GLX_DEFINES)
 
-#if DoLoadableServer
-        DONES = X/DONE
+        DONES = X/DONE math/DONE array_cache/DONE \
+		swrast/DONE swrast_setup/DONE tnl/DONE
+      
 
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
+#if DoLoadableServer
 ModuleObjectRule()
 
 DepLibraryModuleTarget(GLcore,$(SUBDIRS) $(DONES) $(OBJS),$(OBJS) $(XOBJS))
@@ -42,9 +46,9 @@ InstallLibraryModule(GLcore,$(MODULEDIR),extensions)
 ForceSubdirs($(SUBDIRS))
 
 #else
-MakeSubdirs($(SUBDIRS))
-NormalLibraryTarget(GLcore,$(OBJS))
+NormalDepLibraryTarget(GLcore,$(SUBDIRS) $(DONES) $(OBJS), $(OBJS) $(XOBJS))
 NormalLibraryObjectRule()
+ForceSubdirs($(SUBDIRS))
 #endif
 
 DependTarget()

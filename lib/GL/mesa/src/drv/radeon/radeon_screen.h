@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.1 2001/01/08 01:07:27 martin Exp $ */
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -39,6 +39,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+#include <X11/Xlibint.h>
+#include "dri_util.h"
+#include "xf86drm.h"
+#include "xf86drmRadeon.h"
 #include "radeon_sarea.h"
 
 typedef struct {
@@ -49,28 +53,24 @@ typedef struct {
 
 typedef struct {
 
-   GLint chipset;
-   GLint cpp;
-   GLint IsPCI;				/* Current card is a PCI card */
-   GLint AGPMode;
+   int chipset;
+   int cpp;
+   int IsPCI;				/* Current card is a PCI card */
+   int AGPMode;
 
-   GLuint frontOffset;
-   GLuint frontPitch;
-   GLuint backOffset;
-   GLuint backPitch;
+   unsigned int frontOffset;
+   unsigned int frontPitch;
+   unsigned int backOffset;
+   unsigned int backPitch;
 
-   GLuint depthOffset;
-   GLuint depthPitch;
+   unsigned int depthOffset;
+   unsigned int depthPitch;
 
     /* Shared texture data */
    int numTexHeaps;
    int texOffset[RADEON_NR_TEX_HEAPS];
    int texSize[RADEON_NR_TEX_HEAPS];
    int logTexGranularity[RADEON_NR_TEX_HEAPS];
-
-#ifdef PER_CONTEXT_SAREA
-   drmSize private_sarea_size;
-#endif
 
    radeonRegionRec mmio;
    radeonRegionRec status;

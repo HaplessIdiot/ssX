@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.12 2001/04/16 15:02:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.14 2001/10/01 13:44:03 eich Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -40,7 +40,6 @@
 #include "radeon.h"
 #include "radeon_dri.h"
 #include "radeon_reg.h"
-#include "radeon_sarea.h"
 #include "radeon_version.h"
 
 				/* X and server generic header files */
@@ -51,6 +50,7 @@
 #define _XF86DRI_SERVER_
 #include "GL/glxtokens.h"
 #include "sarea.h"
+#include "radeon_sarea.h"
 
 #if defined(__alpha__)
 # define PCIGART_ENABLED
@@ -150,12 +150,12 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		pConfigs[i].bufferSize         = 16;
 		pConfigs[i].depthSize          = 16;
 		if (stencil)
-		    pConfigs[i].stencilSize    = 8; /* Simulated in software */
+		    pConfigs[i].stencilSize    = 8;
 		else
 		    pConfigs[i].stencilSize    = 0;
 		pConfigs[i].auxBuffers         = 0;
 		pConfigs[i].level              = 0;
-		if (accum || stencil) {
+		if (accum) {
 		   pConfigs[i].visualRating    = GLX_SLOW_VISUAL_EXT;
 		} else {
 		   pConfigs[i].visualRating    = GLX_NONE_EXT;
@@ -233,7 +233,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 		}
 		pConfigs[i].auxBuffers         = 0;
 		pConfigs[i].level              = 0;
-		if (accum || stencil) {
+		if (accum) {
 		   pConfigs[i].visualRating    = GLX_SLOW_VISUAL_EXT;
 		} else {
 		   pConfigs[i].visualRating    = GLX_NONE_EXT;
@@ -489,8 +489,8 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     RADEONSAREAPrivPtr pSAREAPriv;
     BoxPtr             pbox;
     int                nbox;
-    unsigned int       color, depth;
-    unsigned int       color_mask, depth_mask;
+    unsigned int       color, depth, stencil;
+    unsigned int       color_mask, depth_mask, flags;
 
     /* FIXME: This should be based on the __GLXvisualConfig info */
     color = 0;
@@ -499,17 +499,18 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
        depth = 0x0000ffff;
        color_mask = 0x0000ffff;
        depth_mask = 0xffffffff;
+       stencil = 0x00000000;
+       flags = RADEON_BACK | RADEON_DEPTH;
        break;
     case 32:
        depth = 0x00ffffff;
        color_mask = 0xffffffff;
-       depth_mask = 0xffffffff;
+       depth_mask = 0x00ffffff;
+       stencil = 0xff000000;
+       flags = RADEON_BACK | RADEON_DEPTH /*| RADEON_STENCIL*/;
        break;
     default:
-       depth = 0x00000000;
-       color_mask = 0x00000000;
-       depth_mask = 0x00000000;
-       break;
+       return;
     }
 
     /* FIXME: Copy XAAPaintWindow() and use REGION_TRANSLATE() */
@@ -536,7 +537,7 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 	pSAREAPriv->nbox = 1;
 
 	ret = drmRadeonClear(info->drmFD,
-			     DRM_RADEON_BACK | DRM_RADEON_DEPTH,
+			     flags,
 			     color, depth, color_mask, depth_mask,
 			     pSAREAPriv->boxes, pSAREAPriv->nbox);
 	if (ret) {
@@ -1151,7 +1152,7 @@ static void RADEONDRISAREAInit(ScreenPtr pScreen,
     ctx->rb3d_zstencilcntl = (depth_fmt |
 			      RADEON_Z_TEST_LESS |
 			      RADEON_STENCIL_TEST_ALWAYS |
-			      RADEON_STENCIL_S_FAIL_KEEP |
+			      RADEON_STENCIL_FAIL_KEEP |
 			      RADEON_STENCIL_ZPASS_KEEP |
 			      RADEON_STENCIL_ZFAIL_KEEP |
 			      RADEON_Z_WRITE_ENABLE);

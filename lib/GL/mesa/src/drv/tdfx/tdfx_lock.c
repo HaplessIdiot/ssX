@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.2 2001/08/18 02:51:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.3 2001/12/13 00:34:21 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -34,11 +34,10 @@
  *
  */
 
-#include "dri_glide.h"
-
 #include "tdfx_context.h"
 #include "tdfx_lock.h"
 #include "tdfx_state.h"
+#include "tdfx_render.h"
 #include "tdfx_texman.h"
 #include "tdfx_tris.h"
 
@@ -51,15 +50,14 @@ void tdfxGetLock( tdfxContextPtr fxMesa )
     TDFXSAREAPriv *saPriv = (TDFXSAREAPriv *) (((char *) sPriv->pSAREA) +
 					fxMesa->fxScreen->sarea_priv_offset);
     int stamp = dPriv->lastStamp;
-    int one_rect = (fxMesa->numClipRects <= 1);
 
     drmGetLock( fxMesa->driFd, fxMesa->hHWContext, 0 );
 
     /* This macro will update dPriv's cliprects if needed */
-    XMESA_VALIDATE_DRAWABLE_INFO( cPriv->display, sPriv, dPriv );
+    DRI_VALIDATE_DRAWABLE_INFO( cPriv->display, sPriv, dPriv );
 
     if ( saPriv->fifoOwner != fxMesa->hHWContext ) {
-       fxMesa->Glide.grDRIImportFifo( saPriv->fifoPtr, saPriv->fifoRead );
+        fxMesa->Glide.grDRIImportFifo( saPriv->fifoPtr, saPriv->fifoRead );
     }
 
     if ( saPriv->ctxOwner != fxMesa->hHWContext ) {
@@ -69,11 +67,11 @@ void tdfxGetLock( tdfxContextPtr fxMesa )
 	 * that state onto the hardware when you set the state.
 	 */
         void *state;
-        FxI32 size;
-        fxMesa->Glide.grGet( GR_GLIDE_STATE_SIZE, 4, &size );
-        state = malloc( size );
-        FX_grGlideGetState_NoLock( state );
-        FX_grGlideSetState_NoLock( state );
+        FxI32 stateSize;
+        fxMesa->Glide.grGet(GR_GLIDE_STATE_SIZE, 4, &stateSize);
+        state = malloc(stateSize);
+        fxMesa->Glide.grGlideGetState( state );
+        fxMesa->Glide.grGlideSetState( state );
         free( state );
     }
 
@@ -87,12 +85,6 @@ void tdfxGetLock( tdfxContextPtr fxMesa )
        tdfxUpdateClipping(fxMesa->glCtx);
        tdfxUploadClipping(fxMesa);
     }
-
-    /* Detect if we have swapped between 1 and >1 cliprects, and change
-     * triangle funcs if necessary.
-     */
-    if (one_rect != (fxMesa->numClipRects <= 1))
-       tdfxDDToggleTriCliprects( fxMesa->glCtx );
 
     DEBUG_LOCK();
 }

@@ -39,7 +39,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-extern void radeonDDInitSpanFuncs( GLcontext *ctx );
+extern void radeonInitSpanFuncs( GLcontext *ctx );
 
 #endif
 #endif

@@ -67,12 +67,12 @@ void r128GetLock( r128ContextPtr rmesa, GLuint flags )
     * Since the hardware state depends on having the latest drawable
     * clip rects, all state checking must be done _after_ this call.
     */
-   XMESA_VALIDATE_DRAWABLE_INFO( rmesa->display, sPriv, dPriv );
+   DRI_VALIDATE_DRAWABLE_INFO( rmesa->display, sPriv, dPriv );
 
    if ( rmesa->lastStamp != dPriv->lastStamp ) {
       rmesa->lastStamp = dPriv->lastStamp;
       rmesa->new_state |= R128_NEW_WINDOW | R128_NEW_CLIP;
-      rmesa->SetupDone = 0;
+      rmesa->SetupNewInputs = ~0;
    }
 
    rmesa->dirty |= R128_UPLOAD_CONTEXT | R128_UPLOAD_CLIPRECTS;

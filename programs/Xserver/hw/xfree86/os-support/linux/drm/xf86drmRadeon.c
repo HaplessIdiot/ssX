@@ -27,7 +27,7 @@
  *   Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRadeon.c,v 1.3 2001/04/10 16:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRadeon.c,v 1.4 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -239,7 +239,7 @@ int drmRadeonSwapBuffers( int fd )
 
 int drmRadeonClear( int fd, unsigned int flags,
 		    unsigned int clear_color, unsigned int clear_depth,
-		    unsigned int color_mask, unsigned int depth_mask,
+		    unsigned int color_mask, unsigned int stencil,
 		    void *b, int nbox )
 {
    drm_radeon_clear_t clear;
@@ -251,7 +251,7 @@ int drmRadeonClear( int fd, unsigned int flags,
    clear.clear_color = clear_color;
    clear.clear_depth = clear_depth;
    clear.color_mask = color_mask;
-   clear.depth_mask = depth_mask;
+   clear.depth_mask = stencil;	/* misnamed field in ioctl */
    clear.depth_boxes = depth_boxes;
 
    /* We can remove this when we do real depth clears, instead of
@@ -273,6 +273,9 @@ int drmRadeonClear( int fd, unsigned int flags,
    }
 }
 
+
+/* Obsolete
+ */
 int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
 				int count, int discard )
 {
@@ -290,6 +293,8 @@ int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
    }
 }
 
+/* Obsolete
+ */
 int drmRadeonFlushIndices( int fd, int prim, int index,
 			   int start, int end, int discard )
 {
@@ -307,6 +312,33 @@ int drmRadeonFlushIndices( int fd, int prim, int index,
       return 0;
    }
 }
+
+int drmRadeonFlushPrims( int fd, int index,
+			 int discard, int nr_states,
+			 drmRadeonState *state,
+			 int nr_prims,
+			 drmRadeonPrim *prim )
+{
+   drm_radeon_vertex2_t v;
+
+/*     assert(sizeof(drm_radeon_context_regs_t) == sizeof(drmRadeonState)); */
+/*     assert(sizeof(drm_radeon_prim_t) == sizeof(drmRadeonPrim)); */
+
+   v.idx = index;
+   v.discard = discard;
+   v.nr_states = nr_states;
+   v.state = (drm_radeon_state_t *)state;
+   v.nr_prims = nr_prims;
+   v.prim = (drm_radeon_prim_t *)prim;
+
+   if ( ioctl( fd, DRM_IOCTL_RADEON_VERTEX2, &v ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+
 
 int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
 			  int width, int height, drmRadeonTexImage *image )

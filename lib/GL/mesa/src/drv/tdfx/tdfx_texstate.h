@@ -31,24 +31,14 @@
  *
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
- *	Keith Whitwell <keithw@valinux.com>
+ *	Brian Paul <brianp@valinux.com>
  *
  */
 
-#ifndef __TDFX_PIPELINE_H__
-#define __TDFX_PIPELINE_H__
+#ifndef __TDFX_TEXSTATE_H__
+#define __TDFX_TEXSTATE_H__
 
-#ifdef GLX_DIRECT_RENDERING
+extern void tdfxUpdateTextureState( GLcontext *ctx );
+extern void tdfxUpdateTextureBinding( GLcontext *ctx );
 
-#include "context.h"
-
-extern GLboolean tdfxDDBuildPrecalcPipeline( GLcontext *ctx );
-extern GLuint tdfxDDRegisterPipelineStages( struct gl_pipeline_stage *out,
-					    const struct gl_pipeline_stage *in,
-					    GLuint nr );
-
-extern void tdfxDDFastPathInit( void );
-extern void tdfxDDFastPath( struct vertex_buffer *VB );
-
-#endif
 #endif

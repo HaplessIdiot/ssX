@@ -31,7 +31,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
  *   Gareth Hughes <gareth@valinux.com>
- *
+ *   Keith Whitwell <keith_whitwell@yahoo.com>
  */
 
 #ifndef __RADEON_CONTEXT_H__
@@ -41,15 +41,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <X11/Xlibint.h>
 
-#include "dri_mesaint.h"
-#include "dri_tmm.h"
+#include "dri_util.h"
 
 #include "xf86drm.h"
 #include "xf86drmRadeon.h"
 
-#include "types.h"
+#include "macros.h"
+#include "mtypes.h"
 
-#include "radeon_sarea.h"
 #include "radeon_reg.h"
 
 struct radeon_context;
@@ -57,135 +56,229 @@ typedef struct radeon_context radeonContextRec;
 typedef struct radeon_context *radeonContextPtr;
 
 #include "radeon_lock.h"
-#include "radeon_texobj.h"
 #include "radeon_screen.h"
-
-/* Flags for what context state needs to be updated */
-#define RADEON_NEW_ALPHA		0x0001
-#define RADEON_NEW_DEPTH		0x0002
-#define RADEON_NEW_FOG			0x0004
-#define RADEON_NEW_CLIP			0x0008
-#define RADEON_NEW_CULL			0x0010
-#define RADEON_NEW_MASKS		0x0020
-#define RADEON_NEW_WINDOW		0x0040
-#define RADEON_NEW_TEXTURE		0x0080
-#define RADEON_NEW_CONTEXT		0x0100
-#define RADEON_NEW_ALL			0x01ff
+#include "mm.h"
 
 /* Flags for software fallback cases */
+/* See correponding strings in radeon_tris.c */
 #define RADEON_FALLBACK_TEXTURE		0x0001
 #define RADEON_FALLBACK_DRAW_BUFFER	0x0002
-#define RADEON_FALLBACK_READ_BUFFER	0x0004
-#define RADEON_FALLBACK_STENCIL		0x0008
-#define RADEON_FALLBACK_RENDER_MODE	0x0010
-#define RADEON_FALLBACK_MULTIDRAW	0x0020
-#define RADEON_FALLBACK_LOGICOP		0x0040
+#define RADEON_FALLBACK_STENCIL		0x0004
+#define RADEON_FALLBACK_RENDER_MODE	0x0008
+#define RADEON_FALLBACK_BLEND_EQ	0x0010
+#define RADEON_FALLBACK_BLEND_FUNC	0x0020
 
-/* Subpixel offsets for window coordinates (triangles):
+/* Use the templated vertex format:
  */
-#define SUBPIXEL_X  (0.0625)
-#define SUBPIXEL_Y  (0.125)
+#define COLOR_IS_RGBA
+#define TAG(x) radeon##x
+#include "tnl_dd/t_dd_vertex.h"
+#undef TAG
 
-/* Offset for points:
- */
-#define PNT_X_OFFSET  ( 0.125F)
-#define PNT_Y_OFFSET  (-0.125F)
+typedef void (*radeon_tri_func)( radeonContextPtr,
+				 radeonVertex *,
+				 radeonVertex *,
+				 radeonVertex * );
+
+typedef void (*radeon_line_func)( radeonContextPtr,
+				  radeonVertex *,
+				  radeonVertex * );
+
+typedef void (*radeon_point_func)( radeonContextPtr,
+				   radeonVertex * );
 
 typedef void (*radeon_interp_func)( GLfloat t,
-				    GLfloat *result,
-				    const GLfloat *in,
-				    const GLfloat *out );
+				    radeonTnlVertex *O,
+				    const radeonTnlVertex *I,
+				    const radeonTnlVertex *J );
 
-struct radeon_elt_tab {
-   void (*emit_unclipped_verts)( struct vertex_buffer *VB );
+typedef void (*radeon_prim_func)( GLcontext *ctx );
+typedef void (*radeon_flush_func)( GLcontext *ctx, radeonTnlVertex *v );
 
-   void (*build_tri_verts)( radeonContextPtr rmesa,
-			    struct vertex_buffer *VB,
-			    GLfloat *O, GLuint *elt );
 
-   void (*interp)( GLfloat t, GLfloat *O,
-		   const GLfloat *I, const GLfloat *J );
+struct radeon_colorbuffer_state {
+   GLuint clear;
 
-   void (*project_and_emit_verts)( radeonContextPtr rmesa,
-				   const GLfloat *verts,
-				   GLuint *elts,
-				   GLuint nr );
+   GLint drawOffset, drawPitch;
 };
+
+
+struct radeon_depthbuffer_state {
+   GLuint clear;
+   GLfloat scale;
+};
+
+struct radeon_pixel_state {
+   GLint readOffset, readPitch;
+};
+
+struct radeon_scissor_state {
+   XF86DRIClipRectRec rect;
+   GLboolean enabled;
+};
+
+struct radeon_stencilbuffer_state {
+   GLboolean hwBuffer;
+   GLuint clear;			/* rb3d_stencilrefmask value */
+};
+
+struct radeon_stipple_state {
+   GLuint mask[32];
+};
+
+
+
+#define TEX_0 1
+#define TEX_1 2
+
+typedef struct radeon_tex_obj radeonTexObj, *radeonTexObjPtr;
+
+/* Texture object in locally shared texture space.
+ */
+struct radeon_tex_obj {
+   radeonTexObjPtr next, prev;
+
+   struct gl_texture_object *tObj;	/* Mesa texture object */
+
+   PMemBlock memBlock;			/* Memory block containing texture */
+   GLuint bufAddr;			/* Offset to start of locally
+					   shared texture block */
+
+   GLuint dirty_images;			/* Flags for whether or not
+					   images need to be uploaded to
+					   local or AGP texture space */
+
+   GLint bound;				/* Texture unit currently bound to */
+   GLint heap;				/* Texture heap currently stored in */
+
+   drmRadeonTexImage image[RADEON_MAX_TEXTURE_LEVELS];
+
+   GLint totalSize;			/* Total size of the texture
+					   including all mipmap levels */
+
+   GLuint pp_txfilter;		        /* hardware register values */
+   GLuint pp_txformat;
+   GLuint pp_txoffset;
+   GLuint pp_border_color;
+
+   /* texObj->Image[firstLevel] through texObj->Image[lastLevel] are the
+    * images to upload.
+    */
+   GLint firstLevel;     
+   GLint lastLevel;      
+};
+
+
+struct radeon_texture_env_state {
+   radeonTexObjPtr texobj;
+   GLenum format;
+   GLenum envMode;
+};
+
+struct radeon_texture_state {
+   struct radeon_texture_env_state unit[RADEON_MAX_TEXTURE_UNITS];
+};
+
+struct radeon_state {
+   drmRadeonState hw;
+
+
+   struct radeon_colorbuffer_state color;
+   struct radeon_depthbuffer_state depth;
+   struct radeon_pixel_state pixel;
+   struct radeon_scissor_state scissor;
+   struct radeon_stencilbuffer_state stencil;
+   struct radeon_stipple_state stipple;
+   struct radeon_texture_state texture;
+};
+
+struct radeon_texture {
+   radeonTexObj objects[RADEON_NR_TEX_HEAPS];
+   radeonTexObj swapped;
+
+   memHeap_t *heap[RADEON_NR_TEX_HEAPS];
+   GLint age[RADEON_NR_TEX_HEAPS];
+
+   GLint numHeaps;
+};
+
+
+struct radeon_dma {
+   drmBufPtr buffer;
+   drmBufPtr retained;
+   GLubyte *address;
+   GLuint low, high, last;
+   GLuint offset;
+};
+
+struct radeon_dri_mirror {
+   Display *display;			/* X server display */
+
+   __DRIcontextPrivate	*context;	/* DRI context */
+   __DRIscreenPrivate	*screen;	/* DRI screen */
+   __DRIdrawablePrivate	*drawable;	/* DRI drawable bound to this ctx */
+
+   drmContext hwContext;
+   drmLock *hwLock;
+   int fd;
+};
+
+struct radeon_store {
+   radeonTexObjPtr texture[2][RADEON_MAX_STATES];
+   drmRadeonState state[RADEON_MAX_STATES];
+   drmRadeonPrim prim[RADEON_MAX_PRIMS];
+   GLuint statenr;
+   GLuint primnr;
+};
+
+
+
 
 struct radeon_context {
    GLcontext *glCtx;			/* Mesa context */
 
    /* Driver and hardware state management
     */
-   GLuint new_state;
-   GLuint dirty;			/* Hardware state to be updated */
-   radeon_context_regs_t setup;
-
-   GLuint vertsize;
-   GLuint vc_format;
-   GLfloat depth_scale;
-
-   GLuint Color;			/* Current draw color */
-   GLuint ClearColor;			/* Color used to clear color buffer */
-   GLuint ClearDepth;			/* Value used to clear depth buffer */
-   GLuint ClearStencil;			/* Value used to clear stencil */
-   GLuint DepthMask;
-   GLuint StencilMask;
-
-   /* Map GL texture units onto hardware
-    */
-   GLint multitex;
-   GLint tmu_source[RADEON_MAX_TEXTURE_UNITS];
-   GLint tex_dest[RADEON_MAX_TEXTURE_UNITS];
-   GLuint color_combine[RADEON_MAX_TEXTURE_UNITS];
-   GLuint alpha_combine[RADEON_MAX_TEXTURE_UNITS];
-   GLuint env_color[RADEON_MAX_TEXTURE_UNITS];
-   GLuint lod_bias[RADEON_MAX_TEXTURE_UNITS];
+   struct radeon_state state;
 
    /* Texture object bookkeeping
     */
-   radeonTexObjPtr CurrentTexObj[RADEON_MAX_TEXTURE_UNITS];
-   radeonTexObj TexObjList[RADEON_NR_TEX_HEAPS];
-   radeonTexObj SwappedOut;
-   memHeap_t *texHeap[RADEON_NR_TEX_HEAPS];
-   GLint lastTexAge[RADEON_NR_TEX_HEAPS];
-   GLint lastTexHeap;
+   struct radeon_texture texture;
 
-   /* Current rendering state, fallbacks
+   /* Fallback rasterization functions
     */
-   points_func   PointsFunc;
-   line_func     LineFunc;
-   triangle_func TriangleFunc;
-   quad_func     QuadFunc;
+   radeon_point_func draw_point;
+   radeon_line_func draw_line;
+   radeon_tri_func draw_tri;
 
-   GLuint IndirectTriangles;
+   /* Rasterization and vertex state:
+    */
+   GLuint NewGLState;
    GLuint Fallback;
-
-   /* Fast path
-    */
    GLuint SetupIndex;
-   GLuint SetupDone;
+   GLuint SetupNewInputs;
    GLuint RenderIndex;
-   GLuint OnFastPath;
-   radeon_interp_func interp;
-   GLfloat *tmp_matrix;
+
+   GLuint vertex_size;
+   GLuint vertex_stride_shift;
+   GLuint vertex_format;
+   GLuint num_verts;
+   char *verts;
+   
+   /* Temporaries for translating away float colors:
+    */
+   struct gl_client_array UbyteColor;
+   struct gl_client_array UbyteSecondaryColor;
 
    /* Vertex buffers
     */
-   drmBufPtr vert_buf;
-   GLuint vert_prim;
-   GLuint num_verts;
+   struct radeon_dma dma;
 
-   /* Elt path
-    */
-   drmBufPtr elt_buf, retained_buf;
-   GLushort *first_elt, *next_elt;
-   GLfloat *next_vert, *vert_heap;
-   GLushort next_vert_index;
-   GLushort first_vert_index;
-   GLuint elt_vertsize;
-   struct radeon_elt_tab *elt_tab;
-   GLfloat device_matrix[16];
+   struct radeon_store store;
+   GLboolean upload_cliprects;
+
+   GLuint hw_primitive;
+   GLenum render_primitive;
 
    /* Page flipping
     */
@@ -194,36 +287,18 @@ struct radeon_context {
 
    /* Drawable, cliprect and scissor information
     */
-   GLenum DrawBuffer;			/* Optimize draw buffer update */
-   GLint drawOffset, drawPitch;
-   GLint readOffset, readPitch;
-
    GLuint numClipRects;			/* Cliprects for the draw buffer */
    XF86DRIClipRectPtr pClipRects;
-
-   GLuint scissor;
-   XF86DRIClipRectRec scissor_rect;	/* Current software scissor */
+   GLuint lastStamp;
 
    /* Mirrors of some DRI state
     */
-   Display *display;			/* X server display */
-
-   __DRIcontextPrivate	*driContext;	/* DRI context */
-   __DRIscreenPrivate	*driScreen;	/* DRI screen */
-   __DRIdrawablePrivate	*driDrawable;	/* DRI drawable bound to this ctx */
-
-   int lastStamp;		        /* mirror driDrawable->lastStamp */
-
-   drmContext hHWContext;
-   drmLock *driHwLock;
-   int driFd;
+   struct radeon_dri_mirror dri;
 
    radeonScreenPtr radeonScreen;	/* Screen private DRI data */
    RADEONSAREAPrivPtr sarea;		/* Private SAREA data */
 
-#ifdef PER_CONTEXT_SAREA
-   char *private_sarea;			/* Per-context private SAREA */
-#endif
+   GLboolean debugFallbacks;
 
    /* Performance counters
     */
@@ -239,19 +314,25 @@ struct radeon_context {
 #define RADEON_CONTEXT(ctx)		((radeonContextPtr)(ctx->DriverCtx))
 
 
-extern GLboolean radeonCreateContext( Display *dpy, GLvisual *glVisual,
-				      __DRIcontextPrivate *driContextPriv );
-extern void radeonDestroyContext( radeonContextPtr rmesa );
-extern radeonContextPtr radeonMakeCurrent( radeonContextPtr oldCtx,
-					   radeonContextPtr newCtx,
-					   __DRIdrawablePrivate *dPriv );
+static __inline GLuint radeonPackColor( GLuint cpp,
+					GLubyte r, GLubyte g,
+					GLubyte b, GLubyte a )
+{
+   switch ( cpp ) {
+   case 2:
+      return PACK_COLOR_565( r, g, b );
+   case 4:
+      return PACK_COLOR_8888( a, r, g, b );
+   default:
+      return 0;
+   }
+}
 
 
 /* ================================================================
  * Debugging:
  */
 #define DO_DEBUG		0
-#define ENABLE_PERF_BOXES	0
 
 #if DO_DEBUG
 extern int RADEON_DEBUG;

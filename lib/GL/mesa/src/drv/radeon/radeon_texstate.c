@@ -40,49 +40,85 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_vb.h"
 #include "radeon_tex.h"
 
+#include "colormac.h"
+#include "context.h"
+#include "enums.h"
+#include "macros.h"
+#include "mem.h"
 #include "mmath.h"
 #include "simple_list.h"
-#include "enums.h"
-#include "mem.h"
+#include "texformat.h"
+
 
 static void radeonSetTexImages( radeonContextPtr rmesa,
 				struct gl_texture_object *tObj )
 {
    radeonTexObjPtr t = (radeonTexObjPtr)tObj->DriverData;
-   struct gl_texture_image *texImage = tObj->Image[0];
-   const struct gl_texture_format *texFormat = texImage->TexFormat;
-   GLint log2Width, log2Height, log2Size;
+   const struct gl_texture_image *baseImage = tObj->Image[tObj->BaseLevel];
    GLint totalSize;
    GLint texelsPerDword = 0, blitWidth = 0, blitPitch = 0;
    GLint x, y, width, height;
    GLint i;
+   GLint firstLevel, lastLevel, numLevels;
+   GLint log2Width, log2Height;
+   GLuint txformat = 0;
 
-   /* Calculate dimensions in log domain.
+   /* Set the hardware texture format
     */
-   for ( i = 1, log2Height = 0 ; i < texImage->Height ; i *= 2 ) {
-      log2Height++;
+   switch (baseImage->TexFormat->MesaFormat) {
+   case MESA_FORMAT_I8:
+      txformat = RADEON_TXFORMAT_I8;
+      break;
+   case MESA_FORMAT_AL88:
+      txformat = RADEON_TXFORMAT_AI88;
+      break;
+   case MESA_FORMAT_RGBA8888:
+      txformat = RADEON_TXFORMAT_RGBA8888;
+      break;
+   case MESA_FORMAT_ARGB8888:
+      txformat = RADEON_TXFORMAT_ARGB8888;
+      break;
+   case MESA_FORMAT_RGB565:
+      txformat = RADEON_TXFORMAT_RGB565;
+      break;
+   case MESA_FORMAT_ARGB1555:
+      txformat = RADEON_TXFORMAT_ARGB1555;
+      break;
+   case MESA_FORMAT_ARGB4444:
+      txformat = RADEON_TXFORMAT_ARGB4444;
+      break;
+   default:
+      _mesa_problem(NULL, "unexpected texture format in radeonTexImage2D");
+      return;
    }
-   for ( i = 1, log2Width = 0 ;  i < texImage->Width ;  i *= 2 ) {
-      log2Width++;
+
+   t->pp_txformat &= ~(RADEON_TXFORMAT_FORMAT_MASK |
+		       RADEON_TXFORMAT_ALPHA_IN_MAP);
+   t->pp_txformat |= txformat;
+
+   if ( txformat == RADEON_TXFORMAT_RGBA8888 ||
+	txformat == RADEON_TXFORMAT_ARGB4444 ||
+	txformat == RADEON_TXFORMAT_ARGB1555 ||
+	txformat == RADEON_TXFORMAT_AI88 ) {
+      t->pp_txformat |= RADEON_TXFORMAT_ALPHA_IN_MAP;
    }
-   log2Size = MAX2( log2Width, log2Height );
 
    /* The Radeon has a 64-byte minimum pitch for all blits.  We
     * calculate the equivalent number of texels to simplify the
     * calculation of the texture image area.
     */
-   switch ( texFormat->TexelBytes ) {
-   case 4:
-      texelsPerDword = 1;
-      blitPitch = 16;
+   switch ( baseImage->TexFormat->TexelBytes ) {
+   case 1:
+      texelsPerDword = 4;
+      blitPitch = 64;
       break;
    case 2:
       texelsPerDword = 2;
       blitPitch = 32;
       break;
-   case 1:
-      texelsPerDword = 4;
-      blitPitch = 64;
+   case 4:
+      texelsPerDword = 1;
+      blitPitch = 16;
       break;
    }
 
@@ -91,7 +127,7 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
     * can't upload mipmaps directly and have to reference their location
     * from the aligned start of the whole image.
     */
-   blitWidth = MAX2( texImage->Width, blitPitch );
+   blitWidth = MAX2( baseImage->Width, blitPitch );
 
    /* Calculate mipmap offsets and dimensions.
     */
@@ -99,10 +135,33 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
    x = 0;
    y = 0;
 
-   for ( i = 0 ; i <= log2Size ; i++ ) {
+   /* Compute which mipmap levels we really want to send to the hardware.
+    * This depends on the base image size, GL_TEXTURE_MIN_LOD,
+    * GL_TEXTURE_MAX_LOD, GL_TEXTURE_BASE_LEVEL, and GL_TEXTURE_MAX_LEVEL.
+    * Yes, this looks overly complicated, but it's all needed.
+    */
+   firstLevel = tObj->BaseLevel + (GLint) (tObj->MinLod + 0.5);
+   firstLevel = MAX2(firstLevel, tObj->BaseLevel);
+   lastLevel = tObj->BaseLevel + (GLint) (tObj->MaxLod + 0.5);
+   lastLevel = MAX2(lastLevel, tObj->BaseLevel);
+   lastLevel = MIN2(lastLevel, tObj->BaseLevel + baseImage->MaxLog2);
+   lastLevel = MIN2(lastLevel, tObj->MaxLevel);
+   lastLevel = MAX2(firstLevel, lastLevel); /* need at least one level */
+
+   /* save these values */
+   t->firstLevel = firstLevel;
+   t->lastLevel = lastLevel;
+
+   numLevels = lastLevel - firstLevel + 1;
+
+   log2Width = tObj->Image[firstLevel]->WidthLog2;
+   log2Height = tObj->Image[firstLevel]->HeightLog2;
+
+   for ( i = 0 ; i < numLevels ; i++ ) {
+      const struct gl_texture_image *texImage;
       GLuint size;
 
-      texImage = tObj->Image[i];
+      texImage = tObj->Image[i + firstLevel];
       if ( !texImage )
 	 break;
 
@@ -118,7 +177,7 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
 	 width = blitPitch / 2;
       }
 
-      size = width * height * texFormat->TexelBytes;
+      size = width * height * baseImage->TexFormat->TexelBytes;
       totalSize += size;
       ASSERT( (totalSize & 31) == 0 );
 
@@ -127,6 +186,7 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
 	 height /= 2;
       }
 
+      assert(i < RADEON_MAX_TEXTURE_LEVELS);
       t->image[i].x = x;
       t->image[i].y = y;
 
@@ -147,12 +207,11 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
 	 }
       }
 
-      if ( 0 ) {
+      if ( 0 )
 	 fprintf( stderr, "level=%d p=%d   %dx%d -> %dx%d at (%d,%d)\n",
-		  i, blitWidth, texImage->Width, texImage->Height,
+		  i, blitWidth, baseImage->Width, baseImage->Height,
 		  t->image[i].width, t->image[i].height,
 		  t->image[i].x, t->image[i].y );
-      }
    }
 
    /* Align the total size of texture memory block.
@@ -162,13 +221,16 @@ static void radeonSetTexImages( radeonContextPtr rmesa,
    /* Hardware state:
     */
    t->pp_txfilter &= ~RADEON_MAX_MIP_LEVEL_MASK;
-   t->pp_txfilter |= i << RADEON_MAX_MIP_LEVEL_SHIFT;
+   t->pp_txfilter |= (numLevels - 1) << RADEON_MAX_MIP_LEVEL_SHIFT;
 
    t->pp_txformat &= ~(RADEON_TXFORMAT_WIDTH_MASK |
 		       RADEON_TXFORMAT_HEIGHT_MASK);
    t->pp_txformat |= ((log2Width << RADEON_TXFORMAT_WIDTH_SHIFT) |
 		      (log2Height << RADEON_TXFORMAT_HEIGHT_SHIFT));
+
+   radeonUploadTexImages( rmesa, t );
 }
+
 
 
 /* ================================================================
@@ -664,35 +726,17 @@ do {									\
 static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   int source = rmesa->tmu_source[unit];
-   struct gl_texture_object *tObj;
-   struct gl_texture_unit *texUnit;
-   GLuint enabled;
+   const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
+   const struct gl_texture_object *tObj = texUnit->_Current;
+   const GLenum format = tObj->Image[tObj->BaseLevel]->Format;
    GLuint color_combine, alpha_combine;
    GLuint color_arg[3], alpha_arg[3];
    GLuint i, numColorArgs = 0, numAlphaArgs = 0;
-   GLuint op;
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_MSG ) {
-      fprintf( stderr, "%s( %p, %d )\n",
-	       __FUNCTION__, ctx, unit );
+   if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
+      fprintf( stderr, __FUNCTION__"( %p, %d ) format=%s\n",
+	       ctx, unit, _mesa_lookup_enum_by_nr( format ) );
    }
-
-   enabled = (ctx->Texture.ReallyEnabled >> (source * 4)) & TEXTURE0_ANY;
-   if ( enabled != TEXTURE0_2D && enabled != TEXTURE0_1D )
-      return;
-
-   /* Only update the hardware texture state if the texture is current,
-    * complete and enabled.
-    */
-   texUnit = &ctx->Texture.Unit[source];
-   tObj = texUnit->Current;
-   if ( !tObj || !tObj->Complete )
-      return;
-
-   if ( ( tObj != texUnit->CurrentD[2] ) &&
-	( tObj != texUnit->CurrentD[1] ) )
-      return;
 
    /* Set the texture environment state.  Isn't this nice and clean?
     * The Radeon will automagically set the texture alpha to 0xff when
@@ -702,10 +746,8 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
     */
    switch ( texUnit->EnvMode ) {
    case GL_REPLACE:
-      switch ( tObj->Image[0]->Format ) {
+      switch ( format ) {
       case GL_RGBA:
-      case GL_RGB:
-      case GL_LUMINANCE:
       case GL_LUMINANCE_ALPHA:
       case GL_INTENSITY:
 	 color_combine = radeon_color_combine[unit][RADEON_REPLACE];
@@ -715,6 +757,11 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	 color_combine = radeon_color_combine[unit][RADEON_DISABLE];
 	 alpha_combine = radeon_alpha_combine[unit][RADEON_REPLACE];
 	 break;
+      case GL_LUMINANCE:
+      case GL_RGB:
+	 color_combine = radeon_color_combine[unit][RADEON_REPLACE];
+	 alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
+         break;
       case GL_COLOR_INDEX:
       default:
 	 return;
@@ -722,10 +769,8 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       break;
 
    case GL_MODULATE:
-      switch ( tObj->Image[0]->Format ) {
+      switch ( format ) {
       case GL_RGBA:
-      case GL_RGB:
-      case GL_LUMINANCE:
       case GL_LUMINANCE_ALPHA:
       case GL_INTENSITY:
 	 color_combine = radeon_color_combine[unit][RADEON_MODULATE];
@@ -735,6 +780,11 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	 color_combine = radeon_color_combine[unit][RADEON_DISABLE];
 	 alpha_combine = radeon_alpha_combine[unit][RADEON_MODULATE];
 	 break;
+      case GL_RGB:
+      case GL_LUMINANCE:
+	 color_combine = radeon_color_combine[unit][RADEON_MODULATE];
+	 alpha_combine = radeon_alpha_combine[unit][RADEON_DISABLE];
+	 break;
       case GL_COLOR_INDEX:
       default:
 	 return;
@@ -742,7 +792,7 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       break;
 
    case GL_DECAL:
-      switch ( tObj->Image[0]->Format ) {
+      switch ( format ) {
       case GL_RGBA:
       case GL_RGB:
 	 color_combine = radeon_color_combine[unit][RADEON_DECAL];
@@ -762,7 +812,7 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       break;
 
    case GL_BLEND:
-      switch ( tObj->Image[0]->Format ) {
+      switch ( format ) {
       case GL_RGBA:
       case GL_RGB:
       case GL_LUMINANCE:
@@ -785,7 +835,7 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       break;
 
    case GL_ADD:
-      switch ( tObj->Image[0]->Format ) {
+      switch ( format ) {
       case GL_RGBA:
       case GL_RGB:
       case GL_LUMINANCE:
@@ -808,6 +858,11 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       break;
 
    case GL_COMBINE_EXT:
+      /* Don't cache these results.
+       */
+      rmesa->state.texture.unit[unit].format = 0;
+      rmesa->state.texture.unit[unit].envMode = 0;
+
       /* Step 0:
        * Calculate how many arguments we need to process.
        */
@@ -849,7 +904,9 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
        * Extract the color and alpha combine function arguments.
        */
       for ( i = 0 ; i < numColorArgs ; i++ ) {
-	 op = texUnit->CombineOperandRGB[i] - GL_SRC_COLOR;
+	 const GLuint op = texUnit->CombineOperandRGB[i] - GL_SRC_COLOR;
+         ASSERT(op >= 0);
+         ASSERT(op <= 3);
 	 switch ( texUnit->CombineSourceRGB[i] ) {
 	 case GL_TEXTURE:
 	    color_arg[i] = radeon_texture_color[op][unit];
@@ -869,7 +926,9 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       }
 
       for ( i = 0 ; i < numAlphaArgs ; i++ ) {
-	 op = texUnit->CombineOperandA[i] - GL_SRC_ALPHA;
+	 const GLuint op = texUnit->CombineOperandA[i] - GL_SRC_ALPHA;
+         ASSERT(op >= 0);
+         ASSERT(op <= 1);
 	 switch ( texUnit->CombineSourceA[i] ) {
 	 case GL_TEXTURE:
 	    alpha_arg[i] = radeon_texture_alpha[op][unit];
@@ -997,7 +1056,9 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	   texUnit->CombineModeRGB != GL_DOT3_RGBA_EXT ) {
 	 color_combine |= (texUnit->CombineScaleShiftRGB << 21);
 	 alpha_combine |= (texUnit->CombineScaleShiftA << 21);
-      } else {
+      }
+      else
+      {
 	 color_combine |= RADEON_SCALE_4X;
 	 alpha_combine |= RADEON_SCALE_4X;
       }
@@ -1010,94 +1071,82 @@ static void radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       return;
    }
 
-   rmesa->color_combine[source] = color_combine;
-   rmesa->alpha_combine[source] = alpha_combine;
+   if ( rmesa->state.hw.texture[unit].pp_txcblend != color_combine ||
+	rmesa->state.hw.texture[unit].pp_txablend != alpha_combine ) {
+      RADEON_STATECHANGE( rmesa, (RADEON_UPLOAD_TEX0 << unit) );
+      rmesa->state.hw.texture[unit].pp_txcblend = color_combine;
+      rmesa->state.hw.texture[unit].pp_txablend = alpha_combine;
+   }
 }
 
-static void radeonUpdateTextureObject( GLcontext *ctx, int unit )
+static void radeonUpdateTextureUnit( GLcontext *ctx, int unit )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   int source = rmesa->tmu_source[unit];
-   struct gl_texture_object *tObj;
-   radeonTexObjPtr t;
-   GLuint enabled;
+   struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
 
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_MSG ) {
-      fprintf( stderr, "%s( %p, %d )\n",
-	       __FUNCTION__, ctx, unit );
-   }
+   if ( texUnit->_ReallyEnabled & (TEXTURE0_1D|TEXTURE0_2D) ) {
+      struct gl_texture_object *tObj = texUnit->_Current;
+      radeonTexObjPtr t = (radeonTexObjPtr) tObj->DriverData;
+      GLuint flag = RADEON_UPLOAD_TEX0 << unit;
+      GLenum format;
 
-   enabled = (ctx->Texture.ReallyEnabled >> (source * 4)) & TEXTURE0_ANY;
-   if ( enabled != TEXTURE0_2D && enabled != TEXTURE0_1D ) {
-      if ( enabled )
-	 rmesa->Fallback |= RADEON_FALLBACK_TEXTURE;
-      return;
-   }
-
-   /* Only update the hardware texture state if the texture is current,
-    * complete and enabled.
-    */
-   tObj = ctx->Texture.Unit[source].Current;
-   if ( !tObj || !tObj->Complete )
-      return;
-
-   if ( ( tObj != ctx->Texture.Unit[source].CurrentD[2] ) &&
-	( tObj != ctx->Texture.Unit[source].CurrentD[1] ) )
-      return;
-
-   /* We definately have a valid texture now */
-   t = tObj->DriverData;
-
-   /* Force the texture unit state to be loaded into the hardware */
-   rmesa->dirty |= RADEON_UPLOAD_CONTEXT | (RADEON_UPLOAD_TEX0 << unit);
-
-   /* Force any texture images to be loaded into the hardware */
-   if ( t->dirty_images ) {
-      if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-	 fprintf( stderr, "   t->dirty_images = 0x%x\n", t->dirty_images );
+      /* Fallback if there's a texture border */
+      if ( tObj->Image[tObj->BaseLevel]->Border > 0 ) {
+         FALLBACK( rmesa, RADEON_FALLBACK_TEXTURE, GL_TRUE );
+         return;
       }
-      radeonSetTexImages( rmesa, tObj );
-      rmesa->dirty |= (RADEON_UPLOAD_TEX0IMAGES << unit);
+
+      /* Upload teximages (not pipelined)
+       */
+      if ( t->dirty_images ) {
+	 RADEON_FIREVERTICES( rmesa );
+	 radeonSetTexImages( rmesa, tObj );
+	 if ( !t->memBlock ) {
+	    FALLBACK( rmesa, RADEON_FALLBACK_TEXTURE, GL_TRUE );
+	    return;
+	 }
+      }
+
+      /* Update state if this is a different texture object to last
+       * time.
+       */
+      if ( rmesa->state.texture.unit[unit].texobj != t ) {
+	 if ( rmesa->state.texture.unit[unit].texobj == NULL ) {
+	    RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT );
+	    rmesa->state.hw.context.pp_cntl |= (RADEON_TEX_0_ENABLE |
+					     RADEON_TEX_BLEND_0_ENABLE)<<unit;
+	 }
+	 RADEON_STATECHANGE( rmesa, flag );
+	 rmesa->state.texture.unit[unit].texobj = t;
+	 radeonUpdateTexLRU( rmesa, t ); /* done too often */
+      }
+
+      format = tObj->Image[tObj->BaseLevel]->Format;
+      if ( rmesa->state.texture.unit[unit].format != format ||
+	   rmesa->state.texture.unit[unit].envMode != texUnit->EnvMode ) {
+	 rmesa->state.texture.unit[unit].format = format;
+	 rmesa->state.texture.unit[unit].envMode = texUnit->EnvMode;
+	 radeonUpdateTextureEnv( ctx, unit );
+      }
    }
-
-   if ( t->memBlock )
-      radeonUpdateTexLRU( rmesa, t );
-
-   switch ( unit ) {
-   case 0:
-      rmesa->setup.pp_cntl |= (RADEON_TEX_0_ENABLE |
-			       RADEON_TEX_BLEND_0_ENABLE);
-      break;
-   case 1:
-      rmesa->setup.pp_cntl |= (RADEON_TEX_1_ENABLE |
-			       RADEON_TEX_BLEND_1_ENABLE);
-      break;
+   else if ( texUnit->_ReallyEnabled ) {
+      FALLBACK( rmesa, RADEON_FALLBACK_TEXTURE, GL_TRUE );
+      return;
+   }
+   else {
+      /* Texture unit disabled */
+      rmesa->state.texture.unit[unit].texobj = 0;
+      rmesa->state.hw.dirty &= ~(RADEON_UPLOAD_TEX0 << unit);
+      RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_CONTEXT );
+      rmesa->state.hw.context.pp_cntl &= ~((RADEON_TEX_0_ENABLE |
+					    RADEON_TEX_BLEND_0_ENABLE) << unit);
    }
 }
 
 void radeonUpdateTextureState( GLcontext *ctx )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-
-   if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, "%s( %p ) en=0x%x\n",
-	       __FUNCTION__, ctx, ctx->Texture.ReallyEnabled );
-   }
-
-   /* Clear any texturing fallbacks */
-   rmesa->Fallback &= ~RADEON_FALLBACK_TEXTURE;
-
-   /* Disable all texturing until it is known to be good */
-   rmesa->setup.pp_cntl &= ~(RADEON_TEX_ENABLE_MASK |
-			     RADEON_TEX_BLEND_ENABLE_MASK);
-
-   radeonUpdateTextureObject( ctx, 0 );
-   radeonUpdateTextureEnv( ctx, 0 );
-
-   if ( rmesa->multitex ) {
-      radeonUpdateTextureObject( ctx, 1 );
-      radeonUpdateTextureEnv( ctx, 1 );
-   }
-
-   rmesa->dirty |= RADEON_UPLOAD_CONTEXT;
+   FALLBACK( rmesa, RADEON_FALLBACK_TEXTURE, GL_FALSE );
+   radeonUpdateTextureUnit( ctx, 0 );
+   radeonUpdateTextureUnit( ctx, 1 );
 }
