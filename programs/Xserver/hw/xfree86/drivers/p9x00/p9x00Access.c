@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/p9x00/p9x00Access.c,v 1.1 1998/01/11 03:36:44 dawes Exp $ */
 
 #define P9X00ACCESS_C
 
@@ -90,9 +90,12 @@ CARD8 p9100readvl(CARD8 index)
 
 void p9100writevl(CARD8 index,CARD8 mask,CARD8 value)
 {
+  unsigned char tmp;
+
   P9X00_ENABLEPORTS;
   outb(P9X_CFG_IO,(unsigned char)index);
-  outb(P9X_CFG_IO+4,(inb(P9X_CFG_IO+4)&mask)|value);
+  tmp = inb(P9X_CFG_IO+4);
+  outb(P9X_CFG_IO+4,(tmp&mask)|value);
   P9X00_DISABLEPORTS;
 }
 
@@ -165,7 +168,10 @@ static void p9100write_dac(CARD8 index,CARD8 value)
 
 static void p9000write_icd(CARD8 value)
 {
-  outb(0x3C2,(inb(0x3CC)&0xF3)|value);
+  unsigned char tmp;
+
+  tmp = inb(0x3CC);
+  outb(0x3C2,(tmp&0xF3)|value);
 }
 
 
