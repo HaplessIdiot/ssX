@@ -20,8 +20,11 @@ CIDDIR = CID
 #if BuildTrueTypeFonts
 TTFDIR = TTF
 #endif
+#ifdef BuildBethMarduthoFonts
+MELTHODIR = Meltho
+#endif
 
-        SUBDIRS = $(SPEEDODIR) $(TYPE1DIR) $(CIDDIR) $(TTFDIR)
+        SUBDIRS = $(SPEEDODIR) $(TYPE1DIR) $(CIDDIR) $(TTFDIR) $(MELTHODIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

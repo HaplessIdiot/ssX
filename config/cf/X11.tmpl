@@ -144,6 +144,9 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildTrueTypeFonts
 #define BuildTrueTypeFonts	YES
 #endif
+#ifndef BuildBethMarduthoFonts
+#define BuildBethMarduthoFonts	NO
+#endif
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	YES
 #endif
@@ -3167,7 +3170,8 @@ clean::									@@\
 
 # ifndef InstallFcCache
 #  define InstallFcCache(dest)						@@\
-InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)
+install::								@@\
+	RunProgram(FCCACHE, $(FCCACHEOPTS) dest)
 # endif /* InstallFcCache */
 
 #else
