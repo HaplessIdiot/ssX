@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.1 1997/06/25 08:25:04 hohndel Exp $ */
 
 
 
@@ -35,6 +35,18 @@
 
 #include "sym.h"
 #include "loader.h"
+
+#ifdef DL_LAZY
+#define DLOPEN_FLAGS DL_LAZY
+#else
+#ifdef RTLD_LAZY
+#define DLOPEN_FLAGS RTLD_LAZY
+#else
+#ifdef __FreeBSD__
+#define DLOPEN_FLAGS 1
+#endif
+#endif
+#endif
 
 /*
  * This structure contains all of the information about a module
@@ -100,7 +112,7 @@ DLLoadModule(int modtype,
 	return NULL;
     }
     dlfile->handle = handle;
-    dlfile->dlhandle = dlopen(modname, RTLD_LAZY);
+    dlfile->dlhandle = dlopen(modname, DLOPEN_FLAGS);
     if (handle == NULL) {
 	ErrorF("dlopen: %s\n", dlerror());
 	free(dlfile);
