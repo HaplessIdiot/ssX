@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.5 1997/02/24 17:46:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.6 1997/03/03 15:55:23 hohndel Exp $ */
 
 
 
@@ -117,7 +117,7 @@ AOUTHashCleanOut(AOUTModulePtr aoutfile, itemPtr item)
 static char *
 AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
 {
-    char *symname =  &(aoutfile->strings[sym->n_un.n_strx]);
+    char *symname =  (char *)&(aoutfile->strings[sym->n_un.n_strx]);
 
     if (symname[0] == '_') {
 	return symname + 1;
@@ -132,7 +132,7 @@ AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
 unsigned long
 AOUTGetSymbolValue(AOUTModulePtr aoutfile, int index)
 {
-    unsigned long symval = NULL; /* value of the indicated symbol */
+    unsigned long symval = 0; /* value of the indicated symbol */
     itemPtr symbol;		/* name/value of symbol */
 
     symbol = LoaderHashFind(AOUTGetSymbolName(aoutfile, aoutfile->symtab 
@@ -249,7 +249,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 	s = aoutfile->symtab + i;
 	soff = s->n_un.n_strx;
 
-	symname = &(aoutfile->strings[soff]);
+	symname = (char *)&(aoutfile->strings[soff]);
 	/* strip leading underscore */
 	if (symname[0] == '_') {
 	    symname++;

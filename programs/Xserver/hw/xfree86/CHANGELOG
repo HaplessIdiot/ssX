@@ -1,4 +1,5 @@
 XFree86 3.9b (3 May 1997)
+ 751. Make 'makedepend' understand '-U' on the command line.
  750. Some fix-trackers from TOG, includes:
         lib/Xi: missing error message (#352 -- we already had this fix)
         lib/X11: long font paths can garbage heap (#353)
@@ -4493,4 +4494,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.455 1997/04/28 11:13:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.456 1997/05/03 09:16:11 dawes Exp $
