@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.48 2001/01/27 11:35:41 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.49 2001/02/03 19:33:04 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -151,7 +151,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define LdPostLib		/**/
 #  define ServerExtraDefines GccGasOption XFree86ServerDefines
 #  ifndef XFree86ConsoleDefines
-#    define XFree86ConsoleDefines -DPCCONS_SUPPORT -DWSCONS_SUPPORT -DPCVT_SUPPORT
+#   if OSMajorVersion == 2 && OSMinorVersion <= 8 
+#    define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+#   else
+#    define XFree86ConsoleDefines -DWSCONS_SUPPORT
+#   endif
 #  endif
 #endif
 
