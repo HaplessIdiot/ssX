@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.6 94/04/17 21:17:12 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.0 1994/05/22 00:07:50 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -1297,7 +1297,7 @@ CreateWellKnownSockets()
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
 #ifdef hpux
