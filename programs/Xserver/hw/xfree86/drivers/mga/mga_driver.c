@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.167 2000/09/20 00:09:22 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.170 2000/10/06 17:32:45 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -212,7 +212,8 @@ typedef enum {
     OPTION_ROTATE,
     OPTION_TEXTURED_VIDEO,
     OPTION_XAALINES,
-    OPTION_CRTC2HALF
+    OPTION_CRTC2HALF,
+    OPTION_INT10
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -234,6 +235,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_TEXTURED_VIDEO,	"TexturedVideo",OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_CRTC2HALF,		"Crtc2Half",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -369,6 +371,12 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
+
 static const char *fbdevHWSymbols[] = {
 	"fbdevHWInit",
 	"fbdevHWUseBuildinMode",
@@ -442,7 +450,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 			  xf8_32bppSymbols, ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols,
 			  fbdevHWSymbols, vbeSymbols,
-			  fbSymbols,
+			  fbSymbols, int10Symbols,
 #ifdef XF86DRI 
 			  drmSymbols, driSymbols,
 #endif
@@ -1186,20 +1194,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
 
-#if 0
-    /* This is causing problems with restoring the card to it's
-       original state.  If this is to be done, it needs to happen
-       after we've saved the original state */
-    /* Initialize the card through int10 interface if needed */
-    if ( xf86LoadSubModule(pScrn, "int10")){
-        xf86Int10InfoPtr pInt;
-
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
-        pInt = xf86InitInt10(pMga->pEnt->index);
-        xf86FreeInt10(pInt);
-    }
-#endif
-
     /* Find the PCI info for this screen */
     pMga->PciInfo = xf86GetPciInfoForEntity(pMga->pEnt->index);
     pMga->PciTag = pciTag(pMga->PciInfo->bus, pMga->PciInfo->device,
@@ -1352,6 +1346,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Process the options */
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
 
+   if(xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
+      xf86LoadSubModule(pScrn, "int10"))
+   {
+        xf86Int10InfoPtr pInt;
+
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+        pInt = xf86InitInt10(pMga->pEnt->index);
+        xf86FreeInt10(pInt);
+    }
+
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) 
 	pScrn->rgbBits = 8;
@@ -1433,12 +1437,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
     /* For compatibility, accept this too (as an override) */
-    if (xf86ReturnOptValBool(MGAOptions, OPTION_SW_CURSOR, FALSE)) {
-	from = X_CONFIG;
-	pMga->HWCursor = FALSE;
-    }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pMga->HWCursor ? "HW" : "SW");
     if (xf86ReturnOptValBool(MGAOptions, OPTION_NOACCEL, FALSE)) {
 	pMga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
