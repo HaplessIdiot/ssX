@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.68 2005/01/07 23:03:12 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.69 2005/01/26 05:31:48 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -743,9 +743,6 @@ README.mouse
 .br
 README.DRI
 .IR <http://www.xfree86.org/current/DRI.html> ,
-.br
-Status
-.IR <http://www.xfree86.org/current/Status.html> ,
 .br
 Install
 .IR <http://www.xfree86.org/current/Install.html> .
