@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.18 2000/08/04 21:07:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.19 2000/08/09 16:30:22 tsi Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -212,7 +212,7 @@ xf86AddNewOption(pointer head, char *name, char *val)
 {
     char *tmp = strdup(val);
                                                                                
-    return addNewOption(head, name, val);
+    return addNewOption(head, name, tmp);
 }
 
 
