@@ -235,7 +235,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_MERGEDDPI,			"MergedDPI", 		  OPTV_STRING,	  {0}, FALSE },
 #ifdef SISXINERAMA
     { OPTION_NOSISXINERAMA,		"NoMergedXinerama",	  OPTV_BOOLEAN,	  {0}, FALSE },
-    { OPTION_NOSISXINERAMA2,		"NoTwinviewXineramaInfo",  OPTV_BOOLEAN,  {0}, FALSE },   /* alias */
+    { OPTION_NOSISXINERAMA2,		"NoTwinviewXineramaInfo", OPTV_BOOLEAN,   {0}, FALSE },   /* alias */
     { OPTION_CRT2ISSCRN0,		"MergedXineramaCRT2IsScreen0",OPTV_BOOLEAN,{0},FALSE },
 #endif
 #endif
@@ -250,7 +250,6 @@ SiSOptions(ScrnInfoPtr pScrn)
 {
     SISPtr      pSiS = SISPTR(pScrn);
     MessageType from;
-/*  double      temp;  */
     char        *strptr;
     static const char *mybadparm = "\"%s\" is is not a valid parameter for option \"%s\"\n";
     static const char *disabledstr = "disabled";
@@ -271,7 +270,6 @@ SiSOptions(ScrnInfoPtr pScrn)
     
     pSiS->newFastVram = -1;
     pSiS->NoHostBus = FALSE;
-/*  pSiS->UsePCIRetry = TRUE; */
     pSiS->TurboQueue = TRUE;
 #ifdef SISVRAMQ
     /* TODO: Option (315 series VRAM command queue) */
@@ -920,7 +918,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  /* ForceCRT1Type (315/330 series only)
 	   * Used for forcing the driver to initialize CRT1 as
 	   * VGA (analog) or LCDA (for simultanious LCD and TV
-           * display) - on M650/651 with 30xLV only!
+           * display) - on M650/651 and 661 or later with 301C/30xLV only!
            */
 	  if(pSiS->VGAEngine == SIS_315_VGA) {
              strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT1TYPE);
@@ -1167,7 +1165,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
       /* CHTVType  (315/330 series only)
        * Used for telling the driver if the TV output shall
-       * be i480 HDTV or SCART.
+       * be 480i HDTV or SCART.
        */
        if(pSiS->VGAEngine == SIS_315_VGA) {
           strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CHTVTYPE);

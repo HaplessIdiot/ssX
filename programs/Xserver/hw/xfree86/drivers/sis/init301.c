@@ -4653,6 +4653,7 @@ SiS_SetCRT2Offset(SiS_Private *SiS_Pr,USHORT ModeNo,
   temp = (UCHAR)(offset >> 8);
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x09,temp);
   temp = (UCHAR)(((offset >> 3) & 0xFF) + 1);
+  if(offset % 8) temp++;
   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x03,temp);
 }
 
@@ -10281,7 +10282,8 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	       SiS_Pr->CP_DataValid[i] = TRUE;
 
 	       /* Sort out invalid timings, interlace and too high clocks */
-	       if((SiS_Pr->CP_HDisplay[i] > SiS_Pr->CP_HSyncStart[i])  			||
+	       if((SiS_Pr->CP_HDisplay[i] & 7)						||
+	          (SiS_Pr->CP_HDisplay[i] > SiS_Pr->CP_HSyncStart[i])  			||
 	          (SiS_Pr->CP_HDisplay[i] >= SiS_Pr->CP_HSyncEnd[i])   			||
 	          (SiS_Pr->CP_HDisplay[i] >= SiS_Pr->CP_HTotal[i])     			||
 	          (SiS_Pr->CP_HSyncStart[i] >= SiS_Pr->CP_HSyncEnd[i]) 			||
@@ -10294,7 +10296,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	          (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    			||
 	          (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      			||
 		  (((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162500)) ||
-	           ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108500)))	||
+	           ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108200)))	||
 		  (buffer[base+17] & 0x80)) {
 
 	          SiS_Pr->CP_DataValid[i] = FALSE;
@@ -10514,7 +10516,8 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 
 	    SiS_Pr->CP_DataValid[i] = TRUE;
 
-	    if((SiS_Pr->CP_HDisplay[i] > SiS_Pr->CP_HSyncStart[i])  			||
+	    if((SiS_Pr->CP_HDisplay[i] & 7)						||
+	       (SiS_Pr->CP_HDisplay[i] > SiS_Pr->CP_HSyncStart[i])  			||
 	       (SiS_Pr->CP_HDisplay[i] >= SiS_Pr->CP_HSyncEnd[i])   			||
 	       (SiS_Pr->CP_HDisplay[i] >= SiS_Pr->CP_HTotal[i])     			||
 	       (SiS_Pr->CP_HSyncStart[i] >= SiS_Pr->CP_HSyncEnd[i]) 			||
@@ -10527,7 +10530,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	       (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    			||
 	       (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      			||
 	       (((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162500)) ||
-	        ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108500)))	||
+	        ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108200)))	||
 	       (buffer[index + 17] & 0x80)) {
 
 	       SiS_Pr->CP_DataValid[i] = FALSE;
