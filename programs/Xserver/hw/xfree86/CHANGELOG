@@ -1,4 +1,10 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 820. ati & atimisc module changes (Marc La France)
+      - Allow builds with ATIAvoidNonPCI && !ATIAvoidCPIO;
+      - Make handling of unknown Radeon's saner;
+      - Add private option to re-enable BIOS display switches;
+      - Deal with ati & atimisc module version skews;
+      - Fix private option handling;
  819. Fix rendition driver system lockup on changes to text mode
       (Bugzilla #1204, Eric Wittry).
  818. Make the "fp=n" TTCap option behave the same with the FreeType backend
@@ -18675,7 +18681,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3153 2004/02/20 21:49:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3154 2004/02/24 01:13:05 dawes Exp $
 
 
 
