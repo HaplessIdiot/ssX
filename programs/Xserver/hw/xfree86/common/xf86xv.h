@@ -71,6 +71,8 @@ typedef int (* PutImageFuncPtr)( ScrnInfoPtr pScrn,
 	short src_w, short src_h, short drw_w, short drw_h,
 	int image, unsigned char* buf, short width, short height, Bool sync,
 	RegionPtr clipBoxes, pointer data );
+typedef int (* ReputImageFuncPtr)( ScrnInfoPtr pScrn, short drw_x, short drw_y,
+        RegionPtr clipBoxes, pointer data );
 typedef int (*QueryImageAttributesFuncPtr)(ScrnInfoPtr pScrn, 
 	int image, unsigned short *width, unsigned short *height, 
 	int *pitches, int *offsets);
@@ -119,6 +121,7 @@ typedef struct {
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;
   PutImageFuncPtr PutImage;
+  ReputImageFuncPtr ReputImage;
   QueryImageAttributesFuncPtr QueryImageAttributes;
 } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 
@@ -149,6 +152,7 @@ typedef struct {
    CreateWindowProcPtr		CreateWindow;
    DestroyWindowProcPtr		DestroyWindow;
    ClipNotifyProcPtr		ClipNotify;
+   void                         (*AdjustFrame)(int, int, int, int);
    Bool                         (*EnterVT)(int, int);
    void                         (*LeaveVT)(int, int);
 } XF86XVScreenRec, *XF86XVScreenPtr;
@@ -164,6 +168,7 @@ typedef struct {
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;
   PutImageFuncPtr PutImage;
+  ReputImageFuncPtr ReputImage;
   QueryImageAttributesFuncPtr QueryImageAttributes;
 } XvAdaptorRecPrivate, *XvAdaptorRecPrivatePtr;
 
