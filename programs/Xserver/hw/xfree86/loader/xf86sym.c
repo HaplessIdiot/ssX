@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.225 2003/02/21 03:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.226 2003/02/22 06:00:38 dawes Exp $ */
 
 /*
  *
@@ -62,9 +62,11 @@
 #endif
 #include "compiler.h"
 
+#ifndef HAS_GLIBC_SIGSETJMP
 #if defined(setjmp) && \
     defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 2
 #define HAS_GLIBC_SIGSETJMP 1
+#endif
 #endif
 
 #ifdef __FreeBSD__
