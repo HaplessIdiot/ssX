@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.13 2001/01/30 17:31:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.14 2001/01/31 16:15:00 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -107,8 +107,6 @@ static void Permedia3WritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 static void Permedia3WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
 				unsigned char *src, int srcwidth, int skipleft, 
 				int fg, int bg, int rop,unsigned int planemask);
-
-#define MAX_FIFO_ENTRIES 120 /* PM3 reports bogus entries above 120 */
 
 void
 Permedia3InitializeEngine(ScrnInfoPtr pScrn)
@@ -497,7 +495,8 @@ Permedia3Sync(ScrnInfoPtr pScrn)
     CHECKCLIPPING;
 
     while (GLINT_READ_REG(DMACount) != 0);
-    GLINT_WAIT(1);
+    GLINT_WAIT(2);
+    GLINT_WRITE_REG(0x400, FilterMode);
     GLINT_WRITE_REG(0, GlintSync);
     do {
    	while(GLINT_READ_REG(OutFIFOWords) == 0);
@@ -795,7 +794,7 @@ Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    if (pGlint->dwords <= MAX_FIFO_ENTRIES) {
+    if (pGlint->dwords <= pGlint->FIFOSize) {
 	/* Turn on direct for less than 120 dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;
@@ -820,14 +819,14 @@ Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     	    GLINT_WAIT(pGlint->dwords);
 	return;
     } else {
-	while(pGlint->dwords >= MAX_FIFO_ENTRIES) {
-	    GLINT_WAIT(MAX_FIFO_ENTRIES);
-            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | 0x0D, OutputFIFO);
+	while(pGlint->dwords >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | 0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			MAX_FIFO_ENTRIES - 1);
-	    pGlint->dwords -= MAX_FIFO_ENTRIES - 1;
+			pGlint->FIFOSize - 1);
+	    pGlint->dwords -= pGlint->FIFOSize - 1;
 	}
 	if(pGlint->dwords) {
 	    GLINT_WAIT(pGlint->dwords + 1);
@@ -883,7 +882,7 @@ static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
 
-    if (pGlint->dwords <= MAX_FIFO_ENTRIES) {
+    if (pGlint->dwords <= pGlint->FIFOSize) {
 	/* Turn on direct for less than 120 dword colour expansion */
     	pGlint->XAAScanlineColorExpandBuffers[0] = pGlint->IOBase+OutputFIFO+4;
 	pGlint->ScanlineDirect = 1;
@@ -910,15 +909,15 @@ Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     	    GLINT_WAIT(pGlint->dwords);
 	return;
     } else {
-	while(pGlint->dwords >= MAX_FIFO_ENTRIES) {
-	    GLINT_WAIT(MAX_FIFO_ENTRIES);
-            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) |
+	while(pGlint->dwords >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) |
 							0x05, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)pGlint->XAAScanlineColorExpandBuffers[bufno],
-			MAX_FIFO_ENTRIES - 1);
-	    pGlint->dwords -= MAX_FIFO_ENTRIES - 1;
+			pGlint->FIFOSize - 1);
+	    pGlint->dwords -= pGlint->FIFOSize - 1;
 	}
 	if(pGlint->dwords) {
 	    GLINT_WAIT(pGlint->dwords + 1);
@@ -1002,16 +1001,16 @@ Permedia3WritePixmap(
     while(h--) {
 	count = dwords;
 	srcp = (CARD32*)src;
-	while(count >= MAX_FIFO_ENTRIES) {
-	    GLINT_WAIT(MAX_FIFO_ENTRIES);
+	while(count >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
 	    /* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-	    count -= MAX_FIFO_ENTRIES - 1;
-	    srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+	    count -= pGlint->FIFOSize - 1;
+	    srcp += pGlint->FIFOSize - 1;
 	}
 	if(count) {
 	    GLINT_WAIT(count + 1);
@@ -1085,15 +1084,15 @@ Permedia3WriteBitmap(ScrnInfoPtr pScrn,
     while(h--) {
 	count = dwords;
 	srcp = (CARD32*)src;
-	while(count >= MAX_FIFO_ENTRIES) {
-	    GLINT_WAIT(MAX_FIFO_ENTRIES);
-            GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) |
+	while(count >= pGlint->FIFOSize) {
+	    GLINT_WAIT(pGlint->FIFOSize);
+            GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) |
 					0x0D, OutputFIFO);
 	    GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-	    count -= MAX_FIFO_ENTRIES - 1;
-	    srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+	    count -= pGlint->FIFOSize - 1;
+	    srcp += pGlint->FIFOSize - 1;
 	}
 	if(count) {
 	    GLINT_WAIT(count + 1);
