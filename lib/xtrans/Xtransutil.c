@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.10 1998/10/03 09:07:37 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.11 1999/03/28 15:32:08 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -482,7 +482,7 @@ trans_mkdir(char *path, int mode)
     /* If mkdir failed with EEXIST, test if it is a directory with 
        the right modes, else fail */
     if (errno == EEXIST) {
-	if (stat(path, &buf) != 0) {
+	if (lstat(path, &buf) != 0) {
 	    return -1;
 	}
 	if (S_ISDIR(buf.st_mode) && ((buf.st_mode & ~S_IFMT) == mode)) {
