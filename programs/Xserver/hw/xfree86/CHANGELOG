@@ -1,3 +1,9 @@
+XFree86 3.1.2Bb (6 January 1996)
+181. Merge in X11R6.1 beta.
+180. Fix problems with the ARK/ICS5342 clock programming (Leon Bottou).
+179. Fix problem with Mach64 CT cards that incorrectly appear to be using
+     block I/O.
+
 XFree86 3.1.2Ba (3 January 1996)
 178. Fix support for the old ET4000 in the et4000 driver.
 177. Fix problem with the SIS driver that can cause a server crash

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.3 1995/12/28 01:32:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.4 1996/01/05 06:29:30 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -425,6 +425,13 @@ long freq;
 	reg->std.MiscOutReg &= ~0xC;
 	reg->std.MiscOutReg |= 0x8;
 	reg->SR11 &= ~0xC0;
+	ICS5342Mode(TRUE);
+	reg->GENDAC[0] = inb(0x3c6);	/* Enhanced command register */
+	reg->GENDAC[2] = inb(0x3c8);	/* PLL write index */
+	reg->GENDAC[1] = inb(0x3c7);	/* PLL read index */
+	outb(0x3c7, 0x0e);		/* index to PLL control */
+	reg->GENDAC[5] = inb(0x3c9);	/* PLL control */
+	ICS5342Mode(FALSE);
 	return(0);
 }
 
