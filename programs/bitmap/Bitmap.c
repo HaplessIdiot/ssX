@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/Bitmap.c,v 1.3 2001/01/17 23:44:50 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/Bitmap.c,v 1.4 2001/12/14 20:00:40 dawes Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -37,6 +37,7 @@ from The Open Group.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Drawing.h>
+#include <X11/Xmu/SysUtil.h>
 #include <X11/Xatom.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -1027,7 +1028,7 @@ BWUnparseStatus(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
-    sprintf(BW->bitmap.status, 
+    XmuSnprintf(BW->bitmap.status, sizeof(BW->bitmap.status),
 	    "Filename: %s  Basename: %s  Size: %dx%d",
 	    (strcmp(BW->bitmap.filename, "") ? BW->bitmap.filename : "<none>"),
 	    (strcmp(BW->bitmap.basename, "") ? BW->bitmap.basename : "<none>"),
