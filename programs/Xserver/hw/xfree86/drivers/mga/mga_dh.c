@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dh.c,v 1.1 2001/04/05 17:42:32 dawes Exp $ */
 /*********************************************************************
 *  	G450: This is for Dual Head. 
 *       Matrox Graphics
@@ -281,7 +281,7 @@ void CRTC2Set(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo)
 }
 
 
-    /* Set CRTC2 on Second OutPut*/
+/* Set CRTC2 on the right output */
 void EnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo)
 {
     CARD8   ucByte, ucXDispCtrl;
@@ -306,7 +306,7 @@ void EnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo)
     
     ulC2CTL &= ~(C2CTL_PIXCLKSEL_MASK | C2CTL_PIXCLKSELH_MASK);
     
-      ulC2CTL |= C2CTL_PIXCLKSEL_VIDEOPLL;   
+    ulC2CTL |= C2CTL_PIXCLKSEL_VIDEOPLL; 
 
     
     OUTREG( MGAREG_C2CTL, ulC2CTL);
@@ -332,17 +332,30 @@ void EnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo)
     ucByte &= ~0x40;
     pReg->DacRegs[MGA1064_GEN_IO_DATA]= ucByte;
     outMGAdac (MGA1064_GEN_IO_DATA, ucByte);
+   
+    /* Since G550 can swap outputs at BIOS initialisation, we must check which
+     * DAC is 'logically' used as the secondary (don't assume its DAC2 anymore) */
     
+    ulC2CTL = INREG(MGAREG_C2CTL);
+    ucXDispCtrl = inMGAdac(MGA1064_DISP_CTL);
 
+    ucXDispCtrl &= ~XDISPCTRL_DAC2OUTSEL_MASK;
+    ucXDispCtrl |=  XDISPCTRL_DAC2OUTSEL_CRTC2;
 
-    /* Route Crtc2 on Dac2*/
-    ulC2CTL = INREG( MGAREG_C2CTL);
-    ucXDispCtrl = inMGAdac( MGA1064_DISP_CTL);
-
-    ucXDispCtrl    &= ~XDISPCTRL_DAC2OUTSEL_MASK;
-    ucXDispCtrl    |= XDISPCTRL_DAC2OUTSEL_CRTC2;
-
-   /* Enable CRTC2*/
+    if (!pMga->SecondOutput) {
+        /* Route Crtc2 on Output1 */
+        ucXDispCtrl &= ~XDISPCTRL_DAC2OUTSEL_MASK;
+        ucXDispCtrl |=  XDISPCTRL_DAC2OUTSEL_CRTC1;
+        ulC2CTL     |=  C2CTL_CRTCDACSEL_CRTC2; 
+    }
+    else {
+        /* Route Crtc2 on Output2*/
+        ucXDispCtrl &= ~XDISPCTRL_DAC2OUTSEL_MASK;
+        ucXDispCtrl |=  XDISPCTRL_DAC2OUTSEL_CRTC2;
+        ulC2CTL     &= ~C2CTL_CRTCDACSEL_MASK;
+    }
+    
+    /* Enable CRTC2*/
     ulC2CTL |= C2_EN_M;
 
     pReg->dac2[ MGA1064_DISP_CTL - 0x80] =  ucXDispCtrl; 
