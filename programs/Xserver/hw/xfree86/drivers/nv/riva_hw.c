@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.18 2001/10/08 22:28:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.19 2001/10/30 19:38:29 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1447,6 +1447,15 @@ static void LoadStateExt
 	    chip->PMC[0x00008924/4] = 0;
 	    chip->PMC[0x00008908/4] = 0x01ffffff;
 	    chip->PMC[0x0000890C/4] = 0x01ffffff;
+
+            chip->PFB[0x00000240/4] = 0;
+            chip->PFB[0x00000244/4] = 0;
+            chip->PFB[0x00000248/4] = 0;
+            chip->PFB[0x0000024C/4] = 0;
+            chip->PFB[0x00000250/4] = 0;
+            chip->PFB[0x00000254/4] = 0;
+            chip->PFB[0x00000258/4] = 0;
+            chip->PFB[0x0000025C/4] = 0;
 
             chip->PGRAPH[0x00000B00/4] = chip->PFB[0x00000240/4];
             chip->PGRAPH[0x00000B04/4] = chip->PFB[0x00000244/4];
