@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.8 1999/05/15 12:10:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.11 2000/02/12 20:45:36 dawes Exp $ */
 
 #include "vgaHW.h"
 
@@ -35,7 +35,9 @@
 #define andSISREG(base,val)		outSISREG(base, inb(base)&(val))
 
 #define	inSISIDXREG(base,idx,var)	outb(base,idx); var=inb((base)+1);
-//#define	outSISIDXREG(base,idx,val)	outw(base, (val)<<8 | (idx));
+#if 0
+#define	outSISIDXREG(base,idx,val)	outw(base, (val)<<8 | (idx));
+#endif
 #define	outSISIDXREG(base,idx,val)	outb(base,idx); outb((base)+1,val);
 #define orSISIDXREG(base,idx,val)	outb(base,idx);	\
 		outSISIDXREG(base,idx,inb((base)+1)|(val));
