@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.59 2002/12/15 01:50:57 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.60 2002/12/31 02:14:02 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -193,6 +193,8 @@ es_CO:						es_CO.ISO8859-1
 es_CO.iso88591:					es_CO.ISO8859-1
 es_CR:						es_CR.ISO8859-1
 es_CR.iso88591:					es_CR.ISO8859-1
+es_DO:						es_DO.ISO8859-1
+es_DO.iso88591:					es_DO.ISO8859-1
 es_EC:						es_EC.ISO8859-1
 es_EC.iso88591:					es_EC.ISO8859-1
 es_ES:						es_ES.ISO8859-1
@@ -205,6 +207,8 @@ es_ES.iso885915:				es_ES.ISO8859-15
 es_ES@euro:					es_ES.ISO8859-15
 es_GT:						es_GT.ISO8859-1
 es_GT.iso88591:					es_GT.ISO8859-1
+es_HN:						es_HN.ISO8859-1
+es_HN.iso88591:					es_HN.ISO8859-1
 es_MX:						es_MX.ISO8859-1
 es_MX.iso88591:					es_MX.ISO8859-1
 es_NI:						es_NI.ISO8859-1
@@ -215,6 +219,8 @@ es_PA.iso885915:				es_PA.ISO8859-15
 es_PE:						es_PE.ISO8859-1
 es_PE.iso88591:					es_PE.ISO8859-1
 es_PE.iso885915:				es_PE.ISO8859-15
+es_PR:						es_PR.ISO8859-1
+es_PR.iso88591:					es_PR.ISO8859-1
 es_PY:						es_PY.ISO8859-1
 es_PY.iso88591:					es_PY.ISO8859-1
 es_PY.iso885915:				es_PY.ISO8859-15
