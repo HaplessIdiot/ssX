@@ -9,10 +9,10 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 2 December 2000
+<Date>Last modified on: 7 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.56 2000/07/02 02:35:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.57 2000/12/02 15:27:09 herrb Exp $
 </ident>
 <toc>
 
@@ -353,6 +353,19 @@ You should configure the distribution by editing
 <tt>xc/config/cf/host.def</tt>  before compiling.  To compile the
 sources, invoke ``<tt/make World/'' in the xc directory.
 
+<sect1>Perl support
+<p>
+Starting with XFree86 4.0.2, perl is needed to build the fonts in
+XFree86. Since perl is not included with standard NetBSD installation,
+fonts that need perl are not built by default. 
+<p>
+If you have installed perl (from the NetBSD packages, for instance),
+add the line  
+<tscreen><verb>
+#define HasPerl YES
+</verb></tscreen>
+in <tt>xc/config/cf/host.def</tt> before rebuilding XFree86. 
+
 <sect1>Aperture driver
 <p>
 To build the XFree86 server with the Aperture driver enabled, you
@@ -362,9 +375,7 @@ Then edit <tt>xc/config/cf/host.def</tt> and add the line
 <tscreen><verb>
 #define HasNetBSDApertureDriver    YES
 </verb></tscreen>
-to it.
-
-And finally run <tt/make World/ in the <tt/xc/ directory. 
+to it before rebuilding XFree86.
 
 <sect1>Console drivers<label id="console-drivers">
 
