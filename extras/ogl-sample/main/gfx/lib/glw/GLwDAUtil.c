@@ -31,21 +31,40 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2000/11/02 19:18:55 $ $Revision: 1.1 $
+** $Date: 2000/11/02 20:39:06 $ $Revision: 1.2 $
 */
 /* utility routines for GLX.
  * Since these routines are used both in the Motif and X versions of
  * the widget, they cannot peek directly into the structure
  *
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.1 2000/11/02 19:18:55 dawes Exp $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.2 2000/11/02 20:39:06 dawes Exp $
  */
+
+/* $XFree86$ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
-#include <Xm/PrimitiveP.h>
-#include "GLwDrawAP.h"
+
+/*
+ * By default only a static library is created because most of the UNIX
+ * loaders, if not all, complain about unresolved symbols even if the
+ * application doesn't use the modules in which such symbols are referenced.
+ * However, if your system supports libraries with weak symbols (e.g.
+ * Solaris, FreeBSD and Linux) it is possible to fool the loader using these
+ * weak symbols.
+ */
+#ifdef USE_XM_STUBS
+#pragma weak _XmPrimitiveHighlightPixmapDefault	= _Xm_Stub_Pointer_
+#pragma weak _XmHighlightColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmForegroundColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmBackgroundColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmStrings				= _Xm_Stub_Pointer_
+#pragma weak xmPrimitiveClassRec		= _Xm_Stub_Pointer_
+
+static XtPointer _Xm_Stub_Pointer_ = NULL;
+#endif
 
 void GLwDrawingAreaMakeCurrent (Widget w, GLXContext ctx)
 {

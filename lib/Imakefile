@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.39 2000/08/26 16:15:51 keithp Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.40 2000/10/05 18:05:25 keithp Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -57,6 +57,7 @@ XINERAMADIR=Xinerama
 
 #if BuildGLXLibrary
 GLXLIBDIR = GL
+GLWLIBDIR = GLw
 #endif
 
 #if BuildDPSLibrary
@@ -109,7 +110,7 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIBDIR) X11 oldX ICE SM Xext Xt \
 	     $(SSLIBDIR) $(XF86MISCLIBDIR) $(XF86VMLIBDIR) $(XF86DGALIBDIR) \
 	     $(XF86RUSHLIBDIR) Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
-	     Xp $(XVLIBDIR) $(GLXLIBDIR) $(DPSLIBDIR) \
+	     Xp $(XVLIBDIR) $(GLXLIBDIR) $(GLWLIBDIR) $(DPSLIBDIR) \
 	     $(DPSTKLIBDIR) $(PSRESLIBDIR) $(XINERAMADIR) \
 	     $(ZLIBDIR) $(REGEXDIR) $(RENDERLIBDIR) $(XFTLIBDIR)
 #else
@@ -119,7 +120,7 @@ XEXTDIR = Xext
 
 LINTSUBDIRS = Xau Xdmcp X11 $(XINERAMADIR) $(XEXTDIR) $(XKBLIBDIR) \
 	      $(XKBUILIBDIR) $(LBXUTILDIR) $(XF86EXTLIBS) $(XVLIBDIR) \
-	      $(GLXLIBDIR) $(ZLIBDIR) $(REGEXDIR) $(RENDERLIBDIR) \
+	      $(GLXLIBDIR) $(GLWLIBDIR) $(ZLIBDIR) $(REGEXDIR) $(RENDERLIBDIR) \
 	      $(XFTLIBDIR)
 #endif
 

@@ -31,14 +31,28 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2000/11/02 19:18:54 $ $Revision: 1.1 $
+** $Date: 2000/11/02 20:39:07 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawA.h,v 1.1 2000/11/02 19:18:54 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawA.h,v 1.2 2000/11/02 20:39:07 dawes Exp $
 */
+
+/*
+** This file has been slightly modified from the original by Carlos A. M. dos
+** Santos <casantos@cpmet.ufpel.tche.br> for integration into XFree86 source
+** tree and for generating both Motif(TM) 1.2 and 2.x versions of the widgets
+** in the same library.
+*/
+/* $XFree86$ */
 
 #ifndef _GLwDrawA_h
 #define _GLwDrawA_h
+
+#ifdef __GLX_MOTIF
+# ifndef __GLX_INCLUDE_XM_H	/* Defined during library compilation */
+#  include <Xm/Xm.h>		/* We need to know about XmVERSION early */
+# endif
+#endif
 
 #include <GL/glx.h>
 #include <GL/gl.h>
@@ -134,16 +148,38 @@
 #define GLwCAccumAlphaSize	"AccumAlphaSize"
 
 #ifdef __GLX_MOTIF
+
+#if XmVERSION == 1
+/*
+#  define _GLwMDrawingAreaClassRec	_GLwM1DrawingAreaClassRec
+#  define _GLwMDrawingAreaRec		_GLwM1DrawingAreaRec
+*/
+#  define glwMDrawingAreaWidgetClass	glwM1DrawingAreaWidgetClass
+#  define GLwCreateMDrawingArea		GLwCreateM1DrawingArea
+#elif XmVERSION == 2
+/*
+#  define _GLwMDrawingAreaClassRec	_GLwM2DrawingAreaClassRec
+#  define _GLwMDrawingAreaRec		_GLwM2DrawingAreaRec
+*/
+#  define glwMDrawingAreaWidgetClass	glwM2DrawingAreaWidgetClass
+#  define GLwCreateMDrawingArea		GLwCreateM2DrawingArea
+#else
+#error "Sorry, unknown Motif version."
+#endif /* XmVERSION */
+
 typedef struct _GLwMDrawingAreaClassRec	*GLwMDrawingAreaWidgetClass;
 typedef struct _GLwMDrawingAreaRec	*GLwMDrawingAreaWidget;
 
 extern WidgetClass glwMDrawingAreaWidgetClass;
+
 #else /* not __GLX_MOTIF */
+
 typedef struct _GLwDrawingAreaClassRec	*GLwDrawingAreaWidgetClass;
 typedef struct _GLwDrawingAreaRec	*GLwDrawingAreaWidget;
 
 extern WidgetClass glwDrawingAreaWidgetClass;
-#endif
+
+#endif /* __GLX_MOTIF */
 
 /* Callback reasons */
 #ifdef __GLX_MOTIF

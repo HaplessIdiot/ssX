@@ -31,19 +31,31 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2000/11/02 19:18:55 $ $Revision: 1.1 $
+** $Date: 2000/11/02 20:39:07 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawAP.h,v 1.1 2000/11/02 19:18:55 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawAP.h,v 1.2 2000/11/02 20:39:07 dawes Exp $
 */
+
+/*
+** This file has been slightly modified from the original by Carlos A. M. dos
+** Santos <casantos@cpmet.ufpel.tche.br> for integration into XFree86 source
+** tree and for generating both Motif(TM) 1.2 and 2.x versions of the widgets
+** in the same library.
+*/
+/* $XFree86$ */
 
 #ifndef _GLwDrawAP_h
 #define _GLwDrawAP_h
 
 #ifdef __GLX_MOTIF
-#include "GLwMDrawA.h"
+# ifndef __GLX_INCLUDE_PRIMITIVE_P_H	/* Used during library compilation */
+#  include <Xm/PrimitiveP.h>
+# endif
+# include <GL/GLwMDrawA.h>		/* includes IntrinsicP.h */
 #else
-#include "GLwDrawA.h"
+# include <X11/IntrinsicP.h>
+# include <GL/GLwDrawA.h>
 #endif
 
 typedef struct _GLwDrawingAreaClassPart

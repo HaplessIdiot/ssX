@@ -31,13 +31,21 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2000/11/02 19:18:54 $ $Revision: 1.1 $
+** $Date: 2000/11/02 20:39:07 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwMDrawAP.h,v 1.1 2000/11/02 19:18:54 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwMDrawAP.h,v 1.2 2000/11/02 20:39:07 dawes Exp $
 */
+
+/*
+** This file has been slightly modified from the original by Carlos A. M. dos
+** Santos <casantos@cpmet.ufpel.tche.br> for integration into XFree86 source
+** tree and for generating both Motif(TM) 1.2 and 2.x versions of the widgets
+** in the same library.
+*/
+/* $XFree86$ */
 
 #ifndef __GLX_MOTIF
 #define __GLX_MOTIF 1
 #endif
-#include "GLwDrawAP.h"
+#include <GL/GLwDrawAP.h>

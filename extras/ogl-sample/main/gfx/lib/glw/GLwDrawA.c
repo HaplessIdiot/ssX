@@ -31,22 +31,21 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2000/11/02 19:18:55 $ $Revision: 1.1 $
+** $Date: 2000/11/02 20:39:07 $ $Revision: 1.2 $
 */
 /*
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawA.c,v 1.1 2000/11/02 19:18:55 dawes Exp $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/GLwDrawA.c,v 1.2 2000/11/02 20:39:07 dawes Exp $
 */
 
 #include <stdio.h>
-#include <X11/IntrinsicP.h>
-#include <X11/StringDefs.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
 #ifdef __GLX_MOTIF
-#include <Xm/PrimitiveP.h>
 #include "GLwMDrawAP.h"
 #else /* not __GLX_MOTIF */
 #include "GLwDrawAP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #endif /* __GLX_MOTIF */
 #include <assert.h>
 
