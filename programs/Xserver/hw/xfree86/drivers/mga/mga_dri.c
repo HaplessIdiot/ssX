@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.4 2000/06/20 20:34:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.5 2000/06/23 23:43:44 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -725,13 +725,15 @@ void mgaGetQuiescence( ScrnInfoPtr pScrn )
 
       MgaLockUpdate(pScrn, (DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH));	
 
-      WAITFIFO(12);
+      WAITFIFO(11);
       OUTREG(MGAREG_MACCESS, pMga->MAccess);
       OUTREG(MGAREG_PITCH, pLayout->displayWidth);
-      OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
-      OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
-      OUTREG(MGAREG_BCOL, pMga->BgColor);
-      OUTREG(MGAREG_FCOL, pMga->FgColor);
+      pMga->PlaneMask = ~0;
+      pMga->BgColor = 0;
+      pMga->FgColor = 0;
+      OUTREG(MGAREG_PLNWT, ~0);
+      OUTREG(MGAREG_BCOL, 0);
+      OUTREG(MGAREG_FCOL, 0);
       pMga->SrcOrg = 0;
       OUTREG(MGAREG_SRCORG, 0);
       OUTREG(MGAREG_DSTORG, pMga->DstOrg);
