@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.123 2004/06/10 17:28:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.124 2004/07/25 20:49:15 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -139,10 +139,10 @@ typedef enum {
     OPTION_VIDEO_KEY,
     OPTION_DISP_PRIORITY,
     OPTION_PANEL_SIZE,
-    OPTION_MIN_DOTCLOCK,
 #ifdef __powerpc__
-    OPTION_IBOOKHACKS
+    OPTION_IBOOKHACKS,
 #endif
+    OPTION_MIN_DOTCLOCK
 } RADEONOpts;
 
 const OptionInfoRec RADEONOptions[] = {
