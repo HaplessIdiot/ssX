@@ -1,4 +1,11 @@
+XFree86 3.9b (30 April 1997)
+ 711. Restore changes accidentally backed out of xfree86.cf in 3.9a.
+ 710. Open /dev/tty0 instead of /dev/console on Linux to find the first
+      free VT.
+
 XFree86 3.9a (17 April 1997)
+ 709. Add delayed syncing as an optional flag for XAA.  This is now
+      currently enabled only in the S3 driver (#308, Mark Vojkovich).
  708. Several fixes to TE and NonTE fonts. The server now passes CH06
       drwimgstr, drwimgst16, drwstr, drwstr16, drwtxt and drwtxt16 xtest tests
       (#305,307, Sebastien Marineau).
@@ -4403,4 +4410,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.453 1997/04/17 13:03:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.454 1997/04/18 09:11:14 hohndel Exp $

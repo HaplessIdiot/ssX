@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.12 1997/02/18 10:46:52 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.13 1997/04/10 10:05:21 hohndel Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -62,6 +62,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.12 1997/02/18 10:46:52 hohndel Exp $
 #endif
 #ifndef BuildType1Fonts
 #define BuildType1Fonts		YES
+#endif
+#ifndef BuildLatin2Fonts
+#define BuildLatin2Fonts	NO
 #endif
 #ifndef BuildCyrillicFonts
 #define BuildCyrillicFonts	NO
