@@ -1,3 +1,4 @@
+.\" $XFree86$
 .\" Input Extension Porting Document
 .EH ''''
 .OH ''''
@@ -10,7 +11,7 @@
 \fBX11 Input Extension Porting Document
 .sp 2
 .ps 12
-X Version 11, Release 6
+X Version 11, Release 6.4
 .sp 16
 .ps 15
 George Sachs\0\0\0\0Hewlett-Packard
@@ -57,8 +58,8 @@ in this Software without prior written authorization from the X Consortium.
 .sp 3
 \fIX Window System\fP is a trademark of X Consortium, Inc.
 .bp 1
-.EH '\fBX Input Extension Porting Document\fP''\fBX11, Release 6\fP'
-.OH '\fBX Input Extension Porting Document\fP''\fBX11, Release 6\fP'
+.EH '\fBX Input Extension Porting Document\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Input Extension Porting Document\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .\"  Force the heading counter for level 1 to one
@@ -987,4 +988,4 @@ the stylus or finger leaves the proximity of the input devices surface.
 The event type is \fBProximityIn\fP or \fBProximityOut\fP, and there is no
 detail information.
 .bp
-.TC
+.\" .TC
