@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.1 2000/10/30 23:02:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimisc.c,v 1.2 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,7 +30,7 @@
 
 static XF86ModuleVersionInfo ATIVersionRec =
 {
-    ATI_DRIVER_NAME,
+    "atimisc",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
