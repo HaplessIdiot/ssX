@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/22 15:42:37 mor Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.16 94/12/27 17:42:37 mor Exp $
+XCOMM $XFree86: xc/workInProgress/xsm/Imakefile,v 3.0 1994/06/28 12:41:21 dawes Exp $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -12,34 +12,30 @@ XCOMM $XFree86$
 #endif
 #endif
 
+#ifdef MinixArchitecture
+       SHELLSRC = Shell.c
+       SHELLOBJ = Shell.o
+#endif
+
          RSHCMD = RshCmd
 
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 
-#ifdef MinixArchitecture
-           SRCS1 = auth.c list.c misc.c printhex.c remote.c restart.c save.c \
-                   xsm.c xtwatch.c Shell.c
+           SRCS1 = auth.c choose.c info.c list.c lock.c log.c \
+		   mainwin.c misc.c popup.c printhex.c prop.c remote.c \
+		   restart.c save.c saveutil.c signals.c xsm.c xtwatch.c \
+		   $(SHELLSRC)
                    
-           OBJS1 = auth.o list.o misc.o printhex.o remote.o restart.o save.o \
-                   xsm.o xtwatch.o Shell.o
-#else
-           SRCS1 = auth.c list.c misc.c printhex.c remote.c restart.c save.c \
-                   xsm.c xtwatch.c
-                   
-           OBJS1 = auth.o list.o misc.o printhex.o remote.o restart.o save.o \
-                   xsm.o xtwatch.o
-#endif
+           OBJS1 = auth.o choose.o info.o list.o lock.o log.o \
+		   mainwin.o misc.o popup.o printhex.o prop.o remote.o \
+	           restart.o save.o saveutil.o signals.o xsm.o xtwatch.o \
+		   $(SHELLOBJ)
 
           PROGS1 = xsm
 
-#ifdef MinixArchitecture
-           SRCS2 = xsmclient.c Shell.c
-           OBJS2 = xsmclient.o Shell.o
-#else
-           SRCS2 = xsmclient.c
-           OBJS2 = xsmclient.o
-#endif
+           SRCS2 = xsmclient.c $(SHELLSRC)
+           OBJS2 = xsmclient.o $(SHELLOBJ)
           PROGS2 = xsmclient
 
             SRCS = $(SRCS1) $(SRCS2)
@@ -52,6 +48,10 @@ SpecialCObjectRule(remote,NullParameter,'-DRSHCMD="$(RSHCMD)"')
 #if !HasPutenv
 SpecialCObjectRule(misc,NullParameter,-DNOPUTENV)
 #endif
+SpecialCObjectRule(restart,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(XSMDIR)'/system.xsm"')
+SpecialCObjectRule(signals,NullParameter,$(SIGNAL_DEFINES))
 #ifdef MinixArchitecture
-ObjectFromSpecialSource(Shell,../../lib/Xt/Shell,-I../../lib/Xt)
+ObjectFromSpecialSource(Shell,$(TOOLKITSRC)/Shell,-I$(TOOLKITSRC))
 #endif
+InstallNonExecFile(system.xsm,$(XSMDIR))
+InstallAppDefaults(XSm)

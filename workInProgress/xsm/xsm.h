@@ -1,5 +1,5 @@
-/* $XConsortium: xsm.h,v 1.5 94/04/17 21:15:20 rws Exp $ */
-/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.1 1994/11/26 12:55:43 dawes Exp $ */
+/* $XConsortium: xsm.h,v 1.36 95/01/03 17:22:47 mor Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.2 1994/11/30 20:52:07 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,30 +26,19 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
-#include <X11/Xaw/Box.h>
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/Dialog.h>
-#include <X11/Xaw/Toggle.h>
+#include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#include <stdio.h>
-#undef _POSIX_SOURCE
-#else
-#include <stdio.h>
-#endif
-#include <X11/Shell.h>
-#include <X11/ICE/ICEutil.h>
-#include <X11/SM/SMlib.h>
-#include <ctype.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#endif
-#include <setjmp.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
 #include <limits.h>
-#ifndef MINIX
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif /* X_NOT_POSIX */
+#ifndef PATH_MAX
 #include <sys/param.h>
 #endif
 #ifndef PATH_MAX
@@ -58,27 +47,60 @@ in this Software without prior written authorization from the X Consortium.
 #else
 #define PATH_MAX 1024
 #endif
-#endif
-#include <X11/Xos.h>
+#endif /* PATH_MAX */
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(__STDC__) && defined(ISC)
 extern FILE *fdopen(int, char const *);
 #endif
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#include <stdio.h>
+#undef _POSIX_SOURCE
+#else
+#include <stdio.h>
+#endif
+
+#include <ctype.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
+
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>
+
+#include <X11/SM/SMlib.h>
 
 #include "list.h"
 
-#define MAX_PROPS 50
+/*
+ * Each time the format of the sm's save file changes, bump up
+ * the version.
+ */
+
+#define SAVEFILE_VERSION 3
+
+#define DEFAULT_SESSION_NAME "Default"
+#define FAILSAFE_SESSION_NAME "Fail Safe"
+
+#define RESTART_MANAGERS 	1
+#define RESTART_REST_OF_CLIENTS	2
 
 typedef struct _ClientRec {
     SmsConn	 	smsConn;
     IceConn		ice_conn;
     char 		*clientId;
     char		*clientHostname;
-    Bool		interactPending;
-    int			numProps;
-    SmProp *		props[MAX_PROPS];
-    struct _ClientRec	*next;
+    List		*props;
+    char		*discardCommand;
+    char		*saveDiscardCommand;
+
+    unsigned int	restarted : 1;
+    unsigned int	userIssuedCheckpoint : 1;
+    unsigned int	restartHint : 2;
+    unsigned int        receivedDiscardCommand : 1;
+    unsigned int	freeAfterBadSavePopup : 1;
+
 } ClientRec;
 
 typedef struct _PendingClient {
@@ -87,24 +109,73 @@ typedef struct _PendingClient {
     List		*props;
 } PendingClient;
 
-typedef struct _PendingProp {
+typedef struct _Prop {
     char		*name;
     char		*type;
     List		*values;
-} PendingProp;
+} Prop;
 
-typedef struct _PendingValue {
+typedef struct _PropValue {
     XtPointer		value;
     int			length;
-} PendingValue;
+} PropValue;
 
 
-typedef struct _AppResources {
-    Boolean	verbose;
-    Boolean	debug;
-} AppResources;
+extern int		Argc;
+extern char		**Argv;
 
-extern AppResources app_resources;
+extern char		*display_env, *non_local_display_env;
+extern char		*session_env, *non_local_session_env;
+extern char		*audio_env;
+
+extern Bool		need_to_name_session;
+
+extern Bool		remote_allowed;
+
+extern Bool		verbose;
+
+extern char		*sm_id;
+
+extern char		*networkIds;
+extern char		*session_name;
+
+extern List		*RunningList;
+extern List		*PendingList;
+extern List		*RestartAnywayList;
+extern List		*RestartImmedList;
+
+extern List		*WaitForSaveDoneList;
+extern List		*FailedSaveList;
+extern List		*WaitForInteractList;
+extern List		*WaitForPhase2List;
+
+extern Bool		client_info_visible;
+extern Bool		client_prop_visible;
+extern Bool		client_log_visible;
+extern String 		*clientListNames;
+extern ClientRec	**clientListRecs;
+extern int		numClientListNames;
+extern int		current_client_selected;
+
+extern Bool		shutdownInProgress;
+extern Bool		phase2InProgress;
+extern Bool	        saveInProgress;
+extern Bool		shutdownCancelled;
+extern Bool		wantShutdown;
+
+extern int		sessionNameCount;
+extern String		*sessionNamesShort;
+extern String		*sessionNamesLong;
+extern Bool		*sessionsLocked;
+
+extern int		num_clients_in_last_session;
+
+extern char		**non_session_aware_clients;
+extern int		non_session_aware_count;
+
+extern XtAppContext	appContext;
+extern Widget		topLevel;
+extern Widget		mainWindow;
 
 extern void fprintfhex ();
 
@@ -114,4 +185,12 @@ extern void fprintfhex ();
 extern char *Strstr();
 #endif
 
-extern strbw ();
+/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
+#if defined(ISC) && __STDC__
+extern FILE *fdopen(int, char const *);
+#endif
+
+#if defined(sun) && defined(SVR4)
+extern int System();
+#define system(s) System(s)
+#endif
