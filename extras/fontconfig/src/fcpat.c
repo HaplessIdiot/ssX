@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcpat.c,v 1.20 2002/10/11 17:53:03 keithp Exp $
- *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -754,14 +753,11 @@ FcBool
 FcPatternDel (FcPattern *p, const char *object)
 {
     FcPatternElt   *e;
-    int		    i;
 
     e = FcPatternFindElt (p, object);
     if (!e)
 	return FcFalse;
 
-    i = e - p->elts;
-    
     /* destroy value */
     FcValueListDestroy (e->values);
     

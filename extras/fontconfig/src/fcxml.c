@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fcxml.c,v 1.22 2002/08/31 22:17:32 keithp Exp $
- *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include <stdarg.h>
 #include "fcint.h"
@@ -384,7 +383,7 @@ FcElementMap (const XML_Char *name)
 	{ "not",	FcElementNot },
 	{ "if",		FcElementIf },
 	
-	{ 0,		0 }
+	{ 0,		FcElementUnknown }
     };
 
     int	    i;
@@ -703,7 +702,6 @@ FcVStackElements (FcConfigParse *parse)
 static FcChar8 **
 FcConfigSaveAttr (const XML_Char **attr)
 {
-    int		n;
     int		slen;
     int		i;
     FcChar8	**new;
@@ -714,7 +712,6 @@ FcConfigSaveAttr (const XML_Char **attr)
     slen = 0;
     for (i = 0; attr[i]; i++)
 	slen += strlen (attr[i]) + 1;
-    n = i;
     new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
     if (!new)
 	return 0;

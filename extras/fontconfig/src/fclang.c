@@ -1,6 +1,4 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fclang.c,v 1.7 2002/08/26 23:34:31 keithp Exp $
- *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -21,6 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86$ */
 
 #include "fcint.h"
 
@@ -30,9 +29,6 @@ typedef struct {
 } FcLangCharSet;
 
 #include "../fc-lang/fclang.h"
-
-#define NUM_LANG_CHAR_SET   (sizeof (fcLangCharSets) / sizeof (fcLangCharSets[0]))
-#define NUM_LANG_SET_MAP    ((NUM_LANG_CHAR_SET + 31) / 32)
 
 struct _FcLangSet {
     FcChar32	map[NUM_LANG_SET_MAP];
@@ -339,13 +335,21 @@ FcLangSetCompareStrSet (const FcLangSet *ls, FcStrSet *set)
 FcLangResult
 FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 {
-    int		    i;
+    int		    i, j;
     FcLangResult    best, r;
 
     for (i = 0; i < NUM_LANG_SET_MAP; i++)
 	if (lsa->map[i] & lsb->map[i])
 	    return FcLangEqual;
     best = FcLangDifferentLang;
+    for (j = 0; j < NUM_COUNTRY_SET; j++)
+	for (i = 0; i < NUM_LANG_SET_MAP; i++)
+	    if ((lsa->map[i] & fcLangCountrySets[j][i]) &&
+		(lsb->map[i] & fcLangCountrySets[j][i]))
+	    {
+		best = FcLangDifferentCountry;
+		break;
+	    }
     if (lsa->extra)
     {
 	r = FcLangSetCompareStrSet (lsb, lsa->extra);
