@@ -1,3 +1,4 @@
+3975. Fix an event ordering problem in Xinerama (Mark Vojkovich).
 3974. Fix some clipping bugs in the Xv DDX (Mark Vojkovich).
 3973. Remove 24bpp shadowfb support from the NV driver since the hardware
       is not capable of 24bpp (Mark Vojkovich).
