@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.2 2001/04/05 17:42:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.3 2001/09/26 12:59:17 alanh Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -295,7 +295,7 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
 {
    Bool bFoundValidPLL;
    Bool bLocked;
-   CARD8  ucMisc, ucSIndex, ucSTable[4];
+   CARD8  ucMisc;
    CARD32 ulMaxIndex;
    CARD32 ulMNP;
    CARD32 ulMNPTable[MNP_TABLE_SIZE];
@@ -366,27 +366,15 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
    {
       ulTryMNP = ulMNPTable[ulIndex];
 
-      ucSTable[3] = 0xff;
-      ucSTable[2] = 0xff;
-      ucSTable[0] = (CARD8) (ulTryMNP & 0x38);
-      if (ucSTable[0] != 0)
+#if 0
+      for(ucS = 0; !bFoundValidPLL && (ucS < 0x40); ucS += 8)
+#endif
       {
-	  ucSTable[1] = ucSTable[0] - 8;
-	  if (ucSTable[0] != 0x38)
-	  {
-	      ucSTable[2] = ucSTable[0] + 8;
-	  }
-      }
-      else
-      {
-	  ucSTable[1] = 8;
-      }
-
-      for(ucSIndex = 0; !bFoundValidPLL && (ucSTable[ucSIndex] != 0xff); ucSIndex++)
-      {
+#if 0
          ulTryMNP &= 0xffffffc7;
-         ulTryMNP |= (CARD32)ucSTable[ucSIndex];
-	 
+         ulTryMNP |= (CARD32)ucS;
+#endif
+         
          bLocked = TRUE;
          if((ulMNPTable[ulIndex] & 0xff00) < 0x300 ||
             (ulMNPTable[ulIndex] & 0xff00) > 0x7a00)
