@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.91 2000/07/09 21:02:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.92 2000/08/24 11:40:22 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2306,7 +2306,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	    if (!vgaHWMapMem(pScrn))
 	   	 return FALSE;
 	}
-    	vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
+	/* Timing problem with PM3 & PM2V chips dont like being blasted */
+        if ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) && 
+            (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V))
+    	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
     	vgaHWGetIOBase(hwp);
     }
 
