@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 13 August 1998.
+Last modified: 19 August 1998.
 
 
 
@@ -3699,4 +3699,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.5 1998/08/13 14:45:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.6 1998/08/19 07:49:05 dawes Exp $
