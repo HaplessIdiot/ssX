@@ -1,6 +1,6 @@
 
-/* $XConsortium: sun.h,v 5.39.1.1 95/01/05 19:58:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.1 1995/01/28 15:46:01 dawes Exp $ */
+/* $XConsortium: sun.h /main/56 1995/10/08 11:12:03 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.2 1995/02/12 02:36:21 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -37,25 +37,33 @@ extern char *getenv();
 #include <sys/filio.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
+
 #ifdef SVR4
-#ifdef X_POSIX_C_SOURCE
-#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
-#include <signal.h>
-#undef _POSIX_C_SOURCE
-#else
-#define _POSIX_SOURCE
-#include <signal.h>
-#undef _POSIX_SOURCE
+# ifdef X_POSIX_C_SOURCE
+#  define _POSIX_C_SOURCE X_POSIX_C_SOURCE
+#  include <signal.h>
+#  undef _POSIX_C_SOURCE
+# else
+#  define _POSIX_SOURCE
+#  include <signal.h>
+#  undef _POSIX_SOURCE
+# endif
 #endif
-#endif
+
 #include <fcntl.h>
-#ifndef __NetBSD__
-#ifndef i386
-# include <poll.h>
+
+#ifndef __bsdi_
+# ifndef __NetBSD__
+#  ifndef i386
+#   include <poll.h>
+#  else
+#   include <sys/poll.h>
+#  endif
+# endif
 #else
-# include <sys/poll.h>
+# include <unistd.h>
 #endif
-#endif
+
 #include <errno.h>
 #include <memory.h>
 
@@ -92,10 +100,18 @@ extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 # else
-#  include <machine/fbio.h>
-#  include <machine/kbd.h>
-#  include <machine/kbio.h>
-#  include <machine/vuid_event.h>
+#  ifdef __NetBSD__
+#   include <machine/fbio.h>
+#   include <machine/kbd.h>
+#   include <machine/kbio.h>
+#   include <machine/vuid_event.h>
+#  endif
+#  ifdef __bsdi__
+#   include <sys/fbio.h>
+#   include </sys/sparc/dev/kbd.h>
+#   include </sys/sparc/dev/kbio.h>
+#   include </sys/sparc/dev/vuid_event.h>
+#  endif
 # endif
 #endif
 extern int gettimeofday();
@@ -286,7 +302,7 @@ extern int sunChangeKbdTranslation(
 
 extern void sunNonBlockConsoleOff(
 #if NeedFunctionPrototypes
-#if defined(SVR4) || defined(__NetBSD__)
+#if defined(SVR4) || defined(CSRG_BASED)
     void
 #else
     char* /* arg */
@@ -350,6 +366,7 @@ extern Bool sunInitCommon(
 extern Firm_event* sunKbdGetEvents(
 #if NeedFunctionPrototypes
     int /* fd */,
+    Bool /* on */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -358,6 +375,7 @@ extern Firm_event* sunKbdGetEvents(
 extern Firm_event* sunMouseGetEvents(
 #if NeedFunctionPrototypes
     int /* fd */,
+    Bool /* on */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif

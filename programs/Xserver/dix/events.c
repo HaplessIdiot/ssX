@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.76 94/08/16 13:45:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.1 1994/09/17 13:45:18 dawes Exp $ */
+/* $XConsortium: events.c /main/182 1995/12/08 13:38:35 dpw $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.2 1995/03/04 08:40:13 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -65,6 +65,7 @@ SOFTWARE.
 
 #ifdef XKB
 #include "XKBsrv.h"
+extern Bool noXkbExtension;
 #endif
 
 extern WindowPtr *WindowTable;
@@ -107,6 +108,7 @@ extern void (* ReplySwapVector[256]) ();
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
 CallbackListPtr EventCallback;
+CallbackListPtr DeviceEventCallback;
 
 #define DNPMCOUNT 8
 
@@ -408,7 +410,7 @@ CheckVirtualMotion(qe, pWin)
     ROOT = WindowTable[sprite.hot.pScreen->myNum];
 }
 
-static void
+void
 ConfineCursorToWindow(pWin, generateEvents, confineToScreen)
     WindowPtr pWin;
     Bool generateEvents;
@@ -565,7 +567,14 @@ EnqueueEvent(xE, device, count)
     register QdEventPtr qe;
     xEvent		*qxE;
 
-    NoticeTime(xE)
+    NoticeTime(xE);
+    if (DeviceEventCallback)
+    {
+	DeviceEventInfoRec eventinfo;
+	eventinfo.events = xE;
+	eventinfo.count = count;
+	CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
+    }
     if (xE->u.u.type == MotionNotify)
     {
 	sprite.hotPhys.x = xE->u.keyButtonPointer.rootX;
@@ -1670,6 +1679,13 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
     tempGrab.modifiersDetail.pMask = NULL;
     for (; grab; grab = grab->next)
     {
+#ifdef XKB
+	DeviceIntPtr	gdev;
+	XkbSrvInfoPtr	xkbi;
+
+	gdev= grab->modifierDevice;
+	xkbi= gdev->key->xkbInfo;
+#endif
 	tempGrab.modifierDevice = grab->modifierDevice;
 	if (device == grab->modifierDevice &&
 	    (xE->u.u.type == KeyPress
@@ -1678,13 +1694,15 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 #endif
 	     ))
 	    tempGrab.modifiersDetail.exact =
+#ifdef XKB
+		(noXkbExtension?gdev->key->prev_state:xkbi->state.grab_mods);
+#else
 		grab->modifierDevice->key->prev_state;
+#endif
 	else
 	    tempGrab.modifiersDetail.exact =
 #ifdef XKB
-		noXkbExtension ?
-		    grab->modifierDevice->key->state :
-		    grab->modifierDevice->key->xkbInfo->grabState;
+		(noXkbExtension ? gdev->key->state : xkbi->state.grab_mods);
 #else
 		grab->modifierDevice->key->state;
 #endif
@@ -1695,11 +1713,10 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 		&grab->confineTo->borderSize))))
 	{
 #ifdef XKB
-	    if (!noXkbExtension)
-	    {
+	    if (!noXkbExtension) {
 		xE->u.keyButtonPointer.state &= 0x1f00;
 		xE->u.keyButtonPointer.state |=
-		    grab->modifierDevice->key->xkbInfo->grabState & 0xe0ff;
+				tempGrab.modifiersDetail.exact&(~0x1f00);
 	    }
 #endif
 	    (*device->ActivateGrab)(device, grab, currentTime, TRUE);
@@ -1928,7 +1945,16 @@ ProcessKeyboardEvent (xE, keybd, count)
     register KeyClassPtr keyc = keybd->key;
 
     if (!syncEvents.playingEvents)
-	NoticeTime(xE)
+    {
+	NoticeTime(xE);
+	if (DeviceEventCallback)
+	{
+	    DeviceEventInfoRec eventinfo;
+	    eventinfo.events = xE;
+	    eventinfo.count = count;
+	    CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
+	}
+    }
     xE->u.keyButtonPointer.state = (keyc->state |
 				    inputInfo.pointer->button->state);
     xE->u.keyButtonPointer.rootX = sprite.hot.x;
@@ -1937,6 +1963,13 @@ ProcessKeyboardEvent (xE, keybd, count)
     kptr = &keyc->down[key >> 3];
     bit = 1 << (key & 7);
     modifiers = keyc->modifierMap[key];
+#ifdef DEBUG
+    if ((xkbDebugFlags&0x4)&&
+	((xE->u.u.type==KeyPress)||(xE->u.u.type==KeyRelease))) {
+	ErrorF("CoreProcessKbdEvent: Key %d %s\n",key,
+			(xE->u.u.type==KeyPress?"down":"up"));
+    }
+#endif
     switch (xE->u.u.type)
     {
 	case KeyPress: 
@@ -2015,18 +2048,31 @@ ProcessPointerEvent (xE, mouse, count)
     register GrabPtr	grab = mouse->grab;
     Bool                deactivateGrab = FALSE;
     register ButtonClassPtr butc = mouse->button;
+#ifdef XKB
+    XkbSrvInfoPtr xkbi= inputInfo.keyboard->key->xkbInfo;
+#endif
 
     if (!syncEvents.playingEvents)
 	NoticeTime(xE)
-    xE->u.keyButtonPointer.state = (butc->state |
+    xE->u.keyButtonPointer.state = (butc->state | (
 #ifdef XKB
-				(noXkbExtension ?
-				   inputInfo.keyboard->key->state :
-				   inputInfo.keyboard->key->xkbInfo->grabState)
+			(noXkbExtension ?
+				inputInfo.keyboard->key->state :
+				xkbi->state.grab_mods)
 #else
-				    inputInfo.keyboard->key->state
+			inputInfo.keyboard->key->state
 #endif
-				    );
+				    ));
+    {
+	NoticeTime(xE);
+	if (DeviceEventCallback)
+	{
+	    DeviceEventInfoRec eventinfo;
+	    eventinfo.events = xE;
+	    eventinfo.count = count;
+	    CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
+	}
+    }
     if (xE->u.u.type != MotionNotify)
     {
 	register int  key;
@@ -2188,7 +2234,12 @@ EventSelectForWindow(pWin, client, mask)
     if (wClient (pWin) == client)
     {
 	check = pWin->eventMask;
+#if SGIMISC
+	pWin->eventMask =
+	    (mask & ~SGIMiscSpecialDestroyMask) | (pWin->eventMask & SGIMiscSpecialDestroyMask);
+#else
 	pWin->eventMask = mask;
+#endif
     }
     else
     {
@@ -2197,6 +2248,9 @@ EventSelectForWindow(pWin, client, mask)
 	    if (SameClient(others, client))
 	    {
 		check = others->mask;
+#if SGIMISC
+		mask = (mask & ~SGIMiscSpecialDestroyMask) | (others->mask & SGIMiscSpecialDestroyMask);
+#endif
 		if (mask == 0)
 		{
 		    FreeResource(others->resource, RT_NONE);
@@ -2339,12 +2393,11 @@ EnterLeaveEvent(type, mode, detail, pWin, child)
 	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
 					    ELFlagSameScreen : 0;
 #ifdef XKB
-	if (!noXkbExtension)
-	{
+	if (!noXkbExtension) {
 	    event.u.enterLeave.state = mouse->button->state & 0x1f00;
-	    event.u.enterLeave.state |= (keybd->key->xkbInfo->grabState & 0xe0ff);
-	}
-	else
+	    event.u.enterLeave.state |= 
+			XkbGrabStateFromRec(&keybd->key->xkbInfo->state);
+	} else
 #endif
 	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
 	event.u.enterLeave.mode = mode;
@@ -3572,6 +3625,11 @@ WriteEventsToClient(pClient, count, events)
     xEvent    eventTo, *eventFrom;
     int       i;
 
+#ifdef XKB
+    if ((!noXkbExtension)&&(!XkbFilterEvents(pClient, count, events)))
+      return;
+#endif
+
     if (EventCallback)
     {
 	EventInfoRec eventinfo;
@@ -3589,21 +3647,11 @@ WriteEventsToClient(pClient, count, events)
 	       this event was sent with "SendEvent." */
 	    (*EventSwapVector[eventFrom->u.u.type & 0177])
 		(eventFrom, &eventTo);
-#ifdef XKB
-	    if (!noXkbExtension)
-		(void)XkbFilterWriteEvents(pClient, 1, (char *)&eventTo);
-	    else
-#endif
 	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
 	}
     }
     else
     {
-#ifdef XKB
-	if (!noXkbExtension)
-	    (void)XkbFilterWriteEvents(pClient, count, events);
-	else
-#endif
 	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
     }
 }

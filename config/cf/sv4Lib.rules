@@ -1,5 +1,5 @@
-XCOMM $XConsortium: sv4Lib.rules,v 1.14 94/04/09 12:00:10 rws Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: sv4Lib.rules /main/17 1995/12/01 18:31:40 kaleb $
+XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.0 1994/06/05 13:39:10 dawes Exp $
 
 /*
  * SVR4 shared library rules
@@ -49,6 +49,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	mcs -d Concat($(DESTDIR)dest/lib,libname.so.rev)		@@\
 	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
+<<<<<<< sv4Lib.rules
 	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
 #else
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
@@ -58,6 +59,8 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
 	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
 #endif
+	cd $(DESTDIR)dest; $(LN) Concat(lib,libname.so.rev) Concat(lib,libname.so)
+
 #endif /* InstallSharedLibrary */
 
 /*

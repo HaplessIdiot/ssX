@@ -27,8 +27,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.23.1.1 95/05/03 20:32:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.3 1995/03/08 04:50:32 dawes Exp $ */
+/* $XConsortium: shm.c,v 1.25 95/04/06 16:00:55 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.4 1995/06/29 13:25:08 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -155,6 +155,10 @@ ShmExtensionInit()
     }
 #endif
 
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    sharedPixmaps = xFalse;
+    pixmapFormat = 0;
+#else
     sharedPixmaps = xTrue;
     pixmapFormat = shmPixFormat[0];
     for (i = 0; i < screenInfo.numScreens; i++)
@@ -171,6 +175,7 @@ ShmExtensionInit()
     }
     if (!pixmapFormat)
 	pixmapFormat = ZPixmap;
+#endif
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
     ShmPixType = CreateNewResourceType(ShmDetachSegment);
     if (ShmSegType && ShmPixType &&
@@ -282,7 +287,7 @@ ProcShmAttach(client)
 	shmdesc = (ShmDescPtr) xalloc(sizeof(ShmDescRec));
 	if (!shmdesc)
 	    return BadAlloc;
-	shmdesc->addr = (char *)shmat(stuff->shmid, 0,
+	shmdesc->addr = shmat(stuff->shmid, 0,
 			      stuff->readOnly ? SHM_RDONLY : 0);
 	if ((shmdesc->addr == ((char *)-1)) ||
 	    shmctl(stuff->shmid, IPC_STAT, &buf))
@@ -403,6 +408,11 @@ ProcShmPutImage(client)
     register GCPtr pGC;
     register DrawablePtr pDraw;
     long length;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    long lengthProto;
+    char *tmpImage;
+    int  tmpAlloced = 0;
+#endif
     ShmDescPtr shmdesc;
     REQUEST(xShmPutImageReq);
 
@@ -416,6 +426,9 @@ ProcShmPutImage(client)
         if (stuff->depth != 1)
             return BadMatch;
         length = PixmapBytePad(stuff->totalWidth, 1);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = PixmapBytePadProto(stuff->totalWidth, 1);
+#endif
     }
     else if (stuff->format == XYPixmap)
     {
@@ -423,20 +436,33 @@ ProcShmPutImage(client)
             return BadMatch;
         length = PixmapBytePad(stuff->totalWidth, 1);
 	length *= stuff->depth;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = PixmapBytePadProto(stuff->totalWidth, 1);
+	lengthProto *= stuff->depth;
+#endif
     }
     else if (stuff->format == ZPixmap)
     {
         if (pDraw->depth != stuff->depth)
             return BadMatch;
         length = PixmapBytePad(stuff->totalWidth, stuff->depth);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        lengthProto = PixmapBytePadProto(stuff->totalWidth, stuff->depth);
+#endif
     }
     else
     {
 	client->errorValue = stuff->format;
         return BadValue;
     }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, lengthProto * stuff->totalHeight,
+		   client);
+#else
     VERIFY_SHMSIZE(shmdesc, stuff->offset, length * stuff->totalHeight,
 		   client);
+#endif
     if (stuff->srcX > stuff->totalWidth)
     {
 	client->errorValue = stuff->srcX;
@@ -457,6 +483,64 @@ ProcShmPutImage(client)
 	client->errorValue = stuff->srcHeight;
 	return BadValue;
     }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    /* handle 64 bit case where protocol may pad to 32 and we want 64 
+     * In this case, length is what the server wants and lengthProto is
+     * what the protocol thinks it is.  If the the two are different,
+     * copy the protocol version (i.e. the memory shared between the 
+     * server and the client) to a version with a scanline pad of 64.
+     */
+    if (length != lengthProto) 
+    {
+	register int 	i;
+	char 		* stuffptr, /* pointer into protocol data */
+			* tmpptr;   /* new location to copy to */
+
+        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->totalHeight)))
+            return (BadAlloc);
+	tmpAlloced = 1;
+    
+	bzero(tmpImage,length*stuff->totalHeight);
+    
+	if (stuff->format == XYPixmap) 
+	{
+	    int lineBytes =  PixmapBytePad(stuff->totalWidth, 1);
+	    int lineBytesProto = PixmapBytePadProto(stuff->totalWidth, 1);
+	    int depth = stuff->depth;
+
+	    stuffptr = shmdesc->addr + stuff->offset ;
+	    tmpptr = tmpImage;
+	    for (i = 0; i < stuff->totalHeight*stuff->depth;
+		 stuffptr += lineBytesProto,tmpptr += lineBytes, i++) 
+	        bcopy(stuffptr,tmpptr,lineBytesProto);
+	}
+	else 
+	{
+	    for (i = 0,
+		 stuffptr = shmdesc->addr + stuff->offset,
+		 tmpptr=tmpImage;
+		 i < stuff->totalHeight;
+		 stuffptr += lengthProto,tmpptr += length, i++) 
+	        bcopy(stuffptr,tmpptr,lengthProto);
+	}
+    }
+    /* handle 64-bit case where stuff is not 64-bit aligned 
+     */
+    else if ((unsigned long)(shmdesc->addr+stuff->offset) & 
+	     (sizeof(long)-1)) 
+    {
+        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->totalHeight)))
+            return (BadAlloc);
+	tmpAlloced = 1;
+	bcopy((char *)(shmdesc->addr+stuff->offset),
+	      tmpImage,
+	      length*stuff->totalHeight);
+    }
+    else
+	tmpImage = (char *)(shmdesc->addr+stuff->offset);
+#endif
+
     if ((((stuff->format == ZPixmap) && (stuff->srcX == 0)) ||
 	 ((stuff->format != ZPixmap) &&
 	  (stuff->srcX < screenInfo.bitmapScanlinePad) &&
@@ -468,7 +552,11 @@ ProcShmPutImage(client)
 			       stuff->dstX, stuff->dstY,
 			       stuff->totalWidth, stuff->srcHeight, 
 			       stuff->srcX, stuff->format, 
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+			       tmpImage +
+#else
 			       shmdesc->addr + stuff->offset +
+#endif
 			       (stuff->srcY * length));
     else
 	(*shmFuncs[pDraw->pScreen->myNum]->PutImage)(
@@ -477,7 +565,13 @@ ProcShmPutImage(client)
 			       stuff->srcX, stuff->srcY,
 			       stuff->srcWidth, stuff->srcHeight,
 			       stuff->dstX, stuff->dstY,
-			       shmdesc->addr + stuff->offset);
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+			       tmpImage);
+    
+#else
+                               shmdesc->addr + stuff->offset);
+#endif
+
     if (stuff->sendEvent)
     {
 	xShmCompletionEvent ev;
@@ -491,8 +585,16 @@ ProcShmPutImage(client)
 	ev.offset = stuff->offset;
 	WriteEventsToClient(client, 1, (xEvent *) &ev);
     }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    if (tmpAlloced)
+        DEALLOCATE_LOCAL(tmpImage);
+#endif
+
      return (client->noClientException);
 }
+
+
 
 static int
 ProcShmGetImage(client)
@@ -504,6 +606,13 @@ ProcShmGetImage(client)
     xShmGetImageReply	xgi;
     ShmDescPtr		shmdesc;
     int			n;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    long		widthBytesLine,widthBytesLineProto;
+    long 		lenPerProto,lengthProto;
+    char 		*tmpImage;
+    int  		tmpAlloced = 0;
+#endif
+
     REQUEST(xShmGetImageReq);
 
     REQUEST_SIZE_MATCH(xShmGetImageReq);
@@ -550,44 +659,153 @@ ProcShmGetImage(client)
     xgi.depth = pDraw->depth;
     if(stuff->format == ZPixmap)
     {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
+	length = widthBytesLine * stuff->height;
+	widthBytesLineProto =  PixmapBytePadProto(stuff->width, pDraw->depth);
+	lengthProto = widthBytesLineProto * stuff->height;
+#else
 	length = PixmapBytePad(stuff->width, pDraw->depth) * stuff->height;
+#endif
     }
     else 
     {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLine = PixmapBytePad(stuff->width, 1);
+	lenPer = widthBytesLine * stuff->height;
+	plane = ((Mask)1) << (pDraw->depth - 1);
+	/* only planes asked for */
+	length = lenPer * Ones(stuff->planeMask & (plane | (plane - 1)));
+
+	widthBytesLineProto = PixmapBytePadProto(stuff->width, 1);
+	lenPerProto = widthBytesLineProto * stuff->height;
+	lengthProto = lenPerProto * Ones(stuff->planeMask & 
+					 (plane | (plane - 1)));
+#else
 	lenPer = PixmapBytePad(stuff->width, 1) * stuff->height;
 	plane = ((Mask)1) << (pDraw->depth - 1);
 	/* only planes asked for */
 	length = lenPer * Ones(stuff->planeMask & (plane | (plane - 1)));
+#endif
     }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, lengthProto, client);
+    xgi.size = lengthProto;
+#else
     VERIFY_SHMSIZE(shmdesc, stuff->offset, length, client);
     xgi.size = length;
+#endif
+
     if (length == 0)
     {
 	/* nothing to do */
     }
     else if (stuff->format == ZPixmap)
     {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        /* check for protocol/server padding differences.
+	 */
+        if ((widthBytesLine != widthBytesLineProto) ||
+	    ((unsigned long)shmdesc->addr + stuff->offset & (sizeof(long)-1))) 
+	{
+	    /* temp stuff for 64 bit alignment stuff */
+	    register char * bufPtr, * protoPtr;
+	    register int i;
+
+	    if(!(tmpImage = (char *) ALLOCATE_LOCAL(length))) 
+	      return (BadAlloc);
+	    tmpAlloced = 1;
+	    
+	    (*pDraw->pScreen->GetImage)(pDraw, stuff->x, stuff->y,
+					stuff->width, stuff->height,
+					stuff->format, stuff->planeMask,
+					tmpImage);
+	    
+	    /* for 64-bit server, convert image to pad to 32 bits 
+	     */
+	    bzero(shmdesc->addr + stuff->offset,lengthProto);
+	    
+	    for (i=0,bufPtr=tmpImage,protoPtr=shmdesc->addr + stuff->offset; 
+		 i < stuff->height;
+		 bufPtr += widthBytesLine,protoPtr += widthBytesLineProto, 
+		 i++)
+		bcopy(bufPtr,protoPtr,widthBytesLineProto);
+	}
+	else 
+	{
+	    (*pDraw->pScreen->GetImage)(pDraw, stuff->x, stuff->y,
+					stuff->width, stuff->height,
+					stuff->format, stuff->planeMask,
+					shmdesc->addr + stuff->offset);
+	}
+#else
 	(*pDraw->pScreen->GetImage)(pDraw, stuff->x, stuff->y,
 				    stuff->width, stuff->height,
 				    stuff->format, stuff->planeMask,
 				    shmdesc->addr + stuff->offset);
+#endif
     }
     else
     {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	/* check for protocol/server padding differences.
+	 */
+	if ((widthBytesLine != widthBytesLineProto) ||
+	    ((unsigned long)shmdesc->addr + stuff->offset & 
+	     (sizeof(long)-1))) 
+	{
+	    if(!(tmpImage = (char *) ALLOCATE_LOCAL(length)))
+	      return (BadAlloc);
+	    tmpAlloced = 1;
+	}
+#endif
+
 	length = stuff->offset;
         for (; plane; plane >>= 1)
 	{
 	    if (stuff->planeMask & plane)
 	    {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+		if ((widthBytesLine != widthBytesLineProto) ||
+		    ((unsigned long)shmdesc->addr + stuff->offset & 
+		     (sizeof(long)-1))) 
+		{
+		    /* get image for each plane. 
+		     */
+		    (*pDraw->pScreen->GetImage)(pDraw,
+						stuff->x, stuff->y,
+						stuff->width, stuff->height,
+						stuff->format, plane,
+						tmpImage);
+		    
+		    /* for 64-bit server, convert image to pad to 32 bits */
+		    bzero(shmdesc->addr+length, widthBytesLine);
+		    bcopy(tmpImage, shmdesc->addr+length, widthBytesLineProto);
+		    /* increment length */
+		    length += lenPerProto;
+		}
+		else /* no diff between protocol and server */
+		{
+		    (*pDraw->pScreen->GetImage)(pDraw,
+						stuff->x, stuff->y,
+						stuff->width, stuff->height,
+						stuff->format, plane,
+						shmdesc->addr + length);
+		    length += lenPer;
+		}
+#else
 		(*pDraw->pScreen->GetImage)(pDraw,
 					    stuff->x, stuff->y,
 					    stuff->width, stuff->height,
 					    stuff->format, plane,
 					    shmdesc->addr + length);
 		length += lenPer;
+#endif
 	    }
 	}
     }
+    
     if (client->swapped) {
     	swaps(&xgi.sequenceNumber, n);
     	swapl(&xgi.length, n);
@@ -595,6 +813,12 @@ ProcShmGetImage(client)
 	swapl(&xgi.size, n);
     }
     WriteToClient(client, sizeof(xShmGetImageReply), (char *)&xgi);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    if (tmpAlloced)
+	DEALLOCATE_LOCAL(tmpImage);
+#endif
+
     return(client->noClientException);
 }
 

@@ -1,5 +1,5 @@
-/* $XConsortium: os.h,v 1.10 95/04/07 20:34:17 kaleb Exp $ */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.0 1995/04/09 13:55:16 dawes Exp $ */
+/* $XConsortium: os.h /main/11 1995/10/04 07:51:34 dpw $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.1 1995/06/14 07:54:56 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -55,13 +55,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "FSproto.h"
 #include "misc.h"
-
-#ifdef INCLUDE_ALLOCA_H
-#include <alloca.h>
-#else
-extern char *alloca();
-
-#endif
+#define ALLOCATE_LOCAL_FALLBACK(_size) FSalloc((unsigned long)_size)
+#define DEALLOCATE_LOCAL_FALLBACK(_ptr) FSfree((pointer)_ptr)
+#include "X11/Xalloca.h"
 
 #define	MAX_REQUEST_SIZE	16384
 
@@ -72,59 +68,6 @@ extern void FSfree();
 #define	fsalloc(size)		FSalloc((unsigned long)size)
 #define	fsrealloc(ptr, size)	FSrealloc((pointer)ptr, (unsigned long)size)
 #define	fsfree(ptr)		FSfree((pointer)ptr)
-
-#ifndef NO_ALLOCA
-/*
- * os-dependent definition of local allocation and deallocation
- * If you want something other than FSalloc/FSfree for ALLOCATE/DEALLOCATE
- * LOCAL then you add that in here.
- */
-#ifdef __HIGHC__
-
-#ifndef NCR
-extern char *alloca();
-
-#if HCVERSION < 21003
-#define ALLOCATE_LOCAL(size)    alloca((int)(size))
-pragma on(alloca);
-#else /* HCVERSION >= 21003 */
-#define ALLOCATE_LOCAL(size)    _Alloca((int)(size))
-#endif /* HCVERSION < 21003 */
-#else /* NCR */
-#define ALLOCATE_LOCAL(size)	alloca(size)
-#endif /* NCR */
-
-#define DEALLOCATE_LOCAL(ptr)	/* as nothing */
-
-#endif /* __HIGHC__ */
-
-#ifdef __GNUC__
-#ifndef alloca
-#define alloca __builtin_alloca
-#endif /* !alloca */
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#else
-
-/*
- * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
- * Test is easy, the new one is named __builtin_alloca and comes
- * from alloca.h which #defines alloca.
- */
-#ifndef NCR
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
-#define	ALLOCATE_LOCAL(size)		alloca((int)size)
-#define	DEALLOCATE_LOCAL(ptr)
-#endif
-#endif /* NCR */
-#endif /* __GNUC__ */
-
-#endif /* NO_ALLOCA */
-
-#ifndef ALLOCATE_LOCAL
-#define	ALLOCATE_LOCAL(size)	FSalloc((unsigned long)size)
-#define	DEALLOCATE_LOCAL(ptr)	FSfree((pointer)ptr)
-#endif				/* ALLOCATE_LOCAL */
 
 int         ReadRequest();
 

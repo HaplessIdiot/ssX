@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.10 95/04/07 19:22:32 kaleb Exp $
+XCOMM $XConsortium: ibmLib.rules /main/12 1995/12/04 11:59:16 kaleb $
 
 /*
  * AIX shared library rules
@@ -35,14 +35,26 @@ XCOMM $XConsortium: ibmLib.rules,v 1.10 95/04/07 19:22:32 kaleb Exp $
 #endif
 
 /*
- * SharedLibReferences - variables for shared libraries
+ * SharedDSLibReferences - variables for shared libraries
  */
 #if OSMajorVersion < 4
+
 #ifndef SharedLibReferences
 #define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
 Concat3(DEP,varname,LIB) = /**/						@@\
 Concat(varname,LIB) = _Use(Concat(-l,libname),Concat(libsource/lib,libname.a)) @@\
 LintLibReferences(varname,libname,libsource)
+#endif
+
+#else
+
+#ifndef SharedLibReferences
+#define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
+Concat3(DEP,varname,LIB) = /**/						@@\
+Concat(varname,LIB) = _Use(Concat(-l,libname),Concat($(BUILDLIBDIR),/libname.imp) Concat3($(BUILDLIBDIR),/lib,libname.a)) @@\
+LintLibReferences(varname,libname,libsource)
+#endif
+
 #endif
 
 /*
@@ -52,7 +64,19 @@ LintLibReferences(varname,libname,libsource)
 #define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
 SharedLibReferences(varname,libname,libsource,revname,rev)
 #endif
+
+#if OSMajorVersion == 4
+/*
+ * UnsharedLibReferences - variables for unshared libraries
+ */
+#ifndef UnsharedLibReferences
+#define UnsharedLibReferences(varname,libname,libsource)		@@\
+Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/lib,$(BUILDLIBDIR)/lib,libname.a)	@@\
+Concat(varname,LIB) = _Use(Concat(-l,libname),Concat($(BUILDLIBDIR)/lib,libname.a))	@@\
+LintLibReferences(varname,libname,libsource)
 #endif
+#endif
+
 
 /*
  * InstallSharedLibrary - generate rules to install the shared library.
@@ -74,6 +98,8 @@ InstallLibrary(libname,dest)
  * build it into a different name so that the we do not hose people by having
  * the library gone for long periods.
  */
+#if OSMajorVersion < 4
+
 #ifndef SharedLibraryTarget
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.a))					@@\
@@ -91,8 +117,33 @@ Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.a)
-
 #endif /* SharedLibraryTarget */
+
+#else /* OSMajorVersion == 4 */
+
+#ifndef SharedLibraryTarget
+#define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
+AllTarget(Concat(lib,libname.a))					@@\
+									@@\
+Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
+	$(RM) $@~ shr.o							@@\
+	(cd down; $(AR) up/$@~ solist)					@@\
+	echo "#! $@ (shr.o)" > libname.inp				@@\
+	dump -g $@~ | sed -n -e 's/^[ 	]*[0-9][0-9]*[	 ]*\([^	 .][^	 ]*\)$$/\1/p' >> libname.inp	@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:libname.inp -bnoentry $(REQUIREDLIBS) BaseShLibReqs -L$(USRLIBDIR)	@@\
+	$(RM) $@~							@@\
+	$(AR) $@~ shr.o $(UNSHAREDOBJS)					@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+	LinkBuildLibrary($@)						@@\
+	RemoveFile($(BUILDLIBDIR)/libname.imp)				@@\
+	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/libname.inp libname.imp @@\
+									@@\
+clean::									@@\
+	$(RM) Concat(lib,libname.a)
+#endif /* SharedLibraryTarget */
+
+#endif
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

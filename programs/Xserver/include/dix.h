@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.82 94/12/02 19:15:52 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.0 1994/12/25 12:36:38 dawes Exp $ */
+/* $XConsortium: dix.h /main/39 1995/12/08 13:32:23 dpw $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.1 1995/01/14 10:49:23 dawes Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -128,6 +128,59 @@ SOFTWARE.
 	return (BadGC);\
     }
 
+/*
+ * We think that most hardware implementations of DBE will want
+ * LookupID*(dbe_back_buffer_id) to return the window structure that the
+ * id is a back buffer for.  Since both front and back buffers will
+ * return the same structure, you need to be able to distinguish
+ * somewhere what kind of buffer (front/back) was being asked for, so
+ * that ddx can render to the right place.  That's the problem that the
+ * following code solves.  Note: we couldn't embed this in the LookupID*
+ * functions because the VALIDATE_DRAWABLE_AND_GC macro often circumvents
+ * those functions by checking a one-element cache.  That's why we're
+ * mucking with VALIDATE_DRAWABLE_AND_GC.
+ * 
+ * If you put -DNEED_DBE_BUF_BITS into PervasiveDBEDefines, the window
+ * structure will have two additional bits defined, srcBuffer and
+ * dstBuffer, and their values will be maintained via the macros
+ * SET_DBE_DSTBUF and SET_DBE_SRCBUF (below).  If you also
+ * put -DNEED_DBE_BUF_VALIDATE into PervasiveDBEDefines, the function
+ * DbeValidateBuffer will be called any time the bits change to give you
+ * a chance to do some setup.  See the DBE code for more details on this
+ * function.  We put in these levels of conditionality so that you can do
+ * just what you need to do, and no more.  If neither of these defines
+ * are used, the bits won't be there, and VALIDATE_DRAWABLE_AND_GC will
+ * be unchanged.	dpw
+ */
+
+#if defined(NEED_DBE_BUF_BITS)
+#define SET_DBE_DSTBUF(_pDraw, _drawID) \
+        SET_DBE_BUF(_pDraw, _drawID, dstBuffer, TRUE)
+#define SET_DBE_SRCBUF(_pDraw, _drawID) \
+        SET_DBE_BUF(_pDraw, _drawID, srcBuffer, FALSE)
+#if defined (NEED_DBE_BUF_VALIDATE)
+#define SET_DBE_BUF(_pDraw, _drawID, _whichBuffer, _dstbuf) \
+    if (_pDraw->type == DRAWABLE_WINDOW)\
+    {\
+	int thisbuf = (_pDraw->id == _drawID);\
+	if (thisbuf != ((WindowPtr)_pDraw)->_whichBuffer)\
+	{\
+	     ((WindowPtr)_pDraw)->_whichBuffer = thisbuf;\
+	     DbeValidateBuffer((WindowPtr)_pDraw, _drawID, _dstbuf);\
+	}\
+     }
+#else /* want buffer bits, but don't need to call DbeValidateBuffer */
+#define SET_DBE_BUF(_pDraw, _drawID, _whichBuffer, _dstbuf) \
+    if (_pDraw->type == DRAWABLE_WINDOW)\
+    {\
+	((WindowPtr)_pDraw)->_whichBuffer = (_pDraw->id == _drawID);\
+    }
+#endif /* NEED_DBE_BUF_VALIDATE */
+#else /* don't want buffer bits in window */
+#define SET_DBE_DSTBUF(_pDraw, _drawID) /**/
+#define SET_DBE_SRCBUF(_pDraw, _drawID) /**/
+#endif /* NEED_DBE_BUF_BITS */
+
 #define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
     if ((stuff->gc == INVALID) || (client->lastGCID != stuff->gc) ||\
 	(client->lastDrawableID != drawID))\
@@ -147,8 +200,10 @@ SOFTWARE.
         pGC = client->lastGC;\
         pDraw = client->lastDrawable;\
     }\
+    SET_DBE_DSTBUF(pDraw, drawID);\
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
+
 
 #define WriteReplyToClient(pClient, size, pReply) \
    if ((pClient)->swapped) \
@@ -189,14 +244,22 @@ extern ClientPtr requestingClient;
 extern ClientPtr *clients;
 extern ClientPtr serverClient;
 extern int currentMaxClients;
-extern long *checkForInput[2];
+
+#ifndef __alpha
+typedef long HWEventQueueType;
+#else
+typedef int HWEventQueueType;
+#endif
+typedef HWEventQueueType* HWEventQueuePtr;
+
+extern HWEventQueuePtr checkForInput[2];
 
 /* dispatch.c */
 
 extern void SetInputCheck(
 #if NeedFunctionPrototypes
-    long* /*c0*/,
-    long* /*c1*/
+    HWEventQueuePtr /*c0*/,
+    HWEventQueuePtr /*c1*/
 #endif
 );
 
@@ -550,7 +613,10 @@ extern Bool AllocateClientPrivate(
  *  callback manager stuff
  */
 
-typedef struct _CallbackList *CallbackListPtr;
+#ifndef _XTYPEDEF_CALLBACKLISTPTR
+typedef struct _CallbackList *CallbackListPtr; /* also in misc.h */
+#define _XTYPEDEF_CALLBACKLISTPTR
+#endif
 
 typedef void (*CallbackProcPtr) (
 #if NeedNestedPrototypes
@@ -653,8 +719,19 @@ extern CallbackListPtr EventCallback;
 
 typedef struct {
     ClientPtr client;
-    struct _xEvent *events;
+    xEventPtr events;
     int count;
 } EventInfoRec;
+
+/*
+ *  DeviceEventCallback stuff
+ */
+
+extern CallbackListPtr DeviceEventCallback;
+
+typedef struct {
+    xEventPtr events;
+    int count;
+} DeviceEventInfoRec;
 
 #endif /* DIX_H */

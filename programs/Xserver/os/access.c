@@ -1,5 +1,5 @@
-/* $XConsortium: access.c,v 1.76 95/04/06 16:10:29 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.7 1995/05/07 12:25:25 dawes Exp $ */
+/* $XConsortium: access.c /main/62 1995/12/07 17:53:09 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.8 1995/06/20 14:30:54 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -304,7 +304,7 @@ ifioctl (fd, cmd, arg)
  * for this fd and add them to the selfhosts list.
  */
 
-#ifdef WINTCP
+#ifdef WINTCP /* NCR Wollongong based TCP */
 
 #include <sys/un.h>
 #include <stropts.h>

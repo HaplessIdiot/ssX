@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.7tsi Exp $
+XCOMM $XConsortium: Imakefile /main/36 1995/12/15 18:56:01 matt $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.8 1995/07/12 15:27:25 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -35,8 +35,6 @@ xf86.rules
 
 TMPLFILES = \
 Imake.tmpl \
-Fresco.tmpl \
-Ixx.tmpl \
 bsdLib.tmpl \
 lnxLib.tmpl \
 lnxdoc.tmpl \
@@ -49,6 +47,7 @@ hpLib.tmpl \
 ibmLib.tmpl \
 necLib.tmpl \
 osfLib.tmpl \
+sgiLib.tmpl \
 sunLib.tmpl \
 sv4Lib.tmpl \
 sv3Lib.tmpl \
@@ -83,7 +82,7 @@ ncr.cf \
 nec.cf \
 osf1.cf \
 pegasus.cf \
-rtcchack.bac \
+sco.cf \
 sequent.cf \
 sgi.cf \
 sony.cf \

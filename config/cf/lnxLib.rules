@@ -1,5 +1,5 @@
-XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.15 1995/12/31 10:22:57 dawes Exp $
+XCOMM $XConsortium: lnxLib.rules /main/11 1995/12/14 15:31:16 matt $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.16 1996/01/03 01:21:13 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -55,7 +55,7 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.15 1995/12/31 10:22:57 dawes Exp $
 #define PositionIndependentCplusplusFlags -fPIC
 #endif
 #ifndef ExtraLoadFlags
-#define ExtraLoadFlags -Wl,-rpath,/usr/X11R6/lib
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIR)
 #endif
 
 /*
@@ -319,33 +319,6 @@ JUMP_GOTSIZE_XIE = 4096
 JUMP_STUBNAMES_XIE = libXIE
 JUMP_STUBS_IMPORT_XIE = $(JUMP_STUBS_IMPORT_X11) $(LIBM_SA)
 JUMP_LDLIBS_XIE = $(JUMP_ROOT_X11)/libX11.sa $(JUMP_LDLIBS_libc) -lm
-
-XCOMM libFresco.so (Fresco, Xtf)
-JUMP_ROOT_Fresco = $(FRESCOSRC)/src
-JUMP_IS_HOST_Fresco = YES
-JUMP_STUBLIBS_Fresco = libFresco.sa libXtf.sa
-JUMP_SUBDIRS_Fresco = $(JUMP_ROOT_X11)
-JUMP_SIBDIRS_Fresco = $(JUMP_ROOT_Xtf)
-JUMP_DIR_Fresco = $(JUMP_ROOT_Fresco)/shared
-JUMP_VARS_Fresco = $(JUMP_ROOT_Fresco)/jump_vars
-JUMP_FUNCS_Fresco = $(JUMP_ROOT_Fresco)/jump_funcs
-JUMP_IGNORE_Fresco = $(JUMP_ROOT_Fresco)/jump_ignore
-JUMP_EXPORT_Fresco = $(JUMP_DIR_Fresco)/jump.vars
-JUMP_IMPORT_Fresco = $(JUMP_EXPORT_X11)
-JUMP_ADDRESS_Fresco = 0x60bc0000
-JUMP_JUMPTABLESIZE_Fresco = 0x4000
-JUMP_GOTSIZE_Fresco = 4096
-JUMP_STUBNAMES_Fresco = libFresco libXtf
-JUMP_STUBS_IMPORT_Fresco = $(JUMP_STUBS_IMPORT_X11)
-JUMP_SIBARS_Fresco = jump/libXtf.a~
-JUMP_LDLIBS_Fresco = $(JUMP_SIBARS_Fresco) $(JUMP_ROOT_X11)/libX11.sa \
-	$(JUMP_LDLIBS_libc)
-
-XCOMM libXtf (part of libFresco.so)
-JUMP_ROOT_Xtf = $(XTFSRC)
-JUMP_IS_HOST_Xtf = NO
-JUMP_HOST_Xtf = $(JUMP_ROOT_Fresco)
-JUMP_DIR_Xtf = $(JUMP_DIR_Fresco)
 
 #endif /* !UseInstalled */
 

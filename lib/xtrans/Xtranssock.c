@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c,v 1.36 95/04/28 15:23:33 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.14 1995/06/20 14:24:47 dawes Exp $ */
+/* $XConsortium: Xtranssock.c /main/50 1995/12/05 16:53:10 mor $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.15 1995/07/07 15:33:09 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -54,6 +54,9 @@ from the X Consortium.
  */
 
 #include <ctype.h>
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 #ifndef WIN32
 
 #if defined(TCPCONN) || defined(UNIXCONN)
@@ -95,7 +98,7 @@ from the X Consortium.
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
-#if (defined(i386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV) && !defined(sco)) || defined(_SEQUENT_)
 #if !defined(_SEQUENT_) && !defined(ESIX)
 #include <net/errno.h>
 #endif /* _SEQUENT_  || ESIX */
@@ -812,7 +815,27 @@ char 		*port;
     int		namelen = sizeof(sockname);
     int		status;
     short	tmpport;
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+    struct	servent sent;
+#ifndef _POSIX_THREADS
+#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
+#define CallFailed NULL
+#define ServPort sent.s_port
     struct	servent	*servp;
+    char*	sbuf[LINE_MAX];
+#else 
+#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,&sdata)
+#define CallFailed -1
+#define ServPort sent.s_port
+    struct servent_data sdata;
+    int		servp;
+#endif
+#else
+#define Getservbyname(s,p) getservbyname((s),(p))
+#define CallFailed NULL
+#define ServPort servp->s_port
+    struct	servent	*servp;
+#endif
 
 #define PORTBUFSIZE	64	/* what is a real size for this? */
 
@@ -848,15 +871,17 @@ char 		*port;
 
 	if (!is_numeric (port))
 	{
-	    if ((servp = getservbyname (port, "tcp")) == NULL)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	    bzero ((char*)&sdata, sizeof sdata);
+#endif
+	    if ((servp = Getservbyname (port, "tcp")) == CallFailed)
 	    {
 		PRMSG (1,
 	     "TRANS(SocketINETCreateListener): Unable to get service for %s\n",
 		      port, 0, 0);
 		return TRANS_CREATE_LISTENER_FAILED;
 	    }
-	    
-	    sockname.sin_port = servp->s_port;
+	    sockname.sin_port = ServPort;
 	}
 	else
 	{
@@ -998,7 +1023,7 @@ XtransConnInfo ciptr;
 
     if (stat (unsock->sun_path, &statb) == -1 ||
         ((statb.st_mode & S_IFMT) !=
-#if (defined (sun) && defined(SVR4)) || defined(NCR) || defined(SCO) || !defined(S_IFSOCK)
+#if (defined (sun) && defined(SVR4)) || defined(NCR) || defined(SCO) || defined(sco) || !defined(S_IFSOCK)
 	  		S_IFIFO))
 #else
 			S_IFSOCK))
@@ -1189,7 +1214,9 @@ int	       *status;
     }
     
     newciptr->peeraddrlen = ciptr->addrlen;
-    memcpy (newciptr->peeraddr, ciptr->addr, newciptr->peeraddrlen);
+    memcpy (newciptr->peeraddr, ciptr->addr, newciptr->addrlen);
+
+    newciptr->family = AF_UNIX;
 
     *status = 0;
 
@@ -1214,8 +1241,43 @@ char 		*port;
 {
     struct sockaddr_in	sockname;
     int			namelen = sizeof(sockname);
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+    struct hostent	hent;
+    struct servent	sent;
+#ifndef _POSIX_THREADS
+#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
+#define CallFailed NULL
+#define HostAddrType hent.h_addrtype
+#define HostAddr hent.h_addr
+#define ServPort sent.s_port
+    char		hbuf[LINE_MAX];
+    char		sbuf[LINE_MAX];
     struct hostent	*hostp;
     struct servent	*servp;
+    int			herr;
+#else
+#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
+#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,&sdata)
+#define CallFailed -1
+#define HostAddrType hent.h_addrtype
+#define HostAddr hent.h_addr
+#define ServPort sent.s_port
+    struct hostent_data hdata;
+    struct servent_data sdata;
+    int			hostp;
+    int			servp;
+#endif
+#else /* !XTHREADS etc */
+#define Gethostbyname(h) gethostbyname((h))
+#define Getservbyname(s,p) getservbyname((s),(p))
+#define CallFailed NULL
+#define HostAddrType hostp->h_addrtype
+#define HostAddr hostp->h_addr
+#define ServPort servp->s_port
+    struct hostent	*hostp;
+    struct servent	*servp;
+#endif
 
 #define PORTBUFSIZE	64	/* what is a real size for this? */
     char	portbuf[PORTBUFSIZE];
@@ -1280,14 +1342,17 @@ char 		*port;
 
     if (tmpaddr == -1)
     {
-	if ((hostp = gethostbyname(host)) == NULL)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero ((char*)&hdata, sizeof hdata);
+#endif
+	if ((hostp = Gethostbyname(host)) == CallFailed)
 	{
 	    PRMSG (1,"TRANS(SocketINETConnect) () can't get address for %s\n",
 		  host, 0, 0);
 	    ESET(EINVAL);
 	    return TRANS_CONNECT_FAILED;
 	}
-	if (hostp->h_addrtype != AF_INET)  /* is IP host? */
+	if (HostAddrType != AF_INET)  /* is IP host? */
 	{
 	    PRMSG (1,"TRANS(SocketINETConnect) () not INET host%s\n",
 		  host, 0, 0);
@@ -1303,7 +1368,7 @@ char 		*port;
 	sockname.sin_addr = t;
         }
 #else
-        memcpy ((char *) &sockname.sin_addr, (char *) hostp->h_addr,
+        memcpy ((char *) &sockname.sin_addr, (char *) HostAddr,
 		sizeof (sockname.sin_addr));
 #endif /* CRAY and OLDTCP */
 	
@@ -1326,13 +1391,16 @@ else
 
     if (!is_numeric (portbuf))
     {
-	if ((servp = getservbyname (portbuf,"tcp")) == NULL)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero ((char*)&sdata, sizeof sdata);
+#endif
+	if ((servp = Getservbyname (portbuf,"tcp")) == CallFailed)
 	{
 	    PRMSG (1,"TRANS(SocketINETConnect) () can't get service for %s\n",
 		  portbuf, 0, 0);
 	    return TRANS_CONNECT_FAILED;
 	}
-	sockname.sin_port = servp->s_port;
+	sockname.sin_port = ServPort;
     }
     else
     {
@@ -1429,35 +1497,55 @@ char *host;
 	 * by TRANS(GetHostname)), then the two hostnames are equivalent,
 	 * and we know that 'host' is really a local host.
 	 */
-
-	struct hostent *specified_local_host;
-	struct hostent *actual_local_host;
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+	struct hostent	hent;
+#ifndef _POSIX_THREADS
+#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#define HostAddrList hent.h_addr_list
+#define CallFailed NULL
+	char		hbuf[LINE_MAX];
+	struct hostent	*hostp;
+	int		herr;
+#else
+#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
+#define HostAddrList hent.h_addr_list
+#define CallFailed -1
+	struct hostent_data hdata;
+	int		hostp;
+#endif
+#else /* !XTHREADS etc */
+#define Gethostbyname(h) gethostbyname((h))
+#define HostAddrList hostp->h_addr_list
+#define CallFailed NULL
+	struct hostent	*hostp;
+#endif
 	char specified_local_addr_list[10][4];
 	int scount, equiv, i, j;
 
-	if ((specified_local_host = gethostbyname (host)) == NULL)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero ((char*)&hdata, sizeof hdata);
+#endif
+	if ((hostp = Gethostbyname (host)) == CallFailed)
 	    return (0);
 
 	scount = 0;
-	while (specified_local_host->h_addr_list[scount] && scount <= 8)
+	while (HostAddrList[scount] && scount <= 8)
 	{
 	    /*
 	     * The 2nd call to gethostname() overrides the data
 	     * from the 1st call, so we must save the address list.
 	     */
 
-	    specified_local_addr_list[scount][0] =
-		specified_local_host->h_addr_list[scount][0];
-	    specified_local_addr_list[scount][1] =
-		specified_local_host->h_addr_list[scount][1];
-	    specified_local_addr_list[scount][2] =
-		specified_local_host->h_addr_list[scount][2];
-	    specified_local_addr_list[scount][3] =
-		specified_local_host->h_addr_list[scount][3];
+	    specified_local_addr_list[scount][0] = HostAddrList[scount][0];
+	    specified_local_addr_list[scount][1] = HostAddrList[scount][1];
+	    specified_local_addr_list[scount][2] = HostAddrList[scount][2];
+	    specified_local_addr_list[scount][3] = HostAddrList[scount][3];
 	    scount++;
 	}
-
-	if ((actual_local_host = gethostbyname (hostnamebuf)) == NULL)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero ((char*)&hdata, sizeof hdata);
+#endif
+	if ((hostp = Gethostbyname (hostnamebuf)) == CallFailed)
 	    return (0);
 
 	equiv = 0;
@@ -1467,16 +1555,12 @@ char *host;
 	{
 	    j = 0;
 
-	    while (actual_local_host->h_addr_list[j])
+	    while (HostAddrList[j])
 	    {
-		if ((specified_local_addr_list[i][0] ==
-		     actual_local_host->h_addr_list[j][0]) &&
-		    (specified_local_addr_list[i][1] ==
-		     actual_local_host->h_addr_list[j][1]) &&
-		    (specified_local_addr_list[i][2] ==
-		     actual_local_host->h_addr_list[j][2]) &&
-		    (specified_local_addr_list[i][3] ==
-		     actual_local_host->h_addr_list[j][3]))
+		if ((specified_local_addr_list[i][0] == HostAddrList[j][0]) &&
+		    (specified_local_addr_list[i][1] == HostAddrList[j][1]) &&
+		    (specified_local_addr_list[i][2] == HostAddrList[j][2]) &&
+		    (specified_local_addr_list[i][3] == HostAddrList[j][3]))
 		{
 		    /* They're equal, so we're done */
 		    
@@ -1654,7 +1738,7 @@ char dummybuf[1500];
 #ifdef WIN32
     return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
 #else
-#if (defined(i386) && defined(SYSV) && !defined(SCO)) || defined(_SEQUENT_)
+#if (defined(i386) && defined(SYSV) && !defined(sco)) || defined(_SEQUENT_)
     return ioctl (ciptr->fd, I_NREAD, (char *) pend);
 #else
 #if defined(__EMX__)

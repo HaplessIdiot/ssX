@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.249 95/05/23 21:36:40 matt Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
+XCOMM $XConsortium: Project.tmpl /main/r61_main/3 1995/12/18 17:35:53 gildea $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.20 1995/11/02 00:26:37 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -61,6 +61,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 #define BuildFontServer		YES
 #endif
 #ifndef BuildFonts
+<<<<<<< Project.tmpl
 #define BuildFonts		BuildServer
 #endif
 #ifndef Build75DpiFonts
@@ -80,6 +81,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 #endif
 #ifndef UseKoi8RForCyrillic
 #define UseKoi8RForCyrillic	NO
+#define BuildFonts		(BuildServer | BuildFontServer)
 #endif
 #ifndef BuildPhigs
 #define BuildPhigs		NO
@@ -97,19 +99,19 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 #define BuildXIE		YES
 #endif
 #ifndef BuildXKB
-#define BuildXKB		NO
+#define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		NO	/* not yet a standard part of Xlib */
+#define BuildXKBlib		YES	/* not yet a standard part of Xlib */
 #endif
-#ifndef BuildLBX
-#define BuildLBX		NO
+#ifndef BuildDBE
+#define BuildDBE		YES
 #endif
-#ifndef BuildLBXCompatible
-#define BuildLBXCompatible	NO
+#ifndef BuildMultibuffer
+#define BuildMultibuffer	NO
 #endif
-#ifndef BuildFresco
-#define BuildFresco		NO	/* R6 snapshot is obsolete */
+#ifndef BuildRECORD
+#define BuildRECORD		YES
 #endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO
@@ -256,20 +258,37 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 #define XkbDefines /**/
 #endif
 #endif
-#ifndef LbxDefines
-#if BuildLBX
-#define LbxDefines -DLBX
+#ifndef XkbClientDefines
+#if BuildXKB
+#define XkbClientDefines -DXKB
 #else
-#define LbxDefines /**/
+#define XkbClientDefines /**/
 #endif
 #endif
 #ifndef BigReqDefines
-#if !BuildLBX
 #define BigReqDefines -DBIGREQS
+#endif
+
+#ifndef DBEDefines
+#if BuildDBE
+#define DBEDefines -DDBE
 #else
-#define BigReqDefines /**/	/* LBX doesn't work with BIG-REQUESTS yet */
+#define DBEDefines /**/
 #endif
 #endif
+
+#ifndef PervasiveDBEDefines
+#define PervasiveDBEDefines /* -DNEED_DBE_BUF_BITS -DNEED_DBE_BUF_VALIDATE */
+#endif
+
+#ifndef MultibufferDefines
+#if BuildMultibuffer
+#define MultibufferDefines -DMULTIBUFFER
+#else
+#define MultibufferDefines /**/
+#endif
+#endif
+
 #ifndef ScreenSaverExtensionDefines
 #if BuildScreenSaverExt
 #define ScreenSaverExtensionDefines -DSCREENSAVER
@@ -277,24 +296,32 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.19 1995/10/21 11:25:59 dawes Exp $
 #define ScreenSaverExtensionDefines /**/
 #endif
 #endif
-#ifndef XF86VidModeExtDefines
+#ifndef VidTuneExtensionDefines
 #if BuildXF86VidModeExt
-#define XF86VidModeExtDefines -DXF86VIDMODE
+#define VidTuneExtensionDefines -DXF86VIDMODE
 #else
-#define XF86VidModeExtDefines /**/
+#define VidTuneExtensionDefines /**/
+#endif
+
+#ifndef RECORDDefines
+#if BuildRECORD
+#define RECORDDefines -DXRECORD
+#else
+#define RECORDDefines /**/
 #endif
 #endif
+
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LbxDefines SitePervasiveExtensionDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines PervasiveDBEDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines ScreenSaverExtensionDefines XF86VidModeExtDefines
+#define BaseExtensionDefines MultibufferDefines -DMITMISC -DXTEST -DXSYNC -DXCMISC -DXRECORD PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines DBEDefines SiteExtensionDefines ScreenSaverExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
@@ -555,19 +582,11 @@ XCOMM X Window System make variables; these need to be coordinated with rules
           XLIBSRC = $(LIBSRC)/X11
 #if SharedLibX11
 #ifndef SharedX11Rev
-#define SharedX11Rev 6.0
+#define SharedX11Rev 6.1
 #endif
-#if BuildXKBlib
-SharedLibReferences(XONLY,X11kb,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
-#else
 SharedLibReferences(XONLY,X11,$(XLIBSRC),SOXLIBREV,SharedX11Rev)
-#endif
-#else
-#if BuildXKBlib
-UnsharedLibReferences(XONLY,X11kb,$(XLIBSRC))
 #else
 UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
-#endif
 #endif
          XLIBONLY = $(XONLYLIB)
 
@@ -629,7 +648,7 @@ UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
 #endif
 #if SharedLibXext
 #ifndef SharedXextRev
-#define SharedXextRev 6.0
+#define SharedXextRev 6.1
 #endif
 SharedLibReferences(XEXT,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 SharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC),SOXEXTREV,SharedXextRev)
@@ -786,55 +805,11 @@ UnsharedLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC))
        AWIDGETSRC = $(LIBSRC)/Xaw
 #if SharedLibXaw
 #ifndef SharedXawRev
-#define SharedXawRev 6.0
+#define SharedXawRev 6.1
 #endif
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
 UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
-#endif
-
-#ifndef SharedLibXtf
-#define SharedLibXtf HasSharedLibraries
-#endif
-#ifndef NormalLibXtf
-#define NormalLibXtf (!SharedLibXtf | ForceNormalLib)
-#endif
-#ifndef DebugLibXtf
-#define DebugLibXtf		NO	/* debugged widget library */
-#endif
-#ifndef ProfileLibXtf
-#define ProfileLibXtf		NO	/* profiled widget library */
-#endif
-       XTFSRC = $(TOP)/workInProgress/Xtf
-#if SharedLibXtf
-#ifndef SharedXtfRev
-#define SharedXtfRev 0.7
-#endif
-SharedLibReferences(XTF,Xtf,$(XTFSRC),SOXTFREV,SharedXtfRev)
-#else
-UnsharedLibReferences(XTF,Xtf,$(XTFSRC))
-#endif
-
-#ifndef SharedLibFresco
-#define SharedLibFresco HasSharedLibraries
-#endif
-#ifndef NormalLibFresco
-#define NormalLibFresco (!SharedLibFresco | ForceNormalLib)
-#endif
-#ifndef DebugLibFresco
-#define DebugLibFresco		NO	/* debugged widget library */
-#endif
-#ifndef ProfileLibFresco
-#define ProfileLibFresco	NO	/* profiled widget library */
-#endif
-       FRESCOSRC = $(TOP)/workInProgress/Fresco
-#if SharedLibFresco
-#ifndef SharedFrescoRev
-#define SharedFrescoRev 0.7
-#endif
-SharedLibReferences(FRESCO,Fresco,$(FRESCOSRC)/src,SOFRESCOREV,SharedFrescoRev)
-#else
-UnsharedLibReferences(FRESCO,Fresco,$(FRESCOSRC)/src)
 #endif
 
 #ifndef SharedLibXi
@@ -874,7 +849,7 @@ UnsharedLibReferences(XI,Xi,$(XILIBSRC))
       XTESTLIBSRC = $(LIBSRC)/Xtst
 #if SharedLibXtst
 #ifndef SharedXtstRev
-#define SharedXtstRev 6.0
+#define SharedXtstRev 6.1
 #endif
 SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXtstRev)
 #else
@@ -1012,18 +987,29 @@ UnsharedLibReferences(FS,FS,$(FSLIBSRC))
          FONTLIBSRC = $(LIBSRC)/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
 
+#ifdef BuildXKBlib
+    XKBFILELIBSRC = $(LIBSRC)/xkbfile
+UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
+#ifndef XkbClientDepLibs
+#define	XkbClientDepLibs $(DEPXKBFILELIB)
+#endif
+#ifndef XkbClientLibs
+#define	XkbClientLibs $(XKBFILELIB)
+#endif
+#else /* !BuildXKBlib */
+#ifndef XkbClientDepLibs
+#define	XkbClientDepLibs 
+#endif
+#ifndef XkbClientLibs
+#define	XkbClientLibs
+#endif
+#endif /* BuildXKBlib */
+
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 #endif
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-#endif
-
-#ifndef FrescoClientDepLibs
-#define FrescoClientDepLibs $(DEPFRESCOLIB) $(DEPXLIB)
-#endif
-#ifndef FrescoClientLibs
-#define FrescoClientLibs $(FRESCOLIB) $(XLIB) MathLibrary
 #endif
 
 #ifndef NeedDefaultDepLibs
@@ -1151,7 +1137,7 @@ InstallTarget(install,fonts.scale,$(INSTDATFLAGS),dest)
 #define UncompressedFontTarget(basename)				@@\
 FontBaseObj(basename):  FontSrc(basename)				@@\
 	$(FONTC) $(FONTCFLAGS) $? -o $@
-#endif /* CompressedFontTarget */
+#endif /* UncompressedFontTarget */
 
 /*
  * CompressedFontTarget
@@ -1172,16 +1158,26 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #endif /* CompressAllFonts */
 #endif
 
+/*
+ * PostProcessTroffPS - by default moves the working output into place,
+ * but can be a hook for more complicated post-processing.
+ */
+#ifndef PostProcessTroffPS
+#define PostProcessTroffPS(temp,real) $(MV) temp real
+#endif
+
 #ifndef MakeSimpleDoc
 #define MakeSimpleDoc(file,srcs)					@@\
 all:: file.PS								@@\
+.PRECIOUS: file.PS							@@\
 									@@\
-file.PS:								@@\
-	$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > file.nPS \@@\
-	&& $(MV) file.nPS $@						@@\
+file.PS: srcs								@@\
+	-$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > file.nPS \@@\
+	&& PostProcessTroffPS(file.nPS,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? = 1; fi @@\
 									@@\
-file.txt:								@@\
-	nroff $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > $@		@@\
+file.txt: srcs								@@\
+	$(NROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > $@	@@\
 									@@\
 clean::									@@\
 	$(RM) index.raw file.nPS file.PS file.txt
@@ -1190,13 +1186,15 @@ clean::									@@\
 #ifndef MakeTblDoc
 #define MakeTblDoc(file,srcs)						@@\
 all:: file.PS								@@\
+.PRECIOUS: file.PS							@@\
 									@@\
-file.PS:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
-	&& $(MV) file.nPS $@						@@\
+file.PS: srcs								@@\
+	-$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
+	&& PostProcessTroffPS(file.nPS,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? = 1; fi @@\
 									@@\
-file.txt:								@@\
-	$(TBL) $(XDOCMACROS) srcs | nroff $(MSMACROS) 2> index.raw | col > $@	@@\
+file.txt: srcs								@@\
+	$(TBL) $(XDOCMACROS) srcs | $(NROFF) $(MSMACROS) 2> index.raw | $(COL) > $@	@@\
 									@@\
 clean::									@@\
 	$(RM) index.raw file.nPS file.PS file.txt
@@ -1205,13 +1203,15 @@ clean::									@@\
 #ifndef MakeEqnDoc
 #define MakeEqnDoc(file,srcs)						@@\
 all:: file.PS								@@\
+.PRECIOUS: file.PS							@@\
 									@@\
-file.PS:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
-	&& $(MV) file.nPS $@						@@\
+file.PS: srcs								@@\
+	-$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
+	&& PostProcessTroffPS(file.nPS,$@)				@@\
+	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? = 1; fi @@\
 									@@\
-file.txt:								@@\
-	$(TBL) $(XDOCMACROS) srcs | neqn | nroff $(MSMACROS) 2> index.raw | col > $@ @@\
+file.txt: srcs								@@\
+	$(TBL) $(XDOCMACROS) srcs | $(NEQN) | $(NROFF) $(MSMACROS) 2> index.raw | $(COL) > $@ @@\
 									@@\
 clean::									@@\
 	$(RM) index.raw file.nPS file.PS file.txt
@@ -1221,9 +1221,9 @@ clean::									@@\
 #define MakeDocIndex(file,srcs)						@@\
 all:: file.idx.PS							@@\
 									@@\
-file.idx.PS:								@@\
+file.idx.PS: srcs index.raw						@@\
 	tail -1 index.raw > index.pageno				@@\
-	grep -v '^.pn ' index.raw | sort -f '-t:' +1 -3 +0n -1n | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
+	grep '^[1-9]' index.raw | sort -f '-t:' +1 -3 +0n -1n | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
 	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > file.idx.nPS \@@\
 	&& $(MV) file.idx.nPS $@					@@\
 	$(RM) index.troff index.pageno					@@\

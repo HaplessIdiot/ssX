@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranslcl.c,v 1.23 95/04/28 15:23:33 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.11 1995/06/20 14:24:44 dawes Exp $ */
+/* $XConsortium: Xtranslcl.c /main/24 1995/12/05 16:52:01 mor $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.12 1995/07/07 15:33:04 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -200,7 +200,7 @@ char		*peer_sun_path;
 
 /* PTS */
 
-#if defined(SYSV) && !defined(SCO) && !defined(ISC)
+#if defined(SYSV) && !defined(sco) && !defined(SCO) && !defined(ISC)
 #define SIGNAL_T int
 #else
 #define SIGNAL_T void
@@ -2349,7 +2349,7 @@ BytesReadable_t *pend;
 {
     PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
     
-#if defined(SCO) || defined(ISC)
+#if defined(SCO) || || defined(sco) || defined(ISC)
     return ioctl(ciptr->fd, I_NREAD, (char *)pend);
 #else
     return ioctl(ciptr->fd, FIONREAD, (char *)pend);

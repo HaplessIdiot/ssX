@@ -1,6 +1,6 @@
 /*
- * $XConsortium: IMWrap.c,v 11.11 94/09/01 18:40:04 kaleb Exp $
- * $XFree86: xc/lib/X11/IMWrap.c,v 3.0 1994/06/28 12:21:00 dawes Exp $
+ * $XConsortium: IMWrap.c /main/12 1995/12/09 12:03:06 gildea $
+ * $XFree86: xc/lib/X11/IMWrap.c,v 3.1 1994/09/17 13:44:11 dawes Exp $
  */
 
 /*
@@ -101,8 +101,8 @@ _XCopyToArg(src, dst, size)
 #ifdef LONG64
 	    else if (size == sizeof(int))      *dst = (XPointer)u.intval;
 #endif
-	    else if (size == sizeof(short))    *dst = (XPointer)u.shortval;
-	    else if (size == sizeof(char))     *dst = (XPointer)u.charval;
+	    else if (size == sizeof(short))    *dst = (XPointer)(long)u.shortval;
+	    else if (size == sizeof(char))     *dst = (XPointer)(long)u.charval;
 	    else if (size == sizeof(char*))    *dst = (XPointer)u.charptr;
 	    else if (size == sizeof(XPointer)) *dst = (XPointer)u.ptr;
 	    else memcpy( (char*)dst, (char*)src, (int)size );

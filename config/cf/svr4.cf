@@ -1,5 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.14 95/06/30 18:21:43 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.18 1995/12/16 08:12:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.19 1995/12/17 04:58:17 dawes Exp $
 /*
  * A default OS name
  */

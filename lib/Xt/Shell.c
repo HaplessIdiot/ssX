@@ -1,5 +1,5 @@
-/* $XConsortium: Shell.c,v 1.169 95/06/22 22:31:11 converse Exp $ */
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.2 1995/01/27 04:46:59 dawes Exp $ */
+/* $XConsortium: Shell.c /main/172 1995/09/13 19:55:40 kaleb $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.3 1995/06/29 13:24:00 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -2647,7 +2647,11 @@ static void ApplicationShellInsertChild(widget)
 #define XtSessionCheckpoint	0
 #define XtSessionInteract	1
 
-extern String _XtGetUserName();
+extern String _XtGetUserName(
+#if NeedFunctionPrototypes
+    String
+#endif
+);
 
 static void CallSaveCallbacks();
 static String *EditCommand();
@@ -2893,8 +2897,9 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	return;
 
     if (initialize) {
-	String user_name;
+	char nam_buf[256];
 	char pid[12];
+	String user_name;
 	String pidp = pid;
 
 	/* set all non-NULL session properties, the UserID and the ProcessID */
@@ -2908,7 +2913,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
 
 	}
-	user_name = _XtGetUserName();
+	user_name = _XtGetUserName(nam_buf);
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
 	sprintf(pid, "%d", getpid());

@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.10 95/06/26 20:41:49 kaleb Exp $ */
+/* $XConsortium: lcEuc.c /main/13 1995/11/18 16:58:49 kaleb $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -256,9 +256,7 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
     XLCd lcd = (XLCd)conv->state;
     CodeSet codeset;
-    Ulong wc_encoding_mask = XLC_GENERIC(lcd, wc_encode_mask);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
-    Ulong wch_encode;
 
 
     if (*from_left > *to_left)
@@ -397,7 +395,6 @@ euc_mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    XLCd lcd = (XLCd)conv->state;
     char *tmp_from, *tmp_to;
     int tmp_from_left, tmp_to_left;
     XlcCharSet charset, tmp_charset;
@@ -465,7 +462,6 @@ euc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     register length;
     CodeSet codeset;
     Ulong wc_encoding;
-    int unconv_num = 0;
     int wcstr_len = *from_left, buf_len = *to_left;
 
 
@@ -710,8 +706,13 @@ typedef struct _StateRec {
     CTData charset;
 } StateRec, *State;
 
-static enum { CT_STD, CT_NSTD, CT_DIR, CT_EXT0, CT_EXT1, CT_EXT2, CT_VER }
-                ct_types;
+#define CT_STD  0
+#define CT_NSTD 1
+#define CT_DIR  2
+#define CT_EXT0 3
+#define CT_EXT1 4
+#define CT_EXT2 5
+#define CT_VER  6
 
 static CTDataRec ctdata[] =
 {
@@ -745,8 +746,11 @@ static CTDataRec ctdata[] =
 
 static CTData ctd_endp = ctdata + ((sizeof(ctdata) / sizeof(CTDataRec))) - 1;
 static CTData ctdptr[sizeof(ctdata) / sizeof(CTDataRec)];
-static enum { Ascii, Kanji, Kana, Userdef } cs_nums;
 
+#define Ascii   0
+#define Kanji   1
+#define Kana    2
+#define Userdef 3
 
 /*
  * initCTptr(): Set ctdptr[] to point at ctdata[], indexed by codeset_num.
@@ -949,14 +953,13 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
     register length;
     register unconv_num = 0;
     Uchar tmp;
-    Uchar t1 = 0, t2;
+    Uchar t1 = 0;
     int num_conv;
 
     StateRec ct_state;
     XLCd lcd = (XLCd)conv->state;
     CTData charset;
     CodeSet codeset;
-    Ulong wc_encoding_mask = XLC_GENERIC(lcd, wc_encode_mask);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
 
 

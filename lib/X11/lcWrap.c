@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.23 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: lcWrap.c /main/24 1995/12/09 12:03:14 gildea $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -475,9 +475,9 @@ _XlcCopyFromArg(src, dst, size)
 	*((int *) dst) = (int) src;
 #endif
     else if (size == sizeof(short))
-	*((short *) dst) = (short) src;
+	*((short *) dst) = (short)(long) src;
     else if (size == sizeof(char))
-	*((char *) dst) = (char) src;
+	*((char *) dst) = (char)(long) src;
     else if (size == sizeof(XPointer))
 	*((XPointer *) dst) = (XPointer) src;
     else if (size > sizeof(XPointer))

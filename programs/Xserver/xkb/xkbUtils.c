@@ -1,5 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.14 94/05/09 13:07:14 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: xkbUtils.c /main/16 1995/12/07 21:23:15 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,44 +26,129 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #include <math.h>
 #define NEED_EVENTS 1
 #include <X11/X.h>
 #include <X11/Xproto.h>
+#define	XK_CYRILLIC
 #include <X11/keysym.h>
 #include "misc.h"
 #include "inputstr.h"
-#include "XKBsrv.h"
-#include <ctype.h>
 
-	int	XkbComputeAutoRepeat = 1;
+#define	XKBSRV_NEED_FILE_FUNCS
+#include "XKBsrv.h"
+#include "extensions/XKBgeom.h"
+
+#ifdef MODE_SWITCH
+extern Bool noKME; /* defined in os/utils.c */
+#endif
+
 	int	XkbDisableLockActions = 0;
 
-#define IsKeypadKey(keysym) \
-  (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+/***====================================================================***/
+
+#ifndef RETURN_SHOULD_REPEAT
+#if (defined(__osf__) && defined(__alpha))
+#define RETURN_SHOULD_REPEAT 1
+#else
+#define	RETURN_SHOULD_REPEAT 0
+#endif
+#endif
 
 /***====================================================================***/
 
 DeviceIntPtr
-XkbLookupDevice(id)
+_XkbLookupAnyDevice(id,why_rtrn)
     int id;
+    int *why_rtrn;
 {
-DeviceIntPtr coreKbd = (DeviceIntPtr)LookupKeyboardDevice();
 DeviceIntPtr dev = NULL;
-extern	DeviceIntPtr LookupDeviceIntRec();
 
-   if (( id == XkbUseCoreKbd ) || (coreKbd->id==id))
-	dev= coreKbd;
+    dev= (DeviceIntPtr)LookupKeyboardDevice();
+    if ((id==XkbUseCoreKbd)||(dev->id==id))
+	return dev;
+
+    dev= (DeviceIntPtr)LookupPointerDevice();
+    if ((id==XkbUseCorePtr)||(dev->id==id))
+	return dev;
+
+    if (id&(~0xff))
+	 dev = NULL;
 #ifdef XINPUT
-   else {
-	dev = LookupDeviceIntRec(id);
-   }
+    else dev = (DeviceIntPtr)LookupDeviceIntRec(id);
 #endif
-   if (dev) {
-	if ((!dev->key)||(!dev->key->xkbInfo))
-	    dev= NULL;
-   }
-   return dev;
+    if ((!dev)&&(why_rtrn))
+	*why_rtrn= XkbErr_BadDevice;
+    return dev;
+}
+
+DeviceIntPtr
+_XkbLookupKeyboard(id,why_rtrn)
+    int id;
+    int *why_rtrn;
+{
+DeviceIntPtr dev = NULL;
+
+    if ((dev= _XkbLookupAnyDevice(id,why_rtrn))==NULL)
+	return NULL;
+    else if ((!dev->key)||(!dev->key->xkbInfo)) {
+	if (why_rtrn)
+	   *why_rtrn= XkbErr_BadClass;
+	return NULL;
+    }
+    return dev;
+}
+
+DeviceIntPtr
+_XkbLookupBellDevice(id,why_rtrn)
+    int id;
+    int *why_rtrn;
+{
+DeviceIntPtr dev = NULL;
+
+    if ((dev= _XkbLookupAnyDevice(id,why_rtrn))==NULL)
+	return NULL;
+    else if ((!dev->kbdfeed)&&(!dev->bell)) {
+	if (why_rtrn)
+	   *why_rtrn= XkbErr_BadClass;
+	return NULL;
+    }
+    return dev;
+}
+
+DeviceIntPtr
+_XkbLookupLedDevice(id,why_rtrn)
+    int id;
+    int *why_rtrn;
+{
+DeviceIntPtr dev = NULL;
+
+    if ((dev= _XkbLookupAnyDevice(id,why_rtrn))==NULL)
+	return NULL;
+    else if ((!dev->kbdfeed)&&(!dev->leds)) {
+	if (why_rtrn)
+	   *why_rtrn= XkbErr_BadClass;
+	return NULL;
+    }
+    return dev;
+}
+
+DeviceIntPtr
+_XkbLookupButtonDevice(id,why_rtrn)
+    int id;
+    int *why_rtrn;
+{
+DeviceIntPtr dev = NULL;
+
+    if ((dev= _XkbLookupAnyDevice(id,why_rtrn))==NULL)
+	return NULL;
+    else if (!dev->button) {
+	if (why_rtrn)
+	   *why_rtrn= XkbErr_BadClass;
+	return NULL;
+    }
+    return dev;
 }
 
 static void
@@ -94,6 +178,42 @@ register unsigned	tmp;
 
 /***====================================================================***/
 
+	/*
+	 * These two functions provide more-or-less the same functionality
+	 * via slightly different interfaces.   XkbVirtualModsToReal
+	 * is a identical to the XKB X library function with the same
+	 * name; we need a copy in the server because some of the functions
+	 * in xkmread.c use it.   XkbVirtualModsToReal reports failure if
+	 * you pass in an XkbDescRec that is so incomplete that makes it
+	 * impossible to determine the correct mask.  The XkbMaskToVMask
+	 * interface is a little more efficient and convenient and is
+	 * used only inside the server.
+	 */
+Bool
+XkbVirtualModsToReal(xkb,virtual_mask,mask_rtrn)
+    XkbDescPtr		xkb;
+    unsigned		virtual_mask;
+    unsigned *		mask_rtrn;
+{
+register int i,bit;
+register unsigned mask;
+
+    if (xkb==NULL)
+        return False;
+    if (virtual_mask==0) {
+        *mask_rtrn= 0;
+        return True;
+    }
+    if (xkb->server==NULL)
+        return False;
+    for (i=mask=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
+        if (virtual_mask&bit)
+	    mask|= xkb->server->vmods[i];
+    }
+    *mask_rtrn= mask;
+    return True;
+}
+
 unsigned
 XkbMaskForVMask(xkb,vmask)
     XkbDescPtr	xkb;
@@ -103,18 +223,21 @@ register int i,bit;
 register unsigned mask;
     
     for (mask=i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	if ((vmask&bit)&&(xkb->server->vmods[i]!=XkbNoModifier)) {
-	    mask|= (1<<xkb->server->vmods[i]);
-	}
+	if (vmask&bit)
+	    mask|= xkb->server->vmods[i];
     }
     return mask;
 }
 
 static Bool
-XkbVMUpdateKeyType(xkb,index,changes)
+#if NeedFunctionPrototypes
+XkbVMUpdateKeyType(XkbDescPtr xkb,int ndx,XkbChangesPtr changes)
+#else
+XkbVMUpdateKeyType(xkb,ndx,changes)
     XkbDescPtr		xkb;
-    int			index;
+    int			ndx;
     XkbChangesPtr	changes;
+#endif
 {
 register unsigned i;
 XkbKeyTypePtr	type;
@@ -122,14 +245,21 @@ CARD8		mask;
 
 #ifdef DEBUG
     if (xkbDebugFlags>0)
-	ErrorF("Updating key type %d due to virtual modifier change\n",index);
+	ErrorF("Updating key type %d due to virtual modifier change\n",ndx);
 #endif
-    type= &xkb->map->types[index];
-    type->mask= type->real_mods|XkbMaskForVMask(xkb,type->vmods);
-    if ((type->map_count>0)&&(type->vmods!=0)) {
+    type= &xkb->map->types[ndx];
+    type->mods.mask= type->mods.real_mods|XkbMaskForVMask(xkb,type->mods.vmods);
+    if ((type->map_count>0)&&(type->mods.vmods!=0)) {
 	XkbKTMapEntryPtr entry;
 	for (i=0,entry=type->map;i<type->map_count;i++,entry++) {
-	    entry->mask=entry->real_mods|XkbMaskForVMask(xkb,entry->vmods);
+	    if (entry->mods.vmods!=0) {
+		unsigned tmp;
+		tmp= XkbMaskForVMask(xkb,entry->mods.vmods);
+		entry->mods.mask=entry->mods.real_mods|tmp;
+		/* entry is active if vmods are bound*/
+	    	entry->active= (tmp!=0);
+	    }
+	    else entry->active= 1;
 	}
     }
     if (changes) {
@@ -153,79 +283,81 @@ CARD8		mask;
 }
 
 Bool
-XkbApplyVirtualModChanges(info,changed,changes)
-    XkbSrvInfoPtr	 info;
+XkbApplyVirtualModChanges(xkbi,changed,changes,needChecksRtrn)
+    XkbSrvInfoPtr	 xkbi;
     unsigned		 changed;
     XkbChangesPtr	 changes;
+    unsigned *		 needChecksRtrn;
 {
 register unsigned 	i,n,bit;
 int 			lowChange,highChange;
 XkbDescPtr		xkb;
+XkbCompatMapPtr		compat;
+unsigned		check;
 
-    xkb= &info->desc;
+    xkb= xkbi->desc;
+    check= 0;
+#ifdef DEBUG
     for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if ((changed&bit)==0)
 	    continue;
-#ifdef DEBUG
 	if (xkbDebugFlags)
 	    ErrorF("Should be applying: change vmod %d to 0x%x\n",i,
 					xkb->server->vmods[i]);
-#endif
     }
+#endif
     for (i=0;i<xkb->map->num_types;i++) {
-	if (xkb->map->types[i].vmods & changed)
+	if (xkb->map->types[i].mods.vmods & changed)
 	    XkbVMUpdateKeyType(xkb,i,changes);
     }
 
-    if (changed&xkb->ctrls->internal_vmods) {
+    if (changed&xkb->ctrls->internal.vmods) {
 	CARD8 newMask;
 	XkbControlsPtr ctrl= xkb->ctrls;
 
-	newMask= XkbMaskForVMask(xkb,ctrl->internal_vmods);
-	newMask|= ctrl->internal_real_mods;
-	if (newMask!=ctrl->internal_mask) {
-	    ctrl->internal_mask= newMask;
+	newMask= XkbMaskForVMask(xkb,ctrl->internal.vmods);
+	newMask|= ctrl->internal.real_mods;
+	if (newMask!=ctrl->internal.mask) {
+	    ctrl->internal.mask= newMask;
 	    changes->ctrls.changed_ctrls|= XkbInternalModsMask;
-	    /* 3/1/94 (ef) - XXX! Don't forget to (possibly) change state */
+	    check|= XkbStateNotifyMask;
 	}
     }
-    if (changed&xkb->ctrls->ignore_lock_vmods) {
+    if (changed&xkb->ctrls->ignore_lock.vmods) {
 	CARD8 newMask;
 	XkbControlsPtr ctrl= xkb->ctrls;
 
-	newMask= XkbMaskForVMask(xkb,ctrl->ignore_lock_vmods);
-	newMask|= ctrl->ignore_lock_real_mods;
-	if (newMask!=ctrl->ignore_lock_mask) {
-	    ctrl->ignore_lock_mask= newMask;
+	newMask= XkbMaskForVMask(xkb,ctrl->ignore_lock.vmods);
+	newMask|= ctrl->ignore_lock.real_mods;
+	if (newMask!=ctrl->ignore_lock.mask) {
+	    ctrl->ignore_lock.mask= newMask;
 	    changes->ctrls.changed_ctrls|= XkbIgnoreLockModsMask;
-	    /* 3/1/94 (ef) - XXX! Don't forget to (possibly) change state */
+	    check|= XkbStateNotifyMask;
 	}
     }
     for (i=0;i<XkbNumIndicators;i++) {
-	if (xkb->indicators->maps[i].vmods&changed) {
+	if (xkb->indicators->maps[i].mods.vmods&changed) {
 	    CARD8 newMask;
 	    XkbIndicatorMapPtr map= &xkb->indicators->maps[i];
 
-	    newMask= XkbMaskForVMask(xkb,map->vmods)|map->real_mods;
-	    if (newMask!=map->mask)
-		map->mask= newMask;
+	    newMask= XkbMaskForVMask(xkb,map->mods.vmods)|map->mods.real_mods;
+	    if (newMask!=map->mods.mask)
+		map->mods.mask= newMask;
 	    changes->indicators.map_changes|= (1<<i);
 	}
-	/* 3/1/94 (ef) - XXX! If indicator maps change, don't forget to    */
-	/*               change the indicator state (and send events)      */
+	check|= XkbIndicatorStateNotify;
     }
-    for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	int realMod= xkb->server->vmods[i];
-	XkbCompatPtr	compat;
-	if (((changed&bit)==0)||(realMod==XkbNoModifier))
-	    continue;
-	compat= xkb->compat;
-	if (compat->vmod_compat[i].mods||compat->vmod_compat[i].groups){
-	    compat->mod_compat[realMod]= &compat->vmod_compat[i];
+    compat= xkb->compat;
+    for (i=0;i<XkbNumKbdGroups;i++) {
+	if (compat->groups[i].vmods&changed) {
+	    CARD8 newMask;
+	    newMask= XkbMaskForVMask(xkb,compat->groups[i].vmods);
+	    compat->groups[i].mask= (newMask|compat->groups[i].real_mods);
+	    changes->compat.changed_groups|= (1<<i);
 	}
-	changes->compat.changed_mods|= (1<<realMod);
-	/* 3/1/94 (ef) - XXX! If modifier compatibility maps change, don't */
-	/*               forget to change the compatibility state          */
+	check|= XkbIndicatorStateNotify;
+	/* 7/12/95 (ef) - XXX! If group compatibility maps change, don't */
+	/*               forget to change the compatibility state        */
     }
     lowChange= -1;
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
@@ -270,147 +402,14 @@ XkbDescPtr		xkb;
 	changes->map.first_key_act= lowChange;
 	changes->map.num_key_acts= (highChange-lowChange)+1;
     }
+    if (check&XkbStateNotifyMask)
+	check|= XkbIndicatorStateNotifyMask;
+    if (needChecksRtrn!=NULL) 
+	*needChecksRtrn= check;
+    else {
+	/* 7/12/95 (ef) -- XXX check compatibility and/or indicator state */
+    }
     return 1;
-}
-
-/***====================================================================***/
-
-XkbAction *
-_XkbNewActionsForKey(xkb,key,needed)
-    XkbDescRec *xkb;
-    unsigned key;
-    unsigned needed;
-{
-register unsigned	i,nActs;
-XkbAction *		newActs;
-
-    if ((xkb->server->key_acts[key]!=0)&&(XkbKeyNumSyms(xkb,key)>=needed)) {
-	return XkbKeyActionsPtr(xkb,key);
-    }
-    if (xkb->server->size_acts-xkb->server->num_acts>=needed) {
-	xkb->server->key_acts[key]= xkb->server->num_acts;
-	xkb->server->num_acts+= needed;
-	return &xkb->server->acts[xkb->server->key_acts[key]];
-    }
-    xkb->server->size_acts+= 32;
-    newActs = (XkbAction *)xcalloc(xkb->server->size_acts,sizeof(XkbAction));
-    newActs[0].type = XkbSA_NoAction;
-    nActs = 1;
-    for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
-	if (xkb->server->key_acts[i]!=0) {
-	    memcpy(&newActs[nActs],XkbKeyActionsPtr(xkb,i),
-				XkbKeyNumActions(xkb,i)*sizeof(XkbAction));
-	    xkb->server->key_acts[i]= nActs;
-	    if (i!=key)	nActs+= XkbKeyNumActions(xkb,i);
-	    else	nActs+= needed;
-	}
-    }
-    free(xkb->server->acts);
-    xkb->server->acts = newActs;
-    xkb->server->num_acts = nActs;
-    return &xkb->server->acts[xkb->server->key_acts[key]];
-}
-
-KeySym *
-_XkbNewSymsForKey(xkb,key,needed)
-    XkbDescRec *xkb;
-    unsigned key;
-    unsigned needed;
-{
-register unsigned	i,nSyms;
-KeySym	*		newSyms;
-
-    if (needed==0) {
-	if (xkb->server->key_acts[key]!=0)
-	    _XkbNewActionsForKey(xkb,key,needed);
-	xkb->map->key_sym_map[key].offset= 0;
-	return xkb->map->syms;
-    }
-    else if (XkbKeyNumSyms(xkb,key)>=needed) {
-	return XkbKeySymsPtr(xkb,key);
-    }
-    if (xkb->server->key_acts[key]!=0)
-	_XkbNewActionsForKey(xkb,key,needed);
-
-    if (xkb->map->size_syms-xkb->map->num_syms>=needed) {
-	xkb->map->key_sym_map[key].offset = xkb->map->num_syms;
-	xkb->map->num_syms+= needed;
-	return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
-    }
-    xkb->map->size_syms+= 128;
-    newSyms = (KeySym *)xcalloc(xkb->map->size_syms,sizeof(KeySym));
-    nSyms = 1;
-    for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
-	if (xkb->map->key_sym_map[i].offset==0) {
-	    if (i==key) {
-		xkb->map->key_sym_map[i].offset= nSyms;
-		nSyms+= needed;
-	    }
-	    continue;
-	}
-	else {
-	    memcpy(&newSyms[nSyms],XkbKeySymsPtr(xkb,i),
-					XkbKeyNumSyms(xkb,i)*sizeof(KeySym));
-	    xkb->map->key_sym_map[i].offset = nSyms;
-	}
-	if (i!=key)	nSyms+= XkbKeyNumSyms(xkb,i);
-	else		nSyms+= needed;
-    }
-    free(xkb->map->syms);
-    xkb->map->syms = newSyms;
-    xkb->map->num_syms = nSyms;
-    return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
-}
-
-void
-_XkbResizeKeyType(xkb,ndx,nLevels)
-    XkbDescRec	*xkb;
-    unsigned	 ndx;
-    unsigned	 nLevels;
-{
-XkbKeyTypePtr		type= &xkb->map->types[ndx];
-unsigned 		nTotal;
-KeySym	*		newSyms;
-register unsigned	i,nSyms;
-
-    if (type->group_width==nLevels)
-	return;
-    for (nTotal=0,i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
-	if (xkb->map->key_sym_map[i].kt_index==ndx) 
-	     nTotal+= XkbKeyNumGroups(xkb,i)*nLevels;
-	else nTotal+= XkbKeyNumSyms(xkb,i);
-    }
-    xkb->map->size_syms= (nTotal*12)/10;
-    newSyms = (KeySym *)xcalloc(xkb->map->size_syms,sizeof(KeySym));
-    /* 9/3/93 (ef) -- XXX! deal with allocation failure */
-    nSyms= 1;
-    for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
-	if (xkb->map->key_sym_map[i].kt_index==ndx) {
-	    register int g;
-	    unsigned lastLevel,nGroups;
-
-	    if (type->group_width>nLevels)	lastLevel= nLevels;
-	    else				lastLevel= type->group_width;
-	    nGroups= XkbKeyNumGroups(xkb,i);
-	    for (g=0;g<nGroups;g++) {
-		KeySym *pOld;
-		pOld= XkbKeySymsPtr(xkb,i)+(g*XkbKeyGroupWidth(xkb,i));
-		memcpy(&newSyms[nSyms+(nLevels*g)],pOld,nLevels*sizeof(KeySym));
-	    }
-	    xkb->map->key_sym_map[i].offset = nSyms;
-	    nSyms+= nGroups*nLevels;
-	}
-	else {
-	    memcpy(&newSyms[nSyms],XkbKeySymsPtr(xkb,i),
-					XkbKeyNumSyms(xkb,i)*sizeof(KeySym));
-	    xkb->map->key_sym_map[i].offset = nSyms;
-	    nSyms+= XkbKeyNumSyms(xkb,i);
-	}
-    }
-    free(xkb->map->syms);
-    xkb->map->syms = newSyms;
-    xkb->map->num_syms = nSyms;
-    return;
 }
 
 /***====================================================================***/
@@ -420,35 +419,152 @@ XkbIndicatorsToUpdate(keybd,modsChanged)
     DeviceIntRec		*keybd;
     unsigned long	 	 modsChanged;
 {
-register unsigned update = 0;
-XkbSrvInfoRec	*xkb = keybd->key->xkbInfo;
+register unsigned	update=	0;
+XkbSrvInfoPtr		xkbi = keybd->key->xkbInfo;
 
     if (modsChanged&(XkbModifierStateMask|XkbGroupStateMask))
-	update|= xkb->iAccel.usesEffective;
+	update|= xkbi->iAccel.usesEffective;
     if (modsChanged&(XkbModifierBaseMask|XkbGroupBaseMask))
-	update|= xkb->iAccel.usesBase;
+	update|= xkbi->iAccel.usesBase;
     if (modsChanged&(XkbModifierLatchMask|XkbGroupLatchMask))
-	update|= xkb->iAccel.usesLatched;
+	update|= xkbi->iAccel.usesLatched;
     if (modsChanged&(XkbModifierLockMask|XkbGroupLockMask))
-	update|= xkb->iAccel.usesLocked;
+	update|= xkbi->iAccel.usesLocked;
     if (modsChanged&XkbCompatStateMask)
-	update|= xkb->iAccel.usesCompat;
+	update|= xkbi->iAccel.usesCompat;
     return update;
 }
 
-void
-XkbSetIndicators(keybd,affect,values,pChanges)
-    DeviceIntPtr		keybd;
-    CARD32			affect;
-    CARD32			values;
-    XkbIndicatorChangesPtr	pChanges;
+Bool
+XkbApplyLEDChangeToKeyboard(xkbi,map,on,change)
+    XkbSrvInfoPtr	xkbi;
+    XkbIndicatorMapPtr	map;
+    Bool		on;
+    XkbChangesPtr	change;
 {
-XkbSrvInfoRec	*xkb = keybd->key->xkbInfo;
+Bool		ctrlChange,stateChange;
+XkbStatePtr	state;
 
-    xkb->iStateExplicit&= ~affect;
-    xkb->iStateExplicit|= (affect&values);
+    if ((map->flags&XkbIM_NoExplicit)||((map->flags&XkbIM_LEDDrivesKB)==0))
+	return False;
+    ctrlChange= stateChange= False;
+    if (map->ctrls) {
+	XkbControlsPtr	ctrls= xkbi->desc->ctrls;
+	unsigned 	old;
 
-    XkbUpdateIndicators(keybd,affect,pChanges);
+	old= ctrls->enabled_ctrls;
+	if (on)	ctrls->enabled_ctrls|= map->ctrls;
+	else	ctrls->enabled_ctrls&= ~map->ctrls;
+	if (old!=ctrls->enabled_ctrls) {
+	    change->ctrls.changed_ctrls= XkbControlsEnabledMask;
+	    change->ctrls.enabled_ctrls_changes= old^ctrls->enabled_ctrls;
+	    ctrlChange= True;
+	}
+    }
+    state= &xkbi->state;
+    if ((map->groups)&&((map->which_groups&(~XkbIM_UseBase))!=0)) {
+	register int i;
+	register unsigned bit,match;
+
+	if (on)	match= (map->groups)&XkbAllGroupsMask;
+	else 	match= (~map->groups)&XkbAllGroupsMask;
+	if (map->which_groups&(XkbIM_UseLocked|XkbIM_UseEffective)) {
+	    for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+		if (bit&match)
+		    break;
+	    }
+	    if (map->which_groups&XkbIM_UseLatched)
+		XkbLatchGroup(xkbi->device,0); /* unlatch group */
+	    state->locked_group= i;
+	    stateChange= True;
+	}
+	else if (map->which_groups&(XkbIM_UseLatched|XkbIM_UseEffective)) {
+	    for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+		if (bit&match)
+		    break;
+	    }
+	    state->locked_group= 0;
+	    XkbLatchGroup(xkbi->device,i);
+	    stateChange= True;
+	}
+    }
+    if ((map->mods.mask)&&((map->which_mods&(~XkbIM_UseBase))!=0)) {
+	if (map->which_mods&(XkbIM_UseLocked|XkbIM_UseEffective)) {
+	    register unsigned long old;
+	    old= state->locked_mods;
+	    if (on)	state->locked_mods|= map->mods.mask;
+	    else	state->locked_mods&= ~map->mods.mask;
+	    if (state->locked_mods!=old)
+		stateChange= True;
+	}
+	if (map->which_mods&(XkbIM_UseLatched|XkbIM_UseEffective)) {
+	    register unsigned long newmods;
+	    newmods= state->latched_mods;
+	    if (on)	newmods|=  map->mods.mask;
+	    else	newmods&= ~map->mods.mask;
+	    if (newmods!=state->locked_mods) {
+		newmods&= map->mods.mask;
+		XkbLatchModifiers(xkbi->device,map->mods.mask,newmods);
+		stateChange= True;
+	    }
+	}
+    }
+    return (stateChange || ctrlChange);
+}
+
+void
+XkbSetIndicators(keybd,affect,values,pChanges,pCause)
+    DeviceIntPtr	keybd;
+    CARD32		affect;
+    CARD32		values;
+    XkbChangesPtr	pChanges;
+    XkbEventCausePtr	pCause;
+{
+XkbSrvInfoPtr		xkbi=	keybd->key->xkbInfo;
+XkbChangesRec		changes;
+XkbEventCauseRec	cause;
+register CARD32		led_changes;
+
+    if (pChanges==NULL) {
+	pChanges= &changes;
+	bzero((char *)pChanges,sizeof(XkbChangesRec));
+    }
+    if (pCause==NULL) {
+	pCause= &cause;
+	XkbSetCauseCoreReq(pCause,X_ChangeKeyboardMapping);
+    }
+    xkbi->iStateExplicit&= ~affect;
+    xkbi->iStateExplicit|= (affect&values);
+
+    led_changes= (xkbi->iStateEffective&affect);
+    led_changes^= (affect&values);
+    if (led_changes) {
+	register int 		i;
+	register unsigned	bit;
+	CARD8			flags;
+	XkbStateRec		old;
+	XkbIndicatorPtr	map;
+	old= xkbi->state;
+	map= xkbi->desc->indicators;
+	for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
+	    Bool on;
+	    if ((led_changes&bit)==0)
+		continue;
+	    flags= map->maps[i].flags;
+	    if ((flags&XkbIM_NoExplicit)||((flags&XkbIM_LEDDrivesKB)==0))
+		continue;
+	    on= ((values&bit)!=0);
+	    if (XkbApplyLEDChangeToKeyboard(xkbi,&map->maps[i],on,pChanges)) {
+		XkbComputeDerivedState(xkbi);
+		pChanges->state_changes|= 
+					XkbStateChangedFlags(&old,&xkbi->state);
+	    }
+	    xkbi->iStateExplicit&= ~bit;
+	}
+    }
+    XkbUpdateIndicators(keybd,affect,&pChanges->indicators);
+    if (pChanges==&changes)
+	XkbSendNotification(keybd,pChanges,pCause);
     return;
 }
 
@@ -459,18 +575,18 @@ XkbUpdateIndicators(keybd,update,pChanges)
     XkbIndicatorChangesPtr	pChanges;
 {
 register int	i,bit;
-XkbSrvInfoRec	*xkb = keybd->key->xkbInfo;
-XkbIndicatorRec	*map = xkb->desc.indicators;
-XkbStateRec	*kbdState = &xkb->state;
-CARD32		 oldState;
+XkbSrvInfoPtr	xkbi= keybd->key->xkbInfo;
+XkbStatePtr	kbdState = &xkbi->state;
+CARD32		oldState;
+unsigned	changedLEDs;
 
 
-    oldState= xkb->iStateEffective;
+    oldState= xkbi->iStateEffective;
     for (i=0,bit=1;update;i++,bit<<=1) {
 	if (update&bit) {
 	    int on;
-	    CARD8 mods,group;
-	    XkbIndicatorMapRec *map= &xkb->desc.indicators->maps[i];
+	    CARD8 		mods,group;
+	    XkbIndicatorMapPtr	map= &xkbi->desc->indicators->maps[i];
 	    on= mods= group= 0;
 	    if (map->which_mods&XkbIM_UseBase)
 		mods|= kbdState->base_mods;
@@ -495,98 +611,119 @@ CARD32		 oldState;
 	    if (map->which_mods&XkbIM_UseCompat)
 		mods|= kbdState->compat_state;
 
-	    if ((map->which_mods|map->which_groups)&XkbIM_UseAnyState) {
-		on = (((map->mask&mods)!=0)||(map->mask==mods));
-		on = on && (((map->groups&group)!=0)||(map->groups==0));
+	    if ((map->which_mods|map->which_groups)&XkbIM_UseAnyMods) {
+		on = ((map->mods.mask&mods)!=0);
+		on = on||((mods==0)&&(map->mods.mask==0)&&(map->mods.vmods==0));
+		on = on&&(((map->groups&group)!=0)||(map->groups==0));
 	    }
 	    if (map->ctrls)
-		on = on || (xkb->desc.ctrls->enabled_ctrls&map->ctrls);
+		on = on || (xkbi->desc->ctrls->enabled_ctrls&map->ctrls);
 
-	    if (on)	xkb->iStateAuto|= bit;
-	    else	xkb->iStateAuto&= ~bit;
+	    if (on)	xkbi->iStateAuto|= bit;
+	    else	xkbi->iStateAuto&= ~bit;
 
 	    if ((map->flags&XkbIM_NoExplicit)==0) {
 		if ((map->flags&XkbIM_NoAutomatic)!=0)
 		    on= FALSE;
-		on= on||((xkb->iStateExplicit&bit)!=0);
+		on= on||((xkbi->iStateExplicit&bit)!=0);
 	    }
 
-	    if (on)	xkb->iStateEffective|= bit;
-	    else	xkb->iStateEffective&= ~bit;
+	    if (on)	xkbi->iStateEffective|= bit;
+	    else	xkbi->iStateEffective&= ~bit;
 	    update&= ~bit;
 	}
     }
-    if (xkb->iStateEffective!=oldState) {
-	DDXUpdateIndicators(keybd,oldState,xkb->iStateEffective);
+    changedLEDs= xkbi->iStateEffective^oldState;
+    if (changedLEDs!=0) {
+#ifdef DEBUG
+	if (xkbDebugFlags&0x2) {
+	    ErrorF("changedLEDs= 0x%x, effective= 0x%x\n",changedLEDs,
+	    						xkbi->iStateEffective);
+	}
+#endif
+	XkbDDXUpdateIndicators(keybd,oldState,xkbi->iStateEffective);
+	if (pChanges)
+	    pChanges->state_changes|= changedLEDs;
+	else {
+	    xkbIndicatorNotify	in;
+	    in.changed= changedLEDs;
+	    in.state = xkbi->iStateEffective;
+	    XkbSendIndicatorNotify(keybd,XkbIndicatorStateNotify,&in);
+	}
+	if (XkbAX_NeedFeedback(xkbi->desc->ctrls,XkbAX_IndicatorFBMask)) {
+	    unsigned on,off,beepType;
+	    on= changedLEDs&xkbi->iStateEffective;
+	    off= changedLEDs&(~on);
+
+	    if (on && off)	beepType= _BEEP_LED_CHANGE;
+	    else if (on)	beepType= _BEEP_LED_ON;
+	    else if (off)	beepType= _BEEP_LED_OFF;
+	    else		beepType= _BEEP_NONE;
+	    if (beepType!=_BEEP_NONE)
+		XkbDDXAccessXBeep(keybd,beepType,0);
+	}
     }
-    if (pChanges)
-	pChanges->state_changes|= (xkb->iStateEffective^oldState);
-    else if ((xkb->iStateEffective^oldState)!=0) {
-	xkbIndicatorNotify	in;
-	in.stateChanged= (xkb->iStateEffective^oldState);
-	in.state = xkb->iStateEffective;
-	in.mapChanged = 0;
-	XkbSendIndicatorNotify(keybd,&in);
-    }
+    if (xkbi->device->kbdfeed)
+	xkbi->device->kbdfeed->ctrl.leds= xkbi->iStateEffective;
     return;
 }
 
 void
-XkbCheckIndicatorMaps(xkb,which)
-    XkbSrvInfoPtr	xkb;
+XkbCheckIndicatorMaps(xkbi,which)
+    XkbSrvInfoPtr	xkbi;
     unsigned		which;
 {
-register unsigned i,bit;
-XkbIndicatorPtr	leds;
+register unsigned	i,bit;
+XkbIndicatorPtr		leds;
 
-    leds= xkb->desc.indicators;
+    leds= xkbi->desc->indicators;
     for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	if (which&bit) {
-	    CARD8 which;
-	    which= (leds->maps[i].which_mods|leds->maps[i].which_groups);
+	    CARD8		what;
+	    XkbIndicatorMapPtr	map= &leds->maps[i];
 
-	    if (which&XkbIM_UseBase)
-		 xkb->iAccel.usesBase|= bit;
-	    else xkb->iAccel.usesBase&= ~bit;
-	    if (which&XkbIM_UseLatched)
-		 xkb->iAccel.usesLatched|= bit;
-	    else xkb->iAccel.usesLatched&= ~bit;
-	    if (which&XkbIM_UseLocked)
-		 xkb->iAccel.usesLocked|= bit;
-	    else xkb->iAccel.usesLocked&= ~bit;
-	    if (which&XkbIM_UseEffective)
-		 xkb->iAccel.usesEffective|= bit;
-	    else xkb->iAccel.usesEffective&= ~bit;
-	    if (which&XkbIM_UseCompat)
-		 xkb->iAccel.usesCompat|= bit;
-	    else xkb->iAccel.usesCompat&= ~bit;
-	    if (leds->maps[i].ctrls)
-		 xkb->iAccel.usesControls|= bit;
-	    else xkb->iAccel.usesControls&= ~bit;
+	    what= (map->which_mods|map->which_groups);
+	    if (what&XkbIM_UseBase)
+		 xkbi->iAccel.usesBase|= bit;
+	    else xkbi->iAccel.usesBase&= ~bit;
+	    if (what&XkbIM_UseLatched)
+		 xkbi->iAccel.usesLatched|= bit;
+	    else xkbi->iAccel.usesLatched&= ~bit;
+	    if (what&XkbIM_UseLocked)
+		 xkbi->iAccel.usesLocked|= bit;
+	    else xkbi->iAccel.usesLocked&= ~bit;
+	    if (what&XkbIM_UseEffective)
+		 xkbi->iAccel.usesEffective|= bit;
+	    else xkbi->iAccel.usesEffective&= ~bit;
+	    if (what&XkbIM_UseCompat)
+		 xkbi->iAccel.usesCompat|= bit;
+	    else xkbi->iAccel.usesCompat&= ~bit;
+	    if (map->ctrls)
+		 xkbi->iAccel.usesControls|= bit;
+	    else xkbi->iAccel.usesControls&= ~bit;
 
-	    if (leds->maps[i].ctrls || 
-		(leds->maps[i].which_groups && leds->maps[i].groups) ||
-		(leds->maps[i].which_mods && leds->maps[i].real_mods))
-		 xkb->iAccel.haveMap|= bit;
-	    else xkb->iAccel.haveMap&= ~bit;
-	    if (leds->maps[i].vmods!=0) {
-		leds->maps[i].mask= leds->maps[i].real_mods;
-		leds->maps[i].mask|= 
-				XkbMaskForVMask(&xkb->desc,leds->maps[i].vmods);
+	    if (map->ctrls || 
+		(map->which_groups && map->groups) ||
+		(map->which_mods && map->mods.real_mods))
+		 xkbi->iAccel.haveMap|= bit;
+	    else xkbi->iAccel.haveMap&= ~bit;
+	    if (map->mods.vmods!=0) {
+		map->mods.mask= map->mods.real_mods;
+		map->mods.mask|= XkbMaskForVMask(xkbi->desc,map->mods.vmods);
 	    }
 	}
     }
-    xkb->iAccel.usedComponents= 0;
-    if (xkb->iAccel.usesBase)
-	xkb->iAccel.usedComponents|= XkbModifierBaseMask|XkbGroupBaseMask;
-    if (xkb->iAccel.usesLatched)
-	xkb->iAccel.usedComponents|= XkbModifierLatchMask|XkbGroupLatchMask;
-    if (xkb->iAccel.usesLocked)
-	xkb->iAccel.usedComponents|= XkbModifierLockMask|XkbGroupLockMask;
-    if (xkb->iAccel.usesEffective)
-	xkb->iAccel.usedComponents|= XkbModifierStateMask|XkbGroupStateMask;
-    if (xkb->iAccel.usesCompat)
-	xkb->iAccel.usedComponents|= XkbCompatStateMask;
+    xkbi->iAccel.usedComponents= 0;
+    if (xkbi->iAccel.usesBase)
+	xkbi->iAccel.usedComponents|= XkbModifierBaseMask|XkbGroupBaseMask;
+    if (xkbi->iAccel.usesLatched)
+	xkbi->iAccel.usedComponents|= XkbModifierLatchMask|XkbGroupLatchMask;
+    if (xkbi->iAccel.usesLocked)
+	xkbi->iAccel.usedComponents|= XkbModifierLockMask|XkbGroupLockMask;
+    if (xkbi->iAccel.usesEffective)
+	xkbi->iAccel.usedComponents|= XkbModifierStateMask|XkbGroupStateMask;
+    if (xkbi->iAccel.usesCompat)
+	xkbi->iAccel.usedComponents|= XkbCompatStateMask;
     return;
 }
 
@@ -605,82 +742,144 @@ XkbUpdateKeyTypesFromCore(pXDev,first,num,pChanges)
     XkbChangesPtr pChanges;
 #endif
 {
-XkbDescRec *xkb;
-XkbSymMapRec	*map;
-unsigned	key,mapWidth,nLevels,nGroups;
-KeySym	*pSym,*newSyms;
-KeySym	core[4];
+XkbDescPtr	xkb;
+XkbSymMapPtr	map;
+unsigned	key,nGroups,nLevels[XkbNumKbdGroups],width;
+KeySymsPtr	pCore;
+KeySym		*pSym,*newSyms;
+KeySym		core[4];
+int		i;
 
-    xkb= &pXDev->key->xkbInfo->desc;
-    xkb->min_key_code = pXDev->key->curKeySyms.minKeyCode;
-    xkb->max_key_code = pXDev->key->curKeySyms.maxKeyCode;
+    xkb= pXDev->key->xkbInfo->desc;
+    if (first<xkb->min_key_code) {
+	if (first>=XkbMinLegalKeyCode) {
+	    xkb->min_key_code= first;
+#ifdef NOTYET
+	    /* 1/12/95 (ef) -- XXX! should zero out the new maps */
+	    pChanges->map.changed|= XkbKeycodesMask;
+generate a NewKeyboard notify here?
+#endif
+	}
+    }
+    if (first+num-1>xkb->max_key_code) {
+	/* 1/12/95 (ef) -- XXX! should allow XKB structures to grow */
+	num= xkb->max_key_code-first+1;
+    }
 
-    mapWidth= pXDev->key->curKeySyms.mapWidth;
+    pCore= &pXDev->key->curKeySyms;
     map= &xkb->map->key_sym_map[first];
-    pSym= &pXDev->key->curKeySyms.map[(first-xkb->min_key_code)*mapWidth];
-    for (key=first; key<(first+num); key++,map++,pSym+= mapWidth) {
-	if (xkb->server->explicit[key]&XkbExplicitKeyTypeMask) {
-	    if (key==first) {
-		first++; num--;	/* don't report unchanged types */
-	    }
-	    continue;
-	}
+    pSym= &pCore->map[(first-pCore->minKeyCode)*pCore->mapWidth];
+    for (key=first; key<(first+num); key++,map++,pSym+= pCore->mapWidth) {
 	core[0]= pSym[0];
-	if (mapWidth>1)	core[1]= pSym[1];
-	else		core[1]= NoSymbol;
-	if (mapWidth>2)	core[2]= pSym[2];
-	else		core[2]= NoSymbol;
-	if (mapWidth>3)	core[3]= pSym[3];
-	else		core[3]= NoSymbol;
+	if (pCore->mapWidth>1)	core[1]= pSym[1];
+	else			core[1]= NoSymbol;
+	if (pCore->mapWidth>2)	core[2]= pSym[2];
+	else			core[2]= NoSymbol;
+	if (pCore->mapWidth>3)	core[3]= pSym[3];
+	else			core[3]= NoSymbol;
 
-	/* 3/24/94 (ef) -- Horrible kludge to fake core proto capitalization */
-	if (((core[0]&0xffffff00)==0)&&(core[1]==NoSymbol)) {
-	    if (isupper(core[0])) {
-		core[1]= core[0];
-		core[0]= tolower(core[0]);
+	/* 3/24/94 (ef) -- XXX! Horrible kludge to fake core capitalization */
+	if ((core[1]==NoSymbol)&&(core[0]!=NoSymbol)) {
+	    KeySym upper,lower;
+	    XkbConvertCase(core[0],&lower,&upper);
+	    if ((core[0]==upper)&&(upper!=lower)) {
+		core[1]= upper;
+		core[0]= lower;
 	    }
 	}
-	if (((core[2]&0xffffff00)==0)&&(core[3]==NoSymbol)) {
-	    if (isupper(core[2])) {
-		core[3]= core[2];
-		core[2]= tolower(core[2]);
+	if ((core[3]==NoSymbol)&&(core[2]!=NoSymbol)) {
+	    KeySym upper,lower;
+	    XkbConvertCase(core[2],&lower,&upper);
+	    if ((core[2]==upper)&&(upper!=lower)) {
+		core[3]= upper;
+		core[2]= lower;
 	    }
 	}
-	if ((core[1]==NoSymbol)&&(core[3]==NoSymbol))
-	     nLevels= 1;
-	else nLevels= 2;
+
+	bzero(nLevels,XkbNumKbdGroups*sizeof(unsigned));
+	if (core[1]==NoSymbol)	nLevels[XkbGroup1Index]= 1;
+	else 			nLevels[XkbGroup1Index]= 2;
+	if (core[3]==NoSymbol)	nLevels[XkbGroup2Index]= 1;
+	else 			nLevels[XkbGroup2Index]= 2;
+
 	if ((core[2]==NoSymbol)&&(core[3]==NoSymbol)) {
-	     if ((core[0]==NoSymbol)&&(core[1]==NoSymbol))
+	     nLevels[XkbGroup2Index]= 0;
+	     if ((core[0]==NoSymbol)&&(core[1]==NoSymbol)) {
 		  nGroups= 0;
+		  nLevels[XkbGroup1Index]= 0;
+	     }
 	     else nGroups= 1;
 	}
 	else nGroups= 2;
-	if (nGroups>0) {
-	    newSyms= _XkbNewSymsForKey(xkb,key,nGroups*nLevels);
-	    if (nLevels==1) {
-		newSyms[0]= core[0];
-		if (nGroups>1)
-		    newSyms[1]= core[2];
+
+	for (width=i=0;i<XkbNumKbdGroups;i++) {
+	    if (xkb->server->explicit[key]&(1<<i)) {
+		nLevels[i]= XkbKeyGroupWidth(xkb,key,i);
+		if  (i>nGroups)
+		    nGroups= i+1;
 	    }
-	    else {
-		newSyms[0]= core[0];
+	    if (nLevels[i]>width)
+		width= nLevels[i];
+	}
+	if (nGroups>0) {
+	    KeySym syms[XkbMaxSymsPerKey];
+
+	    if (XkbKeyNumSyms(xkb,key)>0) {
+		memcpy(syms,XkbKeySymsPtr(xkb,key),
+					XkbKeyNumSyms(xkb,key)*sizeof(KeySym));
+	    }
+	    newSyms= XkbResizeKeySyms(xkb,key,nGroups*width);
+	    newSyms[0]= core[0];
+	    if (nLevels[XkbGroup1Index]>1)
 		newSyms[1]= core[1];
+	    if (nGroups>1) {
+		newSyms[width]= core[2];
+		if (nLevels[XkbGroup2Index]>=2)
+		    newSyms[width+1]= core[3];
+		for (i=XkbGroup3Index;i<XkbNumKbdGroups;i++) {
+		    memcpy(&newSyms[width*i],
+				&syms[XkbKeyGroupsWidth(xkb,key)*i],
+		    		nLevels[i]*sizeof(KeySym));
+		}
+	    }
+	    if (XkbKeyHasActions(xkb,key)) {
+		XkbAction *newActs,acts[XkbMaxSymsPerKey];
+		newActs= XkbResizeKeyActions(xkb,key,nGroups*width);
 		if (nGroups>1) {
-		    newSyms[2]= core[2];
-		    newSyms[3]= core[3];
+		    register int g,oldWidth;
+		    oldWidth= XkbKeyGroupsWidth(xkb,key)*i;
+		    memcpy(acts,newActs,
+				XkbKeyNumActions(xkb,key)*sizeof(XkbAction));
+		    bzero(newActs,(nGroups*width)*sizeof(XkbAction));
+		    for (g=0;g<nGroups;g++) {
+			int ncopy;
+			if (nLevels[g]>=XkbKeyGroupWidth(xkb,key,g))
+			     ncopy= XkbKeyGroupWidth(xkb,key,g);
+			else ncopy= nLevels[g];
+			memcpy(&newActs[width*g],&acts[oldWidth*g],
+						    ncopy*sizeof(XkbAction));
+		    }
 		}
 	    }
 	}
 	if ((nGroups>1)&&(xkb->ctrls->num_groups<2)) {
-	   XkbControlsRec *ctrls= xkb->ctrls;
-	   ctrls->num_groups= nGroups;
-	   /* 8/19/93 (ef) -- XXX! generate ctrls notify here */
+	    xkb->ctrls->num_groups= nGroups;
+	    pChanges->ctrls.num_groups_changed= True;
 	}
-	if (nLevels==1)
-	     map->kt_index= XkbOneLevelIndex;
-	else if (IsKeypadKey(newSyms[0])||IsKeypadKey(newSyms[1]))
-	     map->kt_index= XkbKeypadIndex;
-	else map->kt_index= XkbTwoLevelIndex;
+	for (i=0;i<nGroups;i++) {
+	    if ((xkb->server->explicit[key]&(1<<i))==0) {
+		if (nLevels[i]<2)
+		     map->kt_index[i]= XkbOneLevelIndex;
+		else if (XkbKSIsLower(newSyms[i*width])&&
+			 XkbKSIsUpper(newSyms[i*width+1]))
+		     map->kt_index[i]= XkbAlphabeticIndex;
+		else if (XkbKSIsKeypad(newSyms[i*width])||
+			 XkbKSIsKeypad(newSyms[i*width+1]))
+		     map->kt_index[i]= XkbKeypadIndex;
+		else map->kt_index[i]= XkbTwoLevelIndex;
+	    }
+	}
+	map->width= width;
 	map->group_info = XkbSetNumGroups(map->group_info,nGroups);
     }
     if (pChanges->map.changed&XkbKeySymsMask) {
@@ -740,7 +939,7 @@ CARD8			 mods;
 		    match= (interp->mods==mods);
 		    break;
 		default:
-		    ErrorF("Illegal match in UpdateActions\n");
+		    ErrorF("Illegal match in FindMatchingInterp\n");
 		    match= 0;
 		    break;
 	    }
@@ -762,30 +961,39 @@ void
 XkbUpdateActions(	DeviceIntPtr	 pXDev,
 			KeyCode		 first,
 			CARD8		 num,
-			XkbChangesPtr	 pChanges)
+			XkbChangesPtr	 pChanges,
+			unsigned *	 needChecksRtrn)
 #else
 void
-XkbUpdateActions(pXDev,first,num,pChanges)
-    DeviceIntPtr pXDev;
-    KeyCode first;
-    CARD8 num;
-    XkbChangesPtr pChanges;
+XkbUpdateActions(pXDev,first,num,pChanges,needChecksRtrn)
+    DeviceIntPtr 	pXDev;
+    KeyCode 		first;
+    CARD8 		num;
+    XkbChangesPtr 	pChanges;
+    unsigned *		needChecksRtrn;
 #endif
 {
-XkbDescRec *xkb;
-register unsigned	i,key,n;
+XkbSrvInfoPtr		xkbi;
+XkbDescPtr		xkb;
+register unsigned	i,key,n,interpSize;
 unsigned	 	nSyms,found;
 KeySym	*		pSym;
-XkbSymInterpretPtr	interps[8];
+XkbSymInterpretPtr	*interps,ibuf[8]; 
 CARD8		 	mods,*repeat,explicit;
+unsigned char		origVMods[XkbNumVirtualMods];
 CARD16		 	changedVMods;
 
-    xkb= &pXDev->key->xkbInfo->desc;
-    repeat= pXDev->key->xkbInfo->repeat;
+    if (needChecksRtrn)
+	*needChecksRtrn= 0;
+    xkbi= pXDev->key->xkbInfo;
+    xkb= xkbi->desc;
+    repeat= xkb->ctrls->per_key_repeat;
     changedVMods= 0;
-    if (XkbComputeAutoRepeat && pXDev->kbdfeed)
+    memcpy(origVMods,xkb->server->vmods,XkbNumVirtualMods);
+    if (pXDev->kbdfeed)
 	memcpy(repeat,pXDev->kbdfeed->ctrl.autoRepeats,32);
-
+    interpSize= 8;
+    interps= ibuf;
     for (key=first;key<(first+num);key++) {
 	if ((xkb->server->explicit[key]&XkbExplicitInterpretMask)!=0) {
 	    if (key==first) {
@@ -798,8 +1006,22 @@ CARD16		 	changedVMods;
 	pSym= XkbKeySymsPtr(xkb,key);
 	nSyms= XkbKeyNumSyms(xkb,key);
 	found= 0;
+	if (nSyms>interpSize) {
+	    if (interps==ibuf) {
+		 interps= (XkbSymInterpretPtr *)
+			Xcalloc(nSyms*sizeof(XkbSymInterpretPtr));
+	    }
+	    else interps= (XkbSymInterpretPtr *)
+			Xrealloc(interps,nSyms*sizeof(XkbSymInterpretPtr));
+	    if (interps==NULL) {
+		ErrorF("Couldn't allocate room for symbol interps\n");
+		ErrorF("Some actions may be incorrect\n");
+		nSyms= interpSize= 8;
+		interps= ibuf;
+	    }
+	}
 	for (n=0;n<nSyms;n++,pSym++) {
-	    CARD8 level= (n%XkbKeyGroupWidth(xkb,key));
+	    CARD8 level= (n%XkbKeyGroupsWidth(xkb,key));
 	    interps[n]= NULL;
 	    if (*pSym!=NoSymbol) {
 		interps[n]= _XkbFindMatchingInterp(xkb,*pSym,mods,level);
@@ -813,7 +1035,7 @@ CARD16		 	changedVMods;
 	}
 	else {
 	    XkbAction *pActs;
-	    pActs= _XkbNewActionsForKey(xkb,key,nSyms);
+	    pActs= XkbResizeKeyActions(xkb,key,nSyms);
 	    for (i=0;i<nSyms;i++) {
 		if (interps[i]) {
 		    unsigned effMods;
@@ -826,38 +1048,54 @@ CARD16		 	changedVMods;
 		}
 		else pActs[i].type= XkbSA_NoAction;
 	    }
+	    if ((explicit&XkbExplicitVModMapMask)==0) {
+		changedVMods|= xkb->server->vmodmap[key];
+		xkb->server->vmodmap[key]= 0;
+	    }
 	    if (interps[0]) {
 		if ((interps[0]->flags&XkbSI_LockingKey)&&
 		    ((explicit&XkbExplicitBehaviorMask)==0)) {
 		    xkb->server->behaviors[key].type= XkbKB_Lock;
 		}
-		if (XkbComputeAutoRepeat&&
-		    ((explicit&XkbExplicitAutorepeatMask)==0)) {
-		    if (interps[0]->flags&XkbSI_Autorepeat)
+		if ((explicit&XkbExplicitAutoRepeatMask)==0) {
+		    if (interps[0]->flags&XkbSI_AutoRepeat)
 			 repeat[key/8]|= (1<<(key%8));
 		    else repeat[key/8]&= ~(1<<(key%8));
 		}
-		if (interps[0]->virtual_mod!=XkbNoModifier) {
-		    register CARD8 bit,modNdx,old;
+		if ((interps[0]->virtual_mod!=XkbNoModifier)&&
+				((explicit&XkbExplicitVModMapMask)==0)) {
+		    if (pChanges) {
+			if (pChanges->map.changed&XkbVirtualModMapMask) {
+			    CARD8 oldLast,newLast;
+			    oldLast= pChanges->map.first_vmodmap_key+
+					pChanges->map.num_vmodmap_keys-1;
+			    newLast = key;
 
-		    if (mods==0)	modNdx= XkbNoModifier;
-		    else {
-			for (modNdx=7,bit=0x80;modNdx>=0;modNdx--,bit>>=1) {
-			    if (mods&bit)
-				break;
+			    if (key<pChanges->map.first_vmodmap_key)
+				pChanges->map.first_vmodmap_key = key;
+			    if (newLast>oldLast)
+				newLast= oldLast;
+			    pChanges->map.num_vmodmap_keys= 
+				newLast-pChanges->map.first_vmodmap_key+1;
+			}
+			else {
+			    pChanges->map.changed|= XkbVirtualModMapMask;
+			    pChanges->map.first_vmodmap_key= key;
+			    pChanges->map.num_vmodmap_keys= 1;
 			}
 		    }
-		    old= xkb->server->vmods[interps[0]->virtual_mod];
-		    if (old!=modNdx) {
-			xkb->server->vmods[interps[0]->virtual_mod]=modNdx;
-			changedVMods|= (1<<interps[0]->virtual_mod);
-		    }
+		    changedVMods|= (1<<interps[0]->virtual_mod);
+		    xkb->server->vmodmap[key]|= (1<<interps[0]->virtual_mod);
 		}
 	    }
 	}
 	if ((!found)||(interps[0]==NULL)) {
-	    if (XkbComputeAutoRepeat&&(explicit&XkbExplicitAutorepeatMask)==0)
+	    if ((explicit&XkbExplicitAutoRepeatMask)==0) {
+#if RETURN_SHOULD_REPEAT
+		if (*XkbKeySymsPtr(xkb,key) != XK_Return)
+#endif
 		repeat[key/8]|= (1<<(key%8));
+	    }
 	    if (((explicit&XkbExplicitBehaviorMask)==0)&&
 		(xkb->server->behaviors[key].type==XkbKB_Lock)) {
 		xkb->server->behaviors[key].type= XkbKB_Default;
@@ -865,16 +1103,30 @@ CARD16		 	changedVMods;
 	}
     }
 
-    if (XkbComputeAutoRepeat && pXDev->kbdfeed) {
-	int realRepeat= pXDev->kbdfeed->ctrl.autoRepeat;
-	if (XkbUsesSoftRepeat(pXDev))
-	    pXDev->kbdfeed->ctrl.autoRepeat= FALSE;
+    if (pXDev->kbdfeed) {
         memcpy(pXDev->kbdfeed->ctrl.autoRepeats,repeat, 32);
 	(*pXDev->kbdfeed->CtrlProc)(pXDev, &pXDev->kbdfeed->ctrl);
-	pXDev->kbdfeed->ctrl.autoRepeat= realRepeat;
     }
     if (changedVMods) {
-	XkbApplyVirtualModChanges(pXDev->key->xkbInfo,changedVMods,pChanges);
+	register unsigned bit;
+	bzero(xkb->server->vmods,XkbNumVirtualMods);
+	if (xkb->server->vmodmap) {
+	    for (key=xkb->min_key_code;key<=xkb->max_key_code;key++) {
+		if ((xkb->server->vmodmap[key]==0)||(xkb->map->modmap[key]==0))
+		    continue;
+		for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
+		    if (bit&xkb->server->vmodmap[key])
+			xkb->server->vmods[i]|= xkb->map->modmap[key];
+		}
+	    }
+	}
+	changedVMods= 0;
+	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
+	    if (origVMods[i]!=xkb->server->vmods[i])
+		changedVMods|= bit;
+	}
+	if (changedVMods)
+	   XkbApplyVirtualModChanges(xkbi,changedVMods,pChanges,needChecksRtrn);
     }
     if (pChanges->map.changed&XkbKeyActionsMask) {
 	CARD8 oldLast,newLast;
@@ -892,6 +1144,8 @@ CARD16		 	changedVMods;
 	pChanges->map.first_key_act = first;
 	pChanges->map.num_key_acts = num;
     }
+    if (interps!=ibuf)
+	Xfree(interps);
     return;
 }
 
@@ -899,48 +1153,170 @@ void
 XkbUpdateCoreDescription(keybd)
     DeviceIntPtr keybd;
 {
-    /* 8/3/93 (ef) -- XXX! Not implemented yet */
+register int		key,tmp;
+int			maxSymsPerKey,maxKeysPerMod;
+int			first,last,firstCommon,lastCommon;
+XkbDescPtr		xkb;
+KeyClassPtr		keyc;
+CARD8			keysPerMod[XkbNumModifiers];
+
+    if (!keybd || !keybd->key || !keybd->key->xkbInfo)
+	return;
+    xkb= keybd->key->xkbInfo->desc;
+    keyc= keybd->key;
+    maxSymsPerKey= maxKeysPerMod= 0;
+    bzero(keysPerMod,sizeof(keysPerMod));
+    memcpy(keyc->modifierMap,xkb->map->modmap,xkb->max_key_code+1);
+    if (xkb->min_key_code<keyc->curKeySyms.minKeyCode) {
+	 first= xkb->min_key_code;
+	 firstCommon= keyc->curKeySyms.minKeyCode;
+    }
+    else {
+	firstCommon= xkb->min_key_code;
+	first= keyc->curKeySyms.minKeyCode;
+    }
+    if (xkb->max_key_code>keyc->curKeySyms.maxKeyCode) {
+	 lastCommon= keyc->curKeySyms.maxKeyCode;
+	 last= xkb->max_key_code;
+    }
+    else {
+	lastCommon= xkb->max_key_code;
+	last= keyc->curKeySyms.maxKeyCode;
+    }
+
+    /* determine sizes */
+    for (key=first;key<=last;key++) {
+	if (XkbKeycodeInRange(xkb,key)) {
+	    tmp= XkbKeyNumSyms(xkb,key);
+	    if (tmp>maxSymsPerKey)
+		maxSymsPerKey= tmp;
+	}
+	if (_XkbCoreKeycodeInRange(keyc,key)) {
+	    if (keyc->modifierMap[key]!=0) {
+		register unsigned bit,i,mask;
+		mask= keyc->modifierMap[key];
+		for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
+		    if (mask&bit) {
+			keysPerMod[i]++;
+			if (keysPerMod[i]>maxKeysPerMod)
+			    maxKeysPerMod= keysPerMod[i];
+		    }
+		}
+	    }
+	}
+    }
+
+    if (maxKeysPerMod>0) {
+	tmp= maxKeysPerMod*XkbNumModifiers;
+	if (keyc->modifierKeyMap==NULL)
+	    keyc->modifierKeyMap= (KeyCode *)Xcalloc(tmp);
+	else if (keyc->maxKeysPerModifier<maxKeysPerMod)
+	    keyc->modifierKeyMap= (KeyCode *)Xrealloc(keyc->modifierKeyMap,tmp);
+	if (keyc->modifierKeyMap==NULL)
+	    FatalError("Couldn't allocate modifierKeyMap in UpdateCore\n");
+	bzero(keyc->modifierKeyMap,tmp);
+    }
+    else if ((keyc->maxKeysPerModifier>0)&&(keyc->modifierKeyMap!=NULL)) {
+	Xfree(keyc->modifierKeyMap);
+	keyc->modifierKeyMap= NULL;
+    }
+    keyc->maxKeysPerModifier= maxKeysPerMod;
+
+    if (maxSymsPerKey>0) {
+	tmp= maxSymsPerKey*_XkbCoreNumKeys(keyc);
+	keyc->curKeySyms.map= _XkbTypedRealloc(keyc->curKeySyms.map,tmp,KeySym);
+	if (keyc->curKeySyms.map==NULL)
+	    FatalError("Couldn't allocate symbols map in UpdateCore\n");
+    }
+    else if ((keyc->curKeySyms.mapWidth>0)&&(keyc->curKeySyms.map!=NULL)) {
+	_XkbFree(keyc->curKeySyms.map);
+	keyc->curKeySyms.map= NULL;
+    }
+    keyc->curKeySyms.mapWidth= maxSymsPerKey;
+
+    bzero(keysPerMod,sizeof(keysPerMod));
+    for (key=firstCommon;key<=lastCommon;key++) {
+	if (keyc->curKeySyms.map!=NULL) {
+	    KeySym *pCore,*pXKB;
+	    unsigned nGroups,groupWidth;
+
+	    nGroups= XkbKeyNumGroups(xkb,key);
+	    groupWidth= XkbKeyGroupsWidth(xkb,key);
+	    tmp= (key-keyc->curKeySyms.minKeyCode)*maxSymsPerKey;
+	    pCore= &keyc->curKeySyms.map[tmp];
+	    bzero(pCore,maxSymsPerKey*sizeof(KeySym));
+	    pXKB= XkbKeySymsPtr(xkb,key);
+	    for (tmp=0;tmp<nGroups;tmp++) {
+		*pCore++= *pXKB++;
+		if (groupWidth>1) {
+		    *pCore++= *pXKB++;
+		    pXKB+= groupWidth-2;
+		}
+		else if (maxSymsPerKey>1)
+		    *pCore++= NoSymbol;
+	    }
+	    if (groupWidth>2) {
+		register unsigned level;
+		pXKB= XkbKeySymsPtr(xkb,key);
+		for (tmp=0;tmp<nGroups;tmp++) {
+		    for (level=2;level<groupWidth;level++) {
+			*pCore++= pXKB[level];
+		    }
+		    pXKB+= groupWidth;
+		}
+	    }
+	}
+	if (keyc->modifierMap[key]!=0) {
+	    register unsigned bit,i,mask;
+	    mask= keyc->modifierMap[key];
+	    for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
+		if (mask&bit) {
+		    tmp= i*maxKeysPerMod+keysPerMod[i];
+		    keyc->modifierKeyMap[tmp]= key;
+		    keysPerMod[i]++;
+		}
+	    }
+	}
+    }
+#ifdef MODE_SWITCH
+    /* Fix up any of the KME stuff if we changed the core description.
+     */
+    if (!noKME)
+	HandleKeyBinding(keyc, &keyc->curKeySyms);
+#endif
+    return;
 }
 
 void
-XkbSetRepeatKeys(pXDev,onoff)
+XkbSetRepeatKeys(pXDev,key,onoff)
     DeviceIntPtr pXDev;
+    int		 key;
     int		 onoff;
 {
     if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
-	unsigned old,new;
-	new= old= pXDev->key->xkbInfo->desc.ctrls->enabled_ctrls;
-	if (onoff)	new|= XkbRepeatKeysMask;
-	else		new&= ~XkbRepeatKeysMask;
-	if (new!=old) {
-	    xkbControlsNotify	cn;
-	    cn.changedControls=	0;
-	    cn.enabledControlChanges= XkbRepeatKeysMask;
-	    XkbSendControlsNotify(pXDev,&cn);
+	xkbControlsNotify	cn;
+	XkbControlsPtr		ctrls = pXDev->key->xkbInfo->desc->ctrls;
+	XkbControlsRec 		old;
+	old = *ctrls;
+
+	if (key== -1) {	/* global autorepeat setting changed */
+	    if (onoff)	ctrls->enabled_ctrls |= XkbRepeatKeysMask;
+	    else	ctrls->enabled_ctrls &= ~XkbRepeatKeysMask;
 	}
+	else if (pXDev->kbdfeed) {
+	    ctrls->per_key_repeat[key/8] = 
+		pXDev->kbdfeed->ctrl.autoRepeats[key/8];
+	}
+	
+	if (XkbComputeControlsNotify(pXDev,&old,ctrls,&cn,True))
+	    XkbSendControlsNotify(pXDev,&cn);
     }
     return;
 }
 
-int
-XkbUsesSoftRepeat(pXDev)
-    DeviceIntPtr pXDev;
-{
-    if (pXDev && pXDev->kbdfeed ) {
-	if (pXDev->kbdfeed->ctrl.autoRepeat) {
-	    if (pXDev->key && pXDev->key->xkbInfo) {
-		XkbDescPtr	xkb;
-		xkb= &pXDev->key->xkbInfo->desc;
-		return ((xkb->ctrls->enabled_ctrls&XkbRepeatKeysMask)!=0);
-	    }
-	}
-    }
-    return 0;
-}
-
 #if NeedFunctionPrototypes
 void
-XkbApplyMappingChange(	DeviceIntRec	*kbd,
+XkbApplyMappingChange(	DeviceIntPtr	kbd,
 			CARD8		 request,
 			KeyCode		 firstKey,
 			CARD8		 num)
@@ -953,38 +1329,62 @@ XkbApplyMappingChange(kbd,request,firstKey,num)
     CARD8 num;
 #endif
 {
-XkbChangesRec	 changes;
-int		 req;
+XkbEventCauseRec	cause;
+XkbChangesRec	 	changes;
+int		 	req;
+unsigned	 	check;
 
     if (kbd->key->xkbInfo==NULL)
 	XkbInitDevice(kbd);
     bzero(&changes,sizeof(XkbChangesRec));
+    check= 0;
     if (request==MappingKeyboard) {
 	XkbUpdateKeyTypesFromCore(kbd,firstKey,num,&changes);
-	XkbUpdateActions(kbd,firstKey,num,&changes);
+	XkbUpdateActions(kbd,firstKey,num,&changes,&check);
+	if (check)
+	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes);
 	req= X_ChangeKeyboardMapping;
     }
     else if (request==MappingModifier) {
-	XkbDescRec *desc= &kbd->key->xkbInfo->desc;
-	num = desc->max_key_code-desc->min_key_code+1;
-	XkbUpdateActions(kbd,desc->min_key_code,num,&changes);
+	XkbDescPtr	xkb= kbd->key->xkbInfo->desc;
+	num = xkb->max_key_code-xkb->min_key_code+1;
+	memcpy(xkb->map->modmap,kbd->key->modifierMap,xkb->max_key_code+1);
+
+	changes.map.changed|= XkbModifierMapMask;
+	changes.map.first_modmap_key= xkb->min_key_code;
+	changes.map.num_modmap_keys= num;
+	XkbUpdateActions(kbd,xkb->min_key_code,num,&changes,&check);
+	if (check)
+	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes);
 	req= X_SetModifierMapping;
     }
     /* 3/26/94 (ef) -- XXX! Doesn't deal with input extension requests */
-    XkbSendNotification(kbd,&changes,0,0,req,0);
+    XkbSetCauseCoreReq(&cause,req);
+    XkbSendNotification(kbd,&changes,&cause);
     return;
 }
 
 void
-XkbDisableComputedAutoRepeats()
+XkbDisableComputedAutoRepeats(dev,key)
+    DeviceIntPtr	dev;
+    unsigned		key;
 {
-     XkbComputeAutoRepeat = 0;
+XkbSrvInfoPtr	xkbi = dev->key->xkbInfo;
+xkbMapNotify	mn;
+
+    xkbi->desc->server->explicit[key]|= XkbExplicitAutoRepeatMask;
+    bzero(&mn,sizeof(mn));
+    mn.changed= XkbExplicitComponentsMask;
+    mn.firstKeyExplicit= key;
+    mn.nKeyExplicit= 1;
+    XkbSendMapNotify(dev,&mn);
+    return;
 }
 
 unsigned
 XkbStateChangedFlags(old,new)
-    XkbStateRec *old;
-    XkbStateRec *new;
+    XkbStatePtr	old;
+    XkbStatePtr	new;
 {
 int		groupUnlatch,changed;
 
@@ -997,87 +1397,125 @@ int		groupUnlatch,changed;
     changed|=(old->latched_mods!=new->latched_mods?XkbModifierLatchMask:0);
     changed|=(old->locked_mods!=new->locked_mods?XkbModifierLockMask:0);
     changed|=(old->compat_state!=new->compat_state?XkbCompatStateMask:0);
+    changed|=(old->grab_mods!=new->grab_mods?XkbGrabModsMask:0);
+    if (old->compat_grab_mods!=new->compat_grab_mods)
+	changed|= XkbCompatGrabModsMask;
+    changed|=(old->lookup_mods!=new->lookup_mods?XkbLookupModsMask:0);
+    if (old->compat_lookup_mods!=new->compat_lookup_mods)
+	changed|= XkbCompatLookupModsMask;
+    changed|=(old->ptr_buttons!=new->ptr_buttons?XkbPointerButtonMask:0);
     return changed;
 }
 
 void
-XkbComputeCompatState(xkb)
-    XkbSrvInfoRec	*xkb;
+XkbComputeCompatState(xkbi)
+    XkbSrvInfoPtr	xkbi;
 {
-    register int i,bit;
-    CARD8 grabGroup,lookupGroup;
-    XkbStateRec	*state= &xkb->state;
-    XkbModCompatRec *map;
+register int 	i,bit;
+CARD16 		grp_mask;
+XkbStatePtr	state= &xkbi->state;
+XkbCompatMapPtr	map;
 
-    lookupGroup= (xkb->lookupState>>13)&0x7;
-    grabGroup= (xkb->grabState>>13)&0x7;
-    state->compat_state = 0;
-    xkb->compatLookupState= 0;
-    xkb->compatGrabState= 0;
-    for (i=0,bit=1;i<8;i++,bit<<=1) {
-	map= xkb->desc.compat->mod_compat[i];
-	if (map==NULL) {
-	    map= &xkb->desc.compat->real_mod_compat[i];
-	}
-	if ((map->mods&state->mods)||(map->groups&(1<<state->group)))
-	    state->compat_state|= bit;
+    map= xkbi->desc->compat;
+    grp_mask= map->groups[state->group].mask;
+    state->compat_state = state->mods|grp_mask;
+    state->compat_lookup_mods= state->lookup_mods|grp_mask;
 
-	if ((map->mods&xkb->lookupState)||(map->groups&(1<<lookupGroup)))
-	    xkb->compatLookupState|= bit;
-
-	if ((map->mods&xkb->grabState)||(map->groups&(1<<grabGroup)))
-	    xkb->compatGrabState|= bit;
-    }
+    if (xkbi->desc->ctrls->enabled_ctrls&XkbIgnoreGroupLockMask)
+	 grp_mask= map->groups[state->base_group].mask;
+    state->compat_grab_mods= state->grab_mods|grp_mask;
+    return;
 }
 
 static void
-_XkbAdjustGroup(pGroup,nGroups,groupsWrap)
+#if NeedFunctionPrototypes
+_XkbAdjustGroup(CARD8 *pGroup,unsigned nGroups,unsigned act,unsigned newGroup)
+#else
+_XkbAdjustGroup(pGroup,nGroups,act,newGroup)
     CARD8 *	pGroup;
     unsigned	nGroups;
-    Bool	groupsWrap;
+    unsigned	act;
+    unsigned	newGroup;
+#endif
 {
 register int group = XkbCharToInt(*pGroup);
 
     if (group<0) {
 	while ( group < 0 )  {
-	    if ( groupsWrap )	group+= nGroups;
-	    else	    	group= 0;
+	    if (act==XkbClampIntoRange) {
+		group= 0;
+	    }
+	    else if (act==XkbRedirectIntoRange) {
+		if (newGroup>=nGroups)
+		     group= 0;
+		else group= newGroup;
+	    }
+	    else {
+		group+= nGroups;
+	    }
 	}
     }
     else if (((unsigned)group)>=nGroups) {
-	if ( groupsWrap )	group%= nGroups;
-	else 			group= nGroups-1;
+	if (act==XkbClampIntoRange) {
+	    group= nGroups-1;
+	}
+	else if (act==XkbRedirectIntoRange) {
+	    if (newGroup>=nGroups)
+		 group= 0;
+	    else group= newGroup;
+	}
+	else {
+	    group%= nGroups;
+	}
     }
     *pGroup= group;
     return;
 }
 
 void
-XkbComputeDerivedState(xkb)
-    XkbSrvInfoRec	*xkb;
+XkbComputeDerivedState(xkbi)
+    XkbSrvInfoPtr	xkbi;
 {
-XkbStateRec	*state= &xkb->state;
-XkbControlsRec	*ctrls= xkb->desc.ctrls;
-Bool		wrap= ((ctrls->enabled_ctrls&XkbGroupsWrapMask)!=0);
+XkbStatePtr	state= &xkbi->state;
+XkbControlsPtr	ctrls= xkbi->desc->ctrls;
+unsigned	act,newGroup;
 
+    act= XkbOutOfRangeGroupAction(ctrls->groups_wrap);
+    newGroup= XkbOutOfRangeGroupNumber(ctrls->groups_wrap);
     state->mods= (state->base_mods|state->latched_mods);
     state->mods|= state->locked_mods;
-    xkb->lookupState=state->mods&(~ctrls->internal_mask);
-    xkb->grabState= xkb->lookupState&(~ctrls->ignore_lock_mask);
-    xkb->grabState|= (state->base_mods&ctrls->ignore_lock_mask);
+    state->lookup_mods= state->mods&(~ctrls->internal.mask);
+    state->grab_mods= state->lookup_mods&(~ctrls->ignore_lock.mask);
+    state->grab_mods|= 
+		(state->base_mods|state->latched_mods&ctrls->ignore_lock.mask);
 
-    _XkbAdjustGroup(&state->base_group,ctrls->num_groups,wrap);
-    _XkbAdjustGroup(&state->latched_group,ctrls->num_groups,wrap);
-    _XkbAdjustGroup(&state->locked_group,ctrls->num_groups,wrap);
+    _XkbAdjustGroup(&state->locked_group,ctrls->num_groups,act,newGroup);
 
-    xkb->state.group = state->base_group+state->latched_group;
-    xkb->state.group+= state->locked_group;
-    _XkbAdjustGroup(&state->group,ctrls->num_groups,wrap);
+    state->group = state->base_group+state->latched_group;
+    state->group+= state->locked_group;
+    _XkbAdjustGroup(&state->group,ctrls->num_groups,act,newGroup);
 
-    xkb->lookupState|= ((state->group&0x7)<<13);
-    xkb->grabState|= ((state->group&0x7)<<13);
+    XkbComputeCompatState(xkbi);
+    return;
+}
 
-    XkbComputeCompatState(xkb);
+/***====================================================================***/
+
+void
+XkbCheckSecondaryEffects(xkbi,which,changes)
+    XkbSrvInfoPtr	xkbi;
+    unsigned		which;
+    XkbChangesPtr	changes;
+{
+    if (which&XkbStateNotifyMask) {
+	XkbStateRec old;
+	old= xkbi->state;
+	changes->state_changes|= XkbStateChangedFlags(&old,&xkbi->state);
+	XkbComputeDerivedState(xkbi);
+    }
+    if (which&XkbIndicatorStateNotifyMask)
+	XkbUpdateIndicators(xkbi->device,XkbAllIndicatorsMask,
+							&changes->indicators);
     return;
 }
 
@@ -1088,13 +1526,214 @@ XkbSetPhysicalLockingKey(dev,key)
    DeviceIntPtr	dev;
    unsigned	key;
 {
-XkbSrvInfoRec	*xkb = dev->key->xkbInfo;
+XkbDescPtr	xkb;
 
-    if (( xkb && xkb->desc.server )&&
-	( (key>=xkb->desc.min_key_code) && (key<=xkb->desc.max_key_code))) {
+    xkb= dev->key->xkbInfo->desc;
+    if ((key>=xkb->min_key_code) && (key<=xkb->max_key_code)) {
 	XkbAction	*pActs;
-	xkb->desc.server->behaviors[key].type= XkbKB_Lock|XkbKB_Permanent;
+	xkb->server->behaviors[key].type= XkbKB_Lock|XkbKB_Permanent;
     }
     else ErrorF("Internal Error!  Bad XKB info in SetPhysicalLockingKey\n");
     return;
 }
+
+/***====================================================================***/
+
+Bool
+XkbChangeEnabledControls(xkbi,change,newValues,cause,changes)
+    XkbSrvInfoPtr	xkbi;
+    unsigned long	change;
+    unsigned long	newValues;
+    XkbEventCausePtr	cause;
+    XkbChangesPtr	changes;
+{
+XkbControlsPtr		ctrls;
+unsigned 		old;
+
+    ctrls= xkbi->desc->ctrls;
+    old= ctrls->enabled_ctrls;
+    ctrls->enabled_ctrls&= ~change;
+    ctrls->enabled_ctrls|= (change&newValues);
+    if (old==ctrls->enabled_ctrls)
+	return False;
+    if (cause!=NULL) {
+	xkbControlsNotify cn;
+	cn.numGroups= ctrls->num_groups;
+	cn.changedControls|= XkbControlsEnabledMask;
+	cn.enabledControls= ctrls->enabled_ctrls;
+	cn.enabledControlChanges= (ctrls->enabled_ctrls^old);
+	cn.keycode= cause->kc;
+	cn.eventType= cause->event;
+	cn.requestMajor= cause->mjr;
+	cn.requestMinor= cause->mnr;
+	XkbSendControlsNotify(xkbi->device,&cn);
+    }
+    else {
+	/* Yes, this really should be an XOR.  If ctrls->enabled_ctrls_changes*/
+	/* is non-zero, the controls in question changed already in "this" */
+	/* request and this change merely undoes the previous one.  By the */
+	/* same token, we have to figure out whether or not ControlsEnabled */
+	/* should be set or not in the changes structure */
+	changes->ctrls.enabled_ctrls_changes^= (ctrls->enabled_ctrls^old);
+	if (changes->ctrls.enabled_ctrls_changes)
+	     changes->ctrls.changed_ctrls|= XkbControlsEnabledMask;
+	else changes->ctrls.changed_ctrls&= ~XkbControlsEnabledMask;
+    }
+    if (xkbi->iAccel.usesControls) {
+	XkbIndicatorChangesPtr	ic;
+	ic= (changes?(&changes->indicators):NULL);
+	XkbUpdateIndicators(xkbi->device,xkbi->iAccel.usesControls,ic);
+    }
+    return True;
+}
+
+/***====================================================================***/
+
+#define	MAX_TOC	16
+
+XkbGeometryPtr 
+XkbLookupNamedGeometry(dev,name,shouldFree)
+    DeviceIntPtr	dev;
+    Atom		name;
+    Bool *		shouldFree;
+{
+XkbSrvInfoPtr	xkbi=	dev->key->xkbInfo;
+XkbDescPtr	xkb=	xkbi->desc;
+
+    *shouldFree= 0;
+    if (name==None) {
+	if (xkb->geom!=NULL)
+	    return xkb->geom;
+	name= xkb->names->geometry;
+    }
+    if ((xkb->geom!=NULL)&&(xkb->geom->name==name))
+	return xkb->geom;
+    else if ((name==xkb->names->geometry)&&(xkb->geom==NULL)) {
+	FILE *file= XkbDDXOpenConfigFile(XkbInitialMap,NULL,0);
+	if (file!=NULL) {
+	    XkbFileInfo		xkbFInfo;
+	    xkmFileInfo		finfo;
+	    xkmSectionInfo	toc[MAX_TOC],*entry;
+	    bzero(&xkbFInfo,sizeof(xkbFInfo));
+	    xkbFInfo.xkb= xkb;
+	    if (XkmReadTOC(file,&finfo,MAX_TOC,toc)) {
+		entry= XkmFindTOCEntry(&finfo,toc,XkmGeometryIndex);
+		if (entry!=NULL)
+		    XkmReadFileSection(file,entry,&xkbFInfo,NULL);
+	    }
+	    fclose(file);
+	    if (xkb->geom) {
+		*shouldFree= 0;
+		return xkb->geom;
+	    }
+	}
+    }
+    *shouldFree= 1;
+    return NULL;
+}
+
+void
+XkbConvertCase(sym, lower, upper)
+    register KeySym sym;
+    KeySym *lower;
+    KeySym *upper;
+{
+    *lower = sym;
+    *upper = sym;
+    switch(sym >> 8) {
+    case 0: /* Latin 1 */
+	if ((sym >= XK_A) && (sym <= XK_Z))
+	    *lower += (XK_a - XK_A);
+	else if ((sym >= XK_a) && (sym <= XK_z))
+	    *upper -= (XK_a - XK_A);
+	else if ((sym >= XK_Agrave) && (sym <= XK_Odiaeresis))
+	    *lower += (XK_agrave - XK_Agrave);
+	else if ((sym >= XK_agrave) && (sym <= XK_odiaeresis))
+	    *upper -= (XK_agrave - XK_Agrave);
+	else if ((sym >= XK_Ooblique) && (sym <= XK_Thorn))
+	    *lower += (XK_oslash - XK_Ooblique);
+	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
+	    *upper -= (XK_oslash - XK_Ooblique);
+	break;
+    case 1: /* Latin 2 */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym == XK_Aogonek)
+	    *lower = XK_aogonek;
+	else if (sym >= XK_Lstroke && sym <= XK_Sacute)
+	    *lower += (XK_lstroke - XK_Lstroke);
+	else if (sym >= XK_Scaron && sym <= XK_Zacute)
+	    *lower += (XK_scaron - XK_Scaron);
+	else if (sym >= XK_Zcaron && sym <= XK_Zabovedot)
+	    *lower += (XK_zcaron - XK_Zcaron);
+	else if (sym == XK_aogonek)
+	    *upper = XK_Aogonek;
+	else if (sym >= XK_lstroke && sym <= XK_sacute)
+	    *upper -= (XK_lstroke - XK_Lstroke);
+	else if (sym >= XK_scaron && sym <= XK_zacute)
+	    *upper -= (XK_scaron - XK_Scaron);
+	else if (sym >= XK_zcaron && sym <= XK_zabovedot)
+	    *upper -= (XK_zcaron - XK_Zcaron);
+	else if (sym >= XK_Racute && sym <= XK_Tcedilla)
+	    *lower += (XK_racute - XK_Racute);
+	else if (sym >= XK_racute && sym <= XK_tcedilla)
+	    *upper -= (XK_racute - XK_Racute);
+	break;
+    case 2: /* Latin 3 */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Hstroke && sym <= XK_Hcircumflex)
+	    *lower += (XK_hstroke - XK_Hstroke);
+	else if (sym >= XK_Gbreve && sym <= XK_Jcircumflex)
+	    *lower += (XK_gbreve - XK_Gbreve);
+	else if (sym >= XK_hstroke && sym <= XK_hcircumflex)
+	    *upper -= (XK_hstroke - XK_Hstroke);
+	else if (sym >= XK_gbreve && sym <= XK_jcircumflex)
+	    *upper -= (XK_gbreve - XK_Gbreve);
+	else if (sym >= XK_Cabovedot && sym <= XK_Scircumflex)
+	    *lower += (XK_cabovedot - XK_Cabovedot);
+	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
+	    *upper -= (XK_cabovedot - XK_Cabovedot);
+	break;
+    case 3: /* Latin 4 */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Rcedilla && sym <= XK_Tslash)
+	    *lower += (XK_rcedilla - XK_Rcedilla);
+	else if (sym >= XK_rcedilla && sym <= XK_tslash)
+	    *upper -= (XK_rcedilla - XK_Rcedilla);
+	else if (sym == XK_ENG)
+	    *lower = XK_eng;
+	else if (sym == XK_eng)
+	    *upper = XK_ENG;
+	else if (sym >= XK_Amacron && sym <= XK_Umacron)
+	    *lower += (XK_amacron - XK_Amacron);
+	else if (sym >= XK_amacron && sym <= XK_umacron)
+	    *upper -= (XK_amacron - XK_Amacron);
+	break;
+    case 6: /* Cyrillic */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Serbian_DJE && sym <= XK_Serbian_DZE)
+	    *lower -= (XK_Serbian_DJE - XK_Serbian_dje);
+	else if (sym >= XK_Serbian_dje && sym <= XK_Serbian_dze)
+	    *upper += (XK_Serbian_DJE - XK_Serbian_dje);
+	else if (sym >= XK_Cyrillic_YU && sym <= XK_Cyrillic_HARDSIGN)
+	    *lower -= (XK_Cyrillic_YU - XK_Cyrillic_yu);
+	else if (sym >= XK_Cyrillic_yu && sym <= XK_Cyrillic_hardsign)
+	    *upper += (XK_Cyrillic_YU - XK_Cyrillic_yu);
+        break;
+    case 7: /* Greek */
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Greek_ALPHAaccent && sym <= XK_Greek_OMEGAaccent)
+	    *lower += (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_alphaaccent && sym <= XK_Greek_omegaaccent &&
+		 sym != XK_Greek_iotaaccentdieresis &&
+		 sym != XK_Greek_upsilonaccentdieresis)
+	    *upper -= (XK_Greek_alphaaccent - XK_Greek_ALPHAaccent);
+	else if (sym >= XK_Greek_ALPHA && sym <= XK_Greek_OMEGA)
+	    *lower += (XK_Greek_alpha - XK_Greek_ALPHA);
+	else if (sym >= XK_Greek_alpha && sym <= XK_Greek_omega &&
+		 sym != XK_Greek_finalsmallsigma)
+	    *upper -= (XK_Greek_alpha - XK_Greek_ALPHA);
+        break;
+    }
+}
+
+

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.86 94/11/21 18:19:48 kaleb Exp $
-XCOMM $XFree86: xc/include/Imakefile,v 3.3tsi Exp $
+XCOMM $XConsortium: Imakefile /main/88 1995/10/04 07:48:56 dpw $
+XCOMM $XFree86: xc/include/Imakefile,v 3.4 1995/07/12 15:30:02 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -9,12 +9,14 @@ HEADERS = DECkeysym.h \
 	Sunkeysym.h \
 	X.h \
 	XWDFile.h \
+	Xalloca.h \
 	Xatom.h \
 	Xfuncproto.h \
 	Xfuncs.h \
 	Xmd.h \
 	Xos.h \
 	Xosdefs.h \
+	Xpoll.h \
 	Xproto.h \
 	Xprotostr.h \
 	Xthreads.h \

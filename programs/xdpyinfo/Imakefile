@@ -1,5 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/07/12 18:15:34 dpw Exp $
-XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.1 1995/12/23 10:12:13 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/7 1995/12/04 15:10:00 dpw $
+XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.2 1995/12/26 06:10:05 dawes Exp $
+        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XLIB)
   SYS_LIBRARIES = MathLibrary
 
 #if HasShm
@@ -10,21 +12,10 @@ XCOMM $XFree86: xc/programs/xdpyinfo/Imakefile,v 3.1 1995/12/23 10:12:13 dawes E
     VIDMODEDEFINES = -DXF86VIDMODE
 #endif
 
-#if BuildLBX
-        LBXDEFINES = -DLBX
-       LBXINCLUDES = -I$(TOP)/workInProgress/lbx/include/extensions
-            LBXLIB = $(LBXXEXTLIB)
-         DEPLBXLIB = $(DEPLBXXEXTLIB)
-#endif
-
 #if BuildXF86DGA
         DGADEFINES = -DXFreeXDGA
 #endif
 
-        DEFINES = $(SHMDEFINES) $(LBXDEFINES) $(LBXINCLUDES) \
-			$(VIDMODEDEFINES) $(DGADEFINES)
-        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXMULIB) $(DEPXLIB) \
-			$(DEPLBXLIB)
-LOCAL_LIBRARIES = $(XTESTLIB) $(XIELIB) $(XMULIB) $(LBXLIB) $(XLIB)
+        DEFINES = $(SHMDEFINES) $(VIDMODEDEFINES) $(DGADEFINES)
 
 SimpleProgramTarget(xdpyinfo)

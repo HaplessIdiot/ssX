@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.27 94/04/07 15:01:48 rws Exp $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.3 1995/06/24 13:43:55 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/r61_main/1 1995/12/11 20:58:09 mor $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.4 1995/11/02 00:26:58 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -11,6 +11,10 @@ XCOMM $XFree86: xc/lib/Imakefile,v 3.3 1995/06/24 13:43:55 dawes Exp $
 BERKDIR = Xbsd
 #endif
 
+#if BuildXKBlib
+XKBLIBDIR = xkbfile
+#endif
+
 #if BuildThreadStubLibrary
 THRSTUBLIB = XThrStub
 #endif
@@ -19,19 +23,14 @@ THRSTUBLIB = XThrStub
 EXEXTLIB = XExExt
 #endif
 
-#if !BuildLBXProxyOnly
 #if !BuildServersOnly
 LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext $(EXEXTLIB) \
-	     Xt Xmu Xaw XIE Xi Xtst FS PEX5
+	     Xt Xmu Xaw XIE Xi Xtst FS PEX5 $(XKBLIBDIR)
 #else
 /* For ServersOnly */
 LINTSUBDIRS = Xau Xdmcp
 #endif
 FONTSUBDIR = font
-#else
-/* For LBXProxyOnly */
-LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 Xext $(EXEXTLIB)
-#endif
 
 SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR)
 

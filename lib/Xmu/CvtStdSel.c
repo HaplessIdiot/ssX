@@ -1,5 +1,5 @@
-/* $XConsortium: CvtStdSel.c,v 1.29 94/04/17 20:15:57 gildea Exp $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.2 1994/06/28 12:23:29 dawes Exp $ */
+/* $XConsortium: CvtStdSel.c /main/35 1995/11/10 12:07:47 kaleb $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.3 1995/06/02 10:04:45 dawes Exp $ */
 
 /*
  
@@ -46,6 +46,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/IntrinsicP.h>
 #include <X11/Xatom.h>
 #include <X11/ShellP.h>
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 #include <stdio.h>
 
 #ifndef SYSVNET
@@ -215,15 +218,48 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 #if defined(TCPCONN) || defined(MNX_TCPCONN)
     if (*target == XA_IP_ADDRESS(d)) {
 	char hostname[1024];
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+	struct hostent hent;
+#ifndef _POSIX_THREADS
+#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#define HostAddrType hent.h_addrtype
+#define HostAddr hent.h_addr
+#define HostLength hent.h_length
+#define CallFailed NULL
+	char hbuf[LINE_MAX];
+	int herr;
+	struct hostent *hostp;
+#else
+#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
+#define HostAddrType hent.h_addrtype
+#define HostAddr hent.h_addr
+#define HostLength hent.h_length
+#define CallFailed -1
+	struct hostent_data hdata;
+	int hostp;
+#endif
+#else
+#define Gethostbyname(h) gethostbyname((h))
+#define HostAddrType hostp->h_addrtype
+#define HostAddr hostp->h_addr
+#define HostLength hostp->h_length
+#define CallFailed NULL
+	struct hostent *hostp;
+#endif
 
-	struct hostent *hostent;
 	hostname[0] = '\0';
 	(void) XmuGetHostname (hostname, sizeof hostname);
-	hostent = gethostbyname (hostname);
-	if (hostent->h_addrtype != AF_INET) return False;
-	*length = hostent->h_length;
+
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero((char*)&hdata, sizeof hdata);
+#endif
+	if ((hostp = Gethostbyname (hostname)) == CallFailed)
+	    return False;
+
+	if (HostAddrType != AF_INET) return False;
+	*length = HostLength;
 	*value = XtMalloc(*length);
-	(void) memmove (*value, hostent->h_addr, *length);
+	(void) memmove (*value, HostAddr, *length);
 	*type = XA_NET_ADDRESS(d);
 	*format = 8;
 	return True;

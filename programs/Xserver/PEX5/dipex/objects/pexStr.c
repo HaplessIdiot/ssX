@@ -1,5 +1,5 @@
-/* $XConsortium: pexStr.c,v 5.4 94/04/17 20:36:14 hersh Exp $ */
-/* $XFree86$ */
+/* $XConsortium: pexStr.c,v 5.5 94/09/09 20:32:50 hersh Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexStr.c,v 3.0 1995/07/07 15:36:16 dawes Exp $ */
 
 /***********************************************************
 
@@ -54,6 +54,7 @@ SOFTWARE.
  *	PEXCopyStructure
  *	PEXDestroyStructures
  *	PEXGetStructureInfo
+ *	PEXSetStructurePermission
  *	PEXGetElementInfo
  *	PEXGetStructuresInNetwork
  *	PEXGetAncestors
@@ -62,6 +63,7 @@ SOFTWARE.
  *	PEXSetEditingMode
  *	PEXSetElementPointer
  *	PEXSetElementPointerAtLabel
+ *	PEXSetElementPointerAtPickID
  *	PEXElementSearch
  *	PEXStoreElements
  *	PEXDeleteElements
@@ -183,6 +185,25 @@ pexGetStructureInfoReq  *strmPtr;
     return( err );
 
 } /* end-PEXGetStructureInfo() */
+
+/*++	PEXSetStructurePermission
+ --*/
+ErrorCode
+PEXSetStructurePermission( cntxtPtr, strmPtr )
+pexContext     		*cntxtPtr;
+pexSetStructurePermissionReq  *strmPtr;
+{
+    ErrorCode err = Success;
+    diStructHandle pstr = 0;
+
+    LU_STRUCTURE(strmPtr->sid, pstr);
+
+    err = SetStructurePermission( pstr, strmPtr->permission );
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    return( err );
+
+} /* end-PEXSetStructurePermission() */
 
 /*++	PEXGetElementInfo
  */
@@ -377,6 +398,24 @@ pexSetElementPointerAtLabelReq  *strmPtr;
     LU_STRUCTURE(strmPtr->sid, pstr);
 
     err = SetElementPointerAtLabel (pstr, strmPtr->label, strmPtr->offset);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXSetElementPointerAtLabel() */
+
+/*++	PEXSetElementPointerAtPickID
+ --*/
+ErrorCode
+PEXSetElementPointerAtPickID( cntxtPtr, strmPtr )
+pexContext      		*cntxtPtr;
+pexSetElementPointerAtPickIDReq  *strmPtr;
+{
+    ErrorCode err = Success;
+    diStructHandle pstr = 0;
+
+    LU_STRUCTURE(strmPtr->sid, pstr);
+
+    err = SetElementPointerAtPickID (pstr, strmPtr->pickId, strmPtr->offset);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
     return( err );
 

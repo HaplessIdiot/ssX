@@ -1,11 +1,21 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.11 95/01/23 18:32:03 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.29 1995/12/17 04:58:16 dawes Exp $
+XCOMM platform:  $XConsortium: linux.cf /main/14 1995/12/04 17:38:41 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.30 1996/01/03 01:21:12 dawes Exp $
 
+#ifndef OSName
 #define OSName			Linux
+#endif
+#ifndef OSVendor
 #define OSVendor		/**/
+#endif
+#ifndef OSMajorVersion
 #define OSMajorVersion		1
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		2
-#define OSTeenyVersion		1
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion		13
+#endif
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		NO

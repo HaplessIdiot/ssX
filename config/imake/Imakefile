@@ -1,9 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/03/29 16:21:51 matt Exp $
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.2tsi Exp $
+XCOMM $XConsortium: Imakefile /main/7 1995/11/07 19:46:45 gildea $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.3 1995/07/12 15:28:03 dawes Exp $
 
 DEPLIBS = 
 
-INCLUDES = -I$(BUILDINCDIR)
+INCLUDES = -I$(TOP)/include
 CPP_PROGRAM = CppCmd
 CPP_DEFINES = -DCPP_PROGRAM="\"$(CPP_PROGRAM)\""
 DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES)
@@ -30,5 +30,12 @@ InstallNamedProg(imakesvc.cmd,imakesvc.cmd,$(BINDIR))
 InstallLinkKitNamedProg(imakesvc.cmd,imakesvc.cmd,$(LINKKITDIR)/config/imake)
 #endif
 
+#if HasClearmake
+bootstrapdepend: depend
+#else
+bootstrapdepend:
+#endif
+
 clean::
 	RemoveFile(ProgramTargetName(ccimake))
+	$(RM) -r bootstrap

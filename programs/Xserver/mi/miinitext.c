@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.6 1995/12/09 11:09:04 dawes Exp $ */
+/* $XConsortium: miinitext.c /main/38 1995/12/08 13:41:44 dpw $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.7 1995/12/09 11:41:40 dawes Exp $ */
 
 #include "misc.h"
 
@@ -119,6 +119,9 @@ extern void XRecordExtensionInit();
 #ifdef LBX
 extern void     LbxExtensionInit();
 #endif
+#ifdef DBE
+extern void     DbeExtensionInit();
+#endif
 #ifdef XFREE86
 #ifdef XF86VIDMODE
 extern void	XF86VidModeExtensionInit();
@@ -189,11 +192,15 @@ InitExtensions(argc, argv)
     XCMiscExtensionInit();
 #endif
 #ifdef XRECORD
-    if (!noTestExtensions) XRecordExtensionInit(); 
+    if (!noTestExtensions) RecordExtensionInit(); 
 #endif
 #ifdef LBX
     LbxExtensionInit();
 #endif
+#ifdef DBE
+    DbeExtensionInit();
+#endif
+}
 #ifdef XFREE86
 #ifdef XF86VIDMODE
     XFree86VidModeExtensionInit();
@@ -202,4 +209,3 @@ InitExtensions(argc, argv)
     XFree86DGAExtensionInit();
 #endif
 #endif
-}

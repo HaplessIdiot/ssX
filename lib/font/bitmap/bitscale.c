@@ -1,5 +1,5 @@
-/* $XConsortium: bitscale.c,v 1.28 94/07/25 13:50:59 kaleb Exp $ */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.1 1994/08/20 07:29:55 dawes Exp $ */
+/* $XConsortium: bitscale.c /main/29 1995/11/17 14:12:51 ray $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.2 1995/07/19 12:41:03 dawes Exp $ */
 
 /*
 
@@ -480,7 +480,7 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 	    result = NULL;
     }
 
-    if (rescale_x != 1.0)
+    if (result && rescale_x != 1.0)
     {
 	/* We have rescaled horizontally due to an XLFD width field.  Change
 	   the matrix appropriately */

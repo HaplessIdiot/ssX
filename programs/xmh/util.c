@@ -1,6 +1,6 @@
 /*
- * $XConsortium: util.c,v 2.44 94/03/30 19:55:04 gildea Exp $
- * $XFree86: xc/programs/xmh/util.c,v 3.0 1994/06/28 12:33:38 dawes Exp $
+ * $XConsortium: util.c,v 2.45 94/11/28 23:43:16 gildea Exp $
+ * $XFree86: xc/programs/xmh/util.c,v 3.1 1994/09/22 16:38:39 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -42,7 +42,9 @@
 static char *SysErrorMsg (n)
     int n;
 {
-	return strerror(n);
+    char *s = strerror(n);
+
+    return (s ? s : "no such error");
 }
 
 /* Something went wrong; panic and quit. */

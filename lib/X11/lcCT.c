@@ -1,4 +1,4 @@
-/* $XConsortium: lcCT.c,v 1.5 95/02/22 22:03:04 kaleb Exp $ */
+/* $XConsortium: lcCT.c /main/6 1995/11/18 16:09:43 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -376,7 +376,6 @@ _XlcParseCharSet(charset)
 {
     CTParseRec parse;
     char *ptr, buf[BUFSIZ];
-    unsigned int type;
     int length;
 
     if (charset->ct_sequence == NULL)
@@ -385,7 +384,7 @@ _XlcParseCharSet(charset)
     ptr = charset->ct_sequence;
     length = strlen(ptr);
 
-    type = _XlcParseCT(&parse, &ptr, &length);
+    (void) _XlcParseCT(&parse, &ptr, &length);
 	
     if (charset->name) {
 	charset->xrm_name = XrmStringToQuark(charset->name);

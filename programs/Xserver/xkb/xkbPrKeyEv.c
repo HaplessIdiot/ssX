@@ -1,5 +1,4 @@
-/* $XConsortium: xkbPrKeyEv.c,v 1.1 94/04/01 18:46:13 erik Exp $ */
-/* $XFree86$ */
+/* $XConsortium: xkbPrKeyEv.c /main/3 1995/12/07 21:23:03 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -41,42 +40,59 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 static XkbAction
-XkbKeyAction(xkb,xkbState,keycode)
-    XkbDescRec	*xkb;
-    XkbStateRec *xkbState;
-    CARD8 	 keycode;
+XkbKeyAction(xkbi,xkbState,key)
+    XkbSrvInfoPtr	xkbi;
+    XkbStatePtr		xkbState;
+    CARD8 	 	key;
 {
-int		n;
-int		col;
-XkbKeyTypeRec	*type;
-XkbAction	*pActs;
-static XkbAction fake;
+int			effectiveGroup;
+int			col;
+XkbDescPtr		xkb;
+XkbKeyTypePtr		type;
+XkbAction *		pActs;
+static XkbAction 	fake;
 
-    n= XkbKeyNumActions(xkb,keycode);
-    pActs= XkbKeyActionsPtr(xkb,keycode);
+    xkb= xkbi->desc;
+    if (!XkbKeyHasActions(xkb,key)) {
+	fake.type = XkbSA_NoAction;
+	return fake;
+    }
+    pActs= XkbKeyActionsPtr(xkb,key);
     col= 0;
-    if (n>1) {
-	type= XkbKeyKeyType(xkb,keycode);
-	if (type->map!=NULL) {
-	    register unsigned		i,mods;
-	    register XkbKTMapEntryPtr	entry;
-	    mods= xkbState->mods&type->mask;
-	    for (entry= type->map,i=0;i<type->map_count;i++,entry++) {
-		if ((entry->active)&&(entry->mask==mods)) {
-		    col= entry->level;
-		    break;
+    effectiveGroup= xkbState->group;
+    if (effectiveGroup!=XkbGroup1Index) {
+	if (XkbKeyNumGroups(xkb,key)>(unsigned)1) {
+	    if (effectiveGroup>=XkbKeyNumGroups(xkb,key)) {
+		unsigned gi= XkbKeyGroupInfo(xkb,key);
+		switch (XkbOutOfRangeGroupAction(gi)) {
+		    default:
+		    case XkbWrapIntoRange:
+			effectiveGroup %= XkbKeyNumGroups(xkb,key);
+			break;
+		    case XkbClampIntoRange:
+			effectiveGroup = XkbKeyNumGroups(xkb,key)-1;
+			break;
+		    case XkbRedirectIntoRange:
+			effectiveGroup= XkbOutOfRangeGroupInfo(gi);
+			if (effectiveGroup>=XkbKeyNumGroups(xkb,key))
+			    effectiveGroup= 0;
+			break;
 		}
 	    }
 	}
-	if ((xkbState->group!=0)&&(XkbKeyNumGroups(xkb,keycode)>(unsigned)1)) {
-	    unsigned effectiveGroup = xkbState->group;
-	    if (effectiveGroup>=XkbKeyNumGroups(xkb,keycode)) {
-		if ( XkbKeyGroupsWrap(xkb,keycode) ) {
-		     effectiveGroup %= XkbKeyNumGroups(xkb,keycode);
-		}
-		else effectiveGroup  = XkbKeyNumGroups(xkb,keycode)-1;
+	else effectiveGroup= XkbGroup1Index;
+	col+= (effectiveGroup*XkbKeyGroupsWidth(xkb,key));
+    }
+    type= XkbKeyKeyType(xkb,key,effectiveGroup);
+    if (type->map!=NULL) {
+	register unsigned		i,mods;
+	register XkbKTMapEntryPtr	entry;
+	mods= xkbState->mods&type->mods.mask;
+	for (entry= type->map,i=0;i<type->map_count;i++,entry++) {
+	    if ((entry->active)&&(entry->mods.mask==mods)) {
+		col+= entry->level;
+		break;
 	    }
-	    col+= (effectiveGroup*type->group_width);
 	}
     }
     if (XkbIsPtrAction(&pActs[col])&&
@@ -110,7 +126,10 @@ static XkbAction fake;
 		return fake;
 	    case XkbSA_LockGroup:
 	    case XkbSA_LatchGroup:
-		XkbSASetGroup(&fake.group,XkbSAGroup(&pActs[col].iso));
+		/* We want everything from the latch/lock action except the
+		 * type should be changed to set.
+		 */
+		fake = pActs[col];
 		fake.group.type = XkbSA_SetGroup;
 		return fake;
 	}
@@ -119,13 +138,17 @@ static XkbAction fake;
     if (xkb->ctrls->enabled_ctrls&XkbStickyKeysMask) {
 	if (pActs[col].any.type==XkbSA_SetMods) {
 	    fake.mods.type = XkbSA_LatchMods;
-	    fake.mods.flags= XkbSA_ClearLocks|XkbSA_LatchToLock;
 	    fake.mods.mask = pActs[col].mods.mask;
+	    if (XkbAX_NeedOption(xkb->ctrls,XkbAX_LatchToLockMask))
+		 fake.mods.flags= XkbSA_ClearLocks|XkbSA_LatchToLock;
+	    else fake.mods.flags= XkbSA_ClearLocks;
 	    return fake;
 	}
 	if (pActs[col].any.type==XkbSA_SetGroup) {
 	    fake.group.type = XkbSA_LatchGroup;
-	    fake.group.flags= XkbSA_ClearLocks|XkbSA_LatchToLock;
+	    if (XkbAX_NeedOption(xkb->ctrls,XkbAX_LatchToLockMask))
+		 fake.group.flags= XkbSA_ClearLocks|XkbSA_LatchToLock;
+	    else fake.group.flags= XkbSA_ClearLocks;
 	    XkbSASetGroup(&fake.group,XkbSAGroup(&pActs[col].group));
 	    return fake;
 	}
@@ -144,14 +167,14 @@ typedef struct _XkbFilter {
 	XkbAction		  upAction;
 	int			(*filter)();
 	struct _XkbFilter	 *next;
-} XkbFilter;
+} XkbFilterRec,*XkbFilterPtr;
 
 static int
-_XkbFilterSetState(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterSetState(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
 
     if (filter->keycode==0) {		/* initial press */
@@ -162,28 +185,28 @@ _XkbFilterSetState(xkb,filter,keycode,pAction)
 	filter->filter = _XkbFilterSetState;
 	if (pAction->type==XkbSA_SetMods) {
 	    filter->upAction = *pAction;
-	    xkb->setMods= pAction->mods.mask;
+	    xkbi->setMods= pAction->mods.mask;
 	}
 	else {
-	    xkb->groupChange = XkbSAGroup(&pAction->group);
+	    xkbi->groupChange = XkbSAGroup(&pAction->group);
 	    if (pAction->group.flags&XkbSA_GroupAbsolute)
-		xkb->groupChange-= xkb->state.base_group;
+		xkbi->groupChange-= xkbi->state.base_group;
 	    filter->upAction= *pAction;
-	    XkbSASetGroup(&filter->upAction.group,xkb->groupChange);
+	    XkbSASetGroup(&filter->upAction.group,xkbi->groupChange);
 	}
     }
     else if (filter->keycode==keycode) {
 	if (filter->upAction.type==XkbSA_SetMods) {
-	    xkb->clearMods = filter->upAction.mods.mask;
+	    xkbi->clearMods = filter->upAction.mods.mask;
 	    if (filter->upAction.mods.flags&XkbSA_ClearLocks) {
-		xkb->state.locked_mods&= ~filter->upAction.mods.mask;
+		xkbi->state.locked_mods&= ~filter->upAction.mods.mask;
 	    }
 	}
 	else {
 	    if (filter->upAction.group.flags&XkbSA_ClearLocks) {
-		xkb->state.locked_group = 0;
+		xkbi->state.locked_group = 0;
 	    }
-	    xkb->groupChange = -XkbSAGroup(&filter->upAction.group);
+	    xkbi->groupChange = -XkbSAGroup(&filter->upAction.group);
 	}
 	filter->active = 0;
     }
@@ -199,11 +222,18 @@ _XkbFilterSetState(xkb,filter,keycode,pAction)
 #define	NO_LATCH	3
 
 static int
-_XkbFilterLatchState(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+#if NeedFunctionPrototype
+_XkbFilterLatchState(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
+_XkbFilterLatchState(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
+#endif
 {
 
     if (filter->keycode==0) {			/* initial press */
@@ -214,30 +244,36 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 	filter->filter = _XkbFilterLatchState;
 	if (pAction->type==XkbSA_LatchMods) {
 	    filter->upAction = *pAction;
-	    xkb->setMods = pAction->mods.mask;
+	    xkbi->setMods = pAction->mods.mask;
 	}
 	else {
-	    xkb->groupChange = XkbSAGroup(&pAction->group);
+	    xkbi->groupChange = XkbSAGroup(&pAction->group);
 	    if (pAction->group.flags&XkbSA_GroupAbsolute)
-		 xkb->groupChange-= xkb->state.base_group;
+		 xkbi->groupChange-= xkbi->state.base_group;
 	    filter->upAction= *pAction;
-	    XkbSASetGroup(&filter->upAction.group,xkb->groupChange);
+	    XkbSASetGroup(&filter->upAction.group,xkbi->groupChange);
 	}
     }
     else if ( pAction && (filter->priv==LATCH_PENDING) ) {
-	if (pAction->type==XkbSA_NoAction) {
+	if (((1<<pAction->type)&XkbSA_BreakLatch)!=0) {
 	    filter->active = 0;
 	    if (filter->upAction.type==XkbSA_LatchMods)
-		 xkb->state.latched_mods&= ~filter->upAction.mods.mask;
-	    else xkb->state.latched_group-=XkbSAGroup(&filter->upAction.group);
+		 xkbi->state.latched_mods&= ~filter->upAction.mods.mask;
+	    else xkbi->state.latched_group-=XkbSAGroup(&filter->upAction.group);
 	}
 	else if ((pAction->type==filter->upAction.type)&&
 		 (pAction->mods.flags==filter->upAction.mods.flags)&&
 		 (pAction->mods.mask==filter->upAction.mods.mask)) {
 	    if (filter->upAction.mods.flags&XkbSA_LatchToLock) {
+		XkbControlsPtr ctrls= xkbi->desc->ctrls;
 		if (filter->upAction.type==XkbSA_LatchMods)
 		     pAction->mods.type= XkbSA_LockMods;
 		else pAction->group.type= XkbSA_LockGroup;
+		if (XkbAX_NeedFeedback(ctrls,XkbAX_StickyKeysFBMask)&&
+		    		(ctrls->enabled_ctrls&XkbStickyKeysMask)) {
+		    XkbDDXAccessXBeep(xkbi->device,_BEEP_STICKY_LOCK,
+						XkbStickyKeysMask);
+		}
 	    }
 	    else {
 		if (filter->upAction.type==XkbSA_LatchMods)
@@ -245,26 +281,34 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 		else pAction->group.type= XkbSA_SetGroup;
 	    }
 	    if (filter->upAction.type==XkbSA_LatchMods)
-		 xkb->state.latched_mods&= ~filter->upAction.mods.mask;
-	    else xkb->state.latched_group-=XkbSAGroup(&filter->upAction.group);
+		 xkbi->state.latched_mods&= ~filter->upAction.mods.mask;
+	    else xkbi->state.latched_group-=XkbSAGroup(&filter->upAction.group);
 	    filter->active = 0;
 	}
     }
     else if (filter->keycode==keycode) {	/* release */
+	XkbControlsPtr	ctrls= xkbi->desc->ctrls;
+	int		needBeep;
+	int		beepType= _BEEP_NONE;
+
+	needBeep= ((ctrls->enabled_ctrls&XkbStickyKeysMask)&&
+			XkbAX_NeedFeedback(ctrls,XkbAX_StickyKeysFBMask));
 	if (filter->upAction.type==XkbSA_LatchMods) {
-	    xkb->clearMods = filter->upAction.mods.mask;
+	    xkbi->clearMods = filter->upAction.mods.mask;
 	    if ((filter->upAction.mods.flags&XkbSA_ClearLocks)&&
-		 (xkb->clearMods&xkb->state.locked_mods)==xkb->clearMods) {
-		xkb->state.locked_mods&= ~xkb->clearMods;
+		 (xkbi->clearMods&xkbi->state.locked_mods)==xkbi->clearMods) {
+		xkbi->state.locked_mods&= ~xkbi->clearMods;
 		filter->priv= NO_LATCH;
+		beepType= _BEEP_STICKY_UNLOCK;
 	    }
 	}
 	else {
-	    xkb->groupChange = -XkbSAGroup(&filter->upAction.group);
+	    xkbi->groupChange = -XkbSAGroup(&filter->upAction.group);
 	    if ((filter->upAction.group.flags&XkbSA_ClearLocks)&&
-						(xkb->state.locked_group)) {
-		xkb->state.locked_group = 0;
+						(xkbi->state.locked_group)) {
+		xkbi->state.locked_group = 0;
 		filter->priv = NO_LATCH;
+		beepType= _BEEP_STICKY_UNLOCK;
 	    }
 	}
 	if (filter->priv==NO_LATCH) {
@@ -273,9 +317,13 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 	else {
 	    filter->priv= LATCH_PENDING;
 	    if (filter->upAction.type==XkbSA_LatchMods)
-		 xkb->state.latched_mods |= filter->upAction.mods.mask;
-	    else xkb->state.latched_group+=XkbSAGroup(&filter->upAction.group);
+		 xkbi->state.latched_mods |= filter->upAction.mods.mask;
+	    else xkbi->state.latched_group+=XkbSAGroup(&filter->upAction.group);
+	    if (needBeep && (beepType==_BEEP_NONE))
+		beepType= _BEEP_STICKY_LATCH;
 	}
+	if (needBeep && (beepType!=_BEEP_NONE))
+	    XkbDDXAccessXBeep(xkbi->device,beepType,XkbStickyKeysMask);
     }
     else if (filter->priv==LATCH_KEY_DOWN) {
 	filter->priv= NO_LATCH;
@@ -285,17 +333,17 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 }
 
 static int
-_XkbFilterLockState(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterLockState(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
 
     if (pAction&&(pAction->type==XkbSA_LockGroup)) {
 	if (pAction->group.flags&XkbSA_GroupAbsolute)
-	     xkb->state.locked_group= XkbSAGroup(&pAction->group);
-	else xkb->state.locked_group+= XkbSAGroup(&pAction->group);
+	     xkbi->state.locked_group= XkbSAGroup(&pAction->group);
+	else xkbi->state.locked_group+= XkbSAGroup(&pAction->group);
 	return 1;
     }
     if (filter->keycode==0) {		/* initial press */
@@ -307,12 +355,12 @@ _XkbFilterLockState(xkb,filter,keycode,pAction)
 	filter->priv = 0;
 	filter->filter = _XkbFilterLockState;
 	filter->upAction = *pAction;
-	xkb->state.locked_mods^= pAction->mods.mask;
-	xkb->setMods = pAction->mods.mask;
+	xkbi->state.locked_mods^= pAction->mods.mask;
+	xkbi->setMods = pAction->mods.mask;
     }
     else if (filter->keycode==keycode) {
 	filter->active = 0;
-	xkb->clearMods = filter->upAction.mods.mask;
+	xkbi->clearMods = filter->upAction.mods.mask;
     }
     return 1;
 }
@@ -321,15 +369,16 @@ _XkbFilterLockState(xkb,filter,keycode,pAction)
 #define	NO_ISO_LOCK		1
 
 static int
-_XkbFilterISOLock(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterISOLock(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
 
     if (filter->keycode==0) {		/* initial press */
-	CARD8	flags = pAction->iso.flags;
+	CARD8	flags= pAction->iso.flags;
+
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 1;
@@ -337,18 +386,18 @@ _XkbFilterISOLock(xkb,filter,keycode,pAction)
 	filter->upAction = *pAction;
 	filter->filter = _XkbFilterISOLock;
 	if (flags&XkbSA_ISODfltIsGroup) {
-	    xkb->groupChange = XkbSAGroup(&pAction->iso);
-	    xkb->setMods = 0;
+	    xkbi->groupChange = XkbSAGroup(&pAction->iso);
+	    xkbi->setMods = 0;
 	}
 	else {
-	    xkb->setMods = pAction->iso.mask;
-	    xkb->groupChange = 0;
+	    xkbi->setMods = pAction->iso.mask;
+	    xkbi->groupChange = 0;
 	}
-	if ((!(flags&XkbSA_ISONoAffectMods))&&(xkb->state.base_mods)) {
+	if ((!(flags&XkbSA_ISONoAffectMods))&&(xkbi->state.base_mods)) {
 	    filter->priv= NO_ISO_LOCK;
-	    xkb->state.locked_mods^= xkb->state.base_mods;
+	    xkbi->state.locked_mods^= xkbi->state.base_mods;
 	}
-	if ((!(flags&XkbSA_ISONoAffectGroup))&&(xkb->state.base_group)) {
+	if ((!(flags&XkbSA_ISONoAffectGroup))&&(xkbi->state.base_group)) {
 /* 6/22/93 (ef) -- lock groups if group key is down first */
 	}
 	if (!(flags&XkbSA_ISONoAffectPtr)) {
@@ -356,23 +405,25 @@ _XkbFilterISOLock(xkb,filter,keycode,pAction)
 	}
     }
     else if (filter->keycode==keycode) {
-	CARD8	flags = filter->upAction.iso.flags;
+	CARD8	flags= filter->upAction.iso.flags;
+
 	if (flags&XkbSA_ISODfltIsGroup) {
-	    xkb->groupChange = -XkbSAGroup(&filter->upAction.iso);
-	    xkb->clearMods = 0;
+	    xkbi->groupChange = -XkbSAGroup(&filter->upAction.iso);
+	    xkbi->clearMods = 0;
 	    if (filter->priv==ISO_KEY_DOWN)
-		xkb->state.locked_group+= XkbSAGroup(&filter->upAction.iso);
+		xkbi->state.locked_group+= XkbSAGroup(&filter->upAction.iso);
 	}
 	else {
-	    xkb->clearMods= filter->upAction.iso.mask;
-	    xkb->groupChange= 0;
+	    xkbi->clearMods= filter->upAction.iso.mask;
+	    xkbi->groupChange= 0;
 	    if (filter->priv==ISO_KEY_DOWN)
-		xkb->state.locked_mods^= filter->upAction.iso.mask;
+		xkbi->state.locked_mods^= filter->upAction.iso.mask;
 	}
 	filter->active = 0;
     }
     else if (pAction) {
-	CARD8	flags = filter->upAction.iso.flags;
+	CARD8	flags= filter->upAction.iso.flags;
+
 	switch (pAction->type) {
 	    case XkbSA_SetMods: case XkbSA_LatchMods:
 		if (!(flags&XkbSA_ISONoAffectMods)) {
@@ -410,42 +461,53 @@ _XkbPtrAccelExpire(timer,now,arg)
     CARD32	 now;
     pointer	 arg;
 {
-XkbSrvInfoRec	*xkbInfo= (XkbSrvInfoRec *)arg;
-XkbControlsRec	*ctrls= xkbInfo->desc.ctrls;
-int	dx,dy;
+XkbSrvInfoPtr	xkbi= (XkbSrvInfoPtr)arg;
+XkbControlsPtr	ctrls= xkbi->desc->ctrls;
+int		dx,dy;
 
-    if (xkbInfo->mouseKey==0)
+    if (xkbi->mouseKey==0)
 	return 0;
 
-    if (xkbInfo->mouseKeysAccel) {
-	if ((xkbInfo->mouseKeysCounter)<ctrls->mouse_keys_time_to_max) {
+    if (xkbi->mouseKeysAccel) {
+	if ((xkbi->mouseKeysCounter)<ctrls->mk_time_to_max) {
 	    double step;
-	    xkbInfo->mouseKeysCounter++;
-	    step= xkbInfo->mouseKeysCurveFactor*
-		 pow((double)xkbInfo->mouseKeysCounter,xkbInfo->mouseKeysCurve);
-	    dx= ceil( ((double)xkbInfo->mouseKeysDX)*step );
-	    dy= ceil( ((double)xkbInfo->mouseKeysDY)*step );
+	    xkbi->mouseKeysCounter++;
+	    step= xkbi->mouseKeysCurveFactor*
+		 pow((double)xkbi->mouseKeysCounter,xkbi->mouseKeysCurve);
+	    if (xkbi->mouseKeysDX<0)
+		 dx= floor( ((double)xkbi->mouseKeysDX)*step );
+	    else dx=  ceil( ((double)xkbi->mouseKeysDX)*step );
+	    if (xkbi->mouseKeysDY<0)
+		 dy= floor( ((double)xkbi->mouseKeysDY)*step );
+	    else dy=  ceil( ((double)xkbi->mouseKeysDY)*step );
 	}
 	else {
-	    dx= xkbInfo->mouseKeysDX*ctrls->mouse_keys_max_speed;
-	    dy= xkbInfo->mouseKeysDY*ctrls->mouse_keys_max_speed;
+	    dx= xkbi->mouseKeysDX*ctrls->mk_max_speed;
+	    dy= xkbi->mouseKeysDY*ctrls->mk_max_speed;
 	}
+	if (xkbi->mouseKeysFlags&XkbSA_MoveAbsoluteX)
+	    dx= xkbi->mouseKeysDX;
+	if (xkbi->mouseKeysFlags&XkbSA_MoveAbsoluteY)
+	    dy= xkbi->mouseKeysDY;
     }
     else {
-	dx= xkbInfo->mouseKeysDX;
-	dy= xkbInfo->mouseKeysDY;
+	dx= xkbi->mouseKeysDX;
+	dy= xkbi->mouseKeysDY;
     }
-    DDXFakePointerMotion(dx,dy);
-    return xkbInfo->desc.ctrls->mouse_keys_interval;
+    XkbDDXFakePointerMotion(xkbi->mouseKeysFlags,dx,dy);
+    return xkbi->desc->ctrls->mk_interval;
 }
 
 static int
-_XkbFilterPointerMove(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterPointerMove(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
+int	x,y;
+Bool	accel;
+
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;
@@ -453,28 +515,29 @@ _XkbFilterPointerMove(xkb,filter,keycode,pAction)
 	filter->priv=0;
 	filter->filter = _XkbFilterPointerMove;
 	filter->upAction= *pAction;
-	xkb->mouseKeysCounter= 0;
-	xkb->mouseKey= keycode;
-	DDXFakePointerMotion(XkbPtrActionX(&pAction->ptr),
-					XkbPtrActionY(&pAction->ptr));
-	xkb->mouseKeysAccel= 
-		((pAction->type==XkbSA_AccelPtr)||
-		 ((pAction->type==XkbSA_MovePtr)&&
-		  (xkb->desc.ctrls->enabled_ctrls&XkbMouseKeysAccelMask)));
-	if (xkb->mouseKeysAccel) {
-	    AccessXCancelRepeatKey(xkb,keycode);
-	    xkb->mouseKeysDX= XkbPtrActionX(&pAction->ptr);
-	    xkb->mouseKeysDY= XkbPtrActionY(&pAction->ptr);
-	    xkb->mouseKeyTimer= TimerSet(xkb->mouseKeyTimer, 0,
-				xkb->desc.ctrls->mouse_keys_delay,
-				_XkbPtrAccelExpire,(pointer)xkb);
+	xkbi->mouseKeysCounter= 0;
+	xkbi->mouseKey= keycode;
+	accel= ((pAction->ptr.flags&XkbSA_NoAcceleration)==0);
+	x= XkbPtrActionX(&pAction->ptr);
+	y= XkbPtrActionY(&pAction->ptr);
+	XkbDDXFakePointerMotion(pAction->ptr.flags,x,y);
+	AccessXCancelRepeatKey(xkbi,keycode);
+	xkbi->mouseKeysAccel= accel&&
+		(xkbi->desc->ctrls->enabled_ctrls&XkbMouseKeysAccelMask);
+	if (xkbi->mouseKeysAccel) {
+	    xkbi->mouseKeysFlags= pAction->ptr.flags;
+	    xkbi->mouseKeysDX= XkbPtrActionX(&pAction->ptr);
+	    xkbi->mouseKeysDY= XkbPtrActionY(&pAction->ptr);
+	    xkbi->mouseKeyTimer= TimerSet(xkbi->mouseKeyTimer, 0,
+				xkbi->desc->ctrls->mk_delay,
+				_XkbPtrAccelExpire,(pointer)xkbi);
 	}
     }
     else if (filter->keycode==keycode) {
 	filter->active = 0;
-	if (xkb->mouseKey==keycode) {
-	    xkb->mouseKey= 0;
-	    xkb->mouseKeyTimer= TimerSet(xkb->mouseKeyTimer, 0, 0,
+	if (xkbi->mouseKey==keycode) {
+	    xkbi->mouseKey= 0;
+	    xkbi->mouseKeyTimer= TimerSet(xkbi->mouseKeyTimer, 0, 0,
 							NULL, NULL);
 	}
     }
@@ -482,16 +545,17 @@ _XkbFilterPointerMove(xkb,filter,keycode,pAction)
 }
 
 static int
-_XkbFilterPointerBtn(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
     if (filter->keycode==0) {		/* initial press */
-	int button = pAction->btn.button;
+	int	button= pAction->btn.button;
+
 	if (button==XkbSA_UseDfltButton)
-	    button = xkb->desc.ctrls->mouse_keys_dflt_btn;
+	    button = xkbi->desc->ctrls->mk_dflt_btn;
 
 	filter->keycode = keycode;
 	filter->active = 1;
@@ -502,44 +566,46 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 	filter->upAction.btn.button= button;
 	switch (pAction->type) {
 	    case XkbSA_LockPtrBtn:
-		if ((xkb->lockedPtrButtons&(1<<button))==0) {
-		    xkb->lockedPtrButtons|= (1<<button);
-		    DDXFakePointerButton(ButtonPress,button);
+		if (((xkbi->lockedPtrButtons&(1<<button))==0)&&
+			((pAction->btn.flags&XkbSA_LockNoLock)==0)) {
+		    xkbi->lockedPtrButtons|= (1<<button);
+		    XkbDDXFakePointerButton(ButtonPress,button);
 		    filter->upAction.type= XkbSA_NoAction;
 		}
 		break;
 	    case XkbSA_PtrBtn:
-		DDXFakePointerButton(ButtonPress,button);
-		break;
-	    case XkbSA_ClickPtrBtn:
 		{
 		    register int i,nClicks;
-		    nClicks= pAction->btn.count;
-		    for (i=0;i<nClicks;i++) {
-			DDXFakePointerButton(ButtonPress,button);
-			DDXFakePointerButton(ButtonRelease,button);
+		    if (pAction->btn.count>0) {
+			nClicks= pAction->btn.count;
+			for (i=0;i<nClicks;i++) {
+			    XkbDDXFakePointerButton(ButtonPress,button);
+			    XkbDDXFakePointerButton(ButtonRelease,button);
+			}
+			filter->upAction.type= XkbSA_NoAction;
 		    }
-		    filter->upAction.type= XkbSA_NoAction;
+		    else XkbDDXFakePointerButton(ButtonPress,button);
 		}
 		break;
 	    case XkbSA_SetPtrDflt:
 		{
-		    XkbControlsRec	*ctrls= xkb->desc.ctrls;
+		    XkbControlsPtr	ctrls= xkbi->desc->ctrls;
 		    XkbControlsRec	old;
 		    xkbControlsNotify	cn;
+
 		    old= *ctrls;
 		    switch (pAction->dflt.affect) {
 			case XkbSA_AffectDfltBtn:
 			    if (pAction->dflt.flags&XkbSA_DfltBtnAbsolute)
-				ctrls->mouse_keys_dflt_btn= 
+				ctrls->mk_dflt_btn= 
 					XkbSAPtrDfltValue(&pAction->dflt);
 			    else {
-				ctrls->mouse_keys_dflt_btn+=
+				ctrls->mk_dflt_btn+=
 					XkbSAPtrDfltValue(&pAction->dflt);
-				if (ctrls->mouse_keys_dflt_btn>5)
-				    ctrls->mouse_keys_dflt_btn= 5;
-				else if (ctrls->mouse_keys_dflt_btn<1)
-				    ctrls->mouse_keys_dflt_btn= 1;
+				if (ctrls->mk_dflt_btn>5)
+				    ctrls->mk_dflt_btn= 5;
+				else if (ctrls->mk_dflt_btn<1)
+				    ctrls->mk_dflt_btn= 1;
 			    }
 			    break;
 			default:
@@ -548,26 +614,31 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 							pAction->dflt.affect);
 			    break;
 		    }
-		    if (XkbComputeControlsNotify(xkb->device,
-						&old,xkb->desc.ctrls,
-						&cn)) {
+		    if (XkbComputeControlsNotify(xkbi->device,
+						&old,xkbi->desc->ctrls,
+						&cn,False)) {
 			cn.keycode = keycode;
 			cn.eventType = KeyPress;
 			cn.requestMajor = 0;
 			cn.requestMinor = 0;
-			XkbSendControlsNotify(xkb->device,&cn);
+			XkbSendControlsNotify(xkbi->device,&cn);
 		    }
 		}
 		break;
 	}
     }
     else if (filter->keycode==keycode) {
-	int button= filter->upAction.btn.button;
+	int	button= filter->upAction.btn.button;
+
 	switch (filter->upAction.type) {
 	    case XkbSA_LockPtrBtn:
-		xkb->lockedPtrButtons&= ~(1<<button);
+		if (((filter->upAction.btn.flags&XkbSA_LockNoUnlock)!=0)||
+				((xkbi->lockedPtrButtons&(1<<button))==0)) {
+		    break;
+		}
+		xkbi->lockedPtrButtons&= ~(1<<button);
 	    case XkbSA_PtrBtn:
-		DDXFakePointerButton(ButtonRelease,button);
+		XkbDDXFakePointerButton(ButtonRelease,button);
 		break;
 	}
 	filter->active = 0;
@@ -576,59 +647,83 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 }
 
 static int
-_XkbFilterControls(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterControls(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
 XkbControlsRec	old;
-CARD16		change;
+XkbControlsPtr	ctrls;
+DeviceIntPtr	kbd;
+unsigned int	change;
 
-    old= *xkb->desc.ctrls;
+    kbd= xkbi->device;
+    ctrls= xkbi->desc->ctrls;
+    old= *ctrls;
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 0;
-	filter->priv = change= XkbActionCtrls(&pAction->ctrls);
+	change= XkbActionCtrls(&pAction->ctrls);
+	filter->priv = change;
 	filter->filter = _XkbFilterControls;
 	filter->upAction = *pAction;
 
 	if (pAction->type==XkbSA_LockControls) {
-	    filter->priv= (xkb->desc.ctrls->enabled_ctrls&change);
-	    change&= ~xkb->desc.ctrls->enabled_ctrls;
+	    filter->priv= (ctrls->enabled_ctrls&change);
+	    change&= ~ctrls->enabled_ctrls;
 	}
 
 	if (change) {
-	    xkbControlsNotify cn;
-	    xkb->desc.ctrls->enabled_ctrls|= change;
-	    if (XkbComputeControlsNotify(xkb->device,&old,xkb->desc.ctrls,
-									&cn)) {
+	    xkbControlsNotify	cn;
+
+	    ctrls->enabled_ctrls|= change;
+	    if (XkbComputeControlsNotify(kbd,&old,ctrls,&cn,False)) {
 		cn.keycode = keycode;
 		cn.eventType = KeyPress;
 		cn.requestMajor = 0;
 		cn.requestMinor = 0;
-		XkbSendControlsNotify(xkb->device,&cn);
+		XkbSendControlsNotify(kbd,&cn);
 	    }
-	    if (xkb->iAccel.usesControls)
-		XkbUpdateIndicators(xkb->device,xkb->iAccel.usesControls,NULL);
+#ifndef NO_CLEAR_LATCHES_FOR_STICKY_KEYS_OFF
+	    /* If sticky keys were disabled, clear all locks and latches */
+	    if ((old.enabled_ctrls&XkbStickyKeysMask)&&
+		(!(ctrls->enabled_ctrls&XkbStickyKeysMask))) {
+		XkbClearAllLatchesAndLocks(kbd,xkbi,False,keycode,KeyPress,0,0);
+    	    }
+#endif
+	    if (xkbi->iAccel.usesControls)
+		XkbUpdateIndicators(kbd,xkbi->iAccel.usesControls,NULL);
+	    if (XkbAX_NeedFeedback(ctrls,XkbAX_FeatureFBMask))
+		XkbDDXAccessXBeep(kbd,_BEEP_FEATURE_ON,change);
 	}
     }
     else if (filter->keycode==keycode) {
 	change= filter->priv;
 	if (change) {
-	    xkbControlsNotify cn;
-	    xkb->desc.ctrls->enabled_ctrls&= ~change;
-	    if (XkbComputeControlsNotify(xkb->device,&old,xkb->desc.ctrls,
-									&cn)) {
+	    xkbControlsNotify 	cn;
+
+	    ctrls->enabled_ctrls&= ~change;
+	    if (XkbComputeControlsNotify(kbd,&old,ctrls,&cn,False)) {
 		cn.keycode = keycode;
 		cn.eventType = KeyRelease;
 		cn.requestMajor = 0;
 		cn.requestMinor = 0;
-		XkbSendControlsNotify(xkb->device,&cn);
+		XkbSendControlsNotify(kbd,&cn);
 	    }
-	    if (xkb->iAccel.usesControls)
-		XkbUpdateIndicators(xkb->device,xkb->iAccel.usesControls,NULL);
+#ifndef NO_CLEAR_LATCHES_FOR_STICKY_KEYS_OFF
+	    /* If sticky keys were disabled, clear all locks and latches */
+	    if ((old.enabled_ctrls&XkbStickyKeysMask)&&
+		(!(ctrls->enabled_ctrls&XkbStickyKeysMask))) {
+		XkbClearAllLatchesAndLocks(kbd,xkbi,False,keycode,KeyRelease,
+									0,0);
+    	    }
+#endif
+	    if (xkbi->iAccel.usesControls)
+		XkbUpdateIndicators(kbd,xkbi->iAccel.usesControls,NULL);
+	    if (XkbAX_NeedFeedback(ctrls,XkbAX_FeatureFBMask))
+		XkbDDXAccessXBeep(kbd,_BEEP_FEATURE_OFF,change);
 	}
 	filter->keycode= 0;
 	filter->active= 0;
@@ -637,14 +732,16 @@ CARD16		change;
 }
 
 static int
-_XkbFilterActionMessage(xkb,filter,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    XkbFilter		*filter;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+_XkbFilterActionMessage(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
-XkbMessageAction *pMsg;
+XkbMessageAction *	pMsg;
+DeviceIntPtr		kbd;
 
+    kbd= xkbi->device;
     if (filter->keycode==0) {		/* initial press */
 	pMsg= &pAction->msg;
 	if ((pMsg->flags&XkbSA_MessageOnRelease)||
@@ -657,45 +754,135 @@ XkbMessageAction *pMsg;
 	    filter->upAction = *pAction;
 	}
 	if (pMsg->flags&XkbSA_MessageOnPress)  {
-	    xkbActionMessage msg;
+	    xkbActionMessage	msg;
+
 	    msg.keycode= keycode;
 	    msg.press= 1;
 	    msg.keyEventFollows=((pMsg->flags&XkbSA_MessageGenKeyEvent)!=0);
 	    memcpy((char *)msg.message,
 				(char *)pMsg->message,XkbActionMessageLength);
-	    XkbSendActionMessage(xkb->device,&msg);
+	    XkbSendActionMessage(kbd,&msg);
 	}
 	return ((pAction->msg.flags&XkbSA_MessageGenKeyEvent)!=0);
     }
     else if (filter->keycode==keycode) {
 	pMsg= &filter->upAction.msg;
 	if (pMsg->flags&XkbSA_MessageOnRelease) {
-	    xkbActionMessage msg;
+	    xkbActionMessage	msg;
+
 	    msg.keycode= keycode;
 	    msg.press= 0;
 	    msg.keyEventFollows=((pMsg->flags&XkbSA_MessageGenKeyEvent)!=0);
 	    memcpy((char *)msg.message,(char *)pMsg->message,
 						XkbActionMessageLength);
-	    XkbSendActionMessage(xkb->device,&msg);
+	    XkbSendActionMessage(kbd,&msg);
 	}
 	filter->keycode= 0;
 	filter->active= 0;
-	return ((pAction->msg.flags&XkbSA_MessageGenKeyEvent)!=0);
+	return ((pMsg->flags&XkbSA_MessageGenKeyEvent)!=0);
     }
     return 0;
 }
 
-static	int		 szFilters = 0;
-static	XkbFilter	*filters = NULL;
-
-static XkbFilter *
-_XkbNextFreeFilter()
+static int
+_XkbFilterRedirectKey(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
 {
-register int i;
+DeviceIntPtr		kbd;
+
+    if (filter->keycode==0) {		/* initial press */
+	filter->keycode = keycode;
+	filter->active = 1;
+	filter->filterOthers = 0;
+	filter->priv = 0;
+	filter->filter = _XkbFilterRedirectKey;
+	filter->upAction = *pAction;
+	/* 7/20/95 (ef) -- XXX! Not implemented yet */
+	ErrorF("Redirect KeyPress Not Implemented Yet\n");
+	return 0;
+    }
+    else if (filter->keycode==keycode) {
+	/* 7/20/95 (ef) -- XXX! Not implemented yet */
+	ErrorF("Redirect KeyRelease Not Implemented Yet\n");
+	filter->keycode= 0;
+	filter->active= 0;
+	return 0;
+    }
+    return 0;
+}
+
+static int
+_XkbFilterDeviceBtn(xkbi,filter,keycode,pAction)
+    XkbSrvInfoPtr	xkbi;
+    XkbFilterPtr	filter;
+    CARD8		keycode;
+    XkbAction *		pAction;
+{
+DeviceIntPtr	dev;
+int		button;
+
+    if (filter->keycode==0) {		/* initial press */
+	dev= _XkbLookupKeyboard(pAction->devbtn.device,NULL);
+	if ((!dev)||(!dev->button))
+	    return 1;
+
+	button= pAction->devbtn.button;
+	if ((button<1)||(button>dev->button->numButtons))
+	    return 1;
+
+	filter->keycode = keycode;
+	filter->active = 1;
+	filter->filterOthers = 0;
+	filter->priv=0;
+	filter->filter = _XkbFilterDeviceBtn;
+	filter->upAction= *pAction;
+	switch (pAction->type) {
+	    case XkbSA_LockDeviceBtn:
+		/* 7/20/95 (ef) XXX! - Not implemented yet! */
+		ErrorF("Lock Device Button(Press) Not Implemented Yet\n");
+		break;
+	    case XkbSA_DeviceBtn:
+		/* 7/20/95 (ef) XXX! - Not implemented yet! */
+		ErrorF("Device Button(Press) Not Implemented Yet\n");
+		break;
+	}
+    }
+    else if (filter->keycode==keycode) {
+	int	button= filter->upAction.btn.button;
+        ErrorF("Button is %d\n",button);
+	switch (filter->upAction.type) {
+	    case XkbSA_LockPtrBtn:
+		/* 7/20/95 (ef) XXX! - Not implemented yet! */
+		ErrorF("Lock Device Button(Release) Not Implemented Yet\n");
+		break;
+	    case XkbSA_PtrBtn:
+		/* 7/20/95 (ef) XXX! - Not implemented yet! */
+		ErrorF("Device Button(Release) Not Implemented Yet\n");
+		break;
+	}
+	filter->active = 0;
+    }
+    return 0;
+}
+
+static	int		szFilters = 0;
+static	XkbFilterPtr	filters = NULL;
+
+static XkbFilterPtr
+_XkbNextFreeFilter(
+#if NeedFunctionPrototypes
+	void
+#endif
+)
+{
+register int	i;
 
     if (szFilters==0) {
 	szFilters = 4;
-	filters = (XkbFilter *)xcalloc(szFilters,sizeof(XkbFilter));
+	filters = _XkbTypedCalloc(szFilters,XkbFilterRec);
 	/* 6/21/93 (ef) -- XXX! deal with allocation failure */
     }
     for (i=0;i<szFilters;i++) {
@@ -705,181 +892,209 @@ register int i;
 	}
     }
     szFilters*=2;
-    filters= (XkbFilter *)xrealloc(filters,szFilters*sizeof(XkbFilter));
+    filters= _XkbTypedRealloc(filters,szFilters,XkbFilterRec);
     /* 6/21/93 (ef) -- XXX! deal with allocation failure */
-    bzero(&filters[szFilters/2],(szFilters/2)*sizeof(XkbFilter));
+    bzero(&filters[szFilters/2],(szFilters/2)*sizeof(XkbFilterRec));
     return &filters[szFilters/2];
 }
 
 static int
-_XkbApplyFilters(xkb,keycode,pAction)
-    XkbSrvInfoRec	*xkb;
-    CARD8		 keycode;
-    XkbAction		*pAction;
+#if NeedFunctionPrototypes
+_XkbApplyFilters(	XkbSrvInfoPtr	xkbi,
+			CARD8		kc,
+			XkbAction *	pAction)
+#else
+_XkbApplyFilters(xkbi,kc,pAction)
+    XkbSrvInfoPtr	xkbi;
+    CARD8		kc;
+    XkbAction *		pAction;
+#endif
 {
-register int i,send;
+register int	i,send;
 
     send= 1;
     for (i=0;i<szFilters;i++) {
 	if ((filters[i].active)&&(filters[i].filter))
-	    send= ((*filters[i].filter)(xkb,&filters[i],keycode,pAction)&&send);
+	    send= ((*filters[i].filter)(xkbi,&filters[i],kc,pAction)&&send);
     }
     return send;
 }
 
 void
-XkbHandleActions(xE,keybd,count)
-    xEvent	 *xE;
-    DeviceIntPtr  keybd;
-    int		  count;
+XkbHandleActions(xE,kbd,count)
+    xEvent *		xE;
+    DeviceIntPtr  	kbd;
+    int		  	count;
 {
 int		key,bit,i;
-register CARD8	realMods;
-XkbSrvInfoRec	*xkb;
-KeyClassRec	*keyc = keybd->key;
-int		 changed,sendEvent;
-CARD16		 data;
-XkbStateRec	 oldState;
-XkbAction	 act;
-XkbFilter	*filter;
+CARD8		realMods;
+XkbSrvInfoPtr	xkbi;
+KeyClassPtr	keyc = kbd->key;
+int		changed,sendEvent;
+CARD16		data;
+Bool		genStateNotify;
+XkbStateRec	oldState;
+XkbAction	act;
+XkbFilterPtr	filter;
 
     key= xE->u.u.detail;
-    realMods = keyc->modifierMap[key];
-    keyc->modifierMap[key]= 0;
-    xkb= keyc->xkbInfo;
-    oldState= xkb->state;
+    xkbi= keyc->xkbInfo;
+    if ((xkbi->flags&_XkbStateNotifyInProgress)==0) {
+	oldState= xkbi->state;
+	xkbi->flags|= _XkbStateNotifyInProgress;
+	genStateNotify= True;
+    }
+    else genStateNotify= False;
 
-    xkb->clearMods = xkb->setMods = 0;
-    xkb->groupChange = 0;
+    xkbi->clearMods = xkbi->setMods = 0;
+    xkbi->groupChange = 0;
 
     sendEvent = 1;
 
     if ( xE->u.u.type == KeyPress ) {
-	act = XkbKeyAction(&xkb->desc,&xkb->state,key);
-	sendEvent = _XkbApplyFilters(xkb,key,&act);
+	act = XkbKeyAction(xkbi,&xkbi->state,key);
+	sendEvent = _XkbApplyFilters(xkbi,key,&act);
 	if (sendEvent) {
 	    switch (act.type) {
 		case XkbSA_SetMods:
 		case XkbSA_SetGroup:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent = _XkbFilterSetState(xkb,filter,key,&act);
+		    sendEvent = _XkbFilterSetState(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_LatchMods:
 		case XkbSA_LatchGroup:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent=_XkbFilterLatchState(xkb,filter,key,&act);
+		    sendEvent=_XkbFilterLatchState(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_LockMods:
 		case XkbSA_LockGroup:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent=_XkbFilterLockState(xkb,filter,key,&act);
+		    sendEvent=_XkbFilterLockState(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_ISOLock:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent=_XkbFilterISOLock(xkb,filter,key,&act);
+		    sendEvent=_XkbFilterISOLock(xkbi,filter,key,&act);
 		    break;
-		case XkbSA_AccelPtr:
 		case XkbSA_MovePtr:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent= _XkbFilterPointerMove(xkb,filter,key,&act);
+		    sendEvent= _XkbFilterPointerMove(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_PtrBtn:
-		case XkbSA_ClickPtrBtn:
 		case XkbSA_LockPtrBtn:
 		case XkbSA_SetPtrDflt:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent= _XkbFilterPointerBtn(xkb,filter,key,&act);
+		    sendEvent= _XkbFilterPointerBtn(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_Terminate:
-		    sendEvent= DDXTerminateServer(keybd,key,&act);
+		    sendEvent= XkbDDXTerminateServer(kbd,key,&act);
 		    break;
 		case XkbSA_SwitchScreen:
-		    sendEvent= DDXSwitchScreen(keybd,key,&act);
+		    sendEvent= XkbDDXSwitchScreen(kbd,key,&act);
 		    break;
 		case XkbSA_SetControls:
 		case XkbSA_LockControls:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent=_XkbFilterControls(xkb,filter,key,&act);
+		    sendEvent=_XkbFilterControls(xkbi,filter,key,&act);
 		    break;
 		case XkbSA_ActionMessage:
 		    filter = _XkbNextFreeFilter();
-		    sendEvent=_XkbFilterActionMessage(xkb,filter,key,&act);
+		    sendEvent=_XkbFilterActionMessage(xkbi,filter,key,&act);
+		    break;
+		case XkbSA_RedirectKey:
+		    filter = _XkbNextFreeFilter();
+		    sendEvent= _XkbFilterRedirectKey(xkbi,filter,key,&act);
+		    break;
+		case XkbSA_DeviceBtn:
+		case XkbSA_LockDeviceBtn:
+		    filter = _XkbNextFreeFilter();
+		    sendEvent= _XkbFilterDeviceBtn(xkbi,filter,key,&act);
 		    break;
 	    }
 	}
     }
     else {
-	sendEvent = _XkbApplyFilters(xkb,key,NULL);
+	sendEvent = _XkbApplyFilters(xkbi,key,NULL);
     }
 
-    xkb->state.base_group+= xkb->groupChange;
-    if (xkb->setMods) {
-	for (i=0,bit=1; xkb->setMods; i++,bit<<=1 ) {
-	    if (xkb->setMods&bit) {
+    if (xkbi->groupChange!=0)
+	xkbi->state.base_group+= xkbi->groupChange;
+    if (xkbi->setMods) {
+	for (i=0,bit=1; xkbi->setMods; i++,bit<<=1 ) {
+	    if (xkbi->setMods&bit) {
 		keyc->modifierKeyCount[i]++;
-		xkb->state.base_mods|= bit;
-		xkb->setMods&= ~bit;
+		xkbi->state.base_mods|= bit;
+		xkbi->setMods&= ~bit;
 	    }
 	}
     }
-    if (xkb->clearMods) {
-	for (i=0,bit=1; xkb->clearMods; i++,bit<<=1 ) {
-	    if (xkb->clearMods&bit) {
+    if (xkbi->clearMods) {
+	for (i=0,bit=1; xkbi->clearMods; i++,bit<<=1 ) {
+	    if (xkbi->clearMods&bit) {
 		keyc->modifierKeyCount[i]--;
 		if (keyc->modifierKeyCount[i]<=0) {
-		    xkb->state.base_mods&= ~bit;
+		    xkbi->state.base_mods&= ~bit;
 		    keyc->modifierKeyCount[i] = 0;
 		}
-		xkb->clearMods&= ~bit;
+		xkbi->clearMods&= ~bit;
 	    }
 	}
     }
 
-    keyc->modifierMap[key] = 0;
-    if (sendEvent)
-	CoreProcessKeyboardEvent(xE,keybd,count);
-    keyc->modifierMap[key] = realMods;
-    XkbComputeDerivedState(xkb);
-    keyc->state= xkb->lookupState&0xE0FF;
-
-    changed = XkbStateChangedFlags(&oldState,&xkb->state);
-    if (changed) {
-	xkbStateNotify	sn;
-	sn.keycode= key;
-	sn.eventType= xE->u.u.type;
-	sn.requestMajor = sn.requestMinor = 0;
-	sn.changed= changed;
-	XkbSendStateNotify(keybd,&sn);
+    if (sendEvent) {
+	realMods = keyc->modifierMap[key];
+	keyc->modifierMap[key] = 0;
+	CoreProcessKeyboardEvent(xE,kbd,count);
+	keyc->modifierMap[key] = realMods;
     }
-    if (changed&xkb->iAccel.usedComponents) {
-	changed= XkbIndicatorsToUpdate(keybd,changed);
+    xkbi->prev_state= oldState;
+    XkbComputeDerivedState(xkbi);
+    keyc->prev_state= keyc->state;
+    keyc->state= XkbStateFieldFromRec(&xkbi->state);
+    changed = XkbStateChangedFlags(&oldState,&xkbi->state);
+    if (genStateNotify) {
+	if (changed) {
+	    xkbStateNotify	sn;
+	    sn.keycode= key;
+	    sn.eventType= xE->u.u.type;
+	    sn.requestMajor = sn.requestMinor = 0;
+	    sn.changed= changed;
+	    XkbSendStateNotify(kbd,&sn);
+	}
+	xkbi->flags&= ~_XkbStateNotifyInProgress;
+    }
+    if (changed&xkbi->iAccel.usedComponents) {
+	changed= XkbIndicatorsToUpdate(kbd,changed);
 	if (changed)
-	    XkbUpdateIndicators(keybd,changed,NULL);
+	    XkbUpdateIndicators(kbd,changed,NULL);
     }
-
     return;
 }
 
 void
 XkbProcessKeyboardEvent(xE,keybd,count)
-    xEvent *xE;
-    DeviceIntPtr keybd;
-    int count;
+    xEvent *		xE;
+    DeviceIntPtr 	keybd;
+    int 		count;
 {
-KeyClassRec	*keyc = keybd->key;
-XkbSrvInfoRec	*xkb;
-int		 key;
-XkbBehavior	 behavior;
+KeyClassPtr	keyc = keybd->key;
+XkbSrvInfoPtr	xkbi;
+int		key;
+XkbBehavior	behavior;
 
-    xkb= keyc->xkbInfo;
+    xkbi= keyc->xkbInfo;
     key= xE->u.u.detail;
+#ifdef DEBUG
+    if (xkbDebugFlags&0x8) {
+	ErrorF("XkbPKE: Key %d %s\n",key,(xE->u.u.type==KeyPress?"down":"up"));
+    }
+#endif
 
-    if ( (xkb->repeatKey==key) && (xE->u.u.type==KeyRelease) &&
-	 ((xkb->desc.ctrls->enabled_ctrls&XkbRepeatKeysMask)==0) ) {
-	AccessXCancelRepeatKey(xkb,key);
+    if ( (xkbi->repeatKey==key) && (xE->u.u.type==KeyRelease) &&
+	 ((xkbi->desc->ctrls->enabled_ctrls&XkbRepeatKeysMask)==0) ) {
+	AccessXCancelRepeatKey(xkbi,key);
     }
 
-    behavior= xkb->desc.server->behaviors[key];
+    behavior= xkbi->desc->server->behaviors[key];
     /* The "permanent" flag indicates a hard-wired behavior that occurs */
     /* below XKB, such as a key that physically locks.   XKB does not   */
     /* do anything to implement the behavior, but it *does* report that */
@@ -889,18 +1104,22 @@ XkbBehavior	 behavior;
 	    case XkbKB_Default:
 		if (( xE->u.u.type == KeyPress ) && 
 		    (keyc->down[key>>3] & (1<<(key&7)))) {
+		    XkbLastRepeatEvent=	(pointer)xE;
 		    xE->u.u.type = KeyRelease;
 		    XkbHandleActions(xE,keybd,count);
 		    xE->u.u.type = KeyPress;
 		    XkbHandleActions(xE,keybd,count);
+		    XkbLastRepeatEvent= NULL;
 		    return;
 		}
 		else if ((xE->u.u.type==KeyRelease) &&
 			(!(keyc->down[key>>3]&(1<<(key&7))))) {
+		    XkbLastRepeatEvent=	(pointer)&xE;
 		    xE->u.u.type = KeyPress;
 		    XkbHandleActions(xE,keybd,count);
 		    xE->u.u.type = KeyRelease;
 		    XkbHandleActions(xE,keybd,count);
+		    XkbLastRepeatEvent= NULL;
 		    return;
 		}
 		break;
@@ -917,11 +1136,12 @@ XkbBehavior	 behavior;
 		if ( xE->u.u.type == KeyRelease )
 		    return;
 		else {
-		    unsigned	ndx = behavior.data;
-		    if ( ndx<xkb->nRadioGroups ) {
-			XkbRadioGroupRec	*rg;
-			register int i;
-			rg = &xkb->radioGroups[ndx];
+		    unsigned	ndx= behavior.data;
+		    if ( ndx<xkbi->nRadioGroups ) {
+			XkbRadioGroupPtr	rg;
+			register int 		i;
+
+			rg = &xkbi->radioGroups[ndx];
 			if ( rg->currentDown == xE->u.u.detail ) {
 			    xE->u.u.type = KeyRelease;
 			    XkbHandleActions(xE,keybd,count);
@@ -941,6 +1161,23 @@ XkbBehavior	 behavior;
 		    else ErrorF("InternalError! Illegal radio group %d\n",ndx);
 		}
 		break;
+	    case XkbKB_Overlay1: case XkbKB_Overlay2:
+		{
+		    unsigned	which;
+		    if (behavior.type==XkbKB_Overlay1)	which= XkbOverlay1Mask;
+		    else				which= XkbOverlay2Mask;
+		    if ( (xkbi->desc->ctrls->enabled_ctrls&which)==0 )
+			break;
+		    if ((behavior.data>=xkbi->desc->min_key_code)&&
+			(behavior.data<=xkbi->desc->max_key_code)) {
+			xE->u.u.detail= behavior.data;
+			/* 9/11/94 (ef) -- XXX! need to match release with */
+			/*                 press even if the state of the  */
+			/*                 corresponding overlay control   */
+			/*                 changes while the key is down   */
+		    }
+		}
+		break;
 	    default:
 		ErrorF("unknown key behavior 0x%04x\n",behavior.type);
 		break;
@@ -952,19 +1189,23 @@ XkbBehavior	 behavior;
 
 void
 ProcessKeyboardEvent(xE,keybd,count)
-    xEvent *xE;
-    DeviceIntPtr keybd;
-    int	count;
+    xEvent *		xE;
+    DeviceIntPtr 	keybd;
+    int			count;
 {
-KeyClassRec	*keyc = keybd->key;
-XkbSrvInfoRec	*xkb;
-int		 key;
-XkbAction	 act;
+KeyClassPtr	keyc = keybd->key;
+XkbSrvInfoPtr	xkbi;
+XkbAction	act;
 
-    xkb= keyc->xkbInfo;
-    key= xE->u.u.detail;
+    xkbi= keyc->xkbInfo;
 
-    if (!(xkb->desc.ctrls->enabled_ctrls&ALL_FILTERED_MASK))
+#ifdef DEBUG
+    if (xkbDebugFlags&0x8) {
+	int key= xE->u.u.detail;
+	ErrorF("PKE: Key %d %s\n",key,(xE->u.u.type==KeyPress?"down":"up"));
+    }
+#endif
+    if ((xkbi->desc->ctrls->enabled_ctrls&XkbAllFilteredEventsMask)==0)
 	XkbProcessKeyboardEvent(xE,keybd,count);
     else if (xE->u.u.type==KeyPress)
 	AccessXFilterPressEvent(xE,keybd,count);
@@ -974,26 +1215,30 @@ XkbAction	 act;
 }
 
 int
+#if NeedFunctionPrototypes
+XkbLatchModifiers(DeviceIntPtr pXDev,CARD8 mask,CARD8 latches)
+#else
 XkbLatchModifiers(pXDev,mask,latches)
-    DeviceIntPtr pXDev;
-    CARD8 mask;
-    CARD8 latches;
+    DeviceIntPtr 	pXDev;
+    CARD8 		mask;
+    CARD8 		latches;
+#endif
 {
-XkbSrvInfoRec	*xkb;
-XkbFilter	*filter;
-XkbAction	 act;
-unsigned	 clear;
+XkbSrvInfoPtr	xkbi;
+XkbFilterPtr	filter;
+XkbAction	act;
+unsigned	clear;
 
     if ( pXDev && pXDev->key && pXDev->key->xkbInfo ) {
-	xkb = pXDev->key->xkbInfo;
+	xkbi = pXDev->key->xkbInfo;
 	clear= (mask&(~latches));
-	xkb->state.latched_mods&= ~clear;
+	xkbi->state.latched_mods&= ~clear;
 	act.type = XkbSA_LatchMods;
 	act.mods.flags = 0;
 	act.mods.mask  = mask&latches;
 	filter = _XkbNextFreeFilter();
-	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,&act);
-	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,NULL);
+	_XkbFilterLatchState(xkbi,filter,SYNTHETIC_KEYCODE,&act);
+	_XkbFilterLatchState(xkbi,filter,SYNTHETIC_KEYCODE,(XkbAction *)NULL);
 	return Success;
     }
     return BadValue;
@@ -1004,19 +1249,69 @@ XkbLatchGroup(pXDev,group)
     DeviceIntPtr  pXDev;
     int		  group;
 {
-XkbSrvInfoRec	*xkb;
-XkbFilter	*filter;
-XkbAction	 act;
+XkbSrvInfoPtr	xkbi;
+XkbFilterPtr	filter;
+XkbAction	act;
 
     if ( pXDev && pXDev->key && pXDev->key->xkbInfo ) {
-	xkb = pXDev->key->xkbInfo;
+	xkbi = pXDev->key->xkbInfo;
 	act.type = XkbSA_LatchGroup;
 	act.group.flags = 0;
 	XkbSASetGroup(&act.group,group);
 	filter = _XkbNextFreeFilter();
-	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,&act);
-	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,NULL);
+	_XkbFilterLatchState(xkbi,filter,SYNTHETIC_KEYCODE,&act);
+	_XkbFilterLatchState(xkbi,filter,SYNTHETIC_KEYCODE,(XkbAction *)NULL);
 	return Success;
     }
     return BadValue;
 }
+
+/***====================================================================***/
+
+void
+XkbClearAllLatchesAndLocks(dev,xkbi,genEv,keycode,evType,rMajor,rMinor)
+    DeviceIntPtr	dev;
+    XkbSrvInfoPtr	xkbi;
+    Bool		genEv;
+    unsigned		keycode;
+    unsigned		evType;
+    unsigned		rMajor;
+    unsigned		rMinor;
+{
+XkbStateRec	os;
+xkbStateNotify	sn;
+
+    sn.changed= 0;
+    os= xkbi->state;
+    if (os.latched_mods) { /* clear all latches */
+	XkbLatchModifiers(dev,~0,0);
+	sn.changed|= XkbModifierLatchMask;
+    }
+    if (os.latched_group) {
+	XkbLatchGroup(dev,0);
+	sn.changed|= XkbGroupLatchMask;
+    }
+    if (os.locked_mods) {
+	xkbi->state.locked_mods= 0;
+	sn.changed|= XkbModifierLockMask;
+    }
+    if (os.locked_group) {
+	xkbi->state.locked_group= 0;
+	sn.changed|= XkbGroupLockMask;
+    }
+    if ( genEv && sn.changed) {
+	CARD32 changed;
+	XkbComputeDerivedState(xkbi);
+	sn.keycode= keycode;
+	sn.eventType= evType;
+	sn.requestMajor = rMajor;
+	sn.requestMinor = rMinor;
+	sn.changed= XkbStateChangedFlags(&os,&xkbi->state);
+	XkbSendStateNotify(dev,&sn);
+	changed= XkbIndicatorsToUpdate(dev,sn.changed);
+	if (changed)
+	    XkbUpdateIndicators(dev,changed,NULL);
+    }
+    return;
+}
+

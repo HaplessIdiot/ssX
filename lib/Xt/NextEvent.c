@@ -1,5 +1,5 @@
-/* $XConsortium: NextEvent.c,v 1.145.1.1 95/07/07 13:26:11 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.9 1995/07/05 12:32:01 dawes Exp $ */
+/* $XConsortium: NextEvent.c /main/134 1995/12/05 16:47:38 mor $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.10 1995/07/08 10:24:35 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -86,7 +86,7 @@ static SignalEventRec* freeSignalRecs;
  */
 
 #ifndef NEEDS_NTPD_FIXUP
-# if defined(sun) || defined(MOTOROLA) || defined(SCO) || (defined(__osf__) && defined(__alpha))
+# if defined(sun) || defined(MOTOROLA) || defined(sco324) || (defined(__osf__) && defined(__alpha))
 #  define NEEDS_NTPD_FIXUP 1
 # else
 #  define NEEDS_NTPD_FIXUP 0
@@ -180,7 +180,7 @@ typedef struct {
 
 static struct timeval  zero_time = { 0 , 0};
 #ifndef USE_POLL
-static Fd_set zero_fd = { 0 };
+static fd_set zero_fd = { 0 };
 #else
 #define X_BLOCK -1
 #define X_DONT_BLOCK 0
@@ -222,7 +222,7 @@ static void InitTimes (block, howlong, wt)
 
 typedef struct {
 #ifndef USE_POLL
-    Fd_set rmask, wmask, emask;
+    fd_set rmask, wmask, emask;
     int nfds;
 #else
     struct pollfd* fdlist;
@@ -363,10 +363,7 @@ static int IoWait (wt, wf)
     wait_fds_ptr_t wf;
 {
 #ifndef USE_POLL
-    return select (wf->nfds, 
-		   (int *) &wf->rmask, 
-		   (int *) &wf->wmask, 
-		   (int *) &wf->emask, 
+    return Select (wf->nfds, &wf->rmask, &wf->wmask, &wf->emask, 
 		   wt->wait_time_ptr);
 #else
     return poll (wf->fdlist, wf->fdlistlen, wt->poll_wait);
@@ -426,7 +423,7 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 #ifndef AMOEBA
 #ifndef USE_POLL /* { check ready file descriptors block */
 #ifdef XTHREADS
-    Fd_set rmask;
+    fd_set rmask;
 #endif
     int dd;
     *dpy_no = -1;

@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.30 95/06/15 19:30:38 converse Exp $ */
+/* $XConsortium: Varargs.c /main/31 1995/12/07 14:26:13 converse $ */
 
 /*
 
@@ -236,10 +236,12 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
     } else {
             from_val.addr = (XPointer)&typed_arg->value;
     }
-       
+
+    LOCK_PROCESS;
     XtConvertAndStore(widget, typed_arg->type, &from_val, to_type, &to_val);
  
     if (to_val.addr == NULL) {
+	UNLOCK_PROCESS;
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
             "conversionFailed", XtNxtConvertVarToArgList, XtCXtToolkitError,
             "Type conversion failed", (String *)NULL, (Cardinal *)NULL);
@@ -267,6 +269,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources,
 		memcpy((void *)arg_return->value, to_val.addr, to_val.size);
 	}
     }
+    UNLOCK_PROCESS;
        
     return(1);
 }

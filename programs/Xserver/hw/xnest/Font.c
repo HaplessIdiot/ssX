@@ -1,5 +1,5 @@
-/* $XConsortium: Font.c,v 1.1 93/07/12 15:28:18 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Font.c,v 1.2 95/07/10 17:42:22 ray Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Font.c,v 3.0 1995/03/11 14:18:51 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -26,10 +26,7 @@ is" without express or implied warranty.
 #include "fontstruct.h"
 #include "scrnintstr.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "Xnest.h"
 
 #include "Display.h"
 #ifdef __EMX__

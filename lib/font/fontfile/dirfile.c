@@ -1,5 +1,8 @@
-/* $XConsortium: dirfile.c,v 1.11 94/04/17 20:17:01 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.0 1995/11/16 11:02:52 dawes Exp $ */
+#ifndef lint
+static char *rid=
+    "$XConsortium: dirfile.c /main/12 1995/12/08 19:02:23 gildea $";
+#endif /* lint */
 
 /*
 

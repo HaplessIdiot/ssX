@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 95/04/07 19:42:56 kaleb Exp $
+XCOMM $XConsortium: Imakefile /main/17 1995/12/19 16:35:21 mor $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -25,6 +25,8 @@ NormalLibraryTarget(os,$(OBJS))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES) $(SOCK_DEFINES) $(OS_DEFINES))
 
 SpecialCObjectRule(io,$(ICONFIGFILES),$(CONN_DEFINES))
+
+SpecialCObjectRule(waitfor,$(ICONFIGFILES),$(CONN_DEFINES))
 
 SpecialCObjectRule(error,$(ICONFIGFILES),$(ERROR_DEFINES))
 

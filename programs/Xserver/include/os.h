@@ -46,16 +46,15 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.64.1.1 95/06/12 17:13:50 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.9 1995/07/07 15:45:32 dawes Exp $ */
+/* $XConsortium: os.h /main/55 1995/12/08 13:34:38 dpw $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.10 1995/07/08 10:31:10 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
 #include "misc.h"
-
-#ifdef INCLUDE_ALLOCA_H
-#include <alloca.h>
-#endif
+#define ALLOCATE_LOCAL_FALLBACK(_size) Xalloc((unsigned long)(_size))
+#define DEALLOCATE_LOCAL_FALLBACK(_ptr) Xfree((pointer)(_ptr))
+#include "Xalloca.h"
 
 #define NullFID ((FID) 0)
 
@@ -75,67 +74,8 @@ typedef pointer	FID;
 typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
-#ifndef NO_ALLOCA
-/*
- * os-dependent definition of local allocation and deallocation
- * If you want something other than Xalloc/Xfree for ALLOCATE/DEALLOCATE
- * LOCAL then you add that in here.
- */
-#ifdef __HIGHC__
-
-#ifndef NCR
-extern char *alloca();
-
-#if HCVERSION < 21003
-#define ALLOCATE_LOCAL(size)	alloca((int)(size))
-pragma on(alloca);
-#else /* HCVERSION >= 21003 */
-#define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
-#endif /* HCVERSION < 21003 */
-#else /* NCR */
-#define ALLOCATE_LOCAL(size)	alloca(size)
-#endif
-
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-
-#endif /* defined(__HIGHC__) */
-
-
-#ifdef __GNUC__
-#ifndef alloca
-#define alloca __builtin_alloca
-#endif /* !alloca */
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#else
-
-/*
- * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
- * Test is easy, the new one is named __builtin_alloca and comes
- * from alloca.h which #defines alloca.
- */
-#ifndef NCR
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
-/*
- * Some System V boxes extract alloca.o from /lib/libPW.a; if you
- * decide that you don't want to use alloca, you might want to fix 
- * ../os/4.2bsd/Imakefile
- */
-#ifndef alloca
-char *alloca();
-#endif
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* who does alloca */
-#endif /* NCR */
-#endif /* ! __GNUC__ */
-
-#endif /* NO_ALLOCA */
-
-#ifndef ALLOCATE_LOCAL
-#define ALLOCATE_LOCAL(size) Xalloc((unsigned long)(size))
-#define DEALLOCATE_LOCAL(ptr) Xfree((pointer)(ptr))
-#endif /* ALLOCATE_LOCAL */
+#define xnfalloc(size) XNFalloc((unsigned long)(size))
+#define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
 
 #define xalloc(size) Xalloc((unsigned long)(size))
 #define xnfalloc(size) XNFalloc((unsigned long)(size))
@@ -693,5 +633,65 @@ extern ClientPtr AllocPiggybackConnection(
 );
 
 #endif /* LBX */
+
+/*
+ *  idiom processing stuff
+ */
+
+xReqPtr PeekNextRequest(
+#if NeedFunctionPrototypes
+    xReqPtr req, ClientPtr client, Bool readmore
+#endif
+);
+
+void SkipRequests(
+#if NeedFunctionPrototypes
+    xReqPtr req, ClientPtr client, int numskipped
+#endif
+);
+
+/* int ReqLen(xReq *req, ClientPtr client)
+ * Given a pointer to a *complete* request, return its length in bytes.
+ * Note that if the request is a big request (as defined in the Big
+ * Requests extension), the macro lies by returning 4 less than the
+ * length that it actually occupies in the request buffer.  This is so you
+ * can blindly compare the length with the various sz_<request> constants
+ * in Xproto.h without having to know/care about big requests.
+ */
+#define ReqLen(_pxReq, _client) \
+ ((_pxReq->length ? \
+     (_client->swapped ? lswaps(_pxReq->length) : _pxReq->length) \
+  : ((_client->swapped ? \
+	lswapl(((CARD32*)_pxReq)[1]) : ((CARD32*)_pxReq)[1])-1) \
+  ) << 2)
+
+/* otherReqTypePtr CastxReq(xReq *req, otherReqTypePtr)
+ * Cast the given request to one of type otherReqTypePtr to access
+ * fields beyond the length field.
+ */
+#define CastxReq(_pxReq, otherReqTypePtr) \
+    (_pxReq->length ? (otherReqTypePtr)_pxReq \
+		    : (otherReqTypePtr)(((CARD32*)_pxReq)+1))
+
+/* stuff for SkippedRequestsCallback */
+extern CallbackListPtr SkippedRequestsCallback;
+typedef struct {
+    xReqPtr req;
+    ClientPtr client;
+    int numskipped;
+} SkippedRequestInfoRec;
+
+/* stuff for ReplyCallback */
+extern CallbackListPtr ReplyCallback;
+typedef struct {
+    ClientPtr client;
+    pointer replyData;
+    unsigned long dataLenBytes;
+    unsigned long bytesRemaining;
+    Bool startOfReply;
+} ReplyInfoRec;
+
+/* stuff for FlushCallback */
+extern CallbackListPtr FlushCallback;
 
 #endif /* OS_H */

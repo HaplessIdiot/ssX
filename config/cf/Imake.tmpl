@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.224.1.1 95/06/19 17:51:01 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.18 1995/07/12 15:27:23 dawes Exp $
+XCOMM $XConsortium: Imake.tmpl /main/r61_main/2 1995/12/14 15:35:00 matt $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.19 1995/09/22 07:20:11 dawes Exp $
 XCOMM
 
 /*
@@ -38,11 +38,51 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define HasGcc HasGcc2
 #endif
 
-XCOMM -----------------------------------------------------------------------
+#ifndef HasClearmake
+#define HasClearmake NO
+#endif
+
+/*
+ * ClearmakeOSName - insert the current OS type into the clearmake
+ * build script, so .o files from different platforms cannot be winked in.
+ * If clearmake finds the build script for two .o files is the same, it
+ * will share the .o, even across different architectures.  Inserting the
+ * O/S name into the build script in a comment prevents unwanted sharing.
+ * Note the trailing double-@ in the macro: end a line using this macro
+ * with backslash without the double-@ usually used.
+ * Like this:
+ *
+ * #define SomeRule() @@\
+ *     something or other @@\
+ *     ClearmakeOSName \
+ *     something else @@\
+ *     and more
+ */
+#ifndef ClearmakeOSName
+#if HasClearmake
+#define ClearmakeOSName	@ XCOMM $(OSNAME) @@
+#else
+#define ClearmakeOSName /**/
+#endif
+#endif
+
+#if HasClearmake
+#ifndef MakeCmd
+#define MakeCmd clearmake
+#endif
+#endif
+
+#if HasClearmake
+XCOMM ----------------------------------------------------------------------
+.c.o:
+	ClearmakeOSName	$(CC) -c $(CFLAGS) $*.c
+#endif
+
+XCOMM ----------------------------------------------------------------------
 XCOMM platform-specific configuration parameters - edit MacroFile to change
 #include MacroIncludeFile
 
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM site-specific configuration parameters that go after
 XCOMM the platform-specific parameters - edit site.def to change
 #define AfterVendorCF
@@ -94,6 +134,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #endif
 
+#ifndef HasMakefileSafeInclude	    /* -include or sinclude in a Makefile */
+#if HasClearmake
+#define HasMakefileSafeInclude YES
+#else
+#define HasMakefileSafeInclude NO   /* see also vendor-specific .cf files */
+#endif
+#endif
+
 #include <Imake.rules>
 
 #ifndef HasSharedLibraries
@@ -112,12 +160,15 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define AvoidNullMakeCommand NO
 #endif
 #if AvoidNullMakeCommand
+#ifndef NullMakeCommand
+#define NullMakeCommand		@ echo -n
+#endif
 /*
  * An obscure bug in BSD4.3's original make causes it not to recognize a
  * macro definition if the macro name starts with a non-alpha and in
  * column one.
  */
- _NULLCMD_ = @ echo -n
+ _NULLCMD_ = NullMakeCommand
 #endif
 
 #ifndef CrossCompiling
@@ -134,12 +185,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #endif
 
-#ifndef HasLargeTmp
-#define HasLargeTmp		NO	/* be paranoid */
+#ifndef ConstructMAKEFLAGS		/* needed on old BSD-based? */
+#define ConstructMAKEFLAGS	NO	/* build MAKEFLAGS from MFLAGS */
 #endif
 
-#ifndef HasLdRunPath
-#define HasLdRunPath		NO
+#ifndef HasLargeTmp
+#define HasLargeTmp		NO	/* be paranoid */
 #endif
 
 #ifndef HasBSD44Sockets
@@ -702,18 +753,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef DependFlags
 #define DependFlags /**/
 #endif
-#ifndef IxxCmd
-#ifdef UseInstalled
-#define IxxCmd ixx		/* assume BINDIR in path */
-#else
-#define IxxCmd $(IXXSRC)/ixx
-#endif
-#endif
-#ifndef IxxFlags
-#define IxxFlags -s BaseObject -m TypeObj -r RequestObj -p Xf
-#endif
-#ifndef IxxIncludes
-#define IxxIncludes -i '<X11/Fresco/enter-scope.h>'
+#ifndef DependFileName
+#define DependFileName Makefile.dep
 #endif
 #ifndef MkdirHierCmd
 #ifdef UseInstalled		/* assume BINDIR in path */
@@ -725,14 +766,26 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef TroffCmd
 #define TroffCmd psroff
 #endif
+#ifndef NroffCmd
+#define NroffCmd nroff
+#endif
 #ifndef MsMacros
 #define MsMacros -ms
+#endif
+#ifndef ManMacros
+#define ManMacros -man
 #endif
 #ifndef TblCmd
 #define TblCmd tbl
 #endif
 #ifndef EqnCmd
 #define EqnCmd eqn
+#endif
+#ifndef NeqnCmd
+#define NeqnCmd neqn
+#endif
+#ifndef ColCmd
+#define ColCmd col
 #endif
 #ifndef DvipsCmd
 #define DvipsCmd dvips
@@ -827,10 +880,6 @@ XCOMM the platform-specific parameters - edit site.def to change
         CONFIGSRC = ConfigSrc
          IMAKESRC = $(CONFIGSRC)/imake
         DEPENDSRC = DependDir
-           IXXSRC = $(UNSUPPORTEDSRC)/programs/ixx
-              IXX = IxxCmd
-         IXXFLAGS = IxxFlags
-      IXXINCLUDES = IxxIncludes
 
           INCROOT = IncRoot		/* base of where to put header files */
         USRLIBDIR = UsrLibDir		/* nonshared libraries */
@@ -859,10 +908,9 @@ XCOMM the platform-specific parameters - edit site.def to change
     CXXDEBUGFLAGS = DefaultCplusplusDebugFlags
  CXXEXTRA_DEFINES = CplusplusExtraDefines
 CXXEXTRA_INCLUDES = CplusplusExtraIncludes
-  CXXIDL_INCLUDES = -I$(TOP)/include
    CXXSTD_DEFINES = CplusplusStandardDefines
        CXXOPTIONS = CplusplusOptions
-      CXXINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CXXEXTRA_INCLUDES) $(CXXIDL_INCLUDES) 
+      CXXINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CXXEXTRA_INCLUDES) 
        CXXDEFINES = $(CXXINCLUDES) $(CXXSTD_DEFINES) $(THREADS_CXXDEFINES) $(CXXEXTRA_DEFINES)
          CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
@@ -892,9 +940,13 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
     FILEMANSUFFIX = FileManSuffix	/* suffix for config file man pages */
             TROFF = TroffCmd
+            NROFF = NroffCmd
          MSMACROS = MsMacros
+        MANMACROS = ManMacros
               TBL = TblCmd
               EQN = EqnCmd
+             NEQN = NeqnCmd
+              COL = ColCmd
 #if HasLatex
             DVIPS = DvipsCmd
             LATEX = LatexCmd
@@ -920,6 +972,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
              TAGS = TagsCmd
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)
+#endif
+#if ConstructMAKEFLAGS
+        MAKEFLAGS = $(MFLAGS)
 #endif
 #if HasSharedLibraries
     SHAREDCODEDEF = SharedCodeDef
@@ -1031,11 +1086,15 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      CXXLDOPTIONS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_CXXLDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
 
            LDLIBS = $(LDPOSTLIB) $(THREADS_LIBS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
+#if HasBrokenCCForLink
+           CCLINK = LdCmd
+#else
 #if AlternateUsrLibDir && HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
            CCLINK = $(CCENVSETUP) $(CC)
 #else
            CCLINK = $(CC)
+#endif
 #endif
 #if AlternateUsrLibDir && HasLdRunPath
       CXXENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
@@ -1058,9 +1117,15 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
          IRULESRC = $(CONFIGSRC)/cf
         IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 #endif
+#if !HasClearmake
+     /* clearmake records relevant defines and flags in the build script,
+	so it knows when they change and we don't need this coarser-level
+	dependency.  We also don't want it, since it prevents sharing if
+	even one config file, say site.def or host.def, changes. */
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Project.tmpl \
 			$(IRULESRC)/site.def $(IRULESRC)/$(MACROFILE) \
 			OtherIConfigFiles SiteIConfigFiles $(EXTRA_ICONFIGFILES)
+#endif
 
 #ifndef LocalRulesFile
 /* need this to make ANSI-style preprocessors happy */
@@ -1084,12 +1149,15 @@ FixupLibReferences()
 
 /* ConfigDir comes from Project.tmpl */
         CONFIGDIR = ConfigDir		/* build configuration information */
+#if HasClearmake
+           OSNAME = OSName
+#endif
 
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM start of Imakefile
 #include INCLUDE_IMAKEFILE
 
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM common rules for all Makefiles - do not edit
 
 .c.i:
@@ -1116,8 +1184,10 @@ CenterLoadTarget(debug_src,$(SRCS),NullParameter,$(ALLDEFINES))
 
 CenterLoadTarget(debug_obj,$(OBJS),NullParameter,$(ALLDEFINES))
 
+ManKeywordsTarget($(MANPATH))
+
 #ifdef IHaveSubdirs
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
@@ -1128,8 +1198,15 @@ TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
 IncludesSubdirs($(SUBDIRS))
 
-#else
-XCOMM -----------------------------------------------------------------------
+#endif
+
+/* must be after all install.man rules that install anything */
+#if MakeManKeywords		/* typically only at top level */
+install.man:: man_keywords
+#endif
+
+#ifndef IHaveSubdirs
+XCOMM ----------------------------------------------------------------------
 XCOMM empty rules for directories that do not have SUBDIRS - do not edit
 
 install::
@@ -1149,5 +1226,6 @@ depend::
 
 #endif /* if subdirectory rules are needed */
 
-XCOMM -----------------------------------------------------------------------
+XCOMM ----------------------------------------------------------------------
 XCOMM dependencies generated by makedepend
+IncludeMakefile(DependFileName)

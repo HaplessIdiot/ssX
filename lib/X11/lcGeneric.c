@@ -1,4 +1,4 @@
-/* $XConsortium: lcGeneric.c,v 1.6 95/02/22 22:03:08 kaleb Exp $ */
+/* $XConsortium: lcGeneric.c /main/7 1995/11/18 16:08:54 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -269,7 +269,6 @@ free_charset(lcd)
     XLCd lcd;
 {
     XLCdGenericPart *gen = XLC_GENERIC_PART(lcd);
-    CodeSet *codeset;
     ParseInfo *parse_info;
     int num;
 

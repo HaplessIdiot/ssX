@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.190.1.1 95/06/12 17:17:15 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.15 1995/07/08 10:31:28 dawes Exp $ */
+/* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.16 1995/08/06 02:11:41 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -119,6 +119,7 @@ extern int errno;
 #include <sys/uio.h>
 #endif
 #include "misc.h"		/* for typedef of pointer */
+#include <X11/Xpoll.h>
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"
@@ -126,8 +127,16 @@ extern int errno;
 #ifdef LBX
 #ifndef X_NOT_POSIX
 #include <unistd.h>
+#ifdef NCR
+/* 
+ * this might be temporary, loosing version of SVR4 (MP/RAS 4.0 3.0
+ * doesn't have a * prototype for writev in unistd.h. Perhaps it's in
+ * a newer version of the OS.
+ */
+extern int writev(int fildes, const struct iovec *iov, int iovcnt);
+#endif
 #else
-extern int read(), writev();
+extern int read(), writev(), close();
 #endif
 #endif /* LBX */
 
@@ -144,16 +153,16 @@ extern int read(), writev();
 extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
-FdMask WellKnownConnections;	/* Listener mask */
-FdSet EnabledDevices;		/* mask for input devices that are on */
-FdSet AllSockets;		/* select on this */
-FdSet AllClients;		/* available clients */
-FdSet LastSelectMask;		/* mask returned from last select call */
-FdSet ClientsWithInput;		/* clients with FULL requests in buffer */
-FdSet ClientsWriteBlocked;	/* clients who cannot receive output */
-FdSet OutputPending;		/* clients with reply/event data ready to go */
+fd_set WellKnownConnections;	/* Listener mask */
+fd_set EnabledDevices;		/* mask for input devices that are on */
+fd_set AllSockets;		/* select on this */
+fd_set AllClients;		/* available clients */
+fd_set LastSelectMask;		/* mask returned from last select call */
+fd_set ClientsWithInput;	/* clients with FULL requests in buffer */
+fd_set ClientsWriteBlocked;	/* clients who cannot receive output */
+fd_set OutputPending;		/* clients with reply/event data ready to go */
 int MaxClients = MAXSOCKS;
-long NConnBitArrays = mskcnt;
+long NConnBitArrays = howmany(XFD_SETSIZE, NFDBITS);
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
@@ -163,11 +172,11 @@ static Pid_t ParentProcess;
 
 static Bool debug_conns = FALSE;
 
-FdSet IgnoredClientsWithInput;
-static FdSet GrabImperviousClients;
-static FdSet SavedAllClients;
-static FdSet SavedAllSockets;
-static FdSet SavedClientsWithInput;
+fd_set IgnoredClientsWithInput;
+static fd_set GrabImperviousClients;
+static fd_set SavedAllClients;
+static fd_set SavedAllSockets;
+static fd_set SavedClientsWithInput;
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
@@ -244,16 +253,16 @@ CreateWellKnownSockets()
     int		partial;
     char 	port[20];
 
-    CLEARBITS(AllSockets);
-    CLEARBITS(AllClients);
-    CLEARBITS(LastSelectMask);
-    CLEARBITS(ClientsWithInput);
+    FD_ZERO(&AllSockets);
+    FD_ZERO(&AllClients);
+    FD_ZERO(&LastSelectMask);
+    FD_ZERO(&ClientsWithInput);
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
 #ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
 #endif
-#ifdef XNO_SYSCONF
+#ifdef XNO_SYSCONF      /* should only be on FreeBSD 1.x and NetBSD 0.x */
 #undef _SC_OPEN_MAX
 #endif
 #ifdef _SC_OPEN_MAX
@@ -273,7 +282,7 @@ CreateWellKnownSockets()
 	    ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
     }
 
-    WellKnownConnections = 0;
+    FD_ZERO (&WellKnownConnections);
 
     sprintf (port, "%d", atoi (display));
 
@@ -294,7 +303,7 @@ CreateWellKnownSockets()
 		int fd = _XSERVTransGetConnectionNumber (ListenTransConns[i]);
 		
 		ListenTransFds[i] = fd;
-		WellKnownConnections |= (1L << fd);
+		FD_SET (fd, &WellKnownConnections);
 
 		if (!_XSERVTransIsLocal (ListenTransConns[i]))
 		{
@@ -304,14 +313,14 @@ CreateWellKnownSockets()
 	}
     }
 
-    if (WellKnownConnections == 0)
+    if (!XFD_ANYSET (&WellKnownConnections))
         FatalError ("Cannot establish any listening sockets - Make sure an X server isn't already running");
 
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);
     OsSignal (SIGINT, GiveUp);
     OsSignal (SIGTERM, GiveUp);
-    AllSockets[0] = WellKnownConnections;
+    XFD_COPYSET (&WellKnownConnections, &AllSockets);
     ResetHosts(display);
     /*
      * Magic:  If SIGUSR1 was set to SIG_IGN when
@@ -361,7 +370,7 @@ ResetWellKnownSockets ()
 		 * Remove it from out list.
 		 */
 
-		WellKnownConnections &= ~(1L << ListenTransFds[i]);
+		FD_CLR (ListenTransFds[i], &WellKnownConnections);
 		ListenTransFds[i] = ListenTransFds[ListenTransCount - 1];
 		ListenTransConns[i] = ListenTransConns[ListenTransCount - 1];
 		ListenTransCount -= 1;
@@ -375,9 +384,9 @@ ResetWellKnownSockets ()
 
 		int newfd = _XSERVTransGetConnectionNumber (ListenTransConns[i]);
 
-		WellKnownConnections &= ~(1L << ListenTransFds[i]);
+		FD_CLR (ListenTransFds[i], &WellKnownConnections);
 		ListenTransFds[i] = newfd;
-		WellKnownConnections |= (1L << newfd);
+		FD_SET(newfd, &WellKnownConnections);
 	    }
 	}
     }
@@ -569,8 +578,8 @@ AvailableClientInput (client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    if (GETBIT(AllSockets, oc->fd))
-	BITSET(ClientsWithInput, oc->fd);
+    if (FD_ISSET(oc->fd, &AllSockets))
+	FD_SET(oc->fd, &ClientsWithInput);
 }
 
 ClientPtr
@@ -610,13 +619,13 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
 	ConnectionOutputTranslation[fd] = client->index;
 	if (GrabInProgress)
 	{
-	    BITSET(SavedAllClients, fd);
-	    BITSET(SavedAllSockets, fd);
+	    FD_SET(fd, &SavedAllClients);
+	    FD_SET(fd, &SavedAllSockets);
 	}
 	else
 	{
-	    BITSET(AllClients, fd);
-	    BITSET(AllSockets, fd);
+	    FD_SET(fd, &AllClients);
+	    FD_SET(fd, &AllSockets);
 	}
     }
     client->public.readRequest = StandardReadRequestFromClient;
@@ -633,8 +642,24 @@ AllocPiggybackConnection (client, Read, Writev, Close)
     int	    (*Writev)();
     void    (*Close)();
 {
+    ClientPtr rtn_client;
     OsCommPtr oc = (OsCommPtr) client->osPrivate;
-    return AllocNewConnection(oc->trans_conn, oc->fd, Read, Writev, Close);
+
+    rtn_client = AllocNewConnection (
+	oc->trans_conn, oc->fd, Read, Writev, Close);
+
+    /*
+     * Until LBX implements end to end authentication, the server does
+     * not authenticate each LBX connection setup (it only authenticates
+     * the X connection setup used for the LBX master client).  As a result,
+     * we must set the client's conn_time field to zero, signifying that
+     * the connection is valid.
+     */
+
+    oc = (OsCommPtr) rtn_client->osPrivate;
+    oc->conn_time = 0;
+
+    return rtn_client;
 }
 
 void
@@ -680,19 +705,18 @@ EstablishNewConnections(clientUnused, closure)
     ClientPtr clientUnused;
     pointer closure;
 {
-    FdMask readyconnections;     /* mask of listeners that are ready */
+    fd_mask readyconnections;     /* mask of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
     register int newconn;         /* fd of new client */
     CARD32 connect_time;
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;
-#ifdef LBX
-    extern int  writev(), close();
-#endif
+    fd_set tmask;
 
 #ifndef AMOEBA
-    readyconnections = (((FdMask)closure) & WellKnownConnections);
+    XFD_ANDSET (&tmask, (fd_set*)closure, &WellKnownConnections);
+    readyconnections = tmask.fds_bits[0];
     if (!readyconnections)
 	return TRUE;
     connect_time = GetTimeInMillis();
@@ -750,13 +774,13 @@ EstablishNewConnections(clientUnused, closure)
 	}
 	if (GrabInProgress)
 	{
-	    BITSET(SavedAllClients, newconn);
-	    BITSET(SavedAllSockets, newconn);
+	    FD_SET(newconn, &SavedAllClients);
+	    FD_SET(newconn, &SavedAllSockets);
 	}
 	else
 	{
-	    BITSET(AllClients, newconn);
-	    BITSET(AllSockets, newconn);
+	    FD_SET(newconn, &AllClients);
+	    FD_SET(newconn, &AllSockets);
 	}
 	oc->fd = newconn;
 	oc->trans_conn = new_trans_conn;
@@ -801,16 +825,15 @@ XtransConnInfo trans_conn;
     int whichbyte = 1;
 #ifndef AMOEBA
     struct timeval waittime;
-    FdSet mask;
+    fd_set mask;
 
     /* if these seems like a lot of trouble to go to, it probably is */
     waittime.tv_sec = BOTIMEOUT / MILLI_PER_SECOND;
     waittime.tv_usec = (BOTIMEOUT % MILLI_PER_SECOND) *
 		       (1000000 / MILLI_PER_SECOND);
-    CLEARBITS(mask);
-    BITSET(mask, fd);
-    (void)select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
-#endif
+    FD_ZERO(&mask);
+    FD_SET(fd, &mask);
+    (void)Select(fd + 1, &mask, NULL, NULL, &waittime);
     /* try to read the byte-order of the connection */
     (void)_XSERVTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B'))
@@ -857,28 +880,30 @@ CloseDownFileDescriptor(oc)
 #endif
     int connection = oc->fd;
 
-    if (oc->trans_conn)
+    if (oc->trans_conn) {
+	_XSERVTransDisconnect(oc->trans_conn);
 	_XSERVTransClose(oc->trans_conn);
+    }
 #ifdef LBX
     ConnectionTranslation[connection] = 0;
     ConnectionOutputTranslation[connection] = 0;
 #else
     FreeOsBuffers(oc);
 #endif
-    BITCLEAR(AllSockets, connection);
-    BITCLEAR(AllClients, connection);
-    BITCLEAR(ClientsWithInput, connection);
-    BITCLEAR(GrabImperviousClients, connection);
+    FD_CLR(connection, &AllSockets);
+    FD_CLR(connection, &AllClients);
+    FD_CLR(connection, &ClientsWithInput);
+    FD_CLR(connection, &GrabImperviousClients);
     if (GrabInProgress)
     {
-	BITCLEAR(SavedAllSockets, connection);
-	BITCLEAR(SavedAllClients, connection);
-	BITCLEAR(SavedClientsWithInput, connection);
+	FD_CLR(connection, &SavedAllSockets);
+	FD_CLR(connection, &SavedAllClients);
+	FD_CLR(connection, &SavedClientsWithInput);
     }
-    BITCLEAR(ClientsWriteBlocked, connection);
-    if (!ANYSET(ClientsWriteBlocked))
+    FD_CLR(connection, &ClientsWriteBlocked);
+    if (!XFD_ANYSET(&ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
-    BITCLEAR(OutputPending, connection);
+    FD_CLR(connection, &OutputPending);
 #ifndef LBX
     xfree(oc);
 #endif
@@ -896,8 +921,8 @@ CloseDownFileDescriptor(oc)
 void
 CheckConnections()
 {
-    FdMask		mask;
-    FdSet		tmask; 
+    fd_mask		mask;
+    fd_set		tmask; 
     register int	curclient, curoff;
     int			i;
     struct timeval	notime;
@@ -907,17 +932,16 @@ CheckConnections()
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
-    for (i=0; i<mskcnt; i++)
+    for (i=0; i<howmany(XFD_SETSIZE, NFDBITS); i++)
     {
-	mask = AllClients[i];
+	mask = AllClients.fds_bits[i];
         while (mask)
     	{
 	    curoff = ffs (mask) - 1;
  	    curclient = curoff + (i << 5);
-            CLEARBITS(tmask);
-            BITSET(tmask, curclient);
-            r = select (curclient + 1, (int *)tmask, (int *)NULL, (int *)NULL, 
-			&notime);
+            FD_ZERO(&tmask);
+            FD_SET(curclient, &tmask);
+            r = Select (curclient + 1, &tmask, NULL, NULL, &notime);
             if (r < 0)
 		CloseDownClient(clients[ConnectionTranslation[curclient]]);
 	    mask &= ~(1 << curoff);
@@ -959,16 +983,16 @@ CloseDownConnection(client)
 AddEnabledDevice(fd)
     int fd;
 {
-    BITSET(EnabledDevices, fd);
-    BITSET(AllSockets, fd);
+    FD_SET(fd, &EnabledDevices);
+    FD_SET(fd, &AllSockets);
 }
 
 
 RemoveEnabledDevice(fd)
     int fd;
 {
-    BITCLEAR(EnabledDevices, fd);
-    BITCLEAR(AllSockets, fd);
+    FD_CLR(fd, &EnabledDevices);
+    FD_CLR(fd, &AllSockets);
 }
 
 /*****************
@@ -989,21 +1013,21 @@ OnlyListenToOneClient(client)
 
     if (! GrabInProgress)
     {
-	COPYBITS(ClientsWithInput, SavedClientsWithInput);
-	MASKANDSETBITS(ClientsWithInput,
-		       ClientsWithInput, GrabImperviousClients);
-	if (GETBIT(SavedClientsWithInput, connection))
+	XFD_COPYSET(&ClientsWithInput, &SavedClientsWithInput);
+	XFD_ANDSET(&ClientsWithInput,
+		       &ClientsWithInput, &GrabImperviousClients);
+	if (FD_ISSET(connection, &SavedClientsWithInput))
 	{
-	    BITCLEAR(SavedClientsWithInput, connection);
-	    BITSET(ClientsWithInput, connection);
+	    FD_CLR(connection, &SavedClientsWithInput);
+	    FD_SET(connection, &ClientsWithInput);
 	}
-	UNSETBITS(SavedClientsWithInput, GrabImperviousClients);
-	COPYBITS(AllSockets, SavedAllSockets);
-	COPYBITS(AllClients, SavedAllClients);
-	UNSETBITS(AllSockets, AllClients);
-	MASKANDSETBITS(AllClients, AllClients, GrabImperviousClients);
-	BITSET(AllClients, connection);
-	ORBITS(AllSockets, AllSockets, AllClients);
+	XFD_UNSET(&SavedClientsWithInput, &GrabImperviousClients);
+	XFD_COPYSET(&AllSockets, &SavedAllSockets);
+	XFD_COPYSET(&AllClients, &SavedAllClients);
+	XFD_UNSET(&AllSockets, &AllClients);
+	XFD_ANDSET(&AllClients, &AllClients, &GrabImperviousClients);
+	FD_SET(connection, &AllClients);
+	XFD_ORSET(&AllSockets, &AllSockets, &AllClients);
 	GrabInProgress = client->index;
     }
 }
@@ -1017,9 +1041,9 @@ ListenToAllClients()
 {
     if (GrabInProgress)
     {
-	ORBITS(AllSockets, AllSockets, SavedAllSockets);
-	ORBITS(AllClients, AllClients, SavedAllClients);
-	ORBITS(ClientsWithInput, ClientsWithInput, SavedClientsWithInput);
+	XFD_ORSET(&AllSockets, &AllSockets, &SavedAllSockets);
+	XFD_ORSET(&AllClients, &AllClients, &SavedAllClients);
+	XFD_ORSET(&ClientsWithInput, &ClientsWithInput, &SavedClientsWithInput);
 	GrabInProgress = 0;
     }	
 }
@@ -1036,26 +1060,26 @@ IgnoreClient (client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (!GrabInProgress || GETBIT(AllClients, connection))
+    if (!GrabInProgress || FD_ISSET(connection, &AllClients))
     {
-    	if (GETBIT (ClientsWithInput, connection))
-	    BITSET(IgnoredClientsWithInput, connection);
+    	if (FD_ISSET (connection, &ClientsWithInput))
+	    FD_SET(connection, &IgnoredClientsWithInput);
     	else
-	    BITCLEAR(IgnoredClientsWithInput, connection);
-    	BITCLEAR(ClientsWithInput, connection);
-    	BITCLEAR(AllSockets, connection);
-    	BITCLEAR(AllClients, connection);
-	BITCLEAR(LastSelectMask, connection);
+	    FD_CLR(connection, &IgnoredClientsWithInput);
+    	FD_CLR(connection, &ClientsWithInput);
+    	FD_CLR(connection, &AllSockets);
+    	FD_CLR(connection, &AllClients);
+	FD_CLR(connection, &LastSelectMask);
     }
     else
     {
-    	if (GETBIT (SavedClientsWithInput, connection))
-	    BITSET(IgnoredClientsWithInput, connection);
+    	if (FD_ISSET (connection, &SavedClientsWithInput))
+	    FD_SET(connection, &IgnoredClientsWithInput);
     	else
-	    BITCLEAR(IgnoredClientsWithInput, connection);
-	BITCLEAR(SavedClientsWithInput, connection);
-	BITCLEAR(SavedAllSockets, connection);
-	BITCLEAR(SavedAllClients, connection);
+	    FD_CLR(connection, &IgnoredClientsWithInput);
+	FD_CLR(connection, &SavedClientsWithInput);
+	FD_CLR(connection, &SavedAllSockets);
+	FD_CLR(connection, &SavedAllClients);
     }
     isItTimeToYield = TRUE;
 }
@@ -1072,20 +1096,20 @@ AttendClient (client)
     int connection = oc->fd;
 
     if (!GrabInProgress || GrabInProgress == client->index ||
-	GETBIT(GrabImperviousClients, connection))
+	FD_ISSET(connection, &GrabImperviousClients))
     {
-    	BITSET(AllClients, connection);
-    	BITSET(AllSockets, connection);
-	BITSET(LastSelectMask, connection);
-    	if (GETBIT (IgnoredClientsWithInput, connection))
-	    BITSET(ClientsWithInput, connection);
+    	FD_SET(connection, &AllClients);
+    	FD_SET(connection, &AllSockets);
+	FD_SET(connection, &LastSelectMask);
+    	if (FD_ISSET (connection, &IgnoredClientsWithInput))
+	    FD_SET(connection, &ClientsWithInput);
     }
     else
     {
-	BITSET(SavedAllClients, connection);
-	BITSET(SavedAllSockets, connection);
-	if (GETBIT(IgnoredClientsWithInput, connection))
-	    BITSET(SavedClientsWithInput, connection);
+	FD_SET(connection, &SavedAllClients);
+	FD_SET(connection, &SavedAllSockets);
+	if (FD_ISSET(connection, &IgnoredClientsWithInput))
+	    FD_SET(connection, &SavedClientsWithInput);
     }
 }
 
@@ -1097,7 +1121,7 @@ MakeClientGrabImpervious(client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    BITSET(GrabImperviousClients, connection);
+    FD_SET(connection, &GrabImperviousClients);
 
     if (ServerGrabCallback)
     {
@@ -1116,16 +1140,16 @@ MakeClientGrabPervious(client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    BITCLEAR(GrabImperviousClients, connection);
+    FD_CLR(connection, &GrabImperviousClients);
     if (GrabInProgress && (GrabInProgress != client->index))
     {
-	if (GETBIT(ClientsWithInput, connection))
+	if (FD_ISSET(connection, &ClientsWithInput))
 	{
-	    BITSET(SavedClientsWithInput, connection);
-	    BITCLEAR(ClientsWithInput, connection);
+	    FD_SET(connection, &SavedClientsWithInput);
+	    FD_CLR(connection, &ClientsWithInput);
 	}
-	BITCLEAR(AllSockets, connection);
-	BITCLEAR(AllClients, connection);
+	FD_CLR(connection, &AllSockets);
+	FD_CLR(connection, &AllClients);
 	isItTimeToYield = TRUE;
     }
 
@@ -1140,7 +1164,7 @@ MakeClientGrabPervious(client)
 
 #ifdef AIXV3
 
-static FdSet pendingActiveClients;
+static fd_set pendingActiveClients;
 static BOOL reallyGrabbed;
 
 /****************
@@ -1163,20 +1187,20 @@ DontListenToAnybody()
 {
     if (!GrabInProgress)
     {
-	COPYBITS(ClientsWithInput, SavedClientsWithInput);
-	COPYBITS(AllSockets, SavedAllSockets);
-	COPYBITS(AllClients, SavedAllClients);
+	XFD_COPYSET(&ClientsWithInput, &SavedClientsWithInput);
+	XFD_COPYSET(&AllSockets, &SavedAllSockets);
+	XFD_COPYSET(&AllClients, &SavedAllClients);
 	GrabInProgress = TRUE;
 	reallyGrabbed = FALSE;
     }
     else
     {
-	COPYBITS(AllClients, pendingActiveClients);
+	XFD_COPYSET(&AllClients, &pendingActiveClients);
 	reallyGrabbed = TRUE;
     }
-    CLEARBITS(ClientsWithInput);
-    UNSETBITS(AllSockets, AllClients);
-    CLEARBITS(AllClients);
+    FD_ZERO(&ClientsWithInput);
+    XFD_UNSET(&AllSockets, &AllClients);
+    FD_ZERO(&AllClients);
     isItTimeToYield = TRUE;
 }
 
@@ -1185,8 +1209,8 @@ PayAttentionToClientsAgain()
 {
     if (reallyGrabbed)
     {
-	ORBITS(AllSockets, AllSockets, pendingActiveClients);
-	ORBITS(AllClients, AllClients, pendingActiveClients);
+	XFD_ORSET(&AllSockets, &AllSockets, &pendingActiveClients);
+	XFD_ORSET(&AllClients, &AllClients, &pendingActiveClients);
     }
     else
     {

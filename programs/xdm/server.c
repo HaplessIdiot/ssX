@@ -1,5 +1,5 @@
-/* $XConsortium: server.c,v 1.19 94/04/17 20:03:44 hersh Exp $ */
-/* $XFree86: xc/programs/xdm/server.c,v 3.0 1994/04/28 12:44:54 dawes Exp $ */
+/* $XConsortium: server.c,v 1.20 94/10/17 18:29:34 converse Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.1 1994/06/28 12:32:39 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -71,6 +71,13 @@ CatchUsr1 (n)
 #endif
     Debug ("display manager caught SIGUSR1\n");
     ++receivedUsr1;
+}
+
+char *_SysErrorMsg (n)
+    int n;
+{
+    char *s = strerror(n);
+    return (s ? s : "unknown error");
 }
 
 StartServerOnce (d)

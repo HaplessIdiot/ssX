@@ -1,8 +1,8 @@
-XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.37 1995/12/09 11:02:42 dawes Exp $
+XCOMM platform:  $XConsortium: FreeBSD.cf /main/9 1995/12/04 10:35:08 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.38 1995/12/17 04:58:15 dawes Exp $
 
 #ifndef OSName
-#define OSName            FreeBSD 2.1.0
+#define OSName            FreeBSD 2.1
 #endif
 #ifndef OSVendor
 #define OSVendor          /**/
@@ -67,9 +67,7 @@ XCOMM operating system:  OSName
 #define GnuMallocLibrary	-lgnumalloc
 #endif
 
-#ifdef InstallCmd
 #undef  InstallCmd
-#endif
 #define InstallCmd		/usr/bin/install
 
 #if GccUsesGas
@@ -83,18 +81,21 @@ XCOMM operating system:  OSName
 
 #define StandardDefines	-DCSRG_BASED
 
-#define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#if OSMajorVersion > 1
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
+#define XawI18nDefines		-DUSE_XWCHAR_STRING
+#define HasMakefileSafeInclude	YES
+#define IncludeMakefile(file) @@# dependencies are in .depend
+#define DependFileName		.depend
+#else
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#endif
 
 #ifdef i386Architecture
 # define OptimizedCDebugFlags -m486 DefaultGcc2i386Opt
-# if OSMajorVersion < 2
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
-# else
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-# endif
 #else
 # define OptimizedCDebugFlags -O2
-# define ServerOSDefines /**/
 #endif
 
 #ifndef PreIncDir

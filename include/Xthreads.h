@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.19 95/06/30 17:58:05 kaleb Exp $
+ * $XConsortium: Xthreads.h /main/30 1995/12/06 20:18:34 kaleb $
  *
  * 
 Copyright (c) 1993  X Consortium
@@ -62,17 +62,29 @@ typedef struct mutex xmutex_rec;
 #define xcondition_signal(cv) condition_signal(cv)
 #define xcondition_broadcast(cv) condition_broadcast(cv)
 #define xcondition_set_name(cv,str) condition_set_name(cv,str)
-#else
+#else /* !CTHREADS */
 #ifdef SVR4
 #include <thread.h>
 #include <synch.h>
+#ifndef LINE_MAX
+#define LINE_MAX 2048
+#endif
 typedef thread_t xthread_t;
+typedef thread_key_t xthread_key_t;
 typedef cond_t xcondition_rec;
 typedef mutex_t xmutex_rec;
 #define xthread_self thr_self
 #define xthread_fork(func,closure) thr_create(NULL,0,func,closure,THR_NEW_LWP|THR_DETACHED,NULL)
 #define xthread_yield() thr_yield()
 #define xthread_exit(v) thr_exit(v)
+#define xthread_key_create(kp,d) thr_keycreate(kp,d)
+#ifdef sun
+#define xthread_key_delete(k) 0
+#else
+#define xthread_key_delete(k) thr_keydelete(k)
+#endif
+#define xthread_set_specific(k,v) thr_setspecific(k,v)
+#define xthread_get_specific(k,vp) thr_getspecific(k,vp)
 #define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
 #define xmutex_clear(m) mutex_destroy(m)
 #define xmutex_lock(m) mutex_lock(m)
@@ -82,7 +94,7 @@ typedef mutex_t xmutex_rec;
 #define xcondition_wait(cv,m) cond_wait(cv,m)
 #define xcondition_signal(cv) cond_signal(cv)
 #define xcondition_broadcast(cv) cond_broadcast(cv)
-#else
+#else /* !SVR4 */
 #ifdef WIN32
 #define BOOL wBOOL
 #ifdef Status
@@ -96,6 +108,7 @@ typedef mutex_t xmutex_rec;
 #endif
 #undef BOOL
 typedef DWORD xthread_t;
+typedef DWORD xthread_key_t;
 struct _xthread_waiter {
     HANDLE sem;
     struct _xthread_waiter *next;
@@ -114,6 +127,10 @@ typedef CRITICAL_SECTION xmutex_rec;
 }
 #define xthread_yield() Sleep(0)
 #define xthread_exit(v) ExitThread((DWORD)(v))
+#define xthread_key_create(kp,d) *(kp) = TlsAlloc()
+#define xthread_key_delete(k) TlsFree(k)
+#define xthread_set_specific(k,v) TlsSetValue(k,v)
+#define xthread_get_specific(k,vp) TlsGetValue(k)
 #define xmutex_init(m) InitializeCriticalSection(m)
 #define xmutex_clear(m) DeleteCriticalSection(m)
 #define _XMUTEX_NESTS
@@ -151,20 +168,37 @@ extern struct _xthread_waiter *_Xthread_waiter();
     (cv)->waiters = NULL; \
     LeaveCriticalSection(&(cv)->cs); \
 }
+#else /* !WIN32 */
+#ifdef USE_TIS_SUPPORT
+/*
+ * TIS support is intended for thread safe libraries.
+ * This should not be used for general client programming.
+ */
+#include <tis.h>
+typedef pthread_t xthread_t;
+#define pthread_key_t xthread_key_t;
+typedef pthread_cond_t xcondition_rec;
+typedef pthread_mutex_t xmutex_rec;
+#define xthread_self tis_self
+#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
+        pthread_create(&_tmpxthr,NULL,func,closure); }
+#define xthread_yield() pthread_yield_np()
+#define xthread_exit(v) pthread_exit(v)
+#define xthread_set_specific(k,v) pthread_setspecific(k,v)
+#define xmutex_init(m) tis_mutex_init(m)
+#define xmutex_clear(m) tis_mutex_destroy(m)
+#define xmutex_lock(m) tis_mutex_lock(m)
+#define xmutex_unlock(m) tis_mutex_unlock(m)
+#define xcondition_init(c) tis_cond_init(c)
+#define xcondition_clear(c) tis_cond_destroy(c)
+#define xcondition_wait(c,m) tis_cond_wait(c,m)
+#define xcondition_signal(c) tis_cond_signal(c)
+#define xcondition_broadcast(c) tis_cond_broadcast(c)
 #else
 #include <pthread.h>
-#ifdef AIXV3
-#ifndef _AIX32_THREADS
-#define POSIX_DRAFT7_THREADS
+#ifndef LINE_MAX
+#define LINE_MAX 2048
 #endif
-#endif
-/* 
- * The above would probably be better handled with an imake config
- * variable, but since AIX 4.X seems to be the only platform implementing
- * the draft 7 API, this will suffice for now. An imake config variable
- * would also require changes to the Xlib and Xt Imakefiles to compile 
- * Xlib's locking.c and  Xt's Threads.c, so this has less impact.
- */
 typedef pthread_t xthread_t;
 typedef pthread_cond_t xcondition_rec;
 typedef pthread_mutex_t xmutex_rec;
@@ -174,19 +208,23 @@ typedef pthread_mutex_t xmutex_rec;
 #define xmutex_clear(m) pthread_mutex_destroy(m)
 #define xmutex_lock(m) pthread_mutex_lock(m)
 #define xmutex_unlock(m) pthread_mutex_unlock(m)
-#ifndef POSIX_DRAFT7_THREADS
+#ifndef XPRE_STANDARD_API
+#define xthread_key_create(kp,d) pthread_key_create(kp,d)
+#define xthread_key_delete(k) pthread_key_delete(k)
+#define xthread_get_specific(k,vp) *(vp) = pthread_getspecific(k)
+#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
+	pthread_create(&_tmpxthr,NULL,func,closure); }
+#define xmutex_init(m) pthread_mutex_init(m, NULL)
+#define xcondition_init(c) pthread_cond_init(c, NULL)
+#else /* XPRE_STANDARD_API */
+#define xthread_key_create(kp,d) pthread_keycreate(kp,d)
+#define xthread_key_delete(k) 0
+#define xthread_get_specific(k,vp) pthread_getspecific(k,vp)
 #define xthread_fork(func,closure) { pthread_t _tmpxthr; \
 	pthread_create(&_tmpxthr,pthread_attr_default,func,closure); }
 #define xmutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
 #define xcondition_init(c) pthread_cond_init(c, pthread_condattr_default)
-#else /* POSIX_DRAFT7_THREADS */
-#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
-	pthread_create(&_tmpxthr,&pthread_attr_default,func,closure); }
-#define xmutex_init(m) \
-	pthread_mutex_init(m, &pthread_mutexattr_default)
-#define xcondition_init(c) \
-	pthread_cond_init(c, &pthread_condattr_default)
-#endif /* POSIX_DRAFT7_THREADS */
+#endif /* XPRE_STANDARD_API */
 #define xcondition_clear(c) pthread_cond_destroy(c)
 #define xcondition_wait(c,m) pthread_cond_wait(c,m)
 #define xcondition_signal(c) pthread_cond_signal(c)
@@ -204,8 +242,9 @@ static xthread_t _X_no_thread_id;
 #define xcondition_set_name(cv,str) ((char**)(cv)->field1)[5] = (str)
 #endif /* DEBUG */
 #endif /* _CMA_VENDOR_ == _CMA__IBM */
+#endif /* USE_TIS_SUPPORT */
 #endif /* WIN32 */
-#endif /* sun */
+#endif /* SVR4 */
 #endif /* CTHREADS */
 typedef xcondition_rec *xcondition_t;
 typedef xmutex_rec *xmutex_t;

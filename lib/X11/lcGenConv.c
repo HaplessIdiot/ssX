@@ -1,5 +1,5 @@
-/* $XConsortium: lcGenConv.c,v 1.7 95/02/22 22:03:01 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.2 1995/06/14 07:07:39 dawes Exp $ */
+/* $XConsortium: lcGenConv.c /main/10 1995/11/18 16:08:50 kaleb $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.3 1995/07/15 14:56:02 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -91,7 +91,7 @@ mbtocs(conv, from, from_left, to, to_left, args, num_args)
     State state = (State) conv->state;
     XLCd lcd = state->lcd;
     register char *src, *dst;
-    unsigned char ch, *mb_parse_table;
+    unsigned char *mb_parse_table;
     ParseInfo *parse_list, parse_info;
     XlcCharSet charset;
     int length, number, encoding_len = 0;
@@ -297,6 +297,11 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = *codeset->charset_list;
+
+#ifdef AIXV4
+    /* Work around compiler bug in AIX 4.1.3 */
+    wcptr = wcptr;
+#endif
 
     *from_left -= wcptr - *((wchar_t **) from);
     *from = (XPointer) wcptr;
@@ -505,6 +510,9 @@ close_converter(conv)
 {
     if (conv->state) {
 	Xfree((char *) conv->state);
+    }
+    if (conv->methods) {
+	XFree((char*) conv->methods);
     }
 
     Xfree((char *) conv);

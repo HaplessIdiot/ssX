@@ -1,5 +1,5 @@
-/* $XConsortium: GetDflt.c,v 1.34 94/11/30 16:19:43 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.2 1994/12/02 05:41:46 dawes Exp $ */
+/* $XConsortium: GetDflt.c /main/40 1995/11/10 12:07:17 kaleb $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.3 1995/01/28 15:42:48 dawes Exp $ */
 
 /***********************************************************
 
@@ -52,6 +52,9 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xos.h>
 #include <X11/Xresource.h>
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 #ifndef WIN32
 #include <pwd.h>
 #endif
@@ -63,67 +66,65 @@ extern char *getenv();
 #endif
 
 /*ARGSUSED*/
-static char *GetHomeDir (dest, destlen)
-	char *dest;
-	int destlen;
+static char *GetHomeDir (dest)
+    char *dest;
 {
 #ifdef WIN32
-	register char *ptr;
+    register char *ptr;
 
-	if (ptr = getenv("HOME"))
-		(void) strcpy(dest, ptr);
-	else {
-		if (ptr = getenv("USERNAME")) {
-			(void) strcpy (dest, "/users/");
-			(void) strcat (dest, ptr);
-		}
+    if (ptr = getenv("HOME"))
+	(void) strcpy(dest, ptr);
+    else {
+	if (ptr = getenv("USERNAME")) {
+	    (void) strcpy (dest, "/users/");
+	    (void) strcat (dest, ptr);
 	}
-	return dest;
+    } else
+	*dest = '\0';
 #else
-#ifndef X_NOT_POSIX
-        uid_t uid;
-#else
-	int uid;
-	extern int getuid();
+#ifdef X_NOT_POSIX
 #ifndef i386
 # ifndef SYSV
-	extern struct passwd *getpwuid(), *getpwnam();
+    extern struct passwd *getpwuid(), *getpwnam();
 # endif
 #endif
 #endif
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-	struct passwd pws;
-	char pwbuf[512];	/* ought to use MAX_INPUT */
-#endif
-	struct passwd *pw;
-	register char *ptr;
-
-	if (ptr = getenv("HOME")) {
-		(void) strcpy(dest, ptr);
-
-	} else {
-		if (ptr = getenv("USER")) {
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-			pw = getpwnam_r(ptr, &pws, pwbuf, sizeof pwbuf);
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#define PwDir pws.pw_dir
+    struct passwd pws;
+    char pwbuf[LINE_MAX];
+#define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf)
+#define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf)
+#ifndef _POSIX_THREADS
+#define CallFailed NULL
+    struct passwd *pw;
 #else
-			pw = getpwnam(ptr);
+#define CallFailed -1
+    int pw;
 #endif
-		} else {
-			uid = getuid();
-#if defined(sun) && defined(SVR4) && defined(XTHREADS)
-			pw = getpwuid_r(uid, &pws, pwbuf, sizeof pwbuf);
 #else
-			pw = getpwuid(uid);
+#define Getpwnam(u) getpwnam((u))
+#define Getpwuid(u) getpwuid((u))
+#define CallFailed NULL
+#define PwDir pw->pw_dir
+    struct passwd *pw;
 #endif
-		}
-		if (pw) {
-			(void) strcpy(dest, pw->pw_dir);
-		} else {
-		        *dest = '\0';
-		}
-	}
-	return dest;
+    register char *ptr;
+
+    if ((ptr = getenv("HOME"))) {
+	(void) strcpy(dest, ptr);
+    } else {
+	if (ptr = getenv("USER"))
+	    pw = Getpwnam(ptr);
+	else
+	    pw = Getpwuid(getuid());
+	if (pw != CallFailed)
+	    (void) strcpy(dest, PwDir);
+	else
+	    *dest = '\0';
+    }
 #endif
+    return dest;
 }
 
 
@@ -146,7 +147,7 @@ static XrmDatabase InitDefaults (dpy)
      */
 
     if (dpy->xdefaults == NULL) {
-	(void) GetHomeDir (fname, sizeof(fname));
+	(void) GetHomeDir (fname);
 	(void) strcat (fname, "/.Xdefaults");
 	xdb = XrmGetFileDatabase (fname);
     } else {
@@ -155,7 +156,7 @@ static XrmDatabase InitDefaults (dpy)
 
     if (!(xenv = getenv ("XENVIRONMENT"))) {
 	int len;
-	(void) GetHomeDir (fname, sizeof(fname));
+	(void) GetHomeDir (fname);
 	(void) strcat (fname, "/.Xdefaults-");
 	len = strlen (fname);
 	(void) _XGetHostname (fname+len, BUFSIZ-len);

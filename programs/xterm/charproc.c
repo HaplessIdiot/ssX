@@ -1,6 +1,6 @@
 /*
- * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.10 1995/11/04 11:31:18 dawes Exp $
+ * $XConsortium: charproc.c /main/188 1995/12/08 17:18:02 kaleb $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.11 1995/11/12 09:55:49 dawes Exp $
  */
 
 /*
@@ -55,11 +55,6 @@ in this Software without prior written authorization from the X Consortium.
 /* charproc.c */
 
 #include "ptyx.h"
-#include "VTparse.h"
-#include "data.h"
-#include "error.h"
-#include "menu.h"
-#include "main.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -68,9 +63,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
-#ifdef I18N
 #include <X11/Xaw/XawImP.h>
-#endif
+#include <X11/Xpoll.h>
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -83,6 +77,11 @@ in this Software without prior written authorization from the X Consortium.
 #define read(f,b,s) nbio_read(f,b,s)
 #define write(f,b,s) nbio_write(f,b,s)
 #endif
+#include "VTparse.h"
+#include "data.h"
+#include "error.h"
+#include "menu.h"
+#include "main.h"
 
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -106,6 +105,9 @@ extern Widget toplevel;
 extern void exit();
 extern char *malloc();
 extern char *realloc();
+extern fd_set Select_mask;
+extern fd_set X_mask;
+extern fd_set pty_mask;
 
 static void VTallocbuf();
 static int finput();
@@ -314,7 +316,7 @@ static char defaultTranslations[] =
 "\
           Shift <KeyPress> Prior:scroll-back(1,halfpage) \n\
            Shift <KeyPress> Next:scroll-forw(1,halfpage) \n\
-         Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \n\
+         Shift <KeyPress> Select:select-cursor-start() select-cursor-end(PRIMARY , CUT_BUFFER0) \n\
          Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \n\
                 ~Meta <KeyPress>:insert-seven-bit() \n\
                  Meta <KeyPress>:insert-eight-bit() \n\
@@ -335,9 +337,9 @@ static char defaultTranslations[] =
  !Lock Ctrl @Num_Lock <Btn3Down>:popup-menu(fontMenu) \n\
      ! @Num_Lock Ctrl <Btn3Down>:popup-menu(fontMenu) \n\
           ~Ctrl ~Meta <Btn3Down>:start-extend() \n\
-              ~Meta <Btn3Motion>:select-extend()	\n\
+              ~Meta <Btn3Motion>:select-extend()      \n\
                          <BtnUp>:select-end(PRIMARY, CUT_BUFFER0) \n\
-	               <BtnDown>:bell(0) \
+                       <BtnDown>:bell(0) \
 ";
 
 static XtActionsRec actionsList[] = { 
@@ -565,17 +567,15 @@ static XtResource resources[] = {
 {"font6", "Font6", XtRString, sizeof(String),
 	XtOffsetOf(XtermWidgetRec, screen.menu_font_names[fontMenu_font6]),
 	XtRString, (XtPointer) NULL},
-#ifdef I18N
-  {XtNinputMethod, XtCInputMethod, XtRString, sizeof(char*),
-                XtOffsetOf(XtermWidgetRec, misc.input_method),
-                XtRString, (XtPointer)NULL},
-  {XtNpreeditType, XtCPreeditType, XtRString, sizeof(char*),
-                XtOffsetOf(XtermWidgetRec, misc.preedit_type),
-                XtRString, (XtPointer)"Root"},
-  {XtNopenIm, XtCOpenIm, XtRBoolean, sizeof(Boolean),
-                XtOffsetOf(XtermWidgetRec, misc.open_im),
-                XtRImmediate, (XtPointer)TRUE},
-#endif
+{XtNinputMethod, XtCInputMethod, XtRString, sizeof(char*),
+	XtOffsetOf(XtermWidgetRec, misc.input_method),
+	XtRString, (XtPointer)NULL},
+{XtNpreeditType, XtCPreeditType, XtRString, sizeof(char*),
+	XtOffsetOf(XtermWidgetRec, misc.preedit_type),
+	XtRString, (XtPointer)"Root"},
+{XtNopenIm, XtCOpenIm, XtRBoolean, sizeof(Boolean),
+	XtOffsetOf(XtermWidgetRec, misc.open_im),
+	XtRImmediate, (XtPointer)TRUE},
 {XtNcolor0, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.colors[COLOR_0]),
 	XtRString, "XtDefaultForeground"},
@@ -654,9 +654,7 @@ static void VTExpose();
 static void VTResize();
 static void VTDestroy();
 static Boolean VTSetValues();
-#ifdef I18N
 static void VTInitI18N();
-#endif
 
 static WidgetClassRec xtermClassRec = {
   {
@@ -849,7 +847,7 @@ static void VTparse()
 		 case CASE_ESC_SEMI:
 			/* semicolon in csi or dec mode */
 			if (nparam < NPARAM)
-				param[nparam++] = DEFAULT;
+			    param[nparam++] = DEFAULT;
 			break;
 
 		 case CASE_DEC_STATE:
@@ -1377,7 +1375,7 @@ v_write(f, d, len)
 #endif
 
 #ifndef AMOEBA
-	if ((1 << f) != pty_mask)
+	if (!FD_ISSET (f, &pty_mask))
 		return(write(f, d, len));
 #else
 	if (term->screen.respond != f)
@@ -1507,8 +1505,8 @@ v_write(f, d, len)
 	return(c);
 }
 
-static int select_mask;
-static int write_mask;
+static fd_set select_mask;
+static fd_set write_mask;
 static int pty_read_bytes;
 
 in_put()
@@ -1519,7 +1517,7 @@ in_put()
 
     for( ; ; ) {
 #ifndef AMOEBA
-	if (select_mask & pty_mask && eventMode == NORMAL) {
+	if (FD_ISSET (screen->respond, &select_mask) && eventMode == NORMAL) {
 #else
 	if ((bcnt = cb_full(screen->tty_outq)) > 0 && eventMode == NORMAL) {
 #endif
@@ -1574,9 +1572,8 @@ in_put()
 		pty_read_bytes += bcnt;
 		/* stop speed reading at some point to look for X stuff */
 		/* (4096 is just a random large number.) */
-		if (pty_read_bytes > 4096) {
-		    select_mask &= ~pty_mask;
-		}
+		if (pty_read_bytes > 4096)
+		    FD_CLR (screen->respond, &select_mask);
 		break;
 	    }
 	}
@@ -1601,13 +1598,15 @@ in_put()
 #ifndef AMOEBA
 	/* Update the masks and, unless X events are already in the queue,
 	   wait for I/O to be possible. */
-	select_mask = Select_mask;
-	write_mask = ptymask();
+	XFD_COPYSET (&Select_mask, &select_mask);
+	if (v_bufptr > v_bufstr) {
+	    XFD_COPYSET (&pty_mask, &write_mask);
+	} else
+	    FD_ZERO (&write_mask);
 	select_timeout.tv_sec = 0;
 	select_timeout.tv_usec = 0;
-	i = select(max_plus1, &select_mask, &write_mask, (int *)NULL,
-		   QLength(screen->display) ? &select_timeout
-		   : (struct timeval *) NULL);
+	i = Select(max_plus1, &select_mask, &write_mask, NULL,
+		   QLength(screen->display) ? &select_timeout : NULL);
 	if (i < 0) {
 	    if (errno != EINTR)
 		SysError(ERROR_SELECT);
@@ -1615,13 +1614,14 @@ in_put()
 	} 
 
 	/* if there is room to write more data to the pty, go write more */
-	if (write_mask & ptymask()) {
+	if (FD_ISSET (screen->respond, &write_mask)) {
 	    v_write(screen->respond, 0, 0); /* flush buffer */
 	}
 
 	/* if there are X events already in our queue, it
 	   counts as being readable */
-	if (QLength(screen->display) || (select_mask & X_mask)) {
+	if (QLength(screen->display) || 
+	    FD_ISSET (ConnectionNumber(screen->display), &select_mask)) {
 	    xevents();
 	}
 #else  /* AMOEBA */
@@ -2738,9 +2738,7 @@ static void VTRealize (w, valuemask, values)
 		InputOutput, CopyFromParent,	
 		*valuemask|CWBitGravity, values);
 
-#ifdef I18N
 	VTInitI18N();
-#endif
 
 	set_cursor_gcs (screen);
 
@@ -2784,8 +2782,6 @@ static void VTRealize (w, valuemask, values)
 	CursorSave (term, &screen->sc);
 	return;
 }
-
-#ifdef I18N
 
 static void VTInitI18N()
 {
@@ -2904,8 +2900,6 @@ static void VTInitI18N()
 
     return;
 }
-
-#endif
 
 
 static Boolean VTSetValues (cur, request, new, args, num_args)

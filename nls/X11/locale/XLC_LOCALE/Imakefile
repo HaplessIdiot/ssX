@@ -1,14 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 16:53:46 rws Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile /main/9 1995/08/14 21:49:40 gildea $
+XCOMM $XFree86: xc/nls/X11/locale/XLC_LOCALE/Imakefile,v 3.0 1995/09/23 06:00:05 dawes Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data
 
 #define LTarget(name)							@@\
-all:: name.i								@@\
+all:: name.lt								@@\
 									@@\
-CppFileTarget(name.i,name,-DWCHAR32=$(WCHAR32),NullParameter)		@@\
-InstallNamedNonExec(name.i,XLC_LOCALE,$(XLOCALEDIR)/name)
+CppFileTarget(name.lt,name,-DWCHAR32=$(WCHAR32),NullParameter)		@@\
+InstallNamedNonExec(name.lt,XLC_LOCALE,$(XLOCALEDIR)/name)
 
 LTarget(C)
 LTarget(iso8859-1)

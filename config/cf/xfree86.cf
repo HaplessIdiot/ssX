@@ -1,5 +1,5 @@
-XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.75 1995/12/21 11:43:12 dawes Exp $
+XCOMM $XConsortium: xfree86.cf /main/15 1995/12/17 08:02:41 kaleb $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.76 1996/01/03 02:12:02 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -505,7 +505,7 @@ XF98PWSKBDRIVERSRC = $(XF98SRC)/accel/s3pwskb/drivers
 #endif
 
 /*
- * Installed location of XFree86 documentation
+ * Installed location of the XFree86 documentation
  */
 
         XFREE86DOCDIR = $(LIBDIR)/doc

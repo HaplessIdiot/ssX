@@ -1,6 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.17 94/09/16 19:00:07 kaleb Exp $
-* $XFree86$
+* $XConsortium: Xtos.h /main/19 1995/10/04 07:54:35 dpw $
 */
 
 /***********************************************************
@@ -54,9 +53,9 @@ SOFTWARE.
 #ifndef _Xtos_h
 #define _Xtos_h
 
-#ifdef INCLUDE_ALLOCA_H
-#include <alloca.h>
-#endif
+#define ALLOCATE_LOCAL_FALLBACK(_size) XtMalloc((unsigned long)(_size))
+#define DEALLOCATE_LOCAL_FALLBACK(_ptr) XtFree((XtPointer)(_ptr))
+#include <X11/Xalloca.h>
 
 #ifdef CRAY
 #define WORD64
@@ -66,69 +65,11 @@ SOFTWARE.
 #define LONG64
 #endif
 
-/* stolen from server/include/os.h */
-#ifndef NO_ALLOCA
-/*
- * os-dependent definition of local allocation and deallocation
- * If you want something other than XtMalloc/XtFree for ALLOCATE/DEALLOCATE
- * LOCAL then you add that in here.
- */
-#if defined(__HIGHC__)
-
-#ifndef NCR
-extern char *alloca();
-
-#if HCVERSION < 21003
-#define ALLOCATE_LOCAL(size)	alloca((int)(size))
-pragma on(alloca);
-#else /* HCVERSION >= 21003 */
-#define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
-#endif /* HCVERSION < 21003 */
-#else
-#define ALLOCATE_LOCAL(size)	alloca(size)
+#ifdef __sgi
+#if (_MIPS_SZLONG == 64)
+#define LONG64
 #endif
-
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-
-#endif /* defined(__HIGHC__) */
-
-
-#ifdef __GNUC__
-#ifndef alloca
-#define alloca __builtin_alloca
-#endif /* !alloca */
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#else /* ! __GNUC__ */
-
-/*
- * warning: old mips alloca (pre 2.10) is unusable, new one is built in
- * Test is easy, the new is is named __builtin_alloca and comes
- * from alloca.h which #defines alloca.
- */
-#ifndef NCR
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
-/*
- * Some System V boxes extract alloca.o from /lib/libPW.a; if you
- * decide that you don't want to use alloca, you might want to fix it here.
- */
-/* alloca might be a macro taking one arg (hi, Sun!), so give it one. */
-#if !(defined(sun) && defined(SVR4))
-#define __Xnullarg		/* as nothing */
-char *alloca(__Xnullarg);
 #endif
-#define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* who does alloca */
-#endif /* NCR */
-#endif /* __GNUC__ */
-
-#endif /* NO_ALLOCA */
-
-#ifndef ALLOCATE_LOCAL
-#define ALLOCATE_LOCAL(size) XtMalloc((unsigned long)(size))
-#define DEALLOCATE_LOCAL(ptr) XtFree((XtPointer)(ptr))
-#endif /* ALLOCATE_LOCAL */
 
 #endif /* _Xtos_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

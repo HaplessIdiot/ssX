@@ -1,5 +1,5 @@
-/* $XConsortium: FSlibInt.c,v 1.16 94/04/17 20:15:21 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: FSlibInt.c /main/18 1995/12/05 16:46:07 mor $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.0 1994/04/28 12:30:17 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -59,6 +59,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 #include <stdio.h>
 #include "FSlibint.h"
+#include <X11/Xos.h>
 
 static void _EatData32();
 
@@ -487,10 +488,10 @@ _FSReadPad(svr, data, size)
 	    size -= bytes_read;
 	    if ((iov[0].iov_len -= bytes_read) < 0) {
 		iov[1].iov_len += iov[0].iov_len;
-		iov[1].iov_base -= iov[0].iov_len;
+		iov[1].iov_base = (char *)iov[1].iov_base - iov[0].iov_len;
 		iov[0].iov_len = 0;
 	    } else
-		iov[0].iov_base += bytes_read;
+		iov[0].iov_base = (char *)iov[0].iov_base + bytes_read;
 	}
 	else if (ETEST()) {
 	    _FSWaitForReadable(svr);
@@ -923,6 +924,15 @@ _FSWireToEvent(svr, re, event)
 }
 
 
+static char *
+_SysErrorMsg(n)
+    int         n;
+{
+    char       *s = strerror(n);
+
+    return (s ? s : "no such error");
+}
+
 /*
  * _FSDefaultIOError - Default fatal system error reporting routine.  Called
  * when an X internal system error is encountered.
@@ -936,7 +946,7 @@ _FSDefaultIOError(svr)
 			WSAGetLastError(), strerror(WSAGetLastError()),
 #else
 
-		   errno, strerror(errno),
+		   errno, _SysErrorMsg(errno),
 #endif
 		   FSServerString(svr));
     (void) fprintf(stderr,

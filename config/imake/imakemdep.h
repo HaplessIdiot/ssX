@@ -1,5 +1,5 @@
-/* $XConsortium: imakemdep.h,v 1.83 95/04/07 19:47:46 kaleb Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.11 1995/06/14 06:31:16 dawes Exp $ */
+/* $XConsortium: imakemdep.h /main/91 1995/12/05 16:44:18 mor $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.12 1995/07/08 10:22:17 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -57,8 +57,16 @@ in this Software without prior written authorization from the X Consortium.
 #define imake_ccflags "-DSYSV"
 #endif
 
-#if defined(USL) || defined(Oki) || defined(NCR)
-#define imake_ccflags "-Xc -DSVR4"
+#if defined(USL) || defined(__USLC__) || defined(Oki) || defined(NCR)
+#define imake_ccflags "-Xa -DSVR4"
+#endif
+
+/* SCO may define __USLC__ so put this after the USL check */
+#if defined(M_UNIX) || defined(_SCO_DS)
+#ifdef imake_ccflags
+#undef imake_ccflags
+#endif
+#define imake_ccflags "-Dsco"
 #endif
 
 #ifdef sony
@@ -98,7 +106,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef SYSV386
 # ifdef SVR4
-#  define imake_ccflags "-Xc -DSVR4"
+#  define imake_ccflags "-Xa -DSVR4"
 # else
 #  define imake_ccflags "-DSYSV"
 # endif
@@ -106,7 +114,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef SVR4
 # ifdef i386
-#  define imake_ccflags "-Xc -DSVR4"
+#  define imake_ccflags "-Xa -DSVR4"
 # endif
 #endif
 
@@ -173,7 +181,7 @@ in this Software without prior written authorization from the X Consortium.
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(_CRAY) && !defined(Mips) && !defined(_SEQUENT_)
+#if defined(SYSV) && !defined(_CRAY) && !defined(Mips) && !defined(_SEQUENT_) && !defined(sco)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
@@ -188,7 +196,7 @@ in this Software without prior written authorization from the X Consortium.
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || (defined(AMOEBA) && defined(CROSS_COMPILE))
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE))
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32
@@ -219,7 +227,7 @@ in this Software without prior written authorization from the X Consortium.
 #if defined(_IBMR2) && !defined(DEFAULT_CPP)
 #define DEFAULT_CPP "/usr/lpp/X11/Xamples/util/cpp/cpp"
 #endif
-#if defined(sun) && defined(SVR4)
+#if defined(sun) && (defined(SVR4) || defined(__svr4__) || defined(__SVR4) || defined(__sol__))
 #define DEFAULT_CPP "/usr/ccs/lib/cpp"
 #endif
 #ifdef __bsdi__
@@ -289,7 +297,7 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(macII) || defined(_AUX_SOURCE)
 	"-DmacII",	/* Apple A/UX */
 #endif
-#ifdef USL
+#if defined(USL) || defined(__USLC__)
 	"-DUSL",	/* USL */
 #endif
 #ifdef sony
@@ -348,6 +356,12 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DSVR4",
 # endif
 #endif /* MOTOROLA */
+#if defined(M_UNIX) || defined(sco)
+	"-Dsco",
+# if defined(sco324)
+	"-Dsco324",
+# endif
+#endif
 #ifdef i386
 	"-Di386",
 # ifdef SVR4
@@ -444,7 +458,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DOki",
 #endif
 #ifdef sun
-#ifdef SVR4
+#if defined(SVR4) || defined(__svr4__) || defined(__SVR4) || defined(__sol__)
 	"-DSVR4",
 #endif
 #endif
@@ -665,6 +679,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __decc
 	{"__decc",  "1"},
+#endif
+#ifdef __unix__
+	{"__unix__", "1"},
 #endif
 #ifdef __uxp__
 	{"__uxp__", "1"},

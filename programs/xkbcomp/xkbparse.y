@@ -1,5 +1,4 @@
-/* $XConsortium: xkbparse.y,v 1.3 94/04/08 15:30:22 erik Exp $ */
-/* $XFree86$ */
+/* $XConsortium: xkbparse.y /main/5 1995/12/07 21:43:26 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -45,9 +44,20 @@
 	INTERPRET	22
 	ACTION		23
 	KEY		24
-	MODIFIER	25
-	MODIFIER_MAP	26
-	INDICATOR	27
+	ALIAS		25
+	GROUP		26
+	MODIFIER_MAP	27
+	INDICATOR	28
+	SHAPE		29
+	KEYS		30
+	ROW		31
+	SECTION		32
+	OVERLAY		33
+	TEXT		34
+	OUTLINE		35
+	SOLID		36
+	LOGO		37
+	VIRTUAL		38
 	EQUALS		40
 	PLUS		41
 	MINUS		42
@@ -65,9 +75,13 @@
 	EXCLAM		54
 	INVERT		55
 	STRING		60
-	NUMBER		61
-	IDENT		62
-	KEYNAME		63
+	INTEGER		61
+	FLOAT		62
+	IDENT		63
+	KEYNAME		64
+	PARTIAL		70
+	DEFAULT		71
+	HIDDEN		72
 %{
 #ifdef DEBUG
 #define	YYDEBUG 1
@@ -75,6 +89,7 @@
 #define	DEBUG_VAR parseDebug
 #include "xkbparse.h"
 #include <X11/keysym.h>
+#include <X11/extensions/XKBgeom.h>
 %}
 %right	EQUALS
 %left	PLUS MINUS
@@ -86,7 +101,7 @@
 	int		 ival;
 	unsigned	 uval;
 	char		*str;
-	StringToken	 sval;
+	Atom	 	sval;
 	ParseCommon	*any;
 	ExprDef		*expr;
 	VarDef		*var;
@@ -95,37 +110,69 @@
 	KeyTypeDef	*keyType;
 	SymbolsDef	*syms;
 	ModMapDef	*modMask;
-	ModCompatDef	*modCompat;
+	GroupCompatDef	*groupCompat;
 	IndicatorMapDef	*ledMap;
+	IndicatorNameDef *ledName;
 	KeycodeDef	*keyName;
+	KeyAliasDef	*keyAlias;
+	ShapeDef	*shape;
+	SectionDef	*section;
+	RowDef		*row;
+	KeyDef		*key;
+	OverlayDef	*overlay;
+	OverlayKeyDef	*olKey;
+	OutlineDef	*outline;
+	DoodadDef	*doodad;
 	XkbFile		*file;
 }
-%type <ival>	Number
+%type <ival>	Number Integer Float
 %type <uval>	XkbCompositeType FileType MergeMode OptMergeMode KeySym
-%type <str>	KeyName
-%type <sval>	FieldSpec Ident Element String OptString
+%type <uval>	DoodadType Flag Flags OptFlags
+%type <str>	KeyName MapName OptMapName
+%type <sval>	FieldSpec Ident Element String 
 %type <any>	DeclList Decl 
 %type <expr>	OptExprList ExprList Expr Term Lhs Terminal ArrayInit
-%type <expr>	OptKeySymList KeySymList Action ActionList 
+%type <expr>	OptKeySymList KeySymList Action ActionList Coord CoordList
 %type <var>	VarDecl VarDeclList SymbolsBody SymbolsVarDecl 
 %type <vmod>	VModDecl VModDefList VModDef
 %type <interp>	InterpretDecl InterpretMatch
 %type <keyType>	KeyTypeDecl
 %type <syms>	SymbolsDecl
 %type <modMask>	ModMapDecl
-%type <modCompat> ModCompatDecl
+%type <groupCompat> GroupCompatDecl
 %type <ledMap>	IndicatorMapDecl
+%type <ledName>	IndicatorNameDecl
 %type <keyName>	KeyNameDecl
+%type <keyAlias> KeyAliasDecl
+%type <shape>	ShapeDecl
+%type <section>	SectionDecl
+%type <row>	SectionBody SectionBodyItem
+%type <key>	RowBody RowBodyItem Keys Key 
+%type <overlay>	OverlayDecl
+%type <olKey>	OverlayKeyList OverlayKey
+%type <outline>	OutlineList OutlineInList
+%type <doodad>	DoodadDecl
 %type <file>	XkbFile XkbMapConfigList XkbMapConfig XkbConfig
+%type <file>	XkbCompositeMap XkbCompMapList
 %%
-XkbFile		:	XkbCompositeType OptString XkbMapConfigList
-			{ 
-			    rtrnValue=CreateXKBFile($1,$2,NULL);
-			    $$= (XkbFile *)AppendStmt(&rtrnValue->common,
-								&$3->common);
-			}
+XkbFile		:	XkbCompMapList
+			{ $$= rtrnValue= $1; }
+		|	XkbMapConfigList 
+			{ $$= rtrnValue= $1;  }
 		|	XkbConfig
 			{ $$= rtrnValue= $1; }
+		;
+
+XkbCompMapList	:	XkbCompMapList XkbCompositeMap
+			{ $$= (XkbFile *)AppendStmt(&$1->common,&$2->common); }
+		|	XkbCompositeMap
+			{ $$= $1; }
+		;
+
+XkbCompositeMap	:	OptFlags XkbCompositeType OptMapName OBRACE
+			    XkbMapConfigList
+			CBRACE SEMI
+			{ $$= CreateXKBFile($2,$3,&$5->common,$1); }
 		;
 
 XkbCompositeType:	XKB_KEYMAP	{ $$= XkmKeymapFile; }
@@ -139,14 +186,14 @@ XkbMapConfigList :	XkbMapConfigList XkbMapConfig
 			{ $$= $1; }
 		;
 
-XkbMapConfig	:	FileType OptString OBRACE
+XkbMapConfig	:	OptFlags FileType OptMapName OBRACE
 			    DeclList
 			CBRACE SEMI
-			{ $$= CreateXKBFile($1,$2,$4); }
+			{ $$= CreateXKBFile($2,$3,$5,$1); }
 		;
 
-XkbConfig	:	FileType OptString DeclList
-			{ $$= CreateXKBFile($1,$2,$3); }
+XkbConfig	:	OptFlags FileType OptMapName DeclList
+			{ $$= CreateXKBFile($2,$3,$4,$1); }
 		;
 
 
@@ -155,6 +202,19 @@ FileType	:	XKB_KEYCODES		{ $$= XkmKeyNamesIndex; }
 		|	XKB_COMPATMAP		{ $$= XkmCompatMapIndex; }
 		|	XKB_SYMBOLS		{ $$= XkmSymbolsIndex; }
 		|	XKB_GEOMETRY		{ $$= XkmGeometryIndex; }
+		;
+
+OptFlags	:	Flags			{ $$= $1; }
+		|				{ $$= NULL; }
+		;
+
+Flags		:	Flags Flag		{ $$= (($1)|($2)); }
+		|	Flag			{ $$= $1; }
+		;
+
+Flag		:	PARTIAL			{ $$= XkbLC_Partial; }
+		|	DEFAULT			{ $$= XkbLC_Default; }
+		|	HIDDEN			{ $$= XkbLC_Hidden; }
 		;
 
 DeclList	:	DeclList Decl
@@ -182,6 +242,11 @@ Decl		:	OptMergeMode VarDecl
 			    $2->merge= $1;
 			    $$= &$2->common;
 			}
+		|	OptMergeMode KeyAliasDecl
+			{
+			    $2->merge= $1;
+			    $$= &$2->common;
+			}
 		|	OptMergeMode KeyTypeDecl
 			{
 			    $2->merge= $1;
@@ -197,7 +262,7 @@ Decl		:	OptMergeMode VarDecl
 			    $2->merge= $1;
 			    $$= &$2->common;
 			}
-		|	OptMergeMode ModCompatDecl
+		|	OptMergeMode GroupCompatDecl
 			{
 			    $2->merge= $1;
 			    $$= &$2->common;
@@ -207,18 +272,29 @@ Decl		:	OptMergeMode VarDecl
 			    $2->merge= $1;
 			    $$= &$2->common;
 			}
-		|	MergeMode String
+		|	OptMergeMode IndicatorNameDecl
 			{
-			    IncludeStmt *incl;
-                            incl= uTypedAlloc(IncludeStmt);
-                            if (incl) {
-                                incl->common.stmtType= StmtInclude;
-                                incl->common.next= NULL;
-                                incl->merge= $1;
-                                incl->file= scanStr;
-                                scanStr= NULL;
-                            }
-                            $$= &incl->common;
+			    $2->merge= $1;
+			    $$= &$2->common;
+			}
+		|	OptMergeMode ShapeDecl
+			{
+			    $2->merge= $1;
+			    $$= &$2->common;
+			}
+		|	OptMergeMode SectionDecl
+			{
+			    $2->merge= $1;
+			    $$= &$2->common;
+			}
+		|	OptMergeMode DoodadDecl
+			{
+			    $2->merge= $1;
+			    $$= &$2->common;
+			}
+		|	MergeMode STRING
+			{
+			    $$= &IncludeCreate(scanStr,$1)->common;
                         }
 		;
 
@@ -237,6 +313,16 @@ KeyNameDecl	:	KeyName EQUALS Expr SEMI
 			    def= KeycodeCreate($1,$3);
 			    if ($1)
 				free($1);
+			    $$= def;
+			}
+		;
+
+KeyAliasDecl	:	ALIAS KeyName EQUALS KeyName SEMI
+			{ 
+			    KeyAliasDef	*def;
+			    def= KeyAliasCreate($2,$4); 
+			    if ($2)	free($2);	
+			    if ($4)	free($4);	
 			    $$= def;
 			}
 		;
@@ -287,7 +373,7 @@ KeyTypeDecl	:	TYPE String OBRACE
 SymbolsDecl	:	KEY KeyName OBRACE
 			    SymbolsBody
 			CBRACE SEMI
-			{ $$= SymbolsCreate($2,$4); }
+			{ $$= SymbolsCreate($2,(ExprDef *)$4); }
 		;
 
 SymbolsBody	:	SymbolsBody COMMA SymbolsVarDecl
@@ -314,8 +400,8 @@ ArrayInit	:	OBRACKET OptKeySymList CBRACKET
 			{ $$= ExprCreateUnary(ExprActionList,TypeAction,$2); }
 		;
 
-ModCompatDecl	:	MODIFIER Ident OBRACE VarDeclList CBRACE SEMI
-			{ $$= ModCompatCreate($2,$4); }
+GroupCompatDecl	:	GROUP Integer EQUALS Expr SEMI
+			{ $$= GroupCompatCreate($2,$4); }
 		;
 
 ModMapDecl	:	MODIFIER_MAP Ident OBRACE ExprList CBRACE SEMI
@@ -326,17 +412,152 @@ IndicatorMapDecl:	INDICATOR String OBRACE VarDeclList CBRACE SEMI
 			{ $$= IndicatorMapCreate($2,$4); }
 		;
 
+IndicatorNameDecl:	INDICATOR Integer EQUALS Expr SEMI
+			{ $$= IndicatorNameCreate($2,$4,False); }
+		|	VIRTUAL INDICATOR Integer EQUALS Expr SEMI
+			{ $$= IndicatorNameCreate($3,$5,True); }
+		;
+
+ShapeDecl	:	SHAPE String OBRACE OutlineList CBRACE SEMI
+			{ $$= ShapeDeclCreate($2,(OutlineDef *)&$4->common); }
+		;
+		|	SHAPE String OBRACE CoordList CBRACE SEMI
+			{ 
+			    OutlineDef *outlines;
+			    outlines= OutlineCreate(None,$4);
+			    $$= ShapeDeclCreate($2,outlines);
+			}
+		;
+
+SectionDecl	:	SECTION String OBRACE SectionBody CBRACE SEMI
+			{ $$= SectionDeclCreate($2,$4); }
+		;
+
+SectionBody	:	SectionBody SectionBodyItem
+			{ $$=(RowDef *)AppendStmt(&$1->common,&$2->common);}
+		|	SectionBodyItem
+			{ $$= $1; }
+		;
+
+SectionBodyItem	:	ROW OBRACE RowBody CBRACE SEMI
+			{ $$= RowDeclCreate($3); }
+		|	VarDecl
+			{ $$= (RowDef *)$1; }
+		|	DoodadDecl
+			{ $$= (RowDef *)$1; }
+		|	IndicatorMapDecl
+			{ $$= (RowDef *)$1; }
+		|	OverlayDecl
+			{ $$= (RowDef *)$1; }
+		;
+
+RowBody		:	RowBody RowBodyItem
+			{ $$=(KeyDef *)AppendStmt(&$1->common,&$2->common);}
+		|	RowBodyItem
+			{ $$= $1; }
+		;
+
+RowBodyItem	:	KEYS OBRACE Keys CBRACE SEMI
+			{ $$= $3; }
+		|	VarDecl
+			{ $$= (KeyDef *)$1; }
+		;
+
+Keys		:	Keys COMMA Key
+			{ $$=(KeyDef *)AppendStmt(&$1->common,&$3->common);}
+		|	Key
+			{ $$= $1; }
+		;
+
+Key		:	KeyName
+			{ $$= KeyDeclCreate($1,NULL); }
+		|	OBRACE ExprList CBRACE
+			{ $$= KeyDeclCreate(NULL,$2); }
+		;
+
+OverlayDecl	:	OVERLAY String OBRACE OverlayKeyList CBRACE SEMI
+			{ $$= OverlayDeclCreate($2,$4); }
+		;
+
+OverlayKeyList	:	OverlayKeyList COMMA OverlayKey
+			{ 
+			    $$= (OverlayKeyDef *)
+				AppendStmt(&$1->common,&$3->common);
+			};
+		|	OverlayKey
+			{ $$= $1; }
+		;
+
+OverlayKey	:	KeyName EQUALS KeyName
+			{ $$= OverlayKeyCreate($1,$3); }
+		;
+
+OutlineList	:	OutlineList COMMA OutlineInList
+			{ $$=(OutlineDef *)AppendStmt(&$1->common,&$3->common);}
+		|	OutlineInList
+			{ $$= $1; }
+		;
+
+OutlineInList	:	OBRACE CoordList CBRACE
+			{ $$= OutlineCreate(None,$2); }
+		|	Ident EQUALS OBRACE CoordList CBRACE
+			{ $$= OutlineCreate($1,$4); }
+		|	Ident EQUALS Expr
+			{ $$= OutlineCreate($1,$3); }
+		;
+
+CoordList	:	CoordList COMMA Coord
+			{ $$= (ExprDef *)AppendStmt(&$1->common,&$3->common); }
+		|	Coord
+			{ $$= $1; }
+		;
+
+Coord		:	OBRACKET Number COMMA Number CBRACKET
+			{
+			    ExprDef *expr;
+			    expr= ExprCreate(ExprCoord,TypeUnknown);
+			    expr->value.coord.x= $2;
+			    expr->value.coord.y= $4;
+			    $$= expr;
+			}
+		;
+
+DoodadDecl	:	DoodadType String OBRACE VarDeclList CBRACE SEMI
+			{ $$= DoodadCreate($1,$2,$4); }
+		;
+
+DoodadType	:	TEXT			{ $$= XkbTextDoodad; }
+		|	OUTLINE			{ $$= XkbOutlineDoodad; }
+		|	SOLID			{ $$= XkbSolidDoodad; }
+		|	LOGO			{ $$= XkbLogoDoodad; }
+		;
+
 FieldSpec	:	Ident			{ $$= $1; }
 		|	Element			{ $$= $1; }
 		;
 
-Element		:	ACTION			{ $$= stGetToken("action"); }
-		|	INTERPRET		{ $$= stGetToken("interpret"); }
-		|	TYPE			{ $$= stGetToken("type"); }
-		|	KEY			{ $$= stGetToken("key"); }
-		|	MODIFIER		{ $$= stGetToken("modifier"); }
-		|	MODIFIER_MAP		{$$=stGetToken("modifier_map");}
-		|	INDICATOR		{ $$= stGetToken("indicator"); }
+Element		:	ACTION		
+			{ $$= XkbInternAtom(NULL,"action",False); }
+		|	INTERPRET
+			{ $$= XkbInternAtom(NULL,"interpret",False); }
+		|	TYPE
+			{ $$= XkbInternAtom(NULL,"type",False); }
+		|	KEY
+			{ $$= XkbInternAtom(NULL,"key",False); }
+		|	GROUP
+			{ $$= XkbInternAtom(NULL,"group",False); }
+		|	MODIFIER_MAP
+			{$$=XkbInternAtom(NULL,"modifier_map",False);}
+		|	INDICATOR
+			{ $$= XkbInternAtom(NULL,"indicator",False); }
+		|	SHAPE	
+			{ $$= XkbInternAtom(NULL,"shape",False); }
+		|	ROW	
+			{ $$= XkbInternAtom(NULL,"row",False); }
+		|	SECTION	
+			{ $$= XkbInternAtom(NULL,"section",False); }
+		|	TEXT
+			{ $$= XkbInternAtom(NULL,"text",False); }
 		;
 
 OptMergeMode	:	MergeMode		{ $$= $1; }
@@ -360,30 +581,30 @@ ExprList	:	ExprList COMMA Expr
 		;
 
 Expr		:	Expr DIVIDE Expr
-			{ $$= ExprCreateBinary(OpDivide,TypeUnknown,$1,$3); }
+			{ $$= ExprCreateBinary(OpDivide,$1,$3); }
 		|	Expr PLUS Expr
-			{ $$= ExprCreateBinary(OpAdd,TypeUnknown,$1,$3); }
+			{ $$= ExprCreateBinary(OpAdd,$1,$3); }
 		|	Expr MINUS Expr
-			{ $$= ExprCreateBinary(OpSubtract,TypeUnknown,$1,$3); }
+			{ $$= ExprCreateBinary(OpSubtract,$1,$3); }
 		|	Expr TIMES Expr
-			{ $$= ExprCreateBinary(OpMultiply,TypeUnknown,$1,$3); }
+			{ $$= ExprCreateBinary(OpMultiply,$1,$3); }
 		|	Lhs EQUALS Expr
-			{ $$= ExprCreateBinary(OpAssign,TypeUnknown,$1,$3); }
+			{ $$= ExprCreateBinary(OpAssign,$1,$3); }
 		|	Term
 			{ $$= $1; }
 		;
 
 Term		:	MINUS Term
-			{ $$= ExprCreateUnary(OpNegate,TypeUnknown,$2); }
+			{ $$= ExprCreateUnary(OpNegate,$2->type,$2); }
 		|	PLUS Term
-			{ $$= ExprCreateUnary(OpUnaryPlus,TypeUnknown,$2); }
+			{ $$= ExprCreateUnary(OpUnaryPlus,$2->type,$2); }
 		|	EXCLAM Term
-			{ $$= ExprCreateUnary(OpNot,TypeUnknown,$2); }
+			{ $$= ExprCreateUnary(OpNot,TypeBoolean,$2); }
 		|	INVERT Term
-			{ $$= ExprCreateUnary(OpInvert,TypeUnknown,$2); }
+			{ $$= ExprCreateUnary(OpInvert,$2->type,$2); }
 		|	Lhs
 			{ $$= $1;  }
-		|	Ident OPAREN OptExprList CPAREN %prec OPAREN
+		|	FieldSpec OPAREN OptExprList CPAREN %prec OPAREN
 			{ $$= ActionCreate($1,$3); }
 		|	Terminal
 			{ $$= $1;  }
@@ -397,7 +618,7 @@ ActionList	:	ActionList COMMA Action
 			{ $$= $1; }
 		;
 
-Action		:	Ident OPAREN OptExprList CPAREN
+Action		:	FieldSpec OPAREN OptExprList CPAREN
 			{ $$= ActionCreate($1,$3); }
 		;
 
@@ -420,7 +641,7 @@ Lhs		:	FieldSpec
 			{
 			    ExprDef *expr;
 			    expr= ExprCreate(ExprArrayRef,TypeUnknown);
-			    expr->value.array.element= NullStringToken;
+			    expr->value.array.element= None;
 			    expr->value.array.field= $1;
 			    expr->value.array.entry= $3;
 			    $$= expr;
@@ -443,12 +664,19 @@ Terminal	:	String
                             expr->value.str= $1;
                             $$= expr;
 			}
-		|	Number
+		|	Integer
 			{
 			    ExprDef *expr;
                             expr= ExprCreate(ExprValue,TypeInt);
                             expr->value.ival= $1;
                             $$= expr;
+			}
+		|	Float
+			{
+			    ExprDef *expr;
+			    expr= ExprCreate(ExprValue,TypeFloat);
+			    expr->value.ival= $1;
+			    $$= expr;
 			}
 		|	KeyName
 			{
@@ -484,422 +712,55 @@ KeySym		:	IDENT
 				$$= NoSymbol;
 			    }
 			}
-		|	Number		{ $$= $1; }
+		|	SECTION
+			{
+			    KeySym sym;
+			    $$= XK_section;
+			}
+		|	Integer		
+			{
+			    if ($1<10)	$$= $1+'0';	/* XK_0 .. XK_9 */
+			    else	$$= $1;
+			}
 		;
 
-Number		:	NUMBER		{ $$= scanInt; }
+Number		:	FLOAT		{ $$= scanInt; }
+		|	INTEGER		{ $$= scanInt*XkbGeomPtsPerMM; }
+		;
+
+Float		:	FLOAT		{ $$= scanInt; }
+		;
+
+Integer		:	INTEGER		{ $$= scanInt; }
 		;
 
 KeyName		:	KEYNAME		{ $$= scanStr; scanStr= NULL; }
 		;
 
-Ident		:	IDENT		{ $$= stGetToken(scanStr); }
+Ident		:	IDENT	{ $$= XkbInternAtom(NULL,scanStr,False); }
+		|	DEFAULT { $$= XkbInternAtom(NULL,"default",False); }
 		;
 
-OptString	:	String		{ $$= $1; }
-		|			{ $$= NullStringToken; }
+String		:	STRING	{ $$= XkbInternAtom(NULL,scanStr,False); }
 		;
 
-String		:	STRING		{ $$= stGetToken(scanStr); }
+OptMapName	:	MapName	{ $$= $1; }
+		|		{ $$= NULL; }
+		;
+
+MapName		:	STRING 	{ $$= scanStr; scanStr= NULL; }
 		;
 %%
-static ExprDef *
-ExprCreate(op,type)
-    unsigned	op;
-    unsigned	type;
-{
-ExprDef *expr;
-    expr= uTypedAlloc(ExprDef);
-    if (expr) {
-	expr->common.stmtType= StmtExpr;
-	expr->common.next= NULL;
-	expr->op= op;
-	expr->type= type;
-    }
-    else {
-	uFatalError("Couldn't allocate expression in parser\n");
-	/* NOTREACHED */
-    }
-    return expr;
-}
-
-static ExprDef *
-ExprCreateUnary(op,type,child)
-    unsigned	 op;
-    unsigned	 type;
-    ExprDef	*child;
-{
-ExprDef *expr;
-    expr= uTypedAlloc(ExprDef);
-    if (expr) {
-	expr->common.stmtType= StmtExpr;
-	expr->common.next= NULL;
-	expr->op= op;
-	expr->type= type;
-	expr->value.child= child;
-    }
-    else {
-	uFatalError("Couldn't allocate expression in parser\n");
-	/* NOTREACHED */
-    }
-    return expr;
-}
-
-static ExprDef *
-ExprCreateBinary(op,type,left,right)
-    unsigned	 op;
-    unsigned	 type;
-    ExprDef	*left;
-    ExprDef	*right;
-{
-ExprDef *expr;
-    expr= uTypedAlloc(ExprDef);
-    if (expr) {
-	expr->common.stmtType= StmtExpr;
-	expr->common.next= NULL;
-	expr->op= op;
-	expr->type= type;
-	expr->value.binary.left= left;
-	expr->value.binary.right= right;
-    }
-    else {
-	uFatalError("Couldn't allocate expression in parser\n");
-	/* NOTREACHED */
-    }
-    return expr;
-}
-
-static KeycodeDef *
-KeycodeCreate(name,value)
-    char *	name;
-    ExprDef *	value;
-{
-KeycodeDef *def;
-
-    def= uTypedAlloc(KeycodeDef);
-    if (def) {
-	def->common.stmtType= StmtKeycodeDef;
-	def->common.next= NULL;
-	strncpy(def->name,name,4);
-	def->name[4]= '\0';
-	def->value= value;
-    }
-    else {
-	uFatalError("Couldn't allocate variable definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static VModDef *
-VModCreate(name,value)
-    StringToken	name;
-    ExprDef *	value;
-{
-VModDef *def;
-    def= uTypedAlloc(VModDef);
-    if (def) {
-	def->common.stmtType= StmtVModDef;
-	def->common.next= NULL;
-	def->name= name;
-	def->value= value;
-    }
-    else {
-	uFatalError("Couldn't allocate variable definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static VarDef *
-VarCreate(name,value)
-    ExprDef *	name;
-    ExprDef *	value;
-{
-VarDef *def;
-    def= uTypedAlloc(VarDef);
-    if (def) {
-	def->common.stmtType= StmtVarDef;
-	def->common.next= NULL;
-	def->name= name;
-	def->value= value;
-    }
-    else {
-	uFatalError("Couldn't allocate variable definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static VarDef *
-BoolVarCreate(nameToken,set)
-    StringToken	nameToken;
-    unsigned	set;
-{
-ExprDef	*name,*value;
-
-    name= ExprCreate(ExprIdent,TypeUnknown);
-    name->value.str= nameToken;
-    value= ExprCreate(ExprValue,TypeBoolean);
-    value->value.uval= set;
-    return VarCreate(name,value);
-}
-
-static InterpDef *
-InterpCreate(sym,match)
-    KeySym	sym;
-    ExprDef *	match;
-{
-InterpDef *def;
-
-    def= uTypedAlloc(InterpDef);
-    if (def) {
-	def->common.stmtType= StmtInterpDef;
-	def->common.next= NULL;
-	def->sym= sym;
-	def->match= match;
-    }
-    else {
-	uFatalError("Couldn't allocate interp definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static KeyTypeDef *
-KeyTypeCreate(name,body)
-    StringToken	name;
-    VarDef *	body;
-{
-KeyTypeDef *def;
-
-    def= uTypedAlloc(KeyTypeDef);
-    if (def) {
-	def->common.stmtType= StmtKeyTypeDef;
-	def->common.next= NULL;
-	def->merge= MergeDefault;
-	def->name= name;
-	def->body= body;
-    }
-    else {
-	uFatalError("Couldn't allocate key type definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static SymbolsDef *
-SymbolsCreate(keyName,symbols)
-    char *	keyName;
-    ExprDef *	symbols;
-{
-SymbolsDef *def;
-
-    def= uTypedAlloc(SymbolsDef);
-    if (def) {
-	def->common.stmtType= StmtSymbolsDef;
-	def->common.next= NULL;
-	def->merge= MergeDefault;
-	bzero(def->keyName,5);
-	strncpy(def->keyName,keyName,4);
-	def->symbols= symbols;
-    }
-    else {
-	uFatalError("Couldn't allocate symbols definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static ModCompatDef *
-ModCompatCreate(modifier,body)
-    StringToken	modifier;
-    VarDef *	body;
-{
-ModCompatDef *def;
-
-    def= uTypedAlloc(ModCompatDef);
-    if (def) {
-	def->common.stmtType= StmtModCompatDef;
-	def->common.next= NULL;
-	def->merge= MergeDefault;
-	def->modifier= modifier;
-	def->def= body;
-    }
-    else {
-	uFatalError("Couldn't allocate mod compat definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static ModMapDef *
-ModMapCreate(modifier,keys)
-    StringToken	modifier;
-    ExprDef *	keys;
-{
-ModMapDef *def;
-
-    def= uTypedAlloc(ModMapDef);
-    if (def) {
-	def->common.stmtType= StmtModMapDef;
-	def->common.next= NULL;
-	def->merge= MergeDefault;
-	def->modifier= modifier;
-	def->keys= keys;
-    }
-    else {
-	uFatalError("Couldn't allocate mod mask definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static IndicatorMapDef *
-IndicatorMapCreate(name,body)
-    StringToken	name;
-    VarDef *	body;
-{
-IndicatorMapDef *def;
-
-    def= uTypedAlloc(IndicatorMapDef);
-    if (def) {
-	def->common.stmtType= StmtIndicatorMapDef;
-	def->common.next= NULL;
-	def->merge= MergeDefault;
-	def->name= name;
-	def->body= body;
-    }
-    else {
-	uFatalError("Couldn't allocate mod mask definition in parser\n");
-	/* NOTREACHED */
-    }
-    return def;
-}
-
-static ExprDef *
-ActionCreate(name,args)
-    StringToken	 name;
-    ExprDef	*args;
-{
-ExprDef *act;
-
-    act= uTypedAlloc(ExprDef);
-    if (act) {
-	act->common.stmtType= StmtExpr;
-	act->common.next= NULL;
-	act->op= ExprActionDecl;
-	act->value.action.name= name;
-        act->value.action.args= args;
-	return act;
-    }
-    uFatalError("Couldn't allocate ActionDef in parser\n");
-    return NULL;
-}
-
-static ExprDef *
-CreateKeysymList(sym)
-    KeySym	sym;
-{
-ExprDef	 *def;
-
-    def= ExprCreate(ExprKeysymList,TypeSymbols);
-    if (def) {
-	def->value.list.nSyms= 1;
-	def->value.list.szSyms= 2;
-	def->value.list.syms= uTypedCalloc(2,KeySym);
-	if (def->value.list.syms!=NULL) {
-	    def->value.list.syms[0]= sym;
-	    return def;
-	}
-    }
-    uFatalError("Couldn't allocate expression for keysym list in parser\n");
-    return NULL;
-}
-
-static ExprDef *
-AppendKeysymList(list,sym)
-    ExprDef *	list;
-    KeySym	sym;
-{
-    if (list->value.list.nSyms>=list->value.list.szSyms) {
-	list->value.list.szSyms*=2;
-	list->value.list.syms= uTypedRealloc(list->value.list.syms,
-						list->value.list.szSyms,
-						KeySym);
-	if (list->value.list.syms==NULL) {
-	    uFatalError("Couldn't resize list of symbols for append\n");
-	    return NULL;
-	}
-    }
-    list->value.list.syms[list->value.list.nSyms++]= sym;
-    return list;
-}
-
-static ParseCommon *
-AppendStmt(to,append)
-    ParseCommon *	to;
-    ParseCommon *	append;
-{
-ParseCommon	*start= to;
-
-    while ((to!=NULL) && (to->next!=NULL)) {
-	to= to->next;
-    }
-    if (to) {
-	to->next= append;
-	return start;
-    }
-    return append;
-}
-
-static int
-LookupKeysym(str,sym_rtrn)
-    char	*str;
-    KeySym	*sym_rtrn;
-{
-KeySym sym;
-
-    if ((!str)||(uStrCaseCmp(str,"any")==0)||(uStrCaseCmp(str,"nosymbol")==0)) {
-	*sym_rtrn= NoSymbol;
-	return 1;
-    }
-    else if ((uStrCaseCmp(str,"none")==0)||(uStrCaseCmp(str,"voidsymbol")==0)) {
-	*sym_rtrn= XK_VoidSymbol;
-	return 1;
-    }
-    sym= XStringToKeysym(str);
-    if (sym!=NoSymbol) {
-	*sym_rtrn= sym;
-	return 1;
-    }
-    return 0;
-}
-
-#ifdef DEBUG
-void
-PrintStmtAddrs(stmt)
-    ParseCommon *	stmt;
-{
-    fprintf(stderr,"0x%x",stmt);
-    if (stmt) {
-	do {
-	    fprintf(stderr,"->0x%x",stmt->next);
-	    stmt= stmt->next;
-	} while (stmt);
-    }
-    fprintf(stderr,"\n");
-}
-#endif
-
 void
 yyerror(s)
 char	*s;
 {
-    (void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
+    if (warningLevel>0) {
+	(void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
 					(scanFile?scanFile:"(unknown)"));
-    if (scanStr)
-	(void)fprintf(stderr,"last scanned symbol is: %s\n",scanStr);
+	if ((scanStr)&&(warningLevel>3))
+	    (void)fprintf(stderr,"last scanned symbol is: %s\n",scanStr);
+    }
     return;
 }
 
@@ -910,41 +771,3 @@ yywrap()
    return(1);
 }
 
-int
-XKBParseFile(file,pRtrn)
-FILE 		 *file;
-XkbFile		**pRtrn;
-{
-    if (file) {
-	extern FILE *yyin;
-	yyin= file;
-	rtrnValue= NULL;
-	if (yyparse()==0) {
-	    *pRtrn= rtrnValue;
-	    return 1;
-	}
-	*pRtrn= NULL;
-	return 0;
-    }
-    *pRtrn= NULL;
-    return 1;
-}
-
-XkbFile *
-CreateXKBFile(type,name,defs)
-int		type;
-StringToken	name;
-ParseCommon *	defs;
-{
-XkbFile *file;
-static int	fileID;
-
-    file= uTypedAlloc(XkbFile);
-    if (file) {
-	file->type= type;
-	file->name= name;
-	file->defs= defs;
-	file->id= fileID++;
-    }
-    return file;
-}

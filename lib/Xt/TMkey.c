@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.29 95/06/22 15:39:05 kaleb Exp $ */
+/* $XConsortium: TMkey.c /main/30 1995/11/30 19:05:20 kaleb $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -539,6 +539,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
     Modifiers *modifiers_return;
     KeySym *keysym_return;
 #endif
+#ifndef XKB
 {
     XtPerDisplay pd;
     int per;
@@ -594,6 +595,13 @@ void XtTranslateKey(dpy, keycode, modifiers,
 	*keysym_return = NoSymbol;
     UNLOCK_APP(app);
 }
+#else
+{
+    XkbLookupKeySym(dpy, keycode, modifiers, modifiers_return, 
+						    keysym_return);
+    return;
+}
+#endif
 
 void XtSetKeyTranslator(dpy, translator)
 

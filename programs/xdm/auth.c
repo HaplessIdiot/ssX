@@ -1,5 +1,5 @@
-/* $XConsortium: auth.c /main/1.56.1/2 1995/10/26 17:35:48 gildea $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.10 1995/05/07 12:27:00 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.11 1995/11/02 00:29:38 dawes Exp $ */
+/* $XConsortium: auth.c /main/62 1995/12/19 16:44:07 mor $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -822,7 +822,7 @@ DefineSelf (fd, file, auth)
 
 #else
 
-#ifdef WINTCP
+#ifdef WINTCP /* NCR with Wollongong TCP */
 
 #include <sys/un.h>
 #include <stropts.h>
@@ -1030,6 +1030,8 @@ DefineSelf (fd, file, auth)
 #endif /* SIOCGIFCONF else */
 #endif /* WINTCP else */
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
+
+#endif /* WINTCP */
 
 
 static
@@ -1280,13 +1282,8 @@ SetUserAuthorization (d, verify)
 				    "XAUTHORITY", envname);
 	}
 	XauUnlockAuth (name);
-	if (envname) {
-#ifdef NGROUPS_MAX
-	    chown (envname, verify->uid, verify->groups[0]);
-#else
+	if (envname)
 	    chown (envname, verify->uid, verify->gid);
-#endif
-	}
     }
     Debug ("done SetUserAuthorization\n");
 }

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:05 gildea Exp $
-XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.1tsi Exp $
+XCOMM $XConsortium: Imakefile /main/23 1995/11/07 19:46:53 gildea $
+XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.2 1995/07/12 15:28:15 dawes Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -24,14 +24,40 @@ INC_DEFINES = $(PREINC_DEFINES) $(STDINC_DEFINES) $(POSTINC_DEFINES)
 OSUF = .Osuf
 OSUF_DEFINES = -DOBJSUFFIX=\"$(OSUF)\"
 MAIN_DEFINES = $(INC_DEFINES) $(SIGNAL_DEFINES) $(OSUF_DEFINES)
-INCLUDES = -I$(IMAKESRC)
+INCLUDES = -I$(IMAKESRC) -I$(TOP)/include
+
  DEPLIBS =
 
 #if defined(MacIIArchitecture) || defined(SequentArchitecture) || defined(i386ScoArchitecture)
  XBSDLIB = /**/
 #endif
 
-all:: ProgramTargetName(makedepend)
+AllTarget(ProgramTargetName(makedepend))
+
+/*
+ * bootstrapping: want to build the real makedepend
+ * only after we've run "make depend" here.  That way
+ * the program has the right dependencies for clearmake.
+ * Save the bootstrap original files so they can be winked in
+ * to other views.
+ */
+
+#if HasClearmake
+bootstrap:
+	$(MAKE) -f Makefile.proto makedepend
+	$(MAKE) -f Makefile.proto depend
+	test -d bootstrap || mkdir bootstrap
+	$(MV) *.o makedepend bootstrap
+	$(MAKE) -f Makefile.proto makedepend
+
+clean::
+	$(RM) -r bootstrap
+#else
+bootstrap:
+#endif /* HasClearmake */
+
+clean::
+	$(RM) Makefile.proto
 
 #undef InstallManPage
 #define InstallManPage(file,dest) /* as nothing */

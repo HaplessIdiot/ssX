@@ -1,5 +1,5 @@
-/* $XConsortium: Xlibint.h,v 11.143.1.1 95/06/19 19:33:25 gildea Exp $ */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.1 1995/06/14 07:07:12 dawes Exp $ */
+/* $XConsortium: Xlibint.h /main/110 1995/11/14 22:55:49 gildea $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.2 1995/07/08 10:23:58 dawes Exp $ */
 
 /*
 
@@ -47,6 +47,14 @@ from the X Consortium.
 
 #ifdef WIN32
 #define _XFlush _XFlushIt
+#endif
+
+/*
+ * If your BytesReadable correctly detects broken connections, then
+ * you should NOT define XCONN_CHECK_FREQ.
+ */
+#ifndef XCONN_CHECK_FREQ
+#define XCONN_CHECK_FREQ 256
 #endif
 
 struct _XGC
@@ -519,12 +527,12 @@ extern int errno;			/* Internal system error number. */
 #else
 #define MakeBigReq(req,n) \
     { \
-    long _BRdat; \
-    unsigned long _BRlen = req->length - 1; \
+    CARD32 _BRdat; \
+    CARD32 _BRlen = req->length - 1; \
     req->length = 0; \
-    _BRdat = ((long *)req)[_BRlen]; \
+    _BRdat = ((CARD32 *)req)[_BRlen]; \
     memmove(((char *)req) + 8, ((char *)req) + 4, _BRlen << 2); \
-    ((unsigned long *)req)[1] = _BRlen + n + 2; \
+    ((CARD32 *)req)[1] = _BRlen + n + 2; \
     Data32(dpy, &_BRdat, 4); \
     }
 #endif
@@ -681,7 +689,24 @@ extern int errno;			/* Internal system error number. */
 
 typedef struct _XInternalAsync {
     struct _XInternalAsync *next;
-    Bool (*handler)();
+    /*
+     * handler arguments:
+     * rep is the generic reply that caused this handler
+     * to be invoked.  It must also be passed to _XGetAsyncReply.
+     * buf and len are opaque values that must be passed to
+     * _XGetAsyncReply or _XGetAsyncData.
+     * data is the closure stored in this struct.
+     * The handler returns True iff it handled this reply.
+     */
+    Bool (*handler)(
+#if NeedNestedPrototypes
+		    Display*	/* dpy */,
+		    xReply*	/* rep */,
+		    char*	/* buf */,
+		    int		/* len */,
+		    XPointer	/* data */
+#endif
+		    );
     XPointer data;
 } _XAsyncHandler;
 

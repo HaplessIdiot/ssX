@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranstli.c,v 1.21 94/06/02 10:54:50 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xtranstli.c /main/26 1995/12/13 18:07:13 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.0 1995/07/07 15:33:12 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -55,10 +55,12 @@ from the X Consortium.
 
 #include <sys/un.h>
 #include <stropts.h>
+#include <poll.h>
 #include <tiuser.h>
 
 #include <netdir.h>
 #include <netconfig.h>
+
 
 /*
  * This is the TLI implementation of the X Transport service layer
@@ -1047,7 +1049,13 @@ struct t_call	*sndcall;
 	PRMSG(1, "TRANS(TLIConnect)() t_connect() failed\n", 0,0,0 );
 	PRMSG(1, "%s\n", t_errlist[t_errno], 0,0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	if (t_errno == TLOOK && t_look(ciptr->fd) == T_DISCONNECT)
+	{
+	    t_rcvdis(ciptr->fd,NULL);
+	    return TRANS_TRY_CONNECT_AGAIN;
+	}
+	else
+	    return TRANS_CONNECT_FAILED;
     }
     
     t_free((char *)sndcall,T_CALL);
@@ -1061,7 +1069,7 @@ struct t_call	*sndcall;
 	PRMSG(1,
 	      "TRANS(TLIConnect): TRANS(TLIGetAddr)() failed: %d\n",
 	      errno, 0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( TRANS(TLIGetPeerAddr)(ciptr) < 0 )
@@ -1069,21 +1077,21 @@ struct t_call	*sndcall;
 	PRMSG(1,
 	      "TRANS(TLIConnect): TRANS(TLIGetPeerAddr)() failed: %d\n",
 	      errno, 0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( ioctl(ciptr->fd, I_POP,"timod") < 0 )
     {
 	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_POP,\"timod\") failed %d\n",
 	      errno,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( ioctl(ciptr->fd, I_PUSH,"tirdwr") < 0 )
     {
 	PRMSG(1, "TRANS(TLIConnect)() ioctl(I_PUSH,\"tirdwr\") failed %d\n",
 	      errno,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     return 0;
@@ -1127,7 +1135,7 @@ char		*port;
     if( (sndcall=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_ALL)) == NULL )
     {
 	PRMSG(1, "TRANS(TLIINETConnect)() failed to allocate a t_call\n", 0,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( TRANS(TLIAddrToNetbuf)(ciptr->index, host, portbuf, &(sndcall->addr) ) < 0 )
@@ -1135,7 +1143,7 @@ char		*port;
 	PRMSG(1, "TRANS(TLIINETConnect)() unable to resolve name:%s.%s\n",
 	      host, portbuf, 0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     return TRANS(TLIConnect)(ciptr, sndcall );
@@ -1158,7 +1166,7 @@ char		*port;
     if( (sndcall=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_OPT|T_UDATA)) == NULL )
     {
 	PRMSG(1, "TRANS(TLITLIConnect)() failed to allocate a t_call\n", 0,0,0 );
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     if( (sunaddr=(struct sockaddr_un *)
@@ -1168,7 +1176,7 @@ char		*port;
 	      "TRANS(TLICreateListener): failed to allocate a sockaddr_un\n",
 	      0,0,0 );
 	t_free((char *)sndcall,T_CALL);
-	return -1;
+	return TRANS_CONNECT_FAILED;
     }
     
     sunaddr->sun_family=AF_UNIX;
@@ -1197,8 +1205,43 @@ XtransConnInfo	ciptr;
 BytesReadable_t	*pend;
 
 {
+    int ret;
+    struct pollfd filedes;
+
     PRMSG(2, "TRANS(TLIByteReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend );
+
+    /*
+     * This function should detect hangup conditions. Use poll to check
+     * if no data is present. On SVR4, the M_HANGUP message sits on the
+     * streams head, and ioctl(N_READ) keeps returning 0 because there is
+     * no data available. The hangup goes undetected, and the client hangs.
+     */
     
+    ret=ioctl(ciptr->fd, I_NREAD, (char *)pend);
+
+    if( ret != 0 )
+	return ret; /* Data present or error */
+
+
+    /* Zero data, or POLLHUP message */
+
+    filedes.fd=ciptr->fd;
+    filedes.events=POLLIN;
+
+    ret=poll(&filedes, 1, 0);
+ 
+    if( ret == 0 ) {
+	*pend=0;
+	return 0; /* Really, no data */
+	}
+
+    if( ret < 0 )
+	return -1; /* just pass back the error */
+
+    if( filedes.revents & (POLLHUP|POLLERR) ) /* check for hangup */
+	return -1;
+
+    /* Should only get here if data arrived after the first ioctl() */
     return ioctl(ciptr->fd, I_NREAD, (char *)pend);
 }
 
@@ -1267,6 +1310,14 @@ XtransConnInfo	ciptr;
 {
     PRMSG(2, "TRANS(TLIDisconnect)(%x->%d)\n", ciptr, ciptr->fd, 0 );
     
+    /*
+     * Restore the TLI modules so that the connection can be properly shutdown.
+     * This avoids the situation where a connection goes into the TIME_WAIT
+     * state, and the address remains unavailable for a while.
+     */
+    ioctl(ciptr->fd, I_POP,"tirdwr");
+    ioctl(ciptr->fd, I_PUSH,"timod");
+
     t_snddis(ciptr->fd,NULL);
     
     return 0;

@@ -1,30 +1,24 @@
-XCOMM $XConsortium: Imakefile,v 1.125 94/04/08 19:57:43 rws Exp $
-XCOMM $XFree86: xc/Imakefile,v 3.4 1995/06/24 10:20:51 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/132 1995/12/12 16:43:27 gildea $
+XCOMM $XFree86: xc/Imakefile,v 3.5 1995/06/24 13:40:03 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-RELEASE = "Release 6"
+RELEASE = "Release 6.1beta"
 #ifndef OSName
 #define OSName Unknown Operating System!
 #endif
 
-#if !BuildLBXProxyOnly
 #if !BuildServersOnly
 #if BuildFonts
         FONTSDIR = fonts
 #endif
-#if !defined(Win32Architecture)
-        WIPDIR = workInProgress
+#ifndef Win32Architecture
         DOCSDIR = doc
         NLSSUBDIR = nls
 #endif
 #endif
-        PROGRAMSDIR = programs
-#else
-        WIPDIR = workInProgress
-#endif
 
-        SUBDIRS = config include lib $(NLSSUBDIR) $(PROGRAMSDIR) $(WIPDIR) $(FONTSDIR) $(DOCSDIR)
+        SUBDIRS = include config lib $(NLSSUBDIR) $(FONTSDIR) $(DOCSDIR)
   LNINSTALLDIRS = lib
 
 #if HasParallelMake
@@ -40,6 +34,8 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
 DependSubdirs($(SUBDIRS))
+
+#define IHaveSpecialMakefileTarget
 
 #ifndef Win32Architecture
 #ifndef OS2Architecture
@@ -58,29 +54,7 @@ clean::
 	$(RM) -r $(BUILDINCDIR)
 	$(RM) -r $(BUILDLIBDIR)
 
-      WORLDOPTS = -k $(PARALLELOPTS)
-
-XCOMM do not name your log file make.log when you run this ...
-World::
-	@echo ""
-	@echo Building $(RELEASE) of the X Window System.
-	@echo ""
-	@date
-	@echo ""
-	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini clean; $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
-	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) VerifyOS
-	$(MAKE) $(MFLAGS) Makefiles
-	$(MAKE) $(MFLAGS) clean
-	$(MAKE) $(MFLAGS) includes
-	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
-	@echo ""
-	@date
-	@echo ""
-	@echo Full build of $(RELEASE) of the X Window System complete.
-	@echo ""
+      MAKE_OPTS = -f xmakefile
 
 Everything::
 	@echo ""
@@ -88,13 +62,17 @@ Everything::
 	@echo ""
 	@date
 	@echo ""
-	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
-	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) Makefiles
-	$(MAKE) $(MFLAGS) includes
-	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	cd $(IMAKESRC) && if [ -f Makefile ]; then \
+	    $(MAKE) $(MFLAGS) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
+	else \
+	    $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; \
+	fi
+	-$(RM) xmakefile.bak; $(MV) xmakefile xmakefile.bak
+	$(MAKE) $(MFLAGS) xmakefile
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) Makefiles
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) includes
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) depend
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
 	@echo ""
 	@date
 	@echo ""
@@ -103,7 +81,7 @@ Everything::
 
 XCOMM clean out link tree looking for stuff that should get checked in
 dangerous_strip_clean::
-	make -k clean
+	$(MAKE) -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
@@ -123,28 +101,6 @@ clean::
 	$(RM) -r $(BUILDINCDIR)
 	$(RM) -r $(BUILDLIBDIR)
 
-XCOMM do not name your log file make.log when you run this ...
-World::
-	@echo :
-	@echo Building $(RELEASE) of the X Window System on OS/2
-	@echo :
-	@echo :
-	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini clean.os2 
-	\indir $(IMAKESRC) $(MAKE) $(MFLAGS) SHELL= -f Makefile.ini BOOTSTRAPCFLAGS=-Zexe
-	if exist Makefile.bak del Makefile.bak
-	if exist MAkefile ren Makefile Makefile.bak
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) SHELL= VerifyOS
-	$(MAKE) $(MFLAGS) SHELL= Makefiles
-	$(MAKE) $(MFLAGS) SHELL= clean
-	$(MAKE) $(MFLAGS) SHELL= includes
-	$(MAKE) $(MFLAGS) SHELL= depend
-	$(MAKE) $(MFLAGS)
-	@echo :
-	@echo :
-	@echo Full build of $(RELEASE) of the X Window System complete.
-	@echo :
-
 Everything::
 	@echo :
 	@echo Building $(RELEASE) of the X Window System on OS/2
@@ -162,7 +118,7 @@ Everything::
 	$(MAKE) $(MFLAGS)
 	@echo :
 	@echo :
-	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo Rebuild of $(RELEASE) of the X Window System complete.
 	@echo :
 
 #ifdef ProjectRoot
@@ -176,7 +132,7 @@ install::
 	MakeDir($(subst /,\,$(LIBDIR)))
 
 #endif
-#else /* Win32Architecture */
+#else /* not Win32Architecture else */
 VerifyOS::
 	@echo :
 	@echo Building on OSName.
@@ -192,31 +148,6 @@ clean::
 	RmTreeCmd $(BUILDINCDIR:/=\)
 	RmTreeCmd $(BUILDLIBDIR:/=\)
 
-      WORLDOPTS = -i
-
-XCOMM do not name your log file make.log when you run this ...
-World World.Win32::
-	@echo :
-	@echo Building $(RELEASE) of the X Window System.
-	@echo :
-	@echo :
-	cd $(IMAKESRC)
-	$(MAKE) $(MFLAGS) -f Makefile.ini clean.Win32
-	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
-	cd ..\..
-	RMoveToBakFile(Makefile)
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) VerifyOS
-	$(MAKE) $(MFLAGS) Makefiles
-	$(MAKE) $(MFLAGS) clean
-	$(MAKE) $(MFLAGS) includes
-	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
-	@echo :
-	@echo :
-	@echo Full build of $(RELEASE) of the X Window System complete.
-	@echo :
-
 Everything::
 	@echo :
 	@echo Rebuilding $(RELEASE) of the X Window System.
@@ -225,12 +156,12 @@ Everything::
 	cd $(IMAKESRC)
 	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
 	cd ..\..
-	RMoveToBakFile(Makefile)
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	$(MAKE) $(MFLAGS) Makefiles
-	$(MAKE) $(MFLAGS) includes
-	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	RMoveToBakFile(xmakefile)
+	$(MAKE) $(MFLAGS) xmakefile
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) Makefiles
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) includes
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) depend
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Rebuild of $(RELEASE) of the X Window System complete.
@@ -246,4 +177,12 @@ install::
 	MakeDir($(USRLIBDIR:/=\))
 	MakeDir($(LIBDIR:/=\))
 
+#endif /* not Win32Architecture else */
+
+#ifndef MakeManKeywords
+#define MakeManKeywords YES	/* install.man rebuilds "man -k" database? */
 #endif
+
+#undef BootstrapCleanSubdirs
+#define BootstrapCleanSubdirs 'BOOTSTRAPSUBDIRS=$(BOOTSTRAPSUBDIRS)'
+BOOTSTRAPSUBDIRS = imake makedepend

@@ -1,5 +1,10 @@
-XCOMM platform:  $XFree86$
+#if 1
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.7 1995/07/12 15:27:36 dawes Exp $
 
+/*
+ * This is the XFree86 version of sco.cf.  The new one from R6.1beta is
+ * below
+ */
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
  *****************************************************************************/
@@ -11,9 +16,9 @@ XCOMM platform:  $XFree86$
 /* You must manually compute BootstrapCFlags for initial build */
 
 #ifdef i386Sco324Architecture
-# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO -DSCO324
+# define BootstrapCFlags	-DSYSV -Di386 -DSCO -DSCO324
 #else
-# define BootstrapCFlags	-DSYSV -DSYSV386 -DSCO
+# define BootstrapCFlags	-DSYSV -Di386 -DSCO
 #endif
 
 #define	OSMinorVersion	2
@@ -47,6 +52,8 @@ XCOMM platform:  $XFree86$
 # define CompressManCmd pack
 #endif /* ! i386Sco324Architecture */
 
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+
 /*
  *	XBSDLIB is included with the Socket libraries, because SCO
  *	needs Xbsd as its bcopy routine doesn't handle overlapping
@@ -59,7 +66,7 @@ XCOMM platform:  $XFree86$
 #define ManSourcePath		$(MANPATH)/cat.
 
 #if ScoOsMouse
-# define	ServerExtraDefines	-DUSE_OSMOUSE
+# define	ServerExtraDefines	-DUSE_OSMOUSE XFree86ServerDefines
 # define	LocalLibraries		-lmalloc -lpt -levent
 #else
 # define	LocalLibraries		-lmalloc -lpt
@@ -67,8 +74,23 @@ XCOMM platform:  $XFree86$
 
 #define Malloc0ReturnsNull		YES
 #define RemoveDSDENroffMacros   NO
+#define ServerExtraSysLibs		$(CBRT) -lm
+
+#ifndef CompressManPages
 #define CompressManPages        YES
-#define ServerExtraSysLibs		$(CBRT)
+#endif
+
+/*
+ *	The user should override this in their
+ *	site.def if they have the real crypt library,
+ *	we default to the international crypt library
+ *	here as anyone may obtain that
+ */
+
+#ifndef HasLibCrypt
+#define	HasLibCrypt				YES
+#define	SpecialLibCrypt			-lcrypt_i
+#endif
 
 /*
  * due to the extra '.' chars in the SCO man pages file name we have
@@ -80,9 +102,83 @@ install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f3,4 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
         $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
-        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
+        (cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
+        $$i.$${SUFFIX})); \                                             @@\
         done)
 
 #include <svr3.cf>
 
+#else
+
+/* This is the new sco.cf from R6.1beta */
+
+XCOMM platform:  $XConsortium: sco.cf /main/2 1995/12/18 11:27:15 mor $
+
+#ifndef OSName
+#define OSName			SCO OpenServer Release 5
+#endif
+#ifndef OSVendor
+#define OSVendor		SCO
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion		5
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion		0
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion		0
+#endif
+
+#if OSMajorVersion < 5 		/* Must be 3.2v4 (not fully tested) */
+#define StandardDefines		-Dsco -Dsco324 -DSYSV -Di386
+#else
+#define StandardDefines		-Dsco -DSYSV -Di386
+#define DefaultCCOptions	-b elf
+#endif
+
+#define CcCmd			cc
+#define NeedWidePrototypes	NO
+#define ServerExtraDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV
+#define ServerOSDefines		-DDDXTIME -DDDXOSINIT -DSERVER_LOCK
+#define ToolkitStringsABIOptions -intelabi
+#define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define ExtraLibraries		-lsocket 
+#define ExtraLoadOptions   	-b elf 
+#define ThreadedX		NO
+#define HasThreadSafeAPI	NO
+#define HasNdbm                 YES
+#define HasVFork                YES
+#define ExecableScripts         YES
+#define HasShadowPasswd		YES
+
+
+XCOMM Uncomment the following line to build static COFF libraries
+XCOMM #define ForceNormalLib		YES 
+#define SharedLibXmu		NO
+
+#define XnestServer		YES
+
+#define SystemV			YES
+#define LdCombineFlags		-r 
+
+#define AlternateUsrLibDir 	NO
+#define HasLdRunPath		YES
+#define HasPoll			YES
+#define PatheticCpp		YES
+#define Malloc0ReturnsNull	YES		/* in case -lmalloc used */
+
+#define	ArCmdBase	ar
+#define	AsCmd		as
+#define	CppCmd		/lib/cpp
+#define	LdCmd		ld
+#define	LexCmd		lex
+#define	MakeCmd		make
+#define	YaccCmd		yacc
+
+#define ConnectionFlags	-DUNIXCONN -DLOCALCONN -DTCPCONN -DFD_SETSIZE=256
+
+#include <scoLib.rules>  /* minor changes to sv4Lib.rules */
+#include <sv4Lib.rules>
+
+#endif

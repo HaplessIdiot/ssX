@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.82.1.1 95/06/29 13:56:28 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.85 95/06/16 19:25:22 kaleb Exp $ */
 
 /***********************************************************
 
@@ -78,11 +78,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if !defined(USE_POLL)
-#include "fd.h"
-#else
-#include <sys/poll.h>
-#endif
+#include <X11/Xpoll.h>
 
 typedef struct _TimerEventRec {
         struct timeval        te_timer_value;
@@ -121,9 +117,9 @@ typedef struct _WorkProcRec {
 typedef struct 
 {
 #ifndef USE_POLL
-  	Fd_set rmask;
-	Fd_set wmask;
-	Fd_set emask;
+  	fd_set rmask;
+	fd_set wmask;
+	fd_set emask;
 #endif
 	int	nfds;
 } FdStruct;

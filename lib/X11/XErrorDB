@@ -1,16 +1,30 @@
-! $XConsortium: XErrorDB,v 1.25 94/04/13 18:11:43 gildea Exp $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.3 1995/12/02 05:03:19 dawes Exp $
-! Copyright 1993 Massachusetts Institute of Technology
-!
-! Permission to use, copy, modify, distribute, and sell this software and
-! its documentation for any purpose is hereby granted without fee, provided
-! that the above copyright notice appear in all copies and that both that
-! copyright notice and this permission notice appear in supporting
-! documentation, and that the name of M.I.T. not be used in advertising or
-! publicity pertaining to distribution of the software without specific,
-! written prior permission.  M.I.T. makes no representations about the
-! suitability of this software for any purpose.  It is provided "as is"
-! without express or implied warranty.
+! $XConsortium: XErrorDB /main/33 1995/12/09 15:44:40 kaleb $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.4 1995/12/09 11:04:03 dawes Exp $
+! Copyright (c) 1993, 1995  X Consortium
+! 
+! Permission is hereby granted, free of charge, to any person obtaining
+! a copy of this software and associated documentation files (the
+! "Software"), to deal in the Software without restriction, including
+! without limitation the rights to use, copy, modify, merge, publish,
+! distribute, sublicense, and/or sell copies of the Software, and to
+! permit persons to whom the Software is furnished to do so, subject to
+! the following conditions:
+! 
+! The above copyright notice and this permission notice shall be
+! included in all copies or substantial portions of the Software.
+! 
+! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+! EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+! MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+! IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+! OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+! ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+! OTHER DEALINGS IN THE SOFTWARE.
+! 
+! Except as contained in this notice, the name of the X Consortium shall
+! not be used in advertising or otherwise to promote the sale, use or
+! other dealings in this Software without prior written authorization
+! from the X Consortium.
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -161,7 +175,7 @@ XProtoError.14: BadIDChoice (invalid resource ID chosen for this connection)
 XProtoError.15: BadName (named color or font does not exist)
 XProtoError.16: BadLength (poly request too large or internal Xlib length error)
 XProtoError.17: BadImplementation (server does not implement operation)
-! Multi-Buffering extension, a draft X Consortium standard
+! Multi-Buffering extension, not an X Consortium standard
 XRequest.Multi-Buffering.0: X_MbufGetBufferVersion
 XRequest.Multi-Buffering.1: X_MbufCreateImageBuffers
 XRequest.Multi-Buffering.2: X_MbufDestroyImageBuffers
@@ -184,7 +198,7 @@ XRequest.SHAPE.5: X_ShapeQueryExtents
 XRequest.SHAPE.6: X_ShapeSelectInput
 XRequest.SHAPE.7: X_ShapeInputSelected
 XRequest.SHAPE.8: X_ShapeGetRectangles
-! Input extension, a draft X Consortium standard
+! Input extension, an X Consortium standard
 XRequest.XInputExtension.1:X_GetExtensionVersion
 XRequest.XInputExtension.2:X_ListInputDevices
 XRequest.XInputExtension.3:X_OpenDevice
@@ -367,13 +381,13 @@ XProtoError.X3D-PEX.13: PEXStructureError
 XlibMessage.X3D-PEX.13: Structure id in failed request:  0x%lx
 XProtoError.X3D-PEX.14: PEXOutputCommandError
 XlibMessage.X3D-PEX.14: Resource id in failed request:  0x%lx
-! XTEST extension
+! XTEST extension, an X Consortium standard
 XRequest.XTEST.0: X_XTestGetVersion
 XRequest.XTEST.1: X_XTestCompareCursor
 XRequest.XTEST.2: X_XTestFakeInput
-! BIG-REQUESTS extension
+! BIG-REQUESTS extension, an X Consortium standard
 XRequest.BIG-REQUESTS.0: X_BigReqEnable
-! XIE extension
+! XIE extension, an X Consortium standard
 XRequest.XIE.1: XIE_QueryImageExtension
 XRequest.XIE.2: XIE_QueryTechniques
 XRequest.XIE.3: XIE_CreateColorList
@@ -414,7 +428,7 @@ XProtoError.XIE.5: XIE_ROIError
 XlibMessage.XIE.5: ROI in failed request:  0x%lx
 XProtoError.XIE.6: XIE_FloError
 XlibMessage.XIE.6: Photoflo in failed request:  0x%lx
-! SYNC extension
+! SYNC extension, an X Consortium standard
 XRequest.SYNC.0: X_SyncInitialize
 XRequest.SYNC.1: X_SyncListSystemCounters
 XRequest.SYNC.2: X_SyncCreateCounter
@@ -449,13 +463,17 @@ XRequest.XKEYBOARD.11: XkbSetCompatMap
 XRequest.XKEYBOARD.12: XkbGetIndicatorState
 XRequest.XKEYBOARD.13: XkbGetIndicatorMap
 XRequest.XKEYBOARD.14: XkbSetIndicatorMap
-XRequest.XKEYBOARD.15: XkbGetNames
-XRequest.XKEYBOARD.16: XkbSetNames
-XRequest.XKEYBOARD.17: XkbListAlternateSyms
-XRequest.XKEYBOARD.18: XkbGetAlternateSyms
-XRequest.XKEYBOARD.19: XkbSetAlternateSyms
-XRequest.XKEYBOARD.20: XkbGetGeometry
-XRequest.XKEYBOARD.21: XkbSetGeometry
+XRequest.XKEYBOARD.15: XkbGetNamedIndicator
+XRequest.XKEYBOARD.16: XkbSetNamedIndicator
+XRequest.XKEYBOARD.17: XkbGetNames
+XRequest.XKEYBOARD.18: XkbSetNames
+XRequest.XKEYBOARD.19: XkbGetGeometry
+XRequest.XKEYBOARD.20: XkbSetGeometry
+XRequest.XKEYBOARD.21: XkbPerClientFlags
+XRequest.XKEYBOARD.22: XkbListComponents
+XRequest.XKEYBOARD.23: XkbGetKbdByName
+XRequest.XKEYBOARD.24: XkbGetDeviceInfo
+XRequest.XKEYBOARD.25: XkbSetDeviceInfo
 XRequest.XKEYBOARD.101: XkbSetDebuggingFlags
 XProtoError.XKEYBOARD.0: XkbBadKeyboard
 XlibMessage.XKEYBOARD.0: Device id in failed request:  0x%lx
@@ -476,13 +494,16 @@ XRequest.GLX.15: X_GLXDestroyGLXPixmap
 XRequest.GLX.14: X_GLXGetVisualConfigs
 XRequest.GLX.16: X_GLXVendorPrivate
 XRequest.GLX.17: X_GLXVendorPrivateWithReply
+XRequest.GLX.18: X_GLXQueryExtensionsString
+XRequest.GLX.19: X_GLXQueryServerString
+XRequest.GLX.20: X_GLXClientInfo
 ! GL Non-rendering Commands
 XRequest.GLX.103: X_GLXDeleteLists
 XRequest.GLX.102: X_GLXEndList
 XRequest.GLX.105: X_GLXFeedbackBuffer
 XRequest.GLX.108: X_GLXFinish
 XRequest.GLX.142: X_GLXFlush
-XRequest.GLX.104: X_GLXGenLists
+XRequest.GLX.104: X_GLXGenList
 XRequest.GLX.112: X_GLXGetBooleanv
 XRequest.GLX.113: X_GLXGetClipPlane
 XRequest.GLX.114: X_GLXGetDoublev
@@ -533,18 +554,20 @@ XProtoError.GLX.5: GLXBadCurrentWindow
 XProtoError.GLX.6: GLXBadRenderRequest
 XProtoError.GLX.7: GLXBadLargeRequest
 XProtoError.GLX.8: GLXUnsupportedPrivateRequest
-! XC-MISC extension
+! XC-MISC extension, an X Consortium standard
 XRequest.XC-MISC.0: XCMiscGetVersion
 XRequest.XC-MISC.1: XCMiscGetXIDRange
 ! RECORD extension
 XRequest.RECORD.0: XRecordQueryVersion
-XRequest.RECORD.1: XRecordCreateConfig
-XRequest.RECORD.2: XRecordFreeConfig
-XRequest.RECORD.3: XRecordChangeConfig
-XRequest.RECORD.4: XRecordGetConfig
-XRequest.RECORD.5: XRecordEnableConfig
-XRequest.RECORD.6: XRecordDisableConfig
-XProtoError.RECORD.0: XRecordBadConfiguration
+XRequest.RECORD.1: XRecordCreateContext
+XRequest.RECORD.2: XRecordRegisterClients
+XRequest.RECORD.3: XRecordUnregisterClients
+XRequest.RECORD.4: XRecordGetContext
+XRequest.RECORD.5: XRecordEnableContext
+XRequest.RECORD.6: XRecordDisableContext
+XRequest.RECORD.7: XRecordFreeContext
+XProtoError.RECORD.0: XRecordBadContext
+XlibMessage.RECORD.0: Context in failed request:  0x%lx
 ! XFree86-VidModeExtension  -- not an X Consortium standard
 XRequest.XFree86-VidModeExtension.0: XF86VidModeQueryVersion
 XRequest.XFree86-VidModeExtension.1: XF86VidModeGetModeLine
@@ -566,3 +589,21 @@ XRequest.XFree86-DGA.2: XF86DGAGetViewPort
 XRequest.XFree86-DGA.3: XF86DGASetViewPort
 XRequest.XFree86-DGA.4: XF86DGAGetVidPage
 XRequest.XFree86-DGA.5: XF86DGASetVidPage
+! XFree86-DGA  -- not an X Consortium standard
+XRequest.XFree86-DGA.0: XF86DGAGetVideoLL
+XRequest.XFree86-DGA.1: XF86DGADirectVideo
+XRequest.XFree86-DGA.2: XF86DGAGetViewPort
+XRequest.XFree86-DGA.3: XF86DGASetViewPort
+XRequest.XFree86-DGA.4: XF86DGAGetVidPage
+XRequest.XFree86-DGA.5: XF86DGASetVidPage
+! DOUBLE-BUFFER (DBE), an X Consortium standard
+XRequest.DOUBLE-BUFFER.0: DBEGetVersion
+XRequest.DOUBLE-BUFFER.1: DBEAllocateBackBufferName
+XRequest.DOUBLE-BUFFER.2: DBEDeallocateBackBufferName
+XRequest.DOUBLE-BUFFER.3: DBESwapBuffers
+XRequest.DOUBLE-BUFFER.4: DBEBeginIdiom
+XRequest.DOUBLE-BUFFER.5: DBEEndIdiom
+XRequest.DOUBLE-BUFFER.6: DBEGetVisualInfo
+XRequest.DOUBLE-BUFFER.7: DBEGetBackBufferAttributes
+XProtoError.DOUBLE-BUFFER.0: DBEBadBuffer  (invalid BackBuffer parameter)
+XlibMessage.DOUBLE-BUFFER.0: BackBuffer in failed request:  0x%lx

@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.139.1.1 95/06/19 18:22:21 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.21 1995/07/19 12:36:51 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf /main/148 1995/12/14 15:31:52 matt $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.22 1995/09/22 07:06:33 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -18,14 +18,14 @@ XCOMM operating system:  OSName
 #endif
 #else
 #ifndef OSName
-#define OSName            SunOS 5.3
+#define OSName            SunOS 5.4
 #endif
 XCOMM operating system:  OSName
 #ifndef OSMajorVersion
 #define OSMajorVersion    5
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion    3
+#define OSMinorVersion    4
 #endif
 #ifndef	OSTeenyVersion
 #define OSTeenyVersion    0
@@ -135,18 +135,6 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
-/*
- * Gnu g++ 2.6.0 cannot build working C++ shared libraries under Solaris 2
- */
-#if HasGcc2ForCplusplus && OSMajorVersion > 4
-#ifndef SharedLibFresco
-#define SharedLibFresco NO
-#endif
-#ifndef SharedLibXtf
-#define SharedLibXtf NO
-#endif
-#endif
-
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
 #define BootstrapCFlags   -DNOSTDHDRS
@@ -220,10 +208,10 @@ XCOMM operating system:  OSName
 #if HasSunCplusplus || HasCenterLineCplusplus
 #define PositionIndependentCplusplusFlags -pic
 #endif
-#else
+#else /* not OSMajorVersion > 4 */
 #define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
-#endif
+#endif /* OSMajorVersion > 4 (else) */
 
 #define HasNdbm		  YES
 #define HasShm		  YES
@@ -257,38 +245,34 @@ XCOMM operating system:  OSName
 #endif
 
 #if HasGcc
-#if OSMajorVersion > 4 && defined(i386Architecture)
-#ifndef DefaultCCOptions
-#if UseInstalled
-#define DefaultCCOptions -DNO_ASM
-#else
-#if OSMinorVersion > 3
-#define DefaultCCOptions -ansi -pedantic -DNO_ASM
-#else
-#define DefaultCCOptions -DNO_ASM
-#endif
-#endif
-#endif
-#endif
-#if HasGcc2
-#ifdef UseInstalled
-#if defined(i386Architecture)
-#define OptimizedCDebugFlags DefaultGcc2i386Opt
-#else
-#define OptimizedCDebugFlags -O2
-#endif
-#else
-#define OptimizedCDebugFlags -O
-#endif
-#else
-#define SharedLibraryCcCmd cc
-#define ExtraLoadFlags -B/usr/bin/
-#define AllocateLocalDefines /**/
+# if OSMajorVersion > 4 && defined(i386Architecture)
+#  ifndef DefaultCCOptions
+#   if UseInstalled
+#    define DefaultCCOptions -DNO_ASM
+#   else
+#    if OSMinorVersion > 3
+#     define DefaultCCOptions -ansi -pedantic -DNO_ASM
+#    else
+#     define DefaultCCOptions -DNO_ASM
+#    endif
+#   endif
+#  endif
+# endif
+# if HasGcc2
+#  ifdef i386Architecture
+#    define OptimizedCDebugFlags DefaultGcc2i386Opt
+#  else
+#   define OptimizedCDebugFlags -O2
+#  endif
+# else
+#  define SharedLibraryCcCmd cc
+#  define ExtraLoadFlags -B/usr/bin/
+#  define AllocateLocalDefines /**/
 
 .c.o:
-	$(CC) -c $(CFLAGS) $*.c
+	ClearmakeOSName	$(CC) -c $(CFLAGS) $*.c
 
-#endif /* HasGcc2 (else) */
+# endif /* HasGcc2 (else) */
 #else /* not HasGcc */
 
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
@@ -343,8 +327,14 @@ XCOMM operating system:  OSName
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
 #define LibraryCCOptions /* don't want special floating point */
-#endif
+#endif /* OSMajorVersion < 5 */
 
 #if OSMajorVersion > 4
 #include <svr4.cf>
+#endif
+
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	catman -M $(DESTDIR)manpath -w
 #endif

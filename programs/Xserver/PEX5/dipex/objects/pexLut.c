@@ -1,5 +1,5 @@
-/* $XConsortium: pexLut.c,v 5.4 94/04/17 20:36:08 hersh Exp $ */
-/* $XFree86$ */
+/* $XConsortium: pexLut.c,v 5.5 94/09/09 20:32:50 hersh Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexLut.c,v 3.0 1995/07/07 15:36:02 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -405,6 +405,98 @@ pexDeleteTableEntriesReq 	*strmPtr;
     return( err );
 
 } /* end-PEXDeleteTableEntries() */
+
+/*++	PEXChangeTableValues
+ --*/
+ErrorCode
+PEXChangeTableValues (cntxtPtr, strmPtr)
+pexContext		*cntxtPtr;	/* context pointer 	*/
+pexChangeTableValuesReq	*strmPtr;	/* stream pointer 	*/
+{
+    ErrorCode err = Success;
+    diLUTHandle pf = 0;
+
+    LU_TABLE(strmPtr->lut, pf);
+    CHECK_FP_FORMAT(strmPtr->fpFormat);
+
+    /*
+	If this is a font table, lookup font id's and stuff pointers into
+	the that longword, so ddpex gets its handles instead of ids.
+     */
+    if  ( (pf->lutType == PEXTextFontLUT) && 
+	  (strmPtr->TableMask == PEXLUTVTextFontGroup) )
+    {
+	int i, j;
+	diFontHandle fh;
+	pexTextFontEntry *ptfe = (pexTextFontEntry *)(strmPtr + 1);
+ 	    pexFont *ptr = (pexFont *)(ptfe + 1);
+ 	    for (j=0; j<ptfe->numFonts; j++, ptr++) {
+ 		LU_PEXFONT(*ptr, fh);
+ 		*ptr = (pexFont) fh;
+ 	    }
+    }
+
+    /* call to change table values routine goes here, this is a shell
+	for this routine but should contain all necessary information
+	to process the request
+
+    err = ChangeTableValues ( pf, strmPtr->length, strmPtr->index,
+			      strmPtr->TableMask, (ddPointer)(strmPtr + 1));
+    */
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+    return( err );
+
+} /* end-PEXChangeTableValues() */
+
+/*++	PEXGetTableValues
+ --*/
+ErrorCode
+PEXGetTableValues( cntxtPtr, strmPtr )
+pexContext 	 	*cntxtPtr;
+pexGetTableValuesReq 	*strmPtr;
+{
+    ErrorCode err = Success;
+    diLUTHandle pf;
+    ddULONG numValues;
+    ddUSHORT status;
+    extern ddBuffer *pPEXBuffer;
+
+    CHECK_FP_FORMAT(strmPtr->fpFormat);
+    LU_TABLE(strmPtr->lut, pf);
+
+    SETUP_INQ(pexGetTableValuesReply);
+
+    /* Place holder for ddpex interface
+    err =  GetLUTValues( pf, strmPtr->index, strmPtr->TableMask,
+			 strmPtr->valueType, &numValues, &status, pPEXBuffer);
+    */
+
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    /*
+     * If this is a font table, we have to convert font handles to font ids.
+     */
+
+    if  ( (pf->lutType == PEXTextFontLUT) && 
+	  (strmPtr->TableMask == PEXLUTVTextFontGroup) )
+    {
+	int i, j;
+	pexTextFontEntry *ptfe = (pexTextFontEntry *)(pPEXBuffer->pBuf);
+ 	    pexFont *ptr = (pexFont *)(ptfe + 1);
+ 	    for (j=0; j<ptfe->numFonts; j++, ptr++)
+ 		*ptr = ((diFontHandle) *ptr)->id;
+    }
+
+    {
+	SETUP_VAR_REPLY(pexGetTableValuesReply);
+	reply->tableType = pf->lutType;
+	reply->numValues = numValues;
+	reply->status = status;
+	WritePEXBufferReply(pexGetTableValuesReply);
+    }
+    return( err );
+
+} /* end-PEXGetTableValues() */
 /*++
  *
  *	End of File

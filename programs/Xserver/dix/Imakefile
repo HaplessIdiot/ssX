@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.47 94/11/21 18:27:00 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.4 1995/05/27 03:00:19 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.48 95/05/18 20:36:02 dpw Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.5 1995/11/04 11:29:08 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -43,12 +43,12 @@ DEFAULTDISPLAYCLASS = DefaultDisplayClass
 
 #ifdef XVendorString
 VENDORSTRING = XVendorString
-   VENDOR_STRING = -DVENDOR_STRING='$(VENDORSTRING)'
+   VENDOR_STRING = -DVENDOR_STRING=\"$(VENDORSTRING)\"
 #endif
 
 #ifdef XVendorRelease
 VENDORRELEASE = XVendorRelease
-   VENDOR_RELEASE = -DVENDOR_RELEASE='$(VENDORRELEASE)'
+   VENDOR_RELEASE = -DVENDOR_RELEASE=$(VENDORRELEASE)
 #endif
 
 #if HasKrb5
@@ -58,8 +58,6 @@ VENDORRELEASE = XVendorRelease
 SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB) $(SITE_DISPLAY_CLASS)
 
 VENDOR_DEFINES = $(VENDOR_STRING) $(VENDOR_RELEASE)
-
-DEFINES = $(LBXCOMPAT_DEFINES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
@@ -71,38 +69,6 @@ SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(main,$(ICONFIGFILES),$(VENDOR_DEFINES))
 
-#ifndef LinkDirectory
-#if !BuildLBX
 InstallLinkKitLibrary(dix,$(LINKKITDIR)/lib)
-#else
-InstallLinkKitNamedLibrary(dix,dixlbx,$(LINKKITDIR)/lib)
-#endif
-#endif
-
-#ifdef LinkDirectory
-LinkSourceFile(atom.c,LinkDirectory)
-LinkSourceFile(colormap.c,LinkDirectory)
-LinkSourceFile(cursor.c,LinkDirectory)
-LinkSourceFile(devices.c,LinkDirectory)
-LinkSourceFile(dispatch.c,LinkDirectory)
-LinkSourceFile(dixfonts.c,LinkDirectory)
-LinkSourceFile(dixutils.c,LinkDirectory)
-LinkSourceFile(events.c,LinkDirectory)
-LinkSourceFile(extension.c,LinkDirectory)
-LinkSourceFile(gc.c,LinkDirectory)
-LinkSourceFile(globals.c,LinkDirectory)
-LinkSourceFile(glyphcurs.c,LinkDirectory)
-LinkSourceFile(grabs.c,LinkDirectory)
-LinkSourceFile(initatoms.c,LinkDirectory)
-LinkSourceFile(main.c,LinkDirectory)
-LinkSourceFile(pixmap.c,LinkDirectory)
-LinkSourceFile(privates.c,LinkDirectory)
-LinkSourceFile(property.c,LinkDirectory)
-LinkSourceFile(resource.c,LinkDirectory)
-LinkSourceFile(swaprep.c,LinkDirectory)
-LinkSourceFile(swapreq.c,LinkDirectory)
-LinkSourceFile(tables.c,LinkDirectory)
-LinkSourceFile(window.c,LinkDirectory)
-#endif
 
 DependTarget()

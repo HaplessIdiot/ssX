@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xconsole.c,v 1.21 95/01/05 21:04:06 kaleb Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.6 1995/09/17 06:32:30 dawes Exp $
+ * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.7 1995/09/23 01:18:18 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -147,7 +147,7 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
-#if defined(SVR4) || (defined(SYSV) && defined(i386))
+#if (defined(SVR4) && !defined(sun)) || (defined(SYSV) && defined(i386))
 #define USE_OSM
 #include <signal.h>
 FILE *osm_pipe();
@@ -825,6 +825,13 @@ get_pty (pty, tty, ttydev, ptydev)
 #endif
 #endif
 
+#ifdef USL
+#define OSM_DEVICE      "/dev/osm2"
+#define NO_READAHEAD
+#else
+#define OSM_DEVICE      "/dev/osm"
+#endif
+
 FILE *
 osm_pipe()
 {
@@ -843,8 +850,9 @@ osm_pipe()
     char cbuf[128];
 
     skip = 0;
-#ifndef NO_READAHEAD
     osm = open("/dev/osm1", O_RDONLY);
+#ifndef NO_READAHEAD
+    osm = open(OSM_DEVICE, O_RDONLY);
     if (osm >= 0) {
 	while ((nbytes = read(osm, cbuf, sizeof(cbuf))) > 0)
 	    skip += nbytes;

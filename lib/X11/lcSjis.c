@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.14 95/06/26 20:41:49 kaleb Exp $ */
+/* $XConsortium: lcSjis.c /main/18 1995/11/18 16:58:54 kaleb $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -125,7 +125,6 @@ sjis_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
     XLCd lcd = (XLCd)conv->state;
 
     register int chr_len = 0;
-    register int outbuf = 0;
     register int shift_mult = 0;
     register Uint chrcode = 0;
 
@@ -274,7 +273,6 @@ sjis_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
     XLCd lcd = (XLCd)conv->state;
     CodeSet codeset;
-    Ulong wc_encoding_mask = XLC_GENERIC(lcd, wc_encode_mask);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
 
 
@@ -483,7 +481,6 @@ sjis_mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    XLCd lcd = (XLCd) conv->state;
     char *tmp_from, *tmp_to;
     int tmp_from_left, tmp_to_left;
     XlcCharSet charset, tmp_charset;
@@ -551,7 +548,6 @@ sjis_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     CodeSet codeset;
     Ulong wc_encoding;
     int buf_len = *to_left;
-    int unconv_num = 0;
     int wcstr_len = *from_left;
 
 
@@ -656,7 +652,6 @@ sjis_cstombs(conv, from, from_left, to, to_left, args, num_args)
     CodeSet codeset;
     EncodingType type;
     int cvt_length = 0;
-    CodeSet *codesets = XLC_GENERIC(lcd, codeset_list); 
 
 
     if (num_args < 1)
@@ -781,8 +776,13 @@ typedef struct _StateRec {
     CTData charset;
 } StateRec, *State;
 
-static enum { CT_STD, CT_NSTD, CT_DIR, CT_EXT0, CT_EXT1, CT_EXT2, CT_VER }
-		ct_types;
+#define CT_STD  0
+#define CT_NSTD 1
+#define CT_DIR  2
+#define CT_EXT0 3
+#define CT_EXT1 4
+#define CT_EXT2 5
+#define CT_VER  6
 
 static CTDataRec ctdata[] =
 {
@@ -816,8 +816,11 @@ static CTDataRec ctdata[] =
 
 static CTData ctdptr[sizeof(ctdata) / sizeof(CTDataRec)];
 static CTData ctd_endp = ctdata + ((sizeof(ctdata) / sizeof(CTDataRec))) - 1;
-static enum { Ascii, Kanji, Kana, Userdef } cs_nums;
 
+#define Ascii   0
+#define Kanji   1
+#define Kana    2
+#define Userdef 3
 
 /*
  * initCTptr(): Set ctptr[] to point at ctdata[], indexed by codeset_num.
@@ -1020,7 +1023,7 @@ sjis_wcstocts(conv, from, from_left, to, to_left, args, num_args)
     wchar_t  wch;
     register length;
     Uchar tmp;
-    Uchar t1 = 0, t2;
+    Uchar t1 = 0;
     int num_conv;
 
     StateRec ct_state;
@@ -1028,9 +1031,7 @@ sjis_wcstocts(conv, from, from_left, to, to_left, args, num_args)
     CTData charset;
     CodeSet codeset;
     int unconv_num = 0;
-    Ulong wc_encoding_mask = XLC_GENERIC(lcd, wc_encode_mask);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
-
 
 /* Initial State: */
     ct_state.GL_charset = ctdptr[0]; /* Codeset 0 */
@@ -1215,9 +1216,15 @@ sjis_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	clen = length;
+	if (ctdp->side == XlcGL || isrightside (*inbufptr)) {
+	    clen = length;
+	} else {
+	    clen = 1;
+	    *from_left += length - clen;
+	}
 	do {
-	    *outbufptr++ = *inbufptr++;
+	    Uchar mask = (length == 2) ? GL : -1;
+	    *outbufptr++ = *inbufptr++ & mask;
 	} while (--clen);
 
 	if (length >= 2)
@@ -1327,12 +1334,16 @@ sjis_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 #if !defined(__sony_news)  ||  defined(SVR4)
-	wc_encoding = (ctdp == ctdptr[Kana] && isleftside(*inbufptr)) ?
-	    ctdptr[Ascii]->wc_encoding : ctdp->wc_encoding;
-
-	shift_mult = length - 1;
+	if (ctdp->side == XlcGL || isrightside (*inbufptr)) {
+	    clen = length;
+	    wc_encoding = ctdp->wc_encoding;
+	} else {
+	    clen = 1;
+	    *from_left += length - clen;
+	    wc_encoding = ctdptr[Ascii]->wc_encoding;
+	}
+	shift_mult = clen - 1;
 	wch = (wchar_t)0;
-	clen = length;
 
 	do {
 	    wc_tmp = BIT8OFF(*inbufptr++) << (wc_shift_bits * shift_mult);
@@ -1519,7 +1530,6 @@ _XlcSjisLoader(name)
     char *name;
 {
     XLCd lcd;
-    CodeSet *codeset_list;
 
     lcd = _XlcCreateLC(name, _XlcGenericMethods);
     if (lcd == NULL)

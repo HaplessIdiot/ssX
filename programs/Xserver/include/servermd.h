@@ -47,8 +47,8 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.73 95/01/09 20:56:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.7 1995/01/28 16:15:35 dawes Exp $ */
+/* $XConsortium: servermd.h /main/55 1995/11/30 17:26:01 dpw $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.8 1995/06/02 10:28:28 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -158,14 +158,6 @@ SOFTWARE.
 
 #endif /* sun && !(i386 && SVR4) */
 
-#ifdef apollo
-
-#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
-#define BITMAP_BIT_ORDER	MSBFirst
-#define	GLYPHPADBYTES		2
-#define GETLEFTBITS_ALIGNMENT	4
-
-#endif /* apollo */
 
 #if defined(AIXV3)
 
@@ -353,8 +345,33 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst
 #define BITMAP_BIT_ORDER	MSBFirst
+
+#if (_MIPS_SZLONG == 64)
+
+# define GLYPHPADBYTES		4
+# define GETLEFTBITS_ALIGNMENT	1
+
+/* pad scanline to a longword */
+#define BITMAP_SCANLINE_UNIT			64
+
+#define BITMAP_SCANLINE_PAD 			64
+#define LOG2_BITMAP_PAD				6
+#define LOG2_BYTES_PER_SCANLINE_PAD		3
+
+/* Add for handling protocol XPutImage and XGetImage; see comment below */
+#define INTERNAL_VS_EXTERNAL_PADDING
+#define BITMAP_SCANLINE_UNIT_PROTO		32
+
+#define BITMAP_SCANLINE_PAD_PROTO 	 	32
+#define LOG2_BITMAP_PAD_PROTO			5
+#define LOG2_BYTES_PER_SCANLINE_PAD_PROTO	2
+
+#else
+
 #define GLYPHPADBYTES		2
 #define GETLEFTBITS_ALIGNMENT	4
+
+#endif
 
 #define AVOID_MEMORY_READ
 #define FAST_CONSTANT_OFFSET_MODE

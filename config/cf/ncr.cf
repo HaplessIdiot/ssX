@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.21 95/06/09 20:57:00 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.12 1995/06/14 05:16:40 dawes Exp $
+XCOMM platform:  $XConsortium: ncr.cf /main/24 1995/11/28 10:20:57 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.13 1995/06/17 12:06:47 dawes Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName
@@ -14,7 +14,7 @@ XCOMM
 XCOMM These flags build correctly on SVR4/MP-RAS 3.0. If building on
 XCOMM SVR4/MP-RAS 2.X, you must add -DWINTCP to StandardDefines
 XCOMM
-#define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
+#define StandardDefines		-DSVR4 -DNCR -Di386
 #define DefaultCCOptions	-Xa -Hnocopyr -W0,-asm
 #define DefaultCDebugFlags	-O3
 #define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
@@ -54,13 +54,11 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
 #define ManSourcePath		$(MANPATH)/g
 #define XmanSearchPath		/usr/catman
 
-#undef	TblCmd
 #define	TblCmd /usr/ucb/tbl
-#undef	EqnCmd
 #define	EqnCmd /usr/ucb/eqn
-          COL = /usr/bin/col
-         NEQN = /usr/ucb/neqn
-        NROFF = /usr/ucb/nroff -Tlp
+#define ColCmd /usr/bin/col
+#define NeqnCmd /usr/ucb/neqn
+#define NroffCmd /usr/ucb/nroff -Tlp
 
 /*
  * Man pages need to be formatted when installed, so override the default
@@ -72,7 +70,7 @@ all:: file.z								@@\
 file.z:: file.man							@@\
 	@if [ -f file.man ]; \						@@\
 	then \								@@\
-	cat file.man | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.man; \	@@\
+	cat file.man | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.man; \	@@\
 	$(RM) /tmp/$$$$.man.z; \					@@\
 	pack -f /tmp/$$$$.man; \					@@\
 	cp /tmp/$$$$.man.z file.z; \					@@\
@@ -94,10 +92,10 @@ install.man::                                                           @@\
 #define InstallMultipleManSuffix(list,dest,suff)                        @@\
 install.man:: 								@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	MakeFlagsToShellFlags(i,set +e); \				@@\
 	for i in list; do \                                             @@\
 	  (set -x; \							@@\
-	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.suff; \	@@\
+	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.suff; \	@@\
 	  pack -f /tmp/$$$$.suff; \					@@\
 	  $(INSTALL) -c $(INSTMANFLAGS) /tmp/$$$$.suff.z $(DESTDIR)dest/$$i.z; \	@@\
 	  $(RM) /tmp/$$$$.suff.z); \						@@\
@@ -108,7 +106,7 @@ install.man:: 								@@\
 
 #define InstallManPageAliases(file,destdir,aliases)                     @@\
 install.man:: 								@@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
+	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	for i in aliases; do \                                          @@\
 		(set -x; \						@@\
 		$(RM) $(DESTDIR)destdir/$$i.z;\  			@@\

@@ -20,8 +20,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.33 94/04/17 20:25:40 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: dixstruct.h /main/30 1995/12/08 13:33:28 dpw $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.0 1994/12/25 12:36:41 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -48,6 +48,12 @@ typedef struct _TimeStamp {
 #endif
 
 extern CallbackListPtr ClientStateCallback;
+
+typedef struct {
+    ClientPtr 		client;
+    xConnSetupPrefix 	*prefix; 
+    xConnSetup  	*setup;
+} NewClientInfoRec;
 
 typedef enum {ClientStateInitial,
 	      ClientStateAuthenticating,
@@ -94,6 +100,8 @@ typedef struct _Client {
 #ifdef XKB
     unsigned short xkbClientFlags;
     unsigned short mapNotifyMask;
+    KeyCode	minKC;
+    KeyCode	maxKC;
 #endif
 
 #ifdef DEBUG
@@ -103,7 +111,17 @@ typedef struct _Client {
 #if defined(LBX) || defined(LBX_COMPAT)
     ClientPublicRec public;
     int         lbxIndex;
+
+    char	*largeReqBuf;		/* When the server gets an
+					   LbxBeginLargeRequest, it allocates
+					   a large request buffer for the
+					   client */
+    CARD32	largeReqTotLen;		/* The total length (in 4 byte units)
+					   of the large request */
+    CARD32	largeReqLenRead;	/* The bytes read thus far (in 4
+					   byte units) */
 #endif
+    unsigned long replyBytesRemaining;
 }           ClientRec;
 
 typedef struct _WorkQueue {

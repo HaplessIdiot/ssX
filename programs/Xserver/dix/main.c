@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.30 94/04/17 20:26:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.2 1994/12/17 09:42:55 dawes Exp $ */
+/* $XConsortium: main.c,v 5.33 95/04/07 18:59:06 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.3 1994/12/29 09:41:44 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -67,8 +67,8 @@ SOFTWARE.
 #include "site.h"
 #include "dixfont.h"
 
-extern long defaultScreenSaverTime;
-extern long defaultScreenSaverInterval;
+extern CARD32 defaultScreenSaverTime;
+extern CARD32 defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultScreenSaverAllowExposures;
 
@@ -197,7 +197,7 @@ main(argc, argv)
     char	*argv[];
 {
     int		i, j, k;
-    long	alwaysCheckForInput[2];
+    HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restart.  Probably this is because we jumped through
      * uninitialized pointer */
@@ -361,7 +361,7 @@ main(argc, argv)
 
 	xfree(ConnectionInfo);
     }
-    exit(0);
+    return(0);
 }
 
 static int padlength[4] = {0, 3, 2, 1};

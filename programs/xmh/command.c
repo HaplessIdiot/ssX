@@ -1,5 +1,5 @@
-/* $XConsortium: command.c,v 2.47 94/05/14 19:10:18 rws Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.1 1994/05/22 06:57:22 dawes Exp $ */
+/* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.2 1994/06/28 12:33:31 dawes Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -29,6 +29,7 @@
 /* command.c -- interface to exec mh commands. */
 
 #include "xmh.h"
+#include <X11/Xpoll.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 #ifndef SYSV
@@ -36,21 +37,6 @@
 #endif	/* SYSV */
 #ifdef SVR4
 #include <sys/filio.h>
-#endif
-#ifdef SYSV
-#ifdef _IBMR2
-#include <sys/select.h>
-#endif
-#endif
-
-#ifdef MINIX
-#include <sys/nbio.h>
-
-typedef struct
-{
-	long fds_bits[2];
-} fd_set;
-#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 /* number of user input events to queue before malloc */
@@ -63,16 +49,6 @@ typedef struct
 #include <vfork.h>
 #endif
 #endif
-
-#ifndef FD_SET
-#define NFDBITS         (8*sizeof(fd_set))
-#define FD_SETSIZE      NFDBITS
-#define FD_SET(n, p)    ((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
-#define FD_CLR(n, p)    ((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
-#define FD_ISSET(n, p)  ((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
-#define FD_ZERO(p)      bzero((char *)(p), sizeof(*(p)))
-#endif /* FD_SET */
-
 
 typedef struct _CommandStatus {
     Widget	popup;		 /* must be first; see PopupStatus */
@@ -97,7 +73,8 @@ static void SystemError(text)
     char* text;
 {
     char msg[BUFSIZ];
-    sprintf( msg, "%s; errno = %d %s", text, errno, strerror(errno));
+    sprintf( msg, "%s; errno = %d %s", text, errno, 
+	     strerror(errno));
     XtWarning( msg );
 }
 
@@ -263,8 +240,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 		readfds = fds;
                 if (childdone) break;
 DEBUG("blocking.\n")
-		(void) select(num_fds, (int *) &readfds,
-			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
+		(void) Select(num_fds, &readfds, NULL, NULL, NULL);
 DEBUG1("unblocked; child%s done.\n", childdone ? "" : " not")
 		if (childdone) break;
 		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))

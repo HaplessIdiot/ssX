@@ -1,5 +1,5 @@
-/* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.9 1995/11/12 09:54:30 dawes Exp $ */
+/* $XConsortium: utils.c /main/121 1995/12/19 14:11:06 matt $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.10 1995/11/30 13:05:42 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -130,12 +130,7 @@ extern Bool defeatAccessControl;
 Bool CoreDump;
 Bool noTestExtensions;
 
-Bool noXkbExtension = 
-#ifdef XKB
-    FALSE;
-#else
-    TRUE;
-#endif
+Bool noXkbExtension = TRUE;
 
 int auditTrailLevel = 1;
 
@@ -490,8 +485,9 @@ void UseMsg()
     ErrorF("-fp string             default font path\n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
-    ErrorF("-kb                    disable XKB extension\n");
 #ifdef XKB
+    ErrorF("-kb                    disable XKB extension\n");
+    ErrorF("+kb                    enable XKB extension\n");
     XkbUseMsg();
 #endif
 #ifdef RLIMIT_DATA
@@ -704,13 +700,15 @@ char	*argv[];
 	    UseMsg();
 	    exit(0);
 	}
+#ifdef XKB
 	else if ( strcmp( argv[i], "-kb") == 0)
 	{
-#ifdef XKB
 	    noXkbExtension = TRUE;
-#endif
 	}
-#ifdef XKB
+	else if ( strcmp( argv[i], "+kb") == 0)
+	{
+	    noXkbExtension = FALSE;
+	}
         else if ( (skip=XkbProcessArguments(argc,argv,i))!=0 ) {
 	    if (skip>0)
 		 i+= skip-1;
@@ -804,7 +802,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
-		TimeOutValue = ((long)atoi(argv[i])) * MILLI_PER_SECOND;
+		TimeOutValue = ((CARD32)atoi(argv[i])) * MILLI_PER_SECOND;
 	    else
 		UseMsg();
 	}
@@ -1127,7 +1125,7 @@ Xrealloc (ptr, amount)
 	    free(ptr);
 	return (unsigned long *)NULL;
     }
-    amount = (amount + 3) & ~3;
+    amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
     if (ptr)
         ptr = (pointer)realloc((char *)ptr, amount);
     else

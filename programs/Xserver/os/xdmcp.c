@@ -1,5 +1,5 @@
-/* $XConsortium: xdmcp.c,v 1.31 94/06/03 17:21:13 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.5 1994/12/17 10:09:26 dawes Exp $ */
+/* $XConsortium: xdmcp.c /main/33 1995/12/08 13:54:21 kaleb $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.6 1995/05/07 12:25:29 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -34,6 +34,7 @@
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"
+#include "Xpoll.h"
 #include "osdep.h"
 #include "input.h"
 #include "dixstruct.h"
@@ -50,8 +51,8 @@
 #include "Xdmcp.h"
 
 extern char *display;
-extern FdSet EnabledDevices;
-extern FdSet AllClients;
+extern fd_set EnabledDevices;
+extern fd_set AllClients;
 extern char *defaultDisplayClass;
 
 static int		    xdmcpSocket, sessionSocket;
@@ -621,13 +622,13 @@ XdmcpBlockHandler(data, wt, pReadmask)
     struct timeval  **wt;
     pointer	    pReadmask;
 {
-    FdMask *LastSelectMask = (FdMask *)pReadmask;
+    fd_set *LastSelectMask = (fd_set*)pReadmask;
     CARD32 millisToGo, wtMillis;
     static struct timeval waittime;
 
     if (state == XDM_OFF)
 	return;
-    BITSET(LastSelectMask, xdmcpSocket);
+    FD_SET(xdmcpSocket, LastSelectMask);
     if (timeOutTime == 0)
 	return;
     millisToGo = GetTimeInMillis();
@@ -665,27 +666,27 @@ XdmcpWakeupHandler(data, i, pReadmask)
     int	    i;
     pointer pReadmask;
 {
-    FdMask  *LastSelectMask = (FdMask *)pReadmask;
-    FdSet   devicesReadable;
+    fd_set* LastSelectMask = (fd_set*)pReadmask;
+    fd_set   devicesReadable;
 
     if (state == XDM_OFF)
 	return;
     if (i > 0)
     {
-	if (GETBIT(LastSelectMask, xdmcpSocket))
+	if (FD_ISSET(xdmcpSocket, LastSelectMask))
 	{
 	    receive_packet();
-	    BITCLEAR(LastSelectMask, xdmcpSocket);
+	    FD_CLR(xdmcpSocket, LastSelectMask);
 	} 
-	MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
-	if (ANYSET(devicesReadable))
+	XFD_ANDSET(&devicesReadable, LastSelectMask, &EnabledDevices);
+	if (XFD_ANYSET(&devicesReadable))
 	{
 	    if (state == XDM_AWAIT_USER_INPUT)
 		restart();
 	    else if (state == XDM_RUN_SESSION)
 		keepaliveDormancy = defaultKeepaliveDormancy;
 	}
-	if (ANYSET(AllClients) && state == XDM_RUN_SESSION)
+	if (XFD_ANYSET(&AllClients) && state == XDM_RUN_SESSION)
 	    timeOutTime = GetTimeInMillis() +  keepaliveDormancy * 1000;
     }
     else if (timeOutTime && GetTimeInMillis() >= timeOutTime)
@@ -921,35 +922,35 @@ get_xdmcp_sock()
     if ((xdmcpSocket = t_open("/dev/udp", O_RDWR, 0)) < 0) {
 	XdmcpWarning("t_open() of /dev/udp failed");
 	return;
-	}
+    }
 
     if( t_bind(xdmcpSocket,NULL,NULL) < 0 ) {
 	XdmcpWarning("UDP socket creation failed");
 	t_error("t_bind(xdmcpSocket) failed" );
 	t_close(xdmcpSocket);
 	return;
-	}
+    }
 
     /*
      * This part of the code looks contrived. It will actually fit in nicely
      * when the CLTS part of Xtrans is implemented.
      */
-
+ 
     if( (nconf=getnetconfigent("udp")) == NULL ) {
 	XdmcpWarning("UDP socket creation failed: getnetconfigent()");
 	t_unbind(xdmcpSocket);
 	t_close(xdmcpSocket);
 	return;
-	}
-
+    }
+ 
     if( netdir_options(nconf, ND_SET_BROADCAST, xdmcpSocket, NULL) ) {
 	XdmcpWarning("UDP set broadcast option failed: netdir_options()");
 	freenetconfigent(nconf);
 	t_unbind(xdmcpSocket);
 	t_close(xdmcpSocket);
 	return;
-	}
-
+    }
+ 
     freenetconfigent(nconf);
 #else
 #ifndef _MINIX

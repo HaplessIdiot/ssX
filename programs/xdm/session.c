@@ -1,5 +1,5 @@
-/* $XConsortium: session.c,v 1.72.1.1 95/06/19 20:29:12 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.6 1995/06/14 07:54:26 dawes Exp $ */
+/* $XConsortium: session.c,v 1.75 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.7 1995/07/08 10:32:08 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -228,9 +228,7 @@ static
 IOErrorHandler (dpy)
     Display *dpy;
 {
-    char *s = strerror(errno);
-
-    LogError("fatal IO error %d (%s)\n", errno, s);
+    LogError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
     exit(RESERVER_DISPLAY);
 }
 
@@ -453,11 +451,7 @@ SessionExit (d, status, removeAuth)
 	ResetServer (d);
     if (removeAuth)
     {
-#ifdef NGROUPS_MAX
-	setgid (verify.groups[0]);
-#else
 	setgid (verify.gid);
-#endif
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
 #ifdef K5AUTH
@@ -529,26 +523,12 @@ StartClient (verify, d, pidp, name, passwd)
 	    return (0);
 	}
 #else /* AIXV3 */
-#ifdef NGROUPS_MAX
-	if (setgid(verify->groups[0]) < 0)
-	{
-	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
-		     verify->groups[0], name, errno);
-	    return (0);
-	}
-	if (setgroups(verify->ngroups, verify->groups) < 0)
-	{
-	    LogError("setgroups for \"%s\" failed, errno=%d\n", name, errno);
-	    return (0);
-	}
-#else
 	if (setgid(verify->gid) < 0)
 	{
 	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
 		     verify->gid, name, errno);
 	    return (0);
 	}
-#endif
 #if (BSD >= 199103)
 	if (setlogin(name) < 0)
 	{
@@ -556,6 +536,11 @@ StartClient (verify, d, pidp, name, passwd)
 	    return(0);
 	}
 #endif
+	if (initgroups(name, verify->gid) < 0)
+	{
+	    LogError("initgroups for \"%s\" failed, errno=%d\n", name, errno);
+	    return (0);
+	}
 	if (setuid(verify->uid) < 0)
 	{
 	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",

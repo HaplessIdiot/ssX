@@ -1,5 +1,5 @@
-/* $XConsortium: rgb.c,v 11.19 94/04/17 20:24:45 rws Exp $ */
-/* $XFree86: xc/programs/rgb/rgb.c,v 3.0 1994/04/28 12:44:05 dawes Exp $ */
+/* $XConsortium: rgb.c,v 11.20 94/11/28 23:39:21 gildea Exp $ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.1 1994/05/21 23:59:21 dawes Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium
@@ -67,6 +67,12 @@ extern int errno;
 #endif
 
 char *ProgramName;
+
+char *SysError ()
+{
+    register char *s = strerror(errno);
+    return s ? s : "?";
+}
 
 main(argc, argv)
     int argc;

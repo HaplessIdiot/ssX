@@ -1,6 +1,6 @@
 /*
- * $XConsortium: constype.c,v 1.6 95/01/05 20:01:06 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.0 1994/11/19 07:49:00 dawes Exp $
+ * $XConsortium: constype.c /main/7 1995/10/05 07:36:37 kaleb $
+ * $XFree86: xc/programs/Xserver/hw/sun/constype.c,v 3.1 1995/01/28 15:45:58 dawes Exp $
  * 
  * consoletype - utility to print out string identifying Sun console type
  *
@@ -39,9 +39,10 @@ library, accounting for what otherwise might appear to be a strange coding
 style.
 */
 #include <stdio.h>
-#ifdef SVR4
+#if defined(SVR4) || defined(__bsdi__)
 #include <string.h>
 #else
+/* NetBSD seemingly still uses <strings.h> and naturally SunOS does */
 #include <strings.h>
 #endif
 
@@ -51,9 +52,15 @@ main (argc, argv)
 {
     char *wu_fbid();
     int retval = -1;
-    char *consoleid = wu_fbid("/dev/fb", &retval);
+    char *consoleid, *dev;
     int print_num = 0;
 
+    if (argc > 1 && argv[1][0] == '/') {
+	dev = argv[1];
+	argc--; argv++;
+    } else
+	dev = "/dev/fb";
+    consoleid = wu_fbid(dev, &retval);
     if (argc > 1 && strncmp (argv[1], "-num", strlen(argv[1])) == 0)
 	print_num = 1;
 
@@ -65,7 +72,7 @@ main (argc, argv)
 }
 #include <sys/ioctl.h>
 #include <sys/file.h>
-#ifdef SVR4
+#if defined(SVR4) || defined(__bsdi__)
 #include <fcntl.h>
 #include <sys/fbio.h>
 #else

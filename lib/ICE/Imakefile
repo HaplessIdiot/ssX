@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.15 94/03/31 17:46:50 mor Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile /main/19 1995/12/13 18:07:45 kaleb $
+XCOMM $XFree86: xc/lib/ICE/Imakefile,v 3.0 1994/10/20 06:02:06 dawes Exp $
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE

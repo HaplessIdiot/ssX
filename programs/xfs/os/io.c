@@ -1,5 +1,5 @@
-/* $XConsortium: io.c,v 1.16 94/04/17 19:56:06 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.2 1994/06/28 12:33:03 dawes Exp $ */
+/* $XConsortium: io.c,v 1.17 95/04/05 19:58:20 kaleb Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.3 1995/03/11 14:21:08 dawes Exp $ */
 /*
  * i/o functions
  */
@@ -62,6 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	"FSproto.h"
 #include	"clientstr.h"
+#include	"X11/Xpoll.h"
 #include	"osdep.h"
 #include	"globals.h"
 
@@ -87,9 +88,9 @@ extern int errno;
 #endif
 
 
-extern long ClientsWithInput[];
-extern long ClientsWriteBlocked[];
-extern long OutputPending[];
+extern fd_set ClientsWithInput;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
 
 extern long OutputBufferSize;
 
@@ -115,7 +116,7 @@ static ConnectionOutputPtr AllocateOutputBuffer();
 
 #define	yield_control_no_input()		\
 	{ yield_control();			\
-	  BITCLEAR(ClientsWithInput, fd); }
+	  FD_CLR(fd, &ClientsWithInput); }
 
 #define	yield_control_death()			\
 	{ timesThisConnection = 0; }
@@ -256,7 +257,7 @@ ReadRequest(client)
     if (gotnow >= needed + SIZEOF(fsReq)) {
 	request = (fsReq *) (oci->bufptr + needed);
 	if (gotnow >= needed + request_length(request, client))
-	    BITSET(ClientsWithInput, fd);
+	    FD_SET(fd, &ClientsWithInput);
 	else
 	    yield_control_no_input();
     } else {
@@ -334,7 +335,7 @@ InsertFakeRequest(client, data, count)
     gotnow += count;
     if ((gotnow >= SIZEOF(fsReq)) &&
 	    (gotnow >= request_length(request, client)))
-	BITSET(ClientsWithInput, fd);
+	FD_SET(fd, &ClientsWithInput);
     else
 	yield_control_no_input();
     return TRUE;
@@ -356,7 +357,7 @@ ResetCurrentRequest(client)
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
     if ((gotnow >= SIZEOF(fsReq)) &&
 	    (gotnow >= request_length(request, client))) {
-	BITSET(ClientsWithInput, fd);
+	FD_SET(fd, &ClientsWithInput);
 	yield_control();
     } else {
 	yield_control_no_input();
@@ -437,7 +438,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 #endif
 		)
 	{
-	    BITSET(ClientsWriteBlocked, fd);
+	    FD_SET(fd, &ClientsWriteBlocked);
 	    AnyClientsWriteBlocked = TRUE;
 
 	    if (written < oco->count) {
@@ -496,8 +497,8 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 
     /* clear the write block if it was set */
     if (AnyClientsWriteBlocked) {
-	BITCLEAR(ClientsWriteBlocked, fd);
-	if (!ANYSET(ClientsWriteBlocked))
+	FD_CLR(fd, &ClientsWriteBlocked);
+	if (!XFD_ANYSET(&ClientsWriteBlocked))
 	    AnyClientsWriteBlocked = FALSE;
     }
     if (oco->size > BUFWATERMARK) {
@@ -515,9 +516,8 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 void
 FlushAllOutput()
 {
-    int         index,
-                base,
-                mask;
+    int         index, base;
+    fd_mask	mask;
     OsCommPtr   oc;
     ClientPtr   client;
 
@@ -526,9 +526,9 @@ FlushAllOutput()
 
     NewOutputPending = FALSE;
 
-    for (base = 0; base < mskcnt; base++) {
-	mask = OutputPending[base];
-	OutputPending[base] = 0;
+    for (base = 0; base < howmany(XFD_SETSIZE, NFDBITS); base++) {
+	mask = OutputPending.fds_bits[base];
+	OutputPending.fds_bits[base] = 0;
 	while (mask) {
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
@@ -538,8 +538,8 @@ FlushAllOutput()
 	    if (client->clientGone == CLIENT_GONE)
 		continue;
 	    oc = (OsCommPtr) client->osPrivate;
-	    if (GETBIT(ClientsWithInput, oc->fd)) {
-		BITSET(OutputPending, oc->fd);
+	    if (FD_ISSET(oc->fd, &ClientsWithInput)) {
+		FD_SET(oc->fd, &OutputPending);
 		NewOutputPending = TRUE;
 	    } else {
 		(void) FlushClient(client, oc, (char *) NULL, 0, 0);
@@ -576,12 +576,12 @@ write_to_client_internal(client, count, buf, padBytes)
 	oc->output = oco;
     }
     if (oco->count + count + padBytes > oco->size) {
-	BITCLEAR(OutputPending, oc->fd);
+	FD_CLR(oc->fd, &OutputPending);
 	NewOutputPending = FALSE;
 	return FlushClient(client, oc, buf, count, padBytes);
     }
     NewOutputPending = TRUE;
-    BITSET(OutputPending, oc->fd);
+    FD_SET(oc->fd, &OutputPending);
     memmove( (char *) oco->buf + oco->count, buf, count);
     oco->count += count + padBytes;
 

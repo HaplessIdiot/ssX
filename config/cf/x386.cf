@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.12 95/06/09 21:28:51 gildea Exp $
+XCOMM platform:  $XConsortium: x386.cf /main/14 1995/10/26 20:50:16 gildea $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -99,17 +99,17 @@ XCOMM platform:  $XConsortium: x386.cf,v 1.12 95/06/09 21:28:51 gildea Exp $
 #define InstallManPageLong(file,destdir,dest)                           @@\
 install.man:: file.man                                                  @@\
 	$(RM) destdir/dest.$(MANSUFFIX)					@@\
-	cat file.man | neqn | nroff -man >/tmp/file.man  		@@\
+	cat file.man | $(NEQN) | $(NROFF) $(MANMACROS) >/tmp/file.man	@@\
 	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man destdir/dest.$(MANSUFFIX) @@\
 	$(RM) /tmp/file.man
 
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
+	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	for i in list; do \                                             @@\
 		(set -x; \						@@\
 		$(RM) dest/$$i; \					@@\
-		cat $$i | neqn | nroff -man >/tmp/$$i; \  		@@\
+		cat $$i | $(NEQN) | $(NROFF) $(MANMACROS) >/tmp/$$i; \	@@\
 		$(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i dest/$$i; \	@@\
 		$(RM) /tmp/$$i); \					@@\
 	done

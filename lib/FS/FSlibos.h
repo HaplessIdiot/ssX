@@ -1,5 +1,5 @@
-/* $XConsortium: FSlibos.h,v 1.21 94/04/17 20:15:22 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: FSlibos.h,v 1.22 94/07/20 10:38:02 mor Exp $ */
+/* $XFree86: xc/lib/FS/FSlibos.h,v 3.0 1995/03/11 14:04:45 dawes Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -83,6 +83,9 @@ in this Software without prior written authorization from the X Consortium.
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
@@ -90,6 +93,7 @@ in this Software without prior written authorization from the X Consortium.
 #define OPEN_MAX NOFILES_MAX
 #else
 #define OPEN_MAX 256
+#endif
 #endif
 #endif
 #endif

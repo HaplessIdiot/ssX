@@ -1,5 +1,5 @@
-/* $XConsortium: lndir.c,v 1.14 95/01/09 20:08:20 kaleb Exp $ */
-/* $XFree86: xc/config/util/lndir.c,v 3.2 1994/12/11 10:48:35 dawes Exp $ */
+/* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.3 1995/01/28 15:41:09 dawes Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -80,7 +80,8 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-int silent;
+int silent = 0;			/* -silent */
+int ignore_links = 0;		/* -ignorelinks */
 
 char *rcurdir;
 char *curdir;
@@ -181,9 +182,11 @@ int rel;			/* if true, prepend "../" to fn before using */
     struct dirent *dp;
     char buf[MAXPATHLEN + 1], *p;
     char symbuf[MAXPATHLEN + 1];
+    char basesym[MAXPATHLEN + 1];
     struct stat sb, sc;
     int n_dirs;
     int symlen;
+    int basesymlen = -1;
     char *ocurdir;
 
     if ((fs->st_dev == ts->st_dev) && (fs->st_ino == ts->st_ino)) {
@@ -269,12 +272,27 @@ int rel;			/* if true, prepend "../" to fn before using */
 
 	/* non-directory */
 	symlen = readlink (dp->d_name, symbuf, sizeof(symbuf) - 1);
-	if (symlen >= 0) {
+	if (symlen >= 0)
 	    symbuf[symlen] = '\0';
-	    if (!equivalent (symbuf, buf))
+
+	/* The option to ignore links exists mostly because
+	   checking for them slows us down by 10-20%.
+	   But it is off by default because this really is a useful check. */
+	if (!ignore_links) {
+	    /* see if the file in the base tree was a symlink */
+	    basesymlen = readlink(buf, basesym, sizeof(basesym) - 1);
+	    if (basesymlen >= 0)
+		basesym[basesymlen] = '\0';
+	}
+
+	if (symlen >= 0) {
+	    /* Link exists in new tree.  Print message if it doesn't match. */
+	    if (!equivalent (basesymlen>=0 ? basesym : buf, symbuf))
 		msg ("%s: %s", dp->d_name, symbuf);
-	} else if (symlink (buf, dp->d_name) < 0)
-	    mperror (dp->d_name);
+	} else {
+	    if (symlink (basesymlen>=0 ? basesym : buf, dp->d_name) < 0)
+		mperror (dp->d_name);
+	}
     }
 
     closedir (df);
@@ -286,19 +304,30 @@ main (ac, av)
 int ac;
 char **av;
 {
+    char *prog_name = av[0];
     char *fn, *tn;
     struct stat fs, ts;
 
-    silent = 0;
-    if (ac > 1 && !strcmp(av[1], "-silent")) {
-	silent = 1;
+    while (++av, --ac) {
+	if (strcmp(*av, "-silent") == 0)
+	    silent = 1;
+	else if (strcmp(*av, "-ignorelinks") == 0)
+	    ignore_links = 1;
+	else if (strcmp(*av, "--") == 0) {
+	    ++av, --ac;
+	    break;
+	}
+	else
+	    break;
     }
-    if (ac < silent + 2 || ac > silent + 3)
-	quit (1, "usage: %s [-silent] fromdir [todir]", av[0]);
 
-    fn = av[silent + 1];
-    if (ac == silent + 3)
-	tn = av[silent + 2];
+    if (ac < 1 || ac > 2)
+	quit (1, "usage: %s [-silent] [-ignorelinks] fromdir [todir]",
+	      prog_name);
+
+    fn = av[0];
+    if (ac == 2)
+	tn = av[1];
     else
 	tn = ".";
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c /main/150 1995/09/22 15:27:40 converse $ */
+/* $XConsortium: Event.c /main/151 1995/12/08 18:21:53 converse $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1440,9 +1440,12 @@ Boolean _XtDefaultDispatcher(event)
 	    
 	if ((grabList == NULL ||_XtOnGrabList(dspWidget, grabList))
 	    && XtIsSensitive(dspWidget)) {
-	    was_dispatched =
-		((was_filtered = XFilterEvent(event, XtWindow(dspWidget)))
-		 || XtDispatchEventToWidget(dspWidget, event));
+	    if (was_filtered = XFilterEvent(event, XtWindow(dspWidget))) {
+		/* If this event activated a device grab, release it. */
+		_XtUngrabBadGrabs(event, widget, mask, pdi);
+		was_dispatched = True;
+	    } else
+		was_dispatched = XtDispatchEventToWidget(dspWidget, event);
 	}
 	else _XtUngrabBadGrabs(event, widget, mask, pdi);
 

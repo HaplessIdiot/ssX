@@ -1,5 +1,5 @@
-/* $XConsortium: sm_genid.c,v 1.7 94/05/02 11:14:45 mor Exp $ */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.0 1994/06/28 12:19:54 dawes Exp $ */
+/* $XConsortium: sm_genid.c /main/15 1995/11/10 12:16:04 kaleb $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.1 1994/10/20 06:02:35 dawes Exp $ */
 
 /*
 
@@ -38,6 +38,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/SM/SMlib.h>
 #include "SMlibint.h"
 #include <X11/Xtrans.h>
+#ifdef XTHREADS
+#include <X11/Xthreads.h>
+#endif
 #include <stdio.h>
 
 #if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
@@ -132,13 +135,42 @@ SmsConn smsConn;
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
     {
-    struct hostent *tcp_hostent = gethostbyname (hostname);
-    char *inet_addr = (char *) inet_ntoa (
-	*(struct in_addr *)(tcp_hostent->h_addr));
+    char* inet_addr;
     char temp[4], *ptr1, *ptr2;
     unsigned char decimal[4];
     int i, len;
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#define HostAddr hent.h_addr
+    struct hostent hent;
+#ifndef _POSIX_THREADS
+#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
+#define CallFailed NULL
+    char hbuf[LINE_MAX];
+    int herr;
+#else
+#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
+#define CallFailed -1
+    struct hostent_data hdata;
+#endif
+#ifndef _POSIX_THREADS
+    struct hostent *hostp;
+#else
+    int hostp;
+#endif
+#else
+#define Gethostbyname(h) gethostbyname((h))
+#define CallFailed NULL
+#define HostAddr hostp->h_addr
+    struct hostent *hostp;
+#endif
 
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+	bzero((char*)&hdata, sizeof hdata);
+#endif
+    if ((hostp = Gethostbyname (hostname)) != CallFailed)
+	inet_addr = (char *) inet_ntoa (*(struct in_addr *)(HostAddr));
+    else
+	return NULL;
     for (i = 0, ptr1 = inet_addr; i < 3; i++)
     {
 	ptr2 = strchr (ptr1, '.');
