@@ -127,15 +127,15 @@ ProcXResQueryClientResources (ClientPtr client)
         return BadValue;
     }
 
-    counts = ALLOCATE_LOCAL((lastResourceType - 1) * sizeof(int));
+    counts = ALLOCATE_LOCAL((lastResourceType + 1) * sizeof(int));
 
-    memset(counts, 0, (lastResourceType - 1) * sizeof(int));
+    memset(counts, 0, (lastResourceType + 1) * sizeof(int));
 
     FindAllClientResources(clients[clientID], ResFindAllRes, counts);
 
     rep.num_types = 0;
 
-    for(i = 0; i < lastResourceType; i++) {
+    for(i = 0; i <= lastResourceType; i++) {
        if(counts[i]) rep.num_types++;
     }
 
