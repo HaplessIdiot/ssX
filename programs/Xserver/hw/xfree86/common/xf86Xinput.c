@@ -872,18 +872,6 @@ xf86eqSwitchScreen(ScreenPtr	pScreen,
  * convenient functions to post events
  */
 
-/*
- * Relative devices send accumulated valuators.
- */
-#define RELATIVE_CHECK(VALUATOR,IDX)				\
-       {							\
-	    if (!is_absolute) {					\
-		(VALUATOR) += axisvals[(IDX)];			\
-		axisvals[(IDX)] = (VALUATOR);			\
-	    }							\
-    }
-
-
 void
 xf86PostMotionEvent(DeviceIntPtr	device,
 		    int			is_absolute,
@@ -1049,17 +1037,20 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 	    /*
 	     * Deliver core event
 	     */
-	    if (is_core || is_shared) {
+	    if (is_core || is_shared && num_valuators >= 2 && loop_start == 0) {
 #ifdef XFreeXDGA
 		/*
 		 * Let DGA peek at the event and steal it
 		 */
 		xev->type = MotionNotify;
 		xev->detail = 0;
+		if (is_absolute)
+		{
+		    dx = axisvals[0] - oldaxis[0];
+		    dy = axisvals[1] - oldaxis[1];
+		}
 		if (DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum,
-				       xE,
-				       axisvals[0] - oldaxis[0],
-				       axisvals[1] - oldaxis[1]))
+				       xE, dx, dy))
 		    continue;
 #endif
 		if (!(*local->conversion_proc)(local, loop_start, num,
