@@ -1,4 +1,8 @@
-XFree86 4.2.99.3 (xx December 2002)
+XFree86 4.2.99.3 (21 December 2002)
+ 679. Fix animated cursor problem with multiple screens (#A.1454,
+      Keith Packard).
+ 678. gtf.c build fix for LynxOS 4.0 (#A.1453, Stuart Lissaman).
+ 677. Fix a segfault in fontconfig (#A.1450, Keith Packard).
  676. If some LEDs are lighting when one reloads the XKB keyboard map
       (using setxkbmap or xf86cfg) the LEDs become 'frozen' and can't
       be switched off. The patch fixes this bug. (#5544, Ivan Pascal).
@@ -15896,4 +15900,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2456 2002/12/20 02:51:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2457 2002/12/20 20:18:37 paulo Exp $
