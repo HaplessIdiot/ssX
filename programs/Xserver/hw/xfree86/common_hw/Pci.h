@@ -71,7 +71,9 @@
 
 #ifndef _PCI_H
 #define _PCI_H 1
+/*** this file doesn't exist (dhh)
 #include "Xarch.h"
+***/
 #include "Xfuncproto.h"
 
 /*
@@ -487,6 +489,7 @@ typedef struct pci_device {
 #define	_base3			   cfgspc.regs.bc.dv.dv_base3
 #define	_base4			   cfgspc.regs.bc.dv.dv_base4
 #define	_base5			   cfgspc.regs.bc.dv.dv_base5
+#define	_baserom		   cfgspc.regs._baserom
 #define	_primary_bus_number	   cfgspc.regs.bc.bg.primary_bus_number
 #define	_secondary_bus_number	   cfgspc.regs.bc.bg.secondary_bus_number
 #define	_subordinate_bus_number	   cfgspc.regs.bc.bg.subordinate_bus_number

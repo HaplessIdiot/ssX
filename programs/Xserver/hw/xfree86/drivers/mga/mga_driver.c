@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.26 1998/01/11 06:54:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.27 1998/01/24 01:53:10 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -83,7 +83,7 @@ pointer mmioBase = NULL;
 MGABiosInfo MGABios;
 MGABios2Info MGABios2;
 
-pciTagRec MGAPciTag;
+PCITAG MGAPciTag;
 int MGAchipset;
 int MGArev;
 int MGAinterleave;

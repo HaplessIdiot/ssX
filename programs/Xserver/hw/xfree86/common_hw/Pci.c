@@ -166,7 +166,9 @@
  */
 #include <errno.h>
 #include <signal.h>
+/*** this file doesn't exist (dhh)
 #include "Xarch.h"
+***/
 #include "os.h"
 #include "compiler.h"
 #include "input.h"

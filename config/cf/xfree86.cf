@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.175 1998/01/11 03:48:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.176 1998/01/24 16:56:16 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -578,8 +578,6 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 				s3_pio s3_newmmio s3v p9x00 \
 				apollo hercules hgc1280 sigma \
 				vga
-#  endif
-#  endif
 # endif
 #endif
 
