@@ -37,7 +37,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
-extern	int	DeviceButtonPress,DeviceButtonRelease,DeviceValuator;
+extern	int	DeviceValuator;
 
 void
 #if NeedFunctionPrototypes

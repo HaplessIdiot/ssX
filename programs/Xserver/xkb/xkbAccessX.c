@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.7 2001/02/12 18:26:00 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.8 2001/08/13 19:35:00 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -143,9 +143,6 @@ AccessXKeyboardEvent(keybd,type,keyCode,isRepeat)
 #endif
 {
 xEvent		xE;
-#ifdef XINPUT
-extern int	DeviceKeyPress;
-#endif
     
     xE.u.u.type = type;
     xE.u.u.detail = keyCode;

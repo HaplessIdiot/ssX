@@ -37,8 +37,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XI.h"
 #include "XKBsrv.h"
 
-extern InputInfo	inputInfo;
-
 /***====================================================================***/
 
 	/*
