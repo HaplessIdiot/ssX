@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.9 2000/12/21 16:37:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.10 2000/12/22 11:49:03 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -84,26 +84,20 @@ static void Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 static void Permedia3SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int x_offset, int y_offset, int x, int y, 
 				int w, int h);
-/* Color Expansion Fills */
-static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
-				int fg, int bg, int rop,unsigned int planemask);
-static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
-				int x, int y, int w, int h, int skipleft);
-/* Direct Fifo Bitmap Writes */
-static void Permedia3WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
-				unsigned char *src, int srcwidth, int skipleft, 
-				int fg, int bg, int rop,unsigned int planemask);
-/* Images Writes */
-static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
+static void Permedia3SetupForScanlineCPUToScreenColorExpandFill(
+				ScrnInfoPtr pScrn,
+				int fg, int bg, int rop, 
+				unsigned int planemask);
+static void Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
+				ScrnInfoPtr pScrn, int x,
+				int y, int w, int h, int skipleft);
+static void Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
+static void Permedia3SetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
 				unsigned int planemask, int trans_color,
 				int bpp, int depth);
-static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn, 
+static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
-/* Direct Fifo Pixmap Writes */
-static void Permedia3WritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
-				unsigned char *src, int srcwidth, int rop,
-				unsigned int planemask, int transparency_color,
-				int bpp, int depth);
+static void Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno);
 
 void
 Permedia3InitializeEngine(ScrnInfoPtr pScrn)
@@ -345,6 +339,7 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     GLINT_SLOW_WRITE_REG(0, StartXSub);
     GLINT_SLOW_WRITE_REG(0, StartY);
     GLINT_SLOW_WRITE_REG(0, GLINTCount);
+    Permedia3Sync(pScrn);
     TRACE_EXIT("Permedia3InitializeEngine");
 }
 
@@ -406,55 +401,39 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentMono8x8PatternFillRect = 
 	Permedia3SubsequentMono8x8PatternFillRect;
 
-    if ((!pGlint->PM3_NoDirectFifoWrite) && (!pGlint->PM3_NoImageWrite))
-      {
-    /* Direct Fifo Bitmap Writes */
-    infoPtr->WriteBitmapFlags = 0;
-    infoPtr->WriteBitmap = Permedia3WriteBitmap;
-      }
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
+						LEFT_EDGE_CLIPPING |
+						LEFT_EDGE_CLIPPING_NEGATIVE_X |
+					       	BIT_ORDER_IN_BYTE_LSBFIRST |
+						CPU_TRANSFER_PAD_DWORD;
 
-    /* Color Expand Fills */
-    infoPtr->CPUToScreenColorExpandFillFlags =
-	/*
-	SYNC_AFTER_COLOR_EXPAND |
-	*/
-	LEFT_EDGE_CLIPPING |
-	BIT_ORDER_IN_BYTE_LSBFIRST |
-	CPU_TRANSFER_BASE_FIXED |
-	CPU_TRANSFER_PAD_DWORD;
-    infoPtr->ColorExpandBase = pGlint->IOBase + BitMaskPattern;
-    infoPtr->ColorExpandRange = 4;
-    infoPtr->SetupForCPUToScreenColorExpandFill =
-	    Permedia3SetupForCPUToScreenColorExpandFill;
-    infoPtr->SubsequentCPUToScreenColorExpandFill = 
-	    Permedia3SubsequentCPUToScreenColorExpandFill;
+    infoPtr->NumScanlineColorExpandBuffers = 1;
+    infoPtr->ScanlineColorExpandBuffers = 
+					pGlint->XAAScanlineColorExpandBuffers;
+    pGlint->XAAScanlineColorExpandBuffers[0] = 
+					pGlint->IOBase + OutputFIFO + 4;
 
-    if ((!pGlint->PM3_NoDirectFifoWrite) && (!pGlint->PM3_NoImageWrite))
-      {
-    /* Direct Fifo Images Writes */
-    infoPtr->WritePixmapFlags = 0;
-    infoPtr->WritePixmap = Permedia3WritePixmap;
-      }
-    else if (!pGlint->PM3_NoImageWrite)
-      {
-    /* Images Writes */
-    infoPtr->ImageWriteFlags = 
-	NO_GXCOPY |
-	/*
-	SYNC_AFTER_IMAGE_WRITE |
-	*/
-	LEFT_EDGE_CLIPPING |
-	LEFT_EDGE_CLIPPING_NEGATIVE_X |
-	BIT_ORDER_IN_BYTE_LSBFIRST |
-	CPU_TRANSFER_BASE_FIXED |
-	CPU_TRANSFER_PAD_DWORD;
-    infoPtr->ImageWriteBase = pGlint->IOBase + PM3FBSourceData;
-    infoPtr->ImageWriteRange = 4;
-    infoPtr->SetupForImageWrite =
-	    Permedia3SetupForImageWrite;
-    infoPtr->SubsequentImageWriteRect =
-	    Permedia3SubsequentImageWriteRect;
-      }
+    infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
+			Permedia3SetupForScanlineCPUToScreenColorExpandFill;
+    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+			Permedia3SubsequentScanlineCPUToScreenColorExpandFill;
+    infoPtr->SubsequentColorExpandScanline = 
+			Permedia3SubsequentColorExpandScanline;
+
+    infoPtr->ScanlineImageWriteFlags = 	NO_GXCOPY |
+					LEFT_EDGE_CLIPPING |
+					LEFT_EDGE_CLIPPING_NEGATIVE_X |
+					BIT_ORDER_IN_BYTE_LSBFIRST |
+					CPU_TRANSFER_PAD_DWORD;
+    infoPtr->NumScanlineImageWriteBuffers = 1;
+    infoPtr->ScanlineImageWriteBuffers = 
+					pGlint->XAAScanlineColorExpandBuffers;
+    infoPtr->SetupForScanlineImageWrite =
+	    Permedia3SetupForScanlineImageWrite;
+    infoPtr->SubsequentScanlineImageWriteRect =
+	    Permedia3SubsequentScanlineImageWriteRect;
+    infoPtr->SubsequentImageWriteScanline = 
+			Permedia3SubsequentImageWriteScanline;
 
     /* Available Framebuffer Area for XAA. */
     AvailFBArea.x1 = 0;
@@ -470,7 +449,6 @@ Permedia3AccelInit(ScreenPtr pScreen)
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
-    Permedia3Sync(pScrn);
     return(XAAInit(pScreen, infoPtr));
 }
 
@@ -699,12 +677,15 @@ Permedia3SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
     TRACE_EXIT("Permedia3SubsequentMono8x8PatternFillRect");
 }
 
-/* Color Expansion Fills */
-static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
-	int fg, int bg, int rop,unsigned int planemask)
-{
+static void
+Permedia3SetupForScanlineCPUToScreenColorExpandFill(
+	ScrnInfoPtr pScrn,
+	int fg, int bg, 
+	int rop, 
+	unsigned int planemask
+){
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SetupForCPUToScreenColorExpandFill");
+
     REPLICATE(fg);
     pGlint->PM3_Render2D =
 	PM3Render2D_SpanOperation |
@@ -729,13 +710,22 @@ static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(fg, PM3ForegroundColor);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
-    TRACE_EXIT("Permedia3SetupForCPUToScreenColorExpandFill");
 }
-static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
-	int x, int y, int w, int h, int skipleft)
-{
+
+static void
+Permedia3SubsequentScanlineCPUToScreenColorExpandFill(
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h,
+	int skipleft
+){
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SubsequentCPUToScreenColorExpandFill");
+
+    TRACE_ENTER("Permedia2SubsequentScanlineCPUToScreenColorExpandFill");
+	
+    pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
+ 
+    pGlint->cpucount = h;
+
     GLINT_WAIT(4);
     GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
@@ -746,16 +736,27 @@ static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
-    TRACE_EXIT("Permedia3SubsequentCPUToScreenColorExpandFill");
+
+    GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | 0x0D, OutputFIFO);
+    GLINT_WAIT(pGlint->dwords);
+    pGlint->cpucount--;
 }
 
+static void
+Permedia3SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    if (pGlint->cpucount--)
+    	GLINT_WAIT(pGlint->dwords);
+}
 
 /* Images Writes */
-static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
+static void Permedia3SetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
 	unsigned int planemask, int trans_color, int bpp, int depth)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SetupForImageWrite");
+    TRACE_ENTER("Permedia3SetupForScanlineImageWrite");
     pGlint->PM3_Render2D =
 	PM3Render2D_SpanOperation |
 	PM3Render2D_XPositive |
@@ -771,13 +772,17 @@ static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
     GLINT_WAIT(2);
     DO_PLANEMASK(planemask);
     GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
-    TRACE_EXIT("Permedia3SetupForImageWrite");
+    TRACE_EXIT("Permedia3SetupForScanlineImageWrite");
 }
-static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn, 
+
+static void Permedia3SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, 
 	int x, int y, int w, int h, int skipleft)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3SubsequentImageWrite");
+    TRACE_ENTER("Permedia3SubsequentScanlineImageWrite");
+    pGlint->dwords = ((w + 31) >> 5); /* dwords per scanline */
+ 
+    pGlint->cpucount = h;
     GLINT_WAIT(4);
     GLINT_WRITE_REG(((y&0x0fff)<<16)|((x+skipleft)&0x0fff), ScissorMinXY);
     GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
@@ -788,156 +793,17 @@ static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn,
     GLINT_WRITE_REG(pGlint->PM3_Render2D |
 	PM3Render2D_Width(w) | PM3Render2D_Height(h),
 	PM3Render2D);
-    TRACE_EXIT("Permedia3SubsequentImageWrite");
+    GLINT_WRITE_REG(((pGlint->dwords*h)-1)<<16 | (0x15<<4) | 0x05, OutputFIFO);
+    GLINT_WAIT(pGlint->dwords);
+    pGlint->cpucount--;
+    TRACE_EXIT("Permedia3SubsequentScanlineImageWrite");
 }
 
-
-/* Defines for Direct Fifo access */
-
-#define WriteRange 120
-#define PciRetryWriteRange 1023
-#define WriteBase_Fixed ((CARD32 *)(pGlint->IOBase + PM3FBSourceData))
-#define WriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
-
-/* Direct Fifo Bitmap Writes */
-
 static void
-Permedia3WriteBitmap(ScrnInfoPtr pScrn,
-    int x, int y, int w, int h,
-    unsigned char *src,
-    int srcwidth, int skipleft,
-    int fg, int bg, int rop,
-    unsigned int planemask
-)
+Permedia3SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
-    int dwords;
-    int ApertureRange;
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3WriteBitmap");
 
-    w += skipleft;
-    x -= skipleft;
-    dwords = (w + 31) >>5;
-    if (pGlint->UsePCIRetry) ApertureRange = PciRetryWriteRange;
-    else ApertureRange = WriteRange;
-
-    /* width of the stuff to copy in 32 bit words */
-    Permedia3SetupForCPUToScreenColorExpandFill(pScrn, fg, bg, rop, planemask);
-    Permedia3SubsequentCPUToScreenColorExpandFill(pScrn, x, y, w, h, skipleft);
-
-    if (dwords > ApertureRange) {
-	while(h--) {
-	    XAAMoveDWORDS_FixedBase(WriteBase_Fixed, (CARD32*)src, dwords);
-	    src += srcwidth;
-	}
-    } else {
-	/* the src is exatcly as wide as the target rectangle. We copy all
-	 * of it, so no need to separate stuff by scanline */
-	if(srcwidth == (dwords << 5)) {
-	    /* decrement contains the number of lines that can be
-	     * put in the fifo */
- 	    int decrement = ApertureRange/dwords;
-
-	    while(h > decrement) {
-		GLINT_WAIT(dwords * decrement);
-       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0xd,
-		    OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * decrement);
-		src += (srcwidth * decrement);
-		h -= decrement;
-	    }
-	    if(h) {
-		GLINT_WAIT(dwords * h);
-       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0xd, OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * h);
-	    }
-	} else {
-	    while(h--) {
-		GLINT_WAIT(dwords);
-       		GLINT_WRITE_REG(((dwords-1) << 16) | 0xd, OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords);
-		src += srcwidth;
-	    }
-	}
-    }
-    TRACE_EXIT("Permedia3WriteBitmap");
-}
-/* Direct Fifo Images Writes */
-
-static void
-Permedia3WritePixmap(
-    ScrnInfoPtr pScrn,
-    int x, int y, int w, int h,
-    unsigned char *src,
-    int srcwidth,
-    int rop,
-    unsigned int planemask,
-    int trans,
-    int bpp, int depth
-)
-{
-    int dwords;
-    int skipleft = (long)src & 0x03L;
-    int Bpp = bpp >> 3;
-    int ApertureRange;
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    TRACE_ENTER("Permedia3WritePixmap");
-
-    if (skipleft) {
-	/* Skipleft is either
-	 *   - 0, 1, 2 or 3 in 8 bpp
-	 *   - 0 or 1 in 16 bpp
-	 *   - 0 in 32 bpp
-	 */
-	skipleft /= Bpp;
-
-	x -= skipleft;	     
-	w += skipleft;
-	
-	src = (unsigned char*)((long)src & ~0x03L);     
-    }
-    Permedia3SetupForImageWrite(pScrn, rop, planemask, trans, bpp, depth);
-    Permedia3SubsequentImageWriteRect(pScrn, x, y, w, h, skipleft);
-
-    /* width of the stuff to copy in 32 bit words */
-    dwords = ((w * Bpp) + 3) >> 2;
-    if (pGlint->UsePCIRetry) ApertureRange = PciRetryWriteRange;
-    else ApertureRange = WriteRange;
-
-    if (dwords > ApertureRange) {
-	while(h--) {
-	    XAAMoveDWORDS_FixedBase(WriteBase_Fixed, (CARD32*)src, dwords);
-	    src += srcwidth;
-	}
-    } else {
-	/* the src is exatcly as wide as the target rectangle. We copy all
-	 * of it, so no need to separate stuff by scanline */
-	if(srcwidth == (dwords << 2)) {
-	    /* decrement contains the number of lines that can be
-	     * put in the fifo */
- 	    int decrement = ApertureRange/dwords;
-
-	    while(h > decrement) {
-		GLINT_WAIT(dwords * decrement);
-       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0x155,
-		    OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * decrement);
-		src += (srcwidth * decrement);
-		h -= decrement;
-	    }
-	    if(h) {
-		GLINT_WAIT(dwords * h);
-       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0x155, OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords * h);
-	    }
-	} else {
-	    while(h--) {
-		GLINT_WAIT(dwords);
-       		GLINT_WRITE_REG(((dwords-1) << 16) | 0x155, OutputFIFO);
-		XAAMoveDWORDS(WriteBase, (CARD32*)src, dwords);
-		src += srcwidth;
-	    }
-	}
-    }
-    TRACE_EXIT("Permedia3WritePixmap");
+    if (pGlint->cpucount--)
+    	GLINT_WAIT(pGlint->dwords);
 }

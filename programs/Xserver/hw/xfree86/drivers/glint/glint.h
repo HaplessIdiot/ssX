@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.37 2000/11/14 17:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.38 2000/12/20 11:13:01 alanh Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -110,7 +110,6 @@ typedef struct {
     Bool		NoAccel;
     Bool		FBDev;
     Bool		ShadowFB;
-    Bool		WriteBitmap;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
     Bool		Dac6Bit;
@@ -151,8 +150,6 @@ typedef struct {
     PCITAG		PM3_GammaPciTag;
     CARD32		PM3_GammaIOAddress;
     unsigned char *     PM3_GammaIOBase;
-    Bool                PM3_NoImageWrite;
-    Bool                PM3_NoDirectFifoWrite;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
