@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.41 2002/03/10 08:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.39 2002/03/08 04:33:17 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -381,7 +381,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Read, "read &optional input-stream (eof-error-p t) eof-value recursive-p"},
     {LispFunction, Lisp_ReadChar, "read-char &optional input-stream (eof-error-p t) eof-value recursive-p"},
     {LispFunction, Lisp_ReadCharNoHang, "read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p"},
-    {LispFunction, Lisp_ReadLine, "read-line &optional input-stream (eof-error-p t) eof-value recursive-p"},
+    {LispFunction, Lisp_ReadLine, "read-line &optional input-stream (eof-error-p t) eof-value recursive-p", 1},
     {LispFunction, Lisp_Realpart, "realpart number"},
     {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2 &aux (length1 (length sequence1)) (length2 (length sequence2))"},
     {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace", 1},

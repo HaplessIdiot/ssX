@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.30 2002/03/08 05:21:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.32 2002/03/10 08:56:36 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -2514,14 +2514,13 @@ Lisp_ReturnFrom(LispMac *mac, LispBuiltin *builtin)
 		    break;
 	    }
 	}
-	if (block->type != LispBlockTag && block->type != LispBlockClosure)
-	    break;
-	if (jmp) {
+	if (jmp &&
+	    (block->type == LispBlockTag || block->type == LispBlockClosure)) {
 	    mac->block.block_ret = NCONSTANT_P(result) ? EVAL(result) : result;
 	    LispBlockUnwind(mac, block);
 	    BLOCKJUMP(block);
 	}
-	if (block->type != LispBlockTag)
+	if (block->type == LispBlockClosure)
 	    /* can use return-from only in the current function */
 	    break;
     }
@@ -2732,7 +2731,8 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 	/* if a variable, just work like setq */
 	if (SYMBOL_P(place)) {
 	    ERROR_CHECK_CONSTANT(place);
-	    (void)LispSetVar(mac, place, EVAL(result));
+	    result = EVAL(result);
+	    (void)LispSetVar(mac, place, result);
 	}
 
 	else if (CONS_P(place)) {
