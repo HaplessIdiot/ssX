@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: lex.l,v 5.6 94/04/17 20:10:07 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.0 1994/04/28 12:29:49 dawes Exp $ */
 
 /*****************************************************************
 
@@ -58,7 +58,7 @@ SOFTWARE.
 #endif
 #include "to_wfont.h"
 
-#if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
+#if (defined(ISC) || defined(SCO)) && defined(SYSV) && defined(SYSV386) && __STDC__
 extern double atof(char *);
 #endif
 
