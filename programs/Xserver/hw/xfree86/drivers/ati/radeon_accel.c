@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.20 2001/10/28 03:33:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.21 2001/11/08 04:00:13 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -502,7 +502,11 @@ static void LastLinePel(int *X1, int *Y1, int *X2, int *Y2)
 	deltax = xb - xa;
 	deltay = yb - ya;
 
-	tg = labs((deltay<<4) / deltax);
+    	if(deltax == 0) 
+		tg = 40;
+       	else
+		tg = labs((deltay<<4) / deltax);
+
 	if((tg >= 7) && (tg <= 39))
 	{
 		if(deltax > 0)xb++;
