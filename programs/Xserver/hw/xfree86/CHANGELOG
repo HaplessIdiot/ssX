@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 114. Add serial PNP entry for the Genius NetScroll+ mouse (Bugzilla #1017,
+      N Marci).
  113. Automatic configuration updates:
        - Auto-detect DPMS support based on EDID data.
        - Fix DPMS enable/disable logic.
@@ -18938,7 +18940,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3261 2004/05/27 11:02:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3262 2004/06/01 01:23:48 dawes Exp $
 
 
 
