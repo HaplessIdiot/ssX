@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.8 2000/04/17 16:30:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.9 2000/06/17 00:03:25 martin Exp $ */
 
 
 #if 0
@@ -85,7 +85,7 @@ void TDFXResetFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
   int oldValue;
-  CARD32 start_sec, end_sec, dummy;
+  long start_sec, end_sec, dummy;
 
   pTDFX=TDFXPTR(pScrn);
   ErrorF("Resetting FIFO\n");
@@ -94,16 +94,16 @@ void TDFXResetFifo(ScrnInfoPtr pScrn)
   /* Toggle the reset bits */
   oldValue=TDFXReadLongMMIO(pTDFX, MISCINIT0);
   TDFXWriteLongMMIO(pTDFX, MISCINIT0, oldValue|0x23);
-  xf86getsecs(&start_sec, &dummy);
+  getsecs(&start_sec, &dummy);
   do {
-    xf86getsecs(&end_sec, &dummy);
+    getsecs(&end_sec, &dummy);
   } while (end_sec-start_sec<2);
   TDFXWriteLongMMIO(pTDFX, MISCINIT0, oldValue);
   oldValue=TDFXReadLongMMIO(pTDFX, MISCINIT1);
   TDFXWriteLongMMIO(pTDFX, MISCINIT1, oldValue|BIT(19));
-  xf86getsecs(&start_sec, &dummy);
+  getsecs(&start_sec, &dummy);
   do {
-    xf86getsecs(&end_sec, &dummy);
+    getsecs(&end_sec, &dummy);
   } while (end_sec-start_sec<2);
   TDFXWriteLongMMIO(pTDFX, MISCINIT1, oldValue);
   InstallFifo(pScrn);
@@ -122,7 +122,7 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
   TDFXPtr pTDFX;
   int i, cnt;
   int stat;
-  CARD32 start_sec, end_sec, dummy;
+  long start_sec, end_sec, dummy;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);
@@ -136,9 +136,9 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
     cnt++;
     if (cnt==1000) {
       if (!start_sec) {
-	xf86getsecs(&start_sec, &dummy);
+	getsecs(&start_sec, &dummy);
       } else {
-	xf86getsecs(&end_sec, &dummy);
+	getsecs(&end_sec, &dummy);
 	if (end_sec-start_sec>3) {
 	  TDFXResetFifo(pScrn);
 	  start_sec=0;
