@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.43 2003/11/11 01:29:46 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.44 2003/11/14 20:24:15 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -91,12 +91,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
    PROJ_BUILD = pbxbuild
 # endif
 
-/*
- * If we have Apple's Xplugin library, use it.
- */
 # ifndef HasXplugin
-#  define HasXplugin            NO
-#  define XpluginLibrary        /**/
+#  if OSMajorVersion >= 7
+#   define HasXplugin           YES
+#  else
+#   define HasXplugin           NO
+#  endif
 # endif
 
 # if HasXplugin
@@ -109,6 +109,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
    XPLIBDIR = XpLibDir
    XPINCDIR = XpIncDir
 #  define XpluginLibrary        Concat(-L,$(XPLIBDIR)) -lXplugin
+# else
+#  define XpluginLibrary        /**/
 # endif
 
 # ifndef BuildAppleDRI
