@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.107 2001/04/03 17:36:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.108 2001/04/03 22:22:16 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -132,6 +132,7 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildCIDFonts
 #define BuildCIDFonts		YES
 #endif
+/* Not used now */
 #ifndef BuildLatin2Fonts
 #define BuildLatin2Fonts	NO
 #endif
@@ -140,6 +141,16 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef UseKoi8RForCyrillic
 #define UseKoi8RForCyrillic	NO
+#endif
+/* Some bdf font generation details.  The scripts for this require perl. */
+#ifndef TruncateUCSFonts
+#define TruncateUCSFonts	HasPerl
+#endif
+#ifndef MaxUCSChar
+#define MaxUCSChar		0x3200
+#endif
+#ifndef DerivedUCSFonts
+#define DerivedUCSFonts		HasPerl
 #endif
 #ifndef HasXAudio
 #define HasXAudio		NO
