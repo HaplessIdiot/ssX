@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.1 2000/10/05 18:05:26 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -21,10 +21,15 @@ INCLUDES=-I$(FREETYPEDIR)/include
 #ifndef XftLibDir
 #define XftLibDir $(LIBDIR)
 #endif
+#ifndef XftType1Dir
+#define XftType1Dir $(LIBDIR)/fonts/Type1
+#endif
 
 XFTLIBDIR=XftLibDir
 XFTCONFIG=$(XFTLIBDIR)/XftConfig
 
+TYPE1DIR=XftType1Dir
+CONFIG_DEFS=-DXFT_TYPE1_DIR=\"$(TYPE1DIR)\"
 DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\"
 REQUIREDLIBS=$(LDPRELIBS) $(XRENDER) $(XLIB) $(FREETYPE)
 
@@ -38,7 +43,7 @@ HEADERS = Xft.h
 SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
-CppFileTarget(XftConfig,XftConfig.cpp,$(DEFINES),$(ICONFIGFILES))
+CppFileTarget(XftConfig,XftConfig.cpp,$(CONFIG_DEFS),$(ICONFIGFILES))
 
 #if InstallFSConfig
 InstallNonExecFile(XftConfig,$(XFTLIBDIR))

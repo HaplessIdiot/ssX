@@ -4,9 +4,9 @@
 
 MATCH 	spacing = 2	EDIT	face = "Courier"
 MATCH	spacing = 1	EDIT	face = "Courier"
-MATCH	spacing = 0	EDIT	face = "Charter
+MATCH	spacing = 0	EDIT	face = "Charter"
 
-DIR XFT_DEFAULT_PATH
+DIR XFT_TYPE1_DIR
 
 #
 # Check users config file
