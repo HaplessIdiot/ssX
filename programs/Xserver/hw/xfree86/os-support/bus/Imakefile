@@ -42,7 +42,7 @@ XCOMM generic FreeBSD PCI driver (using /dev/pci)
 PCIDRVRSRC = freebsdPci.c
 PCIDRVROBJ = freebsdPci.o
 
-#elif defined(i386Architecture)
+#elif defined(i386Architecture) || defined(ia64Architecture)
 
 XCOMM ix86 PCI driver
 

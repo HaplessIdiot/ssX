@@ -45,6 +45,11 @@
 
 static Bool ExtendedEnabled = FALSE;
 
+#ifdef __ia64__
+#include "compiler.h"
+#include <sys/io.h>
+#endif
+
 #ifdef __alpha__
 
 # ifdef LIBC_IS_FIXED
@@ -420,7 +425,11 @@ xf86DisableInterrupts()
 #if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
 #else
 #ifdef __GNUC__
-	__asm__ __volatile__("cli");
+#if defined(__ia64__)
+      __asm__ __volatile__ (";; rsm psr.i;; srlz.d" ::: "memory");
+#else
+      __asm__ __volatile__("cli");
+#endif
 #else
 	asm("cli");
 #endif
@@ -443,7 +452,11 @@ xf86EnableInterrupts()
 #if defined(__alpha__) || defined(__mc68000__) || defined(__powerpc__) || defined(__sparc__)
 #else
 #ifdef __GNUC__
-	__asm__ __volatile__("sti");
+#if defined(__ia64__)
+      __asm__ __volatile__ (";; ssm psr.i;; srlz.d" ::: "memory");
+#else
+      __asm__ __volatile__("sti");
+#endif
 #else
 	asm("sti");
 #endif

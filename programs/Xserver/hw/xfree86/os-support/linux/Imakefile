@@ -27,7 +27,7 @@ DRI_OBJ = sigio.o
 MOUSESRC = lnx_mouse.c
 MOUSEOBJ = lnx_mouse.o
 
-#if defined(i386Architecture)
+#if defined(i386Architecture) || defined(ia64Architecture)
 RES_SRCS=stdResource.c
 RES_OBJS=stdResource.o
 #else
@@ -104,7 +104,7 @@ LinkSourceFile(VTsw_usl.c,../shared)
 
 LinkSourceFile($(DRI_SRC),../shared)
 
-#if defined(i386Architecture)
+#if defined(i386Architecture) || defined(ia64Architecture)
 LinkSourceFile(stdResource.c,../shared)
 #endif
 
