@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.5 1996/04/15 11:29:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.6 1996/05/06 05:56:47 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -20,7 +20,11 @@ xf86scanpci()
     unsigned char tmp1, tmp2;
     unsigned int i, j, idx = 0;
     struct pci_config_reg pcr;
+#ifdef PC98
+    Word PCI_CtrlIOPorts[] = { 0xCF8, 0xCF9, 0xCFC };
+#else
     Word PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
+#endif
     int Num_PCI_CtrlIOPorts = 3;
     unsigned PCI_DevIOAddrPorts[16*16];
     int Num_PCI_DevIOAddrPorts = 16*16;
@@ -33,10 +37,10 @@ xf86scanpci()
     /* Enable I/O access */
     EnableIOPorts(Num_PCI_CtrlIOPorts,PCI_CtrlIOPorts);
 
-    outp(0xCF8, 0x00);
-    outp(0xCFA, 0x00);
-    tmp1 = inp(0xCF8);
-    tmp2 = inp(0xCFA);
+    outp(PCI_MODE2_ENABLE_REG, 0x00);
+    outp(PCI_MODE2_FORWARD_REG, 0x00);
+    tmp1 = inp(PCI_MODE2_ENABLE_REG);
+    tmp2 = inp(PCI_MODE2_FORWARD_REG);
 
     if ((tmp1 == 0x00) && (tmp2 == 0x00)) {
 	pcr._configtype = 2;
@@ -44,10 +48,10 @@ xf86scanpci()
         printf("PCI says configuration type 2\n");
 #endif
     } else {
-        tmplong1 = inpl(0xCF8);
-        outpl(0xCF8, PCI_EN);
-        tmplong2 = inpl(0xCF8);
-        outpl(0xCF8, tmplong1);
+        tmplong1 = inpl(PCI_MODE1_ADDRESS_REG);
+        outpl(PCI_MODE1_ADDRESS_REG, PCI_EN);
+        tmplong2 = inpl(PCI_MODE1_ADDRESS_REG);
+        outpl(PCI_MODE1_ADDRESS_REG, tmplong1);
         if (tmplong2 == PCI_EN) {
 	    pcr._configtype = 1;
 #ifdef DEBUGPCI
@@ -83,8 +87,8 @@ xf86scanpci()
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx]<<16) |
                                   (pcr._cardnum<<11);
 
-            outpl(0xCF8, config_cmd);         /* ioreg 0 */
-            pcr._device_vendor = inpl(0xCFC);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd);         /* ioreg 0 */
+            pcr._device_vendor = inpl(PCI_MODE1_DATA_REG);
 
             if (pcr._vendor == 0xFFFF)   /* nothing there */
                 continue;
@@ -95,20 +99,30 @@ xf86scanpci()
                 pcr._device);
 #endif
 
-            outpl(0xCF8, config_cmd | 0x04); pcr._status_command  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x08); pcr._class_revision  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x0C); pcr._bist_header_latency_cache
-								= inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x10); pcr._base0  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x14); pcr._base1  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x18); pcr._base2  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x1C); pcr._base3  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x20); pcr._base4  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x24); pcr._base5  = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x30); pcr._baserom = inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x3C); pcr._max_min_ipin_iline
-								= inpl(0xCFC);
-            outpl(0xCF8, config_cmd | 0x40); pcr._user_config = inpl(0xCFC);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x04);
+	    pcr._status_command  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x08);
+	    pcr._class_revision  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x0C);
+	    pcr._bist_header_latency_cache = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x10);
+	    pcr._base0  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x14);
+	    pcr._base1  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x18);
+	    pcr._base2  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x1C);
+	    pcr._base3  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x20);
+	    pcr._base4  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x24);
+	    pcr._base5  = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x30);
+	    pcr._baserom = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x3C);
+	    pcr._max_min_ipin_iline = inpl(PCI_MODE1_DATA_REG);
+            outpl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x40);
+	    pcr._user_config = inpl(PCI_MODE1_DATA_REG);
 
             /* check for pci-pci bridges (currently we only know Digital) */
             if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
@@ -127,7 +141,7 @@ xf86scanpci()
 		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
-                outpl(0xCF8, 0x00);
+                outpl(PCI_MODE1_ADDRESS_REG, 0x00);
 #if 0
                 DisableIOPorts(0);
 #endif
@@ -141,7 +155,7 @@ xf86scanpci()
 
 #ifndef DEBUGPCI
     if (pcr._configtype == 1) {
-        outpl(0xCF8, 0x00);
+        outpl(PCI_MODE1_ADDRESS_REG, 0x00);
 #if 0
 	xf86DisableIOPorts(0);
 #endif
@@ -150,8 +164,8 @@ xf86scanpci()
 #endif
     /* Now try pci config 2 probe (deprecated) */
 
-    outp(0xCF8, 0xF1);
-    outp(0xCFA, 0x00); /* bus 0 for now */
+    outp(PCI_MODE2_ENABLE_REG, 0xF1);
+    outp(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
 
 #ifdef DEBUGPCI
     printf("\nPCI probing configuration type 2\n");
@@ -163,9 +177,9 @@ xf86scanpci()
 
     do {
         for (pcr._ioaddr = 0xC000; pcr._ioaddr < 0xD000; pcr._ioaddr += 0x0100){
-	    outp(0xCFA, pcr._pcibuses[pcr._pcibusidx]); /* bus 0 for now */
+	    outp(PCI_MODE2_FORWARD_REG, pcr._pcibuses[pcr._pcibusidx]); /* bus 0 for now */
             pcr._device_vendor = inpl(pcr._ioaddr);
-	    outp(0xCFA, 0x00); /* bus 0 for now */
+	    outp(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
 
             if (pcr._vendor == 0xFFFF)   /* nothing there */
                 continue;
@@ -179,7 +193,7 @@ xf86scanpci()
                 pcr._device);
 #endif
 
-	    outp(0xCFA, pcr._pcibuses[pcr._pcibusidx]); /* bus 0 for now */
+	    outp(PCI_MODE2_FORWARD_REG, pcr._pcibuses[pcr._pcibusidx]); /* bus 0 for now */
             pcr._status_command = inpl(pcr._ioaddr + 0x04);
             pcr._class_revision = inpl(pcr._ioaddr + 0x08);
             pcr._bist_header_latency_cache = inpl(pcr._ioaddr + 0x0C);
@@ -192,7 +206,7 @@ xf86scanpci()
             pcr._baserom = inpl(pcr._ioaddr + 0x30);
             pcr._max_min_ipin_iline = inpl(pcr._ioaddr + 0x3C);
             pcr._user_config = inpl(pcr._ioaddr + 0x40);
-	    outp(0xCFA, 0x00); /* bus 0 for now */
+	    outp(PCI_MODE2_FORWARD_REG, 0x00); /* bus 0 for now */
 
             /* check for pci-pci bridges (currently we only know Digital) */
             if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
@@ -211,8 +225,8 @@ xf86scanpci()
 		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
-                outp(0xCF8, 0x00);
-                outp(0xCFA, 0x00);
+                outp(PCI_MODE2_ENABLE_REG, 0x00);
+                outp(PCI_MODE2_FORWARD_REG, 0x00);
 #if 0
                 xf86DisableIOPorts(0);
 #endif
@@ -224,8 +238,8 @@ xf86scanpci()
 	}
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
-    outp(0xCF8, 0x00);
-    outp(0xCFA, 0x00);
+    outp(PCI_MODE2_ENABLE_REG, 0x00);
+    outp(PCI_MODE2_FORWARD_REG, 0x00);
 
 #if 0
     DisableIOPorts(0);

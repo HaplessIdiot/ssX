@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.59 1996/08/18 01:51:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.60 1996/08/20 12:30:30 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1960,10 +1960,9 @@ nolinear:
 	  if (!cirrusMMIOBase)
 	    cirrusMMIOBase = 
 	      xf86MapVidMem(0, EXTENDED_REGION, (pointer)vgaPCIInfo->IOBase, 0x4000);
-	  ErrorF("%s %s: %s: Using memory-mapped I/O at address 0x%08X\n"
-		 "\tmapped to 0x%08X\n",
+	  ErrorF("%s %s: %s: Using memory-mapped I/O at address 0x%08X\n",
 		 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
-		 (unsigned char *)vgaPCIInfo->IOBase, cirrusMMIOBase);
+		 (unsigned char *)vgaPCIInfo->IOBase);
 	} else {
 	  /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
 	  /* mapped yet. For now we do that in the init function. */
@@ -3562,26 +3561,25 @@ static int screenStartY;
 void
 cirrusCursorAdjust(int deltaXTiles)
 {
-#if 0
-  int wideTiles = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width;
-  int pixelsPerTile;
-  int startX;
+  /* This function is called from cir_cursor.c:cirrusMoveCursor().  Because
+     of the tiled memory of the '6x family, the desktop is always aligned 
+     with a tile boundry.  This is not how X envisions the virtual desktop, 
+     though; X thinks that the desktop can be aligned with any pixel.  Thus,
+     when X moves the cursor and changes the cursor pattern, it does so w.r.t.
+     what *it* thinks the virtual desktop is.
 
-  if (vgaBitsPerPixel == 8)
-    pixelsPerTile = wideTiles?256:128;
-  else if (vgaBitsPerPixel == 16)
-    pixelsPerTile = wideTiles?128:64;
-  else if (vgaBitsPerPixel == 32)
-    pixelsPerTile = wideTiles?64:32;
-
-  fprintf(stderr, "dX = %d  screenStartX = %d  x = %d  XOffset = %d\n",
-	  deltaXTiles, screenStartX, screenStartX + deltaXTiles*pixelsPerTile,
-	  cirrusLgCursorXOffset);
-
-  startX = screenStartX + deltaXTiles*pixelsPerTile;
-  if (startX < 0)
-    startX = 0;
-#endif
+     What does this all mean?  It means that, if left alone, the mouse will
+     become misaligned with the screen (in particular, the cursor pattern will
+     not change when the cursor passes over windows, etc.).  To solve this
+     problem, we must artificially offset the cursor position on the '6x HW 
+     cursor.  (This is why the '6x can't use a SW cursor -- the virtual 
+     desktop won't work correctly).  The downside of offsetting the cursor is
+     that the cursor may wander off the visable screen, but X won't know 
+     (e.g., 800x600 display, cursor offset +20, X asks for cursor at (790,10).
+     790 + 20 > 800, so off screen).  To remedy this, the moveCursor routine
+     explicitly asks that the virtual desktop be adjusted when it *knows* that
+     the mouse has wandered off screen (when x + offset > displayWidth).
+     */
   cirrusAdjust(screenStartX, screenStartY);
 }
 
@@ -3600,14 +3598,9 @@ cirrusAdjust(x, y)
 #ifdef MONOVGA
      unsigned char lsb;
 
-     /* If y is negative, then cirrusCursorAdjust was called from moveCursor.
-	moveCursor would like cirrusAdjust to bump the screen over a little
-	bit to accomdate the mouse, which is now off the screen. */
-     if (y >= 0) {
-       screenStartX = x;
-       screenStartY = y;
-     } else
-       y = screenStartY;
+     /* Remember where X thinks the screen is at. */
+     screenStartX = x;
+     screenStartY = y;
 
      if (HAVE546X()) {
        /* If the screen isn't aligned to a tile boundry, the first tile
@@ -3617,7 +3610,7 @@ cirrusAdjust(x, y)
        int pixelsPerTile;
        int wideTiles = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width;
        unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
-       int halfScreenWidth;
+       int screenWidth;
 
        if (vgaBitsPerPixel == 8)
 	 pixelsPerTile = wideTiles?256:128;
@@ -3626,20 +3619,29 @@ cirrusAdjust(x, y)
        else if (vgaBitsPerPixel == 32)
 	 pixelsPerTile = wideTiles?64:32;
 
-       halfScreenWidth = (vga256InfoRec.frameX1 - vga256InfoRec.frameX0) / 2;
-       if (*pX < halfScreenWidth) {
-	 /* Cursor is bumping against left edge.  Scroll left. */
+       screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
+       if (*pX < 2) {
+	 /* Bumping up against left edge.  Bias screen to left. */
 	 x = (x / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 1;
-       } else {
-	 /* Cursor is bumping agains right edge.  Scroll right. */
+       } else if (*pX > screenWidth - 2) {
+	 /* Bumping up against right edge.  Bias screen to right. */
 	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 0;
+       } else if (onLeftSide) {
+	 /* Scrolling vertically, but screen is biased to left edge. */
+	 x = (x / pixelsPerTile) * pixelsPerTile;
+       } else /* !onLeftSide */ {
+	 /* Scrolling vertically, but screen is biased to right edge. */
+	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
        }
-       if (x + pixelsPerTile * 
-	   cirrusTilesPerLineTab[cirrusTilesPerLineIndex].tilesPerLine > 
-	   cirrusTilesPerLineTab[cirrusTilesPerLineIndex].pitch)
+
+       /* Don't scroll the virtual desktop too far right.  If the desktop
+	  gets aligned with one tile too far right, then you see the screen
+	  wrapped horizontally on the far right of the display. */
+       if (x >= vga256InfoRec.displayWidth - screenWidth)
 	 x -= pixelsPerTile;
+
        cirrusLgCursorXOffset = screenStartX - x;
      }
 
@@ -3647,14 +3649,11 @@ cirrusAdjust(x, y)
      lsb = Base & 7;
      Base >>= 3;
 #else
-     /* If y is negative, then cirrusAdjust was called from moveCursor.
-	moveCursor would like cirrusAdjust to bump the screen over a little
-	bit to accomdate the mouse, which is now off the screen */
-     if (y >= 0) {
-       screenStartX = x;
-       screenStartY = y;
-     } else
-       y = screenStartY;
+
+     /* Remember where X thinks the screen is at. */
+     screenStartX = x;
+     screenStartY = y;
+
 
      if (HAVE546X()) {
        /* If the screen isn't aligned to a tile boundry, the first tile
@@ -3664,7 +3663,7 @@ cirrusAdjust(x, y)
        int pixelsPerTile;
        int wideTiles = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width;
        unsigned short *pX = (unsigned short *)(cirrusMMIOBase + 0xE0);
-       int halfScreenWidth;
+       int screenWidth;
 
        if (vgaBitsPerPixel == 8)
 	 pixelsPerTile = wideTiles?256:128;
@@ -3674,20 +3673,30 @@ cirrusAdjust(x, y)
 	 pixelsPerTile = wideTiles?64:32;
 
 
-       halfScreenWidth = (vga256InfoRec.frameX1 - vga256InfoRec.frameX0) / 2;
-       if (*pX < halfScreenWidth) {
-	 /* Cursor is bumping against left edge.  Scroll left. */
+       screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
+
+       if (*pX < 2) {
+	 /* Bumping up against left edge.  Bias screen to left. */
 	 x = (x / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 1;
-       } else {
-	 /* Cursor is bumping agains right edge.  Scroll right. */
+       } else if (*pX > screenWidth - 2) {
+	 /* Bumping up against right edge.  Bias screen to right. */
 	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 0;
+       } else if (onLeftSide) {
+	 /* Scrolling vertically, but screen is biased to left edge. */
+	 x = (x / pixelsPerTile) * pixelsPerTile;
+       } else /* !onLeftSide */ {
+	 /* Scrolling vertically, but screen is biased to right edge. */
+	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
        }
-       if (x + pixelsPerTile * 
-	   cirrusTilesPerLineTab[cirrusTilesPerLineIndex].tilesPerLine > 
-	   cirrusTilesPerLineTab[cirrusTilesPerLineIndex].pitch)
+
+       /* Don't scroll the virtual desktop too far right.  If the desktop
+	  gets aligned with one tile too far right, then you see the screen
+	  wrapped horizontally on the far right of the display. */
+       if (x >= vga256InfoRec.displayWidth - screenWidth)
 	 x -= pixelsPerTile;
+       
        cirrusLgCursorXOffset = screenStartX - x;
      }
        

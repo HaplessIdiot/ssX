@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.8 1996/07/08 10:15:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.9 1996/08/11 12:32:25 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -12,7 +12,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.8 1996/07/08 10:15:22 dawes Exp $
 
 #undef ImakeSubCmdHelper
 #ifdef UseInstalled
-#define ImakeSubCmdHelper $(IMAKE) -DUseInstalled -I$$imaketop \
+#define ImakeSubCmdHelper $(IMAKE) -DUseInstalled -I$(IMAKETOP) \
 			  -I$(IRULESRC) $(IMAKE_DEFINES)
 #else
 #define ImakeSubCmdHelper $(IMAKEPREFIX)$(IMAKE) -I$(IMAKETOP) \

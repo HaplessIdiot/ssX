@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.9 1996/03/10 12:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.10 1996/08/10 13:07:11 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -162,7 +162,7 @@ void xf86KbdInit()
 	case CODRV011:
 	case CODRV01X:
 		break;
-#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined (PCCONS_SUPPORT)
+#if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case PCCONS:
 	case SYSCONS:
 	case PCVT:
@@ -182,14 +182,10 @@ int xf86KbdOn()
 	case CODRV01X:
 		break;
 
-#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCVT_SUPPORT)
 	case SYSCONS:
-	case PCVT:
-		ioctl(xf86Info.consoleFd, KDSKBMODE, K_RAW);
-		/* FALL THROUGH */
-#endif
-#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCCONS_SUPPORT)
 	case PCCONS:
+	case PCVT:
 		nTty = kbdtty;
 		nTty.c_iflag = IGNPAR | IGNBRK;
 		nTty.c_oflag = 0;
@@ -200,6 +196,10 @@ int xf86KbdOn()
 		cfsetispeed(&nTty, 9600);
 		cfsetospeed(&nTty, 9600);
 		tcsetattr(xf86Info.consoleFd, TCSANOW, &nTty);
+
+#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+		ioctl(xf86Info.consoleFd, KDSKBMODE, K_RAW);
+#endif
 		break;
 #endif
 	}
@@ -220,7 +220,7 @@ int xf86KbdOff()
 		ioctl(xf86Info.consoleFd, KDSKBMODE, K_XLATE);
 		/* FALL THROUGH */
 #endif
-#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCCONS_SUPPORT)
+#if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCVT_SUPPORT)
 	case PCCONS:
 		tcsetattr(xf86Info.consoleFd, TCSANOW, &kbdtty);
 		break;

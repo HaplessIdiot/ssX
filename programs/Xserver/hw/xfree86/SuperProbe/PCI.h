@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.7 1996/08/16 12:28:32 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.8 1996/08/18 01:47:07 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -182,6 +182,17 @@ struct pci_config_reg {
 /* Sub Classes */
 #define PCI_SUBCLASS_PREHISTORIC_VGA	0x01
 #define PCI_SUBCLASS_DISPLAY_VGA	0x00
+
+/* PCI Configuration address */
+#define	PCI_MODE1_ADDRESS_REG		0xCF8
+#define	PCI_MODE1_DATA_REG		0xCFC
+
+#define	PCI_MODE2_ENABLE_REG		0xCF8
+#ifdef PC98
+#define	PCI_MODE2_FORWARD_REG		0xCF9
+#else
+#define	PCI_MODE2_FORWARD_REG		0xCFA
+#endif
 
 extern struct pci_config_reg *pci_devp[];
 

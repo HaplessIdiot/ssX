@@ -1,5 +1,5 @@
 .\" $XConsortium: XF68_FBDev.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree68/XF68_FBDev.man,v 3.0 1996/08/18 01:46:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree68/XF68_FBDev.man,v 3.0 1996/08/21 13:05:16 dawes Exp $
 .TH XF68_FBDev 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF68_FBDev - X Window System servers for the Linux/m68k Frame Buffer Device
@@ -94,6 +94,16 @@ Geert Uytterhoeven, \fIGeert.Uytterhoeven@cs.kuleuven.ac.be\fP
 .fi
 .RS 8
 Wrote the support for Amiga and created the generic server.
+.RE
+.PP
+.nf
+Martin Schaller,    \fIMartin_Schaller@r.maus.de\fP
+Geert Uytterhoeven, \fIGeert.Uytterhoeven@cs.kuleuven.ac.be\fP
+Andreas Schwab,     \fIschwab@issan.informatik.uni-dortmund.de\fP
+Guenther Kelleter,  \fIguenther@Pool.Informatik.RWTH-Aachen.de\fP
+.fi
+.RS 8
+Development and improvement of the frame buffer device specific code.
 .RE
 .PP
 .nf

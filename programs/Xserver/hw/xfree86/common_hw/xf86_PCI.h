@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.5 1996/02/22 05:11:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.6 1996/08/20 12:27:40 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -174,6 +174,24 @@ struct pci_config_reg {
 /* Sub Classes */
 #define PCI_SUBCLASS_PREHISTORIC_VGA	0x01
 #define PCI_SUBCLASS_DISPLAY_VGA	0x00
+
+/* PCI Configuration address */
+#define	PCI_MODE1_ADDRESS_REG		0xCF8
+#define	PCI_MODE1_DATA_REG		0xCFC
+
+#define	PCI_MODE2_ENABLE_REG		0xCF8
+#ifdef PC98
+#define	PCI_MODE2_FORWARD_REG		0xCF9
+#else
+#define	PCI_MODE2_FORWARD_REG		0xCFA
+#endif
+
+#define	PCI_CMD_STAT_REG	0x04
+#define	PCI_CMD_MASK		0xffff
+#define	PCI_CMD_IO_ENABLE	0x01
+#define	PCI_CMD_MEM_ENABLE	0x02
+#define	PCI_CMD_MASTER_ENABLE	0x04
+#define	PCI_CMD_PARITY_ENABLE	0x40
 
 extern struct pci_config_reg *pci_devp[];
 

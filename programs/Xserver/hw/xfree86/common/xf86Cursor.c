@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.10 1996/02/18 03:42:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.11 1996/03/29 22:16:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -150,7 +150,7 @@ xf86SetViewport(pScreen, x, y)
   
   if ( pScr->frameX1 < x) { 
     pScr->frameX1 = x + 1;
-    pScr->frameX0 = x - pScr->modes->HDisplay + 2;
+    pScr->frameX0 = x - pScr->modes->HDisplay + 1;
     frameChanged = TRUE ;
   }
   

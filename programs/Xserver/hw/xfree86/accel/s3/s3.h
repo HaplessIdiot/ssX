@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.36 1996/06/29 09:06:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.37 1996/08/20 12:26:50 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -79,7 +79,6 @@
 
 #define outw32(p,n) \
   if (s3InfoRec.bitsPerPixel == 32) { \
-    outw(MULTIFUNC_CNTL,MULT_MISC); \
     outw(p,n); \
     outw(p,(n)>>16); \
   } \
@@ -88,19 +87,35 @@
 
 #define S3_OUTW32(p,n) \
   if (s3InfoRec.bitsPerPixel == 32) { \
-    S3_OUTW(MULTIFUNC_CNTL,MULT_MISC); \
     S3_OUTW(p,n); \
     S3_OUTW(p,(n)>>16); \
   } \
   else \
     S3_OUTW(p,n)
 
+#ifdef S3_NEWMMIO
 #define WaitQueue16_32(n16,n32) \
   	 if (s3InfoRec.bitsPerPixel == 32) { \
 	    WaitQueue(n32); \
 	 } \
 	 else \
 	    WaitQueue(n16)
+#else
+#define WaitQueue16_32(n16,n32) \
+  	 if (s3InfoRec.bitsPerPixel == 32) { \
+	    if (n32 < 8) { \
+	       WaitQueue(n32+1); \
+	       SET_MULT_MISC(MULT_MISC); \
+	    } else { \
+	       WaitQueue(1); \
+	       SET_MULT_MISC(MULT_MISC); \
+	       WaitQueue(n32); \
+	    } \
+	 } \
+	 else \
+	    WaitQueue(n16)
+#endif
+
 
 #else /* !LINKKIT */
 #include "X.h"
@@ -256,6 +271,21 @@ Bool s3Probe(
     void
 #endif
 );
+#ifdef PC98
+void s3ConnectPCI(
+#if NeedFunctionPrototypes
+	CARD16,
+	CARD16
+#endif
+);
+
+void s3DisconnectPCI(
+#if NeedFunctionPrototypes
+	CARD16,
+	CARD16
+#endif
+);
+#endif
 /* s3misc.c */
 Bool s3Initialize(
 #if NeedFunctionPrototypes

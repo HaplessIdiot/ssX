@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.2 1994/12/25 12:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.3 1996/02/04 08:56:45 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Robin Cutshaw <robin@xfree86.org>
  *
@@ -30,7 +30,11 @@
 
 #include "Probe.h"
 
+#ifdef PC98
+static Word Ports[] = {0xCF8, 0xCF9, 0xCFC, 0x000 };
+#else
 static Word Ports[] = {0xCF8, 0xCFA, 0xCFC, 0x000 };
+#endif
 
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
@@ -60,19 +64,19 @@ int *Chipset;
 
 	EnableIOPorts(2, Ports);
 
-	outp(0xCF8, 0x00);
-	outp(0xCFA, 0x00);
-	tmp1 = inp(0xCF8);
-	tmp2 = inp(0xCFA);
+	outp(PCI_MODE2_ENABLE_REG, 0x00);
+	outp(PCI_MODE2_FORWARD_REG, 0x00);
+	tmp1 = inp(PCI_MODE2_ENABLE_REG);
+	tmp2 = inp(PCI_MODE2_FORWARD_REG);
 	if ((tmp1 == 0x00) && (tmp2 == 0x00))
 	    configtype = 2;
 	else {
-	    tmplong1 = inpl(0xCF8);
-	    outpl(0xCF8, PCI_EN);
-	    tmplong2 = inpl(0xCF8);
+	    tmplong1 = inpl(PCI_MODE1_ADDRESS_REG);
+	    outpl(PCI_MODE1_ADDRESS_REG, PCI_EN);
+	    tmplong2 = inpl(PCI_MODE1_ADDRESS_REG);
 	    if (tmplong2 == PCI_EN);
 		configtype = 1;
-	    outpl(0xCF8, tmplong1);
+	    outpl(PCI_MODE1_ADDRESS_REG, tmplong1);
 	}
 
 	DisableIOPorts(2, Ports);
@@ -83,8 +87,8 @@ int *Chipset;
 	    EnableIOPorts(3, Ports);
 	    for (pcibus = 0x000000; pcibus < 0x100000; pcibus += 0x10000) {
 		for (cardnum = 0x00000; cardnum < 0x10000; cardnum += 0x0800) {
-		    outpl(0xCF8, PCI_EN | pcibus | cardnum);
-		    tmplong1 = inpl(0xCFC);
+		    outpl(PCI_MODE1_ADDRESS_REG, PCI_EN | pcibus | cardnum);
+		    tmplong1 = inpl(PCI_MODE1_DATA_REG);
 		    vendor = (unsigned short )(tmplong1 & 0xFFFF);
 		    device = (unsigned short )((tmplong1 >> 16) & 0xFFFF);
 #ifdef DEBUG
@@ -92,8 +96,8 @@ int *Chipset;
 	    pcibus | cardnum, vendor, device);
 #endif
 		    if ((vendor == 0x105D) && (device == 0x2309)) {
-			outpl(0xCF8, PCI_EN | pcibus | cardnum | 0x24);
-			iobase = inpl(0xCFC) & 0xFFFFFF00;
+			outpl(PCI_MODE1_ADDRESS_REG, PCI_EN | pcibus | cardnum | 0x24);
+			iobase = inpl(PCI_MODE1_DATA_REG) & 0xFFFFFF00;
 
 			DisableIOPorts(3, Ports);
 			Ports[3] = iobase + 0x18;
@@ -130,8 +134,8 @@ int *Chipset;
 	/* else configtype == 2 */
 
 	EnableIOPorts(2, Ports);
-	outp(0xCF8, 0x80);
-	outp(0xCFA, 0x00);
+	outp(PCI_MODE2_ENABLE_REG, 0x80);
+	outp(PCI_MODE2_FORWARD_REG, 0x00);
 	DisableIOPorts(2, Ports);
 
 	for (ioaddr = 0xC000; ioaddr < 0xD000; ioaddr += 0x0100) {
@@ -185,7 +189,7 @@ int *Chipset;
 
 	Ports[2] = Ports[3] = 0x0000;
 	EnableIOPorts(NUMPORTS, Ports);
-	outp(0xCF8, 0x00);
+	outp(PCI_MODE2_ENABLE_REG, 0x00);
 	DisableIOPorts(NUMPORTS, Ports);
 
 	return(result);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.14 1996/03/05 05:42:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.15 1996/08/16 12:31:58 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -760,7 +760,7 @@ cirrusMoveCursor(pScr, x, y)
      ScreenPtr pScr;
      int   x, y;
 {
-  void cirrusCursorAdjust(int);
+  void cirrusCursorAdjust(void);
 
   if (!xf86VTSema)
       return;
@@ -775,14 +775,13 @@ cirrusMoveCursor(pScr, x, y)
      coordinates to us (the moveMouse function) accordingly.  Thus, we must
      compensate for the tile-alligned desktop here. */
   if (HAVE546X()) {
+    int screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
+
     if (x + cirrusLgCursorXOffset < 0) {
-#ifdef DEBUG_CIRRUS_CURSOR
-      fprintf(stderr, "x = %d  off = %d  ", x, cirrusLgCursorXOffset);
-#endif
-      cirrusCursorAdjust(-1);  /* Bump one tile left */
+      cirrusCursorAdjust();  /* Bump one tile left */
     }
-    else if (x + cirrusLgCursorXOffset > vga256InfoRec.displayWidth)
-      cirrusCursorAdjust(1);  /* Bump one tile right */
+    else if (x + cirrusLgCursorXOffset > screenWidth)
+      cirrusCursorAdjust();  /* Bump one tile right */
     x += cirrusLgCursorXOffset;
   }
 

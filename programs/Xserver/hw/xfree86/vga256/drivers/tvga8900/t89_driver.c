@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.38 1996/08/10 13:08:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.39 1996/08/14 14:32:57 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1006,7 +1006,7 @@ TVGA8900FbInit()
 
 	/* Use Membase when told to, then align on 2MB boundary */
 	if (vga256InfoRec.MemBase != 0)
-		TVGA8900.ChipLinearBase = vga256InfoRec.MemBase & 0xFE00000;
+		TVGA8900.ChipLinearBase = vga256InfoRec.MemBase & 0xFFE00000;
 
 	if (tridentIsTGUI)
 	  if (tridentReprogrammedMCLK > 0) 

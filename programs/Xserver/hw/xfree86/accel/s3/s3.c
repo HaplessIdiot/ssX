@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.136 1996/08/18 01:50:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.137 1996/08/20 12:26:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -240,6 +240,7 @@ static SymTabRec s3ChipTable[] = {
    { S3_TRIO32,		"Trio32" },
    { S3_TRIO64,		"Trio64" },
    { S3_TRIO64VPLUS,	"Trio64V+" },
+   { S3_ViRGE,		"ViRGE" },
    { -1,		"" },
 };
 
@@ -637,6 +638,9 @@ s3GetPCIInfo()
 	 case PCI_968:
 	    info.ChipType = S3_968;
 	    break;
+	 case PCI_ViRGE:
+	    info.ChipType = S3_ViRGE;
+	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
 	    info.DevID = pcrp->_device;
@@ -653,17 +657,72 @@ s3GetPCIInfo()
       i++;
    }
 
+   /* for new mmio we have to ensure that the PCI base address is 
+    * 64MB aligned and that there are no address collitions within 64MB.
+    * S3 868/968 only pretend to need 32MB and thus fool 
+    * the BIOS PCI auto configuration :-(  */
+ 
+   if (   info.ChipType == S3_868 
+       || info.ChipType == S3_968 
+       || info.ChipType == S3_TRIO_32_64  /* only needed for Trio64V+ */
+       || info.ChipType == S3_ViRGE) {
+      unsigned long base0 = info.MemBase;
+      char *probed = XCONFIG_PROBED;
+      char map_64m[64];
+      int j;
+      
+      if (s3InfoRec.MemBase != 0) {
+	 base0 = s3InfoRec.MemBase;
+	 probed = XCONFIG_GIVEN;
+      }
+
+      /* map allocated 64MB blocks */
+      map_64m[63] = 1;  /* don't use the last 64MB area */
+      for (j=0; j<64; j++) map_64m[j] = 0;
+      for (j=0; pcrp = pci_devp[j]; j++) {
+	 if (i != j) {
+	    map_64m[ (pcrp->_base0 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base0+0x3ffffff) >> 26) & 0x3f] = 1;
+	    map_64m[ (pcrp->_base1 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base1+0x3ffffff) >> 26) & 0x3f] = 1;
+	    map_64m[ (pcrp->_base2 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base2+0x3ffffff) >> 26) & 0x3f] = 1;
+	    map_64m[ (pcrp->_base3 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base3+0x3ffffff) >> 26) & 0x3f] = 1;
+	    map_64m[ (pcrp->_base4 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base4+0x3ffffff) >> 26) & 0x3f] = 1;
+	    map_64m[ (pcrp->_base5 >> 26) & 0x3f] = 1;
+	    map_64m[((pcrp->_base5+0x3ffffff) >> 26) & 0x3f] = 1;
+	 }
+      }
+
+      /* check for 64MB alignment and free space */
+      
+      if ((base0 & 0x3ffffff) ||
+	  map_64m[(base0 >> 26) & 0x3f] || 
+	  map_64m[((base0+0x3ffffff) >> 26) & 0x3f]) {
+	 for (j=63; j>=16 && map_64m[j]; j--);
+	 ErrorF("%s %s: PCI: base address not correctly aligned or address conflict\n",
+		probed, info.ChipRev);
+	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
+		base0, ((unsigned long)j) << 26);
+	 info.MemBase = ((unsigned long)j) << 26;
+         xf86writepci(s3InfoRec.scrnIndex, pci_devp[i]->_cardnum, 0x10,
+		      ~0L, ((unsigned long)j) << 26);
+      }
+   }
    /* Free PCI information */
    xf86cleanpci();
 
    if (found && xf86Verbose) {
+
       if (info.ChipType != S3_UNKNOWN) {
-	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08x\n", XCONFIG_PROBED,
+	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
 		s3InfoRec.name, xf86TokenToString(s3ChipTable, info.ChipType),
 		info.ChipRev, info.MemBase);
       } else {
 	 ErrorF("%s %s: PCI: unknown (please report), ID 0x%04x rev %x,"
-		" Linear FB @ 0x%08x\n", XCONFIG_PROBED,
+		" Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
 		s3InfoRec.name, info.DevID, info.ChipRev, info.MemBase);
       }
    }
@@ -766,7 +825,7 @@ s3Probe()
 	pc98BoardType = PWLB;
    if (OFLG_ISSET(OPTION_PW968, &s3InfoRec.options))
 	pc98BoardType = PW968;
-   ErrorF("PC98   :Board Type = %X \n",pc98BoardType);
+   ErrorF("   PC98:Board Type = %X \n",pc98BoardType);
    if(BoardInit() == FALSE)
 	return(FALSE);
 #endif 
@@ -1083,6 +1142,8 @@ s3Probe()
 	    chipname = "968";
 	 } else if (S3_964_SERIES(s3ChipId)) {
 	    chipname = "964";
+/*	 } else if (S3_ViRGE_SERIES(s3ChipId)) {
+	    chipname = "ViRGE"; */
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {
@@ -3659,6 +3720,58 @@ redo_mode_lookup:
 #endif
    return TRUE;
 }
+
+#ifdef PC98
+void
+s3ConnectPCI(vendor, device)
+    CARD16 vendor;
+    CARD16 device;
+{
+    struct pci_config_reg *pcrp;
+    unsigned int dev;
+
+    xf86scanpci(s3InfoRec.scrnIndex);
+
+    for (dev = 0; (pcrp = pci_devp[dev]) != NULL; dev ++)
+    {
+	if (pcrp->_vendor == vendor && pcrp->_device == device)
+	{
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 
+		PCI_CMD_STAT_REG, PCI_CMD_MASK,
+		PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
+	    break;
+	}
+    }
+
+    xf86cleanpci();
+    return;
+}
+
+void
+s3DisconnectPCI(vendor, device)
+    CARD16 vendor;
+    CARD16 device;
+{
+    struct pci_config_reg *pcrp;
+    unsigned int dev;
+
+    xf86scanpci(s3InfoRec.scrnIndex);
+
+    for (dev = 0; (pcrp = pci_devp[dev]) != NULL; dev ++)
+    {
+	if (pcrp->_vendor == vendor && pcrp->_device == device)
+	{
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 
+		PCI_CMD_STAT_REG, PCI_CMD_MASK,
+		0);
+	    break;
+	}
+    }
+
+    xf86cleanpci();
+    return;
+}
+#endif
 
 static Bool
 s3ClockSelect(no)

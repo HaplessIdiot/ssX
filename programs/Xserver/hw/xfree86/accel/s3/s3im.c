@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.22 1996/05/13 11:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.23 1996/08/20 12:27:03 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -879,10 +879,9 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
+   WaitIdle();
    outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA
 	  | WRTDATA);
-
-   WaitQueue(8);
 
    w *= s3Bpp;
    psrc += pwidth * py;

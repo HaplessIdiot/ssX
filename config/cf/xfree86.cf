@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.99 1996/08/20 12:07:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.100 1996/08/21 13:04:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -418,9 +418,10 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
  * The expiry date for beta versions
  *
  * 841536000 is Sun Sep  1 00:00:00 1996 GMT
+ * 849398400 is Sun Dec  1 00:00:00 1996 GMT
  */
 #ifndef XF86ServerExpiry
-#define XF86ServerExpiry 841536000
+#define XF86ServerExpiry 849398400
 #endif
 
 /*

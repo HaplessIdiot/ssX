@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.94 1996/08/14 14:32:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.95 1996/08/20 12:27:05 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2668,8 +2668,18 @@ s3Init(mode)
       tmp = inb(vgaCRReg) & ~0x18;
       if (s3Mmio928)
 	 tmp |= 0x10;
-      if (s3NewMmio)
+      if (s3NewMmio) {
+	 if (s3InfoRec.MemBase != 0) {
+	    s3Port59 = (s3InfoRec.MemBase >> 24) & 0xfc;
+	    s3Port5A = 0;
+	    outb(vgaCRIndex, 0x59);
+	    outb(vgaCRReg, s3Port59);
+	    outb(vgaCRIndex, 0x5a);
+	    outb(vgaCRReg, s3Port5A);
+	    outb(vgaCRIndex, 0x53);
+	 }
 	 tmp |= 0x18;
+      }
 
       /*
        * Now the DRAM interleaving bit for the 801/805 chips
@@ -2739,6 +2749,11 @@ s3Init(mode)
       outb(vgaCRReg, s3Port59);
       outb(vgaCRIndex, 0x5A);
       outb(vgaCRReg, s3Port5A);
+
+      if (s3NewMmio) {      
+	 outb (vgaCRIndex, 0x58);
+	 outb (vgaCRReg, s3LinApOpt & ~0x04 | s3SAM256);  /* window size for linear mode */
+      }
 
       /* This shouldn't be needed -- they should be set by vgaHWInit() */
       if (!mode->CrtcVAdjusted) {

@@ -1,5 +1,5 @@
 /* $XConsortium: maprules.c /main/5 1996/03/22 12:52:33 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.3 1996/08/14 23:39:06 dawes Exp $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -729,8 +729,10 @@ int	len;
 	}
     }
     *outstr++= '\0';
+#if 0
     if (orig!=name)
 	free(orig);
+#endif
     return name;
 }
 

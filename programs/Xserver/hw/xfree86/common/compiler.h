@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.13 1996/08/14 14:32:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.14 1996/08/18 01:51:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1168,6 +1168,7 @@ static int inb(port)
 #  pragma asm partial_optimization inb
 # endif
 #endif
+#define mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
 
 /*

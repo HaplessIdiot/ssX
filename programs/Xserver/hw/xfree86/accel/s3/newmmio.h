@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.0 1996/08/20 12:26:45 dawes Exp $ */
 /***************************************************************************
  * 
  * typedefs and macros for old and new MMIO mode, Trio64V+ and 868/968
@@ -117,37 +117,37 @@ typedef struct {
 
 
 typedef struct  {
-        int32	cur_x;
-        char    filler1[0x8ae8 - 0x86e8 - sizeof(int32)];
-        int32	dy_axstep;
-        char    filler2[0x8ee8 - 0x8ae8 - sizeof(int32)];
-        int32	dx_diastep;
-        char    filler3[0x92e8 - 0x8ee8 - sizeof(int32)];
-        int32	line_err;
-        char    filler33[0x96e8 - 0x92e8 - sizeof(int32)];
-        int32	mj_ax_pcnt;
-        char    filler4[0x9ae8 - 0x96e8 - sizeof(int32)];
-        int32	gp_stat;
-        char    filler5[0x9ee8 - 0x9ae8 - sizeof(int32)];
-        int32	stroke_vectrans; 
-        char    filler6[0xa2e8 - 0x9ee8 - sizeof(int32)];
-        int32  back_color;
-        char    filler7[0xa6e8 - 0xa2e8 - sizeof(int32)];
-        int32  fore_col;
-        char    filler8[0xaae8 - 0xa6e8 - sizeof(int32)];
-        int32  bitplane_wmask;
-        char    filler88[0xaee8 - 0xaae8 - sizeof(int32)];
-        int32  bitplane_rmask;
-        char    filler9[0xb2e8 - 0xaee8 - sizeof(int32)];
-        int32  color_compare;
-        char    filler10[0xb6e8 - 0xb2e8 - sizeof(int32)];
-        int32	back_mix;
-        char    filler101[0xbae8 - 0xb6e8 - sizeof(int32)];
-        int32	fore_mix;
-        char    filler11[0xbee8 - 0xbae8 - sizeof(int32)];
-        int32	r_reg_data;
-        char    filler12[0xe2e8 - 0xbee8 - sizeof(int32)];
-        int32	pixel_data_transfer;
+        int16	cur_x;
+        char    filler1[0x8ae8 - 0x86e8 - sizeof(int16)];
+        int16	dy_axstep;
+        char    filler2[0x8ee8 - 0x8ae8 - sizeof(int16)];
+        int16	dx_diastep;
+        char    filler3[0x92e8 - 0x8ee8 - sizeof(int16)];
+        int16	line_err;
+        char    filler33[0x96e8 - 0x92e8 - sizeof(int16)];
+        int16	mj_ax_pcnt;
+        char    filler4[0x9ae8 - 0x96e8 - sizeof(int16)];
+        int16	gp_stat;
+        char    filler5[0x9ee8 - 0x9ae8 - sizeof(int16)];
+        int16	stroke_vectrans; 
+        char    filler6[0xa2e8 - 0x9ee8 - sizeof(int16)];
+        int16  back_color;
+        char    filler7[0xa6e8 - 0xa2e8 - sizeof(int16)];
+        int16  fore_col;
+        char    filler8[0xaae8 - 0xa6e8 - sizeof(int16)];
+        int16  bitplane_wmask;
+        char    filler88[0xaee8 - 0xaae8 - sizeof(int16)];
+        int16  bitplane_rmask;
+        char    filler9[0xb2e8 - 0xaee8 - sizeof(int16)];
+        int16  color_compare;
+        char    filler10[0xb6e8 - 0xb2e8 - sizeof(int16)];
+        int16	back_mix;
+        char    filler101[0xbae8 - 0xb6e8 - sizeof(int16)];
+        int16	fore_mix;
+        char    filler11[0xbee8 - 0xbae8 - sizeof(int16)];
+        int16	r_reg_data;
+        char    filler12[0xe2e8 - 0xbee8 - sizeof(int16)];
+        int16	pixel_data_transfer;
 } enhanced_regs;
 
 typedef struct {
@@ -180,9 +180,10 @@ typedef struct {
         union { streams_proc_regs regs; 
                 char dummy[0x82e8-0x8180]; 
         } streams_regs; 
-        union { int32	cur_y;
-                char dummy[0x83b0 - 0x82e8];
-        } cur_y;
+        int16	cur_y;
+        union { int16	cur_y2;
+                char dummy[0x83b0 - 0x82ea];
+        } cur_y2;
         union { vga_3bd_regs    regs;
                 char dummy[0x83c0 - 0x83b0];
         } v3b_regs;
@@ -217,7 +218,7 @@ typedef struct {
 #define SET_MAJ_AXIS_PCNT(maj)	((mmtr)s3VideoMem)->enh_regs.regs.mj_ax_pcnt = (maj)
 #define SET_CURPT(c_x, c_y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.cur_point = (c_y) | ((c_x) << 16)
 #define SET_CUR_X(c_x)		((mmtr)s3VideoMem)->enh_regs.regs.cur_x = (c_x)
-#define SET_CUR_Y(c_y)		((mmtr)s3VideoMem)->cur_y.cur_y = (c_y)
+#define SET_CUR_Y(c_y)		((mmtr)s3VideoMem)->cur_y = (c_y)
 #define SET_DESTSTP(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.dest_stp = (y) | ((x) << 16)
 #define SET_AXIS_PCNT(maj, min)	((mmtr)s3VideoMem)->pk_enh_regs.regs.axis_pcnt = (min) | ((maj) << 16)
 #define SET_CMD(c_d) 		{ mem_barrier(); ((mmtr)s3VideoMem)->pk_enh_regs.regs.command = (c_d); }
@@ -227,7 +228,7 @@ typedef struct {
 				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = (y2) | ((x2) << 16);\
 				}
 #define SET_SCISSORS_RB(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = (y) | ((x) << 16)
-
+#define SET_MULT_MISC(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.mult_misc = (val)
 
 /*
  * reads from GP_STAT
@@ -271,6 +272,8 @@ typedef struct {
 	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | x); \
 	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | y); \
 }
+#define SET_MULT_MISC(val) 	S3_OUTW(MULTIFUNC_CNTL, MULT_MISC)
+
 #define SET_SCISSORS(x1,y1,x2,y2) {\
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | y1);\
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | x1);\

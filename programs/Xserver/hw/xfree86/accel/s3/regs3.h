@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.19 1996/06/30 04:41:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.20 1996/08/20 12:26:46 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -101,6 +101,7 @@
 #define S3_TRIO64_SERIES(chip)  ((chip&0xfff0)==0x11e0)
 #define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && (s3ChipRev & 0x400) == 0x400)
 #define S3_TRIOxx_SERIES(chip)  ((chip&0xfef0)==0x10e0)  /* (S3_TRIO32_SERIES(chip) || S3_TRIO64_SERIES(chip) */
+#define S3_ViRGE_SERIES(chip)   ((chip&0xfff0)==0x31e0)
 #define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) ||  S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))
 #define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || S3_x68_SERIES(chip))
@@ -115,6 +116,7 @@
 #define PCI_964_0		0x88D0
 #define PCI_964_1		0x88D1
 #define PCI_968			0x88F0
+#define PCI_ViRGE		0x5631
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
@@ -131,6 +133,7 @@
 #define S3_TRIO32		11
 #define S3_TRIO64		12
 #define S3_TRIO64VPLUS		13
+#define S3_ViRGE		S3_UNKNOWN /* 14 */
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

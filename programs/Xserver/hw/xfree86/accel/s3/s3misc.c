@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.46 1996/06/29 09:07:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.47 1996/08/20 12:27:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -654,6 +654,13 @@ s3Initialize(scr_index, pScreen, argc, argv)
       for(i = 0; i < s3Bpp * 8; i++)
 	 ErrorF(" %02x", pat[i]&0xff);
       ErrorF("\n");
+
+      ErrorF("%s %s:            ",
+	     XCONFIG_PROBED, s3InfoRec.name);
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+      ErrorF("\n\n");
 #endif
 
       ok = 1;
@@ -770,6 +777,9 @@ s3EnterLeaveVT(enter, screen_idx)
    }
 
    if (enter) {
+#ifdef PC98_GA968
+	s3ConnectPCI(PCI_S3_VENDOR_ID, PCI_968);
+#endif
       xf86MapDisplay(screen_idx, VGA_REGION);
       if (s3VideoMem != vgaBase)
 	 xf86MapDisplay(screen_idx, LINEAR_REGION);
@@ -839,6 +849,9 @@ s3EnterLeaveVT(enter, screen_idx)
         /* make sure we are in linear mode */
 	s3EnableLinear();
       }
+#endif
+#ifdef PC98_GA968
+   s3DisconnectPCI(PCI_S3_VENDOR_ID, PCI_968);
 #endif
    }
 }
