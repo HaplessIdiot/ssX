@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.2 2001/10/04 04:38:41 paulo Exp $ */
 
 #ifndef Lisp_debugger_h
 #define Lisp_debugger_h
@@ -56,7 +56,13 @@ typedef enum _LispDebugCall {
     LispDebugCallBegini,
     LispDebugCallEndi,
     LispDebugCallFatal,
+    LispDebugCallWatch,	/* just remove watched variables that lost context */
 } LispDebugCall;
+
+typedef enum _LispDebugBreak {
+    LispDebugBreakFunction,
+    LispDebugBreakVariable,
+} LispDebugBreak;
 
 #include "private.h"
 

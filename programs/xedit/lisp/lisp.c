@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.11 2001/10/02 06:38:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.13 2001/10/04 04:38:41 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -97,19 +97,6 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 {
     va_list ap;
 
-    if (mac->debugging)
-	LispDebugger(mac, LispDebugCallFatal, NIL, NIL);
-
-    while (mac->mem.mem_level)
-	free(mac->mem.mem[--mac->mem.mem_level]);
-
-    /* panic */
-    LispTopLevel(mac);
-    if (mac->st) {
-	mac->cp = &(mac->st[strlen(mac->st)]);
-	mac->tok = 0;
-    }
-
     fprintf(lisp_stderr, "%s", "*** Error: ");
 
     va_start(ap, fmt);
@@ -121,6 +108,24 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 
     mac->column = 0;
     mac->newline = 1;
+
+    if (mac->debugging) {
+	/* when stack variables could be changed, this must be also changed! */
+	mac->debug_level = -1;
+	LispDebugger(mac, LispDebugCallWatch, NIL, NIL);
+
+	LispDebugger(mac, LispDebugCallFatal, NIL, NIL);
+    }
+
+    while (mac->mem.mem_level)
+	free(mac->mem.mem[--mac->mem.mem_level]);
+
+    /* panic */
+    LispTopLevel(mac);
+    if (mac->st) {
+	mac->cp = &(mac->st[strlen(mac->st)]);
+	mac->tok = 0;
+    }
 
     if (mac->errexit)
 	exit(1);
@@ -2334,9 +2339,9 @@ LispMachine(LispMac *mac)
     /*CONSTCOND*/
     while (1) {
 	if (setjmp(mac->jmp) == 0) {
-	    global_mac = mac;
 	    mac->sigint = signal(SIGINT, LispAbortSignal);
 	    mac->sigfpe = signal(SIGFPE, LispFPESignal);
+	    global_mac = mac;
 	    if (mac->interactive && mac->prompt) {
 		fprintf(lisp_stdout, "%s", mac->prompt);
 		fflush(lisp_stdout);
@@ -2354,14 +2359,17 @@ LispMachine(LispMac *mac)
 		    }
 		}
 	    }
-	    global_mac = NULL;
 	    signal(SIGINT, mac->sigint);
 	    signal(SIGFPE, mac->sigfpe);
-	    mac->sigint = NULL;
+	    global_mac = NULL;
 	    LispTopLevel(mac);
 	    if (mac->tok == EOF)
 		break;
+	    continue;
 	}
+	signal(SIGINT, mac->sigint);
+	signal(SIGFPE, mac->sigfpe);
+	global_mac = NULL;
     }
 }
 
