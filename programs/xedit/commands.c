@@ -24,9 +24,10 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.1 1998/10/25 07:12:16 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.2 1998/10/25 11:56:54 dawes Exp $ */
 
 #include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include "xedit.h"
 #ifdef CRAY
 #include <unistd.h>

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.5 1998/08/20 13:58:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.6 1998/10/03 08:42:05 dawes Exp $ */
 
 /* Form widget private definitions */
 
@@ -51,7 +51,10 @@ SOFTWARE.
 
 #include <X11/Xaw/Form.h>
 
+#ifndef XAWDL_DEFINED
+#define XAWDL_DEFINED
 typedef struct _XawDL XawDisplayList;
+#endif
 
 #define XtREdgeType "EdgeType"
 

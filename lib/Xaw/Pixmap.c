@@ -25,13 +25,14 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.7 1998/06/29 13:41:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.8 1998/08/16 10:24:23 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xfuncs.h>
 #include "Private.h"
 
 /*

@@ -3,10 +3,12 @@ XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:52:16 rws Exp $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/fonts/scaled/Type1/Imakefile,v 1.2 1997/04/17 13:02:41 dawes Exp $
 
 
+#if BuildLatin2Fonts
 #define IHaveSubdirs
+#endif
 #define PassCDebugFlags /* as nothing */
 
 #if BuildLatin2Fonts
@@ -28,5 +30,7 @@ MakeFontsDir(fonts.scale)
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
 
+#ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+#endif

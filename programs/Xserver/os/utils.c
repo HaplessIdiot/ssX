@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.39 1998/09/19 12:15:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.40 1998/10/04 09:39:49 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1150,7 +1150,7 @@ pointer client;
 
 #ifndef INTERNAL_MALLOC
 
-unsigned long * 
+void * 
 Xalloc (amount)
     unsigned long amount;
 {
@@ -1182,7 +1182,7 @@ Xalloc (amount)
  * "no failure" realloc, alternate interface to Xalloc w/o Must_have_memory
  *****************/
 
-unsigned long *
+void *
 XNFalloc (amount)
     unsigned long amount;
 {
@@ -1209,7 +1209,7 @@ XNFalloc (amount)
  * Xcalloc
  *****************/
 
-unsigned long *
+void *
 Xcalloc (amount)
     unsigned long   amount;
 {
@@ -1225,7 +1225,7 @@ Xcalloc (amount)
  * XNFcalloc
  *****************/
 
-unsigned long *
+void *
 XNFcalloc (amount)
     unsigned long   amount;
 {
@@ -1243,7 +1243,7 @@ XNFcalloc (amount)
  * Xrealloc
  *****************/
 
-unsigned long *
+void *
 Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
@@ -1281,7 +1281,7 @@ Xrealloc (ptr, amount)
  * "no failure" realloc, alternate interface to Xrealloc w/o Must_have_memory
  *****************/
 
-unsigned long *
+void *
 XNFrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;

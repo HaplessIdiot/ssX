@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.10 1998/08/16 10:24:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.11 1998/09/05 06:36:05 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -37,6 +37,7 @@
 #include <X11/Constraint.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
+#include <X11/Xfuncs.h>
 #include "Private.h"
 
 /*

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.7 1998/09/05 06:36:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.8 1998/10/03 09:06:27 dawes Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -35,6 +35,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include <X11/Xatom.h>
 #include <X11/Xos.h>		/* for strcpy declaration */
+#include <X11/Xfuncs.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xmu/EditresP.h>
 #include <X11/Xmd.h>
