@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.21 2003/02/13 20:28:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.22tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -94,7 +94,7 @@ static void RADEONSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     RADEONInfoPtr  info       = RADEONPTR(pScrn);
     CARD32        *pixels     = (CARD32 *)(pointer)(info->FB + info->cursor_start);
-    CARD32         pixel, i;
+    int            pixel, i;
     CURSOR_SWAPPING_DECL_MMIO
     CURSOR_SWAPPING_DECL
 
