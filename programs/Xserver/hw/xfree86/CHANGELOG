@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 363. Update documention for the SiS driver, the Options file
+      (Ademar de Souza Reis Jr.).
  362. Xterm patches #157, #158, #159, #160 (Thomas Dickey): mostly bug fixes.
  361. Fix high-res modes in the nv driver.  Add interlaced support for
       chips older than NV11 (Mark Vojkovich).
@@ -13984,4 +13986,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1982 2001/10/08 22:31:37 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1983 2001/10/09 15:44:41 dickey Exp $
