@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.26 2000/12/20 00:14:15 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.27 2000/12/20 19:48:42 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1868,6 +1868,7 @@ DRIMoveBuffersHelper(
 )
 {
    BoxPtr extents, pbox, firstBox, lastBox;
+   BoxRec tmpBox;
    int y, nbox;
 
    extents = REGION_EXTENTS(pScreen, reg);
@@ -1879,8 +1880,13 @@ DRIMoveBuffersHelper(
      if(nbox > 1) {
         firstBox = pbox;
         lastBox = pbox + nbox - 1;
-        while((unsigned long)firstBox < (unsigned long)lastBox)
-           *firstBox++ = *lastBox--;
+        while((unsigned long)firstBox < (unsigned long)lastBox) {
+           tmpBox = *firstBox;
+           *firstBox = *lastBox;
+           *lastBox = tmpBox;
+           firstBox++;
+           lastBox--;
+        }
      }
    } else *ydir = 1;
 
@@ -1893,15 +1899,25 @@ DRIMoveBuffersHelper(
            pbox++;
            if(pbox->y1 == y) lastBox++;
            else {
-              while((unsigned long)firstBox < (unsigned long)lastBox)
-                  *firstBox++ = *lastBox--;
+              while((unsigned long)firstBox < (unsigned long)lastBox) {
+                 tmpBox = *firstBox;
+                 *firstBox = *lastBox;
+                 *lastBox = tmpBox;
+                 firstBox++;
+                 lastBox--;
+              }
 
               firstBox = lastBox = pbox;
               y = pbox->y1;
            }
          }
-         while((unsigned long)firstBox < (unsigned long)lastBox)
-            *firstBox++ = *lastBox--;
+         while((unsigned long)firstBox < (unsigned long)lastBox) {
+           tmpBox = *firstBox;
+           *firstBox = *lastBox;
+           *lastBox = tmpBox;
+           firstBox++;
+           lastBox--;
+        }
      }
    } else *xdir = 1;
 
