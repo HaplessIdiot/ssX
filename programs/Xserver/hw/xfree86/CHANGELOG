@@ -1,4 +1,6 @@
 XFree86 4.4.99.14 (xx September 2004)
+ 189. Fix incorrect application of Satoshi Kimura's fix (124) to avoid
+      various keycode conversions on NEC PC-98 platforms.
  188. Fix bug that caused restacks to be optimized away in rootless mode
       (Torrey T. Lyons).
  187. Remove stale references to XAudio (Marc La France).
@@ -19107,7 +19109,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3318 2004/09/20 15:24:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3319 2004/09/21 18:37:48 torrey Exp $
 
 
 
