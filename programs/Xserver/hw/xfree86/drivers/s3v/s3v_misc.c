@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.3 1997/03/28 09:42:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.4 1997/05/03 09:18:38 dawes Exp $ */
 
 /*
  *
@@ -137,7 +137,7 @@ s3vGetPCIInfo()
 	  map_64m[((base0+0x3ffffff) >> 26) & 0x3f]) {
 	 for (j=63; j>=16 && map_64m[j]; j--);
 	 info.MemBase = ((unsigned long)j) << 26;
-	 ErrorF("%s %s: PCI: base address not correctly aligned or address conflict\n",
+	 ErrorF("%s %s: S3V: PCI base address not correctly aligned or address conflict\n",
 		probed, vga256InfoRec.name);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
 		base0, info.MemBase);
@@ -160,11 +160,11 @@ s3vGetPCIInfo()
    xf86cleanpci();
    if (found && xf86Verbose) {
       if (info.ChipType != S3_UNKNOWN) {
-	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
+	 ErrorF("%s %s: S3V: %s rev %x, Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
 		vga256InfoRec.name,xf86TokenToString(s3vChipTable, info.ChipType), 
 		info.ChipRev, info.MemBase);
       } else {
-	 ErrorF("%s %s: PCI: unknown (please report), ID 0x%04x rev %x,"
+	 ErrorF("%s %s: S3V: unknown (non-ViRGE? please report), ID 0x%04x rev %x,"
 		" Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
 		vga256InfoRec.name, info.DevID, info.ChipRev, info.MemBase);
       }
