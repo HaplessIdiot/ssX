@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.10 2001/12/14 20:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.11 2002/05/31 18:46:05 dawes Exp $ */
 
 /*
  * authorization hooks for the server
@@ -145,7 +145,7 @@ LoadAuthorization (void)
 #if !defined(WIN32) && !defined(__UNIXOS2__)
     buf = xalloc (strlen(authorization_file) + 5);
     if (!buf)
-	return 0;
+	return -1;
     sprintf (buf, "cat %s", authorization_file);
     f = Popen (buf, "r");
     xfree (buf);
@@ -153,7 +153,7 @@ LoadAuthorization (void)
     f = fopen (authorization_file, "r");
 #endif
     if (!f)
-	return 0;
+	return -1;
 
     while ((auth = XauReadAuth (f)) != 0) {
 	for (i = 0; i < NUM_AUTHORIZATION; i++) {
@@ -170,7 +170,8 @@ LoadAuthorization (void)
     }
 
 #if !defined(WIN32) && !defined(__UNIXOS2__)
-    Pclose (f);
+    if (Pclose (f) != 0)
+	return -1;
 #else
     fclose (f);
 #endif
@@ -205,6 +206,7 @@ CheckAuthorization (
     int	i;
     struct stat buf;
     static time_t lastmod = 0;
+    static Bool loaded = FALSE;
 
     if (!authorization_file || stat(authorization_file, &buf))
     {
@@ -220,9 +222,28 @@ CheckAuthorization (
     }
     if (ShouldLoadAuth)
     {
-	if (LoadAuthorization())
+	int loadauth = LoadAuthorization();
+
+	/*
+	 * If the authorization file has at least one entry for this server,
+	 * disable local host access. (loadauth > 0)
+	 *
+	 * If there are zero entries (either initially or when the
+	 * authorization file is later reloaded), or if a valid
+	 * authorization file was never loaded, enable local host access.
+	 * (loadauth == 0 || !loaded)
+	 *
+	 * If the authorization file was loaded initially (with valid
+	 * entries for this server), and reloading it later fails, don't
+	 * change anything. (loadauth == -1 && loaded)
+	 */
+	
+	if (loadauth > 0)
+	{
 	    DisableLocalHost(); /* got at least one */
-	else
+	    loaded = TRUE;
+	}
+	else if (loadauth == 0 || !loaded)
 	    EnableLocalHost ();
     }
     if (name_length) {
