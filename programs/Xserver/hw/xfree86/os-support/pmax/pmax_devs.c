@@ -47,7 +47,7 @@
  * sysv/sysv_io.c which contains the following copyright notice:
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
- * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
+ * Copyright 1993 by David Dawes <dawes@xfree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -69,7 +69,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.2 1998/07/25 16:56:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.3 1999/01/26 10:40:44 dawes Exp $ */
 
 #include "X.h"
 

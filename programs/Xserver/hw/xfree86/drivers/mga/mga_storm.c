@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.47 1999/03/21 07:35:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.48 1999/04/25 10:02:12 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -280,6 +280,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				LEFT_EDGE_CLIPPING |
 				LEFT_EDGE_CLIPPING_NEGATIVE_X |
 				SYNC_AFTER_IMAGE_WRITE;
+
+    /* if we're write combining */
+    infoPtr->ImageWriteFlags |= NO_GXCOPY;
+
     if(pMga->ILOADBase) {
 	infoPtr->ImageWriteRange = 0x800000;
 	infoPtr->ImageWriteBase = pMga->ILOADBase;

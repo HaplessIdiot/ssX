@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.39 1999/04/29 09:13:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.40 1999/05/05 14:29:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -23,6 +23,7 @@
 #include "micmap.h"
 #include "xf86PciInfo.h"
 #include "xf86DDC.h"
+#include "xf86Xinput.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -201,6 +202,72 @@ xf86AllocateScrnInfoPrivateIndex(void)
 	pScr->privates = nprivs;
     }
     return idx;
+}
+
+/* Allocate a new InputInfoRec and add it to the head xf86InputDevs. */
+
+InputInfoPtr
+xf86AllocateInput(InputDriverPtr drv, int flags)
+{
+    InputInfoPtr new;
+
+    new = xnfcalloc(sizeof(InputInfoRec), 1);
+    new->drv = drv;
+    drv->refCount++;
+#ifdef XFree86LOADER
+    new->module = DuplicateModule(drv->module, NULL);
+#else
+    new->module = NULL;
+#endif
+    new->next = xf86InputDevs;
+    xf86InputDevs = new;
+    return new;
+}
+
+
+/*
+ * Remove an entry from xf86InputDevs.  Ideally it should free all allocated
+ * data.  To do this properly may require a driver hook.
+ */
+
+void
+xf86DeleteInput(InputInfoPtr pInp, int flags)
+{
+    InputInfoPtr p;
+
+    /* First check if the inputdev is valid. */
+    if (pInp == NULL)
+	return;
+
+#if 0
+    /* If a free function is defined, call it here. */
+    if (pInp->free)
+	pInp->free(pInp, 0);
+#endif
+
+#ifdef XFree86LOADER
+    if (pInp->module)
+	UnloadModule(pInp->module);
+#endif
+
+    if (pInp->drv)
+	pInp->drv->refCount--;
+
+    if (pInp->private);
+	xfree(pInp->private);
+
+    /* Remove the entry from the list. */
+    if (pInp == xf86InputDevs)
+	xf86InputDevs = pInp->next;
+    else {
+	p = xf86InputDevs;
+	while (p && p->next != pInp)
+	    p = p->next;
+	if (p)
+	    p->next = pInp->next;
+	/* Else the entry wasn't in the xf86InputDevs list (ignore this). */
+    }
+    xfree(pInp);
 }
 
 Bool

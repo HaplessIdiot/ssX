@@ -21,9 +21,10 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.6 1999/04/04 05:44:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.7 1999/04/04 09:33:50 dawes Exp $ */
 
 #if !defined(sun) || defined(i386)
+#include "xf86.h"
 #include "xf86Xinput.h"
 #else
 #include "extio.h"

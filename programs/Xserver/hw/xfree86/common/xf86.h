@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.101 1999/04/18 04:08:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.102 1999/05/05 14:29:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -110,8 +110,6 @@ void SetTimeSinceLastInputEvent(void);
 
 void xf86AddDriver(DriverPtr driver, pointer module, int flags);
 void xf86DeleteDriver(int drvIndex);
-void xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags);
-void xf86DeleteInputDriver(int drvIndex);
 ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags);
 void xf86DeleteScreen(int scrnIndex, int flags);
 int xf86AllocateScrnInfoPrivateIndex(void);

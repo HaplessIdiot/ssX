@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.13 1999/04/29 05:12:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.14 1999/05/05 14:29:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -13,6 +13,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Parser.h"
+#include "xf86Xinput.h"
 
 /* Globals that video drivers may access */
 
@@ -55,6 +56,8 @@ const unsigned char byte_reversed[256] =
     0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
 };
 
+/* Globals that input drivers may access */
+InputInfoPtr xf86InputDevs = NULL;
 
 
 /* Globals that video drivers may not access */

@@ -1,4 +1,6 @@
 XFree86 3.9Pm (xx May 1999)
+2814. Change the MGA ImageWrite code to not use the image transfer window
+      for simple cpu->framebuffer copies (#2738, Mark Vojkovich).
 2813. Add lseek and bsearch to the libc wrappers (and fix fseek), as needed
       by the CID font code.
 2812. Add missing file for CID fonts support, and fix a few module-related
@@ -17,8 +19,7 @@ XFree86 3.9Pl (3 May 1999)
       Mark Vojkovich).
 2804. Update the LynxOS vidmem code to use the new shared vidmem.c (#2743,
       Thomas Mueller).
-2803. Change the MGA ImageWrite code to not use the image transfer window
-      for simple cpu->framebuffer copies (#2738, Mark Vojkovich).
+2803. -
 2802. Update TGA docs (#2737, Matt Grossman).
 2801. Fix a zero width problem that shows up in xaaSpans.c when hardware
       clipping is enabled (#2736, Alan Hourihane).
@@ -7939,4 +7940,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.742 1999/05/03 12:15:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.743 1999/05/04 11:27:10 dawes Exp $
