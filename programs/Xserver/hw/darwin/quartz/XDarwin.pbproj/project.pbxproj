@@ -1214,6 +1214,70 @@
 			path = applewmExt.h;
 			refType = 4;
 		};
+		6EA0B3AF0544A9CC006877C2 = {
+			children = (
+				6EA0B3B00544A9CC006877C2,
+				6EA0B3B10544A9CC006877C2,
+				6EA0B3B20544A9CC006877C2,
+				6EA0B3B30544A9CC006877C2,
+				6EA0B3B40544A9CC006877C2,
+				6EA0B3B50544A9CC006877C2,
+				6EA0B3B60544A9CC006877C2,
+				6EA0B3B70544A9CC006877C2,
+			);
+			isa = PBXGroup;
+			name = Acceleration;
+			path = accel;
+			refType = 4;
+		};
+		6EA0B3B00544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlAccel.h;
+			refType = 4;
+		};
+		6EA0B3B10544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlBlt.c;
+			refType = 4;
+		};
+		6EA0B3B20544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlCopy.c;
+			refType = 4;
+		};
+		6EA0B3B30544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlFill.c;
+			refType = 4;
+		};
+		6EA0B3B40544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlFillRect.c;
+			refType = 4;
+		};
+		6EA0B3B50544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlFillSpans.c;
+			refType = 4;
+		};
+		6EA0B3B60544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlGlyph.c;
+			refType = 4;
+		};
+		6EA0B3B70544A9CC006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rlSolid.c;
+			refType = 4;
+		};
 		6EA8EEC80445E25C006877C2 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -1231,6 +1295,7 @@
 				6EC4A660042A9654006877C2,
 				6EC4A663042A9654006877C2,
 				6EC4A664042A9654006877C2,
+				6EA0B3AF0544A9CC006877C2,
 				6E79040104FD5ED900EEC080,
 			);
 			isa = PBXGroup;
