@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.3 2000/08/30 18:00:41 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.7 2000/10/07 05:58:18 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -683,8 +683,26 @@ FreePicture (pointer	value,
 	if (pPicture->alphaMap)
 	    FreePicture ((pointer) pPicture->alphaMap, (XID) 0);
 	(*ps->DestroyPicture) (pPicture);
-	if (pPicture->pDrawable->type == DRAWABLE_PIXMAP)
+	if (pPicture->pDrawable->type == DRAWABLE_WINDOW)
+	{
+	    WindowPtr	pWindow = (WindowPtr) pPicture->pDrawable;
+	    PicturePtr	*pPrev;
+
+	    for (pPrev = (PicturePtr *) &((pWindow)->devPrivates[PictureWindowPrivateIndex].ptr);
+		 *pPrev;
+		 pPrev = &(*pPrev)->pNext)
+	    {
+		if (*pPrev == pPicture)
+		{
+		    *pPrev = pPicture->pNext;
+		    break;
+		}
+	    }
+	}
+	else if (pPicture->pDrawable->type == DRAWABLE_PIXMAP)
+	{
 	    (*pScreen->DestroyPixmap) ((PixmapPtr)pPicture->pDrawable);
+	}
 	xfree (pPicture);
     }
     return Success;
