@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.1 2003/12/17 18:58:35 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -82,9 +82,11 @@ void VIAFreeLinear(VIAMemPtr mem)
 
 unsigned long VIAAllocLinear(VIAMemPtr mem, ScrnInfoPtr pScrn, unsigned long size)
 {
-#ifdef XF86DRI
+#if defined(XF86DRI) || !defined(XFREE_44)
 	VIAPtr  pVia = VIAPTR(pScrn);
+#endif
 	
+#ifdef XF86DRI
 	if(mem->pool)
 		ErrorF("VIA Double Alloc.\n");
 		
