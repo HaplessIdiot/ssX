@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.6 1998/11/15 04:30:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.1 1999/02/20 14:55:50 hohndel Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -79,7 +79,7 @@ pciBusInfo_t linuxPci0 = {
 /* pciBusPriv  */	  NULL
 };
 
-#if BYTE_ORDER == BIG_ENDIAN
+#if X_BYTE_ORDER == X_BIG_ENDIAN
 #define PCI_CPU(val)	(((val >> 24) & 0x000000ff) |	\
 			 ((val >>  8) & 0x0000ff00) |	\
 			 ((val <<  8) & 0x00ff0000) |	\

@@ -92,7 +92,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/triangle.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/triangle.c,v 1.2 1999/03/14 03:20:53 dawes Exp $ */
 
 /*
  * Triangle rasterizers
@@ -104,9 +104,9 @@
 #else
 #ifndef XFree86Server
 #include <assert.h>
-#include <math.h>
 #include <stdio.h>
 #endif
+#include <math.h>
 #include "context.h"
 #include "depth.h"
 #include "feedback.h"

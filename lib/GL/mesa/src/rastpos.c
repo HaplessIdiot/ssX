@@ -62,7 +62,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/rastpos.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/rastpos.c,v 1.2 1999/03/14 03:20:50 dawes Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -70,12 +70,12 @@
 #ifndef XFree86Server
 #include <assert.h>
 #endif
+#include "mmath.h"
 #include "clip.h"
 #include "feedback.h"
 #include "light.h"
 #include "macros.h"
 #include "matrix.h"
-#include "mmath.h"
 #include "types.h"
 #include "xform.h"
 #include "context.h"
