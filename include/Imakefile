@@ -83,8 +83,8 @@ InstallDriverSDKNonExecFile(Xos.h,$(DRIVERSDKINCLUDEDIR))
 XCOMM For the Linux/OpenGL base standard
 #if LinkGLToUsrInclude && AlternateIncRoot
 install::
-	-$(RM) $(SYSTEMUSRINCDIR)/GL
-	@if [ ! -d $(SYSTEMUSRINCDIR)/GL ] then \
-		set -x; $(LN) $(INCDIR)/GL $(SYSTEMUSRINCDIR)/GL;
+/*	-$(RM) $(SYSTEMUSRINCDIR)/GL */
+	@if [ ! -d $(SYSTEMUSRINCDIR)/GL ]; then \
+		set -x; $(LN) $(INCDIR)/GL $(SYSTEMUSRINCDIR)/GL; \
 	fi
 #endif
