@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 371. Fix disappearing cursor in XDarwin rootless mode by falling back to
+      system cursor for cursors bigger than 16x16 (Torrey T. Lyons).
  370. Make XDarwin start more robustly from the Finder (Torrey T. Lyons).
  369. Update XDarwin Japanese localization (Toshimitsu Tanaka).
  368. Fix calculation of DPI when Xinerama in use (#4986, Andrew C Aitchison).
@@ -13995,4 +13997,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1989 2001/10/16 01:18:48 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1990 2001/10/18 04:59:42 torrey Exp $
