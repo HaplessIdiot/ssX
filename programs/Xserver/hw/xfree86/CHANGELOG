@@ -1,4 +1,5 @@
 XFree86 3.9.16f (xx December 1999)
+3382. Reverse kbdrate patch (#3478, Harald Koenig).
 3381. Add Xv support to tga driver (#3473, Matt Grossman).
 3380. Add ViRGE/MX and BIOS probing to the s3virge driver (#3470,
       Harald Koenig).
@@ -9164,4 +9165,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.877 1999/12/14 02:52:43 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.878 1999/12/14 02:55:33 robin Exp $

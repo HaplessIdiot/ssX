@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.8 1999/07/04 06:39:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.10 1999/11/19 13:55:00 hohndel Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -146,65 +146,6 @@ void xf86SetKbdRepeat(rad)
 char rad;
 #endif
 {
-  int i;
-  int         value = 0x7f;    /* Maximum delay with slowest rate */
-
-#ifdef __sparc__
-  double      rate  =  50;     /* Default rate */
-  int         delay = 200;     /* Default delay */
-#else
-  double      rate  =  30.0;    /* Default rate */
-  int         delay = 250;     /* Default delay */
-#endif
-
-
-  static int valid_rates[] = { 300, 267, 240, 218, 200, 185, 171, 160, 150,
-			       133, 120, 109, 100, 92, 86, 80, 75, 67,
-			       60, 55, 50, 46, 43, 40, 37, 33, 30, 27,
-			       25, 23, 21, 20 };
-#define RATE_COUNT (sizeof( valid_rates ) / sizeof( int ))
-
-  static int valid_delays[] = { 250, 500, 750, 1000 };
-#define DELAY_COUNT (sizeof( valid_delays ) / sizeof( int ))
-
-
-  if (xf86Info.kbdRate >= 0) 
-    rate = xf86Info.kbdRate;
-  if (xf86Info.kbdDelay >= 0)
-    delay = xf86Info.kbdDelay;
-
-
-  if(KDKBDREP_ioctl_ok(rate, delay)) 	/* m68k? */
-    return;
-
-  if(KIOCSRATE_ioctl_ok(rate, delay))	/* sparc? */
-    return;
-
-
-
-  /* The ioport way */
-
-  for (i = 0; i < RATE_COUNT; i++)
-    if (rate * 10 >= valid_rates[i]) {
-      value &= 0x60;
-      value |= i;
-      break;
-    }
-
-  for (i = 0; i < DELAY_COUNT; i++)
-    if (delay <= valid_delays[i]) {
-      value &= 0x1f;
-      value |= i << 5;
-      break;
-    }
-
-
-  while ((inb(0x64) & 2) == 2); /* wait */
-  outb(0x60, 0xf3);             /* set typematic rate */
-  while ((inb(0x64) & 2) == 2); /* wait */
-  /* sleep( 1 ); */
-  outb(0x60, value);
-
   return;
 }
 
