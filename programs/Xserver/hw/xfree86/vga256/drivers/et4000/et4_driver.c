@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.36 1996/12/17 21:00:43 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.37 1996/12/23 06:57:26 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -605,7 +605,7 @@ ET4000LinMem()
 
 
 static Bool
-ET6000Probe()
+ET6000InitVars()
 {
    int i;
 
@@ -760,7 +760,7 @@ TsengDetectMem()
         {
           vga256InfoRec.videoRam <<= 1;
         }
-        ErrorF("%s %s: ET6000: Detected %d Mb of multi-bank DRAM\n",
+        ErrorF("%s %s: ET6000: Detected %d kb of multi-bank DRAM\n",
             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
         break;
       case 0x00:  /* DRAM */
@@ -814,7 +814,6 @@ static Bool
 ET4000Probe()
 {
   int numClocks;
-  Bool use_PCI=FALSE;
 
   /*
    * Set up I/O ports to be used by this card
@@ -833,12 +832,10 @@ ET4000Probe()
   }
   else if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
   {
-    use_PCI=TRUE;  /* we'll be using the PCI info for detecting the card type */
     switch(vgaPCIInfo->ChipType)
       {
         case PCI_CHIP_ET6000:
           et4000_type = TYPE_ET6000;
-          ET6000Probe();
           break;
         case PCI_CHIP_ET4000_W32P_A:
         case PCI_CHIP_ET4000_W32P_B:
@@ -856,6 +853,9 @@ ET4000Probe()
   }
   else  /* all else failed -- try old-style autodetect */
     if (ET4000AutoDetect()==FALSE) return(FALSE);
+
+  if (et4000_type == TYPE_ET6000)
+      ET6000InitVars();
 
   ET4000EnterLeave(ENTER);
 
@@ -1159,6 +1159,10 @@ ET4000Restore(restore)
 {
   unsigned char i;
 
+#ifndef W32_ACCEL_SUPPORT
+  vgaProtect(TRUE);
+#endif
+
   outb(0x3CD, 0x00); /* segment select */
 
 #ifdef W32_ACCEL_SUPPORT
@@ -1279,7 +1283,9 @@ ET4000Restore(restore)
       {
 	vgaProtect(TRUE);
         (ClockSelect)(restore->std.NoClock);
+#ifdef W32_ACCEL_SUPPORT
 	vgaProtect(FALSE);
+#endif
       }
 
 #ifdef USE_XAA
@@ -1290,6 +1296,9 @@ ET4000Restore(restore)
   {
     tseng_init_acl(); /* initialize the accelerator registers for XAA interface */
   }
+#endif
+#ifndef W32_ACCEL_SUPPORT
+  vgaProtect(FALSE);
 #endif
 }
 

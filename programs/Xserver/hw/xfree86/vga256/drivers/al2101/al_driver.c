@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.14 1996/10/16 14:42:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.15 1996/12/23 06:55:46 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -283,6 +283,8 @@ static void
 AL2101Restore(restore)
   vgaAL2101Ptr restore;
 {
+  vgaProtect(TRUE);
+
   outb(0x3D6,0x00);outb(0x3D7,0x00);
 
   outw(0x3CE, (restore->AbilReadBank  << 8) | 0x0F);
@@ -294,6 +296,8 @@ AL2101Restore(restore)
   vgaHWRestore((vgaHWPtr)restore);
 
   outw(0x3C4, 0x0300); /* now reenable the timing sequencer */
+
+  vgaProtect(FALSE);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.17 1996/10/16 14:42:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.18 1996/12/23 06:57:19 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -286,6 +286,8 @@ ET3000Restore(restore)
 {
   unsigned char i;
 
+  vgaProtect(TRUE);
+
   outb(0x3CD, restore->SegSel);
 
   outw(0x3C4, (restore->ZoomControl << 8)   | 0x06);
@@ -298,6 +300,8 @@ ET3000Restore(restore)
   outw(vgaIOBase + 4, (restore->Overflow << 8)    | 0x25);
 
   vgaHWRestore((vgaHWPtr)restore);
+
+  vgaProtect(FALSE);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.12 1996/10/16 14:42:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.13 1996/12/23 06:57:06 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -728,6 +728,8 @@ vgaCL64XXPtr restore;
 {
 	unsigned char	temp;
 
+	vgaProtect(TRUE);
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -822,6 +824,7 @@ vgaCL64XXPtr restore;
 	 * This function handles restoring the generic VGA registers.
 	 */
 	vgaHWRestore((vgaHWPtr)restore);
+	vgaProtect(FALSE);
 }
 
 /*

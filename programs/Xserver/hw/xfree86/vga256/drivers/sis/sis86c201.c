@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.13 1996/10/16 14:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.14 1996/12/23 06:58:29 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -436,6 +436,8 @@ static void
 SISRestore(restore)
      	vgaSISPtr restore;
 {
+	vgaProtect(TRUE);
+
 	outw(0x3C4, ((restore->BankReg) << 8) | 0x06);
 	outw(0x3C4, ((restore->Unknown) << 8) | 0x08);
 	outw(0x3C4, ((restore->CRTCOff) << 8) | 0x0A);
@@ -449,6 +451,8 @@ SISRestore(restore)
 	vgaHWRestore((vgaHWPtr)restore);
 
 	outb(0x3C2, restore->ClockReg2);
+
+	vgaProtect(FALSE);
 }
 
 /*

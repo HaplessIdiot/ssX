@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.4 1996/12/26 01:39:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.5 1996/12/27 07:04:48 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -730,6 +730,8 @@ static void
 ApmRestore(restore)
 vgaApmPtr restore;
 {
+	vgaProtect(TRUE);
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -769,6 +771,7 @@ vgaApmPtr restore;
 	 */
 	vgaHWRestore((vgaHWPtr)restore);
 
+	vgaProtect(FALSE);
 }
 
 /*

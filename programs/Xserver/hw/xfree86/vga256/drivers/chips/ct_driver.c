@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.29 1996/12/17 21:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.30 1996/12/23 06:56:21 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -2216,6 +2216,8 @@ CHIPSRestore(restore)
     ErrorF("CHIPSRestore\n");
 #endif
 
+    vgaProtect(TRUE);
+
     /* set registers so that we can program the controller */
     if (ctisHiQV32) {
 	outw(0x3D6, 0x0E);
@@ -2308,6 +2310,8 @@ CHIPSRestore(restore)
     outb(ctCRindex, 0x11);
     tmp = inb(ctCRvalue);
     outb(ctCRvalue, (tmp & 0x7F));
+
+    vgaProtect(FALSE);
 
 #ifdef IO_DEBUG
     ErrorF("-> %X\n", (unsigned char)inb(0x3CC));

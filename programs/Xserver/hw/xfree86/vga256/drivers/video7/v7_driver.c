@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.13 1996/10/16 14:43:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.14 1996/12/23 06:58:55 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -573,6 +573,9 @@ VIDEO7Restore(restore)
 vgaVIDEO7Ptr restore;
 {
 	unsigned char temp;
+
+	vgaProtect(TRUE);
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -622,6 +625,8 @@ vgaVIDEO7Ptr restore;
 	outw(0x3C4, 0xFC | (restore->C4FC << 8));
 	outw(0x3C4, 0xFD | (restore->C4FD << 8));
 	outw(0x3C4, 0xFF | (restore->C4FF << 8));
+
+	vgaProtect(FALSE);
 }
 
 /*

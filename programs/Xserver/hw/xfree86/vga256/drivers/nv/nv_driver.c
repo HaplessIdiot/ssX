@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.2 1996/10/23 13:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.3 1996/12/27 07:05:42 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -404,12 +404,14 @@ static void NVEnterLeave(Bool enter)
  */
 static void NVRestore(vgaNVPtr restore)     
 {
+  vgaProtect(TRUE);
+
   /*
    * This function handles restoring the generic VGA registers.
    */
   vgaHWRestore ((vgaHWPtr) restore);
-  /* Set the clock registers */
 
+  /* Set the clock registers */
   nvPort[NV_MEMORY_TRACE]=restore->memoryTrace;
   nvPort[NV_PRM_CONFIG_0]=restore->prmConfig0;
 
@@ -435,6 +437,8 @@ static void NVRestore(vgaNVPtr restore)
   nvPort[NV_PFB_VER_SYNC_WIDTH]=restore->verSyncWidth;
   nvPort[NV_PFB_VER_BACK_PORCH]=restore->verBackPorch;
   nvPort[NV_PFB_VER_DISP_WIDTH]=restore->verDispWidth;
+
+  vgaProtect(FALSE);
 }
 
 /*

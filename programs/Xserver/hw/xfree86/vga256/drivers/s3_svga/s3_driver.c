@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.15 1996/09/29 14:02:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.16 1996/12/23 06:58:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -490,6 +490,8 @@ void S3CleanUp()
 {
    unsigned char tmp;
 
+   vgaProtect(TRUE);
+
    /* Restore S3 Trio32/64 ext. sequenzer (PLL) registers */
    if (S3_TRIOxx_SERIES) {
       outb(0x3c2, oldS3->Trio[0]);
@@ -518,6 +520,8 @@ void S3CleanUp()
       outb(0x3c4, 0x08); outb(0x3c5, oldS3->Trio[1]);
    }
    AlreadyInited = 1;
+
+   vgaProtect(FALSE);
 }
 
 

@@ -33,7 +33,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
-#include "XKBsrv.h"
 #include "XI.h"
 
 #include "compiler.h"
@@ -41,6 +40,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+
+#include "XKBsrv.h"
 
 #ifdef AMOEBA
 #define LED_CAP	IOP_LED_CAP

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.16 1996/09/14 13:06:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.17 1996/12/23 06:32:01 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -553,6 +553,8 @@ static void
 STUBRestore(restore)
 vgaSTUBPtr restore;
 {
+	vgaProtect(TRUE);		/* Blank the screen */
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -576,6 +578,8 @@ vgaSTUBPtr restore;
 	 *	if (restore->std.NoClock >= 0)
 	 *		restore clock-select bits.
 	 */
+
+	vgaProtect(FALSE);		/* Turn on screen */
 }
 
 /*

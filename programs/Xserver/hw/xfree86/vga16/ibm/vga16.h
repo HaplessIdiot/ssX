@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.7 1996/02/18 03:43:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.8 1996/12/23 06:53:21 dawes Exp $ */
 
 
 
@@ -1045,7 +1045,7 @@ void v16BresD(
 	int,
 	PixelType *,
 	int, int, int, int, int, int,
-	register, register,
+	int, int,
 	int, int
 #endif
 );

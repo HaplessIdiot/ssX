@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.10 1996/11/24 09:54:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.11 1996/12/27 07:03:42 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -610,9 +610,9 @@ tgaEnterLeaveVT(enter, screen_idx)
     } else {
 	xf86MapDisplay(screen_idx, LINEAR_REGION);
 	if (!xf86Exiting) {
-	    ppix = (pScreen->CreatePixmap)(pScreen,
-					   pScreen->width, pScreen->height,
-					   pScreen->rootDepth);
+	    ppix = (pScreen->CreatePixmap)(pScreen, tgaInfoRec.displayWidth,
+					    pScreen->height,
+					    pScreen->rootDepth);
 
 	    if (ppix) {
 #if 1

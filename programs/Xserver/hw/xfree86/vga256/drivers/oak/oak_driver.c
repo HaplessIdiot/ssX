@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.26 1996/10/26 09:41:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.27 1996/12/23 06:57:55 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -812,6 +812,8 @@ OAKRestore(restore)
      vgaOAKPtr restore;
 {
   unsigned char temp;
+
+  vgaProtect(TRUE);
       
   /* Go to bank 0 */
 
@@ -977,6 +979,7 @@ OAKRestore(restore)
 
   outw(0x3C4, 0x0300); /* now reenable the timing sequencer */
 
+  vgaProtect(FALSE);
 }
 
 /*

@@ -28,13 +28,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.1 1996/08/20 12:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.2 1996/11/24 09:51:45 dawes Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"servermd.h"
 #ifdef XFREE86
+#define NO_COMPILER_H_EXTRAS
 #include	"compiler.h"
 #endif
 

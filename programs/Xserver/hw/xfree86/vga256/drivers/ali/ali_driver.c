@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.14 1996/10/26 09:41:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.15 1996/12/23 06:55:52 dawes Exp $
  */
 
 #include "X.h"
@@ -450,6 +450,8 @@ ALIRestore(restore)
   unsigned char i;
   unsigned char temp;
 
+  vgaProtect(TRUE);
+
   /* du_all_regs("ALIRestore():"); */
   outb(0x3CE, 0x0F); temp = inb(0x3CF);
   outb(0x3CF, temp | 0x04);	/* 3CE.F.2 = 1 for 1R,1W bank selection */
@@ -475,6 +477,7 @@ ALIRestore(restore)
   outb(0x3D6, restore->RSegSel);	/* Read Bank */
   outb(0x3D7, restore->WSegSel);	/* Write Bank */
 
+  vgaProtect(FALSE);
 }
 
 

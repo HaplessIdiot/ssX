@@ -1,5 +1,5 @@
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.h,v 3.0 1996/12/17 21:00:47 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -113,6 +113,8 @@ extern LongP MemW32PatternPing;
 extern LongP MemW32PatternPong;
 extern LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */ 
 
+extern LongP CPU2ACLBase;
+
 /******************************************************************************/
 
 #define WAIT_QUEUE \
@@ -123,8 +125,14 @@ extern LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */
   { int cnt=0; while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) cnt++; ErrorF("W%d ",cnt);}
 
 #define WAIT_ACL \
-  { while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2); }
-
+  { int cnt = 1000000; \
+    while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x2) \
+      if (--cnt < 0) \
+      { \
+        ErrorF("WAIT_ACL: timeout.\n"); \
+        break; \
+      } \
+  }
   
 #define WAIT_XY \
   {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}

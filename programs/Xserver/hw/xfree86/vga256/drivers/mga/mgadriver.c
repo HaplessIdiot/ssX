@@ -33,7 +33,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.13 1996/12/17 21:00:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.14 1996/12/27 07:05:32 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -1216,6 +1216,8 @@ MGARestore(restore)
 vgaMGAPtr restore;
 {
 	int i;
+
+	vgaProtect(TRUE);
 	
 	/*
 	 * Code is needed to get things back to bank zero.
@@ -1248,6 +1250,8 @@ vgaMGAPtr restore;
 
 	MGAWaitForBlitter();
 	MGAEngineInit();
+
+	vgaProtect(FALSE);
 }
 
 /*

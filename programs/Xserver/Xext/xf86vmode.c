@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.27 1996/12/23 06:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.28 1996/12/24 08:47:30 dawes Exp $ */
 
 /*
 
@@ -521,6 +521,8 @@ ProcXF86VidModeGetAllModeLines(client)
 				&& mptr->VTotal    == stuff->vtotal \
 				&& mptr->Flags     == stuff->flags )
 
+#include "xf86_Config.h"
+
 static int
 ProcXF86VidModeAddModeLine(client)
     register ClientPtr client;
@@ -528,8 +530,8 @@ ProcXF86VidModeAddModeLine(client)
     REQUEST(xXF86VidModeAddModeLineReq);
     ScrnInfoPtr vptr;
     DisplayModePtr curmptr, mptr, newmptr;
-    DisplayModeRec modetmp;
-    int len;
+    Bool clock_added = FALSE;
+    int i, len;
 
     if (xf86Verbose) {
 	ErrorF("AddModeLine - scrn: %d clock: %d\n",
@@ -590,7 +592,76 @@ ProcXF86VidModeAddModeLine(client)
 
     newmptr = (DisplayModePtr) xalloc(sizeof(DisplayModeRec));
 
-    newmptr->Clock         = stuff->dotclock;
+    /* Clock checking code, mostly copied from the xf86LookupMode function */
+    if (stuff->dotclock < vptr->clocks) {
+	newmptr->Clock = stuff->dotclock;
+    } else {
+	if ((OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(vptr->clockOptions))) &&
+	    !OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(vptr->options)))
+	{
+	    for (i = 0; i < vptr->clocks; i++)
+		if (stuff->dotclock == vptr->clock[i])
+		    break;
+
+	    if (i >= MAXCLOCKS || vptr->clock[i]/1000 > vptr->maxClock/1000) {
+		xfree(newmptr);
+		return vidmodeErrorBase + XF86VidModeBadClock;
+	    }
+	
+	    if (i == vptr->clocks) {
+		vptr->clock[i] = stuff->dotclock;
+		vptr->clocks++;
+		clock_added = TRUE;
+	    }
+	} else {
+	    int		flags=0, j, k, Gap, Minimum_Gap = CLOCK_TOLERANCE + 1;
+	    double	refresh, bestRefresh = 0.0;
+
+	    if (OFLG_ISSET(OPTION_CLKDIV2, &(vptr->options)))
+	        k=2;
+	    else
+	        k=1;
+	    
+	    if (xf86BestRefresh)
+	    	flags |= LOOKUP_BEST_REFRESH;
+
+	    for (j=1 ; j<=k ; j++) {
+	        i = xf86GetNearestClock(vptr, stuff->dotclock * j);
+	        if (flags & LOOKUP_BEST_REFRESH) {
+		    if ( ((vptr->clock[i]/j) / 1000) > (vptr->maxClock / 1000) ) {
+			xfree(newmptr);
+			return vidmodeErrorBase + XF86VidModeBadClock;
+		    } else {
+		        refresh = stuff->dotclock * 1000.0 / stuff->htotal / stuff->vtotal;
+		        if (stuff->flags & V_INTERLACE) {
+			    refresh *= 2;
+			    refresh /= INTERLACE_REFRESH_WEIGHT;
+			} else if (stuff->flags & V_DBLSCAN)
+			    refresh /= 2;
+
+		        if (refresh > bestRefresh) {
+			    newmptr->Clock = i;
+			    if (j==2) stuff->flags |= V_CLKDIV2;
+			    bestRefresh = refresh;
+		        }
+		    }
+		} else {
+		    Gap = abs( stuff->dotclock - (vptr->clock[i]/j) );
+		    if (Gap < Minimum_Gap) {
+			if ( ((vptr->clock[i]/j) / 1000) > (vptr->maxClock / 1000) ) {
+			    xfree(newmptr);
+			    return vidmodeErrorBase + XF86VidModeBadClock;
+			} else {
+			    newmptr->Clock = i;
+			    if (j==2) stuff->flags |= V_CLKDIV2;
+			    Minimum_Gap = Gap;
+		        }
+		    }
+	        }
+	    }
+	}
+    }
+
     newmptr->CrtcHDisplay  = newmptr->HDisplay      = stuff->hdisplay;
     newmptr->CrtcHSyncStart= newmptr->HSyncStart    = stuff->hsyncstart;
     newmptr->CrtcHSyncEnd  = newmptr->HSyncEnd      = stuff->hsyncend;
@@ -617,20 +688,32 @@ ProcXF86VidModeAddModeLine(client)
 
     /* Check that the mode is consistent with the monitor specs */
     switch (xf86CheckMode(vptr, newmptr, vptr->monitor, FALSE)) {
+    	case MODE_OK:
+	    break;
 	case MODE_HSYNC:
 	    xfree(newmptr->Private);
 	    xfree(newmptr);
+	    if (clock_added)
+	    	vptr->clocks--;
 	    return vidmodeErrorBase + XF86VidModeBadHTimings;
 	case MODE_VSYNC:
 	    xfree(newmptr->Private);
 	    xfree(newmptr);
+	    if (clock_added)
+	    	vptr->clocks--;
 	    return vidmodeErrorBase + XF86VidModeBadVTimings;
+	default:
+	    if (clock_added)
+	    	vptr->clocks--;
+	    return vidmodeErrorBase + XF86VidModeModeUnsuitable;
     }
 
     /* Check that the driver is happy with the mode */
     if (vptr->ValidMode(newmptr, xf86Verbose) != MODE_OK) {
 	xfree(newmptr->Private);
 	xfree(newmptr);
+	if (clock_added)
+	    vptr->clocks--;
 	return vidmodeErrorBase + XF86VidModeModeUnsuitable;
     }
 
@@ -664,7 +747,6 @@ ProcXF86VidModeDeleteModeLine(client)
     REQUEST(xXF86VidModeDeleteModeLineReq);
     ScrnInfoPtr vptr;
     DisplayModePtr curmptr, mptr;
-    DisplayModeRec modetmp;
     int len;
 
     if (xf86Verbose) {
@@ -858,7 +940,7 @@ ProcXF86VidModeValidateModeLine(client)
 
     if (xf86Verbose) {
 	ErrorF("ValidateModeLine - scrn: %d clock: %d\n",
-		stuff->screen, stuff->dotclock, stuff->dotclock);
+		stuff->screen, stuff->dotclock);
 	ErrorF("                   hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
@@ -975,8 +1057,17 @@ ProcXF86VidModeSwitchToMode(client)
     REQUEST(xXF86VidModeSwitchToModeReq);
     ScrnInfoPtr vptr;
     DisplayModePtr curmptr, mptr;
-    DisplayModeRec modetmp;
 
+    if (xf86Verbose) {
+	ErrorF("SwitchToMode - scrn: %d clock: %d\n",
+		stuff->screen, stuff->dotclock);
+	ErrorF("               hdsp: %d hbeg: %d hend: %d httl: %d\n",
+		stuff->hdisplay, stuff->hsyncstart,
+		stuff->hsyncend, stuff->htotal);
+	ErrorF("               vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
+		stuff->vtotal, stuff->flags);
+    }
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
 
@@ -992,6 +1083,14 @@ ProcXF86VidModeSwitchToMode(client)
 	return (client->noClientException);
 
     while ((mptr = mptr->next) != curmptr) {
+	ErrorF("Checking against clock: %d (%d)\n",
+		mptr->Clock, CLOCKSPD(mptr->Clock, vptr));
+	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
+		mptr->HDisplay, mptr->HSyncStart,
+		mptr->HSyncEnd, mptr->HTotal);
+	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+		mptr->VDisplay, mptr->VSyncStart, mptr->VSyncEnd,
+		mptr->VTotal, mptr->Flags);
 	if (MODEMATCH(mptr, stuff, vptr)) {
 	    if ((vptr->SwitchMode)(mptr)) {
 		vptr->modes = mptr;
@@ -1015,6 +1114,8 @@ ProcXF86VidModeSwitchToMode(client)
 		}
 	    }
 	    (vptr->AdjustFrame)(vptr->frameX0, vptr->frameY0);
+	    if (xf86Verbose)
+		ErrorF("SwitchToMode - Succeeded\n");
 	    return(client->noClientException);
 	}
     }
@@ -1125,11 +1226,8 @@ ProcXF86VidModeGetViewPort(client)
 {
     REQUEST(xXF86VidModeGetViewPortReq);
     xXF86VidModeGetViewPortReply rep;
-    register int n;
     ScrnInfoPtr vptr;
     MonPtr mptr;
-    CARD32 *hsyncdata, *vsyncdata;
-    int i;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
@@ -1147,11 +1245,8 @@ ProcXF86VidModeSetViewPort(client)
     register ClientPtr client;
 {
     REQUEST(xXF86VidModeSetViewPortReq);
-    register int n;
     ScrnInfoPtr vptr;
     MonPtr mptr;
-    CARD32 *hsyncdata, *vsyncdata;
-    int i;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;

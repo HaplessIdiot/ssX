@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.7 1996/10/16 14:43:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.8 1996/12/23 06:58:17 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -805,6 +805,8 @@ vgaRTVGAPtr restore;
    ErrorF ("RTVGARestore\n");
    print_rtk_mode (&restore->realtek);
 #endif   
+	vgaProtect(TRUE);
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -887,6 +889,8 @@ vgaRTVGAPtr restore;
    	outb (vgaIOBase+5, save);      /* lock registers again */
 
    	vgaHWRestore((vgaHWPtr)restore); /* quick-hack: Now restore the font-data */
+
+	vgaProtect(FALSE);
 }
 
 /*

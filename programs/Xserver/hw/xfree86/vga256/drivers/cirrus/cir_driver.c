@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.72 1996/12/20 06:45:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.73 1996/12/23 06:56:44 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -2497,6 +2497,8 @@ cirrusRestore(restore)
   }
 #endif
 
+  vgaProtect(TRUE);
+
   outw(0x3CE, 0x0009);	/* select bank 0 */
   outw(0x3CE, 0x000A);
 
@@ -2577,7 +2579,6 @@ cirrusRestore(restore)
 /*  unsigned short CONTROL;      Control (546X) */
 /*  unsigned short cursorX; */
 /*  unsigned short cursorY; */
-
   
   /* SR0 */
   outw(0x3C4, 0x0100);				/* disable timing sequencer */
@@ -2658,7 +2659,6 @@ cirrusRestore(restore)
       outb(vgaIOBase + 5, restore->CR1D);
   }
 
-
   if (HAVE546X()) {
     outb(vgaIOBase + 4, 0x1E);
     outb(vgaIOBase + 5, restore->CR1E);
@@ -2676,7 +2676,6 @@ cirrusRestore(restore)
       unsigned char *pTILE;
       unsigned short *pFORMAT, *pDTTC, *pCONTROL;
       unsigned int *pVSC;
-
 
       pFORMAT = (unsigned short *)(cirrusMMIOBase + 0xC0);
       *pFORMAT = restore->FORMAT;
@@ -2703,7 +2702,6 @@ cirrusRestore(restore)
 #endif
     }
   }
-    
 
   if (Is_754x(cirrusChip)) {
       /* Does something need to be unlocked here?? */
@@ -2738,14 +2736,11 @@ cirrusRestore(restore)
        }
 
 #ifndef MONOVGA
-
-
 #ifdef DEBUG_CIRRUS
 #if 0
   cirrusDumpRegs(restore);
 #endif
 #endif
-
 
   CirrusInvalidateShadowVariables();
   if (cirrusUseBLTEngine) {
@@ -2757,6 +2752,8 @@ cirrusRestore(restore)
   }
 
 #endif
+
+  vgaProtect(FALSE);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.107 1996/12/09 11:52:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.108 1996/12/23 06:43:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3530,6 +3530,29 @@ xf86CheckMode(scrp, dispmp, monp, verbose)
 	float dotclock, hsyncfreq, vrefreshrate;
 	char *scrname = scrp->name;
 
+	/* Sanity checks */
+	if ((0 >= dispmp->HDisplay) ||
+	    (dispmp->HDisplay > dispmp->HSyncStart) ||
+	    (dispmp->HSyncStart >= dispmp->HSyncEnd) ||
+	    (dispmp->HSyncEnd >= dispmp->HTotal))
+	{
+		ErrorF(
+                  "%s %s: Invalid horizontal timing for mode \"%s\". Deleted.\n",
+		  XCONFIG_PROBED, scrname, dispmp->name);
+		return MODE_HSYNC;
+	}
+
+	if ((0 >= dispmp->VDisplay) ||
+	    (dispmp->VDisplay > dispmp->VSyncStart) ||
+	    (dispmp->VSyncStart >= dispmp->VSyncEnd) ||
+	    (dispmp->VSyncEnd >= dispmp->VTotal))
+	{
+		ErrorF(
+		  "%s %s: Invalid vertical timing for mode \"%s\". Deleted.\n",
+		  XCONFIG_PROBED, scrname, dispmp->name);
+		return MODE_VSYNC;
+	}
+
 	/* Deal with the dispmp->Clock being a frequency or index */
 	if (dispmp->Clock > MAXCLOCKS) {
 		dotclock = (float)dispmp->Clock;
@@ -3537,21 +3560,11 @@ xf86CheckMode(scrp, dispmp, monp, verbose)
 		dotclock = (float)scrp->clock[dispmp->Clock];
 	}
 	hsyncfreq = dotclock / (float)(dispmp->HTotal);
-	for ( i = 0 ; i < monp->n_hsync ; i++ ) {
-		if ( monp->hsync[i].hi == monp->hsync[i].lo ) {
-			if ( (hsyncfreq > 0.999 * monp->hsync[i].hi) &&
-			     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
-			{
-				break; /* Matches close enough. */
-			}
-		} else {
-			if ( (hsyncfreq > 0.999 * monp->hsync[i].lo) &&
-			     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
-			{
-				break; /* In range. */
-			}
-		}
-	}
+	for ( i = 0 ; i < monp->n_hsync ; i++ )
+		if ( (hsyncfreq > 0.999 * monp->hsync[i].lo) &&
+		     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
+			break; /* In range. */
+
 	/* Now see whether we ran out of sync frequencies */
 	if ( i == monp->n_hsync ) {
 	    if (verbose) {
@@ -3566,21 +3579,11 @@ xf86CheckMode(scrp, dispmp, monp, verbose)
 			((float)(dispmp->HTotal) * (float)(dispmp->VTotal)) ;
 	if ( dispmp->Flags & V_INTERLACE ) vrefreshrate *= 2.0;
 	if ( dispmp->Flags & V_DBLSCAN ) vrefreshrate /= 2.0;
-	for ( i = 0 ; i < monp->n_vrefresh ; i++ ) {
-		if ( monp->vrefresh[i].hi == monp->vrefresh[i].lo ) {
-			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].hi) &&
-			     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )
-			{
-				break; /* Matches close enough. */
-			}
-		} else {
-			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].lo) &&
-			     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )
-			{
-				break; /* In range. */
-			}
-		}
-	}
+	for ( i = 0 ; i < monp->n_vrefresh ; i++ )
+		if ( (vrefreshrate > 0.999 * monp->vrefresh[i].lo) &&
+		     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )
+			break; /* In range. */
+
 	/* Now see whether we ran out of refresh rates */
 	if ( i == monp->n_vrefresh ) {
 	    if (verbose) {

@@ -1,5 +1,5 @@
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.0 1996/12/17 21:00:46 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -143,6 +143,8 @@ LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */
 
 extern long ET6Kbase;
 
+LongP CPU2ACLBase;
+
 /**********************************************************************/
 
 void tseng_terminate_acl()
@@ -150,7 +152,6 @@ void tseng_terminate_acl()
   /* only terminate when needed */
   if (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x06)
   {
-    ErrorF("Resetting ACL... ");
     *ACL_SUSPEND_TERMINATE = 0x00;
     *ACL_SUSPEND_TERMINATE = 0x01;
     WAIT_ACL;
@@ -158,7 +159,6 @@ void tseng_terminate_acl()
     *ACL_SUSPEND_TERMINATE = 0x10;
     WAIT_ACL;
     *ACL_SUSPEND_TERMINATE = 0x00;
-    ErrorF("Done");    
   }
 }
 
@@ -176,6 +176,13 @@ void tseng_init_acl()
     {
       MMioBase = (long)vgaLinearBase + 0x3FFF00;
       scratchMemBase = (long)vgaLinearBase + scratchVidBase;
+      /* 
+       * we won't be using CPU2ACLBase in linear memory mode anyway, since
+       * using the MMU apertures restricts the amount of useable video memory
+       * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
+       * (see data book W32p, page 207)
+       */
+      CPU2ACLBase = (LongP) ((long)vgaLinearBase + 0x300000); /* MMU aperture 2 */
     }
     else
     {
@@ -185,9 +192,14 @@ void tseng_init_acl()
        * which we'll make point at the last 1 KB of video memory.
        */
       scratchMemBase = (long)vgaBase + 0x18000L;
-      *((LongP) (MMioBase + 0x00)) = vga256InfoRec.videoRam * 1024 - 1024;
+      *((LongP) (MMioBase + 0x00)) = scratchVidBase;
+      /*
+       * CPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
+       */
+      CPU2ACLBase = (LongP)((long)vgaBase + 0x1C000L); /* MMU aperture 2 */
     }
-      
+
+    ErrorF("MMioBase = 0x%x, scratchMemBase = 0x%x\n", MMioBase, scratchMemBase);      
 
     MMU_CONTROL			= (ByteP) (MMioBase + 0x13);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.44 1996/12/17 20:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.45 1996/12/23 06:41:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -220,6 +220,7 @@ typedef struct {
     int (*PreInit)();
     void (*DacRestore)();
     void (*DacSave)();
+    int (*DacInit)(DisplayModePtr);
 } s3RamdacInfo;
 
 extern s3RamdacInfo s3Ramdacs[];

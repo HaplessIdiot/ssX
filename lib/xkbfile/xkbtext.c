@@ -1609,7 +1609,7 @@ register int i;
 
 /***====================================================================***/
 
-#define	PIXEL_MAX	65537
+#define	PIXEL_MAX	65535
 
 Bool
 #if NeedFunctionPrototypes

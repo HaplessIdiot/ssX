@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.27 1996/10/16 14:43:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.28 1996/12/23 06:58:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -754,6 +754,8 @@ PVGA1Restore(restore)
 {
   unsigned char temp;
 
+  vgaProtect(TRUE);
+
   /*
    * First unlock all these special registers ...
    * NOTE: Locking will not be fully renabled !!!
@@ -899,6 +901,8 @@ fprintf(stderr, "pr69 now = 0x%x\n", rdinx(0x3C4, 0x32));
      outw (EXT_REG_ACCESS_PORT, CURSOR_BLOCK);
      outw (EXT_REG_IO_PORT, restore->CursorCntl);
   }
+
+  vgaProtect(FALSE);
 }
 
 

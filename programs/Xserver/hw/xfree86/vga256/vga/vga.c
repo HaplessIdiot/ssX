@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.64 1996/12/09 11:54:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.65 1996/12/23 06:59:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -312,19 +312,6 @@ extern int defaultColorVisualClass;
 extern vgaVideoChipPtr Drivers[];
 
 /*
- * vgaRestore -- 
- *	Wrap the chip-level restore function in a protect/unprotect.
- */
-void
-vgaRestore(mode)
-     pointer mode;
-{
-  vgaProtect(TRUE);
-  (vgaRestoreFunc)(mode);
-  vgaProtect(FALSE);
-}
-
-/*
  * vgaPrintIdent --
  *     Prints out identifying strings for drivers included in the server
  */
@@ -499,17 +486,17 @@ vgaProbe()
          * with < 256K there should be fewer planes.
          */
         if (vga256InfoRec.videoRam <= 256 || !vga256InfoRec.bankedMono)
-            needmem = Drivers[i]->ChipMapSize * 8;
+            needmem = Drivers[i]->ChipSegmentSize * 8;
         else
 	    needmem = vga256InfoRec.videoRam / 4 * 1024 * 8;
 #else /* BANKEDMONOVGA */
-	needmem = Drivers[i]->ChipMapSize * 8;
+	needmem = Drivers[i]->ChipSegmentSize * 8;
 #endif /* BANKEDMONOVGA */
 	rounding = 32;
 #else /* MONOVGA */
 #ifdef XF86VGA16
 #ifdef PC98_EGC
-	needmem = Drivers[i]->ChipMapSize * 8;
+	needmem = Drivers[i]->ChipSegmentSize * 8;
 #else
 	needmem = vga256InfoRec.videoRam / 4 * 1024 * 8;
 #endif
@@ -660,9 +647,15 @@ vgaProbe()
 		vgaEnterLeaveFunc(LEAVE);
 		return(FALSE);
 	}
-	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY <= 8*vgaMapSize)
-		/* may be unbanked */
-		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
+		rounding) * rounding;
+	if (vga256InfoRec.displayWidth*vga256InfoRec.virtualY <= 8*vgaSegmentSize)
+	{	/* may be unbanked */
+		if (vga256InfoRec.displayWidth > vga256InfoRec.virtualX)
+			ErrorF("%s %s: Display width set to %d (a multiple of"
+			       " %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
+			       vga256InfoRec.displayWidth, rounding);
+	}
 	else if (vga256InfoRec.virtualX > (1024))
 		vga256InfoRec.displayWidth=2048;
 	     else vga256InfoRec.displayWidth=1024;
@@ -816,19 +809,19 @@ vgaProbe()
 	}
 	/* Now that modes are resolved and max. extents are found,
 	 * test size again */
-	if (vga256InfoRec.virtualX*vga256InfoRec.virtualY <= 8*vgaMapSize)
-		/* may be unbanked */
-		vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
-	else 
+	vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
+		rounding) * rounding;
+	if (vga256InfoRec.displayWidth*vga256InfoRec.virtualY > 8*vgaSegmentSize)
 	  {
              if (vga256InfoRec.virtualX > (1024))
 		vga256InfoRec.displayWidth=2048;
 	     else vga256InfoRec.displayWidth=1024;
-	     if (xf86Verbose)
-		ErrorF("%s %s: Display width set to %i\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-		        vga256InfoRec.displayWidth);
           }
+	if ((xf86Verbose) &&
+	    (vga256InfoRec.displayWidth != vga256InfoRec.virtualX))
+		ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+		        vga256InfoRec.displayWidth, rounding);
 #endif
 
 #ifndef BANKEDMONOVGA
@@ -1141,7 +1134,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
         			      vgaLinearSize);
 
 #ifdef MONOVGA
-    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaMapSize * 8)
+    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaSegmentSize * 8)
     {                                                     /* ^ mfb bug */
       ErrorF("%s %s: Using banked mono vga mode\n", 
           XCONFIG_PROBED, vga256InfoRec.name);
@@ -1189,7 +1182,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     }
   }
 
-  if (!(vgaInitFunc)(vga256InfoRec.modes))
+  if (!(*vgaInitFunc)(vga256InfoRec.modes))
     FatalError("%s: hardware initialisation failed\n", vga256InfoRec.name);
 
 
@@ -1200,12 +1193,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
    * DHD Dec 1991.
    */
   if (!vgaOrigVideoState)
-    vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
-  vgaRestore(vgaNewVideoState);
+    vgaOrigVideoState = (pointer)(*vgaSaveFunc)(vgaOrigVideoState);
+  (*vgaRestoreFunc)(vgaNewVideoState);
 #ifndef DIRTY_STARTUP
   vgaSaveScreen(NULL, FALSE); /* blank the screen */
 #endif
-  (vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
+  (*vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
 
   /*
    * Take display resolution from the -dpi flag if specified
@@ -1468,16 +1461,16 @@ vgaEnterLeaveVT(enter, screen_idx)
       if (vgaUseLinearAddressing)
         xf86MapDisplay(screen_idx, LINEAR_REGION);
 
-      (vgaEnterLeaveFunc)(ENTER);
+      (*vgaEnterLeaveFunc)(ENTER);
 #ifdef XFreeXDGA
       if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
 	/* Should we do something here or not ? */
       } else
 #endif
       {
-        vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
+        vgaOrigVideoState = (pointer)(*vgaSaveFunc)(vgaOrigVideoState);
       }
-      vgaRestore(vgaNewVideoState);
+      (*vgaRestoreFunc)(vgaNewVideoState);
 #ifdef SCO
       /*
        * This is a temporary fix for et4000's, it shouldn't affect the other
@@ -1549,7 +1542,7 @@ vgaEnterLeaveVT(enter, screen_idx)
       if (vgaUseLinearAddressing)
         xf86MapDisplay(screen_idx, LINEAR_REGION);
 
-      (vgaEnterLeaveFunc)(ENTER);
+      (*vgaEnterLeaveFunc)(ENTER);
 
       /*
        * Create a dummy pixmap to write to while VT is switched out.
@@ -1557,8 +1550,8 @@ vgaEnterLeaveVT(enter, screen_idx)
        */
       if (!xf86Exiting)
       {
-        ppix = (pScreen->CreatePixmap)(pScreen, pScreen->width,
-                                        pScreen->height, pScreen->rootDepth);
+        ppix = (pScreen->CreatePixmap)(pScreen, vga256InfoRec.displayWidth,
+				       pScreen->height, pScreen->rootDepth);
         if (ppix)
         {
 #ifndef XF86VGA16
@@ -1585,7 +1578,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 #endif /* XF86VGA16 */
 	  pspix->devPrivate.ptr = ppix->devPrivate.ptr;
         }
-        (vgaSaveFunc)(vgaNewVideoState);
+        (*vgaSaveFunc)(vgaNewVideoState);
       }
       /*
        * We come here in many cases, but one is special: When the server aborts
@@ -1596,14 +1589,14 @@ vgaEnterLeaveVT(enter, screen_idx)
       if (vga256InfoRec.directMode & XF86DGADirectGraphics) {      
          /* make sure we are in linear mode */
          /* hide any harware cursors */
-         (vgaEnterLeaveFunc)(LEAVE);
+         (*vgaEnterLeaveFunc)(LEAVE);
       } else
 #endif
       {
          if (vgaOrigVideoState)
-            vgaRestore(vgaOrigVideoState);
+            (*vgaRestoreFunc)(vgaOrigVideoState);
 
-            (vgaEnterLeaveFunc)(LEAVE);
+            (*vgaEnterLeaveFunc)(LEAVE);
 
             xf86UnMapDisplay(screen_idx, VGA_REGION);
             if (vgaUseLinearAddressing)
@@ -1708,7 +1701,7 @@ void
 vgaAdjustFrame(x, y)
      int x, y;
 {
-  (vgaAdjustFunc)(x, y);
+  (*vgaAdjustFunc)(x, y);
 }
 
 /*
@@ -1719,9 +1712,9 @@ Bool
 vgaSwitchMode(mode)
      DisplayModePtr mode;
 {
-  if ((vgaInitFunc)(mode))
+  if ((*vgaInitFunc)(mode))
   {
-    vgaRestore(vgaNewVideoState);
+    (*vgaRestoreFunc)(vgaNewVideoState);
     if (vgaHWCursor.Initialized)
     {
       vgaHWCursor.Restore(savepScreen);
@@ -1745,5 +1738,5 @@ vgaValidMode(mode, verbose)
      DisplayModePtr mode;
      Bool verbose;
 {
-  return (vgaValidModeFunc)(mode, verbose);
+  return (*vgaValidModeFunc)(mode, verbose);
 }

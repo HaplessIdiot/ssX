@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.22 1996/12/23 06:56:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.23 1996/12/26 01:39:19 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -1329,6 +1329,8 @@ static void
 ArkRestore(restore)
 vgaArkPtr restore;
 {
+	vgaProtect(TRUE);
+
 	/*
 	 * Whatever code is needed to get things back to bank zero should be
 	 * placed here.  Things should be in the same state as when the
@@ -1469,6 +1471,8 @@ vgaArkPtr restore;
 		SETBITMAPCONFIG(LINEARSTENCILADDR | LINEARSOURCEADDR |
 			LINEARDESTADDR);
 	}
+
+	vgaProtect(FALSE);
 }
 
 /*

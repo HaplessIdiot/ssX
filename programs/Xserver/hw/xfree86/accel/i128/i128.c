@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.18 1996/11/24 09:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.19 1996/12/23 06:35:35 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -91,12 +91,13 @@ ScrnInfoRec i128InfoRec =
    i128ValidTokens,		/* int *validTokens */
    I128_PATCHLEVEL,		/* char *patchlevel */
    0,				/* int IObase */
-   0,				/* int PALbase */
+   0,				/* int DACbase */
    0,				/* int COPbase */
    0,				/* int POSbase */
    0,				/* int instance */
    0,				/* int s3Madjust */
    0,				/* int s3Nadjust */
+   0,				/* int s3MClk */
    0,				/* unsigned long VGABase */
    0,				/* int s3RefClk */
    0,				/* int suspendTime */

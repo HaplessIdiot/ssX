@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.36 1996/11/24 09:53:14 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.37 1996/12/23 06:35:19 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -193,7 +193,7 @@ extern vgaVideoChipPtr Drivers[];
  *	Wrap the chip-level restore function in a protect/unprotect.
  */
 static w32_mode = FALSE;
-void
+static void
 vgaRestore(mode)
      pointer mode;
 {
@@ -807,7 +807,7 @@ vgaEnterLeaveVT(enter, screen_idx)
        */
       if (!xf86Exiting)
       {
-        ppix = (pScreen->CreatePixmap)(pScreen, pScreen->width,
+        ppix = (pScreen->CreatePixmap)(pScreen, vga256InfoRec.displayWidth, 
                                         pScreen->height, pScreen->rootDepth);
         if (ppix)
         {

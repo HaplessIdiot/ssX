@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.13 1996/10/16 14:42:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.14 1996/12/23 06:57:30 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -315,7 +315,9 @@ static void
 GenericRestore(restore)
 vgaGenericPtr restore;
 {
+	vgaProtect(TRUE);
 	vgaHWRestore((vgaHWPtr)restore);
+	vgaProtect(FALSE);
 }
 
 

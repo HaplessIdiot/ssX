@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.0 1996/12/17 21:00:41 dawes Exp $ */
 
 #include "vga256.h"
 #include "xf86.h"
@@ -35,6 +35,10 @@ void TsengSubsequentScanlineScreenToScreenColorExpand();
 
 void TsengSubsequentBresenhamLine();
 void TsengSubsequentTwoPointLine();
+
+void TsengSetupForCPUToScreenColorExpand();
+void TsengSubsequentCPUToScreenColorExpand();
+
 
 int bytesperpixel;
 int tseng_line_width;
@@ -128,17 +132,38 @@ void TsengAccelInit() {
      */
 
 #if 0
-    xf86AccelInfoRec.ColorExpandFlags =
-        VIDEO_SOURCE_GRANULARITY_PIXEL | BIT_ORDER_IN_BYTE_LSBFIRST |
-        NO_TRANSPARENCY | NO_PLANEMASK;
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-        TsengSetupForScanlineScreenToScreenColorExpand;
-    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-        TsengSubsequentScanlineScreenToScreenColorExpand;
-    xf86AccelInfoRec.ScratchBufferAddr = (long) W32Mix;
-    xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
-    ErrorF("ColorExpand ScratchBuf: Base = %d ; Size = %d\n",
-           xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferSize);
+    if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+    {
+      xf86AccelInfoRec.ColorExpandFlags =
+          VIDEO_SOURCE_GRANULARITY_PIXEL | BIT_ORDER_IN_BYTE_LSBFIRST |
+          NO_TRANSPARENCY | NO_PLANEMASK;
+      xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+          TsengSetupForScanlineScreenToScreenColorExpand;
+      xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+          TsengSubsequentScanlineScreenToScreenColorExpand;
+      xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+      xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
+      ErrorF("ColorExpand ScratchBuf: Base = %d ; Size = %d\n",
+             xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferSize);
+     }
+
+    if (et4000_type < TYPE_ET6000)
+    {
+      xf86AccelInfoRec.ColorExpandFlags =
+          BIT_ORDER_IN_BYTE_LSBFIRST | CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD | 
+          ONLY_TRANSPARENCY_SUPPORTED;
+      xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
+          TsengSetupForCPUToScreenColorExpand;
+      xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
+          TsengSubsequentCPUToScreenColorExpand;
+      
+      /* we'll be using MMU aperture 2 */
+      xf86AccelInfoRec.CPUToScreenColorExpandBase = CPU2ACLBase;
+      ErrorF("CPU2ACLBase = 0x%x\n", CPU2ACLBase);
+      /* aperture size is 8kb in banked mode. Larger in linear mode, but 8kb is enough */
+      xf86AccelInfoRec.CPUToScreenColorExpandRange = 8192;
+    }
+
 #endif
     
     /*
@@ -381,10 +406,10 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
 
     *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[rop];
     *ACL_BACKGROUND_RASTER_OPERATION	= W32PatternOpTable[rop];
-    if (et4000_type == TYPE_ET6000)
+    if (et4000_type >= TYPE_ET6000)
       *ACL_MIX_CONTROL			= 0x32;
     else
-      *ACL_ROUTING_CONTROL		= 0x02;
+      *ACL_ROUTING_CONTROL		= 0x08;
 
     *ACL_XY_DIRECTION			= 0;
 
@@ -539,3 +564,53 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
    START_ACL(destaddr);
 }
 
+
+/*
+ * CPU-to-Screen color expansion.
+ *   This is for ET4000 only (The ET6000 cannot do this)
+ */
+
+void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
+{
+  PINGPONG;
+
+  *ACL_FOREGROUND_RASTER_OPERATION    = W32OpTable[rop];
+  *ACL_BACKGROUND_RASTER_OPERATION    = W32PatternOpTable[rop];
+  *ACL_ROUTING_CONTROL                = 0x02;
+  *ACL_XY_DIRECTION                   = 0;
+  *ACL_DESTINATION_Y_OFFSET           = tseng_line_width-1;
+
+  switch (bytesperpixel)
+  {
+    case 1:
+      fg &= 0xFF;
+      fg = (fg << 24) | (fg << 16) | (fg << 8) | fg;
+      bg &= 0xFF;
+      bg = (bg << 24) | (bg << 16) | (bg << 8) | bg;
+      break;
+    case 2:
+      fg &= 0xFFFF;
+      fg = (fg << 16) | fg;
+      bg &= 0xFFFF;
+      bg = (bg << 16) | bg;
+      break;
+  }
+
+  *ACL_SOURCE_ADDRESS                 = Fg;
+  *MemFg                              = fg;
+
+  *ACL_SOURCE_WRAP                    = 0x02;
+  *ACL_PATTERN_WRAP                   = 0x02;
+  *ACL_PATTERN_ADDRESS                = Pat;
+  *MemPat                             = bg;
+
+  *ACL_MIX_ADDRESS                    = 0;
+  *ACL_MIX_Y_OFFSET                   = 31;
+}
+
+void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
+{
+  int destaddr = y * tseng_line_width + x * bytesperpixel;
+  SET_XY(w, h);
+  *ACL_DESTINATION_ADDRESS = destaddr;
+}

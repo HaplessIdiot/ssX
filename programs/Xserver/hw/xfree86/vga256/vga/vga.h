@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.17 1996/09/29 13:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.18 1996/12/23 06:59:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -219,6 +219,7 @@ extern pointer vgaNewVideoState;
 extern pointer vgaBase;              /* the framebuffer himself */
 extern pointer vgaLinearBase;
 
+extern OsTimerPtr vgaSuspendTimer, vgaOffTimer;
 
 typedef struct {
   unsigned char MiscOutReg;     /* */
@@ -345,18 +346,6 @@ void vgaGetClocks(
 );
 
 /* vga.c */
-void NoopVGA(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-void vgaRestore(
-#if NeedFunctionPrototypes
-    pointer mode
-#endif
-);
-
 void vgaPrintIdent(
 #if NeedFunctionPrototypes
     void
