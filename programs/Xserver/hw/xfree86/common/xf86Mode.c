@@ -1718,7 +1718,7 @@ void
 xf86PrintModes(ScrnInfoPtr scrp)
 {
     DisplayModePtr p;
-    float hsync, refresh;
+    float hsync, refresh = 0;
     char *desc, *desc2, *prefix;
 
     if (scrp == NULL)

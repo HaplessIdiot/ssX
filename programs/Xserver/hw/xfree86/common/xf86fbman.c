@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.19 2000/11/24 23:18:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.21 2001/02/15 20:31:53 eich Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -917,7 +917,7 @@ localResizeOffscreenLinear(FBLinearPtr resize, int length)
 	extents = REGION_EXTENTS(pScreen, offman->InitialBoxes);
 	pitch = extents->x2 - extents->x1;
 
-	if(length < w) { /* special case */
+	if(length < pitch) { /* special case */
 	    w = length;
 	    h = 1;
 	} else {

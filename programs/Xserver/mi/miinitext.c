@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.55 2001/03/05 04:52:30 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.56 2001/03/16 04:45:36 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -476,8 +476,8 @@ InitExtensions(argc, argv)
     int		argc;
     char	*argv[];
 {
-    int i, j, k, numExts, ii;
-    ExtensionModule *ext, *newList;
+    int i;
+    ExtensionModule *ext;
     static Bool listInitialised = FALSE;
 
     if (!listInitialised) {
