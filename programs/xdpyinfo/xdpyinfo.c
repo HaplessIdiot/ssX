@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.22 2001/02/08 23:36:27 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.23 2001/04/03 22:37:02 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -62,6 +62,9 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #ifdef XINPUT
 #include <X11/extensions/XInput.h>
+#endif
+#ifdef XRENDER
+#include <X11/extensions/Xrender.h>
 #endif
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -921,6 +924,85 @@ print_xinput_info(Display *dpy, char *extname)
 }
 #endif
 
+#ifdef XRENDER
+static int
+print_xrender_info(Display *dpy, char *extname)
+{
+  int		    loop, num_extensions;
+  char		    **extensions;
+  XRenderPictFormat *pictform;
+  int		    count;
+  int		    major, minor;
+  int		    i, j;
+  XVisualInfo	    viproto;		/* fill in for getting info */
+  XVisualInfo	    *vip;		/* retured info */
+  int		    nvi;		/* number of elements returned */
+  int		    ndepths = 0, *depths = NULL;
+
+  if (!XRenderQueryVersion (dpy, &major, &minor))
+    return 0;
+  
+  print_standard_extension_info(dpy, extname, major, minor);
+
+  extensions = XListExtensions(dpy, &num_extensions);
+  for (loop = 0; loop < num_extensions &&
+         (strcmp(extensions[loop], extname) != 0); loop++);
+  XFreeExtensionList(extensions);
+  if (loop != num_extensions) {
+    printf ("  Render formats :\n");
+    for (count = 0; (pictform = XRenderFindFormat (dpy, 0, 0, count)); count++)
+    {
+      printf  ("  pict format:\n");
+      printf  ("\tformat id:    0x%lx\n", pictform->id);
+      printf  ("\ttype:         %s\n",
+	     pictform->type == PictTypeIndexed ? "Indexed" : "Direct");
+      printf  ("\tdepth:        %d\n", pictform->depth);
+      if (pictform->type == PictTypeDirect) {
+	printf("\talpha:        %2d mask 0x%x\n", pictform->direct.alpha, pictform->direct.alphaMask);
+	printf("\tred:          %2d mask 0x%x\n", pictform->direct.red, pictform->direct.redMask);
+	printf("\tgreen:        %2d mask 0x%x\n", pictform->direct.green, pictform->direct.greenMask);
+	printf("\tblue:         %2d mask 0x%x\n", pictform->direct.blue, pictform->direct.blueMask);
+      }
+      else
+	printf("\tcolormap      0x%lx\n", pictform->colormap);
+    }
+    printf ("  Screen formats :\n");
+    for (i = 0; i < ScreenCount (dpy); i++) {
+      nvi = 0;
+      viproto.screen = i;
+      vip = XGetVisualInfo (dpy, VisualScreenMask, &viproto, &nvi);
+      printf ("    Screen %d\n", i);
+      for (j = 0; j < nvi; j++)
+      {
+	printf  ("      visual format:\n");
+	printf  ("        visual id:      0x%lx\n", vip[j].visualid);
+	pictform = XRenderFindVisualFormat (dpy, vip[j].visual);
+	if (pictform)
+	  printf("        pict format id: 0x%lx\n", pictform->id);
+	else
+	  printf("        pict format id: None\n");
+      }
+      if (vip) XFree ((char *) vip);
+      depths = XListDepths (dpy, i, &ndepths);
+      if (!depths) ndepths = 0;
+      for (j = 0; j < ndepths; j++)
+      {
+	XRenderPictFormat templ;
+
+	templ.depth = depths[j];
+	printf  ("     depth formats:\n");
+	printf  ("       depth           %d\n", depths[j]);
+	for (count = 0; (pictform = XRenderFindFormat (dpy, PictFormatDepth, &templ, count)); count++)
+	  printf("       pict format id: 0x%lx\n", pictform->id);
+      }
+    }
+    return 1;
+  }
+  else
+    return 0;
+}
+#endif /* XRENDER */
+
 /* utilities to manage the list of recognized extensions */
 
 
@@ -965,7 +1047,10 @@ ExtensionPrintInfo known_extensions[] =
     {"DOUBLE-BUFFER", print_dbe_info, False},
     {"RECORD", print_record_info, False},
 #ifdef XINPUT
-    {INAME, print_xinput_info, False}
+    {INAME, print_xinput_info, False},
+#endif
+#ifdef XRENDER
+    {RENDER_NAME, print_xrender_info, False},
 #endif
     /* add new extensions here */
     /* wish list: PEX */
