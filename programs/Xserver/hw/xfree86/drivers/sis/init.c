@@ -1480,10 +1480,10 @@ SiSDetermineROMLayout661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	 return TRUE;
       }
    } else if(IS_SIS650740) {
-      if((ROMAddr[0x1a] = 'N') &&
-         (ROMAddr[0x1b] = 'e') &&
-         (ROMAddr[0x1c] = 'w') &&
-         (ROMAddr[0x1d] = 'V')) {
+      if((ROMAddr[0x1a] == 'N') &&
+         (ROMAddr[0x1b] == 'e') &&
+         (ROMAddr[0x1c] == 'w') &&
+         (ROMAddr[0x1d] == 'V')) {
 	 return TRUE;
       }
    }
