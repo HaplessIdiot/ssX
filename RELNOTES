@@ -817,7 +817,7 @@ and some new features should be completed in a future release.
 
 Xedit has several new features, including:
 
-   o An embeded lisp interpreter that allows easier extension of the editor.
+   o An embedded lisp interpreter that allows easier extension of the editor.
 
    o Several new syntax highlight modes, and indentation rules for C and
      Lisp.
@@ -930,7 +930,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.80 2003/02/26 21:59:44 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.81 2003/02/27 00:45:05 dawes Exp $
 
 
 $XFree86: $
