@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.195tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.196 2004/11/28 17:22:34 tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -4080,26 +4080,26 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
        i = 0;
        do {
-	  if( (mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
-	      ((!strlen(mycustomttable[i].biosversion)) ||
+	  if( (SiS_mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
+	      ((!strlen(SiS_mycustomttable[i].biosversion)) ||
 	       (pSiS->sishw_ext.UseROM &&
-	       (!strncmp(mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
-	                strlen(mycustomttable[i].biosversion)))))                     &&
-	      ((!strlen(mycustomttable[i].biosdate)) ||
+	       (!strncmp(SiS_mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
+	                strlen(SiS_mycustomttable[i].biosversion)))))                     &&
+	      ((!strlen(SiS_mycustomttable[i].biosdate)) ||
 	       (pSiS->sishw_ext.UseROM &&
-	       (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
-	                strlen(mycustomttable[i].biosdate)))))			      &&
-	      ((!mycustomttable[i].bioschksum) ||
+	       (!strncmp(SiS_mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
+	                strlen(SiS_mycustomttable[i].biosdate)))))			      &&
+	      ((!SiS_mycustomttable[i].bioschksum) ||
 	       (pSiS->sishw_ext.UseROM &&
-	       (mycustomttable[i].bioschksum == chksum)))			      &&
-	      (mycustomttable[i].pcisubsysvendor == pSiS->PciInfo->subsysVendor)      &&
-	      (mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
+	       (SiS_mycustomttable[i].bioschksum == chksum)))			      &&
+	      (SiS_mycustomttable[i].pcisubsysvendor == pSiS->PciInfo->subsysVendor)      &&
+	      (SiS_mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
 	     footprint = TRUE;
 	     for(j=0; j<5; j++) {
-	        if(mycustomttable[i].biosFootprintAddr[j]) {
+	        if(SiS_mycustomttable[i].biosFootprintAddr[j]) {
 		   if(pSiS->sishw_ext.UseROM) {
-	              if(pSiS->BIOS[mycustomttable[i].biosFootprintAddr[j]] !=
-		      				mycustomttable[i].biosFootprintData[j])
+	              if(pSiS->BIOS[SiS_mycustomttable[i].biosFootprintAddr[j]] !=
+		      				SiS_mycustomttable[i].biosFootprintData[j])
 		         footprint = FALSE;
 		   } else footprint = FALSE;
 	        }
@@ -4107,13 +4107,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     if(footprint) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	           "Identified %s %s, special timing applies\n",
-		   mycustomttable[i].vendorName, mycustomttable[i].cardName);
-	        pSiS->SiS_Pr->SiS_CustomT = mycustomttable[i].SpecialID;
+		   SiS_mycustomttable[i].vendorName, SiS_mycustomttable[i].cardName);
+	        pSiS->SiS_Pr->SiS_CustomT = SiS_mycustomttable[i].SpecialID;
 	        break;
 	     }
           }
           i++;
-       } while(mycustomttable[i].chipID);
+       } while(SiS_mycustomttable[i].chipID);
     }
 
     /* Handle ForceCRT1 option */

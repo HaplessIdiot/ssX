@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.59 2004/07/07 21:20:41 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver option evaluation
@@ -37,8 +37,6 @@
 #include "xf86Cursor.h"
 
 #include "sis.h"
-
-extern const customttable mycustomttable[];
 
 typedef enum {
     OPTION_SW_CURSOR,
@@ -1149,13 +1147,13 @@ SiSOptions(ScrnInfoPtr pScrn)
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			"Special timing disabled\n");
 	     } else {
-	        while(mycustomttable[i].chipID != 0) {
-	           if(!xf86NameCmp(strptr,mycustomttable[i].optionName)) {
-		      pSiS->SiS_Pr->SiS_CustomT = mycustomttable[i].SpecialID;
+	        while(SiS_mycustomttable[i].chipID != 0) {
+	           if(!xf86NameCmp(strptr,SiS_mycustomttable[i].optionName)) {
+		      pSiS->SiS_Pr->SiS_CustomT = SiS_mycustomttable[i].SpecialID;
 		      found = TRUE;
 		      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   	  "Special timing for %s %s forced\n",
-			  mycustomttable[i].vendorName, mycustomttable[i].cardName);
+			  SiS_mycustomttable[i].vendorName, SiS_mycustomttable[i].cardName);
 		      break;
 		   }
 		   i++;
@@ -1165,12 +1163,12 @@ SiSOptions(ScrnInfoPtr pScrn)
 		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Valid parameters are:\n");
 		   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "\t\"NONE\" (to disable special timings)\n");
 		   i = 0;
-		   while(mycustomttable[i].chipID != 0) {
+		   while(SiS_mycustomttable[i].chipID != 0) {
 		      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		        	"\t\"%s\" (for %s %s)\n",
-				mycustomttable[i].optionName,
-				mycustomttable[i].vendorName,
-				mycustomttable[i].cardName);
+				SiS_mycustomttable[i].optionName,
+				SiS_mycustomttable[i].vendorName,
+				SiS_mycustomttable[i].cardName);
 		      i++;
 		   }
                 }

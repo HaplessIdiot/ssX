@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.47 2004/06/29 10:17:45 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * Data and prototypes for init301.c
@@ -380,8 +380,6 @@ void    SiS_FinalizeLCD(SiS_Private *, USHORT, USHORT, PSIS_HW_INFO);
 #ifdef SIS300
 void    SiS_OEM300Setting(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
                           USHORT ModeNo, USHORT ModeIdIndex, USHORT RefTabindex);
-void    SetOEMLCDData2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
-		       USHORT ModeNo, USHORT ModeIdIndex,USHORT RefTableIndex);
 #endif
 
 extern void     SiS_SetReg(SISIOADDRESS, USHORT, USHORT);

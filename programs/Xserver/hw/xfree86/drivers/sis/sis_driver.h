@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.40 2004/06/29 10:17:46 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * Global data and definitions
@@ -127,7 +127,7 @@ static const chswtable mychswtable[] = {
 
 /*     These machines require special timing/handling
  */
-const customttable mycustomttable[] = {
+const customttable SiS_mycustomttable[] = {
         { SIS_630, "2.00.07", "09/27/2002-13:38:25",
 	  0x3240A8,
 	  { 0x220, 0x227, 0x228, 0x229, 0x0ee },

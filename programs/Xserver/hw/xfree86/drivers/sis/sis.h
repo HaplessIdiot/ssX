@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.117 2004/07/07 21:20:40 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * Main global data and definitions
@@ -1150,6 +1150,8 @@ typedef struct _sisdirectcommand {
 #define SDC_CMD_CHECKMODEFORCRT2 	0x98980002
 /* more to come */
 #endif
+
+extern const customttable SiS_mycustomttable[];
 
 extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *reg2);
 extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg1, unsigned char reg2);
