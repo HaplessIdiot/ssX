@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.25 2001/08/23 00:03:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.26 2001/12/14 19:54:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -446,6 +446,9 @@ AsciiPreparePaint(Widget w, int y, int line,
     XawTextBlock block;
     XFontStruct *font;
     XawTextPaintStruct *paint;
+
+    if (!sink->ascii_sink.echo)
+	return;
 
     /* pass 1: calculate ascent/descent values and x coordinate */
     /* XXX the MAX ascent/descent value should be in the line table XXX */
@@ -1290,6 +1293,36 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 	XawTextBlock block;
 	XawTextPosition selection_start, selection_end;
 	Boolean has_selection;
+
+	if (!sink->ascii_sink.echo) {
+	    if (sink->ascii_sink.laststate != state) {
+		int width = CharWidth(sink, font, 0, ' ') - 1;
+
+		x = ctx->text.margin.left;
+		y = ctx->text.margin.top;
+		font = sink->ascii_sink.font;
+		fheight = font->ascent + font->descent;
+		if (state == XawisOn) {
+		    if (ctx->text.hasfocus)
+		    XFillRectangle(XtDisplay(ctx), XtWindow(ctx),
+				   sink->ascii_sink.xorgc, x, y,
+				   width + 1, fheight + 1);
+		    else
+			XDrawRectangle(XtDisplay(ctx), XtWindow(ctx),
+				       sink->ascii_sink.xorgc, x, y,
+				       width, fheight);
+
+		}
+		else
+		    _XawTextSinkClearToBackground(w, x, y,
+						  width + 1, fheight + 1);
+	    }
+	    sink->ascii_sink.cursor_x = x;
+	    sink->ascii_sink.cursor_y = y;
+	    sink->ascii_sink.laststate = state;
+	    return;
+	}
+
 
 	XawTextGetSelectionPos((Widget)ctx, &selection_start, &selection_end);
 	has_selection = selection_start != selection_end;

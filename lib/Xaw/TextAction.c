@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.42 2001/12/03 13:38:10 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.43 2001/12/14 19:54:44 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3158,6 +3158,7 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	XawTextPosition insertPos = ctx->text.insertPos, pos, tmp, last;
 	char left, right = text.ptr[0];
 	int level = 0;
+	XtAppContext app_context = XtWidgetToApplicationContext(w);
 
 	left = right == ')' ? '(' : right == ']' ? '[' : '{';
 
@@ -3188,8 +3189,14 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	EndAction(ctx);
 
 	XSync(XtDisplay(w), False);
-	while (XtAppPending(XtWidgetToApplicationContext(w)) & XtIMXEvent)
-	    XtAppProcessEvent(XtWidgetToApplicationContext(w), XtIMXEvent);
+	while (XtAppPending(app_context) & XtIMXEvent) {
+	    XEvent ev;
+	    if (! XtAppPeekEvent(app_context, &ev))
+		break;
+	    if (ev.type == KeyPress || ev.type == ButtonPress)
+		break;
+	    XtAppProcessEvent(app_context, XtIMXEvent);
+	}
 	FD_ZERO(&fds);
 	FD_SET(ConnectionNumber(XtDisplay(w)), &fds);
 	(void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
