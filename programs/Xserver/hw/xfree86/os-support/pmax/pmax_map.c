@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.3.2.1 1998/06/09 14:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.4 1998/07/25 16:56:55 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -184,17 +184,21 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
 {
 	pointer hostbase = pciBusAddrToHostAddr(Tag, (void *)Base);
 	char   *base;
+	int	psize;
+	int	mlen;
 
-	base = pmax_iomap((unsigned long)hostbase, 0x8000);
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	base = pmax_iomap((unsigned long)hostbase, mlen);
 	if (base == MAP_FAILED)	{
 		xf86Msg(X_WARNING, "xf86ReadPciBIOS: Could not mmap PCI memory"
 			" [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
-			Base, hostbase, 0x8000, strerror(errno));
+			Base, hostbase, mlen, strerror(errno));
 		return(0);
 	}
 	
 	(void)memcpy(Buf, base + Offset, Len);
-	(void)munmap(base, 0x8000);
+	(void)munmap(base, mlen);
 	return(Len);
 }
 

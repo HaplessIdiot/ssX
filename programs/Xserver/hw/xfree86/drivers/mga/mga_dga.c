@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.7 1999/04/17 07:06:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.8 1999/06/06 08:48:50 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -89,12 +89,13 @@ SECOND_PASS:
 	currentMode->red_mask = pScrn->mask.red;
 	currentMode->green_mask = pScrn->mask.green;
 	currentMode->blue_mask = pScrn->mask.blue;
+	currentMode->visualClass = (Bpp == 1) ? PseudoColor : TrueColor;
 	currentMode->viewportWidth = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
 	currentMode->xViewportStep = (3 - pMga->BppShift);
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
-	currentMode->offset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+	currentMode->offset = pMga->YDstOrg * Bpp;
 	currentMode->address = pMga->FbStart;
 
 	if(oneMore) { /* first one is narrow width */

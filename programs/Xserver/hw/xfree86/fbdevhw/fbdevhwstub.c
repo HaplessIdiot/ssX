@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.4 1999/04/11 14:54:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.5 1999/06/20 16:35:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86cmap.h"
@@ -120,7 +120,7 @@ fbdevHWRestore(ScrnInfoPtr pScrn)
 
 void
 fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-		 LOCO *colors, short visualClass)
+		 LOCO *colors, VisualPtr pVisual)
 {
 }
 

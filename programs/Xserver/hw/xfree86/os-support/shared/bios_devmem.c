@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.4 1998/07/25 16:57:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_devmem.c,v 3.5 1998/09/13 00:51:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -41,70 +41,6 @@ int
 xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		int Len)
 {
-#ifdef __alpha__
-  /*
-   * The Alpha version uses "mmap" instead of "lseek/read",
-   *  because these (currently) don't work for BUS memory.
-   * We trick "mmap" into mapping BUS memory for us via BUS_BASE,
-   *  which is the KSEG address of the start of the DENSE memory
-   *  area.
-   */
-
-  /*
-   * NOTE: there prolly ought to be more validity checks and all
-   *  re: boundaries and sizes and such...
-   */
-
-/*
- * The Jensen lacks dense memory, thus we have to address the bus via
- * the sparse addressing scheme.
- *
- * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
- */
-
-#ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
-#define SPARSE (5)
-#define isJensen (1)
-#else
-#define isJensen (!_bus_base())
-#define SPARSE (7)
-#endif
-
-extern unsigned long _bus_base(void);
-extern unsigned long _bus_base_sparse(void);
-#define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
-#define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
-
-#define SIZE (64*1024)
-
-	caddr_t base;
- 	int fd;
-
-	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
-	{
-		xf86Msg(X_WARNING, "xf86ReadBIOS: Failed to open %s (%s)\n",
-			DEV_MEM, strerror(errno));
-		return(-1);
-	}
-
-	base = mmap((caddr_t)0, JENSEN_SHIFT(SIZE), PROT_READ,
-		    MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
-
-	if (base == (caddr_t)-1UL)
-	{
-		xf86Msg(X_WARNING, "xf86ReadBIOS: Failed to mmap %s (%s)\n",
-			DEV_MEM, strerror(errno));
-		return(-1);
-	}
-
-	xf86SlowBCopyFromBus(base+JENSEN_SHIFT(Offset), Buf, Len);
-
-	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(SIZE));
-	close(fd);
-	return(Len);
-
-#else /* __alpha__ */
-
  	int fd;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
@@ -130,5 +66,4 @@ extern unsigned long _bus_base_sparse(void);
 	}
 	close(fd);
 	return(Len);
-#endif /* __alpha__ */
 }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/bios_DGmmap.c,v 1.1 1998/12/13 07:37:46 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -38,6 +38,8 @@ int Len;
 {
 	int fd;
 	unsigned char *ptr;
+	int psize;
+	int mlen;
 
 	if ((fd = open(DEV_MEM, O_RDONLY)) < 0)
 	{
@@ -45,7 +47,10 @@ int Len;
 		       strerror(errno));
 		return(-1);
 	}
-	ptr = (unsigned char *)mmap((caddr_t)0, 0x8000, PROT_READ, MAP_SHARED,
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	/* Base is assumed to be page-aligned. */
+	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ, MAP_SHARED,
 				    fd, (off_t)Base);
 	if ((int)ptr == -1)
 	{
@@ -54,7 +59,7 @@ int Len;
 		return(-1);
 	}
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
-	(void)munmap((caddr_t)ptr, 0x8000);
+	(void)munmap((caddr_t)ptr, mlen);
 	(void)close(fd);
 	return(Len);
 }
