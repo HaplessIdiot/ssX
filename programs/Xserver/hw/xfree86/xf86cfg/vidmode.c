@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.4 2000/11/14 21:59:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.5 2001/06/23 01:45:56 paulo Exp $
  */
 
 /*
@@ -687,10 +687,14 @@ SetLabelAndModeline(void)
 		      vidtune->monitor->mon_identifier, NULL);
 	XtSetSensitive(add, True);
 
-	XmuSnprintf(string, sizeof(string), "%dx%d@%d",
-		    modeline.hdisplay, modeline.vdisplay,
-		    (int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
-		    (double)modeline.vtotal));
+	if (modeline.htotal && modeline.vtotal)
+	    XmuSnprintf(string, sizeof(string), "%dx%d@%d",
+			modeline.hdisplay, modeline.vdisplay,
+			(int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
+			(double)modeline.vtotal));
+	else
+	    XmuSnprintf(string, sizeof(string), "%dx%d",
+			modeline.hdisplay, modeline.vdisplay);
 	XtVaSetValues(text, XtNstring, string, NULL);
     }
     else {
@@ -716,15 +720,17 @@ VidmodeRestoreAction(Widget w, XEvent *event,
 static void
 UpdateSyncRates(Bool update)
 {
-    hsync_rate = (dot_clock * 1000) / modeline.htotal;
-    vsync_rate = (hsync_rate * 1000) / modeline.vtotal;
-    if (modeline.flags & V_INTERLACE)
-	vsync_rate *= 2;
-    else if (modeline.flags & V_DBLSCAN)
-	vsync_rate /= 2;
-    if (update) {
-	SetLabel(HSYNC, hsync_rate);
-	SetLabel(VSYNC, vsync_rate);
+    if (modeline.htotal && modeline.vtotal) {
+	hsync_rate = (dot_clock * 1000) / modeline.htotal;
+	vsync_rate = (hsync_rate * 1000) / modeline.vtotal;
+	if (modeline.flags & V_INTERLACE)
+	    vsync_rate *= 2;
+	else if (modeline.flags & V_DBLSCAN)
+	    vsync_rate /= 2;
+	if (update) {
+	    SetLabel(HSYNC, hsync_rate);
+	    SetLabel(VSYNC, vsync_rate);
+	}
     }
 }
 
@@ -989,10 +995,14 @@ SwitchCallback(Widget w, XtPointer call_data, XtPointer client_data)
 
     UpdateCallback(w, call_data, client_data);
 
-    XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
-		modeline.hdisplay, modeline.vdisplay,
-		(int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
-		(double)modeline.vtotal));
+    if (modeline.htotal && modeline.vtotal)
+	XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
+		    modeline.hdisplay, modeline.vdisplay,
+		    (int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
+		    (double)modeline.vtotal));
+    else
+	XmuSnprintf(label, sizeof(label), "%dx%d",
+		    modeline.hdisplay, modeline.vdisplay);
     XtSetArg(args[0], XtNlabel, label);
     XtSetValues(mode, args, 1);
 }
@@ -1137,21 +1147,31 @@ GetModes(void)
     for (i = 0; i < vidtune->num_infos; i++) {
 	Widget sme;
 
-	XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
-		    vidtune->infos[i]->hdisplay,
-		    vidtune->infos[i]->vdisplay,
-		    (int)((double)vidtune->infos[i]->dotclock /
-		    (double)vidtune->infos[i]->htotal * 1000.0 /
-		    (double)vidtune->infos[i]->vtotal));
+	if ((double)vidtune->infos[i]->htotal &&
+	    (double)vidtune->infos[i]->vtotal)
+	    XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
+			vidtune->infos[i]->hdisplay,
+			vidtune->infos[i]->vdisplay,
+			(int)((double)vidtune->infos[i]->dotclock /
+			(double)vidtune->infos[i]->htotal * 1000.0 /
+			(double)vidtune->infos[i]->vtotal));
+	else
+	    XmuSnprintf(label, sizeof(label), "%dx%d",
+			vidtune->infos[i]->hdisplay,
+			vidtune->infos[i]->vdisplay);
 	sme = XtCreateManagedWidget(label, smeBSBObjectClass, menu, NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectCallback,
 		      (XtPointer)vidtune->infos[i]);
     }
 
-    XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
-		modeline.hdisplay, modeline.vdisplay,
-		(int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
-		(double)modeline.vtotal));
+    if (modeline.htotal && modeline.vtotal)
+	XmuSnprintf(label, sizeof(label), "%dx%d @ %d Hz",
+		    modeline.hdisplay, modeline.vdisplay,
+		    (int)((double)dot_clock / (double)modeline.htotal * 1000.0 /
+		    (double)modeline.vtotal));
+    else
+	XmuSnprintf(label, sizeof(label), "%dx%d",
+		    modeline.hdisplay, modeline.vdisplay);
     XtSetArg(args[0], XtNlabel, label);
     XtSetValues(mode, args, 1);
 }
