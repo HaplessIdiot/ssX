@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.20 1998/08/19 07:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.21 1998/08/29 05:43:32 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -223,7 +223,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     
     maxFastBlitMem = (pMga->Interleave ? 4096 : 2048) * 1024;
 
-    if(pMga->FbMapSize > maxFastBlitMem) {
+    if(pMga->FbUsableSize > maxFastBlitMem) {
 	pMga->MaxFastBlitY = maxFastBlitMem / (pScrn->displayWidth * PSZ / 8);
     }
 
@@ -231,7 +231,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pMga->FbMapSize / (pScrn->displayWidth * PSZ / 8);
+    AvailFBArea.y2 = pMga->FbUsableSize / (pScrn->displayWidth * PSZ / 8);
 
     xf86InitFBManager(pScreen, &AvailFBArea); 
 
@@ -606,7 +606,7 @@ MGANAME(SubsequentSolidHorVertLine) (
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | len);
     } else {
 	WAITFIFO(4);
-	OUTREG(MGAREG_DWGCTL, pMga->SolidLineCMD | MGADWG_AUTOLINE_CLOSE);
+	OUTREG(MGAREG_DWGCTL, pMga->SolidLineCMD | MGADWG_AUTOLINE_OPEN);
 	OUTREG(MGAREG_XYSTRT, (y << 16) | x);
 	OUTREG(MGAREG_XYEND + MGAREG_EXEC, ((y + len) << 16) | x);
 	OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD); 

@@ -38,9 +38,12 @@
  *		Guy DESBIEF
  *			g.desbief@aix.pacwan.net
  *		RAMDAC MGA1064 timing,
+ *		Doug Merritt
+ *			doug@netcom.com
+ *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.38 1998/08/29 08:56:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.39 1998/08/29 14:34:37 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1257,13 +1260,31 @@ MGAUnmapMem(pScrn);
 	    ydstorg_modulo <<= 1;
 	}
 	pMga->YDstOrg = offset / bytesPerPixel;
-	while ((offset % offset_modulo) != 0 ||
-	       (pMga->YDstOrg % ydstorg_modulo) != 0)
-	{
-	    offset++;
-	    pMga->YDstOrg = offset / bytesPerPixel;
+
+	/*
+	 * When this was unconditional, it caused a line of horizontal garbage
+	 * at the middle right of the screen at the 4Meg boundary in 32bpp
+	 * (and presumably any other modes that use more than 4M). But it's
+	 * essential for 24bpp (it may not matter either way for 8bpp & 16bpp,
+	 * I'm not sure; I didn't notice problems when I checked with and
+	 * without.)
+	 * DRM Doug Merritt 12/97, submitted to XFree86 6/98 (oops)
+	 */
+	if (bytesPerPixel < 4) {
+	    while ((offset % offset_modulo) != 0 ||
+		   (pMga->YDstOrg % ydstorg_modulo) != 0) {
+		offset++;
+		pMga->YDstOrg = offset / bytesPerPixel;
+	    }
 	}
     }
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "YDstOrg is set to %d\n",
+		   pMga->YDstOrg);
+    pMga->FbUsableSize = pMga->FbMapSize - pMga->YDstOrg * bytesPerPixel;
+    /*
+     * XXX This should be taken into account in some way in the mode valdation
+     * section.
+     */
 
     /* Set Fast bitblt flag */
     if (pMga->Chipset == PCI_CHIP_MGA1064) {
@@ -1386,6 +1407,8 @@ MGAMapMem(ScrnInfoPtr pScrn)
     if (pMga->FbBase == NULL)
 	return FALSE;
 
+    pMga->FbStart = pMga->FbBase + pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+
     /* Re-enable I/O and memory */
     pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
 		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
@@ -1421,6 +1444,7 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->FbBase, pScrn->videoRam);
     pMga->FbBase = NULL;
+    pMga->FbStart = NULL;
     return TRUE;
 }
 
@@ -1644,25 +1668,25 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 8:
-	ret = cfbScreenInit(pScreen, pMga->FbBase,
+	ret = cfbScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pMga->FbBase,
+	ret = cfb16ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pMga->FbBase,
+	ret = cfb24ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pMga->FbBase,
+	ret = cfb32ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
@@ -1762,7 +1786,7 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
     pMga = MGAPTR(pScrn);
 
     if(pMga->ShowCache && y) {
-	int lastline = pMga->FbMapSize / 
+	int lastline = pMga->FbUsableSize / 
 		(pScrn->displayWidth * pScrn->bitsPerPixel/8);
 
 	if(lastline > 4095) lastline = 4095; /* is that right ? */

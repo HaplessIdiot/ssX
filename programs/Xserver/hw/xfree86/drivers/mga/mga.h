@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.15 1998/08/29 05:43:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.16 1998/08/29 14:34:37 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -91,7 +91,9 @@ typedef struct {
     unsigned char *     IOBaseDense;
 #endif
     unsigned char *	FbBase;
+    unsigned char *	FbStart;
     long		FbMapSize;
+    long		FbUsableSize;
     MGARamdacRec	Dac;
     Bool		NoAccel;
     Bool		SyncOnGreen;

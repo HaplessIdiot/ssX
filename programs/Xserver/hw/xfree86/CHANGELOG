@@ -1,4 +1,11 @@
 XFree86 3.9Nc (29 August 1998)
+1790. 24bpp (high res display problems) and 32bpp (horizontal stripe) fixes
+      for the mga driver (#1715, 1716, Doug Merritt).
+1789. Take the mga driver's YDstOrg parameter into account when it passed the
+      framebuffer start address to the cfbInitScreen functions.  This fixes
+      problems that can show up when using more than 4MB.
+1788. Fix an extraneous pixel drawn for some H/V two point lines with
+      a Millennium I (Mark Vojkovich).
 1787. Make the BuildLinuxDoc* symbols default to YES when HasSgmlFmt is YES 
       (Marc La France).
 1786. Add a resize function to the offscreen memory manager (#1937,
@@ -6408,4 +6415,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.615 1998/08/29 05:42:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.616 1998/08/29 08:56:40 dawes Exp $
