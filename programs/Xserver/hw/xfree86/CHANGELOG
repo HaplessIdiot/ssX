@@ -1,4 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
+ 112. [SECURITY] Fix temp files vulnerabilites in xman on systems with 
+      mkstemp(). (Matthieu Herrb).
  111. Major improvement to the Xmaster UI on Mac OS X. (#4447, XonX team).
  110. 8 bit DAC support for the NVIDIA Riva-128 (Mark Vojkovich).
  109. Fix panning on Permedia3 (Alan Hourihane).
@@ -12373,4 +12375,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1560 2001/02/08 18:56:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1561 2001/02/08 21:26:53 herrb Exp $
