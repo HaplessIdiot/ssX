@@ -1,6 +1,7 @@
-XCOMM $XFree86: xc/programs/dpsinfo/Imakefile,v 1.1 2001/03/01 01:23:58 dawes Exp $
+XCOMM $XFree86: xc/programs/dpsinfo/Imakefile,v 1.2 2001/03/03 23:01:33 tsi Exp $
 XCOMM XTOOLLIB is currently needed by our version of DPSLIB
 
+        DEPLIBS = $(DEPDPSLIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(DPSLIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = MathLibrary
          PSWRAP = PsWrap
