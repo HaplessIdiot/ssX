@@ -1,4 +1,6 @@
 XFree86 4.0.2a (?? January 2001)
+1251. Rename fsinfo to xfsinfo to avoid a name clash with the fsinfo utility
+      in the Berkeley automounter amd (Matthieu Herrb).
 1250. Invert NO_COMPILER_H_EXTRAS to prevent unintentional references to inx()/
       outx() on the likes of SunOS (Marc La France).
 1249. Change the os-support layer to only claim a bare minimum of I/O resources
@@ -12192,4 +12194,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1510 2001/01/06 20:19:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1511 2001/01/06 21:29:00 tsi Exp $
