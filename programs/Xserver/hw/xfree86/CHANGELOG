@@ -1,4 +1,6 @@
 XFree86 3.9Pw (x July 1999)
+2822. Updates to the xf86config utility for the 4.0 config file format
+      (#2968, Matthieu Herrb).
 2821. Add default rules to allow easy compilation of .c files to assembler.
 
 XFree86 3.9Pv (4 July 1999)
@@ -8315,4 +8317,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.789 1999/07/04 13:27:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.790 1999/07/05 04:23:16 dawes Exp $
