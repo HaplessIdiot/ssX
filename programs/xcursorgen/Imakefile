@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.1 2002/09/03 06:48:28 keithp Exp $
+XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.2 2002/09/05 22:46:14 keithp Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -28,6 +28,9 @@ all:: index.theme
 index.theme:: Imakefile
 	echo '[Icon Theme]' > index.theme
 	echo 'Inherits=$(DEFAULT_THEME)' >> index.theme
+
+clean::
+	$(RM) index.theme
 
 InstallTarget(install,index.theme,$(INSTDATAFLAGS),$(THEMEDIR))
 
