@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* mfbmap.h */
 
 #ifndef _MFBMAP_H

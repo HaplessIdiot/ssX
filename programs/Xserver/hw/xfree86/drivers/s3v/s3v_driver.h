@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* Header file for ViRGE server */
 
 /* Declared in s3v_driver.c */

@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* regs3v.h
  *
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc., Londonderry,
