@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.111 2002/01/02 17:31:01 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.112 2002/01/03 16:33:49 tsi Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -521,8 +521,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef PreloadFontSetup
 #define PreloadFontSetup	LD_PRELOAD="`(cd $(XENVLIBDIR); echo libXfont*.so.?)`"
 #endif
-#ifndef PreloadSetup
-#define PreloadSetup		LD_PRELOAD="`(cd $(XENVLIBDIR); echo lib[A-f]*.so.? | grep -v Xfont)`"
+#ifndef PreloadXFTSetup
+#define PreloadXFTSetup		LD_PRELOAD="`(cd $(XENVLIBDIR); echo libfreetype.so.? libXft.so.? libXrender.so.?)`"
 #endif
 #endif
 

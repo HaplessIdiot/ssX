@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.143 2002/02/15 07:36:18 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.144 2002/02/18 22:29:27 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1487,8 +1487,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
-          FCCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
-         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) XFT_CONFIG=$(XFT1LIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
+          FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
+         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADXFTSETUP) XFT_CONFIG=$(XFT1LIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
 #if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
 #else
@@ -1559,6 +1559,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 #ifdef PreloadFontSetup
  PRELOADFONTSETUP = PreloadFontSetup
+#endif
+#ifdef PreloadXFTSetup
+     PRELOADXFTSETUP = PreloadXFTSetup
 #endif
 
 #ifndef ShLibIncludeFile
