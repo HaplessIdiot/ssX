@@ -1,4 +1,8 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 361. Fixes and updates for XKB keyboard maps:
+      - Added numpad:microsoft XKB option (Bugzilla #558, Will Styles).
+      - Fixed inconsistence in indicator names (Bugzilla #577, Noah Levitt).
+      - Added type6 model of Sun keyboard (Warren Turkal).
  360. Add UK (gb) layout to the dvorak XKB map (#5739, Mike Sulivan).
  359. More work on the NativeGDI server for Cygwin/XFree86. The span routines
       are nearing completion (albeit they run slowly until the higher
@@ -17498,7 +17502,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2797 2003/08/07 23:47:55 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2798 2003/08/08 06:27:05 dawes Exp $
 
 
 
