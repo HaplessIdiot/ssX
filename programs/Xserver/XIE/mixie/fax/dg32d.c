@@ -1,15 +1,15 @@
-/* $XConsortium: dg32d.c,v 1.5 94/04/17 20:34:27 rws Exp $ */
+/* $Xorg: dg32d.c,v 1.4 2001/02/09 02:04:25 xorgcvs Exp $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module fax/dg32d.c ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +17,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -269,7 +269,7 @@ int 	code,nbits;
 
 	  case  FAX_GOAL_FoundOneEOL:
 	    /* found an EOL.  If this is RTC, there will be five more EOL's */
-	    /* one the way.  If this is a normal EOL,  next code will not   */
+	    /* on the way.  If this is a normal EOL,  next code will not    */
 	    /* be an EOL,  and we should interpret the next bit as tag bit  */
 
 
@@ -331,21 +331,8 @@ int 	code,nbits;
 		goal = FAX_GOAL_SeekEOLandTag;
 		break;
 	    }
-
-	    if (goal == FAX_GOAL_RecoverZero) {
-	        /* it's possible we got here by reading a zero in get_a0a1, */
-	        /* in which case 'goal' was set to FAX_GOAL_RecoverZero. We */
-	        /* must assume that the zero is an EOL pre-padded with a    */
-	        /* variable number of zeros, which is legal according to    */
-	        /* the coding spec.  So we will record the increment in     */
-	        /* line number and then attempt to recover.		    */
-		FlushLineData();
-	  	goal = FAX_GOAL_SkipPastAnyToEOL;
-	        break;
-			/* break out of the switch, loop with the while */
-	    }
-
-	    if (rl == EOL_RUN_LENGTH) {
+#if defined(lenient_decoder)
+	    if (rl < 0) {
 		FlushLineData();
 	        goal =  FAX_GOAL_SeekTagBit;
 		/* if we got a non-zero length, remember the transition */
@@ -359,6 +346,22 @@ int 	code,nbits;
 		break;
 			/* break out of the switch, loop with the while */
 	    }
+#else  /* not so lenient */
+	    if (goal == FAX_GOAL_RecoverZero) {
+	        /* it's possible we got here by reading a zero in get_a0a1, */
+	        /* in which case 'goal' was set to FAX_GOAL_RecoverZero. We */
+	        /* must assume that the zero is an EOL pre-padded with a    */
+	        /* variable number of zeros, which is legal according to    */
+	        /* the coding spec.  So we will record the increment in     */
+	        /* line number and then attempt to recover.		    */
+		FlushLineData();
+	  	goal = FAX_GOAL_SkipPastAnyToEOL;
+	        break;
+	    } else if(rl == BAD_RUN_LENGTH) {
+		state->decoder_done = FAX_DECODE_DONE_ErrorBada0a1;
+		return(lines_found);
+	    }
+#endif
 	    length_acc=0;
 	    goal = FAX_GOAL_AccumulateA1A2;
 		/* in case I run out of data while getting a1-a2 distance */
@@ -375,11 +378,16 @@ int 	code,nbits;
 
 	  case  FAX_GOAL_FinishHoriz:
 	    a1a2 = length_acc;
-	    /* XXX - I may regret not checking for a1a2 > 0 later... */
 	    new_trans[n_new_trans] = a0_pos = new_trans[n_new_trans-1]+a1a2;
 	    n_new_trans++;
 
-
+#if defined(lenient_decoder)
+	    if (rl < 0) {
+		FlushLineData();
+	        goal =  FAX_GOAL_SeekTagBit;
+		break;
+	    }
+#else  /* not so lenient */
 	    /* it's possible we got here by reading a zero in get_a1a2, */
 	    /* in which case 'goal' was set to FAX_GOAL_RecoverZero. We */
 	    /* must assume that the zero is an EOL pre-padded with a 	*/
@@ -391,12 +399,11 @@ int 	code,nbits;
 		FlushLineData();
 	  	goal = FAX_GOAL_SkipPastAnyToEOL;
 	        break;
+	    } else if(rl == BAD_RUN_LENGTH) {
+		state->decoder_done = FAX_DECODE_DONE_ErrorBada1a2;
+		return(lines_found);
 	    }
-	    if (rl == EOL_RUN_LENGTH) {
-		FlushLineData();
-	        goal =  FAX_GOAL_SeekTagBit;
-		break;
-	    }
+#endif
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
 #if defined(lenient_decoder)
@@ -410,12 +417,14 @@ int 	code,nbits;
 		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
 		break;
-	    }
-	    else {
+	    } else if(a0_pos > 0) {
 		if (g32d_horiz)
 	            goal = FAX_GOAL_HandleHoriz;
 		else
 	            goal = FAX_GOAL_DetermineMode;
+	    } else {
+		state->decoder_done = FAX_DECODE_DONE_ErrorBadA0pos;
+		return(lines_found);
 	    }
 	    break;
 
@@ -426,13 +435,10 @@ int 	code,nbits;
 	    find_b2pos(a0_pos,a0_color,n_old_trans,old_trans);
 
 	    a0_pos = b2_pos;
-	    if (a0_pos < 0) {
+	    if (a0_pos < 0 || a0_pos >= width) {
 		FlushLineData();
 	       	goal = FAX_GOAL_SeekEOLandTag;
 	       	break;
-	    }
-	    if (a0_pos >= width) {
-		return(-1);
 	    }
 	    goal = FAX_GOAL_DetermineMode;
 	    break;
@@ -453,27 +459,22 @@ int 	code,nbits;
 		   }
 		   b1_pos = width;
 		}
-		/* ok, we are guaranteed that 0 <= b1_pos <= width */
-		/* set a0_pos = a1_pos,  which is relative to b1_pos */
-		a0_pos   = b1_pos + (goal-FAX_GOAL_HandleVert0);
-		a0_color = 1-a0_color;
-	        if (a0_pos >= width) {
-		    FlushLineData();
-		    goal = FAX_GOAL_SeekEOLandTag;
-		}
-		else  {
-		    /* not at eol yet */
-		    goal = FAX_GOAL_DetermineMode;
-		    new_trans[n_new_trans++] = a0_pos;
-		}
-	    }
-	    else {		
+	    } else {		
 	       /* line above was all white. Since b1 was first non-white */
-	       /* b1 is imaginary transition off right edge.  In other   */
-	       /* words, there are no more transitions! Done with line	 */
-
+	       /* b1 is imaginary transition off right edge.		 */
+		b1_pos = width;
+	    }
+	    /* ok, we are guaranteed that 0 <= b1_pos <= width */
+	    /* set a0_pos = a1_pos,  which is relative to b1_pos */
+	    a0_pos   = b1_pos + (goal-FAX_GOAL_HandleVert0);
+	    a0_color = 1-a0_color;
+	    new_trans[n_new_trans++] = a0_pos > 0 ? a0_pos : 0;
+	    if (a0_pos < 0 || a0_pos >= width) {
 		FlushLineData();
 		goal = FAX_GOAL_SeekEOLandTag;
+	    } else {
+		/* not at eol yet */
+		goal = FAX_GOAL_DetermineMode;
 	    }
 	    break;
 

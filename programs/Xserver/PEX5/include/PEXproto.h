@@ -1,15 +1,14 @@
-/* $XConsortium: PEXproto.h,v 5.7 94/04/17 20:35:51 rws Exp $ */
+/* $Xorg: PEXproto.h,v 1.4 2001/02/09 02:04:18 xorgcvs Exp $ */
 
 /***********************************************************
 
-Copyright (c) 1989, 1990, 1991  X Consortium
+Copyright 1989, 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +16,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. 
 
@@ -224,6 +223,18 @@ typedef struct {
     CARD8	what;			/* unused */
     CARD16	sequenceNumber	B16;
     CARD32	length B32;		/* not 0 */
+    CARD16	status B16;
+    CARD16	tableType B16;
+    CARD32	numValues B32;
+    BYTE	pad[16];
+    /* LISTof TableValues( numValues, tableType ) */
+    } pexGetTableValuesReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
     BYTE	pad[24];
     /* SINGLE PipelineContextAttributes( itemMask )  */
     } pexGetPipelineContextReply;
@@ -237,6 +248,26 @@ typedef struct {
     BYTE	pad[24];
     /* SINGLE RendererAttributes( itemMask ) */
     } pexGetRendererAttributesReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
+    CARD32	numValues B16;
+    pexSwitch	undefinedValues;
+    BYTE	pad[19];
+    /* Z buffer values go here */
+} pexGetZBufferReply;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* 0 */
+    INT32 	count B16;
+    BYTE	pad[20];
+} pexNextPassReply;
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -538,6 +569,19 @@ typedef struct {
     /* LISTof ExtentInfo() */
     } pexQueryTextExtentsReply;
 
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    CARD8	what;			/* unused */
+    CARD16	sequenceNumber	B16;
+    CARD32	length B32;		/* not 0 */
+    CARD8	approxSupported;
+    CARD8	exhaustiveApprox;
+    CARD8	unused[2];
+    CARD32	numColorApprox;
+    BYTE	pad[16];
+    /* List of pexColourApproxEntry */ 
+} pexQueryColorApproxReply;
+
 /****************************************************************
  *  		REQUESTS 					*
  ****************************************************************/
@@ -707,6 +751,29 @@ typedef struct {
 
 
 typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    pexEnumTypeIndex	fpFormat B16;
+    pexTableIndex	index B16;
+    pexLookupTable	lut B32;
+    pexBitmask		TableMask;	/* Lookup Table specific bitmask */
+    /*  Lookup Table specific list of values */
+} pexChangeTableValuesReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 5 */
+    pexEnumTypeIndex	fpFormat B16;
+    CARD16		valueType B16;
+    pexLookupTable	lut B32;
+    pexTableIndex	index B16;
+    CARD16		unused;
+    pexBitmask		TableMask;	/* Lookup Table specific bitmask */
+} pexGetTableValuesReq;
+
+typedef struct {
     CARD8 		reqType;
     CARD8 		opcode;
     CARD16 		length B16;	/* 3 */
@@ -815,6 +882,127 @@ typedef struct {
 } pexEndRenderingReq;
 
 typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    pexBitmask	clearControl B32;
+} pexClearRendererReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    pexSwitch	flushFlag;
+    BYTE	pad[3];
+} pexFlushRendererReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 2 */
+    pexRenderer	rdr B32;
+} pexInitRendererReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    Drawable	pixmap B32;
+} pexCopyAlphaToPixmapReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    Drawable	pixmap B32;
+} pexCopyPixmapToAlphaReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    Drawable	pixmap B32;
+} pexCopyZBufferToPixmapReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 3 */
+    pexRenderer	rdr B32;
+    Drawable	pixmap B32;
+} pexCopyPixmapToZBufferReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 6 */
+    pexRenderer	rdr B32;
+    pexPC               pc B32;
+    pexBitmask		itemMask[3];	/* pexBitmask Array */
+} pexCopyPCToPipelineStateReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 6 */
+    pexRenderer	rdr B32;
+    pexPC               pc B32;
+    pexBitmask		itemMask[3];	/* pexBitmask Array */
+} pexCopyPipelineStateToPCReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	/* 5 */
+    pexEnumTypeIndex	fpFormat B16;
+    pexSwitch	normalizedValues;
+    CARD8	unused;
+    pexRenderer	rdr B32;
+    INT16	x B16;
+    INT16	y B16;
+    CARD16	width B16;
+    CARD16	height B16;
+} pexGetZBufferReq;
+
+typedef struct {
+    CARD8 	reqType;
+    CARD8 	opcode;
+    CARD16 	length B16;	
+    pexEnumTypeIndex	fpFormat B16;
+    CARD16      unused;
+    CARD32	numValues B32;
+    pexRenderer	rdr B32;
+    INT16	x B16;
+    INT16	y B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    pexSwitch	normalizedValues;
+    CARD8	more_unused[3];
+    /* Z buffer values go here */
+} pexPutZBufferReq;
+
+typedef struct {
+    CARD8               reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 2 */
+    pexRenderer		rdr B32;
+} pexInitMultipassReq;
+
+typedef struct {
+    CARD8               reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 2 */
+    pexRenderer		rdr B32;
+    CARD16      	multipass_control;
+    CARD16      	unused;
+} pexNextPassReq;
+
+typedef struct {
     CARD8 		reqType;
     CARD8 		opcode;
     CARD16 		length B16;	/* 3 */
@@ -894,6 +1082,15 @@ typedef struct {
 typedef struct {
     CARD8 		reqType;
     CARD8 		opcode;
+    CARD16 		length B16;	/* 3 */
+    pexStructure	sid B32;
+    CARD16		permission B16;
+    CARD16		unused B16;
+} pexSetStructurePermissionReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
     CARD16 		length B16;	/* 7 */
     pexEnumTypeIndex	fpFormat B16;
     CARD16		unused B16;
@@ -957,6 +1154,15 @@ typedef struct {
     INT32		label B32;
     INT32		offset B32;
 } pexSetElementPointerAtLabelReq;
+
+typedef struct {
+    CARD8 		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 4 */
+    pexStructure	sid B32;
+    INT32		pickId B32;
+    INT32		offset B32;
+} pexSetElementPointerAtPickIDReq;
 
 typedef struct {
     CARD8 		reqType;
@@ -1454,6 +1660,88 @@ typedef struct {
     /* LISTof LISTof MONO_ENCODINGS() */
     /* pad() */
 }  pexQueryTextExtentsReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8 		opcode;
+    CARD16 		length B16;	/* 5 */
+    pexEnumTypeIndex    fpFormat B16;
+    CARD16 		unused;
+    Drawable		drawable B32;
+    pexColourApproxEntry ColourApprox;
+} pexQueryColorApproxReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    pexEnumTypeIndex    fpFormat B16;
+    pexEnumTypeIndex    TMDimension B16;
+    CARD32		TMid B32;	
+    CARD16		numLevels B16;	
+    pexEnumTypeIndex    texelType B16;
+    /* list of array of Texels goes here */
+} pexCreateColorMipMapTMReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    pexEnumTypeIndex    fpFormat B16;
+    pexEnumTypeIndex    TMDimension B16;
+    CARD32		TMid B32;	
+    CARD16		numLevels B16;	
+    pexEnumTypeIndex    texelType B16;
+    Drawable		drawable B32;
+    CARD16		lumnanceSelector B16;	
+    CARD16		alphaSelector B16;	
+    /* list of texel array counts
+       list of color resource IDs
+       list of alpha resource IDs
+    */
+} pexCreateColorMipMapfromResReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    pexEnumTypeIndex    fpFormat B16;
+    pexEnumTypeIndex    unused B16;
+    Drawable		drawable B32;
+    PEXFLOAT		src_weight;
+    PEXFLOAT		dst_weight;
+} pexAccumulateBufferReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    Drawable		drawable B32;
+} pexAllocAccumBufferReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    Drawable		drawable B32;
+} pexFreeAccumBufferReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    Drawable		drawable B32;
+} pexLoadAccumBufferReq;
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		opcode;
+    CARD16		length B16;	
+    pexEnumTypeIndex    fpFormat B16;
+    pexEnumTypeIndex    unused B16;
+    Drawable		drawable B32;
+    PEXFLOAT		scale;
+} pexReturnAccumBufferReq;
 
 /*****************************************************************
  * Output Commands 

@@ -1,10 +1,14 @@
-/* $Xorg: Text.c,v 1.3 2000/08/17 19:45:40 cpqbld Exp $ */
+/* $Xorg: Text.c,v 1.4 2001/02/09 02:03:46 xorgcvs Exp $ */
 
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -70,7 +74,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.47 2001/11/03 16:07:22 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.48 2001/11/06 06:43:23 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>

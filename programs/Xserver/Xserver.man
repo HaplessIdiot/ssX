@@ -1,7 +1,11 @@
-.\" $Xorg: Xserver.man,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
+.\" $Xorg: Xserver.man,v 1.4 2001/02/09 02:04:07 xorgcvs Exp $
 .\" Copyright 1984 - 1991, 1993, 1994, 1998  The Open Group
 .\" 
-.\" All Rights Reserved.
+.\" Permission to use, copy, modify, distribute, and sell this software and its
+.\" documentation for any purpose is hereby granted without fee, provided that
+.\" the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation.
 .\" 
 .\" The above copyright notice and this permission notice shall be included
 .\" in all copies or substantial portions of the Software.
@@ -18,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.15 2001/01/27 18:20:39 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.16 2001/03/28 14:35:14 dawes Exp $
 .TH XSERVER 1 __xorgversion__
 .SH NAME
 Xserver \- X Window System display server

@@ -1,10 +1,14 @@
-/* $Xorg: AsciiSrc.c,v 1.3 2000/08/17 19:45:30 cpqbld Exp $ */
+/* $Xorg: AsciiSrc.c,v 1.4 2001/02/09 02:03:42 xorgcvs Exp $ */
 
 /*
 
 Copyright 1989, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.28 2001/06/08 18:47:42 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.29 2001/07/25 15:04:48 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).

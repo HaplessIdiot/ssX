@@ -26,7 +26,11 @@
 
 Portions Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -49,14 +53,14 @@ from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: twm.h,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
+ * $Xorg: twm.h,v 1.4 2001/02/09 02:05:37 xorgcvs Exp $
  *
  * twm include file
  *
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.10 2001/12/02 15:57:03 herrb Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.11 2001/12/08 19:31:37 herrb Exp $ */
 
 #ifndef _TWM_
 #define _TWM_

@@ -1,9 +1,13 @@
-/* $Xorg: access.c,v 1.4 2001/01/31 13:25:23 pookie Exp $ */
+/* $Xorg: access.c,v 1.5 2001/02/09 02:05:23 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -41,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.36 2001/11/16 16:47:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.37 2001/11/19 20:44:18 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>

@@ -3,7 +3,11 @@
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -48,14 +52,14 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: twm.c,v 1.4 2000/10/27 09:14:03 pookie Exp $
+ * $Xorg: twm.c,v 1.5 2001/02/09 02:05:37 xorgcvs Exp $
  *
  * twm - "Tom's Window Manager"
  *
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.10 2001/12/02 15:57:03 herrb Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.11 2001/12/08 19:31:37 herrb Exp $ */
 
 #include <stdio.h>
 #include <signal.h>

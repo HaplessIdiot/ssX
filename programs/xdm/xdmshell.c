@@ -1,11 +1,15 @@
-/* $Xorg: xdmshell.c,v 1.3 2000/08/17 19:54:16 cpqbld Exp $ */
+/* $Xorg: xdmshell.c,v 1.4 2001/02/09 02:05:41 xorgcvs Exp $ */
 /*
  * xdmshell - simple program for running xdm from login
  *
  * 
 Copyright 1988, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -32,7 +36,7 @@ in this Software without prior written authorization from The Open Group.
  * bring down X when you are finished.
  */
 
-/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.5 2001/01/17 23:45:23 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.6 2001/07/25 15:05:19 dawes Exp $ */
 
 #include <stdio.h>
 #include "dm.h"

@@ -1,9 +1,13 @@
-/* $Xorg: ConnDis.c,v 1.7 2000/08/17 19:44:31 cpqbld Exp $ */
+/* $Xorg: ConnDis.c,v 1.8 2001/02/09 02:03:31 xorgcvs Exp $ */
 /*
  
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.22 2001/10/28 03:32:30 tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.23 2001/10/30 17:41:46 tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.

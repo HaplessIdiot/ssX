@@ -1,4 +1,4 @@
-/* $Xorg: t1info.c,v 1.3 2000/08/17 19:46:33 cpqbld Exp $ */
+/* $Xorg: t1info.c,v 1.4 2001/02/09 02:04:01 xorgcvs Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -59,7 +59,11 @@
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -95,7 +99,7 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.15 2001/01/17 19:43:23 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.16 2001/08/27 19:49:54 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"

@@ -1,10 +1,14 @@
-/* $Xorg: AsciiSink.c,v 1.3 2000/08/17 19:45:30 cpqbld Exp $ */
+/* $Xorg: AsciiSink.c,v 1.4 2001/02/09 02:03:42 xorgcvs Exp $ */
 
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.24 2001/08/01 00:44:39 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.25 2001/08/23 00:03:19 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

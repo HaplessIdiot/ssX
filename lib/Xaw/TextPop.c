@@ -1,10 +1,14 @@
-/* $Xorg: TextPop.c,v 1.3 2000/08/17 19:45:41 cpqbld Exp $ */
+/* $Xorg: TextPop.c,v 1.4 2001/02/09 02:03:46 xorgcvs Exp $ */
 
 /*
 
 Copyright 1989, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.18 2001/02/05 22:38:05 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.19 2001/07/25 15:04:49 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with

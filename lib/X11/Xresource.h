@@ -1,10 +1,14 @@
-/* $Xorg: Xresource.h,v 1.6 2000/08/17 19:45:08 cpqbld Exp $ */
+/* $Xorg: Xresource.h,v 1.7 2001/02/09 02:03:39 xorgcvs Exp $ */
 
 /***********************************************************
 
 Copyright 1987, 1988, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Xresource.h,v 3.6 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xresource.h,v 3.7 2001/08/01 00:44:38 tsi Exp $ */
 
 #ifndef _XRESOURCE_H_
 #define _XRESOURCE_H_

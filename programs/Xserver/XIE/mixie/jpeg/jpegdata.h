@@ -1,16 +1,16 @@
-/* $XConsortium: jpegdata.h,v 1.4 94/04/17 20:35:43 rws Exp $ */
+/* $Xorg: jpegdata.h,v 1.4 2001/02/09 02:04:29 xorgcvs Exp $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /* Module jpegdata.h */
 
 /****************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -18,13 +18,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -68,7 +68,6 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
-	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -1041,6 +1040,14 @@ struct Compress_methods_struct {
 struct Decompress_methods_struct {
 	/* Hook for user interface to get control after reading file header */
 	METHOD(void, d_ui_method_selection, (decompress_info_ptr cinfo));
+	/* Hook for user interface to process comment blocks */
+#ifdef XIE_SUPPORTED
+	METHOD(int, process_comment, (decompress_info_ptr cinfo,
+				       long comment_length));
+#else
+	METHOD(void, process_comment, (decompress_info_ptr cinfo,
+				       long comment_length));
+#endif	/* XIE_SUPPORTED */
 	/* Hook for user interface to do progress monitoring */
 	METHOD(void, progress_monitor, (decompress_info_ptr cinfo,
 					long loopcounter, long looplimit));

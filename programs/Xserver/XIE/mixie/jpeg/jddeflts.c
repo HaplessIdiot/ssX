@@ -1,16 +1,16 @@
-/* $XConsortium: jddeflts.c,v 1.4 94/04/17 20:35:34 rws Exp $ */
+/* $Xorg: jddeflts.c,v 1.4 2001/02/09 02:04:28 xorgcvs Exp $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /* Module jddeflts.c */
 
 /****************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -18,13 +18,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -68,7 +68,6 @@ terms and conditions:
 *****************************************************************************
 
 	Gary Rogers, AGE Logic, Inc., October 1993
-	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
 
@@ -114,8 +113,51 @@ progress_monitor (decompress_info_ptr cinfo, long loopcounter, long looplimit)
 {
   /* do nothing */
 }
+#endif	/* XIE_SUPPORTED */
+
+/* Default comment-block processing routine.
+ * This can be overridden by an application that wishes to examine
+ * COM blocks found in the JPEG file.  The default routine does nothing.
+ * CAUTION: the comment processing routine MUST call JGETC() exactly
+ * comment_length times to read the comment data, whether it intends
+ * to do anything with the data or not!
+ * Keep in mind that (a) there may be more than one COM block in a file;
+ * (b) there's no guarantee that what's in the block is ASCII data.
+ */
+
+#ifdef XIE_SUPPORTED
+METHODDEF int
+#if NeedFunctionPrototypes
+process_comment (decompress_info_ptr cinfo, long comment_length)
+#else
+process_comment (cinfo, comment_length)
+	decompress_info_ptr cinfo;
+	long comment_length;
+#endif	/* NeedFunctionPrototypes */
+#else
+METHODDEF void
+process_comment (decompress_info_ptr cinfo, long comment_length)
+#endif	/* XIE_SUPPORTED */
+{
+#ifdef XIE_SUPPORTED
+  int i;
+#endif	/* XIE_SUPPORTED */
+
+  while (comment_length-- > 0) {
+#ifdef XIE_SUPPORTED
+    if ((i = JGETC(cinfo)) < 0)
+      return(-1);
+#else
+    (void) JGETC(cinfo);
+#endif	/* XIE_SUPPORTED */
+  }
+#ifdef XIE_SUPPORTED
+  return(0);
+#endif	/* XIE_SUPPORTED */
+}
 
 
+#ifndef XIE_SUPPORTED
 /*
  * Reload the input buffer after it's been emptied, and return the next byte.
  * See the JGETC macro for calling conditions.  Note in particular that
@@ -246,4 +288,7 @@ j_d_defaults (decompress_info_ptr cinfo, boolean standard_buffering)
   /* Install default do-nothing progress monitoring method. */
   cinfo->methods->progress_monitor = progress_monitor;
 #endif	/* XIE_SUPPORTED */  
+
+  /* Install default comment-block processing method. */
+  cinfo->methods->process_comment = process_comment;
 }

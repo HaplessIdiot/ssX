@@ -1,9 +1,13 @@
-/* $Xorg: InitInput.c,v 1.3 2000/08/17 19:48:38 cpqbld Exp $ */
+/* $Xorg: InitInput.c,v 1.4 2001/02/09 02:04:44 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.7 2001/05/16 08:01:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitInput.c,v 3.8 2001/06/11 16:59:03 dawes Exp $ */
 
 #include "X11/X.h"
 #define NEED_EVENTS

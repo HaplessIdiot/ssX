@@ -1,4 +1,4 @@
-/* $Xorg: dispatch.c,v 1.5 2000/08/17 19:54:20 cpqbld Exp $ */
+/* $Xorg: dispatch.c,v 1.6 2001/02/09 02:05:42 xorgcvs Exp $ */
 /*
  * protocol dispatcher
  */
@@ -6,7 +6,11 @@
  
 Copyright 1990, 1991, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.10 2001/06/25 20:40:17 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.11 2001/08/28 23:44:53 paulo Exp $ */
 
 #include	<stdlib.h>
 #include	"dispatch.h"

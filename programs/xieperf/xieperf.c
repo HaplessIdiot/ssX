@@ -1,11 +1,15 @@
-/* $Xorg: xieperf.c,v 1.3 2000/08/17 19:54:29 cpqbld Exp $ */
+/* $Xorg: xieperf.c,v 1.4 2001/02/09 02:05:48 xorgcvs Exp $ */
 
 /**** module xieperf.c ****/
 /****************************************************************************
 
 Copyright 1993, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -67,7 +71,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.6 2001/01/23 20:38:30 herrb Exp $ */
+/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.7 2001/07/25 15:05:23 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>

@@ -1,10 +1,14 @@
-/* $Xorg: Lower.c,v 1.3 2000/08/17 19:46:02 cpqbld Exp $ */
+/* $Xorg: Lower.c,v 1.4 2001/02/09 02:03:53 xorgcvs Exp $ */
 
 /* 
  
 Copyright 1988, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.10 2001/01/17 19:42:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.11 2001/07/25 15:04:50 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
