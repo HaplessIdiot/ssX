@@ -8,24 +8,23 @@
 
      XFree86 is the Open Source port of X.Org's X11R6.4 release that
      supports several UNIX(R) and UNIX-like (such as Linux, the BSDs and
-     Solaris x86 series) operating systems on Intel and other platforms.
+     Solaris x86) operating systems on Intel and other platforms.
 
 1.  What is XFree86 4.0.1?
 
 XFree86 4.0.1 is a the upgrade to the first full release in the new XFree86 4
 series.  Release 4 is a major re-design of the basic architectural underpin-
 nings of XFree86's implementation of the original X Consortium's X Server.
-This re-design allows for a modular process of how the hardware drivers
-interact with the XFree86 core (the main process which loads the X server).
-With 4.0, upgrades to the X server with new and unsupported hardware can be
-easily done and installed without undergoing the previous process of rebuild-
-ing a X server, but just updating the configuration (bootstrap) files (assum-
-ing of course that driver has been written and donated to the code base ).
+This re-design allows for a modular interaction between the hardware drivers
+and the XFree86 core X server.  With 4.0, upgrades to the X server with new
+and unsupported hardware can be easily done and installed without undergoing
+the previous process of rebuilding a X server.  All that is required is
+installing the new driver module and updating the configuration file.
 
 The road to XFree86 Release 4 began as an architectural concept in mid 1997,
-with the serious framework being implemented in code the beginning of early
-1998.  There were several snapshots on the Road to 4.0 which are now part of
-the 4.0 base Release.  The 4.0.1 is an upgrade to the 4.0 which include more
+with the serious framework being implemented in code the beginning of 1998.
+There were several snapshots on the road to 4.0 which are now part of the 4.0
+base release.  The 4.0.1 version is an upgrade to 4.0, which include more
 hardware ports, code enhancements and bug fixes.
 
 Release 4 also included the long-awaited integration of the DRI (Direct Ren-
@@ -33,17 +32,17 @@ dering Infrastructure).  This upgrade into the code base  gives XFree86 the
 abilities of direct 3-D graphics rendering, used widely in games and other
 visualization programs.
 
-Many drivers used in the old 3.3.X series have not be converted over to the
+Many drivers used in the old 3.3.x series have not be converted over to the
 4.0 design and so check first whether your hardware is supported before
-upgrading to the 4.0 series at Driver Status document.
+upgrading to the 4.0 series in the Driver Status document.
 
-Specific release enhancements can be viewed at Release Notes.
+Specific release enhancements can be viewed in the Release Notes.
 
-Binary distributions and the attendant installation instructions can be found
-at Installation Document.
+Information about binary distributions and the attendant installation
+instructions can be found in the Installation Document.
 
 Copyright and Licensing information for this release and all XFree86 releases
-can be found at License Document.
+can be found in the License Document.
 
 2.  Joining The Team
 
@@ -65,21 +64,20 @@ If instead your interests are on the Documentation side of the Project, or
 you want to contribute and are not ready for plunging into the code, you can
 join the Documentation Team (those hardy souls responsible for the content
 you are reading :-).  Amongst the Doc Team's activities are converting our
-SGML based documentation into an XML based and updating and creating techni-
-cal documentation used by staff and public.  If this sounds interesting then
-please send a request to join the XFree86 documentation team
-<URL:http://www.xfree86.org:/developer.html>.  Include in your note, you
-name, email address, reason for joining (what you will work on) and level of
-expertise and whether you are interested in the tools or content side of the
-group.
+SGML based documentation into an XML based one and updating and creating
+technical documentation used by staff and public.  If this sounds interesting
+then please send a request to join the XFree86 documentation team
+<URL:mailto:signup@xfree86.org>.  Include in your note, you name, email
+address, reason for joining (what you will work on) and level of expertise
+and whether you are interested in the tools or content side of the group.
 
 3.  The Public Mailing Lists
 
 3.1  Newbie
 
-For those new to XFree86  and want to learn more about our Project we recom-
-mend that you join our Newbie list, located at Public Mailing Lists
-<URL:http://www.xfree86.org/mailman/listinfo> where this and other discus-
+For those who are new to XFree86  and want to learn more about our Project we
+recommend that you join our Newbie list, located at Public Mailing Lists
+<URL:http://www.xfree86.org/mailman/listinfo>, where this and other discus-
 sions occur with our senior all-volunteer staff.  This is great forum to get
 introduced to XFree86 and ask for help on how to set up the XServer or
 whether your hardware is supported, and why not?,  and make suggestions for
@@ -100,11 +98,11 @@ dynamically every time the repository is updated after the the commit hap-
 pens.
 
 A followup to the commit list is the soon to be public, patch archives.  This
-archive will be available on our web-site and will tell what patches have
+archive will be available on our web-site and will show what patches have
 been submitted and will soon be committed.  This is helpful for people who
-are interested in a specific area and what to know what work is happening
-there.  When this go es public we will announce it first on our web site so
-keep watching.
+are interested in a specific area and want to know what work is happening
+there.  When this goes public we will announce it on our web site and our
+Announce mailing list, so keep watching.
 
 3.4  Xpert
 
@@ -144,7 +142,7 @@ should be applied by running:
      gunzip < 4.0-4.0.1.diff1.gz | patch -p0 -E
      gunzip < 4.0-4.0.1.diff2.gz | patch -p0 -E
 
-The contrib part of the distribution has now been folded into the main source
+The contrib part of the distribution has been folded into the main source
 tree, so a separate contrib tarball is no longer required.
 
 To format the XFree86 documentation use the latest version of our doctools
@@ -159,7 +157,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.105 2000/06/30 22:21:26 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.106 2000/07/02 02:35:27 dawes Exp $
 
 
 $XFree86$
