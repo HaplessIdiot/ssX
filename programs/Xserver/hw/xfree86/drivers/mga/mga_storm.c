@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.71 2000/09/24 13:51:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.72 2000/09/25 23:55:03 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -350,7 +350,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     if(pMga->AccelFlags & MGA_NO_PLANEMASK) {
 	infoPtr->ScanlineImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
-	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
+	infoPtr->ScanlineCPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 	infoPtr->SolidFillFlags |= NO_PLANEMASK;
 	infoPtr->SolidLineFlags |= NO_PLANEMASK;
 	infoPtr->DashedLineFlags |= NO_PLANEMASK;
