@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.401 2002/08/19 03:16:31 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.403 2002/09/16 18:05:14 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -288,11 +288,8 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86AFB
 #  define XF86AFB		YES
 # endif
-# if HasAgpGart || XFree86Devel
-#  define AgpGartDrivers	i810
-# else
-#  define AgpGartDrivers	/**/
-# endif
+
+# define AgpGartDrivers	/**/
 
 /*
  * Drivers under development, but not ready for binary releases, or
@@ -312,9 +309,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				neomagic i740 tdfx savage \
 				cirrus vmware tseng trident chips apm \
 				GlideDriver fbdev i128 \
-				ati AgpGartDrivers DevelDrivers ark cyrix \
-				siliconmotion dummy\
-				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
+				ati i810 AgpGartDrivers DevelDrivers ark \
+				cyrix siliconmotion \
+				vesa vga \
+				/*dummy*/ XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 
 /*
