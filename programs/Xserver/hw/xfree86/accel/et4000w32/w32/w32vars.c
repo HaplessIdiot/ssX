@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.7 1996/08/13 11:29:35 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.8 1996/09/14 13:08:38 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -121,8 +121,6 @@ long W32PointHop;
 
 /*
  *
- * Sixteen X ops in total
- *
  */
 int W32OpTable[] = {
     0x00, /* Xclear		0 */
@@ -140,6 +138,26 @@ int W32OpTable[] = {
     0x33, /* XcopyInverted	NOT src */
     0xbb, /* XorInverted	NOT src OR dst */
     0x77, /* Xnand		NOT src OR NOT dst */
+    0xff  /* Xset		1 */
+};
+
+
+int W32PatternOpTable[] = {
+    0x00, /* Xclear		0 */
+    0xa0, /* Xand		pat AND dst */
+    0x50, /* XandReverse	pat AND NOT dst */
+    0xf0, /* Xcopy		pat */
+    0x0a, /* XandInverted	NOT pat AND dst */
+    0xaa, /* Xnoop		dst */
+    0x5a, /* Xxor		pat XOR dst */
+    0xfa, /* Xor		pat OR dst */
+    0x05, /* Xnor		NOT pat AND NOT dst */
+    0xa5, /* Xequiv		NOT pat XOR dst */
+    0x55, /* Xinvert		NOT dst */
+    0xf5, /* XorReverse		pat OR NOT dst */
+    0x0f, /* XcopyInverted	NOT pat */
+    0xaf, /* XorInverted	NOT pat OR dst */
+    0x5f, /* Xnand		NOT pat OR NOT dst */
     0xff  /* Xset		1 */
 };
 

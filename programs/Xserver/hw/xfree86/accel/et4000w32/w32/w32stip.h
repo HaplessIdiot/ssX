@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.5 1996/02/04 09:00:48 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.6 1996/08/13 11:29:34 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -37,7 +37,7 @@ glenn@cs.utexas.edu)
 #define W32_INIT_OPAQUE_STIPPLE(OP, FOREGROUND, BACKGROUND, DST_OFFSET) \
 { \
     *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[OP]; \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
+    *ACL_BACKGROUND_RASTER_OPERATION	= W32PatternOpTable[OP]; \
     *ACL_ROUTING_CONTROL		= 0x2; \
     *ACL_XY_DIRECTION			= 0; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
@@ -89,7 +89,7 @@ glenn@cs.utexas.edu)
 #define W32P_INIT_OPAQUE_STIPPLE(OP, FOREGROUND, BACKGROUND, DST_OFFSET) \
 { \
     *ACL_FOREGROUND_RASTER_OPERATION 	= W32OpTable[OP]; \
-    *ACL_BACKGROUND_RASTER_OPERATION	= 0xf0; \
+    *ACL_BACKGROUND_RASTER_OPERATION	= W32PatternOpTable[OP]; \
     if (W32et6000) \
       *ACL_MIX_CONTROL			= 0x32; \
     else \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.10 1996/08/13 11:29:30 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.11 1996/09/14 13:08:34 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -186,6 +186,7 @@ extern LongP W32LongPtr;
 
 
 extern int W32OpTable[16];
+extern int W32PatternOpTable[16];
 
 #if 0
 extern FILE *GlennDebug;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.32 1996/09/14 13:08:33 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.33 1996/09/15 11:16:43 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -656,6 +656,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   pScreen->UninstallColormap = vgaUninstallColormap;
   pScreen->ListInstalledColormaps = vgaListInstalledColormaps;
   pScreen->StoreColors = vgaStoreColors;
+  pScreen->whitePixel = 1;
+  pScreen->blackPixel = 0;
+  XF86FLIP_PIXELS();
   
   if (vgaHWCursor.Initialized)
   {
