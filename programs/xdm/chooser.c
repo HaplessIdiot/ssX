@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.9 1996/01/16 15:08:46 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.10 1996/01/26 09:20:39 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -77,6 +77,7 @@ in this Software without prior written authorization from the X Consortium.
 #include    <sys/stream.h>
 #ifdef ISC
 #include    <sys/sioctl.h>
+#include    <sys/stropts.h>
 #endif
 #endif
 #ifndef MINIX

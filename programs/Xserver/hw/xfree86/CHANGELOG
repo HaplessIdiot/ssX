@@ -1,3 +1,18 @@
+XFree86 3.1.2Em (24 August 1996)
+706. Swap acute and apostrophe keys in de(nodeadkeys) (Michael Rohleder).
+705. ISC documentation udpates (Michael Rohleder).
+704. Chips & Tech documentation update (Egbert Eich).
+703. Chips & Tech driver updates, including a fix for a 65545 PCI problem,
+     and a hack/option for a suspend/resume problem (Egbert Eich).
+702. Major updates to XF86Setup (Joe Moss).
+701. Updates to the Cards database (various).
+700. ATI (SVGA) driver update (Marc Aurele La France).
+699. Cards file update for AGX (Henry Worth).
+698. Fix for a BIOS initialisation problem on some VideoLogic (S3) cards
+     (Harald Koenig).
+697. Fix some 32bpp problems with S3 newmmio (Harald Koenig, Bernd Lind).
+696. Fix some PCI lockups when using S3 newmmio mode (Harald Koenig).
+
 XFree86 3.1.2El (23 August 1996)
 695. NetBSD/OpenBSD doc updates (Matthieu Herrb).
 694. Fix typo in rules/xfree86 (Joe Moss).
