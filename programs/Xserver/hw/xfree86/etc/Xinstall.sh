@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.16 2000/12/10 00:15:24 herrb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.17 2000/12/10 11:23:10 herrb Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -267,6 +267,7 @@ GetOsInfo()
 		tmp="`strings $LibcPath | grep -i 'c library'`"
 		OsLibcMajor=`expr "$tmp" : '.* \([0-9][0-9]*\)'`
 		OsLibcMinor=`expr "$tmp" : '.* [0-9][0-9]*\.\([0-9][0-9]*\)'`
+		OsLibcTeeny=`expr "$tmp" : '.* [0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\)'`
 		case "$OsLibcMajor" in
 		2)
 			# 2 is the glibc version
@@ -279,15 +280,23 @@ GetOsInfo()
 	if [ X"$OsLibcMajor" != X ]; then
 		Echo "libc version is '$OsLibcMajor"
 		if [ X"$OsLibcMinor" != X ]; then
-			Echo ".$OsLibcMinor'."
+			Echo ".$OsLibcMinor"
+			if [ X"$OsLibcTeeny" != X ]; then
+				Echo ".$OsLibcTeeny"
+				if [ $OsLibcTeeny -gt 80 ]; then
+					OsLibcMinor=`expr $OsLibcMinor + 1`
+				fi
+			fi
+			Echo "'"
+			Echo " ($OsLibcMajor.$OsLibcMinor)"
 		else
-			Echo "'."
+			Echo "'"
 		fi
-		needNL=YES
+		echo "."
 	fi
-	if [ X"$needNL" = XYES ]; then
-		echo ""
-	fi
+#	if [ X"$needNL" = XYES ]; then
+#		echo ""
+#	fi
 	echo ""
 }
 
@@ -421,8 +430,11 @@ FindDistName()
 				1)
 					DistName="Linux-ix86-glibc21"
 					;;
+				2)
+					DistName="Linux-ix86-glibc22"
+					;;
 				*)
-					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc21"
+					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc22"
 					;;
 				esac
 				;;
