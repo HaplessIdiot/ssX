@@ -15,6 +15,8 @@
  *
  ******************************************************************/
 
+/* $XFree86$ */
+
 #include "ttobjs.h"
 #include "ttdebug.h"
 #include "ttfile.h"
@@ -443,6 +445,10 @@
     seg4 = cmap4->segments[i];
 
     if ( charCode < seg4.startCount )
+      return 0;
+
+    /* Protect against broken fonts */
+    if( seg4.startCount == 0xFFFF )
       return 0;
 
     if ( seg4.idRangeOffset == 0 )
