@@ -1,15 +1,35 @@
 /* $XFree86$ */
-
 /*
- * Copyright 1999-2001 by The XFree86 Project, Inc.
+ * Copyright 1999-2001 The XFree86 Project, Inc.  All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the XFree86 Project shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from the
+ * XFree86 Project.
  */
 
-#include "X.h"
-#include "xf86.h"
-#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86Xinput.h"
 #include "xf86OSmouse.h"
+
+#if defined(__SOL8__) || !defined(i386)
+
 #include "xisb.h"
 #include "mipointer.h"
 #include <sys/vuid_event.h>
@@ -228,7 +248,7 @@ vuidMouseProc(DeviceIntPtr pPointer, int what)
 }
 
 static Bool
-sol8MousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
+sunMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 {
     /* The protocol is guaranteed to be one of the internalNames[] */
     if (xf86NameCmp(protocol, "VUID") == 0) {
@@ -255,17 +275,24 @@ CheckProtocol(const char *protocol)
     return FALSE;
 }
 
+static const char *
+DefaultProtocol(void)
+{
+    return "VUID";
+}
+
+#else /* __SOL8__ || !i386 */
+
+#undef MSE_MISC
+#define MSE_MISC 0
+
+#endif /* !__SOL8__ && i386 */
+
 static int
 SupportedInterfaces(void)
 {
     /* XXX This needs to be checked. */
     return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_AUTO | MSE_XPS2 | MSE_MISC;
-}
-
-static const char *
-DefaultProtocol(void)
-{
-    return "VUID";
 }
 
 OSMouseInfoPtr
@@ -277,10 +304,12 @@ xf86OSMouseInit(int flags)
     if (!p)
 	return NULL;
     p->SupportedInterfaces = SupportedInterfaces;
+#if defined(__SOL8__) || !defined(i386)
     p->BuiltinNames = BuiltinNames;
     p->DefaultProtocol = DefaultProtocol;
     p->CheckProtocol = CheckProtocol;
-    p->PreInit = sol8MousePreInit;
+    p->PreInit = sunMousePreInit;
+#endif
     return p;
 }
 

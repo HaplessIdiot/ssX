@@ -1,4 +1,13 @@
 XFree86 4.1.99.1 (xx June 2001)
+  42. Make the entire source tree (except GLX) compile under SunOS/SPARC 5.7.
+      Functions that have yet to be ported are FatalError()'s.  This is
+      temporarily controlled through a BuildXFree86onSparcSunOS #define in
+      host.def (Marc La France).
+  41. Merge support for all Solaris/ix86 versions together (Marc La France).
+  40. Replace Xserver/Imakefile's DDXDIRn scheme with a more general scheme
+      (Marc La France).
+  39. For GCC on SVR4 variants, use -fPIC rather than -fpic to generate shared
+      objects (Marc La France).
   38. Fix xmh's use of XtNewString() with getenv (#4694, Tim Waugh).
   37. Xdm/PAM fixes: leave it to PAM to observe whether or not an account
       is locked, and reinitialize credentials after calling initgroups(),
@@ -46,7 +55,7 @@ XFree86 4.1.99.1 (xx June 2001)
   15. Fix Trident XVideo colorkey at depth 15, 24 (Alan Hourihane).
   14. Fix some apm driver bugs, including one that prevented acceleration
       from working (#4674, Loïc Grenié).
-  13. Fix 555 (depth 15) palette handling in the i810 driver (#4673,
+  13. Fix 555 (depth 15) palette handling in the i810 driver (#4673,
       Andrew C. Aitchison).
   12. [SECURITY] Fix authentication issues with mmap() on drm devices
       (Jeff Hartmann).
@@ -13376,4 +13385,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1804 2001/05/25 12:25:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1805 2001/05/25 18:40:59 dawes Exp $
