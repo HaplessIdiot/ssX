@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.8 2002/09/16 18:06:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.10 2002/12/20 20:18:35 paulo Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -1038,6 +1038,7 @@ _XkbFilterSwitchScreen(xkbi,filter,keycode,pAction)
 	filter->active = 1;
 	filter->filterOthers = 0;
 	filter->filter = _XkbFilterSwitchScreen;
+	AccessXCancelRepeatKey(xkbi, keycode);
 	XkbDDXSwitchScreen(dev,keycode,pAction);
         return 0; 
     }
