@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.40 2003/08/17 17:12:25 dawes Exp $
+# $XFree86: xc/extras/drm/linux/Makefile,v 1.1.1.1 2004/12/10 16:05:32 alanh Exp $
 #
 
 #
@@ -99,7 +99,7 @@ VIAHEADERS	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
 		via_3d_reg.h $(DRMHEADERS) $(DRMTEMPLATES)
 VIASHARED	= via_drm.h via_drv.h via.h via_mm.h via_ds.h \
 		via_3d_reg.h via_drv.c via_ds.c via_irq.c via_map.c \
-		via_mm.c via_dma.c via_verifier.c
+		via_mm.c via_dma.c via_verifier.c via_verifier.h
 MACH64HEADERS	= mach64.h mach64_drv.h mach64_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 MACH64SHARED 	= mach64.h mach64_drv.h mach64_drm.h mach64_dma.c \
@@ -394,7 +394,7 @@ $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
 $(i830-objs):	$(I830HEADERS)
-$(i915-objs):	$(I830HEADERS)
+$(i915-objs):	$(I915HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)
