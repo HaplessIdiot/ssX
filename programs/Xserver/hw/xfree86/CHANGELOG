@@ -1,4 +1,8 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 558. Updating SiS driver. Lots of new features, supported chipsets and
+      LCD panels, bug fixes. For details please check:
+      http://www.winischhofer.net/linuxsis630.shtml 
+      (Thomas Winischhofer).
  557. Changed MGA driver to query fb_offset for DRI from kernel instead
       of taking the driver's FBAddress - this is required by platforms
       like Alpha (Egbert Eich).
@@ -15644,4 +15648,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2410 2002/11/27 20:54:50 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2411 2002/11/29 11:08:28 eich Exp $

@@ -1,8 +1,11 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_shadow.c,v 1.2 2001/04/19 14:11:37 alanh Exp $ */
 /*
  *  Copyright (c) 1999,  The XFree86 Project Inc. 
  *  based on code written by Mark Vojkovich <markv@valinux.com>
+ *
+ *  TW: This module doesn't use CurrentLayout, because it is never
+ *      active when DGA is active and vice versa.
  */
-/* $XFree86: $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
