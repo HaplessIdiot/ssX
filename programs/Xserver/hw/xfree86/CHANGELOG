@@ -1,13 +1,15 @@
 XFree86 3.9Nv (15 January 1999)
-2150. Fix cfb24 problems that show up with xtest (#2384, Nozomi Ytow).
-2149. Fix 64 pixel rounding of display width in the C&T driver (#2383,
+2151. Fix cfb24 problems that show up with xtest (#2384, Nozomi Ytow).
+2150. Fix 64 pixel rounding of display width in the C&T driver (#2383,
       David Bateman).
-2148. Add an UnloadSubModule() function that can unload individual sub-modules
+2149. Add an UnloadSubModule() function that can unload individual sub-modules
       without unloading sibilings.
-2147. Remove a lot of unnecessary casts of x*alloc().
-2146. Add a pciGetBaseSize() funtion to the PCI code.
-2145. Make our PCI code aware of the following 2.1 type 0 header fields:
+2148. Remove a lot of unnecessary casts of x*alloc().
+2147. Add a pciGetBaseSize() funtion to the PCI code.
+2146. Make our PCI code aware of the following 2.1 type 0 header fields:
       Cardbus CIS pointer and subsystem ids.
+2145. Remove the KEEP_BPP code, and fix problems with some drivers referencing
+      the unused pixmapBPP ScrnInfoRec field.
 
 XFree86 3.9Nu (13 January 1999)
 2144. Fix a bug in PANORAMIX_FREE(), which was referencing just freed data.
@@ -7082,4 +7084,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.668 1999/01/15 02:12:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.669 1999/01/15 02:27:09 dawes Exp $
