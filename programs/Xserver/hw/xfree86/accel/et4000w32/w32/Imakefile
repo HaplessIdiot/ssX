@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.0 1994/09/11 00:42:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.1 1994/09/13 15:08:25 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s et4_bank.s w32vars.c \
-	et4000.c et4000w32.c dummy.c
+	et4000.c et4000w32.c dummy.c ramdac.c w32blank.c
 
 OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o et4_bank.o w32vars.o \
-	et4000.o et4000w32.o dummy.o
+	et4000.o et4000w32.o dummy.o ramdac.o w32blank.o
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

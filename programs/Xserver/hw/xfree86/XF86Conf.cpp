@@ -1,6 +1,29 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.1 1994/09/17 04:05:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.2 1994/09/18 08:48:11 dawes Exp $
 XCOMM
-XCOMM Copyright 1994 by The XFree86 Project, Inc.
+XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
+XCOMM
+XCOMM Permission is hereby granted, free of charge, to any person obtaining a
+XCOMM copy of this software and associated documentation files (the "Software"),
+XCOMM to deal in the Software without restriction, including without limitation
+XCOMM the rights to use, copy, modify, merge, publish, distribute, sublicense,
+XCOMM and/or sell copies of the Software, and to permit persons to whom the
+XCOMM Software is furnished to do so, subject to the following conditions:
+XCOMM 
+XCOMM The above copyright notice and this permission notice shall be included in
+XCOMM all copies or substantial portions of the Software.
+XCOMM 
+XCOMM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+XCOMM IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+XCOMM FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+XCOMM THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+XCOMM WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+XCOMM OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+XCOMM SOFTWARE.
+XCOMM 
+XCOMM Except as contained in this notice, the name of the XFree86 Project shall
+XCOMM not be used in advertising or otherwise to promote the sale, use or other
+XCOMM dealings in this Software without prior written authorization from the
+XCOMM XFree86 Project.
 XCOMM
 
 XCOMM **********************************************************************

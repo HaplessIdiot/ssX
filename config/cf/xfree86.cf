@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.18 1994/09/08 14:20:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.19 1994/09/18 08:46:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -179,6 +179,14 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.18 1994/09/08 14:20:21 dawes Exp $
  */
 #ifndef BuildExtraExtensionLibrary
 #define BuildExtraExtensionLibrary	YES
+#endif
+
+/*
+ * Turn Fresco off by default.  It requires gcc 2.6.0 or later, and this
+ * is unreliable in may ways on i386 platforms.
+ */
+#ifndef BuildFresco
+#define BuildFresco	NO
 #endif
 
 /*

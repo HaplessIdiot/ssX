@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.30 1994/09/17 13:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.31 1994/09/18 08:48:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1133,10 +1133,11 @@ s3Probe()
    case ATT20C498_DAC:
    case STG1700_DAC:
    case S3_SDAC_DAC:
-      if (s3ATT498PixMux)
+      if (s3ATT498PixMux) {
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    clockDoublingPossible = TRUE;
+      }
       else {
 	 if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
 	    s3InfoRec.maxClock = 110000;

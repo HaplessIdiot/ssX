@@ -1,4 +1,3 @@
-/* $XFree86$ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -32,7 +31,10 @@ glenn@cs.utexas.edu)
 #include "w32.h"
 
 /* the following needs some polishing */
-
+void W32pImageText1();
+void W32pImageText2();
+void W32pImageText3();
+void W32pImageText4();
 
 #define W32_INIT_IMAGE_TEXT(FOREGROUND, BACKGROUND, DST_OFFSET, X, Y) \
 { \
@@ -89,7 +91,6 @@ glenn@cs.utexas.edu)
 
 #define W32_IMAGE_TEXT(DST, Y) \
 { \
-    WAIT_QUEUE \
     START_ACL_CPU(DST) \
     switch (bytes) \
     { \
@@ -126,7 +127,6 @@ glenn@cs.utexas.edu)
 	default: \
 	    break; \
     } \
-    /* WAIT_XY */ \
 }
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.2 1994/08/31 04:44:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.3 1994/09/03 02:52:51 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -1122,7 +1122,7 @@ toy, destpitch)
 	}
 	else
 		tbyteindexmiddle = (x >> 3) % tbytes;
-	if ((x + w) & 7 > 0)
+	if (((x + w) & 7) > 0)
 		tbyteindexright = ((x + w) >> 3) % tbytes;
 
 	nspans = h;	/* Number of spans to go. */
@@ -1215,7 +1215,7 @@ skipleftedge:
 		}
 
 /* Right part. */
-		if ((x + w) & 7 == 0)
+		if (((x + w) & 7) == 0)
 			goto skiprightpart;
 		SETPIXELMASK(rightbitmask[(x + w) & 7]);
 		destp = writebase + destlineaddr + ((x + w) >> 3);

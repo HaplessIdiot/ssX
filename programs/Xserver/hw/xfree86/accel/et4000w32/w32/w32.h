@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.0 1994/09/11 00:42:20 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -123,10 +123,6 @@ extern Bool W32OrW32i;
 extern Bool W32p;
 extern Bool FrameBuffer; /* Is the operation on the frame buffer? */  
 
-extern long W32BlankHackR;
-extern long W32BlankHackG;
-extern long W32BlankHackB;
-
 extern long W32Foreground;
 extern long W32Background;
 extern long W32Pattern;
@@ -204,13 +200,13 @@ void figure(char*);
     *ACL_INTERRUPT_MASK = 0x0; \
     *ACL_INTERRUPT_STATUS = 0x0; \
     *ACL_ACCELERATOR_STATUS = 0x0; \
+    *ACL_RELOAD_CONTROL = 0x0; \
     *ACL_SYNC_ENABLE = 0x1; \
     if (W32OrW32i) \
     { \
         *ACL_X_POSITION = 0; \
         *ACL_Y_POSITION = 0; \
         *ACL_OPERATION_STATE = 0x0; \
-        *ACL_RELOAD_CONTROL = 0x0; \
     } \
     else /* w32p */ \
     { /* Enable the W32p startup bit and set use an eight-bit pixel depth */ \

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.5 1994/08/20 07:36:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.6 1994/08/31 04:44:29 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -211,12 +211,18 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		CirrusTransferText32bitSpecial(nglyph, h, glyphp, glyphWidth,
 			CIRRUSBASE());
 	else
+#if 0
 		if (glyphWidth > 16 || HAVE543X())
 			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
 				CIRRUSBASE());
 		else
 			CirrusTransferText(nglyph, h, glyphp, glyphWidth,
 				CIRRUSBASE());
+#else
+		/* The new 542x databook says to use DWORD transfers. */
+		CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
+			CIRRUSBASE());
+#endif
 
 	WAITUNTILFINISHED();
 

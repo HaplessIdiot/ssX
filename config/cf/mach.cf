@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.1 1994/06/05 13:39:08 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.2 1994/06/12 16:30:15 dawes Exp $
 
 #define OSName           Mach 2.5/3.0
 #define OSVendor          /**/
@@ -12,8 +12,9 @@ XCOMM operating system:  OSName
 #define UseGas			YES
 #define GnuCpp			YES
 #define UseGccMakeDepend	YES
-#define HasCplusplus		YES
+#ifndef HasGcc2ForCplusplus
 #define HasGcc2ForCplusplus	YES
+#endif
 
 #define CcCmd			gcc
 #define CppCmd			/usr/mach3/lib/gcc-lib/i386-mach/2.3.3/cpp

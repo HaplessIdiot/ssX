@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.17 1994/09/17 13:46:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.18 1994/09/18 08:48:57 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1012,8 +1012,9 @@ configKeyboardSection()
 
   while ((token = getToken(KeyboardTab)) != ENDSECTION) {
     switch (token) {
-    case DEVICE:
-      if (getToken(NULL) != STRING) configError("Device name expected");
+    case KPROTOCOL:
+      if (getToken(NULL) != STRING)
+        configError("Keyboard protocol name expected");
       if ( StrCaseCmp(val.str,"standard") == 0 ) {
          xf86Info.kbdProc    = xf86KbdProc;
 #ifdef AMOEBA
@@ -1031,7 +1032,7 @@ configKeyboardSection()
   	         XCONFIG_GIVEN);
 #endif
       } else {
-        configError("Not a valid device name");
+        configError("Not a valid keyboard protocol name");
       }
       break;
     case AUTOREPEAT:

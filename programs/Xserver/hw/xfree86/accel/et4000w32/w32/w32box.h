@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.0 1994/09/11 00:42:22 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -34,7 +34,6 @@ glenn@cs.utexas.edu)
 /* Paint a solid box */
 #define W32_INIT_BOX(OP, MASK, COLOR, DST_OFFSET) \
 { \
-    WAIT_QUEUE \
     if (MASK == 0xffffffff) \
     { \
 	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \

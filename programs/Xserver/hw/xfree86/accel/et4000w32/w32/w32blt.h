@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.0 1994/09/11 00:42:21 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -37,7 +37,6 @@ glenn@cs.utexas.edu)
 { \
     int i; \
 \
-    WAIT_QUEUE \
     *ACL_SOURCE_WRAP	= 0x77; \
     if (MASK == 0xffffffff) \
     { \
@@ -71,7 +70,6 @@ glenn@cs.utexas.edu)
 #define W32_BLT(SRC, DST, X, Y) \
 if (((X) | (Y) != 0)) \
 { \
-    WAIT_QUEUE \
     SET_XY(X, Y) \
     *(ACL_SOURCE_ADDRESS) = SRC; \
     START_ACL(DST) \

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_textblt.s,v 1.2 94/03/29 11:07:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.1 1994/08/20 07:36:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.2 1994/09/13 15:11:13 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -72,6 +72,8 @@
 /* Saving %ebx and %ecx may be unnecessary. */
 
 	SEG_TEXT
+
+#if 0	/* Unused. The 1994 databook specifies 32-bit tranfers for 5426/8. */
 
 	ALIGNTEXT4
 
@@ -184,6 +186,8 @@ GLNAME(CirrusTransferText):
 	POP_L	(EBX)
 	POP_L	(EBP)
 	RET
+
+#endif	/* Unused. */
 
 /*
  * This is version of the above function that exclusively does 32-bit

@@ -1,3 +1,13 @@
+XFree86 3.0Ec (19 September 1994)
+315. No longer allow 'Device' in the Keyboard section.  Must now use
+     'Protocol'.
+314. Updates to Cirrus BitBLT and fix for tile fill bug (Harm Hanemaayer).
+313. Disable Cirrus top/left edge HW cursor handling -- problems when
+     changing cursors near the edge.
+312. Fix another clock limit bug in S3 server.
+311. Disable Fresco by default.
+310. Updates to W32 server (Glenn Lai).
+
 XFree86 3.0Eb (18 September 1994)
 309. Updates to README.NetBSD (Matthieu Herrb).
 308. Fix Mode Flags error reporting in xf86Config.c.

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_im.c,v 1.1 94/03/28 21:49:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.3 1994/08/20 07:36:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.4 1994/08/31 04:44:26 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -164,10 +164,7 @@ void _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
        * Don't try this on your Sparc :-)
        */
 
-      if (HAVE543X())
-          CirrusImageWriteTransfer(w, h, psrc, widthSrc, CIRRUSBASE());
-      else
-          CirrusImageWriteTransfer16bit(w, h, psrc, widthSrc, CIRRUSBASE());
+      CirrusImageWriteTransfer(w, h, psrc, widthSrc, CIRRUSBASE());
 
       WAITUNTILFINISHED();
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.11 94/04/07 15:42:57 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.5 1994/09/17 13:38:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.6 1994/09/18 08:46:20 dawes Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -23,7 +23,9 @@ XCOMM xf86site.def
 # endif
 #endif
 #if HasGcc2
-# define HasGcc2ForCplusplus	YES
+# ifndef HasGcc2ForCplusplus
+#  define HasGcc2ForCplusplus	YES
+# endif
 # define CcCmd			gcc2
 # define OptimizedCDebugFlags	-O2 -m486
 #else

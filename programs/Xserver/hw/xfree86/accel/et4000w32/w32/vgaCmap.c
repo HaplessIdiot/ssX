@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.0 1994/09/11 00:42:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,9 @@ vgaStoreColors(pmap, ndef, pdefs)
     Bool          new_overscan = FALSE;
     unsigned char overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
     unsigned char tmp_overscan;
+   
+    extern RamdacShift;
+    extern W32pBlanked;
 
     if (pmap != InstalledMaps[pmap->pScreen->myNum])
         return;
@@ -79,9 +82,9 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    new_overscan = TRUE;
 	}
         cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
-        cmap[0] = pdefs[i].red   >> 10;
-        cmap[1] = pdefs[i].green >> 10;
-        cmap[2] = pdefs[i].blue  >> 10;
+        cmap[0] = pdefs[i].red   >> RamdacShift;
+        cmap[1] = pdefs[i].green >> RamdacShift;
+        cmap[2] = pdefs[i].blue  >> RamdacShift;
 
         if (xf86VTSema)
 	{
@@ -141,20 +144,21 @@ vgaStoreColors(pmap, ndef, pdefs)
 	        overscan = tmp_overscan;
 	    }
 	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
-            if (xf86VTSema)
+            if (xf86VTSema && !W32pBlanked)
 	    {
 	        (void)inb(vgaIOBase + 0x0A);
+		GlennsIODelay();
 	        outb(0x3C0, OVERSCAN);
+		GlennsIODelay();
 	        outb(0x3C0, overscan);
+		GlennsIODelay();
 	        (void)inb(vgaIOBase + 0x0A);
+		GlennsIODelay();
 	        outb(0x3C0, 0x20);
+		GlennsIODelay();
 	    }
         }
     }
-    cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[0];
-    W32BlankHackR = cmap[0];
-    W32BlankHackG = cmap[1];
-    W32BlankHackB = cmap[2];
 }
 
 
@@ -229,4 +233,3 @@ vgaUninstallColormap(pmap)
 
   (*pmap->pScreen->InstallColormap) (defColormap);
 }
-

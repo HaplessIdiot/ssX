@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.0 1994/09/11 00:42:14 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.1 1994/09/13 15:08:26 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -143,35 +143,92 @@ ET4000W32Ident(n)
 
 
 /*
+ *  Detect the amount of memory installed
+ */
+static Bool
+w32_fails_memory_check(i)
+    int *i;
+{
+    int p, *pp, t;
+
+    /*
+     *  Assume the amount of memory is a multiple of 256K to speed this up--GGL
+     */
+#define STRIDE (256 * 1024)
+
+    /*
+     *  Should at least fail at 16M--GGL
+     */
+    for (p = 0; p <= 16 * 1024 * 1024; p += STRIDE)
+    {
+	pp = (int *)p;
+	W32_LONG(pp);
+	*pp = p;
+
+	for (t = 0; t < p; t += STRIDE) 
+	{
+	    pp = (int *)t;
+	    W32_LONG(pp);
+	    if (*pp != t)
+		goto sanity_check;
+	}
+    }
+
+sanity_check:
+
+    for (t = 0; t < p; t += STRIDE)
+    {
+	pp = (int *)t;
+	W32_LONG(pp);
+	*pp = t;
+    }
+
+    for (t = 0; t < p; t += STRIDE)
+    {
+	pp = (int *)t;
+	W32_LONG(pp);
+	if (*pp != t)
+	    return TRUE;
+    }
+
+    *i = p >> 10;
+    return FALSE;
+}
+
+
+/*
  * ET4000W32Probe --
  */
 
-static char *et4000w32_id = NULL;
 static Bool
 ET4000W32Probe()
 {
-    static char *et4000_id = NULL;
-    char *saveChipset = vga256InfoRec.chipset;
-    int saveVideoRam = vga256InfoRec.videoRam;
+    static char *et4000w32_id = NULL;
+    char *et4000 = "et4000";
+    char *save_chipset = NULL;
+    int i;
+
+    if (et4000w32_id)
+	return TRUE;
 
 #if 0
-    /* Coax the et4000 driver into cooperation */
-    if (vga256InfoRec.chipset)
-	vga256InfoRec.chipset = et4000_id;
+    if ((GlennDebug = fopen("/tmp/glenn", "w")) == NULL)
+	FatalError("Failed to open debug file\n");
 #endif
 
-    if (!ET4000.ChipProbe() || strcmp(vga256InfoRec.chipset, "et4000") == 0) {
-	vga256InfoRec.chipset = saveChipset;
+    if (strcmp(vga256InfoRec.chipset, "et4000") == 0)
+	return FALSE;
+
+    if (save_chipset = vga256InfoRec.chipset)
+	vga256InfoRec.chipset = et4000;
+
+    if (!ET4000.ChipProbe())
+    {
+	vga256InfoRec.chipset = save_chipset;
 	return FALSE;
     }
 
-    /*
-     *  So we don't get messed up if the ET4000 code is changed in unexpected
-     *  ways
-     */ 
-    et4000_id = vga256InfoRec.chipset;
-    vga256InfoRec.chipset = saveChipset;
-    vga256InfoRec.videoRam = saveVideoRam;
+    vga256InfoRec.chipset = save_chipset; 
 
     /*
      *  Set up those I/O ports not in the ET4000 
@@ -181,16 +238,20 @@ ET4000W32Probe()
 		   ET4000W32_ExtPorts);
     ET4000W32EnterLeave(ENTER);
 
-    if (et4000w32_id == NULL)
+    if (vga256InfoRec.chipset)
     {
-	int i;
-	unsigned config;
-
-#if 0
-	if ((GlennDebug = fopen("/tmp/glenn", "w")) == NULL)
-	    FatalError("Failed to open debug file\n");
-#endif
-
+	i = 0;
+	while (et4000w32_id = ET4000W32Ident(i++))
+	    if (StrCaseCmp(et4000w32_id, vga256InfoRec.chipset) == 0)
+		break;
+	if (!et4000w32_id)
+	{
+	    ET4000W32EnterLeave(LEAVE);
+	    return FALSE;
+	}
+    }
+    else
+    {
 	/*
 	 *  Hope this doesn't cause any trouble
 	 *  Use a delay loop if it does--GGL
@@ -215,60 +276,35 @@ ET4000W32Probe()
 		return FALSE;
 	    }
 	}
-
-	if (vga256InfoRec.chipset)
-	{
-	    i = 0;
-	    while (et4000w32_id = ET4000W32Ident(i++))
-		if (StrCaseCmp(et4000w32_id, vga256InfoRec.chipset) == 0)
-		    break;
-	    if (!et4000w32_id)
-	    {
-		ET4000W32EnterLeave(LEAVE);
-		return FALSE;
-	    }
-	}
-	else
-	{
-	    outb(0x217a, 0xec);
-	    vga256InfoRec.chipset = et4000w32_id
-				  = w32ChipNames[inb(0x217b) >> 4];
-	}
+	outb(0x217a, 0xec);
+	vga256InfoRec.chipset = et4000w32_id = w32ChipNames[inb(0x217b) >> 4];
 	if (strcmp(et4000w32_id, "reserved") == 0)
 	{
-	    et4000w32_id = NULL;
+	    vga256InfoRec.chipset = et4000w32_id = NULL;
+	    ET4000W32EnterLeave(LEAVE);
 	    return FALSE;
 	}
-
-	W32 = strcmp(et4000w32_id, "et4000w32") == 0;
-	W32i = strcmp(et4000w32_id, "et4000w32i") == 0 ||
-	       strcmp(et4000w32_id, "et4000w32i_rev_b") == 0 ||
-	       strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
-	W32OrW32i = W32 || W32i;
-	W32p = !W32OrW32i;
-
-	if (!vga256InfoRec.videoRam)
-	{
-	    outb(vgaIOBase+0x04, 0x37); config = inb(vgaIOBase+0x05);
-	    switch(config & 0x09)
-	    {
-		case 0x00: vga256InfoRec.videoRam = 2048; break;
-		case 0x01: vga256InfoRec.videoRam = 4096; break;
-		case 0x08: vga256InfoRec.videoRam = 512; break;
-		case 0x09: vga256InfoRec.videoRam = 1024; break;
-	    }
-	}
-
-	outb(vgaIOBase+0x04, 0x32);
-	config = inb(vgaIOBase + 0x05);
-
-	/* Interleaving? */
-	if (strcmp(vga256InfoRec.chipset, "et4000w32") != 0 &&
-	   (config & 0x80))
-	    vga256InfoRec.videoRam <<= 1;
-
-	vga256InfoRec.videoRam -= 1;
     }
+
+    W32 = strcmp(et4000w32_id, "et4000w32") == 0;
+    W32i = strcmp(et4000w32_id, "et4000w32i") == 0 ||
+	   strcmp(et4000w32_id, "et4000w32i_rev_b") == 0 ||
+	   strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
+    W32OrW32i = W32 || W32i;
+    W32p = !W32OrW32i;
+
+    if (!vga256InfoRec.videoRam)
+	if (w32_fails_memory_check(&i))
+	{
+	    vga256InfoRec.videoRam = 0;
+	    et4000w32_id = NULL;
+	    ET4000W32EnterLeave(LEAVE);
+	    return FALSE;
+	}
+	else
+	    vga256InfoRec.videoRam = i;
+
+    vga256InfoRec.videoRam -= 1;
 
     return TRUE;
 }
@@ -412,6 +448,8 @@ ET4000W32Init(mode)
     W32Pattern = W32Foreground + 16;
 
     RESET_ACL
+
+    SetupRamdac();
 
     return et4000w32_initted = TRUE;
 }

@@ -1437,11 +1437,25 @@ cirrusRestore(restore)
 #ifndef MONOVGA
 #ifdef ALLOW_8BPP_MULTIPLEXING
   if (cirrusChip == CLGD5434 || vgaBitsPerPixel != 8) {
+      outb(0x3c6, 0xff);
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
       outb(0x3c6, restore->HIDDENDAC);
   }
 #else
   if (vgaBitsPerPixel != 8) {
+      /* The 5426/8 have a hardware bug that can cause lock-ups on the bus
+       * when the Hidden DAC register is programmed with the ESYNC* signal
+       * disabled. I hope this stuff makes sure it is enabled. */
+      if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428) {
+          unsigned char tmp;
+          outb(0x3c4, 0x01);
+          tmp = inb(0x3c5);
+          /* Re-enable screen refresh. */
+          outw(0x3c4, ((tmp & 0xdf) << 8) | 0x01);
+          outw(0x3c4, 0x0300);	/* Enable sequencer. */
+      }
+      /* Write to DAC. */
+      outb(0x3c6, 0xff);	/* Reset access count. */
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
       outb(0x3c6, restore->HIDDENDAC);
   }
@@ -1742,7 +1756,6 @@ cirrusInit(mode)
          /* On the 5434, enable pixel multiplexing for clocks > 85.5 MHz. */
          multiplexing = 1;
          /* The actual DAC register value is set later. */
-         new->HIDDENDAC = 0x4a;
          /* The CRTC is clocked at VCLK / 2, so we must half the */
          /* horizontal timings. */
          mode->HDisplay >>= 1;

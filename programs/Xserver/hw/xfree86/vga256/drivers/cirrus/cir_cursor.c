@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.1 1994/09/13 15:11:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.2 1994/09/17 04:07:31 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -395,6 +395,7 @@ cirrusMoveCursor(pScr, x, y)
   x -= vga256InfoRec.frameX0 + cirrusCur.hotX;
   y -= vga256InfoRec.frameY0 + cirrusCur.hotY;
 
+#if 0	/* Has problems with cursor changes. */
   if (x < 0 || y < 0)
     {
       cirrusLoadCursorSkewed (pScr, cirrusCur.pCurs, x, y);
@@ -405,6 +406,7 @@ cirrusMoveCursor(pScr, x, y)
       cirrusLoadCursorSkewed (pScr, cirrusCur.pCurs, 0, 0);
       cirrusCur.skewed = 0;
     }
+#endif
   
   if (x < 0) x = 0;
   if (y < 0) y = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.0 1994/09/11 00:42:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.1 1994/09/13 15:08:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,6 +49,7 @@
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern Bool miDCInitialize();
+extern Bool vgaW32SaveScreen();
 
 ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool configured */
@@ -431,7 +432,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     return(FALSE);
 
   pScreen->CloseScreen = vgaCloseScreen;
-  pScreen->SaveScreen = vgaSaveScreen;
+  pScreen->SaveScreen = vgaW32SaveScreen;
   pScreen->InstallColormap = vgaInstallColormap;
   pScreen->UninstallColormap = vgaUninstallColormap;
   pScreen->ListInstalledColormaps = vgaListInstalledColormaps;
@@ -508,6 +509,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 
       (vgaEnterLeaveFunc)(ENTER);
       vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
+      XRamdac();
       vgaRestore(vgaNewVideoState);
 
 #ifdef SCO 
@@ -576,6 +578,7 @@ vgaEnterLeaveVT(enter, screen_idx)
        * abnormaly. Therefore there MUST be a check whether vgaOrigVideoState
        * is valid or not.
        */
+      VGARamdac();
       if (vgaOrigVideoState)
 	vgaRestore(vgaOrigVideoState);
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.9 1994/07/21 13:37:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.10 1994/09/14 11:00:40 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -12,8 +12,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.9 1994/07/21 13:37:46 dawes
 
 #define HasGcc			YES
 #define HasGcc2			YES
-#define HasCplusplus		YES
-#define HasGcc2ForCplusplus	YES
+#ifndef HasGcc2ForCplusplus
+# define HasGcc2ForCplusplus	YES
+#endif
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
