@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.175 1999/05/14 14:11:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.176 1999/05/15 12:10:19 dawes Exp $ */
 
 
 /*
@@ -35,7 +35,6 @@ extern DeviceAssocRec mouse_assoc;
 #endif
 
 static char *fontPath = NULL;
-static char *logFilePath;
 
 /* Forward declarations */
 static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
@@ -432,12 +431,13 @@ configFiles(XF86ConfFilesPtr fileconf)
   xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
 #endif
 
+#ifdef NEW_LOG
   /* LogFile */
-  if (fileconf->file_logfile) {
-    logFilePath = fileconf->file_logfile;
-    xf86Msg(X_CONFIG, "LogFile set to \"%s\"\n", logFilePath);
-  } else
-    logFilePath = NULL;
+  if (xf86LogFileFrom == X_DEFAULT && fileconf->file_logfile) {
+    xf86LogFile = fileconf->file_logfile;
+    xf86LogFileFrom = X_CONFIG;
+  }
+#endif
 
   return TRUE;
 }

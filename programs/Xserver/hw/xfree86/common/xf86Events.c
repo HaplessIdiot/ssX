@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.64 1999/04/29 05:12:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.65 1999/05/09 06:06:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -139,6 +139,7 @@ extern void xf86XqueRequest(void);
 
 static void xf86VTSwitch(void);
 
+#ifndef NEW_INPUT
 static CARD32 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg);
 
 /*
@@ -245,6 +246,7 @@ static char hitachMap[16] = {  0,  2,  1,  3,
 			      12, 14, 13, 15 };
 
 #define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
+#endif
 
 /*
  * TimeSinceLastInputEvent --
@@ -974,6 +976,7 @@ special:
 #endif /* !__EMX__ */
 
 
+#ifndef NEW_INPUT
 static CARD32
 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 {
@@ -984,6 +987,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 #endif
     return(0);
 }
+#endif
 
 
 /*      
@@ -992,10 +996,10 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
  *	about it. Perform a 3Button emulation if required.
  */
 
+#ifndef NEW_INPUT
 void
 xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 {
-#ifndef NEW_INPUT
   static OsTimerPtr timer = NULL;
   MouseDevPtr private = MOUSE_DEV(device);
   int         id, change;
@@ -1141,8 +1145,8 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 #endif
     }
     private->lastButtons = truebuttons;
-#endif
 }
+#endif
 
 
 
@@ -1186,13 +1190,18 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 #ifndef __EMX__
 #ifdef	__OSF__
-  fd_set kbdDevices;
-  fd_set mseDevices;
+    fd_set kbdDevices;
+    fd_set mseDevices;
 #endif	/* __OSF__ */
-  fd_set* LastSelectMask = (fd_set*)pReadmask;
-  fd_set devicesWithInput;
+    fd_set* LastSelectMask = (fd_set*)pReadmask;
+    fd_set devicesWithInput;
+#ifdef NEW_INPUT
+    InputInfoPtr pInfo;
+#endif
 
-  if ((int)err >= 0) {
+    if (err < 0)
+	return;
+
     XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
 #ifdef	__OSF__
    /*
@@ -1215,31 +1224,39 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
         (xf86Info.mouseDev->mseEvents)(1);
 
 #else
-    if (XFD_ANYSET(&devicesWithInput))
-      {
+    if (XFD_ANYSET(&devicesWithInput)) {
 	(xf86Info.kbdEvents)();
 #ifndef NEW_INPUT
 	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
+#else
+	pInfo = xf86InputDevs;
+	while (pInfo) {
+	    if (pInfo->read_input && pInfo->fd >= 0 &&
+		(FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
+		pInfo->read_input(pInfo);
+		/* break; XXX */
+	    }
+	    pInfo = pInfo->next;
+	}
 #endif
-      }
+    }
 #endif	/* __OSF__ */
-  }
 #else   /* __EMX__ */
 
-	(xf86Info.kbdEvents)();  /* Under OS/2, always call */
-	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
+    (xf86Info.kbdEvents)();  /* Under OS/2, always call */
+    (xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
 
 #endif  /* __EMX__ */
 
 #if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
   /* This could be done more cleanly */
-  if (xf86Info.mouseDev->xqueSema && xf86Info.mouseDev->xquePending)
-    xf86XqueRequest();
+    if (xf86Info.mouseDev->xqueSema && xf86Info.mouseDev->xquePending)
+	xf86XqueRequest();
 #endif
 
-  if (xf86VTSwitchPending()) xf86VTSwitch();
+    if (xf86VTSwitchPending()) xf86VTSwitch();
 
-  if (xf86Info.inputPending) ProcessInputEvents();
+    if (xf86Info.inputPending) ProcessInputEvents();
 }
 
 #endif /* AMOEBA */

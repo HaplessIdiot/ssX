@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.116 1999/05/09 12:49:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.117 1999/05/14 14:11:16 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -95,7 +95,6 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 static int numFormats = 6;
 static Bool formatsDone = FALSE;
 
-#ifdef XFree86LOADER
 #ifdef NEW_INPUT
 InputDriverRec xf86KEYBOARD = {
 	1,
@@ -106,7 +105,6 @@ InputDriverRec xf86KEYBOARD = {
 	NULL,
 	0
 };
-#endif
 #endif
 
 /*
@@ -681,7 +679,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   xf86Initialising = FALSE;
 
 #ifndef AMOEBA
-  RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, (void *)0);
+  RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, NULL);
 #endif
 }
 
@@ -723,8 +721,7 @@ InitInput(argc, argv)
 #endif /* XTESTEXT1 */
 
     /* Call the PreInit function for each input device instance. */
-    pDev = xf86ConfigLayout.inputs;
-    while (pDev && pDev->identifier) {
+    for (pDev = xf86ConfigLayout.inputs; pDev && pDev->identifier; pDev++) {
 	if ((pDrv = MatchInput(pDev)) == NULL) {
 	    xf86Msg(X_ERROR, "No Input driver matching `%s'\n", pDev->driver);
 	    /* XXX For now, just continue. */
@@ -737,19 +734,31 @@ InitInput(argc, argv)
 	    continue;
 	}
 	pInfo = pDrv->PreInit(pDrv, pDev, 0);
-	if (pInfo && pInfo->flags & XI86_CORE_KEYBOARD) {
+	if (!pInfo) {
+	    xf86Msg(X_ERROR, "PreInit returned NULL for \"%s\"\n",
+		    pDev->identifier);
+	    continue;
+	} else if (!(pInfo->flags & XI86_CONFIGURED)) {
+	    xf86Msg(X_ERROR, "PreInit failed for input device \"%s\"\n",
+		    pDev->identifier);
+	    xf86DeleteInput(pInfo, 0);
+	    continue;
+	}
+	if (pInfo->flags & XI86_CORE_KEYBOARD) {
 	    if (coreKeyboard) {
 		xf86Msg(X_ERROR,
 		    "Attempt to register more than one core keyboard (%s)\n",
 		    pInfo->name);
+		pInfo->flags &= ~XI86_CORE_KEYBOARD;
 	    } else
 		coreKeyboard = pInfo;
 	}
-	if (pInfo && pInfo->flags & XI86_CORE_POINTER) {
+	if (pInfo->flags & XI86_CORE_POINTER) {
 	    if (corePointer) {
 		xf86Msg(X_ERROR,
 		    "Attempt to register more than one core pointer (%s)\n",
 		    pInfo->name);
+		pInfo->flags &= ~XI86_CORE_POINTER;
 	    } else
 		corePointer = pInfo;
 	}
@@ -759,35 +768,53 @@ InitInput(argc, argv)
 	xf86Msg(X_WARNING, "No core pointer registered\n");
 	/* XXX register a dummy core pointer */
     }
+#ifdef NEW_KBD
     if (!coreKeyboard) {
 	xf86Msg(X_WARNING, "No core keyboard registered\n");
 	/* XXX register a dummy core keyboard */
     }
 #endif
 
-  xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
-#ifndef NEW_INPUT
-  xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
-#endif
-  RegisterKeyboardDevice(xf86Info.pKeyboard); 
-#ifndef NEW_INPUT
-  RegisterPointerDevice(xf86Info.pMouse); 
+    /* Initialise all input devices. */
+    pInfo = xf86InputDevs;
+    while (pInfo) {
+	xf86ActivateDevice(pInfo);
+	pInfo = pInfo->next;
+    }
 #endif
 
+    xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
+#ifndef NEW_INPUT
+    xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
+#else
+    if (corePointer)
+	xf86Info.pMouse = corePointer->dev;
+#endif
+    RegisterKeyboardDevice(xf86Info.pKeyboard); 
+#ifndef NEW_INPUT
+    RegisterPointerDevice(xf86Info.pMouse); 
+#endif
+
+#ifndef NEW_INPUT
 #ifdef XINPUT
   (xf86Info.pMouse)->public.devicePrivate = xf86Info.mouseLocal;
   ((LocalDevicePtr) xf86Info.mouseLocal)->dev = xf86Info.pMouse;
 #else
   (xf86Info.pMouse)->public.devicePrivate = (pointer) xf86Info.mouseDev;
 #endif
+#endif
   
+#ifndef NEW_INPUT
 #ifdef XINPUT
   InitExtInput();
+#endif
 #endif
 
   miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pMouse);
 #ifdef XINPUT
+#ifndef NEW_INPUT
   xf86XinputFinalizeInit(xf86Info.pMouse);
+#endif
   xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #else
   mieqInit (xf86Info.pKeyboard, xf86Info.pMouse);
@@ -896,9 +923,9 @@ void
 OsVendorFatalError()
 {
   ErrorF("\nWhen reporting a problem related to a server crash, please send\n"
-	 "the full server output, not just the last messages\n");
+	 "the full server output, not just the last messages.\n");
   if (xf86LogFile)
-    ErrorF("This can be found in the log file \"%s\"\n", xf86LogFile);
+    ErrorF("This can be found in the log file \"%s\".\n", xf86LogFile);
   ErrorF("\n");
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.13 1998/10/04 09:38:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.14 1999/01/13 08:30:50 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -174,14 +174,18 @@ InitAndStartDevices()
 	 dev && (dev != inputInfo.keyboard);
 	 dev = dev->next)
 	;
-    if (!dev || (dev != inputInfo.keyboard))
+    if (!dev || (dev != inputInfo.keyboard)) {
+	ErrorF("No core keyboard\n");
 	return BadImplementation;
+    }
     for (dev = inputInfo.devices;
 	 dev && (dev != inputInfo.pointer);
 	 dev = dev->next)
 	;
-    if (!dev || (dev != inputInfo.pointer))
+    if (!dev || (dev != inputInfo.pointer)) {
+	ErrorF("No core pointer\n");
 	return BadImplementation;
+    }
     return Success;
 }
 

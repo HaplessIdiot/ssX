@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.44 1999/04/17 07:06:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.45 1999/05/09 06:06:21 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -36,6 +36,7 @@
 #include "xf86Xinput.h"
 #include "XIstubs.h"
 #include "mipointer.h"
+#include "xf86InPriv.h"
 
 #ifdef DPMSExtension
 #define DPMS_SERVER
@@ -226,29 +227,29 @@ xf86ProcessCommonOptions(LocalDevicePtr local,
     if (xf86SetBoolOption(list, "AlwaysCore", 0) ||
 	xf86SetBoolOption(list, "SendCoreEvents", 0)) {
 	local->flags |= XI86_ALWAYS_CORE;
-	xf86Msg(X_CONFIG, "%s always reports core events\n", local->name);
+	xf86Msg(X_CONFIG, "%s: always reports core events\n", local->name);
     }
 
     if (xf86SetBoolOption(list, "CorePointer", 0)) {
 	local->flags |= XI86_CORE_POINTER;
-	xf86Msg(X_CONFIG, "%s is the Core Pointer\n", local->name);
+	xf86Msg(X_CONFIG, "%s: Core Pointer\n", local->name);
     }
 
     if (xf86SetBoolOption(list, "CoreKeyboard", 0)) {
 	local->flags |= XI86_CORE_KEYBOARD;
-	xf86Msg(X_CONFIG, "%s is the Core Keyboard\n", local->name);
+	xf86Msg(X_CONFIG, "%s: Core Keyboard\n", local->name);
     }
 
     if (xf86SetBoolOption(list, "SendDragEvents", 1)) {
 	local->flags |= XI86_SEND_DRAG_EVENTS;
     } else {
-	xf86Msg(X_CONFIG, "%s doesn't report drag events\n", local->name);
+	xf86Msg(X_CONFIG, "%s: doesn't report drag events\n", local->name);
     }
     
     local->history_size = xf86SetIntOption(list, "HistorySize", 0);
 
     if (local->history_size > 0) {
-	xf86Msg(X_CONFIG, "%s has %d motions history\n", local->name,
+	xf86Msg(X_CONFIG, "%s: has %d motions history\n", local->name,
 		local->history_size);
     }
     
@@ -288,7 +289,7 @@ xf86XinputFinalizeInit(DeviceIntPtr	dev)
  *
  ***********************************************************************
  */
-static void
+void
 xf86ActivateDevice(LocalDevicePtr local)
 {
     DeviceIntPtr	dev;
@@ -313,7 +314,15 @@ xf86ActivateDevice(LocalDevicePtr local)
 	
 	xf86XinputFinalizeInit(dev);
 
-	RegisterOtherDevice(dev);
+	if (local->flags & XI86_CORE_POINTER)
+	    RegisterPointerDevice(dev);
+	else if (local->flags & XI86_CORE_KEYBOARD)
+	    RegisterKeyboardDevice(dev);
+#ifdef XINPUT
+	else
+	    RegisterOtherDevice(dev);
+#endif
+
 	if (serverGeneration == 1) 
 	    xf86Msg(X_INFO, "XINPUT: Adding extended input device \"%s\" (type: %s)\n",
 		    local->name, local->type_name);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86InPriv.h,v 1.1 1999/05/07 12:34:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86InPriv.h,v 1.2 1999/05/09 06:06:19 dawes Exp $ */
 
 #ifndef _xf86InPriv_h
 #define _xf86InPriv_h
@@ -13,5 +13,8 @@ extern int xf86NumInputDrivers;
 
 /* xf86Mouse.c */
 extern InputDriverRec xf86MOUSE;
+
+/* xf86Xinput.c */
+void xf86ActivateDevice(InputInfoPtr pInfo);
 
 #endif /* _xf86InPriv_h */

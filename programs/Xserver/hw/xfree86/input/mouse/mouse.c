@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.2 1999/05/14 14:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.3 1999/05/15 14:31:22 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -60,6 +60,7 @@
 #include "xf86Xinput.h"
 #include "xf86_OSproc.h"
 #include "xf86OSmouse.h"
+#define NEED_XF86_TYPES	/* for xisb.h when !XFree86LOADER */
 #include "xf86_ansic.h"
 #include "xisb.h"
 #include "mouse.h"
@@ -75,6 +76,7 @@ static void MouseReadInput(InputInfoPtr pInfo);
 static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 		 	     int v1, int v2, int v3, int v4, int v5, int *x,
 		 	     int *y);
+static void MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy);
 
 InputDriverRec xf86MOUSE = {
 	1,
@@ -322,7 +324,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Initialise the InputInfoRec. */
     pInfo->name = dev->identifier;
     pInfo->type_name = XI_MOUSE;
-    pInfo->flags = XI86_NO_OPEN_ON_INIT | XI86_SEND_DRAG_EVENTS;
+    pInfo->flags = /*XI86_NO_OPEN_ON_INIT |*/ XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = MouseProc;
     pInfo->read_input = MouseReadInput;
     pInfo->motion_history_proc = xf86GetMotionEvents;
@@ -336,9 +338,10 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->dev = NULL;
     pInfo->private_flags = 0;
     pInfo->always_core_feedback = 0;
+    pInfo->conf_idev = dev;
 
     /* Find the protocol type. */
-    protocol = xf86SetStrOption(pInfo->options, "Protocol", NULL);
+    protocol = xf86SetStrOption(dev->commonOptions, "Protocol", NULL);
     if (protocol) {
 	from = X_CONFIG;
     } else if (osInfo->DefaultProtocol) {
@@ -347,7 +350,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
     if (!protocol) {
 	xf86Msg(X_ERROR, "%s: No Protocol specified\n", pInfo->name);
-	return NULL;
+	return pInfo;
     }
     protocolID = ProtocolNameToID(protocol);
     switch (protocolID) {
@@ -355,28 +358,30 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	/* Check for a builtin OS-specific protocol, and call its PreInit. */
 	if (osInfo->CheckProtocol && osInfo->CheckProtocol(protocol)) {
 	    if (osInfo->PreInit) {
-		if (!osInfo->PreInit(pInfo, protocol, 0))
-		    return NULL;
+		MouseInfoPtr pMInfo = xnfalloc(sizeof(MouseInfoRec));
+		pMInfo->PostEvent = MousePostEvent;
+		if (!osInfo->PreInit(pInfo, protocol, pMInfo, 0))
+		    return pInfo;
 		return pInfo;
 	    }
-	    return NULL;
+	    return pInfo;
 	}
 	xf86Msg(X_ERROR, "%s: Unknown protocol \"%s\"\n", pInfo->name,
 		protocol);
-	return NULL;
+	return pInfo;
 	break;
     case PROT_UNSUP:
 	xf86Msg(X_ERROR,
 		"%s: Protocol \"%s\" is not supported on this platform\n",
 		pInfo->name, protocol);
-	return NULL;
+	return pInfo;
 	break;
     default:
 	xf86Msg(from, "%s: Protocol: \"%s\"\n", pInfo->name, protocol);
     }
 
     if (!(pProto = GetProtocol(protocolID)))
-	return NULL;
+	return pInfo;
 
     /* Collect the options, and process the common options. */
     xf86CollectInputOptions(pInfo, pProto->defaults, NULL);
@@ -384,7 +389,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     /* Allocate the MouseDevRec and initialise it. */
     if (!(pMse = xcalloc(sizeof(MouseDevRec), 1)))
-	return NULL;
+	return pInfo;
 
     pInfo->private = pMse;
     pMse->protocol = protocol;
@@ -400,7 +405,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	else {
 	    xf86Msg(X_ERROR, "%s: cannot open input device\n", pInfo->name);
 	    xfree(pMse);
-	    return NULL;
+	    return pInfo;
 	}
     }
     xf86CloseSerial(pInfo->fd);
@@ -410,7 +415,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     from = X_CONFIG;
     if (!pMse->buttons) {
 	pMse->buttons = MSE_DFLTBUTTONS;
-	from = X_CONFIG;
+	from = X_DEFAULT;
     }
     xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
     
@@ -454,11 +459,14 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     /* XXX Add parsing of the ZAxisMapping option. */
+#if 0
     pMse->buffer = XisbNew(pInfo->fd, 64);
     if (!pMse->buffer) {
 	xfree(pMse);
 	xf86CloseSerial(pInfo->fd);
     }
+#endif
+    pInfo->flags |= XI86_CONFIGURED;
     return pInfo;
 }
 
@@ -757,10 +765,10 @@ SetupMouse(InputInfoPtr pInfo)
     case PROT_ACECAD:
 	/* initialize */
 	/* A nul character resets. */
-	write(pInfo->fd, "", 1);
+	xf86WriteSerial(pInfo->fd, "", 1);
 	usleep(50000);
 	/* Stream out relative mode high resolution increments of 1. */
-	write(pInfo->fd, "@EeI!", 5);
+	xf86WriteSerial(pInfo->fd, "@EeI!", 5);
 	break;
 
     case PROT_BM:		/* bus/InPort mouse */
@@ -1288,7 +1296,7 @@ post_event:
 #endif
 
 	/* post an event (XXX Check this) */
-	xf86PostMseEvent(pMse->device, buttons, dx, dy);
+	MousePostEvent(pInfo, buttons, dx, dy);
 
 	/* 
 	 * If dz has been mapped to a button `down' event, we need to cook
@@ -1297,7 +1305,7 @@ post_event:
 	if ((pMse->negativeZ > 0) &&
 		(buttons & (pMse->negativeZ | pMse->positiveZ))) {
 	    buttons &= ~(pMse->negativeZ | pMse->positiveZ);
-	    xf86PostMseEvent(pMse->device, buttons, 0, 0);
+	    MousePostEvent(pInfo, buttons, 0, 0);
 	}
 
 	/* 
@@ -1373,6 +1381,7 @@ MouseProc(DeviceIntPtr device, int what)
 	/* Y valuator */
 	xf86InitValuatorAxisStruct(device, 1, 0, -1, 1, 0, 1);
 	xf86InitValuatorDefaults(device, 1);
+	xf86MotionHistoryAllocate(pInfo);
 
 #ifdef EXTMOUSEDEBUG
 	ErrorF("assigning %p atom=%d name=%s\n", device, pInfo->atom,
@@ -1385,11 +1394,18 @@ MouseProc(DeviceIntPtr device, int what)
 	if (pInfo->fd == -1)
 	    xf86Msg(X_WARNING, "%s: cannot open input device\n", pInfo->name);
 	else {
-	    SetupMouse(pInfo);
-	    xf86FlushInput(pInfo->fd);
-	    if (pMse->protocolID == PROT_PS2)
-		xf86WriteSerial(pInfo->fd, "\364", 1);
-	    AddEnabledDevice(pInfo->fd);
+	    pMse->buffer = XisbNew(pInfo->fd, 64);
+	    if (!pMse->buffer) {
+		xfree(pMse);
+		xf86CloseSerial(pInfo->fd);
+		pInfo->fd = -1;
+	    } else {
+		SetupMouse(pInfo);
+		xf86FlushInput(pInfo->fd);
+		if (pMse->protocolID == PROT_PS2)
+		    xf86WriteSerial(pInfo->fd, "\364", 1);
+		AddEnabledDevice(pInfo->fd);
+	    }
 	}
 	pMse->lastButtons = 0;
 	pMse->emulateState = 0;
@@ -1400,6 +1416,10 @@ MouseProc(DeviceIntPtr device, int what)
     case DEVICE_CLOSE:
 	if (pInfo->fd != -1) {
 	    RemoveEnabledDevice(pInfo->fd);
+	    if (pMse->buffer) {
+		XisbFree(pMse->buffer);
+		pMse->buffer = NULL;
+	    }
 	    xf86CloseSerial(pInfo->fd);
 	    pInfo->fd = -1;
 	}
@@ -1429,5 +1449,196 @@ MouseConvert(InputInfoPtr pInfo, int first, int num, int v0, int v1, int v2,
     *y = v1;
 
     return TRUE;
+}
+
+static CARD32
+buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
+{
+    InputInfoPtr pInfo;
+    MouseDevPtr pMse;
+
+    pInfo = arg;
+    pMse = pInfo->private;
+
+    MousePostEvent(pInfo, pMse->truebuttons, 0, 0);
+    return 0;
+}
+
+/*
+ * Lets create a simple finite-state machine:
+ *
+ *   state[?][0]: action1
+ *   state[?][1]: action2
+ *   state[?][2]: next state
+ *
+ *   action > 0: ButtonPress
+ *   action = 0: nothing
+ *   action < 0: ButtonRelease
+ *
+ * Why this stuff ??? Normally you cannot press both mousebuttons together, so
+ * the mouse reports both pressed at the same time ...
+ */
+
+static signed char stateTab[48][3] = {
+
+/* nothing pressed */
+  {  0,  0,  0 },	
+  {  0,  0,  8 },	/* 1 right -> delayed right */
+  {  0,  0,  0 },       /* 2 nothing */
+  {  0,  0,  8 },	/* 3 right -> delayed right */
+  {  0,  0, 16 },	/* 4 left -> delayed left */
+  {  2,  0, 24 },       /* 5 left & right (middle press) -> middle pressed */
+  {  0,  0, 16 },	/* 6 left -> delayed left */
+  {  2,  0, 24 },       /* 7 left & right (middle press) -> middle pressed */
+
+/* delayed right */
+  {  1, -1,  0 },	/* 8 nothing (right event) -> init */
+  {  1,  0, 32 },       /* 9 right (right press) -> right pressed */
+  {  1, -1,  0 },	/* 10 nothing (right event) -> init */
+  {  1,  0, 32 },       /* 11 right (right press) -> right pressed */
+  {  1, -1, 16 },       /* 12 left (right event) -> delayed left */
+  {  2,  0, 24 },       /* 13 left & right (middle press) -> middle pressed */
+  {  1, -1, 16 },       /* 14 left (right event) -> delayed left */
+  {  2,  0, 24 },       /* 15 left & right (middle press) -> middle pressed */
+
+/* delayed left */
+  {  3, -3,  0 },	/* 16 nothing (left event) -> init */
+  {  3, -3,  8 },       /* 17 right (left event) -> delayed right */
+  {  3, -3,  0 },	/* 18 nothing (left event) -> init */
+  {  3, -3,  8 },       /* 19 right (left event) -> delayed right */
+  {  3,  0, 40 },	/* 20 left (left press) -> pressed left */
+  {  2,  0, 24 },	/* 21 left & right (middle press) -> pressed middle */
+  {  3,  0, 40 },	/* 22 left (left press) -> pressed left */
+  {  2,  0, 24 },	/* 23 left & right (middle press) -> pressed middle */
+
+/* pressed middle */
+  { -2,  0,  0 },	/* 24 nothing (middle release) -> init */
+  { -2,  0,  0 },	/* 25 right (middle release) -> init */
+  { -2,  0,  0 },	/* 26 nothing (middle release) -> init */
+  { -2,  0,  0 },	/* 27 right (middle release) -> init */
+  { -2,  0,  0 },	/* 28 left (middle release) -> init */
+  {  0,  0, 24 },	/* 29 left & right -> pressed middle */
+  { -2,  0,  0 },	/* 30 left (middle release) -> init */
+  {  0,  0, 24 },	/* 31 left & right -> pressed middle */
+
+/* pressed right */
+  { -1,  0,  0 },	/* 32 nothing (right release) -> init */
+  {  0,  0, 32 },	/* 33 right -> pressed right */
+  { -1,  0,  0 },	/* 34 nothing (right release) -> init */
+  {  0,  0, 32 },	/* 35 right -> pressed right */
+  { -1,  0, 16 },	/* 36 left (right release) -> delayed left */
+  { -1,  2, 24 },	/* 37 left & right (r rel, m prs) -> middle pressed */
+  { -1,  0, 16 },	/* 38 left (right release) -> delayed left */
+  { -1,  2, 24 },	/* 39 left & right (r rel, m prs) -> middle pressed */
+
+/* pressed left */
+  { -3,  0,  0 },	/* 40 nothing (left release) -> init */
+  { -3,  0,  8 },	/* 41 right (left release) -> delayed right */
+  { -3,  0,  0 },	/* 42 nothing (left release) -> init */
+  { -3,  0,  8 },	/* 43 right (left release) -> delayed right */
+  {  0,  0, 40 },	/* 44 left -> left pressed */
+  { -3,  2, 24 },	/* 45 left & right (l rel, mprs) -> middle pressed */
+  {  0,  0, 40 },	/* 46 left -> left pressed */
+  { -3,  2, 24 },	/* 47 left & right (l rel, mprs) -> middle pressed */
+};
+
+
+/*
+ * Table to allow quick reversal of natural button mapping to correct mapping
+ */
+
+/*
+ * [JCH-96/01/21] The ALPS GlidePoint pad extends the MS protocol
+ * with a fourth button activated by tapping the PAD.
+ * The 2nd line corresponds to 4th button on; the drv sends
+ * the buttons in the following map (MSBit described first) :
+ * 0 | 4th | 1st | 2nd | 3rd
+ * And we remap them (MSBit described first) :
+ * 0 | 4th | 3rd | 2nd | 1st
+ */
+static char reverseMap[32] = { 0,  4,  2,  6,  1,  5,  3,  7,
+			       8, 12, 10, 14,  9, 13, 11, 15,
+			      16, 20, 18, 22, 17, 21, 19, 23,
+			      24, 28, 26, 30, 25, 29, 27, 31};
+
+
+static char hitachMap[16] = {  0,  2,  1,  3, 
+			       8, 10,  9, 11,
+			       4,  6,  5,  7,
+			      12, 14, 13, 15 };
+
+#define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
+
+static void
+MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
+{
+    static OsTimerPtr timer = NULL;
+    MouseDevPtr pMse;
+    int truebuttons;
+    int id, change;
+
+    pMse = pInfo->private;
+
+    truebuttons = buttons;
+    if (pMse->protocolID == PROT_MMHIT)
+	buttons = reverseBits(hitachMap, buttons);
+    else
+	buttons = reverseBits(reverseMap, buttons);
+
+    if (dx || dy)
+	xf86PostMotionEvent(pInfo->dev, 0, 0, 2, dx, dy);
+
+    if (pMse->emulate3Buttons) {
+	/*
+	 * Hack to operate the middle button even with Emulate3Buttons set.
+	 * Modifying the state table to keep track of the middle button state
+	 * would nearly double its size, so I'll stick with this fix.  - TJW
+	 */
+	if (pMse->protocolID == PROT_MMHIT)
+	    change = buttons ^ reverseBits(hitachMap, pMse->lastButtons);
+	else
+	    change = buttons ^ reverseBits(reverseMap, pMse->lastButtons);
+	if (change & 02)
+	    xf86PostButtonEvent(pInfo->dev, 0, 2, (buttons & 02), 0, 0);
+
+	/*
+	 * emulate the third button by the other two
+	 */
+	if ((id = stateTab[(buttons & 0x07) + pMse->emulateState][0]) != 0)
+	    xf86PostButtonEvent(pInfo->dev, 0, abs(id), (id >= 0), 0, 0);
+
+	if ((id = stateTab[(buttons & 0x07) + pMse->emulateState][1]) != 0)
+	    xf86PostButtonEvent(pInfo->dev, 0, abs(id), (id >= 0), 0, 0);
+
+	pMse->emulateState = stateTab[(buttons & 0x07) + pMse->emulateState][2];
+	if (stateTab[(buttons & 0x07) + pMse->emulateState][0] ||
+	    stateTab[(buttons & 0x07) + pMse->emulateState][1]) {
+	    pMse->truebuttons = truebuttons;
+	    timer = TimerSet(timer, 0, pMse->emulate3Timeout, buttonTimer,
+			     pInfo);
+	} else {
+	    if (timer) {
+		TimerFree(timer);
+		timer = NULL;
+	    }
+	}
+    } else {
+	/*
+	 * real three button event
+	 * Note that pMse.lastButtons has the hardware button mapping which
+	 * is the reverse of the button mapping reported to the server.
+	 */
+	if (pMse->protocolID == PROT_MMHIT)
+	    change = buttons ^ reverseBits(hitachMap, pMse->lastButtons);
+	else
+	    change = buttons ^ reverseBits(reverseMap, pMse->lastButtons);
+	while (change) {
+	    id = ffs(change);
+	    change &= ~(1 << (id - 1));
+	    xf86PostButtonEvent(pInfo->dev, 0, id,
+				(buttons & (1 << (id - 1))), 0, 0);
+	}
+    }
+    pMse->lastButtons = truebuttons;
 }
 
