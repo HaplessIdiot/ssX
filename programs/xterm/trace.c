@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/trace.c,v 3.1 1997/05/23 09:19:55 dawes Exp $
+ * $XFree86: xc/programs/xterm/trace.c,v 3.2 1997/08/26 10:01:59 hohndel Exp $
  */
 
 /************************************************************
@@ -48,6 +48,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <varargs.h>
 #endif
 
+char *trace_who = "parent";
+
 void
 #if	ANSI_VARARGS
 Trace(char *fmt, ...)
@@ -63,7 +65,9 @@ va_dcl
 	va_list ap;
 
 	if (!fp) {
-		fp = fopen("Trace.out", "w");
+		char name[BUFSIZ];
+		sprintf(name, "Trace-%s.out", trace_who);
+		fp = fopen(name, "w");
 		if (fp != 0) {
 #if HAVE_UNISTD_H
 			time_t now;

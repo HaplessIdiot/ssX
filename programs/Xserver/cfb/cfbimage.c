@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.2 1998/03/20 21:05:03 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -123,6 +123,7 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	gcv[1] = oldFg;
 	gcv[2] = oldBg;
 	DoChangeGC(pGC, GCPlaneMask | GCForeground | GCBackground, gcv, 0);
+	ValidateGC(pDraw, pGC);
     }
 }
 

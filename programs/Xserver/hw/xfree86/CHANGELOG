@@ -1,4 +1,9 @@
-XFree86 3.9Ah (XX April 1998)
+XFree86 3.9Ah (26 April 1998)
+1669. Xterm patch 73 added print window facility, terminfo updates,
+      conditional include cleanup, debugging trace enhancements, and
+      HP-UX configure updates (#1672 T.E.Dickey).
+1668. Framebuffer fixes leaving valid GC on exit, fix for opaque types
+      (#1669 Marc Aurele La France).
 1667. Add ELF support for AXP platform (#1666 Stuart Anderson).
 1666. PCI function fixes for AXP platform (#1665 Alan Hourihane).
 1665. SiS updates (#1664 Mike Chapman, Mitani Hiroshi).
@@ -6118,4 +6123,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.588 1998/04/26 18:31:53 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.589 1998/04/26 18:35:37 robin Exp $

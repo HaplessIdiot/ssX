@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.16 1998/04/05 00:46:11 robin Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.17 1998/04/18 18:42:02 robin Exp $ */
 
 /***********************************************************
 
@@ -68,6 +68,7 @@ SOFTWARE.
 
 #include "version.h"
 #include "ptyx.h"
+
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
@@ -80,9 +81,11 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <ctype.h>
+
 #include "data.h"
 #include "error.h"
 #include "menu.h"
+#include "xterm.h"
 
 #include <sys/termio.h>
 
@@ -96,24 +99,13 @@ char *ttyname(int fd) { return "/dev/tty"; }
 #include <sys/param.h>	/* for NOFILE */
 
 #include <stdio.h>
-#include <errno.h>
 #include <setjmp.h>
 
 #include <time.h>
-#define Time_t time_t
 
 #include <signal.h>
-#include <sys/wait.h>
-
-#define SIGNAL_T void
-#define SIGNAL_RETURN return
-
-#include <unistd.h>
-#include <stdlib.h>
 
 extern char *strindex ();
-
-#include "xterm.h"
 
 int switchfb[] = {0, 2, 1, 3};
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/proto.h,v 3.0 1996/01/10 05:51:43 dawes Exp $ */
 
 #ifndef included_proto_h
 #define included_proto_h
@@ -34,13 +34,6 @@
 #else
 #define SIGNAL_T void
 #define SIGNAL_RETURN return
-#endif
-
-#undef  Size_t
-#ifndef X_NOT_STDC_ENV
-#define Size_t size_t
-#else
-#define Size_t int
 #endif
 
 #endif/*included_proto_h*/

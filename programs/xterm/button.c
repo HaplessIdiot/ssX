@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.19 1997/12/28 21:28:38 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.20 1998/01/11 03:48:35 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -37,12 +37,6 @@ button.c	Handles button events in the terminal emulator.
 #include "ptyx.h"		/* Xlib headers included here. */
 
 #include <X11/Xatom.h>
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *malloc();
-#endif
 
 #include <stdio.h>
 

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/mi/miglblt.c,v 1.0tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -245,5 +246,6 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     gcvals[1] = oldFG;
     gcvals[2] = oldFS;
     DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
+    ValidateGC(pDrawable, pGC);
 
 }
