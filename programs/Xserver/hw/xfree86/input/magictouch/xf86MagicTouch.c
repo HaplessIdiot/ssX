@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.1 2001/07/03 15:13:57 paulo Exp $
  */
 
 #include <xf86Version.h>
@@ -10,8 +10,9 @@
 #ifdef XFREE86_V4
 
 #ifndef XFree86LOADER
-#include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <unistd.h>
 #endif
 
 #include <misc.h>
