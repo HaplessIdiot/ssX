@@ -8,7 +8,7 @@
 <date>9 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.8 2000/02/10 22:33:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.9 2000/02/12 20:45:20 dawes Exp $
 </ident>
 
 <toc>
@@ -933,7 +933,7 @@ This can be done by the following command:
 	xmodmap -e "pointer = 1 6 3 2 4 5"
 </verb>
 
-After this command is run, the correspondance between the buttons and 
+After this command is run, the correspondence between the buttons and 
 button numbers will be as shown in the following table.
 
 <verb>
@@ -964,7 +964,7 @@ EndSection
 The IntelliMouse Explorer has 5 buttons, thus, you should give "7"
 to the <tt>Buttons</tt> option if you want to map the wheel movement
 to buttons (6 and 7).
-With this configuration, the correspondance between the buttons and
+With this configuration, the correspondence between the buttons and
 button numbers will be as follows:
 
 <verb>

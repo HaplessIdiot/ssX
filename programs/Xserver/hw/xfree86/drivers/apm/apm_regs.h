@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.5 2000/02/11 22:35:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.6 2000/02/14 19:20:47 dawes Exp $ */
 
 
 
@@ -214,3 +214,6 @@
 #define DEC_QUICKSTART_NONE         (0 << 29)
 #define DEC_START                   (1 << 31)
 #define DEC_START_NO                (0 << 31)
+
+#define AT3D_SST_STATUS		0x1F4
+#define		SST_BUSY	1

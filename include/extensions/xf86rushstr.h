@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86rushstr.h,v 1.2 1999/09/27 06:29:07 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86rushstr.h,v 1.3 2000/02/11 22:35:44 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -118,5 +118,46 @@ typedef struct {
     CARD16	drw_h B16;
 } xXF86RushOverlayPixmapReq;
 #define sz_xXF86RushOverlayPixmapReq 40
+
+typedef struct _XF86RushStatusRegOffset {
+    CARD8	reqType;		/* always RushReqCode */
+    CARD8	rushReqType;		/* always X_RushStatusRegOffset */
+    CARD16      length B16;
+    CARD16      screen B16;
+    CARD16      pad B16;
+} xXF86RushStatusRegOffsetReq;
+#define sz_xXF86RushStatusRegOffsetReq   8
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	offset B32;		/* Offset of Rush status reg in mem */
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXF86RushStatusRegOffsetReply;
+#define sz_xXF86RushStatusRegOffsetReply	32
+
+typedef struct _XF86RushAT3DEnableRegs {
+    CARD8	reqType;		/* always RushReqCode */
+    CARD8	rushReqType;		/* always X_RushAT3DEnableRegs */
+    CARD16      length B16;
+    CARD16      screen B16;
+    CARD16      pad B16;
+} xXF86RushAT3DEnableRegsReq;
+#define sz_xXF86RushAT3DEnableRegsReq   8
+
+typedef struct _XF86RushAT3DDisableRegs {
+    CARD8	reqType;		/* always RushReqCode */
+    CARD8	rushReqType;		/* always X_RushAT3DDisableRegs */
+    CARD16      length B16;
+    CARD16      screen B16;
+    CARD16      pad B16;
+} xXF86RushAT3DDisableRegsReq;
+#define sz_xXF86RushAT3DDisableRegsReq   8
 
 #endif /* _XF86RUSHSTR_H_ */

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/include/extensions/xf86bigfstr.h,v 1.1 2000/02/08 17:18:25 dawes Exp $ */
 /*
  * Declarations of request structures for the BIGFONT extension.
  *
@@ -16,7 +16,7 @@
 #define XF86BIGFONTNAME			"XFree86-Bigfont"
 
 #define XF86BIGFONT_MAJOR_VERSION	1	/* current version numbers */
-#define XF86BIGFONT_MINOR_VERSION	0
+#define XF86BIGFONT_MINOR_VERSION	1
 
 typedef struct _XF86BigfontQueryVersion {
     CARD8	reqType;		/* always XF86BigfontReqCode */
@@ -34,19 +34,23 @@ typedef struct {
     CARD16	minorVersion B16;	/* minor version of XFree86-Bigfont */
     CARD32	uid B32;
     CARD32	gid B32;
+    CARD32	signature B32;
     CARD32	pad1 B32;
     CARD32	pad2 B32;
-    CARD32	pad3 B32;
 } xXF86BigfontQueryVersionReply;
 #define sz_xXF86BigfontQueryVersionReply 32
+
+/* Bit masks that can be set in the capabilities */
+#define XF86Bigfont_CAP_LocalShm 1
 
 typedef struct _XF86BigfontQueryFont {
     CARD8	reqType;		/* always XF86BigfontReqCode */
     CARD8	xf86bigfontReqType;	/* always X_XF86BigfontQueryFont */
     CARD16	length B16;
     CARD32	id B32;
+    CARD32	flags B32;
 } xXF86BigfontQueryFontReq;
-#define sz_xXF86BigfontQueryFontReq	8
+#define sz_xXF86BigfontQueryFontReq	12
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -82,5 +86,8 @@ typedef struct {
        and then, if nCharInfos is odd, one more CARD16 for padding. */
 } xXF86BigfontQueryFontReply;
 #define sz_xXF86BigfontQueryFontReply	72
+
+/* Bit masks that can be set in the flags */
+#define XF86Bigfont_FLAGS_Shm 1
 
 #endif /* _XF86BIGFSTR_H_ */

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.46 2000/02/13 00:56:16 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.47 2000/02/17 14:16:35 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A>
 <LI><A HREF="#xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A>
 <LI><A HREF="#xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A>
@@ -171,6 +172,18 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A></H1>
+<ul>
+	<li>improve initialization of ANSI colors by delaying allocation until
+	  each color is first used.
+
+	<li>remove ifdef that prevented colorBD/colorUL/colorBL resources from
+	  working when 256-color configuration was built (reported by
+	  Todd Larason).
+
+	<li>fix some minor inconsistencies in terminfo (Debian #58530).
+</ul>
 
 <H1><A NAME="xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A></H1>
 <ul>

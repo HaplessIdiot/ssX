@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 20 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.6 2000/01/24 19:38:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.7 2000/02/21 18:05:47 dawes Exp $
 </ident>
 
 <toc>
@@ -52,10 +52,19 @@ Send email to <em/herrb@xfree86.org/ (Matthieu Herrb) or
 <em/XFree86@XFree86.org/ if you have comments or suggestions about
 this file and we'll revise it.
 
-<sect>New OS dependant features
+<sect>New OS dependent features
 <p>
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
 non-OS dependent new features in XFree86 &relvers;.
+
+<sect1>New OS dependent features in 4.0
+<p>
+<itemize>
+<item>Multi-thread safe libraries are built by default on OpenBSD 2.6
+      and later,
+<item>Preliminary APM support.
+</itemize>
+
 <sect1>New OS dependent features in 3.9.18
 <p>
 <itemize>

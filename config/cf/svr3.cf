@@ -2,7 +2,7 @@ XCOMM $XConsortium: svr3.cf /main/1 1996/10/31 14:47:37 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.10 1997/05/24 13:46:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.11 2000/01/25 18:37:30 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -59,10 +59,6 @@ XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.10 1997/05/24 13:46:28 dawes Exp $
  */
 #ifndef HasSymLinks
 # define HasSymLinks NO
-#endif
-
-#ifndef StripInstalledPrograms
-# define StripInstalledPrograms	YES
 #endif
 
 #ifndef MotifBC

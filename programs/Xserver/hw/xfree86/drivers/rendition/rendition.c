@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.24 2000/02/21 19:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.26 2000/02/27 02:45:30 alanh Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1162,13 +1162,15 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Setup default colourmap */
-    Inited = miCreateDefColormap(pScreen);
+    if (!miCreateDefColormap(pScreen))
+      return FALSE;
 
     /* Try the new code based on the new colormap layer */
     if (pScreenInfo->depth > 1)
       if (!xf86HandleColormaps(pScreen, 256, pScreenInfo->rgbBits,
-			       renditionLoadPalette,
-			       NULL, CMAP_RELOAD_ON_MODE_SWITCH)) {
+			       renditionLoadPalette, NULL,
+			       CMAP_LOAD_EVEN_IF_OFFSCREEN|
+			       CMAP_RELOAD_ON_MODE_SWITCH)) {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR, "Colormap initialization failed\n");
         return FALSE;
       }

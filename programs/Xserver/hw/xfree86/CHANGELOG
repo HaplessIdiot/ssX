@@ -1,4 +1,37 @@
 XFree86 3.9.18b (28 February 2000)
+3890. Fix some problems using the UTF-8 -locale:
+       - Add proper side (GL/GR) handling to the UTF-8 locale
+       - No more need to define ISO10646-1 in en_US.UTF-8. It is already
+         defined in lcCT.c
+       - The fontset loading routines would access invalid memory when
+         not all fonts for a fontset were found
+      (#3761, Bruno Haible).
+3889. Avoid spurious warnings from the XFree86-Bigfont extension (#3760,
+      Bruno Haible).
+3888. Fix an error in the XtAppMainLoop() man page related to its return
+      behaviour (#3759, Bruno Haible).
+3887. Make it possible for gcc to compile the Linux int10 module with -fPIC
+      (#3758, Bruno Haible).
+3886. Fix typos in fontcacheP.h and RELNOTES (#3757, Bruno Haible).
+3885. Disable stripping programs when they are installed to make it
+      easier to debug problems that may show up within libraries (#3756,
+      Bruno Haible).
+3884. Add support for reading power management events for NetBSD and
+      OpenBSD (#3755, Matthieu Herrb).
+3883. Update Xinstall.sh for NetBSD-current-ELF (#3754, Matthieu Herrb).
+3882. Update NetBSD and OpenBSD bindist files (#3753, Matthieu Herrb).
+3881. Apm driver update, including extending the Rush extension to allow
+      initialisation of the Rush chip in a legal way (#3751, Loic Grenie).
+3880. Xterm patch #129 (#3751, Thomas Dickey).
+3879. Add DDC support to the tdfx driver via the vbe interface (#3750,
+      Jarno Paananen).
+3878. Enable double scan and interlaced modes for the tdfx and nv drivers
+      (#3750, Jarno Paananen).
+3877. Fix 8bpp initialisation problem with the rendition driver (#3749,
+      Dejan Ilic).
+3876. Update the XThrStub library version with that in the 3.3.x branch,
+      and enable thread-safe libraries for OpenBSD 2.6 and later (#3748,
+      Matthieu Herrb).
 3875. Fix some REGION_BROKEN related stuff with the overlays (Mark Vojkovich).
 3874. Fix a bug with unaccelerated pixmap cache uploads when virtualX
       was larger than the displayWidth (Mark Vojkovich).
@@ -9859,4 +9892,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1039 2000/02/27 02:43:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1042 2000/02/29 00:19:35 mvojkovi Exp $

@@ -54,7 +54,7 @@ struct fc_cache_statistics {
 typedef struct fc_cache_settings FontCacheSettings, *FontCacheSettingsPtr;
 typedef struct fc_cache_statistics FontCacheStatistics, *FontCacheStatisticsPtr;
 
-int	FontCahceChangeSettings(FontCacheSettingsPtr /* cinfo */);
+int	FontCacheChangeSettings(FontCacheSettingsPtr /* cinfo */);
 void	FontCacheGetSettings(FontCacheSettingsPtr /* cinfo */);
 void	FontCacheGetStatistics(FontCacheStatisticsPtr /* cstats */);
 

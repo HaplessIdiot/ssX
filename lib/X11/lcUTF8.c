@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86:  $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.1 2000/02/12 02:54:15 dawes Exp $ */
 
 /*
  * This file contains:
@@ -124,7 +124,8 @@ typedef wchar_t original_wchar_t;
 #define conv_t XlcConv
 
 typedef struct _Utf8ConvRec {
-    char *name;
+    const char *name;
+    XrmQuark xrm_name;
 #if NeedFunctionPrototypes
     int (* cstowc) (XlcConv, wchar_t *, unsigned char const *, int);
 #else
@@ -205,98 +206,114 @@ typedef struct {
 #endif
 
 static Utf8ConvRec all_charsets[] = {
-    { "ISO8859-1",
+    { "ISO8859-1", NULLQUARK,
 	iso8859_1_mbtowc, iso8859_1_wctomb
     },
-    { "ISO8859-2",
+    { "ISO8859-2", NULLQUARK,
 	iso8859_2_mbtowc, iso8859_2_wctomb
     },
-    { "ISO8859-3",
+    { "ISO8859-3", NULLQUARK,
 	iso8859_3_mbtowc, iso8859_3_wctomb
     },
-    { "ISO8859-4",
+    { "ISO8859-4", NULLQUARK,
 	iso8859_4_mbtowc, iso8859_4_wctomb
     },
-    { "ISO8859-5",
+    { "ISO8859-5", NULLQUARK,
 	iso8859_5_mbtowc, iso8859_5_wctomb
     },
-    { "ISO8859-6",
+    { "ISO8859-6", NULLQUARK,
 	iso8859_6_mbtowc, iso8859_6_wctomb
     },
-    { "ISO8859-7",
+    { "ISO8859-7", NULLQUARK,
 	iso8859_7_mbtowc, iso8859_7_wctomb
     },
-    { "ISO8859-8",
+    { "ISO8859-8", NULLQUARK,
 	iso8859_8_mbtowc, iso8859_8_wctomb
     },
-    { "ISO8859-9",
+    { "ISO8859-9", NULLQUARK,
 	iso8859_9_mbtowc, iso8859_9_wctomb
     },
-    { "ISO8859-10",
+    { "ISO8859-10", NULLQUARK,
 	iso8859_10_mbtowc, iso8859_10_wctomb
     },
-    { "ISO8859-14",
+    { "ISO8859-14", NULLQUARK,
 	iso8859_14_mbtowc, iso8859_14_wctomb
     },
-    { "ISO8859-15",
+    { "ISO8859-15", NULLQUARK,
 	iso8859_15_mbtowc, iso8859_15_wctomb
     },
-    { "ISO8859-16",
+    { "ISO8859-16", NULLQUARK,
 	iso8859_16_mbtowc, iso8859_16_wctomb
     },
-    { "JISX0201.1976-0",
+    { "JISX0201.1976-0", NULLQUARK,
 	jisx0201_mbtowc, jisx0201_wctomb
     },
-    { "GB2312.1980-0",
+    { "GB2312.1980-0", NULLQUARK,
 	gb2312_mbtowc, gb2312_wctomb
     },
-    { "JISX0208.1983-0",
+    { "JISX0208.1983-0", NULLQUARK,
 	jisx0208_mbtowc, jisx0208_wctomb
     },
-    { "JISX0212.1990-0",
+    { "JISX0212.1990-0", NULLQUARK,
 	jisx0212_mbtowc, jisx0212_wctomb
     },
-    { "KSC5601.1987-0",
+    { "KSC5601.1987-0", NULLQUARK,
 	ksc5601_mbtowc, ksc5601_wctomb
     },
-    { "TIS620.2533-1",
+    { "TIS620.2533-1", NULLQUARK,
 	tis620_mbtowc, tis620_wctomb
     },
-    { "KOI8-R",
+    { "KOI8-R", NULLQUARK,
 	koi8_r_mbtowc, koi8_r_wctomb
     },
-    { "KOI8-U",
+    { "KOI8-U", NULLQUARK,
 	koi8_u_mbtowc, koi8_u_wctomb
     },
-    { "ARMSCII-8",
+    { "ARMSCII-8", NULLQUARK,
 	armscii_8_mbtowc, armscii_8_wctomb
     },
-    { "IBM-CP1133",
+    { "IBM-CP1133", NULLQUARK,
 	cp1133_mbtowc, cp1133_wctomb
     },
-    { "MULELAO-1",
+    { "MULELAO-1", NULLQUARK,
 	mulelao_mbtowc, mulelao_wctomb
     },
-    { "VISCII1.1-1",
+    { "VISCII1.1-1", NULLQUARK,
 	viscii_mbtowc, viscii_wctomb
     },
-    { "TCVN-5712",
+    { "TCVN-5712", NULLQUARK,
 	tcvn_mbtowc, tcvn_wctomb
     },
-    { "GEORGIAN-ACADEMY",
+    { "GEORGIAN-ACADEMY", NULLQUARK,
 	georgian_academy_mbtowc, georgian_academy_wctomb
     },
-    { "GEORGIAN-PS",
+    { "GEORGIAN-PS", NULLQUARK,
 	georgian_ps_mbtowc, georgian_ps_wctomb
     },
 #ifdef notdef
-    { "BIG-5",
+    { "BIG-5", NULLQUARK,
 	big5_mbtowc, big5_wctomb
     },
 #endif
 };
 
 #define all_charsets_count (sizeof(all_charsets)/sizeof(all_charsets[0]))
+
+static void
+init_all_charsets()
+{
+    Utf8Conv convptr;
+    int i;
+
+    for (convptr = all_charsets, i = all_charsets_count; i > 0; convptr++, i--)
+	convptr->xrm_name = XrmStringToQuark(convptr->name);
+}
+
+#define lazy_init_all_charsets()					\
+    do {								\
+	if (all_charsets[0].xrm_name == NULLQUARK)			\
+	    init_all_charsets();					\
+    } while (0)
 
 /*
  * UTF-8 itself
@@ -500,6 +517,7 @@ open_cstoutf8(from_lcd, from_type, to_lcd, to_type)
     XLCd to_lcd;
     char *to_type;
 {
+    lazy_init_all_charsets();
     return create_conv(from_lcd, &methods_cstoutf8);
 }
 
@@ -520,6 +538,8 @@ create_tocs_conv(lcd, methods)
     conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
     if (conv == (XlcConv) NULL)
 	return (XlcConv) NULL;
+
+    lazy_init_all_charsets();
 
     codeset_list = XLC_GENERIC(lcd, codeset_list);
     codeset_num = XLC_GENERIC(lcd, codeset_num);
@@ -575,12 +595,14 @@ close_tocs_converter(conv)
 /*
  * Converts a Unicode character to an appropriate character set. The NULL
  * terminated array of preferred character sets is passed as first argument.
- * If successful, *charsetp is set to the character set that was used.
+ * If successful, *charsetp is set to the character set that was used, and
+ * *sidep is set to the character set side (XlcGL or XlcGR).
  */
 static int
-charset_wctocs(preferred, charsetp, conv, r, wc, n)
+charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
     Utf8Conv *preferred;
     Utf8Conv *charsetp;
+    XlcSide *sidep;
     XlcConv conv;
     unsigned char *r;
     wchar_t wc;
@@ -597,6 +619,7 @@ charset_wctocs(preferred, charsetp, conv, r, wc, n)
 	    return 0;
 	if (count > 0) {
 	    *charsetp = convptr;
+	    *sidep = (*r < 0x80 ? XlcGL : XlcGR);
 	    return count;
 	}
     }
@@ -606,6 +629,7 @@ charset_wctocs(preferred, charsetp, conv, r, wc, n)
 	    return 0;
 	if (count > 0) {
 	    *charsetp = convptr;
+	    *sidep = (*r < 0x80 ? XlcGL : XlcGR);
 	    return count;
 	}
     }
@@ -623,7 +647,7 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
     int num_args;
 {
     Utf8Conv *preferred_charsets;
-    Utf8Conv last_charset = NULL;
+    XlcCharSet last_charset = NULL;
     unsigned char const *src;
     unsigned char const *srcend;
     unsigned char *dst;
@@ -641,7 +665,8 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	Utf8Conv chosen_charset = NULL; /* FIXME: side */
+	Utf8Conv chosen_charset = NULL;
+	XlcSide chosen_side = XlcNONE;
 	wchar_t wc;
 	int consumed;
 	int count;
@@ -655,7 +680,7 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	count = charset_wctocs(preferred_charsets, &chosen_charset, conv, dst, wc, dstend-dst);
+	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
 	if (count == 0)
 	    break;
 	if (count < 0) {
@@ -664,11 +689,22 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	if (last_charset != NULL && chosen_charset != last_charset)
-	    break;
+	if (last_charset == NULL) {
+	    last_charset =
+	        _XlcGetCharSetWithSide(chosen_charset->name, chosen_side);
+	    if (last_charset == NULL) {
+		src += consumed;
+		unconv_num++;
+		continue;
+	    }
+	} else {
+	    if (!(last_charset->xrm_encoding_name == chosen_charset->xrm_name
+	          && (last_charset->side == XlcGLGR
+	              || last_charset->side == chosen_side)))
+		break;
+	}
 	src += consumed;
 	dst += count;
-	last_charset = chosen_charset;
     }
 
     if (last_charset == NULL)
@@ -680,7 +716,7 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
     *to_left = dstend - dst;
 
     if (num_args >= 1)
-	*((XlcCharSet *)args[0]) = _XlcGetCharSet(last_charset->name);
+	*((XlcCharSet *)args[0]) = last_charset;
 
     return unconv_num;
 }
@@ -714,7 +750,7 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
     int num_args;
 {
     Utf8Conv *preferred_charsets;
-    Utf8Conv last_charset = NULL;
+    XlcCharSet last_charset = NULL;
     unsigned char const *src;
     unsigned char const *srcend;
     unsigned char *dst;
@@ -732,7 +768,8 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	Utf8Conv chosen_charset = NULL; /* FIXME: side */
+	Utf8Conv chosen_charset = NULL;
+	XlcSide chosen_side = XlcNONE;
 	wchar_t wc;
 	int consumed;
 	int count;
@@ -746,7 +783,7 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	count = charset_wctocs(preferred_charsets, &chosen_charset, conv, dst, wc, dstend-dst);
+	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
 	if (count == 0)
 	    break;
 	if (count < 0) {
@@ -755,11 +792,22 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	if (last_charset != NULL && chosen_charset != last_charset)
-	    break;
+	if (last_charset == NULL) {
+	    last_charset =
+	        _XlcGetCharSetWithSide(chosen_charset->name, chosen_side);
+	    if (last_charset == NULL) {
+		src += consumed;
+		unconv_num++;
+		continue;
+	    }
+	} else {
+	    if (!(last_charset->xrm_encoding_name == chosen_charset->xrm_name
+	          && (last_charset->side == XlcGLGR
+	              || last_charset->side == chosen_side)))
+		break;
+	}
 	src += consumed;
 	dst += count;
-	last_charset = chosen_charset;
 	break;
     }
 
@@ -772,7 +820,7 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
     *to_left = dstend - dst;
 
     if (num_args >= 1)
-	*((XlcCharSet *)args[0]) = _XlcGetCharSet(last_charset->name);
+	*((XlcCharSet *)args[0]) = last_charset;
 
     return unconv_num;
 }
@@ -1267,6 +1315,7 @@ open_cstowcs(from_lcd, from_type, to_lcd, to_type)
     XLCd to_lcd;
     char *to_type;
 {
+    lazy_init_all_charsets();
     return create_conv(from_lcd, &methods_cstowcs);
 }
 
@@ -1283,7 +1332,7 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
     int num_args;
 {
     Utf8Conv *preferred_charsets;
-    Utf8Conv last_charset = NULL;
+    XlcCharSet last_charset = NULL;
     wchar_t const *src;
     wchar_t const *srcend;
     unsigned char *dst;
@@ -1301,11 +1350,12 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	Utf8Conv chosen_charset = NULL; /* FIXME: side */
+	Utf8Conv chosen_charset = NULL;
+	XlcSide chosen_side = XlcNONE;
 	wchar_t wc = *src;
 	int count;
 
-	count = charset_wctocs(preferred_charsets, &chosen_charset, conv, dst, wc, dstend-dst);
+	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
 	if (count == 0)
 	    break;
 	if (count < 0) {
@@ -1314,11 +1364,22 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	if (last_charset != NULL && chosen_charset != last_charset)
-	    break;
+	if (last_charset == NULL) {
+	    last_charset =
+	        _XlcGetCharSetWithSide(chosen_charset->name, chosen_side);
+	    if (last_charset == NULL) {
+		src++;
+		unconv_num++;
+		continue;
+	    }
+	} else {
+	    if (!(last_charset->xrm_encoding_name == chosen_charset->xrm_name
+	          && (last_charset->side == XlcGLGR
+	              || last_charset->side == chosen_side)))
+		break;
+	}
 	src++;
 	dst += count;
-	last_charset = chosen_charset;
     }
 
     if (last_charset == NULL)
@@ -1330,7 +1391,7 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
     *to_left = dstend - dst;
 
     if (num_args >= 1)
-	*((XlcCharSet *)args[0]) = _XlcGetCharSet(last_charset->name);
+	*((XlcCharSet *)args[0]) = last_charset;
 
     return unconv_num;
 }
@@ -1364,7 +1425,7 @@ wcstocs1(conv, from, from_left, to, to_left, args, num_args)
     int num_args;
 {
     Utf8Conv *preferred_charsets;
-    Utf8Conv last_charset = NULL;
+    XlcCharSet last_charset = NULL;
     wchar_t const *src;
     wchar_t const *srcend;
     unsigned char *dst;
@@ -1382,11 +1443,12 @@ wcstocs1(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	Utf8Conv chosen_charset = NULL; /* FIXME: side */
+	Utf8Conv chosen_charset = NULL;
+	XlcSide chosen_side = XlcNONE;
 	wchar_t wc = *src;
 	int count;
 
-	count = charset_wctocs(preferred_charsets, &chosen_charset, conv, dst, wc, dstend-dst);
+	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
 	if (count == 0)
 	    break;
 	if (count < 0) {
@@ -1395,11 +1457,22 @@ wcstocs1(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 
-	if (last_charset != NULL && chosen_charset != last_charset)
-	    break;
+	if (last_charset == NULL) {
+	    last_charset =
+	        _XlcGetCharSetWithSide(chosen_charset->name, chosen_side);
+	    if (last_charset == NULL) {
+		src++;
+		unconv_num++;
+		continue;
+	    }
+	} else {
+	    if (!(last_charset->xrm_encoding_name == chosen_charset->xrm_name
+	          && (last_charset->side == XlcGLGR
+	              || last_charset->side == chosen_side)))
+		break;
+	}
 	src++;
 	dst += count;
-	last_charset = chosen_charset;
 	break;
     }
 
@@ -1412,7 +1485,7 @@ wcstocs1(conv, from, from_left, to, to_left, args, num_args)
     *to_left = dstend - dst;
 
     if (num_args >= 1)
-	*((XlcCharSet *)args[0]) = _XlcGetCharSet(last_charset->name);
+	*((XlcCharSet *)args[0]) = last_charset;
 
     return unconv_num;
 }

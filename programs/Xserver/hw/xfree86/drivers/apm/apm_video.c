@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.3 2000/02/13 03:06:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.5 2000/02/22 02:00:49 mvojkovi Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -121,6 +121,7 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
 };
 
 #define NUM_IMAGES 8
+typedef char c8;
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
@@ -197,7 +198,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
         XvYUV,
 	LSBFirst,
 	{'Y','V','1','2',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	  0x00,0x00,0x00,0x10,(c8)0x80,0x00,0x00,(c8)0xAA,0x00,0x38,(c8)0x9B,0x71},
 	12,
 	XvPlanar,
 	3,
@@ -214,7 +215,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
         XvYUV,
 	LSBFirst,
 	{'U','Y','V','Y',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	  0x00,0x00,0x00,0x10,(c8)0x80,0x00,0x00,(c8)0xAA,0x00,0x38,(c8)0x9B,0x71},
 	16,
 	XvPlanar,
 	1,
@@ -231,7 +232,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
         XvYUV,
 	LSBFirst,
 	{'Y','V','Y','U',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	  0x00,0x00,0x00,0x10,(c8)0x80,0x00,0x00,(c8)0xAA,0x00,0x38,(c8)0x9B,0x71},
 	16,
 	XvPlanar,
 	1,
@@ -248,7 +249,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
         XvYUV,
 	LSBFirst,
 	{'V','Y','U','Y',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
+	  0x00,0x00,0x00,0x10,(c8)0x80,0x00,0x00,(c8)0xAA,0x00,0x38,(c8)0x9B,0x71},
 	16,
 	XvPlanar,
 	1,
@@ -857,32 +858,35 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
 	break;
     }
     pPriv->Bps = pPriv->Bpp * pPriv->xden;
-    offset = (area->box.y1 * pitch) + (top * dstPitch);
-    dst_start = ((unsigned char *)pApm->FbBase) + (pPriv->data = offset + left);
-    switch(id) {
-    case 0x32315659:
-	top &= ~1;
-	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
-	offset2 += tmp;
-	offset3 += tmp;
-	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	ApmCopyMungedData(buf + (top * srcPitch) + (left >> 1),
-			  buf + offset2, buf + offset3, dst_start,
-			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
-	break;
-    default:
-	if (id == 0x32335652)
-	    npixels <<= 1;
-	else if (id == 0x59595959)
-	    npixels >>= 1;
-	buf += (top * srcPitch) + left;
-	nlines = ((y2 + 0xffff) >> 16) - top;
-	if (offscreen)
-	    ApmCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
-	else
-	    pPriv->data = buf - (unsigned char *)pApm->FbBase;
-        break;
+    if (offscreen) {
+	offset = (area->box.y1 * pitch) + (top * dstPitch);
+	dst_start = ((unsigned char *)pApm->FbBase) +
+						(pPriv->data = offset + left);
+	switch(id) {
+	case 0x32315659:
+	    top &= ~1;
+	    tmp = ((top >> 1) * srcPitch2) + (left >> 2);
+	    offset2 += tmp;
+	    offset3 += tmp;
+	    nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
+	    ApmCopyMungedData(buf + (top * srcPitch) + (left >> 1),
+			      buf + offset2, buf + offset3, dst_start,
+			      srcPitch, srcPitch2, dstPitch, nlines, npixels);
+	    break;
+	default:
+	    if (id == 0x32335652)
+		npixels <<= 1;
+	    else if (id == 0x59595959)
+		npixels >>= 1;
+	    buf += (top * srcPitch) + left;
+	    nlines = ((y2 + 0xffff) >> 16) - top;
+	    if (offscreen)
+		ApmCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+	    break;
+	}
     }
+    else
+	pPriv->data = buf - (unsigned char *)pApm->FbBase;
     pPriv->on = 1;
     A(WaitForFifo)(pApm, 3);
     WRXW(pPriv->reg + 0x02, dstPitch >> 2);

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.22 2000/02/22 02:00:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.24 2000/02/27 02:45:31 alanh Exp $ */
 
 /*
  * Authors:
@@ -49,7 +49,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
 #include "xf86RAC.h"
-#include "xf86int10.h"
+#include "vbe.h"
 #include "xf86cmap.h"
 
 /* If the driver uses port I/O directly, it needs: */
@@ -245,6 +245,12 @@ static const char *ramdacSymbols[] = {
     "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
     NULL
 };
 
@@ -517,6 +523,19 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   return memSize*1024;
 }
 
+extern xf86MonPtr ConfiguredMonitor;
+
+void
+TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL,index);
+        ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
+
 /*
  * TDFXPreInit --
  *
@@ -588,6 +607,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   else
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
+  if (flags & PROBE_DETECT) {
+    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
+    return FALSE;
+  }
+  
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
 
@@ -776,7 +800,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   clockRanges->maxClock=pTDFX->MaxClock;
   clockRanges->clockIndex = -1;
   clockRanges->interlaceAllowed = TRUE;
-  clockRanges->doubleScanAllowed = FALSE;
+  clockRanges->doubleScanAllowed = TRUE;
 
   i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			pScrn->display->modes, clockRanges,
@@ -845,6 +869,22 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
     xf86LoaderReqSymLists(ramdacSymbols, NULL);
   }
 
+  /* Load DDC if needed */
+  /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+  if (!xf86LoadSubModule(pScrn, "ddc")) {
+    TDFXFreeRec(pScrn);
+    return FALSE;
+  }
+  xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+  /* Initialize DDC1 if possible */
+  if (xf86LoadSubModule(pScrn, "vbe")) {
+      xf86MonPtr pMon;
+      pMon = vbeDoEDID(VBEInit(NULL,pTDFX->pEnt->index));
+      xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
+  }
+
+  
   /*  We wont be using the VGA access after the probe */
   if (!xf86ReturnOptValBool(TDFXOptions, OPTION_USE_PIO, FALSE)) {
     resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},

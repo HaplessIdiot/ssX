@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.2 1999/09/27 06:29:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.3 2000/02/11 22:35:45 dawes Exp $ */
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -216,6 +216,74 @@ int XF86RushOverlayPixmap (Display *dpy, XvPortID port, Drawable d,
   req->drw_y = dest_y;
   req->drw_w = dest_w;
   req->drw_h = dest_h;
+
+  UnlockDisplay(dpy);
+  SyncHandle();
+  return Success;
+}
+
+int XF86RushStatusRegOffset (Display *dpy, int screen)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushStatusRegOffsetReq *req;
+  xXF86RushStatusRegOffsetReply rep;
+
+  XF86RushCheckExtension (dpy, info, False);
+
+  LockDisplay(dpy);
+  GetReq(XF86RushStatusRegOffset, req);
+
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushStatusRegOffset;
+  req->screen = screen;
+
+  if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return False;
+  }
+
+  UnlockDisplay(dpy);
+  SyncHandle();
+  return rep.offset;
+}
+
+Bool XF86RushAT3DEnableRegs (Display *dpy, int screen)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushAT3DEnableRegsReq *req;
+
+  XF86RushCheckExtension (dpy, info, False);
+
+  LockDisplay(dpy);
+  GetReq(XF86RushAT3DEnableRegs, req);
+
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushAT3DEnableRegs;
+  req->screen = screen;
+
+  UnlockDisplay(dpy);
+  SyncHandle();
+  /*
+   * The request has to be processed to stay in sync...
+   */
+  XSync(dpy, False);
+  return Success;
+}
+
+Bool XF86RushAT3DDisableRegs (Display *dpy, int screen)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushAT3DDisableRegsReq *req;
+
+  XF86RushCheckExtension (dpy, info, False);
+
+  LockDisplay(dpy);
+  GetReq(XF86RushAT3DDisableRegs, req);
+
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushAT3DDisableRegs;
+  req->screen = screen;
 
   UnlockDisplay(dpy);
   SyncHandle();

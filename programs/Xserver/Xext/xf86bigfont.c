@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.3 2000/02/10 22:33:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.4 2000/02/11 18:06:40 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -40,7 +40,10 @@
 #ifdef CSRG_BASED
 #include <sys/param.h>
 #endif
-#ifdef linux
+#if defined(linux) && !defined(__GNU_LIBRARY__)
+/* Linux libc4 and libc5 only (because glibc doesn't include kernel headers):
+   Linux 2.0.x and 2.2.x define SHMLBA as PAGE_SIZE, but forget to define
+   PAGE_SIZE. It is defined in <asm/page.h>. */
 #include <asm/page.h>
 #endif
 #ifdef SVR4
@@ -53,6 +56,8 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <time.h>
 #include <errno.h>
 #endif
 
@@ -84,6 +89,11 @@ static DISPATCH_PROC(SProcXF86BigfontQueryFont);
 static unsigned char XF86BigfontReqCode;
 
 #ifdef HAS_SHM
+
+/* A random signature, transmitted to the clients so they can verify that the
+   shared memory segment they are attaching to was really established by the
+   X server they are talking to. */
+static CARD32 signature;
 
 /* Index for additional information stored in a FontRec's devPrivates array. */
 static int FontShmdescIndex;
@@ -147,7 +157,14 @@ XFree86BigfontExtensionInit()
 	    return;
 	}
 #endif
+
+	srand((unsigned int) time(NULL));
+	signature = ((unsigned int) (65536.0/(RAND_MAX+1.0) * rand()) << 16)
+	           + (unsigned int) (65536.0/(RAND_MAX+1.0) * rand());
+	/* fprintf(stderr, "signature = 0x%08X\n", signature); */
+
 	FontShmdescIndex = AllocateFontPrivateIndex();
+
 	pagesize = SHMLBA;
 #endif
     }
@@ -301,7 +318,14 @@ ProcXF86BigfontQueryVersion(
     reply.minorVersion = XF86BIGFONT_MINOR_VERSION;
     reply.uid = geteuid();
     reply.gid = getegid();
-    reply.capabilities = 0; /* may add some bits here in future versions */
+    reply.signature = signature;
+    reply.capabilities =
+#ifdef HAS_SHM
+	(LocalClient(client) && !client->swapped ? XF86Bigfont_CAP_LocalShm : 0)
+#else
+	0
+#endif
+	; /* may add more bits here in future versions */
     if (client->swapped) {
 	char tmp;
 	swaps(&reply.sequenceNumber, tmp);
@@ -310,6 +334,7 @@ ProcXF86BigfontQueryVersion(
 	swaps(&reply.minorVersion, tmp);
 	swapl(&reply.uid, tmp);
 	swapl(&reply.gid, tmp);
+	swapl(&reply.signature, tmp);
     }
     WriteToClient(client,
 		  sizeof(xXF86BigfontQueryVersionReply), (char *)&reply);
@@ -343,6 +368,7 @@ ProcXF86BigfontQueryFont(
 {
     FontPtr pFont;
     REQUEST(xXF86BigfontQueryFontReq);
+    CARD32 stuff_flags;
     xCharInfo* pmax;
     xCharInfo* pmin;
     int nCharInfos;
@@ -357,7 +383,20 @@ ProcXF86BigfontQueryFont(
     CARD16* pUniqIndex2Index;
     CARD32 nUniqCharInfos;
 
+#if 0
     REQUEST_SIZE_MATCH(xXF86BigfontQueryFontReq);
+#else
+    switch (client->req_len) {
+	case 2: /* client with version 1.0 libX11 */
+	    stuff_flags = (LocalClient(client) && !client->swapped ? XF86Bigfont_FLAGS_Shm : 0);
+	    break;
+	case 3: /* client with version 1.1 libX11 */
+	    stuff_flags = stuff->flags;
+	    break;
+	default:
+	    return BadLength;
+    }
+#endif
     client->errorValue = stuff->id;		/* EITHER font or gc */
     pFont = (FontPtr)SecurityLookupIDByType(client, stuff->id, RT_FONT,
 					    SecurityReadAccess);
@@ -392,11 +431,12 @@ ProcXF86BigfontQueryFont(
 	pDesc = (ShmDescPtr) FontGetPrivate(pFont, FontShmdescIndex);
 	if (pDesc) {
 	    pCI = (xCharInfo *) pDesc->attach_addr;
-	    if (LocalClient(client) && !client->swapped)
+	    if (stuff_flags & XF86Bigfont_FLAGS_Shm)
 		shmid = pDesc->shmid;
 	} else {
-	    if (LocalClient(client) && !client->swapped)
-		pDesc = shmalloc(nCharInfos * sizeof(xCharInfo));
+	    if (stuff_flags & XF86Bigfont_FLAGS_Shm)
+		pDesc = shmalloc(nCharInfos * sizeof(xCharInfo)
+				 + sizeof(CARD32));
 	    if (pDesc) {
 		pCI = (xCharInfo *) pDesc->attach_addr;
 		shmid = pDesc->shmid;
@@ -440,6 +480,7 @@ ProcXF86BigfontQueryFont(
 	    }
 #ifdef HAS_SHM
 	    if (pDesc) {
+		*(CARD32 *)(pCI + nCharInfos) = signature;
 		if (!FontSetPrivate(pFont, FontShmdescIndex, pDesc)) {
 		    shmdealloc(pDesc);
 		    return BadAlloc;

@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.12 1999/05/09 10:50:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.13 2000/02/12 02:54:16 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -466,6 +466,7 @@ init_core_part(oc)
 	    continue;
 
 	length += strlen(font_set->font_name) + 1;
+
 	count++;
     }
     if (count == 0)
@@ -490,7 +491,7 @@ init_core_part(oc)
     font_set = gen->font_set;
     font_set_num = gen->font_set_num;
 
-    for (count = 0; font_set_num-- > 0; font_set++, count++) {
+    for (count = 0; font_set_num-- > 0; font_set++) {
 	if (font_set->font_name == NULL)
 	    continue;
 
@@ -503,6 +504,8 @@ init_core_part(oc)
 	Xfree(font_set->font_name);
 	*font_name_list++ = font_set->font_name = font_name_buf;
 	font_name_buf += strlen(font_name_buf) + 1;
+
+	count++;
     }
 
     set_fontset_extents(oc);

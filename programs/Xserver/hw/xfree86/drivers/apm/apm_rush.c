@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.5 2000/02/11 22:35:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.6 2000/02/14 19:20:47 dawes Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -43,7 +43,7 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
     FBAreaPtr area = pXAAPriv->offscreenArea;
     int	p2, width = (pScrn->displayWidth * pScrn->bitsPerPixel) / 8;
 
-    if (strcmp(pScrn->chipset, "AT3D"))
+    if (pScrn->drv != &APM || pApm->Chipset != AT3D)
 	return 0;
     pApm->apmLock = TRUE;
     pApmPriv->num = 0;
@@ -235,7 +235,8 @@ __xf86UnlockPixmap(ApmPtr pApm, PixmapLinkPtr pLink)
 	area->RemoveAreaCallback	= pApmPriv->RemoveAreaCallback;
 	area->devPrivate.ptr		= pApmPriv->devPriv;
     }
-    if (i = pApmPriv->num) {
+    i = pApmPriv->num;
+    if (i) {
 	pApm->RushY[i - 1] = 0;
 	pix->drawable.y %= pApm->CurrentLayout.Scanlines;
     }
@@ -247,7 +248,7 @@ xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
     APMDECL(xf86Screens[scrnIndex]);
     PixmapLinkPtr pLink = GET_XAAINFORECPTR_FROM_SCREEN(xf86Screens[scrnIndex]->pScreen)->OffscreenPixmaps;
 
-    if (pApm->Chipset != AT3D)
+    if (xf86Screens[scrnIndex]->drv != &APM || pApm->Chipset != AT3D)
 	return;
     if (pApm->apmLock) {
 	/*
@@ -255,12 +256,18 @@ xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
 	 * registers.
 	 */
 	if (!pApm->noLinear) {
-	    WRXB(0xDB, (RDXB(0xDB) & 0xF4) |  0x0A);
+	    CARD8	db;
+
+	    db = RDXB(0xDB);
+	    WRXB(0xDB, (db & 0xF4) |  0x0A);
 	    ApmWriteSeq(0x1B, 0x20);
 	    ApmWriteSeq(0x1C, 0x2F);
 	}
 	else {
-	    WRXB_IOP(0xDB, (RDXB_IOP(0xDB) & 0xF4) |  0x0A);
+	    CARD8	db;
+
+	    db = RDXB_IOP(0xDB);
+	    WRXB_IOP(0xDB, (db & 0xF4) |  0x0A);
 	    wrinx(0x3C4, 0x1B, 0x20);
 	    wrinx(0x3C4, 0x1C, 0x2F);
 	}
@@ -278,12 +285,14 @@ xf86RushUnlockAllPixmaps()
     int		scrnIndex;
 
     for (scrnIndex = 0; scrnIndex < screenInfo.numScreens; scrnIndex++) {
-	PixmapLinkPtr pLink = GET_XAAINFORECPTR_FROM_SCREEN(xf86Screens[scrnIndex]->pScreen)->OffscreenPixmaps;
+	ScrnInfoPtr	pScrn = xf86Screens[scrnIndex];
+	APMDECL(pScrn);
+	PixmapLinkPtr pLink = GET_XAAINFORECPTR_FROM_SCREEN(pScrn->pScreen)->OffscreenPixmaps;
 
-	if (APMPTR(xf86Screens[scrnIndex])->Chipset != AT3D)
+	if (pScrn->drv != &APM || pApm->Chipset != AT3D)
 	    continue;
 	while(pLink) {
-	    __xf86UnlockPixmap(APMPTR(xf86Screens[scrnIndex]), pLink);	
+	    __xf86UnlockPixmap(pApm, pLink);	
 	    pLink = pLink->next;
 	}    
     }
@@ -317,6 +326,9 @@ static DISPATCH_PROC(ProcXF86RushUnlockAllPixmaps);
 static DISPATCH_PROC(ProcXF86RushSetCopyMode);
 static DISPATCH_PROC(ProcXF86RushSetPixelStride);
 static DISPATCH_PROC(ProcXF86RushOverlayPixmap);
+static DISPATCH_PROC(ProcXF86RushStatusRegOffset);
+static DISPATCH_PROC(ProcXF86RushAT3DEnableRegs);
+static DISPATCH_PROC(ProcXF86RushAT3DDisableRegs);
 
 static int rush_ext_generation = -1;
 
@@ -334,7 +346,8 @@ XFree86RushExtensionInit(ScreenPtr pScreen)
 	return;
 #endif
     if (rush_ext_generation == serverGeneration) {
-	if (APMPTR(xf86Screens[pScreen->myNum])-> Chipset == AT3D) {
+	if (xf86Screens[pScreen->myNum]->drv == &APM &&
+		APMPTR(xf86Screens[pScreen->myNum])->Chipset == AT3D) {
 	    pScreen->CreatePixmap	= RushCreatePixmap;
 	    pScreen->DestroyPixmap	= RushDestroyPixmap;
 	}
@@ -350,7 +363,8 @@ XFree86RushExtensionInit(ScreenPtr pScreen)
 				StandardMinorOpcode))) {
 	RushReqCode = (unsigned char)extEntry->base;
 	RushErrorBase = extEntry->errorBase;
-	if (APMPTR(xf86Screens[pScreen->myNum])-> Chipset == AT3D) {
+	if (xf86Screens[pScreen->myNum]->drv == &APM &&
+		APMPTR(xf86Screens[pScreen->myNum])->Chipset == AT3D) {
 	    pScreen->CreatePixmap	= RushCreatePixmap;
 	    pScreen->DestroyPixmap	= RushDestroyPixmap;
 	}
@@ -383,7 +397,7 @@ ProcXF86RushQueryVersion(register ClientPtr client)
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
     }
-    WriteToClient(client, sizeof(xXF86RushQueryVersionReply), (char *)&rep);
+    WriteToClient(client, sz_xXF86RushQueryVersionReply, (char *)&rep);
     return (client->noClientException);
 }
 
@@ -480,6 +494,12 @@ ProcXF86RushDispatch (register ClientPtr client)
         return ProcXF86RushSetPixelStride(client);
     case X_XF86RushOverlayPixmap:
 	return ProcXF86RushOverlayPixmap(client);
+    case X_XF86RushStatusRegOffset:
+	return ProcXF86RushStatusRegOffset(client);
+    case X_XF86RushAT3DEnableRegs:
+	return ProcXF86RushAT3DEnableRegs(client);
+    case X_XF86RushAT3DDisableRegs:
+	return ProcXF86RushAT3DDisableRegs(client);
     default:
 	return BadRequest;
     }
@@ -516,7 +536,8 @@ ProcXF86RushOverlayPixmap(ClientPtr client)
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
 
     pScrn = xf86Screens[pDraw->pScreen->myNum];
-    if (strcmp(pScrn->chipset, "AT3D"))
+    pApm = APMPTR(pScrn);
+    if (pScrn->drv != &APM || pApm->Chipset != AT3D)
 	return (_XvBadPort);
 
     if(!(pPort = LOOKUP_PORT(stuff->port, client) )) {
@@ -583,4 +604,119 @@ ProcXF86RushOverlayPixmap(ClientPtr client)
     pApm->PutImageStride = 0;
 
     return status;
+}
+
+static int
+ProcXF86RushStatusRegOffset(ClientPtr client)
+{
+    int		scrnIndex;
+    ScrnInfoPtr	pScrn;
+    ApmPtr	pApm;
+    REQUEST(xXF86RushStatusRegOffsetReq);
+    xXF86RushStatusRegOffsetReply rep;
+    register int n;
+
+    REQUEST_SIZE_MATCH(xXF86RushStatusRegOffsetReq);
+    scrnIndex = stuff->screen;
+    if (scrnIndex < 0 || scrnIndex > screenInfo.numScreens)
+	return BadValue;
+    pScrn = xf86Screens[scrnIndex];
+    pApm = APMPTR(pScrn);
+    if (pScrn->drv != &APM || pApm->Chipset != AT3D)
+	return BadMatch;
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.offset = 0xFFEDF4;
+    if (client->swapped) {
+    	swapl(&rep.offset, n);
+    }
+    WriteToClient(client, sz_xXF86RushStatusRegOffsetReply, (char *)&rep);
+
+    return client->noClientException;
+}
+
+static int
+ProcXF86RushAT3DEnableRegs(ClientPtr client)
+{
+    u32		db, tmp;
+    int		scrnIndex;
+    ScrnInfoPtr	pScrn;
+    ApmPtr	pApm;
+    REQUEST(xXF86RushAT3DEnableRegsReq);
+
+    REQUEST_SIZE_MATCH(xXF86RushAT3DEnableRegsReq);
+    scrnIndex = stuff->screen;
+    if (scrnIndex < 0 || scrnIndex > screenInfo.numScreens)
+	return BadValue;
+    pScrn = xf86Screens[scrnIndex];
+    pApm = APMPTR(pScrn);
+    if (pScrn->drv != &APM || pApm->Chipset != AT3D)
+	return BadMatch;
+    pApm->Rush = 0x04;
+    if (!pApm->noLinear) {
+	db = RDXL(0xDB);
+	WRXL(0xDB, db | 0x04);
+	WRXB(0x110, 0x03);
+	tmp = RDXB(0x1F0);
+	WRXB(0x1F0, tmp | 0xD0);
+	tmp = RDXB(0x1F1);
+	WRXB(0x1F1, (tmp & ~0xC0) | 0x10);
+	tmp = RDXB(0x1F2);
+	WRXB(0x1F2, tmp | 0x10);
+    }
+    else {
+	db = RDXL(0xDB);
+	WRXL_IOP(0xDB, db | 0x04);
+	WRXB_IOP(0x110, 0x03);
+	tmp = RDXB_IOP(0x1F0);
+	WRXB_IOP(0x1F0, tmp | 0xD0);
+	tmp = RDXB_IOP(0x1F1);
+	WRXB_IOP(0x1F1, (tmp & ~0xC0) | 0x10);
+	tmp = RDXB_IOP(0x1F2);
+	WRXB_IOP(0x1F2, tmp | 0x10);
+    }
+
+    return client->noClientException;
+}
+
+static int
+ProcXF86RushAT3DDisableRegs(ClientPtr client)
+{
+    u32		db, tmp;
+    int		scrnIndex;
+    ScrnInfoPtr	pScrn;
+    ApmPtr	pApm;
+    REQUEST(xXF86RushAT3DDisableRegsReq);
+
+    REQUEST_SIZE_MATCH(xXF86RushAT3DDisableRegsReq);
+    scrnIndex = stuff->screen;
+    if (scrnIndex < 0 || scrnIndex > screenInfo.numScreens)
+	return BadValue;
+    pScrn = xf86Screens[scrnIndex];
+    pApm = APMPTR(pScrn);
+    if (pScrn->drv != &APM || pApm->Chipset != AT3D)
+	return BadMatch;
+    if (!pApm->noLinear) {
+	tmp = RDXB(0x1F2);
+	WRXB(0x1F2, tmp & ~0x10);
+	tmp = RDXB(0x1F0);
+	WRXB(0x1F0, tmp & ~0xD0);
+	WRXB(0x110, 0);
+	pApm->Rush = 0x00;
+	db = RDXL(0xDB);
+	WRXL(0xDB, db & ~0x04);
+    }
+    else {
+	tmp = RDXB_IOP(0x1F2);
+	WRXB_IOP(0x1F2, tmp & ~0x10);
+	tmp = RDXB_IOP(0x1F0);
+	WRXB_IOP(0x1F0, tmp & ~0xD0);
+	WRXB_IOP(0x110, 0);
+	pApm->Rush = 0x00;
+	db = RDXL_IOP(0xDB);
+	WRXL_IOP(0xDB, db & ~0x04);
+    }
+
+    return client->noClientException;
 }

@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.3 2000/02/12 02:54:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.4 2000/02/25 18:27:54 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -187,6 +187,13 @@ extern char *_XGetLCValues(
 extern XlcCharSet _XlcGetCharSet(
 #if NeedFunctionPrototypes
     _Xconst char*	/* name */
+#endif
+);
+
+extern XlcCharSet _XlcGetCharSetWithSide(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* encoding_name */,
+    XlcSide		/* side */
 #endif
 );
 

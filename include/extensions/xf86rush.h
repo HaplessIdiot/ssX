@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86rush.h,v 1.2 1999/09/27 06:29:07 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86rush.h,v 1.3 2000/02/11 22:35:44 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -20,6 +20,9 @@ Copyright (c) 1998  Daryll Strauss
 #define X_XF86RushGetPixelStride	6
 #define X_XF86RushSetPixelStride	7
 #define X_XF86RushOverlayPixmap		8
+#define X_XF86RushStatusRegOffset	9
+#define X_XF86RushAT3DEnableRegs	10
+#define X_XF86RushAT3DDisableRegs	11
 
 #define XF86RushNumberEvents		0
 
@@ -101,6 +104,27 @@ Bool XF86RushOverlayPixmap(
     unsigned int	/* dest_w */,
     unsigned int	/* dest_h */,
     unsigned int	/* id */
+#endif			    
+);
+
+int XF86RushStatusRegOffset(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */
+#endif			    
+);
+
+Bool XF86RushAT3DEnableRegs(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */
+#endif			    
+);
+
+Bool XF86RushAT3DDisableRegs(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */
 #endif			    
 );
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.271 2000/02/23 20:33:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.272 2000/02/25 21:25:21 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -853,8 +853,9 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 # define GzipFontCompression	YES
 #endif
 
+/* Disable stripping installed programs for this release. */
 #ifndef StripInstalledPrograms
-# define StripInstalledPrograms	YES
+# define StripInstalledPrograms	NO
 #endif
 
 #ifndef InstallJapaneseDocs

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.3 2000/02/08 17:18:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.4 2000/02/12 02:54:09 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -91,6 +91,25 @@ _XlcGetCharSet(name)
 
     for (list = charset_list; list; list = list->next) {
 	if (xrm_name == list->charset->xrm_name)
+	    return (XlcCharSet) list->charset;
+    }
+
+    return (XlcCharSet) NULL;
+}
+
+XlcCharSet
+_XlcGetCharSetWithSide(encoding_name, side)
+    _Xconst char *encoding_name;
+    XlcSide side;
+{
+    XlcCharSetList list;
+    XrmQuark xrm_encoding_name;
+    
+    xrm_encoding_name = XrmStringToQuark(encoding_name);
+
+    for (list = charset_list; list; list = list->next) {
+	if (list->charset->xrm_encoding_name == xrm_encoding_name
+	    && (list->charset->side == XlcGLGR || list->charset->side == side))
 	    return (XlcCharSet) list->charset;
     }
 

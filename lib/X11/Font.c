@@ -28,7 +28,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.4 1999/10/13 04:44:31 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.5 2000/02/08 17:18:42 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -58,7 +58,17 @@ static XFontStruct *_XQueryFont(
 
 #ifdef USE_XF86BIGFONT
 
-static XExtCodes *_XF86BigfontCodes(
+/* Private data for this extension. */
+typedef struct {
+    XExtCodes *codes;
+    CARD32 serverSignature;
+    CARD32 serverCapabilities;
+} XF86BigfontCodes;
+
+/* Additional bit masks that can be set in serverCapabilities */
+#define CAP_VerifiedLocal 256
+
+static XF86BigfontCodes *_XF86BigfontCodes(
 #if NeedFunctionPrototypes
     Display*		/* dpy */
 #endif
@@ -67,7 +77,7 @@ static XExtCodes *_XF86BigfontCodes(
 static XFontStruct *_XF86BigfontQueryFont(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    XExtCodes*		/* extcodes */,
+    XF86BigfontCodes*	/* extcodes */,
     Font		/* fid */,
     unsigned long	/* seq */
 #endif
@@ -98,7 +108,7 @@ XFontStruct *XLoadQueryFont(dpy, name)
     xOpenFontReq *req;
     unsigned long seq;
 #ifdef USE_XF86BIGFONT
-    XExtCodes *extcodes = _XF86BigfontCodes(dpy);
+    XF86BigfontCodes *extcodes = _XF86BigfontCodes(dpy);
 #endif
 
     LockDisplay(dpy);
@@ -128,7 +138,7 @@ XFontStruct *XQueryFont (dpy, fid)
 {
     XFontStruct *font_result;
 #ifdef USE_XF86BIGFONT
-    XExtCodes *extcodes = _XF86BigfontCodes(dpy);
+    XF86BigfontCodes *extcodes = _XF86BigfontCodes(dpy);
 #endif
 
     LockDisplay(dpy);
@@ -326,18 +336,20 @@ static int
 _XF86BigfontFreeCodes (extension)
     XExtData *extension;
 {
-    /* Don't Xfree(extension->private_data) because this is shared with the
-       display's ext_procs list. */
+    /* Don't Xfree(extension->private_data) because it is on the same malloc
+       chunk as extension. */
+    /* Don't Xfree(extension->private_data->codes) because this is shared with
+       the display's ext_procs list. */
     return 0;
 }
 
-static XExtCodes *
+static XF86BigfontCodes *
 _XF86BigfontCodes (dpy)
     register Display *dpy;
 {
     XEDataObject dpy_union;
     XExtData *pData;
-    XExtCodes *pCodes;
+    XF86BigfontCodes *pCodes;
     char *envval;
 
     dpy_union.display = dpy;
@@ -349,20 +361,27 @@ _XF86BigfontCodes (dpy)
     pData = XFindOnExtensionList(XEHeadOfExtensionList(dpy_union),
 				 XF86BigfontNumber);
     if (pData)
-	return (XExtCodes *) pData->private_data;
+	return (XF86BigfontCodes *) pData->private_data;
 
-    pData = (XExtData *) Xmalloc(sizeof(XExtData));
+    pData = (XExtData *) Xmalloc(sizeof(XExtData) + sizeof(XF86BigfontCodes));
     if (!pData) {
 	/* Out of luck. */
-	return (XExtCodes *) NULL;
+	return (XF86BigfontCodes *) NULL;
     }
 
     /* See if the server supports the XF86Bigfont extension. */
     envval = getenv("XF86BIGFONT_DISABLE"); /* Let the user disable it. */
     if (envval != NULL && envval[0] != '\0')
 	pCodes = NULL;
-    else
-	pCodes = XInitExtension(dpy, XF86BIGFONTNAME);
+    else {
+	XExtCodes *codes = XInitExtension(dpy, XF86BIGFONTNAME);
+	if (codes == NULL)
+	    pCodes = NULL;
+	else {
+	    pCodes = (XF86BigfontCodes *) &pData[1];
+	    pCodes->codes = codes;
+	}
+    }
     pData->number = XF86BigfontNumber;
     pData->private_data = (XPointer) pCodes;
     pData->free_private = _XF86BigfontFreeCodes;
@@ -374,17 +393,30 @@ _XF86BigfontCodes (dpy)
 	register xXF86BigfontQueryVersionReq *req;
 
 	GetReq(XF86BigfontQueryVersion, req);
-	req->reqType = pCodes->major_opcode;
+	req->reqType = pCodes->codes->major_opcode;
 	req->xf86bigfontReqType = X_XF86BigfontQueryVersion;
 
 	if (!(_XReply (dpy, (xReply *) &reply,
 		(SIZEOF(xXF86BigfontQueryVersionReply) - SIZEOF(xReply)) >> 2,
-		xFalse))) {
-	    /* No need to Xfree(pCodes), see _XF86BigfontFreeCodes comment. */
-	    pCodes = (XExtCodes *) NULL;
-	    pData->private_data = (XPointer) pCodes;
-	}
+		xFalse)))
+	    goto ignore_extension;
+
+	/* No need to provide backward compatibility with version 1.0. It
+	   was never widely distributed. */
+	if (!(reply.majorVersion > 1
+	      || (reply.majorVersion == 1 && reply.minorVersion >= 1)))
+	    goto ignore_extension;
+
+	pCodes->serverSignature = reply.signature;
+	pCodes->serverCapabilities = reply.capabilities;
     }
+    return pCodes;
+
+  ignore_extension:
+    /* No need to Xfree(pCodes) or Xfree(pCodes->codes), see
+       _XF86BigfontFreeCodes comment. */
+    pCodes = (XF86BigfontCodes *) NULL;
+    pData->private_data = (XPointer) pCodes;
     return pCodes;
 }
 
@@ -398,7 +430,7 @@ _XF86BigfontFreeNop (extension)
 static XFontStruct *
 _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
     register Display *dpy;
-    XExtCodes *extcodes;
+    XF86BigfontCodes *extcodes;
     Font fid;
     unsigned long seq;
 {
@@ -426,9 +458,11 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
     }
 
     GetReq(XF86BigfontQueryFont, req);
-    req->reqType = extcodes->major_opcode;
+    req->reqType = extcodes->codes->major_opcode;
     req->xf86bigfontReqType = X_XF86BigfontQueryFont;
     req->id = fid;
+    req->flags = (extcodes->serverCapabilities & XF86Bigfont_CAP_LocalShm
+		  ? XF86Bigfont_FLAGS_Shm : 0);
 
     /* The function _XQueryFont benefits from a "magic" error handler for
        BadFont coming from a X_QueryFont request. (See function _XReply.)
@@ -436,7 +470,7 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
     async2_state.min_sequence_number = dpy->request;
     async2_state.max_sequence_number = dpy->request;
     async2_state.error_code = BadFont;
-    async2_state.major_opcode = extcodes->major_opcode;
+    async2_state.major_opcode = extcodes->codes->major_opcode;
     async2_state.minor_opcode = X_XF86BigfontQueryFont;
     async2_state.error_count = 0;
     async2.next = dpy->async_handlers;
@@ -553,12 +587,42 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
 		return (XFontStruct *)NULL;
 	    }
 
+	    /* In some cases (e.g. an ssh daemon forwarding an X session to
+	       a remote machine) it is possible that the X server thinks we
+	       are running on the same machine (because getpeername() and
+	       LocalClient() cannot know about the forwarding) but we are
+	       not really local. Therefore, when we attach the first shared
+	       memory segment, we verify that we are on the same machine as
+	       the X server by checking that 1. shmat() succeeds, 2. the
+	       segment has a sufficient size, 3. it contains the X server's
+	       signature. Then we set the CAP_VerifiedLocal bit to indicate
+	       the verification was successful. */
+
 	    if ((addr = shmat(reply.shmid, 0, SHM_RDONLY)) == (char *)-1) {
-		fprintf(stderr, "_XF86BigfontQueryFont: could not attach shm segment\n");
+		if (extcodes->serverCapabilities & CAP_VerifiedLocal)
+		    fprintf(stderr, "_XF86BigfontQueryFont: could not attach shm segment\n");
 	        Xfree((char *) pData);
 	        if (fs->properties) Xfree((char *) fs->properties);
 	        Xfree((char *) fs);
+		/* Stop requesting shared memory transport from now on. */
+		extcodes->serverCapabilities &= ~ XF86Bigfont_CAP_LocalShm;
 	        return (XFontStruct *)NULL;
+	    }
+
+	    if (!(extcodes->serverCapabilities & CAP_VerifiedLocal)) {
+		struct shmid_ds buf;
+		if (!(shmctl(reply.shmid, IPC_STAT, &buf) >= 0
+		      && buf.shm_segsz >= reply.shmsegoffset + reply.nCharInfos * sizeof(XCharStruct) + sizeof(CARD32)
+		      && *(CARD32 *)(addr + reply.shmsegoffset + reply.nCharInfos * sizeof(XCharStruct)) == extcodes->serverSignature)) {
+		    shmdt(addr);
+		    Xfree((char *) pData);
+		    if (fs->properties) Xfree((char *) fs->properties);
+		    Xfree((char *) fs);
+		    /* Stop requesting shared memory transport from now on. */
+		    extcodes->serverCapabilities &= ~ XF86Bigfont_CAP_LocalShm;
+		    return (XFontStruct *)NULL;
+		}
+		extcodes->serverCapabilities |= CAP_VerifiedLocal;
 	    }
 
 	    pData->number = XF86BigfontNumber;
@@ -572,6 +636,8 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
 	    fprintf(stderr, "_XF86BigfontQueryFont: try recompiling libX11 with HasShm, Xserver has shm support\n");
 	    if (fs->properties) Xfree((char *) fs->properties);
 	    Xfree((char *) fs);
+	    /* Stop requesting shared memory transport from now on. */
+	    extcodes->serverCapabilities &= ~ XF86Bigfont_CAP_LocalShm;
 	    return (XFontStruct *)NULL;
 #endif
 	}
