@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.7 2000/10/20 14:59:05 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.8 2000/10/23 12:10:17 alanh Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -73,7 +73,8 @@ AllTarget(ProgramTargetName($(PROG)))
 #if DoLoadableServer
 LOADERLIB      = -L../loader -lxloader -L../dummylib -ldummy
 DEFINES        = -DUSE_MODULES
-INCLUDES       = -I../loader -I$(XF86OSSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+INCLUDES       = -I../common -I../loader -I$(XF86OSSRC) \
+		 -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
 #endif
 

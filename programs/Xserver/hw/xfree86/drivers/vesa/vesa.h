@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #ifndef _VESA_H_
 #define _VESA_H_

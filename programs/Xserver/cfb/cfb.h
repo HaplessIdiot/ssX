@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.23 2000/02/12 03:39:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.24 2000/08/23 22:10:05 tsi Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1292,38 +1292,8 @@ extern int cfbScreenPrivateIndex;
     ((pDrawable)->type == DRAWABLE_PIXMAP ? \
      TRUE : cfbWindowEnabled((WindowPtr) pDrawable))
 
-/* Macros which handle a coordinate in a single register */
+#include "micoord.h"
 
-/* Most compilers will convert divide by 65536 into a shift, if signed
- * shifts exist.  If your machine does arithmetic shifts and your compiler
- * can't get it right, add to this line.
- */
-
-/* mips compiler - what a joke - it CSEs the 65536 constant into a reg
- * forcing as to use div instead of shift.  Let's be explicit.
- */
-
-#if defined(mips) || \
-    defined(sparc) || \
-    defined(__alpha) || defined(__alpha__) || \
-    defined(__i386__) || defined(i386) || \
-    defined(__ia64__) || defined(ia64)
-#define GetHighWord(x) (((int) (x)) >> 16)
-#else
-#define GetHighWord(x) (((int) (x)) / 65536)
-#endif
-
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = GetHighWord(i)), ((y) = (int) ((short) (i))))
-#define coordToInt(x,y)	(((x) << 16) | ((y) & 0xffff))
-#define intToX(i)	(GetHighWord(i))
-#define intToY(i)	((int) ((short) i))
-#else
-#define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = GetHighWord(i)))
-#define coordToInt(x,y)	(((y) << 16) | ((x) & 0xffff))
-#define intToX(i)	((int) ((short) (i)))
-#define intToY(i)	(GetHighWord(i))
-#endif
 /*
  * if CFB is built as a module, it shouldn't call libc functions.
  */

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "vesa.h"
 
 /* All drivers initialising the SW cursor need this */

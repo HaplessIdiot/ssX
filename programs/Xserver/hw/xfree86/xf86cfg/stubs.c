@@ -26,9 +26,10 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/stubs.c,v 1.1tsi Exp $
  */
 
+#include <stdio.h>
 #include <string.h>
 #include "stubs.h"
 
@@ -43,7 +44,7 @@ ErrorF(const char *fmt, ...)
     int retval;
     va_list ap;
 
-    Va_start(ap, fmt);
+    va_start(ap, fmt);
     retval = vfprintf(stderr, fmt, ap);
 
     va_end(ap);
