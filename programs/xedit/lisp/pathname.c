@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.7 2002/04/16 17:12:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.8 2002/04/17 23:46:59 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -217,7 +217,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     strncpy(name, THESTR(pathname), sizeof(name) - 1);
     name[sizeof(name) - 1] = '\0';
     length = strlen(name);
-    if (length < strlen(THESTR(pathname)))
+    if (length < STRLEN(pathname))
 	LispDestroy(mac, "%s: pathname too long %s",
 		    STRFUN(builtin), name);
 
@@ -236,7 +236,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	    path[length++] = PATH_SEP;
 	    path[length] = '\0';
 	}
-	CAR(arguments) = STRING(path);
+	CAR(arguments) = LSTRING(path, length);
 	result = APPLY(function, arguments);
 	mac->protect.length = protect;
 
@@ -461,7 +461,6 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
  parse-namestring object &optional host defaults &key start end junk-allowed
  */
 {
-    int start = 0, end = 0;
     LispObj *object, *host, *defaults, *ostart, *oend, *junk_allowed;
 
     junk_allowed = ARGUMENT(5);
@@ -476,9 +475,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
     }
     if (defaults != NIL) {
 	if (!PATHNAME_P(defaults))
-	    /* XXX this may become unsupported if unamed arguments
-	     * are implemented for faster builtin functions call */
-	    defaults = EXECUTE("(parse-namestring defaults)");
+	    defaults = APPLY1(Oparse_namestring, defaults);
     }
 
     if (STREAM_P(object)) {
@@ -496,31 +493,10 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	LispObj *result, *cons, *cdr;
 	char *name = THESTR(object), *ptr, *str, data[PATH_MAX + 1],
 	      string[PATH_MAX + 1], *namestr, *typestr;
-	int length = strlen(name), alength;
+	long start, end, length, alength;
 
-	if (ostart == NIL)
-	    start = 0;
-	else if (!INDEX_P(ostart))
-	    LispDestroy(mac, "%s: :START %s is not a positive integer",
-			STRFUN(builtin), STROBJ(ostart));
-	else
-	    start = ostart->data.integer;
-
-	if (oend == NIL)
-	    end = length;
-	else if (!INDEX_P(oend))
-	    LispDestroy(mac, "%s: :END %s is not a positive integer",
-			STRFUN(builtin), STROBJ(oend));
-	else
-	    end = oend->data.integer;
-
-	if (start > end)
-	    LispDestroy(mac, "%s: :START %d is larger than :END %d",
-			STRFUN(builtin), start, end);
-	if (end > length)
-	    LispDestroy(mac, "%s: :END %d is larger than string length %d",
-			STRFUN(builtin), start, length);
-
+	LispCheckSequenceStartEnd(mac, builtin, object, ostart, oend,
+				  &start, &end, &length);
 	alength = end - start;
 
 	if (alength > sizeof(data) - 1)
@@ -713,9 +689,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     if (defaults != NIL && !PATHNAME_P(defaults) &&
 	(host == NIL || device == NIL || directory == NIL ||
 	 name == NIL || type == NIL || version == NIL))
-	/* XXX This may become unsupported if unamed arguments are
-	 * implemented for faster builtin functions call */
-	defaults = EXECUTE("(parse-namestring defaults)");
+	defaults = APPLY1(Oparse_namestring, defaults);
 
     if (defaults != NIL) {
 	defaults = defaults->data.quote;
@@ -751,7 +725,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 		LispDestroy(mac, "%s: bad directory element %s",
 			    STRFUN(builtin), STROBJ(CAR(cdr)));
 	    string = THESTR(CAR(cdr));
-	    alength = strlen(string);
+	    alength = STRLEN(CAR(cdr));
 	    if (alength > NAME_MAX)
 		LispDestroy(mac, "%s: directory name too long %s",
 			    STRFUN(builtin), string);
@@ -766,10 +740,10 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	int xlength = 0;
 
 	if (type != NIL)
-	    xlength = strlen(THESTR(type)) + 1;
+	    xlength = STRLEN(type) + 1;
 
 	string = THESTR(name);
-	alength = strlen(string);
+	alength = STRLEN(name);
 	if (alength + xlength > NAME_MAX)
 	    LispDestroy(mac, "%s: file name too long %s",
 			STRFUN(builtin), string);
@@ -782,7 +756,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	if (length + 2 < sizeof(pathname))
 	    pathname[length++] = PATH_TYPESEP;
 	string = THESTR(type);
-	alength = strlen(string);
+	alength = STRLEN(type);
 	if (length + alength + 2 > sizeof(pathname))
 	    alength = sizeof(pathname) - length - 2;
 	strncpy(pathname + length, string, alength);
@@ -983,19 +957,6 @@ Lisp_HostNamestring(LispMac *mac, LispBuiltin *builtin)
     return (LispPathnameField(mac, PATH_HOST, 1));
 }
 
-LispObj *
-Lisp_Pathnamep(LispMac *mac, LispBuiltin *builtin)
-/*
- pathnamep object
- */
-{
-    LispObj *object;
-
-    object = ARGUMENT(0);
-
-    return (PATHNAME_P(object) ? T : NIL);
-}
-
 /* XXX only checks if host is a string and only checks the HOME enviroment
  * variable */
 LispObj *
@@ -1004,6 +965,7 @@ Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
  user-homedir-pathname &optional host
  */
 {
+    GC_ENTER();
     int length;
     char *home = getenv("HOME"), data[PATH_MAX + 1];
     LispObj *result;
@@ -1025,9 +987,10 @@ Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
     }
     data[length] = '\0';
 
-    GCProtect();
-    result = EVAL(CONS(Oparse_namestring, CONS(STRING(data), NIL)));
-    GCUProtect();
+    result = LSTRING(data, length);
+    GC_PROTECT(result);
+    result = APPLY1(Oparse_namestring, result);
+    GC_LEAVE();
 
     return (result);
 }

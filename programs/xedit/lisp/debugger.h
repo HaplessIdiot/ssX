@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.4 2001/10/10 07:02:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.h,v 1.5 2002/01/30 21:00:57 paulo Exp $ */
 
 #ifndef Lisp_debugger_h
 #define Lisp_debugger_h
@@ -36,6 +36,7 @@
  * Definitions
  */
 #define	DBGPROMPT	"DEBUG> "
+#ifdef DEBUGGER
 
 /*
  * Types
@@ -67,4 +68,5 @@ typedef enum _LispDebugBreak {
  */
 void LispDebugger(LispMac*, LispDebugCall, LispObj*, LispObj*);
 
+#endif /* DEBUGGER */
 #endif /* Lisp_debugger_h */

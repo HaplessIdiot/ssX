@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.9 2002/07/22 07:26:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.10 2002/07/28 21:34:04 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -90,19 +90,6 @@ LispStreamInit(LispMac *mac)
     Sappend		= GETATOMID("APPEND");
     Ssupersede		= GETATOMID("SUPERSEDE");
     Screate		= GETATOMID("CREATE");
-}
-
-LispObj *
-Lisp_Streamp(LispMac *mac, LispBuiltin *builtin)
-/*
- streamp object
- */
-{
-    LispObj *object;
-
-    object = ARGUMENT(0);
-
-    return (STREAM_P(object) ? T : NIL);
 }
 
 LispObj *
@@ -584,7 +571,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: stream %s is unreadable",
 		    STRFUN(builtin), STROBJ(input_stream));
     if (input_stream->data.stream.type == LispStreamString) {
-	unsigned char *start, *end;
+	unsigned char *start, *end, *ptr;
 
 	if (SSTREAMP(input_stream)->input >=
 	    SSTREAMP(input_stream)->length) {
@@ -599,17 +586,19 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 
 	start = SSTREAMP(input_stream)->string +
 		SSTREAMP(input_stream)->input;
-	if ((end = (unsigned char*)strchr((char*)start, '\n')) == NULL) {
+	end = SSTREAMP(input_stream)->string +
+	      SSTREAMP(input_stream)->length;
+	/* Search for a newline */
+	for (ptr = start; *ptr != '\n' && ptr < end; ptr++)
+	    ;
+	if (ptr == end)
 	    status = T;
-	    end = SSTREAMP(input_stream)->string +
-		  SSTREAMP(input_stream)->length;
-	}
-	length = end - start;
+	length = ptr - start;
 	string = LispMalloc(mac, length + 1);
 	memcpy(string, start, length);
 	string[length] = '\0';
-	result = STRING2(string);
-	/* macro STRING2 does not make a copy of it's arguments, and
+	result = LSTRING2(string, length);
+	/* macro LSTRING2 does not make a copy of it's arguments, and
 	 * calls LispMused on it. */
 	SSTREAMP(input_stream)->input += length + (status == NIL);
     }
@@ -656,8 +645,7 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 	    if ((length % 64) == 0)
 		string = LispRealloc(mac, string, length + 1);
 	    string[length] = '\0';
-	    result = STRING(string);
-	    LispFree(mac, string);
+	    result = LSTRING2(string, length);
 	}
 	else
 	    result = STRING("");
@@ -696,7 +684,7 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
  */
 {
     char *string;
-    int start, end, length;
+    long start, end, length;
 
     LispObj *ostring, *ostart, *oend, *result;
 
@@ -706,39 +694,13 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
 
     start = end = 0;
     ERROR_CHECK_STRING(ostring);
+    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+			      &start, &end, &length);
     string = THESTR(ostring);
-    length = strlen(string);
 
-    if (ostart == NIL)		start = 0;
-    else ERROR_CHECK_INDEX(ostart);
-    else			start = ostart->data.integer;
-
-    if (oend == NIL)
-	end = length;
-    else if (!INT_P(oend) || !INDEX_P(oend))
-	LispDestroy(mac, "%s: END %s is not a positive integer",
-		    STRFUN(builtin), STRPTR(oend));
-    else
-	end = oend->data.integer;
-
-    if (start > end)
-	LispDestroy(mac, "%s: START %d is larger than END %d",
-		    STRFUN(builtin), start, end);
-    if (end > length)
-	LispDestroy(mac, "%s: END %d is larger than string length %d",
-		    STRFUN(builtin), end, length);
-
-    if (end - start != length) {
+    if (end - start != length)
 	length = end - start;
-	string = LispMalloc(mac, length + 1);
-	strncpy(string, THESTR(ostring) + start, length);
-	string[length] = '\0';
-    }
-
-    result = STRINGSTREAM((unsigned char*)string, STREAM_READ);
-
-    if (string != THESTR(ostring))
-	LispFree(mac, string);
+    result = LSTRINGSTREAM((unsigned char*)string + start, STREAM_READ, length);
 
     return (result);
 }
@@ -765,7 +727,7 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
-    return (STRINGSTREAM((unsigned char*)"", STREAM_WRITE));
+    return (LSTRINGSTREAM((unsigned char*)"", STREAM_WRITE, 1));
 }
 
 LispObj *
@@ -774,6 +736,8 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
  get-output-stream-string string-output-stream
  */
 {
+    int length;
+    char *string;
     LispObj *string_output_stream, *result;
 
     string_output_stream = ARGUMENT(0);
@@ -785,10 +749,10 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not an output string stream",
 		    STRFUN(builtin), STROBJ(string_output_stream));
 
-    result = STRING(LispGetSstring(SSTREAMP(string_output_stream)));
+    string = LispGetSstring(SSTREAMP(string_output_stream), &length);
+    result = LSTRING(string, length);
 
     /* reset string */
-    SSTREAMP(string_output_stream)->string[0] = '\0';
     SSTREAMP(string_output_stream)->output =
 	SSTREAMP(string_output_stream)->length = 0;
 
@@ -1001,7 +965,7 @@ Lisp_PipeInputDescriptor(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: pipe %s is unreadable",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
-    return (INTEGER(LispFileno(IPSTREAMP(pipe_stream))));
+    return (SMALLINT(LispFileno(IPSTREAMP(pipe_stream))));
 }
 
 /*
@@ -1025,5 +989,5 @@ Lisp_PipeErrorDescriptor(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: pipe %s is closed",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
-    return (INTEGER(LispFileno(EPSTREAMP(pipe_stream))));
+    return (SMALLINT(LispFileno(EPSTREAMP(pipe_stream))));
 }

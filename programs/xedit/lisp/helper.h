@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.9 2002/05/23 01:14:32 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.10 2002/06/03 21:39:23 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -56,10 +56,10 @@ LispObj *LispDo(LispMac*, LispBuiltin*, int);
  */
 LispObj *LispDoListTimes(LispMac*, LispBuiltin*, int);
 
-#define FEQ	0
-#define FEQL	1
-#define FEQUAL	2
-#define FEQUALP	3
+#define FEQ	1
+#define FEQL	2
+#define FEQUAL	3
+#define FEQUALP	4
 LispObj *LispObjectCompare(LispMac*, LispObj*, LispObj*, int);
 #define XEQ(x, y)	LispObjectCompare(mac, x, y, FEQ)
 #define XEQL(x, y)	LispObjectCompare(mac, x, y, FEQL)
@@ -96,14 +96,6 @@ void LispGetStringArgs(LispMac*, LispBuiltin*,
  string-right-trim character-bag string
 */
 LispObj *LispStringTrim(LispMac*, LispBuiltin*, int, int);
-
-/*
- string-upcase string &key start end
- string-downcase string &key start end
- string-capitalize string &key start end
-*/
-void LispGetStringCaseArgs(LispMac*, LispBuiltin*,
-			   LispObj**, char**, int*, int*);
 
 /*
  pathname-host pathname

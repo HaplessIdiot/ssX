@@ -27,51 +27,18 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.8 2002/07/16 05:19:41 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/lisp.lsp,v 1.1 2002/07/22 07:26:29 paulo Exp $
 ;;
 (provide "lisp")
 
 (in-package "LISP")
 
 (export '(
-    caar cadr cdar cddr
-    caaar caadr cadar caddr cdaar cdadr cddar cdddr
-    caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
-    cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
     second third fourth fifth sixth seventh eighth ninth tenth
     pathname merge-pathnames
     logtest signum
     alphanumericp copy-seq push pop prog prog* with-open-file
 ))
-
-(defun caar (a)		(car (car a)))
-(defun cadr (a)		(nth 1 a))
-(defun cdar (a)		(cdr (car a)))
-(defun cddr (a)		(nthcdr 2 a))
-(defun caaar (a)	(car (car (car a))))
-(defun caadr (a)	(car (car (cdr a))))
-(defun cadar (a)	(car (cdr (car a))))
-(defun caddr (a)	(nth 2 a))
-(defun cdaar (a)	(cdr (car (car a))))
-(defun cdadr (a)	(cdr (car (cdr a))))
-(defun cddar (a)	(cdr (cdr (car a))))
-(defun cdddr (a)	(nthcdr 3 a))
-(defun caaaar (a)	(car (car (car (car a)))))
-(defun caaadr (a)	(car (car (car (cdr a)))))
-(defun caadar (a)	(car (car (cdr (car a)))))
-(defun caaddr (a)	(car (car (cdr (cdr a)))))
-(defun cadaar (a)	(car (cdr (car (car a)))))
-(defun cadadr (a)	(car (cdr (car (cdr a)))))
-(defun caddar (a)	(car (cdr (cdr (car a)))))
-(defun cadddr (a)	(nth 3 a))
-(defun cdaaar (a)	(cdr (car (car (car a)))))
-(defun cdaadr (a)	(cdr (car (car (cdr a)))))
-(defun cdadar (a)	(cdr (car (cdr (car a)))))
-(defun cdaddr (a)	(cdr (car (cdr (cdr a)))))
-(defun cddaar (a)	(cdr (cdr (car (car a)))))
-(defun cddadr (a)	(cdr (cdr (car (cdr a)))))
-(defun cdddar (a)	(cdr (cdr (cdr (car a)))))
-(defun cddddr (a)	(nthcdr 4 a))
 
 (defun second (a)	(nth 1 a))
 (defun third (a)	(nth 2 a))
@@ -112,12 +79,6 @@
 
 (defun copy-seq (sequence)
     (subseq sequence 0))
-
-(defmacro push (object place)
-    (list 'setf place (list 'cons object place)))
-
-(defmacro pop (place)
-    (list 'prog1 (list 'car place) (list 'setf place (list 'cdr place))))
 
 (defmacro prog (init &rest body)
     `(block nil (let ,init (tagbody ,@body))))

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.18 2002/02/14 17:42:59 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.20 2002/07/08 03:54:01 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -504,9 +504,9 @@ format_object(LispMac *mac, LispObj *stream, LispObj *object)
 static void
 format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 {
+    GC_ENTER();
     LispObj *string = NIL;
     int length = 0,
-	protect = mac->protect.length,
 	atsign = args->atsign,
 	collon = args->collon,
 	mincol = args->arguments[0].value,
@@ -532,11 +532,9 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
     if (atsign) {
 	/* if length not yet known */
 	if (object != NIL && !CHAR_P(object)) {
-	    string = STRINGSTREAM((unsigned char*)"",
-				  STREAM_READ | STREAM_WRITE);
-	    if (protect + 1 >= mac->protect.space)
-		LispMoreProtects(mac);
-	    mac->protect.objects[mac->protect.length++] = string;
+	    string = LSTRINGSTREAM((unsigned char*)"",
+				   STREAM_READ | STREAM_WRITE, 1);
+	    GC_PROTECT(string);
 	    length = LispWriteObject(mac, string, object);
 	}
 
@@ -556,8 +554,12 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	}
     }
 
-    if (object == NIL)
-	LispWriteStr(mac, stream, collon ? "()" : "NIL");
+    if (object == NIL) {
+	if (collon)
+	    LispWriteStr(mac, stream, "()", 2);
+	else
+	    LispWriteStr(mac, stream,  Snil, 3);
+    }
     else {
 	if (CHAR_P(object))
 	    LispWriteChar(mac, stream, object->data.integer);
@@ -566,9 +568,12 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	     * and object printed to string */
 	    if (string == NIL)
 		length = format_object(mac, stream, object);
-	    else
-		/* XXX a string-stream can have nulls */
-		LispWriteStr(mac, stream, LispGetSstring(SSTREAMP(string)));
+	    else {
+		int size;
+		char *str = LispGetSstring(SSTREAMP(string), &size);
+
+		LispWriteStr(mac, stream, str, size);
+	    }
 	}
     }
 
@@ -589,7 +594,7 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	}
     }
 
-    mac->protect.length = protect;
+    GC_LEAVE();
 }
 
 /* assumes radix is 0 or in range 2 - 36 */
@@ -1056,21 +1061,19 @@ free_formats(LispMac *mac, char **formats, int num_formats)
 static void
 format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
 {
+    GC_ENTER();
     LispObj *string;
     FmtInfo case_info;
     unsigned char *str, *ptr;
     char *format, *next_format, **formats;
-    int atsign, collon, num_formats, protect = mac->protect.length;
+    int atsign, collon, num_formats, length;
 
     atsign = info->args.atsign;
     collon = info->args.collon;
 
-    if (protect + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* output to a string, before case conversion */
-    string = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
-    mac->protect.objects[mac->protect.length++] = string;
+    string = LSTRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE, 1);
+    GC_PROTECT(string);
 
     /* most information is the same */
     memcpy(&case_info, info, sizeof(FmtInfo));
@@ -1088,7 +1091,7 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
     /* format text to string */
     LispFormat(mac, string, &case_info);
 
-    str = ptr = (unsigned char*)LispGetSstring(SSTREAMP(string));
+    str = ptr = (unsigned char*)LispGetSstring(SSTREAMP(string), &length);
 
     /* do case conversion */
     if (!atsign && !collon) {
@@ -1131,10 +1134,10 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
     }
 
     /* output case converted string */
-    LispWriteStr(mac, stream, (char*)str);
+    LispWriteStr(mac, stream, (char*)str, length);
 
     /* temporary string stream is not necessary anymore */
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     /* free temporary memory */
     free_formats(mac, formats, num_formats);
@@ -1505,8 +1508,9 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 static void
 format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 {
+    GC_ENTER();
     FmtInfo justify_info;
-    char **formats, *format, *next_format;
+    char **formats, *format, *next_format, *str;
     LispObj *string, *strings = NIL, *cons;
     int atsign = info->args.atsign,
 	collon = info->args.collon,
@@ -1515,7 +1519,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	minpad = info->args.arguments[2].value,
 	padchar = info->args.arguments[3].value;
     int i, k, total_length, length, padding, num_formats, has_default,
-	comma_width, line_width, protect = mac->protect.length;
+	comma_width, line_width, size;
 
     next_format = *(info->format);
 
@@ -1523,16 +1527,15 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
     list_formats(mac, info, '<', &next_format, &formats, &num_formats,
 		 &has_default, &comma_width, &line_width);
 
-    if (protect + 1 <= mac->protect.space)
-	LispMoreProtects(mac);
-
     /* initialize list of strings streams */
     if (num_formats) {
-	string = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
+	string = LSTRINGSTREAM((unsigned char*)"",
+			       STREAM_READ | STREAM_WRITE, 1);
 	strings = cons = CONS(string, NIL);
-	mac->protect.objects[mac->protect.length++] = strings;
+	GC_PROTECT(strings);
 	for (i = 1; i < num_formats; i++) {
-	    string = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
+	    string = LSTRINGSTREAM((unsigned char*)"",
+				   STREAM_READ | STREAM_WRITE, 1);
 	    CDR(cons) = CONS(string, NIL);
 	    cons = CDR(cons);
 	}
@@ -1573,7 +1576,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    --num_formats;
 	}
 	/* keep strings gc protected, discarding first entries */
-	mac->protect.objects[protect] = strings;
+	mac->protect.objects[gc__protect] = strings;
     }
 	/* now remove intermediary discarded formats */
     cons = strings;
@@ -1633,8 +1636,10 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
     /* first check for the special case of only one string being justified */
     if (num_formats - has_default == 1) {
 	if (has_default && line_width > 0 && comma_width >= 0 &&
-	    total_length + comma_width > line_width)
-	    LispWriteStr(mac, stream, LispGetSstring(SSTREAMP(CAR(strings))));
+	    total_length + comma_width > line_width) {
+	    str = LispGetSstring(SSTREAMP(CAR(strings)), &size);
+	    LispWriteStr(mac, stream, str, size);
+	}
 	string = has_default ? CAR(CDR(strings)) : CAR(strings);
 	/* check if need left padding */
 	if (k && !atsign) {
@@ -1646,7 +1651,8 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    LispWriteChars(mac, stream, padchar, k / 2);
 	    k -= k / 2;
 	}
-	LispWriteStr(mac, stream, LispGetSstring(SSTREAMP(string)));
+	str = LispGetSstring(SSTREAMP(string), &size);
+	LispWriteStr(mac, stream, str, size);
 	/* if any padding remaining */
 	if (k)
 	    LispWriteChars(mac, stream, padchar, k);
@@ -1657,11 +1663,9 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	/* if has default, need to check output length */
 	if (has_default && line_width > 0 && comma_width >= 0) {
-	    if (mac->protect.length + 1 <= mac->protect.space)
-		LispMoreProtects(mac);
-
-	    result = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
-	    mac->protect.objects[mac->protect.length++] = result;
+	    result = LSTRINGSTREAM((unsigned char*)"",
+				   STREAM_READ | STREAM_WRITE, 1);
+	    GC_PROTECT(result);
 	}
 	/* else write directly to stream */
 	else
@@ -1687,7 +1691,8 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 		    LispWriteChars(mac, result, padchar, spaces);
 		    k -= spaces;
 		}
-		LispWriteStr(mac, result, LispGetSstring(SSTREAMP(string)));
+		str = LispGetSstring(SSTREAMP(string), &size);
+		LispWriteStr(mac, result, str, size);
 		padout = 0;
 	    }
 	    if (!padout)
@@ -1695,7 +1700,8 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    padout = k;
 	    /* if not first string, or if left padding specified */
 	    if (spaces_before) {
-		LispWriteStr(mac, result, LispGetSstring(SSTREAMP(string)));
+		str = LispGetSstring(SSTREAMP(string), &size);
+		LispWriteStr(mac, result, str, size);
 		padout = 0;
 	    }
 	    padding -= k;	
@@ -1705,16 +1711,19 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    length = SSTREAMP(result)->length + LispGetColumn(mac, stream);
 
 	    /* if current line is too large */
-	    if (has_default && length + comma_width > line_width)
-		LispWriteStr(mac, stream, LispGetSstring(SSTREAMP(CAR(strings))));
+	    if (has_default && length + comma_width > line_width) {
+		str = LispGetSstring(SSTREAMP(CAR(strings)), &size);
+		LispWriteStr(mac, stream, str, size);
+	    }
 
 	    /* write result to stream */
-	    LispWriteStr(mac, stream, LispGetSstring(SSTREAMP(result)));
+	    str = LispGetSstring(SSTREAMP(result), &size);
+	    LispWriteStr(mac, stream, str, size);
 	}
     }
 
     /* unprotect string streams from GC */
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     /* this information always updated */
     *(info->format) = next_format;
@@ -1744,8 +1753,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	if (*format == '~') {
 	    /* flush non formatted characters */
 	    if (length) {
-		stk[length] = '\0';
-		LispWriteStr(mac, stream, stk);
+		LispWriteStr(mac, stream, stk, length);
 		length = 0;
 	    }
 
@@ -1921,7 +1929,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 			if (INT_P(object) && object->data.integer == 1)
 			    LispWriteChar(mac, stream, 'y');
 			else
-			    LispWriteStr(mac, stream, "ies");
+			    LispWriteStr(mac, stream, "ies", 3);
 		    }
 		    else if (!INT_P(object) || object->data.integer != 1)
 			LispWriteChar(mac, stream, 's');
@@ -2022,9 +2030,8 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    format = next_format;
 	}
 	else {
-	    if (length + 1 >= sizeof(stk)) {
-		stk[length] = '\0';
-		LispWriteStr(mac, stream, stk);
+	    if (length >= sizeof(stk)) {
+		LispWriteStr(mac, stream, stk, length);
 		length = 0;
 	    }
 	    stk[length++] = *format++;
@@ -2032,10 +2039,8 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
     }
 
     /* flush any peding output */
-    if (length) {
-	stk[length] = '\0';
-	LispWriteStr(mac, stream, stk);
-    }
+    if (length)
+	LispWriteStr(mac, stream, stk, length);
 
 format_up_and_out:
     /* update for recursive call */
@@ -2051,10 +2056,11 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
  format destination control-string &rest arguments
  */
 {
+    GC_ENTER();
     FmtInfo info;
     LispObj *object;
     char *control_string;
-    int protect, num_arguments;
+    int num_arguments;
 
     LispObj *stream, *format, *arguments;
 
@@ -2062,15 +2068,12 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     format = ARGUMENT(1);
     stream = ARGUMENT(0);
 
-    protect = mac->protect.length;
-
     /* check format and stream */
     ERROR_CHECK_STRING(format);
     if (stream == NIL) {	/* return a string */
-	stream = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
-	if (protect + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = stream;
+	stream = LSTRINGSTREAM((unsigned char*)"",
+			       STREAM_READ | STREAM_WRITE, 1);
+	GC_PROTECT(stream);
     }
     else if (stream == T ||	/* print directly to *standard-output* */
 	     (stream->data.stream.type == LispStreamStandard &&
@@ -2111,10 +2114,15 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     if (stream == NIL)
 	LispFflush(Stdout);
     /* else if printing to string-stream, return a string */
-    else if (stream->data.stream.type == LispStreamString)
-	stream = STRING(LispGetSstring(SSTREAMP(stream)));
+    else if (stream->data.stream.type == LispStreamString) {
+	int length;
+	char *string;
 
-    mac->protect.length = protect;
+	string = LispGetSstring(SSTREAMP(stream), &length);
+	stream = LSTRING(string, length);
+    }
+
+    GC_LEAVE();
 
     return (stream);
 }

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.1 2002/07/22 07:26:30 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
@@ -104,7 +104,7 @@
 	:ICASE T)
 
     ;;  Integers.
-    (syntoken "([0-9]+)|(0x[0-9a-f]+)(u?l{0,2}|l{0,2}u?)?"
+    (syntoken "([0-9]+|0x[0-9a-f]+)(u|ul|ull|l|lu|llu)?"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
@@ -117,15 +117,15 @@
     (syntoken "//.*$"
 	:PROPERTY *PROP-COMMENT*)
 
-    ;;  Punctuation.
-    (syntoken "[/*+:;=<>,&.!%|^~?-]"
-	:PROPERTY *PROP-PUNCTUATION*)
-
-
     ;;  Comment start rule.
     (syntoken "/\\*"
 	:BEGIN :COMMENT
 	:CONTAINED T)
+
+    ;;  Punctuation, match two at the same time if possible, but no more to
+    ;; avoid matching things like /** or ///.
+    (syntoken "[/*+:;=<>,&.!%|^~?-]{1,2}"
+	:PROPERTY *PROP-PUNCTUATION*)
 
     ;;  String start rule.
     (syntoken "\""
@@ -138,7 +138,7 @@
 	:CONTAINED T)
 
     ;;  Preprocessor start rule.
-    (syntoken "^[ 	]*#[ 	]*[a-z]*"
+    (syntoken "^[ 	]*#[ 	]*[a-z]+"
 	:BEGIN :PREPROCESSOR
 	:CONTAINED T)
 
@@ -158,7 +158,6 @@
 	:BEGIN :KEYS)
 
 
-
     ;;  Rules for comments.
     (syntable :COMMENT *PROP-COMMENT*
 
@@ -171,7 +170,7 @@
 
 	;;  Rule to finish a comment.
 	(syntoken "\\*/"
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
     )
 
     ;;  Rules for strings.
@@ -186,7 +185,7 @@
 
 	;;  Rule to finish a string.
 	(syntoken "\""
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
     )
 
     ;;  Rules for characters.
@@ -197,7 +196,7 @@
 
 	;;  Rule to finish a character constant.
 	(syntoken "'"
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
     )
 
     ;;  Rules for preprocessor.
@@ -213,14 +212,14 @@
 
 	;;  Return to previous state if end of line found.
 	(syntoken "$"
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
     )
 
     ;;  Rules for parenthesis.
     (syntable :PARENTHESES NIL
 	(syntoken "\\)"
 	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
 
 	;;  Unbalanced.
 	(syntoken "[]}]"
@@ -234,7 +233,7 @@
     (syntable :BRACKETS NIL
 	(syntoken "\\]"
 	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
 
 	;;  Unbalanced.
 	(syntoken "[)}]"
@@ -248,7 +247,7 @@
     (syntable :KEYS NIL
 	(syntoken "\\}"
 	    :PROPERTY *PROP-PUNCTUATION*
-	    :SWITCH :PREVIOUS)
+	    :SWITCH -1)
 
 	;;  Unbalanced.
 	(syntoken "[])]"

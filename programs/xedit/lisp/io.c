@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.6 2002/07/16 05:19:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.7 2002/07/28 21:34:04 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -533,6 +533,7 @@ LispFwrite(LispFile *file, void *data, int size)
 	    /* keep remaining data in buffer */
 	    memcpy(file->buffer + file->length, buffer, size);
 	    file->length += size;
+	    length += size;
 	}
 
 	return (length);
@@ -576,14 +577,15 @@ LispSwrite(LispString *string, void *data, int size)
     return (size);
 }
 
-/* it is also possible that the string have nuls */
 char *
-LispGetSstring(LispString *string)
+LispGetSstring(LispString *string, int *length)
 {
-    if (string->string == NULL)
+    if (string->string == NULL) {
+	*length = 0;
+
 	return ("");
-    else if (string->string[string->length] != '\0')
-	string->string[string->length] = '\0';
+    }
+    *length = string->length;
 
     return ((char*)string->string);
 }

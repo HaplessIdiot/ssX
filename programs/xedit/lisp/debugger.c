@@ -27,13 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.17 2002/03/20 05:12:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.18 2002/06/03 21:39:23 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
 #include "debugger.h"
 #include "write.h"
 
+#ifdef DEBUGGER
 #define DebuggerHelp		0
 #define DebuggerAbort		1
 #define DebuggerBacktrace	2
@@ -139,10 +140,9 @@ Subcommands may be abbreviated.\n";
  *		NAM is an ATOM for the function/macro name
  *		    or NIL for lambda expressions
  *		ARG is NAM arguments (a LIST)
- *		ENV is the value of mac->env.base (a INTEGER)
+ *		ENV is the value of mac->stack.base (a INTEGER)
  *		LEN is the value of mac->env.length (a INTEGER)
  *		LEX is the value of mac->env.lex (a INTEGER)
- *		DYN is the value of mac->dyn.length (a INTEGER)
  *	new elements are added to the beggining of the DBG list
  *
  * BRK
@@ -178,10 +178,9 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 	case LispDebugCallBegin:
 	    ++mac->debug_level;
 	    GCProtect();
-	    DBG = CONS(CONS(name, CONS(arg, CONS(INTEGER(mac->env.base),
-		       CONS(INTEGER(mac->env.length),
-			    CONS(INTEGER(mac->env.lex),
-				 INTEGER(mac->dyn.length)))))), DBG);
+	    DBG = CONS(CONS(name, CONS(arg, CONS(SMALLINT(mac->stack.base),
+		       CONS(SMALLINT(mac->env.length),
+			    SMALLINT(mac->env.lex))))), DBG);
 	    GCUProtect();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
 		if (ATOMID(CAR(CAR(obj))) == ATOMID(name) &&
@@ -339,8 +338,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
     int i = 0, frame, matches, action = -1, subaction = 0;
     char *cmd, *arg, *ptr, line[256];
 
-    int envbase = mac->env.base, envlen = mac->env.length, envlex = mac->env.lex,
-	dynlen = mac->dyn.length;
+    int envbase = mac->stack.base, envlen = mac->env.length, envlex = mac->env.lex;
 
     frame = mac->debug_level;
     curframe = CAR(DBG);
@@ -505,8 +503,12 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		break;
 	    case DebuggerAbort:
-		while (mac->mem.mem_level)
-		    free(mac->mem.mem[--mac->mem.mem_level]);
+		while (mac->mem.level) {
+		    --mac->mem.level;
+		    if (mac->mem.mem[mac->mem.level])
+			free(mac->mem.mem[mac->mem.level]);
+		}
+		mac->mem.index = 0;
 		LispTopLevel(mac);
 		if (!mac->running) {
 		    LispMessage(mac, "*** Fatal: nowhere to longjmp.");
@@ -536,9 +538,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    ++mac->debug_break;
 		    GCProtect();
 		    obj = CONS(ATOM(arg),
-			       CONS(INTEGER(i),
-				    CONS(INTEGER(LispDebugBreakFunction),
-					 CONS(INTEGER(0), NIL))));
+			       CONS(SMALLINT(i),
+				    CONS(SMALLINT(LispDebugBreakFunction),
+					 CONS(SMALLINT(0), NIL))));
 		    if (BRK == NIL)
 			BRK = CONS(obj, NIL);
 		    else
@@ -577,10 +579,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			mac->env.base = CAR(CDR(CDR(obj)))->data.integer;
+			mac->stack.base = CAR(CDR(CDR(obj)))->data.integer;
 			mac->env.length = CAR(CDR(CDR(CDR(obj))))->data.integer;
-			mac->env.lex = CAR(CDR(CDR(CDR(CDR(obj)))))->data.integer;
-			mac->dyn.length = CDR(CDR(CDR(CDR(CDR(obj)))))->data.integer;
+			mac->env.lex = CDR(CDR(CDR(CDR(obj))))->data.integer;
 
 			if (LispGetVarAddr(mac, atom) == sym)
 			    /* got variable initial frame */
@@ -593,10 +594,9 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			     frm = CDR(frm), i--)
 			    ;
 			obj = CAR(frm);
-			mac->env.base = CAR(CDR(CDR(obj)))->data.integer;
+			mac->stack.base = CAR(CDR(CDR(obj)))->data.integer;
 			mac->env.length = CAR(CDR(CDR(CDR(obj))))->data.integer;
-			mac->env.lex = CAR(CDR(CDR(CDR(CDR(obj)))))->data.integer;
-			mac->dyn.length = CDR(CDR(CDR(CDR(CDR(obj)))))->data.integer;
+			mac->env.lex = CDR(CDR(CDR(CDR(obj))))->data.integer;
 		    }
 		}
 
@@ -606,13 +606,13 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    ;
 
 		GCProtect();
-		obj = CONS(atom,					 /* NAM */
-			   CONS(INTEGER(i),				 /* IDX */
-				CONS(INTEGER(LispDebugBreakVariable),	 /* TYP */
-				     CONS(INTEGER(0),			 /* HIT */
-					  CONS(OPAQUE(sym, 0),		 /* VAR */
-					       CONS(val,		 /* VAL */
-						    CONS(INTEGER(vframe),/* FRM */
+		obj = CONS(atom,					  /* NAM */
+			   CONS(SMALLINT(i),				  /* IDX */
+				CONS(SMALLINT(LispDebugBreakVariable),	  /* TYP */
+				     CONS(SMALLINT(0),			  /* HIT */
+					  CONS(OPAQUE(sym, 0),		  /* VAR */
+					       CONS(val,		  /* VAL */
+						    CONS(SMALLINT(vframe),/* FRM */
 							      NIL)))))));
 
 		/* add watchpoint */
@@ -783,10 +783,9 @@ debugger_new_frame:
 	    for (frm = DBG, i = mac->debug_level; i > frame; frm = CDR(frm), i--)
 		;
 	    curframe = CAR(frm);
-	    mac->env.base = CAR(CDR(CDR(curframe)))->data.integer;
+	    mac->stack.base = CAR(CDR(CDR(curframe)))->data.integer;
 	    mac->env.length = CAR(CDR(CDR(CDR(curframe))))->data.integer;
-	    mac->env.lex = CAR(CDR(CDR(CDR(CDR(curframe)))))->data.integer;
-	    mac->dyn.length = CDR(CDR(CDR(CDR(CDR(curframe)))))->data.integer;
+	    mac->env.lex = CDR(CDR(CDR(CDR(curframe))))->data.integer;
 	}
 debugger_print_frame:
 	LispFputc(Stdout, '#');
@@ -799,10 +798,9 @@ debugger_print_frame:
     }
 
 debugger_command_done:
-    mac->env.base = envbase;
+    mac->stack.base = envbase;
     mac->env.length = envlen;
     mac->env.lex = envlex;
-    mac->dyn.length = dynlen;
 }
 
 static char *
@@ -814,3 +812,5 @@ format_integer(int integer)
 
     return (buffer);
 }
+
+#endif /* DEBUGGER */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
 
 #ifndef Lisp_pathname_h
 #define Lisp_pathname_h
@@ -70,7 +70,6 @@ LispObj *Lisp_PathnameDirectory(LispMac*, LispBuiltin*);  /* pathname-directory 
 LispObj *Lisp_PathnameName(LispMac*, LispBuiltin*);	  /* pathname-name */
 LispObj *Lisp_PathnameType(LispMac*, LispBuiltin*);	  /* pathname-type */
 LispObj *Lisp_PathnameVersion(LispMac*, LispBuiltin*);	  /* pathname-version */
-LispObj *Lisp_Pathnamep(LispMac*, LispBuiltin*);	  /* pathnamep */
 LispObj *Lisp_Truename(LispMac*, LispBuiltin*);		  /* truename */
 LispObj *Lisp_ProbeFile(LispMac*, LispBuiltin*);	  /* probe-file */
 LispObj *Lisp_UserHomedirPathname(LispMac*, LispBuiltin*);/* user-homedir-pathname */

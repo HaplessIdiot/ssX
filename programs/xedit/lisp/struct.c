@@ -27,9 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.12 2002/04/10 16:20:09 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.13 2002/07/28 21:34:04 paulo Exp $ */
 
 #include "struct.h"
+
+/*
+ * Prototypes
+ */
+static LispObj *LispStructAccessOrStore(LispMac*, LispBuiltin*, int);
 
 /*
  * Initialization
@@ -57,7 +62,6 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 
     description = ARGUMENT(1);
     oname = ARGUMENT(0);
-    MACRO_ARGUMENT2();
 
     /* get structure name */
     if (!SYMBOL_P(oname) ||
@@ -278,25 +282,33 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     return (STRUCT(fields, definition));
 }
 
-LispObj *
-Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
+static LispObj *
+LispStructAccessOrStore(LispMac *mac, LispBuiltin *builtin, int store)
 /*
  lisp::struct-access atom struct
+ lisp::struct-store atom struct value
  */
 {
-    int offset = 0;
-    LispAtom *atom = NULL;
+    long offset;
+    LispAtom *atom;
+    LispObj *definition, *list;
 
-    LispObj *definition, *struc, *name, *list;
+    LispObj *name, *struc, *value;
 
+    if (store)
+	value = ARGUMENT(2);
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
     if (!SYMBOL_P(name) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
-	(offset = atom->property->structure.function) < 0)
+	(offset = atom->property->structure.function) < 0) {
 	LispDestroy(mac, "%s: invalid argument %s",
 		    STRFUN(builtin), STROBJ(name));
+	/*NOTREACHED*/
+	offset = 0;
+	atom = NULL;
+    }
     definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
@@ -307,7 +319,16 @@ Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
     for (list = struc->data.struc.fields; offset; list = CDR(list), offset--)
 	;
 
-    return (CAR(list));
+    return (store ? CAR(list) = value : CAR(list));
+}
+
+LispObj *
+Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
+/*
+ lisp::struct-access atom struct
+ */
+{
+    return (LispStructAccessOrStore(mac, builtin, 0));
 }
 
 LispObj *
@@ -316,31 +337,7 @@ Lisp_XeditStructStore(LispMac *mac, LispBuiltin *builtin)
  lisp::struct-store atom struct value
  */
 {
-    int offset = 0;
-    LispAtom *atom = NULL;
-
-    LispObj *definition, *value, *struc, *name, *list;
-
-    value = ARGUMENT(2);
-    struc = ARGUMENT(1);
-    name = ARGUMENT(0);
-
-    if (!SYMBOL_P(name) ||
-	(atom = name->data.atom)->a_defstruct == 0 ||
-	(offset = atom->property->structure.function) < 0)
-	LispDestroy(mac, "%s: invalid argument %s",
-		    STRFUN(builtin), STROBJ(name));
-    definition = atom->property->structure.definition;
-
-    /* check if the object is of the required type */
-    if (struc->type != LispStruct_t || struc->data.struc.def != definition)
-	LispDestroy(mac, "%s: %s is not a %s",
-		    STRPTR(name), STROBJ(struc), STRPTR(CAR(definition)));
-
-    for (list = struc->data.struc.fields; offset; list = CDR(list), offset--)
-	;
-
-    return (CAR(list) = value);
+    return (LispStructAccessOrStore(mac, builtin, 1));
 }
 
 LispObj *

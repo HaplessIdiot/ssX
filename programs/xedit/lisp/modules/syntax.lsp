@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.1 2002/07/22 07:26:29 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -84,12 +84,6 @@ longer, it is used. But in the case:
 	input	=>	int
     Both, token1 and token2 match "int", since token1 is defined first, it
 is used.
-
-	RESERVED NAMES
-	--------------
-    :PREVIOUS
-    Reserved to be used with a :SWITCH clause to pop a syntax table from
-the parser stack, or if the stack is empty, just return/keep in the top level.
 |#
 
 
@@ -196,15 +190,26 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 			;;	NIL	  -> do nothing
 			;;	A keyword -> switch to the syntax table
 			;;		     identified by the keyword.
+			;;	A negative integer -> Pop the stack
+			;;			      -<swich-value> times.
+			;;			      A common value is -1,
+			;;			     to switch to the previous
+			;;			     state, but some times
+			;;			     it is desired to return
+			;;			     two or more times in
+			;;			     in the stack.
 			;;  NOTE: This is actually a jump, the stack is
 			;; popped until the named syntax table is found,
 			;; if the stack becomes empty, a new state is
 			;; implicitly created.
-    begin		;;  Same values as for switch, but instead of
+    begin		;;  NIL or a keyword (like switch), but instead of
 			;; popping the stack, it pushes the current syntax
 			;; table to the stack and sets a new current one.
 
     ;; Note: Either "switch" or "begin" may be specified, not both.
+    ;;       Also, after "compile" time, switch and begin will be a
+    ;;	     a pointer to the syntable, not a keyword (unless it is
+    ;;	     a switch with a negative integer argument).
 )
 
 
@@ -219,7 +224,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 
     ;;  Don't allow a regex that matches the null string enter the
     ;; syntax table list.
-    (if (consp (setq check (regexec regex "" :NOTEOL :NOTBOL)))
+    (if (consp (setq check (regexec regex "" :NOTEOL T :NOTBOL T)))
 #+xedit	(error "SYNTOKEN: regex matches empty string ~S" regex)
 #-xedit	()
     )
@@ -249,6 +254,11 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
     augments		;;  A list of synaugment structures, used only
 			;; at "compile time", so that a table can be
 			;; used before it's definition.
+    bol			;;  One of the tokens match the empty string at
+			;; the start of a line (loop optimization hint).
+			;; Field filled at "link" time.
+    eol			;;  Same comments as bol, but in this case, for
+			;; the empty string at the end of a line.
 )
 
 
@@ -257,8 +267,6 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 (defstruct SYNTAX
     name		;;  A unique string to identify the syntax mode.
 			;; Should be the name of the language/file type.
-    table		;; The main syntable structure.
-			;; NOTE: This is also the car of the labels field.
 
     ;; Field(s) defined at "compile time"
     labels		;;  Not exactly a list of labels, but all syntax
@@ -271,14 +279,8 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 			;; used by this syntax mode.
 
     ;; Field(s) used at "run time"
-    syntax		;;  The current syntable, about to move to the
-			;; top of the stack, if a rule requests nesting.
-			;;  At initialization, or when in the top level,
-			;; this is the same as the table field.
-    property		;;  The current default text property.
-			;;  NOTE: This value is also available from the
-			;; syntax field as it is it's property element.
     stack		;; Stack of syntax tables for nested rules.
+    table		;; The current syntax table main syntable structure.
 )
 
 
@@ -342,11 +344,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun SYNAUGMENT (&rest keywords)
     (dolist (keyword keywords)
-	(if
-	    (or
-		(eq keyword :PREVIOUS)
-		(not (keywordp keyword))
-	    )
+	(unless (keywordp keyword)
 	    (error "SYNAUGMENT: bad syntax table label ~A" keyword)
 	)
     )
@@ -451,6 +449,24 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	(append (syntable-tokens table) (syntable-augments table))
     )
 
+    ;;  Check if one of the tokens match the empty string at the
+    ;; start or end of a text line. XXX The fields bol and eol
+    ;; are expected to be initialized to NIL.
+    (dolist (token (syntable-tokens table))
+	(when
+	    (consp (regexec (syntoken-regex token) "" :NOTEOL T))
+	    (setf (syntable-bol table) T)
+	    (return)
+	)
+    )
+    (dolist (token (syntable-tokens table))
+	(when
+	    (consp (regexec (syntoken-regex token) "" :NOTBOL T))
+	    (setf (syntable-eol table) T)
+	    (return)
+	)
+    )
+
     (dolist (child (syntable-tables table))
 	(link-syntax-augment-table child)
     )
@@ -472,8 +488,8 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	(list-syntable-elements main-table)
 
 	switches
-	(remove-if-not
-	    #'keywordp
+	(remove-if
+	    #'null
 	    (car elements)
 	    :KEY #'syntoken-switch
 	)
@@ -500,21 +516,24 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
     )
 
     ;; Check for typos in the keywords, or for not defined syntax tables.
-    (dolist (item switches)
+    (dolist (item (mapcar #'syntoken-switch switches))
 	(unless
 	    (or
-		(eql (syntoken-switch item) :PREVIOUS)
-		(member (syntoken-switch item) tables :key #'syntable-label)
+		(and
+		    (integerp item)
+		    (minusp item)
+		)
+		(member item tables :key #'syntable-label)
 	    )
 	    (error "COMPILE-SYNTAX-TABLE: SWITCH ~A cannot be matched"
-		(syntoken-switch item)
+		item
 	    )
 	)
     )
-    (dolist (item begins)
-	(unless (member (syntoken-begin item) tables :key #'syntable-label)
+    (dolist (item (mapcar #'syntoken-begin begins))
+	(unless (member item tables :key #'syntable-label)
 	    (error "COMPILE-SYNTAX-TABLE: BEGIN ~A cannot be matched"
-		(syntoken-begin item)
+		item
 	    )
 	)
     )
@@ -522,7 +541,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
     ;; Create a list of all properties used by the syntax.
     (setq
 	properties
-	(remove-duplicates
+	(delete-duplicates
 
 	    ;; Remove explicitly set to "default" properties.
 	    (remove NIL
@@ -573,10 +592,40 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
     ;;  Now just append the augmented tokens to the table's token list.
     (link-syntax-augment-table main-table)
 
+    ;;  Change all syntoken switch and begin fields to point to the
+    ;; syntable.
+    (dolist (item switches)
+	(if (keywordp (syntoken-switch item))
+	    ;;  A switch may be relative, check if a keyword
+	    ;; was specified.
+	    (setf
+		(syntoken-switch item)
+		(car
+		    (member
+			(syntoken-switch item)
+			tables
+			:KEY #'syntable-label
+		    )
+		)
+	    )
+	)
+    )
+    (dolist (item begins)
+	(setf
+	    (syntoken-begin item)
+	    (car
+		(member
+		    (syntoken-begin item)
+		    tables
+		    :KEY #'syntable-label
+		)
+	    )
+	)
+    )
+
     (setq syntax
 	(make-syntax
 	    :NAME	name
-	    :TABLE	main-table
 	    :LABELS	tables
 	    :QUARK
 		(compile-syntax-property-list
@@ -584,11 +633,8 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		    properties
 		)
 
-	    ;; Setup initial state.
-	    :SYNTAX	main-table
-	    :PROPERTY	(syntable-property main-table)
-
 	    ;; Stack field initialization defaults to NIL...
+	    :TABLE	main-table
 	)
     )
 
@@ -669,6 +715,19 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 
     (prog*
 	(
+	;;  The current stack of states.
+	(stack (syntax-stack *SYNTAX*))
+
+	;;  The current syntable.
+	(syntax-table (syntax-table *SYNTAX*))
+
+	;;  The current syntable's default property.
+	(default-property (syntable-property syntax-table))
+
+	;;  The tokens in the current syntax table that may match,
+	;; i.e. the items in this list are not in nomatch.
+	token-list
+
 	;;  Input line does not end in a newline?
 	noteol
 
@@ -715,173 +774,188 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	    (read-line stream NIL NIL)
 
 	    (setq
-		line	text
-		length	(length text)
-		noteol	eos
-		nomatch	()
+		line		text
+		length		(length text)
+		notbol		(> start 0)
+		noteol		eos
+		token-list	(syntable-tokens syntax-table)
+		nomatch		()
+		cache		()
 	    )
 	)
-
 
 	;;  If input has finished, return.
 	(unless line
 	    ;;  XXX FIXME: This will not free the string until the garbage
 	    ;;	    collector be called on stream.
 #-debug	    (close stream)
+
+	    ;;  Remember the state if did not pop all the stack.
+	    (setf (syntax-table *SYNTAX*) syntax-table)
+	    (setf (syntax-stack *SYNTAX*) stack)
 	    (return)
 	)
+
+	;;  If empty line, and current table does not have matches for
+	;; the empty string at start or end of a text line.
+	(when
+	    (and
+		(= length 0)
+		(not (syntable-eol syntax-table))
+		(not (syntable-bol syntax-table))
+	    )
+#+debug-verbose
+	    (format T "Empty line and table has no match to bol or eol~%")
+	    (go :PROCESS)
+	)
+
 
 :LOOP
 #+debug-verbose
 	(format T "** Entering :LOOP at offset ~D in table ~A, cache has ~D items~%"
 	    start
-	    (syntable-label (syntax-table *SYNTAX*))
+	    (syntable-label syntax-table)
 	    (length cache)
 	)
 
-	(setq notbol (> start 0))
+	;;  For every regex token in the current syntax table
+	;; that may match.
+	(dolist
+	    (token
+		(setq
+		    token-list
+		    (set-difference token-list nomatch)
+		)
+	    )
 
-	;;  For every regex token in the current syntax table.
-	(dolist (token (syntable-tokens (syntax-table *SYNTAX*)))
+	    ;;	Try to fetch match from cache.
+	    (if (setq match (member token cache :key #'car))
+		;;  Match is in the cache.
 
-	    ;;  If token is already known to not be in the input line.
-	    (unless (position token nomatch)
+		(when (member (caar match) token-list)
 
-		;;  Try to fetch match from cache.
-		(if (setq match (member token cache :key #'car))
-		    ;;	Match is in the cache.
+		    ;;	Match must be moved to the beginning of the
+		    ;; matches list, as a match from another syntax
+		    ;; table may be also in the cache, but before
+		    ;; the match for the current token.
+		    (setq matches (cons (car match) matches))
 
-		    (when
-			(member
-			    (caar match)
-			    (syntable-tokens (syntax-table *SYNTAX*))
-			)
+		    ;;	Remove the match from the cache.
+		    (if (eq match cache)
 
-			;;  Match must be moved to the beginning of the
-			;; matches list, as a match from another syntax
-			;; table may be also in the cache, but before
-			;; the match for the current token.
-			(setq
-			    matches
-			    (nconc
-				matches
-				(list (car match))
-			    )
-			)
+			;;  Slightly faster than (setq cache (cdr cache))
+			(pop cache)
 
-			;;  Remove the match from the cache.
 			(case (length match)
-			    (1
-				(if (eq match cache)
-				    (setq cache NIL)
-				    (rplacd (last cache 2) NIL)
-				)
+			    (1	(rplacd (last cache 2) NIL)
 			    )
 			    (T
-				(setf
-				    (car match) (cadr match)
-				    (cdr match) (cddr match)
-				)
+				(rplaca match (cadr match))
+				(rplacd match (cddr match))
+			    )
+			)
+		    )
+		)
+
+
+		;;  Not in the cache, call regexec.
+		(if
+		    (consp
+			(setq
+			    match
+			    (regexec
+				(syntoken-regex token)
+				line
+				:START	    start
+				:NOTBOL     notbol
+				:NOTEOL     noteol
 			    )
 			)
 		    )
 
+		    ;;	Match found.
+		    (progn
+#+debug-verbose		(format T "Adding to cache: {~A:~S} ~A~%"
+			    (car match)
+			    (subseq line (caar match) (cdar match))
+			    (syntoken-regex token)
+			)
+			(setq
+			    ;; Only the first pair is used.
+			    match
+			    (car match)
 
-		    ;;	Not in the cache, call regexec.
-		    (if
-			(consp
-			    (setq
-				match
-				(regexec (syntoken-regex token) line
-				    :START	start
-				    :NOTBOL	notbol
-				    :NOTEOL	noteol
-				)
-			    )
+			    matches
+			    (cons (cons token match) matches)
 			)
 
-			;;  Match found.
-			(progn
-#+debug-verbose		    (format T "Adding to cache: {~A:~S} ~A~%"
-				(car match)
-				(subseq line (caar match) (cdar match))
-				(syntoken-regex token)
+			;;  Exit loop if the all the remaining
+			;; input was matched.
+			(when
+			    (and
+				(= start (car match))
+				(= length (cdr match))
 			    )
-			    (setq
-				;; Only the first pair is used.
-				match
-				(car match)
-
-				matches
-				(nconc matches (list (cons token match)))
-			    )
-
-			    ;;	Exit loop if the all the remaining
-			    ;; input was matched.
-			    (when
-				(and
-				    (= start (car match))
-				    (= length (cdr match))
-				)
-#+debug-verbose			(format T "Rest of line match~%")
-				(return)
-			    )
+#+debug-verbose 	    (format T "Rest of line match~%")
+			    (return)
 			)
+		    )
 
-			;;  Match not found.
-#+debug-verbose		(progn
-			    (format T "Adding to nomatch: ~A~%"
-				(syntoken-regex token)
-			    )
-			    (setq nomatch (nconc nomatch (list token)))
+		    ;;	Match not found.
+#+debug-verbose	    (progn
+			(format T "Adding to nomatch: ~A~%"
+			    (syntoken-regex token)
 			)
-#-debug-verbose		(setq nomatch (nconc nomatch (list token)))
+			(unless (position token nomatch)
+			    (setq nomatch (cons token nomatch))
+			)
+		    )
+#-debug-verbose	    (unless (position token nomatch)
+			(setq nomatch (cons token nomatch))
 		    )
 		)
 	    )
 	)
 
-	;;  Add matches to the beginning of the cache list.
-	;;  There may be matches from another syntable table in the cache.
-	(setq
-	    cache	(nconc matches cache)
+	;;  Matches was created in reversed order of precedence.
+	(when (nreverse matches)
 
-	    ;;  Make sure that when the match loop is reentered, this
-	    ;; variable is NIL.
-	    matches	()
+	    ;;	Add matches to the beginning of the cache list.
+	    ;;	There may be matches from another syntable table in the cache.
+	    (setq
+		cache	    (nconc matches cache)
+
+		;;  Make sure that when the match loop is reentered, this
+		;; variable is NIL.
+		matches     ()
+	    )
+
+	    ;;	Put matches with smaller offset first.
+	    (stable-sort cache #'< :KEY #'cadr)
 	)
-
-	;;  Put matches with smaller offset first.
-	(stable-sort cache #'< :KEY #'cadr)
 
 	;;  While the first entry in the is not from the current table.
-	(until
-	    (or
-		(null cache)
-		(member
-		    (caar cache)
-		    (syntable-tokens (syntax-table *SYNTAX*))
-		)
-	    )
+	(until (or (null cache) (member (caar cache) token-list))
+
 #+debug-verbose
 	    (format T "Not in the current table, removing {~A:~S} ~A~%"
 		(cdar cache)
 		(subseq line (cadar cache) (cddar cache))
 		(syntoken-regex (caar cache))
 	    )
-	    (setq cache (cdr cache))
+
+	    ;;  Slightly faster than (setq cache (cdr cache)).
+	    (pop cache)
 	)
 
 
 	;;  If nothing was matched in the entire/remaining line.
-	(when (null cache)
+	(unless cache
 	    (setq
 		result
-		(nconc
+		(cons
+		    (cons start (cons length default-property))
 		    result
-		    (list
-			(list* start length (syntax-property *SYNTAX*))
-		    )
 		)
 
 		;;  Let the code know the input line is finished.
@@ -917,6 +991,13 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	;;  If got here, length of cache is larger than one.
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+#+debug-verbose
+	(format T "Removing first candidate from cache {~A:~S} ~A~%"
+	    (cdar cache)
+	    (subseq line (cadar cache) (cddar cache))
+	    (syntoken-regex (caar cache))
+	)
+
 	;;  Prepare to choose best match.
 	(setq
 	    match	(car cache)
@@ -944,42 +1025,33 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 
 			;;  Or next item is at a longer offset than the
 			;; end of current match.
-			(> from right)
+			(>= from right)
 		    )
 		    (return)
 		)
 
-		(if (= left from)
+		(if
+		    (and
+			;;  If another match at the same offset.
+			(= left from)
 
-		    ;;	If another match at the same offset.
-		    (if (> to right)
-
-			;;  If this match is longer than the current one.
-			(setq
-			    match   item
-			    right   to
-			)
+			;;  And if this match is longer than the current one.
+			(> to right)
 		    )
-
-		    ;;	Else, if at the offset of the end, but
-		    ;; not a zero length match, keep it by returning.
-		    ;;	A zero length match *is* an overlap, and
-		    ;; must be removed.
-		    (when
-			(and
-			    (= from right)
-			    (> to from)
-			)
-			(return)
+		    (setq
+			match	item
+			right	to
 		    )
 		)
 
 #+debug-verbose	(format T "Removing from cache {~A:~S} ~A~%"
 		    (cdar cache)
 		    (subseq line from to)
-		    (cdr cache)
+		    (syntoken-regex (caar cache))
 		)
-		(setq cache (cdr cache))
+
+		;;  Slightly faster than (setq cache (cdr cache)).
+		(pop cache)
 	    )
 	)
 
@@ -1001,7 +1073,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	    (switch	(syntoken-switch match))
 	    (contained	(syntoken-contained match))
 	    (change	(or begin switch))
-	    (property	(syntax-property *SYNTAX*))
+	    (property	default-property)
 	    )
 
 	    ;;  Check for unmatched leading text.
@@ -1013,10 +1085,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		)
 		(setq
 		    result
-		    (nconc
-			result
-			(list (list* start left property))
-		    )
+		    (cons (cons start (cons left property)) result)
 		)
 	    )
 
@@ -1037,10 +1106,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		;;  Add matched text.
 		(setq
 		    result
-		    (nconc
-			result
-			(list (list* left right property))
-		    )
+		    (cons (cons left (cons right property)) result)
 		)
 #+debug-verbose	(format T "(0)Match found for {(~D . ~D):~S}~%"
 		    left
@@ -1053,25 +1119,29 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	    ;;	Update start offset in the input now!
 	    (setq start right)
 
+
 	    ;;	When changing the current syntax table.
 	    (when change
 		(if switch
 		    (progn
 #+debug-verbose		(format T "switching to ")
-			(if (eq :PREVIOUS switch)
+			(if (numberp switch)
 
-			    ;;	If returning to the previous state.
-			    (setq change (pop (syntax-stack *SYNTAX*)))
+			    ;;	If returning to a previous state.
+			    ;;  Don't generate an error if the stack
+			    ;; becomes empty?
+			    (while
+				(< switch 0)
+				(setq change (pop stack))
+				(incf switch)
+			    )
 
 			    ;;	Else, not to the previous state, but
 			    ;; returning to a named syntax table,
 			    ;; search for it in the stack.
 			    (while
 				(and
-				    (setq
-					change
-					(pop (syntax-stack *SYNTAX*))
-				    )
+				    (setq change (pop stack))
 				    (not (eq switch change))
 				)
 				;;  Empty loop.
@@ -1080,12 +1150,12 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 
 			;;  If no match found while popping
 			;; the stack.
-			(if (null change)
+			(unless change
 
 			    ;;	Return to the topmost syntax table.
 			    (setq
 				change
-				(syntax-table *SYNTAX*)
+				(car (syntax-labels *SYNTAX*))
 			    )
 			)
 		    )
@@ -1093,22 +1163,11 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		    ;;	Else, it is a begin.
 		    (progn
 #+debug-verbose		(format T "begining ")
-			(setq change
-			    (car
-				(member
-				    begin
-				    (syntax-labels *SYNTAX*)
-				    :KEY #'syntable-label
-				)
-			    )
-			)
+			(setq change begin)
 
 			;;  Save state for a possible
 			;; :SWITCH later.
-			(push
-			    (syntax-table *SYNTAX*)
-			    (syntax-stack *SYNTAX*)
-			)
+			(push syntax-table stack)
 		    )
 		)
 
@@ -1118,12 +1177,10 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		)
 
 		;;  Change current syntax table.
-		(setf
-		    (syntax-table *SYNTAX*)
-		    change
-
-		    (syntax-property *SYNTAX*)
-		    (syntable-property change)
+		(setq
+		    syntax-table	change
+		    default-property	(syntable-property change)
+		    token-list		(syntable-tokens change)
 		)
 
 
@@ -1137,17 +1194,14 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 			)
 			(setq
 			    property
-			    (syntax-property *SYNTAX*)
+			    default-property
 			)
 		    )
 
 		    ;; Add matched text with the updated property.
 		    (setq
 			result
-			(nconc
-			    result
-			    (list (list* left right property))
-			)
+			(cons (cons left (cons right property)) result)
 		    )
 
 #+debug-verbose	    (format T "(1)Match found for {(~D . ~D):~S}~%"
@@ -1157,19 +1211,15 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		    )
 		)
 
-		;;  This is to find matches to end of line.
-		;;  Probably it would be better to know if such matches
-		;; exists in the current syntax table.
-		(if (= start length) (go :LOOP))
+		;;  Try again if the table has a match to the empty
+		;; string in the end of a line.
+		(and (= start length) (syntable-eol change) (go :LOOP))
 	    )
 	)
 
 
 ;-----------------------------------------------------------------------
 :PROCESS
-#+debug-verbose
-	(format T "** Entering :PROCESS~%")
-
 	;;  Wait for the end of the line to process, so that 
 	;; it is possible to join sequential matches with the
 	;; same text property.
@@ -1177,6 +1227,11 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	    (go :LOOP)
 	)
 
+#+debug-verbose
+	(format T "** Entering :PROCESS~%")
+
+	;;  Result was created in reversed order.
+	(nreverse result)
 
 	(let
 	    (
@@ -1209,7 +1264,7 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 	    ;;	Loop in the result. If there are consecutive matches
 	    ;; with the same property, now result will have the same
 	    ;; offset value in the CAR of it's elements.
-	    (dolist (item (remove-duplicates result :TEST #'= :KEY #'car))
+	    (dolist (item (delete-duplicates result :TEST #'= :KEY #'car))
 		(setq
 		    left	    (car item)
 		    right	    (cadr item)
@@ -1226,19 +1281,17 @@ the parser stack, or if the stack is empty, just return/keep in the top level.
 		    (subseq line left right)
 		)
 
-		(if
-		    (and
-			;; XXX
-			;; XXX
-			;; IF THE CHECK OF RIGHT LARGER THAN LEFT IS NOT
-			;; DONE (i.e. right != left) XAW WILL CRASH
-			;; ALLOCATING ALL AVAILABLE MEMORY.
-			;; XXX FIXME
-			;; XXX
-			;; XXX
-			(> right left)
-			(synprop-p property)
-		    )
+		(and
+		    ;; XXX
+		    ;; XXX
+		    ;; IF THE CHECK OF RIGHT LARGER THAN LEFT IS NOT
+		    ;; DONE (i.e. right != left) XAW WILL CRASH
+		    ;; ALLOCATING ALL AVAILABLE MEMORY.
+		    ;; XXX FIXME
+		    ;; XXX
+		    ;; XXX
+		    (> right left)
+		    (synprop-p property)
 		    (add-entity
 			(+ *FROM* left)
 			(- right left)

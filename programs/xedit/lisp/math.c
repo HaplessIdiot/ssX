@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.9 2002/05/16 15:43:30 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.11 2002/07/16 05:19:39 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -107,7 +107,7 @@ Lisp_Mul(LispMac *mac, LispBuiltin *builtin)
 	    return (number);
     }
     else
-	return (INTEGER(1));
+	return (SMALLINT(1));
 
     result = copy_number(mac, builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
@@ -139,7 +139,7 @@ Lisp_Plus(LispMac *mac, LispBuiltin *builtin)
 	    return (number);
     }
     else
-	return (INTEGER(0));
+	return (SMALLINT(0));
 
     result = copy_number(mac, builtin, number);
     for (; CONS_P(numbers); numbers = CDR(numbers)) {
@@ -503,19 +503,6 @@ Lisp_Complex(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Complexp(LispMac *mac, LispBuiltin *builtin)
-/*
- complexp object
- */
-{
-    LispObj *object;
-
-    object = ARGUMENT(0);
-
-    return (COMPLEX_P(object) ? T : NIL);
-}
-
-LispObj *
 Lisp_Conjugate(LispMac *mac, LispBuiltin *builtin)
 /*
  conjugate number
@@ -549,7 +536,6 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 
     delta = ARGUMENT(1);
     place = ARGUMENT(0);
-    MACRO_ARGUMENT2();
 
     if (SYMBOL_P(place)) {
 	number = LispGetVar(mac, place);
@@ -578,8 +564,10 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 	number = accumulator;
     }
 
-    if (SYMBOL_P(place))
+    if (SYMBOL_P(place)) {
+	ERROR_CHECK_CONSTANT(place);
 	LispSetVar(mac, place, number);
+    }
     else
 	(void)APPLY2(Osetf, place, number);
 
@@ -600,17 +588,17 @@ Lisp_Denominator(LispMac *mac, LispBuiltin *builtin)
 
     switch (rational->type) {
 	case FI:
-	    result = INTEGER(1);
+	    result = SMALLINT(1);
 	    break;
 	case FR:
-	    result = INTEGER(XFRD(rational));
+	    result = SMALLINT(XFRD(rational));
 	    break;
 	case BI:
-	    result = INTEGER(1);
+	    result = SMALLINT(1);
 	    break;
 	case BR:
 	    if (mpi_fiti(XBRD(rational)))
-		result = INTEGER(mpi_geti(XBRD(rational)));
+		result = SMALLINT(mpi_geti(XBRD(rational)));
 	    else {
 		mpi *den = XALLOC(mpi);
 
@@ -730,7 +718,7 @@ Lisp_Gcd(LispMac *mac, LispBuiltin *builtin)
     integers = ARGUMENT(0);
 
     if (!CONS_P(integers))
-	return (INTEGER(0));
+	return (SMALLINT(0));
 
     integer = CAR(integers);
 
@@ -763,7 +751,7 @@ Lisp_Imagpart(LispMac *mac, LispBuiltin *builtin)
 	return (number->data.complex.imag);
     else ERROR_CHECK_REAL(number);
 
-    return (INTEGER(0));
+    return (SMALLINT(0));
 }
 
 LispObj *
@@ -777,7 +765,6 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
 
     delta = ARGUMENT(1);
     place = ARGUMENT(0);
-    MACRO_ARGUMENT2();
 
     if (SYMBOL_P(place)) {
 	number = LispGetVar(mac, place);
@@ -803,8 +790,10 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
     add_accumulator(mac, builtin, accumulator, number);
     number = accumulator;
 
-    if (SYMBOL_P(place))
+    if (SYMBOL_P(place)) {
+	ERROR_CHECK_CONSTANT(place);
 	LispSetVar(mac, place, number);
+    }
     else
 	(void)APPLY2(Osetf, place, number);
 
@@ -841,7 +830,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 	    if (XFI(natural) < 0)
 		LispDestroy(mac, "%s: %s is not a natural number",
 			    STRFUN(builtin), STROBJ(natural));
-	    result = INTEGER(floor(sqrt(XFI(natural))));
+	    result = SMALLINT(floor(sqrt(XFI(natural))));
 	    break;
 	case BI: {
 	    mpi *bigi;
@@ -853,7 +842,7 @@ Lisp_Isqrt(LispMac *mac, LispBuiltin *builtin)
 	    mpi_init(bigi);
 	    mpi_sqrt(bigi, XBI(natural));
 	    if (mpi_fiti(bigi)) {
-		result = INTEGER(mpi_geti(bigi));
+		result = SMALLINT(mpi_geti(bigi));
 		mpi_clear(bigi);
 		XFREE(bigi);
 	    }
@@ -883,7 +872,7 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
     integers = ARGUMENT(0);
 
     if (!CONS_P(integers))
-	return (INTEGER(1));
+	return (SMALLINT(1));
 
     integer = CAR(integers);
 
@@ -1282,14 +1271,14 @@ Lisp_Numerator(LispMac *mac, LispBuiltin *builtin)
 	    result = rational;
 	    break;
 	case FR:
-	    result = INTEGER(rational->data.ratio.numerator);
+	    result = SMALLINT(rational->data.ratio.numerator);
 	    break;
 	case BI:
 	    result = rational;
 	    break;
 	case BR:
 	    if (mpi_fiti(XBRN(rational)))
-		result = INTEGER(mpi_geti(XBRN(rational)));
+		result = SMALLINT(mpi_geti(XBRN(rational)));
 	    else {
 		mpi *num = XALLOC(mpi);
 
@@ -1379,7 +1368,7 @@ Lisp_Rational(LispMac *mac, LispBuiltin *builtin)
 	double numerator = number->data.real;
 
 	if ((long)numerator == numerator)
-	    number = INTEGER(numerator);
+	    number = SMALLINT(numerator);
 	else {
 	    mpr *bigr = XALLOC(mpr);
 

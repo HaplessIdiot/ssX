@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.17 2002/07/16 05:19:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.18 2002/07/22 07:26:28 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -64,17 +64,300 @@ static LispObj *LispEvalFeature(LispMac*, LispObj*);
 /*
  * Initialization
  */
-char *LispCharNames[] = {
-    "Null",		"Soh",		"Stx",		"Etx",
-    "Eot",		"Enq",		"Ack",		"Bell",
-    "Backspace",	"Tab",		"Newline",	"Vt",
-    "Page",		"Return",	"So",		"Si",
-    "Dle",		"Dc1",		"Dc2",		"Dc3",
-    "Dc4",		"Nak",		"Syn",		"Etb",
-    "Can",		"Em",		"Sub",		"Escape",
-    "Fs",		"Gs",		"Rs",		"Us",
-    "Space"
+static char *Char_Nul[] = {"Null", "Nul", NULL};
+static char *Char_Soh[] = {"Soh", NULL};
+static char *Char_Stx[] = {"Stx", NULL};
+static char *Char_Etx[] = {"Etx", NULL};
+static char *Char_Eot[] = {"Eot", NULL};
+static char *Char_Enq[] = {"Enq", NULL};
+static char *Char_Ack[] = {"Ack", NULL};
+static char *Char_Bel[] = {"Bell", "Bel", NULL};
+static char *Char_Bs[]  = {"Backspace", "Bs", NULL};
+static char *Char_Tab[] = {"Tab", NULL};
+static char *Char_Nl[]  = {"Newline", "Nl", "Lf", "Linefeed", NULL};
+static char *Char_Vt[]  = {"Vt", NULL};
+static char *Char_Np[]  = {"Page", "Np", NULL};
+static char *Char_Cr[]  = {"Return", "Cr", NULL};
+static char *Char_Ff[]  = {"So", "Ff", NULL};
+static char *Char_Si[]  = {"Si", NULL};
+static char *Char_Dle[] = {"Dle", NULL};
+static char *Char_Dc1[] = {"Dc1", NULL};
+static char *Char_Dc2[] = {"Dc2", NULL};
+static char *Char_Dc3[] = {"Dc3", NULL};
+static char *Char_Dc4[] = {"Dc4", NULL};
+static char *Char_Nak[] = {"Nak", NULL};
+static char *Char_Syn[] = {"Syn", NULL};
+static char *Char_Etb[] = {"Etb", NULL};
+static char *Char_Can[] = {"Can", NULL};
+static char *Char_Em[]  = {"Em", NULL};
+static char *Char_Sub[] = {"Sub", NULL};
+static char *Char_Esc[] = {"Escape", "Esc", NULL};
+static char *Char_Fs[]  = {"Fs", NULL};
+static char *Char_Gs[]  = {"Gs", NULL};
+static char *Char_Rs[]  = {"Rs", NULL};
+static char *Char_Us[]  = {"Us", NULL};
+static char *Char_Sp[]  = {"Space", "Sp", NULL};
+static char *Char_Del[] = {"Rubout", "Del", "Delete", NULL};
+
+LispCharInfo LispChars[256] = {
+    {{LispCharacter_t /*   0 */}, Char_Nul},
+    {{LispCharacter_t /*   1 */}, Char_Soh},
+    {{LispCharacter_t /*   2 */}, Char_Stx},
+    {{LispCharacter_t /*   3 */}, Char_Etx},
+    {{LispCharacter_t /*   4 */}, Char_Eot},
+    {{LispCharacter_t /*   5 */}, Char_Enq},
+    {{LispCharacter_t /*   6 */}, Char_Ack},
+    {{LispCharacter_t /*   7 */}, Char_Bel},
+    {{LispCharacter_t /*   8 */}, Char_Bs},
+    {{LispCharacter_t /*   9 */}, Char_Tab},
+    {{LispCharacter_t /*  10 */}, Char_Nl},
+    {{LispCharacter_t /*  11 */}, Char_Vt},
+    {{LispCharacter_t /*  12 */}, Char_Np},
+    {{LispCharacter_t /*  13 */}, Char_Cr},
+    {{LispCharacter_t /*  14 */}, Char_Ff},
+    {{LispCharacter_t /*  15 */}, Char_Si},
+    {{LispCharacter_t /*  16 */}, Char_Dle},
+    {{LispCharacter_t /*  17 */}, Char_Dc1},
+    {{LispCharacter_t /*  18 */}, Char_Dc2},
+    {{LispCharacter_t /*  19 */}, Char_Dc3},
+    {{LispCharacter_t /*  20 */}, Char_Dc4},
+    {{LispCharacter_t /*  21 */}, Char_Nak},
+    {{LispCharacter_t /*  22 */}, Char_Syn},
+    {{LispCharacter_t /*  23 */}, Char_Etb},
+    {{LispCharacter_t /*  24 */}, Char_Can},
+    {{LispCharacter_t /*  25 */}, Char_Em},
+    {{LispCharacter_t /*  26 */}, Char_Sub},
+    {{LispCharacter_t /*  27 */}, Char_Esc},
+    {{LispCharacter_t /*  28 */}, Char_Fs},
+    {{LispCharacter_t /*  29 */}, Char_Gs},
+    {{LispCharacter_t /*  30 */}, Char_Rs},
+    {{LispCharacter_t /*  31 */}, Char_Us},
+    {{LispCharacter_t /*  32 */}, Char_Sp},
+    {{LispCharacter_t /*  33 */}, NULL},
+    {{LispCharacter_t /*  34 */}, NULL},
+    {{LispCharacter_t /*  35 */}, NULL},
+    {{LispCharacter_t /*  36 */}, NULL},
+    {{LispCharacter_t /*  37 */}, NULL},
+    {{LispCharacter_t /*  38 */}, NULL},
+    {{LispCharacter_t /*  39 */}, NULL},
+    {{LispCharacter_t /*  40 */}, NULL},
+    {{LispCharacter_t /*  41 */}, NULL},
+    {{LispCharacter_t /*  42 */}, NULL},
+    {{LispCharacter_t /*  43 */}, NULL},
+    {{LispCharacter_t /*  44 */}, NULL},
+    {{LispCharacter_t /*  45 */}, NULL},
+    {{LispCharacter_t /*  46 */}, NULL},
+    {{LispCharacter_t /*  47 */}, NULL},
+    {{LispCharacter_t /*  48 */}, NULL},
+    {{LispCharacter_t /*  49 */}, NULL},
+    {{LispCharacter_t /*  50 */}, NULL},
+    {{LispCharacter_t /*  51 */}, NULL},
+    {{LispCharacter_t /*  52 */}, NULL},
+    {{LispCharacter_t /*  53 */}, NULL},
+    {{LispCharacter_t /*  54 */}, NULL},
+    {{LispCharacter_t /*  55 */}, NULL},
+    {{LispCharacter_t /*  56 */}, NULL},
+    {{LispCharacter_t /*  57 */}, NULL},
+    {{LispCharacter_t /*  58 */}, NULL},
+    {{LispCharacter_t /*  59 */}, NULL},
+    {{LispCharacter_t /*  60 */}, NULL},
+    {{LispCharacter_t /*  61 */}, NULL},
+    {{LispCharacter_t /*  62 */}, NULL},
+    {{LispCharacter_t /*  63 */}, NULL},
+    {{LispCharacter_t /*  64 */}, NULL},
+    {{LispCharacter_t /*  65 */}, NULL},
+    {{LispCharacter_t /*  66 */}, NULL},
+    {{LispCharacter_t /*  67 */}, NULL},
+    {{LispCharacter_t /*  68 */}, NULL},
+    {{LispCharacter_t /*  69 */}, NULL},
+    {{LispCharacter_t /*  70 */}, NULL},
+    {{LispCharacter_t /*  71 */}, NULL},
+    {{LispCharacter_t /*  72 */}, NULL},
+    {{LispCharacter_t /*  73 */}, NULL},
+    {{LispCharacter_t /*  74 */}, NULL},
+    {{LispCharacter_t /*  75 */}, NULL},
+    {{LispCharacter_t /*  76 */}, NULL},
+    {{LispCharacter_t /*  77 */}, NULL},
+    {{LispCharacter_t /*  78 */}, NULL},
+    {{LispCharacter_t /*  79 */}, NULL},
+    {{LispCharacter_t /*  80 */}, NULL},
+    {{LispCharacter_t /*  81 */}, NULL},
+    {{LispCharacter_t /*  82 */}, NULL},
+    {{LispCharacter_t /*  83 */}, NULL},
+    {{LispCharacter_t /*  84 */}, NULL},
+    {{LispCharacter_t /*  85 */}, NULL},
+    {{LispCharacter_t /*  86 */}, NULL},
+    {{LispCharacter_t /*  87 */}, NULL},
+    {{LispCharacter_t /*  88 */}, NULL},
+    {{LispCharacter_t /*  89 */}, NULL},
+    {{LispCharacter_t /*  90 */}, NULL},
+    {{LispCharacter_t /*  91 */}, NULL},
+    {{LispCharacter_t /*  92 */}, NULL},
+    {{LispCharacter_t /*  93 */}, NULL},
+    {{LispCharacter_t /*  94 */}, NULL},
+    {{LispCharacter_t /*  95 */}, NULL},
+    {{LispCharacter_t /*  96 */}, NULL},
+    {{LispCharacter_t /*  97 */}, NULL},
+    {{LispCharacter_t /*  98 */}, NULL},
+    {{LispCharacter_t /*  99 */}, NULL},
+    {{LispCharacter_t /* 100 */}, NULL},
+    {{LispCharacter_t /* 101 */}, NULL},
+    {{LispCharacter_t /* 102 */}, NULL},
+    {{LispCharacter_t /* 103 */}, NULL},
+    {{LispCharacter_t /* 104 */}, NULL},
+    {{LispCharacter_t /* 105 */}, NULL},
+    {{LispCharacter_t /* 106 */}, NULL},
+    {{LispCharacter_t /* 107 */}, NULL},
+    {{LispCharacter_t /* 108 */}, NULL},
+    {{LispCharacter_t /* 109 */}, NULL},
+    {{LispCharacter_t /* 110 */}, NULL},
+    {{LispCharacter_t /* 111 */}, NULL},
+    {{LispCharacter_t /* 112 */}, NULL},
+    {{LispCharacter_t /* 113 */}, NULL},
+    {{LispCharacter_t /* 114 */}, NULL},
+    {{LispCharacter_t /* 115 */}, NULL},
+    {{LispCharacter_t /* 116 */}, NULL},
+    {{LispCharacter_t /* 117 */}, NULL},
+    {{LispCharacter_t /* 118 */}, NULL},
+    {{LispCharacter_t /* 119 */}, NULL},
+    {{LispCharacter_t /* 110 */}, NULL},
+    {{LispCharacter_t /* 121 */}, NULL},
+    {{LispCharacter_t /* 122 */}, NULL},
+    {{LispCharacter_t /* 123 */}, NULL},
+    {{LispCharacter_t /* 124 */}, NULL},
+    {{LispCharacter_t /* 125 */}, NULL},
+    {{LispCharacter_t /* 126 */}, NULL},
+    {{LispCharacter_t /* 127 */}, Char_Del},
+    {{LispCharacter_t /* 128 */}, NULL},
+    {{LispCharacter_t /* 129 */}, NULL},
+    {{LispCharacter_t /* 130 */}, NULL},
+    {{LispCharacter_t /* 131 */}, NULL},
+    {{LispCharacter_t /* 132 */}, NULL},
+    {{LispCharacter_t /* 133 */}, NULL},
+    {{LispCharacter_t /* 134 */}, NULL},
+    {{LispCharacter_t /* 135 */}, NULL},
+    {{LispCharacter_t /* 136 */}, NULL},
+    {{LispCharacter_t /* 137 */}, NULL},
+    {{LispCharacter_t /* 138 */}, NULL},
+    {{LispCharacter_t /* 139 */}, NULL},
+    {{LispCharacter_t /* 140 */}, NULL},
+    {{LispCharacter_t /* 141 */}, NULL},
+    {{LispCharacter_t /* 142 */}, NULL},
+    {{LispCharacter_t /* 143 */}, NULL},
+    {{LispCharacter_t /* 144 */}, NULL},
+    {{LispCharacter_t /* 145 */}, NULL},
+    {{LispCharacter_t /* 146 */}, NULL},
+    {{LispCharacter_t /* 147 */}, NULL},
+    {{LispCharacter_t /* 148 */}, NULL},
+    {{LispCharacter_t /* 149 */}, NULL},
+    {{LispCharacter_t /* 150 */}, NULL},
+    {{LispCharacter_t /* 151 */}, NULL},
+    {{LispCharacter_t /* 152 */}, NULL},
+    {{LispCharacter_t /* 153 */}, NULL},
+    {{LispCharacter_t /* 154 */}, NULL},
+    {{LispCharacter_t /* 155 */}, NULL},
+    {{LispCharacter_t /* 156 */}, NULL},
+    {{LispCharacter_t /* 157 */}, NULL},
+    {{LispCharacter_t /* 158 */}, NULL},
+    {{LispCharacter_t /* 159 */}, NULL},
+    {{LispCharacter_t /* 160 */}, NULL},
+    {{LispCharacter_t /* 161 */}, NULL},
+    {{LispCharacter_t /* 162 */}, NULL},
+    {{LispCharacter_t /* 163 */}, NULL},
+    {{LispCharacter_t /* 164 */}, NULL},
+    {{LispCharacter_t /* 165 */}, NULL},
+    {{LispCharacter_t /* 166 */}, NULL},
+    {{LispCharacter_t /* 167 */}, NULL},
+    {{LispCharacter_t /* 168 */}, NULL},
+    {{LispCharacter_t /* 169 */}, NULL},
+    {{LispCharacter_t /* 170 */}, NULL},
+    {{LispCharacter_t /* 171 */}, NULL},
+    {{LispCharacter_t /* 172 */}, NULL},
+    {{LispCharacter_t /* 173 */}, NULL},
+    {{LispCharacter_t /* 174 */}, NULL},
+    {{LispCharacter_t /* 175 */}, NULL},
+    {{LispCharacter_t /* 176 */}, NULL},
+    {{LispCharacter_t /* 177 */}, NULL},
+    {{LispCharacter_t /* 178 */}, NULL},
+    {{LispCharacter_t /* 179 */}, NULL},
+    {{LispCharacter_t /* 180 */}, NULL},
+    {{LispCharacter_t /* 181 */}, NULL},
+    {{LispCharacter_t /* 182 */}, NULL},
+    {{LispCharacter_t /* 183 */}, NULL},
+    {{LispCharacter_t /* 184 */}, NULL},
+    {{LispCharacter_t /* 185 */}, NULL},
+    {{LispCharacter_t /* 186 */}, NULL},
+    {{LispCharacter_t /* 187 */}, NULL},
+    {{LispCharacter_t /* 188 */}, NULL},
+    {{LispCharacter_t /* 189 */}, NULL},
+    {{LispCharacter_t /* 190 */}, NULL},
+    {{LispCharacter_t /* 191 */}, NULL},
+    {{LispCharacter_t /* 192 */}, NULL},
+    {{LispCharacter_t /* 193 */}, NULL},
+    {{LispCharacter_t /* 194 */}, NULL},
+    {{LispCharacter_t /* 195 */}, NULL},
+    {{LispCharacter_t /* 196 */}, NULL},
+    {{LispCharacter_t /* 197 */}, NULL},
+    {{LispCharacter_t /* 198 */}, NULL},
+    {{LispCharacter_t /* 199 */}, NULL},
+    {{LispCharacter_t /* 200 */}, NULL},
+    {{LispCharacter_t /* 201 */}, NULL},
+    {{LispCharacter_t /* 202 */}, NULL},
+    {{LispCharacter_t /* 203 */}, NULL},
+    {{LispCharacter_t /* 204 */}, NULL},
+    {{LispCharacter_t /* 205 */}, NULL},
+    {{LispCharacter_t /* 206 */}, NULL},
+    {{LispCharacter_t /* 207 */}, NULL},
+    {{LispCharacter_t /* 208 */}, NULL},
+    {{LispCharacter_t /* 209 */}, NULL},
+    {{LispCharacter_t /* 210 */}, NULL},
+    {{LispCharacter_t /* 211 */}, NULL},
+    {{LispCharacter_t /* 212 */}, NULL},
+    {{LispCharacter_t /* 213 */}, NULL},
+    {{LispCharacter_t /* 214 */}, NULL},
+    {{LispCharacter_t /* 215 */}, NULL},
+    {{LispCharacter_t /* 216 */}, NULL},
+    {{LispCharacter_t /* 217 */}, NULL},
+    {{LispCharacter_t /* 218 */}, NULL},
+    {{LispCharacter_t /* 219 */}, NULL},
+    {{LispCharacter_t /* 210 */}, NULL},
+    {{LispCharacter_t /* 221 */}, NULL},
+    {{LispCharacter_t /* 222 */}, NULL},
+    {{LispCharacter_t /* 223 */}, NULL},
+    {{LispCharacter_t /* 224 */}, NULL},
+    {{LispCharacter_t /* 225 */}, NULL},
+    {{LispCharacter_t /* 226 */}, NULL},
+    {{LispCharacter_t /* 227 */}, NULL},
+    {{LispCharacter_t /* 228 */}, NULL},
+    {{LispCharacter_t /* 229 */}, NULL},
+    {{LispCharacter_t /* 230 */}, NULL},
+    {{LispCharacter_t /* 231 */}, NULL},
+    {{LispCharacter_t /* 232 */}, NULL},
+    {{LispCharacter_t /* 233 */}, NULL},
+    {{LispCharacter_t /* 234 */}, NULL},
+    {{LispCharacter_t /* 235 */}, NULL},
+    {{LispCharacter_t /* 236 */}, NULL},
+    {{LispCharacter_t /* 237 */}, NULL},
+    {{LispCharacter_t /* 238 */}, NULL},
+    {{LispCharacter_t /* 239 */}, NULL},
+    {{LispCharacter_t /* 240 */}, NULL},
+    {{LispCharacter_t /* 241 */}, NULL},
+    {{LispCharacter_t /* 242 */}, NULL},
+    {{LispCharacter_t /* 243 */}, NULL},
+    {{LispCharacter_t /* 244 */}, NULL},
+    {{LispCharacter_t /* 245 */}, NULL},
+    {{LispCharacter_t /* 246 */}, NULL},
+    {{LispCharacter_t /* 247 */}, NULL},
+    {{LispCharacter_t /* 248 */}, NULL},
+    {{LispCharacter_t /* 249 */}, NULL},
+    {{LispCharacter_t /* 250 */}, NULL},
+    {{LispCharacter_t /* 251 */}, NULL},
+    {{LispCharacter_t /* 252 */}, NULL},
+    {{LispCharacter_t /* 253 */}, NULL},
+    {{LispCharacter_t /* 254 */}, NULL},
+    {{LispCharacter_t /* 255 */}, NULL}
 };
+#undef CHAR_VALUE
 
 Atom_id Sand, Sor, Snot;
 
@@ -506,7 +789,7 @@ LispReadObject(LispMac *mac)
     string[length] = '\0';
 
     if (quote == '"')
-	object = STRING(string);
+	object = LSTRING(string, length);
 
     else if (quote == '|' || (unreadable && !collon)) {
 	/* Set unreadable field, this atom needs quoting to be read back */
@@ -826,7 +1109,7 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 	LispMused(mac, iop);
     }
     else
-	number = INTEGER(integer);
+	number = SMALLINT(integer);
 
     return (number);
 }
@@ -993,43 +1276,31 @@ LispReadCharacter(LispMac *mac)
 	    stk[len++] = ch;
     }
     if (len > 1) {
+	char **names;
+	int found = 0;
 	stk[len] = '\0';
 
-	for (c = 0; c <= ' '; c++) {
-	    if (strcasecmp(LispCharNames[c], stk) == 0)
-		break;
+	for (c = ch = 0; ch <= ' ' && !found; ch++) {
+	    for (names = LispChars[ch].names; *names; names++)
+		if (strcasecmp(*names, stk) == 0) {
+		    c = ch;
+		    found = 1;
+		    break;
+		}
 	}
-	if (c > ' ') {
-	    /* extra or special cases */
-	    if (strcasecmp(stk, "Rubout") == 0)
-		c = 0177;
-	    else if (strcasecmp(stk, "Nul") == 0)
-		c = 0;
-	    else if (strcasecmp(stk, "Bel") == 0)
-		c = 007;
-	    else if (strcasecmp(stk, "Bs") == 0)
-		c = 010;
-	    else if (strcasecmp(stk, "Ht") == 0)
-		c = 011;
-	    else if (strcasecmp(stk, "Lf") == 0)
-		c = 012;
-	    else if (strcasecmp(stk, "Ff") == 0)
-		c = 014;
-	    else if (strcasecmp(stk, "Cr") == 0)
-		c = 015;
-	    else if (strcasecmp(stk, "Esc") == 0)
-		c = 033;
-	    else if (strcasecmp(stk, "Del") == 0)
-		c = 0177;
-	    else if (strcasecmp(stk, "Linefeed") == 0)
-		c = 012;
-	    else if (strcasecmp(stk, "Delete") == 0)
-		c = 0177;
-	    else {
-		if (mac->discard)
-		    return (NIL);
-		LispDestroy(mac, "READ: unkwnown character %s", stk);
-	    }
+	if (!found) {
+	    for (names = LispChars[0177].names; *names; names++)
+		if (strcasecmp(*names, stk) == 0) {
+		    c = 0177;
+		    found = 1;
+		    break;
+		}
+	}
+
+	if (!found) {
+	    if (mac->discard)
+		return (NIL);
+	    LispDestroy(mac, "READ: unkwnown character %s", stk);
 	}
     }
     else
@@ -1161,7 +1432,7 @@ LispReadArray(LispMac *mac, long dimensions)
     initial = Kinitial_contents;
 
     if (dimensions) {
-	dim = cons = CONS(INTEGER(dimensions), NIL);
+	dim = cons = CONS(SMALLINT(dimensions), NIL);
 
 	for (count = 1; count < dimensions; count++) {
 	    long length;
@@ -1176,7 +1447,7 @@ LispReadArray(LispMac *mac, long dimensions)
 	    for (length = 1, obj = data; CONS_P(obj); obj = CDR(obj), length++)
 		;
 	    GCProtect();
-	    CDR(cons) = CONS(INTEGER(length), NIL);
+	    CDR(cons) = CONS(SMALLINT(length), NIL);
 	    cons = CDR(cons);
 	    GCUProtect();
 	}

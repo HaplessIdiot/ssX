@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.26 2002/07/16 05:19:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.27 2002/07/28 21:34:04 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -54,7 +54,7 @@
 #define CDDR(list)		((list)->data.cons.cdr->data.cons.cdr)
 #define CONS(car, cdr)		LispNewCons(mac, car, cdr)
 #define EVAL(list)		LispEval(mac, list)
-#define APPLY(fun, args)	LispApply(mac, fun, args)
+#define APPLY(fun, args)	LispFuncall(mac, fun, args, 0)
 #define APPLY1(fun, arg)	LispApply1(mac, fun, arg)
 #define APPLY2(fun, arg1, arg2)	LispApply2(mac, fun, arg1, arg2)
 #define EXECUTE(string)		LispExecute(mac, string)
@@ -71,21 +71,37 @@
 #define BACKQUOTE(bquote)	LispNewBackquote(mac, bquote)
 #define COMMA(comma, at)	LispNewComma(mac, comma, at)
 #define REAL(num)		LispNewReal(mac, num)
-#define STRING(str)		LispNewString(mac, str)
+#define STRING(str)		LispNewString(mac, str, strlen(str))
+#define LSTRING(str, size)	LispNewString(mac, str, size)
 
 	/* string must be from the LispXXX allocation functions,
 	 * and LispMused not yet called on it */
-#define STRING2(str)		LispNewAllocedString(mac, str)
+#define STRING2(str)		LispNewAllocedString(mac, str, strlen(str))
+#define LSTRING2(str, size)	LispNewAllocedString(mac, str, size)
 
 #define CHAR(c)			LispNewCharacter(mac, c)
 #define INTEGER(i)		LispNewInteger(mac, i)
+	/* The object returned by SMALLINT cannot be changed, is a constant */
+#define SMALLINT(i)		LispNewSmallInt(mac, i)
 #define RATIO(n, d)		LispNewRatio(mac, n, d)
 #define VECTOR(objects)		LispNewVector(mac, objects)
 #define COMPLEX(r, i)		LispNewComplex(mac, r, i)
 #define OPAQUE(data, type)	LispNewOpaque(mac, (void*)((long)data), type)
 #define KEYWORD(key)		LispNewKeyword(mac, key)
 #define PATHNAME(p)		LispNewPathname(mac, p)
-#define STRINGSTREAM(str, flag)	LispNewStringStream(mac, str, flag)
+
+	/* STRINGSTREAM2 and LSTRINGSTREAM2 require that the
+	 * string be allocated from the LispXXX allocation functions,
+	 * and LispMused not yet called on it */
+#define STRINGSTREAM(str, flag)			\
+	LispNewStringStream(mac, str, flag, strlen(str), 0)
+#define STRINGSTREAM2(str, flag)		\
+	LispNewStringStream(mac, str, flag, strlen(str), 1)
+#define LSTRINGSTREAM(str, flag, length)	\
+	LispNewStringStream(mac, str, flag, length, 0)
+#define LSTRINGSTREAM2(str, flag, length)	\
+	LispNewStringStream(mac, str, flag, length, 1)
+
 #define FILESTREAM(file, path, flag)	\
 	LispNewFileStream(mac, file, path, flag)
 #define PIPESTREAM(file, path, flag)	\
@@ -113,7 +129,8 @@
 #define ATOMID(obj)		(obj)->data.atom->string
 
 /* pointer to string of a LispString_t object */
-#define THESTR(obj)		(obj)->data.string
+#define THESTR(obj)		(obj)->data.string.string
+#define STRLEN(obj)		(obj)->data.string.length
 
 #define INT_P(obj)		((obj)->type == LispInteger_t)
 #define FLOAT_P(obj)		((obj)->type == LispReal_t)
@@ -191,12 +208,8 @@
 /* fetch builtin function/macro argument value
  */
 #define ARGUMENT(index)					\
-	mac->env.values[mac->env.base + (index)]
+	mac->stack.values[mac->stack.base + (index)]
 
-/* fetch argument name for builtin functions
- */
-#define ARGUMENT_NAME(index)				\
-	mac->env.names[mac->env.base + (index)]
 
 /* only extra return values are stored, that is, only
  *	(cdr (multiple-value-list (<form>)))
@@ -230,30 +243,6 @@
 
 #define GC_LEAVE()					\
     mac->protect.length = gc__protect
-
-/* unbound builtin macro arguments, but keep objects gc protected,
- * avoid name clashes
-*/
-#define MACRO_ARGUMENT1()				\
-	mac->env.names[mac->env.base] = NULL
-#define MACRO_ARGUMENT2()				\
-	mac->env.names[mac->env.base] =			\
-	    mac->env.names[mac->env.base + 1] = NULL
-#define MACRO_ARGUMENT3()				\
-	mac->env.names[mac->env.base] =			\
-	  mac->env.names[mac->env.base + 1] =		\
-	    mac->env.names[mac->env.base + 2] = NULL
-#define MACRO_ARGUMENT4()				\
-	mac->env.names[mac->env.base] =			\
-	  mac->env.names[mac->env.base + 1] =		\
-	    mac->env.names[mac->env.base + 2] =		\
-		mac->env.names[mac->env.base + 3] = NULL
-#define MACRO_ARGUMENTS(count)				\
-    {							\
-	int i = (count) + mac->env.base;		\
-	for (; i >= mac->env.base; i--)			\
-	    mac->env.names[i] = NULL;			\
-    }
 
 /* Error checking, to be called from builtin functions */
 #define ERROR_CHECK_SYMBOL(object)				\
@@ -404,8 +393,10 @@ struct _LispObj {
     unsigned int prot: 1;	/* protection for constant/unamed variables */
     union {
 	LispAtom *atom;
-	char *string;		/* will be converted to a more complete
-				 * type at some time*/
+	struct {
+	    char *string;
+	    long length;
+	} string;
 	long integer;
 	double real;
 	LispObj *quote;
@@ -511,7 +502,7 @@ struct _LispModuleData {
  * Prototypes
  */
 LispObj *LispEval(LispMac*, LispObj*);
-LispObj *LispApply(LispMac*, LispObj*, LispObj*);
+LispObj *LispFuncall(LispMac*, LispObj*, LispObj*, int);
 LispObj *LispApply1(LispMac*, LispObj*, LispObj*);
 LispObj *LispApply2(LispMac*, LispObj*, LispObj*, LispObj*);
 
@@ -520,9 +511,10 @@ LispObj *LispNewSymbol(LispMac*, LispAtom*);
 LispObj *LispNewAtom(LispMac*, char*);
 LispObj *LispNewStaticAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
-LispObj *LispNewString(LispMac*, char*);
-LispObj *LispNewAllocedString(LispMac*, char*);
+LispObj *LispNewString(LispMac*, char*, long);
+LispObj *LispNewAllocedString(LispMac*, char*, long);
 LispObj *LispNewCharacter(LispMac*, long);
+LispObj *LispNewSmallInt(LispMac*, long);
 LispObj *LispNewInteger(LispMac*, long);
 LispObj *LispNewRatio(LispMac*, long, long);
 LispObj *LispNewVector(LispMac*, LispObj*);
@@ -536,7 +528,7 @@ LispObj *LispNewComplex(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewOpaque(LispMac*, void*, int);
 LispObj *LispNewKeyword(LispMac*, char*);
 LispObj *LispNewPathname(LispMac*, LispObj*);
-LispObj *LispNewStringStream(LispMac*, unsigned char*, int);
+LispObj *LispNewStringStream(LispMac*, unsigned char*, int, long, int);
 LispObj *LispNewFileStream(LispMac*, LispFile*, LispObj*, int);
 LispObj *LispNewPipeStream(LispMac*, LispPipe*, LispObj*, int);
 LispObj *LispNewBigInteger(LispMac*, mpi*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.1 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.2 2002/02/08 02:59:29 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -99,6 +99,6 @@ int LispSputc(LispString*, int);
 int LispSputs(LispString*, char*);
 int LispSwrite(LispString*, void*, int);
 
-char *LispGetSstring(LispString*);
+char *LispGetSstring(LispString*, int*);
 
 #endif /* Lisp_io_h */
