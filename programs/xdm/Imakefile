@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.47 2002/06/07 21:40:53 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.48 2002/10/06 18:12:28 herrb Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -249,15 +249,13 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
-		  '-DDEF_CHOOSER="$(BINDIR)/chooser"' \
-		  '-DDEF_AUTH_DIR="$(XDMVARDIR)"' \
-		  '-DDEF_GREETER_LIB="$(USRLIBDIR)/libXdmGreet.so"'
+		  '-DDEF_CHOOSER="$(XDMIR)/chooser"' \
+		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
+		  '-DDEF_GREETER_LIB="$(XDMDIR)/libXdmGreet.so"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 LinkConfDirectory(xdm,.,xdm,.)
-#ifdef VarDbDirectory
-LinkConfDirectoryLong(xdm,xdm,authdir,authdir,$(CONFDIR),$(VARDBDIR))
-#endif
+InstallDirectory($(XDMVARDIR))
 NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
 InstallProgram(sessreg,$(BINDIR))
@@ -270,7 +268,7 @@ SpecialCObjectRule(daemon,$(ICONFIGFILES),-UCSRG_BASED)
 #if BuildChooser
 SpecialCObjectRule(chooser, $(ICONFIGFILES), $(SOCK_DEFINES))
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
-InstallProgram(chooser,$(BINDIR))
+InstallProgram(chooser,$(XDMDIR))
 InstallAppDefaults(Chooser)
 #endif
 #if BuildBoth
