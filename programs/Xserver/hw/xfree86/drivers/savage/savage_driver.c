@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.5 2000/12/07 20:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.6 2000/12/12 16:50:48 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -242,14 +242,9 @@ static const char *int10Symbols[] = {
     NULL
 };
 
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb24_32ScreenInit",
-    "cfb32ScreenInit",
-    "cfb16BresS",
-    "cfb24BresS",
+static const char *fbSymbols[] = {
+    "fbScreenInit",
+    "fbPictureInit",
     NULL
 };
 
@@ -280,7 +275,7 @@ static pointer SavageSetup(pointer module, pointer opts, int *errmaj,
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&SAVAGE, module, 0);
-	LoaderRefSymLists(vgaHWSymbols, cfbSymbols, ramdacSymbols, 
+	LoaderRefSymLists(vgaHWSymbols, fbSymbols, ramdacSymbols, 
 			  xaaSymbols, shadowSymbols, vbeSymbols,
 			  ddcSymbols, NULL);
 	return (pointer) 1;
@@ -574,9 +569,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     MessageType from = X_DEFAULT;
     int i;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
     char *s = NULL;
-    const char *reqSym = NULL;
     unsigned char config1, m, n, n1, n2, sr8, cr66 = 0, tmp;
     int mclk;
     vgaHWPtr hwp;
@@ -1069,8 +1062,8 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     psav->minClock = 20000;
 
-    pScrn->maxHValue = 2048;
-    pScrn->maxVValue = 2048;
+    pScrn->maxHValue = 2048 << 3;	/* 11 bits of h_total 8-pixel units */
+    pScrn->maxVValue = 2048;		/* 11 bits of v_total */
     pScrn->virtualX = pScrn->display->virtualX;
 
     clockRanges = xnfalloc(sizeof(ClockRange));
@@ -1151,28 +1144,12 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     xf86PrintModes(pScrn);
     xf86SetDpi(pScrn, 0, 0);
 
-    /* load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	mod = "cfb16";
-	reqSym = "cfb16ScreenInit";
-	break;
-    case 32:
-	mod = "cfb32";
-	reqSym = "cfb32ScreenInit";
-	break;
-    }
-
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	SavageFreeRec(pScrn);
 	return FALSE;
     }
 
-    xf86LoaderReqSymbols(reqSym, NULL);
+    xf86LoaderReqSymbols("fbScreenInit", NULL);
 
     if( !psav->NoAccel ) {
 	if( !xf86LoadSubModule(pScrn, "xaa") ) {
@@ -1927,6 +1904,8 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	    return FALSE;
     }
 
+    miSetPixmapDepths ();
+
     ret = SavageInternalScreenInit(scrnIndex, pScreen);
     if (!ret)
 	return FALSE;
@@ -1948,7 +1927,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	    }
 	}
     }
-
+    
     if( !psav->NoAccel ) {
 	SavageInitAccel(pScreen);
     }
@@ -2046,29 +2025,12 @@ static int SavageInternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 	FBStart = psav->FBStart;
     }
 
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	ret = cfbScreenInit(pScreen, FBStart, width, height,
-			    pScrn->xDpi, pScrn->yDpi,
-			    displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart, width, height,
-			      pScrn->xDpi, pScrn->yDpi,
-			      displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, FBStart, width, height,
-			      pScrn->xDpi, pScrn->yDpi,
-			      displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in SavageScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
-    }
+    ret = fbScreenInit(pScreen, FBStart, width, height,
+		       pScrn->xDpi, pScrn->yDpi,
+		       displayWidth,
+		       pScrn->bitsPerPixel);
+    if (ret)
+	fbPictureInit (pScreen, 0, 0);
 
     return ret;
 }
