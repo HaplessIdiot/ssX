@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.7 2001/04/25 16:44:55 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.8 2001/04/27 03:03:51 tsi Exp $ */
 
 #include "def.h"
 
@@ -195,7 +195,7 @@ my_eval_variable (IfParser *ip, const char *var, int len)
     } while (s);
 
     var = ParseIfExpression(ip, var, &val);
-    if (var && *var) debug(3, ("extraneous: '%s'\n", var));
+    if (var && *var) debug(4, ("extraneous: '%s'\n", var));
     return val;
 }
 

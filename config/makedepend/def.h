@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.7 2000/10/24 18:07:35 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.8 2001/01/17 16:38:58 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -65,11 +65,13 @@ in this Software without prior written authorization from The Open Group.
 #define ELIF            13
 #define EJECT           14
 #define WARNING         15
-#define IFFALSE         16     /* pseudo value --- never matched */
-#define ELIFFALSE       17     /* pseudo value --- never matched */
-#define INCLUDEDOT      18     /* pseudo value --- never matched */
-#define IFGUESSFALSE    19     /* pseudo value --- never matched */
-#define ELIFGUESSFALSE  20     /* pseudo value --- never matched */
+#define INCLUDENEXT     16
+#define IFFALSE         17     /* pseudo value --- never matched */
+#define ELIFFALSE       18     /* pseudo value --- never matched */
+#define INCLUDEDOT      19     /* pseudo value --- never matched */
+#define IFGUESSFALSE    20     /* pseudo value --- never matched */
+#define ELIFGUESSFALSE  21     /* pseudo value --- never matched */
+#define INCLUDENEXTDOT  22     /* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	_debugmask;
@@ -147,7 +149,7 @@ void                    included_by(struct inclist *ip,
 				    struct inclist *newfile);
 struct inclist		*newinclude(char *newfile, char *incstring);
 void                    inc_clean (void);
-struct inclist		*inc_path(char *file, char *include, boolean dot);
+struct inclist		*inc_path(char *file, char *include, int type);
 
 void                    freefile(struct filepointer *fp);
 
@@ -164,7 +166,7 @@ void                    recursive_pr_include(struct inclist *head,
 void                    add_include(struct filepointer *filep, 
 				    struct inclist *file, 
 				    struct inclist *file_red, 
-				    char *include, boolean dot, 
+				    char *include, int type,
 				    boolean failOK);
 
 int                     cppsetup(char *line, struct filepointer *filep, 

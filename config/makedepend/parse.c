@@ -20,12 +20,16 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.6 1999/03/21 07:34:26 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.7 2001/01/17 16:38:59 dawes Exp $ */
 
 #include "def.h"
 
 extern char	*directives[];
-extern struct inclist	maininclist;
+extern struct inclist	inclist[ MAXFILES ],
+			*inclistnext,
+			maininclist;
+extern char	*includedirs[ ],
+		**includedirsnext;
 
 static int deftype (char *line, struct filepointer *filep,
 		    struct inclist *file_red, struct inclist *file,
@@ -71,6 +75,8 @@ gobble(struct filepointer *filep, struct inclist *file,
 		case SCCS:
 		case EJECT:
 		case WARNING:
+		case INCLUDENEXT:
+		case INCLUDENEXTDOT:
 			break;
 		case ELIF:
 		case ELIFFALSE:
@@ -104,7 +110,7 @@ deftype (char *line, struct filepointer *filep,
 		directive++;
 
 	p = directive;
-	while (*p >= 'a' && *p <= 'z')
+	while ((*p == '_') || (*p >= 'a' && *p <= 'z'))
 		p++;
 	savechar = *p;
 	*p = '\0';
@@ -172,8 +178,10 @@ deftype (char *line, struct filepointer *filep,
 		*line = '\0';
 		break;
 	case INCLUDE:
-		debug(2,("%s, line %d: #include %s\n",
-			file->i_file, filep->f_line, p));
+	case INCLUDENEXT:
+		debug(2,("%s, line %d: #include%s %s\n",
+			file->i_file, filep->f_line,
+			(ret == INCLUDE) ? "" : "_next", p));
 
 		/* Support ANSI macro substitution */
 		{
@@ -198,7 +206,10 @@ deftype (char *line, struct filepointer *filep,
 		if (! *p)
 			return(-2);
 		if (*p++ == '"') {
-			ret = INCLUDEDOT;
+			if (ret == INCLUDE)
+				ret = INCLUDEDOT;
+			else
+				ret = INCLUDENEXTDOT;
 			while (*p && *p != '"')
 				*line++ = *p++;
 		} else
@@ -506,6 +517,8 @@ int
 find_includes(struct filepointer *filep, struct inclist *file, 
 	      struct inclist *file_red, int recursion, boolean failOK)
 {
+	struct inclist	*inclistp;
+	char		**includedirsp;
 	register char	*line;
 	register int	type;
 	boolean recfailOK;
@@ -591,10 +604,14 @@ find_includes(struct filepointer *filep, struct inclist *file,
 			undefine(line, file_red);
 			break;
 		case INCLUDE:
-			add_include(filep, file, file_red, line, FALSE, failOK);
-			break;
 		case INCLUDEDOT:
-			add_include(filep, file, file_red, line, TRUE, failOK);
+		case INCLUDENEXT:
+		case INCLUDENEXTDOT:
+			inclistp = inclistnext;
+			includedirsp = includedirsnext;
+			add_include(filep, file, file_red, line, type, failOK);
+			inclistnext = inclistp;
+			includedirsnext = includedirsp;
 			break;
 		case ERROR:
 		case WARNING:
