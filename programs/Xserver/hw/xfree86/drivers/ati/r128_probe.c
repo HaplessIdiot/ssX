@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.4 2000/11/28 17:25:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.5 2000/12/02 15:30:33 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -170,6 +170,25 @@ R128Probe(DriverPtr drv, int flags)
 	    }
 
 	    xf86LoaderReqSymLists(R128Symbols, NULL);
+
+	    /* Workaround for possible loader bug */
+#	    define R128PreInit     \
+		(xf86PreInitProc*)    LoaderSymbol("R128PreInit")
+#	    define R128ScreenInit  \
+		(xf86ScreenInitProc*) LoaderSymbol("R128ScreenInit")
+#	    define R128SwitchMode  \
+		(xf86SwitchModeProc*) LoaderSymbol("R128SwitchMode")
+#	    define R128AdjustFrame \
+		(xf86AdjustFrameProc*)LoaderSymbol("R128AdjustFrame")
+#	    define R128EnterVT     \
+		(xf86EnterVTProc*)    LoaderSymbol("R128EnterVT")
+#	    define R128LeaveVT     \
+		(xf86LeaveVTProc*)    LoaderSymbol("R128LeaveVT")
+#	    define R128FreeScreen  \
+		(xf86FreeScreenProc*) LoaderSymbol("R128FreeScreen")
+#	    define R128ValidMode   \
+		(xf86ValidModeProc*)  LoaderSymbol("R128ValidMode")
+
 #endif
 
 	    pScrn->driverVersion = R128_VERSION_CURRENT;

@@ -1,4 +1,5 @@
 XFree86 4.0.1Zb (?? December 2000)
+1178. Workaround for IA-64 loader bug (Marc La France).
 1177. Fix recognition of valid depth/fbbpp combinations in ATI driver
       (Marc La France).
 1176. Fix 1bpp in ATI driver (Marc La France).
@@ -12052,4 +12053,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1470 2000/12/13 00:25:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1471 2000/12/13 00:45:11 tsi Exp $

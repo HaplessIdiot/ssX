@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.34 2000/11/03 01:15:49 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.35 2000/11/03 03:42:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -2240,6 +2240,25 @@ NoVGAWonder:;
             }
 
             xf86LoaderReqSymLists(ATISymbols, NULL);
+
+            /* Workaround for possible loader bug */
+#           define ATIPreInit     \
+                (xf86PreInitProc*)    LoaderSymbol("ATIPreInit")
+#           define ATIScreenInit  \
+                (xf86ScreenInitProc*) LoaderSymbol("ATIScreenInit")
+#           define ATISwitchMode  \
+                (xf86SwitchModeProc*) LoaderSymbol("ATISwitchMode")
+#           define ATIAdjustFrame \
+                (xf86AdjustFrameProc*)LoaderSymbol("ATIAdjustFrame")
+#           define ATIEnterVT     \
+                (xf86EnterVTProc*)    LoaderSymbol("ATIEnterVT")
+#           define ATILeaveVT     \
+                (xf86LeaveVTProc*)    LoaderSymbol("ATILeaveVT")
+#           define ATIFreeScreen  \
+                (xf86FreeScreenProc*) LoaderSymbol("ATIFreeScreen")
+#           define ATIValidMode   \
+                (xf86ValidModeProc*)  LoaderSymbol("ATIValidMode")
+
 #endif
 
             /* Attach device to screen */
