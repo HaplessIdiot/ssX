@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.1 2001/02/13 21:15:19 dawes Exp $ */
 
 /*
 Copyright (C) 1994-2000 The XFree86 Project, Inc.  All Rights Reserved.
@@ -41,15 +41,11 @@ in this Software without prior written authorization from the XFree86 Project.
 static Bool Savage_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 		int *, int *, int *);
 static Bool Savage_SetMode(ScrnInfoPtr, DGAModePtr);
-static int	Savage_GetViewport(ScrnInfoPtr);
+static int  Savage_GetViewport(ScrnInfoPtr);
 static void Savage_SetViewport(ScrnInfoPtr, int, int, int);
 static void Savage_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void Savage_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 
-#if 0
-static void MGA_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-		unsigned long);
-#endif
 
 static
 DGAFunctionRec Savage_DGAFuncs = {
@@ -64,6 +60,7 @@ DGAFunctionRec Savage_DGAFuncs = {
     NULL			 /* BlitTransRect */
 };
 
+#define DGATRACE	4
 
 /*
  * I don't understand the thinking here.  As near as I can tell, we are
@@ -92,9 +89,15 @@ SavageSetupDGAMode(
     int otherPitch, Bpp = bitsPerPixel >> 3;
     Bool oneMore;
 
-    xf86ErrorFVerb(3, "		SavageSetupDGAMode\n");
+    xf86ErrorFVerb(DGATRACE, "		SavageSetupDGAMode\n");
 
     pMode = firstMode = pScrn->modes;
+
+    /*
+     * DGA 1.0 would only provide modes where the depth and stride
+     * matched the current desktop.  Some DGA apps might still expect
+     * this, so we provide them, too.
+     */
 
     while(pMode) {
 
@@ -142,7 +145,7 @@ SECOND_PASS:
 	mode->offset = 0;
 	mode->address = psav->FBBase;
 
-	xf86ErrorFVerb(3,
+	xf86ErrorFVerb(DGATRACE,
 	    "SavageDGAInit vpWid=%d, vpHgt=%d, Bpp=%d, mdbitsPP=%d\n",
 	    mode->viewportWidth,
 	    mode->viewportHeight,
@@ -161,8 +164,8 @@ SECOND_PASS:
 	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
 	    oneMore = FALSE;
 
-	    xf86ErrorFVerb(3,
-		"SavageDGAInit imgHgt=%d, stride=%d\n",
+	    xf86ErrorFVerb(DGATRACE,
+		"SavageDGAInit 1 imgHgt=%d, stride=%d\n",
 		mode->imageHeight,
 		mode->bytesPerScanline );
  
@@ -176,6 +179,11 @@ SECOND_PASS:
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
 	    /* this might need to get clamped to some maximum */
 	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+
+	    xf86ErrorFVerb(DGATRACE,
+		"SavageDGAInit 2 imgHgt=%d, stride=%d\n",
+		mode->imageHeight,
+		mode->bytesPerScanline );
 	}		
 
 	pMode = pMode->next;
@@ -195,7 +203,7 @@ SavageDGAInit(ScreenPtr pScreen)
     DGAModePtr modes = NULL;
     int num = 0;
 
-    xf86ErrorFVerb(3, "		SavageDGAInit\n");
+    xf86ErrorFVerb(DGATRACE, "		SavageDGAInit\n");
 
     /* 8 */
     modes = SavageSetupDGAMode (pScrn, modes, &num, 8, 8, 
@@ -225,20 +233,7 @@ SavageDGAInit(ScreenPtr pScreen)
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
 		0xf800, 0x07e0, 0x001f, DirectColor);
 
-#if 0
-    /* 24 */
-    modes = SavageSetupDGAMode (pScrn, modes, &num, 24, 24, 
-		(pScrn->bitsPerPixel == 24),
-		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
-
-    modes = SavageSetupDGAMode (pScrn, modes, &num, 24, 24, 
-		(pScrn->bitsPerPixel == 24),
-		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
-		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
-#endif
-
-    /* 32 */
+    /* 24-in-32 */
     modes = SavageSetupDGAMode (pScrn, modes, &num, 32, 24, 
 		(pScrn->bitsPerPixel == 32),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
@@ -290,13 +285,13 @@ Savage_SetMode(
 	    pMode->bitsPerPixel, pMode->depth);
 #endif
 
+	if( psav->hwcursor )
+	    SavageHideCursor(pScrn);
+
 	if(!psav->DGAactive) {  /* save the old parameters */
 	    OldDisplayWidth[index] = pScrn->displayWidth;
 	    OldBitsPerPixel[index] = pScrn->bitsPerPixel;
 	    OldDepth[index] = pScrn->depth;
-
-	    if( psav->hwcursor )
-		SavageHideCursor(pScrn);
 
 	    psav->DGAactive = TRUE;
 	}
