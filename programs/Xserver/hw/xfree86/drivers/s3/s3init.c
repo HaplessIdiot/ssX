@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.4 1997/06/10 12:30:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.5 1997/08/15 07:19:19 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -371,8 +371,6 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 	return FALSE;
    }
 
-   s3InitCursorFlag = TRUE;  /* turn on the cursor during the next load */
-
    outb(0x3C2, new->MiscOutReg);
 
    for (i = 1; i < 5; i++)
@@ -494,11 +492,11 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       break;
    }
 
-   /****** CR43 ******/
+   /****** CR44 ******/
    /* What is this? */
    outb(vgaCRIndex, 0x44); outb(vgaCRReg, 0x00);
 
-   /****** CR44 ******/
+   /****** CR45 ******/
    outb(vgaCRIndex, 0x45);
    tmp = inb(vgaCRReg) & 0xf2;
    /* hi/true cursor color enable */

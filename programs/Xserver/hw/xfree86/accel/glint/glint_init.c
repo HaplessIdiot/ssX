@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.7 1997/09/19 08:30:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.8 1997/09/25 07:31:12 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -402,15 +402,17 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	    /* the 4MB Gloria-S have Errors wich clockspeed > 80MHz !? */
 	    if (glintInfoRec.videoRam > 4096)
 	      {
+#if 0
 		if (crtcRegs->clock_sel > 80000)  
-		  FatalError("Pixelclock ist to high for permedia and ,,no_accel'' Mode = %d MHz.\nMax mode clock <= 80 MHz. \n", crtcRegs->clock_sel/1000);
+		  FatalError("Pixelclock ist too high for permedia and ,,no_accel'' Mode = %d MHz.\nMax mode clock <= 80 MHz. \n", crtcRegs->clock_sel/1000);
+#endif
 	      }
 	    else
 	      switch (glintInfoRec.depth) 
 		{
 		case 8: 
 		  if (crtcRegs->clock_sel > 200000) 
-		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 200 MHz. \n",
+		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 200 MHz. \n",
 			       crtcRegs->clock_sel/1000);
 		  break;
 		case 15: 
@@ -418,12 +420,12 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 		case 32: /* 32 bpp have tested with 8Mb Gloria-S */
 		  ErrorF("Test Clock_sel = %d \n", crtcRegs->clock_sel);
 		  if (crtcRegs->clock_sel > 100000) 
-		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 100 MHz. \n",
+		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 100 MHz. \n",
 			       crtcRegs->clock_sel/1000);
 		  break;
 		default:
 		  if (crtcRegs->clock_sel > 50000) 
-		    FatalError("Pixelclock ist to high for permedia Mode = %d MHz.\nMax mode clock <= 50 MHz. \n",
+		    FatalError("Pixelclock ist too high for permedia Mode = %d MHz.\nMax mode clock <= 50 MHz. \n",
 			       crtcRegs->clock_sel/1000);
 		  break;
 		}

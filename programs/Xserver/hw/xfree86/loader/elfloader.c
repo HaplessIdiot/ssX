@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.7 1997/05/03 09:19:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.8 1997/06/03 14:12:28 hohndel Exp $ */
 
 
 
@@ -347,6 +347,7 @@ switch( ELF32_ST_TYPE(syms[index].st_info) )
 					syms[index].st_value);
 				break;
 			case STB_GLOBAL:
+			case STB_WEAK:
 				symname=
 				    ElfGetString(elffile,syms[index].st_name);
 				symbol=LoaderHashFind( symname );
@@ -409,6 +410,7 @@ switch( ELF32_ST_TYPE(syms[index].st_info) )
 		switch( ELF32_ST_BIND(syms[index].st_info) )
 			{
 			case STB_GLOBAL:
+			case STB_WEAK:
 				symname=
 				    ElfGetString(elffile,syms[index].st_name);
 				symbol=LoaderHashFind( symname );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.1 1997/03/06 23:16:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/Ti3026Curs.c,v 1.2 1997/08/26 10:01:22 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -140,75 +140,9 @@ unsigned char reg;
  *                                   (plane 0) maps to cursor colors 0 and 1
  */
 
-Bool
-s3Ti3026RealizeCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-{
-   extern unsigned char s3SwapBits[256];
-   register int i, j;
-   unsigned char *pServMsk;
-   unsigned char *pServSrc;
-   int   index = pScr->myNum;
-   pointer *pPriv = &pCurs->bits->devPriv[index];
-   int   wsrc, h;
-   unsigned char *ram, *plane0, *plane1;
-   CursorBitsPtr bits = pCurs->bits;
-
-   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH)
-	return FALSE;
-
-   if (pCurs->bits->refcnt > 1)
-      return TRUE;
-
-   ram = (unsigned char *)xalloc(1024);
-   *pPriv = (pointer) ram;
-   plane0 = ram;
-   plane1 = ram+512;
-
-   if (!ram)
-      return FALSE;
-
-   pServSrc = (unsigned char *)bits->source;
-   pServMsk = (unsigned char *)bits->mask;
-
-   h = bits->height;
-   if (h > MAX_CURS_HEIGHT)
-      h = MAX_CURS_HEIGHT;
-
-   wsrc = PixmapBytePad(bits->width, 1);	/* bytes per line */
-
-   for (i = 0; i < MAX_CURS_HEIGHT; i++) {
-      for (j = 0; j < MAX_CURS_WIDTH / 8; j++) {
-	 unsigned char mask, source;
-
-	 if (i < h && j < wsrc) {
-	    source = *pServSrc++;
-	    mask = *pServMsk++;
-
-	    source = s3SwapBits[source];
-	    mask = s3SwapBits[mask];
-
-	    if (j < MAX_CURS_WIDTH / 8) {
-	       *plane0++ = source & mask;
-	       *plane1++ = mask;
-	    }
-	 } else {
-	    *plane0++ = 0x00;
-	    *plane1++ = 0x00;
-	 }
-      }
-      /*
-       * if we still have more bytes on this line (j < wsrc),
-       * we have to ignore the rest of the line.
-       */
-       while (j++ < wsrc) pServMsk++,pServSrc++;
-   }
-   return TRUE;
-}
 
 void 
-s3Ti3026CursorOn()
+s3Ti3026ShowCursor()
 {
    unsigned char tmp;
 
@@ -228,11 +162,10 @@ s3Ti3026CursorOn()
    s3OutTi3026IndReg(TI_CURS_CONTROL, 0x6c, 0x13);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void
-s3Ti3026CursorOff()
+s3Ti3026HideCursor()
 {
    UNLOCK_SYS_REGS;
 
@@ -246,39 +179,16 @@ s3Ti3026CursorOff()
    s3OutTi3026IndReg(TI_CURS_CONTROL, 0xfc, 0x00);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void
-s3Ti3026MoveCursor(pScr, x, y)
-     ScreenPtr pScr;
-     int   x, y;
+s3Ti3026SetCursorPosition(x, y, xorigin, yorigin)
+     int x, y, xorigin, yorigin;
 {
-   extern int s3AdjustCursorXPos;
-   extern int s3hotX, s3hotY;
    unsigned char tmp;
-
-   if (!xf86VTSema)
-      return;
    
-   if (tmp_useSWCursor) {
-      extern miPointerSpriteFuncRec miSpritePointerFuncs;
-      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
-      return;
-   }
-
-   if (s3BlockCursor)
-      return;
-   
-   x -= vga256InfoRec.frameX0 - s3AdjustCursorXPos;
-   x += 64 - s3hotX;
-   if (x < 0)
-      return;
-
-   y -= vga256InfoRec.frameY0;
-   y += 64 - s3hotY;
-   if (y < 0)
-      return;
+   x += 64 - xorigin;
+   y += 64 - yorigin;
 
    UNLOCK_SYS_REGS;
 
@@ -296,13 +206,11 @@ s3Ti3026MoveCursor(pScr, x, y)
    outb(vgaCRReg, tmp | 0x00);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void
-s3Ti3026RecolorCursor(pScr, pCurs)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
+s3Ti3026SetCursorColors(bg, fg)
+   int bg, fg;
 {
    unsigned char tmp;
    UNLOCK_SYS_REGS;
@@ -315,51 +223,35 @@ s3Ti3026RecolorCursor(pScr, pCurs)
 
    /* Background color */
    outb(0x3c8, 0x01); /* cursor color write address */
-   outb(0x3c9, (pCurs->backRed >> 8)   & 0xFF);
-   outb(0x3c9, (pCurs->backGreen >> 8) & 0xFF);
-   outb(0x3c9, (pCurs->backBlue >> 8)  & 0xFF);
+   outb(0x3c9, (bg & 0x00FF0000) >> 16);
+   outb(0x3c9, (bg & 0x0000FF00) >> 8);
+   outb(0x3c9, (bg & 0x000000FF));
 
    /* Foreground color */
    outb(0x3c8, 0x02); /* cursor color write address */
-   outb(0x3c9, (pCurs->foreRed >> 8)   & 0xFF);
-   outb(0x3c9, (pCurs->foreGreen >> 8) & 0xFF);
-   outb(0x3c9, (pCurs->foreBlue >> 8)  & 0xFF);
+   outb(0x3c9, (fg & 0x00FF0000) >> 16);
+   outb(0x3c9, (fg & 0x0000FF00) >> 8);
+   outb(0x3c9, (fg & 0x000000FF));
 
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp | 0x00);
 
    LOCK_SYS_REGS;
-   return;
 }
 
 void 
-s3Ti3026LoadCursor(pScr, pCurs, x, y)
-     ScreenPtr pScr;
-     CursorPtr pCurs;
-     int x, y;
+s3Ti3026LoadCursorImage(bits, xorigin, yorigin)
+   unsigned char *bits;
+   int xorigin, yorigin;
 {
-   int   index = pScr->myNum;
    register int   i;
-   unsigned char *ram, *p, tmp, tmpcurs;
-   extern int s3InitCursorFlag;
-
-   if (!xf86VTSema)
-      return;
-
-   if (!pCurs)
-      return;
+   unsigned char  tmp, tmpcurs;
 
    /* turn the cursor off */
    if ((tmpcurs = s3InTi3026IndReg(TI_CURS_CONTROL)) & 0x03)
-      s3Ti3026CursorOff();
-
-   /* load colormap */
-   s3Ti3026RecolorCursor(pScr, pCurs);
-
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
+      s3Ti3026HideCursor();
 
    UNLOCK_SYS_REGS;
-   BLOCK_CURSOR;
 
    /* position cursor off screen */
    outb(vgaCRIndex, 0x55);
@@ -380,31 +272,18 @@ s3Ti3026LoadCursor(pScr, pCurs, x, y)
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp | 0x02);
 
-   /* 
-    * Output the cursor data.  The realize function has put the planes into
-    * their correct order, so we can just blast this out.
-    */
-   p = ram;
-   for (i = 0; i < 1024; i++,p++)
-      outb(0x3c7, (*p));
+   for (i = 0; i < 1024; i++)
+      outb(0x3c7, *bits++);
 
    outb(vgaCRIndex, 0x55);
    outb(vgaCRReg, tmp);
 
-   UNBLOCK_CURSOR;
    LOCK_SYS_REGS;
 
-   /* position cursor */
-   s3Ti3026MoveCursor(0, x, y);
-
    /* turn the cursor on */
-   if ((tmpcurs & 0x03) || s3InitCursorFlag)
-      s3Ti3026CursorOn();
+   if (tmpcurs & 0x03)
+      s3Ti3026HideCursor();
 
-   if (s3InitCursorFlag)
-      s3InitCursorFlag = FALSE;
-
-   return;
 }
 
 

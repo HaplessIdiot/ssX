@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.6 1997/04/14 07:05:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.7 1997/05/21 15:17:09 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -116,10 +116,14 @@ int cirrusUseSolidColorFill = FALSE;
 int cirrusPCIRetrySupport = FALSE;
 int cirrusChipFeatures = 0;
 
+int cirrusFillColor = 0;
+
 #else
 
 extern int cirrusUseAutoStart, cirrusUseSolidColorFill, cirrusPCIRetrySupport;
 extern int cirrusChipFeatures;
+
+extern int cirrusFillColor;
 
 #define MMIONAME(x) x##MMIO
 
@@ -491,18 +495,22 @@ void CirrusSetupForFillRectSolid(color, rop, planemask)
             WAITUNTILFINISHED();
     }
 
-    if (vga256InfoRec.bitsPerPixel >= 24 &&
-	(vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL))) {
-      if (!cirrusUseSolidColorFill) {
-	SETBACKGROUNDCOLOR32(color);
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT)) {
+      cirrusFillColor = color;
+    } else {
+      if (vga256InfoRec.bitsPerPixel >= 24 &&
+	  (vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL))) {
+	if (!cirrusUseSolidColorFill) {
+	  SETBACKGROUNDCOLOR32(color);
+	}
+	SETFOREGROUNDCOLOR32(color);
       }
-      SETFOREGROUNDCOLOR32(color);
-    }
-    else {
-      if (!cirrusUseSolidColorFill) {
-	SETBACKGROUNDCOLOR16(color);
+      else {
+	if (!cirrusUseSolidColorFill) {
+	  SETBACKGROUNDCOLOR16(color);
+	}
+	SETFOREGROUNDCOLOR16(color);
       }
-      SETFOREGROUNDCOLOR16(color);
     }
 
 
@@ -550,6 +558,16 @@ void Cirrus8SubsequentFillRectSolid(x, y, w, h)
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w, h);			/* 8 */
 
+
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT)) {
+      /* Set the color each time.  Someone may have sneaked in here at 
+	 Sync()'d us since the Setup() function was called. */
+      if (!cirrusUseSolidColorFill) {
+	SETBACKGROUNDCOLOR16(cirrusFillColor);
+      }
+      SETFOREGROUNDCOLOR16(cirrusFillColor);
+    }
+
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);	                        /* 20 */
@@ -558,9 +576,6 @@ void Cirrus8SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
-
-    /* Without this sync, the Cirrus Alpine chips lock up */
-    CirrusSync();
 }
 
 void Cirrus16SubsequentFillRectSolid(x, y, w, h)
@@ -574,6 +589,13 @@ void Cirrus16SubsequentFillRectSolid(x, y, w, h)
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 2, h);		/* 10 */
 
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT)) {
+      if (!cirrusUseSolidColorFill) {
+	SETBACKGROUNDCOLOR16(cirrusFillColor);
+      }
+      SETFOREGROUNDCOLOR16(cirrusFillColor);
+    }
+
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);	                        /* 20 */
@@ -582,9 +604,6 @@ void Cirrus16SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);			/* 10 */
     if (!cirrusUseAutoStart)
         STARTBLT();
-
-    /* Without this sync, the Cirrus Alpine chips lock up */
-    CirrusSync();
 }
 
 void Cirrus24SubsequentFillRectSolid(x, y, w, h)
@@ -598,6 +617,21 @@ void Cirrus24SubsequentFillRectSolid(x, y, w, h)
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 3, h);		/* 8 */
 
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT)) {
+      if (CHIPHAS(PACKED24FILL)) {
+	if (!cirrusUseSolidColorFill) {
+	  SETBACKGROUNDCOLOR32(cirrusFillColor);
+	}
+	SETFOREGROUNDCOLOR32(cirrusFillColor);
+      }
+      else {
+	if (!cirrusUseSolidColorFill) {
+	  SETBACKGROUNDCOLOR16(cirrusFillColor);
+	}
+	SETFOREGROUNDCOLOR16(cirrusFillColor);
+      }
+    }
+
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);	                        /* 20 */
@@ -606,9 +640,6 @@ void Cirrus24SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
-
-    /* Without this sync, the Cirrus Alpine chips lock up */
-    CirrusSync();
 }
 
 void Cirrus32SubsequentFillRectSolid(x, y, w, h)
@@ -622,6 +653,13 @@ void Cirrus32SubsequentFillRectSolid(x, y, w, h)
         WAITUNTILFINISHED();
     SETWIDTHANDHEIGHT(w * 4, h);		/* 8 */
 
+    if (CHIPHAS(FGCOLORREGISTERSIDEEFFECT)) {
+      if (!cirrusUseSolidColorFill) {
+	SETBACKGROUNDCOLOR32(cirrusFillColor);
+      }
+      SETFOREGROUNDCOLOR32(cirrusFillColor);
+    }
+
 #if 0
     if (!cirrusUseSolidColorFill)
         SETSRCADDR(0);	                        /* 20 */
@@ -630,9 +668,6 @@ void Cirrus32SubsequentFillRectSolid(x, y, w, h)
     SETDESTADDR(destaddr);
     if (!cirrusUseAutoStart)
         STARTBLT();
-
-    /* Without this sync, the Cirrus Alpine chips lock up */
-    CirrusSync();
 }
 
 /*

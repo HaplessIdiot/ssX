@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.4 1997/05/03 09:18:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.6 1997/06/10 12:30:29 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -55,14 +55,9 @@ the correct solution is.
 
 int   s3maxRawClock = 0;
 int   s3BppDisplayWidth;
-int   s3CursorStartX;
-int   s3CursorStartY;
-int   s3CursorLines;
+int   s3CursorBytes;
 int   s3maxDisplayWidth;
 int   s3maxDisplayHeight;
-int   s3AdjustCursorXPos = 0;
-int   s3hotX;
-int   s3hotY;
 int   s3numClocks;
 int   s3ScissB;
 int   s3ScissR;
@@ -84,9 +79,6 @@ Bool  s3PixelMultiplexing = FALSE;
 Bool  s3Bt485PixMux = FALSE;
 Bool  s3ATT498PixMux = FALSE;
 Bool  s3PowerSaver = FALSE;
-Bool  s3BlockCursor;
-Bool  s3ReloadCursor;
-Bool  s3InitCursorFlag = TRUE;
 Bool  s3Initialized = FALSE;
 Bool  s3clockDoublingPossible = FALSE;
 unsigned char 	s3Port31;
@@ -338,7 +330,7 @@ void 	S3Adjust(int x, int y)
    unsigned char tmp;
       
    if (OFLG_ISSET(OPTION_SHOWCACHE, &vga256InfoRec.options)) {
-         if(y) y += 512;
+         if(y) y += 128;
    }
 
    if (x > s3DisplayWidth - s3HDisplay)
@@ -404,14 +396,6 @@ void 	S3Adjust(int x, int y)
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
-
-#ifdef XFreeXDGA
-   if (!(vga256InfoRec.directMode & XF86DGADirectMouse)) {
-#endif
-      s3AdjustCursorXPos = (origBase - (Base << 2)) / s3Bpp;
-#ifdef XFreeXDGA
-   }
-#endif
 
 #ifdef XFreeXDGA
    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.5 1997/06/10 12:30:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.6 1997/06/15 07:12:35 dawes Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -58,12 +58,8 @@ typedef struct {
 
 extern int   s3maxRawClock;
 extern int   s3BppDisplayWidth;
-extern int   s3CursorStartY;
-extern int   s3CursorLines;
+extern int   s3CursorBytes;
 extern int   s3MaxClock;
-extern int   s3AdjustCursorXPos;
-extern int   s3hotX;
-extern int   s3hotY;
 extern int   s3maxDisplayWidth;
 extern int   s3maxDisplayHeight;
 extern int   s3numClocks;
@@ -90,9 +86,6 @@ extern Bool  s3PixelMultiplexing;
 extern Bool  s3Bt485PixMux;
 extern Bool  s3ATT498PixMux;
 extern Bool  s3PowerSaver;
-extern Bool  s3BlockCursor;
-extern Bool  s3ReloadCursor;
-extern Bool  s3InitCursorFlag;
 extern Bool  s3clockDoublingPossible;
 extern Bool  s3Initialized;
 extern unsigned char s3Port31;
@@ -128,15 +121,12 @@ extern void  S3FillInModeInfo(DisplayModePtr);
 extern void  S3EnterLeave(Bool);
 extern void  S3Adjust(int,int);
 extern void  S3AccelInit(void);
-extern void  S3QueryBestSize(int, unsigned short*, unsigned short*, ScreenPtr);
-extern void  S3WarpCursor(ScreenPtr, int, int);
-extern void  S3RestoreCursor(ScreenPtr);
 extern Bool  S3InitLevelOne(DisplayModePtr);
 extern Bool  S3InitLevelTwo(DisplayModePtr);
 extern Bool  S3Probe(void);
 extern Bool  S3InitLevelThree(DisplayModePtr);
 extern Bool  S3Init(DisplayModePtr);
-extern Bool  S3CursorInit(char *, ScreenPtr);
+extern void  S3CursorInit();
 extern unsigned char S3MuxOrNot(DisplayModePtr);
 
 extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
