@@ -108,6 +108,42 @@ typedef struct {
   XvRationalRec rate;
 } XvEncodingRec, *XvEncodingPtr;
 
+typedef struct _XvAttributeRec {
+  int flags;
+  int min_value;
+  int max_value;
+  char *name;
+} XvAttributeRec, *XvAttributePtr;
+
+typedef struct {
+  int id;
+  int type;
+  int byte_order;
+  char guid[16];
+  int bits_per_pixel;
+  int format;
+  int num_planes;
+
+  /* for RGB formats only */
+  int depth;
+  unsigned int red_mask;       
+  unsigned int green_mask;   
+  unsigned int blue_mask;   
+
+  /* for YUV formats only */
+  unsigned int y_sample_bits;
+  unsigned int u_sample_bits;
+  unsigned int v_sample_bits;   
+  unsigned int horz_y_period;
+  unsigned int horz_u_period;
+  unsigned int horz_v_period;
+  unsigned int vert_y_period;
+  unsigned int vert_u_period;
+  unsigned int vert_v_period;
+  char component_order[32];
+  int scanline_order;
+} XvImageRec, *XvImagePtr; 
+
 typedef struct {
   unsigned long base_id;
   unsigned char type; 
@@ -115,7 +151,11 @@ typedef struct {
   int nEncodings;
   XvEncodingPtr pEncodings;  
   int nFormats;
-  XvFormatPtr pFormats;  
+  XvFormatPtr pFormats; 
+  int nAttributes;
+  XvAttributePtr pAttributes;
+  int nImages;
+  XvImagePtr pImages;
   int nPorts;
   struct _XvPortRec *pPorts;
   ScreenPtr pScreen; 
@@ -140,14 +180,14 @@ typedef struct {
   int (* ddQueryBestSize)(ClientPtr, struct _XvPortRec*, CARD8,
    				CARD16, CARD16,CARD16, CARD16, 
 				unsigned int*, unsigned int*);
+  int (* ddPutImage)(ClientPtr, DrawablePtr, struct _XvPortRec*, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16,
+				XvImagePtr, char*, Bool, CARD16, CARD16);
+  int (* ddQueryImageAttributes)(ClientPtr, struct _XvPortRec*, XvImagePtr, 
+				CARD16*, CARD16*, int*, int*);
   DevUnion devPriv;
 } XvAdaptorRec, *XvAdaptorPtr;
-
-/* XXX this is a guess */
-typedef struct _XvAttributeRec {
-  int flags;
-  char *name;
-} XvAttributeRec, *XvAttributePtr;
 
 typedef struct _XvPortRec {
   unsigned long id;
@@ -157,8 +197,6 @@ typedef struct _XvPortRec {
   ClientPtr client;
   XvGrabRec grab;
   TimeStamp time;
-  XvAttributePtr attributes;
-  int numAttributes;
   DevUnion devPriv;
 } XvPortRec, *XvPortPtr;
 
@@ -221,6 +259,10 @@ extern int XvdiGetVideo(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
 extern int XvdiGetStill(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
    				INT16, INT16, CARD16, CARD16, 
 				INT16, INT16, CARD16, CARD16);
+extern int XvdiPutImage(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16,
+				XvImagePtr, char*, Bool, CARD16, CARD16);
 extern int XvdiSelectVideoNotify(ClientPtr, DrawablePtr, BOOL);
 extern int XvdiSelectPortNotify(ClientPtr, XvPortPtr, BOOL);
 extern int XvdiSetPortAttribute(ClientPtr, XvPortPtr, Atom, INT32);

@@ -708,6 +708,47 @@ XvdiPutStill(
   return status;
 
 }
+
+int
+XvdiPutImage(   
+   ClientPtr client, 
+   DrawablePtr pDraw, 
+   XvPortPtr pPort, 
+   GCPtr pGC,
+   INT16 src_x, INT16 src_y, 
+   CARD16 src_w, CARD16 src_h, 
+   INT16 drw_x, INT16 drw_y,
+   CARD16 drw_w, CARD16 drw_h,
+   XvImagePtr image,
+   char* data,
+   Bool sync,
+   CARD16 width, CARD16 height
+){
+  if(!drw_w || !drw_h || !src_w || !src_h)
+	return BadValue;
+
+  /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
+
+  UpdateCurrentTime();
+
+  /* CHECK FOR GRAB; IF THIS CLIENT DOESN'T HAVE THE PORT GRABBED THEN
+     INFORM CLIENT OF ITS FAILURE */
+
+  if (pPort->grab.client && (pPort->grab.client != client))
+    {
+      XvdiSendVideoNotify(pPort, pDraw, XvBusy);
+      return Success;
+    }
+
+  pPort->time = currentTime;
+
+  return (* pPort->pAdaptor->ddPutImage)(client, pDraw, pPort, pGC, 
+					   src_x, src_y, src_w, src_h, 
+					   drw_x, drw_y, drw_w, drw_h,
+					   image, data, sync, width, height);
+}
+
+
 int
 XvdiGetVideo(
    ClientPtr client,
