@@ -2,4 +2,5 @@
 
 CFBundleName = "Xmaster";
 CFBundleShortVersionString = "Xmaster version 0.1";
-CFBundleGetInfoString = "Xmaster version 0.1, Copyright 2000 MyGreatSoftware.";
+CFBundleGetInfoString = "Xmaster version 0.1";
+NSHumanReadableCopyright = "";

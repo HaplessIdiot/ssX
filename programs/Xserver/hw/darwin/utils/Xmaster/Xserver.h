@@ -1,75 +1,71 @@
-/*
- *  file: Xserver.h
- *  project: Xmaster
- *
- * Greg Parker (gparker@cs.stanford.edu) November 2000
- * This code is hereby released into the public domain.
- *
- */
+//
+//  Xserver.h
+//  Xmaster-Cocoa
+//
+//  Created by am on Sat Jan 06 2001.
+//
 
-#ifndef XSERVER_H
-#define XSERVER_H
+#import <Cocoa/Cocoa.h>
 
-#include <Carbon/Carbon.h>
+#include <Carbon/Carbon.h> // for Show/HideMenuBar()
 
 // for NXEvent
 #include <drivers/event_status_driver.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-
+#define hideKeycode 0
+#define hideModifiers (NSCommandKeyMask | NSAlternateKeyMask)
+#define DEFAULT_DISPLAY @"0"
 #define MAX_DISPLAY 100
-#define DEFAULT_DISPLAY "0" // no prepended ':'
 
+extern BOOL killed;
 
-class XServer {
-public:
-    XServer(char *display);
-    ~XServer();
-    
-    Boolean Run();
-    void Show();
-    void Hide();
-    void Toggle();
-    void Kill();
-    void UpdateModifiers();
-    void UpdateModifiers(UInt32 modifiers);
-    OSStatus SendKey(EventKind kind, UInt32 keyCode, UInt32 modifiers);
-    OSStatus SendMouseEvent(EventRef event);
-    Boolean IsRunning() { return mRunning; };
-    Boolean IsVisible() { return mVisible; };
-    
-protected:
-    void SendShowHide(Boolean show);
-    void SendEvent(NXEvent ev);
-    void ClearModifiers();
-
-
-protected:
+@interface Xserver : NSObject {
     // server state
-    Boolean mRunning;
-    Boolean mVisible;
+    BOOL mRunning;
+    BOOL mVisible;
     UInt32 mModifiers;
-    
+
     // communication
     int mEventWriteFD;
     FILE *mOutputReadFile;
 
     // settings
-    char mDisplay[MAX_DISPLAY];
-    
+    NSString *mDisplay;
+}
+
+- (id)init;
+
+- (BOOL)translateEvent:(NSEvent *)anEvent;
+
+- (void)getNXMouse:(NXEvent*)ev;
++ (void)append:(NSString*)value toEnv:(NSString*)name;
+
+- (void)toggle;
+- (void)show;
+- (void)hide;
+- (void)kill;
+- (void)sendEvent:(NXEvent*)ev;
+- (void)sendShowHide:(BOOL)show;
+
+//NSApplication delegate
+- (BOOL)applicationShouldTerminate:(NSApplication *)sender;
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
+- (void)applicationWillResignActive:(NSNotification *)aNotification;
+
+@end
+
 // NX_APPDEFINED event subtypes for special commands to the X server
 // clear modifiers: release all pressed modifier keys
 // show: vt switch to X server; recapture screen and restore X drawing
 // hide: vt switch away from X server; release screen and clip X drawing
 // quit: kill the X server and release the display
-protected:
     enum {
         kClearModifiers,
         kShow,
         kHide,
         kQuit
     };
-
-};
-
-
-#endif
