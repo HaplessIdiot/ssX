@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.35 2003/04/11 15:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.37 2003/04/23 14:18:36 eich Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -490,7 +490,11 @@ I810DRIScreenInit(ScreenPtr pScreen)
       DRICloseScreen(pScreen);
       return FALSE;
    } else {
-      back_size = i810_pitches[pitch_idx] * (pScrn->virtualY + 4);
+      /* for tiled memory to work, the buffer needs to have the
+       * number of lines as a multiple of 16 (the tile size),
+       *  - airlied */
+      int lines = (pScrn->virtualY + 15) / 16 * 16;
+      back_size = i810_pitches[pitch_idx] * lines;
       back_size = ((back_size + 4096 - 1) / 4096) * 4096;
    }
 
