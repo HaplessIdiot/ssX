@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.28 1996/10/16 14:28:24 dawes Exp $
+XCOMM $XConsortium: Imake.cf /main/26 1996/09/28 16:05:09 rws $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.29 1996/12/17 20:58:31 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -295,6 +295,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.28 1996/10/16 14:28:24 dawes Exp $
 #  undef _SVR4
 #  define SVR4Architecture
 # endif
+# ifdef _SYSTYPE_SVR4
+#  undef _SYSTYPE_SVR4
+#  define SVR4Architecture
+# endif
 #endif /* sgi */
 
 #ifdef stellar
@@ -552,7 +556,9 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.28 1996/10/16 14:28:24 dawes Exp $
 #ifdef __uxp__
 # define MacroIncludeFile <fujitsu.cf>
 # define MacroFile fujitsu.cf
+# define FujitsuArchitecture
 # undef __uxp__
+# define UXPArchitecture
 # ifdef sparc
 #  undef sparc
 #  define SparcArchitecture
@@ -562,6 +568,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.28 1996/10/16 14:28:24 dawes Exp $
 #ifdef __sxg__
 # define MacroIncludeFile <fujitsu.cf>
 # define MacroFile fujitsu.cf
+# define FujitsuArchitecture
 # undef __sxg__
 # define mc68000Architecture
 #endif /* __sxg__ */

@@ -1,6 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
+XCOMM $XFree86$
 
 /***************************************************************************
  *                                                                         *
@@ -41,11 +42,32 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #ifndef BuildServer
 #define BuildServer		HasXServer
 #endif
+#ifndef BuildServersOnly
+#define BuildServersOnly	NO
+#endif
 #ifndef BuildFontServer
 #define BuildFontServer		YES
 #endif
 #ifndef BuildFonts
 #define BuildFonts		(BuildServer | BuildFontServer)
+#endif
+#ifndef Build75DpiFonts
+#define Build75DpiFonts		YES
+#endif
+#ifndef Build100DpiFonts
+#define Build100DpiFonts	YES
+#endif
+#ifndef BuildSpeedoFonts
+#define BuildSpeedoFonts	YES
+#endif
+#ifndef BuildType1Fonts
+#define BuildType1Fonts		YES
+#endif
+#ifndef BuildCyrillicFonts
+#define BuildCyrillicFonts	NO
+#endif
+#ifndef UseKoi8RForCyrillic
+#define UseKoi8RForCyrillic	NO
 #endif
 #ifndef HasXAudio
 #define HasXAudio		NO
@@ -58,6 +80,24 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #endif
 #ifndef BuildXAServer
 #define BuildXAServer		(HasXAServer & HasCplusplus)
+#endif
+#ifndef BuildMITMiscExt
+#define BuildMITMiscExt		YES
+#endif
+#ifndef BuildTestExt
+#define BuildTestExt		YES
+#endif
+#ifndef BuildSyncExt
+#define BuildSyncExt		YES
+#endif
+#ifndef BuildXCMiscExt
+#define BuildXCMiscExt		YES
+#endif
+#ifndef BuildShapeExt
+#define BuildShapeExt		YES
+#endif
+#ifndef BuildBigReqsExt
+#define BuildBigReqsExt		YES
 #endif
 #ifndef BuildPhigs
 #define BuildPhigs		NO
@@ -74,11 +114,17 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #ifndef BuildXIE
 #define BuildXIE		YES
 #endif
+#ifndef BuildXIElib
+#define BuildXIElib		BuildXIE
+#endif
 #ifndef BuildXKB
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		YES
+#define BuildXKBlib		BuildXKB
+#endif
+#ifndef BuildXKBuilib
+#define BuildXKBuilib		BuildXKB
 #endif
 	/*
 	 * WARNING: Setting UseXKBInClients to YES cause incompatibilities
@@ -91,11 +137,17 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #ifndef BuildDBE
 #define BuildDBE		YES
 #endif
+#ifndef BuildDBElib
+#define BuildDBElib		BuildDBE
+#endif
 #ifndef BuildMultibuffer
 #define BuildMultibuffer	NO
 #endif
 #ifndef BuildRECORD
 #define BuildRECORD		YES
+#endif
+#ifndef BuildRECORDlib
+#define BuildRECORDlib		BuildRECORD
 #endif
 #ifndef BuildLBX
 #define BuildLBX		YES
@@ -122,6 +174,30 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #define BuildXprint		NO
 #endif
 #endif
+#ifndef BuildScreenSaverExt
+#define BuildScreenSaverExt	NO
+#endif
+#ifndef BuildScreenSaverLibrary
+#define BuildScreenSaverLibrary	BuildScreenSaverExt
+#endif
+#ifndef BuildXF86VidModeExt
+#define BuildXF86VidModeExt	NO
+#endif
+#ifndef BuildXF86VidModeLibrary
+#define BuildXF86VidModeLibrary BuildXF86VidModeExt
+#endif
+#ifndef BuildXF86MiscExt
+#define BuildXF86MiscExt	NO
+#endif
+#ifndef BuildXF86MiscLibrary
+#define BuildXF86MiscLibrary	BuildXF86MiscExt
+#endif
+#ifndef BuildXF86DGA
+#define BuildXF86DGA		NO
+#endif
+#ifndef BuildXF86DGALibrary
+#define BuildXF86DGALibrary	BuildXF86DGA
+#endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
 #endif
@@ -146,6 +222,9 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #endif
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
+#endif
+#ifndef CompressAllFonts
+#define CompressAllFonts	NO
 #endif
 #ifndef ThreadedX
 #if HasPosixThreads || HasCThreads
@@ -178,6 +257,15 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #endif
 #ifndef UseRgbTxt
 #define UseRgbTxt		NO	/* default is to compile with dbm */
+#endif
+#ifndef UseMemLeak
+#define UseMemLeak		NO
+#endif
+#ifndef SpecialMalloc
+#define SpecialMalloc		NO
+#endif
+#ifndef UseInternalMalloc
+#define UseInternalMalloc	NO
 #endif
 #ifndef FontCompilerFlags
 #define FontCompilerFlags -t
@@ -213,6 +301,41 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #define ExtensionOSDefines /**/
 #endif
 #ifndef ExtensionDefines
+#ifndef MITMiscDefines
+#if BuildMITMiscExt
+#define MITMiscDefines -DMITMISC
+#else
+#define MITMiscDefines /**/
+#endif
+#endif
+#ifndef XTestDefines
+#if BuildTestExt
+#define XTestDefines -DXTEST
+#else
+#define XTestDefines /**/
+#endif
+#endif
+#ifndef XSyncDefines
+#if BuildSyncExt
+#define XSyncDefines -DXSYNC
+#else
+#define XSyncDefines /**/
+#endif
+#endif
+#ifndef XCMiscDefines
+#if BuildXCMiscExt
+#define XCMiscDefines -DXCMISC
+#else
+#define XCMiscDefines /**/
+#endif
+#endif
+#ifndef ShapeDefines
+#if BuildShapeExt
+#define ShapeDefines -DSHAPE
+#else
+#define ShapeDefines /**/
+#endif
+#endif
 #ifndef PexDefines
 #if BuildPexExt
 #define PexDefines -DPEXEXT
@@ -280,7 +403,12 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #endif
 #endif
 #ifndef BigReqDefines
+#if BuildBigReqsExt
 #define BigReqDefines -DBIGREQS
+#else
+#define BigReqDefines /**/
+#endif
+#endif
 #endif
 
 #ifndef DBEDefines
@@ -303,8 +431,26 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #endif
 #endif
 
+#ifndef ScreenSaverExtensionDefines
+#if BuildScreenSaverExt
+#define ScreenSaverExtensionDefines -DSCREENSAVER
+#else
+#define ScreenSaverExtensionDefines /**/
+#endif
+#endif
 #ifndef VidTuneExtensionDefines
+#if BuildXF86VidModeExt
+#define VidTuneExtensionDefines -DXF86VIDMODE
+#else
 #define VidTuneExtensionDefines /**/
+#endif
+#endif
+#ifndef XF86MiscExtensionDefines
+#if BuildXF86MiscExt
+#define XF86MiscExtensionDefines -DXF86MISC
+#else
+#define XF86MiscExtensionDefines /**/
+#endif
 #endif
 
 #ifndef RECORDDefines
@@ -347,13 +493,21 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LbxDefines AppgroupDefines XCSecurityDefines PervasiveDBEDefines XprintDefines SitePervasiveExtensionDefines
+#define PervasiveExtensionDefines ShapeDefines XInputDefines XkbDefines \
+				  LbxDefines AppgroupDefines \
+				  XCSecurityDefines PervasiveDBEDefines \
+				  XprintDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines MultibufferDefines -DMITMISC -DXTEST -DXSYNC -DXCMISC RECORDDefines PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines DBEDefines SiteExtensionDefines
+#define BaseExtensionDefines MultibufferDefines MITMiscDefines XTestDefines \
+			     XSyncDefines XCMiscDefines RECORDDefines \
+			     PexDefines ShmDefines XieDefines BigReqDefines \
+			     VidTuneExtensionDefines XF86MiscExtensionDefines \
+			     DBEDefines ScreenSaverExtensionDefines \
+			     SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
@@ -487,6 +641,12 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #ifndef XdmDir
 #define XdmDir $(LIBDIR)/xdm
 #endif
+#ifndef XdmVarDir
+#define XdmVarDir $(VARLIBDIR)/xdm
+#endif
+#ifndef XdmAuthDir
+#define XdmAuthDir $(LIBDIR)/xdm
+#endif
 #ifndef XdmConfigurationSubdirectory		/* under xdm sources */
 #define XdmConfigurationSubdirectory config
 #endif
@@ -573,6 +733,10 @@ XCOMM $XConsortium: X11.tmpl /main/289 1996/12/09 16:34:08 kaleb $
 #define ForceNormalLib (HasGcc && !HasGcc2)
 #endif
 
+#ifndef XkbComp
+#define XkbComp xkbcomp
+#endif
+
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System make variables; these need to be coordinated with rules
 
@@ -601,6 +765,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
+        XDMVARDIR = XdmVarDir		/* xdm config files */
            TWMDIR = TwmDir		/* twm config files */
            XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
@@ -625,6 +790,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 
        DOCUTILSRC = $(XTOP)/doc/util
+        CLIENTSRC = $(TOP)/clients
+          DEMOSRC = $(TOP)/demos
        XDOCMACROS = $(DOCUTILSRC)/macros.t
        XIDXMACROS = $(DOCUTILSRC)/indexmacros.t
        PROGRAMSRC = $(TOP)/programs
@@ -691,6 +858,90 @@ ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
 #endif
          XLIBONLY = $(XONLYLIB)
 
+#if BuildThreadStubLibrary
+#ifndef SharedLibXThrStub
+#define SharedLibXThrStub YES
+#endif
+#ifndef NormalLibXThrStub
+#define NormalLibXThrStub NO
+#endif
+#ifndef DebugLibXThrStub
+#define DebugLibXThrStub NO
+#endif
+#ifndef ProfileLibXThrStub
+#define ProfileLibXThrStub NO
+#endif
+   XTHRSTUBLIBSRC = $(LIBSRC)/XThrStub
+#if SharedLibXThrStub
+#ifndef SharedXThrStubRev
+#define SharedXThrStubRev 6.0
+#endif
+SharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBLIBSRC),SOXTHRSTUBREV,SharedXThrStubRev)
+#else
+UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
+#endif
+#endif
+
+#if BuildScreenSaverLibrary
+#ifndef SharedLibXss
+#define SharedLibXss	NO
+#endif
+#ifndef NormalLibXss
+#define NormalLibXss	YES
+#endif
+#ifndef DebugLibXss
+#define DebugLibXss	NO
+#endif
+#ifndef ProfileLibXss
+#define ProfileLibXss	NO
+#endif
+#endif
+
+#if BuildXF86MiscLibrary
+#ifndef SharedLibXxf86misc
+#define SharedLibXxf86misc	NO
+#endif
+#ifndef NormalLibXxf86misc
+#define NormalLibXxf86misc	YES
+#endif
+#ifndef DebugLibXxf86misc
+#define DebugLibXxf86misc	NO
+#endif
+#ifndef ProfileLibXxf86misc
+#define ProfileLibXxf86misc	NO
+#endif
+#endif
+
+#if BuildXF86VidModeLibrary
+#ifndef SharedLibXxf86vm
+#define SharedLibXxf86vm	NO
+#endif
+#ifndef NormalLibXxf86vm
+#define NormalLibXxf86vm	YES
+#endif
+#ifndef DebugLibXxf86vm
+#define DebugLibXxf86vm		NO
+#endif
+#ifndef ProfileLibXxf86vm
+#define ProfileLibXxf86vm	NO
+#endif
+#endif
+
+#if BuildXF86DGALibrary
+#ifndef SharedLibXxf86dga
+#define SharedLibXxf86dga	NO
+#endif
+#ifndef NormalLibXxf86dga
+#define NormalLibXxf86dga	YES
+#endif
+#ifndef DebugLibXxf86dga
+#define DebugLibXxf86dga	NO
+#endif
+#ifndef ProfileLibXxf86dga
+#define ProfileLibXxf86dga	NO
+#endif
+#endif
+
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
 #endif
@@ -716,6 +967,54 @@ LINTEXTENSIONLIB = $(LINTEXTENSION)
           DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)
              XLIB = $(EXTENSIONLIB) $(XONLYLIB)
          LINTXLIB = $(LINTXONLYLIB)
+
+#if BuildScreenSaverLibrary
+    XSSLIBSRC = $(LIBSRC)/Xss
+#if SharedLibXss
+#ifndef SharedXssRev
+#define SharedXssRev 1.0
+#endif
+SharedLibReferences(XSS,Xss,$(XSSLIBSRC),SOXSSREV,SharedXssRev)
+#else
+ProjectUnsharedLibReferences(XSS,Xss,$(XSSLIBSRC))
+#endif
+#endif
+
+#if BuildXF86MiscLibrary
+    XXF86MISCLIBSRC = $(LIBSRC)/Xxf86misc
+#if SharedLibXxf86misc
+#ifndef SharedXxf86miscRev
+#define SharedXxf86miscRev 1.0
+#endif
+SharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC),SOXXF86MISCREV,SharedXxf86miscRev)
+#else
+ProjectUnsharedLibReferences(XXF86MISC,Xxf86misc,$(XXF86MISCLIBSRC))
+#endif
+#endif
+
+#if BuildXF86VidModeLibrary
+    XXF86VMLIBSRC = $(LIBSRC)/Xxf86vm
+#if SharedLibXxf86vm
+#ifndef SharedXxf86vmRev
+#define SharedXxf86vmRev 1.0
+#endif
+SharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC),SOXXF86VMREV,SharedXxf86vmRev)
+#else
+ProjectUnsharedLibReferences(XXF86VM,Xxf86vm,$(XXF86VMLIBSRC))
+#endif
+#endif
+
+#if BuildXF86DGALibrary
+    XXF86DGALIBSRC = $(LIBSRC)/Xxf86dga
+#if SharedLibXxf86dga
+#ifndef SharedXxf86dgaRev
+#define SharedXxf86dgaRev 1.0
+#endif
+SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf86dgaRev)
+#else
+ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC))
+#endif
+#endif
 
 #ifndef SharedLibXau
 #define SharedLibXau NO		/* don't need shared form */
@@ -1094,6 +1393,20 @@ ProjectUnsharedLibReferences(FS,FS,$(FSLIBSRC),XBuildLibDir)
          FONTLIBSRC = $(LIBSRC)/font
 ProjectUnsharedLibReferences(FONT,font,$(FONTLIBSRC),XBuildLibDir)
 
+          XPMLIBSRC = $(LIBSRC)/Xpm
+#if SharedLibXpm
+#ifndef SharedXpmRev
+#define SharedXpmRev 4.8
+#endif
+SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
+#else
+ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC))
+#endif
+
+#ifndef LdLibraryPath
+#define LdLibraryPath LD_LIBRARY_PATH
+#endif
+
 #ifdef BuildXKBlib
     XKBFILELIBSRC = $(LIBSRC)/xkbfile
 ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
@@ -1111,8 +1424,8 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #define XkbClientLibs /**/
 #endif
 #endif
-#ifdef UseInstalled
-     XKBCOMPCMD = xkbcomp                       /* assume BINDIR in path */
+#if defined(UseInstalled) || defined(OS2Architecture)
+     XKBCOMPCMD = XkbComp                       /* assume BINDIR in path */
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
      XKBCOMPCMD = $(CLIENTENVSETUP) $(XKBCOMPSRC)/xkbcomp
@@ -1125,6 +1438,24 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #define XkbClientLibs
 #endif
 #endif /* BuildXKBlib */
+
+#ifdef BuildXKBuilib
+    XKBUILIBSRC = $(LIBSRC)/xkbui
+UnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC))
+#ifndef XkbuiLibs
+#define	XkbuiLibs $(XKBUILIB)
+#endif
+#ifndef XkbuiDepLibs
+#define	XkbuiDepLibs $(DEPXKBFILELIB)
+#endif
+#else /* !BuildXKBuilib */
+#ifndef XkbuiLibs
+#define	XkbuiLibs
+#endif
+#ifndef XkbuiDepLibs
+#define	XkbuiDepLibs
+#endif
+#endif /* BuildXKBuilib */
 
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
@@ -1260,7 +1591,7 @@ InstallTarget(install,fonts.scale,$(INSTDATFLAGS),dest)
 #define UncompressedFontTarget(basename)				@@\
 FontBaseObj(basename):  FontSrc(basename)				@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $? -o $@)
-#endif /* CompressedFontTarget */
+#endif /* UncompressedFontTarget */
 
 /*
  * CompressedFontTarget
@@ -1281,6 +1612,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #endif
 #endif /* CompressedFontTarget */
 
+if !defined(FontTarget) && !defined(FontObj)
 #ifdef CompressAllFonts
 #define FontTarget(basename) CompressedFontTarget(basename)
 #if GzipFontCompression
@@ -1292,6 +1624,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #define FontTarget(basename) UncompressedFontTarget(basename)
 #define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
+#endif
 
 /*
  * MakeXkbDir

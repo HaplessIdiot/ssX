@@ -1,10 +1,10 @@
-# $XConsortium: Makefile /main/33 1996/02/02 19:03:18 gildea $
-# $XFree86: xc/Makefile,v 3.4 1996/02/10 10:35:14 dawes Exp $
+# $XConsortium: Makefile /main/36 1996/11/13 14:42:50 lehors $
+# $XFree86: xc/Makefile,v 3.5 1996/03/04 04:19:16 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
 
-RELEASE = "Release 6.1"
+RELEASE = "Release 6.3"
 SHELL = /bin/sh
 RM = rm -f
 MV = mv
@@ -111,6 +111,9 @@ World.Win32:
 	$(MAKE_CMD) $(MFLAGS) VerifyOS
 	$(MAKE_CMD) $(MFLAGS) Makefiles
 	$(MAKE_CMD) $(MFLAGS) clean
+	cd $(CONFIGSRC)\util
+	$(MAKE) mkdirhier.exe
+	cd ..\..
 	$(MAKE_CMD) $(MFLAGS) includes
 	$(MAKE_CMD) $(MFLAGS) depend
 	$(MAKE_CMD) $(MFLAGS) $(WIN32WORLDOPTS)

@@ -1,5 +1,5 @@
-/* $XConsortium: Xlib.h /main/118 1995/09/19 10:00:22 kaleb $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.8 1996/02/09 08:18:47 dawes Exp $ */
+/* $XConsortium: Xlib.h /main/119 1996/09/28 16:35:29 rws $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.9 1996/12/09 11:49:33 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium

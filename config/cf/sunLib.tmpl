@@ -1,5 +1,5 @@
-XCOMM $XConsortium: sunLib.tmpl /main/40 1995/12/18 17:47:03 gildea $
-XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.5 1995/07/22 13:56:26 dawes Exp $
+XCOMM $XConsortium: sunLib.tmpl /main/44 1996/12/09 16:34:30 kaleb $
+XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.6 1996/01/05 13:06:45 dawes Exp $
 
 /*
  * SunOS shared library template
@@ -7,47 +7,78 @@ XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.5 1995/07/22 13:56:26 dawes Exp $
 
 #if OSMajorVersion <= 4
 
-#if SunPost411FCSLd
-#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XEXTLIB) $(XONLYLIB)
-#endif
+# if SunPost411FCSLd
+#  define SharedXmuReqs $(LDPRELIBS) $(XTOOLLIB) $(XLIB)
+# endif
 
-#ifndef SharedX11Rev
-#define SharedX11Rev 4.30
-#endif
-#ifndef SharedOldXRev
-#define SharedOldXRev 4.20
-#endif
-#ifndef SharedXtRev
-#define SharedXtRev 4.20
-#endif
-#ifndef SharedXawRev
-#define SharedXawRev 6.10
-#endif
-#ifndef SharedXmuRev
-#define SharedXmuRev 4.20
-#endif
-#ifndef SharedXextRev
-#define SharedXextRev 4.30
-#endif
-#ifndef SharedXiRev
-#define SharedXiRev 4.20
-#endif
-#ifndef SharedXtstRev
-#define SharedXtstRev 1.20
-#endif
-#ifndef SharedPexRev
-#define SharedPexRev 1.10
-#endif
+# ifndef SharedX11Rev
+#  define SharedX11Rev 4.20
+# endif
+# ifndef SharedOldXRev
+#  define SharedOldXRev 4.20
+# endif
+# ifndef SharedXtRev
+#  define SharedXtRev 4.20
+# endif
+# ifndef SharedXmuRev
+#  define SharedXmuRev 4.20
+# endif
+# ifndef SharedXextRev
+#  define SharedXextRev 4.30
+# endif
+# ifndef SharedXiRev
+#  define SharedXiRev 4.20
+# endif
+# ifndef SharedXtstRev
+#  define SharedXtstRev 1.10
+# endif
+# ifndef SharedPexRev
+#  define SharedPexRev 1.10
+# endif
 
 #else				/* else it's Solaris */
 
-#if ThreadedX
-#if defined(i386Architecture) || OSMinorVersion > 3
-#define SharedX11Reqs /**/
-#endif
-#endif
-#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
-#define FixupLibReferences() /**/
-#include <sv4Lib.tmpl>
+# if ThreadedX
+#  if OSMinorVersion > 3
+#   define SharedThreadReqs /**/
+#   define SharedX11Reqs /**/
+#  endif
+# endif
+# define SharedXmuReqs $(LDPRELIBS) $(XTOOLLIB) $(XLIB)
+# define FixupLibReferences() /**/
+
+# define SharedPamReqs -ldl
+# define SharedPamUnixReqs $(LDPRELIBS) -lpam $(LDPOSTLIBS) -lnsl -lmp -lcmd SharedThreadReqs
+# define SharedPamSampleReqs $(LDPRELIBS) -lpam $(LDPOSTLIBS) SharedThreadReqs
+# define SharedPamDialAuthReqs $(LDPRELIBS) -lpam $(LDPOSTLIBS) SharedThreadReqs
+# define SharedPamRhostsAuthReqs $(LDPRELIBS) -lpam $(LDPOSTLIBS) -lsocket SharedThreadReqs
+# define SharedPamDceAuthReqs $(LDPRELIBS) -lpam $(LDPOSTLIBS) -ldce -lnsl -lsocket SharedThreadReqs
+# define SharedTtReqs -lnsl -lsocket -lintl -ldl -lc -lw
+# define SharedDtSvcReqs $(LDPRELIBS) $(TTLIB) $(XMLIB) $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS) SharedThreadReqs -lgen -lc -lsocket -lnsl -ldl
+# define SharedDtMmdbReqs $(LDPRELIBS) $(DTSVCLIB) $(TTLIB) $(XMLIB) $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS) SharedThreadReqs -lgen -lc -lsocket -lnsl -ldl
+# define SharedDtSearchReqs -lm -lc
+# define SharedDtWidgetReqs $(LDPRELIBS) $(DTSVCLIB) $(XMLIB) -lintl $(LDPOSTLIBS) -lw -lm -lc
+# define SharedDtHelpReqs $(LDPRELIBS) $(DTSVCLIB) $(XMLIB) $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS) -lw -lgen -lm -lc
+# define SharedDtPrintReqs $(LDPRELIBS) $(DTSVCLIB) $(DTHELPLIB) $(XMLIB) -lintl $(LDPOSTLIBS) -lw -lm -lc
+# define SharedDtTermReqs SharedDtHelpReqs -ldl -lgen
+# define SharedDtMrmReqs $(LDPRELIBS) $(DTTERMLIB) $(DTPRINTLIB) $(DTHELPLIB) $(DTWIDGETLIB) $(MRESOURCELIB) $(XMLIB) $(XTOOLLIB) $(XPLIB) $(XLIB) $(LDPOSTLIBS) -lw -lsocket -lnsl -lc
+# define SharedDtMailReqs $(LDPRELIBS) -lw $(CXXLIB) -lm -ldl
+# define SharedCsaReqs $(LDPRELIBS) $(DTSVCLIB) $(XMLIB) SharedXmReqs
+
+# define DtClientExtraLibs -lintl
+
+/* The inbuf paramter to iconv(3) is "const char**", not "char **" */
+ICONV_INBUF_DEFINE = -DICONV_INBUF_CONST=const
+
+# if HasCplusplus
+#  if HasGcc2ForCplusplus
+UNSHARED_CXXLIB = -static -lC
+#  else
+UNSHARED_CXXLIB = -Bstatic -lC -Bdynamic -lm -lc -Bstatic
+#  endif
+# endif
+
+# define IafSysLib	/**/
+# include <sv4Lib.tmpl>
 
 #endif

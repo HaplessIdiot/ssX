@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.100 95/06/23 22:36:25 converse Exp $ */
+/* $XConsortium: Selection.c /main/97 1996/12/04 10:22:41 lehors $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -288,6 +288,7 @@ Atom *properties;
 	(void) memmove((char*)info->incremental, (char*) incremental,
 		       count * sizeof(Boolean));
 	info->current = 0;
+	info->value = NULL;
 	return (info);
 }
 
@@ -900,7 +901,7 @@ Boolean incremental;
 	    return FALSE;
 	if (ctx->ref_count) {	/* exchange is in-progress */
 #ifdef DEBUG_ACTIVE
-	    printf( "Active exchange for widget \"%s\"; selection=0x%x, ref_count=%d\n",
+	    printf( "Active exchange for widget \"%s\"; selection=0x%lx, ref_count=%d\n",
 		    XtName(widget), (long)selection, ctx->ref_count );
 #endif
 	    if (ctx->widget != widget ||
@@ -1092,6 +1093,7 @@ Boolean *cont;
            XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE,
 			   ReqCleanup, (XtPointer) info );
            FreeSelectionProperty(XtDisplay(widget), info->property);
+	   XtFree(info->value);	/* requestor never got this, so free now */
 	   FreeInfo(info);
 	}
     }
@@ -1179,8 +1181,8 @@ Boolean *cont;
 			     &info->type, 
 			     (info->offset == 0 ? value : info->value), 
 			     &u_offset, &info->format);
-       if (info->offset == 0) XtFree(info->value);
-       else XFree(value);
+       /* assert ((info->offset != 0) == (info->incremental[n]) */
+       if (info->offset != 0) XFree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
@@ -1331,7 +1333,10 @@ unsigned long size;
     XFlush(dpy);
 
     info->bytelength = size;
-    info->value = (char *) XtMalloc((unsigned) info->bytelength);
+    if (info->incremental[info->current]) /* requestor wants incremental too */
+	info->value = NULL;	/* so no need for buffer to assemble value */
+    else
+	info->value = (char *) XtMalloc((unsigned) info->bytelength);
     info->offset = 0;
 
     /* reset the timer */

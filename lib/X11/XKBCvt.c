@@ -1,5 +1,5 @@
-/* $XConsortium: XKBCvt.c /main/22 1996/03/01 14:29:37 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.9 1996/08/13 11:25:36 dawes Exp $ */
+/* $XConsortium: XKBCvt.c /main/23 1996/08/31 12:44:18 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.10 1996/08/27 03:11:24 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium

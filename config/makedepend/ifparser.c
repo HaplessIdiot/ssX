@@ -1,6 +1,6 @@
 /*
- * $XConsortium: ifparser.c /main/9 1995/08/09 14:10:57 kaleb $
- * $XFree86: xc/config/makedepend/ifparser.c,v 3.3 1996/05/06 06:42:44 dawes Exp $
+ * $XConsortium: ifparser.c /main/10 1996/09/28 16:15:18 rws $
+ * $XFree86: xc/config/makedepend/ifparser.c,v 3.4 1996/08/20 12:07:21 dawes Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 

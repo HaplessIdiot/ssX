@@ -1,4 +1,4 @@
-/* $XConsortium: lcCT.c /main/6 1995/11/18 16:09:43 kaleb $ */
+/* $XConsortium: lcCT.c /main/9 1996/12/05 10:40:19 swick $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -22,6 +22,14 @@
  *
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
+ */
+/*
+ * Copyright 1995 by FUJITSU LIMITED
+ * This is source code modified by FUJITSU LIMITED under the Joint
+ * Development Agreement for the CDE/Motif PST.
+ *
+ * Modifier: Takanori Tateno   FUJITSU LIMITED
+ *
  */
 
 #include "Xlibint.h"
@@ -127,6 +135,17 @@ typedef struct {
     int version;
     CTInfo ct_info;
 } CTParseRec, *CTParse;
+
+CTDataRec *default_ct_data_list()
+{
+	return(default_ct_data);
+}
+
+size_t default_ct_data_list_num()
+{
+	size_t num = sizeof(default_ct_data) / sizeof(CTDataRec);
+	return(num);
+}
 
 static CTInfo ct_list = NULL;
 
@@ -699,7 +718,7 @@ strtocs(conv, from, from_left, to, to_left, args, num_args)
     State state = (State) conv->state;
     register char *src, *dst;
     unsigned char side;
-    register length;
+    register int length;
 
     src = (char *) *from;
     dst = (char *) *to;

@@ -1,4 +1,4 @@
-/* $XConsortium: PutImage.c,v 11.71 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: PutImage.c /main/43 1996/10/22 14:20:50 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -133,7 +133,7 @@ _XReverse_Bytes (bpt, nb)
  */
 
 /*ARGSUSED*/
-static int
+static void
 NoSwap (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -149,7 +149,7 @@ NoSwap (src, dest, srclen, srcinc, destinc, height, half_order)
 	    memcpy((char *)dest, (char *)src, (int)srclen);
 }
 
-static int
+static void
 SwapTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -176,7 +176,7 @@ SwapTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     }
 }
 
-static int
+static void
 SwapThreeBytes (src, dest, srclen, srcinc, destinc, height, byte_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -206,7 +206,7 @@ SwapThreeBytes (src, dest, srclen, srcinc, destinc, height, byte_order)
     }
 }
 
-static int
+static void
 SwapFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -241,7 +241,7 @@ SwapFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     }
 }
 
-static int
+static void
 SwapWords (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -276,7 +276,7 @@ SwapWords (src, dest, srclen, srcinc, destinc, height, half_order)
     }
 }
 
-static int
+static void
 SwapNibbles (src, dest, srclen, srcinc, destinc, height)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -292,7 +292,7 @@ SwapNibbles (src, dest, srclen, srcinc, destinc, height)
 	    *dest++ = rev[*src++];
 }
 
-static int
+static void
 ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height, nibble_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -322,7 +322,7 @@ ShiftNibblesLeft (src, dest, srclen, srcinc, destinc, height, nibble_order)
 }
 
 /*ARGSUSED*/
-static int
+static void
 SwapBits (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -339,7 +339,7 @@ SwapBits (src, dest, srclen, srcinc, destinc, height, half_order)
 	    *dest++ = rev[*src++];
 }
 
-static int
+static void
 SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -366,7 +366,7 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     }
 }
 
-static int
+static void
 SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -402,7 +402,7 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
     }
 }
 
-static int
+static void
 SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height, half_order)
     register unsigned char *src, *dest;
     long srclen, srcinc, destinc;
@@ -488,7 +488,7 @@ legend:
 
 */
 
-static int (* RConst (SwapFunction[12][12]))() = {
+static void (* RConst (SwapFunction[12][12]))() = {
 #define n NoSwap,
 #define s SwapTwoBytes,
 #define l SwapFourBytes,
@@ -599,7 +599,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     long bytes_per_line, bytes_per_src_plane, bytes_per_dest_plane;
     char *src, *dest, *buf;
     char *extra = (char *)NULL;
-    register int (*swapfunc)();
+    register void (*swapfunc)();
     int half_order;
 
     total_xoffset = image->xoffset + req_xoffset;
@@ -952,6 +952,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	if (dest_bits_per_pixel != image->bits_per_pixel) {
 	    XImage img;
 	    register long i, j;
+	    extern void _XInitImageFuncPtrs();
 	    /* XXX slow, but works */
 	    img.width = width;
 	    img.height = height;

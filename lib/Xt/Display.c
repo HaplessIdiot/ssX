@@ -1,5 +1,5 @@
-/* $XConsortium: Display.c,v 1.118 95/06/16 19:25:22 kaleb Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Display.c /main/113 1996/08/21 11:37:33 kaleb $ */
+/* $XFree86: xc/lib/Xt/Display.c,v 3.3 1996/04/15 11:56:56 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -541,14 +541,27 @@ void XtDestroyApplicationContext(app)
 
 void _XtDestroyAppContexts()
 {
-	int i;
+	int i,ii;
+	XtAppContext apps[8];
+	XtAppContext* pApps;
 
-	for (i = 0; i < _XtAppDestroyCount; i++) {
-	    DestroyAppContext(appDestroyList[i]);
+	pApps = XtStackAlloc (sizeof (XtAppContext) * _XtAppDestroyCount, apps);
+
+	for (i = ii = 0; i < _XtAppDestroyCount; i++) {
+	    if (_XtSafeToDestroy(appDestroyList[i]))
+		DestroyAppContext(appDestroyList[i]);
+	    else
+		pApps[ii++] = appDestroyList[i];
 	}
-	_XtAppDestroyCount = 0;
-	XtFree((char *) appDestroyList);
-	appDestroyList = NULL;
+	_XtAppDestroyCount = ii;
+	if (_XtAppDestroyCount == 0) {
+	    XtFree((char *) appDestroyList);
+	    appDestroyList = NULL;
+	} else {
+	    for (i = 0; i < ii; i++)
+		appDestroyList[i] = pApps[i];
+	}
+	XtStackFree ((XtPointer) pApps, apps);
 }
 
 XrmDatabase XtDatabase(dpy)

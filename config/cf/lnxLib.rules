@@ -1,5 +1,5 @@
-XCOMM $XConsortium: lnxLib.rules /main/12 1996/01/03 14:51:18 kaleb $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.24 1996/10/06 13:09:44 dawes Exp $
+XCOMM $XConsortium: lnxLib.rules /main/13 1996/09/28 16:11:01 rws $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.25 1996/12/09 11:48:05 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -73,6 +73,7 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.24 1996/10/06 13:09:44 dawes Exp $
 #else
 #define ExtraLoadFlags -Wl,-rpath,$(SHLIBDIR)
 #endif
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIRPATH)
 #endif
 
 /*
@@ -116,7 +117,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
-Concat(lib,libname.so.rev):  solist					@@\
+Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	$(RM) $@~							@@\
 	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
 		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\

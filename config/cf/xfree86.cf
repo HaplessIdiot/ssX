@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.119 1996/11/20 14:00:29 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.120 1996/11/24 09:50:41 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -6,7 +6,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.119 1996/11/20 14:00:29 dawes Exp $
  * Most of these settings can be overridden in a vendor.cf or the
  * BeforeVendor part of the site.def file.
  */
-XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
+XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 
 /*
  * The LinkKit needs to inherit some settings (from the xc build that

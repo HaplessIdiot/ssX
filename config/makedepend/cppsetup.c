@@ -1,4 +1,4 @@
-/* $XConsortium: cppsetup.c /main/16 1996/04/23 13:27:04 kaleb $ */
+/* $XConsortium: cppsetup.c /main/17 1996/09/28 16:15:03 rws $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

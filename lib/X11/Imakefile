@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/192 1996/02/02 16:15:49 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.13 1996/05/13 06:37:07 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/194 1996/09/28 16:34:05 rws $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.15 1996/08/26 06:23:31 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.13 1996/05/13 06:37:07 dawes Exp $
 #define LibName X11
 #define SoRev SOXLIBREV
 #define HugeLibrary YES
+#define IncSubdir X11
 
 #include <Threads.tmpl>
 
@@ -59,8 +60,6 @@ EXTRA_LIBRARIES = /**/
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
-#if HasSnprintf
-    MISC_DEFINES = -DHAS_SNPRINTF -DLIBX11 #endif
 #if MotifBC
       BC_DEFINES = -DMOTIFBC
 #endif
@@ -74,18 +73,12 @@ EXTRA_LIBRARIES = /**/
          K5INCL = Krb5Includes
          K5DEFS = Krb5Defines
 #endif
-#if !HasSnprintf
-       MISCSRCS = snprintf.c
-       MISCOBJS = snprintf.o
-#endif
 #if NeedLibInsideFlag
     LIB_DEFINES = -D_XLIBINT_
 #endif
- LIB_MT_DEFINES = LibraryMTDefines
-
-        DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES) $(MISC_DEFINES)
+        DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES)
    OPEN_DEFINES = -I$(EXTINCSRC) $(K5INCL) $(K5DEFS)
- DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES) $(THREADS_DEFINES) $(LIB_MT_DEFINES)
+ DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES) $(THREADS_DEFINES)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
            SRCS = $(SRCS1) $(SRCS2) $(SRCS3) /* try *.c if you have trouble */
@@ -808,6 +801,7 @@ LCSRCS = \
 	lcGenConv.c \
 	lcGeneric.c \
 	lcInit.c \
+	lcJis.c \
 	lcPrTxt.c \
 	lcPubWrap.c \
 	lcPublic.c \
@@ -878,6 +872,7 @@ LCOBJS = \
 	lcGenConv.o \
 	lcGeneric.o \
 	lcInit.o \
+	lcJis.o \
 	lcPrTxt.o \
 	lcPubWrap.o \
 	lcPublic.o \
@@ -910,7 +905,7 @@ SpecialCLibObjectRule(ximtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES)
 LinkFile(ximtrans.c,$(TRANSCOMMSRC)/transport.c)
 SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES) $(XTRANS_X_DEFINES) $(XKB_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES) $(LIB_MT_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES))
 SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
@@ -918,7 +913,6 @@ SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(imTrans,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(lcFile,$(ICONFIGFILES),$(XLC_DEFINES))
-SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(LIB_MT_DEFINES))
 #if BuildXKBlib
 SpecialCLibObjectRule(XKBCvt,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(KeyBind,$(ICONFIGFILES),$(XKB_DEFINES))
@@ -953,18 +947,12 @@ LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 #endif
 
-#if !HasSnprintf
-LinkSourceFile(snprintf.c,../misc)
-SpecialCLibObjectRule(snprintf,$(ICONFIGFILES),-DLIBX11)
-#endif
-LinkSourceFile(snprintf.h,../misc)
-
 MAKEKEYS = ./makekeys
 
-ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
+ks_tables.h: $(XINCLUDESRC)/keysymdef.h util/makekeys.c
 	RemoveFiles($@ ProgramTargetName(makekeys) makekeys.Osuf)
 	-HostLinkRule(ProgramTargetName(makekeys),$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
-	RunProgram(MAKEKEYS,< $(INCLUDESRC)/keysymdef.h > ks_tables_h)
+	RunProgram(MAKEKEYS,< $(XINCLUDESRC)/keysymdef.h > ks_tables_h)
 	$(MV) ks_tables_h $@
 	RemoveFiles(ProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)
 

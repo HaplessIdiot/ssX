@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c /main/19 1996/03/01 14:29:21 kaleb $ */
+/* $XConsortium: XKBBind.c /main/20 1996/08/31 12:44:10 kaleb $ */
 /*
 
 Copyright (c) 1985, 1987, 1994  X Consortium

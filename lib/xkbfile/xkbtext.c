@@ -1,4 +1,4 @@
-/* $XConsortium: xkbtext.c /main/4 1996/01/14 16:44:25 kaleb $ */
+/* $XConsortium: xkbtext.c /main/6 1996/08/31 12:45:41 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbconfig.c /main/3 1996/01/01 10:53:07 kaleb $ */
+/* $XConsortium: xkbconfig.c /main/4 1996/08/31 12:45:25 kaleb $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 

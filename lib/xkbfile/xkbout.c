@@ -1,4 +1,4 @@
-/* $XConsortium: xkbout.c /main/4 1996/01/23 10:10:56 kaleb $ */
+/* $XConsortium: xkbout.c /main/5 1996/08/31 12:45:35 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

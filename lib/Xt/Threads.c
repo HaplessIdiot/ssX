@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.16 95/06/06 21:00:38 kaleb Exp $ */
+/* $XConsortium: Threads.c /main/17 1996/09/28 16:47:13 rws $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -63,7 +63,9 @@ in this Software without prior written authorization from the X Consortium.
 #define xfree XtFree
 #include <X11/Xthreads.h>
 
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #include <assert.h>
 #include <stdio.h>
 

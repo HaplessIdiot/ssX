@@ -1,17 +1,19 @@
-XCOMM platform:  $XConsortium: fujitsu.cf /main/6 1996/01/22 17:36:40 gildea $
-
-#ifdef SparcArchitecture
+XCOMM platform:  $XConsortium: fujitsu.cf /main/8 1996/12/04 10:10:25 swick $
 
 #ifndef OSName
-#define OSName             FUJITSU UXP/DS V10L20
+# define OSName		DefaultOSName
 #endif
-XCOMM operating system:    OSName
 #ifndef OSMajorVersion
-#define OSMajorVersion     10
+# define OSMajorVersion	DefaultOSMajorVersion
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion     20
+# define OSMinorVersion	DefaultOSMinorVersion
 #endif
+XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion)
+
+#define PatheticCpp	   YES
+
+#ifdef SparcArchitecture
 
 #define BootstrapCFlags    -D__uxp__
 #define StandardDefines    -D__uxp__ -DSVR4 -DANSICPP
@@ -19,8 +21,11 @@ XCOMM operating system:    OSName
 
 #define CppCmd             /usr/ccs/lib/cpp
 
+#define BuildLibPathVar	   LD_LIBRARY_PATH
 #define SystemV4	   YES
 #define HasSockets         YES
+#define DBMLibrary         /* ndbm modules are in -lc */
+#define HasNdbm            YES
 #ifndef HasLdRunPath
 #define HasLdRunPath       YES
 #endif
@@ -31,16 +36,6 @@ XCOMM operating system:    OSName
 #endif
 
 #ifdef mc68000Architecture
-#ifndef OSName
-#define OSName             FUJITSU SX/G E17
-#endif
-XCOMM operating system:    OSName
-#ifndef OSMajorVersion
-#define OSMajorVersion     17
-#endif
-#ifndef OSMinorVersion
-#define OSMinorVersion     10
-#endif
 
 #define BootstrapCFlags    -D__sxg__
 #define StandardDefines    -D__sxg__ -DSYSV -DUSG -DNOSTDHDRS -I/usr/xwin/include
@@ -58,3 +53,15 @@ XCOMM operating system:    OSName
 #define XawI18nDefines     -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #endif
+
+#define GencatFlags		-m
+
+#define DtSvcDefines		-DXK_MISCELLANY -DMULTIBYTE -DNO_REGCOMP -DHAVE_PTMS
+#define DtSearchDefines		-DI18N_MSG DtSvcDefines -DNEED_STRCASECMP
+#define DtWidgetDefines		DtSearchDefines
+
+#define ArchitectureDefines	-DUXP_ARCHITECTURE
+
+#define CdeProjectDefines \
+	-DMULTIBYTE -DNLS16 \
+	-DOSMAJORVERSION=OSMajorVersion -DOSMINORVERSION=OSMinorVersion

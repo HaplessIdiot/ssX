@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.50 1996/11/18 13:07:02 dawes Exp $
+XCOMM platform:  $XConsortium: linux.cf /main/26 1996/09/29 18:19:31 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.51 1996/12/09 11:48:03 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -10,6 +10,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.50 1996/11/18 13:07:02 dawe
 #endif
 
 #ifndef OSName
+
+#if 0
+
 #if UseElfFormat
 #define OSName			Linux [ELF]
 #else
@@ -19,20 +22,28 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.50 1996/11/18 13:07:02 dawe
 #define OSName			Linux [a.out]
 #endif
 #endif
+
+#else
+
+#define OSName			DefaultOSName
+
+#endif
+
 #endif
 
 #ifndef OSVendor
 #define OSVendor		/**/
 #endif
 #ifndef OSMajorVersion
-#define OSMajorVersion		2
+#define OSMajorVersion		DefaultOSMajorVersion
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion		0
+#define OSMinorVersion		DefaultOSMinorVersion
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		13
+#define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
 /*
  * The Linux BinUtils major version.  25 => 2.5.x, which is what is included

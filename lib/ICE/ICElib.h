@@ -1,5 +1,5 @@
-/* $XConsortium: ICElib.h,v 1.40 94/06/01 10:48:43 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: ICElib.h /main/41 1996/11/29 13:30:19 swick $ */
+/* $XFree86: xc/lib/ICE/ICElib.h,v 3.0 1996/12/09 11:49:11 dawes Exp $ */
 /******************************************************************************
 
 
@@ -286,6 +286,16 @@ extern IcePointer IceGetConnectionContext (
 
 extern Status IceListenForConnections (
 #if NeedFunctionPrototypes
+    int *		/* countRet */,
+    IceListenObj **	/* listenObjsRet */,
+    int			/* errorLength */,
+    char *		/* errorStringRet */
+#endif
+);
+
+extern Status IceListenForWellKnownConnections (
+#if NeedFunctionPrototypes
+    char *		/* port */,
     int *		/* countRet */,
     IceListenObj **	/* listenObjsRet */,
     int			/* errorLength */,
