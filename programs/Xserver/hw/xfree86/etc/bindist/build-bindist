@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/build-bindist,v 1.1 1997/05/27 03:47:02 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/bindist/build-bindist,v 1.2 2000/02/22 16:55:23 dawes Exp $
 #
 
 Usage()
 {
-  echo `basename $0` [-l] version from-dir to-dir
+  echo `basename $0` [-l] [prefix] from-dir to-dir
   exit 1
 }
 
@@ -18,13 +18,21 @@ case $1 in
     ;;
 esac
 
-if [ $# != 3 ]; then
-  Usage
-fi
-
-VERS=$1
-FROMDIR=$2
-TODIR=$3
+case $# in
+3)
+    PRE=$1
+    shift
+    ;;
+2)
+    PRE=X
+    ;;
+*)
+    Usage
+    ;;
+esac
+    
+FROMDIR=$1
+TODIR=$2
 
 if [ ! -d $FROMDIR ]; then
   echo No such dir $FROMDIR
@@ -91,7 +99,7 @@ for d in $SUBDIRS; do
       DEFPREFIX=`cat $DIRFILE`
       for i in *-list; do
         name=`basename $i -list`
-        tarball=$VERS$name.tgz
+        tarball=$PRE$name.tgz
         echo creating $tarball
         lfile="-T $TODIR/$d/$i"
         if [ -f $name-excl ]; then
