@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* i830_dma.c -- DMA support for the I830 -*- linux-c -*-
  * Created: Mon Dec 13 01:50:01 1999 by jhartmann@precisioninsight.com
  *
@@ -145,10 +146,17 @@ int i830_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
    	buf_priv->currently_mapped = I830_BUF_MAPPED;
 	unlock_kernel();
 
+#ifdef NO_REMAP_PAGE_RANGE
+	if (remap_pfn_range(vma, vma->vm_start,
+			    VM_OFFSET(vma) >> PAGE_SHIFT,
+			    vma->vm_end - vma->vm_start,
+			    vma->vm_page_prot)) return -EAGAIN;
+#else
 	if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 			     VM_OFFSET(vma),
 			     vma->vm_end - vma->vm_start,
 			     vma->vm_page_prot)) return -EAGAIN;
+#endif
 	return 0;
 }
 

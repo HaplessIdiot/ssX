@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**
  * \file drmP.h 
  * Private header for Direct Rendering Manager
@@ -86,6 +87,12 @@
 #define NO_SSCANF 1
 #else
 #define NO_SSCANF 0
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,10)
+#define NO_REMAP_PAGE_RANGE
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,11)
+#define HAVE_PUD_OFFSET
 #endif
 
 #include "drm.h"

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**
  * \file drm_vm.h
  * Memory mapping for DRM
@@ -619,10 +620,17 @@ int DRM(mmap)(struct file *filp, struct vm_area_struct *vma)
 					vma->vm_end - vma->vm_start,
 					vma->vm_page_prot, 0))
 #else
+#ifdef NO_REMAP_PAGE_RANGE
+		if (remap_pfn_range(vma, vma->vm_start,
+				    (VM_OFFSET(vma) + offset) >> PAGE_SHIFT,
+				    vma->vm_end - vma->vm_start,
+				    vma->vm_page_prot))
+#else
 		if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 				     VM_OFFSET(vma) + offset,
 				     vma->vm_end - vma->vm_start,
 				     vma->vm_page_prot))
+#endif
 #endif
 				return -EAGAIN;
 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"

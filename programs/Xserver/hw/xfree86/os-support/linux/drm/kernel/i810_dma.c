@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* i810_dma.c -- DMA support for the i810 -*- linux-c -*-
  * Created: Mon Dec 13 01:50:01 1999 by jhartmann@precisioninsight.com
  *
@@ -145,10 +146,17 @@ int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
 	buf_priv->currently_mapped = I810_BUF_MAPPED;
 	unlock_kernel();
 
+#ifdef NO_REMAP_PAGE_RANGE
+	if (remap_pfn_range(vma, vma->vm_start,
+			    VM_OFFSET(vma) >> PAGE_SHIFT,
+			    vma->vm_end - vma->vm_start,
+			    vma->vm_page_prot)) return -EAGAIN;
+#else
 	if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 			     VM_OFFSET(vma),
 			     vma->vm_end - vma->vm_start,
 			     vma->vm_page_prot)) return -EAGAIN;
+#endif
 	return 0;
 }
 
@@ -453,7 +461,7 @@ static int i810_dma_initialize(drm_device_t *dev,
 
 /* i810 DRM version 1.1 used a smaller init structure with different
  * ordering of values than is currently used (drm >= 1.2). There is
- * no defined way to detect the XFree version to correct this problem,
+ * no defined way to detect the XFree86 version to correct this problem,
  * however by checking using this procedure we can detect the correct
  * thing to do.
  *
@@ -510,7 +518,7 @@ int i810_dma_init(struct inode *inode, struct file *filp,
 	switch(init.func) {
 		case I810_INIT_DMA:
 			/* This case is for backward compatibility. It
-			 * handles XFree 4.1.0 and 4.2.0, and has to
+			 * handles XFree86 4.1.0 and 4.2.0, and has to
 			 * do some parameter checking as described below.
 			 * It will someday go away.
 			 */
