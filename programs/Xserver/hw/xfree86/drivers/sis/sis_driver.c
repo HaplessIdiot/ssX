@@ -2815,6 +2815,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->SecondHead = FALSE;
 	     pSiSEnt->pScrn_1 = pScrn;
 	     pSiSEnt->CRT1ModeNo = pSiSEnt->CRT2ModeNo = -1;
+	     pSiSEnt->CRT2ModeSet = FALSE;
 	     pSiS->DualHeadMode = TRUE;
 	     pSiSEnt->DisableDual = FALSE;
 	     pSiSEnt->BIOS = NULL;
@@ -6516,10 +6517,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Save the current state */
     SISSave(pScrn);
-    
-    OnScreenSize = pScrn->displayWidth * pScrn->currentMode->VDisplay
-                               * (pScrn->bitsPerPixel / 8);
-    
+
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
 
        if(!pSiS->OldMode) {
@@ -6565,12 +6563,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	     pSiS->OldMode = myoldmode;
 	  }
        }
-
-       /* Clear frame buffer on 300 and 315/330 series
-	* (older chipsets don't like this to be done before
-	* setting the mode (such as rev 0x0b of 6326))
-	*/
-       bzero(pSiS->FbBase, OnScreenSize);
     }
 
     /* Initialise the first mode */
@@ -6578,9 +6570,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        SISErrorLog(pScrn, "SiSModeInit() failed\n");
        return FALSE;
     }
-
-    /* Clear frame buffer */
-    bzero(pSiS->FbBase, OnScreenSize);
 
     /* Darken the screen for aesthetic reasons */
     /* Not using Dual Head variant on purpose; we darken
@@ -6927,15 +6916,36 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
+    /* Clear frame buffer */
+    /* For CRT2, we don't do that at this point in dual head
+     * mode since the mode isn't switched at this time (it will
+     * be reset when setting the CRT1 mode). Hence, we just
+     * save the necessary data and clear the screen when
+     * going through this for CRT1.
+     */
+     
+    OnScreenSize = pScrn->displayWidth * pScrn->currentMode->VDisplay
+                               * (pScrn->bitsPerPixel >> 3);
+
     /* Turn on the screen now */
     /* We do this in dual head mode after second head is finished */
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
-       if(pSiS->SecondHead)
+       if(pSiS->SecondHead) {
+          bzero(pSiS->FbBase, OnScreenSize);
+	  bzero(pSiSEnt->FbBase1, pSiSEnt->OnScreenSize1);
     	  SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
-    } else
+       } else {
+          pSiSEnt->FbBase1 = pSiS->FbBase;
+	  pSiSEnt->OnScreenSize1 = OnScreenSize;
+       }
+    } else {
 #endif
        SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
+       bzero(pSiS->FbBase, OnScreenSize);
+#ifdef SISDUALHEAD
+    }
+#endif
 
     pSiS->SiS_SD_Flags &= ~SiS_SD_ISDEPTH8;
     if(pSiS->CurrentLayout.bitsPerPixel == 8) {
@@ -7971,7 +7981,7 @@ SISValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 SISSaveScreen(ScreenPtr pScreen, int mode)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];    
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
     if((pScrn != NULL) && pScrn->vtSema) {
 
