@@ -226,11 +226,33 @@ PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
     return 0;
 }
 
+PictFormatPtr
+PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 f)
+{
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    PictFormatPtr	format;
+    int			nformat;
+    int			type;
+
+    if (!ps)
+	return 0;
+    format = ps->formats;
+    nformat = ps->nformats;
+    while (nformat--)
+    {
+	if (format->depth == depth && format->format == f & 0xffffff)
+	    return format;
+	format++;
+    }
+    return 0;
+}
+
 Bool
 PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 {
     PictureScreenPtr	ps;
     int			n;
+    CARD32		type, a, r, g, b;
     
     if (PictureGeneration != serverGeneration)
     {
@@ -265,6 +287,27 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	    xfree (formats);
 	    return FALSE;
 	}
+	if (formats[n].type == PictTypeIndexed)
+	{
+	    type = PICT_TYPE_INDEX;
+	    a = r = g = b = 0;
+	}
+	else
+	{
+	    if ((formats[n].direct.redMask|
+		 formats[n].direct.blueMask|
+		 formats[n].direct.greenMask) == 0)
+		type = PICT_TYPE_A;
+	    else if (formats[n].direct.red > formats[n].direct.blue)
+		type = PICT_TYPE_ARGB;
+	    else
+		type = PICT_TYPE_ABGR;
+	    a = Ones (formats[n].direct.alphaMask);
+	    r = Ones (formats[n].direct.redMask);
+	    g = Ones (formats[n].direct.greenMask);
+	    b = Ones (formats[n].direct.blueMask);
+	}
+	formats[n].format = PICT_FORMAT(0,type,a,r,g,b);
     }
     ps = (PictureScreenPtr) xalloc (sizeof (PictureScreenRec));
     if (!ps)
@@ -364,7 +407,6 @@ CreatePicture (Picture		pid,
 {
     PicturePtr		pPicture;
     PictureScreenPtr	ps = GetPictureScreen(pDrawable->pScreen);
-    CARD32		bpp, type, a, r, g, b;
 
     pPicture = AllocatePicture (pDrawable->pScreen);
     if (!pPicture)
@@ -376,31 +418,7 @@ CreatePicture (Picture		pid,
     pPicture->id = pid;
     pPicture->pDrawable = pDrawable;
     pPicture->pFormat = pFormat;
-    /*
-     * Compute format constant
-     */
-    bpp = pDrawable->bitsPerPixel;
-    if (pFormat->type == PictTypeIndexed)
-    {
-	type = PICT_TYPE_INDEX;
-	a = r = g = b = 0;
-    }
-    else
-    {
-	if ((pFormat->direct.redMask|
-	     pFormat->direct.blueMask|
-	     pFormat->direct.greenMask) == 0)
-	    type = PICT_TYPE_A;
-	else if (pFormat->direct.red > pFormat->direct.blue)
-	    type = PICT_TYPE_ARGB;
-	else
-	    type = PICT_TYPE_ABGR;
-	a = Ones (pFormat->direct.alphaMask);
-	r = Ones (pFormat->direct.redMask);
-	g = Ones (pFormat->direct.greenMask);
-	b = Ones (pFormat->direct.blueMask);
-    }
-    pPicture->format = PICT_FORMAT(bpp,type,a,r,g,b);
+    pPicture->format = pFormat->format | (pDrawable->bitsPerPixel << 24);
     if (pDrawable->type == DRAWABLE_PIXMAP)
     {
 	++((PixmapPtr)pDrawable)->refcnt;
