@@ -1,4 +1,28 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 178. DRM resync from the DRI trunk...
+       - Lots of fixes/cleanups/resyncs for the BSD DRM drivers (Eric Anholt).
+       - Fix potential oops and memory leaks when allocations fail in
+         addbufs_agp/pci (Leif Delgass).
+       - Add support for buffer private structs with PCI DMA buffers
+         (Leif Delgass).
+       - Disable MTRRS on FreeBSD-stable (Eric Anholt).
+       - Remove some unused code (Keith Whitwell).
+       - Move prototypes for gamma functions to gamma_drv.h (Keith Whitwell).
+       - 2.5.x resync (Linus Torvalds).
+       - Ensure driver has been initialized before installing irq handler,
+	 and modify all drivers to ensure irq handler is removed before
+	 cleanup, and cleanup is called at takedown (Leif Delgass).
+       - Check for lock on init/cleanup in all drivers except i810/i830
+         (Leif Delgass).
+       - Put back __HAVE_KERNEL_CTX_SWITCH for the sparc drm driver
+         (Keith Whitwell).
+       - Only free original pagelist in addbufs_pci if one already exists
+         (fixes oops) (Leif Delgass).
+       - texmem-0-0-1 branch merge (Ian Romanick).
+       - Fix warning on machines where sizeof(drm_addr_t) != 4 (Randy Dunlap).
+       - Support AGP bridges where the AGP aperture can't be accessed directly
+         by the CPU (David Mosberger, Benjamin Herrenschmidt, Michel Daenzer,
+         Paul Mackerras, Jeff Wiedemeier).
  177. Fix another xedit compile problem (Marc La France).
  176. Small fix for Italian keyboard map (Sebastiano Vigna).
  175. Don't ship xf86Bus.h and xf86pciBus.h with the SDK (Marc La France).
@@ -16967,7 +16991,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2697 2003/05/20 12:27:08 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2698 2003/05/20 21:44:45 tsi Exp $
 
 
 

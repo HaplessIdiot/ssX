@@ -903,8 +903,8 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
 			     entry->busaddr[page_ofs]);
-		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
-			   entry->busaddr[page_ofs],
+		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
+			   (unsigned long) entry->busaddr[page_ofs],
 			   entry->handle + tmp_ofs );
 	}
 
@@ -1151,10 +1151,11 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		(drm_radeon_sarea_t *)((u8 *)dev_priv->sarea->handle +
 				       init->sarea_priv_offset);
 
+#if __REALLY_HAVE_AGP
 	if ( !dev_priv->is_pci ) {
-		DRM_IOREMAP( dev_priv->cp_ring );
-		DRM_IOREMAP( dev_priv->ring_rptr );
-		DRM_IOREMAP( dev_priv->buffers );
+		DRM_IOREMAP( dev_priv->cp_ring, dev );
+		DRM_IOREMAP( dev_priv->ring_rptr, dev );
+		DRM_IOREMAP( dev_priv->buffers, dev );
 		if(!dev_priv->cp_ring->handle ||
 		   !dev_priv->ring_rptr->handle ||
 		   !dev_priv->buffers->handle) {
@@ -1163,7 +1164,9 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 			radeon_do_cleanup_cp(dev);
 			return DRM_ERR(EINVAL);
 		}
-	} else {
+	} else
+#endif
+	{
 		dev_priv->cp_ring->handle =
 			(void *)dev_priv->cp_ring->offset;
 		dev_priv->ring_rptr->handle =
@@ -1210,7 +1213,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
-#if __REALLY_HAVE_SG
 	if ( dev_priv->is_pci ) {
 		if (!DRM(ati_pcigart_init)( dev, &dev_priv->phys_pci_gart,
 					    &dev_priv->bus_pci_gart)) {
@@ -1240,15 +1242,12 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 		RADEON_WRITE( RADEON_MC_AGP_LOCATION, 0xffffffc0 ); /* ?? */
 		RADEON_WRITE( RADEON_AGP_COMMAND, 0 ); /* clear AGP_COMMAND */
 	} else {
-#endif /* __REALLY_HAVE_SG */
 		/* Turn off PCI GART
 		 */
 		tmp = RADEON_READ( RADEON_AIC_CNTL )
 		      & ~RADEON_PCIGART_TRANSLATE_EN;
 		RADEON_WRITE( RADEON_AIC_CNTL, tmp );
-#if __REALLY_HAVE_SG
 	}
-#endif /* __REALLY_HAVE_SG */
 
 	radeon_cp_load_microcode( dev_priv );
 	radeon_cp_init_ring_buffer( dev, dev_priv );
@@ -1266,23 +1265,32 @@ int radeon_do_cleanup_cp( drm_device_t *dev )
 {
 	DRM_DEBUG( "\n" );
 
+#if _HAVE_DMA_IRQ
+	/* Make sure interrupts are disabled here because the uninstall ioctl
+	 * may not have been called from userspace and after dev_private
+	 * is freed, it's too late.
+	 */
+	if ( dev->irq ) DRM(irq_uninstall)(dev);
+#endif
+
 	if ( dev->dev_private ) {
 		drm_radeon_private_t *dev_priv = dev->dev_private;
 
+#if __REALLY_HAVE_AGP
 		if ( !dev_priv->is_pci ) {
 			if ( dev_priv->cp_ring != NULL )
-				DRM_IOREMAPFREE( dev_priv->cp_ring );
+				DRM_IOREMAPFREE( dev_priv->cp_ring, dev );
 			if ( dev_priv->ring_rptr != NULL )
-				DRM_IOREMAPFREE( dev_priv->ring_rptr );
+				DRM_IOREMAPFREE( dev_priv->ring_rptr, dev );
 			if ( dev_priv->buffers != NULL )
-				DRM_IOREMAPFREE( dev_priv->buffers );
-		} else {
-#if __REALLY_HAVE_SG
+				DRM_IOREMAPFREE( dev_priv->buffers, dev );
+		} else
+#endif
+		{
 			if (!DRM(ati_pcigart_cleanup)( dev,
 						dev_priv->phys_pci_gart,
 						dev_priv->bus_pci_gart ))
 				DRM_ERROR( "failed to cleanup PCI GART!\n" );
-#endif /* __REALLY_HAVE_SG */
 		}
 
 		DRM(free)( dev->dev_private, sizeof(drm_radeon_private_t),
@@ -1468,6 +1476,8 @@ int radeon_cp_init( DRM_IOCTL_ARGS )
 {
 	DRM_DEVICE;
 	drm_radeon_init_t init;
+
+	LOCK_TEST_WITH_RETURN( dev, filp );
 
 	DRM_COPY_FROM_USER_IOCTL( init, (drm_radeon_init_t *)data, sizeof(init) );
 

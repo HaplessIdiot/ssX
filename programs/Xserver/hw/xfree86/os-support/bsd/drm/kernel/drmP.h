@@ -101,13 +101,13 @@ typedef struct drm_file drm_file_t;
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
 				/* Mapping helper macros */
-#define DRM_IOREMAP(map)						\
+#define DRM_IOREMAP(map, dev)						\
 	(map)->handle = DRM(ioremap)( dev, map )
 
-#define DRM_IOREMAP_NOCACHE(map)					\
+#define DRM_IOREMAP_NOCACHE(map, dev)					\
 	(map)->handle = DRM(ioremap_nocache)( dev, map )
 
-#define DRM_IOREMAPFREE(map)						\
+#define DRM_IOREMAPFREE(map, dev)						\
 	do {								\
 		if ( (map)->handle && (map)->size )			\
 			DRM(ioremapfree)( map );			\
@@ -196,7 +196,8 @@ typedef struct drm_buf_entry {
 	drm_buf_t	  *buflist;
 	int		  seg_count;
 	int		  page_order;
-	unsigned long	  *seglist;
+	vm_offset_t	  *seglist;
+	dma_addr_t	  *seglist_bus;
 
 	drm_freelist_t	  freelist;
 } drm_buf_entry_t;
@@ -402,11 +403,8 @@ extern void	     DRM(mem_uninit)(void);
 extern void	     *DRM(alloc)(size_t size, int area);
 extern void	     *DRM(realloc)(void *oldpt, size_t oldsize, size_t size,
 				   int area);
-extern char	     *DRM(strdup)(const char *s, int area);
-extern void	     DRM(strfree)(char *s, int area);
 extern void	     DRM(free)(void *pt, size_t size, int area);
 extern void	     *DRM(ioremap)(drm_device_t *dev, drm_local_map_t *map);
-extern void	     *DRM(ioremap_nocache)(drm_device_t *dev, drm_local_map_t *map);
 extern void	     DRM(ioremapfree)(drm_local_map_t *map);
 
 #if __REALLY_HAVE_AGP
@@ -565,6 +563,12 @@ extern int		DRM(sg_alloc)(DRM_IOCTL_ARGS);
 extern int		DRM(sg_free)(DRM_IOCTL_ARGS);
 #endif
 
+/* consistent PCI memory functions (drm_pci.h) */
+extern void		*DRM(pci_alloc)(drm_device_t *dev, size_t size, 
+					size_t align, dma_addr_t maxaddr,
+					dma_addr_t *busaddr);
+extern void		DRM(pci_free)(drm_device_t *dev, size_t size, 
+				      void *vaddr, dma_addr_t busaddr);
 
 #endif /* __KERNEL__ */
 #endif /* _DRM_P_H_ */
