@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu     March 3, 2001
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootless.h,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootless.h,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -15,6 +15,8 @@
 // Describes a single rootless window (aka frame).
 // The rootless mode keeps track of window position, and the 
 // rootless implementation is responsible for the pixmap.
+// Multiple screens: all coordinates are SCREEN-LOCAL, not global.
+
 
 typedef struct RootlessFrameRec {
     /* Data maintained by rootless mode */

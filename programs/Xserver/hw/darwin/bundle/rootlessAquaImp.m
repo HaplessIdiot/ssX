@@ -1,7 +1,7 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "XWindow.h"
@@ -15,16 +15,30 @@ typedef struct {
 
 #define WINREC(rw) ((AquaWindowRec *)rw)
 
-void AquaDisplayInit(int *width, int *height, int *rowBytes,
-                     unsigned long *bps, unsigned long *spp, int *bpp)
+int AquaDisplayCount()
 {
+    return [[NSScreen screens] count];
+}
+
+void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
+                    int *rowBytes, unsigned long *bps, unsigned long *spp,
+                    int *bpp)
+{
+    NSScreen *screen = [[NSScreen screens] objectAtIndex:index];
+    NSRect frame = [screen frame];
+
     // fixme
     *bps = 8;
     *spp = 3;
     *bpp = 32;
 
-    *width =  [[NSScreen mainScreen] frame].size.width;
-    *height = [[NSScreen mainScreen] frame].size.height;
+    // set x,y so (0,0) is top left of main screen
+    *x = frame.origin.x;
+    *y = [[NSScreen mainScreen] frame].size.height - 
+            frame.size.height - frame.origin.y;
+
+    *width =  frame.size.width;
+    *height = frame.size.height;
     *rowBytes = (*width) * (*bpp) / 8;
 }
 

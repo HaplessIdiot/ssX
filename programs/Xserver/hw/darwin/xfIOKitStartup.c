@@ -3,11 +3,9 @@
  * Startup code for the IOKit Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.3 2001/04/11 08:34:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.4 2001/07/15 01:57:35 torrey Exp $ */
 
-#include "mi.h"
-#include "mipointer.h"
-#include "scrnintstr.h"
+#include "bundle/quartz.h"
 
 /*
  * DarwinHandleGUI
@@ -38,12 +36,16 @@ int QuartzProcessArgument( int argc, char *argv[], int i )
 
 // No Quartz support. All Quartz functions are no-ops.
 
-BOOL QuartzAddScreen(ScreenPtr pScreen) {
+Bool QuartzAddScreen(int index, ScreenPtr pScreen) {
     FatalError("QuartzAddScreen called without Quartz support.\n");
 }
 
-void QuartzOsVendorInit(void) {
-    FatalError("QuartzOsVendorInit called without Quartz support.\n");
+Bool QuartzSetupScreen(int index, ScreenPtr pScreen) {
+    FatalError("QuartzInitCursor called without Quartz support.\n");
+}
+
+void QuartzInitOutput(void) {
+    FatalError("QuartzInitOutput called without Quartz support.\n");
 }
 
 void QuartzGiveUp(void) {

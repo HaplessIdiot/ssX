@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.28 2001/07/06 00:37:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.29 2001/07/15 01:57:35 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -19,6 +19,7 @@
 #include "site.h"
 #include "globals.h"
 #include "xf86Version.h"
+#include "dix.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -45,7 +46,9 @@
 #define SCROLLWHEELDOWNFAKE	5
 
 // X server shared global variables
-DarwinFramebufferRec    dfb;
+int                     darwinScreensFound = 0;
+int                     darwinScreenIndex = 0;
+DarwinInputRec          hid;
 int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 int                     quartzEventWriteFD = -1;
@@ -135,7 +138,8 @@ static Bool DarwinSaveScreen(ScreenPtr pScreen, int on)
 
 /*
  * DarwinAddScreen
- *  This is a callback from X during AddScreen() from InitOutput()
+ *  This is a callback from dix during AddScreen() from InitOutput().
+ *  Initialize the screen and communicate information about it back to dix.
  */
 static Bool DarwinAddScreen(
     int         index,
@@ -144,29 +148,45 @@ static Bool DarwinAddScreen(
     char        **argv )
 {
     int         bitsPerRGB, i, dpi;
+    static int  foundIndex = 0;
+    Bool        ret;
     VisualPtr   visual;
     ColormapPtr pmap;
+    DarwinFramebufferPtr dfb;
 
-    /* Communicate the information about our initialized screen back to X. */
-    bitsPerRGB = dfb.pixelInfo.bitsPerComponent;
+    // allocate space for private per screen storage
+    dfb = xalloc(sizeof(DarwinFramebufferRec));
+    SCREEN_PRIV(pScreen) = dfb;
+
+    // setup hardware/mode specific details
+    if (quartz) {
+        ret = QuartzAddScreen(foundIndex, pScreen);
+    } else {
+        ret = XFIOKitAddScreen(foundIndex, pScreen);
+    }
+    foundIndex++;
+    if (! ret)
+        return FALSE;
+
+    bitsPerRGB = dfb->pixelInfo.bitsPerComponent;
 
     // reset the visual list
     miClearVisualTypes();
 
     // setup a single visual appropriate for our pixel type
     // Note: Darwin kIORGBDirectPixels = X window TrueColor, not DirectColor
-    if (dfb.pixelInfo.pixelType == kIORGBDirectPixels) {
-        if (!miSetVisualTypes( dfb.colorBitsPerPixel, TrueColorMask,
+    if (dfb->pixelInfo.pixelType == kIORGBDirectPixels) {
+        if (!miSetVisualTypes( dfb->colorBitsPerPixel, TrueColorMask,
                                 bitsPerRGB, TrueColor )) {
             return FALSE;
         }
-    } else if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
-        if (!miSetVisualTypes( dfb.colorBitsPerPixel, PseudoColorMask,
+    } else if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
+        if (!miSetVisualTypes( dfb->colorBitsPerPixel, PseudoColorMask,
                                 bitsPerRGB, PseudoColor )) {
             return FALSE;
         }
-    } else if (dfb.pixelInfo.pixelType == kIOFixedCLUTPixels) {
-        if (!miSetVisualTypes( dfb.colorBitsPerPixel, StaticColorMask,
+    } else if (dfb->pixelInfo.pixelType == kIOFixedCLUTPixels) {
+        if (!miSetVisualTypes( dfb->colorBitsPerPixel, StaticColorMask,
                                 bitsPerRGB, StaticColor )) {
             return FALSE;
         }
@@ -185,17 +205,17 @@ static Bool DarwinAddScreen(
 
     // initialize fb
     if (! fbScreenInit(pScreen,
-                dfb.framebuffer,                // pointer to screen bitmap
-                dfb.width, dfb.height,          // screen size in pixels
+                dfb->framebuffer,                // pointer to screen bitmap
+                dfb->width, dfb->height,          // screen size in pixels
                 dpi, dpi,                       // dots per inch
-                dfb.pitch/(dfb.bitsPerPixel/8), // pixel width of framebuffer
-                dfb.bitsPerPixel))              // bits per pixel for screen
+                dfb->pitch/(dfb->bitsPerPixel/8), // pixel width of framebuffer
+                dfb->bitsPerPixel))              // bits per pixel for screen
     {
         return FALSE;
     }
 
     // set the RGB order correctly for TrueColor
-    if (dfb.bitsPerPixel > 8) {
+    if (dfb->bitsPerPixel > 8) {
         for (i = 0, visual = pScreen->visuals;  // someday we may have more than 1
             i < pScreen->numVisuals; i++, visual++) {
             if (visual->class == TrueColor) {
@@ -207,9 +227,9 @@ static Bool DarwinAddScreen(
                 visual->greenMask = ((1<<bitsPerRGB)-1) << visual->offsetGreen;
                 visual->blueMask = ((1<<bitsPerRGB)-1) << visual->offsetBlue;
 #else
-                visual->redMask = dfb.pixelInfo.componentMasks[0];
-                visual->greenMask = dfb.pixelInfo.componentMasks[1];
-                visual->blueMask = dfb.pixelInfo.componentMasks[2];
+                visual->redMask = dfb->pixelInfo.componentMasks[0];
+                visual->greenMask = dfb->pixelInfo.componentMasks[1];
+                visual->blueMask = dfb->pixelInfo.componentMasks[2];
 #endif
             }
         }
@@ -228,13 +248,13 @@ static Bool DarwinAddScreen(
     // this must be initialized (why doesn't X have a default?)
     pScreen->SaveScreen = DarwinSaveScreen;
 
-    // Perform operations specific to the screen interface
+    // finish mode dependent screen setup including cursor support
     if (quartz) {
-        if (! QuartzAddScreen(pScreen)) {
+        if (! QuartzSetupScreen(index, pScreen)) {
             return FALSE;
         }
     } else {
-        if (! XFIOKitAddScreen(pScreen)) {
+        if (! XFIOKitInitCursor(pScreen)) {
             return FALSE;
         }
     }
@@ -249,8 +269,9 @@ static Bool DarwinAddScreen(
      * mode and we're using a fixed color map.  Essentially this translates
      * to Darwin/x86 in 8-bit mode.
      */
-    if( (dfb.colorBitsPerPixel == 8) && 
-                (dfb.pixelInfo.pixelType == kIOFixedCLUTPixels) ) {
+    if( (dfb->colorBitsPerPixel == 8) && 
+                (dfb->pixelInfo.pixelType == kIOFixedCLUTPixels) ) 
+    {
         pmap = miInstalledMaps[pScreen->myNum];
         visual = pmap->pVisual;
         for( i = 0; i < visual->ColormapEntries; i++ ) {
@@ -259,6 +280,12 @@ static Bool DarwinAddScreen(
             pmap->red[i].co.local.blue  = darwinClut8[i].blue;
         }
     }
+
+    dixScreenOrigins[index].x = dfb->x;
+    dixScreenOrigins[index].y = dfb->y;
+
+    ErrorF("Screen %d added: %dx%d @ %d,%d\n",
+            index, dfb->width, dfb->height, dfb->x, dfb->y);
 
     return TRUE;
 }
@@ -287,7 +314,7 @@ static void DarwinChangePointerControl(
         return;
 
     acceleration = ctrl->num / ctrl->den;
-    kr = IOHIDSetMouseAcceleration( dfb.hidParam, acceleration );
+    kr = IOHIDSetMouseAcceleration( hid.paramConnect, acceleration );
     if (kr != KERN_SUCCESS)
         ErrorF( "Could not set mouse acceleration with kernel return = 0x%x.\n", kr );
 }
@@ -858,22 +885,49 @@ void InitInput( int  argc, char **argv )
 /*
  * InitOutput
  *  Initialize screenInfo for all actually accessible framebuffers.
+ *
+ *  The display mode dependent code gets called three times. The mode
+ *  specific InitOutput routines are expected to discover the number
+ *  of potentially useful screens and cache routes to them internally.
+ *  Inside DarwinAddScreen are two other mode specific calls.
+ *  A mode specific AddScreen routine is called for each screen to
+ *  actually initialize the screen with the ScreenPtr structure.
+ *  After other screen setup has been done, a mode specific
+ *  SetupScreen function can be called to finalize screen setup.
  */
 void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
 {
     int i;
+    static unsigned long generation = 0;
 
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
     pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
     pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
 
-    // list how we want common pixmap formats to be padded
+    // List how we want common pixmap formats to be padded
     pScreenInfo->numPixmapFormats = NUMFORMATS;
     for (i = 0; i < NUMFORMATS; i++)
         pScreenInfo->formats[i] = formats[i];
 
-    AddScreen( DarwinAddScreen, argc, argv );
+    // Allocate private storage for each screen's Darwin specific info
+    if (generation != serverGeneration) {
+        darwinScreenIndex = AllocateScreenPrivateIndex();
+        generation = serverGeneration; 	
+    }
+
+    // Discover screens and do mode specific initialization
+    if (quartz) {
+        QuartzInitOutput();
+    } else {
+        XFIOKitInitOutput();
+    }
+
+    // Add screens
+    // The first is the main screen.
+    for (i = 0; i < darwinScreensFound; i++) {
+        AddScreen( DarwinAddScreen, argc, argv );
+    }
 }
 
 /*
@@ -886,18 +940,12 @@ void OsVendorFatalError( void )
 
 /*
  * OsVendorInit
- *  Initialization of Darwin support.
- *  Initialize display and event handling.
+ *  Initialization of Darwin OS support.
+ *  Nothing special to do here.
  */
 void OsVendorInit(void)
 {
     DarwinPrintBanner();
-
-    if (quartz) {
-        QuartzOsVendorInit();
-    } else {
-        XFIOKitOsVendorInit();
-    }
 }
 
 /*
