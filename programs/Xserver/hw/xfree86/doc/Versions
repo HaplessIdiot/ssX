@@ -41,7 +41,7 @@ New features will not usually be added in update releases.  Update/bugfix
 releases will not be full releases, and will consist of source code patches,
 plus binary updates to be layered on top of the previous full release.
 
-The next full release will be version 4.4.0.  There is no scheduled update
+The next full release will be version 4.5.0.  There is no scheduled update
 release, but if one is needed, the version will be 4.4.1.
 
 Aside from actual releases, snapshots of the active release branches are
