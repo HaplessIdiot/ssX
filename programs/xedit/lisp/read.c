@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.5 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.6 2002/02/12 16:07:55 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -487,10 +487,6 @@ LispReadObject(LispMac *mac)
 	}
 
 	if (length + 2 >= size) {
-	    if (!quote || quote == '|')
-		/* Only strings with more than sizeof(stk) - 1 bytes!? */
-		LispDestroy(mac, "READ: symbol name too large");
-
 	    if (string == stk) {
 		size = 1024;
 		string = LispMalloc(mac, size);
@@ -500,6 +496,8 @@ LispReadObject(LispMac *mac)
 		size += 1024;
 		string = LispRealloc(mac, string, size);
 	    }
+	    symbol = string + (symbol - package);
+	    package = string;
 	}
 	string[length++] = ch;
     }
