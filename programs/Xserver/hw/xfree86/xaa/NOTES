@@ -1764,3 +1764,7 @@ xf86expblt.h	Declares monochrome data color-expansion blit functions
 The Mach64 server by Kevin Martin has been used a base for some parts
 (notably pixmap caching), and the set of functions accelerated in the
 Mach64 server provided a baseline for what to implement first.
+
+
+
+$XFree86: $

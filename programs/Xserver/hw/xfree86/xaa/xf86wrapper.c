@@ -1,3 +1,6 @@
+/* $XFree86: $ */
+
+
 #include "gcstruct.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"

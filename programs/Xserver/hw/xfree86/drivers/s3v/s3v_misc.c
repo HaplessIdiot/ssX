@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
