@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.104 2003/05/19 00:47:33 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.106 2003/07/07 15:34:30 eich Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -108,6 +108,15 @@
 #endif
 #endif
 #endif /* SYSV */
+
+/*
+ * Newer versions of <X11/Xft/Xft.h> have a version number.  We use certain
+ * features from that.
+ */
+#if defined(XRENDERFONT) && defined(XFT_VERSION) && XFT_VERSION >= 20100
+#define HAVE_TYPE_FCCHAR32	1	/* compatible: XftChar16 */
+#define HAVE_TYPE_XFTCHARSPEC	1	/* new type XftCharSpec */
+#endif
 
 /*
 ** Definitions to simplify ifdef's for pty's.
@@ -329,7 +338,7 @@ typedef struct {
 	int	x;
 	int	y;
 	int	fontsize;
-	int	linetype;
+	unsigned linetype;
 } Tmodes;
 
 typedef struct {
@@ -883,6 +892,9 @@ typedef struct {
 #ifndef TRACE_CHILD
 #define TRACE_CHILD /*nothing*/
 #endif
+#ifndef TRACE_HINTS
+#define TRACE_HINTS(hints) /*nothing*/
+#endif
 #ifndef TRACE_OPTS
 #define TRACE_OPTS(opts,ress,lens) /*nothing*/
 #endif
@@ -1325,6 +1337,7 @@ typedef struct {
 #endif /* OPT_TEK4014 */
 
 	int		multiClickTime;	 /* time between multiclick selects */
+	int		visualBellDelay; /* msecs to delay for visibleBell */
 	int		bellSuppressTime; /* msecs after Bell before another allowed */
 	Boolean		bellInProgress; /* still ringing/flashing prev bell? */
 	char		*charClass;	/* for overriding word selection */
