@@ -48,6 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
+/* $XFree86$ */
 
 /*
  * Machine dependent values:
@@ -328,7 +329,7 @@ SOFTWARE.
 #endif
 
 #ifndef BITMAP_BIT_ORDER
-# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86BDM2)
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
 #  define BITMAP_BIT_ORDER      MSBFirst
 # else
 #  define BITMAP_BIT_ORDER      LSBFirst
