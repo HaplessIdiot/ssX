@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*	$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $	*/
 
 /*-
@@ -65,11 +66,13 @@ static char rcsid[] = "$NetBSD: zopen.c,v 1.8 2003/08/07 11:13:29 agc Exp $";
  * Diomidis Spinellis <dds@doc.ic.ac.uk>.
  */
 
+#ifndef FONTMODULE
 #include <ctype.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#endif
 
 #if 0
 static char_type magic_header[] =

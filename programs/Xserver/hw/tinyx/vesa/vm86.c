@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.c,v 1.1tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.c,v 1.2tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -90,6 +90,9 @@ THE SOFTWARE.
  */
 
 #include "vm86.h"
+
+/* Don't #include <sys/io.h> here... */
+extern int iopl(int __level);
 
 #define PUSHW(vi, i) \
 { vi->vms.regs.esp -= 2;\
