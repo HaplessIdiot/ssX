@@ -1,4 +1,7 @@
 XFree86 3.9.18c (2 March 2000)
+3915. Fix a segfault in XAA caused by reading beyond shared memory bitmaps
+      when hardware clipping is not available (Mark Vojkovich).
+3914. Update the mga man page (Mark Vojkovich).
 3913. A Q&D fix for GLX segment violation in loader server (Marc La France).
 3912. Add Mach64 screen-to-screen copy acceleration (Marc La France).
 3911. IA-64 fixes (Mark Vojkovich).
