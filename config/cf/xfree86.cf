@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.270 2000/02/22 00:59:07 mvojkovi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.271 2000/02/23 20:33:57 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -981,33 +981,11 @@ DRIVERSDKINCLUDEDIR = DriverSDKIncludeDir
  */
 
        XF86SRC = $(SERVERSRC)/hw/xfree86
-  XF86ACCELSRC = $(XF86SRC)/accel
     XF86COMSRC = $(XF86SRC)/common
  XF86PARSERSRC = $(XF86SRC)/parser
      XF86OSSRC = $(XF86SRC)/os-support
  XF86DRIVERSRC = $(XF86SRC)/drivers
      DRIVERSRC = $(XF86DRIVERSRC)
-   S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
-  S3VDRIVERSRC = $(XF86SRC)/accel/s3_virge/drivers
-
-       XF68SRC = $(SERVERSRC)/hw/xfree68
-    XF68COMSRC = $(XF68SRC)/common
- XF68PARSERSRC = $(XF68SRC)/parser
-     XF68OSSRC = $(XF68SRC)/os-support
-
-           XF98SRC = $(SERVERSRC)/hw/xfree98
-      XF98ACCELSRC = $(XF98SRC)/accel
-        XF98COMSRC = $(XF98SRC)/common
-         XF98OSSRC = $(XF98SRC)/os-support
-     XF98DRIVERSRC = $(XF98SRC)/drivers
-  XF98VGADRIVERSRC = $(XF98SRC)/vga256/drivers
-XF98VGA16DRIVERSRC = $(XF98SRC)/vga16/drivers
- XF98VGA2DRIVERSRC = $(XF98SRC)/vga2/drivers
- XF98MONODRIVERSRC = $(XF98SRC)/mono/drivers
-XF98NECS3DRIVERSRC = $(XF98SRC)/accel/s3nec/drivers
-XF98PWSKBDRIVERSRC = $(XF98SRC)/accel/s3pwskb/drivers
- XF98PWLBDRIVERSRC = $(XF98SRC)/accel/s3pwlb/drivers
-XF98GA968DRIVERSRC = $(XF98SRC)/accel/s3ga968/drivers
 
 /*
  * Installed location of the XFree86 documentation
