@@ -1,4 +1,7 @@
 XFree86 4.0.1Za (x December 2000)
+1157 Add Darwin documentation (Torrey T. Lyons).
+1156 Add Darwin bindist files and update Xinstall.sh (Matthieu Herrb).
+1155 Update bindist files for NetBSD 1.5 ELF (Matthieu Herrb).
 1154. Add DGA support to I128 driver (Robin Cutshaw).
 
 XFree86 4.0.1Z (8 December 2000)
@@ -12003,4 +12006,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1463 2000/12/09 03:31:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1464 2000/12/11 01:55:45 robin Exp $
