@@ -1,4 +1,7 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 660. Fix a bug in the fbgc.c code that caused the even stipple code path to
+      be used instead of the odd stipple path. Basically causing glitches in
+      rendering or no rendering at all. (Alan Hourihane).
  659. Fix XDarwin crash in IOKit mode for certain screen resolutions
       (Torrey T. Lyons).
  658. DRI update - update the SiS DRI driver from DRI trunk (Eric Anholt).
@@ -18351,7 +18354,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3027 2003/12/09 00:29:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3028 2003/12/09 04:42:29 torrey Exp $
 
 
 

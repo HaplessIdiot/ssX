@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.11 2000/10/19 18:08:22 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.12 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -254,9 +254,9 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
     if (changes & GCStipple)
     {
 	if (pGC->stipple &&
-	    (FbEvenStip (pGC->stipple->drawable.width,
-			 pDrawable->bitsPerPixel) ||
-	     fbCanEvenStipple (pGC->stipple, pDrawable->bitsPerPixel)))
+	    FbEvenStip (pGC->stipple->drawable.width,
+			 			pDrawable->bitsPerPixel) &&
+	    fbCanEvenStipple (pGC->stipple, pDrawable->bitsPerPixel))
 	{
 	    pPriv->evenStipple = TRUE;
 	    if (pGC->stipple->drawable.width * pDrawable->bitsPerPixel < FB_UNIT)
