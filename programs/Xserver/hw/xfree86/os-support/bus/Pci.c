@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.29 2000/06/09 07:53:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.30 2000/06/14 17:03:22 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -711,7 +711,6 @@ ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusN
  if (!pciBusInfo[pciBusNum]) {
      pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
      *pciBusInfo[pciBusNum] = *pciBusInfo[0];
-     ErrorF("setting speculative\n");
      
      speculativeProbe = TRUE;
  }
