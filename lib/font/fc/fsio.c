@@ -1,5 +1,5 @@
 /* $XConsortium: fsio.c,v 1.36 94/03/18 11:01:01 mor Exp $ */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.0 1994/04/28 12:32:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.1 1994/05/08 05:16:23 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -517,7 +517,9 @@ _fs_wait_for_readable(conn)
     CLEARBITS(e_mask);
     do {
 	BITSET(r_mask, conn->fs_fd);
+#ifndef MINIX
 	BITSET(e_mask, conn->fs_fd);
+#endif
 #ifdef WIN32
 	result = select(0, &r_mask, NULL, &e_mask, NULL);
 #else

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.182 94/04/14 09:07:43 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.0 1994/05/21 23:45:51 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -910,6 +910,10 @@ SpecialCLibObjectRule(KeyBind,$(ICONFIGFILES),$(XKB_DEFINES))
 #endif
 #if HasKrb5
 SpecialCLibObjectRule(k5encode,$(_NOOP_),$(K5INCL))
+#endif
+#ifdef MinixArchitecture
+SpecialCLibObjectRule(IMWrap,$(ICONFIGFILES),-DX11_TINY_IM)
+SpecialCLibObjectRule(lcInit,$(ICONFIGFILES),-DX11_TINY_LC)
 #endif
 
 #if InstallXcmsTxt

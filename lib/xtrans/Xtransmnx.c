@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/xtrans/Xtransmnx.c,v 3.0 1994/05/08 05:16:37 dawes Exp $ */
 
 /*
 Xtransmnx.c
@@ -19,6 +19,8 @@ Created:	11 April 1994 by Philip Homburg <philip@cs.vu.nl>
 
 struct private
 {
+	int nonblocking;
+
 	int read_inprogress;
 	char *read_buffer;
 	size_t read_bufsize;
@@ -254,10 +256,12 @@ int 		arg;
 
 {
 	int flags;
+	struct private *priv;
 
-	PRMSG(2, "TRANS(MnxTcpetSetOption)(%d,%d,%d)\n",
+	PRMSG(2, "TRANS(MnxTcpSetOption)(%d,%d,%d)\n",
 		ciptr->fd, option, arg);
 
+	priv= (struct private *)ciptr->priv;
 	switch(option)
 	{
 	case TRANS_NONBLOCKING:
@@ -287,6 +291,7 @@ int 		arg;
 				strerror(errno), 0, 0);
 			return -1;
 		}
+		priv->nonblocking= arg;
 		return 0;
 	case TRANS_CLOSEONEXEC:
 		flags= fcntl(ciptr->fd, F_GETFD);
@@ -376,7 +381,7 @@ char		*port;
 		"TRANS(MnxTcpCreateListener): can't get service for %s\n",
 				port, 0, 0);
 			errno= EINVAL;
-			return -1;
+			return TRANS_CREATE_LISTENER_FAILED;
 		}
 		num_port= servp->s_port;
 	}
@@ -395,7 +400,7 @@ char		*port;
 		PRMSG(1,
 		"TRANS(MnxTcpCreateListener): NWIOSTCPCONF failed: %s\n",
 			strerror(errno),0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 
 	if (ioctl(ciptr->fd, NWIOGTCPCONF, &tcpconf) == -1)
@@ -403,7 +408,7 @@ char		*port;
 		PRMSG(1,
 		"TRANS(MnxTcpListen): NWIOGTCPCONF failed: %s\n",
 			strerror(errno),0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 
 	priv->listen_port= tcpconf.nwtc_locport;
@@ -412,7 +417,7 @@ char		*port;
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpAccept): malloc failed\n", 0, 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 	addr->sin_family= AF_INET;
 	addr->sin_addr.s_addr= tcpconf.nwtc_locaddr;
@@ -428,14 +433,14 @@ char		*port;
 		PRMSG(1,
 		"TRANS(MnxTcpCreateListener): fcntl F_GETFD failed: %s\n",
 			strerror(errno), 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 	if (fcntl(ciptr->fd, F_SETFD, flags | FD_ASYNCHIO) == -1)
 	{
 		PRMSG(1,
 		"TRANS(MnxTcpCreateListener): fcntl F_SETFD failed: %s\n",
 			strerror(errno), 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 
 	tcpcl.nwtcl_flags= 0;
@@ -447,7 +452,7 @@ char		*port;
 		PRMSG(1,
 		"TRANS(MnxTcpCreateListener): fcntl F_SETFD failed: %s\n",
 			strerror(errno), 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	}
 
 	if (r == -1 && s_errno == EINPROGRESS)
@@ -465,7 +470,7 @@ char		*port;
 	errno= s_errno;
 	PRMSG(1, "TRANS(MnxTcpCreateListener): NWIOTCPLISTEN failed: %s\n",
 		strerror(errno), 0, 0);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
 }
 #endif /* TRANS_SERVER */
 
@@ -764,18 +769,27 @@ BytesReadable_t *pend;
 	priv= (struct private *)ciptr->priv;
 	if (priv->read_inprogress)
 	{
+		PRMSG(5, "TRANS(MnxTcpBytesReadable): read inprogress, %d\n",
+			*pend, 0, 0);
 		return *pend;
 	}
 	if (priv->read_offset < priv->read_size)
 	{
 		*pend= priv->read_size-priv->read_offset;
+		PRMSG(5, "TRANS(MnxTcpBytesReadable): %d\n",
+			*pend, 0, 0);
 		return *pend;
 	}
 	priv->read_offset= 0;
 	r= read(ciptr->fd, priv->read_buffer, priv->read_bufsize);
 	if (r >= 0)
 	{
+		if (r == 0)
+			r= 1;	/* Signal EOF condition */
+
 		priv->read_size= r;
+		PRMSG(5, "TRANS(MnxTcpBytesReadable): %d\n",
+			*pend, 0, 0);
 		*pend= r;
 	}
 	else if (r == -1 && errno == EINPROGRESS)
@@ -790,6 +804,7 @@ BytesReadable_t *pend;
 			strerror(errno), 0, 0);
 		return -1;
 	}
+	PRMSG(5, "TRANS(MnxTcpBytesReadable): %d\n", *pend, 0, 0);
 	return *pend;
 }
 
@@ -899,22 +914,26 @@ int		size;
 		abort();
 	priv->read_offset= 0;
 	priv->read_size= 0;
-	r= read(ciptr->fd, priv->read_buffer, priv->read_bufsize);
-	if (r >= 0)
+	if (priv->nonblocking)
 	{
-		PRMSG(5, "TRANS(MnxTcpRead): buffered %d bytes\n", r, 0, 0);
-		priv->read_size= r;
-	}
-	else if (r == -1 && errno == EINPROGRESS)
-	{
-		priv->read_inprogress= 1;
-		nbio_inprogress(ciptr->fd, ASIO_READ, 1 /* read */,
-			0 /* write */, 0 /* exception */);
-	}
-	else
-	{
-		PRMSG(1, "TRANS(MnxTcpRead): read failed: %s\n",
-			strerror(errno), 0, 0);
+		r= read(ciptr->fd, priv->read_buffer, priv->read_bufsize);
+		if (r >= 0)
+		{
+			PRMSG(5, "TRANS(MnxTcpRead): buffered %d bytes\n",
+				r, 0, 0);
+			priv->read_size= r;
+		}
+		else if (r == -1 && errno == EINPROGRESS)
+		{
+			priv->read_inprogress= 1;
+			nbio_inprogress(ciptr->fd, ASIO_READ, 1 /* read */,
+				0 /* write */, 0 /* exception */);
+		}
+		else
+		{
+			PRMSG(1, "TRANS(MnxTcpRead): read failed: %s\n",
+				strerror(errno), 0, 0);
+		}
 	}
 	errno= s_errno;
 	return ret;
@@ -1267,6 +1286,7 @@ size_t wr_size;
 		PRMSG(1, "alloc_private: malloc failed\n", 0, 0, 0);
 		return NULL;
 	}
+	priv->nonblocking= 0;
 	priv->read_inprogress= 0;
 	priv->read_buffer= NULL;
 	priv->read_bufsize= rd_size;

@@ -1,4 +1,5 @@
-/* $XConsortium: process.c,v 1.39 94/04/17 20:15:37 mor Exp $ */
+/* $XConsortium: process.c,v 1.41 94/05/11 17:35:38 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 
@@ -31,6 +32,9 @@ Author: Ralph Mor, X Consortium
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 
+#ifdef MINIX
+#include <X11/Xtrans.h>
+#endif
 
 /*
  * Check for bad length
@@ -336,12 +340,21 @@ Bool		 *replyReadyRet;
 
 
     /*
-     * Decrement the dispatch level and check for bad IO status.
+     * Decrement the dispatch level.  If we reach level 0, and the
+     * free_asap bit is set, free the connection now.  Also check for
+     * possible bad IO status.
      */
 
     iceConn->dispatch_level--;
-    if (!iceConn->io_ok)
+
+    if (iceConn->dispatch_level == 0 && iceConn->free_asap)
+    {
+	_IceFreeConnection (iceConn);
+	retStatus = IceProcessMessagesConnectionClosed;
+    }
+    else if (!iceConn->io_ok)
 	retStatus = IceProcessMessagesIOError;
+
     return (retStatus);
 }
 
@@ -2189,7 +2202,18 @@ IceReplyWaitInfo 	*replyWait;
 	    IcePoAuthProc authProc = myProtocol->auth_procs[
 		iceConn->protosetup_to_you->my_auth_index];
 
-	    (*authProc) (iceConn, &iceConn->protosetup_to_you->my_auth_state,
+#ifdef SVR4
+
+/*
+ * authProc is never NULL, but the cc compiler on UNIX System V/386
+ * Release 4.2 Version 1 screws up an optimization.  Unless there is
+ * some sort of reference to authProc before the function call, the
+ * function call will seg fault.
+ */
+	    if (authProc)
+#endif
+		(*authProc) (iceConn,
+		&iceConn->protosetup_to_you->my_auth_state,
 		True /* clean up */, False /* swap */,
 	        0, NULL, NULL, NULL, NULL);
 	}
@@ -2461,3 +2485,20 @@ Bool		 *connectionClosedRet;
     if (replyWait)
 	*replyReadyRet = replyReady;
 }
+
+
+#ifdef MINIX
+int 
+MNX_IceMessagesAvailable(iceConn)
+
+IceConn          iceConn;
+{
+	BytesReadable_t bytes;
+
+	_IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 1);
+	if (_IceTransBytesReadable(iceConn->trans_conn, &bytes) < 0)
+		bytes= -1;
+	_IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 0);
+	return (bytes != 0);
+}
+#endif
