@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.152 2003/01/06 00:04:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.153 2003/02/10 13:20:11 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1930,7 +1930,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
     }
 
-    if ( (pGlint->RamDac->RamDacType != (IBM640_RAMDAC)) &&
+    if ( pGlint->RamDac &&
+	 (pGlint->RamDac->RamDacType != (IBM640_RAMDAC)) &&
 	 (pScrn->depth == 30) )
     {
     	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
