@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.43 2004/06/23 19:40:17 tsi Exp $ */
+/* $XFree86$ */
 /* $XdotOrg$ */
 /*
  * DRI wrapper for 300 and 315 series
@@ -48,13 +48,24 @@
 #include "GL/glxtokens.h"
 
 #include "sis.h"
+
+#undef SISHAVECOMPATLAYER
+#ifdef XORG_VERSION_CURRENT
+#define SISHAVECOMPATLAYER
+#else
+# if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
+# define SISHAVECOMPATLAYER
+# endif
+#endif
+
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
 extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
 #else
-# if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
+# ifdef SISHAVECOMPATLAYER
 #  include "xf86drmCompat.h"
 # endif
 #endif
+
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,0,0,0)
 #include "sis_common.h"
 #endif
@@ -98,6 +109,8 @@ static void SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
                    RegionPtr prgnSrc, CARD32 index);
 
+extern char *DRICreatePCIBusID(pciVideoPtr PciInfo);		   
+		   
 static Bool
 SISInitVisualConfigs(ScreenPtr pScreen)
 {
@@ -280,19 +293,16 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
   pDRIInfo->drmDriverName = SISKernelDriverName;
   pDRIInfo->clientDriverName = SISClientDriverName;
-#if 0  /* Wait for DRI update */
+
   if(xf86LoaderCheckSymbol("DRICreatePCIBusID")) {
      pDRIInfo->busIdString = DRICreatePCIBusID(pSIS->PciInfo);
   } else {
-#endif  
      pDRIInfo->busIdString = xalloc(64);
      sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
              ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
       	     ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
-      	     ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
-#if 0  	     
+      	     ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);   
   }
-#endif  
 
   /* Hack to keep old DRI working -- checked for major==1 and
    * minor==1.
@@ -524,7 +534,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
        pSISDRI->AGPVtxBufOffset = pSIS->agpVtxBufAddr - pSIS->agpAddr;
        pSISDRI->AGPVtxBufSize = pSIS->agpVtxBufSize;
 
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
+#ifdef SISHAVECOMPATLAYER
        drmSiSAgpInit(pSIS->drmSubFD, AGP_VTXBUF_SIZE,(pSIS->agpSize - AGP_VTXBUF_SIZE));
 #else
        {
@@ -546,7 +556,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
        pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
        pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
+#ifdef SISHAVECOMPATLAYER
        drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(pSIS->agpSize - AGP_CMDBUF_SIZE));
 #else
        {
