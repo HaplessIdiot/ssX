@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.7 1995/07/02 07:44:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.8 1995/07/15 15:00:47 dawes Exp $ */
 
 /*
 
@@ -417,10 +417,7 @@ ProcVGAHelpModModeLine(client)
 	return BadValue;
 
     memcpy(&modetmp, mptr, sizeof(DisplayModeRec));
-    if (mptr->PrivSize && mptr->Private) {
-	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(CARD32));
-	memcpy(modetmp.Private, mptr->Private, mptr->PrivSize * sizeof(CARD32));
-    }
+
     modetmp.HDisplay   = stuff->hdisplay;
     modetmp.HSyncStart = stuff->hsyncstart;
     modetmp.HSyncEnd   = stuff->hsyncend;
@@ -433,22 +430,33 @@ ProcVGAHelpModModeLine(client)
     if (mptr->PrivSize && stuff->privsize) {
 	if (mptr->PrivSize != stuff->privsize)
 	    return BadValue;
-	memcpy(modetmp.Private, &stuff[1],
-	       mptr->PrivSize * sizeof(CARD32));
+    }
+    if (mptr->PrivSize && mptr->Private) {
+	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(CARD32));
+	if (stuff->privsize)
+	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(CARD32));
+	else
+	    memcpy(modetmp.Private, mptr->Private,
+		   mptr->PrivSize * sizeof(CARD32));
     }
 
     /* Check that the mode is consistent with the monitor specs */
     switch (xf86CheckMode(vptr, &modetmp, vptr->monitor, FALSE)) {
 	case MODE_HSYNC:
+	    DEALLOCATE_LOCAL(modetmp.Private);
 	    return VGAHelpErrorBase + XF86VidModeBadHTimings;
 	case MODE_VSYNC:
+	    DEALLOCATE_LOCAL(modetmp.Private);
 	    return VGAHelpErrorBase + XF86VidModeBadVTimings;
     }
 
     /* Check that the driver is happy with the mode */
     if (!vptr->ValidMode(&modetmp)) {
+	DEALLOCATE_LOCAL(modetmp.Private);
 	return VGAHelpErrorBase + XF86VidModeModeUnsuitable;
     }
+
+    DEALLOCATE_LOCAL(modetmp.Private);
 
     mptr->HDisplay   = stuff->hdisplay;
     mptr->HSyncStart = stuff->hsyncstart;
