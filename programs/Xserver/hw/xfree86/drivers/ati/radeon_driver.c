@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.42 2001/11/14 16:50:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.43 2001/11/19 20:44:17 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -3817,7 +3817,7 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 
     if(info->IsR200)
         save->disp_output_cntl = 
-            ((info->SavedReg.disp_output_cntl & ~RADEON_DISP_DAC_SOURCE_MASK)
+            ((info->SavedReg.disp_output_cntl & ~(CARD32)RADEON_DISP_DAC_SOURCE_MASK)
             | RADEON_DISP_DAC_SOURCE_CRTC2);
     else
         save->dac2_cntl = info->SavedReg.dac2_cntl 
