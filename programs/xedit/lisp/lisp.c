@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.15 2001/10/06 02:40:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.16 2001/10/10 07:02:52 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -86,9 +86,24 @@ char *ExpectingListAt = "expecting list, at %s";
 char *ExpectingNumberAt = "expecting number, at %s";
 FILE *lisp_stdin, *lisp_stdout, *lisp_stderr;
 
+static char *LispCharNames[] = {
+"Null",		"Soh",		"Stx",		"Etx",
+"Eot",		"Enq",		"Ack",		"Bel",
+"Backspace",	"Tab",		"Newline",	"Vt",
+"Page",		"Return",	"So",		"Si",
+"Dle",		"Dc1",		"Dc2",		"Dc3",
+"Dc4",		"Nak",		"Syn",		"Etb",
+"Can",		"Em",		"Sub",		"Escape",
+"Fs",		"Gs",		"Rs",		"Us",
+"Space"
+};
+
 /*
  * Implementation
  */
+#ifdef __GNUC__
+#define inline __inline
+#endif
 #include "table.c"
 
 void
@@ -862,6 +877,17 @@ LispNewString(LispMac *mac, char *str)
 }
 
 LispObj *
+LispNewCharacter(LispMac *mac, long c)
+{
+    LispObj *character = LispNew(mac, NIL, NIL);
+
+    character->type = LispCharacter_t;
+    character->data.integer = c;
+
+    return (character);
+}
+
+LispObj *
 LispNewSymbol(LispMac *mac, char *name, LispObj *obj)
 {
     LispObj *symbol = LispNew(mac, obj, NIL);
@@ -1234,11 +1260,91 @@ LispSkipWhiteSpace(LispMac *mac)
     return (ch);
 }
 
+void
+LispGetKeys(LispMac *mac, char *fname, char *spec, LispObj *list, ...)
+{
+    va_list ap;
+    int nargs, ncvt;
+    LispObj *obj, **arg;
+    char *ptr, *end, *str;
+
+    /* count how many arguments specified and check arguments */
+    for (obj = list, nargs = 0; obj != NIL; obj = CDR(obj)) {
+	if (CAR(obj)->type != LispAtom_t || CAR(obj)->data.atom[0] != ':')
+	    LispDestroy(mac, "&KEY needs arguments as pairs, at %s", fname);
+	else if (CDR(obj) == NIL)
+	    LispDestroy(mac, "expecting %s value, at %s",
+			CAR(obj)->data.atom, fname);
+	obj = CDR(obj);
+	++nargs;
+    }
+
+    va_start(ap, list);
+    for (ncvt = 0, ptr = spec, end = strchr(spec, ':'); end;
+	 ptr = end + 1, end = strchr(ptr, ':')) {
+	arg = (LispObj**)va_arg(ap, LispObj**);
+	*arg = NULL;	/* to know if it was found */
+
+	for (obj = list; obj != NIL; obj = CDR(obj)) {
+	    str = CAR(obj)->data.atom + 1;
+	    obj = CDR(obj);
+	    if (strncmp(str, ptr, end - ptr) == 0) {
+		*arg = CAR(obj);
+		++ncvt;
+	    }
+	}
+	if (*arg == NULL)
+	    *arg = NIL;
+    }
+    if (ptr) {
+	/* last or unique argument */
+	arg = (LispObj**)va_arg(ap, LispObj**);
+	*arg = NULL;	/* to know if it was found */
+
+	for (obj = list; obj != NIL; obj = CDR(obj)) {
+	    str = CAR(obj)->data.atom + 1;
+	    obj = CDR(obj);
+	    if (strcmp(str, ptr) == 0) {
+		*arg = CAR(obj);
+		++ncvt;
+	    }
+	}
+	if (*arg == NULL)
+	    *arg = NIL;
+    }
+    va_end(ap);
+
+    /* if got here, arguments are correctly specified as pairs */
+    if (ncvt < nargs) {
+	/* Possible error. If argument value specified more than once, it is
+	 * not triggered as an error, but if an incorrect argument name was
+	 * specified, it is a fatal error (probably a typo in the code) */
+
+	for (obj = list; obj != NIL; obj = CDR(CDR(obj))) {
+	    int match = 0;
+
+	    for (ptr = spec, end = strchr(ptr, ':'); end;
+		 ptr = end + 1, end = strchr(ptr, ':'))
+		if (strncmp(CAR(obj)->data.atom + 1, ptr, end - ptr) == 0) {
+		    match = 1;
+		    break;
+		}
+
+	    if (!match && ptr && strcmp(CAR(obj)->data.atom + 1, ptr) == 0)
+		match = 1;
+
+	    if (!match)
+		LispDestroy(mac, "%s is not an argument to %s",
+			    CAR(obj)->data.atom, fname);
+	}
+    }
+}
+
 LispObj *
 LispRun(LispMac *mac)
 {
-    static char *DOTMSG = "Illegal end of dotted list";
-    int ch, len, dquote = 0, escape = 0, size, dot = 0;
+    static char *DOTMSG = "illegal end of dotted list";
+    int ch, len, dquote = 0, escape = 0, size, dot = 0, hash = 0;
     LispObj *res, *obj, *cons, *code, *frm;
     char stk[1024], *str;
 
@@ -1257,7 +1363,7 @@ LispRun(LispMac *mac)
 	    else
 		FRM = CONS(res, FRM);
 	    if ((CAR(cons) = LispRun(mac)) == DOT)
-		LispDestroy(mac, "Illegal start of dotted list");
+		LispDestroy(mac, "illegal start of dotted list");
 	    while ((obj = LispRun(mac)) != NULL) {
 		if (obj == DOT) {
 		    if (dot)
@@ -1284,19 +1390,29 @@ LispRun(LispMac *mac)
 	    return (NULL);
 	case '\'':
 	    if ((obj = LispRun(mac)) == NULL)
-		LispDestroy(mac, "Illegal quoted object");
+		LispDestroy(mac, "illegal quoted object");
 	    res = QUOTE(obj);
 	    break;
+	case '#':
+	    hash = 1;
+	    ch = LispGet(mac);
+	    if (ch == EOF)
+		return (NIL);
+	    else if (ch != '\\')
+		LispDestroy(mac, "syntax error at #");
+	    ch = '#';
+	    goto string_label;
 	case '"':
 	    dquote = 1;
 	    escape = 1;
-	    /*FALLTHROUGH*/
+	    goto string_label;
 	default:
+string_label:
 	    len = 0;
 	    size = sizeof(stk);
 	    str = stk;
-	    while (ch != EOF && (dquote ||
-		   (!isspace(ch) && ch != ')' && ch != '(' && ch != ';'))) {
+	    while (ch != EOF && ((dquote || (hash && len < 2)) ||
+		   (!isspace(ch) && (ch != ')' && ch != '(' && ch != ';')))) {
 		if (len >= size - 1) {
 		    char *tmp;
 
@@ -1307,31 +1423,34 @@ LispRun(LispMac *mac)
 		    str = tmp;
 		    size += 1024;
 		}
+
+		if (ch == '\\')
+		    escape = !escape;
+
 		if (dquote) {
-		    if (ch == '\\')
-			escape = !escape;
-		    else if (ch == '"' && !escape) {
+		    if (!escape) {
+			if (ch == '"')
+			    break;
 			str[len++] = ch;
-			break;
 		    }
-		    else
-			escape = 0;
+		}
+		else if (hash) {
 		    if (!escape)
 			str[len++] = ch;
 		}
-		else
+		else if (!escape)
 		    str[len++] = toupper(ch);
 		ch = LispGet(mac);
+		if (escape)
+		    escape = 0;
 	    }
 	    str[len] = '\0';
 	    if (ch == '(' || ch == ')' || ch == ';')
 		LispUnget(mac);
 	    if (!len)
 		res = NIL;
-	    else if (str[0] == '"') {
-		str[strlen(str) - 1] = '\0';
-		res = STRING(str + 1);
-	    }
+	    else if (dquote)
+		res = STRING(str);
 	    else if (isdigit(str[0]) ||
 		     ((str[0] == '-' || str[0] == '.' || str[0] == '+') &&
 		      isdigit(str[1]))) {
@@ -1343,6 +1462,48 @@ LispRun(LispMac *mac)
 		    res = ATOM(str);
 		else
 		    res = REAL(value);
+	    }
+	    else if (hash) {
+		long c;
+
+		if (len == 1)
+		    LispDestroy(mac, "syntax error at #");
+		else if (len > 2) {
+		    for (c = 0; c <= ' '; c++)
+			if (strcasecmp(LispCharNames[c], str + 1) == 0)
+			    break;
+		    if (c > ' ') {
+			/* extra or special cases */
+			if (strcasecmp(str + 1, "Rubout") == 0)
+			    c = 0177;
+			else if (strcasecmp(str + 1, "Nul") == 0)
+			    c = 0;
+			else if (strcasecmp(str + 1, "Bs") == 0)
+			    c = 010;
+			else if (strcasecmp(str + 1, "Ht") == 0)
+			    c = 011;
+			else if (strcasecmp(str + 1, "Lf") == 0)
+			    c = 012;
+			else if (strcasecmp(str + 1, "Ff") == 0)
+			    c = 014;
+			else if (strcasecmp(str + 1, "Cr") == 0)
+			    c = 015;
+			else if (strcasecmp(str + 1, "Esc") == 0)
+			    c = 033;
+			else if (strcasecmp(str + 1, "Del") == 0)
+			    c = 0177;
+			else if (strcasecmp(str + 1, "Linefeed") == 0)
+			    c = 012;
+			else if (strcasecmp(str + 1, "Delete") == 0)
+			    c = 0177;
+			else
+			    LispDestroy(mac, "no character named \"%s\"",
+					str + 1);
+		    }
+		}
+		else
+		    c = *(unsigned char*)(str + 1);
+		res = CHAR(c);
 	    }
 	    else {
 		if (strcmp(str, "NIL") == 0)
@@ -1767,17 +1928,18 @@ LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list)
     }
 
     if (type != LispMacro) {
-	int did_jump = 1;
+	int did_jump = 1, *pdid_jump = &did_jump;
+	LispObj **pres = &res;
 	LispBlock *block = LispBeginBlock(mac, fun->data.lambda.name, 0);
 
-	res = NIL;
+	*pres = NIL;
 	if (setjmp(block->jmp) == 0) {
-	    res = Lisp_Progn(mac, code, fun->data.lambda.name->data.atom);
-	    did_jump = 0;
+	    *pres = Lisp_Progn(mac, code, fun->data.lambda.name->data.atom);
+	    *pdid_jump = 0;
 	}
 	LispEndBlock(mac, block);
-	if (did_jump)
-	    res = mac->block.block_ret;
+	if (*pdid_jump)
+	    *pres = mac->block.block_ret;
     }
     else
 	res = Lisp_Progn(mac, code, "#<LAMBDA>");
@@ -1826,14 +1988,31 @@ LispSnprintObj(LispMac *mac, LispObj *obj, char **str, int *len, int paren)
 	    *len -= sz;
 	    *str += sz;
 	    break;
-	case LispReal_t: {
-	    char stk[32];
-
-	    snprintf(stk, sizeof(stk), "%g", obj->data.real);
-	    sz = snprintf(*str, *len, stk);
+	case LispCharacter_t:
+	    sz = snprintf(*str, *len, "#\\");
+	    if ((*len -= sz) <= 0)
+		return;
+	    *str += sz;
+	    if (obj->data.integer >= 0 && obj->data.integer <= ' ')
+		sz = snprintf(*str, *len, "%s",
+			      LispCharNames[obj->data.integer]);
+	    else if (obj->data.integer == 0177)
+		sz = snprintf(*str, *len, "Rubout");
+	    else
+		sz = snprintf(*str, *len, "%c", (int)obj->data.integer);
+	    *str += sz;
+	    *len -= sz;
+	    break;
+	case LispReal_t:
+	    sz = snprintf(*str, *len, "%g", obj->data.real);
 	    *len -= sz;
 	    *str += sz;
-	}    break;
+	    break;
+	case LispInteger_t:
+	    sz = snprintf(*str, *len, "%ld", obj->data.integer);
+	    *len -= sz;
+	    *str += sz;
+	    break;
 	case LispCons_t: {
 	    LispObj *car, *cdr;
 
@@ -2177,8 +2356,22 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 	case LispString_t:
 	    len += LispPrintString(mac, stream, obj->data.atom);
 	    break;
+	case LispCharacter_t:
+	    if (!mac->princ)
+		len += LispPrintf(mac, stream, "#\\");
+	    if (obj->data.integer >= 0 && obj->data.integer <= ' ')
+		len += LispPrintf(mac, stream, "%s",
+				  LispCharNames[obj->data.integer]);
+	    else if (obj->data.integer == 0177)
+		len += LispPrintf(mac, stream, "Rubout");
+	    else
+		len += LispPrintf(mac, stream, "%c", obj->data.integer);
+	    break;
 	case LispReal_t:
 	    len += LispPrintf(mac, stream, "%g", obj->data.real);
+	    break;
+	case LispInteger_t:
+	    len += LispPrintf(mac, stream, "%ld", obj->data.integer);
 	    break;
 	case LispCons_t: {
 	    LispObj *car, *cdr;
@@ -2328,8 +2521,7 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 	    else
 		len += LispPrintString(mac, stream,
 				       obj->data.stream.source.str ?
-				       obj->data.stream.source.str :
-				       (unsigned char*)"");
+				       (char*)obj->data.stream.source.str : "");
 	    break;
     }
 

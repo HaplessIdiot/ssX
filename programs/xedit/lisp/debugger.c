@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.5 2001/10/06 03:48:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.6 2001/10/10 07:02:51 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -365,6 +365,7 @@ watch_again:
 	LispDebuggerCommand(mac, arg);
 
 debugger_done:
+    return;
 }
 
 static void
