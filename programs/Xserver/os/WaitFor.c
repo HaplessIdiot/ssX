@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.40 2003/06/23 18:39:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.41 2003/09/25 13:26:27 pascal Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -112,7 +112,7 @@ struct _OsTimerRec {
 };
 
 static void DoTimer(OsTimerPtr timer, CARD32 now, OsTimerPtr *prev);
-static OsTimerPtr timers;
+static OsTimerPtr timers = NULL;
 
 /*****************
  * WaitForSomething:
@@ -568,10 +568,15 @@ ScreenSaverTimeoutExpire(OsTimerPtr timer,CARD32 now,pointer arg)
 }
 
 static OsTimerPtr ScreenSaverTimer = NULL;
+static int ScreenSaverGeneration = -1;
 
 void
 SetScreenSaverTimer(void)
 {
+    if (ScreenSaverGeneration != serverGeneration) {
+	ScreenSaverTimer = NULL;
+	ScreenSaverGeneration = serverGeneration;
+    }
     if (ScreenSaverTime > 0) {
        ScreenSaverTimer = TimerSet(ScreenSaverTimer, 0, ScreenSaverTime,
                                    ScreenSaverTimeoutExpire, NULL);
@@ -586,6 +591,7 @@ SetScreenSaverTimer(void)
 static OsTimerPtr DPMSStandbyTimer = NULL;
 static OsTimerPtr DPMSSuspendTimer = NULL;
 static OsTimerPtr DPMSOffTimer = NULL;
+static int DPMSGeneration = -1;
 
 static CARD32
 DPMSStandbyTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
@@ -635,12 +641,19 @@ SetDPMSTimers(void)
     if (!DPMSEnabled)
         return;
 
+    if (DPMSGeneration != serverGeneration) {
+	DPMSStandbyTimer = NULL;
+	DPMSSuspendTimer = NULL;
+	DPMSOffTimer = NULL;
+	DPMSGeneration = serverGeneration;
+    }
+
     if (DPMSStandbyTime > 0) {
         DPMSStandbyTimer = TimerSet(DPMSStandbyTimer, 0, DPMSStandbyTime,
                                     DPMSStandbyTimerExpire, NULL);
     }
     if (DPMSSuspendTime > 0) {
-        DPMSStandbyTimer = TimerSet(DPMSSuspendTimer, 0, DPMSSuspendTime,
+        DPMSSuspendTimer = TimerSet(DPMSSuspendTimer, 0, DPMSSuspendTime,
                                     DPMSSuspendTimerExpire, NULL);
     }
     if (DPMSOffTime > 0) {
