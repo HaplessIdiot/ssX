@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.25 2001/12/19 23:03:18 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -102,7 +102,7 @@ update.docs:: textfile							@@\
 			fi; \						@@\
 			cp textfile dstdir/textfile ; \			@@\
 			echo "" >> dstdir/textfile; \			@@\
-			echo "\$$XFree86:\$$" >> dstdir/textfile; \	@@\
+			echo "\$$XFree86"": \$$" >> dstdir/textfile; \	@@\
 		fi; \							@@\
 	    fi; \							@@\
 	fi								@@\
