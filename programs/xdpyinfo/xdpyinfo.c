@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.8 1996/01/30 15:27:50 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.9 1996/03/04 05:29:09 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -680,8 +680,8 @@ char *kbdtable[] = { "Unknown", "84-key", "101-key", "Other", "Xqueue" };
 char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 		     "Logitech", "BusMouse", "Mouseman", "PS/2", "MMHitTab",
 		     "GlidePoint", "Unknown", "Xqueue", "OSMouse" };
-char *flgtable[] = { "None", "ClearDTR", "ClearCTS",
-		     "ClearDTR and ClearCTS" };
+char *flgtable[] = { "None", "ClearDTR", "ClearRTS",
+		     "ClearDTR and ClearRTS" };
 
 print_XF86Misc_info(dpy, extname)
     Display *dpy;
@@ -719,7 +719,7 @@ print_XF86Misc_info(dpy, extname)
       printf("                        ChordMiddle: %s, Flags: %s\n",
 	mouseinfo.chordmiddle? "yes": "no",
 	flgtable[(mouseinfo.flags & MF_CLEAR_DTR? 1: 0)
-		+(mouseinfo.flags & MF_CLEAR_CTS? 1: 0)] );
+		+(mouseinfo.flags & MF_CLEAR_RTS? 1: 0)] );
     }
 
     return 1;

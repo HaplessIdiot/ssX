@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.0 1996/01/30 15:28:31 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.1 1996/02/19 09:52:49 dawes Exp $ */
 
 /***********************************************************
 
@@ -582,6 +582,8 @@ extern fd_set pty_mask;
 #define XTY_TRACE	0x5b
 #define XTY_TIOCGETA	0x65
 #define XTY_TIOCGWINSZ	0x66
+#define PTMS_GETPTY	0x64
+#define PTMS_BUFSZ	14
 #ifndef NCCS
 #define NCCS 11
 #endif
@@ -671,6 +673,11 @@ int ptioctl(int fd, int func, void* data)
 		return DosDevIOCtl(fd,XFREE86_PTY, XTY_TRACE,
 			(ULONG*)&i, sizeof(ULONG), &len,
 			NULL, 0, NULL);
+	case PTMS_GETPTY:
+		i = 1;
+		return DosDevIOCtl(fd,XFREE86_PTY, PTMS_GETPTY,
+			(ULONG*)&i, sizeof(ULONG), &len,
+			(UCHAR*)data, 14, &len);
 	default:
 		return -1;
 	}
@@ -703,8 +710,8 @@ char **envp;
 
 /*debug	opencons();*/
 
-	ttydev = (char *) malloc (strlen (TTYDEV) + 1);
-	ptydev = (char *) malloc (strlen (PTYDEV) + 1);
+	ttydev = (char *) malloc (PTMS_BUFSZ);
+	ptydev = (char *) malloc (PTMS_BUFSZ);
 	if (!ttydev || !ptydev) {
 	    fprintf (stderr, 
 	    	     "%s:  unable to allocate memory for ttydev or ptydev\n",
@@ -713,6 +720,7 @@ char **envp;
 	}
 	strcpy (ttydev, TTYDEV);
 	strcpy (ptydev, PTYDEV);
+
 
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
@@ -1018,30 +1026,23 @@ get_pty (pty)
 int pty_search(pty)
     int *pty;
 {
-    static int devindex, letter = 0;
+	char namebuf[PTMS_BUFSZ];
 
-    while (PTYCHAR1[letter]) {
-	ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
-	    PTYCHAR1 [letter];
-
-	while (PTYCHAR2[devindex]) {
-	    ttydev [strlen(ttydev) - 1] = ptydev [strlen(ptydev) - 1] =
-		PTYCHAR2 [devindex];
-	    /* for next time around loop or next entry to this function */
-	    devindex++;
-	    if ((*pty = open (ptydev, O_RDWR)) >= 0) {
-		ptioctl(*pty,XTY_TRACE,1);
-		return 0;
-	    }
-	}
-	devindex = 0;
-	letter++;
-    }
-    /*
-     * We were unable to allocate a pty master!  Return an error
-     * condition and let our caller terminate cleanly.
-     */
-    return 1;
+	/* ask the PTY manager */
+	int fd = open("/dev/ptms$",0);
+	if (fd && ptioctl(fd,PTMS_GETPTY,namebuf)==0) {
+		strcpy(ttydev,namebuf);
+		strcpy(ptydev,namebuf);
+		ttydev[5] = 't';
+		close (fd);
+		if ((*pty = open(ptydev, O_RDWR)) >= 0) {
+#ifdef PTYDEBUG
+			ptioctl(*pty,XTY_TRACE,0);
+#endif
+			return 0;
+		}
+	} 
+	return 1;
 }
 
 get_terminal ()
@@ -1118,6 +1119,35 @@ void first_map_occurred ()
     handshake.cols = screen->max_col;
     waiting_for_initial_map = False;
 }
+
+#define THE_PARENT 1
+#define THE_CHILD  2
+int whoami = -1;
+
+SIGNAL_T killit(int sig)
+{
+	switch (whoami) {
+	case -1:
+		signal(sig,killit);
+		break;
+	case THE_PARENT:
+		wait(NULL);
+		signal(SIGTERM,SIG_DFL);
+		kill(-getpid(),SIGTERM);
+		Exit(0);
+		break;
+	case THE_CHILD:
+		signal(SIGTERM,SIG_DFL);
+		kill(-getppid(),SIGTERM);
+		Exit(0);
+		break;
+	}
+
+	SIGNAL_RETURN;
+}
+
+
+
 
 spawn ()
 /* 
@@ -1298,10 +1328,12 @@ spawn ()
 		case -1:	/* error */
 			SysError (ERROR_FORK);
 		default:	/* parent */
+			whoami = THE_PARENT;
 			DosWaitEventSem(sev,1000l);
 			DosCloseEventSem(sev);
 			break;
 		case 0:		/* child */
+			whoami = THE_CHILD;
 
 /*debug fclose(confd);
 opencons();*/
@@ -1492,11 +1524,13 @@ opencons();*/
  * don't ignore the signals.  This is annoying.
  */
 
-	signal (SIGINT, SIG_IGN);
+/*	signal (SIGINT, SIG_IGN);*/
+signal(SIGINT, killit);
+signal(SIGTERM, killit);
 
 	/* hung shell problem */
 	signal (SIGQUIT, SIG_IGN);
-	signal (SIGTERM, SIG_IGN);
+/*	signal (SIGTERM, SIG_IGN);*/
 	return 0;
 }							/* end spawn */
 

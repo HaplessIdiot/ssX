@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.4 1996/01/05 13:23:15 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.5 1996/02/12 11:16:50 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -666,25 +666,6 @@ disables all colors, including underlining.
 .B "color7 (\fPclass\fB Foreground)"
 These specify the colors for the ISO 6429 extension.  The defaults are,
 respectively, black, red, green, yellow, blue, magenta, cyan, and white.
-If \fIcolorMode\fP is not active,
-the resources \fIcolor0\fP through \fIcolor6\fP
-are interpreted differently:
-.RS
-.TP 8
-.B "color0\fP text foreground"
-.TP 8
-.B "color1\fP text background"
-.TP 8
-.B "color2\fP text cursor"
-.TP 8
-.B "color3\fP mouse foreground"
-.TP 8
-.B "color4\fP mouse background"
-.TP 8
-.B "color5\fP Tektronix foreground"
-.TP 8
-.B "color6\fP Tektronix background"
-.RE
 .TP 8
 .B "color8 (\fPclass\fB Foreground)"
 .TP 8
@@ -1038,7 +1019,7 @@ This entry invokes the \fBsoft-reset()\fP action.
 .B "hardreset (\fPclass\fB SmeBSB)"
 This entry invokes the \fBhard-reset()\fP action.
 .TP 8
-.B "clearsavedlines" (\fPclass\fB SmeBSB)"
+.B "clearsavedlines (\fPclass\fB SmeBSB)"
 This entry invokes the \fBclear-saved-lines()\fP action.
 .TP 8
 .B "line2 (\fPclass\fB SmeLine)"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 1.1.1.2 1996/01/03 07:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.0 1996/03/04 05:16:45 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -70,9 +70,10 @@ int leds;
 	ioctl(xf86Info.consoleFd, KDSETLED, leds );
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
-	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
+	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
@@ -83,31 +84,33 @@ void xf86MouseInit()
 	}
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
-	xf86SetupMouse();
+	xf86SetupMouse(mouse);
 
 	/* Flush any pending input */
-	ioctl(xf86Info.mseFd, TCFLSH, 0);
+	ioctl(mouse->mseFd, TCFLSH, 0);
 
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MouseDevPtr mouse;
 Bool doclose;
 {
-	if (xf86Info.mseFd >= 0)
+	if (mouse->mseFd >= 0)
 	{
-		if (xf86Info.mseType == P_LOGI)
+		if (mouse->mseType == P_LOGI)
 		{
-			write(xf86Info.mseFd, "U", 1);
-			xf86SetMouseSpeed(xf86Info.baudRate, 1200,
+			write(mouse->mseFd, "U", 1);
+			xf86SetMouseSpeed(mouse->baudRate, 1200,
 				  	  xf86MouseCflags[P_LOGI]);
 		}
 		if (doclose)
 		{
-			close(xf86Info.mseFd);
+			close(mouse->mseFd);
 		}
 	}
-	return(xf86Info.mseFd);
+	return(mouse->mseFd);
 }

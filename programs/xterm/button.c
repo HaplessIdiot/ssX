@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/70 1996/01/14 16:52:34 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.2 1996/01/10 05:44:07 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.3 1996/01/16 15:09:38 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -125,7 +125,7 @@ static void SelectionReceived PROTO_XT_SEL_CB_ARGS;
 static void SetSelectUnit PROTO((Time buttonDownTime, SelectUnit defaultUnit));
 static void StartSelect PROTO((int startrow, int startcol));
 static void TrackDown PROTO((XButtonEvent *event));
-static void _GetSelection PROTO((Widget w, Time time, String *params, Cardinal num_params));
+static void _GetSelection PROTO((Widget w, Time ev_time, String *params, Cardinal num_params));
 static void _OwnSelection PROTO((XtermWidget termw, String *selections, Cardinal count));
 static void do_select_end PROTO((Widget w, XEvent *event, String *params, Cardinal *num_params, Bool use_cursor_loc));
 static void do_select_start PROTO((Widget w, XEvent *event, int startrow, int startcol));
@@ -317,9 +317,9 @@ struct _SelectionList {
 };
 
 
-static void _GetSelection(w, time, params, num_params)
+static void _GetSelection(w, ev_time, params, num_params)
 Widget w;
-Time time;
+Time ev_time;
 String *params;			/* selections in precedence order */
 Cardinal num_params;
 {
@@ -350,17 +350,17 @@ Cardinal num_params;
 	    SelectionReceived(w, NULL, &selection, &type, (XtPointer)line,
 			      &nbytes, &fmt8);
 	else if (num_params > 1)
-	    _GetSelection(w, time, params+1, num_params-1);
+	    _GetSelection(w, ev_time, params+1, num_params-1);
     } else {
 	struct _SelectionList* list;
 	if (--num_params) {
 	    list = XtNew(struct _SelectionList);
 	    list->params = params + 1;
 	    list->count = num_params; /* decremented above */
-	    list->time = time;
+	    list->time = ev_time;
 	} else list = NULL;
 	XtGetSelectionValue(w, selection, XA_STRING, SelectionReceived,
-			    (XtPointer)list, time);
+			    (XtPointer)list, ev_time);
     }
 }
 
@@ -1503,13 +1503,13 @@ void HandleSecure(w, event, params, param_count)
     String *params;		/* [0] = volume */
     Cardinal *param_count;	/* 0 or 1 */
 {
-    Time time = CurrentTime;
+    Time ev_time = CurrentTime;
 
     if ((event->xany.type == KeyPress) ||
 	(event->xany.type == KeyRelease))
-	time = event->xkey.time;
+	ev_time = event->xkey.time;
     else if ((event->xany.type == ButtonPress) ||
 	     (event->xany.type == ButtonRelease))
-      time = event->xbutton.time;
-    DoSecureKeyboard (time);
+        ev_time = event->xbutton.time;
+    DoSecureKeyboard (ev_time);
 }

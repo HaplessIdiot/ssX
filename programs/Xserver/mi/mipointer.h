@@ -4,7 +4,7 @@
  */
 
 /* $XConsortium: mipointer.h,v 5.7 94/04/17 20:27:40 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.h,v 3.1 1996/02/18 12:02:37 dawes Exp $ */
 
 /*
 
@@ -168,14 +168,21 @@ extern void miPointerPosition(
 #endif
 );
 
+#undef miRegisterPointerDevice
 extern void miRegisterPointerDevice(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
-#ifdef DEVINTPTR
-    DeviceIntPtr /*pDevice*/
-#else
     DevicePtr /*pDevice*/
 #endif
+);
+
+#define miRegisterPointerDevice(pScreen,pDevice) \
+       _miRegisterPointerDevice(pScreen,pDevice)
+
+extern void _miRegisterPointerDevice(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/,
+    DeviceIntPtr /*pDevice*/
 #endif
 );
 

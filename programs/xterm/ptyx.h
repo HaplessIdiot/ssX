@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.8 1996/01/24 22:05:02 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.9 1996/02/12 11:16:46 dawes Exp $
  */
 
 /*
@@ -268,7 +268,7 @@ typedef struct {
 				 ((n)==TEXT_BG?TEK_FG:(n))))))))
 
 typedef struct {
-	unsigned	which;
+	unsigned	which;	/* must have NCOLORS bits */
 	Pixel		colors[NCOLORS];
 	char		*names[NCOLORS];
 } ScrnColors;
@@ -333,7 +333,9 @@ typedef struct {
 	Pixel		cursorcolor;	/* Cursor color			*/
 	Pixel		mousecolor;	/* Mouse color			*/
 	Pixel		mousecolorback;	/* Mouse color background	*/
-	Pixel		colors[MAXCOLORS]; /* ANSI color emulation	*/
+	Pixel		Acolors[MAXCOLORS]; /* ANSI color emulation	*/
+	Pixel		original_fg;	/* reference for SGR reset fg	*/
+	Pixel		original_bg;	/* reference for SGR reset bg	*/
 	Boolean		colorMode;	/* are we using color mode?	*/
 	Boolean		colorULMode;	/* use color for underline?	*/
 	Boolean		colorBDMode;	/* use color for bold?		*/

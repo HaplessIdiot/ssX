@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_io.c,v 3.3 1996/02/04 09:09:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_io.c,v 3.4 1996/03/04 05:16:13 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -126,7 +126,8 @@ void xf86KbdEvents()
 	return;
 }
 
-void xf86SetMouseSpeed(old, new, cflag)
+void xf86SetMouseSpeed(mouse, old, new, cflag)
+MouseDevPtr mouse;
 int old;
 int new;
 unsigned cflag;
@@ -134,7 +135,8 @@ unsigned cflag;
 	return;
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MouseDevPtr mouse;
 {
 	return;
 }
@@ -150,19 +152,20 @@ static int mtypes[] = {
 	IOP_MOUSE_PS2		/* P_PS2 */
 };
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
 	int msetype;
 	errstat err;
 	
-	msetype = xf86Info.mseType;
+	msetype = mouse->mseType;
 	if (msetype >= 0 && msetype < (sizeof(mtypes) / sizeof(mtypes[0]))) {
 		/* translate */
 		msetype = mtypes[msetype];
 	}
 
-	if ((err = iop_mousecontrol(&iopcap, msetype, xf86Info.baudRate,
-				    xf86Info.sampleRate)) != STD_OK)
+	if ((err = iop_mousecontrol(&iopcap, msetype, mouse->baudRate,
+				    mouse->sampleRate)) != STD_OK)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("iop_mousecontrol failed (%s) - Continuing...\n",
@@ -174,14 +177,16 @@ int xf86MouseOn()
 	return(-1);
 }
 
-int xf86MouseOff(doclose)
+int xf86MouseOff(mouse, doclose)
+MouseDevPtr mouse;
 Bool doclose;
 {
 	return -1;
 }
 
 /* Amoeba doesn't use this */
-void xf86MouseEvents()
+void xf86MouseEvents(device)
+DeviceIntPtr  device;
 {
 	return;
 }

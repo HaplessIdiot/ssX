@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 1.1.1.2 1996/01/03 07:21:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.0 1996/03/04 05:16:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -70,12 +70,14 @@ int leds;
 #endif
 }
 
-void xf86MouseInit()
+void xf86MouseInit(mouse)
+MousedevPtr mouse;
 {
 	return;
 }
 
-int xf86MouseOn()
+int xf86MouseOn(mouse)
+MouseDevPtr mouse;
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
@@ -87,7 +89,7 @@ int xf86MouseOn()
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 
-	xf86SetupMouse();
+	xf86SetupMouse(mouse);
 
 	/* Flush any pending input */
 	ioctl(xf86Info.mseFd, TCFLSH, 0);
