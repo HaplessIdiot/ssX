@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.34 2001/06/15 22:29:58 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.36 2001/10/01 13:44:05 eich Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -58,15 +58,16 @@ static Bool	FBDevScreenInit(int Index, ScreenPtr pScreen, int argc,
 static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void *	FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 				  CARD32 *size, void *closure);
+static void	FBDevPointerMoved(int index, int x, int y);
 static Bool	FBDevDGAInit(ScrnInfoPtr pScrn, ScreenPtr pScreen);
 
 
-#if 0
-static ShadowUpdateProc updateFuncs[] =
-  { shadowUpdatePacked, shadowUpdateRotate8, shadowUpdateRotUD8, shadowUpdateRotCCW8,
-    shadowUpdatePacked, shadowUpdateRotate16, shadowUpdateRotUD16, shadowUpdateRotCCW16,
-    shadowUpdatePacked, shadowUpdateRotate32, shadowUpdateRotUD32, shadowUpdateRotCCW32 };
-#endif
+enum { FBDEV_ROTATE_NONE=0, FBDEV_ROTATE_CW=270, FBDEV_ROTATE_UD=180, FBDEV_ROTATE_CCW=90 };
+
+/*static ShadowUpdateProc updateFuncs[] =
+  { shadowUpdatePacked, shadowUpdateRotate8_270, shadowUpdateRotate8_180, shadowUpdateRotate8_90,
+    shadowUpdatePacked, shadowUpdateRotate16_270, shadowUpdateRotate16_180, shadowUpdateRotate16_90,
+    shadowUpdatePacked, shadowUpdateRotate32_270, shadowUpdateRotate32_180, shadowUpdateRotate32_90 }; */
 
 
 /* -------------------------------------------------------------------- */
@@ -108,17 +109,13 @@ static SymTabRec FBDevChipsets[] = {
 /* Supported options */
 typedef enum {
 	OPTION_SHADOW_FB,
-#if 0
 	OPTION_ROTATE,
-#endif
 	OPTION_FBDEV
 } FBDevOpts;
 
 static const OptionInfoRec FBDevOptions[] = {
 	{ OPTION_SHADOW_FB,	"ShadowFB",	OPTV_BOOLEAN,	{0},	FALSE },
-#if 0
 	{ OPTION_ROTATE,	"Rotate",	OPTV_STRING,	{0},	FALSE },
-#endif
 	{ OPTION_FBDEV,		"fbdev",	OPTV_STRING,	{0},	FALSE },
 	{ -1,			NULL,		OPTV_NONE,	{0},	FALSE }
 };
@@ -230,11 +227,10 @@ typedef struct {
 	int				fboff;
 	int				lineLength;
 	unsigned char*			shadowmem;
-#if 0
 	int				rotate;
-#endif
 	Bool				shadowFB;
 	CloseScreenProcPtr		CloseScreen;
+	void				(*PointerMoved)(int index, int x, int y);
 	EntityInfoPtr			pEnt;
 	/* DGA info */
 	DGAModePtr			pDGAMode;
@@ -468,31 +464,30 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	/* use shadow framebuffer by default */
 	fPtr->shadowFB = xf86ReturnOptValBool(fPtr->Options, OPTION_SHADOW_FB, TRUE);
 
-#if 0
-	/* rotation (doesn't work yet) */
-	fPtr->rotate = 0;
+	/* rotation */
+	fPtr->rotate = FBDEV_ROTATE_NONE;
 	if ((s = xf86GetOptValString(fPtr->Options, OPTION_ROTATE)))
 	{
 	  if(!xf86NameCmp(s, "CW"))
 	  {
 	    fPtr->shadowFB = TRUE;
-	    fPtr->rotate = 1;
+	    fPtr->rotate = FBDEV_ROTATE_CW;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Rotating screen clockwise\n");
 	  }
 	  else if(!xf86NameCmp(s, "CCW"))
 	  {
 	    fPtr->shadowFB = TRUE;
-	    fPtr->rotate = 3;
+	    fPtr->rotate = FBDEV_ROTATE_CCW;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Rotating screen counter clockwise\n");
 	  }
 	  else if(!xf86NameCmp(s, "UD"))
 	  {
 	    fPtr->shadowFB = TRUE;
-	    fPtr->rotate = 2;
+	    fPtr->rotate = FBDEV_ROTATE_UD;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "Rotating screen counter clockwise\n");
+		       "Rotating screen upside down\n");
 	  }
 	  else
 	  {
@@ -502,7 +497,6 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		       "Valid options are \"CW\", \"CCW\" or \"UD\"\n");
 	  }
 	}
-#endif
 
 	/* select video modes */
 
@@ -671,18 +665,19 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  return FALSE;
 	}
 
-#if 0
-	if(fPtr->rotate==3 || fPtr->rotate==1)
+	if(fPtr->rotate==FBDEV_ROTATE_CW || fPtr->rotate==FBDEV_ROTATE_CCW)
 	{
 	  height = pScrn->virtualX;
-	  width = pScrn->virtualY;
+	  width = pScrn->displayWidth = pScrn->virtualY;
 	} else {
-#endif
 	  height = pScrn->virtualY;
 	  width = pScrn->virtualX;
-#if 0
 	}
-#endif
+
+	if(fPtr->rotate && !fPtr->PointerMoved) {
+		fPtr->PointerMoved = pScrn->PointerMoved;
+		pScrn->PointerMoved = FBDevPointerMoved;
+	}
 
 	/* shadowfb */
 	if (fPtr->shadowFB) {
@@ -703,7 +698,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	{
 #ifdef USE_AFB
 	case FBDEVHW_PLANES:
-#if 0
 		if (fPtr->rotate)
 		{
 		  xf86DrvMsg(scrnIndex, X_ERROR,
@@ -711,7 +705,6 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		  ret = FALSE;
 		  break;
 		}
-#endif
 		if (fPtr->shadowFB)
 		{
 		  xf86DrvMsg(scrnIndex, X_ERROR,
@@ -794,35 +787,24 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (init_picture && !fbPictureInit(pScreen, NULL, 0))
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			   "RENDER extension initialisation failed.\n");
-#if 0
-	switch (pScrn->bitsPerPixel)
-	{
-	case 8:
-	case 16:
-	case 32:
-#endif
-	  if (fPtr->shadowFB && 
-	      !shadowInit(pScreen, shadowUpdatePacked,	/*updateFuncs[fPtr->rotate + (pScrn->bitsPerPixel/4 & 0xc)],*/
-			  FBDevWindowLinear))
-	    return FALSE;
-#if 0
-	  break;
-	default:
-	  if (fPtr->rotate)
+
+	if (fPtr->shadowFB && 
+	    (!shadowSetup(pScreen) || !shadowAdd(pScreen, NULL,
+	      fPtr->rotate ? shadowUpdateRotatePacked : shadowUpdatePacked,
+	      FBDevWindowLinear, fPtr->rotate, NULL)) ) {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
-		       "Internal error: rotate not supported for %dbpp.\n",
-		       pScrn->bitsPerPixel);
-	  return FALSE;
+		       "Shadow framebuffer initialization failed.\n");
+	    return FALSE;
 	}
 
 	if (!fPtr->rotate)
-#endif
 	  FBDevDGAInit(pScrn, pScreen);
-#if 0
-	else
-	  xf86DrvMsg(scrnIndex, X_WARNING,
-		       "Rotated display, disabling DGA\n");
-#endif
+	else {
+	  xf86DrvMsg(scrnIndex, X_INFO, "Rotated display, disabling DGA\n");
+
+	  if (pScrn->bitsPerPixel == 24)
+	    xf86DrvMsg(scrnIndex, X_WARNING, "Rotation might be broken in 24 bpp\n");
+	}
 
 	xf86SetBlackWhitePixels(pScreen);
 	miInitializeBackingStore(pScreen);
@@ -914,6 +896,12 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
+
+
+/***********************************************************************
+ * Shadow stuff
+ ***********************************************************************/
+
 static void *
 FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 		 CARD32 *size, void *closure)
@@ -927,6 +915,44 @@ FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
       *size = fPtr->lineLength = fbdevHWGetLineLength(pScrn);
 
     return ((CARD8 *)fPtr->fbmem + fPtr->fboff + row * fPtr->lineLength + offset);
+}
+
+static void
+FBDevPointerMoved(int index, int x, int y)
+{
+    ScrnInfoPtr pScrn = xf86Screens[index];
+    FBDevPtr fPtr = FBDEVPTR(pScrn);
+    int newX, newY;
+
+    switch (fPtr->rotate)
+    {
+    case FBDEV_ROTATE_CW:
+	/* 90 degrees CW rotation. */
+	newX = pScrn->pScreen->height - y - 1;
+	newY = x;
+	break;
+
+    case FBDEV_ROTATE_CCW:
+	/* 90 degrees CCW rotation. */
+	newX = y;
+	newY = pScrn->pScreen->width - x - 1;
+	break;
+
+    case FBDEV_ROTATE_UD:
+	/* 180 degrees UD rotation. */
+	newX = pScrn->pScreen->width - x - 1;
+	newY = pScrn->pScreen->height - y - 1;
+	break;
+
+    default:
+	/* No rotation. */
+	newX = x;
+	newY = y;
+	break;
+    }
+
+    /* Pass adjusted pointer coordinates to wrapped PointerMoved function. */
+    (*fPtr->PointerMoved)(index, newX, newY);
 }
 
 
