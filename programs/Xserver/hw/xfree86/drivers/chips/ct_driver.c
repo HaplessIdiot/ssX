@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.109 2001/05/10 22:18:56 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.110 2001/05/15 10:19:36 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1185,6 +1185,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!res) {
 	vbeFree(cPtr->pVbe);
+	cPtr->pVbe = NULL;
 	return FALSE;
     }
     
@@ -1223,6 +1224,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (i == -1) {
 	vbeFree(cPtr->pVbe);
+	cPtr->pVbe = NULL;
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
@@ -1238,6 +1240,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
 	vbeFree(cPtr->pVbe);
+	cPtr->pVbe = NULL;
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
@@ -1266,6 +1269,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     case 1:
 	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1274,6 +1278,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     case 4:
 	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1283,6 +1288,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	if (cPtr->Flags & ChipsOverlay8plus16) {
 	    if (xf86LoadSubModule(pScrn, "xf8_16bpp") == NULL) {
 		vbeFree(cPtr->pVbe);
+		cPtr->pVbe = NULL;
 	        CHIPSFreeRec(pScrn);
 		return FALSE;
 	    }	
@@ -1292,6 +1298,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     default:
 	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1302,6 +1309,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1311,6 +1319,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     if (cPtr->Flags & ChipsShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1320,6 +1329,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     if (cPtr->Accel.UseHWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    vbeFree(cPtr->pVbe);
+	    cPtr->pVbe = NULL;
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -4422,6 +4432,7 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
     if (cPtr->pVbe)
 	vbeFree(cPtr->pVbe);
+	cPtr->pVbe = NULL;
     if (cPtr->AccelInfoRec)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)

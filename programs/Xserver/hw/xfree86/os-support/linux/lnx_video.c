@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.51 2001/05/15 10:19:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.52 2001/05/23 14:39:01 alanh Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -248,11 +248,10 @@ mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
 	 * Splits up the write-combining region if it is not aligned on a
  	 * size boundary.
 	 */
-
 	if (base % size) {
 		struct mtrr_wc_region *wcrc = wcr;
 		int rgs = 1;
-		int srem, sdiv, bcurr;
+		unsigned long srem, sdiv, bcurr;
 	    
 		xf86DrvMsgVerb(screenNum, X_INFO, 2,
 		    "WC region has to be split (0x%lx,0x%lx)\n", base, size);
@@ -261,7 +260,7 @@ mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
 		srem = size;
 
 		do {
-			for (sdiv = (0x1 << 31); sdiv; sdiv >> 1) {
+			for (sdiv = (0x1 << 31); sdiv; sdiv = sdiv >> 1) {
 				while(sdiv > srem) {
 					sdiv >>= 1;
 				}

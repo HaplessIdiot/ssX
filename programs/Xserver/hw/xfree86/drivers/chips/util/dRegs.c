@@ -188,7 +188,7 @@ void main(void)
     storeReg = inb(0x3CE);
     for(i = 0;i < 0x10;i++){
 	outb(0x3CE,i);
-	printf("GC 0x%2.2X\t0x%X2.2\n",i,inb(0x3CF)&0xFF);
+	printf("GC 0x%2.2X\t0x%2.2X\n",i,inb(0x3CF)&0xFF);
     }
     outb(0x3CE,storeReg);
     printf("port 0x3C4 (Sequencer)\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/pci.c,v 1.8 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/pci.c,v 1.9 2001/05/21 03:45:31 tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -32,7 +32,7 @@ mapPciRom(int pciEntity, unsigned char * address)
 
     /* Read in entire PCI ROM */
     mem = ptr = xnfcalloc(length, 1);
-    if (xf86ReadPciBIOS(0, tag, -1, ptr, length) < length) {
+    if (xf86ReadPciBIOS(0, tag, -1, ptr, length) == 0) {
 	xfree(mem);
 #ifdef DEBUG
 	ErrorF("mapPciRom: cannot read BIOS\n");
