@@ -1,12 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.4 1996/01/20 02:48:57 dawes Exp $
+XCOMM $XFree86$
 
 #include <Server.tmpl>
-
-#ifdef DontInstallPC98Version
-#define DontInstallLinuxDoc
-#endif
-
 #include <lnxdoc.rules>
 
 #if defined(BSD386Architecture) || BuildAllDocs
@@ -74,15 +69,12 @@ LinuxDocTargetLong(RELNOTE.sgml,RELNOTES,RELNOTES)
 LinuxDocReadmeTarget(Config)
 LinuxDocTarget(INSTALL)
 LinuxDocTarget(README)
-LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
 LinuxDocTarget(DocIndex)
 
 /* Other docs */
 LinuxDocReadmeTarget(LinkKit)
 LinuxDocReadmeTarget(clkprog)
-#if 0
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
-#endif
 LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
 
 LinkSourceFile(Bsdi.sgml,$(XF86SRC)/doc/sgml)
@@ -99,9 +91,7 @@ LinkSourceFile(Mach64.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(NetBSD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Oak.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(P9000.sgml,$(XF86SRC)/doc/sgml)
-LinkSourceFile(QStart.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(README.sgml,$(XF86SRC)/doc/sgml)
-LinkSourceFile(RELNOTE.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(S3.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SCO.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(SOLX86.sgml,$(XF86SRC)/doc/sgml)
@@ -120,8 +110,6 @@ LinkSourceFile(isc.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(trident.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(tseng.sgml,$(XF86SRC)/doc/sgml)
 
-#ifndef DontInstallPC98Version
 InstallLinkKitNamedNonExec(README.LinkKit,README,$(LINKKITDIR))
 InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
-#endif
 

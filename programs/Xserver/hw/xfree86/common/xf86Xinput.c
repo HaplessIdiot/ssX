@@ -1,3 +1,4 @@
+/* Id: xf86Xinput.c,v 1.1 1995/12/20 14:00:01 lepied Exp */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -21,12 +22,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.1 1995/12/26 06:08:25 dawes Exp $ */
+/* $XFree86$ */
+
+static const char rcs_id[] = "Id: xf86Xinput.c,v 1.1 1995/12/20 14:00:01 lepied Exp";
 
 #include "XI.h"
 #include "XIproto.h"
-#include "xf86.h"
 #include "osdep.h"
+#include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"
 #include "xf86_Config.h"
@@ -36,34 +39,35 @@
 extern InputInfo inputInfo;
 
 #ifdef JOYSTICK_SUPPORT
-extern DeviceAssocRec   joystick_assoc;
+extern LocalDeviceRec   joystick_device;
+#endif
+#ifdef JOYSTICK2_SUPPORT
+extern LocalDeviceRec   joystick2_device;
 #endif
 #ifdef WACOM_SUPPORT
-extern DeviceAssocRec   wacom_stylus_assoc;
-extern DeviceAssocRec   wacom_cursor_assoc;
-extern DeviceAssocRec   wacom_eraser_assoc;
+extern LocalDeviceRec   wacom_stylus_device;
+extern LocalDeviceRec   wacom_cursor_device;
+extern LocalDeviceRec   wacom_eraser_device;
 #endif
 #ifdef ELOGRAPHICS_SUPPORT
-extern DeviceAssocRec	elographics_assoc;
+extern LocalDeviceRec	elographics_device;
 #endif
 
-static int              num_devices;
-static LocalDevicePtr	*localDevices;
-static int              max_devices;
-static int              num_assoc;
-
-static DeviceAssocPtr   deviceAssoc[] =
-{
+static  int             num_devices;
+static	LocalDevicePtr	localDevices[] = {
 #ifdef JOYSTICK_SUPPORT
-  &joystick_assoc,
+  &joystick_device,
+#endif
+#ifdef JOYSTICK2_SUPPORT
+  &joystick2_device,
 #endif
 #ifdef WACOM_SUPPORT
-  &wacom_stylus_assoc,
-  &wacom_cursor_assoc,
-  &wacom_eraser_assoc,
+  &wacom_stylus_device,
+  &wacom_cursor_device,
+  &wacom_eraser_device,
 #endif
 #ifdef ELOGRAPHICS_SUPPORT
-  &elographics_assoc,
+  &elographics_device,
 #endif
 };
 
@@ -135,10 +139,7 @@ configExtendedInputSection(LexPtr       val)
   int           token;
   extern int    xf86GetToken(SymTabRec tab[]);
 
-  num_assoc = sizeof(deviceAssoc) / sizeof(DeviceAssocPtr);
-  num_devices = 0;
-  max_devices = 3;
-  localDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr)*max_devices);
+  num_devices = sizeof(localDevices) / sizeof(LocalDevicePtr);
   
   while ((token = xf86GetToken(XinputTab)) != ENDSECTION)
     {
@@ -149,25 +150,15 @@ configExtendedInputSection(LexPtr       val)
           if (xf86GetToken(NULL) != STRING)
             xf86ConfigError("SubSection name expected");
           
-          for(i=0; !found && i<num_assoc; i++)
+          for(i=0; !found && i<num_devices; i++)
             {
-              if (StrCaseCmp(val->str, deviceAssoc[i]->config_section_name) == 0)
+              if (StrCaseCmp(val->str, localDevices[i]->config_section_name) == 0)
                 {
-                  if (num_devices == max_devices) {
-                    max_devices *= 2;
-                    localDevices = (LocalDevicePtr*) xrealloc(localDevices,
-                                                              sizeof(LocalDevicePtr)*max_devices);
-                  }
-                  localDevices[num_devices] = deviceAssoc[i]->device_allocate();
-                  
-                  if (localDevices[num_devices] && localDevices[num_devices]->device_config) 
+                  if (localDevices[i]->device_config) 
                     {
-                      (*localDevices[num_devices]->device_config)(localDevices,
-                                                                  num_devices,
-                                                                  num_devices+1,
-                                                                  val);
-                      localDevices[num_devices]->flags |= XI86_CONFIGURED;
-                      num_devices++;
+                      (*localDevices[i]->device_config)(localDevices[i],
+                                                        val);
+                      localDevices[i]->flags |= XI86_CONFIGURED;
                     }
                   found = 1;
                 }

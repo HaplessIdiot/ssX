@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.1 1996/01/30 15:27:06 dawes Exp $
+XCOMM $XFree86$
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -25,7 +25,6 @@ XCOMM not be used in advertising or otherwise to promote the sale, use or other
 XCOMM dealings in this Software without prior written authorization from the
 XCOMM XFree86 Project.
 XCOMM
-XCOMM $XConsortium: XF86Conf.cpp /main/12 1996/01/27 16:00:02 kaleb $
 
 XCOMM **********************************************************************
 XCOMM Refer to the XF86Config(4/5) man page for details about the format of 
@@ -49,8 +48,6 @@ XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
     FontPath	MISCFONTPATH
-USE_75FONTS	DPI75USFONTPATH
-USE_100FONTS	DPI100USFONTPATH
 USE_T1FONTS	T1FONTPATH
 USE_SPFONTS	SPFONTPATH
 USE_75FONTS	DPI75FONTPATH
@@ -79,17 +76,6 @@ XCOMM Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching
 XCOMM sequences.  This allows clients to receive these key events.
 
 XCOMM    DontZoom
-
-XCOMM Uncomment this to disable tuning with the xvidtune client. With
-XCOMM it the client can still run and fetch card and monitor attributes,
-XCOMM but it will not be allowed to change them. If it tries it will
-XCOMM receive a protocol error.
-
-XCOMM	DisableVidModeExtension
-
-XCOMM Uncomment this to enable the use of a non-local xvidtune client.
-
-XCOMM	AllowNonLocalXvidtune
 
 EndSection
 
@@ -127,21 +113,6 @@ XCOMM    RightAlt    ModeShift
 XCOMM    RightCtl    Compose
 XCOMM    ScrollLock  ModeLock
 
-XCOMM To disable the XKEYBOARD extension, uncomment XkbDisable.
-
-XCOMM XkbDisable
-
-XCOMM To tailor a combination not already in keymap/xfree98 modify
-XCOMM keymap/xfree98 or uncomment and modify the other lines as
-XCOMM desired.
-
-XCOMM    XkbKeymap   "keymap/xfree98"
-XCOMM    Xkbkeycodes "keycodes/xfree98"
-XCOMM    XkbTypes    "types/default"
-XCOMM    XkbCompat   "compat/default"
-XCOMM    XkbSymbols  "symbols/nec/jp(pc98)"
-XCOMM    XkbGeometry "geometry/nec(pc98)"
-
 EndSection
 
 
@@ -154,9 +125,9 @@ Section "Pointer"
     Protocol	"BusMouse"
 XCOMM For FreeBSD(98)-2.X
 FREEBSDMOUSEDEV
-XCOMM For NetBSD/pc98 (based on NetBSD 1.1 or later)
+XCOMM For NetBSD/PC98 1.1 or later
 NETBSDNEWMOUSEDEV
-XCOMM For NetBSD/pc98 (based on NetBSD 1.0)
+XCOMM For NetBSD/PC98 1.0
 NETBSDOLDMOUSEDEV
 
 XCOMM When using XQUEUE, comment out the above two lines, and uncomment
@@ -180,49 +151,6 @@ XCOMM ChordMiddle is an option for some 3-button Logitech mice
 XCOMM    ChordMiddle
 
 EndSection
-
-
-XCOMM **********************************************************************
-XCOMM Xinput section -- this is optional and is required only if you
-XCOMM are using extended input devices.  This is for example only.  Refer
-XCOMM to the XF86Config man page for a description of the options.
-XCOMM **********************************************************************
-XCOMM
-XCOMM Section "Xinput"
-XCOMM    SubSection "WacomStylus"
-XCOMM        Port "/dev/ttyS1"
-XCOMM        DeviceName "Wacom"
-XCOMM    EndSubSection
-XCOMM    SubSection "WacomCursor"
-XCOMM    EndSubSection
-XCOMM    SubSection "WacomEraser"
-XCOMM    EndSubSection
-XCOMM
-XCOMM    SubSection "Elographics"
-XCOMM        Port "/dev/ttyS1"
-XCOMM        DeviceName "Elo"
-XCOMM        MinimumXPosition 300
-XCOMM        MaximumXPosition 3500
-XCOMM        MinimumYPosition 300
-XCOMM        MaximumYPosition 3500
-XCOMM        Screen 0
-XCOMM        UntouchDelay 10
-XCOMM        ReportDelay 10
-XCOMM    EndSubSection
-XCOMM   
-XCOMM    SubSection "Joystick"
-XCOMM        Port "/dev/joy0"
-XCOMM        DeviceName "Joystick"
-XCOMM        TimeOut 10
-XCOMM        MinimumXPosition 100
-XCOMM        MaximumXPosition 1300
-XCOMM        MinimumYPosition 100
-XCOMM        MaximumYPosition 1100
-XCOMM        # CenterX 700
-XCOMM        # CenterY 600
-XCOMM        Delta 20
-XCOMM    EndSubSection
-XCOMM EndSection
 
 
 XCOMM **********************************************************************

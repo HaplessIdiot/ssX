@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/nec480/Imakefile,v 3.1 1996/01/13 12:23:18 dawes Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -22,8 +22,7 @@ SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
 	 vgalined.c vgasegd.c vgaseg.c vgasegS.c \
 	 vgaply1rctC.c vgaply1rctG.c vgafuncs.c \
 	 SpeedUpBlt.c BitBlt.s BitBlt2.s Box.s Line.s \
-	 VHLine.s vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c vgaBank.s \
-	 vgaPCI.c
+	 VHLine.s vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c vgaBank.s
 
 FOBJS =  fBitBlt.o fFillCopy.o fFillXor.o fFillOr.o fFillAnd.o \
          fFillSet.o vgabres.o vgalineH.o vgalineV.o
@@ -47,13 +46,12 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgabltO.o vgabltG.o \
 	 vgapush8.o vgaply1rctC.o vgaply1rctG.o $(STIPPLEOBJ) vgafuncs.o \
 	 SpeedUpBlt.o BitBlt.o BitBlt2.o Box.o Line.o \
-	 VHLine.o vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o vgaBank.o \
-	 vgaPCI.o
+	 VHLine.o vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o vgaBank.o
 
    INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(XF98HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
               -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC) \
-	      -I$(XF86SRC)/vga256/vgainit
+	      -I../vgainit
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
 	     ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
 
@@ -79,8 +77,6 @@ LinkSourceFile(vgaBank.h,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgaBank.s,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgaCmap.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgaHW.c,$(XF86SRC)/vga256/vga)
-LinkSourceFile(vgaPCI.c,$(XF86SRC)/vga256/vga)
-LinkSourceFile(vgaPCI.h,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgabitblt.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgablt.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgabltC.c,$(XF86SRC)/vga256/vga)

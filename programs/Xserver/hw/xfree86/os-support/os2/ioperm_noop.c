@@ -1,7 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/ioperm_noop.c,v 3.0 1996/01/24 22:02:07 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
- * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -78,7 +77,7 @@ HFILE hfd;
 		ErrorF("Please install xf86sup.sys in config.sys!\n");
 		return;
 	}
-	ErrorF("xf86-OS/2: Granting IOPL to X-server\n");
+	fprintf(stderr,"Opened io driver...\n");
 
 	callgate[0] = callgate[1] = 0;
 
@@ -100,41 +99,12 @@ HFILE hfd;
 			: "eax","ebx","ecx","edx","cc");
 
 	ioEnabled = TRUE;
-        DosClose(hfd);
 	return;
 }
 
 void xf86DisableIOPorts(ScreenNum)
 int ScreenNum;
 {
-HFILE hfd;
-	ULONG dlen;
-
-
-	/* no need to call multiple times */
-	if (!ioEnabled) return;
-	
-	if (DosOpen((PSZ)ioDrvPath, (PHFILE)&hfd, (PULONG)&action,
-	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
-	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
-	   (ULONG)0) != 0) {
-		ErrorF("Error opening fastio$ driver...\n");
-		ErrorF("Please install xf86sup.sys in config.sys!\n");
-		return;
-	}
-	ErrorF("xf86-OS/2: Setting X-server back to ring 3\n");
-
-	callgate[0] = callgate[1] = 0;
-
-/* Get callgate from driver for fast io to ports and other stuff */
-
-	if (DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
-		NULL, 0, NULL,
-		(ULONG*)&callgate[2], sizeof(USHORT), &dlen) != 0) {
-		ErrorF("IOCTL to fastio$ failed!\n");
-		DosClose(hfd);
-		return;
-	}
 
 /* Function 14 of callgate brings program back to ring 3 */
 
@@ -143,7 +113,6 @@ HFILE hfd;
 			: /*no inputs */
 			: "eax","ebx","ecx","edx","cc");
 	ioEnabled=FALSE;
-        DosClose(hfd);
 	return;
 
 }

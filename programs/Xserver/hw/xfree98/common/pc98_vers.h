@@ -1,14 +1,14 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/common/pc98_vers.h,v 3.1 1996/01/13 12:22:40 dawes Exp $ */
+/* $XFree86$ */
 
 #ifndef _PC98_VERSION_H
 #define _PC98_VERSION_H
 
 #define ORIGINAL_VER		"3.1.2"
-#define PC98_GENERAL_VER	" "
-#define PC98_GENERAL_PL		"11"
-#define PC98_GENERAL_NAME 	"XFree86-3.1.2 PC98 Server PL.11"
+#define PC98_GENERAL_VER	"Test Version"
+#define PC98_GENERAL_PL		"9"
+#define PC98_GENERAL_NAME 	"XFree86-3.1.2(98) Test Version PL.9"
 
-#define PC98_SVGA_PL	 "2" 
+#define PC98_SVGA_PL	 "1" 
 #define PC98_SVGA_BOARDS "WAB-S WAB-1000 WAB-2000 WSR-G WSR-E WAP-2000/4000 GA-98NB2/4\n\t\tPCNKV PCNKV2 PC9821Be/Bs/Bp/Xe PEGC" 
 
 #define PC98_S3_PL	 "7" 
@@ -22,13 +22,7 @@
 /**************
  * Change LOG *
  **************
-XFree86-3.1.2  PC98 servers
 
-PC98 servers were included in XFree86 main tree.
-
-PL.9	Xfree98 directory was created.
-PL.10	PC98 initialize code was separated from cir_driver.c. (made cir_pc98.c)
-PL.11   Imakefiles were updated. XF98Conf.cpp was added.
 =======================================================================
 
 XFree86(98)-3.1.2 TEST Version
@@ -46,6 +40,8 @@ PL.6	PWLB window address was modified.
 PL.7	Initialize code of all registers was moved.
 PL.8	NEC_480 Server corresponded to gcc-2.4.5 bugs. (for NetBSD/pc98)
 	PW wrap arround bug was fixed. (in pw_mux mode)
+PL.9	Xfree98 directory was created.
+
 =======================================================================
 
 XFree86(98)-3.1.2 Beta Version

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/joycal.c,v 3.0 1995/12/26 08:36:05 dawes Exp $ */
+/* $XFree86$ */
 
 /* A simple program to get the Joystick calibration coordinates */
 
@@ -12,7 +12,6 @@
 #define button_down(j) (j.b1 | j.b2)
 #endif
 #ifdef linux
-#define inline __inline__
 #include <linux/joystick.h>
 #define button_down(j) (j.buttons)
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.0 1996/01/12 14:39:02 dawes Exp $ */
+/* $XFree86$ */
 /*
  * PCI Probe
  *
@@ -55,21 +55,18 @@
 #define PCI_CHIP_GD5430		0x00A0
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
-#define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD7542		0x1200
 
 /* Trident */
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
-#define PCI_CHIP_9660		0x9660
-#define PCI_CHIP_9680		0x9680
-#define PCI_CHIP_9682		0x9682
+#define PCI_CHIP_9660		0x9660	/* Guess */
+#define PCI_CHIP_9680		0x9680	/* Guess */
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
 
-/* SiS */
-#define PCI_CHIP_SG86C201	0x0001
+/* SIS */
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
@@ -99,8 +96,6 @@ typedef struct vgaPCIInformation {
     unsigned long IOBase;
     struct pci_config_reg *PCIPtr;
 } vgaPCIInformation;
-
-extern vgaPCIInformation *vgaPCIInfo;
 
 typedef struct pciVendorDeviceInfo {
     unsigned short VendorID;
@@ -147,9 +142,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CIRRUS,	"Cirrus Logic", {
 				{PCI_CHIP_GD5430,	"GD5430"},
-				{PCI_CHIP_GD5434_4,	"GD5434"},
-				{PCI_CHIP_GD5434_8,	"GD5434"},
-				{PCI_CHIP_GD5436,	"GD5436"},
+				{PCI_CHIP_GD5434_4,	"GD5434-4"},
+				{PCI_CHIP_GD5434_8,	"GD5434-8"},
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{
@@ -159,7 +153,6 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_9440,		"TGUI 9440"},
 				{PCI_CHIP_9660,		"TGUI 9660"},
 				{PCI_CHIP_9680,		"TGUI 9680"},
-				{PCI_CHIP_9682,		"TGUI 9682"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_MATROX,	"Matrox", {
 				{0x0000,		NULL}}},
@@ -167,7 +160,6 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_65545,	"65545"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SIS,	"SiS",	{
-				{PCI_CHIP_SG86C201,	"SG86C201"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NUMNINE, "Number Nine", {
 				{PCI_CHIP_I128,		"Imagine 128"},
@@ -184,7 +176,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_964_1,	"964"},
 				{PCI_CHIP_968,		"968"},
 				{0x0000,		NULL}}},
-    {PCI_VENDOR_ARK,	"ARK Logic", {
+    {PCI_VENDOR_ARK,	 "ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},
 				{PCI_CHIP_2000PV,	"2000PV"},
 				{0x0000,		NULL}}},

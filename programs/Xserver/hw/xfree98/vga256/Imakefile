@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.0 1995/12/17 10:06:20 dawes Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -47,8 +47,8 @@ OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) \
 DONES   = $(GANBWAPDONES) $(NEC480DONES) $(NKVNECDONES) \
 	  $(WABSDONES) $(VGA256DONES)
 
-INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) -I$(XF98OSSRC) \
-	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
+INCLUDES = -Ivga -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
 
 VGADRIVERS = XF98SvgaDrivers
 

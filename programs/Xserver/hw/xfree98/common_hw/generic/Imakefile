@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common_hw/generic/Imakefile,v 3.0 1995/12/17 10:05:35 dawes Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = I2061Acal.c I2061Aset.c I2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
@@ -11,7 +11,7 @@ OBJS = I2061Acal.o I2061Aset.o I2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
        ICS2595.o CirrusClk.o Ch8391clk.o xf86_PCI.o Ti3026clk.o IBMRGB.o \
        STG1703clk.o
 
-INCLUDES = -I. -I$(XF98COMSRC) -I$(XF86OSSRC) \
+INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98OSSRC) \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I../accel/s3
 
 DEFINES = -DPC98

@@ -45,7 +45,7 @@
 
      o  Run xf86config and answer the questions
 
-     o  Fix up the generated XF86Config
+     o  Fixup the generated XF86Config
 
   Why did I list only two steps, after I said there were three?  Well,
   that's because after doing the first two (and step two might not even
@@ -316,7 +316,7 @@
 
   6.3.  The middle button doesn't work.
 
-  There's no easy answer to this one.  It's a lot of trial and error.
+  There's no easy answer to this one.  It's alot of trial and error.
   You need to make sure you're running the right protocol for your
   mouse.
 
@@ -352,7 +352,7 @@
         wherever you got XFree86 and get the missing pieces.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.1 1995/12/28 03:49:32 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/QStart.sgml,v 3.0 1995/12/23 11:16:30 dawes Exp $
 
 
 
@@ -394,5 +394,4 @@
 
 
 
-
-$XFree86$
+\n$XFree86$
