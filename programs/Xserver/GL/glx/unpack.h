@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/unpack.h,v 1.3tsi Exp $ */
 #ifndef __GLX_unpack_h__
 #define __GLX_unpack_h__
 
@@ -144,7 +144,9 @@ extern xGLXSingleReply __glXReply;
 ** conceivably be replaced with routines that do the job faster.
 */
 #define __GLX_DECLARE_SWAP_VARIABLES \
-	GLbyte sw;		\
+	GLbyte sw
+
+#define __GLX_DECLARE_SWAP_ARRAY_VARIABLES \
   	GLbyte *swapPC;		\
   	GLbyte *swapEnd
 
