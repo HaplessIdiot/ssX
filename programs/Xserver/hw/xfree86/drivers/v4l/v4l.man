@@ -1,25 +1,34 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.man,v 1.1 2001/01/24 00:06:33 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.man,v 1.2 2001/01/27 18:20:55 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH V4L __drivermansuffix__ __vendorversion__
 .SH NAME
-v4l \- Video 4 Linux driver
+v4l \- video4linux driver
 .SH SYNOPSIS
 .nf
-.B "Section \*qDevice\*q"
-.BI "  Identifier \*q"  devname \*q
-.B  "  Driver \*qv4l\*q"
+.B "Section \*qModule\*q"
 \ \ ...
+.B "  Load \*qv4l\*q"
 .B EndSection
 .fi
 .SH DESCRIPTION
 .B v4l 
-is an XFree86 driver for Video 4 Linux.
-THIS MAN PAGE NEEDS TO BE FILLED IN.
+is an XFree86 driver for video4linux cards.  It provides a Xvideo
+extention port for video overlay.  Just add the driver to the module
+list within the module section of your XF86Config file if you want
+to use it.  There are no config options.
+.P
+Note that the the extmod module is also required for the Xvideo
+support (and lots of other extentions too).
 .SH SUPPORTED HARDWARE
 The
 .B v4l
-driver supports...
+driver works with every piece of hardware which is supported by a
+video4linux (kernel-) device driver and is able to handle video
+overlay.
+.P
+bt848/bt878-based TV cards are the most popular hardware these
+days.
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -27,4 +36,4 @@ driver.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
-Authors include: ...
+Authors include: Gerd Knorr <kraxel@bytesex.org>
