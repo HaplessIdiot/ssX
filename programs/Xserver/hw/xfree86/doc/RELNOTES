@@ -82,7 +82,7 @@ enough space to cover them all here.
    o The 3Dlabs (glint) driver now has Permedia3 support.
 
    o The SiS driver has had many updates, and XVideo support for the 630 is
-     not included.
+     included.
 
    o The NVIDIA (nv) driver has been updated to include support for the
      GeForce2, and line acceleration has been added.  Also, DDC support has
@@ -687,8 +687,8 @@ The following X server command line options have been changed since 3.3.x:
 4.4  XAA
 
 The XFree86 Acceleration Architecture (XAA) has been completely rewritten
-from scratch.  Most drivers implement acceleration by making use of the XAA
-module.
+from scratch for XFree86 4.x.  Most drivers implement acceleration by making
+use of the XAA module.
 
 4.5  Multi-head
 
@@ -778,12 +778,13 @@ cards, ATI Rage 128, and Matrox G400.  Updated information on DRI compatible
 drivers can be found at the DRI Project <URL:http://dri.sourceforge.net> on
 SourceForge <URL:http://www.sourceforge.net>.
 
-4.10  X-Video Extension (Xv)
+4.10  XVideo Extension (Xv)
 
-An XvQueryPortAttributes function has been added as well as support for XvIm-
-ages.  XvImages are XImages in alternate color spaces such as YUV and can be
-passed to the server through shared memory segments.  This allows clients to
-display YUV data with high quality hardware scaling and filtering.
+The XVideo extension is supported in XFree86 4.x.  An XvQueryPortAttributes
+function has been added as well as support for XvImages.  XvImages are XIm-
+ages in alternate color spaces such as YUV and can be passed to the server
+through shared memory segments.  This allows clients to display YUV data with
+high quality hardware scaling and filtering.
 
 4.11  X Rendering Extension (Render)
 
@@ -1077,7 +1078,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.54 2000/12/15 20:21:35 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.55 2000/12/15 21:56:47 dawes Exp $
 
 
 $XFree86$
