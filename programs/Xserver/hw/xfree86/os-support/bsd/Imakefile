@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.67 2004/12/13 13:09:04 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.68 2005/03/01 03:48:53 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -96,11 +96,6 @@ SHARED_CFLAGS = PositionIndependentCFlags
   IOPERM_SRC = ioperm_noop.c
   IOPERM_OBJ = ioperm_noop.o
 # endif
-#endif
-
-#if BuildXF86DRI
-DRI_SRC = sigio.c
-DRI_OBJ = sigio.o
 #endif
 
 MOUSESRC = bsd_mouse.c
