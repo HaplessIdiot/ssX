@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.5 2003/12/31 05:47:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.6 2004/01/05 00:34:17 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -129,11 +129,15 @@ static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 	    "[drm] Failed to map public agp area\n");
         pVIADRI->agp.size = 0;
-        return FALSE;
+	drmAgpUnbind(pVia->drmFD, pVia->agpHandle);
+	drmAgpFree(pVia->drmFD, pVia->agpHandle);
+	drmAgpRelease(pVia->drmFD);
+	return FALSE;
     }  
     /* Map AGP from kernel to Xserver - Not really needed */
     drmMap(pVia->drmFD, pVIADRI->agp.handle,pVIADRI->agp.size,
 	(drmAddressPtr)&agpaddr);
+    pVia->agpMappedAddr = agpaddr;
 
     xf86DrvMsg(pScreen->myNum, X_INFO, 
                 "[drm] agpBase = %p\n", pVia->agpBase);
@@ -149,8 +153,14 @@ static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 	agp.offset = 0;
 	agp.size = AGP_SIZE;
 	if (drmCommandWrite(pVia->drmFD, DRM_VIA_AGP_INIT, &agp,
-			    sizeof(drmViaAgp)) < 0)
+			    sizeof(drmViaAgp)) < 0) {
+	    drmUnmap((drmAddressPtr)agpaddr,pVia->agpSize);
+	    drmRmMap(pVia->drmFD,pVIADRI->agp.handle);
+	    drmAgpUnbind(pVia->drmFD, pVia->agpHandle);
+	    drmAgpFree(pVia->drmFD, pVia->agpHandle);
+	    drmAgpRelease(pVia->drmFD);
 	    return FALSE;
+	}
     }
 	
     return TRUE;
@@ -462,8 +472,18 @@ VIADRICloseScreen(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VIAPtr pVia = VIAPTR(pScrn);
 
-    DRICloseScreen(pScreen);
+    if (pVia->agpSize) {
+	drmUnmap((drmAddressPtr)pVia->agpMappedAddr,pVia->agpSize);
+	drmRmMap(pVia->drmFD,pVia->agpHandle);
+	drmAgpUnbind(pVia->drmFD, pVia->agpHandle);
+	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Freeing agp memory\n");
+	drmAgpFree(pVia->drmFD, pVia->agpHandle);
+	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Releasing agp module\n");
+	drmAgpRelease(pVia->drmFD);
+    }
 
+    DRICloseScreen(pScreen);
+    
     if (pVia->pDRIInfo) {
 	if (pVia->pDRIInfo->devPrivate) {
     	    xfree(pVia->pDRIInfo->devPrivate);
@@ -475,12 +495,6 @@ VIADRICloseScreen(ScreenPtr pScreen)
     
     if (pVia->pVisualConfigs) xfree(pVia->pVisualConfigs);
     if (pVia->pVisualConfigsPriv) xfree(pVia->pVisualConfigsPriv);
-    if (pVia->agpSize) {
-	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Freeing agp memory\n");
-        drmAgpFree(pVia->drmFD, pVia->agpHandle);
-	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Releasing agp module\n");
-    	drmAgpRelease(pVia->drmFD);
-    }
 }
 
 /* TODO: xserver receives driver's swapping event and does something
