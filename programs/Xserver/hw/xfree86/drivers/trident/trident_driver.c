@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.162 2002/03/29 18:33:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.164 2002/04/04 14:05:49 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1993,7 +1993,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    /* Apparantly this isn't true for the CYBER9397DVD */
 	    /* maybe some other chipsets aren't affected either */
 	    /* XXX this needs to be investigated further */
-	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD)) {
+	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD) &&
+	      			    (pTrident->Chipset < BLADE3D)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
 		       "Found 8MB board, using 4MB\n");
 	    pScrn->videoRam = 4096;
