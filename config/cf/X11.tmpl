@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.112 2001/04/07 16:36:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.113 2001/04/10 16:07:47 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3031,6 +3031,14 @@ install:: deps								@@\
 
 #ifndef InstallRoffDoc
 #define InstallRoffDoc(name) InstallDoc(name,name.PS name.txt)
+#endif
+
+#ifndef InstallLatexDoc
+#if HasLatex
+#define InstallLatexDoc(name) InstallDoc(name,name.PS)
+#else
+#define InstallLatexDoc(name)
+#endif
 #endif
 
 #ifndef InstallHardcopyDoc

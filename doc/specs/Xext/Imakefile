@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:30 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/doc/specs/Xext/Imakefile,v 1.3 2000/03/02 17:52:58 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/Xext/Imakefile,v 1.4 2001/01/17 16:57:43 dawes Exp $
 
 MakeSimpleDoc(shape,shape.ms)
 
@@ -55,12 +55,17 @@ InstallRoffDoc(DPMS)
 InstallRoffDoc(DPMSLib)
 InstallRoffDoc(bigreq)
 InstallRoffDoc(buffer)
+InstallLatexDoc(dbe)
+InstallLatexDoc(dbelib)
 InstallRoffDoc(evi)
 InstallRoffDoc(mit-shm)
 InstallRoffDoc(record)
 InstallRoffDoc(recordlib)
+InstallLatexDoc(security)
 InstallRoffDoc(shape)
 InstallRoffDoc(shapelib)
+InstallLatexDoc(sync)
+InstallLatexDoc(synclib)
 InstallRoffDoc(tog-cup)
 InstallRoffDoc(xc-misc)
 InstallRoffDoc(xtest)

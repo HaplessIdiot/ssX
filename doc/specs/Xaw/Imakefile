@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 17:13:58 rws Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:26 cpqbld Exp $
 EVERYWHERE=strings.mit strings.xaw
 CHAPTER1=CH1
 CHAPTER2=CH2
@@ -19,7 +19,9 @@ MakeTblDoc(widgets,$(SRCS))
 
 MakeDocIndex(widg,widg.idxmac.t)
 
+InstallRoffDoc(widgets)
+
 XCOMM Useful for running off part of the manual by hand,
 XCOMM e.g., make part PART=Label
-part:
-	$(TBL) $(PART) | $(TROFF) $(MSMACROS) $(EVERYWHERE) -
+part: $(PART)
+	$(TBL) $(PART) | $(TROFF) $(MSMACROS) $(XDOCMACROS) $(EVERYWHERE) - > part.PS
