@@ -1,0 +1,80 @@
+#include <Server.tmpl>
+
+#ifdef i386Architecture
+TRIDENTSRCS = trident_bank.s
+TRIDENTOBJS = trident_bank.o
+#else
+TRIDENTSRCS = trident_bank.c
+TRIDENTOBJS = trident_bank.o
+#endif
+
+SRCS = trident_driver.c $(TRIDENTSRCS) tgui_curs.c tgui_accel.c tguimaccel.c \
+	tgui_oldacl.c tguimoldacl.c pc98_tgui.c
+
+OBJS = trident_driver.o $(TRIDENTOBJS) tgui_curs.o tgui_accel.o tguimaccel.o \
+	tgui_oldacl.o tguimoldacl.o pc98_tgui.o
+
+DEFINES = -DPSZ=8 -DPC98 -DPC98_TGUI
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I$(XF86SRC)/vga256/vga -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/cfb \
+           -I$(XF86SRC)/xaa -I$(FONTINCSRC) \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(trident_drv,$(OBJS))
+
+#if !XF86LinkKit
+LinkSourceFile(bank.s,$(XF86SRC)/drivers/trident)
+LinkSourceFile(trident_driver.c,$(XF86SRC)/drivers/trident)
+LinkSourceFile(trident_driver.h,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_curs.c,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_accel.c,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_drv.h,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_ger.h,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_mmio.h,$(XF86SRC)/drivers/trident)
+LinkSourceFile(tgui_oldacl.c,$(XF86SRC)/drivers/trident)
+#endif
+
+#ifdef i386Architecture
+ObjectFromSpecialAsmSource(trident_bank,bank,NullParameter)
+#else
+ObjectFromSpecialSource(trident_bank,bankc,NullParameter)
+#endif
+
+ObjectFromSpecialSource(tguimaccel, tgui_accel, -DTRIDENT_MMIO)
+ObjectFromSpecialSource(tguimoldacl, tgui_oldacl, -DTRIDENT_MMIO)
+
+InstallLinkKitNonExecFile(trident_driver.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(trident_driver.h,$(XF98LINKKITDIR)/drivers98/trident)
+#ifdef i386Architecture
+InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers98/trident)
+#else
+InstallLinkKitNonExecFile(bankc.c,$(XF98LINKKITDIR)/drivers98/trident)
+#endif
+InstallLinkKitNonExecFile(tgui_curs.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_accel.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_oldacl.c,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_drv.h,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_ger.h,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(tgui_mmio.h,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(pc98_tgui.h,$(XF98LINKKITDIR)/drivers98/trident)
+InstallLinkKitNonExecFile(pc98_tgui.c,$(XF98LINKKITDIR)/drivers98/trident)
+
+#if DoLoadableServer
+#ifndef DontInstallPC98Version
+InstallDynamicModule(trident_drv.o, $(MODULEDIR))
+#endif
+#endif
+
+DependTarget()
