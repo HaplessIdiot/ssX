@@ -3515,7 +3515,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
       /*(pSiS->ChipFlags & (SiSCF_Is65x))                 && */ /* Seems to work on any 650 */
         (pSiS->VBFlags & (VB_302B | VB_301LV | VB_302LV)) &&
         (pSiS->VBFlags & CRT2_LCD) 			  &&
-	(pSiS->VBLCDFlags & (VB_LCD_1024x768 | VB_LCD_1280x1024 | VB_LCD_1400x1050)) &&
+	(pSiS->VBLCDFlags & (VB_LCD_1024x768|VB_LCD_1280x1024|VB_LCD_1400x1050|VB_LCD_1600x1200)) &&
 	(pSiS->VESA != 1) ) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTLCDA;
     } else {

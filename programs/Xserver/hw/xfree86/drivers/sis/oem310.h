@@ -513,4 +513,26 @@ static const SiS_LVDSDesStruct Clevo1024x768Des_2[] =
   {    0,   0 }
 };
 
+static const SiS_LVDSDesStruct Uniwill1024x768Des_1[] =
+{
+  { 0, 0 },
+  { 0, 0 },
+  { 0, 0 },
+  { 0, 0 },
+  { 0, 0 },
+  { 0, 0 },
+  { 0, 805 }
+};
+
+static const SiS_LVDSDesStruct Uniwill1024x768Des_2[] =
+{
+  { 1184, 622 },
+  { 1184, 597 },
+  { 1184, 622 },
+  { 1184, 597 },
+  { 1152, 650 },
+  { 1232, 722 },
+  {    0, 805 },
+};
+
 

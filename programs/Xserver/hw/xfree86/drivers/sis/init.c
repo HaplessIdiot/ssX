@@ -66,63 +66,6 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_StResInfo     = SiS_StResInfo;
    SiS_Pr->SiS_ModeResInfo   = SiS_ModeResInfo;
    SiS_Pr->SiS_StandTable    = SiS_StandTable;
-   if(HwInfo->jChipType < SIS_315H) {
-      SiS_StandTable[0x04].CRTC[4] = 0x2b;
-      SiS_StandTable[0x05].CRTC[4] = 0x2b;
-      SiS_StandTable[0x06].CRTC[4] = 0x54;
-      SiS_StandTable[0x06].CRTC[5] = 0x80;
-      SiS_StandTable[0x0d].CRTC[4] = 0x2b;
-      SiS_StandTable[0x0e].CRTC[4] = 0x54;
-      SiS_StandTable[0x0e].CRTC[5] = 0x80;
-      SiS_StandTable[0x11].CRTC[4] = 0x54;
-      SiS_StandTable[0x11].CRTC[5] = 0x80;
-      SiS_StandTable[0x11].CRTC[16] = 0x83;
-      SiS_StandTable[0x11].CRTC[17] = 0x85;
-      SiS_StandTable[0x12].CRTC[4] = 0x54;
-      SiS_StandTable[0x12].CRTC[5] = 0x80;
-      SiS_StandTable[0x12].CRTC[16] = 0x83;
-      SiS_StandTable[0x12].CRTC[17] = 0x85;
-      SiS_StandTable[0x13].CRTC[5] = 0xa0;
-      SiS_StandTable[0x17].CRTC[5] = 0xa0;
-      SiS_StandTable[0x1a].CRTC[4] = 0x54;
-      SiS_StandTable[0x1a].CRTC[5] = 0x80;
-      SiS_StandTable[0x1a].CRTC[16] = 0xea;
-      SiS_StandTable[0x1a].CRTC[17] = 0x8c;
-      SiS_StandTable[0x1b].CRTC[4] = 0x54;
-      SiS_StandTable[0x1b].CRTC[5] = 0x80;
-      SiS_StandTable[0x1b].CRTC[16] = 0xea;
-      SiS_StandTable[0x1b].CRTC[17] = 0x8c;
-      SiS_StandTable[0x1c].CRTC[4] = 0x54;
-      SiS_StandTable[0x1c].CRTC[5] = 0x80;
-   } else {
-      SiS_StandTable[0x04].CRTC[4] = 0x2c;
-      SiS_StandTable[0x05].CRTC[4] = 0x2c;
-      SiS_StandTable[0x06].CRTC[4] = 0x55;
-      SiS_StandTable[0x06].CRTC[5] = 0x81;
-      SiS_StandTable[0x0d].CRTC[4] = 0x2c;
-      SiS_StandTable[0x0e].CRTC[4] = 0x55;
-      SiS_StandTable[0x0e].CRTC[5] = 0x81;
-      SiS_StandTable[0x11].CRTC[4] = 0x55;
-      SiS_StandTable[0x11].CRTC[5] = 0x81;
-      SiS_StandTable[0x11].CRTC[16] = 0x82;
-      SiS_StandTable[0x11].CRTC[17] = 0x84;
-      SiS_StandTable[0x12].CRTC[4] = 0x55;
-      SiS_StandTable[0x12].CRTC[5] = 0x81;
-      SiS_StandTable[0x12].CRTC[16] = 0x82;
-      SiS_StandTable[0x12].CRTC[17] = 0x84;
-      SiS_StandTable[0x13].CRTC[5] = 0xb1;
-      SiS_StandTable[0x17].CRTC[5] = 0xb1;
-      SiS_StandTable[0x1a].CRTC[4] = 0x55;
-      SiS_StandTable[0x1a].CRTC[5] = 0x81;
-      SiS_StandTable[0x1a].CRTC[16] = 0xe9;
-      SiS_StandTable[0x1a].CRTC[17] = 0x8b;
-      SiS_StandTable[0x1b].CRTC[4] = 0x55;
-      SiS_StandTable[0x1b].CRTC[5] = 0x81;
-      SiS_StandTable[0x1b].CRTC[16] = 0xe9;
-      SiS_StandTable[0x1b].CRTC[17] = 0x8b;
-      SiS_StandTable[0x1c].CRTC[4] = 0x55;
-      SiS_StandTable[0x1c].CRTC[5] = 0x81;
-   }
 
    SiS_Pr->SiS_NTSCPhase    = SiS_NTSCPhase;
    SiS_Pr->SiS_PALPhase     = SiS_PALPhase;
@@ -200,12 +143,17 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_LVDS848x480Data_1   = SiS_LVDS848x480Data_1;
    SiS_Pr->SiS_LVDS848x480Data_2   = SiS_LVDS848x480Data_2;
 
+   SiS_Pr->SiS_CHTVUNTSCData = SiS_CHTVUNTSCData;
+   SiS_Pr->SiS_CHTVONTSCData = SiS_CHTVONTSCData;
+
+   SiS_Pr->SiS_LCDA1024x768Data_1  = SiS_LCDA1024x768Data_1;
+   SiS_Pr->SiS_LCDA1024x768Data_2  = SiS_LCDA1024x768Data_2;
+   SiS_Pr->SiS_LCDA1280x1024Data_1 = SiS_LCDA1280x1024Data_1;
+   SiS_Pr->SiS_LCDA1280x1024Data_2 = SiS_LCDA1280x1024Data_2;
    SiS_Pr->SiS_LCDA1400x1050Data_1 = SiS_LCDA1400x1050Data_1;
    SiS_Pr->SiS_LCDA1400x1050Data_2 = SiS_LCDA1400x1050Data_2;
    SiS_Pr->SiS_LCDA1600x1200Data_1 = SiS_LCDA1600x1200Data_1;
    SiS_Pr->SiS_LCDA1600x1200Data_2 = SiS_LCDA1600x1200Data_2;
-   SiS_Pr->SiS_CHTVUNTSCData = SiS_CHTVUNTSCData;
-   SiS_Pr->SiS_CHTVONTSCData = SiS_CHTVONTSCData;
 
    SiS_Pr->LVDS1024x768Des_1  = SiS_PanelType1076_1;
    SiS_Pr->LVDS1280x1024Des_1 = SiS_PanelType1210_1;
@@ -252,6 +200,34 @@ static void
 InitTo300Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 {
    InitCommonPointer(SiS_Pr, HwInfo);
+
+   SiS_StandTable[0x04].CRTC[4] = 0x2b;
+   SiS_StandTable[0x05].CRTC[4] = 0x2b;
+   SiS_StandTable[0x06].CRTC[4] = 0x54;
+   SiS_StandTable[0x06].CRTC[5] = 0x80;
+   SiS_StandTable[0x0d].CRTC[4] = 0x2b;
+   SiS_StandTable[0x0e].CRTC[4] = 0x54;
+   SiS_StandTable[0x0e].CRTC[5] = 0x80;
+   SiS_StandTable[0x11].CRTC[4] = 0x54;
+   SiS_StandTable[0x11].CRTC[5] = 0x80;
+   SiS_StandTable[0x11].CRTC[16] = 0x83;
+   SiS_StandTable[0x11].CRTC[17] = 0x85;
+   SiS_StandTable[0x12].CRTC[4] = 0x54;
+   SiS_StandTable[0x12].CRTC[5] = 0x80;
+   SiS_StandTable[0x12].CRTC[16] = 0x83;
+   SiS_StandTable[0x12].CRTC[17] = 0x85;
+   SiS_StandTable[0x13].CRTC[5] = 0xa0;
+   SiS_StandTable[0x17].CRTC[5] = 0xa0;
+   SiS_StandTable[0x1a].CRTC[4] = 0x54;
+   SiS_StandTable[0x1a].CRTC[5] = 0x80;
+   SiS_StandTable[0x1a].CRTC[16] = 0xea;
+   SiS_StandTable[0x1a].CRTC[17] = 0x8c;
+   SiS_StandTable[0x1b].CRTC[4] = 0x54;
+   SiS_StandTable[0x1b].CRTC[5] = 0x80;
+   SiS_StandTable[0x1b].CRTC[16] = 0xea;
+   SiS_StandTable[0x1b].CRTC[17] = 0x8c;
+   SiS_StandTable[0x1c].CRTC[4] = 0x54;
+   SiS_StandTable[0x1c].CRTC[5] = 0x80;
 
    SiS_Pr->SiS_SModeIDTable  = (SiS_StStruct *)SiS300_SModeIDTable;
    SiS_Pr->SiS_VBModeIDTable = (SiS_VBModeStruct *)SiS300_VBModeIDTable;
@@ -436,6 +412,34 @@ static void
 InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 {
    InitCommonPointer(SiS_Pr, HwInfo);
+
+   SiS_StandTable[0x04].CRTC[4] = 0x2c;
+   SiS_StandTable[0x05].CRTC[4] = 0x2c;
+   SiS_StandTable[0x06].CRTC[4] = 0x55;
+   SiS_StandTable[0x06].CRTC[5] = 0x81;
+   SiS_StandTable[0x0d].CRTC[4] = 0x2c;
+   SiS_StandTable[0x0e].CRTC[4] = 0x55;
+   SiS_StandTable[0x0e].CRTC[5] = 0x81;
+   SiS_StandTable[0x11].CRTC[4] = 0x55;
+   SiS_StandTable[0x11].CRTC[5] = 0x81;
+   SiS_StandTable[0x11].CRTC[16] = 0x82;
+   SiS_StandTable[0x11].CRTC[17] = 0x84;
+   SiS_StandTable[0x12].CRTC[4] = 0x55;
+   SiS_StandTable[0x12].CRTC[5] = 0x81;
+   SiS_StandTable[0x12].CRTC[16] = 0x82;
+   SiS_StandTable[0x12].CRTC[17] = 0x84;
+   SiS_StandTable[0x13].CRTC[5] = 0xb1;
+   SiS_StandTable[0x17].CRTC[5] = 0xb1;
+   SiS_StandTable[0x1a].CRTC[4] = 0x55;
+   SiS_StandTable[0x1a].CRTC[5] = 0x81;
+   SiS_StandTable[0x1a].CRTC[16] = 0xe9;
+   SiS_StandTable[0x1a].CRTC[17] = 0x8b;
+   SiS_StandTable[0x1b].CRTC[4] = 0x55;
+   SiS_StandTable[0x1b].CRTC[5] = 0x81;
+   SiS_StandTable[0x1b].CRTC[16] = 0xe9;
+   SiS_StandTable[0x1b].CRTC[17] = 0x8b;
+   SiS_StandTable[0x1c].CRTC[4] = 0x55;
+   SiS_StandTable[0x1c].CRTC[5] = 0x81;
 
    SiS_Pr->SiS_SModeIDTable  = (SiS_StStruct *)SiS310_SModeIDTable;
    SiS_Pr->SiS_EModeIDTable  = (SiS_ExtStruct *)SiS310_EModeIDTable;
