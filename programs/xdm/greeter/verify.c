@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.12 2001/05/11 09:03:07 alanh Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.13 2001/05/18 16:03:15 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -190,12 +190,14 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	} else {
+#ifndef USE_PAM
 #ifdef linux
 	    if (p->pw_passwd[0] == '!' || p->pw_passwd[0] == '*') {
 		Debug ("The account is locked, no login allowed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	    }
+#endif
 #endif
 	    user_pass = p->pw_passwd;
 	}

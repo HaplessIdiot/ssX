@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.73 93/10/07 15:23:05 gildea Exp $
+ * $XConsortium: init.c,v 2.81 95/01/25 14:56:39 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -25,6 +25,7 @@
  * without specific, written prior permission.
  *
  */
+/* $XFree86$ */
 
 /* Init.c - Handle start-up initialization. */
 
@@ -243,12 +244,30 @@ xmh man page for further information."
 }
 
 
+/*ARGSUSED*/
+static void _Die(w, client_data, call_data)
+    Widget w;			/* == toplevel */
+    XtPointer client_data;	/* unused */
+    XtPointer call_data;	/* unused */
+{
+    int i;
+
+    for (i=0; i<numScrns; i++)
+	if (scrnList[i]->mapped)
+	    XtUnmapWidget(scrnList[i]->parent);
+
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
+    exit(0);
+}
+
+
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
 int argc;
 char **argv;
 {
+    extern char** environ;	/* POSIX doesn't specify a .h for this */
     int l;
     FILEPTR fid;
     char str[500], str2[500], *ptr;
@@ -346,24 +365,28 @@ char **argv;
 
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
+	{XtNjoinSession, (XtArgVal)False}, /* join is delayed to end of init */
+	{XtNenvironment, (XtArgVal)NULL},  /* set dynamically below */
+	{XtNmappedWhenManaged, (XtArgVal)False}
     };
 
     ptr = strrchr(argv[0], '/');
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    toplevel = XtAppInitialize(&app, "Xmh", table, XtNumber(table),
-			       &argc, argv, FallbackResources,
-			       NULL, (Cardinal)0);
+    shell_args[2].value = (XtArgVal)environ;
+    toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
+				 &argc, argv, FallbackResources,
+				 sessionShellWidgetClass,
+				 shell_args, XtNumber(shell_args));
     if (argc > 1) Syntax(progName);
 
     XSetIOErrorHandler(_IOErrorHandler);
 
-    XtSetValues(toplevel, shell_args, XtNumber(shell_args));
-
     theDisplay = XtDisplay(toplevel);
 
-    homeDir = XtNewString(getenv("HOME"));
+    homeDir = getenv("HOME");
+    homeDir = XtNewString(homeDir);
 
     XtGetApplicationResources( toplevel, (XtPointer)&app_resources,
 			       resources, XtNumber(resources),
@@ -469,6 +492,9 @@ char **argv;
     protocolList[1] = wm_save_yourself = 
 	XInternAtom(XtDisplay(toplevel), "WM_SAVE_YOURSELF", False);
 
+    XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
+    XtAddCallback(toplevel, XtNdieCallback, _Die, (XtPointer)NULL);
+
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),
 			      RootWindowOfScreen( XtScreen(toplevel)),
@@ -489,6 +515,8 @@ char **argv;
     TocSetScrn(InitialFolder, scrn);
 
     DEBUG("done.\n");
+
+    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
 
     MapScrn(scrn);
 }

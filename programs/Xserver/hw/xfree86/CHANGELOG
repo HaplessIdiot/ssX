@@ -1,4 +1,18 @@
 XFree86 4.1.99.1 (xx June 2001)
+  38. Fix xmh's use of XtNewString() with getenv (#4694, Tim Waugh).
+  37. Xdm/PAM fixes: leave it to PAM to observe whether or not an account
+      is locked, and reinitialize credentials after calling initgroups(),
+      because sometimes the credentials pam_setcred() gives are in the
+      form of group membership (#4693, Mike Harris).
+  36. Add an encodings file for standard box drawing characters for
+      VT100-compatible terminals (#4691, Juliusz Chroboczek).
+  35. Fix warnings when building mieq.c (#4689, Adam Sulmicki).
+  34. Fix some bugs in the cz and sk entried in XKB's keymap/xfree86 file
+      (#4692, Ivan Pascal).
+  33. Add 'hr' entries to XKB's keymap/xfree86 and rules/xfree86.lst files
+      (#4687, Nerijus Baliunas).
+  32. Include <X11/Xutil.h> in shape.h to get Region typedef (#4686,
+      Adam Sulmicki).
   31. Acceleration bug fixes for GLINT Permedia1 (Alan Hourihane).
   30. Ensure glint driver chips don't exceed the specified virtual sizes.
       (Alan Hourihane).
@@ -13362,4 +13376,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1803 2001/05/25 12:01:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1804 2001/05/25 12:25:57 alanh Exp $

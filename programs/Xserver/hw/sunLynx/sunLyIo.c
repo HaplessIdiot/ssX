@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.3 1998/10/04 09:38:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyIo.c,v 3.4 2001/01/17 22:36:53 dawes Exp $ */
 
  /*
  *
@@ -90,7 +90,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 void
 ProcessInputEvents ()
 {
-    (void) mieqProcessInputEvents ();
+    mieqProcessInputEvents ();
     miPointerUpdate ();
 }
 

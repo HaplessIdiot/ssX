@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.20 2001/05/18 23:35:34 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.21 2001/05/24 19:43:05 dawes Exp $
 
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
@@ -94,6 +94,13 @@ xkb_keymap "gb"	{
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
     xkb_symbols		{ include "en_US(pc105)+gb"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
+xkb_keymap "hr"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+hr"	};
     xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "it"	{
@@ -253,29 +260,29 @@ xkb_keymap "br"	{
 xkb_keymap "cz" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
-    xkb_options		{ include "grp_led:scroll"	};
-    xkb_symbols		{ include "cz"			};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+cz"	};
     xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "cz_qwerty" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
-    xkb_options		{ include "grp_led:scroll"	};
-    xkb_symbols		{ include "cz_qwerty"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+cz_qwerty"	};
     xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "sk" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
-    xkb_options		{ include "grp_led:scroll"	};
-    xkb_symbols		{ include "sk"			};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+sk"	};
     xkb_geometry	{ include "pc"			};
 };
 xkb_keymap "sk_qwerty" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
-    xkb_options		{ include "grp_led:scroll"	};
-    xkb_symbols		{ include "sk_qwerty"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+sk_qwerty"	};
     xkb_geometry	{ include "pc"			};
 };
 
