@@ -43,6 +43,7 @@ pciVideoPtr ConfiguredPciCard;
 int ConfiguredIsaCard;
 int FoundPciCards = 0;
 static int haveVGA = -1;
+Bool havePrimary = FALSE;
 
 static void
 GetPciCard(int id, int *vendor1, int *vendor2, int *card)
@@ -147,6 +148,7 @@ configureScreenSection (char *driver)
     xf86PciCard = ConfiguredPciCard;
     for (i = 0; i < FoundPciCards; i++) {
 	if (xf86IsPrimaryPci(xf86PciCard)) {
+	    havePrimary = TRUE;
     	    GetPciCard(i, &vendor1, &vendor2, &card);
     	    ptr->scrn_device_str = xalloc(
 		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
@@ -157,8 +159,10 @@ configureScreenSection (char *driver)
 	}
 	xf86PciCard++;
     }
-    if (xf86IsPrimaryIsa())
+    if (xf86IsPrimaryIsa()) {
+	havePrimary = TRUE;
 	ptr->scrn_device_str = "ISA Card";
+    }
 
     /* Make sure we use depth 4 for vga driver and depth 8 for direct */
     /* Just to get a usable 640x480 display */
@@ -288,6 +292,7 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
 	  		xf86PciCard->chipType,(xf86IsPrimaryPci(xf86PciCard) ? 
 			"Primary! - Configuring this one." : "Secondary.")); 
 	if (xf86IsPrimaryPci(xf86PciCard)) {
+	    havePrimary = TRUE;
     	    GetPciCard(i, &vendor1, &vendor2, &card);
     	    ptr->dev_identifier = xalloc(	
 		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
@@ -302,6 +307,7 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
 	xf86PciCard++;
     }
     if (xf86IsPrimaryIsa()) {
+	    havePrimary = TRUE;
     	    ptr->dev_identifier = "ISA Card";
 	    ptr->dev_busid = "ISA";
     }
@@ -343,6 +349,7 @@ configureLayoutSection (void)
     xf86PciCard = ConfiguredPciCard;
     for (i = 0; i < FoundPciCards; i++) {
 	if (xf86IsPrimaryPci(xf86PciCard)) {
+	    havePrimary = TRUE;
     	    GetPciCard(i, &vendor1, &vendor2, &card);
     	    ptr->lay_identifier = xalloc(
 		strlen(xf86PCIVendorNameInfo[vendor1].name) + 
@@ -353,8 +360,10 @@ configureLayoutSection (void)
 	}
 	xf86PciCard++;
     }
-    if (xf86IsPrimaryIsa())
+    if (xf86IsPrimaryIsa()) {
+	havePrimary = TRUE;
 	ptr->lay_identifier = "ISA Card";
+    }
 
     { 
 	XF86ConfAdjacencyPtr aptr;
@@ -621,6 +630,11 @@ DoConfigure()
 
     if ((haveVGA == -1) && (foundDriver == NULL)) {
 	ErrorF("Unable to configure XFree86 - no able drivers found.\n");
+	goto bail;
+    }
+
+    if (!havePrimary) {
+	ErrorF("Unable to configure XFree86 - Primary card driver not found.\n");
 	goto bail;
     }
 

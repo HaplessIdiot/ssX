@@ -1620,8 +1620,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    }
 	}
     } else {
-	    /* Find PCI devices that match the given vendor ID */
-
+	/* Find PCI devices that match the given vendor ID */
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    if ((*ppPci)->vendor == vendorID) {
 		++allocatedInstances;
@@ -1657,21 +1656,25 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 
     if (xf86DoConfigure) {
 	pciVideoPtr ConfCard;
+	int actualcards = 0;
 	ConfiguredPciCard = xnfrealloc((pciVideoPtr)ConfiguredPciCard, sizeof(pciVideoRec) * (allocatedInstances + FoundPciCards));
 	ConfCard = ConfiguredPciCard;
 	for (i = 0; i < FoundPciCards; i++) 
 	    ConfCard++;
 	for (i = 0; i < allocatedInstances; i++) {
-	    pPci = instances[i].pci;
-	    ConfCard->vendor = pPci->vendor;
-	    ConfCard->chipType = pPci->chipType;
-	    ConfCard->device = pPci->device;
-	    ConfCard->bus = pPci->bus;
-	    ConfCard->func = pPci->func;
-	    ConfCard++;
+	    if (instances[i].foundHW) {
+		actualcards++;
+	    	pPci = instances[i].pci;
+	    	ConfCard->vendor = pPci->vendor;
+	    	ConfCard->chipType = pPci->chipType;
+	    	ConfCard->device = pPci->device;
+	    	ConfCard->bus = pPci->bus;
+	    	ConfCard->func = pPci->func;
+	    	ConfCard++;
+	    }
 	}
-	FoundPciCards += allocatedInstances;
-	return 1;
+	FoundPciCards += actualcards;
+	return actualcards;
     }
 
 #ifdef DEBUG
