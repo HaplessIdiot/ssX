@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.19 2001/03/05 20:18:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.20 2001/08/06 20:51:11 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -33,6 +33,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#define KBC_TIMEOUT 250        /* Timeout in ms for sending to keyboard controller */
 
 void
 xf86SoundKbdBell(int loudness, int pitch, int duration)
@@ -140,6 +142,7 @@ char rad;
 #endif
 {
   int i;
+  int timeout;
   int         value = 0x7f;    /* Maximum delay with slowest rate */
 
 #ifdef __sparc__
@@ -194,9 +197,17 @@ char rad;
       break;
     }
 
-  while ((inb(0x64) & 2) == 2); /* wait */
+  timeout = KBC_TIMEOUT;
+  while (((inb(0x64) & 2) == 2) && --timeout)
+       usleep(1000); /* wait */
+
+  if (timeout == 0)
+      return;
+
   outb(0x60, 0xf3);             /* set typematic rate */
-  while ((inb(0x64) & 2) == 2); /* wait */
+  while (((inb(0x64) & 2) == 2) && --timeout)
+       usleep(1000); /* wait */
+
   usleep(10000);
   outb(0x60, value);
 
