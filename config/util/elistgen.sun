@@ -14,6 +14,8 @@ XCOMM    The output file, "mapfile.scope" may then be passed to the Solaris
 XCOMM    linker to reconstruct the shared library, libfoo.so.
 XCOMM
 XCOMM ########################################################################
+XCOMM
+XCOMM $XFree86$
 
 XCOMM Utility programs
 FILTER=CXXFILT			# C++ symbol demangler
