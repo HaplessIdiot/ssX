@@ -70,6 +70,9 @@ struct xf86stat {
 /* sysv IPC */
 typedef int xf86key_t;
 
+/* setjmp/longjmp */
+typedef int xf86jmp_buf[20];
+
 /* for setvbuf */
 #define XF86_IONBF    1
 #define XF86_IOFBF    2
@@ -437,6 +440,8 @@ typedef int xf86key_t;
 #define shmat(a,b,c)		xf86shmat(a,b,c)
 #define shmdt(a)		xf86shmdt(a)
 #define shmctl(a,b,c)		xf86shmctl(a,b,c)
+#define setjmp(a)               xf86setjmp(a)
+#define longjmp(a,b)            xf86longjmp(a,b) 
 
 #undef S_ISUID
 #define S_ISUID XF86_S_ISUID
@@ -492,6 +497,8 @@ typedef int xf86key_t;
 #define uid_t                   xf86uid_t
 #undef gid_t
 #define gid_t                   xf86gid_t
+#undef jmp_buf
+#define jmp_buf                 xf86jmp_buf
 
 /*
  * There should be no need to #undef any of these.  If they are already

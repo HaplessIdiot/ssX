@@ -568,7 +568,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
     mask1 >>= 1;
   }
   /* I/O maps can be no larger than 8 bits */
-  if (PCI_MAP_IS_IO(addr1) && bits > 8)
+  if ((index < 6) && PCI_MAP_IS_IO(addr1) && bits > 8)
     bits = 8;
   /* ROM maps can be no larger than 24 bits */
   if (index == 6 && bits > 24)
@@ -1009,10 +1009,10 @@ ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)
 
 pointer
-xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
+xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, ADDRESS Base,
 		unsigned long Size)
 {
-	unsigned long hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM,Base);
+	ADDRESS hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM,Base);
 	pointer base;
 	CARD32 save = 0;
 

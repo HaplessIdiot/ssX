@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.13 1998/08/19 07:49:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.15 2000/08/08 08:58:06 eich Exp $ */
 
 
 
@@ -20,8 +20,6 @@ TsengHWCursorInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
-    int iobase = VGAHW_GET_IOBASE();
-    unsigned char tmp;
 
     PDEBUG("	TsengHWCursorInit\n");
 
@@ -52,44 +50,6 @@ TsengHWCursorInit(ScreenPtr pScreen)
 #else
 	ErrorF("banked HW cursor not implemented yet!\n");
 #endif
-    }
-    /*
-     * Program the cursor image address in video memory. This never changes
-     * once the server has started, so we can set it here, once. The adress
-     * is given in doublewords.
-     */
-    if (Is_ET6K) {
-	/* bits 19:16 */
-	outb(iobase + 0x04, 0x0E);
-	tmp = inb(iobase + 0x05) & 0xF0;
-	outb(iobase + 0x05, tmp | (((pTseng->HWCursorBufferOffset / 4) >> 16) & 0x0F));
-	/* bits 15:8 */
-	outb(iobase + 0x04, 0x0F);
-	outb(iobase + 0x05, ((pTseng->HWCursorBufferOffset / 4) >> 8) & 0xFF);
-	/* on the ET6000, bits (7:0) are always 0 */
-    } else {
-	/* bits 19:16 */
-	outb(0x217A, 0xEA);
-	tmp = inb(0x217B) & 0xF0;
-	outb(0x217B, tmp | (((pTseng->HWCursorBufferOffset / 4) >> 16) & 0x0F));
-	/* bits 15:8 */
-	outb(0x217A, 0xE9);
-	outb(0x217B, ((pTseng->HWCursorBufferOffset / 4) >> 8) & 0xFF);
-	/* bits 7:0 */
-	outb(0x217A, 0xE8);
-	outb(0x217B, (pTseng->HWCursorBufferOffset / 4) & 0xFF);
-
-	/* this needs to be set for the sprite */
-	outb(0x217A, 0xEB);
-	outb(0x217B, 2);
-	outb(0x217A, 0xEC);
-	tmp = inb(0x217B);
-	outb(0x217B, tmp & 0xFE);
-	outb(0x217A, 0xEF);
-	tmp = inb(0x217B);
-	outb(0x217B, (tmp & 0xF8) | 0x02);
-	outb(0x217A, 0xEE);
-	outb(0x217B, 1);
     }
 
     /* set up the XAA HW cursor structure */
@@ -250,6 +210,8 @@ TsengLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
 
+    int iobase = VGAHW_GET_IOBASE();
+    unsigned char tmp;
 #ifdef DEBUG_HWC
     int i;
     int d;
@@ -261,6 +223,49 @@ TsengLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
 	    ErrorF("\n");
     }
 #endif
+    /*
+     * Program the cursor image address in video memory. 
+     * We need to set it here or we might loose it on mode/vt switches.
+     */
+
+    if (Is_ET6K) {
+	/* bits 19:16 */
+	outb(iobase + 0x04, 0x0E);
+	tmp = inb(iobase + 0x05) & 0xF0;
+	outb(iobase + 0x05, tmp | (((pTseng->HWCursorBufferOffset / 4) >> 16) & 0x0F));
+	/* bits 15:8 */
+	outb(iobase + 0x04, 0x0F);
+	outb(iobase + 0x05, ((pTseng->HWCursorBufferOffset / 4) >> 8) & 0xFF);
+	/* on the ET6000, bits (7:0) are always 0 */
+    } else {
+	/* bits 19:16 */
+	outb(0x217A, 0xEA);
+	tmp = inb(0x217B) & 0xF0;
+	outb(0x217B, tmp | (((pTseng->HWCursorBufferOffset / 4) >> 16) & 0x0F));
+	/* bits 15:8 */
+	outb(0x217A, 0xE9);
+	outb(0x217B, ((pTseng->HWCursorBufferOffset / 4) >> 8) & 0xFF);
+	/* bits 7:0 */
+	outb(0x217A, 0xE8);
+	outb(0x217B, (pTseng->HWCursorBufferOffset / 4) & 0xFF);
+
+	/* this needs to be set for the sprite */
+	outb(0x217A, 0xEB);
+	outb(0x217B, 2);
+	outb(0x217A, 0xEC);
+	tmp = inb(0x217B);
+	outb(0x217B, tmp & 0xFE);
+	outb(0x217A, 0xEF);
+	tmp = inb(0x217B);
+	outb(0x217B, (tmp & 0xF8) | 0x02);
+	outb(0x217A, 0xEE);
+	outb(0x217B, 1);
+    }
     /* this assumes the apertures have been set up correctly for banked mode */
     memcpy(pTseng->HWCursorBuffer, bits, 1024);
 }
+
+
+
+
+

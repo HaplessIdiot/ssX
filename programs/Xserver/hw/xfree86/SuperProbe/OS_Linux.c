@@ -201,7 +201,11 @@ Byte *MapMem(address, size)
 	}
 #endif
 	
-	if ((fd = open("/dev/mem", O_RDWR)) < 0)
+#if defined(__ia64__)
+	if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) 
+#else
+	    if ((fd = open("/dev/mem", O_RDWR)) < 0) 
+#endif
 	{
 		fprintf(stderr, "%s: Failed to open /dev/mem\n", MyName);
 		return((Byte *)0);

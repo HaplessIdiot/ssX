@@ -123,14 +123,15 @@ TridentFindClock(ScrnInfoPtr pScrn, int clock)
     pTrident->currentClock = clock;
 
     if (pTrident->IsCyber) {
-#ifdef READOUT
         Bool LCDActive;
+#ifdef READOUT
         Bool ShadowModeActive;
 	Bool HStretch;
 	Bool VStretch;
-	
+#endif
 	OUTB(0x3CE, FPConfig);
 	LCDActive = (INB(0x3CF) & 0x10);
+#ifdef READOUT
 	OUTB(0x3CE,HorStretch);
 	HStretch = (INB(0x3CF) & 0x01);
 	OUTB(0x3CE,VertStretch);
@@ -154,7 +155,7 @@ TridentFindClock(ScrnInfoPtr pScrn, int clock)
 	} else
 #endif
 	{
-	    if (pTrident->lcdMode != 0xff)
+	    if (pTrident->lcdMode != 0xff && LCDActive)
 	        pTrident->currentClock =  clock = LCD[pTrident->lcdMode].clock;
 	}
 	

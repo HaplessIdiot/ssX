@@ -43,6 +43,21 @@ typedef struct {
     CARD8       control;
 } pciBridgeSave, *pciBridgeSavePtr;
 
+typedef struct pciBusRec {
+    int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
+    int primary, secondary, subordinate;
+    int subclass;          /* bridge type */
+    int interface;
+    resPtr preferred_io;   /* I/O range */
+    resPtr preferred_mem;  /* non-prefetchable memory range */
+    resPtr preferred_pmem; /* prefetchable memory range */
+    resPtr io;		   /* for subtractive PCI-PCI bridges */
+    resPtr mem;		
+    resPtr pmem;	
+    int brcontrol;	   /* bridge_control byte */
+    struct pciBusRec *next;
+} PciBusRec, *PciBusPtr;
+
 void xf86PciProbe(void);
 PciBusPtr xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo);
 void ValidatePci(void);

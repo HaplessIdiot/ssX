@@ -2,7 +2,7 @@ XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
 XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.15 1999/08/21 13:48:01 dawes Exp $
 #include <Server.tmpl>
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 #define IHaveSubdirs
 #define NoLibSubdirs
 SUBDIRS = module
@@ -66,7 +66,7 @@ SpecialCLibObjectRule(fileio,$(ICONFIGFILES),$(GZIP_DEFS))
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif

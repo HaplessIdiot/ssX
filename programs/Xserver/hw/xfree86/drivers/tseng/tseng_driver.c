@@ -1220,6 +1220,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 		"Hardware Cursor not supported on this chipset\n");
 	pTseng->HWCursor = FALSE;
     }
+
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 	pTseng->HWCursor ? "HW" : "SW");
 

@@ -1102,8 +1102,9 @@ renditionCloseScreen(int scrnIndex, ScreenPtr pScreen)
         prenditionPriv->CloseScreen = NULL;
         Closed = (*pScreen->CloseScreen)(scrnIndex, pScreen);
     }
-
-    renditionLeaveGraphics(pScreenInfo);
+    
+    if (pScrn->vtSema)
+	renditionLeaveGraphics(pScreenInfo);
     pScreenInfo->vtSema = FALSE;
 
 #ifdef DEBUG

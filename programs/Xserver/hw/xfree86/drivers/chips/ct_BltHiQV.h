@@ -68,13 +68,14 @@
  * the BRxx registers.
  */
 #define ctBLTWAIT \
-                    {int timeout; \
+                     {int timeout; \
                      timeout = 0; \
 		     for (;;) { \
-                         if (!((cPtr->readXR(cPtr, 0x20)) & 0x1)) break; \
+                         if (!(cPtr->readXR(cPtr,0x20) & 0x1)) break; \
                          timeout++; \
                          if (timeout == 100000) { \
 			    unsigned char tmp; \
+                            ErrorF("timeout\n"); \
 			    tmp = cPtr->readXR(cPtr, 0x20); \
 			    cPtr->writeXR(cPtr, 0x20, ((tmp & 0xFD) | 0x2)); \
 			    cPtr->writeXR(cPtr, 0x20, (tmp & 0xFD)); \

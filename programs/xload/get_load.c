@@ -41,6 +41,7 @@ from the X Consortium.
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
+#include <X11/Xlocale.h>
 #include <stdio.h>
 
 #if !defined(DGUX)
@@ -417,7 +418,12 @@ void GetLoadPoint( w, closure, call_data )
 {
       static int fd = -1;
       int n;
-      char buf[10];
+      char buf[10] = {0, };
+#ifndef X_LOCALE
+      char *dp;
+      static char ldp = 0;
+#endif
+
 
       if (fd < 0)
       {
@@ -428,13 +434,25 @@ void GetLoadPoint( w, closure, call_data )
                       *(double *)call_data = 0.0;
                       return;
               }
+#ifndef X_LOCALE
+	      ldp = *localeconv()->decimal_point;
+#endif
       }
       else
               lseek(fd, 0, 0);
 
-      if ((n = read(fd, buf, sizeof(buf)-1)) > 0 &&
-          sscanf(buf, "%lf", (double *)call_data) == 1)
-                      return;
+      if ((n = read(fd, buf, sizeof(buf)-1)) > 0) {
+#ifndef X_LOCALE
+	  if (ldp != '.')
+	      while ((dp = memchr(buf,'.',sizeof(buf)-1)) != NULL) {
+		  *(char *)dp = ldp;
+	      }
+	  
+#endif
+	  if (sscanf(buf, "%lf", (double *)call_data) == 1)
+	      return;
+      }
+      
 
       *(double *)call_data = 0.0;     /* temporary hiccup */
 

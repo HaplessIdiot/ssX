@@ -734,11 +734,11 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
     
     for (pbp=xf86PciBus; pbp; pbp = pbp->next) {
 	if (pbp->primary == busIndex) {
-	    tmp = xf86DupResList(pbp->io);
+	    tmp = xf86DupResList(pbp->preferred_io);
 	    bridgeRes = xf86JoinResLists(tmp,bridgeRes);
-	    tmp = xf86DupResList(pbp->mem);
+	    tmp = xf86DupResList(pbp->preferred_mem);
 	    bridgeRes = xf86JoinResLists(tmp,bridgeRes);
-	    tmp = xf86DupResList(pbp->pmem);
+	    tmp = xf86DupResList(pbp->preferred_pmem);
 	    bridgeRes = xf86JoinResLists(tmp,bridgeRes);
 	}
     }
@@ -1043,28 +1043,42 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 #if 0 /*EE*/
 		     || (res_n == 0xff)/* bios should also be prefetchable */
 #endif
-		     ) 
-		    && pbp->pmem) {
-		    w = xf86FindIntersectOfLists(pbp->pmem,ResRange);
-		    if (pbp->mem) {
-			w_2nd = xf86FindIntersectOfLists(pbp->mem,ResRange);
-		    }
-		} else if (pbp->mem) {
-		    w = xf86FindIntersectOfLists(pbp->mem,ResRange);
-		} 
-	    } else if (pbp->io) {
+		     )) {
+		    if (pbp->preferred_pmem)
+			w = xf86FindIntersectOfLists(pbp->preferred_pmem,
+						     ResRange);
+		    else if (pbp->pmem)
+			w = xf86FindIntersectOfLists(pbp->pmem,ResRange);
+		    
+		    if (pbp->preferred_mem) 
+			w_2nd = xf86FindIntersectOfLists(pbp->preferred_mem,
+							 ResRange);
+		    else if (pbp->mem) 
+			w_2nd = xf86FindIntersectOfLists(pbp->mem,
+							 ResRange);
+		} else {
+		    if (pbp->preferred_mem)
+			w = xf86FindIntersectOfLists(pbp->preferred_mem,
+						     ResRange);
+		    else if (pbp->mem)
+			w = xf86FindIntersectOfLists(pbp->mem,ResRange);
+		}
+	    } else {
+		if (pbp->preferred_io) 
+		    w = xf86FindIntersectOfLists(pbp->preferred_io,ResRange);
+		if (pbp->io) 
 		    w = xf86FindIntersectOfLists(pbp->io,ResRange);
 	    }
 	    
 	    while (pbp1) {
 		if (pbp1->primary == pvp->bus) {
 		    if (type & ResMem) {
-			tmp = xf86DupResList(pbp1->pmem);
+			tmp = xf86DupResList(pbp1->preferred_pmem);
 			avoid = xf86JoinResLists(avoid,tmp);
-			tmp = xf86DupResList(pbp1->mem);
+			tmp = xf86DupResList(pbp1->preferred_mem);
 			avoid = xf86JoinResLists(avoid,tmp);
 		    } else {
-			tmp = xf86DupResList(pbp1->io);
+			tmp = xf86DupResList(pbp1->preferred_io);
 			avoid = xf86JoinResLists(avoid,tmp);
 		    }
 		}	
@@ -1224,10 +1238,10 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     while (alignment >> (*p_size))
 	(*p_size)++;
     (*p_base) = H2B(tag,range.rBegin,type);
-    
+#ifdef DEBUG
     ErrorF("New PCI res %i base: 0x%lx, size: 0x%lx, type %s\n",
 	   res_n,(*p_base),(1 << (*p_size)),type | ResMem ? "Mem" : "Io");
-
+#endif
     if (res_n != 0xff) {
 	pciWriteLong(tag,PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
 		     (CARD32)(*p_base) | (CARD32)(p_type));
@@ -1339,9 +1353,15 @@ getValidBIOSBase(PCITAG tag, int num)
     pbp = pbp1 = xf86PciBus;
     while (pbp) {
 	if (pbp->secondary == pvp->bus) {
-	    tmp = xf86DupResList(pbp->pmem);
+	    if (pbp->preferred_pmem)
+	        tmp = xf86DupResList(pbp->preferred_pmem);
+	    else
+	        tmp = xf86DupResList(pbp->pmem);
 	    m = xf86JoinResLists(m,tmp);
-	    tmp = xf86DupResList(pbp->mem);
+	    if (pbp->preferred_mem)
+	        tmp = xf86DupResList(pbp->preferred_mem);
+	    else
+	        tmp = xf86DupResList(pbp->mem);
 	    m = xf86JoinResLists(m,tmp);
 	    tmp = m;
 	    while (tmp) {
@@ -1351,7 +1371,11 @@ getValidBIOSBase(PCITAG tag, int num)
 	}
 	while (pbp1) {
 	    if (pbp1->primary == pvp->bus) {
+		tmp = xf86DupResList(pbp1->preferred_pmem);
+		avoid = xf86JoinResLists(avoid,tmp);
 		tmp = xf86DupResList(pbp1->pmem);
+		avoid = xf86JoinResLists(avoid,tmp);
+		tmp = xf86DupResList(pbp1->preferred_mem);
 		avoid = xf86JoinResLists(avoid,tmp);
 		tmp = xf86DupResList(pbp1->mem);
 		avoid = xf86JoinResLists(avoid,tmp);
@@ -1429,6 +1453,29 @@ xf86PciProbe(void)
 
 static void alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary);
 
+static void
+printBridgeInfo(PciBusPtr PciBus) 
+{
+  xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "
+	      "(%d,%d,%d), BCTRL: 0x%02x (VGA_EN is %s)\n",
+	      PciBus->secondary,PciBus->brbus, PciBus->brdev,
+	      PciBus->brfunc, PciBus->primary,
+	      PciBus->secondary, PciBus->subordinate,
+	      PciBus->brcontrol,
+	      (PciBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN)
+	      ? "set" : "cleared");
+  xf86MsgVerb(X_INFO, 3, "Bus %d I/O range:\n",
+	      PciBus->secondary);
+  xf86PrintResList(3, PciBus->preferred_io);
+  xf86MsgVerb(X_INFO, 3,
+	      "Bus %d non-prefetchable memory range:\n",
+	      PciBus->secondary);
+  xf86PrintResList(3, PciBus->preferred_mem);
+  xf86MsgVerb(X_INFO, 3, "Bus %d prefetchable memory range:"
+	      "\n",PciBus->secondary);
+  xf86PrintResList(3, PciBus->preferred_pmem);
+}
+
 PciBusPtr
 xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 {
@@ -1470,6 +1517,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->brdev = pcrp->devnum;
 		PciBus->brfunc = pcrp->funcnum;
 		PciBus->subclass = sub_class;
+		PciBus->interface = pcrp->pci_prog_if;
 		PciBus->brcontrol = pcrp->pci_bridge_control;
 		if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
 		    base = (pcrp->pci_upper_io_base << 16) |
@@ -1485,15 +1533,16 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			    PCI_I_RANGE(range, pcrp->tag,
 				base, base + (CARD8)(-1),
 				ResIo | ResBlock | ResExclusive);
-			    PciBus->io = xf86AddResToList(PciBus->io,
-				&range, -1);
+			    PciBus->preferred_io = xf86AddResToList(
+				PciBus->preferred_io,&range, -1);
 			    base += 0x0400;
 			}
 		    }
 		    if (base <= limit) {
 			PCI_I_RANGE(range, pcrp->tag, base, limit,
 			    ResIo | ResBlock | ResExclusive);
-			PciBus->io = xf86AddResToList(PciBus->io, &range, -1);
+			PciBus->preferred_io = xf86AddResToList(
+			    PciBus->preferred_io, &range, -1);
 		    }
 		}
 		if  (pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
@@ -1503,7 +1552,8 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			PCI_M_RANGE(range, pcrp->tag,
 				    base << 16, (limit << 16) | 0x0fffff,
 				    ResMem | ResBlock | ResExclusive);
-			PciBus->mem = xf86AddResToList(NULL, &range, -1);
+			PciBus->preferred_mem 
+			    = xf86AddResToList(NULL, &range, -1);
 		    }
                     base = pcrp->pci_prefetch_mem_base & 0xfff0u;
                     limit = pcrp->pci_prefetch_mem_limit & 0xfff0u;
@@ -1515,7 +1565,8 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 			PCI_M_RANGE(range, pcrp->tag,
 				    base << 16, (limit << 16) | 0xfffff,
 				    ResMem | ResBlock | ResExclusive);
-			PciBus->pmem = xf86AddResToList(NULL, &range, -1);
+			PciBus->preferred_pmem 
+			    = xf86AddResToList(NULL, &range, -1);
 		    }
 		}
 		break;
@@ -1528,6 +1579,8 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->brdev = pcrp->devnum;
 		PciBus->brfunc = pcrp->funcnum;
 		PciBus->subclass = sub_class;
+		xf86MsgVerb(X_INFO,3,"PCI-to-ISA bridge:\n");
+		printBridgeInfo(PciBus);
 		break;
 	    case PCI_SUBCLASS_BRIDGE_HOST:
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
@@ -1535,12 +1588,14 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->primary = -1;
 		PciBus->secondary = -1; /* to be set below */
 		PciBus->subclass = sub_class;
-		PciBus->io = xf86ExtractTypeFromList(
+		PciBus->preferred_io = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResIo);
-		PciBus->mem = xf86ExtractTypeFromList(
+		PciBus->preferred_mem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
-		PciBus->pmem = xf86ExtractTypeFromList(
+		PciBus->preferred_pmem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
+		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
+		printBridgeInfo(PciBus);
 		break;
 	    default:
 		break;
@@ -1570,12 +1625,14 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->primary = -1;
 		PciBus->secondary = i;
 		PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
-		PciBus->io = xf86ExtractTypeFromList(
+		PciBus->preferred_io = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResIo);
-		PciBus->mem = xf86ExtractTypeFromList(
+		PciBus->preferred_mem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
-		PciBus->pmem = xf86ExtractTypeFromList(
+		PciBus->preferred_pmem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
+		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
+		printBridgeInfo(PciBus);
 	    }
 	}
     }
@@ -1583,6 +1640,25 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
     for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next) {
 	if (PciBus->subclass == PCI_SUBCLASS_BRIDGE_HOST) {
 	    alignBridgeRanges(PciBusBase, PciBus);
+	}
+    }
+    for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next) {
+	if (PciBus->subclass == PCI_SUBCLASS_BRIDGE_PCI &&
+	    PciBus->interface == PCI_IF_BRIDGE_PCI_SUBTRACTIVE) {
+	    PciBusPtr PciBus1;
+	    for (PciBus1 = PciBusBase; PciBus1; PciBus1 = PciBus->next) {
+		if (PciBus1->secondary == PciBus->primary) {
+		    PciBus->io = PciBus1->io ? PciBus1->io
+			: PciBus1->preferred_io;
+		    PciBus->mem = PciBus1->mem ? PciBus1->mem
+			: PciBus1->preferred_mem;
+		    PciBus->pmem = PciBus1->pmem ? PciBus1->pmem
+			: PciBus1->preferred_pmem;
+		    xf86MsgVerb(X_INFO,3,"Subtractive PCI-to-PCI bridge:\n");
+		    printBridgeInfo(PciBus);
+		    break;
+		}
+	    }
 	}
     }
     
@@ -1599,33 +1675,20 @@ alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary)
 	if ((PciBus->primary == primary->secondary)
 	    && (PciBus->subclass == PCI_SUBCLASS_BRIDGE_PCI)) {
 	    resPtr tmp;
-	    tmp = xf86FindIntersectOfLists(primary->io,PciBus->io);
-		    xf86FreeResList(PciBus->io);
-		    PciBus->io = tmp;
-		    tmp = xf86FindIntersectOfLists(primary->pmem,PciBus->pmem);
-		    xf86FreeResList(PciBus->pmem);
-		    PciBus->pmem = tmp;
-		    tmp = xf86FindIntersectOfLists(primary->mem,PciBus->mem);
-		    xf86FreeResList(PciBus->mem);
-		    PciBus->mem = tmp;
-		    xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "
-				"(%d,%d,%d), BCTRL: 0x%02x (VGA_EN is %s)\n",
-				PciBus->secondary,PciBus->brbus, PciBus->brdev,
-				PciBus->brfunc, PciBus->primary,
-				PciBus->secondary, PciBus->subordinate,
-				PciBus->brcontrol,
-				(PciBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN)
-				? "set" : "cleared");
-		    xf86MsgVerb(X_INFO, 3, "Bus %d I/O range:\n",
-				PciBus->secondary);
-		    xf86PrintResList(3, PciBus->io);
-		    xf86MsgVerb(X_INFO, 3,
-				"Bus %d non-prefetchable memory range:\n",
-				PciBus->secondary);
-		    xf86PrintResList(3, PciBus->mem);
-		    xf86MsgVerb(X_INFO, 3, "Bus %d prefetchable memory range:"
-				"\n",PciBus->secondary);
-		    xf86PrintResList(3, PciBus->pmem);
+	    tmp = xf86FindIntersectOfLists(primary->preferred_io,
+					   PciBus->preferred_io);
+		    xf86FreeResList(PciBus->preferred_io);
+		    PciBus->preferred_io = tmp;
+		    tmp = xf86FindIntersectOfLists(primary->preferred_pmem,
+						   PciBus->preferred_pmem);
+		    xf86FreeResList(PciBus->preferred_pmem);
+		    PciBus->preferred_pmem = tmp;
+		    tmp = xf86FindIntersectOfLists(primary->preferred_mem,
+						   PciBus->preferred_mem);
+		    xf86FreeResList(PciBus->preferred_mem);
+		    PciBus->preferred_mem = tmp;
+		    xf86MsgVerb(X_INFO,3,"PCI-to-PCI bridge:\n");
+		    printBridgeInfo(PciBus);
 		    alignBridgeRanges(PciBusBase, PciBus);
 	}
     }
@@ -1761,25 +1824,37 @@ ValidatePci(void)
 	pbp = pbp1 = xf86PciBus;
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
-		if (pbp->pmem) {
+		if (pbp->preferred_pmem) {
 		    /* keep prefetchable separate */
-		    res_mp = xf86FindIntersectOfLists(pbp->pmem,ResRange);
+		    res_mp = xf86FindIntersectOfLists(pbp->preferred_pmem,
+						      ResRange);
+		}
+		if (pbp->pmem) {
+		    res_mp = xf86FindIntersectOfLists(pbp->pmem, ResRange);
+		}
+		if (pbp->preferred_mem) {
+		    res_m_io = xf86FindIntersectOfLists(pbp->preferred_mem,
+							ResRange);
 		}
 		if (pbp->mem) {
-		    res_m_io = xf86FindIntersectOfLists(pbp->mem,ResRange);
+		    res_m_io = xf86FindIntersectOfLists(pbp->mem, ResRange);
+		}
+		if (pbp->preferred_io) {
+		    res_m_io = xf86JoinResLists(res_m_io,
+			xf86FindIntersectOfLists(pbp->preferred_io,ResRange));
 		}
 		if (pbp->io) {
 		    res_m_io = xf86JoinResLists(res_m_io,
-			xf86FindIntersectOfLists(pbp->io,ResRange));
+			xf86FindIntersectOfLists(pbp->preferred_io,ResRange));
 		}
 	    }
 	    while (pbp1) {
 		if (pbp1->primary == pvp->bus) {
-		    tmp = xf86DupResList(pbp1->pmem);
+		    tmp = xf86DupResList(pbp1->preferred_pmem);
 		    avoid = xf86JoinResLists(avoid,tmp);
-		    tmp = xf86DupResList(pbp1->mem);
+		    tmp = xf86DupResList(pbp1->preferred_mem);
 		    avoid = xf86JoinResLists(avoid,tmp);
-		    tmp = xf86DupResList(pbp1->io);
+		    tmp = xf86DupResList(pbp1->preferred_io);
 		    avoid = xf86JoinResLists(avoid,tmp);
 		}
 		pbp1 = pbp1->next;
@@ -1849,16 +1924,16 @@ ValidatePci(void)
 			"****INVALID MEM ALLOCATION**** b: 0x%lx e: 0x%lx "
 			"correcting\a\n", range.rBegin,range.rEnd);
 		if (ChkConflict(&range,own,SETUP)) {
-		    ErrorF("own\n");
-		    xf86PrintResList(0,own);
+		    xf86MsgVerb(X_INFO,3,"own\n");
+		    xf86PrintResList(3,own);
 		}
 		if (ChkConflict(&range,avoid,SETUP)) {
-		    ErrorF("avoid\n");
-		    xf86PrintResList(0,avoid);
+		    xf86MsgVerb(X_INFO,3,"avoid\n");
+		    xf86PrintResList(3,avoid);
 		}
 		if (ChkConflict(&range,NonSys,SETUP)) {
-		    ErrorF("NonSys\n");
-		    xf86PrintResList(0,NonSys);
+		    xf86MsgVerb(X_INFO,3,"NonSys\n");
+		    xf86PrintResList(3,NonSys);
 		}
 
 #ifdef DEBUG
@@ -2751,5 +2826,4 @@ pciConvertRange2Host(int entityIndex, resRange *pRange)
 	break;
     }
 }
-
 

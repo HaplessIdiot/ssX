@@ -95,7 +95,7 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
 		 $(FREETYPEDONES) $(XTTDONES) \
 		 $(BUILTINDONES) util/DONE
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
       BASEDIRS = fontfile fc util fontcache
    BASELIBOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
 		 util/$(STATIC_OBJSDIR)?*.o fontcache/$(STATIC_OBJSDIR)?*.o 
@@ -138,7 +138,7 @@ ProfiledDepLibraryTarget(Xfont,$(SUBDIRS) $(DONES),$(PROFILE_OBJS))
 InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif /* ProfileLibFont */
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 NormalDepLibraryTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASELIBOBJS))
 NormalDepRelocatableTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASEOBJS))
 #endif

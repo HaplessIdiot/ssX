@@ -161,6 +161,7 @@ typedef struct dirent DIRENTRY;
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
+#include <setjmp.h>
 
 #if 0
 #define SETBUF_RETURNS_INT
@@ -1883,3 +1884,16 @@ xf86shmdt(char *addr)
     return -1;
 }
 #endif /* HAVE_SYSV_IPC */
+
+int
+xf86setjmp(xf86jmp_buf xf86env)
+{
+    return setjmp(xf86env);
+}
+
+void
+xf86longjmp(xf86jmp_buf xf86env, int val)
+{
+    longjmp(xf86env,val);
+}
+

@@ -104,10 +104,10 @@ xf86PciBusAccWindowsFromOS(void)
 	RANGE(range,0xF9000000,0xffffffff,ResExcMemBlock);
 	ret = xf86AddResToList(ret, &range, -1);
     } else {
-	RANGE(range,0,0xffffffff,ResExcMemBlock);
+      /* Some drivers choke if a PCI base address is set to 0 */
+	RANGE(range,1,0xffffffff,ResExcMemBlock);
 	ret = xf86AddResToList(ret, &range, -1);
     }
-
     RANGE(range,0,0xffffffff,ResExcIoBlock);
     ret = xf86AddResToList(ret, &range, -1);
     return ret;

@@ -500,9 +500,14 @@ DeleteLine(TScreen *screen, int n)
 void
 InsertChar (TScreen *screen, int n)
 {
+	register int width;
+
 	if(screen->cursor_state)
 		HideCursor();
 	screen->do_wrap = 0;
+	if (n > (width = screen->max_col + 1 - screen->cur_col))
+	    n = width;
+
 	if(screen->cur_row - screen->topline <= screen->max_row) {
 	    if(!AddToRefresh(screen)) {
 		int col = screen->max_col + 1 - n;

@@ -1908,12 +1908,15 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
 #endif
 
-   if(pScrn->vtSema == TRUE) I810UnbindGARTMemory(pScrn);
-   I810Restore(pScrn);
-   vgaHWLock(hwp);
+   if(pScrn->vtSema == TRUE) {
+       I810UnbindGARTMemory(pScrn);
+       I810Restore(pScrn);
+       vgaHWLock(hwp);
+   }
+   
    I810UnmapMem(pScrn);
    vgaHWUnmapMem(pScrn);
-  
+   
    if (pI810->ScanlineColorExpandBuffers) {
       xfree(pI810->ScanlineColorExpandBuffers);
       pI810->ScanlineColorExpandBuffers = 0;

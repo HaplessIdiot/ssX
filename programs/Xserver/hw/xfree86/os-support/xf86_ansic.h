@@ -297,6 +297,8 @@ extern int xf86shmget(xf86key_t key, int size, int xf86shmflg);
 extern char * xf86shmat(int id, char *addr, int xf86shmflg);
 extern int xf86shmdt(char *addr);
 extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
+extern int xf86setjmp(xf86jmp_buf env);
+extern void xf86longjmp(xf86jmp_buf env, int val);
 
 #else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>

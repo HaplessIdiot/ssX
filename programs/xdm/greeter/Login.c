@@ -1120,7 +1120,14 @@ static void Initialize (
             &(w->login.logoHeight),
             &(w->login.logoBorderWidth),
             &myPixmapDepth);
+    } else {
+	w->login.logoX = 0;
+	w->login.logoY = 0;
+	w->login.logoWidth = 0;
+	w->login.logoHeight = 0;
+	w->login.logoBorderWidth = 0;
     }
+
 
 SkipXpmLoad:
 #endif /* XPM */

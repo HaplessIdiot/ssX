@@ -580,19 +580,100 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.59 2000/08/09 23:40:08 dawes Exp $
 # undef linux
 # define LinuxArchitecture
 # ifdef i386
-#  define i386Architecture
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
 #  undef i386
 XCOMM Keep cpp from replacing path elements containing i486/i586/i686
-#  undef i486
-#  undef i586
-#  undef i686
-# endif /* i386 */
+#  ifdef i486
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#   undef i486
+#  endif
+#  ifdef i586
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#   undef i586
+#  endif
+#  ifdef i686
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#   undef i686
+#  endif
+#  ifdef k6
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#   undef k6
+#  endif
+# endif /* k6 */
 # ifdef __i386__
 #  ifndef i386Architecture
 #   define i386Architecture
 #  endif
 #  undef __i386__
 # endif /* __i386__ */
+# ifdef __i486__
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i486__
+# endif /* __i486__ */
+# ifdef __i586__
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i586__
+# endif /* __i586__ */
+# ifdef __i686__
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i686__
+# endif /* __i686__ */
+# ifdef __k6__
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __k6__
+# endif /* __k6__ */
+# ifdef __i386
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i386
+# endif /* __i386 */
+# ifdef __i486
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i486
+# endif /* __i486 */
+# ifdef __i586
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i586
+# endif /* __i586 */
+# ifdef __i686
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i686
+# endif /* __i686 */
+# ifdef __k6
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __k6
+# endif /* __k6 */
+# ifdef __s390__
+#   define s390Architecture
+#  undef __s390__
+# endif /* s390 */
 # ifdef __alpha
 #  define AlphaArchitecture
 #  undef __alpha
@@ -648,7 +729,7 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  undef mips
 #  undef __mips__
 # endif
-/* for compatibility with 3.3.x */
+XCOMM  for compatibility with 3.3.x 
 # ifdef PpcArchitecture
 #  define PowerPCArchitecture
 # endif

@@ -16,6 +16,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # define XFree86Devel		YES
 #endif
 
+#ifndef BuildDebug
+# define BuildDebug 		YES
+#endif
+
 /*
  * settings for the config file parser
  */
@@ -449,6 +453,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # endif
 #endif
 
+#if BuildDebug
+# define DebugDefines -DBUILDDEBUG
+#else
+# define DebugDefines /**/
+#endif
 
 /*
  * Fbdev module defines.  They are set to indicate the fb types supported
@@ -974,6 +983,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				VidModeExtensionDefines \
 				ServerSnprintfDefines \
 				SmartScheduleDefines \
+				DebugDefines \
 				-DX_BYTE_ORDER=ByteOrder
 #endif
 

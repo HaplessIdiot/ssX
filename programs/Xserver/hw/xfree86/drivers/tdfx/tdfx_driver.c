@@ -1943,10 +1943,13 @@ TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen)
   TDFXShutdownPrivate(pScreen);
 #endif
 
-  TDFXRestore(pScrn);
-  vgaHWLock(hwp);
-  TDFXUnmapMem(pScrn);
-  vgaHWUnmapMem(pScrn);
+  if (pScrn->vtSema) {
+      TDFXRestore(pScrn);
+      vgaHWLock(hwp);
+      TDFXUnmapMem(pScrn);
+      vgaHWUnmapMem(pScrn);
+  }
+  
   if (pTDFX->AccelInfoRec) XAADestroyInfoRec(pTDFX->AccelInfoRec);
   pTDFX->AccelInfoRec=0;
   if (pTDFX->DGAModes) xfree(pTDFX->DGAModes);

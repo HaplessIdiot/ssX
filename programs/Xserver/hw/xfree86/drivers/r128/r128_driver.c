@@ -292,8 +292,6 @@ static const char *fbdevHWSymbols[] = {
     NULL
 };
 
-#if 0
-				/* Not used until DDC is supported. */
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
@@ -301,6 +299,7 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+#if 0
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
@@ -1169,33 +1168,19 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 {
-				/* FIXME: DDC support goes here. */
-#if 0
-				/* Using the GPIO_MONID register for DDC2
-                                   does not appear to work as expected.
-                                   Hence, the implementation of DDC is
-                                   deferred. */
     R128InfoPtr   info = R128PTR(pScrn);
-    Bool          ret  = TRUE;
-
+    vbeInfoPtr pVbe;
+  
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
-    if (!xf86LoadSubModule(pScrn, "i2c")) return FALSE;
-    xf86LoaderReqSymLists(i2cSymbols, NULL);
-
-    R128MapMMIO(pScrn);
-    if (!R128I2CInit(pScrn)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
-	ret = FALSE;
-    } else {
-	xf86SetDDCProperties(pScrn,xf86PrintEDID(
-	    xf86DoEDID_DDC2(pScrn->scrnIndex, info->i2c)));
-    }
-    R128UnmapMMIO(pScrn);
-    return ret;
-#else
-    return TRUE;
-#endif
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+ 	pVbe = VBEInit(NULL,info->pEnt->index);
+ 	if (!pVbe) return NULL;
+  	
+ 	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+  	return TRUE;
+    } else
+ 	return FALSE;
 }
 
 /* This is called by R128PreInit to initialize gamma correction. */

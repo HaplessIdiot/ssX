@@ -100,7 +100,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "neo_macros.h"
 
 /* These need to be checked */
-#if 0
 #ifdef XFreeXDGA 
 #include "X.h"
 #include "Xproto.h"
@@ -108,7 +107,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 #endif
 
 /* Mandatory functions */
@@ -141,6 +139,7 @@ static void     neoCalcVCLK(ScrnInfoPtr pScrn, long freq);
 static void     neo_ddc1(int scrnIndex);
 static void     NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 				int PowerManagementMode, int flags);
+static int      neoFindMode(int xres, int yres, int depth);
 
 #define VERSION 4000
 #define NEO_NAME "NEOMAGIC"
@@ -155,6 +154,39 @@ static void     NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn,
  * choice made in the first PreInit.
  */
 static int pix24bpp = 0;
+
+
+static biosMode bios8[] = {	
+    { 320, 240, 0x40 },
+    { 300, 400, 0x42 },    
+    { 640, 400, 0x20 },
+    { 640, 480, 0x21 },
+    { 800, 600, 0x23 },
+    { 1024, 768, 0x25 },
+};
+
+static biosMode bios15[] = {
+    { 320, 200, 0x2D },
+    { 640, 480, 0x30 },
+    { 800, 600, 0x33 },
+    { 1024, 768, 0x36 },
+};
+
+static biosMode bios16[] = {
+    { 320, 200, 0x2e },
+    { 320, 240, 0x41 },
+    { 300, 400, 0x43 },
+    { 640, 480, 0x31 },
+    { 800, 600, 0x34 },
+    { 1024, 768, 0x37 },
+};
+
+static biosMode bios24[] = {
+    { 640, 480, 0x32 },
+    { 800, 600, 0x35 },
+    { 1024, 768, 0x38 }
+};
+
 
 /*
  * This contains the functions needed by the server after loading the driver
@@ -1240,26 +1272,12 @@ NEOLeaveVT(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     NEOPtr nPtr = NEOPTR(pScrn);
     
-#if 0
-#ifdef XFreeXDGA
-    if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter) {
-	/* 
-	 * Disable HW cursor. I hope DGA can't call this function twice
-	 * in a row, without calling EnterVT in between. Otherwise the
-	 * effect will be to hide the cursor, perhaps permanently!!
-	 */
-    if (nPtr->NeoHWCursorShown) 
-	NeoHideCursor(pScrn);
-	return;
-    }
-#endif
-#endif
-
     /* Invalidate the cached acceleration registers */
     if (nPtr->NeoHWCursorShown) 
 	NeoHideCursor(pScrn);
     neoRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &nPtr->NeoSavedReg, TRUE);
     neoLock(pScrn);
+    
 }
 
 /* Mandatory */
@@ -1626,7 +1644,7 @@ NEOAdjustFrame(int scrnIndex, int x, int y, int flags)
     nPtr = NEOPTR(pScrn);
     /* Scale Base by the number of bytes per pixel. */
 
-    switch (pScrn->bitsPerPixel) {
+    switch (pScrn->depth) {
     case  8 :
 	break;
     case 15 :
@@ -1910,6 +1928,7 @@ neoSave(ScrnInfoPtr pScrn)
         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Non-NULL reg in NeoSave: reg=0x%08X\n", save->reg);
 
+    save->reg->CR[0x23] = VGArCR(0x23);
     save->reg->CR[0x25] = VGArCR(0x25);
     save->reg->CR[0x2F] = VGArCR(0x2F);
     for (i = 0x40; i <= 0x59; i++) {
@@ -1984,6 +2003,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     }
 
     if (noProgramShadowRegs) {
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Not programming shadow registers\n");
 	if (nPtr->NeoSavedReg.reg){
 	    for (i = 0x40; i <= 0x59; i++) {
 		VGAwCR(i, nPtr->NeoSavedReg.reg->CR[i]);
@@ -2240,8 +2260,11 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	}
 	VGAwGR(0x9F, restore->VCLK3Denominator);
     }
-
+    if (restore->biosMode)
+	VGAwCR(0x23,restore->biosMode);
+    
     if (restore->reg) {
+	VGAwCR(0x23,restore->reg->CR[0x23]);
 	VGAwCR(0x25,restore->reg->CR[0x25]);
 	VGAwCR(0x2F,restore->reg->CR[0x2F]);
 	for (i = 0x40; i <= 0x59; i++) {
@@ -2307,7 +2330,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     NeoStd->Attribute[16] = 0x01;
 
-    switch (pScrn->bitsPerPixel) {
+    switch (pScrn->depth) {
     case  8 :
 	NeoStd->CRTC[0x13] = pScrn->displayWidth >> 3;
 	NeoNew->ExtCRTOffset   = pScrn->displayWidth >> 11;
@@ -2532,7 +2555,8 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    }
 	}
     }
-
+    NeoNew->biosMode = neoFindMode(mode->HDisplay,mode->VDisplay,pScrn->depth);
+    
     /*
      * New->reg should be empty.  Just in
      * case it isn't, warn us and clear it anyway.
@@ -2713,3 +2737,45 @@ neo_ddc1(int scrnIndex)
     VGAwCR(0x1D,reg2);
 }
 
+static int
+neoFindMode(int xres, int yres, int depth)
+{
+    int xres_s;
+    int i, size;
+    biosMode *mode;
+
+    switch (depth) {
+    case 8:
+	size = sizeof(bios8) / sizeof(biosMode);
+	mode = bios8;
+	break;
+    case 15:
+	size = sizeof(bios15) / sizeof(biosMode);
+	mode = bios15;
+	break;
+    case 16:
+	size = sizeof(bios16) / sizeof(biosMode);
+	mode = bios16;
+	break;
+    case 24:
+	size = sizeof(bios24) / sizeof(biosMode);
+	mode = bios24;
+	break;
+    default:
+	return 0;
+    }
+
+    for (i = 0; i < size; i++) {
+	if (xres <= mode[i].x_res) {
+	    xres_s = mode[i].x_res;
+	    for (; i < size; i++) {
+		if (mode[i].x_res != xres_s)
+		    return mode[i-1].mode;
+		if (yres <= mode[i].y_res)
+		    return mode[i].mode;
+	    }
+	}
+    }
+    return mode[size - 1].mode;
+    
+}

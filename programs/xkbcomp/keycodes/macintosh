@@ -78,6 +78,7 @@ default xkb_keycodes "macintosh" {
     <AC11> = 47;
     <RTRN> = 44;
 
+    <LSGT> = 18;
     <AB01> = 14;
     <AB02> = 15;
     <AB03> = 16;
@@ -91,14 +92,14 @@ default xkb_keycodes "macintosh" {
 
     <SPCE> = 57;
 
-    <LCTL> = 62;
-    <LMTA> = 66;
-    <LFSH> = 64;
-    <LALT> = 63;
-    <RTSH> = 131;
-    <RALT> = 132;
-    <RCTL> = 133;
-    <RMTA> = 134;
+    <LCTL> = 62;  // Left Control
+    <LALT> = 63;  // Left Option
+    <LFSH> = 64;  // Left Shift
+    <RALT> = 66;  // Left Command
+//    <RTSH> = 131; // Right Shift
+//    <RALT> = 132; // Right Command
+//    <RCTL> = 133; // Right Control
+//    <RMTA> = 134; // Right Option
 
     <FK01> = 130;
     <FK02> = 128;
@@ -155,4 +156,6 @@ default xkb_keycodes "macintosh" {
     indicator 3 = "Scroll Lock";
     indicator 2 = "Num Lock";
     indicator 1 = "Caps Lock";
+
+    alias <ALGR> = <RALT>;
 };

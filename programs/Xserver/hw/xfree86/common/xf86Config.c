@@ -1339,6 +1339,13 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
 		slp[i].right = slp[j].screen;
 	    }
 	}
+	if (slp[i].where != CONF_ADJ_OBSOLETE
+	    && slp[i].where != CONF_ADJ_ABSOLUTE
+	    && !slp[i].refscreen) {
+	    xf86Msg(X_ERROR,"Screen %s doesn't exist: deleting placement\n",
+		     slp[i].refname);
+	    slp[i].where = 0;
+	}
     }
 
 #ifdef LAYOUT_DEBUG

@@ -444,9 +444,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86LoaderCheckSymbol)
    SYMFUNC(xf86LoaderReqSymLists)
    SYMFUNC(xf86LoaderReqSymbols)
-   SYMFUNC(xf86Break1)
-   SYMFUNC(xf86Break2)
-   SYMFUNC(xf86Break3)
    SYMFUNC(xf86SetBackingStore)
    SYMFUNC(xf86SetSilkenMouse)
    /* SYMFUNC(xf86NewSerialNumber) */
@@ -635,7 +632,15 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef DPMSExtension
    SYMFUNC(DPMSSet)
 #endif
-
+/* xf86Debug.c */
+#ifdef BUILDDEBUG
+   SYMFUNC(xf86Break1)
+   SYMFUNC(xf86Break2)
+   SYMFUNC(xf86Break3)
+   SYMFUNC(xf86SPTimestamp)
+   SYMFUNC(xf86STimestamp)
+#endif
+   
 #if 0 /* we want to move the hw stuff in a module */
    SYMFUNC(xf86dactopel)
    SYMFUNC(xf86dactocomm)
@@ -878,6 +883,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
+   SYMFUNC(xf86setjmp)
+   SYMFUNC(xf86longjmp)
 #ifdef XF86DRI
 				/* These may have more general uses, but
                                    for now, they are only used by the DRI.

@@ -1664,8 +1664,11 @@ I740CloseScreen(int scrnIndex, ScreenPtr pScreen)
   hwp = VGAHWPTR(pScrn);
   pI740 = I740PTR(pScrn);
 
-  I740Restore(pScrn);
-  vgaHWLock(hwp);
+  if (pScrn->vtSema) {
+      I740Restore(pScrn);
+      vgaHWLock(hwp);
+  }
+  
   I740UnmapMem(pScrn);
   vgaHWUnmapMem(pScrn);
   if (pI740->AccelInfoRec)

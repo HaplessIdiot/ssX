@@ -146,17 +146,6 @@ typedef struct {
 } VidModeRec, *VidModePtr;
 #endif
 
-typedef struct pciBusRec {
-    int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
-    int primary, secondary, subordinate;
-    int subclass;	/* bridge type */
-    resPtr io;		/* I/O range */
-    resPtr mem;		/* non-prefetchable memory range */
-    resPtr pmem;	/* prefetchable memory range */
-    int brcontrol;	/* bridge_control byte */
-    struct pciBusRec *next;
-} PciBusRec, *PciBusPtr;
-
 /* private resource types */
 #define ResNoAvoid  ResBios
 

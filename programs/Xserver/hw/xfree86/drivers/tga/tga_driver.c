@@ -1373,8 +1373,11 @@ TGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TGAPtr pTga = TGAPTR(pScrn);
 
+    if (pScrn->vtSema) {
     TGARestore(pScrn);
     memset(pTga->FbBase, 0, pScrn->videoRam * 1024);
+    }
+    
     TGAUnmapMem(pScrn);
     if(pTga->AccelInfoRec)
 	XAADestroyInfoRec(pTga->AccelInfoRec);

@@ -39,6 +39,8 @@ xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags)
 	DPMSGeneration = serverGeneration;
     }
 
+    if (DPMSDisabledSwitch)
+	DPMSEnabled = FALSE;
     if (!(pScreen->devPrivates[DPMSIndex].ptr = xcalloc(sizeof(DPMSRec), 1)))
 	return FALSE;
 
@@ -47,11 +49,19 @@ xf86DPMSInit(ScreenPtr pScreen, DPMSSetProcPtr set, int flags)
     pDPMS->Flags = flags;
     DPMSOpt = xf86FindOption(xf86Screens[pScreen->myNum]->options, "dpms");
     if (DPMSOpt) {
-	pDPMS->Enabled = TRUE;
-	DPMSEnabled = TRUE;
+	if (pDPMS->Enabled
+	    = xf86SetBoolOption(xf86Screens[pScreen->myNum]->options,
+				"dpms",FALSE)
+	    && !DPMSDisabledSwitch)
+	    DPMSEnabled = TRUE;
 	xf86MarkOptionUsed(DPMSOpt);
 	xf86DrvMsg(pScreen->myNum, X_CONFIG, "DPMS enabled\n");
-    } else {
+    } else if (DPMSEnabledSwitch) {
+	if (!DPMSDisabledSwitch)
+	    DPMSEnabled = TRUE;
+	pDPMS->Enabled = TRUE;
+    }  
+    else {
 	pDPMS->Enabled = FALSE;
     }
     pDPMS->CloseScreen = pScreen->CloseScreen;

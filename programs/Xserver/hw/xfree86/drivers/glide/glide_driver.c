@@ -835,7 +835,8 @@ GLIDECloseScreen(int scrnIndex, ScreenPtr pScreen)
   ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
   GLIDEPtr pGlide = GLIDEPTR(pScrn);
 
-  GLIDERestore(pScrn, TRUE);
+  if (pScrn->vtSema)
+      GLIDERestore(pScrn, TRUE);
   xfree(pGlide->ShadowPtr);
 
   pScrn->vtSema = FALSE;

@@ -249,23 +249,6 @@ void xf86UnloadSubModule(pointer mod);
 Bool xf86LoaderCheckSymbol(const char *name);
 void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
-/* debugging */
- void xf86Break1(void);
-void xf86Break2(void);
-void xf86Break3(void);
-CARD8  xf86PeekFb8(CARD8  *p);
-CARD16 xf86PeekFb16(CARD16 *p);
-CARD32 xf86PeekFb32(CARD32 *p);
-void xf86PokeFb8(CARD8  *p, CARD8  v);
-void xf86PokeFb16(CARD16 *p, CARD16 v);
-void xf86PokeFb32(CARD16 *p, CARD32 v);
-CARD8  xf86PeekMmio8(pointer Base, unsigned long Offset);
-CARD16 xf86PeekMmio16(pointer Base, unsigned long Offset);
-CARD32 xf86PeekMmio32(pointer Base, unsigned long Offset);
-void xf86PokeMmio8(pointer Base, unsigned long Offset, CARD8  v);
-void xf86PokeMmio16(pointer Base, unsigned long Offset, CARD16 v);
-void xf86PokeMmio32(pointer Base, unsigned long Offset, CARD32 v);
-
 void xf86SetBackingStore(ScreenPtr pScreen);
 void xf86SetSilkenMouse(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);
@@ -308,7 +291,27 @@ int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 				    pointer value);
 Bool xf86IsUnblank(int mode);
 
-
+/* xf86Debug.c */
+#ifdef BUILDDEBUG
+ void xf86Break1(void);
+void xf86Break2(void);
+void xf86Break3(void);
+CARD8  xf86PeekFb8(CARD8  *p);
+CARD16 xf86PeekFb16(CARD16 *p);
+CARD32 xf86PeekFb32(CARD32 *p);
+void xf86PokeFb8(CARD8  *p, CARD8  v);
+void xf86PokeFb16(CARD16 *p, CARD16 v);
+void xf86PokeFb32(CARD16 *p, CARD32 v);
+CARD8  xf86PeekMmio8(pointer Base, unsigned long Offset);
+CARD16 xf86PeekMmio16(pointer Base, unsigned long Offset);
+CARD32 xf86PeekMmio32(pointer Base, unsigned long Offset);
+void xf86PokeMmio8(pointer Base, unsigned long Offset, CARD8  v);
+void xf86PokeMmio16(pointer Base, unsigned long Offset, CARD16 v);
+void xf86PokeMmio32(pointer Base, unsigned long Offset, CARD32 v);
+extern void xf86SPTimestamp(xf86TsPtr* timestamp, char* string);
+extern void xf86STimestamp(xf86TsPtr* timestamp);
+#endif
+ 
 /* xf86Init.c */
 
 PixmapFormatPtr xf86GetPixFormat(ScrnInfoPtr pScrn, int depth);

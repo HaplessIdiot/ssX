@@ -49,6 +49,13 @@ xkb_keymap "cs"	{
     xkb_symbols		{ include "en_US(pc105)+cs"	};
     xkb_geometry 	{ include "pc(pc102)"		};
 };
+xkb_keymap "cs_qwerty"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+cs_qwerty"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
+};
 xkb_keymap "de"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};

@@ -1,3 +1,23 @@
+ 701. Fix to xterm InsertChar() to handle cases where cur_col + n
+      ends up past the end of the line (Andreas Schwab).
+ 700. Added keyboard layouts for PowerMac (Olaf Hering).
+ 609. Fixed Macintosh keyboard layouts (Olaf Hering).
+ 608. Fixed build when BuildServer defined NO (Egbert Eich).
+ 607. Fixes for C&T 69030 (David Bateman).
+ 606. Fix for locale setting in Xlib and Xt using getlocale() 
+      from glibc5 (Egbert Eich).
+ 605. Added handling of i5/686 and k6 compiler defines to Imake.cf
+      (Philipp Thomas).
+ 604. Added support for non-English locales in xload (Egbert Eich).
+ 603. Fixed memory initialization in Xlib (Vladimir Nadvornik).
+ 602. Fixed memory initialization in xdm (Egbert Eich).
+ 601. Rudimentary S390 support (Ruediger Oertel, Bernhard Kaindl).
+ 600. Enabled support for compressed xpm-files (Stefan Dirsch).
+ 599. Added support for Czech querty keyboard (Jan Holesovsky).
+      Some fixes for ia64 (). 
+ 598. Added CPU to Screen Color expansion to Neomagic driver (Egbert Eich).
+ 597. Added support for hotkey display output switch for Neomagic
+      driver (Egbert Eich).
  596. Add "xvinfo" client for querying Xv adaptors (Mark Vojkovich).
  595. Fix DGA support in the i810 driver (Mark Vojkovich).
  594. Enlarge the i810 pixmap cache and have the YUV overlay use that memory 
@@ -42,7 +62,6 @@ XFree86 4.0.1d (8 September 2000)
  569. Fix in ATI drivber for DPMS support on panels (Marc La France).
  568. I810 bugs fixes and enhancements relating to Xv (#4121, 4117, 4123, 
       4128, Jonathan Bian).
-
 XFree86 4.0.1c (28 August 2000)
  567. Add support to xset for setting the keyboard repeat rate using XKB
       (A.119, A.126, Stephen Montgomery-Smith).

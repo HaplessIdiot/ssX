@@ -25,6 +25,8 @@
   itouch	=       xfree86         pc(pc104)
   compaq	=       xfree86         pc(pc104)
   microsoftpro	=	xfree86		microsoft(natural)
+  macintosh	=	macintosh	macintosh(macintosh)
+  powerpcps2	=	powerpcps2	pc(pc104)
 
 //! model		layout	=	symbols
 //  microsoft	us	=	us(pc104)
@@ -43,6 +45,8 @@
   pc104		nodeadkeys	=	en_US(pc104%_v)+%l%(v)
   pc105		nodeadkeys	=	en_US(pc105%_v)+%l%(v)
   microsoft	nodeadkeys	=	en_US(pc104%_v)+%l%(v)
+  macintosh	nodeadkeys	=	macintosh/us(extended)+macintosh/%l%(v)
+  powerpcps2	nodeadkeys	=	en_US(pc104%_v)+%l%(v)
   *		nodeadkeys	=	en_US(pc101%_v)+%l%(v)
 
 ! model		layout	=	symbols
@@ -83,6 +87,11 @@
   microsoftpro	us	=	us(pc104)+inet(microsoftpro)
   microsoftpro	en_US	=	en_US(pc104)+inet(microsoftpro)
   microsoftpro	*	=	en_US(pc104)+inet(microsoftpro)+%l%(v)
+  macintosh	us	=	macintosh/us(extended)
+  macintosh	*	=	macintosh/us(extended)+macintosh/%l%(v)
+  powerpcps2	us	=	us(pc104)
+  powerpcps2	en_US	=	en_US(pc104)
+  powerpcps2	*	=	en_US(pc104)+%l%(v)
   *		us	=	us(pc101)
   *		en_US	=	en_US(pc101)
   *		intl	=	us(pc101compose)

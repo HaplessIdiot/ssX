@@ -35,11 +35,12 @@
 #include "trident.h"
 #include "trident_regs.h"
 
-biosMode bios1[] = { 
+
+static biosMode bios1[] = { 
     { 640, 480, 0x11 }
 };
 
-biosMode bios4[] = {
+static biosMode bios4[] = {
     { 320, 200, 0xd },
     { 640, 200, 0xe },
     { 640, 350, 0x11 },
@@ -50,7 +51,7 @@ biosMode bios4[] = {
     { 1600, 1200, 0x65 }
 };
 
-biosMode bios8[] = {	
+static biosMode bios8[] = {	
     { 320, 200, 0x13 },
     { 640, 400, 0x5c },
     { 640, 480, 0x5d },
@@ -61,7 +62,7 @@ biosMode bios8[] = {
     { 1600, 1200, 0x66 }
 };
 
-biosMode bios15[] = {
+static biosMode bios15[] = {
     { 640, 400, 0x72 },
     { 640, 480, 0x74 },
     { 720, 480, 0x70 },
@@ -71,7 +72,7 @@ biosMode bios15[] = {
     { 1600, 1200, 0x7c }
 };
 
-biosMode bios16[] = {
+static biosMode bios16[] = {
     { 640, 400, 0x73 },
     { 640, 480, 0x75 },
     { 720, 480, 0x71 },
@@ -81,7 +82,7 @@ biosMode bios16[] = {
     { 1600, 1200, 0x7d }
 };
 
-biosMode bios24[] = {
+static biosMode bios24[] = {
     { 640, 400, 0x6b },
     { 640, 480, 0x6c },
     { 720, 480, 0x61 },

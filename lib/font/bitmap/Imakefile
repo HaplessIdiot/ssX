@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
 XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.6 1999/01/11 09:39:26 dawes Exp $
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 #define IHaveSubdirs
 #define NoLibSubdirs
 #define PassCDebugFlags
@@ -52,7 +52,7 @@ SpecialCLibObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif

@@ -180,6 +180,7 @@
 #define PCI_SUBCLASS_BRIDGE_CARDBUS	0x07
 #define PCI_SUBCLASS_BRIDGE_RACEWAY	0x08
 #define PCI_SUBCLASS_BRIDGE_MISC	0x80
+#define PCI_IF_BRIDGE_PCI_SUBTRACTIVE   0x01
 
 /* 0x07 communications controller subclasses */
 #define PCI_SUBCLASS_COMMUNICATIONS_SERIAL	0x00
@@ -643,7 +644,7 @@ PCITAG        pciTag(int busnum, int devnum, int funcnum);
 int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 CARD32        pciCheckForBrokenBase(PCITAG tag,int basereg);
 pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
-				unsigned long Base, unsigned long Size);
+				ADDRESS Base, unsigned long Size);
 int           xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 				unsigned char *Buf, int Len);
 pciConfigPtr *xf86scanpci(int flags);

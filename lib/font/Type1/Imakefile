@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
 XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.7 1999/03/02 02:49:14 dawes Exp $
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 #define IHaveSubdirs
 #define NoLibSubdirs
 #define PassCDebugFlags
@@ -77,7 +77,7 @@ LibraryObjectRule()
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#if DoLoadableServer
+#if BuildServer && DoLoadableServer
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
