@@ -1,5 +1,23 @@
 XFree86 4.2.99.2 (xx October 2002)
- 381. Add a "kbd" driver module that can eventually replace the built-in
+ 385. linux.cf updates:
+       - Resync the DebianMaintainer #define and the stuff in the
+         corresponding if block to meet Debian's current needs.
+       - Sort long chains of architecture-dependent #if-#elif directives in
+         ASCII order.
+       - Add explicit recongition of several architectures to the #ifndef
+         BuildXF86DRI block.
+       - Define a fallback CplusplusCmd (g++) if we don't recongize the
+         platform we're on.
+       - Turn off the loadable server on MIPS and SuperH platforms, where it
+         doesn't (yet) work.
+       - Trash some unneeded #defines in the Mc68020Architecture compilation
+         environment.
+       - Remove the block that #defines HasXserver NO for the s390 and s390x
+         architectures (things like Xvfb build fine on these platforms).
+      (#5357, Branden Robinson).
+ 384. Fix an error in the Finnish XKB keyboard map (#5356, Marko Myllynen).
+ 383. Add a Malayalam XKB keyboard map (#5355, Baiju M).
+ 382. Add a "kbd" driver module that can eventually replace the built-in
       "keyboard" driver (#5344, Ivan Pascal).
  381. Add os-support level support for a loadable keyboard driver for BSD
       and Linux (#5344, Ivan Pascal).
@@ -15287,4 +15305,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2332 2002/10/10 01:58:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2333 2002/10/11 01:40:25 dawes Exp $
