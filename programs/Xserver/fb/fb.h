@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.33 2002/04/04 14:05:37 eich Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.34 2003/01/29 01:11:02 torrey Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -637,7 +637,7 @@ typedef struct {
 	((WindowPtr) (pWin))->devPrivates[fbWinPrivateIndex].ptr)
 #endif
 
-#if __DARWIN__
+#ifdef __DARWIN__
 #define __fbPixOriginX(pPix)	((pPix)->drawable.x)
 #define __fbPixOriginY(pPix)	((pPix)->drawable.y)
 #else
