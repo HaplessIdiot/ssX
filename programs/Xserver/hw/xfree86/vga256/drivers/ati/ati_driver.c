@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.42 1997/01/18 06:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.45 1997/02/16 12:13:13 hohndel Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -548,10 +548,10 @@ static unsigned char ATIVGAOffset = 0x80U;    /* Index offset for ATIVGAPort */
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-ati_drvModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {

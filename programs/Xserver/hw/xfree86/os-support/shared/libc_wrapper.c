@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.6 1997/02/23 09:25:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.8 1997/02/24 17:47:05 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -26,6 +26,7 @@
 #include <X.h>
 #include <Xmd.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/time.h>
 #include <math.h>
 #include "Xfuncproto.h"
@@ -46,6 +47,24 @@ int xf86execl(char *, ...);
 #else
 int xf86execl();
 #endif
+
+#ifndef X_NOT_POSIX
+#include <dirent.h>
+#else
+#ifdef SYSV
+#include <dirent.h>
+#else
+#ifdef USG
+#include <dirent.h>
+#else
+#include <sys/dir.h>
+#ifndef dirent
+#define dirent direct
+#endif
+#endif
+#endif
+#endif
+typedef struct dirent DIRENTRY;
 
 #ifdef __EMX__
 #define _POSIX_SOURCE
@@ -254,14 +273,24 @@ typedef struct _xf86_file_ {
 } XF86FILE_priv;
 
 XF86FILE_priv stdhnd[3] = {
-	{ 0, XF86FILE_magic, stdin,  "$stdinp$" },
-	{ 0, XF86FILE_magic, stdout, "$stdout$" },
-	{ 0, XF86FILE_magic, stderr, "$stderr$" }
+	{ 0, XF86FILE_magic, NULL, "$stdinp$" },
+	{ 0, XF86FILE_magic, NULL, "$stdout$" },
+	{ 0, XF86FILE_magic, NULL, "$stderr$" }
 };
 
 XF86FILE xf86stdin = (XF86FILE)&stdhnd[0];
 XF86FILE xf86stdout = (XF86FILE)&stdhnd[1];
 XF86FILE xf86stderr = (XF86FILE)&stdhnd[2];
+
+void xf86WrapperInit()
+{
+    if (stdhnd[0].filehnd == NULL)
+	stdhnd[0].filehnd = stdin;
+    if (stdhnd[1].filehnd == NULL)
+	stdhnd[1].filehnd = stdout;
+    if (stdhnd[2].filehnd == NULL)
+	stdhnd[2].filehnd = stderr;
+}
 
 XF86FILE xf86fopen(const char* fn, const char* mode)
 {
@@ -272,6 +301,7 @@ XF86FILE xf86fopen(const char* fn, const char* mode)
 	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
 	fp->magic = XF86FILE_magic;
 	fp->filehnd = f;
+	fp->magic = XF86FILE_magic;
 	fp->fileno = fileno(f);
 	fp->fname = xf86strdup(fn);
 #ifdef DEBUG
@@ -285,7 +315,7 @@ static void _xf86checkhndl(XF86FILE_priv* f,const char *func)
 {
 	if (!f || f->magic != XF86FILE_magic ||
 	    !f->filehnd || !f->fname) {
-		FatalError("Module Error: passed invalid handle to %s\n",
+		FatalError("libc_wrapper error: passed invalid FILE handle to %s\n",
 			func);
 		exit(42);
 	}
@@ -473,7 +503,14 @@ int xf86fgetpos(XF86FILE f,XF86FPOS_T pos)
 	fpos_t *ppos = (fpos_t*)pos;
 
 	_xf86checkhndl(fp,"xf86fgetpos");
+#ifndef ISC
 	return fgetpos(fp->filehnd,ppos);
+#else
+	*ppos = ftell(fp->filehnd);
+	if (*ppos < 0L)
+		return(-1);
+	return(0);
+#endif
 }
 
 int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos)
@@ -482,7 +519,16 @@ int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos)
 	fpos_t *ppos = (fpos_t*)pos;
 
 	_xf86checkhndl(fp,"xf86fsetpos");
+#ifndef ISC
 	return fsetpos(fp->filehnd,ppos);
+#else
+	if (ppos == NULL)
+	{
+		errno = EINVAL;
+		return EOF;
+	}
+	return fseek(fp->filehnd, *ppos, SEEK_SET);
+#endif
 }
 
 void xf86perror(const char *s)
@@ -680,3 +726,82 @@ pathname, a0, a1, a2, a3) /* limit of four args */
     return(1);
 #endif /* __EMX__ Disable this crazy business for now */
 }
+
+/* directory handling functions */
+#define XF86DIR_magic	0x78666876	/* "xfhv" */
+
+typedef struct _xf86_dir_ {
+	DIR		*dir;
+	INT32		magic;
+	XF86DIRENT	dirent;
+} XF86DIR_priv;
+
+static void _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
+{
+	if (!f || f->magic != XF86DIR_magic || !f->dir || !f->dirent) {
+		FatalError("libc_wrapper error: passed invalid DIR handle to %s\n",
+			func);
+		exit(42);
+	}
+}
+
+XF86DIR	xf86opendir(const char *name)
+{
+	XF86DIR_priv *dp;
+	DIR *dirp;
+
+	dirp = opendir(name);
+	if (!dirp)
+		return (XF86DIR)0;
+
+	dp = (XF86DIR_priv*)xalloc(sizeof(XF86DIR_priv));
+	dp->magic = XF86DIR_magic; /* This time I have this, Dirk! :-) */
+	dp->dir = dirp;
+	dp->dirent = (XF86DIRENT)xalloc(sizeof(struct _xf86dirent));
+
+	return (XF86DIR)dp;
+}
+
+XF86DIRENT xf86readdir(XF86DIR dirp)
+{
+	XF86DIR_priv* dp = (XF86DIR_priv*)dirp;
+	DIRENTRY *de;
+	XF86DIRENT xde;
+	int sz;
+
+	_xf86checkdirhndl(dp,"xf86readdir");
+
+	de = readdir(dp->dir);
+	if (!de)
+		return (XF86DIRENT)0;
+	xde = dp->dirent;
+	sz = strlen(de->d_name);
+	strncpy(xde->d_name,de->d_name, sz>_XF86NAMELEN ? (_XF86NAMELEN+1) : (sz+1));
+	xde->d_name[_XF86NAMELEN] = '\0';	/* be sure to have a 0 byte */
+	return xde;
+}
+
+void xf86rewinddir(XF86DIR dirp)
+{
+	XF86DIR_priv* dp = (XF86DIR_priv*)dirp;
+
+	_xf86checkdirhndl(dp,"xf86readdir");
+	rewinddir(dp->dir);
+}
+
+int xf86closedir(XF86DIR dir)
+{
+	XF86DIR_priv* dp = (XF86DIR_priv*)dir;
+	int n;
+	DIR *dirp;
+
+	_xf86checkdirhndl(dp,"xf86readdir");
+
+	n = closedir(dp->dir);
+	dp->magic = 0;
+	xfree(dp->dirent);
+	xfree(dp);
+
+	return n;
+}
+

@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/Imakefi
 
 XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:21:46 rws $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = mmio_928.c

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.2 1997/02/24 17:46:58 hohndel Exp $ */
 
 
 
@@ -27,6 +27,7 @@
  */
 
 #include <sys/types.h>
+#include <string.h>
 
 #include "sym.h"
 #include "loader.h"
@@ -115,11 +116,44 @@ LoaderAddSymbols( handle, list )
 int	handle;
 LOOKUP	*list ;
 {
-  LOOKUP * l = list ;
-  itemPtr i ;
+  LOOKUP	*l = list ;
+  itemPtr	 i ;
+  char		*p;
+  char		*modname;
+  char		*newmodname;
+
   while ( l->symName ) {
     i = (itemPtr) malloc( sizeof( itemRec )) ;
     i->name = l->symName ;
+    if( strcmp(i->name,"ModuleInit") == 0 )
+    {
+      /*
+       * special handling for symbol name "ModuleInit"
+       */
+      modname = _LoaderHandleToName(handle);
+      if( modname )
+      {
+        newmodname = strdup(modname);
+        p = strrchr(newmodname,'.');
+	if( p )
+	  *p = '\0';
+	p = strrchr(newmodname,'/');
+	if( p )
+	  p++;
+	else
+	  p = newmodname;
+      }
+      i->name = (char*)malloc(strlen(p)+11);
+      if( i->name )
+      {
+        strcpy(i->name,p);
+	strcat(i->name,"ModuleInit");
+      }
+      free(newmodname);
+#ifdef DEBUG
+      ErrorF("Add module init function %s \n",i->name);
+#endif
+    }
     i->address = (char *) l->offset ;
 #ifdef HANDLE_IN_HASH_ENTRY
     i->handle = handle ;

@@ -1,11 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.10 1996/12/23 06:42:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.12 1997/02/20 10:01:09 hohndel Exp $
 
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.10 1996/12/23 06:42:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.12 1997/02/20 10:01:09 hohndel Exp $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = 	s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \

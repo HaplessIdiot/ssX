@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.31 1997/01/23 11:03:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.34 1997/02/16 12:13:58 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -353,10 +353,10 @@ PVGA1lcd24power(int PowerManagementMode)
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
- * its name has to be <driver_module_name>ModuleInit()
+ * its name has to be ModuleInit()
  */
 void
-pvga1_drvModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {

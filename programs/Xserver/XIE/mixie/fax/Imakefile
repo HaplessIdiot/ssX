@@ -1,6 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/5 1996/09/28 16:56:07 rws $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/fax/Imakefile,v 3.2 1996/12/23 06:28:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/fax/Imakefile,v 3.3 1997/02/18 17:51:25 hohndel Exp $
 XCOMM build device dependent machine independent fax processing element objects
+
+#define IHaveModules
 #include <Server.tmpl>
 
        SRCS = 	dg31d.c \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.9 1997/02/23 09:25:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.10 1997/02/24 17:47:00 hohndel Exp $ */
 
 
 
@@ -40,6 +40,9 @@
 #include "xf86_PCI.h"
 #include "CirrusClk.h"
 #include "vga.h"
+
+#define DONT_DEFINE_WRAPPERS
+#include "xf86_libc.h"
 
 extern Bool xf86Resetting;
 extern Bool xf86ProbeFailed;
@@ -166,6 +169,10 @@ LOOKUP xfree86LookupTab[] = {
  * would pass structures around
  */
    SYMFUNC(xf86getsecs)
+   SYMFUNC(xf86opendir)
+   SYMFUNC(xf86readdir)
+   SYMFUNC(xf86rewinddir)
+   SYMFUNC(xf86closedir)
 
 /*
  * these are the stdio wrappers (first two used by tmp/accelswitch in mga)

@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.35 1997/02/17 11:04:18 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.36 1997/02/18 19:16:41 hohndel Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -985,6 +985,14 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(_NOOP_))
 
 #ifndef LibraryTargetName
 #define LibraryTargetName(libname)Concat(lib,libname.a)
+#endif
+
+/* This rule is used for libs in Xserver/Imakefile which are loaded, not
+ * linked into the core module. Since modules are called libXXXX.a,
+ * this rule mustn't be overriden by .cf files.
+ */
+#ifndef ModuleLibraryTargetName
+#define ModuleLibraryTargetName(libname)Concat(lib,libname.a)
 #endif
 
 #ifndef LibraryTargetNameSuffix

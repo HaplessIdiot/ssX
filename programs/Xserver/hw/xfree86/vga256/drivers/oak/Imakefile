@@ -5,6 +5,11 @@ XCOMM $XConsortium: Imakefile /main/8 1996/10/25 06:20:46 kaleb $
 
 
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/Imakefile,v 3.9 1996/12/23 06:57:51 dawes Exp $
+
+
+
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = oak_driver.c oak_bank.s oti87_fill.c oti87_sol.c oti87_bltC.c \

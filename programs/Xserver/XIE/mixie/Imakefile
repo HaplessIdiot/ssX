@@ -1,5 +1,7 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:34 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.8 1997/02/18 17:51:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.9 1997/02/23 13:11:55 dawes Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 #if BuildDIS

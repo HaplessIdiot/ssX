@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.3 1997/02/18 10:50:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.4 1997/02/18 17:51:17 hohndel Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -378,7 +378,7 @@ unsigned long server_version;
  */
 
 void
-libxieModuleInit(data,magic)
+ModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {

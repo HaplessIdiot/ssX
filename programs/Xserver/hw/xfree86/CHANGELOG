@@ -1,4 +1,26 @@
 XFree86 3.2Ai (xx February 1997)
+ 506. Fix libc_wrapper.c for LynxOS, where stdin/out/err isn't a valid
+      initializer (#87, Thomas Mueller).
+ 505. Updates to SiS driver: fix setting MemBase, allos some XAA functions
+      in 8bpp even without linear mode, support DPMS (#86, Xavier Ducoin).
+ 504. Disable the stream display fetch length control for Trio64V2
+      (#85, Xavier Ducoin).
+ 503. Update SuperProbe for sis86c202 and sis86c205 (#84, Xavier Ducoin).
+ 502. Allow ModulePath to have multiple elements; use heuristic to find the
+      module if only part of the exact filename is specified; allow subdirs
+      of the module directory to be searched (Dirk Hohndel).
+ 501. Change loader code so that ModuleInit is a magic function name that
+      indicates the init function for a module. ServerInit now is the function
+      used to get the initial ScrnInfoRec; change all modules to follow these
+      naming conventions (Dirk Hohndel).
+ 500. Fix missing fsetpos/fgetpos in ISC (#78, Michael Rohleder).
+ 499. Fix elfloader to recognize .data1 and .rodata1 sections 
+      (#82, Steve Forsythe).
+ 498. Add readdir family of functions to libc_wrapper (#81, Holger Veit).
+ 497. Add crosscompilation support for OS/2 (#81, Holger Veit).
+ 496. Add loadable module support for P9000 (#80, Erik Nygren).
+ 495. Fix error message in loader (#79, Matthieu Herrb).
+ 494. Workaround for a bug in 68k GNU binutils (#77, Geert Uytterhoeven).
  493. Add new xf86_libc.h to make porting to the new style loader
       architecture easier. Adapt PEX5 using the new header file (Dirk Hohndel).
  492. Fixes for a.out loader (#74-76, Matthieu Herrb).

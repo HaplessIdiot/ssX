@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/Imake
 
 XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:21:57 rws $
 
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = s3_generic.c

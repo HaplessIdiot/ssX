@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 3.0 1996/06/29 09:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.6 1997/02/17 09:44:00 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -58,23 +58,12 @@ miBSFuncRec cfbBSFuncRec = {
 #include <xf86.h>
     /*
      * this is the module init function that is executed when loading
-     * libcfb as a module. Its name has to be <modulename>ModuleInit.
+     * libcfb as a module. Its name has to be ModuleInit.
      * With this we initialize the function and variable pointers used
      * in generic parts of XFree86
      */
 void
-#if PSZ == 8
-libcfbModuleInit(data,magic)
-#endif
-#if PSZ == 16
-libcfb16ModuleInit(data,magic)
-#endif
-#if PSZ == 24
-libcfb24ModuleInit(data,magic)
-#endif
-#if PSZ == 32
-libcfb32ModuleInit(data,magic)
-#endif
+ModuleInit(data,magic)
     pointer *	data;
     INT32 *	magic;
 {

@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:50:20 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.13 1996/12/23 06:55:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.16 1997/02/20 10:01:27 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 #define IHaveSubdirs
