@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.2tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -23,6 +23,7 @@
 
 #define _LARGEFILE_SOURCE 1
 #define _FILE_OFFSET_BITS 64
+#undef  __STRICT_ANSI__
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -37,7 +38,10 @@
 # define MAP_FAILED ((void *)(-1))
 #endif
 
-#if !defined(strtoull) && defined(CSRG_BASED)
+#if !defined(strtoull) && \
+    (defined(CSRG_BASED) || \
+     (defined(__GNU_LIBRARY__) && \
+       (__GNU_LIBRARY__ < 6)))
 # define strtoull strtouq
 #endif
 
