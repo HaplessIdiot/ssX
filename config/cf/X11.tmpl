@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.181 2002/11/20 04:32:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.182 2002/11/22 02:57:16 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2772,7 +2772,7 @@ FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
 #endif
 
 #ifndef Freetype2LibDir
-#define Freetype2LibDir Freetype2Dir/lib
+#define Freetype2LibDir Freetype2Dir/LibDirName
 #endif
 
 #ifndef Freetype2IncDir
@@ -2841,7 +2841,7 @@ LIBXML2DEFINES=-DLIBXML2
 #endif
 
 #ifndef Libxml2LibDir
-#define Libxml2LibDir Libxml2Dir/lib
+#define Libxml2LibDir Libxml2Dir/LibDirName
 #endif
 
 #ifndef Libxml2IncDir
@@ -2905,7 +2905,7 @@ EXPATDEFINES=-DEXPAT
 #endif
 
 #ifndef ExpatLibDir
-#define ExpatLibDir ExpatDir/lib
+#define ExpatLibDir ExpatDir/LibDirName
 #endif
 
 #ifndef ExpatIncDir
@@ -3043,7 +3043,7 @@ FONTCONFIGINCDIR=$(BUILDINCDIR)
 #endif
 
 #ifndef FontconfigLibDir
-#define FontconfigLibDir FontconfigDir/lib
+#define FontconfigLibDir FontconfigDir/LibDirName
 #endif
 
 #ifndef FontconfigIncDir
@@ -3093,7 +3093,7 @@ FONTCONFIGDEFINES = -DFONTCONFIG
 #endif
 
 #ifndef LibpngLibDir
-#define LibpngLibDir LibpngDir/lib
+#define LibpngLibDir LibpngDir/LibDirName
 #if LibpngDirStandard
 #define LibpngLibDirStandard YES
 #endif
