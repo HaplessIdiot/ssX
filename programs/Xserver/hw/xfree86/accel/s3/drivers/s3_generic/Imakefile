@@ -1,6 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:17:43 dpw Exp $
-XCOMM $XFree86$
-#include <Server.tmpl>
+XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:12:09 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/Imakefile,v 3.0 1994/08/01 12:13:13 dawes Exp $
 
 SRCS = s3_generic.c
 

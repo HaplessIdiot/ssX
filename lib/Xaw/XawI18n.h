@@ -1,5 +1,5 @@
-/* $XConsortium: XawI18n.h,v 1.11 94/07/05 11:13:10 kaleb Exp $ */
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.0 1994/05/21 23:46:26 dawes Exp $ */
+/* $XConsortium: XawI18n.h,v 1.12 95/01/25 00:48:44 kaleb Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.1 1994/08/20 07:28:54 dawes Exp $ */
 
 /************************************************************
 
@@ -74,6 +74,6 @@ extern wchar_t _Xaw_atowc (
 #ifndef HAS_ISW_FUNCS
 #include <ctype.h>
 #ifndef iswspace
-#define iswspace(c) (isascii(c) && isspace(c))
+#define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
 #endif

@@ -1,6 +1,5 @@
-/* $XConsortium: mach8blt.c,v 1.2 94/04/17 20:30:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.1 1994/06/06 06:46:42 dawes Exp $ */
-/*
+/* $XConsortium: mach8blt.c,v 1.6 95/01/12 20:20:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.2 1994/11/26 12:43:25 dawes Exp $ */
 
 Copyright (c) 1989  X Consortium
 
@@ -43,7 +42,6 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 
-/* $XConsortium: mach8blt.c,v 1.2 94/04/17 20:30:53 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

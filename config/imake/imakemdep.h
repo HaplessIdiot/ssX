@@ -1,5 +1,5 @@
-/* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.6 1994/12/02 07:40:39 dawes Exp $ */
+/* $XConsortium: imakemdep.h,v 1.82 95/01/12 16:27:01 kaleb Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.7 1994/12/17 09:33:42 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

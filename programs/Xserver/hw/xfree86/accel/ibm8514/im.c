@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514im.c,v 1.1 94/03/28 21:04:41 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.3 1994/12/10 02:07:35 dawes Exp $ */
+/* $XConsortium: im.c,v 1.1 95/01/26 15:30:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.4 1995/01/26 02:17:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

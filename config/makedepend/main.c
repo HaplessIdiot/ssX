@@ -1,5 +1,5 @@
-/* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.1 1994/10/20 06:00:48 dawes Exp $ */
+/* $XConsortium: main.c,v 1.84 94/11/30 16:10:44 kaleb Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.2 1994/11/30 20:29:54 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

@@ -1,5 +1,5 @@
-/* $XConsortium: sunIo.c,v 5.26 94/05/02 17:24:53 mor Exp $ */
-/* $XFree86$ */
+/* $XConsortium: sunIo.c,v 5.26.1.3 95/01/25 23:02:33 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunIo.c,v 3.0 1994/11/19 07:49:09 dawes Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.

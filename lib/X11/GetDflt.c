@@ -1,5 +1,5 @@
-/* $XConsortium: GetDflt.c,v 1.33 94/04/17 20:19:31 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.1 1994/11/30 21:32:00 dawes Exp $ */
+/* $XConsortium: GetDflt.c,v 1.34 94/11/30 16:19:43 kaleb Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.2 1994/12/02 05:41:46 dawes Exp $ */
 
 /***********************************************************
 

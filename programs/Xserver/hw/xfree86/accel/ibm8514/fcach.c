@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514fcac.c,v 1.1 94/03/28 21:03:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fcach.c,v 3.2 1994/09/07 15:48:25 dawes Exp $ */
+/* $XConsortium: fcach.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fcach.c,v 3.3 1995/01/26 02:17:18 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c,v 1.33 94/12/01 16:33:12 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.9 1995/01/12 05:54:21 dawes Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.34 95/01/12 18:25:25 kaleb Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.10 1995/01/25 10:46:15 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

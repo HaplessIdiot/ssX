@@ -1,6 +1,6 @@
 
-/* $XConsortium: sun.h,v 5.39 94/08/16 13:45:30 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: sun.h,v 5.39.1.1 95/01/05 19:58:43 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.0 1994/11/19 07:49:04 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -85,18 +85,24 @@ extern int errno;
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
 #else
-# include <sun/fbio.h>
-# include <sundev/kbd.h>
-# include <sundev/kbio.h>
-# include <sundev/msio.h>
-# include <sundev/vuid_event.h>
-# include <pixrect/pixrect.h>
-# include <pixrect/memreg.h>
+# ifndef __NetBSD__
+#  include <sun/fbio.h>
+#  include <sundev/kbd.h>
+#  include <sundev/kbio.h>
+#  include <sundev/msio.h>
+#  include <sundev/vuid_event.h>
+#  include <pixrect/pixrect.h>
+#  include <pixrect/memreg.h>
 extern int ioctl();
 extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
-#endif
+# else
+#  include <machine/fbio.h>
+#  include <machine/kbd.h>
+#  include <machine/kbio.h>
+#  include <machine/vuid_event.h>
+# endif
 #endif
 extern int gettimeofday();
 

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.8 93/09/06 13:41:47 rws Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.10 94/11/28 11:50:26 kaleb Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.0 1994/05/30 08:19:59 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs

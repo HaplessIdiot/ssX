@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.46 94/02/04 10:51:26 rws Exp $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.1 1994/05/30 08:22:05 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.47 94/11/21 18:27:00 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.2 1994/12/25 12:15:56 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \

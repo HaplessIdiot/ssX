@@ -1,6 +1,5 @@
-/* $XConsortium: xf86fcache.h,v 1.1 94/03/28 21:02:28 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.2 1994/09/07 15:48:05 dawes Exp $ */
-/*
+/* $XConsortium: xf86fcache.h,v 1.4 95/01/05 20:25:04 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.3 1994/11/26 12:40:21 dawes Exp $ */
  * Data structures and function prototypes for the font cache.
  */
 

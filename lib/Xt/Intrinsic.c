@@ -1,5 +1,5 @@
-/* $XConsortium: Intrinsic.c,v 1.194 94/04/17 20:14:16 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.1 1994/11/26 12:36:05 dawes Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.196 94/11/21 18:20:56 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.2 1994/12/02 05:42:22 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

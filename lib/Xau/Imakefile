@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.24 94/03/29 15:54:23 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.25 94/11/21 18:21:36 kaleb Exp $
+XCOMM $XFree86: xc/lib/Xau/Imakefile,v 3.0 1994/05/30 08:19:27 dawes Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau

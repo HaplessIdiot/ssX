@@ -1,6 +1,6 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.7 94/04/17 20:10:08 rws Exp $ */
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.1 1994/05/21 23:42:12 dawes Exp $ */
+/* $XConsortium: to_wfont.y,v 5.8 94/11/21 17:11:41 kaleb Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.2 1994/11/26 12:34:17 dawes Exp $ */
 
 /*****************************************************************
 

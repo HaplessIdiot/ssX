@@ -1,6 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:17:55 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.3 1994/08/01 12:14:01 dawes Exp $
-#include <Server.tmpl>
+XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:13:35 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.4 1994/09/22 15:50:18 dawes Exp $
 
 SRCS = 	s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc32.c s3fs.c s3ss.c \
 	s3gs.c s3win.c s3im.c s3bstor.c \
