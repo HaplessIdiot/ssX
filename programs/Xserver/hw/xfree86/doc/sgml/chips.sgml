@@ -222,7 +222,7 @@ Option &dquot;hw_clocks&dquot; (Chips 65535 and later)
 	31.000 and 36.000MHz. The current programmable clock will be
 	given as the last clock in the list. On a cold-booted system this
 	might be the appropriate value to use at the text console (see the 
-	"<tt>TextClockFreq<tt>" option), as many flat panels will need a
+	"<tt>TextClockFreq</tt>" option), as many flat panels will need a
 	dot clock different than the default to synchronise. The
 	programmable clock makes this option obsolete and so it's use
 	isn't recommended.
@@ -351,7 +351,7 @@ display. In fact the timing for the flat panel are dependent on the
 specification of the panel itself and are independent of the particular
 mode chosen. For this reason it is recommended to use one of the programs
 that automatically generate XF86Config files, such as "<tt>xf86config</tt>"
-or "<tt>XF86Setup<tt>".
+or "<tt>XF86Setup</tt>".
 
 However there are many machines, particular those with 800x600 screen or
 larger, that need to reprogram the panel timings. The reason for this is
@@ -576,7 +576,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.12 1997/01/25 03:22:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.13 1997/05/03 09:17:25 dawes Exp $
 </verb>
 
 </article>
