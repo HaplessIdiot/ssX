@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.50 2004/01/20 23:54:50 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.51 2004/02/11 00:30:27 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -256,8 +256,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* no direct graphics extension */
 #define BuildXF86DGA            NO
 
-/* no server support for extra tablets and weird input devices */
-#define BuildXInputExt          NO
+/* Support for tablets and other non-standard input devices */
+#ifndef BuildXInputExt
+# define BuildXInputExt         YES
+#endif
 #define BuildXInputLib          YES
 
 /* no Display Power Management extension */
