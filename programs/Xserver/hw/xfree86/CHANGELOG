@@ -1,5 +1,7 @@
 XFree86 4.3.99.902 (xx December 2003)
-
+ 646. Fix for XKB map 'altwin' to avoid one keysym to more than one modifier
+      mapping (Ivan Pascal).
+ 
 XFree86 4.3.99.901 ( 2 December 2003)
  645. Update xterm's checking of modifiers to match change 635, and handle
       the case of keys like Meta_L being in more than one modifier.  This
@@ -18326,7 +18328,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3013 2003/12/03 05:02:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3014 2003/12/03 05:05:57 dawes Exp $
 
 
 
