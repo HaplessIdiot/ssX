@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.18 2000/12/05 22:09:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.19 2000/12/05 23:57:39 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -196,7 +196,6 @@ ImageAccelInit(ScreenPtr pScreen)
 
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = NO_PLANEMASK |
 					LEFT_EDGE_CLIPPING |
-					LEFT_EDGE_CLIPPING_NEGATIVE_X |
 					BIT_ORDER_IN_BYTE_MSBFIRST;
 
     pTrident->XAAScanlineColorExpandBuffers[0] =
@@ -214,7 +213,6 @@ ImageAccelInit(ScreenPtr pScreen)
 			ImageSubsequentColorExpandScanline;
 
     infoPtr->ScanlineImageWriteFlags = NO_PLANEMASK |
-				       LEFT_EDGE_CLIPPING_NEGATIVE_X |
 				       LEFT_EDGE_CLIPPING;
 
     infoPtr->SetupForScanlineImageWrite = ImageSetupForScanlineImageWrite;
@@ -409,6 +407,9 @@ static void
 ImageSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    if ((w<=0) || (h<=0))
+	return;
 
     IMAGE_OUT(0x2108, ((y&0xfff)<<16) | (x&0xfff));
     IMAGE_OUT(0x210C, (((y+h-1)&0xfff)<<16) | ((x+w-1)&0xfff));
