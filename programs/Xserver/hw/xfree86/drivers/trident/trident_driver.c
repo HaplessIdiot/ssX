@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.113 2000/12/02 15:30:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.114 2000/12/07 16:48:05 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1078,6 +1078,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 8:
 	case 15:
 	case 16:
+	    if (pScrn->bitsPerPixel != pScrn->depth) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	     "Given depth (%d)/ fbbpp (%d) is not supported by this driver\n",
+		       pScrn->depth, pScrn->bitsPerPixel);
+		return FALSE;
+	    }
 	case 24:
 	    /* OK */
 	    break;
@@ -2011,7 +2017,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86LoaderReqSymbols(Sym, NULL);
 #ifdef RENDER
-    xf86LoaderReqSymbols("fbPictureInit", NULL);
+    if (pScrn->depth > 8)
+    	xf86LoaderReqSymbols("fbPictureInit", NULL);
 #endif
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
@@ -2453,6 +2460,11 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width,
 			height, pScrn->xDpi, pScrn->yDpi, 
 			displayWidth, pScrn->bitsPerPixel);
+#ifdef RENDER
+	if (ret)
+    	    fbPictureInit (pScreen, 0, 0);
+#endif
+    
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -2464,10 +2476,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-#ifdef RENDER
-    fbPictureInit (pScreen, 0, 0);
-#endif
-    
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
