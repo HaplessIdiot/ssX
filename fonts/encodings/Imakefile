@@ -11,6 +11,7 @@ OBJS = EncObjComp(adobe-dingbats) EncObjComp(adobe-standard) \
 	EncObj(dec-special) \
 	EncObj(ibm-cp437) EncObj(ibm-cp850) \
 	EncObj(ibm-cp852) EncObj(ibm-cp866) \
+	EncObj(iso8859-6.16) EncObj(iso8859-6.8x) \
 	EncObj(iso8859-11) EncObj(iso8859-13) \
 	EncObj(iso8859-16) \
 	EncObj(microsoft-cp1250) EncObj(microsoft-cp1251) \

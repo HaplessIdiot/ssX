@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.550 2003/06/25 11:07:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.551 2003/06/25 20:45:04 dawes Exp $ */
 
 #ifndef XF86_VERSION_CURRENT
 
@@ -25,7 +25,7 @@
    XF86_VERSION_NUMERIC(XF86_VERSION_MAJOR,			\
 			XF86_VERSION_MINOR,			\
 			XF86_VERSION_PATCH,			\
-			XF87_VERSION_SNAP,			\
+			XF86_VERSION_SNAP,			\
 			0)
 
 #endif

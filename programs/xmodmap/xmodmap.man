@@ -124,7 +124,7 @@ The list of keysyms is assigned to the indicated keycode
 (which may be specified in decimal, hex or octal and can be determined by 
 running the
 .I xev
-program.  Up to eight keysyms may be attached to a key, however the last four
+program).  Up to eight keysyms may be attached to a key, however the last four
 are not used in any major X server implementation.  The first keysym is used
 when no modifier key is pressed in conjunction with this key, the second with
 Shift, the third when the Mode_switch key is used with this key and the fourth
