@@ -4,7 +4,7 @@
  *
  *    TrueType Character Mappings
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -48,7 +48,7 @@
   TT_Error  CharMap_Load( PCMapTable  cmap,
                           TT_Stream   input )
   {
-    DEFINE_LOAD_LOCALS(input);
+    DEFINE_LOAD_LOCALS( input );
 
     UShort  num_SH, num_Seg, i;
 

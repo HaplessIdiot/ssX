@@ -4,7 +4,7 @@
  *
  *    File I/O Component (body).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg
  *
  *  This file is part of the FreeType project, and may only be used
@@ -38,7 +38,7 @@
  *    new "Load_TrueType_Any" function in the tables loader.
  *
  ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/ttfile.c,v 1.2 1998/09/06 07:31:56 dawes Exp $ */
 
 #include "ttconfig.h"
 
@@ -78,7 +78,7 @@
 /* It has proven useful to do some bounds checks during development phase. */
 /* They should probably be undefined for speed reasons in a later release. */
 
-#if 0
+#if DEBUG_FILE
 #define CHECK_FRAME( frame, n )                          \
   do {                                                   \
     if ( frame.cursor + n > frame.address + frame.size ) \

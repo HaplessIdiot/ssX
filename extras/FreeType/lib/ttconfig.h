@@ -4,7 +4,7 @@
  *
  *    Configuration settings header file (spec only).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -23,7 +23,10 @@
 #ifndef TTCONFIG_H
 #define TTCONFIG_H
 
+
+
 /* ------------ auto configuration ------------------------------------- */
+
 
 /*************************************************************************/
 /* Here we include the file ft_conf.h for system dependent stuff.        */
@@ -39,23 +42,52 @@
 
 /* #define TT_CONFIG_OPTION_THREAD_SAFE */
 
+
+
 /* ------------ general debugging -------------------------------------- */
 
+
+/*************************************************************************
+ *
+ *  There are now three debugging modes:
+ *
+ *  - trace mode:
+ *
+ *       Error and trace messages are sent to the log file
+ *       (which can be the standard error output).  Define
+ *       DEBUG_LEVEL_TRACE to enable this mode.
+ *
+ *  - error mode:
+ *
+ *       Only error messages are generated.  Define
+ *       DEBUG_LEVEL_ERROR to enable this mode.
+ *
+ *  - release mode:
+ *
+ *       Error messages are neither sent nor generated. The code is
+ *       free from any debugging parts.
+ *
+ *
+ * Note that you should link the engine with the 'ttdebug' component.
+ * in case either DEBUG_LEVEL_TRACE or DEBUG_LEVEL_ERROR is defined.
+ *
+ * Please consult ttdebug.h for more details.                           */
+
+/* #define DEBUG_LEVEL_TRACE */
+/* #define DEBUG_LEVEL_ERROR */
+
+
+
+/* ------------ special debugging -------------------------------------- */
+
+
 /*************************************************************************/
-/* Define DEBUG if you want the program to output a series of messages   */
-/* to stderr regarding its behaviour.  Only useful during development.   */
-/*                                                                       */
-/* Note that you should link the engine with the 'ttdebug' component.    */
-/* The latter can be ignored in normal compiles.                         */
-
-/* #define DEBUG */
-
-
-/*************************************************************************/
-/* Define this if you want to generate a debug version of the            */
+/* Define this if you want to generate a special debug version of the    */
 /* rasterizer.  This will progressively draw the glyphs while the        */
 /* computations are done directly on the graphics screen... (with        */
-/* inverted glyphs)                                                      */
+/* inverted glyphs).                                                     */
+/*                                                                       */
+/* Use it at your own risk!  It is not maintained currently.             */
 /*                                                                       */
 /* IMPORTANT: This is reserved to developers willing to debug the        */
 /*            rasterizer, which seems working very well in its           */
@@ -64,8 +96,35 @@
 /* #define DEBUG_RASTER */
 
 
+/*************************************************************************/
+/* Define this to have a simple debugger version of RunIns().            */
+/*                                                                       */
+/* Use it at your own risk!  It is not maintained currently.             */
+
+/* #define DEBUG_INTERPRETER */
+
+
+/*************************************************************************/
+/* Define this to have some housekeeping of allocation and deallocation. */
+/*                                                                       */
+/* Please note that probably not all OS-specific versions of ttmemory.c  */
+/* provide this functionality.                                           */
+
+/* #define DEBUG_MEMORY */
+
+
+/*************************************************************************/
+/* Define this to have bounds checking for file buffer frames.           */
+/*                                                                       */
+/* Please note that probably not all OS-specific versions of ttfile.c    */
+/* provide this functionality.                                           */
+
+/* #define DEBUG_FILE */
+
+
 
 /* ------------ arithmetic and processor support ----------------------- */
+
 
 /*************************************************************************/
 /* Define TT_USE_LONG_LONG if you want to enable the use of the          */
@@ -98,7 +157,19 @@
 
 
 
+/* --------------- miscellaneous ----------------------------------- */
+
+
+/*********************************************************************/
+/* The number of extensions available.  Don't change this value      */
+/* except if you add new extensions to the engine.                   */
+
+#define TT_MAX_EXTENSIONS  8
+
+
+
 /* --------------- automatic setup -- don't touch ------------------ */
+
 
 /*********************************************************************/
 /* If HAVE_TT_TEXT is defined we don't provide a default typedef for */
@@ -127,18 +198,9 @@
 /* This is only used by the "ttdebug" component, which should be     */
 /* linked to the engine only in debug mode.                          */
 
-#ifdef DEBUG
+#if defined( DEBUG_LEVEL_TRACE ) || defined( DEBUG_LEVEL_ERROR )
 #ifndef HAVE_PRINT_FUNCTION
 #define Print( format, ap )  vfprintf( stderr, (format), (ap) )
-#endif
-
-#define FT_BIG_ENDIAN     4321
-#define FT_LITTLE_ENDIAN  1234
-
-#ifdef WORDS_BIGENDIAN
-#define FT_BYTE_ORDER  FT_BIG_ENDIAN
-#else
-#define FT_BYTE_ORDER  FT_LITTLE_ENDIAN
 #endif
 #endif
 
@@ -196,7 +258,9 @@
 #endif
 
 
+
 /* -------------- internal (developer) configuration toggles ------------ */
+
 
 #undef TT_STATIC_INTERPRETER
 /* Do not undefine this configuration macro. It is now a default that */

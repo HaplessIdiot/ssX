@@ -1,6 +1,6 @@
 /* This file is an Xserver-specific version */
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/arch/unix/freetype.c,v 1.2 1998/09/06 04:29:55 dawes Exp $ */
 
 /* Single object library component for Unix */
 
@@ -27,5 +27,5 @@
 #include "ttextend.c"
 #endif
 
-/* end of freetype.c */
 
+/* END */
