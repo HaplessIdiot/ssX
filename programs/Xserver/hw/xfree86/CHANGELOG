@@ -1,4 +1,5 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 858. Update Rage 128 and Radeon PCI IDs (Mike Harris).
  857. Fix vertical retrace to not interfere with interrupt handling
       (#5608, Michel Dänzer).
  856. Add M9 DRI support (Hui Yu@ATI).
@@ -16279,4 +16280,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2533 2003/02/07 05:46:51 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2534 2003/02/07 18:08:55 martin Exp $

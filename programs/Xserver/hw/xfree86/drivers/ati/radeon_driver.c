@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.84 2003/01/30 05:31:31 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.85 2003/02/07 18:08:59 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1365,17 +1365,25 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	info->ChipFamily = CHIP_FAMILY_M6;
 	break;
 
-    case PCI_CHIP_RADEON_QY:
-    case PCI_CHIP_RADEON_QZ:
+    case PCI_CHIP_RV100_QY:
+    case PCI_CHIP_RV100_QZ:
 	info->ChipFamily = CHIP_FAMILY_VE;
 	break;
 
+    case PCI_CHIP_R200_BB:
     case PCI_CHIP_R200_QH:
+    case PCI_CHIP_R200_QI:
+    case PCI_CHIP_R200_QJ:
+    case PCI_CHIP_R200_QK:
     case PCI_CHIP_R200_QL:
+    case PCI_CHIP_R200_QM:
     case PCI_CHIP_R200_QN:
     case PCI_CHIP_R200_QO:
+    case PCI_CHIP_R200_Qh:
+    case PCI_CHIP_R200_Qi:
+    case PCI_CHIP_R200_Qj:
+    case PCI_CHIP_R200_Qk:
     case PCI_CHIP_R200_Ql:
-    case PCI_CHIP_R200_BB:
 	info->ChipFamily = CHIP_FAMILY_R200;
 	break;
 
@@ -1573,8 +1581,8 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 #if 0
 	case PCI_CHIP_RADEON_XX: info->IsPCI = TRUE;  break;
 #endif
-	case PCI_CHIP_RADEON_QY:
-	case PCI_CHIP_RADEON_QZ:
+	case PCI_CHIP_RV100_QY:
+	case PCI_CHIP_RV100_QZ:
 	case PCI_CHIP_RADEON_LW:
 	case PCI_CHIP_RADEON_LX:
 	case PCI_CHIP_RADEON_LY:
@@ -1583,13 +1591,38 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RADEON_QE:
 	case PCI_CHIP_RADEON_QF:
 	case PCI_CHIP_RADEON_QG:
+	case PCI_CHIP_R200_BB:
 	case PCI_CHIP_R200_QH:
+	case PCI_CHIP_R200_QI:
+	case PCI_CHIP_R200_QJ:
+	case PCI_CHIP_R200_QK:
 	case PCI_CHIP_R200_QL:
+	case PCI_CHIP_R200_QM:
 	case PCI_CHIP_R200_QN:
 	case PCI_CHIP_R200_QO:
+	case PCI_CHIP_R200_Qh:
+	case PCI_CHIP_R200_Qi:
+	case PCI_CHIP_R200_Qj:
+	case PCI_CHIP_R200_Qk:
 	case PCI_CHIP_R200_Ql:
-	case PCI_CHIP_R200_BB:
 	case PCI_CHIP_RV200_QW:
+	case PCI_CHIP_RV200_QX:
+	case PCI_CHIP_RV250_Id:
+	case PCI_CHIP_RV250_Ie:
+	case PCI_CHIP_RV250_If:
+	case PCI_CHIP_RV250_Ig:
+	case PCI_CHIP_RV250_Ld:
+	case PCI_CHIP_RV250_Le:
+	case PCI_CHIP_RV250_Lf:
+	case PCI_CHIP_RV250_Lg:
+	case PCI_CHIP_R300_AD:
+	case PCI_CHIP_R300_AE:
+	case PCI_CHIP_R300_AF:
+	case PCI_CHIP_R300_AG:
+	case PCI_CHIP_R300_ND:
+	case PCI_CHIP_R300_NE:
+	case PCI_CHIP_R300_NF:
+	case PCI_CHIP_R300_NG:
 	default:                 info->IsPCI = FALSE; break;
 	}
     }
@@ -3568,7 +3601,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    info->directRenderingEnabled = FALSE;
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Direct rendering not yet supported on "
-		       "Radeon 9700 and newer cards\n");
+		       "Radeon 9500/9700 and newer cards\n");
 	} else {
 	    if (info->IsSecondary)
 		info->directRenderingEnabled = FALSE;
@@ -4146,7 +4179,7 @@ static void RADEONRestoreCrtc2Registers(ScrnInfoPtr pScrn,
 	     * TV_DAC_CNTL to a correct value which causes too high
 	     * contrast for the second CRT (using TV_DAC).
 	     */
-	    OUTREG(0x88c, 0x00280203);
+	    OUTREG(RADEON_TV_DAC_CNTL, 0x00280203);
 	}
     }
 
