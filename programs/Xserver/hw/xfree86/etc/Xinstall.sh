@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.76 2005/01/29 00:24:30 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.77 2005/01/29 03:41:21 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -90,6 +90,25 @@
 
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
+
+if [ X"$1" != "X-check" ]; then
+	if [ X$XINST_LOGFILE = X ]; then
+		BACKUP_SUFFIX=$$
+		XINST_LOGFILE=XFree86-install.log.$$
+		export XINST_LOGFILE
+		export BACKUP_SUFFIX
+		echo ""
+		echo "Logging this install to $XINST_LOGFILE"
+		echo ""
+		sleep 1
+		exec sh $0 "$@" 2>&1 | tee $XINST_LOGFILE; exit
+	fi
+fi
+
+if [ X$XINST_LOGFILE != X ]; then
+	logmsg="The log for this installation is $XINST_LOGFILE"
+	trap "echo ''; echo $logmsg; echo ''; exit" 0
+fi
 
 SNAPSHOT=y
 
@@ -225,9 +244,7 @@ ETCDLINKS=" \
 	xserver \
 	"
 
-ETCFLINKS=" \
-	XftConfig \
-	"
+ETCFLINKS=""
 
 ETCFONTFILES=" \
 	fonts.conf \
@@ -1093,11 +1110,19 @@ echo "You are strongly advised to backup your existing XFree86 installation"
 echo "before proceeding.  This includes the $ROOTDIR/usr/X11R6, $ROOTDIR/etc/X11"
 echo "and $ROOTDIR/etc/fonts directories.  The installation process will"
 echo "overwrite existing files in those directories, and this may include"
-echo "some configuration files that may have been customised."
+echo "some configuration files that have been customised either by you"
+echo "or by your OS distribution.  Although an attempt is made to make backup"
+echo "copies of these files and directories before overwriting them, this is"
+echo "not a failsafe procedure.  The backup copies will have a suffix"
+echo "\".$BACKUP_SUFFIX\".  The installation is logged.  Refer to the log"
+echo "file \"$XINST_LOGFILE\" in the current directory if you"
+echo "have problems during or after the installation."
 echo ""
-echo "Make a copy when backing up those directories.  Do not simply rename"
-echo "them, or you will find many of your existing applications will no"
-echo "longer be visible."
+echo "When making your own backup of the installation directories before "
+echo "proceeding with this installation, do it by making a copy of those"
+echo "directories and their contents.  Do not simply rename them.  Otherwise"
+echo "you may find that many of your existing applications will no longer be"
+echo "visible."
 echo ""
 echo "If you are installing a version different from $SCRIPTVERSION, you"
 echo "may need an updated version of this installer script."
@@ -1430,6 +1455,7 @@ if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 		DoNotMove=YES;
 		;;
 	*)
+		echo ""
 		DoNotMove=
 		;;
 	esac
@@ -1459,8 +1485,6 @@ if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 	fi
 fi
 
-# Maybe allow a backup of the config files to be made?
-
 # Extract Xetc.tgz into a temporary location, and prompt for moving the
 # files.
 
@@ -1468,6 +1492,13 @@ echo "Extracting $ETCDIST into a temporary location ..."
 Rm -fr .etctmp
 Mkdir .etctmp
 (cd .etctmp; "$EXTRACT" "$WDIR"/$ETCDIST)
+echo ""
+echo "Configuration files will now be installed.  There are some cases where"
+echo "installing these files over existing files will adversely affect your"
+echo "previous desktop configuration, and some other cases where the new files"
+echo "are essential for the correct operation of the new installation."
+echo "These cases will noted before any old files are overwritten."
+echo ""
 for i in $ETCDLINKS; do
 	if [ -d .etctmp/X11/$i ]; then
 		DoCopy=YES
@@ -1482,9 +1513,17 @@ for i in $ETCDLINKS; do
 			echo "experience problems running the latest XFree86 server."
 			echo ""
 			;;
+		xinit|xdm)
+			echo ""
+			echo "Installing the $i configuration files may prevent your"
+			echo "previous desktop configuration from coming up."
+			echo "If you have this problem, restore the saved originals."
+			echo ""
+			;;
 		esac
 		Echo "Do you want to overwrite the $i config files? (y/n) [n] "
 		read response
+		echo ""
 		case "$response" in
 		[yY]*)
 			: OK
@@ -1495,7 +1534,6 @@ for i in $ETCDLINKS; do
 		esac
 	fi
 	if [ $DoCopy = YES ]; then
-		echo "Installing the $i config files ..."
 		# If no directory, create it.
 		if [ ! -d $RUNDIR/lib/X11/$i -a ! -d $ETCDIR/X11/$i ]; then
 			if [ X"$EtcX11IsUsedBy" = X ]; then
@@ -1503,6 +1541,19 @@ for i in $ETCDLINKS; do
 			else
 				Mkdir $ETCDIR/X11/$i
 			fi
+		fi
+		if [ -d $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
+			targetdir=$RUNDIR/lib/X11
+		else
+			targetdir=$ETCDIR/X11
+		fi
+		if [ -d $targetdir/$i ]; then
+			backupdir=$targetdir/$i.$BACKUP_SUFFIX
+			Rm -fr $backupdir
+			Mkdir $backupdir
+			echo "Making a backup of $targetdir/$i to $backupdir"
+			"$TAR" -C $targetdir/$i -c -f - . | \
+				"$TAR" -C $backupdir -x -p -U -f -
 		fi
 
 		# Create link to other location if necessary
@@ -1515,8 +1566,9 @@ for i in $ETCDLINKS; do
 				fi
 			fi
 		fi
+		echo "Installing the $i config files ..."
 		"$TAR" -C .etctmp/X11/$i -c -f - . | \
-			"$TAR" -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
+			"$TAR" -C $targetdir/$i -x -p -U -f -
 	fi
 done
 for i in $ETCFLINKS; do
@@ -1528,6 +1580,7 @@ for i in $ETCFLINKS; do
 	if [ $DoCopy = YES -a -f $RUNDIR/lib/X11/$i ]; then
 		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
 		read response
+		echo ""
 		case "$response" in
 		[yY]*)
 			: OK
@@ -1539,15 +1592,27 @@ for i in $ETCFLINKS; do
 	fi
 	if [ $DoCopy = YES ]; then
 		echo "Installing the $i config file ..."
-		targetdir=$ETCDIR/X11
 		if [ ! -f $RUNDIR/lib/X11/$i -a ! -f $ETCDIR/X11/$i ]; then
 			if [ X"$EtcX11IsUsedBy" = X ]; then
 				targetdir=$RUNDIR/lib/X11
 			else
 				targetdir=$ETCDIR/X11
 			fi
+		else
+			if [ -f $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
+				targetdir=$RUNDIR/lib/X11
+			else
+				targetdir=$ETCDIR/X11
+			fi
 		fi
-		(set -x; cp -p .etctmp/X11/$i $targetdir/$i)
+	
+		if [ -f $targetdir/$i ]; then
+			backupfile=$targetdir/$i.$BACKUP_SUFFIX
+			echo "Making a backup of $targetdir/$i to $backupfile"
+			rm -f $backupfile
+			Cp -p $targetdir/$i $backupfile
+		fi
+		Cp -p .etctmp/X11/$i $targetdir/$i
 		if [ X"$NoSymLinks" != XYES ]; then
 			if [ ! -f $RUNDIR/lib/X11/$i ]; then
 				Ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
@@ -1569,6 +1634,7 @@ for i in $ETCFONTFILES; do
 	if [ $DoCopy = YES -a -f $ETCDIR/fonts/$i ]; then
 		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
 		read response
+		echo ""
 		case "$response" in
 		[yY]*)
 			: OK
@@ -1579,8 +1645,13 @@ for i in $ETCFONTFILES; do
 		esac
 	fi
 	if [ $DoCopy = YES ]; then
+		targetdir=$ETCDIR/fonts
+		backupfile=$targetdir/$i.$BACKUP_SUFFIX
+		echo "Making a backup of $targetdir/$i to $backupfile"
+		rm -f $backupfile
+		Cp -p $targetdir/$i $backupfile
 		echo "Installing the $i config file ..."
-		(set -x; cp -p .etctmp/fonts/$i $ETCDIR/fonts/$i)
+		Cp -p .etctmp/fonts/$i $ETCDIR/fonts/$i
 	fi
 done
 Rm -fr .etctmp
@@ -1605,6 +1676,7 @@ for i in $UPDDIST; do
 	if [ -f $i ]; then
 		Echo "Do you want to install update $i `(Description $i)`? (y/n) [y] "
 		read response
+		echo ""
 		case "$response" in
 		[nN]*)
 			: skip this one
@@ -1621,6 +1693,7 @@ for i in $OPTDIST $EXTRAOPTDIST; do
 	if [ -f $i ]; then
 		Echo "Do you want to install $i (`Description $i`)? (y/n) [y] "
 		read response
+		echo ""
 		case "$response" in
 		[nN]*)
 			: skip this one
@@ -1631,6 +1704,9 @@ for i in $OPTDIST $EXTRAOPTDIST; do
 		esac
 	fi
 done
+
+echo ""
+echo "Searching for a termcap file.  This may take a few seconds..."
 
 # Check if the system has a termcap file
 TERMCAP1DIR=$ROOTDIR/usr/share
@@ -1700,6 +1776,7 @@ if [ -d $TINFODIR ]; then
 	echo "Do you wish to have the new xterm terminfo entries installed"
 	Echo "now (y/n)? [n] "
 	read response
+	echo ""
 	case "$response" in
 	[yY]*)
 		echo ""
@@ -1853,6 +1930,7 @@ if [ -f $RUNDIR/bin/rstartd ]; then
 	echo ""
 	Echo "Do you wish to have this link installed (y/n)? [n] "
 	read response
+	echo ""
 	case "$response" in
 	[yY]*)
 		if [ ! -d $ROOTDIR/usr/bin ]; then
@@ -1886,6 +1964,7 @@ if [ -d $RUNDIR/lib/modules ]; then
 		echo "Note: that if you want to use them with 3.3.x again, you'll"
 		Echo "need to move them back manually. (y/n) [n] "
 		read response
+		echo ""
 		case "$response" in
 		[yY]*)
 			if [ ! -d $RUNDIR/lib/modules/old ]; then
@@ -1950,6 +2029,7 @@ if [ -f $DRMBUILDDIR/Makefile ]; then
 	echo ""
 	Echo "Do you want to build and install new DRM kernel modules? (y/n) [n] "
 	read response
+	echo ""
 	case "$response" in
 	[yY]*)
 		DoDrmBuild=1
