@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.1 1997/06/15 07:12:25 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -36,10 +36,10 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86_Config.h"
 #include "xf86Procs.h"
-#include "xf86Xinput.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
+#include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
 
