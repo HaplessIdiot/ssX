@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/apple/Imakefile,v 1.1 2003/06/30 01:45:12 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/apple/Imakefile,v 1.2 2003/09/16 00:36:11 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -34,7 +34,8 @@ LinkSourceFile(compsize.c,$(LIBSRC)/GL/glx)
                 -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(FONTINCSRC) \
                 -I$(SERVERSRC)/render -I$(SERVERSRC)/GL/include \
                 -I$(SERVERSRC)/GL/glx -I$(SERVERSRC)/hw/darwin/quartz/cr \
-                -I$(SERVERSRC)/hw/darwin/quartz $(GL_INCLUDES)
+                -I$(SERVERSRC)/hw/darwin/quartz $(GL_INCLUDES) \
+                -I$(MESASRCDIR)/src
 
       DEFINES = $(GLX_DEFINES)
 
