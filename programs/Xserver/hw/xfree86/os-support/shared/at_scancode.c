@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/at_scancode.c,v 1.1 2002/10/11 01:40:37 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -21,6 +21,9 @@ ATScancode(InputInfoPtr pInfo, int *scanCode)
              case KEY_Prefix1:
                   pKbd->scanPrefix = *scanCode;  /* special prefixes */
                   return TRUE;
+             case 0x5c:
+                  *scanCode = KEY_KP_Equal;
+                  break;
           }
           break;
        case KEY_Prefix0:
