@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.43 2001/02/05 10:44:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.44 2001/02/07 13:26:18 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -234,6 +234,8 @@ void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg);
 Bool Permedia3AccelInit(ScreenPtr pScreen);
 void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
+void Permedia3Sync(ScrnInfoPtr pScrn);
+void DualPermedia3Sync(ScrnInfoPtr pScrn);
 
 void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
@@ -302,6 +304,11 @@ void Permedia2VideoInit(ScreenPtr pScreen);
 void Permedia2VideoUninit(ScrnInfoPtr pScrn);
 void Permedia2VideoEnterVT(ScrnInfoPtr pScrn);
 void Permedia2VideoLeaveVT(ScrnInfoPtr pScrn);
+
+void Permedia3VideoInit(ScreenPtr pScreen);
+void Permedia3VideoUninit(ScrnInfoPtr pScrn);
+void Permedia3VideoEnterVT(ScrnInfoPtr pScrn);
+void Permedia3VideoLeaveVT(ScrnInfoPtr pScrn);
 
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 		   CARD32, unsigned char mask, unsigned char data);
