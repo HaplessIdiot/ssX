@@ -1,4 +1,8 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 252. SiS driver update:
+      Fixed Xabre support
+      (Final) fix for Compaq 3045US
+      Customized timing for 848x480 parallel panels
  251. Replaced mkfontdir by simple shell script that calls mkfontscale
       (see #233) (Bugzilla #388, Juliusz Chroboczek).
  250. Added encoding files for Arabic (iso8859-6.16 and iso8859-6.8x)
@@ -17167,7 +17171,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2752 2003/06/26 10:19:43 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2753 2003/06/26 13:04:34 eich Exp $
 
 
 
