@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XCreFCur.man,v 1.2 2001/01/27 18:19:57 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -144,7 +144,7 @@
 .SH NAME
 XCreateFontCursor, XCreatePixmapCursor, XCreateGlyphCursor \- create cursors
 .SH SYNTAX
-#include <X11/cursorfont.h>
+\&#include <X11/cursorfont.h>
 .sp 6p
 Cursor XCreateFontCursor\^(\^\fIdisplay\fP, \fIshape\fP\^)
 .br

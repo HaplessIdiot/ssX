@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XReadBF.man,v 1.2 2001/01/27 18:20:03 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -359,7 +359,7 @@ a bitmap file that was written out by
 The following example creates a gray bitmap:
 .LP
 .Ds 0
-#include "gray.bitmap"
+\&#include "gray.bitmap"
 .sp 6p
 Pixmap bitmap;
 bitmap = XCreateBitmapFromData(display, window, gray_bits, gray_width, gray_height);

@@ -4,7 +4,7 @@
 .\"
 .\"
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.8 1998/04/05 02:28:41 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.9 2001/01/27 18:20:46 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -16,7 +16,7 @@ XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86
 .SH SYNTAX
 .nf
 .LP
-#include <X11/extensions/xf86vmode.h>
+\&#include <X11/extensions/xf86vmode.h>
 .LP
 Bool XF86VidModeQueryExtension(
     Display *\fIdisplay\fP\^,
