@@ -1,4 +1,5 @@
 XFree86 4.4.99.4 (xx April 2004)
+  73. Build fixes and updates for OS/2 (Bugzilla #1340, Frank Giessler)
   72. Fix freetype module segfault with some Type1 fonts (Bugzilla #1330,
       Werner Lemberg, from freetype 2.1.5, reported by Michael Lampe).
 
@@ -18853,7 +18854,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3223 2004/04/12 11:02:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3224 2004/04/13 00:38:19 dawes Exp $
 
 
 
