@@ -1,4 +1,8 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 425. Disable the bytecode interpreter by default in FreeType 1, bringing it
+      into line with the default for FreeType 2.  Document how to enable
+      it in xf86site.def for those with no legal impediment to doing so
+      (David Dawes).
  424. Improvement of Xlib's keysym compose module:
       - Allow to figure out a mulibyte string if it is ommited in Compose file.
       - Add 'include' instruction with some substitutions.
@@ -17673,7 +17677,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2844 2003/09/05 22:07:24 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2845 2003/09/06 14:08:44 pascal Exp $
 
 
 

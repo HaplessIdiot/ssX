@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.9 2000/11/28 19:09:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.10 2001/07/25 15:04:55 dawes Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
@@ -116,6 +116,21 @@
 #undef  TT_CONFIG_OPTION_GRAY_SCALING
 
 /*************************************************************************/
+/* Define this if you want to completely disable the use of the bytecode */
+/* interpreter.  Doing so will produce a much smaller library, but the   */
+/* quality of the rendered glyphs will enormously suffer from this.      */
+/*                                                                       */
+/* This switch was introduced due to the Apple patents issue which       */
+/* emerged recently on the FreeType lists.  We still do not have Apple's */
+/* opinion on the subject and will change this as soon as we have.       */
+
+/* #undef   TT_CONFIG_OPTION_NO_INTERPRETER */
+
+#ifndef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#define TT_CONFIG_OPTION_NO_INTERPRETER
+#endif
+
+/*************************************************************************/
 /* Define this if you want to use a big 'switch' statement within the    */
 /* bytecode interpreter. Because some non-optimizing compilers are not   */
 /* able to produce jump tables from such statements, undefining this     */
@@ -125,6 +140,24 @@
 
 #define  TT_CONFIG_OPTION_INTERPRETER_SWITCH
 
+/*************************************************************************/
+/* Define this if you want to build a 'static' version of the TrueType   */
+/* bytecode interpreter. This will produce much bigger code, which       */
+/* _may_ be faster on some architectures..                               */
+/*                                                                       */
+/* Do NOT DEFINE THIS is you build a thread-safe version of the engine   */
+/*                                                                       */
+/* #undef TT_CONFIG_OPTION_STATIC_INTERPRETER */
+
+/*************************************************************************/
+/* Define this if you want to build a 'static' version of the scan-line  */
+/* converter (the component which in charge of converting outlines into  */
+/* bitmaps). This will produce a bigger object file for "ttraster.c",    */
+/* which _may_ be faster on some architectures..                         */
+/*                                                                       */
+/* Do NOT DEFINE THIS is you build a thread-safe version of the engine   */
+/*                                                                       */
+/* #define TT_CONFIG_OPTION_STATIC_RASTER */
 
 /*************************************************************************/
 /* Define TT_CONFIG_THREAD_SAFE if you want to build a thread-safe       */
