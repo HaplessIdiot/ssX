@@ -1,4 +1,5 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 863. Fix segfault in XkbInitKeyboardDeviceStruct() (David Dawes).
  862. Add a ServerFlags/ServerLayout option for disabling the RandR extension
       (David Dawes).
  861. Resync with DRI mesa-4-0-4 branch:
@@ -16302,4 +16303,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2537 2003/02/08 21:26:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2538 2003/02/09 00:18:07 dawes Exp $
