@@ -1,3 +1,21 @@
+XFree86 3.0Ea (17 September 1994)
+295. Trap bpp > 8 in S3 server for Bt485 and Ti RAMDACs since it doesn't work.
+294. Fixes for various xf86Config.c bugs.
+293. Fix S3 clock limits when using clock doubling RAMDACs.
+292. Fixes to  Ti3025 code to prevent lockups (Robin Cutshaw).
+291. Move S3 Bt485 probe to after the Ti3020/5 probe (Robin Cutshaw).
+290. Fix cirrus HW cursor behaviour at top and left edges (Simon Cooper).
+289. Set background colour mapping of Cirrus HW cursor correctly
+     (Simon Cooper).
+288. Allow cirrus hardware cursor to be used when accel is turned off
+     (Simon Cooper).
+287. Don't build shared lib for LBX on Linux (Orest Zborowski).
+286. Add README.Linux (Orest Zborowski).
+285. Fix P9000 cursor problems when VT switching (Erik Nygren).
+284. Update P9000 server to work with XF86Config (Erik Nygren).
+283. Fixes for Solaris 2.4 x86 build problems with reconfig and shm.c
+      (Doug Anson).
+
 XFree86 3.0E (14 September 1994)
 282. Change the 'Device' entry in the Keyboard section of XF86Config to
      'Protocol'.
