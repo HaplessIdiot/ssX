@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.9 2000/05/06 21:09:32 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.10 2000/08/09 17:50:51 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -274,12 +274,15 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
 	
 	mask = FbFullMask(pDrawable->bitsPerPixel);
 	depthMask = FbFullMask(pDrawable->depth);
-	if ((pGC->planemask & depthMask) == depthMask)
-	    pGC->planemask = mask;
+	
 	pPriv->fg = pGC->fgPixel & mask;
 	pPriv->bg = pGC->bgPixel & mask;
-	pPriv->pm = pGC->planemask & mask;
-    
+	
+	if ((pGC->planemask & depthMask) == depthMask)
+	    pPriv->pm = mask;
+	else
+	    pPriv->pm = pGC->planemask & mask;    
+	
 	s = pDrawable->bitsPerPixel;
 	while (s < FB_UNIT)
 	{
