@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.14 2003/07/16 00:54:00 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_glx.c,v 1.15 2003/09/28 20:14:59 alanh Exp $ */
 
 /*
  * Authors:
@@ -303,6 +303,50 @@ __DRIdriver *driGetDriver(Display *dpy, int scrNum)
       return ret;
    }
    return NULL;
+}
+
+
+/*
+ * Exported function for querying the DRI driver for a given screen.
+ *
+ * The returned char pointer points to a static array that will be
+ * overwritten by subsequent calls.
+ */
+const char *glXGetScreenDriver (Display *dpy, int scrNum) {
+   static char ret[32];
+   char *driverName;
+   if (GetDriverName(dpy, scrNum, &driverName)) {
+      int len;
+      if (!driverName)
+	 return NULL;
+      len = strlen (driverName);
+      if (len >= 31)
+	 return NULL;
+      memcpy (ret, driverName, len+1);
+      Xfree(driverName);
+      return ret;
+   }
+   return NULL;
+}
+
+
+/*
+ * Exported function for obtaining a driver's option list (UTF-8 encoded XML).
+ *
+ * The returned char pointer points directly into the driver. Therefore
+ * it should be treated as a constant.
+ *
+ * If the driver was not found or does not support configuration NULL is
+ * returned.
+ *
+ * Note: The driver remains opened after this function returns.
+ */
+const char *glXGetDriverConfig (const char *driverName) {
+   __DRIdriver *driver = OpenDriver (driverName);
+   if (driver)
+      return dlsym (driver->handle, "__driConfigOptions");
+   else
+      return NULL;
 }
 
 

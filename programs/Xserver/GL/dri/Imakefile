@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.7 2003/02/11 21:34:04 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.8 2004/03/18 07:06:33 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -12,7 +12,7 @@ MOBJ = drimodule.o
          OBJS = xf86dri.o dri.o $(MOBJ)
 
      INCLUDES = -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(XINCLUDESRC) \
-		-I$(EXTINCSRC) \
+		-I$(EXTINCSRC) -I$(MESASRCDIR)/include \
 		-I$(XF86OSSRC) -I$(XF86COMSRC) \
 		-I../include -I../glx -I$(LIBSRC)/GL/include \
 		-I$(SERVERSRC)/mi -I$(FONTINCSRC)

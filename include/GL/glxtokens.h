@@ -1,7 +1,7 @@
 #ifndef __GLX_glxtokens_h__
 #define __GLX_glxtokens_h__
 
-/* $XFree86: xc/include/GL/glxtokens.h,v 1.5 2001/03/21 15:51:38 dawes Exp $ */
+/* $XFree86: xc/include/GL/glxtokens.h,v 1.6 2002/02/22 21:32:50 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -203,6 +203,12 @@ extern "C" {
 #define GLX_VISUAL_CAVEAT_EXT		0x20  /* visual_rating extension type */
 #define GLX_SLOW_VISUAL_EXT		0x8001
 #define GLX_NON_CONFORMANT_VISUAL_EXT	0x800D
+
+/* Property values for swap method (GLX_OML_swap_method) */
+#define GLX_SWAP_METHOD_OML                0x8060
+#define GLX_SWAP_EXCHANGE_OML              0x8061
+#define GLX_SWAP_COPY_OML                  0x8062
+#define GLX_SWAP_UNDEFINED_OML             0x8063
 
 /*
 ** Names for attributes to glXGetClientString.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.30 2004/01/30 20:33:06 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.19 2003/01/20 21:37:18 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -34,7 +34,11 @@
 **
 */
 
-#include "packsingle.h"
+/**
+ * \file glxcmds.c
+ * Client-side GLX interface.
+ */
+
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>
@@ -81,11 +85,13 @@ const char __glXGLClientExtensions[] =
 			"GL_EXT_fog_coord "
 			"GL_EXT_multi_draw_arrays "
 			"GL_EXT_packed_pixels "
+			"GL_EXT_paletted_texture "
 			"GL_EXT_polygon_offset "
 			"GL_EXT_rescale_normal "
 			"GL_EXT_secondary_color "
 			"GL_EXT_separate_specular_color "
 			"GL_EXT_shadow_funcs "
+			"GL_EXT_shared_texture_palette "
  			"GL_EXT_stencil_two_side "
 			"GL_EXT_stencil_wrap "
 			"GL_EXT_subtexture "
@@ -98,6 +104,7 @@ const char __glXGLClientExtensions[] =
 			"GL_EXT_texture_filter_anisotropic "
  			"GL_EXT_texture_lod "
  			"GL_EXT_texture_lod_bias "
+ 			"GL_EXT_texture_mirror_clamp "
 			"GL_EXT_texture_object "
 			"GL_EXT_texture_rectangle "
 			"GL_EXT_vertex_array "
@@ -120,6 +127,7 @@ const char __glXGLClientExtensions[] =
 			"GL_IBM_rasterpos_clip "
 			"GL_IBM_texture_clamp_nodraw "
 			"GL_IBM_texture_mirrored_repeat "
+			"GL_INGR_blend_func_separate "
 			"GL_INGR_interlace_read "
  			"GL_MESA_pack_invert "
  			"GL_MESA_ycbcr_texture "
@@ -131,6 +139,7 @@ const char __glXGLClientExtensions[] =
 			"GL_NV_multisample_filter_hint "
 			"GL_NV_point_sprite "
 			"GL_NV_texgen_reflection "
+			"GL_NV_texture_env_combine4 "
 			"GL_NV_texture_rectangle "
 			"GL_SGIS_generate_mipmap "
 			"GL_SGIS_multisample "
@@ -151,6 +160,7 @@ const char __glXGLClientExtensions[] =
 			"GL_SGIX_vertex_preclip_hint "
 			"GL_SGIX_ycrcb "
 			"GL_SUN_convolution_border_modes "
+			"GL_SUN_multi_draw_arrays "
 			"GL_SUN_slice_accum "
 			;
 
@@ -164,6 +174,8 @@ static const char __glXGLXClientVersion[] = "1.2";
 const char __glXGLClientVersion[] = "1.2";
 
 #ifdef GLX_DIRECT_RENDERING
+static Bool __glXWindowExists(Display *dpy, GLXDrawable draw);
+
 static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
     Display *dpy, XVisualInfo *vis, void *shared, __DRIcontext *ctx,
     __GLcontextModes *fbconfig );
@@ -176,6 +188,12 @@ static Bool dummyUnbindContext2( Display *dpy, int scrn,
 
 /****************************************************************************/
 
+/**
+ * Used as glue when a driver does not support
+ * \c __DRIcontextRec::bindContext2.
+ * 
+ * \sa DriverCreateContextWrapper, __DRIcontextRec::bindContext2
+ */
 static Bool dummyBindContext2( Display *dpy, int scrn,
 			       GLXDrawable draw, GLXDrawable read,
 			       GLXContext gc )
@@ -184,6 +202,12 @@ static Bool dummyBindContext2( Display *dpy, int scrn,
     return (*gc->driContext.bindContext)( dpy, scrn, draw, gc );
 }
 
+/**
+ * Used as glue when a driver does not support
+ * \c __DRIcontextRec::unbindContext2.
+ * 
+ * \sa DriverCreateContextWrapper, __DRIcontextRec::unbindContext2
+ */
 static Bool dummyUnbindContext2( Display *dpy, int scrn,
 				 GLXDrawable draw, GLXDrawable read,
 				 GLXContext gc )
@@ -203,6 +227,9 @@ static Bool dummyUnbindContext2( Display *dpy, int scrn,
  * if either function is not supported it is wrapped.  The wrappers test to
  * make sure that both drawables are the same and pass control to the old
  * interface.
+ *
+ * \sa dummyBindContext2, dummyUnbindContext2,
+ *      __DRIcontextRec::bindContext2, __DRIcontextRec::unbindContext2
  */
 
 static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
@@ -316,12 +343,47 @@ GetGLXPrivScreenConfig( Display *dpy, int scrn, __GLXdisplayPrivate ** ppriv,
 
     /* Check to see if the GL is supported on this screen */
     *ppsc = &((*ppriv)->screenConfigs[scrn]);
-    if ( ((*ppsc)->configs == NULL) || ((*ppsc)->numConfigs <= 0) ) {
+    if ( (*ppsc)->configs == NULL ) {
 	/* No support for GL on this screen regardless of visual */
 	return GLX_BAD_VISUAL;
     }
 
     return Success;
+}
+
+
+/**
+ * Determine if a \c GLXFBConfig supplied by the application is valid.
+ *
+ * \param dpy     Application supplied \c Display pointer.
+ * \param config  Application supplied \c GLXFBConfig.
+ *
+ * \returns If the \c GLXFBConfig is valid, the a pointer to the matching
+ *          \c __GLcontextModes structure is returned.  Otherwise, \c NULL
+ *          is returned.
+ */
+static __GLcontextModes *
+ValidateGLXFBConfig( Display * dpy, GLXFBConfig config )
+{
+    __GLXdisplayPrivate * const priv = __glXInitialize(dpy);
+    const unsigned num_screens = ScreenCount(dpy);
+    unsigned   i;
+    const __GLcontextModes * modes;
+
+
+    if ( priv != NULL ) {
+	for ( i = 0 ; i < num_screens ; i++ ) {
+	    for ( modes = priv->screenConfigs[i].configs
+		  ; modes != NULL
+		  ; modes = modes->next ) {
+		if ( modes == (__GLcontextModes *) config ) {
+		    return (__GLcontextModes *) config;
+		}
+	    }
+	}
+    }
+
+    return NULL;
 }
 
 
@@ -367,6 +429,7 @@ GLXContext AllocateGLXContext( Display *dpy )
     }
     gc->client_state_private = state;
     memset(gc->client_state_private, 0, sizeof(struct __GLXattributeRec));
+    state->NoDrawArraysProtocol = (getenv("LIBGL_NO_DRAWARRAYS") != NULL);
 
     /*
     ** Create a temporary buffer to hold GLX rendering commands.  The size
@@ -561,7 +624,7 @@ void __glXFreeContext(__GLXcontext *gc)
     if (gc->extensions) XFree((char *) gc->extensions);
     __glFreeAttributeState(gc);
     XFree((char *) gc->buf);
-    XFree((char *) gc->client_state_private);
+    Xfree((char *) gc->client_state_private);
     XFree((char *) gc);
     
 }
@@ -809,9 +872,14 @@ void GLX_PREFIX(glXCopyContext)(Display *dpy, GLXContext source, GLXContext dest
 }
 
 
-/*
-** Return GL_TRUE if the context is direct rendering or not.
-*/
+/**
+ * Determine if a context uses direct rendering.
+ *
+ * \param dpy        Display where the context was created.
+ * \param contextID  ID of the context to be tested.
+ *
+ * \returns \c GL_TRUE if the context is direct rendering or not.
+ */
 static Bool __glXIsDirect(Display *dpy, GLXContextID contextID)
 {
     xGLXIsDirectReq *req;
@@ -954,12 +1022,12 @@ int GLX_PREFIX(glXGetConfig)(Display *dpy, XVisualInfo *vis, int attribute,
 
     status = GetGLXPrivScreenConfig( dpy, vis->screen, & priv, & psc );
     if ( status == Success ) {
-	unsigned  i;
+	const __GLcontextModes * modes;
 
 	/* Lookup attribute after first finding a match on the visual */
-	for ( i = 0 ; i < psc->numConfigs ; i++ ) {
-	    if (psc->configs[i].visualID == vis->visualid) {
-		return _gl_get_context_mode_data( & psc->configs[i], 
+	for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
+	    if (modes->visualID == vis->visualid) {
+		return _gl_get_context_mode_data( modes,
 						  attribute,
 						  value_return );
 	    }
@@ -1239,13 +1307,12 @@ choose_visual( __GLcontextModes ** configs, int num_configs,
 */
 XVisualInfo *GLX_PREFIX(glXChooseVisual)(Display *dpy, int screen, int *attribList)
 {
-    XVisualInfo visualTemplate;
-    XVisualInfo *visualList;
+    XVisualInfo *visualList = NULL;
     __GLXdisplayPrivate *priv;
     __GLXscreenConfigs *psc;
     __GLcontextModes  test_config;
+    __GLcontextModes *modes;
     const __GLcontextModes *best_config = NULL;
-    int i;
 
     /*
     ** Get a list of all visuals, return if list is empty
@@ -1268,24 +1335,23 @@ XVisualInfo *GLX_PREFIX(glXChooseVisual)(Display *dpy, int screen, int *attribLi
     ** Compute a score for those that do
     ** Remember which visual, if any, got the highest score
     */
-    for (i = 0; i < psc->numConfigs; i++) {
-	if ( fbconfigs_compatible( & test_config, &psc->configs[i] ) ) {
-	    const __GLcontextModes * const temp = &psc->configs[i];
-
-	    if ( (best_config == None)
-		 || (fbconfig_compare( &temp, &best_config ) > 0) ) {
-		best_config = &psc->configs[i];
-	    }
+    for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
+	if ( fbconfigs_compatible( & test_config, modes )
+	     && ((best_config == NULL)
+		 || (fbconfig_compare( (const __GLcontextModes * const * const)&modes, &best_config ) > 0)) ) {
+	    best_config = modes;
 	}
     }
 
     /*
     ** If no visual is acceptable, return None
     ** Otherwise, create an XVisualInfo list with just the selected X visual
-    **   and return this after freeing the original list
+    ** and return this.
     */
-    visualList = NULL;
     if (best_config != NULL) {
+	XVisualInfo visualTemplate;
+	int  i;
+
 	visualTemplate.screen = screen;
 	visualTemplate.visualid = best_config->visualID;
 	visualList = XGetVisualInfo( dpy, VisualScreenMask|VisualIDMask,
@@ -1295,10 +1361,10 @@ XVisualInfo *GLX_PREFIX(glXChooseVisual)(Display *dpy, int screen, int *attribLi
     return visualList;
 }
 
-/*
-** Query the Server GLX string and cache it in the display private.
-** This routine will allocate the necessay space for the string.
-*/
+/**
+ * Query the Server GLX string and cache it in the display private.
+ * This routine will allocate the necessay space for the string.
+ */
 char *__glXInternalQueryServerString( Display *dpy, int opcode,
 				      int screen, int name )
 {
@@ -1333,6 +1399,15 @@ char *__glXInternalQueryServerString( Display *dpy, int opcode,
 }
 
 #define SEPARATOR " "
+
+/**
+ * Performs a intersection operation on two input extension strings.
+ * 
+ * \param cext_string Pointer to a GL extension string.
+ * \param sext_string Pointer to a GL extension string.
+ * \returns  A pointer to a new string that is the intersection of the two
+ *           input strings.
+ */
 
 char *__glXCombineExtensionStrings( const char *cext_string, const char *sext_string )
 {
@@ -1500,8 +1575,18 @@ Display *glXGetCurrentDisplay(void)
 }
 
 GLX_ALIAS(Display *, glXGetCurrentDisplayEXT, (void), (),
-	  glXGetCurrentDisplay)
+	  glXGetCurrentDisplay);
 
+/**
+ * Used internally by libGL to send \c xGLXQueryContextinfoExtReq requests
+ * to the X-server.
+ * 
+ * \param dpy  Display where \c ctx was created.
+ * \param ctx  Context to query.
+ * \returns  \c Success on success.  \c GLX_BAD_CONTEXT if \c ctx is invalid,
+ *           or zero if the request failed due to internal problems (i.e.,
+ *           unable to allocate temporary memory, etc.)
+ */
 static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
 {
     xGLXVendorPrivateReq *vpreq;
@@ -1736,14 +1821,30 @@ GLXFBConfig *GLX_PREFIX(glXGetFBConfigs)(Display *dpy, int screen, int *nelement
 
     if ( (priv->screenConfigs != NULL)
 	 && (screen >= 0) && (screen <= ScreenCount(dpy))
-	 && (priv->screenConfigs[screen].numConfigs > 0)
-	 && (priv->screenConfigs[screen].configs->fbconfigID != ((XID)-1)) ) {
+	 && (priv->screenConfigs[screen].configs != NULL)
+	 && (priv->screenConfigs[screen].configs->fbconfigID != GLX_DONT_CARE) ) {
+	unsigned num_configs = 0;
+	__GLcontextModes * modes;
+
+
+	for ( modes = priv->screenConfigs[screen].configs
+	      ; modes != NULL
+	      ; modes = modes->next ) {
+	    if ( modes->fbconfigID != GLX_DONT_CARE ) {
+		num_configs++;
+	    }
+	}
+
 	config = (__GLcontextModes **) Xmalloc( sizeof(__GLcontextModes *)
-				 * priv->screenConfigs[screen].numConfigs );
+						* num_configs );
 	if ( config != NULL ) {
-	    *nelements = priv->screenConfigs[screen].numConfigs;
-	    for ( i = 0 ; i < *nelements ; i++ ) {
-		config[i] = & priv->screenConfigs[screen].configs[i];
+	    *nelements = num_configs;
+	    i = 0;
+	    for ( modes = priv->screenConfigs[screen].configs
+		  ; modes != NULL
+		  ; modes = modes->next ) {
+		config[i] = modes;
+		i++;
 	    }
 	}
     }
@@ -1753,25 +1854,11 @@ GLXFBConfig *GLX_PREFIX(glXGetFBConfigs)(Display *dpy, int screen, int *nelement
 
 int GLX_PREFIX(glXGetFBConfigAttrib)(Display *dpy, GLXFBConfig config, int attribute, int *value)
 {
-    __GLXdisplayPrivate *priv = __glXInitialize(dpy);
-    __GLcontextModes * fbconfig = (__GLcontextModes *) config;
-    const int screen_count = ScreenCount(dpy);
-    int  i;
+    __GLcontextModes * const modes = ValidateGLXFBConfig( dpy, config );
 
-
-    if ( priv->screenConfigs != NULL ) {
-	for ( i = 0 ; i < screen_count ; i++ ) {
-	    const int numConfigs = priv->screenConfigs[i].numConfigs;
-	    if ( ( numConfigs > 0)
-		 && (priv->screenConfigs[i].configs->fbconfigID != ((XID)-1))
-		 && (fbconfig >= & priv->screenConfigs[i].configs[0])
-		 && (fbconfig < & priv->screenConfigs[i].configs[numConfigs]) ) {
-		return _gl_get_context_mode_data(fbconfig, attribute, value);
-	    }
-	}
-    }
-
-    return GLXBadFBConfig;
+    return (modes != NULL)
+	? _gl_get_context_mode_data( modes, attribute, value )
+	: GLXBadFBConfig;
 }
 
 
@@ -1829,7 +1916,7 @@ void GLX_PREFIX(glXSelectEvent)(Display *dpy, GLXDrawable drawable, unsigned lon
 */
 
 GLX_ALIAS(GLXDrawable, glXGetCurrentReadDrawableSGI, (void), (),
-	  glXGetCurrentReadDrawable)
+	  glXGetCurrentReadDrawable);
 
 
 /*
@@ -2157,17 +2244,17 @@ void GLX_PREFIX(glXDestroyGLXVideoSourceSGIX)(Display *dpy, GLXVideoSourceSGIX s
 GLX_ALIAS(int, glXGetFBConfigAttribSGIX,
 	  (Display *dpy, GLXFBConfigSGIX config, int attribute, int *value),
 	  (dpy, config, attribute, value),
-	  glXGetFBConfigAttrib)
+	  glXGetFBConfigAttrib);
 
 GLX_ALIAS(GLXFBConfigSGIX *, glXChooseFBConfigSGIX,
 	  (Display *dpy, int screen, int *attrib_list, int *nelements),
 	  (dpy, screen, attrib_list, nelements),
-	  glXChooseFBConfig)
+	  glXChooseFBConfig);
 
 GLX_ALIAS(XVisualInfo *, glXGetVisualFromFBConfigSGIX,
 	  (Display * dpy, GLXFBConfigSGIX config),
 	  (dpy, config),
-	  glXGetVisualFromFBConfig)
+	  glXGetVisualFromFBConfig);
 
 GLXPixmap GLX_PREFIX(glXCreateGLXPixmapWithConfigSGIX)(Display *dpy, GLXFBConfigSGIX config, Pixmap pixmap)
 {
@@ -2235,14 +2322,14 @@ GLXFBConfigSGIX GLX_PREFIX(glXGetFBConfigFromVisualSGIX)(Display *dpy, XVisualIn
 {
     __GLXdisplayPrivate *priv;
     __GLXscreenConfigs *psc;
-    int   i;
+    __GLcontextModes *modes;
 
     if ( (GetGLXPrivScreenConfig( dpy, vis->screen, & priv, & psc ) != Success)
 	 && __glXExtensionBitIsEnabled( psc, SGIX_fbconfig_bit )
-	 && (psc->configs[0].fbconfigID != ((XID)-1)) ) {
-	for ( i = 0 ; i < psc->numConfigs ; i++ ) {
-	    if ( psc->configs[i].visualID == vis->visualid ) {
-		return (GLXFBConfigSGIX) & (psc->configs[i]);
+	 && (psc->configs->fbconfigID != GLX_DONT_CARE) ) {
+	for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
+	    if ( modes->visualID == vis->visualid ) {
+		return (GLXFBConfigSGIX) modes;
 	    }
 	}
     }
@@ -2773,8 +2860,11 @@ Bool GLX_PREFIX(glXSet3DfxModeMESA)( int mode )
 
 
 
-/* strdup() is actually not a standard ANSI C or POSIX routine.
+/**
+ * \c strdup is actually not a standard ANSI C or POSIX routine.
  * Irix will not define it if ANSI mode is in effect.
+ * 
+ * \sa strdup
  */
 char *
 __glXstrdup(const char *str)
@@ -2960,11 +3050,15 @@ static const struct name_address_pair GLX_functions[] = {
    GLX_FUNCTION( __glXFindDRIScreen ),
    GLX_FUNCTION( __glXGetInternalVersion ),
    GLX_FUNCTION( __glXWindowExists ),
-#endif
+
+   /*** DRI configuration ***/
+   GLX_FUNCTION( glXGetScreenDriver ),
+   GLX_FUNCTION( glXGetDriverConfig ),
 
    GLX_FUNCTION( __glXScrEnableExtension ),
 
    GLX_FUNCTION( __glXGetUST ),
+#endif
 
    { NULL, NULL }   /* end of list */
 };
@@ -2986,6 +3080,15 @@ get_glx_proc_address(const char *funcName)
 
 
 #ifndef GLX_BUILT_IN_XMESA
+/**
+ * Get the address of a named GL function.  This is the pre-GLX 1.4 name for
+ * \c glXGetProcAddress.
+ *
+ * \param procName  Name of a GL or GLX function.
+ * \returns         A pointer to the named function
+ *
+ * \sa glXGetProcAddress
+ */
 void (*glXGetProcAddressARB(const GLubyte *procName))( void )
 {
    typedef void (*gl_function)( void );
@@ -3008,9 +3111,17 @@ void (*glXGetProcAddressARB(const GLubyte *procName))( void )
    return f;
 }
 
-/* GLX 1.4 */
+/**
+ * Get the address of a named GL function.  This is the GLX 1.4 name for
+ * \c glXGetProcAddressARB.
+ *
+ * \param procName  Name of a GL or GLX function.
+ * \returns         A pointer to the named function
+ *
+ * \sa glXGetProcAddressARB
+ */
 void (*glXGetProcAddress(const GLubyte *procName))( void )
-#if defined(__GNUC__) && !defined(GLX_ALIAS_UNSUPPORTED)
+#ifdef __GNUC__
     __attribute__ ((alias ("glXGetProcAddressARB")));
 #else
 {
@@ -3020,9 +3131,19 @@ void (*glXGetProcAddress(const GLubyte *procName))( void )
 #endif /* GLX_BUILT_IN_XMESA */
 
 
-/*
- * Return our version number (YYYYMMDD format).  This might be used by
- * the DRI drivers to determine how new libGL is at runtime.
+#ifdef GLX_DIRECT_RENDERING
+/**
+ * Retrieves the verion of the internal libGL API in YYYYMMDD format.  This
+ * might be used by the DRI drivers to determine how new libGL is at runtime.
+ * Drivers should not call this function directly.  They should instead use
+ * \c glXGetProcAddress to obtain a pointer to the function.
+ * 
+ * \returns An 8-digit decimal number representing the internal libGL API in
+ *          YYYYMMDD format.
+ * 
+ * \sa glXGetProcAddress, PFNGLXGETINTERNALVERSIONPROC
+ *
+ * \since Internal API version 20021121.
  */
 int __glXGetInternalVersion(void)
 {
@@ -3059,10 +3180,26 @@ static int windowExistsErrorHandler(Display *dpy, XErrorEvent *xerr)
     return 0;
 }
 
-/*
- * Utility function useful to DRI drivers.
+/**
+ * Determine if a window associated with a \c GLXDrawable exists on the
+ * X-server.  This function is not used internally by libGL.  It is provided
+ * as a utility function for DRI drivers.
+ * Drivers should not call this function directly.  They should instead use
+ * \c glXGetProcAddress to obtain a pointer to the function.
+ *
+ * \param dpy  Display associated with the drawable to be queried.
+ * \param draw \c GLXDrawable to test.
+ * 
+ * \returns \c GL_TRUE if a window exists that is associated with \c draw,
+ *          otherwise \c GL_FALSE is returned.
+ * 
+ * \warning This function is not currently thread-safe.
+ *
+ * \sa glXGetProcAddress
+ *
+ * \since Internal API version 20021128.
  */
-Bool __glXWindowExists(Display *dpy, GLXDrawable draw)
+static Bool __glXWindowExists(Display *dpy, GLXDrawable draw)
 {
     XWindowAttributes xwa;
     int (*oldXErrorHandler)(Display *, XErrorEvent *);
@@ -3080,9 +3217,15 @@ Bool __glXWindowExists(Display *dpy, GLXDrawable draw)
  * Get the unadjusted system time (UST).  Currently, the UST is measured in
  * microseconds since Epoc.  The actual resolution of the UST may vary from
  * system to system, and the units may vary from release to release.
+ * Drivers should not call this function directly.  They should instead use
+ * \c glXGetProcAddress to obtain a pointer to the function.
  *
  * \param ust Location to store the 64-bit UST
  * \returns Zero on success or a negative errno value on failure.
+ * 
+ * \sa glXGetProcAddress, PFNGLXGETUSTPROC
+ *
+ * \since Internal API version 20030317.
  */
 int __glXGetUST( int64_t * ust )
 {
@@ -3099,3 +3242,4 @@ int __glXGetUST( int64_t * ust )
 	return -errno;
     }
 }
+#endif /* GLX_DIRECT_RENDERING */

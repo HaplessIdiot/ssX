@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.25 2004/03/18 07:06:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.26 2004/04/05 02:33:08 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -21,18 +21,18 @@ XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.25 2004/03/18 07:06:20 dawes Exp $
 BASEREQUIREDLIBS = SharedGLReqs
 #endif
 
-#include "../mesa/src/array_cache/Imakefile.inc"
-#include "../mesa/src/math/Imakefile.inc"
-#include "../mesa/src/swrast/Imakefile.inc"
-#include "../mesa/src/swrast_setup/Imakefile.inc"
-#include "../mesa/src/tnl/Imakefile.inc"
-#include "../mesa/src/tnl_dd/Imakefile.inc"
-#include "../mesa/src/Imakefile.inc"
+#include "../mesa/array_cache/Imakefile.inc"
+#include "../mesa/math/Imakefile.inc"
+#include "../mesa/swrast/Imakefile.inc"
+#include "../mesa/swrast_setup/Imakefile.inc"
+#include "../mesa/tnl/Imakefile.inc"
+#include "../mesa/tnl_dd/Imakefile.inc"
+#include "../mesa/Imakefile.inc"
 #ifdef i386Architecture
-#include "../mesa/src/X86/Imakefile.inc"
+#include "../mesa/x86/Imakefile.inc"
 #endif
 #ifdef SparcArchitecture
-#include "../mesa/src/SPARC/Imakefile.inc"
+#include "../mesa/sparc/Imakefile.inc"
 #endif
 
 XCOMM
@@ -228,15 +228,15 @@ VMODEREQUIREDLIBS = $(LDPRELIBS) $(XXF86VMLIB)
 
 REQUIREDLIBS = $(OTHERREQUIREDLIBS) $(VMODEREQUIREDLIBS) $(BASEREQUIREDLIBS)
 
-        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS)
-       EOBJS = $(GLXEOBJS) $(DRIEOBJS) $(DRVEOBJS)
+        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) $(DRMOBJS)
+       EOBJS = $(GLXEOBJS) $(DRIEOBJS) $(DRVEOBJS) $(DRMEOBJS)
 #if HasSharedLibraries && !SharedLibGlxWithoutPIC
-       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
+       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS) $(DRMUOBJS)
 #else
        UOBJS = $(OBJS)
 #endif
-       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRVDOBJS)
-       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS)
+       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRVDOBJS) $(DRMDOBJS)
+       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRVPOBJS) $(DRMPOBJS)
 
 #if LocalThreads
 #if NeedUIThrStubs

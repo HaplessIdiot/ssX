@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.22 2003/12/08 17:35:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.17 2003/06/30 01:45:10 torrey Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -60,37 +60,6 @@
 
 #ifdef DEBUG
 void __glXDumpDrawBuffer(__GLXcontext *ctx);
-#endif
-
-#ifdef USE_SPARC_ASM
-/*
- * This is where our dispatch table's bounds are.
- * And the static mesa_init is taken directly from
- * Mesa's 'sparc.c' initializer.
- *
- * We need something like this here, because this version
- * of openGL/glx never initializes a Mesa context, and so
- * the address of the dispatch table pointer never gets stuffed
- * into the dispatch jump table otherwise.
- *
- * It matters only on SPARC, and only if you are using assembler
- * code instead of C-code indirect dispatch.
- *
- * -- FEM, 04.xii.03
- */
-extern unsigned int _mesa_sparc_glapi_begin;
-extern unsigned int _mesa_sparc_glapi_end;
-extern void __glapi_sparc_icache_flush(unsigned int *);
-static void _glx_mesa_init_sparc_glapi_relocs(void);
-static int _mesa_sparc_needs_init = 1;
-#define INIT_MESA_SPARC { \
-    if(_mesa_sparc_needs_init) { \
-      _glx_mesa_init_sparc_glapi_relocs(); \
-      _mesa_sparc_needs_init = 0; \
-  } \
-}
-#else
-#define INIT_MESA_SPARC
 #endif
 
 static Bool MakeContextCurrent(Display *dpy, GLXDrawable draw,
@@ -259,7 +228,7 @@ static void FreeScreenConfigs(__GLXdisplayPrivate *priv)
     screens = ScreenCount(priv->dpy);
     for (i = 0; i < screens; i++, psc++) {
 	if (psc->configs) {
-	    Xfree((char*) psc->configs);
+	    _gl_context_modes_destroy( psc->configs );
 	    if(psc->effectiveGLXexts)
 		Xfree(psc->effectiveGLXexts);
 
@@ -269,7 +238,7 @@ static void FreeScreenConfigs(__GLXdisplayPrivate *priv)
 		psc->numOldConfigs = 0;
 	    }
 
-	    psc->configs = 0;	/* NOTE: just for paranoia */
+	    psc->configs = NULL;	/* NOTE: just for paranoia */
 	}
 
 #ifdef GLX_DIRECT_RENDERING
@@ -356,18 +325,18 @@ static Bool QueryVersion(Display *dpy, int opcode, int *major, int *minor)
 static GLboolean
 FillInVisuals( __GLXscreenConfigs * psc )
 {
+    __GLcontextModes *modes;
     int glx_visual_count;
-    int i;
 
 
     glx_visual_count = 0;
-    for ( i = 0 ; i < psc->numConfigs ; i++ ) {
-	if ( (psc->configs[i].visualID != GLX_DONT_CARE)
-	     && (psc->configs[i].sampleBuffers == 0)
-	     && (psc->configs[i].samples == 0)
-	     && (psc->configs[i].drawableType == GLX_WINDOW_BIT)
-	     && ((psc->configs[i].xRenderable == GL_TRUE)
-		 || (psc->configs[i].xRenderable == GLX_DONT_CARE)) ) {
+    for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
+	if ( (modes->visualID != GLX_DONT_CARE)
+	     && (modes->sampleBuffers == 0)
+	     && (modes->samples == 0)
+	     && (modes->drawableType == GLX_WINDOW_BIT)
+	     && ((modes->xRenderable == GL_TRUE)
+		 || (modes->xRenderable == GLX_DONT_CARE)) ) {
 	    glx_visual_count++;
 	}
     }
@@ -379,16 +348,16 @@ FillInVisuals( __GLXscreenConfigs * psc )
     }
 
     glx_visual_count = 0;
-    for ( i = 0 ; i < psc->numConfigs ; i++ ) {
-	if ( (psc->configs[i].visualID != GLX_DONT_CARE)
-	     && (psc->configs[i].sampleBuffers == 0)
-	     && (psc->configs[i].samples == 0)
-	     && (psc->configs[i].drawableType == GLX_WINDOW_BIT)
-	     && ((psc->configs[i].xRenderable == GL_TRUE)
-		 || (psc->configs[i].xRenderable == GLX_DONT_CARE)) ) {
+    for ( modes = psc->configs ; modes != NULL ; modes = modes->next ) {
+	if ( (modes->visualID != GLX_DONT_CARE)
+	     && (modes->sampleBuffers == 0)
+	     && (modes->samples == 0)
+	     && (modes->drawableType == GLX_WINDOW_BIT)
+	     && ((modes->xRenderable == GL_TRUE)
+		 || (modes->xRenderable == GLX_DONT_CARE)) ) {
 
 #define COPY_VALUE(src_tag,dst_tag) \
-    psc->old_configs[glx_visual_count]. dst_tag = psc->configs[i]. src_tag
+    psc->old_configs[glx_visual_count]. dst_tag = modes-> src_tag
 
 	    COPY_VALUE( visualID,  vid );
 	    COPY_VALUE( rgbMode,   rgba );
@@ -396,7 +365,7 @@ FillInVisuals( __GLXscreenConfigs * psc )
 	    COPY_VALUE( doubleBufferMode, doubleBuffer );
 	    
 	    psc->old_configs[glx_visual_count].class = 
-		_gl_convert_to_x_visual_type( psc->configs[i].visualType );
+		_gl_convert_to_x_visual_type( modes->visualType );
 
 	    COPY_VALUE( level, level );
 	    COPY_VALUE( numAuxBuffers, auxBuffers );
@@ -776,9 +745,8 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	}
 
 	/* Allocate memory for our config structure */
-	psc->configs = (__GLcontextModes*)
-	    Xmalloc(reply.numVisuals * sizeof(__GLcontextModes));
-	psc->numConfigs = reply.numVisuals;
+	psc->configs = _gl_context_modes_create(reply.numVisuals,
+						sizeof(__GLcontextModes));
 	if (!psc->configs) {
 	    UnlockDisplay(dpy);
 	    SyncHandle();
@@ -800,14 +768,16 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
  	} 
 
 	/* Read each config structure and convert it into our format */
-	config = psc->configs;
-	for (j = 0; j < reply.numVisuals; j++, config++) {
+        config = psc->configs;
+	for (j = 0; j < reply.numVisuals; j++) {
+	    assert( config != NULL );
 	    _XRead(dpy, (char *)props, prop_size);
 
 	    __glXInitializeVisualConfigFromTags( config, nprops, props,
 						 (supported_request != 3),
 						 GL_TRUE );
 	    config->screen = i;
+	    config = config->next;
 	}
 	if (props != buf) {
 	    Xfree((char *)props);
@@ -862,7 +832,6 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     }
 #endif
 
-    INIT_MESA_SPARC
     /* The one and only long long lock */
     __glXLock();
 
@@ -977,7 +946,6 @@ CARD8 __glXSetupForCommand(Display *dpy)
 
 	if (gc->currentDpy == dpy) {
 	    /* Use opcode from gc because its right */
-            INIT_MESA_SPARC
 	    return gc->majorOpcode;
 	} else {
 	    /*
@@ -1029,6 +997,51 @@ GLubyte *__glXFlushRenderBuffer(__GLXcontext *ctx, GLubyte *pc)
     return ctx->pc;
 }
 
+
+/**
+ * Send a portion of a GLXRenderLarge command to the server.  The advantage of
+ * this function over \c __glXSendLargeCommand is that callers can use the
+ * data buffer in the GLX context and may be able to avoid allocating an
+ * extra buffer.  The disadvantage is the clients will have to do more
+ * GLX protocol work (i.e., calculating \c totalRequests, etc.).
+ *
+ * \sa __glXSendLargeCommand
+ *
+ * \param gc             GLX context
+ * \param requestNumber  Which part of the whole command is this?  The first
+ *                       request is 1.
+ * \param totalRequests  How many requests will there be?
+ * \param data           Command data.
+ * \param dataLen        Size, in bytes, of the command data.
+ */
+void __glXSendLargeChunk(__GLXcontext *gc, GLint requestNumber, 
+			 GLint totalRequests,
+			 const GLvoid * data, GLint dataLen)
+{
+    Display *dpy = gc->currentDpy;
+    xGLXRenderLargeReq *req;
+
+    if ( requestNumber == 1 ) {
+	LockDisplay(dpy);
+    }
+
+    GetReq(GLXRenderLarge,req); 
+    req->reqType = gc->majorOpcode;
+    req->glxCode = X_GLXRenderLarge; 
+    req->contextTag = gc->currentContextTag;
+    req->length += (dataLen + 3) >> 2;
+    req->requestNumber = requestNumber;
+    req->requestTotal = totalRequests;
+    req->dataBytes = dataLen;
+    Data(dpy, data, dataLen);
+
+    if ( requestNumber == totalRequests ) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+    }
+}
+
+
 /**
  * Send a command that is too large for the GLXRender protocol request.
  * 
@@ -1048,9 +1061,7 @@ void __glXSendLargeCommand(__GLXcontext *ctx,
 			   const GLvoid *header, GLint headerLen,
 			   const GLvoid *data, GLint dataLen)
 {
-    Display *dpy = ctx->currentDpy;
-    xGLXRenderLargeReq *req;
-    GLint maxSize, amount;
+    GLint maxSize;
     GLint totalRequests, requestNumber;
 
     /*
@@ -1066,40 +1077,20 @@ void __glXSendLargeCommand(__GLXcontext *ctx,
     ** Send all of the command, except the large array, as one request.
     */
     assert( headerLen <= maxSize );
-    LockDisplay(dpy);
-    GetReq(GLXRenderLarge,req); 
-    req->reqType = ctx->majorOpcode;
-    req->glxCode = X_GLXRenderLarge; 
-    req->contextTag = ctx->currentContextTag;
-    req->length += (headerLen + 3) >> 2;
-    req->requestNumber = 1;
-    req->requestTotal = totalRequests;
-    req->dataBytes = headerLen;
-    Data(dpy, (const void *)header, headerLen);
+    __glXSendLargeChunk(ctx, 1, totalRequests, header, headerLen);
 
     /*
     ** Send enough requests until the whole array is sent.
     */
-    requestNumber = 2;
-    while (dataLen > 0) {
-	amount = dataLen;
-	if (amount > maxSize) {
-	    amount = maxSize;
-	}
-	GetReq(GLXRenderLarge,req); 
-	req->reqType = ctx->majorOpcode;
-	req->glxCode = X_GLXRenderLarge; 
-	req->contextTag = ctx->currentContextTag;
-	req->length += (amount + 3) >> 2;
-	req->requestNumber = requestNumber++;
-	req->requestTotal = totalRequests;
-	req->dataBytes = amount;
-	Data(dpy, (const void *)data, amount);
-	dataLen -= amount;
-	data = ((const char*) data) + amount;
+    for ( requestNumber = 2 ; requestNumber <= (totalRequests - 1) ; requestNumber++ ) {
+	__glXSendLargeChunk(ctx, requestNumber, totalRequests, data, maxSize);
+	data = (const GLvoid *) (((const GLubyte *) data) + maxSize);
+	dataLen -= maxSize;
+	assert( dataLen > 0 );
     }
-    UnlockDisplay(dpy);
-    SyncHandle();
+
+    assert( dataLen <= maxSize );
+    __glXSendLargeChunk(ctx, requestNumber, totalRequests, data, dataLen);
 }
 
 /************************************************************************/
@@ -1451,11 +1442,11 @@ Bool GLX_PREFIX(glXMakeCurrent)(Display *dpy, GLXDrawable draw, GLXContext gc)
 
 GLX_ALIAS(Bool, glXMakeCurrentReadSGI,
 	  (Display *dpy, GLXDrawable d, GLXDrawable r, GLXContext ctx),
-	  (dpy, d, r, ctx), MakeContextCurrent)
+	  (dpy, d, r, ctx), MakeContextCurrent);
 
 GLX_ALIAS(Bool, glXMakeContextCurrent,
 	  (Display *dpy, GLXDrawable d, GLXDrawable r, GLXContext ctx),
-	  (dpy, d, r, ctx), MakeContextCurrent)
+	  (dpy, d, r, ctx), MakeContextCurrent);
 
 
 #ifdef DEBUG
@@ -1481,61 +1472,3 @@ void __glXDumpDrawBuffer(__GLXcontext *ctx)
     }	    
 }
 #endif
-
-#ifdef  USE_SPARC_ASM
-/*
- * Used only when we are sparc, using sparc assembler.
- *
- */
-
-static void
-_glx_mesa_init_sparc_glapi_relocs(void)
-{
-	unsigned int *insn_ptr, *end_ptr;
-	unsigned long disp_addr;
-
-	insn_ptr = &_mesa_sparc_glapi_begin;
-	end_ptr = &_mesa_sparc_glapi_end;
-	disp_addr = (unsigned long) &_glapi_Dispatch;
-
-	/*
-         * Verbatim from Mesa sparc.c.  It's needed because there doesn't
-         * seem to be a better way to do this:
-         *
-         * UNCONDITIONAL_JUMP ( (*_glapi_Dispatch) + entry_offset )
-         *
-         * This code is patching in the ADDRESS of the pointer to the
-         * dispatch table.  Hence, it must be called exactly once, because
-         * that address is not going to change.
-         *
-         * What it points to can change, but Mesa (and hence, we) assume
-         * that there is only one pointer.
-         *
-	 */
-	while (insn_ptr < end_ptr) {
-#if ( defined(__sparc_v9__) && ( !defined(__linux__) || defined(__linux_64__) ) )	
-/*
-	This code patches for 64-bit addresses.  This had better
-	not happen for Sparc/Linux, no matter what architecture we
-	are building for.  So, don't do this.
-
-        The 'defined(__linux_64__)' is used here as a placeholder for
-        when we do do 64-bit usermode on sparc linux.
-	*/
-		insn_ptr[0] |= (disp_addr >> (32 + 10));
-		insn_ptr[1] |= ((disp_addr & 0xffffffff) >> 10);
-		__glapi_sparc_icache_flush(&insn_ptr[0]);
-		insn_ptr[2] |= ((disp_addr >> 32) & ((1 << 10) - 1));
-		insn_ptr[3] |= (disp_addr & ((1 << 10) - 1));
-		__glapi_sparc_icache_flush(&insn_ptr[2]);
-		insn_ptr += 11;
-#else
-		insn_ptr[0] |= (disp_addr >> 10);
-		insn_ptr[1] |= (disp_addr & ((1 << 10) - 1));
-		__glapi_sparc_icache_flush(&insn_ptr[0]);
-		insn_ptr += 5;
-#endif
-	}
-}
-#endif  /* sparc ASM in use */
-
