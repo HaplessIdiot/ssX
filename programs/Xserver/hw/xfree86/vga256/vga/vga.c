@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.1 1994/05/31 08:21:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.2 1994/05/31 14:24:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -141,12 +141,12 @@ ScrnInfoRec vga256InfoRec = {
   VGA256_PATCHLEVEL,	/* char *patchLevel */
 #endif
 #endif
+  0,			/* int IObase */
+  0,			/* int PALbase */
+  0,			/* int COPbase */
+  0,			/* int POSbase */
+  0,			/* int instance */
 };
-
-void
-NoopVGA()
-{
-}
 
 pointer vgaOrigVideoState = NULL;
 pointer vgaNewVideoState = NULL;

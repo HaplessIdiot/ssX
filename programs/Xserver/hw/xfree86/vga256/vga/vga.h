@@ -1,4 +1,5 @@
 /* $XConsortium: vga.h,v 1.1 94/03/28 21:55:30 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -177,6 +178,9 @@ extern void vgaDoBitBlt();
 #endif
 #ifdef MACH32_SERVER
 #define vga256InfoRec mach32InfoRec
+#endif
+#ifdef AGX_SERVER
+#define vga256InfoRec agxInfoRec
 #endif
 extern ScrnInfoRec vga256InfoRec;
 
