@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.22 2002/12/06 00:50:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.23 2003/01/02 20:44:56 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -413,6 +413,7 @@ typedef struct _riva_hw_state
 #define RIVA_FIFO_FREE(hwinst,hwptr,cnt)                           \
 {                                                                  \
    while ((hwinst).FifoFreeCount < (cnt)) {                          \
+        mem_barrier(); \
         mem_barrier(); \
 	(hwinst).FifoFreeCount = (hwinst).hwptr->FifoFree >> 2;        \
    } \
