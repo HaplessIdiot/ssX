@@ -1,5 +1,5 @@
-/* $XConsortium: IntrinsicI.h,v 1.58 94/04/17 20:14:24 converse Exp $ */
-/* $XFree86$ */
+/* $XConsortium: IntrinsicI.h,v 1.59 94/10/10 18:57:48 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.0 1994/05/21 23:52:24 dawes Exp $ */
 
 /***********************************************************
 
@@ -117,7 +117,7 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#define _XBCOPYFUNC(src, dst, len) _XtMemmove(dst, src, len)
+#define _XBCOPYFUNC _XtBcopy
 #include <X11/Xfuncs.h>
 
 /* If the alignment characteristics of your machine are right, these may be

@@ -1,5 +1,5 @@
-/* $XConsortium: XlibInt.c,v 11.228 94/04/17 20:21:48 rws Exp $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.0 1994/04/28 12:31:08 dawes Exp $ */
+/* $XConsortium: XlibInt.c,v 11.230 94/11/29 00:06:42 gildea Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.1 1994/10/20 06:03:21 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -326,7 +326,7 @@ _XWaitForWritable(dpy
 #endif
 	}
 #ifdef USE_POLL
-	if (filedes.revents & (POLLOUT|POLLHUP))
+	if (filedes.revents & (POLLOUT|POLLHUP|POLLERR))
 #else
 	if (GETBIT(w_mask, dpy->fd))
 #endif
@@ -488,7 +488,7 @@ _XWaitForReadable(dpy)
 	if (result <= 0)
 	    continue;
 #ifdef USE_POLL
-	if (filedes[0].revents & (POLLIN|POLLHUP))
+	if (filedes[0].revents & (POLLIN|POLLHUP|POLLERR))
 #else
 	if (GETBIT(r_mask, fd))
 #endif

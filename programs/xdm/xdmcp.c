@@ -1,5 +1,5 @@
-/* $XConsortium: xdmcp.c,v 1.14 94/04/17 20:03:50 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.0 1994/06/28 12:32:43 dawes Exp $ */
+/* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.1 1994/08/31 04:50:54 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -767,17 +767,32 @@ request_respond (from, fromlen, length)
 	    pdpy = 0;
 	    goto decline;
 	}
-	if (pdpy = FindProtoDisplay (from, fromlen, displayNumber))
-	    goto accept;
-	reason = Accept (from, fromlen, displayNumber);
-	if (reason)
-	    goto decline;
-	i = SelectConnectionTypeIndex (&connectionTypes,
-				       &connectionAddresses);
-	if (i < 0)
-	{
-	    reason = &noValidAddr;
-	    goto decline;
+	pdpy = FindProtoDisplay (from, fromlen, displayNumber);
+	if (!pdpy) {
+
+	    /* Check this Display against the Manager's policy */
+	    reason = Accept (from, fromlen, displayNumber);
+	    if (reason)
+		goto decline;
+
+	    /* Check the Display's stream services against Manager's policy */
+	    i = SelectConnectionTypeIndex (&connectionTypes,
+					   &connectionAddresses);
+	    if (i < 0) {
+		reason = &noValidAddr;
+		goto decline;
+	    }
+	
+	    /* The Manager considers this a new session */
+	    connectionAddress = &connectionAddresses.data[i];
+	    pdpy = NewProtoDisplay (from, fromlen, displayNumber,
+				    connectionTypes.data[i], connectionAddress,
+				    NextSessionID());
+	    Debug ("NewProtoDisplay 0x%x\n", pdpy);
+	    if (!pdpy) {
+		reason = &outOfMemory;
+		goto decline;
+	    }
 	}
 	if (authorizationNames.length == 0)
 	    j = 0;
@@ -787,18 +802,6 @@ request_respond (from, fromlen, length)
 	if (j < 0)
 	{
 	    reason = &noValidAuth;
-	    goto decline;
-	}
-	connectionAddress = &connectionAddresses.data[i];
-	pdpy = NewProtoDisplay (from, fromlen,
-				displayNumber,
-				connectionTypes.data[i],
-				connectionAddress,
-				NextSessionID());
-	Debug ("NewProtoDisplay 0x%x\n", pdpy);
-	if (!pdpy)
-	{
-	    reason = &outOfMemory;
 	    goto decline;
 	}
 	if (!CheckAuthentication (pdpy,
@@ -828,7 +831,6 @@ request_respond (from, fromlen, length)
 	}
 	if (pdpy)
 	{
-accept:	    ;
 	    send_accept (from, fromlen, pdpy->sessionID,
 				        &authenticationName,
 					&authenticationData,

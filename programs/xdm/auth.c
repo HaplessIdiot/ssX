@@ -1,5 +1,5 @@
-/* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.6 1994/11/19 13:57:29 dawes Exp $ */
+/* $XConsortium: auth.c,v 1.56 94/10/03 21:01:57 mor Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.7 1994/11/27 07:06:48 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -676,15 +676,24 @@ DefineLocal (file, auth)
 	uname(&name);
 	strcpy(displayname, name.nodename);
 	}
-#else
+	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+#endif
+
+#if (!defined(NEED_UTSNAME) || defined (hpux))
         /* AIXV3:
 	 * In AIXV3, _POSIX_SOURCE is defined, but uname gives only first
 	 * field of hostname. Thus, we use gethostname instead.
 	 */
 
+	/*
+	 * For HP-UX, HP's Xlib expects a fully-qualified domain name, which
+	 * is achieved by using gethostname().  For compatability, we must
+	 * also still create the entry using uname() above.
+	 */
+
 	gethostname(displayname, sizeof(displayname));
-#endif
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+#endif
 }
 
 #ifdef SYSV_SIOCGIFCONF
@@ -977,6 +986,7 @@ DefineSelf (fd, file, auth)
 #endif /* SIOCGIFCONF else */
 #endif /* NCR else */
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
+
 
 static
 setAuthNumber (auth, name)
