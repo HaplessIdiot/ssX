@@ -1,4 +1,6 @@
 XFree86 4.0.2a (?? January 2001)
+1250. Invert NO_COMPILER_H_EXTRAS to prevent unintentional references to inx()/
+      outx() on the likes of SunOS (Marc La France).
 1249. Change the os-support layer to only claim a bare minimum of I/O resources
       rather than a larger estimate (Marc La France).
 1248. Loader work:  Fix handling of shared GOTs on IA-64 and Alpha's, and of
@@ -12190,4 +12192,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1509 2001/01/03 23:49:37 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1510 2001/01/06 20:19:04 tsi Exp $

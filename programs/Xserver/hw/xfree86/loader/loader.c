@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.48 2000/12/06 15:35:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.49 2000/12/13 16:52:01 tsi Exp $ */
 
 /*
  *
@@ -49,7 +49,6 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 
-#define NO_COMPILER_H_EXTRAS
 #include "compiler.h"
 
 extern LOOKUP miLookupTab[];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.75 2000/12/06 15:35:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.76 2000/12/07 15:43:40 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1388,13 +1388,13 @@ extern void outl(unsigned port, unsigned val);
 #endif
 
 /*
- * This header sometimes gets included where is isn't needed, and on some
- * OSs this causes problems because the following functions generate
- * references to inb() and outb() which can't be resolved.  Defining
- * NO_COMPILER_H_EXTRAS avoids this problem.
+ * This header sometimes gets included where is isn't needed, and on some OSs
+ * this causes problems because the following functions generate references to
+ * inx() and outx() which can't be resolved.  If you need the extra definitions
+ * below, #define COMPILER_H_EXTRAS.
  */
 
-#ifndef NO_COMPILER_H_EXTRAS
+#ifdef COMPILER_H_EXTRAS
 /*
  *-----------------------------------------------------------------------
  * Port manipulation convenience functions
@@ -1491,7 +1491,7 @@ testinx(unsigned short port, unsigned char ind)
 {
 	return(testinx2(port, ind, 0xFF));
 }
-#endif /* NO_COMPILER_H_EXTRAS */
+#endif /* COMPILER_H_EXTRAS */
 
 #endif /* NO_INLINE */
 

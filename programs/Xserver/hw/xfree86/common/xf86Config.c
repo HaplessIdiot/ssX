@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.236 2000/12/06 15:35:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.237 2001/01/06 20:19:07 tsi Exp $ */
 
 
 /*
@@ -23,7 +23,6 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 #include "xf86Config.h"
-#define NO_COMPILER_H_EXTRAS
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 

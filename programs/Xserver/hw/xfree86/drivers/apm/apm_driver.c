@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.45 2000/11/22 04:32:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.46 2000/12/02 15:30:31 tsi Exp $ */
 
-
+#define COMPILER_H_EXTRAS
 #include "apm.h"
 #include "xf86cmap.h"
 #include "shadowfb.h"
