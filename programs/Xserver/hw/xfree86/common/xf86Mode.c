@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.74 2005/01/07 23:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.75 2005/02/17 03:46:48 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1241,10 +1241,6 @@ xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode, int flags)
     return MODE_OK;
 }
 
-#ifndef MODENAMESIZE
-#define MODENAMESIZE (4 + 1 + 4 + 1)
-#endif
-
 /*
  * xf86ValidateModes
  *
@@ -1494,29 +1490,45 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			hmax = h;
 
 		    if (!haveEDIDModes) {
-			new = xnfcalloc(1, sizeof(DisplayModeRec));
-			new->type = M_T_DEFAULT | M_T_EDID;
-			new->Clock = dt->clock / 1000;
-			new->HDisplay = dt->h_active;
-			new->HSyncStart = new->HDisplay + dt->h_sync_off;
-			new->HSyncEnd = new->HSyncStart + dt->h_sync_width;
-			new->HTotal = new->HDisplay + dt->h_blanking;
-			new->VDisplay = dt->v_active;
-			new->VSyncStart = new->VDisplay + dt->v_sync_off;
-			new->VSyncEnd = new->VSyncStart + dt->v_sync_width;
-			new->VTotal = new->VDisplay + dt->v_blanking;
-			new->name = xnfalloc(MODENAMESIZE);
-			snprintf(new->name, MODENAMESIZE, "%dx%d",
-				 new->HDisplay, new->VDisplay);
-			if (firstPreferred && firstDetailed) {
-			    new->type |= M_T_PREFER;
-			    preferredName = new->name;
+			char *newName = NULL;
+
+			xasprintf(&newName, "%dx%d",
+				  dt->h_active, dt->v_active);
+			if (newName && !xf86ModeIsPresent(newName,
+							  monitor->Modes,
+							  0, M_T_DEFAULT)) {
+			    new = xcalloc(1, sizeof(DisplayModeRec));
+			    if (new) {
+				new->type = M_T_DEFAULT | M_T_EDID;
+				new->Clock = dt->clock / 1000;
+				new->HDisplay = dt->h_active;
+				new->HSyncStart = new->HDisplay +
+							dt->h_sync_off;
+				new->HSyncEnd = new->HSyncStart +
+							dt->h_sync_width;
+				new->HTotal = new->HDisplay + dt->h_blanking;
+				new->VDisplay = dt->v_active;
+				new->VSyncStart = new->VDisplay +
+							dt->v_sync_off;
+				new->VSyncEnd = new->VSyncStart +
+							dt->v_sync_width;
+				new->VTotal = new->VDisplay + dt->v_blanking;
+				new->name = newName;
+				newName = NULL;
+				if (firstPreferred && firstDetailed) {
+				    new->type |= M_T_PREFER;
+				    preferredName = new->name;
+				}
+				xf86DrvMsgVerb(scrp->scrnIndex, X_INFO, 4,
+				    "Adding detailed EDID mode %s to monitor "
+				    "(preferred: %s).\n",
+				    new->name,
+				    new->type & M_T_PREFER ? "yes" : "no");
+				xf86AddModeToMonitor(monitor, new);
+			    }
 			}
-			xf86DrvMsgVerb(scrp->scrnIndex, X_INFO, 4,
-			    "Adding detailed EDID mode %s to monitor "
-			    "(preferred: %s).\n",
-			    new->name, new->type & M_T_PREFER ? "yes" : "no");
-			xf86AddModeToMonitor(monitor, new);
+			if (newName)
+			    xfree(newName);
 		    }
 
 		    if (digital || (firstPreferred && firstDetailed)) {
