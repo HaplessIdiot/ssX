@@ -1168,7 +1168,7 @@ static const SiS_LVDSDataStruct  SiS_LCDA1400x1050Data_2[]=
 };
 
 static const SiS_LVDSDataStruct  SiS_LCDA1600x1200Data_1[]=
-{ /* Clevo (Temporary data)  */
+{ /* Clevo, 651+301C */
 	{1200, 450, 2048,1250},
 	{1200, 400, 2048,1250},
 	{1280, 450, 2048,1250},
@@ -1178,14 +1178,16 @@ static const SiS_LVDSDataStruct  SiS_LCDA1600x1200Data_1[]=
 	{1584, 818, 2048,1250},
 	{1688,1066, 2048,1250},
 	{1688,1066, 2048,1250},
-	{2048,1250, 2048,1250}   /* this should be correct */
 #if 0
+	{2048,1250, 2048,1250}   /* this should be correct */
+#endif
+#if 1
 	{2160,1250, 2048,1250}   /* ? */
 #endif
 };
 
 static const SiS_LVDSDataStruct  SiS_LCDA1600x1200Data_2[]=
-{ /* Clevo (Temporary data. Seems invalid.) */
+{ /* Clevo, 651+301C */
 	{2160,1250, 2160,1250},
 	{2160,1250, 2160,1250},
 	{2160,1250, 2160,1250},

@@ -91,7 +91,7 @@ static const UCHAR SiS310_LCDDelayCompensation_650301LV[] =	   	/* 650 + 30xLV *
 		 0x02,0x02,0x02
 };
 
-static const UCHAR SiS310_LCDDelayCompensation_651301LV[] =	  /* M650/651 301LV */
+static const UCHAR SiS310_LCDDelayCompensation_651301LV[] =	  	/* M650/651 301LV */
 {
                  0x33,0x33,0x33,    /*   800x600 (guessed) - new: PanelType, not PanelRes ! */
 		 0x33,0x33,0x33,    /*  1024x768 */
@@ -110,7 +110,7 @@ static const UCHAR SiS310_LCDDelayCompensation_651301LV[] =	  /* M650/651 301LV 
 		 0x33,0x33,0x33
 };
 
-static const UCHAR SiS310_LCDDelayCompensation_651302LV[] =	   /* M650/651 302LV */
+static const UCHAR SiS310_LCDDelayCompensation_651302LV[] =	   	/* M650/651 302LV */
 {
                  0x33,0x33,0x33,    /*   800x600 (guessed) */
 		 0x33,0x33,0x33,    /*  1024x768 */
@@ -169,13 +169,6 @@ static const UCHAR SiS310_TVDelayCompensation_740301B[] =	/* 740 + 30xB (30xLV?)
 		 0x05,0x05
 };
 
-static const UCHAR SiS310_TVDelayCompensation_LVDS[] =		/* LVDS */
-{
-		 0x0a,0x0a,
-		 0x0a,0x0a,
-		 0x0a,0x0a
-};
-
 static const UCHAR SiS310_TVDelayCompensation_651301LV[] =	/* M650, 651, 301LV */
 {
 		 0x33,0x33,
@@ -208,6 +201,13 @@ static const UCHAR SiS_TVDelay661_301B[] =			/* 661, 301B et al */
 		 0x44,0x44,
 		 0x44,0x44,
 		 0x44,0x44
+};
+
+static const UCHAR SiS310_TVDelayCompensation_LVDS[] =		/* LVDS */
+{
+		 0x0a,0x0a,
+		 0x0a,0x0a,
+		 0x0a,0x0a
 };
 
 static const UCHAR SiS310_TVAntiFlick1[6][2] =
