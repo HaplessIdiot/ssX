@@ -1,4 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -154,7 +155,7 @@ PexExtensionInit()
     /*
      *  Open up the default font
      */
-    pPEXFont=(dipexFont *)Xalloc((unsigned long)(sizeof(dipexFont)));
+    pPEXFont=(dipexFont *)xalloc((unsigned long)(sizeof(dipexFont)));
     if (!pPEXFont) {
 	ErrorF("PEXExtensionInit: Memory error--could not allocate default PEX font");
   	diFreePEXBuffer(pPEXBuffer);
@@ -173,7 +174,7 @@ PexExtensionInit()
 	char *static_message =
 		    "PEXExtensionInit: Couldn't open default PEX font file ";
 
-        errmsg = (char *) Xalloc(strlen(static_message) +
+        errmsg = (char *) xalloc(strlen(static_message) +
 				 strlen(DEFAULT_PEX_FONT_NAME) +
 				 2  /* 1 byte for space between strings,
 				     * 1 byte for null */
@@ -182,10 +183,10 @@ PexExtensionInit()
           sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
 
 	  ErrorF(errmsg);
-          Xfree(errmsg);
+          xfree(errmsg);
         }
 
-	Xfree(pPEXFont);
+	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
 	return; 
@@ -204,7 +205,7 @@ PexExtensionInit()
     if (!AddResource(	pPEXFont->ddFont.id, PEXFontType,
 			(pointer)(pPEXFont))) {
 	ErrorF("PEXExtensionInit: Couldn't add default PEX font resource.");
-	Xfree(pPEXFont);
+	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
 	return;
@@ -215,7 +216,7 @@ PexExtensionInit()
 				    PEXResetProc, StandardMinorOpcode);
     if (!PextEntry) {
 	ErrorF("PEXExtensionInit: AddExtensions failed\n");
-	Xfree(pPEXFont);
+	xfree(pPEXFont);
 	defaultPEXFont = 0; 
   	diFreePEXBuffer(pPEXBuffer);
 	return; 
@@ -245,7 +246,7 @@ ClientPtr client;
     XID pexId;
 
     /* Allocate space for the context table */
-    cntxtPtr = (pexContext *) Xalloc( (unsigned long)(sizeof( pexContext )
+    cntxtPtr = (pexContext *) xalloc( (unsigned long)(sizeof( pexContext )
 						+ sizeof(pexSwap)) );
     cntxtPtr->swap = (pexSwap *)(cntxtPtr+1);	/* this is silly */
 
@@ -258,7 +259,7 @@ ClientPtr client;
 	temp = MinorOpcodeOfRequest(client);
 	SendErrorToClient(  client, (unsigned) PexReqCode,
 			    (temp), (unsigned long)0, (int) (BadAlloc));
-	Xfree((pointer)cntxtPtr);
+	xfree((pointer)cntxtPtr);
 	return(0); }
 
     /* setup the default proc vectors */
@@ -298,7 +299,7 @@ XID pexId;
     pexContext *cntxtPtr = (pexContext *)value;
 
     /* Free space allocated for the client context */
-    if (cntxtPtr) Xfree( (pointer)cntxtPtr );
+    if (cntxtPtr) xfree( (pointer)cntxtPtr );
 
 }
 

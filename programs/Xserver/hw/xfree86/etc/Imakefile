@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.4 1995/01/26 02:19:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.5 1995/06/01 08:26:04 dawes Exp $
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
@@ -64,14 +64,20 @@ InstallManPage(kbd_mode,$(MANDIR))
 #if BuildScanpci
        SRCS2 = xf86pci.c
    XF86HWLIB = $(XF86HWSRC)/LibraryTargetName(xf86_hw)
+#if defined(SunArchitecture) && !HasGcc
+       IOSRC = SolX86IO.s
+       IOOBJ = SolX86IO.o
+
+LinkFile(SolX86IO.s,../SuperProbe/SolX86IO.s)
+#endif
     
 AllTarget(ProgramTargetName(scanpci))
 
-NormalProgramTarget(scanpci,xf86pci.o,NullParameter,$(XF86HWLIB),NullParameter)
+NormalProgramTarget(scanpci,xf86pci.o $(IOOBJ),NullParameter,$(XF86HWLIB),NullParameter)
 InstallProgram(scanpci,$(BINDIR))
 #endif
 
-        SRCS = $(SRCS1) $(SRCS2)
+        SRCS = $(SRCS1) $(SRCS2) $(IOSRC)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
@@ -100,5 +106,6 @@ LinkFile(sun.termcap,sun.tcap)
 LinkFile(sun.terminfo,sun.tinfo)
 
 NormalLibraryObjectRule()
+NormalAsmObjectRule()
 DependTarget()
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.45 1995/06/27 06:57:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.46 1995/06/27 14:33:46 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -36,6 +36,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.45 1995/06/27 06:57:10 dawes Exp $
  * The default is '-lgmalloc' unless is specified in the OS's .cf file.
  *
 #define GnuMallocLibrary	-L/usr/local/lib -lgmalloc
+ */
+
+/*
+ * To use the internal Xserver malloc, set this to YES
+ *
+#define UseInternalMalloc	YES
  */
 
 /*

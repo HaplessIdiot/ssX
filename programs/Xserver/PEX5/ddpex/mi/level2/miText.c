@@ -1,4 +1,5 @@
 /* $XConsortium: miText.c,v 5.13 94/04/17 20:37:19 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -136,7 +137,7 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
     
     /* Allocate space for stroke definitions of all chars in ISTRING */
 
-    if (!((tx_el->paths) = (miCharPath *) Xalloc(numChars *
+    if (!((tx_el->paths) = (miCharPath *) xalloc(numChars *
 						sizeof(miCharPath))))
       return (BadAlloc);
 
@@ -376,7 +377,7 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
     
     /* Allocate space for stroke definitions of all chars in ISTRING */
 
-    if (!((tx_el->paths) = (miCharPath *) Xalloc(numChars *
+    if (!((tx_el->paths) = (miCharPath *) xalloc(numChars *
 						sizeof(miCharPath))))
       return (BadAlloc);
 
@@ -809,7 +810,7 @@ miText3D(pRend, pExecuteOC)
 
 /* Define required temporary variables */
 
-    ddULONG             numChars; /* Needed for Xalloc */
+    ddULONG             numChars; /* Needed for xalloc */
     pexMonoEncoding     *pMono;
     ddCoord2D           align;    /* alignment info */
     ddFLOAT             tc_to_cc_xform[4][4];
@@ -1053,7 +1054,7 @@ miText3D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }
@@ -1089,7 +1090,7 @@ miText2D(pRend, pExecuteOC)
 
 /* Define required temporary variables */
 
-    ddULONG             numChars; /* Needed for Xalloc */
+    ddULONG             numChars; /* Needed for xalloc */
     pexMonoEncoding     *pMono;
     ddCoord2D           align;    /* alignment info */
     ddFLOAT             tc_to_cc_xform[4][4];
@@ -1333,7 +1334,7 @@ miText2D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }
@@ -1371,7 +1372,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
 /* Define required temporary variables */
 
-    ddULONG             numChars; /* Needed for Xalloc */
+    ddULONG             numChars; /* Needed for xalloc */
     pexMonoEncoding     *pMono;
     ddCoord2D           align;    /* alignment info */
     ddFLOAT             tc_to_cc_xform[4][4];
@@ -1696,11 +1697,11 @@ miAnnoText3D(pRend, pExecuteOC)
       Connector.type = DD_3D_POINT;
       Connector.numLists = 1;
       if (!(Connector.ddList = (listofddPoint *) 
-	                       Xalloc(sizeof(listofddPoint))))
+	                       xalloc(sizeof(listofddPoint))))
 	return (BadAlloc);
       Connector.ddList->numPoints = 2;
       if (!((Connector.ddList->pts.p3Dpt) = (ddCoord3D *) 
-	                                    Xalloc(sizeof(ddCoord3D) * 2)))
+	                                    xalloc(sizeof(ddCoord3D) * 2)))
       return (BadAlloc);
 
       Connector.ddList->pts.p3Dpt->x = pOrigin->x;
@@ -1754,7 +1755,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }
@@ -1791,7 +1792,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
 /* Define required temporary variables */
 
-    ddULONG             numChars; /* Needed for Xalloc */
+    ddULONG             numChars; /* Needed for xalloc */
     pexMonoEncoding     *pMono;
     ddCoord2D           align;    /* alignment info */
     ddFLOAT             tc_to_cc_xform[4][4];
@@ -2117,11 +2118,11 @@ miAnnoText2D(pRend, pExecuteOC)
 
       Connector.type = DD_2D_POINT;
       Connector.numLists = 1;
-      if (!(Connector.ddList = (listofddPoint *) Xalloc(sizeof(listofddPoint))))
+      if (!(Connector.ddList = (listofddPoint *) xalloc(sizeof(listofddPoint))))
 	return (BadAlloc);
       Connector.ddList->numPoints = 2;
       if (!((Connector.ddList->pts.p2Dpt) = (ddCoord2D *) 
-	                                     Xalloc(sizeof(ddCoord2D) * 2)))
+	                                     xalloc(sizeof(ddCoord2D) * 2)))
 	return (BadAlloc);
       Connector.ddList->pts.p2Dpt->x = pOrigin->x;
       Connector.ddList->pts.p2Dpt->y = pOrigin->y;
@@ -2170,7 +2171,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
     /* Free up space allocated for text stroke data */
 
-    Xfree ((char *)save_ptr);
+    xfree ((char *)save_ptr);
 
     return (Success);
 }

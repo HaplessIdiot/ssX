@@ -17,7 +17,7 @@ The following chipsets are supported:
 <descrip>
 <tag>ARK1000PV (ark1000pv)</tag>
 	Chipset with 32-bit DRAM interface, supports fast DRAM timing,
-	for VESA and PCI bus. Has powerful "coprocesor" for graphics
+	for VESA and PCI bus. Has powerful "coprocessor" for graphics
 	acceleration which is not yet used in the current driver.
 	The max supported resolution/refresh depends on the RAMDAC
 	used on the card; expect 256 colors up to 80 or 110 MHz dot clock.
@@ -102,7 +102,7 @@ can be reached at <it>hhanemaa@cs.ruu.nl</it>), or post in the Usenet
 newsgroup "<it>comp.windows.x.i386unix</it>".
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.0 1995/07/03 08:50:55 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,5 @@
 /* $XConsortium: getfctl.c,v 1.16 94/04/17 20:33:10 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -166,7 +167,7 @@ ProcXGetFeedbackControl(client)
 	return Success;
 	}
 
-    buf = (char *) Xalloc (total_length);
+    buf = (char *) xalloc (total_length);
     if (!buf)
 	{
 	SendErrorToClient(client, IReqCode, X_GetFeedbackControl, 0, 
@@ -191,7 +192,7 @@ ProcXGetFeedbackControl(client)
     rep.length = (total_length+3) >> 2;
     WriteReplyToClient(client, sizeof(xGetFeedbackControlReply), &rep);
     WriteToClient(client, total_length, savbuf);
-    Xfree (savbuf);
+    xfree (savbuf);
     return Success;
     }
 

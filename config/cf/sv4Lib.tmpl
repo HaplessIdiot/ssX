@@ -13,3 +13,8 @@ XMULIB = $(XMULIBONLY) -z nodefs
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
+#if ThreadedX
+#ifndef SharedX11Reqs
+#define SharedX11Reqs -lthread
+#endif
+#endif

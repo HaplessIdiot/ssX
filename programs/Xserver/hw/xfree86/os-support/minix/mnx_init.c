@@ -1,5 +1,5 @@
 /* $XConsortium: mnx_init.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.1 1994/09/23 10:25:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.3 1995/01/28 17:04:46 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -73,7 +73,7 @@ void xf86OpenConsole()
 	}
 	setuid(real_uid);
 
-	xf86VideoBaseRaw = (char *)Xalloc(VIDEO_SIZE+VIDEO_ALIGN);
+	xf86VideoBaseRaw = (char *)xalloc(VIDEO_SIZE+VIDEO_ALIGN);
 	if (xf86VideoBaseRaw == 0)
 	{
 	    FatalError("xf86OpenConsole: Out of memory\n");
@@ -96,6 +96,8 @@ void xf86OpenConsole()
 
 void xf86CloseConsole()
 {
+	xfree(xf86VideoBaseRaw);
+	xf86VideoBaseRaw = NULL; 	/* not needed? */
 	return;
 }
 

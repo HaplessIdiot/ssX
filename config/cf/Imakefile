@@ -1,12 +1,18 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.5 1995/06/02 09:59:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.6 1995/07/05 12:25:49 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
 #endif
 
+#ifndef InstallEmptyHostDef
+HOSTDEFFILES = \
+host.def
+#endif
+
 DEFFILES = \
 xf86site.def \
+$(HOSTDEFFILES) \
 site.def
 
 RULEFILES = \
@@ -97,9 +103,11 @@ all::
 
 InstallMultipleDestFlags(install,$(INSTFILES),$(CONFIGDIR),$(INSTDATFLAGS))
 
+#ifdef InstallEmptyHostDef
 install::
 	@(TMP=/tmp/tmp.$$$$; \
 	RemoveFile($${TMP}); \
 	echo "" > $${TMP}; \
 	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $${TMP} $(DESTDIR)$(CONFIGDIR)/host.def; \
 	RemoveFile($${TMP}))
+#endif

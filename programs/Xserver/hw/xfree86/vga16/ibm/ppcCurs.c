@@ -103,7 +103,7 @@ ppcRealizeCursor( pScr, pCurs )
     int srcRealWidth ;
 
     TRACE(("ppcRealizeCursor( pScr= 0x%x, pCurs= 0x%x)\n",pScr,pCurs)) ;
-    if ( ! ( pCurs->devPriv[ pScr->myNum ] = (pointer) Xalloc( 256 ) ) )
+    if ( ! ( pCurs->devPriv[ pScr->myNum ] = (pointer) xalloc( 256 ) ) )
 	{
 	ErrorF("ppcRealizeCursor: can't malloc\n") ;
 	return FALSE ;
@@ -146,7 +146,7 @@ ppcUnrealizeCursor( pScr, pCurs )
 
     TRACE(("ppcUnrealizeCursor( pScr= 0x%x, pCurs= 0x%x )\n",pScr,pCurs)) ;
 
-    Xfree( pCurs->devPriv[ pScr->myNum ] ) ;
+    xfree( pCurs->devPriv[ pScr->myNum ] ) ;
     pCurs->devPriv[ pScr->myNum ] = 0 ;
     return TRUE ;
 }

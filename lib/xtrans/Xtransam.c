@@ -1,4 +1,5 @@
 /* $XConsortium: Xtransam.c,v 1.4 94/04/17 20:23:01 mor Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -335,7 +336,7 @@ XAmFreeChanDesc(chandesc)
     XAmChanDesc *chandesc;
 {
     if (chandesc->sema) {
-	free(chandesc->sema);
+	xfree(chandesc->sema);
 	chandesc->sema = NULL;
     }
     chandesc->state = ACDS_FREE;
@@ -489,7 +490,7 @@ MakeAmConnection(phostname, idisplay, familyp, saddrlenp, saddrp)
 	/* start TCP/IP reader thread */
 	chandesc->signal = sig_uniq();
 	chandesc->circbuf = cb_alloc(CIRCBUFSIZE);
-	param = (XAmChanDesc **) malloc(sizeof(XAmChanDesc *));
+	param = (XAmChanDesc **) xalloc(sizeof(XAmChanDesc *)); /* error checking? */
 	*param = chandesc;
 	result = thread_newthread(XAmReaderThread, THREAD_STACK_SIZE,
 				  (char *)param, sizeof(XAmChanDesc *));
@@ -507,8 +508,8 @@ MakeAmConnection(phostname, idisplay, familyp, saddrlenp, saddrp)
 	 */
 	*familyp = AF_INET;
 	*saddrlenp = sizeof(ipaddr_t);
-	*saddrp = malloc(sizeof(ipaddr_t));
-	memcpy(*saddrp, (char *)&ipaddr, sizeof(ipaddr_t));
+	*saddrp = xalloc(sizeof(ipaddr_t));
+	memcpy(*saddrp, (char *)&ipaddr, sizeof(ipaddr_t)); /* error checking? */
     }
 
     return XAmChanDescToFd(chandesc);
@@ -610,7 +611,7 @@ TRANS(AmSelect)(ifd, timout)
 	 * available. The underlying circular buffer and
 	 * virtual circuit packages manage this semaphore.
 	 */
-	chandesc->sema = (semaphore *) malloc(sizeof(semaphore));
+	chandesc->sema = (semaphore *) xalloc(sizeof(semaphore));
 	if (chandesc->sema == NULL) {
 	    errno = ENOMEM;
 	    return -1;
@@ -733,7 +734,7 @@ XtransConnInfo	ciptr;
 #endif
 
 	ciptr->peeraddrlen = sizeof(tcpconf.nwtc_remaddr);
-	ciptr->peeraddr = (char *) malloc (ciptr->peeraddrlen);
+	ciptr->peeraddr = (char *) xalloc (ciptr->peeraddrlen);
 	if (ciptr->peeraddr == NULL) {
 	    PRMSG (1, "TRANS(AMGetPeerAddr): Can't allocate peeraddr\n",
 		   0, 0, 0);
@@ -745,7 +746,7 @@ XtransConnInfo	ciptr;
 
     case ACDT_VIRTCIRC:
 	/* for Amoeba virtual circuits just copy the client address */
-	if ((ciptr->peeraddr = (char *) malloc (ciptr->addrlen)) == NULL) {
+	if ((ciptr->peeraddr = (char *) xalloc (ciptr->addrlen)) == NULL) {
 	    PRMSG (1, "TRANS(AMGetPeerAddr): Can't allocate peeraddr\n",
 		   0, 0, 0);
 	    return -1;
@@ -802,7 +803,7 @@ char		*port;
 
     PRMSG(2,"TRANS(AMOpenCOTSClient)(%s,%s,%s)\n", protocol, host, port );
     
-    ciptr = (XtransConnInfo) calloc (1, sizeof(struct _XtransConnInfo));
+    ciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (ciptr == NULL) {
         PRMSG (1, "TRANS(AMOpenCotsClient): malloc failed\n", 0, 0, 0);
         return NULL;
@@ -813,7 +814,7 @@ char		*port;
     if (ciptr->fd < 0) {
 	PRMSG(1,"TRANS(AMOpenCOTSClient): Unable to make connection to %s\n",
 	      host, 0,0 );
-	free(ciptr);
+	xfree(ciptr);
 	return NULL;
     }
 
@@ -1124,7 +1125,7 @@ capability *chancap;
     }
 
     chandesc->signal = sig_uniq();
-    param = (XAmChanDesc **) malloc(sizeof(XAmChanDesc *));
+    param = (XAmChanDesc **) xalloc(sizeof(XAmChanDesc *)); /* error checking? */
     *param = chandesc;
     if (thread_newthread(TcpIpReaderThread, MAXBUFSIZE + CONNECTOR_STACK,
 			 (char *)param, sizeof(XAmChanDesc *)) == 0)
@@ -1168,7 +1169,7 @@ AmConnectorThread()
 
     WaitForInitialization();
     dbprintf(("AmConnectorThread() running ...\n"));
-    if ((repb = (char *)malloc(REPLY_BUFSIZE)) == NULL) {
+    if ((repb = (char *)xalloc(REPLY_BUFSIZE)) == NULL) {
 	Fatal(("Amoeba connector thread: malloc failed"));
     }
     for (;;) {
@@ -1533,7 +1534,7 @@ char		*port;
 
     PRMSG(2,"TRANS(AMOpenCOTSServer)(%s,%s,%s)\n", protocol, given_host, port);
 
-    ciptr = (XtransConnInfo) calloc (1, sizeof(struct _XtransConnInfo));
+    ciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (ciptr == NULL) {
         PRMSG (1, "TRANS(AMOpenCotsClient): malloc failed\n", 0, 0, 0);
         return NULL;
@@ -1652,7 +1653,7 @@ XtransConnInfo	ciptr;
     }
     nNewConns--;
 
-    newciptr = (XtransConnInfo) calloc (1, sizeof(struct _XtransConnInfo));
+    newciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (newciptr == NULL)
     {
         PRMSG (1, "TRANS(AMAccept): malloc failed\n", 0, 0, 0);

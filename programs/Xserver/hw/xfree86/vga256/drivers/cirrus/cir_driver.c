@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.36 1995/05/27 03:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.37 1995/06/02 11:19:42 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1347,7 +1347,9 @@ cirrusFbInit()
         CIRRUS.ChipLinearSize = vga256InfoRec.videoRam * 1024;
         if (xf86Verbose)
             ErrorF("%s %s: %s: Using linear framebuffer at 0x%08x (%dMB)\n",
-	        XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+	        OFLG_ISSET(XCONFIG_MEMBASE, &vga256InfoRec.xconfigFlag) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED,
+		vga256InfoRec.name, vga256InfoRec.chipset,
 	        CIRRUS.ChipLinearBase, (unsigned int)CIRRUS.ChipLinearBase
 	        / (1024 * 1024));
 	if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5428 &&

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.0 1995/07/01 10:49:05 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -21,16 +21,16 @@ extern int vgaIOBase;
 #define PALETTE_RAM_READ_ADDRESS             0x03C7
 
 /* when RS2 = 1 */
-#define CLOCK_RAM_WRITE_ADDRESS              0x03C8
-#define CLOCK_RAM_DATA_REGISTER              0x03C9
-#define CONTROL_REGISTER                     0x03C6
-#define CLOCK_RAM_READ_ADDRESS               0x03C7
+#define INDEX_LO              0x03C8
+#define INDEXED_REG           0x03C9
+#define PIXEL_COMMAND         0x03C6
+#define INDEX_HI              0x03C7
 
 #define MIN_N1		6
 
-#define FREQ_MIN   8500		/* A guess */
-#define FREQ_MAX 135000
-#define STG1703_REF_FREQ 14318 /* A guess */
+#define FREQ_MIN              8500
+#define FREQ_MAX            135000
+#define STG1703_REF_FREQ     14318
 
 
 #if NeedFunctionPrototypes
@@ -48,6 +48,7 @@ int clk;
    vgaCRAddr = vgaIOBase + 4;
    vgaCRData = vgaIOBase + 5;
 
+   /* Shouldn't need to do this */
    /* RS2 controlled in CR55 bit 0 */
    outb(vgaCRAddr, 0x55);
    oldCR55 = inb(vgaCRData);   /* save value in register 55 */
@@ -55,19 +56,12 @@ int clk;
       talking to correct registers */
    outb(vgaCRData, (oldCR55 & 0xFC) | 0x01);
 
-   (void)inb(CONTROL_REGISTER);   /* reset sequence just to make sure */
-   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
-   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
-   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
-   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
-
-   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
-   outb(CLOCK_RAM_WRITE_ADDRESS, (clk << 1) + 0x20);
-   outb(CLOCK_RAM_WRITE_ADDRESS, 0);
-   outb(CLOCK_RAM_WRITE_ADDRESS, (program_word & 0xff00) >> 8);
-   outb(CLOCK_RAM_WRITE_ADDRESS, (program_word & 0xff));
-
-   (void)inb(CONTROL_REGISTER); /* Clear DAC Counter */
+   outb(INDEX_LO, (clk << 1) + 0x20);
+   outb(INDEX_HI, 0);
+   outb(INDEXED_REG, (program_word & 0xff00) >> 8);
+   outb(INDEXED_REG, program_word & 0xff);
+   
+   usleep(10000);
 
    /* that's done, now select clock through register 0x42 on S3 */
 
@@ -75,7 +69,6 @@ int clk;
    outb(0x3C2, tmp | 0x0C);
    outb(vgaCRAddr, 0x042);
    outb(vgaCRData, clk);
-
 
    /* we're all done (I think), put things back the way they were */
 
@@ -137,6 +130,12 @@ int clk;
    } while (tempA <= (MIN_N1 << 1));
 
    program_word = divider;
+
+   /*
+    * M  = program_word >> 8
+    * N1 = program_word & 0x1F
+    * N2 = (program_word & 0xFF) >> 5
+    */
 
    s3ProgramSTG1703Clock(program_word, clk);
    return;

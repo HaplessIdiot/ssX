@@ -1,5 +1,5 @@
 /* $XConsortium: ppcGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.2 1995/01/28 17:06:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGC.c,v 3.3 1995/05/07 11:53:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -205,10 +205,10 @@ register GCPtr pGC ;
 		return (mfbCreateGC(pGC));
 		}
 
-	if ( !( pPriv = (ppcPrivGC *) Xalloc( sizeof( ppcPrivGC ) ) ) )
+	if ( !( pPriv = (ppcPrivGC *) xalloc( sizeof( ppcPrivGC ) ) ) )
 		return FALSE ;
 
-	if ( !( pOps = (GCOps *) Xalloc( sizeof( GCOps ) ) ) ) {
+	if ( !( pOps = (GCOps *) xalloc( sizeof( GCOps ) ) ) ) {
 		xfree(pPriv);
 		return FALSE;
 	}
@@ -257,8 +257,8 @@ ppcDestroyGC( pGC )
 
     if ( pPriv->freeCompClip && pPriv->pCompositeClip )
 	(* pGC->pScreen->RegionDestroy)( pPriv->pCompositeClip ) ;
-    if(pGC->ops->devPrivate.val) Xfree( pGC->ops );
-    Xfree( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
+    if(pGC->ops->devPrivate.val) xfree( pGC->ops );
+    xfree( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
     return ;
 }
 

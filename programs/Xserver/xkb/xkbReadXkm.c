@@ -1,4 +1,5 @@
 /* $XConsortium: xkbReadXkm.c,v 1.1 94/04/08 15:15:55 erik Exp $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -67,10 +68,10 @@ int	newCount= *newCountRtrn;
     if (oldPtr==NULL) {
 	if (newCount==0)
 	    return NULL;
-	oldPtr= (pointer)Xcalloc(newCount*elemSize);
+	oldPtr= (pointer)xcalloc(newCount,elemSize);
     }
     else if (oldCount<newCount) {
-	oldPtr= (pointer)Xrealloc(oldPtr,newCount*elemSize);
+	oldPtr= (pointer)xrealloc(oldPtr,newCount*elemSize);
 	if (oldPtr!=NULL) {
 	    char *tmp= (char *)oldPtr;
 	    bzero(&tmp[oldCount*elemSize],(newCount-oldCount)*elemSize);
@@ -227,7 +228,7 @@ char name[100];
     }
     if (xkb->names->keys==NULL) {
 	xkb->names->keys= (XkbKeyNamePtr)
-			  Xcalloc((xkb->max_key_code+1)*sizeof(XkbKeyNameRec)); 
+			  xcalloc((xkb->max_key_code+1),sizeof(XkbKeyNameRec)); 
 	if (xkb->names->keys==NULL) {
 	    ErrorF("Couldn't allocate key names\n");
 	    return 0;
@@ -266,11 +267,11 @@ char 			buf[100];
 				 (xkb->map->types[0].free&XkbNoFreeKTStruct)) {
 	if (xkb->map->types!=NULL) {
 	    if ((xkb->map->types[0].free&XkbNoFreeKTStruct)==0)
-		Xfree(xkb->map->types);
+		xfree(xkb->map->types);
 	    xkb->map->types= NULL;
 	}
 	xkb->map->types= (XkbKeyTypePtr)
-			 Xcalloc(num_types*sizeof(XkbKeyTypeRec));
+			 xcalloc(num_types,sizeof(XkbKeyTypeRec));
 	if (xkb->map->types==NULL)
 	    return 0;
 	xkb->map->size_types= num_types;
@@ -367,10 +368,10 @@ xkmSymInterpretDesc	wire;
 	xkb->names->semantics= XkmInternAtom(name,0);
     if ((xkb->compat->sym_interpret==NULL)||(xkb->compat->size_si<num_si)) {
 	if (xkb->compat->sym_interpret!=NULL) {
-	    Xfree(xkb->compat->sym_interpret);
+	    xfree(xkb->compat->sym_interpret);
 	}
 	xkb->compat->sym_interpret= (XkbSymInterpretPtr)
-				    Xcalloc(num_si*sizeof(XkbSymInterpretRec));
+				    xcalloc(num_si,sizeof(XkbSymInterpretRec));
 	if (xkb->compat->sym_interpret==NULL)
 	    return 0;
 	xkb->compat->size_si= num_si;

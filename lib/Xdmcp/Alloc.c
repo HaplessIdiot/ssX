@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Alloc.c,v 1.2 94/04/17 20:16:29 keith Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -32,30 +33,30 @@ in this Software without prior written authorization from the X Consortium.
 
 extern char	*malloc (), *realloc ();
 
-long *
+unsigned long *
 Xalloc (amount)
     unsigned	amount;
 {
     if (amount == 0)
 	amount = 1;
-    return (long *) malloc (amount);
+    return (unsigned long *) malloc (amount);
 }
 
-long *
+unsigned long *
 Xrealloc (old, amount)
-    long	*old;
-    unsigned	amount;
+    unsigned long	*old;
+    unsigned		amount;
 {
     if (amount == 0)
 	amount = 1;
     if (!old)
-	return (long *) malloc (amount);
-    return (long *) realloc ((char *) old, amount);
+	return (unsigned long *) malloc (amount);
+    return (unsigned long *) realloc ((char *) old, amount);
 }
 
 void
 Xfree (old)
-    long    *old;
+    unsigned long    *old;
 {
     if (old)
 	free ((char *) old);

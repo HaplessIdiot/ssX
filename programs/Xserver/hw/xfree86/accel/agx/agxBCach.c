@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.11 1995/06/24 10:27:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.12 1995/07/01 10:47:53 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -98,16 +98,16 @@ agxBitCache8Init(x,y)
    headBitRow  = NULL;
    if ( numRows ) {
       bitMapRowPtr bptr;
-      /* Xcalloc returns zeroed memory */
-      agxHeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
-      headBitRow  = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
+      /* xcalloc returns zeroed memory */
+      agxHeadFont = (CacheFont8Ptr) xcalloc(1,sizeof(CacheFont8Rec));
+      headBitRow  = (bitMapRowPtr) xcalloc(1,sizeof(bitMapRowRec));
       bptr        = headBitRow;
       i           = numRows;
       while( i-- ) {	
          bptr->offset = agxFontCacheOffset + i * FONT_ROW_LENGTH;
 	 bptr->freel  = ROW_NUM_LINES;	
          if( i ) {
-	    bptr->next   = (bitMapRowPtr) Xcalloc(sizeof(bitMapRowRec));
+	    bptr->next   = (bitMapRowPtr) xcalloc(1,sizeof(bitMapRowRec));
 	    bptr->next->prev  = bptr;
 	    bptr = bptr->next;
          }
@@ -157,7 +157,7 @@ agxCGetBlock( fentry, block, size  )
    
    do {
        if (bptr->blocks == NULL) { /* block is empty */    
-	  bptr->blocks = (bitMapBlockPtr) Xcalloc(sizeof(bitMapBlockRec));
+	  bptr->blocks = (bitMapBlockPtr) xcalloc(1,sizeof(bitMapBlockRec));
 	  bptr->blocks->line = 0;
 	  bptr->blocks->sizel = size;
 	  bptr->blocks->daddy = bptr; /* so we can trace a block back to its
@@ -177,7 +177,7 @@ agxCGetBlock( fentry, block, size  )
 		bbptr = bbptr->next; 
 
 	     /* and add this block onto the end */
-	     bbptr->next = (bitMapBlockPtr) Xcalloc(sizeof(bitMapBlockRec));
+	     bbptr->next = (bitMapBlockPtr) xcalloc(1,sizeof(bitMapBlockRec));
 	     bbptr->next->line  = ROW_NUM_LINES - bptr->freel;
 	     bbptr->next->sizel = size;
 	     bbptr->next->daddy = bptr;
@@ -358,7 +358,7 @@ agxCReturnBlock(block)
          block->fentry->fblock[block->block]=NULL; 
       block->fentry=NULL; 
    }
-   Xfree(block);
+   xfree(block);
 
 }
 

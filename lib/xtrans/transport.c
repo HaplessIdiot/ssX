@@ -1,5 +1,5 @@
 /* $XConsortium: transport.c,v 1.6 94/04/17 20:23:07 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/xtrans/transport.c,v 3.0 1994/05/08 05:16:40 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -52,6 +52,15 @@ from the X Consortium.
  * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifdef XSERV_t
+#include "os.h"
+#else
+#define xalloc(_size)		malloc(_size)
+#define xcalloc(_num,_size)	calloc(_num,_size)
+#define xrealloc(_ptr,_size)	realloc(_ptr,_size)
+#define xfree(_ptr)		free(_ptr)
+#endif
 
 #include "Xtransint.h"
 

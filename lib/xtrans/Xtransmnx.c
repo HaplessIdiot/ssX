@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/xtrans/Xtransmnx.c,v 3.0 1994/05/08 05:16:37 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransmnx.c,v 3.1 1994/06/28 12:24:22 dawes Exp $ */
 
 /*
 Xtransmnx.c
@@ -413,7 +413,7 @@ char		*port;
 
 	priv->listen_port= tcpconf.nwtc_locport;
 
-	if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+	if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpAccept): malloc failed\n", 0, 0, 0);
@@ -423,7 +423,7 @@ char		*port;
 	addr->sin_addr.s_addr= tcpconf.nwtc_locaddr;
 	addr->sin_port= tcpconf.nwtc_locport;
 	if (ciptr->addr)
-		free(ciptr->addr);
+		xfree(ciptr->addr);
 	ciptr->addr= (char *)addr;
 	ciptr->addrlen= sizeof(struct sockaddr_in);
 
@@ -569,7 +569,7 @@ int	       *status;
 		*status= TRANS_ACCEPT_MISC_ERROR;
 		return NULL;
 	}
-	if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+	if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpAccept): malloc failed\n", 0, 0, 0);
@@ -582,7 +582,7 @@ int	       *status;
 	addr->sin_addr.s_addr= tcpconf.nwtc_locaddr;
 	addr->sin_port= tcpconf.nwtc_locport;
 	if (ciptr->addr)
-		free(ciptr->addr);
+		xfree(ciptr->addr);
 	ciptr->addr= (char *)addr;
 	ciptr->addrlen= sizeof(struct sockaddr_in);
 	if (*(u8_t *)&tcpconf.nwtc_remaddr == 127)
@@ -591,7 +591,7 @@ int	       *status;
 		addr->sin_addr.s_addr= tcpconf.nwtc_remaddr;
 	}
 
-	if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+	if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpConnect): malloc failed\n", 0, 0, 0);
@@ -719,7 +719,7 @@ char 		*port;
 			strerror(errno),0, 0);
 		return TRANS_CONNECT_FAILED;
 	}
-	if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+	if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpConnect): malloc failed\n", 0, 0, 0);
@@ -736,7 +736,7 @@ char 		*port;
 		addr->sin_addr.s_addr= tcpconf.nwtc_remaddr;
 	}
 
-	if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+	if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 		== NULL)
 	{
 		PRMSG(1, "TRANS(MnxTcpConnect): malloc failed\n", 0, 0, 0);
@@ -1241,7 +1241,7 @@ Xtransport *thistrans;
 
 	PRMSG(2, "alloc_ConnInfo(%p)\n", thistrans, 0, 0);
 
-	if ((ciptr= (XtransConnInfo) malloc(sizeof(struct _XtransConnInfo)))
+	if ((ciptr= (XtransConnInfo) xalloc(sizeof(struct _XtransConnInfo)))
 		== NULL)
 	{
 		PRMSG(1, "alloc_ConnInfo: malloc failed\n", 0, 0, 0);
@@ -1267,7 +1267,7 @@ XtransConnInfo ciptr;
 	if (ciptr == NULL)
 		return;
 	free_private((struct private *)ciptr->priv);
-	free(ciptr);
+	xfree(ciptr);
 }
 
 static struct private *
@@ -1281,7 +1281,7 @@ size_t wr_size;
 
 	PRMSG(2, "alloc_private(%d, %d)\n", rd_size, wr_size, 0);
 
-	if ((priv= (struct private *)malloc(sizeof(struct private))) == NULL)
+	if ((priv= (struct private *)xalloc(sizeof(struct private))) == NULL)
 	{
 		PRMSG(1, "alloc_private: malloc failed\n", 0, 0, 0);
 		return NULL;
@@ -1295,7 +1295,7 @@ size_t wr_size;
 
 	if (rd_size != 0)
 	{
-		if ((buf= malloc(rd_size)) == NULL)
+		if ((buf= xalloc(rd_size)) == NULL)
 		{
 			PRMSG(1, "alloc_private: malloc failed\n", 0, 0, 0);
 			s_errno= errno;
@@ -1315,7 +1315,7 @@ size_t wr_size;
 
 	if (wr_size != 0)
 	{
-		if ((buf= malloc(wr_size)) == NULL)
+		if ((buf= xalloc(wr_size)) == NULL)
 		{
 			PRMSG(1, "alloc_private: malloc failed\n", 0, 0, 0);
 			s_errno= errno;
@@ -1339,9 +1339,9 @@ struct private *priv;
 {
 	if (priv == NULL)
 		return;
-	free(priv->read_buffer);
-	free(priv->write_buffer);
-	free(priv);
+	xfree(priv->read_buffer);
+	xfree(priv->write_buffer);
+	xfree(priv);
 }
 
 static void
@@ -1438,7 +1438,7 @@ int err;
 				strerror(errno),0, 0);
 			return;
 		}
-		if ((addr= (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in)))
+		if ((addr= (struct sockaddr_in *)xalloc(sizeof(struct sockaddr_in)))
 			== NULL)
 		{
 			PRMSG(1, "listen_cb: malloc failed\n", 0, 0, 0);
@@ -1448,7 +1448,7 @@ int err;
 		addr->sin_addr.s_addr= tcpconf.nwtc_locaddr;
 		addr->sin_port= tcpconf.nwtc_locport;
 		if (ciptr->addr)
-			free(ciptr->addr);
+			xfree(ciptr->addr);
 		ciptr->addr= (char *)addr;
 		ciptr->addrlen= sizeof(struct sockaddr_in);
 		priv->listen_completed= 1;

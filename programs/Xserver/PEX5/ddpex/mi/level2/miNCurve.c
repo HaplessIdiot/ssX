@@ -1,4 +1,5 @@
 /* $XConsortium: miNCurve.c,v 5.3 94/04/17 20:37:10 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -131,7 +132,7 @@ miNurbsCurve(pRend, pExecuteOC)
     }
 
     /* allocate polyline command block */
-    if (!(pGStr = (miGenericStr *) (Xalloc(sizeof(miGenericStr) +
+    if (!(pGStr = (miGenericStr *) (xalloc(sizeof(miGenericStr) +
 					   sizeof(miListHeader)))))
       return(BadAlloc);
 
@@ -145,7 +146,7 @@ miNurbsCurve(pRend, pExecuteOC)
     /* render tesselated curve */
     status = InitExecuteOCTable[(int)(pGStr->elementType)](pRend, pGStr);
 
-    Xfree(pGStr);
+    xfree(pGStr);
 
     return (status);
 
@@ -391,11 +392,11 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
     if ( num_additional_knots > 0 ) {
 
 	if ( !( knots = (ddFLOAT *)
-	    Xalloc((num_additional_knots + curve->numKnots)*sizeof(float))))
+	    xalloc((num_additional_knots + curve->numKnots)*sizeof(float))))
 	    goto no_mem;
 
 	if ( !( cpts = (ddCoord4D *)
-	      Xalloc( (num_additional_knots + control_points->ddList->numPoints)
+	      xalloc( (num_additional_knots + control_points->ddList->numPoints)
 			* sizeof(ddCoord4D))) )
 	    goto no_mem;
 
@@ -490,7 +491,7 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 		}
 
 		if ( !( rknots = (ddFLOAT (*)[MAXORD])
-		    Xalloc( MAXORD * numKnots * sizeof(float))) )
+		    xalloc( MAXORD * numKnots * sizeof(float))) )
 		    goto no_mem;
 
 		mi_nu_preprocess_knots( order, numKnots, knots, rknots );
@@ -531,16 +532,16 @@ nu_compute_nurb_curve( pddc, curve, aptype, apval, curve_list )
 	} /* end switch on approx type */
     }
 
-    if (knots != curve->pKnots) Xfree(knots);
-    if (cpts != control_points->ddList->pts.p4Dpt) Xfree(cpts);
-    Xfree(rknots);
+    if (knots != curve->pKnots) xfree(knots);
+    if (cpts != control_points->ddList->pts.p4Dpt) xfree(cpts);
+    xfree(rknots);
 
     return 0;
 
 no_mem:
-    if ((knots)&&(knots != curve->pKnots)) Xfree(knots);
-    if ((cpts)&&(cpts != control_points->ddList->pts.p4Dpt)) Xfree(cpts);
-    if (rknots) Xfree(rknots);
+    if ((knots)&&(knots != curve->pKnots)) xfree(knots);
+    if ((cpts)&&(cpts != control_points->ddList->pts.p4Dpt)) xfree(cpts);
+    if (rknots) xfree(rknots);
 
     return (BadAlloc);
 }
@@ -615,7 +616,7 @@ compute_adaptive_crv_interval( pddc, curve, xform, apxval )
 
       DD_VertPointSize(curve->points.type, point_size);
 
-      if ( !( xpts = (ddCoord4D *)Xalloc(npts * sizeof(ddCoord4D))) ) {
+      if ( !( xpts = (ddCoord4D *)xalloc(npts * sizeof(ddCoord4D))) ) {
 	return BadAlloc;
       }
 
@@ -690,7 +691,7 @@ compute_adaptive_crv_interval( pddc, curve, xform, apxval )
 			(pddc->Static.attrs->curveApprox.tolerance > 0.0 
 			  ? pddc->Static.attrs->curveApprox.tolerance : 0.01)));
 
-    if (xpts != tmp_list->ddList->pts.p4Dpt) Xfree(xpts);
+    if (xpts != tmp_list->ddList->pts.p4Dpt) xfree(xpts);
 
     return Success;
 }

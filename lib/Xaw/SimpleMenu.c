@@ -1,5 +1,4 @@
 /* $XConsortium: SimpleMenu.c,v 1.44 94/04/17 20:12:45 kaleb Exp $ */
-/* $XFree86$ */
 
 /*
 Copyright (c) 1989, 1994  X Consortium
@@ -96,8 +95,8 @@ static XtResource resources[] = {
 static char defaultTranslations[] =
     "<EnterWindow>:     highlight()             \n\
      <LeaveWindow>:     unhighlight()           \n\
-     Any<BtnMotion>:    highlight()             \n\
-     Any<BtnUp>:        MenuPopdown() notify() unhighlight()"; 
+     <BtnMotion>:       highlight()             \n\
+     <BtnUp>:           MenuPopdown() notify() unhighlight()"; 
 
 /*
  * Semi Public function definitions. 

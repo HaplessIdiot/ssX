@@ -5,7 +5,7 @@
 
 <title>Information for SVR4 Users
 <author>The XFree86 Project, Inc
-<date>14 December 1994
+<date>7 July 1995
 
 <abstract>
 <bf>NOTE:</bf>
@@ -35,7 +35,7 @@
 and the following versions of <bf>SVR4.2</bf>:
 <itemize>
 <item>	Consensys
-<item>	Novell UnixWare
+<item>	Novell UnixWare 1.x and 2.0
 </itemize>
 Basically, we believe that XFree86 binaries will run unmodified on any
 ISA, EISA, or MCA platform version version of SVR4.0 (Solaris 2.x is an
@@ -135,9 +135,11 @@ compatibility.<p>
    change.<p>
 <item>The <tt>BOOTSTRAPCFLAGS</tt> required are:
 <quote>
-   For Unixware:     "<tt>-DUSL</tt>"<p>
-   For NCR:          "<tt>-DNCR</tt>"<p>
-   For other SVR4:   "<tt>-DSVR4 -Di386</tt>"<p>
+   For Unixware:     "<tt>-DUSL</tt>"
+
+   For NCR:          "<tt>-DNCR</tt>"
+
+   For other SVR4:   "<tt>-DSVR4 -Di386</tt>"
 </quote>
 </enum>
 <sect>Notes for running XFree86 on SVR4<p>
@@ -233,6 +235,7 @@ spelled out
    that a client connecting to :0 will use not use a Unix socket for the
    connection.  To use the Unix socket connection, the client must connect
    to unix:0.<p>
+
    The local connection types available are "<tt>NAMED</tt>" (named streams pipe),
    "<tt>PTS</tt>" (old-stype USL streams pipe), "<tt>SCO</tt>" 
    (SCO Xsight streams pipe), and
@@ -251,13 +254,6 @@ spelled out
    (when using xinit or startx) or
    your <tt>/usr/X11R6/lib/xdm/Xsession</tt> script (when using xdm).<p>
 
-   The X server doesn't currently remove the links it makes to its PTS
-   listener when it exits.  This can lead to problems when starting a new
-   server if something else is now using that PTS device.  This is usually
-   noticed by delays in clients making connections to the server.  The only
-   solution is to make sure that an old link in <tt>/dev/X/server.N</tt> 
-   is removed
-   before starting a server for display N.<p>
 </enum>
 <sect>Notes for running XFree86 on SVR4.2<p>
   In addition to the notes for SVR4.0, you need to be aware of a few
@@ -291,18 +287,6 @@ considered a local connection type.<p>
 </verb>
    The best solution is to modify the code so it compiles correctly
    without <tt>-DSYSV</tt>.<p>
-<item>The default compiler options include `<tt>-ansi</tt>' for gcc, 
-  and `<tt>-Xc</tt>' for cc.
-   A consequence of this is <tt>__STDC__</tt> gets <tt>#defined</tt> 
-   to `1'.  There are a
-   number of functions which will not have prototypes declared unless
-   either <tt>__STDC__</tt> is not defined, or
-<verb>
-	__STDC__ == 0 || defined(_POSIX_SOURCE) || defined(_XOPEN_SOURCE)
-</verb>
-   Possible solutions are to change the definition of <tt>CCOPTIONS</tt> 
-   by adding a line to the Imakefile, or to add the required prototypes 
-   to the source.
 </enum>
 <sect>Using DOS/Merge 2.2 with XFree86<p>
   It is possible to use the Locus DOS/Merge 2.2 X clients with XFree86.
@@ -389,7 +373,7 @@ to your <tt>.xinitrc</tt> file (or your <tt>Xsetup</tt> file if using xdm).
 <sect>A kernel patch that is required for accelerated servers<p>
   SVR4.0 has a bug handling programs that access extended I/O registers
 (above 0x3FF).  Boards like S3 and 8514/A use these extended I/O
-registers.  XFree86 now supports boards that tickle this bug.  In
+registers.  XFree86 supports boards that tickle this bug.  In
 preparation for using these servers, we have produced a kernel patch 
 that works around the problem, and provided scripts for you that will 
 both install and back out the patch.  You must install this if you
@@ -420,6 +404,6 @@ information.<p>
 
 <verb>
 $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.3 1995/01/28 16:02:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.4 1995/06/17 12:16:28 dawes Exp $
 </verb>
 </article>

@@ -1,4 +1,5 @@
-/* $XConsortium: xkbUtils.c,v 1.13 94/04/08 15:15:07 erik Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.14 94/05/09 13:07:14 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -292,7 +293,7 @@ XkbAction *		newActs;
 	return &xkb->server->acts[xkb->server->key_acts[key]];
     }
     xkb->server->size_acts+= 32;
-    newActs = (XkbAction *)Xcalloc(xkb->server->size_acts*sizeof(XkbAction));
+    newActs = (XkbAction *)xcalloc(xkb->server->size_acts,sizeof(XkbAction));
     newActs[0].type = XkbSA_NoAction;
     nActs = 1;
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
@@ -337,7 +338,7 @@ KeySym	*		newSyms;
 	return &xkb->map->syms[xkb->map->key_sym_map[key].offset];
     }
     xkb->map->size_syms+= 128;
-    newSyms = (KeySym *)Xcalloc(xkb->map->size_syms*sizeof(KeySym));
+    newSyms = (KeySym *)xcalloc(xkb->map->size_syms,sizeof(KeySym));
     nSyms = 1;
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
 	if (xkb->map->key_sym_map[i].offset==0) {
@@ -380,7 +381,7 @@ register unsigned	i,nSyms;
 	else nTotal+= XkbKeyNumSyms(xkb,i);
     }
     xkb->map->size_syms= (nTotal*12)/10;
-    newSyms = (KeySym *)Xcalloc(xkb->map->size_syms*sizeof(KeySym));
+    newSyms = (KeySym *)xcalloc(xkb->map->size_syms,sizeof(KeySym));
     /* 9/3/93 (ef) -- XXX! deal with allocation failure */
     nSyms= 1;
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
@@ -1013,8 +1014,11 @@ XkbComputeCompatState(xkb)
     state->compat_state = 0;
     xkb->compatLookupState= 0;
     xkb->compatGrabState= 0;
-    map = &xkb->desc.compat->real_mod_compat[0];
-    for (i=0,bit=1;i<8;i++,bit<<=1,map++) {
+    for (i=0,bit=1;i<8;i++,bit<<=1) {
+	map= xkb->desc.compat->mod_compat[i];
+	if (map==NULL) {
+	    map= &xkb->desc.compat->real_mod_compat[i];
+	}
 	if ((map->mods&state->mods)||(map->groups&(1<<state->group)))
 	    state->compat_state|= bit;
 

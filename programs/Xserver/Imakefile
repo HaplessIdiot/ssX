@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.192 95/01/25 20:37:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.35 1995/06/02 10:06:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.36 1995/06/24 10:25:54 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -85,9 +85,9 @@ INSTPGMFLAGS =
         BSDEMUL = $(DEPXBSDLIB)
             MFB = mfb/LibraryTargetName(mfb)
             CFB = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
-            CFB8 = cfb/LibraryTargetName(cfb)
-            CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb)
-            CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
+           CFB8 = cfb/LibraryTargetName(cfb)
+          CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb)
+          CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
              MI = mi/LibraryTargetName(mi)
             DIX = dix/LibraryTargetName(dix)
            FONT = $(DEPFONTLIB)

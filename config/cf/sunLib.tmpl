@@ -1,5 +1,5 @@
 XCOMM $XConsortium: sunLib.tmpl,v 1.36 94/04/08 19:13:50 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.1 1995/01/08 08:13:57 dawes Exp $
 
 /*
  * SunOS shared library template
@@ -39,8 +39,8 @@ XCOMM $XFree86$
 #else				/* else it's Solaris */
 
 #if ThreadedX
-#ifndef i386Architecture
-#define SharedX11Reqs -lthread
+#if (i386Architecture) || OSMinorVersion > 3
+#define SharedX11Reqs /**/
 #endif
 #endif
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)

@@ -94,7 +94,7 @@ ppcCreatePixmap( pScreen, width, height, depth )
 	return (PixmapPtr) NULL ;
 
     size = PixmapBytePad(width, depth);
-    pPixmap = (PixmapPtr) Xalloc( sizeof (PixmapRec) + (height * size) ) ;
+    pPixmap = (PixmapPtr) xalloc( sizeof (PixmapRec) + (height * size) ) ;
     if ( !pPixmap )
 	return (PixmapPtr) NULL ;
     pPixmap->drawable.type = DRAWABLE_PIXMAP ;

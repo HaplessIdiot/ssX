@@ -322,197 +322,197 @@ installation.
 <sect>  Generic Video Modes
 <p>
 <code>
-&num;
-&num;  Mode       Refresh  Hor. Sync  Dot-clock  Interlaced?  VESA?
-&num;  ------------------------------------------------------------
-&num;  640x480     60Hz      31.5k     25.175M       No         No
-&num;  640x480     60Hz      31.5k     25.175M       No         No
-&num;  640x480     63Hz      32.8k     28.322M       No         No
-&num;  640x480     70Hz      36.5k     31.5M         No         No
-&num;  640x480     72Hz      37.9k     31.5M         No        Yes
-&num;  800x600     56Hz      35.1k     36.0M         No        Yes
-&num;  800x600     56Hz      35.4k     36.0M         No         No
-&num;  800x600     60Hz      37.9k     40.0M         No        Yes
-&num;  800x600     60Hz      37.9k     40.0M         No         No
-&num;  800x600     72Hz      48.0k     50.0M         No        Yes
-&num;  1024x768i   43.5Hz    35.5k     44.9M        Yes         No
-&num;  1024x768    60Hz      48.4k     65.0M         No        Yes
-&num;  1024x768    60Hz      48.4k     62.0M         No         No
-&num;  1024x768    70Hz      56.5k     75.0M         No        Yes
-&num;  1024x768    70Hz      56.25k    72.0M         No         No
-&num;  1024x768    76Hz      62.5k     85.0M         No         No
-&num;  1280x1024i  44Hz      51kHz     80.0M        Yes         No
-&num;  1280x1024i  44Hz      47.6k     75.0M        Yes         No
-&num;  1280x1024   59Hz      63.6k    110.0M         No         No
-&num;  1280x1024   61Hz      64.24k   110.0M         No         No
-&num;  1280x1024   74Hz      78.85k   135.0M         No         No
+#
+#  Mode       Refresh  Hor. Sync  Dot-clock  Interlaced?  VESA?
+#  ------------------------------------------------------------
+#  640x480     60Hz      31.5k     25.175M       No         No
+#  640x480     60Hz      31.5k     25.175M       No         No
+#  640x480     63Hz      32.8k     28.322M       No         No
+#  640x480     70Hz      36.5k     31.5M         No         No
+#  640x480     72Hz      37.9k     31.5M         No        Yes
+#  800x600     56Hz      35.1k     36.0M         No        Yes
+#  800x600     56Hz      35.4k     36.0M         No         No
+#  800x600     60Hz      37.9k     40.0M         No        Yes
+#  800x600     60Hz      37.9k     40.0M         No         No
+#  800x600     72Hz      48.0k     50.0M         No        Yes
+#  1024x768i   43.5Hz    35.5k     44.9M        Yes         No
+#  1024x768    60Hz      48.4k     65.0M         No        Yes
+#  1024x768    60Hz      48.4k     62.0M         No         No
+#  1024x768    70Hz      56.5k     75.0M         No        Yes
+#  1024x768    70Hz      56.25k    72.0M         No         No
+#  1024x768    76Hz      62.5k     85.0M         No         No
+#  1280x1024i  44Hz      51kHz     80.0M        Yes         No
+#  1280x1024i  44Hz      47.6k     75.0M        Yes         No
+#  1280x1024   59Hz      63.6k    110.0M         No         No
+#  1280x1024   61Hz      64.24k   110.0M         No         No
+#  1280x1024   74Hz      78.85k   135.0M         No         No
 
-&num;
-&num; 640x480@60Hz Non-Interlaced mode
-&num; Horizontal Sync = 31.5kHz
-&num; Timing: H=(0.95us, 3.81us, 1.59us), V=(0.35ms, 0.064ms, 1.02ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 640x480@60Hz Non-Interlaced mode
+# Horizontal Sync = 31.5kHz
+# Timing: H=(0.95us, 3.81us, 1.59us), V=(0.35ms, 0.064ms, 1.02ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "640x480"     25.175  640  664  760  800    480  491  493  525
 
-&num;
-&num; Alternate 640x480@60Hz Non-Interlaced mode
-&num; Horizontal Sync = 31.5kHz
-&num; Timing: H=(1.27us, 3.81us, 1.27us) V=(0.32ms, 0.06ms, 1.05ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# Alternate 640x480@60Hz Non-Interlaced mode
+# Horizontal Sync = 31.5kHz
+# Timing: H=(1.27us, 3.81us, 1.27us) V=(0.32ms, 0.06ms, 1.05ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "640x480"     25.175  640  672  768  800    480  490  492  525
 
-&num;
-&num; 640x480@63Hz Non-Interlaced mode (non-standard)
-&num; Horizontal Sync = 32.8kHz
-&num; Timing: H=(1.41us, 1.41us, 5.08us) V=(0.24ms, 0.092ms, 0.92ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 640x480@63Hz Non-Interlaced mode (non-standard)
+# Horizontal Sync = 32.8kHz
+# Timing: H=(1.41us, 1.41us, 5.08us) V=(0.24ms, 0.092ms, 0.92ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "640x480"     28.322  640  680  720  864    480  488  491  521
 
-&num;
-&num; 640x480@70Hz Non-Interlaced mode (non-standard)
-&num; Horizontal Sync = 36.5kHz
-&num; Timing: H=(1.27us, 1.27us, 4.57us) V=(0.22ms, 0.082ms, 0.82ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 640x480@70Hz Non-Interlaced mode (non-standard)
+# Horizontal Sync = 36.5kHz
+# Timing: H=(1.27us, 1.27us, 4.57us) V=(0.22ms, 0.082ms, 0.82ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "640x480"     31.5    640  680  720  864    480  488  491  521
 
-&num;
-&num; VESA 640x480@72Hz Non-Interlaced mode
-&num; Horizontal Sync = 37.9kHz
-&num; Timing: H=(0.76us, 1.27us, 4.06us) V=(0.24ms, 0.079ms, 0.74ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 640x480@72Hz Non-Interlaced mode
+# Horizontal Sync = 37.9kHz
+# Timing: H=(0.76us, 1.27us, 4.06us) V=(0.24ms, 0.079ms, 0.74ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "640x480"     31.5    640  664  704  832    480  489  492  520
 
-&num;
-&num; VESA 800x600@56Hz Non-Interlaced mode
-&num; Horizontal Sync = 35.1kHz
-&num; Timing: H=(0.67us, 2.00us, 3.56us) V=(0.03ms, 0.063ms, 0.70ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 800x600@56Hz Non-Interlaced mode
+# Horizontal Sync = 35.1kHz
+# Timing: H=(0.67us, 2.00us, 3.56us) V=(0.03ms, 0.063ms, 0.70ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "800x600"     36      800  824  896 1024    600  601  603  625
 
-&num;
-&num; Alternate 800x600@56Hz Non-Interlaced mode
-&num; Horizontal Sync = 35.4kHz
-&num; Timing: H=(0.89us, 4.00us, 1.11us) V=(0.11ms, 0.057ms, 0.79ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# Alternate 800x600@56Hz Non-Interlaced mode
+# Horizontal Sync = 35.4kHz
+# Timing: H=(0.89us, 4.00us, 1.11us) V=(0.11ms, 0.057ms, 0.79ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "800x600"     36      800  832  976 1016    600  604  606  634
 
-&num;
-&num; VESA 800x600@60Hz Non-Interlaced mode
-&num; Horizontal Sync = 37.9kHz
-&num; Timing: H=(1.00us, 3.20us, 2.20us) V=(0.03ms, 0.106ms, 0.61ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 800x600@60Hz Non-Interlaced mode
+# Horizontal Sync = 37.9kHz
+# Timing: H=(1.00us, 3.20us, 2.20us) V=(0.03ms, 0.106ms, 0.61ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "800x600"     40      800  840  968 1056    600  601  605  628 +hsync +vsync
 
-&num;
-&num; Alternate 800x600@60Hz Non-Interlaced mode
-&num; Horizontal Sync = 37.9kHz
-&num; Timing: H=(1.20us, 3.80us, 1.40us) V=(0.13ms, 0.053ms, 0.69ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# Alternate 800x600@60Hz Non-Interlaced mode
+# Horizontal Sync = 37.9kHz
+# Timing: H=(1.20us, 3.80us, 1.40us) V=(0.13ms, 0.053ms, 0.69ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "800x600"     40      800 848 1000 1056     600  605  607  633
 
-&num;
-&num; VESA 800x600@72Hz Non-Interlaced mode
-&num; Horizontal Sync = 48kHz
-&num; Timing: H=(1.12us, 2.40us, 1.28us) V=(0.77ms, 0.13ms, 0.48ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 800x600@72Hz Non-Interlaced mode
+# Horizontal Sync = 48kHz
+# Timing: H=(1.12us, 2.40us, 1.28us) V=(0.77ms, 0.13ms, 0.48ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "800x600"     50      800  856  976 1040    600  637  643  666  +hsync +vsync
 
-&num;
-&num; 1024x768@43.5Hz, Interlaced mode (8514/A standard)
-&num; Horizontal Sync = 35.5kHz
-&num; Timing: H=(0.54us, 1.34us, 1.25us) V=(0.23ms, 0.23ms, 0.93ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1024x768@43.5Hz, Interlaced mode (8514/A standard)
+# Horizontal Sync = 35.5kHz
+# Timing: H=(0.54us, 1.34us, 1.25us) V=(0.23ms, 0.23ms, 0.93ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768i"   44.9   1024 1048 1208 1264    768  776  784  817  Interlace
 
-&num;
-&num; VESA 1024x768@60Hz Non-Interlaced mode
-&num; Horizontal Sync = 48.4kHz
-&num; Timing: H=(0.12us, 2.22us, 2.58us) V=(0.06ms, 0.12ms, 0.60ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 1024x768@60Hz Non-Interlaced mode
+# Horizontal Sync = 48.4kHz
+# Timing: H=(0.12us, 2.22us, 2.58us) V=(0.06ms, 0.12ms, 0.60ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768"    65     1024 1032 1176 1344    768  771  777  806 -hsync -vsync
 
-&num;
-&num; 1024x768@60Hz Non-Interlaced mode (non-standard dot-clock)
-&num; Horizontal Sync = 48.4kHz
-&num; Timing: H=(0.65us, 2.84us, 0.65us) V=(0.12ms, 0.041ms, 0.66ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1024x768@60Hz Non-Interlaced mode (non-standard dot-clock)
+# Horizontal Sync = 48.4kHz
+# Timing: H=(0.65us, 2.84us, 0.65us) V=(0.12ms, 0.041ms, 0.66ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768"    62     1024 1064 1240 1280   768  774  776  808
 
-&num;
-&num; VESA 1024x768@70Hz Non-Interlaced mode
-&num; Horizontal Sync=56.5kHz
-&num; Timing: H=(0.32us, 1.81us, 1.92us) V=(0.05ms, 0.14ms, 0.51ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# VESA 1024x768@70Hz Non-Interlaced mode
+# Horizontal Sync=56.5kHz
+# Timing: H=(0.32us, 1.81us, 1.92us) V=(0.05ms, 0.14ms, 0.51ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768"    75     1024 1048 1184 1328    768  771  777  806 -hsync -vsync
 
-&num;
-&num; 1024x768@70Hz Non-Interlaced mode (non-standard dot-clock)
-&num; Horizontal Sync=56.25kHz
-&num; Timing: H=(0.44us, 1.89us, 1.22us) V=(0.036ms, 0.11ms, 0.53ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1024x768@70Hz Non-Interlaced mode (non-standard dot-clock)
+# Horizontal Sync=56.25kHz
+# Timing: H=(0.44us, 1.89us, 1.22us) V=(0.036ms, 0.11ms, 0.53ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768"    72     1024 1056 1192 1280    768  770  776 806   -hsync -vsync
 
-&num;
-&num; 1024x768@76Hz Non-Interlaced mode
-&num; Horizontal Sync=62.5kHz
-&num; Timing: H=(0.09us, 1.41us, 2.45us) V=(0.09ms, 0.048ms, 0.62ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1024x768@76Hz Non-Interlaced mode
+# Horizontal Sync=62.5kHz
+# Timing: H=(0.09us, 1.41us, 2.45us) V=(0.09ms, 0.048ms, 0.62ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1024x768"    85     1024 1032 1152 1360    768  784  787  823
 
-&num;
-&num; 1280x1024@44Hz, Interlaced mode
-&num; Horizontal Sync=51kHz
-&num; Timing: H=(0.02us, 2.7us, 0.70us) V=(0.02ms, 0.24ms, 2.51ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1280x1024@44Hz, Interlaced mode
+# Horizontal Sync=51kHz
+# Timing: H=(0.02us, 2.7us, 0.70us) V=(0.02ms, 0.24ms, 2.51ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1280x1024i"  80     1280 1296 1512 1568   1024 1025 1037 1165  Interlace
 
-&num;
-&num; Alternate 1280x1024@44Hz, Interlaced mode (non-standard dot-clock)
-&num; Horizontal Sync=47.6kHz
-&num; Timing: H=(0.42us, 2.88us, 0.64us) V=(0.08ms, 0.12ms, 0.96ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# Alternate 1280x1024@44Hz, Interlaced mode (non-standard dot-clock)
+# Horizontal Sync=47.6kHz
+# Timing: H=(0.42us, 2.88us, 0.64us) V=(0.08ms, 0.12ms, 0.96ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1280x1024i"  75     1280 1312 1528 1576   1024 1028 1034 1080  Interlace
 
-&num;
-&num; 1280x1024@59Hz Non-Interlaced mode (non-standard)
-&num; Horizontal Sync=63.6kHz
-&num; Timing: H=(0.36us, 1.45us, 2.25us) V=(0.08ms, 0.11ms, 0.65ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1280x1024@59Hz Non-Interlaced mode (non-standard)
+# Horizontal Sync=63.6kHz
+# Timing: H=(0.36us, 1.45us, 2.25us) V=(0.08ms, 0.11ms, 0.65ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1280x1024"  110     1280 1320 1480 1728   1024 1029 1036 1077
 
-&num;
-&num; 1280x1024@61Hz, Non-Interlaced mode
-&num; Horizontal Sync=64.25kHz
-&num; Timing: H=(0.44us, 1.67us, 1.82us) V=(0.02ms, 0.05ms, 0.41ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1280x1024@61Hz, Non-Interlaced mode
+# Horizontal Sync=64.25kHz
+# Timing: H=(0.44us, 1.67us, 1.82us) V=(0.02ms, 0.05ms, 0.41ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1280x1024"  110     1280 1328 1512 1712   1024 1025 1028 1054
 
-&num;
-&num; 1280x1024@74Hz, Non-Interlaced mode
-&num; Horizontal Sync=78.85kHz
-&num; Timing: H=(0.24us, 1.07us, 1.90us) V=(0.04ms, 0.04ms, 0.43ms)
-&num;
-&num; name        clock   horizontal timing     vertical timing      flags
+#
+# 1280x1024@74Hz, Non-Interlaced mode
+# Horizontal Sync=78.85kHz
+# Timing: H=(0.24us, 1.07us, 1.90us) V=(0.04ms, 0.04ms, 0.43ms)
+#
+# name        clock   horizontal timing     vertical timing      flags
  "1280x1024"  135     1280 1312 1456 1712   1024 1027 1030 1064
 
 
@@ -520,7 +520,7 @@ installation.
 
 <verb>
 $XConsortium: Config.sgml,v 1.3 95/01/23 15:34:40 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.4 1995/01/21 07:16:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.5 1995/01/28 16:01:22 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,5 @@
 /* $XConsortium: queryst.c,v 1.13 94/04/17 20:33:19 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -131,7 +132,7 @@ ProcXQueryDeviceState(client)
 			(v->numAxes * sizeof(int)));
 	num_classes++;
 	}
-    buf = (char *) Xalloc (total_length);
+    buf = (char *) xalloc (total_length);
     if (!buf)
 	{
 	SendErrorToClient(client, IReqCode, X_QueryDeviceState, 0, 
@@ -186,7 +187,7 @@ ProcXQueryDeviceState(client)
     WriteReplyToClient (client, sizeof(xQueryDeviceStateReply), &rep);
     if (total_length > 0)
 	WriteToClient (client, total_length, savbuf);
-    Xfree (savbuf);
+    xfree (savbuf);
     return Success;
     }
 

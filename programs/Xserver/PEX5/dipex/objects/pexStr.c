@@ -1,4 +1,5 @@
 /* $XConsortium: pexStr.c,v 5.4 94/04/17 20:36:14 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -99,13 +100,13 @@ pexCreateStructureReq   *strmPtr;
     if (!LegalNewID(strmPtr->id, cntxtPtr->client))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->id,cntxtPtr);
 
-    sh = (diStructHandle)Xalloc((unsigned long)sizeof(ddStructResource));
+    sh = (diStructHandle)xalloc((unsigned long)sizeof(ddStructResource));
     if (!sh) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     sh->id = strmPtr->id;
     err = CreateStructure(sh);
     if (err) {
-	Xfree((pointer)sh);
+	xfree((pointer)sh);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
 

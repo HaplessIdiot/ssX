@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.15 1995/06/24 10:27:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.16 1995/07/03 08:42:04 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -72,12 +72,12 @@ agxUnCacheFont8(font)
 
 	 if (ptr != agxHeadFont) {
 	    last->next = ptr->next;
-	    Xfree(ptr);
+	    xfree(ptr);
 	 }
          else {
 	    if (ptr->next != NULL) { /* move the head down */
 	       agxHeadFont=ptr->next;
-	       Xfree(ptr);		  
+	       xfree(ptr);		  
 	    }
             else { /* one and only entry */
 	       agxHeadFont->font = NULL;
@@ -137,7 +137,7 @@ agxCacheFont8(font)
    if (agxHeadFont->font == NULL)
        ret = agxHeadFont;
    else
-       ret = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
+       ret = (CacheFont8Ptr) xcalloc(1,sizeof(CacheFont8Rec));
    if (ret == NULL)
       return NULL;
 

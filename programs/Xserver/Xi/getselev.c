@@ -46,6 +46,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: getselev.c,v 1.12 94/04/17 20:33:13 rws Exp $ */
+/* $XFree86$ */
 
 /***********************************************************************
  *
@@ -144,7 +145,7 @@ ProcXGetSelectedExtensionEvents(client)
 	total_length = (rep.all_clients_count + rep.this_client_count) * 
 	    sizeof (XEventClass);
 	rep.length = (total_length + 3) >> 2;
-	buf = (XEventClass *) Xalloc (total_length);
+	buf = (XEventClass *) xalloc (total_length);
 
 	tclient = buf;
 	aclient = buf + rep.this_client_count;
@@ -163,7 +164,7 @@ ProcXGetSelectedExtensionEvents(client)
 	{
 	client->pSwapReplyFunc = Swap32Write;
 	WriteSwappedDataToClient( client, total_length, buf);
-	Xfree (buf);
+	xfree (buf);
 	}
     return Success;
     }

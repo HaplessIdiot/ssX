@@ -1,4 +1,5 @@
 /* $XConsortium: miInquire.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -96,7 +97,7 @@ SOFTWARE.
     DD_ST  = (DD_TYPE *)(pExecuteOC + 1);
 
 #define GET_MORE_STORAGE(DD_ST, TYPE, SIZE) \
-    (DD_ST) = (TYPE *)Xalloc((unsigned long)(SIZE)); \
+    (DD_ST) = (TYPE *)xalloc((unsigned long)(SIZE)); \
     if (!(DD_ST)) return (BadAlloc); 
 
 

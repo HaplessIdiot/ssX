@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.2 1994/09/23 10:18:52 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -235,13 +235,13 @@ HGA6845Probe()
     /* The following is done for both probed and preset chipset */
 
     if (!monoInfoRec.videoRam) {
-	/* videoram not given in Xconfig */
+	/* videoram not given in XF86Config */
 	monoInfoRec.videoRam=32;
     }
 
     /* We do 'virtual' handling here as it is highly chipset specific */
     if (!(monoInfoRec.virtualX < 0)) {
-	/* virtual set in Xconfig */
+	/* virtual set in XF86Config */
 	ErrorF("%s %s: %s: Virtual not allowed for this chipset\n",
 		XCONFIG_PROBED, monoInfoRec.name, monoInfoRec.chipset);
     }
@@ -301,7 +301,7 @@ HGA6845Save(save)
     unsigned char i;
 
     if (NULL==save)
-	save = (pointer)Xcalloc(sizeof(hga6845Rec));
+	save = (pointer)xcalloc(1,sizeof(hga6845Rec));
     ((hga6845Ptr)save)->config = static_config;
     ((hga6845Ptr)save)->mode   = static_mode;
     for (i = 0; i < 16; i++)
@@ -321,7 +321,7 @@ HGA6845Init(mode)
     unsigned char i;
     hga6845Ptr new_mode;
 
-    if (NULL==(new_mode = (hga6845Ptr)Xcalloc(sizeof(hga6845Rec))))
+    if (NULL==(new_mode = (hga6845Ptr)xcalloc(1,sizeof(hga6845Rec))))
 	return(NULL);
     new_mode->config = init_conf;
     new_mode->mode = init_mode;
@@ -363,8 +363,8 @@ HGA6845SaveScreen (pScreen, on)
     return(TRUE);
 }
 
-static unsigned long *hga6845Mapping;
-static unsigned long *hga6845RevMapping;
+static unsigned long *hga6845Mapping=NULL;
+static unsigned long *hga6845RevMapping=NULL;
 
 /*
  * HGA6845MapFrameBuffer --
@@ -375,8 +375,15 @@ static int HGA6845MapFrameBuffer()
     unsigned long voffset;
     unsigned long roffset;
 
+    if ( (NULL!=hga6845Mapping) && (NULL!=hga6845RevMapping) )
+	return(0); /* already done */
+
+    if (NULL!=hga6845Mapping)
+	xfree(hga6845Mapping);
     hga6845Mapping    = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
+    if (NULL!=hga6845RevMapping)
+	xfree(hga6845RevMapping);
     hga6845RevMapping = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
     if ( (NULL==hga6845Mapping) || (NULL==hga6845RevMapping) ) {

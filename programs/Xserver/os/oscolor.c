@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: oscolor.c,v 1.23 94/04/17 20:27:04 dpw Exp $ */
+/* $XFree86$ */
 
 #ifndef USE_RGB_TXT
 
@@ -108,11 +109,11 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
     if(!rgb_dbm)
 	return(0);
 
-    /* we use Xalloc here so that we can compile with cc without alloca
+    /* we use xalloc here so that we can compile with cc without alloca
      * when otherwise using gcc */
     if (len < sizeof(buf))
 	lowername = buf;
-    else if (!(lowername = (char *)Xalloc(len + 1)))
+    else if (!(lowername = (char *)xalloc(len + 1)))
 	return(0);
     CopyISOLatin1Lowered ((unsigned char *) lowername, (unsigned char *) name,
 			  (int)len);
@@ -126,7 +127,7 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 #endif
 
     if (len >= sizeof(buf))
-	Xfree(lowername);
+	xfree(lowername);
 
     if(dbent.dptr)
     {
@@ -198,7 +199,7 @@ lookup(name, len, create)
   else
     prev = &(hashTab[h]);
 
-  if (!entry && create && (entry = (dbEntryPtr)Xalloc(sizeof(dbEntry) +len)))
+  if (!entry && create && (entry = (dbEntryPtr)xalloc(sizeof(dbEntry) +len)))
     {
       *prev = entry;
       entry->link = NULL;

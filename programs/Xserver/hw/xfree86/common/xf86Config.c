@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.52 1995/07/02 07:52:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.53 1995/07/03 08:50:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -212,7 +212,7 @@ xf86ValidateFontPath(path)
   struct stat stat_buf;
   int flag;
 
-  tmp_path = (char *)Xcalloc(strlen(path)+1);
+  tmp_path = (char *)xcalloc(1,strlen(path)+1);
   out_pnt = tmp_path;
   path_elem = NULL;
   next = path;

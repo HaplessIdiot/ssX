@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.6 1994/12/29 10:22:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.7 1995/03/11 14:19:59 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -1016,7 +1016,7 @@ pointer client;
 }
 
 /* XALLOC -- X's internal memory allocator.  Why does it return unsigned
- * int * instead of the more common char *?  Well, if you read K&R you'll
+ * long * instead of the more common char *?  Well, if you read K&R you'll
  * see they say that alloc must return a pointer "suitable for conversion"
  * to whatever type you really want.  In a full-blown generic allocator
  * there's no way to solve the alignment problems without potentially
@@ -1027,6 +1027,8 @@ pointer client;
  * expectations of malloc, but this makes lint happier.
  */
 
+#ifndef INTERNAL_MALLOC
+
 unsigned long * 
 Xalloc (amount)
     unsigned long amount;
@@ -1036,8 +1038,9 @@ Xalloc (amount)
 #endif
     register pointer  ptr;
 	
-    if ((long)amount <= 0)
+    if ((long)amount <= 0) {
 	return (unsigned long *)NULL;
+    }
     /* aligned extra on long word boundary */
     amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
 #ifdef MEMBUG
@@ -1045,8 +1048,9 @@ Xalloc (amount)
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
 #endif
-    if (ptr = (pointer)malloc(amount))
+    if (ptr = (pointer)malloc(amount)) {
 	return (unsigned long *)ptr;
+    }
     if (Must_have_memory)
 	FatalError("Out of memory");
     return (unsigned long *)NULL;
@@ -1071,7 +1075,7 @@ XNFalloc (amount)
         return (unsigned long *)NULL;
     }
     /* aligned extra on long word boundary */
-    amount = (amount + 3) & ~3;
+    amount = (amount + (sizeof(long) - 1)) & ~(sizeof(long) - 1);
     ptr = (pointer)malloc(amount);
     if (!ptr)
     {
@@ -1163,6 +1167,7 @@ Xfree(ptr)
 	free((char *)ptr); 
 }
 
+void
 OsInitAllocator ()
 {
 #ifdef MEMBUG
@@ -1175,6 +1180,8 @@ OsInitAllocator ()
 	been_here = 1;
 #endif
 }
+
+#endif /* old version */
 
 /*VARARGS1*/
 void

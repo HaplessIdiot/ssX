@@ -1,4 +1,5 @@
 /* $XConsortium: Xdmcp.h,v 1.8 91/07/23 22:28:07 keith Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -134,7 +135,7 @@ extern void XdmcpUnwrap();
 
 #ifndef Xalloc
 #ifndef xalloc
-extern long *Xalloc (), *Xrealloc ();
+extern unsigned long *Xalloc (), *Xrealloc ();
 extern void Xfree();
 #endif
 #endif

@@ -1,4 +1,5 @@
 /* $XConsortium: dipexBuf.c,v 5.3 94/04/17 20:36:03 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -57,11 +58,11 @@ ddBuffer *
 diInitPEXBuffer()
 {
     ddBuffer *temp;
-    if (!(temp = (ddBuffer *)Xalloc((unsigned long)(sizeof(ddBuffer)))))
+    if (!(temp = (ddBuffer *)xalloc((unsigned long)(sizeof(ddBuffer)))))
 	return (0);
-    if (!(temp->pHead =(ddPointer)Xalloc((unsigned long)(INIT_PEX_BUFFER_SIZE))))
+    if (!(temp->pHead =(ddPointer)xalloc((unsigned long)(INIT_PEX_BUFFER_SIZE))))
     {
-  	Xfree(temp);
+  	xfree(temp);
    	return (0);
     }
     temp->bufSize = (ddULONG)INIT_PEX_BUFFER_SIZE;
@@ -74,7 +75,7 @@ diInitPEXBuffer()
 void diFreePEXBuffer(buffer)
     ddBuffer *buffer;
 {
-    Xfree(buffer->pHead);
-    Xfree(buffer);
+    xfree(buffer->pHead);
+    xfree(buffer);
 }
 

@@ -1,4 +1,5 @@
 /* $XConsortium: mipex.h,v 5.5 94/04/17 20:36:48 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -224,7 +225,7 @@ typedef enum {
 /*
  * MI_ROUND_LISTHEADERCOUNT is used by the clip routines to round up the 
  * header block count by 16 - in other words to allocated headerblocks
- * in increment of 16 and thus reduce calls to Xrealloc.
+ * in increment of 16 and thus reduce calls to xrealloc.
  * Note that this doesn't work for beans w/ negative numbers (although
  * allocating a negative number of header blocks doesn't work well either!).
  */
@@ -233,7 +234,7 @@ typedef enum {
 /* 
  * MI_ALLOCLISTHEADER insures that there are numlists headers in the
  * header array. It also returns either a pointer to the base of the
- * new header array, or 0 in the event of an Xrealloc error.
+ * new header array, or 0 in the event of an xrealloc error.
  */
 #define MI_ALLOCLISTHEADER(list, numlists)				\
    if ((list)->maxLists < (numlists)) {					\
@@ -255,7 +256,7 @@ typedef enum {
    }
 
 /* 
- * MI_FREELISTHEADER Xfree's all allocated data associated with
+ * MI_FREELISTHEADER xfree's all allocated data associated with
  * a ListHeader data structure.
  */
 #define MI_FREELISTHEADER(list)						\
@@ -278,7 +279,7 @@ typedef enum {
  * MI_ALLOCLISTOFDDPOINT insures that there are numpoints in the
  * vertex array of type type. It also returns either a pointer 
  * to the base of the new data array, or 0 in the event of 
- * an Xrealloc error.
+ * an xrealloc error.
  */
 #define MI_ALLOCLISTOFDDPOINT(buff, numpoints, bytes_per_vert)		\
   if ((buff)->maxData) {						\
@@ -314,7 +315,7 @@ typedef enum {
  * MI_ALLOCLISTOFDDFACET insures that there are numfacets in the
  * facet array of type type. It also returns either a pointer 
  * to the base of the new data array, or 0 in the event of 
- * an Xrealloc error.
+ * an xrealloc error.
  */
 #define MI_ALLOCLISTOFDDFACET(buff, numfacets, bytes_per_facet)		\
   if ((buff)->maxData) {						\

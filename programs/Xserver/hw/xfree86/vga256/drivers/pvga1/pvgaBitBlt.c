@@ -1,5 +1,5 @@
 /* $XConsortium: pvgaBitBlt.c,v 1.4 95/01/23 15:35:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.2 1995/01/18 11:00:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.4 1995/01/28 17:09:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,7 +62,7 @@ pvgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,
      unsigned long  planemask;
 
 {
-  if (WDchipset == WD90C31)
+  if (WDchipset == WD90C31 || WDchipset == WD90C24)
     {
       wd90c31BitBlt(pdstBase, psrcBase,
 		    widthSrc, widthDst,

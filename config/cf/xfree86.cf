@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.60 1995/06/17 12:06:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.61 1995/07/05 12:25:53 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -189,6 +189,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.60 1995/06/17 12:06:51 dawes Exp $
  */
 #ifndef BuildFresco
 #define BuildFresco	NO
+#endif
+
+#ifndef UseInternalMalloc
+#define UseInternalMalloc	YES
 #endif
 
 /*

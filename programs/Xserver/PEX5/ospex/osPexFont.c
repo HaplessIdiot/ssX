@@ -1,4 +1,5 @@
 /* $XConsortium: osPexFont.c,v 5.8 94/04/17 20:36:01 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -112,11 +113,11 @@ pex_get_font_directory_path()
     if (!already_determined) {
 	if (getenv("PEX_FONTPATH")) {
 	    font_dir_path = 
-	       (char *)Xalloc((unsigned long)(1+strlen(getenv("PEX_FONTPATH"))));
+	       (char *)xalloc((unsigned long)(1+strlen(getenv("PEX_FONTPATH"))));
 	    strcpy(font_dir_path, getenv("PEX_FONTPATH"));
 	} else {
 	    font_dir_path =
-		(char *)Xalloc((unsigned long)(1+strlen(PEX_DEFAULT_FONTPATH)));
+		(char *)xalloc((unsigned long)(1+strlen(PEX_DEFAULT_FONTPATH)));
 	    strcpy(font_dir_path, PEX_DEFAULT_FONTPATH);
 	}
 	already_determined = 1;
@@ -263,7 +264,7 @@ char    ***names;		/* out - pointer to list of strings */
     
     CopyISOLatin1Lowered((unsigned char*)pattern, pPattern, patLen);
     
-    if (!(*names = (char **)Xalloc((unsigned long)(ABSOLUTE_MAX_NAMES * sizeof(char *)))))
+    if (!(*names = (char **)xalloc((unsigned long)(ABSOLUTE_MAX_NAMES * sizeof(char *)))))
 	return 0;
     
     if (!(fontdir = opendir(pex_get_font_directory_path())))
@@ -280,10 +281,10 @@ char    ***names;		/* out - pointer to list of strings */
 
 	    if (pex_is_matching(entry, pattern, head, tail, len) > 0) {
 	    
-		if (!( (*names)[total] = (char *)Xalloc((unsigned long)(1 + strlen(entry))))) {
+		if (!( (*names)[total] = (char *)xalloc((unsigned long)(1 + strlen(entry))))) {
 		    for (i = 0; i < total; i++)
-			Xfree((*names)[i]);
-		    Xfree(*names);
+			xfree((*names)[i]);
+		    xfree(*names);
 		    return 0;
 		}
 		
@@ -321,7 +322,7 @@ get_stroke(stroke, fp)
     npath = hdr->maxLists = hdr->numLists;
     hdr->type = DD_2D_POINT;
     hdr->ddList = spath = (listofddPoint *)
-	Xalloc((unsigned long)(sizeof(listofddPoint) * npath));
+	xalloc((unsigned long)(sizeof(listofddPoint) * npath));
 	
     if (spath == NULL)
 	return -1;
@@ -343,7 +344,7 @@ get_stroke(stroke, fp)
 
 	spath->maxData = sizeof(ddCoord2D) * spath->numPoints;
 	
-	if (!(spath->pts.p2Dpt = (ddCoord2D *) Xalloc((unsigned long)(spath->maxData))))
+	if (!(spath->pts.p2Dpt = (ddCoord2D *) xalloc((unsigned long)(spath->maxData))))
 	    return -1;
 	    
 	if (fread((char *)spath->pts.p2Dpt, sizeof(ddCoord2D), 
@@ -439,24 +440,24 @@ LoadPEXFontFile(length, fontname, pFont)
     if (header.num_props > 0) {
 
 	(void) SetPEXFontFilePtr(fp, START_PROPS);   /* Get to props position */
-	properties = (Property *) Xalloc(header.num_props * sizeof(Property));
+	properties = (Property *) xalloc(header.num_props * sizeof(Property));
 	if (properties == NULL) {
 	    (void) ClosePEXFontFile(fp);
 	    return (BadAlloc); }
 
 	if (fread((char *) properties, sizeof(Property), 
 		  header.num_props, fp) != header.num_props) {
-	    Xfree((char *) properties);
+	    xfree((char *) properties);
 	    (void) ClosePEXFontFile(fp);
 	    return (PEXERR(PEXFontError)); }
     
 	/* Create space for font properties in the font data area */
 
 	font->properties =
-	    (pexFontProp *) Xalloc( (unsigned long)(header.num_props
+	    (pexFontProp *) xalloc( (unsigned long)(header.num_props
 				    * sizeof(pexFontProp)));
 	if (font->properties == NULL) {
-	    Xfree((char *) properties);
+	    xfree((char *) properties);
 	    (void) ClosePEXFontFile(fp);
 	    return (BadAlloc); }
 
@@ -479,7 +480,7 @@ LoadPEXFontFile(length, fontname, pFont)
 	}
 
 	/* free up local storage allocated for properties */
-	 Xfree((char *) properties);
+	 xfree((char *) properties);
     }
 
     /* position file pointer to dispatch data */
@@ -493,7 +494,7 @@ LoadPEXFontFile(length, fontname, pFont)
      * "right" value.
      */
 
-    table = (Dispatch *)Xalloc((unsigned long)(sizeof(Dispatch) *font->num_ch));
+    table = (Dispatch *)xalloc((unsigned long)(sizeof(Dispatch) *font->num_ch));
     
     if (table == NULL) {
 	(void) ClosePEXFontFile(fp);
@@ -501,15 +502,15 @@ LoadPEXFontFile(length, fontname, pFont)
     
     if (fread((char *) table, sizeof(Dispatch), font->num_ch, fp)
 	    != font->num_ch) {
-	Xfree((char *) table);
+	xfree((char *) table);
 	(void) ClosePEXFontFile(fp);
 	return (PEXERR(PEXFontError)); }
     
     font->ch_data =
-	(Ch_stroke_data **) Xalloc((unsigned long)(sizeof(Ch_stroke_data *) * 
+	(Ch_stroke_data **) xalloc((unsigned long)(sizeof(Ch_stroke_data *) * 
 						    font->num_ch));
     if (font->ch_data == NULL) {
-	Xfree((char *) table);
+	xfree((char *) table);
 	(void) ClosePEXFontFile(fp);
 	return (BadAlloc); }
     
@@ -523,7 +524,7 @@ LoadPEXFontFile(length, fontname, pFont)
 	*ch_font = NULL;
 	if (tblptr->offset != 0) numChars++; }
 
-    ch_stroke = (Ch_stroke_data *)Xalloc((unsigned long)(numChars *
+    ch_stroke = (Ch_stroke_data *)xalloc((unsigned long)(numChars *
 						    sizeof(Ch_stroke_data)));
     if (!ch_stroke) {
 	err = BadAlloc;
@@ -572,7 +573,7 @@ LoadPEXFontFile(length, fontname, pFont)
 	    }
     }
 
-    Xfree((char *)table);
+    xfree((char *)table);
 
     (void) ClosePEXFontFile(fp);
     
@@ -580,7 +581,7 @@ LoadPEXFontFile(length, fontname, pFont)
 
 disaster:
     (void) ClosePEXFontFile(fp);
-    if (table) Xfree(table);
+    if (table) xfree(table);
     if (pFont == defaultPEXFont) defaultPEXFont = 0;	/* force free */
     FreePEXFont((diFontHandle) pFont, pFont->id);
     return (err);

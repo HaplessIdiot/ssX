@@ -1,6 +1,6 @@
 /*
  * $XConsortium: mach32curs.c,v 1.3 94/10/12 19:59:09 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.3 1995/01/28 16:58:41 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.4 1995/04/09 13:45:09 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -197,7 +197,7 @@ mach32RealizeCursor(pScr, pCurs)
   if (pCurs->bits->refcnt > 1)
 	return TRUE;
 
-  cursPriv = (Mach32CursPriv *)Xcalloc(sizeof(Mach32CursPriv));
+  cursPriv = (Mach32CursPriv *)xcalloc(1,sizeof(Mach32CursPriv));
   *pPriv = (pointer)cursPriv;
   if (!cursPriv) 
      return (FALSE);

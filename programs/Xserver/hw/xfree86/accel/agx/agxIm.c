@@ -1,5 +1,5 @@
 /* $XConsortium: agxIm.c,v 1.7 95/01/27 14:50:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.14 1995/05/27 03:02:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.15 1995/07/01 10:47:59 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -1079,7 +1079,7 @@ agxImageTileScrPad( x, y, w, h, pwidth, pw, ph, xrot, yrot )
     int                 pw;
     int                 ph;
     int                 xrot;
-    int                 yrot;,
+    int                 yrot;
 #endif
 {
     register unsigned int numHorizTiles;
@@ -1556,7 +1556,7 @@ agxImageStipScrPad( x, y, w, h, pwidth, pw, ph, xrot, yrot )
     int                 pw;
     int                 ph;
     int                 xrot;
-    int                 yrot;,
+    int                 yrot;
 #endif
 {
     register unsigned int numHorizTiles;

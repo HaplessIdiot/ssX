@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.23 1995/06/29 15:16:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.24 1995/07/03 08:52:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -707,7 +707,7 @@ vgaHWSave(save, size)
       tmp = -size;
     if (tmp < sizeof(vgaHWRec))
       tmp = sizeof(vgaHWRec);
-    save = (vgaHWPtr)Xcalloc(tmp);
+    save = (vgaHWPtr)xcalloc(1,tmp);
     /*
      * Here we are, when we first save the videostate. This means we came here
      * to save the original Text mode. Because some drivers may depend
@@ -913,7 +913,7 @@ vgaHWInit(mode, size)
   if (vgaNewVideoState == NULL) {
     if (size < sizeof(vgaHWRec))
       size = sizeof(vgaHWRec);
-    vgaNewVideoState = (void *)Xcalloc(size);
+    vgaNewVideoState = (void *)xcalloc(1,size);
 
     /*
      * initialize default colormap for monochrome

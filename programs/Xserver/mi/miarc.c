@@ -45,11 +45,18 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.50 94/04/17 20:27:12 dpw Exp $ */
+/* $XConsortium: miarc.c,v 5.51 94/07/25 13:47:32 kaleb Exp $ */
+/* $XFree86$ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 #include "X.h"
 #include "Xprotostr.h"
 #include "misc.h"
@@ -62,9 +69,6 @@ SOFTWARE.
 #include "mifillarc.h"
 #include "Xfuncproto.h"
 
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
-#endif
 static double miDsin(), miDcos(), miDasin(), miDatan2();
 double	cbrt(
 #if NeedFunctionPrototypes
@@ -1582,10 +1586,10 @@ double	dy, dx;
  * This procedure allocates the space necessary to fit the arc points.
  * Sometimes it's convenient for those points to be at the end of an existing
  * array. (For example, if we want to leave a spare point to make sectors
- * instead of segments.)  So we pass in the Xalloc()ed chunk that contains the
+ * instead of segments.)  So we pass in the xalloc()ed chunk that contains the
  * array and an index saying where we should start stashing the points.
  * If there isn't an array already, we just pass in a null pointer and 
- * count on Xrealloc() to handle the null pointer correctly.
+ * count on xrealloc() to handle the null pointer correctly.
  */
 static int
 miGetArcPts(parc, cpt, ppPts)
@@ -3064,8 +3068,8 @@ fillSpans (pDrawable, pGC)
 
 	if (nspans == 0)
 		return;
-	xSpan = xSpans = (DDXPointPtr) xalloc (nspans * sizeof (DDXPointRec));
-	xWidth = xWidths = (int *) xalloc (nspans * sizeof (int));
+	xSpan = xSpans = (DDXPointPtr) ALLOCATE_LOCAL (nspans * sizeof (DDXPointRec));
+	xWidth = xWidths = (int *) ALLOCATE_LOCAL (nspans * sizeof (int));
 	if (xSpans && xWidths)
 	{
 	    i = 0;
@@ -3084,8 +3088,10 @@ fillSpans (pDrawable, pGC)
 	    (*pGC->ops->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
 	}
 	disposeFinalSpans ();
-	xfree (xSpans);
-	xfree (xWidths);
+	if (xSpans)
+	    DEALLOCATE_LOCAL (xSpans);
+	if (xWidths)
+	    DEALLOCATE_LOCAL (xWidths);
 	finalMiny = 0;
 	finalMaxy = -1;
 	finalSize = 0;

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h,v 1.67 95/04/25 20:32:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.7 1995/06/14 07:51:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.8 1995/06/20 14:30:28 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -137,11 +137,11 @@ char *alloca();
 #define DEALLOCATE_LOCAL(ptr) Xfree((pointer)(ptr))
 #endif /* ALLOCATE_LOCAL */
 
-#define xnfalloc(size) XNFalloc((unsigned long)(size))
-#define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
-
 #define xalloc(size) Xalloc((unsigned long)(size))
+#define xnfalloc(size) XNFalloc((unsigned long)(size))
+#define xcalloc(_num, _size) Xcalloc((unsigned long)(_num)*(unsigned long)(_size))
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
+#define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 
 #ifdef SCO
@@ -440,7 +440,7 @@ extern void Xfree(
 #endif
 );
 
-extern int OsInitAllocator(
+extern void OsInitAllocator(
 #if NeedFunctionPrototypes
     void
 #endif

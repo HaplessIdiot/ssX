@@ -1,4 +1,5 @@
-/* $XConsortium: xkbInit.c,v 1.5 94/04/08 15:15:34 erik Exp $ */
+/* $XConsortium: xkbInit.c,v 1.8 94/05/16 10:49:53 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -49,9 +50,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	NUM_PHYS	7
 #else
 #ifdef sun
-#define LED_CAPS	4
 #define LED_NUM		1
 #define	LED_SCROLL	2
+#define LED_COMPOSE	3
+#define LED_CAPS	4
 #define	NUM_PHYS	4
 #else
 #define	LED_CAPS	1
@@ -124,7 +126,7 @@ int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
 
     map->num_syms= 1;
     map->size_syms= (nKeys*15)/10;
-    map->syms=(KeySym *)Xcalloc(map->size_syms*sizeof(KeySym));
+    map->syms=(KeySym *)xcalloc(map->size_syms,sizeof(KeySym));
     if (map->syms) {
 	register int i;
 	XkbSymMapRec *symMap= &map->key_sym_map[xkb->desc.min_key_code];
@@ -152,7 +154,7 @@ int	nKeys= xkb->desc.max_key_code-xkb->desc.min_key_code+1;
 
     map->num_acts= 1;
     map->size_acts= (nKeys/2)+1;
-    map->acts=(XkbAction *)Xcalloc(map->size_acts*sizeof(XkbAction));
+    map->acts=(XkbAction *)xcalloc(map->size_acts,sizeof(XkbAction));
     if (map->acts) {
 	register int i;
 	map->acts[0].type = XkbSA_NoAction;
@@ -185,7 +187,7 @@ XkbRadioGroupRec	*grp;
     if ( xkb->num_rg>0 )
 	return;
 
-    xkb->radioGroups=(XkbRadioGroupRec *)Xcalloc(RG_COUNT*
+    xkb->radioGroups=(XkbRadioGroupRec *)xcalloc(RG_COUNT,
 						sizeof(XkbRadioGroupRec));
     if (!xkb->radioGroups)
 	return;
@@ -230,7 +232,7 @@ XkbCompatRec	*compat;
     compat->vmod_compat[vmod_AltGr].groups= 0xfe;
 
     compat->num_si= 0;
-    compat->sym_interpret = (XkbSymInterpretRec *)Xcalloc(sizeof(dfltSI));
+    compat->sym_interpret = (XkbSymInterpretRec *)xcalloc(1,sizeof(dfltSI));
     if (compat->sym_interpret) {
 	compat->num_si = num_dfltSI;
 	memcpy((char *)compat->sym_interpret,(char *)dfltSI,sizeof(dfltSI));
@@ -296,16 +298,20 @@ register int	i;
 	names->indicators[LED_CAPS-1] = CREATE_ATOM("Caps Lock");
 	names->indicators[LED_NUM-1] = CREATE_ATOM("Num Lock");
 	names->indicators[LED_SCROLL-1] = CREATE_ATOM("Scroll Lock");
+#ifdef LED_COMPOSE
+	names->indicators[LED_COMPOSE-1] = CREATE_ATOM("Compose");
+#endif
+
     }
 #ifdef DEBUG_RADIO_GROUPS
-    names->radio_groups= (Atom *)Xcalloc(RG_COUNT*sizeof(Atom));
+    names->radio_groups= (Atom *)xcalloc(RG_COUNT,sizeof(Atom));
     if (names->radio_groups) {
 	names->num_rg = RG_COUNT;
 	names->radio_groups[RG_BOGUS_FUNCTION_GROUP]= CREATE_ATOM("BOGUS");
     }
 #endif
     names->num_char_sets= 1;
-    names->char_sets= (Atom *)Xcalloc(sizeof(Atom));
+    names->char_sets= (Atom *)xcalloc(1,sizeof(Atom));
     names->char_sets[0]= CREATE_ATOM("iso8859-1");
 
     if (file->present&XkmKeyNamesMask) {
@@ -326,22 +332,22 @@ XkbInitAlternateSyms(xkb)
 {
 XkbAlternateSymsRec *alt;
 
-   alt= (XkbAlternateSymsRec *)Xcalloc(sizeof(XkbAlternateSymsRec));
+   alt= (XkbAlternateSymsRec *)xcalloc(1,sizeof(XkbAlternateSymsRec));
    if (alt) {
 	alt->name= CREATE_ATOM("BOGUS_DE");
 	alt->index= 0;
 	alt->num_char_sets= 1;
-	alt->char_sets= (Atom *)Xcalloc(sizeof(Atom));
+	alt->char_sets= (Atom *)xcalloc(1,sizeof(Atom));
 	alt->char_sets[0]= CREATE_ATOM("iso8859-1");
 	alt->first_key= 27;
 	alt->num_keys= 13;
 	alt->num_syms= 4;
-	alt->syms= (KeySym *)Xcalloc(alt->num_syms*sizeof(KeySym));
+	alt->syms= (KeySym *)xcalloc(alt->num_syms,sizeof(KeySym));
 	alt->syms[0]= XK_y;
 	alt->syms[1]= XK_Y;
 	alt->syms[2]= XK_z;
 	alt->syms[3]= XK_Z;
-	alt->maps= (XkbSymMapRec *)Xcalloc(alt->num_keys*sizeof(XkbSymMapRec));
+	alt->maps= (XkbSymMapRec *)xcalloc(alt->num_keys,sizeof(XkbSymMapRec));
 	alt->maps[0].kt_index= XkbTwoLevelIndex;
 	alt->maps[0].group_info= XkbSetGroupInfo(1,0);
 	alt->maps[0].offset= 0;
@@ -392,7 +398,8 @@ register int 	i;
     map->maps[LED_NUM-1].which_mods= XkbIM_UseLocked;
     map->maps[LED_NUM-1].mask= 0;
     map->maps[LED_NUM-1].real_mods= 0;
-    map->maps[LED_NUM-1].vmods= vmod_NumLock;
+    map->maps[LED_NUM-1].vmods= vmod_NumLockMask;
+    xkb->iAccel.usesLocked|= (1<<(LED_NUM-1));
     xkb->iAccel.haveMap|= (1<<(LED_NUM-1));
 
     xkb->iAccel.usedComponents|= XkbModifierLockMask;
@@ -438,7 +445,7 @@ SrvXkmInfo	file;
     i+= sizeof(unsigned char);	/* explicit components */
     i*= pXDev->key->curKeySyms.maxKeyCode+1;
 
-    pXDev->key->xkbInfo= xkb=(XkbSrvInfoRec *)Xcalloc(sizeof(XkbSrvInfoRec)+i);
+    pXDev->key->xkbInfo= xkb=(XkbSrvInfoRec *)xcalloc(1,sizeof(XkbSrvInfoRec)+i);
     if ( xkb ) {
 	xkb->desc.ctrls = &xkb->Controls;
 	xkb->desc.map = &xkb->Map;
@@ -566,7 +573,7 @@ XkbFreeInfo(xkb)
     XkbSrvInfoRec *xkb;
 {
     if (xkb->radioGroups) {
-	Xfree(xkb->radioGroups);
+	xfree(xkb->radioGroups);
 	xkb->radioGroups= NULL;
     }
     if (xkb->mouseKeyTimer) {
@@ -593,7 +600,7 @@ XkbFreeInfo(xkb)
 	xkb->desc.ctrls= NULL;
     if (xkb->desc.server) {
 	if (xkb->desc.server->acts)
-	    Xfree(xkb->desc.server->acts);
+	    xfree(xkb->desc.server->acts);
 	xkb->desc.server->num_acts= xkb->desc.server->size_acts= 0;
 	xkb->desc.server->acts= NULL;
 	if (xkb->desc.server->behaviors)
@@ -604,11 +611,11 @@ XkbFreeInfo(xkb)
     }
     if (xkb->desc.names) {
 	if (xkb->desc.names->radio_groups) {
-	    Xfree(xkb->desc.names->radio_groups);
+	    xfree(xkb->desc.names->radio_groups);
 	    xkb->desc.names->radio_groups= NULL;
 	}
 	if (xkb->desc.names->char_sets) {
-	    Xfree(xkb->desc.names->char_sets);
+	    xfree(xkb->desc.names->char_sets);
 	    xkb->desc.names->char_sets= NULL;
 	}
 	xkb->desc.names= NULL;
@@ -619,27 +626,27 @@ XkbFreeInfo(xkb)
 	    XkbKeyTypeRec	*type= xkb->desc.map->types;
 	    for (i=0;i<xkb->desc.map->num_types;i++,type++) {
 		if (type->map&&(!(type->free&XkbNoFreeKTMap))) {
-		    Xfree(type->map);
+		    xfree(type->map);
 		    type->map_count= 0;
 		    type->map= NULL;
 		}
 		if (type->preserve&&(!(type->free&XkbNoFreeKTPreserve))) {
-		    Xfree(type->preserve);
+		    xfree(type->preserve);
 		    type->preserve= NULL;
 		}
 		if (type->lvl_names&&(!(type->free&XkbNoFreeKTLevelNames))) {
-		    Xfree(type->lvl_names);
+		    xfree(type->lvl_names);
 		    type->lvl_names= NULL;
 		}
 	    }
 	    type= xkb->desc.map->types;
 	    if (!(type->free&XkbNoFreeKTStruct)) {
-		Xfree(type);
+		xfree(type);
 	    }
 	    xkb->desc.map->types= NULL;
 	}
 	if (xkb->desc.map->syms) {
-	    Xfree(xkb->desc.map->syms);
+	    xfree(xkb->desc.map->syms);
 	    xkb->desc.map->syms= NULL;
 	}
 	if (xkb->desc.map->key_sym_map) {
@@ -652,7 +659,7 @@ XkbFreeInfo(xkb)
     }
     if (xkb->desc.compat) {
 	if (xkb->desc.compat->sym_interpret)
-	    Xfree(xkb->desc.compat->sym_interpret);
+	    xfree(xkb->desc.compat->sym_interpret);
 	xkb->desc.compat->num_si= 0;
 	xkb->desc.compat->sym_interpret= NULL;
 	xkb->desc.compat= NULL;
@@ -663,23 +670,23 @@ XkbFreeInfo(xkb)
 	next= this->next;
 	while (this) {
 	    if (this->char_sets)
-		Xfree(this->char_sets);
+		xfree(this->char_sets);
 	    this->num_char_sets= 0;
 	    this->char_sets= NULL;
 	    if (this->syms)
-		Xfree(this->syms);
+		xfree(this->syms);
 	    this->num_syms= 0;
 	    this->syms= NULL;
 	    if (this->maps)
-		Xfree(this->maps);
+		xfree(this->maps);
 	    this->num_keys= 0;
 	    this->maps= NULL;
-	    Xfree(this);
+	    xfree(this);
 	    this= next;
 	}
 	xkb->desc.alt_syms= NULL;
     }
-    Xfree(xkb);
+    xfree(xkb);
     return;
 }
 
@@ -721,16 +728,12 @@ XkbProcessArguments(argc,argv,i)
     }
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatDelay = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatDelay > 1000000)
-	    XkbDfltRepeatDelay =  999000;
+	XkbDfltRepeatDelay = (long)atoi(argv[i]);
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatInterval = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatInterval > 1000000)
-	    XkbDfltRepeatInterval =  999000;
+	XkbDfltRepeatInterval = (long)atoi(argv[i]);
 	return 2;
     }
     return 0;

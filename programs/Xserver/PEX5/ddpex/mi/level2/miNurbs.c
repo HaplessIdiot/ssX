@@ -1,4 +1,5 @@
 /* $XConsortium: miNurbs.c,v 5.5 94/04/17 20:37:13 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -259,7 +260,7 @@ mi_nu_insert_knots( order, pt_type,
     } else return (1);
 
     if ( !(tmpknots = (ddFLOAT *)
-	Xalloc( (numinknots + *numoutknots) * sizeof(float))) )
+	xalloc( (numinknots + *numoutknots) * sizeof(float))) )
 	return 0;
 
     /* Insert new knots and control points, starting from the end of the
@@ -375,6 +376,6 @@ mi_nu_insert_knots( order, pt_type,
     *numoutknots = numtmpknots; /* resulting total knots */
     memcpy( (char *)nknots, (char *)tmpknots, numtmpknots * sizeof(ddFLOAT) );
 
-    free( (char *)tmpknots );
+    xfree( (char *)tmpknots );
     return 1;
 }

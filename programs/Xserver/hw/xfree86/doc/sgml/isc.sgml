@@ -4,7 +4,7 @@
 <!-- made up title -->
 <title> Information for ISC Users
 <author> Michael Rohleder
-<date> 24 January 1995
+<date> 06 July 1995
 <toc>
 
 <sect> X11R6/XFree86&tm; on Interactive Unix <p>
@@ -16,7 +16,8 @@ Interactive Unix, also referred to as ISC.
 If you have any suggestions, comments, fixes or ideas regarding
 X11R6/XFree86 on Interactive Unix, send e-mail to
 
-<em>michael.rohleder@stadt-frankfurt.de</em><p>
+<url url="mailto:michael.rohleder@stadt-frankfurt.de" 
+    name="michael.rohleder@stadt-frankfurt.de"><p>
 Bug Reports should be sent to<p>
 <em>XFree86@XFree86.Org</em><p>
 Questions or anything else should be posted to the NewsGroup<p>
@@ -33,11 +34,13 @@ new facilities provided in the X11R6 Libraries against them.
     <tag> gcc-2.6.x </tag>
           Use the highest number for x you found.
           Fresco will only build 2.6.3 and later.
-
-	  I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3.  
-
-          2.6.2 and 2.6.3 had some problems compiling 3.1.  
-          2.6.3 builds since 3.1.0A (beta) without problem.
+	  I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3,
+          but not 2.7.0 yet.  
+          <p>
+          With 2.6.3 the current source tree should be able to compile
+          with a little bit more Optimization:
+          <tt> &num;define DefaultCDebugFlags -O3 -fomit-frame-pointer</tt>
+          inside xf86site.def to overwrite the default -O2.
     <tag> libg++-2.6.x </tag>
           The needed g++ Libraries for use with g++ 2.6.x
     <tag> binutils-2.5.2 </tag>
@@ -51,11 +54,12 @@ new facilities provided in the X11R6 Libraries against them.
           Due to better memory usage we should use GNU's malloc library
           on systems where possible. 
 
-          Enable &num;define UseGnuMalloc YES
+          Enable <tt>&num;define UseGnuMalloc YES</tt>
 	  inside xf86site.def or within the Linkkit site.def. 
 
-          Set &num;define MallocLibrary
-	  to your needs if it isn't like the default -lgmalloc
+          Enable and set <tt>&num;define GnuMallocLibrary</tt>
+	  to your needs, if it isn't like the default 
+          <tt>-L/usr/local/lib -lgmalloc</tt>.
 
 </descrip>          
 
@@ -144,9 +148,13 @@ BOOTSTRAPCFLAGS="-DISC [-DISC30 | -DISC40] -DSYSV [-Di386]"
                    set the HasSymLinks to Yes ('cause symbolic linking
                    were only supported from Version 4.x using the S5L 
                    Filesystem)<p>
+                   If you could use long filenames, you could enable
+                   the installation of expanded Manual Pages by including
+                   <tt> &num;define ExpandManNames	YES </tt>
+                   inside xf86site.def.<p>
 		   A build on ISC 4.x only needs -DISC40 defined in
-		   the BOOTSRAPCFLAGS -- the -DISC30 will be included
-		   automatically.
+		   the BOOTSTRAPCFLAGS -- 
+                   the -DISC30 will be included automatically.
 
 <tag>-DSYSV &lsqb;-Di386&rsqb;</tag>
 	standard defines for SystemV Release3 on x86 platform.
@@ -154,13 +162,6 @@ BOOTSTRAPCFLAGS="-DISC [-DISC30 | -DISC40] -DSYSV [-Di386]"
 		  this is pre-defined in /lib/cpp.
 
 </descrip>
-<code>
-  You maybe got some warnings from makedepend regarding that it can
-  not find the file <sys/mman.h>.
-  Don't worry about it, the actual compile will be alright.
-  If you don't want to see this, generate an empty file sys/mman.h
-  under /usr/include
-</code>
 
 <sect> linear Addressing <p>
 
@@ -342,7 +343,9 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
 	      you should use the new S5L on both filesystems.
 	      ISC30 systems should take care that the two directories
 	      are on the same FS. Else if you are using a ISC40 compiled
-	      binary, the Server abort due to a SIGSYS.
+	      binary, the Server could maybe abort due to a SIGSYS.
+              We tried to catch this signal, so if it dumps please send
+              me a note.
           
 </itemize>
                  
@@ -356,7 +359,7 @@ as to all who contribute to this excellent piece of free software.
 
 <verb>
 $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.5 1995/03/04 06:16:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.6 1995/06/25 09:53:47 dawes Exp $
 </verb>
 
 </article>

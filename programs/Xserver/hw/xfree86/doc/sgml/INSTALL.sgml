@@ -32,7 +32,7 @@ distributions.
 
 We highly recommend using GCC-2 to build XFree86.  Do not use version
 2.6.0 or 2.4.x versions prior to 2.4.5 due to bugs that cause either
-build or execution failures.  Most of the XFree86 3.1.1 binary kits are
+build or execution failures.  Most of the XFree86 3.1.2 binary kits are
 built with GCC 2.4.5, 2.5.8 or 2.6.3.  Use of GCC's -m486 option will yield
 approximately 5&percnt; better performance on a 486, with no degradation (other
 than larger binaries) on a 386.  (gcc-2 is available from prep.ai.mit.edu
@@ -83,7 +83,7 @@ and other sites archiving GNU source.)
  xc/programs/Xserver/PEX5      2MB
 </verb></tscreen>
 
-      A few more MB can be freed by removing unnecessary directories under
+      A few more MB can be freed by removing the non-XFree86 directories under
  <tt>xc/programs/Xserver/hw/</tt>.
 
     <item> It is possible to configure a cut-down source tree for building only
@@ -182,7 +182,7 @@ and other sites archiving GNU source.)
    are building the Font Server).
 
    If you are using a cut-down source tree for building only the X servers,
-   set <bf/BuildServersOnly/ to <bf/YES/.
+   set <bf/BuildServersOnly/ to <bf/YES/, and <bf/XnestServer/ to <bf/NO/.
 
    If you are using the cut-down source tree designed for building only the
    lbxproxy server, set <bf/BuildLBXProxyOnly/ to <bf/YES/.
@@ -275,8 +275,8 @@ and other sites archiving GNU source.)
 <item> To build the subset of the contrib release supported by
    XFree86, make sure that you have first built and installed the core
    distribution.  Then go to the <tt/contrib/ directory and run
-   ``<tt/xmkmf -a; make/''.  When that is completed you can do a
-   ``<tt/make install/'' and a ``<tt/make install.man/''.
+   ``<tt/xmkmf -a; make/''.  When that is completed, run
+   ``<tt/make install/'' and ``<tt/make install.man/'' to install it.
 </enum>
 
 <sect> Using and Configuring XFree86
@@ -335,7 +335,7 @@ name="README.LinkKit"> file.
 
 <verb>
 $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.8 1995/02/04 04:50:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.10 1995/06/25 09:53:38 dawes Exp $
 </verb>
 
 </article>

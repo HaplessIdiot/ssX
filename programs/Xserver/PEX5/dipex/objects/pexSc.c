@@ -1,4 +1,5 @@
 /* $XConsortium: pexSc.c,v 5.9 94/04/17 20:36:13 hersh Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -98,7 +99,7 @@ listofNSPair *pair;
     ddNSPair *ptr;
     if (pair->numPairs >= pair->maxPairs) {
 	pair->maxPairs += SC_NS_LIMIT;
-	pair->pPairs = (ddNSPair *)Xrealloc(    (pointer)(pair->pPairs),
+	pair->pPairs = (ddNSPair *)xrealloc(    (pointer)(pair->pPairs),
 						(unsigned long)(pair->maxPairs
 						    * sizeof(ddNSPair)));
 	if (!pair->pPairs) return(BadAlloc);
@@ -138,7 +139,7 @@ int		incr;
 	((int)(*array) + *number > (int)end)) {	/*  need more room in array */
 	unsigned long **bigger_array;
 	bigger_array = 
-	    (unsigned long **)Xrealloc((pointer)array, 
+	    (unsigned long **)xrealloc((pointer)array, 
 					(unsigned long)(sizeof(unsigned long) *
 					  ((int)end - (int)*array + incr)));
 	if (!bigger_array) return(BadAlloc);
@@ -172,7 +173,7 @@ int		incr;
 	((int)(list) + *number > (int)end)) {	/*  need more room in list */
 	unsigned long *bigger_list;
 	bigger_list = 
-		(unsigned long *)Xrealloc((pointer)list, 
+		(unsigned long *)xrealloc((pointer)list, 
 					 (unsigned long)(sizeof(unsigned long) *
 					     ((int)end - (int)list + incr)));
 	if (!bigger_list) return(BadAlloc);
@@ -283,17 +284,17 @@ pexCreateSearchContextReq *strmPtr;
 
     CHECK_FP_FORMAT (strmPtr->fpFormat);
 
-    psc = (ddSCStr *)Xalloc((unsigned long)sizeof(ddSCStr));
+    psc = (ddSCStr *)xalloc((unsigned long)sizeof(ddSCStr));
     if (!psc) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     psc->id = strmPtr->sc;
     psc->normal.numPairs=0;
     psc->normal.maxPairs=SC_NS_LIMIT;
     psc->normal.pPairs =
-		(ddNSPair *)Xalloc(psc->normal.maxPairs * sizeof(ddNSPair));
+		(ddNSPair *)xalloc(psc->normal.maxPairs * sizeof(ddNSPair));
     psc->inverted.numPairs=0;
     psc->inverted.maxPairs=SC_NS_LIMIT;
     psc->inverted.pPairs =
-		(ddNSPair *)Xalloc(psc->inverted.maxPairs * sizeof(ddNSPair));
+		(ddNSPair *)xalloc(psc->inverted.maxPairs * sizeof(ddNSPair));
 
     psc->position.x = psc->position.y = psc->position.z = 0.0;
     psc->distance = 0.0;
@@ -311,7 +312,7 @@ pexCreateSearchContextReq *strmPtr;
     err = UpdateSearchContext(cntxtPtr, psc, strmPtr->itemMask, ptr);
     if (err) {
 	puDeleteList(psc->startPath);
-	Xfree((pointer)psc);
+	xfree((pointer)psc);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
 
@@ -351,9 +352,9 @@ pexCopySearchContextReq *strmPtr;
 
 
     if (strmPtr->itemMask & PEXSCNormalList) {
-	Xfree((pointer)(dst->normal.pPairs));
+	xfree((pointer)(dst->normal.pPairs));
 	dst->normal.pPairs =
-	    (ddNSPair *) Xalloc(   (unsigned long)(src->normal.maxPairs * 
+	    (ddNSPair *) xalloc(   (unsigned long)(src->normal.maxPairs * 
 						 sizeof(ddNSPair)));
 	if (! dst->normal.pPairs) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
@@ -365,9 +366,9 @@ pexCopySearchContextReq *strmPtr;
 
 
     if (strmPtr->itemMask & PEXSCInvertedList) {
-	Xfree((pointer)dst->inverted.pPairs);
+	xfree((pointer)dst->inverted.pPairs);
 	dst->inverted.pPairs =
-	    (ddNSPair *)Xalloc((unsigned long)(src->inverted.maxPairs*
+	    (ddNSPair *)xalloc((unsigned long)(src->inverted.maxPairs*
 						 sizeof(ddNSPair)));
 	if (! dst->inverted.pPairs) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
@@ -386,11 +387,11 @@ FreeSearchContext (ptr, id)
 ddSCStr *ptr;
 pexSC id;
 {
-    if (ptr->inverted.pPairs) Xfree ((pointer)(ptr->inverted.pPairs));
-    if (ptr->normal.pPairs) Xfree ((pointer)(ptr->normal.pPairs));
+    if (ptr->inverted.pPairs) xfree ((pointer)(ptr->inverted.pPairs));
+    if (ptr->normal.pPairs) xfree ((pointer)(ptr->normal.pPairs));
     puDeleteList(ptr->startPath);
 
-    Xfree((pointer)ptr);
+    xfree((pointer)ptr);
 
     return( Success );
 }

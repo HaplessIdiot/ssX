@@ -1,5 +1,5 @@
 /* $XConsortium: paradise.h,v 1.2 94/10/13 13:26:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/paradise.h,v 3.0 1994/07/24 11:57:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/paradise.h,v 3.2 1995/01/28 17:09:12 dawes Exp $ */
 /* Author: Mike Tierney <floyd@eng.umd.edu> */
 
 /* Modified by: Bill Morgart <wsm@morticia.ssw.com> */
@@ -10,12 +10,12 @@
 #define WD90C00	1		/* WD90C00 */
 #define WD90C10	2		/* WD90C1x */
 #define WD90C30	3		/* WD90C30 */
-#define WD90C31	4		/* WD90C31 */
-#define WD90C33 5		/* WD90C33 */
-#define WD90C20 6		/* WD90C2x */
-#define IS_WD90C3X(x)	(((x) == WD90C30) \
-			 || ((x) == WD90C31) \
-			 || ((x) == WD90C33))
+#define WD90C24	4		/* WD90C24 Treat this as 90C3X */
+#define WD90C31	5		/* WD90C31 */
+#define WD90C33 6		/* WD90C33 */
+#define WD90C20 7		/* WD90C2x */
+#define IS_WD90C3X(x)	(((x) >= WD90C30) \
+			 && ((x) <= WD90C33))
 
 /* wd chip type */
 extern int WDchipset;

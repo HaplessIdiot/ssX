@@ -1,4 +1,5 @@
 /* $XConsortium: miBldXform.c,v 5.7 94/04/17 20:37:01 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -296,7 +297,7 @@ ng
 	      int             i;
 
 	      ddrects = (ddDeviceRect *) pRend->clipList->pList;
-	      xrects = (xRectangle*) Xalloc (numrects * sizeof(xRectangle));
+	      xrects = (xRectangle*) xalloc (numrects * sizeof(xRectangle));
 	      if (!xrects) return BadAlloc;
 	      /* Need to convert to XRectangle format */
 	      for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
@@ -319,7 +320,7 @@ ng
 	      clipRegion = RECTS_TO_REGION(pGC->pScreen, numrects,
 	          xrects, Unsorted);
 
-	      Xfree((char *) xrects);
+	      xfree((char *) xrects);
 
 	      box.x1 = viewport.x;
 	      box.y1 = viewport.y;

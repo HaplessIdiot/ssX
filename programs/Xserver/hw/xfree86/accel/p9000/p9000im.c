@@ -1,5 +1,5 @@
 /* $XConsortium: p9000im.c,v 1.5 95/01/05 20:38:51 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.6 1995/05/24 12:21:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.7 1995/05/28 11:47:58 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -327,6 +327,7 @@ p9000ImageOpStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw,
 		  int ph, int pox, int poy,
                   int fgPixel, int bgPixel, int alu, int planemask) 
 #else
+void
 p9000ImageOpStipple(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, fgPixel,
 		  bgPixel, alu, planemask)
 	int		x ;
@@ -513,6 +514,7 @@ p9000ImageStipple(int x, int y, int w, int h, char *psrc, int pwidth, int pw,
 		  int ph, int pox, int poy,
                   int fgPixel, int alu, int planemask) 
 #else
+void
 p9000ImageStipple(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, fgPixel,
 		  alu, planemask)
 	int		x ;
@@ -688,6 +690,7 @@ void
 p9000ImageFill(int x, int y, int w, int h, char *psrc, int pwidth, int pw, 
 		  int ph, int pox, int poy, int alu, int planemask) 
 #else
+void
 p9000ImageFill(x, y, w, h, psrc, pwdith, pw, ph, pox, poy, 
 		  alu, planemask)
 	int		x ;

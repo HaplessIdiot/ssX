@@ -1,5 +1,5 @@
 /* $XConsortium: pvgablt.c,v 1.6 95/01/23 15:35:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.2 1995/01/19 05:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.4 1995/01/28 17:09:17 dawes Exp $ */
 /*
  * cfb copy area
  */
@@ -218,6 +218,7 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	switch (WDchipset)
 	{
 	case WD90C31:
+	case WD90C24:
 #if 0
 	  /* Not sure why this causes problems (DHD) */
 	  wd90c31BitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
@@ -276,7 +277,7 @@ pvgacfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     }
 
     /* the c33 bitblt code does its own waiting */
-    if (WDchipset == WD90C31)
+    if (WDchipset == WD90C31 || WDchipset == WD90C24)
       WAIT_BLIT; /* must wait, since memory writes can mess up as well */
 
     if (pboxNew2)

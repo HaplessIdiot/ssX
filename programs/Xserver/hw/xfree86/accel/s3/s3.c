@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.87 1995/07/03 09:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.88 1995/07/05 12:39:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -705,8 +705,8 @@ s3Probe()
    if (card_id > 0) {
       ErrorF("%s %s: card: %s, Ser.No. %s\n",
 	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
-      free(card);
-      free(serno);
+      xfree(card);
+      xfree(serno);
 
       if (s3InfoRec.dacSpeed <= 0)
 	 s3InfoRec.dacSpeed = max_pix_clock;
@@ -772,7 +772,10 @@ s3Probe()
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
-	    chipname = "Trio64";
+	    if ((s3ChipRev & 0xf0) == 0x80) 
+	       chipname = "Trio64V+ (untested, please report !!)";
+	    else 
+	       chipname = "Trio64";
 	 }
 	 ErrorF("%s %s: chipset:   %s rev. %x\n",
                 XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
@@ -2045,11 +2048,55 @@ s3Probe()
       numClocks = 3;
 #ifdef STG1703_CLOCK_SUPPORT
    } else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &s3InfoRec.clockOptions)) {
+      unsigned char mi, ml, mh;
+      int mclk;
+      
+      outb(vgaCRIndex, 0x43);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp & ~0x02);
+      
+      outb(vgaCRIndex, 0x55);
+      tmp = inb(vgaCRReg) & ~0x03;
+      outb(vgaCRReg, tmp | 1);  /* set RS2 */
+      
+      outb(0x3c7, 0x00);  /* index high */
+      outb(0x3c8, 0x48);  /* index low  */
+      mi = (inb(0x3c9) >> 4) & 0x03;
+      
+      outb(0x3c8, 0x40 + 2*mi);  /* index low  */
+      ml = inb(0x3c9);
+      mh = inb(0x3c9);
+      
+#if 1  /* to be deleted before 3.1.2 */
+      for (i=0; i<0x50; i++) {
+	 if (i%16 == 0) ErrorF ("\t%04x",i);
+	 if (i% 8 == 0) ErrorF (" ");
+	 if (i% 4 == 0) ErrorF (" ");
+	 outb(0x3c8, i);
+	 ErrorF(" %02x",inb(0x3c9));
+	 if (i%16 == 15) ErrorF ("\n");
+      }
+#endif
+      
+      outb(vgaCRReg, tmp);  /* reset RS2 */
+      
+      mclk = ((((1431818 * ((ml&0x7f) + 2)) / ((mh&0x1f) + 2)) 
+	       >> ((mh>>5)&0x03)) + 50) / 100;
+      
       s3ClockSelectFunc = STG1703ClockSelect;
-      if (xf86Verbose)
-	 ErrorF("%s %s: Using STG1703 programmable clock\n",
-		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
+
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using STG1703 programmable clock(MCLK%d %02x %02x %1.3f MHz)\n",
+		XCONFIG_GIVEN, s3InfoRec.name, mi, ml,mh, mclk/1e3);
+      if (s3InfoRec.s3MClk > 0) {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
+		   XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.s3MClk / 1000.0);
+      }
+      else
+	 s3InfoRec.s3MClk = mclk;
+      
 #endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
@@ -2190,8 +2237,12 @@ s3Probe()
    case IBMRGB524_DAC:
    case IBMRGB525_DAC:
    case IBMRGB528_DAC:
-      clockDoublingPossible = TRUE;
-      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      clockDoublingPossible = FALSE;
+      /* LCLK & SCLK limit is 100 MHz */
+      if ((s3InfoRec.dacSpeed * s3Bpp) / 8 > 100000)  
+	 s3InfoRec.maxClock = (100000 * 8) / s3Bpp; 
+      else
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       break;
       /* XXXX What happens for 16bpp and 32bpp?? */
       /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
@@ -2330,7 +2381,7 @@ s3Probe()
 		  numClocksChanged = TRUE;
 		  clocksChanged = TRUE;
 		  for(i = s3InfoRec.clocks; i < newNumClocks; i++)
-		     s3InfoRec.clock[j] = 0;  /* XXXX is clock[] initialized? */
+		     s3InfoRec.clock[i] = 0;  /* XXXX is clock[] initialized? */
 		  if (s3InfoRec.clocks > 16) 
 		     s3InfoRec.clocks = 16;
 	       }
@@ -2465,6 +2516,11 @@ s3Probe()
 		 s3InfoRec.videoRam * 1024) {
 	 ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
 		s3InfoRec.name, pMode->name);
+	 if (!OFLG_ISSET(OPTION_BT485_CURS,  &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_SW_CURSOR,   &s3InfoRec.options))
 	 ErrorF("%s %s: NB. 1 scan line is required for the hardware cursor\n",
 	        XCONFIG_PROBED, s3InfoRec.name);
 	 xf86DeleteMode(&s3InfoRec, pMode);
