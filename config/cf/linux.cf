@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.151 2000/12/05 17:15:33 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.152 2000/12/05 21:18:32 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -114,6 +114,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define ForceNormalLib		YES
 #define BuildSpecsDocs		YES
 #define SpecsDocDirs		GL Xext Xv xterm
+/* right now glide only works on i386 */
+#ifdef i386Architecture
 #ifdef DebianMaintainer
 #define HasGlide2		YES
 #endif
@@ -122,6 +124,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define HasGlide3		YES
 #endif
 #define Glide3IncDir		/usr/include/glide3
+#endif
 #define XAppLoadDir		EtcX11Directory/app-defaults
 #define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
 #ifdef DebianMaintainer

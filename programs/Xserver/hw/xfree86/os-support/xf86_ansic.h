@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.42 2000/09/19 12:46:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.43 2000/10/24 22:45:10 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -133,6 +133,9 @@
 #define MAXLONG LONG_MAX
 #endif
 
+#endif /* XFree86LOADER || NEED_XF86_TYPES */
+
+#if defined(XFree86LOADER) || defined(NEED_XF86_PROTOTYPES)
 /*
  * ANSI C compilers only.
  */
@@ -304,7 +307,7 @@ extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
 extern int xf86setjmp(xf86jmp_buf env);
 extern void xf86longjmp(xf86jmp_buf env, int val);
 
-#else /* XFree86LOADER || NEED_XF86_TYPES */
+#else /* XFree86LOADER || NEED_XF86_PROTOTYPES */
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -315,7 +318,7 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
-#endif /* XFree86LOADER NEED_XF86_TYPES */
+#endif /* XFree86LOADER || NEED_XF86_PROTOTYPES */
 
 /*
  * These things are always required by drivers (but not by libc_wrapper.c),
