@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.182 2001/01/30 22:06:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.183 2001/02/15 18:20:34 dawes Exp $ */
 
 /*
  *
@@ -61,23 +61,6 @@
 /* XXX used in drmOpen(). This should change to use a less os-specific
  * method. */
 int sysctlbyname(const char*, void *, size_t *, void *, size_t);
-#endif
-
-/* XXX Should get all of these from elsewhere */
-#if defined(PowerMAX_OS) || (defined(sun) && defined(SVR4))
-# undef inb
-# undef inw
-# undef inl
-# undef outb
-# undef outw
-# undef outl
-
-extern void outb(unsigned int a, unsigned char b);
-extern void outw(unsigned int a, unsigned short w);
-extern void outl(unsigned int a, unsigned long l);
-extern unsigned char  inb(unsigned int a);
-extern unsigned short inw(unsigned int a);
-extern unsigned long  inl(unsigned int a);
 #endif
 
 #if defined(__alpha__)
