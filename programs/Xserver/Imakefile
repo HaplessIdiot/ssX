@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.195 2000/09/22 05:56:35 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.196 2000/09/26 04:27:20 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -590,6 +590,9 @@ XF1BPPLIB = $(XF86SRC)/xf1bpp/LibraryTargetName(xf1bpp)
 #if XF4Bpp
 XF4BPPLIB = $(XF86SRC)/xf4bpp/LibraryTargetName(xf4bpp)
 #endif
+#if XF8_32Wid
+XF8_32WIDLIB = $(XF86SRC)/xf8_32wid/LibraryTargetName(xf8_32wid)
+#endif
 #if XF8_32Bpp
 XF8_32BPPLIB = $(XF86SRC)/xf8_32bpp/LibraryTargetName(xf8_32bpp)
 #endif
@@ -628,7 +631,8 @@ XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
-              $(XF8_32BPPLIB) $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
+	      $(XF8_32WIDLIB) $(XF8_32BPPLIB) \
+	      $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
 	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)

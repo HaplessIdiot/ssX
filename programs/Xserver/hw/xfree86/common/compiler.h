@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.67 2000/09/01 01:13:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.69 2000/10/07 05:09:37 keithp Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -440,19 +440,24 @@ __ustw (unsigned long r5, unsigned short * r11)
 #define ASI_PL 0x88
 #endif
 
+#define barrier() __asm__ __volatile__(".word 0x8143e00a": : :"memory")
+
 static __inline__ void outb(unsigned long port, unsigned char val)
 {
 	__asm__ __volatile__("stba %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+	barrier();
 }
 
 static __inline__ void outw(unsigned long port, unsigned short val)
 {
 	__asm__ __volatile__("stha %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+	barrier();
 }
 
 static __inline__ void outl(unsigned long port, unsigned int val)
 {
 	__asm__ __volatile__("sta %0, [%1] %2" : : "r" (val), "r" (port), "i" (ASI_PL));
+	barrier();
 }
 
 static __inline__ unsigned int inb(unsigned long port)
@@ -474,6 +479,156 @@ static __inline__ unsigned int inl(unsigned long port)
 	unsigned int ret;
 	__asm__ __volatile__("lda [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
 	return ret;
+}
+
+static __inline__ unsigned char xf86ReadMmio8(void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned char ret;
+
+	__asm__ __volatile__("lduba [%1] %2, %0" : "=r" (ret) : "r" (addr), "i" (ASI_PL));
+	return ret;
+}
+
+static __inline__ unsigned short xf86ReadMmio16Be(void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned short ret;
+
+	__asm__ __volatile__("lduh [%1], %0" : "=r" (ret) : "r" (addr));
+	return ret;
+}
+
+static __inline__ unsigned short xf86ReadMmio16Le(void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned short ret;
+
+	__asm__ __volatile__("lduha [%1] %2, %0" : "=r" (ret) : "r" (addr), "i" (ASI_PL));
+	return ret;
+}
+
+static __inline__ unsigned int xf86ReadMmio32Be(void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned int ret;
+
+	__asm__ __volatile__("ld [%1], %0" : "=r" (ret) : "r" (addr));
+	return ret;
+}
+
+static __inline__ unsigned int xf86ReadMmio32Le(void *base, const unsigned long offset)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+	unsigned int ret;
+
+	__asm__ __volatile__("lda [%1] %2, %0" : "=r" (ret) : "r" (addr), "i" (ASI_PL));
+	return ret;
+}
+
+static __inline__ void xf86WriteMmio8(void *base, const unsigned long offset,
+				      const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("stba %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
+	barrier();
+}
+
+static __inline__ void xf86WriteMmio16Be(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("sth %0, [%1]"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr));
+	barrier();
+}
+
+static __inline__ void xf86WriteMmio16Le(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("stha %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
+	barrier();
+}
+
+static __inline__ void xf86WriteMmio32Be(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("st %0, [%1]"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr));
+	barrier();
+}
+
+static __inline__ void xf86WriteMmio32Le(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("sta %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
+	barrier();
+}
+
+static __inline__ void xf86WriteMmio8NB(void *base, const unsigned long offset,
+				      const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("stba %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
+}
+
+static __inline__ void xf86WriteMmio16BeNB(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("sth %0, [%1]"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr));
+}
+
+static __inline__ void xf86WriteMmio16LeNB(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("stha %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
+}
+
+static __inline__ void xf86WriteMmio32BeNB(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("st %0, [%1]"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr));
+}
+
+static __inline__ void xf86WriteMmio32LeNB(void *base, const unsigned long offset,
+					 const unsigned int val)
+{
+	unsigned long addr = ((unsigned long)base) + offset;
+
+	__asm__ __volatile__("sta %0, [%1] %2"
+			     : /* No outputs */
+			     : "r" (val), "r" (addr), "i" (ASI_PL));
 }
 
 #endif	/* !Lynx */
@@ -1384,7 +1539,33 @@ testinx(unsigned short port, unsigned char ind)
 #  define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Le(base, offset, val)
 #  define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Le(base, offset, val)
 # endif
-#else /* !__alpha__ && !__powerpc__ */
+#elif defined(__sparc__)
+ /*
+  * Like powerpc, we provide byteswapping and no byteswapping functions
+  * here with byteswapping as default, drivers that don't need byteswapping
+  * should define SPARC_MMIO_IS_BE (perhaps create a generic macro so that we
+  * do not need to use PPC_MMIO_IS_BE and the sparc one in all the same places
+  * of drivers?).
+  */
+# define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
+# define MMIO_OUT8(base, offset, val) xf86WriteMmio8(base, offset, val)
+# define MMIO_ONB8(base, offset, val) xf86WriteMmio8NB(base, offset, val)
+# if defined(SPARC_MMIO_IS_BE) /* No byteswapping */
+#  define MMIO_IN16(base, offset) xf86ReadMmio16Be(base, offset)
+#  define MMIO_IN32(base, offset) xf86ReadMmio32Be(base, offset)
+#  define MMIO_OUT16(base, offset, val) xf86WriteMmio16Be(base, offset, val)
+#  define MMIO_OUT32(base, offset, val) xf86WriteMmio32Be(base, offset, val)
+#  define MMIO_ONB16(base, offset, val) xf86WriteMmio16BeNB(base, offset, val)
+#  define MMIO_ONB32(base, offset, val) xf86WriteMmio32BeNB(base, offset, val)
+# else /* byteswapping is the default */
+#  define MMIO_IN16(base, offset) xf86ReadMmio16Le(base, offset)
+#  define MMIO_IN32(base, offset) xf86ReadMmio32Le(base, offset)
+#  define MMIO_OUT16(base, offset, val) xf86WriteMmio16Le(base, offset, val)
+#  define MMIO_OUT32(base, offset, val) xf86WriteMmio32Le(base, offset, val)
+#  define MMIO_ONB16(base, offset, val) xf86WriteMmio16LeNB(base, offset, val)
+#  define MMIO_ONB32(base, offset, val) xf86WriteMmio32LeNB(base, offset, val)
+# endif
+#else /* !__alpha__ && !__powerpc__ && !__sparc__ */
 #define MMIO_IN8(base, offset) \
 	*(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) \

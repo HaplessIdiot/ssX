@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.72 2000/09/19 12:46:20 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.73 2000/10/09 23:37:16 alanh Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2302,7 +2302,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
 	    return FALSE;
 	}
 	if (pTseng->UseAccel) {
-	  pTseng->MMioBase = (memType)xf86MapPciMem(pScrn->scrnIndex, 
+	  pTseng->MMioBase = xf86MapPciMem(pScrn->scrnIndex, 
 					   VIDMEM_MMIO,
 					   pTseng->PciTag,
 					   (unsigned long)pTseng->LinFbAddress,
@@ -2318,7 +2318,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
         vgaHWPtr hwp = VGAHWPTR(pScrn);
 	if (pTseng->UseAccel) {
 	    pTseng->FbBase = hwp->Base;
-	    pTseng->MMioBase = (memType)xf86MapPciMem(pScrn->scrnIndex, 
+	    pTseng->MMioBase = xf86MapPciMem(pScrn->scrnIndex, 
 					     VIDMEM_MMIO,
 					     pTseng->PciTag,
 					     (unsigned long)hwp->MapPhys,

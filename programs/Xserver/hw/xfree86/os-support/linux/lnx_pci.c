@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.3 1999/12/31 15:38:33 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.4 2000/02/08 17:19:22 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -28,14 +28,9 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
     do {
 	res = fgets(c,0xff,file);
 	if (res) {
-#if defined WORD64 || defined LONG64
-#define ILF "\t%*16x\t%*16x\t%*16x\t%*16x\t%*16x\t%*16x\t%*16x"
-#define LF  "\t%16x\t%16x\t%16x\t%16x\t%16x\t%16x\t%16x"
-#else
-#define ILF "\t%*08x\t%*08x\t%*08x\t%*08x\t%*08x\t%*08x\t%*08x"
-#define LF  "\t%08x\t%08x\t%08x\t%08x\t%08x\t%08x\t%08x"
-#endif
-	    num = sscanf(res,"%02x%02x\t%*04x%*04x\t%*x"ILF LF,
+	    num = sscanf(res,"%02x%02x\t%*04x%*04x\t%*x"
+			     "\t%*x\t%*x\t%*x\t%*x\t%*x\t%*x\t%*x"
+			     "\t%x\t%x\t%x\t%x\t%x\t%x\t%x",
 			 &bus,&devfn,&size[0],&size[1],&size[2],&size[3],
 			 &size[4],&size[5],&size[6]);
 	    if (num != 9) {  /* apparantly not 2.3 style */ 

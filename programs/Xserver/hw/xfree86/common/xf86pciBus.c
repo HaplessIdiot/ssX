@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.21 2000/09/19 12:46:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.22 2000/09/29 08:59:44 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1476,6 +1476,46 @@ printBridgeInfo(PciBusPtr PciBus)
   xf86PrintResList(3, PciBus->preferred_pmem);
 }
 
+/*
+ * This Sun PCI-->PCI bridge must be handled specially since it does
+ * not report the decoded I/O and MEM ranges in the usual way.
+ */
+#define APB_IO_ADDRESS_MAP	0xde
+#define APB_MEM_ADDRESS_MAP	0xdf
+
+static void
+get_sun_apb_ranges(PciBusPtr PciBus, pciConfigPtr pcrp)
+{
+    unsigned char iomap, memmap;
+    resRange range;
+    int i;
+
+    iomap = pciReadByte(pcrp->tag, APB_IO_ADDRESS_MAP);
+    memmap = pciReadByte(pcrp->tag, APB_MEM_ADDRESS_MAP);
+
+    /* if (pcrp->pci_command & PCI_CMD_IO_ENABLE) */ {	/* ??? */
+	for (i = 0; i < 8; i++) {
+	    if ((iomap & (1 << i)) != 0) {
+		PCI_I_RANGE(range, pcrp->tag,
+		    (i << 21), (i << 21) + ((1 << 21) - 1),
+		    ResIo | ResBlock | ResExclusive);
+		PciBus->io = xf86AddResToList(PciBus->io, &range, -1);
+	    }
+	}
+    }
+
+    /* if (pcrp->pci_command & PCI_CMD_MEM_ENABLE) */ {	/* ??? */
+	for (i = 0; i < 8; i++) {
+	    if ((memmap & (1 << i)) != 0) {
+		PCI_M_RANGE(range, pcrp->tag,
+		    (i << 29), (i << 29) + ((1 << 29) - 1),
+		    ResMem | ResBlock | ResExclusive);
+		PciBus->mem = xf86AddResToList(PciBus->mem, &range, -1);
+	    }
+	}
+    }
+}
+
 PciBusPtr
 xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 {
@@ -1519,6 +1559,11 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->subclass = sub_class;
 		PciBus->interface = pcrp->pci_prog_if;
 		PciBus->brcontrol = pcrp->pci_bridge_control;
+		if (pcrp->pci_vendor == PCI_VENDOR_SUN &&
+		    pcrp->pci_device == 0x5000) {
+			get_sun_apb_ranges(PciBus, pcrp);
+			break;
+		}
 		if (pcrp->pci_command & PCI_CMD_IO_ENABLE) {
 		    base = (pcrp->pci_upper_io_base << 16) |
 			((pcrp->pci_io_base & 0xf0u) << 8);

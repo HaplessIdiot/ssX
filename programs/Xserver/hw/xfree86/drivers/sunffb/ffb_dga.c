@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dga.c,v 1.1 2000/05/23 04:47:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -153,7 +153,7 @@ static Bool FFB_OpenFramebuffer(ScrnInfoPtr pScrn, char **name, unsigned char **
 {
 	FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
 
-	*name = &pFfb->psdp->device;
+	*name = pFfb->psdp->device;
 
 	/* We give the user the dumb frame buffer. */
 	*mem = (unsigned char *)FFB_DFB24_VOFF;

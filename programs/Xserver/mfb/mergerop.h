@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.8 1999/12/13 02:13:14 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.9 2000/02/12 03:40:00 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -36,7 +36,7 @@ typedef struct _mergeRopBits {
 
 extern mergeRopRec	mergeRopBits[16];
 
-#if PPW != PGSZ	/* cfb */
+#if defined(PPW) && defined(PGSZ) && (PPW != PGSZ)	/* cfb */
 #define DeclareMergeRop() MfbBits   _ca1, _cx1, _ca2, _cx2;
 #define DeclarePrebuiltMergeRop()	MfbBits	_cca, _ccx;
 #if PSZ == 24  /* both for PGSZ == 32 and 64 */
@@ -50,7 +50,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define DeclarePrebuiltMergeRop()	MfbBits	_cca, _ccx;
 #endif
 
-#if PPW != PGSZ	/* cfb */
+#if defined(PPW) && defined(PGSZ) && (PPW != PGSZ)	/* cfb */
 #define InitializeMergeRop(alu,pm) {\
     MfbBits   _pm; \
     mergeRopPtr  _bits; \

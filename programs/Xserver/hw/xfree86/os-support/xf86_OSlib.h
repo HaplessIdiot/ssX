@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.73 2000/08/10 17:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.74 2000/08/11 19:51:04 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -362,6 +362,9 @@ extern int xf86_solx86usleep(unsigned long);
 # include <sys/ioctl.h>
 # include <signal.h>
 # include <termio.h>
+# ifdef __sparc__
+#  include <sys/param.h>
+# endif
 
 # include <errno.h>
 #ifndef __errno_location
@@ -382,6 +385,10 @@ extern int errno;
 # define USE_VT_SYSREQ
 
 # define POSIX_TTY
+
+# ifdef __sparc__
+#  define DEV_MEM "/dev/fb"
+# endif
 
 #endif /* linux */
 

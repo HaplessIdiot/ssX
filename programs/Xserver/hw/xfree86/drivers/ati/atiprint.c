@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.16 2000/10/11 22:52:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.17 2000/10/12 18:51:49 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -148,10 +148,10 @@ ATIPrintMach64Registers
 
 #ifdef AVOID_CPIO
 
-    if (pATI->Chip < ATI_CHIP_264VT)
-        Limit = MM_IO_SELECT;
-    else
+    if (pATI->pBlock[1])
         Limit = DWORD_SELECT;
+    else
+        Limit = MM_IO_SELECT;
 
     for (Index = 0;  Index <= Limit;  Index += UnitOf(MM_IO_SELECT))
     {

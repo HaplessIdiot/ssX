@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.137 2000/09/19 12:46:03 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.139 2000/09/29 08:59:41 eich Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault		YES
@@ -172,7 +172,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 /* The DRM module requires kernel services that appeared in late 2.1.x
    kernels and are known to be present in 2.2.x kernels. */
 #ifndef BuildXF86DRI
-#  if defined(i386Architecture)
+#  if defined(i386Architecture) || defined(ia64Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 #      define BuildXF86DRI            YES
 #    else
@@ -193,7 +193,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
    kernel revisions.  So, we'll only build the module for kernels that are
    known to be supported by the module. */
 #ifndef BuildXF86DRM
-#  ifdef i386Architecture
+#  if defined(i386Architecture) || defined(ia64Architecture)
 #    if OSMajorVersion == 2
        /* Only tested for Linux 2.2.0 through 2.2.12 */
 #      if OSMinorVersion == 2 && OSTeenyVersion <= 12
@@ -217,7 +217,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 
 #ifndef HasAgpGart
-#  ifdef i386Architecture
+#  if defined(i386Architecture) || defined(ia64Architecture)
      /* The AGPGART header file is included in os-support/linux, which
         allows all drivers that depend on AGP to build properly. */
 #    define HasAgpGart              YES

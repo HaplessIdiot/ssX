@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.35 2000/06/13 02:28:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.36 2000/06/27 21:41:37 mvojkovi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -331,15 +331,15 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
-  pointer base;
-  int fd;
+    pointer base;
+    int fd;
 
 #if defined(__ia64__)
-  if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
+    if ((fd = open(DEV_MEM, O_RDWR | O_SYNC)) < 0) {
 #else
-  if ((fd = open("/dev/mem", O_RDWR)) < 0) {
+    if ((fd = open(DEV_MEM, O_RDWR)) < 0) {
 #endif
-      FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
+      FatalError("xf86MapVidMem: failed to open " DEV_MEM " (%s)\n",
 		 strerror(errno));
     }
     /* This requires linux-0.99.pl10 or above */
@@ -538,8 +538,8 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
       xf86ReadMmio16 = readSparse16;
       xf86ReadMmio32 = readSparse32;
 	
-      if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-	FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
+      if ((fd = open(DEV_MEM, O_RDWR)) < 0) {
+	FatalError("xf86MapVidMem: failed to open " DEV_MEM " (%s)\n",
 		   strerror(errno));
       }
       /* This requirers linux-0.99.pl10 or above */
@@ -779,8 +779,8 @@ mapVidMemJensen(int ScreenNum, unsigned long Base, unsigned long Size)
   xf86ReadMmio16 = readSparseJensen16;
   xf86ReadMmio32 = readSparseJensen32;
 
-  if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-    FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
+  if ((fd = open(DEV_MEM, O_RDWR)) < 0) {
+    FatalError("xf86MapVidMem: failed to open " DEV_MEM " (%s)\n",
 	       strerror(errno));
   }
   /* This requires linux-0.99.pl10 or above */
