@@ -1,0 +1,103 @@
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.13 2001/03/21 16:14:23 dawes Exp $
+
+#include <Threads.tmpl>
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#ifdef i386Architecture
+#if MesaUseMMX
+     MMX_DEFS = -DUSE_MMX_ASM
+#endif
+#if MesaUse3DNow
+   3DNOW_DEFS = -DUSE_3DNOW_ASM
+#endif
+#if MesaUseKatmai
+  KATMAI_DEFS = -DUSE_KATMAI_ASM
+#endif
+  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines -DDRIVERTS
+ DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
+		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
+		-I$(GLXLIBSRC)/mesa/dri \
+		-I$(SERVERSRC)/GL/dri \
+		-I$(XF86OSSRC) \
+		-I$(XF86DRIVERSRC)/ati \
+		-I$(XF86COMSRC) \
+		-I$(GLXLIBSRC)/dri/drm
+#endif
+
+MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESADRVSRC)/common -I$(MESADRVSRC)/r128
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
+
+LinkSourceFile(r128_context.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_dd.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_fastpath.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_eltpath.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_ioctl.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_lock.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_pipeline.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_screen.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_span.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_state.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_tex.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_tris.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_vb.c, $(MESADRVSRC)/r128)
+LinkSourceFile(r128_xmesa.c, $(MESADRVSRC)/r128)
+
+     R128SRCS = r128_context.c \
+		r128_dd.c \
+		r128_fastpath.c \
+		r128_eltpath.c \
+		r128_ioctl.c \
+		r128_lock.c \
+		r128_pipeline.c \
+                r128_screen.c \
+		r128_span.c \
+		r128_state.c \
+		r128_tex.c \
+		r128_tris.c \
+		r128_vb.c \
+		r128_xmesa.c
+
+     R128OBJS = r128_context.o \
+		r128_dd.o \
+		r128_fastpath.o \
+		r128_eltpath.o \
+		r128_ioctl.o \
+		r128_lock.o \
+		r128_pipeline.o \
+                r128_screen.o \
+		r128_span.o \
+		r128_state.o \
+		r128_tex.o \
+		r128_tris.o \
+		r128_vb.o \
+		r128_xmesa.o
+
+         SRCS = $(R128SRCS)
+         OBJS = $(R128OBJS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
+

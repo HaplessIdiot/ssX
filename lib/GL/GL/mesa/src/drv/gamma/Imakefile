@@ -1,0 +1,80 @@
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.19 2001/03/21 16:14:20 dawes Exp $
+
+#include <Threads.tmpl>
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+MESADRVSRC = $(GLXLIBSRC)/mesa/src/drv
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+#ifdef i386Architecture
+#if MesaUseMMX
+     MMX_DEFS = -DUSE_MMX_ASM
+#endif
+#if MesaUse3DNow
+   3DNOW_DEFS = -DUSE_3DNOW_ASM
+#endif
+#if MesaUseKatmai
+  KATMAI_DEFS = -DUSE_KATMAI_ASM
+#endif
+  ASM_DEFINES = -DUSE_X86_ASM $(MMX_DEFS) $(3DNOW_DEFS) $(KATMAI_DEFS)
+#endif
+
+#if BuildXF86DRI
+  DRI_DEFINES = GlxDefines -DDRIVERTS
+ DRI_INCLUDES = -I$(GLXLIBSRC)/dri -I$(GLXLIBSRC)/glx \
+		-I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
+		-I$(GLXLIBSRC)/mesa/dri \
+		-I$(SERVERSRC)/GL/dri \
+		-I$(XF86DRIVERSRC)/glint \
+		-I$(GLXLIBSRC)/dri/drm
+#endif
+
+MESA_INCLUDES = -I$(MESASRCDIR)/src -I$(MESADRVSRC)/gamma
+
+
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFINES)
+     INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
+
+LinkSourceFile(gamma_gl.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_xmesa.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_init.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_matrix.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_inithw.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_texture.c, $(MESADRVSRC)/gamma)
+LinkSourceFile(gamma_dlist.c, $(MESADRVSRC)/gamma)
+
+    GAMMASRCS = gamma_gl.c \
+		gamma_xmesa.c \
+		gamma_init.c \
+		gamma_matrix.c \
+		gamma_inithw.c \
+		gamma_texture.c \
+		gamma_dlist.c
+
+    GAMMAOBJS = gamma_gl.o \
+		gamma_xmesa.o \
+		gamma_init.o \
+		gamma_matrix.o \
+		gamma_inithw.o \
+		gamma_texture.o \
+		gamma_dlist.o
+
+         SRCS = $(GAMMASRCS)
+         OBJS = $(GAMMAOBJS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()

@@ -1,0 +1,152 @@
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.11 2000/08/01 20:28:38 dawes Exp $
+XCOMM The contents of this file are subject to the GLX Public License Version 1.0
+XCOMM (the "License"). You may not use this file except in compliance with the
+XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
+XCOMM attn: Legal Services, 2011 N. Shoreline Blvd., Mountain View, CA 94043
+XCOMM or at http://www.sgi.com/software/opensource/glx/license.html.
+XCOMM
+XCOMM Software distributed under the License is distributed on an "AS IS"
+XCOMM basis. ALL WARRANTIES ARE DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY
+XCOMM IMPLIED WARRANTIES OF MERCHANTABILITY, OF FITNESS FOR A PARTICULAR
+XCOMM PURPOSE OR OF NON- INFRINGEMENT. See the License for the specific
+XCOMM language governing rights and limitations under the License.
+XCOMM
+XCOMM The Original Software is GLX version 1.2 source code, released February,
+XCOMM 1999. The developer of the Original Software is Silicon Graphics, Inc.
+XCOMM Those portions of the Subject Software created by Silicon Graphics, Inc.
+XCOMM are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
+
+#include <Threads.tmpl>
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+XCOMM #define IHaveSubdirs
+XCOMM #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+XCOMM 
+XCOMM SUBDIRS = \
+XCOMM 	glu \
+XCOMM 	glw
+
+# Files from Mesa
+
+LinkSourceFile(glapi.c, $(MESASRCDIR)/src)
+LinkSourceFile(glapi.h, $(MESASRCDIR)/src)
+LinkSourceFile(glapinoop.c, $(MESASRCDIR)/src)
+LinkSourceFile(glapinoop.h, $(MESASRCDIR)/src)
+LinkSourceFile(glapioffsets.h, $(MESASRCDIR)/src)
+LinkSourceFile(glapitable.h, $(MESASRCDIR)/src)
+LinkSourceFile(glapitemp.h, $(MESASRCDIR)/src)
+LinkSourceFile(glheader.h, $(MESASRCDIR)/src)
+LinkSourceFile(glthread.c, $(MESASRCDIR)/src)
+LinkSourceFile(glthread.h, $(MESASRCDIR)/src)
+LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(assyntax.h, $(MESASRCDIR)/src/X86)
+
+# Files from glx.  Maybe some of these could come from
+# xc/extras/ogl-sample/main/glx/lib at some point.  For now we take all
+# of them from  $(GLXLIBSRC)/glx.
+
+LinkSourceFile(clientattrib.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(compsize.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(dispatch.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(eval.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(g_render.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(g_single.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(g_vendpriv.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(glxcmds.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(glxext.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(indirect_init.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(pixel.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(pixelstore.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(render2.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(renderpix.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(single2.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(singlepix.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(vertarr.c, $(GLXLIBSRC)/glx)
+LinkSourceFile(xfont.c, $(GLXLIBSRC)/glx)
+
+     GLX_SRCS = \
+		clientattrib.c \
+		compsize.c \
+		dispatch.c \
+		eval.c \
+		g_render.c \
+		g_single.c \
+		g_vendpriv.c \
+		glapi.c \
+		glapinoop.c \
+		glthread.c \
+		glxcmds.c \
+		glxext.c \
+		indirect_init.c \
+		pixel.c \
+		pixelstore.c \
+		render2.c \
+		renderpix.c \
+		single2.c \
+		singlepix.c \
+		vertarr.c \
+	        xfont.c
+
+     GLX_OBJS = \
+	        clientattrib.o \
+		compsize.o \
+		dispatch.o \
+		eval.o \
+		g_render.o \
+		g_single.o \
+		g_vendpriv.o \
+		glapi.o \
+		glapinoop.o \
+		glthread.o \
+		glxcmds.o \
+		glxext.o \
+		indirect_init.o \
+		pixel.o \
+		pixelstore.o \
+		render2.o \
+		renderpix.o \
+		single2.o \
+		singlepix.o \
+		vertarr.o \
+	        xfont.o
+
+     GLX_DEFS = GlxDefines
+
+#if BuildXF86DRI
+     DRI_INCS = -I$(GLXLIBSRC)/dri
+#if defined(i386Architecture)
+     ASM_SRCS = glapi_x86.S
+     ASM_OBJS = glapi_x86.o
+     ASM_DEFS = -DUSE_X86_ASM
+#endif
+#endif
+
+         SRCS = $(GLX_SRCS) $(ASM_SRCS)
+         OBJS = $(GLX_OBJS) $(ASM_OBJS)
+      DEFINES = $(GLX_DEFS) $(ASM_DEFS)
+
+     INCLUDES = -I$(INCLUDESRC) \
+		-I$(XINCLUDESRC) \
+		-I$(EXTINCSRC) \
+		-I$(INCLUDESRC)/GL \
+		-I$(GLXLIBSRC)/glx \
+		-I$(GLXLIBSRC)/mesa/src \
+		$(DRI_INCS)
+
+#include <Library.tmpl>
+
+LibraryObjectRule()
+
+#if BuildXF86DRI && defined(i386Architecture)
+ObjectFromAsmSource(glapi_x86, NullParameter)
+#endif
+
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
+
+DependTarget()
