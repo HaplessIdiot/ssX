@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.13 2002/09/29 23:39:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.14tsi Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -286,8 +286,9 @@ TellChanged (WindowPtr pWin, pointer value)
 	se.widthInMillimeters = 0;
 	se.heightInMillimeters = 0;
     }    
-    fprintf(stderr, "size = %d\n, widthmm = %d, heightmm=%d\n",
-	    sizeof(se), se.widthInMillimeters, se.heightInMillimeters);
+    fprintf(stderr, "size = %ld\n, widthmm = %d, heightmm=%d\n",
+	    (unsigned long)sizeof(se),
+	    se.widthInMillimeters, se.heightInMillimeters);
     for (pRREvent = *pHead; pRREvent; pRREvent = pRREvent->next) 
     {
 	client = pRREvent->client;

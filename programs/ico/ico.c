@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/ico/ico.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.6tsi Exp $ */
 
 /******************************************************************************
  * Description
@@ -246,7 +246,7 @@ xcondition_rec count_cond;	/* Xthreads doesn't define an equivalent to
  *****************************************************************************/
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-void icoFatal () __attribute__((__noreturn__));
+void icoFatal (const char *fmt, const char *a0) __attribute__((__noreturn__));
 #endif
 void
 icoFatal(fmt,a0)
@@ -776,7 +776,7 @@ initDBufs(closure, fg,bg,planesperbuf)
 		    closure->plane_masks,closure->totalplanes, closure->pixels,1);
 			    /* allocate color planes */
 	    if (t==0) {
-		    icoFatal("can't allocate enough color planes");
+		    icoFatal("can't allocate enough color planes", NULL);
 	    }
 	}
 
@@ -874,7 +874,7 @@ do_ico_window(closure)
 #endif
 	closure->cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
 	if (!closure->cmap) {
-		icoFatal("no default colormap!");
+		icoFatal("no default colormap!", NULL);
 	}
 
 	fg = WhitePixel(dpy, DefaultScreen(dpy));
@@ -957,7 +957,7 @@ do_ico_window(closure)
 		printf("thread %x got Expose\n", xthread_self());
 #endif
 		if (XGetWindowAttributes(dpy,closure->draw_window,&xwa)==0) {
-			icoFatal("cannot get window attributes (size)");
+			icoFatal("cannot get window attributes (size)", NULL);
 		}
 		closure->winW = xwa.width;
 		closure->winH = xwa.height;
@@ -994,7 +994,7 @@ do_ico_window(closure)
 			   0, 0, closure->winW, closure->winH, 0, 0);
 		closure->win = closure->multibuffers[1];
 	    } else 
-	      icoFatal ("unable to obtain 2 buffers");
+	      icoFatal ("unable to obtain 2 buffers", NULL);
 	}
 #endif /* MULTIBUFFER */
 	if (closure->win == None) closure->win = closure->draw_window;
@@ -1316,7 +1316,7 @@ int main(argc, argv)
 	}
 
 	if (!dofaces && !doedges)
-		icoFatal("nothing to draw");
+		icoFatal("nothing to draw", NULL);
 
 #ifdef MULTITHREAD
 	XInitThreads();
