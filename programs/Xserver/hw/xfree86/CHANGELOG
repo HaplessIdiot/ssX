@@ -1,5 +1,5 @@
 XFree86 4.2.99.3 (xx October 2002)
- 464. Fix mode validatation to deal with video memory sizes 256MB or greater
+ 464. Fix mode validation to deal with video memory sizes 256MB or greater
       (Marc La France).
  463. Add ARGB cursors support to the vmware driver (#5442, Nolan Leake).
  462. Add more query options to glxinfo (#5441, Brian Paul).
@@ -15467,4 +15467,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2376 2002/11/07 12:25:44 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2377 2002/11/07 18:04:53 tsi Exp $
