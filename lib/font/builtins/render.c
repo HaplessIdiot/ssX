@@ -1,5 +1,5 @@
 /*
- * $Id: render.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $
+ * $Id: render.c,v 1.3 1999/12/30 02:29:51 robin Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,8 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: $ */
-
+/* $XFree86: xc/lib/font/builtins/render.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $ */
 
 #include    "fntfilst.h"
 #include    "builtin.h"
@@ -103,8 +102,8 @@ static FontRendererRec renderers[] = {
 
 BuiltinRegisterFontFileFunctions()
 {
-    int	    i;
+    int	i;
     for (i = 0; i < numRenderers; i++)
-	FontFileRegisterRenderer (&renderers[i]);
+	FontFileRegisterRenderer ((FontRendererRec *) &renderers[i]);
 }
 

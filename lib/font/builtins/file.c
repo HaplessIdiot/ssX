@@ -1,5 +1,5 @@
 /*
- * $Id: file.c,v 1.2 1999/11/19 14:59:11 hohndel Exp $
+ * $Id: file.c,v 1.3 1999/12/30 02:29:49 robin Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/builtins/file.c,v 1.2 1999/11/19 14:59:11 hohndel Exp $ */
 
 #include "builtin.h"
 
@@ -111,7 +111,7 @@ BuiltinFileOpen (name)
     if (!io)
 	return NULL;
     io->offset = 0;
-    io->file = &builtin_files[i];
+    io->file = (void *) &builtin_files[i];
     raw = BufFileCreate ((char *) io, BuiltinFill, 0, BuiltinSkip, BuiltinClose);
     if (!raw)
     {

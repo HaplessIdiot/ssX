@@ -1,5 +1,5 @@
 /*
- * $Id: fpe.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $
+ * $Id: fpe.c,v 1.3 1999/12/30 02:29:51 robin Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,14 +22,13 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: $ */
-
+/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $ */
 
 #include    "fntfilst.h"
 
 static int  font_file_type;
 
-char	builtin_fonts[] = "built-ins";
+const char	builtin_fonts[] = "built-ins";
 
 int
 BuiltinNameCheck (name)

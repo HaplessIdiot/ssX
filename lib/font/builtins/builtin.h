@@ -1,5 +1,5 @@
 /*
- * $Id: builtin.h,v 1.2 1999/11/19 14:59:11 hohndel Exp $
+ * $Id: builtin.h,v 1.3 1999/12/30 02:29:49 robin Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/builtins/builtin.h,v 1.2 1999/11/19 14:59:11 hohndel Exp $ */
 
 #include <X11/Xdefs.h>
 #include <font.h>
@@ -32,29 +32,29 @@
 #include "fntfilst.h"
 
 typedef struct _BuiltinFile {
-    char    *name;
-    int	    len;
-    char    *bits;
+    const char  *name;
+    int		len;
+    const char  *bits;
 } BuiltinFileRec, *BuiltinFilePtr;
 
 typedef struct _BuiltinDir {
-    char    *file_name;
-    char    *font_name;
+    char	*file_name;
+    char	*font_name;
 } BuiltinDirRec, *BuiltinDirPtr;
 
 typedef struct _BuiltinAlias {
-    char    *alias_name;
-    char    *font_name;
+    char	*alias_name;
+    char	*font_name;
 } BuiltinAliasRec, *BuiltinAliasPtr;
 
-extern BuiltinFileRec	builtin_files[];
-extern int		builtin_files_count;
+extern const BuiltinFileRec	builtin_files[];
+extern const int		builtin_files_count;
 
-extern BuiltinDirRec	builtin_dir[];
-extern int		builtin_dir_count;
+extern const BuiltinDirRec	builtin_dir[];
+extern const int		builtin_dir_count;
 
-extern BuiltinAliasRec	builtin_alias[];
-extern int		builtin_alias_count;
+extern const BuiltinAliasRec	builtin_alias[];
+extern const int		builtin_alias_count;
 
 extern FontFilePtr	BuiltinFileOpen ();
 extern int		BuiltinFileClose ();
