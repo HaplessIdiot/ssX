@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.41 1996/10/03 08:34:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.42 1996/10/08 12:23:12 dawes Exp $
 
 
 
@@ -193,6 +193,7 @@ all:: $(OFILES)
 #if BuildXInputExt
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
 # if BuildDynamicLoading
+SpecialObjectRule(xf86Dl.o,xf86Dl.c,$(MODULEDEFINES))
 #  if JoystickSupport
 SpecialObjectRule(xf86Jstk.o,xf86Jstk.c,$(SHARED_CFLAGS))
 DynamicModuleTarget(xf86Jstk.so,xf86Jstk.o $(ARCH_JSTK))

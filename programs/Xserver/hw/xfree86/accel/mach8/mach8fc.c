@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fc.c,v 3.4 1996/02/04 09:03:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fc.c,v 3.5 1996/10/08 12:20:50 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -70,7 +70,7 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
      GCPtr pGC;
      BoxPtr pBox;
 {
-   int   gHeight;
+   int   gHeight, gWidth;
    int   w = fentry->w;
    int blocki = 255;
    unsigned short height = 0;	/* Cache for height, width and		 */
@@ -84,7 +84,12 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       pci = fentry->pci[*chars];
       if (pci != NULL) {
 	 gHeight = GLYPHHEIGHTPIXELS(pci);
-	 if (gHeight) {
+	 gWidth = GLYPHWIDTHPIXELS(pci);
+	 if (gHeight
+	 && x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	 && x + pci->metrics.leftSideBearing            <  pBox->x2
+	 && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	 && y - pci->metrics.ascent                     <  pBox->y2 ) {
 	    if (*chars / 32 != blocki) {
 	       bitMapBlockPtr block;
 

@@ -1,3 +1,22 @@
+XFree86 3.1.2Gl (10 October 1996)
+963. PC98 doc updates (Michio "Karl" Jinbo).
+962. Add some solid box fills to the MGA driver (Radoslaw Kapitan).
+961. Cirrus and Ark doc updates (Harm Hanemaayer).
+960. Apply 959 to the Mach32 server.
+959. Ignore clipping boxes completely to the left of right of each glyph
+     for the S3, Mach8 and 8514 servers (Hans Nasten).
+958. LinkKit fixes for PC98 (Takaaki Nomura).
+957. Fix Imakefile problem related to dynamic loading for PC98
+     (Michio "Karl" Jinbo).
+956. ViRGE/VX update (Harald Koenig).
+955. Add power_saver support to the TGA server (Alan Hourihane).
+954. Some more line/seg updates for S3V (Harald Koenig). 
+953. Fix some problems with the previous S3V planemask patch (Harald Koenig).
+952. Add code to read the MGA card information from the BIOS.  This
+     allows the RAMDAC type/speed to be determined (Andrew E. Mileski).
+951. Disable 24/32bpp for S3V server because it doesn't work yet.
+950. Driver for NVidia NV1 / SGS-Thomson STG2000 (David McKay).
+
 XFree86 3.1.2Gk (8 October 1996)
 949. Use cfb code in the S3V server when the planemask is non-trivial
      (Harald Koenig).
@@ -6,7 +25,7 @@ XFree86 3.1.2Gk (8 October 1996)
 946. Force 1-cycle EDO mode for the ViRGE/VX (Harald Koenig).
 945. Disable the font and pixmap caches in the S3V server (not implemented).
 944. Apply 943 to the Mach32 and S3V servers.
-943. Ignore cliping boxes completely above or below the displayed text
+943. Ignore clipping boxes completely above or below the displayed text
      for the S3, Mach8 and 8514 servers.  This improves performance
      when a window is partly covered by a shaped window (Hans Nasten).
 942. Resync PC98 Imakefiles, and update documentation (Michio "Karl" Jinbo).

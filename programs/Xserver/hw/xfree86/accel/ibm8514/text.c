@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/text.c,v 1.1.1.3 1996/01/03 07:12:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/text.c,v 3.0 1996/10/08 12:19:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -52,13 +52,14 @@ extern unsigned short ibm8514stipple_tab[];
  * with no tiling and starting from (0,0) in the source bitmap. - Jon.
  */
 __inline__ static void
-ibm8514PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
+ibm8514PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
+    BoxPtr pBox;                /* clipping box */
 {
     int width, height;
     int nbyLine;		/* bytes per line of padded pixmap */
@@ -88,12 +89,16 @@ ibm8514PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     while(nglyph--)
     {
-	pci = *ppci++;
-	pglyph = FONTGLYPHBITS(pglyphBase, pci);
-	gWidth = GLYPHWIDTHPIXELS(pci);
-	gHeight = GLYPHHEIGHTPIXELS(pci);
-	if (gWidth && gHeight)
-	{
+      pci = *ppci++;
+      pglyph = FONTGLYPHBITS(pglyphBase, pci);
+      gWidth = GLYPHWIDTHPIXELS(pci);
+      gHeight = GLYPHHEIGHTPIXELS(pci);
+      if (gWidth && gHeight)
+      {
+	if ( x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
+	     && x + pci->metrics.leftSideBearing            <  pBox->x2
+	     && y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
+	     && y - pci->metrics.ascent                     <  pBox->y2 ) {
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
 	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
@@ -140,11 +145,10 @@ ibm8514PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		     }
 		  }
 	       }
-
 	    }
 	}
-
-	x += pci->metrics.characterWidth;
+      }
+      x += pci->metrics.characterWidth;
     }
     DEALLOCATE_LOCAL(pbits);
 }
@@ -243,7 +247,7 @@ int ibm8514NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
        outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
        ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-			   FONTGLYPHS(pGC->font));
+			   FONTGLYPHS(pGC->font), pBox);
      }
    }
 
@@ -382,7 +386,7 @@ int ibm8514NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
        outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
        ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-			   FONTGLYPHS(pGC->font));
+			   FONTGLYPHS(pGC->font), pBox);
      }
    }
 
