@@ -3,6 +3,8 @@
 // russian standard keyboard
 // AEN <aen@logic.ru>
 // Last Changes 2001/12/23 by Leon Kanter <leon@blackcatlinux.com>
+//
+// $XFree86$
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {

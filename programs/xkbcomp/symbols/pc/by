@@ -3,6 +3,8 @@
 // belarusian standard keyboard 
 // Alexander Mikhailian <mikhailian@altern.org>
 //
+//
+// $XFree86$
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {

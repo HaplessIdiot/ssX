@@ -1,6 +1,8 @@
 
 // based on
 // XKB keyboard by Hrafnkell Eiriksson - hkelle@rhi.hi.is
+//
+// $XFree86$
 
 default partial alphanumeric_keys
 xkb_symbols "default" {

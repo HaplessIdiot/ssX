@@ -1,5 +1,7 @@
 
 // Common Latin alphabet layout
+//
+// $XFree86$
 
 default partial
 xkb_symbols "basic" {

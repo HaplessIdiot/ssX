@@ -4,6 +4,8 @@
 // by Ricardo Y. Igarashi (iga@that.com.br)
 // Adds suport for dead-keys in I18N applications
 // by Conectiva  (http://www.conectiva.com.br)"
+//
+// $XFree86$
 
 xkb_symbols "abnt2" {
 

@@ -3,6 +3,8 @@
 // Yugoslavian keyboard.
 // Source: the keyboard pictures on MS-DOS 6.22 manual
 // Pablo Saratxaga <srtxg@f2219.n293.z2.fidonet.org>
+//
+// $XFree86$
 
 default partial alphanumeric_keys
 xkb_symbols "basic" {

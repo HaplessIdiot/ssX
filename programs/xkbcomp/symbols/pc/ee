@@ -1,6 +1,8 @@
 
 // based on
 // Estonian XKB-keymap by Ville Hallik <ville@linux.ee>
+//
+// $XFree86$
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {

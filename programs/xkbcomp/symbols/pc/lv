@@ -1,6 +1,8 @@
 
 // based on
 // Latvian keyboard map by Ilya Ketris <Ilya.Ketris@ipro.lv>
+//
+// $XFree86$
 
 partial default alphanumeric_keys modifier_keys
 xkb_symbols "basic" {

@@ -2,6 +2,8 @@
 // based on
 // Maltese keyboard map (for US-based keyboards)
 // by Ramon Casha (ramon.casha@linux.org.mt)
+//
+// $XFree86$
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {

@@ -3,6 +3,8 @@
 // Created by Cristian Gafton, <gafton@redhat.com> (C) 2000
 // Modified by Miºu Moldovan, <dumol@go.ro> (C) 2001
 // Modified by Marius Andreiana, <mandreiana@yahoo.com> (C) 2001
+//
+// $XFree86$
 
 default partial alphanumeric_keys
 xkb_symbols "basic" {
