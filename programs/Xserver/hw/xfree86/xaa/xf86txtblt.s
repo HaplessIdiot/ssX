@@ -22,7 +22,7 @@
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86txtblt.s,v 3.0 1996/12/18 03:13:33 dawes Exp $ */
 
 /*
  * Intel Pentium-optimized versions of "terminal emulator font" text
@@ -90,7 +90,7 @@ GLNAME(xf86DrawTextScanlineP):
 	MOV_L	(EBP,REGOFF(8,ESP))	/* PUSH line_arg */
 	MOV_L	(ESI,REGOFF(4,ESP))	/* PUSH glyphp_arg */
 	MOV_L	(EDI,REGOFF(0,ESP))	/* PUSH base_arg */
-	CALL	(EAX)
+	CALL	(CODEPTR(EAX))
 	ADD_L	(CONST(16),ESP)
 
 	MOV_L	(glyphwidth_arg,ECX)
