@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winerror.c,v 1.1 2001/08/30 21:24:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winerror.c,v 1.2 2001/10/04 20:02:36 alanh Exp $ */
 
 #include "win.h"
 
@@ -37,6 +37,9 @@ extern FILE		*g_pfLog;
 void
 OsVendorVErrorF (const char *pszFormat, va_list va_args)
 {
+  /* Check we opened the log file first */
+  if (g_pfLog == NULL) return;
+
   /* Print the error message to a log file, could be stderr */
   vfprintf (g_pfLog, pszFormat, va_args);
 
