@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.3 2000/02/15 00:40:31 dawes Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.4 2000/02/15 14:51:21 dawes Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -227,6 +227,8 @@ PSOPSANSIHEADERFILES = \
     psl2ops.ah
 
 includes:: $(DPSOPSCFILES) $(PSOPSCFILES)
+
+$(DPSOPSCFILES) $(PSOPSCFILES): $(PSWRAP)
 
 XCOMM Unless you have a completely and thoroughly ANSI-C environment, dont run
 XCOMM pswrap on the singleops with -a (ANSI C).  Many of the procedures have 
