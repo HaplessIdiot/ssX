@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.9 2001/09/21 15:48:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.10 2001/09/22 08:57:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -49,11 +49,6 @@
 #define CLIENT_VIDEO_ON	0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
-#ifndef XvExtension
-void TRIDENTInitVideo(ScreenPtr pScreen) {}
-void TRIDENTResetVideo(ScrnInfoPtr pScrn) {}
-#else
 
 static XF86VideoAdaptorPtr TRIDENTSetupImageVideo(ScreenPtr);
 static void TRIDENTInitOffscreenImages(ScreenPtr);
@@ -226,20 +221,24 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     OUTW(vgaIOBase + 4, 0x008E);
     OUTW(vgaIOBase + 4, 0x008F);
 
-    OUTW(vgaIOBase + 4, 0x80B9); 
-
-    OUTW(0x3C4, 0x3037);
-    OUTW(0x3C4, 0xC057);
-    OUTW(0x3C4, 0x3420);
+    if (pTrident->Chipset >= CYBER9397) {
+    	OUTW(vgaIOBase + 4, 0x80B9); 
+    	OUTW(0x3C4, 0xC057);
+    	OUTW(0x3C4, 0x3420);
+    	OUTW(0x3C4, 0x3037);
+    } else {
+    	OUTB(0x83C8, 0x37);
+    	OUTB(0x83C6, 0x01);
+    }
 
     switch (pScrn->depth) {
     case 8:
-	OUTW(0x3C4, (pPriv->colorKey<<8) | 0x50);
-	OUTW(0x3C4, 0x0051);
-	OUTW(0x3C4, 0x0052);
-	OUTW(0x3C4, 0xFF54);
-	OUTW(0x3C4, 0x0055);
-	OUTW(0x3C4, 0x0056);
+	VIDEOOUT(pPriv->colorKey, pTrident->keyOffset);
+	VIDEOOUT(0x00, (pTrident->keyOffset + 1));
+	VIDEOOUT(0x00, (pTrident->keyOffset + 2));
+	VIDEOOUT(0xFF, (pTrident->keyOffset + 4));
+	VIDEOOUT(0x00, (pTrident->keyOffset + 5));
+	VIDEOOUT(0x00, (pTrident->keyOffset + 6));
 	break;
     default:
 	red = (pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red;
@@ -248,29 +247,29 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
 	switch (pScrn->depth) {
 	case 15:
 	    tmp = (red << 10) | (green << 5) | (blue);
-	    OUTW(0x3C4, (tmp & 0xff) << 8 | 0x50);
-	    OUTW(0x3C4, (tmp & 0xff00)    | 0x51);
-	    OUTW(0x3C4, 0x0052);
-	    OUTW(0x3C4, 0xFF54);
-	    OUTW(0x3C4, 0xFF55);
-	    OUTW(0x3C4, 0x0056);
+	    VIDEOOUT((tmp & 0xff), pTrident->keyOffset);
+	    VIDEOOUT((tmp & 0xff00)>>8, (pTrident->keyOffset + 1));
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 2));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 4));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 5));
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 6));
 	    break;
 	case 16:
 	    tmp = (red << 11) | (green << 5) | (blue);
-	    OUTW(0x3C4, (tmp & 0xff) << 8 | 0x50);
-	    OUTW(0x3C4, (tmp & 0xff00)    | 0x51);
-	    OUTW(0x3C4, 0x0052);
-	    OUTW(0x3C4, 0xFF54);
-	    OUTW(0x3C4, 0xFF55);
-	    OUTW(0x3C4, 0x0056);
+	    VIDEOOUT((tmp & 0xff), pTrident->keyOffset);
+	    VIDEOOUT((tmp & 0xff00)>>8, (pTrident->keyOffset + 1));
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 2));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 4));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 5));
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 6));
 	    break;
 	case 24:
-	    OUTW(0x3C4, (blue<<8)   | 0x50);
-	    OUTW(0x3C4, (green<<8) | 0x51);
-	    OUTW(0x3C4, (red<<8)  | 0x52);
-	    OUTW(0x3C4, 0xFF54);
-	    OUTW(0x3C4, 0xFF55);
-	    OUTW(0x3C4, 0xFF56);
+	    VIDEOOUT(blue, pTrident->keyOffset);
+	    VIDEOOUT(green, (pTrident->keyOffset + 1));
+	    VIDEOOUT(red, (pTrident->keyOffset + 2));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 4));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 5));
+	    VIDEOOUT(0xFF, (pTrident->keyOffset + 6));
 	    break;
 	}    
     }    
@@ -333,6 +332,11 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     xvSaturation = MAKE_ATOM("XV_SATURATION");
     xvHUE        = MAKE_ATOM("XV_HUE");
     xvGamma      = MAKE_ATOM("XV_GAMMA");
+
+    if (pTrident->Chipset >= CYBER9397) 
+	pTrident->keyOffset = 0x50;
+    else
+	pTrident->keyOffset = 0x30;
 
     TRIDENTResetVideo(pScrn);
 
@@ -575,9 +579,9 @@ TRIDENTSetPortAttribute(
 	pPriv->colorKey = value;
 	switch (pScrn->depth) {
 	case 8:
-	    OUTW(0x3C4, (pPriv->colorKey<<8) | 0x50);
-	    OUTW(0x3C4, 0x0051);
-	    OUTW(0x3C4, 0x0052);
+	    VIDEOOUT(pPriv->colorKey, pTrident->keyOffset);
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 1));
+	    VIDEOOUT(0x00, (pTrident->keyOffset + 2));
 	    break;
 	default:
 	    red = (pPriv->colorKey & pScrn->mask.red) >> pScrn->offset.red;
@@ -586,20 +590,20 @@ TRIDENTSetPortAttribute(
 	    switch (pScrn->depth) {
 	    case 15:
 	    	tmp = (red << 10) | (green << 5) | (blue);
-	    	OUTW(0x3C4, (tmp&0xff)<<8 | 0x50);
-	    	OUTW(0x3C4, (tmp&0xff00)  | 0x51);
-	    	OUTW(0x3C4, 0x0052);
+	    	VIDEOOUT((tmp&0xff), pTrident->keyOffset);
+	    	VIDEOOUT((tmp&0xff00)>>8, (pTrident->keyOffset + 1));
+	    	VIDEOOUT(0x00, (pTrident->keyOffset + 2));
 		break;
 	    case 16:
 	    	tmp = (red << 11) | (green << 5) | (blue);
-	    	OUTW(0x3C4, (tmp&0xff)<<8 | 0x50);
-	    	OUTW(0x3C4, (tmp&0xff00)  | 0x51);
-	    	OUTW(0x3C4, 0x0052);
+	    	VIDEOOUT((tmp&0xff), pTrident->keyOffset);
+	    	VIDEOOUT((tmp&0xff00)>>8, (pTrident->keyOffset + 1));
+	    	VIDEOOUT(0x00, (pTrident->keyOffset + 2));
 		break;
 	    case 24:
-	    	OUTW(0x3C4, (blue<<8)   | 0x50);
-	    	OUTW(0x3C4, (green<<8) | 0x51);
-	    	OUTW(0x3C4, (red<<8)  | 0x52);
+	    	VIDEOOUT(blue, pTrident->keyOffset);
+	    	VIDEOOUT(green, (pTrident->keyOffset + 1));
+	    	VIDEOOUT(red, (pTrident->keyOffset + 2));
 		break;
 	    }    
 	}    
@@ -785,12 +789,20 @@ TRIDENTDisplayVideo(
     switch(id) {
     case 0x35315652:		/* RGB15 */
     case 0x36315652:		/* RGB16 */
-    	OUTW(vgaIOBase + 4, 0x22BF);
+	if (pTrident->Chipset >= CYBER9397) {
+    	    OUTW(vgaIOBase + 4, 0x22BF);
+	} else {
+    	    OUTW(vgaIOBase + 4, 0x198F);
+	}
 	break;
     case FOURCC_YV12:		/* YV12 */
     case FOURCC_YUY2:		/* YUY2 */
     default:
-    	OUTW(vgaIOBase + 4, 0x00BF);
+	if (pTrident->Chipset >= CYBER9397) {
+    	    OUTW(vgaIOBase + 4, 0x00BF);
+	} else {
+    	    OUTW(vgaIOBase + 4, 0x188F);
+	}
 	break;
     }  
     tx1 = dstBox->x1 + pTrident->hsync;
@@ -838,8 +850,7 @@ TRIDENTDisplayVideo(
     if (drw_w > src_w) {
 	float z;
 
-            z = (float)drw_w/(float)src_w - 1;
-
+        z = (float)drw_w/(float)src_w - 1;
 	zoomx1 =  z;
 	zoomx2 = (z - (int)zoomx1 ) * 1024;
 		
@@ -887,26 +898,35 @@ TRIDENTDisplayVideo(
     }
     } 
 
-    { /* Line Buffer levels */
+    if (pTrident->Chipset >= CYBER9397) {
 	int lb = (width+2) >> 2;
+
     	OUTW(vgaIOBase + 4, ((lb & 0x100)>>1) | 0x0895);
     	OUTW(vgaIOBase + 4,  (lb & 0xFF)<<8   | 0x0096);
-    }
 
-    if (src_w > 384) { 
-    	OUTW(vgaIOBase + 4, 0x0497); /* 2x line buffers */ 
+    	if (src_w > 384) { 
+    	    OUTW(vgaIOBase + 4, 0x0497); /* 2x line buffers */ 
+    	} else {
+    	    OUTW(vgaIOBase + 4, 0x0097); /* 1x line buffers */
+    	}
+    	OUTW(vgaIOBase + 4, 0x00BA);
+    	OUTW(vgaIOBase + 4, 0x00BB);
+    	OUTW(vgaIOBase + 4, 0xFFBC);
+    	OUTW(vgaIOBase + 4, 0xFFBD);
+    	OUTW(vgaIOBase + 4, 0x04BE); 
+    	OUTW(vgaIOBase + 4, 0xD48E);
+    	OUTW(vgaIOBase + 4, 0x208F);
     } else {
-    	OUTW(vgaIOBase + 4, 0x0097); /* 1x line buffers */
+	
+    	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
+					? (width >> 2) : (width >> 6)) << 8) | 0x95);
+    	OUTW(vgaIOBase + 4, ((((id == FOURCC_YV12) || (id == FOURCC_YUY2)) 
+				? ((width+2) >> 2) : ((width+2) >> 6)) << 8) |0x96);
+
+    	OUTW(vgaIOBase + 4, 0x938E);
+	OUTB(0x83C8, 0x00);
+	OUTB(0x83C6, 0x95);
     }
-
-    OUTW(vgaIOBase + 4, 0x00BA);
-    OUTW(vgaIOBase + 4, 0x00BB);
-    OUTW(vgaIOBase + 4, 0xFFBC);
-    OUTW(vgaIOBase + 4, 0xFFBD);
-    OUTW(vgaIOBase + 4, 0x04BE); 
-
-    OUTW(vgaIOBase + 4, 0xD48E);
-    OUTW(vgaIOBase + 4, 0x208F);
 }
 
 static int 
@@ -1291,5 +1311,3 @@ TRIDENTVideoTimerCallback(ScrnInfoPtr pScrn, Time time)
     } else  /* shouldn't get here */
 	pTrident->VideoTimerCallback = NULL;
 }
-
-#endif  /* !XvExtension */
