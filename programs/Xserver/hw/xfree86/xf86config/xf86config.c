@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.9 1995/03/11 14:18:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.10 1995/03/18 11:10:07 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -475,7 +475,7 @@ static char *monitordescintro_text =
 "in default names.\n"
 "\n";
 
-#define NU_MONITORTYPES 9
+#define NU_MONITORTYPES 10
 
 static char *monitortype_range[NU_MONITORTYPES] = {
 	"31.5",
@@ -486,7 +486,8 @@ static char *monitortype_range[NU_MONITORTYPES] = {
 	"31.5 - 48.5",
 	"31.5 - 57.0",
 	"31.5 - 64.3",
-	"31.5 - 79.0"
+	"31.5 - 79.0",
+	"31.5 - 82.0"
 };
 
 static char *monitortype_name[NU_MONITORTYPES] = {
@@ -498,7 +499,8 @@ static char *monitortype_name[NU_MONITORTYPES] = {
 	"Non-Interlaced SVGA, 1024x768 @ 60 Hz, 800x600 @ 72 Hz",
 	"High Frequency SVGA, 1024x768 @ 70 Hz",
 	"Monitor that can do 1280x1024 @ 60 Hz",
-	"Monitor that can do 1280x1024 @ 74 Hz"
+	"Monitor that can do 1280x1024 @ 74 Hz",
+	"Monitor that can do 1280x1024 @ 76 Hz"
 };
 
 void monitor_configuration() {
@@ -1108,6 +1110,35 @@ void screen_configuration() {
 	config_modesline32bpp = "\"640x480\"";
 	config_virtualx8bpp = config_virtualx16bpp = config_virtualx32bpp =
 	config_virtualy8bpp = config_virtualy16bpp = config_virtualy32bpp = 0;
+	if (config_videomemory >= 4096) {
+		config_virtualx8bpp = 1600;
+		config_virtualy8bpp = 1280;
+		if (config_screentype == 4) {
+			/*
+			 * Allow room for font/pixmap cache for accel
+			 * servers.
+			 */
+			config_virtualx16bpp = 1280;
+			config_virtualy16bpp = 1024;
+		}
+		else {
+			config_virtualx16bpp = 1600;
+			config_virtualy16bpp = 1280;
+		}
+		if (config_screentype == 4) {
+			config_virtualx32bpp = 1024;
+			config_virtualy32bpp = 768;
+		}
+		else {
+			config_virtualx32bpp = 1152;
+			config_virtualy32bpp = 900;
+		}
+		/* Add 1600x1280 */
+		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
+		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
+		config_modesline32bpp = "\"640x480\" \"800x600\" \"1024x768\"";
+	}
+	else
 	if (config_videomemory >= 2048) {
 		if (config_screentype == 4) {
 			/*
@@ -1631,6 +1662,9 @@ static char *modelines_text =
 "\n"
 "# 1280x1024 @ 74 Hz, 78.85 kHz hsync\n"
 "Modeline \"1280x1024\"  135    1280 1312 1456 1712  1024 1027 1030 1064\n"
+"\n"
+"# 1280x1024 @ 76 Hz, 81.13 kHz hsync\n"
+"Modeline \"1280x1024\"  135    1280 1312 1416 1664  1024 1027 1030 1064\n"
 "\n"
 #if XFREE86_VERSION >= 311
 "# Low-res Doublescan modes\n"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.18 1995/05/27 03:18:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.19 1995/06/02 10:28:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -329,11 +329,13 @@ void
 vgaHWSaveScreen(start)
     Bool start;
 {
+#if 0
   static Bool started = SS_FINISH;
 
   if (start == started)
     return;
   started = start;
+#endif
 
   if (start == SS_START)
   {
