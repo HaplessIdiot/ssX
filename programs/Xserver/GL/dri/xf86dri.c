@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.2 1999/06/27 14:07:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.3 2000/02/11 17:25:42 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -389,8 +389,6 @@ ProcXF86DRIGetDrawableInfo(
     DrawablePtr pDrawable;
     int X, Y, W, H;
     XF86DRIClipRectPtr pClipRects;
-    XF86DRIClipRectPtr pAuxClipRects;
-    int auxX, auxY;
 
     REQUEST(xXF86DRIGetDrawableInfoReq);
     REQUEST_SIZE_MATCH(xXF86DRIGetDrawableInfoReq);
@@ -414,12 +412,7 @@ ProcXF86DRIGetDrawableInfo(
 			     (int*)&W,
 			     (int*)&H,
 			     (int*)&rep.numClipRects,
-			     &pClipRects,
-			     &auxX, 
-			     &auxY,
-			     (int*)&rep.numAuxClipRects,
-			     &pAuxClipRects
-			     )) {
+			     &pClipRects)) {
 	return BadValue;
     }
 
@@ -427,33 +420,17 @@ ProcXF86DRIGetDrawableInfo(
     rep.drawableY = Y;
     rep.drawableWidth = W;
     rep.drawableHeight = H;
-    rep.length = (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
-		  SIZEOF(xGenericReply));
-
-    rep.auxX = auxX;
-    rep.auxY = auxY;
-        
-    if (rep.numAuxClipRects) 
-       rep.length += sizeof(XF86DRIClipRectRec) * rep.numAuxClipRects;    
-
-    if (rep.numClipRects) 
-       rep.length += sizeof(XF86DRIClipRectRec) * rep.numClipRects;
-    
-  
-    WriteToClient(client, sizeof(xXF86DRIGetDrawableInfoReply), (char *)&rep);
-
+    rep.length = 0;
     if (rep.numClipRects) {
-	WriteToClient(client,  
-		      sizeof(XF86DRIClipRectRec) * rep.numClipRects,
-		      (char *)pClipRects);
+	rep.length = (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
+		      SIZEOF(xGenericReply) +
+		      sizeof(XF86DRIClipRectRec) * rep.numClipRects);
     }
 
-    if (rep.numAuxClipRects) {
-       WriteToClient(client, 
-		     sizeof(XF86DRIClipRectRec) * rep.numAuxClipRects,
-		     (char *)pAuxClipRects);
+    WriteToClient(client, sizeof(xXF86DRIGetDrawableInfoReply), (char *)&rep);
+    if (rep.length) {
+	WriteToClient(client, rep.length, (char *)pClipRects);
     }
-
     return (client->noClientException);
 }
 

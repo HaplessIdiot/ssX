@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.5 2000/02/08 17:18:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.6 2000/02/11 17:25:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -167,11 +167,7 @@ Bool DRIGetDrawableInfo(
     int* W,
     int* H,
     int* numClipRects,
-    XF86DRIClipRectPtr* pClipRects,
-    int* auxX,
-    int* auxY,
-    int* numAuxClipRects,
-    XF86DRIClipRectPtr* pAuxClipRects
+    XF86DRIClipRectPtr* pClipRects
 );
 Bool DRIGetDeviceInfo(
     ScreenPtr pScreen,

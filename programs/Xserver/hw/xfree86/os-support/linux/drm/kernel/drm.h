@@ -1,6 +1,6 @@
 /* drm.h -- Header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 17:11:19 1999 by faith@precisioninsight.com
+ * Revised: Mon Feb 14 00:15:23 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.46 1999/08/20 20:00:53 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.2 1999/12/14 01:33:56 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drm.h,v 1.3 2000/02/11 17:26:03 dawes Exp $
  *
  * Acknowledgements:
  * Dec 1999, Richard Henderson <rth@twiddle.net>, move to generic cmpxchg.
@@ -102,8 +102,7 @@ typedef struct drm_control {
 typedef enum drm_map_type {
 	_DRM_FRAME_BUFFER = 0,	  /* WC (no caching), no core dump	    */
 	_DRM_REGISTERS	  = 1,	  /* no caching, no core dump		    */
-	_DRM_SHM	  = 2,	  /* shared, cached			    */
-	_DRM_AGP          = 3	  /* AGP/GART                               */
+	_DRM_SHM	  = 2	  /* shared, cached			    */
 } drm_map_type_t;
 
 typedef enum drm_map_flags {
@@ -158,14 +157,7 @@ typedef enum drm_dma_flags {	      /* These values *MUST* match xf86drm.h */
 				      /* Flags for DMA buffer request	     */
 	_DRM_DMA_WAIT	      = 0x10, /* Wait for free buffers		     */
 	_DRM_DMA_SMALLER_OK   = 0x20, /* Smaller-than-requested buffers ok   */
-	_DRM_DMA_LARGER_OK    = 0x40, /* Larger-than-requested buffers ok    */
-			  /* Specially for MGA, but not limited to use by it */
-
-	_DRM_DMA_TYPE_MASK    = 0x0F000000,
-	_DRM_DMA_GENERAL      = 0x00000000, /* the default type */
-	_DRM_DMA_VERTEX	      = 0x01000000, 
-	_DRM_DMA_SETUP	      = 0x02000000,
-	_DRM_DMA_BLIT	      = 0x03000000
+	_DRM_DMA_LARGER_OK    = 0x40  /* Larger-than-requested buffers ok    */
 } drm_dma_flags_t;
 
 typedef struct drm_buf_desc {
@@ -174,11 +166,8 @@ typedef struct drm_buf_desc {
 	int	      low_mark;	 /* Low water mark			     */
 	int	      high_mark; /* High water mark			     */
 	enum {
-		_DRM_PAGE_ALIGN = 0x01, /* Align on page boundaries for DMA  */
-		_DRM_AGP_BUFFER = 0x02  /* Buffer is in agp space            */
+		DRM_PAGE_ALIGN = 0x01  /* Align on page boundaries for DMA   */
 	}	      flags;
-	unsigned long agp_start; /* Start address of where the agp buffers
-				  * are in the agp aperture */
 } drm_buf_desc_t;
 
 typedef struct drm_buf_info {
@@ -249,38 +238,6 @@ typedef struct drm_irq_busid {
 	int funcnum;
 } drm_irq_busid_t;
 
-typedef struct drm_agp_mode {
-	unsigned long mode;
-} drm_agp_mode_t;
-
-				/* For drm_agp_alloc -- allocated a buffer */
-typedef struct drm_agp_buffer {
-	unsigned long size;	/* In bytes -- will round to page boundary */
-	unsigned long handle;	/* Used for BIND/UNBIND ioctls */
-	unsigned long type;     /* Type of memory to allocate  */
-        unsigned long physical; /* Physical used by i810       */
-} drm_agp_buffer_t;
-
-				/* For drm_agp_bind */
-typedef struct drm_agp_binding {
-	unsigned long handle;   /* From drm_agp_buffer */
-	unsigned long offset;	/* In bytes -- will round to page boundary */
-} drm_agp_binding_t;
-
-typedef struct drm_agp_info {
-	int            agp_version_major;
-	int            agp_version_minor;
-	unsigned long  mode;
-	unsigned long  aperture_base;  /* physical address */
-	unsigned long  aperture_size;  /* bytes */
-	unsigned long  memory_allowed; /* bytes */
-	unsigned long  memory_used;
-
-				/* PCI information */
-	unsigned short id_vendor;
-	unsigned short id_device;
-} drm_agp_info_t;
-
 #define DRM_IOCTL_BASE	     'd'
 #define DRM_IOCTL_NR(n)	     _IOC_NR(n)
 #define DRM_IO(nr)	     _IO(DRM_IOCTL_BASE,nr)
@@ -320,14 +277,4 @@ typedef struct drm_agp_info {
 #define DRM_IOCTL_UNLOCK     DRM_IOW( 0x2b, drm_lock_t)
 #define DRM_IOCTL_FINISH     DRM_IOW( 0x2c, drm_lock_t)
 
-#define DRM_IOCTL_AGP_ACQUIRE DRM_IO(  0x30)
-#define DRM_IOCTL_AGP_RELEASE DRM_IO(  0x31)
-#define DRM_IOCTL_AGP_ENABLE  DRM_IOR( 0x32, drm_agp_mode_t)
-#define DRM_IOCTL_AGP_INFO    DRM_IOW( 0x33, drm_agp_info_t)
-#define DRM_IOCTL_AGP_ALLOC   DRM_IOWR(0x34, drm_agp_buffer_t)
-#define DRM_IOCTL_AGP_FREE    DRM_IOW( 0x35, drm_agp_buffer_t)
-#define DRM_IOCTL_AGP_BIND    DRM_IOWR(0x36, drm_agp_binding_t)
-#define DRM_IOCTL_AGP_UNBIND  DRM_IOW( 0x37, drm_agp_binding_t)
-
-/* 0x40 is reserved for mga dma init */
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.1 2000/02/08 17:18:36 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.2 2000/02/11 17:25:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -307,25 +307,14 @@ void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
 	Xfree(pdp->pClipRects); 
     }
 
-    if (pdp->pAuxClipRects) {
-	Xfree(pdp->pAuxClipRects); 
-    }
-
-
     DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
     if (!XF86DRIGetDrawableInfo(dpy, scrn, pdp->draw,
 				&pdp->index, &pdp->lastStamp,
 				&pdp->x, &pdp->y, &pdp->w, &pdp->h,
-				&pdp->numClipRects, &pdp->pClipRects,
-				&pdp->auxX,
-				&pdp->auxY,
-				&pdp->numAuxClipRects,
-				&pdp->pAuxClipRects)) {
+				&pdp->numClipRects, &pdp->pClipRects)) {
 	pdp->numClipRects = 0;
 	pdp->pClipRects = NULL;
-	pdp->numAuxClipRects = 0;
-	pdp->pAuxClipRects = 0;
 	/* ERROR!!! */
     }
 

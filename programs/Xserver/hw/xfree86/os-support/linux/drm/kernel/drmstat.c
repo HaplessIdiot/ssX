@@ -1,6 +1,6 @@
 /* drmstat.c -- DRM device status and testing program
  * Created: Tue Jan  5 08:19:24 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 10:33:46 1999 by faith@precisioninsight.com
+ * Revised: Sun Feb 13 23:35:00 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.28 1999/08/04 18:12:11 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.3 2000/01/20 07:25:35 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmstat.c,v 1.4 2000/02/11 17:26:04 dawes Exp $
  * 
  */
 
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	case 'b':
 	    count   = strtoul(optarg, &pt, 0);
 	    size    = strtoul(pt+1, NULL, 0);
-	    if ((r = drmAddBufs(fd, count, size, 0, 65536)) < 0) {
+	    if ((r = drmAddBufs(fd, count, size, 0)) < 0) {
 		drmError(r, argv[0]);
 		return 1;
 	    }

@@ -1,3 +1,5 @@
+3762. Fix DRI/DRM code to build tdfx driver and turn off building MGA DRI
+      support until the next code merge (Kevin Martin).
 3761. Attempt to first read the PLL parameters in the BIOS from PCI space,
       then fallback to 0xc0000, and then fallback to default PLL parameters
       in r128 driver (Kevin Martin).
@@ -9657,4 +9659,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1002 2000/02/13 07:26:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1003 2000/02/13 19:33:39 martin Exp $

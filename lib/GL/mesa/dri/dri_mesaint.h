@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.2 2000/02/11 17:25:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.3 2000/02/13 00:56:02 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -103,16 +103,6 @@ struct __DRIdrawablePrivateRec {
     int h;
     int numClipRects;
     XF86DRIClipRectPtr pClipRects;
-
-    /*
-    ** Information about the back and depthbuffer where different
-    ** from above.
-    */
-    int auxX;
-    int auxY;
-    int auxClipRectType;
-    int numAuxClipRects;
-    XF86DRIClipRectPtr pAuxClipRects;
 
     /*
     ** Pointer to context to which this drawable is currently bound.

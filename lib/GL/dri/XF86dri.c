@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.2 1999/06/27 14:07:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.3 2000/02/11 17:25:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -385,11 +385,7 @@ Bool XF86DRIDestroyDrawable(dpy, screen, drawable)
 }
 
 Bool XF86DRIGetDrawableInfo(dpy, screen, drawable, 
-			    index, stamp, X, Y, W, H, 
-			    numClipRects, pClipRects,
-			    auxX, auxY, 
-			    numAuxClipRects, pAuxClipRects
-			    )
+	index, stamp, X, Y, W, H, numClipRects, pClipRects)
     Display* dpy;
     int screen;
     Drawable drawable;
@@ -401,15 +397,10 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     int* H;
     int* numClipRects;
     XF86DRIClipRectPtr* pClipRects;
-    int* auxX;
-    int* auxY;
-    int* numAuxClipRects;
-    XF86DRIClipRectPtr*	pAuxClipRects;    
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86DRIGetDrawableInfoReply rep;
     xXF86DRIGetDrawableInfoReq *req;
-    int total_rects;
 
     XF86DRICheckExtension (dpy, info, False);
 
@@ -419,9 +410,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     req->driReqType = X_XF86DRIGetDrawableInfo;
     req->screen = screen;
     req->drawable = drawable;
-
-    if (!_XReply(dpy, (xReply *)&rep, 1, xFalse)) 
-    {
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
@@ -433,43 +422,16 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     *W = (int)rep.drawableWidth;
     *H = (int)rep.drawableHeight;
     *numClipRects = rep.numClipRects;
-    total_rects = *numClipRects;
 
-#ifndef DRI_NO_PRIVATE_BACKBUFFERS
-    *auxX = rep.auxX;
-    *auxY = rep.auxY;
-    *numAuxClipRects = rep.numAuxClipRects;
-    total_rects += *numAuxClipRects;
-#endif
-
-    if (rep.length != (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
-		       SIZEOF(xGenericReply) + 
-		       total_rects * sizeof(XF86DRIClipRectRec))) {
-       _XEatData(dpy, rep.length);
-       return False;
-    }
-       
-
-    if (*numClipRects) {
-       int len = sizeof(XF86DRIClipRectRec) * (*numClipRects);
-
-       *pClipRects = (XF86DRIClipRectPtr)Xcalloc(len, 1);
-       if (*pClipRects) 
-	  _XRead32(dpy, *pClipRects, len);
+    if (rep.length) {
+        if (!(*pClipRects = (XF86DRIClipRectPtr)Xcalloc(rep.length, 1))) {
+            _XEatData(dpy, rep.length);
+            return False;
+        }
+	_XRead32(dpy, *pClipRects, rep.length);
     } else {
         *pClipRects = NULL;
     }
-
-    if (*numAuxClipRects) {
-       int len = sizeof(XF86DRIClipRectRec) * (*numAuxClipRects);
-
-       *pAuxClipRects = (XF86DRIClipRectPtr)Xcalloc(len, 1);
-       if (*pAuxClipRects) 
-	  _XRead32(dpy, *pAuxClipRects, len);
-    } else {
-        *pAuxClipRects = NULL;
-    }
-
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
