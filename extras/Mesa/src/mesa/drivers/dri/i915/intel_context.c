@@ -72,7 +72,7 @@ int prevLockLine;
  * Mesa's Driver Functions
  ***************************************/
 
-#define DRIVER_DATE                     "20040919"
+#define DRIVER_DATE                     "20041217"
 
 const GLubyte *intelGetString( GLcontext *ctx, GLenum name )
 {
@@ -96,6 +96,8 @@ const GLubyte *intelGetString( GLcontext *ctx, GLenum name )
 	 chipset = "Intel(R) 865G"; break;
       case PCI_CHIP_I915_G:
 	 chipset = "Intel(R) 915G"; break;
+      case PCI_CHIP_I915_GM:
+	 chipset = "Intel(R) 915GM"; break;
       default:
 	 chipset = "Unknown Intel Chipset"; break;
       }
@@ -124,19 +126,12 @@ static void intelBufferSize(GLframebuffer *buffer,
 }
 
 
-
 /**
  * Extension strings exported by the intel driver.
  *
  * \note
- * It appears that ARB_texture_env_crossbar and NV_blend_square have
- * "disappeared" compared to the old i830-specific driver.
- *
- * \note
- * See implementation of \c glGetString in each hw_context.c file:
- * This set of extensions is overridden and many are not actually
- * exported to the driver.  They are however enabled internally as
- * Mesa requires this when calculating things like GL version number.
+ * It appears that ARB_texture_env_crossbar has "disappeared" compared to the
+ * old i830-specific driver.
  */
 static const char * const card_extensions[] =
 {
@@ -144,8 +139,8 @@ static const char * const card_extensions[] =
    "GL_ARB_multitexture",
    "GL_ARB_point_parameters",
    "GL_ARB_texture_border_clamp",
-   "GL_ARB_texture_cube_map",
    "GL_ARB_texture_compression",
+   "GL_ARB_texture_cube_map",
    "GL_ARB_texture_env_add",
    "GL_ARB_texture_env_combine",
    "GL_ARB_texture_env_dot3",
@@ -154,7 +149,6 @@ static const char * const card_extensions[] =
    "GL_ARB_vertex_buffer_object",
    "GL_ARB_vertex_program",
    "GL_ARB_window_pos",
-
    "GL_EXT_abgr",
    "GL_EXT_bgra",
    "GL_EXT_blend_color",
@@ -162,6 +156,7 @@ static const char * const card_extensions[] =
    "GL_EXT_blend_func_separate",
    "GL_EXT_blend_minmax",
    "GL_EXT_blend_subtract",
+   "GL_EXT_cull_vertex",             /* New: alanh 06-Jan-2005 */
    "GL_EXT_fog_coord",
    "GL_EXT_multi_draw_arrays",
    "GL_EXT_secondary_color",
@@ -171,23 +166,22 @@ static const char * const card_extensions[] =
    "GL_EXT_texture_env_dot3",
    "GL_EXT_texture_filter_anisotropic",
    "GL_EXT_texture_lod_bias",
-
    "GL_3DFX_texture_compression_FXT1",
    "GL_APPLE_client_storage",
    "GL_MESA_pack_invert",
    "GL_MESA_ycbcr_texture",
+   "GL_NV_blend_square",	
    "GL_NV_vertex_program",
    "GL_NV_vertex_program1_1",
    "GL_SGIS_generate_mipmap",
-
    NULL
 };
-
 
 extern const struct tnl_pipeline_stage _intel_render_stage;
 
 static const struct tnl_pipeline_stage *intel_pipeline[] = {
    &_tnl_vertex_transform_stage,
+   &_tnl_vertex_cull_stage,
    &_tnl_normal_transform_stage,
    &_tnl_lighting_stage,
    &_tnl_fog_coordinate_stage,

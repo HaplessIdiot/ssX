@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/intel_screen.c,v 1.3 2004/12/13 22:40:51 tsi Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -284,6 +284,7 @@ static GLboolean intelCreateContext( const __GLcontextModes *mesaVis,
 				sharedContextPrivate );
 
    case PCI_CHIP_I915_G:
+   case PCI_CHIP_I915_GM:
       return i915CreateContext( mesaVis, driContextPriv, 
 			       sharedContextPrivate );
  

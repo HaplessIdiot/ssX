@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/i830_context.c,v 1.4 2004/12/13 22:40:51 tsi Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -43,7 +43,6 @@
 static const char * const card_extensions[] =
 {
    "GL_ARB_texture_env_crossbar",
-   "GL_NV_blend_square",
    NULL
 };
 
