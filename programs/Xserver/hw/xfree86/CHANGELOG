@@ -1,5 +1,6 @@
 XFree86 4.X.Ya (?? January 2001)
-1265. Allow libGLU to be built (Craig Dunwoody, SGI).
+1265. Allow libGLU to be built (Craig Dunwoody, SGI, David Dawes,
+      Alan Hourihane).
 1264. Import the GLU parts of ogl-sample.
 1263. Add an imake control for determining when xload should be installed
       set-gid (David Dawes).
@@ -12227,4 +12228,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1520 2001/01/15 20:56:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1521 2001/01/15 22:18:09 dawes Exp $

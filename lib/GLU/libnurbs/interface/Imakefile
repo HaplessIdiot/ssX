@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GLU/libnurbs/interface/Imakefile,v 1.1 2001/01/15 22:18:01 dawes Exp $
+XCOMM $XFree86: xc/lib/GLU/libnurbs/interface/Imakefile,v 1.2 2001/01/15 22:25:09 dawes Exp $
 
 XCOMM License Applicability. Except to the extent portions of this file are
 XCOMM made subject to an alternative license as permitted in the SGI Free
@@ -33,9 +33,25 @@ XCOMM published by SGI, but has not been independently verified as being
 XCOMM compliant with the OpenGL(R) version 1.2.1 Specification.
 XCOMM
 
+#define DoNormalLib NormalLibGlu
+#define DoSharedLib SharedLibGlu
+#define DoDebugLib DebugLibGlu
+#define DoProfileLib ProfileLibGlu
+
 #define CplusplusSource
 
 #include <Library.tmpl>
+
+SRCS = \
+	bezierEval.cc \
+	bezierPatch.cc \
+	bezierPatchMesh.cc \
+	glcurveval.cc \
+	glinterface.cc \
+	glrenderer.cc \
+	glsurfeval.cc \
+	incurveeval.cc \
+	insurfeval.cc
 
 OBJS = \
 	bezierEval.o \
@@ -60,9 +76,10 @@ DEFINES = \
 	-DLIBRARYBUILD \
 	-DNDEBUG
 
-NormalCplusplusObjectRule()
+LibraryObjectRule()
 
-NormalLibraryTarget(interface, $(OBJS))
+SubdirLibraryRule($(OBJS))
+NormalLintTarget($(SRCS))
 
 GLUSRCDIR = $(OGLSAMPLESRCDIR)/main/gfx/lib/glu
 
