@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.72 2003/09/08 14:25:31 eich Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.73 2003/09/11 10:08:38 eich Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -69,7 +69,6 @@
 ! model		layout	=	symbols
   pc98		nec/jp	=	nec/jp(pc98)
   abnt2		br	=	us(pc101)+br
- $pcmodels	us_intl	=	us(%m)+us_intl
  $maclaptop	us	=	macintosh/us(extended)+apple(laptop_bad_switch)
  $maclaptop	en_US	=	macintosh/us(extended)+apple(laptop_bad_switch)
  $maclaptop	*	=	macintosh/us(extended)+apple(laptop_bad_switch)+macintosh/%l%(v)

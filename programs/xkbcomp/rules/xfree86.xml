@@ -2227,7 +2227,14 @@
         <description xml:lang="bg">британска</description>
         <description xml:lang="ru">Английская (Великобритания)</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>intl</name>
+            <description>International (with deadkeys)</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
