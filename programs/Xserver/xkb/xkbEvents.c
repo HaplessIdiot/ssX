@@ -1,4 +1,5 @@
 /* $XConsortium: xkbEvents.c /main/17 1996/03/01 14:31:28 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1073,7 +1074,7 @@ Bool		found;
 	    dev->xkb_interest = interest->next;
 	    autoCtrls= interest->autoCtrls;
 	    autoValues= interest->autoCtrlValues;
-	    xfree(interest);
+	    _XkbFree(interest);
 	    found= True;
 	}
 	while ((!found)&&(interest->next)) {
@@ -1082,7 +1083,7 @@ Bool		found;
 		interest->next = victim->next;
 		autoCtrls= victim->autoCtrls;
 		autoValues= victim->autoCtrlValues;
-		xfree(victim);
+		_XkbFree(victim);
 		found= True;
 	    }
 	    interest = interest->next;
@@ -1123,7 +1124,7 @@ ClientPtr	client;
 	    autoCtrls= interest->autoCtrls;
 	    autoValues= interest->autoCtrlValues;
 	    client= interest->client;
-	    xfree(interest);
+	    _XkbFree(interest);
 	    found= True;
 	}
 	while ((!found)&&(interest->next)) {
@@ -1133,7 +1134,7 @@ ClientPtr	client;
 		autoCtrls= victim->autoCtrls;
 		autoValues= victim->autoCtrlValues;
 		client= victim->client;
-		xfree(victim);
+		_XkbFree(victim);
 		found= True;
 	    }
 	    interest = interest->next;

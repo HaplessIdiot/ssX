@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/16 1996/06/11 11:31:21 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.11 1996/08/20 12:32:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.12 1996/09/29 13:48:24 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -187,14 +187,14 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	    nameRtrn[nameRtrnLen-1]= '\0';
 	}
 	if (outFile!=NULL)
-	    Xfree(outFile);
+	    _XkbFree(outFile);
 	return True;
     } 
 #ifdef DEBUG
     ErrorF("Error compiling keymap (%s)\n",names->keymap);
 #endif
     if (outFile!=NULL)
-	Xfree(outFile);
+	_XkbFree(outFile);
     return False;
 }
         	
