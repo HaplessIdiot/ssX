@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.8 2001/01/17 23:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.9 2001/08/27 21:11:40 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -146,6 +146,7 @@ extern int mods;
 #define F_WARPTOSCREEN		109	/* string */
 #define F_COLORMAP		110	/* string */
 #define F_PRIORITY		111	/* string */
+#define F_STARTWM		114	/* string */
 
 #define D_NORTH			1
 #define D_SOUTH			2

@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 298. Add a f.startwm function to twm to start another manager. 
+      (Matthieu Herrb).
  297. Disable MIT-SHM in Xnest, caused a segfault (Matthieu Herrb). 
  296. Update wskbd keyboard protocol handling for OpenBSD/macppc
       (Matthieu Herrb).
@@ -13847,4 +13849,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1960 2001/09/29 20:48:38 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1961 2001/09/30 17:36:30 herrb Exp $
