@@ -1,5 +1,5 @@
 /* $XConsortium: Imakefile,v 1.5 94/03/17 19:43:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/workInProgress/lbx/programs/Xserver/lbx/Imakefile,v 3.0 1994/06/12 16:44:48 dawes Exp $ */
 /*
  * $NCDId: @(#)Imakefile,v 1.11 1994/03/14 23:32:34 lemke Exp $
  *
@@ -36,7 +36,10 @@ INCLUDES = \
 	-I$(FONTSRC)/include \
 	-I$(SERVERSRC)/include
 #else
+INCLUDES =  -I$(INCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/include  -I../../../include/extensions
+#if 0
 INCLUDES =  -I$(TOP)/include -I$(TOP)/include/fonts -I$(SERVERSRC)/include  -I../../../include/extensions
+#endif
 #endif
 
 SRCS =	\
