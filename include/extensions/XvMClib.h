@@ -1,3 +1,4 @@
+#include <X11/extensions/Xvlib.h>
 #include <X11/extensions/XvMC.h>
 
 Bool XvMCQueryExtension (Display *display, int *eventBase, int *errBase);
