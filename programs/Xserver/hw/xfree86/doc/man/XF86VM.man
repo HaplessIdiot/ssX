@@ -4,7 +4,7 @@
 .\"
 .\"
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.10 2001/02/07 22:35:22 tsi Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.11 2002/10/12 16:06:43 herrb Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -12,7 +12,7 @@
 ..
 .TH XF86VIDMODE 3X11 __vendorversion__ "X FUNCTIONS"
 .SH NAME
-XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeSetClientVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeDeleteModeLine, XF86VidModeModModeLine, XF86VidModeValidateModeLine, XF86VidModeSwitchMode, XF86VidModeSwitchToMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor, XF86VidModeGetViewPort, XF86VidModeSetViewPort, XF86VidModeGetDotClocks, XF86VidModeGetGamma, XF86VidModeSetGamma, XF86VidModeGetGammaRamp, XF86VidModeSetGammaRamp, XF86VidModeGetGammaRampSize \- XFree86-VidMode extension interface functions
+XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeSetClientVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeDeleteModeLine, XF86VidModeModModeLine, XF86VidModeValidateModeLine, XF86VidModeSwitchMode, XF86VidModeSwitchToMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor, XF86VidModeGetViewPort, XF86VidModeSetViewPort, XF86VidModeGetDotClocks, XF86VidModeGetGamma, XF86VidModeSetGamma, XF86VidModeGetGammaRamp, XF86VidModeSetGammaRamp, XF86VidModeGetGammaRampSize, XF86VidModeGetPermissions \- XFree86-VidMode extension interface functions
 .SH SYNTAX
 .nf
 .LP
@@ -404,10 +404,12 @@ XF86VidModeGetGamma,
 XF86VidModeSetGamma,
 XF86VidModeSetGammaRamp,
 XF86VidModeGetGammaRamp,
+XF86VidModeGetGammaRampSize,
 and
-XF86VidModeGetGammaRampSize
-functions need to be documented.
+XF86VidModeGetPermissions
+functions need to be documented.  In the meantime, check the source
+code for information about how to use them.
 .SH SEE ALSO
-XFree86(1), XF86Config(4/5), xvidtune(1)
+XFree86(1), XF86Config(__filemansuffix__), xvidtune(1)
 .SH AUTHORS
 Kaleb Keithley, Jon Tombs, David Dawes, and Joe Moss

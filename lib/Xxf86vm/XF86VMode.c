@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.32 2001/07/25 15:04:54 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.33 2002/10/16 00:37:34 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -1196,6 +1196,36 @@ Bool XF86VidModeGetGammaRampSize(
         return False; 
     }
     *size = rep.size;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86VidModeGetPermissions(
+    Display *dpy,
+    int screen,
+    int *permissions
+)
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetPermissionsReq *req;
+    xXF86VidModeGetPermissionsReply rep;
+  
+    *permissions = 0;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetPermissions, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeGetPermissions;
+    req->screen = screen;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
+        UnlockDisplay (dpy);
+        SyncHandle ();
+        return False; 
+    }
+    *permissions = rep.permissions;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

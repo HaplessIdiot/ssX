@@ -1,4 +1,9 @@
 XFree86 4.2.99.3 (21 December 2002)
+ 682. Add a request to XFree86-VidModeExtension to get the read/write
+      permissions so that clients can check if they have permission to
+      change parameters (David Dawes).
+ 681. Fix read-only XFree86-VidModeExtension requests for remote connections
+      (David Dawes, reported by Jamie Zawinski).
  680. Correct problem when the server prints the name of a 'private
       xkb action' in a format that xkbcomp cannot understand, and
       was causing problems when calling XkbGetKeyboard (Ivan Pascal).
@@ -15903,4 +15908,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2458 2002/12/21 04:17:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2459 2002/12/21 18:49:02 paulo Exp $
