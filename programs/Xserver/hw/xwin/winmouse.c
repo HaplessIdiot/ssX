@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winmouse.c,v 1.1 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmouse.c,v 1.2 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -164,6 +164,124 @@ winMouseWheel (ScreenPtr pScreen, int iDeltaZ)
       xCurrentEvent.u.keyButtonPointer.time
 	= g_c32LastInputEventTime = GetTickCount ();
       mieqEnqueue (&xCurrentEvent);
+    }
+
+  return 0;
+}
+
+/*
+ * Enqueue a mouse button event
+ */
+void
+winMouseButtonsSendEvent (int iEventType, int iButton)
+{
+  xEvent		xCurrentEvent;
+
+  /* Load an xEvent and enqueue the event */
+  xCurrentEvent.u.u.type = iEventType;
+  xCurrentEvent.u.u.detail = iButton;
+  xCurrentEvent.u.keyButtonPointer.time
+    = g_c32LastInputEventTime = GetTickCount ();
+  mieqEnqueue (&xCurrentEvent);
+}
+
+/*
+ * Decide what to do with a Windows mouse message
+ */
+int
+winMouseButtonsHandle (ScreenPtr pScreen,
+		       int iEventType, int iButton,
+		       WPARAM wParam)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+
+  /* Send button events right away if emulate 3 buttons is off */
+  if (pScreenInfo->iE3BTimeout == WIN_E3B_OFF)
+    {
+      /* Emulate 3 buttons is off, send the button event */
+      winMouseButtonsSendEvent (iEventType, iButton);
+      return 0;
+    }
+
+  /* Emulate 3 buttons is on, let the fun begin */
+  if (iEventType == ButtonPress
+      && pScreenPriv->iE3BCachedPress == 0
+      && !pScreenPriv->fE3BFakeButton2Sent)
+    {
+      /*
+       * Button was pressed, no press is cached,
+       * and there is no fake button 2 release pending.
+       */
+
+      /* Store button press type */
+      pScreenPriv->iE3BCachedPress = iButton;
+
+      /*
+       * Set a timer to send this button press if the other button
+       * is not pressed within the timeout time.
+       */
+      SetTimer (pScreenPriv->hwndScreen,
+		WIN_E3B_TIMER_ID,
+		pScreenInfo->iE3BTimeout,
+		NULL);
+    }
+  else if (iEventType == ButtonPress
+	   && pScreenPriv->iE3BCachedPress != 0
+	   && pScreenPriv->iE3BCachedPress != iButton
+	   && !pScreenPriv->fE3BFakeButton2Sent)
+    {
+      /*
+       * Button press is cached, other button was pressed,
+       * and there is no fake button 2 release pending.
+       */
+
+      /* Mouse button was cached and other button was pressed */
+      KillTimer (pScreenPriv->hwndScreen, WIN_E3B_TIMER_ID);
+      pScreenPriv->iE3BCachedPress = 0;
+
+      /* Send fake middle button */
+      winMouseButtonsSendEvent (ButtonPress, Button2);
+
+      /* Indicate that a fake middle button event was sent */
+      pScreenPriv->fE3BFakeButton2Sent = TRUE;
+    }
+  else if (iEventType == ButtonRelease
+	   && pScreenPriv->iE3BCachedPress == iButton)
+    {
+      /*
+       * Cached button was released before timer ran out,
+       * and before the other mouse button was pressed.
+       */
+      KillTimer (pScreenPriv->hwndScreen, WIN_E3B_TIMER_ID);
+      pScreenPriv->iE3BCachedPress = 0;
+
+      /* Send cached press, then send release */
+      winMouseButtonsSendEvent (ButtonPress, iButton);
+      winMouseButtonsSendEvent (ButtonRelease, iButton);
+    }
+  else if (iEventType == ButtonRelease
+	   && pScreenPriv->fE3BFakeButton2Sent
+	   && !(wParam & MK_LBUTTON)
+	   && !(wParam & MK_RBUTTON))
+    {
+      /*
+       * Fake button 2 was sent and both mouse buttons have now been released
+       */
+      pScreenPriv->fE3BFakeButton2Sent = FALSE;
+      
+      /* Send middle mouse button release */
+      winMouseButtonsSendEvent (ButtonRelease, Button2);
+    }
+  else if (iEventType == ButtonRelease
+	   && pScreenPriv->iE3BCachedPress == 0
+	   && !pScreenPriv->fE3BFakeButton2Sent)
+    {
+      /*
+       * Button was release, no button is cached,
+       * and there is no fake button 2 release is pending.
+       */
+      winMouseButtonsSendEvent (ButtonRelease, iButton);
     }
 
   return 0;

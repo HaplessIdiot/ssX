@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.5 2001/05/02 08:10:15 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -86,7 +86,10 @@
 #define WIN_DEFAULT_WHITEPIXEL	255
 #define WIN_DEFAULT_BLACKPIXEL	0
 #define WIN_DEFAULT_LINEBIAS	0
+#define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
 
+#define WIN_E3B_OFF		-1
+#define WIN_E3B_TIMER_ID	1
 #define WIN_FD_INVALID		-1
 
 #define WIN_SERVER_NONE		0x0L	/* 0 */
@@ -234,6 +237,7 @@ typedef struct
   DWORD			dwEnginePreferred;
   DWORD			dwEnginesSupported;
   Bool			fFullScreen;
+  int			iE3BTimeout;
 } winScreenInfo, *winScreenInfoPtr;
 
 typedef struct
@@ -255,6 +259,10 @@ typedef struct
   DWORD			dwBitsPerRGB;
 
   DWORD			dwModeKeyStates;
+
+  /* 3 button emulation variables */
+  int			iE3BCachedPress;
+  Bool			fE3BFakeButton2Sent;
 
   /* Privates used by shadow fb GDI server */
   HBITMAP		hbmpShadow;
@@ -542,6 +550,14 @@ winMouseProc (DeviceIntPtr pDeviceInt, int iState);
 
 int
 winMouseWheel (ScreenPtr pScreen, int iDeltaZ);
+
+void
+winMouseButtonsSendEvent (int iEventType, int iButton);
+
+int
+winMouseButtonsHandle (ScreenPtr pScreen,
+		       int iEventType, int iButton,
+		       WPARAM wParam);
 
 /*
  * winpfbddd.c
