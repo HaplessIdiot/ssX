@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.39 2003/10/08 15:48:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.40 2003/10/21 01:45:50 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1166,8 +1166,8 @@ RestoreBIOSMemSize(ScrnInfoPtr pScrn)
 
 #if HAVE_GET_PUT_BIOSMEMSIZE
    if (!pI830->useSWF1) {
-       PutBIOSMemSize(pScrn, pI830->saveBIOSMemSize);
-       return;
+      PutBIOSMemSize(pScrn, pI830->saveBIOSMemSize);
+      return;
    }
 #endif
 
