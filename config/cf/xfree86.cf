@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.168.2.11 1998/07/18 17:53:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.180 1998/07/25 05:57:18 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -116,7 +116,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * For LynxOS/PowerPC platforms, the default is to build all X servers which
  * are supported on this platform.
  */
-#if defined(ppcArchitecture) && defined(LynxOSArchitecture)
+#if defined(PpcArchitecture) && defined(LynxOSArchitecture)
 #ifndef XF86Server
 #define XF86Server		YES
 #endif
