@@ -833,7 +833,7 @@ typedef struct {
     Bool		HideHWCursor;  /* Custom application */
     Bool		HWCursorIsVisible;
 #ifdef SISMERGED
-    Bool		MergedFB;
+    Bool		MergedFB, MergedFBAuto;
     SiSScrn2Rel		CRT2Position;
     char *		CRT2HSync;
     char *		CRT2VRefresh;

@@ -116,6 +116,7 @@ typedef enum {
     OPTION_LVDSHL,
     OPTION_ENABLEHOTKEY,
     OPTION_MERGEDFB,
+    OPTION_MERGEDFBAUTO,
     OPTION_CRT2HSYNC,
     OPTION_CRT2VREFRESH,
     OPTION_CRT2POS,
@@ -226,6 +227,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_STOREDPBRIB,		"StoredGammaPreBrightnessBlue",   OPTV_INTEGER,   {0}, -1    },
 #ifdef SISMERGED
     { OPTION_MERGEDFB,			"MergedFB",		  OPTV_BOOLEAN,	  {0}, FALSE },
+    { OPTION_MERGEDFBAUTO,		"MergedFBAuto",		  OPTV_BOOLEAN,	  {0}, FALSE },
     { OPTION_CRT2HSYNC,			"CRT2HSync",		  OPTV_ANYSTR,	  {0}, FALSE },
     { OPTION_CRT2VREFRESH,		"CRT2VRefresh",		  OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_CRT2POS,   		"CRT2Position",		  OPTV_ANYSTR,	  {0}, FALSE },
@@ -358,7 +360,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->HideHWCursor = FALSE;
     pSiS->HWCursorIsVisible = FALSE;
 #ifdef SISMERGED
-    pSiS->MergedFB = FALSE;
+    pSiS->MergedFB = pSiS->MergedFBAuto = FALSE;
     pSiS->CRT2Position = sisRightOf;
     pSiS->CRT2HSync = NULL;
     pSiS->CRT2VRefresh = NULL;
@@ -590,9 +592,26 @@ SiSOptions(ScrnInfoPtr pScrn)
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
        Bool val;
        if(xf86GetOptValBool(pSiS->Options, OPTION_MERGEDFB, &val)) {
-	  if(val) pSiS->MergedFB = TRUE;
+	  if(val) {
+	     pSiS->MergedFB = TRUE;
+	     pSiS->MergedFBAuto = FALSE;
+	  }
        } else if(xf86GetOptValBool(pSiS->Options, OPTION_MERGEDFB2, &val)) {
-          if(val) pSiS->MergedFB = TRUE;
+          if(val) {
+	     pSiS->MergedFB = TRUE;
+	     pSiS->MergedFBAuto = FALSE;
+	  }
+       }
+
+       if(xf86GetOptValBool(pSiS->Options, OPTION_MERGEDFBAUTO, &val)) {
+          if(!pSiS->MergedFB) {
+	     if(val) {
+	        pSiS->MergedFB = pSiS->MergedFBAuto = TRUE;
+	     }
+	  } else {
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	     	"Option \"MergedFB\" overrules option \"MergedFBAuto\"\n");
+	  }
        }
 
        if(pSiS->MergedFB) {

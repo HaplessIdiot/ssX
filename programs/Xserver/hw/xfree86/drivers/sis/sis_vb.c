@@ -172,7 +172,7 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
 #endif
 
 #ifdef SISMERGED
-    if(pSiS->MergedFB) {
+    if((pSiS->MergedFB) && (!(pSiS->MergedFBAuto))) {
        pSiS->CRT1off = 0;
        return;
     }
