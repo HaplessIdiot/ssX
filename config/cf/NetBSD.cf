@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.51tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.52 1997/03/27 18:37:24 hohndel Exp $
 
 
 #ifndef OSName
@@ -201,11 +201,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * Make & install Features
  */
-
-#define HasMakefileSafeInclude	YES
-#define IncludeMakefile(file) @@# dependencies are in .depend
-#define DependFileName .depend
-#define AvoidNullMakeCommand 	YES
+#define HasBsdMAke		YES
 #define StripInstalledPrograms	YES
 #define CompressAllFonts	YES
 #define GzipFontCompression	YES
@@ -237,8 +233,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasNetBSDApertureDrv	NO
 #endif
 #endif
-
-#define MakeHasPosixVariableSubstitutions	YES
 
 /*
  * ForceSubdirs - force make to build subdirectories

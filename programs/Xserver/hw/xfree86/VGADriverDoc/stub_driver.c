@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.18 1996/12/28 08:12:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.19 1997/02/11 10:01:43 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -237,11 +237,41 @@ vgaVideoChipRec STUB = {
 	 */
 	NULL,
 	/*
-	 * This is a factor that can be used to scale the raw clocks
-	 * to pixel clocks.  This is rarely used, and in most cases, set
-	 * it to 1.
+	 * ClockMulFactor can be used to scale the raw clocks to pixel
+	 * clocks. This is rarely used, and in most cases, set it to 1. The
+	 * "raw" pixel clock from the modeline is multiplied by this value,
+	 * and that value is used for clock selection.
 	 */
 	1,
+	/*
+	 * ClockDivFactor can be used to scale the raw clocks to pixel
+	 * clocks. This is rarely used, and in most cases, set it to 1. The
+	 * "raw" pixel clock from the modeline is divided by this value
+	 * (after having been multiplied by ClockMulFactor), and that value
+	 * is used for clock selection.
+	 *
+	 * When these values are set to a non-1 value, the server will
+	 * automatically scale pixel clocks (if a discrete clock generator
+	 * is used) and maximum allowed pixel clock. If e.g. a 16bpp mode
+	 * requires pixel clock multipled by 2 (to be able to transport data
+	 * over an 8-bit data bus), setting ClockMulFactor to 2 will
+	 * automatically scale the maximum allowed ramdac speed with the
+	 * same factor, and use a clock*2 for the pixel data transfer clock.
+	 *
+	 * ClockMulFactor and ClockDivFactor can only be used when the
+	 * "rules" don't change over time: dynamic changes of these
+	 * variables will cause inconsistent server behaviour (e.g. it will
+	 * report wrong pixel clocks and maximum pixel speeds. Pixel
+	 * multiplexing modes for example can mostly only be enabled if the
+	 * pixel clock is higher than a certain value, and these modes
+	 * cannot use ClockDivFactor (they don't need to: the maximum RAMDAC
+	 * speed remains the same, so there's no use in the server code
+	 * lowering it).
+	 *
+	 * For 24bpp modes over a 16-bit RAMDAC bus, one would set
+	 * ClockMulFactor to 3, and ClockDivFactor to 2.
+	 */
+	1
 };
 
 /*

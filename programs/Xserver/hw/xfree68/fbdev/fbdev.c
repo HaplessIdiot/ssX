@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.4 1997/01/25 04:14:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.5 1997/02/11 10:01:29 hohndel Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -40,6 +40,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+#include "xf86Version.h"
 #include "mfb.h"
 #ifdef CONFIG_ILBM
 #include "ilbm.h"
@@ -202,6 +203,66 @@ ScrnInfoRec fbdevInfoRec = {
 
 };
 
+#if defined(XFree86LOADER)
+XF86ModuleVersionInfo fbdevVersRec =
+{
+	"libfbdev.a", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
+ScrnInfoRec *
+ServerInit()
+{
+return &fbdevInfoRec;
+}
+
+      
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+	/* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+	* data = (pointer) &fbdevVersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
+        * data = (pointer) &fbdevInfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+#if 0
+    case 2:        
+        * data = (pointer) "libafb.a";
+        * magic= MAGIC_LOAD;
+        break;
+    case 3:
+        * data = (pointer) "libilbm.a";
+        * magic= MAGIC_LOAD;
+        break;
+#endif
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif  /* XFree86LOADER */
+
 static pointer fbdevVirtBase = NULL;
 
 static ScreenPtr savepScreen = NULL;
@@ -253,7 +314,7 @@ static void close_framebuffer(void)
     }
 }
 
-pointer xf86MapVidMem(int ScreenNum, int Region, pointer Base,
+pointer xf86MapVidMem_m68k(int ScreenNum, int Region, pointer Base,
 		      unsigned long Size)
 {
     pointer base;
@@ -267,7 +328,7 @@ pointer xf86MapVidMem(int ScreenNum, int Region, pointer Base,
     return(base);
 }
 
-void xf86UnMapVidMem(int ScreenNum, int Region, pointer Base,
+void xf86UnMapVidMem_m68k(int ScreenNum, int Region, pointer Base,
 		     unsigned long Size)
 {
     munmap(fbdevVirtBase, fb_fix.smem_len);
@@ -605,7 +666,7 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
     }
 
     if (serverGeneration == 1)
-	fbdevVirtBase = xf86MapVidMem(scr_index, 0, 0, 0);
+	fbdevVirtBase = xf86MapVidMem_m68k(scr_index, 0, 0, 0);
 
     /*
      *  Do we have a virtual screen, and support for panning?
@@ -921,7 +982,7 @@ static void fbdevEnterLeaveVT(Bool enter, int screen_idx)
     }
 
     if (enter) {
-	fbdevVirtBase = xf86MapVidMem(screen_idx, 0, 0, 0);
+	fbdevVirtBase = xf86MapVidMem_m68k(screen_idx, 0, 0, 0);
 
 	/*
 	 *  point pspix back to fbdevVirtBase, and copy the dummy buffer to the
@@ -980,7 +1041,7 @@ static void fbdevEnterLeaveVT(Bool enter, int screen_idx)
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
 	}
-	xf86UnMapVidMem(screen_idx, 0, 0, 0);
+	xf86UnMapVidMem_m68k(screen_idx, 0, 0, 0);
     }
 }
  

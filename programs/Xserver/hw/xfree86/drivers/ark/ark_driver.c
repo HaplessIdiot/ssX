@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.30 1997/02/28 08:19:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.1 1997/03/06 23:14:40 hohndel Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -98,6 +98,8 @@
  * pixel multiplexing/RAMDAC clock doubling on a 16-bit RAMDAC
  * interface is supported. It cannot work currently because the SVGA
  * server can't handle required raw clocks that are half the pixel clock.
+ *
+ * update: now it can -- code needs to be upgraded [kmg]
  */
  
 /* #define ARK_8BPP_MULTIPLEXING_SUPPORTED */
@@ -337,7 +339,8 @@ vgaVideoChipRec ARK = {
 	 * to pixel clocks.  This is rarely used, and in most cases, set
 	 * it to 1.
 	 */
-	1,
+	1,  /* ChipClockMulFactor */
+	1   /* ChipClockDivFactor */
 };
 
 /*
@@ -958,27 +961,28 @@ ArkProbe()
  	if (arkChip == ARK1000PV || arkDacPathWidth == 8) {
 		/* 8-bit RAMDAC path. */
 		if (vgaBitsPerPixel == 16) {
-			ARK.ChipClockScaleFactor = 2;
+			ARK.ChipClockMulFactor = 2;
 			maxclock16bpp *= 2;
 		}
 		if (vgaBitsPerPixel == 24) {
-			ARK.ChipClockScaleFactor = 3;
+			ARK.ChipClockMulFactor = 3;
 			maxclock24bpp *= 3;
 		}
 		if (vgaBitsPerPixel == 32) {
-			ARK.ChipClockScaleFactor = 4;
+			ARK.ChipClockMulFactor = 4;
 			maxclock32bpp *= 4;
 		}
 	}
 	if (arkDacPathWidth == 16) {
 		/* 16-bit RAMDAC path. */
 		if (vgaBitsPerPixel == 32) {
-			ARK.ChipClockScaleFactor = 2;
+			ARK.ChipClockMulFactor = 2;
 			maxclock32bpp *= 2;
 		}
 #ifdef ARK_PACKED_24BPP_ON_16BIT_DAC_SUPPORTED
 		if (vgaBitsPerPixel == 24) {
-			ARK.ChipClockScaleFactor = 3 / 2;
+			ARK.ChipClockMulFactor = 3;
+			ARK.ChipClockDivFactor = 2;
 			maxclock24bpp *= 3;
 			maxclock24bpp /= 2;
 		}
@@ -1127,7 +1131,7 @@ static void ArkChangeModeTimings() {
 		pEnd = mode;
 		do {
 			if ((mode->HSyncStart - mode->HDisplay) *
-			ARK.ChipClockScaleFactor > 16) {
+			ARK.ChipClockMulFactor > 16) {
 				int new_value;
 				if (changed == FALSE && xf86Verbose) {
 					ErrorF("%s %s: %s: Modifying HSync"
@@ -1137,12 +1141,12 @@ static void ArkChangeModeTimings() {
 						vga256InfoRec.chipset);
 					changed = TRUE;
 				}
-				if (ARK.ChipClockScaleFactor == 2 &&
+				if (ARK.ChipClockMulFactor == 2 &&
 				vga256InfoRec.clock[mode->Clock] > 60000)
 					new_value = mode->HDisplay + 12;
 				else
 					new_value = mode->HDisplay + 16 /
-						ARK.ChipClockScaleFactor;
+						ARK.ChipClockMulFactor;
 				ErrorF("%s %s: %s: HSyncStart of mode \"%s\" "
 					"modified from %d to %d\n",
 					XCONFIG_PROBED, vga256InfoRec.name,
@@ -1641,7 +1645,7 @@ DisplayModePtr mode;
 	 * must be done before the VGA CRTC register values
 	 * are initialized.
 	 */
-	if (ARK.ChipClockScaleFactor == 2)
+	if (ARK.ChipClockMulFactor == 2)
 		if (!mode->CrtcHAdjusted) {
 			mode->CrtcHDisplay <<= 1;
 			mode->CrtcHSyncStart <<= 1;
@@ -1650,7 +1654,7 @@ DisplayModePtr mode;
 			mode->CrtcHSkew <<= 1;
 			mode->CrtcHAdjusted = TRUE;
 		}
-	if (ARK.ChipClockScaleFactor == 3)
+	if (ARK.ChipClockMulFactor == 3)
 		if (!mode->CrtcHAdjusted) {
 			mode->CrtcHDisplay *= 3;
 			mode->CrtcHSyncStart *= 3;
@@ -1659,7 +1663,7 @@ DisplayModePtr mode;
 			mode->CrtcHSkew *= 3;
 			mode->CrtcHAdjusted = TRUE;
 		}
-	if (ARK.ChipClockScaleFactor == 4)
+	if (ARK.ChipClockMulFactor == 4)
 		if (!mode->CrtcHAdjusted) {
 			mode->CrtcHDisplay <<= 2;
 			mode->CrtcHSyncStart <<= 2;
@@ -1671,7 +1675,8 @@ DisplayModePtr mode;
 	if (multiplexing)
 		/*
 		 * This is linked to the fact that the
-		 * ChipClockScaleFactor is (should be) equal to 0.5.
+		 * ChipClockMulFactor is (should be) equal to 0.5.
+		 * Setting ChipClockDivFactor to 2 will do the job [kmg]
 		 */
 		if (!mode->CrtcHAdjusted) {
 			mode->CrtcHDisplay >>= 1;
@@ -1851,7 +1856,7 @@ DisplayModePtr mode;
 		unsigned char val;
 		int bandwidthused, percentused;
 		bandwidthused = (vga256InfoRec.clock[mode->Clock] /
-			ARK.ChipClockScaleFactor) * vgaBitsPerPixel / 8;
+			ARK.ChipClockMulFactor) * vgaBitsPerPixel / 8;
 		percentused = bandwidthused * 100 / arkDRAMBandwidth;
 		val = rdinx(0x3C4, 0x18);
 		if (arkChip == ARK1000PV) {

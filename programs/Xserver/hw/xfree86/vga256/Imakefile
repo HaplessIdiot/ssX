@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:50:20 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.18 1997/03/07 00:30:03 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/Imakefile,v 3.19 1997/03/11 11:11:39 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -28,7 +28,7 @@ VGADRIVERS = XF86SvgaDrivers
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
-#if HasGnuMake
+#if HasGnuMake || HasBsdMake
 $(DONES): $(SUBDIRS)
 #endif
 

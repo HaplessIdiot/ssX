@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.7 1997/04/08 10:13:32 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.8 1997/04/14 07:05:29 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -175,7 +175,8 @@ vgaVideoChipRec TSENG = {
   FALSE,	/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,				/* ChipBuiltinModes */
-  1,				/* ChipClockScaleFactor */
+  1,				/* ChipClockMulFactor */
+  1 				/* ChipClockDivFactor */
 };
 
 #define new ((vgaET4000Ptr)vgaNewVideoState)
@@ -1014,13 +1015,6 @@ ET4000Probe()
          vga256InfoRec.videoRam = 4096-8;
       }
     }
-
-    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-    {
-      ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
-      vga256InfoRec.videoRam -= 1; /* 1kb reserved for accelerator code */
-    }
     
     if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
         && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
@@ -1031,6 +1025,13 @@ ET4000Probe()
                XCONFIG_PROBED, vga256InfoRec.name);
         OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
       }
+    }
+
+    if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+    {
+      ErrorF("%s %s: Reserving 1kb of video memory for accelerator.\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+      vga256InfoRec.videoRam -= 1; /* 1kb reserved for accelerator code */
     }
   }
   else   /* no acceleration supported */
@@ -1374,17 +1375,17 @@ ET4000Restore(restore)
   outb(0x3CD, 0x00); /* segment select */
 
 #ifdef W32_SUPPORT
-  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  if (TsengRamdacType == ICS5341_DAC)
   {
-    if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
-    {
-       /* Restore ICS 5341 GenDAC Command and PLL registers */
-       outb(vgaIOBase + 4, 0x31);
-       i = inb(vgaIOBase + 5);
-       outb(vgaIOBase + 4, 0x31);
-       outb(vgaIOBase + 5, i | 0x40);
+     /* Restore ICS 5341 GenDAC Command and PLL registers */
+     outb(vgaIOBase + 4, 0x31);
+     i = inb(vgaIOBase + 5);
+     outb(vgaIOBase + 5, i | 0x40);
 
-       outb(0x3c6, restore->gendac.cmd_reg);      /* Enhanced command register*/
+     outb(0x3c6, restore->gendac.cmd_reg);        /* Enhanced command register*/
+
+     if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
+          (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) ) {
        outb(0x3c8, 2);                            /* index to f2 reg */
        outb(0x3c9, restore->gendac.PLL_f2_M);     /* f2 PLL M divider */
        outb(0x3c9, restore->gendac.PLL_f2_N);     /* f2 PLL N1/N2 divider */
@@ -1393,37 +1394,37 @@ ET4000Restore(restore)
        outb(0x3c9, restore->gendac.PLL_ctrl);     /* PLL control */
        outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
        outb(0x3c7, restore->gendac.PLL_r_idx);    /* PLL read index */
+     }
+     outb(vgaIOBase + 4, 0x31);
+     outb(vgaIOBase + 5, i & ~0x40);
+  }
 
-       outb(vgaIOBase + 4, 0x31);
-       outb(vgaIOBase + 5, i & ~0x40);
-    }
-    if (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions))
-    {
-       /* Restore STG 1703 GenDAC Command and PLL registers 
-        * we share one data structure with the gendac code, so the names
-	* are not too good.
-	*/
+  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) )
+  {
+     /* Restore STG 1703 GenDAC Command and PLL registers 
+      * we share one data structure with the gendac code, so the names
+      * are not too good.
+      */
 
+     if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
+          (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions)) ) {
        STG1703setIndex(0x24,restore->gendac.PLL_f2_M);
        outb(0x3c6,restore->gendac.PLL_f2_N);      /* use autoincrement */
-       STG1703setIndex(0x03,restore->gendac.PLL_ctrl);/* write same value to */
-       outb(0x3c6,restore->gendac.PLL_ctrl);	  /* primary and secondary 
-       						   * pixel mode select register 
-						   */
-       STG1703magic(0);
-       xf86dactopel();
-       xf86setdaccomm(restore->gendac.cmd_reg);   /* write enh command reg */
-    }
-    if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
-    {
-       /* Alas... The ICD clock registers cannot be restored */
-    }
+     }
+     STG1703setIndex(0x03,restore->gendac.PLL_ctrl);/* write same value to */
+     outb(0x3c6,restore->gendac.PLL_ctrl);	  /* primary and secondary 
+       						   * pixel mode select register */
+     STG1703magic(0);
+     xf86dactopel();
+     xf86setdaccomm(restore->gendac.cmd_reg);   /* write enh command reg */
   }
+
   if (TsengRamdacType == CH8398_DAC) {
-  xf86dactopel();
-  xf86setdaccomm(restore->gendac.cmd_reg);
+    xf86dactopel();
+    xf86setdaccomm(restore->gendac.cmd_reg);
   }
 #endif
+
   if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
   {
     if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
@@ -1581,68 +1582,64 @@ ET4000Save(save)
   i = inb(vgaIOBase + 0x0A); /* reset flip-flop */
   outb(0x3C0,0x36); save->Misc = inb(0x3C1); outb(0x3C0, save->Misc);
 #ifdef W32_SUPPORT
-  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+  if (TsengRamdacType == ICS5341_DAC)
   {
-    if (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions))
-    {
-      /* Restore ICS 5341 GenDAC Command and PLL registers */
-      outb(vgaIOBase + 4, 0x31);
-      i = inb(vgaIOBase + 5);
-      outb(vgaIOBase + 5, i | 0x40);
+     /* Save ICS 5341 GenDAC Command and PLL registers */
+     outb(vgaIOBase + 4, 0x31);
+     i = inb(vgaIOBase + 5);
+     outb(vgaIOBase + 5, i | 0x40);
 
-      save->gendac.cmd_reg = inb(0x3c6);      /* Enhanced command register */
-      save->gendac.PLL_w_idx = inb(0x3c8);    /* PLL write index */
-      save->gendac.PLL_r_idx = inb(0x3c7);    /* PLL read index */
-      outb(0x3c7, 2);                         /* index to f2 reg */
-      save->gendac.PLL_f2_M = inb(0x3c9);     /* f2 PLL M divider */
-      save->gendac.PLL_f2_N = inb(0x3c9);     /* f2 PLL N1/N2 divider */
-      outb(0x3c7, 0x0e);                      /* index to PLL control */
-      save->gendac.PLL_ctrl = inb(0x3c9);     /* PLL control */
-
-      outb(vgaIOBase + 5, i & ~0x40);
-    }
-    if (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions))
-    {
-      /* Restore STG 1703 GenDAC Command and PLL registers 
-       * unfortunately we reuse the gendac data structure, so the 
-       * field names are not really good.
-       */
-
-      xf86dactopel();
-      save->gendac.cmd_reg = xf86getdaccomm();/* Enhanced command register */
-      save->gendac.PLL_f2_M = STG1703getIndex(0x24);    
-                                              /* f2 PLL M divider */
-      save->gendac.PLL_f2_N = inb(0x3c6);     /* f2 PLL N1/N2 divider */
-      save->gendac.PLL_ctrl = STG1703getIndex(0x03);    
-                                              /* pixel mode select control */
-    }
-    if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
-    {
-      /* ICD2061A clock registers cannot be saved, 'cause they cannot be read */ 
-    }
+     save->gendac.cmd_reg = inb(0x3c6);      /* Enhanced command register */
+     if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
+          (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) ) {
+       save->gendac.PLL_w_idx = inb(0x3c8);    /* PLL write index */
+       save->gendac.PLL_r_idx = inb(0x3c7);    /* PLL read index */
+       outb(0x3c7, 2);                         /* index to f2 reg */
+       save->gendac.PLL_f2_M = inb(0x3c9);     /* f2 PLL M divider */
+       save->gendac.PLL_f2_N = inb(0x3c9);     /* f2 PLL N1/N2 divider */
+       outb(0x3c7, 0x0e);                      /* index to PLL control */
+       save->gendac.PLL_ctrl = inb(0x3c9);     /* PLL control */
+      }
+     outb(vgaIOBase + 4, 0x31);
+     outb(vgaIOBase + 5, i & ~0x40);
   }
+  
+  if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) )
+  {
+     /* Restore STG 1703 GenDAC Command and PLL registers 
+      * unfortunately we reuse the gendac data structure, so the 
+      * field names are not really good.
+      */
+
+     xf86dactopel();
+     save->gendac.cmd_reg = xf86getdaccomm();/* Enhanced command register */
+     if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
+          (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions)) ) {
+       save->gendac.PLL_f2_M = STG1703getIndex(0x24); /* f2 PLL M divider */
+       save->gendac.PLL_f2_N = inb(0x3c6);            /* f2 PLL N1/N2 divider */
+     }
+     save->gendac.PLL_ctrl = STG1703getIndex(0x03);   /* pixel mode select control */
+  }
+
   if (TsengRamdacType == CH8398_DAC) {
-  xf86dactopel();
-  save->gendac.cmd_reg = xf86getdaccomm();
+    xf86dactopel();
+    save->gendac.cmd_reg = xf86getdaccomm();
   }
 #endif
 
-  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
-  {
-    if (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions))
-    {
-       /* Save ET6000 CLKDAC PLL registers */
-       i = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
-       outb(ET6Kbase+0x67, 2);
-       save->gendac.PLL_f2_M = inb(ET6Kbase+0x69);
-       save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
-       /* save MClk values */
-       outb(ET6Kbase+0x67, 10);
-       save->ET6KMclkM = inb(ET6Kbase+0x69);
-       save->ET6KMclkN = inb(ET6Kbase+0x69);
-       /* restore old index register */
-       outb(ET6Kbase+0x67, i);
-    }
+  if ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) &&
+       (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions)) ) {
+     /* Save ET6000 CLKDAC PLL registers */
+     i = inb(ET6Kbase+0x67); /* remember old CLKDAC index register pointer */
+     outb(ET6Kbase+0x67, 2);
+     save->gendac.PLL_f2_M = inb(ET6Kbase+0x69);
+     save->gendac.PLL_f2_N = inb(ET6Kbase+0x69);
+     /* save MClk values */
+     outb(ET6Kbase+0x67, 10);
+     save->ET6KMclkM = inb(ET6Kbase+0x69);
+     save->ET6KMclkN = inb(ET6Kbase+0x69);
+     /* restore old index register */
+     outb(ET6Kbase+0x67, i);
   }
 
   if (DAC_IS_ATT49x) save->ATTdac_cmd = xf86getdaccomm();
@@ -1817,8 +1814,8 @@ ET4000Init(mode)
 
 #ifdef W32_SUPPORT
     if (    (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
-         && (    (TsengRamdacType == STG1703_DAC)
-              || (TsengRamdacType == ICS5341_DAC)) )
+         && (    (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions)))
+              || (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) )
     { 
       /* for pixmux: must use post-div of 4 on ICS GenDAC clock generator!
        */

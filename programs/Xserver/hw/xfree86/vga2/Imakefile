@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/21 14:49:26 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.17 1997/04/08 10:14:03 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/Imakefile,v 3.18 1997/04/12 13:46:18 hohndel Exp $
 
 
 #define IHaveModules
@@ -27,7 +27,7 @@ INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
-#if HasGnuMake
+#if HasGnuMake || HasBsdMake
 $(DONES): $(SUBDIRS)
 #endif
 

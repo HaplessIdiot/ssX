@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.22 1997/02/28 11:01:27 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.1 1997/03/06 23:14:26 hohndel Exp $
  */
 
 #include "X.h"
@@ -173,6 +173,7 @@ vgaVideoChipRec ALI = {
 	FALSE,	/* 32bpp */
 	NULL,
 	1,
+	1
 };
 
 #define new ((vgaALIPtr)vgaNewVideoState)

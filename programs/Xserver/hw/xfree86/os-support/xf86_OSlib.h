@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.39 1997/04/10 11:34:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.40 1997/04/12 13:45:50 hohndel Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -67,7 +67,7 @@
 # include <sys/ioctl.h>
 # include <signal.h>
 # include <termio.h>
-# if !defined(SVR4)
+# if defined(SCO) || !defined(SVR4)
 # include <sys/stat.h>
 # endif		
 # include <sys/types.h>

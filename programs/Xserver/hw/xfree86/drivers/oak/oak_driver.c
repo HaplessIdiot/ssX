@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.33 1997/02/28 08:22:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/oak/oak_driver.c,v 1.1 1997/03/06 23:16:16 hohndel Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -243,7 +243,8 @@ vgaVideoChipRec OAK = {
   FALSE,	/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,
-  1,
+  1,            /* ClockMulFactor */
+  1             /* ClockDivFactor */
 };
 
 /* 

@@ -6,7 +6,7 @@
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<it>dbateman@ee.uts.edu.au</it>),
          Egbert Eich (<it>Egbert.Eich@Physik.TH-Darmstadt.DE</it>)
-<date> 24th January 1997
+<date> 22nd April 1997
 
 <!-- Table of contents -->
 <toc>
@@ -20,8 +20,9 @@ a few "<tt>Green</tt>" video cards for desktop machines. Prior to
 the release of XFree 3.2, XFree contained only limited support for
 these chipsets. The support that was introduced in XFree3.1.1 was not
 capable of linear addressing or using the programmable clocks in the
-ct65540 and later chips. In addition to these chipset the new driver
-gives limited support to the WinGine series of chips. 
+ct65535 and later chips. In addition to these chipsets the new driver
+supports the WinGine ct643xx series of chips and gives limited support
+to the WinGine ct642xx chips.
 
 The driver has been almost completely rewritten, with many additional
 features added. These include
@@ -34,7 +35,7 @@ features added. These include
 <item>BitBLT acceleration of many operations
 </itemize>
 
-With the release of XFree 3.2A, the Chips and Technologies driver 
+With the latest release of XFree, the Chips and Technologies driver 
 supports the new XAA acceleration interface. This should improve
 the graphics performance particularly at higher depths or for the
 newer chips.
@@ -127,7 +128,7 @@ Option &dquot;no_bitblt&dquot; (Chips 65545 and later)
 <tag>
 Option &dquot;xaa_no_color_exp&dquot; (Chips 65545 and later)
 </tag>
-	This option will have the effect of disabling the use the use
+	This option will have the effect of disabling the use
 	of monochrome colour expansion. In particular this effects
 	text and bitmaps. It is useful for problems related to image writes,
 	and possible acceleration problems. In general this will result in
@@ -212,15 +213,28 @@ Option &dquot;lcd_center&dquot;
 	have problems with some machines at 16/24bpp, the effect of which
 	is that the right-hand edge of the mode will be pushed off the screen.
 <tag>
-Option &dquot;hw_clocks&dquot; (Chips 65540 and later)
+Option &dquot;hw_clocks&dquot; (Chips 65535 and later)
 </tag>
-	On chips 65540 and later, the default is to use the programmable
+	On chips 65535 and later, the default is to use the programmable
 	clock for all clocks. It is possible to use the fixed clocks
 	supported by the chip instead by using this option. Typically
 	this will give you some or all of the clocks 25.175, 28.322,
-	31.000 and 36.000MHz. Note that many flat panels will need a dot
-	clock that is lower than 25.175MHz to synchronise. The programmable
-	clock makes this option obsolete and so it's use isn't recommended.
+	31.000 and 36.000MHz. The current programmable clock will be
+	given as the last clock in the list. On a cold-booted system this
+	might be the appropriate value to use at the text console (see the 
+	"<tt>TextClockFreq<tt>" option), as many flat panels will need a
+	dot clock different than the default to synchronise. The
+	programmable clock makes this option obsolete and so it's use
+	isn't recommended.
+<tag>
+Option &dquot;use_vclk1&dquot; (Chips 65550 and later)
+</tag>
+	The HiQV series of chips have three programmable clocks. The
+	first two are usually loaded with 25.175 and 28.322MHz for
+	VGA backward compatability, and the third is used as a fully
+	programable clock. On at least one system (the Inside 686 LCD/S
+	single board computer) the third clock is unusable. This option
+	forces the use of VClk1 as the programmable clock.
 <tag>
 TextClockFreq 25.175
 </tag>
@@ -237,10 +251,11 @@ Option &dquot;mmio&dquot;
         This enables the use of memory-mapped I/O to talk to the BitBLT
         engine. By default memory-mapped I/O is not enabled on the
 	6554x series of chips, and is only usable on 6554x's with PCI
-	buses. It also enables additional acceleration using memory-mapped
-	I/O. This option has no effect when not using the BitBLT engine
+	buses. This option has no effect when not using the BitBLT engine
 	(e.g. when using "<tt>no_bitblt</tt>"), or for the 65550 which can
-	only use MMIO for access to the BitBLT engine.
+	only use MMIO for access to the BitBLT engine. On 65545 PCI
+	machines MMIO is enabled by default because the blitter can not
+	be used otherwise.
 <tag>
 Option &dquot;suspend_hack&dquot;
 </tag>
@@ -261,13 +276,7 @@ Chipset &dquot;ct65546&dquot; (or some other chip)
 	It is possible that the chip could be misidentified, particular
 	due to interactions with other drivers in the server. It is
 	possible to force the server to identify a particular chip with
-	this option.  Some later releases of the ct65545, in particular the
-	ct65545A1 and ct65545B1, are believed to have limitations very similar
-	to those of the 65546. The server is currently configured to use
-	the 65545 bandwidth, etc for these chips. So the user might wish to
-	force the server to identify their chip as a ct65546 and so have a
-	larger maximum bandwidth. Note that this forces the server to exceed
-	the documented limitations of the chip, so take care.
+	this option.
 <tag>
 Option &dquot;sync_on_green&dquot; (Chips 65550/54)
 </tag>
@@ -278,11 +287,12 @@ Option &dquot;sync_on_green&dquot; (Chips 65550/54)
 <tag>
 Option &dquot;fast_dram&dquot; (Chips 65550/54)
 </tag>
-	This options set the internal memory clock (MCLK) register to
+	This option sets the internal memory clock (MCLK) register to
 	another value. The default value programmed by the BIOS is
 	usually OK, but some machines can accept a faster MClk to achieve
 	a better performance. One machine known to work well with this
-	option is the Toshiba 720CDT.
+	option is the Toshiba 720CDT. This option is generally not
+	recommended.
 </descrip>
 
 <sect> Modelines <p>
@@ -340,7 +350,8 @@ The ct655xx driver is capable of driving both a CRT and a flat panel
 display. In fact the timing for the flat panel are dependent on the
 specification of the panel itself and are independent of the particular
 mode chosen. For this reason it is recommended to use one of the programs
-that automatically generate XF86Config files, such as "<tt>xf86config</tt>".
+that automatically generate XF86Config files, such as "<tt>xf86config</tt>"
+or "<tt>XF86Setup<tt>".
 
 However there are many machines, particular those with 800x600 screen or
 larger, that need to reprogram the panel timings. The reason for this is
@@ -374,9 +385,6 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 <sect> Troubleshooting <p>
 
 <descrip>
-<tag> The cursor appears as a box</tag>
-	The 64300's H/W cursor is known to still have problems. With these
-	machines try using the "<tt>sw_cursor</tt>" option.
 <tag> The cursor appears as a white box, after switching modes</tag>
 	There is a known bug in the H/W cursor, that sometimes causes
 	the cursor to be redrawn as a white box, when the mode is changed.
@@ -386,8 +394,9 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 <tag> The cursor hot-spot isn't at the same point as the cursor</tag>
  	With modes on the 6555x machines that are stretched to fill the
 	flat panel, the H/W cursor is not correspondingly stretched. This
-	is a small bug in the current server. You can avoid this by either
-	using the "<tt>no_stretch</tt>" or <tt>sw_cursor</tt>" options.
+	is a small and long-standing bug in the current server. You can
+	avoid this by either using the "<tt>no_stretch</tt>" or
+	<tt>sw_cursor</tt>" options.
 <tag> The lower part of the screen is corrupted</tag>
 	Many DSTN screens use the top of video ram to implement a frame
 	accelerator. This reduces the amount of video ram available to
@@ -489,7 +498,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	true then the screen will appear to have a reddish tint. This can
 	be fixed by using the "<tt>use_18bit_bus</tt>" option. Note that
 	the reverse is also true. If the "<tt>use_18bit_bus</tt>" is used
-	at the TFT bus width is 24bpp, the the screen will appear reddish.
+	and the TFT bus width is 24bpp, then the screen will appear reddish.
 	Note that this option only has an effect on TFT screens. 
 <tag> I can't start X-windows with 16 or 24bpp</tag>
 	Firstly, is your machine capable of 16/24bpp with the mode
@@ -526,7 +535,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
   If you are having driver-related problems that are not addressed by this
   document, or if you have found bugs in accelerated functions, you can
   try contacting the XFree86 team (the current driver maintainer can be
-  reached at <it>dbateman@ee.uts.edu.au</it> or 
+  reached at <it>dbateman@eng.uts.edu.au</it> or 
   <it>Egbert.Eich@Physik.TH-Darmstadt.DE)</it>,
   or post in the Usenet newsgroup "<it>comp.windows.x.i386unix</it>".
 
@@ -567,7 +576,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.11 1997/01/24 09:32:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.12 1997/01/25 03:22:21 dawes Exp $
 </verb>
 
 </article>

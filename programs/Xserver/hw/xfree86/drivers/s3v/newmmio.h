@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.3 1997/03/28 09:42:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.4 1997/04/08 10:13:08 hohndel Exp $ */
 
 /* Copied over from accel/s3_virge */
 
@@ -15,6 +15,7 @@
  *
  *	who	when	vers
  *	BL	0300296	0.1
+ *      SM      200497  0.2   Added Caching version of register macros.
  ***************************************************************************/
 
 /* base for S3_OUTW macro  */
@@ -419,6 +420,17 @@ typedef struct {
 #define SETB_RSRC_XY(x,y)	((mmtr)s3vMmioMem)->bltfill_regs.regs.rsrc_xy = ((x)<<16 | (y))
 #define SETB_RDEST_XY(x,y)	do { write_mem_barrier(); ((mmtr)s3vMmioMem)->bltfill_regs.regs.rdest_xy = ((x)<<16 | (y)); write_mem_barrier(); } while (0)
 
+/* Caching version of the same MACROs */
+
+#define CACHE_SETB_CLIP_L_R(l,r)	do { unsigned int clip = ((l)<<16 | (r)); if (s3vCached_CLIP_LR != clip) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.clip_l_r = clip; s3vCached_CLIP_LR = clip; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_CLIP_T_B(t,b)	do { unsigned int clip = ((t)<<16 | (b)); if (s3vCached_CLIP_TB != clip) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.clip_t_b = clip; s3vCached_CLIP_TB = clip; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_RSRC_XY(x,y)		do { unsigned int src = ((x)<<16 | (y)); if (s3vCached_RSRC_XY != src) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.rsrc_xy = src; s3vCached_RSRC_XY = src; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_RWIDTH_HEIGHT(w,h)	do { unsigned int rwh = ((w)<<16 | (h)); if (s3vCached_RWIDTH_HEIGHT != rwh) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.rwidth_height = rwh; s3vCached_RWIDTH_HEIGHT = rwh; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_MONO_PAT0(val)	do { if (s3vCached_MONO_PATTERN0 != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat0 = val; s3vCached_MONO_PATTERN0 = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_MONO_PAT1(val)	do { if (s3vCached_MONO_PATTERN1 != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat1 = val; s3vCached_MONO_PATTERN1 = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_PAT_FG_CLR(val)	do { if (s3vCached_PAT_FGCLR != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_fg_clr = val; s3vCached_PAT_FGCLR = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_PAT_BG_CLR(val)	do { if (s3vCached_PAT_BGCLR != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_bg_clr = val; s3vCached_PAT_BGCLR = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
+#define CACHE_SETB_CMD_SET(val)		do { if (s3vCached_CMD_SET != val) { write_mem_barrier(); ((mmtr)s3vMmioMem)->bltfill_regs.regs.cmd_set = val; s3vCached_CMD_SET = val; s3vCacheMiss++; write_mem_barrier(); } else s3vCacheHit++;} while(0)
 
 
 #define SETL_SRC_BASE(val)	((mmtr)s3vMmioMem)->line_regs.regs.src_base = (val)
@@ -433,6 +445,9 @@ typedef struct {
 #define SETL_LXSTART(val)	((mmtr)s3vMmioMem)->line_regs.regs.lxstart = (val)
 #define SETL_LYSTART(val)	((mmtr)s3vMmioMem)->line_regs.regs.lystart = (val)
 #define SETL_LYCNT(val)	do { write_mem_barrier(); ((mmtr)s3vMmioMem)->line_regs.regs.lycnt = (val); write_mem_barrier(); } while (0)
+
+/* Cache version */
+#define CACHE_SETL_CMD_SET(val)		do { if (s3vCached_CMD_SET != val) { write_mem_barrier(); ((mmtr)s3vMmioMem)->line_regs.regs.cmd_set = val; s3vCached_CMD_SET = val; s3vCacheMiss++; write_mem_barrier(); } else s3vCacheHit++;} while(0)
 
 
 
@@ -454,6 +469,8 @@ typedef struct {
 #define SETP_PYSTART(val)	((mmtr)s3vMmioMem)->polyfill_regs.regs.pystart = (val)
 #define SETP_PYCNT(val)	do { write_mem_barrier(); ((mmtr)s3vMmioMem)->polyfill_regs.regs.pycnt = (val); write_mem_barrier(); } while (0)
 
+/* Cache version */
+#define CACHE_SETP_CMD_SET(val)		do { if (s3vCached_CMD_SET != val) { write_mem_barrier(); ((mmtr)s3vMmioMem)->polyfill_regs.regs.cmd_set = val; s3vCached_CMD_SET = val; s3vCacheMiss++; write_mem_barrier(); } else s3vCacheHit++;} while(0)
 
 
 #define SETL3_Z_BASE(val)	((mmtr)s3vMmioMem)->line3d_regs.regs.z_base = (val)

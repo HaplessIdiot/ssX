@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.55 1997/04/08 10:11:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.56 1997/04/08 13:16:09 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -289,6 +289,8 @@ typedef enum {
 						/* must be returned as */
 						/* first item from ModuleInit */
 #define MAGIC_DONT_CHECK_UNRESOLVED	10	/* delay checking */
+
+#define MAGIC_GLX_VISUALS_INIT		11      /* GLX visuals init function */
 
 #define LD_RESOLV_IFDONE		0	/* only check if no more 
 						   delays pending */

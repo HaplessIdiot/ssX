@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.14 1997/02/28 08:22:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.1 1997/03/06 23:16:22 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -281,7 +281,8 @@ vgaVideoChipRec REALTEK = {
 	 * to pixel clocks.  This is rarely used, and in most cases, set
 	 * it to 1.
 	 */
-	1,
+	1,       /* ClockMulFactor */
+	1        /* ClockDivFactor */
 };
 
 /*
@@ -662,9 +663,9 @@ RTVGAProbe()
 	}
 #endif
 	if (vgaBitsPerPixel == 16)
-	  REALTEK.ChipClockScaleFactor *= 2;
+	  REALTEK.ChipClockMulFactor *= 2;
 	if (vga256InfoRec.videoRam < 1024)
-	  REALTEK.ChipClockScaleFactor *= 2;
+	  REALTEK.ChipClockMulFactor *= 2;
 	if (vgaBitsPerPixel >= 8) {
 #ifdef XFreeXDGA 
 	vga256InfoRec.directMode = XF86DGADirectPresent;

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.35 1997/02/25 14:18:42 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.36 1997/03/10 10:09:27 hohndel Exp $
 XCOMM
 
 /*
@@ -119,6 +119,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasGnuMake
 #define HasGnuMake		NO
 #endif
+#ifndef HasBsdMake
+#define HasBsdMake		NO
+#endif
 #ifndef HasParallelMake
 #define HasParallelMake		NO
 #endif
@@ -141,7 +144,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 
 #ifndef HasMakefileSafeInclude	    /* -include or sinclude in a Makefile */
-#if HasClearmake
+#if HasClearmake || HasBsdMake
 #define HasMakefileSafeInclude YES
 #else
 #define HasMakefileSafeInclude NO   /* see also vendor-specific .cf files */
@@ -163,7 +166,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
 #endif
 #ifndef AvoidNullMakeCommand
+#if !HasBsdMake
 #define AvoidNullMakeCommand NO
+#else
+#define AvoidNullMakeCommand YES
+#endif
 #endif
 #if AvoidNullMakeCommand
 #ifndef NullMakeCommand
@@ -276,7 +283,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define HasZlib			NO
 #endif
 #if !HasZlib		/* if OS doesn't have it, we'll build it */
-#undef GzipLibrary	/* GzipLibrary was valid only if HasGzipLibrary */
+#undef GzipLibrary	/* GzipLibrary was valid only if HasZlib */
 #endif
 #ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
 #define GzipLibrary -lz
@@ -906,7 +913,11 @@ TCLIBDIR = TclLibDir
 #define DependFlags /**/
 #endif
 #ifndef DependFileName
+#if !HasBsdMake
 #define DependFileName Makefile.dep
+#else
+#define DependFileName .depend
+#endif
 #endif
 #ifndef ExportListCmd
 # ifndef ExportListGenSource

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.12 1997/04/17 08:17:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.13 1997/04/18 09:13:04 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -317,8 +317,6 @@ static void DrawTextNonTECPUToScreenColorExpand(
     int nglyph,
     int w,
     int h,
-    int addleft,
-    int addright,
     NonTEGlyphInfo *glyphinfop
 #endif
 );
@@ -328,8 +326,6 @@ static void DrawTextNonTEScreenToScreenColorExpand(
     int nglyph,
     int w,
     int h,
-    int addleft,
-    int addright,
     NonTEGlyphInfo *glyphinfop
 #endif
 );
@@ -725,7 +721,6 @@ nglyph, ppci, pglyphBase)
 
     NonTEGlyphInfo *glyphinfop;
     xRectangle backrect;
-    int addleft, addright;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -765,49 +760,27 @@ nglyph, ppci, pglyphBase)
     backrect.x = xInit + pDrawable->x;
     backrect.y = y;
     backrect.height = h;
-    
-    /*
-     * If only color expansion with transparency is supported, then
-     * do it in two steps -- first do the background with a solid fill,
-     * then draw the text with transparency.
-     */
-    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
-        /* First fill-in the background. */
-        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
-            pGC->planemask);
-        xf86AccelInfoRec.SubsequentFillRectSolid(backrect.x, backrect.y, 
-            backrect.width, backrect.height);
-        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
-        xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            -1, pGC->fgPixel, GXcopy, pGC->planemask);
- 	xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
-             x, y, w, h, 0);
-#if 0
-	if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-            DrawTextNonTECPUToScreenColorExpandBytePad(
-                nglyph, w, h, 0, 0,  glyphinfop);
-	else
-#endif
-            DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, 0, 0, glyphinfop);
-    } else {
-        xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
- 	addleft = (*ppci)->metrics.leftSideBearing;
- 	addright = backrect.width - w - addleft;
- 	xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
- 	    backrect.x, backrect.y, backrect.width, backrect.height, 0);
-#if 0
-	if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-            DrawTextNonTECPUToScreenColorExpandBytePad(
-                nglyph, backrect.width, backrect.height, addleft,
-		addright, glyphinfop);
-	else
-#endif
-            DrawTextNonTECPUToScreenColorExpand(nglyph, backrect.width,
-                backrect.height, addleft, addright, glyphinfop);
-     }
 
+    /* 
+     * There is the possibility of overlapping characters with NonTE
+     * fonts. Hence the only safe way to do them is to fill in the
+     * backing rectangle first and then treat them as PolyText.
+     */
+    xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
+        pGC->planemask);
+    xf86AccelInfoRec.SubsequentFillRectSolid(backrect.x, backrect.y, 
+        backrect.width, backrect.height);
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        xf86AccelInfoRec.Sync();
+    xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
+        -1, pGC->fgPixel, GXcopy, pGC->planemask);
+    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
+         x, y, w, h, 0);
+#if 0
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
+        DrawTextNonTECPUToScreenColorExpandBytePad(nglyph, w, h, glyphinfop);
+    else
+#endif
         DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
@@ -837,7 +810,6 @@ nglyph, ppci, pglyphBase)
 
     NonTEGlyphInfo *glyphinfop;
     xRectangle backrect;
-    int addleft, addright;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -882,39 +854,26 @@ nglyph, ppci, pglyphBase)
     backrect.y = y;
     backrect.height = h;
     
-    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
-        /* First fill-in the background. */
-        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
-            pGC->planemask);
-        xf86AccelInfoRec.SubsequentFillRectSolid(backrect.x, backrect.y,
-            backrect.width, backrect.height);
-        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
-        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
-            x, y, w, h, -1, pGC->fgPixel, GXcopy, pGC->planemask);
+    /* 
+     * There is the possibility of overlapping characters with NonTE
+     * fonts. Hence the only safe way to do them is to fill in the
+     * backing rectangle first and then treat them as PolyText.
+     */
+    xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, GXcopy,
+        pGC->planemask);
+    xf86AccelInfoRec.SubsequentFillRectSolid(backrect.x, backrect.y,
+        backrect.width, backrect.height);
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        xf86AccelInfoRec.Sync();
+    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
+        x, y, w, h, -1, pGC->fgPixel, GXcopy, pGC->planemask);
 #if 0
-	if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-            DrawTextNonTEScreenToScreenColorExpandBytePad(
-                nglyph, w, h, 0, 0,  glyphinfop);
-	else
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
+        DrawTextNonTEScreenToScreenColorExpandBytePad(
+            nglyph, w, h, glyphinfop);
+    else
 #endif
-            DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, 0, 0, glyphinfop);
-    } else {
-	addleft = (*ppci)->metrics.leftSideBearing;
-	addright = backrect.width - w - addleft;
-        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
-            backrect.x, backrect.y, backrect.width, backrect.height, 
-            pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
-#if 0
-	if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-            DrawTextNonTEScreenToScreenColorExpandBytePad(
-                nglyph, backrect.width, backrect.height, addleft,
-		addright, glyphinfop);
-	else
-#endif
-            DrawTextNonTEScreenToScreenColorExpand(nglyph, backrect.width,
-                backrect.height, addleft, addright, glyphinfop);
-    }
+        DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
 }
@@ -980,11 +939,10 @@ nglyph, ppci, pglyphBase)
 
 #if 0
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
-        DrawTextNonTECPUToScreenColorExpandBytePad(
-            nglyph, w, h, glyphinfop);
+        DrawTextNonTECPUToScreenColorExpandBytePad(nglyph, w, h, glyphinfop);
     else
 #endif
-        DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, 0, 0, glyphinfop);
+        DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
 }
@@ -1050,7 +1008,7 @@ nglyph, ppci, pglyphBase)
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
         x, y, w, h, -1, pGC->fgPixel, pGC->alu, pGC->planemask);
 
-    DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, 0, 0, glyphinfop);
+    DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
 }
@@ -1352,12 +1310,10 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
  */
 
 static void
-DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinfop)
+DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop)
     int nglyph;
     int w;
     int h;
-    int addleft;
-    int addright;
     NonTEGlyphInfo *glyphinfop;
 {
     int bitmapwidth;
@@ -1368,9 +1324,7 @@ DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinfop)
         unsigned int *base,
         NonTEGlyphInfo *glyphinfop,
         int line,
-        int nglyph,
-        int addleft,
-        int addright
+        int nglyph
 #endif
     );
 
@@ -1403,11 +1357,10 @@ DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinfop)
     while (line < h) {
         if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
 	    (*DrawTextScanlineFunc)((unsigned int *)base, glyphinfop, line,
-	        nglyph, addleft, addright);
+	        nglyph);
 	else {
 	    base = (unsigned char *)(*DrawTextScanlineFunc)(
-	        (unsigned int *)base, glyphinfop, line, nglyph, addleft,
-                addright);
+	        (unsigned int *)base, glyphinfop, line, nglyph);
 	    if (base >=
 	    (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
                 base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
@@ -1438,12 +1391,10 @@ DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinfop)
  */
 
 static void
-DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinfop)
+DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
     int nglyph;
     int w;
     int h;
-    int addleft;
-    int addright;
     NonTEGlyphInfo *glyphinfop;
 {
     int bitmapwidth;
@@ -1454,9 +1405,7 @@ DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinf
         unsigned int *base,
         NonTEGlyphInfo *glyphinfop,
         int line,
-        int nglyph,
-        int addleft,
-        int addright
+        int nglyph
 #endif
     );
 
@@ -1486,7 +1435,7 @@ DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, addleft, addright, glyphinf
 	    xf86AccelInfoRec.Sync();
 	(*DrawTextScanlineFunc)((unsigned int *)
 	    (xf86AccelInfoRec.ScratchBufferBase + offset),
-	    glyphinfop, line, nglyph, addleft, addright);
+	    glyphinfop, line, nglyph);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
 	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
 	line++;

@@ -1,4 +1,4 @@
-XCOMM  $XConsortium: zh_TW /main/7 1996/09/28 16:52:44 rws $
+XCOMM  $TOG: zh_TW /main/8 1997/04/18 07:51:12 barstow $
 XCOMM  XLocale Database Sample for zh_TW
 XCOMM 
 XCOMM Note: In lib/X11/lcCT.c, charset names for CNS11643 coded character
@@ -6,7 +6,7 @@ XCOMM sets are defined as CNS11643.1986-1 and -2.  In the ECMA Registry,
 XCOMM CNS coded character sets 1-7 are registered as CNS 11643-1992.
 XCOMM CJK.INF Version 1.7 (August 15, 1995) written by Ken Lunde says
 XCOMM plane 14 of CNS 11643-1983 now became plane 3 of CNS 11643-1992.
-XCOMM I don't know how Taiwanese EUC is organized currently, so I left the
+XCOMM I do not know how Taiwanese EUC is organized currently, so I left the
 XCOMM X11R6 organization of fsN/csN as it is and only changed "CNS11643-*"
 XCOMM to "CNS11643.1986-*".
 XCOMM	1995-10-24	T. Numata (numa@rp.open.cs.fujitsu.co.jp)

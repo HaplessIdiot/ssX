@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.89 1997/03/27 18:40:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.90 1997/04/12 13:46:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -171,12 +171,12 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int textClockFreq */
   NULL,			/* char* DCConfig */
   NULL,			/* char* DCOptions */
-  0,			/* int MemClk */
+  0			/* int MemClk */
 #ifdef XFreeXDGA
-  0,                    /* int directMode */
+  ,0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
   0,                    /* unsigned long physBase */
-  0,                    /* int physSize */
+  0                    /* int physSize */
 #endif
 };
 
@@ -625,10 +625,14 @@ vgaProbe()
         }
 
 	/* Scale raw clocks to give pixel clocks if driver requires it */
-	if (Drivers[i]->ChipClockScaleFactor > 1) {
-	  for (j = 0; j < vga256InfoRec.clocks; j++)
-	    vga256InfoRec.clock[j] /= Drivers[i]->ChipClockScaleFactor;
-	  vga256InfoRec.maxClock /= Drivers[i]->ChipClockScaleFactor;
+	if ((Drivers[i]->ChipClockMulFactor > 1)
+	 || (Drivers[i]->ChipClockDivFactor > 1)) {
+	  for (j = 0; j < vga256InfoRec.clocks; j++) {
+	    vga256InfoRec.clock[j] *= Drivers[i]->ChipClockDivFactor;
+	    vga256InfoRec.clock[j] /= Drivers[i]->ChipClockMulFactor;
+	  }
+	  vga256InfoRec.maxClock *= Drivers[i]->ChipClockDivFactor;
+	  vga256InfoRec.maxClock /= Drivers[i]->ChipClockMulFactor;
 	  if (xf86Verbose) {
 	    ErrorF("%s %s: Effective pixel clocks available:\n",
 		   XCONFIG_PROBED, vga256InfoRec.name);
@@ -1634,6 +1638,10 @@ vgaEnterLeaveVT(enter, screen_idx)
 	  pspix->devPrivate.ptr = ppix->devPrivate.ptr;
         }
         (*vgaSaveFunc)(vgaNewVideoState);
+
+#if PSZ == 8
+        xf86InvalidatePixmapCache();
+#endif
       }
       /*
        * We come here in many cases, but one is special: When the server aborts

@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.14 1997/03/07 00:30:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.15 1997/03/28 08:19:10 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -229,7 +229,11 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
     /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
+     * on the backing store wrapped version. Before we do that, we replace
+     * the cfb backing store functions with our wrapper versions.
+     */
+    xf86BSFuncRec.SaveAreas = xf86GCInfoRec.SaveAreasWrapper;
+    xf86BSFuncRec.RestoreAreas = xf86GCInfoRec.RestoreAreasWrapper;
     miInitializeBackingStore (pScreen, &xf86BSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = cfbCreateScreenResources;

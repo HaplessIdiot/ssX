@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.7 1997/01/22 11:17:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.8 1997/04/10 11:34:55 hohndel Exp $ */
 
 /***********************************************************
 
@@ -240,6 +240,12 @@ xf86ValidateGC(pGC, changes, pDrawable)
 #else
     	cfbValidateGC(pGC, changes, pDrawable);
 #endif
+        /* We need to restore these functions to the wrappered version, 
+         * so that when drawing to/from pixmap->screen, we sync first.
+         */
+	pGC->ops->PutImage = xf86GCInfoRec.PutImageWrapper;
+	pGC->ops->CopyArea = xf86GCInfoRec.CopyAreaWrapper;
+
         if (xf86VTSema && pDrawable->type != DRAWABLE_WINDOW)
             return;
         if (VTSwitch) {

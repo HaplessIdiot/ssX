@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.1 1997/03/06 23:15:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.2 1997/04/12 13:45:21 hohndel Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -36,6 +36,21 @@
 #define MGAWAITFREE() while(INREG8(MGAREG_Status + 2) & 0x01);
 #define MGAWAITFIFOSLOTS(slots) while ( ((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0 );
 
+typedef struct {
+    Bool	isHwCursor;
+    pointer	(*RealizeCursor)();
+    void	(*LoadCursor)();
+    void	(*QueryCursorSize)();
+    Bool	(*CursorState)();
+    void	(*CursorOn)();
+    void	(*CursorOff)();
+    void	(*MoveCursor)();
+    void	(*RecolorCursor)();
+    long	maxPixelClock;
+    long	MemoryClock;
+} MGARamdacRec;
+
+extern MGARamdacRec MGAdac;
 extern pciTagRec MGAPciTag;
 extern int MGAinterleave;
 extern int MGABppShft;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.13 1997/04/13 13:57:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.14 1997/04/17 08:17:34 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -232,7 +232,6 @@ xf86GCNewText(pGC)
     void (*ImageGlyphBltFunc) () = miImageGlyphBlt;
     cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
-#if 0
     /* This is the MatchCommon logic. */
  
     if(!(FONTMAXBOUNDS(pGC->font, rightSideBearing) -
@@ -256,7 +255,6 @@ xf86GCNewText(pGC)
 #endif
 	}
     }
-#endif
 
     /* Replace with accelerated functions if possible. */
     if (!TERMINALFONT(pGC->font)) {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.17 1997/04/08 14:56:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.18 1997/04/10 10:07:02 hohndel Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -52,6 +52,8 @@ XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 #if GlxModule | DoLoadableServer
 GLX_MODULE_DEFINES = -DGLX_MODULE
+#else
+GLX_MODULE_DEFINES = -UGLXEXT
 #endif
 
 EXT_MODULES_DEFINES  =  $(PEX_MODULE_DEFINES) \

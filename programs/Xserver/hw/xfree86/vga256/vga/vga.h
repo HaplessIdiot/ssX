@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.25 1997/03/07 00:30:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.26 1997/03/11 13:07:52 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -201,7 +201,8 @@ typedef struct {
   Bool ChipHas24bpp;		    /* Driver supports 24bpp */
   Bool ChipHas32bpp;		    /* Driver supports 32bpp */
   DisplayModePtr ChipBuiltinModes;  /* Pointer to builtin mode list */
-  int ChipClockScaleFactor;	    /* Factor to divide raw clocks by */
+  int ChipClockMulFactor;	    /* Factor to multiply pixel clock by, to get RAMDAC clock */
+  int ChipClockDivFactor;	    /* Factor to divide pixel clock by, to get RAMDAC clock */
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
 /* Tables in vgatables.c */

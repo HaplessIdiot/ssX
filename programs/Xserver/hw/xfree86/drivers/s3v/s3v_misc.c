@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.3 1997/03/28 09:42:53 hohndel Exp $ */
 
 /*
  *
@@ -45,16 +45,16 @@
 #include "regs3v.h"
 #include "s3v_driver.h"
 
-extern SymTabRec chipsets[];
+extern SymTabRec s3vChipTable[];
 extern S3VPRIV s3vPriv;
 
 
 /*
- * s3GetPCIInfo -- probe for PCI information
+ * s3vGetPCIInfo -- probe for PCI information
  */
 
 S3PCIInformation *
-s3GetPCIInfo()
+s3vGetPCIInfo()
 {
    static S3PCIInformation info = {0, };
    pciConfigPtr pcrp, *pcrpp;
@@ -161,7 +161,7 @@ s3GetPCIInfo()
    if (found && xf86Verbose) {
       if (info.ChipType != S3_UNKNOWN) {
 	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08lx\n", XCONFIG_PROBED,
-		vga256InfoRec.name,xf86TokenToString(chipsets, info.ChipType), 
+		vga256InfoRec.name,xf86TokenToString(s3vChipTable, info.ChipType), 
 		info.ChipRev, info.MemBase);
       } else {
 	 ErrorF("%s %s: PCI: unknown (please report), ID 0x%04x rev %x,"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.8 1997/02/12 08:55:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.9 1997/04/08 10:11:36 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1068,6 +1068,8 @@ static __inline__ int s3CheckLSPN(int w, int dir)
       else if (lspn <= 6*3)
 	 w += 3;
    }
+   if (w > 2048) 
+      w = 2048;
 
    if (dir && w >= s3bltbug_width1 && w <= s3bltbug_width2) {
       w = s3bltbug_width2 + 1;

@@ -1,9 +1,39 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.2 1997/04/12 15:34:32 hohndel Exp $ */
 
 
 /*
- * Mystique RAMDAC driver
- */
+ * Mystique RAMDAC driver v1.2
+ *
+ * Author:	Andrew van der Stock
+ * 		ajv@greebo.svhm.org.au
+ *
+ * Contributors:
+ *
+ * 		Radoslaw Kapitan,
+ * 		dude.
+ * 
+ *		Dirk Hohndel
+ *			hohndel@XFree86.Org
+ *		integrated into XFree86-3.1.2Gg
+ *		fixed some problems with PCI probing and mapping
+ *
+ *		David Dawes
+ *			dawes@XFree86.Org
+ *		some cleanups, and fixed some problems
+ *
+ *		Andrew E. Mileski
+ *			aem@ott.hookup.net
+ *		RAMDAC timing, and BIOS stuff
+ *
+ *		Leonard N. Zubkoff
+ *			lnz@dandelion.com
+ *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
+ 
+ *		Guy DESBIEF
+ *			g.desbief@aix.pacwan.net
+ *		RAMDAC timing, for MGA 1064SG integrated RAMDAC
+ *
+*/
  
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -18,6 +48,7 @@
 /*
  * exported functions
  */
+void MGA1064RamdacInit();
 Bool MGA1064Init();
 void MGA1064Restore();
 void *MGA1064Save();
@@ -27,32 +58,44 @@ void *MGA1064Save();
  */
  
 /*
- * indexes to registers (the order is important)
+ * indexes to mga1064sg registers (the order is important)
  */
 static unsigned char MGADACregs[] = {
-	0x0F, 0x18, 0x19, 0x1A, 0x1C, 0x1D, 0x1E, 0x2A, 0x2B, 0x30,
-	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x06
+        0x04, 0x05, 0x08, 0x09, 0x0A, 0x0C, 0x0D, 0x0E,
+	0x10, 0x11, 0x12, 0x18, 0x19, 0x1A, 0x1D, 0x1E, 
+	0x2A, 0x2B, 0x2F, 0x38, 0x3A,
+	0x3C, 0x3D, 0x3E, 0x40, 0x41, 0x42, 0x43
 };
 
 /*
  * initial values of the registers
  */
 static unsigned char MGADACbpp8[] = {
-	0x06, 0x80,    0, 0x25, 0x00, 0x00, 0x0C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,    0, 0x00, 0x00
-	
+        0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x00, 0x1A, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
+
 static unsigned char MGADACbpp16[] = {
-	0x07, 0x05,    0, 0x15, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+        0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x00, 0x1A, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
+
 static unsigned char MGADACbpp24[] = {
-	0x07, 0x16,    0, 0x25, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+        0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x00, 0x1A, 0x40, 0x00, 0x07,
+	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
+
 static unsigned char MGADACbpp32[] = {
-	0x07, 0x06,    0, 0x05, 0x00, 0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00, 0x00
+        0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00,
+	0x4B, 0xE4, 0xF9, 0x80, 0x00, 0x09, 0x20, 0x1F, 
+	0x00, 0x1A, 0x0A, 0x72, 0x10,
+	0x00, 0x00, 0x0D, 0xCA, 0x33, 0x58, 0xC2
 };
 
 /*
@@ -75,43 +118,37 @@ typedef struct {
  */
 
 /*
- * indirect registers
+ * Read/write to the DAC via MMIO 
  */
-static unsigned char inTi3026(reg)
+
+void outMGA1064(reg, val)
+unsigned char reg, val;
+{
+	if (!MGAMMIOBase)
+		FatalError("outMGA1064: IO registers not mapped\n");
+
+		OUTREG8(RAMDAC_OFFSET + MGA1064_INDEX, reg);
+		OUTREG8(RAMDAC_OFFSET + MGA1064_DATA, val);
+}
+
+unsigned char inMGA1064(reg)
 unsigned char reg;
 {
 	unsigned char val;
 	
 	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
+		FatalError("inMGA1064: IO registers not mapped\n");
 
-	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-	val = INREG8(RAMDAC_OFFSET + TVP3026_DATA);
+		OUTREG8(RAMDAC_OFFSET + MGA1064_INDEX, reg);
+		val = INREG8(RAMDAC_OFFSET + MGA1064_DATA);
 
 	return val;
-}
-
-static void outTi3026(reg, mask, val)
-unsigned char reg, mask, val;
-{
-	unsigned char tmp;
-
-	if (!MGAMMIOBase)
-		FatalError("MGA: IO registers not mapped\n");
-
-	if (mask != 0x00)
-		tmp = inTi3026(reg) & mask;
-	else
-		tmp = 0;
-	
-	OUTREG8(RAMDAC_OFFSET + TVP3026_INDEX, reg);
-	OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, tmp | val);
 }
 
 /*
  * direct registers
  */
-static unsigned char inTi3026dreg(reg)
+static unsigned char inMGA1064dreg(reg)
 unsigned char reg;
 {
 	unsigned char val;
@@ -124,7 +161,7 @@ unsigned char reg;
 	return val;
 }
 
-static void outTi3026dreg(reg, val)
+static void outMGA1064dreg(reg, val)
 unsigned char reg, val;
 {
 	if (!MGAMMIOBase)
@@ -133,15 +170,14 @@ unsigned char reg, val;
 	OUTREG8(RAMDAC_OFFSET + reg, val);
 }
 
+
 /*
- * MGATi3026CalcClock - Calculate the PLL settings (m, n, p).
+ * MGA1064SGCalcClock - Calculate the PLL settings (m, n, p, s).
  *
  * DESCRIPTION
- *   For more information, refer to the Texas Instruments
- *   "TVP3026 Data Manual" (document SLAS098B).
- *     Section 2.4 "PLL Clock Generators"
- *     Appendix A "Frequency Synthesis PLL Register Settings"
- *     Appendix B "PLL Programming Examples"
+ *   For more information, refer to the Matrox
+ *   "MGA1064SG Developer Specification (document 10524-MS-0100).
+ *     chapter 5.7.8. "PLLs Clocks Generators"
  *
  * PARAMETERS
  *   f_out		IN	Desired clock frequency.
@@ -149,94 +185,127 @@ unsigned char reg, val;
  *   m			OUT	Value of PLL 'm' register.
  *   n			OUT	Value of PLL 'n' register.
  *   p			OUT	Value of PLL 'p' register.
+ *   s			OUT	Value of PLL 's' filter register 
+ *                              (pix pll clock only).
  *
  * HISTORY
- *   January 11, 1997 - [aem] Andrew E. Mileski
- *   Split off from MGATi3026SetClock.
+ *   February 28, 1997 - Guy DESBIEF 
+ *   Adapted for MGA1064SG DAC.
+  *  based on MGACalcClock  written by [aem] Andrew E. Mileski
  */
 
 /* The following values are in kHz */
-#define TI_MIN_VCO_FREQ  110000
-#define TI_MAX_VCO_FREQ  220000
-#define TI_MAX_MCLK_FREQ 100000
-#define TI_REF_FREQ      14318.18
+/* #define MGA1064_MIN_VCO_FREQ  110000 */
+#define MGA1064_MIN_VCO_FREQ  120000
+#define MGA1064_MAX_VCO_FREQ    170000
+#define MGA1064_MAX_PCLK_FREQ    170000
+#define MGA1064_MAX_MCLK_FREQ 100000
+#define MGA1064_REF_FREQ      14318.18
+#define MGA1064_FEED_DIV_MIN      100
+#define MGA1064_FEED_DIV_MAX      127
+#define MGA1064_IN_DIV_MIN      1
+#define MGA1064_IN_DIV_MAX      31
+#define MGA1064_POST_DIV_MIN      0
+#define MGA1064_POST_DIV_MAX      3
+
 
 static double
-MGATi3026CalcClock ( f_out, f_max, m, n, p )
+MGA1064SGCalcClock ( f_out, f_max, m, n, p, s )
 	long f_out;
 	long f_max;
 	int *m;
 	int *n;
 	int *p;
+	int *s;
 {
 	int best_m, best_n;
 	double f_pll, f_vco;
-	double m_err, inc_m, calc_m;
+	double m_err, inc_m, calc_f, f_out_f,base_freq;
 
 	/* Make sure that f_min <= f_out <= f_max */
-	if ( f_out < ( TI_MIN_VCO_FREQ / 8 ))
-		f_out = TI_MIN_VCO_FREQ / 8;
-	if ( f_out > f_max )
+
+	if ( f_out < ( MGA1064_MIN_VCO_FREQ / 8))
+		f_out = MGA1064_MIN_VCO_FREQ / 8;
+
+	if ( f_out > f_max ) {
 		f_out = f_max;
+#ifdef DEBUG
+	ErrorF( "f_out adjusted to f_max =%f\n",
+		f_out );
+#endif
+	}
 
 	/*
-	 * f_pll = f_vco / 2 ^ p
-	 * Choose p so that TI_MIN_VCO_FREQ <= f_vco <= TI_MAX_VCO_FREQ
-	 * Note that since TI_MAX_VCO_FREQ = 2 * TI_MIN_VCO_FREQ
+	 * f_pll = f_vco /  (2^p)
+	 * Choose p so that MGA1064_MIN_VCO_FREQ   <= f_vco <= MGA1064_MAX_VCO_FREQ  
 	 * we don't have to bother checking for this maximum limit.
 	 */
 	f_vco = ( double ) f_out;
-	for ( *p = 0; *p < 3 && f_vco < TI_MIN_VCO_FREQ; ( *p )++ )
+	for ( *p = 0; *p < MGA1064_POST_DIV_MAX && f_vco < MGA1064_MIN_VCO_FREQ  ; ( *p )++ )
 		f_vco *= 2.0;
 
-	/*
-	 * We avoid doing multiplications by ( 65 - n ),
-	 * and add an increment instead - this keeps any error small.
-	 */
-	inc_m = f_vco / ( TI_REF_FREQ * 8.0 );
+	/* Initial value of calc_f for the loop */
+	calc_f = 0;
 
-	/* Initial value of calc_m for the loop */
-	calc_m = inc_m + inc_m + inc_m;
+	base_freq = MGA1064_REF_FREQ / ( 1 << *p );
 
-	/* Initial amount of error for an integer - impossibly large */
-	m_err = 2.0;
+	/* Initial amount of error for frequency maximum */
+	m_err = f_out;
 
-	/* Search for the closest INTEGER value of ( 65 - m ) */
-	for ( *n = 3; *n <= 25; ( *n )++, calc_m += inc_m ) {
+	/* Search for the different values of ( *m ) */
+	for ( *m = 1 ; *m < 31 ; ( *m )++ ) {
+		/* see values of ( *n ) which we can't use */
+		for ( *n = 100; *n <= 127; ( *n )++ ) { 
 
-		/* Ignore values of ( 65 - m ) which we can't use */
-		if ( calc_m < 3.0 || calc_m > 64.0 )
-			continue;
+			calc_f = (base_freq * (*n)) / *m ;
 
 		/*
-		 * Pick the closest INTEGER (has smallest fractional part).
-		 * The optimizer should clean this up for us.
+		 * Pick the closest frequency.
 		 */
-		if (( calc_m - ( int ) calc_m ) < m_err ) {
-			m_err = calc_m - ( int ) calc_m;
-			best_m = ( int ) calc_m;
-			best_n = *n;
+			if (abs( calc_f - f_out ) < m_err ) {
+				m_err = abs(calc_f - f_out);
+				best_m = *m;
+				best_n = *n;
+#ifdef DEBUG1
+	ErrorF( "best_m=%x, best_n=%x,  m_err %f, calc_f=%f\n",
+		best_m, best_n, m_err, calc_f );
+#endif
+			}
 		}
 	}
 	
-	/* 65 - ( 65 - x ) = x */
-	*m = 65 - best_m;
-	*n = 65 - best_n;
+	/*  */
 
 	/* Now all the calculations can be completed */
-	f_vco = 8.0 * TI_REF_FREQ * best_m / best_n;
+	f_vco = MGA1064_REF_FREQ * best_n / best_m;
+/* Adjustments for filtering pll feed back */
+	if ( (50000.0 <= f_vco)
+	&& (f_vco < 100000.0) )
+		*s = 0;	
+	if ( (100000.0 <= f_vco)
+	&& (f_vco < 140000.0) )
+		*s = 1;	
+	if ( (140000.0 <= f_vco)
+	&& (f_vco < 180000.0) )
+		*s = 2;	
+	if ( (180000.0 <= f_vco)
+	&& (f_vco < 220000.0) )
+		*s = 3;	
+
 	f_pll = f_vco / ( 1 << *p );
 
+	*m = best_m - 1;
+	*n = best_n - 1;
+	*p = ( 1 << *p ) - 1 ; 
 #ifdef DEBUG
-	ErrorF( "f_out=%ld f_pll=%.1f f_vco=%.1f n=%d m=%d p=%d\n",
-		f_out, f_pll, f_vco, *n, *m, *p );
+	ErrorF( "f_out_requ =%ld f_pll_real=%.1f f_vco=%.1f n=0x%x m=0x%x p=0x%x s=0x%x\n",
+		f_out, f_pll, f_vco, *n, *m, *p, *s );
 #endif
 
 	return f_pll;
 }
-
 /*
- * MGATi3026SetPCLK - Set the pixel (PCLK) and loop (LCLK) clocks.
+ * MGA1064SetPCLK - Set the pixel (PCLK) and loop (LCLK) clocks.
  *
  * PARAMETERS
  *   f_pll			IN	Pixel clock PLL frequencly in kHz.
@@ -247,6 +316,8 @@ MGATi3026CalcClock ( f_out, f_max, m, n, p )
  *   vgaBitsPerPixel		IN	Bits per pixel.
  *
  * HISTORY
+ *   March 26, 1997 - [aem] Guy DESBIEF
+ *   modified for Mystique DAC not tested.
  *   January 11, 1997 - [aem] Andrew E. Mileski
  *   Split to simplify code for MCLK (=GCLK) setting.
  *
@@ -263,113 +334,196 @@ MGATi3026CalcClock ( f_out, f_max, m, n, p )
  *   Low speed pixel clock fix (per the docs). Documented what I understand.
  *
  *   ?????, ??, ???? - [???] ????????????
- *   Based on the TVP3026 code in the S3 driver.
  */
 
+
 static void 
-MGATi3026SetPCLK( f_out, bpp )
+MGA1064SGSetPCLK( f_out, bpp )
 	long	f_out;
 	int	bpp;
 {
 	/* Pixel clock values */
-	int m, n, p;
+	int m, n, p, s;
 
-	/* Loop clock values */
-	int lm, ln, lp, lq;
-	double z;
+	unsigned char pclk_ctrl;
+	unsigned char misc_ctrl,misc_reg;
 
 	/* The actual frequency output by the clock */
 	double f_pll;
 
 	/* Get the maximum pixel clock frequency */
-	long f_max = TI_MAX_VCO_FREQ;
-	if ( vga256InfoRec.maxClock > TI_MAX_VCO_FREQ )
+	long f_max = MGA1064_MAX_PCLK_FREQ  ;
+	if ( vga256InfoRec.maxClock < MGA1064_MAX_PCLK_FREQ   )
 		f_max = vga256InfoRec.maxClock;
 
 	/* Do the calculations for m, n, and p */
-	f_pll = MGATi3026CalcClock( f_out, f_max, & m, & n, & p );
+	f_pll = MGA1064SGCalcClock( f_out, f_max, & m, & n, & p ,& s);
 
 	/* Values for the pixel clock PLL registers */
-	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xc0;
-	newVS->DACclk[ 1 ] = ( m & 0x3f );
-	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xb0;
+	newVS->DACclk[ 0 ] = ( m & 0x1f );
+	newVS->DACclk[ 1 ] = ( n & 0x7f );
+	newVS->DACclk[ 2 ] = ( p & 0x07 | ((s & 0x3) << 3) );
 
 	/*
 	 * Now that the pixel clock PLL is setup,
 	 * the loop clock PLL must be setup.
 	 */
 
-	/*
-	 * First we figure out lm, ln, and z.
-	 * Things are different in packed pixel mode (24bpp) though.
-	 */
+
+	/* Stop PCLK (pixclkdis = 1) according doc p 5.77 */
+	/* Guy DESBIEF April 4 97 */
+	pclk_ctrl = inMGA1064(MGA1064_PIX_CLK_CTL);
+	pclk_ctrl |= MGA1064_PIX_CLK_CTL_CLK_DIS;
+	outMGA1064(MGA1064_MISC_CTL,pclk_ctrl);
+
+	/*  select Non VGA Mode  p 5.77 */
+	misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
+	misc_ctrl |= MGA1064_MISC_CTL_DAC_POW_DN;
+	misc_ctrl |= MGA1064_MISC_CTL_DAC_RAM_CS;
+	misc_ctrl |= MGA1064_MISC_CTL_DIS_CON;
+	misc_ctrl |= MGA1064_MISC_CTL_VGA8;
+
+	outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
+
+	ErrorF( "MGA1064SGSetPCLK: MISC Reg %x\n",inb(MGAREG_MISC_READ));
+	/* Select PLL C values p 4-151 */
+#ifdef JAMAIS
+	misc_reg= inb(MGAREG_MISC_READ);
+	misc_reg &= ~MGAREG_MISC_CLK_SEL_MGA_MSK;
+	misc_reg |= MGAREG_MISC_CLK_SEL_MGA_PIX;
+	outb(MGAREG_MISC_WRITE, misc_reg);
+/* #endif */
+#endif
+	ErrorF( "MGA1064SGSetPCLK: MISC Reg %x (apres ecriture)\n",inb(MGAREG_MISC_READ));
+
+/* Set the new PCLK frequency  */
+	/* see page 4.184 */	
+	outMGA1064( MGA1064_PIX_PLLC_M, ( m & 0x1f ));
+	/* see page 4.185 */	
+	outMGA1064( MGA1064_PIX_PLLC_N, n & 0x7f );
+	/* see page 4.186 */	
+	/* adjust filter also */	
+	outMGA1064( MGA1064_PIX_PLLC_P, ( (p & 0x07) | ((s & 0x03) << 3 )) );
+
+	/* Wait for PIX PLL to lock on frequency */
+	while (( inMGA1064( MGA1064_PIX_PLL_STAT ) & 0x40 ) == 0 ) {
+		;
+	}
+	/* Start PCLK (pixclkdis = 0) according doc p 5.77 */
+	pclk_ctrl = inMGA1064(MGA1064_PIX_CLK_CTL);
+	pclk_ctrl &= ~MGA1064_PIX_CLK_CTL_CLK_DIS;
+	pclk_ctrl &= ~MGA1064_PIX_CLK_CTL_SEL_MSK;
+	pclk_ctrl |= MGA1064_PIX_CLK_CTL_SEL_PLL;
+	outMGA1064(MGA1064_PIX_CLK_CTL,pclk_ctrl);
 	 if ( vgaBitsPerPixel == 24 ) {
-
-		/* ln:lm = ln:3 */
-		lm = 65 - 3;
-
-		/* Check for interleaved mode */
-		if ( bpp == 2 )
-			/* ln:lm = 4:3 */
-			ln = 65 - 4;
-		else
-			/* ln:lm = 8:3 */
-			ln = 65 - 8;
-
-		/* Note: this is actually 100 * z for more precision */
-		z = ( 11000 * ( 65 - ln )) / (( f_pll / 1000 ) * ( 65 - lm ));
 	}
 	else {
-		/* ln:lm = ln:4 */
-		lm = 65 - 4;
-
-		/* Note: bpp = bytes per pixel */
-		ln = 65 - 4 * ( 64 / 8 ) / bpp;
-
-		/* Note: this is actually 100 * z for more precision */
-		z = (( 11000 / 4 ) * ( 65 - ln )) / ( f_pll / 1000 );
 	}
-
-	/*
-	 * Now we choose dividers lp and lq so that the VCO frequency
-	 * is within the operating range of 110 MHz to 220 MHz.
-	 */
-
-	/* Assume no lq divider */
-	lq = 0;
-
-	/* Note: z is actually 100 * z for more precision */
-	if ( z <= 200.0 )
-		lp = 0;
-	else if ( z <= 400.0 )
-		lp = 1;
-	else if ( z <= 800.0 )
-		lp = 2;
-	else if ( z <= 1600.0 )
-		lp = 3;
-	else {
-		lp = 3;
-		lq = ( int )( z / 1600.0 );
-	}
- 
-	/* Values for the loop clock PLL registers */
-	if ( vgaBitsPerPixel == 24 ) {
-		/* Packed pixel mode values */
-		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0x80;
-		newVS->DACclk[ 4 ] = ( lm & 0x3f ) | 0x80;
-		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf8;
- 	} else {
-		/* Non-packed pixel mode values */
-		newVS->DACclk[ 3 ] = ( ln & 0x3f ) | 0xc0;
-		newVS->DACclk[ 4 ] = ( lm & 0x3f );
-		newVS->DACclk[ 5 ] = ( lp & 0x03 ) | 0xf0;
-	}
-	newVS->DACreg[ 18 ] = lq | 0x38;
 
 #ifdef DEBUG
-	ErrorF( "bpp=%d z=%.1f ln=%d lm=%d lp=%d lq=%d\n",
-		bpp, z, ln, lm, lp, lq );
+	ErrorF( "MGA1064SGSetPCLK: pixpll_m=%x pixpll_n=%x pixpll_p=%x, misc_ctrl=%x\n"
+		,inMGA1064( MGA1064_PIX_PLLC_M )
+		,inMGA1064( MGA1064_PIX_PLLC_N )
+		,inMGA1064( MGA1064_PIX_PLLC_P )
+		,inMGA1064( MGA1064_MISC_CTL ) 
+		);
+	ErrorF( "bpp=%d \n", bpp);
 #endif
+}
+
+/*
+ * MGA1064SGSetMCLK - Set the memory clock (MCLK) PLL.
+ *
+ * HISTORY
+ *   March 26, 1997 - [aem] Guy DESBIEF
+ *   modified not tested.
+ */
+
+static void
+MGA1064SGSetMCLK( f_out )
+	long f_out;
+{
+	double f_pll;
+	int mclk_m, mclk_n, mclk_p,mclk_s;
+	int pclk_m, pclk_n, pclk_p,pclk_s;
+	int mclk_ctl, rfhcnt;
+	long	option_reg;
+
+	f_pll = MGA1064SGCalcClock(
+		f_out, MGA1064_MAX_MCLK_FREQ,
+		& mclk_m, & mclk_n, & mclk_p ,& mclk_s
+	);
+
+	/* Save MCLK settings */
+	/* modified Guy DESBIEF March 20 97 */
+
+	pclk_n = inMGA1064( MGA1064_SYS_PLL_N );
+	pclk_m = inMGA1064( MGA1064_SYS_PLL_M );
+	pclk_p = (inMGA1064( MGA1064_SYS_PLL_P ) & 0x7);
+	pclk_s = ((inMGA1064( MGA1064_SYS_PLL_P ) & 0x18) >>3) ;
+	option_reg = pciReadLong(MGAPciTag, PCI_OPTION_REG);
+#ifdef JAMAIS
+	/* Sequence required according page 5.77 */
+	/* Stop MCLK (sysclkdis = 1) according doc p 4.14 and 5.77 */
+	/* Disable system clock */
+	option_reg |= MGA1064_OPT_SYS_CLK_DIS;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+	/* select PCI bus clock */
+	option_reg &= ~MGA1064_OPT_SYS_CLK_MSK;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+	/* Enable system clock */
+	option_reg &= ~MGA1064_OPT_SYS_CLK_DIS;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+
+/* Set the new MCLK frequency  */
+	/* Guy DESBIEF March 26 97 */	
+	/* see page 4.189 */	
+	outMGA1064( MGA1064_SYS_PLL_M, ( mclk_m & 0x1f ));
+	/* see page 4.190 */	
+	outMGA1064( MGA1064_SYS_PLL_N, mclk_n & 0x7f );
+	/* see page 4.191 */	
+	/* adjust filter also */	
+	outMGA1064( MGA1064_SYS_PLL_P, ( (mclk_p & 0x07) | ((mclk_s & 0x03) << 3 )) );
+
+	/* Wait for SYS PLL to lock on frequency */
+	while (( inMGA1064( MGA1064_SYS_PLL_STAT ) & 0x40 ) == 0 ) {
+		;
+	}
+	option_reg = pciReadLong(MGAPciTag, PCI_OPTION_REG);
+	/* Disable system clock */
+	option_reg |= MGA1064_OPT_SYS_CLK_DIS;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+	/* Select PLL clock */
+	option_reg &= ~MGA1064_OPT_SYS_CLK_MSK;
+	option_reg |= MGA1064_OPT_SYS_CLK_PLL;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+	/* Enable system clock */
+	option_reg &= ~MGA1064_OPT_SYS_CLK_DIS;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, option_reg );
+
+#endif	
+	/* Set the WRAM refresh divider */
+	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
+	if ( rfhcnt > 15 )
+		rfhcnt = 0;
+	pciWriteLong( MGAPciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
+		( pciReadLong( MGAPciTag, PCI_OPTION_REG ) & ~0xf0000 ));
+
+#ifdef DEBUG
+	ErrorF( "MGA1064SGSetMCLK: syspll_m=%x syspll_n=%x syspll_p=%x, option_reg=%x\n"
+		,inMGA1064( MGA1064_SYS_PLL_M )
+		,inMGA1064( MGA1064_SYS_PLL_N )
+		,inMGA1064( MGA1064_SYS_PLL_P )
+		,pciReadLong( MGAPciTag, PCI_OPTION_REG ) 
+		);
+	ErrorF( "rfhcnt=%d\n", rfhcnt );
+#endif
+
 }
 
 /*
@@ -388,26 +542,27 @@ DisplayModePtr mode;
 	int i, index_1d;
 	unsigned char* initDAC;
 
+	ErrorF("MGA1064Init: depth %x bits\n",vgaBitsPerPixel);
 	switch(vgaBitsPerPixel)
 	{
 	case 8:
 		initDAC = MGADACbpp8;
-		initDAC[2] = MGAinterleave? 0x4C : 0x4B;
+		initDAC[12] = MGA1064_MUL_CTL_8bits;
 		break;
 	case 16:
 		initDAC = MGADACbpp16;
-		initDAC[2] = MGAinterleave? 0x54 : 0x53;
+		initDAC[12] = MGAinterleave? 0x54 : 0x53;
 		if ( (xf86weight.red == 5) && (xf86weight.green == 5)
 					&& (xf86weight.blue == 5) )
 			initDAC[1] = 0x04 ;
 		break;
 	case 24:
 		initDAC = MGADACbpp24;
-		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
+		initDAC[12] = MGAinterleave? 0x5C : 0x5B;
 		break;
 	case 32:
 		initDAC = MGADACbpp8;
-		initDAC[2] = MGAinterleave? 0x5C : 0x5B;
+		initDAC[12] = MGAinterleave? 0x5C : 0x5B;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
@@ -507,14 +662,22 @@ DisplayModePtr mode;
 	 * via the TVP3026 RAMDAC register 1D and so MISC Output Register
 	 * should always have bits 6 and 7 set. */
 
-	newVS->std.MiscOutReg |= 0xC0;
+#ifndef JAMAIS
+	newVS->std.MiscOutReg |= 0x2B;
+/*
+	newVS->std.MiscOutReg &= ~0x1;
+	newVS->std.MiscOutReg &= ~0xc;
+	newVS->std.MiscOutReg |= 0x8;
+*/
+#else
+	newVS->std.MiscOutReg |=  0xC0;
 	if ((mode->Flags & (V_PHSYNC | V_NHSYNC)) &&
 	    (mode->Flags & (V_PVSYNC | V_NVSYNC)))
 	{
 	    if (mode->Flags & V_PHSYNC)
-		newVS->DACreg[index_1d] |= 0x01;
+		newVS->std.MiscOutReg &= ~0x40;
 	    if (mode->Flags & V_PVSYNC)
-		newVS->DACreg[index_1d] |= 0x02;
+		newVS->std.MiscOutReg &= ~0x80;
 	}
 	else
 	{
@@ -522,29 +685,49 @@ DisplayModePtr mode;
 	  if (mode->Flags & V_DBLSCAN)
 	    VDisplay *= 2;
 	  if      (VDisplay < 400)
-		  newVS->DACreg[index_1d] |= 0x01; /* +hsync -vsync */
+  		  newVS->std.MiscOutReg &= ~0x40; /* +hsync -vsync */
 	  else if (VDisplay < 480)
-		  newVS->DACreg[index_1d] |= 0x02; /* -hsync +vsync */
+  		  newVS->std.MiscOutReg &= ~0x80; /* -hsync +vsync */
 	  else if (VDisplay < 768)
-		  newVS->DACreg[index_1d] |= 0x00; /* -hsync -vsync */
+  		  newVS->std.MiscOutReg &= ~0x00; /* -hsync -vsync */
 	  else
-		  newVS->DACreg[index_1d] |= 0x03; /* +hsync +vsync */
+  		  newVS->std.MiscOutReg &= ~0xC0; /* +hsync +vsync */
 	}
-	
-	if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options))
+#endif
+	if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options)) {
 	    newVS->DACreg[index_1d] |= 0x20;
+		ErrorF("synchro dans le vert\n");
+	}
+	newVS->DAClong = 0x5F094F21;
 
-	newVS->DAClong = MGAinterleave << 12;
-
-	newVS->std.MiscOutReg |= 0x0C; 
-	MGATi3026SetPCLK(
+	MGA1064SGSetPCLK(
 		vga256InfoRec.clock[newVS->std.NoClock], 1 << MGABppShft
 	);
 
 #ifdef DEBUG		
-	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", vga256InfoRec.clock[newVS->std.NoClock],
-		newVS->DACclk[0], newVS->DACclk[1], newVS->DACclk[2], newVS->DACclk[3], newVS->DACclk[4], newVS->DACclk[5], newVS->DAClong);
-	for (i=0; i<sizeof(MGADACregs); i++) ErrorF("%02X ", newVS->DACreg[i]);
+	ErrorF("MGA1064Init: Inforec pixclk=\n");
+	ErrorF("%6ld pixclk: m=%02X n=%02X p=%02X\n"
+	,vga256InfoRec.clock[newVS->std.NoClock],
+	newVS->DACclk[0], newVS->DACclk[1], newVS->DACclk[2]
+	);
+	ErrorF("sysclk: m=%02X n=%02X p=%02X	DAClong: %08lX\n",
+	newVS->DACclk[3], newVS->DACclk[4], newVS->DACclk[5], newVS->DAClong);
+
+	ErrorF("NewVS ->DACregs:\n");
+
+	for(i=0; i<sizeof(MGADACregs); i++) {
+	    ErrorF("(ad=%02X) %02X ",MGADACregs[i],newVS->DACreg[i]);
+	if ((i % 5) == 4 )
+	ErrorF("\n");
+	}
+	ErrorF("\n");
+	ErrorF("Physical DACregs\n");
+	for(i=0; i<sizeof(MGADACregs); i++) {
+	    ErrorF("(ad=%02X) %02X ",MGADACregs[i],inMGA1064(MGADACregs[i]));
+	if ((i % 5) == 4 )
+	ErrorF("\n");
+	}
+	ErrorF("ExtVgaRegs:");
 	for (i=0; i<6; i++) ErrorF(" %02X", newVS->ExtVga[i]);
 	ErrorF("\n");
 #endif
@@ -562,7 +745,9 @@ void
 MGA1064Restore(restore)
 vgaMGAPtr restore;
 {
-	int i;
+	int i,j;
+	long daclong,option_reg;
+	vgaProtect(TRUE);
 
 	/*
 	 * Code is needed to get things back to bank zero.
@@ -570,52 +755,67 @@ vgaMGAPtr restore;
 	for (i = 0; i < 6; i++)
 		outw(0x3DE, (restore->ExtVga[i] << 8) | i);
 
-	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
-		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
+	option_reg = pciReadLong(MGAPciTag, PCI_OPTION_REG) ;
+	ErrorF("MGA1064Restore(1): DAClong %x option_reg %x\n",
+		restore->DAClong,option_reg);
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong );
 
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
 	vgaHWRestore((vgaHWPtr)restore);
 
+	outb(0x3C2, restore -> std.MiscOutReg);
+
 	/*
 	 * Code to restore SVGA registers that have been saved/modified
 	 * goes here. 
 	 */
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
+	j = 0;
+	/* restore Pix pll C regs */
 	for (i = 0; i < 3; i++)
-		outTi3026(TVP3026_PIX_CLK_DATA, 0, restore->DACclk[i]);
-	
-	/* Wait for PCLK PLL to lock on frequency */
-	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
+		outMGA1064((MGA1064_PIX_PLLC_M + i), restore->DACclk[j++]);
 
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
-	for (i = 3; i < 6; i++)
-		outTi3026(TVP3026_LOAD_CLK_DATA, 0, restore->DACclk[i]);
+	/* Wait for PIX PLL to lock on frequency */
+	while (( inMGA1064( MGA1064_PIX_PLL_STAT ) & 0x40 ) == 0 ) {
+		;
+	}
+#ifdef JAMAIS
+	j = 3;
+	/* restore Sys pll regs */
+	for (i = 0; i < 3; i++)
+		outMGA1064((MGA1064_SYS_PLL_M + i), restore->DACclk[j++]);
+#endif
+	/* restore other DAC regs */
 	
-	/* Wait for PCLK PLL to lock on frequency */
-	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
-
+	j = 0;
 	for (i = 0; i < sizeof(MGADACregs); i++)
-		outTi3026(MGADACregs[i], 0, restore->DACreg[i]);
-
+		outMGA1064(MGADACregs[i], restore->DACreg[j++]);
+	
 #ifdef DEBUG
 	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
 		!!(restore->DAClong & 0x20000000));
+	ErrorF("MGA1064Restore: DAClong %x\n",
+		restore->DAClong);
+	ErrorF( "MGA1064Restore: MiscOutReg= %x\n",inb(0x3CC));
 #endif		 
 }
 
+
 /*
- * MGA1064Save
+ * MGA1064Save --
  *
  * This function saves the video state.	 It reads all of the SVGA registers
  * into the vgaMGARec data structure.
+ *   March 3, 1997 - [aem] Guy DESBIEF
+ *   modified and tested.
  */
 void *
 MGA1064Save(save)
 vgaMGAPtr save;
 {
-	int i;
+	int i,j,index_sav;
+	unsigned char index_reg;
 	
 	/*
 	 * Code is needed to get back to bank zero.
@@ -638,20 +838,34 @@ vgaMGAPtr save;
 		save->ExtVga[i] = inb(0x3DF);
 	}
 	
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
-	for (i = 0; i < 3; i++)
-		outTi3026(TVP3026_PIX_CLK_DATA, 0, save->DACclk[i] =
-					inTi3026(TVP3026_PIX_CLK_DATA));
-
-	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
-	for (i = 3; i < 6; i++)
-		outTi3026(TVP3026_LOAD_CLK_DATA, 0, save->DACclk[i] =
-					inTi3026(TVP3026_LOAD_CLK_DATA));
-	
 	for (i = 0; i < sizeof(MGADACregs); i++)
-		save->DACreg[i]	 = inTi3026(MGADACregs[i]);
-	
+		save->DACreg[i]	 = inMGA1064(MGADACregs[i]);
+/* Reading Sys PLL register */
+	index_reg = MGA1064_SYS_PLL_M;
+	index_sav = 0;
+	for (i = 0; i < 3; i++) {
+		save->DACclk[index_sav++] = inMGA1064(index_reg++);
+	}
+
+/* Reading Pix PLL register */
+	index_reg = MGA1064_PIX_PLLC_M;
+/* C pix pll registers bank only */	
+	for (i = 0; i < 3; i++) {
+		save->DACclk[index_sav++] = inMGA1064(index_reg++);
+	}
+/*	save ->std.MiscOutReg = inb(0x3CC); */	
 	save->DAClong = pciReadLong(MGAPciTag, PCI_OPTION_REG);
-	
-	return (void *)save;
+#ifdef DEBUG	
+	ErrorF( "MGA1064Save: save->DAClong= %x\n",save->DAClong );
+	ErrorF( "MGA1064Save: MiscOutReg= %x\n",inb(0x3CC));
+#endif
+	return((void *) save);
+}
+
+void
+MGA1064RamdacInit()
+{
+    MGAdac.isHwCursor = FALSE;
+    
+    MGAdac.maxPixelClock = 135000;
 }

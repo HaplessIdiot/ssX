@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.4 1997/04/14 07:05:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.5 1997/04/17 08:17:07 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -102,6 +102,7 @@ unsigned char *ctMMIOBase = NULL;
 /* Chip type */
 Bool ctisHiQV32 = FALSE;	  /*New architecture used in 65550 and 65554 */
 Bool ctisWINGINE = FALSE;         /* WINGINE support */
+Bool ctForceVClk1 = FALSE;        /* Use VClk1 as prog clock on HiQV chips */
 
 /* syncronous reset */
 Bool ctSyncResetIgn = FALSE;
@@ -304,15 +305,23 @@ static void CHIPSDisplayPowerManagementSet();
 extern void CHIPSSetRead();
 extern void CHIPSSetWrite();
 extern void CHIPSSetReadWrite();
-extern void CHIPSSetReadPlanar();
-extern void CHIPSSetWritePlanar();
-extern void CHIPSSetReadWritePlanar();
 extern void CHIPSWINSetRead();
 extern void CHIPSWINSetWrite();
 extern void CHIPSWINSetReadWrite();
 extern void CHIPSHiQVSetRead();
 extern void CHIPSHiQVSetWrite();
 extern void CHIPSHiQVSetReadWrite();
+
+/* Bank select functions for 1 and 4bpp */
+extern void CHIPSSetReadPlanar();
+extern void CHIPSSetWritePlanar();
+extern void CHIPSSetReadWritePlanar();
+extern void CHIPSWINSetReadPlanar();
+extern void CHIPSWINSetWritePlanar();
+extern void CHIPSWINSetReadWritePlanar();
+extern void CHIPSHiQVSetReadPlanar();
+extern void CHIPSHiQVSetWritePlanar();
+extern void CHIPSHiQVSetReadWritePlanar();
 
 /*internal functions */
 static void ctRestore();
@@ -369,7 +378,8 @@ vgaVideoChipRec CHIPS =
     FALSE,	/* 24bpp */
     FALSE,	/* 32bpp */
     NULL,
-    1,
+    1,          /* ChipClockMulFactor */
+    1           /* ChipClockDivFactor */
 };
 
 #define new ((vgaCHIPSPtr)vgaNewVideoState)
@@ -583,9 +593,13 @@ ctClockSave(Type,Clock)
     case HiQV_STYLE:
 	read_fr(0x03, Clock->fr03);  /* save alternate clock select reg.  */
 	if (!ctCurrentClock) {	     /* save 65550+ console clock         */
-	    temp = (Clock->fr03 & 0xC) >> 2;
-	    if (temp == 3)
-		temp = 2;
+	    if (ctForceVClk1) {
+		temp = 1;
+	    } else {
+		temp = (Clock->fr03 & 0xC) >> 2;
+		if (temp == 3)
+		    temp = 2;
+	    }
 	    temp = temp << 2;
 	    read_xr(0xC0 + temp, ctConsole_clk[0]);
 	    read_xr(0xC1 + temp, ctConsole_clk[1]);
@@ -623,7 +637,10 @@ ctClockFind(Type, no, Clock)
 
     switch (Type & GET_STYLE) {
     case HiQV_STYLE:
-	Clock->msr = 3 << 2;
+	if (ctForceVClk1)
+	    Clock->msr = 1 << 2;
+	else
+	    Clock->msr = 3 << 2;
 	Clock->fr03 = Clock->msr;
 	Clock->Clock = vga256InfoRec.clock[no];
 	break;
@@ -739,9 +756,13 @@ ctClockLoad(Type, Clock)
       outb(0x3C2, (tempmsr & ~0x0D) | ctVgaIOBaseFlag);
       write_fr(0x03, (tempf03 & ~0x0C) | 0x04);
       if (!Clock->Clock) {      /* Hack to load saved console clock  */
-	temp = (Clock->fr03 & 0xC) >> 2;
-	if (temp == 3)
-	  temp = 2;
+	if (ctForceVClk1) {
+	    temp = 1;
+	} else {
+	    temp = (Clock->fr03 & 0xC) >> 2;
+	    if (temp == 3)
+	    temp = 2;
+	}
 	temp = temp << 2;
 	write_xr(0xC0 + temp, (ctConsole_clk[0] & 0xFF));
 	write_xr(0xC1 + temp, (ctConsole_clk[1] & 0xFF));
@@ -753,10 +774,17 @@ ctClockLoad(Type, Clock)
 	 *  on the 65550, so write zero to 0xCA 
 	 */
 	ctCalcClock(Clock->Clock, vclk);
-	write_xr(0xC8, (vclk[1] & 0xFF));
-	write_xr(0xC9, (vclk[2] & 0xFF));
-	write_xr(0xCA, 0x0);
-	write_xr(0xCB, (vclk[0] & 0xFF));
+	if (ctForceVClk1) { 
+	    write_xr(0xC4, (vclk[1] & 0xFF));
+	    write_xr(0xC5, (vclk[2] & 0xFF));
+	    write_xr(0xC5, 0x0);
+	    write_xr(0xC7, (vclk[0] & 0xFF));
+	} else {
+	    write_xr(0xC8, (vclk[1] & 0xFF));
+	    write_xr(0xC9, (vclk[2] & 0xFF));
+	    write_xr(0xCA, 0x0);
+	    write_xr(0xCB, (vclk[0] & 0xFF));
+	}
       }
       usleep(10000);		         /* Let VCO stabilise    */
       write_fr(0x03, ((tempf03 & ~0x0C) | (Clock->fr03 & 0x0C)));
@@ -1516,6 +1544,12 @@ Bool ctProbeHiQV()
       ErrorF("%s %s: CHIPS: using programmable clocks.\n",
 	     XCONFIG_PROBED, vga256InfoRec.name);
 
+    if (OFLG_ISSET(OPTION_FORCE_VCLK1, &vga256InfoRec.options)) {
+        ctForceVClk1 = TRUE;
+	ErrorF("%s %s: CHIPS: using VCLK1 as programmable clock.\n",
+	       XCONFIG_GIVEN, vga256InfoRec.name);
+    }
+
     /* maximal clock */
 	outb(0x3D0, 0x0A);
 	if (inb(0x3D1) & 2) {
@@ -1536,16 +1570,14 @@ Bool ctProbeHiQV()
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = TRUE;
-#if 0
-    /* I'm not sure this is needed for the HiQV chips yet */
     if (vgaBitsPerPixel < 8) {
 	CHIPS.ChipSetRead = CHIPSHiQVSetReadPlanar;
 	CHIPS.ChipSetWrite = CHIPSHiQVSetWritePlanar;
 	CHIPS.ChipSetReadWrite = CHIPSHiQVSetReadWritePlanar;
     }
-#endif
 
     /* allowed options */
+    OFLG_SET(OPTION_FORCE_VCLK1, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NOACCEL, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_HW_CLKS, &CHIPS.ChipOptionFlags);
@@ -1785,7 +1817,7 @@ Bool ctProbeWINGINE()
     }
   }
 
-    CHIPS.ChipClockScaleFactor = ((vgaBitsPerPixel >= 8) ? 
+    CHIPS.ChipClockMulFactor = ((vgaBitsPerPixel >= 8) ? 
 				  vgaBytesPerPixel : 1);
   
   /* maximal clock */
@@ -1800,14 +1832,12 @@ Bool ctProbeWINGINE()
 
   vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
   vga256InfoRec.bankedMono = TRUE;
-#if 0
   /* I'm not sure this is necessary for the Wingine yet */
   if (vgaBitsPerPixel < 8) {
       CHIPS.ChipSetRead = CHIPSWINSetReadPlanar;
       CHIPS.ChipSetWrite = CHIPSWINSetWritePlanar;
       CHIPS.ChipSetReadWrite = CHIPSWINSetReadWritePlanar;
   }
-#endif
   
   /* allowed options */
   OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -2245,7 +2275,7 @@ Bool ctProbe()
       }
     }
 
-    CHIPS.ChipClockScaleFactor = ((vgaBitsPerPixel >= 8) ? 
+    CHIPS.ChipClockMulFactor = ((vgaBitsPerPixel >= 8) ? 
 				  vgaBytesPerPixel : 1);
 
     /* maximal clock */
@@ -4591,12 +4621,12 @@ int *clock;
 	    /* save clock */
 	    saveClock = vga256InfoRec.clock[*clock];
 	    /* scale clock */
-	    vga256InfoRec.clock[*clock] *= CHIPS.ChipClockScaleFactor;
+	    vga256InfoRec.clock[*clock] *= CHIPS.ChipClockMulFactor;
 	} else {
 	    /* save clock */
 	    saveClock = *clock;
 	    /* scale clock */
-	    *clock *= CHIPS.ChipClockScaleFactor;
+	    *clock *= CHIPS.ChipClockMulFactor;
 	}
     } else {
 	if (*clock < MAXCLOCKS)

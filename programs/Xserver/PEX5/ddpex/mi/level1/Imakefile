@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/10 1996/09/28 16:54:08 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.5 1997/02/18 17:47:58 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.6 1997/02/25 14:18:57 hohndel Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -74,6 +74,7 @@ OBJS = miDDCtoGC.o \
 SubdirLibraryRule($(OBJS))
 UnsharedLibraryTarget(ddpex1,$(OBJS),unshared,..)
 #else
+SubdirLibraryRule($(OBJS))
 NormalLibraryTarget(ddpex1,$(OBJS))
 #endif
 LintLibraryTarget(dp1, $(SRCS))

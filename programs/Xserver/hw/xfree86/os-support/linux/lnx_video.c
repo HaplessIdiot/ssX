@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.12 1996/12/20 06:45:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.13 1996/12/23 06:50:02 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -210,9 +210,11 @@ int ScreenNum;
 	if (ExtendedEnabled)
 		return;
 
+#ifndef __mc68000__
 	if (iopl(3))
 		FatalError("%s: Failed to set IOPL for I/O\n",
 			   "xf86EnableIOPorts");
+#endif
 	ExtendedEnabled = TRUE;
 
 	return;
@@ -232,7 +234,9 @@ int ScreenNum;
 		if (ScreenEnabled[i])
 			return;
 
+#ifndef __mc68000__
 	iopl(0);
+#endif
 	ExtendedEnabled = FALSE;
 
 	return;
@@ -299,11 +303,13 @@ int ScreenNum;
 	{
 		if (ExtendedPorts[i] && (ScreenEnabled[i] || i == ScreenNum))
 		{
+#ifndef __mc68000__
 		    if (iopl(3))
 		    {
 			FatalError("%s: Failed to set IOPL for extended I/O\n",
 				   "xf86EnableIOPorts");
 		    }
+#endif
 		    ExtendedEnabled = TRUE;
 		    break;
 		}
@@ -311,7 +317,9 @@ int ScreenNum;
 	/* Extended I/O was used, but not any more */
 	if (ExtendedEnabled && i == MAXSCREENS)
 	{
+#ifndef __mc68000__
 		iopl(0);
+#endif
 		ExtendedEnabled = FALSE;
 	}
 	/*
@@ -356,7 +364,9 @@ int ScreenNum;
 	}
 	if (ExtendedEnabled && i == MAXSCREENS)
 	{
+#ifndef __mc68000__
 		iopl(0);
+#endif
 		ExtendedEnabled = FALSE;
 	}
 	for (i = 0; i < NumEnabledPorts[ScreenNum]; i++)
@@ -379,8 +389,10 @@ int ScreenNum;
 
 void xf86DisableIOPrivs()
 {
+#ifndef __mc68000__
 	if (ExtendedEnabled)
 		iopl(0);
+#endif
 	return;
 }
 
@@ -391,8 +403,10 @@ void xf86DisableIOPrivs()
 Bool xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
+#ifndef __mc68000__
 		if (iopl(3))
 			return (FALSE);
+#endif
 #if defined(__alpha__) || defined(__mc68000__)
 #else
 #ifdef __GNUC__
@@ -401,16 +415,20 @@ Bool xf86DisableInterrupts()
 	asm("cli");
 #endif
 #endif
+#ifndef __mc68000__
 	if (!ExtendedEnabled)
 		iopl(0);
+#endif
 	return (TRUE);
 }
 
 void xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
+#ifndef __mc68000__
 		if (iopl(3))
 			return;
+#endif
 #if defined(__alpha__) || defined(__mc68000__)
 #else
 #ifdef __GNUC__
@@ -419,8 +437,10 @@ void xf86EnableInterrupts()
 	asm("sti");
 #endif
 #endif
+#ifndef __mc68000__
 	if (!ExtendedEnabled)
 		iopl(0);
+#endif
 	return;
 }
 

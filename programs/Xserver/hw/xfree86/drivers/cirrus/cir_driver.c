@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.4 1997/04/08 13:16:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.5 1997/04/13 13:57:12 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -337,7 +337,8 @@ vgaVideoChipRec CIRRUS = {
   TRUE,				/* ChipHas24bpp */
   TRUE,				/* ChipHas32bpp */
   NULL,				/* ChipBuiltinModes */
-  1,				/* ChipClockScaleFactor */
+  1,				/* ChipClockMulFactor */
+  1				/* ChipClockDivFactor */
 #else
   cirrusProbe,			/* ChipProbe()*/
   cirrusIdent,			/* ChipIdent(); */
@@ -378,7 +379,8 @@ vgaVideoChipRec CIRRUS = {
   TRUE,				/* ChipHas24bpp */
   TRUE,				/* ChipHas32bpp */
   NULL,				/* ChipBuiltinModes */
-  1,				/* ChipClockScaleFactor */
+  1,				/* ChipClockMulFactor */
+  1				/* ChipClockDivFactor */
 #endif
 };
 

@@ -1,5 +1,9 @@
-XCOMM platform:  $XConsortium: usl.cf /main/49 1996/12/04 10:11:06 swick $
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.12 1996/05/13 06:36:02 dawes Exp $
+XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
+
+
+
+
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.13 1996/12/23 05:50:37 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -15,9 +19,19 @@ XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.12 1996/05/13 06:36:02 dawes 
 #endif
 XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
-#ifndef CcCmd
+#ifndef  CcCmd
 # define CcCmd			/usr/ccs/bin/cc
 #endif
+#ifndef  CplusplusCmd
+# define CplusplusCmd		/usr/ccs/bin/CC
+#endif
+#ifndef  CplusplusFilt
+# define CplusplusFilt		/usr/ccs/bin/c++filt
+#endif
+#ifndef  CplusplusDependIncludes
+# define CplusplusDependIncludes	-I/usr/include/CC
+#endif
+
 #define BootstrapCFlags		/* none needed */
 #define StandardDefines		-DUSL -DSVR4 -Di386
 #define NeedWidePrototypes	NO	/* experimental */

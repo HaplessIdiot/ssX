@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.4 1997/04/14 07:05:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.5 1997/04/17 08:17:29 hohndel Exp $ */
 
 /*
  *
@@ -104,17 +104,17 @@ ProbeSTG1703(Bool quiet)
     outb(RAMDAC_RMR,readmask);
     xf86setdaccomm(daccomm);
 
-    if ((cid == 0x44) && (did == 0x00)) {
+    if (cid == 0x44) {   /* STG170x RAMDAC found */
        Found = TRUE;
-       TsengRamdacType = STG1700_DAC;
-    }
-    if ((cid == 0x44) && (did == 0x02)) {
-       Found = TRUE;
-       TsengRamdacType = STG1702_DAC;
-    }
-    if ((cid == 0x44) && (did == 0x03)) {
-       Found = TRUE;
-       TsengRamdacType = STG1703_DAC;
+       switch (did) {
+          case 0x02: TsengRamdacType = STG1702_DAC;
+                     break;
+          case 0x03: TsengRamdacType = STG1703_DAC;
+                     break;
+          case 0x00:
+          default: TsengRamdacType = STG1700_DAC;
+                   /* treat an unknown STG170x as a 1700 */
+       }
     }
 
     return(Found);
@@ -400,7 +400,7 @@ void Check_Tseng_Ramdac()
               break;
      case Sierra1502X_DAC:
      case ET6000_DAC:
-              generic_ramdac = TRUE;
+              generic_ramdac = TRUE;   /* avoids treatment as ATT compatible DAC */
               RamdacShift = 10;
               vgaRamdacMask = 0x3f;
               TsengDac8Bit = FALSE;
@@ -432,38 +432,27 @@ void Check_Tseng_Ramdac()
 }
 
 
-/* 
- * This doesn't work for 24bpp modes yet, where ChipClockScaleFactor should
- * be 1.5, nor for PIXMUX modes, where it should be 0.5.
- * ChipClockScaleFactor is an int instead of a float...
- */
-
 void tseng_init_clockscale(int bytesperpixel)
 {
-    int hdiv=1, hmul=1;
+    /* nothing to do for 1:1 modes */
+    if (bytesperpixel == 1) return;
+    if (et4000_type >= TYPE_ET6000) return;
 
-    if ( (bytesperpixel > 1) && (et4000_type < TYPE_ET6000) )
-    {
-       /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
-        switch (TsengRamdacType) {
-            case STG1702_DAC:
-            case STG1703_DAC:
-            case ICS5341_DAC:
-            case CH8398_DAC:
-               switch (bytesperpixel) {
-                   case 3: hdiv = 2; 
-                           hmul = 3;
-                           break;
-                   case 4: hmul = 2;
-                           break;
-               }
-               break;
-            default:
-               hmul = bytesperpixel; /* this is the case for 8-bit RAMDACs */
-        }
-    }
-
-   TSENG.ChipClockScaleFactor = hmul/hdiv;
+    /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
+     if (dac_is_16bit) {
+         switch (bytesperpixel) {
+             case 3: TSENG.ChipClockDivFactor = 2; 
+                     TSENG.ChipClockMulFactor = 3;
+                     break;
+             case 4: TSENG.ChipClockMulFactor = 2;
+                     break;
+         }
+         return;
+     }
+     
+     /* 8-bit RAMDACs */
+     TSENG.ChipClockMulFactor = bytesperpixel; /* 8-bit RAMDAC */
+     return;
 }
 
 
@@ -485,9 +474,10 @@ void tseng_set_dacspeed(int bytesperpixel)
     * page-mode memory requests.
     */
 
-    int maxclock_bpp[4];
     int mem_bw;     /* memory bandwidth */
+#ifndef USE_OFFICIAL_TSENG_LIMITS
     unsigned char bw_reg;
+#endif
 
     /* if not set in the XF86Config file, use defaults */
     if (vga256InfoRec.dacSpeed <= 0) {
@@ -513,19 +503,13 @@ void tseng_set_dacspeed(int bytesperpixel)
         if (vga256InfoRec.videoRam > 1024)
             mem_bw = 150000;  /* interleaved DRAM gives 70% more bandwidth */
 
-        maxclock_bpp[0] = vga256InfoRec.dacSpeed;
-        if (dac_is_16bit)
-        {
-            maxclock_bpp[1] = min(maxclock_bpp[0]  , mem_bw/2);
-            maxclock_bpp[2] = min(maxclock_bpp[0]/2, mem_bw/3);
-            maxclock_bpp[3] = min(maxclock_bpp[0]/2, mem_bw/4);
-        }
-        else
-        {
-            maxclock_bpp[1] = min(maxclock_bpp[0]/2, mem_bw/2);
-            maxclock_bpp[2] = min(maxclock_bpp[0]/3, mem_bw/3);
-            maxclock_bpp[3] = min(maxclock_bpp[0]/4, mem_bw/4);
-        }
+        /* note that the vga code will scale the maxclock using
+         * ClockMulFactor and ClockDivFactor, so we have to take this into
+         * account here.
+         */
+        vga256InfoRec.maxClock =
+          min(vga256InfoRec.dacSpeed,
+           ((mem_bw/bytesperpixel)*TSENG.ChipClockMulFactor)/TSENG.ChipClockDivFactor);
     }
     else
     {
@@ -556,10 +540,7 @@ void tseng_set_dacspeed(int bytesperpixel)
       if (bw_reg & 0x04) mem_bw *=2;  /* 2 MDRAM channels  (2 chips) */
       if (bw_reg & 0x03) mem_bw *=2;  /* interleaved MDRAM (4 chips) */
 #endif
-      maxclock_bpp[0] = vga256InfoRec.dacSpeed;
-      maxclock_bpp[1] = min(maxclock_bpp[0], mem_bw/2);
-      maxclock_bpp[2] = min(maxclock_bpp[0], mem_bw/3);
-      maxclock_bpp[3] = min(maxclock_bpp[0], mem_bw/4);
+      vga256InfoRec.maxClock = min(vga256InfoRec.dacSpeed, mem_bw/bytesperpixel);
     }
     
 #ifndef USE_OFFICIAL_TSENG_LIMITS
@@ -568,11 +549,6 @@ void tseng_set_dacspeed(int bytesperpixel)
              XCONFIG_PROBED, vga256InfoRec.name, mem_bw/1000);
     }
 #endif
-
-    vga256InfoRec.maxClock = maxclock_bpp[bytesperpixel-1];
-    
-    /* this is a kludge, until ChipClockScaleFactor supports full floats */
-    vga256InfoRec.maxClock *= TSENG.ChipClockScaleFactor;
 
     if (xf86Verbose) {
       ErrorF("%s %s: Ramdac speed: %3.3f MHz\n",
@@ -653,7 +629,7 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
     */
 
    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
-         mode->SynthClock = pixel_clock;
+         mode->SynthClock = (pixel_clock * TSENG.ChipClockMulFactor) / TSENG.ChipClockDivFactor;
    }
 
    /*
@@ -705,18 +681,35 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
        }
     }
     
-    hmul *= TSENG.ChipClockScaleFactor;
+    hmul *= TSENG.ChipClockMulFactor;
+    hdiv *= TSENG.ChipClockDivFactor;
 
    /*
     * Modify mode timings accordingly
     */
-    if (!mode->CrtcHAdjusted) {
+     if (!mode->CrtcHAdjusted) {
           /* now divide and multiply the horizontal timing parameters as required */
           mode->CrtcHTotal     = (mode->CrtcHTotal * hmul) / hdiv;
           mode->CrtcHDisplay   = (mode->CrtcHDisplay * hmul) / hdiv;
           mode->CrtcHSyncStart = (mode->CrtcHSyncStart * hmul) / hdiv;
           mode->CrtcHSyncEnd   = (mode->CrtcHSyncEnd * hmul) / hdiv;
           mode->CrtcHSkew      = (mode->CrtcHSkew * hmul) / hdiv;
+          if (bytesperpixel == 3) {
+             int rgb_skew;
+            /* in 24bpp, the position of the BLANK signal determines the
+             * phase of the R,G and B values. XFree86 sets blanking equal to
+             * the Sync, so setting the Sync correctly will also set the
+             * BLANK corectly, and thus also the RGB phase */
+             rgb_skew = (mode->CrtcHTotal/8 - mode->CrtcHSyncEnd/8 - 1) % 3;
+             mode->CrtcHSyncEnd += rgb_skew * 8 + 24;
+             /* HSyncEnd must come BEFORE HTotal */
+             if (mode->CrtcHSyncEnd > mode->CrtcHTotal)
+               mode->CrtcHSyncEnd -= 24;
+             /* HSyncEnd could now have been moved BEFORE HSyncStart,
+              * but if that happens, it means you had a sync of only 8
+              * clocks long. This should not happen
+              */
+          }
           mode->CrtcHAdjusted  = TRUE;
     }
 }

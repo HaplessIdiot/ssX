@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.13 1996/12/23 06:49:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.14 1997/01/05 11:59:11 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -98,33 +98,27 @@ Bool warn;
 		useDevMem = TRUE;
 		return;
 	    } else {
+		/* This should not happen */
 		if (warn)
 		{
-		     ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
-			    XCONFIG_PROBED, DEV_MEM, strerror(errno));
+		    ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
+			   XCONFIG_PROBED, DEV_MEM, strerror(errno));
 		}
-	    }
-	} else {
-	    if (warn)
-	    { 
-		ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
-		       XCONFIG_PROBED, DEV_MEM, strerror(errno));
+		useDevMem = FALSE;
+		return;
 	    }
 	}
 #ifndef HAS_APERTURE_DRV
-	if (warn) 
-	{
-	    ErrorF("\tlinear fb access unavailable\n");
+	if (warn)
+	{ 
+	    ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
+		   XCONFIG_PROBED, DEV_MEM, strerror(errno));
+	    ErrorF("\tlinear framebuffer access unavailable\n");
 	} 
 	useDevMem = FALSE;
 	return;
 #else
-	/* Failed to mmap /dev/mem, try the aperture driver */
-	if (warn)
-	{
-	    ErrorF("\ttrying aperture driver\n");
-	}
-
+	/* Failed to open /dev/mem, try the aperture driver */
 	if ((fd = open(DEV_APERTURE, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
@@ -136,6 +130,8 @@ Bool warn;
 		munmap((caddr_t)base, 4096);
 		devMemFd = fd;
 		useDevMem = TRUE;
+		ErrorF("%s checkDevMem: using aperture driver %s\n",
+		       XCONFIG_PROBED, DEV_APERTURE);
 		return;
 	    } else {
 
@@ -148,14 +144,14 @@ Bool warn;
 	} else {
 	    if (warn)
 	    {
-		ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
-		   XCONFIG_PROBED, DEV_APERTURE, strerror(errno));
+		ErrorF("%s checkDevMem: warning: failed to open %s and %s\n\t(%s)\n",
+		   XCONFIG_PROBED, DEV_MEM, DEV_APERTURE, strerror(errno));
 	    }
 	}
 	
 	if (warn)
 	{
-	    ErrorF("\tlinear fb access unavailable\n");
+	    ErrorF("\tlinear framebuffer access unavailable\n");
 	}
 	useDevMem = FALSE;
 	return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.14 1997/04/08 13:16:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.15 1997/04/18 09:12:56 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -39,6 +39,12 @@
  * The numbering of slots is slightly different from the Mach64 server,
  * slot 0 is the first valid slot.
  *
+ * Added new type of cache slot, ZeroSlot, which is used to hold 8x8 mono
+ * patterns for those chips which have PROGRAMMED_BITS. This means that there's
+ * no need to waste a whole screen cache slot for this. Flag = 3 for an 
+ * allocated slot means that it should get swapped into a ZeroSlot.
+ * (SM, 20/04/97)
+ * 
  * Future improvements:
  * - Fix stipple caching for 24bpp (problem is with fall-back function to
  *   load stipple into cache).
@@ -107,6 +113,12 @@ static int FindCacheSlot(
 #endif
 );
 
+static int SwapZeroSlotForPixmapSlot(
+#if NeedFunctionPrototypes
+    int slot
+#endif
+);
+
 static void IncrementCacheLRU(
 #if NeedFunctionPrototypes
     int slot
@@ -132,13 +144,14 @@ static int MaxHeight;
 static unsigned int pixmap_cache_clock = 1;
 static int FirstWideSlot;
 static int MaxWideSlotHeight;
+static int FirstZeroSlot;
 
 void xf86InitPixmapCacheSlots()
 {
     ScrnInfoPtr infoRec;
     int memoryStart, memoryEnd;
     int width_in_bytes, cache_start_y, i;
-    int height_left, standard_slots, wide_slots, wide_slot_width;
+    int height_left, standard_slots, wide_slots, wide_slot_width, zero_slots;
 
     infoRec = xf86AccelInfoRec.ServerInfoRec;
     memoryStart = xf86AccelInfoRec.PixmapCacheMemoryStart;
@@ -156,6 +169,12 @@ void xf86InitPixmapCacheSlots()
         height_left = MaxHeight - 128;
         MaxHeight = 128;
    }
+   /* Memory slots for mono 8x8 pattern for chips with PROGRAMMED_BITS */
+   if (xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_BITS) 
+      zero_slots = 16;
+   else 
+      zero_slots = 0;
+
    /* XXXX DEBUGGING ONLY */
 /*   cache_start_y = infoRec->virtualY - MaxHeight; */
    if (MaxHeight < 1) {
@@ -197,9 +216,10 @@ void xf86InitPixmapCacheSlots()
         }
     }
 
-    MaxSlot = standard_slots + wide_slots - 1;
+    MaxSlot = standard_slots + wide_slots + zero_slots - 1;
     xf86CacheInfo = (CacheInfoPtr)xcalloc(MaxSlot + 1, sizeof(CacheInfo));
     FirstWideSlot = standard_slots;
+    FirstZeroSlot = FirstWideSlot + wide_slots;
 
     ErrorF("%s %s: XAA: Using %d %dx%d ",
         XCONFIG_PROBED, infoRec->name, standard_slots, MaxWidth, MaxHeight);
@@ -207,6 +227,9 @@ void xf86InitPixmapCacheSlots()
         ErrorF("and %d %dx%d ", wide_slots, (infoRec->displayWidth / 2),
             min(32, height_left));
     ErrorF("areas for pixmap caching\n");
+    if (zero_slots > 0)
+        ErrorF("%s %s: XAA: Using %d memory slots for 8x8 mono pattern caching\n", 
+            XCONFIG_PROBED, infoRec->name, zero_slots);
 
     for (i = 0; i < standard_slots; i++) {
         xf86CacheInfo[i].x = i * MaxWidth;
@@ -223,6 +246,12 @@ void xf86InitPixmapCacheSlots()
             infoRec->displayWidth / 2;
         xf86CacheInfo[i + standard_slots].cache_height = min(32, height_left);
     }
+    for (i = 0; i < zero_slots; i ++) {
+        xf86CacheInfo[i + standard_slots + wide_slots].x = 0;
+        xf86CacheInfo[i + standard_slots + wide_slots].y = 0;
+        xf86CacheInfo[i + standard_slots + wide_slots].cache_width = -1;
+        xf86CacheInfo[i + standard_slots + wide_slots].cache_height = -1;
+    }
 
     for (i = 0; i <= MaxSlot; i++) {
         xf86CacheInfo[i].id = -1;
@@ -235,8 +264,10 @@ void xf86InitPixmapCacheSlots()
 
 void xf86InvalidatePixmapCache() {
    int i;
-   for (i = 0; i <= MaxSlot; i++)
-       xf86CacheInfo[i].id == -1;
+
+   if (xf86CacheInfo != NULL)
+       for (i = 0; i <= MaxSlot; i++)
+           xf86CacheInfo[i].id = -1;
 }
 
 int xf86CacheTile(pix)
@@ -260,6 +291,11 @@ int xf86CacheTile(pix)
 	devPriv->slot = slot;
         IncrementCacheLRU(slot);
 	DoCacheTile(pix);
+        if (xf86CacheInfo[slot].flags == 3) {
+            slot = SwapZeroSlotForPixmapSlot(slot);  /* We swap slots */
+	    devPriv->slot = slot;
+            IncrementCacheLRU(slot); 
+            }
 	return (1);
     }
 #endif
@@ -314,6 +350,8 @@ int xf86CacheStipple(pDrawable, pGC)
             devPriv->slot = MaxSlot + 1;
             return 0;
         }
+        if (xf86CacheInfo[slot].flags == 3)   /* Need to swap slots */
+            slot = SwapZeroSlotForPixmapSlot(slot); 
         devPriv->slot = slot;
         IncrementCacheLRU(slot);
 	return (1);
@@ -326,7 +364,8 @@ static int FindCacheSlot(pix)
     PixmapPtr pix;
 {
     int i, j, best;
-    if (pix->drawable.height <= MaxWideSlotHeight && FirstWideSlot <= MaxSlot)
+    if (pix->drawable.height <= MaxWideSlotHeight && 
+        FirstWideSlot < FirstZeroSlot)
     	/*
     	 * Start with the most appropriate slots.
     	 * It might be a good idea to force using a wide slot if there
@@ -336,7 +375,9 @@ static int FindCacheSlot(pix)
     else
         j = 0;
     best = j;
-    for (i = 0; i <= MaxSlot; i++) {
+
+    /* Also make sure that we do not allocate one of the ZeroSlots */
+    for (i = 0; i <= (FirstZeroSlot - 1); i++) {
          if (xf86CacheInfo[j].cache_width >= pix->drawable.width
          && xf86CacheInfo[j].cache_height >= pix->drawable.height) {
              if (xf86CacheInfo[j].id == -1)
@@ -346,11 +387,56 @@ static int FindCacheSlot(pix)
                      best = j;
          }
          j++;
-         if (j > MaxSlot)
+         if (j > (FirstZeroSlot - 1))
              j = 0;
     }
     return best;
 }
+
+
+/* 
+ * This function will swap an 8x8 mono pattern into a memory cache slot 
+ * The original (screen) pixmap slot is freed. The flags for this cache
+ * slot is originaly 3, which indicates that it is an 8 byte pattern
+ * for PROGRAMMED_ORIGIN chips.
+ */
+
+static int SwapZeroSlotForPixmapSlot(slot)
+    int slot;
+{
+    int i, best;
+
+    if(FirstZeroSlot > MaxSlot) {  /* No ZeroSlots, restore flags */
+        xf86CacheInfo[slot].flags = 2;
+        return slot;
+        }
+
+    best = FirstZeroSlot;
+    for (i = FirstZeroSlot; i <= MaxSlot; i++) {
+        if (xf86CacheInfo[i].id == -1) {
+           best = i;
+           break;
+           }
+        else
+           if (xf86CacheInfo[i].lru < xf86CacheInfo[best].lru)
+               best = i;
+        }
+
+    /* Copy relevant info into new slot */
+    xf86CacheInfo[best].id = xf86CacheInfo[slot].id;
+    xf86CacheInfo[best].pix_w = xf86CacheInfo[slot].pix_w;
+    xf86CacheInfo[best].pix_h = xf86CacheInfo[slot].pix_h;
+    xf86CacheInfo[best].fg_color = xf86CacheInfo[slot].fg_color;
+    xf86CacheInfo[best].bg_color = xf86CacheInfo[slot].bg_color;
+    xf86CacheInfo[best].flags = 2;
+    xf86CacheInfo[best].pattern0 = xf86CacheInfo[slot].pattern0;
+    xf86CacheInfo[best].pattern1 = xf86CacheInfo[slot].pattern1;
+
+    /* Free other slot */
+    xf86CacheInfo[slot].id = -1;
+    return best;
+}
+
 
 static void
 IncrementCacheLRU(slot)
@@ -904,13 +990,14 @@ static void DoCacheTile(pix)
                         ((unsigned char*)&pci->pattern0)[k] = 
                             byte_reversed[((unsigned char*)&pci->pattern0)[k]];
                 }
+                pci->flags = 3;  /* Need to swap slots */
 	    }
 	    else {
                 WriteTileAs8x8MonoPattern(pci,
                     pix->drawable.width, pix->drawable.height,
                     pix->devPrivate.ptr, pix->devKind);
+                pci->flags = 2;
             }
-            pci->flags = 2;
             return;
         }
 
@@ -1104,6 +1191,7 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	                ((unsigned char*)&pci->pattern0)[k] = 
 	                    byte_reversed[((unsigned char*)&pci->pattern0)[k]];
 	        }
+                pci->flags = 3;  /* Need to swap slots */
 	    }
 	    else {
 #if 0
@@ -1115,8 +1203,8 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 #if 0
                 ErrorF("Finished writing mono patterns.\n");
 #endif
+                pci->flags = 2;
             }
-            pci->flags = 2;
             *realpci = *pci;
             DEALLOCATE_LOCAL(pci);
             return 1;

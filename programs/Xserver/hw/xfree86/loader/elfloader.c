@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.5 1997/02/27 13:58:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.6 1997/03/03 15:55:24 hohndel Exp $ */
 
 
 
@@ -105,7 +105,7 @@ typedef	struct {
  * to try later after more odules have been loaded.
  */
 typedef struct _elf_reloc {
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 	Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -185,7 +185,7 @@ static void
 ElfDelayRelocation(elffile,secp,rel)
 ELFModulePtr	elffile;
 char		*secp;
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -536,7 +536,7 @@ static void
 Elf_RelocateEntry(elffile,secp,rel)
 ELFModulePtr	elffile;
 unsigned char *secp;	/* Begining of the target section */
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 Elf32_Rel	*rel;
 #endif
 #if defined(__powerpc__)
@@ -550,7 +550,7 @@ unsigned short *dest16;	/* address of the 16 bit place being modified */
 Elf32_Addr symval;	/* value of the indicated symbol */
 
 #ifdef ELFDEBUG
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 	ELFDEBUG( "%x %d %d\n", rel->r_offset,
 		ELF32_R_SYM(rel->r_info),ELF32_R_TYPE(rel->r_info) );
 #endif
@@ -563,7 +563,7 @@ Elf32_Addr symval;	/* value of the indicated symbol */
 
 switch( ELF32_R_TYPE(rel->r_info) )
 	{
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 	case R_386_32:
 		dest32=(unsigned long *)(secp+rel->r_offset);
 		symval=ElfGetSymbolValue(elffile,ELF32_R_SYM(rel->r_info));
@@ -993,7 +993,7 @@ int	index; /* The section to use as relocation data */
 {
 int	i, numrel;
 Elf32_Shdr	*sect=&(elffile->sections[index]);
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 Elf32_Rel	*rel=(Elf32_Rel *)elffile->saddr[index];
 #endif
 #if defined(__powerpc__)
@@ -1250,7 +1250,7 @@ ELFDEBUG(".strtab starts at %x\n", elffile->straddr );
 #endif
 		continue;
 		}
-#if defined(i386) || defined(__alpha__)
+#if defined(i386) || defined(__alpha__) || defined(__mc68000__)
 	/* .rel.text */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 							".rel.text" ) == 0 ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.68 1997/03/22 09:35:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.69 1997/04/12 13:45:09 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -57,6 +57,7 @@ typedef struct {
 #define OPTION_CLKDIV2		 7  /* allow using clocks divided by 2 
 				       in addition to bare clocks */
 #define OPTION_HW_CLKS		 8  /* (ct) Hardware clocks */
+#define OPTION_FORCE_VCLK1	 9  /* (ct) Use VClk1 as programmable clock */
 
 /* Laptop display options */
 #define OPTION_INTERN_DISP	10  /* Laptops - enable internal display (WD)*/
@@ -263,6 +264,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "hibit_low",	OPTION_HIBIT_LOW },
   { "clkdiv2",		OPTION_CLKDIV2 },
   { "hw_clocks",        OPTION_HW_CLKS },
+  { "use_vclk1",        OPTION_FORCE_VCLK1 },
 
   { "intern_disp",	OPTION_INTERN_DISP },
   { "extern_disp",	OPTION_EXTERN_DISP },

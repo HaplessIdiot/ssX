@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.1 1997/03/06 23:16:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.2 1997/03/11 11:10:21 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -135,7 +135,8 @@ vgaVideoChipRec NCR= {
   FALSE,	/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,
-  1,
+  1,            /* ClockMulFactor */
+  1             /* ClockDivFactor */
 };
 
 #define new ((vgaNCRPtr)vgaNewVideoState)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.8 1997/04/10 11:34:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.9 1997/04/17 09:16:10 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -55,7 +55,9 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* PolyPointWrapper */ 
     NULL,	/* PutImageWrapper */
     NULL,	/* SetSpansWrapper */
-    NULL	/* PushPixelsWrapper */
+    NULL,	/* PushPixelsWrapper */
+    NULL, 	/* SaveAreasWrapper */
+    NULL	/* RestoreAreasWrapper */
 };
 
 xf86AccelInfoRecType xf86AccelInfoRec = {

@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/8 1996/10/23 18:46:36 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/gen_driver.c,v 3.17 1997/02/27 13:59:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga2.c,v 1.1 1997/03/06 23:17:17 hohndel Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -75,6 +75,7 @@ vgaVideoChipRec GENERIC = {
   FALSE,
   NULL,
   1,
+  1
 };
 
 #define new ((vgaGENERICPtr)vgaNewVideoState)

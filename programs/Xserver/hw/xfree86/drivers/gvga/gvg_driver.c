@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.20 1997/02/28 08:21:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/gvga/gvg_driver.c,v 1.1 1997/03/06 23:15:49 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -109,7 +109,8 @@ vgaVideoChipRec GVGA = {
   FALSE,
   FALSE,
   NULL,
-  1,
+  1,       /* ClockMulFactor */
+  1        /* ClockDivFactor */
 };
 
 #define new ((vgaGVGAPtr)vgaNewVideoState)

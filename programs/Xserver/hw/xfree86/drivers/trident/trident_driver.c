@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.6 1997/04/12 13:45:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.7 1997/04/17 08:17:27 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -118,6 +118,7 @@ typedef struct {
 	unsigned char CyberEnhance;	/* For Cyber Enhancement	*/
 	unsigned char DRAMTiming;	/* For 9400/9420/9430 DRAM 	*/
 	unsigned char FIFOControl;	/* For 9400/9420/9430 FIFO 	*/
+	unsigned char Performance;	/* For 968x FIFO		*/
 } vgaTVGA8900Rec, *vgaTVGA8900Ptr;
 
 static Bool TVGA8900ClockSelect();
@@ -180,7 +181,8 @@ vgaVideoChipRec TRIDENT = {
   FALSE,	/* 24bpp */
   FALSE,	/* 32bpp */
   NULL,
-  1,
+  1,            /* ChipClockMulFactor */
+  1             /* ChipClockDivFactor */
 };
 
 #define new ((vgaTVGA8900Ptr)vgaNewVideoState)
@@ -842,8 +844,12 @@ TVGA8900Probe()
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		tridentHasAcceleration = TRUE;
+		if (vgaBitsPerPixel == 24)
+			tridentHasAcceleration = FALSE;
+		else
+			tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
-		TRIDENT.ChipHas32bpp = TRUE;
+		TRIDENT.ChipHas24bpp = TRUE;
 		if (vgaBitsPerPixel >= 8)
 			TRIDENT.ChipUse2Banks = TRUE;
 		if (IsCyber)
@@ -1070,7 +1076,7 @@ TVGA8900Probe()
 	if (vgaBitsPerPixel >= 8) {
 	/* For 512k in 256 colour, the pixel clock is half the raw clock */
 	if ((vga256InfoRec.videoRam < 1024) && (!tridentIsTGUI))
-		TRIDENT.ChipClockScaleFactor = 2;
+		TRIDENT.ChipClockMulFactor = 2;
 
 	if (tridentLinearOK)
 	{
@@ -1130,7 +1136,7 @@ TVGA8900Probe()
 				tridentClockLimit16bpp[TVGAchipset];
 			if (!tridentTGUIProgrammableClocks)
 			{
-				TRIDENT.ChipClockScaleFactor = 2;
+				TRIDENT.ChipClockMulFactor = 2;
 				vga256InfoRec.maxClock *= 2;
 			}
 			break;
@@ -1140,7 +1146,7 @@ TVGA8900Probe()
 				tridentClockLimit32bpp[TVGAchipset];
 			if (!tridentTGUIProgrammableClocks)
 			{
-				TRIDENT.ChipClockScaleFactor = 3;
+				TRIDENT.ChipClockMulFactor = 3;
 				vga256InfoRec.maxClock *= 3;
 			}
 			break;
@@ -1529,6 +1535,9 @@ TVGA8900Restore(restore)
 		if (TVGAchipset >= TGUI9440AGi)
 		{
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
+			if (TVGAchipset >= TGUI96xx)
+				outw(vgaIOBase + 4, ((restore->Performance)<<8)
+						| 0x2F);
 			outw(vgaIOBase + 4, ((restore->PixelBusReg) << 8) | 0x38);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
@@ -1699,6 +1708,11 @@ TVGA8900Save(save)
 			save->PixelBusReg = inb(vgaIOBase + 5);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
+			if (TVGAchipset >= TGUI96xx) 
+			{
+				outb(vgaIOBase + 4, 0x2F);
+				save->Performance = inb(vgaIOBase + 5);
+			}
 		}
 		else
 		{
@@ -1995,7 +2009,11 @@ TVGA8900Init(mode)
 		}
 
 		if (TVGAchipset >= TGUI96xx)
+		{
 			new->AddColReg |= (offset & 0x200) >> 4;
+			outb(vgaIOBase + 4, 0x2F);
+			new->Performance = inb(vgaIOBase + 5) | 0x10;
+		}
 
 		if (vgaBitsPerPixel >= 8) {
 		if ((!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) &&
@@ -2057,7 +2075,7 @@ TVGA8900Init(mode)
 			new->CommandReg = 0xD0; /* 32bpp */
 			new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
 			new->PixelBusReg |= 0x08;
-			GE_OP |= 0x00; /* 8bpp in GE, but 24bpp through XAA */
+			GE_OP |= 0x03; /* 24bpp in GE */
 		}
 		if (vgaBitsPerPixel == 32)
 		{
@@ -2100,6 +2118,7 @@ TVGA8900Init(mode)
 				new->OldMode1 = (new->std.NoClock & 0x08) << 1;
 		}
 	}
+
         return(TRUE);
 }
 

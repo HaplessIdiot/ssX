@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.159 1997/04/17 12:55:35 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.160 1997/04/28 11:13:11 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -153,8 +153,16 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * are supported on this platform.
  */
 #ifdef Mc68020Architecture
+#ifndef XF68LoaderServer
+#define XF68LoaderServer	DoLoadableServer
+#endif
+#ifndef XF68FBDevModule
+#define XF68FBDevModule         XF68LoaderServer
+#endif
+#ifndef XF68LoaderServer
 #ifndef XF68FBDevServer
 #define XF68FBDevServer		YES
+#endif
 #endif
 #endif
 
@@ -836,7 +844,11 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 #ifndef MakeHasPosixVariableSubstitutions
+#if !HasBsdMake
 #define MakeHasPosixVariableSubstitutions	NO
+#else
+#define MakeHasPosixVariableSubstitutions	YES
+#endif
 #endif
 
 /* Server defines required for all OSs */

@@ -1,5 +1,9 @@
-XCOMM platform:  $XConsortium: sun.cf /main/160 1996/12/26 08:52:18 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.30 1997/01/03 07:58:04 dawes Exp $
+XCOMM platform:  $TOG: sun.cf /main/161 1997/04/17 14:11:29 barstow $
+
+
+
+
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.31 1997/01/14 22:12:41 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -102,6 +106,23 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define CplusplusOptions -Xa
 # endif
 #endif
+
+/* 
+ * Assume /opt/SUNWspro/bin/ contains symlinks to the appropriate tools
+ */
+#ifndef  CcCmd
+# define CcCmd		/opt/SUNWspro/bin/cc
+#endif
+#ifndef  CplusplusCmd
+# define CplusplusCmd	/opt/SUNWspro/bin/CC
+#endif
+#ifndef  CplusplusFilt
+# define CplusplusFilt	/opt/SUNWspro/bin/c++filt
+#endif
+#ifndef  CplusplusDependIncludes
+# define CplusplusDependIncludes	-I/opt/SUNWspro/SC3.0/include/CC
+#endif
+
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */

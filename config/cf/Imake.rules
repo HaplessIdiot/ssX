@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.37 1997/02/25 14:18:38 hohndel Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.38 1997/03/10 10:09:19 hohndel Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1417,7 +1417,11 @@ InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))
 #if HasClearmake
 #define IncludeMakefile(file) @@sinclude file
 #else
+#if HasBsdMake
+#define IncludeMakefile(file) @@# dependencies are in .depend
+#else
 #define IncludeMakefile(file) /**/
+#endif
 #endif
 #endif
 
@@ -2290,12 +2294,23 @@ NamedTargetSubdirs(depend,dirs,"depending",NullParameter,depend)
  * ForceSubdirs - force make to build subdirectories
  */
 #ifndef ForceSubdirs
+#if !HasBsdMake
 #define ForceSubdirs(dirs)						@@\
 dirs: FRC								@@\
 	@echo "making all in $(CURRENT_DIR)/$@..."			@@\
 	@MakeNamedTargetSubdir($@,PassCDebugFlags,all)			@@\
 									@@\
 FRC:
+#else
+/* For BSD 4.4 make */
+#define ForceSubdirs(dirs)						@@\
+dirs:	.EXEC								@@\
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
+	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+									@@\
+.EXEC:
+#endif
+
 #endif /* ForceSubdirs */
 
 /*

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/10/19 19:10:59 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/os-support/linux/Imakefile,v 3.1 1996/08/21 13:05:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/os-support/linux/Imakefile,v 3.2 1996/12/27 06:52:58 dawes Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt
@@ -20,10 +20,12 @@ SHARED_CFLAGS = PositionIndependentCFlags
 #endif
 
 SRCS = lnx_init.c lnx_video.c IO_utils.c lnx_io.c bios_devmem.c mapVT_noop.c \
-       VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c $(JOYSTICK_SRC)
+       VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c \
+       libc_wrapper.c m68kiopl.c $(JOYSTICK_SRC)
 
 OBJS = lnx_init.o lnx_video.o IO_utils.o lnx_io.o bios_devmem.o mapVT_noop.o \
-       VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o $(JOYSTICK_OBJ)
+       VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o \
+       libc_wrapper.o m68kiopl.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -56,5 +58,6 @@ ObjectFromSpecialSource(std_kbdEv,$(XF86OSSRC)/shared/std_kbdEv,/**/)
 ObjectFromSpecialSource(posix_tty,$(XF86OSSRC)/shared/posix_tty,/**/)
 ObjectFromSpecialSource(std_mouse,$(XF86OSSRC)/shared/std_mouse,/**/)
 ObjectFromSpecialSource(std_mseEv,$(XF86OSSRC)/shared/std_mseEv,/**/)
+ObjectFromSpecialSource(libc_wrapper,$(XF86OSSRC)/shared/libc_wrapper,/**/)
 
 DependTarget()

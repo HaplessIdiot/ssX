@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.22 1997/01/23 12:06:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.23 1997/02/11 10:01:52 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -94,7 +94,8 @@ vgaVideoChipRec ET4000W32 = {
     FALSE,			/* ChipHas24bpp */
     FALSE,			/* ChipHas32bpp */
     NULL,			/* ChipBuiltinModes */
-    1,				/* ChipClockScaleFactor */
+    1,				/* ChipClockMulFactor */
+    1				/* ChipClockDivFactor */
 };
 
 static et4000w32_initted = FALSE;

@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.1 1997/03/06 23:14:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.2 1997/03/10 10:12:02 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -210,7 +210,8 @@ vgaVideoChipRec APM = {
 	 * to pixel clocks.  This is rarely used, and in most cases, set
 	 * it to 1.
 	 */
-	1,
+	1,       /* ClockMulFactor */
+	1        /* ClockDivFactor */
 };
 
 /*

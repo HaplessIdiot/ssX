@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.1 1997/04/10 11:34:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.2 1997/04/12 13:45:24 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -69,17 +69,7 @@
 #include "mga_reg.h"
 #include "mga.h"
 
-/* Uncomment the next line to force a 60 MHz MCLK - AT YOUR OWN RISK! */
-/* #define FORCE_FAST_MCLK */
-
 extern vgaPCIInformation *vgaPCIInfo;
-
-extern vgaHWCursorRec vgaHWCursor;
-
-extern void MGACursorInit();
-extern void MGARestoreCursor();
-extern void MGAWarpCursor();
-extern void MGAQueryBestSize();
 
 /*
  * Driver data structures.
@@ -95,7 +85,6 @@ unsigned char* MGAMMIOBase = NULL;
 #ifdef __alpha__
 unsigned char* MGAMMIOBaseDENSE = NULL;
 #endif
-static unsigned long MGAMMIOAddr = 0;
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -223,7 +212,8 @@ vgaVideoChipRec MGA = {
 	 * to pixel clocks.	 This is rarely used, and in most cases, set
 	 * it to 1.
 	 */
-	1,
+	1,     /* ClockMulFactor */
+	1      /* ClockDivFactor */
 };
 
 #ifdef XFree86LOADER
@@ -271,6 +261,14 @@ ModuleInit(data,magic)
 }
 #endif /* XFree86LOADER */
 
+/* 
+ * ramdac info structure initialization
+ */
+MGARamdacRec MGAdac = {
+	FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	90000, /* maxPixelClock */
+	0
+}; 
 
 /*
  * array of ports
@@ -412,6 +410,7 @@ int n;
 static Bool
 MGAProbe()
 {
+	unsigned long MGAMMIOAddr = 0;
 	pciConfigPtr pcr = NULL;
 	int i;
 
@@ -419,9 +418,15 @@ MGAProbe()
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.
 	 */
-	if (vga256InfoRec.chipset)
-		if (StrCaseCmp(vga256InfoRec.chipset, MGAIdent(0)))
-			return(FALSE);
+	if (vga256InfoRec.chipset) {
+		char *chipset;
+		for (i = 0; (chipset = MGAIdent(i)); i++) {
+			if (!StrCaseCmp(vga256InfoRec.chipset, chipset))
+				break;
+		}
+		if (!chipset)
+			return FALSE;
+	}
 
 	MGAchipset = 0;
 	i = 0;
@@ -430,8 +435,13 @@ MGAProbe()
 		if (pcr->_vendor == PCI_VENDOR_MATROX) {
 			switch(pcr->_device) {
 				case PCI_CHIP_MGA2064:
+					MGAchipset = pcr->_device;
+					vga256InfoRec.chipset = MGAIdent(0);
+				break;
 				case PCI_CHIP_MGA1064:
 					MGAchipset = pcr->_device;
+					vga256InfoRec.chipset = MGAIdent(1);
+				break;
 			}
 			if (MGAchipset)
 				break;
@@ -485,6 +495,16 @@ MGAProbe()
 	if (!MGAMMIOAddr)
 		FatalError("MGA: Can't detect IO registers address\n");
 	
+	if (xf86Verbose)
+	{
+		ErrorF("%s %s: Linear framebuffer at 0x%lX\n", 
+			vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
+			vga256InfoRec.name, MGA.ChipLinearBase);
+		ErrorF("%s %s: MMIO registers at 0x%lX\n", 
+			vga256InfoRec.IObase? XCONFIG_GIVEN : XCONFIG_PROBED,
+			vga256InfoRec.name, MGAMMIOAddr);
+	}
+	
 	/*
 	 * Map IO registers to virtual address space
 	 */ 
@@ -516,6 +536,9 @@ MGAProbe()
 	 * Read the BIOS data struct
 	 */
 	MGAReadBios();
+#ifdef DEBUG
+	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
+#endif
 	
 	/*
 	 * Set up I/O ports to be used by this card.
@@ -536,53 +559,31 @@ MGAProbe()
 		vga256InfoRec.videoRam = MGACountRam();
 	
 	/*
-	 * Set MCLK based on amount of memory.
-	 */
-#ifndef FORCE_FAST_MCLK
-	if ( vga256InfoRec.videoRam < 4096 )
-		MGATi3026SetMCLK( MGABios.ClkBase * 10 );
-	else if ( vga256InfoRec.videoRam < 8192 )
-		MGATi3026SetMCLK( MGABios.Clk4MB * 10 );
-	else
-		MGATi3026SetMCLK( MGABios.Clk8MB * 10 );
-#else
-	MGATi3026SetMCLK( 60000 );
-#endif
-
-	/*
-	 * If the user has specified ramdac speed in the XF86Config
-	 * file, we respect that setting.
-	 */
-#ifdef DEBUG
-	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
-#endif
-	if( vga256InfoRec.dacSpeed )
-		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
-	else
-	{
-		switch( MGABios.RamdacType & 0xff )
-		{
-		case 1:	vga256InfoRec.maxClock = 220000;
-			break;
-		case 2:	vga256InfoRec.maxClock = 250000;
-			break;
-		default:	
-			vga256InfoRec.maxClock = 175000;
-			break;
-		}
-	}
-	/*
-	 * Last we fill in the remaining data structures. 
+	 * fill MGAdac struct
+	 * Warning: currently, it should be after RAM counting
 	 */
 	switch (MGAchipset)
 	{
 	case PCI_CHIP_MGA2064:
-		vga256InfoRec.chipset = MGAIdent(0);
+		MGA3026RamdacInit();
 		break;
 	case PCI_CHIP_MGA1064:
-		vga256InfoRec.chipset = MGAIdent(1);
+		MGA1064RamdacInit();
 		break;
 	}
+	
+	/*
+	 * If the user has specified ramdac speed in the XF86Config
+	 * file, we respect that setting.
+	 */
+	if( vga256InfoRec.dacSpeed )
+		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
+	else
+		vga256InfoRec.maxClock = MGAdac.maxPixelClock;
+
+	/*
+	 * Last we fill in the remaining data structures. 
+	 */
 	vga256InfoRec.bankedMono = FALSE;
 	
 #ifdef XFreeXDGA
@@ -630,6 +631,10 @@ TestAndSetRounding(pitch)
 	else
 		/* we can't display more than 2MB in non-interleave */
 		size = pitch * vga256InfoRec.virtualY / 1024;
+		
+	/* we can't use interleave on Mystique */
+	if (MGAchipset == PCI_CHIP_MGA1064)
+		size = 0;
 		
 	if (vgaBitsPerPixel == 32)
 	{
@@ -838,33 +843,21 @@ MGALinearOffset()
 static void
 MGAFbInit()
 {
-	if (xf86Verbose)
+	if (MGAdac.MemoryClock && xf86Verbose)
 	{
-		ErrorF("%s %s: Linear framebuffer at %lX\n", 
-			vga256InfoRec.MemBase? XCONFIG_GIVEN : XCONFIG_PROBED,
-			vga256InfoRec.name, MGA.ChipLinearBase);
-		ErrorF("%s %s: IO registers at %lX\n", 
-			vga256InfoRec.IObase? XCONFIG_GIVEN : XCONFIG_PROBED,
-			vga256InfoRec.name, MGAMMIOAddr);
+	    ErrorF("%s %s: MCLK set to %1.3f MHz\n",
+	        vga256InfoRec.MemClk? XCONFIG_GIVEN : XCONFIG_PROBED,
+	        vga256InfoRec.name, MGAdac.MemoryClock / 1000.0);
 	}
 	
-	if (xf86Verbose)
-		ErrorF("%s %s: Using TI TVP3026 programmable clock\n",
-			XCONFIG_PROBED, vga256InfoRec.name);
- 
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
-
 	        /*
 		 * Hardware cursor
 		 */
 	        if ( !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
-		    vgaHWCursor.Initialized = TRUE;
-		    vgaHWCursor.Init = MGACursorInit;
-		    vgaHWCursor.Restore = MGARestoreCursor;
-		    vgaHWCursor.Warp = MGAWarpCursor;
-		    vgaHWCursor.QueryBestSize = MGAQueryBestSize;
-		    ErrorF("%s %s: Using hardware cursor\n",
+		    if (MGAHwCursorInit())
+		        ErrorF("%s %s: Using hardware cursor\n",
 			   XCONFIG_PROBED, vga256InfoRec.name);
 		}	
 		else
@@ -874,7 +867,11 @@ MGAFbInit()
 		/*
 		 * now call the new acc interface
 		 */
-		MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
+		if (MGAchipset == PCI_CHIP_MGA1064 )  {
+			MGAusefbitblt = 0;
+			} else {
+			MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
+		}
 		MGAStormAccelInit();
 	}
 }

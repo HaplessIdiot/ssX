@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.5 1997/03/27 08:31:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.6 1997/04/08 10:13:40 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -208,7 +208,8 @@ vgaVideoChipRec EGC = {
 	FALSE,	/* 24bpp */
 	FALSE,	/* 32bpp */
 	&Mode320x200,
-	1,
+	1,      /* ClockMulFactor */
+	1       /* ClockDivFactor */
 };
 
 /* These are the fixed 100% VGA compatible CRTC register values used. */

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/12/07 21:15:29 gildea $
-XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/Imakefile,v 3.8 1997/02/23 13:11:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/dixie/Imakefile,v 3.9 1997/02/25 14:19:17 hohndel Exp $
 XCOMM build dixie archive
 
 #define IHaveModules
@@ -18,7 +18,7 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 #endif
 
-#if HasGnuMake
+#if HasGnuMake || HasBsdMake
 $(DONES): $(SUBDIRS)
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.3 1997/04/14 07:05:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.4 1997/04/17 08:17:34 hohndel Exp $ */
 
 
 /*
@@ -258,9 +258,7 @@ unsigned int *xf86DrawNonTETextScanline(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
     );
 
@@ -273,9 +271,7 @@ unsigned int *xf86DrawNonTETextScanlineMSBFirst(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
     );
 
@@ -284,9 +280,7 @@ unsigned int *xf86DrawNonTETextScanlineFixedBase(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
     );
 
@@ -295,9 +289,7 @@ unsigned int *xf86DrawNonTETextScanlineMSBFirstFixedBase(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
     );
 
@@ -364,9 +356,7 @@ unsigned int *xf86DrawNonTETextScanline3(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
     );
 
@@ -375,9 +365,7 @@ unsigned int *xf86DrawNonTETextScanline3MSBFirst(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
 );
 
@@ -386,9 +374,7 @@ unsigned int *xf86DrawNonTETextScanline3FixedBase(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
 );
 
@@ -397,9 +383,7 @@ unsigned int *xf86DrawNonTETextScanline3MSBFirstFixedBase(
     unsigned int *base,
     NonTEGlyphInfo *glyphinfop,
     int line,
-    int nglyph,
-    int addleft,
-    int addright
+    int nglyph
 #endif
 );
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.25 1997/02/25 14:20:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.26 1997/04/12 13:44:19 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -150,12 +150,12 @@ ScrnInfoRec i128InfoRec =
    0,				/* int textClockFreq */
    NULL,                        /* char* DCConfig */
    NULL,                        /* char* DCOptions */
-   0,				/* int MemClk */
+   0				/* int MemClk */
 #ifdef XFreeXDGA
-   0,				/* int directMode */
+   ,0,				/* int directMode */
    0,				/* Set Vid Page */
    0,				/* unsigned long physBase */
-   0,				/* int physSize */
+   0				/* int physSize */
 #endif
 };
 

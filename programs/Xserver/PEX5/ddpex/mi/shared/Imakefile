@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/12 1996/09/28 16:54:42 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/Imakefile,v 3.5 1997/02/18 17:49:34 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/Imakefile,v 3.6 1997/02/25 14:19:05 hohndel Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -90,6 +90,7 @@ OBJS = miFont.o \
 SubdirLibraryRule($(OBJS))
 UnsharedLibraryTarget(ddpexs,$(OBJS),unshared,..)
 #else
+SubdirLibraryRule($(OBJS))
 NormalLibraryTarget(ddpexs,$(OBJS))
 #endif
 LintLibraryTarget(dps, $(SRCS))

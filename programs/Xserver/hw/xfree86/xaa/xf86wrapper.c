@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.6 1997/04/14 07:55:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.7 1997/04/18 09:13:07 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -332,6 +332,35 @@ xf86PushPixelsWrapper (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
 }
 
+
+/* These are the wrappers for the backing store functions. */
+
+void static
+xf86SaveAreasWrapper(pPixmap, prgnSave, xorg, yorg, pWin)
+    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
+    RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
+    int	    	  	xorg;	    	/* X origin of region */
+    int	    	  	yorg;	    	/* Y origin of region */
+    WindowPtr		pWin;
+{
+    SYNC_CHECK;
+
+    cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+}
+
+void static
+xf86RestoreAreasWrapper(pPixmap, prgnRestore, xorg, yorg, pWin)
+    PixmapPtr	  	pPixmap;  	/* Backing pixmap */
+    RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
+    int	    	  	xorg;	    	/* X origin of window */
+    int	    	  	yorg;	    	/* Y origin of window */
+    WindowPtr		pWin;
+{
+    SYNC_CHECK;
+
+    cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+}
+
 void XF86NAME(xf86InitWrappers)()
 {
     if(!xf86GCInfoRec.FillPolygonWrapper)
@@ -375,6 +404,12 @@ void XF86NAME(xf86InitWrappers)()
 
     if(!xf86GCInfoRec.PushPixelsWrapper)
 	xf86GCInfoRec.PushPixelsWrapper = xf86PushPixelsWrapper;
+
+    if(!xf86GCInfoRec.SaveAreasWrapper)
+	xf86GCInfoRec.SaveAreasWrapper = xf86SaveAreasWrapper;
+
+    if(!xf86GCInfoRec.RestoreAreasWrapper)
+	xf86GCInfoRec.RestoreAreasWrapper = xf86RestoreAreasWrapper;
 
 }
 

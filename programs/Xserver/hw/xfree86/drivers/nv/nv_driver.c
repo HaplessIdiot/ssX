@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.2 1996/10/23 13:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.2 1997/03/22 09:35:42 hohndel Exp $ */
 
 #include <math.h>
 
@@ -195,7 +195,8 @@ vgaVideoChipRec NV =
   FALSE, /* 24 bpp */ 
   FALSE, /* 32 bpp */	
   NULL,  /* Pointer to a list of builtin driver modes */   
-  1      /* Scale factor used to scale the raw clocks to pixel clocks */
+  1,     /* Scale factor used to multiply the raw clocks to pixel clocks */
+  1      /* Scale factor used to divide the raw clocks to pixel clocks */
 };
 
 

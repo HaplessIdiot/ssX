@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.15 1997/04/12 13:46:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.16 1997/04/17 09:16:12 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -300,7 +300,8 @@ xf86InitializeAcceleration(pScreen)
             xf86GCInfoRec.ImageGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
 	    /* Only DWORD padding currently supported */
-	    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+	    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD &&
+		SimpleFillRectSolid) {
 		xf86AccelInfoRec.ImageTextNonTE =
                     xf86ImageTextNonTECPUToScreenColorExpand;
 		xf86GCInfoRec.ImageGlyphBltNonTEFlags =

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.8 1997/04/08 10:13:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.9 1997/04/17 08:17:18 hohndel Exp $ */
 
 /*
  *
@@ -143,11 +143,12 @@ vgaVideoChipRec S3V = {
   TRUE,        /* 24bpp */
   TRUE,        /* 32bpp */
   NULL,                 /* DisplayModePtr ChipBuiltinModes */
-  1                     /* int ChipClockScaleFactor */
+  1,                    /* int ChipClockMulFactor */
+  1                     /* int ChipClockDivFactor */
 };
 
 /* entries must be in sequence with chipset numbers !! */
-SymTabRec chipsets[] = {
+SymTabRec s3vChipTable[] = {
    { S3_UNKNOWN,   "unknown"},
    { S3_ViRGE,     "ViRGE"}, 
    { S3_ViRGE_VX,  "ViRGE/VX"},
@@ -164,7 +165,7 @@ S3VPRIV s3vPriv;
 
 int vgaCRIndex, vgaCRReg;
 pointer s3vMmioMem = NULL;   /* MMIO base address */
-
+extern vgaHWCursorRec vgaHWCursor;
 
 #ifdef XFree86LOADER
 XF86ModuleVersionInfo s3vVersRec =
@@ -213,10 +214,11 @@ static char *
 S3VIdent(n)
 int n;
 {
-  if(chipsets[n].token < 0)
-      return NULL;
-  else 
-      return chipsets[n].name;
+   char *chipset = "s3_virge";
+
+   if(n == 0) return(chipset);
+   else return NULL;
+
 }
 
 
@@ -361,6 +363,8 @@ unsigned char tmp;
    outb(vgaCRReg, restore->CR42);
    outb(vgaCRIndex, 0x51);             
    outb(vgaCRReg, restore->CR51);
+   outb(vgaCRIndex, 0x54);             
+   outb(vgaCRReg, restore->CR54);
    
    /* Memory timings */
    outb(vgaCRIndex, 0x36);             
@@ -497,6 +501,8 @@ unsigned char tmp;
    save->CR51 = inb(vgaCRReg);
    outb(vgaCRIndex, 0x53);             
    save->CR53 = inb(vgaCRReg);
+   outb(vgaCRIndex, 0x54);             
+   save->CR54 = inb(vgaCRReg);
    outb(vgaCRIndex, 0x58);             
    save->CR58 = inb(vgaCRReg);
    outb(vgaCRIndex, 0x63);
@@ -589,13 +595,18 @@ static Bool
 S3VProbe()
 {
 S3PCIInformation *pciInfo = NULL;
-unsigned char config1, config2;
-double mclk;
+unsigned char config1, config2, m, n, n1, n2;
+int mclk;
+
+   if (vga256InfoRec.chipset) {
+      if (StrCaseCmp(vga256InfoRec.chipset,S3VIdent(0)))
+      return(FALSE);
+   } 
 
    /* Start with PCI probing, this should get us quite far already */
    /* For now, we only use the PCI probing; add in later VLB */
 
-   pciInfo = s3GetPCIInfo();
+   pciInfo = s3vGetPCIInfo();
    if (pciInfo && pciInfo->MemBase)
       vga256InfoRec.MemBase = pciInfo->MemBase;
    if (pciInfo)
@@ -608,11 +619,13 @@ double mclk;
           }
       else {
          s3vPriv.chip = pciInfo->ChipType;
-         ErrorF("%s %s: Detected chipset %d\n",XCONFIG_PROBED, 
-            vga256InfoRec.name, s3vPriv.chip);
+         ErrorF("%s %s: Detected S3 %s\n",XCONFIG_PROBED,
+            vga256InfoRec.name, xf86TokenToString(s3vChipTable, s3vPriv.chip));
+         ErrorF("%s %s: using driver for chipset \"%s\"\n",XCONFIG_PROBED, 
+            vga256InfoRec.name, S3VIdent(0));
 	 }
 
-   vga256InfoRec.chipset = S3VIdent(s3vPriv.chip);
+   vga256InfoRec.chipset = S3VIdent(0);
 
    /* Add/enable IO ports to list: call EnterLeave */
    S3VEnterLeave(ENTER);
@@ -745,15 +758,15 @@ double mclk;
    outb(0x3c4, 0x08);
    outb(0x3c5, 0x06); 
    outb(0x3c4, 0x10);
-   config1 = inb(0x3c5);
+   n = inb(0x3c5);
    outb(0x3c4, 0x11);
-   config2 = inb(0x3c5);
-   mclk = 14.318 * (double)(config2+2.0)/((config1 & 0x1f) + 2.0);
-   if ((config1 & 0x60) == 0x60) mclk /= 8.0;
-   else if ((config1 & 0x60) == 0x40) mclk /= 4.0;
-   else if ((config1 & 0x60) == 0x20) mclk /= 2.0;
-   ErrorF("%s %s: Detected current MCLK value of %.0lf kHz\n",XCONFIG_PROBED, 
-      vga256InfoRec.name, mclk * 1000);
+   m = inb(0x3c5);
+   m &= 0x7f;
+   n1 = n & 0x1f;
+   n2 = (n>>5) & 0x03;
+   mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+   ErrorF("%s %s: Detected current MCLK value of %1.3f kHz\n",XCONFIG_PROBED, 
+      vga256InfoRec.name, mclk / 1000.0);
 
 
    /* Now check if the user has specified "set_memclk" value in XConfig */
@@ -819,6 +832,7 @@ double mclk;
    OFLG_SET(OPTION_FIFO_AGGRESSIVE, &S3V.ChipOptionFlags);
    OFLG_SET(OPTION_PCI_RETRY, &S3V.ChipOptionFlags);
    OFLG_SET(OPTION_NOACCEL, &S3V.ChipOptionFlags);
+   OFLG_SET(OPTION_HW_CURSOR, &S3V.ChipOptionFlags);
 
    s3vPriv.NoPCIRetry = 1;
    S3V.ChipLinearBase = vga256InfoRec.MemBase;
@@ -988,10 +1002,11 @@ int i, j;
 
    dclk = vga256InfoRec.clock[mode->Clock];
    new->CR67 = 0x00;             /* Defaults */
-   new->SR15 = 0x03; 
+   new->SR15 = 0x03 | 0x80; 
    new->SR18 = 0x00;
    new->CR43 = 0x00;
    new->CR65 = 0x20;
+   new->CR54 = 0x00;
    
    /* Memory controller registers. Optimize for better graphics engine 
     * performance. These settings are adjusted/overridden below for other bpp/
@@ -1038,7 +1053,7 @@ int i, j;
           else new->CR67 = 0x30;                /* 15bpp, 220MHz */
           }
        else if (vgaBitsPerPixel == 16) {
-          if (dclk <= 135000) new->CR67 = 0x40; /* 16bpp, 135MHz */
+          if (dclk <= 110000) new->CR67 = 0x40; /* 16bpp, 135MHz */
           else new->CR67 = 0x50;                /* 16bpp, 220MHz */
           }
        else if ((vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32)) {
@@ -1201,6 +1216,18 @@ S3VFbInit()
          ErrorF("%s %s: \"pci_retry\" option requires \"pci_burst\".\n",
               XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.MemClk);
          }
+   if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
+      vgaHWCursor.Initialized = TRUE;
+      vgaHWCursor.Init = S3VCursorInit;
+      vgaHWCursor.Restore = S3VRestoreCursor;
+      vgaHWCursor.Warp = S3VWarpCursor;
+      vgaHWCursor.QueryBestSize = S3VQueryBestSize;
+      if (xf86Verbose)
+                ErrorF("%s %s: %s: Using hardware cursor\n",
+                        XCONFIG_PROBED, vga256InfoRec.name,
+                        vga256InfoRec.chipset);
+      }
+
 
 }
 

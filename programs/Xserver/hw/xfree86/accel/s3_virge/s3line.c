@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.11 1997/01/14 22:17:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.12 1997/04/08 10:11:34 hohndel Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -450,7 +450,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		* parts will join exactly (mostly experimental values)
 		*/
 
-#define LEN 500
+#define LEN 250
 	       if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
 		  WaitQueue(5);
 		  SETL_LXEND0_END1(xs, xe);

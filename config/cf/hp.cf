@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: hp.cf /main/84 1997/02/28 09:52:49 kaleb $
+XCOMM platform:  $TOG: hp.cf /main/85 1997/04/17 14:11:34 barstow $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -32,18 +32,34 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
  */
 
 #if HasHPCplusplus
-# ifndef HasCplusplus
+# ifndef  HasCplusplus
 #  define HasCplusplus YES
 # endif
-# ifndef DefaultCplusplusOptions
+# ifndef  DefaultCplusplusOptions
 #  define DefaultCplusplusOptions	-Aa
 # endif
-# ifndef CplusplusOptions
+# ifndef  CplusplusOptions
 #  define CplusplusOptions		-Aa
 # endif
-# ifndef CplusplusDependIncludes 
-#  define CplusplusDependIncludes	-I/usr/include/CC
+# ifndef  CplusplusCmd
+#  define CplusplusCmd 			/opt/CC/bin/CC
 # endif
+# ifndef  CplusplusDependIncludes 
+#  define CplusplusDependIncludes	-I/opt/CC/include/CC
+# endif
+#endif
+
+#ifndef  CcCmd
+# define CcCmd			/opt/ansic/bin/cc
+#endif
+#ifndef  YaccCmd
+# define YaccCmd		/opt/langtools/bin/yacc
+#endif
+#ifndef  LexCmd
+# define LexCmd			/opt/langtools/bin/lex
+#endif
+#ifndef  LintCmd
+# define LintCmd		/opt/ansic/bin/lint
 #endif
 
 #if HasCenterLineCplusplus

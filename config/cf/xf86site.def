@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.112 1997/04/17 10:44:45 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.113 1997/04/17 12:55:33 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -409,6 +409,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.112 1997/04/17 10:44:45 hohndel Ex
  * library, uncomment this.
  *
 #define BuildGlxExt             NO
+ */
+
+/*
+ * If you aren't building with support for loadable modules and wish
+ * to statically link external GLX server libs instead of the default
+ * non-functional stub library, uncomment the following define and
+ * specify the space-seperated pathnames of those libraries here.
+ *
+#define GlxStaticServerLib	/your/full/path/name/libServerGlx.a \
+				/your/full/path/name/Mesa/lib/libMesaGl.a
  */
 
 /*

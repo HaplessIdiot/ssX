@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/3 1996/10/25 11:32:44 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/Imakefile,v 3.2 1996/10/03 08:32:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/Imakefile,v 3.3 1996/12/27 06:52:43 dawes Exp $
 #include <Server.tmpl>
 
 
@@ -39,7 +39,8 @@ FB_DEFINES:= $(FB_DEFINES) -DCONFIG_CFB32
 
 INCLUDES = -I../common -I../os-support -I$(XF86COMSRC) -I$(XF86OSSRC) -I. \
 	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/ilbm -I$(SERVERSRC)/afb \
-	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+	   -I$(XF86SRC)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(fbdev,$(OBJS))
@@ -48,5 +49,9 @@ NormalLintTarget($(SRCS))
 SpecialCObjectRule(fbdev,NullParameter,$(FB_DEFINES))
 
 InstallLinkKitLibrary(fbdev,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(fbdev),$(MODULEDIR))
+#endif
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati_driver.c,v 3.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati_driver.c,v 1.2 1997/03/27 18:39:03 hohndel Exp $ */
 /*
  * Copyright 1994 through 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -404,7 +404,8 @@ vgaVideoChipRec ATI =
         FALSE,                  /* No support for 24 bits per pixel (yet) */
         FALSE,                  /* No support for 32 bits per pixel (yet) */
         NULL,                   /* List of builtin modes */
-        1,                      /* Clock scaling factor */
+        1,                      /* ChipClockMulFactor */
+        1                       /* ChipClockDivFactor */
 };
 
 #ifdef XFree86LOADER
@@ -3424,7 +3425,7 @@ ATIProbe(void)
                         Message = "required dot clock cannot be determined";
                 else if ((DefaultMode.SynthClock / 1000) >
                    ((vga256InfoRec.maxClock / 1000) /
-                     ATI.ChipClockScaleFactor))
+                     ATI.ChipClockMulFactor))
                         Message = "required dot clock greater than maxClock";
                 else
                 if ((DefaultMode.HDisplay * DefaultMode.VDisplay) > MaxScreen)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.2 1997/03/27 18:39:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.3 1997/04/08 10:13:22 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -85,7 +85,8 @@ void TGUISubsequent8x8PatternColorExpand();
  */
 void TGUIAccelInit() {
 
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
+			     DELAYED_SYNC;
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
 				HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |

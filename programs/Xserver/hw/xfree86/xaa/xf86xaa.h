@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.14 1997/04/17 09:16:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.15 1997/04/18 09:13:09 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -530,6 +530,26 @@ typedef struct {
 	int 		dy, 
 	int		xOrg, 
 	int		yOrg
+#endif
+   );
+
+    void (*SaveAreasWrapper) (
+#if NeedFunctionPrototypes
+    PixmapPtr	  	pPixmap,
+    RegionPtr	  	prgnSave,
+    int	    	  	xorg,
+    int	    	  	yorg,
+    WindowPtr		pWin
+#endif
+   );
+
+    void (*RestoreAreasWrapper) (
+#if NeedFunctionPrototypes
+    PixmapPtr	  	pPixmap,
+    RegionPtr	  	prgnRestore,
+    int	    	  	xorg,
+    int	    	  	yorg,
+    WindowPtr		pWin
 #endif
    );
   

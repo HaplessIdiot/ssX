@@ -1,5 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/afb/Imakefile,v 3.1 1996/10/03 08:31:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/afb/Imakefile,v 3.2 1997/01/25 04:13:33 dawes Exp $
 XCOMM $XConsortium: Imakefile,v 1.38 94/03/11 18:47:47 dpw Exp $
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS1 =	 afbgc.c afbwindow.c afbfont.c afbfillrct.c afbpntwin.c afbpixmap.c \
@@ -52,6 +53,10 @@ ObjectFromSpecialSource(afbtileG,afbtile,-DMROP=0)
 
 InstallLinkKitLibrary(afb,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(afb.h,$(LINKKITDIR)/include)
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(afb),$(MODULEDIR))
+#endif
 
 #ifndef OS2Architecture
 DependTarget()

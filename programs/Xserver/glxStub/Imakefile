@@ -1,4 +1,4 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/glxStub/Imakefile,v 1.2 1997/04/12 15:34:29 hohndel Exp $
 
 
 
@@ -8,11 +8,14 @@ SRCS = glxstub.c
 
 OBJS = glxstub.o
 
+INCLUDES = -I../include  -I$(XINCLUDESRC) -I$(SERVERSRC)/include
+
+
 NormalLibraryObjectRule()
-NormalLibraryTarget(serverGl,$(OBJS))
-LintLibraryTarget(serverGl,$(SRCS))
+NormalLibraryTarget(serverGlx,$(OBJS))
+LintLibraryTarget(serverGlx,$(SRCS))
 NormalLintTarget($(SRCS))
 
-InstallLinkKitLibrary(serverGl,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(serverGlx,$(LINKKITDIR)/lib)
 
 DependTarget()
