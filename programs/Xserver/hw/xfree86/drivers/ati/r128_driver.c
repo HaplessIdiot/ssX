@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.46 2001/11/06 15:53:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.47 2001/11/19 20:44:16 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1128,7 +1128,7 @@ R128I2CPutBits(I2CBusPtr b, int Clock, int data)
     unsigned char *R128MMIO = info->MMIO;
 
     val = INREG(info->DDCReg)  
-              & ~R128_GPIO_MONID_EN_0 & ~R128_GPIO_MONID_EN_3;
+              & ~(CARD32)(R128_GPIO_MONID_EN_0 | R128_GPIO_MONID_EN_3);
     val |= (Clock ? 0:R128_GPIO_MONID_EN_3);
     val |= (data ? 0:R128_GPIO_MONID_EN_0);
     OUTREG(info->DDCReg, val);
@@ -1181,7 +1181,7 @@ static Bool R128GetDFPInfo(ScrnInfoPtr pScrn)
            | R128_GPIO_MONID_MASK_0 | R128_GPIO_MONID_MASK_3));
 
     OUTREG(info->DDCReg, INREG(info->DDCReg)
-           & ~R128_GPIO_MONID_A_0 & ~R128_GPIO_MONID_A_3);
+           & ~(CARD32)(R128_GPIO_MONID_A_0 | R128_GPIO_MONID_A_3));
 
     MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, info->pI2CBus);
     if(!MonInfo) {
@@ -2503,7 +2503,7 @@ static void R128RestoreFPRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     OUTREG(R128_FP_V_SYNC_STRT_WID,   restore->fp_v_sync_strt_wid);
     OUTREG(R128_TMDS_CRC,             restore->tmds_crc);
     OUTREG(R128_FP_PANEL_CNTL,        restore->fp_panel_cntl);
-    OUTREG(R128_FP_GEN_CNTL, restore->fp_gen_cntl & ~R128_FP_BLANK_DIS);
+    OUTREG(R128_FP_GEN_CNTL, restore->fp_gen_cntl & ~(CARD32)R128_FP_BLANK_DIS);
 
     if(info->isDFP) return;
 
@@ -3053,7 +3053,7 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
         save->fp_gen_cntl    |= (R128_FP_FPON | R128_FP_TDMS_EN |
              R128_FP_CRTC_DONT_SHADOW_VPAR | R128_FP_CRTC_DONT_SHADOW_HEND);
         save->tmds_transmitter_cntl = (orig->tmds_transmitter_cntl
-            & ~R128_TMDS_PLLRST) | R128_TMDS_PLLEN;
+            & ~(CARD32)R128_TMDS_PLLRST) | R128_TMDS_PLLEN;
     }
     else
         save->lvds_gen_cntl  |= (R128_LVDS_ON | R128_LVDS_BLON);
