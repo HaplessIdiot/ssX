@@ -1,6 +1,6 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/doc/hardcopy/XIE/XIEProto/Imakefile,v 1.1 2000/12/14 18:23:11 dawes Exp $
 
-InstallHardcopyDoc(XIEProto,XIEProto.txt)
+InstallDoc(XIEProto,XIEProto.txt)
 InstallHardcopyDoc(apa_xie,apa_xie.PS.gz)
 InstallHardcopyDoc(apb_xie,apb_xie.PS.gz)
 InstallHardcopyDoc(apc_xie,apc_xie.PS.gz)
