@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.4 2001/08/01 05:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.5 2001/09/21 22:57:17 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -71,59 +71,16 @@ RootlessDestroyWindow(WindowPtr pWin)
 
 #ifdef SHAPE
 
-// fixme reimplement shape
-
-// boundingShape = outside border (like borderClip)
-// clipShape = inside border (like clipList)
-// Both are in window-local coordinates
-// We only care about boundingShape (fixme true?)
-
-// RootlessReallySetShape is used in several places other than SetShape.
-// Most importantly, SetShape is often called on unmapped windows, so we
-// have to wait until the window is mapped to reshape the frame.
-static void RootlessReallySetShape(WindowPtr pWin)
-{
-    RootlessWindowRec *winRec = WINREC(pWin);
-    ScreenPtr pScreen = pWin->drawable.pScreen;
-    RegionRec newShape;
-
-    // fixme reimplement shape
-    return;
-
-    if (IsRoot(pWin)) return;
-    if (!IsTopLevel(pWin)) return;
-    if (!winRec) return;
-
-    if (wBoundingShape(pWin)) {
-        // wBoundingShape is relative to *inner* origin of window.
-        // Translate by borderWidth to get the outside-relative position.
-        REGION_INIT(pScreen, &newShape, NullBox, 0);
-        REGION_COPY(pScreen, &newShape, wBoundingShape(pWin));
-        REGION_TRANSLATE(pScreen, &newShape, pWin->borderWidth,
-                         pWin->borderWidth);
-    } else {
-        newShape.data = NULL;
-        newShape.extents.x1 = 0;
-        newShape.extents.y1 = 0;
-        newShape.extents.x2 = winRec->frame.w;
-        newShape.extents.y2 = winRec->frame.h;
-    }
-    RL_DEBUG_MSG("reshaping...");
-    RL_DEBUG_MSG("numrects %d, extents %d %d %d %d ",
-                 REGION_NUM_RECTS(&newShape),
-                 newShape.extents.x1, newShape.extents.y1,
-                 newShape.extents.x2, newShape.extents.y2);
-    CallFrameProc(pScreen, ReshapeFrame,(pScreen, &winRec->frame, &newShape));
-    REGION_UNINIT(pScreen, &newShape);
-}
-
-
+// RootlessSetShape
+// Shape is usually set before the window is mapped, but (for now) we
+// don't keep track of frames before they're mapped. So we just record
+// that the shape needs to updated later.
 void
 RootlessSetShape(WindowPtr pWin)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    RootlessReallySetShape(pWin);
+    RootlessDamageShape(pWin);
     SCREEN_UNWRAP(pScreen, SetShape);
     pScreen->SetShape(pWin);
     SCREEN_WRAP(pScreen, SetShape);
@@ -229,8 +186,8 @@ RootlessRealizeWindow(WindowPtr pWin)
         REGION_INIT(pScreen, &winRec->damage, NullBox, 0);
         winRec->borderWidth = pWin->borderWidth;
 
-	winRec->pixmap = NULL;
-	// UpdatePixmap() called below
+        winRec->pixmap = NULL;
+        // UpdatePixmap() called below
 
         WINREC(pWin) = winRec;
 
@@ -239,20 +196,19 @@ RootlessRealizeWindow(WindowPtr pWin)
                       (pScreen, &WINREC(pWin)->frame,
                       pWin->prevSib ? &WINREC(pWin->prevSib)->frame : NULL));
 
-	// fixme implement ParentRelative with transparency?
-	//  need non-interfering fb first
-	// Disallow ParentRelative background state
-	// This might have been set before the window was mapped
-	if (pWin->backgroundState == ParentRelative) {
-	  XID pixel = 0;
-	  ChangeWindowAttributes(pWin, CWBackPixel, &pixel, serverClient);
-	}
+        // fixme implement ParentRelative with transparency?
+        //  need non-interfering fb first
+        // Disallow ParentRelative background state
+        // This might have been set before the window was mapped
+        if (pWin->backgroundState == ParentRelative) {
+            XID pixel = 0;
+            ChangeWindowAttributes(pWin, CWBackPixel, &pixel, serverClient);
+        }
 
 #ifdef SHAPE
         // Shape is usually set before the window is mapped, but
         // (for now) we don't keep track of frames before they're mapped.
-        // RootlessReallySetShape(pWin);
-	// fixme reimplement shape
+        winRec->shapeDamage = TRUE;
 #endif
     }
 
@@ -324,32 +280,32 @@ RootlessRestackWindow(WindowPtr pWin, WindowPtr pOldNextSib)
         WindowPtr oldNextW, newNextW, oldPrevW, newPrevW;
         RootlessFramePtr oldNext, newNext, oldPrev, newPrev;
 
-	oldNextW = pOldNextSib;
-	while (oldNextW  &&  ! WINREC(oldNextW)) oldNextW = oldNextW->nextSib;
-	oldNext = oldNextW ? &WINREC(oldNextW)->frame : NULL;
-	
-	newNextW = pWin->nextSib;
-	while (newNextW  &&  ! WINREC(newNextW)) newNextW = newNextW->nextSib;
-	newNext = newNextW ? &WINREC(newNextW)->frame : NULL;
-	
-	oldPrevW= pOldNextSib ? pOldNextSib->prevSib : pWin->parent->lastChild;
-	while (oldPrevW  &&  ! WINREC(oldPrevW)) oldPrevW = oldPrevW->prevSib;
-	oldPrev = oldPrevW ? &WINREC(oldPrevW)->frame : NULL;
-	
-	newPrevW = pWin->prevSib;
-	while (newPrevW  &&  ! WINREC(newPrevW)) newPrevW = newPrevW->prevSib;
-	newPrev = newPrevW ? &WINREC(newPrevW)->frame : NULL;
-	
-	if (pWin->prevSib) {
-	    WindowPtr w = pWin->prevSib;
-	    while (w) {
-	        RL_DEBUG_MSG("w 0x%x\n", w);
-		w = w->parent;
-	    }
-	}
+        oldNextW = pOldNextSib;
+        while (oldNextW  &&  ! WINREC(oldNextW)) oldNextW = oldNextW->nextSib;
+        oldNext = oldNextW ? &WINREC(oldNextW)->frame : NULL;
 
-	CallFrameProc(pScreen, RestackFrame,
-		      (pScreen, &winRec->frame, oldPrev, newPrev));
+        newNextW = pWin->nextSib;
+        while (newNextW  &&  ! WINREC(newNextW)) newNextW = newNextW->nextSib;
+        newNext = newNextW ? &WINREC(newNextW)->frame : NULL;
+
+        oldPrevW= pOldNextSib ? pOldNextSib->prevSib : pWin->parent->lastChild;
+        while (oldPrevW  &&  ! WINREC(oldPrevW)) oldPrevW = oldPrevW->prevSib;
+        oldPrev = oldPrevW ? &WINREC(oldPrevW)->frame : NULL;
+
+        newPrevW = pWin->prevSib;
+        while (newPrevW  &&  ! WINREC(newPrevW)) newPrevW = newPrevW->prevSib;
+        newPrev = newPrevW ? &WINREC(newPrevW)->frame : NULL;
+
+        if (pWin->prevSib) {
+            WindowPtr w = pWin->prevSib;
+            while (w) {
+                RL_DEBUG_MSG("w 0x%x\n", w);
+                w = w->parent;
+            }
+        }
+
+        CallFrameProc(pScreen, RestackFrame,
+                      (pScreen, &winRec->frame, oldPrev, newPrev));
     }
 
     RL_DEBUG_MSG("restackwindow end\n");
@@ -484,21 +440,6 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
 
     RootlessRedisplay(pWin);
 
-/*
-#ifdef SHAPE
-    // make the frame shape a rect
-    // fixme reimplement shape
-    if (wBoundingShape(pWin)) {
-        RegionPtr saveShape = wBoundingShape(pWin);
-
-        pWin->optional->boundingShape = NULL;
-        RL_DEBUG_MSG("RootlessReallySetShape from resize ");
-        RootlessReallySetShape(pWin);
-        pWin->optional->boundingShape = saveShape;
-    }
-#endif // SHAPE
-*/
-
     // Make a copy of the current pixmap and all its data.
     // The original will go away when we ask the frame manager to
     // allocate the new pixmap.
@@ -542,7 +483,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         DrawablePtr dst = &pScreen->GetWindowPixmap(pWin)->drawable;
        // These vars are needed because implicit unsigned->signed fails
        int oldX2 = (int)(oldX + oldW), newX2 = (int)(newX + newW);
-       int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH); 
+       int oldY2 = (int)(oldY + oldH), newY2 = (int)(newY + newH);
 
         r.data = NULL;
         r.extents.x1 = max(oldX, newX);
@@ -560,7 +501,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
             int dy = newY - oldY;
             REGION_TRANSLATE(pScreen, &r, dx, dy);
 #endif
-	    fbCopyRegion(src, dst, NULL, &r, 0, 0, fbCopyWindowProc, 0, 0);
+            fbCopyRegion(src, dst, NULL, &r, 0, 0, fbCopyWindowProc, 0, 0);
         }
         REGION_UNINIT(pScreen, &r);
     }
@@ -643,9 +584,9 @@ RootlessMoveWindow(WindowPtr pWin, int x, int y, WindowPtr pSib, VTKind kind)
 
     if (winRec) {
         if (kind == VTMove) {
-	    // PositionWindow has already set the new frame position.
+            // PositionWindow has already set the new frame position.
             CallFrameProc(pScreen, MoveFrame,
-			  (pScreen, &winRec->frame, oldX, oldY));
+                          (pScreen, &winRec->frame, oldX, oldY));
         } else {
             FinishFrameResize(pWin, FALSE, oldX, oldY, oldW, oldH, oldBW,
                               newX, newY, newW, newH, newBW);
@@ -748,8 +689,8 @@ RootlessChangeBorderWidth(WindowPtr pWin, unsigned int width)
         NORMAL_ROOT(pWin);
 
         if (winRec) {
-	    FinishFrameResize(pWin, FALSE, oldX, oldY, oldW, oldH, oldBW,
-			      newX, newY, newW, newH, newBW);
+            FinishFrameResize(pWin, FALSE, oldX, oldY, oldW, oldH, oldBW,
+                              newX, newY, newW, newH, newBW);
         }
     }
     RL_DEBUG_MSG("change border width end\n");

@@ -1,7 +1,7 @@
 /*
  * NSView subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.h,v 1.1 2001/07/01 02:13:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.h,v 1.2 2001/09/17 03:08:40 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -16,6 +16,7 @@
     int mSamplesPerPixel;
     int mBitsPerPixel;
     int mDepth;
+    BOOL mShaped;
 }
 
 - (id)initWithFrame:(NSRect)aRect;
@@ -33,12 +34,17 @@
 
 - (void)allocBitsForSize:(NSSize)newSize;
 - (char *)bits;
-- (void)getBits:(char **)bits 
+- (void)getBits:(char **)bits
        rowBytes:(int *)rowBytes
           depth:(int *)depth
    bitsPerPixel:(int *)bpp;
 
 - (void)refreshRects:(fakeBoxRec *)rectList count:(int)count;
-- (void)copyRects:(fakeBoxRec *)rectList count:(int)count;
+- (void)reshapeRects:(fakeBoxRec *)eraseRects count:(int)count;
+
+- (void)copyToScreen:(fakeBoxRec *)rectList count:(int)count
+            fromTemp:(BOOL)copyFromTemp;
+- (void)copyToShapeBits:(fakeBoxRec *)rectList count:(int)count;
+- (void)eraseFromShapeBits:(fakeBoxRec *)rectList count:(int)count;
 
 @end

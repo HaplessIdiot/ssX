@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.h,v 1.2 2001/07/01 03:24:57 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -19,7 +19,6 @@
 
 
 // Debug output, or not.
-
 #ifdef ROOTLESSDEBUG
 #define RL_DEBUG_MSG ErrorF
 #else
@@ -46,6 +45,9 @@ typedef struct RootlessWindowRec {
     RegionRec damage;
     unsigned int borderWidth; // needed for MoveWindow(VTOther) (%$#@!!!)
     PixmapPtr pixmap;
+#ifdef SHAPE
+    BOOL shapeDamage; // TRUE if shape has changed
+#endif
 } RootlessWindowRec;
 
 
@@ -188,22 +190,25 @@ WindowPtr TopLevelParent(WindowPtr pWindow);
 // (e.g. it is visible and has a top-level or root parent)
 Bool IsFramedWindow(WindowPtr pWin);
 
-// Move the given pixmap's base address to where pixel (0, 0) 
-// would be if the pixmap's actual data started at (x, y)
+// Move the given pixmap's base address to where pixel (0, 0)
+// would be if the pixmap's actual data started at (x, y).
 void SetPixmapBaseToScreen(PixmapPtr pix, int x, int y);
 
-// Update pWindow's pixmap. 
-// This needs to be called every time a window moves relative to 
+// Update pWindow's pixmap.
+// This needs to be called every time a window moves relative to
 // its top-level parent, or the parent's pixmap data is reallocated.
 void UpdatePixmap(WindowPtr pWindow);
 
 // Routines that cause regions to get redrawn.
-// DamageRegion and DamageRect are GLOBAL coords
-// DamageBox is WINDOW-LOCAL coords
+// DamageRegion and DamageRect are in global coordinates.
+// DamageBox is in window-local coordinates.
 void RootlessDamageRegion(WindowPtr pWindow, RegionPtr pRegion);
 void RootlessDamageRect(WindowPtr pWindow, int x, int y, int w, int h);
 void RootlessDamageBox(WindowPtr pWindow, BoxPtr pBox);
 void RootlessRedisplay(WindowPtr pWindow);
 void RootlessRedisplayScreen(ScreenPtr pScreen);
+
+// Window reshape needs to be updated. The reshape also forces complete redraw.
+void RootlessDamageShape(WindowPtr pWin);
 
 #endif // _ROOTLESSCOMMON_H
