@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 659. Fix XDarwin crash in IOKit mode for certain screen resolutions
+      (Torrey T. Lyons).
  658. DRI update - update the SiS DRI driver from DRI trunk (Eric Anholt).
  657. Fix mouse wheel code again for PowerPC (#5990, Rene Rebe).
  656. Fix sparc asm glapi initialisation in libGL when using indirect rendering
@@ -18349,7 +18351,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3026 2003/12/08 23:49:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3027 2003/12/09 00:29:59 alanh Exp $
 
 
 
