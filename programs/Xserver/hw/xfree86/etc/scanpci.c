@@ -116,10 +116,11 @@ pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 void
 usage(void)
 {
-    printf("Usage: scanpci [-v12fV]\n");
+    printf("Usage: scanpci [-v12OfV]\n");
     printf("           -v print config space\n");
     printf("           -1 config type 1\n");
     printf("           -2 config type 2\n");
+    printf("           -O use OS config support\n");    
     printf("           -f force config type\n");
     printf("           -V set message verbosity level\n");
 }
@@ -135,7 +136,7 @@ main(int argc, char *argv[])
     
     xf86Info.pciFlags = PCIProbe1;
 
-    while ((c = getopt(argc, argv, "?v12fV:")) != -1) 
+    while ((c = getopt(argc, argv, "?v12OfV:")) != -1) 
 	switch(c) {
 	case 'v':
 	    Verbose = 1;
@@ -145,6 +146,9 @@ main(int argc, char *argv[])
 	    break;
 	case '2':
 	    xf86Info.pciFlags = PCIProbe2;
+	    break;
+	case 'O':
+	    xf86Info.pciFlags = PCIOsConfig;
 	    break;
 	case 'f':
 	    force = 1;
@@ -312,41 +316,53 @@ print_default_class(pciConfigPtr pcr)
 	       pcr->pci_bist, pcr->pci_header_type, pcr->pci_latency_timer,
 	       pcr->pci_cache_line_size);
     if (pcr->pci_base0)
-	printf("  BASE0     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE0     0x%08x  addr 0x%08x  %s%s%s\n",
 	      (int)pcr->pci_base0,(int)(pcr->pci_base0
 					& (pcr->pci_base0 & 0x1 ?
 					   0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base0 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base0 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base0 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base0 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_base1)
-	printf("  BASE1     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE1     0x%08x  addr 0x%08x  %s%s%s\n",
 	       (int)pcr->pci_base1, (int)(pcr->pci_base1
 					  & (pcr->pci_base1 & 0x1 ?
 					     0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base1 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base1 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base1 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base1 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_base2)
-	printf("  BASE2     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE2     0x%08x  addr 0x%08x  %s%s%s\n",
 	       (int)pcr->pci_base2, (int)(pcr->pci_base2
 					  & (pcr->pci_base2 & 0x1 ?
 					     0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base2 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base2 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base2 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base2 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_base3)
-	printf("  BASE3     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE3     0x%08x  addr 0x%08x  %s%s%s\n",
 	       (int)pcr->pci_base3, (int)(pcr->pci_base3
 					  & (pcr->pci_base3 & 0x1 ?
 					     0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base3 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base3 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base3 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base3 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_base4)
-	printf("  BASE4     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE4     0x%08x  addr 0x%08x  %s%s%s\n",
 	       (int)pcr->pci_base4, (int)(pcr->pci_base4
 					  & (pcr->pci_base4 & 0x1 ?
 					   0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base4 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base4 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base4 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base4 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_base5)
-	printf("  BASE5     0x%08x  addr 0x%08x  %s\n",
+	printf("  BASE5     0x%08x  addr 0x%08x  %s%s%s\n",
 	       (int)pcr->pci_base5, (int)(pcr->pci_base5
 					  & (pcr->pci_base5 & 0x1 ?
 					     0xFFFFFFFC : 0xFFFFFFF0)), 
-	       pcr->pci_base5 & 0x1 ? "I/O" : "MEM");
+	       pcr->pci_base5 & 0x1 ? "I/O" : "MEM",
+	       ((pcr->pci_base5 & 0x9) == 0x8) ? " PREFETCHABLE" :"",
+	       ((pcr->pci_base5 & 0x7) == 0x4) ? " 64BIT" : "");
     if (pcr->pci_baserom)
 	printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
 	       (int)pcr->pci_baserom, (int)(pcr->pci_baserom & 0xFFFF8000),
