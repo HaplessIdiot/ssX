@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.14 2001/04/03 02:29:32 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.15 2002/02/22 21:32:52 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -35,9 +35,12 @@ XCOMM 	glw
 
 LinkSourceFile(glapi.c, $(MESASRCDIR)/src)
 LinkSourceFile(glthread.c, $(MESASRCDIR)/src)
+#ifdef i386Architecture
 LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
+#endif
+#ifdef SparcArchitecture
 LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
-
+#endif
 
 
 # Maybe some of these could come from
@@ -89,6 +92,13 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
 
      GLX_DEFS = GlxDefines
 
+#ifdef i386Architecture
+      ASM_DIR = X86
+#endif
+#ifdef SparcArchitecture
+      ASM_DIR = SPARC
+#endif
+
 #if BuildXF86DRI
      DRI_INCS = -I$(GLXLIBSRC)/dri
 #if defined(i386Architecture)
@@ -118,8 +128,7 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
 		-I$(GLXLIBSRC)/glx \
 		-I$(MESASRCDIR)/src \
 		-I$(MESASRCDIR)/src/X \
-		-I$(MESASRCDIR)/src/X86 \
-		-I$(MESASRCDIR)/src/SPARC \
+		-I$(MESASRCDIR)/src/$(ASM_DIR) \
 		-I$(MESASRCDIR)/include \
 		-I$(GLXLIBSRC)/include \
 		$(DRI_INCS)

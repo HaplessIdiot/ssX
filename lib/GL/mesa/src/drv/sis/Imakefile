@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.18 2001/11/02 23:29:27 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.19 2002/02/23 00:45:50 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -27,6 +27,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.18 2001/11/02 23:29:27 
 #include "../../Imakefile.inc"
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"
+#endif
+#ifdef SparcArchitecture
+#include "../../SPARC/Imakefile.inc"
 #endif
 
 XCOMM SIS_DEFINES = -DSIS_USE_HW_CULL -DSIS_USE_FASTPATH
