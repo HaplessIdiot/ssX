@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.41 2000/03/05 16:59:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.42 2000/06/17 00:03:27 martin Exp $
 
 #include <Server.tmpl>
 
@@ -73,7 +73,7 @@ APMSRC = pm_noop.c
 APMOBJ = pm_noop.o
 #endif
 
-#if defined(FreeBSDArchitecture)
+#if defined(FreeBSDArchitecture) && (OSMajorVersion > 2)
 KMODSRC = bsd_kmod.c
 KMODOBJ = bsd_kmod.o
 #else

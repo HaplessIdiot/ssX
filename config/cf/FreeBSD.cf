@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.93 2000/06/07 02:13:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.94 2000/06/13 23:15:46 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -122,6 +122,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasMTRRSupport		YES
 #else
 #define HasMTRRSupport		NO
+#endif
+#endif
+
+/*
+ * Drivers that don't need AGP can work with 4.0, but we don't have a
+ * mechanism for specifying a subset of drivers in the OS.cf files yet.
+ */
+#ifndef BuildXF86DRI
+#if OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 1)
+#define BuildXF86DRI		YES
 #endif
 #endif
 

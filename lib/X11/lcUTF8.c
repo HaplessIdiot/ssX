@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.1 2000/02/12 02:54:15 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.2 2000/02/29 03:09:04 dawes Exp $ */
 
 /*
  * This file contains:
@@ -120,7 +120,8 @@ close_converter(conv)
  */
 
 typedef wchar_t original_wchar_t;
-#define wchar_t unsigned int
+typedef unsigned int local_wchar_t;
+#define wchar_t local_wchar_t
 #define conv_t XlcConv
 
 typedef struct _Utf8ConvRec {
@@ -142,12 +143,13 @@ typedef struct _Utf8ConvRec {
  * int xxx_cstowc (XlcConv conv, wchar_t *pwc, unsigned char const *s, int n)
  * converts the byte sequence starting at s to a wide character. Up to n bytes
  * are available at s. n is >= 1.
- * Result is number of bytes consumed, or -1 if invalid, or 0 if n too small.
+ * Result is number of bytes consumed (if a wide character was read),
+ * or 0 if invalid, or -1 if n too small.
  *
  * int xxx_wctocs (XlcConv conv, unsigned char *r, wchar_t wc, int n)
  * converts the wide character wc to the character set xxx, and stores the
  * result beginning at r. Up to n bytes may be written at r. n is >= 1.
- * Result is number of bytes written, or -1 if invalid, or 0 if n too small.
+ * Result is number of bytes written, or 0 if invalid, or -1 if n too small.
  */
 
 /* Return code if invalid. (xxx_mbtowc, xxx_wctomb) */
@@ -164,6 +166,7 @@ typedef struct _Utf8ConvRec {
  * when the current locale is not an UTF-8 locale.
  */
 
+#include "lcUniConv/utf8.h"
 #ifdef notused
 #include "lcUniConv/ascii.h"
 #endif
@@ -177,6 +180,7 @@ typedef struct _Utf8ConvRec {
 #include "lcUniConv/iso8859_8.h"
 #include "lcUniConv/iso8859_9.h"
 #include "lcUniConv/iso8859_10.h"
+#include "lcUniConv/iso8859_13.h"
 #include "lcUniConv/iso8859_14.h"
 #include "lcUniConv/iso8859_15.h"
 #include "lcUniConv/iso8859_16.h"
@@ -206,6 +210,12 @@ typedef struct {
 #endif
 
 static Utf8ConvRec all_charsets[] = {
+    /* The ISO10646-1/UTF-8 entry occurs twice, once at the beginning
+       (for lookup speed), once at the end (as a fallback).  */
+    { "ISO10646-1", NULLQUARK,
+	utf8_mbtowc, utf8_wctomb
+    },
+
     { "ISO8859-1", NULLQUARK,
 	iso8859_1_mbtowc, iso8859_1_wctomb
     },
@@ -235,6 +245,9 @@ static Utf8ConvRec all_charsets[] = {
     },
     { "ISO8859-10", NULLQUARK,
 	iso8859_10_mbtowc, iso8859_10_wctomb
+    },
+    { "ISO8859-13", NULLQUARK,
+	iso8859_13_mbtowc, iso8859_13_wctomb
     },
     { "ISO8859-14", NULLQUARK,
 	iso8859_14_mbtowc, iso8859_14_wctomb
@@ -295,6 +308,12 @@ static Utf8ConvRec all_charsets[] = {
 	big5_mbtowc, big5_wctomb
     },
 #endif
+
+    /* The ISO10646-1/UTF-8 entry occurs twice, once at the beginning
+       (for lookup speed), once at the end (as a fallback).  */
+    { "ISO10646-1", NULLQUARK,
+	utf8_mbtowc, utf8_wctomb
+    },
 };
 
 #define all_charsets_count (sizeof(all_charsets)/sizeof(all_charsets[0]))
@@ -314,119 +333,6 @@ init_all_charsets()
 	if (all_charsets[0].xrm_name == NULLQUARK)			\
 	    init_all_charsets();					\
     } while (0)
-
-/*
- * UTF-8 itself
- */
-
-static int
-utf8_cstowc(pwc, src, n)
-    wchar_t *pwc;
-    unsigned char const *src;
-    int n;
-{
-    unsigned char c = src[0];
-
-    if (c < 0x80) {
-	*pwc = c;
-	return 1;
-    } else if (c < 0xc2) {
-	return -1;
-    } else if (c < 0xe0) {
-	if (n < 2)
-	    return 0;
-	if (!((src[1] ^ 0x80) < 0x40))
-	    return -1;
-	*pwc = ((wchar_t) (c & 0x1f) << 6)
-	       | (wchar_t) (src[1] ^ 0x80);
-	return 2;
-    } else if (c < 0xf0) {
-	if (n < 3)
-	    return 0;
-	if (!((src[1] ^ 0x80) < 0x40 && (src[2] ^ 0x80) < 0x40
-              && (c >= 0xe1 || src[1] >= 0xa0)))
-	    return -1;
-	*pwc = ((wchar_t) (c & 0x0f) << 12)
-	       | ((wchar_t) (src[1] ^ 0x80) << 6)
-	       | (wchar_t) (src[2] ^ 0x80);
-	return 3;
-    } else if (c < 0xf8 && sizeof(wchar_t)*8 >= 32) {
-	if (n < 4)
-	    return 0;
-	if (!((src[1] ^ 0x80) < 0x40 && (src[2] ^ 0x80) < 0x40
-	      && (src[3] ^ 0x80) < 0x40
-              && (c >= 0xf1 || src[1] >= 0x90)))
-	    return -1;
-	*pwc = ((wchar_t) (c & 0x07) << 18)
-	       | ((wchar_t) (src[1] ^ 0x80) << 12)
-	       | ((wchar_t) (src[2] ^ 0x80) << 6)
-	       | (wchar_t) (src[3] ^ 0x80);
-	return 4;
-    } else if (c < 0xfc && sizeof(wchar_t)*8 >= 32) {
-	if (n < 5)
-	    return 0;
-	if (!((src[1] ^ 0x80) < 0x40 && (src[2] ^ 0x80) < 0x40
-	      && (src[3] ^ 0x80) < 0x40 && (src[4] ^ 0x80) < 0x40
-              && (c >= 0xf9 || src[1] >= 0x88)))
-	    return -1;
-	*pwc = ((wchar_t) (c & 0x03) << 24)
-	       | ((wchar_t) (src[1] ^ 0x80) << 18)
-	       | ((wchar_t) (src[2] ^ 0x80) << 12)
-	       | ((wchar_t) (src[3] ^ 0x80) << 6)
-	       | (wchar_t) (src[4] ^ 0x80);
-	return 5;
-    } else if (c < 0xfe && sizeof(wchar_t)*8 >= 32) {
-	if (n < 6)
-	    return 0;
-	if (!((src[1] ^ 0x80) < 0x40 && (src[2] ^ 0x80) < 0x40
-	      && (src[3] ^ 0x80) < 0x40 && (src[4] ^ 0x80) < 0x40
-	      && (src[5] ^ 0x80) < 0x40
-              && (c >= 0xfd || src[1] >= 0x84)))
-	    return -1;
-	*pwc = ((wchar_t) (c & 0x01) << 30)
-	       | ((wchar_t) (src[1] ^ 0x80) << 24)
-	       | ((wchar_t) (src[2] ^ 0x80) << 18)
-	       | ((wchar_t) (src[3] ^ 0x80) << 12)
-	       | ((wchar_t) (src[4] ^ 0x80) << 6)
-	       | (wchar_t) (src[5] ^ 0x80);
-	return 6;
-    } else
-	return -1;
-}
-
-static int
-utf8_wctocs(r, wc, n)
-    unsigned char *r;
-    wchar_t wc;
-    int n; /* n == 0 is acceptable */
-{
-    int count;
-    if ((unsigned int) wc < 0x80)
-	count = 1;
-    else if ((unsigned int) wc < 0x800)
-	count = 2;
-    else if ((unsigned int) wc < 0x10000)
-	count = 3;
-    else if ((unsigned int) wc < 0x200000)
-	count = 4;
-    else if ((unsigned int) wc < 0x4000000)
-	count = 5;
-    else if ((unsigned int) wc <= 0x7fffffff)
-	count = 6;
-    else
-	return -1;
-    if (n < count)
-	return 0;
-    switch (count) { /* note: code falls through cases! */
-	case 6: r[5] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x4000000;
-	case 5: r[4] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x200000;
-	case 4: r[3] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x10000;
-	case 3: r[2] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0x800;
-	case 2: r[1] = 0x80 | (wc & 0x3f); wc = wc >> 6; wc |= 0xc0;
-	case 1: r[0] = wc;
-    }
-    return count;
-}
 
 /* from XlcNCharSet to XlcNUtf8String */
 
@@ -460,7 +366,7 @@ cstoutf8(conv, from, from_left, to, to_left, args, num_args)
     name = charset->encoding_name;
     /* not charset->name because the latter has a ":GL"/":GR" suffix */
 
-    for (convptr = all_charsets, i = all_charsets_count; i > 0; convptr++, i--)
+    for (convptr = all_charsets, i = all_charsets_count-1; i > 0; convptr++, i--)
 	if (!strcmp(convptr->name, name))
 	    break;
     if (i == 0)
@@ -478,17 +384,17 @@ cstoutf8(conv, from, from_left, to, to_left, args, num_args)
 	int count;
 
 	consumed = convptr->cstowc(conv, &wc, src, srcend-src);
-	if (consumed < 0)
+	if (consumed == RET_ILSEQ)
 	    return -1;
-	if (consumed == 0)
+	if (consumed == RET_TOOFEW(0))
 	    break;
 
-	count = utf8_wctocs(dst, wc, dstend-dst);
-	if (count == 0)
+	count = utf8_wctomb(NULL, dst, wc, dstend-dst);
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
-	    count = utf8_wctocs(dst, BAD_WCHAR, dstend-dst);
-	    if (count == 0)
+	if (count == RET_ILSEQ) {
+	    count = utf8_wctomb(NULL, dst, BAD_WCHAR, dstend-dst);
+	    if (count == RET_TOOSMALL)
 		break;
 	    unconv_num++;
 	}
@@ -547,8 +453,8 @@ create_tocs_conv(lcd, methods)
     charset_num = 0;
     for (i = 0; i < codeset_num; i++)
 	charset_num += codeset_list[i]->num_charsets;
-    if (charset_num > all_charsets_count)
-	charset_num = all_charsets_count;
+    if (charset_num > all_charsets_count-1)
+	charset_num = all_charsets_count-1;
     preferred = (Utf8Conv *) Xmalloc((charset_num + 1) * sizeof(Utf8Conv));
     if (preferred == (Utf8Conv *) NULL) {
 	Xfree((char *) conv);
@@ -568,7 +474,7 @@ create_tocs_conv(lcd, methods)
 		    break;
 	    if (k < 0) {
 		/* Look it up in all_charsets[]. */
-		for (k = 0; k < all_charsets_count; k++)
+		for (k = 0; k < all_charsets_count-1; k++)
 		    if (!strcmp(all_charsets[k].name, name)) {
 			/* Add it to the preferred set. */
 			preferred[charset_num++] = &all_charsets[k];
@@ -615,25 +521,25 @@ charset_wctocs(preferred, charsetp, sidep, conv, r, wc, n)
     while (*preferred != (Utf8Conv) NULL) {
 	convptr = *preferred;
 	count = convptr->wctocs(conv, r, wc, n);
-	if (count == 0)
-	    return 0;
-	if (count > 0) {
+	if (count == RET_TOOSMALL)
+	    return RET_TOOSMALL;
+	if (count != RET_ILSEQ) {
 	    *charsetp = convptr;
 	    *sidep = (*r < 0x80 ? XlcGL : XlcGR);
 	    return count;
 	}
     }
-    for (convptr = all_charsets, i = all_charsets_count; i > 0; convptr++, i--) {
+    for (convptr = all_charsets+1, i = all_charsets_count-1; i > 0; convptr++, i--) {
 	count = convptr->wctocs(conv, r, wc, n);
-	if (count == 0)
-	    return 0;
-	if (count > 0) {
+	if (count == RET_TOOSMALL)
+	    return RET_TOOSMALL;
+	if (count != RET_ILSEQ) {
 	    *charsetp = convptr;
 	    *sidep = (*r < 0x80 ? XlcGL : XlcGR);
 	    return count;
 	}
     }
-    return -1;
+    return RET_ILSEQ;
 }
 
 static int
@@ -671,19 +577,19 @@ utf8tocs(conv, from, from_left, to, to_left, args, num_args)
 	int consumed;
 	int count;
 
-	consumed = utf8_cstowc(&wc, src, srcend-src);
-	if (consumed == 0)
+	consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
+	if (consumed == RET_TOOFEW(0))
 	    break;
-	if (consumed < 0) {
+	if (consumed == RET_ILSEQ) {
 	    src++;
 	    unconv_num++;
 	    continue;
 	}
 
 	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
-	if (count == 0)
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
+	if (count == RET_ILSEQ) {
 	    src += consumed;
 	    unconv_num++;
 	    continue;
@@ -774,19 +680,19 @@ utf8tocs1(conv, from, from_left, to, to_left, args, num_args)
 	int consumed;
 	int count;
 
-	consumed = utf8_cstowc(&wc, src, srcend-src);
-	if (consumed == 0)
+	consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
+	if (consumed == RET_TOOFEW(0))
 	    break;
-	if (consumed < 0) {
+	if (consumed == RET_ILSEQ) {
 	    src++;
 	    unconv_num++;
 	    continue;
 	}
 
 	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
-	if (count == 0)
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
+	if (count == RET_ILSEQ) {
 	    src += consumed;
 	    unconv_num++;
 	    continue;
@@ -873,12 +779,12 @@ utf8tostr(conv, from, from_left, to, to_left, args, num_args)
 	wchar_t wc;
 	int consumed;
 
-	consumed = utf8_cstowc(&wc, src, srcend-src);
-	if (consumed == 0)
+	consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
+	if (consumed == RET_TOOFEW(0))
 	    break;
 	if (dst == dstend)
 	    break;
-	if (consumed < 0) {
+	if (consumed == RET_ILSEQ) {
 	    consumed = 1;
 	    c = BAD_CHAR;
 	    unconv_num++;
@@ -943,8 +849,8 @@ strtoutf8(conv, from, from_left, to, to_left, args, num_args)
     dstend = dst + *to_left;
 
     while (src < srcend) {
-	int count = utf8_wctocs(dst, *src, dstend-dst);
-	if (count == 0)
+	int count = utf8_wctomb(NULL, dst, *src, dstend-dst);
+	if (count == RET_TOOSMALL)
 	    break;
 	dst += count;
 	src++;
@@ -1023,13 +929,17 @@ utf8towcs(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend && dst < dstend) {
-	int consumed = utf8_cstowc(dst, src, srcend-src);
-	if (consumed < 0) {
+	local_wchar_t wc;
+	int consumed = utf8_mbtowc(NULL, &wc, src, srcend-src);
+	if (consumed == RET_TOOFEW(0))
+	    break;
+	if (consumed == RET_ILSEQ) {
 	    src++;
 	    *dst = BAD_WCHAR;
 	    unconv_num++;
 	} else {
 	    src += consumed;
+	    *dst = wc;
 	}
 	dst++;
     }
@@ -1086,12 +996,12 @@ wcstoutf8(conv, from, from_left, to, to_left, args, num_args)
     unconv_num = 0;
 
     while (src < srcend) {
-	int count = utf8_wctocs(dst, *src, dstend-dst);
-	if (count == 0)
+	int count = utf8_wctomb(NULL, dst, *src, dstend-dst);
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
-	    count = utf8_wctocs(dst, BAD_WCHAR, dstend-dst);
-	    if (count == 0)
+	if (count == RET_ILSEQ) {
+	    count = utf8_wctomb(NULL, dst, BAD_WCHAR, dstend-dst);
+	    if (count == RET_TOOSMALL)
 		break;
 	    unconv_num++;
 	}
@@ -1268,7 +1178,7 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
     charset = (XlcCharSet) args[0];
     name = charset->name;
 
-    for (convptr = all_charsets, i = all_charsets_count; i > 0; convptr++, i--)
+    for (convptr = all_charsets, i = all_charsets_count-1; i > 0; convptr++, i--)
 	if (!strcmp(convptr->name, name)) /* FIXME: charset->side */
 	    break;
     if (i == 0)
@@ -1285,9 +1195,9 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
 	int consumed;
 
 	consumed = convptr->cstowc(conv, &wc, src, srcend-src);
-	if (consumed < 0)
+	if (consumed == RET_ILSEQ)
 	    return -1;
-	if (consumed == 0)
+	if (consumed == RET_TOOFEW(0))
 	    break;
 
 	*dst++ = wc;
@@ -1356,9 +1266,9 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 	int count;
 
 	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
-	if (count == 0)
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
+	if (count == RET_ILSEQ) {
 	    src++;
 	    unconv_num++;
 	    continue;
@@ -1449,9 +1359,9 @@ wcstocs1(conv, from, from_left, to, to_left, args, num_args)
 	int count;
 
 	count = charset_wctocs(preferred_charsets, &chosen_charset, &chosen_side, conv, dst, wc, dstend-dst);
-	if (count == 0)
+	if (count == RET_TOOSMALL)
 	    break;
-	if (count < 0) {
+	if (count == RET_ILSEQ) {
 	    src++;
 	    unconv_num++;
 	    continue;
