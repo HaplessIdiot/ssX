@@ -51,3 +51,7 @@ the 3D texture mapping, or any of the sound functionality. If these features
 are to be supported the driver will need to be moved into the kernel.
 
 For more details, download Nvidia's NVlib SDK.
+
+
+
+/* $XFree86: $ */
