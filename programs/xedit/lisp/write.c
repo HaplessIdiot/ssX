@@ -520,10 +520,26 @@ LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
     if (atom->package != PACKAGE) {
 	if (atom->package == mac->keyword)
 	    length += LispWriteChar(mac, stream, ':');
-	else if (!atom->ext) {
-	    length += LispWriteStr(mac, stream,
-				   THESTR(atom->package->data.package.name));
-	    length += LispWriteStr(mac, stream, "::");
+	else {
+	    /* Check if the symbol is visible */
+	    int i, visible = 0;
+
+	    if (atom->ext) {
+		for (i = mac->pack->use.length - 1; i >= 0; i--) {
+		    if (mac->pack->use.pairs[i] == atom->package) {
+			visible = 1;
+			break;
+		    }
+		}
+	    }
+
+	    if (!visible) {
+		length += LispWriteStr(mac, stream,
+				       THESTR(atom->package->data.package.name));
+		length += LispWriteChar(mac, stream, ':');
+		if (!atom->ext)
+		    length += LispWriteChar(mac, stream, ':');
+	    }
 	}
     }
     if (atom->unreadable)
