@@ -3,7 +3,7 @@
   for Alpha Linux
 *******************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SlowBcopy.c,v 3.1 1996/11/24 09:55:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SlowBcopy.c,v 3.2 1996/12/27 07:04:04 dawes Exp $ */
  
 /* 
  *   Create a dependency that should be immune from the effect of register
@@ -28,6 +28,7 @@ int len;
     }
 }
 
+#ifdef __alpha__
 /*
  * The Jensen lacks dense memory, thus we have to address the bus via
  * the sparse addressing scheme. Time critical code uses routines from
@@ -89,4 +90,4 @@ SlowBCopyToBus(src, dst, count)
     else
 	SlowBcopy(src,dst,count);    
 }
-
+#endif

@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h /main/100 1996/10/31 14:32:02 kaleb $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.21 1996/12/31 04:14:50 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.22 1997/01/03 07:58:15 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -596,8 +596,8 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
 # define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"
 # define DEFAULT_OS_NAME	"srm %[^\n]"
-#elif defined(__FreeBSD__)
-/* OpenBSD, 386BSD, and BSD/OS too? */
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+/* BSD/OS too? */
 /* uname -r returns "x.y[.z]-mumble", e.g. "2.1.5-RELEASE" or "2.2-0801SNAP" */
 # define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
 # define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"

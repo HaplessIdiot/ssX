@@ -131,3 +131,4 @@ EXPORTS
 	_IcePaAuthDataEntries @ 123
 	_IceTransSocketINETFuncs @ 124
 	_IceTransSocketTCPFuncs @ 125
+	IceListenForWellKnownConnections @ 126

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DCConf.c,v 3.0 1996/11/24 09:54:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DCConf.c,v 3.1 1996/12/09 11:52:06 dawes Exp $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -90,7 +90,7 @@ SymTabRec otab[];
 	      pos = 0;
 	      return( DCpushToken = EOF );
 	    }
-	    configLineNo = *(int *)currpointer; /* get line number */
+	    memcpy(&configLineNo, currpointer, sizeof(int));
 	    currpointer += sizeof(int);
 	    pos += (sizeof(int) + strlen(currpointer) + 1);
 	    configBuf = currpointer;      /* copy line       */

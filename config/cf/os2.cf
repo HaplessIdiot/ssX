@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.cf /main/1 1996/10/31 14:47:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.15 1996/11/18 13:07:03 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.16 1996/12/27 06:50:23 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -71,6 +71,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.15 1996/11/18 13:07:03 dawes 
 
 #define BuildXKB		YES
 #define BuildImplibs		YES
+#define BuildLBX		YES
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
@@ -84,6 +85,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.15 1996/11/18 13:07:03 dawes 
 #define HasSecureRPC		NO
 #define	HasSymLinks		NO
 #define HasVFork		NO
+#define HasStrcasecmp		NO
 #define Malloc0ReturnsNull	YES
 #define SetTtyGroup     	NO
 #ifndef HasLibCrypt
@@ -159,6 +161,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.15 1996/11/18 13:07:03 dawes 
 #define LintCmd	/**/
 #define MvCmd	mv
 #define CompressCmd	compress
+#define GzipCmd	gzip
 #define LnCmd cp
 #define CpCmd cp
 #define RmCmd	ImakeHelper 4 
@@ -207,6 +210,7 @@ _NULLCMD_ = @ rem
 #define StripInstalledPrograms	NO
 #define CompressAllFonts	YES
 #define CompressManPages	YES
+#define GzipFontCompression	YES
 #define DefaultUserPath		.;/os2;/emx/bin;/tcpip/bin;$(BINDIR)
 #define DefaultSystemPath	/os2;/emx/bin;$(BINDIR)
 

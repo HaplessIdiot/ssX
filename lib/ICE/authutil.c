@@ -1,5 +1,5 @@
 /* $XConsortium: authutil.c /main/16 1996/09/28 16:33:00 rws $ */
-/* $XFree86: xc/lib/ICE/authutil.c,v 3.0 1994/10/20 06:02:08 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.1 1996/12/23 05:58:59 dawes Exp $ */
 /******************************************************************************
 
 
@@ -124,11 +124,7 @@ IceAuthFileName ()
     }
 
     strcpy (buf, name);
-#ifdef __EMX__
-    strcat (buf, "/ICEauth." + (name[1] == '\0' ? 1 : 0));
-#else
     strcat (buf, slashDotICEauthority + (name[1] == '\0' ? 1 : 0));
-#endif
 
     return (buf);
 }

@@ -23,11 +23,12 @@
 
    NOTES:
 
+     o  Acceleration is now supported for the 9320, 9440, 9660, 9680,
+        9682 and Cyber chips.
+
      o  The Cyber 9382/5 chips that have started to appear, have
         preliminary support in XFree86 3.2 and appear to work at 800x600
-        on the LCD.  The server cannot yet detect the Cyber chips and
-        therefore it is necessary to specify "Chipset 'cyber938x'" in
-        your XF86Config file to support them.
+        on the LCD.
 
      o  The TGUI9440/9660/9680 are now fully supported by the SVGA
         server.
@@ -63,9 +64,9 @@
            speed, but hasn't been extensively tested yet.
 
 
-
         Option "hw_cursor"
-           Turn on hardware cursor (NOTE: it is off by default)
+           Turn on hardware cursor (NOTE: it is off by default) This is
+           known to be buggy.
 
         Option "tgui_pci_read_off"
            Turn off PCI burst read mode.
@@ -84,8 +85,8 @@
            Useful for fixed frequency monitors - usually used for VGA
            monitors - not SVGA.
 
-     o  No acceleration features of the newer chipsets have been taken
-        advantage of yet!
+        Option "noaccel;"
+           Turn off XAA acceleration.
 
   The original Trident chipset, 8800BR, cannot be supported as an SVGA
   chipset by either the color or monochrome servers.  The chip is
@@ -128,8 +129,8 @@
   clock synthesizers used on the 9000 and 8900CL boards.  If your board
   has a chip labeled "Trident TCK900x" ("x" has been seen as 2 or 4;
   there may be others), your board may actually have a 4th clock select
-  bit.  The 9002 has twelve distinct clocks (the other 4 are
 
+  bit.  The 9002 has twelve distinct clocks (the other 4 are
   duplicates); the 9004 has 16 clocks (the same 12 as the 9002 + 4
   others).  If you see such a chip on a board with an 8900B or 8900C,
   put the following line in the Device section of your XF86Config file:
@@ -157,7 +158,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.16 1996/12/30 13:59:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.17 1997/01/04 12:18:16 dawes Exp $
 
 
 
@@ -165,7 +166,6 @@
 
 
   $XConsortium: trident.sgml /main/11 1996/10/28 04:24:08 kaleb $
-
 
 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:23:11 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/Imakefile,v 3.3 1996/02/04 09:09:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/Imakefile,v 3.4 1996/12/23 06:48:36 dawes Exp $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -124,4 +124,6 @@ ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
 
+#ifndef OS2Architecture
 DependTarget()
+#endif

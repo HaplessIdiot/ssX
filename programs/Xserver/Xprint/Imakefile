@@ -1,4 +1,9 @@
 XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
+
+
+
+
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -14,11 +19,16 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:23:16 rws $
 #define XpPostScriptDDX YES
 #endif
 
-SRCS1 =	Init.c Xrm.c Quarks.c attributes.c Util.c mediaSizes.c \
+SRCS1 =	Init.c Quarks.c attributes.c Util.c mediaSizes.c \
 	Oid.c AttrValid.c
 
-OBJS1 = Init.o Xrm.o Quarks.o attributes.o Util.o mediaSizes.o \
+OBJS1 = Init.o Quarks.o attributes.o Util.o mediaSizes.o \
 	Oid.o AttrValid.o
+
+#ifdef OS2Architecture
+SRCS_OS2 = os2_stubs.c
+OBJS_OS2 = os2_stubs.o
+#endif
 
 #if XprtServer
 #if PrintOnlyServer || defined(PrintServerExtensions)
@@ -37,9 +47,9 @@ SRCS2 = ddxInit.c
 OBJS2 = ddxInit.o
 #endif
 
-SRCS =	$(SRCS1) $(SRCS2) $(SRCS3)
+SRCS =	$(SRCS1) $(SRCS2) $(SRCS3) $(SRCS_OS2)
 
-OBJS = $(OBJS1)
+OBJS = $(OBJS1) $(OBJS_OS2)
 
 #if XpRasterDDX
 RASTDIR = raster
@@ -80,7 +90,7 @@ DEFINES = -DXPRINTDIR=\"$(XPRINTDIR)\" $(RASTDEF) $(PCLDEF) $(MPCLDEF) $(PSDEF)
 NormalLibraryObjectRule()
 
 #if XprtServer
-all:: $(OBJS2) $(OBJS3)
+all:: $(OBJS2) $(OBJS3) $(OBJS_OS2)
 #endif
 
 NormalLibraryTarget(printer,$(OBJS))
@@ -90,6 +100,11 @@ SpecialCObjectRule(ddxInit,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(EXT_DEF
 #if XprtServer && (PrintOnlyServer || defined(PrintServerExtensions))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT)
+#endif
+
+#ifdef OS2Architecture
+LinkSourceFile(os2_stubs.c,../hw/xfree86/os-support/os2)
+SpecialCObjectRule(os2_stubs,$(ICONFIGFILES),-DOS2NULLSELECT)
 #endif
 
 MakeSubdirs($(SUBDIRS))

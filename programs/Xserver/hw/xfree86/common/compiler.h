@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.22 1996/12/09 11:52:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.23 1996/12/23 06:43:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -263,6 +263,104 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #endif
 
 #else /* defined(linux) && defined(__alpha__) */
+#if defined(__mips__)
+
+unsigned int IOPortBase;  /* Memory mapped I/O port area */
+
+static __inline__ void
+outb(port, val)
+     short port;
+     char val;
+{
+	*(volatile unsigned char*)(((unsigned short)(port))+IOPortBase) = val;
+}
+
+static __inline__ void
+outw(port, val)
+     short port;
+     short val;
+{
+	*(volatile unsigned short*)(((unsigned short)(port))+IOPortBase) = val;
+}
+
+static __inline__ void
+outl(port, val)
+     short port;
+     int val;
+{
+	*(volatile unsigned long*)(((unsigned short)(port))+IOPortBase) = val;
+}
+
+static __inline__ unsigned int
+inb(port)
+     short port;
+{
+	return(*(volatile unsigned char*)(((unsigned short)(port))+IOPortBase));
+}
+
+static __inline__ unsigned int
+inw(port)
+     short port;
+{
+	return(*(volatile unsigned short*)(((unsigned short)(port))+IOPortBase));
+}
+
+static __inline__ unsigned int
+inl(port)
+     short port;
+{
+	return(*(volatile unsigned long*)(((unsigned short)(port))+IOPortBase));
+}
+
+
+static __inline__ unsigned long ldq_u(unsigned long * r11)
+{
+	unsigned long r1;
+	__asm__("lwr %0,%2\n\t"
+		"lwl %0,%3\n\t"
+		:"=&r" (r1)
+		:"r" (r11),
+		 "m" (*r11),
+		 "m" (*(unsigned long *)(3+(char *) r11)));
+	return r1;
+}
+
+static __inline__ unsigned long ldl_u(unsigned int * r11)
+{
+	unsigned long r1;
+	__asm__("lwr %0,%2\n\t"
+		"lwl %0,%3\n\t"
+		:"=&r" (r1)
+		:"r" (r11),
+		 "m" (*r11),
+		 "m" (*(unsigned long *)(3+(char *) r11)));
+	return r1;
+}
+
+static __inline__ unsigned long ldw_u(unsigned short * r11)
+{
+	unsigned long r1;
+	__asm__("lwr %0,%2\n\t"
+		"lwl %0,%3\n\t"
+		:"=&r" (r1)
+		:"r" (r11),
+		 "m" (*r11),
+		 "m" (*(unsigned long *)(1+(char *) r11)));
+	return r1;
+}
+
+#define stq_u(v,p)	stl_u(v,p)
+#define stl_u(v,p)	((unsigned char *)(p)) = (v); \
+			((unsigned char *)(p)+1) = ((v) >> 8);  \
+			((unsigned char *)(p)+2) = ((v) >> 16); \
+			((unsigned char *)(p)+3) = ((v) >> 24)
+
+#define stw_u(v,p)	((unsigned char *)(p)) = (v); \
+			((unsigned char *)(p)+1) = ((v) >> 8)
+
+#define mem_barrier()   /* NOP */
+
+#else /* defined(mips) */
 
 #define ldq_u(p)	(*((unsigned long  *)(p)))
 #define ldl_u(p)	(*((unsigned int   *)(p)))
@@ -877,6 +975,7 @@ unsigned short int port;
 
 #endif /* FAKEIT */
 
+#endif /* defined(mips) */
 #endif /* defined(AlphaArchitecture) && defined(LinuxArchitecture) */
 
 #else /* __GNUC__ */

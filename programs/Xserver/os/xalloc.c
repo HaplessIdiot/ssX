@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.10 1996/10/03 08:49:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.11 1996/12/09 11:57:06 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -302,7 +302,7 @@ Xalloc (amount)
     }
 
     /* alignment check */
-#if defined(__alpha__) || defined(__sparc__)
+#if defined(__alpha__) || defined(__sparc__) || defined(__mips__)
     amount = (amount + (sizeof(long)-1)) & ~(sizeof(long)-1);
 #endif
 

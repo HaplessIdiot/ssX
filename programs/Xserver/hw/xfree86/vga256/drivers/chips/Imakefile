@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.10 1996/10/17 15:20:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.11 1996/12/23 06:56:18 dawes Exp $
 
 XCOMM Some possible options to include in the defines below
 XCOMM
@@ -92,5 +92,7 @@ InstallLinkKitNonExecFile(ct_teblt8.c,$(LINKKITDIR)/drivers/vga256/chips)
 InstallLinkKitNonExecFile(ct_textblt.s,$(LINKKITDIR)/drivers/vga256/chips)
 InstallLinkKitNonExecFile(ct_colexp.c,$(LINKKITDIR)/drivers/vga256/chips)
 
+#ifndef OS2Architecture
 DependTarget()
+#endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.12 1996/12/23 06:39:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.13 1996/12/29 13:48:57 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -439,6 +439,12 @@ DoCacheExpandPixmap(pci)
     /* Expand in the x direction */
     while (cur_w * 2 <= pci->w) 
     {
+	/* This extra wait had to be added to work around a timing
+	 * problem I encountered with certain [CVG]T chip sets.  This
+	 * only happens when you are repeatedly blt'ing an image
+	 * smaller than 16x1 or 12x2 from one area to another.
+	 */
+	if (mach64IntegratedController) WaitIdleEmpty();
         MACH64_BIT_BLT((pci->x), (pci->y), (pci->x + cur_w), pci->y, 
 			cur_w, cur_h,
 		       (DST_X_LEFT_TO_RIGHT | DST_Y_TOP_TO_BOTTOM));

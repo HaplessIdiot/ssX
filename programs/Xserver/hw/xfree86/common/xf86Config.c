@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.109 1996/12/28 08:15:25 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.110 1996/12/29 13:50:58 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3634,7 +3634,7 @@ static char *xf86DCSaveLine(DCPointer,token)
 	  len += 4096;
 	}
 	currpointer = DCPointer + pos;  /* find current position */
-	*((int *)currpointer) = currline;   /* store lineno */
+	memcpy(currpointer, &currline, sizeof(int)); /* Grrr unaligned ints.. */
 	strcpy((currpointer + sizeof(int)),configBuf); /* store complete line*/
 	pos += addlen;                      /* goto end */
 	currpointer += addlen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.7 1996/10/17 15:19:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.8 1996/12/23 06:50:40 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -37,6 +37,7 @@
 #define INCL_DOSFILEMGR
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86_OSlib.h"
 
 /***************************************************************************/
 /* Video Memory Mapping helper functions                                   */

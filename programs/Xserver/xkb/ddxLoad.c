@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.16 1996/12/26 07:02:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.17 1996/12/30 14:01:22 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -229,6 +229,7 @@ char tmpname[32];
 #endif    
 #ifdef __EMX__
 char *tmpbase;
+int i;
 #endif
     if ((names->keymap==NULL)||(names->keymap[0]=='\0')) {
 	extern char *display;
@@ -245,12 +246,9 @@ char *tmpbase;
     (void) mktemp(tmpname);
 #endif
 #ifdef __EMX__
-    char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+    tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
 #endif
     if (XkbBaseDirectory!=NULL) {
-#ifdef __EMX__
-	int i;
-#endif
 	if (strlen(XkbBaseDirectory)*2+(xkbDebugFlags>9?2:1)
 		+strlen(PRE_ERROR_MSG)+strlen(ERROR_PREFIX)
 		+strlen(POST_ERROR_MSG1)+strlen(xkm_output_dir)

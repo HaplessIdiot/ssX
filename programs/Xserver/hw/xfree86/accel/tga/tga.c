@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.11 1996/12/27 07:03:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.12 1996/12/28 08:15:09 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -41,6 +41,8 @@
 #include "xf86_HWlib.h"
 #include "tga.h"
 #include "tga_presets.h"
+
+#include "xf86xaa.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -332,6 +334,7 @@ tgaProbe()
 #endif
 
   OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+  OFLG_SET(OPTION_DAC_8_BIT, &tgaInfoRec.options); /* Set 8bit by default */
   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
   OFLG_SET(OPTION_POWER_SAVER, &validOptions);
 
@@ -463,9 +466,6 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 
 	/* Init the screen */
 	
-#ifdef TGA_ACCEL
-	tgaInitGC();
-#endif
 	tgaInitAperture(scr_index);
 	tgaInit(tgaInfoRec.modes);
 	tgaCalcCRTCRegs(&tgaCRTCRegs, tgaInfoRec.modes);
@@ -476,18 +476,21 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 		tgaReorderSwapBits(i, tgaSwapBits[i]);
 	}
 
-	xf86InitCache(tgaCacheMoveBlock);
-	tgaFontCache8Init();
-	tgaImageInit();
-
 	/*
 	 * Take display resolution from the -dpi flag 
 	 */
 	if (monitorResolution)
 		displayResolution = monitorResolution;
 	
+#if 0
+	/* Can't do it yet - glibc-1.99 causes a SIGFPE when XAA inited */
+ 	TGAAccelInit();
+
+	if (!xf86XAAScreenInit8bpp(pScreen,
+#else
 	if (!cfbScreenInit(pScreen,
-			tgaVideoMem,
+#endif
+			(pointer) tgaVideoMem,
 			tgaInfoRec.virtualX, tgaInfoRec.virtualY,
 			displayResolution, displayResolution,
 			tgaInfoRec.displayWidth))
@@ -584,11 +587,6 @@ tgaEnterLeaveVT(enter, screen_idx)
 	    tgaRestoreDACvalues();
 	    tgaAdjustFrame(pScr->frameX0, pScr->frameY0);
 	    tgaRestoreCursor(pScreen);
-
-#ifdef NOTYET
-	    tgaCacheInit(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
-	    tgaFontCache8Init(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
-#endif
 
 	    if (pspix->devPrivate.ptr != tgaVideoMem && ppix) {
 		pspix->devPrivate.ptr = tgaVideoMem;

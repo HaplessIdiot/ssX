@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.2 1997/01/02 04:38:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.3 1997/01/04 12:19:34 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -135,18 +135,9 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     rootdepth = 0;
 
     BitsPerRGB = xf86weight.green;
-
-    /* If we got here without ServerInfoRec - It's fatal */
-    if (!xf86AccelInfoRec.ServerInfoRec)
-    {
-	xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-	ErrorF("%s %s: XAA - No Acceleration interface defined, defaulting.\n", XCONFIG_PROBED,
-		xf86AccelInfoRec.ServerInfoRec->name);
-    }
-
 #if PSZ > 8
     /* Only TrueColor for 16/32bpp */
-    if (!cfbSetVisualTypes(xf86AccelInfoRec.ServerInfoRec->depth, 1 << TrueColor, BitsPerRGB))
+    if (!cfbSetVisualTypes(vga256InfoRec.depth, 1 << TrueColor, BitsPerRGB))
 	return FALSE;
 #endif
     if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth,

@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.30 1996/12/26 06:58:47 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.31 1996/12/30 13:57:31 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1608,7 +1608,7 @@ ProjectUnsharedLibReferences(var,libname,libsource,$(BUILDLIBDIR))
  */
 #ifndef ProjectUnsharedLibReferences
 #define ProjectUnsharedLibReferences(varname,libname,libsource,buildlibdir)	@@\
-Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/lib,buildlibdir/lib,libname.a)	@@\
+Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/,buildlibdir/,LibraryTargetName(libname))	@@\
 Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
@@ -2527,7 +2527,7 @@ all:: depends
 #endif
 
 #ifndef StaticLibrary
-#define StaticLibrary(libpath,libname) Concat4(libpath,/lib,libname,.a)
+#define StaticLibrary(libpath,libname) Concat3(libpath,/,LibraryTargetName(libname))
 #endif
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.4 1996/10/17 15:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.5 1996/12/23 06:50:33 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -39,6 +39,7 @@
 #define INCL_DOSFILEMGR
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86_OSlib.h"
 
 /*
  * Read BIOS via xf86sup.SYS device driver

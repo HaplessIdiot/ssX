@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.37 1996/12/19 10:01:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.38 1996/12/23 06:41:52 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -994,16 +994,17 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    psrc += pwidth * py;
 
    for (j = 0; j < h; j++) {
-      /* This assumes we can cast odd addresses to short! */
+      /* This assumes we can cast odd addresses to short! NOT!! */
       short *psrcs = (short *)&psrc[px*s3Bpp];
       for (i = 0; i < (w & ~1); ) {
 	 if (s3InfoRec.bitsPerPixel == 32) {
-	    outl (PIX_TRANS, *((int*)(psrcs)));
+	    outl (PIX_TRANS, ldl_u((unsigned int *)psrcs));
 	    psrcs+=2;
 	    i += 4;
 	 }
 	 else {
-	    outw (PIX_TRANS, *psrcs++);
+	    outw (PIX_TRANS, ldw_u(psrcs));
+	    psrcs++;
 	    i += 2;
 	 }
       }

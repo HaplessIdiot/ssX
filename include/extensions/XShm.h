@@ -27,12 +27,21 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: XShm.h,v 1.6 94/04/17 20:11:16 rws Exp $ */
+/* $XConsortium: XShm.h,v 1.7 94/09/22 21:25:20 dpw Exp $ */
+
+
+
+
+/* $XFree86$ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_
 
 #include <X11/Xfuncproto.h>
+
+#ifdef __EMX__
+#warning Xshm is not supported in XFree86/OS2 3.2
+#endif
 
 #define X_ShmQueryVersion		0
 #define X_ShmAttach			1
@@ -70,6 +79,12 @@ typedef struct {
 } XShmSegmentInfo;
 
 _XFUNCPROTOBEGIN
+
+Bool XShmQueryExtension(
+#if NeedFunctionPrototypes
+    Display*            /* dpy */
+#endif
+);
 
 Bool XShmQueryVersion(
 #if NeedFunctionPrototypes

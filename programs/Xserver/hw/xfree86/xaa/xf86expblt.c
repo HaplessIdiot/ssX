@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.4 1997/01/02 04:38:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.5 1997/01/03 07:59:55 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -284,18 +284,18 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
     nwords = nbytes / 4;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER(base, 0, ldl_u(src));
-    	WRITE_IN_BITORDER(base, 1, ldl_u(src + 1));
+    	WRITE_IN_BITORDER(base, 0, ldl_u((unsigned int *)src));
+    	WRITE_IN_BITORDER(base, 1, ldl_u((unsigned int *)src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER(base, 2, ldl_u(src + 2));
+    	WRITE_IN_BITORDER(base, 2, ldl_u((unsigned int *)src + 2));
 #ifndef FIXEDBASE
     	base += 4;
 #endif
-    	WRITE_IN_BITORDER(base, -1, ldl_u(src + 3));
+    	WRITE_IN_BITORDER(base, -1, ldl_u((unsigned int *)src + 3));
     	src += 4;
     }
     for (i = 0; i < nwords; i++) {
-    	WRITE_IN_BITORDER(base, i, ldl_u(src + i));
+    	WRITE_IN_BITORDER(base, i, ldl_u((unsigned int *)src + i));
     }
     src += i;
 #ifndef FIXEDBASE
@@ -306,11 +306,11 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
         WRITE_IN_BITORDER(base, 0, *(unsigned char *)src);
         return base + 1;
     case 2 :
-        WRITE_IN_BITORDER(base, 0, ldw_u(src));
+        WRITE_IN_BITORDER(base, 0, ldw_u((unsigned short *)src));
         return base + 1;
     case 3 :
         WRITE_IN_BITORDER(base, 0,
-            ldw_u(src) | (*((unsigned char *)src + 2) << 16));
+            ldw_u((unsigned short *)src) | (*((unsigned char *)src + 2) << 16));
         return base + 1;
     default :
         break;
@@ -329,18 +329,18 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
     nwords = w / 32;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER3(base, 0, ldl_u(src));
-    	WRITE_IN_BITORDER3(base, 3, ldl_u(src + 1));
+    	WRITE_IN_BITORDER3(base, 0, ldl_u((unsigned int *)src));
+    	WRITE_IN_BITORDER3(base, 3, ldl_u((unsigned int *)src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER3(base, 6, ldl_u(src + 2));
+    	WRITE_IN_BITORDER3(base, 6, ldl_u((unsigned int *)src + 2));
 #ifndef FIXEDBASE
     	base += 12;
 #endif
-    	WRITE_IN_BITORDER3(base, -3, ldl_u(src + 3));
+    	WRITE_IN_BITORDER3(base, -3, ldl_u((unsigned int *)src + 3));
     	src += 4;
     }
     while (nwords >= 1) {
-    	WRITE_IN_BITORDER3(base, 0, ldl_u(src));
+    	WRITE_IN_BITORDER3(base, 0, ldl_u((unsigned int *)src));
     	src++;
 #ifndef FIXEDBASE
     	base += 3;
@@ -356,13 +356,13 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
         bits = *(unsigned char *)src;
         break;
     case 2 :
-        bits = ldw_u(src);
+        bits = ldw_u((unsigned short *)src);
         break;
     case 3 :
-        bits = ldw_u(src) | (*((unsigned char *)src + 2) << 16);
+        bits = ldw_u((unsigned short *)src) | (*((unsigned char *)src + 2) << 16);
         break;
     default : /* 4 */
-        bits = ldl_u(src);
+        bits = ldl_u((unsigned int *)src);
     }
     WRITE_IN_BITORDER3_FIRSTWORD(base, 0, bits);
 #ifndef FIXEDBASE
@@ -1195,7 +1195,7 @@ srcoffset, w)
          */
         dw = min(w, sw);
         if (dw >= 32) {
-            UINT64_ORLEFTSHIFTEDINT(bits, ldl_u(srcp), shift);
+            UINT64_ORLEFTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
             shift += 32;
             sw -= 32;
             w -= 32;
@@ -1204,18 +1204,18 @@ srcoffset, w)
         else {
             /* Make sure no source overrunning occurs. */
             if (dw > 24) {
-                UINT64_ORLEFTSHIFTEDINT(bits, ldl_u(srcp), shift);
+                UINT64_ORLEFTSHIFTEDINT(bits, ldl_u((unsigned int *)srcp), shift);
             }
             else
             if (dw > 16) {
                 unsigned int data;
-                data = ldw_u(srcp) +
+                data = ldw_u((unsigned short *)srcp) +
                     (*(unsigned char *)(srcp + 2) << 16);
                 UINT64_ORLEFTSHIFTEDINT(bits, data, shift);
             }
             else
             if (dw > 8) {
-                UINT64_ORLEFTSHIFTEDINT(bits, ldw_u(srcp), shift);
+                UINT64_ORLEFTSHIFTEDINT(bits, ldw_u((unsigned short *)srcp), shift);
             }
             else {
                 UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned char *)srcp, shift);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.44 1996/12/28 08:19:17 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.45 1997/01/04 12:19:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -281,6 +281,19 @@ vgaProtect(on)
 
 OsTimerPtr vgaSuspendTimer = NULL, vgaOffTimer = NULL;
 extern CARD32 ScreenSaverTime;
+
+
+/* Allow each driver to provide a VESA Display Power Management
+   Signaling (DPMS) mode setting function */
+
+void (* vgaDisplayPowerManagementFunc)() = (void (*)())NoopDDA;
+
+void vgaSetDisplayPowerManagementHook(
+	void (* ChipDisplayPowerManagement)())
+{
+  vgaDisplayPowerManagementFunc = ChipDisplayPowerManagement;
+}
+
 
 /*
  * vgaOffMode -- put the screen into power off mode.

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.7 1996/11/24 09:51:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.8 1996/12/23 06:29:20 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -11,10 +11,12 @@ XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.7 1996/11/24 09:51:41 dawe
 PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c cfb8cppl.c
 PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o cfb8cppl.o
 #ifdef MipsArchitecture
+#ifndef ArcArchitecture
 #ifndef Mips64Architecture
 STIPPLESRC = stipmips.s stipmipste.s
 STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
+#endif
 #endif
 #endif
 #ifdef SparcArchitecture
@@ -243,4 +245,7 @@ InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
 #endif
 
+#ifndef OS2Architecture
 DependTarget()
+#endif
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.58 1996/11/24 09:53:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.59 1996/12/23 06:39:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1025,10 +1025,15 @@ mach64Probe()
 	mach64InfoRec.maxClock = 135000;
 	break;
     case DAC_INTERNAL:
-	if (xf86bpp == 8)
-	    mach64InfoRec.maxClock = 135000;
-	else
-	    mach64InfoRec.maxClock = 80000;
+	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	    (mach64ChipRev & 0x01)) {
+	    mach64InfoRec.maxClock = 170000;
+	} else {
+	    if (xf86bpp == 8)
+		mach64InfoRec.maxClock = 135000;
+	    else
+		mach64InfoRec.maxClock = 80000;
+	}
 	break;
     case DAC_IBMRGB514:
 	mach64InfoRec.maxClock = 220000;
@@ -1048,8 +1053,10 @@ mach64Probe()
     }
     OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
     OFLG_SET(OPTION_OVERRIDE_BIOS, &validOptions);
-    OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
-    OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
+    if (!mach64IntegratedController) {
+	OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
+	OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
+    }
     OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     OFLG_SET(OPTION_NO_BIOS_CLOCKS, &validOptions);
     OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &validOptions);

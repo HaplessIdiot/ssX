@@ -4,6 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/11/19 10:35:28 kaleb $
    TBLDIR = $(XLOCALEDIR)/tbl_data
 
 #ifndef Win32Architecture
+#ifndef OS2Architecture
 # define LTarget(name)							@@\
 all:: name.lt								@@\
 									@@\
@@ -15,6 +16,20 @@ all:: name.lt								@@\
 	cd $(BUILDLIBDIR)/locale/name && $(LN) $(BUILDLIBTOP)/../../$(CURRENT_DIR)/name XLC_LOCALE @@\
 									@@\
 InstallNamedNonExec(name.lt,XLC_LOCALE,$(XLOCALEDIR)/name)
+#else
+XCOMM Why the hell don't make a more intelligent LinkFile?
+XCOMM os2.rules defines one for this purpose, maybe put a Unix/Win32 one in Imake.rules
+# define LTarget(name)							@@\
+all:: name.lt								@@\
+									@@\
+CppFileTarget(name.lt,name,-DWCHAR32=$(WCHAR32),NullParameter)		@@\
+									@@\
+all:: name.lt								@@\
+	MakeDir($(BUILDLIBDIR)/locale/name)				@@\
+	LinkFileSpecial($(BUILDLIBDIR)/locale/name,XLC_LOCALE,$(BUILDLIBTOP)/../../$(CURRENT_DIR)/name)
+									@@\
+InstallNamedNonExec(name.lt,XLC_LOCALE,$(XLOCALEDIR)/name)
+#endif
 #else
 # define LTarget(name)							@@\
 all:: name.lt								@@\

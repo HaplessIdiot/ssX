@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/22 09:23:17 kaleb $
-XCOMM $XFree86: xc/programs/bdftopcf/Imakefile,v 3.2 1996/12/23 07:10:23 dawes Exp $
+XCOMM $XFree86: xc/programs/bdftopcf/Imakefile,v 3.3 1996/12/31 04:18:43 dawes Exp $
 #if GzipFontCompression
 ZLIB = GzipLibrary
 #endif
@@ -10,11 +10,4 @@ SRCS = bdftopcf.c
 OBJS = bdftopcf.o
 
 ComplexProgramTarget(bdftopcf)
-#if 0	/* ? */
-#ifdef OS2Architecture
-all:: bdftopcf.exe
-	$(CP) bdftopcf.exe /
-#endif
-#endif
-
-LinkBuildBinary(bdftopcf)
+LinkBuildBinary(ProgramTargetName(bdftopcf))

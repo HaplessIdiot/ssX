@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.61 1996/12/23 06:41:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.62 1996/12/29 13:49:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -94,6 +94,14 @@ static Bool s3ModeSwitched = FALSE;
 #ifdef PC98
 extern int pc98BoardType;
 #endif
+
+
+static void s3WaitRetrace()
+{
+      while (inb(vgaIOBase + 0xA) & 0x08);
+      while (!(inb(vgaIOBase + 0xA) & 0x08));
+}
+
 
 /*
  * s3Initialize -- Attempt to find and initialize a VGA framebuffer Most of
@@ -1238,11 +1246,11 @@ s3AdjustFrame(int x, int y)
 #ifdef XFreeXDGA
    if (s3InfoRec.directMode & XF86DGADirectGraphics) {
       /* Wait until vertical retrace is in progress. */
-      while (inb(vgaIOBase + 0xA) & 0x08);
-      while (!(inb(vgaIOBase + 0xA) & 0x08));
+      s3WaitRetrace();
    }
 #endif
 }
+
 
 /*
  * Force optimising compilers to read *addr

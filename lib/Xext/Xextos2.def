@@ -89,3 +89,20 @@ EXPORTS
 	XdbeGetVisualInfo @ 81
 	XdbeFreeVisualInfo @ 82
 	XdbeGetBackBufferAttributes @ 83
+	XSecurityQueryExtension @ 84
+	XSecurityAllocXauth @ 85
+	XSecurityFreeXauth @ 86
+	XSecurityGenerateAuthorization @ 87
+	XSecurityRevokeAuthorization @ 88
+	XagQueryVersion @ 89
+	XagCreateEmbeddedApplicationGroup @ 90
+	XagCreateNonembeddedApplicationGroup @ 91
+	XagDestroyApplicationGroup @ 92
+	XagGetApplicationGroupAttributes @ 93
+	XagQueryApplicationGroup @ 94
+	XagCreateAssociation @ 95
+	XagDestroyAssociation @ 96
+	XLbxQueryExtension @ 97
+	XLbxGetEventBase @ 98
+	XLbxQueryVersion @ 99
+	
