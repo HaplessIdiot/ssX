@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:39:23 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.22 1997/11/01 15:05:02 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.23 1997/12/05 22:01:53 hohndel Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -31,6 +31,10 @@ ACCELDIRS = accel
 SUPERPROBE = SuperProbe
 #endif
 
+#if !defined(PpcArchitecture) && !defined(LynxOsArchitecture)
+RECONFIG = reconfig
+#endif
+
 #if BuildXF86Setup
 XF86SETUPDIR = XF86Setup
 #endif
@@ -43,8 +47,9 @@ DRIVERS = drivers
 SCREENS = $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
 
 SUBDIRS = os-support common common_hw xaa $(SCREENS) \
-          $(LOADERDIR) doc reconfig xf86config $(XF86SETUPDIR) etc \
-          LinkKit VGADriverDoc $(SUPERPROBE)
+          config $(LOADERDIR) doc \
+	  $(RECONFIG) xf86config $(XF86SETUPDIR) etc LinkKit \
+          VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config

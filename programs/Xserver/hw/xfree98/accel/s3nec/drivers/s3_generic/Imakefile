@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/25 21:23:30 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/drivers/s3_generic/Imakefile,v 3.9 1997/03/24 13:12:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/drivers/s3_generic/Imakefile,v 3.10 1997/03/24 16:30:22 hohndel Exp $
 
 
 
@@ -17,7 +17,7 @@ OBJS = s3nec_s3_generic.o
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I../.. -I$(XF86COMSRC) -I$(XF86HWSRC) \
-	   -I$(XF86OSSRC) -I$(XF86SRC) -I$(SERVERSRC)/mi \
+	   -I$(XF86OSSRC) -I$(XF86SRC) -I$(SERVERSRC)/mi -I$(XF86SRC)/config \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/accel/cache
 #endif

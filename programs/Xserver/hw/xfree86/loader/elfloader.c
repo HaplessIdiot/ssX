@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.8 1997/06/03 14:12:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.9 1997/09/25 16:13:59 hohndel Exp $ */
 
 
 
@@ -36,7 +36,6 @@
 #include <sys/stat.h>
 #include "elf.h"
 
-#include "sym.h"
 #include "loader.h"
 
 #include "xf86.h"

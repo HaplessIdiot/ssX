@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:40:16 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/Imakefile,v 3.11 1997/03/24 13:11:35 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3nec/Imakefile,v 3.14 1998/01/01 14:51:41 robin Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -43,7 +43,7 @@ INCLUDES = -I$(XF98SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb -I$(XINCLUDESRC) \
 	   -I$(FONTSRC)/include -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) \
 	   -I$(XF86HWSRC) -I$(FONTINCSRC) -I$(XF86OSSRC) \
-	   -I$(XF86SRC)/accel/cache
+	   -I$(XF86SRC)/config -I$(XF86SRC)/accel/cache
 
 DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_NEC
 

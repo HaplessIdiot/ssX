@@ -1,5 +1,5 @@
 /* $XConsortium: config.c,v 1.15 94/04/17 19:56:03 dpw Exp $ */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.2 1996/03/10 12:13:17 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.3 1996/04/15 11:35:07 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -68,6 +68,7 @@ static char *config_set_int(),
            *config_set_list(),
            *config_set_file(),
            *config_set_resolutions(),
+           *config_set_ignored_transports(),
 	   *config_set_snf_format();
 
 /* these need to be in lower case and alphabetical order so a
@@ -82,6 +83,7 @@ static ConfigOptionRec config_options[] = {
     {"default-resolutions", config_set_resolutions},
     {"deferglyphs", config_set_glyph_caching_mode},
     {"error-file", config_set_file},
+    {"no-listen", config_set_ignored_transports},
     {"port", config_set_int},
     {"server-number", config_set_int},
     {"snf-format", config_set_snf_format},
@@ -547,6 +549,22 @@ config_set_list(parm, val)
     if (!strcmp(parm->parm_name, "alternate-servers")) {
 	SetAlternateServers(start);
     }
+    *val = t;
+    return val;
+}
+
+static char *
+config_set_ignored_transports(parm, val)
+    ConfigOptionPtr parm;
+    char       *val;
+{
+    char       *start = val,
+                t;
+
+    skip_list_val(val);
+    t = *val;
+    *val = '\0';
+    _FontTransNoListen(start);
     *val = t;
     return val;
 }

@@ -4,7 +4,7 @@ XCOMM $XConsortium: site.def.LK /main/12 1996/10/28 04:23:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.29 1997/04/08 10:10:49 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.30 1997/12/05 22:01:26 hohndel Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -274,6 +274,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.29 1997/0
  * with support for it), uncomment the following
  *
 #define BuildShapeExt		NO
+ */
+
+/*
+ * If you don't want the Glx extension (and this LinkKit was built 
+ * with support for it), uncomment the following
+ *
+#define BuildGlxExt		NO
  */
 
 /* If you are using a different ProjectRoot, set it here */

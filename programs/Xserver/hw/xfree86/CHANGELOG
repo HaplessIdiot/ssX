@@ -1,4 +1,8 @@
 XFree86 3.9Ae (xx February 1998)
+1595. Add no-listen keyword to xfs (#1397, Topi Miettinen).
+1594. Build fixes for PC98 static build (#1391, Takaaki Nomura).
+1593. Build fixes to loader directory (#1388, Alan Hourihane).
+1592. Some Link Kit fixes (#1384, David Bateman).
 1591. Add zoom initialization and fix blits on T2R (Robin Cutshaw).
 1590. Add support for several new mice, including Kensington ThinkingMouse, 
       ALPS GlidePoint, Genius NetScroll, Genius NetMouse, Genius NetMouse,
@@ -5949,4 +5953,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.570 1998/02/07 09:10:35 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.571 1998/02/10 22:42:19 robin Exp $

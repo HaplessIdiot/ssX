@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.6 1997/03/03 15:55:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.7 1997/05/03 12:53:13 dawes Exp $ */
 
 
 
@@ -39,7 +39,6 @@
 #endif
 
 #include "aout.h"
-#include "sym.h"
 #include "loader.h"
 
 #include "xf86.h"

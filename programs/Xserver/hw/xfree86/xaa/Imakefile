@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.17 1998/01/01 14:51:39 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.18 1998/01/11 03:48:27 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -76,3 +76,5 @@ DependSubdirs($(SUBDIRS))
 InstallLinkKitLibrary(xaa,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(xf86scrin.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86xaa.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86cursor.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86local.h,$(LINKKITDIR)/include)

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/19 1996/10/25 21:24:28 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.40 1997/09/19 09:01:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.41 1997/12/05 22:01:54 hohndel Exp $
 
 
 
@@ -179,6 +179,7 @@ SRCS =	\
 	xf86Io.c \
 	xf86Lock.c \
 	xf86_Mouse.c \
+	xf86Cmap.c \
 	xf86_Option.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
@@ -196,6 +197,7 @@ OBJS = \
 	xf86Io.o \
 	xf86Lock.o \
 	xf86_Mouse.o \
+	xf86Cmap.o \
 	$(XF86_XINPUT_OBJ) \
 	$(XINPUT_DEV_OBJS) \
 	$(XKBDDXOBJ) \
@@ -212,7 +214,7 @@ OFILES = \
 
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC) -I$(XF86OSSRC) \
 	      -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
-	      -I$(SERVERSRC)/os -I$(XF86SRC)/vga256/vga \
+	      -I$(SERVERSRC)/os -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/config \
               -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
      OSNAME = OSName
@@ -385,6 +387,7 @@ LinkSourceFile(xf86Keymap.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Lock.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Priv.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Procs.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Cmap.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Mouse.c,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.c,$(XF86SRC)/common)

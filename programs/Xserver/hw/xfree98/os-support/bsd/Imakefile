@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 06:21:14 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.14 1997/07/29 12:08:20 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/bsd/Imakefile,v 3.15 1997/11/01 15:05:12 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -45,8 +45,8 @@ OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o bios_devmem.o mapVT_noop.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o std_mouse.o \
        std_mseEv.o $(JOYSTICK_OBJ)
 
-INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC)
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86SRC)/config -I. \
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
 
 CONSDEFINES = XFree86ConsoleDefines
 

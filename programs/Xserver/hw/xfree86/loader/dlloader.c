@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.2 1997/06/25 11:54:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.3 1997/11/16 11:51:14 dawes Exp $ */
 
 
 
@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 
-#include "sym.h"
 #include "loader.h"
 
 #ifdef DL_LAZY
