@@ -1,7 +1,7 @@
 
-XCOMM $XFree86: xc/programs/xvinfo/Imakefile,v 1.0 Exp $
+XCOMM $XFree86: xc/programs/xvinfo/Imakefile,v 1.1 2000/09/18 18:09:51 mvojkovi Exp $
 
-LOCAL_LIBRARIES = -lXext -lXv
+LOCAL_LIBRARIES = -lXext -lXv $(XLIB)
            SRCS = xvinfo.c
            OBJS = xvinfo.o
 

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.28 2000/09/22 11:35:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.29 2000/09/26 15:57:10 tsi Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -111,6 +111,7 @@ typedef struct {
 #define ChipsHWCursor		0x00001000
 #define ChipsShadowFB		0x00002000
 #define ChipsOverlay8plus16	0x00004000
+#define ChipsUseNewFB		0x00008000
 
 /* Architecture type flags */
 #define ChipsHiQV		0x00010000

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.21 2000/03/31 22:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.22 2000/04/04 19:25:15 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -69,12 +69,22 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "cfb32.h"
 #include "cfb24_32.h"
 
+/* fb support */
+
+#include "fb.h"
+
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 
 #include "vbe.h"
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
+#include "fourcc.h"
+#endif
 
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
@@ -139,9 +149,27 @@ typedef struct {
 } S3VRegRec, *S3VRegPtr;
 
 
-    					/*************************/
-					/* S3VRec  		 */
-    					/*************************/
+/*********************************/
+/*   S3VPortPrivRec              */
+/*********************************/
+
+typedef struct {
+   unsigned char brightness;
+   unsigned char contrast;
+   FBAreaPtr	area;
+   RegionRec	clip;
+   CARD32	colorKey;
+   CARD32	videoStatus;
+   Time		offTime;
+   Time		freeTime;
+   int		lastPort;
+} S3VPortPrivRec, *S3VPortPrivPtr;
+
+
+/*************************/
+/* S3VRec  		 */
+/*************************/
+
 typedef struct {
 	/* accel additions */
 	CARD32		AccelFlags;
@@ -151,8 +179,14 @@ typedef struct {
 	CARD32		CommonCmd;
 	CARD32		FullPlaneMask;
 	GCPtr		CurrentGC;
+        /* fb support */
+        DrawablePtr CurrentDrawable;
 	/* end accel stuff */
-    /* ViRGE specifics -start- */   
+  /* ViRGE specifics -start- */   
+  /* Xv support */
+  XF86VideoAdaptorPtr adaptor;
+  S3VPortPrivPtr portPrivate;
+
   /* S3V console saved mode registers */
   S3VRegRec 		SavedReg;
   /* XServer video state mode registers */
@@ -242,6 +276,7 @@ typedef struct {
   Bool		lcd_center;
   /* hardware cursor enabled */
   Bool		hwcursor;
+  Bool          UseFB;
   /* ViRGE options -end- */
   /***********************/
   /* ViRGE specifics -end- */
@@ -295,6 +330,9 @@ typedef struct {
 
 /******************* regs3v *******************************/
 
+/* cep kjb */
+#define VertDebug 1
+
 /* #ifndef MetroLink */ 
 #if !defined (MetroLink) && !defined (VertDebug)
 #define VerticalRetraceWait() do { \
@@ -316,17 +354,17 @@ typedef struct {
 	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) && _spin_me <= SPIN_LIMIT; \
 	 _spin_me++) ; \
 	if (_spin_me > SPIN_LIMIT) \
-	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out(1:3).\n"); \
 	for (_spin_me = 0; \
 	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) && _spin_me <= SPIN_LIMIT; \
 	 _spin_me++) ; \
 	if (_spin_me > SPIN_LIMIT) \
-	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out(2:3).\n"); \
 	for (_spin_me = 0; \
 	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) && _spin_me <= SPIN_LIMIT; \
 	 _spin_me++) ; \
 	if (_spin_me > SPIN_LIMIT) \
-	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out(3:3).\n"); \
    } \
 } while (0)
 #endif
@@ -371,6 +409,9 @@ void s3vRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void s3vRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void s3vRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void s3vRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+/* s3v_xv.c  X Video Extension support */
+void S3VInitVideo(ScreenPtr pScreen);
 
 
 #endif  /*_S3V_H*/

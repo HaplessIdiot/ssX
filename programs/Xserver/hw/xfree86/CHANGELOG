@@ -1,4 +1,13 @@
 XFree86 4.0.1d (xx October 2000)
+ 783. Add non-GXcopy raster op support to cirrus driver (#4178, David Monniaux).
+ 782. Use DlLibrary instead of referencing -ldl explicitly in xf86cfg
+      (#4189, Matthieu Herrb).
+ 781. Add S3 Virge XVideo support (preliminary) (#4186, Kevin Brosius).
+ 780. Fix non-DRI build problem in r128 driver (#4188, Matthieu Herrb).
+ 779. Add XLIB for OpenBSD/i386 dependency problem to xvinfo
+      (#4187, Matthieu Herrb).
+ 778. Update C&T driver, remove obsolete acceleration and use fb instead
+      of cfb with USE_FB option (#4185, David Bateman).
  777. Experimental XAA Render support in the MGA driver (Mark Vojkovich).
  776. Preliminary XAA support for the Render extension (Mark Vojkovich).
  775. Pass depth/bpp correctly, scan all fbdev devices, misc fbdev fixes.
@@ -174,6 +183,7 @@ XFree86 4.0.1d (xx October 2000)
  569. Fix in ATI drivber for DPMS support on panels (Marc La France).
  568. I810 bugs fixes and enhancements relating to Xv (#4121, 4117, 4123, 
       4128, Jonathan Bian).
+
 XFree86 4.0.1c (28 August 2000)
  567. Add support to xset for setting the keyboard repeat rate using XKB
       (A.119, A.126, Stephen Montgomery-Smith).
@@ -11249,4 +11259,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1349 2000/10/20 15:04:32 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1350 2000/10/21 22:29:46 mvojkovi Exp $

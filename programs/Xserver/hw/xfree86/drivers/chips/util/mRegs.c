@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/mRegs.c,v 1.2 1998/07/25 16:55:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/mRegs.c,v 1.4 2000/04/28 18:19:23 eich Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -68,11 +68,11 @@ int main(int argc, char** argv)
     int i, value, index;
     char c, cport;
     char* str;
-    unsigned int port;
+    unsigned int port, port1;
     int query = 0;
 
     if(argc < 2) {
-	printf("usage: %s Cvvxx [Cvvxx]\n",argv[0]);
+	printf("usage: %s [Cvvxx [Cvvxx]] [Dxx]\n",argv[0]);
         printf("     where C = A|a write vv to ARxx\n");
         printf("             = C|c write vv to CRxx\n");
         printf("             = F|f write vv to FRxx (6555x only)\n");
@@ -80,6 +80,8 @@ int main(int argc, char** argv)
         printf("             = M|m write vv to MRxx (6555x only)\n");
         printf("             = S|s write vv to SRxx\n");
         printf("             = X|x write vv to XRxx\n");
+        printf("     where D = Y|y write xx to FCR\n");
+        printf("             = Z|z write vv to MSR\n");
         printf("     xx is in hexadecimal\n");
 	printf("     vv is in hexadecimal or '?' for query\n");
     }    
@@ -127,11 +129,23 @@ int main(int argc, char** argv)
 	    cport = 'M';
 	    port = 0x3D2;
 	    break;
+	  case 'y':
+	  case 'Y':
+	    cport = 'Y';
+	    port = 0x3DA;
+            port1 = 0x3CA;
+	    break;
+	  case 'z':
+	  case 'Z':
+	    cport = 'Z';
+	    port = 0x3C2;
+	    port1 = 0x3CC;
+	    break;
 	  default:
 	    continue;
 	    break;
 	}
-	index = inb(port);
+	if ((cport != 'Z') && (cport != 'Y')) index = inb(port);
 	while (c = *str++){
 	    if (c == '?') {
 	      query = 1;
@@ -143,15 +157,29 @@ int main(int argc, char** argv)
 	    else if(c >= 'a' && c < 'g')
 	    value = (value << 4) | (c - 'a'+10);  /*ASCII assumed*/
 	}		
-	outb(port,value&0xFF);
+	if ((cport != 'Z') && (cport != 'Y')) outb(port,value&0xFF);
 	if (query) {
-	    printf("%cR%X: 0x%X\n", cport, value & 0xFF, 
+	    if ((cport != 'Z') && (cport != 'Y')) 
+		printf("%cR%X: 0x%X\n", cport, value & 0xFF, 
 		   inb(port+1)&0xFF);
+	    else
+	        if (cport == 'Z')
+		    printf("MSR: 0x%X\n", inb(port1)&0xFF);
+		else
+		    printf("FCR: 0x%X\n", inb(port1)&0xFF);
 	} else {
-	    printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF, 
+	    if ((cport != 'Z') && (cport != 'Y')) {
+		printf("%cR%X: 0x%X -> 0x%X\n", cport, value & 0xFF, 
 		   inb(port+1)&0xFF, (value&0xFF00)>>8);
-	    outw(port, value);
-	    outb(port, index &0xFF);
+		outw(port, value);
+		outb(port, index &0xFF);
+	    } else {
+	        if (cport == 'Z')
+		    printf("MSR: 0x%X -> 0x%X\n", inb(port1)&0xFF, value&0xFF);
+		else
+		    printf("FCR: 0x%X -> 0x%X\n", inb(port1)&0xFF, value&0xFF);
+		outb(port, value & 0xFF);
+	    }
 	}
     }
     RESET_IOPL();

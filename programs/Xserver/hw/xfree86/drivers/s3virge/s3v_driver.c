@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.61 2000/06/24 02:26:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.62 2000/06/30 17:15:12 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -29,9 +29,6 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "xf86RAC.h"
 
 #include "xf86DDC.h"
-#if 0
-#include "xf86int10.h"
-#endif
 #include "vbe.h"
 
 /* Needed by the Shadow Framebuffer */
@@ -60,10 +57,6 @@ in this Software without prior written authorization from the XFree86 Project.
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif /* DPMSExtension */
-
-#ifdef XvExtension
-#include "xf86xv.h"
-#endif
 
 /*
  * Internals
@@ -121,9 +114,9 @@ static int pix24bpp = 0;
  
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "1.2.0"
+#define S3VIRGE_VERSION_NAME "1.3.0"
 #define S3VIRGE_VERSION_MAJOR   1
-#define S3VIRGE_VERSION_MINOR   2
+#define S3VIRGE_VERSION_MINOR   3
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -215,7 +208,8 @@ typedef enum {
    OPTION_SWCURSOR,
    OPTION_HWCURSOR,
    OPTION_SHADOW_FB,
-   OPTION_ROTATE
+   OPTION_ROTATE,
+   OPTION_FB_DRAW
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
@@ -241,6 +235,7 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_SHADOW_FB,          "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+   { OPTION_FB_DRAW,            "UseFB",	OPTV_BOOLEAN,	{0}, TRUE },
    {-1, NULL, OPTV_NONE,	{0}, FALSE}
 };
 
@@ -319,6 +314,12 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+static const char *fbSymbols[] = {
+  "fbScreenInit",
+  "fbBres",
+  NULL
+};
+
 #ifdef XFree86LOADER
 
 static const char *int10Symbols[] = {
@@ -328,7 +329,6 @@ static const char *int10Symbols[] = {
 };
 
 static const char *cfbSymbols[] = {
-#if 1
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
@@ -336,10 +336,8 @@ static const char *cfbSymbols[] = {
     "cfb32ScreenInit",
     "cfb16BresS",
     "cfb24BresS",
-#endif
     NULL
 };
-
 
 static MODULESETUPPROTO(s3virgeSetup);
 
@@ -385,7 +383,8 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
-			  int10Symbols, vbeSymbols, shadowSymbols, NULL);
+			  int10Symbols, vbeSymbols, shadowSymbols, 
+			  fbSymbols, NULL);
 			  
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -852,7 +851,19 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 		   "HW cursor not supported with \"rotate\".\n");
 	ps3v->hwcursor = FALSE;
     }
-    
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FB_DRAW)) 
+      {
+	if (xf86GetOptValBool(S3VOptions, OPTION_FB_DRAW ,&ps3v->UseFB))
+	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using %s.\n",
+		     ps3v->UseFB ? "fb (not cfb)" : "cfb (not fb)");
+      }
+    else
+      {
+	ps3v->UseFB = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Using fb.\n");
+      }
+
     /* Find the PCI slot for this screen */
     /*
      * XXX Ignoring the Type list for now.  It might be needed when
@@ -1431,7 +1442,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* (all depth 24 modes) */
 					/* This should never happen... we */
 					/* checked it before ValidateModes */
-    if ( (pScrn->depth == 24) && 
+    if ( ((pScrn->depth == 24) || (pScrn->depth == 16)) && 
          ((pScrn->bitsPerPixel/8) * pScrn->virtualX > 4095) ) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Virtual width to large for ViRGE\n");
       S3VFreeRec(pScrn);
@@ -1439,36 +1450,48 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	mod = "cfb16";
-	reqSym = "cfb16ScreenInit";
-	break;
-    case 24:
-	if (pix24bpp == 24) {
+    if( ps3v->UseFB )
+      {
+	if( xf86LoadSubModule(pScrn, "fb") == NULL )
+	  {
+	    S3VFreeRec(pScrn);
+	    return FALSE;
+	  }	       
+	xf86LoaderReqSymLists(fbSymbols, NULL);       
+      }
+    else
+      {
+	switch (pScrn->bitsPerPixel) {
+	case 8:
+	  mod = "cfb";
+	  reqSym = "cfbScreenInit";
+	  break;
+	case 16:
+	  mod = "cfb16";
+	  reqSym = "cfb16ScreenInit";
+	  break;
+	case 24:
+	  if (pix24bpp == 24) {
 	    mod = "cfb24";
 	    reqSym = "cfb24ScreenInit";
-	} else {
+	  } else {
 	    mod = "xf24_32bpp";
 	    reqSym = "cfb24_32ScreenInit";
+	  }
+	  break;
+	case 32:
+	  mod = "cfb32";
+	  reqSym = "cfb32ScreenInit";
+	  break;
 	}
-	break;
-    case 32:
-	mod = "cfb32";
-	reqSym = "cfb32ScreenInit";
-	break;
-    }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	S3VFreeRec(pScrn);
-	return FALSE;
-    }	       
+	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+	  S3VFreeRec(pScrn);
+	  return FALSE;
+	}	       
     
-    xf86LoaderReqSymbols(reqSym, NULL);
-	     
+	xf86LoaderReqSymbols(reqSym, NULL);
+      }
+
     /* Load XAA if needed */
     if (!ps3v->NoAccel || ps3v->hwcursor ) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1894,6 +1917,9 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRIndex, 0x55);
    VGAOUT8(vgaCRReg, restore->CR55);
 
+   /* cep kjb 
+      sleep( 7 );*/
+
    /* Extended mode timings registers */  
    VGAOUT8(vgaCRIndex, 0x53);             
    VGAOUT8(vgaCRReg, restore->CR53); 
@@ -1912,6 +1938,8 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRIndex, 0x6d);
    VGAOUT8(vgaCRReg, restore->CR6D);
 
+   /* cep kjb 
+      sleep( 7 );*/
 
    /* Restore the desired video mode with CR67 */
         
@@ -2112,7 +2140,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    }
    
    vgaHWProtect(pScrn, FALSE);
-   
+
    return;
 
 }
@@ -2495,7 +2523,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
 #endif
   
-#ifdef XvExtension
+#ifndef XvExtension
     {
 	XF86VideoAdaptorPtr *ptr;
 	int n;
@@ -2505,6 +2533,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86XVScreenInit(pScreen, ptr, n);
 	}
     }
+#else
+    S3VInitVideo(pScreen);
 #endif
  
     /* Report any unused options (only for the first generation) */
@@ -2557,46 +2587,70 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
      * pScreen fields.
      */
 
-  switch (pScrn->bitsPerPixel) {
-    case 8:
+  if( ps3v->UseFB )
+    {
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using FB\n");
+
+      switch (pScrn->bitsPerPixel) 
+	{
+	case 8:
+	case 16:
+	case 24:
+	  ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
+			     pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			     displayWidth, pScrn->bitsPerPixel);
+	  break;
+	default:
+	  xf86DrvMsg(scrnIndex, X_ERROR,
+		     "Internal error: invalid bpp (%d) in S3VScreenInit\n",
+		     pScrn->bitsPerPixel);
+	  ret = FALSE;
+	  break;
+	}
+    }
+  else
+    {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using CFB\n");
+      switch (pScrn->bitsPerPixel) {
+      case 8:
 	ret = cfbScreenInit(pScreen, FBStart,
 			    width,height,
 			    pScrn->xDpi, pScrn->yDpi,
 			    displayWidth);
 	break;
-    case 16:
+      case 16:
 	ret = cfb16ScreenInit(pScreen, FBStart,
 			      width,height,
 			      pScrn->xDpi, pScrn->yDpi,
 			      displayWidth);
 	break;
-    case 24:
-	  if (pix24bpp ==24) {
-	    ret = cfb24ScreenInit(pScreen, FBStart,
+      case 24:
+	if (pix24bpp ==24) {
+	  ret = cfb24ScreenInit(pScreen, FBStart,
 			    width,height,
 				  pScrn->xDpi, pScrn->yDpi,
 				  displayWidth);
-	  } else {
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
+	} else {
+	  ret = cfb24_32ScreenInit(pScreen, FBStart,
 				     width,height,
 				     pScrn->xDpi, pScrn->yDpi,
 				     displayWidth);
-	  	}
+	}
 	break;
-    case 32:
+      case 32:
 	ret = cfb32ScreenInit(pScreen, FBStart,
 			      width,height,
 			      pScrn->xDpi, pScrn->yDpi,
 			      displayWidth);
 	break;
-    default:
+      default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
 		   "Internal error: invalid bpp (%d) in S3VScreenInit\n",
 		   pScrn->bitsPerPixel);
 	ret = FALSE;
 	break;
-  } /*switch*/
-
+      } /*switch*/
+    } /*if(fb)*/
   return ret;
 }
 
@@ -2831,6 +2885,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    					/* most modes don't need STREAMS */
 					/* processor, preset FALSE */
+   /* support for XVideo needs streams, so added it to some modes */
    ps3v->NeedSTREAMS = FALSE;
    
    if(ps3v->Chipset == S3_ViRGE_VX){
@@ -2856,7 +2911,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        S3VCommonCalcClock(dclk, 1, 1, 31, 0, 4, 
 	   220000, 440000, &new->SR13, &new->SR12);
 
-      }
+      } /* end VX if() */
    else if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
        if (pScrn->bitsPerPixel == 8)
 	  new->CR67 = 0x00;
@@ -2933,7 +2988,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          new->SR29 = ndiv >> 7;
          new->SR12 = (ndiv & 0x1f) | ((ndiv & 0x60) << 1);
        }
-   }
+   } /* end GX2 or MX if() */
    else if(S3_TRIO_3D_SERIES(ps3v->Chipset)) {
       new->SR0F = 0x00;
       if (pScrn->bitsPerPixel == 8) {
@@ -2978,7 +3033,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       }
       S3VCommonCalcClock(dclk, 1, 1, 31, 0, 4,
                      230000, 460000, &new->SR13, &new->SR12);
-   }
+   } /* end TRIO_3D if() */
    else {           /* Is this correct for DX/GX as well? */
       if (pScrn->bitsPerPixel == 8) {
          if(dclk > 80000) {                     /* We need pixmux */
@@ -2991,14 +3046,22 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          new->CR67 = 0x30;                       /* 15bpp */
          }
       else if (pScrn->bitsPerPixel == 16) {
-         new->CR67 = 0x50;
+         new->CR67 = 0x50 | 0x0c;
+	  					/* Flag STREAMS proc. required */
+	 /* cep */
+         ps3v->NeedSTREAMS = TRUE;
+         S3VInitSTREAMS(pScrn, new->STREAMS, mode);
+	 /*new->MMPR0 = 0xc000;            / Adjust FIFO slots */
+         new->MMPR0 = 0x107c02;            /* Adjust FIFO slots, overlay */
          }
       else if (pScrn->bitsPerPixel == 24) { 
          new->CR67 = 0xd0 | 0x0c;
 	  					/* Flag STREAMS proc. required */
          ps3v->NeedSTREAMS = TRUE;
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
-         new->MMPR0 = 0xc000;            /* Adjust FIFO slots */
+	 /*new->MMPR0 = 0xc000;            / Adjust FIFO slots */
+         new->MMPR0 = 0x107c02;            /* Adjust FIFO slots, overlay */
+	 /* kjb cep */
          }
       else if (pScrn->bitsPerPixel == 32) { 
          new->CR67 = 0xd0 | 0x0c;
@@ -3262,14 +3325,20 @@ S3VSaveScreen(ScreenPtr pScreen, int mode)
 static void
 S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode)
 {
-   if ( pScrn->bitsPerPixel == 24 ) {
+  switch (pScrn->bitsPerPixel)
+    {
+    case 16:
+      streams[0] = 0x05000000;
+      break;
+    case 24:
                          /* data format 8.8.8 (24 bpp) */
       streams[0] = 0x06000000;
-      } 
-   else if (pScrn->bitsPerPixel == 32) {
+      break;
+    case 32:
                          /* one more bit for X.8.8.8, 32 bpp */
       streams[0] = 0x07000000;
-   }
+      break;
+    }
                          /* NO chroma keying... */
    streams[1] = 0x0;
                          /* Secondary stream format KRGB-16 */
@@ -3288,14 +3357,21 @@ S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode)
    streams[7] = 0x0;
                                 /* Stride is 3 bytes for 24 bpp mode and */
                                 /* 4 bytes for 32 bpp. */
-   if ( pScrn->bitsPerPixel == 24 ) {
-      streams[8] = 
-             pScrn->displayWidth * 3;
-      } 
-   else {
-      streams[8] = 
-             pScrn->displayWidth * 4;
-      }
+   switch(pScrn->bitsPerPixel)
+     {
+     case 16:
+       streams[8] = 
+	 pScrn->displayWidth * 2;
+       break;
+     case 24:
+       streams[8] = 
+	 pScrn->displayWidth * 3;
+      break;
+     case 32:
+       streams[8] = 
+	 pScrn->displayWidth * 4;
+      break;
+     }
                                 /* Choose fbaddr0 as stream source. */
    streams[9] = 0x0;
    streams[10] = 0x0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.93 2000/09/19 12:46:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.95 2000/09/29 08:59:45 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -105,6 +105,9 @@
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
 
+/* Using fb so this is needed */
+#include "fb.h"
+
 /* If using cfb, cfb.h is required. */
 #define PSZ 8
 #include "cfb.h"  
@@ -114,6 +117,7 @@
 #include "cfb32.h"
 #include "cfb24_32.h"
 #include "cfb8_16.h"
+
 
 /* Needed for the 1 and 4 bpp framebuffers */
 #include "xf1bpp.h"
@@ -559,7 +563,8 @@ typedef enum {
     OPTION_FP_CLOCK_24,
     OPTION_FP_CLOCK_32,
     OPTION_SET_MCLK,
-    OPTION_ROTATE
+    OPTION_ROTATE,
+    OPTION_USE_FB
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -586,6 +591,7 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_FP_CLOCK_8,        "FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -601,6 +607,7 @@ static OptionInfoRec ChipsWingineOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_ROTATE,  	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -629,6 +636,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,      {0}, FALSE },
+    { OPTION_USE_FB,		"UseFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -654,7 +662,7 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
-static const char *cfbSymbols[] = {
+static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     "cfbScreenInit",
@@ -663,6 +671,7 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
+    "fbScreenInit",
     NULL
 };
 
@@ -748,7 +757,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
 			  shadowSymbols, vbeSymbols, NULL);
 
@@ -1107,6 +1116,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     else 
 	res = chipsPreInit655xx(pScrn, flags);
 
+    /* See whether the user wants to use the new framebuffer code */
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_FB, FALSE)) {
+	cPtr->Flags |= ChipsUseNewFB;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			   "Using \"New Framebuffer\"\n");
+    }
+	
     if (cPtr->UseFullMMIO)
 	chipsUnmapMem(pScrn);
 
@@ -1136,21 +1152,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      */
     pScrn->videoRam -= (cPtr->FrameBufferSize + 1023) / 1024;
     
-    if (cPtr->Flags & ChipsAccelSupport) {
-	/*
-	 * If we are using acceleration then we want a display pitch that is
-	 * a multiple of 64 pixels. This allows for alignment issues for the
-	 * 8x8 pattern fills. Try to widen the display pitch to 64 if necessary
-	 */
-      cPtr->Rounding = 64 * (pScrn->bitsPerPixel <= 8 ? 8 
-			     : pScrn->bitsPerPixel);
-	/* 16 Kb cache for each bpp */
-	pScrn->videoRam -= 16 * (pScrn->bitsPerPixel >> 3);
-    } else {
-	cPtr->Rounding = 8;
-	if (pScrn->bitsPerPixel >= 8)
-	    cPtr->Rounding *= (pScrn->bitsPerPixel >> 3);
-    }
+    cPtr->Rounding = 8 * (pScrn->bitsPerPixel <= 8 ? 8 
+			  : pScrn->bitsPerPixel);
 
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			  pScrn->display->modes, clockRanges,
@@ -1158,40 +1161,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 			  128, 2048, pScrn->display->virtualX,
 			  pScrn->display->virtualY, cPtr->FbMapSize,
 			  LOOKUP_BEST_REFRESH);
-    /*
-     * If we are using accel and don't find any valid modes
-     * we might not have enough memory for a 64 bit rounding
-     * and 16 Kb per bpp cache. Let's try without it.
-     */
-    if (i < 1 && (cPtr->Flags & ChipsAccelSupport)) {
-	cPtr->Rounding = 8;
-	if (pScrn->bitsPerPixel >= 8)
-	    cPtr->Rounding *= pScrn->bitsPerPixel;
-	pScrn->videoRam += 16 * (pScrn->bitsPerPixel >> 3);
-	
-	/*
-	 * If the modepool isn't empty, we'll need to delete it
-	 * before revalidating the mode list
-	 */
-	while (pScrn->modes)
-	    xf86DeleteMode(&pScrn->modes, pScrn->modes);
-	while (pScrn->modePool)
-	    xf86DeleteMode(&pScrn->modePool, pScrn->modePool);
-	
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048, cPtr->Rounding,
-			      128, 2048, pScrn->display->virtualX,
-			      pScrn->display->virtualY, cPtr->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
 
-	if (i >= 1) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "not enough free memory to adjust display pitch.\n");
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "some acceleration may be disabled.\n");
-	}
-    }
     if (i == -1) {
 	CHIPSFreeRec(pScrn);
 	return FALSE;
@@ -1240,33 +1210,55 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	mod = "xf4bpp";
 	reqSym = "xf4bppScreenInit";
 	break;
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	if (cPtr->Flags & ChipsOverlay8plus16) {
-	    mod = "xf8_16bpp";
-	    reqSym = "cfb8_16ScreenInit";
-	} else {
-	    mod = "cfb16";
-	    reqSym = "cfb16ScreenInit";
-	}
-	break;
-    case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    reqSym = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    reqSym = "cfb24_32ScreenInit";
-	}
-	break;
-    case 32:
-	mod = "cfb32";
-	reqSym = "cfb32ScreenInit";
-	break;
+    default:
+	if (cPtr->Flags & ChipsUseNewFB)
+	    switch (pScrn->bitsPerPixel) {
+	    case 16:
+		reqSym = "xf4bppScreenInit";
+		if (cPtr->Flags & ChipsOverlay8plus16) {
+		    mod = "xf8_16bpp";
+		    reqSym = "cfb8_16ScreenInit";
+		    break;
+		} else
+		    reqSym = "fbScreenInit";
+		/* fall through */
+	    case 8:
+	    case 24:
+	    case 32:
+		mod = "fb";
+		break;
+	    }
+	else
+	    switch (pScrn->bitsPerPixel) {
+	    case 8:
+		mod = "cfb";
+		reqSym = "cfbScreenInit";
+		break;
+	    case 16:
+		if (cPtr->Flags & ChipsOverlay8plus16) {
+		    mod = "xf8_16bpp";
+		    reqSym = "cfb8_16ScreenInit";
+		} else {
+		    mod = "cfb16";
+		    reqSym = "cfb16ScreenInit";
+		}
+		break;
+	    case 24:
+		if (pix24bpp == 24) {
+		    mod = "cfb24";
+		    reqSym = "cfb24ScreenInit";
+		} else {
+		    mod = "xf24_32bpp";
+		    reqSym = "cfb24_32ScreenInit";
+		}
+		break;
+	    case 32:
+		mod = "cfb32";
+		reqSym = "cfb32ScreenInit";
+		break;
+	    }
     }
+
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	CHIPSFreeRec(pScrn);
 	return FALSE;
@@ -3504,8 +3496,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     unsigned int racflag = 0;
     unsigned char *FBStart;
     int height, width, displayWidth;
+#ifdef DEBUG
     ErrorF("CHIPSScreenInit\n");
-    
+#endif    
     /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
      * one first thing
@@ -3648,49 +3641,79 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
 	break;
-    case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
+    default:
+	if (cPtr->Flags & ChipsUseNewFB)
+	    switch (pScrn->bitsPerPixel) {
+	    case 16:
+		if (cPtr->Flags & ChipsOverlay8plus16) {
+		    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart
+		        + cPtr->FbOffset16, FBStart, width, 
+			height, pScrn->xDpi, pScrn->yDpi,
+			displayWidth, displayWidth);
+		    break;
+		}
+	    case 8:
+	    case 24:
+	    case 32:
+		ret = fbScreenInit(pScreen, FBStart,
+ 		        width,height,
+			pScrn->xDpi, pScrn->yDpi,
+			displayWidth,pScrn->bitsPerPixel);
+		break;
+	    default:
+		xf86DrvMsg(scrnIndex, X_ERROR,
+		   "Internal error: invalid bpp (%d) in CHIPSScreenInit\n",
+		   pScrn->bitsPerPixel);
+		ret = FALSE;
+		break;
+	    }
+	else
+	    switch (pScrn->bitsPerPixel) {
+	    case 8:
+		ret = cfbScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	break;
-    case 16:
-	if (cPtr->Flags & ChipsOverlay8plus16)
-	    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
-		        cPtr->FbOffset16, FBStart, width, 
+		break;
+	    case 16:
+	        if (cPtr->Flags & ChipsOverlay8plus16)
+		    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart
+		        + cPtr->FbOffset16, FBStart, width, 
 			height, pScrn->xDpi, pScrn->yDpi,
 			displayWidth, displayWidth);
-	else
-	    ret = cfb16ScreenInit(pScreen, FBStart,
+		else
+		    ret = cfb16ScreenInit(pScreen, FBStart,
 		        width, height,			  
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart,
+		break;
+	    case 24:
+	        if (pix24bpp == 24)
+		    ret = cfb24ScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
+		else
+		    ret = cfb24_32ScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, FBStart,
+		break;
+	    case 32:
+		ret = cfb32ScreenInit(pScreen, FBStart,
  		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
+		break;
+	    default:
+		xf86DrvMsg(scrnIndex, X_ERROR,
 		   "Internal error: invalid bpp (%d) in CHIPSScreenInit\n",
 		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
+		ret = FALSE;
+		break;
+	    }
     }
+
     if (!ret)
 	return FALSE;
 
@@ -3800,6 +3823,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Setup pointers to free space in video ram */
 #define CHIPSALIGN(size, align) (currentaddr - ((currentaddr - size) & ~align))
 	allocatebase = (pScrn->videoRam<<10) - cPtr->FrameBufferSize;
+	
 	if (pScrn->bitsPerPixel < 8)
 	    freespace = allocatebase - pScrn->displayWidth * 
 		    pScrn->virtualY / 2;
@@ -4780,7 +4804,9 @@ chipsSave(ScrnInfoPtr pScrn)
     CHIPSRegPtr ChipsSave;
     int i;
     unsigned char tmp;
+#ifdef DEBUG
     ErrorF("chipsSave\n");
+#endif
     
     ChipsSave = &cPtr->SavedReg;
 
@@ -4856,7 +4882,9 @@ Bool
 chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
+#ifdef DEBUG
     ErrorF("chipsModeInit\n");
+#endif
 #if 0
     *(int*)0xFFFFFF0 = 0;
     ErrorF("done\n");

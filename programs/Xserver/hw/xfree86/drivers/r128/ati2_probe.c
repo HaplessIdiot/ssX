@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/ati2_probe.c,v 1.1 2000/10/18 17:19:59 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000 ATI Technologies Inc. and VA Linux Systems, Inc.,
@@ -202,13 +202,13 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
+#endif
 
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     NULL
 };
-#endif
 
 static MODULESETUPPROTO(ATI2Setup);
 
