@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.24 2001/01/03 02:54:17 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.25 2001/01/17 22:13:15 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -181,7 +181,8 @@ XineramaCloseScreen (int i, ScreenPtr pScreen)
     pScreen->CreateGC = pScreenPriv->CreateGC;
 
     REGION_UNINIT(pScreen, &XineramaScreenRegions[pScreen->myNum]);
-    REGION_UNINIT(pScreen, &PanoramiXScreenRegion);
+    if (pScreen->myNum == 0)
+	REGION_UNINIT(pScreen, &PanoramiXScreenRegion);
 
     xfree ((pointer) pScreenPriv);
 
