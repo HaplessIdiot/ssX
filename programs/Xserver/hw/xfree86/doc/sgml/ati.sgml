@@ -4,8 +4,8 @@
 <!-- Title information -->
 
 <title>ATI boards README
-<author>XFree86, Inc
-<date>v1.0, 13 December 1994
+<author>Marc Aurele La France
+<date>13 December 1994
 <abstract>
 This is the README for the XFree86 ATI VGA Wonder driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -256,7 +256,7 @@ Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La France
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.5 1994/10/29 22:39:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.0 1994/12/20 11:33:42 dawes Exp $
 </verb>
 
 </article>

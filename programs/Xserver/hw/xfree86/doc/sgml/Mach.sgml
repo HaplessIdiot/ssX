@@ -4,8 +4,8 @@
 <!-- TitleS information -->
 
 <title>README for XFree86 3.1 on Mach
-<author>XFree86, Inc
-<date>v1.0, 17 December 1994
+<author>Robert Baron
+<date>17 December 1994
 
 
 
@@ -171,7 +171,7 @@ necessary for Mach is that the X servers be able to open <tt>/dev/iopl</tt>
 read/write.  There are many ways to achieve this effect.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach,v 3.1 1994/09/26 15:33:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.0 1994/12/20 11:33:28 dawes Exp $
 </verb>
 
 </article>

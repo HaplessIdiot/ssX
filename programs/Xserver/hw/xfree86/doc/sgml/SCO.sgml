@@ -4,8 +4,8 @@
 <!-- TitleS information -->
 
 <title>Information for SCO Users
-<author>XFree86, Inc
-<date>v1.0, 14 December 1994
+<author>David McCullough
+<date>14 December 1994
 
 
 <!-- Table of contents -->
@@ -582,6 +582,6 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.3 1994/12/02 05:46:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.0 1994/12/20 11:33:33 dawes Exp $
 </verb>
 </article>

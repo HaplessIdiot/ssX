@@ -3,7 +3,7 @@
 <article>
 <title>Installation Guide for XFree86 3.1
 <author>David Dawes
-<Date>4 Dec 1994
+<Date>4 December 1994
 
 <toc>
 
@@ -337,7 +337,7 @@ do this, go to the configuration directory
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.3 1994/09/28 16:24:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.0 1994/12/20 11:33:25 dawes Exp $
 </verb>
 
 </article>

@@ -4,8 +4,8 @@
 <!-- TitleS information -->
 
 <title>Information for SVR4 Users
-<author>XFree86, Inc
-<date>v1.0, 14 December 1994
+<author>The XFree86 Project, Inc
+<date>14 December 1994
 
 <abstract>
 <bf>NOTE:</bf>
@@ -419,6 +419,6 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SVR4,v 3.2 1994/12/02 05:46:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.0 1994/12/20 11:33:35 dawes Exp $
 </verb>
 </article>

@@ -4,8 +4,8 @@
 <!-- TitleS information -->
 
 <title>README.VIDEO7
-<author>XFree86, Inc
-<date>xf_vid7 v0.2 5/17/94
+<author>Craig Struble
+<date>17 May 1994
 
 <!-- Table of contents -->
 <toc>
@@ -96,6 +96,6 @@ an INT 10 call, but you can't do this in a user process.<p>
 </quote>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Video7,v 3.1 1994/09/26 15:33:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Video7.sgml,v 3.0 1994/12/20 11:33:38 dawes Exp $
 </verb>
 </article>

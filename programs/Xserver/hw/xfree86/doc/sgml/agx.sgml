@@ -4,8 +4,8 @@
 <!-- Title information -->
 
 <title>Notes on the AGX Server
-<author>XFree86, Inc
-<date>v1.0, 13 December 1994
+<author>Henry Worth
+<date>13 December 1994
 
 <!-- Table of contents -->
 <toc>
@@ -512,7 +512,7 @@ Set or clear CPU access wait state, default is the POST setting.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.10 1994/12/02 05:46:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.0 1994/12/20 11:33:41 dawes Exp $
 </verb>
 
 </article>

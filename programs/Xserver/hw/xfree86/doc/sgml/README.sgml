@@ -5,8 +5,8 @@
  <article>
 
  <title>README for XFree86(TM) 3.1
- <author> ?? HTML version: Michael Klemme (klemme@uni-paderborn.de)
- <date>v1.0, 28 September 1994 (SGML: 30.9.1994)
+ <author> The XFree86 Project, Inc
+ <date>28 September 1994
 
 
 <abstract>
@@ -649,7 +649,7 @@ compile-time option selections were made when building the distribution.
 28 September 1994
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.0 1994/12/20 11:33:32 dawes Exp $
 </verb>
 
 </article>

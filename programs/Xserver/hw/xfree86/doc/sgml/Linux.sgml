@@ -3,7 +3,7 @@
 <article>
  
 <title> Information for Linux Users
-<author> The XFree86 Project, Inc.
+<author> Orest Zborowski
 <date> 13 November 1994
 <toc>
 
@@ -175,7 +175,7 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.2 1994/10/23 12:59:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.0 1994/12/20 11:33:27 dawes Exp $
 </verb>
 
 </article>

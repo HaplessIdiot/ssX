@@ -4,8 +4,8 @@
 <!-- Title information -->
 
 <title>Information for Solaris for x86 Users
-<author>XFree86, Inc
-<date>v1.0, 13 December 1994
+<author>David Holland
+<date>13 December 1994
 
 <!-- Table of contents -->
 <toc>
@@ -293,6 +293,6 @@ Xserver.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SOLX86,v 3.1 1994/09/27 10:30:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.0 1994/12/20 11:33:34 dawes Exp $
 </verb>
 </article>

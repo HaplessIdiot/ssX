@@ -7,8 +7,8 @@
  <title>		Configuring XFree86
 
 			A Step-By-Step Guide
- <author> XFree86, Inc
- <date> 5.10.1994
+ <author> David Wexelblat and The XFree86 Project, Inc
+ <date> 5 October 1994
 
 <abstract>
 	This document describes how to set up your XFree86 server and
@@ -516,7 +516,7 @@ installation.
 </code>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Config.sgml,v 3.0 1994/12/20 11:33:22 dawes Exp $
 </verb>
 
 </article>

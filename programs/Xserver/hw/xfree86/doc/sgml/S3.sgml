@@ -3,7 +3,7 @@
 <article>
 <title> Information for S3 Chipset Users
 <author>The XFree86 Project Inc.
-<date>14 Dec 1994
+<date>14 December 1994
 <toc>
 
 <sect> Supported hardware
@@ -335,7 +335,7 @@ symptom of this not being correct is the HW cursor being chopped off
 when positioned close to the right edge of the screen.
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.0 1994/12/25 08:38:36 dawes Exp $
 </verb>
 
 </article>
