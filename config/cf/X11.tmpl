@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.248 2004/02/16 04:07:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.249tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3724,13 +3724,17 @@ all::  $(OBJS)								@@\
 MakeFontsDir($(OBJS))							@@\
 									@@\
 clean::									@@\
-	RemoveFiles(*.pcf *.pcf.Z *.pcf.gz)
+	RemoveFiles(*.pcf)						@@\
+	RemoveFiles(*.pcf.Z)						@@\
+	RemoveFiles(*.pcf.gz)
 # else
 #  define MakeFonts()							@@\
 MakeFontsDir($(OBJS))							@@\
 									@@\
 clean::									@@\
-	RemoveFiles(*.pcf *.pcf.Z *.pcf.gz)
+	RemoveFiles(*.pcf)						@@\
+	RemoveFiles(*.pcf.Z)						@@\
+	RemoveFiles(*.pcf.gz)
 # endif
 #endif /* MakeFonts */
 
@@ -3832,11 +3836,17 @@ FontBaseObj(tname):  FontSrc(sname)					@@\
 #  if GzipFontCompression
 #   define CompressedFontTargetLong(sname,tname)			@@\
 FontBaseObj(tname).gz:  FontSrc(sname)					@@\
-	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIPCMD) > $@
+	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIPCMD) > $@		@@\
+									@@\
+clean::									@@\
+	RemoveFile(FontBaseObj(tname).gz)
 #  else
 #   define CompressedFontTargetLong(sname,tname)			@@\
 FontBaseObj(tname).Z:  FontSrc(sname)					@@\
-	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(COMPRESS) > $@
+	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(COMPRESS) > $@		@@\
+									@@\
+clean::									@@\
+	RemoveFile(FontBaseObj(tname).Z)
 #  endif
 # endif /* CompressedFontTargetLong */
 #else
