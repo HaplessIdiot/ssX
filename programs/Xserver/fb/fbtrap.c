@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.8 2002/05/31 16:48:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.9 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -1090,7 +1090,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    first_right_x += xFixed1;
 	}
 
-	(*mask.set) (&mask, pixel_x, y);
+	(*mask.set) (&mask, xFixedToInt (pixel_x), xFixedToInt (y));
 	
 	/* 
 	 * Walk pixels on this row intersected by only trap.left
@@ -1187,11 +1187,6 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	    pixelWalkNextPixel(&right);
 	    INCREMENT_X_AND_PIXEL;
 	}
-	
-	/*
-	 * Step down the mask
-	 */
-	(*mask.down) (&mask);
     }
 }
 
