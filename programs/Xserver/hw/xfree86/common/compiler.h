@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.97 2002/12/12 04:12:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.98 2002/12/24 17:42:59 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1025,7 +1025,7 @@ xf86WriteMmio32Be(__volatile__ void *base, const unsigned long offset,
 
 extern volatile unsigned char *ioBase;
 
-#    define eieio()		__asm__ __volatile__ ("eieio")
+#    define eieio()		__asm__ __volatile__ ("eieio" ::: "memory")
 
 static __inline__ unsigned char
 xf86ReadMmio8(__volatile__ void *base, const unsigned long offset)
@@ -1241,7 +1241,7 @@ inl(unsigned short port)
 #    define stw_u(v,p)	(*(unsigned char *)(p)) = (v); \
 				(*((unsigned char *)(p)+1)) = ((v) >> 8)
 
-#    define mem_barrier()		eieio()
+#    define mem_barrier()	eieio()
 #    define write_mem_barrier()	eieio()
 
 #   else /* ix86 */

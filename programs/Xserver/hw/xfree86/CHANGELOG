@@ -1,4 +1,5 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 797. Fix for memory fences on PowerPC (Marc La France).
  796. Work-around for Radeon int10 problems (Marc La France).
  795. Fix XDarwin crash in rootless mode with 16-bit color by ensuring that
       window pixmap pointers are 32-bit aligned (Apple, Torrey T. Lyons).
@@ -16138,4 +16139,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2503 2003/01/29 01:11:03 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2504 2003/01/29 15:17:30 tsi Exp $
