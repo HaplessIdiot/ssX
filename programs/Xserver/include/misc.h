@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.16 1998/12/06 06:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.17 1999/01/31 12:22:17 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -187,6 +187,7 @@ typedef struct _xReq *xReqPtr;
  */
 #define lowbit(x) ((x) & (~(x) + 1))
 
+#ifndef IN_MODULE
 /* XXX Not for modules */
 #include <limits.h>
 #if !defined(MAXSHORT) || !defined(MINSHORT) || \
@@ -205,6 +206,7 @@ typedef struct _xReq *xReqPtr;
 #define MAXINT INT_MAX
 #undef MININT
 #define MININT INT_MIN
+#endif
 
 /* some macros to help swap requests, replies, and events */
 
