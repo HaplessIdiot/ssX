@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.8 2001/10/28 03:33:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.9 2001/12/14 19:59:31 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -553,7 +553,7 @@ WorkQueuePtr		workQueue;
 static WorkQueuePtr	*workQueueLast = &workQueue;
 
 void
-ProcessWorkQueue()
+ProcessWorkQueue(void)
 {
     WorkQueuePtr    q, *p;
 
@@ -581,7 +581,7 @@ ProcessWorkQueue()
 }
 
 void
-ProcessWorkQueueZombies()
+ProcessWorkQueueZombies(void)
 {
     WorkQueuePtr    q, *p;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/tables.c,v 3.3 2001/01/17 22:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/tables.c,v 3.4 2001/12/14 19:59:33 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -54,6 +54,7 @@ SOFTWARE.
 #include "windowstr.h"
 #include "extnsionst.h"
 #include "dixstruct.h"
+#include "dixevents.h"
 #include "dispatch.h"
 #include "swaprep.h"
 #include "swapreq.h"

@@ -72,7 +72,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.9 2001/10/28 03:33:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.10 2001/12/14 19:59:33 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -92,7 +92,6 @@ SOFTWARE.
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
 #endif
-extern WindowPtr *WindowTable;
 #include <assert.h>
 
 static void RebuildTable(
