@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+ 111. Major improvement to the Xmaster UI on Mac OS X. (#4447, XonX team).
  110. 8 bit DAC support for the NVIDIA Riva-128 (Mark Vojkovich).
  109. Fix panning on Permedia3 (Alan Hourihane).
  108. Enable wsmouse support on OpenBSD/i386 (Matthieu Herrb).
@@ -12369,4 +12370,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1557 2001/02/05 10:44:55 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1558 2001/02/06 19:27:01 mvojkovi Exp $
