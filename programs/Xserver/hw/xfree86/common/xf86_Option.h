@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.64 1997/01/18 06:55:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.65 1997/01/23 11:01:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -40,7 +40,7 @@ typedef struct {
 #define OFLG_SET(f,p)	((p)->flag_bits[(f)/FLAGBITS] |= (1 << ((f)%FLAGBITS)))
 #define OFLG_CLR(f,p)	((p)->flag_bits[(f)/FLAGBITS] &= ~(1 << ((f)%FLAGBITS)))
 #define OFLG_ISSET(f,p)	((p)->flag_bits[(f)/FLAGBITS] & (1 << ((f)%FLAGBITS)))
-#define OFLG_ZERO(p)	memset((char *)(p), 0, sizeof(*(p)))
+#define OFLG_ZERO(p)	xf86memset((char *)(p), 0, sizeof(*(p)))
 
 /*
  * Option flags.  Define these in numeric order.
