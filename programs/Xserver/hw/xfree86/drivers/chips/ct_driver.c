@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.27 1998/08/19 07:49:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.28 1998/08/29 05:43:07 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -5156,6 +5156,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     CHIPSUnmapMem(pScrn);
     if (cPtr->AccelInfoRec)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
+    if (cPtr->CursorInfoRec)
+	xf86DestroyCursorInfoRec(cPtr->AccelInfoRec);
 
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = cPtr->CloseScreen;

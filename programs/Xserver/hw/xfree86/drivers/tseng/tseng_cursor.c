@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.12 1998/08/13 14:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.13 1998/08/19 07:49:16 dawes Exp $ */
 
 
 
@@ -12,14 +12,14 @@ static void TsengSetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 static Bool TsengUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
 static void TsengSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 static void TsengLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits);
-unsigned char *TsengRealizeCursor(XAACursorInfoPtr infoPtr, CursorPtr pCurs);
+unsigned char *TsengRealizeCursor(xf86CursorInfoPtr infoPtr, CursorPtr pCurs);
 
 Bool 
 TsengHWCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
-    XAACursorInfoPtr infoPtr;
+    xf86CursorInfoPtr infoPtr;
     int iobase = VGAHW_GET_IOBASE();
     unsigned char tmp;
 
@@ -28,14 +28,14 @@ TsengHWCursorInit(ScreenPtr pScreen)
     if (!pTseng->HWCursor)
 	return FALSE;
 
-    infoPtr = XAACreateCursorInfoRec();
+    infoPtr = xf86CreateCursorInfoRec();
     if (!infoPtr)
 	return FALSE;
 
     pTseng->CursorInfoRec = infoPtr;
 
     /* calculate memory addres from video memory offsets */
-    pTseng->XAAHWCursorBuffer =
+    pTseng->HWCursorBuffer =
 	pTseng->FbBase + pTseng->HWCursorBufferOffset;
 
     /*
@@ -45,7 +45,7 @@ TsengHWCursorInit(ScreenPtr pScreen)
      */
     if (!pTseng->UseLinMem) {
 #ifdef TODO
-	pTseng->XAAHWCursorBuffer =
+	pTseng->HWCursorBuffer =
 	    pTseng->something
 	    - pTseng->what
 	    + 0x18000;
@@ -107,7 +107,7 @@ TsengHWCursorInit(ScreenPtr pScreen)
     infoPtr->ShowCursor = TsengShowCursor;
     infoPtr->UseHWCursor = TsengUseHWCursor;
 
-    return (XAAInitCursor(pScreen, infoPtr));
+    return (xf86InitCursor(pScreen, infoPtr));
 }
 
 static Bool
@@ -262,5 +262,5 @@ TsengLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *bits)
     }
 #endif
     /* this assumes the apertures have been set up correctly for banked mode */
-    memcpy(pTseng->XAAHWCursorBuffer, bits, 1024);
+    memcpy(pTseng->HWCursorBuffer, bits, 1024);
 }

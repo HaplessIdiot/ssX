@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.14 1998/08/19 12:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.15 1998/08/29 05:43:30 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -114,7 +114,7 @@ typedef struct {
     CARD32		FgColor;
     CARD32		BgColor;
     XAAInfoRecPtr	AccelInfoRec;
-    XAACursorInfoPtr	CursorInfoRec;
+    xf86CursorInfoPtr	CursorInfoRec;
     CloseScreenProcPtr	CloseScreen;
 } MGARec, *MGAPtr;
 

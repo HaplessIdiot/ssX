@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.12 1998/08/02 05:16:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.13 1998/08/29 05:43:07 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -283,9 +283,9 @@ CHIPSCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    XAACursorInfoPtr infoPtr;
+    xf86CursorInfoPtr infoPtr;
     
-    infoPtr = XAACreateCursorInfoRec();
+    infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
 
     cPtr->CursorInfoRec = infoPtr;
@@ -316,5 +316,5 @@ CHIPSCursorInit(ScreenPtr pScreen)
     infoPtr->ShowCursor = CHIPSShowCursor;
     infoPtr->UseHWCursor = CHIPSUseHWCursor;
 
-    return(XAAInitCursor(pScreen, infoPtr));
+    return(xf86InitCursor(pScreen, infoPtr));
 }

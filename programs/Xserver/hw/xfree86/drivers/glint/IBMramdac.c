@@ -24,7 +24,7 @@
  * glintOutIBMRGBIndReg() and glintInIBMRGBIndReg() are used to access 
  * the indirect IBM RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/IBMramdac.c,v 1.3 1998/08/13 14:45:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/IBMramdac.c,v 1.4 1998/08/29 05:43:24 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -112,14 +112,14 @@ glintIBMHWCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    XAACursorInfoPtr infoPtr;
+    xf86CursorInfoPtr infoPtr;
 
-    infoPtr = XAACreateCursorInfoRec();
+    infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
     
     pGlint->CursorInfoRec = infoPtr;
 
     (*pGlint->RamDac->HWCursorInit)(infoPtr);
 
-    return(XAAInitCursor(pScreen, infoPtr));
+    return(xf86InitCursor(pScreen, infoPtr));
 }

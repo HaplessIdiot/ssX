@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.5 1998/08/19 07:49:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.6 1998/08/29 05:44:08 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1542,15 +1542,7 @@ extern unsigned int XAAShiftMasks[32];
 
 extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
 
-#if defined(__GNUC__) && defined(__i386__) && !defined(DLOPEN_HACK)
- __inline__ CARD32 XAAReverseBitOrder(CARD32 data);
-#else
-#ifndef __GNUC__
-#define __inline__ /**/
-#endif
- __inline__ CARD32 XAAReverseBitOrder(CARD32 data);
-#endif
-
+CARD32 XAAReverseBitOrder(CARD32 data);
 
 #define GET_XAASCREENPTR_FROM_SCREEN(pScreen)\
 	(pScreen)->devPrivates[XAAScreenIndex].ptr

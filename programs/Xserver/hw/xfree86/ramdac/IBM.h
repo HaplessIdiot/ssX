@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.4 1998/08/20 08:56:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.5 1998/08/29 05:44:01 dawes Exp $ */
 
 #include <xf86RamDac.h>
 
@@ -15,8 +15,8 @@ unsigned long IBMramdac640CalculateMNPCForClock(unsigned long RefClock,
     unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
     unsigned long MaxClock, unsigned long *rM, unsigned long *rN,
     unsigned long *rP, unsigned long *rC);
-void IBMramdac526HWCursorInit(XAACursorInfoPtr infoPtr);
-void IBMramdac640HWCursorInit(XAACursorInfoPtr infoPtr);
+void IBMramdac526HWCursorInit(xf86CursorInfoPtr infoPtr);
+void IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr);
 
 #define IBM524_RAMDAC		(VENDOR_IBM << 16) | 0x00
 #define IBM524A_RAMDAC		(VENDOR_IBM << 16) | 0x01

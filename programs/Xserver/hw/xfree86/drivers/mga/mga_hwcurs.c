@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.5 1998/07/25 16:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.6 1998/08/29 05:43:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -23,12 +23,12 @@ MGAHWCursorInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     MGAPtr pMga = MGAPTR(pScrn);
     MGARamdacPtr MGAdac = &pMga->Dac;
-    XAACursorInfoPtr infoPtr;
+    xf86CursorInfoPtr infoPtr;
 
     if (!MGAdac->isHwCursor) 
         return FALSE;
 
-    infoPtr = XAACreateCursorInfoRec();
+    infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
     
     pMga->CursorInfoRec = infoPtr;
@@ -43,5 +43,5 @@ MGAHWCursorInit(ScreenPtr pScreen)
     infoPtr->ShowCursor = MGAdac->ShowCursor;
     infoPtr->UseHWCursor = MGAdac->UseHWCursor;
 
-    return(XAAInitCursor(pScreen, infoPtr));
+    return(xf86InitCursor(pScreen, infoPtr));
 }
