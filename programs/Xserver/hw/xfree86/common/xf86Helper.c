@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.12 1998/11/28 10:42:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.13 1998/11/29 13:09:21 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -782,10 +782,12 @@ Bool
 xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 {
     ScreenPtr pScreen;
-    static PixmapPtr ppix[MAXSCREENS];
-    static PixmapPtr pspix[MAXSCREENS];
-    static pointer pspixbits[MAXSCREENS];
-    static int pspixwidth[MAXSCREENS];
+    static unsigned char *devPrivates[MAXSCREENS];
+    static int devKinds[MAXSCREENS];
+    pointer devPrivate;
+    Bool ret = FALSE;
+    int width, height, devKind, bitsPerPixel;
+    PixmapPtr pScreenPix, pPix;
 
     BoxRec pixBox;
     RegionRec pixReg;
@@ -797,66 +799,87 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
     pixBox.y2 = pScreen->height;
     (*pScreen->RegionInit)(&pixReg, &pixBox, 1);
 
+    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+
     switch (what) {
     case SaveImage:
-	/*
-	 * Create a dummy pixmap to write to while VT is switched out, and
-  	 * copy the screen to that pixmap.
-	 */
-	pspix[scrnIndex] = (*pScreen->GetScreenPixmap)(pScreen);
-	ppix[scrnIndex] = (*pScreen->CreatePixmap)(pScreen, pScreen->width,
-					pScreen->height, pScreen->rootDepth);
-	if (!ppix[scrnIndex]) {
-	    (*pScreen->RegionUninit)(&pixReg);
-	    return FALSE;
-	}
+        /*
+         * Create a dummy pixmap to write to while VT is switched out, and
+         * copy the screen to that pixmap.
+         */
+	width = pScreenPix->drawable.width;
+	height = pScreenPix->drawable.height;
+	bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
 
-	(*pScreen->BackingStoreFuncs.SaveAreas)(ppix[scrnIndex], &pixReg, 0, 0,
+	/* save the old data */
+	devPrivates[scrnIndex] = pScreenPix->devPrivate.ptr;
+	devKinds[scrnIndex] = pScreenPix->devKind;
+	
+	/* allocate new data */
+	devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ? */
+        devPrivate = (pointer)xalloc(devKind * height);
+
+        if(devPrivate) {
+	    pPix = GetScratchPixmapHeader(pScreen, width, height, 
+		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
+				
+	    if(pPix) {
+		(*pScreen->BackingStoreFuncs.SaveAreas)(pPix, &pixReg, 0, 0,
 						WindowTable[scrnIndex]);
-	pspixbits[scrnIndex] = pspix[scrnIndex]->devPrivate.ptr;
-	pspix[scrnIndex]->devPrivate.ptr = ppix[scrnIndex]->devPrivate.ptr;
-	pspixwidth[scrnIndex] = (int)pspix[scrnIndex]->devKind;
-	pspix[scrnIndex]->devKind = pScreen->width;
-	WalkTree(xf86Screens[scrnIndex]->pScreen, xf86NewSerialNumber, 0);
-	break;
 
+		FreeScratchPixmapHeader(pPix);
+
+		/* modify the pixmap */
+		pScreenPix->devPrivate.ptr = devPrivate;
+		pScreenPix->devKind = devKind;
+
+		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
+		ret = TRUE;
+	    } else
+		xfree(devPrivate);
+	}
+	break;
     case RestoreImage:
 	/*
 	 * Reinstate the screen pixmap and copy the dummy pixmap back
 	 * to the screen.
 	 */
 	
-ErrorF("xf86SaveRestoreImage: restore, xf86Resetting is %s\n", BOOLTOSTRING(xf86Resetting));
-
 	if (!xf86Resetting) {
-	    if (!ppix[scrnIndex]) {
-		(*pScreen->RegionUninit)(&pixReg);
-		return FALSE;
-	    }
+	     width = pScreenPix->drawable.width;
+	     height = pScreenPix->drawable.height;
+	     bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
+	     devPrivate = pScreenPix->devPrivate.ptr;
+	     devKind = pScreenPix->devKind;
 
-	    pspix[scrnIndex]->devPrivate.ptr = pspixbits[scrnIndex];
-	    pspix[scrnIndex]->devKind = pspixwidth[scrnIndex];
-	    (*pScreen->BackingStoreFuncs.RestoreAreas)(ppix[scrnIndex],
-						       &pixReg, 0, 0,
+	     /* scratch pixmap for the old screen */
+	     pPix = GetScratchPixmapHeader(pScreen, width, height, 
+		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
+
+	     if(pPix) {
+		(*pScreen->BackingStoreFuncs.RestoreAreas)(pPix, &pixReg, 0, 0,
 						       WindowTable[scrnIndex]);
-	    WalkTree(xf86Screens[scrnIndex]->pScreen, xf86NewSerialNumber, 0);
-	}
+		xfree(devPrivate);
+		FreeScratchPixmapHeader(pPix);
+		/* restore old values */
+		pScreenPix->devPrivate.ptr = devPrivates[scrnIndex];
+		pScreenPix->devKind = devKinds[scrnIndex];
+		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
+		ret = TRUE;
+	     }
+	     break;
+	} 
 	/* Fall through */
-
     case FreeImage:
-	if (ppix[scrnIndex]) {
-	    (*pScreen->DestroyPixmap)(ppix[scrnIndex]);
-	    ppix[scrnIndex] = NULL;
-	}
+	if (pScreenPix->devPrivate.ptr)
+	    xfree(pScreenPix->devPrivate.ptr);
+	ret = TRUE;
 	break;
-
     default:
 	ErrorF("xf86SaveRestoreImage: Invalid flag (%d)\n", what);
-	(*pScreen->RegionUninit)(&pixReg);
-	return FALSE;
     }
     (*pScreen->RegionUninit)(&pixReg);
-    return TRUE;
+    return ret;
 }
 
 /* Print driver messages in the standard format */

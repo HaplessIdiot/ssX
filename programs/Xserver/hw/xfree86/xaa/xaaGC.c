@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.7 1998/11/01 12:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.8 1998/11/15 04:30:38 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -71,7 +71,7 @@ XAAValidateGC(
     if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
 	pGC->bgPixel = 0x7fffffff; 
 
-    if(pDraw->type != DRAWABLE_WINDOW) {
+    if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){
 	pGCPriv->flags = OPS_ARE_PIXMAP;
         pGCPriv->changes |= changes;
     } 
@@ -80,7 +80,7 @@ XAAValidateGC(
         pGCPriv->changes |= changes;
     }
     else {
-	if(!(pGCPriv->flags & OPS_ARE_ACCEL)) {
+	if(!(pGCPriv->flags & OPS_ARE_ACCEL)) {	
 	    changes |= pGCPriv->changes;
 	    pGCPriv->changes = 0;
 	}
@@ -95,7 +95,7 @@ XAAValidateGC(
 	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
 		
 	if(pixPriv->flags & DIRTY) {
-	    pixPriv->flags = 0;
+	    pixPriv->flags &= ~(DIRTY | REDUCIBILITY_MASK);
 	    pGC->tile.pixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	}
     }
@@ -103,7 +103,7 @@ XAAValidateGC(
 	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
 		
 	if(pixPriv->flags & DIRTY) {
-	    pixPriv->flags = 0;
+	    pixPriv->flags &= ~(DIRTY | REDUCIBILITY_MASK);
 	    pGC->stipple->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.4 1998/08/29 05:44:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.5 1998/11/15 04:30:38 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -31,7 +31,8 @@ XAACopyArea(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
     if(pDstDrawable->type == DRAWABLE_WINDOW) {
-	if(pSrcDrawable->type == DRAWABLE_WINDOW) {
+	if((pSrcDrawable->type == DRAWABLE_WINDOW) ||
+		IS_OFFSCREEN_PIXMAP(pSrcDrawable)){
 	    if(infoRec->ScreenToScreenBitBlt &&
 	     CHECK_ROP(pGC,infoRec->ScreenToScreenBitBltFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->ScreenToScreenBitBltFlags) &&
@@ -49,7 +50,17 @@ XAACopyArea(
 		pGC, srcx, srcy, width, height, dstx, dsty,
 		XAADoImageWrite, 0L));
 	}
-    } else {
+    } else if(IS_OFFSCREEN_PIXMAP(pDstDrawable)){
+	if((pSrcDrawable->type == DRAWABLE_WINDOW) ||
+		IS_OFFSCREEN_PIXMAP(pSrcDrawable)){
+	    if(infoRec->ScreenToScreenBitBlt &&
+	     CHECK_ROP(pGC,infoRec->ScreenToScreenBitBltFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->ScreenToScreenBitBltFlags) &&
+	     CHECK_PLANEMASK(pGC,infoRec->ScreenToScreenBitBltFlags))
+            return (XAABitBlt( pSrcDrawable, pDstDrawable,
+		pGC, srcx, srcy, width, height, dstx, dsty,
+		XAADoBitBlt, 0L));
+	}
     }
 
     return (XAAFallbackOps.CopyArea(pSrcDrawable, pDstDrawable, pGC,

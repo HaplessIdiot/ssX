@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitBlt.c,v 1.1.2.3 1998/06/21 08:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitBlt.c,v 1.2 1998/07/25 16:58:41 dawes Exp $ */
 
 /* 
    This is a lighter version of cfbBitBlt.  We calculate the boxes
@@ -63,7 +63,10 @@ XAABitBlt(
 
     /* clip the source */
     if (pSrcDrawable->type == DRAWABLE_PIXMAP) {
-	fastClip = 1;
+	if ((pSrcDrawable == pDstDrawable) && (pGC->clientClipType == CT_NONE))
+	    prgnSrcClip = pGC->pCompositeClip;
+	else
+	    fastClip = 1;
     } else {	/* Window */
 	if (pGC->subWindowMode == IncludeInferiors) {
 	    if (!((WindowPtr) pSrcDrawable)->parent) {

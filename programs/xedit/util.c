@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.3 1998/11/15 11:11:18 dawes Exp $ */
 
 #include <stdio.h>
 #include "xedit.h"
@@ -43,10 +43,15 @@ static int WindowIndex(Widget);
 static void ChangeTextWindow(Widget);
 
 /*
+ * External
+ */
+extern void _XawTextShowPosition(TextWidget);
+
+/*
  * Initialization
  */
 extern Widget scratch;
-extern Widget vpanes[2], labels[3], texts[3];
+extern Widget vpanes[2], labels[3], texts[3], forms[3];
 
 /*
  * Implementation
@@ -212,7 +217,7 @@ KillTextSource(xedit_flist_item *item)
     unsigned idx, i;
     Arg targs[3];
     Cardinal tnum_args;
-    Arg largs[1];
+    Arg largs[2];
     Cardinal lnum_args;
     char label_buf[BUFSIZ];
 
@@ -235,7 +240,12 @@ KillTextSource(xedit_flist_item *item)
 	XmuSnprintf(label_buf, sizeof(label_buf), "%s       Read - Write",
 		    nitem->name);
     lnum_args = 0;
-    XtSetArg(largs[lnum_args], XtNlabel, label_buf);	++lnum_args;
+    XtSetArg(largs[lnum_args], XtNlabel, label_buf);		++lnum_args;
+    if (nitem->flags & CHANGED_BIT)
+	XtSetArg(largs[lnum_args], XtNleftBitmap, flist.pixmap);
+    else
+	XtSetArg(largs[lnum_args], XtNleftBitmap, None);
+    ++lnum_args;
 
     tnum_args = 0;
     XtSetArg(targs[tnum_args], XtNtextSource,
@@ -247,7 +257,10 @@ KillTextSource(xedit_flist_item *item)
     for (i = 0; i < 3; i++)
 	if (XawTextGetSource(texts[i]) == item->source) {
 	    XtSetValues(labels[i], largs, lnum_args);
+	    XawTextDisableRedisplay(texts[i]);
 	    XtSetValues(texts[i], targs, tnum_args);
+	    _XawTextShowPosition((TextWidget)texts[i]);
+	    XawTextEnableRedisplay(texts[i]);
 	    if (texts[i] == textwindow) {
 		Arg args[1];
 
@@ -303,6 +316,7 @@ SwitchTextSource(xedit_flist_item *item)
 	FindTextSource(XawTextGetSource(textwindow), NULL);
     int i;
 
+    XawTextDisableRedisplay(textwindow);
     if (item->file_access == READ_OK)
 	XmuSnprintf(label_buf, sizeof(label_buf), "%s       READ ONLY",
 		    item->name);
@@ -311,6 +325,11 @@ SwitchTextSource(xedit_flist_item *item)
 		    item->name);
     num_args = 0;
     XtSetArg(args[num_args], XtNlabel, label_buf);		++num_args;
+    if (item->flags & CHANGED_BIT)
+	XtSetArg(args[num_args], XtNleftBitmap, flist.pixmap);
+    else
+	XtSetArg(args[num_args], XtNleftBitmap, None);
+    ++num_args;
     XtSetValues(labelwindow, args, num_args);
 
     for (i = 0; i < 3; i++)
@@ -318,14 +337,12 @@ SwitchTextSource(xedit_flist_item *item)
 	    && XawTextGetSource(texts[i]) == old_item->source)
 	    break;
 
-    if (i >= 3 || item == old_item) {
-	num_args = 0;
-	XtSetArg(args[num_args], XtNdisplayPosition,
-		 &(old_item->display_position));		++num_args;
-	XtSetArg(args[num_args], XtNinsertPosition,
-		 &(old_item->insert_position));			++num_args;
-	XtGetValues(textwindow, args, num_args);
-    }
+    num_args = 0;
+    XtSetArg(args[num_args], XtNdisplayPosition,
+	     &(old_item->display_position));			++num_args;
+    XtSetArg(args[num_args], XtNinsertPosition,
+	     &(old_item->insert_position));			++num_args;
+    XtGetValues(textwindow, args, num_args);
 
     num_args = 0;
     XtSetArg(args[num_args], XtNtextSource, item->source);	++num_args;
@@ -334,6 +351,8 @@ SwitchTextSource(xedit_flist_item *item)
     XtSetArg(args[num_args], XtNinsertPosition, item->insert_position);
     ++num_args;
     XtSetValues(textwindow, args, num_args);
+    _XawTextShowPosition((TextWidget)textwindow);
+    XawTextEnableRedisplay(textwindow);
 
     num_args = 0;
     if (item->source != scratch) {
@@ -375,26 +394,23 @@ ChangeTextWindow(Widget w)
 void
 XeditFocus(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+    Arg args[1];
+    xedit_flist_item *item;
     int idx = WindowIndex(w);
 
-    if (idx >= 0) {
-	Arg args[1];
-	xedit_flist_item *item;
+    XtSetKeyboardFocus(topwindow, w);
 
-	XtSetKeyboardFocus(topwindow, w);
+    ChangeTextWindow(w);
 
-	ChangeTextWindow(w);
+    labelwindow = labels[idx];
+    item = FindTextSource(XawTextGetSource(textwindow), NULL);
 
-	labelwindow = labels[idx];
-	item = FindTextSource(XawTextGetSource(textwindow), NULL);
+    if (item->source != scratch)
+	XtSetArg(args[0], XtNstring, item->name);
+    else
+	XtSetArg(args[0], XtNstring, NULL);
 
-	if (item->source != scratch)
-	    XtSetArg(args[0], XtNstring, item->name);
-	else
-	    XtSetArg(args[0], XtNstring, NULL);
-
-	XtSetValues(filenamewindow, args, 1);
-    }
+    XtSetValues(filenamewindow, args, 1);
 }
 
 void
@@ -443,7 +459,7 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     uidx = XtIsManaged(texts[1]) ? 1 : 2;
 
-    unmanage[0] = labels[uidx];
+    unmanage[0] = forms[uidx];
     unmanage[1] = texts[uidx];
     XtUnmanageChildren(unmanage, 2);
 
@@ -454,15 +470,18 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	Arg args[3];
 	Cardinal num_args;
 	String label_str;
+	Pixmap label_pix;
 	XawTextPosition d_pos, i_pos;
 	Widget source;
 
 	num_args = 0;
 	XtSetArg(args[num_args], XtNlabel, &label_str);		++num_args;
+	XtSetArg(args[num_args], XtNleftBitmap, &label_pix);	++num_args;
 	XtGetValues(labels[current ? idx : uidx], args, num_args);
 
 	num_args = 0;
 	XtSetArg(args[num_args], XtNlabel, label_str);		++num_args;
+	XtSetArg(args[num_args], XtNleftBitmap, label_pix);	++num_args;
 	XtSetValues(labels[0], args, num_args);
 
 	num_args = 0;
@@ -536,8 +555,6 @@ OtherWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XeditFocus(texts[oidx], event, params, num_params);
 }
 
-extern void _XawTextShowPosition(TextWidget);
-
 void
 SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
@@ -547,6 +564,7 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     Dimension width, height, bw;
     XawTextPosition i_pos, d_pos;
     String label_str;
+    Pixmap label_pix;
     int idx = WindowIndex(w), dimension;
     Bool vert = True;
 
@@ -604,11 +622,12 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     num_args = 0;
     XtSetArg(args[num_args], XtNlabel, &label_str);		++num_args;
+    XtSetArg(args[num_args], XtNleftBitmap, &label_pix);	++num_args;
     XtGetValues(labelwindow, args, num_args);
 
     if (vert) {
 	if (XtIsManaged(texts[2])) {
-	    manage[0] = labels[2];
+	    manage[0] = forms[2];
 	    manage[1] = texts[2];
 	    XtUnmanageChildren(manage, 2);
 	    XtUnmanageChild(vpanes[1]);
@@ -616,12 +635,14 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
     else {
 	if (XtIsManaged(texts[1])) {
-	    manage[0] = labels[1];
+	    manage[0] = forms[1];
 	    manage[1] = texts[1];
 	    XtUnmanageChildren(manage, 2);
 	}
     }
 
+    XawTextDisableRedisplay(texts[0]);
+    XawTextDisableRedisplay(ntext);
     if (textwindow == texts[1] || textwindow == texts[2]) {
 	num_args = 0;
 	XtSetArg(args[num_args], XtNdisplayPosition, d_pos);	++num_args;
@@ -632,12 +653,14 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	XtSetKeyboardFocus(topwindow, textwindow);
 
 	num_args = 0;
-	XtSetArg(args[num_args], XtNlabel, label_str);	++num_args;
+	XtSetArg(args[num_args], XtNlabel, label_str);		++num_args;
+	XtSetArg(args[num_args], XtNleftBitmap, label_pix);	++num_args;
 	XtSetValues(labelwindow = labels[0], args, num_args);
     }
 
     num_args = 0;
     XtSetArg(args[num_args], XtNlabel, label_str);		++num_args;
+    XtSetArg(args[num_args], XtNleftBitmap, label_pix);		++num_args;
     XtSetValues(nlabel, args, num_args);
 
     num_args = 0;
@@ -648,7 +671,7 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     else
 	XtSetValues(ntext, args, num_args);
 
-    manage[0] = nlabel;
+    manage[0] = XtParent(nlabel);
     manage[1] = ntext;
     XtManageChildren(manage, 2);
     if (!vert)
@@ -666,6 +689,9 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XtSetArg(args[num_args], XtNinsertPosition, i_pos);		++num_args;
     XtSetValues(ntext, args, num_args);
 
-    _XawTextShowPosition((TextWidget)w);
+    _XawTextShowPosition((TextWidget)textwindow);
     _XawTextShowPosition((TextWidget)ntext);
+
+    XawTextEnableRedisplay(textwindow);
+    XawTextEnableRedisplay(ntext);
 }

@@ -4,11 +4,10 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.2 1998/08/29 05:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.3 1998/09/13 05:23:33 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 
 #include "X.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.1 1998/10/05 13:23:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.2 1998/11/15 04:30:40 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -80,7 +80,7 @@ XAAOverlayFillTiledRects(
 	return;
     }
 
-    if(infoRec->PolyFillRectImageWrite) {
+    if(infoRec->FillImageWriteRects) {
 	(*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
 		planemask, nBox, pBox, xorg, yorg, pPix);
 	return;

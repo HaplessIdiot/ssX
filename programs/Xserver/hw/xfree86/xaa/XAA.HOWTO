@@ -26,6 +26,7 @@ document as well.
     2.8.2 The Indirect Method
   2.9  Image Reads
 3)  The Pixmap Cache
+4)  Offscreen Pixmaps
 
 /********************************************************************/
 
@@ -1367,6 +1368,13 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	of the pixmap cache requires that the driver provide ImageWrite
 	routines or a WritePixmap or WritePixmapToCache replacement so
 	that patterns can even be placed in the cache.
+
+      ADDENDUM: XAA can now load the pixmap cache without requiring
+	that the driver supply an ImageWrite function, but this can
+	only be done on linear framebuffers.  If you have a linear
+	framebuffer, set LINEAR_FRAMEBUFFER in the XAAInfoRec.Flags
+	field and XAA will then be able to upload pixmaps into the
+	cache without the driver providing functions to do so.
    */
 
 
@@ -1402,5 +1410,16 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
    zero or one means there are no alignment issues.
 
 
+4)  OFFSCREEN PIXMAPS
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.6 1998/08/29 05:44:04 dawes Exp $
+   XAA has the ability to store pixmap drawables in offscreen video 
+   memory and render into them with full hardware acceleration.  Placement
+   of pixmaps in the cache is done automatically on a first-come basis and 
+   only if there is room.  To enable this feature, set the OFFSCREEN_PIXMAPS
+   flag in the XAAInfoRec.Flags field.  This is only available when a
+   ScreenToScreenCopy function is provided, when the Offscreen memory 
+   manager has been initialized and when the LINEAR_FRAMEBUFFER flag is
+   also set.
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.7 1998/09/06 12:56:52 dawes Exp $

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/resource.c,v 3.3 1998/10/04 09:40:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/resource.c,v 3.4 1998/10/10 15:25:37 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -55,6 +55,7 @@ char	*accessFile;
 char	**exportList;
 char	*randomFile;
 char	*greeterLib;
+char	*willing;
 int	choiceTimeout;	/* chooser choice timeout */
 
 # define DM_STRING	0
@@ -216,10 +217,12 @@ struct dmResources {
 				DEF_RANDOM_FILE} ,
 { "greeterLib",	"GreeterLib",	DM_STRING,	&greeterLib,
 				DEF_GREETER_LIB} ,
-{ "choiceTimeout","ChoiceTimeout",DM_INT,		(char **) &choiceTimeout,
+{ "choiceTimeout","ChoiceTimeout",DM_INT,	(char **) &choiceTimeout,
 				"15"} ,
 { "sourceAddress","SourceAddress",DM_BOOL,	(char **) &sourceAddress,
 				"false"} ,
+{ "willing",	"Willing",	DM_STRING,	&willing,
+				""} ,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])

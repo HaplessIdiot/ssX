@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.11 1998/10/05 13:23:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.12 1998/11/15 04:30:37 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -82,6 +82,8 @@
 /* Flags */
 #define PIXMAP_CACHE			0x00000001
 #define MICROSOFT_ZERO_LINE_BIAS	0x00000002
+#define OFFSCREEN_PIXMAPS		0x00000004
+#define LINEAR_FRAMEBUFFER		0x00000008
 
 
 /* GC fg, bg, and planemask restrictions */
@@ -183,6 +185,12 @@ typedef struct {
    DevUnion devPrivate;
 } XAACacheInfoRec, *XAACacheInfoPtr;
 
+
+typedef struct _PixmapLink {
+  PixmapPtr pPix;
+  struct _PixmapLink *next;
+  FBAreaPtr area;
+} PixmapLink, *PixmapLinkPtr;
 
 typedef struct _XAAInfoRec {
    ScrnInfoPtr pScrn;
@@ -721,54 +729,29 @@ typedef struct _XAAInfoRec {
    );  
    int PolyFillRectSolidFlags;
 
-   void (*PolyFillRectMono8x8Pattern)(
+   void (*PolyFillRectStippled)(
 	DrawablePtr pDraw,
 	GCPtr pGC,
 	int nrectFill, 	
 	xRectangle *prectInit
    );  
-   int PolyFillRectMono8x8PatternFlags;
+   int PolyFillRectStippledFlags;
 
-   void (*PolyFillRectColor8x8Pattern)(
+   void (*PolyFillRectOpaqueStippled)(
 	DrawablePtr pDraw,
 	GCPtr pGC,
 	int nrectFill, 	
 	xRectangle *prectInit
    );  
-   int PolyFillRectColor8x8PatternFlags;
+   int PolyFillRectOpaqueStippledFlags;
 
-   void (*PolyFillRectCacheBlt)(
+   void (*PolyFillRectTiled)(
 	DrawablePtr pDraw,
 	GCPtr pGC,
 	int nrectFill, 	
 	xRectangle *prectInit
    );  
-   int PolyFillRectCacheBltFlags;
-
-   void (*PolyFillRectColorExpand)(
-	DrawablePtr pDraw,
-	GCPtr pGC,
-	int nrectFill, 	
-	xRectangle *prectInit
-   );  
-   int PolyFillRectColorExpandFlags;
-
-   void (*PolyFillRectCacheExpand)(
-	DrawablePtr pDraw,
-	GCPtr pGC,
-	int nrectFill, 	
-	xRectangle *prectInit
-   );  
-   int PolyFillRectCacheExpandFlags;
-
-   void (*PolyFillRectImageWrite)(
-	DrawablePtr pDraw,
-	GCPtr pGC,
-	int nrectFill, 	
-	xRectangle *prectInit
-   );  
-   int PolyFillRectImageWriteFlags;
-
+   int PolyFillRectTiledFlags;
 
    /** FillSpans **/   
 
@@ -782,7 +765,7 @@ typedef struct _XAAInfoRec {
    );
    int FillSpansSolidFlags;
 
-   void (*FillSpansMono8x8Pattern)(
+   void (*FillSpansStippled)(
 	DrawablePtr	pDraw,
 	GCPtr		pGC,
 	int		nInit,
@@ -790,9 +773,9 @@ typedef struct _XAAInfoRec {
 	int		*pwidth,
 	int		fSorted 
    );
-   int FillSpansMono8x8PatternFlags;
+   int FillSpansStippledFlags;
 
-   void (*FillSpansColor8x8Pattern)(
+   void (*FillSpansOpaqueStippled)(
 	DrawablePtr	pDraw,
 	GCPtr		pGC,
 	int		nInit,
@@ -800,9 +783,9 @@ typedef struct _XAAInfoRec {
 	int		*pwidth,
 	int		fSorted 
    );
-   int FillSpansColor8x8PatternFlags;
+   int FillSpansOpaqueStippledFlags;
 
-   void (*FillSpansColorExpand)(
+   void (*FillSpansTiled)(
 	DrawablePtr	pDraw,
 	GCPtr		pGC,
 	int		nInit,
@@ -810,27 +793,7 @@ typedef struct _XAAInfoRec {
 	int		*pwidth,
 	int		fSorted 
    );
-   int FillSpansColorExpandFlags;
-
-   void (*FillSpansCacheBlt)(
-	DrawablePtr	pDraw,
-	GCPtr		pGC,
-	int		nInit,
-	DDXPointPtr 	ppt,
-	int		*pwidth,
-	int		fSorted 
-   );
-   int FillSpansCacheBltFlags;
-
-   void (*FillSpansCacheExpand)(
-	DrawablePtr	pDraw,
-	GCPtr		pGC,
-	int		nInit,
-	DDXPointPtr 	ppt,
-	int		*pwidth,
-	int		fSorted 
-   );
-   int FillSpansCacheExpandFlags;
+   int FillSpansTiledFlags;
 
    int (*PolyText8TE) (
 	DrawablePtr pDraw,
@@ -1005,7 +968,7 @@ typedef struct _XAAInfoRec {
    );
    int FillPolygonSolidFlags;
 
-   void (*FillPolygonMono8x8Pattern)(
+   void (*FillPolygonStippled)(
 	DrawablePtr	pDrawable,
 	GCPtr		pGC,
 	int		shape,
@@ -1013,9 +976,9 @@ typedef struct _XAAInfoRec {
 	int		count,
 	DDXPointPtr	ptsIn 
    );
-   int FillPolygonMono8x8PatternFlags;
+   int FillPolygonStippledFlags;
 
-   void (*FillPolygonColor8x8Pattern)(
+   void (*FillPolygonOpaqueStippled)(
 	DrawablePtr	pDrawable,
 	GCPtr		pGC,
 	int		shape,
@@ -1023,9 +986,9 @@ typedef struct _XAAInfoRec {
 	int		count,
 	DDXPointPtr	ptsIn 
    );
-   int FillPolygonColor8x8PatternFlags;
+   int FillPolygonOpaqueStippledFlags;
 
-   void (*FillPolygonCacheBlt)(
+   void (*FillPolygonTiled)(
 	DrawablePtr	pDrawable,
 	GCPtr		pGC,
 	int		shape,
@@ -1033,17 +996,7 @@ typedef struct _XAAInfoRec {
 	int		count,
 	DDXPointPtr	ptsIn 
    );
-   int FillPolygonCacheBltFlags;
-
-   void (*FillPolygonCacheExpand)(
-	DrawablePtr	pDrawable,
-	GCPtr		pGC,
-	int		shape,
-	int		mode,
-	int		count,
-	DDXPointPtr	ptsIn 
-   );
-   int FillPolygonCacheExpandFlags;
+   int FillPolygonTiledFlags;
 
    void (*PolyFillArcSolid)(
 	DrawablePtr	pDraw,
@@ -1209,6 +1162,9 @@ typedef struct _XAAInfoRec {
    NonTEGlyphInfo GlyphInfo[255];
 
    unsigned int FullPlanemask;
+
+   PixmapLinkPtr OffscreenPixmaps;
+   XAACacheInfoRec ScratchCacheInfoRec;
 
    Bool NeedToSync;
 } XAAInfoRec, *XAAInfoRecPtr;

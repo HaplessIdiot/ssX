@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.1 1998/10/25 07:12:17 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.2 1998/11/15 04:30:44 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -77,6 +77,7 @@ extern struct _app_resources {
     char *backupNameSuffix;
     xedit_hints hints;
     char *changed_pixmap_name;
+    char *position_format;
 } app_resources;
 
 extern Widget topwindow, textwindow, labelwindow, filenamewindow, messwidget;

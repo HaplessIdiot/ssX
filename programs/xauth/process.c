@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.2 1996/12/23 07:10:52 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.3 1998/10/04 09:40:45 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -600,6 +600,7 @@ static AuthList *xauth_head = NULL;	/* list of auth entries */
 static Bool xauth_existed = False;	/* if was present at initialize */
 static Bool xauth_modified = False;	/* if added, removed, or merged */
 static Bool xauth_allowed = True;	/* if allowed to write auth file */
+static Bool xauth_locked = False;     /* if has been locked */
 static char *xauth_filename = NULL;
 static Bool dieing = False;
 
@@ -608,6 +609,9 @@ static Bool dieing = False;
 #else
 #define _signal_t void
 #endif
+
+/* poor man's puts(), for under signal handlers */
+#define WRITES(fd, S) (void)write((fd), (S), strlen((S)))
 
 /* ARGSUSED */
 static _signal_t die (sig)
@@ -627,7 +631,7 @@ static _signal_t catchsig (sig)
 #ifdef SYSV
     if (sig > 0) signal (sig, die);	/* re-establish signal handler */
 #endif
-    if (verbose && xauth_modified) printf ("\r\n");
+    if (verbose && xauth_modified) WRITES(fileno(stdout), "\r\n");
     die (sig);
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
@@ -658,6 +662,8 @@ int auth_initialize (authfilename)
     FILE *authfp;
     Bool exists;
 
+    xauth_filename = authfilename;    /* used in cleanup, prevent race with 
+                                         signals */
     register_signals ();
 
     bzero ((char *) hexvalues, sizeof hexvalues);
@@ -702,7 +708,8 @@ int auth_initialize (authfilename)
 	    fprintf (stderr, "%s:  %s in locking authority file %s\n",
 		     ProgramName, reason, authfilename);
 	    return -1;
-	}
+	} else
+	    xauth_locked = True;
     }
 
     /* these checks can only be done reliably after the file is locked */
@@ -802,8 +809,10 @@ int auth_finalize ()
     if (xauth_modified) {
 	if (dieing) {
 	    if (verbose) {
-		printf ("Aborting changes to authority file %s\n",
-			xauth_filename);
+		/* called from a signal handler -- printf is *not* reentrant */
+		WRITES(fileno(stdout), "\nAborting changes to authority file ");
+		WRITES(fileno(stdout), xauth_filename);
+		WRITES(fileno(stdout), "\n");
 	    }
 	} else if (!xauth_allowed) {
 	    fprintf (stderr, 
@@ -838,7 +847,7 @@ int auth_finalize ()
 	}
     }
 
-    if (!ignore_locks) {
+    if (xauth_locked) {
 	XauUnlockAuth (xauth_filename);
     }
     (void) umask (original_umask);
@@ -1566,7 +1575,7 @@ static int do_info (inputfilename, lineno, argc, argv)
     printf ("Authority file:       %s\n",
 	    xauth_filename ? xauth_filename : "(none)");
     printf ("File new:             %s\n", xauth_existed ? No : Yes);
-    printf ("File locked:          %s\n", ignore_locks ? No : Yes);
+    printf ("File locked:          %s\n", xauth_locked ? No : Yes);
     printf ("Number of entries:    %d\n", n);
     printf ("Changes honored:      %s\n", xauth_allowed ? Yes : No);
     printf ("Changes made:         %s\n", xauth_modified ? Yes : No);

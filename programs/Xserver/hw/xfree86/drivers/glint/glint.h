@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.11 1998/11/15 04:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.12 1998/11/28 10:43:10 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -32,6 +32,7 @@
 
 #include "xaa.h"
 #include "xf86RamDac.h"
+#include "xf86cmap.h"
 
 typedef struct {
 	unsigned long glintRegs[0x2000];
@@ -157,6 +158,10 @@ void Permedia2WriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2ReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2WriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char Permedia2ReadData(ScrnInfoPtr pScrn);
+void Permedia2LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+    			  LOCO *colors, short visualClass);
+void Permedia2LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
+    			  LOCO *colors, short visualClass);
 
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 		   CARD32, unsigned char mask, unsigned char data);

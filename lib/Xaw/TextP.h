@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.7 1998/10/25 07:11:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.8 1998/11/15 04:30:04 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -97,7 +97,7 @@ typedef struct _XawTextSelectionSalt {
     XawTextSelection	s;
     /* 
      * The element "contents" stores the CT string which is gotten in the
-   * function _XawTextSaltAwaySelection()
+     * function _XawTextSaltAwaySelection()
     */ 
     char		*contents;
     int			length;
@@ -107,6 +107,7 @@ typedef struct _XawTextSelectionSalt {
 typedef struct {
   XawTextPosition top;		/* Top of the displayed text */
   int lines;			/* How many lines in this table */
+  int base_line;		/* line number of first entry */
   XawTextLineTableEntry *info;  /* A dynamic array, one entry per line  */
 } XawTextLineTable, *XawTextLineTablePtr;
 
@@ -141,6 +142,7 @@ struct SearchAndReplace {
   Widget search_text;		/* The Search text field. */
   Widget rep_one;		/* The Replace one button. */
   Widget rep_all;		/* The Replace all button. */
+  Widget case_sensitive;	/* The "Case Sensitive" toggle */
 };
 
 /* New fields for the Text widget class record */
@@ -160,69 +162,54 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
-    Widget              source, sink;
-    XawTextPosition	insertPos;
-    XawTextSelection	s;
-  XawTextSelectType *sarray;	     /* Array to cycle for selections */
-    XawTextSelectionSalt    *salt;	     /* salted away selections */
-#if 0
-    int			options;	     /* wordbreak, scroll, etc. */
-#else
-    int			left_margin;	     /* options is not used */
-#endif
-    int			dialog_horiz_offset; /* position for popup dialog */
-    int			dialog_vert_offset;  /* position for popup dialog */
-    Boolean		display_caret;	     /* insertion pt visible iff T */
-    Boolean             auto_fill;           /* Auto fill mode? */
-  XawTextScrollMode scroll_vert, scroll_horiz;
-  XawTextWrapMode wrap;		     /* The type of wrapping */
-#ifndef notdef
-  XawTextResizeMode text1;
-#endif
-  XawTextMargin r_margin;	     /* The real margins */
-#ifndef notdef
-  XtPointer text2;
-#endif
+    Widget source, sink;
+    XawTextPosition insertPos;
+    XawTextSelection s;
+    XawTextSelectType *sarray;		     /* Array to cycle for selections */
+    XawTextSelectionSalt *salt;		     /* salted away selections */
+    int left_margin;
+    int dialog_horiz_offset, dialog_vert_offset; /* position for popup dialog */
+    Boolean display_caret;		     /* insertion pt visible iff T */
+    Boolean auto_fill;			     /* Auto fill mode? */
+    XawTextScrollMode scroll_vert, scroll_horiz;
+    XawTextWrapMode wrap;		     /* The type of wrapping */
+    XawTextResizeMode resize;
+    XawTextMargin r_margin;		     /* The real margins */
     
     /* private state */
-  XawTextMargin margin;		     /* The current margins */
-    XawTextLineTable	lt;
+    XawTextMargin margin;		     /* The current margins */
+    XawTextLineTable lt;
     XawTextScanDirection extendDir;
-    XawTextSelection	origSel;    /* the selection being modified */
-    Time	    lasttime;	    /* timestamp of last processed action */
-    Time	    time;	    /* time of last key or button action */ 
-    Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
-  Widget vbar, hbar;		     /* The scroll bars (none = NULL) */
-  struct SearchAndReplace *search;   /* Search and replace structure */
-  Widget file_insert;		     /* The file insert popup widget */
-#ifndef notdef
-  XmuTextUpdate *update;	     /* Position intervals to update */
-    XtPointer text3;
-    short text4;
+    XawTextSelection origSel;		     /* the selection being modified */
+    Time lasttime;			     /* timestamp of last processed action */
+    Time time;				     /* time of last key or button action */
+    Position ev_x, ev_y;		     /* x, y coords for key or button action */
+    Widget vbar, hbar;			     /* The scroll bars (none = NULL) */
+    struct SearchAndReplace *search;	     /* Search and replace structure */
+    Widget file_insert;			     /* The file insert popup widget */
+    XmuTextUpdate *update;		     /* Position intervals to update */
+    XtCallbackList position_callbacks;
+    int line_number;
+    short column_number;
     unsigned char kill_ring;
     Boolean selection_state;
-  int text5;
-#else
-  XmuTextUpdate *update;
-#endif
-  XawTextPosition lastPos;	     /* Last position of source */
-    GC              gc;
-  Boolean showposition;		     /* True if we need to show the position */
-  Boolean hasfocus;		     /* TRUE if we currently have input focus*/
-    Boolean	    update_disabled; /* TRUE if display updating turned off */
-  Boolean clear_to_eol;		     /* Clear to eol when painting text? */
-    XawTextPosition  old_insert;    /* Last insertPos for batched updates */
-  short mult;			     /* Multiplier */
+    XawTextPosition lastPos;		     /* Last position of source */
+    GC gc;
+    Boolean showposition;		     /* True if we need to show the position */
+    Boolean hasfocus;			     /* TRUE if we currently have input focus*/
+    Boolean update_disabled;		     /* TRUE if display updating turned off */
+    Boolean clear_to_eol;		     /* Clear to eol when painting text? */
+    XawTextPosition old_insert;		     /* Last insertPos for batched updates */
+    short mult;				     /* Multiplier */
 #ifndef NO_NUMERIC_HACK
-    int doing_numeric_hack;
-#else
-  XtPointer text6;
+    char doing_numeric_hack;
 #endif
+    char source_changed;
 
     /* private state, shared w/Source and Sink */
-    Boolean	    redisplay_needed; /* in SetValues */
-    XawTextSelectionSalt    *salt2;	     /* salted away selections */
-    int			from_left;	/* Cursor position */
+    Boolean redisplay_needed;		     /* in SetValues */
+    XawTextSelectionSalt *salt2;	     /* salted away selections */
+    int from_left;			     /* Cursor position */
 
 #ifndef notyet
     /* more resources */

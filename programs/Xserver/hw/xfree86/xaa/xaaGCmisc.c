@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.10 1998/10/05 13:23:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.11 1998/11/15 04:30:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -110,7 +110,6 @@ XAAValidateFillSpans(
    unsigned long changes,
    DrawablePtr   pDraw )
 {
-   int type = -1;
    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
    if(pGC->fillStyle != FillTiled) changes &= ~GCTile;
@@ -136,57 +135,36 @@ XAAValidateFillSpans(
 	     pGC->ops->PolyFillRect = infoRec->PolyFillRectSolid;
 	     pGC->ops->FillPolygon = infoRec->FillPolygonSolid;
 	     pGC->ops->PolyFillArc = infoRec->PolyFillArcSolid;
-	} else return;
+	}
 	break;
+    	/* The [Stippled/OpaqueStippled/Tiled]FillChooser 
+		functions do the validating */
    case FillStippled:
-        type = (*infoRec->StippledFillChooser)(pGC);
+	if(infoRec->FillSpansStippled) {
+	     pGC->ops->FillSpans = infoRec->FillSpansStippled;
+	     pGC->ops->PolyFillRect = infoRec->PolyFillRectStippled;
+	     pGC->ops->FillPolygon = infoRec->FillPolygonStippled;
+	     pGC->ops->PolyFillArc = miPolyFillArc;
+	}
 	break;
    case FillOpaqueStippled:
-        type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+	if(infoRec->FillSpansOpaqueStippled) {
+	     pGC->ops->FillSpans = infoRec->FillSpansOpaqueStippled;
+	     pGC->ops->PolyFillRect = infoRec->PolyFillRectOpaqueStippled;
+	     pGC->ops->FillPolygon = infoRec->FillPolygonOpaqueStippled;
+	     pGC->ops->PolyFillArc = miPolyFillArc;
+	}
 	break;
    case FillTiled:
-        type = (*infoRec->TiledFillChooser)(pGC);
+	if(infoRec->FillSpansTiled) {
+	     pGC->ops->FillSpans = infoRec->FillSpansTiled;
+	     pGC->ops->PolyFillRect = infoRec->PolyFillRectTiled;
+	     pGC->ops->FillPolygon = infoRec->FillPolygonTiled;
+	     pGC->ops->PolyFillArc = miPolyFillArc;
+	}
 	break;
    default: return;
    }
-
-   switch(type) {
-   case -1: break;  /* solid rects */
-   case 0: return;  /* using fallbacks */
-   case DO_COLOR_8x8:
-	pGC->ops->FillSpans = infoRec->FillSpansColor8x8Pattern;
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectColor8x8Pattern;
-	break;
-   case DO_MONO_8x8:
-	pGC->ops->FillSpans = infoRec->FillSpansMono8x8Pattern;
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectMono8x8Pattern;
-	pGC->ops->FillPolygon = infoRec->FillPolygonMono8x8Pattern;
-	break;
-   case DO_CACHE_BLT:
-	pGC->ops->FillSpans = infoRec->FillSpansCacheBlt;
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectCacheBlt;
-	pGC->ops->FillPolygon = infoRec->FillPolygonCacheBlt;
-	break;
-   case DO_COLOR_EXPAND:
-	pGC->ops->FillSpans = infoRec->FillSpansColorExpand;
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectColorExpand;
-	break;
-   case DO_CACHE_EXPAND:
-	pGC->ops->FillSpans = infoRec->FillSpansCacheExpand;
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectCacheExpand;
-	pGC->ops->FillPolygon = infoRec->FillPolygonCacheExpand;
-	break;
-   case DO_IMAGE_WRITE:
-	pGC->ops->PolyFillRect = infoRec->PolyFillRectImageWrite;
-	/* fallthrough since we're not supplying spans */
-   default: return;
-   }
-
-   if(pGC->ops->FillPolygon == XAAFallbackOps.FillPolygon)
-	pGC->ops->FillPolygon = miFillPolygon;
-   if(pGC->ops->PolyFillArc == XAAFallbackOps.PolyFillArc)
-	pGC->ops->PolyFillArc = miPolyFillArc;
-
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.12 1998/11/01 12:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.13 1998/11/15 04:30:41 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -8,6 +8,7 @@
 
 #include "gcstruct.h"
 #include "regionstr.h"
+#include "xf86fbman.h"
 #include "xaa.h"
 #include "mi.h"
 
@@ -19,6 +20,7 @@
 #define DO_COLOR_EXPAND		0x00000004
 #define DO_CACHE_EXPAND		0x00000005
 #define DO_IMAGE_WRITE		0x00000006
+#define DO_PIXMAP_COPY		0x00000007
 
 
 typedef CARD32 * (*GlyphScanlineFuncPtr)(
@@ -40,13 +42,12 @@ typedef struct _XAAScreen {
    CloseScreenProcPtr 		CloseScreen;
    GetImageProcPtr 		GetImage;
    GetSpansProcPtr 		GetSpans;
-   SourceValidateProcPtr 	SourceValidate;
    PaintWindowBackgroundProcPtr PaintWindowBackground;
    PaintWindowBorderProcPtr 	PaintWindowBorder;
    CopyWindowProcPtr 		CopyWindow;
-   ClearToBackgroundProcPtr 	ClearToBackground;
    BSFuncRec 			BackingStoreFuncs;
    CreatePixmapProcPtr 		CreatePixmap;
+   DestroyPixmapProcPtr 	DestroyPixmap;
    XAAInfoRecPtr 		AccelInfoRec;
    Bool                		(*EnterVT)(int, int);
    void                		(*LeaveVT)(int, int);
@@ -69,13 +70,18 @@ typedef struct _XAAGC {
 #define REDUCIBLE_TO_8x8	0x00000002
 #define REDUCIBLE_TO_2_COLOR	0x00000004
 #define DIRTY			0x00010000
+#define OFFSCREEN		0x00020000
+
+#define REDUCIBILITY_MASK \
+ (REDUCIBILITY_CHECKED | REDUCIBLE_TO_8x8 | REDUCIBLE_TO_2_COLOR)
 
 typedef struct _XAAPixmap {
-    int flags;
+    unsigned long flags;
     CARD32 pattern0;
     CARD32 pattern1;
     int fg;
     int bg;    
+    FBAreaPtr offscreenArea;
 } XAAPixmapRec, *XAAPixmapPtr;
 
 
@@ -560,7 +566,7 @@ XAAPolyFillRectSolid(
 );
 
 void
-XAAPolyFillRectMono8x8Pattern(
+XAAPolyFillRectStippled(
     DrawablePtr pDraw,
     GCPtr pGC,
     int	nrectFill,
@@ -568,45 +574,13 @@ XAAPolyFillRectMono8x8Pattern(
 );
 
 void
-XAAPolyFillRectColor8x8Pattern(
+XAAPolyFillRectTiled(
     DrawablePtr pDraw,
     GCPtr pGC,
     int	nrectFill,
     xRectangle *prectInit
 );
 
-
-void
-XAAPolyFillRectCacheBlt(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
-
-void
-XAAPolyFillRectColorExpand(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
-
-void
-XAAPolyFillRectCacheExpand(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
-
-void
-XAAPolyFillRectImageWrite(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
 
 void
 XAATEGlyphRendererMSBFirstFixedBase (
@@ -1124,8 +1098,9 @@ XAAFillSpansSolid(
     int fSorted 
 );
 
+
 void
-XAAFillSpansMono8x8Pattern(
+XAAFillSpansStippled(
     DrawablePtr pDrawable,
     GC		*pGC,
     int		nInit,
@@ -1135,38 +1110,7 @@ XAAFillSpansMono8x8Pattern(
 );
 
 void
-XAAFillSpansColor8x8Pattern(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,
-    DDXPointPtr pptInit,
-    int *pwidth,
-    int fSorted 
-);
-
-
-void
-XAAFillSpansCacheBlt(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,
-    DDXPointPtr pptInit,
-    int *pwidth,
-    int fSorted 
-);
-
-void
-XAAFillSpansColorExpand(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,
-    DDXPointPtr pptInit,
-    int *pwidth,
-    int fSorted 
-);
-
-void
-XAAFillSpansCacheExpand(
+XAAFillSpansTiled(
     DrawablePtr pDrawable,
     GC		*pGC,
     int		nInit,
@@ -1193,6 +1137,15 @@ XAAWriteBitmapToCache(
 );
  
 void 
+XAAWriteBitmapToCacheLinear(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *src,
+   int srcwidth,
+   int fg, int bg
+);
+
+void 
 XAAWritePixmapToCache(
    ScrnInfoPtr pScrn,
    int x, int y, int w, int h,
@@ -1200,6 +1153,16 @@ XAAWritePixmapToCache(
    int srcwidth,
    int bpp, int depth
 );
+
+void 
+XAAWritePixmapToCacheLinear(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *src,
+   int srcwidth,
+   int bpp, int depth
+);
+
 
 void
 XAAPaintWindow(
@@ -1256,7 +1219,7 @@ XAAFillPolygonSolid(
 );
 
 void
-XAAFillPolygonMono8x8Pattern(
+XAAFillPolygonStippled(
     DrawablePtr	pDrawable,
     GCPtr	pGC,
     int		shape,
@@ -1265,8 +1228,9 @@ XAAFillPolygonMono8x8Pattern(
     DDXPointPtr	ptsIn 
 );
 
+
 void
-XAAFillPolygonCacheExpand(
+XAAFillPolygonTiled(
     DrawablePtr	pDrawable,
     GCPtr	pGC,
     int		shape,
@@ -1275,15 +1239,6 @@ XAAFillPolygonCacheExpand(
     DDXPointPtr	ptsIn 
 );
 
-void
-XAAFillPolygonCacheBlt(
-    DrawablePtr	pDrawable,
-    GCPtr	pGC,
-    int		shape,
-    int		mode,
-    int		count,
-    DDXPointPtr	ptsIn 
-);
 
 int
 XAAIsEasyPolygon(
@@ -1420,6 +1375,11 @@ int XAAStippledFillChooser(GCPtr pGC);
 int XAAOpaqueStippledFillChooser(GCPtr pGC);
 int XAATiledFillChooser(GCPtr pGC);
 
+void XAAMoveInOffscreenPixmaps(ScreenPtr pScreen);
+void XAAMoveOutOffscreenPixmaps(ScreenPtr pScreen);
+void XAARemoveAreaCallback(FBAreaPtr area);
+void XAAMoveOutOffscreenPixmap(PixmapPtr pPix); 
+
 extern GCOps XAAFallbackOps;
 extern GCFuncs XAAGCFuncs;
 extern int XAAScreenIndex;
@@ -1485,7 +1445,26 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 #define CHECK_NO_GXCOPY(pGC, flags) \
 	((pGC->alu != GXcopy) || !(flags & NO_GXCOPY) || \
 	((pGC->planemask & infoRec->FullPlanemask) != infoRec->FullPlanemask))
+
+#define IS_OFFSCREEN_PIXMAP(pPix)\
+        ((XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pPix)))->offscreenArea)	
+
+#define DELIST_OFFSCREEN_PIXMAP(pPix) { \
+	PixmapLinkPtr _pLink, _prev; \
+	_pLink = infoRec->OffscreenPixmaps; \
+	_prev = NULL; \
+	while(_pLink) { \
+	    if(_pLink->pPix == pPix) { \
+		if(_prev) _prev->next = _pLink->next; \
+		else infoRec->OffscreenPixmaps = _pLink->next; \
+		xfree(_pLink); \
+		break; \
+	    } \
+	    _prev = _pLink; \
+	    _pLink = _pLink->next; \
+        }}
 	
+
 
 /*
  * Moved XAAPixmapCachePrivate here from xaaPCache.c, since driver

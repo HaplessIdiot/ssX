@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.21 1998/10/04 09:38:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.22 1998/10/10 15:25:26 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -82,6 +82,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #define xfree(ptr) Xfree((pointer)(ptr))
 #define xstrdup(s) Xstrdup(s)
 
+#ifndef IN_MODULE
 #ifdef SCO
 #include <stdio.h>
 #endif
@@ -92,6 +93,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #include <string.h>
 #else
 #include <strings.h>
+#endif
 #endif
 #endif
 

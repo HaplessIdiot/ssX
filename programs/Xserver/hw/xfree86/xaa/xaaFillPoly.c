@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.5 1998/08/19 07:49:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.6 1998/11/01 12:36:06 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -195,7 +195,7 @@ XAAIsEasyPolygon(
 
 void
 XAAFillPolygonSolid(
-    DrawablePtr	pDrawable,
+    DrawablePtr	pDraw,
     GCPtr	pGC,
     int		shape,
     int		mode,
@@ -221,24 +221,24 @@ XAAFillPolygonSolid(
     }
     
     if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
 	return;
     }
 
-    origin = coordToInt(pDrawable->x, pDrawable->y);
+    origin = coordToInt(pDraw->x, pDraw->y);
 
     switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents, 
 		origin, &topPoint, &y, &maxy, shape) ) {
     case POLY_USE_MI: 
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
     case POLY_FULLY_CLIPPED: 
 	return;
     }
 
     endp = (int*)ptsIn + count;
     vertex2p = vertex1p = (int *)topPoint;
-    origin = pDrawable->x;
-    yoffset = pDrawable->y;
+    origin = pDraw->x;
+    yoffset = pDraw->y;
     vertex2 = vertex1 = *vertex2p++;
     if (vertex2p == endp)
 	vertex2p = (int *) ptsIn;
@@ -551,127 +551,6 @@ Mono8x8PatternRectHelper (
 }
 
 
-void
-XAAFillPolygonMono8x8Pattern(
-    DrawablePtr	pDrawable,
-    GCPtr	pGC,
-    int		shape,
-    int		mode,
-    int		count,
-    DDXPointPtr	ptsIn 
-){
-    XAAInfoRecPtr   infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    XAAPixmapPtr    pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
-    int    	    origin;
-    int		    y, maxy, fg, bg, patx, paty, xorg, yorg;
-    DDXPointPtr	    topPoint;
-    RectFuncPtr	    RectFunc;
-    TrapFuncPtr	    TrapFunc = NULL;
-    XAACacheInfoPtr pCache = NULL;
-
-    if (mode == CoordModePrevious) {
-	register DDXPointPtr ppt = ptsIn + 1;
-
-	for (origin = 1; origin < count; origin++, ppt++) {
-	    ppt->x += (ppt-1)->x;
-	    ppt->y += (ppt-1)->y;
-	}
-        mode = CoordModeOrigin;
-    }
-    
-    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
-	return;
-    }
-
-    origin = coordToInt(pDrawable->x, pDrawable->y);
-
-    switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
-		 origin, &topPoint, &y, &maxy, shape) ) {
-    case POLY_USE_MI: 
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
-    case POLY_FULLY_CLIPPED: 
-	return;
-    }
-
-    fg = pGC->fgPixel;
-    bg = pGC->bgPixel;
-
-    switch(pGC->fillStyle) {
-    case FillStippled:	
-		bg = -1;
-		break;	
-    case FillOpaqueStippled:	
-		break;	
-    case FillTiled:	
-		pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
-		fg = pPriv->fg;		bg = pPriv->bg;
-		break;
-    default:
-		ErrorF("Bad fillStyle %i in XAAFillPolygonMono8x8Pattern\n",
-			pGC->fillStyle);
-		return;
-    }
-
-    xorg = (pDrawable->x + pGC->patOrg.x);
-    yorg = (pDrawable->y + pGC->patOrg.y);
-    patx = pPriv->pattern0; paty = pPriv->pattern1;
-
-    if((bg != -1) && (bg == fg) &&
-	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
-
-	(*infoRec->SetupForSolidFill)(infoRec->pScrn, fg,
-				pGC->alu, pGC->planemask);
-
-	RectFunc = SolidRectHelper;
-        TrapFunc = infoRec->SubsequentSolidFillTrap ? SolidTrapHelper : NULL;
-    } else {
-      if(infoRec->Mono8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
-	xorg = (-xorg) & 0x07; yorg = (-yorg) & 0x07;
-	if(infoRec->Mono8x8PatternFillFlags & 
-					HARDWARE_PATTERN_PROGRAMMED_BITS) {
-  	    if(!(infoRec->Mono8x8PatternFillFlags & 		
-				HARDWARE_PATTERN_PROGRAMMED_ORIGIN)){
-		XAARotateMonoPattern(&patx, &paty, xorg, yorg,
-				(infoRec->Mono8x8PatternFillFlags & 		
-				BIT_ORDER_IN_BYTE_MSBFIRST));
-		xorg = patx; yorg = paty;
-	    }
-	} else {
-	    XAACacheInfoPtr pCache =
-		(*infoRec->CacheMono8x8Pattern)(infoRec->pScrn, patx, paty);
-	    patx = pCache->x;  paty = pCache->y;
-   	    if(!(infoRec->Mono8x8PatternFillFlags & 
-				HARDWARE_PATTERN_PROGRAMMED_ORIGIN)){
-		int slot = (yorg << 3) + xorg;
-		patx += pCache->offsets[slot].x;
-		paty += pCache->offsets[slot].y;
-		xorg = patx;  yorg = paty;
-	    }	
-	}	
-	RectFunc = Mono8x8PatternRectHelper_ScreenOrigin;
-	if(infoRec->SubsequentMono8x8PatternFillTrap)
-	    TrapFunc = Mono8x8PatternTrapHelper_ScreenOrigin;
-      } else {
-    	if(!(infoRec->Mono8x8PatternFillFlags & 
-				HARDWARE_PATTERN_PROGRAMMED_BITS)){
-	   pCache = (*infoRec->CacheMono8x8Pattern)(infoRec->pScrn, patx, paty);
-	   patx = pCache->x;  paty = pCache->y;
-	}
-	RectFunc = Mono8x8PatternRectHelper;
-      }
-
-      (*infoRec->SetupForMono8x8PatternFill)(infoRec->pScrn, patx, paty,
-					fg, bg, pGC->alu, pGC->planemask);
-
-    }
-
-    XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
-		y, maxy, origin, RectFunc, TrapFunc, xorg, yorg, pCache);
-
-    SET_SYNC_FLAG(infoRec);
-	
-}
 
 	/****************\
 	|  Cache Expand  |
@@ -721,76 +600,6 @@ CacheExpandRectHelper (
 }
 
 
-void
-XAAFillPolygonCacheExpand(
-    DrawablePtr	pDrawable,
-    GCPtr	pGC,
-    int		shape,
-    int		mode,
-    int		count,
-    DDXPointPtr	ptsIn )
-{
-    XAAInfoRecPtr   infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int    	    origin;
-    int		    y, maxy, xorg, yorg;
-    DDXPointPtr	    topPoint;
-    XAACacheInfoPtr pCache;
-
-    if (mode == CoordModePrevious) {
-	register DDXPointPtr ppt = ptsIn + 1;
-
-	for (origin = 1; origin < count; origin++, ppt++) {
-	    ppt->x += (ppt-1)->x;
-	    ppt->y += (ppt-1)->y;
-	}
-        mode = CoordModeOrigin;
-    }
-    
-    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
-	return;
-    }
-
-    origin = coordToInt(pDrawable->x, pDrawable->y);
-
-    switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
-		 origin, &topPoint, &y, &maxy, shape) ) {
-    case POLY_USE_MI: 
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
-    case POLY_FULLY_CLIPPED: 
-	return;
-    }
-    
-    xorg = (pDrawable->x + pGC->patOrg.x);
-    yorg = (pDrawable->y + pGC->patOrg.y);
-
-    if((pGC->fillStyle == FillOpaqueStippled) && 
-	(pGC->fgPixel == pGC->bgPixel) &&
-	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
-
-	(*infoRec->SetupForSolidFill)(infoRec->pScrn, pGC->fgPixel,
-				pGC->alu, pGC->planemask);
-	
-	XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
-		y, maxy, origin, SolidRectHelper, 
-		infoRec->SubsequentSolidFillRect ? SolidTrapHelper : NULL, 
-		xorg, yorg, NULL);
-    } else {
-	pCache = (*infoRec->CacheMonoStipple)(infoRec->pScrn, pGC->stipple);
-
-	(*infoRec->SetupForScreenToScreenColorExpandFill)(
-			infoRec->pScrn, pGC->fgPixel,
-			(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
-			pGC->alu, pGC->planemask);
-
-	XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
-		y, maxy, origin, CacheExpandRectHelper, NULL, 
-		xorg, yorg, pCache);
-    }
-
-    SET_SYNC_FLAG(infoRec);
-	
-}
 
 	/**************\
 	|  Cache Blit  |
@@ -835,21 +644,29 @@ CacheBltRectHelper (
      }	
 }
 
+
+	/**********************\
+	|   Stippled Polygons  |
+	\**********************/
+
+
 void
-XAAFillPolygonCacheBlt(
-    DrawablePtr	pDrawable,
+XAAFillPolygonStippled(
+    DrawablePtr	pDraw,
     GCPtr	pGC,
     int		shape,
     int		mode,
     int		count,
-    DDXPointPtr	ptsIn )
-{
+    DDXPointPtr	ptsIn 
+){
     XAAInfoRecPtr   infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int    	    origin;
+    XAAPixmapPtr    pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+    int    	    origin, type, patx, paty, fg, bg;
     int		    y, maxy, xorg, yorg;
     DDXPointPtr	    topPoint;
-    XAACacheInfoPtr pCache;
-    PixmapPtr 	    pPix;
+    XAACacheInfoPtr pCache = NULL;
+    RectFuncPtr	    RectFunc = NULL;
+    TrapFuncPtr	    TrapFunc = NULL;
 
     if (mode == CoordModePrevious) {
 	register DDXPointPtr ppt = ptsIn + 1;
@@ -862,53 +679,262 @@ XAAFillPolygonCacheBlt(
     }
     
     if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
 	return;
     }
 
-    origin = coordToInt(pDrawable->x, pDrawable->y);
+
+    if(pGC->fillStyle == FillStippled) {
+    	type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+	fg = pGC->fgPixel;  bg = -1;
+    } else {
+    	type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+	fg = pGC->fgPixel;  bg = pGC->bgPixel;
+    }
+
+
+    if(!type) {
+	(*XAAFallbackOps.FillPolygon)(pDraw, pGC, shape, mode, count, ptsIn);
+	return;
+    }
+	
+    if((type == DO_COLOR_EXPAND) || (type == DO_COLOR_8x8)) {
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
+	return;
+    }
+
+    origin = coordToInt(pDraw->x, pDraw->y);
 
     switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
 		 origin, &topPoint, &y, &maxy, shape) ) {
     case POLY_USE_MI: 
-	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
     case POLY_FULLY_CLIPPED: 
 	return;
     }
+
+    xorg = (pDraw->x + pGC->patOrg.x);
+    yorg = (pDraw->y + pGC->patOrg.y);
+
+
+    if((fg == bg) && (bg != -1) &&
+	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
+
+	(*infoRec->SetupForSolidFill)(infoRec->pScrn, fg,
+				pGC->alu, pGC->planemask);
+
+	RectFunc = SolidRectHelper;
+        TrapFunc = infoRec->SubsequentSolidFillTrap ? SolidTrapHelper : NULL;
+    } else
+    switch(type) {
+	case DO_MONO_8x8:
+	    patx = pPriv->pattern0; paty = pPriv->pattern1;
+	    if(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_SCREEN_ORIGIN) {
+		xorg = (-xorg) & 0x07; yorg = (-yorg) & 0x07;
+		if(infoRec->Mono8x8PatternFillFlags & 
+					HARDWARE_PATTERN_PROGRAMMED_BITS) {
+		    if(!(infoRec->Mono8x8PatternFillFlags & 		
+					HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+		        XAARotateMonoPattern(&patx, &paty, xorg, yorg,
+				(infoRec->Mono8x8PatternFillFlags & 		
+				BIT_ORDER_IN_BYTE_MSBFIRST));
+		        xorg = patx; yorg = paty;
+		    }
+	        } else {
+		    XAACacheInfoPtr pCache = (*infoRec->CacheMono8x8Pattern)(
+					infoRec->pScrn, patx, paty);
+		    patx = pCache->x;  paty = pCache->y;
+		    if(!(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_PROGRAMMED_ORIGIN)){
+			int slot = (yorg << 3) + xorg;
+			patx += pCache->offsets[slot].x;
+			paty += pCache->offsets[slot].y;
+			xorg = patx;  yorg = paty;
+		    }
+	        }	
+		RectFunc = Mono8x8PatternRectHelper_ScreenOrigin;
+		if(infoRec->SubsequentMono8x8PatternFillTrap)
+		    TrapFunc = Mono8x8PatternTrapHelper_ScreenOrigin;
+	    } else {  /* !HARDWARE_PATTERN_SCREEN_ORIGIN */
+		if(!(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_PROGRAMMED_BITS)){
+		    pCache = (*infoRec->CacheMono8x8Pattern)(
+					infoRec->pScrn, patx, paty);
+		    patx = pCache->x;  paty = pCache->y;
+	    	}
+		RectFunc = Mono8x8PatternRectHelper;
+       	    }
+
+	    (*infoRec->SetupForMono8x8PatternFill)(infoRec->pScrn, 
+				patx, paty, fg, bg, pGC->alu, pGC->planemask);
+	    break;
+	case DO_CACHE_EXPAND:
+	    pCache = (*infoRec->CacheMonoStipple)(infoRec->pScrn, pGC->stipple);
+
+	    (*infoRec->SetupForScreenToScreenColorExpandFill)(
+		infoRec->pScrn, fg, bg, pGC->alu, pGC->planemask);
+
+	    RectFunc = CacheExpandRectHelper;
+	    break;
+	case DO_CACHE_BLT:
+	    pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pGC->stipple, 
+							fg, bg);
+	    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
+		pGC->alu, pGC->planemask, pCache->trans_color);
+
+	    RectFunc = CacheBltRectHelper;
+	    break;
+	default:
+	    return;
+    }
+        
+
+    XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
+		y, maxy, origin, RectFunc, TrapFunc, xorg, yorg, pCache);
+
+    SET_SYNC_FLAG(infoRec);	
+}
+
+
+
+
+	/*******************\
+	|   Tiled Polygons  |
+	\*******************/
+
+
+void
+XAAFillPolygonTiled(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn 
+){
+    XAAInfoRecPtr   infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    XAAPixmapPtr    pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+    int    	    origin, type, patx, paty;
+    int		    y, maxy, xorg, yorg;
+    DDXPointPtr	    topPoint;
+    XAACacheInfoPtr pCache = NULL;
+    RectFuncPtr	    RectFunc = NULL;
+    TrapFuncPtr	    TrapFunc = NULL;
+
+    if (mode == CoordModePrevious) {
+	register DDXPointPtr ppt = ptsIn + 1;
+
+	for (origin = 1; origin < count; origin++, ppt++) {
+	    ppt->x += (ppt-1)->x;
+	    ppt->y += (ppt-1)->y;
+	}
+        mode = CoordModeOrigin;
+    }
     
-    xorg = (pDrawable->x + pGC->patOrg.x);
-    yorg = (pDrawable->y + pGC->patOrg.y);
-
-    pPix = pGC->stipple;
-
-    switch(pGC->fillStyle) {
-    case FillStippled:
-	pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pPix, 
-					pGC->fgPixel, -1);
-	break;
-    case FillOpaqueStippled:
-	pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pPix, 
-					pGC->fgPixel, pGC->bgPixel);
-	break;
-    case FillTiled:
-	pPix = pGC->tile.pixmap;
-	pCache = (*infoRec->CacheTile)(infoRec->pScrn, pPix);
-	break;
-    default:
-	ErrorF("Bad fillStyle %i in XAAFillPolygonCacheBlt\n", pGC->fillStyle);
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) != 1) {
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
 	return;
     }
 
 
-    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
+    type = (*infoRec->TiledFillChooser)(pGC);
+
+    if(!type || (type == DO_IMAGE_WRITE)) {
+	(*XAAFallbackOps.FillPolygon)(pDraw, pGC, shape, mode, count, ptsIn);
+	return;
+    }
+	
+    if(type == DO_COLOR_8x8) {
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
+	return;
+    }
+
+    origin = coordToInt(pDraw->x, pDraw->y);
+
+    switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
+		 origin, &topPoint, &y, &maxy, shape) ) {
+    case POLY_USE_MI: 
+	miFillPolygon (pDraw, pGC, shape, mode, count, ptsIn);
+    case POLY_FULLY_CLIPPED: 
+	return;
+    }
+
+    xorg = (pDraw->x + pGC->patOrg.x);
+    yorg = (pDraw->y + pGC->patOrg.y);
+
+    switch(type) {
+	case DO_MONO_8x8:
+	    patx = pPriv->pattern0; paty = pPriv->pattern1;
+	    if(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_SCREEN_ORIGIN) {
+		xorg = (-xorg) & 0x07; yorg = (-yorg) & 0x07;
+		if(infoRec->Mono8x8PatternFillFlags & 
+					HARDWARE_PATTERN_PROGRAMMED_BITS) {
+		    if(!(infoRec->Mono8x8PatternFillFlags & 		
+					HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+		        XAARotateMonoPattern(&patx, &paty, xorg, yorg,
+				(infoRec->Mono8x8PatternFillFlags & 		
+				BIT_ORDER_IN_BYTE_MSBFIRST));
+		        xorg = patx; yorg = paty;
+		    }
+	        } else {
+		    XAACacheInfoPtr pCache = (*infoRec->CacheMono8x8Pattern)(
+					infoRec->pScrn, patx, paty);
+		    patx = pCache->x;  paty = pCache->y;
+		    if(!(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_PROGRAMMED_ORIGIN)){
+			int slot = (yorg << 3) + xorg;
+			patx += pCache->offsets[slot].x;
+			paty += pCache->offsets[slot].y;
+			xorg = patx;  yorg = paty;
+		    }
+	        }	
+		RectFunc = Mono8x8PatternRectHelper_ScreenOrigin;
+		if(infoRec->SubsequentMono8x8PatternFillTrap)
+		    TrapFunc = Mono8x8PatternTrapHelper_ScreenOrigin;
+	    } else {  /* !HARDWARE_PATTERN_SCREEN_ORIGIN */
+		if(!(infoRec->Mono8x8PatternFillFlags & 
+				HARDWARE_PATTERN_PROGRAMMED_BITS)){
+		    pCache = (*infoRec->CacheMono8x8Pattern)(
+					infoRec->pScrn, patx, paty);
+		    patx = pCache->x;  paty = pCache->y;
+	    	}
+		RectFunc = Mono8x8PatternRectHelper;
+       	    }
+
+	    (*infoRec->SetupForMono8x8PatternFill)(infoRec->pScrn, 
+		 patx, paty, pPriv->fg, pPriv->bg, pGC->alu, pGC->planemask);
+	    break;
+	case DO_CACHE_BLT:
+            pCache = (*infoRec->CacheTile)(infoRec->pScrn, pGC->tile.pixmap);
+	    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
 		pGC->alu, pGC->planemask, pCache->trans_color);
 
+	    RectFunc = CacheBltRectHelper;
+	    break;
+	case DO_PIXMAP_COPY:
+	    pCache = &(infoRec->ScratchCacheInfoRec);
+	    pCache->x = pPriv->offscreenArea->box.x1;
+	    pCache->y = pPriv->offscreenArea->box.y1;
+	    pCache->w = pCache->orig_w = 
+		pPriv->offscreenArea->box.x2 - pCache->x;
+	    pCache->h = pCache->orig_h = 
+		pPriv->offscreenArea->box.y2 - pCache->y;
+
+	    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
+		pGC->alu, pGC->planemask, pCache->trans_color);
+
+	    RectFunc = CacheBltRectHelper;
+	    break;
+	default:
+	    return;
+    }
 
     XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
-		y, maxy, origin, CacheBltRectHelper, NULL, 
-		xorg, yorg, pCache);
+		y, maxy, origin, RectFunc, TrapFunc, xorg, yorg, pCache);
 
-    SET_SYNC_FLAG(infoRec);
-	
+    SET_SYNC_FLAG(infoRec);	
 }
+
 

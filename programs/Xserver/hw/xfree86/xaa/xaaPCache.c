@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.6 1998/08/29 05:44:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.7 1998/11/15 04:30:40 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -160,14 +160,6 @@ XAAClosePixmapCache(ScreenPtr pScreen)
 		(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate);
 
    infoRec->PixmapCachePrivate = NULL;
-}
-
-
-static int
-XAANewSerialNumber(WindowPtr pWin, pointer data)
-{
-    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    return WT_WALKCHILDREN;
 }
 
 
@@ -646,11 +638,8 @@ XAAInitPixmapCache(
    int Target512, Target256;
    CacheLinkPtr List512, List256, List128, ListPartial, ListColor, ListMono;
    int x, y, w, h, ntotal, granularity, width, height, i;
-   int oldMaxW, oldMaxH, oldFlags = 0;
    int MaxPartialWidth, MaxPartialHeight;
 
-   oldMaxW = infoRec->MaxCacheableTileWidth;
-   oldMaxH = infoRec->MaxCacheableTileHeight;
    infoRec->MaxCacheableTileWidth = 0;
    infoRec->MaxCacheableTileHeight = 0;
    infoRec->MaxCacheableStippleHeight = 0;
@@ -663,8 +652,6 @@ XAAInitPixmapCache(
 
    /* free the old private data if it exists */
    if(infoRec->PixmapCachePrivate) {
-	if(infoRec->CanDoMono8x8) oldFlags |= CACHE_MONO_8x8;
-	if(infoRec->CanDoColor8x8) oldFlags |= CACHE_COLOR_8x8;
 	FreePixmapCachePrivate(
 		(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate);
 	infoRec->PixmapCachePrivate = NULL;
@@ -1016,51 +1003,6 @@ XAAInitPixmapCache(
     }
 
 
-
-#if 0
-    if(FirstTime){
-	XAACacheInfoPtr pntr;
-
-        xf86ErrorF("512x512:\n");
-	pntr = pCachePriv->Info512;
-	for(i = 0; i < pCachePriv->Num512x512; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-
-        xf86ErrorF("\n256x256:\n");
-	pntr = pCachePriv->Info256;
-	for(i = 0; i < pCachePriv->Num256x256; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-
-        xf86ErrorF("\n128x128:\n");
-	pntr = pCachePriv->Info128;
-	for(i = 0; i < pCachePriv->Num128x128; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-
-        xf86ErrorF("\nUseable fragments:\n");
-	pntr = pCachePriv->InfoPartial;
-	for(i = 0; i < pCachePriv->NumPartial; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-
-        xf86ErrorF("\n8x8 Color:\n");
-	pntr = pCachePriv->InfoColor;
-	for(i = 0; i < pCachePriv->NumColor; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-
-        xf86ErrorF("\n8x8 Mono:\n");
-	pntr = pCachePriv->InfoMono;
-	for(i = 0; i < pCachePriv->NumMono; i++, pntr++) {
-	    xf86ErrorF("\t%ix%i at (%i,%i)\n",pntr->w, pntr->h, pntr->x, pntr->y);
-	}
-    }
-
-#endif
-
-
     if(NumPartial) {
 	infoRec->MaxCacheableTileWidth = MaxPartialWidth;
 	infoRec->MaxCacheableTileHeight = MaxPartialHeight;
@@ -1107,7 +1049,7 @@ XAAInitPixmapCache(
     }
 
     if(FirstTime) {
-	xf86ErrorF("\tSetting up pixmap cache:\n");
+	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 
 	   xf86ErrorF("\t\t%i %ix%i slots\n", 
 		NumPartial, MaxPartialWidth, MaxPartialHeight);
@@ -1116,14 +1058,7 @@ XAAInitPixmapCache(
 	if(Num512) xf86ErrorF("\t\t%i 512x512 slots\n", Num512);
 	if(NumColor) xf86ErrorF("\t\t%i 8x8 color pattern slots\n", NumColor);
 	if(NumMono) xf86ErrorF("\t\t%i 8x8 color expansion slots\n", NumMono);
-    } else if((oldMaxW != infoRec->MaxCacheableTileWidth) ||
-	(oldMaxH != infoRec->MaxCacheableTileHeight) ||
-	((oldFlags & CACHE_MONO_8x8) && !infoRec->CanDoMono8x8) ||
-	((oldFlags & CACHE_COLOR_8x8) && !infoRec->CanDoColor8x8)) {
-	/* state has changed and we can't do something that we used
-	   to be able to do.  So force all windows to revalidate */
-		WalkTree(pScreen, XAANewSerialNumber, 0);
-    }
+    } 
 
     if(!(NumPartial | Num128 | Num256 | Num512 | NumColor | NumMono)) {
 	if(FirstTime)
@@ -1149,7 +1084,8 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
     int i;
     CARD32 bits[8];
 
-    pPriv->flags = REDUCIBILITY_CHECKED | REDUCIBLE_TO_2_COLOR;
+    pPriv->flags |= REDUCIBILITY_CHECKED | REDUCIBLE_TO_2_COLOR;
+    pPriv->flags &= ~REDUCIBLE_TO_8x8;
 
     if((w > 32) || (h > 32) || (w & (w - 1)) || (h & (h - 1))) 
 	return FALSE;
@@ -1244,7 +1180,8 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
     int pitch = pPixmap->devKind >> 2;
     int dwords, i, j;
 
-    pPriv->flags = REDUCIBILITY_CHECKED;
+    pPriv->flags |= REDUCIBILITY_CHECKED;
+    pPriv->flags &= ~(REDUCIBILITY_CHECKED | REDUCIBLE_TO_2_COLOR);
 
     if((w > 32) || (h > 32) || (w & (w - 1)) || (h & (h - 1))) 
 	return FALSE;
@@ -1890,6 +1827,42 @@ XAAWriteBitmapToCache(
 					0, fg, bg, GXcopy, ~0);
 }
 
+void 
+XAAWriteBitmapToCacheLinear(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *src,
+   int srcwidth,
+   int fg, int bg
+){
+   ScreenPtr pScreen = pScrn->pScreen;
+   PixmapPtr pScreenPix, pDstPix;
+   XID gcvals[2];
+   GCPtr pGC;
+
+   pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+
+   pDstPix = GetScratchPixmapHeader(pScreen, pScreenPix->drawable.width, 
+					y + h, pScreenPix->drawable.depth, 
+					pScreenPix->drawable.bitsPerPixel, 
+					pScreenPix->devKind,
+					pScreenPix->devPrivate.ptr);
+   
+   pGC = GetScratchGC(pScreenPix->drawable.depth, pScreen);
+   gcvals[0] = fg;
+   gcvals[1] = bg;
+   DoChangeGC(pGC, GCForeground | GCBackground, gcvals, 0);
+   ValidateGC((DrawablePtr)pDstPix, pGC);
+
+   /* We assume that there is no leftPad.  I think that's true.
+       For now anyhow.  */
+
+   (*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, 1, x, y, w, h, 0,
+						XYBitmap, (pointer)src);
+
+   FreeScratchGC(pGC);
+   FreeScratchPixmapHeader(pDstPix);
+}
 
 
 void 
@@ -1905,6 +1878,40 @@ XAAWritePixmapToCache(
    (*infoRec->WritePixmap)(pScrn, x, y, w, h, src, srcwidth,
 				GXcopy, ~0, -1, bpp, depth);
 }
+
+
+
+void 
+XAAWritePixmapToCacheLinear(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *src,
+   int srcwidth,
+   int bpp, int depth
+){
+   ScreenPtr pScreen = pScrn->pScreen;
+   PixmapPtr pScreenPix, pDstPix;
+   GCPtr pGC;
+
+   pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+
+   pDstPix = GetScratchPixmapHeader(pScreen, pScreenPix->drawable.width, 
+					y + h, depth, bpp, pScreenPix->devKind,
+					pScreenPix->devPrivate.ptr);
+   
+   pGC = GetScratchGC(depth, pScreen);
+   ValidateGC((DrawablePtr)pDstPix, pGC);
+
+   /* We assume that there is no leftPad.  I think that's true.
+       For now anyhow.  */
+
+   (*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, depth, x, y, w, h, 0,
+					ZPixmap, (pointer)src);
+
+   FreeScratchGC(pGC);
+   FreeScratchPixmapHeader(pDstPix);
+}
+
 
 void 
 XAAWriteMono8x8PatternToCache(
@@ -2069,40 +2076,40 @@ XAAStippledFillChooser(GCPtr pGC)
 
     if(pPriv->flags & REDUCIBLE_TO_8x8) {
 	if(infoRec->CanDoMono8x8 && 
-	   !(infoRec->FillSpansMono8x8PatternFlags & NO_TRANSPARENCY) && 
-	   ((pGC->alu == GXcopy) || !(infoRec->FillSpansMono8x8PatternFlags & 
+	   !(infoRec->FillMono8x8PatternSpansFlags & NO_TRANSPARENCY) && 
+	   ((pGC->alu == GXcopy) || !(infoRec->FillMono8x8PatternSpansFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_FG(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
+	   CHECK_ROP(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_FG(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_PLANEMASK(pGC,infoRec->FillMono8x8PatternSpansFlags)) {
 
 	      return DO_MONO_8x8;
 	}
 
 	if(infoRec->CanDoColor8x8 && 
-	   !(infoRec->FillSpansColor8x8PatternFlags & NO_TRANSPARENCY) && 
-	   ((pGC->alu == GXcopy) || !(infoRec->FillSpansColor8x8PatternFlags &
+	   !(infoRec->FillColor8x8PatternSpansFlags & NO_TRANSPARENCY) && 
+	   ((pGC->alu == GXcopy) || !(infoRec->FillColor8x8PatternSpansFlags &
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
+	   CHECK_ROP(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_PLANEMASK(pGC,infoRec->FillColor8x8PatternSpansFlags)) {
 
 	      return DO_COLOR_8x8;
 	}
     }
 
-    if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
+    if(infoRec->UsingPixmapCache && infoRec->FillCacheExpandSpans && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth /
 	 infoRec->CacheColorExpandDensity) &&
-	!(infoRec->FillSpansCacheExpandFlags & NO_TRANSPARENCY) && 
-	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheExpandFlags & 
+	!(infoRec->FillCacheExpandSpansFlags & NO_TRANSPARENCY) && 
+	((pGC->alu == GXcopy) || !(infoRec->FillCacheExpandSpansFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_FG(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
+	CHECK_ROP(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_FG(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheExpandSpansFlags)) {
 
 	      return DO_CACHE_EXPAND;
     }
@@ -2110,27 +2117,27 @@ XAAStippledFillChooser(GCPtr pGC)
 
     if(infoRec->UsingPixmapCache && 
 	!(infoRec->PixmapCacheFlags & DO_NOT_BLIT_STIPPLES) && 
-	infoRec->FillSpansCacheBlt && 
+	infoRec->FillCacheBltSpans && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableTileWidth) &&
-	!(infoRec->FillSpansCacheBltFlags & NO_TRANSPARENCY) && 
-	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheBltFlags & 
+	!(infoRec->FillCacheBltSpansFlags & NO_TRANSPARENCY) && 
+	((pGC->alu == GXcopy) || !(infoRec->FillCacheBltSpansFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
+	CHECK_ROP(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheBltSpansFlags)) {
 
 	      return DO_CACHE_BLT;
     }
 
-    if(infoRec->FillSpansColorExpand && 
-	!(infoRec->FillSpansColorExpandFlags & NO_TRANSPARENCY) && 
-	((pGC->alu == GXcopy) || !(infoRec->FillSpansColorExpandFlags & 
+    if(infoRec->FillColorExpandSpans && 
+	!(infoRec->FillCacheExpandSpansFlags & NO_TRANSPARENCY) && 
+	((pGC->alu == GXcopy) || !(infoRec->FillCacheExpandSpansFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
-	CHECK_ROP(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_FG(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansColorExpandFlags)) {
+	CHECK_ROP(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_FG(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheExpandSpansFlags)) {
 
 	      return DO_COLOR_EXPAND;
     }
@@ -2155,55 +2162,55 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 
     if(pPriv->flags & REDUCIBLE_TO_8x8) {
 	if(infoRec->CanDoMono8x8 && 
-	   !(infoRec->FillSpansMono8x8PatternFlags & TRANSPARENCY_ONLY) && 
-	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_COLORS(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
+	   !(infoRec->FillMono8x8PatternSpansFlags & TRANSPARENCY_ONLY) && 
+	   CHECK_ROP(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_COLORS(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_PLANEMASK(pGC,infoRec->FillMono8x8PatternSpansFlags)) {
 
 	      return DO_MONO_8x8;
 	}
 
 	if(infoRec->CanDoColor8x8 && 
-	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
+	   CHECK_ROP(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_PLANEMASK(pGC,infoRec->FillColor8x8PatternSpansFlags)) {
 
 	      return DO_COLOR_8x8;
 	}
     }
 
-    if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheExpand && 
+    if(infoRec->UsingPixmapCache && infoRec->FillCacheExpandSpans && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableStippleHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableStippleWidth /
 	 infoRec->CacheColorExpandDensity) &&
-	!(infoRec->FillSpansCacheExpandFlags & TRANSPARENCY_ONLY) && 
-	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_COLORS(pGC,infoRec->FillSpansCacheExpandFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
+	!(infoRec->FillCacheExpandSpansFlags & TRANSPARENCY_ONLY) && 
+	CHECK_ROP(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_COLORS(pGC,infoRec->FillCacheExpandSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheExpandSpansFlags)) {
 
 	      return DO_CACHE_EXPAND;
     } 
 
     if(infoRec->UsingPixmapCache &&
 	!(infoRec->PixmapCacheFlags & DO_NOT_BLIT_STIPPLES) && 
-	infoRec->FillSpansCacheBlt && 
+	infoRec->FillCacheBltSpans && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableTileWidth) &&
-	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
+	CHECK_ROP(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheBltSpansFlags)) {
 
 	      return DO_CACHE_BLT;
     } 
 
-    if(infoRec->FillSpansColorExpand && 
-	!(infoRec->FillSpansColorExpandFlags & TRANSPARENCY_ONLY) && 
-	CHECK_ROP(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_COLORS(pGC,infoRec->FillSpansColorExpandFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansColorExpandFlags)) {
+    if(infoRec->FillColorExpandSpans && 
+	!(infoRec->FillColorExpandSpansFlags & TRANSPARENCY_ONLY) && 
+	CHECK_ROP(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_COLORS(pGC,infoRec->FillColorExpandSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillColorExpandSpansFlags)) {
 
 	      return DO_COLOR_EXPAND;
     }
@@ -2220,50 +2227,55 @@ XAATiledFillChooser(GCPtr pGC)
     PixmapPtr pPixmap = pGC->tile.pixmap;
     XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPixmap);
 
+    if(IS_OFFSCREEN_PIXMAP(pPixmap) && infoRec->FillCacheBltSpans &&
+	CHECK_ROP(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheBltSpansFlags)) {
+
+	return DO_PIXMAP_COPY;
+    }
+
     if(!(pPriv->flags & REDUCIBILITY_CHECKED) &&
 	(infoRec->CanDoMono8x8 || infoRec->CanDoColor8x8)) {
 	XAACheckTileReducibility(pPixmap,infoRec->CanDoMono8x8);
     }
 
-
     if(pPriv->flags & REDUCIBLE_TO_8x8) {
-	if((pPriv->flags & REDUCIBLE_TO_2_COLOR) &&
-	   infoRec->CanDoMono8x8 && 
-	   !(infoRec->FillSpansMono8x8PatternFlags & TRANSPARENCY_ONLY) && 
-	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
-	   (!(infoRec->FillSpansMono8x8PatternFlags & RGB_EQUAL) || 
+	if((pPriv->flags & REDUCIBLE_TO_2_COLOR) && infoRec->CanDoMono8x8 && 
+	   !(infoRec->FillMono8x8PatternSpansFlags & TRANSPARENCY_ONLY) && 
+	   CHECK_ROP(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillMono8x8PatternSpansFlags) &&
+	   (!(infoRec->FillMono8x8PatternSpansFlags & RGB_EQUAL) || 
 		(CHECK_RGB_EQUAL(pPriv->fg) && CHECK_RGB_EQUAL(pPriv->bg))) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
+	   CHECK_PLANEMASK(pGC,infoRec->FillMono8x8PatternSpansFlags)) {
 
 	      return DO_MONO_8x8;
 	}
 
 	if(infoRec->CanDoColor8x8 && 
-	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
-	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
+	   CHECK_ROP(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillColor8x8PatternSpansFlags) &&
+	   CHECK_PLANEMASK(pGC,infoRec->FillColor8x8PatternSpansFlags)) {
 
 	      return DO_COLOR_8x8;
 	}
     }
 
-
-    if(infoRec->UsingPixmapCache && infoRec->FillSpansCacheBlt && 
+    if(infoRec->UsingPixmapCache && infoRec->FillCacheBltSpans && 
 	(pPixmap->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableTileWidth) &&
-	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
+	CHECK_ROP(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillCacheBltSpansFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillCacheBltSpansFlags)) {
 
 	      return DO_CACHE_BLT;
     }
 
-    if(infoRec->PolyFillRectImageWrite && 
-	CHECK_NO_GXCOPY(pGC,infoRec->PolyFillRectImageWriteFlags) &&
-	CHECK_ROP(pGC,infoRec->PolyFillRectImageWriteFlags) &&
-	CHECK_ROPSRC(pGC,infoRec->PolyFillRectImageWriteFlags) &&
-	CHECK_PLANEMASK(pGC,infoRec->PolyFillRectImageWriteFlags)) {
+    if(infoRec->FillImageWriteRects && 
+	CHECK_NO_GXCOPY(pGC,infoRec->FillImageWriteRectsFlags) &&
+	CHECK_ROP(pGC,infoRec->FillImageWriteRectsFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillImageWriteRectsFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->FillImageWriteRectsFlags)) {
 
 	      return DO_IMAGE_WRITE;
     }

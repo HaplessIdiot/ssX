@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.3 1998/10/25 07:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.4 1998/11/15 04:30:41 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -77,8 +77,23 @@ XAAPaintWindow(
 		 pBgWin = pBgWin->parent);
 	}
 
+	if(IS_OFFSCREEN_PIXMAP(pPix) && infoRec->FillCacheBltRects) {
+	    XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);
+
+	    pCache->x = pPriv->offscreenArea->box.x1;
+	    pCache->y = pPriv->offscreenArea->box.y1;
+	    pCache->w = pCache->orig_w = 
+		pPriv->offscreenArea->box.x2 - pCache->x;
+	    pCache->h = pCache->orig_h = 
+		pPriv->offscreenArea->box.y2 - pCache->y;
+	     
+	    (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, ~0,
+		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+	    return;
+	}
+
 	if(pPriv->flags & DIRTY) {
-	    pPriv->flags = 0;
+	    pPriv->flags &= ~(DIRTY | REDUCIBILITY_MASK);
 	    pPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
         }
 
@@ -121,8 +136,8 @@ XAAPaintWindow(
 	     return;
 	}
 
-	if(infoRec->PolyFillRectImageWrite && 
-		!(infoRec->PolyFillRectImageWriteFlags & NO_GXCOPY)) {
+	if(infoRec->FillImageWriteRects && 
+		!(infoRec->FillImageWriteRectsFlags & NO_GXCOPY)) {
 	    (*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
                    ~0, nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y,
                    pPix);

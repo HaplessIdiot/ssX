@@ -1,13 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.4 1998/11/29 10:50:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.5 1998/11/29 13:09:22 dawes Exp $ */
 
-#ifndef XFree86LOADER
 #ifdef _XOPEN_SOURCE
 #include <math.h>
 #else
 #define _XOPEN_SOURCE   /* to get prototype for pow on some systems */
 #include <math.h>
 #undef _XOPEN_SOURCE
-#endif
 #endif
 
 #include "X.h"
@@ -20,7 +18,6 @@
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
-#include "xf86_ansic.h"
 #include "xf86str.h"
 #include "micmap.h"
 

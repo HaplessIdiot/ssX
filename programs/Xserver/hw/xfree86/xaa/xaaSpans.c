@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.4 1998/08/02 05:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.5 1998/08/19 07:49:28 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -21,7 +21,7 @@
 
 void
 XAAFillSpansSolid(
-    DrawablePtr pDrawable,
+    DrawablePtr pDraw,
     GC		*pGC,
     int		nInit,		/* number of spans to fill */
     DDXPointPtr pptInit,	/* pointer to list of start points */
@@ -70,33 +70,14 @@ XAAFillSpansSolid(
 }
 
 
-void 
-XAAFillSolidSpans(
-   ScrnInfoPtr pScrn,
-   int fg, int rop,
-   unsigned int planemask,
-   int n,
-   DDXPointPtr ppt,
-   int *pwidth, int fSorted 
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-
-    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
-     while(n--) {
-        (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, *pwidth, 1);
-	ppt++; pwidth++;
-     }
-     SET_SYNC_FLAG(infoRec);
-}
-
-	/********************\
-	|   Mono 8x8 Spans   |
-	\********************/
+	/************************\
+	|     Stippled Spans     |
+	\************************/
 
 
 void
-XAAFillSpansMono8x8Pattern(
-    DrawablePtr pDrawable,
+XAAFillSpansStippled(
+    DrawablePtr pDraw,
     GC		*pGC,
     int		nInit,		/* number of spans to fill */
     DDXPointPtr pptInit,	/* pointer to list of start points */
@@ -107,9 +88,24 @@ XAAFillSpansMono8x8Pattern(
     int n;			/* number of spans to fill */
     DDXPointPtr ppt;		/* pointer to list of start points */
     int *pwidth;		/* pointer to list of n widths */
+    int type, fg, bg;
 
-    if (!(pGC->planemask))
+    if (!pGC->planemask)
 	return;
+
+    if(pGC->fillStyle == FillStippled) {
+	type = (*infoRec->StippledFillChooser)(pGC);
+	fg = pGC->fgPixel;  bg = -1;
+    } else {
+	type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+	fg = pGC->fgPixel;  bg = pGC->bgPixel;
+    }
+
+    if(!type) {
+	(*XAAFallbackOps.FillSpans)(pDraw, pGC, nInit, pptInit,
+				pwidthInit, fSorted);
+	return;
+    }
 
     n = nInit * miFindMaxBand(pGC->pCompositeClip);
     if(!n) return;
@@ -134,25 +130,48 @@ XAAFillSpansMono8x8Pattern(
 		     ppt, pwidth, fSorted);
 
     if (n) {
-	int fg = pGC->fgPixel, bg = pGC->bgPixel;
-	XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+        XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+	XAACacheInfoPtr pCache;
 
-        switch(pGC->fillStyle) {
-	case FillStippled:
-		bg = -1;
-		break;	
-	case FillOpaqueStippled:
-		break;	
-	default:	/* FillTiled */	
-		pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
-		fg = pPriv->fg;		bg = pPriv->bg;
-		break;
+	if((fg == bg) && (bg != -1) && infoRec->FillSolidSpans){
+	    (*infoRec->FillSolidSpans) (infoRec->pScrn, fg, 
+		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted);    
+	} else
+	switch(type) {
+	case DO_MONO_8x8:
+           (*infoRec->FillMono8x8PatternSpans) (infoRec->pScrn, 
+                fg, bg, pGC->alu, pGC->planemask, 
+                n, ppt, pwidth, fSorted, pPriv->pattern0, pPriv->pattern1, 
+                (pDraw->x + pGC->patOrg.x), 
+		(pDraw->y + pGC->patOrg.y));	    
+	    break;
+	case DO_COLOR_8x8:
+            pCache = (*infoRec->CacheColor8x8Pattern)(infoRec->pScrn,
+			 			pGC->stipple, fg, bg);
+            (*infoRec->FillColor8x8PatternSpans) (infoRec->pScrn, 
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache,
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y));
+	    break;
+	case DO_CACHE_EXPAND:
+            (*infoRec->FillCacheExpandSpans) (infoRec->pScrn, fg, bg,
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted,
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y),
+                pGC->stipple); 
+	    break;
+	case DO_CACHE_BLT:
+            pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pGC->stipple, 
+                                                   fg, bg);
+             (*infoRec->FillCacheBltSpans) (infoRec->pScrn, 
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache, 
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y));
+	     break;
+	case DO_COLOR_EXPAND:
+            (*infoRec->FillColorExpandSpans) (infoRec->pScrn, fg, bg,
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted,
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y),
+                pGC->stipple); 
+	    break;
 	}
- 
-	(*infoRec->FillMono8x8PatternSpans) (infoRec->pScrn, 
-		fg, bg, pGC->alu, pGC->planemask, 
-		n, ppt, pwidth, fSorted, pPriv->pattern0, pPriv->pattern1, 
-		(pDrawable->x + pGC->patOrg.x), (pDrawable->y + pGC->patOrg.y));
     }
 
     if(ppt != infoRec->PreAllocDDXPointRecs)
@@ -160,6 +179,135 @@ XAAFillSpansMono8x8Pattern(
     if(pwidth != infoRec->PreAllocInts)
     	DEALLOCATE_LOCAL(pwidth);
 }
+
+
+
+	/*********************\
+	|     Tiled Spans     |
+	\*********************/
+
+void
+XAAFillSpansTiled(
+    DrawablePtr pDraw,
+    GC		*pGC,
+    int		nInit,		/* number of spans to fill */
+    DDXPointPtr pptInit,	/* pointer to list of start points */
+    int *pwidthInit,		/* pointer to list of n widths */
+    int fSorted )
+{
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int n;			/* number of spans to fill */
+    DDXPointPtr ppt;		/* pointer to list of start points */
+    int *pwidth;		/* pointer to list of n widths */
+    int type;
+
+    if (!(pGC->planemask))
+	return;
+
+    type = (*infoRec->TiledFillChooser)(pGC);
+    if(!type || (type == DO_IMAGE_WRITE)) {
+	(*XAAFallbackOps.FillSpans)(pDraw, pGC, nInit, pptInit,
+				pwidthInit, fSorted);
+	return;
+    }
+
+    n = nInit * miFindMaxBand(pGC->pCompositeClip);
+    if(!n) return;
+
+    if(n > infoRec->NumPreAllocDDXPointRecs) {
+	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+	if(!ppt) return;	
+    } else ppt = infoRec->PreAllocDDXPointRecs;
+
+
+    if(n > infoRec->NumPreAllocInts) {
+    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+	if(!pwidth) {
+	   if(ppt != infoRec->PreAllocDDXPointRecs)
+		DEALLOCATE_LOCAL(ppt);
+	   return;
+	}	
+    } else pwidth = infoRec->PreAllocInts;
+
+    n = miClipSpans( pGC->pCompositeClip,
+		     pptInit, pwidthInit, nInit, 
+		     ppt, pwidth, fSorted);
+
+    if (n) {
+	XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+	XAACacheInfoPtr pCache;
+
+	switch(type) {
+	case DO_MONO_8x8:
+           (*infoRec->FillMono8x8PatternSpans) (infoRec->pScrn, 
+                pPriv->fg, pPriv->bg, pGC->alu, pGC->planemask, 
+                n, ppt, pwidth, fSorted, pPriv->pattern0, pPriv->pattern1, 
+                (pDraw->x + pGC->patOrg.x), 
+		(pDraw->y + pGC->patOrg.y));	    
+	    break;
+	case DO_COLOR_8x8:
+            pCache = (*infoRec->CacheColor8x8Pattern)(
+                        infoRec->pScrn, pGC->tile.pixmap, -1, -1);
+            (*infoRec->FillColor8x8PatternSpans) (infoRec->pScrn, 
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache,
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y));
+	    break;
+	case DO_CACHE_BLT:
+            pCache = (*infoRec->CacheTile)(infoRec->pScrn, pGC->tile.pixmap);
+            (*infoRec->FillCacheBltSpans) (infoRec->pScrn, 
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache, 
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y));
+	    break;
+	case DO_PIXMAP_COPY:
+	    pCache = &(infoRec->ScratchCacheInfoRec);
+	    pCache->x = pPriv->offscreenArea->box.x1;
+	    pCache->y = pPriv->offscreenArea->box.y1;
+	    pCache->w = pCache->orig_w = 
+		pPriv->offscreenArea->box.x2 - pCache->x;
+	    pCache->h = pCache->orig_h = 
+		pPriv->offscreenArea->box.y2 - pCache->y;
+
+            (*infoRec->FillCacheBltSpans) (infoRec->pScrn, 
+                pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache, 
+                (pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y));
+	    break;
+	}
+    }
+
+    if(ppt != infoRec->PreAllocDDXPointRecs)
+	DEALLOCATE_LOCAL(ppt);
+    if(pwidth != infoRec->PreAllocInts)
+    	DEALLOCATE_LOCAL(pwidth);
+}
+
+
+	/*********************\
+	|     Solid Spans     |
+	\*********************/
+
+
+void 
+XAAFillSolidSpans(
+   ScrnInfoPtr pScrn,
+   int fg, int rop,
+   unsigned int planemask,
+   int n,
+   DDXPointPtr ppt,
+   int *pwidth, int fSorted 
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+
+    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
+     while(n--) {
+        (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, *pwidth, 1);
+	ppt++; pwidth++;
+     }
+     SET_SYNC_FLAG(infoRec);
+}
+
+	/********************\
+	|   Mono 8x8 Spans   |
+	\********************/
 
 
 void 
@@ -273,80 +421,6 @@ XAAFillMono8x8PatternSpans(
 	\*********************/
 
 
-void
-XAAFillSpansColor8x8Pattern(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,		/* number of spans to fill */
-    DDXPointPtr pptInit,	/* pointer to list of start points */
-    int *pwidthInit,		/* pointer to list of n widths */
-    int fSorted )
-{
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-
-    if (!(pGC->planemask))
-	return;
-
-    n = nInit * miFindMaxBand(pGC->pCompositeClip);
-    if(!n) return;
-
-    if(n > infoRec->NumPreAllocDDXPointRecs) {
-	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-	if(!ppt) return;	
-    } else ppt = infoRec->PreAllocDDXPointRecs;
-
-
-    if(n > infoRec->NumPreAllocInts) {
-    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-	if(!pwidth) {
-	   if(ppt != infoRec->PreAllocDDXPointRecs)
-		DEALLOCATE_LOCAL(ppt);
-	   return;
-	}	
-    } else pwidth = infoRec->PreAllocInts;
-
-    n = miClipSpans( pGC->pCompositeClip,
-		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
-
-    if (n) {
-	XAACacheInfoPtr pCache;
-        PixmapPtr pPix = pGC->stipple;
-
-        switch(pGC->fillStyle) {
-	case FillStippled:
-	     pCache = (*infoRec->CacheColor8x8Pattern)(
-			infoRec->pScrn, pPix, pGC->fgPixel, -1);
-	     break;
-	case FillOpaqueStippled:
-	     pCache = (*infoRec->CacheColor8x8Pattern)(
-			infoRec->pScrn, pPix, pGC->fgPixel, pGC->bgPixel);
-	     break;
-	case FillTiled:
-	     pPix = pGC->tile.pixmap;
-	     pCache = (*infoRec->CacheColor8x8Pattern)(
-			infoRec->pScrn, pPix, -1, -1);
-	     break;
-	default:
-	     ErrorF("Bad fillStyle %i in XAAFillSpansColor8x8Pattern\n",
-			pGC->fillStyle);
-	     return;
-	}
- 
-	(*infoRec->FillColor8x8PatternSpans) (infoRec->pScrn, 
-		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache,
-		(pDrawable->x + pGC->patOrg.x), (pDrawable->y + pGC->patOrg.y));
-    }
-
-    if(ppt != infoRec->PreAllocDDXPointRecs)
-	DEALLOCATE_LOCAL(ppt);
-    if(pwidth != infoRec->PreAllocInts)
-    	DEALLOCATE_LOCAL(pwidth);
-}
-
 void 
 XAAFillColor8x8PatternSpansScreenOrigin(
    ScrnInfoPtr pScrn,
@@ -424,75 +498,6 @@ XAAFillColor8x8PatternSpans(
 	\**********************/
 
 
-void
-XAAFillSpansCacheBlt(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,		/* number of spans to fill */
-    DDXPointPtr pptInit,	/* pointer to list of start points */
-    int *pwidthInit,		/* pointer to list of n widths */
-    int fSorted )
-{
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-
-    if (!(pGC->planemask))
-	return;
-
-    n = nInit * miFindMaxBand(pGC->pCompositeClip);
-    if(!n) return;
-
-    if(n > infoRec->NumPreAllocDDXPointRecs) {
-	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-	if(!ppt) return;	
-    } else ppt = infoRec->PreAllocDDXPointRecs;
-
-
-    if(n > infoRec->NumPreAllocInts) {
-    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-	if(!pwidth) {
-	   if(ppt != infoRec->PreAllocDDXPointRecs)
-		DEALLOCATE_LOCAL(ppt);
-	   return;
-	}	
-    } else pwidth = infoRec->PreAllocInts;
-
-    n = miClipSpans( pGC->pCompositeClip,
-		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
-
-    if (n) {
-	XAACacheInfoPtr pCache;
-        PixmapPtr pPix = pGC->stipple;
-
-        switch(pGC->fillStyle) {
-	case FillStippled:
-	     pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pPix, 
-							pGC->fgPixel, -1);
-	     break;
-	case FillOpaqueStippled:
-	     pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pPix, 
-			pGC->fgPixel, pGC->bgPixel);
-	     break;
-	default:	/* FillTiled */	
-	     pPix = pGC->tile.pixmap;
-	     pCache = (*infoRec->CacheTile)(infoRec->pScrn, pPix);
-	     break;
-	}
- 
-	(*infoRec->FillCacheBltSpans) (infoRec->pScrn, 
-		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted, pCache, 
-		(pDrawable->x + pGC->patOrg.x), (pDrawable->y + pGC->patOrg.y));
-    }
-
-    if(ppt != infoRec->PreAllocDDXPointRecs)
-	DEALLOCATE_LOCAL(ppt);
-    if(pwidth != infoRec->PreAllocInts)
-    	DEALLOCATE_LOCAL(pwidth);
-}
-
 void 
 XAAFillCacheBltSpans(
    ScrnInfoPtr pScrn,
@@ -537,121 +542,10 @@ XAAFillCacheBltSpans(
      SET_SYNC_FLAG(infoRec);
 }
 
-	/*******************\
-	|  Color Expansion  |
-	\*******************/
-
-void
-XAAFillSpansColorExpand(
-    DrawablePtr pDraw,
-    GC		*pGC,
-    int		nInit,		/* number of spans to fill */
-    DDXPointPtr pptInit,	/* pointer to list of start points */
-    int *pwidthInit,		/* pointer to list of n widths */
-    int fSorted )
-{
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-
-    if (!(pGC->planemask))
-	return;
-
-    n = nInit * miFindMaxBand(pGC->pCompositeClip);
-    if(!n) return;
-
-    if(n > infoRec->NumPreAllocDDXPointRecs) {
-	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-	if(!ppt) return;	
-    } else ppt = infoRec->PreAllocDDXPointRecs;
-
-
-    if(n > infoRec->NumPreAllocInts) {
-    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-	if(!pwidth) {
-	   if(ppt != infoRec->PreAllocDDXPointRecs)
-		DEALLOCATE_LOCAL(ppt);
-	   return;
-	}	
-    } else pwidth = infoRec->PreAllocInts;
-
-    n = miClipSpans( pGC->pCompositeClip,
-		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
-
-    if (n) {
-	(*infoRec->FillColorExpandSpans) (infoRec->pScrn, pGC->fgPixel,
-		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
-		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted,   
-		(pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y),
-		pGC->stipple); 
-    }
-
-    if(ppt != infoRec->PreAllocDDXPointRecs)
-	DEALLOCATE_LOCAL(ppt);
-    if(pwidth != infoRec->PreAllocInts)
-    	DEALLOCATE_LOCAL(pwidth);
-}
-
 
 	/****************\
 	|  Cache Expand  |
 	\****************/
-
-void
-XAAFillSpansCacheExpand(
-    DrawablePtr pDraw,
-    GC		*pGC,
-    int		nInit,		/* number of spans to fill */
-    DDXPointPtr pptInit,	/* pointer to list of start points */
-    int *pwidthInit,		/* pointer to list of n widths */
-    int fSorted )
-{
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-
-    if (!(pGC->planemask))
-	return;
-
-    n = nInit * miFindMaxBand(pGC->pCompositeClip);
-    if(!n) return;
-
-    if(n > infoRec->NumPreAllocDDXPointRecs) {
-	ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
-	if(!ppt) return;	
-    } else ppt = infoRec->PreAllocDDXPointRecs;
-
-
-    if(n > infoRec->NumPreAllocInts) {
-    	pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-	if(!pwidth) {
-	   if(ppt != infoRec->PreAllocDDXPointRecs)
-		DEALLOCATE_LOCAL(ppt);
-	   return;
-	}	
-    } else pwidth = infoRec->PreAllocInts;
-
-    n = miClipSpans( pGC->pCompositeClip,
-		     pptInit, pwidthInit, nInit, 
-		     ppt, pwidth, fSorted);
-
-    if (n) {
-	(*infoRec->FillCacheExpandSpans) (infoRec->pScrn, pGC->fgPixel,
-		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
-		pGC->alu, pGC->planemask, n, ppt, pwidth, fSorted,   
-		(pDraw->x + pGC->patOrg.x), (pDraw->y + pGC->patOrg.y),
-		pGC->stipple); 
-    }
-
-    if(ppt != infoRec->PreAllocDDXPointRecs)
-	DEALLOCATE_LOCAL(ppt);
-    if(pwidth != infoRec->PreAllocInts)
-    	DEALLOCATE_LOCAL(pwidth);
-}
-
 
 
 void 

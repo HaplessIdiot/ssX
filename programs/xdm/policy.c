@@ -29,7 +29,7 @@ from The Open Group.
  *
  * policy.c.  Implement site-dependent policy for XDMCP connections
  */
-/* $XFree86: xc/programs/xdm/policy.c,v 3.2 1998/10/04 09:40:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/policy.c,v 3.3 1998/10/10 15:25:36 dawes Exp $ */
 
 # include "dm.h"
 # include "dm_auth.h"
@@ -128,7 +128,20 @@ Willing (
     if (!ret)
 	sprintf (statusBuf, "Display not authorized to connect");
     else
-	sprintf (statusBuf, "Willing to manage");
+    {
+        if (*willing)
+	{   FILE *fd;
+	    if ((fd = popen(willing, "r")) && fgets(statusBuf, 256, fd))
+	    {
+	        statusBuf[strlen(statusBuf)-1] = 0; /* chop newline */
+	    }
+	    else
+	        sprintf (statusBuf, "Willing, but %s failed",willing);
+	    if (fd) pclose(fd);
+	}
+	else
+	    sprintf (statusBuf, "Willing to manage");
+    }
     status->length = strlen (statusBuf);
     status->data = (CARD8Ptr) malloc (status->length);
     if (!status->data)

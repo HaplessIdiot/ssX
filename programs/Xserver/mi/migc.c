@@ -23,7 +23,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.4 1998/04/05 02:28:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/migc.c,v 1.5 1998/10/04 09:39:28 dawes Exp $ */
 
 #include "scrnintstr.h"
 #include "gcstruct.h"
@@ -251,10 +251,11 @@ miComputeCompositeClip(pGC, pDrawable)
 	BoxRec          pixbounds;
 
 	/* XXX should we translate by drawable.x/y here ? */
-	pixbounds.x1 = 0;
-	pixbounds.y1 = 0;
-	pixbounds.x2 = pDrawable->width;
-	pixbounds.y2 = pDrawable->height;
+	/* If you want pixmaps in offscreen memory, yes */
+	pixbounds.x1 = pDrawable->x;
+	pixbounds.y1 = pDrawable->y;
+	pixbounds.x2 = pDrawable->x + pDrawable->width;
+	pixbounds.y2 = pDrawable->y + pDrawable->height;
 
 	if (pGC->freeCompClip)
 	{
@@ -268,12 +269,23 @@ miComputeCompositeClip(pGC, pDrawable)
 
 	if (pGC->clientClipType == CT_REGION)
 	{
-	    REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
-					 -pGC->clipOrg.x, -pGC->clipOrg.y);
-	    REGION_INTERSECT(pScreen, pGC->pCompositeClip,
+	    if(pDrawable->x || pDrawable->y) {
+	        REGION_TRANSLATE(pScreen, pGC->clientClip,
+					  pDrawable->x + pGC->clipOrg.x, 
+					  pDrawable->y + pGC->clipOrg.y);
+	        REGION_INTERSECT(pScreen, pGC->pCompositeClip,
 				pGC->pCompositeClip, pGC->clientClip);
-	    REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
+	        REGION_TRANSLATE(pScreen, pGC->clientClip,
+					  -(pDrawable->x + pGC->clipOrg.x), 
+					  -(pDrawable->y + pGC->clipOrg.y));
+	    } else {
+	        REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
+					 -pGC->clipOrg.x, -pGC->clipOrg.y);
+	        REGION_INTERSECT(pScreen, pGC->pCompositeClip,
+				pGC->pCompositeClip, pGC->clientClip);
+	        REGION_TRANSLATE(pScreen, pGC->pCompositeClip,
 					 pGC->clipOrg.x, pGC->clipOrg.y);
+	    }
 	}
     }	/* end of composite clip for pixmap */
 } /* end miComputeCompositeClip */

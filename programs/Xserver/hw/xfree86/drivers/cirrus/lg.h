@@ -10,7 +10,7 @@
  *  Inspired by cir.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.2 1998/11/15 04:30:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.3 1998/11/22 10:37:20 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -52,7 +52,7 @@ typedef struct {
 #define LGPTR(p) ((LgPtr)((p)->driverPrivate))
 
 typedef struct {
-    ScreenPtr		pScreen;
+    ScrnInfoPtr         pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
@@ -133,5 +133,8 @@ extern Bool LgXAAInit(ScreenPtr pScreen);
 extern Bool LgHWCursorInit(ScreenPtr pScreen);
 extern void LgHideCursor(ScrnInfoPtr pScrn);
 extern void LgShowCursor(ScrnInfoPtr pScrn);
+
+/* lg_i2c.c */
+extern Bool LGI2CInit(ScreenPtr pScreen);
 
 #endif /* LG_H */

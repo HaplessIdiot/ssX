@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.3 1998/11/22 10:37:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.4 1998/11/29 10:50:24 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -55,6 +55,8 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+
+#include "xf86DDC.h"
 
 /*
 #define LG_DEBUG
@@ -317,6 +319,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pLg = LGPTR(pScrn);
+    pLg->pScrn = pScrn;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
@@ -645,6 +648,16 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	    LgFreeRec(pScrn);
 	    return FALSE;
 	}
+
+    if (!xf86LoadSubModule(pScrn, "i2c")) {
+        LgFreeRec(pScrn);
+        return FALSE;
+    }
+
+    if (!xf86LoadSubModule(pScrn, "ddc")) {
+        LgFreeRec(pScrn);
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -1267,6 +1280,13 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                 "Hardware cursor initialization failed\n");
     }
+
+    if(!LGI2CInit(pScreen)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+            "I2C initialization failed\n");
+    }
+    else
+	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pLg->I2CPtr1));
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.12 1998/11/01 12:36:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.13 1998/11/15 04:30:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -35,7 +35,8 @@ typedef enum {
     XAAOPT_IMAGE_WRITE_RECT,
     XAAOPT_SCANLINE_IMAGE_WRITE_RECT,
     XAAOPT_IMAGE_READ_RECT,
-    XAAOPT_PIXMAP_CACHE
+    XAAOPT_PIXMAP_CACHE,
+    XAAOPT_OFFSCREEN_PIXMAPS
 } XAAOpts;
 
 static OptionInfoRec XAAOptions[] = {
@@ -76,6 +77,8 @@ static OptionInfoRec XAAOptions[] = {
     {XAAOPT_IMAGE_READ_RECT,		"XaaNoImageReadRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
+				OPTV_BOOLEAN,	{0}, FALSE },
+    {XAAOPT_OFFSCREEN_PIXMAPS,		"XaaOffscreenPixmaps",
 				OPTV_BOOLEAN,	{0}, FALSE },
     { -1,				NULL,
 				OPTV_NONE,	{0}, FALSE }
@@ -389,6 +392,12 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(HaveImageReadRect)
 	xf86ErrorF("\tImage Reads\n");
+
+    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && HaveScreenToScreenCopy &&
+		!xf86IsOptionSet(XAAOptions, XAAOPT_OFFSCREEN_PIXMAPS))
+	xf86ErrorF("\tOffscreen Pixmaps\n");
+    else
+	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
 
 
     /************** Mid Level *************/
@@ -905,92 +914,62 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
 
-    if(infoRec->FillMono8x8PatternRects) {
-	if(!infoRec->PolyFillRectMono8x8Pattern) {
-	    infoRec->PolyFillRectMono8x8Pattern = XAAPolyFillRectMono8x8Pattern;
-	    infoRec->PolyFillRectMono8x8PatternFlags =
-				infoRec->FillMono8x8PatternRectsFlags;
+    if(infoRec->FillMono8x8PatternRects || infoRec->FillColor8x8PatternRects ||
+	infoRec->FillCacheBltRects || infoRec->FillColorExpandRects ||
+	infoRec->FillCacheExpandRects) {
+	if(!infoRec->PolyFillRectStippled) {
+
+	    infoRec->PolyFillRectStippled = XAAPolyFillRectStippled;
+	    infoRec->PolyFillRectStippledFlags = 0;
 	}
     }
-    if(infoRec->FillMono8x8PatternSpans) {
-	if(!infoRec->FillSpansMono8x8Pattern) {
-	    infoRec->FillSpansMono8x8Pattern = XAAFillSpansMono8x8Pattern;
-	    infoRec->FillSpansMono8x8PatternFlags =
-				infoRec->FillMono8x8PatternSpansFlags;
+    if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
+	infoRec->FillCacheBltSpans || infoRec->FillColorExpandSpans ||
+	infoRec->FillCacheExpandSpans) {
+	if(!infoRec->FillSpansStippled) {
+
+	    infoRec->FillSpansStippled = XAAFillSpansStippled;
+	    infoRec->FillSpansStippledFlags = 0;
+	}
+    }
+
+    if(infoRec->FillMono8x8PatternRects || infoRec->FillColor8x8PatternRects ||
+	infoRec->FillCacheBltRects || infoRec->FillColorExpandRects ||
+	infoRec->FillCacheExpandRects) {
+	if(!infoRec->PolyFillRectOpaqueStippled) {
+
+	    infoRec->PolyFillRectOpaqueStippled = XAAPolyFillRectStippled;
+	    infoRec->PolyFillRectOpaqueStippledFlags = 0;
+	}
+    }
+    if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
+	infoRec->FillCacheBltSpans || infoRec->FillColorExpandSpans ||
+	infoRec->FillCacheExpandSpans) {
+	if(!infoRec->FillSpansOpaqueStippled) {
+
+	    infoRec->FillSpansOpaqueStippled = XAAFillSpansStippled;
+	    infoRec->FillSpansOpaqueStippledFlags = 0;
 	}
     }
 
 
-    if(infoRec->FillColor8x8PatternRects) {
-	if(!infoRec->PolyFillRectColor8x8Pattern) {
-	    infoRec->PolyFillRectColor8x8Pattern = 
-				XAAPolyFillRectColor8x8Pattern;
-	    infoRec->PolyFillRectColor8x8PatternFlags =
-				infoRec->FillColor8x8PatternRectsFlags;
+    if(infoRec->FillMono8x8PatternRects || infoRec->FillColor8x8PatternRects ||
+	infoRec->FillCacheBltRects || infoRec->FillImageWriteRects) {
+	if(!infoRec->PolyFillRectTiled) {
+
+	    infoRec->PolyFillRectTiled = XAAPolyFillRectTiled;
+	    infoRec->PolyFillRectTiledFlags = 0;
 	}
     }
-    if(infoRec->FillColor8x8PatternSpans) {
-	if(!infoRec->FillSpansColor8x8Pattern) {
-	    infoRec->FillSpansColor8x8Pattern = 
-				XAAFillSpansColor8x8Pattern;
-	    infoRec->FillSpansColor8x8PatternFlags =
-				infoRec->FillColor8x8PatternSpansFlags;
+    if(infoRec->FillMono8x8PatternSpans || infoRec->FillColor8x8PatternSpans ||
+	infoRec->FillCacheBltSpans) {
+	if(!infoRec->FillSpansTiled) {
+
+	    infoRec->FillSpansTiled = XAAFillSpansTiled;
+	    infoRec->FillSpansTiledFlags = 0;
 	}
     }
 
-
-    if(infoRec->FillCacheBltRects) {
-	if(!infoRec->PolyFillRectCacheBlt) {
-	    infoRec->PolyFillRectCacheBlt = XAAPolyFillRectCacheBlt;
-	    infoRec->PolyFillRectCacheBltFlags =
-				infoRec->FillCacheBltRectsFlags;
-	}
-    }
-    if(infoRec->FillCacheBltSpans) {
-	if(!infoRec->FillSpansCacheBlt) {
-	    infoRec->FillSpansCacheBlt = XAAFillSpansCacheBlt;
-	    infoRec->FillSpansCacheBltFlags =
-				infoRec->FillCacheBltSpansFlags;
-	}
-    }
-
-    if(infoRec->FillColorExpandRects) {
-	if(!infoRec->PolyFillRectColorExpand) {
-	    infoRec->PolyFillRectColorExpand = XAAPolyFillRectColorExpand;
-	    infoRec->PolyFillRectColorExpandFlags =
-				infoRec->FillColorExpandRectsFlags;
-	}
-    }
-    if(infoRec->FillColorExpandSpans) {
-	if(!infoRec->FillSpansColorExpand) {
-	    infoRec->FillSpansColorExpand = XAAFillSpansColorExpand;
-	    infoRec->FillSpansColorExpandFlags =
-				infoRec->FillColorExpandSpansFlags;
-	}
-    }
-
-    if(infoRec->FillCacheExpandRects) {
-	if(!infoRec->PolyFillRectCacheExpand) {
-	    infoRec->PolyFillRectCacheExpand = XAAPolyFillRectCacheExpand;
-	    infoRec->PolyFillRectCacheExpandFlags =
-				infoRec->FillCacheExpandRectsFlags;
-	}
-    }
-    if(infoRec->FillCacheExpandSpans) {
-	if(!infoRec->FillSpansCacheExpand) {
-	    infoRec->FillSpansCacheExpand = XAAFillSpansCacheExpand;
-	    infoRec->FillSpansCacheExpandFlags =
-				infoRec->FillCacheExpandSpansFlags;
-	}
-    }
-
-    if(infoRec->FillImageWriteRects) {
-	if(!infoRec->PolyFillRectImageWrite) {
-	    infoRec->PolyFillRectImageWrite = XAAPolyFillRectImageWrite;
-	    infoRec->PolyFillRectImageWriteFlags =
-				infoRec->FillImageWriteRectsFlags;
-	}
-    }
 
     if(infoRec->TEGlyphRenderer &&
 	!(infoRec->TEGlyphRendererFlags & NO_TRANSPARENCY)) {
@@ -1074,22 +1053,22 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillPolygonSolidFlags = infoRec->SolidFillFlags;
     }
 
-    if(!infoRec->FillPolygonMono8x8Pattern && HaveMono8x8PatternFillRect) {
-	infoRec->FillPolygonMono8x8Pattern = XAAFillPolygonMono8x8Pattern;
-	infoRec->FillPolygonMono8x8PatternFlags = 
-				infoRec->Mono8x8PatternFillFlags;
+    if(!infoRec->FillPolygonStippled && (HaveMono8x8PatternFillRect || 	
+	HaveScreenToScreenColorExpandFill || HaveScreenToScreenCopy)) {
+	infoRec->FillPolygonStippled = XAAFillPolygonStippled;
+	infoRec->FillPolygonStippledFlags = infoRec->SolidFillFlags;
     }
 
-    if(!infoRec->FillPolygonCacheExpand && HaveScreenToScreenColorExpandFill) {
-	infoRec->FillPolygonCacheExpand = XAAFillPolygonCacheExpand;
-	infoRec->FillPolygonCacheExpandFlags = 
-				infoRec->ScreenToScreenColorExpandFillFlags;
+    if(!infoRec->FillPolygonOpaqueStippled && (HaveMono8x8PatternFillRect || 	
+	HaveScreenToScreenColorExpandFill || HaveScreenToScreenCopy)) {
+	infoRec->FillPolygonOpaqueStippled = XAAFillPolygonStippled;
+	infoRec->FillPolygonOpaqueStippledFlags = infoRec->SolidFillFlags;
     }
 
-    if(!infoRec->FillPolygonCacheBlt && HaveScreenToScreenCopy) {
-	infoRec->FillPolygonCacheBlt = XAAFillPolygonCacheBlt;
-	infoRec->FillPolygonCacheBltFlags = 
-				infoRec->ScreenToScreenCopyFlags;
+    if(!infoRec->FillPolygonTiled && (HaveMono8x8PatternFillRect || 	
+	HaveScreenToScreenColorExpandFill || HaveScreenToScreenCopy)) {
+	infoRec->FillPolygonTiled = XAAFillPolygonTiled;
+	infoRec->FillPolygonTiledFlags = infoRec->SolidFillFlags;
     }
 
 
@@ -1200,18 +1179,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	you may need to supply replacement validation routines */
 
     if(!infoRec->ValidateFillSpans && 
-	(infoRec->FillSpansSolid || infoRec->FillSpansMono8x8Pattern ||
-	infoRec->FillSpansColor8x8Pattern || infoRec->FillSpansColorExpand ||
-	infoRec->FillSpansCacheBlt || infoRec->FillSpansCacheExpand ||
-	infoRec->PolyFillRectImageWrite)) {
+	(infoRec->FillSpansSolid || infoRec->FillSpansStippled ||
+	infoRec->FillSpansOpaqueStippled || infoRec->FillSpansTiled)) {
 
         int compositeFlags = 	infoRec->FillSpansSolidFlags |
-				infoRec->FillSpansMono8x8PatternFlags |
-				infoRec->FillSpansColor8x8PatternFlags |
-				infoRec->FillSpansColorExpandFlags |
-				infoRec->FillSpansCacheBltFlags |
-				infoRec->FillSpansCacheExpandFlags |
-				infoRec->PolyFillRectImageWriteFlags;
+				infoRec->FillSpansStippledFlags |
+				infoRec->FillSpansOpaqueStippledFlags |
+				infoRec->FillSpansTiledFlags;
 
 	infoRec->FillSpansMask = GCFillStyle | GCTile | GCStipple;
 
@@ -1311,20 +1285,23 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     else if(infoRec->WriteBitmap && 
 	!(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY))
 	infoRec->WriteBitmapToCache = XAAWriteBitmapToCache;
-    else {/* until we get framebuffer versions */
+    else if(infoRec->Flags & LINEAR_FRAMEBUFFER)
+	infoRec->WriteBitmapToCache = XAAWriteBitmapToCacheLinear;
+    else
 	infoRec->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
-    }   
 
 
     if(infoRec->WritePixmapToCache) {}
     else if(infoRec->WritePixmap && !(infoRec->WritePixmapFlags & NO_GXCOPY))
 	infoRec->WritePixmapToCache = XAAWritePixmapToCache;
-    else {/* until we get framebuffer versions */
+    else if(infoRec->Flags & LINEAR_FRAMEBUFFER)
+	infoRec->WritePixmapToCache = XAAWritePixmapToCacheLinear;
+    else
 	infoRec->Flags &= ~PIXMAP_CACHE;
-    }   
 
     if (xf86IsOptionSet(XAAOptions, XAAOPT_PIXMAP_CACHE))
 	infoRec->Flags &= ~PIXMAP_CACHE;
+
 
     if(infoRec->WriteMono8x8PatternToCache) {}
     else if(infoRec->PixmapCacheFlags & CACHE_MONO_8x8) {

@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.18.2.1 1998/06/03 15:49:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.19 1998/07/25 05:57:17 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -83,6 +83,9 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.18.2.1 1998/06/03 15:49:18 dawes Exp 
 
 #if defined(IHaveModules) && MakeDllModules
 MODULE_CFLAGS = $(PICFLAGS)
+#endif
+#if defined(IHaveModules) && DoLoadableServer
+MODULE_DEFINES = -DIN_MODULE
 #endif
 
 #if defined(IHaveModules) && DoLoadableServer && defined(OS2Architecture)

@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.10 1998/04/05 02:29:04 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.11 1998/10/04 09:40:59 dawes Exp $
 .\" 
 .TH XDM 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -358,6 +358,12 @@ Default is 15.
 Use the numeric IP address of the incoming connection on multihomed hosts
 instead of the host name. This is to avoid trying to connect on the wrong
 interface which might be down at this time.
+.IP \fBDisplayManager.willing\fP
+This specifies a program which is run (as) root when an an XDMCP
+BroadcastQuery is received and this host is configured to offer XDMCP
+display management. The output of this program may be displayed on a chooser
+window.  If no program is specified, the string \fIWilling to manage\fP is
+sent.
 .PP
 .\"
 .IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resources\fP"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.4 1998/11/15 04:30:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.5 1998/11/28 10:43:02 dawes Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -13,6 +13,7 @@ typedef struct _FBArea {
    BoxRec   	box;
    int 		granularity;
    void 	(*MoveAreaCallback)(struct _FBArea*);
+   void 	(*RemoveAreaCallback)(struct _FBArea*);
    DevUnion 	devPrivate;
 } FBArea, *FBAreaPtr;
 
@@ -23,6 +24,7 @@ typedef struct _FBLink {
 
 typedef void (*FreeBoxCallbackProcPtr)(ScreenPtr, RegionPtr, pointer);
 typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr);
+typedef void (*RemoveAreaCallbackProcPtr)(FBAreaPtr);
 
 typedef struct {
    ScreenPtr	pScreen;
@@ -31,8 +33,9 @@ typedef struct {
    FBLinkPtr 	UsedAreas;
    int		NumUsedAreas;
    CloseScreenProcPtr 		CloseScreen;
-   FreeBoxCallbackProcPtr	FreeBoxesUpdateCallback;
-   DevUnion	devPrivate;
+   int				NumCallbacks;
+   FreeBoxCallbackProcPtr	*FreeBoxesUpdateCallback;
+   DevUnion			*devPrivates;
 } FBManager, *FBManagerPtr;
 
 
@@ -59,19 +62,20 @@ xf86AllocateOffscreenArea (
    ScreenPtr pScreen, 
    int w, int h,
    int granularity,
-   MoveAreaCallbackProcPtr callback,
+   MoveAreaCallbackProcPtr moveCB,
+   RemoveAreaCallbackProcPtr removeCB,
    pointer privData
 );
 
 void xf86FreeOffscreenArea(FBAreaPtr area);
 
-Bool xf86ResizeOffscreenArea(
-   ScreenPtr pScreen, 
-   int w, int h, 
-   FBAreaPtr resize
+Bool 
+xf86ResizeOffscreenArea(
+   FBAreaPtr resize,
+   int w, int h
 );
 
-void
+Bool
 xf86RegisterFreeBoxCallback(
     ScreenPtr pScreen,  
     FreeBoxCallbackProcPtr FreeBoxCallback,

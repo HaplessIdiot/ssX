@@ -4,11 +4,10 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_8plus24.c,v 1.1 1998/10/05 13:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_8plus24.c,v 1.2 1998/10/11 10:20:27 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 
 #include "X.h"

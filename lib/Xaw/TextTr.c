@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.5 1998/10/10 15:25:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.6 1998/10/25 07:11:16 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -75,20 +75,20 @@ char _XawDefaultTextTranslations[] =
 "m<Key>V:"		"previous-page()\n"
 "m<Key>Y:"		"insert-selection(PRIMARY, CUT_BUFFER0)\n"
 "m<Key>Z:"		"scroll-one-line-down()\n"
-":m<Key>d:"		"delete-next-word()\n"
-":m<Key>D:"		"kill-word()\n"
-":m<Key>h:"		"delete-previous-word()\n"
-":m<Key>H:"		"backward-kill-word()\n"
+":m<Key>d:"		"delete-next-word(alnum)\n"
+":m<Key>D:"		"kill-word(alnum)\n"
+":m<Key>h:"		"delete-previous-word(alnum)\n"
+":m<Key>H:"		"backward-kill-word(alnum)\n"
 ":m<Key>\\<:"		"beginning-of-file()\n"
 ":m<Key>\\>:"		"end-of-file()\n"
 ":m<Key>]:"		"forward-paragraph()\n"
 ":m<Key>[:"		"backward-paragraph()\n"
-"~s m<Key>Delete:"	"delete-previous-word()\n"
-"s m<Key>Delete:"	"backward-kill-word()\n"
-"~s m<Key>BackSpace:"	"delete-previous-word()\n"
-"s m<Key>BackSpace:"	"backward-kill-word()\n"
-"c<Key>Left:"		"backward-word(AlphaNumeric)\n"
-"c<Key>Right:"		"forward-word(AlphaNumeric)\n"
+"~s m<Key>Delete:"	"delete-previous-word(alnum)\n"
+"s m<Key>Delete:"	"backward-kill-word(alnum)\n"
+"~s m<Key>BackSpace:"	"delete-previous-word(alnum)\n"
+"s m<Key>BackSpace:"	"backward-kill-word(alnum)\n"
+"c<Key>Left:"		"backward-word(alnum)\n"
+"c<Key>Right:"		"forward-word(alnum)\n"
 "c<Key>Up:"		"backward-paragraph()\n"
 "c<Key>Down:"		"forward-paragraph()\n"
 "<Key>Home:"		"beginning-of-file()\n"

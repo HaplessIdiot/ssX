@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.14 1998/08/14 13:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.15 1998/10/04 09:38:58 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -78,11 +78,13 @@ extern unsigned long serverGeneration;
 #include <X11/Xmd.h>
 #include <X11/X.h>
 
+#ifndef IN_MODULE
 #ifndef NULL
 #ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
 #define NULL            0
+#endif
 #endif
 #endif
 
@@ -155,6 +157,7 @@ typedef struct _xReq *xReqPtr;
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
+#ifndef IN_MODULE
 #ifdef X_NOT_STDC_ENV
 #ifndef abs
 #define abs(a) ((a) > 0 ? (a) : -(a))
@@ -165,6 +168,7 @@ typedef struct _xReq *xReqPtr;
  */  
 #include <stdlib.h>
 #endif /* X_NOT_STDC_ENV */
+#endif /* IN_MODULE */
 #ifndef Fabs
 #define Fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */
 #endif
@@ -180,6 +184,7 @@ typedef struct _xReq *xReqPtr;
  */
 #define lowbit(x) ((x) & (~(x) + 1))
 
+/* XXX Not for modules */
 #include <limits.h>
 #undef MAXSHORT
 #define MAXSHORT SHRT_MAX
