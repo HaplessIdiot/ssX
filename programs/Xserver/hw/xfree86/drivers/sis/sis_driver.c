@@ -333,14 +333,6 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#if defined(XFree86LOADER) || (XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,10,0))
-static const char *i2cSymbols[] = {
-    "xf86I2CBusInit",
-    "xf86CreateI2CBusRec",
-    NULL
-};
-#endif
-
 static const char *int10Symbols[] = {
     "xf86FreeInt10",
     "xf86InitInt10",
@@ -427,7 +419,7 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
         setupDone = TRUE;
         xf86AddDriver(&SIS, module, 0);
-        LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, xaaSymbols,
+        LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
 			  miscfbSymbols, shadowSymbols, ramdacSymbols,
 			  vbeSymbols, int10Symbols,
 #ifdef XF86DRI
