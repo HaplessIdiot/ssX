@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texman.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texman.c,v 1.2 2001/04/10 16:07:54 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -317,7 +317,7 @@ void tdfxTMClose( tdfxContextPtr fxMesa )
 {
    GLcontext *ctx = fxMesa->glCtx;
 
-   if ( ctx->Shared->RefCount == 1 ) {
+   if ( ctx->Shared->RefCount == 1 && fxMesa->driDrawable ) {
       /* RefCount will soon go to zero, free our 3dfx stuff */
       tdfxSharedStatePtr tss = (tdfxSharedStatePtr)ctx->Shared->DriverData;
       int unit;
