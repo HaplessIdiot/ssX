@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -158,7 +158,7 @@ calculate_column(void *data, int size, int column)
     char *str, *ptr;
 
     /* search for newline in data */
-    for (str = (char*)data, ptr = data + size - 1; ptr >= str; ptr--)
+    for (str = (char*)data, ptr = (char*)data + size - 1; ptr >= str; ptr--)
 	if (*ptr == '\n')
 	    break;
 

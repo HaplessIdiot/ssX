@@ -646,8 +646,8 @@ LispParseNumber(LispMac *mac, char *str, int radix)
 
     /* if does not fit in a long */
     if (errno == ERANGE &&
-	(*str == '-' && integer == LONG_MIN) ||
-	(*str != '-' && integer == LONG_MAX)) {
+	((*str == '-' && integer == LONG_MIN) ||
+	 (*str != '-' && integer == LONG_MAX))) {
 	iop = LispMalloc(mac, sizeof(mpi));
 	mpi_init(iop);
 	mpi_setstr(iop, str, radix);
@@ -1103,17 +1103,8 @@ LispReadFeature(LispMac *mac, int with)
     status = LispEvalFeature(mac, feature);
 
     if (with) {
-	if (status == T) {
-	    LispObj *result;
-	    int protect = mac->protect.length;
-
-	    if (mac->protect.length + 1 >= mac->protect.space)
-		LispMoreProtects(mac);
-	    result = LispRead(mac);
-	    mac->protect.objects[mac->protect.length++] = result;
-
-	    return (result);
-	}
+	if (status == T)
+	    return (LispRead(mac));
 
 	/* need to use the field discard because the following expression
 	 * may be #.FORM or #,FORM or any other form that may generate

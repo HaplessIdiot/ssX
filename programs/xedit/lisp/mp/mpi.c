@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.2 2002/01/31 04:33:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.3 2002/02/08 02:59:33 paulo Exp $ */
 
 #include "mp.h"
 
@@ -88,7 +88,6 @@ void
 mpi_seti(mpi *rop, long si)
 {
     unsigned long ui;
-    BNS *digs;
     int sign = si < 0;
     int size;
 
@@ -127,7 +126,6 @@ static void
 _mpi_seti(mpi *rop, long si)
 {
     unsigned long ui;
-    BNS *digs;
     int sign = si < 0;
     int size;
 
@@ -1348,7 +1346,7 @@ mpi_cmp(mpi *op1, mpi *op2)
 	return (op1->sign ? -1 : 1);
 
     if (op1->size == op2->size) {
-	long i, cmp;
+	long i, cmp = 0;
 
 	for (i = op1->size - 1; i >= 0; i--)
 	    if ((cmp = (long)op1->digs[i] - (long)op2->digs[i]) != 0)
@@ -1384,7 +1382,7 @@ int
 mpi_cmpabs(mpi *op1, mpi *op2)
 {
     if (op1->size == op2->size) {
-	long i, cmp;
+	long i, cmp = 0;
 
 	for (i = op1->size - 1; i >= 0; i--)
 	    if ((cmp = (long)op1->digs[i] - (long)op2->digs[i]) != 0)

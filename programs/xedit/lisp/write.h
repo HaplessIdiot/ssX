@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.2 2002/01/31 04:33:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.1 2002/02/08 02:59:30 paulo Exp $ */
 
 #ifndef Lisp_write_h
 #define Lisp_write_h
@@ -80,6 +80,9 @@ int LispFormatCharacter(LispMac*, LispObj*, LispObj*, int, int);
 	/* object must be a float */
 int LispFormatFixedFloat(LispMac*, LispObj*, LispObj*, int,
 			 int, int*, int, int, int);
+	/* object must be a float */
+int LispFormatExponentialFloat(LispMac*, LispObj*, LispObj*,
+			      int, int, int*, int, int, int, int, int);
 	/* object must be a float */
 int LispFormatGeneralFloat(LispMac*, LispObj*, LispObj*, int,
 			   int, int*, int, int, int, int, int);
