@@ -1,6 +1,6 @@
+/* $XFree86$ */
 
 #include <stdio.h>
-
 
 #include "types.h"
 #include "pb.h"
@@ -174,6 +174,7 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
 	 a |= AC_alphasel_modulated;
 	 break;
       default:
+	 break;
       }
    }
 
@@ -209,6 +210,7 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
 	 a |= AC_atmode_noacmp; 
 	 break;
       default:
+	 break;
       }
       a |= MGA_FIELD(AC_atref,ref);
    }
@@ -244,6 +246,7 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
 	 a |= AC_src_src_alpha_sat; 
 	 break;
       default:		/* never happens */
+	 break;
       }
 
       switch (ctx->Color.BlendDstRGB) {
@@ -272,6 +275,7 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
 	    a |= AC_dst_zero;
 	 break;
       default:		/* never happens */
+	 break;
       }
    } else {
       a |= AC_src_one|AC_dst_zero;
@@ -641,7 +645,7 @@ static void mgaDDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
       }
       break;
    default:
-      ; 
+      break;
    }    
 }
 
