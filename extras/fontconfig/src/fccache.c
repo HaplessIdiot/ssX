@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/fontconfig/src/fccache.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/fontconfig/src/fccache.c,v 1.3 2003/10/28 18:01:48 tsi Exp $ */
 
 #include "fcint.h"
 
@@ -888,7 +888,7 @@ FcDirCacheValid (const FcChar8 *dir)
      * If the directory has been modified more recently than
      * the cache file, the cache is not valid
      */
-    if (dir_stat.st_mtime - file_stat.st_mtime > 0)
+    if (dir_stat.st_mtime > file_stat.st_mtime)
 	return FcFalse;
     return FcTrue;
 }
