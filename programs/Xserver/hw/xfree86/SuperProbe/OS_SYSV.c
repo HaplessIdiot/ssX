@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.0 1994/05/14 06:51:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.1 1994/05/21 23:54:41 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -55,7 +55,9 @@
 #include <sys/tss.h>
 #include <sys/sysi86.h>
 #ifdef SVR4
-# include <sys/seg.h>
+# if !defined(sun)
+#  include <sys/seg.h>
+# endif
 #endif
 #include <sys/v86.h>
 #if defined(sun)
