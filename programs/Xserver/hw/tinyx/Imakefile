@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/tinyx/Imakefile,v 1.2 2004/06/23 19:40:15 tsi Exp $
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -66,7 +66,11 @@ TINY_DEFINES = TinyDIXDefines
 IPAQ_DEFINES = -DXIPAQ
 #endif
 
-DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES) -UXFree86LOADER
+#if HasMTRRSupport
+MTRR_DEFINES = -DHAS_MTRR
+#endif
+
+DEFINES = $(IPAQ_DEFINES) $(TINY_DEFINES) $(MTRR_DEFINES) -UXFree86LOADER
 
 SRCS = txaa.c txcmap.c txcolor.c tinyx.c txinfo.c txinput.c txmap.c txnoop.c \
 	txtest.c vga.c txasync.c txmode.c txcurscol.c txshadow.c \

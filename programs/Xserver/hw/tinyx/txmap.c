@@ -19,9 +19,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/txmap.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/txmap.c,v 1.2 2004/08/04 16:33:35 tsi Exp $ */
 /*
- * Copyright (c) 2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2004, 2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -68,12 +68,6 @@
  */
 
 #include "tinyx.h"
-
-#ifdef linux
-#ifdef __i386__
-#define HAS_MTRR
-#endif
-#endif
 
 #include <errno.h>
 #include <unistd.h>
