@@ -32,8 +32,8 @@
            the X Consortium's ``contrib'' distribution)
 
         o  If upgrading from XFree86 version 3.1 you will only need the
-           3.1-3.1.1.diff.gz patch, and optionally the
-           contrib-3.1-3.1.1.diff.gz patch.
+           3.1-3.1.1.diff1.gz and 3.1-3.1.1.diff2.gz patches, and
+           optionally the contrib-3.1-3.1.1.diff.gz patch.
 
         o  The full XFree86 source tree requires about 110MB.  An
            additional 110MB (more for OSs without shared libraries) is
@@ -134,7 +134,8 @@
         directory above your xc directory, and run:
 
 
-                gzip -d < 3.1-3.1.1.diff.gz | patch -p -E
+                gzip -d < 3.1-3.1.1.diff1.gz | patch -p -E
+                gzip -d < 3.1-3.1.1.diff2.gz | patch -p -E
 
 
 
@@ -261,7 +262,6 @@
      1. Add /usr/X11R6/bin to your PATH and /usr/X11R6/man to your
         MANPATH.
 
-
      2. Set up an XF86Config file.  The default locations for this file
         are: /etc/XF86Config, /usr/X11R6/lib/X11/XF86Config.hostname,
         and /usr/X11R6/lib/X11/XF86Config.  There is a sample file
@@ -312,7 +312,7 @@
   (LinkKit.html) file.
 
   $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.7 1995/01/30 03:37:10 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.8 1995/02/04 04:50:40 dawes Exp $
 
 
 

@@ -12,7 +12,7 @@
   If you have any suggestions, comments, fixes or ideas regarding
   X11R6/XFree86 on Interactive Unix, send e-mail to
 
-  michael.rohleder%iktffm.uucp@Germany.EU.net
+  michael.rohleder@stadt-frankfurt.de
 
   Bug Reports should be sent to
 
@@ -54,7 +54,15 @@
         my machines) and the last requires the use of ranlib after
         creating an archive, this is not configured.
 
+      gnu-malloc
+        Due to better memory usage we should use GNU's malloc library on
+        systems where possible.
 
+        Enable #define UseGnuMalloc YES inside xf86site.def or within
+        the Linkkit site.def.
+
+        Set #define MallocLibrary to your needs if it isn't like the
+        default -lgmalloc
 
   3.  Changes to the System Header Files
 
@@ -64,6 +72,7 @@
   include files in the gcc-lib/include directory.
 
   Let us say the gcc-files are in directory
+
   /usr/local/lib/gcc-lib/i[345]86-isc[34].[0-9]/2.6.x
 
   referred to as "gcc-lib"
@@ -118,6 +127,9 @@
   from the sources.
 
 
+
+
+
   3.4.  /usr/include/rpc/types.h
 
   copy this file to gcc-lib/include/rpc/types.h and change the
@@ -130,6 +142,9 @@
 
 
   Note that this is only necessary if you want to build Fresco
+
+
+
   4.  make World
 
   ______________________________________________________________________
@@ -218,10 +233,20 @@
         +  ATI GUP      - mach32   - VLB
 
            with 32MB MainMemory installed I could map the CardMemory at
-           MemBase 0x06400000   100MB. I could work with all clients
-           until I try to activate a Motif 1.1.1 InputField inside a
-           Motif Client like Mosaic-2.4 or xplan. This results in a
-           crash of the XServer.
+           MemBase 0x07c00000. I could work with all clients until I try
+           to activate a Motif 1.1.1 InputField inside a Motif Client
+           like Mosaic-2.4 or xplan. This results in a crash of the
+           XServer.
+
+                      !!! You could workaround this !!!
+
+
+        Expand your .Xdefaults with
+                   *blinkRate:                  0
+                   *cursorPositionVisible:      false
+
+
+
 
 
 
@@ -236,7 +261,6 @@
         #define BuildFresco             YES
 
      in either xf86site.def (just uncomment the appropriate definition.
-
 
      o  Using ...
 
@@ -256,9 +280,6 @@
      As a workaround you could specify local-machinename:0 to the -dis-
      play Argument when starting the Fresco application. On TCP/IP
      transport you got a workable Fresco App.
-
-
-
 
 
 
@@ -306,6 +327,7 @@
 
         +  RightAlt ModeShift
 
+
         +  RightCtl Compose
 
         in your XF86Config - Section "Keyboard"
@@ -328,6 +350,7 @@
                                 <Key>ssharp: string(0xe1)
 
 
+
      The only disadvantage is that you have to use Alt instead of AltGr
      to get the \ Backslash (on a German Keyboard)
 
@@ -342,6 +365,19 @@
         Makefile.
 
 
+     o  ISC Streams Pipes
+
+        The old path to the pipes on ISC's R4 /tmp/.X11-unix has changed
+        to /dev/X/ISCCONN. For compatibility reasons on ISC, the pipes
+        in the new directory will be linked to a file inside the old.
+        This will normaly be a hard link, so it can't go across
+        filesystems. On ISC Version 4.x this is now allowed. But you
+        should use the new S5L on both filesystems.  ISC30 systems
+        should take care that the two directories are on the same FS.
+        Else if you are using a ISC40 compiled binary, the Server abort
+        due to a SIGSYS.
+
+
 
   9.  Acknowledgements
 
@@ -352,43 +388,7 @@
 
 
   $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.4 1995/01/28 16:03:10 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.5 1995/03/04 06:16:01 dawes Exp $
 
 
 
