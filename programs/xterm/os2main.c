@@ -7,7 +7,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.65 2004/04/18 20:49:43 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.66 2004/04/28 00:41:00 dickey Exp $ */
 
 /***********************************************************
 
@@ -2025,7 +2025,7 @@ ptioctl(int fd, int func, void *data)
 
     switch (func) {
     case TCGETA:
-	rc = DosDevIOCtl(fd, XFREE86_PTY, func,
+	rc = DosDevIOCtl(fd, XFREE86_PTY, XTY_TIOCGETA,
 			 NULL, 0, NULL,
 			 (ULONG *) & pt, sizeof(struct pt_termios), &len);
 	if (rc)
