@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.29 2004/02/13 23:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.30 2004/06/05 18:17:03 herrb Exp $ */
 
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
@@ -493,6 +493,7 @@ wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
 
     /* Setup the local input proc. */
     pInfo->read_input = wsconsReadInput;
+    pMse->xisbscale = sizeof(struct wscons_event);
 
     pInfo->flags |= XI86_CONFIGURED;
     return TRUE;
