@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.27 1996/02/22 05:12:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.28tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -64,7 +64,8 @@
  *
  * The driver is intended to support ATI VGA Wonder series of adapters and its
  * OEM counterpart, the VGA1024 series.  It will also work with Mach32's and
- * Mach64's but will not use their accelerated features.
+ * Mach64's but will not use their accelerated features.  This includes
+ * Mach64's based on the 264xT series of integrated controllers.
  *
  * The ATI x8800 chips use special registers for their extended VGA features.
  * These registers are accessible through an index I/O port and a data I/O
@@ -90,7 +91,7 @@
  * (and this driver) sets up an indexing scheme whereby the last 16 extended
  * VGA registers are accessed at indices 0xB0 through 0xBF on all chipsets.
  *
- * Note that Mach64's based on the 88800CT and 88800ET controllers do not
+ * Note that Mach64's based on the 264xT integrated controllers do not
  * implement the ATI extended VGA registers described above.
  *
  * Adapters prior to V5 use 4 crystals.  Adapters V5 and later use a clock
@@ -482,8 +483,8 @@ static unsigned short int
 #define BLOCK_IO        1
 static unsigned short int ATIIOBase;
 static unsigned char ATIIODecoding;
-#define ATIIOPort(PortTag)                                                      \
-        (((ATIIODecoding == SPARSE_IO) ?                                        \
+#define ATIIOPort(PortTag)                                                   \
+        (((ATIIODecoding == SPARSE_IO) ?                                     \
           (((PortTag) & SPARSE_IO_SELECT) | ((PortTag) & IO_BYTE_SELECT)) :  \
           (((PortTag) & BLOCK_IO_SELECT)  | ((PortTag) & IO_BYTE_SELECT))) | \
          ATIIOBase)
@@ -553,15 +554,17 @@ static unsigned short int ChipType = 0, ChipClass = 0, ChipRevision = 0;
 #define ATI_CHIP_68800_6  12    /* Mach32 */
 #define ATI_CHIP_68800LX  13    /* Mach32 */
 #define ATI_CHIP_68800AX  14    /* Mach32 */
-#define ATI_CHIP_88800    15    /* Mach64 */
-#define ATI_CHIP_88800GXC 16    /* Mach64 */
-#define ATI_CHIP_88800GXD 17    /* Mach64 */
-#define ATI_CHIP_88800GXE 18    /* Mach64 */
-#define ATI_CHIP_88800GXF 19    /* Mach64 */
-#define ATI_CHIP_88800GX  20    /* Mach64 */
-#define ATI_CHIP_88800CX  21    /* Mach64 */
-#define ATI_CHIP_88800CT  22    /* Mach64 */
-#define ATI_CHIP_88800ET  23    /* Mach64 */
+#define ATI_CHIP_88800GXC 15    /* Mach64 */
+#define ATI_CHIP_88800GXD 16    /* Mach64 */
+#define ATI_CHIP_88800GXE 17    /* Mach64 */
+#define ATI_CHIP_88800GXF 18    /* Mach64 */
+#define ATI_CHIP_88800GX  19    /* Mach64 */
+#define ATI_CHIP_88800CX  20    /* Mach64 */
+#define ATI_CHIP_264CT    21    /* Mach64 */
+#define ATI_CHIP_264ET    22    /* Mach64 */
+#define ATI_CHIP_264VT    23    /* Mach64 */
+#define ATI_CHIP_264GT    24    /* Mach64 */
+#define ATI_CHIP_88800    25    /* Mach64 */
 static unsigned char ATIChip = ATI_CHIP_NONE;
 static const char *ChipNames[] =
 {
@@ -580,15 +583,17 @@ static const char *ChipNames[] =
         "ATI 68800-6",
         "ATI 68800LX",
         "ATI 68800AX",
-        "ATI 88800",
         "ATI 88800GX-C",
         "ATI 88800GX-D",
         "ATI 88800GX-E",
         "ATI 88800GX-F",
         "ATI 88800GX",
         "ATI 88800CX",
-        "ATI 88800CT",
-        "ATI 88800ET",
+        "ATI 264CT",
+        "ATI 264ET",
+        "ATI 264VT",
+        "ATI 264GT",
+        "ATI unknown Mach64",
 };
 
 /*
@@ -1668,7 +1673,7 @@ ATIMach32ChipID(void)
 /*
  * ATIMach64ChipID --
  *
- * Set variables whose value is dependent upon an 88800's CONFIG_CHIP_ID
+ * Set variables whose value is dependent upon a Mach64's CONFIG_CHIP_ID
  * register.
  */
 static void
@@ -1716,13 +1721,25 @@ ATIMach64ChipID(void)
                 case 0x0053U:
                 case 0x4354U:
                         ChipType = 0x0053U;
-                        ATIChip = ATI_CHIP_88800CT;
+                        ATIChip = ATI_CHIP_264CT;
                         break;
 
                 case 0x0093U:
                 case 0x4554U:
                         ChipType = 0x0093U;
-                        ATIChip = ATI_CHIP_88800ET;
+                        ATIChip = ATI_CHIP_264ET;
+                        break;
+
+                case 0x02B3U:
+                case 0x5654U:
+                        ChipType = 0x02B3U;
+                        ATIChip = ATI_CHIP_264VT;
+                        break;
+
+                case 0x00D3U:
+                case 0x4754U:
+                        ChipType = 0x00D3U;
+                        ATIChip = ATI_CHIP_264GT;
                         break;
 
                 default:
@@ -1732,7 +1749,7 @@ ATIMach64ChipID(void)
 
         /*
          * When selecting clocks through the ATI extended VGA registers,
-         * 88800's use a different clock ordering than 28800 controllers.
+         * Mach64's use a different clock ordering than 28800 controllers.
          */
         ATIClockMap = ATIMachClockMap;
 }
@@ -3498,7 +3515,7 @@ ATIRestore(vgaATIPtr restore)
 
         /* Get (back) to bank 0 */
         ATIAccessBottomBank(&ae, &b2);
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
         {
                 outb(CRTC_GEN_CNTL_IOPort, restore->crtc_gen_cntl0);
                 outb(CRTC_GEN_CNTL_IOPort + 3, restore->crtc_gen_cntl3);
@@ -3689,7 +3706,7 @@ ATIRestore(vgaATIPtr restore)
          */
         vgaHWRestore((vgaHWPtr)restore);
 
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
                 outl(CRTC_OFF_PITCH_IOPort, restore->crtc_off_pitch);
 
         if ((xf86Verbose > 2) && (restore->mode))
@@ -3766,7 +3783,7 @@ ATISave(vgaATIPtr save)
                 }
         }
 
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
         {
                 save->crtc_gen_cntl0 = inb(CRTC_GEN_CNTL_IOPort);
                 save->crtc_gen_cntl3 = inb(CRTC_GEN_CNTL_IOPort + 3);
@@ -3831,7 +3848,7 @@ ATIInit(DisplayModePtr mode)
                 new->std.Sequencer[4] = 0x0AU;  /* instead of 0x0EU */
                 new->std.Attribute[16] = 0x01U; /* instead of 0x41U */
                 new->std.CRTC[23] = 0xE3U;      /* instead of 0xC3U */
-                if (ATIChip >= ATI_CHIP_88800CT)
+                if (ATIChip >= ATI_CHIP_264CT)
                         new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
                 else
                 {
@@ -4085,7 +4102,7 @@ ATIInit(DisplayModePtr mode)
                 }
         }
 
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
         {
                 new->crtc_gen_cntl0 = 0;
 #if 0
@@ -4161,10 +4178,10 @@ ATIInit(DisplayModePtr mode)
                 /*
                  * Modes using the higher clock frequencies need a non-zero
                  * Display Enable Skew.  The following number has been
-                 * empirically determined to be between 1054 and 1342
+                 * empirically determined to be between 1054 and 1171
                  * non-inclusively.
                  */
-#               define Display_Enable_Skew_Threshold 1250
+#               define Display_Enable_Skew_Threshold 1112
 
                 /*
                  * Set a reasonable value for Display Enable Skew.
@@ -4194,7 +4211,7 @@ ATIAdjust(const unsigned int x, const unsigned int y)
          */
         ATIEnterLeave(ENTER);
 
-        if (ATIChip < ATI_CHIP_88800CT)
+        if (ATIChip < ATI_CHIP_264CT)
         {
                 PutReg(CRTX(vgaIOBase), 0x0CU, (Base & 0x00FF00U) >> 8);
                 PutReg(CRTX(vgaIOBase), 0x0DU, (Base &   0x00FFU)     );
@@ -4221,7 +4238,7 @@ ATIAdjust(const unsigned int x, const unsigned int y)
         else
         {
                 /*
-                 * On CT's and ET's, there is only one CRTC which is
+                 * On integrated controllers, there is only one CRTC which is
                  * simultaneously accessible through both VGA and accelerator
                  * I/O ports.  Given VGA's architectural limitations, setting
                  * the CRTC's offset register to more than 256k needs to be
@@ -4287,7 +4304,7 @@ ATIGetMode(DisplayModePtr mode)
         crt12 = GetReg(CRTX(vgaIOBase), 0x12U);
         crt17 = GetReg(CRTX(vgaIOBase), 0x17U);
 
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
                 crtc_gen_cntl0 = inb(CRTC_GEN_CNTL_IOPort);
 
         if (Chip_Has_VGA_Wonder)
@@ -4438,7 +4455,7 @@ ATIGetMode(DisplayModePtr mode)
                 else if (bd & 0x08U)
                         mode->Flags |= V_PCSYNC;
         }
-        if (ATIChip >= ATI_CHIP_88800CT)
+        if (ATIChip >= ATI_CHIP_264CT)
         {
                 if (crtc_gen_cntl0 & CRTC_DBL_SCAN_EN)
                         mode->Flags |= V_DBLSCAN;
