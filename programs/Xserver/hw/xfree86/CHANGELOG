@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 208. Add support for Permedia3 (rev C) chips that use slightly different
+      clock programming techniques (Jay Estabrook).
  207. Fix Finder warnings about XDarwin plist format on Jaguar
       (Torrey T. Lyons).
  206. Fix XDarwin build issues on Jaguar (Sean Fagan).
@@ -14952,4 +14954,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2265 2002/07/16 13:31:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2266 2002/07/17 01:24:49 torrey Exp $
