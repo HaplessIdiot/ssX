@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.10 2002/10/12 16:06:43 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.11 2002/11/26 01:59:34 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -86,8 +86,6 @@ the form:
 .PP
 .RS 4
 .nf
-.\" Some man macros don't handle quotes in .BI, etc very well
-.\" \fBSection "\fP\fISectionName\fP\fB"\fP
 .BI "Section  \*q" SectionName \*q
 .RI "    " SectionEntry
     ...
