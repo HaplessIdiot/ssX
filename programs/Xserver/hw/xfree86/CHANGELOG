@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  49. Work around a problem building the rstart specs doc with a symlinked
+      build tree (David Dawes).
   48. Fix Glint 300SX+Delta support. Add faster 500TX text acceleration
       based on other code (Alan Hourihane).
   47. Remove SPARC-specific byte-swapping code that would not work on older
@@ -13395,4 +13397,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1809 2001/05/28 18:20:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1810 2001/05/29 11:23:36 alanh Exp $
