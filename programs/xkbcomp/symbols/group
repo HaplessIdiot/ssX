@@ -1,6 +1,8 @@
 // $TOG: group /main/3 1997/06/13 06:25:02 kaleb $
 // using the group(switch) map, the right alt key temporarily chooses 
 // the second keyboard group (until it is released).
+//
+// $XFree86$
 partial modifier_keys 
 xkb_symbols "switch" {
     key <RALT>	{ 	

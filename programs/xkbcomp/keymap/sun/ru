@@ -20,6 +20,8 @@
 //other dealings in this Software without prior written authorization
 //from The Open Group.
 //
+// $XFree86$
+//
 xkb_keymap "type4_ru" {
     xkb_keycodes	{ include "sun(type4_euro)"	};
     xkb_types		{ include "default"		};
