@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/ppc_video.c,v 1.1 2002/08/06 13:08:39 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/ppc_video.c,v 1.2 2002/11/09 17:17:34 herrb Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -100,14 +100,9 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	}
 
 #ifdef DEBUG
-	xf86MsgVerb(X_INFO, 3, "xf86ReadBIOS() %lx %lx, %x", 
+	xf86MsgVerb(X_INFO, 3, "xf86ReadBIOS() %lx %lx, %x\n", 
 		    Base, Offset, Len);
 #endif
-
-	if (Base < 0x80000000) {
-		xf86Msg(X_WARNING, "No VGA");
-		return 0;
-	}
 
 
 	lseek(kmem, Base + Offset, 0);
