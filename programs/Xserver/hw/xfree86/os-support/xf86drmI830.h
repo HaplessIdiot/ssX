@@ -26,6 +26,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
+/* $XFree86$ */
+
 /* Author: Jeff Hartmann <jhartmann@valinux.com> 
  */
 

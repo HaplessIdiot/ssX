@@ -1,3 +1,4 @@
+/* $XFree86$ */
 #define I830_SET_FIELD( var, mask, value ) (var &= ~(mask), var |= value)
 
 #define CMD_3D (0x3<<29)
