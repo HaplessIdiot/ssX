@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.1 2002/09/12 04:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.2 2002/12/10 01:27:05 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1775,8 +1775,14 @@ I830InitOffscreenImages(ScreenPtr pScreen)
 void
 I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-   I830PortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+   I830PortPrivPtr pPriv;
    int pixrate;
+
+   if (!I830PTR(pScrn)->adaptor) {
+      return;
+   }
+
+   pPriv = GET_PORT_PRIVATE(pScrn);
 
    if (!pPriv) {
       xf86ErrorF("pPriv isn't set\n");
