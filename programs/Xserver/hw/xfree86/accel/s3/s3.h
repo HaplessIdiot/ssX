@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.6 1994/08/02 04:23:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.7 1994/08/03 13:27:43 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -109,6 +109,8 @@ extern void (*s3ImageFillFunc)();
 extern int s3DisplayWidth;
 extern int s3ScissB;
 extern int s3Bpp;    /* Bytes per pixel */
+extern int s3BppDisplayWidth;
+extern int s3Weight;
 extern short s3alu[];
 extern pointer s3VideoMem;
 extern pointer vgaBase;
@@ -439,10 +441,10 @@ RegionPtr s3CopyArea(
     GC *,
     int,
     int,
-    Pixel,
-    Pixel,
     int,
-    Pixel
+    int,
+    int,
+    int
 #endif
 );
 void s3FindOrdering(

@@ -1,3 +1,10 @@
+XFree86 3.0Db (6 August 1994)
+172. Patches for N.M value triming (Harald Koenig).
+171. ATT20C498 and 864 support for 15/16/24bpp in S3 server (Harald Koenig).
+170. Ti3020 Ramdac support for 15/16/24bpp in S3 server (Robin Cutshaw).
+169. Fix problems building debugging libFS (Christos Zoulas).
+168. Remove XOR'd extended register addressing in S3 server.
+
 XFree86 3.0Da (3 August 1994)
 167. Use XOR'd extended register addresses for S3 server -- avoids clash
      with "COM4" I/O address (Jon Tombs).

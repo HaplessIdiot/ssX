@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.4 1994/07/24 11:48:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.5 1994/08/03 13:27:40 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -86,44 +86,44 @@
 #define S3_928_SERIES(chip)     (((chip&0xf0)==0x90)||S3_928_P(chip)||S3_x64_SERIES(chip)) /* hack for 864/964 looking like 928 */
 #define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip))
 
-/* VESA Approved Register Definitions XOR with 0x3a0 */
+/* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6
 #define	DAC_R_INDEX	0x03c7
 #define	DAC_W_INDEX	0x03c8
 #define	DAC_DATA	0x03c9
 
-#define	DISP_STAT	(0x02e8 ^ 0x3a0)
-#define	H_TOTAL		(0x02e8 ^ 0x3a0)
-#define	H_DISP		(0x06e8 ^ 0x3a0)
-#define	H_SYNC_STRT	(0x0ae8 ^ 0x3a0)
-#define	H_SYNC_WID	(0x0ee8 ^ 0x3a0)
-#define	V_TOTAL		(0x12e8 ^ 0x3a0)
-#define	V_DISP		(0x16e8 ^ 0x3a0)
-#define	V_SYNC_STRT	(0x1ae8 ^ 0x3a0)
-#define	V_SYNC_WID	(0x1ee8 ^ 0x3a0)
-#define	DISP_CNTL	(0x22e8 ^ 0x3a0)
-#define	ADVFUNC_CNTL	(0x4ae8 ^ 0x3a0)
-#define	SUBSYS_STAT	(0x42e8 ^ 0x3a0)
-#define	SUBSYS_CNTL	(0x42e8 ^ 0x3a0)
+#define	DISP_STAT	0x02e8
+#define	H_TOTAL		0x02e8
+#define	H_DISP		0x06e8
+#define	H_SYNC_STRT	0x0ae8
+#define	H_SYNC_WID	0x0ee8
+#define	V_TOTAL		0x12e8
+#define	V_DISP		0x16e8
+#define	V_SYNC_STRT	0x1ae8
+#define	V_SYNC_WID	0x1ee8
+#define	DISP_CNTL	0x22e8
+#define	ADVFUNC_CNTL	0x4ae8
+#define	SUBSYS_STAT	0x42e8
+#define	SUBSYS_CNTL	0x42e8
 #define	ROM_PAGE_SEL	0x46e8
-#define	CUR_Y		(0x82e8 ^ 0x3a0)
-#define	CUR_X		(0x86e8 ^ 0x3a0)
-#define	DESTY_AXSTP	(0x8ae8 ^ 0x3a0)
-#define	DESTX_DIASTP	(0x8ee8 ^ 0x3a0)
-#define	ERR_TERM	(0x92e8 ^ 0x3a0)
-#define	MAJ_AXIS_PCNT	(0x96e8 ^ 0x3a0)
-#define	GP_STAT		(0x9ae8 ^ 0x3a0)
-#define	CMD		(0x9ae8 ^ 0x3a0)
-#define	SHORT_STROKE	(0x9ee8 ^ 0x3a0)
-#define	BKGD_COLOR	(0xa2e8 ^ 0x3a0)
-#define	FRGD_COLOR	(0xa6e8 ^ 0x3a0)
-#define	WRT_MASK	(0xaae8 ^ 0x3a0)
-#define	RD_MASK		(0xaee8 ^ 0x3a0)
-#define	COLOR_CMP	(0xb2e8 ^ 0x3a0)
-#define	BKGD_MIX	(0xb6e8 ^ 0x3a0)
-#define	FRGD_MIX	(0xbae8 ^ 0x3a0)
-#define	MULTIFUNC_CNTL	(0xbee8 ^ 0x3a0)
-#define	PIX_TRANS	(0xe2e8 ^ 0x3a0)
+#define	CUR_Y		0x82e8
+#define	CUR_X		0x86e8
+#define	DESTY_AXSTP	0x8ae8
+#define	DESTX_DIASTP	0x8ee8
+#define	ERR_TERM	0x92e8
+#define	MAJ_AXIS_PCNT	0x96e8
+#define	GP_STAT		0x9ae8
+#define	CMD		0x9ae8
+#define	SHORT_STROKE	0x9ee8
+#define	BKGD_COLOR	0xa2e8
+#define	FRGD_COLOR	0xa6e8
+#define	WRT_MASK	0xaae8
+#define	RD_MASK		0xaee8
+#define	COLOR_CMP	0xb2e8
+#define	BKGD_MIX	0xb6e8
+#define	FRGD_MIX	0xbae8
+#define	MULTIFUNC_CNTL	0xbee8
+#define	PIX_TRANS	0xe2e8
 #define	MIN_AXIS_PCNT	0x0000
 #define	SCISSORS_T	0x1000
 #define	SCISSORS_L	0x2000
@@ -341,5 +341,9 @@ LUTENTRY;
 #ifndef NULL
 #define NULL	0
 #endif
+
+#define RGB16_565         0
+#define RGB16_555         1
+#define RGB32_888         2
 
 #endif /* _REGS3_H */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.10 1994/07/21 13:56:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.11 1994/08/03 13:28:09 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -428,8 +428,22 @@ s3Init(mode)
       mode->HSyncEnd >>= pixMuxShift;
    }
 
+   if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
+      mode->HTotal <<= (s3Bpp>>1);
+      mode->HDisplay <<= (s3Bpp>>1);
+      mode->HSyncStart <<= (s3Bpp>>1);
+      mode->HSyncEnd <<= (s3Bpp>>1);
+   }
+
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
+
+   if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
+      mode->HTotal >>= (s3Bpp>>1);
+      mode->HDisplay >>= (s3Bpp>>1);
+      mode->HSyncStart >>= (s3Bpp>>1);
+      mode->HSyncEnd >>= (s3Bpp>>1);
+   }
 
    if (pixel_multiplexing) {
       /* put back the horizontal timing parameters */
@@ -598,6 +612,7 @@ s3Init(mode)
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
       if (pixel_multiplexing) { /* x64:pixmux */
+	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
 	 tmp = xf86getdaccomm();
 	 xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2,
 						  pixel multiplexing on */
@@ -620,19 +635,44 @@ s3Init(mode)
 	    /* don't know */
 	 }
       }
-      else {
-	 tmp = xf86getdaccomm();
-	 xf86setdaccomm( (tmp&0x0f) );  /* set mode 0, pixel multiplexing off */
-
+      else { /* !pixel_multiplexing */
 	 outb(vgaCRIndex, 0x33);
 	 tmp = inb(vgaCRReg);
 	 outb(vgaCRReg, tmp &  ~0x08 );
 
+	 tmp = xf86getdaccomm() & 0x0f;
+
 	 if (S3_x64_SERIES(s3ChipId)) {
+	    int invert_vclk = 0;
+	    int delay_blank = 0;
 	    outb(vgaCRIndex, 0x67);
-	    outb(vgaCRReg, 0x00 );  /* set Mode 0: 8-bit color, 1 VCLK/pixel */
+
+	    switch (s3InfoRec.bitsPerPixel) {
+	    case 8: /* set Mode  0:  8-bit color, 1 VCLK/pixel */
+	       outb(vgaCRReg, 0x00 | invert_vclk); 
+	       xf86setdaccomm(tmp | 0x00);  /* set mode 0 */
+	       break;
+	    case 16: 
+	       if (s3Weight == RGB16_555) {
+		  outb(vgaCRReg, 0x30 | invert_vclk); /* set Mode 9: 15-bit color, 1 VCLK/pixel */
+		  xf86setdaccomm(tmp | 0x10);  /* set mode 1 */
+	       }
+	       else {
+		  outb(vgaCRReg, 0x50 | invert_vclk); /* set Mode 10: 16-bit color, 1 VCLK/pixel */
+		  xf86setdaccomm(tmp | 0x30);  /* set mode 3 */
+	       }
+	       delay_blank = 2;
+	       break;
+	    case 32: /* set Mode 11: 24/32-bit color, 2 VCLK/pixel */
+	       outb(vgaCRReg, 0x70 | invert_vclk);  
+	       xf86setdaccomm(tmp | 0x50);  /* set mode 5 */
+	       delay_blank = 2;
+	       break;
+	    default:
+	       ErrorF("default switch 2\n");
+	    }
 	    outb(vgaCRIndex, 0x6d);
-	    outb(vgaCRReg, 0 );     /* don't delay -BLANK pulse  */
+	    outb(vgaCRReg, delay_blank);
 	 }
 	 else {
 	    /* don't know */
@@ -672,7 +712,11 @@ s3Init(mode)
          /* set s3 reg55 to external serial by or'ing 0x08              */
          outb(vgaCRIndex, 0x55);
          tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp | 0x08);
+	 if (s3InfoRec.bitsPerPixel == 32)  /* 24bpp truecolor */
+	    tmp |= 0x48;
+	 else
+	    tmp |= 0x08;
+         outb(vgaCRReg, tmp);
 
 	 if (OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)) {
 	    /* Set VCLK = DCLCK/2 */
@@ -693,7 +737,15 @@ s3Init(mode)
          /*
           * set output clocking to 4:1 multiplexing
           */
-         s3OutBtReg(BT_COMMAND_REG_1, 0x00, 0x40);
+	 if (s3InfoRec.bitsPerPixel == 32)             /* 24bpp */
+	    tmp = 0x10;
+	 else if (s3InfoRec.bitsPerPixel == 16)        /* 5-6-5 */
+	    tmp = 0x38;
+	 else if (s3InfoRec.bitsPerPixel == 15)        /* 5-5-5 */
+	    tmp = 0x30;
+	 else
+	    tmp = 0x40;                                /* 8bpp */
+         s3OutBtReg(BT_COMMAND_REG_1, 0x00, tmp);
 
 	 /* SCLK enable,pclk1,pixport	                           */
 	 if (mode->Flags & V_INTERLACE)
@@ -837,7 +889,15 @@ s3Init(mode)
 	     * set output clocking to VCLK/4, RCLK/8 like the fixed Bt485.
 	     * RCLK/8 is used because of the 8:1 pixel-multiplexing below.
 	     */
-	    s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
+	    if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V1_R2);
+	    } else if (s3InfoRec.bitsPerPixel == 16) {      /* 5-6-5 */
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
+	    } else if (s3InfoRec.bitsPerPixel == 15) {      /* 5-5-5 */
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V2_R4);
+	    } else {
+	       s3OutTiIndReg(TI_OUTPUT_CLOCK_SELECT, 0x00, TI_OCLK_S_V4_R8);
+	    }
 	 }
 
          /*
@@ -847,10 +907,24 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
-         /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
-         /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
-         s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_PSEUDO_COLOR);
-         s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_PIX64);
+	 if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
+            s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_888);
+            s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D24P64);
+            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
+	 } else if (s3InfoRec.bitsPerPixel == 16) {      /* 5-6-5 */
+            s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_565);
+            s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D16P64);
+            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
+	 } else if (s3InfoRec.bitsPerPixel == 15) {      /* 5-5-5 */
+            s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_DIRECT_555);
+            s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_DC_D15P64);
+            s3OutTiIndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x00);
+	 } else {
+            /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
+            /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
+            s3OutTiIndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_PSEUDO_COLOR);
+            s3OutTiIndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_PC_D8P64);
+	 }
 
          /* change to 8-bit DAC and re-route the data path and clocking */
          s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, TI_GIC_ALL_BITS);
@@ -980,7 +1054,7 @@ s3Init(mode)
    }
 
    outb(vgaCRIndex, 0x43);
-   outb(vgaCRReg, 0x10); /* enable XOR addresses */
+   outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
 
    outb(vgaCRIndex, 0x44);
    outb(vgaCRReg, 0x00);
@@ -1082,10 +1156,24 @@ s3Init(mode)
          mode->HSyncEnd >>= pixMuxShift;
       }
 
+      if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
+	 mode->HTotal <<= (s3Bpp>>1);
+	 mode->HDisplay <<= (s3Bpp>>1);
+	 mode->HSyncStart <<= (s3Bpp>>1);
+	 mode->HSyncEnd <<= (s3Bpp>>1);
+      }
+      
       i = ((mode->HTotal & 0x800) >> 11) |
 	  ((mode->HDisplay & 0x800) >> 10) |
 	  ((mode->HSyncStart & 0x800) >> 9) |
 	  ((mode->HSyncStart & 0x800) >> 7);
+
+      if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
+	 mode->HTotal >>= (s3Bpp>>1);
+	 mode->HDisplay >>= (s3Bpp>>1);
+	 mode->HSyncStart >>= (s3Bpp>>1);
+	 mode->HSyncEnd >>= (s3Bpp>>1);
+      }
 
       if (pixel_multiplexing) {
          /* put back the horizontal timing parameters */
@@ -1160,12 +1248,13 @@ s3Init(mode)
 
       if (S3_x64_SERIES(s3ChipId)) {
 	 outb(vgaCRIndex, 0x60);
-	 outb(vgaCRReg, 20);
+	 outb(vgaCRReg, 255);
 	 
+ErrorF("0x61:  %d %d\n",s3DisplayWidth,s3BppDisplayWidth);
 	 if (s3InfoRec.videoRam < 2048) 
-	    tmp = s3DisplayWidth / 4;
+	    tmp = s3BppDisplayWidth / 4;
 	 else
-	    tmp = s3DisplayWidth / 8;
+	    tmp = s3BppDisplayWidth / 8;
 	 
  	 outb(vgaCRIndex, 0x61);
 	 outb(vgaCRReg, (tmp >> 8) | 0x80);

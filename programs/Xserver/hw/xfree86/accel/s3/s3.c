@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.14 1994/08/01 12:12:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.15 1994/08/03 13:27:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -54,11 +54,14 @@ extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
 extern int s3MaxTi3020Clock, s3MaxTi3020Clock175, s3MaxTi3020ClockFast;
 extern int s3MaxATT498Clock, s3MaxATT498MuxClock;
 char s3Mbanks;
+int s3Weight = -1;
 
 extern s3VideoChipPtr s3Drivers[];
 
 int vgaInterlaceType = VGA_DIVIDE_VERT;
 void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+
+extern int defaultColorVisualClass;
 
 ScrnInfoRec s3InfoRec =
 {
@@ -195,6 +198,8 @@ Bool s3UsingPixMux = FALSE;
 Bool s3Bt485PixMux = FALSE;
 Bool s3ClockDouble = FALSE;
 Bool s3ATT498PixMux = FALSE;
+unsigned s3BytesPerPixel;
+unsigned long s3PMask;
 
 
 /*
@@ -523,6 +528,55 @@ s3Probe()
     * but, the OPTION flag setting/checking goes.
     */
 
+   switch (xf86bpp) {
+   case 8:
+      break;
+   case 15:
+      s3InfoRec.depth = 15;
+      xf86bpp = 16;
+      s3Weight = RGB16_555;
+      xf86weight.red = xf86weight.green = xf86weight.blue = 5;
+      s3InfoRec.bitsPerPixel = 16;
+#if 0
+      s3InfoRec.defaultVisual = TrueColor;
+      defaultColorVisualClass = TrueColor;
+#endif
+      break;
+   case 16:
+      if (xf86weight.red==5 && xf86weight.green==5 && xf86weight.blue==5) {
+	 s3Weight = RGB16_555;
+	 s3InfoRec.depth = 15;
+      }
+      else if (xf86weight.red==5 && xf86weight.green==6 && xf86weight.blue==5) {
+	 s3Weight = RGB16_565;
+	 s3InfoRec.depth = 16;
+      }
+      else {
+	 ErrorF("Invalid color weighting (only 555 and 565 are valid)\n");
+	 return(FALSE);
+      }
+      s3InfoRec.bitsPerPixel = 16;
+#if 0
+      s3InfoRec.defaultVisual = TrueColor;
+      defaultColorVisualClass = TrueColor;
+#endif
+      break;
+   case 24:
+   case 32:
+      xf86bpp = 32;
+      s3InfoRec.depth = 24;
+      s3InfoRec.bitsPerPixel = 32; /* Use sparse 24 bpp (RGBX) */
+      s3InfoRec.defaultVisual = TrueColor;
+      defaultColorVisualClass = TrueColor;
+      /* s3MaxClock = S3_MAX_32BPP_CLOCK; */
+      xf86weight.red =  xf86weight.green = xf86weight.blue = 8;
+      break;
+   default:
+      ErrorF("Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
+      return(FALSE);
+   }
+   s3Bpp = s3InfoRec.bitsPerPixel / 8;
+
 #ifndef USE_XCONFIG_RAMDAC
    /*
     * Handle RAMDAC Option flags first.
@@ -799,7 +853,7 @@ s3Probe()
    if (DAC_IS_ATT498 && 
        (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
-      s3ATT498PixMux = TRUE;
+      if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
 #ifdef USE_XCONFIG_RAMDAC
    /* Set dot clock limit based on RAMDAC type/speed and pixmux usage */
@@ -981,7 +1035,7 @@ s3Probe()
 	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
 	 return (FALSE);
       }
-      if ((pMode->HDisplay * (1 + pMode->VDisplay)) >
+      if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
 	  s3InfoRec.videoRam * 1024) {
 	 ErrorF("%s: Too little memory for mode %s\n", s3InfoRec.name,
 		pMode->name);
@@ -1147,6 +1201,21 @@ s3Probe()
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
          XCONFIG_GIVEN, s3InfoRec.name);
 
+   if (xf86Verbose) {
+      if (s3InfoRec.bitsPerPixel == 8)
+	 ErrorF("%s %s: Using %d bits per RGB value\n",
+		XCONFIG_PROBED, s3InfoRec.name,
+		s3DAC8Bit ?  8 : 6);
+      else if (s3InfoRec.bitsPerPixel == 16)
+	 ErrorF("%s %s: Using 16 bpp.  Color weight: %1d%1d%1d\n",
+		XCONFIG_GIVEN, s3InfoRec.name, xf86weight.red,
+		xf86weight.green, xf86weight.blue);
+      else if (s3InfoRec.bitsPerPixel == 32)
+	 ErrorF("%s %s: Using sparse 32 bpp.  Color weight: %1d%1d%1d\n",
+		XCONFIG_GIVEN, s3InfoRec.name, xf86weight.red,
+		xf86weight.green, xf86weight.blue);
+   }
+
    if (S3_911_SERIES(s3ChipId)) {
       maxDisplayWidth = 1024;
       maxDisplayHeight = 1024 - 1; /* Cursor takes exactly 1 line for 911 */
@@ -1210,6 +1279,7 @@ s3Probe()
 	 return (FALSE);
       }
    }
+   s3BppDisplayWidth = s3Bpp * s3DisplayWidth;
       
    /*
     * Work out where to locate S3's HW cursor storage.  It must be on a
