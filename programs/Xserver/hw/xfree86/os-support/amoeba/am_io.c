@@ -1,4 +1,5 @@
 /* $XConsortium: am_io.c,v 1.1 94/03/28 21:27:35 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
