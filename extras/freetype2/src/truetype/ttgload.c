@@ -16,23 +16,15 @@
 /***************************************************************************/
 
 
-#include <freetype/internal/ftdebug.h>
-#include <freetype/internal/ftcalc.h>
-#include <freetype/internal/ftstream.h>
-#include <freetype/internal/sfnt.h>
-#include <freetype/tttags.h>
-#include <freetype/ftoutln.h>
-
-
-#ifdef FT_FLAT_COMPILE
+#include <ft2build.h>
+#include FT_INTERNAL_DEBUG_H
+#include FT_INTERNAL_CALC_H
+#include FT_INTERNAL_STREAM_H
+#include FT_INTERNAL_SFNT_H
+#include FT_TRUETYPE_TAGS_H
+#include FT_OUTLINE_H
 
 #include "ttgload.h"
-
-#else
-
-#include <truetype/ttgload.h>
-
-#endif
 
 
   /*************************************************************************/
@@ -502,7 +494,8 @@
       /* composite instructions, if we find some.               */
       /* we will process them later...                          */
       /*                                                        */
-      loader->ins_pos = FILE_Pos() + stream->cursor - stream->limit;
+      loader->ins_pos = (FT_ULong)( FILE_Pos() +
+                                    stream->cursor - stream->limit );
     }
 #endif
 
@@ -977,6 +970,10 @@
               }
             }
           }
+
+	  error = FT_GlyphLoader_Check_Points( gloader, num_new_points, 0 );
+	  if ( error )
+	    goto Fail;
 
           translate_array( num_new_points, loader->zone.cur, x, y );
           cur_to_org( num_new_points, &loader->zone );
