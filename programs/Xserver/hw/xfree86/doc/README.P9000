@@ -1,42 +1,115 @@
-	  XFree86 P9000 Server Initial Source Release Notes
-			      1994.05.27
+
+	       XFree86 P9000 Server Beta Release Notes
+		       Last Modified 1994.07.08
 		     Erik Nygren (nygren@mit.edu)
 
-The code is stable and various incarnations of it have been tested by
-many people.  However, it should still be considered as Beta code.
-The main problem is that text restoration does not yet work.  No
-hardware acceleration is in place except for a hardware cursor.
-Use with interlaced monitors is untested.
+Recent changes since last patch:
 
-One unresolved issue is the maximum clock speed.  It is currently set
-to 135 MHz with a warning printed over 110 MHz.  Diamond claims that
-this is the max in their docs, but examination has shown some Viper's
-to contain 110 MHz bt485's.  Without a 135 MHz, it is not possible for
-people to with large monitors to run at 1280x1024.
+	* 16 and 32 bpp TrueColor support (Erik Nygren)
+	* Color restoration hopefully fixed (Erik Nygren)
+	* Changes to how "Modes" line in Xconfig is processed
+	* Removed banking support   :-(
+
+The code is stable and various incarnations of it have been tested by
+many people.  However, it should still be considered as Beta code.  No
+hardware acceleration is in place except for a hardware cursor.  Use
+with interlaced monitors is untested.
+
+Support for 16 and 24 bit truecolor is now supported.  Note that 24
+bit color is really 32 bits per pixel.  Use the -bpp option when
+starting the server.  Examples:
+	startx -- -bpp 32
+	startx -- -bpp 16
+	startx -- -bpp 16 -weight 555
+	startx -- -bpp 16 -weight 565
+
+Note that many programs do not yet work properly with these modes.
+Don't tell me.  Tell the authors unless they've already fixed it.
+It's their fault...  :-)
+
+Example problems:
+	xv 3.00    - Works fine in 32 bpp and in 16 bpp with 24 bit images.
+		     Has problems with colors in 8 bit images in 8 bpp mode.
+	Mosaic 2.1 - Has problems with colormap in both 16 bpp and 32 bpp
+	mpeg_play  - Doesn't work at all in 16 bpp mode.  Works fine
+  		     24 bpp mode when compiled with -DRS6000 and when
+		     run with "-dither color"
+	xpaint 2.0 - Works great in both modes but has a bug in the
+                     color requestor for the selection tool.
+
+There is not yet support for screen blanking in either 16 or 32 bpp modes/
+Please send me a patch to do this if you have a good idea...
+
+Text restoration should now be fixed.  Color restoration should
+also be fixed.
+
+The modes line in the Xconfig file is now handled differently.
+The virtual line is now ignored entirely.  Each mode on the mode
+line is looked at and the first usable mode is selected (ie the first
+one which works with available memory, etc).  Any other modes which
+are valid and have the same dimensions are also used.  And other modes
+are ignored.
 
 Only the Diamond Viper VLB is supported.  Adding support for other
 vendors should be straightforward.  The ease of modifying the code for
 PCI systems is unknown because I haven't yet looked into it (and I
-don't have a board or machine to test it with).  The Viper PCI may work
-already but I'm not sure.  I've never heard of anyone with an EISA
-board so they're in the same state...  Diamond has actually
-been fairly open and helpful.  No NDA's were signed by anyone who
-wrote code.
+don't have a board or machine to test it with).  I've never heard of
+anyone with an EISA board so I don't know if they'll work...  Diamond has
+actually been fairly open and helpful.  No NDA's were signed by anyone
+who wrote code and Diamond claims that none of the information
+they provided is proprietary.
+
+One unresolved issue is the maximum clock speed.  It is currently set
+to 135 MHz with a warning printed over 110 MHz.  Diamond claims that
+this is the max in their docs, but examination has shown some Viper's
+to contain 110 MHz bt485's.  Without 135 MHz, it is not possible for
+people to with large monitors to run at 1280x1024.  Diamond claims
+that all Vipers have 135MHz bt485's or compatables.  If you have
+something slower, call their tech support and they will send you
+a RMA to get the board replaced.
 
 During the course of the next few months, people will be working on
-acceleration, text restoration, etc.  Please send any patches
-to me (nygren@mit.edu).
+acceleration, etc.  Please send any patches to me (nygren@mit.edu).
+
+Here's a portion of a sample Xconfig file:
+
+--------------------------------------------------------------------
+
+ACCEL
+  Viewport      0 0
+  Modes         "1024x768" "1024x768i" "800x600" "640x480"
+  VideoRAM      2048
+  ChipSet       "p9000"
+  Clocks        81 50 31 87 115 25
+  MemBase       0x80000000
+#  Option        "sw_cursor" "sync_on_green"
+
+# DO NOT USE THESE VALUES!!!  THEY ARE PROVIDED AS AN EXAMPLE ONLY.
+# DO NOT BLINDLY USE VIDEO MODES WITHOUT UNDERSTANDING WHAT YOU ARE
+# DOING.  IT IS POSSIBLE TO DAMAGE THE MONITOR.  THE XFree86 CORE TEAM
+# DISCLAIMS ALL LIABILITY FOR MONITOR DAMAGE.
+
+ModeDB
+ "640x480"     31      640  680  704  832     480  489  492  520
+ "800x600"     50      800  864  976 1040     600  637  643  666
+ "1024x768i"   81     1024 1068 1204 1324     768  776  782  807 Interlace
+ "1024x768"    81     1024 1068 1204 1324     768  776  782  807 
+
 
 --------------------------------------------------------------------
 
 Major contributors to P9000 code:
         Erik Nygren (nygren@mit.edu)
         Harry Langenbacher (harry@brain.jpl.nasa.gov)
+	Chris Mason (mason@mail.csh.rit.edu)
 
-Thanks to Chris, Andy, Dave, all the XFree86 core team people, and
+Thanks to Andy, David, Dave, Michael, all the XFree86 core team people, and
 everyone else!
+
+Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu)
+whose banking patch could unfortunately not be included.
 
 --------------------------------------------------------------------
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.0 1994/05/29 02:06:21 dawes Exp $

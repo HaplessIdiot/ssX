@@ -37,22 +37,16 @@
 3) Known Problems
 
      a) The accelerated line routines don't match lines written
-        by the mi routines. This is noticable when switching between
+        by the mi/cfb routines. This is noticable when switching between
         virtual consoles while running routines that draw and erase 
-        lines. This problem is worse with X11R6.  
+        lines. 
 
-     b) After converting over to the X11R6 the font caching stopped
-        working during the xbench text tests. This is probably a 
-        GC validation problem but I haven't had time to investigate 
-        it yet, font caching is working in other situations, and 
-        the failure is benign except for the performance impact 
-        (probably halves the overall Xstones rating).
+     b) Dashed zero-width lines are not yet accelerated, the cfb.banked 
+        routines used for these (and for all zero-width lines with the
+        AGX-014) occasionally write random bits. 
 
      c) The AGX-016 adds support for additional virtual width's,
-        the current server may not fully support these (to get
-        a virtual width approaching 1600 would require compound
-        adjusts, the documents do not indicate this is possible
-        so it will have to wait until I can test it).	
+        the current server does not support these.
 
      d) The video memory probe often doesn't work.
 
@@ -72,7 +66,7 @@
         setup code and then finding a lot of time to debug and test
         the numerous permutations.
 
-     b) The current server is still heavily dependent cfb.banked
+     b) The current server is still heavily dependent on cfb.banked
         routines. Cleaning this up is necessary not only for better
         performance, but to support other than 8bpp. 
 
@@ -140,7 +134,8 @@
            "AGX-014", "AGX-010, "XGA-2", "XGA-1". Some vendors place
            stickers over the chip, in general, if it's a VLB board
            it's probably an AGX-015 and is it's an ISA board it may
-           be an AGX-014.
+           be an AGX-014. The Hercules Graphite Power Pro and Spider 
+           Black Widow plus use the AGX-016 chipset.
 
            Note: Only an AGX-015 has had much testing, the 
            AGX-014 and AGX-016 are very similiar and have a high
@@ -164,14 +159,32 @@
            "no_wait_state"     is the POST setting.
            "fifo_conserv"    - Disable Memory I/O Buffer, AGX-015 and AGX-016. 
                                MS-Windows driver default. Required by some
-                               faster VLB systems (>33Mhz?). The default
+                               VLB systems with aggresive timing. The default
                                for this server is to enable the buffer.
+           "fifo_aggressive: - Enable the AGX-016's extra-large buffer.
+                               May result in garbage being left about the
+                               screen, disabled by default.
+
+      Memory Timing:
+
+           POST defaults should be ok.
+
+           "vram_delay_latch"  
+           "vram delay_ras"
+           "vram_extend_ras"
+           "slow_dram"       - Set all of the above vram options.
+           "med_dram"        - Set vram latch delay, clear others.
+           "fast_dram"       - All of the vram options are cleared.  
+                               Should be specified if directly specifing
+                               vram options to clear POST settings. 
+
       Debugging:
 
            These shouldn't need to be messed with:
      
            "crtc_delay"      - Sets XGA mode CRTC delay. Default and AGX
                                recommended value is VGA CRTC delay.
+           "engine_delay"    - AGX-015 only? adds additional VLB wait state.
            "vram_128"        - Sets VRAM shift frequency, vram_128 is for
            "vram_256"          128Kx8 VRAM. Default is to leave this bit
                                unchanged from POST setting.
@@ -183,7 +196,6 @@
                                enabled.
            "vlb_a"           - VLB transaction type, default is to leave
            "vlb_b"             this bit unchanged from POST value.
-                               Some AGX docs indicate these are no longer used.
 
       Virtual resolution:
 
@@ -193,17 +205,20 @@
                AGX-014 : width must be a power of 2 (e.g. 512 and 1024)
                AGX-015 : width must be a power of 2, or 256 plus
                          a power of 2 (e.g. 512, 768, 1024, 1280).
-               AGX-016 : adds adjusts of 128 and 288 to those of the -015.
+               AGX-016 : adds adjusts of 128 and 288 to those of the -015,
+                         but those are not yet supported, and initial attempts
+                         indicate they may only be for 640 and 800 (docs are
+                         vague, but only mention there use for 640 and 800).
 
            When panning I ocassionally get streaks if the virtual 
            resolution >> physical resolution, moving the mouse a 
            little makes it disappear. The Hercules manual indicates 
            this also happens with the MS-Windows drivers.
 
-           The server requires at least a 32KB scratchpad, 1MB AGX-016
-           users should limit max virtual resolution to 1152x881. Future
+           The server requires at least a 32KB scratchpad. Future
            versions of the server may require a minimum of 64KB for the
-           scratchpad to support some acceleration features.
+           scratchpad to support some acceleration features. Additional
+           memory is useful for font caching and a larger scratchpad.
 
 
        Clocks:
@@ -320,4 +335,4 @@
            
           
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.2 1994/06/22 05:42:24 dawes Exp $
