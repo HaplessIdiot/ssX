@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.29 2000/07/02 19:23:34 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.30 2000/08/25 13:42:19 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -72,11 +72,19 @@ NormalLintTarget($(PROFSRC))
 #endif
 #endif
 
-    MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o
-   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o $(ASM_OBJS)
-   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o $(ASM_OBJS)
-   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o $(ASM_OBJS)
-   MESADONES = mesa/src/DONE mesa/src/X86/DONE
+#ifdef i386Architecture
+ MESAARCHOBJS = mesa/src/X86/?*.o
+MESAARCHUOBJS = mesa/src/X86/unshared/?*.o $(ASM_OBJS)
+MESAARCHDOBJS = mesa/src/X86/debugger/?*.o $(ASM_OBJS)
+MESAARCHPOBJS = mesa/src/X86/profiled/?*.o $(ASM_OBJS)
+MESAARCHDONES = mesa/src/X86/DONE
+#endif
+
+    MESAOBJS = mesa/src/?*.o $(MESAARCHOBJS)
+   MESAUOBJS = mesa/src/unshared/?*.o $(MESAARCHUOBJS)
+   MESADOBJS = mesa/src/debugger/?*.o $(MESAARCHDOBJS)
+   MESAPOBJS = mesa/src/profiled/?*.o $(MESAARCHPOBJS)
+   MESADONES = mesa/src/DONE $(MESAARCHDONES)
 
  DRIMESAOBJS = mesa/dri/?*.o
 DRIMESAUOBJS = mesa/dri/unshared/?*.o

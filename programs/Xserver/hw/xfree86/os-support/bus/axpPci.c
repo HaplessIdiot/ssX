@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.5 1998/09/27 04:43:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.8 2000/08/04 16:13:40 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -61,6 +61,7 @@ CARD32 axpPciCfgRead(PCITAG tag, int off);
 void axpPciCfgWrite(PCITAG, int off, CARD32 val);
 void axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
+#if 0
 pciBusInfo_t axpPci0 = {
 /* configMech  */	  PCI_CFG_MECH_OTHER,
 /* numDevices  */	  32,
@@ -77,12 +78,32 @@ pciBusInfo_t axpPci0 = {
 		          },
 /* pciBusPriv  */	  NULL
 };
+#else
+pciBusInfo_t axpPci[MAX_PCI_BUSES];
+#endif
 
 void  
 axpPciInit()
 {
+#if 0
   pciNumBuses    = 1;
   pciBusInfo[0]  = &axpPci0;
+#else
+  int i;
+
+  pciNumBuses    = MAX_PCI_BUSES;
+  memset(&axpPci, 0, sizeof(axpPci));
+  for (i = 0; i < MAX_PCI_BUSES; ++i) {
+	  axpPci[i].configMech = PCI_CFG_MECH_OTHER;
+	  axpPci[i].numDevices = 32;
+	  axpPci[i].funcs.pciReadLong = axpPciCfgRead;
+	  axpPci[i].funcs.pciWriteLong = axpPciCfgWrite;
+	  axpPci[i].funcs.pciSetBitsLong = axpPciCfgSetBits;
+	  axpPci[i].funcs.pciAddrHostToBus = pciAddrNOOP;
+	  axpPci[i].funcs.pciAddrBusToHost = pciAddrNOOP;
+	  pciBusInfo[i] = axpPci + i;
+  }
+#endif
   pciFindFirstFP = pciGenFindFirst;
   pciFindNextFP  = pciGenFindNext;
 }

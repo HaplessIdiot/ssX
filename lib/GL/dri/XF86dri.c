@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.7 2000/06/20 05:08:37 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.8 2000/08/13 10:19:56 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -511,7 +511,7 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
 
     *hFrameBuffer = rep.hFrameBufferLow;
 #ifdef LONG64
-    *hFrameBuffer = ((drmHandle)rep.hFrameBufferHigh) << 32;
+    *hFrameBuffer |= ((drmHandle)rep.hFrameBufferHigh) << 32;
 #endif
 
     *fbOrigin = rep.framebufferOrigin;

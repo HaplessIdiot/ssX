@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.66 2000/07/12 21:14:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.67 2000/08/10 17:40:36 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -145,7 +145,6 @@ typedef struct dirent DIRENTRY;
 
 /* For xf86getpagesize() */
 #if defined(linux)
-#include <asm/page.h>
 #define HAS_SC_PAGESIZE
 #define HAS_GETPAGESIZE
 #elif defined(CSRG_BASED)

@@ -26,7 +26,7 @@
  * 
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.8 2000/06/17 00:03:26 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.9 2000/06/20 05:08:48 dawes Exp $
  * 
  */
 
@@ -187,7 +187,8 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 #define DRM_LOCK_HELD  0x80000000 /* Hardware lock is held                 */
 #define DRM_LOCK_CONT  0x40000000 /* Hardware lock is contended            */
 
-#if __GNUC__ >= 2 && defined(__i386)
+#if __GNUC__ >= 2
+# if defined(__i386)
 				/* Reflect changes here to drmP.h */
 #define DRM_CAS(lock,old,new,__ret)                                    \
 	do {                                                           \
@@ -201,9 +202,9 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 			: "2" (old),                                   \
 			  "r" (new));                                  \
 	} while (0)
-#endif
 
-#ifdef __sparc__
+#elif defined(__sparc__)
+
 #define DRM_CAS(lock,old,new,__ret)				\
 do {	register unsigned int __old __asm("o0");		\
 	register unsigned int __new __asm("o1");		\
@@ -223,6 +224,39 @@ do {	register unsigned int __old __asm("o0");		\
 		: "memory");					\
 	__ret = (__new != __old);				\
 } while(0)
+
+#elif defined(__ia64__)
+
+#if 0
+/* this currently generates bad code (missing stop bits)... */
+#include <ia64intrin.h>
+
+#define DRM_CAS(lock,old,new,__ret)					      \
+	do {								      \
+		__ret = (__sync_val_compare_and_swap(&__drm_dummy_lock(lock), \
+						     (old), (new))	      \
+			 != (old));					      \
+	} while (0)
+
+#else
+#define DRM_CAS(lock,old,new,__ret)					  \
+	do {								  \
+		unsigned int __result, __old = (old);			  \
+		__asm__ __volatile__(					  \
+			"mf\n"						  \
+			"mov ar.ccv=%2\n"				  \
+			";;\n"						  \
+			"cmpxchg4.acq %0=%1,%3,ar.ccv"			  \
+			: "=r" (__result), "=m" (__drm_dummy_lock(lock))  \
+			: "r" (__old), "r" (new)			  \
+			: "memory");					  \
+		__ret = (__result) != (__old);				  \
+	} while (0)
+
+#endif
+#endif /* architecture */
+#endif /* __GNUC__ >= 2 */
+
 #endif
 
 #ifndef DRM_CAS

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.64 2000/07/27 21:20:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.65 2000/08/11 17:27:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -364,20 +364,63 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 
 
 #elif defined(linux) && defined(__ia64__) 
-#define inline __inline__
  
-#include <stdlib.h>
-#include <asm/types.h>
-#include <asm/system.h>
+#include <inttypes.h>
+
 #include <sys/io.h>
-#include <asm/unaligned.h>
-  
-#define ldq_u(p)        __uldq(p)
-#define ldl_u(p)        __uldl(p)
-#define ldw_u(p)        __uldw(p) 
-#define stq_u(v,p)      __ustq(v,p)
-#define stl_u(v,p)      __ustl(v,p)
-#define stw_u(v,p)      __ustw(v,p)
+
+struct __una_u64 { uint64_t x __attribute__((packed)); };
+struct __una_u32 { uint32_t x __attribute__((packed)); };
+struct __una_u16 { uint16_t x __attribute__((packed)); };
+
+extern __inline__ unsigned long
+__uldq (const unsigned long * r11)
+{
+	const struct __una_u64 *ptr = (const struct __una_u64 *) r11;
+	return ptr->x;
+}
+
+extern __inline__ unsigned long
+__uldl (const unsigned int * r11)
+{
+	const struct __una_u32 *ptr = (const struct __una_u32 *) r11;
+	return ptr->x;
+}
+
+extern __inline__ unsigned long
+__uldw (const unsigned short * r11)
+{
+	const struct __una_u16 *ptr = (const struct __una_u16 *) r11;
+	return ptr->x;
+}
+
+extern __inline__ void
+__ustq (unsigned long r5, unsigned long * r11)
+{
+	struct __una_u64 *ptr = (struct __una_u64 *) r11;
+	ptr->x = r5;
+}
+
+extern __inline__ void
+__ustl (unsigned long r5, unsigned int * r11)
+{
+	struct __una_u32 *ptr = (struct __una_u32 *) r11;
+	ptr->x = r5;
+}
+
+extern __inline__ void
+__ustw (unsigned long r5, unsigned short * r11)
+{
+	struct __una_u16 *ptr = (struct __una_u16 *) r11;
+	ptr->x = r5;
+}
+
+#define ldq_u(p)	__uldq(p)
+#define ldl_u(p)	__uldl(p)
+#define ldw_u(p)	__uldw(p) 
+#define stq_u(v,p)	__ustq(v,p)
+#define stl_u(v,p)	__ustl(v,p)
+#define stw_u(v,p)	__ustw(v,p)
   
 #define mem_barrier()        __asm__ __volatile__ ("mf" ::: "memory")
 #define write_mem_barrier()  __asm__ __volatile__ ("mf" ::: "memory")
