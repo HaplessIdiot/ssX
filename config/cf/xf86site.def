@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.58 1995/12/26 06:02:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.59 1995/12/26 08:34:46 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -145,62 +145,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.58 1995/12/26 06:02:47 dawes Exp $
  * pcvt only.
  *
 #define XFree86ConsoleDefines	-DSYSCONS_SUPPORT -DPCVT_SUPPORT
- */
-
-/*
- * To build with LBX, uncomment the BuildLBX line below.  Note, if you
- * are doing this after already having built non-LBX Xservers,
- * you should do the following:
- *
- *   cd programs/Xserver
- *   make clean
- *   make Makefile
- *   make Makefiles
- *   make includes
- *   make depend
- *   make
- *
- * To build the lbxproxy, do:
- *
- *   cd workInProgress
- *   make Makefile
- *   make SUBDIRS=lbx Makefiles
- *   cd lbx
- *   make includes
- *   make depend
- *   make
- *
- * For information about using LBX, refer to the README in workInProgress/lbx/.
- *
-#define BuildLBX YES
- */
-
-/*
- * To build the required bits to make LBX selectable via the LinkKit
- * uncomment this.  Note:  BuildLBX should *not* be set when doing this.
- *
- */
-#define BuildLBXCompatible	YES
-
-/*
- * To build only the LBX proxy server using a cut-down source tree
- * designed specifically for this purpose, uncomment the following.
- *
-#define BuildLBXProxyOnly	YES
- */
-
-/*
- * If BuildLBXProxyOnly is set and you want a dynamically linked lbxproxy,
- * uncomment this (the default is statically linked).
- *
-#define DynamicLBXProxyOnly	YES
- */
-
-/*
- * Build xterm with Internationalisation support by default.
- * To disable this, uncomment the following.
- *
-#define XtermWithI18N	NO 
  */
 
 /*

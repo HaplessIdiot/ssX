@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf /main/15 1995/12/17 08:02:41 kaleb $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.76 1996/01/03 02:12:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.77 1996/01/05 13:06:50 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -290,13 +290,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.76 1996/01/03 02:12:02 dawes Exp $
 #endif
 
 /*
- * Build xterm with Internationalisation support by default.
- */
-#ifndef XtermWithI18N
-#define XtermWithI18N	YES
-#endif
-
-/*
  * By default, build all of the fonts.
  */
 #ifndef Build75DpiFonts
@@ -576,20 +569,6 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #if HasGcc2 && defined(i386Architecture)
 #ifndef DefaultGcc2i386Opt
 #define DefaultGcc2i386Opt -O2 -fno-strength-reduce
-#endif
-#endif
-
-#ifndef BuildLBXCompatible
-#define BuildLBXCompatible NO
-#endif
-
-#ifndef BuildLBX
-#define BuildLBX NO
-#endif
-
-#if BuildLBXCompatible
-#if !BuildLBX
-#define LbxDefines -DLBX_COMPAT
 #endif
 #endif
 

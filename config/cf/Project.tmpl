@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/3 1995/12/18 17:35:53 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.20 1995/11/02 00:26:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.21 1996/01/05 13:06:31 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -44,16 +44,6 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.20 1995/11/02 00:26:37 dawes Exp $
 #ifndef BuildServersOnly
 #define BuildServersOnly	NO
 #endif
-#ifndef BuildLBXProxyOnly
-#define BuildLBXProxyOnly	NO
-#endif
-#ifndef DynamicLBXProxyOnly
-#define DynamicLBXProxyOnly	NO
-#endif
-#if BuildLBXProxyOnly && !DynamicLBXProxyOnly
-#undef HasSharedLibraries
-#define HasSharedLibraries	NO
-#endif
 #ifndef XServerThreaded
 #define XServerThreaded		NO	/* turn on threads in merged server */
 #endif
@@ -61,8 +51,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.20 1995/11/02 00:26:37 dawes Exp $
 #define BuildFontServer		YES
 #endif
 #ifndef BuildFonts
-<<<<<<< Project.tmpl
-#define BuildFonts		BuildServer
+#define BuildFonts		(BuildServer | BuildFontServer)
 #endif
 #ifndef Build75DpiFonts
 #define Build75DpiFonts		YES
@@ -81,7 +70,6 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.20 1995/11/02 00:26:37 dawes Exp $
 #endif
 #ifndef UseKoi8RForCyrillic
 #define UseKoi8RForCyrillic	NO
-#define BuildFonts		(BuildServer | BuildFontServer)
 #endif
 #ifndef BuildPhigs
 #define BuildPhigs		NO
@@ -642,7 +630,6 @@ UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
 #define ProfileLibXext		NO	/* profiled Xext library */
 #endif
       XEXTLIBSRC = $(LIBSRC)/Xext
-   LBXXEXTLIBSRC = $(TOP)/workInProgress/lbx/lib/Xext
 #if BuildExtraExtensionLibrary
     XEXEXTLIBSRC = $(LIBSRC)/XExExt
 #endif
@@ -651,10 +638,8 @@ UnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC))
 #define SharedXextRev 6.1
 #endif
 SharedLibReferences(XEXT,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
-SharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else
 UnsharedLibReferences(XEXT,Xext,$(XEXTLIBSRC))
-UnsharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC))
 #endif
 
 #if BuildExtraExtensionLibrary
