@@ -140,6 +140,86 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # endif
 #endif
 
+/* IA-64 */
+
+#ifdef ia64Architecture
+# ifndef XF86Server
+#  define XF86Server		YES
+# endif
+/* 1bpp module */
+# ifndef XF1Bpp
+#  define XF1Bpp		YES
+# endif
+/* 4bpp module */
+# ifndef XF4Bpp
+#  define XF4Bpp		YES
+# endif
+/* 8/32bpp overlay module */
+# ifndef XF8_32Bpp
+#  define XF8_32Bpp		YES
+# endif
+/* 8/16bpp dual fb module */
+# ifndef XF8_16Bpp
+#  define XF8_16Bpp		YES
+# endif
+/* 24/32bpp conversion module */
+# ifndef XF24_32Bpp
+#  define XF24_32Bpp		YES
+# endif
+/* shadow fb module */
+# ifndef XFShadowFB
+#  define XFShadowFB		YES
+# endif
+/* vgahw module */
+# ifndef XF86VgaHw
+#  define XF86VgaHw		YES
+# endif
+/* fbdevhw module */
+# ifndef XF86FBDevHw
+#  define XF86FBDevHw		YES
+# endif
+/* XAA module */
+# ifndef XF86XAA
+#  define XF86XAA		YES
+# endif
+/* ramdac module */
+# ifndef XF86Ramdac
+#  define XF86Ramdac		YES
+# endif
+/* I2C module */
+# ifndef XF86I2C
+#  define XF86I2C		YES
+# endif
+/* DDC module */
+# ifndef XF86DDC
+#  define XF86DDC		YES
+# endif
+/* RAC (Resource Access Control) module */
+# ifndef XF86RAC
+#  define XF86RAC		YES
+# endif
+
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10		NO
+# endif
+
+/*
+ * XXX Should change this to allow such drivers to be built without agpgart
+ * support (when it is useful to do so).
+ */
+# if HasAgpGart
+#  define AgpGartDrivers		i810
+# else
+#  define AgpGartDrivers		/**/
+# endif
+
+/* Pure PCI drivers should go first */
+# ifndef XF86CardDrivers
+#  define XF86CardDrivers	mga vga
+# endif
+#endif
+
 /* Sparc drivers */
 
 #if defined(SparcArchitecture) && !defined(LynxOSArchitecture)

@@ -119,11 +119,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 				LinuxAdditionalIncludes LinuxGnuSourceDefines \
 				LinuxLocaleDefines
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
+#ifndef ia64Architecture
 #define HasPosixThreads		YES
 #define ThreadedX		YES
 #define HasThreadSafeAPI	YES
 #define ThreadsLibraries	-lpthread
 #define SystemMTDefines		-D_REENTRANT
+#endif /* ia64Architecture */
 #ifndef HasLibCrypt
 #define HasLibCrypt		YES
 #endif
@@ -316,6 +318,14 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LdCmd			/usr/alpha-linuxecoff/bin/ld -m alpha
 #define AsmDefines		-DUSE_GAS -U__ELF__
 #endif /* AlphaArchitecture */
+#ifdef ia64Architecture
+#define CcCmd                 gcc
+#define CplusplusCmd          g++ 
+#define AsCmd                 as
+#define LdCmd                 ld
+#define AsmDefines            -DUSE_GAS -U__ELF__
+#define HasSharedLibraries    NO
+#endif /* ia64Architecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linuxaout
 #define CplusplusCmd		g++ -b i486-linuxaout
@@ -340,6 +350,14 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		c++ -b alpha-linux
 #endif /* AlphaArchitecture */
+#ifdef ia64Architecture
+#define CcCmd                 gcc
+#define CplusplusCmd          g++ 
+#define AsCmd                 as
+#define LdCmd                 ld
+#define AsmDefines            -D__ELF__
+#define HasSharedLibraries    NO
+#endif /* ia64Architecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linux
 #define AsCmd			/usr/i486-linux/bin/as
@@ -409,6 +427,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* AlphaArchitecture */
+
+#ifdef ia64Architecture
+#define OptimizedCDebugFlags  -O2
+#define LinuxMachineDefines   -D__ia64__
+#define ServerOSDefines       XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines    -DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
+#endif /* ia64Architecture */
 
 #ifdef Mc68020Architecture
 #define OptimizedCDebugFlags	-O2
