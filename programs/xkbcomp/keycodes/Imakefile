@@ -1,10 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/7 1996/01/30 14:25:39 kaleb $
 #define IHaveSubdirs
 
-     DATAFILES = ibm sgi sun xfree86 xfree98 sony
-       SUBDIRS = digital
+     DATAFILES = ibm sun xfree86 xfree98 sony
+       SUBDIRS = digital sgi
 
 all::
 
+MakeXkbDir($(LIBDIR)/xkb,keycodes)
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keycodes)
 DependTarget()
