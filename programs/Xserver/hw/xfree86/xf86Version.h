@@ -1,6 +1,6 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.236 1997/01/27 06:57:29 dawes Exp $ */
 
-#define XF86_VERSION " 3.2Ab"
+#define XF86_VERSION " 3.2Aa "
 
 /* The finer points in versions... */
 #define XF86_VERSION_MAJOR	3
