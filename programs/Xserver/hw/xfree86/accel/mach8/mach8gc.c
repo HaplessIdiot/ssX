@@ -1,4 +1,5 @@
 /* $XConsortium: mach8gc.c,v 1.2 94/04/17 20:30:57 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -380,11 +381,6 @@ cfbValidateGC(pGC, changes, pDrawable)
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
     int		oneRect;
-
-#ifdef PIXPRIV
-    if (pDrawable->type == DRAWABLE_PIXMAP)
-	mach8CacheFreeSlot(pDrawable);
-#endif
 
     new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
 		 pGC->lastWinOrg.y != pDrawable->y;

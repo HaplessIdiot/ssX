@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.1 94/03/28 21:02:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.3 1994/09/07 15:48:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.4 1994/09/08 14:25:35 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -45,18 +45,35 @@ static CacheFont8Ptr xf86HeadFont = NULL;
 static CachePool xf86FontPool = NULL;
 static int xf86MaxWidth;
 static int xf86MaxHeight;
-static void (*xf86FontOpStippleFunc)(int, int, int, int, unsigned char *, int,
-				     Pixel);
+static void (*xf86FontOpStippleFunc)(
+#if NeedFunctionPrototypes
+int, int, int, int, unsigned char *, int, Pixel
+#endif
+);
 
 /*
  * Init the font cache.
  * The Cache Pool pointer is stored together with  various other information
  */
-void xf86InitFontCache( FontCache, MaxWidth, MaxHeight,
-			FontOpStippleFunc )
-CachePool FontCache;
-int MaxWidth, MaxHeight;
-void (*FontOpStippleFunc)(int, int, int, int, unsigned char *, int, Pixel);
+
+void 
+#if NeedFunctionPrototypes
+xf86InitFontCache(
+    CachePool FontCache,
+    int MaxWidth, 
+    int MaxHeight,
+    void (*FontOpStippleFunc)(
+#if NeedNestedPrototypes
+	int, int, int, int, unsigned char *, int, Pixel
+#endif
+    )
+)
+#else
+xf86InitFontCache( FontCache, MaxWidth, MaxHeight, FontOpStippleFunc )
+    CachePool FontCache;
+    int MaxWidth, MaxHeight;
+    void (*FontOpStippleFunc)();
+#endif
 
 {
     xf86FontPool = FontCache;

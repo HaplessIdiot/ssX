@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.2 1994/06/26 13:11:47 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.3 1994/07/24 12:00:07 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -61,6 +61,10 @@ from the X Consortium.
 #ifndef RTLD_NOW
 #define RTLD_NOW 1
 #endif
+#endif
+
+#ifdef CSRG_BASED
+#include <sys/param.h>
 #endif
 
 extern	int	PingServer();

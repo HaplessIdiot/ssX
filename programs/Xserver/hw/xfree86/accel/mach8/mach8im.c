@@ -1,5 +1,5 @@
 /* $XConsortium: mach8im.c,v 1.1 94/03/28 21:11:41 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.1 1994/09/07 16:19:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.2 1994/09/11 00:50:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -68,6 +68,21 @@ mach8ImageInit()
 #ifdef ASM_IMAGE
 
 void
+#if NeedFunctionPrototypes
+mach8ImageFill(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
@@ -80,7 +95,8 @@ mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     if (alu == MIX_DST)
 	return;
@@ -95,6 +111,19 @@ mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 #else /* ASM_IMAGE */
 
 void
+#if NeedFunctionPrototypes
+mach8ImageWrite(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach8ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
@@ -105,7 +134,8 @@ mach8ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     unsigned short *p;
     int i,j;
@@ -145,16 +175,29 @@ mach8ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+mach8ImageRead(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 mach8ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     int i, j;
     unsigned short *sp;
@@ -197,19 +240,35 @@ mach8ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+mach8ImageFill(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     int srcxsave, srcx, srcy, dstw, srcw, srch;
     int wtemp, count, i, j;
@@ -281,20 +340,39 @@ mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+mach8ImageStipple(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pw, 
+    int			ph,
+    int			pox,
+    int			poy,
+    int			pwidth,
+    Pixel		fgPixel,
+    Pixel		bgPixel,
+    short		alu,
+    unsigned long	planemask,
+    int			opaque)
+#else
 mach8ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		  fgPixel, bgPixel, alu, planemask, opaque)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pw, ph, pox, poy;
     int			pwidth;
-    int			fgPixel;
-    int			bgPixel;
+    Pixel		fgPixel;
+    Pixel		bgPixel;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
     int			opaque;
+#endif
 {
     int			srcx, srch, dstw;
     unsigned short	*ptmp;
@@ -408,6 +486,16 @@ mach8ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 #endif /* ASM_IMAGE */
 
 void
+#if NeedFunctionPrototypes
+mach8FontOpStipple(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    unsigned char	*psrc,
+    int			pwidth,
+    Pixel		id)
+#else
 mach8FontOpStipple(x, y, w, h, psrc, pwidth, id )
     int			x;
     int			y;
@@ -416,10 +504,9 @@ mach8FontOpStipple(x, y, w, h, psrc, pwidth, id )
     unsigned char	*psrc;
     int			pwidth;
     Pixel		id;
+#endif
 {
 
-    (mach8ImageStippleFunc)(x, y, w, h, psrc, pwidth, w, h, x, y,
+    (mach8ImageStippleFunc)(x, y, w, h, (char *)psrc, pwidth, w, h, x, y,
 		      ~0, 0, mach8alu[GXcopy], 1 << id, 1 );
 }
-
-

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.5 1994/09/07 15:53:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.6 1994/10/23 12:59:31 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -185,12 +185,17 @@ extern int errno;
 #ifdef __BSD__
 # undef __BSD__
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined (__bsdi__)
-# define __BSD__
-#endif
 
 #if defined(__386BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 # undef __386BSD__
+#endif
+
+/*
+ * Use __BSD__ instead of CSRG_BASED to avoid excessive warnings
+ * from makedepend (because makedepend doesn't have __FreeBSD__ etc defined).
+ */
+#if defined(__386BSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__bsdi__)
+#define __BSD__
 #endif
 
 #ifdef __BSD__
@@ -282,7 +287,8 @@ extern int errno;
 #   define NULL 0
 # endif
 
-#endif /* __386BSD__ */
+#undef __BSD__
+#endif /* __BSD__ */
 
 /**************************************************************************/
 /* Mach and OSF/1                                                         */

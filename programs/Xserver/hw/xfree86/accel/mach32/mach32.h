@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.h,v 1.1 94/03/28 21:06:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.5 1994/09/11 00:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.6 1994/11/19 13:18:13 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -82,9 +82,49 @@ extern short mach32alu[];
 
 extern Bool checkCursorColor;
 
-extern void (*mach32ImageReadFunc)();
-extern void (*mach32ImageWriteFunc)();
-extern void (*mach32ImageFillFunc)();
+extern void (*mach32ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    char *,
+    int,
+    int,
+    int,
+    short,
+    unsigned long
+#endif
+);
+extern void (*mach32ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    char *,
+    int,
+    int,
+    int,
+    unsigned long
+#endif
+);
+extern void (*mach32ImageFillFunc)(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    char *,
+    int,
+    int,
+    int,
+    int,
+    int,
+    short,
+    unsigned long
+#endif
+);
 
 /* Function Prototypes */
 
@@ -328,7 +368,7 @@ void mach32ImageStipple(
     int y,
     int w,
     int h,
-    unsigned char *psrc,
+    char *psrc,
     int pwidth,
     int pw,
     int ph,
@@ -337,7 +377,7 @@ void mach32ImageStipple(
     Pixel fgPixel,
     Pixel bgPixel,
     short alu,
-    Pixel planemask,
+    unsigned long planemask,
     int   opaque
 #endif
 );
@@ -347,7 +387,7 @@ void mach32ImageOpStipple(
     int y,
     int w,
     int h,
-    unsigned char *psrc,
+    char *psrc,
     int pwidth,
     int pw,
     int ph,
@@ -356,7 +396,7 @@ void mach32ImageOpStipple(
     Pixel fgPixel,
     Pixel bgPixel,
     short alu,
-    Pixel planemask
+    unsigned long planemask
 #endif
 );
 void mach32FontOpStipple(

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.1 1994/05/08 05:25:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.2 1994/06/09 10:51:20 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -67,7 +67,7 @@ SOFTWARE.
 #include "X.h"
 #include "Xproto.h"
 #include <X11/Xtrans.h>
-#ifndef X_NO_SYS_PARAM
+#ifndef MINIX
 #include <sys/param.h>
 #endif
 #include <errno.h>

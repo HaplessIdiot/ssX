@@ -237,7 +237,8 @@ int mach8NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      mach8PolyGlyphBlt(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
+      mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
+			charinfo, FONTGLYPHS(pGC->font));
 
    }
 
@@ -371,7 +372,8 @@ int mach8NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      mach8PolyGlyphBlt(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
+      mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
+			charinfo, FONTGLYPHS(pGC->font));
 
    }
 

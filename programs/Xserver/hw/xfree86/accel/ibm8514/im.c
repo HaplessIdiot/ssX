@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514im.c,v 1.1 94/03/28 21:04:41 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514im.c,v 3.1 1994/09/07 16:19:10 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -31,8 +31,6 @@
 #include "ibm8514.h"
 
 #define ASM_IMAGE
-
-extern void ibm8514RealImageFill();
 
 #define	reorder(a)	( \
 	(a & 0x80) >> 7 | \
@@ -67,6 +65,21 @@ ibm8514ImageInit()
 #ifdef ASM_IMAGE
 
 void
+#if NeedFunctionPrototypes
+ibm8514ImageFill(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 ibm8514ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
@@ -79,7 +92,8 @@ ibm8514ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     if (alu == MIX_DST)
 	return;
@@ -94,17 +108,31 @@ ibm8514ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 #else /* ASM_IMAGE */
 
 void
+#if NeedFunctionPrototypes
+ibm8514ImageWrite(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    short		alu,
+    unsigned long	planemask)
+#else
 ibm8514ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     unsigned short *p;
     int i,j;
@@ -149,16 +177,29 @@ ibm8514ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+ibm8514ImageRead(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			px,
+    int			py,
+    unsigned long	planemask)
+#else
 ibm8514ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     int i,j;
     unsigned short *sp;
@@ -201,19 +242,35 @@ ibm8514ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+ibm8514ImageFill(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pwidth,
+    int			pw,
+    int			ph,
+    int			pox,
+    int			poy,
+    short		alu,
+    unsigned long	planemask)
+#else
 ibm8514ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pwidth;
     int			pw;
     int			ph;
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
+#endif
 {
     int srcxsave, srcx, srcy, dstw, srcw, srch;
     int wtemp, count, i, j;
@@ -288,20 +345,39 @@ ibm8514ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 void
+#if NeedFunctionPrototypes
+ibm8514ImageStipple(
+    int			x,
+    int			y,
+    int			w,
+    int			h,
+    char		*psrc,
+    int			pw, 
+    int			ph, 
+    int			pox, 
+    int			poy,
+    int			pwidth,
+    Pixel		fgPixel,
+    Pixel		bgPixel,
+    short		alu,
+    unsigned long	planemask,
+    int			opaque)
+#else
 ibm8514ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 			fgPixel, bgPixel, alu, planemask, opaque)
     int			x;
     int			y;
     int			w;
     int			h;
-    unsigned char	*psrc;
+    char		*psrc;
     int			pw, ph, pox, poy;
     int			pwidth;
-    int			fgPixel;
-    int			bgPixel;
+    Pixel		fgPixel;
+    Pixel		bgPixel;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
     int			opaque;
+#endif
 {
     int			srcx, srch, dstw;
     unsigned short	*ptmp;
