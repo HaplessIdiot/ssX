@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ifparser.c,v 1.7 94/01/18 21:30:50 rws Exp $
+ * $XConsortium: ifparser.c,v 1.8 95/06/03 00:01:41 gildea Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -160,6 +160,8 @@ parse_value (g, cp, valp)
       case 'd':
 	if (strncmp (cp, "defined", 7) == 0 && !isalnum(cp[7])) {
 	    int paren = 0;
+	    int len;
+
 	    cp += 7;
 	    SKIPSPACE (cp);
 	    if (*cp == '(') {
@@ -167,10 +169,11 @@ parse_value (g, cp, valp)
 		cp++;
 	    }
 	    DO (cp = parse_variable (g, cp, &var));
+	    len = cp - var;
 	    SKIPSPACE (cp);
 	    if (paren && *cp != ')')
 		return CALLFUNC(g, handle_error) (g, cp, ")");
-	    *valp = (*(g->funcs.eval_defined)) (g, var, cp - var);
+	    *valp = (*(g->funcs.eval_defined)) (g, var, len);
 	    return cp + paren;		/* skip the right paren */
 	}
 	/* fall out */

@@ -1,5 +1,5 @@
-/* $XConsortium: imakemdep.h,v 1.82 95/01/12 16:27:01 kaleb Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.9 1995/03/04 09:33:14 dawes Exp $ */
+/* $XConsortium: imakemdep.h,v 1.83 95/04/07 19:47:46 kaleb Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.10 1995/03/11 14:03:17 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -676,15 +676,6 @@ struct symtab	predefs[] = {
 	{"_SEQUENT_", "1"},
 	{"__STDC__", "1"},
 #endif
-#ifdef __bsdi__
-	{"__bsdi__", "1"},
-#endif
-#ifdef __FreeBSD__
-	{"__FreeBSD__", "1"},
-#endif
-#ifdef __NetBSD__
-	{"__NetBSD__", "1"},
-#endif
 #ifdef nec_ews_svr2
 	{"nec_ews_svr2", "1"},
 #endif
@@ -708,6 +699,21 @@ struct symtab	predefs[] = {
 #endif
 #ifdef PC_UX
 	{"PC_UX", "1"},
+#endif
+#ifdef sgi
+	{"sgi", "1"},
+#endif
+#ifdef __sgi
+	{"__sgi", "1"},
+#endif
+#ifdef __FreeBSD__
+	{"__FreeBSD__", "1"},
+#endif
+#ifdef __NetBSD__
+	{"__NetBSD__", "1"},
+#endif
+#ifdef __bsdi__
+	{"__bsdi__", "1"},
 #endif
 #ifdef __EMX__
 	{"__EMX__", "1"},
