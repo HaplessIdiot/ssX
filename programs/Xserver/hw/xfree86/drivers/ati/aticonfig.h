@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.h,v 1.2 2001/01/06 20:58:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.h,v 1.3 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,7 +29,6 @@
 
 #include "xf86str.h"
 
-extern void          ATIProcessOptions   FunctionPrototype((ScrnInfoPtr,
-                                                            ATIPtr));
+extern void ATIProcessOptions FunctionPrototype((ScrnInfoPtr, ATIPtr));
 
 #endif /* ___ATICONFIG_H___ */
