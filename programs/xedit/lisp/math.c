@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.4 2002/02/10 02:50:07 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -37,8 +37,11 @@
  */
 static LispObj zero, one, two;
 
+LispObj *Ocomplex;
+
 LispObj *Oshort_float, *Osingle_float, *Odouble_float, *Olong_float;
-LispAtom *Adefault_float_format;
+
+Atom_id Sdefault_float_format;
 
 /*
  * Implementation
@@ -49,36 +52,27 @@ void
 LispMathInit(LispMac *mac)
 {
     LispObj *object, *result;
-    int length = mac->protect.length;
 
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-
-    Oshort_float = SYMBOL(LispDoGetAtom(mac, "SHORT-FLOAT", 1, 1));
-    Osingle_float = SYMBOL(LispDoGetAtom(mac, "SINGLE-FLOAT", 1, 1));
-    Odouble_float = SYMBOL(LispDoGetAtom(mac, "DOUBLE-FLOAT", 1, 1));
-    Olong_float = SYMBOL(LispDoGetAtom(mac, "LONG-FLOAT", 1, 1));
-    /* protect from GC */
-    Oshort_float->prot = LispTrue_t;
-    Osingle_float->prot = LispTrue_t;
-    Odouble_float->prot = LispTrue_t;
-    Olong_float->prot = LispTrue_t;
+    Ocomplex		= STATIC_ATOM(Scomplex);
+    Oshort_float	= STATIC_ATOM("SHORT-FLOAT");
+    Osingle_float	= STATIC_ATOM("SINGLE-FLOAT");
+    Odouble_float	= STATIC_ATOM("DOUBLE-FLOAT");
+    Olong_float		= STATIC_ATOM("LONG-FLOAT");
 
     zero.type = one.type = two.type = FI;
     zero.data.integer = 0;
     one.data.integer = 1;
     two.data.integer = 2;
 
-    object = SYMBOL(LispDoGetAtom(mac, "*DEFAULT-FLOAT-FORMAT*", 1, 1));
-    mac->protect.objects[mac->protect.length++] = object;
+    object		= STATIC_ATOM("*DEFAULT-FLOAT-FORMAT*");
     LispProclaimSpecial(mac, object, Odouble_float, NIL);
-    Adefault_float_format = object->data.atom;
+    LispExportSymbol(mac, object);
+    Sdefault_float_format = ATOMID(object);
 
-    object = SYMBOL(LispDoGetAtom(mac, "PI", 1, 1));
-    mac->protect.objects[length] = object;
+    object		= STATIC_ATOM("PI");
     result = math_pi(mac);
     LispProclaimSpecial(mac, object, result, NIL);
-    mac->protect.length = length;
+    LispExportSymbol(mac, object);
 }
 
 LispObj *
@@ -606,7 +600,7 @@ Lisp_Decf(LispMac *mac, LispBuiltin *builtin)
 	GCProtect();
 	if (mac->protect.length + 1 >= mac->protect.space)
 	    LispMoreProtects(mac);
-	setf = CONS(SYMBOL(mac->setf_atom), CONS(place, CONS(number, NIL)));
+	setf = CONS(Osetf, CONS(place, CONS(number, NIL)));
 	mac->protect.objects[mac->protect.length++] = setf;
 	GCUProtect();
 	(void)EVAL(setf);
@@ -849,7 +843,7 @@ Lisp_Incf(LispMac *mac, LispBuiltin *builtin)
 	GCProtect();
 	if (mac->protect.length + 1 >= mac->protect.space)
 	    LispMoreProtects(mac);
-	setf = CONS(SYMBOL(mac->setf_atom), CONS(place, CONS(number, NIL)));
+	setf = CONS(Osetf, CONS(place, CONS(number, NIL)));
 	mac->protect.objects[mac->protect.length++] = setf;
 	GCUProtect();
 	(void)EVAL(setf);

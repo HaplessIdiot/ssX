@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.5 2001/10/20 00:19:36 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.6 2002/01/30 21:01:00 paulo Exp $
 ;;
 (provide "fun")
 
@@ -166,20 +166,20 @@
 
 (defsetf rest (list) (value)	`(progn (rplacd ,list ,value) ,value))
 
-(defun xedit::nth-store (index list value)
+(defun lisp::nth-store (index list value)
     (rplaca (nthcdr index list) value) value)
-(defsetf nth xedit::nth-store)
+(defsetf nth lisp::nth-store)
 
 (defsetf aref (array &rest indices) (value)
-    `(xedit::vector-store ,array ',indices ,value))
+    `(lisp::vector-store ,array ',indices ,value))
 
 (defsetf get (symbol key &optional default) (value)
-    `(xedit::put ,symbol ,key ,value))
+    `(lisp::put ,symbol ,key ,value))
 
-(defsetf char xedit::char-store)
-(defsetf schar xedit::char-store)
-(defsetf elt xedit::elt-store)
-(defsetf svref xedit::elt-store)
+(defsetf char lisp::char-store)
+(defsetf schar lisp::char-store)
+(defsetf elt lisp::elt-store)
+(defsetf svref lisp::elt-store)
 
 (defsetf subseq (sequence start &optional end) (value)
     `(progn (replace ,sequence ,value :start1 ,start :end1 ,end) ,value))

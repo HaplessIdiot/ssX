@@ -1,0 +1,460 @@
+/*
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the XFree86 Project shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from the
+ * XFree86 Project.
+ *
+ * Author: Paulo César Pereira de Andrade
+ */
+
+/* $XFree86$ */
+
+#include "package.h"
+#include "private.h"
+
+/*
+ * Prototypes
+ */
+static LispObj *LispReallyDoSymbols(LispMac*, LispBuiltin*, int, int);
+static LispObj *LispDoSymbols(LispMac*, LispBuiltin*, int, int);
+static LispObj *LispFindPackageOrDie(LispMac*, LispBuiltin*, LispObj*);
+
+/*
+ * Implementation
+ */
+LispObj *
+LispFindPackageFromString(LispMac *mac, char *string)
+{
+    LispObj *list, *package, *nick;
+
+    for (list = PACK; CONS_P(list); list = CDR(list)) {
+	package = CAR(list);
+	if (strcmp(THESTR(package->data.package.name), string) == 0)
+	    return (package);
+	for (nick = package->data.package.nicknames;
+	     CONS_P(nick); nick = CDR(nick))
+	    if (strcmp(THESTR(CAR(nick)), string) == 0)
+		return (package);
+    }
+
+    return (NIL);
+}
+
+LispObj *
+LispFindPackage(LispMac *mac, LispObj *name)
+{
+    char *string = NULL;
+
+    if (PACKAGE_P(name))
+	return (name);
+
+    if (SYMBOL_P(name))
+	string = STRPTR(name);
+    else if (STRING_P(name))
+	string = THESTR(name);
+    else
+	LispDestroy(mac, "FIND-PACKAGE: %s is not a string or symbol",
+		    STROBJ(name));
+
+    return (LispFindPackageFromString(mac, string));
+}
+
+static LispObj *
+LispFindPackageOrDie(LispMac *mac, LispBuiltin *builtin, LispObj *name)
+{
+    LispObj *package;
+
+    package = LispFindPackage(mac, name);
+
+    if (package == NIL)
+	LispDestroy(mac, "%s: package %s is not available",
+		    STRFUN(builtin), STROBJ(name));
+
+    return (package);
+}
+
+static LispObj *
+LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
+		    int only_externs, int all_symbols)
+{
+    int i;
+    LispPackage *pack;
+    LispAtom *atom, *next_atom;
+    LispObj *variable, *package, *code, *result_form;
+
+    LispObj *init, *body;
+
+    body = ARGUMENT(1);
+    init = ARGUMENT(0);
+    MACRO_ARGUMENT2();
+
+    /* Prepare for loop */
+    if (!CONS_P(init))
+	LispDestroy(mac, "%s: %s is not a list",
+		    STRFUN(builtin), STROBJ(init));
+    variable = CAR(init);
+    if (!SYMBOL_P(variable))
+	LispDestroy(mac, "%s: %s is not a symbol",
+		    STRFUN(builtin), STROBJ(variable));
+
+    if (!all_symbols) {
+	/* if all_symbols, a package name is not specified in the init form */
+
+	init = CDR(init);
+	if (!CONS_P(init))
+	    LispDestroy(mac, "%s: missing package name");
+
+	/* Evaluate package specification */
+	package = EVAL(CAR(init));
+	if (!PACKAGE_P(package))
+	    package = LispFindPackageOrDie(mac, builtin, package);
+
+	pack = package->data.package.package;
+    }
+
+    result_form = NIL;
+
+    init = CDR(init);
+    if (CONS_P(init))
+	result_form = init;
+
+    /* Initialize iteration variable */
+    LispAddVar(mac, variable, NIL);
+    mac->env.head += 2;
+
+    for (package = PACK; CONS_P(package); package = CDR(package)) {
+	if (all_symbols)
+	    pack = CAR(package)->data.package.package;
+
+	/* Traverse the symbol list, executing body */
+	for (i = 0; i < STRTBLSZ; i++) {
+	    atom = pack->atoms[i];
+	    while (atom) {
+		/* Save pointer to next atom. If variable is removed,
+		 * predicatable result is only guaranteed if the bound
+		 * variable is removed. */
+		next_atom = atom->next;
+
+		if (!only_externs || atom->ext) {
+		    LispSetVar(mac, variable, atom->object);
+		    for (code = body; CONS_P(code); code = CDR(code))
+			EVAL(CAR(code));
+		}
+
+		atom = next_atom;
+	    }
+	}
+
+	if (!all_symbols)
+	    break;
+    }
+
+    /* Variable is still bound */
+    for (code = result_form; CONS_P(code); code = CDR(code))
+	EVAL(CAR(code));
+
+    return (NIL);
+}
+
+static LispObj *
+LispDoSymbols(LispMac *mac, LispBuiltin *builtin,
+	      int only_externs, int all_symbols)
+{
+    int did_jump, *pdid_jump = &did_jump;
+    LispObj *result, **presult = &result;
+    LispBlock *block;
+
+    *presult = NIL;
+    *pdid_jump = 1;
+    block = LispBeginBlock(mac, NIL, LispBlockTag);
+    if (setjmp(block->jmp) == 0) {
+	*presult = LispReallyDoSymbols(mac, builtin, only_externs, all_symbols);
+	*pdid_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (*pdid_jump)
+	*presult = mac->block.block_ret;
+
+    return (*presult);
+}
+
+LispObj *
+Lisp_DoAllSymbols(LispMac *mac, LispBuiltin *builtin)
+/*
+ do-all-symbols init &rest body
+ */
+{
+    return (LispDoSymbols(mac, builtin, 1, 1));
+}
+
+LispObj *
+Lisp_DoExternalSymbols(LispMac *mac, LispBuiltin *builtin)
+/*
+ do-external-symbols init &rest body
+ */
+{
+    return (LispDoSymbols(mac, builtin, 1, 0));
+}
+
+LispObj *
+Lisp_DoSymbols(LispMac *mac, LispBuiltin *builtin)
+/*
+ do-symbols init &rest body
+ */
+{
+    return (LispDoSymbols(mac, builtin, 0, 0));
+}
+
+LispObj *
+Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
+/*
+ find-all-symbols string-or-symbol
+ */
+{
+    /*   There is a problem here. If match to string-or-symbol is not in
+     * the current package, but exists in another package, the printed
+     * representation does not differentiate the symbols.
+     *   I am not sure if the correct solution would be to change the
+     * print routines to always print the package name of an object,
+     * if it's home package is not the current one. There is no fast
+     * way to check if a symbol is in the current package. When a symbol
+     * is printed, there is no way to track down how it's pointer was taken,
+     * and checking for it's "visibility" requires traversing and
+     * strcmp'ing all atom->string entries of the current package. */
+
+    char *string;
+    LispAtom *atom;
+    LispPackage *pack;
+    LispObj *list, *package, *result, *cons;
+    int i, protect = mac->protect.length;
+
+    LispObj *string_or_symbol;
+
+    string_or_symbol = ARGUMENT(0);
+
+    if (STRING_P(string_or_symbol))
+	string = THESTR(string_or_symbol);
+    else if (SYMBOL_P(string_or_symbol))
+	string = STRPTR(string_or_symbol);
+    else
+	LispDestroy(mac, "%s: %s is not a string or symbol",
+		    STRFUN(builtin), STROBJ(string_or_symbol));
+
+    result = cons = NIL;
+
+    /* Will find at least one symbol matching string-or-symbol,
+     * the value of string-or-symbol itself :-) */
+    if (protect + 1 >= mac->protect.space)
+	LispMoreProtects(mac);
+
+    /* Traverse all packages, searching for symbols matching specified string */
+    for (list = PACK; CONS_P(list); list = CDR(list)) {
+	package = CAR(list);
+	pack = package->data.package.package;
+
+	for (i = 0; i < STRTBLSZ; i++) {
+	    atom = pack->atoms[i];
+	    while (atom) {
+
+		if (atom->package == package) {
+		    /* Return only one pointer to a matching symbol */
+
+		    if (strcmp(atom->string, string) == 0) {
+			if (result == NIL) {
+			    result = cons = CONS(atom->object, NIL);
+			    mac->protect.objects[mac->protect.length++] = result;
+			}
+			else {
+			    CDR(cons) = CONS(atom->object, NIL);
+			    cons = CDR(cons);
+			}
+		    }
+		}
+		atom = atom->next;
+	    }
+	}
+    }
+
+    return (result);
+}
+
+LispObj *
+Lisp_FindPackage(LispMac *mac, LispBuiltin *builtin)
+/*
+ find-package name
+ */
+{
+    LispObj *name;
+
+    name = ARGUMENT(0);
+
+    return (LispFindPackage(mac, name));
+}
+
+LispObj *
+Lisp_InPackage(LispMac *mac, LispBuiltin *builtin)
+/*
+ in-package name
+ */
+{
+    LispObj *package;
+
+    LispObj *name;
+
+    name = ARGUMENT(0);
+
+    package = LispFindPackageOrDie(mac, builtin, name);
+
+    /* Update pointer to package symbol table */
+    mac->pack = package->data.package.package;
+
+    LispSetVar(mac, PACKNAM, package);
+
+    return (package);
+}
+
+LispObj *
+Lisp_ListAllPackages(LispMac *mac, LispBuiltin *builtin)
+/*
+ list-all-packages
+ */
+{
+    /*   Maybe this should be read-only or a copy of the package list.
+     *   But, if properly implemented, it should be possible to (rplaca)
+     * this variable from lisp code with no problems. Don't do it at home. */
+
+    return (PACK);
+}
+
+LispObj *
+Lisp_PackageName(LispMac *mac, LispBuiltin *builtin)
+/*
+ package-name package
+ */
+{
+    LispObj *package;
+
+    package = ARGUMENT(0);
+
+    package = LispFindPackageOrDie(mac, builtin, package);
+
+    return (package->data.package.name);
+}
+
+LispObj *
+Lisp_PackageNicknames(LispMac *mac, LispBuiltin *builtin)
+/*
+ package-nicknames package
+ */
+{
+    LispObj *package;
+
+    package = ARGUMENT(0);
+
+    package = LispFindPackageOrDie(mac, builtin, package);
+
+    return (package->data.package.nicknames);
+}
+
+LispObj *
+Lisp_PackageUseList(LispMac *mac, LispBuiltin *builtin)
+/*
+ package-use-list package
+ */
+{
+    /*  If the variable returned by this function is expected to be changeable,
+     * need to change the layout of the LispPackage structure. */
+
+    LispPackage *pack;
+    LispObj *package, *use, *cons;
+
+    package = ARGUMENT(0);
+
+    package = LispFindPackageOrDie(mac, builtin, package);
+
+    use = cons = NIL;
+    pack = package->data.package.package;
+
+    if (pack->use.length) {
+	int i = pack->use.length - 1, protect = mac->protect.length;
+
+	use = cons = CONS(pack->use.pairs[i], NIL);
+	if (protect + 1 >= mac->protect.space)
+	    LispMoreProtects(mac);
+	mac->protect.objects[mac->protect.length++] = use;
+	for (--i; i >= 0; i--) {
+	    CDR(cons) = CONS(pack->use.pairs[i], cons);
+	    cons = CDR(cons);
+	}
+	mac->protect.length = protect;
+    }
+
+    return (use);
+}
+
+LispObj *
+Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
+/*
+ package-used-by-list package
+ */
+{
+    int i, protect;
+    LispPackage *pack;
+    LispObj *package, *other, *used, *cons, *list;
+
+    package = ARGUMENT(0);
+
+    package = LispFindPackageOrDie(mac, builtin, package);
+
+    used = cons = NIL;
+
+    protect = mac->protect.length;
+    if (protect + 1 >= mac->protect.space)
+	LispMoreProtects(mac);
+
+    for (list = PACK; CONS_P(list); list = CDR(list)) {
+	other = CAR(list);
+	if (package == other)
+	    /* Surely package uses itself */
+	    continue;
+
+	pack = other->data.package.package;
+
+	for (i = 0; i < pack->use.length; i++) {
+	    if (pack->use.pairs[i] == package) {
+		if (used == NIL) {
+		    used = cons = CONS(other, NIL);
+		    mac->protect.objects[mac->protect.length++] = used;
+		}
+		else {
+		    CDR(cons) = CONS(other, NIL);
+		    cons = CDR(cons);
+		}
+	    }
+	}
+    }
+
+    mac->protect.length = protect;
+
+    return (used);
+}

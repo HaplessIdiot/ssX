@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.18 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.19 2002/02/10 02:50:07 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -73,8 +73,11 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		    result = T;
 		break;
 	    case LispAtom_t:
+		if (ATOMID(left) == ATOMID(right))
+		    result = T;
+		break;
 	    case LispString_t:
-		if (STRPTR(left) == STRPTR(right))
+		if (strcmp(THESTR(left), THESTR(right)) == 0)
 		    result = T;
 		break;
 	    case LispCons_t:
@@ -119,8 +122,9 @@ LispCharacterCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *object)
 {
     if (CHAR_P(object))
 	return (object);
-    else if ((SYMBOL_P(object) || STRING_P(object)) &&
-	     STRPTR(object)[1] == '\0')
+    else if (STRING_P(object) && strlen(THESTR(object)) == 1)
+	return (CHAR((unsigned char)THESTR(object)[0]));
+    else if (SYMBOL_P(object) && STRPTR(object)[1] == '\0')
 	return (CHAR((unsigned char)STRPTR(object)[0]));
     else if (INDEX_P(object)) {
 	int c = object->data.integer;
@@ -186,37 +190,37 @@ LispCoerce(LispMac *mac, LispBuiltin *builtin,
     else {
 	/* check all known types */
 
-	LispAtom *atom = result_type->data.atom;
+	Atom_id atom = ATOMID(result_type);
 
-	if (atom == mac->atom_atom) {
+	if (atom == Satom) {
 	    if (CONS_P(object))
 		goto coerce_fail;
 	    return (object);
 	}
 	/* only convert ATOM to SYMBOL */
 
-	if (atom == mac->real_atom || atom == mac->float_atom)
+	if (atom == Sreal || atom == Sfloat)
 	    type = LispReal_t;
-	else if (atom == mac->integer_atom)
+	else if (atom == Sinteger)
 	    type = LispInteger_t;
-	else if (atom == mac->cons_atom || atom == mac->list_atom) {
+	else if (atom == Scons || atom == Slist) {
 	    if (object == NIL)
 		return (object);
 	    type = LispCons_t;
 	}
-	else if (atom == mac->string_atom)
+	else if (atom == Sstring)
 	    type = LispString_t;
-	else if (atom == mac->character_atom)
+	else if (atom == Scharacter)
 	    type = LispCharacter_t;
-	else if (atom == mac->complex_atom)
+	else if (atom == Scomplex)
 	    type = LispComplex_t;
-	else if (atom == mac->vector_atom || atom == mac->array_atom)
+	else if (atom == Svector || atom == Sarray)
 	    type = LispArray_t;
-	else if (atom == mac->opaque_atom)
+	else if (atom == Sopaque)
 	    type = LispOpaque_t;
-	else if (atom == mac->rational_atom)
+	else if (atom == Srational)
 	    type = LispRatio_t;
-	else if (atom == mac->pathname_atom)
+	else if (atom == Spathname)
 	    type = LispPathname_t;
 	else
 	    LispDestroy(mac, "%s: invalid type specification %s",
@@ -328,8 +332,7 @@ LispCoerce(LispMac *mac, LispBuiltin *builtin,
 		break;
 	    case LispPathname_t:
 		GCProtect();
-		result = APPLY(SYMBOL(mac->parse_namestring_atom),
-			       CONS(object, NIL));
+		result = APPLY(Oparse_namestring, CONS(object, NIL));
 		GCUProtect();
 		break;
 	    default:
@@ -483,10 +486,8 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
  */
 {
     int length = mac->protect.length;
-    long count = 0, end;
+    long count = 0, end = 0;
     LispObj *symbol, *value = NIL, *result = NIL, *init, *body, *object;
-
-    end = 0;	/* fix gcc warning */
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
@@ -612,24 +613,6 @@ LispDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 }
 
 LispObj *
-LispSet(LispMac *mac, LispObj *var, LispObj *val, char *fname, int eval)
-{
-    char *name;
-
-    if (!SYMBOL_P(var))
-	LispDestroy(mac, "%s: %s is not a symbol", fname, STROBJ(var));
-
-    name = STRPTR(var);
-    if (isdigit(name[0]) || name[0] == '(' || name[0] == ')'
-	|| name[0] == ';' || name[0] == '\'' || name[0] == '#')
-	LispDestroy(mac, "bad name %s, at %s", name, fname);
-    if (eval && !CONSTANT_P(val))
-	val = EVAL(val);
-
-    return (LispSetVar(mac, var, val));
-}
-
-LispObj *
 LispLoadFile(LispMac *mac, LispObj *filename,
 	     int verbose, int print, int ifdoesnotexist)
 {
@@ -637,14 +620,13 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     int ch, eof = mac->eof, length = mac->protect.length;
 
     if (verbose)
-	LispMessage(mac, "; Loading %s", STRPTR(filename));
+	LispMessage(mac, "; Loading %s", THESTR(filename));
 
     GCProtect();
-    ext = ifdoesnotexist ? KEYWORD(SYMBOL(mac->error_atom)) : NIL;
-    eval = CONS(SYMBOL(mac->open_atom),
-		CONS(filename,
-		     CONS(KEYWORD(SYMBOL(mac->if_does_not_exist_atom)),
-			  CONS(ext, NIL))));
+    ext = ifdoesnotexist ? KEYWORD(Oerror) : NIL;
+    eval = CONS(Oopen,
+	        CONS(filename,
+		     CONS(KEYWORD(Oif_does_not_exist), CONS(ext, NIL))));
     stream = EVAL(eval);
     GCUProtect();
 
@@ -690,7 +672,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     mac->protect.length = length;
 
     GCProtect();
-    eval = CONS(SYMBOL(mac->close_atom), CONS(stream, NIL));
+    eval = CONS(Oclose, CONS(stream, NIL));
     EVAL(eval);
     GCUProtect();
 
@@ -714,19 +696,19 @@ LispGetStringArgs(LispMac *mac, LispBuiltin *builtin,
 
     length1 = length2 = 0;	/* fix gcc warning */
 
-    if (!STRING_P(ostring1) && !SYMBOL_P(ostring1))
+    if (!STRING_P(ostring1))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring1));
     else {
-	*string1 = STRPTR(ostring1);
+	*string1 = THESTR(ostring1);
 	length1 = strlen(*string1);
     }
 
-    if (!STRING_P(ostring2) && !SYMBOL_P(ostring2))
+    if (!STRING_P(ostring2))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring2));
     else {
-	*string2 = STRPTR(ostring2);
+	*string2 = THESTR(ostring2);
 	length2 = strlen(*string2);
     }
 
@@ -792,11 +774,11 @@ LispGetStringCaseArgs(LispMac *mac, LispBuiltin *builtin,
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
-    if (!STRING_P(ostring) && !SYMBOL_P(ostring))
+    if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
     *result = ostring;
-    *string = STRPTR(ostring);
+    *string = THESTR(ostring);
     length = strlen(*string);
 
     if (ostart == NIL)
@@ -846,19 +828,19 @@ LispStringTrim(LispMac *mac, LispBuiltin *builtin, int left, int right)
 	    LispDestroy(mac, "%s: %s is not a sequence",
 			STRFUN(builtin), STROBJ(chars));
     }
-    if (!STRING_P(string) && !SYMBOL_P(string))
+    if (!STRING_P(string))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(string));
 
     sstart = start = 0;
-    send = end = strlen(STRPTR(string));
+    send = end = strlen(THESTR(string));
 
     if (STRING_P(chars)) {
 	char *cmp;
 
 	if (left) {
-	    for (str = STRPTR(string); *str; str++) {
-		for (cmp = STRPTR(chars); *cmp; cmp++)
+	    for (str = THESTR(string); *str; str++) {
+		for (cmp = THESTR(chars); *cmp; cmp++)
 		    if (*str == *cmp)
 			break;
 		if (*cmp == '\0')
@@ -867,8 +849,8 @@ LispStringTrim(LispMac *mac, LispBuiltin *builtin, int left, int right)
 	    }
 	}
 	if (right) {
-	    for (str = STRPTR(string) + end - 1; end > 0; str--) {
-		for (cmp = STRPTR(chars); *cmp; cmp++)
+	    for (str = THESTR(string) + end - 1; end > 0; str--) {
+		for (cmp = THESTR(chars); *cmp; cmp++)
 		    if (*str == *cmp)
 			break;
 		if (*cmp == '\0')
@@ -881,7 +863,7 @@ LispStringTrim(LispMac *mac, LispBuiltin *builtin, int left, int right)
 	LispObj *obj;
 
 	if (left) {
-	    for (str = STRPTR(string); *str; str++) {
+	    for (str = THESTR(string); *str; str++) {
 		for (obj = chars; obj != NIL; obj = CDR(obj))
 		    /* Should really ignore non character input ? */
 		    if (CHAR_P(CAR(obj)) && *str == CAR(obj)->data.integer)
@@ -892,7 +874,7 @@ LispStringTrim(LispMac *mac, LispBuiltin *builtin, int left, int right)
 	    }
 	}
 	if (right) {
-	    for (str = STRPTR(string) + end - 1; end > 0; str--) {
+	    for (str = THESTR(string) + end - 1; end > 0; str--) {
 		for (obj = chars; obj != NIL; obj = CDR(obj))
 		    /* Should really ignore non character input ? */
 		    if (CHAR_P(CAR(obj)) && *str == CAR(obj)->data.integer)
@@ -909,11 +891,10 @@ LispStringTrim(LispMac *mac, LispBuiltin *builtin, int left, int right)
 
     length = end - start;
     str = LispMalloc(mac, length + 1);
-    strncpy(str, STRPTR(string) + start, length);
+    strncpy(str, THESTR(string) + start, length);
     str[length] = '\0';
 
-    string = STRING(str);
-    LispFree(mac, str);
+    string = STRING2(str);
 
     return (string);
 }
@@ -942,7 +923,7 @@ LispPathnameField(LispMac *mac, int field, int string)
 	    if (result == NIL)
 		result = STRING("");
 	    else if (field == PATH_DIRECTORY) {
-		char *name = STRPTR(CAR(pathname->data.quote)), *ptr;
+		char *name = THESTR(CAR(pathname->data.quote)), *ptr;
 
 		ptr = strrchr(name, PATH_SEP);
 		if (ptr) {
@@ -959,7 +940,7 @@ LispPathnameField(LispMac *mac, int field, int string)
 		    result = STRING("");
 	    }
 	    else
-		result = KEYWORD(SYMBOL(mac->unspecific_atom));
+		result = KEYWORD(Ounspecific);
 	}
 	else if (field == PATH_NAME) {
 	    object = CAR(CDR(object));
@@ -967,14 +948,14 @@ LispPathnameField(LispMac *mac, int field, int string)
 		int length;
 		char name[PATH_MAX + 1];
 
-		strcpy(name, STRPTR(result));
+		strcpy(name, THESTR(result));
 		length = strlen(name);
 		if (length + 1 < sizeof(name)) {
 		    name[length++] = PATH_TYPESEP;
 		    name[length] = '\0';
 		}
-		if (strlen(STRPTR(object)) + length < sizeof(name))
-		    strcpy(name + length, STRPTR(object));
+		if (strlen(THESTR(object)) + length < sizeof(name))
+		    strcpy(name + length, THESTR(object));
 		/* else LispDestroy ... */
 		result = STRING(name);
 	    }
@@ -996,16 +977,16 @@ LispProbeFile(LispMac *mac, LispBuiltin *builtin, int probe)
     pathname = ARGUMENT(0);
 
     if (STRING_P(pathname)) {
-	name = STRPTR(pathname);
+	name = THESTR(pathname);
 	goto probeit;
     }
     else if (PATHNAME_P(pathname)) {
-	name = STRPTR(CAR(pathname->data.quote));
+	name = THESTR(CAR(pathname->data.quote));
 	goto probeit;
     }
     else if (STREAM_P(pathname) &&
 	     pathname->data.stream.type == LispStreamFile) {
-	name = STRPTR(CAR(pathname->data.stream.pathname->data.quote));
+	name = THESTR(CAR(pathname->data.stream.pathname->data.quote));
 	goto probeit;
     }
     else
@@ -1030,8 +1011,7 @@ probeit:
     }
 
     GCProtect();
-    result = EVAL(CONS(SYMBOL(mac->parse_namestring_atom),
-		       CONS(STRING(resolved), NIL)));
+    result = EVAL(CONS(Oparse_namestring, CONS(STRING(resolved), NIL)));
     GCUProtect();
 
     return (result);
@@ -1150,7 +1130,7 @@ LispWriteString_(LispMac *mac, LispBuiltin *builtin, int newline)
     if (!STRING_P(string))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(string));
-    text = STRPTR(string);
+    text = THESTR(string);
     length = strlen(text);
 
     if (ostart != NIL) {

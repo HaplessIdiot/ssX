@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.6 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.7 2002/02/10 02:50:07 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -74,7 +74,7 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not a positive integer",
 		    STRFUN(builtin), STROBJ(oindex));
     offset = oindex->data.integer;
-    string = STRPTR(ostring);
+    string = THESTR(ostring);
     length = strlen(string);
 
     if (offset >= length)
@@ -95,7 +95,6 @@ Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
  xedit::char-store string index value &aux (length (length string))
  */
 {
-    char *string;
     int character;
     long offset, length;
     LispObj *ostring, *oindex, *ovalue, *olength;
@@ -126,11 +125,7 @@ Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: cannot represent character %d",
 		    STRFUN(builtin), character);
 
-    string = LispStrdup(mac, STRPTR(ostring));
-    string[offset] = character;
-
-    ostring->data.atom = LispDoGetAtom(mac, string, 0, 0);
-    LispFree(mac, string);
+    THESTR(ostring)[offset] = character;
 
     return (ovalue);
 }
@@ -715,7 +710,7 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
-    string = STRPTR(ostring);
+    string = THESTR(ostring);
     length = strlen(string);
 
     if (ostart == NIL)
@@ -857,7 +852,7 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
-    string = (char*)STRPTR(ostring);
+    string = (char*)THESTR(ostring);
     length = strlen(string);
 
     if (ostart == NIL)
@@ -886,12 +881,12 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
     if (start > 0 || end < length) {
 	length = end - start;
 	string = LispMalloc(mac, length + 1);
-	strncpy(string, STRPTR(ostring) + start, length);
+	strncpy(string, THESTR(ostring) + start, length);
 	string[length] = '\0';
     }
 
     stream = STRINGSTREAM((unsigned char*)string, STREAM_READ);
-    if (string != STRPTR(ostring))
+    if (string != THESTR(ostring))
 	LispFree(mac, string);
     LispPushInput(mac, stream);
     result = LispRead(mac);
@@ -1395,18 +1390,18 @@ Lisp_StringConcat(LispMac *mac, LispBuiltin *builtin)
 
     for (length = 1, object = strings; CONS_P(object); object = CDR(object))
 	if (STRING_P(CAR(object)))
-	    length += strlen(STRPTR(CAR(object)));
+	    length += strlen(THESTR(CAR(object)));
 	else
 	    LispDestroy(mac, "%s: %s is not a string",
 			STRFUN(builtin), STROBJ(CAR(object)));
 
     string = LispMalloc(mac, length);
     *string = '\0';
+    /* XXX shouldn't just memcpy at the correct address? */
     for (object = strings; CONS_P(object); object = CDR(object))
-	strcat(string, STRPTR(CAR(object)));
+	strcat(string, THESTR(CAR(object)));
 
-    object = STRING(string);
-    LispFree(mac, string);
+    object = STRING2(string);
 
     return (object);
 }

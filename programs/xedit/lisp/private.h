@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.16 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.17 2002/02/08 02:59:29 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -52,6 +52,9 @@
 #define	STRTBLSZ	23
 
 #define FEAT	mac->featlist
+#define PACK	mac->packlist
+#define PACKNAM	mac->package_name
+#define PACKAGE	mac->package
 #define MOD	mac->modlist
 #define COD	mac->codlist
 #define FRM	mac->frmlist
@@ -78,30 +81,33 @@ typedef struct _LispBlock LispBlock;
 typedef struct _LispOpaque LispOpaque;
 typedef struct _LispModule LispModule;
 typedef struct _LispProperty LispProperty;
+typedef struct _LispObjList LispObjList;
+typedef struct _LispStringHash LispStringHash;
 
-/* Possible values to attach to a LispAtom include:
- *	a generic LispObject for global variable value
- *	a function definition
- *	a pointer to a builtin function definition
- *	the atom properties list, read with (get), set with (setf (get ...) ...)
- *	a setf expansion macro or function replacement name
- *	a structure definition
- */
 struct _LispProperty {
-    unsigned int object : 1;
-    unsigned int function : 1;
-    unsigned int builtin : 1;
-    unsigned int property : 1;
-    unsigned int defsetf : 1;
-    unsigned int defstruct : 1;
+    /* may be used by multiple packages */
+    unsigned int refcount;
+
+    /* package where the property was created */
+    LispPackage *package;
+
+    /* value of variable attached to symbol */
     LispObj *value;
+
     union {
+	/* function attached to symbol */
 	LispObj *function;
+	/* builtin function attached to symbol*/
 	LispBuiltin *builtin;
-    } fun;	/* cannot have both, a builtin and user function attached,
-		 * virtually, builtin and user function are the same */
+    } fun;
+
+    /* symbol properties list */
     LispObj *properties;
+
+    /* setf method */
     LispObj *setf;
+
+    /* structure information */
     struct {
 	LispObj *definition;
 #define STRUCT_NAME		-3
@@ -112,20 +118,67 @@ struct _LispProperty {
 };
 
 struct _LispAtom {
-    unsigned int mark : 1;	/* gc protected */
-    unsigned int prot : 1;	/* never released */
-    unsigned int dyn : 1;	/* hint: dynamically binded variable */
-    unsigned int prop : 1;	/* property field has useful data */
+    /* Gc protected */
+    unsigned int mark : 1;
+    /* Never released, note that this is not the same as the prot field
+     * of LispObj, that is used to mark objects as immutable */
+    unsigned int prot : 1;
+    /* hint: dynamically binded variable */
+    unsigned int dyn : 1;
+
+    /* Property has useful data in value field */
+    unsigned int a_object : 1;
+    /* Property has useful data in fun.function field */
+    unsigned int a_function : 1;
+    /* Property has useful data in fun.builtin field */
+    unsigned int a_builtin : 1;
+    /* Property has useful data in properties field */
+    unsigned int a_property : 1;
+    /* Property has useful data in setf field */
+    unsigned int a_defsetf : 1;
+    /* Property has useful data in defstruct field */
+    unsigned int a_defstruct : 1;
+
+    /* Symbol is extern */
+    unsigned int ext : 1;
+
+    /* Symbol must be quoted with '|' to be allow reading back */
+    unsigned int unreadable : 1;
+
+    /* Symbol value may need special handling when changed */
+    unsigned int watch : 1;
+
     char *string;
     LispObj *object;		/* backpointer to object ATOM */
-    LispProperty property;
+    LispObj *package;		/* package home of symbol */
+    LispProperty *property;
     struct _LispAtom *next;
+};
+
+struct _LispObjList {
+    LispObj **pairs;		/* name0 ... nameN */
+    int length;			/* number of objects */
+    int space;			/* space allocated in field pairs */
+};
+
+struct _LispPackage {
+    LispObjList glb;		/* global symbols in package */
+    LispObjList spc;		/* global special symbols in package */
+    LispObjList use;		/* inherited packages */
+    LispAtom *atoms[STRTBLSZ];	/* atoms in this package */
 };
 
 struct _LispOpaque {
     int type;
     char *desc;
     LispOpaque *next;
+};
+
+/* These strings are never released, they are used to avoid
+ * the need of strcmp() on two symbol names, just compare pointers */
+struct _LispStringHash {
+    char *string;
+    LispStringHash *next;
 };
 
 typedef enum _LispBlockType {
@@ -157,7 +210,7 @@ typedef struct _LispUngetInfo {
 } LispUngetInfo;
 
 struct _LispMac {
-    /* ENVIRONMENT */
+    /* environment */
     struct {
 	LispObj **pairs;	/* value0 name0 ... valueN nameN */
 	int lex;		/* until where variables are visible */
@@ -167,39 +220,27 @@ struct _LispMac {
 	int space;		/* number of objects in pairs */
     } env;
 
-    /* DYNAMIC VARIABLES */
+    /* rebound special variables, dynamic variables */
     struct {
 	LispObj **pairs;	/* value0 name0 ... valueN nameN */
 	int length;		/* number of dynamics * 2 */
 	int space;		/* number of objects in pairs */
     } dyn;
 
-    /* Unfortunately, evaluation of backquotes and macros sometimes uses a
-     * lot of object cells.
-     * This structure, to be used like the ones above allows minimizing
-     * the need of temporary cells to protect data being evaluated. */
     struct {
 	LispObj **objects;
 	int length;
 	int space;
     } protect;
 
-    /* GLOBAL VARIABLES */
-    struct {
-	LispObj **pairs;	/* name0 ... nameN */
-	int length;		/* number of globals */
-	int space;		/* number of objects in pairs */
-    } glb;
+    LispObj *package_name;	/* atom *PACKAGE* */
+    LispObj *package;		/* current package object */
+    LispPackage *pack;		/* pointer to mac->package->data.package.package */
+    LispPackage *keyword;	/* fast access to the KEYWORD package */
 
-    /* SPECIAL VARIABLES */
-    struct {
-	LispObj **pairs;	/* name0 ... nameN */
-	int length;		/* number of specias */
-	int space;		/* number of objects in pairs */
-    } spc;
-
-    /* &KEY, &OPTIONAL, &REST, &AUX */
-    LispAtom *key_atom, *optional_atom, *rest_atom, *aux_atom;
+    /* only used if the package was changed, but an error generated
+     * before returning to the toplevel */
+    LispPackage *savepack;
 
     struct {
 	unsigned block_level;
@@ -211,8 +252,6 @@ struct _LispMac {
     sigjmp_buf jmp;
 
     struct {
-	unsigned int fullbits : 8;	/* how many calls to to do a full gc
-					 * including freeing unused strings */
 	unsigned int expandbits : 3;	/* code doesn't look like reusing cells
 					 * so try to have a larger number of
 					 * free cells */
@@ -222,7 +261,7 @@ struct _LispMac {
 	int average;			/* of cells freed after gc calls */
     } gc;
 
-    LispAtom *strs[STRTBLSZ];
+    LispStringHash *strings[STRTBLSZ];
     LispOpaque *opqs[STRTBLSZ];
     int opaque;
 
@@ -247,49 +286,9 @@ struct _LispMac {
 
     LispObj *features;
 
-    /* NIL, T */
-    LispAtom *nil_atom, *t_atom;
-
-    LispAtom *atom_atom, *symbol_atom, *real_atom, *integer_atom, *cons_atom,
-	     *list_atom, *string_atom, *character_atom, *vector_atom,
-	     *array_atom, *struct_atom, *keyword_atom, *function_atom,
-	     *pathname_atom, *opaque_atom, *rational_atom, *float_atom,
-	     *complex_atom;
-
-    /* VARIABLE, STRUCTURE */
-    LispAtom *variable_atom, *structure_atom, *type_atom;
-
-    /* OTHERWISE */
-    LispAtom *otherwise_atom;
-
-    /* XEDIT::MAKE-STRUCT, XEDIT::STRUCT-ACCESS, XEDIT::STRUCT-STORE,
-       XEDIT::STRUCT-TYPE */
-    LispAtom *make_struct_atom, *struct_access_atom, *struct_store_atom,
-	     *struct_type_atom;
-
-    /* CLOSE, FORMAT, LAMBDA, OPEN, SETF */
-    LispAtom *close_atom, *format_atom, *lambda_atom, *open_atom,
-	     *parse_namestring_atom, *setf_atom;
-
-    /* :ERROR, IF-DOES-NOT-EXIST */
-    LispAtom *error_atom, *if_does_not_exist_atom;
-
-    /* :ABSOLUTE, :RELATIVE */
-    LispAtom *absolute_atom, *relative_atom, *unspecific_atom;
-
-    /* :PROBE, :INPUT, :OUTPUT, :IO, :NEW-VERSION, :RENAME,
-       :RENAME-AND-DELETE, :OVERWRITE, :APPEND, :SUPERSEDE, CREATE */
-    LispAtom *probe_atom, *input_atom, *output_atom, *io_atom,
-	     *new_version_atom, *rename_atom, *rename_and_delete_atom,
-	     *overwrite_atom, *append_atom, *supersede_atom, *create_atom;
-
-    LispAtom *default_atom;
-
-    LispAtom *make_array_atom;
-    LispAtom *initial_contents_atom;
-
     LispObj *modlist;		/* module list */
     LispObj *featlist;		/* features list */
+    LispObj *packlist;		/* list of packages */
     LispObj *codlist;		/* current code */
     LispObj *frmlist;		/* input data */
     LispObj *runlist[3];	/* +, ++, and +++ */
@@ -331,7 +330,20 @@ LispObj *LispAddVar(LispMac*, LispObj*, LispObj*);
 LispObj *LispSetVar(LispMac*, LispObj*, LispObj*);
 void LispUnsetVar(LispMac*, LispObj*);
 
+	/* only used at initialization time */
 LispObj *LispNewStandardStream(LispMac*, LispFile*, LispObj*, int);
+
+	/* create a new package */
+LispObj *LispNewPackage(LispMac*, LispObj*, LispObj*);
+	/* add package to use-list of current, and imports all extern symbols */
+void LispUsePackage(LispMac*, LispObj*);
+	/* make symbol extern in the current package */
+void LispExportSymbol(LispMac*, LispObj*);
+	/* imports symbol to current package */
+void LispImportSymbol(LispMac*, LispObj*);
+
+	/* always returns the same string */
+char *LispGetAtomString(LispMac*, char*, int);
 
 /* destructive fast reverse, note that don't receive a LispMac* argument */
 LispObj *LispReverse(LispObj *list);
@@ -355,10 +367,6 @@ LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
 	/* put value in atom's property list */
 LispObj *LispPutAtomProperty(LispMac*, LispAtom*, LispObj*, LispObj*);
 
-	/* create or change object property */
-void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
-	/* remove object property */
-void LispRemAtomObjectProperty(LispMac*, LispAtom*);
 	/* define function, or replace function definition */
 void LispSetAtomFunctionProperty(LispMac*, LispAtom*, LispObj*);
 	/* remove function property */

@@ -27,12 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.8 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.9 2002/02/10 02:50:06 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
 
 #include "internal.h"
+
+void LispCoreInit(LispMac*);
 
 LispObj *Lisp_Acons(LispMac*, LispBuiltin*);		/* acons */
 LispObj *Lisp_Append(LispMac*, LispBuiltin*);		/* append */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.15 2002/02/08 03:54:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.16 2002/02/10 02:50:06 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -285,6 +285,7 @@ parse_arguments(char *format, FmtArgs *arguments,
     int test;
     char *ptr;
     FmtArg *argument;
+    unsigned int tmpcmd = 0;
 
     /* initialize */
     test = objects == NULL || code == NULL || num_objects == NULL;
@@ -415,8 +416,10 @@ parse_arguments(char *format, FmtArgs *arguments,
     if (!test)
 	*code = NOERROR;
     arguments->command = *ptr++;
-    if (islower(arguments->command))
-	arguments->command = toupper(arguments->command);
+    if (islower(arguments->command)) {
+	tmpcmd = toupper(arguments->command);
+	arguments->command = tmpcmd;
+    }
     ++arguments->offset;
 
     return (ptr);
@@ -866,7 +869,7 @@ format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info
 
     if (!STRING_P(format))
 	generic_error(mac, &(info->args), GENERIC_BADSTRING);
-    string = STRPTR(format);
+    string = THESTR(format);
 
     /* most information is the same */
     memcpy(&indirect_info, info, sizeof(FmtInfo));
@@ -2090,7 +2093,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     object = NIL;
 
     /* the format string */
-    control_string = STRPTR(format);
+    control_string = THESTR(format);
 
     /* arguments to recursive calls */
     info.args.base = control_string;

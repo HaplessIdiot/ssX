@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.7 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.8 2002/01/30 21:00:58 paulo Exp $ */
 
 #include "require.h"
 
@@ -86,11 +86,11 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	pathname = module;
 
     for (obj = MOD; CONS_P(obj); obj = CDR(obj)) {
-	if (STRPTR(CAR(obj)) == STRPTR(module))
+	if (strcmp(THESTR(CAR(obj)), THESTR(module)))
 	    return (module);
     }
 
-    if (STRPTR(pathname)[0] != '/') {
+    if (THESTR(pathname)[0] != '/') {
 #ifdef LISPDIR
 	snprintf(filename, sizeof(filename), "%s", LISPDIR);
 #else
@@ -106,7 +106,7 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	++len;
     }
 
-    snprintf(filename + len, sizeof(filename) - len - 5, "%s", STRPTR(pathname));
+    snprintf(filename + len, sizeof(filename) - len - 5, "%s", THESTR(pathname));
 
     ext = filename + strlen(filename);
 
@@ -127,7 +127,7 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	if ((lisp_module->handle =
 	     dlopen(filename, RTLD_LAZY | RTLD_GLOBAL)) == NULL)
 	    LispDestroy(mac, "%s: dlopen: %s", STRFUN(builtin), dlerror());
-	snprintf(data, sizeof(data), "%sLispModuleData", STRPTR(module));
+	snprintf(data, sizeof(data), "%sLispModuleData", THESTR(module));
 	if ((lisp_module->data =
 	     (LispModuleData*)dlsym(lisp_module->handle, data)) == NULL) {
 	    dlclose(lisp_module->handle);

@@ -1,6 +1,6 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.6 2002/01/30 21:00:56 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.7 2002/02/10 02:50:06 paulo Exp $
 
-LAST UPDATED:	$Date: 2002/02/10 02:50:06 $
+LAST UPDATED:	$Date: 2002/02/12 16:07:54 $
 
 
     SUMMARY
@@ -133,12 +133,12 @@ is only for testing, create a file named "xedit.lsp", with the contents:
 
 (defun search-forward (string)
     (format t "~Csearch-forward ~A~%" #\Escape string)
-    (read)	;; position of nil if not found
+    (read)	;; position or nil if not found
 )
 
 (defun search-backward (string)
     (format t "~Csearch-backward ~A~%" #\Escape string)
-    (read)	;; position of nil if not found
+    (read)	;; position or nil if not found
 )
 
 (defun replace-text (left right string)

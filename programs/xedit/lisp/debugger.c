@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.12 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.13 2002/02/08 02:59:28 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -186,7 +186,7 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 				 INTEGER(mac->dyn.length)))))), DBG);
 	    GCUProtect();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
-		if (STRPTR(CAR(CAR(obj))) == STRPTR(name) &&
+		if (ATOMID(CAR(CAR(obj))) == ATOMID(name) &&
 		    CAR(CDR(CDR(CAR(obj))))->data.integer == LispDebugBreakFunction)
 		    break;
 	    if (obj != NIL) {
@@ -730,7 +730,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    ++ptr;
 		}
 		obj = LispGetVar(mac, ATOM2(arg));
-		if (obj) {
+		if (obj != NULL) {
 		    LispDoWriteObject(mac, NIL, obj, 1);
 		    LispFputc(Stdout, '\n');
 		}
