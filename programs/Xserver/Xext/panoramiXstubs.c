@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.6 1999/06/27 16:56:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.7 1999/09/06 12:35:44 dawes Exp $ */
 /*
  * HISTORY
  * Log
@@ -56,6 +56,9 @@ Bool PanoramiXWinRootFreeable = 0;
 Bool PanoramiXGCRootFreeable = 0;
 Bool PanoramiXCmapRootFreeable = 0;
 Bool PanoramiXPmapRootFreeable = 0;
+
+int PanoramiXPixWidth = 0;
+int PanoramiXPixHeight = 0;
 
 void XineramaGetImageData()
 {

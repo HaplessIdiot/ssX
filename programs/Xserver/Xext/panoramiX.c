@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.9 1999/09/06 11:27:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.10 1999/09/06 12:35:43 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -51,9 +51,9 @@ static unsigned char PanoramiXReqCode = 0;
  *	PanoramiX data declarations
  */
 
-int 		PanoramiXPixWidth;
-int 		PanoramiXPixHeight;
-int 		PanoramiXNumScreens;
+int 		PanoramiXPixWidth = 0;
+int 		PanoramiXPixHeight = 0;
+int 		PanoramiXNumScreens = 0;
 
 PanoramiXData 	*panoramiXdataPtr = NULL;
 PanoramiXWindow *PanoramiXWinRoot = NULL;
