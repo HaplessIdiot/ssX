@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.8 2000/06/13 02:28:27 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.9 2000/06/13 23:15:47 dawes Exp $ */
 
 
 /* TO DO ****
@@ -1606,7 +1606,7 @@ HTML(enum command cmd)
 
 	   case BEGINCOMMENT: printf("\n<!--\n"); break;
 	   case ENDCOMMENT: printf("\n-->\n"); break;
-	   case COMMENTLINE: break;
+	   case COMMENTLINE: printf("  "); break;
 
 	   case BEGINSECTHEAD:
 		printf("\n<H2><A NAME=\"sect%d\" HREF=\"#toc%d\">", tocc, tocc);
