@@ -78,7 +78,9 @@ static int	CYRIXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 
 /* Internally used functions */
+#if 0
 static void     CYRIXEnterLeave(Bool enter);
+#endif
 static void	CYRIXSave(ScrnInfoPtr pScrn);
 static void	CYRIXRestore(ScrnInfoPtr pScrn);
 static Bool	CYRIXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -164,24 +166,8 @@ static const char *racSymbols[] = {
     NULL
 };
 
-unsigned long vgaIOBase;
-CARD32  physbase, padsize;
-
 /* access to the MediaGX video hardware registers */
 
-char* GXregisters;
-
-int CYRIXcbufferAddress;      /* relative to video base */
-int CYRIXoffscreenAddress;
-int CYRIXcursorAddress;
-int CYRIXcbLineDelta;         /* DWORDS */
-int CYRIXoffscreenSize;       /* bytes */
-
-int CYRIXbltBuf0Address;      /* relative to GXregisters */
-int CYRIXbltBuf1Address;
-int CYRIXbltBufSize;
-
-int CYRIXisOldChipRevision;
 
 /* DEBUG variables & flags */
 #define ENTER TRUE
@@ -313,9 +299,7 @@ static Bool
 CYRIXProbe(DriverPtr drv, int flags)
 {
     int i, numDevSections, numUsed, *usedChips;
-    unsigned char gcr;
     GDevPtr *devSections;
-    int device_step, device_revision;
     ScrnInfoPtr pScrn;
 
     /*
@@ -348,34 +332,161 @@ CYRIXProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
+    /* Free it since we don't need that list after this */
+    xfree(devSections);
+
+    for (i=0; i < numUsed; i++) {
+
+
+    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn = NULL;
+	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
+						   CYRIXISAChipsets, NULL,
+						   NULL, NULL, NULL, NULL))){
+		pScrn->driverVersion = VERSION;
+		pScrn->driverName    = CYRIX_DRIVER_NAME;
+		pScrn->name          = CYRIX_NAME;
+		pScrn->Probe         = CYRIXProbe;
+		pScrn->PreInit       = CYRIXPreInit;
+		pScrn->ScreenInit    = CYRIXScreenInit;
+		pScrn->SwitchMode    = CYRIXSwitchMode;
+		pScrn->AdjustFrame   = CYRIXAdjustFrame;
+		pScrn->LeaveVT       = CYRIXLeaveVT;
+		pScrn->EnterVT       = CYRIXEnterVT;
+		pScrn->FreeScreen    = CYRIXFreeScreen;
+		pScrn->ValidMode     = CYRIXValidMode;
+		return (TRUE);
+	    }
+	    xfree(usedChips);
+    }
+    return (TRUE);
+}
+
+static int
+CYRIXFindIsaDevice(GDevPtr dev)
+{
+    CARD32 CurrentValue, TestValue;
+    unsigned char gcr;
+
+    /* No need to unlock VGA CRTC registers here */
+
+    /* VGA has one more read/write attribute register than EGA */
     /* use register probing to decide whether the chip is
      * `suitable' for us.
      */
-    vgaIOBase = VGAHW_GET_IOBASE();
+    int vgaIOBase = VGAHW_GET_IOBASE();
+
+    (void) inb(vgaIOBase + 0x0AU);  /* Reset flip-flop */
+    outb(0x3C0, 0x14 | 0x20);
+    CurrentValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue ^ 0x0F);
+    outb(0x3C0, 0x14 | 0x20);
+    TestValue = inb(0x3C1);
+    outb(0x3C0, CurrentValue);
+
+    /* Quit now if no VGA is present */
+    if ((CurrentValue ^ 0x0F) != TestValue)
+      return -1;
 
     /* the lock register should read 0xFF after we have
       written 0x00 to lock */
     outb(vgaIOBase + 4, CrtcExtendedRegisterLock);
     outb(vgaIOBase + 5, 0x00);
 
-    if (inb(vgaIOBase + 5) != 0xFF) goto probeFailed;
+    if (inb(vgaIOBase + 5) != 0xFF) return -1;
 
     /* the lock register should read 0x00 after we have
-	 writen the magic word 'WL' to unlock */
+	 written the magic word 'WL' to unlock */
     outb(vgaIOBase + 5, 0x57);
     outb(vgaIOBase + 5, 0x4C);
 
     /* GGI's idea to do two comparisons */
-    if (inb(vgaIOBase + 5) != 0x00) goto probeFailed;
-    if (inb(vgaIOBase + 5) != 0x00)
-    {   probeFailed:
-	CYRIXEnterLeave(LEAVE);
-	return (FALSE);
-    }
+    if (inb(vgaIOBase + 5) != 0x00) goto fail;
+    if (inb(vgaIOBase + 5) != 0x00) goto fail;
+
     /* OK, it's most likely a MediaGX.  Now check the scratchpad
      * size.  If it is zero, we're not using the MediaGX graphics
      * facilities. 
      */
+    outb(GX_IOPORT_INDEX, GX_IOIDX_DIR0); /* doesn't work w/o that */
+    outb(GX_IOPORT_INDEX, GX_IOIDX_GCR);
+    gcr = inb(GX_IOPORT_DATA);
+
+    /*      end GGI MediaGX driver based code */
+    if (!(gcr & 12)) goto fail;
+
+    /* Unprotect MediaGX extended registers */
+    outb(vgaIOBase + 4, CrtcExtendedRegisterLock);
+    outb(vgaIOBase + 5, 0x00);
+    return (int)CHIP_CYRIXmediagx;
+
+ fail:
+    /* Protect MediaGX extended registers */
+    outb(vgaIOBase + 4, CrtcExtendedRegisterLock);
+    outb(vgaIOBase + 5, 0x00);
+    return -1;
+}
+	
+/* Mandatory */
+static Bool
+CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
+{
+    MessageType from;
+    CYRIXPrvPtr pCyrix;
+    int videoram;
+    int i;
+    ClockRangePtr clockRanges;
+    char *mod = NULL;
+    const char *Sym = NULL;
+    CARD32 physbase, padsize;
+    int CYRIXisOldChipRevision;
+    int device_step, device_revision;
+    int vgaIOBase;
+    unsigned char gcr;
+
+    if (flags & PROBE_DETECT) return FALSE;
+
+    /* Allocate the CYRIXRec driverPrivate */
+    if (!CYRIXGetRec(pScrn)) return FALSE;
+
+    /*
+     * Note: This function is only called once at server startup, and
+     * not at the start of each server generation.  This means that
+     * only things that are persistent across server generations can
+     * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
+     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
+     * are too, and should be used for data that must persist across
+     * server generations.
+     *
+     * Per-generation data should be allocated with
+     * AllocateScreenPrivateIndex() from the ScreenInit() function.
+     */
+    pCyrix = CYRIXPTR(pScrn);
+
+    /* The vgahw module should be loaded here when needed */
+    if (!xf86LoadSubModule(pScrn, "vgahw"))
+	return FALSE;
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+    /*
+     * Allocate a vgaHWRec
+     */
+    if (!vgaHWGetHWRec(pScrn))
+	return FALSE;
+
+    VGAHWPTR(pScrn)->MapSize = 0x10000;		/* Standard 64k VGA window */
+    if (!vgaHWMapMem(pScrn))
+	return FALSE;
+    
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
+    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    
+    
+    /* Unprotect MediaGX extended registers */
+    outb(vgaIOBase + 4, CrtcExtendedRegisterLock);
+    outb(vgaIOBase + 5, 0x57);
+    outb(vgaIOBase + 5, 0x4C);
+
     outb(GX_IOPORT_INDEX, GX_IOIDX_DIR0); /* doesn't work w/o that */
     outb(GX_IOPORT_INDEX, GX_IOIDX_GCR);
     gcr = inb(GX_IOPORT_DATA);
@@ -415,117 +526,15 @@ CYRIXProbe(DriverPtr drv, int flags)
      * registers.  The op-codes to use depend on the processor
      * revision.  The value `40' is a guess (awaiting details from Cyrix).
      */
-    CYRIXbltBufSize = (padsize == 4) ? 1840 : (padsize == 3) ? 1328 : 816;
-    CYRIXbltBuf1Address = 0x0E60 - CYRIXbltBufSize;
-    CYRIXbltBuf0Address = CYRIXbltBuf1Address - CYRIXbltBufSize;
-
-    /* Free it since we don't need that list after this */
-    xfree(devSections);
-
-    for (i=0; i < numUsed; i++) {
-
-
-    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn = NULL;
-	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
-						   CYRIXISAChipsets, NULL,
-						   NULL, NULL, NULL, NULL))){
-		pScrn->driverVersion = VERSION;
-		pScrn->ioBase	 = vgaIOBase;
-		pScrn->driverName    = CYRIX_DRIVER_NAME;
-		pScrn->name          = CYRIX_NAME;
-		pScrn->Probe         = CYRIXProbe;
-		pScrn->PreInit       = CYRIXPreInit;
-		pScrn->ScreenInit    = CYRIXScreenInit;
-		pScrn->SwitchMode    = CYRIXSwitchMode;
-		pScrn->AdjustFrame   = CYRIXAdjustFrame;
-		pScrn->LeaveVT       = CYRIXLeaveVT;
-		pScrn->EnterVT       = CYRIXEnterVT;
-		pScrn->FreeScreen    = CYRIXFreeScreen;
-		pScrn->ValidMode     = CYRIXValidMode;
-		return (TRUE);
-	    }
-	    xfree(usedChips);
-    }
-    return (TRUE);
-}
-
-static int
-CYRIXFindIsaDevice(GDevPtr dev)
-{
-    CARD32 CurrentValue, TestValue;
-
-    /* No need to unlock VGA CRTC registers here */
-
-    /* VGA has one more read/write attribute register than EGA */
-    (void) inb(vgaIOBase + 0x0AU);  /* Reset flip-flop */
-    outb(0x3C0, 0x14 | 0x20);
-    CurrentValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue ^ 0x0F);
-    outb(0x3C0, 0x14 | 0x20);
-    TestValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue);
-
-    /* Quit now if no VGA is present */
-    if ((CurrentValue ^ 0x0F) != TestValue)
-      return -1;
-    return (int)CHIP_CYRIXmediagx;
-}
-	
-/* Mandatory */
-static Bool
-CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
-{
-    MessageType from;
-    CYRIXPrvPtr pCyrix;
-    int videoram;
-    int i;
-    ClockRangePtr clockRanges;
-    char *mod = NULL;
-    const char *Sym;
-
-    if (flags & PROBE_DETECT) return FALSE;
-
-    /* Allocate the CYRIXRec driverPrivate */
-    if (!CYRIXGetRec(pScrn)) return FALSE;
-
-    /*
-     * Note: This function is only called once at server startup, and
-     * not at the start of each server generation.  This means that
-     * only things that are persistent across server generations can
-     * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-     * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()  
-     * are too, and should be used for data that must persist across
-     * server generations.
-     *
-     * Per-generation data should be allocated with
-     * AllocateScreenPrivateIndex() from the ScreenInit() function.
-     */
-    pCyrix = CYRIXPTR(pScrn);
-
-    /* The vgahw module should be loaded here when needed */
-    if (!xf86LoadSubModule(pScrn, "vgahw"))
-	return FALSE;
-    xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-    /*
-     * Allocate a vgaHWRec
-     */
-    if (!vgaHWGetHWRec(pScrn))
-	return FALSE;
-
-    VGAHWPTR(pScrn)->MapSize = 0x10000;		/* Standard 64k VGA window */
-
-    if (!vgaHWMapMem(pScrn))
-	return FALSE;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    pCyrix->CYRIXbltBufSize = (padsize == 4) ? 1840 : (padsize == 3) ? 1328 : 816;
+    pCyrix->CYRIXbltBuf1Address = 0x0E60 - pCyrix->CYRIXbltBufSize;
+    pCyrix->CYRIXbltBuf0Address = pCyrix->CYRIXbltBuf1Address - pCyrix->CYRIXbltBufSize;
 
     /* map the entire area from GX_BASE (scratchpad area)
 	up to the end of the control registers */
-    GXregisters = (char*)xf86MapVidMem(pScrn->scrnIndex,
+    pCyrix->GXregisters = (char*)xf86MapVidMem(pScrn->scrnIndex,
 			VGA_REGION, (int )physbase, 0x9000);
-    if (!GXregisters) {
+    if (!pCyrix->GXregisters) {
 	ErrorF("%s: Cannot map hardware registers\n", CYRIX_NAME);
 	return FALSE;
     }
@@ -694,8 +703,8 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	from = X_PROBED;
-	outb(pScrn->ioBase + 4, CrtcGraphicsMemorySize);
-	videoram = (inb(pScrn->ioBase + 5) * 64);
+	outb(vgaIOBase + 4, CrtcGraphicsMemorySize);
+	videoram = (inb(vgaIOBase + 5) * 64);
 	pScrn->videoRam = videoram & 0xFFFFFC00; /* mask out the part we want */
     }
 
@@ -1108,11 +1117,13 @@ CYRIXAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp;
-    CYRIXPtr pCyrix;
+    CYRIXPrvPtr pCyrix;
     int base = y * pScrn->displayWidth + x;
     unsigned char temp;
-
+    int vgaIOBase;
+    
     hwp = VGAHWPTR(pScrn);
+    vgaIOBase = hwp->IOBase;
     pCyrix = CYRIXPTR(pScrn);
 
     switch (pScrn->bitsPerPixel) {
@@ -1128,6 +1139,7 @@ CYRIXAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
 
     GX_REG(DC_UNLOCK) = DC_UNLOCK_VALUE;
+    
     /*GX_REG(DC_FB_ST_OFFSET) = base; */
     /* CRT bits 0-15 */
     outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C); 
@@ -1236,6 +1248,7 @@ CYRIXSaveScreen(ScreenPtr pScreen, int mode)
     return vgaHWSaveScreen(pScreen, mode);
 }
 
+#if 0
 static void
 CYRIXEnterLeave(enter)
 Bool enter;
@@ -1267,3 +1280,4 @@ Bool enter;
     	GX_REG(DC_UNLOCK) = 0;
     }
 }
+#endif
