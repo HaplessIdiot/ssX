@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.31 2001/08/16 14:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.32 2002/01/26 23:53:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2001 by The XFree86 Project, Inc.
@@ -146,6 +146,12 @@ typedef struct {
 #define MINOR_UNSPEC		0xFF
 #define PATCH_UNSPEC		0xFFFF
 #define ABI_VERS_UNSPEC		0xFFFFFFFF
+
+#define MODULE_VERSION_NUMERIC(maj, min, patch) \
+	((((maj) & 0xFF) << 24) | (((min) & 0xFF) << 16) | (patch & 0xFFFF))
+#define GET_MODULE_MAJOR_VERSION(vers)	(((vers) >> 24) & 0xFF)
+#define GET_MODULE_MINOR_VERSION(vers)	(((vers) >> 16) & 0xFF)
+#define GET_MODULE_PATCHLEVEL(vers)	((vers) & 0xFFFF)
 
 #define INITARGS void
 

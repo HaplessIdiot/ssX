@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.121 2002/01/25 21:55:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.122 2002/05/31 18:45:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -29,6 +29,7 @@
 #include "mivalidate.h"
 #include "xf86RAC.h"
 #include "xf86Bus.h"
+#include "xf86Version.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(__GNU__)
@@ -2327,6 +2328,22 @@ xf86IsPc98()
     return xf86Info.pc98;
 #else
     return FALSE;
+#endif
+}
+
+CARD32
+xf86GetVersion()
+{
+    return XF86_VERSION_CURRENT;
+}
+
+CARD32
+xf86GetModuleVersion(pointer module)
+{
+#ifdef XFree86LOADER
+    return (CARD32)LoaderGetModuleVersion(module);
+#else
+    return 0;
 #endif
 }
 

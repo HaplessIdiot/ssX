@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.66 2001/12/17 20:00:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.67 2002/05/31 18:46:00 dawes Exp $ */
 
 /*
  *
@@ -775,6 +775,7 @@ DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
 	ret->child = DuplicateModule(mod->child, ret);
 	ret->sib = DuplicateModule(mod->sib, parent);
 	ret->parent = parent;
+	ret->VersionInfo = mod->VersionInfo;
 
 	return ret;
 }
@@ -977,6 +978,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		if (teardown)
 			ret->TearDownProc = teardown;
 		ret->path = path;
+		ret->VersionInfo = vers;
 	}
 	else
 	{
@@ -1277,4 +1279,18 @@ LoaderGetCanonicalName(const char *modname, PatternPtr patterns)
 
 	/* If there is no match, return the whole name minus the leading path */
 	return xstrdup(s);
+}
+
+/*
+ * Return the module version information.
+ */
+unsigned long
+LoaderGetModuleVersion (ModuleDescPtr mod)
+{
+    if (!mod || !mod->VersionInfo)
+		return 0;
+
+    return MODULE_VERSION_NUMERIC(mod->VersionInfo->majorversion,
+								  mod->VersionInfo->minorversion,
+								  mod->VersionInfo->patchlevel);
 }

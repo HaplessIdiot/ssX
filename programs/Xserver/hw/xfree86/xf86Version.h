@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.491 2002/06/05 20:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.492 2002/06/08 03:44:56 dawes Exp $ */
 
 #ifndef XF86_VERSION_CURRENT
 
@@ -10,6 +10,11 @@
 /* This has five arguments for compatibilty reasons */
 #define XF86_VERSION_NUMERIC(major,minor,patch,snap,dummy) \
 	(((major) * 10000000) + ((minor) * 100000) + ((patch) * 1000) + snap)
+
+#define XF86_GET_MAJOR_VERSION(vers)	((vers) / 10000000)
+#define XF86_GET_MINOR_VERSION(vers)	(((vers) % 10000000) / 100000)
+#define XF86_GET_PATCH_VERSION(vers)	(((vers) % 100000) / 1000)
+#define XF86_GET_SNAP_VERSION(vers)	((vers) % 1000)
 
 /* Define these for compatibility.  They'll be removed at some point. */
 #define XF86_VERSION_SUBMINOR	XF86_VERSION_PATCH
