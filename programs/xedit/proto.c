@@ -113,7 +113,7 @@ static XeditReqTrans trans[] = {
     {"create-buffer",		CreateBuffer,		"s"},
 
     /* input  = nil
-     * output = string: converter value, one of "true" and "false" */
+     * output = nil or t */
     {"get-auto-fill",		GetAutoFill,		""},
 
     /* input  = nil
@@ -141,11 +141,11 @@ static XeditReqTrans trans[] = {
     {"get-foreground",		GetForeground,		""},
 
     /* input  = nil
-     * output = string: one of "always" and "never" */
+     * output = nil or t */
     {"get-horiz-scrollbar",	GetHorizScrollbar,	""},
 
     /* input  = nil
-     * output = string: one of "left", "right", "center" and "full" */
+     * output = :left, :right, :center or :full */
     {"get-justification",	GetJustification,	""},
 
     /* input  = nil
@@ -165,11 +165,11 @@ static XeditReqTrans trans[] = {
     {"get-right-column",	GetRightColumn,		""},
 
     /* input  = nil
-     * output = string: one of "always" and "never" */
+     * output = nil or t */
     {"get-vert-scrollbar",	GetVertScrollbar,	""},
 
     /* input  = nil
-     * output = string: converter value, one of "never", "line" and "word" */
+     * output = :never, :line, or :word */
     {"get-wrap-mode",		GetWrapMode,		""},
 
     /* input  = string: text to be inserted
@@ -194,13 +194,13 @@ static XeditReqTrans trans[] = {
      */
     {"replace-text",		ReplaceText,		"iis"},
 
-    /* input  = string: string to be searched
+    /* input  = string: string to be searched and integer: case sensitive flag
      * output = integer: position of text or nil if no match */
-    {"search-backward",		SearchBackward,		"s"},
+    {"search-backward",		SearchBackward,		"si"},
 
-    /* input  = string: string to be searched
+    /* input  = string: string to be searched and integer: case sensitive flag
      * output = integer: position of text or nil if no match */
-    {"search-forward",		SearchForward,		"s"},
+    {"search-forward",		SearchForward,		"si"},
 
     /* input  = string: converter value, one of "true" and "false"
      * output = nil */
@@ -210,13 +210,13 @@ static XeditReqTrans trans[] = {
      * output = nil */
     {"set-background",		SetBackground,		"s"},
 
-    /* input  = string list: buffer-identifier and new buffer-name
-     * output = nil */
-    {"set-buffer-name",		SetBufferName,		"bs"},
-
     /* input  = string list: buffer-identifier and new buffer-file-name
      * output = nil */
     {"set-buffer-filename",	SetBufferFileName,	"bs"},
+
+    /* input  = string list: buffer-identifier and new buffer-name
+     * output = nil */
+    {"set-buffer-name",		SetBufferName,		"bs"},
 
     /* input  = string: buffer-identifier
      * output = nil */
@@ -266,6 +266,8 @@ static XeditReqTrans trans[] = {
 static char buffer[512];
 static char errstr[80];
 
+static char *NIL = "NIL\n", *T = "T\n";
+
 /*
  * Implementation
  */
@@ -285,7 +287,7 @@ XeditProto(char *input, char **result)
     char *function, *string, *description, *value;
 
     /* unless overriden, always return NIL */
-    *result = "NIL\n";
+    *result = NIL;
 
     /* get function name */
     for (function = input; *function && isspace(*function); function++)
@@ -696,7 +698,7 @@ GetWrapMode(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRWrapMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), ":%s\n", str);
     *result = buffer;
 
     return (True);
@@ -729,22 +731,13 @@ SetWrapMode(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetAutoFill(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    char *str;
     Boolean fill;
     Arg arg[1];
-    XrmValue from, to;
-
-    from.size = sizeof(fill);
-    from.addr = (XtPointer)&fill;
-    to.size = 0;
-    to.addr = NULL;
 
     XtSetArg(arg[0], XtNautoFill, &fill);
     XtGetValues(info->text, arg, 1);
-    XtConvertAndStore(info->text, XtRBoolean, &from, XtRString, &to);
-    str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
-    *result = buffer;
+    if (fill)
+	*result = T;
 
     return (True);
 }
@@ -845,7 +838,7 @@ GetJustification(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRJustifyMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), ":%s\n", str);
     *result = buffer;
 
     return (True);
@@ -877,22 +870,13 @@ SetJustification(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetVertScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    char *str;
     Arg arg[1];
     XawTextScrollMode scroll;
-    XrmValue from, to;
-
-    from.size = sizeof(scroll);
-    from.addr = (XtPointer)&scroll;
-    to.size = 0;
-    to.addr = NULL;
 
     XtSetArg(arg[0], XtNscrollVertical, &scroll);
     XtGetValues(info->text, arg, 1);
-    XtConvertAndStore(info->text, XtRScrollMode, &from, XtRString, &to);
-    str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
-    *result = buffer;
+    if (scroll == XawtextScrollAlways)
+	*result = T;
 
     return (True);
 }
@@ -923,22 +907,13 @@ SetVertScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetHorizScrollbar(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    char *str;
     Arg arg[1];
     XawTextScrollMode scroll;
-    XrmValue from, to;
-
-    from.size = sizeof(scroll);
-    from.addr = (XtPointer)&scroll;
-    to.size = 0;
-    to.addr = NULL;
 
     XtSetArg(arg[0], XtNscrollHorizontal, &scroll);
     XtGetValues(info->text, arg, 1);
-    XtConvertAndStore(info->text, XtRScrollMode, &from, XtRString, &to);
-    str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
-    *result = buffer;
+    if (scroll == XawtextScrollAlways)
+	*result = T;
 
     return (True);
 }
@@ -1084,7 +1059,7 @@ Search(XeditReqInfo *info, XeditReqArgs *args, char **result,
 
     position = XawTextGetInsertionPoint(info->text);
 
-    block.firstPos = 0;
+    block.firstPos = args->args[1].integer != 0;
     block.format = FMT8BIT;
     block.length = strlen(args->args[0].string);
     block.ptr = args->args[0].string;

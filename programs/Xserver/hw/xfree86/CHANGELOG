@@ -1,4 +1,10 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 196. When using the vesa driver and the DisplaySize option the server
+      would crash with a floating point exception due to a divide by zero
+      in miscreeninit() (#5298, Mike A. Harris).
+ 195. The function MoveLine in lib/Xaw/TextAction.c sometimes attempts to
+      read uninitialized memory when hit ctrl-N in a Text widget to move to
+      the next line (#5245, Johnathan Kamens).
  194. Adjust -probe for change in default stderr verbosity (Marc La France).
  193. Radeon patch for Xv on all known Radeon devices (James Ralston and
       Keith Packard).
@@ -14912,4 +14918,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2254 2002/06/27 22:39:47 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2255 2002/07/02 02:00:01 tsi Exp $

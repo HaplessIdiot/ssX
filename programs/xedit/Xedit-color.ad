@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.5 1999/08/15 13:00:54 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.8 2002/06/03 21:39:22 paulo Exp $
 
 #include "Xedit"
 
@@ -17,9 +17,9 @@ foreground	gray78;\
 points		-2,+1,+1,-2
 
 *Command.translations:	#override \
-<Btn1Down>:	declare(1, $set, 1) set-values(1, foreground, gray20, background, rgb:d/5/5) set()\n\
-Button1<Leave>: reset() declare(1, $set, 0) set-values(1, foreground, gray20, background, gray70)\n\
-<Btn1Up>:	set-values($set, foreground, gray70, background, gray20) notify() unset()
+<Btn1Down>:	set-values(1, foreground, gray20, background, rgb:d/5/5) set()\n\
+Button1<Leave>: reset() set-values(1, foreground, gray20, background, gray70)\n\
+<Btn1Up>:	notify() unset()
 
 *Toggle.foreground:		gray30
 *Toggle.background:		gray85
