@@ -1,5 +1,5 @@
-XCOMM platform:	$OpenBSD: OpenBSDLib.tmpl,v 1.2 2002/12/04 03:49:30 todd Exp $
-XCOMM platform: $XFree86: xc/config/cf/OpenBSDLib.tmpl,v 1.1 2002/12/16 22:48:27 herrb Exp $
+XCOMM platform:	$OpenBSD: OpenBSDLib.tmpl,v 1.6 2003/04/04 19:48:58 matthieu Exp $
+XCOMM platform: $XFree86: xc/config/cf/OpenBSDLib.tmpl,v 1.2 2003/04/03 22:00:24 herrb Exp $
 XCOMM
 /* Shared Library Revisions. Crank major on API Changes */
 
@@ -62,6 +62,9 @@ XCOMM
 # endif
 # ifndef SharedXrandrRev
 #  define SharedXrandrRev 2.0
+# endif
+# ifndef SharedXcursorRev
+#  define SharedXcursorRev 1.0
 # endif
 # ifndef SharedXfontcacheRev
 #  define SharedXfontcacheRev 2.0
