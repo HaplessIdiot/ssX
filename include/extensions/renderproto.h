@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/renderproto.h,v 1.9 2001/09/07 16:21:15 keithp Exp $
+ * $XFree86: xc/include/extensions/renderproto.h,v 1.12 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -550,6 +550,24 @@ typedef struct {
 
 #define sz_xRenderSetPictureFilterReq		    12
     
+/* 0.8 and higher */
+
+typedef struct {
+    Cursor		cursor B32;
+    CARD32		delay B32;
+} xAnimCursorElt;
+
+#define sz_xAnimCursorElt			    8
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		renderReqType;
+    CARD16		length B16;
+    Cursor		cid B32;
+} xRenderCreateAnimCursorReq;
+
+#define sz_xRenderCreateAnimCursorReq		    8
+
 #undef Window
 #undef Drawable
 #undef Font

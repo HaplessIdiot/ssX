@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/xlib.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/xlib.c,v 1.2 2002/09/05 07:29:55 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -97,12 +97,12 @@ XcursorTryShapeCursor (Display	    *dpy,
     {
 	int		size = XcursorGetDefaultSize (dpy);
 	char		*theme = XcursorGetTheme (dpy);
-	XcursorImage    *image = XcursorShapeLoadImage (source_char, theme, size);
+	XcursorImages   *images = XcursorShapeLoadImages (source_char, theme, size);
 
-	if (image)
+	if (images)
 	{
-	    cursor = XcursorImageLoadCursor (dpy, image);
-	    XcursorImageDestroy (image);
+	    cursor = XcursorImagesLoadCursor (dpy, images);
+	    XcursorImagesDestroy (images);
 	}
     }
     return cursor;

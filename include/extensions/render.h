@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/render.h,v 1.9 2002/09/29 23:39:43 keithp Exp $
+ * $XFree86: xc/include/extensions/render.h,v 1.10 2002/11/06 22:47:49 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -33,7 +33,7 @@ typedef unsigned long	PictFormat;
 
 #define RENDER_NAME	"RENDER"
 #define RENDER_MAJOR	0
-#define RENDER_MINOR	7
+#define RENDER_MINOR	8
 
 #define X_RenderQueryVersion		    0
 #define X_RenderQueryPictFormats	    1
@@ -68,7 +68,8 @@ typedef unsigned long	PictFormat;
 #define X_RenderSetPictureTransform	    28
 #define X_RenderQueryFilters		    29
 #define X_RenderSetPictureFilter	    30
-#define RenderNumberRequests		    (X_RenderSetPictureFilter+1)
+#define X_RenderCreateAnimCursor	    31
+#define RenderNumberRequests		    (X_RenderCreateAnimCursor+1)
 
 #define BadPictFormat			    0
 #define BadPicture			    1

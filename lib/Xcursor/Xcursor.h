@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/Xcursor.h,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/Xcursor.h,v 1.2 2002/09/05 07:29:55 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -355,6 +355,9 @@ XcursorImageLoadCursor (Display *dpy, const XcursorImage *image);
 XcursorCursors *
 XcursorImagesLoadCursors (Display *dpy, const XcursorImages *images);
 
+Cursor
+XcursorImagesLoadCursor (Display *dpy, const XcursorImages *images);
+
 /*
  * Filename/Cursor APIs
  */
@@ -438,6 +441,9 @@ XcursorImageHash (XImage	*image,
  */
 XcursorBool
 XcursorSupportsARGB (Display *dpy);
+
+XcursorBool
+XcursorSupportsAnim (Display *dpy);
 
 XcursorBool
 XcursorSetDefaultSize (Display *dpy, int size);

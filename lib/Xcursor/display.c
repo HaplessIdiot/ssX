@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/display.c,v 1.2 2002/09/05 07:29:55 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/display.c,v 1.3 2002/09/05 07:55:17 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -120,19 +120,30 @@ _XcursorGetDisplayInfo (Display *dpy)
     /*
      * Check whether the display supports the Render CreateCursor request
      */
+    info->has_render_cursor = XcursorFalse;
+    info->has_anim_cursor = XcursorFalse;
     if (XRenderQueryExtension (dpy, &event_base, &error_base) &&
-	XRenderQueryVersion (dpy, &major, &minor) &&
-	(major > 0 || minor >= 5))
+	XRenderQueryVersion (dpy, &major, &minor))
     {
-	info->has_render_cursor = XcursorTrue;
-	v = getenv ("XCURSOR_CORE");
-	if (!v)
-	    v = XGetDefault (dpy, "Xcursor", "core");
-	if (v && _XcursorDefaultParseBool (v) == 1)
-	    info->has_render_cursor = XcursorFalse;
+	if (major > 0 || minor >= 5)
+	{
+	    info->has_render_cursor = XcursorTrue;
+	    v = getenv ("XCURSOR_CORE");
+	    if (!v)
+		v = XGetDefault (dpy, "Xcursor", "core");
+	    if (v && _XcursorDefaultParseBool (v) == 1)
+		info->has_render_cursor = XcursorFalse;
+	}
+	if (info->has_render_cursor && (major > 0 || minor >= 8))
+	{
+	    info->has_anim_cursor = XcursorTrue;
+	    v = getenv ("XCURSOR_ANIM");
+	    if (!v)
+		v = XGetDefault (dpy, "Xcursor", "anim");
+	    if (v && _XcursorDefaultParseBool (v) == 0)
+		info->has_anim_cursor = XcursorFalse;
+	}
     }
-    else
-	info->has_render_cursor = XcursorFalse;
     
     info->size = 0;
 
@@ -246,6 +257,14 @@ XcursorSupportsARGB (Display *dpy)
     XcursorDisplayInfo	*info = _XcursorGetDisplayInfo (dpy);
 
     return info && info->has_render_cursor;
+}
+
+XcursorBool
+XcursorSupportsAnim (Display *dpy)
+{
+    XcursorDisplayInfo	*info = _XcursorGetDisplayInfo (dpy);
+
+    return info && info->has_anim_cursor;
 }
 
 XcursorBool

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/cursor.c,v 1.1 2002/08/29 04:40:34 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/cursor.c,v 1.3 2002/10/11 17:06:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -687,16 +687,48 @@ XcursorImagesLoadCursors (Display *dpy, const XcursorImages *images)
 }
 
 Cursor
+XcursorImagesLoadCursor (Display *dpy, const XcursorImages *images)
+{
+    if (images->nimage == 1 || !XcursorSupportsAnim (dpy))
+	return XcursorImageLoadCursor (dpy, images->images[0]);
+    else
+    {
+	XcursorCursors	*cursors = XcursorImagesLoadCursors (dpy, images);
+	XAnimCursor	*anim;
+	int		n;
+	Cursor		cursor;
+	
+	if (!cursors)
+	    return 0;
+	anim = malloc (cursors->ncursor * sizeof (XAnimCursor));
+	if (!anim)
+	{
+	    XcursorCursorsDestroy (cursors);
+	    return 0;
+	}
+	for (n = 0; n < cursors->ncursor; n++)
+	{
+	    anim[n].cursor = cursors->cursors[n];
+	    anim[n].delay = images->images[n]->delay;
+	}
+	cursor = XRenderCreateAnimCursor (dpy, cursors->ncursor, anim);
+	free (anim);
+	return cursor;
+    }
+}
+
+
+Cursor
 XcursorFilenameLoadCursor (Display *dpy, const char *file)
 {
     int		    size = XcursorGetDefaultSize (dpy);
-    XcursorImage    *image = XcursorFilenameLoadImage (file, size);
+    XcursorImages   *images = XcursorFilenameLoadImages (file, size);
     Cursor	    cursor;
     
-    if (!image)
+    if (!images)
 	return None;
-    cursor = XcursorImageLoadCursor (dpy, image);
-    XcursorImageDestroy (image);
+    cursor = XcursorImagesLoadCursor (dpy, images);
+    XcursorImagesDestroy (images);
     return cursor;
 }
 
@@ -719,13 +751,13 @@ XcursorLibraryLoadCursor (Display *dpy, const char *file)
 {
     int		    size = XcursorGetDefaultSize (dpy);
     char	    *theme = XcursorGetTheme (dpy);
-    XcursorImage    *image = XcursorLibraryLoadImage (file, theme, size);
+    XcursorImages   *images = XcursorLibraryLoadImages (file, theme, size);
     Cursor	    cursor;
     
-    if (!image)
+    if (!images)
 	return None;
-    cursor = XcursorImageLoadCursor (dpy, image);
-    XcursorImageDestroy (image);
+    cursor = XcursorImagesLoadCursor (dpy, images);
+    XcursorImagesDestroy (images);
     return cursor;
 }
 
@@ -811,13 +843,13 @@ XcursorShapeLoadCursor (Display *dpy, unsigned int shape)
 {
     int		    size = XcursorGetDefaultSize (dpy);
     char	    *theme = XcursorGetTheme (dpy);
-    XcursorImage    *image = XcursorShapeLoadImage (shape, theme, size);
+    XcursorImages   *images = XcursorShapeLoadImages (shape, theme, size);
     Cursor	    cursor;
     
-    if (image)
+    if (images)
     {
-	cursor = XcursorImageLoadCursor (dpy, image);
-	XcursorImageDestroy (image);
+	cursor = XcursorImagesLoadCursor (dpy, images);
+	XcursorImagesDestroy (images);
     }
     else
 	cursor = None;
