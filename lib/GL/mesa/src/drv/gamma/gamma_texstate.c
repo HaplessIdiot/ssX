@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texstate.c,v 1.2tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -69,7 +69,8 @@ static void gammaSetTexImages( gammaContextPtr gmesa,
       t->image[i].offset = height * pitch;
       t->image[i].internalFormat = baseImage->Format;
       height += t->image[i].image->Height;
-      t->TextureBaseAddr[i] = (t->image[i].offset + t->BufAddr) << 5;
+      t->TextureBaseAddr[i] = /* ??? */
+	(unsigned long)(t->image[i].offset + t->BufAddr) << 5;
 
    }
 

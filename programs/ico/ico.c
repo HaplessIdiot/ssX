@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/ico/ico.c,v 1.4 2001/07/25 15:05:13 dawes Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.5tsi Exp $ */
 
 /******************************************************************************
  * Description
@@ -166,7 +166,7 @@ Atom wm_delete_window;
  * any additional threads are created
  */
 
-const char *Primaries[] = {
+char *Primaries[] = {
     "red", "green", "blue", "yellow", "cyan", "magenta"
 };
 #define NumberPrimaries 6
@@ -211,7 +211,7 @@ const char *ProgramName;	/* argv[0] */
 const char *geom = NULL;	/* -geometry: window geometry */
 int useRoot = 0;		/* -r */
 int dash = 0;			/* -d: dashed line pattern */
-const char **colornames;	/* -colors (points into argv) */
+char **colornames;		/* -colors (points into argv) */
 #ifdef MULTIBUFFER
 int update_action = MultibufferUpdateActionBackground;
 #endif
@@ -333,8 +333,8 @@ IdentMat(m)
 
 void
 ConcatMat(l, r, m)
-    const Transform3D l;
-    const Transform3D r;
+    Transform3D l;
+    Transform3D r;
     Transform3D m;
 {
 	int i;
@@ -419,7 +419,7 @@ FormatRotateMat(axis, angle, m)
 void
 PartialNonHomTransform(n, m, in, out)
     int n;
-    const Transform3D m;
+    Transform3D m;
     const Point3D *in;
     Point3D *out;
 {
@@ -1183,7 +1183,7 @@ findpoly(name)
 
 int main(argc, argv)
     int argc;
-    const char **argv;
+    char **argv;
 {
 	const char *display = NULL;
 #ifdef MULTIBUFFER

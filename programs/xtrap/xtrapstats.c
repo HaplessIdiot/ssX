@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xtrap/xtrapstats.c,v 1.1tsi Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -51,6 +51,7 @@ SOFTWARE.
  *
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
 #include <ctype.h>

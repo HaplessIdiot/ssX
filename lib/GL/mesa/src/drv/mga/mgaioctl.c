@@ -25,7 +25,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.12 2001/10/31 22:50:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.13tsi Exp $ */
 
 #include <stdio.h>
 
@@ -416,7 +416,9 @@ static void age_mmesa( mgaContextPtr mmesa, int age )
    if (mmesa->CurrentTexObj[1]) mmesa->CurrentTexObj[1]->age = age;
 }
 
+#ifdef __i386__
 static int __break_vertex = 0;
+#endif
 
 void mgaFlushVerticesLocked( mgaContextPtr mmesa )
 {

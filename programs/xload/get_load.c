@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.16 2002/03/05 21:22:11 herrb Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.17tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -43,6 +43,7 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/Xlocale.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "xload.h"
 
 #if !defined(DGUX)

@@ -13,7 +13,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-
+/* $XFree86$ */
 
 #include "t42parse.h"
 #include "t42error.h"
@@ -629,7 +629,9 @@
           goto Fail;
         }
 
-        v = (FT_Byte)( 16 * t42_hexval( *cur++ ) + t42_hexval( *cur++ ) );
+        v = (FT_Byte)( 16 * t42_hexval( *cur ) + t42_hexval( *(cur + 1) ) );
+	cur++;
+	cur++;
         string_size++;
       }
 

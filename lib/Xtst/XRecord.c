@@ -50,7 +50,7 @@ from The Open Group.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
-/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.3 2001/10/28 03:32:41 tsi Exp $ */
+/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.4tsi Exp $ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -822,7 +822,7 @@ parse_reply_call_callback(dpy, info, rep, reply, callback, closure)
 	    if (current_index + datum_bytes > rep->length << 2)
 		fprintf(stderr,
 			"XRecord: %lu-byte reply claims %d-byte element (seq %lu)\n",
-			rep->length << 2, current_index + datum_bytes,
+			(long)rep->length << 2, current_index + datum_bytes,
 			dpy->last_request_read);
 	    /*
 	     * This assignment (and indeed the whole buffer sharing

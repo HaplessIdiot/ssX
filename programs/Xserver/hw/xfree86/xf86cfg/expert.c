@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.8 2001/04/01 14:00:15 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.12tsi Exp $
  */
 
 #include "config.h"
@@ -433,7 +433,7 @@ ExpertConfigureEnd(void)
     InitializeVidmodes();
 
     if (save_config_mode != CONFIG_LAYOUT)
-	SetConfigModeCallback(topMenu, (XtPointer)save_config_mode, NULL);
+	SetConfigModeCallback(topMenu, (XtPointer)(long)save_config_mode, NULL);
 }
 
 /*ARGSUSED*/

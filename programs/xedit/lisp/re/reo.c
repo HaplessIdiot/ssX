@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.3 2002/09/12 02:17:05 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.4tsi Exp $ */
 
 #include "rep.h"
 
@@ -461,8 +461,8 @@ orec_pat_rng(orec_inf *inf, rec_pat *pat)
 		    rbm->map[chf >> 3] |= (1 << (chf & 7));
 		    break;
 		case Reb_CaseSingle:
-		    chf = cht = rng->value.cse.lower;
-		    cht = cht = rng->value.cse.upper;
+		    chf = rng->value.cse.lower;
+		    cht = rng->value.cse.upper;
 		    rbm->map[chf >> 3] |= (1 << (chf & 7));
 		    rbm->map[cht >> 3] |= (1 << (cht & 7));
 		    break;

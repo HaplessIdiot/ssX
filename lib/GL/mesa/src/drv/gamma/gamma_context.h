@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.2tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -144,7 +144,7 @@ struct gamma_texture_object_t {
    int bound;
 
    PMemBlock MemBlock;   
-   GLuint BufAddr;
+   char *BufAddr;
    
    GLuint min_level;
    GLuint max_level;
