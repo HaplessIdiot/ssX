@@ -1,3 +1,8 @@
+XFree86 4.0f (?? June 2000)
+ 354. Fix long standing bug with 3Dfx driver when DRI module isn't loaded.
+      It complained about unresolved symbol called after 'Textures memory'
+      output (Alan Hourihane).
+
 XFree86 4.0e (20 June 2000)
  353. Fix a couple of acceleration problems in glint driver (Alan Hourihane).
  352. Don't attempt to build the Sparc DRI drivers on ix86, and vice versa
@@ -10682,4 +10687,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1198 2000/06/21 00:24:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1199 2000/06/21 13:35:48 alanh Exp $
