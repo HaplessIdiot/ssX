@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.9 2002/09/24 16:14:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.10 2002/11/17 18:42:01 alanh Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -59,13 +59,22 @@
 static CARD32 linuxPciCfgRead(PCITAG tag, int off);
 static void linuxPciCfgWrite(PCITAG, int off, CARD32 val);
 static void linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
+#if defined(__powerpc__)
+static ADDRESS linuxPpcBusAddrToHostAddr(PCITAG, PciAddrType, ADDRESS);
+static ADDRESS linuxPpcHostAddrToBusAddr(PCITAG, PciAddrType, ADDRESS);
+#endif
 
 static pciBusFuncs_t linuxFuncs0 = {
 /* pciReadLong      */	linuxPciCfgRead,
 /* pciWriteLong     */	linuxPciCfgWrite,
 /* pciSetBitsLong   */	linuxPciCfgSetBits,
+#if defined(__powerpc__)
+/* pciAddrHostToBus */	linuxPpcHostAddrToBusAddr,
+/* pciAddrBusToHost */	linuxPpcBusAddrToHostAddr
+#else
 /* pciAddrHostToBus */	pciAddrNOOP,
 /* pciAddrBusToHost */	pciAddrNOOP
+#endif
 };
 
 static pciBusInfo_t linuxPci0 = {
@@ -166,6 +175,50 @@ linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 		write(fd,&val,4);
 	}
 }
+
+#if defined(__powerpc__)
+
+#ifndef __NR_pciconfig_iobase
+#define __NR_pciconfig_iobase   200
+#endif
+
+static ADDRESS
+linuxPpcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
+{
+    if (type == PCI_MEM)
+    {
+	ADDRESS membase = syscall(__NR_pciconfig_iobase, 1,
+		    PCI_BUS_FROM_TAG(tag), PCI_DFN_FROM_TAG(tag));
+	return (addr + membase);
+    }
+    else if (type == PCI_IO)
+    {
+	ADDRESS iobase = syscall(__NR_pciconfig_iobase, 2,
+		    PCI_BUS_FROM_TAG(tag), PCI_DFN_FROM_TAG(tag));
+	return (addr + iobase);
+    }
+    else return addr;
+}
+
+static ADDRESS
+linuxPpcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
+{
+    if (type == PCI_MEM)
+    {
+	ADDRESS membase = syscall(__NR_pciconfig_iobase, 1,
+		    PCI_BUS_FROM_TAG(tag), PCI_DFN_FROM_TAG(tag));
+	return (addr - membase);
+    }
+    else if (type == PCI_IO)
+    {
+	ADDRESS iobase = syscall(__NR_pciconfig_iobase, 2,
+		    PCI_BUS_FROM_TAG(tag), PCI_DFN_FROM_TAG(tag));
+	return (addr - iobase);
+    }
+    else return addr;
+}
+
+#endif /* __powerpc__ */
 
 #ifndef INCLUDE_XF86_NO_DOMAIN
 

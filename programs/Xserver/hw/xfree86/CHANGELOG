@@ -1,4 +1,15 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 175. Fix the host memory to bus macro in xf86pciBus.c, and add translations
+      for the B2I and I2B macros (Bugzilla #1220, Bill Randle).
+ 174. Add PCI address mapping support to linuxPci.c (Bugzilla #1229,
+      Bill Randle).
+ 173. Add encoding file for suneu_greek (Bugzilla #1215, Roland Mainz).
+ 172. Add encoding files for cns11643-1, cns11643-2, cns11643-3
+      (Bugzilla #1214, Roland Mainz).
+ 171. Add support to the savage driver for turning off the back light
+      when DPMS "off" mode is activated (Bugzilla #758, Herbert Graeber).
+ 170. Add support for interlaced video modes to the S3 driver (Bugzilla #1254,
+      Leo Savernik).
  169. Update the gb3212.1980-0 encoding to hande fonts that do not have
       a unicode table (Bugzilla #1230, Roland Mainz).
  168. Fix glint driver build warning (Bugzilla #1462, Nicolas Joly).
@@ -19075,7 +19086,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3307 2004/09/01 22:56:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3308 2004/09/01 23:27:17 dawes Exp $
 
 
 

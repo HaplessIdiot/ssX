@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.21 2003/12/10 02:58:07 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.22 2003/12/19 02:05:39 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +67,7 @@ char *encodings_array[] =
       "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
       "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14",
       "iso8859-15", "iso8859-16",
+      "suneu-greek",
       "ansi-1251", "koi8-r", "koi8-u", "koi8-ru", "koi8-e", "koi8-uni",
       "tis620-2",
       "sun.unicode.india-0",
@@ -75,6 +76,7 @@ char *encodings_array[] =
       /* But not "adobe-dingbats", as it uses generic glyph names. */
       "jisx0201.1976-0", "jisx0208.1983-0", "jisx0208.1990-0",
       "jisx0212.1990-0", "big5-0", "big5.eten-0", "big5hkscs-0",
+      "cns11643-1", "cns11643-2", "cns11643-3",
       "gb2312.1980-0", "gb18030.2000-0", "gb18030.2000-1",
       "ksc5601.1987-0", "ksc5601.1992-3"};
 
