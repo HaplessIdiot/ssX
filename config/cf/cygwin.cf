@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.26 2001/08/03 23:43:37 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.27 2001/08/30 21:24:46 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -32,6 +32,8 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.26 2001/08/03 23:43:37 ala
 #if !CrossCompiling
 #define BootstrapCFlags		-L/lib/automode.o
 #endif
+
+#define ExtraLoadOptions	-Wl,--enable-auto-import
 
 #define HasShadowPasswd         NO
 #define HasLibCrypt             YES
@@ -84,13 +86,8 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.26 2001/08/03 23:43:37 ala
 #define HasDlopen	        NO
 #define HasGnuMake		YES
 #define UseGccMakeDepend	NO
-
-/*
- * This options may depend on the state of POSIX thread
- * support in Cygwin, which is improving as of 2001-04-12.
- */
-#define ThreadedX               NO
-#define HasThreadSafeAPI        NO
+#define ThreadedX               YES
+#define HasThreadSafeAPI        YES
 
 #define LnCmd                   ln -s
 #ifndef CcCmd
@@ -143,9 +140,17 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.26 2001/08/03 23:43:37 ala
 #define HasWChar32              YES
 #define StandardCppOptions	-traditional
 #if UseCygIPC
-# define StandardCppDefines      -DHAS_SHM StandardDefines
+# if ThreadedX
+#  define StandardCppDefines      -DHAS_THREADS -DHAS_SHM StandardDefines
+# else
+#  define StandardCppDefines      -DHAS_SHM StandardDefines
+# endif
 #else
-# define StandardCppDefines      StandardDefines
+# if ThreadedX
+#  define StandardCppDefines      -DHAS_THREADS StandardDefines
+# else
+#  define StandardCppDefines      StandardDefines
+# endif
 #endif
 #define ServerOSDefines         XFree86ServerDefines -DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT -DDDXOSVERRORF
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
