@@ -20,6 +20,51 @@
 			path = XApplication.h;
 			refType = 4;
 		};
+		014C68ED00ED6A9D7F000001 = {
+			isa = PBXFileReference;
+			path = XView.h;
+			refType = 4;
+		};
+		014C68EE00ED6A9D7F000001 = {
+			isa = PBXFileReference;
+			path = XView.m;
+			refType = 4;
+		};
+		014C68EF00ED6A9D7F000001 = {
+			isa = PBXFileReference;
+			path = XWindow.h;
+			refType = 4;
+		};
+		014C68F000ED6A9D7F000001 = {
+			isa = PBXFileReference;
+			path = XWindow.m;
+			refType = 4;
+		};
+		014C68F200ED7AD67F000001 = {
+			isa = PBXFileReference;
+			path = fakeBoxRec.h;
+			refType = 4;
+		};
+		014C68F300EE5AB97F000001 = {
+			isa = PBXFileReference;
+			path = rootlessCommon.c;
+			refType = 4;
+		};
+		014C68F400EE5AB97F000001 = {
+			isa = PBXFileReference;
+			path = rootlessCommon.h;
+			refType = 4;
+		};
+		014C68F700EE678F7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessWindow.c;
+			refType = 4;
+		};
+		014C68F800EE678F7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessWindow.h;
+			refType = 4;
+		};
 		015698ED003DF345CE6F79C2 = {
 			isa = PBXFileReference;
 			path = XDarwin.icns;
@@ -283,12 +328,16 @@
 		};
 		080E96DDFE201D6D7F000001 = {
 			children = (
-				01279092000747AA0A000002,
-				1C4A3109004D8F24CE6F79C2,
-				0127909600074AF60A000002,
-				0127909800074B1A0A000002,
 				04329610000763920A000002,
 				04329611000763920A000002,
+				0127909600074AF60A000002,
+				0127909800074B1A0A000002,
+				01279092000747AA0A000002,
+				1C4A3109004D8F24CE6F79C2,
+				014C68EE00ED6A9D7F000001,
+				014C68ED00ED6A9D7F000001,
+				014C68F000ED6A9D7F000001,
+				014C68EF00ED6A9D7F000001,
 			);
 			isa = PBXGroup;
 			name = Classes;
@@ -705,13 +754,18 @@
 		};
 		32FEE13C00E07C3E7F000001 = {
 			children = (
+				014C68F200ED7AD67F000001,
 				32FEE13E00E07CBE7F000001,
 				32FEE13F00E07CBE7F000001,
 				32FEE14000E07CBE7F000001,
 				32FEE14100E07CBE7F000001,
 				32FEE14200E07CBE7F000001,
+				014C68F300EE5AB97F000001,
+				014C68F400EE5AB97F000001,
 				017D6F4400E861FB7F000001,
 				017D6F4500E861FB7F000001,
+				014C68F700EE678F7F000001,
+				014C68F800EE678F7F000001,
 				32FEE14900E07D317F000001,
 			);
 			isa = PBXGroup;

@@ -12,7 +12,7 @@
  * run by XDarwin.app.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.2 2001/04/07 20:56:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.3 2001/04/16 06:51:48 torrey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
@@ -44,7 +44,10 @@ int main(
             pause();
             return 0;
 
-        } else if (!strcmp(argv[i], "-quartz")) {
+        } else if (!strcmp(argv[i], "-quartz") ||
+                   !strcmp(argv[i], "-rootless") ||
+                   !strcmp(argv[i], "-fullscreen"))
+        {
             char quartzPath[PATH_MAX+1];
             int pathLength;
 

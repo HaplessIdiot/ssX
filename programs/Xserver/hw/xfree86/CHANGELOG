@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 114. Import of Gregory Parker's rootless code for Mac OS X. The code has
+      been cleaned up, reorganized, and modified to use Cocoa and fb
+      (Gregory Parker and Torrey T. Lyons).
  113. Freshen SCO port (J. Kean Johnston).
  112. Fix int10 build for GCC 3.0 (Marc La France).
  111. An attempt at fixing the i740 driver to not reference options before they
@@ -13513,4 +13516,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1859 2001/06/30 22:41:45 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1860 2001/07/01 01:59:59 tsi Exp $

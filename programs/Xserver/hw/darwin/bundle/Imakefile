@@ -1,11 +1,13 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.11 2001/05/21 01:42:17 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.12 2001/06/26 23:29:12 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-SRCS =	Preferences.m \
+SRCS =  Preferences.m \
         XApplication.m \
         Xserver.m \
+        XView.m \
+        XWindow.m \
         quartz.c \
         quartzAudio.c \
         quartzCocoa.m \
@@ -13,13 +15,17 @@ SRCS =	Preferences.m \
         quartzPasteboard.c \
         rootlessAquaGlue.c \
         rootlessAquaImp.m \
+        rootlessCommon.c \
         rootlessGC.c \
         rootlessScreen.c \
-        rootlessValTree.c
+        rootlessValTree.c \
+        rootlessWindow.c
 
-OBJS =	Preferences.o \
+OBJS =  Preferences.o \
         XApplication.o \
         Xserver.o \
+        XView.o \
+        XWindow.o \
         quartz.o \
         quartzAudio.o \
         quartzCocoa.o \
@@ -27,12 +33,15 @@ OBJS =	Preferences.o \
         quartzPasteboard.o \
         rootlessAquaGlue.o \
         rootlessAquaImp.o \
+        rootlessCommon.o \
         rootlessGC.o \
         rootlessScreen.o \
-        rootlessValTree.o
+        rootlessValTree.o \
+        rootlessWindow.o
 
-INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-           -I$(FONTINCSRC) -I$(SERVERSRC)/render -I$(EXTINCSRC) -I..
+INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
+           -I$(EXTINCSRC) -I..
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion

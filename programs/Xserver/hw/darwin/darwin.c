@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.25 2001/06/01 06:07:37 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.26 2001/06/26 23:29:11 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -36,13 +36,24 @@
 #include "bundle/quartz.h"
 #include "xfIOKit.h"
 
+// Quit after this many seconds if no quartz event poster is found.
+// Leave undefined for no safety quit.
+#undef QUARTZ_SAFETY_DELAY
+
+// Should Quartz mode default to rootless?
+#define QUARTZ_DEFAULT_ROOTLESS 0
+
+/* Fake button press/release for scroll wheel move. */
+#define SCROLLWHEELUPFAKE	4
+#define SCROLLWHEELDOWNFAKE	5
+
 // X server shared global variables
 DarwinFramebufferRec    dfb;
 int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
-int                     quartzRootless = 0;
+int                     quartzRootless = QUARTZ_DEFAULT_ROOTLESS;
 int                     quartzUseSysBeep = 0;
 int                     darwinFakeButtons = 0;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
@@ -50,14 +61,6 @@ IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
 UInt32                  darwinScreenNumber = 0;
 char                    *darwinKeymapFile = NULL;
-
-// Quit after this many seconds if no quartz event poster is found.
-// Leave undefined for no safety quit.
-#undef QUARTZ_SAFETY_DELAY
-
-/* Fake button press/release for scroll wheel move. */
-#define SCROLLWHEELUPFAKE	4
-#define SCROLLWHEELDOWNFAKE	5
 
 static DeviceIntPtr     darwinPointer;
 static DeviceIntPtr     darwinKeyboard;
@@ -215,7 +218,9 @@ static Bool DarwinAddScreen(
     }
 
 #ifdef RENDER
-    fbPictureInit(pScreen, 0, 0);
+    if (! fbPictureInit(pScreen, 0, 0)) {
+        return FALSE;
+    }
 #endif
 
 #ifdef MITSHM
@@ -935,9 +940,15 @@ int ddxProcessArgument( int argc, char *argv[], int i )
     }
 
 #ifdef DARWIN_WITH_QUARTZ
-    if ( !strcmp( argv[i], "-quartz" ) ) {
+
+    /* fullscreen: CoreGraphics full-screen mode
+     * rootless: Cocoa rootless mode
+     * quartz: Default, either fullscreen or rootless */
+
+    if ( !strcmp( argv[i], "-fullscreen" ) ) {
         quartz = TRUE;
-        ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
+        quartzRootless = FALSE;
+        ErrorF( "Running full screen in parallel with Mac OS X Quartz window server.\n" );
 #ifdef QUARTZ_SAFETY_DELAY
         ErrorF( "Quitting in %d seconds if no controller is found.\n",
                 QUARTZ_SAFETY_DELAY );
@@ -955,6 +966,16 @@ int ddxProcessArgument( int argc, char *argv[], int i )
 #endif
         return 1;
      }
+
+    if ( !strcmp( argv[i], "-quartz" ) ) {
+        quartz = TRUE;
+        ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
+#ifdef QUARTZ_SAFETY_DELAY
+        ErrorF( "Quitting in %d seconds if no controller is found.\n",
+                QUARTZ_SAFETY_DELAY );
+#endif
+        return 1;
+    }
 
     // The Mac OS X front end uses this argument, which we just ignore here.
     if ( !strcmp( argv[i], "-nostartx" ) ) {
@@ -1041,10 +1062,15 @@ void ddxUseMsg( void )
     ErrorF("-nofakebuttons : don't fake a three button mouse.\n");
     ErrorF("-keymap <file> : read the keymapping from a file instead of the kernel.\n");
     ErrorF("-version : show the server version.\n");
-#ifdef DARWIN_WITH_QUARTZ
-    ErrorF("-quartz : run in parallel with Mac OS X Quartz window server.\n");
     ErrorF("\n");
-    ErrorF("IOKit specific options (ignored with -quartz):\n");
+#ifdef DARWIN_WITH_QUARTZ
+    ErrorF("Quartz modes:\n");
+    ErrorF("-fullscreen : run full screen in parallel with Mac OS X window server.\n");
+    ErrorF("-rootless : run rootless inside Mac OS X window server.\n");
+    ErrorF("-quartz : Mac OS X default mode (currently %s)\n",
+           QUARTZ_DEFAULT_ROOTLESS ? "rootless" : "full screen");
+    ErrorF("\n");
+    ErrorF("IOKit specific options (ignored in Quartz modes):\n");
 #endif
     ErrorF("-screen <0,1,...> : use this screen number.\n");
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
