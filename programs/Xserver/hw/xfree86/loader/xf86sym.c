@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.19 1997/04/12 13:45:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.20 1997/05/06 09:46:35 dawes Exp $ */
 
 
 
@@ -268,6 +268,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86ProbeOnly)
    SYMVAR(videoDrivers)
    SYMVAR(TimingTab)
+#ifdef DPMSExtension
+   SYMVAR(DPMSEnabledSwitch)
+   SYMVAR(DPMSDisabledSwitch)
+   SYMVAR(defaultDPMSEnabled)
+#endif
 
   { 0, 0 },
 
