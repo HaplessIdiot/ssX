@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.21 2003/10/02 22:10:30 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.22tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1466,7 +1466,7 @@ Display *glXGetCurrentDisplay(void)
 }
 
 GLX_ALIAS(Display *, glXGetCurrentDisplayEXT, (void), (),
-	  glXGetCurrentDisplay);
+	  glXGetCurrentDisplay)
 
 static int __glXQueryContextInfo(Display *dpy, GLXContext ctx)
 {
@@ -1795,7 +1795,7 @@ void GLX_PREFIX(glXSelectEvent)(Display *dpy, GLXDrawable drawable, unsigned lon
 */
 
 GLX_ALIAS(GLXDrawable, glXGetCurrentReadDrawableSGI, (void), (),
-	  glXGetCurrentReadDrawable);
+	  glXGetCurrentReadDrawable)
 
 
 /*
@@ -2123,17 +2123,17 @@ void GLX_PREFIX(glXDestroyGLXVideoSourceSGIX)(Display *dpy, GLXVideoSourceSGIX s
 GLX_ALIAS(int, glXGetFBConfigAttribSGIX,
 	  (Display *dpy, GLXFBConfigSGIX config, int attribute, int *value),
 	  (dpy, config, attribute, value),
-	  glXGetFBConfigAttrib);
+	  glXGetFBConfigAttrib)
 
 GLX_ALIAS(GLXFBConfigSGIX *, glXChooseFBConfigSGIX,
 	  (Display *dpy, int screen, int *attrib_list, int *nelements),
 	  (dpy, screen, attrib_list, nelements),
-	  glXChooseFBConfig);
+	  glXChooseFBConfig)
 
 GLX_ALIAS(XVisualInfo *, glXGetVisualFromFBConfigSGIX,
 	  (Display * dpy, GLXFBConfigSGIX config),
 	  (dpy, config),
-	  glXGetVisualFromFBConfig);
+	  glXGetVisualFromFBConfig)
 
 GLXPixmap GLX_PREFIX(glXCreateGLXPixmapWithConfigSGIX)(Display *dpy, GLXFBConfigSGIX config, Pixmap pixmap)
 {

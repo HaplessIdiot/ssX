@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.19 2003/09/28 20:15:03 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.20tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -1418,11 +1418,11 @@ Bool GLX_PREFIX(glXMakeCurrent)(Display *dpy, GLXDrawable draw, GLXContext gc)
 
 GLX_ALIAS(Bool, glXMakeCurrentReadSGI,
 	  (Display *dpy, GLXDrawable d, GLXDrawable r, GLXContext ctx),
-	  (dpy, d, r, ctx), MakeContextCurrent);
+	  (dpy, d, r, ctx), MakeContextCurrent)
 
 GLX_ALIAS(Bool, glXMakeContextCurrent,
 	  (Display *dpy, GLXDrawable d, GLXDrawable r, GLXContext ctx),
-	  (dpy, d, r, ctx), MakeContextCurrent);
+	  (dpy, d, r, ctx), MakeContextCurrent)
 
 
 #ifdef DEBUG
