@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.2 2001/05/15 18:22:23 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.3 2001/05/18 16:03:14 tsi Exp $
  */
 #ifdef USE_MODULES
 #include "config.h"
@@ -197,7 +197,7 @@ typedef struct _ModuleInfoRec {
 typedef enum {
     VideoModule,
     InputModule,
-    GenericModule,
+    GenericModule
 } ModuleType;
 
 typedef struct _xf86cfgModuleOptions {

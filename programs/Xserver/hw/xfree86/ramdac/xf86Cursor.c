@@ -1,20 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.7 2000/04/24 23:40:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.8tsi Exp $ */
 
-#include "misc.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86str.h"
-
-#include "X.h"
-#include "scrnintstr.h"
-#include "pixmapstr.h"
-#include "windowstr.h"
-#include "xf86str.h"
-#include "cursorstr.h"
+#include "xf86CursorPriv.h"
 #include "colormapst.h"
-#include "mi.h"
-#include "xf86Cursor.h"
+#include "cursorstr.h"
 
 int xf86CursorScreenIndex = -1;
 static unsigned long xf86CursorGeneration = 0;
@@ -211,9 +201,11 @@ xf86CursorSwitchMode(int index, DisplayModePtr mode, int flags)
 
     ret = (*ScreenPriv->SwitchMode)(index, mode, flags);
 
-    if (ScreenPriv->CurrentCursor)
-	xf86CursorSetCursor(pScreen, ScreenPriv->CurrentCursor,
-					ScreenPriv->x, ScreenPriv->y);
+    /*
+     * Cannot restore cursor here because the new frame[XY][01] haven't been
+     * calculated yet.
+     */
+    ScreenPriv->CursorToRestore = ScreenPriv->CurrentCursor;
 
     return ret;
 }
@@ -313,6 +305,7 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     ScreenPriv->CurrentCursor = pCurs;
     ScreenPriv->x = x;
     ScreenPriv->y = y;
+    ScreenPriv->CursorToRestore = NULL;
 
     if (pCurs == NullCursor) {	/* means we're supposed to remove the cursor */
 	if (ScreenPriv->SWCursor)
@@ -367,7 +360,10 @@ xf86CursorMoveCursor(ScreenPtr pScreen, int x, int y)
     ScreenPriv->x = x;
     ScreenPriv->y = y;
 
-    if (ScreenPriv->SWCursor)
+    if (ScreenPriv->CursorToRestore)
+	xf86CursorSetCursor(pScreen, ScreenPriv->CursorToRestore,
+			    ScreenPriv->x, ScreenPriv->y);
+    else if (ScreenPriv->SWCursor)
 	(*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
     else if (ScreenPriv->isUp)
 	xf86MoveCursor(pScreen, x, y);

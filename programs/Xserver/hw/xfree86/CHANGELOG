@@ -1,4 +1,14 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 551. More build & warning fixes (Marc La France).
+ 550. Fix bug that caused hardware cursors to be temporarily moved during mode
+      switches (Marc La France).
+ 549. Optimise HARDWARE_CURSOR_AND_SOURCE_WITH_MASK case (Marc La France).
+ 548. Move xf86CursorScreenRec definition into xf86CursorPriv.h
+      (Marc La France).
+ 547. Fix BIOS retrievals in MGA driver (Marc La France).
+ 546. Fix ATIProbe() for newer Rage128 and Radeon chips (Marc La France).
+ 545. Add temporary workaround in ATI driver for interrupts that occur on
+      PowerPC's upon PCI master-aborts (Marc La France).
  544. Update XDarwin to use fb and support Render (Torrey Lyons).
  543. Back out sunleo conversion to fb.  This driver is too heavily dependent
       on cfb32 for a simple fb conversion (Marc La France).
@@ -13276,4 +13286,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1779 2001/05/18 16:03:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1780 2001/05/18 17:48:25 torrey Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.8 2001/05/07 21:59:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.9 2001/05/09 03:12:06 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -13,7 +13,6 @@
 #include "cursorstr.h"
 #include "mi.h"
 #include "mipointer.h"
-#include "xf86Cursor.h"
 #include "xf86CursorPriv.h"
 
 #include "servermd.h"
@@ -229,22 +228,23 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 	tmp = DstS; DstS = DstM; DstM = tmp;
     }
 
-    for(y = pCurs->bits->height, pSrc = DstS, pMsk = DstM;
-	y--;
-	pSrc+=DstPitch, pMsk+=DstPitch, SrcS+=SrcPitch, SrcM+=SrcPitch) {
-	for(x = 0; x < Pitch; x++) {
-	    pSrc[x] = SrcS[x];
-	    pMsk[x] = SrcM[x];
-	}
-    }
-
     if (infoPtr->Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK) {
-	int count = words;
-	SCANLINE* pntr = DstS;
-	SCANLINE* pntr2 = DstM;
-	while (count--) {
-	   *pntr &= *pntr2;
-	    pntr++; pntr2++;
+	for(y = pCurs->bits->height, pSrc = DstS, pMsk = DstM;
+	    y--;
+	    pSrc+=DstPitch, pMsk+=DstPitch, SrcS+=SrcPitch, SrcM+=SrcPitch) {
+	    for(x = 0; x < Pitch; x++) {
+		pSrc[x] = SrcS[x] & SrcM[x];
+		pMsk[x] = SrcM[x];
+	    }
+	}
+    } else {
+	for(y = pCurs->bits->height, pSrc = DstS, pMsk = DstM;
+	    y--;
+	    pSrc+=DstPitch, pMsk+=DstPitch, SrcS+=SrcPitch, SrcM+=SrcPitch) {
+	    for(x = 0; x < Pitch; x++) {
+		pSrc[x] = SrcS[x];
+		pMsk[x] = SrcM[x];
+	    }
 	}
     }
 

@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.199 2001/04/27 05:14:04 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.201 2001/05/15 10:19:38 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -736,7 +736,7 @@ MGAProbe(DriverPtr drv, int flags)
 static void
 MGAReadBios(ScrnInfoPtr pScrn)
 {
-	CARD8 tmp[ 64 ];
+	CARD8  BIOS[0x10000];
 	CARD16 offset;
 	CARD8	chksum;
 	CARD8	*pPINSInfo;
@@ -744,6 +744,7 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	MGABiosInfo *pBios;
 	MGABios2Info *pBios2;
 	Bool pciBIOS = TRUE;
+	int rlen;
 
 	pMga = MGAPTR(pScrn);
 	pBios = &pMga->Bios;
@@ -759,32 +760,36 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	else if (pMga->BiosFrom == X_CONFIG && pMga->BiosAddress < 0x100000)
 	    pciBIOS = TRUE;
 
-#define MGADoBIOSRead(offset, buf, len) \
-    (pciBIOS ? \
-      xf86ReadPciBIOS(offset, pMga->PciTag, pMga->FbBaseReg, buf, len) : \
-      xf86ReadBIOS(pMga->BiosAddress, offset, buf, len))
+	if (pciBIOS)
+	    rlen = xf86ReadPciBIOS(0, pMga->PciTag, pMga->FbBaseReg,
+				   BIOS, sizeof(BIOS));
+	else
+	    rlen = xf86ReadBIOS(pMga->BiosAddress, 0, BIOS, sizeof(BIOS));
 
-	MGADoBIOSRead(0, tmp, sizeof( tmp ));
-	if (
-		tmp[ 0 ] != 0x55
-		|| tmp[ 1 ] != 0xaa
-		|| strncmp(( char * )( tmp + 45 ), "MATROX", 6 )
-	) {
+	if (rlen < (BIOS[2] << 9)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			   "Could not retrieve video BIOS!\n");
+		return;
+	}
+
+	if (strncmp((char *)(&BIOS[45]), "MATROX", 6)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			       "Video BIOS info block not detected!\n");
 		return;
 	}
 
 	/* Get the info block offset */
-	MGADoBIOSRead(0x7ffc, ( CARD8 * ) & offset, sizeof( offset ));
-
+	offset = (BIOS[0x7ffd] << 8) | BIOS[0x7ffc];
 
 	/* Let the world know what we are up to */
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		   "Video BIOS info block at offset 0x%05lX\n",
 		   (long)(offset));
 
+#define MGADoBIOSRead(offset, buf, len) memcpy(buf, &BIOS[offset], len)
+
 	/* Copy the info block */
+	/* XXX What about big-endianness? */
 	switch (pMga->Chipset){
 	   case PCI_CHIP_MGA2064:
 		MGADoBIOSRead(offset,
@@ -794,7 +799,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 		MGADoBIOSRead(offset,
 			( CARD8 * ) & pBios2->PinID, sizeof( MGABios2Info ));
 	}
-
 
 	/* matrox millennium-2 and mystique pins info */
 	if ( pBios2->PinID == 0x412e ) {
@@ -846,7 +850,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	      ErrorF("Pins[0x%02x] is 0x%02x\n", i,
 			((unsigned char *)pBios2)[i]);
 #endif
-	   return;
 	} else {
 	  /* Set default MCLK values (scaled by 10 kHz) */
 	  if ( pBios->ClkBase == 0 )
@@ -856,7 +859,6 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	  if ( pBios->Clk8MB == 0 )
 		pBios->Clk8MB = pBios->Clk4MB;
 	  pBios2->PinID = 0; /* not in use */
-	  return;
 	}
 }
 

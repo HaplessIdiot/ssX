@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.5 2001/03/25 05:32:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.6 2001/04/19 14:14:06 tsi Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
 
 #include "xf86str.h"
-#include "mipointrst.h"
+#include "mipointer.h"
 
 typedef struct _xf86CursorInfoRec {
     ScrnInfoPtr pScrn;
@@ -20,29 +20,6 @@ typedef struct _xf86CursorInfoRec {
     Bool (*UseHWCursor)(ScreenPtr, CursorPtr);
 
 } xf86CursorInfoRec, *xf86CursorInfoPtr;
-
-typedef struct {
-    Bool			SWCursor;
-    Bool			isUp;
-    Bool			showTransparent;
-    short			HotX;
-    short			HotY;
-    short			x;
-    short			y;
-    CursorPtr			CurrentCursor;
-    xf86CursorInfoPtr		CursorInfoPtr;
-    CloseScreenProcPtr          CloseScreen;
-    RecolorCursorProcPtr	RecolorCursor;
-    InstallColormapProcPtr	InstallColormap;
-    QueryBestSizeProcPtr	QueryBestSize;
-    miPointerSpriteFuncPtr	spriteFuncs;
-    Bool			PalettedCursor;
-    ColormapPtr			pInstalledMap;
-    Bool                	(*SwitchMode)(int, DisplayModePtr,int);
-    Bool                	(*EnterVT)(int, int);
-    void                	(*LeaveVT)(int, int);
-    int				(*SetDGAMode)(int, int, DGADevicePtr);
-} xf86CursorScreenRec, *xf86CursorScreenPtr;
 
 Bool xf86InitCursor(
    ScreenPtr pScreen, 

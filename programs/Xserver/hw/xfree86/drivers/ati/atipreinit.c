@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.44 2001/04/01 14:00:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.46 2001/05/15 10:19:36 eich Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -632,11 +632,9 @@ ATIPreInit
         return TRUE;
     }
 
-    if (ConfiguredMonitor) {
-	xf86PrintEDID(ConfiguredMonitor);
-	xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
-    }
-    
+    xf86PrintEDID(ConfiguredMonitor);
+    xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
+
     /* DDC module is no longer needed at this point */
     xf86UnloadSubModule(pDDCModule);
 

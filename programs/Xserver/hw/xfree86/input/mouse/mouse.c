@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.41 2001/03/07 16:21:05 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.42 2001/05/15 18:22:22 paulo Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -116,7 +116,7 @@ typedef enum {
     OPTION_PARITY,
     OPTION_FLOW_CONTROL,
     OPTION_VTIME,
-    OPTION_VMIN,
+    OPTION_VMIN
 } MouseOpts;
 
 static const OptionInfoRec MouseOptions[] = {
