@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.200 2003/04/10 20:22:12 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.201 2003/04/11 06:16:15 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -312,15 +312,6 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildBigReqsExt
 #define BuildBigReqsExt		YES
 #endif
-#ifndef BuildPhigs
-#define BuildPhigs		NO
-#endif
-#ifndef BuildPexExt
-#define BuildPexExt		NO
-#endif
-#ifndef BuildPexLib
-#define BuildPexLib		(BuildPexExt && !BuildServersOnly)
-#endif
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
 #endif
@@ -380,20 +371,6 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildLBX
 #define BuildLBX		YES
 #endif
-#ifndef BuildXIE
-	/*
-	 * Turn off building XIE if you are building for low memory
-	 * footprint
-	 */
-#if BuildLowMem
-#define BuildXIE		NO
-#else
-#define BuildXIE		YES
-#endif
-#endif
-#ifndef BuildXIElib
-#define BuildXIElib		(BuildXIE && !BuildServersOnly)
-#endif
 #ifndef BuildXKB
 #define BuildXKB		YES
 #endif
@@ -444,13 +421,6 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildCup
 #define BuildCup		YES
-#endif
-	/*
-	 * Turn off building PEX if you are building for low memory
-	 * footprint
-	 */
-#if BuildLowMem
-#define BuildPexExt		NO
 #endif
 #ifndef HasPlugin
 #define HasPlugin		NO
@@ -852,13 +822,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define ShapeDefines /**/
 #endif
 #endif
-#ifndef PexDefines
-#if BuildPexExt
-#define PexDefines -DPEXEXT
-#else
-#define PexDefines /**/
-#endif
-#endif
 #ifndef GlxDefines
 #if BuildGlxExt
 #ifdef GlxExtraDefines
@@ -895,13 +858,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XineramaDefines -DPANORAMIX
 #else
 #define XineramaDefines /**/
-#endif
-#endif
-#ifndef XieDefines
-#if BuildXIE
-#define XieDefines -DXIE
-#else
-#define XieDefines /**/
 #endif
 #endif
 #ifndef PrintOnlyServer
@@ -1122,7 +1078,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define BaseExtensionDefines \
 	MultibufferDefines MITMiscDefines XTestDefines XTrapDefines \
 	XSyncDefines XCMiscDefines RECORDDefines \
-	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
+	ShmDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
 	ScreenSaverExtensionDefines XvExtensionDefines XvMCExtensionDefines \
 	GlxDefines FontCacheExtensionDefines SiteExtensionDefines \
@@ -1171,42 +1127,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #ifndef ServerDefines
 #define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines ServerAssertDefines
-#endif
-#ifndef PexDipexDefines
-#define PexDipexDefines /**/
-#endif
-#ifndef PexDdpexDefines
-#define PexDdpexDefines /**/
-#endif
-#ifndef PexPhigsDefines
-#ifndef PexShmIPC
-#define PexShmIPC HasShm
-#endif
-#if PexShmIPC
-#define PexPhigsDefines /**/
-#else
-#define PexPhigsDefines -DPEX_API_SOCKET_IPC
-#endif
-#endif
-#ifndef PexClientDefines
-#define PexClientDefines -DPEX_SI_PHIGS
-#endif
-#ifndef PhigsInclude
-#ifdef UseInstalled
-#define PhigsInclude -I$(INCDIR)/X11
-#else
-#define PhigsInclude -I$(BUILDINCDIR)
-#endif
-#endif
-#ifndef PexCDebugFlags
-#define PexCDebugFlags DebuggableCDebugFlags
-#endif
-#ifndef PexCCOptions
-#ifdef LibraryCCOptions
-#define PexCCOptions LibraryCCOptions
-#else
-#define PexCCOptions DefaultCCOptions
-#endif
 #endif
 
 #ifndef MesaUseX86Asm
@@ -1421,9 +1341,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef XLocaleDir
 #define XLocaleDir $(LIBDIR)/locale
 #endif
-#ifndef PexApiDir
-#define PexApiDir $(LIBDIR)/PEX
-#endif
 #ifndef LbxproxyDir
 #define LbxproxyDir $(LIBDIR)/lbxproxy
 #endif
@@ -1561,7 +1478,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
            XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
        XLOCALEDIR = XLocaleDir		/* locale files */
-        PEXAPIDIR = PexApiDir		/* PEX support files */
       LBXPROXYDIR = LbxproxyDir	        /* lbxproxy files */
   PROXYMANAGERDIR = ProxyManagerDir	/* proxy manager config files */
         XPRINTDIR = XPrintDir		/* print config file root */
@@ -2707,66 +2623,6 @@ ProjectUnsharedLibReferences(XI,Xi,$(XILIBSRC),XBuildLibDir)
 SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXtstRev)
 #else
 ProjectUnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),XBuildLibDir)
-#endif
-
-#ifndef SharedLibPex
-#define SharedLibPex HasSharedLibraries
-#endif
-#ifndef NormalLibPex
-#define NormalLibPex (!SharedLibPex | ForceNormalLib)
-#endif
-#ifndef DebugLibPex
-#define DebugLibPex		NO	/* debugged PEX5 library */
-#endif
-#ifndef ProfileLibPex
-#define ProfileLibPex		NO	/* profiled PEX5 library */
-#endif
-        PEXLIBSRC = $(LIBSRC)/PEX5
-#if SharedLibPex
-#ifndef SharedPexRev
-#define SharedPexRev 6.0
-#endif
-SharedLibReferences(PEX,PEX5,$(PEXLIBSRC),SOPEXREV,SharedPexRev)
-#else
-ProjectUnsharedLibReferences(PEX,PEX5,$(PEXLIBSRC),XBuildLibDir)
-#endif
-
-#ifndef SharedLibXie
-#define SharedLibXie HasSharedLibraries
-#endif
-#ifndef NormalLibXie
-#define NormalLibXie (!SharedLibXie | ForceNormalLib)
-#endif
-#ifndef DebugLibXie
-#define DebugLibXie		NO	/* debugged XIE library */
-#endif
-#ifndef ProfileLibXie
-#define ProfileLibXie		NO	/* profiled XIE library */
-#endif
-        XIELIBSRC = $(LIBSRC)/XIE
-#if SharedLibXie
-#ifndef SharedXieRev
-#define SharedXieRev 6.0
-#endif
-SharedLibReferences(XIE,XIE,$(XIELIBSRC),SOXIEREV,SharedXieRev)
-#else
-ProjectUnsharedLibReferences(XIE,XIE,$(XIELIBSRC),XBuildLibDir)
-#endif
-
-#ifndef SharedLibPhigs
-#define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
-#endif
-#ifndef NormalLibPhigs
-#define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
-#endif
-      PHIGSLIBSRC = $(LIBSRC)/PHIGS
-#if SharedLibPhigs
-#ifndef SharedPhigsRev
-#define SharedPhigsRev 6.0
-#endif
-SharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),SOPHIGSREV,SharedPhigsRev)
-#else
-ProjectUnsharedLibReferences(PHIGS,phigs,$(PHIGSLIBSRC),XBuildLibDir)
 #endif
 
 ProjectUnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Xbsd,XBuildLibDir)
