@@ -240,7 +240,6 @@ static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86SetDDCproperties",
     "xf86InterpretEDID",
-    "xf86DoEDID_DDC1",
     NULL
 };
 
