@@ -1,4 +1,4 @@
-XCOMM $TOG: Imakefile /main/34 1997/09/10 10:47:20 kaleb $
+XCOMM $TOG: Imakefile /main/36 1997/10/13 12:24:42 kaleb $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
@@ -40,6 +40,13 @@ SharedLibReferences(xrx,xrx,$(RXSRC),SOXRXREV,6.3)
 VENDOR_INCLUDES = -I/usr/openwin/include
 #if OSMajorVersion < 5 || OSMajorVersion == 5 && OSMinorVersion < 6
      XT_DEFINES = -DXUSE_XTREGISTERWINDOW
+#else
+/* 
+ * Based on Xmd.h 2.6 appears to be no more than R6pl11, so we need this.
+ * Hopefully Sun will fix this in 2.7.
+ */
+# undef DefaultCCOptions
+# define DefaultCCOptions -Xc 
 #endif
 #endif
 
@@ -109,6 +116,12 @@ PLUGIN_LDOPTIONS = $(LDPRELIBS)
 /* Sun and HP don't ship it yet, SGI has it inside libXt. */
 #ifdef AlphaArchitecture
 RXICELIB = $(ICELIB)
+#endif
+
+#ifdef SunArchitecture
+#if OSMajorVersion == 5 && OSMinorVersion > 5
+RXICELIB = $(ICELIB)
+#endif
 #endif
 
     REQUIREDLIBS =  $(X11R6_3_EXTENSIONS) $(PLUGIN_LDOPTIONS) $(RXICELIB) $(XTOOLONLYLIB) $(XLIB)

@@ -1,5 +1,5 @@
-.\" $XConsortium: xset.man /main/29 1996/12/09 17:10:30 kaleb $
-.\" $XFree86: xc/programs/xset/xset.man,v 3.4 1996/12/23 07:14:09 dawes Exp $
+.\" $TOG: xset.man /main/30 1997/11/04 20:58:12 kaleb $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.5 1997/01/22 11:18:54 dawes Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XSET 1 "Release 6.3" "X Version 11"
+.TH XSET 1 "Release 6.4" "X Version 11"
 .SH NAME
 xset - user preference utility for X
 .SH SYNOPSIS

@@ -1,4 +1,4 @@
-/* $TOG: utils.c /main/128 1997/06/01 13:50:39 sekhar $ */
+/* $TOG: utils.c /main/133 1997/11/11 13:05:44 kaleb $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.31 1997/09/14 13:15:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.32 1997/10/13 17:16:53 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -137,6 +137,14 @@ extern char* protNoListen;
 
 Bool CoreDump;
 Bool noTestExtensions;
+
+Bool noPanoramiXExtension = TRUE;
+#ifdef PANORAMIX
+Bool PanoramiXVisibilityNotifySent = FALSE;
+Bool PanoramiXMapped = FALSE;
+Bool PanoramiXWindowExposureSent = FALSE;
+Bool PanoramiXOneExposeRequest = FALSE;
+#endif
 
 int auditTrailLevel = 1;
 
@@ -531,10 +539,9 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co file               color database file\n");
-#if !defined(WIN32) && !defined(__EMX__)
-    if (getuid() == geteuid())
+#ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
+    ErrorF("-config file           read options from file\n");
 #endif
-      ErrorF("-config file           read options from file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
 #ifdef DPMSExtension
@@ -566,6 +573,10 @@ void UseMsg()
 #endif
     ErrorF("-nolisten string       don't listen on protocol\n");
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
+#ifdef PANORAMIX
+    ErrorF("+xinerama              Enable XINERAMA extension\n");
+    ErrorF("-xinerama              Disable XINERAMA extension\n");
+#endif
     ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-nopn                  reject failure to listen on all ports\n");
     ErrorF("-r                     turns off auto-repeat\n");
@@ -846,6 +857,14 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#ifdef PANORAMIX
+	else if ( strcmp( argv[i], "+xinerama") == 0){
+	    noPanoramiXExtension = FALSE;
+	}
+	else if ( strcmp( argv[i], "-xinerama") == 0){
+	    noPanoramiXExtension = TRUE;
+	}
+#endif
 	else if ( strcmp( argv[i], "-pn") == 0)
 	    PartialNetwork = TRUE;
 	else if ( strcmp( argv[i], "-nopn") == 0)
@@ -952,6 +971,7 @@ char	*argv[];
     }
 }
 
+#ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
 static void
 InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
 			  filename, suffix_argc, suffix_argv)
@@ -1040,6 +1060,7 @@ InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
     (*resargv)[*resargc] = NULL;
 } /* end InsertFileIntoCommandLine */
 
+
 void
 ExpandCommandLine(pargc, pargv)
     int *pargc;
@@ -1064,6 +1085,7 @@ ExpandCommandLine(pargc, pargv)
 	}
     }
 } /* end ExpandCommandLine */
+#endif
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 #ifndef WIN32

@@ -1,16 +1,10 @@
-XCOMM $XConsortium: Imakefile /main/8 1996/12/27 16:16:48 kaleb $
-
-
-
-
-
-XCOMM $XFree86: xc/programs/xfwp/Imakefile,v 1.2 1996/12/26 03:42:44 dawes Exp $
+XCOMM $TOG: Imakefile /main/9 1997/10/29 14:23:29 barstow $
 
          DEPLIBS = $(DEPICELIB)
  LOCAL_LIBRARIES = $(ICELIB)
 
-           SRCS = xfwp.c
-           OBJS = xfwp.o
+           SRCS = xfwp.c misc.c pm.c transport.c io.c
+           OBJS = xfwp.o misc.o pm.o transport.o io.o
 
 ComplexProgramTarget(xfwp)
 

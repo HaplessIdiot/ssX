@@ -1,4 +1,4 @@
-/* $TOG: os.h /main/7 1997/09/12 14:28:26 barstow $ */
+/* $TOG: os.h /main/8 1997/10/16 13:00:24 barstow $ */
 
 /*
 
@@ -31,6 +31,8 @@ from the X Consortium.
 */
 #ifndef OS_H
 #define OS_H
+
+#include <X11/Xtrans.h>
 
 extern fd_set AllSockets;
 extern fd_set AllClients;
@@ -95,7 +97,8 @@ extern ClientPtr AllocNewConnection(
 #if NeedFunctionPrototypes
     int /*fd*/,			/* the fd to the display */
     int /*connect_fd*/,		/* the fd the client connected on */
-    Bool /*to_server*/
+    Bool /*to_server*/,
+    XtransConnInfo /*trans_conn*/
 #endif
 );
 

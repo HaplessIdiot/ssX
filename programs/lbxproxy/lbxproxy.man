@@ -1,4 +1,4 @@
-.\" $TOG: lbxproxy.man /main/10 1997/09/12 14:32:24 barstow $
+.\" $TOG: lbxproxy.man /main/13 1997/11/04 20:55:18 kaleb $
 .\" Copyright (c) 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\" 
-.TH LBXPROXY 1 "Release 6.3" "X Version 11"
+.TH LBXPROXY 1 "Release 6.4" "X Version 11"
 .SH NAME
 lbxproxy - Low BandWidth X proxy
 .SH SYNOPSIS
@@ -54,8 +54,11 @@ is specified, the proxy will use the given display port when
 listening for connections.  The display port is an offset from port 6000,
 identical to the way in which regular X display connections are specified.
 If no port is specified on the command line option, lbxproxy will default
-to port 63.  If the port that the proxy tries to listen on is in use, the
-proxy will exit with an error message.
+to port 63.  If the port number that the proxy tries to listen on is in
+use, the proxy will attempt to use another port number.  If
+the proxy is not using the Proxy Manager and the default
+port number cannot be used, the port number that is used
+will be written to stderr.
 .PP
 The other command line options that can be specified are:
 .PP
@@ -218,3 +221,15 @@ of the following characters: 'i' means the atom should be pre-interned;
 'n' means data for properties with this name should never be delayed;
 and 'w' means data for properties with this name should be delayed only
 if a window manager is also running through the same lbxproxy.
+.PP
+.SH BUGS
+.PP
+When the authorization protocol XDM-AUTHORIZATION-1 is used:
+.PP
+.in +4
+A client must be on the same host as lbxproxy for the client to be
+authorized to connect to the server.
+.PP
+.in +4
+If a client is not on the same host as lbxproxy, the client will
+not be authorized to connect to the server.

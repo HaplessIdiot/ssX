@@ -47,8 +47,12 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h /main/58 1996/12/02 10:22:09 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.24 1997/08/26 10:01:48 hohndel Exp $ */
+/* $TOG: servermd.h /main/59 1997/08/10 13:07:09 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.25 1997/10/25 13:51:11 hohndel Exp $ */
 
 /*
  * Machine dependent values:

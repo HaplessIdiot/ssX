@@ -1,4 +1,4 @@
-/* $TOG: dispatch.c /main/39 1997/09/12 14:29:59 barstow $ */
+/* $TOG: dispatch.c /main/40 1997/10/16 13:00:11 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -254,7 +254,7 @@ NextAvailableClient(ospriv, connect_fd)
 		break;
 	}
 	if (!found) {
-	    fprintf (stderr, "fd %d NOT found among active servers\n", connect_fd);
+	    fprintf (stderr, "Cannot determine a client's transport connection\n");
 	    return (ClientPtr) NULL;
 	}
         client->server = servers[j];

@@ -1,4 +1,4 @@
-/* $TOG: cmaputil.c /main/7 1997/09/12 14:29:52 barstow $ */
+/* $TOG: cmaputil.c /main/8 1997/10/09 15:14:59 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -50,7 +50,7 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.2 1997/01/27 06:59:00 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/cmaputil.c,v 1.3 1997/10/26 13:25:09 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"misc.h"
@@ -93,13 +93,13 @@ CreateVisual(depth, vis)
     pvis->blueMask = vis->blueMask;
     if ((pvis->class | DynamicClass) == DirectColor) {
 	pvis->offsetRed = 0;
-	while (!((pvis->redMask >> pvis->offsetRed) & 1))
+	while (pvis->redMask && !((pvis->redMask >> pvis->offsetRed) & 1))
 	    pvis->offsetRed++;
 	pvis->offsetGreen = 0;
-	while (!((pvis->greenMask >> pvis->offsetGreen) & 1))
+	while (pvis->greenMask && !((pvis->greenMask >> pvis->offsetGreen) & 1))
 	    pvis->offsetGreen++;
 	pvis->offsetBlue = 0;
-	while (!((pvis->blueMask >> pvis->offsetBlue) & 1))
+	while (pvis->blueMask && !((pvis->blueMask >> pvis->offsetBlue) & 1))
 	    pvis->offsetBlue++;
     }
     visuals = (LbxVisualPtr *) xrealloc(visuals,

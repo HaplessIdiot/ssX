@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: io.c /main/15 1997/09/18 12:52:15 barstow $ */
+/* $TOG: io.c /main/16 1997/10/16 13:00:46 barstow $ */
 /*****************************************************************
  * i/o functions
  *
@@ -55,6 +55,7 @@ SOFTWARE.
  *****************************************************************/
 
 #include <stdio.h>
+#include <X11/Xtrans.h>
 #include "Xos.h"
 #ifdef X_NOT_STDC_ENV
 extern int errno;
@@ -340,8 +341,18 @@ StandardReadRequestFromClient(client)
 	    oci->bufptr = oci->buffer;
 	    oci->bufcnt = gotnow;
 	}
-	result = (*oc->Read)(fd, oci->buffer + oci->bufcnt, 
-		      oci->size - oci->bufcnt); 
+
+	if (oc->trans_conn)
+	    result = _LBXPROXYTransRead(oc->trans_conn, 
+					oci->buffer + oci->bufcnt,
+				        oci->size - oci->bufcnt);
+	else
+	    /*
+	     * trans_conn can be NULL if the read is from an X server
+	     */
+	    result = (*oc->Read)(fd, oci->buffer + oci->bufcnt,
+				  oci->size - oci->bufcnt);
+
 	if (result <= 0)
 	{
 	    if ((result < 0) && ETEST(errno))
@@ -659,6 +670,7 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 {
     register ConnectionOutputPtr oco = oc->output;
     int connection = oc->fd;
+    XtransConnInfo trans_conn = oc->trans_conn;
     struct iovec iov[3];
     static char padBuffer[3];
     long written;
@@ -710,7 +722,14 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 	InsertIOV (padBuffer, padsize)
 
 	errno = 0;
-	if ((len = (*oc->Writev) (connection, iov, i)) >= 0)
+	if (trans_conn)
+	    len = _LBXPROXYTransWritev(trans_conn, iov, i);
+	else
+	    /*
+	     * trans_conn can be NULL if the read is from an X server
+	     */
+	    len = (*oc->Writev) (connection, iov, i);
+	if (len >= 0)
 	{
 	    written += len;
 	    notWritten -= len;
@@ -756,7 +775,9 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 						 notWritten + BUFSIZE);
 		if (!obuf)
 		{
-		    close(connection);
+		    _LBXPROXYTransDisconnect(oc->trans_conn);
+		    _LBXPROXYTransClose(oc->trans_conn);
+		    oc->trans_conn = NULL;
 		    MarkClientException(who);
 		    oco->count = 0;
 		    return(-1);
@@ -784,7 +805,12 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 #endif
 	else
 	{
-	    close(connection);
+	    if (oc->trans_conn)
+	    {
+		_LBXPROXYTransDisconnect(oc->trans_conn);
+		_LBXPROXYTransClose(oc->trans_conn);
+		oc->trans_conn = NULL;
+	    }
 	    MarkClientException(who);
 	    oco->count = 0;
 	    return(-1);
@@ -842,6 +868,7 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
     int extraCount; /* do not modify... returned below */
 {
     ConnectionOutputPtr obuf;
+    XtransConnInfo trans_conn = oc->trans_conn;
     register ConnectionOutputPtr oco;
     int retval;
 
@@ -864,7 +891,11 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 		if (extraCount) {
 		    int len = obuf->count + (extraCount + 3) & ~3;
 		    if (ExpandOutputBuffer(obuf, len) < 0) {
-			close (oc->fd);
+			if (oc->trans_conn) {
+			    _LBXPROXYTransDisconnect(oc->trans_conn);
+			    _LBXPROXYTransClose(oc->trans_conn);
+			    oc->trans_conn = NULL;
+			}
 			MarkClientException(who);
 			return(-1);
 		    }
@@ -976,7 +1007,12 @@ StandardWriteToClient (who, count, buf)
 	}
 	else if (!(oco = AllocateOutputBuffer()))
 	{
-	    close(oc->fd);
+	    if (oc->trans_conn) 
+	    {
+		_LBXPROXYTransDisconnect(oc->trans_conn);
+		_LBXPROXYTransClose(oc->trans_conn);
+		oc->trans_conn = NULL;
+	    }
 	    MarkClientException(who);
 	    return -1;
 	}
@@ -1012,6 +1048,7 @@ UncompressWriteToClient (who, count, buf)
     int count;
 {
     OsCommPtr oc = (OsCommPtr)who->osPrivate;
+    XtransConnInfo trans_conn = oc->trans_conn;
     register ConnectionOutputPtr oco;
     int paddedLen = count + padlength[count & 3];
 
@@ -1053,7 +1090,11 @@ UncompressWriteToClient (who, count, buf)
 	    if (oco->size < paddedLen) {
 		oco->buf = (unsigned char *) xrealloc (oco->buf, paddedLen);
 		if (!oco->buf) {
-		    (void) close (oc->fd);
+	            if (oc->trans_conn) {
+			_LBXPROXYTransDisconnect(oc->trans_conn);
+			_LBXPROXYTransClose(oc->trans_conn);
+			oc->trans_conn = NULL;
+		    }
 		    MarkClientException(who);
 		    return -1;
 		}
@@ -1061,7 +1102,11 @@ UncompressWriteToClient (who, count, buf)
 	    }
 	}
 	else if (!(oco = AllocateUncompBuffer(paddedLen))) {
-	    (void) close(oc->fd);
+	    if (oc->trans_conn) {
+		_LBXPROXYTransDisconnect(oc->trans_conn);
+		_LBXPROXYTransClose(oc->trans_conn);
+		oc->trans_conn = NULL;
+	    }
 	    MarkClientException(who);
 	    return -1;
 	}

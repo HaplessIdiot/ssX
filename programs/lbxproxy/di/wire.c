@@ -1,4 +1,4 @@
-/* $TOG: wire.c /main/50 1997/09/12 14:31:57 barstow $ */
+/* $TOG: wire.c /main/51 1997/10/16 13:00:17 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.3 1997/01/18 07:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.4 1997/10/26 13:25:16 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -1528,7 +1528,7 @@ ConnectToServer(dpy_name)
 
     servers[i] = server;
 
-    sc = AllocNewConnection(server->fd, -1, TRUE);
+    sc = AllocNewConnection(server->fd, -1, TRUE, NULL);
     sc->server = server;
     sc->public.requestLength = ServerRequestLength;
     sc->lbxIndex = i;

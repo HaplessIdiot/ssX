@@ -1,4 +1,4 @@
-/* $TOG: connection.c /main/156 1997/06/05 18:43:01 sekhar $ */
+/* $TOG: connection.c /main/158 1997/10/10 13:47:18 barstow $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.26 1997/05/25 14:41:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.27 1997/07/05 15:16:41 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -176,7 +176,11 @@ fd_set LastSelectMask;		/* mask returned from last select call */
 fd_set ClientsWithInput;	/* clients with FULL requests in buffer */
 fd_set ClientsWriteBlocked;	/* clients who cannot receive output */
 fd_set OutputPending;		/* clients with reply/event data ready to go */
-int MaxClients = MAXSOCKS;
+#ifndef _SC_OPEN_MAX
+int MaxClients = MAXSOCKS;      /* use MAXSOCKS if sysconf(_SC_OPEN_MAX) is not supported */
+#else
+int MaxClients = 0;
+#endif
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
@@ -295,11 +299,11 @@ CreateWellKnownSockets()
     lastfdesc = _nfiles - 1;
 #endif
 
-    if (lastfdesc > MAXSOCKS)
+    if (lastfdesc > MAXCLIENTS) 
     {
-	lastfdesc = MAXSOCKS;
+	lastfdesc = MAXCLIENTS;
 	if (debug_conns)
-	    ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
+	    ErrorF( "REACHED MAXIMUM CLIENTS LIMIT %d\n", MAXCLIENTS);
     }
 
     FD_ZERO (&WellKnownConnections);
@@ -545,15 +549,71 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     XID	 		auth_id;
     char	 	*reason = NULL;
     XtransConnInfo	trans_conn;
+    int			restore_trans_conn = 0;
+    ClientPtr           lbxpc;
+
+    priv = (OsCommPtr)client->osPrivate;
+    trans_conn = priv->trans_conn;
+
+#ifdef LBX
+    if (!trans_conn) {
+	/*
+	 * Since trans_conn is NULL, this must be a proxy's client for
+	 * which we have NO address.  Therefore, we will temporarily
+	 * set the client's trans_conn to the proxy's trans_conn and
+	 * after CheckAuthorization the client's trans_conn will be
+	 * restored. 
+	 *
+	 * If XDM-AUTHORIZATION-1 is being used, CheckAuthorization
+	 * will eventually call XdmAuthorizationValidate and this
+	 * later function may use the client's trans_conn to get the 
+	 * client's address.  Since a XDM-AUTH-1 auth string includes 
+	 * the client's address, this address is compared to the address 
+	 * in the client's trans_conn.  If the proxy and client are 
+	 * on the same host, the comparison will fail; otherwise the
+	 * comparison will fail and the client will not be authorized
+	 * to connect to the server.
+	 *
+	 * The basis for this additional code is to prevent a
+	 * NULL pointer dereference of the client's trans_conn.
+	 * The fundamental problem - the fact that the client's
+	 * trans_conn is NULL - is because the NewClient
+	 * request in version 1.0 of the LBX protocol does not
+	 * send the client's address to the server.  When the
+	 * spec is changed and the client's address is sent to
+	 * server in the NewClient request, this additional code
+	 * should be removed.
+	 *
+	 * See defect number XWSog08218 for more information.
+	 */
+	lbxpc = LbxProxyClient(priv->proxy);
+	trans_conn = ((OsCommPtr)lbxpc->osPrivate)->trans_conn;
+        priv->trans_conn = trans_conn;
+	restore_trans_conn = 1;
+    }
+#endif
 
     auth_id = CheckAuthorization (proto_n, auth_proto,
 				  string_n, auth_string, client, &reason);
 
-    priv = (OsCommPtr)client->osPrivate;
-    trans_conn = priv->trans_conn;
+#ifdef LBX
+    if (restore_trans_conn) {
+	/*
+	 * Restore client's trans_conn state
+	 */
+	priv = (OsCommPtr)client->osPrivate;
+	priv->trans_conn = NULL;
+
+	trans_conn = NULL;
+    }
+	
+#endif
+
 #ifdef LBX
     if (!trans_conn) {
-	ClientPtr lbxpc = LbxProxyClient(priv->proxy);
+	/*
+	 * Use the proxy's trans_conn
+	 */
 	trans_conn = ((OsCommPtr)lbxpc->osPrivate)->trans_conn;
 	if (auth_id == (XID) ~0L && !GetAccessControl())
 	    auth_id = ((OsCommPtr)lbxpc->osPrivate)->auth_id;

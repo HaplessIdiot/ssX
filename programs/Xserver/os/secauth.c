@@ -1,4 +1,4 @@
-/* $XConsortium: secauth.c /main/4 1996/11/27 16:57:14 swick $ */
+/* $TOG: secauth.c /main/5 1997/11/08 18:27:23 barstow $ */
 /*
 Copyright (c) 1996  X Consortium
 
@@ -159,6 +159,12 @@ AuthSecurityCheck (data_length, data, client, reason)
     }
     else if (!GetAccessControl())
     {
+	/*
+	 * The client - possibly the X FireWall Proxy - gave
+	 * no auth data and host-based authorization is turned
+	 * off.  In this case, the client should be denied
+	 * access to the X server.
+	 */
 	*reason = "server host access control is disabled";
 	return (XID) -1;
     }

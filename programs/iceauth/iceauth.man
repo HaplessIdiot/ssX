@@ -1,4 +1,4 @@
-.\" $XConsortium: iceauth.man /main/6 1996/12/09 17:07:00 kaleb $
+.\" $TOG: iceauth.man /main/7 1997/11/04 20:55:15 kaleb $
 
 .\" Copyright (c) 1994  X Consortium
 .\" 
@@ -24,7 +24,7 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
-.TH ICEAUTH 1 "Release 6.3" "X Version 11"
+.TH ICEAUTH 1 "Release 6.4" "X Version 11"
 .SH NAME
 iceauth \- ICE authority file utility
 .SH SYNOPSIS

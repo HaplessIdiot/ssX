@@ -1,22 +1,30 @@
-XCOMM $XConsortium: Imakefile /main/8 1996/11/17 14:49:40 rws $
+XCOMM $TOG: Imakefile /main/10 1997/10/20 11:23:37 barstow $
 
 #include <Server.tmpl>
 
  DEFINES = ConnectionFlags $(RPC_DEFINES) \
                 AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
+DEPEND_DEFINES = $(TRANS_INCLUDES) 
+
 INCLUDES = -I../include -I$(TOP)/include -I$(EXTINCSRC) \
            -I../../../include/extensions
 
-    SRCS = connection.c io.c WaitFor.c osinit.c
+    SRCS = connection.c io.c WaitFor.c osinit.c transport.c
 
-    OBJS = connection.o io.o WaitFor.o osinit.o
+    OBJS = connection.o io.o WaitFor.o osinit.o transport.o
+
+CONN_DEFINES = -DLBXPROXY_t -DTRANS_SERVER
  
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
 LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
 
-SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
+
+SpecialCObjectRule(io,$(ICONFIGFILES),$(CONN_DEFINES) $(EXT_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
 
 DependTarget()
 

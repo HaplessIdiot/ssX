@@ -1,5 +1,8 @@
-XCOMM $TOG: Imakefile /main/82 1997/08/05 09:00:14 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.25 1997/06/08 15:32:00 dawes Exp $
+XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.26 1997/08/12 12:02:13 hohndel Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -97,15 +100,13 @@ SYS_LIBRARIES1 = -lauth
 SYS_LIBRARIES1 = -ls
 #endif
 
-#if defined(XFree86Version) && HasLibCrypt || defined(NetBSDArchitecture)
+#if HasLibCrypt
 #ifdef SpecialLibCrypt
-SYS_LIBRARIES2 = SpecialLibCrypt
+CRYPT_LIBRARIES = SpecialLibCrypt
 #else
-SYS_LIBRARIES2 = -lcrypt
+CRYPT_LIBRARIES = -lcrypt
 #endif
 #endif
-
-SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2) $(SYS_LIBRARIES3)
 
 #if HasBSD44Sockets
 SOCK_DEFINES = -DBSD44SOCKETS
@@ -123,12 +124,19 @@ VFORK_DEFINES = -DHAS_VFORK
 XKB_CLIENT_DEFINES = XkbClientDefines
 #endif
 
+#if HasSetUserContext
+USER_CONTEXT_DEFINES = -DHAS_SETUSERCONTEXT
+SYS_LIBRARIES1 = -lutil
+#endif
+
+  SYS_LIBRARIES = $(SYS_LIBRARIES1) $(SYS_LIBRARIES2) $(SYS_LIBRARIES3)
+
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(GREET_DIR) $(XDMCONFIGDIR)
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY) $(CRYPT_LIBRARIES)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
@@ -184,7 +192,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \
-		$(XKB_CLIENT_DEFINES)
+		$(XKB_CLIENT_DEFINES) $(USER_CONTEXT_DEFINES)
 
 XCOMM
 XCOMM Special definitions for compiling default resources; these parameters

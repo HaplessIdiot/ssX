@@ -46,8 +46,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h /main/60 1996/12/15 21:25:13 rws $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.17 1997/07/10 08:17:42 hohndel Exp $ */
+/* $TOG: os.h /main/61 1997/09/19 09:30:37 kaleb $ */
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.18 1997/09/14 13:15:07 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -698,12 +703,14 @@ extern XID GenerateAuthorization(
 #endif
 );
 
+#ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
 extern void ExpandCommandLine(
 #if NeedFunctionPrototypes
     int * /*pargc*/,
     char *** /*pargv*/
 #endif
 );
+#endif
 
 extern int ddxProcessArgument(
 #if NeedFunctionPrototypes

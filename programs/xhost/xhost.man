@@ -1,4 +1,4 @@
-.\" $XConsortium: xhost.man,v 1.17 94/04/18 18:01:36 rws Exp $
+.\" $TOG: xhost.man /main/21 1997/11/04 20:56:58 kaleb $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -24,7 +24,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XHOST 1 "Release 6" "X Version 11"
+.TH XHOST 1 "Release 6.4" "X Version 11"
 .SH NAME
 xhost \- server access control program for X
 .SH SYNOPSIS
@@ -39,14 +39,6 @@ for a workstation (single user) environment, although it does limit the
 worst abuses.  Environments which require more sophisticated measures should
 implement the user-based mechanism or use the hooks in the
 protocol for passing other authentication data to the server.
-.PP
-Hostnames that are followed by two colons (::) are used in checking DECnet
-connections; all other hostnames are used for TCP/IP connections.
-.PP
-User names contain an at-sign (@).  When Secure RPC is being used, the
-network independent netname (e.g., "unix.\fIuid\fP@\fIdomainname\fP") can
-be specified, or a local user can be specified with just the username
-and a trailing at-sign (e.g., "pat@").
 .SH OPTIONS
 \fIXhost\fP accepts the following command line options described below.  For
 security, the options that effect access control may only be run from the
@@ -85,6 +77,31 @@ a message indicating whether or not access control is currently enabled
 is printed, followed by the list of those allowed to connect.
 This is the only option that may be used from machines other than
 the controlling host.
+.SH NAMES
+A complete name has the syntax
+``family:name'' where the families are
+as follows:
+.PP
+.nf
+.ta 1i
+inet	Internet host
+dnet	DECnet host
+nis	Secure RPC network name
+krb	Kerberos V5 principal
+local	contains only one name, the empty string
+.fi
+.PP
+The family is case insensitive.
+The format of the name varies with the family.
+.PP
+When Secure RPC is being used, the
+network independent netname (e.g., "nis:unix.\fIuid\fP@\fIdomainname\fP") can
+be specified, or a local user can be specified with just the username
+and a trailing at-sign (e.g., "nis:pat@").
+.PP
+For backward compatibility with pre-R6 \fIxhost\fP,
+names that contain an at-sign (@) are assumed to be in the nis family.
+Otherwise the inet family is assumed.
 .SH DIAGNOSTICS
 For each name added to the access control list,
 a line of the form "\fIname\fP being added to access control list"
@@ -95,7 +112,7 @@ is printed.
 .SH FILES
 /etc/X*.hosts
 .SH "SEE ALSO"
-X(1), Xserver(1), xdm(1)
+X(1), Xsecurity(1), Xserver(1), xdm(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY

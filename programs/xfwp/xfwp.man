@@ -1,4 +1,4 @@
-.\" $XConsortium: xfwp.man /main/3 1996/12/20 16:38:47 swick $
+.\" $TOG: xfwp.man /main/11 1997/11/12 08:16:03 barstow $
 .\" Copyright (c) 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -26,46 +26,73 @@
 .\" from the X Consortium.
 .\" 
 .nh
-.TH XFWP 1 "Release 6.3" "X Version 11"
+.TH XFWP 1 "Release 6.4" "X Version 11"
 .SH NAME
 xfwp - X firewall proxy
 .SH SYNOPSIS
-\fBxfwp\fP [\fB\-pdt\fP \fI<#secs>\fP] [\fB\-clt\fP \fI<#secs>\fP] [\fB\-cdt\fP \fI<#secs>\fP] [\fB\-pmport\fP \fI<port#>\fP] [\fB\-config\fP \fI<path>\fP] [\fB\-verify\fP]
+.B xfwp
+[option ...]
 .PP
 .SH COMMAND LINE OPTIONS 
-The command line options that can be specified to
-.B xfwp
-are:
+The command line options that can be specified are:
 .PP
 .TP 8
-.B \-cdt
+.B \-cdt \fInum_secs\fP
 Used to override the default time-to-close (604800 seconds) for xfwp client 
 data connections on which there is no activity (connections over which 
 X protocol is already being relayed by xfwp) 
 .PP
 .TP 8
-.B \-clt
+.B \-clt \fInum_secs\fP
 Used to override the default time-to-close (86400 seconds) for xfwp client 
 listen ports (ports on xfwp to which X clients first connect when trying to 
 reach an X server)
 .PP
 .TP 8
-.B \-config
-Used to specify the configuration file path/name
-.PP
-.TP 8
-.B \-pdt
-Used to override the default time-to-close (3600 seconds) for proxy manager 
+.B \-pdt \fInum_secs\fP
+Used to override the default time-to-close (3600 seconds) for Proxy Manager 
 connections on which there is no activity 
 .PP
 .TP 8
-.B \-pmport
+.B \-config \fIfile_name\fP
+Used to specify the configuration the name of the configuration file
+.PP
+.TP 8
+.B \-pmport \fIport_number\fP
 Used to override the default port address (4444) for proxy manager connections
 .PP
 .TP 8
 .B \-verify
 Used to display the configuration file rule that was actually matched for
 each service request
+.PP
+.TP 8
+.B \-logfile \fIfile_name\fP
+Used to specify the name of a file where audit information should be logged.
+The format of a logged entry is: time of day; event code; source IP address;
+destination IP address; and configuration rule number.  The event codes 
+are: "0" for a successful connection; "1" if a connection is denied because of 
+a configuration rule; and "2" if a connection is denied because of an
+authorization failure.  If the event code is "1", and a configuration file
+is used, the configuration rule number is the line number of the 
+configuration file where the match was made (see the section 
+CONFIGURATION FILE for more information).  If the event code is not "1",
+or if no configuration file is used, the configuration rule number is "-1".
+.PP
+.TP 8
+.B \-loglevel \fI{0,1}\fP
+Used to specify the amount of audit detail that should be logged.  If "0", 
+all connections are logged.  If "1", only unsuccessful connections are logged.
+.PP
+.TP 8
+.B \-max_pm_conns \fInum_connections\fP
+Used to specify the maximum number of Proxy Manager connections.  The
+default is 10.
+.PP
+.TP 8
+.B \-max_pm_conns \fInum_connections\fP
+Used to specify the maximum number of X server connections.  The
+default is 100.
 .PP
 .SH DESCRIPTION
 The X firewall proxy (xfwp) is an application layer gateway proxy
@@ -101,6 +128,13 @@ data between client and server is relayed by xfwp until the client terminates
 the connection or, in the case of an inactive client, until a configured 
 timeout period is exceeded.  Xfwp is designed to block while waiting for
 activity on its connections, thereby minimizing demand for system cycles. 
+
+If xfwp is run without a configuration file and thus no sitepolicy is
+defined, if xfwp is using an X server where xhost + has been run to turn 
+off host-based authorization checks, when a client tries to connect to 
+this X server via xfwp, the X server will deny the connection.  If xfwp 
+does not define a sitepolicy, host-based authorization must be turned on 
+for clients to connect to an X server via the xfwp.
 .PP
 .SH INTEROPERATION WITH IP PACKET-FILTERING ROUTERS
 The whole purpose of the xfwp is to provide reliable control over access
@@ -127,9 +161,11 @@ It can be launched using any of the command-line options described above.
 As noted above, xfwp works only in conjunction with proxy manager and the 
 xfindproxy utility.  It can also be configured to support a user-defined
 X server site security policy, in which the X server is required to indicate
-to xfwp whether or not it supports the particular policy.  Consult the man 
-pages for further information on these components.  Xfwp diagnostics can be 
-turned on by recompiling with the -DDEBUG switch.
+to xfwp whether or not it supports the particular policy.  Consult the 
+X server man pages for further information on these components.  Xfwp 
+diagnostics can be turned on by compiling with the -DDEBUG switch.  
+Connection status can be recorded by using the -logfile and -loglevel
+command line options.
 .PP
 .SH PERFORMANCE, LOAD BALANCING AND RESOURCE MANAGEMENT 
 Xfwp manages four different kinds of connections:  proxy manager (PM) data, 
@@ -139,10 +175,10 @@ allocated and reclaimed by xfwp in order to optimize the availability of
 xfwp service.
 
 Each connection-type has a default number of allocation slots and 
-a default timeout.  The number of allocation slots (effectively file
-descriptors) for each connection type is coded as a constant in the xfwp 
-source.  Default connection timeouts are also coded as constants in the 
-xfwp source.  Each connection timeout represents the period the connection 
+a default timeout.  The number of allocation slots for PM connections
+and X server connections is configurable via command line options.
+Connection timeouts are also configurable via command line options.
+Each connection timeout represents the period the connection 
 will be allowed to remain open in the absence of any activity on that 
 connection.  Whenever there is activity on a connection, the time-to-close 
 is automatically reset.  The default distribution of total process connection 
@@ -150,8 +186,9 @@ slots across the four connection types, as well as the choice of default
 timeouts for the connection types, is governed by a number of assumptions
 embedded in the xfwp use model. 
 
-Xfwp allows a maximum of 10 PM connections.  This constant is defined
-in the xfwp source, along with a default duration of 3,600
+
+The default number of PM connections is 10 and the
+default duration for PM connections is 3,600
 seconds (1 hour) for each connection after time of last activity.  
 At start-up, xfwp listens for PM connection requests on any non-reserved 
 port (default of 4444 if not specified on the xfwp command-line).  The PM 
@@ -162,10 +199,8 @@ cases this may result in depletion of available PM connection slots.
 If the sysadmin expects connections to a single xfwp from many PM's,
 xfwp should be started using the -pdt command line option, with a timeout 
 value reflecting the desired duration that inactive connections will be 
-permitted to remain open.
+permitted to remain open. 
 
-Xfwp currently allows a maximum of 100 client listen connections,
-each one of which is associated with a different Intranet X server.
 Xfwp client listeners are set up by a call to xfindproxy and continue to 
 listen for X client connection requests for a default duration of 86,400 
 seconds (24 hours) from the point of last activity.  After this time they
@@ -178,8 +213,8 @@ when a client actually attempts to connect to xfwp, as well the likelihood
 that client listeners will be re-used after the initial client data 
 connection is closed. 
 
-Xfwp allows a maximum of 4096 X client data connections.  Each of these
-connections is allocated a default lifetime of 604,800 seconds (7 * 24 hours) 
+Each client connection is allocated a default lifetime of 604,800 
+seconds (7 * 24 hours) 
 from the point when it last saw activity.  After this time it is 
 automatically closed and its fd's recovered for future allocation.
 Because server connections are not actually established until a connection 
@@ -196,8 +231,12 @@ permitted or denied.  The path to the file is specified at start-up
 time.  If no configuration file is specified, all X client data 
 connection requests routed through xfwp will be by default permitted,
 assuming that other X server authorization checks are successful.  If
-a configuration file is supplied, but none of its entries matches the 
-connection request, then the connection is by default denied.
+a configuration file is supplied but none of its entries matches the 
+connection request then the connection is by default denied.
+
+If a line in the configuration file begins with the '#' character
+or a new-line character, the line is ignored and the evaluator will 
+skip the line.
 
 The configuration file supports two entirely independent authorization
 checks:  one which is performed by xfwp itself, and a second which is the 
@@ -206,20 +245,19 @@ the configuration file employs a syntax and semantic similar to that of IP
 packet-filtering routers.  It contains zero or more source-destination
 rules of the following form:
 .PP
-[#]{permit | deny} <src> <src mask> [<dest> <dest mask> [<operator> <service>]]
+{permit | deny} <src> <src mask> [<dest> <dest mask> [<operator> <service>]]
 .sp
-.IP # 12
-comment delimiter; evaluator will skip these lines 
 .IP permit/deny 12
-the keywords "permit" or "deny" indicate whether the 
-rule will enable or disable access 
+the keywords ``permit'' or ``deny'' indicate whether the 
+rule will enable or disable access, respectively
 .IP src 12
 the IP address against the host who originated the 
 connection request will be matched, expressed in IP 
 format (x.x.x.x)
 .IP "src mask" 12
 a subnet mask, also in IP format, for further qualifying
-the source mask
+the source mask.  Bits set in the mask indicate bits of the
+incoming address to be \fIignored\fP when comparing to the specified src
 .IP dest 12
 the IP address against which the destination of the 
 incoming connection request (i.e. the host IP of the 
@@ -227,26 +265,29 @@ X server to which the incoming client is attempting to
 connect) will be matched
 .IP "dest mask" 12
 a subnet mask, also in IP format, for further qualifying
-the destination mask
+the destination mask.  Bits set in the mask indicate bits of the
+destination address to be \fIignored\fP when comparing to the specified dest
 .IP operator 12
-always "eq" (if the service field is not NULL)
+always ``eq'' (if the service field is not NULL)
 .IP service 12
-one of the following three strings:  "pm", "fp", or
-"cd", corresponding to proxy manager, xfindproxy, or
+one of the following three strings:  ``pm'', ``fp'', or
+``cd'', corresponding to proxy manager, xfindproxy, or
 client data, respectively 
 .PP
 For the second type of authorization check, the configuration file contains 
 zero or more site policy rules of the following form:
 .PP
-[#] {require | disallow} <sitepolicy> 
+{require | disallow} sitepolicy <site_policy> 
 .sp
 .IP require 12
-specifies that the X server \fImust\fP be configured with \fIone\fP of the
-corresponding site policies, else it must refuse the connection.
+specifies that the X server \fImust\fP be configured with \fIat least one\fP
+of the corresponding site policies, else it must refuse the connection.
 .IP disallow 12
 specifies that the X server \fImust not\fP be configured with \fIany\fP of
 the corresponding site policies, else it must refuse the connection.
-.IP "<sitepolicy>" 12
+.IP sitepolicy 12
+a required keyword
+.IP "<site_policy>" 12
 specifies the policy string.  The string may contain any
 combination of alphanumeric characters subject 
 only to interpretation by the target X server
@@ -255,12 +296,14 @@ only to interpretation by the target X server
 For the first type of configurable authorization checking, access
 can be permitted or denied for each connection type based upon
 source and, optionally, destination and service.  Each file entry must
-at a minimum specify "permit" or "deny" and the two source fields.  The
+at a minimum specify the keyword ``permit'' or ``deny'' and the two
+source fields.  The
 destination and service fields can be used to provide finer-grained 
 access control if desired.
 .PP
 The algorithm for rule-matching is as follows:  
 .PP
+.RS 3
   while (more entries to check)
   {
     if ((<originator IP> AND (NOT <src mask>)) == src)
@@ -272,14 +315,21 @@ The algorithm for rule-matching is as follows:
   }
   if (no rule matches) 
     deny connection
+.RE
 .PP
-Site policy configuration checking constitutes a separate (and X server-
+If a permit or deny rule does not specify a service and operation, then
+the rule applies to all services.  If a configuration file is specified 
+and it contains at least one valid deny or permit rule, then a host 
+that is not explicitly permitted will be denied a connection.
+.PP
+Site policy configuration checking constitutes a separate (and X server
 only) authorization check on incoming connection requests.  Any number of
 require or disallow rules may be specified, but all rules must be of the
-same type; that is, a single rule file cannot have both "require" and
-"disallow" keywords.  The algorithm for this check is as follows:
+same type; that is, a single rule file cannot have both ``require'' and
+``disallow'' keywords.  The algorithm for this check is as follows:
 .PP
-  if (X server recognizes site policy string)
+.RS 3
+  if (X server recognizes any of the site policy strings)
     if (keyword == require)
       permit connection
     else
@@ -289,9 +339,11 @@ same type; that is, a single rule file cannot have both "require" and
       deny connection
     else
       permit connection 
+.RE
 .PP
-NOTE:  The site policy check is performed by xfwp only if the source-
-destination rules permit the connection.
+The site policy check is performed by xfwp only if the source-destination
+rules permit the connection.
+.PP
 .SH
 EXAMPLES
 .PP
@@ -301,8 +353,8 @@ EXAMPLES
 # if and only if server supports one of these policies then authorize 
 # connections, but still subject to applicable rule matches
 #
-require policy1
-require policy2
+require sitepolicy policy1
+require sitepolicy policy2
 #
 # deny pm connections originating on 8.7.6.5 [NOTE:  If pm service
 # is explicitly qualified, line must include destination fields as
@@ -329,18 +381,11 @@ syntax checking, a special command-line switch (-verify) has been provided
 to assist the sysadmin in determining which rule was actually matched.  
 .PP
 .SH BUGS
-Xfwp should support audit/logging.
-.PP
-The constants which define how many connections of each type xfwp
-can keep open may be too large for certain platforms.
-.PP
-If an X server disconnects from xfwp before a client can connect 
-to xfwp, the client will hang.
 .PP
 Xfwp should check server site policy and security extension before
 allocating a listen port. 
 .PP 
 .SH SEE ALSO
-xfindproxy (1), Proxy Management Protocol spec V1.0, proxymngr(1)
+xfindproxy (1), Proxy Management Protocol spec V1.0, proxymngr(1), Xserver(1)
 .SH AUTHOR
 Reed Augliere, consulting to X Consortium, Inc.

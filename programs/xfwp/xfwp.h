@@ -1,4 +1,4 @@
-/* $TOG: xfwp.h /main/19 1997/04/16 16:24:48 reed $ */
+/* $TOG: xfwp.h /main/28 1997/11/12 08:16:46 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -28,55 +28,66 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 */
 
+#ifndef _XFWP_H
+#define _XFWP_H
+
+#define FALSE		0
+#define TRUE		1
+
+#define	min(a,b)		((a) < (b) ? (a) : (b))
+#define	max(a,b)		((a) > (b) ? (a) : (b))
+
 /*
-  Author: Reed A. Augliere
-  under contract to X Consortium, Inc.
+ * Default connection array sizes
  */
+#define	MAX_PM_CONNS			10
+#define	MAX_SERVERS			100
 
-/*
-// the following are timeout defaults (in seconds) on the three
-// types of ports (pm-data, client-listen and client-data)
-*/
-#define 	PM_DATA_TIMEOUT_DEFAULT			3600	/* 1 hour */
-#define 	CLIENT_LISTEN_TIMEOUT_DEFAULT		86400	/* 24 hours */
-#define 	CLIENT_DATA_TIMEOUT_DEFAULT		604800  /* 1 week */
-/*
-// connection object defines
-*/
-#define	 	MAX_SERVERS			100
-#define         MAX_CLIENT_CONNS        	4096
-#define		MAX_PM_CONNS			100
-#define		MAX_PM_HOSTS			10
-#define		MAX_CLIENT_LISTEN_PORTS		100
-#define		MAX_HOSTNAME_LEN		256
-#define		MAX_TRANSPORTS			10
-#define		SERVER_REPLY_FAILURE		0
-#define		SERVER_REPLY_SUCCESS		1
-#define		SERVER_REPLY_AUTHENTICATE 	2	
-#define		RWBUFFER_SIZE			2048
-#define		PM_LISTEN_PORT			"4444"
-/*
-// config file parser support defines
-*/
-/* allocate ADD_LINES entries at a time when loading the configuration */
-#define ADD_LINES		20
-#define SEPARATOR1              " \t\n"
-#define SEPARATOR2              '.'
+#define	RWBUFFER_SIZE			2048
 
-#define		min(a,b)		((a) < (b) ? (a) : (b))
-#define		max(a,b)		((a) > (b) ? (a) : (b))
+enum CLIENT_CONN_STATE {
+    CLIENT_WAITING, 
+    SERVER_WAITING, 
+    SERVER_REPLY,
+    CONNECTION_READY
+};
+
+enum PM_CONN_STATE {
+    START, 
+    WAIT_SERVER_INFO, 
+    SENT_PORT_INFO, 
+    PM_EXCHANGE_DONE
+};
+
+enum CONFIG_CHECK {
+    FAILURE, 
+    SUCCESS
+};
+
+enum CONFIG_TYPE {
+    PM, 
+    REM_CLIENT
+};
+
+enum LISTEN_STATE {
+    AVAILABLE, 
+    IN_USE
+};
+
+enum SERVICE_ID_TYPES {
+    CLIENT, 
+    PMGR, 
+    FINDPROXY
+};
+
+enum LOG_EVENTS {
+  CLIENT_ACCEPT,          /* event 0:  client connection granted */
+  CLIENT_REJECT_CONFIG,   /* event 1:  client conn rejected by config file */
+  CLIENT_REJECT_SERVER    /* event 2:  client conn rejected by server query */
+};
 
 typedef void fp1();
 typedef Bool fp2();
-
-struct PMconn
-{
-  IceConn	ice_conn;
-  int		proto_major_version;
-  int		proto_minor_version;
-  char *	vendor;
-  char * 	release;
-} PMconn;
 
 struct ICE_setup_info
 {
@@ -87,36 +98,6 @@ struct ICE_setup_info
  void (*fp1) ();
  Bool (*fp2) ();
 };
-
-struct listen_port_info
-{
-  int	client_listen_fd;
-  int	state;
-};
-
-struct pm_policy 
-{
-  int access_mask;
-  struct hostent mask_info;
-};
-
-enum CLIENT_CONN_STATE {CLIENT_WAITING, SERVER_WAITING, SERVER_REPLY,
-		        CONNECTION_READY};
-enum PM_CONN_STATE {START, WAIT_SERVER_INFO, SENT_PORT_INFO, PM_EXCHANGE_DONE};
-enum CONFIG_CHECK {FAILURE, SUCCESS};
-enum CONFIG_TYPE {PM, REM_CLIENT};
-enum LISTEN_STATE {AVAILABLE, IN_USE};
-enum SERVICE_ID_TYPES {CLIENT, PMGR, FINDPROXY};
-enum LOG_EVENTS {
-  CLIENT_ACCEPT,                /* event 0:  client connection granted */
-  CLIENT_REJECT_CONFIG,         /* event 1:  client conn rejected by config file */
-  CLIENT_REJECT_SERVER          /* event 2:  client conn rejected by server query */
-};
-
-struct ice_data
-{
-  char * server_host_name;
-} ice_data;
 
 struct client_conn_buf
 {
@@ -143,15 +124,14 @@ struct pm_conn_buf
   IceConn  		ice_conn;
   int			creation_time;
   int			time_to_close;
-} pm_conn_buf;
-
+} ;
 
 struct config
 {
   int 			num_client_conns;
   int 			num_pm_conns;
   int 			num_servers;
-  int			num_transports;
+  int			num_pm_listen_ports;
   int			idle_timeout;
   int 			pm_data_timeout;
   int 			client_listen_timeout;
@@ -179,10 +159,6 @@ struct server_list
 
 struct clientDataStruct
 {
-  struct pm_conn_buf *    pm_conn_array[MAX_PM_CONNS];
-  struct server_list *    server_array[MAX_SERVERS];
-  struct listen_port_info port_array[MAX_CLIENT_LISTEN_PORTS];
-  int 			  pm_connection_fd;
   int *			  nfds;
   fd_set *		  rinit;
   fd_set *		  winit;
@@ -206,155 +182,19 @@ struct config_line
   int	 		service_id;
 };
 
-struct log_struct
-{
-  enum LOG_EVENTS       event;
-  char *                source;
-  char *                destination;
-  char *                log_string;
-  int                   log_status;
-  int                   config_rule_num;
-};
 
 /*
-//FUNCTION PROTOTYPES 
-*/
-void  doProcessInputArgs(struct config * config_info, 
-                         int argc, 
-                         char * argv[]);
+ * Global variables
+ */
+extern struct clientDataStruct          global_data;    /* for ICE callbacks */
 
-void  doInitDataStructs(struct config * config_info, 
-                        struct client_conn_buf * client_conn_array[],
-                        struct ice_data * ice_data,
-			struct ICE_setup_info * PM_conn_setup,
-			int pm_listen_array[]);
+extern struct pm_conn_buf 		** pm_conn_array;
+extern struct server_list 		** server_array;
+extern struct client_conn_buf 		** client_conn_array;
 
-int   doSetupPMListen(char * pm_port, 
-		      int pm_listen_array[],
-		      IceListenObj ** listen_objects,
-		      int * nfds,
-		      fd_set * rinit);
-
-int   doSetupRemClientListen(char ** listen_port_string,
-                             struct clientDataStruct * program_data,
-                             char * server_address);
-
-int  doCheckServerList(char * serverAddress, 
-		       struct clientDataStruct * program_data,
-		       char ** listen_port_string);
-
-int  doHandleConfigFile(struct config * config_info);
-
-void  doSelect(struct config * config_info,
-               int * nfds,
-               int * nfds_ready,
-               fd_set * readable,
-               fd_set * writable);
-
-void  doCheckTimeouts(struct config * config_info,
-                      int * nfds,
-                      int * nfds_ready,
-                      fd_set * rinit,
-                      fd_set * winit,
-                      fd_set * readable,
-                      fd_set * writable,
-		      struct client_conn_buf * client_conn_array[]);
-
-void  doProcessSelect(int * nfds,
-                      int * nfds_ready,
-                      fd_set * readable,
-                      fd_set * writable,
-                      fd_set * rinit,
-                      fd_set * winit,
-                      int pm_listen_array[],
-                      int * pm_conn_counter,
-                      int * rem_listen_counter,
-                      struct config * config_info,
-                      struct client_conn_buf * client_conn_array[],
-                      struct ice_data * ice_data,
-		      IceListenObj ** listen_objects);
-
-void  doProcessReadables(int fd_counter,
-                      int * nfds,
-                      int * nfds_ready,
-                      fd_set * readable,
-                      fd_set * writable,
-                      fd_set * rinit,
-                      fd_set * winit,
-                      int pm_listen_array[],
-                      int * pm_conn_counter,
-                      int * rem_listen_counter,
-                      struct config * config_info,
-                      struct client_conn_buf * client_conn_array[],
-                      struct ice_data * ice_data,
-		      IceListenObj ** listen_objects);
-
-void  doProcessWritables(int fd_counter,
-                      int * nfds,
-                      int * nfds_ready,
-                      fd_set * readable,
-                      fd_set * writable,
-                      fd_set * rinit,
-                      fd_set * winit,
-                      int  pm_listen_array[],
-                      int * pm_conn_counter,
-                      int * rem_listen_counter,
-                      struct config * config_info,
-                      struct client_conn_buf * client_conn_array[],
-                      struct ice_data * ice_data);
-
-int doConfigCheck(struct sockaddr_in * temp_sockaddr_in,
-		  struct sockaddr_in * server_sockaddr_in,
-                  struct config * config_info,
-		  int context,
-		  struct log_struct * log_data);
-/*
-// Need to put the ICE callback function declaration here
-// (Don't forget call to the ICE library to register callback!)
-*/
-
-int doCopyFromTo(int fd_from,
-                 int fd_to,
-                 struct client_conn_buf * client_conn_array[],
-                 fd_set * rinit,
-                 fd_set * winit);
-
-void FWPprocessMessages(IceConn ice_conn, 
-			IcePointer * client_data,
-			int opcode,
-			unsigned long length,
-			Bool swap);
-
-Status FWPprotocolSetupProc(IceConn iceConn,
-			   int major_version,
-			   int minor_version,
-			   char * vendor,
-			   char * release,
-			   IcePointer * clientDataRet,
-			   char ** failureReasonRet);
-
-Bool FWPHostBasedAuthProc(char * hostname);
-
-int doServerConnectSetup(char * x_server_hostport, 
-			 int * server_connect_fd, 
-			 struct sockaddr_in * server_addr_in);
-
-int doServerConnect(int * server_connect_fd, 
-		    struct sockaddr_in * server_addr_in);
-
-int doProcessLine(char *line,
-                   struct config * config_info,
-                   int line_number);
-
-int doInitNewRule(struct config *);
-
-int doConfigPermitDeny(struct config *, char*);
-
-Bool doConfigRequireDisallow(int, char*);
-
-int doVerifyHostMaskToken(char token[]);
-
-void doInstallIOErrorHandler();
+extern char **SitePolicies;
+extern int SitePolicyCount;
+extern int SitePolicyPermit;
 
 /*
  * Handy ICE message parsing macros
@@ -472,3 +312,5 @@ void doInstallIOErrorHandler();
        IceDisposeCompleteMessage (iceConn, _pStart); \
        return; \
     }
+
+#endif /* _XFWP_H */
