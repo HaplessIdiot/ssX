@@ -2306,9 +2306,9 @@ static const SiS_PlasmaTables SiS_PlasmaTable[] = {
        0     , 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0       }
    },
 #endif
-   { 0x412f, 1,
-     { 0x000c, 0x0000, 0x0000, 0x0000, 0x0000 },
-     "Pioneer 503CMX",
+   { 0x412f, 2,
+     { 0x000c, 0x000b, 0x0000, 0x0000, 0x0000 },
+     "Pioneer 503CMX/PDA-5002",
      6,   /* DVI unknown */
      { 1|0xc0, 2|0xc0, 9|0xc0,11|0xc0,12|0xc0,15|0xc0, 0     , 0     , 0     , 0     ,
        0     , 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0     , 0       }

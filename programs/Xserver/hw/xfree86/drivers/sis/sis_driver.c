@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.92tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -30,14 +30,14 @@
  *              - new mode switching code for 300, 315 and 330 series
  *              - dual head support on 300, 315 and 330 series
  * 		- merged-framebuffer support on 300, 315 and 330 series
- *              - rewrote code for 5597/5598, 6326 and 530/620 chipsets,
- *              - rewrote code for 300/540/630/730 chipsets,
+ *              - rewritten for 5597/5598, 6326 and 530/620 chipsets,
+ *              - rewritten for 300/540/630/730 chipsets,
  *              - VESA mode switching (deprecated),
  *              - extended CRT2/video bridge handling support,
  *              - 650/740/Chrontel 7019/LVDS support (up to 1600x1200)
  *              - 30xB/30xLV video bridge support (300, 315, 330 series)
  *              - Xv support for 5597/5598, 6326, 530/620, 315 and 330 series
- *              - (working) Xv code for 300 series
+ *              - entirely rewritten Xv support for 300 series
  *              - TV and hi-res support for the 6326
  *		- Color HW cursor support for 300(emulated), 315 and 330 series
  *              - etc. etc. etc.
@@ -833,7 +833,6 @@ SISProbe(DriverPtr drv, int flags)
 #ifdef SISDUALHEAD
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	/* TW: I assume these chipsets as - basically - dual head capable. */
 	if(pEnt->chipset == PCI_CHIP_SIS630 || pEnt->chipset == PCI_CHIP_SIS540 ||
 	   pEnt->chipset == PCI_CHIP_SIS650 || pEnt->chipset == PCI_CHIP_SIS550 ||
 	   pEnt->chipset == PCI_CHIP_SIS315 || pEnt->chipset == PCI_CHIP_SIS315H ||
@@ -1443,7 +1442,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/05/22-1) by "
+        "SiS driver (2003/06/08-1) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -1481,13 +1480,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef SISDUALHEAD
-    /* TW: Allocate an entity private if necessary */
+    /* Allocate an entity private if necessary */
     if(xf86IsEntityShared(pScrn->entityList[0])) {
        pSiSEnt = xf86GetEntityPrivate(pScrn->entityList[0],
 					SISEntityIndex)->ptr;
        pSiS->entityPrivate = pSiSEnt;
 
-       /* TW: If something went wrong, quit here */
+       /* If something went wrong, quit here */
        if((pSiSEnt->DisableDual) || (pSiSEnt->ErrorAfterFirst)) {
 	  xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	      "First head encountered fatal error, can't continue\n");
@@ -1518,8 +1517,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     vgaHWGetIOBase(VGAHWPTR(pScrn));
 
-    /* TW: We "patch" the PIOOffset inside vgaHW in order to force
-     *     the vgaHW module to use our relocated i/o ports.
+    /* We "patch" the PIOOffset inside vgaHW in order to force
+     * the vgaHW module to use our relocated i/o ports.
      */
     VGAHWPTR(pScrn)->PIOOffset = pSiS->IODBase + (pSiS->PciInfo->ioBase[2] & 0xFFFC) - 0x380;
 
@@ -1603,7 +1602,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     pSiS->sishw_ext.jChipRevision = pSiS->ChipRev;
 
-    /* TW: Determine SiS6326 chiprevision. This is not yet used for
+    /* Determine SiS6326 chiprevision. This is not yet used for
      * anything, but it will as soon as I found out on which revisions
      * the hardware video overlay really works.
      * According to SiS the only differences are:
@@ -1678,13 +1677,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->VGAEngine = SIS_315_VGA;
 		break;
 	case PCI_CHIP_SIS315:
-		/* TW: Override for simplicity */
+		/* Override for simplicity */
 	        pSiS->Chipset = PCI_CHIP_SIS315H;
 		pSiS->sishw_ext.jChipType = SIS_315;
 		pSiS->VGAEngine = SIS_315_VGA;
 		break;
 	case PCI_CHIP_SIS315PRO:
-		/* TW: Override for simplicity */
+		/* Override for simplicity */
 		pSiS->Chipset = PCI_CHIP_SIS315H;
 		pSiS->sishw_ext.jChipType = SIS_315PRO;
 		pSiS->VGAEngine = SIS_315_VGA;
@@ -1718,13 +1717,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		break;
     }
 
-    /* TW: Now check if sisfb is loaded. Since sisfb only supports
+    /* Now check if sisfb is loaded. Since sisfb only supports
      * the 300 and 315 series, we only do this for these chips.
      * We use this for checking where sisfb starts its memory
      * heap in order to automatically detect the correct MaxXFBMem
      * setting (which normally is given by the option of the same name).
      * Under kernel 2.4.y, that only works if sisfb is completely 
-     * running, ie with a video mode because the fbdev will not be 
+     * running, ie with a video mode because the fbdev will not be
      * installed otherwise. Under 2.5 and later, sisfb will install
      * the framebuffer device in any way and running it with mode=none
      * is no longer supported (or necessary).
@@ -1758,8 +1757,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			  	     (mysisfbinfo.sisfb_patchlevel);
 
 	              if(sisfbversion >= 0x010508) {
-		        /* TW: Added PCI bus/slot/func into in sisfb Version 1.5.08.
-		              Check this to make sure we run on the same card as sisfb
+		        /* Added PCI bus/slot/func into in sisfb Version 1.5.08.
+		           Check this to make sure we run on the same card as sisfb
 		         */
 		        if((mysisfbinfo.sisfb_pcibus == pSiS->PciInfo->bus) &&
 		           (mysisfbinfo.sisfb_pcislot == pSiS->PciInfo->device) &&
@@ -1778,13 +1777,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		     		pSiS->PciInfo->bus,
 		     		pSiS->PciInfo->device,
 		     		pSiS->PciInfo->func);
-		         /* TW: Added version/rev/pl in sisfb 1.4.0 */
+		         /* Added version/rev/pl in sisfb 1.4.0 */
 		         if(mysisfbinfo.sisfb_version == 0) {
 		            xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		                "Old version of sisfb found. Please update\n");
 		         }
 		         pSiS->sisfbMem = mysisfbinfo.heapstart;
-		         /* TW: Basically, we can't trust the pdc register if sisfb is loaded */
+		         /* Basically, we can't trust the pdc register if sisfb is loaded */
 		         pSiS->donttrustpdc = TRUE;
 		         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		         	"sisfb: memory heap starts at %dKB\n", pSiS->sisfbMem);
@@ -1802,7 +1801,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 				            "no");
 		         }
 		         if(sisfbversion >= 0x01050A) {
-		            /* TW: We can trust the pdc value if sisfb is of recent version */
+		            /* We can trust the pdc value if sisfb is of recent version */
 		            pSiS->donttrustpdc = FALSE;
 		            if(sisfbversion >= 0x01050B) {
 		               /* As of 1.5.11, sisfb saved the register for us */
@@ -1827,8 +1826,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * The first thing we should figure out is the depth, bpp, etc.
-     * TW: Additionally, determine the size of the HWCursor memory
-     * area.
+     * Additionally, determine the size of the HWCursor memory area.
      */
     switch (pSiS->VGAEngine) {
       case SIS_300_VGA:
@@ -1857,11 +1855,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef SISDUALHEAD
-    /* TW: In case of Dual Head, we need to determine if we are the "master" head or
-     *     the "slave" head. In order to do that, we set PrimInit to DONE in the
-     *     shared entity at the end of the first initialization. The second
-     *     initialization then knows that some things have already been done. THIS
-     *     ALWAYS ASSUMES THAT THE FIRST DEVICE INITIALIZED IS THE MASTER!
+    /* In case of Dual Head, we need to determine if we are the "master" head or
+     * the "slave" head. In order to do that, we set PrimInit to DONE in the
+     * shared entity at the end of the first initialization. The second
+     * initialization then knows that some things have already been done. THIS
+     * ALWAYS ASSUMES THAT THE FIRST DEVICE INITIALIZED IS THE MASTER!
      */
 
     if(xf86IsEntityShared(pScrn->entityList[0])) {
@@ -1882,13 +1880,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->DualHeadMode = TRUE;
 	}
       } else {
-        /* TW: Only one screen in config file - disable dual head mode */
+        /* Only one screen in config file - disable dual head mode */
         pSiS->SecondHead = FALSE;
 	pSiS->DualHeadMode = FALSE;
 	pSiSEnt->DisableDual = TRUE;
       }
     } else {
-        /* TW: Entity is not shared - disable dual head mode */
+        /* Entity is not shared - disable dual head mode */
         pSiS->SecondHead = FALSE;
 	pSiS->DualHeadMode = FALSE;
     }
@@ -1896,7 +1894,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     pSiS->ForceCursorOff = FALSE;
 
-    /* TW: Allocate SiS_Private (for mode switching code) and initialize it */
+    /* Allocate SiS_Private (for mode switching code) and initialize it */
     pSiS->SiS_Pr = NULL;
 #ifdef SISDUALHEAD
     if(pSiSEnt) {
@@ -1921,23 +1919,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->SiS_Backup70xx = 0xff;
        pSiS->SiS_Pr->SiS_CHOverScan = -1;
        pSiS->SiS_Pr->SiS_ChSW = FALSE;
+       pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
     }
 
-    /* TW: Get our relocated IO registers */
+    /* Get our relocated IO registers */
     pSiS->RelIO = (pSiS->PciInfo->ioBase[2] & 0xFFFC) + pSiS->IODBase;
     pSiS->sishw_ext.ulIOAddress = pSiS->RelIO + 0x30;
     xf86DrvMsg(pScrn->scrnIndex, from, "Relocated IO registers at 0x%lX\n",
            (unsigned long)pSiS->RelIO);
 
-    /* TW: Initialize SiS Port Reg definitions for externally used
-     *     BIOS emulation (init.c/init301.c) functions.
+    /* Initialize SiS Port Reg definitions for externally used
+     * BIOS emulation (init.c/init301.c) functions.
      */
     SiSRegInit(pSiS->SiS_Pr, pSiS->RelIO + 0x30);
 
-    /* TW: The following identifies the old chipsets. This is only
-     *     partly used since the really old chips are not supported,
-     *     but I keep it here for future use.
+    /* The following identifies the old chipsets. This is only
+     * partly used since the really old chips are not supported,
+     * but I keep it here for future use.
      */
     if(pSiS->VGAEngine == SIS_OLD_VGA || pSiS->VGAEngine == SIS_530_VGA) {
        switch(pSiS->Chipset) {
@@ -2062,7 +2061,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    /* TW: Set the current layout parameters */
+    /* Set the current layout parameters */
     pSiS->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
     pSiS->CurrentLayout.depth        = pScrn->depth;
     /* (Inside this function, we can use pScrn's contents anyway) */
@@ -2092,7 +2091,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef SISDUALHEAD
-    /* TW: Due to palette & timing problems we don't support 8bpp in DHM */
+    /* Due to palette & timing problems we don't support 8bpp in DHM */
     if((pSiS->DualHeadMode) && (pScrn->bitsPerPixel == 8)) {
     	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Color depth 8 not supported in Dual Head mode.\n");
@@ -2103,10 +2102,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #endif
 #ifdef SISMERGED
-    /* TW: Due to palette & timing problems we don't support 8bpp in MFBM */
+    /* Due to palette & timing problems we don't support 8bpp in MFBM */
     if((pSiS->MergedFB) && (pScrn->bitsPerPixel == 8)) {
        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"Color depth 8 not supported in MergeFB mode.\n");
+		"Color depth 8 not supported in MergedFB mode.\n");
 	if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
         SISFreeRec(pScrn);
         return FALSE;
@@ -2146,11 +2145,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Unlock registers */
     sisSaveUnlockExtRegisterLock(pSiS, &srlockReg, &crlockReg);
 
-    /* TW: We need no backup area (300/315/330 new mode switching code) */
+    /* We need no backup area (300/315/330 new mode switching code) */
     pSiS->sishw_ext.pSR = NULL;
     pSiS->sishw_ext.pCR = NULL;
 
-    /* TW: Read BIOS for 300 and 315/330 series customization */
+    /* Read BIOS for 300 and 315/330 series customization */
     pSiS->sishw_ext.pjVirtualRomBase = NULL;
     pSiS->BIOS = NULL;
     pSiS->sishw_ext.UseROM = FALSE;
@@ -2246,7 +2245,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
         if(!pSiS->SecondHead) {
-	     /* TW: Copy some option settings to entity private */
+	     /* Copy some option settings to entity private */
              pSiSEnt->HWCursor = pSiS->HWCursor;
 	     pSiSEnt->NoAccel = pSiS->NoAccel;
 	     pSiSEnt->restorebyset = pSiS->restorebyset;
@@ -2344,7 +2343,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #endif
 
-    /* TW: Handle UseROMData, NoOEM and UsePanelScaler options */
+    /* Handle UseROMData, NoOEM and UsePanelScaler options */
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
        from = X_PROBED;
        if(pSiS->OptROMUsage == 0)  {
@@ -2460,9 +2459,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->sishw_ext.ulVideoMemorySize = pScrn->videoRam * 1024;
     pSiS->sishw_ext.bSkipDramSizing = TRUE;
 
-    /* TW: Calculate real availMem according to Accel/TurboQueue and
-     *     HWCursur setting. Also, initialize some variables used
-     *     in other modules.
+    /* Calculate real availMem according to Accel/TurboQueue and
+     * HWCursur setting. Also, initialize some variables used
+     * in other modules.
      */
     pSiS->cursorOffset = 0;
     switch (pSiS->VGAEngine) {
@@ -2525,42 +2524,42 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	                      pSiS->availMem -= pSiS->CursorSize;
 	}
 	if(pSiS->Chipset == PCI_CHIP_SIS530) {
-		/* TW: Check if Flat Panel is enabled */
+		/* Check if Flat Panel is enabled */
 		inSISIDXREG(SISSR, 0x0e, tempreg);
 		if(!tempreg & 0x04) pSiS->availMem -= pSiS->CursorSize;
 
-		/* TW: Set up mask for MMIO register */
+		/* Set up mask for MMIO register */
 		pSiS->CmdQueLenMask = (pSiS->TurboQueue) ? 0x1FFF : 0x00FF;
 	} else {
-	        /* TW: TQ is never used on 6326/5597, because the accelerator
-		 *     always Syncs. So this is just cosmentic work. (And I
-		 *     am not even sure that 0x7fff is correct. MMIO 0x83a8
-		 *     holds 0xec0 if (30k) TQ is enabled, 0x20 if TQ disabled.
-		 *     The datasheet has no real explanation on the queue length
-		 *     if the TQ is enabled. Not syncing and waiting for a
-		 *     suitable queue length instead does not work.
+	        /* TQ is never used on 6326/5597, because the accelerator
+		 * always Syncs. So this is just cosmentic work. (And I
+		 * am not even sure that 0x7fff is correct. MMIO 0x83a8
+		 * holds 0xec0 if (30k) TQ is enabled, 0x20 if TQ disabled.
+		 * The datasheet has no real explanation on the queue length
+		 * if the TQ is enabled. Not syncing and waiting for a
+		 * suitable queue length instead does not work.
 		 */
 	        pSiS->CmdQueLenMask = (pSiS->TurboQueue) ? 0x7FFF : 0x003F;
 	}
 
-	/* TW: This is to be subtracted from MMIO queue length register contents
-	 *     for getting the real Queue length.
+	/* This is to be subtracted from MMIO queue length register contents
+	 * for getting the real Queue length.
 	 */
 	pSiS->CmdQueLenFix  = (pSiS->TurboQueue) ? 32 : 0;
     }
 
 #ifdef SISDUALHEAD
-    /* TW: In dual head mode, we share availMem equally - so align it
-     *     to 8KB; this way, the address of the FB of the second
-     *     head is aligned to 4KB for mapping.
+    /* In dual head mode, we share availMem equally - so align it
+     * to 8KB; this way, the address of the FB of the second
+     * head is aligned to 4KB for mapping.
      */
    if (pSiS->DualHeadMode)
 	pSiS->availMem &= 0xFFFFE000;
 #endif
 
-    /* TW: Check MaxXFBMem setting */
+    /* Check MaxXFBMem setting */
 #ifdef SISDUALHEAD
-    /* TW: Since DRI is not supported in dual head mode, we
+    /* Since DRI is not supported in dual head mode, we
            don't need the MaxXFBMem setting. */
     if(pSiS->DualHeadMode) {
         if(pSiS->maxxfbmem) {
@@ -2596,7 +2595,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %dK of framebuffer memory\n",
     	pSiS->maxxfbmem / 1024);
 
-    /* TW: Check if the chipset supports two video overlays */
+    /* Check if the chipset supports two video overlays */
     if( (!pSiS->NoXvideo) &&
         ( pSiS->VGAEngine == SIS_300_VGA    ||
           pSiS->VGAEngine == SIS_315_VGA    ||
@@ -2704,7 +2703,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->hasTwoOverlays ? "s" : "");
     }
 
-    /* TW: Backup VB connection and CRT1 on/off register */
+    /* Backup VB connection and CRT1 on/off register */
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
     	inSISIDXREG(SISCR, 0x32, pSiS->oldCR32);
 	inSISIDXREG(SISCR, 0x17, pSiS->oldCR17);
@@ -2718,25 +2717,64 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	else                pSiS->CRT1off = 1;
     } else                  pSiS->CRT1off = -1;
 
-    /* TW: There are some strange machines out there which require a special
-     *     manupulation of ISA bridge registers in order to make the Chrontel
-     *     work. Try to find out if we're running on such a machine.
+    /* There are some machines out there which require a special
+     * setup of the GPIO registers in order to make the Chrontel
+     * work. Try to find out if we're running on such a machine.
+     * Furthermore, there is some highly customized hardware,
+     * which requires some non-standard LVDS timing. Since the
+     * vendors don't seem to care about PCI subsystem ID's we
+     * need to find out using the BIOS version and date strings.
      */
     pSiS->SiS_Pr->SiS_ChSW = FALSE;
+    pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
     if(pSiS->Chipset == PCI_CHIP_SIS630) {
-        int i=0;
-        do {
-	    if(mychswtable[i].subsysVendor == pSiS->PciInfo->subsysVendor &&
-	       mychswtable[i].subsysCard == pSiS->PciInfo->subsysCard) {
+       int i = 0;
+       do {
+	  if(mychswtable[i].subsysVendor == pSiS->PciInfo->subsysVendor &&
+	     mychswtable[i].subsysCard == pSiS->PciInfo->subsysCard) {
+	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	         "PCI subsystem ID found in list for Chrontel/GPIO setup\n");
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		 "Vendor/Card: %s %s (ID %04x)\n",
+		  mychswtable[i].vendorName,
+		  mychswtable[i].cardName,
+		  pSiS->PciInfo->subsysCard);
+	     pSiS->SiS_Pr->SiS_ChSW = TRUE;
+	     break;
+          }
+          i++;
+       } while(mychswtable[i].subsysVendor != 0);
+    }
+
+    if((pSiS->sishw_ext.UseROM) && (pSiS->SiS_Pr->SiS_CustomT == CUT_NONE)) {
+       int i = 0, j;
+       unsigned short bversptr = pSiS->BIOS[0x16] | (pSiS->BIOS[0x17] << 8);
+       BOOLEAN footprint;
+       do {
+	  if( (mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
+	      (!strncmp(mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
+	                strlen(mycustomttable[i].biosversion)))                       &&
+	      (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
+	                strlen(mycustomttable[i].biosdate))) ) {
+	     footprint = TRUE;
+	     for(j=0; j<5; j++) {
+	        if(mycustomttable[i].biosFootprintAddr[j]) {
+	           if(pSiS->BIOS[mycustomttable[i].biosFootprintAddr[j]] != mycustomttable[i].biosFootprintData[j])
+		      footprint = FALSE;
+		}
+	     }
+	     if(footprint) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	           "PCI card/vendor found in list for Chrontel/ISA bridge poking\n");
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		   "Vendor: %s (ID %04x)\n",
-		   mychswtable[i].vendorName, pSiS->PciInfo->subsysCard);
-		pSiS->SiS_Pr->SiS_ChSW = TRUE;
-            }
-            i++;
-        } while(mychswtable[i].subsysVendor != 0);
+	           "BIOS version/date/footprint identified, special timing applies\n");
+	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   "Vendor: %s, Product: %s\n",
+		   mycustomttable[i].vendorName, mycustomttable[i].cardName);
+	        pSiS->SiS_Pr->SiS_CustomT = mycustomttable[i].SpecialID;
+	        break;
+	     }
+          }
+          i++;
+       } while(mycustomttable[i].chipID);
     }
 
     /* Detect video bridge and sense connected devices */
@@ -2753,14 +2791,20 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Backup detected CRT2 devices */
     pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD | CRT2_TV | CRT2_VGA);
 
-    /* Eventually overrule detected CRT2 type */
+    /* Eventually overrule detected CRT2 type
+     * If no type forced, use the detected devices in the order VGA2->TV->LCD
+     * Since the Chrontel 7005 sometimes delivers wrong detection results,
+     * we use a different order on such machines (LCD->TV)
+     */
     if(pSiS->ForceCRT2Type == CRT2_DEFAULT) {
         if(pSiS->VBFlags & CRT2_VGA)
            pSiS->ForceCRT2Type = CRT2_VGA;
-	else if(pSiS->VBFlags & CRT2_TV)
-           pSiS->ForceCRT2Type = CRT2_TV;	   
+	else if((pSiS->VBFlags & CRT2_TV) && (!((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->VGAEngine == SIS_300_VGA))))
+           pSiS->ForceCRT2Type = CRT2_TV;
         else if(pSiS->VBFlags & CRT2_LCD)
            pSiS->ForceCRT2Type = CRT2_LCD;
+	else if(pSiS->VBFlags & CRT2_TV)
+	   pSiS->ForceCRT2Type = CRT2_TV;
     }
 
     switch(pSiS->ForceCRT2Type) {
@@ -2810,7 +2854,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* TW: Eventually overrule TV Type (SVIDEO, COMPOSITE, SCART) */
+    /* Eventually overrule TV Type (SVIDEO, COMPOSITE, SCART) */
     if(pSiS->ForceTVType != -1) {
         if(pSiS->VBFlags & VB_SISBRIDGE) {
     	   pSiS->VBFlags &= ~(TV_INTERFACE);
@@ -2818,7 +2862,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* TW: Handle ForceCRT1 option */
+    /* Handle ForceCRT1 option */
     pSiS->CRT1changed = FALSE;
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
        usScratchCR17 = pSiS->oldCR17;
@@ -2826,9 +2870,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        usScratchSR1F = pSiS->oldSR1F;
        usScratchCR32 = pSiS->postVBCR32;
        if(pSiS->VESA != 1) {
-          /* TW: Copy forceCRT1 option to CRT1off if option is given */
+          /* Copy forceCRT1 option to CRT1off if option is given */
 #ifdef SISDUALHEAD
-          /* TW: In DHM, handle this option only for master head, not the slave */
+          /* In DHM, handle this option only for master head, not the slave */
           if( (pSiS->forceCRT1 != -1) &&
 	       (!(pSiS->DualHeadMode && pSiS->SecondHead)) ) {
 #else
@@ -2858,7 +2902,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		       if(!(usScratchCR63 & 0x40)) pSiS->CRT1changed = TRUE;
 		    }
 		    usScratchCR32 &= ~0x20;
-		    /* TW: We must not actually switch off CRT1 before we changed the mode! */
+		    /* We must not actually switch off CRT1 before we changed the mode! */
 		 }
 	     }
 	     /* Here we can write to CR17 even on 315 series as we only ENABLE
@@ -2879,15 +2923,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     outSISIDXREG(SISSR, 0x1f, usScratchSR1F);
           }
        }
-       /* TW: Store the new VB connection register contents for later mode changes */
+       /* Store the new VB connection register contents for later mode changes */
        pSiS->newCR32 = usScratchCR32;
     }
 
-    /* TW: Check if CRT1 used (or needed; this eg. if no CRT2 detected) */
+    /* Check if CRT1 used (or needed; this eg. if no CRT2 detected) */
     if(pSiS->VBFlags & VB_VIDEOBRIDGE) {
 
-        /* TW: No CRT2 output? Then we NEED CRT1!
-	 *     We also need CRT1 if depth = 8 and bridge=LVDS|301B-DH
+        /* No CRT2 output? Then we NEED CRT1!
+	 * We also need CRT1 if depth = 8 and bridge=LVDS|301B-DH
 	 */
         if( (!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD | CRT2_TV))) ||
 	    ( (pScrn->bitsPerPixel == 8) &&
@@ -2895,11 +2939,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	        ((pSiS->VBFlags & VB_30xBDH) && (pSiS->VBFlags & CRT2_LCD)) ) ) ) {
 	    pSiS->CRT1off = 0;
 	}
-	/* TW: No CRT2 output? Then we can't use Xv on CRT2 */
+	/* No CRT2 output? Then we can't use Xv on CRT2 */
 	if(!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD | CRT2_TV)))
 	    pSiS->XvOnCRT2 = FALSE;
 
-    } else { /* TW: no video bridge? */
+    } else { /* no video bridge? */
 
         /* Then we NEED CRT1... */
         pSiS->CRT1off = 0;
@@ -2907,7 +2951,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	pSiS->XvOnCRT2 = FALSE;
     }
 
-    /* TW: Handle TVStandard option */
+    /* Handle TVStandard option */
     if(pSiS->NonDefaultPAL != -1) {
         if( (!(pSiS->VBFlags & VB_SISBRIDGE)) &&
 	    (!((pSiS->VBFlags & VB_CHRONTEL)) && (pSiS->ChrontelType == CHRONTEL_701x)) ) {
@@ -2960,7 +3004,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* TW: Do some checks */
+    /* Do some checks */
     if(pSiS->OptTVOver != -1) {
         if(pSiS->VBFlags & VB_CHRONTEL) {
 	   pSiS->UseCHOverScan = pSiS->OptTVOver;
@@ -2979,7 +3023,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* TW: Do some MergedFB mode initialisation */
+    /* Do some MergedFB mode initialisation */
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
        pSiS->CRT2pScrn = xalloc(sizeof(ScrnInfoRec));
@@ -2994,14 +3038,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
 
-    /* TW: Determine CRT1<>CRT2 mode
+    /* Determine CRT1<>CRT2 mode
      *     Note: When using VESA or if the bridge is in slavemode, display
      *           is ALWAYS in MIRROR_MODE!
      *           This requires extra checks in functions using this flag!
      *           (see sis_video.c for example)
      */
     if(pSiS->VBFlags & DISPTYPE_DISP2) {
-        if(pSiS->CRT1off) {	/* TW: CRT2 only ------------------------------- */
+        if(pSiS->CRT1off) {	/* CRT2 only ------------------------------- */
 #ifdef SISDUALHEAD
 	     if(pSiS->DualHeadMode) {
 	     	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -3025,9 +3069,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     }
 #endif
 	     pSiS->VBFlags |= VB_DISPMODE_SINGLE;
-	     /* TW: No CRT1? Then we use the video overlay on CRT2 */
+	     /* No CRT1? Then we use the video overlay on CRT2 */
 	     pSiS->XvOnCRT2 = TRUE;
-	} else			/* TW: CRT1 and CRT2 - mirror or dual head ----- */
+	} else			/* CRT1 and CRT2 - mirror or dual head ----- */
 #ifdef SISDUALHEAD
 	     if(pSiS->DualHeadMode) {
 		pSiS->VBFlags |= (VB_DISPMODE_DUAL | DISPTYPE_CRT1);
@@ -3050,7 +3094,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     } else
 #endif
 		 pSiS->VBFlags |= (VB_DISPMODE_MIRROR | DISPTYPE_CRT1);
-    } else {			/* TW: CRT1 only ------------------------------- */
+    } else {			/* CRT1 only ------------------------------- */
 #ifdef SISDUALHEAD
 	     if(pSiS->DualHeadMode) {
 	     	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -3087,25 +3131,25 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* TW: Init Ptrs for Save/Restore functions and calc MaxClock */
+    /* Init Ptrs for Save/Restore functions and calc MaxClock */
     SISDACPreInit(pScrn);
 
     /* ********** end of VBFlags setup ********** */
 
-    /* TW: VBFlags are initialized now. Back them up for SlaveMode modes. */
+    /* VBFlags are initialized now. Back them up for SlaveMode modes. */
     pSiS->VBFlags_backup = pSiS->VBFlags;
 
-    /* TW: Find out about paneldelaycompensation and evaluate option */
+    /* Find out about paneldelaycompensation and evaluate option */
     pSiS->sishw_ext.pdc = 0;
 
     if(pSiS->VGAEngine == SIS_300_VGA) {
 
         if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
-	   /* TW: Save the current PDC if the panel is used at the moment.
-	    *     This seems by far the safest way to find out about it.
-	    *     If the system is using an old version of sisfb, we can't
-	    *     trust the pdc register value. If sisfb saved the pdc for
-	    *     us, use it.
+	   /* Save the current PDC if the panel is used at the moment.
+	    * This seems by far the safest way to find out about it.
+	    * If the system is using an old version of sisfb, we can't
+	    * trust the pdc register value. If sisfb saved the pdc for
+	    * us, use it.
 	    */
 	   if(pSiS->sisfbpdc) {
 	      pSiS->sishw_ext.pdc = pSiS->sisfbpdc;
@@ -3139,7 +3183,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	            if(mypdctable[i].subsysVendor == pSiS->PciInfo->subsysVendor &&
 	               mypdctable[i].subsysCard == pSiS->PciInfo->subsysCard) {
 	                  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	   	            "PCI card/vendor found in list for non-default PanelDelayCompensation\n");
+	   	            "PCI card/vendor identified for non-default PanelDelayCompensation\n");
 		          xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		             "Vendor: %s, card: %s (ID %04x), PanelDelayCompensation: %d\n",
 		             mypdctable[i].vendorName, mypdctable[i].cardName,
@@ -3185,10 +3229,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef SISDUALHEAD
-    /* TW: In dual head mode, both heads (currently) share the maxxfbmem equally.
-     *     If memory sharing is done differently, the following has to be changed;
-     *     the other modules (eg. accel and Xv) use dhmOffset for hardware
-     *     pointer settings relative to VideoRAM start and won't need to be changed.
+    /* In dual head mode, both heads (currently) share the maxxfbmem equally.
+     * If memory sharing is done differently, the following has to be changed;
+     * the other modules (eg. accel and Xv) use dhmOffset for hardware
+     * pointer settings relative to VideoRAM start and won't need to be changed.
      */
     if (pSiS->DualHeadMode) {
         if (pSiS->SecondHead == FALSE) {
@@ -3221,18 +3265,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         pSiS->dhmOffset = 0;
 #endif
 
-    /* TW: Note: Do not use availMem for anything from now. Use
-     *     maxxfbmem instead. (availMem does not take dual head
-     *     mode into account.)
+    /* Note: Do not use availMem for anything from now. Use
+     * maxxfbmem instead. (availMem does not take dual head
+     * mode into account.)
      */
 
 
-    /* TW: Now for something completely different: DDC.
-           For 300 and 315 series, we provide our
-	   own functions (in order to probe CRT2 as well)
-	   If these fail, use the VBE.
-	   All other chipsets will use VBE. No need to re-invent
-	   the wheel there.
+    /* Now for something completely different: DDC.
+     * For 300 and 315 series, we provide our
+     * own functions (in order to probe CRT2 as well)
+     * If these fail, use the VBE.
+     * All other chipsets will use VBE. No need to re-invent
+     * the wheel there.
      */
 
     pSiS->pVbe = NULL;
@@ -3263,22 +3307,22 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef SISDUALHEAD
-    /* TW: In dual head mode, probe DDC using VBE only for CRT1 (second head) */
+    /* In dual head mode, probe DDC using VBE only for CRT1 (second head) */
     if((pSiS->DualHeadMode) && (!didddc2) && (!pSiS->SecondHead))
          didddc2 = TRUE;
 #endif
 
-    /* TW: If CRT1 is off (eventually forced), skip DDC via VBE */
+    /* If CRT1 is off (eventually forced), skip DDC via VBE */
     if((!didddc2) && (pSiS->CRT1off)) didddc2 = TRUE;
 
-    /* TW: Now (re-)load and initialize the DDC module */
+    /* Now (re-)load and initialize the DDC module */
     if(!didddc2) {
 
        if(xf86LoadSubModule(pScrn, "ddc")) {
 
           xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-          /* TW: Now load and initialize VBE module. */
+          /* Now load and initialize VBE module. */
           if(xf86LoadSubModule(pScrn, "vbe")) {
 	      xf86LoaderReqSymLists(vbeSymbols, NULL);
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
@@ -3367,8 +3411,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #endif
 
-    /* TW: If there is no HSync or VRefresh data for the monitor,
-     *     derive it from DDC data. (Idea taken from radeon driver)
+    /* If there is no HSync or VRefresh data for the monitor,
+     * derive it from DDC data. (Idea taken from radeon driver)
      */
     if(pScrn->monitor->DDC) {
        if(pScrn->monitor->nHsync <= 0) {
@@ -3500,8 +3544,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 	     if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 	     if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
-	  } else {
+	  } else if(pSiS->VBFlags & CRT2_ENABLE) {
 	     acceptcustommodes = FALSE;
+	     includelcdmodes   = FALSE;
+	  } else {
 	     includelcdmodes   = FALSE;
 	  }
 
@@ -3519,11 +3565,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	   	"Building list of built-in modes failed, using XFree86 defaults\n");
 	  }
+       } else {
+          pSiS->HaveCustomModes = TRUE;
        }
     }
 
     /*
-     * TW: Add our built-in modes for TV on the 6326
+     * Add our built-in modes for TV on the 6326
      */
     if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {
        if(pSiS->SiS6326Flags & SIS6326_TVDETECTED) {
@@ -3545,7 +3593,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /*
-     * TW: Add our built-in hi-res modes on the 6326
+     * Add our built-in hi-res modes on the 6326
      */
     if(pSiS->Chipset == PCI_CHIP_SIS6326) {
        if(pScrn->bitsPerPixel == 8) {
@@ -3645,11 +3693,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* TW: Go through mode list and mark all those modes as bad,
-     *     - which are unsuitable for dual head mode (if running dhm),
-     *     - which exceed the LCD panels specs (if running on LCD)
-     *     - TODO: which exceed TV capabilities (if running on TV)
-     *     Also, find the highest used pixelclock on the master head.
+    /* Go through mode list and mark all those modes as bad,
+     * - which are unsuitable for dual head mode (if running dhm),
+     * - which exceed the LCD panels specs (if running on LCD)
+     * - TODO: which exceed TV capabilities (if running on TV)
+     * Also, find the highest used pixelclock on the master head.
      */
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
@@ -3661,9 +3709,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	       n = p->next;
 
 #ifdef SISDUALHEAD
-	       /* TW: Modes that require the bridge to operate in SlaveMode
-                *     are not suitable for Dual Head mode. Also check for
-		*     modes that exceed panel dimension.
+	       /* Modes that require the bridge to operate in SlaveMode
+                * are not suitable for Dual Head mode. Also check for
+		* modes that exceed panel dimension.
                 */
                if(pSiS->DualHeadMode) {
 	          if(pSiS->SecondHead == FALSE) {
@@ -3692,8 +3740,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	                }
 		     }
 	          }
-		  /* TW: Search for the highest clock on first head in order to calculate
-		   *     max clock for second head (CRT1)
+		  /* Search for the highest clock on first head in order to calculate
+		   * max clock for second head (CRT1)
 		   */
 		  if(!pSiS->SecondHead) {
 		     if((p->status == MODE_OK) && (p->Clock > pSiSEnt->maxUsedClock)) {
@@ -3954,7 +4002,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           pScrn->modes = pScrn->modes->next;
           pScrn->currentMode = pScrn->modes;
 
-	  /* TW: Update CurrentLayout */
+	  /* Update CurrentLayout */
     	  pSiS->CurrentLayout.mode = pScrn->currentMode;
     	  pSiS->CurrentLayout.displayWidth = pScrn->displayWidth;
 
@@ -4042,7 +4090,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
-    /* TW: Now load and initialize VBE module for VESA and mode restoring. */
+    /* Now load and initialize VBE module for VESA and mode restoring. */
     pSiS->UseVESA = 0;
     if(pSiS->VESA == 1) {
        if(!pSiS->pVbe) {
@@ -4126,7 +4174,7 @@ SISMapMem(ScrnInfoPtr pScrn)
     if(pSiS->DualHeadMode) {
         pSiSEnt->MapCountIOBase++;
         if(!(pSiSEnt->IOBase)) {
-	     /* TW: Only map if not mapped previously */
+	     /* Only map if not mapped previously */
     	     pSiSEnt->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
                          pSiS->PciTag, pSiS->IOAddress, 0x10000);
         }
@@ -4151,7 +4199,7 @@ SISMapMem(ScrnInfoPtr pScrn)
     if(pSiS->DualHeadMode) {
         pSiSEnt->MapCountIOBaseDense++;
         if(!(pSiSEnt->IOBaseDense)) {
-	     /* TW: Only map if not mapped previously */
+	     /* Only map if not mapped previously */
 	     pSiSEnt->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
                     pSiS->PciTag, pSiS->IOAddress, 0x10000);
 	}
@@ -4173,14 +4221,14 @@ SISMapMem(ScrnInfoPtr pScrn)
     if(pSiS->DualHeadMode) {
         pSiSEnt->MapCountFbBase++;
         if(!(pSiSEnt->FbBase)) {
-	     /* TW: Only map if not mapped previously */
+	     /* Only map if not mapped previously */
     	     pSiSEnt->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
                          pSiS->PciTag, (unsigned long)pSiS->realFbAddress,
                          pSiS->FbMapSize);
 	     pSiS->sishw_ext.pjVideoMemoryAddress = (UCHAR *)pSiSEnt->FbBase;
         }
         pSiS->FbBase = pSiSEnt->FbBase;
-     	/* TW: Adapt FbBase (for DHM; dhmOffset is 0 otherwise) */
+     	/* Adapt FbBase (for DHM; dhmOffset is 0 otherwise) */
 	pSiS->FbBase += pSiS->dhmOffset;
     } else {
 #endif
@@ -4220,9 +4268,9 @@ SISUnmapMem(ScrnInfoPtr pScrn)
     pSiSEnt = pSiS->entityPrivate;
 #endif
 
-/* TW: In dual head mode, we must not unmap if the other head still
- *     assumes memory as mapped
-*/
+/* In dual head mode, we must not unmap if the other head still
+ * assumes memory as mapped
+ */
 #ifdef SISDUALHEAD
     if (pSiS->DualHeadMode) {
         if (pSiSEnt->MapCountIOBase) {
@@ -4287,7 +4335,7 @@ SISSave(ScrnInfoPtr pScrn)
     pSiS = SISPTR(pScrn);
 
 #ifdef SISDUALHEAD
-    /* TW: We always save master & slave */
+    /* We always save master & slave */
     if(pSiS->DualHeadMode && pSiS->SecondHead) return;
 #endif
 
@@ -4316,7 +4364,7 @@ SISSave(ScrnInfoPtr pScrn)
     
     if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_SAVE);
     
-    /* TW: Save these as they may have been changed prior to SISSave() call */
+    /* Save these as they may have been changed prior to SISSave() call */
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
     	sisReg->sisRegs3D4[0x17] = pSiS->oldCR17;
 	if(vgaReg->numCRTC >= 0x17) vgaReg->CRTC[0x17] = pSiS->oldCR17;
@@ -4329,7 +4377,7 @@ SISSave(ScrnInfoPtr pScrn)
 }
 
 /*
- * TW: Just adapted from the std* functions in vgaHW.c
+ * Just adapted from the std* functions in vgaHW.c
  */
 static void
 SiS_WriteAttr(SISPtr pSiS, int index, int value)
@@ -4354,7 +4402,6 @@ SiS_ReadAttr(SISPtr pSiS, int index)
     outb(pSiS->IODBase + VGA_ATTR_INDEX, index);
     return (inb(pSiS->IODBase + VGA_ATTR_DATA_R));
 }
-
 
 static void
 SiS_SaveFonts(ScrnInfoPtr pScrn)
@@ -4503,7 +4550,7 @@ SiS_RestoreFonts(ScrnInfoPtr pScrn)
     outSISIDXREG(SISSR, 0x04, seq4);
 }
 
-/* TW: VESASaveRestore taken from vesa driver */
+/* VESASaveRestore taken from vesa driver */
 static void
 SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 {
@@ -4580,14 +4627,14 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(pSiS->UseVESA) {  /* With VESA: */
 
 #ifdef SISDUALHEAD
-	/* TW: No dual head mode when using VESA */
+	/* No dual head mode when using VESA */
 	if(pSiS->SecondHead) return TRUE;
 #endif
 
 	pScrn->vtSema = TRUE;
 	
 	/*
-	 * TW: This order is required:
+	 * This order is required:
 	 * The video bridge needs to be adjusted before the
 	 * BIOS is run as the BIOS sets up CRT2 according to
 	 * these register settings.
@@ -4607,8 +4654,8 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	   SiSPreSetMode(pScrn, mode);
 	   SiSPostSetMode(pScrn, &pSiS->ModeReg);
 	}
-	/* TW: Prepare some register contents and set
-	 *     up some mode dependent variables.
+	/* Prepare some register contents and set
+	 * up some mode dependent variables.
 	 */
 #ifdef TWDEBUG
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -4636,7 +4683,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	        pScrn->vtSema = TRUE;
 
 		if(!(pSiS->SecondHead)) {
-			/* TW: Head 1 (master) is always CRT2 */
+			/* Head 1 (master) is always CRT2 */
 			SiSPreSetMode(pScrn, mode);
 			if (!SiSBIOSSetModeCRT2(pSiS->SiS_Pr, &pSiS->sishw_ext, pScrn, mode, pSiS->IsCustom)) {
 				xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -4645,7 +4692,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			}
 			SiSPostSetMode(pScrn, &pSiS->ModeReg);
 		} else {
-			/* TW: Head 2 (slave) is always CRT1 */
+			/* Head 2 (slave) is always CRT1 */
 			SiSPreSetMode(pScrn, mode);
 			if (!SiSBIOSSetModeCRT1(pSiS->SiS_Pr, &pSiS->sishw_ext, pScrn, mode, pSiS->IsCustom)) {
 				xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -4757,7 +4804,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #endif
     }
 
-    /* TW: Update Currentlayout */
+    /* Update Currentlayout */
     pSiS->CurrentLayout.mode = mode;
 
     return TRUE;
@@ -4773,8 +4820,8 @@ SiSSetVESAMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
 
     if (!(mode = SiSCalcVESAModeIndex(pScrn, pMode))) return FALSE;
 
-    mode |= 1 << 15;	/* TW: Don't clear framebuffer */
-    mode |= 1 << 14;   	/* TW: Use linear adressing */
+    mode |= 1 << 15;	/* Don't clear framebuffer */
+    mode |= 1 << 14;   	/* Use linear adressing */
 
     if(VBESetVBEMode(pSiS->pVbe, mode, NULL) == FALSE) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -4880,7 +4927,7 @@ SISRestore(ScrnInfoPtr pScrn)
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
 
 #ifdef SISDUALHEAD
-       /* TW: We always restore master AND slave */
+       /* We always restore master AND slave */
        if(pSiS->DualHeadMode && pSiS->SecondHead) return;
 #endif
 
@@ -4889,7 +4936,7 @@ SISRestore(ScrnInfoPtr pScrn)
           (*pSiS->AccelInfoPtr->Sync)(pScrn);
        }
 
-       /* TW: We must not disable the sequencer if the bridge is in SlaveMode! */
+       /* We must not disable the sequencer if the bridge is in SlaveMode! */
        if(!(SiSBridgeIsInSlaveMode(pScrn))) {
           vgaHWProtect(pScrn, TRUE);
        }
@@ -4898,15 +4945,15 @@ SISRestore(ScrnInfoPtr pScrn)
        sisSaveUnlockExtRegisterLock(pSiS, NULL,NULL);
 #endif
 
-       /* TW: First, restore CRT1 on/off and VB connection registers */
+       /* First, restore CRT1 on/off and VB connection registers */
        outSISIDXREG(SISCR, 0x32, pSiS->oldCR32);
-       if(!(pSiS->oldCR17 & 0x80)) {			/* TW: CRT1 was off */
-           if(!(SiSBridgeIsInSlaveMode(pScrn))) {       /* TW: Bridge is NOT in SlaveMode now -> do it */
+       if(!(pSiS->oldCR17 & 0x80)) {			/* CRT1 was off */
+           if(!(SiSBridgeIsInSlaveMode(pScrn))) {       /* Bridge is NOT in SlaveMode now -> do it */
 	      doit = TRUE;
 	   } else {
 	      doitlater = TRUE;
 	   }
-       } else {						/* TW: CRT1 was on -> do it now */
+       } else {						/* CRT1 was on -> do it now */
            doit = TRUE;
        }
        
@@ -4919,11 +4966,11 @@ SISRestore(ScrnInfoPtr pScrn)
 
        outSISIDXREG(SISSR, 0x1f, pSiS->oldSR1F);
 
-       /* TW: For 30xB/LV, restoring the registers does not
-        *     work. We "manually" set the old mode, instead.
-	*     The same applies for SiS730 machines with LVDS.
-	*     Finally, this behavior can be forced by setting
-	*     the option RestoreBySetMode.
+       /* For 30xB/LV, restoring the registers does not
+        * work. We "manually" set the old mode, instead.
+	* The same applies for SiS730 machines with LVDS.
+	* Finally, this behavior can be forced by setting
+	* the option RestoreBySetMode.
         */
         if( ( (pSiS->restorebyset) ||
 	      (pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) ||
@@ -4977,10 +5024,10 @@ SISRestore(ScrnInfoPtr pScrn)
         } else {
 
 	   if(pSiS->VBFlags & VB_VIDEOBRIDGE) {
-	      /* TW: If a video bridge is present, we need to restore
-	       *     non-extended (=standard VGA) SR and CR registers
-	       *     before restoring the extended ones and the bridge
-	       *     registers itself. 
+	      /* If a video bridge is present, we need to restore
+	       * non-extended (=standard VGA) SR and CR registers
+	       * before restoring the extended ones and the bridge
+	       * registers itself.
 	       */
 	      if(!(SiSBridgeIsInSlaveMode(pScrn))) {
                  vgaHWProtect(pScrn, TRUE);
@@ -5074,8 +5121,8 @@ SISRestore(ScrnInfoPtr pScrn)
            vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 	}
 
-	/* TW: Restore TV. This is rather complicated, but if we don't do it,
-	 *     TV output will flicker terribly
+	/* Restore TV. This is rather complicated, but if we don't do it,
+	 * TV output will flicker terribly
 	 */
         if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {
 	  if(sisReg->sis6326tv[0] & 0x04) {
@@ -5120,7 +5167,7 @@ SISVESARestore(ScrnInfoPtr pScrn)
    if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_RESTORE);
 }
 
-/* TW: Restore bridge registers - to be called BEFORE VESARestore */
+/* Restore bridge config registers - to be called BEFORE VESARestore */
 static void
 SISBridgeRestore(ScrnInfoPtr pScrn)
 {
@@ -5136,7 +5183,7 @@ SISBridgeRestore(ScrnInfoPtr pScrn)
     }
 }
 
-/* TW: Our generic BlockHandler for Xv */
+/* Our generic BlockHandler for Xv */
 static void
 SISBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
 {
@@ -5156,9 +5203,9 @@ SISBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
 /* Mandatory
  * This gets called at the start of each server generation
  *
- * TW: We use pScrn and not CurrentLayout here, because the
- *     properties we use have not changed (displayWidth,
- *     depth, bitsPerPixel)
+ * We use pScrn and not CurrentLayout here, because the
+ * properties we use have not changed (displayWidth,
+ * depth, bitsPerPixel)
  */
 static Bool
 SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
@@ -5219,8 +5266,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     vgaHWGetIOBase(hwp);
     
-    /* TW: Patch the PIOOffset inside vgaHW to use
-     *     our relocated IO ports.
+    /* Patch the PIOOffset inside vgaHW to use
+     * our relocated IO ports.
      */
     VGAHWPTR(pScrn)->PIOOffset = pSiS->IODBase + (pSiS->PciInfo->ioBase[2] & 0xFFFC) - 0x380;
 
@@ -5235,11 +5282,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    /* TW: Enable TurboQueue so that SISSave() saves it in enabled
-     *     state. If we don't do this, X will hang after a restart!
-     *     (Happens for some unknown reason only when using VESA
-     *     for mode switching; assumingly a BIOS issue.)
-     *     This is done on 300 and 315 series only.
+    /* Enable TurboQueue so that SISSave() saves it in enabled
+     * state. If we don't do this, X will hang after a restart!
+     * (Happens for some unknown reason only when using VESA
+     * for mode switching; assumingly a BIOS issue.)
+     * This is done on 300 and 315 series only.
      */
     if(pSiS->UseVESA) {
 	SiSEnableTurboQueue(pScrn);
@@ -5297,7 +5344,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  }
        }
 
-       /* TW: Clear frame buffer on 300 and 315/330 series
+       /* Clear frame buffer on 300 and 315/330 series
 	* (older chipsets don't like this to be done before
 	* setting the mode (such as rev 0x0b of 6326))
 	*/
@@ -5315,9 +5362,9 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     bzero(pSiS->FbBase, OnScreenSize);
 
     /* Darken the screen for aesthetic reasons */
-    /* TW: Not using Dual Head variant on purpose; we darken
-     *     the screen for both displays, and un-darken
-     *     it when the second head is finished
+    /* Not using Dual Head variant on purpose; we darken
+     * the screen for both displays, and un-darken
+     * it when the second head is finished
      */
     SISSaveScreen(pScreen, SCREEN_SAVER_ON);
 
@@ -5399,11 +5446,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
            pSiS->cmdQueueLenPtr = &(pSiS->cmdQueueLen);
 
-    pSiS->cmdQueueLen = 0; /* TW: Force an EngineIdle() at start */
+    pSiS->cmdQueueLen = 0; /* Force an EngineIdle() at start */
 
 #ifdef XF86DRI
 #ifdef SISDUALHEAD
-    /* TW: No DRI in dual head mode */
+    /* No DRI in dual head mode */
     if(pSiS->DualHeadMode) {
         pSiS->directRenderingEnabled = FALSE;
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -6102,7 +6149,6 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
 
 }
 
-
 /*
  * This is called when VT switching back to the X server.  Its job is
  * to reinitialise the video mode.
@@ -6125,7 +6171,7 @@ SISEnterVT(int scrnIndex, int flags)
     SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 #ifdef XF86DRI
-    /* TW: this is to be done AFTER switching the mode */
+    /* this is to be done AFTER switching the mode */
     if(pSiS->directRenderingEnabled)
         DRIUnlock(screenInfo.screens[scrnIndex]);
 #endif
@@ -6147,7 +6193,7 @@ SISLeaveVT(int scrnIndex, int flags)
 #ifdef XF86DRI
     ScreenPtr pScreen;
 
-    /* TW: to be done before mode change */
+    /* to be done before mode change */
     if(pSiS->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRILock(pScreen, 0);
@@ -6180,10 +6226,10 @@ SISLeaveVT(int scrnIndex, int flags)
 
     if(pSiS->UseVESA) {
 
-       /* TW: This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
-    	*     VBESaveRestore() does not restore CRT1. So we set any mode now,
-	*     because VBESetVBEMode correctly restores CRT1. Afterwards, we
-	*     can call VBESaveRestore to restore original mode.
+       /* This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
+    	* VBESaveRestore() does not restore CRT1. So we set any mode now,
+	* because VBESetVBEMode correctly restores CRT1. Afterwards, we
+	* can call VBESaveRestore to restore original mode.
 	*/
        if((pSiS->VBFlags & VB_VIDEOBRIDGE) && (!(pSiS->VBFlags & DISPTYPE_DISP2)))
 	  VBESetVBEMode(pSiS->pVbe, (pSiS->SISVESAModeList->n) | 0xc000, NULL);
@@ -6201,7 +6247,7 @@ SISLeaveVT(int scrnIndex, int flags)
      * lethal display corruption upon quitting X or changing to a VT
      * until a reboot)
      */
-    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
        orSISIDXREG(SISCR,0x34,0x80);
     }
 
@@ -6255,10 +6301,10 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 	if(pSiS->UseVESA) {
 
-	  /* TW: This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
-    	   *     VBESaveRestore() does not restore CRT1. So we set any mode now,
-	   *     because VBESetVBEMode correctly restores CRT1. Afterwards, we
-	   *     can call VBESaveRestore to restore original mode.
+	  /* This is a q&d work-around for a BIOS bug. In case we disabled CRT2,
+    	   * VBESaveRestore() does not restore CRT1. So we set any mode now,
+	   * because VBESetVBEMode correctly restores CRT1. Afterwards, we
+	   * can call VBESaveRestore to restore original mode.
 	   */
            if((pSiS->VBFlags & VB_VIDEOBRIDGE) && (!(pSiS->VBFlags & DISPTYPE_DISP2)))
 	      VBESetVBEMode(pSiS->pVbe, (pSiS->SISVESAModeList->n) | 0xc000, NULL);
@@ -6272,6 +6318,10 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	}
 
         vgaHWLock(hwp);
+    }
+
+    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
+       andSISIDXREG(SISCR,0x34,0x7f);
     }
 
     SISUnmapMem(pScrn);
@@ -6510,7 +6560,7 @@ SISSaveScreen(ScreenPtr pScreen, int mode)
 }
 
 #ifdef SISDUALHEAD
-/* TW: SaveScreen for dual head mode */
+/* SaveScreen for dual head mode */
 static Bool
 SISSaveScreenDH(ScreenPtr pScreen, int mode)
 {
@@ -6634,7 +6684,7 @@ SISModifyModeInfo(DisplayModePtr mode)
         mode->CrtcVBlankEnd--;
 }
 
-/* TW: Enable the TurboQueue (For 300 and 315/330 series only) */
+/* Enable the TurboQueue (For 300 and 315/330 series only) */
 void
 SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 {
@@ -6657,8 +6707,8 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 	   break;
 	case SIS_315_VGA:
 	   if (!pSiS->NoAccel) {
-	      /* TW: On 315 series, there are three queue modes available
-	       *     which are chosen by setting bits 7:5 in SR26:
+	      /* On 315 series, there are three queue modes available
+	       * which are chosen by setting bits 7:5 in SR26:
 	       * 1. MMIO queue mode (bit 5, 0x20). The hardware will keep
 	       *    track of the queue, the FIFO, command parsing and so
 	       *    on. This is the one comparable to the 300 series.
@@ -6689,26 +6739,26 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 #if 0
 	      if (pSiS->TurboQueue) {
 #endif
-	   	/* TW: We only use MMIO Cmd Queue, not VRAM or AGP */
-	   	/* TW: Set Command Queue Threshold to max value 11111b */
+	   	/* We only use MMIO Cmd Queue, not VRAM or AGP */
+	   	/* Set Command Queue Threshold to max value 11111b */
 	   	outSISIDXREG(SISSR, 0x27, 0x1F);
-	   	/* TW: Syncronous reset for Command Queue */
+	   	/* Syncronous reset for Command Queue */
 	   	outSISIDXREG(SISSR, 0x26, 0x01);
-	   	/* TW: Do some magic (cp readport to writeport) */
+	   	/* Do some magic (cp readport to writeport) */
 	   	temp = MMIO_IN32(pSiS->IOBase, 0x85C8);
 	   	MMIO_OUT32(pSiS->IOBase, 0x85C4, temp);
-	   	/* TW: Enable MMIO Command Queue mode (0x20),
-		 *     Enable_command_queue_auto_correction (0x02)   
-		 *             (no idea, but sounds good, so use it)
-		 *     512k (0x00) (does this apply to MMIO mode?) */
+	   	/* Enable MMIO Command Queue mode (0x20),
+		 * Enable_command_queue_auto_correction (0x02)
+		 *        (no idea, but sounds good, so use it)
+		 * 512k (0x00) (does this apply to MMIO mode?) */
     	   	outSISIDXREG(SISSR, 0x26, 0x22);
-	   	/* TW: Calc Command Queue position (Q is always 512k)*/
+	   	/* Calc Command Queue position (Q is always 512k)*/
 	   	temp = (pScrn->videoRam - 512) * 1024;
-	   	/* TW: Set Q position */
+	   	/* Set Q position */
 	   	MMIO_OUT32(pSiS->IOBase, 0x85C0, temp);
 #if 0
               } else {
-	      	/* TW: Is there a non-TurboQueue mode within MMIO mode? */
+	      	/* Is there a non-TurboQueue mode within MMIO mode? */
 	      }
 #endif
 	   }
@@ -6718,8 +6768,8 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
     }
 }
 
-/* TW: Things to do before a ModeSwitch. We set up the
- *     video bridge configuration and the TurboQueue.
+/* Things to do before a ModeSwitch. We set up the
+ * video bridge configuration and the TurboQueue.
  */
 void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -6858,7 +6908,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);    /* Unlock Registers */
 #endif
 
-    /* TW: The CR3x registers are for communicating with our BIOS emulation
+    /* The CR3x registers are for communicating with our BIOS emulation
      * code (native code in init.c/init301.c) or the BIOS (via VESA)
      */
     inSISIDXREG(SISCR, 0x30, usScratchCR30);  /* Bridge config */
@@ -6884,14 +6934,14 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
               usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, temp, usScratchCR38);
 
     usScratchCR30 = 0;
-    usScratchCR31 &= ~0x60;  /* TW: Clear VB_Drivermode & VB_OutputDisable */
-#if 0  /* TW: For future use */
+    usScratchCR31 &= ~0x60;  /* Clear VB_Drivermode & VB_OutputDisable */
+#if 0  /* For future use */
     if( (pSiS->VBFlags & VB_LVDS) ||
         (pSiS->VBFlags & VB_301)  ||
         ( (pSiS->VBFlags & (VB_301B | VB_302B |VB_301LV | VB_302LV)) &&
 	  (!(pSiS->VBLCDFlags & VB_LCD_1400x1050)) ) ) {
 #endif
-       usScratchCR31 |= 0x04;   /* TW: Set VB_NotSimuMode (not for 30xB/1400x1050?) */
+       usScratchCR31 |= 0x04;   /* Set VB_NotSimuMode (not for 30xB/1400x1050?) */
 #if 0
     }
 #endif
@@ -6900,7 +6950,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
        usScratchCR31 |= 0x80;   /* Disable hotkey-switch */
     }
 
-    usScratchCR79 &= ~0x10;     /* TW: Enable Backlight control on 315/330 series */
+    usScratchCR79 &= ~0x10;     /* Enable Backlight control on 315/330 series */
 
     SiS_SetEnableDstn(pSiS->SiS_Pr, FALSE);
     SiS_SetEnableFstn(pSiS->SiS_Pr, FALSE);
@@ -6968,19 +7018,19 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		}
     }
 
-    /* TW: for VESA: no DRIVERMODE, otherwise
+    /* for VESA: no DRIVERMODE, otherwise
      * -) CRT2 will not be initialized correctly when using mode
      *    where LCD has to scale, and
      * -) CRT1 will have too low rate
      */
      if(pSiS->UseVESA) {
-        usScratchCR31 &= ~0x40;   /* TW: Clear Drivermode */
+        usScratchCR31 &= ~0x40;   /* Clear Drivermode */
 #ifdef TWDEBUG
         usScratchCR31 |= 0x40;   /* DEBUG (for non-slave mode VESA) */
 	crt1rateindex = SISSearchCRT1Rate(pScrn, mymode);
 #endif
      } else {
-        usScratchCR31 |=  0x40;  /* TW: Set Drivermode */
+        usScratchCR31 |=  0x40;  /* Set Drivermode */
 	if(!pSiS->IsCustom) {
            crt1rateindex = SISSearchCRT1Rate(pScrn, mymode);
 	} else {
@@ -7026,20 +7076,21 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
      outSISIDXREG(SISCR, 0x30, usScratchCR30);
      outSISIDXREG(SISCR, 0x31, usScratchCR31);
-     if(temp) {
-        usScratchCR38 &= ~0x03;   /* Clear LCDA/DualEdge bits */
-     	outSISIDXREG(SISCR, temp, usScratchCR38);
-     }
 
      outSISIDXREG(SISCR, 0x33, usScratchCR33);
 
      if(pSiS->VGAEngine == SIS_315_VGA) {
+        usScratchCR38 &= ~0x03;   /* Clear LCDA/DualEdge bits */
         outSISIDXREG(SISCR, 0x79, usScratchCR79);
      }
 
+     if(temp) {
+        outSISIDXREG(SISCR, temp, usScratchCR38);
+     }
+
      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		"After:  CR30=0x%02x, CR31=0x%02x, CR33=0x%02x\n",
-		    usScratchCR30, usScratchCR31, usScratchCR33);
+		"After:  CR30=0x%02x, CR31=0x%02x, CR33=0x%02x, CR%02x=%02x\n",
+		    usScratchCR30, usScratchCR31, usScratchCR33, temp, usScratchCR38);
 
      pSiS->SiS_Pr->SiS_UseOEM = pSiS->OptUseOEM;
 
@@ -8139,9 +8190,9 @@ int SiS_GetTVyposoffset(ScrnInfoPtr pScrn)
         return (int)pSiS->tvypos;
 }
 
-/* TW: Disable CRT1 for saving bandwidth. This doesn't work with VESA;
- *     VESA uses the bridge in SlaveMode and switching CRT1 off while the
- *     bridge is in SlaveMode not that clever...
+/* Disable CRT1 for saving bandwidth. This doesn't work with VESA;
+ * VESA uses the bridge in SlaveMode and switching CRT1 off while the
+ * bridge is in SlaveMode not that clever...
  */
 void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
@@ -8173,9 +8224,9 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 			"VBFlags restored to %0lx\n", pSiS->VBFlags);
 	}
 
-	/* TW: -) We can't switch off CRT1 if bridge is in SlaveMode.
-	 *     -) If we change to a SlaveMode-Mode (like 512x384), we
-	 *        need to adapt VBFlags for eg. Xv.
+	/* -) We can't switch off CRT1 if bridge is in SlaveMode.
+	 * -) If we change to a SlaveMode-Mode (like 512x384), we
+	 *    need to adapt VBFlags for eg. Xv.
 	 */
 #ifdef SISDUALHEAD
 	if(!pSiS->DualHeadMode) {
@@ -8364,7 +8415,7 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif	
 	     break;
 	  case CHRONTEL_701x:
-	     /* TO DO */
+	     /* not supported */
 	     break;
 	  }
 	  if((val = mytvxpos) != 0) {
@@ -8449,7 +8500,7 @@ void SiS6326PostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     pSiS->tvy1 = SiS6326GetTVReg(pScrn,0x11);
     pSiS->tvy1 |= ((SiS6326GetTVReg(pScrn,0x13) & 0x30) << 4);
     
-    /* TW: Handle TVPosOffset options (BEFORE switching on TV) */
+    /* Handle TVPosOffset options (BEFORE switching on TV) */
     if((val = pSiS->tvxpos) != 0) {
        SiS_SetTVxposoffset(pScrn, val);
     }
@@ -8457,8 +8508,8 @@ void SiS6326PostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        SiS_SetTVyposoffset(pScrn, val);
     }
 
-    /* TW: Switch on TV output. This is rather complicated, but
-     *     if we don't do it, TV output will flicker terribly.
+    /* Switch on TV output. This is rather complicated, but
+     * if we don't do it, TV output will flicker terribly.
      */
     if(pSiS->SiS6326Flags & SIS6326_TVON) {
        orSISIDXREG(SISSR, 0x01, 0x20);
@@ -8487,7 +8538,7 @@ void SiS6326PostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     tmp = SiS6326GetTVReg(pScrn,0x00);
     if(!(tmp & 0x04)) return;
 
-    /* TW: Apply TV settings given by options */
+    /* Apply TV settings given by options */
     if((val = pSiS->sistvantiflicker) != -1) {
        SiS_SetSIS6326TVantiflicker(pScrn, val);
     }
@@ -8518,7 +8569,7 @@ SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn)
     }
 }
 
-/* TW: Build a list of the VESA modes the BIOS reports as valid */
+/* Build a list of the VESA modes the BIOS reports as valid */
 static void
 SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
 {
@@ -8553,7 +8604,7 @@ SiSBuildVesaModeList(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe)
     }
 }
 
-/* TW: Calc VESA mode from given resolution/depth */
+/* Calc VESA mode from given resolution/depth */
 static UShort
 SiSCalcVESAModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -8728,6 +8779,10 @@ SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN havecustommode
      case 1360:
 	  if(mode->VDisplay == 768) {
 	     ModeIndex = ModeIndex_1360x768[i];
+	  } else if(pSiS->VGAEngine == SIS_300_VGA) {
+	     if(mode->VDisplay == 1024) {
+	        ModeIndex = ModeIndex_300_1360x1024[i];
+             }
 	  }
           break;
      case 1400:
@@ -8839,7 +8894,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		   ModeIndex = ModeIndex_1024x768[i];
 		} else if(pSiS->VGAEngine == SIS_300_VGA) {
 		   if(mode->VDisplay == 600) {
-		      if(pSiS->LCDheight == 600) { 
+		      if(pSiS->LCDheight == 600) {
 		         ModeIndex = ModeIndex_1024x600[i];
 		      }
 		   }
@@ -8865,6 +8920,15 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		   }
 		}
 		break;
+	  case 1360:
+	        if(pSiS->VGAEngine == SIS_300_VGA) {
+	           if(pSiS->SiS_Pr->SiS_CustomT == CUT_BARCO1366) {
+		      if(mode->VDisplay == 1024) {
+		         ModeIndex = ModeIndex_300_1360x1024[i];
+		      }
+		   }
+		}
+	        break;
 	  case 1400:
 	        if(mode->VDisplay == 1050) {
 		   if(pSiS->VGAEngine == SIS_315_VGA) {
@@ -8887,14 +8951,14 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 	  {
 	  case 320:
      	  	if(mode->VDisplay == 200) {
-	  		ModeIndex = ModeIndex_320x200[i];
+	  	   ModeIndex = ModeIndex_320x200[i];
 	  	} else if(mode->VDisplay == 240) {
-	  		ModeIndex = ModeIndex_320x240[i];
+	  	   ModeIndex = ModeIndex_320x240[i];
           	}
           	break;
      	  case 400:
           	if(mode->VDisplay == 300) {
-             		ModeIndex = ModeIndex_400x300[i];
+             	   ModeIndex = ModeIndex_400x300[i];
 	  	}
           	break;
 	  case 512:
@@ -8920,19 +8984,19 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		} 
 		break;
 	  case 1280:
-		if(mode->VDisplay == 960) {
-		   if(pSiS->LCDwidth != 1400) {
-		      ModeIndex = ModeIndex_1280x960[i];
-		   }
-                } else if(mode->VDisplay == 1024) {
+	        if(mode->VDisplay == 1024) {
 	           ModeIndex = ModeIndex_1280x1024[i];
-	        } else if(mode->VDisplay == 768) {
-		   if(pSiS->LCDwidth != 1400) {
+		} else if(mode->VDisplay == 768) {
+		   if((pSiS->LCDheight != 1050) && (pSiS->LCDheight != 960)) {
 		      if(pSiS->VGAEngine == SIS_300_VGA) {
 		         ModeIndex = ModeIndex_300_1280x768[i];
 		      } else {
 		         ModeIndex = ModeIndex_310_1280x768[i];
 		      }
+		   }
+		} else if(mode->VDisplay == 960) {
+		   if((pSiS->LCDheight != 1050) && (pSiS->LCDheight != 768)) {
+		      ModeIndex = ModeIndex_1280x960[i];
 		   }
 		}
 		break;
@@ -9199,7 +9263,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
    return(ModeIndex);
 }
 
-/* TW: Calculate the vertical refresh rate from a mode */
+/* Calculate the vertical refresh rate from a mode */
 int
 SiSCalcVRate(DisplayModePtr mode)
 {
@@ -9232,10 +9296,10 @@ SiSCalcVRate(DisplayModePtr mode)
    return((int)(refresh));
 }
 
-/* TW: Calculate CR33 (rate index) for CRT1.
- *     Calculation is done using currentmode, therefore it is
- *     recommended to set VertRefresh and HorizSync to correct
- *     values in config file.
+/* Calculate CR33 (rate index) for CRT1.
+ * Calculation is done using currentmode, therefore it is
+ * recommended to set VertRefresh and HorizSync to correct
+ * values in config file.
  */
 unsigned char
 SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode)
@@ -9311,7 +9375,7 @@ SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if(index > 0)
 	return index;
    else {
-        /* TW: Default Rate index */
+        /* Default Rate index */
         if(xres == 800 || xres == 1024 || xres == 1280) return 0x02; 
    	else return 0x01;
    }
