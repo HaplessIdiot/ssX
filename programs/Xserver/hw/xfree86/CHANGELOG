@@ -1,5 +1,6 @@
 XFree86 3.1.1Bc (18 June 1995)
-143. All 'UseGnuMalloc' to work on all platforms.
+144. Fix sessreg for *BSD.
+143. Allow 'UseGnuMalloc' to work on all platforms.
 
 XFree86 3.1.1Bb (17 June 1995)
 142. Config updates to make LinkKit more self-contained

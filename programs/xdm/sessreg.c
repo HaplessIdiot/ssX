@@ -1,6 +1,6 @@
 /*
  * $XConsortium: sessreg.c,v 1.17 95/01/29 12:07:22 kaleb Exp $
- * $XFree86: xc/programs/xdm/sessreg.c,v 3.3 1995/01/29 02:08:36 dawes Exp $
+ * $XFree86: xc/programs/xdm/sessreg.c,v 3.4 1995/01/30 03:28:58 dawes Exp $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -54,17 +54,22 @@
 # include	<stdio.h>
 # include	<utmp.h>
 
-#if defined(SYSV) || defined(CSRG_BASED)
+#if defined(SYSV) || defined(SVR4)
 #define NO_LASTLOG
 #endif
 
-/* Disable LASTLOG for now because it isn't implemented portably */
-#ifndef NO_LASTLOG
-#define NO_LASTLOG
+#ifdef CSRG_BASED
+#include <sys/param.h>
 #endif
 
 #ifndef NO_LASTLOG
-# include	<lastlog.h>
+# ifdef CSRG_BASED
+#  if (BSD < 199103)
+#   include	<lastlog.h>
+#  endif
+# else
+#  include	<lastlog.h>
+# endif
 # include	<pwd.h>
 #endif
 
@@ -74,6 +79,21 @@
 
 #ifdef SVR4
 #define SYSV			/* nice System V utmp interface still the same */
+#endif
+
+#ifdef _PATH_WTMP
+#define WTMP_FILE	_PATH_WTMP
+#endif
+#ifdef _PATH_UTMP
+#define UTMP_FILE	_PATH_UTMP
+#endif
+#ifdef _PATH_LASTLOG
+#define LLOG_FILE	_PATH_LASTLOG
+#endif
+
+#ifdef CSRG_BASED
+/* *BSD doesn't like a ':0' type entry in utmp */
+#define NO_UTMP
 #endif
 
 #ifndef WTMP_FILE
@@ -246,8 +266,12 @@ char	**argv;
 	/* set up default file names */
 	if (!wflag)
 		wtmp_file = WTMP_FILE;
+#ifndef NO_UTMP
 	if (!uflag)
 		utmp_file = UTMP_FILE;
+#else
+	utmp_none = 1;
+#endif
 #ifndef NO_LASTLOG
 	if (!Lflag)
 		llog_file = LLOG_FILE;
