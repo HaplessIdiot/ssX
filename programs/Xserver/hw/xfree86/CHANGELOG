@@ -1,5 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
- 374. Cygwin/XFree86 cleanups and fixes (#4992, #4993, Harold Hunt).
+ 374. Cygwin/XFree86 cleanups and fixes (#4992, #4993, #4999 Harold Hunt).
  373. Fix i830 VT switching problems which hang the ring buffer (#4987,
       #4989, Abraham vd Merwe).
  372. fix a format string problem in lbxproxy, apparently not exploitable 
@@ -14002,4 +14002,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1994 2001/10/19 15:06:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1995 2001/10/22 15:21:07 alanh Exp $

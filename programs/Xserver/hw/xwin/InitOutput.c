@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.21 2001/09/13 08:25:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.22 2001/10/04 20:02:36 alanh Exp $ */
 
 #include "win.h"
 
@@ -186,28 +186,36 @@ OsVendorInit (void)
 void
 ddxUseMsg (void)
 {
-  ErrorF ("-screen scr_num width height\n"
-	  "\tSet screen scr_num's width and height\n");
-  ErrorF ("-engine engine_type_id\n"
-	  "\tOverride the server's automatically selected engine type:\n"
-	  "\t\t1 - GDI blitter\t\t1\n"
-	  "\t\t2 - DirectDraw blitter\t2\n"
-	  "\t\t4 - DirectDraw4 blitter\t4\n");
-  ErrorF ("-fullscreen\n"
-	  "\tRun the server in fullscreen mode\n");
   ErrorF ("-depth bits_per_pixel\n"
 	  "\tSpecify an optional bitdepth to use in fullscreen mode\n"
 	  "\twith a DirectDraw engine.\n");
-  ErrorF ("-refresh rate_in_Hz\n"
-	  "\tSpecify an optional refresh rate to use in fullscreen mode\n"
-	  "\twith a DirectDraw engine.\n");
+
   ErrorF ("-emulate3buttons [timeout]\n"
 	  "\tEmulate 3 button mouse with an optional timeout in "
 	  "milliseconds\n");
-  ErrorF ("-[no]winkill\n"
-          "\tAlt+F4 exits the XServer\n");
+
+  ErrorF ("-engine engine_type_id\n"
+	  "\tOverride the server's automatically selected engine type:\n"
+	  "\t\t1 - Shadow GDI\n"
+	  "\t\t2 - Shadow DirectDraw\n"
+	  "\t\t4 - Shadow DirectDraw4\n"
+	  "\t\t16 - Native GDI - experimental\n");
+
+  ErrorF ("-fullscreen\n"
+	  "\tRun the server in fullscreen mode\n");
+  
+  ErrorF ("-refresh rate_in_Hz\n"
+	  "\tSpecify an optional refresh rate to use in fullscreen mode\n"
+	  "\twith a DirectDraw engine.\n");
+
+  ErrorF ("-screen scr_num width height\n"
+	  "\tSet screen scr_num's width and height\n");
+
   ErrorF ("-[no]unixkill\n"
-          "\tCtrl+Alt+Backspace exits the XServer\n");
+          "\tCtrl+Alt+Backspace exits the X Server\n");
+
+  ErrorF ("-[no]winkill\n"
+          "\tAlt+F4 exits the X Server\n");
 }
 
 
