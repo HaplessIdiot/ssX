@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_noinline.c,v 3.3 1998/07/25 16:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_noinline.c,v 3.4 1998/08/29 05:43:58 dawes Exp $ */
 /*
  * Copyright 1998 by Metro Link Incorporated
  *
@@ -79,7 +79,7 @@ outw(unsigned short port, unsigned short value)
 }
 
 void
-outl(unsigned short port, unsigned long value)
+outl(unsigned short port, unsigned int value)
 {
 	stl_brx(value, ioBase, port); eieio();
 }
@@ -102,10 +102,10 @@ inw(unsigned short port)
 	return(val);
 }
 
-unsigned long
+unsigned int
 inl(unsigned short port)
 {
-	unsigned long val;
+	unsigned int val;
 
 	val = ldl_brx(ioBase, port); eieio();
 	return(val);

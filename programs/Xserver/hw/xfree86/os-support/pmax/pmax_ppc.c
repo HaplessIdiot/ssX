@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_ppc.c,v 1.2.2.1 1998/06/09 14:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_ppc.c,v 1.3 1998/07/25 16:56:56 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -90,7 +90,7 @@ outw(unsigned int a, unsigned short w)
 }
 
 void
-outl(unsigned int a, unsigned long l) 
+outl(unsigned int a, unsigned int l) 
 {
 	if (ioBase == MAP_FAILED) {
 		ErrorF("outl(0x%04X, 0x%08X) fails.  Unitialized ioBase\n", a, l);
@@ -129,10 +129,10 @@ inw(unsigned int a)
 	return(w);
 }
 
-unsigned long
+unsigned int
 inl(unsigned int a) 
 {
-	unsigned long l;
+	unsigned int l;
 	
 	if (ioBase == MAP_FAILED) {
 		FatalError("%s(0x%04X) fails.  Unitialized ioBase\n", "inl", a);
@@ -164,7 +164,7 @@ debug_outw(unsigned int a, unsigned short w, int line, char *file)
 }
 
 void
-debug_outl(unsigned int a, unsigned long l, int line, char *file)
+debug_outl(unsigned int a, unsigned int l, int line, char *file)
 {
 	if (xf86Verbose > 3)
 		ErrorF("outl(0x%04X, 0x%08X) at line %d, file \"%s\"\n", a, l, line, file);
@@ -205,10 +205,10 @@ debug_inw(unsigned int a, int line, char *file)
 	return(w);
 }
 
-unsigned long
+unsigned int
 debug_inl(unsigned int a, int line, char *file) 
 {
-	unsigned long l;
+	unsigned int l;
 	
 	if (xf86Verbose > 4)
 		ErrorF("Calling %s(0x%04x) at line %d, file \"%s\" ...\n", "inl", a, line, file);
