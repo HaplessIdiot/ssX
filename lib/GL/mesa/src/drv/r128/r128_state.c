@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.1 2000/06/17 00:03:07 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -119,7 +119,7 @@ static void r128DDReducedPrimitiveChange(GLcontext *ctx, GLenum prim)
       case GL_BACK:           f &= ~R128_BACKFACE_SOLID;    break;
       case GL_FRONT_AND_BACK: f &= ~(R128_BACKFACE_SOLID |
 				     R128_FRONTFACE_SOLID); break;
-      default:
+      default: break;
       }
    }
 

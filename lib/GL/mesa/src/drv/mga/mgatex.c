@@ -26,6 +26,7 @@
  *	9/20/99 rewrite by John Carmack <johnc@idsoftware.com>
  *      13/1/00 port to DRI by Keith Whitwell <keithw@precisioninsight.com>
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -863,6 +864,7 @@ static void mgaUpdateTextureEnvG200( GLcontext *ctx )
 		t->ctx->Fallback |= MGA_FALLBACK_TEXTURE;
 		break;
 	default:
+		break;
 	}
 }
 
@@ -968,6 +970,7 @@ static void mgaUpdateTextureStage( GLcontext *ctx, int unit )
 
 		break;
 	default:
+		break;
 	}
 }
 
