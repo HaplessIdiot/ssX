@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.3 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.4 2001/06/06 18:02:16 alanh Exp $ */
 
 #include "win.h"
 
@@ -553,4 +553,83 @@ winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam)
   return FALSE;
 }
 
+/*
+ * Lift any modifier keys that are pressed
+ */
+void
+winKeybdReleaseModifierKeys ()
+{
+  xEvent			xCurrentEvent;
+  BYTE				bKeys[256];
+  
+  /*
+   * FIXME: This isn't 100% correct, but it gets the job done
+   * for now.  Might be a better idea to add some sort of flag...
+   */
+  /* Verify that the mi input system has been initialized */
+  if (g_fdMessageQueue == WIN_FD_INVALID)
+    return;
 
+  /* Initialize the xEvent structure */
+  ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
+  xCurrentEvent.u.u.type = KeyRelease;
+  xCurrentEvent.u.keyButtonPointer.time =
+    g_c32LastInputEventTime = GetTickCount ();
+
+  /* Get the keyboard state, freak out on failure */
+  if (!GetKeyboardState (bKeys))
+    {
+      /* Huh, GetKeyboardState failed */
+      ErrorF ("winKeybdReleaseModifierKeys - GetKeyboardState () "
+	      "failed\n");
+      return;
+    }
+
+  /* Pop VK_LMENU */
+  if (bKeys[VK_LMENU] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LMENU\n");
+      xCurrentEvent.u.u.detail = KEY_Alt + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+
+  /* Pop VK_RMENU */
+  if (bKeys[VK_RMENU] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RMENU\n");
+      xCurrentEvent.u.u.detail = KEY_AltLang + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+
+  /* Pop VK_LCONTROL */
+  if (bKeys[VK_LCONTROL] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LCONTROL\n");
+      xCurrentEvent.u.u.detail = KEY_LCtrl + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+
+  /* Pop VK_RCONTROL */
+  if (bKeys[VK_RCONTROL] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RCONTROL\n");
+      xCurrentEvent.u.u.detail = KEY_RCtrl + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+  
+  /* Pop VK_LSHIFT */
+  if (bKeys[VK_LSHIFT] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_LSHIFT\n");
+      xCurrentEvent.u.u.detail = KEY_ShiftL + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+
+  /* Pop VK_RSHIFT */
+  if (bKeys[VK_RSHIFT] & 128)
+    {
+      ErrorF ("winKeybdReleaseModifierKeys - Releasing VK_RSHIFT\n");
+      xCurrentEvent.u.u.detail = KEY_ShiftR + MIN_KEYCODE;
+      mieqEnqueue (&xCurrentEvent);
+    }
+}

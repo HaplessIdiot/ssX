@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.5 2001/06/06 18:02:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.6 2001/06/08 08:06:53 alanh Exp $ */
 
 #include "win.h"
 
@@ -57,7 +57,10 @@ winWindowProc (HWND hWnd, UINT message,
   /* Watch for server regeneration */
   if (g_ulServerGeneration != ulServerGeneration)
     {
-      /* Might as well declare that we received the last mouse message */
+      /*
+       * Might as well declare that this window received 
+       * the last mouse message
+       */
       hwndLastMouse = hWnd;
       
       /* Store new server generation */
@@ -255,9 +258,11 @@ winWindowProc (HWND hWnd, UINT message,
       return winMouseWheel (pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
 
     case WM_KILLFOCUS:
-#if CYGDEBUG
+#if CYGDEBUG      
       ErrorF ("winWindowProc () - WM_KILLFOCUS hWnd %08x\n", hWnd);
-#endif
+#endif     
+
+      winKeybdReleaseModifierKeys ();
       return 0;
 
     case WM_SYSKEYDOWN:
