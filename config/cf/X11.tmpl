@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.258 2004/06/09 18:30:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.259 2004/06/11 00:02:16 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -127,31 +127,28 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.258 2004/06/09 18:30:55 dawes Exp $
  * MakeXkbDir			(basedir,subdir)
  */
 
-/* X.Org release string */
-#ifndef XOrgReleaseString
-#define XOrgReleaseString	Release 6.6
+#ifndef XVendorString
+# define XVendorString  "The XFree86 Project, Inc"
 #endif
 
-#ifndef XOrgManNameString
-#define XOrgManNameString	X Version 11
+#ifndef XVendorRelease
+# define XVendorRelease 40400000
 #endif
 
-XORGRELSTRING = XOrgReleaseString
-XORGMANNAME = XOrgManNameString
-
-#ifndef XOrgManDefs
-#define XOrgManDefs -D__xorgversion__='"$(XORGRELSTRING)" "$(XORGMANNAME)"'
+#ifndef XVendorManVersionString
+#define XVendorManVersionString 4.x
 #endif
 
 #ifndef XVendorManNameString
-#define XVendorManNameString XOrgManNameString
-#endif
-#ifndef XVendorManVersionString
-#define XVendorManVersionString XOrgReleaseString
+#define XVendorManNameString XFree86
 #endif
 
 VENDORMANNAME = XVendorManNameString
 VENDORMANVERSION = XVendorManVersionString
+
+#ifndef XOldManDefs
+#define XOldManDefs -D__xorgversion__="$(VENDORMANVERSION) $(VENDORMANNAME)"
+#endif
 
 #ifndef VendorManDefs
 #define VendorManDefs -D__vendorversion__="$(VENDORMANVERSION) $(VENDORMANNAME)"
@@ -1760,7 +1757,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      XPROJECTROOT = X11ProjectRoot
 #endif
 
-      XORGMANDEFS = XOrgManDefs
+      XOLDMANDEFS = XOldManDefs
     VENDORMANDEFS = VendorManDefs
 
 #if HasSharedLibraries

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.216 2004/06/01 01:23:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.217 2004/06/02 22:43:04 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -1891,8 +1891,8 @@ xf86PrintBanner()
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
 #endif
   ErrorF("\nRelease Date: %s\n", XF86_DATE);
-  ErrorF("X Protocol Version %d, Revision %d, %s\n",
-         X_PROTOCOL, X_PROTOCOL_REVISION, XORG_RELEASE );
+  ErrorF("X Protocol Version %d, Revision %d\n",
+         X_PROTOCOL, X_PROTOCOL_REVISION);
   ErrorF("Build Operating System:%s%s\n", OSNAME, OSVENDOR);
 #ifdef HAS_UTSNAME
   {
