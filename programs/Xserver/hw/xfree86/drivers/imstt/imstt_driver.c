@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.1 2000/06/14 00:16:10 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -142,8 +142,6 @@ static OptionInfoRec IMSTTOptions[] =
 };
 
 
-#ifdef XFree86LOADER
-
 static const char *cfbSymbols[] = {
 	"cfbScreenInit",
 	"cfb16ScreenInit",
@@ -185,6 +183,7 @@ static const char *fbdevHWSymbols[] = {
 };
 
 
+#ifdef XFree86LOADER
 static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 			  int errmin);
 
@@ -221,7 +220,7 @@ static pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 }
 
 
-#endif /* XFree86Loader */
+#endif /* XFree86LOADER */
 
 
 static Bool IMSTTGetRec(ScrnInfoPtr pScrn)
