@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.44 2001/12/16 18:29:45 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.45 2002/02/19 11:09:22 alanh Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -926,6 +926,18 @@ GetSpritePosition(px, py)
     *px = sprite.hotPhys.x;
     *py = sprite.hotPhys.y;
 }
+
+#ifdef PANORAMIX
+int
+XineramaGetCursorScreen()
+{
+    if(!noPanoramiXExtension) {
+	return sprite.screen->myNum;
+    } else {
+	return 0;
+    }
+}
+#endif /* PANORAMIX */
 
 #define TIMESLOP (5 * 60 * 1000) /* 5 minutes */
 
