@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.85 2002/04/04 14:05:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.86 2002/05/31 18:46:02 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1944,16 +1944,3 @@ xf86shmdt(char *addr)
     return -1;
 }
 #endif /* HAVE_SYSV_IPC */
-
-int
-xf86setjmp(xf86jmp_buf xf86env)
-{
-    return setjmp((void *)xf86env);
-}
-
-void
-xf86longjmp(xf86jmp_buf xf86env, int val)
-{
-    longjmp((void *)xf86env, val);
-}
-
