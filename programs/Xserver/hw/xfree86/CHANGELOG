@@ -1,4 +1,12 @@
 XFree86 4.X.Ya (?? January 2001)
+1259. - Various small changes to accomodate Mac OS X support and fix a 
+        problem people were having with uninitialized globals in X 
+        libraries,
+      - Allow XFree86 to run on Mac OS X as a full screen client of
+        CoreGraphics,
+      - Add a Mac OS X application that controls the X server and feeds it 
+        events when running on Mac OS X. Currently must be built by 
+        ProjectBuilder (#4409, #4410, #4411, Torrey T. Lyons).
 1258. Fix Mach64 Mono 8x8 Pattern acceleration (Marc La France).
 1257. Experiment with setting the server's "vendor release" value from
       the information in xf86Version.h, and modify xdpyinfo to show the
@@ -12209,4 +12217,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1516 2001/01/12 19:28:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1517 2001/01/12 20:44:55 tsi Exp $
