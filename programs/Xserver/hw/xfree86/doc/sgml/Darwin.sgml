@@ -8,7 +8,7 @@
 <date>25 May 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.4.4.2 2001/06/02 04:44:37 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.6 2001/06/07 05:11:41 torrey Exp $
 </ident>
 
 <toc>
@@ -16,11 +16,11 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Darwin.sgml,v 1.4.4.2 2001/06/
 <sect>Introduction
 <p>
 <htmlurl url="http://www.xfree86.org/" name="XFree86">, a free
-implementation of X Windows, has been ported to <htmlurl
+implementation of the X Window System, has been ported to <htmlurl
 url="http://www.publicsource.apple.com/projects/darwin/" name="Darwin">
 and <htmlurl url="http://www.apple.com/macosx/" name="Mac OS X">. This
 document is a collection of information for anyone
-experimenting with running X Windows on Apple's next generation operating
+experimenting with running X on Apple's next generation operating
 system. Please send any comments on this page to
 <email/torrey@mrcla.com/.  If you are also 
 working on modifications to the Darwin X server, please let me know.
@@ -186,7 +186,7 @@ system. You can change this behavior in the user preferences so that
 clicking on the XDarwin icon in the Dock switches as well.
 
 <p>
-<bf/Customize X Windows/
+<bf/Customize the X Window System/
 <p>
 
 The X window system is very customizable and you will certainly want to

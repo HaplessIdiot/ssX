@@ -1,4 +1,10 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 523. Newport driver updates, including 24-bit support (#5062, Guido Guenther).
+ 522. Fix pixel info not being returned from the APPGROUP extension (#5061,
+      Chris Bare, from X11R6.6).
+ 521. Remove debug message in the calcomp driver (#5060, Martin Kroeker).
+ 520. Replace "X Windows" with "X Window System" or "X" in various places
+      (#5058, David Krause).
  519. Fix the size of some lbx struct members on 64-bit architectures
       (#5053, Chris Bare, from X11R6.6).
  518. Fix the size of some xXagGetAttrReply struct members on 64-bit
@@ -36,7 +42,7 @@ XFree86 4.1.99.2 (xx November 2001)
       broken (Jay Estabrook).
  501. Allow secondary MGA boards to be used on Alpha that have the VGA
       disable switch set (Jay Estabrook).
- 500. Fix Radeon jerky cursor movement bug (Jay Estabrook).
+ 500. Fix Radeon jerky cursor movement bug (Jay Estabrook, #5054, Mike Harris).
  499. Add new Luxi fonts from Bigelow & Holmes (#5010, Charles Bigelow and
       Kris Holmes, integrated by Juliusz Chroboczek).
  498. Update the ClearlyU fonts to version 1.8 (#5009, Mark Leisher).
@@ -14227,4 +14233,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2057 2001/11/21 22:54:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2058 2001/11/23 19:21:32 dawes Exp $

@@ -1,7 +1,7 @@
 /*
  * Id: newport_regs.c,v 1.3 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_regs.c,v 1.1 2000/12/01 19:48:01 dawes Exp $ */
 
 #include "newport.h"
 
@@ -66,4 +66,36 @@ NewportXmap9SetModeRegister(NewportRegsPtr pNewportRegs, CARD8 address, CARD32 m
 	pNewportRegs->set.dcbmode = (DCB_XMAP_ALL | W_DCB_XMAP9_PROTOCOL |
 			XM9_CRS_MODE_REG_DATA | NPORT_DMODE_W4 );
 	pNewportRegs->set.dcbdata0.all = (address << 24) | ( mode & 0xffffff );
+}
+
+void 
+NewportBackupRex3( ScrnInfoPtr pScrn)
+{
+	NewportPtr pNewport = NEWPORTPTR(pScrn);
+	NewportRegsPtr pNewportRegs = NEWPORTREGSPTR(pScrn);
+
+	pNewport->txt_drawmode0 = pNewportRegs->set.drawmode0;
+	pNewport->txt_drawmode1 = pNewportRegs->set.drawmode1;
+	pNewport->txt_wrmask = pNewportRegs->set.wrmask;
+	pNewport->txt_smask1x = pNewportRegs->cset.smask1x;
+	pNewport->txt_smask1y = pNewportRegs->cset.smask1y;
+	pNewport->txt_smask2x = pNewportRegs->cset.smask2x;
+	pNewport->txt_smask2y = pNewportRegs->cset.smask2y;
+	pNewport->txt_clipmode = pNewportRegs->cset.clipmode;
+}
+
+void
+NewportRestoreRex3( ScrnInfoPtr pScrn)
+{
+	NewportPtr pNewport = NEWPORTPTR(pScrn);
+	NewportRegsPtr pNewportRegs = NEWPORTREGSPTR(pScrn);
+
+	pNewportRegs->set.drawmode0 = pNewport->txt_drawmode0;
+	pNewportRegs->set.drawmode1 = pNewport->txt_drawmode1;
+	pNewportRegs->set.wrmask = pNewport->txt_wrmask;
+	pNewportRegs->cset.smask1x = pNewport->txt_smask1x;
+	pNewportRegs->cset.smask1y = pNewport->txt_smask1y;
+	pNewportRegs->cset.smask2x = pNewport->txt_smask2x;
+	pNewportRegs->cset.smask2y = pNewport->txt_smask2y;
+	pNewportRegs->cset.clipmode = pNewport->txt_clipmode;
 }

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.5 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.6 2001/10/28 03:32:50 tsi Exp $ */
 /*
-Copyright 1996, 1998  The Open Group
+Copyright 1996, 1998, 2001  The Open Group
 
 All Rights Reserved.
 
@@ -20,7 +20,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $Xorg: appgroup.c,v 1.3 2000/08/17 19:47:56 cpqbld Exp $ */
+/* $Xorg: appgroup.c,v 1.5 2001/02/01 18:40:28 pookie Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -499,6 +499,8 @@ int ProcXagGetAttr (client)
     rep.default_root = pAppGrp->default_root;
     rep.root_visual = pAppGrp->root_visual;
     rep.default_colormap = pAppGrp->default_colormap;
+    rep.black_pixel = pAppGrp->black_pixel;
+    rep.white_pixel = pAppGrp->white_pixel;
     rep.single_screen = pAppGrp->single_screen;
     rep.app_group_leader = (pAppGrp->leader) ? 1 : 0;
     if (client->swapped) {
@@ -507,6 +509,8 @@ int ProcXagGetAttr (client)
     	swapl (&rep.default_root, n);
     	swapl (&rep.root_visual, n);
     	swapl (&rep.default_colormap, n);
+    	swapl (&rep.black_pixel, n);
+    	swapl (&rep.white_pixel, n);
     }
     WriteToClient (client, sizeof (xXagGetAttrReply), (char *)&rep);
     return client->noClientException;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.7 2001/08/17 22:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.8 2001/11/21 22:32:58 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -115,25 +115,24 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     {
         if(!info->IsSecondary)
         {
-    OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
+            OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
 				       | (xorigin << 16)
 				       | yorigin));
-    OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
+            OUTREG(RADEON_CUR_HORZ_VERT_POSN, (RADEON_CUR_LOCK
 				       | ((xorigin ? 0 : x) << 16)
 				       | (yorigin ? 0 : y)));
-        OUTREG(RADEON_CUR_OFFSET, 
-            info->cursor_start + yorigin * 16);
+            OUTREG(RADEON_CUR_OFFSET, info->cursor_start + yorigin * 16);
         }
         else
         {
-        OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
+            OUTREG(RADEON_CUR2_HORZ_VERT_OFF,  (RADEON_CUR2_LOCK
 				       | (xorigin << 16)
 				       | yorigin));
-        OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
+            OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
 				       | ((xorigin ? 0 : x) << 16)
 				       | (yorigin ? 0 : y)));
-        OUTREG(RADEON_CUR2_OFFSET,         
-              info->cursor_start + pScrn->fbOffset + yorigin * 16);
+            OUTREG(RADEON_CUR2_OFFSET,         
+			info->cursor_start + pScrn->fbOffset + yorigin * 16);
         }
     }
 }
