@@ -1,15 +1,10 @@
 /*
- * $XConsortium: xcutsel.c,v 1.19 94/04/17 20:25:13 hersh Exp $
+ * $TOG: xcutsel.c /main/22 1998/02/09 13:52:55 kaleb $
  *
  * 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Ralph Swick, DEC/Project Athena
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -40,6 +36,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xfuncs.h>
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#endif
 
 static XrmOptionDescRec optionDesc[] = {
     {"-selection", "selection",	XrmoptionSepArg, NULL},
@@ -96,7 +96,11 @@ static void StoreBuffer(w, client_data, selection, type, value, length, format)
 {
 
     if (*type == 0 || *type == XT_CONVERT_FAIL || *length == 0) {
+#ifdef XKB
+	XkbStdBell( XtDisplay(w), XtWindow(w), 0, XkbBI_MinorError );
+#else
 	XBell( XtDisplay(w), 0 );
+#endif
 	return;
     }
 
@@ -259,17 +263,22 @@ static void GetBuffer(w, closure, callData)
 }
 
 
-void main(argc, argv)
+int main(argc, argv)
     int argc;
     char *argv[];
 {
     char label[100];
     Widget box, button;
     XtAppContext appcon;
-    Widget shell =
+    Widget shell;
+    XrmDatabase rdb;
+
+    XtSetLanguageProc(NULL, NULL, NULL);
+
+    shell =
 	XtAppInitialize( &appcon, "XCutsel", optionDesc, XtNumber(optionDesc),
 			 &argc, argv, NULL, NULL, 0 );
-    XrmDatabase rdb = XtDatabase(XtDisplay(shell));
+    rdb = XtDatabase(XtDisplay(shell));
 
     if (argc != 1) Syntax(argv[0]);
 

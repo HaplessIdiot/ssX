@@ -36,10 +36,12 @@ XCOMM $XConsortium: Imakefile /main/2 1996/11/16 15:20:42 rws $
  **
  ******************************************************************************
  *****************************************************************************/
+XCOMM $XFree86$
 
 
 #define DoNormalLib	NormalLibXp
 #define DoSharedLib	SharedLibXp
+#define DoExtraLib	SharedLibXp
 #define DoDebugLib	DebugLibXp
 #define DoProfileLib	ProfileLibXp
 #define LibName		Xp

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.19 1998/12/06 13:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.20 1998/12/13 07:37:48 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -266,7 +266,7 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#endif /* SVR4 */
+#endif /* SVR4 && !DGUX */
 
 #if defined(sun) && !defined(SVR4) /* SunOS */
 #define MMAP_DEV_ZERO	/* doesn't SunOS have MAP_ANON ?? */

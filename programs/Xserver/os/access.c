@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.27 1998/10/04 09:39:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.28 1998/10/10 15:25:26 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -96,6 +96,21 @@ SOFTWARE.
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
+
+
+#if defined(DGUX)
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <ctype.h>
+#include <sys/utsname.h>
+#include <sys/stream.h>
+#include <sys/stropts.h>
+#include <sys/param.h>
+#include <sys/sockio.h>
+#endif
+
 
 #if !defined(AMOEBA)
 #ifdef hpux
@@ -283,7 +298,7 @@ AccessUsingXdmcp (void)
 }
 
 
-#if ((defined(SVR4) && !defined(SCO325) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
+#if ((defined(SVR4) && !defined(DGUX) && !defined(SCO325) && !defined(sun) && !defined(NCR)) || defined(ISC)) && defined(SIOCGIFCONF)
 
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
@@ -332,9 +347,9 @@ ifioctl (int fd, int cmd, char *arg)
 #endif
     return(ret);
 }
-#else /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+#else /* Case DGUX, sun, SCO325 NCR and others  */
 #define ifioctl ioctl
-#endif /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+#endif /* ((SVR4 && !DGUX !sun !SCO325 !NCR) || ISC) && SIOCGIFCONF */
 
 /*
  * DefineSelf (fd):

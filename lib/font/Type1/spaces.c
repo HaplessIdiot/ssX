@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.0.8.3 1998/07/05 14:35:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.3 1998/07/25 06:56:57 dawes Exp $ */
  /* SPACES   CWEB         V0021 ********                             */
 /*
 :h1 id=spaces.SPACES Module - Handles Coordinate Spaces
@@ -43,6 +43,8 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 #include "fontmisc.h"	/* Bool declaration ??? */
 #include "Xmd.h"	/* INT32 declaration ??? */
 #include "xf86_ansic.h"
+#else
+#include "X11/Xos.h"
 #endif
 #include "objects.h"
 #include "spaces.h"

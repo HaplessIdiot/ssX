@@ -1,19 +1,13 @@
-/* $XConsortium: XTest.c,v 1.15 94/04/17 20:17:54 rws Exp $ */
+/* $TOG: XTest.c /main/16 1998/02/06 15:58:41 kaleb $ */
 /*
 Copyright 1990, 1991 by UniSoft Group Limited
 */
 
 /*
 
-Copyright (c) 1992, 1993  X Consortium
+Copyright 1992, 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -21,17 +15,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/lib/Xtst/XTest.c,v 1.1.1.1.12.2 1998/10/04 15:22:55 hohndel Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -82,7 +77,7 @@ get_xinput_base(dpy)
     first_event = 0;
 
     XQueryExtension(dpy, INAME, &major_opcode, &first_event, &first_error);
-    return (XPointer)first_event;
+    return (XPointer)(long)first_event;
 }
 
 static XEXT_GENERATE_FIND_DISPLAY (find_display, xtest_info,
@@ -283,7 +278,7 @@ send_axes(dpy, info, req, dev, first_axis, axes, n_axes)
 
     req->deviceid |= MORE_EVENTS;
     req->length += ((n_axes + 5) / 6) * (SIZEOF(xEvent) >> 2);
-    ev.type = XI_DeviceValuator + (int)info->data;
+    ev.type = XI_DeviceValuator + (long)info->data;
     ev.deviceid = dev->device_id;
     ev.num_valuators = n_axes;
     ev.first_valuator = first_axis;
@@ -331,7 +326,7 @@ XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = is_press ? XI_DeviceKeyPress : XI_DeviceKeyRelease;
-    req->type += (int)info->data;
+    req->type += (int)(long)info->data;
     req->detail = keycode;
     req->time = delay;
     req->deviceid = dev->device_id;
@@ -361,7 +356,7 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = is_press ? XI_DeviceButtonPress : XI_DeviceButtonRelease;
-    req->type += (int)info->data;
+    req->type += (int)(long)info->data;
     req->detail = button;
     req->time = delay;
     req->deviceid = dev->device_id;
@@ -390,7 +385,7 @@ XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = in_prox ? XI_ProximityIn : XI_ProximityOut;
-    req->type += (int)info->data;
+    req->type += (int)(long)info->data;
     req->time = delay;
     req->deviceid = dev->device_id;
     if (n_axes)
@@ -419,7 +414,7 @@ XTestFakeDeviceMotionEvent(dpy, dev, is_relative,
     GetReq(XTestFakeInput, req);
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
-    req->type = XI_DeviceMotionNotify + (int)info->data;
+    req->type = XI_DeviceMotionNotify + (int)(long)info->data;
     req->detail = is_relative;
     req->time = delay;
     req->deviceid = dev->device_id;

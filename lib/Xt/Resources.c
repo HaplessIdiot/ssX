@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.4 1998/06/28 09:00:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.5 1998/10/03 09:06:57 dawes Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -411,7 +411,7 @@ static void BadSize(size, name)
     String params[2];
     Cardinal num_params = 2;
 
-    params[0] = (String) size;
+    params[0] = (String)(long) size;
     params[1] = XrmQuarkToString(name);
     XtWarningMsg("invalidSizeOverride", "xtDependencies", XtCXtToolkitError,
 	"Representation size %d must match superclass's to override %s",

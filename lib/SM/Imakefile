@@ -1,12 +1,17 @@
-XCOMM $XConsortium: Imakefile,v 1.9 94/03/18 16:02:21 mor Exp $
+XCOMM $XConsortium: Imakefile /main/12 1996/12/04 10:22:18 lehors $
+XCOMM $XFree86$
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
+#define DoExtraLib SharedLibSM
 #define DoDebugLib DebugLibSM
 #define DoProfileLib ProfileLibSM
 #define LibName SM
 #define SoRev SOSMREV
-#define IncSubdir SM
+#define IncSubdir X11
+#define IncSubSubdir SM
+
+#include <Threads.tmpl>
 
 #ifdef SharedSMReqs
 REQUIREDLIBS = SharedSMReqs
@@ -15,8 +20,9 @@ REQUIREDLIBS = SharedSMReqs
 #if (SystemV || SystemV4) && !HasSockets
 CONN_DEFINES = -DTCPCONN -DICE_t
 #else
-CONN_DEFINES = ConnectionFlags -DICE_t
+CONN_DEFINES = $(CONNECTION_FLAGS) -DICE_t
 #endif
+DEPEND_DEFINES = $(CONN_DEFINES)
 
 HEADERS = SM.h \
           SMproto.h \

@@ -1,20 +1,22 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.22 1998/08/02 05:16:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.23 1998/08/29 05:42:51 dawes Exp $
+
 
 #ifndef OSName
-# ifdef i386Architecture
-#  define OSName			LynxOS AT
-# endif
-# ifdef PpcArchitecture
-#  define OSName			LynxOS PowerPC
-# endif
-# ifdef SparcArchitecture
-#  define OSName			LynxOS microSPARC
-# endif
+#define OSName			DefaultOSName
 #endif
+#ifndef OSVendor
 #define OSVendor		(LYNX Real-Time Systems, Inc)
-#define OSMajorVersion		3
-#define OSMinorVersion		0
-#define OSTeenyVersion		0
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion		DefaultOSMajorVersion
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion		DefaultOSMinorVersion
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion		DefaultOSTeenyVersion
+#endif
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
 #ifndef MetroLink
 /* We have our own cross stuff */
@@ -85,6 +87,7 @@ ComplexHostProgramTarget(program)
 #if  OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 4)
 # define HasBSD44Sockets 	YES
 #endif
+#define HasStickyDirBit		NO
 
 #define HasPosixThreads		YES
 #define ThreadedX		YES

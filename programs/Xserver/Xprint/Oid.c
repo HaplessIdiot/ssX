@@ -30,9 +30,11 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "os.h"
 #include "Oid.h"
 #include <X11/Xfuncs.h>		/* for memmove */
 

@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.6 1997/07/06 05:30:37 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.7 1997/10/26 13:24:55 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -38,6 +38,7 @@ extern int errno;
 #endif
 #include "lbxbufstr.h"
 #include "lbx_zlib.h"
+#include "os.h"
 
 #ifndef NULL
 #define NULL		0

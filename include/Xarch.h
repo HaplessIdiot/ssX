@@ -25,7 +25,7 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/include/Xarch.h,v 1.3 1998/12/13 12:23:40 dawes Exp $ */
 
 
 /*
@@ -38,7 +38,7 @@
 #include <sys/byteorder.h>
 #endif
 #elif defined(CSRG_BASED)
-#ifdef __OpenBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/types.h>
 #endif
 #include <machine/endian.h>

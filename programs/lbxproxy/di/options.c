@@ -42,6 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "X.h"
@@ -480,7 +481,7 @@ OptZlibReply(server, preply, replylen)
     int		  replylen;
 {
     server->lbxNegOpt.streamOpts.streamCompInit = ZlibInit;
-    server->lbxNegOpt.streamOpts.streamCompArg = (pointer) zlevel;
+    server->lbxNegOpt.streamOpts.streamCompArg = (pointer)(long) zlevel;
     server->lbxNegOpt.streamOpts.streamCompStuffInput = ZlibStuffInput;
     server->lbxNegOpt.streamOpts.streamCompInputAvail = ZlibInputAvail;
     server->lbxNegOpt.streamOpts.streamCompFlush = ZlibFlush;

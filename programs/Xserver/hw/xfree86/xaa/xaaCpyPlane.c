@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.3 1998/11/22 10:37:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.4 1998/12/13 05:32:56 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -43,7 +43,7 @@ XAACopyPlaneColorExpansion(
     int	dstx, int dsty,
     unsigned long bitPlane 
 ){
-    if((pDst->type == DRAWABLE_WINDOW) && (pSrc->type != DRAWABLE_WINDOW)) {
+    if((pSrc->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pSrc)) {
 	if(pSrc->bitsPerPixel == 1) {
 	   return(XAABitBlt(pSrc, pDst, pGC, srcx, srcy,
 			width, height, dstx, dsty, 

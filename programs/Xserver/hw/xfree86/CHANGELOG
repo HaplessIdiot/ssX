@@ -1,3 +1,55 @@
+XFree86 3.9Nr (20 December 1998)
+2109. Remove cfbPuntCopyPlane from cfb (#2325, Mark Vojkovich).
+2108. Fix a build problem related to Xarch.h on NetBSD (#2322, Isao Ohishi).
+2107. Fix an XAA bug tha can result in a zero height when rendering TE text
+      (#2321, Mark Vojkovich).
+2106. Fix an optimization bug in the new XAA rect and span code (#2319,
+      Mark Vojkovich).
+2105. Accelerate CopyPlane on offscreen pixmaps (#2318, Mark Vojkovich).
+2104. Fix a 4bpp problem with the C&T driver and the new colourmap code
+      (#2317, David Bateman).
+2103. Enable XAA offscreen pixmaps in the C&T driver (#2317, David Bateman).
+2102. ImageRead functions for some C&T HiQV chipsets (disabled) (#2317,
+      David Bateman).
+2101. MMIO access to the registers for PCI C&T 69000 (#2317, David Bateman).
+2100. Cleanup code in mipushpxl.c (#2313, Thomas Mueller).
+2099. Fix MX/TX clipping bugs in the glint driver (#2312, Alan Hourihane).
+2098. xterm patch #90 (#2311, Thomas Dickey).
+2097. Export missing symbols for panoramiX (#2310, Alan Hourihane).
+2096. Initialise a number of Xlib/Xt data structures, correct a minor linker
+      bug in OS/2 (#2026, Holger Veit).
+2095. Fix some realloc() usages (#2019, Matthieu Herrb).
+2094. Support for arc4random() in xdm/genauth.c (#2019, Michael Shalayeff).
+2093. Update mkfontdir to create an appropriate fonts.dir file when no
+      fonts are found rather than doing nothing.
+2092. Replace void main() -> int main() for ANSI conformance (#2019,
+      Matthieu Herrb).
+2091. Only allow the X server -nolock option when the real uid is root.
+2090. Some sanity checks on DISPLAY name (#2168, Kevin Vajk).
+2089. Fix an Xnest crash with too many visuals (#2019, Matthieu Herrb).
+2088. Swedish sun keyboard support in Xsun and xkb (#2019, Magnus Holmberg).
+2087. A quick attempt at neutralising a stack-buffer overflow problem in
+      the Xprt server.
+2086. LP64 compiler warning fixes from the NetBSD xsrc tree (#2019,
+      Ross Harvey).
+2085. Don't install lndir on OpenBSD (#2019, Matthieu Herrb).
+2084. Teach imake how to automatically determine the NetBSD architecture
+      (#2180, Jason Thorpe).
+2083. Add local font directory (Dirk Hohndel).
+2082. LynxOS OS version detection for imake (#2039, Thomas Mueller).
+2081. Resync OpenBSD.cf (#2019, Matthieu Herrb).
+2080. Fix security problem by creating /tmp/.X11-unix with sticky bit (#2168,
+      Kevin Vajk, David Dawes, Dirk Hohndel).
+2079. Make LinkVarDirectory handle DESTDIR (#2019, Matthieu Herrb).
+2078. Resync NetBSD.cf.
+2077. Some doc and nroff-related updates to the build system.
+2076. Update tk/tcl definitions in FreeBSD.cf and add support for building
+      a.out compatibility libraries on FreeBSD/ELF systems.
+2075. Create host.def with sane defaults when none exists and when a cut-down
+      source tree is detected.
+2074. Resync with 3.3.3 (items 2075-2096 above).
+2073. Fix an xset segfault (#2320, Itai Nahshon).
+
 XFree86 3.9Nq (13 December 1998)
 2072. Change the modversion field in the XF86ModuleVersionInfo struct into
       separate major, minor and patchlevel fields.
@@ -14,7 +66,8 @@ XFree86 3.9Nq (13 December 1998)
       Matthieu Herrb).
 2065. Fix a typo in FreeBSD.cf that affects adding the runtime library
       search patch for 2.2.x (#2305, Keisuke Inoue).
-2064. Some update XKB files for French-Canadian keyboards (#2204, Eric Moreau). 
+2064. Some enhanced XKB files for French-Canadian keyboards (#2204,
+      Eric Moreau).
 2063. Fix an incorrect realloc in xmodmap (#2303, Alexander V. Lukyanov).
 2062. Fix depth 30 for the glint driver (#2297, Alan Hourihane).
 2061. Resync pandix and panmi, and fix some panoramix build problems
@@ -6949,4 +7002,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.651 1998/12/13 07:37:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.652 1998/12/13 11:46:15 dawes Exp $

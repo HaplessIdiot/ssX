@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.20 1998/08/14 13:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.21 1998/10/04 09:38:10 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -429,6 +429,7 @@ main(argc, argv)
 
 	if (dispatchException & DE_TERMINATE)
 	{
+	    CloseWellKnownConnections();
 	    OsCleanup();
 	    ddxGiveUp();
 	    break;

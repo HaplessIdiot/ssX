@@ -53,7 +53,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/IMWrap.c,v 3.4 1996/02/09 08:18:40 dawes Exp $ */
+/* $XFree86: xc/lib/X11/IMWrap.c,v 3.5 1998/10/03 08:41:19 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -94,7 +94,7 @@ _XCopyToArg(src, dst, size)
 	    memcpy((char *)&u, (char *)src, (int)size);
 	    if (size == sizeof(long))	       *dst = (XPointer)u.longval;
 #ifdef LONG64
-	    else if (size == sizeof(int))      *dst = (XPointer)u.intval;
+	    else if (size == sizeof(int))      *dst = (XPointer)(long)u.intval;
 #endif
 	    else if (size == sizeof(short))    *dst = (XPointer)(long)u.shortval;
 	    else if (size == sizeof(char))     *dst = (XPointer)(long)u.charval;

@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/main.c,v 1.4 1998/08/20 13:59:48 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/main.c,v 1.5 1998/10/04 09:40:15 dawes Exp $ */
 
 #include "lbx.h"
 #include "wire.h"
@@ -119,6 +119,7 @@ main (argc, argv)
         FreeColors();
         FreeTags();
     }
+    CloseServerSockets();
     exit (0);
 }
 

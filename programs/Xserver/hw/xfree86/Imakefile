@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.46 1998/11/28 10:42:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.47 1998/12/05 14:40:00 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -78,6 +78,7 @@ MANPAGE=Concat3(FileManDir,/XF86Config.,FileManSuffix)
 #endif
 
 RGBPATH=\"DefaultRGBDatabase\"
+LOCALFONTPATH=\"$(LIBDIR)/fonts/local/\"
 MISCFONTPATH=\"$(LIBDIR)/fonts/misc/\"
 T1FONTPATH=\"$(LIBDIR)/fonts/Type1/\"
 SPFONTPATH=\"$(LIBDIR)/fonts/Speedo/\"
@@ -89,6 +90,7 @@ DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
 #ifdef MinixArchitecture
 CppFileTarget($(XF86CONFIG), XF86Conf.cpp,
     -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH)
+    -DLOCALFONTPATH=$(LOCALFONTPATH)
     -DT1FONTPATH=$(T1FONTPATH) -DSPFONTPATH=$(SPFONTPATH)
     -DDPI75FONTPATH=$(DPI75FONTPATH) -DDPI100FONTPATH=$(DPI100FONTPATH)
     -DDPI75USFONTPATH=$(DPI75USFONTPATH) -DDPI100USFONTPATH=$(DPI100USFONTPATH)
@@ -97,6 +99,7 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp,
 #else
 CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
     -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH) \
+    -DLOCALFONTPATH=$(LOCALFONTPATH) \
     -DT1FONTPATH=$(T1FONTPATH) \
     -DSPFONTPATH=$(SPFONTPATH) \
     -DDPI75FONTPATH=$(DPI75FONTPATH) \

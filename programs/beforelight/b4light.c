@@ -1,6 +1,5 @@
 /*
  * $XConsortium: b4light.c,v 1.3 94/04/17 20:59:38 rws Exp $
- * $XFree86$
  *
 Copyright (c) 1992  X Consortium
 
@@ -27,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XFree86: xc/programs/beforelight/b4light.c,v 3.2 1994/08/01 13:21:00 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
@@ -278,7 +278,7 @@ int ignoreError (display, error)
 {
 }
 
-void main(argc, argv)
+int main(argc, argv)
     int argc;
     char **argv;
 {

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.5 1996/12/31 07:06:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclWindow.c,v 1.6 1997/01/14 22:14:17 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -369,13 +369,13 @@ PclPaintWindow(
 	    }
 	    break;
 	case GCClipMask:
-	    if ((pointer) pGC->clientClipType != (pointer)CT_NONE) {
+	    if ((pointer)(long) pGC->clientClipType != (pointer)CT_NONE) {
 		gcmask |= index;
 		gcval[i++] = (pointer)CT_NONE;
 	    }
 	    break;
 	case GCSubwindowMode:
-	    if ((pointer) pGC->subWindowMode != newValues[SUBWINDOW]) {
+	    if ((pointer)(long) pGC->subWindowMode != newValues[SUBWINDOW]) {
 		gcmask |= index;
 		gcval[i++] = newValues[SUBWINDOW];
 	    }
@@ -389,7 +389,7 @@ PclPaintWindow(
 	    }
 	    break;
 	case GCFillStyle:
-	    if ((pointer) pGC->fillStyle != newValues[FILLSTYLE]) {
+	    if ((pointer)(long) pGC->fillStyle != newValues[FILLSTYLE]) {
 		gcmask |= index;
 		gcval[i++] = newValues[FILLSTYLE];
 	    }

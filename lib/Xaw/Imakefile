@@ -1,7 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/87 1996/09/28 16:43:34 rws $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xaw/Imakefile,v 1.5 1998/12/06 13:30:38 dawes Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
+#define DoExtraLib SharedLibXaw
 #define DoDebugLib DebugLibXaw 
 #define DoProfileLib ProfileLibXaw 
 #define HasSharedData YES

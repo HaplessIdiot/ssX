@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.29 1998/10/04 09:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.30 1998/11/29 13:09:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -354,7 +354,7 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__))) || defined(__OS2ELF__) || (defined(__GNU__) && defined(__i386__))
+#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && (defined(__i386__) || defined(__alpha__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__))) || defined(__OS2ELF__) || (defined(__GNU__) && defined(__i386__))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst
@@ -398,6 +398,22 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT  1
 
 #endif /* linux/m68k */
+
+#if defined (linux) && defined(__powerpc__)
+
+#define IMAGE_BYTE_ORDER       MSBFirst
+#define BITMAP_BIT_ORDER       MSBFirst
+#define GLYPHPADBYTES          4
+#define GETLEFTBITS_ALIGNMENT  1
+
+#define LARGE_INSTRUCTION_CACHE
+#define FAST_CONSTANT_OFFSET_MODE
+#define PLENTIFUL_REGISTERS
+#define AVOID_MEMORY_READ
+
+#define FAST_MEMCPY
+
+#endif /* Linux/PPC */
 
 #ifdef sgi
 

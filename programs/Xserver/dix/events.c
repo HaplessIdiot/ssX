@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.12 1997/07/10 08:17:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.13 1998/10/04 09:38:06 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2864,7 +2864,7 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     }
     time = ClientTimeToServerTime(ctime);
     if ((focusID == None) || (focusID == PointerRoot))
-	focusWin = (WindowPtr)focusID;
+	focusWin = (WindowPtr)(long)focusID;
     else if ((focusID == FollowKeyboard) && followOK)
 	focusWin = inputInfo.keyboard->focus->win;
     else if (!(focusWin = SecurityLookupWindow(focusID, client,

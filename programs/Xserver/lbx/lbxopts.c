@@ -21,6 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #ifdef OPTDEBUG
 #include <stdio.h>
@@ -300,7 +301,7 @@ ZlibParse(pno, popt, optlen, preply)
 	return (-1);
 
     pno->streamOpts.streamCompInit = ZlibInit;
-    pno->streamOpts.streamCompArg = (pointer) level;
+    pno->streamOpts.streamCompArg = (pointer)(long)level;
     pno->streamOpts.streamCompStuffInput = ZlibStuffInput;
     pno->streamOpts.streamCompInputAvail = ZlibInputAvail;
     pno->streamOpts.streamCompFlush = ZlibFlush;

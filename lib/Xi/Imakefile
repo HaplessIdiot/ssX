@@ -1,6 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.17 94/03/27 15:54:53 rws Exp $
 #define DoNormalLib NormalLibXi
 #define DoSharedLib SharedLibXi
+#define DoExtraLib SharedLibXi
 #define DoDebugLib DebugLibXi
 #define DoProfileLib ProfileLibXi
 #define LibName Xi

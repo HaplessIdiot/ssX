@@ -44,11 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.3 1996/12/31 07:05:59 dawes Exp $ */
-
-#if defined(sun) && defined(i386) && defined(SVR4)
-#define __EXTENSIONS__
-#endif
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.4 1997/01/12 10:40:27 dawes Exp $ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include <stdio.h>

@@ -1,11 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/17 1996/01/15 12:19:32 gildea $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xdm/config/Imakefile,v 1.4 1998/12/06 13:30:40 dawes Exp $
 
 SERVERSTYPE = XdmServersType
 
 all:: Xservers.ws xdm-config Xservers
 
-#if defined(OpenBSDArchitecture) && defined(i386Architecture)
+#if defined(i386Architecture) && (defined(NetBSDArchitecture) || defined(OpenBSDArchitecture))
 DEFAULTVT=vt05
 #endif
 

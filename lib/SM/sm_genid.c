@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.8 1998/09/05 06:36:04 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.9 1998/10/03 08:41:14 dawes Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -140,7 +140,7 @@ SmsConn smsConn;
     struct hostent *hostp;
 
     if ((hostp = _XGethostbyname (hostname,hparams)) != NULL)
-	inet_addr = (char *) inet_ntoa (*(struct in_addr *)(hostp->h_addr));
+	inet_addr = inet_ntoa (*(struct in_addr *)(hostp->h_addr));
     else
 	return NULL;
     for (i = 0, ptr1 = inet_addr; i < 3; i++)

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.1 1996/01/16 15:09:23 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.2 1998/10/04 09:41:37 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -96,7 +96,7 @@ static void Syntax(toplevel, call)
     exit(1);
 }
 
-void 
+int 
 main(argc, argv)
 int argc;
 char **argv;

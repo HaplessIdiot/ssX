@@ -30,7 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.4 1998/07/25 09:09:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.5 1998/07/26 09:56:06 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -1504,8 +1504,8 @@ DbeSetupBackgroundPainter(pWin, pGC)
         case BackgroundPixmap:
             gcvalues[0] = (pointer)FillTiled;
             gcvalues[1] = (pointer)background.pixmap;
-            gcvalues[2] = (pointer)ts_x_origin;
-            gcvalues[3] = (pointer)ts_y_origin;
+            gcvalues[2] = (pointer)(long)ts_x_origin;
+            gcvalues[3] = (pointer)(long)ts_y_origin;
             gcmask = GCFillStyle|GCTile|GCTileStipXOrigin|GCTileStipYOrigin;
             break;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.15 1998/10/05 13:23:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.16 1998/11/01 12:35:50 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -72,9 +72,8 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
     
     /* turn the cursor on */
     if (IS_HiQV(cPtr)) {
-	outb(0x3D6, 0xA0);
-	tmp = inb(0x3D7);
-	outb(0x3D7, ((tmp & 0xF8) | 5));
+	tmp = cPtr->readXR(cPtr, 0xA0);
+	cPtr->writeXR(cPtr, 0xA0, (tmp & 0xF8) | 5);
     } else {
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0x8);
@@ -97,9 +96,8 @@ CHIPSHideCursor(ScrnInfoPtr pScrn)
 
     /* turn the cursor off */
     if (IS_HiQV(cPtr)) {
-	outb(0x3D6, 0xA0);
-	tmp = inb(0x3D7);
-	outb(0x3D7, (tmp & 0xF8));
+	tmp = cPtr->readXR(cPtr, 0xA0);
+	cPtr->writeXR(cPtr, 0xA0, tmp & 0xF8);
     } else {
 	if(!cPtr->UseMMIO) {
 	    HW_DEBUG(0x8);
@@ -129,10 +127,10 @@ CHIPSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
     /* Program the cursor origin (offset into the cursor bitmap). */
     if (IS_HiQV(cPtr)) {
-	outw(0x3D6, ((x & 0xFF) << 8) | 0xA4);
-	outw(0x3D6, (x & 0x8700) | 0xA5);
-	outw(0x3D6, ((y & 0xFF) << 8) | 0xA6);
-	outw(0x3D6, (y & 0x8700) | 0xA7);
+	cPtr->writeXR(cPtr, 0xA4, x & 0xFF);
+	cPtr->writeXR(cPtr, 0xA5, (x >> 8) & 0x87);
+	cPtr->writeXR(cPtr, 0xA6, y & 0xFF);
+	cPtr->writeXR(cPtr, 0xA7, (y >> 8) & 0x87);
     } else {
 	unsigned long xy;
 
@@ -152,6 +150,7 @@ static void
 CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned long packedcolfg, packedcolbg;
     
     CURSOR_SYNC(pScrn);
@@ -159,34 +158,34 @@ CHIPSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     if (IS_HiQV(cPtr)) {
 	unsigned char xr80;
 
-	outb(0x3D6, 0x80);
-	xr80 = inb(0x3D7);
-	outb(0x3D7, xr80 | 0x1);       /* Enable extended palette addressing */
+	/* Enable extended palette addressing */
+	xr80 = cPtr->readXR(cPtr, 0x80);
+	cPtr->writeXR(cPtr, 0x80, xr80 | 0x1);
 
 	/* Write the new colours to the extended VGA palette. Palette
 	 * index is incremented after each write, so only write index
 	 * once 
 	 */
-	outb(0x3C8, 0x4);
+	hwp->writeDacWriteAddr(hwp, 0x04);
 	if (xr80 & 0x80) {
 	    /* 8bit DAC */
-	    outb(0x3C9, (bg >> 16) & 0xFF);
-	    outb(0x3C9, (bg >> 8) & 0xFF);
-	    outb(0x3C9, bg & 0xFF);
-	    outb(0x3C9, (fg >> 16) & 0xFF);
-	    outb(0x3C9, (fg >> 8) & 0xFF);
-	    outb(0x3C9, fg & 0xFF);
+	    hwp->writeDacData(hwp, (bg >> 16) & 0xFF);
+	    hwp->writeDacData(hwp, (bg >> 8) & 0xFF);
+	    hwp->writeDacData(hwp, bg & 0xFF);
+	    hwp->writeDacData(hwp, (fg >> 16) & 0xFF);
+	    hwp->writeDacData(hwp, (fg >> 8) & 0xFF);
+	    hwp->writeDacData(hwp, fg & 0xFF);
 	} else {
 	    /* 6bit DAC */
-	    outb(0x3C9, (bg >> 18) & 0x3F);
-	    outb(0x3C9, (bg >> 10) & 0x3F);
-	    outb(0x3C9, (bg >> 2) & 0x3F);
-	    outb(0x3C9, (fg >> 18) & 0x3F);
-	    outb(0x3C9, (fg >> 10) & 0x3F);
-	    outb(0x3C9, (fg >> 2) & 0x3F);
+	    hwp->writeDacData(hwp, (bg >> 18) & 0xFF);
+	    hwp->writeDacData(hwp, (bg >> 10) & 0xFF);
+	    hwp->writeDacData(hwp, (bg >> 2) & 0xFF);
+	    hwp->writeDacData(hwp, (fg >> 18) & 0xFF);
+	    hwp->writeDacData(hwp, (fg >> 10) & 0xFF);
+	    hwp->writeDacData(hwp, (fg >> 2) & 0xFF);
 	}
-	outb(0x3D6, 0x80);
-	outb(0x3D7, xr80);	       /* Enable normal palette addressing */
+	/* Enable normal palette addressing */
+	cPtr->writeXR(cPtr, 0x80, xr80);
     } else if (IS_Wingine(cPtr)) {
 	outl(DR(0xA), (bg & 0xFFFFFF));
 	outl(DR(0x9), (fg & 0xFFFFFF));
@@ -255,10 +254,8 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 
     /* set cursor address here or we loose the cursor on video mode change */
     if (IS_HiQV(cPtr)) {
-	outb(0x3D6, 0xA2);
-	outb(0x3D7, (cAcl->CursorAddress >> 8) & 0xFF);
-	outb(0x3D6, 0xA3);
-	outb(0x3D7, (cAcl->CursorAddress >> 16) & 0x3F);
+	cPtr->writeXR(cPtr, 0xA2, (cAcl->CursorAddress >> 8) & 0xFF);
+	cPtr->writeXR(cPtr, 0xA3, (cAcl->CursorAddress >> 16) & 0x3F);
     } else if (!IS_Wingine(cPtr)) {
 	if (!cPtr->UseMMIO) {
 	    HW_DEBUG(0xC);

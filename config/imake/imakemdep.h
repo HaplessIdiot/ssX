@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.32 1998/10/05 13:21:47 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.33 1998/10/25 07:11:10 dawes Exp $ */
 
 
 /* 
@@ -219,6 +219,15 @@ in this Software without prior written authorization from The Open Group.
 #define FIXUP_CPP_WHITESPACE
 #endif
 
+#if defined(Lynx)
+/* On LynxOS 2.4.0 imake gets built with the old "legacy"
+ * /bin/cc which has a rather pedantic builtin preprocessor.
+ * Using a macro which is not #defined (as in Step 5
+ * below) flags an *error*
+ */
+#define __NetBSD_Version__ 0
+#endif
+
 /*
  * Step 4:  USE_CC_E, DEFAULT_CC, DEFAULT_CPP
  *     If you want to use cc -E instead of cpp, define USE_CC_E.
@@ -311,6 +320,12 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef __alpha__
 	"-D__alpha__",
+# endif
+# ifdef __sparc__
+	"-D__sparc__",
+# endif
+# ifdef __m68k__
+	"-D__m68k__",
 # endif
 # ifdef __GNUC__
 	"-traditional",
@@ -472,6 +487,9 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef __alpha
 	"-D__alpha",
+# endif
+# ifdef __amiga__
+	"-D__amiga__",
 # endif
 # ifdef __alpha__
 	"-D__alpha__",
@@ -717,6 +735,14 @@ char *cpp_argv[ARGUMENTS] = {
 	if ((__sp = strchr((buf), ' ')) != NULL)			\
 		*__sp = '/';						\
     } while (0)
+#else
+# if defined(__Lynx__) || defined(Lynx)
+/* Lynx 2.4.0 /bin/cc doesn't like #elif */
+#  define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
+#  define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
+#  define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
+#  define DEFAULT_OS_NAME        "srm %[^\n]"
+# endif
 #endif
 
 #else /* else MAKEDEPEND */
@@ -850,11 +876,12 @@ struct symtab	predefs[] = {
 #ifdef m68k
         {"m68k", "1"},
 #endif
-#if defined(MetroLink)
 #ifdef M68k
         {"M68k", "1"},
 #endif
-#endif /* MetroLink */
+#ifdef __m68k__
+	{"__m68k__", "1"},
+#endif
 #ifdef m88k
         {"m88k", "1"},
 #endif
@@ -881,6 +908,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __osf__
 	{"__osf__", "1"},
+#endif
+#ifdef __amiga__
+	{"__amiga__", "1"},
 #endif
 #ifdef __alpha
 	{"__alpha", "1"},
@@ -955,14 +985,12 @@ struct symtab	predefs[] = {
 #ifdef __EMX__
 	{"__EMX__", "1"},
 #endif
-#if defined(MetroLink)
 # ifdef __powerpc__
 	{"__powerpc__", "1"},
 # endif
 # ifdef PowerMAX_OS
 	{"PowerMAX_OS", "1"},
 # endif
-#endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
 };

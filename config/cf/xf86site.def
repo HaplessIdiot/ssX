@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.132 1998/09/13 05:45:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.133 1998/12/13 05:32:27 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -331,6 +331,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.132 1998/09/13 05:45:42 dawes Exp 
  */
 
 /*
+ * To not install the local font directory, uncomment the following
+ *
+#define MakeLocalFontDir	NO
+ */
+
+/*
  * To build only the servers with a cut-down source tree, uncomment
  * this.
  *
@@ -492,14 +498,22 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.132 1998/09/13 05:45:42 dawes Exp 
  */
 
 /*
- * To use ELF format shared libraries for Linux, uncomment this.
- * Note: gcc-2.6.0-941008 and gas-941008 (or later) is required for this.
- * Check linux.cf if you have problems regarding the location of elf-aware
- * gcc and gas binaries.
+ * To use ELF format shared libraries for supported OSs, uncomment this.
  *
- * The default setting of this is the same as the setting of LinuxElfDefault
+ * For Linux the default setting of this is the same as the setting of
+ * LinuxElfDefault.
+ *
+ * For FreeBSD this should automatically be set correctly by imake.  Only
+ * change it here if you need to override the automatic setting.
  *
 #define UseElfFormat		YES
+ */
+
+/*
+ * For FreeBSD/ELF (FreeBSD 3.0) it is possible to also build and install
+ * a.out compatibility libraries.  To enable that, uncomment this.
+ *
+#define BuildAoutLibraries	YES
  */
 
 /*

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/bufio.c,v 3.2 1998/06/28 03:52:49 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/bufio.c,v 3.3 1998/10/03 09:07:25 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -59,7 +59,7 @@ BufFileCreate (private, io, skip, close)
     return f;
 }
 
-#define FileDes(f)  ((int) (f)->private)
+#define FileDes(f)  ((int)(long) (f)->private)
 
 static int
 BufFileRawFill (f)
@@ -128,7 +128,7 @@ BufFileOpenRead (fd)
     /* hv: I'd bet WIN32 has the same effect here */
     setmode(fd,O_BINARY);
 #endif
-    return BufFileCreate ((char *) fd, BufFileRawFill, BufFileRawSkip, BufFileRawClose);
+    return BufFileCreate ((char *)(long) fd, BufFileRawFill, BufFileRawSkip, BufFileRawClose);
 }
 
 static int
@@ -158,7 +158,7 @@ BufFileOpenWrite (fd)
     /* hv: I'd bet WIN32 has the same effect here */
     setmode(fd,O_BINARY);
 #endif
-    f = BufFileCreate ((char *) fd, BufFileRawFlush, 0, BufFileFlush);
+    f = BufFileCreate ((char *)(long) fd, BufFileRawFlush, 0, BufFileFlush);
     f->bufp = f->buffer;
     f->left = BUFFILESIZE;
     return f;

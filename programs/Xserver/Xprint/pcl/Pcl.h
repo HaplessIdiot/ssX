@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.2 1997/01/14 22:14:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.3 1998/03/20 21:04:49 hohndel Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -327,7 +327,7 @@ extern int PclUpdateDrawableGC(
     FILE **outFile);
 extern void PclValidateGC(
     GCPtr pGC,
-    Mask changes,
+    unsigned long changes,
     DrawablePtr pDrawable);
 extern void PclSetDrawablePrivateStuff(
     DrawablePtr pDrawable,

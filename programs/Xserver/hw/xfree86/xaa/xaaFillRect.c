@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.8 1998/12/06 06:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.9 1998/12/13 05:32:56 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -46,7 +46,11 @@ XAAPolyFillRect(
 	type = (*infoRec->StippledFillChooser)(pGC);
 	break;
     case FillOpaqueStippled:
-	if(pGC->fgPixel == pGC->bgPixel)
+	if((pGC->fgPixel == pGC->bgPixel) && infoRec->FillSolidRects &&
+                CHECK_PLANEMASK(pGC,infoRec->FillSolidRectsFlags) &&
+                CHECK_ROP(pGC,infoRec->FillSolidRectsFlags) &&
+                CHECK_ROPSRC(pGC,infoRec->FillSolidRectsFlags) &&
+                CHECK_FG(pGC,infoRec->FillSolidRectsFlags))
 	    type = DO_SOLID;
 	else
 	    type = (*infoRec->OpaqueStippledFillChooser)(pGC);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.4 1998/09/27 04:43:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.5 1998/12/13 05:32:59 dawes Exp $ */
 
 /********************************************************************
 
@@ -232,7 +232,7 @@ XAAGlyphBltTEColorExpansion(
     }
 
     /* stop when the lower edge of the box is beyond our string */
-    while(nbox && (Bottom >= pbox->y1)) {
+    while(nbox && (Bottom > pbox->y1)) {
 	LeftEdge = max(Left, pbox->x1);
 	RightEdge = min(Right, pbox->x2);
 

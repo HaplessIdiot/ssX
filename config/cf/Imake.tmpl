@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.48 1998/09/06 04:46:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.49 1998/10/02 06:15:00 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -272,6 +272,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasUsableFileMmap
 #define HasUsableFileMmap	NO	/* assume not */
+#endif
+#ifndef HasStickyDirBit
+#define HasStickyDirBit		YES
 #endif
 #ifndef HasFortran
 #define HasFortran		NO
@@ -973,7 +976,7 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef TroffCmd
-#define TroffCmd psroff
+#define TroffCmd groff -Tps
 #endif
 #ifndef NroffCmd
 #define NroffCmd nroff
@@ -995,6 +998,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ColCmd
 #define ColCmd col
+#endif
+#ifndef ColFlags
+#define ColFlags -b
 #endif
 #ifndef DvipsCmd
 #define DvipsCmd dvips
@@ -1172,6 +1178,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
               EQN = EqnCmd
              NEQN = NeqnCmd
               COL = ColCmd
+         COLFLAGS = ColFlags
             MODCC = ModuleCcCmd
            MODCPP = ModuleCppCmd
         MODCFLAGS = ModuleCFlags

@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.rules /main/1 1996/10/31 14:47:27 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.16 1997/02/20 10:00:41 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.17 1998/06/04 16:43:02 hohndel Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -241,8 +241,7 @@ Makefile:: 								@@\
 	ImakeSubCmdHelper -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
 
 #define AssembleObject(flags) $(RM) $@                                  @@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | \         @@\
-	    grep -v '^\#' > _tmp_.s                                     @@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | grep -v '^\#' > _tmp_.s @@\
 	$(CC) $(CFLAGS) -o $*.Osuf -c _tmp_.s                           @@\
 	$(RM) _tmp_.s
 

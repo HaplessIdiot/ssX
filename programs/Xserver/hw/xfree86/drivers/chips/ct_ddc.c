@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.1 1998/11/28 10:43:07 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -18,7 +18,6 @@
 #include "vgaHW.h"
 
 #include "ct_driver.h"
-#include "xf86DDC.h"
 
 static Bool chips_TestI2C(int scrnIndex);
 static Bool chips_setI2CBits(I2CBusPtr I2CPtr, ScrnInfoPtr pScrn);
@@ -27,13 +26,12 @@ static unsigned int
 chips_ddc1Read(ScrnInfoPtr pScrn)
 {
     unsigned char ddc_mask = ((CHIPSPtr)pScrn->driverPrivate)->ddc_mask;
-    register unsigned int ST01reg = ((CHIPSPtr)pScrn->driverPrivate)->IOBase 
-	+ 0x0A;
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
     register unsigned int tmp;
 
-    while(inb(ST01reg)&0x8){};
-    while(!(inb(ST01reg)&0x8)){};
-    read_xr(0x63,tmp);
+    while ((cPtr->readST01(cPtr)) & 0x08){};
+    while (!(cPtr->readST01(cPtr)) & 0x08){};
+    tmp = cPtr->readXR(cPtr, 0x63);
     return (tmp & ddc_mask);
 }
 
@@ -48,12 +46,12 @@ chips_ddc1(ScrnInfoPtr pScrn)
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Probing for DDC1\n");	
 
-    read_fr(0x0C,FR0C);
-    read_xr(0x62,XR62);
+    FR0C = cPtr->readFR(cPtr, 0x0C);
+    XR62 = cPtr->readXR(cPtr, 0x62);
     switch (cPtr->Chipset) {
     case CHIPS_CT65550:
 	cPtr->ddc_mask = 0x1F;         /* GPIO 0-4 */
-	read_fr(0x0B,FR0B);
+	FR0B = cPtr->readFR(cPtr, 0x0B);
 	if (!(FR0B & 0x10))      /* GPIO 2 is used as 32 kHz input */
 	    cPtr->ddc_mask &= 0xFB;      
 	if (cPtr->Bus == ChipsVLB) /* GPIO 3-7 are used as address bits */
@@ -61,6 +59,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
 	break;
     case CHIPS_CT65554:
     case CHIPS_CT65555:
+    case CHIPS_CT68554:
 	cPtr->ddc_mask = 0x0F;        /* GPIO 0-3 */
 	break;
     case CHIPS_CT69000:
@@ -80,9 +79,9 @@ chips_ddc1(ScrnInfoPtr pScrn)
     }
 
     /* set GPIO 0,1 to read if available */
-    write_fr(0x0C, (FR0C & mask_c) | (~mask_c & 0x90));
+    cPtr->writeFR(cPtr, 0x0C, (FR0C & mask_c) | (~mask_c & 0x90));
     /* set remaining GPIO to read */
-    write_xr(0x62,0);
+    cPtr->writeXR(cPtr, 0x62, 0x00);
 
     val = chips_ddc1Read(pScrn);
     for (i = 0; i < 70; i++) {
@@ -99,8 +98,8 @@ chips_ddc1(ScrnInfoPtr pScrn)
 				  chips_ddc1Read));
 
     /* restore */
-    write_fr(0x0C, FR0C);
-    write_xr(0x62, XR62);
+    cPtr->writeFR(cPtr, 0x0C, FR0C);
+    cPtr->writeXR(cPtr, 0x62, XR62);
 }
 
 static void
@@ -109,16 +108,16 @@ chips_I2CGetBits(I2CBusPtr b, int *clock, int *data)
     CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
     unsigned char FR0C, XR62, XR63, val;
 
-    read_fr(0x0C,FR0C);
+    FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
     if (pI2C_c->i2cDataBit & 0x01 || pI2C_c->i2cClockBit & 0x01)
 	FR0C = (FR0C & 0xE7) | 0x10;
     if (pI2C_c->i2cDataBit & 0x02 || pI2C_c->i2cClockBit & 0x02)
 	FR0C = (FR0C & 0x3F) | 0x80;
-    read_xr(0x62,XR62);
+    XR62 = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x62);
     XR62 &= (~pI2C_c->i2cDataBit) & (~pI2C_c->i2cClockBit);
-    write_fr(0x0C,FR0C);
-    write_xr(0x62,XR62);
-    read_xr(0x63,val);
+    pI2C_c->cPtr->writeFR(pI2C_c->cPtr, 0x0C, FR0C);
+    pI2C_c->cPtr->writeXR(pI2C_c->cPtr, 0x62, XR62);
+    val = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x63);
     *clock = (val & pI2C_c->i2cClockBit) != 0;
     *data  = (val & pI2C_c->i2cDataBit) != 0;
 }
@@ -129,19 +128,19 @@ chips_I2CPutBits(I2CBusPtr b, int clock, int data)
     CHIPSI2CPtr pI2C_c = (CHIPSI2CPtr) (b->DriverPrivate.ptr);  
     unsigned char FR0C, XR62, XR63, val;
 
-    read_fr(0x0C,FR0C);
+    FR0C = pI2C_c->cPtr->readFR(pI2C_c->cPtr, 0x0C);
     if (pI2C_c->i2cDataBit & 0x01 || pI2C_c->i2cClockBit & 0x01)
 	FR0C |=  0x18;
     if (pI2C_c->i2cDataBit & 0x02 || pI2C_c->i2cClockBit & 0x02)
 	FR0C |=  0xC0;
-    read_xr(0x62,XR62);
+    XR62 = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x62);
     XR62 |= (pI2C_c->i2cDataBit | pI2C_c->i2cClockBit);
-    write_fr(0x0C,FR0C);
-    write_xr(0x62,XR62);
-    read_xr(0x63,val);
+    pI2C_c->cPtr->writeFR(pI2C_c->cPtr, 0x0C, FR0C);
+    pI2C_c->cPtr->writeXR(pI2C_c->cPtr, 0x62, XR62);
+    val = pI2C_c->cPtr->readXR(pI2C_c->cPtr, 0x63);
     val = (val & ~pI2C_c->i2cClockBit) | (clock ? pI2C_c->i2cClockBit : 0);
     val = (val & ~pI2C_c->i2cDataBit) | (data ? pI2C_c->i2cDataBit : 0);
-    write_xr(0x63,val);
+    pI2C_c->cPtr->writeXR(pI2C_c->cPtr, 0x63, val);
 }
 
 
@@ -161,7 +160,8 @@ chips_i2cInit(ScrnInfoPtr pScrn)
     I2CPtr->I2CPutBits = chips_I2CPutBits;
     I2CPtr->I2CGetBits = chips_I2CGetBits;
     I2CPtr->DriverPrivate.ptr = (pointer)xalloc(sizeof(CHIPSI2CRec));
-
+    ((CHIPSI2CPtr)(I2CPtr->DriverPrivate.ptr))->cPtr = cPtr;
+    
     if (!xf86I2CBusInit(I2CPtr))
 	return FALSE;
     
@@ -183,7 +183,7 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
     switch (cPtr->Chipset) {
     case CHIPS_CT65550:
 	bits = 0x1F;         /* GPIO 0-4 */
-	read_fr(0x0B,FR0B);
+	FR0B = cPtr->readFR(cPtr, 0x0B);
 	if (!(FR0B & 0x10))      /* GPIO 2 is used as 32 kHz input */
 	    bits &= 0xFB;      
 	pI2C_c->i2cDataBit = 0x01;
@@ -193,6 +193,7 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 	break;
     case CHIPS_CT65554:
     case CHIPS_CT65555:
+    case CHIPS_CT68554:
 	bits = 0x0F;        /* GPIO 0-3 */
 	pI2C_c->i2cDataBit = 0x04;
 	pI2C_c->i2cClockBit = 0x08;

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.43 1998/11/29 10:50:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.44 1998/12/13 07:37:48 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -624,6 +624,24 @@ void UseMsg()
     ddxUseMsg();
 }
 
+/*  This function performs a rudimentary sanity check
+ *  on the display name passed in on the command-line,
+ *  since this string is used to generate filenames.
+ *  It is especially important that the display name
+ *  not contain a "/" and not start with a "-".
+ *                                            --kvajk
+ */
+int VerifyDisplayName( d )
+char *d;
+{
+    if ( d == (char *)0 ) return( 0 );  /*  null  */
+    if ( *d == '\0' ) return( 0 );  /*  empty  */
+    if ( *d == '-' ) return( 0 );  /*  could be confused for an option  */
+    if ( *d == '.' ) return( 0 );  /*  must not equal "." or ".."  */
+    if ( strchr(d, '/') != (char *)0 ) return( 0 );  /*  very important!!!  */
+    return( 1 );
+}
+
 /*
  * This function parses the command line. Handles device-independent fields
  * and allows ddx to handle additional fields.  It is not allowed to modify
@@ -659,6 +677,11 @@ char	*argv[];
 	    /* initialize display */
 	    display = argv[i];
 	    display++;
+            if( ! VerifyDisplayName( display ) ) {
+                ErrorF("Bad display name: %s\n", display);
+                UseMsg();
+                exit(1);
+            }
 	}
 #ifdef AMOEBA
         else if (strchr(argv[i], ':') != NULL) {
@@ -668,6 +691,11 @@ char	*argv[];
             if ((p = strchr(argv[i], ':')) != NULL) {
                 *p++ = '\0';
                 display = p;
+                if( ! VerifyDisplayName( display ) ) {
+                    ErrorF("Bad display name: %s\n", display);
+                    UseMsg();
+                    exit(1);
+                }
             }
         } else if (strcmp( argv[i], "-tcp") == 0) {
             if (++i < argc)
@@ -844,6 +872,11 @@ char	*argv[];
 #ifdef SERVER_LOCK
 	else if ( strcmp ( argv[i], "-nolock") == 0)
 	{
+#if !defined(WIN32) && !defined(__EMX__)
+	  if (getuid() != 0)
+	    ErrorF("Warning: the -nolock option can only be used by root\n");
+	  else
+#endif
 	    nolock = TRUE;
 	}
 #endif

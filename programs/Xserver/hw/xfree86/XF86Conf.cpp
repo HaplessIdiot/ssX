@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.31 1998/09/20 14:40:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.32 1998/12/05 14:40:01 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -52,6 +52,7 @@ XCOMM Multiple FontPath entries are allowed (which are concatenated together),
 XCOMM as well as specifying multiple comma-separated entries in one FontPath
 XCOMM command (or a combination of both methods)
 
+    FontPath	LOCALFONTPATH
     FontPath	MISCFONTPATH
     FontPath	DPI75USFONTPATH
     FontPath	DPI100USFONTPATH

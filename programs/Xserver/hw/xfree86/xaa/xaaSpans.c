@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.6 1998/12/06 06:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.7 1998/12/13 05:32:58 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -54,7 +54,11 @@ XAAFillSpans(
 	type = (*infoRec->StippledFillChooser)(pGC);
 	break;
     case FillOpaqueStippled:
-	if(pGC->fgPixel == pGC->bgPixel)
+	if((pGC->fgPixel == pGC->bgPixel) && infoRec->FillSpansSolid &&
+                CHECK_PLANEMASK(pGC,infoRec->FillSpansSolidFlags) &&
+                CHECK_ROP(pGC,infoRec->FillSpansSolidFlags) &&
+                CHECK_ROPSRC(pGC,infoRec->FillSpansSolidFlags) &&
+                CHECK_FG(pGC,infoRec->FillSpansSolidFlags))
 	    type = DO_SOLID;
 	else
 	    type = (*infoRec->OpaqueStippledFillChooser)(pGC);

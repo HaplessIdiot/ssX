@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/pandix/main.c,v 1.5 1998/12/13 05:33:04 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -489,6 +489,7 @@ main(argc, argv)
 
 	if (dispatchException & DE_TERMINATE)
 	{
+	    CloseWellKnownConnections();
 	    OsCleanup();
 	    ddxGiveUp();
 	    break;

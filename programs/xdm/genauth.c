@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.6 1998/10/04 09:40:55 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.7 1998/10/10 15:25:35 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -69,6 +69,7 @@ longtochars (long l, unsigned char *c)
 
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
+#ifndef ARC4_RANDOM
 static
 sumFile (char *name, long sum[2])
 {
@@ -104,10 +105,36 @@ sumFile (char *name, long sum[2])
     close (fd);
     return ret_status;
 }
+#endif
 
 static
 InitXdmcpWrapper (void)
 {
+
+#ifdef	ARC4_RANDOM
+    u_int32_t sum[2];
+
+    sum[0] = arc4random();
+    sum[1] = arc4random();
+    *(u_char *)sum = 0;
+
+    _XdmcpWrapperToOddParity(sum, key);
+
+#elif DEV_RANDOM
+    int fd;
+    unsigned char   tmpkey[8];
+    
+    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
+	if (read(fd, tmpkey, 8) == 8) {
+	    tmpkey[0] = 0;
+	    _XdmcpWrapperToOddParity(tmpkey, key);
+	    close(fd);
+	    return;	
+	} else {
+	    close(fd);
+	}
+    }
+#else    
     long	    sum[2];
     unsigned char   tmpkey[8];
 
@@ -119,6 +146,7 @@ InitXdmcpWrapper (void)
     longtochars (sum[1], tmpkey+4);
     tmpkey[0] = 0;
     _XdmcpWrapperToOddParity (tmpkey, key);
+#endif
 }
 
 #endif

@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.78 1998/09/27 04:43:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.79 1998/12/13 05:32:26 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -38,8 +38,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
-#define HasNdbm         	YES
-#define HasPutenv       	YES
+#define HasNdbm			YES
+#define HasPutenv		YES
 #define HasSnprintf		YES
 #define HasBSD44Sockets 	YES
 #define HasDlopen		YES
@@ -47,7 +47,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasLibCrypt		YES
 #endif
 #ifndef HasShm
-# define HasShm          	YES
+# define HasShm			YES
 #endif
 #define HasWChar32		YES
 #define HasUsableFileMmap	YES
@@ -161,14 +161,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #endif
 
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2) || \
-    (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 2)
 /*
- * FreeBSD 2.2.5 or later.
- *
- * Don't make any assumptions about the version of Tcl in the base OS.
- * These settings assume that the tcl-7.6 and tk-4.2 packages have been
- * installed.
+ * For FreeBSD 2.2.5 and later don't make any assumptions about the version
+ * of Tcl in the base OS.
  *
  * Note the static libs in some versions of the FreeBSD packages are
  * broken.  The symptom of this is unresolved symbols when linking
@@ -177,42 +172,73 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * definitions of XF86SetupUsesStatic{Tcl,Tk}.  The latter is not
  * recommended for binaries that are going to be redistributed.
  */
+
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2) || \
+    (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 5)
+/*
+ * For 2.2.6, 3.0 and later the defaults assume that the tcl-8.0 and tk-8.0
+ * packages have been installed.  XF86Setup is much faster with 8.x than
+ * with earlier versions.
+ *
+ */
+
 #ifndef TkLibName
-#define TkLibName               tk42
+#define TkLibName		tk80
 #endif
 #ifndef TkIncDir
-#define TkIncDir                /usr/local/include/tk4.2
+#define TkIncDir		/usr/local/include/tk8.0
 #endif
 #ifndef TclLibName
-#define TclLibName              tcl76
+#define TclLibName		tcl80
 #endif
 #ifndef TclIncDir
-#define TclIncDir               /usr/local/include/tcl7.6
+#define TclIncDir		/usr/local/include/tcl8.0
 #endif
-#else
-#if OSMajorVersion == 2 && OSMinorVersion == 2
+
+#elif OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion > 2
+/*
+ * For 2.2.5, the defaults assume that the tcl-7.6 and tk-4.2
+ * packages have been installed.
+ */
+
+#ifndef TkLibName
+#define TkLibName		tk42
+#endif
+#ifndef TkIncDir
+#define TkIncDir		/usr/local/include/tk4.2
+#endif
+#ifndef TclLibName
+#define TclLibName		tcl76
+#endif
+#ifndef TclIncDir
+#define TclIncDir		/usr/local/include/tcl7.6
+#endif
+
+#elif OSMajorVersion == 2 && OSMinorVersion == 2
 /*
  * FreeBSD 2.2 prior to 2.2.5
+ *
+ * tcl is part of the base OS.
  *
  * Note: the tk-4.1 package for FreeBSD doesn't have the static lib, so
  * you'll have to build it yourself, or change the definition of
  * XF86SetupUsesStaticTk.
  */
 #ifndef TkLibName
-#define TkLibName               tk41
+#define TkLibName		tk41
 #endif
 #ifndef TclLibName
-#define TclLibName              tcl
+#define TclLibName		tcl
 #endif
 #ifndef TclLibDir
-#define TclLibDir               /usr/lib
+#define TclLibDir		/usr/lib
 #endif
 #ifndef TclIncDir
-#define TclIncDir               /usr/include
+#define TclIncDir		/usr/include
 #endif
 /* FreeBSD 2.2 has libtcl in the base system */
 #ifndef XF86SetupUsesStaticTcl
-#define XF86SetupUsesStaticTcl  NO
+#define XF86SetupUsesStaticTcl	NO
 #endif
 
 #else /* ! 2.2 or later */
@@ -243,7 +269,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define TclLibName		tcl74
 #endif
 
-#endif
 #endif
 #endif
 
@@ -303,8 +328,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define PreIncDir	/usr/include
 #endif
 
-#define TroffCmd        groff -Tps
-#define SetTtyGroup     YES
+#define TroffCmd	groff -Tps
+#define NroffCmd	groff -Tascii
+#define SetTtyGroup	YES
 
 #ifndef ExtraFilesToClean
 # define ExtraFilesToClean *.core
@@ -322,7 +348,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * Compress manual pages
  */
 #ifndef CompressManPages
-# define CompressManPages        YES
+# define CompressManPages	YES
 #endif
 
 #if CompressManPages
@@ -333,37 +359,37 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
    COMPRESSMANCMD = CompressManCmd
 
 #ifndef InstallManPageLong
-#define InstallManPageLong(file,destdir,dest)                           @@\
-install.man:: file.man                                                  @@\
-	MakeDir($(DESTDIR)destdir)                                      @@\
-	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*                      @@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man \                        @@\
-          $(DESTDIR)destdir/dest.$(MANSUFFIX)                           @@\
+#define InstallManPageLong(file,destdir,dest)				@@\
+install.man:: file.man							@@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	  $(DESTDIR)destdir/dest.$(MANSUFFIX)				@@\
 	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.$(MANSUFFIX)
 #endif
 
 #ifndef InstallGenManPageLong
-#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
-install.man:: file.man                                                  @@\
-	MakeDir($(DESTDIR)destdir)                                      @@\
-	$(RM) $(DESTDIR)destdir/dest.suffix*                            @@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man \                        @@\
-          $(DESTDIR)destdir/dest.suffix                                 @@\
+#define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+install.man:: file.man							@@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
+	$(INSTALL) -c $(INSTMANFLAGS) file.man \			@@\
+	  $(DESTDIR)destdir/dest.suffix					@@\
 	-$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix
 #endif
 
 #ifndef InstallMultipleMan
-#define InstallMultipleMan(list,dest)                                   @@\
-install.man:: list                                                      @@\
+#define InstallMultipleMan(list,dest)					@@\
+install.man:: list							@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
-	for i in list; do \                                             @@\
-	        (set -x; \                                              @@\
-	        MNAME=`echo $$i | cut -f1 -d.`; \			@@\
-	        $(RM) $(DESTDIR)dest/$${MNAME}*; \                      @@\
-	        $(INSTALL) -c $(INSTMANFLAGS) $$i \                     @@\
-		  $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \              @@\
-	        $(COMPRESSMANCMD) $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX)); \  @@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \						@@\
+		(set -x; \						@@\
+		MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
+		$(INSTALL) -c $(INSTMANFLAGS) $$i \			@@\
+		  $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \		@@\
+		$(COMPRESSMANCMD) $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX)); \ @@\
 	done
 #endif
 
@@ -371,13 +397,13 @@ install.man:: list                                                      @@\
  * InstallManPageAliases - install soft links for aliases.
  */
 #ifndef InstallManPageAliases
-#define InstallManPageAliases(file,destdir,aliases)                     @@\
-install.man::                                                           @@\
+#define InstallManPageAliases(file,destdir,aliases)			@@\
+install.man::								@@\
 	@(SUFFIX=`echo $(DESTDIR)destdir/file.* | sed -e 's,.*/[^\.]*.,,'`; \ @@\
-	for i in aliases; do (set -x; \                                 @@\
-	$(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-	(cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
-	$$i.$${SUFFIX})); \                                             @@\
+	for i in aliases; do (set -x; \					@@\
+	$(RM) $(DESTDIR)destdir/$$i.*; \				@@\
+	(cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \			@@\
+	$$i.$${SUFFIX})); \						@@\
 	done)
 #endif
 
@@ -385,7 +411,7 @@ install.man::                                                           @@\
  * InstallGenManPageAliases - install soft links for aliases.
  */
 #ifndef InstallGenManPageAliases
-#define InstallGenManPageAliases(file,destdir,suffix,aliases)              @@\
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
 	InstallManPageAliases(file,destdir,aliases)
 #endif
 #endif

@@ -1,13 +1,8 @@
 /************************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +10,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -46,7 +41,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.34 94/04/17 20:25:47 rws Exp $ */
+/* $TOG: inputstr.h /main/29 1998/02/09 14:28:54 kaleb $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -60,7 +55,7 @@ SOFTWARE.
 #define SameClient(obj,client) \
 	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
 
-#define MAX_DEVICES	9
+#define MAX_DEVICES	20
 
 #define EMASKSIZE	MAX_DEVICES
 
@@ -130,8 +125,6 @@ typedef struct _KeyClassRec {
     unsigned short	state;
     unsigned short	prev_state;
 #ifdef XKB
-    int			keymapSerial;
-    int			ddxSerial;
     struct _XkbSrvInfo *xkbInfo;
 #endif
 } KeyClassRec, *KeyClassPtr;
@@ -161,6 +154,9 @@ typedef struct _ButtonClassRec {
     Mask		motionMask;
     CARD8		down[DOWN_LENGTH];
     CARD8		map[MAP_LENGTH];
+#ifdef XKB
+    union _XkbAction *	xkb_acts;
+#endif
 } ButtonClassRec, *ButtonClassPtr;
 
 typedef struct _FocusClassRec {
@@ -188,6 +184,9 @@ typedef struct _KbdFeedbackClassRec {
     KbdCtrlProcPtr	CtrlProc;
     KeybdCtrl	 	ctrl;
     KbdFeedbackPtr	next;
+#ifdef XKB
+    struct _XkbSrvLedInfo *xkb_sli;
+#endif
 } KbdFeedbackClassRec;
 
 typedef struct _PtrFeedbackClassRec {
@@ -219,6 +218,9 @@ typedef struct _LedFeedbackClassRec {
     LedCtrlProcPtr	CtrlProc;
     LedCtrl	 	ctrl;
     LedFeedbackPtr	next;
+#ifdef XKB
+    struct _XkbSrvLedInfo *xkb_sli;
+#endif
 } LedFeedbackClassRec;
 
 /* states for devices */
@@ -281,6 +283,9 @@ typedef struct _DeviceIntRec {
     StringFeedbackPtr	stringfeed;
     BellFeedbackPtr	bell;
     LedFeedbackPtr	leds;
+#ifdef XKB
+    struct _XkbInterest *	xkb_interest;
+#endif
 } DeviceIntRec;
 
 typedef struct {
@@ -290,6 +295,8 @@ typedef struct {
     DeviceIntPtr	keyboard;	/* the main one for the server */
     DeviceIntPtr	pointer;
 } InputInfo;
+
+extern InputInfo inputInfo;
 
 /* for keeping the events for devices grabbed synchronously */
 typedef struct _QdEvent *QdEventPtr;

@@ -69,7 +69,18 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.3 1996/12/31 07:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.4 1998/10/04 09:37:30 dawes Exp $ */
+
+/*      
+ * For XFree86 3.3.3:  
+ *      
+ * As a *quick* way of preventing some buffers overflowing onto the stack,
+ * they have been made static.  There are potential problems with
+ * PsOutRec.Buf overflowing too which should be investigated as part of a
+ * review of this code, but that is at least always allocated with malloc
+ * and shouldn't pose an immediate stack trashing problem.
+ *
+ */
 
 #include <stdlib.h>
 #include "os.h"
@@ -379,7 +390,7 @@ static void
 S_OutNum(PsOutPtr self, float num)
 {
   int  i;
-  char buf[64];
+  static char buf[64];
   sprintf(buf, "%.3f", num);
   for( i=strlen(buf)-1 ; buf[i]=='0' ; i-- ); buf[i+1] = '\0';
   if( buf[strlen(buf)-1]=='.' ) buf[strlen(buf)-1] = '\0';
@@ -392,7 +403,7 @@ static void
 S_OutStr(PsOutPtr self, char *txt, int txtl)
 {
   int  i, k;
-  char buf[512];
+  static char buf[512];
   for( i=0,k=0 ; i<txtl ; i++ )
   {
     if( (txt[i]>=' ' && txt[i]<='~') &&
@@ -802,7 +813,7 @@ void
 PsOut_TextAttrs(PsOutPtr self, char *fnam, int siz, int iso)
 {
   int       i;
-  char      buf[256];
+  static char      buf[256];
   if( self->FontName && strcmp(fnam, self->FontName)==0 &&
       siz==self->FontSize ) return;
   if( self->FontName ) xfree(self->FontName);
@@ -822,7 +833,7 @@ void
 PsOut_TextAttrsMtx(PsOutPtr self, char *fnam, float *mtx, int iso)
 {
   int       i;
-  char      buf[256];
+  static char      buf[256];
   if( self->FontName && strcmp(fnam, self->FontName)==0 &&
       mtx[0]==self->FontMtx[0] && mtx[1]==self->FontMtx[1] &&
       mtx[2]==self->FontMtx[2] && mtx[3]==self->FontMtx[3] ) return;
@@ -1186,7 +1197,7 @@ PsOut_BeginPattern(PsOutPtr self, void *tag, int w, int h, PsFillEnum type,
   }
   self->Patterns[self->NPatterns].tag  = tag;
   self->Patterns[self->NPatterns].type = type;
-  sprintf(key, "/ %d", (int)tag);
+  sprintf(key, "/ %ld", (long)tag);
   switch(type) {
     case PsTile:   key[1] = 't'; break;
     case PsStip:   key[1] = 's'; break;
@@ -1231,7 +1242,7 @@ PsOut_SetPattern(PsOutPtr self, void *tag, PsFillEnum type)
   for( i=0 ; i<self->NPatterns ; i++ )
     { if( tag==self->Patterns[i].tag && type==self->Patterns[i].type ) break; }
   if( i>=self->NPatterns ) return;
-  sprintf(key, " %d", (int)tag);
+  sprintf(key, " %ld", (long)tag);
   switch(type) {
     case PsTile:   key[0] = 't'; break;
     case PsStip:   key[0] = 's'; break;
@@ -1255,7 +1266,7 @@ PsOut_DownloadType1(PsOutPtr self, char *name, char *fname)
 {
   int     i;
   int     stt;
-  char    buf[256];
+  static char    buf[256];
   FILE   *fp;
 
   for( i=0 ; i<self->NDownloads ; i++ )
