@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XFree86: xc/nls/Compose/en_US.UTF-8,v 1.1 2001/11/02 23:29:28 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/en_US.UTF-8,v 1.2 2002/06/03 20:59:21 dawes Exp $
 XCOMM
 XCOMM latin alphabet
 XCOMM
@@ -482,17 +482,31 @@ XCOMM <Multi_key> <Cyrillic_U> <slash> : "Ұ" Cyrillic_U_straight_bat
 <dead_cedilla> <Cyrillic_zhe> : "җ" U0497
 <dead_cedilla> <Cyrillic_ZHE> : "Җ" U0496
 
+XCOMM Brazilians used to use 'c for ccedilla on us-intl keyboards.
+XCOMM It's already taken, but ccedilla is too common in Portuguese to
+XCOMM use the sequence <Multi_key> <comma> <c>.
+XCOMM <dead_acute> <comma> <c> seems like a reasonable sequence, 
+XCOMM given that <dead_acute> starts some 3-key sequences already.
+<dead_acute> <comma> <c> : "ç" ccedilla
+<dead_acute> <comma> <C> : "�" Ccedilla
+XCOMM since '' is only taken for o and u, use it for cedilla too
+<dead_acute> <dead_acute> <c> : "ç" ccedilla
+<dead_acute> <dead_acute> <C> : "�" Ccedilla
+
 XCOMM dead keys producing accents and the like
 <dead_abovedot> <space> : "˙" abovedot
 <dead_abovedot> <dead_abovedot> : "˙" abovedot
 <dead_abovering> <space> : "°" degree
 <dead_abovering> <dead_abovering> : "°" degree
 <dead_acute> <space> : "'" apostrophe
-<dead_acute> <dead_acute> : "´" acute
+<dead_acute> <comma> <space> : "¸" cedilla
+<dead_acute> <dead_acute> <dead_acute> : "´" acute
+<dead_acute> <dead_acute> <space> : "�" doubleacute
 <dead_caron> <space> : "ˇ" caron
 <dead_caron> <dead_caron> : "ˇ" caron
 <dead_cedilla> <space> : "¸" cedilla
 <dead_cedilla> <dead_cedilla> : "¸" cedilla
+<dead_circumflex> <space> : "^" asciicircum
 <dead_circumflex> <dead_circumflex> : "^" asciicircum
 <dead_diaeresis> <space> : "\"" quotedbl
 <dead_diaeresis> <dead_diaeresis> : "¨" diaeresis
