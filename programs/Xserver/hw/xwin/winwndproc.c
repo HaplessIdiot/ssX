@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.9 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.10 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -313,15 +313,21 @@ winWindowProc (HWND hWnd, UINT message,
        * can remap certain actions to new key codes that do not conflict
        * with the X apps that they are using.  Yeah, that'll take awhile.
        */
-      if (wParam == VK_F4
-	  && (GetKeyState (VK_MENU) & 0x8000))
+      if ((pScreenInfo != NULL) && (
+             (pScreenInfo->fUseWinKillKey && 
+              wParam == VK_F4 &&
+              (GetKeyState (VK_MENU) & 0x8000)) || 
+             (pScreenInfo->fUseUnixKillKey &&
+              wParam == VK_BACK &&
+              (GetKeyState (VK_MENU) & 0x8000) && 
+              (GetKeyState (VK_CONTROL) & 0x8000)))) 
 	{
 	  /*
 	   * Better leave this message here, just in case some unsuspecting
 	   * user enters Alt + F4 and is surprised when the application
 	   * quits.
 	   */
-	  ErrorF ("winWindowProc () - Got VK_F4 && VK_MENU, quitting\n");
+	  ErrorF ("winWindowProc () - Closekey hit, quitting\n");
 	  
 	  /* Tell our message queue to give up */
 	  PostMessage (hWnd, WM_CLOSE, 0, 0);
