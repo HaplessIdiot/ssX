@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.32 2002/08/28 06:41:23 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.33 2002/11/26 06:46:50 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -35,9 +35,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasShm                 YES
 #endif
 #define HasNdbm                 YES
-
+#if OSMajorVersion >= 6
+# define HasNCurses             YES
+#else
+# define HasNCurses             NO
+#endif
 #ifndef HasGroff
 # define HasGroff               YES
+#endif
+#ifndef HasGcc3
+# define HasGcc3                NO
 #endif
 
 /* Thread support */
@@ -116,7 +123,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 /* our cpp isn't in /lib/cpp and early versions don't like -undef */
 #define CppCmd                  /usr/bin/cpp
-#if GccMajorVersion >= 3
+#if HasGcc3
 # define RawCppCmd              CppCmd -undef
 #else
 # define RawCppCmd              CppCmd
@@ -145,13 +152,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifdef PpcDarwinArchitecture
 # define DarwinMachineDefines   -D__powerpc__
-# define OptimizedCDebugFlags   -O2
+# if HasGcc3
+#  define OptimizedCDebugFlags   -Os
+# else
+#  define OptimizedCDebugFlags   -O2
+# endif
 # define ByteOrder              X_BIG_ENDIAN
 #endif /* PpcDarwinArchitecture */
 
 #ifdef i386DarwinArchitecture
 # define DarwinMachineDefines   -D__i386__
-# define OptimizedCDebugFlags   -O2 -fno-strength-reduce
+# if HasGcc3
+#  define OptimizedCDebugFlags   -Os
+# else
+#  define OptimizedCDebugFlags   -O2 -fno-strength-reduce
+# endif
 # define ByteOrder              X_LITTLE_ENDIAN
 #endif /* i386DarwinArchitecture */
 
