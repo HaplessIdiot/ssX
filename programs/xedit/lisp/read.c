@@ -27,10 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.4 2002/02/08 03:54:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.5 2002/02/10 02:50:07 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
+#include "package.h"
 
 /*
  * Protypes
@@ -38,10 +39,10 @@
 static int LispSkipWhiteSpace(LispMac*);
 static LispObj *LispReadList(LispMac*);
 static LispObj *LispReadQuote(LispMac*);
-static LispObj *LispReadKeyword(LispMac*);
 static LispObj *LispReadBackquote(LispMac*);
 static LispObj *LispReadCommaquote(LispMac*);
 static LispObj *LispReadObject(LispMac*);
+static LispObj *LispParseAtom(LispMac*, char*, char*, int, int);
 static LispObj *LispParseNumber(LispMac*, char*, int);
 static int StringInRadix(char*, int);
 static LispObj *LispReadVector(LispMac*);
@@ -74,6 +75,8 @@ char *LispCharNames[] = {
     "Space"
 };
 
+Atom_id Sand, Sor, Snot;
+
 static LispObj lispdot = {LispAtom_t};
 LispObj *DOT = &lispdot;
 
@@ -96,9 +99,6 @@ LispRead(LispMac *mac)
 	    return (NULL);
 	case '\'':
 	    object = LispReadQuote(mac);
-	    break;
-	case ':':
-	    object = LispReadKeyword(mac);
 	    break;
 	case '`':
 	    object = LispReadBackquote(mac);
@@ -286,7 +286,7 @@ LispReadList(LispMac *mac)
 
 #ifdef COMPILE_LAMBDA
     /* if it is a lambda expression, "compile" it at read time */
-    lambda = SYMBOL_P(object) && object->data.atom == mac->lambda_atom;
+    lambda = SYMBOL_P(object) && ATOMID(object) == Slambda;
 #endif
 
     result = cons = CONS(object, NIL);
@@ -362,20 +362,6 @@ LispReadQuote(LispMac *mac)
 }
 
 static LispObj *
-LispReadKeyword(LispMac *mac)
-{
-    LispObj *keyword = LispRead(mac);
-
-    if (INVALID_P(keyword) || !SYMBOL_P(keyword)) {
-	if (mac->discard)
-	    return (NULL);
-	LispDestroy(mac, "READ: illegal keyword");
-    }
-
-    return (KEYWORD(keyword));
-}
-
-static LispObj *
 LispReadBackquote(LispMac *mac)
 {
     LispObj *backquote = LispRead(mac);
@@ -422,23 +408,28 @@ static LispObj *
 LispReadObject(LispMac *mac)
 {
     LispObj *object;
-    char stk[128], *str;
-    int ch, len, back, size, quote, esc;
+    char stk[128], *string, *package, *symbol;
+    int ch, length, backslash, size, quote, unreadable, collon;
 
-    str = stk;
+    package = symbol = string = stk;
     size = sizeof(stk);
-    back = quote = esc = 0;
-    len = 1;
+    backslash = quote = unreadable = collon = 0;
+    length = 0;
 
     ch = LispGet(mac);
     if (ch == '"' || ch == '|')
 	quote = ch;
     else if (ch == '\\')
-	esc = back = 1;
+	unreadable = backslash = 1;
+    else if (ch == ':') {
+	collon = 1;
+	string[length++] = ch;
+	symbol = string + 1;
+    }
     else {
 	if (islower(ch))
 	    ch = toupper(ch);
-	str[len++] = ch;
+	string[length++] = ch;
     }
 
     /* read remaining data */
@@ -448,86 +439,206 @@ LispReadObject(LispMac *mac)
 	if (ch == EOF) {
 	    if (quote) {
 		/* if quote, file ended with an open quoted object */
-		if (str != stk)
-		    LispFree(mac, str);
+		if (string != stk)
+		    LispFree(mac, string);
 		return (NULL);
 	    }
 	    break;
 	}
 
 	if (ch == '\\') {
-	    if (back)
-		back = 0;
+	    if (backslash)
+		backslash = 0;
 	    else if (quote != '|') {
-		back = 1;
+		backslash = 1;
 		if (!quote) {
-		    esc = 1;
+		    unreadable = 1;
 		    continue;
 		}
 		else
 		    continue;
 	    }
 	}
-	else if (back)
-	    back = 0;
+	else if (backslash)
+	    backslash = 0;
 	else if (ch == quote)
 	    break;
-	else if (!quote && !esc) {
+	else if (!quote && !backslash) {
 	    if (islower(ch))
 		ch = toupper(ch);
 	    else if (isspace(ch))
 		break;
 	    /* don't include any of these characters in an atom name */
-	    else if (ch == ')' || ch == '"' || ch == ';' ||
-		     ch == '\'' || ch == '`' || ch == '#' || ch == '|') {
+	    else if (ch == ')' || ch == '"' || ch == ';' || ch == '(' ||
+		     ch == '\'' || ch == '`' || ch == '#' || ch == '|' ||
+		     ch == ',') {
 		LispUnget(mac, ch);
 		break;
 	    }
+	    else if (ch == ':') {
+		if (collon == 0 ||
+		    (collon == 1 && symbol == string + length)) {
+		    ++collon;
+		    symbol = string + length + 1;
+		}
+		else
+		    LispDestroy(mac, "READ: too many collons");
+	    }
 	}
 
-	if (len + 2 >= size) {
-	    if (str == stk) {
+	if (length + 2 >= size) {
+	    if (!quote || quote == '|')
+		/* Only strings with more than sizeof(stk) - 1 bytes!? */
+		LispDestroy(mac, "READ: symbol name too large");
+
+	    if (string == stk) {
 		size = 1024;
-		str = LispMalloc(mac, size);
-		strcpy(str + 1, stk + 1);
+		string = LispMalloc(mac, size);
+		strcpy(string, stk);
 	    }
 	    else {
 		size += 1024;
-		str = LispRealloc(mac, str, size);
+		string = LispRealloc(mac, string, size);
 	    }
 	}
-	str[len++] = ch;
+	string[length++] = ch;
     }
 
     if (mac->discard) {
-	if (str != stk)
-	    LispFree(mac, str);
+	if (string != stk)
+	    LispFree(mac, string);
 
 	return (ch == EOF ? NULL : NIL);
     }
 
-    if (esc || quote == '|')
-	str[0] = str[len++] = '|';
-    str[len] = '\0';
+    string[length] = '\0';
 
     if (quote == '"')
-	object = STRING(str + 1);
-    else if (esc || quote == '|')
-	object = ATOM(str);
-    else if (len == 2 && str[1] == 'T')
-	object = T;
-    else if (len == 2 && str[1] == '.')
-	object = DOT;
-    else if (len == 4 && str[1] == 'N' && str[2] == 'I' && str[3] == 'L')
-	object = NIL;
-    else if (isdigit(str[1]) || str[1] == '.' ||
-	     ((str[1] == '-' || str[1] == '+') && str[2]))
-	object = LispParseNumber(mac, str + 1, 10);
-    else
-	object = ATOM(str + 1);
+	object = STRING(string);
 
-    if (str != stk)
-	LispFree(mac, str);
+    else if (quote == '|' || (unreadable && !collon)) {
+	/* Set unreadable field, this atom needs quoting to be read back */
+	object = ATOM(string);
+	object->data.atom->unreadable = 1;
+    }
+
+    else if (collon) {
+	/* Package specified in object name */
+	symbol[-1] = '\0';
+	if (collon > 1)
+	    symbol[-2] = '\0';
+	object = LispParseAtom(mac, package, symbol,
+			       collon == 2, unreadable || length == 0);
+    }
+
+    /* Check some common symbols */
+    else if (length == 1 && string[0] == 'T')
+	/* The T */
+	object = T;
+
+    else if (length == 1 && string[0] == '.')
+	/* The dot */
+	object = DOT;
+
+    else if (length == 3 &&
+	     string[0] == 'N' && string[1] == 'I' && string[2] == 'L')
+	/* The NIL */
+	object = NIL;
+
+    else if (isdigit(string[0]) || string[0] == '.' ||
+	     ((string[0] == '-' || string[0] == '+') && string[1]))
+	/* Looks like a number */
+	object = LispParseNumber(mac, string, 10);
+
+    else
+	/* A normal atom */
+	object = ATOM(string);
+
+    if (string != stk)
+	LispFree(mac, string);
+
+    return (object);
+}
+
+static LispObj *
+LispParseAtom(LispMac *mac, char *package, char *symbol,
+	      int intern, int unreadable)
+{
+    LispObj *object = NULL;
+    LispPackage *pack = NULL;
+
+    /* If package is empty, it is a keyword */
+    if (package[0] == '\0')
+	pack = mac->keyword;
+
+    else {
+	/* Else, search it in the package list */
+	LispObj *entry = LispFindPackageFromString(mac, package);
+
+	if (entry == NIL)
+	    LispDestroy(mac, "READ: the package %s is not available", package);
+
+	pack = entry->data.package.package;
+    }
+
+    if (pack == mac->pack && intern) {
+	/* Redundant package specification, since requesting a
+	 * intern symbol, create it if does not exist */
+
+	object = ATOM(symbol);
+	if (unreadable)
+	    object->data.atom->unreadable = 1;
+    }
+
+    else if (intern || pack == mac->keyword) {
+	/* Symbol is created, or just fetched from the specified package */
+
+	LispPackage *savepack;
+
+	/* Remember curent package */
+	savepack = mac->pack;
+
+	/* Temporarily set another package */
+	mac->pack = pack;
+
+	/* Get the object pointer */
+	object = ATOM(symbol);
+	if (unreadable)
+	    object->data.atom->unreadable = 1;
+
+	if (pack == mac->keyword) {
+	    /* All keywords are external symbols */
+	    LispExportSymbol(mac, object);
+	    object = KEYWORD(object);
+	}
+
+	/* Restore current package */
+	mac->pack = savepack;
+    }
+
+    else {
+	/* Symbol must exist (and be extern) in the specified package */
+
+	int i;
+	LispAtom *atom;
+
+	for (i = 0; i < STRTBLSZ && object == NULL; i++) {
+	    atom = pack->atoms[i];
+	    while (atom) {
+		if (strcmp(atom->string, symbol) == 0) {
+		    object = atom->object;
+		    break;
+		}
+
+		atom = atom->next;
+	    }
+	}
+
+	/* No object found */
+	if (object == NULL || object->data.atom->ext == 0)
+	    LispDestroy(mac, "READ: no extern symbol %s in package %s",
+			symbol, package);
+    }
 
     return (object);
 }
@@ -774,7 +885,7 @@ LispReadFunction(LispMac *mac)
 	LispDestroy(mac, "READ: illegal function object");
     else if (CONS_P(function)) {
 	if (!SYMBOL_P(CAR(function)) ||
-	    CAR(function)->data.atom != mac->lambda_atom) {
+	    ATOMID(CAR(function)) != Slambda) {
 	    LispDestroy(mac, "READ: %s is not a valid lambda", STROBJ(function));
 	}
 
@@ -959,11 +1070,10 @@ LispReadComplex(LispMac *mac)
     if (INVALID_P(arguments) || !CONS_P(arguments))
 	LispDestroy(mac, "READ: invalid complex-number specification");
 
-    if (mac->protect.length + 2 >= mac->protect.space)
+    if (mac->protect.length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
     mac->protect.objects[mac->protect.length++] = arguments;
-    function = SYMBOL(mac->complex_atom);
-    mac->protect.objects[mac->protect.length++] = function;
+    function = Ocomplex;
     number = APPLY(function, arguments);
     mac->protect.length = protect;
 
@@ -984,10 +1094,9 @@ LispReadPathname(LispMac *mac)
     if (INVALID_P(path))
 	LispDestroy(mac, "READ: invalid pathname specification");
 
-    if (mac->protect.length + 2 >= mac->protect.space)
+    function = Oparse_namestring;
+    if (mac->protect.length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
-    function = SYMBOL(mac->parse_namestring_atom);
-    mac->protect.objects[mac->protect.length++] = function;
     arguments = CONS(path, NIL);
     mac->protect.objects[mac->protect.length++] = arguments;
     path = APPLY(function, arguments);
@@ -1011,7 +1120,7 @@ LispReadStruct(LispMac *mac)
     if (INVALID_P(arguments) || !CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
 	LispDestroy(mac, "READ: invalid structure specification");
 
-    if (mac->protect.length + 2 >= mac->protect.space)
+    if (mac->protect.length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
     mac->protect.objects[mac->protect.length++] = arguments;
 
@@ -1025,8 +1134,7 @@ LispReadStruct(LispMac *mac)
     CAR(arguments) = ATOM(str);
     if (str != stk)
 	LispFree(mac, str);
-    function = SYMBOL(mac->make_struct_atom);
-    mac->protect.objects[mac->protect.length++] = function;
+    function = Omake_struct;
     struc = APPLY(function, arguments);
     mac->protect.length = protect;
 
@@ -1048,9 +1156,9 @@ LispReadArray(LispMac *mac, long dimensions)
     if (INVALID_P(data))
 	LispDestroy(mac, "READ: invalid array specification");
 
-    if (mac->protect.length + 4 >= mac->protect.space)
+    if (mac->protect.length + 2 >= mac->protect.space)
 	LispMoreProtects(mac);
-    initial = KEYWORD(SYMBOL(mac->initial_contents_atom));
+    initial = KEYWORD(Oinitial_contents);
     mac->protect.objects[mac->protect.length++] = initial;
 
     if (dimensions) {
@@ -1075,9 +1183,7 @@ LispReadArray(LispMac *mac, long dimensions)
     else
 	dim = NIL;
 
-    mac->protect.objects[mac->protect.length++] = dim;
-    function = SYMBOL(mac->make_array_atom);
-    mac->protect.objects[mac->protect.length++] = function;
+    function = Omake_array;
     arguments = CONS(dim, CONS(initial, CONS(data, NIL)));
     mac->protect.objects[mac->protect.length++] = arguments;
 
@@ -1133,10 +1239,10 @@ LispReadFeature(LispMac *mac, int with)
 static LispObj *
 LispEvalFeature(LispMac *mac, LispObj *feature)
 {
+    Atom_id test;
     LispObj *object;
 
     if (CONS_P(feature)) {
-	char *test;
 	LispObj *function = CAR(feature), *arguments = CDR(feature);
 
 	if (!SYMBOL_P(function))
@@ -1145,22 +1251,22 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
 	if (!CONS_P(arguments))
 	    LispDestroy(mac, "READ: bad feature test arguments %s",
 			STROBJ(arguments));
-	test = STRPTR(function);
-	if (strcmp(test, "AND") == 0) {
+	test = ATOMID(function);
+	if (test == Sand) {
 	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
 		if (LispEvalFeature(mac, CAR(arguments)) == NIL)
 		    return (NIL);
 	    }
 	    return (T);
 	}
-	else if (strcmp(test, "OR") == 0) {
+	else if (test == Sor) {
 	    for (; CONS_P(arguments); arguments = CDR(arguments)) {
 		if (LispEvalFeature(mac, CAR(arguments)) == T)
 		    return (T);
 	    }
 	    return (NIL);
 	}
-	else if (strcmp(test, "NOT") == 0) {
+	else if (test == Snot) {
 	    if (CONS_P(CDR(arguments)))
 		LispDestroy(mac, "READ: too many arguments to NOT");
 
@@ -1178,10 +1284,12 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
 	LispDestroy(mac, "READ: bad feature specification %s",
 		    STROBJ(feature));
 
+    test = ATOMID(feature);
+
     /* check if specified atom is in the feature list
      * note that all elements of the feature list must be keywords */
     for (object = FEAT; CONS_P(object); object = CDR(object))
-	if (CAR(object)->data.quote == feature)
+	if (ATOMID(CAR(object)->data.quote) == test)
 	    return (T);
 
     /* unknown feature */

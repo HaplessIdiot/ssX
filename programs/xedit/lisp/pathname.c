@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
 
 #include <dirent.h>
 #include <errno.h>
@@ -41,7 +41,9 @@
 /*
  * Initialization
  */
-static LispAtom *Akskip, *Akerror;
+LispObj *Oparse_namestring, *Oerror, *Oabsolute, *Orelative;
+
+Atom_id Serror, Sabsolute, Srelative, Sskip;
 
 /*
  * Implementation
@@ -49,8 +51,16 @@ static LispAtom *Akskip, *Akerror;
 void
 LispPathnameInit(LispMac *mac)
 {
-    Akskip = LispDoGetAtom(mac, "SKIP", 1, 1);
-    Akerror = LispDoGetAtom(mac, "ERROR", 1, 1);
+    Oerror		= STATIC_ATOM("ERROR");
+    Oparse_namestring	= STATIC_ATOM("PARSE-NAMESTRING");
+    Oabsolute		= STATIC_ATOM("ABSOLUTE");
+    Orelative		= STATIC_ATOM("RELATIVE");
+
+    Serror		= ATOMID(Oerror);
+    Sabsolute		= ATOMID(Oabsolute);
+    Srelative		= ATOMID(Orelative);
+
+    Sskip		= GETATOMID("SKIP");
 }
 
 static int
@@ -181,11 +191,11 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 
     if (if_cannot_read != NIL) {
 	if (!KEYWORD_P(if_cannot_read) ||
-	    (if_cannot_read->data.quote->data.atom != Akskip &&
-	     if_cannot_read->data.quote->data.atom != Akerror))
+	    (ATOMID(if_cannot_read->data.quote) != Sskip &&
+	     ATOMID(if_cannot_read->data.quote) != Serror))
 	    LispDestroy(mac, "%s: bad :IF-CANNOT-READ %s",
 			STRFUN(builtin), STROBJ(if_cannot_read));
-	if (if_cannot_read->data.quote->data.atom != Akskip)
+	if (ATOMID(if_cannot_read->data.quote) != Sskip)
 	    cannot_read = NOREAD_SKIP;
 	else
 	    cannot_read = NOREAD_ERROR;
@@ -201,20 +211,18 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not a pathname",
 		    STRFUN(builtin), STROBJ(pathname));
 
-    strncpy(name, STRPTR(pathname), sizeof(name) - 1);
+    strncpy(name, THESTR(pathname), sizeof(name) - 1);
     name[sizeof(name) - 1] = '\0';
     length = strlen(name);
-    if (length < strlen(STRPTR(pathname)))
+    if (length < strlen(THESTR(pathname)))
 	LispDestroy(mac, "%s: pathname too long %s",
 		    STRFUN(builtin), name);
 
-    if (mac->protect.length + 3 >= mac->protect.space)
+    if (mac->protect.length + 2 >= mac->protect.space)
 	LispMoreProtects(mac);
 
-    mac->protect.objects[mac->protect.length++] = arguments =
-	CONS(NIL, NIL);
-    mac->protect.objects[mac->protect.length++] = function =
-	SYMBOL(mac->parse_namestring_atom);
+    mac->protect.objects[mac->protect.length++] = arguments = CONS(NIL, NIL);
+    function = Oparse_namestring;
 
     if (length == 0) {
 	if (getcwd(path, sizeof(path) - 2) == NULL)
@@ -449,7 +457,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 
     if (STRING_P(object)) {
 	LispObj *result, *cons, *cdr;
-	char *name = STRPTR(object), *ptr, *str, data[PATH_MAX + 1],
+	char *name = THESTR(object), *ptr, *str, data[PATH_MAX + 1],
 	      string[PATH_MAX + 1], *namestr, *typestr;
 	int length = strlen(name), alength;
 
@@ -509,9 +517,9 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (defaults != NIL)
 	    defaults = CDR(defaults);	/* don't use defaults for directory */
 	if (*data == PATH_SEP)
-	    cdr = CONS(KEYWORD(SYMBOL(mac->absolute_atom)), NIL);
+	    cdr = CONS(KEYWORD(Oabsolute), NIL);
 	else
-	    cdr = CONS(KEYWORD(SYMBOL(mac->relative_atom)), NIL);
+	    cdr = CONS(KEYWORD(Orelative), NIL);
 	CDR(cons) = CONS(cdr, NIL);
 	cons = CDR(cons);
 	/* directory components */
@@ -546,7 +554,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	    *str++ = '\0';
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
-	namestr = STRING_P(cdr) ? STRPTR(cdr) : "";
+	namestr = STRING_P(cdr) ? THESTR(cdr) : "";
 	CDR(cons) = CONS(cdr, NIL);
 	cons = CDR(cons);
 
@@ -557,7 +565,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	ptr = str;
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
-	typestr = STRING_P(cdr) ? STRPTR(cdr) : "";
+	typestr = STRING_P(cdr) ? THESTR(cdr) : "";
 	CDR(cons) = CONS(cdr, NIL);
 	cons = CDR(cons);
 
@@ -637,7 +645,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(device));
 
     if (directory != NIL) {
-	LispAtom *atom;
+	Atom_id atom;
 
 	if (!CONS_P(directory))
 	    LispDestroy(mac, "%s: bad :DIRECTORY %s",
@@ -645,8 +653,8 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	if (!KEYWORD_P(CAR(directory)))
 	    LispDestroy(mac, "%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
-	atom = CAR(directory)->data.quote->data.atom;
-	if (atom != mac->absolute_atom && atom != mac->relative_atom)
+	atom = ATOMID(CAR(directory)->data.quote);
+	if (atom != Sabsolute && atom != Srelative)
 	    LispDestroy(mac, "%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
     }    
@@ -694,14 +702,14 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     /* string representation */
     length = 0;
     if (directory != NIL) {
-	if (CAR(directory)->data.quote->data.atom == mac->absolute_atom)
+	if (ATOMID(CAR(directory)->data.quote) == Sabsolute)
 	    pathname[length++] = PATH_SEP;
 
 	for (cdr = CDR(directory); CONS_P(cdr); cdr = CDR(cdr)) {
 	    if (!STRING_P(CAR(cdr)))
 		LispDestroy(mac, "%s: bad directory element %s",
 			    STRFUN(builtin), STROBJ(CAR(cdr)));
-	    string = STRPTR(CAR(cdr));
+	    string = THESTR(CAR(cdr));
 	    alength = strlen(string);
 	    if (alength > NAME_MAX)
 		LispDestroy(mac, "%s: directory name too long %s",
@@ -717,9 +725,9 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	int xlength = 0;
 
 	if (type != NIL)
-	    xlength = strlen(STRPTR(type)) + 1;
+	    xlength = strlen(THESTR(type)) + 1;
 
-	string = STRPTR(name);
+	string = THESTR(name);
 	alength = strlen(string);
 	if (alength + xlength > NAME_MAX)
 	    LispDestroy(mac, "%s: file name too long %s",
@@ -732,7 +740,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     if (type != NIL) {
 	if (length + 2 < sizeof(pathname))
 	    pathname[length++] = PATH_TYPESEP;
-	string = STRPTR(type);
+	string = THESTR(type);
 	alength = strlen(string);
 	if (length + alength + 2 > sizeof(pathname))
 	    alength = sizeof(pathname) - length - 2;
@@ -753,7 +761,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 
     /* directory */
     if (directory == NIL)
-	cdr = CONS(SYMBOL(mac->relative_atom), NIL);
+	cdr = CONS(Orelative, NIL);
     else
 	cdr = directory;
     CDR(cons) = CONS(cdr, NIL);
@@ -883,8 +891,8 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 			    STRFUN(builtin), STROBJ(defaults));
 	}
 
-	ppathname = pp = STRPTR(pathname);
-	pdefaults = pd = STRPTR(defaults);
+	ppathname = pp = THESTR(pathname);
+	pdefaults = pd = THESTR(defaults);
 	while (*ppathname && *pdefaults && *ppathname == *pdefaults) {
 	    ppathname++;
 	    pdefaults++;
@@ -977,8 +985,7 @@ Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
     data[length] = '\0';
 
     GCProtect();
-    result = EVAL(CONS(SYMBOL(mac->parse_namestring_atom),
-		       CONS(STRING(data), NIL)));
+    result = EVAL(CONS(Oparse_namestring, CONS(STRING(data), NIL)));
     GCUProtect();
 
     return (result);

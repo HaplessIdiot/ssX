@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -63,9 +63,35 @@
 
 extern char **environ;
 
+LispObj *Oopen, *Oclose, *Oif_does_not_exist;
+
+Atom_id Sprobe, Sinput, Soutput, Sio, Snew_version, Srename,
+	Srename_and_delete, Soverwrite, Sappend, Ssupersede,
+	Screate;
+
 /*
  * Implementation
  */
+void
+LispStreamInit(LispMac *mac)
+{
+    Oopen		= STATIC_ATOM("OPEN");
+    Oclose		= STATIC_ATOM("CLOSE");
+    Oif_does_not_exist	= STATIC_ATOM("IF-DOES-NOT-EXIST");
+
+    Sprobe		= GETATOMID("PROBE");
+    Sinput		= GETATOMID("INPUT");
+    Soutput		= GETATOMID("OUTPUT");
+    Sio			= GETATOMID("IO");
+    Snew_version	= GETATOMID("NEW-VERSION");
+    Srename		= GETATOMID("RENAME");
+    Srename_and_delete	= GETATOMID("RENAME-AND-DELETE");
+    Soverwrite		= GETATOMID("OVERWRITE");
+    Sappend		= GETATOMID("APPEND");
+    Ssupersede		= GETATOMID("SUPERSEDE");
+    Screate		= GETATOMID("CREATE");
+}
+
 LispObj *
 Lisp_Streamp(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -140,7 +166,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     char *string;
     LispObj *stream = NIL;
     int mode, flags, direction, exist, noexist;
-    LispAtom *atom;
+    Atom_id atom;
     LispFile *file;
 
     LispObj *filename, *odirection, *element_type, *if_exists,
@@ -155,8 +181,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 
     if (STRING_P(filename)) {
 	GCProtect();
-	filename = EVAL(CONS(SYMBOL(mac->parse_namestring_atom),
-			     CONS(filename, NIL)));
+	filename = EVAL(CONS(Oparse_namestring, CONS(filename, NIL)));
 	GCUProtect();
     }
     else if (STREAM_P(filename)) {
@@ -172,15 +197,15 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (odirection != NIL) {
 	direction = -1;
 	if (KEYWORD_P(odirection)) {
-	    atom = odirection->data.quote->data.atom;
+	    atom = ATOMID(odirection->data.quote);
 
-	    if (atom == mac->probe_atom)
+	    if (atom == Sprobe)
 		direction = DIR_PROBE;
-	    else if (atom == mac->input_atom)
+	    else if (atom == Sinput)
 		direction = DIR_INPUT;
-	    else if (atom == mac->output_atom)
+	    else if (atom == Soutput)
 		direction = DIR_OUTPUT;
-	    else if (atom == mac->io_atom)
+	    else if (atom == Sio)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
@@ -193,34 +218,34 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (element_type != NIL) {
 	/* just check argument... */
 	if (SYMBOL_P(element_type) &&
-	    element_type->data.atom == mac->character_atom)
+	    ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    element_type->data.quote->data.atom == mac->default_atom)
+	    ATOMID(element_type->data.quote) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :DEFAULT and CHARACTER supported for :ELEMENT-TYPE, not %s",
-			STRFUN(builtin), STROBJ(element_type));
+	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
     if (if_exists != NIL) {
 	exist = -1;
 	if (KEYWORD_P(if_exists)) {
-	    atom = if_exists->data.quote->data.atom;
+	    atom = ATOMID(if_exists->data.quote);
 
-	    if (atom == mac->error_atom)
+	    if (atom == Serror)
 		exist = EXT_ERROR;
-	    else if (atom == mac->new_version_atom)
+	    else if (atom == Snew_version)
 		exist = EXT_NEW_VERSION;
-	    else if (atom == mac->rename_atom)
+	    else if (atom == Srename)
 		exist = EXT_RENAME;
-	    else if (atom == mac->rename_and_delete_atom)
+	    else if (atom == Srename_and_delete)
 		exist = EXT_RENAME_DELETE;
-	    else if (atom == mac->overwrite_atom)
+	    else if (atom == Soverwrite)
 		exist = EXT_OVERWRITE;
-	    else if (atom == mac->append_atom)
+	    else if (atom == Sappend)
 		exist = EXT_APPEND;
-	    else if (atom == mac->supersede_atom)
+	    else if (atom == Ssupersede)
 		exist = EXT_SUPERSEDE;
 	}
 	LispDestroy(mac, "bad :IF-EXISTS %s, at %s",
@@ -232,11 +257,11 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (if_does_not_exist != NIL) {
 	noexist = -1;
 	if (KEYWORD_P(if_does_not_exist)) {
-	    atom = if_does_not_exist->data.quote->data.atom;
+	    atom = ATOMID(if_does_not_exist->data.quote);
 
-	    if (atom == mac->error_atom)
+	    if (atom == Serror)
 		noexist = NOEXT_ERROR;
-	    else if (atom == mac->create_atom)
+	    else if (atom == Screate)
 		noexist = NOEXT_CREATE;
 	}
 	if (noexist == -1)
@@ -249,18 +274,18 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (external_format != NIL) {
 	/* just check argument... */
 	if (SYMBOL_P(external_format) &&
-	    external_format->data.atom == mac->character_atom)
+	    ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(external_format) &&
-	    external_format->data.quote->data.atom == mac->default_atom)
+	    ATOMID(external_format->data.quote) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :DEFAULT and CHARACTER supported for :EXTERNAL-FORMAT, not %s",
-			STRFUN(builtin), STROBJ(external_format));
+	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
+			STRFUN(builtin), Sdefault, Scharacter, STROBJ(external_format));
     }
 
     /* string representation of path-name */
-    string = STRPTR(CAR(filename->data.quote));
+    string = THESTR(CAR(filename->data.quote));
     mode = 0;
 
     /* check what to do, if file already exist */
@@ -712,7 +737,7 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
-    string = STRPTR(ostring);
+    string = THESTR(ostring);
     length = strlen(string);
 
     if (ostart == NIL)
@@ -741,13 +766,13 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
     if (end - start != length) {
 	length = end - start;
 	string = LispMalloc(mac, length + 1);
-	strncpy(string, STRPTR(ostring) + start, length);
+	strncpy(string, THESTR(ostring) + start, length);
 	string[length] = '\0';
     }
 
     result = STRINGSTREAM((unsigned char*)string, STREAM_READ);
 
-    if (string != STRPTR(ostring))
+    if (string != THESTR(ostring))
 	LispFree(mac, string);
 
     return (result);
@@ -765,15 +790,14 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 
     if (element_type != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(element_type) &&
-	    element_type->data.atom == mac->character_atom)
+	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    element_type->data.quote->data.atom == mac->default_atom)
+	    ATOMID(element_type->data.quote) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :DEFAULT and CHARACTER supported for :ELEMENT-TYPE, not %s",
-			STRFUN(builtin), STROBJ(element_type));
+	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
     return (STRINGSTREAM((unsigned char*)"", STREAM_WRITE));
@@ -816,7 +840,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
  */
 {
     char *string;
-    LispAtom *atom;
+    Atom_id atom;
     LispObj *stream = NIL;
     int flags, direction;
     LispFile *error_file;
@@ -842,15 +866,15 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
     if (odirection != NIL) {
 	direction = -1;
 	if (KEYWORD_P(odirection)) {
-	    atom = odirection->data.quote->data.atom;
+	    atom = ATOMID(odirection->data.quote);
 
-	    if (atom == mac->probe_atom)
+	    if (atom == Sprobe)
 		direction = DIR_PROBE;
-	    else if (atom == mac->input_atom)
+	    else if (atom == Sinput)
 		direction = DIR_INPUT;
-	    else if (atom == mac->output_atom)
+	    else if (atom == Soutput)
 		direction = DIR_OUTPUT;
-	    else if (atom == mac->io_atom)
+	    else if (atom == Sio)
 		direction = DIR_IO;
 	}
 	if (direction == -1)
@@ -862,31 +886,29 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 
     if (element_type != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(element_type) &&
-	    element_type->data.atom == mac->character_atom)
+	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    element_type->data.quote->data.atom == mac->default_atom)
+	    ATOMID(element_type->data.quote) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :DEFAULT and CHARACTER supported for :ELEMENT-TYPE, not %s",
-			STRFUN(builtin), STROBJ(element_type));
+	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
+			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
     if (external_format != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(external_format) &&
-	    external_format->data.atom == mac->character_atom)
+	if (SYMBOL_P(external_format) && ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(external_format) &&
-	    external_format->data.quote->data.atom == mac->default_atom)
+	    ATOMID(external_format->data.quote) == Sdefault)
 	    ;	/* do nothing */
 	else
-	    LispDestroy(mac, "%s: only :DEFAULT and CHARACTER supported for :EXTERNAL-FORMAT, not %s",
-			STRFUN(builtin), STROBJ(external_format));
+	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
+			STRFUN(builtin), Sdefault, Scharacter, STROBJ(external_format));
     }
 
-    string = STRPTR(command_line);
+    string = THESTR(command_line);
     program = LispMalloc(mac, sizeof(LispPipe));
     if (direction != DIR_PROBE) {
 	argv[0] = "sh";

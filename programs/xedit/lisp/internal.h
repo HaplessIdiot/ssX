@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.12 2002/01/30 21:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.13 2002/02/08 02:59:29 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -53,13 +53,24 @@
 #define APPLY(fun, args)	LispApply(mac, fun, args)
 #define EXECUTE(string)		LispExecute(mac, string)
 #define SYMBOL(atom)		LispNewSymbol(mac, atom)
-#define ATOM(atom)		LispNewAtom(mac, atom)
-#define ATOM2(atom)		LispNewAtom(mac, LispGetString(mac, atom))
+#define ATOM(string)		LispNewAtom(mac, string)
+
+	/* atom string is a static variable */
+#define ATOM2(string)		LispNewSymbol(mac, LispGetPermAtom(mac, string))
+
+	/* make a gc never released variable with a static string argument */
+#define STATIC_ATOM(string)	LispNewStaticAtom(mac, string)
+
 #define QUOTE(quote)		LispNewQuote(mac, quote)
 #define BACKQUOTE(bquote)	LispNewBackquote(mac, bquote)
 #define COMMA(comma, at)	LispNewComma(mac, comma, at)
 #define REAL(num)		LispNewReal(mac, num)
 #define STRING(str)		LispNewString(mac, str)
+
+	/* string must be from the LispXXX allocation functions,
+	 * and LispMused not yet called on it */
+#define STRING2(str)		LispNewAllocedString(mac, str)
+
 #define CHAR(c)			LispNewCharacter(mac, c)
 #define INTEGER(i)		LispNewInteger(mac, i)
 #define RATIO(n, d)		LispNewRatio(mac, n, d)
@@ -83,10 +94,20 @@
 #define PROTECT(key, list)	LispProtect(mac, key, list)
 #define UPROTECT(key, list)	LispUProtect(mac, key, list)
 
+/* create a new unique static atom string */
+#define GETATOMID(string)	LispGetAtomString(mac, string, 1)
+
 #define	GCProtect()		++gcpro
 #define	GCUProtect()		--gcpro
 
+/* pointer to string of a LispAtom_t object */
 #define	STRPTR(obj)		(obj)->data.atom->string
+
+/* pointer to something unique to all atoms with the same print representation */
+#define ATOMID(obj)		(obj)->data.atom->string
+
+/* pointer to string of a LispString_t object */
+#define THESTR(obj)		(obj)->data.string
 
 #define INT_P(obj)		((obj)->type == LispInteger_t)
 #define FLOAT_P(obj)		((obj)->type == LispReal_t)
@@ -146,6 +167,8 @@
 #define EPSTREAMP(str)		\
 	FSTREAMP((str)->data.stream.source.program->errorp)
 
+#define PACKAGE_P(object)	((object)->type == LispPackage_t)
+
 #define LispFileno(file)	((file)->descriptor)
 
 #define STRFUN(builtin)		STRPTR(CAR(builtin->description))
@@ -192,7 +215,6 @@
 	    mac->env.pairs[i] = NIL;			\
     }
 
-
 /*
  * Types
  */
@@ -202,6 +224,9 @@ typedef struct _LispBuiltin LispBuiltin;
 typedef struct _LispModuleData LispModuleData;
 typedef struct _LispFile LispFile;
 typedef struct _LispString LispString;
+typedef struct _LispPackage LispPackage;
+
+typedef char *Atom_id;
 
 typedef enum _LispType {
 	/* simple types, self contained objects first */
@@ -237,7 +262,8 @@ typedef enum _LispType {
     LispStream_t,
     LispBackquote_t,
     LispComma_t,
-    LispPathname_t
+    LispPathname_t,
+    LispPackage_t
 } LispType;
 
 typedef enum _LispFunType {
@@ -267,6 +293,8 @@ struct _LispObj {
     unsigned int prot: 1;	/* protection for constant/unamed variables */
     union {
 	LispAtom *atom;
+	char *string;		/* will be converted to a more complete
+				 * type at some time*/
 	long integer;
 	double real;
 	LispObj *quote;
@@ -324,17 +352,25 @@ struct _LispObj {
 	    LispObj *eval;
 	    int atlist;
 	} comma;
+	struct {
+	    LispObj *name;
+	    LispObj *nicknames;
+	    LispPackage *package;
+	} package;
     } data;
 };
 
 typedef	LispObj *(*LispFunPtr)(LispMac*, LispBuiltin*);
 
-/* values for LispBuiltin.type */
 struct _LispBuiltin {
     /* these fields must be set */
     LispFunType type;
     LispFunPtr function;
     char *declaration;
+
+    /* this field is optional, set if the function should not be exported */
+    int internal;
+
     /* this field is set at runtime */
     LispObj *description;
 };
@@ -358,8 +394,10 @@ LispObj *LispApply(LispMac*, LispObj*, LispObj*);
 LispObj *LispNew(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, LispAtom*);
 LispObj *LispNewAtom(LispMac*, char*);
+LispObj *LispNewStaticAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
 LispObj *LispNewString(LispMac*, char*);
+LispObj *LispNewAllocedString(LispMac*, char*);
 LispObj *LispNewCharacter(LispMac*, long);
 LispObj *LispNewInteger(LispMac*, long);
 LispObj *LispNewRatio(LispMac*, long, long);
@@ -380,11 +418,11 @@ LispObj *LispNewPipeStream(LispMac*, LispPipe*, LispObj*, int);
 LispObj *LispNewBigInteger(LispMac*, mpi*);
 LispObj *LispNewBigRational(LispMac*, mpr*);
 
-char *LispGetString(LispMac*, char*);
+LispAtom *LispGetAtom(LispMac*, char*);
 
 /* This function does not allocate a copy of it's argument, but the argument
  * itself. The argument string should never change. */
-char *LispGetPermString(LispMac*, char*);
+LispAtom *LispGetPermAtom(LispMac*, char*);
 
 void *LispMalloc(LispMac*, unsigned);
 void *LispCalloc(LispMac*, unsigned, unsigned);
@@ -400,6 +438,8 @@ void LispGC(LispMac*, LispObj*, LispObj*);
 char *LispStrObj(LispMac*, LispObj*);
 
 void LispDestroy(LispMac *mac, char *fmt, ...);
+	/* continuable error */
+void LispContinuable(LispMac *mac, char *fmt, ...);
 void LispMessage(LispMac *mac, char *fmt, ...);
 void LispWarning(LispMac *mac, char *fmt, ...);
 
@@ -420,8 +460,26 @@ void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
 /*
  * Initialization
  */
-extern LispObj *NIL, *T, *DOT;
+extern LispObj *NIL, *T, *DOT, *UNBOUND;
 extern int gcpro;
+
+extern Atom_id Snil, St, Slambda, Skey, Srest, Soptional, Saux;
+extern Atom_id Sand, Sor, Snot;
+extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
+	       Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
+	       Srational, Sfloat, Scomplex, Sopaque, Sdefault;
+
+extern LispObj *Ocomplex, *Oformat, *Ounspecific;
+
+extern LispObj *Omake_array, *Oinitial_contents, *Osetf;
+extern Atom_id Sotherwise, Svariable, Sstructure, Stype, Ssetf;
+
+extern Atom_id Smake_struct, Sstruct_access, Sstruct_store, Sstruct_type;
+extern LispObj *Omake_struct, *Ostruct_access, *Ostruct_store, *Ostruct_type;
+
+extern Atom_id Serror, Sabsolute, Srelative, Sskip;
+extern LispObj *Oparse_namestring, *Oerror, *Oabsolute, *Orelative, *Oopen,
+	       *Oclose, *Oif_does_not_exist;
 
 extern LispFile *Stdout, *Stdin, *Stderr;
 

@@ -27,9 +27,16 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.4 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.7 2002/01/31 04:33:28 paulo Exp $ */
 
 #include "struct.h"
+
+/*
+ * Initialization
+ */
+LispObj *Omake_struct, *Ostruct_access, *Ostruct_store, *Ostruct_type;
+
+Atom_id Smake_struct, Sstruct_access, Sstruct_store, Sstruct_type;
 
 /*
  * Implementation
@@ -40,6 +47,7 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
  defstruct name &rest description
  */
 {
+    int intern;
     LispAtom *atom;
     int i, size, length, slength;
     char *name, *strname, *sname;
@@ -54,7 +62,7 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
     /* get structure name */
     if (!SYMBOL_P(oname) ||
 	/* reserved name(s) */
-	oname->data.atom == mac->array_atom)
+	ATOMID(oname) == Sarray)
 	LispDestroy(mac, "%s: %s cannot be a structure name",
 		    STRFUN(builtin), STROBJ(oname));
 
@@ -93,7 +101,7 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 	    if (CONS_P(right))
 		right = CAR(right);
 
-	    if (left->data.atom == right->data.atom)
+	    if (ATOMID(left) == ATOMID(right))
 		LispDestroy(mac, "%s: only one slot named :%s allowed",
 			    STRFUN(builtin), STRPTR(left));
 	}
@@ -103,22 +111,29 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 
     definition = CONS(oname, description);
     atom = oname->data.atom;
-    if (atom->property.defstruct)
+    if (atom->a_defstruct)
 	LispWarning(mac, "%s: structure %s is being redefined",
 		    STRFUN(builtin), strname);
     LispSetAtomStructProperty(mac, atom, definition, STRUCT_NAME);
+
+    /* check if symbol is exported */
+    intern = !atom->ext;
 
 	    /* MAKE- */
     size = length + 6;
     name = LispMalloc(mac, size);
 
     sprintf(name, "MAKE-%s", strname);
-    atom = ATOM(name)->data.atom;
+    atom = (object = ATOM(name))->data.atom;
     LispSetAtomStructProperty(mac, atom, definition, STRUCT_CONSTRUCTOR);
+    if (!intern)
+	LispExportSymbol(mac, object);
 
     sprintf(name, "%s-P", strname);
-    atom = ATOM(name)->data.atom;
+    atom = (object = ATOM(name))->data.atom;
     LispSetAtomStructProperty(mac, atom, definition, STRUCT_CHECK);
+    if (!intern)
+	LispExportSymbol(mac, object);
 
     for (i = 0, list = description; CONS_P(list); i++, list = CDR(list)) {
 	if (CONS_P(CAR(list)))
@@ -131,8 +146,10 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 	    name = LispRealloc(mac, name, size);
 	}
 	sprintf(name, "%s-%s", strname, sname);
-	atom = ATOM(name)->data.atom;
+	atom = (object = ATOM(name))->data.atom;
 	LispSetAtomStructProperty(mac, atom, definition, i);
+	if (!intern)
+	    LispExportSymbol(mac, object);
     }
 
     LispFree(mac, name);
@@ -164,11 +181,11 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
     field = cons = NIL;		/* fix gcc warning */
 
     if (!SYMBOL_P(struc) ||
-	(atom = struc->data.atom)->property.defstruct == 0 ||
-	 atom->property.structure.function != STRUCT_CONSTRUCTOR)
+	(atom = struc->data.atom)->a_defstruct == 0 ||
+	 atom->property->structure.function != STRUCT_CONSTRUCTOR)
 	LispDestroy(mac, "%s: invalid constructor %s",
 		    STRFUN(builtin), STROBJ(struc));
-    definition = atom->property.structure.definition;
+    definition = atom->property->structure.definition;
 
     ncvt = nfld = 0;
     fields = NIL;
@@ -188,6 +205,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 
     /* create structure, CAR(definition) is structure name */
     for (list = CDR(definition); CONS_P(list); list = CDR(list)) {
+	Atom_id id;
 	LispObj *defvalue = NIL;
 
 	++nfld;
@@ -198,12 +216,12 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 		defvalue = CAR(CDR(field));
 	    field = CAR(field);
 	}
-	atom = field->data.atom;
+	id = ATOMID(field);
 
 	for (object = init; CONS_P(object); object = CDR(object)) {
 	    /* field is a keyword, test above checked it */
 	    field = CAR(object);
-	    if (atom == field->data.quote->data.atom) {
+	    if (id == ATOMID(field->data.quote)) {
 		/* value provided */
 		value = CAR(CDR(object));
 		ncvt++;
@@ -238,13 +256,14 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
      * only the first value will be used. */
     if (nfld > ncvt) {
 	for (list = init; CONS_P(list); list = CDR(list)) {
-	    atom = CAR(list)->data.quote->data.atom;
+	    Atom_id id = ATOMID(CAR(list)->data.quote);
+
 	    for (object = CDR(definition); CONS_P(object);
 		 object = CDR(object)) {
 		field = CAR(object);
 		if (CONS_P(field))
 		    field = CAR(field);
-		if (field->data.atom == atom)
+		if (ATOMID(field) == id)
 		    break;
 	    }
 	    if (!CONS_P(object))
@@ -275,11 +294,11 @@ Lisp_XeditStructAccess(LispMac *mac, LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     if (!SYMBOL_P(name) ||
-	(atom = name->data.atom)->property.defstruct == 0 ||
-	(offset = atom->property.structure.function) < 0)
+	(atom = name->data.atom)->a_defstruct == 0 ||
+	(offset = atom->property->structure.function) < 0)
 	LispDestroy(mac, "%s: invalid argument %s",
 		    STRFUN(builtin), STROBJ(name));
-    definition = atom->property.structure.definition;
+    definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
     if (struc->type != LispStruct_t || struc->data.struc.def != definition)
@@ -308,11 +327,11 @@ Lisp_XeditStructStore(LispMac *mac, LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     if (!SYMBOL_P(name) ||
-	(atom = name->data.atom)->property.defstruct == 0 ||
-	(offset = atom->property.structure.function) < 0)
+	(atom = name->data.atom)->a_defstruct == 0 ||
+	(offset = atom->property->structure.function) < 0)
 	LispDestroy(mac, "%s: invalid argument %s",
 		    STRFUN(builtin), STROBJ(name));
-    definition = atom->property.structure.definition;
+    definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
     if (struc->type != LispStruct_t || struc->data.struc.def != definition)
@@ -339,11 +358,11 @@ Lisp_XeditStructType(LispMac *mac, LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     if (!SYMBOL_P(name) ||
-	(atom = name->data.atom)->property.defstruct == 0 ||
-	(atom->property.structure.function != STRUCT_CHECK))
+	(atom = name->data.atom)->a_defstruct == 0 ||
+	(atom->property->structure.function != STRUCT_CHECK))
 	LispDestroy(mac, "%s: invalid argument %s",
 		    STRFUN(builtin), STROBJ(name));
-    definition = atom->property.structure.definition;
+    definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
     if (struc->type == LispStruct_t && struc->data.struc.def == definition)

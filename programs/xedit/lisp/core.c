@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.20 2002/02/08 02:59:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.21 2002/02/10 02:50:06 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -42,8 +42,30 @@
 extern LispObj *LispRunSetf(LispMac*, LispObj*, LispObj*, LispObj*);
 
 /*
+ * Initialization
+ */
+LispObj *Omake_array, *Oinitial_contents, *Osetf;
+
+Atom_id Sotherwise, Svariable, Sstructure, Stype, Ssetf;
+
+/*
  * Implementation
  */
+void
+LispCoreInit(LispMac *mac)
+{
+    Omake_array		= STATIC_ATOM("MAKE-ARRAY");
+    Oinitial_contents	= STATIC_ATOM("INITIAL-CONTENTS");
+    Osetf		= STATIC_ATOM("SETF");
+
+    Sotherwise		= GETATOMID("OTHERWISE");
+    Svariable		= GETATOMID("VARIABLE");
+    Sstructure		= GETATOMID("STRUCTURE");
+    Stype		= GETATOMID("TYPE");
+
+    Ssetf	= ATOMID(Osetf);
+}
+
 LispObj *
 Lisp_Acons(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -119,14 +141,14 @@ Lisp_Aref(LispMac *mac, LispBuiltin *builtin)
 
     /* accept strings also */
     if (STRING_P(array) && INDEX_P(CAR(subscripts)) && CDR(subscripts) == NIL) {
-	long length = strlen(STRPTR(array));
+	long length = strlen(THESTR(array));
 	long offset = CAR(subscripts)->data.integer;
 
 	if (offset >= length)
 	    LispDestroy(mac, "%s: index %d too large for sequence length %d",
 			STRFUN(builtin), offset, length);
 
-	return (CHAR(*(unsigned char*)(STRPTR(array) + offset)));
+	return (CHAR(*(unsigned char*)(THESTR(array) + offset)));
     }
 
     if (array->type != LispArray_t)
@@ -394,8 +416,7 @@ Lisp_Case(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: %s is not a list",
 			STRFUN(builtin), STROBJ(code));
 	else if (CAR(code) == T ||
-		 (SYMBOL_P(CAR(code)) &&
-		  CAR(code)->data.atom == mac->otherwise_atom)) {
+		 (SYMBOL_P(CAR(code)) && ATOMID(CAR(code)) == Sotherwise)) {
 	    if (CONS_P(CDR(body)))
 		LispDestroy(mac, "%s: %s must be the last clause",
 			    STRFUN(builtin), STROBJ(CAR(code)));
@@ -571,7 +592,7 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
     lambda = LispNewLambda(mac, name, lambda_list, body, LispMacro);
     GCUProtect();
 
-    if (name->data.atom->property.builtin) {
+    if (name->data.atom->a_builtin) {
 	/* only warn when redefining builtin functions */
 	LispWarning(mac, "%s: %s is being redefined",
 		    STRFUN(builtin), STRPTR(name));
@@ -612,7 +633,7 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
     lambda = LispNewLambda(mac, name, lambda_list, body, LispFunction);
     GCUProtect();
 
-    if (name->data.atom->property.builtin) {
+    if (name->data.atom->a_builtin) {
 	/* only warn when redefining builtin functions */
 	LispWarning(mac, "%s: %s is being redefined",
 		    STRFUN(builtin), STRPTR(name));
@@ -736,27 +757,28 @@ Lisp_Documentation(LispMac *mac, LispBuiltin *builtin)
 
     if (SYMBOL_P(symbol)) {
 	LispDocType_t doc_type;
-	LispAtom *atom;
+	Atom_id atom;
 
 	if (!SYMBOL_P(type))
 	    LispDestroy(mac, "%s: %s is not a symbol",
 			STRFUN(builtin), STROBJ(symbol));
-	atom = type->data.atom;
+	atom = ATOMID(type);
 
-	if (atom == mac->variable_atom)
+	if (atom == Svariable)
 	    doc_type = LispDocVariable;
-	else if (atom == mac->function_atom)
+	else if (atom == Sfunction)
 	    doc_type = LispDocFunction;
-	else if (atom == mac->structure_atom)
+	else if (atom == Sstructure)
 	    doc_type = LispDocStructure;
-	else if (atom == mac->type_atom)
+	else if (atom == Stype)
 	    doc_type = LispDocType;
-	else if (atom == mac->setf_atom)
+	else if (atom == Ssetf)
 	    doc_type = LispDocSetf;
 	else {
 	    LispDestroy(mac, "%s: unknown documentation type %s",
 			STRFUN(builtin), STROBJ(type));
-	    doc_type = 0;		/* fix gcc warning */
+	    /*NOTREACHED*/
+	    doc_type = 0;
 	}
 
 	return (LispGetDocumentation(mac, symbol, doc_type));
@@ -805,7 +827,7 @@ Lisp_Elt(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), offset, length);
 
     if (STRING_P(sequence))
-	result = CHAR(*(unsigned char*)(STRPTR(sequence) + offset));
+	result = CHAR(*(unsigned char*)(THESTR(sequence) + offset));
     else {
 	if (sequence->type == LispArray_t)
 	    sequence = sequence->data.array.list;
@@ -929,11 +951,9 @@ Lisp_Error(LispMac *mac, LispBuiltin *builtin)
     MACRO_ARGUMENT2();
 
     GCProtect();
-    string = EVAL(CONS(SYMBOL(mac->format_atom),
-		       CONS(NIL,
-			    CONS(control_string, arguments))));
+    string = EVAL(CONS(Oformat, CONS(NIL, CONS(control_string, arguments))));
     GCUProtect();
-    LispDestroy(mac, "%s", STRPTR(string));
+    LispDestroy(mac, "%s", THESTR(string));
     /*NOTREACHED*/
 
     return (NIL);
@@ -966,9 +986,9 @@ Lisp_Fmakunbound(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not a symbol",
 		    STRFUN(builtin), STROBJ(symbol));
 
-    if (symbol->data.atom->property.function)
+    if (symbol->data.atom->a_function)
 	LispRemAtomFunctionProperty(mac, symbol->data.atom);
-    else if (symbol->data.atom->property.builtin)
+    else if (symbol->data.atom->a_builtin)
 	LispRemAtomBuiltinProperty(mac, symbol->data.atom);
 
     return (symbol);
@@ -1008,9 +1028,9 @@ Lisp_Get(LispMac *mac, LispBuiltin *builtin)
 
     if (!SYMBOL_P(symbol)) {
 	if (symbol == NIL)
-	    symbol = SYMBOL(mac->nil_atom);
+	    symbol = ATOM(Snil);
 	else if (symbol == T)
-	    symbol = SYMBOL(mac->t_atom);
+	    symbol = ATOM(St);
 	else
 	    LispDestroy(mac, "%s: %s is not a symbol",
 			STRFUN(builtin), STROBJ(symbol));
@@ -1041,11 +1061,11 @@ Lisp_Getenv(LispMac *mac, LispBuiltin *builtin)
 
     name = ARGUMENT(0);
 
-    if (!STRING_P(name) && !SYMBOL_P(name))
+    if (!STRING_P(name))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(name));
 
-    value = getenv(STRPTR(name));
+    value = getenv(THESTR(name));
 
     return (value ? STRING(value) : NIL);
 }
@@ -1210,7 +1230,7 @@ Lisp_Length(LispMac *mac, LispBuiltin *builtin)
 	case LispNil_t:
 	    break;
 	case LispString_t:
-	    length = strlen(STRPTR(sequence));
+	    length = strlen(THESTR(sequence));
 	    break;
 	case LispArray_t:
 	    if (sequence->data.array.rank != 1)
@@ -1520,19 +1540,21 @@ Lisp_MakeArray(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: unsupported element type %s",
 			STRFUN(builtin), STROBJ(element_type));
 	else {
-	    if (strcmp(STRPTR(element_type), "ATOM") == 0)
+	    Atom_id atom = ATOMID(element_type);
+
+	    if (atom == Satom)
 		type = LispAtom_t;
-	    else if (strcmp(STRPTR(element_type), "INTEGER") == 0)
+	    else if (atom == Sinteger)
 		type = LispInteger_t;
-	    else if (strcmp(STRPTR(element_type), "CHARACTER") == 0)
+	    else if (atom == Scharacter)
 		type = LispCharacter_t;
-	    else if (strcmp(STRPTR(element_type), "REAL") == 0)
+	    else if (atom == Sreal)
 		type = LispReal_t;
-	    else if (strcmp(STRPTR(element_type), "STRING") == 0)
+	    else if (atom == Sstring)
 		type = LispString_t;
-	    else if (strcmp(STRPTR(element_type), "LIST") == 0)
+	    else if (atom == Slist)
 		type = LispCons_t;
-	    else if (strcmp(STRPTR(element_type), "OPAQUE") == 0)
+	    else if (atom == Sopaque)
 		type = LispOpaque_t;
 	    else
 		LispDestroy(mac, "%s: unsupported element type %s",
@@ -2291,7 +2313,7 @@ Lisp_Provide(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(module));
 
     for (obj = MOD; obj != NIL; obj = CDR(obj)) {
-	if (STRPTR(CAR(obj)) == STRPTR(module))
+	if (THESTR(CAR(obj)) == THESTR(module))
 	    return (module);
     }
 
@@ -2415,16 +2437,11 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
 	length = end2 - start2;
 
     if (STRING_P(sequence1)) {
-	char *string;
-
 	if (!STRING_P(sequence2))
 	    LispDestroy(mac, "%s: cannot store %s in %s",
-			STRFUN(builtin), STROBJ(sequence2), STRPTR(sequence1));
+			STRFUN(builtin), STROBJ(sequence2), THESTR(sequence1));
 
-	string = LispStrdup(mac, STRPTR(sequence1));
-	strncpy(string + start1, STRPTR(sequence2) + start2, length);
-	sequence1->data.atom = LispDoGetAtom(mac, string, 0, 0);
-	LispFree(mac, string);
+	memcpy(THESTR(sequence1) + start1, THESTR(sequence2) + start2, length);
     }
     else {
 	int i;
@@ -2556,15 +2573,15 @@ Lisp_Reverse(LispMac *mac, LispBuiltin *builtin)
 	    int i, length;
 	    char *from, *to;
 
-	    from = STRPTR(sequence);
+	    from = THESTR(sequence);
 	    length = strlen(from);
 	    to = LispMalloc(mac, length + 1);
 	    to[length] = '\0';
 	    from += length - 1;
 	    for (i = 0; i < length; i++)
 		to[i] = from[-i];
-	    result = STRING(to);
-	    LispFree(mac, to);
+	    result = STRING2(to);
+
 	}   return (result);
 	case LispArray_t:
 	    if (sequence->data.array.rank != 1)
@@ -2661,15 +2678,15 @@ Lisp_Setenv(LispMac *mac, LispBuiltin *builtin)
     ovalue = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    if (!STRING_P(oname) && !SYMBOL_P(oname))
+    if (!STRING_P(oname))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(oname));
-    name = STRPTR(oname);
+    name = THESTR(oname);
 
     if (!STRING_P(ovalue))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ovalue));
-    value = STRPTR(ovalue);
+    value = THESTR(ovalue);
 
     setenv(name, value, overwrite != NIL);
     value = getenv(name);
@@ -2765,24 +2782,21 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 
 	    setf = CAR(place);
 	    if (!SYMBOL_P(setf))
-		LispDestroy(mac, "%s: %s is a invalid place",
-			    STRFUN(builtin), STROBJ(place));
+		goto invalid_place;
 
 	    atom = setf->data.atom;
 
-	    if (atom->property.defsetf == 0) {
-		if (atom->property.defstruct &&
-		    atom->property.structure.function >= 0) {
+	    if (atom->a_defsetf == 0) {
+		if (atom->a_defstruct && atom->property->structure.function >= 0) {
 		    /* user didn't provide any special defsetf */
-		    setf = SYMBOL(mac->struct_store_atom);
+		    setf = Ostruct_store;
 		    struc_access = 1;
 		}
 		else
-		    LispDestroy(mac, "%s: %s is a invalid place",
-				STRFUN(builtin), STROBJ(place));
+		    goto invalid_place;
 	    }
 	    else
-		setf = setf->data.atom->property.setf;
+		setf = setf->data.atom->property->setf;
 
 	    if (SYMBOL_P(setf)) {
 		/* just change function call, and append value to arguments */
@@ -2812,11 +2826,16 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 		result = LispRunSetf(mac, setf, place, result);
 	}
 	else
-	    LispDestroy(mac, "%s: %s is a invalid place",
-			STRFUN(builtin), STROBJ(place));
+	    goto invalid_place;
     }
 
     return (result);
+
+invalid_place:
+    LispDestroy(mac, "%s: %s is a invalid place",
+		STRFUN(builtin), STROBJ(place));
+    /*NOTREACHED*/
+    return (NIL);
 }
 
 LispObj *
@@ -2911,10 +2930,9 @@ Lisp_Subseq(LispMac *mac, LispBuiltin *builtin)
     else if (STRING_P(sequence)) {
 	char *string = LispMalloc(mac, seqlength + 1);
 
-	strncpy(string, STRPTR(sequence) + start, seqlength);
+	strncpy(string, THESTR(sequence) + start, seqlength);
 	string[seqlength] = '\0';
-	result = STRING(string);
-	LispFree(mac, string);
+	result = STRING2(string);
     }
     else {
 	LispObj *object;
@@ -2993,16 +3011,16 @@ Lisp_SymbolPlist(LispMac *mac, LispBuiltin *builtin)
 
     if (!SYMBOL_P(symbol)) {
 	if (symbol == NIL)
-	    symbol = SYMBOL(mac->nil_atom);
+	    symbol = ATOM(Snil);
 	else if (symbol == T)
-	    symbol = SYMBOL(mac->t_atom);
+	    symbol = ATOM(St);
 	else
 	    LispDestroy(mac, "%s: %s is not a symbol",
 			STRFUN(builtin), STROBJ(symbol));
     }
 
-    return (symbol->data.atom->property.property ?
-	    symbol->data.atom->property.properties : NIL);
+    return (symbol->data.atom->a_property ?
+	    symbol->data.atom->property->properties : NIL);
 }
 
 LispObj *
@@ -3232,54 +3250,53 @@ Lisp_Typep(LispMac *mac, LispBuiltin *builtin)
     object = ARGUMENT(0);
 
     if (SYMBOL_P(type)) {
-	LispAtom *atom = type->data.atom;
+	Atom_id atom = ATOMID(type);
 
 	if (object->type == LispStruct_t)
-	    result = CAR(object->data.struc.def)->data.atom == type->data.atom ?
-		     T : NIL;
-	else if (type->data.atom->property.defstruct &&
-		 type->data.atom->property.structure.function == STRUCT_NAME)
+	    result = ATOMID(CAR(object->data.struc.def)) == atom ? T : NIL;
+	else if (type->data.atom->a_defstruct &&
+		 type->data.atom->property->structure.function == STRUCT_NAME)
 	    result = NIL;
-	else if (atom == mac->nil_atom)
+	else if (atom == Snil)
 	    result = object == NIL ? T : NIL;
-	else if (atom == mac->t_atom)
+	else if (atom == St)
 	    result = object == T ? T : NIL;
-	else if (atom == mac->atom_atom)
+	else if (atom == Satom)
 	    result = !CONS_P(object) ? T : NIL;
-	else if (atom == mac->symbol_atom)
+	else if (atom == Ssymbol)
 	    result = SYMBOL_P(object) || KEYWORD_P(object) ||
 		     object == NIL || object == T ? T : NIL;
-	else if (atom == mac->real_atom)
+	else if (atom == Sreal)
 	    result = FLOAT_P(object) ? T : NIL;
-	else if (atom == mac->integer_atom)
+	else if (atom == Sinteger)
 	    result = INTEGER_P(object) ? T : NIL;
-	else if (atom == mac->rational_atom)
+	else if (atom == Srational)
 	    result = RATIONAL_P(object) ? T : NIL;
-	else if (atom == mac->cons_atom || atom == mac->list_atom)
+	else if (atom == Scons || atom == Slist)
 	    result = CONS_P(object) ? T : NIL;
-	else if (atom == mac->string_atom)
+	else if (atom == Sstring)
 	    result = STRING_P(object) ? T : NIL;
-	else if (atom == mac->character_atom)
+	else if (atom == Scharacter)
 	    result = CHAR_P(object) ? T : NIL;
-	else if (atom == mac->complex_atom)
+	else if (atom == Scomplex)
 	    result = COMPLEX_P(object) ? T : NIL;
-	else if (atom == mac->vector_atom || atom == mac->array_atom)
+	else if (atom == Svector || atom == Sarray)
 	    result = object->type == LispArray_t ? T : NIL;
-	else if (atom == mac->keyword_atom)
+	else if (atom == Skeyword)
 	    result = object->type == LispKeyword_t ? T : NIL;
-	else if (atom == mac->function_atom)
+	else if (atom == Sfunction)
 	    result = object->type == LispLambda_t ? T : NIL;
-	else if (atom == mac->pathname_atom)
+	else if (atom == Spathname)
 	    result = PATHNAME_P(object) ? T : NIL;
-	else if (atom == mac->opaque_atom)
+	else if (atom == Sopaque)
 	    result = object->type == LispOpaque_t ? T : NIL;
     }
     else if (CONS_P(type)) {
 	if (object->type == LispStruct_t &&
-	    SYMBOL_P(CAR(type)) && CAR(type)->data.atom == mac->struct_atom &&
+	    SYMBOL_P(CAR(type)) && ATOMID(CAR(type)) == Sstruct &&
 	    SYMBOL_P(CAR(CDR(type))) && CDR(CDR(type)) == NIL) {
-	    result = CAR(object->data.struc.def)->data.atom ==
-		     CAR(CDR(type))->data.atom ? T : NIL;
+	    result = ATOMID(CAR(object->data.struc.def)) ==
+		     ATOMID(CAR(CDR(type))) ? T : NIL;
 	}
     }
     else if (type == NIL)
@@ -3467,7 +3484,7 @@ Lisp_Unsetenv(LispMac *mac, LispBuiltin *builtin)
     if (!STRING_P(oname))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(oname));
-    name = STRPTR(oname);
+    name = THESTR(oname);
 
     unsetenv(name);
 
@@ -3504,7 +3521,6 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 
     if (STRING_P(sequence)) {
 	int character;
-	char *string;
 
 	if (!CHAR_P(value))
 	    LispDestroy(mac, "%s: %s is not a character",
@@ -3515,11 +3531,7 @@ Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: cannot represent character %d",
 			STRFUN(builtin), character);
 
-	string = LispStrdup(mac, STRPTR(sequence));
-	string[offset] = character;
-
-	sequence->data.atom = LispDoGetAtom(mac, string, 0, 0);
-	LispFree(mac, string);
+	THESTR(sequence)[offset] = character;
     }
     else {
 	if (sequence->type == LispArray_t)
@@ -3547,9 +3559,9 @@ Lisp_XeditPut(LispMac *mac, LispBuiltin *builtin)
 
     if (!SYMBOL_P(symbol)) {
 	if (symbol == NIL)
-	    symbol = SYMBOL(mac->nil_atom);
+	    symbol = ATOM(Snil);
 	else if (symbol == T)
-	    symbol = SYMBOL(mac->t_atom);
+	    symbol = ATOM(St);
 	else
 	    LispDestroy(mac, "%s: %s is not a symbol",
 			STRFUN(builtin), STROBJ(symbol));
@@ -3576,7 +3588,7 @@ Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
     if (STRING_P(array) && CONS_P(subscripts) &&
 	INDEX_P(CAR(subscripts)) && CDR(subscripts) == NIL &&
 	CHAR_P(value)) {
-	long length = strlen(STRPTR(array));
+	long length = strlen(THESTR(array));
 	long offset = CAR(subscripts)->data.integer;
 
 	if (offset >= length)
@@ -3587,7 +3599,7 @@ Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: cannot represent character %d",
 			STRFUN(builtin), value->data.integer);
 
-	return (CHAR(*(unsigned char*)(STRPTR(array) + offset) =
+	return (CHAR(*(unsigned char*)(THESTR(array) + offset) =
 		value->data.integer));
     }
 
