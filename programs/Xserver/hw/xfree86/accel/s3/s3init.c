@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.47 1995/01/20 04:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.48 1995/01/21 07:15:28 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1690,12 +1690,14 @@ s3Init(mode)
              outb(vgaCRIndex, 0x6D);
 	     if (s3Bpp == 1) {
 	        if (mode->Flags & V_DBLCLK) 
-		   outb(vgaCRReg, 0x01);
+		   outb(vgaCRReg, 0x01); /* 01-04 11-14 21-24 31-34 45-47 55-57 65-67 75-77 */
 	        else
-		   outb(vgaCRReg, 0x03);
+		   outb(vgaCRReg, 0x51); /* ok: 01-07 11-17 21-27 31-37 41-47 51-57 */
 	     }
-	     else
-	        outb(vgaCRReg, 0x00);
+	     else if (s3Bpp == 2)
+	        outb(vgaCRReg, 0x00);	 /* ok: 00-03 10-13 20-24 34-37 44-47 54-57 64-67 */
+	     else /* (s3Bpp == 4) */
+		outb(vgaCRReg, 0x10);	 /* ok: 00-01 10-11 22-23 32-33 54-55 66-67 76-77 */
 	   }
 	 }
       } else {

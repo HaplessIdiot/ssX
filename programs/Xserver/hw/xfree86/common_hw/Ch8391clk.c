@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ch8391clk.c,v 3.0 1995/01/20 04:21:14 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -293,7 +293,7 @@ int clk;
 	 continue;    /* the above numbers are not allowed, skip */
       m0 = (int)((n+8) / ffreq) - 2;
       for (m=m0-1; m<=m0+1; m++) {
-	 if (m<1 || m>32) continue;
+	 if (m<1 || m>31) continue;
 	
 	 diff = (n+8.0) / (m+2) - ffreq;
 	 if (diff<0)

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.65 1995/01/21 07:15:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.66 1995/01/21 12:39:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -646,8 +646,6 @@ s3Probe()
 	 if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
 	    OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	    s3ClockSelectFunc = icd2061ClockSelect;
-	    numClocks = 3;
 	    clockchip_probed = XCONFIG_PROBED;
 	 }
       } while (0);
@@ -966,14 +964,10 @@ s3Probe()
                if (S3_964_SERIES(s3ChipId)) {
                    OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
                    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-                   s3ClockSelectFunc = icd2061ClockSelect;
-                   numClocks = 3;
                    clockchip_probed = XCONFIG_PROBED;
                } else if (S3_928_ONLY(s3ChipId)) {
                    OFLG_SET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions);
                    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-                   s3ClockSelectFunc = icd2061ClockSelect;
-                   numClocks = 3;
                    clockchip_probed = XCONFIG_PROBED;
                }
               }    
@@ -1072,8 +1066,6 @@ s3Probe()
 	     !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
 	    OFLG_SET(CLOCK_OPTION_S3GENDAC,    &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-	    s3ClockSelectFunc = s3GendacClockSelect;
-	    numClocks = 3;
 	    clockchip_probed = XCONFIG_PROBED;
 	 }
       }
@@ -1102,8 +1094,6 @@ s3Probe()
              OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
              OFLG_SET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions);
              OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-             s3ClockSelectFunc = icd2061ClockSelect;
-             numClocks = 3;
              clockchip_probed = XCONFIG_PROBED; 
           } else if  (S3_964_SERIES(s3ChipId)) { 
              /* SPEA Mercury P64 */ 
@@ -1112,8 +1102,6 @@ s3Probe()
              OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
              OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
              OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-             s3ClockSelectFunc = icd2061ClockSelect;
-             numClocks = 3;
              clockchip_probed = XCONFIG_PROBED;
           } 
           break;
@@ -1124,8 +1112,6 @@ s3Probe()
             XCONFIG_PROBED, s3InfoRec.name);
             OFLG_SET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions);
             OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-            s3ClockSelectFunc = icd2061ClockSelect;
-            numClocks = 3;
             clockchip_probed = XCONFIG_PROBED;
           }
           break;
@@ -1458,14 +1444,51 @@ s3Probe()
     * generation ramdacs will have a built in clock (i.e. TI 3025)
     */
 
-   if (DAC_IS_TI3025) {
+   if (DAC_IS_TI3025 && 
+       !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      OFLG_SET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      clockchip_probed = XCONFIG_PROBED;
+   }
+
+   if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
+      int mclk, m, n, p, mcc, cr5c;
       s3ClockSelectFunc = ti3025ClockSelect;
       OFLG_SET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions);
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+
+      outb(vgaCRIndex, 0x5c);
+      cr5c = inb(vgaCRReg);
+      outb(vgaCRReg, cr5c & 0xdf);           /* clear RS4 - use 3020 mode */
+
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+      n = s3InTiIndReg(TI_MCLK_PLL_DATA) & 0x7f;
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x01);
+      m = s3InTiIndReg(TI_MCLK_PLL_DATA) & 0x7f;
+      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x02);
+      p = s3InTiIndReg(TI_MCLK_PLL_DATA) & 0x03;
+      mcc = s3InTiIndReg(TI_MCLK_DCLK_CONTROL);
+      if (mcc & 0x08) 
+	 mcc = (mcc & 0x07) * 2 + 2;
+      else 
+	 mcc = 1;
+      mclk = ((1431818 * ((m+2) * 8)) / (n+2) / (1 << p) / mcc + 50) / 100;
       if (xf86Verbose)
-	 ErrorF("%s %s: Using TI 3025 programmable clock\n",
-		XCONFIG_GIVEN, s3InfoRec.name);
+	 ErrorF("%s %s: Using TI 3025 programmable clock (MCLK %1.3f MHz)\n",
+		clockchip_probed, s3InfoRec.name, mclk / 1000.0);
       numClocks = 3;
+      if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+	 mclk = 55000;
+	 ErrorF("%s %s: Setting MCLK to %1.3f MHz for #9GXE64 Pro\n",
+		XCONFIG_PROBED, s3InfoRec.name, mclk / 1000.0);
+	 Ti3025SetClock(2 * mclk, TI_MCLK_PLL_DATA);
+	 mcc = s3InTiIndReg(TI_MCLK_DCLK_CONTROL);
+	 s3OutTiIndReg(TI_MCLK_DCLK_CONTROL,0x00, (mcc & 0xf0) | 0x08);
+      }
+      if (!s3InfoRec.s3MClk)
+	 s3InfoRec.s3MClk = mclk;
+      outb(vgaCRIndex, 0x5c);
+      outb(vgaCRReg, cr5c);
    } else if (OFLG_ISSET(OPTION_LEGEND, &s3InfoRec.options)) {
       s3ClockSelectFunc = LegendClockSelect;
       numClocks = 32;

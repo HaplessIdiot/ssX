@@ -1,5 +1,5 @@
 /* $XConsortium: s3Ti3020.h,v 1.1 94/03/28 21:14:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.7 1994/10/30 02:57:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.8 1994/10/30 04:44:01 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@paros.com>
  *
@@ -172,6 +172,7 @@
 #define TI_COLOR_KEY_BLUE_LOW	0x36
 #define TI_COLOR_KEY_BLUE_HIGH	0x37
 #define TI_COLOR_KEY_CONTROL	0x38
+#define TI_MCLK_DCLK_CONTROL	0x39    /* 3025 only */
 #define TI_SENSE_TEST		0x3A
 #define TI_TEST_DATA		0x3B
 #define TI_CRC_LOW		0x3C

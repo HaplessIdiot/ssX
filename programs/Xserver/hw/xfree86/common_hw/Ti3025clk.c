@@ -13,19 +13,16 @@
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
-#include <xf86.h>
-#include <xf86_Option.h>
 #include <math.h>
-
-extern ScrnInfoRec s3InfoRec;
 
 #ifdef __STDC__
 static void
-s3ProgramTi3025Clock(unsigned char n, unsigned char m,
+s3ProgramTi3025Clock(int clk, unsigned char n, unsigned char m,
                           unsigned char p)
 #else
 static void
-s3ProgramTi3025Clock(n, m, p)
+s3ProgramTi3025Clock(clk, n, m, p)
+int clk;
 unsigned char n;
 unsigned char m;
 unsigned char p;
@@ -36,35 +33,36 @@ unsigned char p;
     */
    s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
 
-   /*
-    * Now output the clock frequency
-    */
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, n);
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, m);
-   s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, p | TI_PLL_ENABLE);
+   if (clk != TI_MCLK_PLL_DATA) {
+      /*
+       * Now output the clock frequency
+       */
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, n);
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, m);
+      s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, p | TI_PLL_ENABLE);
 
-   /*
-    * And now set up the loop clock for RCLK
-    */
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p>0 ? p : 1);
-   s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
-                TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
+      /*
+       * And now set up the loop clock for RCLK
+       */
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
+      s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p>0 ? p : 1);
+      s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
+		    TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
 
-   /*
-    * Set a standard MCLK (109.7MHz / 2)
-    */
-   if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x14);
-     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x13);
-     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
+      /*
+       * And finally enable the clock
+       */
+      s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
    }
-
-   /*
-    * And finally enable the clock
-    */
-   s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
+   else {
+      /*
+       * Set MCLK
+       */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, n);
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, m);
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, p | 0x80);
+   }
 }
 
 #ifdef __STDC__
@@ -141,5 +139,5 @@ int clk;
 	  best_n, best_m, p);
 #endif
    
-   s3ProgramTi3025Clock(best_n, best_m, p);
+   s3ProgramTi3025Clock(clk, best_n, best_m, p);
 }

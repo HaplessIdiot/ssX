@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.11 1995/01/20 04:20:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.12 1995/01/21 07:15:25 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -101,6 +101,7 @@ extern unsigned char s3SwapBits[256];
 
 static int s3CursGeneration = -1;
 static CursorPtr s3SaveCursors[MAXSCREENS];
+static Bool useSWCursor = FALSE;
 
 extern int s3hotX, s3hotY;
 
@@ -123,6 +124,7 @@ s3CursorInit(pm, pScr)
    
    if (s3CursGeneration != serverGeneration) {
       if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+	 useSWCursor = TRUE;
 	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
       } else if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
          if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,
@@ -134,6 +136,7 @@ s3CursorInit(pm, pScr)
             return FALSE;
       } else if (s3InfoRec.bitsPerPixel == 32 
 		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
+	 useSWCursor = TRUE;
 	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,
@@ -149,6 +152,9 @@ s3CursorInit(pm, pScr)
 void
 s3ShowCursor()
 {
+   if (useSWCursor) 
+      return;
+
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
       s3BtCursorOn();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
@@ -159,6 +165,9 @@ s3ShowCursor()
 void
 s3HideCursor()
 {
+   if (useSWCursor) 
+      return;
+
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
       s3BtCursorOff();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
@@ -180,6 +189,9 @@ s3RealizeCursor(pScr, pCurs)
    int   wsrc, h;
    unsigned short *ram;
    CursorBitsPtr bits = pCurs->bits;
+
+   if (useSWCursor) 
+      return TRUE;
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;
@@ -370,6 +382,9 @@ s3SetCursor(pScr, pCurs, x, y, generateEvent)
    if (!pCurs)
       return;
 
+   if (useSWCursor) 
+      return;
+
    s3hotX = pCurs->bits->xhot;
    s3hotY = pCurs->bits->yhot;
    s3SaveCursors[index] = pCurs;
@@ -392,6 +407,9 @@ s3RestoreCursor(pScr)
    int index = pScr->myNum;
    int x, y;
 
+   if (useSWCursor) 
+      return;
+
    s3ReloadCursor = FALSE;
    miPointerPosition(&x, &y);
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
@@ -407,6 +425,9 @@ s3RepositionCursor(pScr)
      ScreenPtr pScr;
 {
    int x, y;
+
+   if (useSWCursor) 
+      return;
 
    miPointerPosition(&x, &y);
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
@@ -427,6 +448,9 @@ s3MoveCursor(pScr, x, y)
 {
    unsigned char xoff, yoff;
    extern int s3AdjustCursorXPos;
+
+   if (useSWCursor) 
+      return;
 
    if (!xf86VTSema)
       return;
@@ -518,6 +542,9 @@ s3RecolorCursor(pScr, pCurs, displayed)
    ColormapPtr pmap;
    unsigned short packedcolfg, packedcolbg;
    xColorItem sourceColor, maskColor;
+
+   if (useSWCursor) 
+      return;
 
    switch (s3InfoRec.bitsPerPixel) {
      case 8:
