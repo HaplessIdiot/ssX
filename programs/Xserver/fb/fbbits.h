@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.h,v 1.4 2000/01/21 15:06:15 dawes Exp $
+ * $Id: fbbits.h,v 1.5 2000/01/29 18:58:27 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.3 2000/01/21 01:11:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.4 2000/01/21 15:06:15 dawes Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -391,18 +391,18 @@ ARC (FbBits	*dst,
 # define WRITE_ADDR4(n)	    ((n))
 #endif
 
-#define WRITE1(d,n,fg)	    d[WRITE_ADDR1(n)] = (BITS) fg
+#define WRITE1(d,n,fg)	    ((d)[WRITE_ADDR1(n)] = (BITS) (fg))
 
 #ifdef BITS2
-# define WRITE2(d,n,fg)	    *((BITS2 *) &(d[WRITE_ADDR2(n)])) = (BITS2) fg
+# define WRITE2(d,n,fg)	    (*((BITS2 *) &((d)[WRITE_ADDR2(n)])) = (BITS2) (fg))
 #else
-# define WRITE2(d,n,fg)	    WRITE1(d,n+1,WRITE1(d,n,fg))
+# define WRITE2(d,n,fg)	    WRITE1(d,(n)+1,WRITE1(d,n,fg))
 #endif
 
 #ifdef BITS4
-# define WRITE4(d,n,fg)	    *((BITS4 *) &(d[WRITE_ADDR4(n)])) = (BITS4) fg
+# define WRITE4(d,n,fg)	    (*((BITS4 *) &((d)[WRITE_ADDR4(n)])) = (BITS4) (fg))
 #else
-# define WRITE4(d,n,fg)	    WRITE2(d,n+2,WRITE2(d,n,fg))
+# define WRITE4(d,n,fg)	    WRITE2(d,(n)+2,WRITE2(d,n,fg))
 #endif
 
 void

@@ -29,6 +29,8 @@
  *		(i.e., for API internal use only)
  *
  */
+/* $XFree86$ */
+
 #ifndef _XCMSINT_H_
 #define _XCMSINT_H_
 
@@ -117,7 +119,7 @@ typedef struct _XcmsIntensityMap {
      * Structure for storing "registered" color space prefix/ID
      */
 typedef struct _XcmsRegColorSpaceEntry {
-    char *prefix;	/* Color Space prefix (e.g., "CIEXYZ:") */
+    const char *prefix;	/* Color Space prefix (e.g., "CIEXYZ:") */
     XcmsColorFormat id;	/* Color Space ID (e.g., XcmsCIEXYZFormat) */
 } XcmsRegColorSpaceEntry;
 

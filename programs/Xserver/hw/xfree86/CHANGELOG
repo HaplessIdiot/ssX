@@ -1,4 +1,21 @@
 XFree86 3.9.17c (29 January 2000)
+3611. XTextPropertyToTextList doesn't work if incoming XTextProperty has
+      encoding field other than STRING or COMPOUND_TEXT (#3606, Ivan Pascal).
+3610. Fix a bug in the X11 generic converters that prevents them from
+      converting the last character in a string (#3605, Ivan Pascal).
+3609. Fix a bug in _XOpenLC() that was causing unallocated memory to be
+      freed (#3604, Ivan Pascal).
+3608. Xterm patch #124 (#3603, Thomas Dickey).
+3607. Fixes to the character set conversion tables (#3602, Bruno Haible).
+3606. Reduce the data section of libX11 by 30% by proper use of
+      'const' for tables (#3601, Bruno Haible).
+3605. Fix a bug in ConvertUCS4toUTF8() in libX11 (#3600, Bruno Haible).
+3604. Fix some fb macros that gcc accepted but which weren't legal ANSI C
+      (#3599, Keith Packard).
+3603. Update micmap to allow the drivers to specify the r/g/b mask values
+      (3598, Keith Packard).
+3602. Disable the cfbCopyPlane functions on big endian machines, and fix
+      a cfb24 bug (#3597, David Bateman).
 3601. Add a CheckExtension() function that can be called to check if an
       extension has been initialised (David Dawes).
 3600. Allow extensions to specify which other extensions must be
@@ -9375,4 +9392,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.965 2000/01/28 03:27:46 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.966 2000/01/29 17:16:56 dawes Exp $

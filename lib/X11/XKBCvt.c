@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.20 1999/06/06 14:05:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.21 2000/01/25 00:08:52 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -65,18 +65,18 @@ extern char *getenv();
 #endif
 
 /* bit (1<<i) means character is in codeset i at the same codepoint */
-extern unsigned int _Xlatin1[];
+extern unsigned int Const _Xlatin1[];
 
 /* bit (1<<i) means character is in codeset i at the same codepoint */
-extern unsigned int _Xlatin2[];
+extern unsigned int Const _Xlatin2[];
 
 /* maps Cyrillic keysyms to KOI8-R */
-extern unsigned char _Xkoi8_r[];
+extern unsigned char Const _Xkoi8_r[];
 
 /* maps Cyrillic keysyms to KOI8-U */
-extern unsigned char _Xkoi8_u[];
+extern unsigned char Const _Xkoi8_u[];
 
-extern unsigned short _Xkoi8_size;
+extern unsigned short Const _Xkoi8_size;
 
 #define sLatin1         0
 #define sLatin2         1
@@ -101,22 +101,22 @@ extern unsigned short _Xkoi8_size;
 #define sCurrency	32
 
 
-static unsigned long	WantLatin1 = sLatin1;
-static unsigned long	WantLatin2 = sLatin2;
-static unsigned long	WantLatin3 = sLatin3;
-static unsigned long	WantLatin4 = sLatin4;
-static unsigned long	WantLatin5 = sLatin5;
-static unsigned long	WantLatin6 = sLatin6;
-static unsigned long	WantLatin9 = sLatin9;
-static unsigned long	WantKana = sKana;
-static unsigned long	WantX0201 = sX0201;
-static unsigned long	WantArabic = sArabic;
-static unsigned long	WantCyrillic = sCyrillic;
-static unsigned long	WantGreek = sGreek;
-static unsigned long	WantAPL = sAPL;
-static unsigned long	WantHebrew = sHebrew;
-static unsigned long	WantArmenian = sArmenian;
-static unsigned long	WantGeorgian = sGeorgian;
+static unsigned long Const	WantLatin1 = sLatin1;
+static unsigned long Const	WantLatin2 = sLatin2;
+static unsigned long Const	WantLatin3 = sLatin3;
+static unsigned long Const	WantLatin4 = sLatin4;
+static unsigned long Const	WantLatin5 = sLatin5;
+static unsigned long Const	WantLatin6 = sLatin6;
+static unsigned long Const	WantLatin9 = sLatin9;
+static unsigned long Const	WantKana = sKana;
+static unsigned long Const	WantX0201 = sX0201;
+static unsigned long Const	WantArabic = sArabic;
+static unsigned long Const	WantCyrillic = sCyrillic;
+static unsigned long Const	WantGreek = sGreek;
+static unsigned long Const	WantAPL = sAPL;
+static unsigned long Const	WantHebrew = sHebrew;
+static unsigned long Const	WantArmenian = sArmenian;
+static unsigned long Const	WantGeorgian = sGeorgian;
 
 static int 
 #if NeedFunctionPrototypes
@@ -185,7 +185,7 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     if (extra_rtrn)
 	*extra_rtrn= 0;
 
-    keysymSet = *((unsigned long *)priv);
+    keysymSet = *((unsigned long Const *)priv);
     kset = keysymSet&0xffffff;
 
     /* convert "dead" diacriticals for dumb applications */

@@ -49,7 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.5 1999/05/09 10:50:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -268,7 +268,7 @@ _XOpenLC(name)
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
     int len;
     char sinamebuf[256];
-    char* siname;
+    char* siname = sinamebuf;
     char *_XlcMapOSLocaleName();
 #endif
 
@@ -279,9 +279,10 @@ _XOpenLC(name)
      * _XlMapOSLOcaleName will return the same string or a substring 
      * of name, so strlen(name) is okay 
      */
-    if ((len = strlen(name)) < sizeof sinamebuf) siname = sinamebuf;
-    else siname = Xmalloc (len + 1);
-    if (siname == NULL) return NULL;
+    if ((len = strlen(name)) > sizeof sinamebuf) {
+       siname = Xmalloc (len + 1);
+       if (siname == NULL) return NULL;
+    }
     name = _XlcMapOSLocaleName(name, siname);
 #endif
     }

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.1 1999/08/21 13:48:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcppl.c,v 1.2 1999/09/04 09:14:13 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -54,6 +54,10 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 #endif
 #if PSZ == 16
     cfbCopyPlane16to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+		      (unsigned long) ~0L, planemask);
+#endif
+#if PSZ == 24
+    cfbCopyPlane24to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 		      (unsigned long) ~0L, planemask);
 #endif
 #if PSZ == 32

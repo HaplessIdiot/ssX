@@ -6,15 +6,17 @@
 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f 
 60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f 
 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f 
-80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f 
-90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f 
+0080 0081 201a 0192 201e 2026 2020 2021 
+02c6 2030 0160 2039 0152 008d 008e 008f 
+0090 2018 2019 201c 201d 2022 2013 2014 
+02dc 2122 0161 203a 0153 009d 009e 0178 
 a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af 
 b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 ba bb bc bd be bf 
 10d0 10d1 10d2 10d3 10d4 10d5 10d6 10f1 
 10d7 10d8 10d9 10da 10db 10dc 10f2 10dd 
-10de 10df 1ee0 10e1 10e2 10f3 10e3 10e4
+10de 10df 10e0 10e1 10e2 10f3 10e3 10e4
 10e5 10e6 10e7 10e8 10e9 10ea 10eb 10ec
-10ed 10ee 10f4 10ef 10f0 10f5 10f6   e7 
+10ed 10ee 10f4 10ef 10f0 10f5   e6   e7 
   e8   e9   ea   eb   ec   ed   ee   ef 
   f0   f1   f2   f3   f4   f5   f6   f7
   f8   f9   fa   fb   fc   fd   fe   ff 

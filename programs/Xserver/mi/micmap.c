@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.7 1999/01/13 08:31:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.8 1999/04/11 13:11:19 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -370,6 +370,11 @@ miCreateDefColormap(ScreenPtr pScreen)
     return TRUE;
 }
 
+/*
+ * Default true color bitmasks, should be overridden by
+ * driver
+ */
+
 #define _RZ(d) ((d + 2) / 3)
 #define _RS(d) 0
 #define _RM(d) ((1 << _RZ(d)) - 1)
@@ -388,6 +393,7 @@ typedef struct _miVisuals {
     int			visuals;
     int			count;
     int			preferredCVC;
+    Pixel		redMask, greenMask, blueMask;
 } miVisualsRec, *miVisualsPtr;
 
 static int  miVisualPriority[] = {
@@ -411,7 +417,9 @@ miClearVisualTypes()
 
 
 Bool
-miSetVisualTypes(int depth, int visuals, int bitsPerRGB, int preferredCVC)
+miSetVisualTypesAndMasks(int depth, int visuals, int bitsPerRGB, 
+			 int preferredCVC,
+			 Pixel redMask, Pixel greenMask, Pixel blueMask)
 {
     miVisualsPtr   new, *prev, v;
     int		    count;
@@ -419,11 +427,20 @@ miSetVisualTypes(int depth, int visuals, int bitsPerRGB, int preferredCVC)
     new = (miVisualsPtr) xalloc (sizeof *new);
     if (!new)
 	return FALSE;
+    if (!redMask || !greenMask || !blueMask)
+    {
+	redMask = _RM(depth);
+	greenMask = _GM(depth);
+	blueMask = _BM(depth);
+    }
     new->next = 0;
     new->depth = depth;
     new->visuals = visuals;
     new->bitsPerRGB = bitsPerRGB;
     new->preferredCVC = preferredCVC;
+    new->redMask = redMask;
+    new->greenMask = greenMask;
+    new->blueMask = blueMask;
     count = (visuals >> 1) & 033333333333;
     count = visuals - count - ((count >> 1) & 033333333333);
     count = (((count + (count >> 3)) & 030707070707) % 077);	/* HAKMEM 169 */
@@ -431,6 +448,13 @@ miSetVisualTypes(int depth, int visuals, int bitsPerRGB, int preferredCVC)
     for (prev = &miVisuals; (v = *prev); prev = &v->next);
     *prev = new;
     return TRUE;
+}
+
+Bool
+miSetVisualTypes(int depth, int visuals, int bitsPerRGB, int preferredCVC)
+{
+    return miSetVisualTypesAndMasks (depth, visuals, bitsPerRGB,
+				     preferredCVC, 0, 0, 0);
 }
 
 int
@@ -461,6 +485,23 @@ miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
 	return FALSE;
 }
 
+/*
+ * Distance to least significant one bit
+ */
+static int
+maskShift (Pixel p)
+{
+    int	s;
+
+    if (!p) return 0;
+    s = 0;
+    while (!(p & 1))
+    {
+	s++;
+	p >>= 1;
+    }
+    return s;
+}
 
 /*
  * Given a list of formats for a screen, create a list
@@ -566,12 +607,12 @@ miDoInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
 		visual->ColormapEntries = _CE(d);
 		/* fall through */
 	    case StaticColor:
-		visual->redMask =  _RM(d);
-		visual->greenMask =  _GM(d);
-		visual->blueMask =  _BM(d);
-		visual->offsetRed  =  _RS(d);
-		visual->offsetGreen = _GS(d);
-		visual->offsetBlue =  _BS(d);
+		visual->redMask =  visuals->redMask;
+		visual->greenMask =  visuals->greenMask;
+		visual->blueMask =  visuals->blueMask;
+		visual->offsetRed  =  maskShift (visuals->redMask);
+		visual->offsetGreen = maskShift (visuals->greenMask);
+		visual->offsetBlue =  maskShift (visuals->blueMask);
 	    }
 	    vid++;
 	    visual++;

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.14 1999/02/28 11:19:17 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.15 1999/05/15 06:24:47 dawes Exp $ */
 
 
 /*
@@ -1628,8 +1628,8 @@ extern Cursor XCreateGlyphCursor(
     Font		/* mask_font */,
     unsigned int	/* source_char */,
     unsigned int	/* mask_char */,
-    XColor*		/* foreground_color */,
-    XColor*		/* background_color */
+    XColor _Xconst *	/* foreground_color */,
+    XColor _Xconst *	/* background_color */
 #endif
 );
 extern Cursor XCreateFontCursor(

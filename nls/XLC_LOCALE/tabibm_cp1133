@@ -11,12 +11,12 @@
 00a0 0e81 0e82 0e84 0e87 0e88 0eaa 0e8a 
 0e8d 0e94 0e95 0e96 0e97 0e99 0e9a 0e9b 
 0e9c 0e9d 0e9e 0e9f 0ea1 0ea2 0ea3 0ea5 
-0ea7 0eab 0ead 0eae   bc   bd   be 0eaf 
+0ea7 0eab 0ead 0eae   -1   -1   -1 0eaf 
 0eb0 0eb2 0eb3 0eb4 0eb5 0eb6 0eb7 0eb8 
-0eb9 0ebc 0eb1 0ebb 0ebd   cd   ce   cf 
+0eb9 0ebc 0eb1 0ebb 0ebd   -1   -1   -1 
 0ec0 0ec1 0ec2 0ec3 0ec4 0ec8 0ec9 0eca 
-0ecb 0ecc 0ecd 0ec6   dc 0edc 0edd 20ad
-  e0   e1   e2   e3   e4   e5   e6   e7 
-  e8   e9   ea   eb   ec   ed   ee   ef 
+0ecb 0ecc 0ecd 0ec6   -1 0edc 0edd 20ad 
+  -1   -1   -1   -1   -1   -1   -1   -1 
+  -1   -1   -1   -1   -1   -1   -1   -1 
 0ed0 0ed1 0ed2 0ed3 0ed4 0ed5 0ed6 0ed7 
-0ed8 0ed9   fa   fb 00a2 00ac 00a6   ff 
+0ed8 0ed9   -1   -1 00a2 00ac 00a6   -1 

@@ -8,15 +8,15 @@
 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f 
 80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f 
 90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f 
-00a0 0e81 0e82   a3 0e84   a5   a6 0e87 
-0e88   a9 0e8a   ab   ac 0e8d   ae   af 
-  b0   b1   b2   b3 0e94 0e95 0e96 0e97 
-  b8 0e99 0e9a 0e9b 0e9c 0e9d 0e9e 0e9f 
-  c0 0ea1 0ea2 0ea3   c4 0ea5   c6 0ea7 
-  c8   c9 0eaa 0eab   cc 0ead 0eae 0eaf 
+00a0 0e81 0e82   -1 0e84   -1   -1 0e87 
+0e88   -1 0e8a   -1   -1 0e8d   -1   -1 
+  -1   -1   -1   -1 0e94 0e95 0e96 0e97 
+  -1 0e99 0e9a 0e9b 0e9c 0e9d 0e9e 0e9f 
+  -1 0ea1 0ea2 0ea3   -1 0ea5   -1 0ea7 
+  -1   -1 0eaa 0eab   -1 0ead 0eae 0eaf 
 0eb0 0eb1 0eb2 0eb3 0eb4 0eb5 0eb6 0eb7 
-0eb8 0eb9   da 0ebb 0ebc 0ebd   de 20ad 
-0ec0 0ec1 0ec2 0ec3 0ec4   e5 0ec6   e7 
-0ec8 0ec9 0eca 0ecb 0ecc 0ecd   ee   ef 
+0eb8 0eb9   -1 0ebb 0ebc 0ebd   -1   -1 
+0ec0 0ec1 0ec2 0ec3 0ec4   -1 0ec6   -1 
+0ec8 0ec9 0eca 0ecb 0ecc 0ecd   -1   -1 
 0ed0 0ed1 0ed2 0ed3 0ed4 0ed5 0ed6 0ed7 
-0ed8 0ed9   fa 0edc 0edd   fd   fe   ff 
+0ed8 0ed9   -1   -1 0edc 0edd   -1   -1 

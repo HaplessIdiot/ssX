@@ -1,4 +1,4 @@
-/* $XConsortium: lcPrTxt.c,v 1.3 94/01/20 18:07:03 rws Exp $ */
+/* $XConsortium: lcPrTxt.c /main/4 1996/01/05 11:23:11 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -118,9 +118,9 @@ _XTextPropertyToTextList(lcd, dpy, text_prop, to_type, list_ret, count_ret)
     XPointer from, to, buf;
     char *str_ptr, *last_ptr;
     Atom encoding;
-    int from_left, to_left, buf_len, ret;
+    int from_left, to_left, buf_len, ret, len;
     int unconv_num, nitems = text_prop->nitems;
-    Bool is_wide_char = False;
+    Bool is_wide_char = False, do_strcpy = False;
 
     if (strcmp(XlcNWideChar, to_type) == 0)
 	is_wide_char = True;
@@ -156,10 +156,15 @@ _XTextPropertyToTextList(lcd, dpy, text_prop, to_type, list_ret, count_ret)
     to = buf;
     to_left = buf_len;
 
-    conv = _XlcOpenConverter(lcd, from_type, lcd, to_type);
-    if (conv == NULL) {
-	Xfree(buf);
-	return XConverterNotFound;
+    /* can be XlcNMultiByte to XlcNMultiByte */
+    if (!strcmp(from_type, to_type)) {
+        do_strcpy = True;
+    } else {
+        conv = _XlcOpenConverter(lcd, from_type, lcd, to_type);
+        if (conv == NULL) {
+	    Xfree(buf);
+	    return XConverterNotFound;
+        }
     }
 
     last_ptr = str_ptr = (char *) text_prop->value;
@@ -167,13 +172,21 @@ _XTextPropertyToTextList(lcd, dpy, text_prop, to_type, list_ret, count_ret)
 
     while (1) {
 	if (nitems == 0 || *str_ptr == 0) {
-	    if (nitems)
-		str_ptr++;
 	    from = (XPointer) last_ptr;
 	    from_left = str_ptr - last_ptr;
 	    last_ptr = str_ptr;
 
-	    ret = _XlcConvert(conv, &from, &from_left, &to, &to_left, NULL, 0);
+            if (do_strcpy) {
+            	len = min(from_left, to_left);
+                strncpy(to, from, len);
+                from += len;
+                to += len;
+                from_left -= len;
+                to_left -= len;
+                ret = 0;
+            } else {
+	        ret = _XlcConvert(conv, &from, &from_left, &to, &to_left, NULL, 0);
+            }
 
 	    if (ret < 0)
 		continue;
@@ -183,6 +196,16 @@ _XTextPropertyToTextList(lcd, dpy, text_prop, to_type, list_ret, count_ret)
 
 	    if (nitems == 0)
 		break;
+ 	    last_ptr = ++str_ptr;
+	    if (is_wide_char) {
+		*((wchar_t *)to) = (wchar_t) 0;
+		to += sizeof(wchar_t);
+		to_left -= sizeof(wchar_t);
+	    } else {
+		*((char *)to) = '\0';
+		to++;
+		to_left--;
+	    }
 	    _XlcResetConverter(conv);
 	} else
 	    str_ptr++;
@@ -190,7 +213,8 @@ _XTextPropertyToTextList(lcd, dpy, text_prop, to_type, list_ret, count_ret)
 	nitems--;
     }
 
-    _XlcCloseConverter(conv);
+    if (! do_strcpy)
+        _XlcCloseConverter(conv);
 
     if (is_wide_char)
 	*((wchar_t *) to) = (wchar_t) 0;

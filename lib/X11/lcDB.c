@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.9 1998/10/03 08:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.10 1999/05/09 10:50:39 dawes Exp $ */
 
 
 
@@ -161,15 +161,15 @@ static DBParseInfo parse_info;
 
 static void init_parse_info()
 {
-    static int first = 1;
+    static int allocated /* = 0 */;
     char *ptr;
     int  size;
-    if(first == 1){
+    if (!allocated) {
 	bzero(&parse_info, sizeof(DBParseInfo));
 	parse_info.buf = (char *)Xmalloc(BUFSIZE);
 	parse_info.bufMaxSize = BUFSIZE;
-	first = 0;
-	return ;
+	allocated = 1;
+	return;
     }
     ptr = parse_info.buf;
     size = parse_info.bufMaxSize;

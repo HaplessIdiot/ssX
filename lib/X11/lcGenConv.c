@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.10 1997/11/22 12:50:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.11 1999/05/09 10:50:39 dawes Exp $ */
 
 
 #include "Xlibint.h"
@@ -1769,24 +1769,21 @@ mbstocs(conv, from, from_left, to, to_left, args, num_args)
 
     ret = mbtocs(conv, from, from_left, to, to_left, tmp_args, 1);
     charset_old = charset;
-    inbufptr = *from;
-    in_left = *from_left;
-    outbufptr = *to;
-    out_left = *to_left;
 
-    while ( ret == 0 && *from_left && *to_left && charset_old == charset ) {
-	charset_old = charset;
+    while ( ret == 0 && *from_left && *to_left) {
 	inbufptr = *from;
 	in_left = *from_left;
 	outbufptr = *to;
 	out_left = *to_left;
         ret = mbtocs(conv, from, from_left, to, to_left, tmp_args, 1);
+        if (charset_old != charset) {
+           *from = inbufptr;
+           *from_left = in_left;
+           *to = outbufptr;
+           *to_left = out_left;
+           break;
+        }
     }
-
-    *from = inbufptr;
-    *from_left = in_left;
-    *to = outbufptr;
-    *to_left = out_left;
 
     if (num_args > 0)
         *((XlcCharSet *) args[0]) = charset_old;
@@ -2100,24 +2097,21 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 
     ret = wctocs(conv, from, from_left, to, to_left, tmp_args, 1);
     charset_old = charset;
-    inbufptr = (wchar_t *)(*from);
-    in_left = *from_left;
-    outbufptr = *to;
-    out_left = *to_left;
 
-    while ( ret == 0 && *from_left && *to_left && charset_old == charset ) {
-	charset_old = charset;
+    while ( ret == 0 && *from_left && *to_left) {
 	inbufptr = (wchar_t *)(*from);
 	in_left = *from_left;
 	outbufptr = *to;
 	out_left = *to_left;
         ret = wctocs(conv, from, from_left, to, to_left, tmp_args, 1);
+        if (charset_old != charset) {
+           *from = (XPointer)inbufptr;
+           *from_left = in_left;
+           *to = outbufptr;
+           *to_left = out_left;
+           break;
+        }
     }
-
-    *from = (XPointer)inbufptr;
-    *from_left = in_left;
-    *to = outbufptr;
-    *to_left = out_left;
 
     if (num_args > 0)
         *((XlcCharSet *) args[0]) = charset_old;
@@ -2151,24 +2145,21 @@ stdc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
 
     ret = stdc_wctocs(conv, from, from_left, to, to_left, tmp_args, 1);
     charset_old = charset;
-    inbufptr = (wchar_t *)(*from);
-    in_left = *from_left;
-    outbufptr = *to;
-    out_left = *to_left;
 
-    while ( ret == 0 && *from_left && *to_left && charset_old == charset ) {
-	charset_old = charset;
+    while ( ret == 0 && *from_left && *to_left ) {
 	inbufptr = (wchar_t *)(*from);
 	in_left = *from_left;
 	outbufptr = *to;
 	out_left = *to_left;
         ret = stdc_wctocs(conv, from, from_left, to, to_left, tmp_args, 1);
+        if (charset_old != charset) {
+           *from = (XPointer)inbufptr;
+           *from_left = in_left;
+           *to = outbufptr;
+           *to_left = out_left;
+           break;
+        }
     }
-
-    *from = (XPointer)inbufptr;
-    *from_left = in_left;
-    *to = outbufptr;
-    *to_left = out_left;
 
     if (num_args > 0)
         *((XlcCharSet *) args[0]) = charset_old;

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.4 1998/10/03 08:41:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.5 1999/05/09 10:49:36 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -524,7 +524,7 @@ static unsigned long _XGetPixel (ximage, x, y)
 }
 
 #ifndef WORD64
-static unsigned long byteorderpixel = MSBFirst << 24;
+static unsigned long Const byteorderpixel = MSBFirst << 24;
 #endif
 
 static unsigned long _XGetPixel32 (ximage, x, y)
@@ -539,7 +539,7 @@ static unsigned long _XGetPixel32 (ximage, x, y)
 	    addr = &((unsigned char *)ximage->data)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
-	    if (*((char *)&byteorderpixel) == ximage->byte_order)
+	    if (*((Const char *)&byteorderpixel) == ximage->byte_order)
 		pixel = *((CARD32 *)addr);
 	    else
 #endif
@@ -730,7 +730,7 @@ static int _XPutPixel32 (ximage, x, y, pixel)
 	    addr = &((unsigned char *)ximage->data)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
-	    if (*((char *)&byteorderpixel) == ximage->byte_order)
+	    if (*((Const char *)&byteorderpixel) == ximage->byte_order)
 		*((CARD32 *)addr) = pixel;
 	    else
 #endif
@@ -996,14 +996,14 @@ _XAddPixel (ximage, value)
 #ifndef WORD64
 	} else if ((ximage->format == ZPixmap) &&
 		   (ximage->bits_per_pixel == 16) &&
-		   (*((char *)&byteorderpixel) == ximage->byte_order)) {
+		   (*((Const char *)&byteorderpixel) == ximage->byte_order)) {
 	    register unsigned short *dp = (unsigned short *) ximage->data;
 	    x = (ximage->bytes_per_line >> 1) * ximage->height;
 	    while (--x >= 0)
 		*dp++ += value;
 	} else if ((ximage->format == ZPixmap) &&
 		   (ximage->bits_per_pixel == 32) &&
-		   (*((char *)&byteorderpixel) == ximage->byte_order)) {
+		   (*((Const char *)&byteorderpixel) == ximage->byte_order)) {
 	    register CARD32 *dp = (CARD32 *) ximage->data;
 	    x = (ximage->bytes_per_line >> 2) * ximage->height;
 	    while (--x >= 0)
