@@ -1,0 +1,33 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s et4_bank.s w32vars.c \
+	et4000.c et4000w32.c dummy.c
+
+OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o et4_bank.o w32vars.o \
+	et4000.o et4000w32.o dummy.o
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
+	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/include -I$(SERVERSRC)/cfb \
+           -I$(INCLUDESRC) -I$(FONTINCSRC) \
+	   -I$(XF86SRC)/vga256/cfb.banked \
+	   -I$(XF86SRC)/vga256/enhanced \
+	   -I$(XF86SRC)/vga256/vga
+
+#if DirtyStartup
+STARTUPDEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = $(SPEEDUPDEFINES) $(STARTUPDEFINES) -DPSZ=8
+
+NormalAsmObjectRule()
+NormalLibraryObjectRule()
+NormalLibraryTarget(w32,$(OBJS))
+
+LinkSourceFile(vgaHW.c,../../../vga256/vga)
+LinkSourceFile(vgaBank.s,../../../vga256/vga)
+ObjectFromSpecialSource(et4000,$(VGADRIVERSRC)/et4000/et4_driver,NullParameter)
+ObjectFromSpecialAsmSource(et4_bank,$(VGADRIVERSRC)/et4000/bank,NullParameter)
+
+DependTarget()

@@ -1,0 +1,27 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86MonoDrivers
+
+SRCS = */?*.c
+
+OBJS = */?*_drv.o
+
+all:: subdirs libmonodrv.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(monodrv,$(LINKKITDIR)/drivers)
+
+NormalDepLibraryTarget(monodrv,$(SUBDIRS),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mono)
+
+#if XF86LinkKit
+#include <LinkKit.tmpl>
+#endif

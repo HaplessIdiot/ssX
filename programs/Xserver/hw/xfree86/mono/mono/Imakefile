@@ -1,0 +1,25 @@
+XCOMM $XConsortium: Imakefile,v 1.1 91/07/16 23:02:00 gildea Exp $
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = 	mono.c
+
+OBJS = 	mono.o 
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/mfb \
+	   -I../mfb.banked -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+	   -I$(INCLUDESRC)
+
+#if DirtyStartup
+STARTUPDEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = -DMFB_MAP_NAMES $(STARTUPDEFINES)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+InstallLinkKitNonExecFile(mono.h,$(LINKKITDIR)/drivers)
+
+DependTarget()

@@ -1,0 +1,15 @@
+XCOMM $XFree86$
+
+          YFLAGS = -d
+            SRCS = lex.c reconfig.c
+            OBJS = lex.o reconfig.o
+ LOCAL_LIBRARIES = $(LEXLIB)
+
+all::
+
+LexFile(lex)
+
+YaccFile(reconfig,$(YFLAGS))
+
+ComplexProgramTarget(reconfig)
+

@@ -1,0 +1,20 @@
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = cfb.w32 asm w32
+
+INCLUDES = -I$(XF86SRC)/vga256/vga -Iw32 -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/include -I$(INCLUDESRC)
+
+W32DRIVERS = XF86W32Drivers
+
+ConfigTargetNoDepend(w32Conf,$(ICONFIGFILES),confw32.sh,$(W32DRIVERS))
+
+NormalLibraryObjectRule()
+
+MakeSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))

@@ -1,0 +1,17 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = s3_driver.c s3_bank.s
+
+OBJS = s3_driver.o s3_bank.o
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../vga -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(s3_drv, $(OBJS))
+
+DependTarget()
