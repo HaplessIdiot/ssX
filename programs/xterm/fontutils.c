@@ -836,14 +836,25 @@ xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStruct *font, in
 					  XFT_SIZE, XftTypeInteger, term->misc.face_size,
 					  XFT_SPACING, XftTypeInteger, XFT_MONO,
 					  0);
-	screen->renderFontBold = 0;
+	if (screen->renderFont)
+	{
+	    screen->renderFontBold = XftFontOpen (dpy, DefaultScreen (dpy),
+						  XFT_FAMILY, XftTypeString, term->misc.face_name,
+						  XFT_FAMILY, XftTypeString, "mono",
+						  XFT_SIZE, XftTypeInteger, term->misc.face_size,
+						  XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD,
+						  XFT_SPACING, XftTypeInteger, XFT_MONO,
+						  XFT_CHAR_WIDTH, XftTypeInteger, 
+						    screen->renderFont->max_advance_width,
+						  0);
+	}
     }
     if (screen->renderFont)
     {
 	win->f_width = screen->renderFont->max_advance_width;
 	win->f_height = screen->renderFont->height;
 	win->f_ascent = screen->renderFont->ascent;
-	win->f_descent = screen->renderFont->descent;;
+	win->f_descent = screen->renderFont->descent;
     }
     else
 #endif
