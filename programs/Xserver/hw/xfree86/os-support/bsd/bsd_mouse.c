@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.5 1999/05/22 09:59:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.6 1999/05/23 04:31:43 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -8,6 +8,9 @@
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
+#include "xf86_OSlib.h"
+#include "xisb.h"
+#include "mipointer.h"
 
 static int
 SupportedInterfaces(void)
@@ -88,7 +91,7 @@ static struct {
 	{ MOUSE_PROTO_INTELLI,		"Intellimouse" },
 	{ MOUSE_PROTO_THINK,		"ThinkingMouse" },
 	{ MOUSE_PROTO_SYSMOUSE,		"SysMouse" }
-}
+};
 	
 static const char *
 SetupAuto(InputInfoPtr pInfo, int *protoPara)
@@ -109,7 +112,7 @@ SetupAuto(InputInfoPtr pInfo, int *protoPara)
     hw.model = MOUSE_MODEL_GENERIC;
     ioctl(pInfo->fd, MOUSE_GETHWINFO, &hw);
     if (ioctl(pInfo->fd, MOUSE_GETMODE, &mode) == 0) {
-	for (i = 0; i < sizeof(devproto)/sizeof(devproto[0]); ++i)
+	for (i = 0; i < sizeof(devproto)/sizeof(devproto[0]); ++i) {
 	    if (mode.protocol == devproto[i].dproto) {
 		/* override some parameters */
 		if (protoPara) {

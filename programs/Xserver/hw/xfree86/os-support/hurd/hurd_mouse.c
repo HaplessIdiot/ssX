@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.3 1999/05/23 04:26:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.4 1999/05/23 04:31:43 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -32,6 +32,7 @@
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
+#include "xf86_OSlib.h"
 
 #include <stdio.h>
 #include <errno.h>
