@@ -1,0 +1,15 @@
+#
+# $Date: 2000/11/02 19:18:55 $ $Revision: 1.1 $
+# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glw/Attic/Distfile,v 1.1 2000/11/02 19:18:55 dawes Exp $
+#
+
+DISTFILES_SI = \
+	GLwDrawA.h /xc/include/GL/GLwDrawA.h \
+	GLwMDrawA.h /xc/include/GL/GLwMDrawA.h \
+	Imakefile /xc/lib/GL/glw/Imakefile \
+	GLwDrawAP.h /xc/lib/GL/glw/GLwDrawAP.h \
+	GLwMDrawAP.h /xc/lib/GL/glw/GLwMDrawAP.h \
+	GLwDAUtil.c /xc/lib/GL/glw/GLwDAUtil.c \
+	GLwDrawA.c /xc/lib/GL/glw/GLwDrawA.c \
+	GLwMDrawA.c /xc/lib/GL/glw/GLwMDrawA.c \
+	$(NULL)
