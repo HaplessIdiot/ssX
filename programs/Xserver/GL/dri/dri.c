@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.24 2000/12/07 20:26:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.25 2000/12/20 00:08:56 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1370,7 +1370,6 @@ DRITreeTraversal(WindowPtr pWin, pointer data)
     if(pDRIDrawablePriv) {
         RegionPtr reg = (RegionPtr)data;
         REGION_UNION(pScreen, reg, reg, &(pWin->clipList));
-        return WT_DONTWALKCHILDREN;
     }
     return WT_WALKCHILDREN;
 }
