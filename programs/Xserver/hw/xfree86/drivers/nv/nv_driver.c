@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.67 2001/06/15 21:22:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.68 2001/06/16 22:00:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -105,12 +105,13 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_QUADRO2PRO,   "Quadro 2 Pro"},
     { NV_CHIP_GEFORCE2MX,   "GeForce2 MX"},
     { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
+    { NV_CHIP_IGEFORCE2,    "GeForce2 Integrated"},
     { NV_CHIP_QUADRO2MXR,   "Quadro 2 MXR"},
     { NV_CHIP_GEFORCE2GO,   "GeForce 2 Go"},
     { NV_CHIP_GEFORCE3,     "GeForce3"},
     { NV_CHIP_GEFORCE3_1,   "GeForce3 (rev 1)"},
     { NV_CHIP_GEFORCE3_2,   "GeForce3 (rev 2)"},
-    { NV_CHIP_GEFORCE3_3,   "GeForce3 (rev 3)"},
+    { NV_CHIP_QUADRO_DDC,   "Quadro DDC"},
     {-1,                        NULL }
 };
 
@@ -133,12 +134,13 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_QUADRO2PRO,       NV_CHIP_QUADRO2PRO,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2MX,       NV_CHIP_GEFORCE2MX,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2MXDDR,    NV_CHIP_GEFORCE2MXDDR,  RES_SHARED_VGA },
+    { NV_CHIP_IGEFORCE2,        NV_CHIP_IGEFORCE2,      RES_SHARED_VGA },
     { NV_CHIP_QUADRO2MXR,       NV_CHIP_QUADRO2MXR,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2GO,       NV_CHIP_GEFORCE2GO,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE3,         NV_CHIP_GEFORCE3,       RES_SHARED_VGA },
     { NV_CHIP_GEFORCE3_1,       NV_CHIP_GEFORCE3_1,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE3_2,       NV_CHIP_GEFORCE3_2,     RES_SHARED_VGA },
-    { NV_CHIP_GEFORCE3_3,       NV_CHIP_GEFORCE3_3,     RES_SHARED_VGA },
+    { NV_CHIP_QUADRO_DDC,       NV_CHIP_QUADRO_DDC,     RES_SHARED_VGA },
     { -1,                       -1,                     RES_UNDEFINED  }
 };
 
@@ -1245,6 +1247,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_QUADRO2PRO:
         case NV_CHIP_GEFORCE2MX:
         case NV_CHIP_GEFORCE2MXDDR:
+        case NV_CHIP_IGEFORCE2:
         case NV_CHIP_QUADRO2MXR:
 	case NV_CHIP_GEFORCE2GO:
             NV10Setup(pScrn);
@@ -1252,7 +1255,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	case NV_CHIP_GEFORCE3:
 	case NV_CHIP_GEFORCE3_1:
 	case NV_CHIP_GEFORCE3_2:
-	case NV_CHIP_GEFORCE3_3:
+	case NV_CHIP_QUADRO_DDC:
             NV20Setup(pScrn);
             break;
     }
