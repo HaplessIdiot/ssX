@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.50 1998/01/24 16:57:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.51 1998/03/22 12:57:33 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -59,9 +59,7 @@
  * if this is built as a module, it shouldn't call libc functions.
  * The following macros should wrap all calls 
  */
-#if defined(XFree86LOADER) && !defined(NOXF86DEFS)
 #include "xf86_ansic.h"
-#endif
 #include "xf86fcache.h"
 #include "xf86Procs.h"
 
