@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.83 2004/06/01 01:23:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.84 2004/10/23 15:29:28 dawes Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1890,32 +1890,22 @@ setAccess(EntityPtr pEnt, xf86State state)
     switch (prop & NEED_SHARED) {
     case NEED_SHARED:
 	pEnt->access->rt = MEM_IO;
+	pEnt->access->pAccess = acc_mem_io;
 	break;
     case NEED_IO_SHARED:
 	pEnt->access->rt = IO;
+	pEnt->access->pAccess = acc_io;
 	break;
     case NEED_MEM_SHARED:
 	pEnt->access->rt = MEM;
-	break;
-    default:
-	pEnt->access->rt = NONE;
-    }
-    
-    switch(pEnt->access->rt) {
-    case IO:
-	pEnt->access->pAccess = acc_io;
-	break;
-    case MEM:
 	pEnt->access->pAccess = acc_mem;
 	break;
-    case MEM_IO:
-	pEnt->access->pAccess = acc_mem_io;
-	break;
     default: /* no conflicts at all */
+	pEnt->access->rt = NONE;
 	pEnt->access->pAccess =  NULL; /* remove from RAC */
 	break;
     }
-
+    
     if (org_io) {
 	/* does the driver want the old access func? */
 	if (pEnt->rac->old) {
