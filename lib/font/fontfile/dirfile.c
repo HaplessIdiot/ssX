@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.7 1998/10/03 09:07:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.8 1999/07/17 05:30:40 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -201,7 +201,8 @@ AddFileNameAliases(FontDirectoryPtr dir)
 	    continue;
 	
 	len = strlen (fileName) - renderer->fileSuffixLen;
-	CopyISOLatin1Lowered (copy, fileName, len);
+	CopyISOLatin1Lowered ((unsigned char *)copy,
+				(unsigned char *)fileName, len);
 	copy[len] = '\0';
 	name.name = copy;
 	name.length = len;

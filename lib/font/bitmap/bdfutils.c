@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.3 1998/10/03 09:07:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.4 1999/07/17 05:30:29 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -217,7 +217,7 @@ bdfIsInteger(char *str)
  */
 
 unsigned char
-bdfHexByte(char *s)
+bdfHexByte(unsigned char *s)
 {
     unsigned char b = 0;
     register char c;
