@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.10 2000/11/02 19:10:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.12 2003/10/02 13:30:07 eich Exp $
 
 
 
@@ -15,6 +15,11 @@ XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #else
 XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
+#if defined(NetBSDArchitecture)
+BUSmemcpy.o: BUSmemcpy.c
+IODelay.o: IODelay.c
+SlowBcopy.o: SlowBcopy.c
+#endif
 #endif
 
 #if HasGcc || HasGcc2
