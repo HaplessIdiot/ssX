@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.18 1999/02/05 04:49:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.19 1999/02/19 21:27:06 hohndel Exp $ */
 
 /*
  *
@@ -1496,7 +1496,7 @@ vgaHWMapMem(ScrnInfoPtr scrp)
 	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
 
     hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER,
-			      (pointer)hwp->MapPhys, hwp->MapSize);
+			      hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }
 

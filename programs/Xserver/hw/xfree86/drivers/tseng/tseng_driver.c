@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.48 1999/01/26 10:40:33 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.49 1999/03/20 08:59:29 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2219,7 +2219,7 @@ TsengMapMem(ScrnInfoPtr pScrn)
     if (pTseng->UseLinMem) {
 	pTseng->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 	    pTseng->PciTag,
-	    (pointer) ((unsigned long)pTseng->LinFbAddress),
+	    (unsigned long)pTseng->LinFbAddress,
 	    pTseng->FbMapSize);
 	if (pTseng->FbBase == NULL) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,

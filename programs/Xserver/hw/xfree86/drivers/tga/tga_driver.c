@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.20 1999/04/17 07:07:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.21 1999/04/17 07:31:52 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -621,7 +621,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     else { /* try to divine the amount of RAM */
       Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-			   pTga->PciTag, (pointer)pTga->FbAddress, 4);
+			   pTga->PciTag, pTga->FbAddress, 4);
       pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
       xf86UnMapVidMem(pScrn->scrnIndex, Base, 4);
     }
@@ -897,13 +897,13 @@ TGAMapMem(ScrnInfoPtr pScrn)
     
     pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 				      pTga->PciTag,
-				      (pointer)pTga->IOAddress, 0x100000);
+				      pTga->IOAddress, 0x100000);
     if (pTga->IOBase == NULL)
 	return FALSE;
 
     pTga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pTga->PciTag,
-				 (pointer)((unsigned long)pTga->FbAddress),
+				 (unsigned long)pTga->FbAddress,
 				 pTga->FbMapSize);
     if (pTga->FbBase == NULL)
 	return FALSE;

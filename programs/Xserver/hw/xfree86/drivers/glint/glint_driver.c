@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.31 1999/03/21 07:35:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.32 1999/03/28 15:32:37 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1475,10 +1475,10 @@ GLINTMapMem(ScrnInfoPtr pScrn)
      */ 
     if (pGlint->PciTagGeometry)
 	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pGlint->PciTagGeometry, (pointer)pGlint->IOAddress, 0x20000);
+		pGlint->PciTagGeometry, pGlint->IOAddress, 0x20000);
     else
 	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pGlint->PciTag, (pointer)pGlint->IOAddress, 0x20000);
+		pGlint->PciTag, pGlint->IOAddress, 0x20000);
 
     if (pGlint->IOBase == NULL)
 	return FALSE;
@@ -1504,7 +1504,7 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     if (pGlint->FbMapSize != 0) {
     	pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pGlint->PciTag,
-				 (pointer)pGlint->FbAddress,
+				 pGlint->FbAddress,
 				 pGlint->FbMapSize);
         if (pGlint->FbBase == NULL)
 	    return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.2 1999/04/17 07:06:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vvga.c,v 1.3 1999/04/17 07:31:52 dawes Exp $ */
 /*
  * file vvga.c
  *
@@ -119,6 +119,7 @@ void v_loadvgafont(void)
     vu8 *address;
     vu8 *vidmem;
     vu8 *vbase;
+    int fbFlags;
 
     /* Assert synchroneous reset while setting the clock mode */
     setvgareg(0x3c4, 0, 1);               /* assert synchronous reset */
@@ -145,21 +146,18 @@ void v_loadvgafont(void)
     /* fill plane 2 with 8x16 font */
     address=font8x16;
 #if defined(__alpha__)
-    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xa0000, 64*1024);
+    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
 #else
-    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xa0000, 64*1024);
+    fbFlags = VIDMEM_FRAMEBUFFER;
 #endif
+    vbase = xf86MapVidMem(0, fbFlags, 0xa0000, 64*1024);
     vidmem=vbase;
     for (c=0; c<=255; c++) {
         v_memtobus(vbase, 32*c, address, 16);
 	    address+=16;
     }
 
-#if defined(__alpha__)
-    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
-#else
-    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
-#endif
+    xf86UnMapVidMem(0, vbase, 64*1024);
 
     /* restore the standard vga register values */
     v_resetvga();
@@ -235,6 +233,7 @@ void v_textmode(struct v_board_t *board)
 void v_savetextmode(struct v_board_t *board) 
 {
     vu8 *vbase;
+    int fbFlags;
 
     /* save the cursor position */
     board->cursor_hi=getvgareg(0x3d4, 0xe);
@@ -247,16 +246,13 @@ void v_savetextmode(struct v_board_t *board)
     /* save the screen contents */
     board->scr_contents=(vu8 *)xalloc(0x8000);
 #if defined(__alpha__)
-    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
 #else
-    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+    fbFlags = VIDMEM_FRAMEBUFFER;
 #endif
+    vbase = xf86MapVidMem(0, fbFlags, 0xb8000, 0x8000);
     v_bustomem(board->scr_contents, vbase, 0x8000);
-#if defined(__alpha__)
-    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
-#else
-    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
-#endif
+    xf86UnMapVidMem(0, vbase, 0x8000);
 }
 
 
@@ -264,6 +260,7 @@ void v_savetextmode(struct v_board_t *board)
 void v_restoretextmode(struct v_board_t *board) 
 {
     vu8 *vbase;
+    int fbFlags;
 
     /* restore the cursor position */
     setvgareg(0x3d4, 0xe, board->cursor_hi);
@@ -275,16 +272,13 @@ void v_restoretextmode(struct v_board_t *board)
 
     /* restore the screen contents */
 #if defined(__alpha__)
-    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+    fbFlags = VIDMEM_FRAMEBUFFER | VIDMEM_SPARSE;
 #else
-    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+    fbFlags = VIDMEM_FRAMEBUFFER;
 #endif
+    vbase = xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, 0xb8000, 0x8000);
     v_memtobus(vbase, 0, board->scr_contents, 0x8000);
-#if defined(__alpha__)
-    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
-#else
-    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
-#endif
+    xf86UnMapVidMem(0, vbase, 0x8000);
     xfree(board->scr_contents);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.11 1999/04/04 00:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.12 1999/04/04 10:59:49 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -298,7 +298,7 @@
  */
 
 /* Primitive Types */
-typedef void * ADDRESS;		/* Memory/PCI address */
+typedef unsigned long ADDRESS;		/* Memory/PCI address */
 typedef unsigned long PCITAG;
 
 /*
@@ -553,10 +553,8 @@ ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);
 int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
-pointer       xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag,
-				pointer Base, unsigned long Size);
-pointer       xf86MapPciMemSparse(int ScreenNum, int Region, PCITAG Tag,
-				pointer Base, unsigned long Size);
+pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
+				unsigned long Base, unsigned long Size);
 int           xf86ReadPciBIOS(unsigned long Base, unsigned long Offset,
 				PCITAG Tag, unsigned char *Buf, int Len);
 pciConfigPtr *xf86scanpci(int flags);

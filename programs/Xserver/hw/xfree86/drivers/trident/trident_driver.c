@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.49 1999/04/11 13:10:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.50 1999/04/15 06:39:02 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1532,6 +1532,7 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
 {
     CARD32 save = 0;
     TRIDENTPtr pTrident;
+    int mmioFlags;
 
     pTrident = TRIDENTPTR(pScrn);
 
@@ -1549,16 +1550,16 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
      * Map IO registers to virtual address space
      */ 
 #if !defined(__alpha__)
-    pTrident->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pTrident->PciTag, (pointer)pTrident->IOAddress, 0x1000);
+    mmioFlags = VIDMEM_MMIO;
 #else
     /*
      * For Alpha, we need to map SPARSE memory, since we need
      * byte/short access.
      */
-    pTrident->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				       (pointer)pTrident->IOAddress, 0x1000);
+    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #endif
+    pTrident->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
+		pTrident->PciTag, pTrident->IOAddress, 0x1000);
     if (pTrident->IOBase == NULL)
 	return FALSE;
 
@@ -1586,18 +1587,18 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pTrident->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pTrident->PciTag, (pointer)pTrident->IOAddress, 0x1000);
+		pTrident->PciTag, pTrident->IOAddress, 0x1000);
 
     if (pTrident->IOBaseDense == NULL)
 	return FALSE;
 #endif /* __alpha__ */
 
     pTrident->IOAccel = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pTrident->PciTag, (pointer)pTrident->IOAccelAddress, 0x10000);
+		pTrident->PciTag, pTrident->IOAccelAddress, 0x10000);
 
     pTrident->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pTrident->PciTag,
-				 (pointer)((unsigned long)pTrident->FbAddress),
+				 (unsigned long)pTrident->FbAddress,
 				 pTrident->FbMapSize);
     if (pTrident->FbBase == NULL)
 	return FALSE;
@@ -1626,11 +1627,7 @@ TRIDENTUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-#ifndef __alpha__
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBase, 0x1000);
-#else
-    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pTrident->IOBase, 0x1000);
-#endif
     pTrident->IOBase = NULL;
 
 #ifdef __alpha__

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_video.c,v 1.1 1998/08/16 10:25:48 dawes Exp $ */
 
 #include <mach.h>
 #include <device/device.h>
@@ -37,7 +37,7 @@
  * Video Memory Mapping section                                            
  ***************************************************************************/
 pointer 
-xf86MapVidMem(int ScreenNum,int Flags ,pointer Base,unsigned long Size)
+xf86MapVidMem(int ScreenNum,int Flags, unsigned long Base, unsigned long Size)
 {
     mach_port_t device,iopl_dev;
     memory_object_t iopl_mem;
@@ -58,7 +58,7 @@ xf86MapVidMem(int ScreenNum,int Flags ,pointer Base,unsigned long Size)
 	FatalError("xf86MapVidMem() can't device_open. (%s)\n",strerror(errno));
     }
 
-    err = device_map(iopl_dev,VM_PROT_READ|VM_PROT_WRITE, (int)Base , Size ,&iopl_mem,0);
+    err = device_map(iopl_dev,VM_PROT_READ|VM_PROT_WRITE, Base , Size ,&iopl_mem,0);
     if( err )
     {
 	errno = err;

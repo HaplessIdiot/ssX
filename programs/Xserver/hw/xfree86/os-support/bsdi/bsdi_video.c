@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.4.4.1 1998/06/05 16:23:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.6 1998/07/25 16:56:38 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,21 +33,25 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
 pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
         pointer base;
 
-	if ((unsigned long)Base >= 0xA0000)
+	if (Base >= 0xA0000)
 	{
-		base = (pointer)mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FILE,
-				     xf86Info.screenFd,
-				     (unsigned long)Base - 0xA0000);
-		if (base == (pointer)-1)
+		base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FILE,
+			     xf86Info.screenFd,
+			     Base - 0xA0000);
+		if (base == MAP_FAILED)
 		{
 		    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
 			       strerror(errno));

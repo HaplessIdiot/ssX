@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.19 1998/12/13 11:14:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.1 1999/04/17 07:06:33 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1107,7 +1107,8 @@ static Bool renditionMapMem(ScrnInfoPtr pScreenInfo)
     RENDITIONPTR(pScreenInfo)->board.vmem_base=
         xf86MapPciMem(pScreenInfo->scrnIndex, mapOption,
         RENDITIONPTR(pScreenInfo)->pcitag,
-        RENDITIONPTR(pScreenInfo)->board.mem_base, pScreenInfo->videoRam);
+        (unsigned long)RENDITIONPTR(pScreenInfo)->board.mem_base,
+	pScreenInfo->videoRam);
     return TRUE;
 
 #if DEBUG0
