@@ -9,7 +9,7 @@
 <date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.122 2005/02/08 16:46:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.123 2005/02/19 02:11:07 dawes Exp $
 </ident>
 
 <abstract>
@@ -1276,7 +1276,7 @@ url="http://www.isc.org/">.
 <sect>Credits for the previous XFree86 release (&prevfullrelvers;).
 <p>
 
-<![ %snapshot [
+<![ %draft [
 <bf>THIS IS A DRAFT OF THE XFree86 &fullrelvers; CREDITS SECTION.</bf>
 If you find missing credits, incorrect attributions, or other errors, please
 send details to <email>devel@XFree86.org</email>.
