@@ -25,16 +25,10 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.51 2000/10/06 12:31:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.52 2000/10/09 23:37:15 alanh Exp $ */
 
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "fb.h"
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 #include "mibank.h"
@@ -200,11 +194,7 @@ static const char *vgahwSymbols[] = {
 static const char *fbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb24_32ScreenInit",
-    "cfb32ScreenInit",
+    "fbScreenInit",
     NULL
 };
 
@@ -939,25 +929,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         Sym = "xf4bppScreenInit";
         break;
     case 8:
-        mod = "cfb";
-        Sym = "cfbScreenInit";
-        break;
     case 16:
-        mod = "cfb16";
-        Sym = "cfb16ScreenInit";
-        break;
     case 24:
-        if (pix24bpp == 24) {
-            mod = "cfb24";
-            Sym = "cfb24ScreenInit";
-        } else {
-            mod = "xf24_32bpp";
-            Sym = "cfb24_32ScreenInit";
-        }
-        break;
     case 32:
-        mod = "cfb32";
-        Sym = "cfb32ScreenInit";
+        mod = "fb";
+        Sym = "fbScreenInit";
         break;
     }
 
@@ -1316,29 +1292,12 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                         pScrn->displayWidth);
         break;
     case 8:
-        ret = cfbScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-                        pScrn->displayWidth);
-        break;
     case 16:
-        ret = cfb16ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-                        pScrn->displayWidth);
-        break;
     case 24:
-        if (pix24bpp == 24)
-            ret = cfb24ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-                        pScrn->displayWidth);
-        else
-            ret = cfb24_32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
-                        pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-                        pScrn->displayWidth);
-        break;
     case 32:
-        ret = cfb32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+        ret = fbScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
                         pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
-                        pScrn->displayWidth);
+                        pScrn->displayWidth, pScrn->bitsPerPixel);
         break;
     default:
         xf86DrvMsg(scrnIndex, X_ERROR,
