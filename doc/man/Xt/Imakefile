@@ -20,7 +20,7 @@ InstallManPageAliases(XtAppAddConverter,$(MANDIR),XtAddConverter)
 InstallManPageLong(XtAppAI,$(MANDIR),XtAppAddInput)
 InstallManPageAliases(XtAppAddInput,$(MANDIR),XtRemoveInput)
 InstallManPageLong(XtAppATO,$(MANDIR),XtAppAddTimeOut)
-#if !defined(OS2Architecture) && !defined(DarwinArchitecture)
+#if CaseSensitiveFileSystem
 InstallManPageAliases(XtAppAddTimeOut,$(MANDIR),XtRemoveTimeOut XtAppAddTimeout)
 #else
 InstallManPageAliases(XtAppAddTimeOut,$(MANDIR),XtRemoveTimeOut)
@@ -131,7 +131,11 @@ InstallManPageAliases(XtLastEventProcessed,$(MANDIR),XtLastTimestampProcessed)
 InstallManPageLong(XtAppASig,$(MANDIR),XtAppAddSignal)
 InstallManPageAliases(XtAppAddSignal,$(MANDIR),XtNoticeSignal XtRemoveSignal)
 InstallManPageLong(XtAddIn,$(MANDIR),XtAddInput)
+#if CaseSensitiveFileSystem
 InstallManPageAliases(XtAddInput,$(MANDIR),XtAddTimeOut XtAddTimeout)
+#else
+InstallManPageAliases(XtAddInput,$(MANDIR),XtAddTimeOut)
+#endif
 InstallManPageLong(XtBlockH,$(MANDIR),XtAppAddBlockHook)
 InstallManPageAliases(XtAppAddBlockHook,$(MANDIR),XtRemoveBlockHook)
 InstallManPageLong(XtGetClExt,$(MANDIR),XtGetClassExtension)

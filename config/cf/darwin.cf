@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.17 2001/09/21 02:39:40 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.18 2001/10/03 23:38:13 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -33,6 +33,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifndef HasGroff
 # define HasGroff               YES
+#endif
+
+/* The most common file system, HFS+, is not case sensitive. */
+#ifndef CaseSensitiveFileSystem
+# define CaseSensitiveFileSystem NO
 #endif
 
 /*
