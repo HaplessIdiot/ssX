@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (xx December 1999)
+3397. Fix util/memleak to work on linux/x86 (#3492, Keith Packard).
 3396. Add DPS support hooks (#3491, Juliusz Chroboczek).
 3395. Add QNX4, Neutrino support (#3489, Frank Guangxin Liu).
 3394. Add ATI Rage 128 Pro PF support to r128 driver (#3488, Rik Faith).
@@ -9184,4 +9185,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.892 1999/12/27 00:39:36 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.893 1999/12/27 00:50:49 robin Exp $
