@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.157 2003/04/23 21:51:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.158 2003/04/30 00:30:26 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -337,6 +337,8 @@ const char *GLINTint10Symbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -375,8 +377,6 @@ static const char *driSymbols[] = {
     NULL
 };
 #endif
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(glintSetup);
 
