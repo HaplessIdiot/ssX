@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.1 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.2 2001/07/25 14:30:08 alanh Exp $ */
 
 #include "win.h"
 
