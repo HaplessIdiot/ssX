@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.7 2001/04/19 14:14:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.8 2001/05/07 21:59:07 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -233,7 +233,7 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 	y--;
 	pSrc+=DstPitch, pMsk+=DstPitch, SrcS+=SrcPitch, SrcM+=SrcPitch) {
 	for(x = 0; x < Pitch; x++) {
-	    pSrc[x] = SrcS[x] & SrcM[x];
+	    pSrc[x] = SrcS[x];
 	    pMsk[x] = SrcM[x];
 	}
     }

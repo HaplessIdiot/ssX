@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.10 2001/01/06 20:58:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.11 2001/02/12 03:27:03 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -133,7 +133,7 @@ ATIAdjustFrame
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[scrnIndex];
     ATIPtr      pATI = ATIPTR(pScreenInfo);
-    int         Base;
+    int         Base, xy;
 
     /*
      * Assume the caller has already done its homework in ensuring the physical
@@ -148,6 +148,21 @@ ATIAdjustFrame
 
     Base = ((((y * pATI->displayWidth) + x) & pATI->AdjustMask) *
             pATI->AdjustDepth) >> 3;
+
+    if (!pATI->currentMode)
+    {
+        /*
+         * Not in DGA.  This reverse-calculates pScreenInfo->frame[XY][01] so
+         * that the cursor does not move on mode switches.
+         */
+        xy = (Base << 3) / pATI->AdjustDepth;
+        pScreenInfo->frameX0 = xy % pATI->displayWidth;
+        pScreenInfo->frameY0 = xy / pATI->displayWidth;
+        pScreenInfo->frameX1 =
+            pScreenInfo->frameX0 + pScreenInfo->currentMode->HDisplay - 1;
+        pScreenInfo->frameY1 =
+            pScreenInfo->frameY0 + pScreenInfo->currentMode->VDisplay - 1;
+    }
 
     /* Unlock registers */
     ATIUnlock(pATI);

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.36 2001/04/25 18:21:10 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,19 +21,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIVERSION_H___
-#define ___ATIVERSION_H___ 1
+#ifndef ___ATIXV_H___
+#define ___ATIXV_H___ 1
 
-#define ATI_NAME          "ATI"
-#define ATI_DRIVER_NAME   "ati"
+#include "atipriv.h"
+#include "atiproto.h"
 
-#define ATI_VERSION_NAME  "6.3.5"
+#include "xf86str.h"
 
-#define ATI_VERSION_MAJOR 6
-#define ATI_VERSION_MINOR 3
-#define ATI_VERSION_PATCH 5
+extern Bool ATIInitializeXVideo FunctionPrototype((ScreenPtr, ScrnInfoPtr,
+                                                   ATIPtr));
 
-#define ATI_VERSION_CURRENT \
-    ((ATI_VERSION_MAJOR << 20) | (ATI_VERSION_MINOR << 10) | ATI_VERSION_PATCH)
-
-#endif /* ___ATIVERSION_H___ */
+#endif /* ___ATIXV_H___ */

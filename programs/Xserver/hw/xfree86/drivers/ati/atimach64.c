@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.34 2001/04/19 14:14:04 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.35 2001/04/23 17:15:57 dawes Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2064,6 +2064,7 @@ ATIMach64CursorInit
         HARDWARE_CURSOR_INVERT_MASK |
         HARDWARE_CURSOR_SHOW_TRANSPARENT |
         HARDWARE_CURSOR_UPDATE_UNHIDDEN |
+        HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
 
 #if X_BYTE_ORDER != X_LITTLE_ENDIAN
 

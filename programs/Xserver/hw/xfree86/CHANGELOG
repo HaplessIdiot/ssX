@@ -1,4 +1,13 @@
 XFree86 4.0.99.x (xx May 2001)
+ 489. Hardware cursor documentation update (Marc La France).
+ 488. XVideo extension support in ATI driver for generic (e.g. v4l) adapters
+      (based on a patch by Ignacio Garcia Etxebarria).
+ 487. Fix ATI driver bug that caused the hardware cursor to move after mode
+      switches (Marc La France).
+ 486. Fix off-by-one error in screen positioning after a mode switch
+      (Marc La France).
+ 485. Backout part of 479 and implement a proper fix in the ATI driver
+      (Marc La France).
  484. Fix palette problem on NVIDIA Riva128 in DGA mode (Mark Vojkovich).
  483. setxkbmap patch that:
         - fixes bug in comand line parser
@@ -13164,4 +13173,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1750 2001/05/08 22:22:32 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1751 2001/05/09 00:41:04 mvojkovi Exp $
