@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.38 2001/10/28 03:33:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.39 2002/01/23 18:48:04 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -23,7 +23,6 @@
 #ifdef USE_AFB
 #include "afb.h"
 #endif
-#include "cfb24_32.h"
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -128,11 +127,6 @@ static const char *afbSymbols[] = {
 	NULL
 };
 
-static const char *cfbSymbols[] = {
-	"cfb24_32ScreenInit",
-	NULL
-};
-
 static const char *fbSymbols[] = {
 	"fbScreenInit",
 	"fbPictureInit",
@@ -212,7 +206,7 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&FBDEV, module, 0);
-		LoaderRefSymLists(afbSymbols, cfbSymbols, fbSymbols,
+		LoaderRefSymLists(afbSymbols, fbSymbols,
 				  shadowSymbols, fbdevHWSymbols, NULL);
 		return (pointer)1;
 	} else {
@@ -548,21 +542,10 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		{
 		case 8:
 		case 16:
+		case 24:
 		case 32:
 			mod = "fb";
 			syms = fbSymbols;
-			break;
-		case 24:
-			if (pix24bpp == 32)
-			{
-				mod = "xf24_32bpp";
-				syms = cfbSymbols;
-			}
-			else 
-			{
-				mod = "fb";
-				syms = fbSymbols;
-			}
 			break;
 		default:
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
