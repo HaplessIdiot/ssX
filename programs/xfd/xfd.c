@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xfd/xfd.c,v 1.5 2001/04/01 14:00:20 tsi Exp $ */
+/* $XFree86: xc/programs/xfd/xfd.c,v 1.7 2002/07/03 06:50:59 keithp Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -257,7 +257,7 @@ main(int argc, char *argv[])
 			    FC_FAMILY, FcTypeString, family,
 			    FC_STYLE, FcTypeString, style,
 			    FC_SIZE, FcTypeDouble, size,
-			    0);
+			    NULL);
 	fontname = (char *) FcNameUnparse (p);
 	FcPatternDestroy (p);
     }
