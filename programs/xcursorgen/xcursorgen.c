@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xcursorgen/xcursorgen.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xcursorgen/xcursorgen.c,v 1.5 2002/10/16 15:35:17 tsi Exp $ */
 /*
  * xcursorgen.c
  *
@@ -47,13 +47,14 @@ struct flist
 static void
 usage (char *name)
 {
-  fprintf (stderr, "usage: %s [-Vh] [--version] [--help] [CONFIG [OUT]]\n",
+  fprintf (stderr, "usage: %s [-Vh] [--version] [--help] [-p <dir>] [--prefix <dir>] [CONFIG [OUT]]\n",
 	   name);
 
   fprintf (stderr, "Generate an Xcursor file from a series of PNG images\n");
   fprintf (stderr, "\n");
-  fprintf (stderr, "  -V, --version    display the version number and exit\n");
-  fprintf (stderr, "  -?, --help       display this message and exit\n");
+  fprintf (stderr, "  -V, --version      display the version number and exit\n");
+  fprintf (stderr, "  -?, --help         display this message and exit\n");
+  fprintf (stderr, "  -p, --prefix <dir> find cursor images in <dir>\n");
   fprintf (stderr, "\n");
   fprintf (stderr, "With no CONFIG, or when CONFIG is -, read standard input. "
 		   "Same with OUT and\n");
@@ -140,7 +141,7 @@ premultiply_data (png_structp png, png_row_infop row_info, png_bytep data)
 }
 
 static XcursorImage *
-load_image (struct flist *list)
+load_image (struct flist *list, char *prefix)
 {
   XcursorImage *image;
   png_structp png;
@@ -150,6 +151,7 @@ load_image (struct flist *list)
   int i;
   png_uint_32 width, height;
   int depth, color, interlace;
+  char *file;
 
   png = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (png == NULL)
@@ -168,7 +170,19 @@ load_image (struct flist *list)
       return NULL;
     }
 
-  fp = fopen (list->pngfile, "rb");
+  if (prefix)
+    {
+      file = malloc (strlen (prefix) + 1 + strlen (list->pngfile) + 1);
+      strcpy (file, prefix);
+      strcat (file, "/");
+      strcat (file, list->pngfile);
+    }
+  else
+    file = list->pngfile;
+  fp = fopen (file, "rb");
+  if (prefix)
+    free (file);
+
   if (fp == NULL)
     {
       png_destroy_read_struct (&png, &info, NULL);
@@ -232,7 +246,7 @@ load_image (struct flist *list)
 }
 
 static int
-write_cursors (int count, struct flist *list, char *filename)
+write_cursors (int count, struct flist *list, char *filename, char *prefix)
 {
   XcursorImages *cimages;
   XcursorImage *image;
@@ -255,7 +269,7 @@ write_cursors (int count, struct flist *list, char *filename)
 
   for (i = 0; i < count; i++, list = list->next)
     {
-      image = load_image (list);
+      image = load_image (list, prefix);
       if (image == NULL)
 	{
 	  fprintf (stderr, "PNG error while reading %s!\n", list->pngfile);
@@ -312,50 +326,69 @@ main (int argc, char *argv[])
 {
   struct flist *list;
   int count;
-  char *filename;
+  char *in = 0, *out = 0;
+  char *prefix = 0;
+  int i;
 
-  if (argc > 1)
+  for (i = 1; i < argc; i++)
     {
-      if (strcmp (argv[1], "-V") == 0 || strcmp (argv[1], "--version") == 0)
+      if (strcmp (argv[i], "-V") == 0 || strcmp (argv[i], "--version") == 0)
         {
           printf ("xcursorgen version %s\n", VERSION_STR);
           return 0;
         }
 
-      if (strcmp (argv[1], "-?") == 0 || strcmp (argv[1], "--help") == 0)
+      if (strcmp (argv[i], "-?") == 0 || strcmp (argv[i], "--help") == 0)
         {
           usage (argv[0]);
           return 0;
         }
-      if (strcmp (argv[1], "-image") == 0)
+      if (strcmp (argv[i], "-image") == 0)
         {
 	  int i = 2;
 	  int ret = 0;
 	  while (argv[i])
 	  {
 	    if (check_image (argv[i]))
-	      ret = 1;
+	      ret = i;
 	    i++;
 	  }
 	  return ret;
 	}
+      if (strcmp (argv[i], "-p") == 0 || strcmp (argv[i], "--prefix") == 0)
+        {
+	  i++;
+	  if (argv[i] == 0)
+	    {
+	      usage (argv[0]);
+	      return 1;
+	    }
+	  prefix = argv[i];
+	  continue;
+        }
 
-      filename = argv[1];
+      if (!in)
+	in = argv[i];
+      else if (!out)
+	out = argv[i];
+      else
+      {
+	usage (argv[0]);
+	return 1;
+      }
     }
-  else
-    filename = "-";
 
-  count = read_config_file (filename, &list);
+  if (!in)
+    in = "-";
+  if (!out)
+    out = "-";
+
+  count = read_config_file (in, &list);
   if (count == 0)
     {
       fprintf (stderr, "Error reading config file!\n");
       return 1;
     }
 
-  if (argc > 2)
-    filename = argv[2];
-  else
-    filename = "-";
-
-  return write_cursors (count, list, filename);
+  return write_cursors (count, list, out, prefix);
 }
