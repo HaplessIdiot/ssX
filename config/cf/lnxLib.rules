@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.3 1994/06/18 16:11:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.4 1994/07/21 13:37:49 dawes Exp $
 
 /*
  * Linux shared library rules (DLL version)
@@ -29,10 +29,8 @@ XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.3 1994/06/18 16:11:31 dawes Exp $
 #define SharedLibraryLoadFlags /**/
 #endif
 #ifndef PositionIndependentCFlags
-#define PositionIndependentCFlags -B/usr/dll/jump/
+#define PositionIndependentCFlags -B/usr/bin/jump
 #endif
-
-DLL_BINDIR = /usr/dll/bin
 
 /*
  * These definitions are now extended to work with the X sources and
@@ -288,12 +286,12 @@ down/mk_JUMP_SA_1:: $(JUMP_SO)						@@\
 									@@\
 down/mk_JUMP_SA_1:: down/mk_JUMP_SO_2					@@\
 	$(RM) $(Concat(JUMP_STUBLIBS_,libname))				@@\
-	$(DLL_BINDIR)/mkstubs -v rev -l $(JUMP_LIB) \
+	mkstubs -v rev -l $(JUMP_LIB) \
 		-a $(Concat(JUMP_ADDRESS_,libname)) \
 		-j $(Concat(JUMP_JUMPTABLESIZE_,libname)) \
 		-g $(Concat(JUMP_GOTSIZE_,libname)) \
 		-- $(Concat(JUMP_STUBNAMES_,libname))			@@\
-	$(DLL_BINDIR)/verify-shlib -l $(JUMP_SO) \
+	verify-shlib -l $(JUMP_SO) \
 		$(Concat(JUMP_STUBLIBS_,libname))			@@\
 	$(MV) verify.out $(JUMP_DIR)					@@\
 	touch $@							@@\
@@ -311,7 +309,7 @@ down/mk_JUMP_SO_1:: $(JUMP_AR) mk_JUMP_SIBDIRS down/mk_JUMP_SO_2	@@\
 									@@\
 down/mk_JUMP_SO_2: down/mk_JUMP_AR $(Concat(JUMP_SIBARS_,libname))	@@\
 	$(RM) $(JUMP_SO)						@@\
-	$(DLL_BINDIR)/mkimage -f -v rev -l $(JUMP_LIB) \
+	mkimage -f -v rev -l $(JUMP_LIB) \
 		-a $(Concat(JUMP_ADDRESS_,libname)) \
 		-j $(Concat(JUMP_JUMPTABLESIZE_,libname)) \
 		-g $(Concat(JUMP_GOTSIZE_,libname)) \
