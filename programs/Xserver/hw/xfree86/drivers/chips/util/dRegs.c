@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.8 2001/10/01 13:44:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.9tsi Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -246,37 +246,47 @@ int main(void)
 
     storeReg = inb(0x3D4);
     {
+	unsigned char tmp;
+
 	outb(0x3D4,0);
 	HTotal = ((inb(0x3D5)&0xFF) + 5) << shift;
 	outb(0x3D4,1);
 	HDisplay = ((inb(0x3D5)&0xFF) + 1) << shift;
 	outb(0x3D4,4);
-	HSyncStart = ((inb(0x3D5)&0xFF) + 1) << shift;
+	HSyncStart = inb(0x3D5)&0xFF;
 	outb(0x3D4,5);
 	HSyncEnd = inb(0x3D5)&0x1F;
-	outb(0x3D4,5);
-	HSyncEnd += HSyncStart >> shift;
+	HSyncEnd |= HSyncStart & ~0x1F;
+	if (HSyncStart > HSyncEnd)
+	    HSyncEnd += (0x1F + 1);
+	HSyncStart++;
+	HSyncEnd++;
+	HSyncStart <<= shift;
 	HSyncEnd <<= shift;
 	
 	outb(0x3D4,6);
 	VTotal = inb(0x3D5)&0xFF;
 	outb(0x3D4,7);
-	VTotal |= (inb(0x3D5)&0x1) << 8;
-	VTotal |= (inb(0x3D5)&0x20) << 4;
+	tmp = inb(0x3D5)&0xFF;
+	VTotal |= (tmp&0x1) << 8;
+	VTotal |= (tmp&0x20) << 4;
 	VTotal += 2;
-	VDisplay = (inb(0x3D5)&0x2) << 7;
-	VDisplay |= (inb(0x3D5)&0x40) << 3;
-	VSyncStart = (inb(0x3D5)&0x4) << 6;
-	VSyncStart |= (inb(0x3D5)&0x80) << 2;
+	VDisplay = (tmp&0x2) << 7;
+	VDisplay |= (tmp&0x40) << 3;
+	VSyncStart = (tmp&0x4) << 6;
+	VSyncStart |= (tmp&0x80) << 2;
 	outb(0x3D4,0x12);
-	    VDisplay |= inb(0x3D5)&0xFF;
+	VDisplay |= inb(0x3D5)&0xFF;
 	VDisplay += 1;
 	outb(0x3D4,0x10);
 	VSyncStart |= inb(0x3D5)&0xFF;
-	
 	outb(0x3D4,0x11);
 	VSyncEnd = inb(0x3D5)&0xF;
-	VSyncEnd += VSyncStart;
+	VSyncEnd |= VSyncStart & ~0xF;
+	if (VSyncStart > VSyncEnd)
+	    VSyncEnd += (0xF + 1);
+	VSyncStart++;
+	VSyncEnd++;
 	
     }
     outb(0x3D4,storeReg);
