@@ -292,10 +292,13 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		break;
 	case PCI_CHIP_MGAG100:
 		initDAC = initDACG200;
-		initDAC[ MGA1064_SYS_PLL_M ] = 0x04;
-		initDAC[ MGA1064_SYS_PLL_N ] = 0x16;
-		initDAC[ MGA1064_SYS_PLL_P ] = 0x08;
-		pReg->Option = 0x4007D121;
+		initDAC[MGAGDAC_XVREFCTRL] = 0x03;
+		initDAC[ MGA1064_SYS_PLL_M ] = 0x02;
+		initDAC[ MGA1064_SYS_PLL_N ] = 0x15;
+		initDAC[ MGA1064_SYS_PLL_P ] = 0x18;
+		pReg->Option = 0x40079121;
+		pReg->Option = 0x400791A9;
+		pReg->Option2= 0x000000015;
 		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
@@ -538,12 +541,24 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 * Code is needed to get things back to bank zero.
 	 */
 	 
-	/* restore DAC registers */
+	/* restore DAC registers 
+	 * according to the docs we shouldn't write to reserved regs*/
 	for (i = 0; i < DACREGSIZE; i++)
-		outMGAdac(i, mgaReg->DacRegs[i]);
+	    if( (i <= 0x03) ||
+	    	(i == 0x07) ||
+	    	(i == 0x0b) ||
+	    	(i == 0x0f) ||
+	       ((i >= 0x13) && (i <= 0x17)) ||
+	    	(i == 0x1b) ||
+	    	(i == 0x1c) ||
+	       ((i >= 0x1f) && (i <= 0x29)) ||
+	       ((i >= 0x30) && (i <= 0x37)) )
+	       		continue;
+	    outMGAdac(i, mgaReg->DacRegs[i]);
 
 	/* restore pci_option register */
 	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option);
+	pciWriteLong(pMga->PciTag, PCI_MGA_OPTION2, mgaReg->Option2);
 
 	/* restore CRTCEXT regs */
 	for (i = 0; i < 6; i++)
@@ -562,7 +577,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	OUTREG16(0x1FDE, (mgaReg->ExtVga[0] << 8) | 0);
 
 #ifdef DEBUG		
-	ErrorF("DAC:");
+	ErrorF("Setting DAC:");
 	for (i=0; i<DACREGSIZE; i++) {
 #if 1
 		if(!(i%16)) ErrorF("\n%02X: ",i);
@@ -572,7 +587,9 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		ErrorF("0x%02X, ", mgaReg->DacRegs[i]);
 #endif
 	}
-	ErrorF("\nOPTION = %08lX\nCRTCEXT:", mgaReg->Option);
+	ErrorF("\nOPTION  = %08lX\n", mgaReg->Option);
+	ErrorF("OPTION2 = %08lX\n", mgaReg->Option2);
+	ErrorF("CRTCEXT:");
 	for (i=0; i<6; i++) ErrorF(" %02X", mgaReg->ExtVga[i]);
 	ErrorF("\n");
 #endif
@@ -614,12 +631,29 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		mgaReg->DacRegs[i] = inMGAdac(i);
 
 	mgaReg->Option = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
+	mgaReg->Option2 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION2);
 
 	for (i = 0; i < 6; i++)
 	{
 		OUTREG8(0x1FDE, i);
 		mgaReg->ExtVga[i] = INREG8(0x1FDF);
 	}
+#ifdef DEBUG		
+	ErrorF("Saved values:\nDAC:");
+	for (i=0; i<DACREGSIZE; i++) {
+#if 1
+		if(!(i%16)) ErrorF("\n%02X: ",i);
+		ErrorF("%02X ", mgaReg->DacRegs[i]);
+#else
+		if(!(i%8)) ErrorF("\n%02X: ",i);
+		ErrorF("0x%02X, ", mgaReg->DacRegs[i]);
+#endif
+	}
+	ErrorF("\nOPTION  = %08lX\n:", mgaReg->Option);
+	ErrorF("OPTION2 = %08lX\nCRTCEXT:", mgaReg->Option2);
+	for (i=0; i<6; i++) ErrorF(" %02X", mgaReg->ExtVga[i]);
+	ErrorF("\n");
+#endif
 }
 
 /****

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.4.2.1 1998/05/23 09:31:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.7 1998/07/25 16:55:53 dawes Exp $ */
 
 
 
@@ -227,6 +227,7 @@
 /* MGA registers in PCI config space */
 #define PCI_MGA_INDEX		0x44
 #define PCI_MGA_DATA		0x48
+#define PCI_MGA_OPTION2		0x50
 
 #define RAMDAC_OFFSET		0x3c00
 
@@ -323,6 +324,7 @@
 #define MGA1064_MUL_CTL_G16V16bits		0x06
 #define MGA1064_MUL_CTL_32_24bits		0x07
 
+#define MGAGDAC_XVREFCTRL		0x18
 #define MGA1064_PIX_CLK_CTL		0x1a
 #define MGA1064_PIX_CLK_CTL_CLK_DIS   		( 0x01 << 2 )
 #define MGA1064_PIX_CLK_CTL_CLK_POW_DOWN   	( 0x01 << 3 )

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.47 1998/09/19 12:14:55 dawes Exp $ */
+/* $XFree86: */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1958,3 +1958,98 @@ ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
 }
 #endif
 
+#if defined (DEBUG)
+/*
+ * some functions to track input/output in the server
+ */
+
+CARD8 dbg_inreg8(ScrnInfoPtr pScrn,int addr,int verbose) {
+    MGAPtr pMga;
+    CARD8 ret;
+
+    pMga = MGAPTR(pScrn);
+    ret = *(volatile CARD8 *)(pMga->IOBase + (addr));
+    if(verbose)
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg8 : 0x%8x = 0x%x\n",addr,ret);
+    return ret;
+}
+
+CARD16 dbg_inreg16(ScrnInfoPtr pScrn,int addr,int verbose) {
+    MGAPtr pMga;
+    CARD16 ret;
+
+    pMga = MGAPTR(pScrn);
+    ret = *(volatile CARD16 *)(pMga->IOBase + (addr));
+    if(verbose)
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg16: 0x%8x = 0x%x\n",addr,ret);
+    return ret;
+}
+
+CARD32 dbg_inreg32(ScrnInfoPtr pScrn,int addr,int verbose) {
+    MGAPtr pMga;
+    CARD32 ret;
+
+    pMga = MGAPTR(pScrn);
+    ret = *(volatile CARD32 *)(pMga->IOBase + (addr));
+    if(verbose)
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "inreg32: 0x%8x = 0x%x\n",addr,ret);
+    return ret;
+}
+
+void dbg_outreg8(ScrnInfoPtr pScrn,int addr,int val) {
+    MGAPtr pMga;
+    CARD8 ret;
+
+    pMga = MGAPTR(pScrn);
+#if 0
+    if( addr = 0x1fdf )
+    	return;
+#endif
+    if( addr != 0x3c00 ) {
+	ret = dbg_inreg8(pScrn,addr,0);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg8 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+    }
+    else {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg8 : index 0x%x\n",val);
+    }
+    *(volatile CARD8 *)(pMga->IOBase + (addr)) = (val);
+}
+
+void dbg_outreg16(ScrnInfoPtr pScrn,int addr,int val) {
+    MGAPtr pMga;
+    CARD16 ret;
+
+#if 0
+    if (addr == 0x1fde)
+    	return;
+#endif
+    pMga = MGAPTR(pScrn);
+    ret = dbg_inreg16(pScrn,addr,0);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg16 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+    *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val);
+}
+
+void dbg_outreg32(ScrnInfoPtr pScrn,int addr,int val) {
+    MGAPtr pMga;
+    CARD32 ret;
+
+    if (((addr & 0xff00) == 0x1c00) 
+    	&& (addr != 0x1c04)
+/*    	&& (addr != 0x1c1c) */
+    	&& (addr != 0x1c20)
+    	&& (addr != 0x1c24)
+    	&& (addr != 0x1c80)
+    	&& (addr != 0x1c8c)
+    	&& (addr != 0x1c94)
+    	&& (addr != 0x1c98)
+    	&& (addr != 0x1c9c)
+	 ) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "refused address 0x%x\n",addr);
+    	return;
+    }
+    pMga = MGAPTR(pScrn);
+    ret = dbg_inreg32(pScrn,addr,0);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "outreg32 : 0x%8x = 0x%x was 0x%x\n",addr,val,ret);
+    *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val);
+}
+#endif /* DEBUG */
