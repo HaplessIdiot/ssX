@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 708. Fix warning in lib/Xt/Alloc.c (Bugzilla #1035, Nicolas Jolly).
  707. Fix short overflow problem with box clipping in fb/fbcopy.c
       (Bugzilla #978, Stephen McCamant).
  706. Fix logic in xterm's get_pty() for platforms where old-style pty's are
@@ -18413,7 +18414,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3055 2003/12/25 22:04:01 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3056 2003/12/28 17:22:25 alanh Exp $
 
 
 
