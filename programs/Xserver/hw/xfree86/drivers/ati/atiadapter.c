@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.c,v 1.3 1999/07/06 11:38:23 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -42,5 +42,6 @@ const char *ATIAdapterNames[] =
     "IBM 8514/A or compatible",
     "ATI Mach8",
     "ATI Mach32",
-    "ATI Mach64"
+    "ATI Mach64",
+    "ATI Rage128"
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.3 1999/07/06 11:38:30 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -36,6 +36,7 @@ typedef enum
     ATI_CHIPSET_MACH8,
     ATI_CHIPSET_MACH32,
     ATI_CHIPSET_MACH64,
+    ATI_CHIPSET_RAGE128,
     ATI_CHIPSET_MAX             /* Must be last */
 } ATIChipsetType;
 
