@@ -1,4 +1,17 @@
 XFree86 4.0.1d (xx September 2000)
+ 714. Lots of Neomagic driver fixes/enhancements (Mark Vojkovich).
+      - Fix logic bug that kept HW cursor from being used.
+      - Added support for gamma correction and DirectColor visuals.
+      - Fixed some depth/bpp confusion (depth 15 works now).
+      - Convert from cfb to fb.
+      - Fix typo that kept the pixmap cache from being used.
+      - Fixed DGA support.
+      - Disable 8x8 pattern fills because they don't work.
+      - Set correct virtual desktop size limits for 2160 and older chips.
+      - Preliminary man page.
+      - Enable burst modes by default.
+      - Accelerate ImageWrite support for 2097/2160.  
+ 713. Fix some depth 32 problems in XAA (Mark Vojkovich).
  712. Add Silken Mouse to Rage 128 driver (Alan Hourihane).
  711. Resync DRI code/drivers with the DRI CVS (VA Linux).
  710. Add glxinfo to programs list (#4138, Mark Paton).
@@ -11159,4 +11172,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1320 2000/09/24 13:51:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1321 2000/09/24 16:29:37 alanh Exp $
