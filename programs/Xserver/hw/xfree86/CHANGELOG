@@ -1,4 +1,5 @@
 XFree86 4.0.2a (?? January 2001)
+1253. Fix multihead pointer problem on Rage 128 (Mark Vojkovich).
 1252. Resync with DRI CVS trunk (Kevin Martin, VA Linux Systems)
       - Add Radeon 3D driver (Kevin Martin and Gareth Hughes)
       - Improve Rage 128 3D driver support (Gareth Hughes)
@@ -12200,4 +12201,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1512 2001/01/06 21:58:29 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1513 2001/01/08 01:07:30 martin Exp $
