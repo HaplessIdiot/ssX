@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.65 1999/05/09 06:06:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.66 1999/05/16 06:55:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1199,8 +1199,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     InputInfoPtr pInfo;
 #endif
 
-    if (err < 0)
-	return;
+    if (err >= 0 {
 
     XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
 #ifdef	__OSF__
@@ -1234,13 +1233,18 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	    if (pInfo->read_input && pInfo->fd >= 0 &&
 		(FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
 		pInfo->read_input(pInfo);
-		/* break; XXX */
+		/*
+		 * Must break here because more than one device may share
+		 * the same file descriptor.
+		 */
+		break;
 	    }
 	    pInfo = pInfo->next;
 	}
 #endif
     }
 #endif	/* __OSF__ */
+    }
 #else   /* __EMX__ */
 
     (xf86Info.kbdEvents)();  /* Under OS/2, always call */
