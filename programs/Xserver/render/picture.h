@@ -42,6 +42,13 @@ typedef struct _Picture		*PicturePtr;
 					 ((g) << 4) | \
 					 ((b)))
 
+/*
+ * gray/color formats use a visual index instead of argb
+ */
+#define PICT_VISFORMAT(bpp,type,vi)	(((bpp) << 24) |  \
+					 ((type) << 16) | \
+					 ((vi)))
+
 #define PICT_FORMAT_BPP(f)	(((f) >> 24)       )
 #define PICT_FORMAT_TYPE(f)	(((f) >> 16) & 0xff)
 #define PICT_FORMAT_A(f)	(((f) >> 12) & 0x0f)
@@ -49,6 +56,7 @@ typedef struct _Picture		*PicturePtr;
 #define PICT_FORMAT_G(f)	(((f) >>  4) & 0x0f)
 #define PICT_FORMAT_B(f)	(((f)      ) & 0x0f)
 #define PICT_FORMAT_RGB(f)	(((f)      ) & 0xfff)
+#define PICT_FORMAT_VIS(f)	(((f)      ) & 0xffff)
 
 #define PICT_TYPE_OTHER	0
 #define PICT_TYPE_A	1
