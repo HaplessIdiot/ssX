@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.11 1999/03/14 11:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.13 2000/12/06 15:35:27 eich Exp $ */
 
 /*
  *
@@ -47,6 +47,7 @@
 #include "loader.h"
 #include "coffloader.h"
 
+#define NO_COMPILER_H_EXTRAS
 #include "compiler.h"
 /*
 #ifndef LDTEST
