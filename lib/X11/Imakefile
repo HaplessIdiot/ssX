@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/192 1996/02/02 16:15:49 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.12 1996/02/19 09:48:07 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.14 1996/08/26 06:19:02 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -59,6 +59,9 @@ EXTRA_LIBRARIES = /**/
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
+#if HasSnprintf
+    MISC_DEFINES = -DHAS_SNPRINTF -DLIBX11
+#endif
 #if MotifBC
       BC_DEFINES = -DMOTIFBC
 #endif
@@ -72,12 +75,16 @@ EXTRA_LIBRARIES = /**/
          K5INCL = Krb5Includes
          K5DEFS = Krb5Defines
 #endif
+#if !HasSnprintf
+       MISCSRCS = snprintf.c
+       MISCOBJS = snprintf.o
+#endif
 #if NeedLibInsideFlag
     LIB_DEFINES = -D_XLIBINT_
 #endif
  LIB_MT_DEFINES = LibraryMTDefines
 
-        DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES)
+        DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES) $(MISC_DEFINES)
    OPEN_DEFINES = -I$(EXTINCSRC) $(K5INCL) $(K5DEFS)
  DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES) $(THREADS_DEFINES) $(LIB_MT_DEFINES)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
@@ -672,7 +679,7 @@ SRCS3 = \
 	LockDis.c \
 	x11trans.c \
 	ximtrans.c \
-	$(XKBSRCS) $(LCSRCS)
+	$(XKBSRCS) $(LCSRCS) $(MISCSRCS)
 
 OBJS3 = \
 	Lab.o \
@@ -753,7 +760,7 @@ OBJS3 = \
 	LockDis.o \
 	x11trans.o \
 	ximtrans.o \
-	$(XKBOBJS) $(LCOBJS)
+	$(XKBOBJS) $(LCOBJS) $(MISCOBJS)
 
 #ifdef RsArchitecture
 LCDEPSYMSRCS = aixlcLoad.c
@@ -946,6 +953,12 @@ LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 #endif
+
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,../misc)
+SpecialCLibObjectRule(snprintf,$(ICONFIGFILES),-DLIBX11)
+#endif
+LinkSourceFile(snprintf.h,../misc)
 
 MAKEKEYS = ./makekeys
 

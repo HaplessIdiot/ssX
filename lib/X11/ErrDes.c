@@ -1,5 +1,6 @@
 /*
  * $XConsortium: ErrDes.c,v 11.54 95/06/08 23:20:39 gildea Exp $
+ * $XFree86$
  */
 
 /***********************************************************
@@ -54,6 +55,7 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include "Xresource.h"
 #include <stdio.h>
+#include "snprintf.h"
 
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XErrorDB"
@@ -118,7 +120,8 @@ XGetErrorText(dpy, code, buffer, nbytes)
 	    bext = ext;
     }    
     if (!buffer[0] && bext) {
-	sprintf(buf, "%s.%d", bext->name, code - bext->codes.first_error);
+	_XSnprintf(buf, sizeof(buf), "%s.%d", bext->name,
+		   code - bext->codes.first_error);
 	XGetErrorDatabaseText(dpy, "XProtoError", buf, "", buffer, nbytes);
     }
     if (!buffer[0])
@@ -176,7 +179,7 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 
     if (db)
     {
-	sprintf(temp, "%s.%s", name, type);
+	_XSnprintf(temp, sizeof(temp), "%s.%s", name, type);
 	XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
     }
     else
