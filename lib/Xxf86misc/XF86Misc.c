@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.1 1996/01/17 12:45:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.2 1996/01/24 21:58:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -188,7 +188,7 @@ Bool XF86MiscGetMouseSettings(dpy, mouseinfo)
         }
         _XReadPad(dpy, mouseinfo->device, rep.devnamelen);
     } else
-	mouseinfo->device = "";
+	mouseinfo->device = NULL;
 
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.9 1996/01/12 14:38:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.10 1996/02/04 09:13:31 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -357,6 +357,7 @@ ET3000Init(mode)
     mode->CrtcHDisplay /= 2;
     mode->CrtcHSyncStart /= 2;
     mode->CrtcHSyncEnd /= 2;
+    mode->CrtcHSkew /= 2;
     mode->CrtcHAdjusted = TRUE;
   }
 #endif
