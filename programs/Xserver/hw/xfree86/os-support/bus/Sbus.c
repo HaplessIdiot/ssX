@@ -1,5 +1,5 @@
 /*
- * Linux platform specific SBUS and OpenPROM access functions.
+ * SBUS and OpenPROM access functions.
  *
  * Copyright (C) 2000 Jakub Jelinek (jakub@redhat.com)
  *
@@ -20,15 +20,14 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxSbus.c,v 1.3 2000/06/30 17:15:18 dawes Exp $ */
-    
+/* $XFree86$ */
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <asm/openpromio.h>
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -48,7 +47,7 @@ static int
 promGetSibling(int node)
 {
     promOpio->oprom_size = sizeof(int);
-    
+
     if (node == -1) return 0;
     *(int *)promOpio->oprom_array = node;
     if (ioctl(promFd, OPROMNEXT, promOpio) < 0)
@@ -61,7 +60,7 @@ static int
 promGetChild(int node)
 {
     promOpio->oprom_size = sizeof(int);
-    
+
     if (!node || node == -1) return 0;
     *(int *)promOpio->oprom_array = node;
     if (ioctl(promFd, OPROMCHILD, promOpio) < 0)
@@ -74,7 +73,7 @@ static char *
 promGetProperty(const char *prop, int *lenp)
 {
     promOpio->oprom_size = MAX_VAL;
-    
+
     strcpy(promOpio->oprom_array, prop);
     if (ioctl(promFd, OPROMGETPROP, promOpio) < 0)
 	return 0;
@@ -211,7 +210,7 @@ static void promWalk(int node, int oldnode, int flags)
     char *prop = promGetProperty("device_type", &len);
     int devId, i, j;
     sbusPromNode pNode, pNode2;
-    
+
     while (prop) {
 	if (len <= 0 || strcmp(prop, "display"))
 	    break;
@@ -222,8 +221,10 @@ static void promWalk(int node, int oldnode, int flags)
 	if (!sbus && strcmp(prop, "ffb") && strcmp(prop, "afb") &&
 	    strcmp(prop, "cgfourteen"))
 	    break;
-	/* All /SUNW,ffb outside of SBUS tree come before all
-	 * /SUNW,afb outside of SBUS tree in Linux. */
+	/*
+	 * All /SUNW,ffb outside of SBUS tree come before all
+	 * /SUNW,afb outside of SBUS tree in Linux.
+	 */
 	if (!sbus && !strcmp(prop, "afb"))
 	    flags |= PROM_NODE_PREF;
 	for (i = 0; sbusDeviceTable[i].devId; i++)
