@@ -215,7 +215,7 @@ static void TAG(emit)( GLcontext *ctx,
       }
    }
 
-   if (VB->importable_data) {
+   if (VB->importable_data || (DO_SPEC && !spec_stride) || (DO_FOG && !fog_stride)) {
       /* May have nonstandard strides:
        */
       if (start) {
