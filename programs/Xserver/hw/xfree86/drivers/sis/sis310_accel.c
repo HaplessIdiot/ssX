@@ -1189,15 +1189,6 @@ SiSSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 	   SiSSetupPatternRegBurst(patadr[4],  patadr[5],  patadr[6],  patadr[7]);
 	   SiSSetupPatternRegBurst(patadr[8],  patadr[9],  patadr[10], patadr[11]);
 	   SiSSetupPatternRegBurst(patadr[12], patadr[13], patadr[14], patadr[15]);
-	   xf86DrvMsg(0, X_INFO, "%0lx %0lx %0lx %0lx\n",
-	   		patadr[0],  patadr[1],  patadr[2],  patadr[3]);
-           xf86DrvMsg(0, X_INFO, "%0lx %0lx %0lx %0lx\n",
-	   		patadr[4],  patadr[5],  patadr[6],  patadr[7]);
-	   xf86DrvMsg(0, X_INFO, "%0lx %0lx %0lx %0lx\n",
-	   		patadr[8],  patadr[9],  patadr[10],  patadr[11]);
-	   xf86DrvMsg(0, X_INFO, "%0lx %0lx %0lx %0lx\n",
-	   		patadr[12],  patadr[13],  patadr[14],  patadr[15]);
-	   xf86DrvMsg(0, X_INFO, "---\n");
 	   patadr += 16;  /* = 64 due to (CARD32 *) */
 	}
 
