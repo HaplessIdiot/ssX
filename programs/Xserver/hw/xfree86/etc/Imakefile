@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.25 1998/07/26 09:56:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.26 1998/08/29 05:43:40 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -67,7 +67,7 @@ all:: $(FILES)
        SRCS1 = kbd_mode.c
      DEFINES = XFree86ConsoleDefines
 
-all:: kbd_mode
+AllTarget(kbd_mode)
 
 SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)
 
@@ -99,7 +99,13 @@ NormalProgramTarget(joycal,joycal.o,NullParameter,NullParameter,NullParameter)
 InstallProgram(joycal,$(BINDIR))
 #endif
 
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3)
+        SRCS4 = pcitweak.c
+
+AllTarget(pcitweak)
+NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os,NullParameter)
+InstallProgram(pcitweak,$(BINDIR))
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
