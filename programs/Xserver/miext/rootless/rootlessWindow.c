@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.3 2003/06/07 05:49:06 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -290,7 +290,7 @@ RootlessPositionWindow(WindowPtr pWin, int x, int y)
 
 
 /*
- * RootlessEnsureFrame
+ * RootlessInitializeFrame
  *  Initialize some basic attributes of the frame. Note that winRec
  *  may already have valid data in it, so don't overwrite anything
  *  valuable.
@@ -468,6 +468,7 @@ RootlessReorderWindow(WindowPtr pWin)
     if (winRec != NULL && !winRec->is_reorder_pending) {
         WindowPtr newPrevW;
         RootlessWindowRec *newPrev;
+        RootlessFrameID newPrevID;
         ScreenPtr pScreen = pWin->drawable.pScreen;
 
         RootlessStopDrawing(pWin, FALSE);
@@ -479,6 +480,7 @@ RootlessReorderWindow(WindowPtr pWin)
             newPrevW = newPrevW->prevSib;
 
         newPrev = newPrevW != NULL ? WINREC(newPrevW) : NULL;
+        newPrevID = newPrev != NULL ? newPrev->wid : 0;
 
         /* If it exists, reorder the frame above us first. */
 
@@ -487,7 +489,7 @@ RootlessReorderWindow(WindowPtr pWin)
             RootlessReorderWindow(newPrevW);
         }
 
-        SCREENREC(pScreen)->imp->RestackFrame(winRec->wid, newPrev);
+        SCREENREC(pScreen)->imp->RestackFrame(winRec->wid, newPrevID);
     }
 }
 
