@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.85 2003/01/29 15:42:17 eich Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
@@ -518,7 +518,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 		      SiS_Chrontel701xBLOn(pSiS->SiS_Pr);
 		  } else if(pSiS->VBFlags & VB_LVDS) {
 		      extDDC_PCR |= (pSiS->LCDon & 0x0C);
-		  } else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		  } else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		      SiS_SiS30xBLOn(pSiS->SiS_Pr,&pSiS->sishw_ext);
 		  }
 	       } else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -542,7 +542,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 		      SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
 		   } else if(pSiS->VBFlags & VB_LVDS) {
 		      extDDC_PCR |= 0x08;
-		   } else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		   } else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		      SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
 		   }
 		} else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -574,7 +574,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 		      SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
 		   } else if(pSiS->VBFlags & VB_LVDS) {
 		      extDDC_PCR |= 0x0C;
-		   } else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		   } else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		      SiS_SiS30xBLOff(pSiS->SiS_Pr,&pSiS->sishw_ext);
 		   }
 		} else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -694,7 +694,7 @@ SISDisplayPowerManagementSetDH(ScrnInfoPtr pScrn, int PowerManagementMode, int f
 		   SiS_Chrontel701xBLOn(pSiS->SiS_Pr);
 		} else if(pSiS->VBFlags & VB_LVDS) {
 		   extDDC_PCR |= (pSiS->LCDon & 0x0C);
-		} else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		} else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		   SiS_SiS30xBLOn(pSiS->SiS_Pr, &pSiS->sishw_ext);
 		}
 	    } else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -714,7 +714,7 @@ SISDisplayPowerManagementSetDH(ScrnInfoPtr pScrn, int PowerManagementMode, int f
 		   SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
 		} else if(pSiS->VBFlags & VB_LVDS) {
 		   extDDC_PCR |= 0x08;
-		} else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		} else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		   SiS_SiS30xBLOff(pSiS->SiS_Pr, &pSiS->sishw_ext);
 		}
 	    } else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -733,7 +733,7 @@ SISDisplayPowerManagementSetDH(ScrnInfoPtr pScrn, int PowerManagementMode, int f
 		   SiS_Chrontel701xBLOff(pSiS->SiS_Pr);
 		} else if(pSiS->VBFlags & VB_LVDS) {
 		   extDDC_PCR |= 0x0C;
-		} else if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+		} else if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
 		   SiS_SiS30xBLOff(pSiS->SiS_Pr, &pSiS->sishw_ext);
 		}
 	    } else if(pSiS->VGAEngine == SIS_300_VGA) {
@@ -1123,7 +1123,7 @@ SiSDoPrivateDDC(ScrnInfoPtr pScrn)
 	return(SiSInternalDDC(pScrn, 1));
     else
 #endif
-        return(SiSInternalDDC(pScrn, 0));
+        return(SiSInternalDDC(pScrn, 0)); 
 }
 
 /* Mandatory */
@@ -1199,7 +1199,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-           "SiS driver (27/01/03-1) by "
+           "SiS driver (31/01/03-1) by "
 	   "Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
            "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -2595,10 +2595,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         break;
       case CRT2_LCD:
         pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_TV | CRT2_VGA);
-        if(pSiS->VBFlags & VB_VIDEOBRIDGE)
+        if((pSiS->VBFlags & VB_VIDEOBRIDGE) && (pSiS->VBLCDFlags))
             pSiS->VBFlags = pSiS->VBFlags | CRT2_LCD;
-        else
+        else {
             pSiS->VBFlags = pSiS->VBFlags & ~(CRT2_LCD);
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    	"Can't force CRT2 to LCD, no panel detected\n");
+	}
         break;
       case CRT2_VGA:
         if(pSiS->VBFlags & VB_LVDS) {
@@ -4306,6 +4309,14 @@ SISRestore(ScrnInfoPtr pScrn)
 	   pSiS->SiS_Pr->UseCustomMode = FALSE;
 	   pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
 	   SiSSetMode(pSiS->SiS_Pr, &pSiS->sishw_ext, pScrn, pSiS->OldMode, FALSE);
+#ifdef TWDEBUG
+		{
+		   SISRegPtr      pReg = &pSiS->ModeReg;
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"REAL REGISTER CONTENTS AFTER RESTORE BY SETMODE:\n");
+		   (*pSiS->SiSSave)(pScrn, pReg);
+		}
+#endif
 
         } else {
 
@@ -7456,7 +7467,7 @@ SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    /* We need the REAL refresh rate here */
    if(mode->Flags & V_INTERLACE)
-       	irefresh /= 2.0;
+       	irefresh /= 2;
 
    /* Do not multiply by 2 when DBLSCAN! */
    
@@ -7472,7 +7483,7 @@ SISSearchCRT1Rate(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		   index = sisx_vrate[i].idx;
 		   break;
 	       } else if(sisx_vrate[i].refresh > irefresh) {
-		   if((sisx_vrate[i].refresh - irefresh) <= 2) {
+		   if((sisx_vrate[i].refresh - irefresh) <= 3) {
 		      index = sisx_vrate[i].idx;
 		   } else if( ((checksis730 == FALSE) || (sisx_vrate[i - 1].SiS730valid32bpp == TRUE)) && 
 		              ((irefresh - sisx_vrate[i - 1].refresh) <=  2) &&

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.6 2002/11/29 13:52:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.8 2003/01/29 15:42:16 eich Exp $ */
 #ifndef  _INIT301_
 #define  _INIT301_
 
@@ -168,6 +168,7 @@ USHORT   SiS_SetSCLKHigh(SiS_Private *SiS_Pr);
 USHORT   SiS_ReadDDC2Data(SiS_Private *SiS_Pr, USHORT tempax);
 USHORT   SiS_WriteDDC2Data(SiS_Private *SiS_Pr, USHORT tempax);
 USHORT   SiS_CheckACK(SiS_Private *SiS_Pr);
+USHORT   SiS_ReadLCDDDC(SiS_Private *SiS_Pr, USHORT length, unsigned char *buffer);
 #ifdef SIS315H
 void     SiS_OEM310Setting(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT BaseAddr,
                            UCHAR *ROMAddr,USHORT ModeNo,USHORT ModeIdIndex);

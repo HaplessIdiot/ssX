@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.6 2002/11/29 13:52:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.8 2003/01/29 15:42:17 eich Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -258,6 +258,7 @@ sis300Setup(ScrnInfoPtr pScrn)
     unsigned int    config;
     unsigned char   temp;
     int		    cpubuswidth;
+    int 	    from = X_PROBED;
 
     pSiS->MemClock = SiSMclk(pSiS);
 
@@ -265,35 +266,23 @@ sis300Setup(ScrnInfoPtr pScrn)
     pScrn->videoRam = ((config & 0x3F) + 1) * 1024;
     cpubuswidth = bus[config >> 6];
     
-    /* TW: What we need here is the GPU-To-VRAM bus width. SR14
-     * only tells us the CPU-To-VRAM bus width, which is not
-     * relevant for refresh rate calculations!
-     * The GPU-To-VRAM bus width seems to be 64bit in all
-     * integrated variants of 300 series GPUs, 128 on the 300.
-     * (SR14 is set by the BIOS by storing 32bit values to 
-     * video RAM and comparing this values. This makes it
-     * clear that SR14 only gives information on the CPU-To-VRAM
-     * bus width; it does not inform us with what bus witdh the
-     * CRT controller can access the RAM. (This is especially
-     * of importance on eg 300/305 cards: These are PCI 32 bit
-     * compatible, but the CRT controller can access the RAM
-     * with a bus width of 64bit.)
-     */
-     
     switch(pSiS->Chipset) {
     case PCI_CHIP_SIS300:
-    	pSiS->BusWidth = 128;
+    	pSiS->BusWidth = cpubuswidth;
 	break;
     case PCI_CHIP_SIS540:
     	pSiS->BusWidth = 64;
+	from = X_INFO;
 	break;
     case PCI_CHIP_SIS630:
     	pSiS->BusWidth = 64;
+	from = X_INFO;
 	break;
     default:
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Internal error: sis300setup() called with invalid chipset!\n");
 	pSiS->BusWidth = 64;
+	from = X_INFO;
     }
 
     inSISIDXREG(SISSR, 0x3A, config);
@@ -320,12 +309,9 @@ sis300Setup(ScrnInfoPtr pScrn)
 	    adaptermclk[(temp & 0x07)]);
     }
     
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-            "Detected CPU-To-DRAM bus width: %d bit\n",
-	    cpubuswidth);
-
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-            "Assumed GPU-To-DRAM bus width: %d bit\n",
+    xf86DrvMsg(pScrn->scrnIndex, from,
+            "%s DRAM bus width: %d bit\n",
+	    (from == X_PROBED) ? "Detected" : "Assuming",
 	    pSiS->BusWidth);
 }
 

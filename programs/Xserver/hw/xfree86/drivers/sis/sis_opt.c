@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.12 2002/11/29 13:52:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.14 2003/01/29 15:42:17 eich Exp $ */
 /*
  *
  * SiS driver option evaluation
@@ -352,6 +352,8 @@ SiSOptions(ScrnInfoPtr pScrn)
 	    pSiS->ForceTVType = TV_SCART;
         } else if((!strcmp(strptr,"LCD")) || (!strcmp(strptr,"lcd")))
             pSiS->ForceCRT2Type = CRT2_LCD;
+        else if((!strcmp(strptr,"DVI")) || (!strcmp(strptr,"dvi")))
+            pSiS->ForceCRT2Type = CRT2_LCD;	    
         else if((!strcmp(strptr,"VGA")) || (!strcmp(strptr,"vga")))
             pSiS->ForceCRT2Type = CRT2_VGA;
         else if((!strcmp(strptr,"NONE")) || (!strcmp(strptr,"none")))
@@ -360,7 +362,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"\"%s\" is not a valid parameter for Option \"ForceCRT2Type\"\n", strptr);
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	        "Valid parameters are \"LCD\", \"TV\", \"SVIDEO\", \"COMPOSITE\", \"SCART\", \"VGA\" or \"NONE\"\n");
+	        "Valid parameters are \"LCD\" (alias \"DVI\"), \"TV\", \"SVIDEO\", \"COMPOSITE\", \"SCART\", \"VGA\" or \"NONE\"\n");
 	}
 
         if(pSiS->ForceCRT2Type != CRT2_DEFAULT)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.6 2003/01/29 15:42:17 eich Exp $ */
 /*
  * sis_driver.h
  *
@@ -70,7 +70,7 @@ static const struct _sis_vrate {
 	{1,  720,  576,  58,  TRUE},
 	{1,  800,  480,  60,  TRUE}, {2,  800,  480,  75,  TRUE}, {3,  800,  480,  85,  TRUE},
 	{1,  800,  600,  56,  TRUE}, {2,  800,  600,  60,  TRUE}, {3,  800,  600,  72,  TRUE}, 
-	{4,  800,  600,  75,  TRUE}, {5,  800,  600,  85,  TRUE}, {6,  800,  600, 100,  TRUE}, 
+	{4,  800,  600,  75,  TRUE}, {5,  800,  600,  85,  TRUE}, {6,  800,  600, 105,  TRUE}, 
 	{7,  800,  600, 120,  TRUE}, {8,  800,  600, 160,  TRUE},
 	{1,  848,  480,  39,  TRUE}, {2,  848,  480,  60,  TRUE},
 	{1,  856,  480,  39,  TRUE}, {2,  856,  480,  60,  TRUE},

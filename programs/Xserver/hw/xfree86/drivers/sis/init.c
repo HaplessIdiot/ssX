@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.3 2002/12/11 17:43:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.5 2003/01/29 15:42:16 eich Exp $ */
 /*
  * Mode switching code (CRT1 section) for SiS 300/540/630/730/315/550/650/740/330
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -2917,9 +2917,9 @@ SiS_SearchModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT *ModeNo,USHORT *Mode
 
       if((*ModeNo) <= 5) (*ModeNo) |= 1;
 
-      for (*ModeIdIndex=0;;(*ModeIdIndex)++) {
-         if (SiS_Pr->SiS_SModeIDTable[*ModeIdIndex].St_ModeID == (*ModeNo)) break;
-         if (SiS_Pr->SiS_SModeIDTable[*ModeIdIndex].St_ModeID == 0xFF)   return FALSE;
+      for(*ModeIdIndex=0;;(*ModeIdIndex)++) {
+         if(SiS_Pr->SiS_SModeIDTable[*ModeIdIndex].St_ModeID == (*ModeNo)) break;
+         if(SiS_Pr->SiS_SModeIDTable[*ModeIdIndex].St_ModeID == 0xFF)   return FALSE;
       }
 
       if(*ModeNo == 0x07) {
@@ -2935,9 +2935,9 @@ SiS_SearchModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT *ModeNo,USHORT *Mode
 
    } else {
 
-      for (*ModeIdIndex=0;;(*ModeIdIndex)++) {
-         if (SiS_Pr->SiS_EModeIDTable[*ModeIdIndex].Ext_ModeID == (*ModeNo)) break;
-         if (SiS_Pr->SiS_EModeIDTable[*ModeIdIndex].Ext_ModeID == 0xFF)   return FALSE;
+      for(*ModeIdIndex=0;;(*ModeIdIndex)++) {
+         if(SiS_Pr->SiS_EModeIDTable[*ModeIdIndex].Ext_ModeID == (*ModeNo)) break;
+         if(SiS_Pr->SiS_EModeIDTable[*ModeIdIndex].Ext_ModeID == 0xFF)      return FALSE;
       }
 
    }
@@ -2954,8 +2954,8 @@ SiS_SearchVBModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT *ModeNo)
    if(*ModeNo <= 5) *ModeNo |= 1;
 
    for(ModeIdIndex=0; ; ModeIdIndex++) {
-       if (SiS_Pr->SiS_VBModeIDTable[ModeIdIndex].ModeID == *ModeNo) break;
-       if (SiS_Pr->SiS_VBModeIDTable[ModeIdIndex].ModeID == 0xFF)   return FALSE;
+        if(SiS_Pr->SiS_VBModeIDTable[ModeIdIndex].ModeID == *ModeNo) break;
+        if(SiS_Pr->SiS_VBModeIDTable[ModeIdIndex].ModeID == 0xFF)    return FALSE;
    }
 
    if(*ModeNo != 0x07) {
@@ -2969,7 +2969,6 @@ SiS_SearchVBModeID(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT *ModeNo)
 }
 
 /* TW: Checked against 630/301B, 315 1.09 and 650/301LVx 1.10.6s BIOS */
-/* TW: Modified */
 BOOLEAN
 SiS_CheckMemorySize(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension,
                     USHORT ModeNo,USHORT ModeIdIndex)
@@ -3047,7 +3046,7 @@ SiS_SetSeqRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT StandTableIndex)
 
    SiS_SetReg1(SiS_Pr->SiS_P3c4,0x01,SRdata);
 
-   for(i=02;i<=04;i++) {
+   for(i = 2; i <= 4; i++) {
        	SRdata = SiS_Pr->SiS_StandTable[StandTableIndex].SR[i-1];
      	SiS_SetReg1(SiS_Pr->SiS_P3c4,i,SRdata);
    }
@@ -3080,7 +3079,7 @@ SiS_SetCRTCRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,PSIS_HW_DEVICE_INFO HwDevice
 
   SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x11,0x7f);                       /* Unlock CRTC */
 
-  for(i=0;i<=0x18;i++) {
+  for(i = 0; i <= 0x18; i++) {
      CRTCdata = SiS_Pr->SiS_StandTable[StandTableIndex].CRTC[i];
      SiS_SetReg1(SiS_Pr->SiS_P3d4,i,CRTCdata);                     /* Set CRTC(3d4) */
   }
@@ -3103,7 +3102,7 @@ SiS_SetATTRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT StandTableIndex,
    UCHAR ARdata;
    USHORT i;
 
-   for(i=0;i<=0x13;i++) {
+   for(i = 0; i <= 0x13; i++) {
     ARdata = SiS_Pr->SiS_StandTable[StandTableIndex].ATTR[i];
 #if 0
     if((i <= 0x0f) || (i == 0x11)) {
@@ -3142,8 +3141,9 @@ SiS_SetATTRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT StandTableIndex,
    SiS_SetReg3(SiS_Pr->SiS_P3c0,0x14);                          /* set index  */
    SiS_SetReg3(SiS_Pr->SiS_P3c0,0x00);                          /* set data   */
 
-   SiS_GetReg2(SiS_Pr->SiS_P3da);                               /* Enable Attribute  */
-   SiS_SetReg3(SiS_Pr->SiS_P3c0,0x20);
+   SiS_GetReg2(SiS_Pr->SiS_P3da);
+   SiS_SetReg3(SiS_Pr->SiS_P3c0,0x20);				/* Enable Attribute  */
+   SiS_GetReg2(SiS_Pr->SiS_P3da);
 }
 
 /* TW: Checked against 300, 330, 650/LVDS (1.10.07, 1.10a) and 650/301LV BIOS */
@@ -3153,7 +3153,7 @@ SiS_SetGRCRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT StandTableIndex)
    UCHAR GRdata;
    USHORT i;
 
-   for(i=0;i<=0x08;i++) {
+   for(i = 0; i <= 0x08; i++) {
      GRdata = SiS_Pr->SiS_StandTable[StandTableIndex].GRC[i];
      SiS_SetReg1(SiS_Pr->SiS_P3ce,i,GRdata);                    /* Set GR(3ce) */
    }
@@ -3169,7 +3169,9 @@ SiS_ClearExt1Regs(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
   USHORT i;
 
-  for(i=0x0A;i<=0x0E;i++) SiS_SetReg1(SiS_Pr->SiS_P3c4,i,0x00);      /* Clear SR0A-SR0E */
+  for(i = 0x0A; i <= 0x0E; i++) {
+      SiS_SetReg1(SiS_Pr->SiS_P3c4,i,0x00);      /* Clear SR0A-SR0E */
+  }
 
   /* TW: New from 330, 650/LVDS/301LV BIOSes: */
   if(HwDeviceExtension->jChipType >= SIS_315H) {
@@ -3192,7 +3194,7 @@ SiS_SetSync(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT RefreshRateTableIndex)
 
   sync &= 0xC0;
   temp = 0x2F | sync;
-  SiS_SetReg3(SiS_Pr->SiS_P3c2,temp);                                 /* Set Misc(3c2) */
+  SiS_SetReg3(SiS_Pr->SiS_P3c2,temp);           /* Set Misc(3c2) */
 }
 
 /* TW: Checked against 300, 330, 650/LVDS (1.10.07) and 650/301LVx (1.10.6s) BIOS */
@@ -4473,6 +4475,10 @@ SiS_SetCRT1FIFO_630(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,
     }
   }
   else {
+    if(HwDeviceExtension->jChipType == SIS_730) { 
+    } else {
+      i = 9;
+    }
     ThresholdLow = 0x02;
   }
 
@@ -5524,24 +5530,24 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
    pSiS->SiS_Pr->CCRT1CRTC[12] = (pSiS->SiS_Pr->CVBlankEnd - 1) & 0xFF;		/* cr16 */
    
    pSiS->SiS_Pr->CCRT1CRTC[13] = 
-                        GETBITSTR(pSiS->SiS_Pr->CVTotal     -2, 10:10, 0:0) |
-                        GETBITSTR(pSiS->SiS_Pr->CVDisplay   -1, 10:10, 1:1) |
-                        GETBITSTR(pSiS->SiS_Pr->CVBlankStart-1, 10:10, 2:2) |
-                        GETBITSTR(pSiS->SiS_Pr->CVSyncStart -1, 10:10, 3:3) |
-                        GETBITSTR(pSiS->SiS_Pr->CVBlankEnd    ,   8:8, 4:4) |
-                        GETBITSTR(pSiS->SiS_Pr->CVSyncEnd     ,   4:4, 5:5) ;  
+                        GETBITSTR((pSiS->SiS_Pr->CVTotal     -2), 10:10, 0:0) |
+                        GETBITSTR((pSiS->SiS_Pr->CVDisplay   -1), 10:10, 1:1) |
+                        GETBITSTR((pSiS->SiS_Pr->CVBlankStart-1), 10:10, 2:2) |
+                        GETBITSTR((pSiS->SiS_Pr->CVSyncStart   ), 10:10, 3:3) |
+                        GETBITSTR((pSiS->SiS_Pr->CVBlankEnd  -1),   8:8, 4:4) |
+                        GETBITSTR((pSiS->SiS_Pr->CVSyncEnd   -1),   4:4, 5:5) ;  
 
    pSiS->SiS_Pr->CCRT1CRTC[14] = 
                         GETBITSTR((pSiS->SiS_Pr->CHTotal      >> 3) - 5, 9:8, 1:0) |
                         GETBITSTR((pSiS->SiS_Pr->CHDisplay    >> 3) - 1, 9:8, 3:2) |
-                        GETBITSTR((pSiS->SiS_Pr->CHBlankStart >> 3)    , 9:8, 5:4) |
-                        GETBITSTR((pSiS->SiS_Pr->CHSyncStart  >> 3)    , 9:8, 7:6) ;
+                        GETBITSTR((pSiS->SiS_Pr->CHBlankStart >> 3) - 1, 9:8, 5:4) |
+                        GETBITSTR((pSiS->SiS_Pr->CHSyncStart  >> 3) + 3, 9:8, 7:6) ;
 
         
    pSiS->SiS_Pr->CCRT1CRTC[15] =
-                        GETBITSTR(pSiS->SiS_Pr->CHBlankEnd >> 3, 7:6, 1:0) |
-                        GETBITSTR(pSiS->SiS_Pr->CHSyncEnd  >> 3, 5:5, 2:2) ;
-
+                        GETBITSTR((pSiS->SiS_Pr->CHBlankEnd >> 3) - 1, 7:6, 1:0) |
+                        GETBITSTR((pSiS->SiS_Pr->CHSyncEnd  >> 3) + 3, 5:5, 2:2) ; 
+			
    switch(depth) {
    case 8: 			
       	pSiS->SiS_Pr->CModeFlag = 0x223b;
@@ -5579,7 +5585,7 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
    	pSiS->SiS_Pr->CHDisplay,pSiS->SiS_Pr->CVDisplay);
    xf86DrvMsg(0, X_INFO, "Modeflag %04x, Infoflag %04x\n",
    	pSiS->SiS_Pr->CModeFlag, pSiS->SiS_Pr->CInfoFlag);
-   xf86DrvMsg(0, X_INFO, "  0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x\n",
+   xf86DrvMsg(0, X_INFO, " {{0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,\n",
    	pSiS->SiS_Pr->CCRT1CRTC[0],
 	pSiS->SiS_Pr->CCRT1CRTC[1],
 	pSiS->SiS_Pr->CCRT1CRTC[2],
@@ -5588,7 +5594,7 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
 	pSiS->SiS_Pr->CCRT1CRTC[5],
 	pSiS->SiS_Pr->CCRT1CRTC[6],
 	pSiS->SiS_Pr->CCRT1CRTC[7]);
-   xf86DrvMsg(0, X_INFO, "  0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x\n",
+   xf86DrvMsg(0, X_INFO, "  0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,0x%02x,\n",
    	pSiS->SiS_Pr->CCRT1CRTC[8],
 	pSiS->SiS_Pr->CCRT1CRTC[9],
 	pSiS->SiS_Pr->CCRT1CRTC[10],
@@ -5597,7 +5603,7 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
 	pSiS->SiS_Pr->CCRT1CRTC[13],
 	pSiS->SiS_Pr->CCRT1CRTC[14],
 	pSiS->SiS_Pr->CCRT1CRTC[15]);
-   xf86DrvMsg(0, X_INFO, "  0x%02x\n", pSiS->SiS_Pr->CCRT1CRTC[16]);
+   xf86DrvMsg(0, X_INFO, "  0x%02x}},\n", pSiS->SiS_Pr->CCRT1CRTC[16]);
    xf86DrvMsg(0, X_INFO, "Clock: 0x%02x, 0x%02x, %d\n",
    	pSiS->SiS_Pr->CSR2B,
 	pSiS->SiS_Pr->CSR2C,
