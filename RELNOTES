@@ -788,7 +788,7 @@ the Xft man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.2.0 includes sources for FreeType version 2.0.1, and, by default,
+XFree86 4.2.0 includes sources for FreeType version 2.0.6, and, by default,
 they are built and installed automatically.
 
 If you prefer, you can configure XFree86 4.2.0 to use an existing Freetype2
@@ -813,13 +813,10 @@ Render extension and the Xft and FreeType libraries to provide anti-aliased
 text.  Xterm, xditview and x11perf.  Migration of other applications may
 occur in future releases.
 
-By default, xterm uses core fonts through the standard core API.  It has two
-command line options and associated resources to direct it to use Xft
-instead:
+By default, xterm uses core fonts through the standard core API.  It has a
+command line option and associated resource to direct it to use Xft instead:
 
    o -fa family / .VT100.faceName: family.  Selects the font family to use.
-
-   o -fs pointsize / .VT100.faceSize: pointsize.  Selects the pointsize.
 
 Xditview will use Xft instead of the core API by default.  X11perf includes
 tests to measure the performance of text rendered in three ways, anti-
@@ -1046,7 +1043,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.70 2002/01/17 18:14:59 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.71 2002/01/21 19:01:35 dawes Exp $
 
 
 $XFree86: $
