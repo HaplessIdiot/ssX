@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.7 1996/05/06 06:00:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.8 1996/09/14 13:14:36 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -289,7 +289,7 @@ Xalloc (amount)
     if ((long)amount < 0) {
 	/* Diagnostic */
 #ifdef FATALERRORS
- 	FatalError("Xalloc warning: Xalloc(<0) ignored..\n");
+ 	FatalError("Xalloc: Xalloc(<0)\n");
 #else
  	ErrorF("Xalloc warning: Xalloc(<0) ignored..\n");
 #endif
@@ -451,7 +451,7 @@ XNFalloc (amount)
     if ((long)amount < 0) {
 	/* Diagnostic */
 #ifdef FATALERRORS
-	FatalError("Xalloc warning: XNFalloc(<0) ignored..\n");
+	FatalError("Xalloc: XNFalloc(<0)\n");
 #else
 	ErrorF("Xalloc warning: XNFalloc(<0) ignored..\n");
 #endif
@@ -508,7 +508,7 @@ Xrealloc (ptr, amount)
     if ((long)amount < 0) {
 	/* Diagnostic */
 #ifdef FATALERRORS
-	FatalError("Xalloc warning: Xrealloc(<0) ignored..\n");
+	FatalError("Xalloc: Xrealloc(<0)\n");
 #else
 	ErrorF("Xalloc warning: Xrealloc(<0) ignored..\n");
 #endif

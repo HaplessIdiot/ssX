@@ -19,7 +19,7 @@
   microsoft	en_US	=	en_US(pc104)
   microsoft	*	=	en_US(pc104)+%l%(v)
   *		us	=	us(pc101)
-  *		en_US	=	us_US(pc102)
+  *		en_US	=	en_US(pc102)
   *		*	=	en_US(pc102)+%l%(v)
 
 ! model		layout	=	compat		types
