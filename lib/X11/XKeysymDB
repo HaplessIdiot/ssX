@@ -11,7 +11,7 @@
 ! suitability of this software for any purpose.  It is provided "as is"
 ! without express or implied warranty.
 !
-! $XFree86: xc/lib/X11/XKeysymDB,v 3.14 2002/12/17 21:35:10 dawes Exp $
+! $XFree86: xc/lib/X11/XKeysymDB,v 3.15 2003/01/04 03:40:25 dawes Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -330,6 +330,24 @@ XF86WebCam		:1008FF8F
 XF86MailForward		:1008FF90
 XF86Pictures		:1008FF91
 XF86Music		:1008FF92
+
+! XFree86 special action keys
+XF86_Switch_VT_1	:1008FE01
+XF86_Switch_VT_2	:1008FE02
+XF86_Switch_VT_3	:1008FE03
+XF86_Switch_VT_4	:1008FE04
+XF86_Switch_VT_5	:1008FE05
+XF86_Switch_VT_6	:1008FE06
+XF86_Switch_VT_7	:1008FE07
+XF86_Switch_VT_8	:1008FE08
+XF86_Switch_VT_9	:1008FE09
+XF86_Switch_VT_10	:1008FE0A
+XF86_Switch_VT_11	:1008FE0B
+XF86_Switch_VT_12	:1008FE0C
+XF86_Ungrab		:1008FE20
+XF86_ClearGrab		:1008FE21
+XF86_Next_VMode		:1008FE22
+XF86_Prev_VMode		:1008FE23
 
 usldead_acute		:100000A8
 usldead_grave		:100000A9

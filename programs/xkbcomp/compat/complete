@@ -1,8 +1,10 @@
-// $XConsortium: complete,v 1.2 94/04/08 15:54:51 erik Exp $
-xkb_compatibility "default" 
-
-include "basic"
-augment "iso9995"
-augment "mousekeys"
-augment "misc"
+// $Xorg: complete,v 1.3 2000/08/17 19:54:34 cpqbld Exp $
+default xkb_compatibility "complete"  {
+    include "basic"
+    augment "iso9995"
+    augment "mousekeys"
+    augment "accessx(full)"
+    augment "misc"
+    augment "xfree86"
+};
 
