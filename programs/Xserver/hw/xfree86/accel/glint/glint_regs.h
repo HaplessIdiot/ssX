@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.9 1997/11/01 15:04:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.10 1997/12/05 22:01:30 hohndel Exp $ */
 
 /*
  * glint register file 
@@ -36,7 +36,7 @@
 #define PCI_CHIP_3DLABS_MX					0x06
 #define PCI_CHIP_3DLABS_PERMEDIA2				0x07
 #define PCI_CHIP_TI_PERMEDIA 	  				0x3d04
-#define PCI_CHIP_TI_3DLABS_PERMEDIA2			        0x3d07
+#define PCI_CHIP_TI_PERMEDIA2				        0x3d07
 
 #define CFGRevisionId						0x08
 #define CFGClassCode						0x09
@@ -49,7 +49,7 @@
 	(((c) == PCI_CHIP_3DLABS_PERMEDIA) || ((c) == PCI_CHIP_TI_PERMEDIA))
 
 #define IS_3DLABS_PM2_CLASS(c)			\
-	(((c) == PCI_CHIP_3DLABS_PERMEDIA2) || ((c) == PCI_CHIP_TI_3DLABS_PERMEDIA2))
+	(((c) == PCI_CHIP_3DLABS_PERMEDIA2) || ((c) == PCI_CHIP_TI_PERMEDIA2))
 
 #define IS_3DLABS_PM_FAMILY(c)			\
 	(IS_3DLABS_PERMEDIA_CLASS(c) || IS_3DLABS_PM2_CLASS(c))
@@ -221,7 +221,8 @@
 #define PM2DACCursorXLsb						0x4060
 #define PM2DACCursorXMsb						0x4068
 #define PM2DACCursorYLsb						0x4070
-#define PM2DACCursorMLsb						0x4078
+#define PM2DACCursorYMsb						0x4078
+#define PM2DACCursorControl						0x06
 #define PM2DACIndexCMR							0x18
 #define   PM2DAC_TRUECOLOR				0x80
 #define   PM2DAC_RGB					0x20
@@ -238,7 +239,7 @@
 #define PM2DACIndexMDCR							0x19
 #define PM2DACIndexPalettePage					        0x1c
 #define PM2DACIndexMCR							0x1e
-#define PM2DACIndexClockYM						0x20
+#define PM2DACIndexClockAM						0x20
 #define PM2DACIndexClockAN						0x21
 #define PM2DACIndexClockAP						0x22
 #define PM2DACIndexClockBM						0x23
@@ -308,6 +309,8 @@
 	#define CoverageEnable						0x08000
 	#define SubPixelCorrectionEnable				0x10000
 	#define SpanOperation						0x40000
+	#define XPositive			1<<21
+	#define YPositive			1<<22
 
 
 #define ContinueNewLine							GLINT_TAG_ADDR(0x00,0x08)
@@ -316,6 +319,7 @@
 #define Continue							GLINT_TAG_ADDR(0x00,0x0b)
 #define FlushSpan							GLINT_TAG_ADDR(0x00,0x0c)
 #define BitMaskPattern							GLINT_TAG_ADDR(0x00,0x0d)
+#define		BitMaskPackingEachScanline	1<<9
 
 #define PointTable0							GLINT_TAG_ADDR(0x01,0x00)
 #define PointTable1							GLINT_TAG_ADDR(0x01,0x01)
@@ -404,6 +408,10 @@
 #define TxBaseAddrLR						GLINT_TAG_ADDR(0x0a,0x01)
 #define TexelLUT						GLINT_TAG_ADDR(0x0a,0x00)
 
+#define PMTextureBaseAddress					GLINT_TAG_ADDR(0x0b,0x00)
+#define PMTextureMapFormat					GLINT_TAG_ADDR(0x0b,0x01)
+#define PMTextureDataFormat					GLINT_TAG_ADDR(0x0b,0x02)
+
 #define Texel0							GLINT_TAG_ADDR(0x0c,0x00)
 #define Texel1							GLINT_TAG_ADDR(0x0c,0x01)
 #define Texel2							GLINT_TAG_ADDR(0x0c,0x02)
@@ -418,6 +426,8 @@
 #define Interp3							GLINT_TAG_ADDR(0x0c,0x0b)
 #define Interp4							GLINT_TAG_ADDR(0x0c,0x0c)
 #define TextureFilter						GLINT_TAG_ADDR(0x0c,0x0d)
+#define PMTextureReadMode					GLINT_TAG_ADDR(0x0c,0x0e)
+#define TexelLUTMode						GLINT_TAG_ADDR(0x0c,0x0f)
 
 #define TextureColorMode					GLINT_TAG_ADDR(0x0d,0x00)
   #define TextureTypeOpenGL 0
@@ -746,6 +756,12 @@
 
 #define FBSourceDelta						GLINT_TAG_ADDR(0x1B,0x01)
 #define Config							GLINT_TAG_ADDR(0x1B,0x02)
+#define		CFBRM_SrcEnable		1<<0
+#define		CFBRM_DstEnable		1<<1
+#define		CFBRM_Packed		1<<2
+#define		CWM_Enable		1<<3
+#define		CCDDA_Enable		1<<4
+#define		CLogOp_Enable		1<<5
 #define YUVMode                                                 GLINT_TAG_ADDR(0x1E,0x00)
 
 
@@ -858,6 +874,7 @@ typedef struct {
 	unsigned int vtgmodectl;
 	unsigned int fbmodesel;
 	unsigned int pitch;
+	unsigned int screenstride;
 } glintCRTCRegRec, *glintCRTCRegPtr;
 
 

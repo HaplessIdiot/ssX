@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.20 1997/11/09 09:31:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.21 1997/11/22 00:00:14 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -2457,6 +2457,7 @@ TVGA8900Init(mode)
 			GE_OP |= 0x100; /* Disable Clip by default */
 		if (vgaBitsPerPixel == 8) 
 		{
+			new->std.Attribute[17] = 0x00;
 			if (IsTGUI9685) 
 			{
 #if 0

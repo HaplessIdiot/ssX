@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.3 1997/11/01 15:04:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.h,v 1.4 1997/12/05 06:39:04 hohndel Exp $ */
 /*
  * IBM RGB526 registers
  */
@@ -336,6 +336,10 @@
 #define 	IBM640_PLL_EN	0x04
 #define		IBM640_PLL_HIGH	0x10
 #define		IBM640_PLL_LOW	0x01
+#define RGB640_AUX_PLL_CTL		0x17
+#define		IBM640_AUXPLL	0x04
+#define		IBM640_AUX_HI	0x02
+#define		IBM640_AUX_LO	0x01
 #define RGB640_VRAM_MASK0		0xf0
 #define RGB640_VRAM_MASK1		0xf1
 #define RGB640_VRAM_MASK2		0xf2

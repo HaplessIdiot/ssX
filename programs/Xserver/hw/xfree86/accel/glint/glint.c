@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.18 1997/12/05 22:01:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.19 1997/12/14 10:03:57 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -248,6 +248,11 @@ ModuleInit(data,magic)
 
 extern void XAAQueryBestSize();
 extern void XAAWarpCursor();
+extern void PM2DACShowCursor();
+extern void PM2DACHideCursor();
+extern void PM2DACSetCursorPosition();
+extern void PM2DACSetCursorColors();
+extern void PM2DACLoadCursorImage();
 extern void glintIBMShowCursor();
 extern void glintIBMHideCursor();
 extern void glintIBMSetCursorPosition();
@@ -255,10 +260,13 @@ extern void glintIBMSetCursorColors();
 extern void glintIBMLoadCursorImage();
 
 Bool glintDoubleBufferMode = FALSE;
-extern Bool glintInitialized;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern Bool xf86Exiting, xf86Resetting;
 extern int VBlank;
+extern int pprod;
+extern int partprod500TX[];
+extern int partprodPermedia[];
+Bool VGAcore;
 ScreenPtr savepScreen = NULL;
 Bool glintReloadCursor, glintBlockCursor;
 unsigned char glintSwapBits[256];
@@ -278,6 +286,7 @@ int GLINTWindowBase;
 int glintAdjustCursorXPos = 0;
 static glintCRTCRegRec glintCRTCRegs;
 extern int defaultColorVisualClass;
+extern void PermediaSaveVGAInfo();
 volatile unsigned long *VidBase;
 Bool xf86issvgatype;
 #define glintReorderSwapBits(a,b)		b = \
@@ -557,13 +566,13 @@ glintProbe()
 			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
-	case PCI_CHIP_TI_3DLABS_PERMEDIA2:
+	case PCI_CHIP_TI_PERMEDIA2:
 		glintcopro = PCI_EN |
 			(pcrp->_bus << 16) |
 			(pcrp->_cardnum << 11) | (pcrp->_func << 8);
 		basecopro = pcrp->_base0;
 		pcrpglint = pcrp;
-		coprotype = PCI_CHIP_3DLABS_PERMEDIA2;
+		coprotype = PCI_CHIP_TI_PERMEDIA2;
 		if( cardnum == -1 )
 			cardnum = pcrp->_cardnum;
 		else if( cardnum != pcrp->_cardnum )
@@ -857,9 +866,6 @@ glintProbe()
 		default:
 			ErrorF("Detected unknown Ramdac with id 0x%x\n");
 	    }
-#if 0
-	    glintIBMRGB52x_PreInit();
-#endif
 	}
 	else {
 	    ErrorF("%s %s: GLINT TX/MX and Permedia are only supported with\n",
@@ -875,12 +881,23 @@ glintProbe()
 	 */
 	ErrorF("%s %s: Using builtin RAMDAC of Permedia 2 chip\n",
 	           XCONFIG_PROBED,glintInfoRec.name);
+  }
+  if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	ErrorF("%s %s: Fitted Memory type is : %s\n", XCONFIG_PROBED,
-		glintInfoRec.name, GLINT_READ_REG(MemControl) & 0x10 ? 
+		glintInfoRec.name, GLINT_READ_REG(PMRomControl) & 0x10 ? 
 					"SDRAM" : "SGRAM");
+	ErrorF("%s %s: VGA core is : %s\n", XCONFIG_PROBED,
+		glintInfoRec.name, GLINT_READ_REG(ChipConfig) & 0x2 ?
+					"Enabled" : "Disabled");
+	if (GLINT_READ_REG(ChipConfig) & 0x2) {
+		VGAcore = TRUE;
+	} else {
+		VGAcore = FALSE;
+	}
   }
 #if DEBUG
-	glintDumpRegs();
+	if( xf86Verbose > 3)					
+	  glintDumpRegs();
 #endif
 
   OFLG_ZERO(&validOptions);
@@ -931,15 +948,16 @@ glintProbe()
   }
 
   /* Let's grab the basic mode lines */
-#if 0
   tx = glintInfoRec.virtualX;
   ty = glintInfoRec.virtualY;
-#else
-  if (glintInfoRec.virtualX > 0) {
-	ErrorF("%s %s: Virtual coordinates - Not yet supported. "
+
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+  	if (glintInfoRec.virtualX > 0) {
+		ErrorF("%s %s: Virtual coordinates - Not yet supported. "
 		   "Ignoring.\n", XCONFIG_GIVEN, glintInfoRec.name);
+  	}
   }
-#endif
+
   pMode = glintInfoRec.modes;
   if (pMode == NULL)
   { 
@@ -958,24 +976,16 @@ glintProbe()
 		pModeSv = pMode->next;
 		xf86DeleteMode(&glintInfoRec, pMode);
 		pMode = pModeSv;
-#if 0
 	} else if (((tx > 0) && (pMode->HDisplay > tx)) ||
 		   ((ty > 0) && (pMode->VDisplay > ty))) {
 		ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
 			XCONFIG_PROBED, glintInfoRec.name,
 			pMode->HDisplay, pMode->VDisplay, tx, ty);
 		xf86DeleteMode(&glintInfoRec, pMode);
-#endif
 	} else {
 		if (pEnd == (DisplayModePtr) NULL)
 			pEnd = pMode;
 
-#if 0
-		glintInfoRec.virtualX = max(glintInfoRec.virtualX,
-						pMode->HDisplay);
-		glintInfoRec.virtualY = max(glintInfoRec.virtualY,
-						pMode->VDisplay);
-#else
 		if (pMode->HDisplay % 4)
 		{
 			pModeSv = pMode->next;
@@ -988,21 +998,42 @@ glintProbe()
 		}
 		else
 		{
-			glintInfoRec.virtualX = pMode->HDisplay;
-			glintInfoRec.virtualY = pMode->VDisplay;
-			pModeInited = TRUE; /* We have a mode - only 1 supported */
+			glintInfoRec.virtualX = max(glintInfoRec.virtualX, 
+							pMode->HDisplay);
+			glintInfoRec.virtualY = max(glintInfoRec.virtualY, 
+							pMode->VDisplay);
+			if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+				pMode = pEnd; /*  only one mode supported */
+			}
 		}
-#endif
 	}
-	pMode = pModeSv;
-  } while (pModeInited == FALSE) /* (pMode != pEnd) */; 
+	if (IS_3DLABS_PM_FAMILY(coprotype)) {
+		pMode = pModeSv;
+	}
+  } while (pMode != pEnd); 
 
-#if 1
-  ErrorF("%s %s: 3Dlabs driver currently only supports one modeline.\n",
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+  	ErrorF("%s %s: 3Dlabs TX/MX only supports one modeline.\n",
 		XCONFIG_PROBED, glintInfoRec.name);
-#endif
+  }
 
   glintInfoRec.displayWidth = glintInfoRec.virtualX;
+
+  if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+	pprod = partprod500TX[glintInfoRec.displayWidth >> 5];
+  } else {
+	pprod = partprodPermedia[glintInfoRec.displayWidth >> 5];
+  }
+
+  if (pprod == -1) {
+	/*
+	 * Houston, we have a problem
+	 * 
+	 * we need to figure out how to handle pitches we
+	 * can't handle. Later, comma, much.
+	 */
+	FatalError("Can't handle pitch %d\n", glintInfoRec.displayWidth);
+  }
 
   if (xf86bpp < 0)
 	xf86bpp = glintInfoRec.depth;
@@ -1111,6 +1142,11 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	/* Init the screen */
         xf86EnableIOPorts(scr_index);
 	glintInitAperture(scr_index);
+	saveGLINTstate();
+	if (IS_3DLABS_PM_FAMILY(coprotype)) {
+		if (VGAcore) 
+			PermediaSaveVGAInfo();
+	}
 	glintInit(glintInfoRec.modes);
 	glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	glintSetCRTCRegs(&glintCRTCRegs);
@@ -1142,7 +1178,9 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 			PermediaAccelInit();
 		else
   		if (IS_3DLABS_PM2_CLASS(coprotype)) {
+#if 1
 			OFLG_SET(OPTION_SW_CURSOR, &glintInfoRec.options);
+#endif
 			Permedia2AccelInit();
 		}
 	}
@@ -1190,6 +1228,22 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	}
 
 	if (!OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options)) {
+	   if (IS_3DLABS_PM2_CLASS(coprotype)) {
+		XAACursorInfoRec.MaxHeight = 64;
+		XAACursorInfoRec.MaxWidth = 64;
+		XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+					 HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+					 HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+					 HARDWARE_CURSOR_PROGRAMMED_BITS;
+		XAACursorInfoRec.ShowCursor = PM2DACShowCursor;
+		XAACursorInfoRec.HideCursor = PM2DACHideCursor;
+		XAACursorInfoRec.SetCursorColors = PM2DACSetCursorColors;
+		XAACursorInfoRec.SetCursorPosition = PM2DACSetCursorPosition;
+		XAACursorInfoRec.LoadCursorImage = PM2DACLoadCursorImage;
+		pScreen->QueryBestSize = XAAQueryBestSize;
+		xf86PointerScreenFuncs.WarpCursor = XAAWarpCursor;
+		(void)XAACursorInit(0, pScreen);
+	    } else {
 		XAACursorInfoRec.MaxHeight = 64;
 		XAACursorInfoRec.MaxWidth = 64;
 		XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
@@ -1207,6 +1261,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 		pScreen->QueryBestSize = XAAQueryBestSize;
 		xf86PointerScreenFuncs.WarpCursor = XAAWarpCursor;
 		(void)XAACursorInit(0, pScreen);
+	    }
 	} else 
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
 
@@ -1272,6 +1327,13 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	if (!xf86Resetting) {
 	    ScrnInfoPtr pScr = (ScrnInfoPtr)XF86SCRNINFO(pScreen);
 	    xf86EnableIOPorts(screen_idx);
+	    if (!AlreadyInited) {
+	      saveGLINTstate();
+	      if (IS_3DLABS_PM_FAMILY(coprotype)) {
+		if (VGAcore)
+			PermediaSaveVGAInfo();
+	      }
+	    }
 	    glintInit(glintInfoRec.modes);
 	    glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	    glintSetCRTCRegs(&glintCRTCRegs);
@@ -1281,7 +1343,8 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	    glintRestoreDACvalues();
 	    glintRestoreColor0(pScreen);
 
-	    XAARestoreCursor(pScreen);
+    	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options))
+	    	XAARestoreCursor(pScreen);
 	    glintAdjustFrame(pScr->frameX0, pScr->frameY0);
 
 	    if (pspix->devPrivate.ptr != glintVideoMem && ppix) {
@@ -1311,7 +1374,8 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	}
 #ifdef XFreeXDGA
     if (glintInfoRec.directMode & XF86DGADirectGraphics) {
-	XAACursorInfoRec.HideCursor();
+	if (!OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options))
+		XAACursorInfoRec.HideCursor();
     }
 #endif
 
@@ -1476,7 +1540,12 @@ void
 glintAdjustFrame(x, y)
     int x, y;
 {
-	GLINT_WRITE_REG(glintInfoRec.virtualY * y + x, FBWindowBase);
+#if 0
+	if (IS_3DLABS_PM_FAMILY(coprotype)) {
+		GLINT_WRITE_REG((y*glintInfoRec.displayWidth+x)/
+			(64 / glintInfoRec.bitsPerPixel), PMScreenBase);
+	}
+#endif
 #ifdef XFreeXDGA
 	if (glintInfoRec.directMode & XF86DGADirectGraphics) {
 		while ( (GLINT_READ_REG(VTGVLineNumber) >= 1) &&
@@ -1498,7 +1567,8 @@ glintSwitchMode(mode)
     glintCalcCRTCRegs(&glintCRTCRegs, mode);
     glintSetCRTCRegs(&glintCRTCRegs);
 
-    XAACursorInfoRec.ShowCursor();
+    if (!OFLG_ISSET(OPTION_SW_CURSOR, &glintInfoRec.options))
+    	XAACursorInfoRec.ShowCursor();
 
     return(TRUE);
 }
@@ -1510,13 +1580,6 @@ glintSwitchMode(mode)
 static int
 glintValidMode(DisplayModePtr mode, Bool verbose, int flag)
 {
-  if (mode->Flags & V_INTERLACE)
-    {
-      ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
-	     XCONFIG_GIVEN, glintInfoRec.name);
-      return MODE_BAD;
-    }
-
   if (mode->Flags & V_INTERLACE)
     {
       ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.13 1997/11/22 00:00:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.14 1997/12/05 22:01:30 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -44,25 +44,24 @@ typedef struct {
 } glintRegisters;
 static glintRegisters SR;
 
-static Bool glintInitialized = FALSE;
 static Bool LUTInited = FALSE;
 static LUTENTRY oldlut[256];
 int VBlank;
-int glintInitCursorFlag = TRUE;
 int glintHDisplay;
 extern struct glintmem glintmem;
 extern int glintWeight;
 extern int glintDisplayWidth;
 extern Bool glintDoubleBufferMode;
+extern Bool VGAcore;
 void glintDumpRegs(void);
 unsigned int glintSetLUT(int , unsigned int );
-int pprod;
+int pprod = -2;
 extern int coprotype;
 
 
 #define PARTPROD(a,b,c) (((a)<<6) | ((b)<<3) | (c))
 
-static int partprod500TX[] = {
+int partprod500TX[] = {
 	-1,
 	PARTPROD(0,0,1), PARTPROD(0,0,2), PARTPROD(0,1,2), PARTPROD(0,0,3),
 	PARTPROD(0,1,3), PARTPROD(0,2,3), PARTPROD(1,2,3), PARTPROD(0,0,4),
@@ -96,7 +95,7 @@ static int partprod500TX[] = {
 		     -1,              -1,              -1,              -1,
 		     -1,              -1,              -1,              -1,
 		     -1,              -1,              -1, PARTPROD(0,7,7)};
-static int partprodPermedia[] = {
+int partprodPermedia[] = {
 	-1,
 	PARTPROD(0,0,1), PARTPROD(0,1,1), PARTPROD(1,1,1), PARTPROD(1,1,2),
 	PARTPROD(1,2,2), PARTPROD(1,2,2), PARTPROD(1,2,3), PARTPROD(2,2,3),
@@ -142,15 +141,9 @@ int            vgaIOBase;
 int            vgaInterlaceType = VGA_DIVIDE_VERT;
 /* Keep vgaHW.c happy */
 void (*vgaSaveScreenFunc)() = vgaHWSaveScreen;
-int scridx;
 
-void PermediaSaveVGAInfo(screen_idx)
-     int screen_idx;
+void PermediaSaveVGAInfo()
 {
-   vgaBase = xf86MapVidMem(screen_idx, VGA_REGION, (pointer)0xA0000,65536);
-
-   scridx = screen_idx;
-
    vgaNewVideoState = vgaHWSave(vgaNewVideoState, sizeof(SaveVGAState));
 }
 
@@ -202,36 +195,33 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
     h_sync_width  = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
     v_sync_width  = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 
-    crtcRegs->h_limit	= Shiftbpp(mode->CrtcHTotal);
+    crtcRegs->h_limit		= Shiftbpp(mode->CrtcHTotal);
     crtcRegs->h_sync_end	= Shiftbpp(h_front_porch + h_sync_width);
     crtcRegs->h_sync_start	= Shiftbpp(h_front_porch);
     crtcRegs->h_blank_end	= Shiftbpp(mode->CrtcHTotal-mode->CrtcHDisplay);
+    crtcRegs->screenstride	= (glintInfoRec.displayWidth - mode->CrtcHDisplay)
+				/ (64 / glintInfoRec.bitsPerPixel);
 
-    crtcRegs->v_limit	= mode->CrtcVTotal;
+    crtcRegs->v_limit		= mode->CrtcVTotal;
     crtcRegs->v_sync_end	= v_front_porch + v_sync_width + 1;
     crtcRegs->v_sync_start	= v_front_porch + 1;
     crtcRegs->v_blank_end	= mode->CrtcVTotal - mode->CrtcVDisplay;
-    VBlank = crtcRegs->v_blank_end;
-
-    crtcRegs->pitch		= mode->CrtcHDisplay;
+    VBlank 			= crtcRegs->v_blank_end;
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	crtcRegs->vtgpolarity = 
 	    (((mode->Flags & V_PHSYNC) ? 0 : 2) << 2) | 
 	    ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0);
     }
+
     else if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	crtcRegs->vtgpolarity = 
  	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
  	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
-#if 0
-	if (IS_3DLABS_PM2_CLASS(coprotype)) {
-		crtcRegs->vtgpolarity |= 0x10000;
-	}
-#endif
     }
 
     crtcRegs->clock_sel = glintInfoRec.clock[mode->Clock];
+
     if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
       /* crtcRegs->vclkctl = 0x03 | 
 	 (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2); */
@@ -239,10 +229,7 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
       crtcRegs->vclkctl = 0x03;
     }
     else if (IS_3DLABS_PM2_CLASS(coprotype)) {
-        crtcRegs->vclkctl = (GLINT_READ_REG(VClkCtl) & ~0xFFFFFFFC) | 0x02;
-#if 0
-	  (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
-#endif
+        crtcRegs->vclkctl = (GLINT_READ_REG(VClkCtl) & 0xFFFFFFFC);
     }
     else {
 	/*
@@ -254,89 +241,40 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
 	/*
 	 * Different settings for Fire GL 3000 and Elsa Gloria cards
 	 */
-	if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options))
-	  {
+	if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options)) {
 	    crtcRegs->fbmodesel = 0x907; /* ?way interleave */
 	    crtcRegs->vtgmodectl = 0x00;
-	  }
-	else
-	  {
+	} else {
 	    crtcRegs->fbmodesel = 0xa07; /* 4way interleave */
 	    crtcRegs->vtgmodectl = 0x44;
-	  }
+	}
     }
 }
 
 void
 glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 {
-    unsigned long usData;
-
-    if (OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options)) {
-	GLINT_WRITE_REG(1,			DFIFODis);
-	GLINT_WRITE_REG(3,			FIFODis);
-    } else {
-	GLINT_WRITE_REG(0,			DFIFODis);
-	GLINT_WRITE_REG(1,			FIFODis);
-    }
-
-    if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	pprod = partprodPermedia[crtcRegs->pitch >> 5];
-    } else {
-	pprod = partprod500TX[crtcRegs->pitch >> 5];
-    }
-  
-    /*
-     * in order to set up a mode we need to do a few more
-     * things here than just set up the CRTC regs...
-     */
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	VTGPolarity);
-    }
-    else if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	PMVideoControl);
-    }
-
-    if (pprod == -1) {
-	/*
-	 * Houston, we have a problem
-	 *
-	 * we need to figure out how to handle pitches we 
-	 * can't handle. Later, comma, much.
-	 */
-	FatalError("Can't handle pitch %d\n",crtcRegs->pitch);
-    }
+    GLINT_WRITE_REG(0, ScissorMode);
+    GLINT_WRITE_REG(1, FBWriteMode);
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	GLINT_WRITE_REG(pprod | 0x600,	LBReadMode);
+
+	/* Initialize the Accelerator Engine to defaults */
+
+	GLINT_WRITE_REG(pprod,		LBReadMode);
 	GLINT_WRITE_REG(0x01,		LBWriteMode);
+#if 1
+	GLINT_WRITE_REG(0x0,		0x6008);
+	GLINT_WRITE_REG(0x0,		0x6000);
+#endif
 #if 0
         GLINT_WRITE_REG(glintInfoRec.displayWidth |
 		    ((((glintInfoRec.videoRam * 1024) / 
 			glintInfoRec.displayWidth))<<16),	ScreenSize);
     	GLINT_WRITE_REG(2,		ScissorMode);
 #endif
-    }
-    GLINT_WRITE_REG(0, ScissorMode);
-
-    /*
-     * this one depends on the color depth
-     */  
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-
-
-	switch (glintInfoRec.bitsPerPixel) {
-	case 8:
-	    GLINT_WRITE_REG(0x400 | (0x0e << 2) | 0,DitherMode);
-	    break;
-	case 16:
-	    GLINT_WRITE_REG(0x400 | (0x01 << 2) | 0,DitherMode);
-	    break;
-	case 32:
-	    GLINT_WRITE_REG(0x400 | (0x00 << 2) | 0,DitherMode);
-	    break;
-	}
-	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	DitherMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AlphaBlendMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	ColorDDAMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	TextureColorMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	TextureAddressMode);
@@ -354,7 +292,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(UNIT_DISABLE,	LineStippleMode);
 	GLINT_WRITE_REG(0,		UpdateLineStippleCounters);
 	GLINT_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
-	GLINT_WRITE_REG(/*0x7b*/0,	DepthMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	DepthMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	StatisticMode);
 	GLINT_WRITE_REG(0x400,		FilterMode);
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
@@ -367,6 +305,10 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(UNIT_DISABLE,	WindowOrigin);
 	GLINT_WRITE_REG(UNIT_DISABLE,	FBWindowBase);
 	GLINT_WRITE_REG(UNIT_DISABLE,	LBWindowBase);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureAddressMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureReadMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	RouterMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	PatternRamMode);
 
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
@@ -379,31 +321,52 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	    GLINT_WRITE_REG(0x0,	PixelSize);
 	    break;
 	}
+
+	/* Now write the CRTC registers */
+
+	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	VTGPolarity);
+	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
+	GLINT_WRITE_REG(0x01,			VTGSerialClk);
+	GLINT_WRITE_REG(0x00,			VTGModeCtl);
+	GLINT_WRITE_REG(crtcRegs->vtgserialclk,	VTGSerialClk);
+	GLINT_WRITE_REG(crtcRegs->vtgmodectl,	VTGModeCtl);
+	GLINT_WRITE_REG(crtcRegs->h_limit,      VTGHLimit);
+	GLINT_WRITE_REG(crtcRegs->h_sync_start, VTGHSyncStart);
+	GLINT_WRITE_REG(crtcRegs->h_sync_end,	VTGHSyncEnd);
+	GLINT_WRITE_REG(crtcRegs->h_blank_end,	VTGHBlankEnd);
+	GLINT_WRITE_REG(crtcRegs->v_limit,	VTGVLimit);
+	GLINT_WRITE_REG(crtcRegs->v_sync_start, VTGVSyncStart);
+	GLINT_WRITE_REG(crtcRegs->v_sync_end,	VTGVSyncEnd);
+	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVBlankEnd);
+	GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
+	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
+	GLINT_WRITE_REG(crtcRegs->fbmodesel, FBModeSel);
+
+	if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options)) {
+    		GLINT_WRITE_REG(crtcRegs->h_blank_end-1,VTGHGateStart);
+    		GLINT_WRITE_REG(crtcRegs->h_limit-1,	VTGHGateEnd);
+  	} else {
+		GLINT_WRITE_REG(crtcRegs->h_blank_end-2,VTGHGateStart);
+		GLINT_WRITE_REG(crtcRegs->h_limit-2,	VTGHGateEnd);
+  	}
     }
     else if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	switch (glintInfoRec.bitsPerPixel) {
-	case 8:
-	  GLINT_WRITE_REG(0x0, FBReadPixel); /* 8 Bits */
-	  break;
-	case 16:
-	  GLINT_WRITE_REG(0x1, FBReadPixel); /* 16 Bits */
-	  break;
-	case 32:
-	  GLINT_WRITE_REG(0x2, FBReadPixel); /* 32 Bits */
-	  break;
-	}
 
+	/* Initialize the Accelerator Engine to defaults */
 
-	GLINT_WRITE_REG(GWIN_DisableLBUpdate,   GLINTWindow); /* for performance */
-	/*  Framebufferorganisation */
-	GLINT_WRITE_REG(0x0,		DitherMode);
-	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
+	GLINT_WRITE_REG(GWIN_DisableLBUpdate,   GLINTWindow);
+	GLINT_WRITE_REG(UNIT_DISABLE,	DitherMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AlphaBlendMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	ColorDDAMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	TextureColorMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	TextureAddressMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,   TextureReadMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	PMTextureReadMode);
+	GLINT_WRITE_REG(pprod,		LBReadMode);
+	GLINT_WRITE_REG(pprod,		PMTextureMapFormat);
 	GLINT_WRITE_REG(UNIT_DISABLE,   AlphaBlendMode);
-	GLINT_WRITE_REG(UNIT_DISABLE,   LogicalOpMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TexelLUTMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	YUVMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,   DepthMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,   RouterMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	FogMode);
@@ -412,7 +375,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(UNIT_DISABLE,	StencilMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	AreaStippleMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
-	GLINT_WRITE_REG(/*0x7b*/0,	DepthMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	DepthMode);
 	GLINT_WRITE_REG(UNIT_DISABLE,	StatisticMode);
 	GLINT_WRITE_REG(0x400,		FilterMode);
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
@@ -425,79 +388,41 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(UNIT_DISABLE,	WindowOrigin);
 	GLINT_WRITE_REG(UNIT_DISABLE,	FBWindowBase);
 	GLINT_WRITE_REG(UNIT_DISABLE,	LBWindowBase);
-    }
 
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	GLINT_WRITE_REG(0x0,		TextureAddressMode);
-	GLINT_WRITE_REG(0x0,		TextureReadMode);
-	GLINT_WRITE_REG(0x0,		RouterMode);
-	GLINT_WRITE_REG(0x0,		PatternRamMode);
+	switch (glintInfoRec.bitsPerPixel) {
+	case 8:
+	  GLINT_WRITE_REG(0x0, FBReadPixel); /* 8 Bits */
+	  break;
+	case 16:
+	  GLINT_WRITE_REG(0x1, FBReadPixel); /* 16 Bits */
+	  break;
+	case 32:
+	  GLINT_WRITE_REG(0x2, FBReadPixel); /* 32 Bits */
+	  break;
+	}
 
+	/* Now write the CRTC registers */
+
+	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	PMVideoControl);
+	GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHgEnd);
 	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
-
-	/* in their infinite wisdom, 3DLabs changed the video timing
-	   registers between the 500TX and PerMedia... */
-	GLINT_WRITE_REG(0x01,			VTGSerialClk);
-	GLINT_WRITE_REG(0x00,			VTGModeCtl);
-	GLINT_WRITE_REG(crtcRegs->vtgserialclk,	VTGSerialClk);
-	GLINT_WRITE_REG(crtcRegs->vtgmodectl,	VTGModeCtl);
-
-	GLINT_WRITE_REG(crtcRegs->h_limit,      VTGHLimit);
-	GLINT_WRITE_REG(crtcRegs->h_sync_start, VTGHSyncStart);
-	GLINT_WRITE_REG(crtcRegs->h_sync_end,	VTGHSyncEnd);
-	GLINT_WRITE_REG(crtcRegs->h_blank_end,	VTGHBlankEnd);
-	GLINT_WRITE_REG(crtcRegs->v_limit,	VTGVLimit);
-	GLINT_WRITE_REG(crtcRegs->v_sync_start, VTGVSyncStart);
-	GLINT_WRITE_REG(crtcRegs->v_sync_end,	VTGVSyncEnd);
-	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVBlankEnd);
-
-if (OFLG_ISSET(OPTION_FIREGL3000, &glintInfoRec.options))
-  {
-    GLINT_WRITE_REG(crtcRegs->h_blank_end-1/*2*/,VTGHGateStart);
-    GLINT_WRITE_REG(crtcRegs->h_limit-1/*2*/,	VTGHGateEnd);
-  }
-else
-  {
-    GLINT_WRITE_REG(crtcRegs->h_blank_end-2,VTGHGateStart);
-    GLINT_WRITE_REG(crtcRegs->h_limit-2,	VTGHGateEnd);
-  }
-
-GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
-	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
-    } 
-  else if (IS_3DLABS_PM_FAMILY(coprotype)) {
-      GLINT_WRITE_REG(0x0,			TextureAddressMode);
-      GLINT_WRITE_REG(0x0,			TextureReadMode);
-      /*
-       * this is the Permedia version of crtc registers
-       */
-      GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHgEnd);
-
-	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
-	GLINT_WRITE_REG(0,			PMScreenBase);
-
-	GLINT_WRITE_REG((crtcRegs->h_limit - crtcRegs->h_blank_end)>>1, PMScreenStride);
+#if 1
+	GLINT_WRITE_REG((crtcRegs->h_limit - 
+				crtcRegs->h_blank_end)>>1, PMScreenStride);
+#else
+	GLINT_WRITE_REG(crtcRegs->screenstride, PMScreenStride);
+#endif
 	GLINT_WRITE_REG(crtcRegs->h_limit-1,    PMHTotal);
 	GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHbEnd);
 	GLINT_WRITE_REG(crtcRegs->h_sync_start-1,   PMHsStart);
 	GLINT_WRITE_REG(crtcRegs->h_sync_end-1,	PMHsEnd);
-
 	GLINT_WRITE_REG(crtcRegs->v_limit-1,	PMVTotal);
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	PMVbEnd);
 	GLINT_WRITE_REG(crtcRegs->v_sync_start-1,	PMVsStart);
 	GLINT_WRITE_REG(crtcRegs->v_sync_end-1,	PMVsEnd);
-#if 0
-	if (IS_3DLABS_PM2_CLASS(coprotype)) {
-	  /* set SClk Src to MClk/2 */
-	  int cc = GLINT_READ_REG(ChipConfig);
-#ifdef DEBUG
-	  ErrorF("SClk was 0x%x\n",cc & SCLK_SEL_MASK);
-#endif
-	  cc &= ~ SCLK_SEL_MASK;
-	  GLINT_WRITE_REG(cc | 0x02, ChipConfig);
-	}
-#endif
     }
+
+    /* Now all the CRTC & Accelerator engines are set, program the clock */
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)|| 
         IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
@@ -505,14 +430,7 @@ GLINT_WRITE_REG(crtcRegs->v_blank_end-1,VTGVGateStart);
     }
     else if (IS_3DLABS_PM2_CLASS(coprotype) ) {
     	PM2DACInit(crtcRegs->clock_sel);
-	GLINT_WRITE_REG(pprod, FBReadMode);
     }
-  
-    if (IS_3DLABS_TX_MX_CLASS(coprotype))
-    {
-	GLINT_WRITE_REG(crtcRegs->fbmodesel, FBModeSel);
-    } 
-    GLINT_WRITE_REG(1, FBWriteMode);
 }
 
 void
@@ -531,12 +449,20 @@ saveGLINTstate()
 	SR.glintRegs[7] = GLINT_READ_REG(VTGVBlankEnd);
 	SR.glintRegs[8] = GLINT_READ_REG(VTGPolarity);
 
+        for (i=0; i<0x100; i++)
+		SR.DacRegs[i] = glintInIBMRGBIndReg(i);
+
     } else if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	SR.glintRegs[5] = GLINT_READ_REG(PMScreenStride);
+	SR.glintRegs[0]  = GLINT_READ_REG(Aperture0);
+	SR.glintRegs[1]  = GLINT_READ_REG(Aperture1);
+	SR.glintRegs[2]  = GLINT_READ_REG(PMFramebufferWriteMask);
+	SR.glintRegs[3]  = GLINT_READ_REG(PMBypassWriteMask);
+	SR.glintRegs[4]  = GLINT_READ_REG(FIFODis);
+
 	SR.glintRegs[6] = GLINT_READ_REG(PMHTotal);
 	SR.glintRegs[7] = GLINT_READ_REG(PMHbEnd);
 	SR.glintRegs[8] = GLINT_READ_REG(PMHgEnd);
-	SR.glintRegs[9] = GLINT_READ_REG(PMHsStart);
+	SR.glintRegs[9] = GLINT_READ_REG(PMScreenStride);
 	SR.glintRegs[10] = GLINT_READ_REG(PMHsStart);
 	SR.glintRegs[11] = GLINT_READ_REG(PMHsEnd);
 	SR.glintRegs[12] = GLINT_READ_REG(PMVTotal);
@@ -546,16 +472,27 @@ saveGLINTstate()
 	SR.glintRegs[16]= GLINT_READ_REG(PMScreenBase);
 	SR.glintRegs[17]= GLINT_READ_REG(PMVideoControl);
 	SR.glintRegs[18]= GLINT_READ_REG(VClkCtl);
+	SR.glintRegs[19]= GLINT_READ_REG(ChipConfig);
+
+	if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
+ 	       for (i=0; i<0x100; i++)
+			SR.DacRegs[i] = glintInIBMRGBIndReg(i);
+	}
+
         if (IS_3DLABS_PM2_CLASS(coprotype)) {
-		GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
-		SR.glintRegs[100] = GLINT_READ_REG(PM2DACIndexData);
+		SR.glintRegs[102] = GLINT_READ_REG(PM2DACIndexData);
 		GLINT_WRITE_REG(PM2DACIndexMCR, PM2DACIndexReg);
 		SR.glintRegs[101] = GLINT_READ_REG(PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
+		SR.glintRegs[100] = GLINT_READ_REG(PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexClockAM, PM2DACIndexReg);
+		SR.glintRegs[104] = GLINT_READ_REG(PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexClockAN, PM2DACIndexReg);
+		SR.glintRegs[103] = GLINT_READ_REG(PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexClockAP, PM2DACIndexReg);
+		SR.glintRegs[102] = GLINT_READ_REG(PM2DACIndexData);
 	}
     }
-
-    for (i=0; i<0x100; i++)
-	SR.DacRegs[i] = glintInIBMRGBIndReg(i);
 }
 
 void
@@ -565,7 +502,8 @@ restoreGLINTstate(void)
     unsigned short usData;
 
 #if DEBUG
-    glintDumpRegs();
+    if( xf86Verbose > 3)
+      glintDumpRegs();
 #endif
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
@@ -583,24 +521,6 @@ restoreGLINTstate(void)
 	    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 
     } else if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	    GLINT_WRITE_REG(SR.glintRegs[8],  PMHgEnd);
-	    GLINT_WRITE_REG(SR.glintRegs[18], VClkCtl);
-	    GLINT_WRITE_REG(SR.glintRegs[16], PMScreenBase);
-	    
-	    GLINT_WRITE_REG(SR.glintRegs[5], PMScreenStride);
-	    GLINT_WRITE_REG(SR.glintRegs[6], PMHTotal);
-	    GLINT_WRITE_REG(SR.glintRegs[7], PMHbEnd);
-	    
-	    GLINT_WRITE_REG(SR.glintRegs[9],  PMHsStart);
-	    GLINT_WRITE_REG(SR.glintRegs[10], PMHsStart);
-	    GLINT_WRITE_REG(SR.glintRegs[11], PMHsEnd);
-	    GLINT_WRITE_REG(SR.glintRegs[12], PMVTotal);
-	    GLINT_WRITE_REG(SR.glintRegs[13], PMVbEnd);
-	    GLINT_WRITE_REG(SR.glintRegs[14], PMVsStart);
-	    GLINT_WRITE_REG(SR.glintRegs[15], PMVsEnd);
-	    
-	    GLINT_WRITE_REG(SR.glintRegs[17], PMVideoControl);
-	    GLINT_WRITE_REG(SR.glintRegs[19], ChipConfig);
 
 	    GLINT_WRITE_REG(SR.glintRegs[0], Aperture0);
 	    GLINT_WRITE_REG(SR.glintRegs[1], Aperture1);
@@ -608,17 +528,26 @@ restoreGLINTstate(void)
 	    GLINT_WRITE_REG(SR.glintRegs[3], PMBypassWriteMask);
 	    GLINT_WRITE_REG(SR.glintRegs[4], FIFODis);
 
-	    GLINT_WRITE_REG(SR.glintRegs[20], PMInterruptLine);
-	    
-	    /* GLINT_WRITE_REG(SR.glintRegs[21], PMMemConfig); */
-	    /* GLINT_WRITE_REG(SR.glintRegs[22], PMBootAddress); */
-	    /* GLINT_WRITE_REG(SR.glintRegs[23], PMRomControl); */
+	    GLINT_WRITE_REG(SR.glintRegs[6], PMHTotal);
+	    GLINT_WRITE_REG(SR.glintRegs[7], PMHbEnd);
+	    GLINT_WRITE_REG(SR.glintRegs[8], PMHgEnd);
+	    GLINT_WRITE_REG(SR.glintRegs[9], PMScreenStride);
+	    GLINT_WRITE_REG(SR.glintRegs[10], PMHsStart);
+	    GLINT_WRITE_REG(SR.glintRegs[11], PMHsEnd);
+	    GLINT_WRITE_REG(SR.glintRegs[12], PMVTotal);
+	    GLINT_WRITE_REG(SR.glintRegs[13], PMVbEnd);
+	    GLINT_WRITE_REG(SR.glintRegs[14], PMVsStart);
+	    GLINT_WRITE_REG(SR.glintRegs[15], PMVsEnd);
+	    GLINT_WRITE_REG(SR.glintRegs[16], PMScreenBase);
+	    GLINT_WRITE_REG(SR.glintRegs[17], PMVideoControl);
+	    GLINT_WRITE_REG(SR.glintRegs[18], VClkCtl);
+	    GLINT_WRITE_REG(SR.glintRegs[19], ChipConfig);
 
             if (IS_3DLABS_PM2_CLASS(coprotype)) {
-		GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
-		GLINT_WRITE_REG(SR.glintRegs[100],PM2DACIndexData);
 		GLINT_WRITE_REG(PM2DACIndexMCR, PM2DACIndexReg);
 		GLINT_WRITE_REG(SR.glintRegs[101],PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
+		GLINT_WRITE_REG(SR.glintRegs[100],PM2DACIndexData);
 		/* restore colors */
 		GLINT_WRITE_REG(0x00, PM2DACWriteAddress);
 		for (i=0; i<256; i++) {
@@ -626,13 +555,15 @@ restoreGLINTstate(void)
 		    GLINT_WRITE_REG(oldlut[i].g,PM2DACData);
 		    GLINT_WRITE_REG(oldlut[i].b,PM2DACData);
 		}
+		GLINT_WRITE_REG(PM2DACIndexClockAM, PM2DACIndexReg);
+		GLINT_WRITE_REG(SR.glintRegs[104],PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexClockAN, PM2DACIndexReg);
+		GLINT_WRITE_REG(SR.glintRegs[103],PM2DACIndexData);
+		GLINT_WRITE_REG(PM2DACIndexClockAP, PM2DACIndexReg);
+		GLINT_WRITE_REG(SR.glintRegs[102],PM2DACIndexData);
 	    }
 
 	    if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-
-		/* restore ramdac */
-		for (i=0; i<0x100; i++) 
-		    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 
 		/* restore colors */
 		GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
@@ -651,6 +582,10 @@ restoreGLINTstate(void)
 		    ((PERMEDIA_VGA_ENABLE | PERMEDIA_VGA_MEMORYACCESS) << 8) | 
 		    PERMEDIA_VGA_CTRL_INDEX;
 		GLINT_WRITE_REG(usData, PERMEDIA_MMVGA_INDEX_REG);
+
+		/* restore ramdac */
+		for (i=0; i<0x100; i++) 
+		    glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 	    }
 
 	}
@@ -659,91 +594,36 @@ restoreGLINTstate(void)
 void
 glintCleanUp(void)
 {
-    unsigned short usData;
-
-    if (!glintInitialized)
-	return;
-  
     restoreGLINTstate();
 
     if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	PermediaRestoreVGAInfo();
+	if (VGAcore)
+		PermediaRestoreVGAInfo();
     }
-
-    glintInitialized = FALSE;
 }
 
 void permediapreinit(void)
 {
-  /* SR.glintRegs[21]= GLINT_READ_REG(PMMemConfig); */
-  /* SR.glintRegs[22]= GLINT_READ_REG(PMBootAddress); */
-  /* SR.glintRegs[23]= GLINT_READ_REG(PMRomControl); */
-
-#if 0
-  /* set the memconfig Register to found memory */
-  switch (glintInfoRec.videoRam)
-    {
-      /* MCLK = 50 Mhz and 4 Mbytes */
-    case 4069:
-      GLINT_WRITE_REG(Burst1Cycle4 | NumberBanks4 | RefreshCount4 | BankDelay4 | 
-		      DeadCycle4 | CAS3Latency4 | TimeRASMin4 | RowCharge4 | 
-		      TimeRCD4 | TimeRC4 | TimeRP4, PMMemConfig);
-      GLINT_WRITE_REG(BootAdress4, PMBootAddress);
-      GLINT_WRITE_REG(SDRAM4, PMRomControl);
-      break;
-    case 6144:
-      /* MCLK = 66 Mhz and 6 Mbytes */
-      GLINT_WRITE_REG(Burst1Cycle6 | NumberBanks6 | RefreshCount6 | BankDelay6 | 
-		      DeadCycle6 | CAS3Latency6 | TimeRASMin6 | RowCharge6 | 
-		      TimeRCD6 | TimeRC6 | TimeRP6, PMMemConfig);
-      GLINT_WRITE_REG(BootAdress6, PMBootAddress);
-      GLINT_WRITE_REG(SDRAM6, PMRomControl);
-      break;
-    case 8192:
-      /* MCLK = 66 Mhz and 8 Mbytes */
-      GLINT_WRITE_REG(Burst1Cycle8 | NumberBanks8 | RefreshCount8 | BankDelay8 | 
-		      DeadCycle8 | CAS3Latency8 | TimeRASMin8 | RowCharge8 | 
-		      TimeRCD8 | TimeRC8 | TimeRP8, PMMemConfig);
-      GLINT_WRITE_REG(BootAdress8, PMBootAddress);
-      GLINT_WRITE_REG(SDRAM8, PMRomControl);
-      break;
-  }
-#endif
-
   GLINT_WRITE_REG(0x00,       Aperture0);
   GLINT_WRITE_REG(0x00,       Aperture1);
+  GLINT_WRITE_REG(0x00,	      PMScreenBase);
   GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
   GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
 }
 
 Bool
-glintInit(DisplayModePtr modes)
+glintInit(DisplayModePtr mode)
 {
     int i,j;
-    CARD32 CC;
     unsigned short usData;
 
-    if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
-	    if (!glintInitialized)
-		saveGLINTstate();
+    if (OFLG_ISSET(OPTION_PCI_RETRY, &glintInfoRec.options)) {
+	GLINT_WRITE_REG(1,			DFIFODis);
+	GLINT_WRITE_REG(3,			FIFODis);
+    } else {
+	GLINT_WRITE_REG(0,			DFIFODis);
+	GLINT_WRITE_REG(1,			FIFODis);
     }
-#if 0 /* we shouldn't have to set this, the card BIOS should do that for us */
-	    /*
-	     * this is hardwired for setting the FB and LB memory control
-	     */
-	    GLINT_WRITE_REG(0xdc000017,  LBMemoryEDO);
-	    GLINT_WRITE_REG(0x60400800,  FBMemoryCtl);
-	    GLINT_WRITE_REG(0xFFFFFFFF,  FBWrMaskk);
-	    GLINT_WRITE_REG(0x00000002,  FBTXMemCtl);
-#endif
-#if 0
-    if (IS_3DLABS_PM2_CLASS(coprotype)) {
-	CC = GLINT_READ_REG(ChipConfig);
-	GLINT_WRITE_REG(CC & 0xFFFFFFFD, ChipConfig);
-	GLINT_WRITE_REG(PM2DACIndexCMR, PM2DACIndexReg);
-	GLINT_WRITE_REG(PM2DAC_CI8|PM2DAC_GRAPHICS|PM2DAC_RGB,PM2DACIndexData);
-    }
-#endif
 
     if (IS_3DLABS_PM_FAMILY(coprotype)) {
 	  permediapreinit();
@@ -757,24 +637,6 @@ glintInit(DisplayModePtr modes)
 	  usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
 	  GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
     }
-
-    /*
-     * for some reason, the server cannot access the framebuffer
-     * when using some motherboards. At this point all we can do is
-     * detect this :-(
-     */
-    if (!glintInitialized)
-	{
-	    *(unsigned char*)glintVideoMem = 0xff;
-	    if(*(unsigned char*)glintVideoMem != 0xff) 
-		ErrorF("Framebuffer Access Problem!!\n");
-	    *(unsigned char*)glintVideoMem = 0x0;
-	    if(*(unsigned char*)glintVideoMem != 0)    
-		ErrorF("Framebuffer Access Problem!!\n");
-	}
-
-    glintInitialized = TRUE;
-    glintInitCursorFlag = TRUE;
 
     return(TRUE);
 }
@@ -887,32 +749,12 @@ glintInitEnvironment(void)
 void
 glintInitAperture(int screen_idx)
 {
-    unsigned short usData;
-  
-    if (IS_3DLABS_PM_FAMILY(coprotype)) {
-	    if (!glintInitialized)
-		{
-		    SR.glintRegs[0]  = GLINT_READ_REG(Aperture0);
-		    SR.glintRegs[1]  = GLINT_READ_REG(Aperture1);
-		    SR.glintRegs[2]  = GLINT_READ_REG(PMFramebufferWriteMask);
-		    SR.glintRegs[3]  = GLINT_READ_REG(PMBypassWriteMask);
-		    SR.glintRegs[4]  = GLINT_READ_REG(FIFODis);
-		    SR.glintRegs[20] = GLINT_READ_REG(PMInterruptLine);
-		    SR.glintRegs[19] = GLINT_READ_REG(ChipConfig);
-	  
-		    permediapreinit();
+    if (VGAcore)
+    	vgaBase = xf86MapVidMem(screen_idx,VGA_REGION,(pointer)0xA0000,65536);
 
-		    saveGLINTstate(); 
-	  	    PermediaSaveVGAInfo(screen_idx);
-		}
-	}
-
-    if (!glintVideoMem) 
-	{
-	    glintVideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
+    glintVideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
 					  (pointer)(glintInfoRec.MemBase),
 					  glintInfoRec.videoRam * 1024);
-	}
 
 #ifdef XFreeXDGA
     glintInfoRec.physBase = glintInfoRec.MemBase;

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/vgaHW.c,v 1.1 1997/12/06 07:52:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -209,56 +209,6 @@ vgaSaveScreen(pScreen, on)
      (*vgaBlankScreenFunc)(pScreen,on);
    }
    return (TRUE);
-}
-
-/*
- * vgaDPMSSet -- Sets VESA Display Power Management Signaling (DPMS) Mode
- *
- * This generic VGA function can only set the Off and On modes.  If the
- * Standby and Suspend modes are to be supported, a chip specific replacement
- * for this function must be written.
- */
-
-void
-vgaDPMSSet(PowerManagementMode)
-    int PowerManagementMode;
-{
-#ifdef DPMSExtension
-  unsigned char seq1, crtc17;
-  if (!xf86VTSema) return;
-  switch (PowerManagementMode)
-  {
-  case DPMSModeOn:
-    /* Screen: On; HSync: On, VSync: On */
-    seq1 = 0x00;
-    crtc17 = 0x80;
-    break;
-  case DPMSModeStandby:
-    /* Screen: Off; HSync: Off, VSync: On -- Not Supported */
-    seq1 = 0x20;
-    crtc17 = 0x80;
-    break;
-  case DPMSModeSuspend:
-    /* Screen: Off; HSync: On, VSync: Off -- Not Supported */
-    seq1 = 0x20;
-    crtc17 = 0x80;
-    break;
-  case DPMSModeOff:
-    /* Screen: Off; HSync: Off, VSync: Off */
-    seq1 = 0x20;
-    crtc17 = 0x00;
-    break;
-  }
-  outw(0x3C4, 0x0100);	/* Synchronous Reset */
-  outb(0x3C4, 0x01);	/* Select SEQ1 */
-  seq1 |= inb(0x3C5) & ~0x20;
-  outb(0x3C5, seq1);
-  outb(vgaIOBase+4, 0x17); /* Select CRTC17 */
-  crtc17 |= inb(vgaIOBase+5) & ~0x80;
-  xf86usleep(10000);
-  outb(vgaIOBase+5, crtc17);
-  outw(0x3C4, 0x0300);	/* End Reset */
-#endif
 }
 
 /*
