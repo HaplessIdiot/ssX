@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.8 2000/02/21 18:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.9 2000/02/21 18:22:34 dawes Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -80,7 +80,7 @@ void DoScanPci(int argc, char **argv, int i)
       /* For now, just a warning */
       xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
   }
-  xf86ScanPciFunc = (void (*)(int))LoaderSymbol("xf86DisplayPCICardInfo");
+  xf86ScanPciFunc = LoaderSymbol("xf86DisplayPCICardInfo");
   DataSetupFunc = LoaderSymbol("xf86SetupScanPci");
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
