@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.7 2001/04/19 19:54:51 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.8 2001/11/01 23:35:35 dawes Exp $ */
 
 /* Vendor-specific definitions */
 
@@ -59,9 +59,9 @@ from the X Consortium.
 # define SEARCHOTHER CAT
 #endif
 
-#if MANCONFIGSTYLE == FreeBSD
+#if defined(MANCONFIGSTYLE_FreeBSD)
 # define MANCONF "/etc/manpath.config"
-#elif MANCONFIGSTYLE == Linux || MANCONFIGSTYLE == OpenBSD || MANCONFIGSTYLE == BSD
+#elif defined(MANCONFIGSTYLE_Linux) || defined(MANCONFIGSTYLE_OpenBSD) || defined(MANCONFIGSTYLE_BSD)
 # define MANCONF "/etc/man.conf"
 #endif
 
