@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.7 2000/02/29 18:01:20 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.8 2000/03/17 18:49:44 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
@@ -37,6 +37,12 @@ OLDFILES=""
 
 OLDDIRS=" \
 	$RUNDIR/lib/X11/xkb/compiled \
+	"
+
+OLDMODULES=" \
+	xie.so \
+	pex5.so \
+	glx.so \
 	"
 
 BASEDIST=" \
@@ -852,6 +858,7 @@ if [ X"$XKBDIR" != X ]; then
 fi
 rm -fr .etctmp
 
+echo ""
 echo "Installing the mandatory parts of the binary distribution"
 echo ""
 for i in $BASEDIST $SERVDIST; do
@@ -1016,6 +1023,60 @@ if [ -f $RUNDIR/bin/rstartd ]; then
 		ln -s $RUNDIR/bin/rstartd /usr/bin/rstartd
 		;;
 	esac
+fi
+
+# Finally, check for old 3.3.x modules that will conflict with 4.x
+if [ -d $RUNDIR/lib/modules ]; then
+	for i in $OLDMODULES; do
+		if [ -f $RUNDIR/lib/modules/$i ]; then
+			ModList="$ModList $i"
+		fi
+	done
+	if [ X"$ModList" != X ]; then
+		echo ""
+		echo "The following 3.3.x X server modules were found in"
+		echo "$RUNDIR/lib/modules, and they may cause problems when running"
+		echo "$VERSION:"
+		echo ""
+		echo "  $ModList"
+		echo ""
+		echo "Do you want them moved to $RUNDIR/lib/modules/old?"
+		echo "Note: that if you want to use them with 3.3.x again, you'll"
+		Echo "need to move them back manually. (y/n) [n] "
+		read response
+		case "$response" in
+		[yY]*)
+			if [ ! -d $RUNDIR/lib/modules/old ]; then
+				echo ""
+				echo "Creating $RUNDIR/lib/modules/old"
+				mkdir $RUNDIR/lib/modules/old
+			else
+				echo ""
+			fi
+			if [ -d $RUNDIR/lib/modules/old ]; then
+				for i in $ModList; do
+					echo "Moving $i to $RUNDIR/lib/modules/old"
+					mv $RUNDIR/lib/modules/$i $RUNDIR/lib/modules/old/$i
+				done
+			else
+				echo "Failed to create directory $RUNDIR/lib/modules/old"
+			fi
+			;;
+		*)
+			echo ""
+			echo "Make sure that you rename, move or delete the old modules"
+			echo "before running $VERSION."
+		esac
+	fi
+	# Some distributions have old codeconv modules
+	if [ -d $RUNDIR/lib/modules/codeconv ]; then
+		if [ -f $RUNDIR/lib/modules/codeconv/ISO8859_1.so ]; then
+			echo ""
+			echo "Warning: it looks like there are some old *.so modules"
+			echo "in $RUNDIR/lib/modules/codeconv.  You may need to rename,"
+			echo "move or delete them if you use the xtt font module."
+		fi
+	fi
 fi
 
 echo ""
