@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 124. Add support for NVIDIA nForce integrated graphics (Mark Vojkovich).
  123. Fix a possible fatal crash in Xv when Xinerama is used (Mark Vojkovich).
  122. Corrects typos in output of xf86cfg when checking modules and
       documents ddc module options (Andrew C Aitchison).
@@ -13530,4 +13531,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1869 2001/07/06 07:37:09 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1870 2001/07/10 07:51:04 mvojkovi Exp $
