@@ -1666,17 +1666,27 @@ able at the driver level:
 Two helper functions are provided to aid configuring entities:
 
      ScrnInfoPtr xf86ConfigPciEntity(ScrnInfoPtr pScrn,
+
                int scrnFlag, int entityIndex,
+
                PciChipsets *p_chip,
+
                resList res, EntityProc init,
+
                EntityProc enter, EntityProc leave,
+
                pointer private)
+
      ScrnInfoPtr xf86ConfigIsaEntity(ScrnInfoPtr pScrn,
+
                int scrnFlag, int entityIndex,
+
                IsaChipsets *i_chip,
 
                resList res, EntityProc init,
+
                EntityProc enter, EntityProc leave,
+
                pointer private)
 
           These functions are used to register the non-relocatable
@@ -1803,7 +1813,7 @@ Two functions are provided to obtain a resource range of a given type:
           avoided within the window can be supplied.  On failure a
           zero-length range of type ResEnd will be returned.
 
-     resRange xf86GetSparse(long type,  memType fixed_bits,
+     resRange xf86GetSparse(long type, memType fixed_bits,
 
                memType decode_mask, memType address_mask,
 
@@ -2051,42 +2061,42 @@ Next, the higher level functions that most drivers would use.
 
           The OptionInfoRec is defined as follows:
 
-                       typedef struct {
-                           double freq;
-                           int units;
-                       } OptFrequency;
+                     typedef struct {
+                         double freq;
+                         int units;
+                     } OptFrequency;
 
-                       typedef union {
-                           unsigned long       num;
-                           char *              str;
-                           double              realnum;
-                           Bool                bool;
-                           OptFrequency        freq;
-                       } ValueUnion;
+                     typedef union {
+                         unsigned long       num;
+                         char *              str;
+                         double              realnum;
+                         Bool                bool;
+                         OptFrequency        freq;
+                     } ValueUnion;
 
-                       typedef enum {
-                           OPTV_NONE = 0,
-                           OPTV_INTEGER,
-                           OPTV_STRING,     /* a non-empty string */
-                           OPTV_ANYSTR,     /* Any string, including an empty one */
-                           OPTV_REAL,
-                           OPTV_BOOLEAN,
-                           OPTV_FREQ
-                       } OptionValueType;
+                     typedef enum {
+                         OPTV_NONE = 0,
+                         OPTV_INTEGER,
+                         OPTV_STRING,  /* a non-empty string */
+                         OPTV_ANYSTR,  /* Any string, including an empty one */
+                         OPTV_REAL,
+                         OPTV_BOOLEAN,
+                         OPTV_FREQ
+                     } OptionValueType;
 
-                       typedef enum {
-                           OPTUNITS_HZ = 1,
-                           OPTUNITS_KHZ,
-                           OPTUNITS_MHZ
-                       } OptFreqUnits;
+                     typedef enum {
+                         OPTUNITS_HZ = 1,
+                         OPTUNITS_KHZ,
+                         OPTUNITS_MHZ
+                     } OptFreqUnits;
 
-                       typedef struct {
-                           int                 token;
-                           const char*         name;
-                           OptionValueType     type;
-                           ValueUnion          value;
-                           Bool                found;
-                       } OptionInfoRec, *OptionInfoPtr;
+                     typedef struct {
+                         int                 token;
+                         const char*         name;
+                         OptionValueType     type;
+                         ValueUnion          value;
+                         Bool                found;
+                     } OptionInfoRec, *OptionInfoPtr;
 
           OPTV_FREQ can be used for options values that are fre-
           quencies.  These values are a floating point number with
@@ -2111,8 +2121,8 @@ Next, the higher level functions that most drivers would use.
           of options that isn't marked as used.  This is intended
           to show options that the driver hasn't recognised.  It
           would normally be called near the end of the Chip-
-          ScreenInit() function, but only when
-          serverGeneration == 1.
+          ScreenInit() function, but only when serverGenera-
+          tion == 1.
 
      OptionInfoPtr xf86TokenToOptinfo(const OptionInfoRec *table,
 
@@ -2446,7 +2456,7 @@ remove all removable FBArea allocations.
 
 Initialization of the XFree86 framebuffer manager is done via
 
-     Bool xf86InitFBManager(ScreenPtr pScreen,  BoxPtr FullBox)
+     Bool xf86InitFBManager(ScreenPtr pScreen, BoxPtr FullBox)
 
 FullBox represents the area of the framebuffer that the manager is allowed to
 manage.  This is typically a box with a width of pScrn->displayWidth and a
@@ -2898,6 +2908,7 @@ passing a list of XF86VideoAdaptorPtr pointers to the following function:
      Bool xf86XVScreenInit(
 
                ScreenPtr pScreen,
+
                XF86VideoAdaptorPtr *adaptPtrs,
 
                int num)
@@ -3108,6 +3119,7 @@ The XF86VideoAdaptorRec:
           visible.
 
      typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn,
+
                short vid_x, short vid_y, short drw_x, short drw_y,
 
                short vid_w, short vid_h, short drw_w, short drw_h,
@@ -3128,6 +3140,7 @@ The XF86VideoAdaptorRec:
           turn on the video.
 
      typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn,
+
                short vid_x, short vid_y, short drw_x, short drw_y,
 
                short vid_w, short vid_h, short drw_w, short drw_h,
@@ -3138,6 +3151,7 @@ The XF86VideoAdaptorRec:
           place only one frame from the stream on the screen.
 
      typedef int (* GetVideoFuncPtr)( ScrnInfoPtr pScrn,
+
                short vid_x, short vid_y, short drw_x, short drw_y,
 
                short vid_w, short vid_h, short drw_w, short drw_h,
@@ -3150,6 +3164,7 @@ The XF86VideoAdaptorRec:
           rect without reading from an area larger than requested.
 
      typedef int (* GetStillFuncPtr)( ScrnInfoPtr pScrn,
+
                short vid_x, short vid_y, short drw_x, short drw_y,
 
                short vid_w, short vid_h, short drw_w, short drw_h,
@@ -3161,6 +3176,7 @@ The XF86VideoAdaptorRec:
           put stream.
 
      typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn,
+
                pointer data, Bool cleanup)
 
           This indicates the driver should stop displaying the
@@ -3181,6 +3197,7 @@ The XF86VideoAdaptorRec:
                Atom attribute,INT32 value, pointer data)
 
      typedef int (* GetPortAttributeFuncPtr)(ScrnInfoPtr pScrn,
+
                Atom attribute,INT32 *value, pointer data)
 
           A port may have particular attributes such as hue, satu-
@@ -3217,6 +3234,7 @@ The XF86VideoAdaptorRec:
                Bool motion, short vid_w, short vid_h,
 
                short drw_w, short drw_h,
+
                unsigned int *p_w, unsigned int *p_h, pointer data)
 
           QueryBestSize provides the client with a way to query
@@ -3228,6 +3246,7 @@ The XF86VideoAdaptorRec:
           important that the driver provide this function.
 
      typedef  int (* PutImageFuncPtr)( ScrnInfoPtr pScrn,
+
                short src_x, short src_y, short drw_x, short drw_y,
 
                short src_w, short src_h, short drw_w, short drw_h,
