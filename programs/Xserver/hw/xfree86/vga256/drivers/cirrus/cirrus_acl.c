@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.1 1996/12/18 03:12:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.2 1997/01/02 04:38:15 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -50,6 +50,7 @@
 #include "vga256.h"
 #include "xf86.h"
 #include "vga.h"
+#include "compiler.h"
 
 #include "xf86xaa.h"
 
