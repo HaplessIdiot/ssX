@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.13 1999/04/11 13:11:31 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.14 1999/04/29 09:14:03 dawes Exp $
  */
 
 /*
@@ -33,12 +33,15 @@
 #include <ptyx.h>		/* gets Xt stuff, too */
 #include <data.h>
 
+Widget toplevel;		/* top-most widget in xterm */
+
 #if OPT_TEK4014
 PtyData *Tbuffer;
 Char *Tpushb;
 Char *Tpushback;
 TekLink *TekRefresh;
 TekWidget tekWidget;
+Widget tekshellwidget;
 int TEKgcFontMask = GCFont;
 int T_lastx = -1;
 int T_lasty = -1;

@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.8 1999/01/31 12:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.9 1999/03/07 11:41:08 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -146,7 +146,7 @@ WaitForSomething(int *pClientsReady)
 
 	XFD_COPYSET(&AllSockets, &LastSelectMask);
 
-	BlockHandler((pointer) &wt, (pointer) &LastSelectMask);
+	BlockHandler(&wt, (pointer) &LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
 

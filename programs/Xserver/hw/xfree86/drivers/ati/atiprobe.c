@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.8 1999/07/06 11:38:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.9 1999/08/01 07:57:21 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -289,9 +289,9 @@ ATIVGAWonderProbe
         default:                /* Must be DoProbe */
             /*
              * Register 0xBB is used by the BIOS to keep track of various
-             * things (monitor type, etc.).  Register 0xBC must be zero and
-             * causes the adapter to enter a test mode when written to with a
-             * non-zero value.
+             * things (monitor type, etc.).  Except for 18800-x's, register
+             * 0xBC must be zero and causes the adapter to enter a test mode
+             * when written to with a non-zero value.
              */
             IOValue1 = inb(pATI->CPIO_VGAWonder);
             IOValue2 = ATIGetExtReg(IOValue1);
@@ -301,7 +301,10 @@ ATIVGAWonderProbe
             ATIPutExtReg(0xBBU, IOValue3 ^ 0x55U);
             IOValue5 = ATIGetExtReg(0xBBU);
             ATIPutExtReg(0xBBU, IOValue3);
-            IOValue6 = ATIGetExtReg(0xBCU);
+            if (pATI->Chip <= ATI_CHIP_18800_1)
+                IOValue6 = 0;
+            else
+                IOValue6 = ATIGetExtReg(0xBCU);
             ATIPutExtReg(IOValue1, IOValue2);
             if ((IOValue4 == (IOValue3 ^ 0xAAU)) &&
                 (IOValue5 == (IOValue3 ^ 0x55U)) &&

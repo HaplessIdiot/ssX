@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.5 1999/07/06 11:38:25 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -299,6 +299,7 @@ ATIMach64ChipID
             pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264LTPRO;
             pATI->BusType = ATI_BUS_PCI;
+            pATI->LCDVBlendFIFOSize = 800;
             break;
 
         case OldChipID('L', 'B'):
@@ -309,6 +310,7 @@ ATIMach64ChipID
             pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264LTPRO;
             pATI->BusType = ATI_BUS_AGP;
+            pATI->LCDVBlendFIFOSize = 800;
             break;
 
         case OldChipID('G', 'O'):
@@ -321,6 +323,7 @@ ATIMach64ChipID
             pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264XL;
             pATI->BusType = ATI_BUS_PCI;
+            pATI->LCDVBlendFIFOSize = 1024;
             break;
 
         case OldChipID('G', 'M'):
@@ -331,6 +334,7 @@ ATIMach64ChipID
             pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264XL;
             pATI->BusType = ATI_BUS_AGP;
+            pATI->LCDVBlendFIFOSize = 1024;
             break;
 
         default:

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.35 1999/06/06 08:49:17 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.36 1999/06/12 15:37:18 dawes Exp $
  */
 
 /*
@@ -70,7 +70,7 @@
 #undef SYSV				/* pretend to be bsd */
 #endif /* macII */
 
-#ifdef SCO
+#if defined(SCO) || defined(sco)
 #define USE_TERMCAP
 #endif
 
@@ -79,31 +79,34 @@
 #define USE_SYSV_UTMP
 #endif
 
+#ifdef Lynx
+#define USE_SYSV_TERMIO
+#endif
+
 #ifdef __OpenBSD__
 #define USE_TERMINFO
 #include <term.h>
 #endif
 
-#ifndef USE_TERMINFO
-#if defined(SCO) || defined(linux)
+#ifndef USE_TERMINFO	/* avoid conflict with configure script */
+#if defined(SCO) || defined(sco) || defined(linux)
 #define USE_TERMINFO
 #endif
 #endif
 
-#if defined(SYSV) || defined(Lynx) || defined(__CYGWIN32__)
+#if defined(SYSV) || defined(__CYGWIN32__)
 #define USE_SYSV_TERMIO
-#ifndef Lynx
 #define USE_SYSV_UTMP
+#elif defined(__QNX__)
+#define USE_TERMINFO
+#include <unix.h>
 #else
-#define USE_TERMCAP
-#endif
-#else /* else not SYSV */
 #define USE_TERMCAP
 #endif /* SYSV */
 
 /*
- * some OS's may want to use both, like SCO for example we catch
- * here anyone who hasn't decided what they want.
+ * Some OS's may want to use both, like SCO for example.  We catch here anyone
+ * who hasn't decided what they want.
  */
 #if !defined(USE_TERMCAP) && !defined(USE_TERMINFO)
 #define USE_TERMINFO

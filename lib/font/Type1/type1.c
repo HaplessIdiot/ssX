@@ -45,7 +45,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/type1.c,v 1.6 1999/03/02 10:41:48 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/type1.c,v 1.7 1999/05/03 05:58:48 dawes Exp $ */
  
 /*********************************************************************/
 /*                                                                   */
@@ -68,7 +68,7 @@
 #include  <stdio.h>          /* a system-dependent include, usually */
 #include  <math.h>
 #else
-#include  "fontmisc.h"
+#include  "Xdefs.h"
 #include  "Xmd.h"
 #include  "xf86_ansic.h"
 #endif
@@ -77,9 +77,11 @@
 #include  "paths.h"
 #include  "fonts.h"        /* understands about TEXTTYPEs */
 #include  "pictures.h"     /* understands about handles */
+#include  "range.h"
  
 typedef struct xobject xobject;
 #include  "util.h"       /* PostScript objects */
+#include  "fontfcn.h"
 #include  "blues.h"          /* Blues structure for font-level hints */
  
 /**********************************/
@@ -164,10 +166,13 @@ struct stem {                     /* representation of a STEM hint */
     struct segment *rthint, *rtrevhint;   /* right or top    hint adjustment */
 };
  
-extern struct XYspace *IDENTITY;
-
+struct xobject *Type1Char(char *env, struct XYspace *S, 
+			  psobj *charstrP, psobj *subrsP, psobj *osubrsP, 
+			  struct blues_struct *bluesP, int *modeP);
 #ifdef BUILDCID
-struct xobject *CIDChar();
+struct xobject *CIDChar(char *env, struct XYspace *S, 
+			psobj *charstrP, psobj *subrsP, psobj *osubrsP, 
+			struct blues_struct *bluesP, int *modeP);
 #endif
  
 static double escapementX, escapementY;
@@ -188,24 +193,57 @@ static int *ModeP;
 /************************/
 /* Forward declarations */
 /************************/
-static double Div();
-static double PSFakePop();
-static void DoCommand();
-static void Escape();
-static void HStem();
-static void VStem();
-static void RLineTo();
-static void RRCurveTo();
-static void DoClosePath();
-static void CallSubr();
-static void Return();
-static void EndChar();
-static void RMoveTo();
-static void DotSection();
-static void Seac();
-static void Sbw();
-static void CallOtherSubr();
-static void SetCurrentPoint();
+static struct segment *Applyhint ( struct segment *p, int stemnumber, 
+				   int half );
+static struct segment *Applyrevhint ( struct segment *p, int stemnumber, 
+				      int half );
+static void CallOtherSubr ( int othersubrno );
+static void CallSubr ( int subrno );
+static struct segment *CenterStem ( double edge1, double edge2 );
+static void ClearCallStack ( void );
+static void ClearPSFakeStack ( void );
+static void ClearStack ( void );
+static void ComputeAlignmentZones ( void );
+static void ComputeStem ( int stemno );
+static void Decode ( int Code );
+static unsigned char Decrypt ( unsigned char cipher );
+static double Div ( double num1, double num2 );
+static void DoClosePath ( void );
+static void DoCommand ( int Code );
+static int DoRead ( int *CodeP );
+static void DotSection ( void );
+static void EndChar ( void );
+static void Escape ( int Code );
+static struct segment *FindStems ( double x, double y, double dx, double dy );
+static void FinitStems ( void );
+static void FlxProc ( double c1x2, double c1y2, double c3x0, double c3y0, 
+		      double c3x1, double c3y1, double c3x2, double c3y2, 
+		      double c4x0, double c4y0, double c4x1, double c4y1, 
+		      double c4x2, double c4y2, double epY, double epX, 
+		      int idmin );
+static void FlxProc1 ( void );
+static void FlxProc2 ( void );
+static void HintReplace ( void );
+static void HStem ( double y, double dy );
+static void InitStems ( void );
+static void PopCall ( psobj **CurrStrPP, int *CurrIndexP, 
+		      unsigned short *CurrKeyP );
+static double PSFakePop ( void );
+static void PSFakePush ( double Num );
+static void Push ( double Num );
+static void PushCall ( psobj *CurrStrP, int CurrIndex, 
+		       unsigned short CurrKey );
+static void Return ( void );
+static void RLineTo ( double dx, double dy );
+static void RMoveTo ( double dx, double dy );
+static void RRCurveTo ( double dx1, double dy1, double dx2, double dy2, 
+			double dx3, double dy3 );
+static void Sbw ( double sbx, double sby, double wx, double wy );
+static void Seac ( double asb, double adx, double ady, unsigned char bchar, 
+		   unsigned char achar );
+static void SetCurrentPoint ( double x, double y );
+static void StartDecrypt ( void );
+static void VStem ( double x, double dx );
 
 /*****************************************/
 /* statics for Flex procedures (FlxProc) */
@@ -227,7 +265,7 @@ static int numalignmentzones;	   /* total number of alignment zones */
 /* Fill in the alignment zone structures. */
 /******************************************/
 static void
-ComputeAlignmentZones()
+ComputeAlignmentZones(void)
 {
   int i;
   double dummy, bluezonepixels, familyzonepixels;
@@ -306,7 +344,7 @@ static double wsoffsetX, wsoffsetY;  /* White space offset - for VSTEM3,HSTEM3 *
 static int wsset;                    /* Flag for whether we've set wsoffsetX,Y */
  
 static void
-InitStems()  /* Initialize the STEM hint data structures */
+InitStems(void)  /* Initialize the STEM hint data structures */
 {
   InDotSection = FALSE;
   currstartstem = numstems = 0;
@@ -314,7 +352,7 @@ InitStems()  /* Initialize the STEM hint data structures */
 }
  
 static void
-FinitStems()  /* Terminate the STEM hint data structures */
+FinitStems(void)  /* Terminate the STEM hint data structures */
 {
   int i;
  
@@ -331,8 +369,7 @@ FinitStems()  /* Terminate the STEM hint data structures */
 /* inside the stem.                                                */
 /*******************************************************************/
 static void
-ComputeStem(stemno)
-  int stemno;
+ComputeStem(int stemno)
 {
   int verticalondevice, idealwidth;
   double stemstart, stemwidth;
@@ -480,10 +517,10 @@ ComputeStem(stemno)
       if (unitpixels < blues->BlueScale)
         suppressovershoot = TRUE;
       else
-        if (alignmentzones[i].topzone)
+	if (alignmentzones[i].topzone) {
           if (stemtop >= alignmentzones[i].bottomy + blues->BlueShift)
             enforceovershoot = TRUE;
-        else
+        } else 
           if (stembottom <= alignmentzones[i].topy - blues->BlueShift)
             enforceovershoot = TRUE;
  
@@ -522,20 +559,21 @@ ComputeStem(stemno)
            it falls at least one pixel beyond the flat position. */
  
         if (enforceovershoot)
-          if (overshoot < onepixel)
+	  if (overshoot < onepixel) {
             if (alignmentzones[i].topzone)
               stemshift += onepixel - overshoot;
             else
               stemshift -= onepixel - overshoot;
- 
+	  }
         /* SUPPRESS overshoot by aligning the stem to the alignment zone's
            flat position. */
  
-        if (suppressovershoot)
+        if (suppressovershoot) {
           if (alignmentzones[i].topzone)
             stemshift -= overshoot;
           else
             stemshift += overshoot;
+	}
       }
  
       /************************************************************/
@@ -599,9 +637,8 @@ ComputeStem(stemno)
 /* hint value or the right/top hint value depending on where the     */
 /* point lies in the stem.                                           */
 /*********************************************************************/
-static struct segment *Applyhint(p, stemnumber, half)
-struct segment *p;
-int stemnumber, half;
+static struct segment *
+Applyhint(struct segment *p, int stemnumber, int half)
 {
   if (half == LEFT || half == BOTTOM)
     return Join(p, stems[stemnumber].lbhint); /* left  or bottom hint */
@@ -614,9 +651,8 @@ int stemnumber, half;
 /* hint value or the right/top hint value depending on where the     */
 /* point lies in the stem.                                           */
 /*********************************************************************/
-static struct segment *Applyrevhint(p, stemnumber, half)
-struct segment *p;
-int stemnumber, half;
+static struct segment *
+Applyrevhint(struct segment *p, int stemnumber, int half)
 {
   if (half == LEFT || half == BOTTOM)
     return Join(p, stems[stemnumber].lbrevhint); /* left  or bottom hint */
@@ -632,8 +668,8 @@ int stemnumber, half;
 /*   The actual hintvalue is returned as a location.                   */
 /* Hints are ignored inside a DotSection.                              */
 /***********************************************************************/
-static struct segment *FindStems(x, y, dx, dy)
-double x, y, dx, dy;
+static struct segment *
+FindStems(double x, double y, double dx, double dy)
 {
   int i;
   int newvert, newhor;
@@ -727,30 +763,26 @@ static double PSFakeStack[MAXPSFAKESTACK];
 static int PSFakeTop;
  
 static void
-ClearStack()
+ClearStack(void)
 {
   Top = -1;
 }
  
 static void
-Push(Num)
-        double Num;
+Push(double Num)
 {
   if (++Top < MAXSTACK) Stack[Top] = Num;
   else Error0("Push: Stack full\n");
 }
  
 static void
-ClearCallStack()
+ClearCallStack(void)
 {
   CallTop = -1;
 }
  
 static void
-PushCall(CurrStrP, CurrIndex, CurrKey)
-  psobj *CurrStrP;
-  int CurrIndex;
-  unsigned short CurrKey;
+PushCall(psobj *CurrStrP, int CurrIndex, unsigned short CurrKey)
 {
   if (++CallTop < MAXCALLSTACK) {
     CallStack[CallTop].currstrP = CurrStrP;   /* save CharString pointer */
@@ -761,10 +793,7 @@ PushCall(CurrStrP, CurrIndex, CurrKey)
 }
  
 static void
-PopCall(CurrStrPP, CurrIndexP, CurrKeyP)
-  psobj **CurrStrPP;
-  int *CurrIndexP;
-  unsigned short *CurrKeyP;
+PopCall(psobj **CurrStrPP, int *CurrIndexP, unsigned short *CurrKeyP)
 {
   if (CallTop >= 0) {
     *CurrStrPP = CallStack[CallTop].currstrP; /* restore CharString pointer */
@@ -775,15 +804,14 @@ PopCall(CurrStrPP, CurrIndexP, CurrKeyP)
 }
  
 static void
-ClearPSFakeStack()
+ClearPSFakeStack(void)
 {
   PSFakeTop = -1;
 }
  
 /* PSFakePush: Pushes a number onto the fake PostScript stack */
 static void
-PSFakePush(Num)
-  double Num;
+PSFakePush(double Num)
 {
   if (++PSFakeTop < MAXPSFAKESTACK) PSFakeStack[PSFakeTop] = Num;
   else Error0("PSFakePush: Stack full\n");
@@ -791,7 +819,7 @@ PSFakePush(Num)
  
 /* PSFakePop: Removes a number from the top of the fake PostScript stack */
 static double
-PSFakePop ()
+PSFakePop (void)
 {
   if (PSFakeTop >= 0) return(PSFakeStack[PSFakeTop--]);
   else Error0Ret("PSFakePop : Stack empty\n", 0.0);
@@ -801,9 +829,8 @@ PSFakePop ()
 /***********************************************************************/
 /* Center a stem on the pixel grid -- used by HStem3 and VStem3        */
 /***********************************************************************/
-static struct segment *CenterStem(edge1, edge2)
-    double edge1;
-    double edge2;
+static struct segment *
+CenterStem(double edge1, double edge2)
 {
   int idealwidth, verticalondevice;
   double leftx, lefty, rightx, righty, center, width;
@@ -872,8 +899,8 @@ static struct segment *CenterStem(edge1, edge2)
  
 static unsigned short r; /* Pseudo-random sequence of keys */
  
-static unsigned char Decrypt(cipher)
-unsigned char cipher;
+static unsigned char 
+Decrypt(unsigned char cipher)
 {
   unsigned char plain;
  
@@ -883,8 +910,8 @@ unsigned char cipher;
 }
  
 /* Get the next byte from the codestring being interpreted */
-static int DoRead(CodeP)
-  int *CodeP;
+static int 
+DoRead(int *CodeP)
 {
   if (strindex >= CharStringP->len) return(FALSE); /* end of string */
   *CodeP = Decrypt((unsigned char) CharStringP->data.stringP[strindex++]);
@@ -894,7 +921,8 @@ static int DoRead(CodeP)
 /* Strip blues->lenIV bytes from CharString and update encryption key */
 /* (the lenIV entry in the Private dictionary specifies the number of */
 /* random bytes at the beginning of each CharString; default is 4)    */
-static void StartDecrypt()
+static void 
+StartDecrypt(void)
 {
   int Code;
  
@@ -905,8 +933,7 @@ static void StartDecrypt()
 }
  
 static void
-Decode(Code)
-  int Code;
+Decode(int Code)
 {
   int Code1, Code2, Code3, Code4;
  
@@ -936,8 +963,7 @@ ended: Error0("Decode: Premature end of Type 1 CharString");
  
 /* Interpret a command code */
 static void
-DoCommand(Code)
-  int Code;
+DoCommand(int Code)
 {
   switch(Code) {
     case HSTEM: /* |- y dy HSTEM |- */
@@ -1055,8 +1081,7 @@ DoCommand(Code)
 }
  
 static void
-Escape(Code)
-  int Code;
+Escape(int Code)
 {
   int i, Num;
   struct segment *p;
@@ -1158,8 +1183,7 @@ Escape(Code)
 /* between coordinates y and y + dy */
 /* y is relative to the left sidebearing point */
 static void
-HStem(y, dy)
-  double y, dy;
+HStem(double y, double dy)
 {
   IfTrace2((FontDebug), "Hstem %f %f\n", &y, &dy);
   if (ProcessHints) {
@@ -1181,8 +1205,7 @@ HStem(y, dy)
 /* x is relative to the left sidebearing point */
 
 static void
-VStem(x, dx)
-  double x, dx;
+VStem(double x, double dx)
 {
   IfTrace2((FontDebug), "Vstem %f %f\n", &x, &dx);
   if (ProcessHints) {
@@ -1201,8 +1224,7 @@ VStem(x, dx)
 /* |- dx dy RLINETO |- */
 /* Behaves like RLINETO in PostScript */
 static void
-RLineTo(dx, dy)
-  double dx, dy;
+RLineTo(double dx, double dy)
 {
   struct segment *B;
  
@@ -1225,8 +1247,8 @@ RLineTo(dx, dy)
 /* (dx1+dx2) (dy1+dy2) (dx1+dx2+dx3) */
 /* (dy1+dy2+dy3) RCURVETO in PostScript */
 static void
-RRCurveTo(dx1, dy1, dx2, dy2, dx3, dy3)
-  double dx1, dy1, dx2, dy2, dx3, dy3;
+RRCurveTo(double dx1, double dy1, double dx2, double dy2, 
+	  double dx3, double dy3)
 {
   struct segment *B, *C, *D;
  
@@ -1249,17 +1271,17 @@ RRCurveTo(dx1, dy1, dx2, dy2, dx3, dy3)
   /* Since XIMAGER is not completely relative, */
   /* we need to add up the delta values */
  
-  C = Join(C, Dup(B));
-  D = Join(D, Dup(C));
+  C = Join(C, (struct segment *)Dup(B));
+  D = Join(D, (struct segment *)Dup(C));
  
-  path = Join(path, Bezier(B, C, D));
+  path = Join(path, (struct segment *)Bezier(B, C, D));
 }
  
 /* - CLOSEPATH |- */
 /* Closes a subpath WITHOUT repositioning the */
 /* current point */
 static void
-DoClosePath()
+DoClosePath(void)
 {
   struct segment *CurrentPoint;
  
@@ -1273,8 +1295,7 @@ DoClosePath()
 /* Calls a CharString subroutine with index */
 /* subr# from the Subrs array */
 static void
-CallSubr(subrno)
-  int subrno;
+CallSubr(int subrno)
 {
   IfTrace1((FontDebug), "CallSubr %d\n", subrno);
   if ((subrno < 0) || (subrno >= SubrsP->len))
@@ -1288,7 +1309,7 @@ CallSubr(subrno)
 /* Returns from a Subrs array CharString */
 /* subroutine called with CALLSUBR */
 static void
-Return()
+Return(void)
 {
   IfTrace0((FontDebug), "Return\n");
   PopCall(&CharStringP, &strindex, &r);
@@ -1303,7 +1324,7 @@ Return()
 /* or STROKE depending on the value of PaintType in the */
 /* font dictionary */
 static void
-EndChar()
+EndChar(void)
 {
   IfTrace0((FontDebug), "EndChar\n");
  
@@ -1321,8 +1342,7 @@ EndChar()
 /* |- dx dy RMOVETO |- */
 /* Behaves like RMOVETO in PostScript */
 static void
-RMoveTo(dx,dy)
-  double dx,dy;
+RMoveTo(double dx, double dy)
 {
   struct segment *B;
  
@@ -1344,7 +1364,7 @@ RMoveTo(dx,dy)
 /* Brackets an outline section for the dots in */
 /* letters such as "i", "j", and "!". */
 static void
-DotSection()
+DotSection(void)
 {
   IfTrace0((FontDebug), "DotSection\n");
   InDotSection = !InDotSection;
@@ -1353,9 +1373,8 @@ DotSection()
 /* |- asb adx ady bchar achar SEAC |- */
 /* Standard Encoding Accented Character. */
 static void
-Seac(asb, adx, ady, bchar, achar)
-  double asb, adx, ady;
-  unsigned char bchar, achar;
+Seac(double asb, double adx, double ady, 
+     unsigned char bchar, unsigned char achar)
 {
   int Code;
   struct segment *mypath;
@@ -1375,7 +1394,7 @@ Seac(asb, adx, ady, bchar, achar)
   path = NULL;
  
   /* Go find the CharString for the accent's code via an upcall */
-  CharStringP = GetType1CharString(Environment, achar);
+  CharStringP = GetType1CharString((psfont *)Environment, achar);
   StartDecrypt();
  
   ClearStack();
@@ -1395,7 +1414,7 @@ Seac(asb, adx, ady, bchar, achar)
   accentoffsetX = accentoffsetY = 0;
  
   /* go find the CharString for the base char's code via an upcall */
-  CharStringP = GetType1CharString(Environment, bchar);
+  CharStringP = GetType1CharString((psfont *)Environment, bchar);
   StartDecrypt();
  
   ClearStack();
@@ -1418,8 +1437,7 @@ Seac(asb, adx, ady, bchar, achar)
 /* Set the left sidebearing point to (sbx,sby), */
 /* set the character width vector to (wx,wy). */
 static void
-Sbw(sbx, sby, wx, wy)
-  double sbx, sby, wx, wy;
+Sbw(double sbx, double sby, double wx, double wy)
 {
   IfTrace4((FontDebug), "SBW %f %f %f %f\n", &sbx, &sby, &wx, &wy);
  
@@ -1436,8 +1454,8 @@ Sbw(sbx, sby, wx, wy)
  
  /* num1 num2 DIV quotient */
 /* Behaves like DIV in the PostScript language */
-static double Div(num1, num2)
-  double num1, num2;
+static double 
+Div(double num1, double num2)
 {
   IfTrace2((FontDebug), "Div %f %f\n", &num1, &num2);
   return(num1 / num2);
@@ -1524,13 +1542,10 @@ static double Div(num1, num2)
 /*   Computes Flex values, and renders the Flex path,    */
 /*   and returns (leaves) ending coordinates on stack    */
 static void
-FlxProc(c1x2, c1y2, c3x0, c3y0, c3x1, c3y1, c3x2, c3y2,
-        c4x0, c4y0, c4x1, c4y1, c4x2, c4y2, epY, epX, idmin)
-  double c1x2, c1y2;
-  double c3x0, c3y0, c3x1, c3y1, c3x2, c3y2;
-  double c4x0, c4y0, c4x1, c4y1, c4x2, c4y2;
-  double epX, epY;
-  int idmin;
+FlxProc(double c1x2, double c1y2, double c3x0, double c3y0, 
+	double c3x1, double c3y1, double c3x2, double c3y2,
+        double c4x0, double c4y0, double c4x1, double c4y1, 
+	double c4x2, double c4y2, double epY, double epX, int idmin)
 {
   double dmin;
   double c1x0, c1y0, c1x1, c1y1;
@@ -1692,7 +1707,8 @@ FlxProc(c1x2, c1y2, c3x0, c3y0, c3x1, c3y1, c3x2, c3y2,
 /* FlxProc1() = OtherSubrs[1]; Part of Flex            */
 /*   Calling sequence: '0 1 callothersubr'             */
 /*   Saves and clears path, then restores currentpoint */
-static void FlxProc1()
+static void 
+FlxProc1(void)
 {
   struct segment *CurrentPoint;
  
@@ -1705,7 +1721,8 @@ static void FlxProc1()
 /* FlxProc2() = OtherSubrs[2]; Part of Flex */
 /*   Calling sequence: '0 2 callothersubr'  */
 /*   Returns currentpoint on stack          */
-static void FlxProc2()
+static void 
+FlxProc2(void)
 {
   struct segment *CurrentPoint;
   double CurrentX, CurrentY;
@@ -1722,7 +1739,8 @@ static void FlxProc2()
 /* HintReplace() = OtherSubrs[3]; Hint Replacement            */
 /*   Calling sequence: 'subr# 1 3 callothersubr pop callsubr' */
 /*   Reinitializes stem hint structure                        */
-static void HintReplace()
+static void 
+HintReplace(void)
 {
   /* Effectively retire the current stems, but keep them around for */
   /* revhint use in case we are in a stem when we replace hints. */
@@ -1735,8 +1753,7 @@ static void HintReplace()
 /* Make calls on the PostScript interpreter (or call equivalent C code) */
 /* NOTE: The n arguments have been pushed on the fake PostScript stack */
 static void
-CallOtherSubr(othersubrno)
-  int othersubrno;
+CallOtherSubr(int othersubrno)
 {
   IfTrace1((FontDebug), "CallOtherSubr %d\n", othersubrno);
  
@@ -1771,8 +1788,7 @@ CallOtherSubr(othersubrno)
 /* character space coordinates without per- */
 /* forming a CharString MOVETO command */
 static void
-SetCurrentPoint(x, y)
-  double x, y;
+SetCurrentPoint(double x, double y)
 {
   IfTrace2((FontDebug), "SetCurrentPoint %f %f\n", &x, &y);
  
@@ -1782,14 +1798,11 @@ SetCurrentPoint(x, y)
  
 /* The Type1Char routine for use by PostScript. */
 /************************************************/
-struct xobject *Type1Char(env, S, charstrP, subrsP, osubrsP, bluesP, modeP)
-  char *env;
-  struct XYspace *S;
-  psobj *charstrP;
-  psobj *subrsP;
-  psobj *osubrsP;
-  struct blues_struct *bluesP;  /* FontID's ptr to the blues struct */
-  int *modeP;
+struct xobject *
+Type1Char(char *env, struct XYspace *S, psobj *charstrP, psobj *subrsP, 
+	  psobj *osubrsP, 
+	  struct blues_struct *bluesP, /* FontID's ptr to the blues struct */
+	  int *modeP)
 {
   int Code;
  
@@ -1845,14 +1858,11 @@ struct xobject *Type1Char(env, S, charstrP, subrsP, osubrsP, bluesP, modeP)
 }
 
 #ifdef BUILDCID
-struct xobject *CIDChar(env, S, charstrP, subrsP, osubrsP, bluesP, modeP)
-  char *env;
-  struct XYspace *S;
-  psobj *charstrP;
-  psobj *subrsP;
-  psobj *osubrsP;
-  struct blues_struct *bluesP;  /* FontID's ptr to the blues struct */
-  int *modeP;
+struct xobject *
+CIDChar(char *env, struct XYspace *S, 
+	psobj *charstrP, psobj *subrsP, psobj *osubrsP, 
+	struct blues_struct *bluesP, /* FontID's ptr to the blues struct */
+	int *modeP)
 {
   int Code;
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/register.c,v 1.10 1999/05/15 12:10:10 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.11 1999/07/17 05:30:43 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs
@@ -30,6 +30,8 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include "fontmisc.h"
+#include "fntfilst.h"
+#include "bitmap.h"
 
 #ifdef LOADABLEFONTS
 #include "fontmod.h"

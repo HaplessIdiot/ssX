@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.1 1999/07/06 11:38:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.2 1999/08/01 07:57:23 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -205,6 +205,7 @@ typedef struct _ATIRec
     int LCDPanelID, LCDClock, LCDHorizontal, LCDVertical;
     int LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
     int LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
+    int LCDVBlendFIFOSize;
 
     /*
      * Data used by ATIAdjustFrame().

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fontfile/printerfont.c,v 1.2 1999/07/17 05:30:43 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -83,7 +83,7 @@ PrinterFontInitFPE (FontPathElementPtr fpe)
  */
 
 static int
-PrinterFontOpenFont (pointer client, FontPathElementPtr fpe, int flags, 
+PrinterFontOpenFont (pointer client, FontPathElementPtr fpe, Mask flags, 
 		     char *name, int namelen, 
 		     fsBitmapFormat format, fsBitmapFormatMask fmask,
 		     XID id, FontPtr *pFont, char **aliasName, 
@@ -166,9 +166,9 @@ PrinterFontRegisterFpeFunctions (void)
 					  PrinterFontListFonts,
 					  PrinterFontStartListFontsWithInfo,
 					  PrinterFontListNextFontWithInfo,
-					  (IntFunc) 0,
-					  (IntFunc) 0,
-					  (IntFunc) 0,
+					  NULL,
+					  NULL,
+					  NULL,
 					  PrinterFontStartListFontsAndAliases,
 					  PrinterFontListNextFontOrAlias,
 					  FontFileEmptyBitmapSource);

@@ -31,6 +31,7 @@
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"
+#include "pictures.h"
  
 /*
 :h2.Handle Functions
@@ -40,15 +41,15 @@
 This is a user operator.  Its new name is QueryHandle.
 */
  
-struct segment *t1_Phantom(obj)
-       register struct xobject *obj;  /* object to take the Phantom of       */
+struct segment *
+t1_Phantom(struct segment *p) /* object to take the Phantom of             */
 {
        struct fractpoint pt; /* handle size will built here                  */
  
-       if (obj == NULL)
+       if (p == NULL)
                pt.x = pt.y = 0;
        else
-               PathDelta(obj, &pt);
+               PathDelta(p, &pt);
  
        return(PathSegment(MOVETYPE, pt.x, pt.y));
 }
@@ -59,8 +60,8 @@ struct segment *t1_Phantom(obj)
 This is a user operator.
 */
  
-struct xobject *t1_Snap(p)
-       register struct segment *p;  /* path to snap                          */
+struct segment *
+t1_Snap(struct segment *p)   /* path to snap                                 */
 {
        struct fractpoint pt; /* for finding length of path                   */
  
@@ -75,5 +76,5 @@ struct xobject *t1_Snap(p)
        }
        else
                p = JoinSegment(p, MOVETYPE, -pt.x, -pt.y, NULL);
-       return((struct xobject *)p);
+       return(p);
 }

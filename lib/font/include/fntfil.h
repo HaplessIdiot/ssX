@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfil.h,v 1.3 1999/03/14 14:39:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfil.h,v 1.4 1999/07/17 05:30:47 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -73,7 +73,7 @@ extern int FontFileInitFPE ( FontPathElementPtr fpe );
 extern int FontFileResetFPE ( FontPathElementPtr fpe );
 extern int FontFileFreeFPE ( FontPathElementPtr fpe );
 extern int FontFileOpenFont ( pointer client, FontPathElementPtr fpe, 
-			      int flags, char *name, int namelen, 
+			      Mask flags, char *name, int namelen, 
 			      fsBitmapFormat format, fsBitmapFormatMask fmask, 
 			      XID id, FontPtr *pFont, char **aliasName, 
 			      FontPtr non_cachable_font );

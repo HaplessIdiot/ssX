@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.9 1999/08/01 07:56:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.10 1999/08/01 11:55:14 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -48,31 +48,8 @@ extern int close();
 
 #endif /* FONTMODULE */
 
-#if 0
-#include "basictypes.h"
-#else
+#include "X11/Xdefs.h"
 
-#ifndef _XTYPEDEF_POINTER
-#define _XTYPEDEF_POINTER
-typedef void		*pointer;	/* Also in Xserver/include/misc.h */
-#endif
-#ifndef _XTYPEDEF_BOOL
-#define _XTYPEDEF_BOOL
-typedef int		Bool;		/* Also in Xserver/include/misc.h */
-#endif
-
-#endif
-
-#ifndef X_PROTOCOL
-#ifndef _XSERVER64
-typedef unsigned long	Atom;
-typedef unsigned long	XID;
-#else
-#include <X11/Xmd.h>
-typedef CARD32 XID;
-typedef CARD32 Atom;
-#endif 
-#endif
 
 #ifndef LSBFirst
 #define LSBFirst	0

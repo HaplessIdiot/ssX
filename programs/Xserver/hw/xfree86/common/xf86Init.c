@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.131 1999/06/21 10:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.132 1999/06/27 09:20:17 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -335,6 +335,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
       }
+      xf86SetPciVideo(NULL,NONE);
     }
 
     /*

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.1 1999/08/15 13:00:55 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -135,6 +135,7 @@ static char *keywords[] = {
     "sizeof",
     "static",
     "struct",
+    "switch",
     "template",
     "this",
     "throw",
@@ -371,14 +372,23 @@ previous_anchor:
 		    entity = anchor->entities;
 	    }
 	    if (anchor && entity) {
+		int count = 0;
+
 		if (entity->property == Qpreprocessor && entity != prep) {
 		    C_ParsePreprocessor(w, anchor, entity, &pleft, &pright);
 		    ltmp = MIN(ltmp, pleft);
 		    rtmp = MAX(rtmp, pright);
 		}
 		right = anchor->position + entity->offset;
-		if (entity->property == Qerror)
-		    right += entity->length;
+		while (entity && ++count < 3) {
+		    if (entity->property == Qerror) {
+			right = anchor->position + entity->offset + entity->length;
+			count = 0;
+		    }
+		    if ((entity = entity->next) == NULL &&
+			(anchor = XawTextSourceNextAnchor(w, anchor)) != NULL)
+			entity = anchor->entities;
+		}
 	    }
 	}
     }
@@ -405,7 +415,14 @@ previous_anchor:
 	parser.position = XawTextSourceRead(parser.source = w, left,
 					    &parser.block, 4096);
 	parser.offset = left - 1;
-	parser.quark = NULLQUARK;
+	ltmp = XawTextSourceScan(w, left, XawstEOL, XawsdLeft, 1, False);
+	if (ltmp == left ||
+	    XawTextSourceScan(w, XawTextSourceScan(w, ltmp, XawstWhiteSpace,
+			      			   XawsdRight, 1, False),
+			      XawstWhiteSpace, XawsdLeft, 1, False) == left)
+	    parser.quark = NULLQUARK;
+	else
+	    parser.quark = Qdefault;
 	parser.i = 0;
 	if (parser.block.length == 0)
 	    parser.ch = parser.next = EOF;
@@ -625,7 +642,7 @@ C_Parse3(C_Parser *parser)
 		parser->quark = Qkeyword;
 		parser->end = parser->offset;
 		C_Commit(parser);
-		parser->quark = Qerror;
+		parser->quark = Qdefault;
 		parser->start = parser->end;
 	    }
 	    else if (isalnum(ch) || ch == '_')
@@ -638,6 +655,7 @@ C_Parse3(C_Parser *parser)
 	else if (ch == '_' || isalpha(ch)) {
 	    parser->end = parser->offset - 1;
 	    C_Commit(parser);
+	    parser->quark = Qdefault;
 	    while ((ch = C_Peek(parser)) != EOF &&
 		   (isalnum(ch) || ch == '_'))
 		(void)C_Get(parser);
@@ -848,8 +866,12 @@ C_Parse1(C_Parser *parser)
 	    default:
 		parser->end = parser->offset - 1;
 		C_Commit(parser);
-		parser->quark = ch == '\n' ? NULLQUARK :
-				ch == ' ' || ch == '\t' ? Qdefault : Qerror;
+		if (ch == '\n')
+		    parser->quark = NULLQUARK;
+		else if (ch == ' ' || ch == '\t')
+		    parser->quark = parser->quark == NULLQUARK ? NULLQUARK : Qdefault;
+		else
+		    parser->quark = Qerror;
 		parser->start = parser->end;
 		return (ch);
 	}
@@ -876,4 +898,6 @@ C_ModeInit(void)
     Qpunctuation	= XrmPermStringToQuark("punctuation");
     Qdefault		= XrmPermStringToQuark("default");
     Qerror		= XrmPermStringToQuark("error");
+
+    initialized = True;
 }

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.10 1999/05/09 11:46:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.11 1999/05/15 12:10:09 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -423,7 +423,7 @@ parseEncodingFile(FontFilePtr f, int headerOnly)
   char *aliases[MAXALIASES];
   int numaliases=0;
 
-no_encoding:
+/* no_encoding: */
   line=getnextline(f);
   switch(line) {
   case EOF_LINE:

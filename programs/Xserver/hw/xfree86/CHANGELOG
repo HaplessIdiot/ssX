@@ -1,3 +1,29 @@
+XFree86 3.9.15c (22 August 1999)
+2970. Modify DDC for neomagic (#3139, Egbert Eich).
+2969. Add DDC support for the S3 ViRGE (DDC2 untested) (#3139, Egbert Eich).
+2968. Fix DDC2 support for MGA and C&T drivers (#3139, Egbert Eich).
+2967. Add a call to xf86SetPciVideo(NULL,NONE) after each probe (#3139,
+      Egbert Eich).
+2966. Modified registration of the OS access windows (#3139, Egbert Eich).
+2965. Some Xaw and xedit fixes (#3138, Paulo Cesar Pereira de Andrade).
+2964. Next round of the font ansification and warning removal (#3135,
+      Matthieu Herrb).
+2963. Fix ATI 18800-x detection problem (#3133, Marc La France).
+2962. Check for limitations on vertical blending in panel support for the ATI
+      driver (#3133, Marc La France).
+2961. Update ATI driver to complain about bad BIOS data (#3133,
+      Marc La France).
+2960. Man page corrections for the MGA driver (#3132, Mark Vojkovich).
+2959. Limit PCI BIOS apertures to 16MB as per the PCI 2.1 spec (#3131,
+      Marc La France).
+2958. Assume a system has up to 1G of physical memory installed, rather than
+      2G (#3130, Marc La France).
+2957. Fix a bug in the handling for buggy VGA CRTCs (#3129, Marc La France).
+2956. Fix to build the mga driver with the driver SDK (#3128, David Bateman).
+2955. Xterm patch #113 (#3125, Thomas Dickey).
+2954. Port the XAA cfb copyplane functions, adding them to the cfb code
+      (#3124, 3126, 3127, David Bateman).
+
 XFree86 3.9.15b (15 August 1999)
 2953. Improved point rendering performance for the MGA driver (#3123,
       Mark Vojkovich).
@@ -8566,4 +8592,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.812 1999/08/14 10:49:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.813 1999/08/15 13:00:46 dawes Exp $

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.19 1999/07/19 13:36:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.20 1999/08/15 13:00:37 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -982,7 +982,6 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	/* XXX index (i) could be returned by XawTextSourceFindAnchor
 	 * or similar function, to speed up */
 	if ((anchor = XawTextSourceFindAnchor(w, left))) {
-	    XawTextAnchor *aprev = anchor;
 	    XawTextEntity *eprev, *entity, *enext;
 	    XawTextPosition offset, diff = block->length - (right - left);
 
@@ -1027,10 +1026,8 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 			    entity = anchor ? anchor->entities : NULL;
 			    eprev = NULL;
 			}
-			else {
-			    eprev = NULL;
-			    entity = enext;
-			}
+			else
+			    eprev = entity = enext;
 		    }
 		    else
 			entity = enext;
@@ -1047,10 +1044,6 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 
 		    if (offset > right) {
 			entity->length = XawMin(entity->length, offset - right);
-			if (entity->offset + diff < 0) {
-			    entity->offset = 0;
-			    entity = entity->next;
-			}
 			goto exit_anchor_loop;
 		    }
 
@@ -1096,20 +1089,20 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	    }
 
 exit_anchor_loop:
-	    while (entity) {
-		entity->offset += diff;
-		entity = entity->next;
-	    }
-	    if (anchor && anchor->position != 0 && anchor != aprev) {
-		if (anchor->position > left + diff) {
-		    XawTextPosition tmp = (left + diff) - anchor->position;
+	    if (anchor && anchor->position > left + diff) {
+		XawTextPosition tmp = (left + diff) - anchor->position;
 
-		    anchor->position += tmp;
-		    entity = anchor->entities;
-		    while (entity) {
-			entity->offset -= tmp;
-			entity = entity->next;
-		    }
+		anchor->position += tmp;
+		entity = anchor->entities;
+		while (entity) {
+		    entity->offset -= tmp;
+		    entity = entity->next;
+		}
+	    }
+	    else {
+		while (entity) {
+		    entity->offset += diff;
+		    entity = entity->next;
 		}
 	    }
 
@@ -1561,24 +1554,26 @@ XawTextSourceAddAnchor(Widget w, XawTextPosition position)
 
 	anchor = XtNew(XawTextAnchor);
 
-	if (panchor->cache && panchor->position + panchor->cache->offset < position)
+	if (panchor->cache && panchor->position + panchor->cache->offset +
+	    panchor->cache->length < position)
 	    pentity = entity = panchor->cache;
 	else
 	    pentity = entity = panchor->entities;
-	while (entity && panchor->position + entity->offset < position) {
+
+	while (entity && panchor->position + entity->offset +
+	       entity->length < position) {
 	    pentity = entity;
 	    entity = entity->next;
 	}
-	if (pentity &&
-	    panchor->position + pentity->offset + pentity->length > position) {
+	if (entity) {
 	    XawTextPosition diff;
 
-	    if (entity != pentity)
-		position = panchor->position + pentity->offset + pentity->length;
+	    if (panchor->position + entity->offset < position)
+		position = panchor->position + entity->offset;
 
 	    diff = position - panchor->position;
 
-	    panchor->cache = anchor->cache = NULL;
+	    panchor->cache = NULL;
 	    anchor->entities = entity;
 	    if (pentity != entity)
 		pentity->next = NULL;
@@ -1831,7 +1826,7 @@ XawTextSourceClearEntities(Widget w, XawTextPosition left, XawTextPosition right
     int i, length;
 
     while (anchor && anchor->entities == NULL)
-	anchor = XawTextSourceNextAnchor(w, anchor);
+	anchor = XawTextSourceRemoveAnchor(w, anchor);
 
     if (anchor == NULL || left >= right)
 	return;

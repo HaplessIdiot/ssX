@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.34 1999/07/12 05:10:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.35 1999/08/01 07:57:09 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -13,13 +13,13 @@
 #include <unistd.h>
 #include "X.h"
 #include "os.h"
+#include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Resources.h"
 
 /* Bus-specific headers */
 
-#include "xf86Pci.h"
 #include "xf86Bus.h"
 #define DECLARE_CARD_DATASTRUCTURES TRUE
 #include "xf86PciInfo.h"
@@ -1742,7 +1742,7 @@ checkConflictBlock(resRange *range, resPtr pRes)
 	val = (~pRes->sparse_mask | pRes->sparse_base) & getMask(range->rEnd);
 #ifdef DEBUG
 	ErrorF("base = 0x%lx, mask = 0x%lx, begin = 0x%lx, end = 0x%lx ,"
-	       "val\n 0x%lx\n",
+	       "val = 0x%lx\n",
 		pRes->sparse_base, pRes->sparse_mask, range->rBegin,
 		range->rEnd, val);
 #endif
@@ -1855,7 +1855,7 @@ needCheck(resPtr pRes, long type, int entityIndex, xf86State state)
 
     /*
      * Resources set by BIOS (ResBios) are allowed to conflict
-     * with resources marked (ResNoAvoid).
+     * with resources marked (ResBios).
      */
     if (pRes->res_type & type & ResBios)
 	return FALSE;
@@ -2258,15 +2258,18 @@ xf86GetPciSysRes(resPtr *res, int flags)
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
 	long resMisc;
+#if 0 /* disable this for now. If no problem remove entirely */
 	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
-	/* Only process devices with type 0 headers */
-	if ((pcrp->pci_header_type & 0x7f) != 0)
-	    continue;
+#endif
 	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    resMisc = ResBios;
 	else
 	    resMisc = ResEstimated;
+
+	/* Only process devices with type 0 headers */
+	if ((pcrp->pci_header_type & 0x7f) != 0)
+	    continue;
 
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
@@ -2358,9 +2361,7 @@ ValidatePci(void)
 {
     pciVideoPtr pvp, pvp1;
     PciBusPtr pbp, pbp1;
-    memType start_mp = 0, start_m = 0;
-    memType end_mp, end_m;
-    memType start_io = 0, end_io;
+    resPtr res_mp = NULL, res_m_io = NULL;
     resPtr tmp, avoid;
     resPtr Sys;
     resPtr Fix;
@@ -2402,23 +2403,19 @@ ValidatePci(void)
 	xf86PrintResList(3,Sys);
 #endif
 	avoid = NULL;
-	end_m = PCI_MEMBASE_LENGTH_MAX;
-	end_mp = PCI_MEMBASE_LENGTH_MAX;
-	end_io = PCI_IOBASE_LENGTH_MAX;
 	pbp = pbp1 = xf86PciBus;
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
 		if (pbp->pmem) {
-		    start_mp = pbp->pmem->block_begin;
-		    end_mp = MIN(end_mp,pbp->pmem->block_end);
+		    /* keep prefetchable separate */
+		    res_mp = findIntersectOfLists(pbp->pmem,ResRange);
 		}
 		if (pbp->mem) {
-		    start_m = pbp->mem->block_begin;
-		    end_m = MIN(end_m,pbp->mem->block_end);
+		    res_m_io = findIntersectOfLists(pbp->mem,ResRange);
 		}
 		if (pbp->io) {
-		    start_io = pbp->io->block_begin;
-		    end_io = MIN(end_io,pbp->io->block_end);
+		    res_m_io = xf86JoinResLists(res_m_io,
+			findIntersectOfLists(pbp->io,ResRange));
 		}
 	    }
 	    while (pbp1) {
@@ -2433,10 +2430,16 @@ ValidatePci(void)
 		pbp1 = pbp1->next;
 	    }	
 	    pbp = pbp->next;
-	}	
+	}
+	if (res_m_io == NULL)
+	   res_m_io = xf86DupResList(ResRange);
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"avoid:\n");
 	xf86PrintResList(3,avoid);
+	xf86MsgVerb(X_INFO, 3,"prefetchable Memory:\n");
+	xf86PrintResList(3,res_mp);
+	xf86MsgVerb(X_INFO, 3,"MEM/IO:\n");
+	xf86PrintResList(3,res_m_io);
 #endif
 	Fix = NULL;
 	for (i = 0; i < 6; i++) {
@@ -2463,7 +2466,7 @@ ValidatePci(void)
 		RANGE(range,pvp->ioBase[i],
 		      pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
 		      ResExcIoBlock);
-		if (range.rBegin >= start_io && range.rEnd <= end_io
+		if (isSubsetOf(range,res_m_io)
 		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
 		    && ! ChkConflict(&range,Sys,SETUP))
@@ -2480,13 +2483,13 @@ ValidatePci(void)
 		      pvp->memBase[i] + (1 << pvp->size[i]) - 1,
 		      ResExcMemBlock);
 		if (pvp->type[i] & PCI_MAP_MEMORY_CACHABLE) {
-		    if (range.rBegin >= start_mp && range.rEnd <= end_mp
+		    if (isSubsetOf(range,res_mp)
 			&& ! ChkConflict(&range,own,SETUP)
 			&& ! ChkConflict(&range,avoid,SETUP)
 			&& ! ChkConflict(&range,Sys,SETUP))
 			continue;
 		}
-		if (range.rBegin >= start_m && range.rEnd <= end_m
+		if (isSubsetOf(range,res_m_io)
 		    && ! ChkConflict(&range,own,SETUP)
 		    && ! ChkConflict(&range,avoid,SETUP)
 		    && ! ChkConflict(&range,Sys,SETUP))
@@ -2503,6 +2506,8 @@ ValidatePci(void)
 	}
 	xf86FreeResList(avoid);
 	xf86FreeResList(Sys);
+	xf86FreeResList(res_mp);
+	xf86FreeResList(res_m_io);
     }
     return;
 }
@@ -2620,9 +2625,10 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     while (list->type !=ResEnd) {
 	switch (list->type & ResAccMask) {
 	case ResExclusive:
-	    if (!xf86ChkConflict(list, entityIndex)) 
+	    if (!xf86ChkConflict(list, entityIndex)) {
+		list->type &= ~ResBios;
 		Acc = xf86AddResToList(Acc,list,entityIndex);
-	    else resError(list); /* no return */
+	    } else resError(list); /* no return */
 	    break;
 	case ResShared:
 	    /* at this stage the resources are just added to the
@@ -3187,7 +3193,7 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 	if(xf86ChkConflict(&range,entityIndex)) 
 	    res = xf86AddResToList(res,&range,entityIndex);
 	else {
-	    range.type &= ~ResNoAvoid;
+	    range.type &= ~ResBios;
 	    Acc = xf86AddResToList(Acc,&range,entityIndex);
 	}
 	list++;
@@ -3653,8 +3659,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     resPtr avoid = NULL;
     resList p_avoid = PciAvoid;
     resRange range;
-    memType start_w = 0, end_w = ~0;
-    memType start_w_2nd = 0, end_w_2nd = ~0;
+    resPtr resBios = 0;
+    resPtr w_tmp, w = NULL, w_2nd = NULL;
     PCITAG tag;
     PciBusPtr pbp = xf86PciBus, pbp1 = xf86PciBus;
     resPtr tmp;
@@ -3670,14 +3676,12 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	    p_base = &(pvp->memBase[res_n]);
 	    p_size = &(pvp->size[res_n]);
 	    p_type = pvp->type[res_n];
-	    end_w = end_w_2nd = PCI_MEMBASE_LENGTH_TYPE(p_type);
 	} else if (pvp->ioBase[prt]){
 	    type |= ResIo;
 	    res_n = prt;
 	    p_base = &(pvp->ioBase[res_n]);
 	    p_size = &(pvp->size[res_n]);
 	    p_type = pvp->type[res_n];
-	    end_w = ~(CARD16)0;
 	} else return FALSE;
     } else if (prt == 6) {
 	type |= ResMem;
@@ -3686,8 +3690,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	p_size = &(pvp->biosSize);
 	/* XXX This should also include the PCI_MAP_MEMORY_TYPE_MASK part */
 	p_type = 0;
-	/* bios is always in the 32 bit address range */
-	end_w = end_w_2nd = ~(CARD32)0;
+	RANGE(range,0,0xffffffff,ResExcMemBlock);
+	resBios = xf86AddResToList(resBios,&range,-1);
     } else return FALSE;
 
     if (! *p_base) return FALSE;
@@ -3702,27 +3706,21 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	    if (type & ResMem) {
 		if (((p_type & PCI_MAP_MEMORY_CACHABLE)
 #if 0 /*EE*/
-		     || (res_n == 0xff)
+		     || (res_n == 0xff)/* bios should also be prefetchable */
 #endif
-		     ) /* bios should also be prefetchable */
+		     ) 
 		    && pbp->pmem) {
-		    start_w = pbp->pmem->block_begin;
-		    end_w = MIN(end_w,pbp->pmem->block_end);
+		    w = findIntersectOfLists(pbp->pmem,ResRange);
 		    if (pbp->mem) {
-			start_w_2nd = pbp->mem->block_begin;
-			end_w_2nd = MIN(end_w_2nd,pbp->mem->block_end);
+			w_2nd = findIntersectOfLists(pbp->mem,ResRange);
 		    }
 		} else if (pbp->mem) {
-		    start_w = pbp->mem->block_begin;
-		    end_w = MIN(end_w,pbp->mem->block_end);
-		    start_w_2nd = end_w_2nd = 0;
+		    w = findIntersectOfLists(pbp->mem,ResRange);
 		} 
 	    } else if (pbp->io) {
-		start_w = pbp->io->block_begin;
-		end_w = MIN(end_w,pbp->io->block_end);
-		start_w_2nd = end_w_2nd = 0;
+		    w = findIntersectOfLists(pbp->io,ResRange);
 	    }
-		
+	    
 	    while (pbp1) {
 		if (pbp1->primary == pvp->bus) {
 		    if (type & ResMem) {
@@ -3742,6 +3740,16 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	pbp = pbp->next;
     }
 
+    if (!w)
+	w = xf86DupResList(ResRange);
+    
+    if (resBios) {
+	w_tmp = w;
+	w = findIntersectOfLists(w,resBios);
+	xf86FreeResList(w_tmp);
+	xf86FreeResList(resBios);
+    }
+
     if (!alignment)
 	alignment = (1 << (*p_size)) - 1;
 
@@ -3753,24 +3761,27 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	     == (type & ~ResAccMask))
 	    && ((*pAcc)->block_begin == (*p_base))
 	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
-	    (*pAcc) = (*pAcc)->next;
+	    resPtr acc_tmp = (*pAcc)->next;
+	    xfree((*pAcc));
+	    (*pAcc) = acc_tmp;
 	    break;
 	} else
 	    pAcc = &((*pAcc)->next);
     }
     /* check if we really need to fix anything */
-    RANGE(range,(*pAcc)->block_begin,(*pAcc)->block_end,type);
+    RANGE(range, (*p_base), (*p_base) + (1 << (*p_size)) - 1, type);
     if (!ChkConflict(&range,avoid,SETUP)
 	&& !ChkConflict(&range,AccTmp,SETUP)
-	&& (((*pAcc)->block_begin & alignment) == (*pAcc)->block_begin)
-	&& (((*pAcc)->block_begin >= start_w && (*pAcc)->block_end <= end_w)
-	    || (end_w_2nd
-		&& (*pAcc)->block_begin >= start_w_2nd
-		&& (*pAcc)->block_end <= end_w))) {
+	&& (((*p_base) & alignment) == (*p_base)->block_begin)
+	&& ((isSubsetOf(range,w)
+	    || (w_2nd && isSubsetOf(range,w_2n))))) {
 #ifdef DEBUG
 	    ErrorF("nothing to fix\n");
 #endif
 	xf86FreeResList(AccTmp);
+	xf86FreeResList(w);
+	xf86FreeResList(w_2nd);
+	xf86FreeResList(avoid);
 	return TRUE;
     } else {
 #ifdef DEBUG
@@ -3799,20 +3810,40 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 #ifdef DEBUG
     ErrorF("base: 0x%lx alignment: 0x%lx size[bit]: 0x%x\n",
 	   (*p_base),alignment,(*p_size));
-    ErrorF("start_w: 0x%lx end_w: 0x%lx\n",start_w,end_w);
-    if (start_w_2nd)
-	ErrorF("start_w: 0x%lx end_w: 0x%lx\n",start_w_2nd,end_w_2nd);
+    xf86MsgVerb(X_INFO, 3, "window:\n");
+    xf86PrintResList(3, w);
+    if (w_2nd)
+	xf86MsgVerb(X_INFO, 3, "2nd window:\n");
+    xf86PrintResList(3, w_2nd);
     xf86ErrorFVerb(3,"avoid:\n");
     xf86PrintResList(3,avoid);
 #endif
-    range = xf86GetBlock(type,alignment + 1, start_w, end_w,
-		     alignment,avoid);
-
+    w_tmp = w;
+    while (w) {
+	if (type & w->res_type & ResPhysMask) {
+	    range = xf86GetBlock(type,alignment + 1, w->block_begin,
+				 w->block_end, alignment,avoid);
+	    if (range.type != ResEnd)
+		break;
+	}
+	w = w->next;
+    }
+    xf86FreeResList(w_tmp);
     /* if unsuccessful and memory prefetchable try non-prefetchable */
-    if (range.type == ResEnd && end_w_2nd)
-	range = xf86GetBlock(type,alignment + 1, start_w_2nd,
-			 end_w_2nd,alignment,avoid);
-    xfree(avoid);
+    if (range.type == ResEnd && w_2nd) {
+	w_tmp = w_2nd;
+	while (w_2nd) {
+	    if (type & w_2nd->res_type & ResPhysMask) {
+		range = xf86GetBlock(type,alignment + 1, w_2nd->block_begin,
+				     w_2nd->block_end,alignment,avoid);
+		if (range.type != ResEnd)
+		    break;
+	    }
+	w_2nd = w_2nd->next;
+	}
+	xf86FreeResList(w_tmp);
+    }
+    xf86FreeResList(avoid);
 
     if (range.type == ResEnd)
 	return FALSE;
@@ -4028,7 +4059,7 @@ isSubsetOf(resRange range, resPtr list)
 	if (range.type & list->res_type & ResPhysMask) {
 	    switch (range.type & ResExtMask) {
 	    case ResBlock:
-		switch (list->res_type) {
+		switch (list->res_type & ResExtMask) {
 		case ResBlock:
 		    if (range.rBegin >= list->block_begin
 			&& range.rEnd <= list->block_end)
@@ -4043,6 +4074,17 @@ isSubsetOf(resRange range, resPtr list)
     return FALSE;
 }
 
+static Bool
+isListSubsetOf(resPtr list, resPtr BaseList)
+{
+    while (list) {
+	if (! isSubsetOf(list->val,BaseList))
+	    return FALSE;
+	list = list->next;
+    }
+    return TRUE;
+}
+
 static resPtr
 findIntersect(resRange Range, resPtr list)
 {
@@ -4053,7 +4095,7 @@ findIntersect(resRange Range, resPtr list)
 	    if (Range.type & list->res_type & ResPhysMask) {
 		switch (Range.type & ResExtMask) {
 		case ResBlock:
-		    switch (list->res_type) {
+		    switch (list->res_type & ResExtMask) {
 		    case ResBlock:
 			if (Range.rBegin >= list->block_begin)
 			    range.rBegin = Range.rBegin;
@@ -4077,3 +4119,14 @@ findIntersect(resRange Range, resPtr list)
     return new;
 }
     
+static resPtr
+findIntersectOfLists(resPtr l1, resPtr l2)
+{
+    resPtr ret = NULL;
+
+    while (l1) {
+	ret = xf86JoinResLists(ret,findIntersect(l1->val,l2));
+	l1 = l1->next;
+    }
+    return ret;
+}

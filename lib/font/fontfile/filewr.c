@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/filewr.c,v 3.1 1998/10/03 09:07:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/filewr.c,v 3.2 1999/07/17 05:30:41 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -31,7 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xos.h>
 
 FontFilePtr
-FontFileOpenWrite (char *name)
+FontFileOpenWrite (const char *name)
 {
     int	fd;
 

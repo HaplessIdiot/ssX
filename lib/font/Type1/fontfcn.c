@@ -45,28 +45,35 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/fontfcn.c,v 1.6 1999/05/03 05:58:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/fontfcn.c,v 1.7 1999/05/04 09:35:21 dawes Exp $ */
  
 #ifndef FONTMODULE
 #include <stdio.h>
 #include <string.h>
 #else
 #include "Xmd.h"	/* For INT32 declaration */
-#include "fontmisc.h"	/* For Bool */
+#include "Xdefs.h"	/* For Bool */
 #include "xf86_ansic.h"
 #endif
 #include "t1imager.h"
 #include "util.h"
 #ifdef BUILDCID
 #include "range.h"
-#include "fontmisc.h"
+#include "Xdefs.h"
 #endif
 #include "fontfcn.h"
- 
-extern xobject Type1Char();
+
+extern struct segment *Type1Char ( char *env, XYspace S, 
+				   psobj *charstrP, psobj *subrsP, 
+				   psobj *osubrsP, 
+				   struct blues_struct *bluesP, int *modeP );
+
 #ifdef BUILDCID
-extern xobject CIDChar();
-static boolean initCIDFont(int);
+extern struct xobject *CIDChar ( char *env, XYspace S, 
+				 psobj *charstrP, psobj *subrsP, 
+				 psobj *osubrsP, 
+				 struct blues_struct *bluesP, int *modeP );
+static boolean initCIDFont( int cnt );
 #endif
 
 /***================================================================***/
@@ -94,9 +101,8 @@ int FDArrayIndex = 0;
 /*                return 0 - not found.                               */
 /*                return n - nth element in dictionary.               */
 /***================================================================***/
-int SearchDictName(dictP,keyP)
- psdict *dictP;
- psobj  *keyP;
+int 
+SearchDictName(psdict *dictP, psobj *keyP)
 {
   int i,n;
  
@@ -116,7 +122,8 @@ int SearchDictName(dictP,keyP)
 }
 
 #ifdef BUILDCID
-static boolean initCIDFont(int cnt)
+static boolean 
+initCIDFont(int cnt)
 {
   if (!(vm_init(cnt))) return(FALSE);
   vm_base = vm_next_byte();
@@ -145,7 +152,8 @@ static boolean initCIDFont(int cnt)
 }
 
 /***================================================================***/
-boolean initCIDType1Font()
+boolean 
+initCIDType1Font(void)
 {
   strcpy(CurFontName, "");    /* initialize to none */
   FontP = &FDArrayP[FDArrayIndex];
@@ -162,8 +170,8 @@ boolean initCIDType1Font()
 }
 #endif
 
-boolean initFont(cnt)
-int cnt;
+boolean 
+initFont(int cnt)
 {
 
   if (!(vm_init(cnt))) return(FALSE);
@@ -182,9 +190,8 @@ int cnt;
 }
 /***================================================================***/
 #ifdef BUILDCID
-static void resetCIDFont(cidfontname, cmapfile)
-    char *cidfontname;
-    char *cmapfile;
+static void 
+resetCIDFont(char *cidfontname, char *cmapfile)
 {
 
   vm_next =  CIDFontP->vm_start;
@@ -209,7 +216,8 @@ static void resetCIDFont(cidfontname, cmapfile)
   CMapP->lastCol = 0;
 }
 
-static void resetCIDType1Font()
+static void 
+resetCIDType1Font(void)
 {
 
   vm_next =  FontP->vm_start;
@@ -226,8 +234,8 @@ static void resetCIDType1Font()
 }
 #endif
 
-static void resetFont(env)
-    char *env;
+static void 
+resetFont(char *env)
 {
  
   vm_next =  FontP->vm_start;
@@ -247,9 +255,8 @@ static void resetFont(env)
 
 #ifdef BUILDCID
 /***================================================================***/
-int readCIDFont(cidfontname, cmapfile)
-char *cidfontname;
-char *cmapfile;
+int 
+readCIDFont(char *cidfontname, char *cmapfile)
 {
   int rcode;
 
@@ -279,7 +286,8 @@ char *cmapfile;
   return(rcode);
 }
 
-int readCIDType1Font()
+int 
+readCIDType1Font(void)
 {
   int rcode;
 
@@ -291,8 +299,8 @@ int readCIDType1Font()
 }
 #endif
 
-int readFont(env)
-char *env;
+int 
+readFont(char *env)
 {
   int rcode;
  
@@ -332,23 +340,17 @@ char *env;
   return(rcode);
 }
 /***================================================================***/
-xobject fontfcnB(S,code,lenP,mode)
-XYspace S;
-unsigned char *code;
-int  *lenP;
-int  *mode;
+struct xobject *
+fontfcnB(struct XYspace *S, unsigned char *code, int *lenP, int *mode)
 {
-  path updateWidth();
- 
   psobj *charnameP; /* points to psobj that is name of character*/
   int   N;
-  unsigned char *s;          /* used to search the name for '|' */
   psdict *CharStringsDictP; /* dictionary with char strings     */
   psobj   CodeName;   /* used to store the translation of the name*/
   psobj  *SubrsArrayP;
   psobj  *theStringP;
  
-  path  charpath;   /* the path for this character              */
+  struct xobject *charpath;   /* the path for this character              */
  
   charnameP = &CodeName;
   charnameP->len = *lenP;
@@ -370,13 +372,15 @@ int  *mode;
   SubrsArrayP = &(FontP->Subrs);
   /* scale the Adobe fonts to 1 unit high */
   /* call the type 1 routine to rasterize the character     */
-  charpath = Type1Char(FontP,S,theStringP,SubrsArrayP,NULL,
+  charpath = (struct xobject *)Type1Char((char *)FontP,S,theStringP,
+					 SubrsArrayP,NULL,
                FontP->BluesP , mode);
   /* if Type1Char reported an error, then return */
   if ( *mode == FF_PARSE_ERROR)  return(NULL);
   /* fill with winding rule unless path was requested */
   if (*mode != FF_PATH) {
-    charpath =  Interior(charpath,WINDINGRULE+CONTINUITY);
+    charpath =  (struct xobject *)Interior((struct segment *)charpath,
+					   WINDINGRULE+CONTINUITY);
   }
   return(charpath);
 }
@@ -388,10 +392,8 @@ int  *mode;
 /*     1) initialize the font     - global indicates it has been done */
 /*     2) load the font                                               */
 /***================================================================***/
-Bool CIDfontfcnA(cidfontname, cmapfile, mode)
-char *cidfontname;
-char *cmapfile;
-int  *mode;
+Bool 
+CIDfontfcnA(char *cidfontname, char *cmapfile, int *mode)
 {
   int rcode, cidinit;
 
@@ -409,8 +411,8 @@ int  *mode;
   /* if the cidfontname is null, then use font already loaded */
 
   /* if not the same font name */
-  if (cidinit || cidfontname && strcmp(cidfontname,CurCIDFontName) != 0 ||
-    cmapfile && strcmp(cmapfile,CurCMapName) != 0) {
+  if (cidinit || (cidfontname && strcmp(cidfontname,CurCIDFontName) != 0) ||
+      (cmapfile && strcmp(cmapfile,CurCMapName) != 0)) {
     /* restore the virtual memory and eliminate old font, read new one */
     rcode = readCIDFont(cidfontname, cmapfile);
     if (rcode != 0 ) {
@@ -430,8 +432,8 @@ int  *mode;
 /*     1) initialize the font     - global indicates it has been done */
 /*     2) load the font                                               */
 /***================================================================***/
-Bool CIDType1fontfcnA(mode)
-int  *mode;
+Bool 
+CIDType1fontfcnA(int *mode)
 {
   int rcode;
 
@@ -459,9 +461,8 @@ int  *mode;
 /*     1) initialize the font     - global indicates it has been done */
 /*     2) load the font                                               */
 /***================================================================***/
-Bool fontfcnA(env,mode)
-char *env;
-int  *mode;
+Bool 
+fontfcnA(char *env, int *mode)
 {
   int rc;
  
@@ -507,12 +508,10 @@ int  *mode;
 /*     3) use the font to call getInfo for that value.                */
 /***================================================================***/
 
-void CIDQueryFontLib(cidfontname,cmapfile,infoName,infoValue,rcodeP)
-char *cidfontname;
-char *cmapfile;
-char *infoName;
-pointer infoValue;    /* parameter returned here    */
-int  *rcodeP;
+void 
+CIDQueryFontLib(char *cidfontname, char *cmapfile, char *infoName,
+		pointer infoValue, /* parameter returned here    */
+		int *rcodeP)
 {
   int rc,N,i,cidinit;
   psdict *dictP;
@@ -532,8 +531,8 @@ int  *rcodeP;
   }
   /* if the file name is null, then use font already loaded */
   /* if the not same font name, reset and load next font */
-  if (cidinit || cidfontname && strcmp(cidfontname,CurCIDFontName) != 0 ||
-    cmapfile && strcmp(cmapfile,CurCMapName) != 0) {
+  if (cidinit || (cidfontname && strcmp(cidfontname,CurCIDFontName) != 0) ||
+    (cmapfile && strcmp(cmapfile,CurCMapName) != 0)) {
     /* restore the virtual memory and eliminate old font */
     rc = readCIDFont(cidfontname, cmapfile);
     if (rc != 0 ) {
@@ -600,11 +599,10 @@ int  *rcodeP;
 /*     3) use the font to call getInfo for that value.                */
 /***================================================================***/
 
-void QueryFontLib(env,infoName,infoValue,rcodeP)
-char *env;
-char *infoName;
-pointer infoValue;    /* parameter returned here    */
-int  *rcodeP;
+void 
+QueryFontLib(char *env, char *infoName,
+	     pointer infoValue, /* parameter returned here    */
+	     int *rcodeP)
 {
   int rc,N,i;
   psdict *dictP;
@@ -680,22 +678,21 @@ int  *rcodeP;
 }
 
 #ifdef BUILDCID
-xobject CIDfontfcnC(S,theStringP,SubrsArrayP,BluesP,lenP,mode)
-XYspace S;
-psobj *theStringP;
-psobj *SubrsArrayP;
-struct blues_struct *BluesP;
-int  *lenP;
-int  *mode;
+struct xobject *
+CIDfontfcnC(struct XYspace *S, psobj *theStringP, 
+	    psobj *SubrsArrayP, struct blues_struct *BluesP,
+	    int *lenP, int *mode)
 {
-  path  charpath;   /* the path for this character              */
+  struct xobject *charpath;   /* the path for this character              */
 
-  charpath = CIDChar(FontP,S,theStringP,SubrsArrayP,NULL,BluesP,mode);
+  charpath = (struct xobject *)CIDChar((char *)FontP,S,theStringP,
+				       SubrsArrayP,NULL,BluesP,mode);
   /* if Type1Char reported an error, then return */
   if ( *mode == FF_PARSE_ERROR)  return(NULL);
   /* fill with winding rule unless path was requested */
   if (*mode != FF_PATH) {
-    charpath =  Interior(charpath,WINDINGRULE+CONTINUITY);
+    charpath = (struct xobject *)Interior((struct segment *)charpath,
+					  WINDINGRULE+CONTINUITY);
   }
   return(charpath);
 }

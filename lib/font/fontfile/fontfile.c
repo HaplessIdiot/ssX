@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.11 1998/10/03 09:07:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.12 1999/07/17 05:30:42 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -225,7 +225,7 @@ transfer_values_to_alias(char *entryname, int entrynamelength,
 
 /* ARGSUSED */
 int
-FontFileOpenFont (pointer client, FontPathElementPtr fpe, int flags, 
+FontFileOpenFont (pointer client, FontPathElementPtr fpe, Mask flags, 
 		  char *name, int namelen, 
 		  fsBitmapFormat format, fsBitmapFormatMask fmask,
 		  XID id, FontPtr *pFont, char **aliasName, 
@@ -1060,9 +1060,9 @@ FontFileRegisterLocalFpeFunctions (void)
 					  FontFileListFonts,
 					  FontFileStartListFontsWithInfo,
 					  FontFileListNextFontWithInfo,
-					  (IntFunc) 0,
-					  (IntFunc) 0,
-					  (IntFunc) 0,
+					  NULL,
+					  NULL,
+					  NULL,
 					  FontFileStartListFontsAndAliases,
 					  FontFileListNextFontOrAlias,
 					  FontFileEmptyBitmapSource);

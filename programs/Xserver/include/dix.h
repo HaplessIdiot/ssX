@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.8 1998/07/26 02:33:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.9 1998/10/04 09:38:56 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -505,16 +505,6 @@ extern void WakeupHandler(
 #if NeedFunctionPrototypes
     int /*result*/,
     pointer /*pReadmask*/
-#endif
-);
-
-typedef struct timeval ** OSTimePtr;
-
-typedef void (* BlockHandlerProcPtr)(
-#if NeedNestedPrototypes
-    pointer /* blockData */,
-    OSTimePtr /* pTimeout */,
-    pointer /* pReadmask */
 #endif
 );
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/util/private.c,v 1.3 1999/06/13 16:18:15 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -33,13 +33,13 @@ in this Software without prior written authorization from The Open Group.
 static int _FontPrivateAllocateIndex = 0;
 
 int
-AllocateFontPrivateIndex ()
+AllocateFontPrivateIndex (void)
 {
     return _FontPrivateAllocateIndex++;
 }
 
 FontPtr 
-CreateFontRec( void )
+CreateFontRec (void)
 {
     FontPtr pFont;
     int size;
@@ -64,16 +64,13 @@ void DestroyFontRec (FontPtr pFont)
 }
 
 void
-ResetFontPrivateIndex ()
+ResetFontPrivateIndex (void)
 {
     _FontPrivateAllocateIndex = 0;
 }
 
 Bool
-_FontSetNewPrivate (pFont, n, ptr)
-    FontPtr pFont;
-    int	    n;
-    pointer ptr;
+_FontSetNewPrivate (FontPtr pFont, int n, pointer ptr)
 {
     pointer *new;
 

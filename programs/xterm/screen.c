@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.41 1999/06/12 15:37:19 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.42 1999/07/11 08:49:40 dawes Exp $ */
 
 /* screen.c */
 
@@ -994,6 +994,8 @@ ScreenResize (
 		register int savelines = screen->scrollWidget ?
 		 screen->savelines : 0;
 		int delta_rows = rows - (screen->max_row + 1);
+
+		TRACE(("...ScreenResize chars %dx%d\n", rows, cols))
 
 		if(screen->cursor_state)
 			HideCursor();

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.2 1998/04/05 16:42:25 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.3 1998/10/04 09:39:01 dawes Exp $ */
 
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
@@ -605,7 +605,7 @@ typedef    void (* ScreenBlockHandlerProcPtr)(
 #if NeedNestedPrototypes
 	int /*screenNum*/,
 	pointer /*blockData*/,
-	struct timeval ** /*pTimeout*/,
+	pointer /*pTimeout*/,
 	pointer /*pReadmask*/
 #endif
 );

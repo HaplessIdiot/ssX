@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.6 1999/04/27 07:08:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.7 1999/05/09 10:51:48 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -649,8 +649,6 @@ font_encoding_name(unsigned code,
                    struct font_encoding *encoding,
                    struct font_encoding_mapping *mapping)
 {
-  unsigned index;
-
   if(mapping->name) {
     if((encoding->row_size==0 && code>=encoding->size) ||
        (encoding->row_size!=0 &&

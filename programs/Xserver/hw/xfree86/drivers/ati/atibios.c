@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.1 1999/08/01 07:57:18 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -51,5 +51,7 @@ ATIReadBIOS
     }
 
     /* Read legacy ROM */
+    if (!pATI->BIOSBase)
+        pATI->BIOSBase = 0x000C0000U;
     return xf86ReadBIOS(pATI->BIOSBase, Offset, Buffer, Length);
 }

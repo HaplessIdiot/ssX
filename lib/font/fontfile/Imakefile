@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.13 1999/03/02 02:49:15 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.14 1999/05/15 12:10:09 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
@@ -38,7 +38,7 @@ FREETYPE_DEFINES = -DBUILD_FREETYPE
 
     DEFINES = StrcasecmpDefines $(ATTRIBDEFS) \
 	      $(SPEEDO_DEFINES) $(TYPE1_DEFINES) $(CID_DEFINES) \
-	      $(FREETYPE_DEFINES)
+	      $(FREETYPE_DEFINES) $(GZIP_DEFS)
 
        SRCS = dirfile.c fontdir.c fontfile.c fileio.c fontscale.c \
               defaults.c bitsource.c register.c renderers.c bufio.c \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.6 1999/04/04 08:46:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.7 1999/06/12 15:37:08 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -86,7 +86,9 @@ in this Software without prior written authorization from the XFree86 Project.
 #define RSRC_XY		0xA508 
 #define RDEST_XY	0xA50C
 
+/* Local Periperal Bus Registers */
 
+#define DDC_REG         0xFF20
 #define BLT_BUG		0x00000001
 #define MONO_TRANS_BUG	0x00000002
 

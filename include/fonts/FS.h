@@ -50,12 +50,11 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _FS_H_
 #define	_FS_H_
 
+#include "X11/Xdefs.h"
 #include "fsmasks.h"
 
 #define	FS_PROTOCOL		2
 #define	FS_PROTOCOL_MINOR	0
-
-typedef unsigned long FSID;
 
 #ifndef X_PROTOCOL
 /* protocol familes */
@@ -63,10 +62,6 @@ typedef unsigned long FSID;
 #define FamilyDECnet            1
 #define FamilyChaos             2
 
-typedef unsigned long Mask;
-
-typedef FSID	Font;
-typedef FSID	AccContext;
 
 typedef unsigned int    FSDrawDirection;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.114 1999/07/11 10:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.115 1999/08/01 07:57:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -55,8 +55,8 @@ Bool xf86ComparePciBusString(const char *busID, int bus, int device, int func);
 pciVideoPtr *xf86GetPciVideoInfo(void);
 #ifdef _XF86PCI_H
 pciConfigPtr *xf86GetPciConfigInfo(void);
-void xf86SetPciVideo(pciVideoPtr, resType);
 #endif
+void xf86SetPciVideo(pciVideoPtr, resType);
 void xf86PrintResList(int verb, resPtr list);
 int xf86ClaimIsaSlot(DriverPtr drvp, int chipset, GDevPtr dev, Bool active);
 int xf86GetIsaInfoForScreen(int scrnIndex);

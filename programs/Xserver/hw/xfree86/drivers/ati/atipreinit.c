@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.1 1999/07/06 11:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.2 1999/08/01 07:57:21 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -420,8 +420,6 @@ ATIPreInit
 
     /* Finish private area initialization */
     pATI->DAC = ATI_DAC_GENERIC;
-    if (!pATI->BIOSBase)
-        pATI->BIOSBase = 0x000C0000U;
     pATI->NewHW.SetBank = ATIx8800SetBank;
     pATI->BankInfo.SetSourceBank = ATIx8800SetRead;
     pATI->BankInfo.SetDestinationBank = ATIx8800SetWrite;
@@ -601,8 +599,16 @@ ATIPreInit
         i = 0;
     if (i < SizeOf(BIOS))
         memset(BIOS + i, 0, SizeOf(BIOS) - i);
-    if ((BIOSByte(0) == 0x55U) && (BIOSByte(1) == 0xAAU))
+    if ((BIOSByte(0) == 0x55U) && (BIOSByte(1) == 0xAAU) && BIOSByte(2))
         BIOSSize = BIOSByte(2) << 9;
+    else
+        i = 0;
+    if ((unsigned int)i < BIOSSize)
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+            "Unable to correctly read adapter BIOS.\n");
+        return FALSE;
+    }
 
     /*
      * For Mach64 adapters, pick up, from the BIOS, the type of programmable
@@ -615,8 +621,6 @@ ATIPreInit
         /* Set up non-zero defaults */
         pATI->ClockDescriptor = ATIClockDescriptors[ATI_CLOCK_FIXED];
         pATI->ClockNumberToProgramme = -1;
-        pATI->ReferenceNumerator = 157500;
-        pATI->ReferenceDenominator = 11;
 
         ROMTable = BIOSWord(0x48U);
         if ((ROMTable + 0x12U) > BIOSSize)
@@ -641,10 +645,23 @@ ATIPreInit
             if (pATI->ProgrammableClock < ATI_CLOCK_MAX)
                 pATI->ClockDescriptor =
                     ATIClockDescriptors[pATI->ProgrammableClock];
-            if ((BIOSWord(ClockTable + 0x08U) / 10) != 143)
+            switch (BIOSWord(ClockTable + 0x08U) / 10)
             {
-                pATI->ReferenceNumerator = BIOSWord(ClockTable + 0x08U) * 10;
-                pATI->ReferenceDenominator = 1;
+                case 143:
+                    pATI->ReferenceNumerator = 157500;
+                    pATI->ReferenceDenominator = 11;
+                    break;
+
+                case 286:
+                    pATI->ReferenceNumerator = 315000;
+                    pATI->ReferenceDenominator = 11;
+                    break;
+
+                default:
+                    pATI->ReferenceNumerator =
+                        BIOSWord(ClockTable + 0x08U) * 10;
+                    pATI->ReferenceDenominator = 1;
+                    break;
             }
         }
 

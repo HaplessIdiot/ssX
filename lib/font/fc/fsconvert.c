@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.4 1999/07/17 05:30:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.5 1999/07/17 08:55:12 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -667,5 +667,5 @@ _fs_init_font(pfont)
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
     pfont->unload_font = _fs_unload_font;
-    pfont->unload_glyphs = (void (*)())0;
+    pfont->unload_glyphs = NULL;
 }

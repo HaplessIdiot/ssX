@@ -45,7 +45,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.5 1999/05/03 05:58:48 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.6 1999/05/23 06:33:33 dawes Exp $ */
 /*******************************************************************
 *  I/O package for Type 1 font reading
 ********************************************************************/
@@ -56,8 +56,9 @@
  
 #ifndef FONTMODULE
 #include <fcntl.h>
+#include <unistd.h>
 #else
-#include "fontmisc.h"	/* Bool declaration */
+#include "Xdefs.h"	/* Bool declaration */
 #include "Xmd.h"	/* INT32 declaration */
 #include "xf86_ansic.h"
 #endif
@@ -66,7 +67,8 @@
 #ifdef WIN32
 #include <X11/Xw32defs.h>
 #endif
- 
+#include "Xdefs.h"
+
 /* Constants and variables used in the decryption */
 #define c1 ((unsigned short)52845)
 #define c2 ((unsigned short)22719)
@@ -80,13 +82,12 @@ STATIC F_FILE TheFile;
 STATIC unsigned char TheBuffer[F_BUFSIZ];
  
 /* Our routines */
-F_FILE *T1Open(), *T1Eexec();
-int T1Close();
-int T1Read(), T1Getc(), T1Ungetc();
-STATIC int T1Decrypt(), T1Fill();
+static int T1Decrypt ( unsigned char *p, int len );
+static int T1Fill ( F_FILE *f );
 
 #ifdef BUILDCID
-void resetDecrypt()
+void 
+resetDecrypt(void)
 {
     Decrypt = 0;
 }
@@ -94,9 +95,9 @@ void resetDecrypt()
  
 /* -------------------------------------------------------------- */
 /*ARGSUSED*/
-F_FILE *T1Open(fn, mode)
-  char *fn;    /* Pointer to filename */
-  char *mode;  /* Pointer to open mode string */
+F_FILE *
+T1Open(char *fn,   /* Pointer to filename */
+       char *mode) /* Pointer to open mode string */
 {
   F_FILE *of = &TheFile;
   int oflags = O_RDONLY;	/* We know we are only reading */
@@ -122,8 +123,8 @@ F_FILE *T1Open(fn, mode)
 } /* end Open */
  
 /* -------------------------------------------------------------- */
-int T1Getc(f)        /* Read one character */
-  F_FILE *f;         /* Stream descriptor */
+int                  /* Read one character */
+T1Getc(F_FILE *f)    /* Stream descriptor */
 {
   if (f->b_base == NULL) return EOF;  /* already closed */
  
@@ -142,9 +143,9 @@ int T1Getc(f)        /* Read one character */
 } /* end Getc */
  
 /* -------------------------------------------------------------- */
-int T1Ungetc(c, f)   /* Put back one character */
-  int c;
-  F_FILE *f;         /* Stream descriptor */
+int                  /* Put back one character */
+T1Ungetc(int c, 
+	 F_FILE *f)  /* Stream descriptor */ 
 {
   if (c != EOF) {
     f->ungotc = c;
@@ -155,11 +156,11 @@ int T1Ungetc(c, f)   /* Put back one character */
 } /* end Ungetc */
  
 /* -------------------------------------------------------------- */
-int T1Read(buffP, size, n, f)  /* Read n items into caller's buffer */
-  char *buffP;       /* Buffer to be filled */
-  int   size;        /* Size of each item */
-  int   n;           /* Number of items to read */
-  F_FILE *f;         /* Stream descriptor */
+int                  /* Read n items into caller's buffer */
+T1Read(char *buffP,  /* Buffer to be filled */
+       int size,     /* Size of each item */
+       int n,        /* Number of items to read */
+       F_FILE *f)    /* Stream descriptor */
 {
   int bytelen, cnt, i;
   F_char *p = (F_char *)buffP;
@@ -193,23 +194,18 @@ int T1Read(buffP, size, n, f)  /* Read n items into caller's buffer */
 } /* end Read */
  
 /* -------------------------------------------------------------- */
-int T1Close(f)       /* Close the file */
-  F_FILE *f;         /* Stream descriptor */
+int                  /* Close the file */
+T1Close(F_FILE *f)   /* Stream descriptor */    
 {
   if (f->b_base == NULL) return 0;  /* already closed */
   f->b_base = NULL;  /* no valid stream */
   return close(f->fd);
 } /* end Close */
 
-#ifdef __STDC__
-#define   pointer          void *
-#else
-#define   pointer          char *
-#endif
  
 /* -------------------------------------------------------------- */
-F_FILE *T1eexec(f)   /* Initialization */
-  F_FILE *f;         /* Stream descriptor */
+F_FILE *             /* Initialization */
+T1eexec(F_FILE *f)   /* Stream descriptor */
 {
   int i, c;
   int H;
@@ -256,8 +252,8 @@ F_FILE *T1eexec(f)   /* Initialization */
 } /* end eexec */
 
 #ifdef BUILDCID
-F_FILE *CIDeexec(f)   /* Initialization */
-  F_FILE *f;         /* Stream descriptor */
+F_FILE *             /* Initialization */
+CIDeexec(F_FILE *f)  /* Stream descriptor */ 
 {
   int i, c;
   int H;
@@ -317,9 +313,8 @@ F_FILE *CIDeexec(f)   /* Initialization */
 #endif
 
 /* -------------------------------------------------------------- */
-STATIC int T1Decrypt(p, len)
-  unsigned char *p;
-  int len;
+STATIC int 
+T1Decrypt(unsigned char *p, int len)
 {
   int n;
   int H, L;
@@ -364,8 +359,8 @@ STATIC int T1Decrypt(p, len)
 } /* end Decrypt */
  
 /* -------------------------------------------------------------- */
-STATIC int T1Fill(f) /* Refill stream buffer */
-  F_FILE *f;         /* Stream descriptor */
+STATIC int           /* Refill stream buffer */ 
+T1Fill(F_FILE *f)    /* Stream descriptor */
 {
   int rc;
 

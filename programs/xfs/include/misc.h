@@ -39,13 +39,14 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/misc.h,v 3.3 1998/10/25 12:48:05 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/misc.h,v 3.4 1999/03/07 11:41:01 dawes Exp $ */
 
 #ifndef _MISC_H_
 #define _MISC_H_
 
 #include	<X11/Xosdefs.h>
 #include	<X11/Xfuncs.h>
+#include	<X11/Xdefs.h>
 
 #include	"assert.h"	/* so its everywhere */
 
@@ -60,10 +61,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 #define	MAXCLIENTS	128
-
-typedef unsigned char *pointer;
-typedef int Bool;
-typedef unsigned long Atom;
 
 #define	MILLI_PER_SECOND	(1000)
 #define	MILLI_PER_MINUTE	(1000 * 60)

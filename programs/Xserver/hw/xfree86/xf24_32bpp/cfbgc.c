@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbgc.c,v 1.1 1999/01/23 09:56:14 dawes Exp $ */
 
 /***********************************************************
 
@@ -119,7 +119,7 @@ static GCOps cfb24_32TEOps1Rect = {
     cfbSetSpans,
     cfbPutImage,
     cfb24_32CopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
     cfb8LineSS1Rect,
@@ -150,7 +150,7 @@ static GCOps cfb24_32NonTEOps1Rect = {
     cfbSetSpans,
     cfbPutImage,
     cfb24_32CopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
     cfb8LineSS1Rect,
@@ -181,7 +181,7 @@ static GCOps cfb24_32TEOps = {
     cfbSetSpans,
     cfbPutImage,
     cfb24_32CopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
@@ -207,7 +207,7 @@ static GCOps cfb24_32NonTEOps = {
     cfbSetSpans,
     cfbPutImage,
     cfb24_32CopyArea,
-    miCopyPlane,
+    cfbCopyPlane,
     cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,

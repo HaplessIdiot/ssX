@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.109 1999/08/01 07:57:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.110 1999/08/14 10:49:47 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -198,7 +198,6 @@ typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
-    OPTION_RGB_BITS,
     OPTION_SYNC_ON_GREEN,
     OPTION_NOACCEL,
     OPTION_SHOWCACHE,
@@ -216,7 +215,6 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -862,14 +860,7 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     hwp->MapSize = 0x10000;
     if (!vgaHWMapMem(pScrn))
       return NULL;
-  } else {
-    /* XXX Need to write an MGA mode ddc1SetSpeed */
-    if (pMga->DDC1SetSpeed == vgaHWddc1SetSpeed) {
-      pMga->DDC1SetSpeed = NULL;
-      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-		     "DDC1 disabled - chip not in VGA mode\n");
-    }
-  }
+  } 
 
   /* Save the current state */
   MGASave(pScrn);
@@ -882,7 +873,6 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     pMga->i2cInit(pScrn);
 ErrorF("I2C initialized on %p\n",pMga->I2C);
   }
-
   /* Read and output monitor info using DDC2 over I2C bus */
   if (pMga->I2C) {
     MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pMga->I2C);
@@ -890,10 +880,9 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
     xf86PrintEDID(MonInfo);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
   }
-
   /* while experimenting, get DDC1 info even if I2C gave us DDC2 info */
-  /* else */
-#endif /* MGAuseI2C */  
+  /* This will not Work! (EE) */
+#else 
   /* Read and output monitor info using DDC1 */
   if (pMga->ddc1Read && pMga->DDC1SetSpeed) {
     MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,
@@ -903,6 +892,7 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
     xf86PrintEDID( MonInfo );
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
   }
+#endif /* MGAuseI2C */  
 
 
   /* Restore previous state and unmap MGA memory and MMIO areas */
@@ -1153,11 +1143,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	/* XXX This is here just to test options. */
 	/* Default to 8 */
 	pScrn->rgbBits = 8;
+#if 0
 	if (xf86GetOptValInteger(MGAOptions, OPTION_RGB_BITS,
 				 &pScrn->rgbBits)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
 	}
+#endif
     }
 
 

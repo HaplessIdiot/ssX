@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.20 1999/07/10 07:24:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.21 1999/07/12 05:10:47 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -555,6 +555,9 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
   /* I/O maps can be no larger than 8 bits */
   if (PCI_MAP_IS_IO(addr1) && bits > 8)
     bits = 8;
+  /* ROM maps can be no larger than 24 bits */
+  if (index == 6 && bits > 24)
+    bits = 24;
   return bits;
 }
 

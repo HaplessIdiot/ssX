@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.3 1998/10/25 12:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.4 1999/03/07 11:40:53 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -220,7 +220,7 @@ build_range(
 	*num = np - new;
 	return new;
     } else {			/* deal with data as a list of characters */
-	pointer     pp = src;
+	unsigned char      *pp = src;
 
 	src_num = *num;
 	np = new = (fsRange *) fsalloc(SIZEOF(fsRange) * src_num);

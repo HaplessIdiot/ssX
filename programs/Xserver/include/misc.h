@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.20 1999/05/15 12:10:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.21 1999/06/12 07:19:07 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -77,6 +77,7 @@ extern unsigned long serverGeneration;
 #include <X11/Xfuncproto.h>
 #include <X11/Xmd.h>
 #include <X11/X.h>
+#include <X11/Xdefs.h>
 
 #ifndef IN_MODULE
 #ifndef NULL
@@ -97,15 +98,6 @@ extern unsigned long serverGeneration;
 #define MAXFORMATS	8
 #define MAXVISUALS_PER_SCREEN 50
 
-#ifndef _XTYPEDEF_POINTER
-#define _XTYPEDEF_POINTER
-typedef void *pointer;		/* Also in fontmisc.h */
-#endif
-#ifndef _XTYPEDEF_BOOL
-#define _XTYPEDEF_BOOL
-typedef int Bool;		/* Also in fontmisc.h */
-#endif
-
 typedef unsigned long PIXEL;
 typedef unsigned long ATOM;
 
@@ -113,16 +105,6 @@ typedef unsigned long ATOM;
 #ifndef TRUE
 #define TRUE 1
 #define FALSE 0
-#endif
-
-#ifndef _XTYPEDEF_FONTPTR
-typedef struct _Font *FontPtr; /* also in fonts/include/font.h */
-#define _XTYPEDEF_FONTPTR
-#endif
-
-#ifndef _XTYPEDEF_CLIENTPTR
-typedef struct _Client *ClientPtr; /* also in dix.h */
-#define _XTYPEDEF_CLIENTPTR
 #endif
 
 #ifndef _XTYPEDEF_CALLBACKLISTPTR

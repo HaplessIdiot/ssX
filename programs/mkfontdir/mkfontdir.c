@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.8 1999/05/03 12:16:08 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.9 1999/05/23 06:33:51 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -112,6 +112,7 @@ SOFTWARE.
 #include <X11/Xproto.h>
 #include "fntfilst.h"
 #include "fontenc.h"
+#include "bitmap.h"
 
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -171,7 +172,6 @@ int LoadScalable ( char *dirName, FontTablePtr table );
 static Bool DoDirectory(char *dirName, 
                         EncodingBucketPtr *encodings, int count);
 int GetDefaultPointSize ( void );
-void RegisterFPEFunctions ( void );
 void ErrorF ( void );
 
 static Bool
@@ -562,7 +562,6 @@ InsertEncoding(EncodingBucketPtr *encodings,
 Bool
 LoadEncodings(EncodingBucketPtr *encodings, char *dirName, int priority)
 {
-  EncodingBucketPtr new;
   char *filename;
   char **names;
   char **name;
@@ -613,7 +612,8 @@ LoadEncodings(EncodingBucketPtr *encodings, char *dirName, int priority)
       strcpy(filename, fullname);
       for(name=names; *name; name++)
         if(!InsertEncoding(encodings, *name, filename, priority))
-          fprintf(stderr, "%s: warning: failed to insert encoding %s\n", *name);
+	  fprintf(stderr, "%s: warning: failed to insert encoding %s\n", 
+		  progName, *name);
       /* Only free the spine -- the names themselves may be used */
       free(names);
     }
@@ -661,11 +661,6 @@ FontResolutionPtr GetClientResolutions (int *num)
 }
 
 void
-RegisterFPEFunctions (void)
-{
-}
-
-void
 ErrorF (void)
 {
 }
@@ -679,7 +674,6 @@ main (int argc, char **argv)
     char *dirname, fulldirname[MAXFONTFILENAMELEN];
     EncodingBucketPtr *encodings;
     EncodingBucketPtr encoding;
-    char **name;
 
     BitmapRegisterFontFileFunctions ();
     progName = argv[0];

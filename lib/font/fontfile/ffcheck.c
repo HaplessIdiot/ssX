@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.10 1999/05/15 12:10:09 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.11 1999/07/17 05:30:40 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -29,6 +29,7 @@ in this Software without prior written authorization from The Open Group.
 /* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
 #include "fntfilst.h"
+#include "bitmap.h"
 #ifdef LOADABLEFONTS
 #include "fontmod.h"
 #endif
@@ -43,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 static int
-FontFileCheckOpenFont (pointer client, FontPathElementPtr fpe, int flags, 
+FontFileCheckOpenFont (pointer client, FontPathElementPtr fpe, Mask flags, 
 		       char *name, int namelen, 
 		       fsBitmapFormat format, fsBitmapFormatMask fmask,
 		       XID id, FontPtr *pFont, char **aliasName, 
@@ -161,9 +162,9 @@ FontFileCheckRegisterFpeFunctions (void)
 				  FontFileCheckListFonts,
 				  FontFileCheckStartListFontsWithInfo,
 				  FontFileCheckListNextFontWithInfo,
-				  (IntFunc) 0,
-				  (IntFunc) 0,
-				  (IntFunc) 0,
+				  NULL,
+				  NULL,
+				  NULL,
 				  FontFileCheckStartListFontsAndAliases,
 				  FontFileCheckListNextFontOrAlias,
 				  FontFileEmptyBitmapSource);
