@@ -1,5 +1,24 @@
 XFree86 4.3.99.2 (xx March 2003)
-  35. Fix SEGV in fbdev's mode validation (Alexandr Andreev).
+  42. Fix memory leaks in ProcXF86VidModeModModeLine and
+      ProcXF86VidModeValidateModeLine, and unintialized fields of the mode
+      structure in ProcXF86VidModeAddModeLine, VidModeCreateMode, and
+      VidModeAddModeline (#5671, Miguel Freitas).
+  41. Fix SEGV in fbdev's mode validation (Alexandr Andreev).
+  40. Add two more variations of Thai XKB maps (#5658,
+      Theppitak Karoonboonyanan, Visanu Euarchukiati,
+      Supphachoke Santiwichaya).
+  39. Fix a twm crash when the window menu is used and no windows are open
+      (#5667, Matthias Scheler).
+  38. Restore the sign of UNDERLINE_POSITION in the FreeType backend (#5665,
+      Roman Kagan).
+  37. Check the return value of fclose() in xauth to prevent losing the
+      existing contents of an Xauthority file when there is insufficient
+      space to write the new one (#5663, Owen Taylor).
+  36. Fix case in xmag which would cause a BadMatch during a X_GetImage for
+      single child of root class InputOnly.  Also do some null pointer
+      protection (#5657, Kevin Brosius).
+  35. Allow an arbitary message to be sent to the DDX by pressing a key
+      which has the appropriate action definition (#5519, Joe Moss).
   34. Add a new request to the XF86Misc extension that allows a client
       to send an arbitrary message to the DDX, which in turn can send the
       message to the driver.  The driver may also send a string back.
@@ -16599,4 +16618,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2610 2003/04/03 16:15:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2611 2003/04/03 16:30:12 tsi Exp $
