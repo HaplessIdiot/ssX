@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.62tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.63 2002/10/08 22:14:02 tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -2240,7 +2240,7 @@ alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary)
 		if (PciBus->interface != PCI_IF_BRIDGE_PCI_SUBTRACTIVE)
 		    break;
 		/* Fall through */
-#if 1
+#if 0	/* Not yet */
 	    case PCI_SUBCLASS_BRIDGE_ISA:
 	    case PCI_SUBCLASS_BRIDGE_EISA:
 	    case PCI_SUBCLASS_BRIDGE_MC:
