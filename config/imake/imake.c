@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.21 1997/08/26 10:00:43 hohndel Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.22 1997/10/26 13:24:39 dawes Exp $ */
 
 /*
  * 
@@ -535,6 +535,8 @@ SetOpts(argc, argv)
 		if (argv[0][1] == 'D') {
 		    AddCppArg(argv[0]);
 		} else if (argv[0][1] == 'I') {
+		    AddCppArg(argv[0]);
+		} else if (argv[0][1] == 'U') {
 		    AddCppArg(argv[0]);
 		} else if (argv[0][1] == 'f') {
 		    if (argv[0][2])

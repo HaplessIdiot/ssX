@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.13 1997/10/25 13:50:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.14 1997/11/01 15:04:41 hohndel Exp $ */
 
 
 
@@ -89,7 +89,6 @@ void CTNAME(SetupForImageWrite)();
 void CTNAME(SubsequentImageWrite)();
 
 #ifdef CHIPS_HIQV
-RegionPtr CTNAME(CopyArea)();
 void CTNAME(DoPixWinBitBltCopy)();
 #endif
 
@@ -124,9 +123,13 @@ static unsigned int CommandFlags;
 /* Its not working properly for me at the moment, so disable it           */
 /* #define CHIPS_SCREEN2SCREEN */
 
-/* The ImageWrite function appears to be broken on the HiQV chips. Perhaps
- * a recent patch has fixed this, so re-enable */
+/* The XAA ImageWrite function appears to be broken on the HiQV chips. 
+ * This is believed to be due to data alignment problems. Defining
+ * CHIPS_IMAGEWRITE below will force the server to use the HiQV specific
+ * ImageWrite code that should work around this */
+#ifdef CHIPS_HIQV
 #define CHIPS_IMAGEWRITE
+#endif
 
 #ifdef CHIPS_MMIO
 #ifdef CHIPS_HIQV
@@ -202,8 +205,6 @@ void _ctAccelInit() {
      */
     if (!ctColorTransparency)
 	xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
-
-    xf86GCInfoRec.CopyArea = CTNAME(CopyArea);
 #endif
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
 	CTNAME(SetupForScreenToScreenCopy);
@@ -327,8 +328,14 @@ void _ctAccelInit() {
             CTNAME(Subsequent8x8PatternColorExpand);
     }
 
-#ifdef CHIPS_IMAGEWRITE
     /* Setup for the Image Write functions */
+#ifdef CHIPS_IMAGEWRITE
+    xf86AccelInfoRec.ImageWriteFlags =
+	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
+        | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+
+    xf86AccelInfoRec.DoImageWrite = CTNAME(DoPixWinBitBltCopy);
+#else
     xf86AccelInfoRec.SetupForImageWrite = CTNAME(SetupForImageWrite);
     xf86AccelInfoRec.SubsequentImageWrite = CTNAME(SubsequentImageWrite);
     xf86AccelInfoRec.ImageWriteBase = (unsigned int *)ctBltDataWindow;
@@ -337,6 +344,7 @@ void _ctAccelInit() {
     xf86AccelInfoRec.ImageWriteFlags =
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
         | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+
     if (!ctColorTransparency)
 	xf86AccelInfoRec.ImageWriteFlags |= NO_TRANSPARENCY;
 #else
@@ -1221,39 +1229,6 @@ void CTNAME(SubsequentImageWrite)(x,y,w,h,skipleft)
 }
 
 #ifdef	CHIPS_HIQV
-RegionPtr CTNAME(CopyArea)(pSrcDrawable, pDstDrawable,
-			    pGC, srcx, srcy, width, height, dstx, dsty)
-    register DrawablePtr pSrcDrawable;
-    register DrawablePtr pDstDrawable;
-    GC *pGC;
-    int srcx, srcy;
-    int width, height;
-    int dstx, dsty;
-{
-	/* Usual XAA handling of screen-to-screen blts. */
-	if (pSrcDrawable->type == DRAWABLE_WINDOW
-	    && pDstDrawable->type == DRAWABLE_WINDOW) {
-	    return (*xf86GCInfoRec.cfbBitBltDispatch)(pSrcDrawable, pDstDrawable,
-						      pGC, srcx, srcy, width,
-						      height, dstx, dsty,
-						      xf86DoBitBlt, 0L);
-	}
-
-	/* ctHiQV-specific handling of pixmap-to-screen blts. */
-	if (pSrcDrawable->type == DRAWABLE_PIXMAP
-	    && pDstDrawable->type == DRAWABLE_WINDOW) {
-	    return (*xf86GCInfoRec.cfbBitBltDispatch)(pSrcDrawable, pDstDrawable,
-						      pGC, srcx, srcy, width,
-						      height, dstx, dsty,
-						      CTNAME(DoPixWinBitBltCopy), 0L);
-	}
-
-	/* Fallback to cfb/vga256. */
-	return (*xf86GCInfoRec.CopyAreaFallBack)(pSrcDrawable, pDstDrawable, pGC,
-						 srcx, srcy, width, height, dstx, dsty);
-}
-
-
 void CTNAME(DoPixWinBitBltCopy)(pSrc, pDst, alu, prgnDst,
 			     pptSrc, planemask, bitPlane)
     DrawablePtr	    pSrc, pDst;

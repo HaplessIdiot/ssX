@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.22 1997/10/13 17:16:48 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.23 1997/11/01 15:04:53 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1051,12 +1051,15 @@ ET4000Probe()
         /* <= W32p_ab :
          *   2 MB direct access + 2*512kb via apertures MBP0 and MBP1
          * == W32p_cd :
-         *   2*1MB via apertures MBP0 and MBP1 + 1MB via fixed MBP2
+         *   2*1MB via apertures MBP0 and MBP1
          */
+        if (Is_W32p_cd)
+          TSENG_MEMLIMIT(2048, "in linear + accelerated mode on W32p rev c and d");
+
         TSENG_MEMLIMIT(2048+1024, "in linear + accelerated mode on W32/W32i/W32p");
 
         /* upper 516kb of 4MB linear map used for "externally mapped registers" */
-        TSENG_MEMLIMIT(4096-516, "in linear + accelerated mode on any W32");
+        TSENG_MEMLIMIT(4096-516, "in linear + accelerated mode on W32/W32i/W32p");
     }
 
     if (Is_ET6K)

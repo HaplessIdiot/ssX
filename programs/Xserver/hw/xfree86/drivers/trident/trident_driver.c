@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.19 1997/11/08 16:24:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.20 1997/11/09 09:31:00 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -381,8 +381,6 @@ TGUISetClock(no)
 
 	if ((vgaBitsPerPixel == 16) && (TVGAchipset <= CYBER9320))
 		freq *= 2; 
-	if (vgaBitsPerPixel == 32)
-		freq *= 2;
 	if ((TVGAchipset < TGUI96xx) && (vgaBitsPerPixel == 24))
 		freq *= 3;
 
@@ -575,7 +573,7 @@ TVGA8900Ident(n)
 				   "tgui9440agi", "cyber9320",
 				   "tgui9660", "tgui9680", "tgui9682",
 				   "tgui9685", "cyber9382", "cyber9385",
-				   "cyber9397"
+				   "cyber9397", "3dimage975", "3dimage985"
 				  };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
@@ -752,28 +750,28 @@ TVGA8900Probe()
 		}
 		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
 			TVGAchipset = TGUI9660;
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
 			TVGAchipset = TGUI9680;
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(18)))
 			TVGAchipset = TGUI9682;
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(19)))
 		{
 			TVGAchipset = TGUI9685;
 			NewClockCode = TRUE;
 		}
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(20)))
 		{
 			TVGAchipset = CYBER9382;
 			IsCyber = TRUE;
 			NewClockCode = TRUE;
 		}
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(16)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(21)))
 		{
 			TVGAchipset = CYBER9385;
 			IsCyber = TRUE;
 			NewClockCode = TRUE;
 		}
-		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(17)))
+		else if (!StrCaseCmp(vga256InfoRec.chipset, TVGA8900Ident(22)))
 		{
 			TVGAchipset = CYBER9397;
 			IsCyber = TRUE;
@@ -924,6 +922,14 @@ TVGA8900Probe()
 					TVGAchipset = TGUI96xx;
 					TVGAName = "Cyber9397";
 					break;
+				case PCI_CHIP_9750:
+					TVGAchipset = IMAGE975;
+					TVGAName = "3DImage975";
+					break;
+				case PCI_CHIP_9850:
+					TVGAchipset = IMAGE985;
+					TVGAName = "3DImage985";
+					break;
 			}
 		}
       		ErrorF("%s Trident chipset version: 0x%02x (%s)\n", 
@@ -1019,6 +1025,12 @@ TVGA8900Probe()
 			TRIDENT.ChipUse2Banks = TRUE;
 		break;
 	case TGUI96xx:
+	case TGUI9680:
+	case TGUI9682:
+	case TGUI9685:
+	case CYBER9382:
+	case CYBER9385:
+	case CYBER9397:
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
@@ -1049,6 +1061,7 @@ TVGA8900Probe()
 				REV = "Cyber 9397";
 				TVGAchipset = CYBER9397;
 				NewClockCode = TRUE;
+				IsCyber = TRUE;
 				break;
 			case 0x30:
 			case 0x33: /* Guessing */
@@ -1090,6 +1103,17 @@ TVGA8900Probe()
 		tridentDACtype = TGUIDAC;
 		if (vgaBitsPerPixel >= 8)
 			TRIDENT.ChipUse2Banks = TRUE;
+		break;
+	case IMAGE975:
+	case IMAGE985:
+		tridentIsTGUI = TRUE;
+		tridentTGUIProgrammableClocks = TRUE;
+		tridentLinearOK = TRUE;
+		tridentHWCursorType = 1;
+		tridentDACtype = TGUIDAC;
+		if (vgaBitsPerPixel >= 8)
+			TRIDENT.ChipUse2Banks = TRUE;
+		tridentHasAcceleration = FALSE; /* Engine completely changed */
 		break;
 	}
 
@@ -1596,8 +1620,8 @@ TVGA8900FbInit()
 				XAACursorInfoRec.MaxHeight = 64;
 				XAACursorInfoRec.MaxWidth = 64;
 			}
-			XAACursorInfoRec.CursorDataX = TridentCursorAddress % (vgaBitsPerPixel/8 * vga256InfoRec.displayWidth);
-			XAACursorInfoRec.CursorDataY = TridentCursorAddress / (vgaBitsPerPixel/8 * vga256InfoRec.displayWidth);
+			XAACursorInfoRec.CursorDataX = (TridentCursorAddress % ((vgaBitsPerPixel/8) * vga256InfoRec.displayWidth)) / (vgaBitsPerPixel / 8);
+			XAACursorInfoRec.CursorDataY = TridentCursorAddress / ((vgaBitsPerPixel/8) * vga256InfoRec.displayWidth);
 			XAACursorInfoRec.ShowCursor = TridentShowCursor;
 			XAACursorInfoRec.HideCursor = TridentHideCursor;
 			XAACursorInfoRec.SetCursorColors = TridentSetCursorColors;
@@ -2470,7 +2494,6 @@ TVGA8900Init(mode)
 		{
 			new->std.Attribute[17] = 0x00;
 			new->CommandReg = 0xD0; /* 32bpp */
-			new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
 			new->PixelBusReg |= 0x09; /* 16bit bus */
 			GE_OP |= 0x02; /* 32bpp in GE */
 		}

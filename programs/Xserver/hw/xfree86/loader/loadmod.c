@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.18 1997/07/06 05:30:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.19 1997/09/14 13:15:07 dawes Exp $ */
 
 
 
@@ -147,13 +147,29 @@ void CheckVersion(module, data, cnt)
 	}
 
 	if (xf86Verbose) {
-		char ver[8];
+		int vercode[3];
+		char verstr[4];
+		int modcode[2];
+		long ver = data->xf86version;
+		long mod = data->modversion;
+
 		ErrorF("\tModule %s: vendor=\"%s\"\n",
 			data->modname ? data->modname : "UNKNOWN!",
 			data->vendor ? data->vendor : "UNKNOWN!");
-		ErrorF("\t  compiled for 0x%x, module version = 0x%x\n",
-			data->xf86version, 
-			data->modversion);
+
+		verstr[1] = verstr[3] = 0;
+		verstr[2] =  (ver & 0x1f) ? (ver & 0x1f)+'a'-1 : 0; ver >>= 5;
+		verstr[0] =  (ver & 0x1f) ? (ver & 0x1f)+'A'-1 : 0; ver >>= 5;
+		vercode[2] = ver & 0x7f; ver >>= 7;
+		vercode[1] = ver & 0x7f; ver >>= 7;
+		vercode[0] = ver;
+		modcode[1] = mod & 0xffff; mod >>= 16;
+		modcode[0] = mod;
+		ErrorF("\t  compiled for %d.%d.%d%s%s, module version = %d.%d\n",
+			vercode[0],vercode[1],vercode[2],
+			verstr,verstr+2,
+			modcode[0],modcode[1]);
+
 #if NOTYET
 		if (data->checksum) {
 			/* verify the checksum field */

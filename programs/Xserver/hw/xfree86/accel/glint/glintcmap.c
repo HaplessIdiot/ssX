@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcmap.c,v 1.1 1997/06/17 08:17:56 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -50,6 +50,12 @@
 
 #include "xf86_Config.h"
 
+#ifdef XFreeXDGA
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
+extern int pciaddr;
 extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 extern struct glintmem glintmem;
 
@@ -124,7 +130,13 @@ glintStoreColors( ColormapPtr pmap, int ndef, xColorItem *pdefs)
          b = currentglintdac[pdefs[i].pixel].b =
 	    xf86bGammaMap[pdefs[i].blue  >> 8];
 
-      if (xf86VTSema) {
+      if (xf86VTSema
+#ifdef XFreeXDGA
+		|| ((glintInfoRec.directMode & XF86DGADirectGraphics)
+		&& !(glintInfoRec.directMode & XF86DGADirectColormap))
+		|| (glintInfoRec.directMode & XF86DGAHasColormap)
+#endif
+	 ) {
 	 GLINT_SLOW_WRITE_REG(pdefs[i].pixel, IBMRGB_WRITE_ADDR); 
 	 GLINT_SLOW_WRITE_REG(r, IBMRGB_RAMDAC_DATA);
 	 GLINT_SLOW_WRITE_REG(g, IBMRGB_RAMDAC_DATA);
