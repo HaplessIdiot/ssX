@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.16 2001/09/12 00:58:11 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.17 2001/09/21 02:39:40 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -75,9 +75,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define DefaultCCOptions       -Wall -Wpointer-arith -Wstrict-prototypes \
                                 -Wmissing-prototypes -Wmissing-declarations \
                                 -Wredundant-decls -Wnested-externs \
-                                -traditional-cpp
+                                -no-cpp-precomp
 #else
-# define DefaultCCOptions       -Wall -Wpointer-arith -traditional-cpp
+# define DefaultCCOptions       -Wall -Wpointer-arith -no-cpp-precomp
 #endif
 #endif
 
