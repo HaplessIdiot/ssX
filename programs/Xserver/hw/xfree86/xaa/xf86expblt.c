@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.8 1997/01/18 06:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.9 1997/03/10 10:12:36 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -83,7 +83,7 @@ extern unsigned char byte_reversed[256];
 
 #if defined(__GNUC__) && defined(__i386__)
 static __inline__ unsigned int reverse_bitorder(data) {
-#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || defined(linux) || defined (__OS2ELF__) && defined(__ELF__)
+#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
 	__asm__(
 		"movl $0,%%ecx\n"
 		"movb %%al,%%cl\n"
