@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.4tsi Exp $
+XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.5 2004/03/12 18:10:25 tsi Exp $
 
 /*
  * BSDI shared library rules (converted from SVr4/Linux rules)
@@ -62,6 +62,9 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #define	InstallSharedLibraryData(libname,rev,dest)
 #endif /* InstallSharedLibraryData */
 
+#ifndef SetSonameRev
+#define SetSonameRev(rev) set +e; S=`expr rev : '\([0-9]*\)'`; set -e
+#endif
 
 /*
  * SharedLibraryTarget - generate rules to create a shared library;
@@ -74,10 +77,13 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	@SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; set -x; \		@@\
-	(cd down; $(CCENVSETUP) SharedCCLdCmd -o up/$@~ $(SHLIBLDFLAGS)	  \
-	   -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs);	  \
-	$(RM) $$SONAME; $(LN) $@ $$SONAME;				  \
+	@SetSonameRev(rev); \						@@\
+	SONAME=Concat(lib,libname.so.$$S); \				@@\
+	(set -x; cd down; \						@@\
+	   $(CCENVSETUP) SharedCCLdCmd -o up/$@~ $(SHLIBLDFLAGS) \	@@\
+	   -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs);\	@@\
+	if [ $$SONAME != $@ ]; then (set -x; \				@@\
+		 $(RM) $$SONAME; $(LN) $@ $$SONAME); fi; \		@@\
 	LinkBuildSonameLibrary($$SONAME)				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
@@ -88,7 +94,8 @@ Concat(lib,libname.so.rev):  solist					@@\
 	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
-	@SONAME=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`; \ @@\
+	@SetSonameRev(rev); \						@@\
+	SONAME=Concat(lib,libname.so.$$S); \				@@\
 	set -x; $(RM) $$SONAME						@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
@@ -105,10 +112,13 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  deplist					@@\
 	$(RM) $@~							@@\
-	@SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; set -x; \		@@\
-	(cd down; $(CCENVSETUP) SharedCCLdCmd -o up/$@~ $(SHLIBLDFLAGS)	  \
-	   -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs);	  \
-	$(RM) $$SONAME; $(LN) $@ $$SONAME;				  \
+	@SetSonameRev(rev); \						@@\
+	SONAME=Concat(lib,libname.so.$$S); \				@@\
+	(set -x; cd down; \						@@\
+	   $(CCENVSETUP) SharedCCLdCmd -o up/$@~ $(SHLIBLDFLAGS) \	@@\
+	   -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs);\	@@\
+	if [ $$SONAME != $@ ]; then (set -x; \				@@\
+		 $(RM) $$SONAME; $(LN) $@ $$SONAME); fi; \		@@\
 	LinkBuildSonameLibrary($$SONAME)				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
@@ -119,7 +129,8 @@ Concat(lib,libname.so.rev):  deplist					@@\
 	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
-	@SONAME=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`; \ @@\
+	@SetSonameRev(rev); \						@@\
+	SONAME=Concat(lib,libname.so.$$S); \				@@\
 	set -x; $(RM) $$SONAME						@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
