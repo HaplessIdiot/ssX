@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.0 1994/04/28 12:28:58 dawes Exp $
 /*
  * A default OS name
  */
@@ -92,6 +92,11 @@ XCOMM $XFree86$
 #endif
 #else
 #define DefaultCCOptions -Xc -Dasm=__asm
+#ifndef ServerCCOptions
+#if defined(SunArchitecture)
+#define ServerCCOptions -Xt -Dasm=__asm
+#endif
+#endif
 #endif
 #endif
 #ifndef DefaultCDebugFlags
