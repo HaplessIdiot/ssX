@@ -236,7 +236,6 @@ int PanoramiXChangeWindowAttributes(ClientPtr client)
 	}
     }
 
-
     FOR_NSCREENS_BACKWARD(j) {
         stuff->window = win->info[j].id;
 	if (backPix)
@@ -495,7 +494,7 @@ int PanoramiXConfigureWindow(ClientPtr client)
 	}
     }
 
-    FOR_NSCREENS_FORWARD(j) {
+    FOR_NSCREENS_BACKWARD(j) {
 	stuff->window = win->info[j].id;
 	if(sib)
 	    *((CARD32 *) &stuff[1] + sib_offset) = sib->info[j].id;
@@ -569,85 +568,6 @@ int PanoramiXGetGeometry(ClientPtr client)
     }
     WriteReplyToClient(client, sizeof(xGetGeometryReply), &rep);
     return (client->noClientException);
-}
-
-
-int PanoramiXChangeProperty(ClientPtr client)
-{	      
-    PanoramiXRes *win;
-    int         result, j;
-    REQUEST(xChangePropertyReq);
-
-    REQUEST_AT_LEAST_SIZE(xChangePropertyReq);
-
-    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
-		client, stuff->window, XRT_WINDOW, SecurityWriteAccess)))
-	return BadWindow;
-
-    FOR_NSCREENS(j) {
-	stuff->window = win->info[j].id;
-	result = (*SavedProcVector[X_ChangeProperty])(client);
-        if(result != Success) break;
-    }
-
-    return (result);
-}
-
-
-int PanoramiXDeleteProperty(ClientPtr client)
-{	      
-    PanoramiXRes *win;
-    int         result, j;
-    REQUEST(xDeletePropertyReq);
-
-    REQUEST_SIZE_MATCH(xDeletePropertyReq);
-
-    if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
-		client, stuff->window, XRT_WINDOW, SecurityWriteAccess)))
-	return BadWindow;
-
-    FOR_NSCREENS_BACKWARD(j) {
-	stuff->window = win->info[j].id;
-	result = (*SavedProcVector[X_DeleteProperty])(client);
-        if(result != Success) break;
-    }
-
-    return (result);
-}
-
-
-int PanoramiXSendEvent(ClientPtr client)
-{	      
-    PanoramiXRes *win;
-    int  	  result, j; 
-    BYTE	  orig_type;
-    Mask	  orig_eventMask;
-    Bool	  no_window;
-    REQUEST(xSendEventReq);
-
-    REQUEST_SIZE_MATCH(xSendEventReq);
-
-    no_window = (stuff->destination == PointerWindow) ||
-		(stuff->destination == InputFocus);
-
-    if(!no_window) {
-	if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
-		client, stuff->destination, XRT_WINDOW, SecurityReadAccess)))
-	   return BadWindow;
-    }
-
-    orig_type = stuff->event.u.u.type;
-    orig_eventMask = stuff->eventMask;
-    FOR_NSCREENS_BACKWARD(j) {
-	if(!no_window)	
-	    stuff->destination = win->info[j].id;
-	stuff->eventMask = orig_eventMask;
-	stuff->event.u.u.type = orig_type;
-	if (!j) noPanoramiXExtension = TRUE;
-	result = (* SavedProcVector[X_SendEvent])(client);
-	noPanoramiXExtension = FALSE;
-    }
-    return (result);
 }
 
 
@@ -1979,10 +1899,7 @@ PanoramiXPolyText8(ClientPtr client)
 	    stuff->x = orig_x - panoramiXdataPtr[j].x;
 	    stuff->y = orig_y - panoramiXdataPtr[j].y;
 	}
-	if (!j) /* so we only get one error message */
-	    noPanoramiXExtension = TRUE;
 	result = (*SavedProcVector[X_PolyText8])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);
@@ -2022,10 +1939,7 @@ PanoramiXPolyText16(ClientPtr client)
 	    stuff->x = orig_x - panoramiXdataPtr[j].x;
 	    stuff->y = orig_y - panoramiXdataPtr[j].y;
 	}
-	if (!j) /* so we only get one error message */
-	    noPanoramiXExtension = TRUE;
 	result = (*SavedProcVector[X_PolyText16])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);
@@ -2283,9 +2197,7 @@ int PanoramiXAllocColor(ClientPtr client)
 
     FOR_NSCREENS_BACKWARD(j){
 	stuff->cmap = cmap->info[j].id;
-	if (!j) noPanoramiXExtension = TRUE;
 	result = (* SavedProcVector[X_AllocColor])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);
@@ -2308,9 +2220,7 @@ int PanoramiXAllocNamedColor(ClientPtr client)
 
     FOR_NSCREENS_BACKWARD(j){
         stuff->cmap = cmap->info[j].id;
-	if (!j) noPanoramiXExtension = TRUE;
         result = (* SavedProcVector[X_AllocNamedColor])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);
@@ -2333,9 +2243,7 @@ int PanoramiXAllocColorCells(ClientPtr client)
 	
     FOR_NSCREENS_BACKWARD(j){
 	stuff->cmap = cmap->info[j].id;
-	if (!j) noPanoramiXExtension = TRUE;
 	result = (* SavedProcVector[X_AllocColorCells])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);
@@ -2358,9 +2266,7 @@ int PanoramiXAllocColorPlanes(ClientPtr client)
 	
     FOR_NSCREENS_BACKWARD(j){
 	stuff->cmap = cmap->info[j].id;
-	if (!j) noPanoramiXExtension = TRUE;
 	result = (* SavedProcVector[X_AllocColorPlanes])(client);
-	noPanoramiXExtension = FALSE;
 	if(result != Success) break;
     }
     return (result);

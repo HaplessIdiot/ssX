@@ -55,7 +55,7 @@ int 		PanoramiXNumScreens = 0;
 PanoramiXData 	*panoramiXdataPtr = NULL;
 
 
-RegionRec   	PanoramiXScreenRegion[MAXSCREENS];
+RegionRec   	PanoramiXScreenRegion;
 
 int		PanoramiXNumDepths;
 DepthPtr	PanoramiXDepths;
@@ -102,8 +102,7 @@ int PanoramiXChangeSaveSet(), 	PanoramiXReparentWindow();
 int PanoramiXMapWindow(), 	PanoramiXMapSubwindows();
 int PanoramiXUnmapWindow(), 	PanoramiXUnmapSubwindows();
 int PanoramiXConfigureWindow(), PanoramiXCirculateWindow();
-int PanoramiXGetGeometry(), 	PanoramiXChangeProperty();
-int PanoramiXDeleteProperty(), 	PanoramiXSendEvent();
+int PanoramiXGetGeometry();	
 int PanoramiXCreatePixmap(), 	PanoramiXFreePixmap();
 int PanoramiXCreateGC(), 	PanoramiXChangeGC();
 int PanoramiXCopyGC(),		PanoramiXCopyColormapAndFree();
@@ -173,6 +172,7 @@ XineramaCloseScreen (int i, ScreenPtr pScreen)
     pScreen->CreateGC = pScreenPriv->CreateGC;
 
     REGION_UNINIT(pScreen, &XineramaScreenRegions[pScreen->myNum]);
+    REGION_UNINIT(pScreen, &PanoramiXScreenRegion);
 
     xfree ((pointer) pScreenPriv);
 
@@ -420,6 +420,7 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ExtensionEntry 	*extEntry, *AddExtension();
     ScreenPtr		pScreen;
     PanoramiXScreenPtr	pScreenPriv;
+    int			w, h;
     
     if (noPanoramiXExtension) 
 	return;
@@ -494,7 +495,9 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	ErrorF("%s Extension failed to initialize\n", PANORAMIX_PROTOCOL_NAME);
 	return;
     }
-       
+  
+
+    REGION_INIT(pScreen, &PanoramiXScreenRegion, NullBox, 1);
     for (i = 0; i < PanoramiXNumScreens; i++) {
 	BoxRec TheBox;
 
@@ -509,6 +512,22 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	TheBox.y2 = TheBox.y1 + panoramiXdataPtr[i].height;
 
 	REGION_INIT(pScreen, &XineramaScreenRegions[i], &TheBox, 1);
+	REGION_UNION(pScreen, &PanoramiXScreenRegion, &PanoramiXScreenRegion,
+						&XineramaScreenRegions[i]);
+    }
+    
+
+    PanoramiXPixWidth = panoramiXdataPtr[0].x + panoramiXdataPtr[0].width;	
+    PanoramiXPixHeight = panoramiXdataPtr[0].y + panoramiXdataPtr[0].height;
+
+    for (i = 1; i < PanoramiXNumScreens; i++) {
+	w = panoramiXdataPtr[i].x + panoramiXdataPtr[i].width;
+	h = panoramiXdataPtr[i].y + panoramiXdataPtr[i].height;
+
+	if(PanoramiXPixWidth < w) 
+	    PanoramiXPixWidth = w;	
+	if(PanoramiXPixHeight < h) 
+	    PanoramiXPixHeight = h;	
     }
 
     /*
@@ -531,9 +550,6 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ProcVector[X_ConfigureWindow] = PanoramiXConfigureWindow;
     ProcVector[X_CirculateWindow] = PanoramiXCirculateWindow;
     ProcVector[X_GetGeometry] = PanoramiXGetGeometry;
-    ProcVector[X_ChangeProperty] = PanoramiXChangeProperty;
-    ProcVector[X_DeleteProperty] = PanoramiXDeleteProperty;
-    ProcVector[X_SendEvent] = PanoramiXSendEvent;
     ProcVector[X_CreatePixmap] = PanoramiXCreatePixmap;
     ProcVector[X_FreePixmap] = PanoramiXFreePixmap;
     ProcVector[X_CreateGC] = PanoramiXCreateGC;
@@ -676,59 +692,13 @@ Bool PanoramiXCreateConnectionBlock(void)
     old_width = root->pixWidth;
     old_height = root->pixHeight;
 
-
-    root->pixWidth = panoramiXdataPtr[0].x + panoramiXdataPtr[0].width;	
-    root->pixHeight = panoramiXdataPtr[0].y + panoramiXdataPtr[0].height;
-
-    for (i = 1; i < PanoramiXNumScreens; i++) {
-	PanoramiXPixWidth = panoramiXdataPtr[i].x + panoramiXdataPtr[i].width;
-	PanoramiXPixHeight = panoramiXdataPtr[i].y + panoramiXdataPtr[i].height;
-
-	if(PanoramiXPixWidth > root->pixWidth) 
-	    root->pixWidth = PanoramiXPixWidth;	
-	if(PanoramiXPixHeight > root->pixHeight) 
-	    root->pixHeight = PanoramiXPixHeight;	
-    }
-
-    PanoramiXPixWidth = root->pixWidth;
-    PanoramiXPixHeight = root->pixHeight;
+    root->pixWidth = PanoramiXPixWidth;
+    root->pixHeight = PanoramiXPixHeight;
     width_mult = root->pixWidth / old_width;
     height_mult = root->pixHeight / old_height;
     root->mmWidth *= width_mult;
     root->mmHeight *= height_mult;
     return TRUE;
-}
-
-extern 
-Bool PanoramiXCreateScreenRegion(WindowPtr pWin)
-{
-   ScreenPtr   pScreen;
-   BoxRec      box;
-   int         i;
-   Bool	       ret = FALSE;
-   
-   pScreen = pWin->drawable.pScreen;
-   for (i = 0; i < PanoramiXNumScreens; i++) {
-        box.x1 = 0 - panoramiXdataPtr[i].x;
-        box.x2 = box.x1 + PanoramiXPixWidth;
-        box.y1 = 0 - panoramiXdataPtr[i].y;
-        box.y2 = box.y1 + PanoramiXPixHeight;
-        REGION_INIT(pScreen, &PanoramiXScreenRegion[i], &box, 1);
-        ret = REGION_NOTEMPTY(pScreen, &PanoramiXScreenRegion[i]);
-        if (!ret) break;
-   }
-   return ret;
-}
-
-extern
-void PanoramiXDestroyScreenRegion(WindowPtr pWin)
-{
-   ScreenPtr   pScreen;
-   int         i;
-
-   pScreen = pWin->drawable.pScreen;
-   for (i = 0; i < PanoramiXNumScreens; i++) 
-        REGION_DESTROY(pScreen, &PanoramiXScreenRegion[i]);
 }
 
 extern

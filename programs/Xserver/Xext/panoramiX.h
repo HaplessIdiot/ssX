@@ -50,8 +50,8 @@ typedef struct {
     RESTYPE type;
     union {
 	struct {
-	    char visibility;
-	    char class;
+	    char   visibility;
+	    char   class;
 	} win;
 	struct {
 	    Bool shared;
