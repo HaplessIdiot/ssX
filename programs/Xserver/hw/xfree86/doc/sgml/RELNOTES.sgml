@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>15 December 2000
+<date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.56 2000/12/15 22:01:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.57 2000/12/15 22:48:42 dawes Exp $
 </ident>
 
 <abstract>
@@ -430,7 +430,7 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>suntcx</tt> (+)<colsep>Sun TCX<colsep>&nbsp;</tabrow>
    <tabrow><tt>tdfx</tt><colsep>3Dfx<colsep>&nbsp;</tabrow>
    <tabrow><tt>tga</tt><colsep>DEC TGA<colsep><htmlurl
-		name="README.TGA" url="TGA.html"></tabrow>
+		name="README.DECtga" url="DECtga.html"></tabrow>
    <tabrow><tt>trident</tt><colsep>Trident<colsep><htmlurl
 		name="trident(4)" url="trident.4.html"></tabrow>
    <tabrow><tt>tseng</tt><colsep>Tseng Labs<colsep>&nbsp;</tabrow>
