@@ -1821,16 +1821,6 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
 	XE_KBPTR.rootX - pWin->drawable.x;
 	XE_KBPTR.eventY =
 	XE_KBPTR.rootY - pWin->drawable.y;
-#ifdef PANORAMIX
-	if(!noPanoramiXExtension) {
-	    XE_KBPTR.rootX += panoramiXdataPtr[0].x;
-	    XE_KBPTR.rootY += panoramiXdataPtr[0].y;
-	    if(pWin == WindowTable[0]) {
-		XE_KBPTR.eventX += panoramiXdataPtr[0].x;
-		XE_KBPTR.eventY += panoramiXdataPtr[0].y;
-	    }
-	}
-#endif
     }
     else
     {
@@ -3856,18 +3846,12 @@ ProcQueryPointer(client)
     rep.root = (ROOT)->drawable.id;
     rep.rootX = sprite.hot.x;
     rep.rootY = sprite.hot.y;
-#ifdef PANORAMIX
-    if(!noPanoramiXExtension) {
-	rep.rootX += panoramiXdataPtr[0].x;
-	rep.rootY += panoramiXdataPtr[0].y;
-    }
-#endif
     rep.child = None;
     if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	rep.sameScreen = xTrue;
 	rep.winX = sprite.hot.x - pWin->drawable.x;
-	rep.winY =sprite.hot.y - pWin->drawable.y;
+	rep.winY = sprite.hot.y - pWin->drawable.y;
 	for (t = sprite.win; t; t = t->parent)
 	    if (t->parent == pWin)
 	    {
@@ -3881,6 +3865,17 @@ ProcQueryPointer(client)
 	rep.winX = 0;
 	rep.winY = 0;
     }
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension) {
+	rep.rootX += panoramiXdataPtr[0].x;
+	rep.rootY += panoramiXdataPtr[0].y;
+	if(stuff->id == rep.root) {
+	    rep.winX += panoramiXdataPtr[0].x;
+	    rep.winY += panoramiXdataPtr[0].y;
+	}
+    }
+#endif
 
     WriteReplyToClient(client, sizeof(xQueryPointerReply), &rep);
 
@@ -4415,6 +4410,34 @@ WriteEventsToClient(pClient, count, events)
 #ifdef XKB
     if ((!noXkbExtension)&&(!XkbFilterEvents(pClient, count, events)))
 	return;
+#endif
+
+#ifdef PANORAMIX
+    /* I tried to do this back in the FixUpEventFromWindow but that
+       would sometimes get called twice while events were being retried. */
+    if(!noPanoramiXExtension && 
+       (panoramiXdataPtr[0].x || panoramiXdataPtr[0].y)) 
+    {
+	xEvent *xE = events;
+	switch(xE->u.u.type) {
+	case MotionNotify:
+	case ButtonPress:
+	case ButtonRelease:
+	case KeyPress:
+	case KeyRelease:
+	case EnterNotify:
+	    for(i = 0; i < count; i++, xE++) {
+		XE_KBPTR.rootX += panoramiXdataPtr[0].x;
+		XE_KBPTR.rootY += panoramiXdataPtr[0].y;
+		if(XE_KBPTR.event == WindowTable[0]->drawable.id) {
+		    XE_KBPTR.eventX += panoramiXdataPtr[0].x;
+		    XE_KBPTR.eventY += panoramiXdataPtr[0].y;
+		}
+	    }
+	    break;
+	default: break;
+	}
+    }
 #endif
 
     if (EventCallback)
