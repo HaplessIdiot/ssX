@@ -27,12 +27,12 @@
  */
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #if UseMMAP
 #include <sys/mman.h>
-#else
-#include <unistd.h>
 #endif
+#include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
@@ -83,6 +83,8 @@ static loader_funcs funcs[] = {
 	{COFF2LoadModule,COFF2ResolveSymbols,COFF2CheckForUnresolved,COFF2UnloadModule},
 	/* LD_XCOFFOBJECT */
 	{COFF2LoadModule,COFF2ResolveSymbols,COFF2CheckForUnresolved,COFF2UnloadModule},
+	/* LD_AOUTOBJECT */
+	{AOUTLoadModule,AOUTResolveSymbols,AOUTCheckForUnresolved,AOUTUnloadModule},
 	};
 
 int	numloaders=sizeof(funcs)/sizeof(loader_funcs);
@@ -124,7 +126,10 @@ if( buf[0] == 0x01 && buf[1] == 0xdf ) {
 	/* XCOFFMAGIC */
 	return LD_COFFOBJECT;
 	}
-
+if( buf[0] == 0x00 && buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x07) {
+        /* AOUTMAGIC */
+        return LD_AOUTOBJECT;
+        }
 return LD_UNKNOWN;
 }
 
@@ -302,7 +307,7 @@ loaderPtr tmp ;
 unsigned char	magic[SARMAG];
 struct ar_hdr	hdr;
 unsigned int	size;
-unsigned int	offset;
+unsigned int	offset = 0;
 int	arnamesize, modnamesize;
 char	*slash;
 
@@ -323,7 +328,7 @@ if(strncmp((const char *)magic,ARMAG,SARMAG) != 0 ) {
 /* Skip the symbol table */
 read(arfd,&hdr,sizeof(struct ar_hdr));
 
-if( hdr.ar_name[0] == '/' ) {
+if( hdr.ar_name[0] == '/' || strncmp(hdr.ar_name, "__.SYMDEF", 9) == 0) {
 	/* If the file name is NULL, then it is a symbol table */
 	sscanf(hdr.ar_size,"%d",&size);
 #ifdef DEBUGAR
@@ -381,6 +386,11 @@ while( read(arfd,&hdr,sizeof(struct ar_hdr)) ) {
 	tmp->handle = handle;
 	tmp->funcs=funcs[modtype];
 	slash=strchr(hdr.ar_name,'/');
+	if (slash == NULL) {
+	    /* BSD format without trailing slash */
+	    slash = strchr(hdr.ar_name,' ');
+	} 
+	/* XXX lots to do with long name in the form #1/ */
 	*slash='\000';
 	modnamesize=strlen(hdr.ar_name);
 	tmp->name=(char *)malloc(arnamesize+modnamesize+2 );
@@ -576,6 +586,7 @@ LoaderUnload( handle)
 return 0;
 }
 
+void
 LoaderDuplicateSymbol(symbol,handle)
 char	*symbol;
 int	handle;

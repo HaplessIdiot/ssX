@@ -27,6 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 3.0 1996/06/29 09:05:38 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.3 1997/02/16 10:27:25 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -279,6 +279,7 @@ char * S3Ident(int n)
 void S3EnterLeave(Bool enter)
 {
    unsigned char tmp;
+   extern void s3HideCursor();
 
 #ifdef S3_DEBUG
    ErrorF("In S3EnterLeave(%s)\n", enter ? "ENTER" : "LEAVE");
@@ -286,9 +287,8 @@ void S3EnterLeave(Bool enter)
 
 #ifdef XFreeXDGA
    if ((vga256InfoRec.directMode & XF86DGADirectGraphics) && !enter) {
-       	/* Hide the HWcursor once it's implemented.  I think the SVGA
-		server should be able to take care of that for us though */
-       		return;
+	s3HideCursor();
+	return;
    }
 #endif 
 

@@ -1,3 +1,10 @@
+XFree86 3.2Af (XX February 1997)
+ 454. Start Elf loader for Linux/Alpha; doesn't work, yet (#44, Alan Hourihane).
+ 453. Hide cursor in S3/SVGA when DGA is active (#43, Mark Vojkovich).
+ 452. a.out loader for module loading (#42, Matthieu Herrb).
+ 451. Extend OS support layer to cover some libc functions and update all 
+      drivers to use the internal functions (Dirk Hohndel).
+
 XFree86 3.2Ae (16 February 1997)
  450. Add -showunresolved flag to server.
  449. Add sourceAddress option to xdm (#41, Christos Zoulas).

@@ -427,8 +427,81 @@ void xf86OsMouseOption(int token, pointer lex_ptr)
 	 */
 }
 
+/*
+ * The following functions are simply wrappers around the OS specific
+ * libc functions
+ */
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.1 1996/02/04 09:09:45 dawes Exp $
+void *
+xf86memmove(void * dest, const void * src, INT32 n)
+{
+	return(memmove(dest,src,n));
+}
+
+void *
+xf86memset(void * s, int c, INT32 n)
+{
+	return(memset(s,c,n));
+}
+
+void *
+xf86memcpy(void * dest, const void * src, INT32 n)
+{
+	return(memcpy(dest,src,n));
+}
+
+int
+xf86memcmp(const void * s1, const void * s2, INT32 n)
+{
+	return(memcmp(s1,s2,n));
+}
+
+char *
+xf86strcat(char * dest, const char * src)
+{
+	return(strcat(dest,src));
+}
+
+char *
+xf86strcpy(char * dest, const char * src)
+{
+	return(strcpy(dest,src));
+}
+
+int
+xf86strcmp(const char * s1, const char * s2)
+{
+	return(strcmp(s1,s2));
+}
+
+int
+xf86strncmp(const char * s1, const char * s2, INT32 n)
+{
+	return(strncmp(s1,s2,n));
+}
+
+size_t
+xf86strlen(const char * s)
+{
+	return(strlen(s));
+}
+
+void
+xf86getsecs(INT32 * secs, INT32 * usecs)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	*secs = tv.tv_sec;
+	*usecs= tv.tv_usec;
+
+	return;
+}
+
+
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.2 1996/12/23 06:48:59 dawes Exp $
 
 
 

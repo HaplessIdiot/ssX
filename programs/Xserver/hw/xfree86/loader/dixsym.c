@@ -49,7 +49,7 @@ extern void writev () ;
 
 LOOKUP dixLookupTab[] = {
 
-  /*dix/*/
+  /*dix/ */
   /* colormap.c */
   SYMFUNC(AllocColor)
   SYMFUNC(CreateColormap)
@@ -84,6 +84,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(serverGeneration)
   SYMVAR(WindowTable)
   SYMVAR(monitorResolution)
+  SYMVAR(DPMSEnabled)
   /* pixmap.c */
   SYMFUNC(AllocatePixmap)
   SYMFUNC(GetScratchPixmapHeader)
@@ -117,7 +118,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(numSaveUndersViewable)
   SYMVAR(screenIsSaved)
 
-  /*os/*/
+  /*os/ */
   /* util.c */
   SYMFUNC(ErrorF)
   SYMFUNC(FatalError)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ramdacs.c,v 3.5 1996/12/28 08:14:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ramdacs.c,v 1.2 1997/02/16 10:27:28 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -4586,19 +4586,19 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
    if (match1 == NULL)
       return NULL;
 
-   l1 = strlen(match1);
+   l1 = xf86strlen(match1);
    if (match2 != NULL) 
-      l2 = strlen(match2);
+      l2 = xf86strlen(match2);
    else	/* for compiler-warnings */
       l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
-      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
+      if (bios[i] == match1[0] && !xf86memcmp(&bios[i],match1,l1))
 	 if (match2 == NULL) 
 	    return &bios[i+l1];
 	 else
 	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
-	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
+	       if (bios[j] == match2[0] && !xf86memcmp(&bios[j],match2,l2))
 		  return &bios[j+l2];
    return NULL;
 }
