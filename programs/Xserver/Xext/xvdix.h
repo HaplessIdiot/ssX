@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.1.2.1 1998/06/27 14:47:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdix.h,v 1.3 1998/08/13 14:45:35 dawes Exp $ */
 
 #ifndef XVDIX_H
 #define XVDIX_H
@@ -143,6 +143,12 @@ typedef struct {
   DevUnion devPriv;
 } XvAdaptorRec, *XvAdaptorPtr;
 
+/* XXX this is a guess */
+typedef struct _XvAttributeRec {
+  int flags;
+  char *name;
+} XvAttributeRec, *XvAttributePtr;
+
 typedef struct _XvPortRec {
   unsigned long id;
   XvAdaptorPtr pAdaptor;
@@ -151,6 +157,8 @@ typedef struct _XvPortRec {
   ClientPtr client;
   XvGrabRec grab;
   TimeStamp time;
+  XvAttributePtr attributes;
+  int numAttributes;
   DevUnion devPriv;
 } XvPortRec, *XvPortPtr;
 
