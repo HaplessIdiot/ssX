@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.145 2000/11/28 16:10:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.146 2000/11/29 17:40:19 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -133,6 +133,11 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define NormalLibGlu		YES
 #define BuildRman		NO
 #define BuildHtmlManPages	NO
+#define FSUseSyslog		YES
+#endif
+
+#if LinuxDistribution == LinuxRedHat
+#define FSUseSyslog		YES
 #endif
 
 /*
@@ -482,6 +487,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 /* Some Linux distributions have yacc, some don't. All have bison. */
 #define YaccCmd			bison -y
 #define LexCmd			flex -l
+#define HasFlex			YES
 #define LexLib			-lfl
 #define PreProcessCmd		CcCmd -E
 #define PostIncDir		DefaultGccIncludeDir
@@ -595,6 +601,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #ifndef PamLibraries
 #define PamLibraries		-lpam DlLibrary
+#endif
+
+#ifndef PamMiscLibraries
+#define PamMiscLibraries	-lpam_misc
 #endif
 
 #if HasDECnet

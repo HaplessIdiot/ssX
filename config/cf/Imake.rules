@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.82 2000/11/09 01:35:05 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.83 2000/11/30 18:59:52 keithp Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2256,7 +2256,7 @@ file.c: file.y								@@\
 clean::									@@\
 	RemoveFiles(y.tab.c y.tab.h file.h file.c)
 #else
-#define YaccFilePrefix(file,flags)					@@\
+#define YaccFilePrefix(file,flags,prefix)				@@\
 depend:: file.c								@@\
 									@@\
 file.h file.c: file.y							@@\

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.7 1999/03/07 11:41:01 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.8 2000/02/13 06:15:45 dawes Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -100,6 +100,11 @@ extern	void	ResetSockets(void);
 extern	void	CloseSockets(void);
 extern	void	StopListening(void);
 
+/* os/daemon.c */
+extern	void	BecomeOrphan(void);
+extern	void	BecomeDaemon(void);
+extern	int	StorePid(void);
+
 /* os/error.c */
 extern void	Error(char *str);
 extern void	InitErrors(void);
@@ -143,6 +148,8 @@ extern	void	FSfree(pointer);
 extern	void	OsInitAllocator (void);
 extern	void	ProcessCmdLine (int argc, char **argv);
 extern	void	ProcessLSoption (char *str);
+extern	void	SetUserId(void);
+extern	void	SetDaemonState(void);
 
 /* os/waitfor.c */
 extern	int	WaitForSomething(int *pClientsReady);

@@ -2,7 +2,7 @@ XCOMM $TOG: os2.cf /main/2 1997/08/05 08:51:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.29 2000/04/05 18:13:08 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.30 2000/07/07 20:06:56 tsi Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -182,6 +182,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.29 2000/04/05 18:13:08 dawes 
 #define RanlibCmd	ar s
 #define BourneShell	/**/
 #define LexCmd	flex -l
+#define HasFlex YES
 #define LexLib	-lfl
 #define YaccCmd	yacc
 #define LintCmd	/**/

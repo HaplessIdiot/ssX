@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/13 1997/08/02 10:11:21 kaleb $
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.13 2000/09/19 12:46:24 eich Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.14 2000/11/28 19:09:34 dawes Exp $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -326,3 +326,35 @@ xkb_keymap "sk_us_prog" {
     xkb_symbols       { include "czsk(sk_us_prog)"    };
     xkb_geometry      { include "pc"                  };
 };   
+xkb_keymap "sl"        {
+    xkb_keycodes       { include "xfree86"             };
+    xkb_types          { include "default"             };
+    xkb_compatibility  { include "default"             };
+    xkb_symbols                { include "en_US(pc105)+si"     };
+    xkb_geometry       { include "pc(pc102)"           };
+};
+xkb_keymap "sl_SI"     {
+    xkb_keycodes       { include "xfree86"             };
+    xkb_types          { include "default"             };
+    xkb_compatibility  { include "default"             };
+    xkb_symbols                { include "en_US(pc105)+si"     };
+    xkb_geometry       { include "pc(pc102)"           };
+};
+
+// Additions by Cristian Gafton, <gafton@redhat.com>
+xkb_keymap "ro"        {
+    xkb_keycodes       { include "xfree86"                     };
+    xkb_types          { include "default"                     };
+    xkb_compatibility  { include "default"                     };
+    xkb_symbols                { include "en_US(pc101)+ro(pc101)"
+    };
+    xkb_geometry       { include "pc(pc101)"                   };
+};
+xkb_keymap "ro_microsoft"      {
+    xkb_keycodes       { include "xfree86"                     };
+    xkb_types          { include "default"                     };
+    xkb_compatibility  { include "default"                     };
+    xkb_symbols                { include "en_US(pc105)+ro(pc105)"
+    };
+    xkb_geometry       { include "pc(pc105)"                   };
+};

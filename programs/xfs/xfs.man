@@ -1,4 +1,5 @@
 .\" Copyright 1991, 1998  The Open Group
+.\" Portions copyright (c) 2000 Red Hat, Inc.
 .\" 
 .\" All Rights Reserved.
 .\" 
@@ -31,14 +32,19 @@
 .\" suitability of this software for any purpose.  It is provided "as is"
 .\" without express or implied warranty.
 .\" $TOG: xfs.man /main/16 1998/02/09 13:58:02 kaleb $
-.\" $XFree86: xc/programs/xfs/xfs.man,v 3.7 1998/04/05 02:29:06 dawes Exp $
+.\" $XFree86: xc/programs/xfs/xfs.man,v 3.8 1998/10/04 09:41:07 dawes Exp $
 .TH XFS 1 "Release 6.4" "X Version 11"
 .SH NAME
 xfs \- X font server
 .SH SYNOPSIS
 .B "xfs"
 [\-config \fIconfiguration_file\fP]
+[\-daemon]
+[\-droppriv]
+[\-ls \fIlisten_socket\fP]
+[\-nodaemon]
 [\-port \fItcp_port\fP]
+[\-user \fIusername\fP]
 .SH DESCRIPTION
 .PP
 .I Xfs
@@ -51,9 +57,11 @@ private font servers for specific sets of fonts.
 .SH "OPTIONS"
 .TP 8
 .B \-config configuration_file
-Specifies the configuration file the font server will use.
+Specifies the configuration file the font server will use.  If this
+parameter is not specified, the default file, \fI/usr/X11R6/lib/X11/fs/config\R
+will be used.
 .TP 8
-.B \-ls listen-socket
+.B \-ls listen_socket
 Specifies a file descriptor which is already set up to be used as the
 listen socket.  This option is only intended to be used by the font server
 itself when automatically spawning another copy of itself to handle
@@ -62,6 +70,31 @@ additional connections.
 .B \-port tcp_port
 Specifies the TCP port number on which the server will listen for connections.
 The default port number is 7100.
+.TP 8
+.B \-daemon
+Instructs xfs to fork and go into the background automatically at
+startup  If this option is not specified, xfs will run as a regular
+process (unless xfs was built to daemonize by default).
+.TP 8
+.B \-droppriv
+If specified, xfs will attempt to run as user and group \fIxfs\fR (unless
+the
+.TP 8
+.B \-nodaemon
+When xfs is built to daemonize (run in the background) by default,
+this prevents that and starts xfs up as a regular process.
+.B \-user
+option is used). This
+has been implemented for security reasons, as xfs may have undiscovered
+buffer overflows or other paths for possible exploit, both local and
+remote.  With this option, you may also wish to specify
+"no-listen = tcp"
+in the config file, which ensures that xfs will not to use a TCP port at all.
+.TP 8
+.B \-user username
+This is equivalent to
+.B \-droppriv
+except that xfs will run as user \fIusername\fR.
 .SH "SIGNALS"
 .TP 8
 .I SIGTERM
@@ -113,11 +146,11 @@ Multiple resolutions are separated by commas.
 .IP "error-file (string)"
 Filename of the error file.  All warnings and errors
 will be logged here.
-.IP "port (cardinal)"
-TCP port on which the server will listen for connections.
 .IP "no-listen (trans-type)"
 Disable a transport  type. For example, TCP/IP connections can
 be disabled with no-listen tcp
+.IP "port (cardinal)"
+TCP port on which the server will listen for connections.
 .IP "use-syslog (boolean)"
 Whether syslog(3) (on supported systems) is to be used 
 for errors.

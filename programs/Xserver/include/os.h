@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.34 2000/06/16 01:50:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.35 2000/08/02 15:30:36 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -567,6 +567,7 @@ extern int Pclose(pointer);
 #endif
 
 extern void CheckUserParameters(int argc, char **argv, char **envp);
+extern void CheckUserAuthorization(void);
 
 extern int AddHost(
 #if NeedFunctionPrototypes

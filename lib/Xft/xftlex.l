@@ -1,6 +1,6 @@
 %{
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftlex.l,v 1.1 2000/11/29 08:39:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,10 +25,29 @@
 
 #include <string.h>
 #include "xftint.h"
+
 #include "xftgram.h"
 
 int	    XftConfigLineno;
+
+static void _XftConfigSkipComment (void);
+
+static void _XftConfigSkipLine (void);
     
+static int _XftConfigPopInput (void);
+    
+    
+#define		XFT_CONFIG_IN_DEEP	20
+FILE	*XftConfigInStack[XFT_CONFIG_IN_DEEP];
+FILE	**XftConfigInpt = XftConfigInStack + XFT_CONFIG_IN_DEEP;
+FILE	*XftConfigInput;
+int	XftConfigLinenos[XFT_CONFIG_IN_DEEP];
+int 	*XftConfigLinenopt = XftConfigLinenos + XFT_CONFIG_IN_DEEP;
+char	*XftConfigFile = "";
+char	*XftConfigFileNames[XFT_CONFIG_IN_DEEP];
+char	**XftConfigFileNamePt = XftConfigFileNames + XFT_CONFIG_IN_DEEP;
+int	XftConfigFiledeep = 0;
+
 #undef YY_INPUT
 
 #define YY_INPUT(buf,result,max_size) \
@@ -69,30 +88,10 @@ static void unput (char c)
 {
     if (c == '\n')
 	XftConfigLineno--;
-    ungetc (XftConfigInput, c);
+    ungetc (c, XftConfigInput);
 }
 #endif
 
-#define		XFT_CONFIG_IN_DEEP	20
-FILE	*XftConfigInStack[XFT_CONFIG_IN_DEEP];
-FILE	**XftConfigInpt = XftConfigInStack + XFT_CONFIG_IN_DEEP;
-FILE	*XftConfigInput;
-int	XftConfigLinenos[XFT_CONFIG_IN_DEEP];
-int 	*XftConfigLinenopt = XftConfigLinenos + XFT_CONFIG_IN_DEEP;
-char	*XftConfigFile = "";
-char	*XftConfigFileNames[XFT_CONFIG_IN_DEEP];
-char	**XftConfigFileNamePt = XftConfigFileNames + XFT_CONFIG_IN_DEEP;
-int	XftConfigFiledeep = 0;
-
-static void
-_XftConfigSkipComment (void);
-
-static void
-_XftConfigSkipLine (void);
-    
-static int
-_XftConfigPopInput (void);
-    
 %}
 %%
 "/\052"		_XftConfigSkipComment();
@@ -126,21 +125,21 @@ all		return ALL;
 "?"		return QUEST;
 \"([^\n\"]|\\\")*\"	{
     			yytext[yyleng - 1] = '\0';
-			XftConfiglval.sval = yytext+1;
+			yylval.sval = yytext+1;
 			return STRING;
 		}
 [0-9]+		{
-		XftConfiglval.ival = strtol (yytext, 0, 10);
+		yylval.ival = strtol (yytext, 0, 10);
 		return INTEGER;
 		}
 (([0-9]+((\.[0-9]*(\{[0-9]+\})?)?))|(\.[0-9]+)|(\.[0-9]*\{[0-9]+\}))(([Ee][-+]?[0-9]+)?) {
-		XftConfiglval.dval = strtod (yytext, 0);
+		yylval.dval = strtod (yytext, 0);
 		return DOUBLE;
 		}
 [a-zA-Z][0-9a-zA-Z_]* {
-		if (XftNameConstant (yytext, &XftConfiglval.ival))
+		if (XftNameConstant (yytext, &yylval.ival))
 		    return INTEGER;
-		XftConfiglval.sval = yytext;
+		yylval.sval = yytext;
 		return NAME;
 		}
 .		;

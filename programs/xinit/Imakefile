@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/25 1996/01/15 12:19:07 gildea $
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.5 1998/12/20 11:58:22 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.6 2000/01/31 19:33:44 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -17,6 +17,9 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           OBJS1 = xinit.o 
    SAMPLECONFIG = xinitrc
        PROGRAMS = ProgramTargetName(xinit) startx $(SAMPLECONFIG)
+#ifdef LinuxArchitecture
+     COOKIEDEFS = -DHAS_COOKIE_MAKER -DMK_COOKIE=mcookie
+#endif
 
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),$(DEFFILE))
@@ -28,7 +31,7 @@ MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
 #ifdef i386ScoArchitecture
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
 #else
-MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
+MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) $(COOKIEDEFS))
 #endif
 
 #ifdef OS2Architecture

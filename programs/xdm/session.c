@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.24 2000/11/14 21:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.25 2000/11/15 01:36:17 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -471,6 +471,18 @@ UnsecureDisplay (struct display *d, Display *dpy)
 void
 SessionExit (struct display *d, int status, int removeAuth)
 {
+#ifdef USE_PAM
+	pam_handle_t *pamh = thepamh();
+#endif
+#ifdef USE_PAM
+    if (pamh) {
+        /* shutdown PAM session */
+	pam_close_session(pamh, 0);
+	pam_end(pamh, PAM_SUCCESS);
+	pamh = NULL;
+    }
+#endif
+
     /* make sure the server gets reset after the session is over */
     if (d->serverPid >= 2 && d->resetSignal)
 	kill (d->serverPid, d->resetSignal);
@@ -478,9 +490,6 @@ SessionExit (struct display *d, int status, int removeAuth)
 	ResetServer (d);
     if (removeAuth)
     {
-#ifdef USE_PAM
-	pam_handle_t *pamh = thepamh();
-#endif
 	setgid (verify.gid);
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
@@ -508,14 +517,6 @@ SessionExit (struct display *d, int status, int removeAuth)
 	    }
 	}
 #endif /* K5AUTH */
-#ifdef USE_PAM
-	if (pamh) {
-	    /* shutdown PAM session */
-	    pam_close_session(pamh, 0);
-	    pam_end(pamh, PAM_SUCCESS);
-	    pamh = NULL;
-	}
-#endif
     }
     Debug ("Display %s exiting with status %d\n", d->name, status);
     exit (status);

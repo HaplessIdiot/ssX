@@ -40,7 +40,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/error.c,v 1.5 1998/10/25 12:48:07 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<stdarg.h>
@@ -70,11 +70,16 @@ in this Software without prior written authorization from The Open Group.
 #include	<syslog.h>
 #endif
 
+#include	<errno.h>
+
 #include	"misc.h"
 
 extern char *progname;
 
 Bool        UseSyslog;
+#ifdef USE_SYSLOG
+Bool        log_open = FALSE;
+#endif
 char        ErrorFile[PATH_MAX];
 
 static void
@@ -128,7 +133,12 @@ CloseErrors(void)
 void
 Error(char *str)
 {
-    /* XXX this should also go to syslog() */
+#ifdef USE_SYSLOG
+    if (UseSyslog) {
+	syslog(LOG_ERR, "%s: %s", str, strerror(errno));
+	return;
+    }
+#endif
     perror(str);
 }
 
@@ -139,17 +149,15 @@ Error(char *str)
 void
 NoticeF(char *f, ...)
 {
-
-#ifdef USE_SYSLOG
-    if (UseSyslog) {
-	syslog(LOG_NOTICE, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-	return;
-    }
-#endif
-
     /* XXX should Notices just be ignored if not using syslog? */
     va_list args;
     va_start(args, f);
+#ifdef USE_SYSLOG
+    if (UseSyslog) {
+	vsyslog(LOG_NOTICE, f, args);
+	return;
+    }
+#endif
     fprintf(stderr, "%s notice: ", progname);
     vfprintf(stderr, f, args);
     va_end(args);
@@ -162,14 +170,14 @@ NoticeF(char *f, ...)
 void
 ErrorF(char * f, ...)
 {
+    va_list args;
+    va_start(args, f);
 #ifdef USE_SYSLOG
     if (UseSyslog) {
-	syslog(LOG_ERR, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+	vsyslog(LOG_NOTICE, f, args);
 	return;
     }
 #endif
-    va_list args;
-    va_start(args, f);
     fprintf(stderr, "%s error: ", progname);
     vfprintf(stderr, f, args);
     va_end(args);

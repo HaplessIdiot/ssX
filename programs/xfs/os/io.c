@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.9 1999/03/07 11:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.10 2000/02/13 06:15:46 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -456,7 +456,8 @@ FlushClient(
 		obuf = (unsigned char *) fsrealloc(oco->buf,
 					      notWritten + OutputBufferSize);
 		if (!obuf) {
-		    _FontTransClose(oc->trans_conn);
+		    if (oc->trans_conn)
+			_FontTransClose(oc->trans_conn);
 		    oc->trans_conn = NULL;
 		    MarkClientException(client);
 		    oco->count = 0;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.21 2000/06/15 23:59:06 keithp Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.22 2000/06/17 00:27:30 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -588,7 +588,10 @@ static void _XFlushInt (dpy, cv)
 	register char *bufindex;
 	_XExtension *ext;
 
-	if (dpy->flags & XlibDisplayIOError) return;
+	if (dpy->flags & XlibDisplayIOError) {
+	    dpy->bufptr = dpy->buffer;  /* reset to avoid buffer overflows */
+	    return;
+	}
 #ifdef XTHREADS
 	while (dpy->flags & XlibDisplayWriting) {
 	    if (dpy->lock) {

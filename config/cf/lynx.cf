@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.37 2000/06/20 20:07:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.38 2000/07/07 20:06:56 tsi Exp $
 
 
 #ifndef OSName
@@ -125,6 +125,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #else
 # define LexLib			/**/
 #endif
+#define HasFlex			YES
 /* On LynxOS AT 2.3.0 /lib/libm.a is a symbolic link to /lib/libc.a, so we
  * screw up some POSIX functionality when -lm comes before -lc_p in our
  * ld argument list. For LynxOS-AT we don't need -lm but for others we 

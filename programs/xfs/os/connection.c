@@ -63,7 +63,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.17 1999/03/07 11:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.18 2000/04/04 19:25:26 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdlib.h>
@@ -261,11 +261,11 @@ CreateSockets(int old_listen_count, OldListenRec *old_listen)
 		FD_SET (fd, &WellKnownConnections);
 	    }
 	}
+	NoticeF("listening on port %s\n", port);
     }
 
     if (! XFD_ANYSET(&WellKnownConnections))
 	FatalError("Cannot establish any listening sockets\n");
-
 
     /* set up all the signal handlers */
     signal(SIGPIPE, SIG_IGN);

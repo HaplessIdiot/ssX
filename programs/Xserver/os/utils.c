@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.65 2000/09/29 22:09:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.66 2000/11/14 18:20:38 dawes Exp $ */
 #ifdef __CYGWIN__
 #include <stdlib.h>
 #include <signal.h>
@@ -2064,4 +2064,57 @@ CheckUserParameters(int argc, char **argv, char **envp)
     FatalError("X server aborted because of unsafe environment\n");
 }
 
+/*
+ * CheckUserAuthorization: check if the user is allowed to start the
+ * X server.  This usually means some sort of PAM checking, and it is
+ * usually only done for setuid servers (uid != euid).
+ */
 
+#ifdef USE_PAM
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+#include <pwd.h>
+#endif /* USE_PAM */
+
+void
+CheckUserAuthorization()
+{
+#ifdef USE_PAM
+    static struct pam_conv conv = {
+	misc_conv,
+	NULL
+    };
+
+    pam_handle_t *pamh = NULL;
+    struct passwd *pw;
+    int retval;
+
+    if (getuid() != geteuid()) {
+	pw = getpwuid(getuid());
+	if (pw == NULL)
+	    FatalError("getpwuid() failed for uid %d\n", getuid());
+
+	retval = pam_start("xserver", pw->pw_name, &conv, &pamh);
+	if (retval != PAM_SUCCESS)
+	    FatalError("pam_start() failed.\n"
+			"\tMissing or mangled PAM config file or module?\n");
+
+	retval = pam_authenticate(pamh, 0);
+	if (retval != PAM_SUCCESS) {
+	    pam_end(pamh, retval);
+	    FatalError("PAM authentication failed, cannot start X server.\n"
+			"\tPerhaps you do not have console ownership?\n");
+	}
+
+	retval = pam_acct_mgmt(pamh, 0);
+	if (retval != PAM_SUCCESS) {
+	    pam_end(pamh, retval);
+	    FatalError("PAM authentication failed, cannot start X server.\n"
+			"\tPerhaps you do not have console ownership?\n");
+	}
+
+	/* this is not a session, so do not do session management */
+	pam_end(pamh, PAM_SUCCESS);
+    }
+#endif
+}

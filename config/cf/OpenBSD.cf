@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.39 2000/08/01 23:38:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.40 2000/11/06 19:24:00 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -197,6 +197,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGnuMalloc		NO
 
 #define	AdmDir			/var/log
+
+#define HasFlex			YES
 
 /*
  * Make & install Features
