@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.100 2001/07/09 23:43:33 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.101 2001/07/14 19:38:28 paulo Exp $ */
 /*
  * PCI Probe
  *
@@ -95,6 +95,7 @@
 #define PCI_VENDOR_LEADTEK	0x107D
 #define PCI_VENDOR_CONTAQ	0x1080
 #define PCI_VENDOR_FOREX	0x1083
+#define PCI_VENDOR_SBS		0x108A
 #define PCI_VENDOR_OLICOM	0x108D
 #define PCI_VENDOR_SUN		0x108E
 #define PCI_VENDOR_DIAMOND	0x1092
@@ -676,6 +677,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_LEADTEK, "Leadtek"},
     {PCI_VENDOR_CONTAQ, "Contaq"},
     {PCI_VENDOR_FOREX, "FOREX"},
+    {PCI_VENDOR_SBS, "SBS Technologies"}, /* Formerly Bit 3 Computer Corp */
     {PCI_VENDOR_OLICOM, "Olicom"},
     {PCI_VENDOR_SUN, "Sun"},
     {PCI_VENDOR_DIAMOND, "Diamond"},
@@ -1124,6 +1126,11 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL,0}}},
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_FOREX, {
+				{0x0000,		NULL,0}}},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_SBS, {
+				{0x0040,		"dataBLIZZARD",0 },
 				{0x0000,		NULL,0}}},
 #endif
     {PCI_VENDOR_OLICOM, {

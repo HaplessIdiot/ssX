@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.80 2001/04/20 16:54:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.81 2001/04/23 16:17:11 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1596,6 +1596,8 @@ extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
     (*xf86WriteMmioNB8)((CARD8)(val), base, offset)
 #define MMIO_ONB16(base, offset, val) \
     (*xf86WriteMmioNB16)((CARD16)(val), base, offset)
+#define MMIO_MOVE32(base, offset, val) \
+    MMIO_OUT32(base, offset, val)
 
 #elif defined(__powerpc__)  
  /* 
@@ -1632,6 +1634,9 @@ extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
 #  define MMIO_ONB32(base, offset, val) \
     xf86WriteMmioNB32Le(base, offset, (CARD32)(val))
 # endif
+
+#define MMIO_MOVE32(base, offset, val) \
+    xf86WriteMmio32Be(base, offset, (CARD32)(val))
 
 static __inline__ void ppc_flush_icache(char *addr)
 {
@@ -1682,6 +1687,9 @@ static __inline__ void ppc_flush_icache(char *addr)
     xf86WriteMmio32LeNB(base, offset, (CARD32)(val))
 # endif
 
+#define MMIO_MOVE32(base, offset, val) \
+    xf86WriteMmio32Be(base, offset, (CARD32)(val))
+
 #else /* !__alpha__ && !__powerpc__ && !__sparc__ */
 
 #define MMIO_IN8(base, offset) \
@@ -1699,6 +1707,8 @@ static __inline__ void ppc_flush_icache(char *addr)
 #define MMIO_ONB8(base, offset, val) MMIO_OUT8(base, offset, val) 
 #define MMIO_ONB16(base, offset, val) MMIO_OUT16(base, offset, val) 
 #define MMIO_ONB32(base, offset, val) MMIO_OUT32(base, offset, val) 
+
+#define MMIO_MOVE32(base, offset, val) MMIO_OUT32(base, offset, val)
 
 #endif /* __alpha__ */
 

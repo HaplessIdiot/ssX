@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.4 2001/07/07 20:19:08 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.5 2001/07/09 23:45:24 paulo Exp $
  */
 
 #ifdef USE_MODULES
@@ -47,7 +47,7 @@
 
 /* XXX beware (or fix it) libc functions called here are the xf86 ones */
 
-static void AddModuleOptions(char*, OptionInfoPtr);
+static void AddModuleOptions(char*, const OptionInfoRec*);
 #if 0
 void xf86AddDriver(DriverPtr, void*, int);
 Bool xf86ServerIsOnlyDetecting(void);
@@ -293,10 +293,10 @@ static int vendor;
 ModuleType module_type = GenericModule;
 
 static void
-AddModuleOptions(char *name, OptionInfoPtr option)
+AddModuleOptions(char *name, const OptionInfoRec *option)
 {
     xf86cfgModuleOptions *ptr;
-    OptionInfoPtr tmp;
+    const OptionInfoRec *tmp;
     SymTabPtr ctmp;
     int count;
 
@@ -361,24 +361,24 @@ xf86cfgLoaderInitList(int type)
 	"fonts",
 	NULL
     };
-    char **subdirs;
+    const char **subdirs;
 
     switch (type) {
 	case GenericModule:
-	    subdirs = (char**)generic;
+	    subdirs = generic;
 	    break;
 	case VideoModule:
-	    subdirs = (char**)video;
+	    subdirs = video;
 	    break;
 	case InputModule:
-	    subdirs = (char**)input;
+	    subdirs = input;
 	    break;
 	case FontRendererModule:
-	    subdirs = (char**)font;
+	    subdirs = font;
 	    break;
 	default:
 	    fprintf(stderr, "Invalid value passed to xf86cfgLoaderInitList.\n");
-	    subdirs = (char**)generic;
+	    subdirs = generic;
 	    break;
     }
     LoaderSetPath(loaderPath);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.38 2001/02/15 20:31:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.40 2001/05/10 10:17:39 alanh Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -837,7 +837,8 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	return MODE_ERROR;
     }
 
-    mode->HSync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
+    if (mode->HSync <= 0.0)
+	mode->HSync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
     if (monitor->nHsync > 0) {
 	/* Check hsync against the allowed ranges */
 	for (i = 0; i < monitor->nHsync; i++)
@@ -850,8 +851,9 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	    return MODE_HSYNC;
     }
 
-    mode->VRefresh = (mode->SynthClock * 1000.0) /
-	(mode->CrtcHTotal * mode->CrtcVTotal);
+    if (mode->VRefresh <= 0.0)
+	mode->VRefresh = (mode->SynthClock * 1000.0) /
+	    (mode->CrtcHTotal * mode->CrtcVTotal);
     if (monitor->nVrefresh > 0) {
 	/* Check vrefresh against the allowed ranges */
 	for (i = 0; i < monitor->nVrefresh; i++)
