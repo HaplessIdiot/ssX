@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.7 1997/05/31 13:51:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.8 1997/10/25 13:49:59 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1509,7 +1509,7 @@ extern int cfbScreenPrivateIndex;
  * if CFB is built as a module, it shouldn't call libc functions.
  * The following macros should wrap all calls in CFB
  */
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER) && !defined(NOXF86DEFS)
 #define memmove(a,b,c)	xf86memmove(a,b,c)
 #define memcpy(a,b,c)	xf86memcpy(a,b,c)
 #define memset(a,b,c)	xf86memset(a,b,c)

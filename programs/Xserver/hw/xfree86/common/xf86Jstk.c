@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.19 1997/06/15 07:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.20 1997/06/25 08:24:58 hohndel Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -45,7 +45,11 @@
 
 #include "osdep.h"
 #ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#if 0
 #define strdup(a) xf86strdup(a)
+extern char* xf86strdup(const char*);
+#endif
 #endif
 
 /******************************************************************************

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.17 1997/08/26 10:01:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.18 1997/10/25 13:50:45 hohndel Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -86,7 +86,7 @@ struct memAccess linearMemInfo = { CONSOLE_GET_LINEAR_INFO, NULL, NULL,
 				       FALSE, FALSE };
 struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 				   FALSE, FALSE };
-#endif __arm32__
+#endif /* __arm32__ */
 
 #if defined(__NetBSD__) && !defined(MAP_FILE)
 #define MAP_FLAGS MAP_SHARED
@@ -238,7 +238,7 @@ unsigned long Size;
 	    base = xf86MapInfoMap(memInfoP, Base, Size);
 	    return (base);
 	}
-#endif __arm32__
+#endif /* __arm32__ */
 
 	if (!devMemChecked)
 		checkDevMem(FALSE);
@@ -475,7 +475,7 @@ static void xf86MapInfoUnmap(memInfoP, Size)
 	    break;
     }
 }
-#endif __arm32__
+#endif /* __arm32__ */
 
 #ifdef USE_I386_IOPL
 /***************************************************************************/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.13 1997/08/26 10:01:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.14 1997/09/09 10:27:50 hohndel Exp $ */
 
 
 
@@ -110,16 +110,27 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ftell(FP)		xf86ftell(FP)
 #define fwrite(cvp,I1,I2,FP)	xf86fwrite(cvp,I1,I2,FP)
 #define getenv(ccp)		xf86getenv(ccp)
+#undef isalnum
 #define isalnum(i)		xf86isalnum(i)
+#undef isalpha
 #define isalpha(i)		xf86isalpha(i)
+#undef iscntrl
 #define iscntrl(i)		xf86iscntrl(i)
+#undef isdigit
 #define isdigit(i)		xf86isdigit(i)
+#undef isgraph
 #define isgraph(i)		xf86isgraph(i)
+#undef islower
 #define islower(i)		xf86islower(i)
+#undef isprint
 #define isprint(i)		xf86isprint(i)
+#undef ispunct
 #define ispunct(i)		xf86ispunct(i)
+#undef isspace
 #define isspace(i)		xf86isspace(i)
+#undef isupper
 #define isupper(i)		xf86isupper(i)
+#undef isxdigit
 #define isxdigit(i)		xf86isxdigit(i)
 #define labs(l)			xf86labs(l)
 #define log(d)			xf86log(d)
@@ -129,6 +140,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define memcmp(cvp1,cvp2,I)	xf86memcmp(cvp1,cvp2,I)
 #define memcpy(vp,cvp,I)	xf86memcpy(vp,cvp,I)
 #define memmove(vp,cvp,I)	xf86memmove(vp,cvp,I)
+#undef memset
 #define memset(vp,int,I)	xf86memset(vp,int,I)
 #define modf(d,dp)		xf86modf(d,dp)
 #define perror(ccp)		xf86perror(ccp)
@@ -161,7 +173,9 @@ typedef struct _xf86dirent XF86DIRENT;
 #define strtoul(ccp,cpp,i)	xf86strtoul(ccp,cpp,i)
 #define tan(d)			xf86tan(d)
 #define tmpfile()		xf86tmpfile()
+#undef tolower
 #define tolower(i)		xf86tolower(i)
+#undef toupper
 #define toupper(i)		xf86toupper(i)
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #define vfprintf		xf86vfprintf
@@ -176,6 +190,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define bcopy(vp,cvp,I)		xf86memmove(cvp,vp,I)
 #define ffs(i)			xf86ffs(i)
 #define strdup(ccp)		xf86strdup(ccp)
+#undef usleep
 #define usleep(ul)		xf86usleep(ul)
 #undef bzero
 #define bzero(vp,ui)		xf86bzero(vp,ui)

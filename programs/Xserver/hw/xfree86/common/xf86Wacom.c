@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.28 1997/06/25 08:24:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.29 1997/10/25 13:50:15 hohndel Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -54,12 +54,12 @@
 #else
 #include "compiler.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
-#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#endif
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"

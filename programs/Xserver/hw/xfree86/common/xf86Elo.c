@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.20 1997/06/25 08:24:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.21 1997/06/29 07:54:33 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -68,12 +68,12 @@
 #else
 #include "compiler.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
-#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#endif
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "xf86Version.h"

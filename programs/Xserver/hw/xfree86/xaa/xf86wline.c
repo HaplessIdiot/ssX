@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.5 1997/10/25 13:51:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wline.c,v 1.6 1997/11/08 16:24:34 hohndel Exp $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
@@ -21,6 +21,7 @@ Original mi code written by Keith Packard.
 #include "miwideline.h"
 #include "mi.h"
 #define PSZ 8
+#define NOXF86DEFS
 #include "cfb.h"
 
 #ifdef ICEILTEMPDECL

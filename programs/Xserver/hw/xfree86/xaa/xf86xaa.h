@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.18 1997/10/25 13:51:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.19 1997/11/01 15:05:01 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -948,7 +948,7 @@ typedef struct {
     	int		alu,
     	RegionPtr	prgnDst,
     	DDXPointPtr	pptSrc,
-    	unsigned int	planemask
+    	unsigned long	planemask
 #endif
     );
     void (*VerticalLineGXcopyFallBack)(

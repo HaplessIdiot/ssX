@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.9 1997/07/05 08:45:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.10 1997/07/06 05:30:50 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -46,12 +46,12 @@
 #else
 #include "compiler.h"
 
-#ifdef XFree86LOADER
-#include "xf86_libc.h"
-#endif
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#endif
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"

@@ -58,7 +58,7 @@ static /* const */ XExtensionHooks panoramiX_extension_hooks = {
 static XEXT_GENERATE_FIND_DISPLAY (find_display, panoramiX_ext_info,
 				   panoramiX_extension_name, 
 				   &panoramiX_extension_hooks,
-				   NULL, NULL)
+				   0, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, panoramiX_ext_info)
 

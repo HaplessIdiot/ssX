@@ -961,7 +961,7 @@ _XtResourceConfigurationEH (w, client_data, event)
 	 *      resource and value fields.
 	 */
 		if (data) {
-			resource_len = Strtoul (data, &data_ptr, 10);
+			resource_len = Strtoul ((char *)data, &data_ptr, 10);
 			data_ptr++;
 
 			data_ptr[resource_len] = '\0';

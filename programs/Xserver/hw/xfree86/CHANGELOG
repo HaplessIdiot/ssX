@@ -1,4 +1,5 @@
 XFree86 3.9w (16 November 1997)
+1435. Remove some compiler warnings.
 1434. Fix lcPublic state_depend_encoding test in Xlib (#1181, Kaleb Keithley).
 1433. Fix buffer overrun in lib/X11/omGeneric.c (#1180, Kaleb Keithley).
 1432. Add new XINERAMA extension (#1171-1178, Kaleb Keithley).
@@ -5637,4 +5638,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.545 1997/11/09 08:03:41 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.546 1997/11/16 06:18:39 dawes Exp $

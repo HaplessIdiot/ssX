@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.7 1997/03/10 10:11:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.8 1997/05/03 09:15:41 dawes Exp $ */
 
 /*
 
@@ -91,6 +91,7 @@ extern char *getenv();
 
 #ifdef XFree86LOADER
 #include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 /* A convenient shorthand. */
 #ifndef XFree86LOADER
