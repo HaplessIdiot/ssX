@@ -3586,7 +3586,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
    USHORT  ModeIdIndex, ModeNo=0;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
-   unsigned char backupreg=0, backupcr30, backupcr31, backupcr38, backupcr35;
+   unsigned char backupreg=0, backupcr30, backupcr31, backupcr38, backupcr35, backupp40d=0;
    BOOLEAN backupcustom;
 
    SiS_Pr->UseCustomMode = FALSE;
@@ -3710,6 +3710,10 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 	 backupcr31 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x31);
 	 backupcr35 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
 	 backupcr38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
+	 if(SiS_Pr->SiS_VBType & VB_SISVB) {
+	    /* Backup LUT-enable */
+	    backupp40d = SiS_GetReg(SiS_Pr->SiS_Part4Port,0x0d) & 0x08;
+	 }
 	 if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x30,pSiSEnt->CRT2CR30);
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x31,pSiSEnt->CRT2CR31);
@@ -3722,6 +3726,9 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x31,backupcr31);
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x35,backupcr35);
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupcr38);
+	 if(SiS_Pr->SiS_VBType & VB_SISVB) {
+	    SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x0d, ~0x08, backupp40d);
+	 }
 	 SiS_Pr->UseCustomMode = backupcustom;
       }
    }

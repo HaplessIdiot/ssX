@@ -1392,7 +1392,8 @@ SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
    } else {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
       	"No MetaModes given, linking %s modes by default\n",
-	(srel == sisClone) ? "first" : "largest");
+	(srel == sisClone) ? "first" :
+	   (((srel == sisLeftOf) || (srel == sisRightOf)) ? "widest" :  "tallest"));
       return(SiSGenerateModeListFromLargestModes(pScrn, i, j, srel));
    }
 }
@@ -3236,6 +3237,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiSEnt->tvxscale = pSiS->tvxscale;
 	     pSiSEnt->tvyscale = pSiS->tvyscale;
 	     pSiSEnt->CRT1gamma = pSiS->CRT1gamma;
+	     pSiSEnt->CRT1gammaGiven = pSiS->CRT1gammaGiven;
+	     pSiSEnt->XvGammaRed = pSiS->XvGammaRed;
+	     pSiSEnt->XvGammaGreen = pSiS->XvGammaGreen;
+	     pSiSEnt->XvGammaBlue = pSiS->XvGammaBlue;
+	     pSiSEnt->XvGamma = pSiS->XvGamma;
+	     pSiSEnt->XvGammaGiven = pSiS->XvGammaGiven;
 	     pSiSEnt->CRT2gamma = pSiS->CRT2gamma;
 	     pSiSEnt->XvOnCRT2 = pSiS->XvOnCRT2;
 	     pSiSEnt->AllowHotkey = pSiS->AllowHotkey;
@@ -3303,10 +3310,28 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->tvypos = pSiSEnt->tvypos;
 	     pSiS->tvxscale = pSiSEnt->tvxscale;
 	     pSiS->tvyscale = pSiSEnt->tvyscale;
-	     pSiS->CRT1gamma = pSiSEnt->CRT1gamma;
+	     if(!pSiS->CRT1gammaGiven) {
+	        if(pSiSEnt->CRT1gammaGiven)
+	           pSiS->CRT1gamma = pSiSEnt->CRT1gamma;
+	     }
 	     pSiS->CRT2gamma = pSiSEnt->CRT2gamma;
+	     if(!pSiS->XvGammaGiven) {
+	        if(pSiSEnt->XvGammaGiven) {
+		   pSiS->XvGamma = pSiSEnt->XvGamma;
+		   pSiS->XvGammaRed = pSiS->XvGammaRedDef = pSiSEnt->XvGammaRed;
+		   pSiS->XvGammaGreen = pSiS->XvGammaGreenDef = pSiSEnt->XvGammaGreen;
+		   pSiS->XvGammaBlue = pSiS->XvGammaBlueDef = pSiSEnt->XvGammaBlue;
+		}
+	     }
 	     pSiS->XvOnCRT2 = pSiSEnt->XvOnCRT2;
 	     pSiS->enablesisctrl = pSiSEnt->enablesisctrl;
+	     /* Copy gamma brightness to Ent for Xinerama */
+	     pSiSEnt->GammaBriR = pSiS->GammaBriR;
+	     pSiSEnt->GammaBriG = pSiS->GammaBriG;
+	     pSiSEnt->GammaBriB = pSiS->GammaBriB;
+	     pSiSEnt->GammaPBriR = pSiS->GammaPBriR;
+	     pSiSEnt->GammaPBriG = pSiS->GammaPBriG;
+	     pSiSEnt->GammaPBriB = pSiS->GammaPBriB;
 #ifdef SIS_CP
 	     SIS_CP_DRIVER_COPYOPTIONS
 #endif
@@ -3912,12 +3937,38 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        default:
           pSiS->VBFlags &= ~(CRT2_TV | CRT2_LCD | CRT2_VGA);
     }
-    
+
+#ifdef SISDUALHEAD
+    if((!pSiS->DualHeadMode) || (pSiS->SecondHead)) {
+#endif
+       xf86DrvMsg(pScrn->scrnIndex, pSiS->CRT1gammaGiven ? X_CONFIG : X_INFO,
+       	     "CRT1 gamma correction is %s\n",
+             pSiS->CRT1gamma ? "enabled" : "disabled");
+
+       if((pSiS->VGAEngine == SIS_315_VGA) && (!(pSiS->NoXvideo))) {
+          xf86DrvMsg(pScrn->scrnIndex, pSiS->XvGammaGiven ? X_CONFIG : X_INFO,
+       		"Separate Xv gamma correction for CRT1 is %s\n",
+		pSiS->XvGamma ? "enabled" : "disabled");
+	  if(pSiS->XvGamma) {
+	     xf86DrvMsg(pScrn->scrnIndex, pSiS->XvGammaGiven ? X_CONFIG : X_INFO,
+	        "Xv gamma correction: %.3f %.3f %.3f\n",
+		(float)((float)pSiS->XvGammaRed / 1000),
+		(float)((float)pSiS->XvGammaGreen / 1000),
+		(float)((float)pSiS->XvGammaBlue / 1000));
+	     if(!pSiS->CRT1gamma) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		      "Separate Xv gamma corr. only effective if CRT1 gamma corr. is enabled\n");
+	     }
+	  }
+       }
+#ifdef SISDUALHEAD
+    }
+#endif
+
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
-       if( (pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) &&
+       if( (pSiS->VBFlags & VB_SISBRIDGE) &&
            (!((pSiS->VBFlags & VB_30xBDH) && (pSiS->VBFlags & CRT2_LCD))) ) {
-          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	     	"CRT2 gamma correction is %s\n",
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO, "CRT2 gamma correction is %s\n",
 		pSiS->CRT2gamma ? "enabled" : "disabled");
        }
     }
@@ -5207,15 +5258,22 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
     pSiS->pInt = NULL;
 
+    if(pSiS->VGAEngine == SIS_315_VGA) pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTXVGAMMA1;
+
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
     	pSiS->SiS_SD_Flags |= SiS_SD_ISDUALHEAD;
 	if(pSiS->SecondHead)      pSiS->SiS_SD_Flags |= SiS_SD_ISDHSECONDHEAD;
+	else			  pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTXVGAMMA1);
 #ifdef PANORAMIX
-	if(!noPanoramiXExtension) pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
+	if(!noPanoramiXExtension) {
+	   pSiS->SiS_SD_Flags |= SiS_SD_ISDHXINERAMA;
+	   pSiS->SiS_SD_Flags &= ~(SiS_SD_SUPPORTXVGAMMA1);
+	}
 #endif
     }
 #endif
+
 #ifdef SISMERGED
     if(pSiS->MergedFB)      pSiS->SiS_SD_Flags |= SiS_SD_ISMERGEDFB;
 #endif
@@ -6735,7 +6793,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pSiS->FbAddress;
     pScrn->fbOffset = 0;
     
-    pSiS->ResetXv = NULL;
+    pSiS->ResetXv = pSiS->ResetXvGamma = NULL;
 
 #if (XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,0,0)) || (defined(XvExtension))
     if(!pSiS->NoXvideo) {
@@ -6809,8 +6867,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 #endif
 
-
-    /* Wrap some funcs */
+    /* Wrap some funcs and setup remaining SD flags */
 
     pSiS->SiS_SD_Flags &= ~(SiS_SD_PSEUDOXINERAMA);
 #ifdef SISMERGED
@@ -6860,7 +6917,10 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
 
     pSiS->SiS_SD_Flags &= ~SiS_SD_ISDEPTH8;
-    if(pSiS->CurrentLayout.bitsPerPixel == 8) pSiS->SiS_SD_Flags |= SiS_SD_ISDEPTH8;
+    if(pSiS->CurrentLayout.bitsPerPixel == 8) {
+    	pSiS->SiS_SD_Flags |= SiS_SD_ISDEPTH8;
+	pSiS->SiS_SD_Flags &= ~SiS_SD_SUPPORTXVGAMMA1;
+    }
 
     return TRUE;
 }
@@ -10431,7 +10491,7 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        denum = (sr2c & 0x1f) + 1.0;
        myclock = (int)((14318 * (divider / postscalar) * (num / denum)) / 1000);
 
-       pSiS->MiscFlags &= ~MISC_CRT1OVERLAY;
+       pSiS->MiscFlags &= ~(MISC_CRT1OVERLAY | MISC_CRT1OVERLAYGAMMA);
        switch(pSiS->sishw_ext.jChipType) {
          case SIS_300:
          case SIS_540:
@@ -10446,6 +10506,9 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
          case SIS_740:
 	    if(myclock < 175) {
                pSiS->MiscFlags |= MISC_CRT1OVERLAY;
+	       if(myclock < 166) {
+	          pSiS->MiscFlags |= MISC_CRT1OVERLAYGAMMA;
+	       }
             }
             break;
 	 case SIS_315H:
@@ -10458,6 +10521,9 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 case SIS_760:
             if(myclock < 180) {
                pSiS->MiscFlags |= MISC_CRT1OVERLAY;
+	       if(myclock < 166) {
+	          pSiS->MiscFlags |= MISC_CRT1OVERLAYGAMMA;
+	       }
             }
             break;
        }
@@ -10495,6 +10561,11 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        SiSEnableTurboQueue(pScrn);
     }
 #endif
+
+    /* Reset XV gamma correction */
+    if(pSiS->ResetXvGamma) {
+       (pSiS->ResetXvGamma)(pScrn);
+    }
 
     /*  Apply TV settings given by options
            Do this even in DualHeadMode:
