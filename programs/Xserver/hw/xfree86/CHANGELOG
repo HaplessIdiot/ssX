@@ -1,4 +1,5 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 360. Add UK (gb) layout to the dvorak XKB map (#5739, Mike Sulivan).
  359. More work on the NativeGDI server for Cygwin/XFree86. The span routines
       are nearing completion (albeit they run slowly until the higher
       level X primitive functions are implemented). The obvious issue with
@@ -17497,7 +17498,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2796 2003/08/07 12:49:13 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2797 2003/08/07 23:47:55 alanh Exp $
 
 
 

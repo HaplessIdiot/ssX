@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/dk' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/dvorak,v 1.1 2002/11/26 01:43:25 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/dvorak,v 1.2 2003/04/19 12:22:11 pascal Exp $
 
 partial default alphanumeric_keys
 xkb_symbols "basic" {
@@ -142,3 +142,19 @@ partial alphanumeric_keys
 xkb_symbols "sv" {
     include "pc/dvorak(se)"
 };
+
+// Dvorak (UK) keymap (by odaen) allowing the usage of
+// the £ and ? key and swapping the @ and " keys.
+
+partial alphanumeric_keys
+xkb_symbols "gb" {
+    include "pc/dvorak(basic)"
+
+    key <BKSL> { [ numbersign,	asciitilde	] };
+    key <AE02> { [	    2,	quotedbl,  twosuperior,   NoSymbol	] };
+    key <AE03> { [	    3,	sterling,  threesuperior, NoSymbol	] };
+    key <AE04> { [	    4,	dollar,    EuroSign,      NoSymbol	] };
+    key <LSGT> { [  backslash,	bar		] };
+    key <AD01> { [ apostrophe,	at		] };
+};
+
