@@ -29,7 +29,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/lib/X11/udcInf.c,v 1.3 1998/08/20 08:55:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/udcInf.c,v 1.4 1998/10/03 08:41:45 dawes Exp $ */
 
 #include <stdio.h>
 #include <locale.h>
@@ -385,14 +385,15 @@ XlcCharSet 	charset;
 char *src;
 int size;
 {
-    int name_len,seq_len,i;
+    int name_len,seq_len,rest_len,i;
     name_len = 2 + strlen(charset->encoding_name) + 1;
     seq_len = strlen(charset->ct_sequence);
-    if (name_len + seq_len + strlen(src) >= size)
+    rest_len = strlen(charset->encoding_name) + 1 + strlen(src);
+    if (name_len + seq_len + strlen(src) >= size || rest_len >= 0x4000)
 	return False;
     strcpy(from,charset->ct_sequence);
-    from[seq_len]    = name_len / 128 + 128;
-    from[seq_len+1]  = name_len % 128 + 128;
+    from[seq_len]    = (rest_len >> 7) + 128;
+    from[seq_len+1]  = (rest_len & 0x7f) + 128;
     strcpy(&from[seq_len + 2],charset->encoding_name);
     from[seq_len+name_len-1]  = 0x02;  /* STX */
     strcpy(&from[seq_len + name_len],src);

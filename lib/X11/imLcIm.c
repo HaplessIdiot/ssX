@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcIm.c,v 1.6 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcIm.c,v 1.7 2000/11/28 18:49:37 dawes Exp $ */
 
 #include <stdio.h>
 /*
@@ -146,6 +146,14 @@ _XimLocalIMFree(im)
     if (im->private.local.cstoutf8_conv) {
 	_XlcCloseConverter(im->private.local.cstoutf8_conv);
 	im->private.local.cstoutf8_conv = NULL;
+    }
+    if (im->private.local.ucstoc_conv) {
+	_XlcCloseConverter(im->private.local.ucstoc_conv);
+	im->private.local.ucstoc_conv = NULL;
+    }
+    if (im->private.local.ucstoutf8_conv) {
+	_XlcCloseConverter(im->private.local.ucstoutf8_conv);
+	im->private.local.ucstoutf8_conv = NULL;
     }
     return;
 }
@@ -283,7 +291,11 @@ _XimLocalOpenIM(im)
 
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
 	goto Open_Error;
-    private->ucs_conv = conv;
+    private->ucstoc_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNUtf8String)))
+	goto Open_Error;
+    private->ucstoutf8_conv = conv;
 
     im->methods = &Xim_im_local_methods;
     private->current_ic = (XIC)NULL;

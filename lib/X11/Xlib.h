@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.16 2000/01/29 18:58:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.17 2000/11/28 18:49:27 dawes Exp $ */
 
 
 /*
@@ -4246,7 +4246,7 @@ extern int XWriteBitmapFile(
 extern Bool XSupportsLocale (void);
 
 extern char *XSetLocaleModifiers(
-    const char*		modifier_list
+    const char*		/* modifier_list */
 );
 
 extern XOM XOpenOM(

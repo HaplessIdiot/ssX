@@ -35,7 +35,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                  miyamoto@jrd.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/XimintP.h,v 1.4 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XimintP.h,v 1.5 2000/11/28 18:49:26 dawes Exp $ */
 
 #ifndef _XIMINTP_H
 #define _XIMINTP_H
@@ -109,7 +109,8 @@ typedef struct _XimProtoPrivateRec {
     XlcConv			 cstomb_conv;
     XlcConv			 cstowc_conv;
     XlcConv			 cstoutf8_conv;
-    XlcConv			 ucs_conv;
+    XlcConv			 ucstoc_conv;
+    XlcConv			 ucstoutf8_conv;
 
     Window			 im_window;
     XIMID			 imid;

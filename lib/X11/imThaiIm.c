@@ -32,7 +32,7 @@ THIS SOFTWARE.
 	                          frankyling@hgrd01.enet.dec.com
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiIm.c,v 1.4 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiIm.c,v 1.5 2000/11/28 18:49:39 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -124,7 +124,11 @@ _XimThaiOpenIM(im)
 
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
 	goto Open_Error;
-    private->ucs_conv = conv;
+    private->ucstoc_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNUtf8String)))
+	goto Open_Error;
+    private->ucstoutf8_conv = conv;
 
     im->methods = &Xim_im_thai_methods;
     private->current_ic = (XIC)NULL;
@@ -195,6 +199,14 @@ _XimThaiIMFree(im)
     if (im->private.local.cstoutf8_conv) {
 	_XlcCloseConverter(im->private.local.cstoutf8_conv);
 	im->private.local.cstoutf8_conv = NULL;
+    }
+    if (im->private.local.ucstoc_conv) {
+	_XlcCloseConverter(im->private.local.ucstoc_conv);
+	im->private.local.ucstoc_conv = NULL;
+    }
+    if (im->private.local.ucstoutf8_conv) {
+	_XlcCloseConverter(im->private.local.ucstoutf8_conv);
+	im->private.local.ucstoutf8_conv = NULL;
     }
     return;
 }

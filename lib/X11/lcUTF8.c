@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.8 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.9 2000/11/28 18:49:50 dawes Exp $ */
 
 /*
  * This file contains:
@@ -198,9 +198,9 @@ typedef struct _Utf8ConvRec {
 #include "lcUniConv/tcvn.h"
 #include "lcUniConv/georgian_academy.h"
 #include "lcUniConv/georgian_ps.h"
-#include "lcUniConv/microsoft_cp1251.h"
-#include "lcUniConv/microsoft_cp1255.h"
-#include "lcUniConv/microsoft_cp1256.h"
+#include "lcUniConv/cp1251.h"
+#include "lcUniConv/cp1255.h"
+#include "lcUniConv/cp1256.h"
 #include "lcUniConv/tatar_cyr.h"
 
 typedef struct {
@@ -276,6 +276,9 @@ static Utf8ConvRec all_charsets[] = {
     { "JISX0208.1983-0", NULLQUARK,
 	jisx0208_mbtowc, jisx0208_wctomb
     },
+    { "JISX0208.1990-0", NULLQUARK,
+	jisx0208_mbtowc, jisx0208_wctomb
+    },
     { "JISX0212.1990-0", NULLQUARK,
 	jisx0212_mbtowc, jisx0212_wctomb
     },
@@ -319,13 +322,13 @@ static Utf8ConvRec all_charsets[] = {
 	iso8859_9e_mbtowc, iso8859_9e_wctomb
     },
     { "MICROSOFT-CP1251", NULLQUARK,
-	microsoft_cp1251_mbtowc, microsoft_cp1251_wctomb
+	cp1251_mbtowc, cp1251_wctomb
     },
     { "MICROSOFT-CP1255", NULLQUARK,
-	microsoft_cp1255_mbtowc, microsoft_cp1255_wctomb
+	cp1255_mbtowc, cp1255_wctomb
     },
     { "MICROSOFT-CP1256", NULLQUARK,
-	microsoft_cp1256_mbtowc, microsoft_cp1256_wctomb
+	cp1256_mbtowc, cp1256_wctomb
     },
     { "BIG5-0", NULLQUARK,
 	big5_0_mbtowc, big5_0_wctomb
@@ -380,7 +383,7 @@ cstoutf8(
     int num_args)
 {
     XlcCharSet charset;
-    char *name;
+    const char *name;
     Utf8Conv convptr;
     int i;
     unsigned char const *src;
@@ -500,7 +503,7 @@ create_tocs_conv(
 	XlcCharSet *charsets = codeset_list[i]->charset_list;
 	int num_charsets = codeset_list[i]->num_charsets;
 	for (j = 0; j < num_charsets; j++) {
-	    char *name = charsets[j]->encoding_name;
+	    const char *name = charsets[j]->encoding_name;
 	    /* If it wasn't already encountered... */
 	    for (k = charset_num-1; k >= 0; k--)
 		if (!strcmp(preferred[k]->name, name))
@@ -914,6 +917,7 @@ open_strtoutf8(
 }
 
 /* Support for the input methods. */
+
 XPointer
 _Utf8GetConvByName(
     const char *name)
@@ -934,7 +938,7 @@ _Utf8GetConvByName(
     return (XPointer) NULL;
 }
 
-/* from XlcNUcsChar to XlcNChar  needed for input methods */
+/* from XlcNUcsChar to XlcNChar, needed for input methods */
 
 static XlcConv
 create_ucstocs_conv(
@@ -1055,6 +1059,67 @@ open_ucstocs1(
     return create_ucstocs_conv(from_lcd, &methods_ucstocs1);
 }
 
+/* from XlcNUcsChar to XlcNUtf8String, needed for input methods */
+
+static int
+ucstoutf8(
+    XlcConv conv,
+    XPointer *from,
+    int *from_left,
+    XPointer *to,
+    int *to_left,
+    XPointer *args,
+    int num_args)
+{
+    const ucs4_t *src;
+    const ucs4_t *srcend;
+    unsigned char *dst;
+    unsigned char *dstend;
+    int unconv_num;
+
+    if (from == NULL || *from == NULL)
+	return 0;
+
+    src = (const ucs4_t *) *from;
+    srcend = src + *from_left;
+    dst = (unsigned char *) *to;
+    dstend = dst + *to_left;
+    unconv_num = 0;
+
+    while (src < srcend) {
+	int count = utf8_wctomb(NULL, dst, *src, dstend-dst);
+	if (count == RET_TOOSMALL)
+	    break;
+	if (count == RET_ILSEQ)
+	    unconv_num++;
+	src++;
+	dst += count;
+    }
+
+    *from = (XPointer) src;
+    *from_left = srcend - src;
+    *to = (XPointer) dst;
+    *to_left = dstend - dst;
+
+    return unconv_num;
+}
+
+static XlcConvMethodsRec methods_ucstoutf8 = {
+    close_converter,
+    ucstoutf8,
+    NULL
+};
+
+static XlcConv
+open_ucstoutf8(
+    XLCd from_lcd,
+    const char *from_type,
+    XLCd to_lcd,
+    const char *to_type)
+{
+    return create_conv(from_lcd, &methods_ucstoutf8);
+}
+
 /* Registers UTF-8 converters for a non-UTF-8 locale. */
 void
 _XlcAddUtf8Converters(
@@ -1066,6 +1131,7 @@ _XlcAddUtf8Converters(
     _XlcSetConverter(lcd, XlcNString, lcd, XlcNUtf8String, open_strtoutf8);
     _XlcSetConverter(lcd, XlcNUtf8String, lcd, XlcNString, open_utf8tostr);
     _XlcSetConverter(lcd, XlcNUcsChar,    lcd, XlcNChar, open_ucstocs1);
+    _XlcSetConverter(lcd, XlcNUcsChar,    lcd, XlcNUtf8String, open_ucstoutf8);
 }
 
 /***************************************************************************/
@@ -1333,7 +1399,7 @@ cstowcs(
     int num_args)
 {
     XlcCharSet charset;
-    char *name;
+    const char *name;
     Utf8Conv convptr;
     int i;
     unsigned char const *src;
@@ -1693,7 +1759,7 @@ create_tofontcs_conv(
         }
 	while (count-- > 0){
 	    XlcCharSet charset = _XlcGetCharSet(*value++);
-	    char *name = charset->encoding_name;
+	    const char *name = charset->encoding_name;
 	    /* If it wasn't already encountered... */
 	    for (k = num - 1; k >= 0; k--)
 		if (!strcmp(preferred[k]->name, name))

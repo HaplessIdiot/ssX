@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.15 2000/08/09 23:40:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.16 2000/11/28 18:49:44 dawes Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -446,8 +446,8 @@ cmp_esc_sequence(
 {
     int seq_len, name_len, total_len;
     unsigned char byte_m, byte_l;
-    char *ct_sequence =  charset->ct_sequence;
-    char *encoding_name = charset->encoding_name;
+    const char *ct_sequence =  charset->ct_sequence;
+    const char *encoding_name = charset->encoding_name;
 
     /* check esc sequence */
     if ( !(seq_len = strlen(ct_sequence) ) )
@@ -462,13 +462,13 @@ cmp_esc_sequence(
     /*
      *   Non-Standard Character Set Encoding
      *
-     * +-----+-----+-----+-----+-----+-----+-----+----   ----+-----+-----+
-     * |     esc sequence      |  M  |  L  |     encoding name     | STX |
-     * +-----+-----+-----+-----+-----+-----+-----+----   ----+-----+-----+
-     *           4bytes         1byte 1byte     variable length     1byte 
-     * 	                   |                                         |
-     * 	                   +-----------------------------------------+
-     * 	                     name length  = ((M - 128) * 128) + (L - 128)
+     * +--- ---+-----+-----+-----+----   ----+-----+-----+-------   ------+
+     * | ctseq |  M  |  L  |     encoding name     | STX |     contents   |
+     * +--- ---+-----+-----+-----+----   ----+-----+-----+-------   ------+
+     *  4bytes  1byte 1byte     variable length     1byte  variable length
+     * 	                   |                                              |
+     * 	                   +----------------------------------------------+
+     * 	                     rest length  = ((M - 128) * 128) + (L - 128)
      */
 
     /* get length of encoding name */
@@ -1074,7 +1074,7 @@ wcstocts(
 
     CodeSet codeset;
     XlcCharSet charset, old_charset = NULL;
-    char *ct_sequence;
+    const char *ct_sequence;
 
     const wchar_t *inbufptr = (const wchar_t *) *from;
     char *outbufptr = *to;

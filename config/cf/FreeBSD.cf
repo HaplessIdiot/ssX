@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.99 2000/11/14 23:58:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.100 2000/11/30 23:29:52 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -511,6 +511,17 @@ InstallManPageAliasesBase(file,destdir,aliases)
  
 #ifndef PamLibraries
 #define PamLibraries		-lpam DlLibrary
+#endif
+
+#ifndef HasCookieMaker
+/* Which versions have /dev/urandom? */
+#if OSMajorVersion >= 4
+#define HasCookieMaker		YES
+#define MkCookieCmd \
+	'dd if=/dev/urandom bs=16 count=1 2>/dev/null | hexdump -e \\"%08x\\"'
+#else
+#define HasCookieMaker		NO
+#endif
 #endif
 
 /*

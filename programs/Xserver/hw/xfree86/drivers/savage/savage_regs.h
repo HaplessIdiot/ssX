@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.1 2000/12/02 01:16:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_regs.h,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
 
 #ifndef _SAVAGE_REGS_H
 #define _SAVAGE_REGS_H
@@ -11,19 +11,6 @@
 
 #define S3_SAVAGE_SERIES(chip)    ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE2000))
 
-/* PCI ids. */
-
-#define PCI_S3_VENDOR_ID	0x5333
-#define PCI_SAVAGE3D            0x8a20
-#define PCI_SAVAGE3D_MV         0x8a21
-#define PCI_SAVAGE4             0x8a22
-#define PCI_PROSAVAGE_133	0x8a25
-#define PCI_PROSAVAGE_K133	0x8a26
-#define PCI_SAVAGE2000		0x9102
-#define PCI_SAVAGE_MX_MV	0x8c10
-#define PCI_SAVAGE_MX		0x8c11
-#define PCI_SAVAGE_IX_MV	0x8c12
-#define PCI_SAVAGE_IX		0x8c13
 
 /* Chip tags.  These are used to group the adapters into 
  * related families.

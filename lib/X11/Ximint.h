@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.6 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.7 2000/11/28 18:49:25 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -68,7 +68,8 @@ typedef struct _XimCommonPrivateRec {
     XlcConv		cstomb_conv;
     XlcConv		cstowc_conv;
     XlcConv		cstoutf8_conv;
-    XlcConv		ucs_conv;
+    XlcConv		ucstoc_conv;
+    XlcConv		ucstoutf8_conv;
 } XimCommonPrivateRec;
 
 typedef union _XIMPrivateRec {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.1 2000/12/02 01:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -87,16 +87,16 @@ DriverRec SAVAGE =
 /* Supported chipsets */
 
 static SymTabRec SavageChips[] = {
-    { PCI_SAVAGE4,		"Savage4" },
-    { PCI_SAVAGE3D,		"Savage3D" },
-    { PCI_SAVAGE3D_MV,		"Savage3D-MV" },
-    { PCI_SAVAGE2000,		"Savage2000" },
-    { PCI_SAVAGE_MX_MV,		"Savage/MX-MV" },
-    { PCI_SAVAGE_MX,		"Savage/MX" },
-    { PCI_SAVAGE_IX_MV,		"Savage/IX-MV" },
-    { PCI_SAVAGE_IX,		"Savage/IX" },
-    { PCI_PROSAVAGE_133,	"ProSavage PM133" },
-    { PCI_PROSAVAGE_K133,	"ProSavage KM133" },
+    { PCI_CHIP_SAVAGE4,		"Savage4" },
+    { PCI_CHIP_SAVAGE3D,	"Savage3D" },
+    { PCI_CHIP_SAVAGE3D_MV,	"Savage3D-MV" },
+    { PCI_CHIP_SAVAGE2000,	"Savage2000" },
+    { PCI_CHIP_SAVAGE_MX_MV,	"Savage/MX-MV" },
+    { PCI_CHIP_SAVAGE_MX,	"Savage/MX" },
+    { PCI_CHIP_SAVAGE_IX_MV,	"Savage/IX-MV" },
+    { PCI_CHIP_SAVAGE_IX,	"Savage/IX" },
+    { PCI_CHIP_PROSAVAGE_PM,	"ProSavage PM133" },
+    { PCI_CHIP_PROSAVAGE_KM,	"ProSavage KM133" },
     { -1,			NULL }
 };
 
@@ -112,16 +112,16 @@ static SymTabRec SavageChipsets[] = {
 /* This table maps a PCI device ID to a chipset family identifier. */
 
 static PciChipsets SavagePciChipsets[] = {
-    { S3_SAVAGE3D,	PCI_SAVAGE3D,		RES_SHARED_VGA },
-    { S3_SAVAGE3D,	PCI_SAVAGE3D_MV, 	RES_SHARED_VGA },
-    { S3_SAVAGE4,	PCI_SAVAGE4,		RES_SHARED_VGA },
-    { S3_SAVAGE2000,	PCI_SAVAGE2000,		RES_SHARED_VGA },
-    { S3_SAVAGE_MX,	PCI_SAVAGE_MX_MV,	RES_SHARED_VGA },
-    { S3_SAVAGE_MX,	PCI_SAVAGE_MX,		RES_SHARED_VGA },
-    { S3_SAVAGE_MX,	PCI_SAVAGE_IX_MV,	RES_SHARED_VGA },
-    { S3_SAVAGE_MX,	PCI_SAVAGE_IX,		RES_SHARED_VGA },
-    { S3_PROSAVAGE,	PCI_PROSAVAGE_133,	RES_SHARED_VGA },
-    { S3_PROSAVAGE,	PCI_PROSAVAGE_K133,	RES_SHARED_VGA },
+    { S3_SAVAGE3D,	PCI_CHIP_SAVAGE3D,	RES_SHARED_VGA },
+    { S3_SAVAGE3D,	PCI_CHIP_SAVAGE3D_MV, 	RES_SHARED_VGA },
+    { S3_SAVAGE4,	PCI_CHIP_SAVAGE4,	RES_SHARED_VGA },
+    { S3_SAVAGE2000,	PCI_CHIP_SAVAGE2000,	RES_SHARED_VGA },
+    { S3_SAVAGE_MX,	PCI_CHIP_SAVAGE_MX_MV,	RES_SHARED_VGA },
+    { S3_SAVAGE_MX,	PCI_CHIP_SAVAGE_MX,	RES_SHARED_VGA },
+    { S3_SAVAGE_MX,	PCI_CHIP_SAVAGE_IX_MV,	RES_SHARED_VGA },
+    { S3_SAVAGE_MX,	PCI_CHIP_SAVAGE_IX,	RES_SHARED_VGA },
+    { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_PM,	RES_SHARED_VGA },
+    { S3_PROSAVAGE,	PCI_CHIP_PROSAVAGE_KM,	RES_SHARED_VGA },
     { -1,		-1,			RES_UNDEFINED }
 };
 
@@ -509,7 +509,7 @@ static Bool SavageProbe(DriverPtr drv, int flags)
     if (xf86GetPciVideoInfo() == NULL)
 	return FALSE;
 
-    numUsed = xf86MatchPciInstances("SAVAGE", PCI_S3_VENDOR_ID,
+    numUsed = xf86MatchPciInstances("SAVAGE", PCI_VENDOR_S3,
 				    SavageChipsets, SavagePciChipsets,
 				    devSections, numDevSections, drv,
 				    &usedChips);
@@ -629,7 +629,17 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* TODO check for supporting DirectColor at > 8bpp */
+    if (!xf86SetDefaultVisual(pScrn, -1)) {
+	return FALSE;
+    } else {
+	/* We don't currently support DirectColor at > 8bpp */
+	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+		       " (%s) is not supported at depth %d\n",
+		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+	    return FALSE;
+	}
+    }
 
     pScrn->progClock = TRUE;
 

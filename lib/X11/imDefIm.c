@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.5 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.6 2000/11/28 18:49:35 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -1053,6 +1053,14 @@ _XimProtoIMFree(im)
 	_XlcCloseConverter(im->private.proto.cstoutf8_conv);
 	im->private.proto.cstoutf8_conv = NULL;
     }
+    if (im->private.proto.ucstoc_conv) {
+	_XlcCloseConverter(im->private.proto.ucstoc_conv);
+	im->private.proto.ucstoc_conv = NULL;
+    }
+    if (im->private.proto.ucstoutf8_conv) {
+	_XlcCloseConverter(im->private.proto.ucstoutf8_conv);
+	im->private.proto.ucstoutf8_conv = NULL;
+    }
 
 #ifdef XIM_CONNECTABLE
     if (!IS_SERVER_CONNECTED(im) && IS_RECONNECTABLE(im)) {
@@ -1685,7 +1693,11 @@ _XimGetEncoding(im, buf, name, name_len, detail, detail_len)
 
     if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNChar)))
 	return False;
-    private->ucs_conv = conv;
+    private->ucstoc_conv = conv;
+
+    if (!(conv = _XlcOpenConverter(lcd,	XlcNUcsChar, lcd, XlcNUtf8String)))
+	return False;
+    private->ucstoutf8_conv = conv;
 
     return True;
 }

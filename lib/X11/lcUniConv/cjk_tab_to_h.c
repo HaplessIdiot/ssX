@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /*
  * Generates a CJK character set table from a .TXT table as found on
  * ftp.unicode.org or in the X nls directory.
@@ -202,7 +204,7 @@ static void output_charset2uni (const char* name, Encoding* enc)
   printf("\n");
 
   printf("static int\n");
-  printf("%s_mbtowc (conv_t conv, wchar_t *pwc, const unsigned char *s, int n)\n", name);
+  printf("%s_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)\n", name);
   printf("{\n");
   printf("  unsigned char c1 = s[0];\n");
   printf("  if (");
@@ -243,7 +245,7 @@ static void output_charset2uni (const char* name, Encoding* enc)
   }
   printf("        }\n");
   printf("        if (wc != 0xfffd) {\n");
-  printf("          *pwc = (wchar_t) wc;\n");
+  printf("          *pwc = (ucs4_t) wc;\n");
   printf("          return 2;\n");
   printf("        }\n");
   printf("      }\n");
@@ -355,7 +357,7 @@ static void output_uni2charset_dense (const char* name, Encoding* enc)
     if (p >= 0)
       printf("\n");
   }
-  printf("static int\n%s_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)\n", name);
+  printf("static int\n%s_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)\n", name);
   printf("{\n");
   printf("  if (n >= 2) {\n");
   printf("    unsigned short c = 0;\n");
@@ -494,7 +496,7 @@ static void output_uni2charset_sparse (const char* name, Encoding* enc)
   printf("\n");
 
   printf("static int\n");
-  printf("%s_wctomb (conv_t conv, unsigned char *r, wchar_t wc, int n)\n", name);
+  printf("%s_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n)\n", name);
   printf("{\n");
   printf("  if (n >= 2) {\n");
   printf("    const Summary16 *summary = NULL;\n");

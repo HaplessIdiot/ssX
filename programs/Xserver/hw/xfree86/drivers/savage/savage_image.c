@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_savage/s3bitmap.c,v 1.1.2.1 1999/07/30 11:21:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_image.c,v 1.1 2000/12/02 01:16:14 dawes Exp $ */
 
 #include "savage_driver.h"
 #include "xaarop.h"
@@ -82,7 +82,7 @@ SavageWriteBitmapCPUToScreenColorExpand (
         cmd |= BCI_CMD_SRC_TRANSPARENT;
 
     BCI_SEND(cmd);
-    BCI_SEND(BCI_CLIP_LR(x, x+w-1));
+    BCI_SEND(BCI_CLIP_LR(x+skipleft, x+w-1));
     BCI_SEND(fg);
     if( bg != -1 )
 	BCI_SEND(bg);
@@ -90,8 +90,6 @@ SavageWriteBitmapCPUToScreenColorExpand (
     /* Bitmaps come in in units of DWORDS, LSBFirst.  This is exactly */
     /* reversed of what we expect.  */
 
-    x -= skipleft;
-    w += skipleft;
     count = (w + 31) / 32;
 /*    src += ((srcx & ~31) / 8); */
 
@@ -138,6 +136,9 @@ SavageSetupForImageWrite(
 
     cmd |= XAACopyROP[rop] << 16;
 
+    if( transparency_color != -1 )
+        cmd |= BCI_CMD_SRC_TRANSPARENT;
+
     psav->SavedBciCmd = cmd;
     psav->SavedBgColor = transparency_color;
 }
@@ -159,7 +160,9 @@ void SavageSubsequentImageWriteRect
     count = ((w * pScrn->bitsPerPixel + 31) / 32) * h;
     WaitQueue( count );
     BCI_SEND(psav->SavedBciCmd);
-    BCI_SEND(BCI_CLIP_LR(x, x+w));
+    BCI_SEND(BCI_CLIP_LR(x+skipleft, x+w-1));
+    if( psav->SavedBgColor != -1 )
+        BCI_SEND(psav->SavedBgColor);
     BCI_SEND(BCI_X_Y(x, y));
     BCI_SEND(BCI_W_H(w, h));
 }

@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcConv.c,v 1.3 2000/02/12 02:54:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcConv.c,v 1.4 2000/11/28 18:49:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -162,22 +162,25 @@ indirect_convert(
 
 	unconv_num += ret;
 
-	length = cs_left = cs - buf;
-	cs = buf;
+	length = cs - buf;
+	if (length > 0) {
+	    cs_left = length;
+	    cs = buf;
 
-	tmp_args[0] = (XPointer) charset;
+	    tmp_args[0] = (XPointer) charset;
 
-	ret = (*to_conv->methods->convert)(to_conv, &cs, &cs_left, to, to_left,
-					   tmp_args, 1);
-	if (ret < 0) {
-	    unconv_num += length / charset->char_size;
-	    continue;
+	    ret = (*to_conv->methods->convert)(to_conv, &cs, &cs_left, to, to_left,
+					       tmp_args, 1);
+	    if (ret < 0) {
+		unconv_num += length / (charset->char_size > 0 ? charset->char_size : 1);
+		continue;
+	    }
+
+	    unconv_num += ret;
+
+	    if (*to_left < 1)
+		break;
 	}
-
-	unconv_num += ret;
-
-	if (*to_left < 1)
-	    break;
     }
 
     return unconv_num;

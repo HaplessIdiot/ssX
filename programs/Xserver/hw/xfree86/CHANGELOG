@@ -1,8 +1,81 @@
-XFree86 4.0.1h (xx December 2000)
+XFree86 4.0.1h (4 December 2000)
+1085. Updates for Hurd support (#A.209, Marcus Brinkmann).
+1084. Bump the minor revisions of libXmu (UTF8_STRING) and libX11
+      (Xutf8LookupString).
+1083. Fixes for all known bugs in the CompoundText parser and generator,
+      including:
+       * While adding a charset:
+         - Adding a charset with two different escape sequences (e.g.
+           ISO-8859-14) led to broken behaviour of the converter. Moreover
+           the second added would have priority over the first added.
+         - If an invalid escape sequence was detected by _XlcParseCharSet, it
+           was still used when generating compound text.
+         - Extended segment charsets with varying number of bytes per character
+           were treated like those with 1 byte per character.
+         - _XlcAddCT failed to copy its ct_sequence argument, thus leading to
+           bugs when this argument was a dynamically allocated string.
+         - Missing detection of different charsets having the same escape
+           sequence.
+       * Parsing Compound Text:
+         - The functions _XlcParseCT and _XlcGetCTInfo did not perform range
+           checks on the strings being parsed. Danger of core dump through
+           out-of-bounds string access if a malicious client provides malformed
+           text.
+         - Builtin extended segment charsets were not recognized because the
+           strncmp in _XlcGetCTInfo was returning false most of the time, due
+           to the embedded length bytes.
+         - Extended segment charsets in general would not be deactivated after
+           the specified number of bytes.
+         - In _XlcCheckCTSequence, extended segments with invalid embedded
+           length bytes would lead to out-of-bounds string accesses as well.
+         - Unrecognized escape sequences did not lead to a return value > 0.
+         - Left-to-right and right-to-left indicators (starting with 0x9b) were
+           just ignored, without leading to a return value > 0.
+         - If the source string was larger than the intermediate buffer,
+           multibyte characters could be split into pieces, leading to
+           conversion errors.
+       * Generating Compound Text:
+         - The length embedded in an extended segment prefix was always wrong.
+         - Long strings could give rise to extended segments with a length that
+           doesn't fit in the allowed 14 bits.
+         - After an extended segment, GL or GR designators would unnecessarily
+           be repeated.
+         - Bytes in the range 0x81..0x88, 0x8b..0x9a, 0x9c..0x9f in multibyte
+           encodings could not be output, would be thrown away.
+         - Byte 0x9b could not be output in the UTF-8 charset.
+       * udcInf.c was generating invalid Compound Text (invalid length in
+         extended segment).
+       * lcConv.c: If in the indirect converter, the first step led to no
+         output, the second step would still be called, possibly leading to
+         out-of-bounds accesses.
+       * lcUTF8.c: had knowledge about JISX0208.1983-0 but not about
+         JISX0208.1990-0.
+      (#4333, Bruno Haible).
+1082. Fix documentation for XSetOMValues() (#4332, Bruno Haible).
+1081. Fix namespace polution in <X11/Xlib.h> introduced with patch #4293
+      (#4331, Bruno Haible).
+1080. Fix a bug in the newly introduced Xutf8LookupString() function that
+      loses input not representable in the locale encoding (#4330,
+      Bruno Haible).
+1079. Avoid four new gcc warnings about const in lcUTF8.c introduced by
+      patch #4293 (#4329, Bruno Haible).
+1078. Fix some additional cases of confusing local typedef for wchar_t
+      (#4328, Bruno Haible).
+1077. Fix some round-trip conversion errors in COMPOUND_TEXT -> UTF8_STRING ->
+      COMPOUND_TEXT due to wrong tables introduced by patches #4214, 4215
+      (#4327, Pablo Saratxaga).
+1076. Cygwin update for building Xrender DLL (#4326, Suhaib M. Siddiqi).
+1075. Fix an undefined SUBDIRS in xc/lib/GL/mesa/src/drv/Imakefile when
+      compiling on something other than x86, alpha or sparc (#4325,
+      Brian Paul).
+1074. Don't have the neomagic driver disable stretching when a mode that
+      fills the panel is selected (#4324, Andrew C. Aitchison).
+1073. Fix a bug in Xlib's _XimLocalMbLookupString() that causes a crash when
+      a zero keycode keypress event is received (#4322, HIBINO Kei).
 1072. NetBSD doesn't have perl in its default install (Matthieu Herrb).
 1071. Add Xft support to xditview with #ifdefs (Keith Packard)
 1070. Add a MIT-MAGIC-COOKIE-1 generator to startx for NetBSD 1.5 and OpenBSD 
-      and make mkcookie support more generic (Matthieu Herrb).
+      and FreeBSD and make mkcookie support more generic (Matthieu Herrb).
 1069. Update OpenBSD and NetBSD docs (Matthieu Herrb).
 1068. Clean up r128_video.c again (Marc La France).
 1067. Fix ATI clock generator recognition when an adapter BIOS cannot be
@@ -15,7 +88,8 @@ XFree86 4.0.1h (xx December 2000)
 1063. Fix for FreeBSD sysmouse support (#4317, from FreeBSD ports collection).
 1062. Enable the ru_SU local entries for FreeBSD (based on patch from FreeBSD
       ports collection).
-1061. Driver for the S3 Savage family of chips (#4315, 4316, Tim Roberts).
+1061. Driver for the S3 Savage family of chips (#4315, 4316, 4319-4321,
+      Tim Roberts).
 1060. Add xkb definitions for the Logitech cordless keyboard (#4314,
       Michel Goraczko).
 1059. Add support for "unicode keysym" to XKeysymToString() and
@@ -61,7 +135,8 @@ XFree86 4.0.1h (xx December 2000)
       linked servers) (David Dawes, from VA's 7.0.1).
 1042. Update the i810 driver to check the max available GART memory
       (Jeff Hartmann, David Dawes, from VA's 7.0.1).
-1041. Resync DRI code/drivers with the DRI CVS (VA Linux).
+1041. Resync DRI code/drivers with the DRI CVS (VA Linux).  Includes
+      3dfx driver updates (Daryll Strauss).
 1040. Fix a couple of clipping problems on the Trident CyberBlade/Blade3d
       chipsets (Alan Hourihane).
 1039. Fix a couple of Alpha related issues (Jay Estabrook).
@@ -11803,4 +11878,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1438 2000/12/03 05:20:50 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1439 2000/12/03 16:14:08 herrb Exp $

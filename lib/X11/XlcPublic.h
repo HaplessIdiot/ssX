@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.6 2000/11/28 17:25:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.7 2000/11/28 18:49:26 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -41,22 +41,120 @@
 
 #include "Xlcint.h"
 
+
+/*
+ * Character sets.
+ */
+
+/* Every character set has a "side". It denotes the range of byte values for
+   which the character set is responsible. This means that the character
+   set's encoded characters will only assumes bytes within the range, and
+   that the character set can be used simultaneously with another character
+   set responsible for a disjoint range. */
+typedef enum {
+    XlcUnknown,
+    XlcC0,		/* responsible for values 0x00..0x1F */
+    XlcGL,		/* responsible for values 0x00..0x7F or 0x20..0x7F */
+    XlcC1,		/* responsible for values 0x80..0x9F */
+    XlcGR,		/* responsible for values 0x80..0xFF or 0xA0..0xFF */
+    XlcGLGR,		/* responsible for values 0x00..0xFF */
+    XlcOther,		/* unused */
+    XlcNONE
+} XlcSide;
+
+/* Data read from XLC_LOCALE files.
+   XXX Apparently superseded by _XUDCGlyphRegion. */
+typedef struct _UDCArea {
+    unsigned long	start;
+    unsigned long	end;
+} UDCAreaRec, *UDCArea;
+
+/* Where the character set comes from. */
+typedef enum {
+    CSsrcUndef,		/* unused */
+    CSsrcStd,		/* defined in libX11 */
+    CSsrcXLC		/* defined in an XLC_LOCALE file */
+} CSSrc;
+
+/* These are the supported properties of XlcCharSet. */
 #define XlcNCharSize 		"charSize"
-#define XlcNCodeset 		"codeset"
 #define XlcNControlSequence 	"controlSequence"
-#define XlcNDefaultString 	"defaultString"
 #define XlcNEncodingName 	"encodingName"
-#define XlcNLanguage 		"language"
-#define XlcNMbCurMax 		"mbCurMax"
 #define XlcNName 		"name"
 #define XlcNSetSize 		"setSize"
 #define XlcNSide 		"side"
+
+/* This is the structure of an XlcCharSet.
+   Once allocated, they are never freed. */
+typedef struct _XlcCharSetRec {
+    /* Character set name, including side suffix */
+    const char 		*name;
+    XrmQuark 		xrm_name;
+
+    /* XLFD encoding name, no side suffix */
+    const char 		*encoding_name;
+    XrmQuark 		xrm_encoding_name;
+
+    /* Range for which the charset is responsible: XlcGL, XlcGR or XlcGLGR */
+    XlcSide 		side;
+
+    /* Number of bytes per character. 0 means a varying number (e.g. UTF-8) */
+    int 		char_size;
+    /* Classification of the character set according to ISO-2022 */
+    int 		set_size;	/* e.g. 94 or 96 */
+    const char 		*ct_sequence;	/* control sequence of CT */
+					/* (normally at most 4 bytes) */
+
+    /* for UDC */
+    Bool        	string_encoding;
+    UDCArea 		udc_area;
+    int     		udc_area_num;
+
+    /* Description source */
+    CSSrc		source;
+} XlcCharSetRec, *XlcCharSet;
+
+_XFUNCPROTOBEGIN
+
+/* Returns the charset with the given name (including side suffix).
+   Returns NULL if not found. */
+extern XlcCharSet _XlcGetCharSet(
+    const char*		name
+);
+
+/* Returns the charset with the given encoding (no side suffix) and
+   responsible for at least the given side (XlcGL or XlcGR).
+   Returns NULL if not found. */
+extern XlcCharSet _XlcGetCharSetWithSide(
+    const char*		encoding_name,
+    XlcSide		side
+);
+
+/* Registers an XlcCharSet in the list of character sets.
+   Returns True if successful. */
+extern Bool _XlcAddCharSet(
+    XlcCharSet		charset
+);
+
+/* Retrieves a number of attributes of an XlcCharSet.
+   Return NULL if successful, otherwise the name of the first argument
+   specifiying a nonexistent attribute. */
+extern char *_XlcGetCSValues(
+#if NeedVarargsPrototypes
+    XlcCharSet		charset,
+    ...
+#endif
+);
+
+_XFUNCPROTOEND
+
+
+#define XlcNCodeset 		"codeset"
+#define XlcNDefaultString 	"defaultString"
+#define XlcNLanguage 		"language"
+#define XlcNMbCurMax 		"mbCurMax"
 #define XlcNStateDependentEncoding "stateDependentEncoding"
 #define XlcNTerritory 		"territory"
-
-typedef enum {
-    XlcUnknown, XlcC0, XlcGL, XlcC1, XlcGR, XlcGLGR, XlcOther, XlcNONE
-} XlcSide;
 
 typedef struct _FontScope {
         unsigned long   start;
@@ -64,40 +162,6 @@ typedef struct _FontScope {
         unsigned long   shift;
         unsigned long   shift_direction;
 } FontScopeRec, *FontScope;
-
-typedef struct _UDCArea {
-        unsigned long 	start,end;
-} UDCAreaRec, *UDCArea;
-
-typedef struct _XlcCharSetRec *XlcCharSet;
-
-typedef char* (*XlcGetCSValuesProc)(
-#if NeedFunctionPrototypes
-    XlcCharSet		/* charset */,
-    XlcArgList		/* args */,
-    int			/* num_args */
-#endif
-);
-
-typedef enum {CSsrcUndef = 0, CSsrcStd, CSsrcXLC} CSSrc;
-
-typedef struct _XlcCharSetRec {
-    char 		*name;		/* character set name */
-    XrmQuark 		xrm_name;
-    char 		*encoding_name;	/* XLFD encoding name */
-    XrmQuark 		xrm_encoding_name;
-    XlcSide 		side;		/* GL, GR or others */
-    int 		char_size;	/* number of bytes per character */
-    int 		set_size;	/* graphic character sets */
-    char 		*ct_sequence;	/* control sequence of CT */
-    XlcGetCSValuesProc 	get_values;
-    /* UDC */
-    Bool        	string_encoding;
-    UDCArea 		udc_area;
-    int     		udc_area_num;
-    /* CS description source */
-    CSSrc		source;
-} XlcCharSetRec;
 
 /*
  * conversion methods
@@ -180,26 +244,6 @@ extern Bool _XInitIM(
 extern char *_XGetLCValues(
 #if NeedVarargsPrototypes
     XLCd		/* lcd */,
-    ...
-#endif
-);
-
-extern XlcCharSet _XlcGetCharSet(
-    const char*		name
-);
-
-extern XlcCharSet _XlcGetCharSetWithSide(
-    const char*		encoding_name,
-    XlcSide		side
-);
-
-extern Bool _XlcAddCharSet(
-    XlcCharSet		charset
-);
-
-extern char *_XlcGetCSValues(
-#if NeedVarargsPrototypes
-    XlcCharSet		/* charset */,
     ...
 #endif
 );

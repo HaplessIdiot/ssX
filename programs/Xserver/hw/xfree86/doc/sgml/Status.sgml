@@ -9,7 +9,7 @@
 <date>11 August 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.18 2000/08/11 21:12:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.19 2000/11/28 20:59:17 dawes Exp $
 </ident>
 
 <abstract>
@@ -433,12 +433,14 @@ dependencies/limitations, other architectures known to work on
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
-	Vanta, M64), GeForce (DDR, 256) and Quadro is provided by
+	Vanta, M64), GeForce (DDR, 256), GeForce2 (GTS, Ultra, MX), Quadro,
+	and Quadro2 is provided by
 	the nv driver.
 
 <tag>Summary:</tag>
 	All chipsets supported in &legacyvers; except the NV1 are also
-	supported in &relvers;.
+	supported in &relvers;.  Support for the newer chips (GeForce2 and
+	later) is only available in &relvers;.
 
 </descrip>
 
