@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.1 1994/12/17 09:32:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.2 1995/03/11 14:02:48 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -50,12 +50,14 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 
+#if 0
 #define	ProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib)	@@\
 ProgramTargetName(program): $(objs) $(deplib)				@@\
 	RemoveTargetProgram($@)						@@\
 	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
 									@@\
 InstallProgram(program,$(BINDIR))
+#endif
 
 
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
@@ -113,6 +115,7 @@ ProgramTargetName(program): objects deplibs				@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 
+#if 0
 #define ComplexProgramTargetNoMan(program)				@@\
 PROGRAM = ProgramTargetName(program)					@@\
 									@@\
@@ -125,6 +128,7 @@ LintTarget()								@@\
 									@@\
 clean::									@@\
 	RemoveFile($(PROGRAM))
+#endif
 
 #define MoveToBakFile(file) ImakeHelper 5 file
 
