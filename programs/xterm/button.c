@@ -1,6 +1,6 @@
 /* $Xorg: button.c,v 1.3 2000/08/17 19:55:08 cpqbld Exp $ */
 /*
- * Copyright 1999-2000 by Thomas E. Dickey
+ * Copyright 1999,2000,2001,2002 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *
@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.62 2001/06/18 19:09:25 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.63 2001/09/09 01:07:25 dickey Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -1733,7 +1733,7 @@ static int charClass[256] = {
 /*  E`   E'   E^   E:   I`   I'   I^   I: */
     48,  48,  48,  48,  48,  48,  48,  48,
 /*  D-   N~   O`   O'   O^   O~   O:    X */
-    48,  48,  48,  48,  48,  48,  48, 216,
+    48,  48,  48,  48,  48,  48,  48, 215,
 /*  O/   U`   U'   U^   U:   Y'    P    B */
     48,  48,  48,  48,  48,  48,  48,  48,
 /*  a`   a'   a^   a~   a:   ao   ae   c, */
@@ -1741,7 +1741,7 @@ static int charClass[256] = {
 /*  e`   e'   e^   e:    i`  i'   i^   i: */
     48,  48,  48,  48,  48,  48,  48,  48,
 /*   d   n~   o`   o'   o^   o~   o:   -: */
-    48,  48,  48,  48,  48,  48,  48,  248,
+    48,  48,  48,  48,  48,  48,  48, 247,
 /*  o/   u`   u'   u^   u:   y'    P   y: */
     48,  48,  48,  48,  48,  48,  48,  48};
 

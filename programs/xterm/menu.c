@@ -1,7 +1,7 @@
 /* $Xorg: menu.c,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /*
 
-Copyright 1999-2001 by Thomas E. Dickey
+Copyright 1999, 2001 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -23,7 +23,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-Copyright 1989, 1998  The Open Group
+Copyright 1989  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.42 2001/09/09 01:07:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.43 2001/12/14 20:02:32 dawes Exp $ */
 
 #include <xterm.h>
 #include <data.h>
