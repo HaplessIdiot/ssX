@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.43 1996/03/31 11:48:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.44 1996/05/10 06:57:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1862,6 +1862,16 @@ mach64SaveScreen (pScreen, on)
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+2, 0x00);
 
+	    if (mach64InfoRec.bitsPerPixel > 8 &&
+		mach64RamdacSubType == DAC_INTERNAL) {
+		int temp;
+		outb(ioDAC_REGS, 0);
+		for (temp = 0; temp < 256; temp++) {
+		    outb(ioDAC_REGS + 1, 0);
+		    outb(ioDAC_REGS + 1, 0);
+		    outb(ioDAC_REGS + 1, 0);
+		}
+	    }
 	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
 			    mach64CRTCRegs.dot_clock);
 	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.15 1996/03/31 11:48:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.16 1996/05/06 05:57:02 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -36,11 +36,25 @@
 #ifdef linux
 #include <asm/page.h>
 #endif
-#ifndef PAGE_MASK
-#define PAGE_MASK 0x0fff
+#ifdef CSRG_BASED
+#include <machine/param.h>
 #endif
+
+/* Defaults for i386 */
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 0x1000
+#endif
+#ifndef PAGE_MASK
+#define PAGE_MASK (~(PAGE_SIZE-1))
+#endif
+
+/* Linux and *BSD define PAGE_MASK differently */
+#ifdef PAGE_MASK
+#if ((PAGE_MASK) & 1)
+#define XF_PAGE_MASK (~(PAGE_MASK))
+#else
+#define XF_PAGE_MASK (PAGE_MASK)
+#endif
 #endif
 
 extern int xf86Verbose;
@@ -1448,7 +1462,7 @@ void mach64InitAperture(screen_idx)
 	break;
     }
 
-    regpage = mach64MemRegOffset & PAGE_MASK;
+    regpage = mach64MemRegOffset & XF_PAGE_MASK;
     regoffset = mach64MemRegOffset - regpage;
 
     if (!mach64MemRegMap) {

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.34 1996/05/06 13:07:31 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.35 1996/05/10 07:02:33 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2445,6 +2445,9 @@ spawn ()
 				close (tty);
 			}
 #endif /* TIOCNOTTY */
+#ifdef CSRG_BASED
+			(void)revoke(ttydev);
+#endif
 			if ((tty = open(ttydev, O_RDWR, 0)) >= 0) {
 #if defined(CRAY) && defined(TCSETCTTY)
 			    /* make /dev/tty work */
@@ -2580,6 +2583,9 @@ spawn ()
 #else /* USE_POSIX_TERMIOS */
 		    cfsetispeed(&tio, B9600);
 		    cfsetospeed(&tio, B9600);
+		    /* Clear CLOCAL so that SIGHUP is sent to us 
+		       when the xterm ends */
+		    tio.c_cflag &= ~CLOCAL;
 #endif /* USE_POSIX_TERMIOS */
 #endif /* MINIX */
 		    tio.c_cflag &= ~CSIZE;
@@ -2697,7 +2703,7 @@ spawn ()
 		    if (ioctl (tty, TCSETA, &tio) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
 #else   /* USE_POSIX_TERMIOS */
-		    if (tcsetattr (tty, TCSANOW, & tio) == -1)
+		    if (tcsetattr (tty, TCSANOW, &tio) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
 #endif  /* USE_POSIX_TERMIOS */
 #else	/* USE_SYSV_TERMIO or USE_POSIX_TERMIOS */

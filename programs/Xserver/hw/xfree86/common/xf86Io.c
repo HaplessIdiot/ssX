@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.20 1996/03/29 22:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.21 1996/05/10 06:58:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,6 +34,10 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+
+#ifdef XINPUT
+#include "xf86Xinput.h"
+#endif
 
 #ifdef XKB
 #include <X11/extensions/XKB.h>
@@ -395,6 +399,11 @@ xf86MseCtrl(pPointer, ctrl)
      PtrCtrl   *ctrl;
 {
     MouseDevPtr	mouse = (MouseDevPtr) ((DeviceIntPtr) pPointer)->public.devicePrivate;
+
+#ifdef XINPUT
+    if (mouse->extended)
+	mouse = (MouseDevPtr)PRIVATE((DeviceIntPtr) pPointer);
+#endif
 
     mouse->num       = ctrl->num;
     mouse->den       = ctrl->den;

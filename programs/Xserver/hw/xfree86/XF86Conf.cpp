@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.24 1996/02/20 14:33:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.25 1996/02/22 05:10:54 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -56,7 +56,30 @@ USE_SPFONTS	SPFONTPATH
 USE_75FONTS	DPI75FONTPATH
 USE_100FONTS	DPI100FONTPATH
 
+XCOMM For OSs that support Dynamically loaded modules, ModulePath can be
+XCOMM used to set a search path for the modules.  This is currently supported
+XCOMM for Linux ELF, FreeBSD 2.x and NetBSD 1.x.  The default path is shown
+XCOMM here.
+
+XCOMM    ModulePath	MODULEPATH
+
 EndSection
+
+XCOMM **********************************************************************
+XCOMM Module section -- this is an optional section which is used to specify
+XCOMM which dynamically loadable modules to load.  Dynamically loadable
+XCOMM modules are currently supported only for Linux ELF, FreeBSD 2.x
+XCOMM and NetBSD 1.x.  Currently, dynamically loadable modules are used
+XCOMM only for some extended input (XInput) device drivers.
+XCOMM **********************************************************************
+XCOMM
+XCOMM Section "Module"
+XCOMM
+XCOMM This loads the module for the Joystick driver
+XCOMM
+XCOMM Load "xf86Jstk.so"
+XCOMM
+XCOMM EndSection
 
 XCOMM **********************************************************************
 XCOMM Server flags section.
@@ -145,17 +168,17 @@ XCOMM To customise the XKB settings to suit your keyboard, modify the
 XCOMM lines below (which are the defaults).  For example, one way to get
 XCOMM a german layout on a 101 key keyboard is to modify the XkbSymbols
 XCOMM line:
-XCOMM    XkbSymbols  "symbols/us(pc101)+de"
+XCOMM    XkbSymbols  "us(pc101)+de"
 XCOMM If you have a US Microsoft Natural keyboard, you can use:
-XCOMM    XkbSymbols  "symbols/us(microsoft)"
-XCOMM    XkbGeometry "geometry/microsoft"
+XCOMM    XkbSymbols  "us(microsoft)"
+XCOMM    XkbGeometry "microsoft"
 
 XCOMM These are the default XKB settings for XFree86
-XCOMM    Xkbkeycodes "keycodes/xfree86"
-XCOMM    XkbTypes    "types/default"
-XCOMM    XkbCompat   "compat/default"
-XCOMM    XkbSymbols  "symbols/us(pc101)"
-XCOMM    XkbGeometry "geometry/pc"
+XCOMM    Xkbkeycodes "xfree86"
+XCOMM    XkbTypes    "default"
+XCOMM    XkbCompat   "default"
+XCOMM    XkbSymbols  "us(pc101)"
+XCOMM    XkbGeometry "pc"
 
 
 XCOMM To specify a keymap file entry to use, use XkbKeymap.  This will
@@ -239,6 +262,16 @@ XCOMM        MaximumYPosition 1100
 XCOMM        # CenterX 700
 XCOMM        # CenterY 600
 XCOMM        Delta 20
+XCOMM    EndSubSection
+XCOMM
+XCOMM The Mouse Subsection contains the same type of entries as the
+XCOMM standard Pointer Section (see above), with the addition of the
+XCOMM DeviceName entry.
+XCOMM
+XCOMM    SubSection "Mouse"
+XCOMM        Port "/dev/mouse2"
+XCOMM        DeviceName "Second Mouse"
+XCOMM        Protocol "Logitech"
 XCOMM    EndSubSection
 XCOMM EndSection
 

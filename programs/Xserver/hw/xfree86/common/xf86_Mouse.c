@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.13 1996/04/15 11:30:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.14 1996/05/10 06:58:20 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -306,6 +306,11 @@ xf86MouseProtocol(device, rBuf, nBytes)
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* GlidePoint */
   };
   
+#ifdef XINPUT
+  if (mouse->extended)
+    mouse = (MouseDevPtr)PRIVATE(device);
+#endif
+
   for ( i=0; i < nBytes; i++) {
     /*
      * Hack for resyncing: We check here for a package that is:
@@ -483,7 +488,9 @@ xf86MouseCtrl(device, ctrl)
     LocalDevicePtr	local = (LocalDevicePtr)(device)->public.devicePrivate;
     MouseDevPtr		mouse = (MouseDevPtr) local->private;    
 
+#ifdef EXTMOUSEDEBUG
     ErrorF("xf86MouseCtrl mouse=0x%x\n", mouse);
+#endif
     
     mouse->num       = ctrl->num;
     mouse->den       = ctrl->den;
@@ -507,7 +514,9 @@ xf86MouseConfig(array, inx, max, val)
     LocalDevicePtr	dev = array[inx];
     MouseDevPtr		mouse = (MouseDevPtr)dev->private;
    
+#ifdef EXTMOUSEDEBUG
     ErrorF("xf86MouseConfig mouse=0x%x\n", mouse);
+#endif
     
     configPointerSection(mouse, ENDSUBSECTION, &dev->name);
 
@@ -541,8 +550,10 @@ xf86MouseProc(device, what)
 	if ((what == DEVICE_INIT) &&
 	    (ret == Success)) {
 	    AssignTypeAndName(device, local->atom, local->name);
+#ifdef EXTMOUSEDEBUG
 	    ErrorF("assigning 0x%x atom=%d name=%s\n", device,
 		   local->atom, local->name);
+#endif
 	}
     }
     
@@ -562,7 +573,9 @@ xf86MouseReadInput(local)
 {
     MouseDevPtr		mouse = (MouseDevPtr) local->private;    
 
+#ifdef EXTMOUSEDEBUG
     ErrorF("xf86MouseReadInput mouse=0x%x\n", mouse);
+#endif
     
     mouse->mseEvents(mouse);
 }
@@ -580,7 +593,9 @@ xf86MouseAllocate()
     LocalDevicePtr	local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
     MouseDevPtr		mouse = (MouseDevPtr) xalloc(sizeof(MouseDevRec));
     
+    local->extended = TRUE;
     local->name = "MOUSE";
+    local->type_name = "Mouse";
     local->flags = XI86_NO_OPEN_ON_INIT;
     local->device_config = xf86MouseConfig;
     local->device_control = xf86MouseProc;
@@ -593,6 +608,7 @@ xf86MouseAllocate()
     local->dev = NULL;
     local->private = mouse;
 
+    mouse->extended = FALSE;
     mouse->device = NULL;
     mouse->mseFd = -1;
     mouse->mseDevice = "";
@@ -601,7 +617,9 @@ xf86MouseAllocate()
     mouse->oldBaudRate = -1;
     mouse->sampleRate = -1;
     
+#ifdef EXTMOUSEDEBUG
     ErrorF("xf86MouseAllocate mouse=0x%x\n", local->private);
+#endif
     
     return local;
 }

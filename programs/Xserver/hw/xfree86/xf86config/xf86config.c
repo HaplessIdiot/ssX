@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.28 1996/03/10 12:08:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.29 1996/04/15 11:32:18 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -527,7 +527,7 @@ static struct symlist1 {
 {0,	"pc101",		"pc",	"Standard 101-key keyboard"},
 {0,	"pc102",		"pc",	"Standard 102-key keyboard"},
 {1,	"pc101euro",		"pc",	"101-key with ALT_R = Multi_key"},
-{1,	"pc102euro",		"pc",	"101-key with ALT_R = Multi_key"},
+{1,	"pc102euro",		"pc",	"102-key with ALT_R = Multi_key"},
 {1,	"microsoft",		"microsoft",   "Microsoft Natural keyboard"},
 {1,	"pc101",		"keytronic(FlexPro)", "KeyTronic FlexPro keyboard"},
 {0,	"pc101",		"pc",	"DEFAULT"}
@@ -633,25 +633,25 @@ void xkb_composekeymaps()
 	config_xkbdisable = 0;
 	config_xkbkeymap = 0;
 #ifdef XFREE98_XKB
-	config_xkbkeycodes = "keycodes/xfree98";	/* static */
+	config_xkbkeycodes = "xfree98";	/* static */
 #else
-	config_xkbkeycodes = "keycodes/xfree86";	/* static */
+	config_xkbkeycodes = "xfree86";	/* static */
 #endif
-	config_xkbtypes = "types/default";		/* static */
-	config_xkbcompat = "compat/default";		/* static */
+	config_xkbtypes = "default";		/* static */
+	config_xkbcompat = "default";		/* static */
 
-	i = 8 + strlen(sympart2[xkbsym2].prefix)
+	i = strlen(sympart2[xkbsym2].prefix)
 	      + strlen(sympart1[xkbsym1].symname)
 	      + strlen(sympart2[xkbsym2].extend)
 	      + 1;
 	config_xkbsymbols = malloc(i);
-	sprintf(config_xkbsymbols,"symbols/%s(%s)%s",
+	sprintf(config_xkbsymbols,"%s(%s)%s",
 		sympart2[xkbsym2].prefix,
 		sympart1[xkbsym1].symname,
 		sympart2[xkbsym2].extend);
 
-	config_xkbgeometry = malloc(9+strlen(sympart1[xkbsym1].geoname)+1);
-	sprintf(config_xkbgeometry,"geometry/%s",sympart1[xkbsym1].geoname);
+	config_xkbgeometry = malloc(strlen(sympart1[xkbsym1].geoname)+1);
+	sprintf(config_xkbgeometry,"%s",sympart1[xkbsym1].geoname);
 
 	return;
 }
@@ -675,7 +675,7 @@ static char *xkb_intro2 =
 "the program will try to combine a keymap from additional information you\n"
 "are asked then. Such a keymap is by default untested and may require\n"
 "manual tuning. Please report success or required changes for such a\n"
-"keymap to BETA@XFREE86.ORG for addition to the list of preconfigured\n"
+"keymap to XFREE86@XFREE86.ORG for addition to the list of preconfigured\n"
 "keymaps in the future.\n\n";
 
 /*
@@ -1995,17 +1995,17 @@ static char *keyboardchunk3_text =
 "# lines below (which are the defaults).  For example, one way to get\n"
 "# a german layout on a 101 key keyboard is to modify the XkbSymbols\n"
 "# line:\n"
-"#    XkbSymbols  \"symbols/us(pc101)+de\"\n"
+"#    XkbSymbols  \"us(pc101)+de\"\n"
 "# If you have a US Microsoft Natural keyboard, you can use:\n"
-"#    XkbSymbols  \"symbols/us(microsoft)\"\n"
-"#    XkbGeometry \"geometry/microsoft\"\n"
+"#    XkbSymbols  \"us(microsoft)\"\n"
+"#    XkbGeometry \"microsoft\"\n"
 "\n"
 "# These are the default XKB settings for XFree86\n"
-"#    Xkbkeycodes \"keycodes/xfree86\"\n"
-"#    XkbTypes    \"types/default\"\n"
-"#    XkbCompat   \"compat/default\"\n"
-"#    XkbSymbols  \"symbols/us(pc101)\"\n"
-"#    XkbGeometry \"geometry/pc\"\n"
+"#    Xkbkeycodes \"xfree86\"\n"
+"#    XkbTypes    \"default\"\n"
+"#    XkbCompat   \"default\"\n"
+"#    XkbSymbols  \"us(pc101)\"\n"
+"#    XkbGeometry \"pc\"\n"
 "\n"
 "# To specify a keymap file entry to use, use XkbKeymap.  This will\n"
 "# override the other Xkb parameters described above.\n"

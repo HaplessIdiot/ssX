@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.88 1996/05/06 05:57:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.89 1996/05/10 06:58:11 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1460,6 +1460,7 @@ configPointerSection(MouseDevPtr	mouse_dev,
   char *mouseType = "unknown";
 
   /* Set defaults */
+  mouse_dev->extended        = FALSE;
   mouse_dev->baudRate        = 1200;
   mouse_dev->oldBaudRate     = -1;
   mouse_dev->sampleRate      = 0;

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.8 1996/03/29 22:16:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.9 1996/05/10 06:58:12 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1186,6 +1186,7 @@ xf86EloAllocate(
   local->atom = 0;
   local->dev = NULL;
   local->private = priv;
+  local->type_name = "ELO TouchScreen";
 
   return local;
 }

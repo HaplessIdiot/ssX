@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.48 1996/03/10 12:04:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.49 1996/04/15 11:30:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -496,6 +496,7 @@ static SymTabRec PointerTab[] = {
   { ENDSECTION,	"endsection"},
 #ifndef OSMOUSE_ONLY
   { PDEVICE,	"device"},
+  { PDEVICE,	"port"},
   { BAUDRATE,	"baudrate" },
   { SAMPLERATE,	"samplerate" },
   { CLEARDTR,	"cleardtr" },

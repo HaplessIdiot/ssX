@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.13 1996/03/29 22:16:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.14 1996/05/10 06:58:17 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -1418,6 +1418,7 @@ xf86WcmAllocateStylus()
   LocalDevicePtr        local = xf86WcmAllocate(XI_STYLUS, STYLUS_ID);
 
   ((WacomDevicePtr)local->private)->wcmStylus = local;
+  local->type_name = "Wacom Stylus";
   return local;
 }
 
@@ -1434,6 +1435,7 @@ xf86WcmAllocateCursor()
   LocalDevicePtr        local = xf86WcmAllocate(XI_CURSOR, CURSOR_ID);
 
   ((WacomDevicePtr)local->private)->wcmCursor = local;
+  local->type_name = "Wacom Cursor";
   return local;
 }
 
@@ -1450,6 +1452,7 @@ xf86WcmAllocateEraser()
   LocalDevicePtr        local = xf86WcmAllocate(XI_ERASER, ABSOLUTE_FLAG|ERASER_ID);
 
   ((WacomDevicePtr)local->private)->wcmEraser = local;
+  local->type_name = "Wacom Eraser";
   return local;
 }
 

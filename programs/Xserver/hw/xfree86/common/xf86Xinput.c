@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.9 1996/05/06 05:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.10 1996/05/10 06:58:18 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -253,7 +253,8 @@ InitExtInput()
       dev->public.devicePrivate = (pointer) localDevices[i];
       localDevices[i]->dev = dev;
       RegisterOtherDevice(dev);
-      ErrorF("adding extended device '%s' (%x)\n", localDevices[i]->name, dev);
+      ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
+	localDevices[i]->name, localDevices[i]->type_name);
     }
   }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.32 1996/05/06 05:57:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.33 1996/05/10 06:58:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -965,6 +965,11 @@ buttonTimer(timer, now, arg)
      pointer arg;
 {
     MouseDevPtr	priv = (MouseDevPtr) ((DeviceIntPtr) arg)->public.devicePrivate;
+
+#ifdef XINPUT
+    if (priv->extended)
+	priv = (MouseDevPtr)PRIVATE((DeviceIntPtr)arg);
+#endif
     
     xf86PostMseEvent(((DeviceIntPtr) arg), priv->truebuttons, 0, 0);
     return(0);
@@ -1001,6 +1006,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
 #endif
 
 #ifdef XINPUT
+  if (private->extended)
+    private = (MouseDevPtr)PRIVATE(device);
+
   is_pointer = xf86IsCorePointer(device);
 
   if (!is_pointer) {

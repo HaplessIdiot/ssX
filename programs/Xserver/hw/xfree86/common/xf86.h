@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.34 1996/04/15 11:30:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.35 1996/05/06 05:57:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -288,6 +288,7 @@ extern Bool        xf86VTSema;
 /* Mouse device private record */
 
 typedef struct _MouseDevRec {
+    int		  extended;		/* This must be first */
     DeviceProc    mseProc;              /* procedure for initializing */
     void          (* mseEvents)(
 #if NeedNestedPrototypes

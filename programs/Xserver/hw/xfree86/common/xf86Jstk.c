@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.9 1996/02/18 12:01:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.10 1996/05/10 06:58:16 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -493,6 +493,7 @@ xf86JstkAllocate()
   local->atom = 0;
   local->dev = NULL;
   local->private = priv;
+  local->type_name = "Joystick";
   
   priv->jstkFd = -1;
   priv->jstkTimer = NULL;
