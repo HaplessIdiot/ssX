@@ -1,7 +1,7 @@
-/* $XConsortium: stubs.c,v 1.5 94/03/27 13:53:51 dpw Exp $ */
+/* $XConsortium: stubs.c,v 1.7 95/04/04 21:08:31 dpw Exp $ */
 /*
  * $NCDOr: stubs.c,v 1.1 1993/11/16 17:58:49 keithp Exp keithp $
- * $NCDId: @(#)stubs.c,v 1.11 1994/03/24 17:54:41 lemke Exp $
+ * $NCDId: @(#)stubs.c,v 1.16 1994/11/18 20:35:22 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -33,22 +33,16 @@
 #include "keysymdef.h"
 
 
-AbortDDX ()
-{
-}
-
-OsInitColors ()
-{
-}
-
 extern int  lbxDebug;
-extern int  lbxLZW;
-extern int  lbxDeltaN;
 extern int  lbxTagCacheSize;
 extern Bool lbxUseTags;
 extern Bool lbxUseLbx;
+extern Bool lbxDoSquishing;
+extern Bool lbxCompressImages;
+extern Bool lbxDoShortCircuiting;
+extern Bool lbxDoLbxGfx;
 
-ddxProcessArgument (argc, argv, i)
+proxyProcessArgument (argc, argv, i)
     char    **argv;
 {
     if (strcmp (argv[i], "-debug") == 0)
@@ -59,14 +53,29 @@ ddxProcessArgument (argc, argv, i)
 	    UseMsg ();
 	return 2;
     }
+    if (strcmp (argv[i], "-nogfx") == 0)
+    {
+	lbxDoLbxGfx = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nosc") == 0)
+    {
+	lbxDoShortCircuiting = 0;
+	return 1;
+    }
     if (strcmp (argv[i], "-nolzw") == 0)
     {
-	lbxLZW = 0;
+	LbxNoComp();
+	return 1;
+    }
+    if (strcmp (argv[i], "-nocomp") == 0)
+    {
+	LbxNoComp();
 	return 1;
     }
     if (strcmp (argv[i], "-nodelta") == 0)
     {
-	lbxDeltaN = 0;
+	LbxNoDelta();
 	return 1;
     }
     if (strcmp (argv[i], "-notags") == 0)
@@ -77,6 +86,16 @@ ddxProcessArgument (argc, argv, i)
     if (strcmp (argv[i], "-nolbx") == 0)
     {
 	lbxUseLbx = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-noimage") == 0)
+    {
+	lbxCompressImages = 0;
+	return 1;
+    }
+    if (strcmp (argv[i], "-nosquish") == 0)
+    {
+	LbxNoSquish();
 	return 1;
     }
     if (strcmp (argv[i], "-tagcachesize") == 0)
@@ -90,30 +109,12 @@ ddxProcessArgument (argc, argv, i)
     return 0;
 }
 
+#ifndef MEMBUG
 CheckMemory ()
 {
 }
+#endif
 
-void
-CopyISOLatin1Lowered(dest, source, length)
-    register unsigned char *dest, *source;
-    int length;
-{
-    register int i;
-
-    for (i = 0; i < length; i++, source++, dest++)
-    {
-	if ((*source >= XK_A) && (*source <= XK_Z))
-	    *dest = *source + (XK_a - XK_A);
-	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
-	    *dest = *source + (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
-	    *dest = *source + (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
-    }
-    *dest = '\0';
-}
 
 typedef struct _BlockHandler {
     void    (*BlockHandler)();
@@ -428,4 +429,3 @@ CallCallbacks(pcbl, call_data)
     pointer         call_data;
 {
 }
-
