@@ -22,7 +22,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.10 2000/04/17 16:29:45 eich Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.11 2001/01/17 16:39:01 dawes Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -205,6 +205,12 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
     while ((dp = readdir (df))) {
 	if (dp->d_name[strlen(dp->d_name) - 1] == '~')
 	    continue;
+#ifdef __DARWIN__
+	/* Ignore these Mac OS X Finder data files */
+	if (!strcmp(dp->d_name, ".DS_Store") || 
+	    !strcmp(dp->d_name, "._.DS_Store")) 
+	    continue;
+#endif
 	strcpy (p, dp->d_name);
 
 	if (n_dirs > 0) {
