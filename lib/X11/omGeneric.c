@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.7 1997/07/19 05:43:01 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.8 1997/11/16 06:17:37 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
@@ -493,7 +493,6 @@ static char
     char *pattern = NULL, *ptr = NULL;
     char *fields[CHARSET_ENCODING_FIELD];
     char str_pixel[32], str_point[4];
-    char rotate_font[256];
     char *rotate_font_ptr = NULL;
     int pixel_size = 0;
     int field_num = 0, len = 0;
@@ -546,20 +545,30 @@ static char
     strcpy(str_point, "*");
     fields[POINT_SIZE_FIELD - 1] = str_point;
 
-    rotate_font[0] = '\0';
+    len = 0;
+    for (field_num = 0; field_num < CHARSET_ENCODING_FIELD &&
+			fields[field_num]; field_num++) {
+	len += 1 + strlen(fields[field_num]);
+    }
+
+    /* Max XLFD length is 255 */
+    if (len > 255) 
+	return NULL;
+
+    rotate_font_ptr = (char *)Xmalloc(len + 1);
+    if(!rotate_font_ptr)
+	return NULL;
+
+    rotate_font_ptr[0] = '\0';
+
     for(field_num = 0 ; field_num < CHARSET_ENCODING_FIELD &&
 			fields[field_num] ; field_num++) {
-	sprintf(rotate_font, "%s-%s", rotate_font, fields[field_num]);
+	sprintf(rotate_font_ptr, "%s-%s", rotate_font_ptr, fields[field_num]);
     }
 
     if(pattern)
 	Xfree(pattern);
 
-    rotate_font_ptr = (char *)Xmalloc(strlen(rotate_font) + 1);
-    if(!rotate_font_ptr)
-	return NULL;
-    strcpy(rotate_font_ptr, rotate_font);
-	
     return rotate_font_ptr;
 }
 
@@ -1009,7 +1018,9 @@ parse_fontname(oc)
     return found_num;
 
 err:
-    XFreeStringList(name_list);		
+    XFreeStringList(name_list);
+    /* Prevent this from being freed twice */
+    oc->core.base_name_list = NULL;
 
     return -1;
 }
