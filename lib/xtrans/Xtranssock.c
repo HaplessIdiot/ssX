@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.21 1996/10/16 14:36:52 dawes Exp $ */
+/* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.22 1996/12/09 11:50:29 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -67,7 +67,9 @@ from the X Consortium.
 #endif
 #endif
 #if defined(TCPCONN) || defined(UNIXCONN)
-#include <netdb.h>
+#define X_INCLUDE_NETDB_H
+#define XOS_USE_NO_LOCKING
+#include <X11/Xos_r.h>
 #endif
 
 #ifdef UNIXCONN
@@ -106,17 +108,10 @@ from the X Consortium.
 #include <sys/stropts.h>
 #endif
 #endif /* i386 && SYSV || _SEQUENT_ */
-#endif /* !WIN32 */
 
-#ifdef WIN32
-#define _WILLWINSOCK_
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
+#else /* !WIN32 */
+
+#include <X11/Xwinsock.h>
 #include <X11/Xw32defs.h>
 #undef close
 #define close closesocket
@@ -127,6 +122,9 @@ from the X Consortium.
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #undef EINTR
 #define EINTR WSAEINTR
+#define X_INCLUDE_NETDB_H
+#define XOS_USE_MTSAFE_NETDBAPI
+#include <X11/Xos_r.h>
 #endif /* WIN32 */
 
 #if defined(SO_DONTLINGER) && defined(SO_LINGER)
@@ -824,43 +822,8 @@ char 		*port;
     int		namelen = sizeof(sockname);
     int		status;
     short	tmpport;
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
-#ifdef _POSIX_REENTRANT_FUNCTIONS
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
-#define _POSIX_THREAD_SAFE_FUNCTIONS 1
-#endif
-#endif
-#endif
-#if defined(sun) || defined(__linux__)
-#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
-#undef _POSIX_THREAD_SAFE_FUNCTIONS
-#endif
-#endif
-    struct	servent sent;
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#ifdef __linux__
-#define Getservbyname(s,p) (getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf, &servp), servp)
-#else
-#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
-#endif
-#define CallFailed NULL
-#define ServPort sent.s_port
-    struct	servent	*servp;
-    char*	sbuf[LINE_MAX];
-#else 
-#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,&sdata)
-#define CallFailed -1
-#define ServPort sent.s_port
-    struct servent_data sdata;
-    int		servp;
-#endif
-#else
-#define Getservbyname(s,p) getservbyname((s),(p))
-#define CallFailed NULL
-#define ServPort servp->s_port
-    struct	servent	*servp;
-#endif
+    _Xgetservbynameparams sparams;
+    struct servent *servp;
 
 #define PORTBUFSIZE	64	/* what is a real size for this? */
 
@@ -896,17 +859,14 @@ char 		*port;
 
 	if (!is_numeric (port))
 	{
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-	    bzero ((char*)&sdata, sizeof sdata);
-#endif
-	    if ((servp = Getservbyname (port, "tcp")) == CallFailed)
+	    if ((servp = _XGetservbyname (port,"tcp",sparams)) == NULL)
 	    {
 		PRMSG (1,
 	     "SocketINETCreateListener: Unable to get service for %s\n",
 		      port, 0, 0);
 		return TRANS_CREATE_LISTENER_FAILED;
 	    }
-	    sockname.sin_port = ServPort;
+	    sockname.sin_port = servp->s_port;
 	}
 	else
 	{
@@ -1266,60 +1226,10 @@ char 		*port;
 {
     struct sockaddr_in	sockname;
     int			namelen = sizeof(sockname);
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
-#ifdef _POSIX_REENTRANT_FUNCTIONS
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
-#define _POSIX_THREAD_SAFE_FUNCTIONS 1
-#endif
-#endif
-#endif
-#if defined(sun) || defined(__linux__)
-#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
-#undef _POSIX_THREAD_SAFE_FUNCTIONS
-#endif
-#endif
-    struct hostent	hent;
-    struct servent	sent;
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#ifdef __linux__
-#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
-#define Getservbyname(s,p) (getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf,&servp),servp)
-#else
-#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
-#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,sbuf,sizeof sbuf)
-#endif
-#define CallFailed NULL
-#define HostAddrType hent.h_addrtype
-#define HostAddr hent.h_addr
-#define ServPort sent.s_port
-    char		hbuf[LINE_MAX];
-    char		sbuf[LINE_MAX];
+    _Xgethostbynameparams hparams;
+    _Xgetservbynameparams sparams;
     struct hostent	*hostp;
     struct servent	*servp;
-    int			herr;
-#else
-#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
-#define Getservbyname(s,p) getservbyname_r((s),(p),&sent,&sdata)
-#define CallFailed -1
-#define HostAddrType hent.h_addrtype
-#define HostAddr hent.h_addr
-#define ServPort sent.s_port
-    struct hostent_data hdata;
-    struct servent_data sdata;
-    int			hostp;
-    int			servp;
-#endif
-#else /* !XTHREADS etc */
-#define Gethostbyname(h) gethostbyname((h))
-#define Getservbyname(s,p) getservbyname((s),(p))
-#define CallFailed NULL
-#define HostAddrType hostp->h_addrtype
-#define HostAddr hostp->h_addr
-#define ServPort servp->s_port
-    struct hostent	*hostp;
-    struct servent	*servp;
-#endif
 
 #define PORTBUFSIZE	64	/* what is a real size for this? */
     char	portbuf[PORTBUFSIZE];
@@ -1384,17 +1294,14 @@ char 		*port;
 
     if (tmpaddr == -1)
     {
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-	bzero ((char*)&hdata, sizeof hdata);
-#endif
-	if ((hostp = Gethostbyname(host)) == CallFailed)
+	if ((hostp = _XGethostbyname(host,hparams)) == NULL)
 	{
 	    PRMSG (1,"SocketINETConnect: Can't get address for %s\n",
 		  host, 0, 0);
 	    ESET(EINVAL);
 	    return TRANS_CONNECT_FAILED;
 	}
-	if (HostAddrType != AF_INET)  /* is IP host? */
+	if (hostp->h_addrtype != AF_INET)  /* is IP host? */
 	{
 	    PRMSG (1,"SocketINETConnect: not INET host%s\n",
 		  host, 0, 0);
@@ -1410,7 +1317,7 @@ char 		*port;
 	sockname.sin_addr = t;
         }
 #else
-        memcpy ((char *) &sockname.sin_addr, (char *) HostAddr,
+        memcpy ((char *) &sockname.sin_addr, (char *) hostp->h_addr,
 		sizeof (sockname.sin_addr));
 #endif /* CRAY and OLDTCP */
 	
@@ -1433,16 +1340,13 @@ else
 
     if (!is_numeric (portbuf))
     {
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-	bzero ((char*)&sdata, sizeof sdata);
-#endif
-	if ((servp = Getservbyname (portbuf,"tcp")) == CallFailed)
+	if ((servp = _XGetservbyname (portbuf,"tcp",sparams)) == NULL)
 	{
 	    PRMSG (1,"SocketINETConnect: Can't get service for %s\n",
 		  portbuf, 0, 0);
 	    return TRANS_CONNECT_FAILED;
 	}
-	sockname.sin_port = ServPort;
+	sockname.sin_port = servp->s_port;
     }
     else
     {
@@ -1539,71 +1443,33 @@ char *host;
 	 * by TRANS(GetHostname)), then the two hostnames are equivalent,
 	 * and we know that 'host' is really a local host.
 	 */
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
-#ifdef _POSIX_REENTRANT_FUNCTIONS
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
-#define _POSIX_THREAD_SAFE_FUNCTIONS 1
-#endif
-#endif
-#endif
-#if defined(sun) || defined(__linux__)
-#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
-#undef _POSIX_THREAD_SAFE_FUNCTIONS
-#endif
-#endif
-	struct hostent	hent;
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#ifdef __linux__
-#define Gethostbyname(h) (gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&hostp,&herr),hostp)
-#else
-#define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
-#endif
-#define HostAddrList hent.h_addr_list
-#define CallFailed NULL
-	char		hbuf[LINE_MAX];
-	struct hostent	*hostp;
-	int		herr;
-#else
-#define Gethostbyname(h) gethostbyname_r((h),&hent,&hdata)
-#define HostAddrList hent.h_addr_list
-#define CallFailed -1
-	struct hostent_data hdata;
-	int		hostp;
-#endif
-#else /* !XTHREADS etc */
-#define Gethostbyname(h) gethostbyname((h))
-#define HostAddrList hostp->h_addr_list
-#define CallFailed NULL
-	struct hostent	*hostp;
-#endif
 	char specified_local_addr_list[10][4];
 	int scount, equiv, i, j;
+	_Xgethostbynameparams hparams;
+	struct hostent *hostp;
 
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-	bzero ((char*)&hdata, sizeof hdata);
-#endif
-	if ((hostp = Gethostbyname (host)) == CallFailed)
+	if ((hostp = _XGethostbyname (host,hparams)) == NULL)
 	    return (0);
 
 	scount = 0;
-	while (HostAddrList[scount] && scount <= 8)
+	while (hostp->h_addr_list[scount] && scount <= 8)
 	{
 	    /*
 	     * The 2nd call to gethostname() overrides the data
 	     * from the 1st call, so we must save the address list.
 	     */
 
-	    specified_local_addr_list[scount][0] = HostAddrList[scount][0];
-	    specified_local_addr_list[scount][1] = HostAddrList[scount][1];
-	    specified_local_addr_list[scount][2] = HostAddrList[scount][2];
-	    specified_local_addr_list[scount][3] = HostAddrList[scount][3];
+	    specified_local_addr_list[scount][0] = 
+				hostp->h_addr_list[scount][0];
+	    specified_local_addr_list[scount][1] = 
+				hostp->h_addr_list[scount][1];
+	    specified_local_addr_list[scount][2] = 
+				hostp->h_addr_list[scount][2];
+	    specified_local_addr_list[scount][3] = 
+				hostp->h_addr_list[scount][3];
 	    scount++;
 	}
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-	bzero ((char*)&hdata, sizeof hdata);
-#endif
-	if ((hostp = Gethostbyname (hostnamebuf)) == CallFailed)
+	if ((hostp = _XGethostbyname (hostnamebuf,hparams)) == NULL)
 	    return (0);
 
 	equiv = 0;
@@ -1613,12 +1479,16 @@ char *host;
 	{
 	    j = 0;
 
-	    while (HostAddrList[j])
+	    while (hostp->h_addr_list[j])
 	    {
-		if ((specified_local_addr_list[i][0] == HostAddrList[j][0]) &&
-		    (specified_local_addr_list[i][1] == HostAddrList[j][1]) &&
-		    (specified_local_addr_list[i][2] == HostAddrList[j][2]) &&
-		    (specified_local_addr_list[i][3] == HostAddrList[j][3]))
+		if ((specified_local_addr_list[i][0] == 
+					hostp->h_addr_list[j][0]) &&
+		    (specified_local_addr_list[i][1] == 
+					hostp->h_addr_list[j][1]) &&
+		    (specified_local_addr_list[i][2] == 
+					hostp->h_addr_list[j][2]) &&
+		    (specified_local_addr_list[i][3] == 
+					hostp->h_addr_list[j][3]))
 		{
 		    /* They're equal, so we're done */
 		    

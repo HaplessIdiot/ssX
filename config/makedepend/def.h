@@ -1,5 +1,5 @@
-/* $XConsortium: def.h /main/27 1995/12/08 18:26:29 gildea $ */
-/* $XFree86$ */
+/* $XConsortium: def.h /main/30 1996/12/04 10:11:12 swick $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.0 1996/05/06 05:52:18 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -27,10 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-#include "Xosdefs.h"
-#ifdef WIN32
-#include "Xw32defs.h"
-#endif
+#include "Xos.h"
 #include "Xfuncproto.h"
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -47,7 +44,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/stat.h>
 
 #define MAXDEFINES	512
-#define MAXFILES	512
+#define MAXFILES	1024
 #define MAXDIRS		64
 #define SYMTABINC	10	/* must be > 1 for define() to work right */
 #define	TRUE		1
@@ -148,7 +145,7 @@ struct inclist		*newinclude();
 struct inclist		*inc_path();
 
 #if NeedVarargsPrototypes
-extern fatalerr(char *, ...);
-extern warning(char *, ...);
-extern warning1(char *, ...);
+extern void fatalerr(char *, ...);
+extern void warning(char *, ...);
+extern void warning1(char *, ...);
 #endif

@@ -1,5 +1,5 @@
-/* $XConsortium: IntrinsicI.h,v 1.59 94/10/10 18:57:48 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.0 1994/05/21 23:52:24 dawes Exp $ */
+/* $XConsortium: IntrinsicI.h /main/46 1996/09/28 16:46:29 rws $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.1 1995/01/12 05:56:08 dawes Exp $ */
 
 /***********************************************************
 
@@ -234,6 +234,26 @@ extern void _XtAddShellToHookObj(
     Widget      /* widget */
 #endif
 );
+
+/** GeoTattler stuff */
+
+#ifdef XT_GEO_TATTLER
+
+extern void _XtGeoTab ();
+extern void _XtGeoTrace (
+#if NeedVarargsPrototypes
+			    Widget widget, 
+			    ...
+#endif
+);
+
+#define CALLGEOTAT(f) f
+
+#else /* XT_GEO_TATTLER */
+
+#define CALLGEOTAT(f) 
+
+#endif /* XT_GEO_TATTLER */
 
 #endif /* _XtintrinsicI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
-/* $XConsortium: t1funcs.c /main/21 1995/12/05 16:50:09 mor $ */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.1 1994/08/20 07:29:43 dawes Exp $ */
+/* $XConsortium: t1funcs.c /main/22 1996/09/28 16:47:46 rws $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.2 1996/01/05 13:13:35 dawes Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ifparser.h /main/3 1996/04/23 13:27:11 kaleb $
+ * $XConsortium: ifparser.h /main/4 1996/09/28 16:15:24 rws $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 

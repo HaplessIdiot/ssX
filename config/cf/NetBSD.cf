@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
+XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.43 1996/10/16 14:28:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.30 1996/01/28 07:27:35 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 

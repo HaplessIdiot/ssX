@@ -1,5 +1,5 @@
-/* $XConsortium: Manage.c,v 1.35 95/06/29 19:19:29 converse Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Manage.c /main/35 1996/09/28 16:46:36 rws $ */
+/* $XFree86: xc/lib/Xt/Manage.c,v 3.2 1996/06/10 08:43:04 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -113,6 +113,8 @@ static void UnmanageChildren(children, num_children, parent, num_unique_children
 	} else
         if (child->core.managed) {
             (*num_unique_children)++;
+	    CALLGEOTAT(_XtGeoTrace(child,"Child \"%s\" is marked unmanaged\n", 
+			   XtName(child)));
 	    child->core.managed = FALSE;
             if (XtIsWidget(child)
 		&& XtIsRealized(child)
@@ -135,6 +137,10 @@ static void UnmanageChildren(children, num_children, parent, num_unique_children
     }
     if (call_change_managed && *num_unique_children != 0 &&
 	change_managed != NULL && parent_realized) {
+	CALLGEOTAT(_XtGeoTrace((Widget)parent,
+		       "Call parent: \"%s\"[%d,%d]'s changemanaged proc\n", 
+		       XtName((Widget)parent),
+		       parent->core.width,parent->core.height));
 	(*change_managed) (parent);
     }
 } /* UnmanageChildren */
@@ -250,13 +256,23 @@ static void ManageChildren(children, num_children, parent, call_change_managed, 
 		(String *)NULL, (Cardinal *)NULL);
 	} else if (! child->core.managed && !child->core.being_destroyed) {
 	    unique_children[num_unique_children++] = child;
+	    CALLGEOTAT(_XtGeoTrace(child,
+			   "Child \"%s\"[%d,%d] is marked managed\n", 
+			   XtName(child),
+			   child->core.width,child->core.height));
 	    child->core.managed = TRUE;
 	}
     }
 
     if ((call_change_managed || num_unique_children != 0) && parent_realized) {
 	/* Compute geometry of new managed set of children. */
-	if (change_managed != NULL) (*change_managed) ((Widget)parent);
+	if (change_managed != NULL) {
+	    CALLGEOTAT(_XtGeoTrace((Widget)parent,
+			   "Call parent: \"%s\"[%d,%d]'s changemanaged\n", 
+			   XtName((Widget)parent), 
+			   parent->core.width,parent->core.height));
+	    (*change_managed) ((Widget)parent);
+	}
 
 	/* Realize each child if necessary, then map if necessary */
 	for (i = 0; i < num_unique_children; i++) {

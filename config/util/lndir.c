@@ -1,5 +1,5 @@
-/* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
-/* $XFree86: xc/config/util/lndir.c,v 3.3 1995/01/28 15:41:09 dawes Exp $ */
+/* $XConsortium: lndir.c /main/16 1996/09/28 16:16:40 rws $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.4 1996/01/05 13:07:38 dawes Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 

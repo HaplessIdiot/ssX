@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c /main/15 1996/01/21 15:11:34 kaleb $ */
+/* $XConsortium: imDefIc.c /main/16 1996/09/28 16:37:13 rws $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
