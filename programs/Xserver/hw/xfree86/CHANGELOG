@@ -1,4 +1,5 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 415. Remove some static variables that should be per-screen (David Dawes).
  414. SiS driver update:
       - Add 8x8 Color Pattern Fill (315/330 series)
       - Add transparency support for 8x8 Mono Pattern (300/315/330 series)
@@ -17647,7 +17648,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2837 2003/09/02 18:19:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2838 2003/09/02 18:24:49 twini Exp $
 
 
 
