@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.11 2000/02/25 19:07:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.12 2000/04/04 22:36:55 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -52,83 +52,83 @@ static xf86ConfigSymTabRec DisplayTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeDisplayList
+#define CLEANUP xf86freeDisplayList
 
 XF86ConfDisplayPtr
-parseDisplaySubSection (void)
+xf86parseDisplaySubSection (void)
 {
 	parsePrologue (XF86ConfDisplayPtr, XF86ConfDisplayRec)
 
-	while ((token = xf86GetToken (DisplayTab)) != ENDSUBSECTION)
+	while ((token = xf86getToken (DisplayTab)) != ENDSUBSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->disp_comment = val.str;
 			break;
 		case VIEWPORT:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (VIEWPORT_MSG, NULL);
 			ptr->disp_frameX0 = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (VIEWPORT_MSG, NULL);
 			ptr->disp_frameY0 = val.num;
 			break;
 		case VIRTUAL:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (VIRTUAL_MSG, NULL);
 			ptr->disp_virtualX = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (VIRTUAL_MSG, NULL);
 			ptr->disp_virtualY = val.num;
 			break;
 		case DEPTH:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Display");
 			ptr->disp_depth = val.num;
 			break;
 		case BPP:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Display");
 			ptr->disp_bpp = val.num;
 			break;
 		case VISUAL:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Display");
 			ptr->disp_visual = val.str;
 			break;
 		case WEIGHT:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.red = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.green = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.blue = val.num;
 			break;
 		case BLACK_TOK:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.red = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.green = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (BLACK_MSG, NULL);
 			ptr->disp_black.blue = val.num;
 			break;
 		case WHITE_TOK:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.red = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.green = val.num;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (WHITE_MSG, NULL);
 			ptr->disp_white.blue = val.num;
 			break;
@@ -136,35 +136,35 @@ parseDisplaySubSection (void)
 			{
 				XF86ModePtr mptr;
 
-				while ((token = xf86GetToken (DisplayTab)) == STRING)
+				while ((token = xf86getToken (DisplayTab)) == STRING)
 				{
 					mptr = xf86confcalloc (1, sizeof (XF86ModeRec));
 					mptr->mode_name = val.str;
 					mptr->list.next = NULL;
 					ptr->disp_mode_lst = (XF86ModePtr)
-						addListItem ((glp) ptr->disp_mode_lst, (glp) mptr);
+						xf86addListItem ((glp) ptr->disp_mode_lst, (glp) mptr);
 				}
-				xf86UnGetToken (token);
+				xf86unGetToken (token);
 			}
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
 					ptr->disp_option_lst =
-					    addNewOption (ptr->disp_option_lst,
+					    xf86addNewOption (ptr->disp_option_lst,
 							  name, val.str);
 				}
 				else
 				{
 					ptr->disp_option_lst =
-					    addNewOption (ptr->disp_option_lst,
+					    xf86addNewOption (ptr->disp_option_lst,
 							  name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
@@ -173,7 +173,7 @@ parseDisplaySubSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -206,26 +206,26 @@ static xf86ConfigSymTabRec ScreenTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeScreenList
+#define CLEANUP xf86freeScreenList
 XF86ConfScreenPtr
-parseScreenSection (void)
+xf86parseScreenSection (void)
 {
 	int has_ident = FALSE;
         int has_driver= FALSE;
 
 	parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
 
-		while ((token = xf86GetToken (ScreenTab)) != ENDSECTION)
+		while ((token = xf86getToken (ScreenTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->scrn_comment = val.str;
 			break;
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->scrn_identifier = val.str;
                         if (has_ident || has_driver)
@@ -233,7 +233,7 @@ parseScreenSection (void)
                         has_ident = TRUE;
 			break;
                 case OBSDRIVER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->scrn_obso_driver = val.str;
                         if (has_ident || has_driver)
@@ -241,27 +241,27 @@ parseScreenSection (void)
                         has_driver = TRUE;
 			break;
 		case DEFAULTDEPTH:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "DefaultDepth");
 			ptr->scrn_defaultdepth = val.num;
 			break;
 		case DEFAULTBPP:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "DefaultBPP");
 			ptr->scrn_defaultbpp = val.num;
 			break;
 		case DEFAULTFBBPP:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "DefaultFbBPP");
 			ptr->scrn_defaultfbbpp = val.num;
 			break;
 		case MDEVICE:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Device");
 			ptr->scrn_device_str = val.str;
 			break;
 		case MONITOR:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Monitor");
 			ptr->scrn_monitor_str = val.str;
 			break;
@@ -269,13 +269,13 @@ parseScreenSection (void)
 			{
 				XF86ConfAdaptorLinkPtr aptr;
 
-				if (xf86GetToken (NULL) != STRING)
+				if (xf86getToken (NULL) != STRING)
 					Error (QUOTE_MSG, "VideoAdaptor");
 
 				/* Don't allow duplicates */
 				for (aptr = ptr->scrn_adaptor_lst; aptr; 
 					aptr = (XF86ConfAdaptorLinkPtr) aptr->list.next)
-					if (NameCompare (val.str, aptr->al_adaptor_str) == 0)
+					if (xf86nameCompare (val.str, aptr->al_adaptor_str) == 0)
 						break;
 
 				if (aptr == NULL)
@@ -284,36 +284,36 @@ parseScreenSection (void)
 					aptr->list.next = NULL;
 					aptr->al_adaptor_str = val.str;
 					ptr->scrn_adaptor_lst = (XF86ConfAdaptorLinkPtr)
-						addListItem ((glp) ptr->scrn_adaptor_lst, (glp) aptr);
+						xf86addListItem ((glp) ptr->scrn_adaptor_lst, (glp) aptr);
 				}
 			}
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
 					ptr->scrn_option_lst =
-					    addNewOption (ptr->scrn_option_lst,
+					    xf86addNewOption (ptr->scrn_option_lst,
 							  name, val.str);
 				}
 				else
 				{
 					ptr->scrn_option_lst =
-					    addNewOption (ptr->scrn_option_lst,
+					    xf86addNewOption (ptr->scrn_option_lst,
 							  name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
 		case SUBSECTION:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
-				HANDLE_LIST (scrn_display_lst, parseDisplaySubSection,
+				HANDLE_LIST (scrn_display_lst, xf86parseDisplaySubSection,
 							 XF86ConfDisplayPtr);
 			}
 			break;
@@ -321,7 +321,7 @@ parseScreenSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -337,7 +337,7 @@ parseScreenSection (void)
 }
 
 void
-printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
+xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 {
 	XF86ConfAdaptorLinkPtr aptr;
 	XF86ConfDisplayPtr dptr;
@@ -433,7 +433,7 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 }
 
 void
-freeScreenList (XF86ConfScreenPtr ptr)
+xf86freeScreenList (XF86ConfScreenPtr ptr)
 {
 	XF86ConfScreenPtr prev;
 
@@ -442,9 +442,9 @@ freeScreenList (XF86ConfScreenPtr ptr)
 		TestFree (ptr->scrn_identifier);
 		TestFree (ptr->scrn_monitor_str);
 		TestFree (ptr->scrn_device_str);
-		OptionListFree (ptr->scrn_option_lst);
-		freeAdaptorLinkList (ptr->scrn_adaptor_lst);
-		freeDisplayList (ptr->scrn_display_lst);
+		xf86optionListFree (ptr->scrn_option_lst);
+		xf86freeAdaptorLinkList (ptr->scrn_adaptor_lst);
+		xf86freeDisplayList (ptr->scrn_display_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -452,7 +452,7 @@ freeScreenList (XF86ConfScreenPtr ptr)
 }
 
 void
-freeAdaptorLinkList (XF86ConfAdaptorLinkPtr ptr)
+xf86freeAdaptorLinkList (XF86ConfAdaptorLinkPtr ptr)
 {
 	XF86ConfAdaptorLinkPtr prev;
 
@@ -466,14 +466,14 @@ freeAdaptorLinkList (XF86ConfAdaptorLinkPtr ptr)
 }
 
 void
-freeDisplayList (XF86ConfDisplayPtr ptr)
+xf86freeDisplayList (XF86ConfDisplayPtr ptr)
 {
 	XF86ConfDisplayPtr prev;
 
 	while (ptr)
 	{
-		freeModeList (ptr->disp_mode_lst);
-		OptionListFree (ptr->disp_option_lst);
+		xf86freeModeList (ptr->disp_mode_lst);
+		xf86optionListFree (ptr->disp_option_lst);
 		prev = ptr;
 		ptr = ptr->list.next;
 		xf86conffree (prev);
@@ -481,7 +481,7 @@ freeDisplayList (XF86ConfDisplayPtr ptr)
 }
 
 void
-freeModeList (XF86ModePtr ptr)
+xf86freeModeList (XF86ModePtr ptr)
 {
 	XF86ModePtr prev;
 
@@ -495,7 +495,7 @@ freeModeList (XF86ModePtr ptr)
 }
 
 int
-validateScreen (XF86ConfigPtr p)
+xf86validateScreen (XF86ConfigPtr p)
 {
 	XF86ConfScreenPtr screen = p->conf_screen_lst;
 	XF86ConfMonitorPtr monitor;
@@ -504,7 +504,7 @@ validateScreen (XF86ConfigPtr p)
 
 	if (!screen)
 	{
-		xf86ValidationError ("At least one Screen section is required.");
+		xf86validationError ("At least one Screen section is required.");
 		return (FALSE);
 	}
 
@@ -513,24 +513,24 @@ validateScreen (XF86ConfigPtr p)
                 if (screen->scrn_obso_driver && !screen->scrn_identifier)
                         screen->scrn_identifier = screen->scrn_obso_driver;
                 
-                monitor = xf86FindMonitor (screen->scrn_monitor_str, p->conf_monitor_lst);
+                monitor = xf86findMonitor (screen->scrn_monitor_str, p->conf_monitor_lst);
 		if (!monitor)
 		{
-			xf86ValidationError (UNDEFINED_MONITOR_MSG,
+			xf86validationError (UNDEFINED_MONITOR_MSG,
 						 screen->scrn_monitor_str, screen->scrn_identifier);
 			return (FALSE);
 		}
 		else
 		{
 			screen->scrn_monitor = monitor;
-			if (!validateMonitor(p, screen))
+			if (!xf86validateMonitor(p, screen))
 				return (FALSE);
 		}
 
-		device = xf86FindDevice (screen->scrn_device_str, p->conf_device_lst);
+		device = xf86findDevice (screen->scrn_device_str, p->conf_device_lst);
 		if (!device)
 		{
-			xf86ValidationError (UNDEFINED_DEVICE_MSG,
+			xf86validationError (UNDEFINED_DEVICE_MSG,
 						  screen->scrn_device_str, screen->scrn_identifier);
 			return (FALSE);
 		}
@@ -540,15 +540,15 @@ validateScreen (XF86ConfigPtr p)
 		adaptor = screen->scrn_adaptor_lst;
 		while (adaptor)
 		{
-			adaptor->al_adaptor = xf86FindVideoAdaptor (adaptor->al_adaptor_str, p->conf_videoadaptor_lst);
+			adaptor->al_adaptor = xf86findVideoAdaptor (adaptor->al_adaptor_str, p->conf_videoadaptor_lst);
 			if (!adaptor->al_adaptor)
 			{
-				xf86ValidationError (UNDEFINED_ADAPTOR_MSG, adaptor->al_adaptor_str, screen->scrn_identifier);
+				xf86validationError (UNDEFINED_ADAPTOR_MSG, adaptor->al_adaptor_str, screen->scrn_identifier);
 				return (FALSE);
 			}
 			else if (adaptor->al_adaptor->va_fwdref)
 			{
-				xf86ValidationError (ADAPTOR_REF_TWICE_MSG, adaptor->al_adaptor_str,
+				xf86validationError (ADAPTOR_REF_TWICE_MSG, adaptor->al_adaptor_str,
 						     adaptor->al_adaptor->va_fwdref);
 				return (FALSE);
 			}
@@ -564,11 +564,11 @@ validateScreen (XF86ConfigPtr p)
 }
 
 XF86ConfScreenPtr
-xf86FindScreen (const char *ident, XF86ConfScreenPtr p)
+xf86findScreen (const char *ident, XF86ConfScreenPtr p)
 {
 	while (p)
 	{
-		if (NameCompare (ident, p->scrn_identifier) == 0)
+		if (xf86nameCompare (ident, p->scrn_identifier) == 0)
 			return (p);
 
 		p = p->list.next;
@@ -577,7 +577,7 @@ xf86FindScreen (const char *ident, XF86ConfScreenPtr p)
 }
 
 XF86ConfDisplayPtr
-xf86FindDisplay (int depth, XF86ConfDisplayPtr p)
+xf86findDisplay (int depth, XF86ConfDisplayPtr p)
 {
 	while (p)
 	{

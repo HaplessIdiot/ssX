@@ -26,20 +26,47 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.h,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86$
  */
 
-#include "config.h"
-#ifdef USE_MODULES
-#include "loader.h"
-#endif
+#include <string.h>
+#include "stubs.h"
 
 /*
- * Prototypes
+ * Implementation
  */
-#ifdef USE_MODULES
-void OptionsPopup(XF86OptionPtr*, char*, OptionInfoPtr);
+#if !defined(USE_MODULES)
+/* these are defined in libdummy.a */
+int
+ErrorF(const char *fmt, ...)
+{
+    int retval;
+    va_list ap;
+
+    Va_start(ap, fmt);
+    retval = vfprintf(stderr, fmt, ap);
+
+    va_end(ap);
+
+    return (retval);
+}
+
+int
+VErrorF(const char *fmt, va_list ap)
+{
+    int retval;
+
+    retval = vfprintf(stderr, fmt, ap);
+
+    return (retval);
+}
+
 #else
-void OptionsPopup(XF86OptionPtr*);
-#endif
-void OptionsCancelAction(Widget, XEvent*, String*, Cardinal*);
+char *Xstrdup(const char*);
+
+char *
+Xstrdup(const char *s)
+{
+    return (strdup(s));
+}
+#endif /* !defined(USE_MODULES) */

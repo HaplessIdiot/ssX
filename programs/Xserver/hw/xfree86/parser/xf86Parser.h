@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.20 2000/04/04 19:25:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.21 2000/06/20 05:08:49 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -391,28 +391,28 @@ xf86ConfigSymTabRec, *xf86ConfigSymTabPtr;
 /*
  * prototypes for public functions
  */
-extern const char *xf86OpenConfigFile (const char *, const char *,
+extern const char *xf86openConfigFile (const char *, const char *,
 					const char *);
-extern XF86ConfigPtr xf86ReadConfigFile (void);
-extern void xf86CloseConfigFile (void);
-extern void XF86FreeConfig (XF86ConfigPtr p);
-extern int xf86WriteConfigFile (const char *, XF86ConfigPtr);
-XF86ConfDevicePtr xf86FindDevice(const char *ident, XF86ConfDevicePtr p);
-XF86ConfLayoutPtr xf86FindLayout(const char *name, XF86ConfLayoutPtr list);
-XF86ConfMonitorPtr xf86FindMonitor(const char *ident, XF86ConfMonitorPtr p);
-XF86ConfModesPtr xf86FindModes(const char *ident, XF86ConfModesPtr p);
-XF86ConfModeLinePtr xf86FindModeLine(const char *ident, XF86ConfModeLinePtr p);
-XF86ConfScreenPtr xf86FindScreen(const char *ident, XF86ConfScreenPtr p);
-XF86ConfDisplayPtr xf86FindDisplay(int depth, XF86ConfDisplayPtr p);
-XF86ConfInputPtr xf86FindInput(const char *ident, XF86ConfInputPtr p);
-XF86ConfInputPtr xf86FindInputByDriver(const char *driver, XF86ConfInputPtr p);
-XF86ConfVendorPtr xf86FindVendor(const char *name, XF86ConfVendorPtr list);
-XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident,
+extern XF86ConfigPtr xf86readConfigFile (void);
+extern void xf86closeConfigFile (void);
+extern void XF86freeConfig (XF86ConfigPtr p);
+extern int xf86writeConfigFile (const char *, XF86ConfigPtr);
+XF86ConfDevicePtr xf86findDevice(const char *ident, XF86ConfDevicePtr p);
+XF86ConfLayoutPtr xf86findLayout(const char *name, XF86ConfLayoutPtr list);
+XF86ConfMonitorPtr xf86findMonitor(const char *ident, XF86ConfMonitorPtr p);
+XF86ConfModesPtr xf86findModes(const char *ident, XF86ConfModesPtr p);
+XF86ConfModeLinePtr xf86findModeLine(const char *ident, XF86ConfModeLinePtr p);
+XF86ConfScreenPtr xf86findScreen(const char *ident, XF86ConfScreenPtr p);
+XF86ConfDisplayPtr xf86findDisplay(int depth, XF86ConfDisplayPtr p);
+XF86ConfInputPtr xf86findInput(const char *ident, XF86ConfInputPtr p);
+XF86ConfInputPtr xf86findInputByDriver(const char *driver, XF86ConfInputPtr p);
+XF86ConfVendorPtr xf86findVendor(const char *name, XF86ConfVendorPtr list);
+XF86ConfVideoAdaptorPtr xf86findVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);
 
-GenericListPtr addListItem(GenericListPtr head, GenericListPtr new);
+GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr new);
 
-int PathIsAbsolute(const char *path);
-int PathIsSafe(const char *path);
+int xf86pathIsAbsolute(const char *path);
+int xf86pathIsSafe(const char *path);
 
 #endif /* _xf86Parser_h_ */

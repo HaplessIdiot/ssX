@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.2 2000/05/18 16:30:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.3 2000/06/13 23:15:52 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -74,31 +74,31 @@ CreateScreenWidget(xf86cfgScreen *screen)
      */
     if (screen->monitor != NULL) {
 	options = ((XF86ConfMonitorPtr)(screen->monitor->config))->mon_option_lst;
-	if ((option = xf86FindOption(options, Rotate)) != NULL) {
+	if ((option = xf86findOption(options, Rotate)) != NULL) {
 	    if (option->opt_val != NULL)
 		rotate = strcasecmp(option->opt_val, _CW) == 0 ? CW :
 			 strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
-	    xf86RemoveOption(&((XF86ConfMonitorPtr)(screen->monitor->config))
+	    xf86removeOption(&((XF86ConfMonitorPtr)(screen->monitor->config))
 			     ->mon_option_lst, Rotate);
 	}
     }
     if (screen->card != NULL) {
 	options = ((XF86ConfDevicePtr)(screen->card->config))->dev_option_lst;
-	if ((option = xf86FindOption(options, Rotate)) != NULL) {
+	if ((option = xf86findOption(options, Rotate)) != NULL) {
 	    if (option->opt_val != NULL)
 		rotate += strcasecmp(option->opt_val, _CW) == 0 ? CW :
 			  strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
-	    xf86RemoveOption(&((XF86ConfDevicePtr)(screen->card->config))
+	    xf86removeOption(&((XF86ConfDevicePtr)(screen->card->config))
 			     ->dev_option_lst, Rotate);
 	}
     }
 
     options = screen->screen->scrn_option_lst;
-    if ((option = xf86FindOption(options, Rotate)) != NULL) {
+    if ((option = xf86findOption(options, Rotate)) != NULL) {
 	if (option->opt_val != NULL)
 	    rotate += strcasecmp(option->opt_val, _CW) == 0 ? CW :
 		      strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
-	xf86RemoveOption(&screen->screen->scrn_option_lst, Rotate);
+	xf86removeOption(&screen->screen->scrn_option_lst, Rotate);
     }
 
     rotate = rotate > 0 ? CW : rotate < 0 ? CCW : 0;
@@ -195,7 +195,7 @@ AddScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
 	++nscreens;
 	XmuSnprintf(screen_name, sizeof(screen_name), "Screen%d",
 		    nscreens);
-    } while (xf86FindScreen(screen_name,
+    } while (xf86findScreen(screen_name,
 	     XF86Config->conf_screen_lst) != NULL);
 
     screen = (XF86ConfScreenPtr)XtCalloc(1, sizeof(XF86ConfScreenRec));
@@ -205,7 +205,7 @@ AddScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
     screen->scrn_monitor_str = XtNewString(((XF86ConfMonitorPtr)(mon->config))->mon_identifier);
     screen->scrn_monitor = (XF86ConfMonitorPtr)(mon->config);
     XF86Config->conf_screen_lst =
-	xf86AddScreen(XF86Config->conf_screen_lst, screen);
+	xf86addScreen(XF86Config->conf_screen_lst, screen);
 
     adj = (XF86ConfAdjacencyPtr)XtCalloc(1, sizeof(XF86ConfAdjacencyRec));
     adj->adj_screen = screen;
@@ -214,7 +214,7 @@ AddScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
 	computer.layout = XF86Config->conf_layout_lst = (XF86ConfLayoutPtr)
 	    XtCalloc(1, sizeof(XF86ConfLayoutRec));
     computer.layout->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
-	addListItem((GenericListPtr)computer.layout->lay_adjacency_lst,
+	xf86addListItem((GenericListPtr)computer.layout->lay_adjacency_lst,
 		    (GenericListPtr)adj);
 
     computer.screens = (xf86cfgScreen**)
@@ -263,7 +263,7 @@ RemoveScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
 	}
     }
 
-    xf86RemoveScreen(XF86Config, screen);
+    xf86removeScreen(XF86Config, screen);
 }
 
 void
@@ -695,7 +695,7 @@ AdjustScreenUI(void)
 	    XF86ConfScreenPtr s;
 
 	    if (adj->adj_where >= CONF_ADJ_RIGHTOF < adj->adj_where <= CONF_ADJ_BELOW) {
-		s = xf86FindScreen(adj->adj_refscreen, XF86Config->conf_screen_lst);
+		s = xf86findScreen(adj->adj_refscreen, XF86Config->conf_screen_lst);
 		for (i = 0; i < computer.num_screens; i++)
 		    if (computer.screens[i]->screen == s)
 			break;
@@ -793,6 +793,9 @@ AdjustScreenUI(void)
     for (i = 0; i < computer.num_screens; i++)
 	if (computer.screens[i]->state == USED1)
 	    computer.screens[i]->state = USED;
+	else
+	    XLowerWindow(XtDisplay(computer.screens[i]->widget),
+			 XtWindow(computer.screens[i]->widget));
 
     w = work->core.width / (columns + 1) - 5;
     h = work->core.height / (rows + 1) - 5;

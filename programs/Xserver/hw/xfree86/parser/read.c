@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.11 1999/09/04 13:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.12 2000/04/04 22:36:55 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -41,10 +41,10 @@ static xf86ConfigSymTabRec TopLevelTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP XF86FreeConfig
+#define CLEANUP XF86freeConfig
 
 XF86ConfigPtr
-xf86ReadConfigFile (void)
+xf86readConfigFile (void)
 {
 	int token;
 	XF86ConfigPtr ptr = NULL;
@@ -55,95 +55,95 @@ xf86ReadConfigFile (void)
 	}
 	memset (ptr, 0, sizeof (XF86ConfigRec));
 
-	while ((token = xf86GetToken (TopLevelTab)) != EOF_TOKEN)
+	while ((token = xf86getToken (TopLevelTab)) != EOF_TOKEN)
 	{
 		switch (token)
 		{
 		case SECTION:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 			{
-				xf86ParseError (QUOTE_MSG, "Section");
+				xf86parseError (QUOTE_MSG, "Section");
 				CLEANUP (ptr);
 				return (NULL);
 			}
-			SetSection (val.str);
-			if (NameCompare (val.str, "files") == 0)
+			xf86setSection (val.str);
+			if (xf86nameCompare (val.str, "files") == 0)
 			{
-				HANDLE_RETURN (conf_files, parseFilesSection ());
+				HANDLE_RETURN (conf_files, xf86parseFilesSection ());
 			}
-			else if (NameCompare (val.str, "serverflags") == 0)
+			else if (xf86nameCompare (val.str, "serverflags") == 0)
 			{
-				HANDLE_RETURN (conf_flags, parseFlagsSection ());
+				HANDLE_RETURN (conf_flags, xf86parseFlagsSection ());
 			}
-			else if (NameCompare (val.str, "keyboard") == 0)
+			else if (xf86nameCompare (val.str, "keyboard") == 0)
 			{
-				HANDLE_LIST (conf_input_lst, parseKeyboardSection,
+				HANDLE_LIST (conf_input_lst, xf86parseKeyboardSection,
 							 XF86ConfInputPtr);
 			}
-			else if (NameCompare (val.str, "pointer") == 0)
+			else if (xf86nameCompare (val.str, "pointer") == 0)
 			{
-				HANDLE_LIST (conf_input_lst, parsePointerSection,
+				HANDLE_LIST (conf_input_lst, xf86parsePointerSection,
 							 XF86ConfInputPtr);
 			}
-			else if (NameCompare (val.str, "videoadaptor") == 0)
+			else if (xf86nameCompare (val.str, "videoadaptor") == 0)
 			{
-				HANDLE_LIST (conf_videoadaptor_lst, parseVideoAdaptorSection,
+				HANDLE_LIST (conf_videoadaptor_lst, xf86parseVideoAdaptorSection,
 							 XF86ConfVideoAdaptorPtr);
 			}
-			else if (NameCompare (val.str, "device") == 0)
+			else if (xf86nameCompare (val.str, "device") == 0)
 			{
-				HANDLE_LIST (conf_device_lst, parseDeviceSection,
+				HANDLE_LIST (conf_device_lst, xf86parseDeviceSection,
 							 XF86ConfDevicePtr);
 			}
-			else if (NameCompare (val.str, "monitor") == 0)
+			else if (xf86nameCompare (val.str, "monitor") == 0)
 			{
-				HANDLE_LIST (conf_monitor_lst, parseMonitorSection,
+				HANDLE_LIST (conf_monitor_lst, xf86parseMonitorSection,
 							 XF86ConfMonitorPtr);
 			}
-			else if (NameCompare (val.str, "modes") == 0)
+			else if (xf86nameCompare (val.str, "modes") == 0)
 			{
-				HANDLE_LIST (conf_modes_lst, parseModesSection,
+				HANDLE_LIST (conf_modes_lst, xf86parseModesSection,
 							 XF86ConfModesPtr);
 			}
-			else if (NameCompare (val.str, "screen") == 0)
+			else if (xf86nameCompare (val.str, "screen") == 0)
 			{
-				HANDLE_LIST (conf_screen_lst, parseScreenSection,
+				HANDLE_LIST (conf_screen_lst, xf86parseScreenSection,
 							 XF86ConfScreenPtr);
 			}
-			else if (NameCompare(val.str, "inputdevice") == 0)
+			else if (xf86nameCompare(val.str, "inputdevice") == 0)
 			{
-				HANDLE_LIST (conf_input_lst, parseInputSection,
+				HANDLE_LIST (conf_input_lst, xf86parseInputSection,
 							 XF86ConfInputPtr);
 			}
-			else if (NameCompare (val.str, "module") == 0)
+			else if (xf86nameCompare (val.str, "module") == 0)
 			{
-				HANDLE_RETURN (conf_modules, parseModuleSection ());
+				HANDLE_RETURN (conf_modules, xf86parseModuleSection ());
 			}
-			else if (NameCompare (val.str, "serverlayout") == 0)
+			else if (xf86nameCompare (val.str, "serverlayout") == 0)
 			{
-				HANDLE_LIST (conf_layout_lst, parseLayoutSection,
+				HANDLE_LIST (conf_layout_lst, xf86parseLayoutSection,
 							 XF86ConfLayoutPtr);
 			}
-			else if (NameCompare (val.str, "vendor") == 0)
+			else if (xf86nameCompare (val.str, "vendor") == 0)
 			{
-				HANDLE_LIST (conf_vendor_lst, parseVendorSection,
+				HANDLE_LIST (conf_vendor_lst, xf86parseVendorSection,
 							 XF86ConfVendorPtr);
 			}
-			else if (NameCompare (val.str, "dri") == 0)
+			else if (xf86nameCompare (val.str, "dri") == 0)
 			{
-				HANDLE_RETURN (conf_dri, parseDRISection ());
+				HANDLE_RETURN (conf_dri, xf86parseDRISection ());
 			}
 			else
 			{
-				Error (INVALID_SECTION_MSG, xf86TokenString ());
+				Error (INVALID_SECTION_MSG, xf86tokenString ());
 			}
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 		}
 	}
 
-	if (validateConfig (ptr))
+	if (xf86validateConfig (ptr))
 		return (ptr);
 	else
 	{
@@ -159,15 +159,15 @@ xf86ReadConfigFile (void)
  * objects cannot be found.
  */
 int
-validateConfig (XF86ConfigPtr p)
+xf86validateConfig (XF86ConfigPtr p)
 {
-	if (!validateDevice (p))
+	if (!xf86validateDevice (p))
 		return FALSE;
-	if (!validateScreen (p))
+	if (!xf86validateScreen (p))
 		return FALSE;
-	if (!validateInput (p))
+	if (!xf86validateInput (p))
 		return FALSE;
-	if (!validateLayout (p))
+	if (!xf86validateLayout (p))
 		return FALSE;
 
 	return (TRUE);
@@ -180,7 +180,7 @@ validateConfig (XF86ConfigPtr p)
  * the first item.
  */
 GenericListPtr
-addListItem (GenericListPtr head, GenericListPtr new)
+xf86addListItem (GenericListPtr head, GenericListPtr new)
 {
 	GenericListPtr p = head;
 	GenericListPtr last = NULL;
@@ -201,20 +201,20 @@ addListItem (GenericListPtr head, GenericListPtr new)
 }
 
 void
-XF86FreeConfig (XF86ConfigPtr p)
+XF86freeConfig (XF86ConfigPtr p)
 {
 	if (p == NULL)
 		return;
 
-	freeFiles (p->conf_files);
-	freeModules (p->conf_modules);
-	freeFlags (p->conf_flags);
-	freeMonitorList (p->conf_monitor_lst);
-	freeVideoAdaptorList (p->conf_videoadaptor_lst);
-	freeDeviceList (p->conf_device_lst);
-	freeScreenList (p->conf_screen_lst);
-	freeLayoutList (p->conf_layout_lst);
-	freeInputList (p->conf_input_lst);
+	xf86freeFiles (p->conf_files);
+	xf86freeModules (p->conf_modules);
+	xf86freeFlags (p->conf_flags);
+	xf86freeMonitorList (p->conf_monitor_lst);
+	xf86freeVideoAdaptorList (p->conf_videoadaptor_lst);
+	xf86freeDeviceList (p->conf_device_lst);
+	xf86freeScreenList (p->conf_screen_lst);
+	xf86freeLayoutList (p->conf_layout_lst);
+	xf86freeInputList (p->conf_input_lst);
 
 	xf86conffree (p);
 }

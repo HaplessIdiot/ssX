@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.6 2000/04/17 16:30:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.7 2000/08/11 17:27:14 dawes Exp $ */
 
 #define FBDEVHW_PACKED_PIXELS		0	/* Packed Pixels	*/
 #define FBDEVHW_PLANES			1	/* Non interleaved planes */
@@ -14,6 +14,7 @@ Bool  fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device);
 
 char* fbdevHWGetName(ScrnInfoPtr pScrn);
 int   fbdevHWGetDepth(ScrnInfoPtr pScrn);
+int   fbdevHWGetLineLength(ScrnInfoPtr pScrn);
 int   fbdevHWGetType(ScrnInfoPtr pScrn);
 int   fbdevHWGetVidmem(ScrnInfoPtr pScrn);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.18 2000/08/11 23:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.19 2000/09/26 15:57:17 tsi Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -43,7 +43,7 @@ static XF86ModuleVersionInfo fbdevHWVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0, 0, 1,
+	0, 0, 2,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
 	MOD_CLASS_NONE,
@@ -92,8 +92,10 @@ typedef struct {
 	char*				device;
 	int				fd;
 	void*				fbmem;
-	int				fboff;
-	void*				mmio;
+	unsigned int			fbmem_len;
+	unsigned int			fboff;
+	char*				mmio;
+	unsigned int			mmio_len;
 
 	/* current hardware state */
 	struct fb_fix_screeninfo	fix;
@@ -101,6 +103,8 @@ typedef struct {
 
 	/* saved video mode */
 	struct fb_var_screeninfo	saved_var;
+
+	/* FIXME: unused??? [geert] */
 	struct fb_cmap			saved_cmap;
 	unsigned short			*saved_red;
 	unsigned short			*saved_green;
@@ -171,12 +175,9 @@ xfree2fbdev_fblayout(ScrnInfoPtr pScrn, struct fb_var_screeninfo *var)
 	var->xres_virtual   = pScrn->virtualX;
 	var->yres_virtual   = pScrn->virtualY;
 	var->bits_per_pixel = pScrn->bitsPerPixel;
-	var->red.length     = 0;
-	var->red.offset     = 0;
-	var->green.length   = 0;
-	var->green.offset   = 0;
-	var->blue.length    = 0;
-	var->blue.offset    = 0;
+	var->red.length     = pScrn->weight.red;
+	var->green.length   = pScrn->weight.green;
+	var->blue.length    = pScrn->weight.blue;
 }
 
 static void
@@ -256,28 +257,6 @@ fbdev2xfree_timing(struct fb_var_screeninfo *var, DisplayModePtr mode)
 /* -------------------------------------------------------------------- */
 /* open correct framebuffer device                                      */
 
-static struct fb2pci_entry {
-	CARD32 id;
-	CARD32 vendor;
-	CARD32 chip;
-} fb2pci_map[] = {
-	{ FB_ACCEL_MATROX_MGA2064W,     PCI_VENDOR_MATROX, PCI_CHIP_MGA2064      },
-	{ FB_ACCEL_MATROX_MGA1064SG,    PCI_VENDOR_MATROX, PCI_CHIP_MGA1064      },
-	{ FB_ACCEL_MATROX_MGA2164W,     PCI_VENDOR_MATROX, PCI_CHIP_MGA2164      },
-	{ FB_ACCEL_MATROX_MGA2164W_AGP, PCI_VENDOR_MATROX, PCI_CHIP_MGA2164_AGP  },
-	{ FB_ACCEL_MATROX_MGAG100,      PCI_VENDOR_MATROX, PCI_CHIP_MGAG100      },
-	{ FB_ACCEL_MATROX_MGAG200,      PCI_VENDOR_MATROX, PCI_CHIP_MGAG200      },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RE    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RF    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RK    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RL    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128PF    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LE    },
-	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LF    },
-	{ FB_ACCEL_3DFX_BANSHEE,        PCI_VENDOR_3DFX,   PCI_CHIP_VOODOO3      },
-};
-#define FB2PCICOUNT (sizeof(fb2pci_map)/sizeof(struct fb2pci_entry))
-
 /* try to find the framebuffer device for a given PCI device */
 static int
 fbdev_open_pci(pciVideoPtr pPci, char **namep)
@@ -285,8 +264,9 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 	struct	fb_fix_screeninfo fix;
 	char	filename[16];
 	int	fd,i,j;
+	memType res_start, res_end;
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 8; i++) {
 		sprintf(filename,"/dev/fb%d",i);
 		if (-1 == (fd = open(filename,O_RDWR,0))) {
 			continue;
@@ -295,15 +275,18 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 			close(fd);
 			continue;
 		}
-		/* FIXME: better ask the fbdev driver for bus/device/func,
-                          but there is no way to to this yet. */
-		for (j = 0; j < FB2PCICOUNT; j++) {
-			if (pPci->vendor   == fb2pci_map[j].vendor &&
-			    pPci->chipType == fb2pci_map[j].chip   &&
-			    fix.accel      == fb2pci_map[j].id)
+		for (j = 0; j < 6; j++) {
+			res_start = pPci->memBase[j];
+			res_end = res_start+pPci->size[j];
+			if ((0 != fix.smem_len &&
+			     (memType) fix.smem_start >= res_start &&
+			     (memType) fix.smem_start < res_end) ||
+			    (0 != fix.mmio_len &&
+			     (memType) fix.mmio_start >= res_start &&
+			     (memType) fix.mmio_start < res_end))
 				break;
 		}
-		if (j == FB2PCICOUNT) {
+		if (j == 6) {
 			close(fd);
 			continue;
 		}
@@ -421,7 +404,24 @@ int
 fbdevHWGetDepth(ScrnInfoPtr pScrn)
 {
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
-	return fPtr->var.bits_per_pixel;
+
+	if (fPtr->fix.visual == FB_VISUAL_TRUECOLOR ||
+	    fPtr->fix.visual == FB_VISUAL_DIRECTCOLOR)
+		return fPtr->var.red.length+fPtr->var.green.length+
+			fPtr->var.blue.length;
+	else
+		return fPtr->var.bits_per_pixel;
+}
+
+int
+fbdevHWGetLineLength(ScrnInfoPtr pScrn)
+{
+	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+
+	if (fPtr->fix.line_length)
+		return fPtr->fix.line_length;
+	else
+		return fPtr->var.xres_virtual*fPtr->var.bits_per_pixel/8;
 }
 
 int
@@ -465,7 +465,11 @@ fbdevHWSetVideoModes(ScrnInfoPtr pScrn)
 		xfree2fbdev_timing(mode,&var);
 		var.xres_virtual = virtX;
 		var.yres_virtual = virtY;
-		var.bits_per_pixel = pScrn->depth;
+		var.bits_per_pixel = pScrn->bitsPerPixel;
+		var.red.length = pScrn->weight.red;
+		var.green.length = pScrn->weight.green;
+		var.blue.length = pScrn->weight.blue;
+
 		var.activate = FB_ACTIVATE_TEST;
 		if (var.xres_virtual < var.xres) var.xres_virtual = var.xres;
 		if (var.yres_virtual < var.yres) var.yres_virtual = var.yres;
@@ -522,6 +526,15 @@ fbdevHWUseBuildinMode(ScrnInfoPtr pScrn)
 
 /* -------------------------------------------------------------------- */
 
+void
+calculateFbmem_len(fbdevHWPtr fPtr)
+{
+	fPtr->fboff = (unsigned int) fPtr->fix.smem_start & ~PAGE_MASK;
+	fPtr->fbmem_len = (fPtr->fboff+fPtr->fix.smem_len+~PAGE_MASK) &
+			  PAGE_MASK;
+}
+
+
 void*
 fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 {
@@ -529,12 +542,17 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("MapVidmem");
 	if (NULL == fPtr->fbmem) {
-		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
-		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
+		calculateFbmem_len(fPtr);
+		fPtr->fbmem = mmap(NULL, fPtr->fbmem_len, PROT_READ | PROT_WRITE,
 				   MAP_SHARED, fPtr->fd, 0);
 		if (-1 == (long)fPtr->fbmem) {
 			perror("mmap fbmem");
 			fPtr->fbmem = NULL;
+		} else {
+		    /* Perhaps we'd better add fboff to fbmem and return 0 in
+		       fbdevHWLinearOffset()? Of course we then need to mask
+		       fPtr->fbmem with PAGE_MASK in fbdevHWUnmapVidmem() as
+		       well. [geert] */
 		}
 	}
 	pScrn->memPhysBase = (unsigned long)fPtr->fix.smem_start & (unsigned long)(PAGE_MASK);
@@ -558,7 +576,7 @@ fbdevHWUnmapVidmem(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("UnmapVidmem");
 	if (NULL != fPtr->fbmem) {
-		if (-1 == munmap(fPtr->fbmem, fPtr->fix.smem_len))
+		if (-1 == munmap(fPtr->fbmem, fPtr->fbmem_len))
 			perror("munmap fbmem");
 		fPtr->fbmem = NULL;
 	}
@@ -568,6 +586,8 @@ fbdevHWUnmapVidmem(ScrnInfoPtr pScrn)
 void*
 fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 {
+	unsigned int mmio_off;
+
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
 
 	TRACE_ENTER("MapMMIO");
@@ -578,12 +598,18 @@ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 			perror("FBIOPUT_VSCREENINFO");
 			return FALSE;
 		}
-		fPtr->mmio = mmap(NULL, fPtr->fix.mmio_len, PROT_READ | PROT_WRITE,
-				  MAP_SHARED, fPtr->fd, fPtr->fix.smem_len);
+		mmio_off = (unsigned int) fPtr->fix.mmio_start & ~PAGE_MASK;
+		fPtr->mmio_len = (mmio_off+fPtr->fix.mmio_len+~PAGE_MASK) &
+				  PAGE_MASK;
+		if (NULL == fPtr->fbmem)
+			calculateFbmem_len(fPtr);
+		fPtr->mmio = mmap(NULL, fPtr->mmio_len, PROT_READ | PROT_WRITE,
+				  MAP_SHARED, fPtr->fd, fPtr->fbmem_len);
 		if (-1 == (long)fPtr->mmio) {
 			perror("mmap mmio");
 			fPtr->mmio = NULL;
-		}
+		} else
+			fPtr->mmio += mmio_off;
 	}
 	return fPtr->mmio;
 }
@@ -595,9 +621,10 @@ fbdevHWUnmapMMIO(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("UnmapMMIO");
 	if (NULL != fPtr->mmio) {
-		if (-1 == munmap(fPtr->mmio, fPtr->fix.mmio_len))
+		if (-1 == munmap((void *)((unsigned long)fPtr->mmio & PAGE_MASK), fPtr->mmio_len))
 			perror("munmap mmio");
 		fPtr->mmio = NULL;
+		/* FIXME: restore var.accel_flags [geert] */
 	}
 	return TRUE;
 }
@@ -679,9 +706,12 @@ fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 	cmap.transp = NULL;
 	for (i = 0; i < numColors; i++) {
 		cmap.start = indices[i];
-		red   = colors[indices[i]].red   << 8;
-		green = colors[indices[i]].green << 8;
-		blue  = colors[indices[i]].blue  << 8;
+		red   = (colors[indices[i]].red   << 8) |
+			colors[indices[i]].red;
+		green = (colors[indices[i]].green << 8) |
+			colors[indices[i]].green;
+		blue  = (colors[indices[i]].blue  << 8) |
+			colors[indices[i]].blue;
 		if (-1 == ioctl(fPtr->fd,FBIOPUTCMAP,(void*)&cmap))
 			perror("ioctl FBIOPUTCMAP");
 	}
@@ -762,7 +792,7 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 {
 #ifdef DPMSExtension
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
-	int fbmode;
+	unsigned long fbmode;
 
 	if (!pScrn->vtSema)
 		return;
@@ -782,7 +812,7 @@ fbdevHWDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
 			break;
 	}
 
-	if (-1 == ioctl(fPtr->fd, FBIOBLANK, fbmode))
+	if (-1 == ioctl(fPtr->fd, FBIOBLANK, (void *)fbmode))
 		perror("ioctl FBIOBLANK");
 #endif    /* DPMSExtension */
 }

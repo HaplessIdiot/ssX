@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.3 1999/05/23 14:38:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.5 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -44,25 +44,25 @@ static xf86ConfigSymTabRec VendorTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeVendorList
+#define CLEANUP xf86freeVendorList
 
 XF86ConfVendorPtr
-parseVendorSection (void)
+xf86parseVendorSection (void)
 {
 	int has_ident = FALSE;
 	parsePrologue (XF86ConfVendorPtr, XF86ConfVendorRec)
 
-	while ((token = xf86GetToken (VendorTab)) != ENDSECTION)
+	while ((token = xf86getToken (VendorTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->vnd_comment = val.str;
 			break;
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->vnd_identifier = val.str;
 			has_ident = TRUE;
@@ -70,19 +70,19 @@ parseVendorSection (void)
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
-					ptr->vnd_option_lst = addNewOption (ptr->vnd_option_lst,
+					ptr->vnd_option_lst = xf86addNewOption (ptr->vnd_option_lst,
 														name, val.str);
 				}
 				else
 				{
-					ptr->vnd_option_lst = addNewOption (ptr->vnd_option_lst,
+					ptr->vnd_option_lst = xf86addNewOption (ptr->vnd_option_lst,
 														name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
@@ -90,7 +90,7 @@ parseVendorSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 
@@ -109,7 +109,7 @@ parseVendorSection (void)
 #undef CLEANUP
 
 void
-printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
+xf86printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 {
 	XF86OptionPtr optr;
 
@@ -134,21 +134,21 @@ printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 }
 
 void
-freeVendorList (XF86ConfVendorPtr p)
+xf86freeVendorList (XF86ConfVendorPtr p)
 {
 	if (p == NULL)
 		return;
 	TestFree (p->vnd_identifier);
-	OptionListFree (p->vnd_option_lst);
+	xf86optionListFree (p->vnd_option_lst);
 	xf86conffree (p);
 }
 
 XF86ConfVendorPtr
-xf86FindVendor (const char *name, XF86ConfVendorPtr list)
+xf86findVendor (const char *name, XF86ConfVendorPtr list)
 {
     while (list)
     {
-        if (NameCompare (list->vnd_identifier, name) == 0)
+        if (xf86nameCompare (list->vnd_identifier, name) == 0)
             return (list);
         list = list->list.next;
     }

@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.5 2000/04/04 19:25:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.6 2000/05/18 00:37:30 dawes Exp $
  * 
  */
 
@@ -43,26 +43,26 @@ static xf86ConfigSymTabRec DRITab[] =
     {-1,         ""},
 };
 
-#define CLEANUP freeBuffersList
+#define CLEANUP xf86freeBuffersList
 
 XF86ConfBuffersPtr
-parseBuffers (void)
+xf86parseBuffers (void)
 {
     parsePrologue (XF86ConfBuffersPtr, XF86ConfBuffersRec)
 
-    if (xf86GetToken (NULL) != NUMBER)
+    if (xf86getToken (NULL) != NUMBER)
 	Error ("Buffers count expected", NULL);
     ptr->buf_count = val.num;
 
-    if (xf86GetToken (NULL) != NUMBER)
+    if (xf86getToken (NULL) != NUMBER)
 	Error ("Buffers size expected", NULL);
     ptr->buf_size = val.num;
 
-    if ((token = xf86GetToken (NULL)) == STRING) {
+    if ((token = xf86getToken (NULL)) == STRING) {
 	ptr->buf_flags = val.str;
     } else {
 	ptr->buf_flags = NULL;
-	xf86UnGetToken (token);
+	xf86unGetToken (token);
     }
     
 #ifdef DEBUG
@@ -74,20 +74,20 @@ parseBuffers (void)
 
 #undef CLEANUP
 	
-#define CLEANUP freeDRI
+#define CLEANUP xf86freeDRI
 
 XF86ConfDRIPtr
-parseDRISection (void)
+xf86parseDRISection (void)
 {
     parsePrologue (XF86ConfDRIPtr, XF86ConfDRIRec);
 
     /* Zero is a valid value for this. */
     ptr->dri_group = -1;
-    while ((token = xf86GetToken (DRITab)) != ENDSECTION) {
+    while ((token = xf86getToken (DRITab)) != ENDSECTION) {
 	switch (token)
 	    {
 	    case GROUP:
-		if ((token = xf86GetToken (NULL)) == STRING)
+		if ((token = xf86getToken (NULL)) == STRING)
 		    ptr->dri_group_name = val.str;
 		else if (token == NUMBER)
 		    ptr->dri_group = val.num;
@@ -95,19 +95,19 @@ parseDRISection (void)
 		    Error (GROUP_MSG, NULL);
 		break;
 	    case MODE:
-		if (xf86GetToken (NULL) != NUMBER)
+		if (xf86getToken (NULL) != NUMBER)
 		    Error (NUMBER_MSG, "Mode");
 		ptr->dri_mode = val.num;
 		break;
 	    case BUFFERS:
-		HANDLE_LIST (dri_buffers_lst, parseBuffers,
+		HANDLE_LIST (dri_buffers_lst, xf86parseBuffers,
 			     XF86ConfBuffersPtr);
 		break;
 	    case EOF_TOKEN:
 		Error (UNEXPECTED_EOF_MSG, NULL);
 		break;
 	    default:
-		Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+		Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 		break;
 	    }
     }
@@ -122,7 +122,7 @@ parseDRISection (void)
 #undef CLEANUP
 
 void
-printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
+xf86printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
 {
     XF86ConfBuffersPtr bufs;
     
@@ -142,7 +142,7 @@ printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
 }
 
 void
-freeDRI (XF86ConfDRIPtr ptr)
+xf86freeDRI (XF86ConfDRIPtr ptr)
 {
     if (ptr == NULL)
 	return;
@@ -151,7 +151,7 @@ freeDRI (XF86ConfDRIPtr ptr)
 }
 
 void
-freeBuffersList (XF86ConfBuffersPtr ptr)
+xf86freeBuffersList (XF86ConfBuffersPtr ptr)
 {
     XF86ConfBuffersPtr prev;
 

@@ -1,4 +1,8 @@
 XFree86 4.0.1d (xx October 2000)
+ 775. Pass depth/bpp correctly, scan all fb devices, misc fb fixes.
+      (#4179, Michel Danzer).
+ 774. Add generic Vesa driver, fixes for xf86cfg plus changes to parser to
+      reflect xf86cfg changes (#4174,#4175, Paulo Cesar Pereira de Andrade).
  773. Loader fixes for Alpha. (Jay Estabrook).
  772. Accelerated TGA2 32bpp for tga driver (Jay Estabrook).
  771. Allow use of Compaq's Math Library on Alpha (currently for Mesa)
@@ -11243,4 +11247,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1346 2000/10/20 00:19:47 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1347 2000/10/20 12:57:23 alanh Exp $

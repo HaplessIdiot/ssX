@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.c,v 1.1 2000/04/04 22:36:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/monitor-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -173,7 +173,7 @@ MonitorConfig(XtPointer conf)
 	    ++nmonitors;
 	    XmuSnprintf(monitor_name, sizeof(monitor_name),
 			"Monitor%d", nmonitors);
-	} while (xf86FindMonitor(monitor_name,
+	} while (xf86findMonitor(monitor_name,
 		 XF86Config->conf_monitor_lst));
 
 	XtSetArg(args[0], XtNstring, monitor_name);
@@ -200,7 +200,7 @@ MonitorConfig(XtPointer conf)
 	       (monitor->mon_n_vrefresh = mon_n_vrefresh));
 
 	if (strcasecmp(monitor->mon_identifier, ident_string))
-	    xf86RenameMonitor(XF86Config, monitor, ident_string);
+	    xf86renameMonitor(XF86Config, monitor, ident_string);
 
 	if (oldcard != card) {
 	    int i;
@@ -210,7 +210,7 @@ MonitorConfig(XtPointer conf)
 		    break;
 	    if (computer.devices[i]->config == NULL)
 		XF86Config->conf_monitor_lst =
-				xf86AddMonitor(XF86Config->conf_monitor_lst,
+				xf86addMonitor(XF86Config->conf_monitor_lst,
 					       monitor);
 	    computer.devices[i]->config = (XtPointer)monitor;
 	    ChangeScreen(monitor, monitor, card, oldcard);

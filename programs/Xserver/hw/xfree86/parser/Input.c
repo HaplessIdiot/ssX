@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.2 1999/05/23 14:38:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.4 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -46,50 +46,50 @@ xf86ConfigSymTabRec InputTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeInputList
+#define CLEANUP xf86freeInputList
 
 XF86ConfInputPtr
-parseInputSection (void)
+xf86parseInputSection (void)
 {
 	int has_ident = FALSE;
 	parsePrologue (XF86ConfInputPtr, XF86ConfInputRec)
 
-	while ((token = xf86GetToken (InputTab)) != ENDSECTION)
+	while ((token = xf86getToken (InputTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->inp_comment = val.str;
 			break;
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->inp_identifier = val.str;
 			has_ident = TRUE;
 			break;
 		case DRIVER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->inp_driver = val.str;
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
-					ptr->inp_option_lst = addNewOption (ptr->inp_option_lst,
+					ptr->inp_option_lst = xf86addNewOption (ptr->inp_option_lst,
 														name, val.str);
 				}
 				else
 				{
-					ptr->inp_option_lst = addNewOption (ptr->inp_option_lst,
+					ptr->inp_option_lst = xf86addNewOption (ptr->inp_option_lst,
 														name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
@@ -97,7 +97,7 @@ parseInputSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -115,7 +115,7 @@ parseInputSection (void)
 #undef CLEANUP
 
 void
-printInputSection (FILE * cf, XF86ConfInputPtr ptr)
+xf86printInputSection (FILE * cf, XF86ConfInputPtr ptr)
 {
 	XF86OptionPtr optr;
 
@@ -141,7 +141,7 @@ printInputSection (FILE * cf, XF86ConfInputPtr ptr)
 }
 
 void
-freeInputList (XF86ConfInputPtr ptr)
+xf86freeInputList (XF86ConfInputPtr ptr)
 {
 	XF86ConfInputPtr prev;
 
@@ -149,7 +149,7 @@ freeInputList (XF86ConfInputPtr ptr)
 	{
 		TestFree (ptr->inp_identifier);
 		TestFree (ptr->inp_driver);
-		OptionListFree (ptr->inp_option_lst);
+		xf86optionListFree (ptr->inp_option_lst);
 
 		prev = ptr;
 		ptr = ptr->list.next;
@@ -158,20 +158,20 @@ freeInputList (XF86ConfInputPtr ptr)
 }
 
 int
-validateInput (XF86ConfigPtr p)
+xf86validateInput (XF86ConfigPtr p)
 {
   XF86ConfInputPtr input = p->conf_input_lst;
 
 #if 0 /* Enable this later */
   if (!input) {
-    xf86ValidationError ("At least one InputDevice section is required.");
+    xf86validationError ("At least one InputDevice section is required.");
     return (FALSE);
   }
 #endif
 
   while (input) {
     if (!input->inp_driver) {
-      xf86ValidationError (UNDEFINED_INPUTDRIVER_MSG, input->inp_identifier);
+      xf86validationError (UNDEFINED_INPUTDRIVER_MSG, input->inp_identifier);
       return (FALSE);
     }
   input = input->list.next;
@@ -180,11 +180,11 @@ validateInput (XF86ConfigPtr p)
 }
 
 XF86ConfInputPtr
-xf86FindInput (const char *ident, XF86ConfInputPtr p)
+xf86findInput (const char *ident, XF86ConfInputPtr p)
 {
 	while (p)
 	{
-		if (NameCompare (ident, p->inp_identifier) == 0)
+		if (xf86nameCompare (ident, p->inp_identifier) == 0)
 			return (p);
 
 		p = p->list.next;
@@ -193,11 +193,11 @@ xf86FindInput (const char *ident, XF86ConfInputPtr p)
 }
 
 XF86ConfInputPtr
-xf86FindInputByDriver (const char *driver, XF86ConfInputPtr p)
+xf86findInputByDriver (const char *driver, XF86ConfInputPtr p)
 {
 	while (p)
 	{
-		if (NameCompare (driver, p->inp_driver) == 0)
+		if (xf86nameCompare (driver, p->inp_driver) == 0)
 			return (p);
 
 		p = p->list.next;

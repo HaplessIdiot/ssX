@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.9 2000/03/04 03:25:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.10 2000/03/06 22:59:34 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -56,7 +56,7 @@ extern int sys_nerr;
 #endif
 
 #ifdef HAS_NO_UIDS
-#define doWriteConfigFile xf86WriteConfigFile
+#define doWriteConfigFile xf86writeConfigFile
 #define Local /**/
 #else
 #define Local static
@@ -72,32 +72,32 @@ doWriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 		return 0;
 	}
 
-	printLayoutSection (cf, cptr->conf_layout_lst);
+	xf86printLayoutSection (cf, cptr->conf_layout_lst);
 
 	fprintf (cf, "Section \"Files\"\n");
-	printFileSection (cf, cptr->conf_files);
+	xf86printFileSection (cf, cptr->conf_files);
 	fprintf (cf, "EndSection\n\n");
 
 	fprintf (cf, "Section \"Module\"\n");
-	printModuleSection (cf, cptr->conf_modules);
+	xf86printModuleSection (cf, cptr->conf_modules);
 	fprintf (cf, "EndSection\n\n");
 
-	printVendorSection (cf, cptr->conf_vendor_lst);
+	xf86printVendorSection (cf, cptr->conf_vendor_lst);
 
-	printServerFlagsSection (cf, cptr->conf_flags);
+	xf86printServerFlagsSection (cf, cptr->conf_flags);
 
-	printInputSection (cf, cptr->conf_input_lst);
+	xf86printInputSection (cf, cptr->conf_input_lst);
 
-	printVideoAdaptorSection (cf, cptr->conf_videoadaptor_lst);
+	xf86printVideoAdaptorSection (cf, cptr->conf_videoadaptor_lst);
 
-	printMonitorSection (cf, cptr->conf_monitor_lst);
+	xf86printMonitorSection (cf, cptr->conf_monitor_lst);
 
-	printDeviceSection (cf, cptr->conf_device_lst);
+	xf86printDeviceSection (cf, cptr->conf_device_lst);
 
-	printScreenSection (cf, cptr->conf_screen_lst);
+	xf86printScreenSection (cf, cptr->conf_screen_lst);
 
 	fprintf (cf, "Section \"DRI\"\n");
-	printDRISection (cf, cptr->conf_dri);
+	xf86printDRISection (cf, cptr->conf_dri);
 	fprintf (cf, "EndSection\n\n");
 
 	fclose(cf);
@@ -107,7 +107,7 @@ doWriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 #ifndef HAS_NO_UIDS
 
 int
-xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
+xf86writeConfigFile (const char *filename, XF86ConfigPtr cptr)
 {
 	int ret;
 
@@ -130,7 +130,7 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 		switch ((pid = fork()))
 		{
 		case -1:
-			ErrorF("xf86WriteConfigFile(): fork failed (%s)\n",
+			ErrorF("xf86writeConfigFile(): fork failed (%s)\n",
 					strerror(errno));
 			return 0;
 		case 0: /* child */
@@ -159,7 +159,7 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 
 		if (seteuid(ruid) == -1)
 		{
-			ErrorF("xf86WriteConfigFile(): seteuid(%d) failed (%s)\n",
+			ErrorF("xf86writeConfigFile(): seteuid(%d) failed (%s)\n",
 					ruid, strerror(errno));
 			return 0;
 		}
@@ -167,7 +167,7 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 
 		if (seteuid(euid) == -1)
 		{
-			ErrorF("xf86WriteConfigFile(): seteuid(%d) failed (%s)\n",
+			ErrorF("xf86writeConfigFile(): seteuid(%d) failed (%s)\n",
 					euid, strerror(errno));
 		}
 		return ret;

@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.3 2000/06/13 23:15:51 dawes Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.4 2000/08/01 20:05:43 dawes Exp $
 !!
 
 *Form.background:			gray85
@@ -193,6 +193,7 @@ lines		-1,0,0,0,0,-1
 *commands.card.tip:		Add video card
 *commands.monitor.tip:		Add monitor
 
+*topM.justify:			left
 *topM.label:			Configure Layout
 *topM*layout.label:		Configure Layout
 *topM*screen.label:		Configure Screen
@@ -200,6 +201,9 @@ lines		-1,0,0,0,0,-1
 *topM*accessx.label:		Configure AccessX
 *topM.showGrip:			False
 *work.showGrip:			False
+
+*MenuButton.leftBitmap:		menu10
+*SmeBSB.HorizontalMargins:	18
 
 *back.label:			<< Back
 *next.label:			Next >>
@@ -359,12 +363,26 @@ lines		-1,0,0,0,0,-1
 *cardModel.filter.fromHoriz:		label
 *cardModel.filter.width:		171
 *cardModel.viewport.width:		302
-*cardModel.viewport.height:		244
+*cardModel.viewport.height:		212
+*cardModel.driver.justify:		left
+*cardModel.driverL.label:		Driver
+*cardModel.driverL.fromVert:		viewport
+*cardModel.driverL.width:		50
+*cardModel.driverL.justify:		right
+*cardModel.driver.fromVert:		viewport
+*cardModel.driver.fromHoriz:		driverL
+*cardModel.driver.width:		250
+*cardModel.driver.left:			chainRight
+*cardModel.driver.right:		chainRight
 *cardModel.busidL.label:		BusID
-*cardModel.busidL.fromVert:		viewport
-*cardModel.busid.fromVert:		viewport
+*cardModel.busidL.fromVert:		driver
+*cardModel.busidL.width:		50
+*cardModel.busidL.justify:		right
+*cardModel.busid.fromVert:		driver
 *cardModel.busid.fromHoriz:		busidL
-*cardModel.busid.width:			255
+*cardModel.busid.width:			250
+*cardModel.busid.left:			chainRight
+*cardModel.busid.right:			chainRight
 *cardModel.viewport.forceBars:		True
 *cardModel.viewport.allowVert:		True
 *cardModel.viewport.useRight:		True
@@ -398,18 +416,18 @@ lines		-1,0,0,0,0,-1
 
 .xf86cfg.pane.work.Simple.borderWidth:	1
 .xf86cfg.pane.work.Simple.translations:\
-<Btn1Down>:	select-device()\n\
-<Btn1Motion>:	move-device()\n\
-<Btn1Up>:	unselect-device()\n\
-<Btn3Down>:	device-popup()\n\
-<Btn3Up>:	device-popdown()
+Any<Btn1Down>:	select-device()\n\
+Any<Btn1Motion>:	move-device()\n\
+Any<Btn1Up>:	unselect-device()\n\
+Any<Btn3Down>:	device-popup()\n\
+Any<Btn3Up>:	device-popdown()
 
 .xf86cfg.pane.work.screen.translations:\
-<Btn1Down>:	select-device()\n\
-<Btn1Motion>:	move-device()\n\
-<Btn1Up>:	unselect-device()\n\
-<Btn3Down>:	device-popup()\n\
-<Btn3Up>:	device-popdown()
+Any<Btn1Down>:	select-device()\n\
+Any<Btn1Motion>:	move-device()\n\
+Any<Btn1Up>:	unselect-device()\n\
+Any<Btn3Down>:	device-popup()\n\
+Any<Btn3Up>:	device-popdown()
 
 XF86Cfg.translations:	#override \
 <Message>WM_PROTOCOLS:	quit()
@@ -472,6 +490,14 @@ XF86Cfg.translations:	#override \
 *options*viewport.left:			chainLeft
 *options*viewport.right:		chainRight
 *options*list.longest:			376
+
+*options*driverOpts.label:		Options for driver\ 
+*options*driverOpts.justify:		left
+*options*driverOpts.width:		278
+*options*popdown.label:			Popdown dialog
+*options*driverOpts.tip:		This menu shows:\n\
+ o option name\n\
+ o option type
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! monitor
@@ -760,10 +786,16 @@ Press ESC or stop button to quit.
 *screenD*unselect.fromHoriz:		viewL
 *screenD*select.fromVert:		modeL
 *screenD*unselect.fromVert:		select
+*screenD*up.fromHoriz:			viewL
+*screenD*down.fromHoriz:		viewL
+*screenD*up.fromVert:			unselect
+*screenD*down.fromVert:			up
 *screenD*viewR.fromHoriz:		select
 *screenD*viewR.fromVert:		modeL
-*screenD*select.label:			->
-*screenD*unselect.label:		<-
+*screenD*select.bitmap:			right.xbm
+*screenD*unselect.bitmap:		left.xbm
+*screenD*up.bitmap:			up.xbm
+*screenD*down.bitmap:			down.xbm
 *screenD*viewL.width:			133
 *screenD*viewR.width:			133
 *screenD*viewL.height:			184

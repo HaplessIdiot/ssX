@@ -26,33 +26,45 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.1 2000/04/04 22:36:56 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.2 2000/06/13 23:15:51 dawes Exp $
  */
 
 #include "xf86config.h"
 #include "mouse-cfg.h"
 #include "cards.h"
+#include "card-cfg.h"
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/List.h>
+#include <X11/Xaw/MenuButton.h>
+#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/Viewport.h>
+#ifdef USE_MODULES
+#include "loader.h"
+#endif
 
 /*
  * Prototypes
  */
 static Bool CardConfigCheck(void);
 static void CardModelCallback(Widget, XtPointer, XtPointer);
+#ifdef USE_MODULES
+static void DriverCallback(Widget, XtPointer, XtPointer);
+#endif
 
 /*
  * Initialization
  */
 static CardsEntry *card_entry;
 static XF86ConfDevicePtr current_device;
-static Widget filter, list, busid;
+static Widget filter, list, driver, busid;
 static char **cards = NULL;
 static int ncards;
-
+#ifdef USE_MODULES
+static char *driver_str;
+#endif
 
 /*
  * Implementation
@@ -65,7 +77,7 @@ CardConfig(XtPointer config)
 /*    XF86OptionPtr option;*/
     char card_name[32];
     Arg args[1];
-    char *bus;
+    char *bus, *drv_nam;
 
     xf86info.cur_list = CARD;
     XtSetSensitive(back, xf86info.lists[CARD].cur_function > 0);
@@ -98,6 +110,12 @@ CardConfig(XtPointer config)
 	XtSetValues(ident_widget, args, 1);
 	XtSetArg(args[0], XtNstring, card->dev_busid);
 	XtSetValues(busid, args, 1);
+#ifdef USE_MODULES
+	XtSetArg(args[0], XtNlabel, driver_str = card->dev_driver);
+#else
+	XtSetArg(args[0], XtNstring, card->dev_driver);
+#endif
+	XtSetValues(driver, args, 1);
     }
     else {
 	XF86ConfDevicePtr device = XF86Config->conf_device_lst;
@@ -110,13 +128,19 @@ CardConfig(XtPointer config)
 	do {
 	    ++ndevices;
 	    XmuSnprintf(card_name, sizeof(card_name), "Card%d", ndevices);
-	} while (xf86FindDevice(card_name,
+	} while (xf86findDevice(card_name,
 		 XF86Config->conf_device_lst));
 
 	XtSetArg(args[0], XtNstring, card_name);
 	XtSetValues(ident_widget, args, 1);
 	XtSetArg(args[0], XtNstring, "");
 	XtSetValues(busid, args, 1);
+#ifdef USE_MODULES	
+	XtSetArg(args[0], XtNlabel, driver_str = "vga");
+#else
+	XtSetArg(args[0], XtNstring, "vga");
+#endif
+	XtSetValues(driver, args, 1);
     }
 
     if (ConfigLoop(CardConfigCheck) == True) {
@@ -154,11 +178,21 @@ CardConfig(XtPointer config)
 	    }
 	}
 	if (strcasecmp(card->dev_identifier, ident_string))
-	    xf86RenameDevice(XF86Config, card, ident_string);
+	    xf86renameDevice(XF86Config, card, ident_string);
 	XtSetArg(args[0], XtNstring, &bus);
 	XtGetValues(busid, args, 1);
 	XtFree(card->dev_busid);
 	card->dev_busid = XtNewString(bus);
+
+#ifdef USE_MODULES
+	drv_nam = driver_str;
+#else
+	XtSetArg(args[0], XtNstring, &drv_nam);
+	XtGetValues(driver, args, 1);
+#endif
+
+	XtFree(card->dev_driver);
+	card->dev_driver = XtNewString(drv_nam);
 
 	return ((XtPointer)card);
     }
@@ -170,9 +204,19 @@ static Bool
 CardConfigCheck(void)
 {
     XF86ConfDevicePtr device = XF86Config->conf_device_lst;
+    char *drv_nam;
 
+#ifdef USE_MODULES
+    drv_nam = driver_str;
+#else
+    Arg args[1];
+
+    XtSetArg(args[0], XtNstring, &drv_nam);
+    XtGetValues(driver, args, 1);
+#endif
     if (ident_string == NULL || strlen(ident_string) == 0 ||
-	(current_device == NULL && card_entry == NULL))
+	(current_device == NULL && card_entry == NULL) ||
+	drv_nam == NULL || *drv_nam == '\0')
 	return (False);
 
     while (device != NULL) {
@@ -230,6 +274,9 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
     else
 	first = 0;
 
+    XtSetArg(args[0], XtNstring, card_entry->driver ? card_entry->driver : "vga");
+    XtSetValues(driver, args, 1);
+
     str = XtNewString(tip);
     XtSetArg(args[0], XtNtip, str);
     XtSetValues(filter, args, 1);
@@ -273,6 +320,19 @@ CardFilterAction(Widget w, XEvent *ev, String *params, Cardinal *num_params)
     XtManageChild(list);
 }
 
+#ifdef USE_MODULES
+/*ARGSUSED*/
+static void
+DriverCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Arg args[1];
+
+    driver_str = XtName(w);
+    XtSetArg(args[0], XtNlabel, driver_str);
+    XtSetValues(driver, args, 1);
+}
+#endif
+
 void
 CardModel(XF86SetupInfo *info)
 {
@@ -303,6 +363,31 @@ CardModel(XF86SetupInfo *info)
 				       NULL, 0);
 	XtAddCallback(list, XtNcallback, CardModelCallback,
 		      (XtPointer)info);
+	XtCreateManagedWidget("driverL", labelWidgetClass, model, NULL, 0);
+#ifdef USE_MODULES
+	driver = XtVaCreateManagedWidget("driver", menuButtonWidgetClass,
+					 model,
+					 XtNmenuName, "driverM",
+					 NULL, 0);
+	{
+	    Widget menu, sme;
+	    xf86cfgDriverOptions *opts = video_driver_info;
+
+	    menu = XtCreatePopupShell("driverM", simpleMenuWidgetClass,
+				      driver, NULL, 0);
+	    while (opts) {
+		sme = XtCreateManagedWidget(opts->name, smeBSBObjectClass,
+					    menu, NULL, 0);
+		XtAddCallback(sme, XtNcallback, DriverCallback, NULL);
+		opts = opts->next;
+	    }
+	}
+#else
+	driver = XtVaCreateManagedWidget("driver", asciiTextWidgetClass,
+					 model,
+					 XtNeditType, XawtextEdit,
+					 NULL, 0);
+#endif
 	XtCreateManagedWidget("busidL", labelWidgetClass, model, NULL, 0);
 	busid = XtVaCreateManagedWidget("busid", asciiTextWidgetClass,
 					 model,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.14 2000/03/01 16:01:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.15 2000/06/20 05:08:48 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -64,10 +64,10 @@ xf86ConfigSymTabRec DeviceTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP freeDeviceList
+#define CLEANUP xf86freeDeviceList
 
 XF86ConfDevicePtr
-parseDeviceSection (void)
+xf86parseDeviceSection (void)
 {
 	int i;
 	int has_ident = FALSE;
@@ -77,55 +77,55 @@ parseDeviceSection (void)
 	ptr->dev_chipid = -1;
 	ptr->dev_chiprev = -1;
 	ptr->dev_irq = -1;
-	while ((token = xf86GetToken (DeviceTab)) != ENDSECTION)
+	while ((token = xf86getToken (DeviceTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->dev_comment = val.str;
 			break;
 		case IDENTIFIER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			ptr->dev_identifier = val.str;
 			has_ident = TRUE;
 			break;
 		case VENDOR:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Vendor");
 			ptr->dev_vendor = val.str;
 			break;
 		case BOARD:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Board");
 			ptr->dev_board = val.str;
 			break;
 		case CHIPSET:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Chipset");
 			ptr->dev_chipset = val.str;
 			break;
 		case CARD:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Card");
 			ptr->dev_card = val.str;
 			break;
 		case DRIVER:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Driver");
 			ptr->dev_driver = val.str;
 			break;
 		case RAMDAC:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Ramdac");
 			ptr->dev_ramdac = val.str;
 			break;
 		case DACSPEED:
 			for (i = 0; i < CONF_MAXDACSPEEDS; i++)
 				ptr->dev_dacSpeeds[i] = 0;
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 			{
 				Error (DACSPEED_MSG, CONF_MAXDACSPEEDS);
 			}
@@ -134,99 +134,99 @@ parseDeviceSection (void)
 				ptr->dev_dacSpeeds[0] = (int) (val.realnum * 1000.0 + 0.5);
 				for (i = 1; i < CONF_MAXDACSPEEDS; i++)
 				{
-					if (xf86GetToken (NULL) == NUMBER)
+					if (xf86getToken (NULL) == NUMBER)
 						ptr->dev_dacSpeeds[i] = (int)
 							(val.realnum * 1000.0 + 0.5);
 					else
 					{
-						xf86UnGetToken (token);
+						xf86unGetToken (token);
 						break;
 					}
 				}
 			}
 			break;
 		case VIDEORAM:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "VideoRam");
 			ptr->dev_videoram = val.num;
 			break;
 		case BIOSBASE:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "BIOSBase");
 			ptr->dev_bios_base = val.num;
 			break;
 		case MEMBASE:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "MemBase");
 			ptr->dev_mem_base = val.num;
 			break;
 		case IOBASE:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "IOBase");
 			ptr->dev_io_base = val.num;
 			break;
 		case CLOCKCHIP:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "ClockChip");
 			ptr->dev_clockchip = val.str;
 			break;
 		case CHIPID:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "ChipID");
 			ptr->dev_chipid = val.num;
 			break;
 		case CHIPREV:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "ChipRev");
 			ptr->dev_chiprev = val.num;
 			break;
 
 		case CLOCKS:
-			token = xf86GetToken(NULL);
+			token = xf86getToken(NULL);
 			for( i = ptr->dev_clocks;
 			     token == NUMBER && i < CONF_MAXCLOCKS; i++ ) {
 				ptr->dev_clock[i] = (int)(val.realnum * 1000.0 + 0.5);
-				token = xf86GetToken(NULL);
+				token = xf86getToken(NULL);
 			}
 			ptr->dev_clocks = i;
-			xf86UnGetToken (token);
+			xf86unGetToken (token);
 			break;
 		case TEXTCLOCKFRQ:
-			if ((token = xf86GetToken(NULL)) != NUMBER)
+			if ((token = xf86getToken(NULL)) != NUMBER)
 				Error (NUMBER_MSG, "TextClockFreq");
 			ptr->dev_textclockfreq = (int)(val.realnum * 1000.0 + 0.5);
 			break;
 		case OPTION:
 			{
 				char *name;
-				if ((token = xf86GetToken (NULL)) != STRING)
+				if ((token = xf86getToken (NULL)) != STRING)
 					Error (BAD_OPTION_MSG, NULL);
 				name = val.str;
-				if ((token = xf86GetToken (NULL)) == STRING)
+				if ((token = xf86getToken (NULL)) == STRING)
 				{
-					ptr->dev_option_lst = addNewOption (ptr->dev_option_lst,
+					ptr->dev_option_lst = xf86addNewOption (ptr->dev_option_lst,
 														name, val.str);
 				}
 				else
 				{
-					ptr->dev_option_lst = addNewOption (ptr->dev_option_lst,
+					ptr->dev_option_lst = xf86addNewOption (ptr->dev_option_lst,
 														name, NULL);
-					xf86UnGetToken (token);
+					xf86unGetToken (token);
 				}
 			}
 			break;
 		case BUSID:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "BusID");
 			ptr->dev_busid = val.str;
 			break;
 		case IRQ:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (QUOTE_MSG, "IRQ");
 			ptr->dev_irq = val.num;
 			break;
 		case SCREEN:
-			if (xf86GetToken (NULL) != NUMBER)
+			if (xf86getToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "Screen");
 			ptr->dev_screen = val.num;
 			break;
@@ -234,7 +234,7 @@ parseDeviceSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -252,7 +252,7 @@ parseDeviceSection (void)
 #undef CLEANUP
 
 void
-printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
+xf86printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 {
 	XF86OptionPtr optr;
 	int i;
@@ -327,7 +327,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 }
 
 void
-freeDeviceList (XF86ConfDevicePtr ptr)
+xf86freeDeviceList (XF86ConfDevicePtr ptr)
 {
 	XF86ConfDevicePtr prev;
 
@@ -341,7 +341,7 @@ freeDeviceList (XF86ConfDevicePtr ptr)
 		TestFree (ptr->dev_driver);
 		TestFree (ptr->dev_ramdac);
 		TestFree (ptr->dev_clockchip);
-		OptionListFree (ptr->dev_option_lst);
+		xf86optionListFree (ptr->dev_option_lst);
 
 		prev = ptr;
 		ptr = ptr->list.next;
@@ -350,18 +350,18 @@ freeDeviceList (XF86ConfDevicePtr ptr)
 }
 
 int
-validateDevice (XF86ConfigPtr p)
+xf86validateDevice (XF86ConfigPtr p)
 {
   XF86ConfDevicePtr device = p->conf_device_lst;
 
   if (!device) {
-    xf86ValidationError ("At least one Device section is required.");
+    xf86validationError ("At least one Device section is required.");
     return (FALSE);
   }
 
   while (device) {
     if (!device->dev_driver) {
-      xf86ValidationError (UNDEFINED_DRIVER_MSG, device->dev_identifier);
+      xf86validationError (UNDEFINED_DRIVER_MSG, device->dev_identifier);
       return (FALSE);
     }
   device = device->list.next;
@@ -370,11 +370,11 @@ validateDevice (XF86ConfigPtr p)
 }
 
 XF86ConfDevicePtr
-xf86FindDevice (const char *ident, XF86ConfDevicePtr p)
+xf86findDevice (const char *ident, XF86ConfDevicePtr p)
 {
 	while (p)
 	{
-		if (NameCompare (ident, p->dev_identifier) == 0)
+		if (xf86nameCompare (ident, p->dev_identifier) == 0)
 			return (p);
 
 		p = p->list.next;
@@ -383,7 +383,7 @@ xf86FindDevice (const char *ident, XF86ConfDevicePtr p)
 }
 
 char *
-ConfigStrdup (const char *s)
+xf86configStrdup (const char *s)
 {
 	char *tmp = xf86confmalloc (sizeof (char) * (strlen (s) + 1));
 	if (tmp)

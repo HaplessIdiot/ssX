@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.5 2000/08/04 16:13:44 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.6 2000/09/26 15:57:22 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -58,6 +58,7 @@
 #include "options.h"
 #include "vidmode.h"
 #include "help.h"
+#include "stubs.h"
 
 #define randomize()		srand((unsigned)time((time_t*)NULL))
 #define DefaultXFree86Dir	"/usr/X11R6"
@@ -91,6 +92,7 @@ static Bool AskConfig(void);
 void WriteConfigAction(Widget, XEvent*, String*, Cardinal*);
 static void ScreenSetup(Bool);
 void QuitAction(Widget, XEvent*, String*, Cardinal*);
+void PopdownErrorCallback(Widget, XtPointer, XtPointer);
 static void ErrorCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void QuitCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void HelpCallback(Widget, XtPointer, XtPointer);
@@ -109,7 +111,10 @@ char *XF86Config_path = NULL;
 char *XF86Module_path = NULL;
 char *XF86Font_path = NULL;
 char *XF86RGB_path = NULL;
+char *XkbConfig_path = NULL;
 char *XFree86Dir;
+static char XF86Config_path_static[1024];
+static char XkbConfig_path_static[1024];
 Bool xf86config_set = False;
 
 xf86cfgComputer computer;
@@ -187,6 +192,10 @@ main(int argc, char *argv[])
     XF86ConfLayoutPtr lay;
     int i, startedx;
 
+#ifdef USE_MODULES
+    xf86Verbose = 1;
+#endif
+
     if ((XFree86Dir = getenv("XWINHOME")) == NULL)
 	XFree86Dir = DefaultXFree86Dir;
 
@@ -214,6 +223,8 @@ main(int argc, char *argv[])
     startedx = startx();
     if (XF86Config_path == NULL)
 	XF86Config_path = "/etc/X11/XF86Config";
+    if (XkbConfig_path == NULL)
+	XkbConfig_path = XkbConfigDir XkbConfigFile;
     toplevel = XtAppInitialize(&appcon, "XF86Cfg",
 /*			       optionDescList, XtNumber(optionDescList),*/
 		    	       NULL, 0,
@@ -379,6 +390,10 @@ main(int argc, char *argv[])
 	}
     }
 
+#ifdef USE_MODULES
+	LoaderInitializeOptions();
+#endif
+
     XtAppMainLoop(appcon);
     if (startedx)
 	endx();
@@ -460,7 +475,7 @@ AskConfig(void)
 		break;
 	    case CF_XKBConfig:
 		str = "XKB";
-		XtSetArg(args[num_args], XtNvalue, XkbConfigDir XkbConfigFile);
+		XtSetArg(args[num_args], XtNvalue, XkbConfig_path);
 		++num_args;
 		break;
 	}
@@ -483,8 +498,24 @@ AskConfig(void)
     while (asking_cf)
 	XtAppProcessEvent(XtWidgetToApplicationContext(shell_cf), XtIMAll);
 
-    if (write_cf > 0)
-	XF86Config_path = XawDialogGetValueString(dialog);
+    if (write_cf > 0) {
+	switch (cf_state) {
+	    case CF_XF86Config:
+		XF86Config_path = XawDialogGetValueString(dialog);
+		XmuSnprintf(XF86Config_path_static,
+			    sizeof(XF86Config_path_static),
+			    "%s", XF86Config_path);
+		XF86Config_path = XF86Config_path_static;
+		break;
+	    case CF_XKBConfig:
+		XkbConfig_path = XawDialogGetValueString(dialog);
+		XmuSnprintf(XkbConfig_path_static,
+			    sizeof(XkbConfig_path_static),
+			    "%s", XkbConfig_path);
+		XkbConfig_path = XkbConfig_path_static;
+		break;
+	}
+    }
 
     return (write_cf);
 }
@@ -523,9 +554,9 @@ QuitCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		break;
 	    case 1:
 		if ((cf_state == CF_XF86Config &&
-		     !xf86WriteConfigFile(XF86Config_path, XF86Config)) ||
+		     !xf86writeConfigFile(XF86Config_path, XF86Config)) ||
 		    (cf_state == CF_XKBConfig &&
-		     !WriteXKBConfiguration(XkbConfigDir XkbConfigFile,
+		     !WriteXKBConfiguration(XkbConfig_path,
 					    &xkb_info->config))) {
 		    static Widget shell;
 
@@ -861,13 +892,13 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	do {
 	    ++num_layouts;
 	    XmuSnprintf(name, sizeof(name), "Layout%d", num_layouts);
-	} while (xf86FindLayout(name,
+	} while (xf86findLayout(name,
 		 XF86Config->conf_layout_lst) != NULL);
 	l = (XF86ConfLayoutPtr)XtCalloc(1, sizeof(XF86ConfLayoutRec));
 
 	l->lay_identifier = XtNewString(name);
 	XF86Config->conf_layout_lst =
-	    xf86AddLayout(XF86Config->conf_layout_lst, l);
+	    xf86addLayout(XF86Config->conf_layout_lst, l);
 	layoutsme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
 					    layoutp,
 					    XtNlabel, name,
@@ -948,7 +979,7 @@ DefaultLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XtGetValues(sme, args, 1);
 
     prev = XF86Config->conf_layout_lst;
-    lay = xf86FindLayout(str, prev);
+    lay = xf86findLayout(str, prev);
     if (prev == lay)
 	return;
 
@@ -997,7 +1028,7 @@ RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XtSetArg(args[0], XtNlabel, &str);
     XtGetValues(sme, args, 1);
     prev = XF86Config->conf_layout_lst;
-    lay = xf86FindLayout(str, prev);
+    lay = xf86findLayout(str, prev);
     tmp = prev;
     while (tmp != NULL) {
 	if (tmp == lay)
@@ -1039,7 +1070,7 @@ RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	DrawCables();
     }
 
-    xf86RemoveLayout(XF86Config, rem);
+    xf86removeLayout(XF86Config, rem);
     XtDestroyWidget(sme);
 }
 
@@ -1169,7 +1200,7 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 			if (mouse != NULL && computer.devices[i]->config == NULL) {
 			    XF86Config->conf_input_lst =
-				xf86AddInput(XF86Config->conf_input_lst,
+				xf86addInput(XF86Config->conf_input_lst,
 					     mouse);
 			    computer.devices[i]->config = (XtPointer)mouse;
 			}
@@ -1181,7 +1212,7 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 			if (keyboard != NULL && computer.devices[i]->config == NULL) {
 			    XF86Config->conf_input_lst =
-				xf86AddInput(XF86Config->conf_input_lst,
+				xf86addInput(XF86Config->conf_input_lst,
 					     keyboard);
 			    computer.devices[i]->config = (XtPointer)keyboard;
 			}
@@ -1193,7 +1224,7 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 			if (card != NULL && computer.devices[i]->config == NULL) {
 			    XF86Config->conf_device_lst =
-				xf86AddDevice(XF86Config->conf_device_lst,
+				xf86addDevice(XF86Config->conf_device_lst,
 					      card);
 			    computer.devices[i]->config = (XtPointer)card;
 			}
@@ -1208,7 +1239,7 @@ ConfigureDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 			if (monitor != NULL && computer.devices[i]->config == NULL) {
 			    XF86Config->conf_monitor_lst =
-				xf86AddMonitor(XF86Config->conf_monitor_lst,
+				xf86addMonitor(XF86Config->conf_monitor_lst,
 					       monitor);
 			    computer.devices[i]->config = (XtPointer)monitor;
 			}
@@ -1236,6 +1267,9 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     int i;
     XF86OptionPtr *options;
+#ifdef USE_MODULES
+    xf86cfgDriverOptions *drv_opts = NULL;
+#endif
 
     if (config_mode == CONFIG_SCREEN) {
 	for (i = 0; i < computer.num_screens; i++)
@@ -1265,6 +1299,21 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		case CARD:
 		    options = (XF86OptionPtr*)&(((XF86ConfDevicePtr)
 			(computer.devices[i]->config))->dev_option_lst);
+#ifdef USE_MODULES
+		    {
+			char *drv = ((XF86ConfDevicePtr)
+				(computer.devices[i]->config))->dev_driver;
+
+			if (drv) {
+			    drv_opts = video_driver_info;
+			    while (drv_opts) {
+				if (strcmp(drv_opts->name, drv) == 0)
+				    break;
+				drv_opts = drv_opts->next;
+			    }
+			}
+		    }
+#endif
 		    break;
 		case MONITOR:
 		    options = (XF86OptionPtr*)&(((XF86ConfMonitorPtr)
@@ -1274,13 +1323,18 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	}
     }
 
+#ifdef USE_MODULES
+    OptionsPopup(options, drv_opts ? drv_opts->name : NULL,
+		 drv_opts ? drv_opts->option : NULL);
+#else
     OptionsPopup(options);
+#endif
     if (config_mode == CONFIG_SCREEN) {
 	XF86OptionPtr option, options;
 	int rotate;
 
 	options = computer.screens[i]->screen->scrn_option_lst;
-	if ((option = xf86FindOption(options, "Rotate")) != NULL) {
+	if ((option = xf86findOption(options, "Rotate")) != NULL) {
 	    if (option->opt_val != NULL)
 		rotate = strcasecmp(option->opt_val, "CW") == 0 ? 1 :
 			 strcasecmp(option->opt_val, "CCW") == 0 ? -1 : 0;
@@ -1351,14 +1405,14 @@ EnableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    nex->iref_inputdev = input;
 	    nex->iref_inputdev_str = XtNewString(input->inp_identifier);
 	    if (nmouses == 0 && computer.devices[i]->type == MOUSE) 
-		option = xf86NewOption(XtNewString("CorePointer"), NULL);
+		option = xf86newOption(XtNewString("CorePointer"), NULL);
 	    else if (nkeyboards == 0 && computer.devices[i]->type == KEYBOARD)
-		option = xf86NewOption(XtNewString("CoreKeyboard"), NULL);
+		option = xf86newOption(XtNewString("CoreKeyboard"), NULL);
 	    else
-		option = xf86NewOption(XtNewString("SendCoreEvents"), NULL);
+		option = xf86newOption(XtNewString("SendCoreEvents"), NULL);
 	    nex->iref_option_lst = option;
 	    computer.layout->lay_input_lst =
-		xf86AddInputref(computer.layout->lay_input_lst, nex);
+		xf86addInputref(computer.layout->lay_input_lst, nex);
 	}   break;
 	case CARD:
 	    for (i = 0; i < computer.num_screens; i++) {
@@ -1372,7 +1426,7 @@ EnableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    adj->adj_screen_str = XtNewString(computer.screens[i]->
 			screen->scrn_identifier);
 		    computer.layout->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
-			addListItem((GenericListPtr)computer.layout->
+			xf86addListItem((GenericListPtr)computer.layout->
 				    lay_adjacency_lst, (GenericListPtr)adj);
 		    computer.screens[i]->state = USED;
 		}
@@ -1411,7 +1465,7 @@ DisableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
     switch (computer.devices[i]->type) {
 	case MOUSE:
 	case KEYBOARD:
-	    xf86RemoveInputRef(computer.layout,
+	    xf86removeInputRef(computer.layout,
 		(XF86ConfInputPtr)(computer.devices[i]->config));
 	    break;
 	case CARD: {
@@ -1425,7 +1479,7 @@ DisableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    adj = computer.layout->lay_adjacency_lst;
 		    while (adj != NULL) {
 			if (adj->adj_screen == computer.screens[j]->screen) {
-			    xf86RemoveAdjacency(computer.layout, adj);
+			    xf86removeAdjacency(computer.layout, adj);
 			    break;
 			}
 			adj = (XF86ConfAdjacencyPtr)(adj->list.next);
@@ -1480,7 +1534,7 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    switch (computer.devices[i]->type) {
 		case MOUSE:
 		case KEYBOARD:
-		    xf86RemoveInput(XF86Config,
+		    xf86removeInput(XF86Config,
 			(XF86ConfInputPtr)(computer.devices[i]->config));
 		    break;
 		case CARD:
@@ -1496,7 +1550,7 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			--j;
 		    }
 		if (computer.devices[i]->refcount <= 0)
-		    xf86RemoveDevice(XF86Config,
+		    xf86removeDevice(XF86Config,
 			(XF86ConfDevicePtr)(computer.devices[i]->config));
 	    }
 	    else if (computer.devices[i]->type == MONITOR) {
@@ -1507,7 +1561,7 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 			--j;
 		    }
 		if (computer.devices[i]->refcount <= 0)
-		    xf86RemoveMonitor(XF86Config,
+		    xf86removeMonitor(XF86Config,
 			(XF86ConfMonitorPtr)(computer.devices[i]->config));
 	    }
 
@@ -1717,7 +1771,7 @@ void RenameLayoutAction(Widget w, XEvent *event,
 
     XtSetArg(args[0], XtNlabel, name);
     XtSetValues(layoutsme, args, 1);
-    xf86RenameLayout(XF86Config, computer.layout, name);
+    xf86renameLayout(XF86Config, computer.layout, name);
 }
 
 /*ARGSUSED*/

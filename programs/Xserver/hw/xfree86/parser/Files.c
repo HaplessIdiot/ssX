@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.5 1999/05/23 14:38:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.7 2000/01/26 02:00:51 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -58,27 +58,27 @@ prependRoot (char *pathname)
 #endif
 }
 
-#define CLEANUP freeFiles
+#define CLEANUP xf86freeFiles
 
 XF86ConfFilesPtr
-parseFilesSection (void)
+xf86parseFilesSection (void)
 {
 	int i, j;
 	int k, l;
 	char *str;
 	parsePrologue (XF86ConfFilesPtr, XF86ConfFilesRec)
 
-	while ((token = xf86GetToken (FilesTab)) != ENDSECTION)
+	while ((token = xf86getToken (FilesTab)) != ENDSECTION)
 	{
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "###");
 			ptr->file_comment = val.str;
 			break;
 		case FONTPATH:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "FontPath");
 			j = FALSE;
 			str = prependRoot (val.str);
@@ -106,12 +106,12 @@ parseFilesSection (void)
 			xf86conffree (val.str);
 			break;
 		case RGBPATH:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "RGBPath");
 			ptr->file_rgbpath = val.str;
 			break;
 		case MODULEPATH:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "ModulePath");
 			l = FALSE;
 			str = prependRoot (val.str);
@@ -138,7 +138,7 @@ parseFilesSection (void)
 			xf86conffree (val.str);
 			break;
 		case LOGFILEPATH:
-			if (xf86GetToken (NULL) != STRING)
+			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "LogFile");
 			ptr->file_logfile = val.str;
 			break;
@@ -146,7 +146,7 @@ parseFilesSection (void)
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
 		default:
-			Error (INVALID_KEYWORD_MSG, xf86TokenString ());
+			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
 		}
 	}
@@ -161,7 +161,7 @@ parseFilesSection (void)
 #undef CLEANUP
 
 void
-printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
+xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 {
 	char *p, *s;
 
@@ -207,7 +207,7 @@ printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 }
 
 void
-freeFiles (XF86ConfFilesPtr p)
+xf86freeFiles (XF86ConfFilesPtr p)
 {
 	if (p == NULL)
 		return;
