@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.3 2000/11/29 08:25:45 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.4 2000/12/01 21:31:59 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -243,9 +243,9 @@ XRenderCompositeString16 (Display	    *dpy,
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
     
-    GetReq(RenderCompositeGlyphs8, req);
+    GetReq(RenderCompositeGlyphs16, req);
     req->reqType = info->codes->major_opcode;
-    req->renderReqType = X_RenderCompositeGlyphs8;
+    req->renderReqType = X_RenderCompositeGlyphs16;
     req->op = op;
     req->src = src;
     req->dst = dst;
@@ -322,9 +322,9 @@ XRenderCompositeString32 (Display	    *dpy,
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
     
-    GetReq(RenderCompositeGlyphs8, req);
+    GetReq(RenderCompositeGlyphs32, req);
     req->reqType = info->codes->major_opcode;
-    req->renderReqType = X_RenderCompositeGlyphs8;
+    req->renderReqType = X_RenderCompositeGlyphs32;
     req->op = op;
     req->src = src;
     req->dst = dst;
