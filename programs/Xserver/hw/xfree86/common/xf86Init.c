@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.167 2000/10/27 18:31:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.168 2000/10/30 23:02:11 tsi Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1537,19 +1537,28 @@ ddxUseMsg()
 #ifndef OSVENDOR
 #define OSVENDOR ""
 #endif
+#ifndef PRE_RELEASE
+#define PRE_RELEASE (XF86_VERSION_BETA || XF86_VERSION_ALPHA)
+#endif
 
 static void
 xf86PrintBanner()
 {
+#if PRE_RELEASE
+  ErrorF("\n"
+    "This is a pre-release version of XFree86, and is not supported in any\n"
+    "way.  Bugs may be reported to XFree86@XFree86.Org and patches submitted\n"
+    "to fixes@XFree86.Org.  Before reporting bugs in pre-release versions,\n"
+    "please check the latest version in the XFree86 CVS repository\n"
+    "(http://www.XFree86.Org/cvs)\n");
+#endif
   ErrorF("\nXFree86 Version%s/ X Window System\n", XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);
-  ErrorF("\tIf the server is older than 6-12 months, or if your card is "
-	 "newer\n"
-	 "\tthan the above date, look for a newer version before "
-	 "reporting\n"
-	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
+  ErrorF("\tIf the server is older than 6-12 months, or if your card is\n"
+	 "\tnewer than the above date, look for a newer version before\n"
+	 "\treporting problems.  (See http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System:%s%s\n", OSNAME, OSVENDOR);
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
