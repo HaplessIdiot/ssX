@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.133 1997/02/13 11:58:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.134 1997/02/14 12:16:17 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -28,20 +28,19 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  * are supported on this platform.
  */
 #ifdef i386Architecture
-#if DoLoadableServer
 #ifndef XF86LoaderServer
-#define XF86LoaderServer        YES
+#define XF86LoaderServer	DoLoadableServer
 #endif
 #ifndef XF86SVGAModule
-#define XF86SVGAModule          YES
+#define XF86SVGAModule          XF86LoaderServer
 #endif
 #ifndef XF86S3Module
-#define XF86S3Module            YES
+#define XF86S3Module            XF86LoaderServer
 #endif
 #ifndef XF86Mach32Module
-#define XF86Mach32Module        YES
+#define XF86Mach32Module        XF86LoaderServer
 #endif
-#else
+#if !XF86LoaderServer
 #ifndef XF86SVGAServer
 #define XF86SVGAServer          YES
 #endif

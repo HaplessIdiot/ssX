@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.8 1997/01/20 12:38:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.9 1997/02/14 12:20:00 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -300,7 +300,7 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
         width);
 }
 
-#if XFree86LOADER
+#ifdef XFree86LOADER
 /*
  * this is the module init code when the color depth specific parts of
  * XAA are loaded at runtime

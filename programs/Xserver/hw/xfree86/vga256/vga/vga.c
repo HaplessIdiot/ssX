@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.71 1997/01/25 04:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.73 1997/02/14 12:19:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -210,7 +210,7 @@ ScrnInfoRec vga256InfoRec = {
 #endif
 };
 
-#if XFree86LOADER
+#ifdef XFree86LOADER
 
 ScrnInfoPtr xf86Screens[] = 
 {
@@ -1315,7 +1315,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.displayWidth))
 #else
   xf86AccelInfoRec.ServerInfoRec = &vga256InfoRec;
-#if XFree86LOADER
+#ifdef XFree86LOADER
   if (vgaBitsPerPixel == 8)
       if (!xf86ccdXAAScreenInit(pScreen,
 		     (pointer) vgaVirtBase,
@@ -1548,10 +1548,19 @@ vgaEnterLeaveVT(enter, screen_idx)
 #if !defined(MONOVGA) && !defined(XF86VGA16)
       if (vgaBitsPerPixel == 8)
           pspix = (PixmapPtr)pScreen->devPrivate;
+#ifdef XFree86LOADER
       if ((vgaBitsPerPixel == 16) || 
           (vgaBitsPerPixel == 24) || 
 	  (vgaBitsPerPixel == 32))
           pspix=(PixmapPtr)pScreen->devPrivates[*xf86ccdScreenPrivateIndex].ptr;
+#else
+      if (vgaBitsPerPixel == 16)
+          pspix = (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
+      if (vgaBitsPerPixel == 24)
+          pspix = (PixmapPtr)pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr;
+      if (vgaBitsPerPixel == 32)
+          pspix = (PixmapPtr)pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
+#endif
 #else
       pspix = (PixmapPtr)pScreen->devPrivate;
 #endif
@@ -1629,6 +1638,7 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 8)
 	      vga256DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFF);
+#ifdef XFree86LOADER
           if (vgaBitsPerPixel == 16)
 	      xf86ccdDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFF);
@@ -1638,6 +1648,17 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 32)
 	      xf86ccdDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFFFFFF);
+#else
+          if (vgaBitsPerPixel == 16)
+	      cfb16DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFF);
+          if (vgaBitsPerPixel == 24)
+	      cfb24DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFF);
+          if (vgaBitsPerPixel == 32)
+	      cfb32DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFFFF);
+#endif
 #endif
 #else /* XF86VGA16 */
 	  vgaRestoreScreenPix(pScreen,ppix);
@@ -1677,6 +1698,7 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 8)
 	      vga256DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFF);
+#ifdef XFree86LOADER
           if (vgaBitsPerPixel == 16)
 	      xf86ccdDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFF);
@@ -1687,6 +1709,18 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 32)
 	      xf86ccdDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFFFFFF);
+#else
+          if (vgaBitsPerPixel == 16)
+	      cfb16DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFF);
+          if (vgaBitsPerPixel == 24){
+	      cfb24DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFF);
+	  }
+          if (vgaBitsPerPixel == 32)
+	      cfb32DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFFFF);
+#endif
 #endif
 #else /* XF86VGA16 */
 	  vgaSaveScreenPix(pScreen,ppix);
