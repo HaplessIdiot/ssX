@@ -1,4 +1,6 @@
 XFree86 4.0.1b (?? ?????? 2000)
+ 495. Build int10 on all platforms and move ATI driver after r128 driver in
+      compiled-in probe lists (Marc La France, Michael Madore).
  494. Fix bug in parser code: addNewOption2() trunkates option list
       when an option is added that already exists (Egbert Eich).
  493. Fix tmp file problem with makedepend scripts (based on report from
@@ -10962,4 +10964,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1258 2000/08/08 03:22:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1259 2000/08/08 08:58:04 eich Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.7 2000/03/31 22:55:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.9 2000/04/17 16:30:11 eich Exp $
 
 /* An OS-independent INT10 module/library */
 
@@ -8,7 +8,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.7 2000/03/31 
 #if !UseX86Emu || (XF86INT10_BUILD == X86INT10_STUB)
 
 SRCS = xf86int10module.c stub.c
-OBJS = xf86int10module.c stub.o
+OBJS = xf86int10module.o stub.o
 
 #else 
 
@@ -35,7 +35,7 @@ X86EMUOBJS = x86emu.o
 
 X86EMUDEFINES = -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
 
-# if defined(i386Architecture)
+# if defined(i386Architecture) || defined(ia64Architecture)
 ARCHDEFINES = -D_PC
 # endif
 
