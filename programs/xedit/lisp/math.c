@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.16 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.17 2002/11/10 16:29:05 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -265,7 +265,7 @@ Lisp_Less(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(compare, number) >= 0)
+	    if (cmp_object_object(compare, number, 1) >= 0)
 		return (NIL);
 	    compare = number;
 	    more_numbers = CDR(more_numbers);
@@ -292,7 +292,7 @@ Lisp_LessEqual(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(compare, number) > 0)
+	    if (cmp_object_object(compare, number, 1) > 0)
 		return (NIL);
 	    compare = number;
 	    more_numbers = CDR(more_numbers);
@@ -319,7 +319,7 @@ Lisp_Equal_(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(compare, number) != 0)
+	    if (cmp_object_object(compare, number, 0) != 0)
 		return (NIL);
 	    compare = number;
 	    more_numbers = CDR(more_numbers);
@@ -346,7 +346,7 @@ Lisp_Greater(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(compare, number) <= 0)
+	    if (cmp_object_object(compare, number, 1) <= 0)
 		return (NIL);
 	    compare = number;
 	    more_numbers = CDR(more_numbers);
@@ -373,7 +373,7 @@ Lisp_GreaterEqual(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(compare, number) < 0)
+	    if (cmp_object_object(compare, number, 1) < 0)
 		return (NIL);
 	    compare = number;
 	    more_numbers = CDR(more_numbers);
@@ -409,7 +409,7 @@ Lisp_NotEqual(LispBuiltin *builtin)
 	for (object = more_numbers; CONSP(object); object = CDR(object)) {
 	    number = CAR(object);
 
-	    if (cmp_object_object(compare, number) == 0)
+	    if (cmp_object_object(compare, number, 0) == 0)
 		return (NIL);
 	}
 	if (CONSP(more_numbers)) {
@@ -437,7 +437,7 @@ Lisp_Min(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(result, number) > 0)
+	    if (cmp_object_object(result, number, 1) > 0)
 		result = number;
 	    more_numbers = CDR(more_numbers);
 	} while (CONSP(more_numbers));
@@ -463,7 +463,7 @@ Lisp_Max(LispBuiltin *builtin)
     if (CONSP(more_numbers)) {
 	do {
 	    number = CAR(more_numbers);
-	    if (cmp_object_object(result, number) < 0)
+	    if (cmp_object_object(result, number, 1) < 0)
 		result = number;
 	    more_numbers = CDR(more_numbers);
 	} while (CONSP(more_numbers));
@@ -688,7 +688,7 @@ Lisp_Evenp(LispBuiltin *builtin)
 	    result = INT_VALUE(integer) % 2 ? NIL : T;
 	    break;
 	case LispBignum_t:
-	    result = mpi_modi(OBI(integer), 2) ? NIL : T;
+	    result = mpi_remi(OBI(integer), 2) ? NIL : T;
 	    break;
 	default:
 	    fatal_builtin_object_error(builtin, integer, NOT_AN_INTEGER);
@@ -886,7 +886,7 @@ Lisp_Isqrt(LispBuiltin *builtin)
 
     natural = ARGUMENT(0);
 
-    if (cmp_object_object(natural, obj_zero) < 0)
+    if (cmp_object_object(natural, obj_zero, 1) < 0)
 	goto not_a_natural_number;
 
     switch (OBJECT_TYPE(natural)) {
@@ -1192,7 +1192,7 @@ Lisp_Oddp(LispBuiltin *builtin)
 	    result = INT_VALUE(integer) % 2 ? T : NIL;
 	    break;
 	case LispBignum_t:
-	    result = mpi_modi(OBI(integer), 2) ? T : NIL;
+	    result = mpi_remi(OBI(integer), 2) ? T : NIL;
 	    break;
 	default:
 	    fatal_builtin_object_error(builtin, integer, NOT_AN_INTEGER);
@@ -1353,7 +1353,8 @@ Lisp_Zerop(LispBuiltin *builtin)
 	    result = cmp_real_object(&zero, number) == 0 ? T : NIL;
 	    break;
 	case LispComplex_t:
-	    result = NIL;
+	    result = cmp_real_object(&zero, OCXR(number)) == 0 &&
+		     cmp_real_object(&zero, OCXI(number)) == 0 ? T : NIL;
 	    break;
 	default:
 	    fatal_builtin_object_error(builtin, number, NOT_A_NUMBER);

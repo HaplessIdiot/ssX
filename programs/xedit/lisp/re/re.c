@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.6 2002/11/02 22:58:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.7 2002/11/15 07:01:32 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -2537,15 +2537,15 @@ redump(re_cod *code)
 		printf("Eow");
 		break;
 	    case Re_Range:
-		printf("Range\n");
+		printf("Range ");
 		goto range;
 	    case Re_RangeNot:
-		printf("Range-not\n");
+		printf("Range-not ");
 range:
-		for (i = 0; i < 256; i += 4) {
-		    for (j = k = 0; j < 4; j++)
-			k = (k << 8) | *cod++;
-		    printf("%04x ", k);
+		for (i = 0; i < 256; i += 32) {
+		    for (j = k = 0; j < 32; j++)
+			k |= (*cod++ & 1) << (31 - j);
+		    printf("%x ", k);
 		}
 		break;
 	    case Re_Literal:

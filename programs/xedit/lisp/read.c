@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.24 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.26 2002/11/15 07:27:46 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -67,6 +67,12 @@ typedef struct _read_info {
     /* information for #<number>= and #<number># */
     object_info *objects;
     long num_objects;
+
+    /* could use only the objects field as all circular data is known,
+     * but check every object so that circular/shared references generated
+     * by evaluations would not cause an infinite loop at read time */
+    LispObj **circles;
+    long num_circles;
 } read_info;
 
 /*
@@ -76,6 +82,7 @@ static LispObj *LispReadChar(LispBuiltin*, int);
 
 static void LispReadFixCircle(LispObj*, read_info*);
 static LispObj *LispReadLabelCircle(LispObj*, read_info*);
+static int LispReadCheckCircle(LispObj*, read_info*);
 static LispObj *LispDoRead(read_info*);
 static int LispSkipWhiteSpace(void);
 static LispObj *LispReadList(read_info*);
@@ -486,8 +493,7 @@ LispRead(void)
     read_info info;
     LispObj *result;
 
-    info.nodot = 0;
-    info.discard = 0;
+    info.level = info.nodot = info.discard = 0;
     info.circle_count = 0;
     info.objects = NULL;
     info.num_objects = 0;
@@ -498,8 +504,13 @@ LispRead(void)
      * the toplevel, so, if some circular/shared reference was evaluated,
      * it should have generated an expected error */
     if (info.num_objects) {
-	if (info.circle_count)
+	if (info.circle_count) {
+	    info.circles = NULL;
+	    info.num_circles = 0;
 	    LispReadFixCircle(result, &info);
+	    if (info.num_circles)
+		LispFree(info.circles);
+	}
 	LispFree(info.objects);
     }
 
@@ -519,6 +530,8 @@ fix_again:
 		 cons = object, object = CDR(object)) {
 		if (READLABELP(CAR(object)))
 		    CAR(object) = LispReadLabelCircle(CAR(object), info);
+		else if (LispReadCheckCircle(object, info))
+		    return;
 		else
 		    LispReadFixCircle(CAR(object), info);
 	    }
@@ -531,7 +544,7 @@ fix_again:
 	    if (READLABELP(object->data.array.list))
 		object->data.array.list =
 		    LispReadLabelCircle(object->data.array.list, info);
-	    else {
+	    else if (!LispReadCheckCircle(object, info)) {
 		object = object->data.array.list;
 		goto fix_again;
 	    }
@@ -540,7 +553,7 @@ fix_again:
 	    if (READLABELP(object->data.struc.fields))
 		object->data.struc.fields =
 		    LispReadLabelCircle(object->data.struc.fields, info);
-	    else {
+	    else if (!LispReadCheckCircle(object, info)) {
 		object = object->data.struc.fields;
 		goto fix_again;
 	    }
@@ -568,7 +581,7 @@ fix_again:
 	    if (READLABELP(object->data.lambda.code))
 		object->data.lambda.code =
 		    LispReadLabelCircle(object->data.lambda.code, info);
-	    else {
+	    else if (!LispReadCheckCircle(object, info)) {
 		object = object->data.lambda.code;
 		goto fix_again;
 	    }
@@ -590,6 +603,23 @@ LispReadLabelCircle(LispObj *label, read_info *info)
     LispDestroy("READ: internal error");
     /*NOTREACHED*/
     return (label);
+}
+
+static int
+LispReadCheckCircle(LispObj *object, read_info *info)
+{
+    long i;
+
+    for (i = 0; i < info->num_circles; i++)
+	if (info->circles[i] == object)
+	    return (1);
+
+    if ((info->num_circles % 16) == 0)
+	info->circles = LispRealloc(info->circles, sizeof(LispObj*) *
+				    (info->num_circles + 16));
+    info->circles[info->num_circles++] = object;
+
+    return (0);
 }
 
 static LispObj *
@@ -636,12 +666,6 @@ LispDoRead(read_info *info)
     if (code == NIL)
 	COD = object;
     else
-	/* XXX This should only happen if a recursive read happened,
-	 * and probably should be triggered as an error, unless specified
-	 * to not do so. Recursive reads works as the read data isn't
-	 * buffered at the read layer.
-	 * FIXME The interpreter must be redesigned in it's current
-	 * read/eval loop to use the builtin function read. */
 	COD = CONS(COD, object);
 
     return (object);
@@ -1214,13 +1238,13 @@ LispParseAtom(char *package, char *symbol, int intern, int unreadable)
 static LispObj *
 LispParseNumber(char *str, int radix)
 {
-    mpr *rop;
-    mpi *iop;
     int len;
-    double dfloat;
     long integer;
-    LispObj *number;
+    double dfloat;
     char *ratio, *ptr;
+    LispObj *number;
+    mpi *bignum;
+    mpr *bigratio;
 
     if (*str == '\0')
 	return (NULL);
@@ -1301,11 +1325,7 @@ LispParseNumber(char *str, int radix)
 	}
     }
 
-    iop = NULL;			/* if ratio and set, numerator was too large */
-    rop = NULL;			/* if ratio and set, denominator was too large */
-
     /* check if correctly specified in the given radix */
-
     len = strlen(str) - 1;
     if (!ratio && radix != 10 && str[len] == '.')
 	str[len] = '\0';
@@ -1322,82 +1342,94 @@ LispParseNumber(char *str, int radix)
 	}
     }
 
+    bignum = NULL;
+    bigratio = NULL;
+
     errno = 0;
-    /* number is an integer or ratio */
     integer = strtol(str, NULL, radix);
 
     /* if does not fit in a long */
     if (errno == ERANGE &&
 	((*str == '-' && integer == LONG_MIN) ||
 	 (*str != '-' && integer == LONG_MAX))) {
-	iop = LispMalloc(sizeof(mpi));
-	mpi_init(iop);
-	mpi_setstr(iop, str, radix);
-	if (ratio == NULL) {
-	    number = BIGNUM(iop);
-	    LispMused(iop);
-
-	    return (number);
-	}
+	bignum = LispMalloc(sizeof(mpi));
+	mpi_init(bignum);
+	mpi_setstr(bignum, str, radix);
     }
 
-    if (ratio) {
+
+    if (ratio && integer != 0) {
 	long denominator;
 
 	errno = 0;
 	denominator = strtol(ratio, NULL, radix);
 	if (denominator == 0)
-	    LispDestroy("READ: divide by zero");
+	    LispDestroy("divide by zero");
 
-	/* if denominator won't fit in a long */
-	if (denominator == LONG_MAX && errno == ERANGE) {
-	    rop = LispMalloc(sizeof(mpr));
-	    mpr_init(rop);
-	    if (iop) {
-		mpi_set(mpr_num(rop), iop);
-		mpi_clear(iop);
-		LispFree(iop);
-		iop = NULL;
+	if (bignum == NULL) {
+	    if (integer == MINSLONG ||
+		(denominator == LONG_MAX && errno == ERANGE)) {
+		bigratio = LispMalloc(sizeof(mpr));
+		mpr_init(bigratio);
+		mpi_seti(mpr_num(bigratio), integer);
+		mpi_setstr(mpr_den(bigratio), ratio, radix);
 	    }
-	    else		
-		mpi_setstr(mpr_num(rop), str, radix);
-	    mpi_setstr(mpr_den(rop), ratio, radix);
 	}
-	else if (iop) {
-	    rop = LispMalloc(sizeof(mpr));
-	    mpr_init(rop);
-	    mpi_set(mpr_num(rop), iop);
-	    mpi_clear(iop);
-	    LispFree(iop);
-	    iop = NULL;
-	    mpi_seti(mpr_den(rop), denominator);
+	else {
+	    bigratio = LispMalloc(sizeof(mpr));
+	    mpr_init(bigratio);
+	    mpi_set(mpr_num(bigratio), bignum);
+	    mpi_clear(bignum);
+	    LispFree(bignum);
+	    mpi_setstr(mpr_den(bigratio), ratio, radix);
 	}
 
-	if (rop) {
-	    mpr_canonicalize(rop);
-	    if (mpr_fiti(rop)) {
-		integer = mpi_geti(mpr_num(rop));
-		denominator = mpi_geti(mpr_den(rop));
-		mpr_clear(rop);
-		LispFree(rop);
-		rop = NULL;
-		/* if denominator becames 1, RATIO will convert to INTEGER */
-		number = RATIO(integer, denominator);
+	if (bigratio) {
+	    mpr_canonicalize(bigratio);
+	    if (mpi_fiti(mpr_num(bigratio)) &&
+		mpi_fiti(mpr_den(bigratio))) {
+		integer = mpi_geti(mpr_num(bigratio));
+		denominator = mpi_geti(mpr_den(bigratio));
+		mpr_clear(bigratio);
+		LispFree(bigratio);
+		if (denominator == 1)
+		    number = INTEGER(integer);
+		else
+		    number = RATIO(integer, denominator);
 	    }
 	    else {
-		number = BIGRATIO(rop);
-		LispMused(rop);
+		number = BIGRATIO(bigratio);
+		LispMused(bigratio);
 	    }
-
-	    return (number);
 	}
+	else {
+	    long num = integer, den = denominator, rest;
 
-	return (RATIO(integer, denominator));
+	    if (num < 0)
+		num = -num;
+	    for (;;) {
+		if ((rest = den % num) == 0)
+		    break;
+		den = num;
+		num = rest;
+	    }
+	    if (den != 1) {
+		denominator /= num;
+		integer /= num;
+	    }
+	    if (denominator < 0) {
+		integer = -integer;
+		denominator = -denominator;
+	    }
+	    if (denominator == 1)
+		number = INTEGER(integer);
+	    else
+		number = RATIO(integer, denominator);
+	}
     }
-
-    if (iop) {
-	number = BIGNUM(iop);
-	LispMused(iop);
+    else if (bignum) {
+	number = BIGNUM(bignum);
+	LispMused(bignum);
     }
     else
 	number = INTEGER(integer);

@@ -27,7 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.10 2002/11/10 16:29:05 paulo Exp $ */
+
+/*
+ * FIXME: code in the mp library must use LispXalloc functions, to reclaim
+ * memory in case of errors.
+ */
 
 /*
  * Defines
@@ -75,12 +80,8 @@
 #define NRBRN(num)		mpr_num(NRBR(num))
 #define NRBRD(num)		mpr_den(NRBR(num))
 
-#define NRINTEGERP(num)				\
-    (NRTYPE(num) == N_FIXNUM || NRTYPE(num) == N_BIGNUM)
-
 #define NRCLEAR_BI(num)		mpi_clear(NRBI(num)); XFREE(NRBI(num))
 #define NRCLEAR_BR(num)		mpr_clear(NRBR(num)); XFREE(NRBR(num))
-
 
 /* imag part from number */
 #define NIMAG(num)		&((num)->imag)
@@ -93,9 +94,6 @@
 #define NIBR(num)		(num)->imag.data.bigratio
 #define NIBRN(obj)		mpr_num(NIBR(obj))
 #define NIBRD(obj)		mpr_den(NIBR(obj))
-
-#define NIINTEGERP(num)				\
-    (NITYPE(num) == N_FIXNUM || NITYPE(num) == N_BIGNUM)
 
 /* real number fields */
 #define RTYPE(real)		(real)->type
@@ -113,7 +111,6 @@
 
 #define RCLEAR_BI(real)		mpi_clear(RBI(real)); XFREE(RBI(real))
 #define RCLEAR_BR(real)		mpr_clear(RBR(real)); XFREE(RBR(real))
-
 
 /* numeric value from lisp object */
 #define OFI(object)		FIXNUM_VALUE(object)
@@ -198,7 +195,7 @@ static int cmp_real_object(n_real*, LispObj*);
 #if 0	/* not used */
 static int cmp_number_object(n_number*, LispObj*);
 #endif
-static int cmp_object_object(LispObj*, LispObj*);
+static int cmp_object_object(LispObj*, LispObj*, int);
 
 /* fixnum */
 static INLINE int fi_fi_add_overflow(long, long) CONST;
@@ -213,8 +210,7 @@ static void rfr_canonicalize(n_real*);
 static void rbr_canonicalize(n_real*);
 
 /* complex */
-static void real_maybe_integer(n_real*);
-static void ncx_canonicalize(n_number*, int, int);
+static void ncx_canonicalize(n_number*);
 
 /* abs */
 static void abs_real(n_real*);
@@ -1219,14 +1215,19 @@ nabs_cx(n_number *num)
 	memcpy(NREAL(num), &temp, sizeof(n_real));
     }
 
-    if (cmp_real_real(NIMAG(num), &zero) == 0)
+    if (cmp_real_real(NIMAG(num), &zero) == 0) {
 	num->complex = 0;
+	if (NITYPE(num) == N_FLONUM) {
+	    /* change number type */
+	    temp.type = N_FLONUM;
+	    temp.data.flonum = 1.0;
+	    mul_real_real(NREAL(num), &temp);
+	}
+	else
+	    clear_real(NIMAG(num));
+    }
     else {
-	int rational;
-
-	rational = NRINTEGERP(num) && NIINTEGERP(num);
-
-	div_real_real(NREAL(num), NIMAG(num));
+	div_real_real(NIMAG(num), NREAL(num));
 	set_real_real(&temp, NIMAG(num));
 	mul_real_real(NIMAG(num), &temp);
 	clear_real(&temp);
@@ -1234,12 +1235,10 @@ nabs_cx(n_number *num)
 	add_real_real(NIMAG(num), &one);
 	sqrt_real(NIMAG(num));
 
-	mul_real_real(NREAL(num), NIMAG(num));
-	clear_real(NIMAG(num));
+	mul_real_real(NIMAG(num), NREAL(num));
+	clear_real(NREAL(num));
+	memcpy(NREAL(num), NIMAG(num), sizeof(n_real));
 	num->complex = 0;
-
-	if (rational)
-	    real_maybe_integer(NREAL(num));
     }
 }
 
@@ -1409,44 +1408,96 @@ sqrt_number(n_number *num)
 static void
 rsqrt_xi(n_real *real)
 {
-    double value;
+    int exact;
+    mpi bignum;
 
-    if (RTYPE(real) == N_BIGNUM) {
-	value = mpi_getd(RBI(real));
-	RCLEAR_BI(real);
-    }
-    else
-	value = (double)RFI(real);
-
-    if (value < 0.0)
+    if (cmp_real_real(real, &zero) < 0)
 	fatal_error(FLOATING_POINT_EXCEPTION);
-    value = sqrt(value);
-    RTYPE(real) = N_FLONUM;
-    RFF(real) = value;
-    real_maybe_integer(real);
+
+    mpi_init(&bignum);
+    if (RTYPE(real) == N_BIGNUM)
+	exact = mpi_sqrt(&bignum, RBI(real));
+    else {
+	mpi tmp;
+
+	mpi_init(&tmp);
+	mpi_seti(&tmp, RFI(real));
+	exact = mpi_sqrt(&bignum, &tmp);
+	mpi_clear(&tmp);
+    }
+    if (exact) {
+	if (RTYPE(real) == N_BIGNUM) {
+	    mpi_set(RBI(real), &bignum);
+	    rbi_canonicalize(real);
+	}
+	else
+	    RFI(real) = mpi_geti(&bignum);
+    }
+    else {
+	double value;
+
+	if (RTYPE(real) == N_BIGNUM) {
+	    value = mpi_getd(RBI(real));
+	    RCLEAR_BI(real);
+	}
+	else
+	    value = (double)RFI(real);
+
+	value = sqrt(value);
+	RTYPE(real) = N_FLONUM;
+	RFF(real) = value;
+    }
+    mpi_clear(&bignum);
 }
 
-/*
- * FIXME: check if sqrt of rational is rational
- */
 static void
 rsqrt_xr(n_real *real)
 {
-    double value;
+    n_real num, den;
 
-    if (RTYPE(real) == N_BIGRATIO) {
-	value = mpr_getd(RBR(real));
-	RCLEAR_BR(real);
-    }
-    else
-	value = (double)RFRN(real) / (double)RFRD(real);
-
-    if (!finite(value))
-	fatal_error(FLOATING_POINT_OVERFLOW);
-    else if (value < 0)
+    if (cmp_real_real(real, &zero) < 0)
 	fatal_error(FLOATING_POINT_EXCEPTION);
-    RTYPE(real) = N_FLONUM;
-    RFF(real) = sqrt(value);
+
+    if (RTYPE(real) == N_FIXRATIO) {
+	num.type = den.type = N_FIXNUM;
+	num.data.fixnum = RFRN(real);
+	den.data.fixnum = RFRD(real);
+    }
+    else {
+	mpi *bignum;
+
+	if (mpi_fiti(RBRN(real))) {
+	    num.type = N_FIXNUM;
+	    num.data.fixnum = mpi_geti(RBRN(real));
+	}
+	else {
+	    bignum = XALLOC(mpi);
+	    mpi_init(bignum);
+	    mpi_set(bignum, RBRN(real));
+	    num.type = N_BIGNUM;
+	    num.data.bignum = bignum;
+	}
+
+	if (mpi_fiti(RBRD(real))) {
+	    den.type = N_FIXNUM;
+	    den.data.fixnum = mpi_geti(RBRD(real));
+	}
+	else {
+	    bignum = XALLOC(mpi);
+	    mpi_init(bignum);
+	    mpi_set(bignum, RBRD(real));
+	    den.type = N_BIGNUM;
+	    den.data.bignum = bignum;
+	}
+    }
+
+    rsqrt_xi(&num);
+    rsqrt_xi(&den);
+
+    clear_real(real);
+    memcpy(real, &num, sizeof(n_real));
+    div_real_real(real, &den);
+    clear_real(&den);
 }
 
 static void
@@ -1461,12 +1512,8 @@ rsqrt_ff(n_real *real)
 static void
 nsqrt_cx(n_number *num)
 {
-    int ireal, iimag;
     n_number mag;
     n_real *real, *imag;
-
-    ireal = NRINTEGERP(num);
-    iimag = NIINTEGERP(num);
 
     real = &(mag.real);
     imag = &(mag.imag);
@@ -1475,7 +1522,7 @@ nsqrt_cx(n_number *num)
     mag.complex = 1;
 
     nabs_cx(&mag);	/* this will free the imag part data */
-    if (!mag.complex && cmp_real_real(real, &zero) == 0) {
+    if (cmp_real_real(real, &zero) == 0) {
 	clear_number(num);
 	memcpy(NREAL(num), real, sizeof(n_real));
 	clear_real(real);
@@ -1501,6 +1548,9 @@ nsqrt_cx(n_number *num)
 	memcpy(NIMAG(num), real, sizeof(n_real));
 	sub_real_real(NIMAG(num), NREAL(num));
 	div_real_real(NIMAG(num), &two);
+	sqrt_real(NIMAG(num));
+	if (cmp_real_real(imag, &zero) < 0)
+	    neg_real(NIMAG(num));
 
 	/* R = Ia / I / 2 */
 	clear_real(NREAL(num));
@@ -1510,36 +1560,22 @@ nsqrt_cx(n_number *num)
 	div_real_real(NREAL(num), &two);
     }
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
 nsqrt_xi(n_number *num)
 {
-    double value;
-
-    if (NRTYPE(num) == N_BIGNUM) {
-	value = mpi_getd(NRBI(num));
-	RCLEAR_BI(NREAL(num));
-    }
-    else
-	value = NRFI(num);
-
-    if (value < 0.0) {
-	value = sqrt(-value);
-
-	NITYPE(num) = N_FLONUM;
-	NIFF(num) = value;
+    if (cmp_real_real(NREAL(num), &zero) < 0) {
+	memcpy(NIMAG(num), NREAL(num), sizeof(n_real));
+	neg_real(NIMAG(num));
+	rsqrt_xi(NIMAG(num));
+	NRTYPE(num) = N_FIXNUM;
 	NRFI(num) = 0;
 	num->complex = 1;
-	real_maybe_integer(NIMAG(num));
     }
-    else {
-	value = sqrt(value);
-	NRTYPE(num) = N_FLONUM;
-	NRFF(num) = value;
-	real_maybe_integer(NREAL(num));
-    }
+    else
+	rsqrt_xi(NREAL(num));
 }
 
 static void
@@ -1562,40 +1598,19 @@ nsqrt_ff(n_number *num)
     }
 }
 
-/*
- * FIXME: check if sqrt of rational is rational
- */
 static void
 nsqrt_xr(n_number *num)
 {
-    double value, ratio;
-    int cmp;
-
-    if (NRTYPE(num) == N_BIGRATIO) {
-	ratio = mpr_getd(NRBR(num));
-	RCLEAR_BR(NREAL(num));
-    }
-    else
-	ratio = (double)NRFRN(num) / (double)NRFRD(num);
-
-    if (!finite(ratio))
-	fatal_error(FLOATING_POINT_OVERFLOW);
-    cmp = ratio < 0 ? -1 : 0;
-    if (cmp < 0)
-	ratio = -ratio;
-    value = sqrt(ratio);
-
-    if (cmp < 0) {
-	NITYPE(num) = N_FLONUM;
-	NIFF(num) = value;
+    if (cmp_real_real(NREAL(num), &zero) < 0) {
+	memcpy(NIMAG(num), NREAL(num), sizeof(n_real));
+	neg_real(NIMAG(num));
+	rsqrt_xr(NIMAG(num));
 	NRTYPE(num) = N_FIXNUM;
 	NRFI(num) = 0;
 	num->complex = 1;
     }
-    else {
-	NRTYPE(num) = N_FLONUM;
-	NRFF(num) = value;
-    }
+    else
+	rsqrt_xr(NREAL(num));
 }
 
 
@@ -1677,6 +1692,14 @@ rmod_fi_fi(n_real *real, long fi)
 
     if ((RFI(real) < 0) ^ (fi < 0))
 	RFI(real) = (RFI(real) % fi) + fi;
+    else if (RFI(real) == MINSLONG || fi == MINSLONG) {
+	mpi bignum;
+
+	mpi_init(&bignum);
+	mpi_seti(&bignum, RFI(real));
+	RFI(real) = mpi_modi(&bignum, fi);
+	mpi_clear(&bignum);
+    }
     else
 	RFI(real) = RFI(real) % fi;
 }
@@ -1771,7 +1794,16 @@ rrem_fi_fi(n_real *real, long fi)
     if (fi == 0)
 	fatal_error(DIVIDE_BY_ZERO);
 
-    RFI(real) = RFI(real) % fi;
+    if (RFI(real) == MINSLONG || fi == MINSLONG) {
+	mpi bignum;
+
+	mpi_init(&bignum);
+	mpi_seti(&bignum, RFI(real));
+	RFI(real) = mpi_remi(&bignum, fi);
+	mpi_clear(&bignum);
+    }
+    else
+	RFI(real) = RFI(real) % fi;
 }
 
 static void
@@ -2123,8 +2155,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		    ndivide_xi_xi(num, obj, fun, flo);
 		    break;
 		case N_FLONUM:
-		    ndivide_flonum(num, NRFF(num), (double)OII(obj),
-				   fun, flo);
+		    ndivide_flonum(num, NRFF(num), (double)OFI(obj), fun, flo);
 		    break;
 		case N_FIXRATIO:
 		case N_BIGRATIO:
@@ -2141,8 +2172,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		    ndivide_xi_xi(num, obj, fun, flo);
 		    break;
 		case N_FLONUM:
-		    ndivide_flonum(num, NRFF(num), (double)OII(obj),
-				   fun, flo);
+		    ndivide_flonum(num, NRFF(num), (double)OII(obj), fun, flo);
 		    break;
 		case N_FIXRATIO:
 		case N_BIGRATIO:
@@ -2200,6 +2230,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		    ndivide_flonum(num, NRFF(num),
 				   (double)OFRN(obj) / (double)OFRD(obj),
 				   fun, flo);
+		    break;
 		case N_FIXRATIO:
 		case N_BIGRATIO:
 		    ndivide_xr_xr(num, obj, fun, flo);
@@ -2215,6 +2246,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		case N_FLONUM:
 		    ndivide_flonum(num, NRFF(num), mpr_getd(OBR(obj)),
 				   fun, flo);
+		    break;
 		case N_FIXRATIO:
 		case N_BIGRATIO:
 		    ndivide_xr_xr(num, obj, fun, flo);
@@ -2531,18 +2563,22 @@ cmp_number_object(n_number *op1, LispObj *op2)
 #endif
 
 static int
-cmp_object_object(LispObj *op1, LispObj *op2)
+cmp_object_object(LispObj *op1, LispObj *op2, int real)
 {
     if (OBJECT_TYPE(op1) == LispComplex_t) {
+	if (real)
+	    fatal_object_error(op1, NOT_A_REAL_NUMBER);
 	if (OBJECT_TYPE(op2) == LispComplex_t)
 	    return (cmp_cx_cx(op1, op2));
 	else if (cmp_real_object(&zero, OCXI(op1)) == 0)
-	    return (cmp_object_object(OCXR(op1), op2));
+	    return (cmp_object_object(OCXR(op1), op2, real));
 	return (1);
     }
     else if (OBJECT_TYPE(op2) == LispComplex_t) {
+	if (real)
+	    fatal_object_error(op1, NOT_A_REAL_NUMBER);
 	if (cmp_real_object(&zero, OCXI(op2)) == 0)
-	    return (cmp_object_object(op1, OCXR(op2)));
+	    return (cmp_object_object(op1, OCXR(op2), real));
 	return (1);
     }
     else {
@@ -2769,6 +2805,18 @@ rfr_canonicalize(n_real *real)
     den = denominator = RFRD(real);
     if (denominator == 0)
 	fatal_error(DIVIDE_BY_ZERO);
+
+    if (num == MINSLONG || den == MINSLONG) {
+	mpr *bigratio = XALLOC(mpr);
+
+	mpr_init(bigratio);
+	mpr_seti(bigratio, num, den);
+	RTYPE(real) = N_BIGRATIO;
+	RBR(real) = bigratio;
+	rbr_canonicalize(real);
+	return;
+    }
+
     if (num < 0)
 	num = -num;
     else if (num == 0) {
@@ -2845,40 +2893,13 @@ rbr_canonicalize(n_real *real)
     }
 }
 
+
 /************************************************************************
  * COMPLEX
  ************************************************************************/
 static void
-real_maybe_integer(n_real *real)
+ncx_canonicalize(n_number *num)
 {
-    if (RTYPE(real) == N_FLONUM) {
-	double value = RFF(real);
-
-	if (!finite(value))
-	    fatal_error(FLOATING_POINT_OVERFLOW);
-	if ((long)value == value) {
-	    RTYPE(real) = N_FIXNUM;
-	    RFI(real) = value;
-	}
-	else if (value == rint(value)) {
-	    mpi *bigi = XALLOC(mpi);
-
-	    mpi_init(bigi);
-	    mpi_setd(bigi, value);
-	    RTYPE(real) = N_BIGNUM;
-	    RBI(real) = bigi;
-	}
-    }
-}
-
-static void
-ncx_canonicalize(n_number *num, int ireal, int iimag)
-{
-    if (ireal && !RINTEGERP(NREAL(num)))
-	real_maybe_integer(NREAL(num));
-    if (iimag && !RINTEGERP(NIMAG(num)))
-	real_maybe_integer(NIMAG(num));
-
     if (NITYPE(num) == N_FIXNUM && NIFI(num) == 0)
 	num->complex = 0;
 }
@@ -2895,8 +2916,23 @@ ndivide_fi_fi(n_number *num, long div, int fun, int flo)
 {
     long quo, rem;
 
-    quo = NRFI(num) / div;
-    rem = NRFI(num) % div;
+    if (NRFI(num) == MINSLONG || div == MINSLONG) {
+	LispObj integer;
+	mpi *bignum = XALLOC(mpi);
+
+	mpi_init(bignum);
+	mpi_seti(bignum, NRFI(num));
+	NRBI(num) = bignum;
+	NRTYPE(num) = N_BIGNUM;
+	integer.type = LispInteger_t;
+	integer.data.integer = div;
+	ndivide_xi_xi(num, &integer, fun, flo);
+	return;
+    }
+    else {
+	quo = NRFI(num) / div;
+	rem = NRFI(num) % div;
+    }
 
     switch (fun) {
 	case NDIVIDE_CEIL:
@@ -3211,11 +3247,17 @@ ndivide_xi_xr(n_number *num, LispObj *div, int fun, int flo)
 
     rsign = mpi_sgn(mpr_num(rem));
     if (mpr_fiti(rem)) {
-	NITYPE(num) = N_FIXNUM;
-	NIFRN(num) = mpi_geti(mpr_num(rem));
-	NIFRD(num) = mpi_geti(mpr_den(rem));
+	if (mpi_geti(mpr_den(rem)) == 1) {
+	    NITYPE(num) = N_FIXNUM;
+	    NIFI(num) = mpi_geti(mpr_num(rem));
+	}
+	else {
+	    NITYPE(num) = N_FIXRATIO;
+	    NIFRN(num) = mpi_geti(mpr_num(rem));
+	    NIFRD(num) = mpi_geti(mpr_den(rem));
+	}
 	mpr_clear(rem);
-	XFREE(rem);
+	XFREE(rem);	
     }
     else {
 	if (mpi_fiti(mpr_den(rem)) && mpi_geti(mpr_den(rem)) == 1) {
@@ -3250,13 +3292,15 @@ ndivide_xi_xr(n_number *num, LispObj *div, int fun, int flo)
 			state = NDIVIDE_ADD;
 		}
 		else {
-		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+		    neg_real(&cmp);
+		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
 			state = NDIVIDE_SUB;
 		}
 	    }
 	    else {
 		if (rsign > 0) {
-		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+		    neg_real(&cmp);
+		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
 			state = NDIVIDE_SUB;
 		}
 		else {
@@ -3357,40 +3401,33 @@ ndivide_xr_xi(n_number *num, LispObj *div, int fun, int flo)
 		state = NDIVIDE_SUB;
 	    break;
 	case NDIVIDE_ROUND: {
-	    int modp;
+	    n_real cmp;
 
-	    if (NITYPE(num) == N_FIXRATIO)
-		modp = NIFRD(num) == 2;
-	    else
-		modp = mpi_cmpi(NIBRD(num), 2) == 0;
-
-	    if (!modp || (quo->digs[0] & 1) == 1) {
-		n_real cmp;
-
-		set_real_object(&cmp, div);
-		div_real_real(&cmp, &two);
-		if (dsign > 0) {
-		    if (rsign > 0) {
-			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
-			    state = NDIVIDE_ADD;
-		    }
-		    else {
-			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
-			    state = NDIVIDE_SUB;
-		    }
+	    set_real_object(&cmp, div);
+	    div_real_real(&cmp, &two);
+	    if (dsign > 0) {
+		if (rsign > 0) {
+		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			state = NDIVIDE_ADD;
 		}
 		else {
-		    if (rsign > 0) {
-			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
-			    state = NDIVIDE_SUB;
-		    }
-		    else {
-			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
-			    state = NDIVIDE_ADD;
-		    }
+		    neg_real(&cmp);
+		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			state = NDIVIDE_SUB;
 		}
-		clear_real(&cmp);
 	    }
+	    else {
+		if (rsign > 0) {
+		    neg_real(&cmp);
+		    if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			state = NDIVIDE_SUB;
+		}
+		else {
+		    if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			state = NDIVIDE_ADD;
+		}
+	    }
+	    clear_real(&cmp);
 	}   break;
     }
 
@@ -3425,7 +3462,7 @@ ndivide_xr_xi(n_number *num, LispObj *div, int fun, int flo)
 static void
 ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 {
-    int state = NDIVIDE_NOP, dsign, rsign;
+    int state = NDIVIDE_NOP, dsign, rsign, modp;
     mpr *bigr;
     mpi *bigi;
 
@@ -3435,10 +3472,11 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 	mpr_seti(bigr, NRFRN(num), NRFRD(num));
     else
 	mpr_set(bigr, NRBR(num));
+
     NITYPE(num) = N_BIGRATIO;
     NIBR(num) = bigr;
 
-    if (XOBJECT_TYPE(div) == LispRatio_t) {
+    if (OBJECT_TYPE(div) == LispRatio_t) {
 	dsign = OFRN(div) < 0 ? -1 : OFRN(div) > 0 ? 1 : 0;
 	mpi_muli(mpr_num(bigr), mpr_num(bigr), OFRD(div));
 	mpi_muli(mpr_den(bigr), mpr_den(bigr), OFRN(div));
@@ -3447,14 +3485,13 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 	dsign = mpi_sgn(OBRN(div));
 	mpr_div(bigr, bigr, OBR(div));
     }
+    modp = mpi_fiti(mpr_den(bigr)) && mpi_geti(mpr_den(bigr)) == 2;
 
     bigi = XALLOC(mpi);
     mpi_init(bigi);
     mpi_divqr(bigi, mpr_num(bigr), mpr_num(bigr), mpr_den(bigr));
-    NRTYPE(num) = N_BIGNUM;
-    NRBI(num) = bigi;
 
-    if (XOBJECT_TYPE(div) == LispRatio_t)
+    if (OBJECT_TYPE(div) == LispRatio_t)
 	mpi_seti(mpr_den(bigr), OFRD(div));
     else
 	mpi_set(mpr_den(bigr), OBRD(div));
@@ -3462,6 +3499,10 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 	mpi_muli(mpr_den(bigr), mpr_den(bigr), NRFRD(num));
     else
 	mpi_mul(mpr_den(bigr), mpr_den(bigr), NRBRD(num));
+
+    clear_real(NREAL(num));
+    NRTYPE(num) = N_BIGNUM;
+    NRBI(num) = bigi;
 
     rbr_canonicalize(NIMAG(num));
     rsign = cmp_real_real(NIMAG(num), &zero);
@@ -3475,14 +3516,7 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
 		state = NDIVIDE_SUB;
 	    break;
-	case NDIVIDE_ROUND: {
-	    int modp;
-
-	    if (NRTYPE(num) == N_FIXRATIO)
-		modp = NRFRD(num) == 2;
-	    else
-		modp = mpi_cmpi(NRBRD(num), 2) == 0;
-
+	case NDIVIDE_ROUND:
 	    if (!modp || (bigi->digs[0] & 1) == 1) {
 		n_real cmp;
 
@@ -3494,13 +3528,15 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 			    state = NDIVIDE_ADD;
 		    }
 		    else {
-			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
+			neg_real(&cmp);
+			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
 			    state = NDIVIDE_SUB;
 		    }
 		}
 		else {
 		    if (rsign > 0) {
-			if (cmp_real_real(NIMAG(num), &cmp) <= 0)
+			neg_real(&cmp);
+			if (cmp_real_real(NIMAG(num), &cmp) >= 0)
 			    state = NDIVIDE_SUB;
 		    }
 		    else {
@@ -3510,7 +3546,7 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 		}
 		clear_real(&cmp);
 	    }
-	}   break;
+	    break;
     }
 
     if (state == NDIVIDE_ADD) {
@@ -3522,18 +3558,24 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 	add_real_object(NIMAG(num), div);
     }
 
-    if (flo) {
-	double dval = mpi_getd(bigi);
+    if (NRTYPE(num) == N_BIGNUM) {
+	if (flo) {
+	    double dval = mpi_getd(bigi);
 
-	mpi_clear(bigi);
-	XFREE(bigi);
-	if (!finite(dval))
-	    fatal_error(FLOATING_POINT_OVERFLOW);
-	NRTYPE(num) = N_FLONUM;
-	NRFF(num) = dval;
+	    mpi_clear(bigi);
+	    XFREE(bigi);
+	    if (!finite(dval))
+		fatal_error(FLOATING_POINT_OVERFLOW);
+	    NRTYPE(num) = N_FLONUM;
+	    NRFF(num) = dval;
+	}
+	else
+	    rbi_canonicalize(NREAL(num));
     }
-    else
-	rbi_canonicalize(NREAL(num));
+    else if (flo) {
+	NRTYPE(num) = N_FLONUM;
+	NRFF(num) = (double)NRFI(num);
+    }
 }
 
 
@@ -3546,11 +3588,6 @@ nadd_re_cx(n_number *num, LispObj *comp)
 /*
 	Ra+Rb Ib
  */
-    int ireal, iimag;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = INTEGERP(OCXI(comp));
-
     /* Ra+Rb */
     add_real_object(NREAL(num), OCXR(comp));
 
@@ -3559,7 +3596,7 @@ nadd_re_cx(n_number *num, LispObj *comp)
 
     num->complex = 1;
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3568,11 +3605,6 @@ nsub_re_cx(n_number *num, LispObj *comp)
 /*
 	Ra-Rb -Ib
  */
-    int ireal, iimag;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = INTEGERP(OCXI(comp));
- 
     /* Ra-Rb */
     sub_real_object(NREAL(num), OCXR(comp));
 
@@ -3583,7 +3615,7 @@ nsub_re_cx(n_number *num, LispObj *comp)
 
     num->complex = 1;
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3592,11 +3624,6 @@ nmul_re_cx(n_number *num, LispObj *comp)
 /*
 	Ra*Rb Ra*Ib
  */
-    int ireal, iimag;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = INTEGERP(OCXI(comp));
-
     /* copy before change */
     set_real_real(NIMAG(num), NREAL(num));
 
@@ -3608,7 +3635,7 @@ nmul_re_cx(n_number *num, LispObj *comp)
 
     num->complex = 1;
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3619,15 +3646,7 @@ ndiv_re_cx(n_number *num, LispObj *comp)
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
-    int ireal, iimag;
     n_real div, temp;
-
-    /* may change to flonum if operation done */
-    if (NRTYPE(num) == N_FIXNUM && NRFI(num) == 0)
-	return;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = INTEGERP(OCXI(comp));
 
     /* Rb*Rb */
     set_real_object(&div, OCXR(comp));
@@ -3656,7 +3675,7 @@ ndiv_re_cx(n_number *num, LispObj *comp)
 
     num->complex = 1;
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 
@@ -3669,14 +3688,9 @@ nadd_cx_re(n_number *num, LispObj *re)
 /*
 	Ra+Rb Ia
  */
-    int ireal, iimag;
-
-    ireal = INTEGERP(re) && NRINTEGERP(num);
-    iimag = NIINTEGERP(num);
-
     add_real_object(NREAL(num), re);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3685,14 +3699,9 @@ nsub_cx_re(n_number *num, LispObj *re)
 /*
 	Ra-Rb Ia
  */
-    int ireal, iimag;
-
-    ireal = INTEGERP(re) && NRINTEGERP(num);
-    iimag = NIINTEGERP(num);
-
     sub_real_object(NREAL(num), re);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3701,15 +3710,10 @@ nmul_cx_re(n_number *num, LispObj *re)
 /*
 	Ra*Rb Ia*Rb
  */
-    int ireal, iimag;
-
-    ireal = INTEGERP(re) && NRINTEGERP(num);
-    iimag = NIINTEGERP(num);
-
     mul_real_object(NREAL(num), re);
     mul_real_object(NIMAG(num), re);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3718,15 +3722,10 @@ ndiv_cx_re(n_number *num, LispObj *re)
 /*
 	Ra/Rb Ia/Rb
  */
-    int ireal, iimag;
-
-    ireal = INTEGERP(re) && NRINTEGERP(num);
-    iimag = NIINTEGERP(num);
-
     div_real_object(NREAL(num), re);
     div_real_object(NIMAG(num), re);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 
@@ -3739,15 +3738,10 @@ nadd_cx_cx(n_number *num, LispObj *comp)
 /*
 	Ra+Rb Ia+Ib
  */
-    int ireal, iimag;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
-
     add_real_object(NREAL(num), OCXR(comp));
     add_real_object(NIMAG(num), OCXI(comp));
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3756,15 +3750,10 @@ nsub_cx_cx(n_number *num, LispObj *comp)
 /*
 	Ra-Rb Ia-Ib
  */
-    int ireal, iimag;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
-
     sub_real_object(NREAL(num), OCXR(comp));
     sub_real_object(NIMAG(num), OCXI(comp));
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3773,11 +3762,7 @@ nmul_cx_cx(n_number *num, LispObj *comp)
 /*
 	Ra*Rb-Ia*Ib Ra*Ib+Ia*Rb
  */
-    int ireal, iimag;
     n_real IaIb, RaIb;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
     set_real_real(&IaIb, NIMAG(num));
     mul_real_object(&IaIb, OCXI(comp));
@@ -3795,7 +3780,7 @@ nmul_cx_cx(n_number *num, LispObj *comp)
     add_real_real(NIMAG(num), &RaIb);
     clear_real(&RaIb);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static void
@@ -3806,11 +3791,7 @@ ndiv_cx_cx(n_number *num, LispObj *comp)
 	-----------  -----------
 	Rb*Rb+Ib*Ib  Rb*Rb+Ib*Ib
  */
-    int ireal, iimag;
     n_real temp1, temp2;
-
-    ireal = NRINTEGERP(num) && INTEGERP(OCXR(comp));
-    iimag = NIINTEGERP(num) && INTEGERP(OCXI(comp));
 
     /* IaIb */
     set_real_real(&temp1, NIMAG(num));
@@ -3847,7 +3828,7 @@ ndiv_cx_cx(n_number *num, LispObj *comp)
     div_real_real(NIMAG(num), &temp1);
     clear_real(&temp1);
 
-    ncx_canonicalize(num, ireal, iimag);
+    ncx_canonicalize(num);
 }
 
 static int
@@ -3855,9 +3836,9 @@ cmp_cx_cx(LispObj *op1, LispObj *op2)
 {
     int cmp;
 
-    cmp = cmp_object_object(OCXR(op1), OCXR(op2));
+    cmp = cmp_object_object(OCXR(op1), OCXR(op2), 1);
     if (cmp == 0)
-	cmp = cmp_object_object(OCXI(op1), OCXI(op2));
+	cmp = cmp_object_object(OCXI(op1), OCXI(op2), 1);
 
     return (cmp);
 }
@@ -4152,9 +4133,9 @@ rop_fi_fr_as_xr(n_real *real, long num, long den, int nop)
 	mpr_init(bigr);
 	mpr_seti(bigr, num, den);
 	if (nop == NOP_ADD)
-	    mpi_add(mpr_num(bigr), mpr_num(bigr), &iop);
+	    mpi_add(mpr_num(bigr), &iop, mpr_num(bigr));
 	else
-	    mpi_sub(mpr_num(bigr), mpr_num(bigr), &iop);
+	    mpi_sub(mpr_num(bigr), &iop, mpr_num(bigr));
 	mpi_clear(&iop);
 	RBR(real) = bigr;
 	RTYPE(real) = N_BIGRATIO;
@@ -4448,12 +4429,15 @@ rop_bi_fr_md_xr(n_real *real, long num, long den, int nop)
     mpr *bigr = XALLOC(mpr);
 
     mpr_init(bigr);
+
     mpr_seti(bigr, num, den);
 
     if (nop == NOP_MUL)
 	mpi_mul(mpr_num(bigr), RBI(real), mpr_num(bigr));
-    else
-	mpi_mul(mpr_num(bigr), RBI(real), mpr_den(bigr));
+    else {
+	mpi_mul(mpr_den(bigr), RBI(real), mpr_den(bigr));
+	mpr_inv(bigr, bigr);
+    }
 
     RCLEAR_BI(real);
     RBR(real) = bigr;
@@ -4614,9 +4598,9 @@ rop_fr_fi_as_xr(n_real *real, long op, int nop)
     }
     if (fit) {
 	if (nop == NOP_ADD)
-	    RFRN(real) = value + num;
+	    RFRN(real) = num + value;
 	else
-	    RFRN(real) = value - num;
+	    RFRN(real) = num - value;
 	rfr_canonicalize(real);
     }
     else {
@@ -4652,24 +4636,20 @@ rop_fr_fi_md_xr(n_real *real, long op, int nop)
 	}
     }
     else if (!fi_fi_mul_overflow(op, den)) {
-	RFRN(real) = op * den;
+	RFRD(real) = op * den;
 	rfr_canonicalize(real);
 	return;
     }
 
     {
-	mpi iop;
 	mpr *bigr = XALLOC(mpr);
 
 	mpr_init(bigr);
+	mpr_seti(bigr, num, den);
 	if (nop == NOP_MUL)
-	    mpr_seti(bigr, num, den);
+	    mpr_muli(bigr, bigr, op);
 	else
-	    mpr_seti(bigr, den, num);
-	mpi_init(&iop);
-	mpi_seti(&iop, op);
-	mpi_mul(mpr_num(bigr), mpr_num(bigr), &iop);
-	mpi_clear(&iop);
+	    mpr_divi(bigr, bigr, op);
 	RBR(real) = bigr;
 	RTYPE(real) = N_BIGRATIO;
 	rbr_canonicalize(real);
@@ -4745,7 +4725,7 @@ rop_fr_bi_md_xr(n_real *real, mpi *bignum, int nop)
     if (nop == NOP_MUL)
 	mpi_mul(mpr_num(bigr), mpr_num(bigr), bignum);
     else
-	mpi_mul(mpr_num(bigr), mpr_den(bigr), bignum);
+	mpi_mul(mpr_den(bigr), mpr_den(bigr), bignum);
 
     RBR(real) = bigr;
     RTYPE(real) = N_BIGRATIO;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.21 2002/11/15 07:01:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.22 2002/11/15 07:27:46 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -1280,7 +1280,7 @@ LispWriteStruct(LispObj *stream, LispObj *object, write_info *info)
     length += LispWriteAtom(stream, symbol, info);
     def = CDR(def);
     for (; def != NIL; def = CDR(def), field = CDR(field)) {
-	length += LispWriteStr(stream, " :", 2);
+	length += LispWriteChar(stream, ' ');
 	symbol = SYMBOLP(CAR(def)) ? CAR(def) : CAAR(def);
 	length += LispWriteAtom(stream, symbol, info);
 	length += LispWriteChar(stream, ' ');

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.3 2002/10/20 05:58:55 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.4 2002/11/15 07:01:32 paulo Exp $
 ;;
 
 (require "syntax")
@@ -214,7 +214,20 @@
     (syntoken "&(aux|key|optional|rest)\\>" :icase t :property *prop-constant*)
 
     ;; numbers
-    (syntoken "(\\<|[+-])(\\d+\\.?(\\d*([SsFfDdLlEe][+-]?\\d+)?)?)"
+    (syntoken
+	;; since lisp is very liberal in what can be a symbol, this pattern
+	;; will not always work as expected, since \< and \> will not properly
+	;; work for all characters that may be in a symbol name
+	(string-concat
+	    "(\\<|[+-])\\d+("
+		;; integers
+		"(\\>|\\.(\\s|$))|"
+		;; ratios
+		"/\\d+\\>|"
+		;;floats
+		"\\.?\\d*([SsFfDdLlEe][+-]?\\d+)?\\>"
+	    ")"
+	)
 	:property *prop-number*)
 
     ;; characters
@@ -224,7 +237,7 @@
     (syntoken "[`'.]|,@?" :property *prop-quote*)
 
     ;; package names
-    (syntoken "[A-Za-z_0-9-]+::?" :property *prop-package*)
+    (syntoken "[A-Za-z_0-9%-]+::?" :property *prop-package*)
 
     ;; read time evaluation
     (syntoken "#\\d+#" :property *prop-preprocessor*)
@@ -260,7 +273,7 @@
 
     (syntable :preprocessor *prop-preprocessor* nil
 	;; a symbol
-	(syntoken "[][{}A-Za-z0-9!$%&/<=>^~+-]+" :switch -1)
+	(syntoken "[][{}A-Za-z0-9!$%&/<=>^~:*+-]+" :switch -1)
 
 	;; conditional expression
 	(syntoken "(" :nospec t :begin :preprocessor-expression :contained t)

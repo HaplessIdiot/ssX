@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.18 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.19 2002/11/15 07:01:30 paulo Exp $ */
 
 #include "struct.h"
 
@@ -56,7 +56,7 @@ Lisp_Defstruct(LispBuiltin *builtin)
     LispAtom *atom;
     int i, size, length, slength;
     char *name, *strname, *sname;
-    LispObj *list, *object, *definition, *documentation;
+    LispObj *list, *cons, *object, *definition, *documentation;
 
     LispObj *oname, *description;
 
@@ -84,17 +84,22 @@ Lisp_Defstruct(LispBuiltin *builtin)
     for (list = description; CONSP(list); list = CDR(list)) {
 	object = CAR(list);
 
+	cons = list;
 	if (CONSP(object)) {
 	    if ((CONSP(CDR(object)) && CDR(CDR(object)) != NIL) ||
 		(!CONSP(CDR(object)) && CDR(object) != NIL))
 	    LispDestroy("%s: bad initialization %s",
 			STRFUN(builtin), STROBJ(object));
+	    cons = object;
 	    object = CAR(object);
 	}
 	if (!SYMBOLP(object) || strcmp(ATOMID(object), "P") == 0)
 	    /* p is invalid as a field name due to `type'-p */
 	    LispDestroy("%s: %s cannot be a field for %s",
 			STRFUN(builtin), STROBJ(object), ATOMID(oname));
+
+	if (!KEYWORDP(object))
+	    CAR(cons) = KEYWORD(ATOMID(object));
 
 	/* check for repeated field names */
 	for (object = description; object != list; object = CDR(object)) {

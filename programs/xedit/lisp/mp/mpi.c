@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.10 2002/10/06 17:11:49 paulo Exp $ */
 
 #include "mp.h"
 
@@ -1370,7 +1370,7 @@ mpi_cmpi(mpi *op1, long op2)
     if (op1->size == 2) {
 	cmp |= (long)op1->digs[1] << BNSBITS;
 	if (cmp == MINSLONG)
-	    return (op1->sign && op2 == cmp ? 0 : -1);
+	    return (op2 == cmp && op1->sign ? 0 : op1->sign ? -1 : 1);
     }
     if (op1->sign)
 	cmp = -cmp;
