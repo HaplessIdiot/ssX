@@ -66,7 +66,18 @@ typedef void (*i810_interp_func)( GLfloat t,
 				  GLfloat *result,
 				  const GLfloat *in,
 				  const GLfloat *out );
-				 
+
+#ifndef PCI_CHIP_I810				 
+#define PCI_CHIP_I810              0x7121
+#define PCI_CHIP_I810_DC100        0x7123
+#define PCI_CHIP_I810_E            0x7125 
+#define PCI_CHIP_I815              0x1132 
+#endif
+
+#define IS_I810(imesa) (imesa->i810Screen->deviceID == PCI_CHIP_I810 ||	\
+			imesa->i810Screen->deviceID == PCI_CHIP_I810_DC100 || \
+			imesa->i810Screen->deviceID == PCI_CHIP_I810_E)
+#define IS_I815(imesa) (imesa->i810Screen->deviceID == PCI_CHIP_I815)
 
 
 struct i810_context_t {

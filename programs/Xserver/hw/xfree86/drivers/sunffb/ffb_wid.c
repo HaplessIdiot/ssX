@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_wid.c,v 1.1 2000/05/23 04:47:45 dawes Exp $ */
 
 #include "ffb.h"
 
@@ -441,4 +441,21 @@ FFBWidChangeBuffer(FFBPtr pFfb, unsigned int wid, int visible)
 
 		update_wids(pFfb, index);
 	}
+}
+
+/* Used by DRI part of driver. */
+Bool
+FFBWidIsShared(FFBPtr pFfb, unsigned int wid)
+{
+	ffb_dac_info_t *p = &pFfb->dac_info;
+	ffb_wid_pool_t *table = &p->wid_table;
+	int index = wid >> table->wid_shift;
+
+	if (index < 0 || index >= table->num_wids)
+		return TRUE;
+
+	if (table->wid_pool[index].canshare == TRUE)
+		return TRUE;
+
+	return FALSE;
 }

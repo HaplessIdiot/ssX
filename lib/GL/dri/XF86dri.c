@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.5 2000/02/23 04:46:33 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.6 2000/06/17 00:02:48 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -183,7 +183,7 @@ Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
 #endif
 
     if (rep.length) {
-        if (!(*busIdString = (char *)Xcalloc(rep.length + 1, 1))) {
+        if (!(*busIdString = (char *)Xcalloc(rep.busIdStringLength + 1, 1))) {
             _XEatData(dpy, ((rep.busIdStringLength+3) & ~3));
             UnlockDisplay(dpy);
             SyncHandle();

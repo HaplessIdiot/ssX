@@ -2,8 +2,8 @@ STARTFONT 2.1
 COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT Generated with 'ucs2any.pl ../6x9.bdf ../map-ISO8859-1 ISO8859-1'
 COMMENT from an ISO10646-1 encoded source BDF font.
-COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 1999.
-COMMENT Id: 6x9.bdf,v 1.21 1999-12-13 10:50:31+00 mgk25 Exp mgk25 $
+COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 2000.
+COMMENT Id: 6x9.bdf,v 1.21 1999-12-13 10:50:31+00 mgk25 Rel mgk25 $
 COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Medium-R-Normal--9-90-75-75-C-60-ISO8859-1
 SIZE 9 75 75
@@ -32,7 +32,7 @@ CAP_HEIGHT 6
 X_HEIGHT 4
 ENDPROPERTIES
 CHARS 219
-STARTCHAR defaultchar
+STARTCHAR char0
 ENCODING 0
 SWIDTH 640 0
 DWIDTH 6 0

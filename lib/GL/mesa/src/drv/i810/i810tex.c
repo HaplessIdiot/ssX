@@ -51,7 +51,9 @@ static void i810SetTexWrapping(i810TextureObjectPtr tex, GLenum s, GLenum t)
    tex->Setup[I810_TEXREG_MCS] = val;
 }
 
-static void i810SetTexFilter(i810TextureObjectPtr t, GLenum minf, GLenum magf)
+static void i810SetTexFilter(i810ContextPtr imesa, 
+			     i810TextureObjectPtr t, 
+			     GLenum minf, GLenum magf)
 {
    GLuint LastLevel;
 
@@ -77,14 +79,30 @@ static void i810SetTexFilter(i810TextureObjectPtr t, GLenum minf, GLenum magf)
 		     MF_MIN_LINEAR | MF_MIP_NEAREST);
       break;
    case GL_NEAREST_MIPMAP_LINEAR:
-      I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
-		     MF_MIN_MASK | MF_MIP_MASK,
-		     MF_MIN_NEAREST | MF_MIP_DITHER );
+      /* This is quite a performance hit - may want to make this
+       * choice user-configurable, otherwise the 815 may look slower
+       * than the 810 (despite having much better image quality).
+       */
+      if (IS_I815(imesa)) {
+	 I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
+			MF_MIN_MASK | MF_MIP_MASK,
+			MF_MIN_NEAREST | MF_MIP_LINEAR );
+      } else {
+	 I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
+			MF_MIN_MASK | MF_MIP_MASK,
+			MF_MIN_NEAREST | MF_MIP_DITHER );
+      }
       break;
    case GL_LINEAR_MIPMAP_LINEAR:
-      I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
-		     MF_MIN_MASK | MF_MIP_MASK,
-		     MF_MIN_LINEAR  | MF_MIP_DITHER );
+      if (IS_I815(imesa)) {
+	 I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
+			MF_MIN_MASK | MF_MIP_MASK,
+			MF_MIN_LINEAR  | MF_MIP_LINEAR );
+      } else {
+	 I810_SET_FIELD(t->Setup[I810_TEXREG_MF],
+			MF_MIN_MASK | MF_MIP_MASK,
+			MF_MIN_LINEAR  | MF_MIP_DITHER );
+      }
       break;
    default:
       i810Error("i810SetTexFilter(): not supported min. filter %d\n",(int)minf);
@@ -103,8 +121,7 @@ static void i810SetTexFilter(i810TextureObjectPtr t, GLenum minf, GLenum magf)
    default:
       i810Error("i810SetTexFilter(): not supported mag. filter %d\n",(int)magf);
       break;
-   }
-  
+   }  
 
    if (t->globj->MinFilter != GL_NEAREST && 
        t->globj->MinFilter != GL_LINEAR) {
@@ -148,11 +165,12 @@ static void i810SetTexBorderColor(i810TextureObjectPtr t, GLubyte color[4])
 
 
 
-static void ReplicateMesaTexState(i810TextureObjectPtr t,
+static void ReplicateMesaTexState(i810ContextPtr imesa,
+				  i810TextureObjectPtr t,
                                   struct gl_texture_object *mesatex)
 {
    i810SetTexWrapping(t,mesatex->WrapS,mesatex->WrapT);
-   i810SetTexFilter(t,mesatex->MinFilter,mesatex->MagFilter);
+   i810SetTexFilter(imesa, t,mesatex->MinFilter,mesatex->MagFilter);
    i810SetTexBorderColor(t,mesatex->BorderColor);
 }
 
@@ -271,7 +289,7 @@ static i810TextureObjectPtr i810CreateTexObj(i810ContextPtr imesa,
 
    t->current_unit = 0;
 
-   ReplicateMesaTexState(t,tObj);
+   ReplicateMesaTexState(imesa, t,tObj);
    tObj->DriverData = t;
    imesa->dirty |= I810_UPLOAD_CTX;
    make_empty_list( t );
@@ -1263,7 +1281,7 @@ static void i810TexParameter( GLcontext *ctx, GLenum target,
    case GL_TEXTURE_MIN_FILTER:
    case GL_TEXTURE_MAG_FILTER:
       if (t->bound) FLUSH_BATCH( imesa );
-      i810SetTexFilter(t,tObj->MinFilter,tObj->MagFilter);
+      i810SetTexFilter(imesa, t,tObj->MinFilter,tObj->MagFilter);
       break;
 
    case GL_TEXTURE_WRAP_S:

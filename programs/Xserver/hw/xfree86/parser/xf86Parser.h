@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.19 2000/01/26 02:00:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.20 2000/04/04 19:25:21 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -203,6 +203,7 @@ typedef struct
 	int dev_chipid;
 	int dev_chiprev;
 	int dev_irq;
+	int dev_screen;
 	XF86OptionPtr dev_option_lst;
 	char *dev_comment;
 }

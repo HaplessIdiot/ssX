@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.147 2000/06/17 00:03:25 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.148 2000/06/17 00:27:33 dawes Exp $ */
 
 /*
  *
@@ -284,8 +284,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FreeResList)
    SYMFUNC(xf86ClaimFixedResources)
    SYMFUNC(xf86AddEntityToScreen)
+   SYMFUNC(xf86SetEntityInstanceForScreen)
    SYMFUNC(xf86RemoveEntityFromScreen)
    SYMFUNC(xf86GetEntityInfo)
+   SYMFUNC(xf86GetNumEntityInstances)
+   SYMFUNC(xf86GetDevFromEntity)
    SYMFUNC(xf86GetPciInfoForEntity)
    SYMFUNC(xf86SetEntityFuncs)
    SYMFUNC(xf86DeallocateResourcesForEntity)
@@ -310,7 +313,19 @@ LOOKUP xfree86LookupTab[] = {
 #ifdef async
    SYMFUNC(xf86QueueAsyncEvent)
 #endif
-
+   /* Shared Accel Accessor Functions */
+   SYMFUNC(xf86GetLastScrnFlag)
+   SYMFUNC(xf86SetLastScrnFlag)
+   SYMFUNC(xf86IsEntityShared)
+   SYMFUNC(xf86SetEntityShared)
+   SYMFUNC(xf86IsEntitySharable)
+   SYMFUNC(xf86SetEntitySharable)
+   SYMFUNC(xf86IsPrimInitDone)
+   SYMFUNC(xf86SetPrimInitDone)
+   SYMFUNC(xf86ClearPrimInitDone)
+   SYMFUNC(xf86AllocateEntityPrivateIndex)
+   SYMFUNC(xf86GetEntityPrivate)
+     
    /* xf86Configure.c */
    SYMFUNC(xf86AddDeviceToConfigure)
 	   

@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.2 2000/05/23 04:47:43 dawes Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -39,6 +39,10 @@
 #include "ffb_regs.h"
 #include "xf86sbusBus.h"
 #include "ffb_dac.h"
+#ifdef XF86DRI
+#include "xf86drm.h"
+#include "ffb_drishare.h"
+#endif
 
 /* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
 /* Note: do not mmap FFB_DFB8R_VOFF and following mappings using one mmap together
@@ -126,6 +130,12 @@ enum ffb_chip_type {
 	afb_m6			/* FCS Elite3D, 6 float chips */
 };
 
+#ifdef XF86DRI
+typedef struct {
+	int	index;
+} FFBConfigPrivRec, *FFBConfigPrivPtr;
+#endif
+
 typedef struct {
 	unsigned short fifo_cache;
 	unsigned short rp_active;
@@ -191,6 +201,16 @@ typedef struct {
 
 	void *I2C;
 	struct ffb_dac_info dac_info;
+
+#ifdef XF86DRI
+	void *pDRIInfo;
+	int numVisualConfigs;
+	void *pVisualConfigs;
+	FFBConfigPrivPtr pVisualConfigsPriv;
+	int drmSubFD;
+	Bool dri_enabled;
+	ffb_dri_state_t *pFfbSarea;
+#endif
 } FFBRec, *FFBPtr;
 
 /* Exported DAC layer routines. */
@@ -211,6 +231,7 @@ extern void FFBWidFree(FFBPtr, unsigned int);
 extern unsigned int FFBWidUnshare(FFBPtr, unsigned int);
 extern unsigned int FFBWidReshare(FFBPtr, unsigned int);
 extern void FFBWidChangeBuffer(FFBPtr, unsigned int, int);
+extern Bool FFBWidIsShared(FFBPtr pFfb, unsigned int wid);
 
 /* Accelerated double-buffering. */
 extern Bool FFBDbePreInit(ScreenPtr);

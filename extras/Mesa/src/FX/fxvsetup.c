@@ -304,9 +304,10 @@ tfxSetupFunc fxDDChooseSetupFunction(GLcontext *ctx)
 
    if ((ctx->Texture.ReallyEnabled & (TEXTURE0_2D|TEXTURE0_3D)) == TEXTURE0_2D) 
    {
+      /* This doesn't work for non-RGBA textures
       if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE) 
 	 setupindex &= ~SETUP_RGBA;
-
+      */
       setupindex |= SETUP_TMU0|SETUP_W;
    }
 

@@ -262,9 +262,10 @@ void i810ChooseRasterSetupFunc(GLcontext *ctx)
   int funcindex = (I810_WIN_BIT | I810_RGBA_BIT);
 
   if (ctx->Texture.Enabled & 0xf) {
+      /* This doesn't work for non-RGBA textures
       if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	 funcindex &= ~I810_RGBA_BIT;
-
+      */
      funcindex |= I810_TEX0_BIT;
   }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.7 2000/05/20 22:30:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.8 2000/06/17 00:03:18 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,13 +32,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
+#ifndef XFree86LOADER
+#include "xf86.h"
+#include "xf86_ansic.h"
+#endif
+
 #ifdef linux
 #include <asm/ioctl.h>
 #include <linux/agpgart.h>
 #endif
 
+#ifdef XFree86LOADER
 #include "xf86.h"
 #include "xf86_ansic.h"
+#endif
 
 #include "i810.h"
 #include "i810_reg.h"

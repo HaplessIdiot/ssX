@@ -439,9 +439,10 @@ void gl_update_pipelines( GLcontext *ctx )
 	 flags |= VERT_INDEX;
 
       if (ctx->Texture.Enabled & 0xf) {
+/* XXX this should also check that the texture is RGBA.  What about Unit[1]?
 	 if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	    flags &= ~VERT_RGBA;
-
+*/
 	 flags |= VERT_TEX0_ANY;
       }
 

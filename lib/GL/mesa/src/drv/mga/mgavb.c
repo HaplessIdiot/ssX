@@ -263,9 +263,10 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
    mmesa->blend_flags &= ~MGA_BLEND_MULTITEX;
 
    if (ctx->Texture.Enabled & 0xf) {
+      /* This doesn't work for non-RGBA textures
       if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	 funcindex &= ~MGA_RGBA_BIT;
-
+      */
       if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
 	  mmesa->envcolor) 
       {
@@ -290,9 +291,11 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
 	 mmesa->tmu_source[0] = 1;
 	 mmesa->tex_dest[1] = MGA_TEX0_BIT;
 
+         /* This doesn't work for non-RGBA textures
 	 if (ctx->Texture.Unit[1].EnvMode == GL_REPLACE)
 	    funcindex &= ~MGA_RGBA_BIT;
-	 
+         */
+
 	 if (ctx->Texture.Unit[0].EnvMode == GL_BLEND &&
 	     mmesa->envcolor) 
 	 {

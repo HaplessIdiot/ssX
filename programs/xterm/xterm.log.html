@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.54 2000/06/14 00:16:22 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.55 2000/06/17 00:27:35 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_139">Patch #139 - 2000/6/17 - XFree86 4.0d</A>
 <LI><A HREF="#xterm_138">Patch #138 - 2000/6/15 - XFree86 4.0c</A>
 <LI><A HREF="#xterm_137">Patch #137 - 2000/6/10 - XFree86 4.0b</A>
 <LI><A HREF="#xterm_136">Patch #136 - 2000/6/3 - XFree86 4.0b</A>
@@ -182,6 +183,14 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_139">Patch #139 - 2000/6/17 - XFree86 4.0d</A></H1>
+<ul>
+	<li>back out change to <code>-name</code> command-line option,
+	  restoring its original behavior (as noted by David Madore, the
+	  correct interpretation of this option is the application instance
+	  rather than the application class).
+</ul>
 
 <H1><A NAME="xterm_138">Patch #138 - 2000/6/15 - XFree86 4.0c</A></H1>
 <ul>

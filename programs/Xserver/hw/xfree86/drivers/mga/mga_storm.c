@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.65 2000/06/09 22:43:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.66 2000/06/17 00:03:20 martin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -402,7 +402,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	  (pScrn->displayWidth * PSZ / 8);
         xf86InitFBManager(pScreen, &AvailFBArea); 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using All available"
-		   "offscreen memory.\n");
+		   " offscreen memory.\n");
     } else {
         /* The dri module is loaded and in use at this time */
         AvailFBArea.x1 = 0;

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.4 2000/06/14 21:57:57 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -92,7 +92,7 @@ KeyboardConfig(XtPointer config)
 	    }
 
 	if (i >= num_xkb_infos) {
-	    int timeout = 5;
+	    int timeout = 10;
 
 	    xkb_info = (XkbInfo*)XtCalloc(1, sizeof(XkbInfo));
 	    xkb_info->conf = keyboard;

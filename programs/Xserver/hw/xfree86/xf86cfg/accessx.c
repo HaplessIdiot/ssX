@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
  */
 
 #include "config.h"
@@ -537,7 +537,7 @@ ApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    xkb_info->xkb->ctrls->ax_timeout = timeout->value * 60;
 	else
 	    xkb_info->config.ax_timeout =
-	    xkb_info->xkb->ctrls->ax_timeout = 0;
+	    xkb_info->xkb->ctrls->ax_timeout = 65535;
 
 	/* Enable StickyKeys */
 	XtSetArg(args[0], XtNstate, &state);
@@ -651,7 +651,7 @@ ApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 	/* Enable BounceKeys */
 	XtSetArg(args[0], XtNstate, &state);
-	XtGetValues(repeat, args, 1);
+	XtGetValues(bounceToggle, args, 1);
 	if (state) {
 	    xkb_info->config.initial_ctrls |= XkbBounceKeysMask;
 	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbBounceKeysMask;

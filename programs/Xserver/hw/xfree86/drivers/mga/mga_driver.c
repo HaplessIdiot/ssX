@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.155 2000/06/14 22:46:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.156 2000/06/17 00:03:20 martin Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2197,7 +2197,8 @@ MGARestore(ScrnInfoPtr pScrn)
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg = &pMga->SavedReg;
 
-    MGAStormSync(pScrn);
+   if (pScrn->pScreen != NULL)
+      MGAStormSync(pScrn);
 
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);

@@ -1387,18 +1387,21 @@ fxConvertGLStencilOp(GLenum op)
 static void
 fxSetupStencilTest(GLcontext *ctx)
 {
-  if (ctx->Stencil.Enabled) {
-    GrStencil_t sfail = fxConvertGLStencilOp(ctx->Stencil.FailFunc);
-    GrStencil_t zfail = fxConvertGLStencilOp(ctx->Stencil.ZFailFunc);
-    GrStencil_t zpass = fxConvertGLStencilOp(ctx->Stencil.ZPassFunc);
-    FX_grStencilOp(sfail, zfail, zpass);
-    FX_grStencilFunc(ctx->Stencil.Function - GL_NEVER,
-                     ctx->Stencil.Ref, ctx->Stencil.ValueMask);
-    FX_grStencilMask(ctx->Stencil.WriteMask);
-    FX_grEnable(GR_STENCIL_MODE_EXT);
-  }
-  else {
-    FX_grDisable(GR_STENCIL_MODE_EXT);
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  if (fxMesa->haveHwStencil) {
+    if (ctx->Stencil.Enabled) {
+      GrStencil_t sfail = fxConvertGLStencilOp(ctx->Stencil.FailFunc);
+      GrStencil_t zfail = fxConvertGLStencilOp(ctx->Stencil.ZFailFunc);
+      GrStencil_t zpass = fxConvertGLStencilOp(ctx->Stencil.ZPassFunc);
+      FX_grStencilOp(sfail, zfail, zpass);
+      FX_grStencilFunc(ctx->Stencil.Function - GL_NEVER,
+                       ctx->Stencil.Ref, ctx->Stencil.ValueMask);
+      FX_grStencilMask(ctx->Stencil.WriteMask);
+      FX_grEnable(GR_STENCIL_MODE_EXT);
+    }
+    else {
+      FX_grDisable(GR_STENCIL_MODE_EXT);
+    }
   }
 }
 
