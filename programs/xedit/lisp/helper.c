@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.49tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.50 2003/05/27 22:27:03 tsi Exp $ */
 
 #include "lisp/helper.h"
 #include "lisp/pathname.h"
@@ -980,7 +980,7 @@ LispPathnameField(int field, int string)
 
     pathname = ARGUMENT(0);
 
-    if (PATHNAMEP(pathname))
+    if (!PATHNAMEP(pathname))
 	pathname = APPLY1(Oparse_namestring, pathname);
 
     result = pathname->data.pathname;
