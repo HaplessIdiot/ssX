@@ -339,7 +339,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->enablesisctrl = FALSE;
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
        pSiS->XvDefBri = 10;
-       pSiS->XvDefCon = 5;
+       pSiS->XvDefCon = 2;
     } else {
        pSiS->XvDefBri = 0;
        pSiS->XvDefCon = 4;
