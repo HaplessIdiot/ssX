@@ -1,4 +1,19 @@
 XFree86 3.9Pn (16 May 1999)
+2658. Change DGA initialisation ordering in the MGA driver (#2796,
+      Mark Vojkovich).
+2657. Turn on DGA pixmaps in xinerama since it insists on duplicating
+      the rendering protocol on all heads despite the DGA pixmaps existing
+      only on a single head (#2795, Mark Vojkovich).
+2656. Fix some xinerama problems with 8+32 overlays (#2795, Mark Vojkovich).
+2655. Add XAA acceleration for DGA pixmaps (#2795, Mark Vojkovich).
+2654. Add PCI IDs for new NVIDIA chipsets (#2794, Mark Vojkovich).
+2653. Change the default cursor colour in the app-defaults for editres
+      (#2793, Paulo Cesar Pereira de Andrade).
+2652. Xedit updates, including a new Xedit-color.ad file, to show some of
+      the new features of Xaw, and some improvements to the ispell interface
+      (#2793, Paulo Cesar Pereira de Andrade).
+2651. Xaw updates, including some fixes, optimizations, and additional
+      documentation (#2793, Paulo Cesar Pereira de Andrade).
 2650. Working mouse support with the new input device code (David Dawes).
 2649. Fix for sysv_video.c on Interactive UNIX (#2792, Michael Rohleder).
 2648. Fix handling of xkbcomp's -I flag (Stanislav Meduna).
@@ -8003,4 +8018,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.749 1999/05/15 14:31:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.750 1999/05/16 06:55:42 dawes Exp $

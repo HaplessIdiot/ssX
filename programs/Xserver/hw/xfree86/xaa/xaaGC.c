@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.12 1999/03/12 02:36:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.13 1999/03/14 11:18:09 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -90,7 +90,7 @@ XAAValidateGC(
 	    xf86FreeOffscreenArea(area);
 	}
     } 
-    else if(!infoRec->pScrn->vtSema) {
+    else if(!infoRec->pScrn->vtSema && (pDraw->type == DRAWABLE_WINDOW)) {
 	pGCPriv->flags = 0;
         pGCPriv->changes |= changes;
     }

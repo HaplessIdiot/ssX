@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.16 1999/01/03 03:58:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.17 1999/03/14 11:18:10 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -53,6 +53,7 @@ typedef struct _XAAScreen {
    XAAInfoRecPtr 		AccelInfoRec;
    Bool                		(*EnterVT)(int, int);
    void                		(*LeaveVT)(int, int);
+   int				(*SetDGAMode)(int, int, DGADevicePtr);
    Bool				(*SaveRestoreImage)(int, SaveRestoreFlags);
 } XAAScreenRec, *XAAScreenPtr;
 
@@ -74,6 +75,7 @@ typedef struct _XAAGC {
 #define REDUCIBLE_TO_2_COLOR	0x00000004
 #define DIRTY			0x00010000
 #define OFFSCREEN		0x00020000
+#define DGA_PIXMAP		0x00040000
 
 #define REDUCIBILITY_MASK \
  (REDUCIBILITY_CHECKED | REDUCIBLE_TO_8x8 | REDUCIBLE_TO_2_COLOR)

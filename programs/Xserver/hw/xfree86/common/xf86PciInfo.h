@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.31 1999/04/15 06:39:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.32 1999/04/25 10:02:03 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -390,7 +390,11 @@
 /* NVIDIA */
 #define PCI_CHIP_NV1		0x0008
 #define PCI_CHIP_DAC64		0x0009
-#define PCI_CHIP_RIVATNT	0x0020
+#define PCI_CHIP_TNT		0x0020
+#define PCI_CHIP_TNT2		0x0028
+#define PCI_CHIP_UTNT2		0x0029
+#define PCI_CHIP_VTNT2		0x002C
+#define PCI_CHIP_ITNT2		0x00A0
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1001,8 +1005,12 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 #endif
     {PCI_VENDOR_NVIDIA,	{
 				{PCI_CHIP_NV1,		"NV1"},
-				{0x009,			"DAC64"},
-				{PCI_CHIP_RIVATNT,	"Riva TNT"},
+				{PCI_CHIP_DAC64,	"DAC64"},
+				{PCI_CHIP_TNT,		"Riva TNT"},
+				{PCI_CHIP_TNT2,		"Riva TNT2"},
+				{PCI_CHIP_UTNT2,	"Riva Ultra TNT2"},
+				{PCI_CHIP_VTNT2,	"Riva Vanta TNT2"},
+				{PCI_CHIP_ITNT2,	"Riva TNT"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, {

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.93 1999/04/25 15:30:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.94 1999/04/27 12:05:12 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2138,14 +2138,14 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    if(!pMga->ShadowFB) /* hardware cursor needs to wrap this layer */
+	MGADGAInit(pScreen);
+
     if (!pMga->NoAccel)
 	MGAStormAccelInit(pScreen);
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
-
-    if(!pMga->ShadowFB) /* hardware cursor needs to wrap this layer */
-	MGADGAInit(pScreen);
 
     /* Initialize software cursor.  
 	Must precede creation of the default colormap */

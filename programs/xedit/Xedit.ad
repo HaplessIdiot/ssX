@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.9 1999/05/03 12:16:09 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.10 1999/05/09 10:52:01 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -91,16 +91,18 @@ xedit.textSource*enableUndo:		True
 *viewport.allowVert:			1
 
 *insertFile*text.width:			141
+*insertFile*text.?.pieceSize:		256
 *search*searchText.width:		157
 *search*replaceText.width:		157
 *search*case.horizDistance:		25
+*search*Text.?.pieceSize:		256
 
 *SimpleMenu.BackingStore:		NotUseful
 *SimpleMenu.menuLabel.vertSpace:	80
 *SimpleMenu.SmeBSB.HorizontalMargins:	16
 *SimpleMenu.justify:			center
 *SimpleMenu.menuLabel.height:		250
-*SimpleMenu.cursor:			left_ptr
+*SimpleMenu*cursor:			left_ptr
 
 *fileMenu.label:			File Menu
 *optionsMenu.label:			Option Menu
@@ -168,20 +170,20 @@ m<Key>I:	no-op(r)
 <Ctrl>X,!l <Key>b:switch-source()\n\
 <Ctrl>X,!@Num_Lock<Key>b:switch-source()\n\
 <Ctrl>X,!<Key>b:switch-source()\n\
-<Ctrl>X,l @Num_Lock<Key>d:dir-window()\n\
-<Ctrl>X,l <Key>d:dir-window()\n\
+<Ctrl>X,!l @Num_Lock<Key>d:dir-window()\n\
+<Ctrl>X,!l <Key>d:dir-window()\n\
 <Ctrl>X,!@Num_Lock<Key>d:dir-window()\n\
 <Ctrl>X,!<Key>d:dir-window()\n\
-<Ctrl>X,l @Num_Lock<Key>k:kill-file()\n\
-<Ctrl>X,l <Key>k:kill-file()\n\
+<Ctrl>X,!l @Num_Lock<Key>k:kill-file()\n\
+<Ctrl>X,!l <Key>k:kill-file()\n\
 <Ctrl>X,!@Num_Lock<Key>k:kill-file()\n\
 <Ctrl>X,!<Key>k:kill-file()\n\
-<Ctrl>X,l @Num_Lock<Key>o:other-window()\n\
-<Ctrl>X,l <Key>o:other-window()\n\
+<Ctrl>X,!l @Num_Lock<Key>o:other-window()\n\
+<Ctrl>X,!l <Key>o:other-window()\n\
 <Ctrl>X,!@Num_Lock<Key>o:other-window()\n\
 <Ctrl>X,!<Key>o:other-window()\n\
-<Ctrl>X,l @Num_Lock<Key>u:undo()\n\
-<Ctrl>X,l <Key>u:undo()\n\
+<Ctrl>X,!l @Num_Lock<Key>u:undo()\n\
+<Ctrl>X,!l <Key>u:undo()\n\
 <Ctrl>X,!@Num_Lock<Key>u:undo()\n\
 <Ctrl>X,!<Key>u:undo()\n\
 <Key>Tab:	insert-char()\n\
@@ -189,20 +191,20 @@ m<Key>I:	no-op(r)
 !l <Key>b:	insert-char()\n\
 !@Num_Lock<Key>b:insert-char()\n\
 !<Key>b:	insert-char()\n\
-l @Num_Lock<Key>d:insert-char()\n\
-l <Key>d:	insert-char()\n\
+!l @Num_Lock<Key>d:insert-char()\n\
+!l <Key>d:	insert-char()\n\
 !@Num_Lock<Key>d:insert-char()\n\
 !<Key>d:	insert-char()\n\
-l <Key>k:	insert-char()\n\
-l @Num_Lock<Key>k:insert-char()\n\
+!l <Key>k:	insert-char()\n\
+!l @Num_Lock<Key>k:insert-char()\n\
 !@Num_Lock<Key>k:insert-char()\n\
 !<Key>k:	insert-char()\n\
-l @Num_Lock<Key>o:insert-char()\n\
-l <Key>o:	insert-char()\n\
+!l @Num_Lock<Key>o:insert-char()\n\
+!l <Key>o:	insert-char()\n\
 !@Num_Lock<Key>o:insert-char()\n\
 !<Key>o:	insert-char()\n\
-l @Num_Lock<Key>u:insert-char()\n\
-l <Key>u:	insert-char()\n\
+!l @Num_Lock<Key>u:insert-char()\n\
+!l <Key>u:	insert-char()\n\
 !@Num_Lock<Key>u:insert-char()\n\
 !<Key>u:	insert-char()\n\
 c l @Num_Lock<Btn1Down>:xedit-focus() popup-menu(fileMenu)\n\
@@ -219,6 +221,7 @@ c l<Btn3Down>:xedit-focus() popup-menu(optionsMenu)\n\
 c<Btn3Down>:	xedit-focus() popup-menu(optionsMenu)\n\
 <Btn1Down>:	xedit-focus() select-start()
 
+*filename.?.pieceSize:			256
 *filename.translations: #override \
 c<Key>S:	no-op(r)\n\
 c<Key>R:	no-op(r)\n\
@@ -270,6 +273,7 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*text.left:			chainLeft
 *ispell*text.right:			chainRight
 *ispell*text.leftMargin:		4
+*ispell*text.?.pieceSize:		256
 *ispell*suggestions.label:		Suggestions:
 *ispell*suggestions.fromVert:		replacement
 *ispell*suggestions.internalWidth:	0
@@ -344,6 +348,7 @@ c<Key>G:	cancel-find-file()\n\
 *columns*cancel.fromHoriz:		ok
 *columns*cancel.fromVert:		rightLabel
 *columns*cancel.horizDistance:		12
+*columns*Text.?.pieceSize:		8
 
 *columns*Text.translations: #override \
 c<Key>S:	no-op(r)\n\
@@ -352,8 +357,10 @@ m<Key>I:	no-op(r)\n\
 <Key>Return:	set-columns(ok)\n\
 <Key>Tab:	change-field()\n\
 c<Key>G:	set-columns(cancel)\n\
-<Key>Escape:	set-columns(cancel)
+<Key>Escape:	set-columns(cancel)\n\
+<Enter>:	no-op()\n\
+<Leave>:	no-op()\n\
+<Btn1Down>:	set-keyboard-focus() select-start()
 
 *columns.translations:	#override \
 <Message>WM_PROTOCOLS:	set-columns(cancel)
-

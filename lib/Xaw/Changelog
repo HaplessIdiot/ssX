@@ -932,7 +932,7 @@ xedit.c:
    Close button.
 
 
-# 8 May 1999
+#2764 8 May 1999
 -- Xaw --
  + Create two new private functions, to replace internally the public interfaces.
    These two functions are XawTextSinkClearToBackground and
@@ -975,8 +975,54 @@ xedit.c:
    entirely in the screen, and if it does not fit, scrollbars will be created.
 
 
+#2793 15 May 1999
+-- Xaw --
+ + Changed AsciiSrc.c:LoadPieces to load the file incrementally, instead of
+   allocating a big buffer.
+ + Added several new functions to DisplayList.c. Almost all gc and painting
+   related functions were mapped to displayList functions. There are
+   several optimizations that can yet be done to the displayList code, and
+   I'm working on it. That code is clearly not finished yet, but is stable.
+   Also, changed some functions to be more exigent with it's parameters,
+   because it is better to receive a warning message than see the program
+   core dumping. The functions are documented in Xaw.man.
+ + Corrected a problem in the SimpleMenu code, to make the sub menus popup
+   more 'visually' correct, when popping up in the left side.
+ + Added a optimization in Text.c, to avoid unnecessarily recalculating
+   the line and column number when scrolling text. A big speed up should
+   be seen when scrolling large files.
+ + Modified all code that expected TAB_SIZE to be equal to 8, to read the
+   TextSink resources, and work properly with whatever value the program
+   had set to the tab stops.
+ + Fixed a very bad bug in the form-paragraph function. It was very hard
+   to find because I was looking at the wrong places. If the text was
+   allready formatted, or did not need formatting, the code was not
+   reenabling undo, making the undo/redo behaviour imprevisible.
+
+-- xedit --
+ + Added Xedit-color.ad file, to show some of the new features of Xaw.
+   Tried to keep it simple, but since it uses gradients, maybe it should
+   better be called Xedit-TrueColor. The better way to see the functionality
+   of this file is (if you don't have it already) add to your .Xdefaults:
+#ifdef COLOR
+*customization:	-color
+#endif
+   and make sure xrdb parses it.
+ + Changed a bit Xedit.ad, to work properly when Caps Lock is pressed.
+ + Several changes to ispell.c. It should run very faster now, because
+   the code keeps information about words already ignored or correct
+   in the xedit side, instead of asking ispell every time. Added also
+   a terseMode resource, and made the interface ask for user interaction
+   allways ispell does not say the word is completely correct; the
+   terseMode resource makes ispell itself decide what words are correct
+   or not.
+
+-- editres --
+ + Small patch to Edit-col.ad, to use a default text cursor color of 'Azure'
+   in text fields, instead of the default 'black'.
 
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.19 1999/05/03 12:15:38 dawes Exp $
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.20 1999/05/09 10:51:37 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.17 1999/03/14 11:18:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.18 1999/03/21 07:35:30 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -36,6 +36,7 @@ static void XAASaveAreas (PixmapPtr pPixmap, RegionPtr prgnSave,
 			int xorg, int yorg, WindowPtr pWin);
 static Bool XAAEnterVT (int index, int flags);
 static void XAALeaveVT (int index, int flags);
+static int  XAASetDGAMode(int index, int num, DGADevicePtr devRet);
 static Bool XAASaveRestoreImage (int index, SaveRestoreFlags what);
 
 
@@ -179,6 +180,8 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->EnterVT = XAAEnterVT; 
     pScreenPriv->LeaveVT = pScrn->LeaveVT;
     pScrn->LeaveVT = XAALeaveVT;
+    pScreenPriv->SetDGAMode = pScrn->SetDGAMode;
+    pScrn->SetDGAMode = XAASetDGAMode;
     pScreenPriv->SaveRestoreImage = pScrn->SaveRestoreImage;
     pScrn->SaveRestoreImage = XAASaveRestoreImage;
 
@@ -494,9 +497,12 @@ XAADestroyPixmap(PixmapPtr pPix)
     Bool ret;
 
     if((pPix->refcnt == 1) && (pPriv->flags & OFFSCREEN)) {
-	if(pPriv->offscreenArea)
-	    xf86FreeOffscreenArea(pPriv->offscreenArea);
-	else
+	if(pPriv->offscreenArea) {
+	   if(pPriv->flags & DGA_PIXMAP)
+		xfree(pPriv->offscreenArea);
+	   else
+		xf86FreeOffscreenArea(pPriv->offscreenArea);
+	} else
 	    xfree(pPix->devPrivate.ptr);
 
         DELIST_OFFSCREEN_PIXMAP(pPix);
@@ -531,6 +537,72 @@ XAALeaveVT(int index, int flags)
 
     (*pScreenPriv->LeaveVT)(index, flags);
 }
+
+typedef struct {
+   Bool UsingPixmapCache;
+   Bool CanDoColor8x8;
+   Bool CanDoMono8x8;
+} SavedCacheState, *SavedCacheStatePtr;
+
+static int  
+XAASetDGAMode(int index, int num, DGADevicePtr devRet)
+{
+    ScreenPtr pScreen = screenInfo.screens[index];
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    XAAScreenPtr pScreenPriv = 
+	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
+    int ret;
+
+    if (!num && infoRec->dgaSaves) { /* restore old pixmap cache state */
+	SavedCacheStatePtr state = (SavedCacheStatePtr)infoRec->dgaSaves;
+	
+	infoRec->UsingPixmapCache = state->UsingPixmapCache;	
+	infoRec->CanDoColor8x8 = state->CanDoColor8x8;	
+	infoRec->CanDoMono8x8 = state->CanDoMono8x8;
+	xfree(infoRec->dgaSaves);
+	infoRec->dgaSaves = NULL;
+    }
+
+    ret = (*pScreenPriv->SetDGAMode)(index, num, devRet);
+
+    if(num && devRet->pPix) {  /* accelerate this pixmap */
+	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(devRet->pPix);
+	FBAreaPtr area;
+
+	if(area = xalloc(sizeof(FBArea))) {
+	    area->pScreen = pScreen;
+	    area->box.x1 = 0;
+	    area->box.x2 = 0;
+	    area->box.y1 = devRet->mode->pixmapWidth;
+	    area->box.y2 = devRet->mode->pixmapHeight;
+	    area->granularity = 0;
+	    area->MoveAreaCallback = 0;
+	    area->RemoveAreaCallback = 0;
+	    area->devPrivate.ptr = 0;	
+
+	    pixPriv->flags |= OFFSCREEN | DGA_PIXMAP;
+	    pixPriv->offscreenArea = area;
+
+	    if(!infoRec->dgaSaves) { /* save pixmap cache state */
+		SavedCacheStatePtr state = xalloc(sizeof(SavedCacheState));
+	
+		state->UsingPixmapCache = infoRec->UsingPixmapCache;	
+		state->CanDoColor8x8 = infoRec->CanDoColor8x8;	
+		state->CanDoMono8x8 = infoRec->CanDoMono8x8;	
+		infoRec->dgaSaves = (char*)state;
+
+		infoRec->UsingPixmapCache = FALSE;
+		if(infoRec->PixmapCacheFlags & CACHE_MONO_8x8)
+		    infoRec->CanDoMono8x8 = FALSE;
+		if(infoRec->PixmapCacheFlags & CACHE_COLOR_8x8)
+		    infoRec->CanDoColor8x8 = FALSE;
+	    }
+	}
+    }
+
+    return ret;
+}
+
 
 
 static Bool 

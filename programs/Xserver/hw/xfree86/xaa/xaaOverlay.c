@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.7 1999/03/21 07:35:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOverlay.c,v 1.8 1999/03/28 15:33:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -14,6 +14,11 @@
 #include "xaawrap.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
+
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
 
 extern WindowPtr *WindowTable;
 
@@ -166,6 +171,7 @@ XAAPaintWindow8_32(
 	WindowPtr pBgWin = pWin;
 	unsigned int pm = (depth == 8) ? 0xff000000 : 0x00ffffff;
 	Bool DoExpose = FALSE;
+	int xorg, yorg;
 
 
 	if (what == PW_BORDER) {
@@ -175,6 +181,19 @@ XAAPaintWindow8_32(
 	    if(depth == 24)
 		DoExpose = TRUE;
 	}
+
+        xorg = pBgWin->drawable.x;
+        yorg = pBgWin->drawable.y;
+
+#ifdef PANORAMIX
+	if(!noPanoramiXExtension) {
+	    int index = pScreen->myNum;
+	    if(WindowTable[index] == pBgWin) {
+		xorg -= panoramiXdataPtr[index].x;
+		yorg -= panoramiXdataPtr[index].y;
+	    }
+	}
+#endif
 
 	if(IS_OFFSCREEN_PIXMAP(pPix) && infoRec->FillCacheBltRects) {
 	    XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);
@@ -187,7 +206,7 @@ XAAPaintWindow8_32(
 		pPriv->offscreenArea->box.y2 - pCache->y;
 	     
 	    (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, pm,
-		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+				nBox, pBox, xorg, yorg, pCache);
 
 	    if(DoExpose)
 		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
@@ -214,8 +233,7 @@ XAAPaintWindow8_32(
 
 		(*infoRec->FillMono8x8PatternRects)(infoRec->pScrn,
 			pPriv->fg, pPriv->bg, GXcopy, pm, nBox, pBox,
-			pPriv->pattern0, pPriv->pattern1,
-			pBgWin->drawable.x, pBgWin->drawable.y);
+			pPriv->pattern0, pPriv->pattern1, xorg, yorg);
 		if(DoExpose)
 		    (*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
 						0xff000000, nBox, pBox);
@@ -225,9 +243,8 @@ XAAPaintWindow8_32(
 		XAACacheInfoPtr pCache = (*infoRec->CacheColor8x8Pattern)(
 					infoRec->pScrn, pPix, -1, -1);
 
-		(*infoRec->FillColor8x8PatternRects) (
-			infoRec->pScrn, GXcopy, pm, nBox, pBox, 
-			pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+		(*infoRec->FillColor8x8PatternRects) (infoRec->pScrn, 
+			GXcopy, pm, nBox, pBox, xorg, yorg, pCache);
 		if(DoExpose)
 		    (*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
 						0xff000000, nBox, pBox);
@@ -242,7 +259,7 @@ XAAPaintWindow8_32(
 	     XAACacheInfoPtr pCache = 
 			(*infoRec->CacheTile)(infoRec->pScrn, pPix);
 	     (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, pm,
-		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
+				nBox, pBox, xorg, yorg, pCache);
 	     if(DoExpose)
 		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
 						0xff000000, nBox, pBox);
@@ -252,8 +269,7 @@ XAAPaintWindow8_32(
 	if(infoRec->FillImageWriteRects && 
 		!(infoRec->FillImageWriteRectsFlags & NO_GXCOPY)) {
 	    (*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
-                   pm, nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y,
-                   pPix);
+			pm, nBox, pBox, xorg, yorg, pPix);
 	    if(DoExpose)
 		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
 						0xff000000, nBox, pBox);

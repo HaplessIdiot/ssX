@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.16 1999/01/11 05:13:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.17 1999/04/25 10:01:21 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -1324,60 +1324,60 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 static void
 LoadPieces(AsciiSrcObject src, FILE *file, char *string)
 {
-  char *local_str, *ptr;
-  Piece *piece = NULL;
-  XawTextPosition left;
+    char *ptr;
+    Piece *piece = NULL;
+    XawTextPosition left;
 
-  if (string == NULL)
-    {
-      if (src->ascii_src.type == XawAsciiFile)
-	{
-	  local_str = XtMalloc((unsigned)(src->ascii_src.length + 1));
+    if (string == NULL) {
+	if (src->ascii_src.type == XawAsciiFile) {
+	    if (src->ascii_src.length != 0) {
+		int len;
 
-	  if (src->ascii_src.length != 0)
-	    {
-	      fseek(file, 0, 0);
-	      src->ascii_src.length = fread(local_str,
-					    (Size_t)sizeof(unsigned char),
-					    (Size_t)src->ascii_src.length,
-					    file);
-	      if (src->ascii_src.length <= 0)
-		XtErrorMsg("readError", "asciiSourceCreate", "XawError",
-			   "fread returned error.", NULL, NULL);
+		left = 0;
+		fseek(file, 0, 0);
+		while (left < src->ascii_src.length) {
+		    ptr = XtMalloc((unsigned)src->ascii_src.piece_size);
+		    if ((len = fread(ptr, (Size_t)sizeof(unsigned char),
+				     (Size_t)src->ascii_src.piece_size, file)) < 0)
+			XtErrorMsg("readError", "asciiSourceCreate", "XawError",
+				   "fread returned error.", NULL, NULL);
+		    piece = AllocNewPiece(src, piece);
+		    piece->text = ptr;
+		    piece->used = XawMin(len, src->ascii_src.piece_size);
+		    left += piece->used;
+		}
 	    }
-	  local_str[src->ascii_src.length] = '\0';
+	    else {
+		piece = AllocNewPiece(src, NULL);
+		piece->text = XtMalloc((unsigned)src->ascii_src.piece_size);
+		piece->used = 0;
+	    }
+	    return;
 	}
-      else
-	local_str = src->ascii_src.string;
+	else
+	    string = src->ascii_src.string;
     }
-  else
-    local_str = string;
 
-  if (src->ascii_src.use_string_in_place)
-    {
-      piece = AllocNewPiece(src, piece);
-      piece->used = Min(src->ascii_src.length, src->ascii_src.piece_size);
-      piece->text = src->ascii_src.string;
-      return;
-  }
+    if (src->ascii_src.use_string_in_place) {
+	piece = AllocNewPiece(src, piece);
+	piece->used = XawMin(src->ascii_src.length, src->ascii_src.piece_size);
+	piece->text = src->ascii_src.string;
+	return;
+    }
 
-  ptr = local_str;
-  left = src->ascii_src.length;
+    ptr = string;
+    left = src->ascii_src.length;
+    do {
+	piece = AllocNewPiece(src, piece);
 
-  do {
-    piece = AllocNewPiece(src, piece);
+	piece->text = XtMalloc((unsigned)src->ascii_src.piece_size);
+	piece->used = XawMin(left, src->ascii_src.piece_size);
+	if (piece->used != 0)
+	    memcpy(piece->text, ptr, (unsigned)piece->used);
 
-    piece->text = XtMalloc((unsigned)src->ascii_src.piece_size);
-    piece->used = Min(left, src->ascii_src.piece_size);
-    if (piece->used != 0)
-      memcpy(piece->text, ptr, (unsigned)piece->used);
-
-    left -= piece->used;
-    ptr += piece->used;
-  } while (left > 0);
-
-  if (src->ascii_src.type == XawAsciiFile && string == NULL)
-    XtFree(local_str);
+	left -= piece->used;
+	ptr += piece->used;
+    } while (left > 0);
 }
 
 /*

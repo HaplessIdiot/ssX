@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.23 1999/03/28 15:33:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.24 1999/04/11 13:11:08 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1208,6 +1208,8 @@ typedef struct _XAAInfoRec {
    BoxPtr ClipBox;
 
    Bool NeedToSync;
+
+   char *dgaSaves;
 
    /* These can be supplied to override the defaults */
 

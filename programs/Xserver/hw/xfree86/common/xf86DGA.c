@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.17 1999/05/03 14:56:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.18 1999/05/09 10:51:54 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -14,6 +14,7 @@
 #include "pixmapstr.h"
 #include "inputstr.h"
 #include "XIproto.h"
+#include "globals.h"
 
 static unsigned long DGAGeneration = 0;
 static int DGAScreenIndex = -1;
@@ -43,7 +44,6 @@ int *XDGAEventBase = &DGAEventBase;
 	((DGAScreenPtr)((pScreen)->devPrivates[DGAScreenIndex].ptr))
 
 
-
 typedef struct {
    ScrnInfoPtr 		pScrn;
    int			numModes;
@@ -54,6 +54,7 @@ typedef struct {
    int			input;
    ClientPtr		client;
 } DGAScreenRec, *DGAScreenPtr;
+
 
 Bool
 DGAInit(
@@ -93,6 +94,13 @@ DGAInit(
     for(i = 0; i < num; i++)
 	modes[i].num = i + 1;
 
+#ifdef PANORAMIX
+     if(!noPanoramiXExtension)
+	for(i = 0; i < num; i++)
+	    modes[i].flags &= ~DGA_PIXMAP_AVAILABLE;
+#endif
+
+
     pScreen->devPrivates[DGAScreenIndex].ptr = (pointer)pScreenPriv;
     pScreenPriv->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = DGACloseScreen;
@@ -118,7 +126,6 @@ DGACloseScreen(int i, ScreenPtr pScreen)
 
    return((*pScreen->CloseScreen)(i, pScreen));
 }
-
 
 
 static int

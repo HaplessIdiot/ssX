@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.1 1999/04/25 10:02:50 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.2 1999/05/09 10:52:02 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -146,7 +146,6 @@ CreateEditPopup(void)
 void
 SetEditMenu(void)
 {
-    int i;
     Arg args[7];
     Cardinal num_args;
     Boolean auto_fill;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbcpyarea.c,v 1.1 1999/01/03 03:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbcpyarea.c,v 1.2 1999/03/28 15:33:09 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -390,7 +390,9 @@ cfb8_32DoBitBlt(
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
      */
-    careful = 1;
+    careful = ((pSrc == pDst) ||
+               ((pSrc->type == DRAWABLE_WINDOW) &&
+                (pDst->type == DRAWABLE_WINDOW)));
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.23 1999/05/03 12:15:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.24 1999/05/09 10:51:41 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/StdSel.h>
 #include <X11/Xmu/SysUtil.h>
+#include <X11/Xaw/MultiSinkP.h>
 #include <X11/Xaw/MultiSrcP.h>
 #include <X11/Xaw/TextP.h>
 #include <X11/Xaw/TextSrcP.h>
@@ -1570,7 +1571,6 @@ DeleteCurrentSelection(Widget w, XEvent *event, String *p, Cardinal *n)
   _XawTextZapSelection((TextWidget)w, event, False);
 }
 
-#define TAB_SIZE 8
 #define CHECK_SAVE()						\
 	if (save && !save->ptr)					\
 	    save->ptr = _XawTextGetText(ctx, save->firstPos,	\
@@ -1697,6 +1697,10 @@ Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
     int i, cpos, count = 0, column = 0, offset = 0;
     XawTextBlock text, block;
     XawTextPosition ipos, position = left, tmp = left;
+    TextSinkObject sink = (TextSinkObject)ctx->text.sink;
+    short *char_tabs = sink->text_sink.char_tabs;
+    int tab_count = sink->text_sink.tab_count;
+    int tab_index = 0, tab_column = 0, TAB_SIZE = DEFAULT_TAB_SIZE;
 
     text.firstPos = 0;
     text.ptr = "\t";
@@ -1707,16 +1711,28 @@ Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 				 &block, right - left);
     ipos = ctx->text.insertPos;
     done = zero = False;
+    if (tab_count)
+	TAB_SIZE = *char_tabs;
     while (!done) {
 	if (XawTextFormat(ctx, XawFmt8Bit)) {
 	    for (i = 0; i < block.length; i++) {
 		++offset;
 		++column;
+		if (tab_count) {
+		    if (column > tab_column + char_tabs[tab_index]) {
+			TAB_SIZE = tab_index < tab_count - 1 ? char_tabs[tab_index + 1] - char_tabs[tab_index] : *char_tabs;
+			if (++tab_index >= tab_count) {
+			    tab_column += char_tabs[tab_count - 1];
+			    tab_index = 0;
+			}
+		    }
+		}
 		if (block.ptr[i] == ' ') {
-		    if (++count > 8)
-			count %= 8;
-		    if (column % 8 == 0) {
-			if (count % 9 > 1)
+		    if (++count > TAB_SIZE)
+			count %= TAB_SIZE;
+		    if ((tab_count && column == tab_column + char_tabs[tab_index]) ||
+			(!tab_count && column % TAB_SIZE == 0)) {
+			if (count % (TAB_SIZE + 1) > 1)
 			    break;
 			else
 			    count = 0;
@@ -1736,11 +1752,21 @@ Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	    for (i = 0; i < block.length; i++) {
 		++offset;
 		++column;
+		if (tab_count) {
+		    if (column > tab_column + char_tabs[tab_index]) {
+			TAB_SIZE = tab_index < tab_count - 1 ? char_tabs[tab_index + 1] - char_tabs[tab_index] : *char_tabs;
+			if (++tab_index >= tab_count) {
+			    tab_column += char_tabs[tab_count - 1];
+			    tab_index = 0;
+			}
+		    }
+		}
 		if (wptr[i] == _Xaw_atowc(' ')) {
-		    if (++count > 8)
-			count %= 8;
-		    if (column % 8 == 0) {
-			if (count % 9 > 1)
+		    if (++count > TAB_SIZE)
+			count %= TAB_SIZE;
+		    if ((tab_count && column == tab_column + char_tabs[tab_index]) ||
+			(!tab_count && column % TAB_SIZE == 0)) {
+			if (count % (TAB_SIZE + 1) > 1)
 			    break;
 			else
 			    count = 0;
@@ -1755,7 +1781,7 @@ Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 		}
 	    }
 	}
-	count %= 9;
+	count %= TAB_SIZE + 1;
 	if (!zero && count > 1 && i < block.length) {
 	    CHECK_SAVE();
 	    if (_XawTextReplace(ctx, tmp + i - count + 1, tmp + i + 1, &text))
@@ -1788,6 +1814,10 @@ Tabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	if (zero) {
 	    count = column = 0;
 	    zero = False;
+	    if (tab_count) {
+		tab_column = tab_index = 0;
+		TAB_SIZE = *char_tabs;
+	    }
 	}
 	else if (i < block.length)
 	    count = 0;
@@ -1811,10 +1841,15 @@ Untabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
     int i, cpos, count = 0, diff = 0;
     XawTextBlock block, text;
     XawTextPosition ipos, position = left, tmp = left;
+    TextSinkObject sink = (TextSinkObject)ctx->text.sink;
+    short *char_tabs = sink->text_sink.char_tabs;
+    int tab_count = sink->text_sink.tab_count;
+    int tab_index = 0, tab_column = 0, tab_base = 0;
+    static char *tabs = "        ";
 
     text.firstPos = 0;
     text.format = XawFmt8Bit;
-    text.ptr = "        ";
+    text.ptr = tabs;
 
     position = XawTextSourceRead(ctx->text.source, position,
 				 &block, right - left);
@@ -1848,10 +1883,39 @@ Untabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 		    break;
 	}
 	if (!zero && i < block.length) {
-	    text.length = TAB_SIZE - (count % TAB_SIZE);
+	    if (tab_count) {
+		while (tab_base + tab_column <= count) {
+		    for (; tab_index < tab_count; ++tab_index)
+			if (tab_base + char_tabs[tab_index] > count) {
+			    tab_column = char_tabs[tab_index];
+			    break;
+			}
+		    if (tab_index >= tab_count) {
+			tab_base += char_tabs[tab_count - 1];
+			tab_column = tab_index = 0;
+		    }
+		}
+		text.length = (tab_base + tab_column) - count;
+		if (text.length > 8) {
+		    int j;
+
+		    text.ptr = XtMalloc(text.length);
+		    for (j = 0; j < text.length; j++)
+			text.ptr[j] = ' ';
+		}
+		else
+		    text.ptr = tabs;
+	    }
+	    else
+		text.length = DEFAULT_TAB_SIZE - (count % DEFAULT_TAB_SIZE);
 	    CHECK_SAVE();
-	    if (_XawTextReplace(ctx, tmp + i, tmp + i + 1, &text))
+	    if (_XawTextReplace(ctx, tmp + i, tmp + i + 1, &text)) {
+		if (tab_count && text.length > 8)
+		    XtFree(text.ptr);
 		return (False);
+	    }
+	    if (tab_count && text.length > 8)
+		XtFree(text.ptr);
 	    count += text.length;
 	    right += text.length - 1;
 	    if (num_pos) {
@@ -1880,6 +1944,8 @@ Untabify(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	    diff += count;
 	    count = 0;
 	    zero = False;
+	    if (tab_count)
+		tab_base = tab_column = tab_index = 0;
 	}
 	position = XawTextSourceRead(ctx->text.source, tmp,
 				     &block, right - tmp);
@@ -1950,6 +2016,8 @@ FormatText(TextWidget ctx, XawTextPosition left, Bool force,
 	    block.length = rlen;
 	    _XawTextReplace(ctx, left, left + llen, &block);
 	}
+	else
+	    src->textSrc.undo_state = False;
 	XtFree(rbuf);
     }
     if (undo) {
@@ -1979,15 +2047,14 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
     XawTextBlock block, text;
     char buf[128];
     wchar_t *wptr;
-    int i, count, savecount, cpos;
+    int i, count, cpos;
     Bool done, force2 = force, recurse = False;
 
-    tmp = left;
     position = XawTextSourceRead(ctx->text.source, left, &block, right - left);
 #ifndef iswalnum
 #define iswalnum(c)	(isascii(c) && isalnum(toascii(c)))
 #endif
-    if (block.length == 0 || ctx->text.left_column >= ctx->text.right_column ||
+    if (block.length == 0 || left >= right ||
 	(level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
 	 block.ptr[0] != ' ' &&
 	 block.ptr[0] != '\t' &&
@@ -1999,10 +2066,10 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 	return (XawEditDone);
 
     if (level == 1 && !paragraph) {
+        tmp = ctx->text.lastPos;
 	if (Untabify(ctx, left, right, pos, num_pos, save) == False)
-	    return (XawEditError);
-	right = SrcScan(ctx->text.source, left, XawstEOL,
-			XawsdRight, 1, False);
+            return (XawEditError);
+        right += ctx->text.lastPos - tmp;
 	position = XawTextSourceRead(ctx->text.source, left, &block,
 				     right - left);
     }
@@ -2066,26 +2133,18 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 
     done = False;
     if (!paragraph && level == 1
-	&& ipos <= right + 1 && ipos - left > ctx->text.right_column) {
+	&& ipos <= right && ipos - left > ctx->text.right_column) {
 	XawTextPosition len = ctx->text.lastPos;
 	int skip = ctx->text.justify == XawjustifyRight
 		|| ctx->text.justify == XawjustifyCenter ?
 		ctx->text.left_column : count;
-	int sub = 0;
 
 	if (pos)
 	    for (i = 0; i < num_pos; i++)
 		if (pos[i] == ipos)
 		    break;
 
-	XawTextSourceRead(ctx->text.source, right - 1, &block, 1);
-	if (block.length &&
-	    ((XawTextFormat(ctx, XawFmt8Bit) &&
-	     block.ptr[0] != ' ') ||
-	    (XawTextFormat(ctx, XawFmtWide) &&
-	     _Xaw_atowc(XawSP) != *(wchar_t*)block.ptr)))
-	    sub = 1;
-	StripSpaces(ctx, left + skip, right - 1 - sub, pos, num_pos, save);
+	StripSpaces(ctx, left + skip, right, pos, num_pos, save);
 	right += ctx->text.lastPos - len;
 	if (pos && i < num_pos)
 	    ipos = pos[i];
@@ -2123,19 +2182,19 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 	}
     }
 
-    if (!paragraph && force2 && ctx->text.justify == XawjustifyCenter)
-	savecount = count;
-    else
-	savecount = 0;
-    count = 0;
     if (force) {
-	count = ctx->text.right_column - savecount;
+	if (ctx->text.justify == XawjustifyCenter)
+	    count = ctx->text.right_column - (count - ctx->text.left_column);
+	else
+	    count = ctx->text.right_column;
 	if (count > right - left)
 	    count -= right - left;
 	else
 	    count = 0;
     }
-    if (count) {
+    else
+	count = 0;
+    if (count > 0) {
 	switch (ctx->text.justify) {
 	    case XawjustifyLeft:
 		break;
@@ -2164,7 +2223,8 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 		    return (XawEditError);
 		}
 		XawStackFree(text.ptr, buf);
-		position += count;
+                position += count;
+                right += count;
 		if (num_pos) {
 		    for (cpos = 0; cpos < num_pos; cpos++)
 			if (pos[cpos] > left)
@@ -2225,7 +2285,8 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
 			inc -= (int)inc;
 			inc += ii;
 		    }
-		    position += count;
+                    position += count;
+                    right += count;
 		    XawStackFree(buf, text.ptr);
 		}
 		break;
@@ -2300,7 +2361,7 @@ Indent(Widget w, XEvent *event, String *params, Cardinal *num_params)
     if (spaces > 0) {
 	text.ptr = XawStackAlloc(spaces, buf);
 	for (i = 0; i < spaces; i++)
-            text.ptr[i] = ' ';
+	    text.ptr[i] = ' ';
 
 	text.length = spaces;
 	while (tmp < to) {
@@ -2892,8 +2953,7 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	    memcpy((char*)ptr, (char *)strbuf, sizeof(wchar_t) * text.length);
 	    ptr += sizeof(wchar_t) * text.length;
 	}
-	if (mult == 1/* && (_Xaw_atowc(XawSP) == *(wchar_t*)text.ptr ||
-			  _Xaw_atowc(XawTAB) == *(wchar_t*)text.ptr)*/)
+	if (mult == 1)
 	    format = ctx->text.left_column < ctx->text.right_column;
     }
     else {	/* == XawFmt8Bit */
@@ -2902,7 +2962,7 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	    strncpy(ptr, strbuf, text.length);
 	    ptr += text.length;
 	}
-	if (mult == 1/* && (XawSP == *text.ptr || XawTAB == *text.ptr)*/)
+	if (mult == 1)
 	    format = ctx->text.left_column < ctx->text.right_column;
     }
 
@@ -3722,6 +3782,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XawTextPosition from, to, endPos = 0, buf[32], *pos;
     char *lbuf = NULL, *rbuf;
     Cardinal i;
+    Bool undo = src->textSrc.enable_undo && src->textSrc.undo_state == False;
 
     StartAction(ctx, event);
 
@@ -3735,7 +3796,7 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	return;
     }
 
-    if (src->textSrc.enable_undo) {
+    if (undo) {
 	src->textSrc.undo_state = True;
 	lbuf = _XawTextGetText(ctx, from, to);
 	endPos = ctx->text.lastPos;
@@ -3744,12 +3805,12 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
     if (FormRegion(ctx, from, to, pos, src->textSrc.num_text) == XawReplaceError) {
 	XawStackFree(pos, buf);
 	XBell(XtDisplay(w), 0);
-	if (src->textSrc.enable_undo) {
+	if (undo) {
 	    src->textSrc.undo_state = False;
 	    XtFree(lbuf);
 	}
     }
-    else if (src->textSrc.enable_undo) {
+    else if (undo) {
 	/* makes the form-paragraph only one undo/redo step */
 	unsigned llen, rlen, size;
 	XawTextBlock block;
@@ -3773,6 +3834,8 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    block.length = rlen;
 	    _XawTextReplace(ctx, from, from + llen, &block);
 	}
+	else
+	    src->textSrc.undo_state = False;
 	XtFree(lbuf);
 	XtFree(rbuf);
     }

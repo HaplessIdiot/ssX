@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.176 1999/05/15 12:10:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.177 1999/05/16 06:55:47 dawes Exp $ */
 
 
 /*
@@ -431,8 +431,17 @@ configFiles(XF86ConfFilesPtr fileconf)
   xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
 #endif
 
-#ifdef NEW_LOG
+#if 0
   /* LogFile */
+  /*
+   * XXX The problem with this is that the log file is already open.
+   * One option might be to copy the exiting contents to the new location.
+   * and re-open it.  The down side is that the default location would
+   * already have been overwritten.  Another option would be to start with
+   * unique temporary location, then copy it once the correct name is known.
+   * A problem with this is what happens if the server exits before that
+   * happens.
+   */
   if (xf86LogFileFrom == X_DEFAULT && fileconf->file_logfile) {
     xf86LogFile = fileconf->file_logfile;
     xf86LogFileFrom = X_CONFIG;
