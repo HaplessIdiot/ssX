@@ -58,7 +58,7 @@ POSTINST = postinst.sh
                $(PATCHFILES) $(XDMCONF) \
                et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST) $(PREINST)
     INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-	       -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+	       -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(XF86SRC)/scanpci
 
 all:: $(FILES)
 
@@ -85,7 +85,7 @@ SYS_LIBRARIES = -li386
 
 AllTarget(ProgramTargetName(scanpci))
 
-NormalProgramTarget(scanpci,scanpci.o,NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(scanpci,scanpci.o dummylib.o,NullParameter,-L../os-support ServerExtraSysLibs -L../scanpci -lscanpci,NullParameter)
 InstallProgram(scanpci,$(BINDIR))
 #endif
 
@@ -105,10 +105,10 @@ SERVEREXTRASYSLIBS = ServerExtraSysLibs
 #endif
 
 AllTarget(ProgramTargetName(pcitweak))
-NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os $(SERVEREXTRASYSLIBS),NullParameter)
+NormalProgramTarget(pcitweak,pcitweak.o dummylib.o,NullParameter,-L../os-support -lxf86_os $(SERVEREXTRASYSLIBS),NullParameter)
 InstallProgram(pcitweak,$(BINDIR))
 
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) dummylib.c
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)
