@@ -1,4 +1,7 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 641. Restore VT ownership at XFree86 server exit on Linux.  Should do the
+      same for other platforms that change change VT ownership at startup
+      (Bugzilla #927, Andrew Bevitt).
  640. Fix Mesa/GL problem on Linux with -mcpu=ultrasparc (reported by
       Ferris McCormick).
  639. Fix a problem connecting to an IPv4-only X server running on a
@@ -18310,7 +18313,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3007 2003/12/02 20:00:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3008 2003/12/02 20:27:35 dawes Exp $
 
 
 
