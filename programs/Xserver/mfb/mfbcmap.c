@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbcmap.c,v 5.6 94/04/17 20:28:19 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
