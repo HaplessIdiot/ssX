@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.8 2001/11/25 13:42:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.9 2002/01/16 16:22:27 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -994,7 +994,12 @@ ATIModeSet
                     outr(BUS_CNTL, pATIHW->bus_cntl);
                     outr(DAC_CNTL, pATIHW->dac_cntl);
                     if (pATI->Chip >= ATI_CHIP_264VTB)
+                    {
                         outr(MEM_CNTL, pATIHW->mem_cntl);
+                        outr(MPP_CONFIG, pATIHW->mpp_config);
+                        outr(MPP_STROBE_SEQ, pATIHW->mpp_strobe_seq);
+                        outr(TVO_CNTL, pATIHW->tvo_cntl);
+                    }
                 }
             }
 
