@@ -1,4 +1,6 @@
 XFree86 3.1.2b (22 October 1995)
+ 38. Updated Japanese docs, including SGML versions suitable for formatting
+     with jlinuxdoc-sgml.  These docs use EUC encoding (Kazuyuki Okamoto).
  37. Preliminary support for the Trident TGUI9440 (Alan Hourihane).
  36. Add an "AllowNullPasswd" resource to xdm to make it possible for xdm
      to login to accounts with a null password.  This is set to "False"
