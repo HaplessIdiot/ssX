@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX January 2002)
+  28. Experimental flat panel support in the "nv" driver.  GeForce2 Go
+      should work now (Mark Vojkovich).
   27. XDarwinStartup improvements:
        - Auto-detect proper mode to run XDarwin.
        - Find XDarwin.app with Launch Services.
@@ -35,7 +37,7 @@ XFree86 4.2.99.1 (XX January 2002)
   13. Make driver I/O relocatable (atimisc, s3, sis and tseng not yet done)
       (Marc La France).
   12. PCI domain changes for SunOS/SPARC64 (Marc La France).
-  11. PCI domain changes for Linux/SPARC64 (#4653, Divid S. Miller,
+  11. PCI domain changes for Linux/SPARC64 (#4653, David S. Miller,
       Marc La France).
   10. Temporary workaround for IA-64 (Marc La France).
    9. Fix SIGSEGV when printing modes that have no modifiers (Marc La France).
@@ -14614,4 +14616,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2163 2002/02/05 17:15:48 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2164 2002/02/05 19:16:11 torrey Exp $
