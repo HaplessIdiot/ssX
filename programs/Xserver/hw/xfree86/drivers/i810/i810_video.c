@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.11 2000/09/16 22:46:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.12 2000/09/17 01:36:27 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -262,8 +262,8 @@ typedef struct {
 
 	unsigned char currentBuf;
 
-	unsigned char brightness;
-	unsigned char contrast;
+	int          brightness;
+	int          contrast;
 
 	RegionRec    clip;
 	CARD32       colorKey;
@@ -542,16 +542,14 @@ I810SetPortAttribute(
 	if((value < -128) || (value > 127))
 	   return BadValue;
 	pPriv->brightness = value;
-	overlay->OV0CLRC0 &= 0xFFFFFF00;
-	overlay->OV0CLRC0 |= value;
+	overlay->OV0CLRC0 = (pPriv->contrast << 8) | (pPriv->brightness & 0xff);
 	OVERLAY_UPDATE(pI810->OverlayPhysical);
   } else
   if(attribute == xvContrast) {
 	if((value < 0) || (value > 255))
 	   return BadValue;
 	pPriv->contrast = value;
-	overlay->OV0CLRC0 &= 0xFFFE00FF;
-	overlay->OV0CLRC0 |= value << 9;
+	overlay->OV0CLRC0 = (pPriv->contrast << 8) | (pPriv->brightness & 0xff);
 	OVERLAY_UPDATE(pI810->OverlayPhysical);
   } else
   if(attribute == xvColorKey) {
