@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.8 2001/07/13 18:16:10 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.9 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -308,15 +308,20 @@ XftGlyphSpecRender (Display	    *dpy,
 		n = 0;
 	    }
 	    switch (width) {
-	    case 1: char8[j] = (char) g;
-	    case 2: char16[j] = (unsigned short) g;
-	    case 4: char32[j] = (unsigned int) g;
+	    case 1: char8[j] = (char) g; break;
+	    case 2: char16[j] = (unsigned short) g; break;
+	    case 4: char32[j] = (unsigned int) g; break;
 	    }
 	    x += glyph->metrics.xOff;
 	    y += glyph->metrics.yOff;
 	    j++;
 	    n++;
 	}
+    }
+    if (n)
+    {
+	elts[nelt].nchars = n;
+	nelt++;
     }
     switch (width) {
     case 1:
@@ -344,6 +349,41 @@ bail2:
 bail1:
     if (glyphs_loaded)
 	_XftFontManageMemory (dpy, public);
+}
+
+void
+XftCharSpecRender (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *public,
+		   Picture	    dst,
+		   int		    srcx, 
+		   int		    srcy,
+		   XftCharSpec	    *chars,
+		   int		    len)
+{
+    XftGlyphSpec    *glyphs, glyphs_local[NUM_LOCAL];
+    int		    i;
+
+    if (len <= NUM_LOCAL)
+	glyphs = glyphs_local;
+    else
+    {
+	glyphs = malloc (len * sizeof (XftGlyphSpec));
+	if (!glyphs)
+	    return;
+    }
+    for (i = 0; i < len; i++)
+    {
+	glyphs[i].glyph = XftCharIndex(dpy, public, chars[i].ucs4);
+	glyphs[i].x = chars[i].x;
+	glyphs[i].y = chars[i].y;
+    }
+
+    XftGlyphSpecRender (dpy, op, src, public, dst, srcx, srcy, glyphs, len);
+
+    if (glyphs != glyphs_local)
+	free (glyphs);
 }
 
 void
@@ -528,15 +568,20 @@ XftGlyphFontSpecRender (Display		    *dpy,
 		n = 0;
 	    }
 	    switch (width) {
-	    case 1: char8[j] = (char) g;
-	    case 2: char16[j] = (unsigned short) g;
-	    case 4: char32[j] = (unsigned int) g;
+	    case 1: char8[j] = (char) g; break;
+	    case 2: char16[j] = (unsigned short) g; break;
+	    case 4: char32[j] = (unsigned int) g; break;
 	    }
 	    x += glyph->metrics.xOff;
 	    y += glyph->metrics.yOff;
 	    j++;
 	    n++;
 	}
+    }
+    if (n)
+    {
+	elts[nelt].nchars = n;
+	nelt++;
     }
     switch (width) {
     case 1:
@@ -565,6 +610,40 @@ bail1:
     if (glyphs_loaded)
 	for (i = 0; i < nglyphs; i++)
 	    _XftFontManageMemory (dpy, glyphs[i].font);
+}
+
+void
+XftCharFontSpecRender (Display		    *dpy,
+		       int		    op,
+		       Picture		    src,
+		       Picture		    dst,
+		       int		    srcx,
+		       int		    srcy,
+		       XftCharFontSpec	    *chars,
+		       int		    len)
+{
+    XftGlyphFontSpec	*glyphs, glyphs_local[NUM_LOCAL];
+    int			i;
+
+    if (len <= NUM_LOCAL)
+	glyphs = glyphs_local;
+    else
+    {
+	glyphs = malloc (len * sizeof (XftGlyphFontSpec));
+	if (!glyphs)
+	    return;
+    }
+    for (i = 0; i < len; i++)
+    {
+	glyphs[i].font = chars[i].font;
+	glyphs[i].glyph = XftCharIndex(dpy, glyphs[i].font, chars[i].ucs4);
+	glyphs[i].x = chars[i].x;
+	glyphs[i].y = chars[i].y;
+    }
+
+    XftGlyphFontSpecRender (dpy, op, src, dst, srcx, srcy, glyphs, len);
+    if (glyphs != glyphs_local)
+	free (glyphs);
 }
 
 void

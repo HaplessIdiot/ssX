@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.5 2000/12/20 00:28:44 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.6 2002/02/15 07:36:10 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1115,6 +1115,9 @@ XftGlyphSpecCore (XftDraw	*draw,
     if (nmissing)
 	XftFontLoadGlyphs (dpy, public, FcTrue, missing, nmissing);
     
+    if (x1 == x2 || y1 == y2)
+	goto bail1;
+
     if ((font->antialias || color->color.alpha != 0xffff) &&
 	_XftSmoothGlyphPossible (draw))
     {
