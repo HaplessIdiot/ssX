@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.150 2003/05/19 14:47:33 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.151 2003/08/10 16:39:28 dawes Exp $
 
 
 
@@ -116,6 +116,7 @@ SRCS =	\
 	xf86xvmc.c \
 	xf86cmap.c\
 	xf86PM.c \
+	xf86Versions.c \
 	$(DEBUGSRC) \
 	$(KBD).c \
 	$(SBUSSRC) \
@@ -153,6 +154,7 @@ OBJS = \
 	xf86xvmc.o \
 	xf86cmap.o\
 	xf86PM.o \
+	xf86Versions.o \
 	$(DEBUGOBJ) \
 	$(SBUSOBJ) \
 	$(XF86_XINPUT_OBJ) \

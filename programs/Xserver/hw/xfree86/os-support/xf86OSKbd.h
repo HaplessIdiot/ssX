@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSKbd.h,v 1.3 2003/02/17 15:11:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSKbd.h,v 1.4 2003/08/24 17:37:03 dawes Exp $ */
 /*
  * Copyright (c) 2002-2003 by The XFree86 Project, Inc.
  *
@@ -113,3 +113,21 @@ typedef struct {
 } KbdProtocolRec;
 
 Bool xf86OSKbdPreInit(InputInfoPtr pInfo);
+
+/* Adjust this when the kbd interface changes. */
+
+/*
+ * History:
+ *
+ *  1.0.0 - Initial version.
+ */
+
+#define OS_KBD_VERSION_MAJOR 1
+#define OS_KBD_VERSION_MINOR 0
+#define OS_KBD_VERSION_PATCH 0
+
+#define OS_KBD_VERSION_CURRENT						\
+	BUILTIN_INTERFACE_VERSION_NUMERIC(OS_KBD_VERSION_MAJOR,		\
+					  OS_KBD_VERSION_MINOR,		\
+					  OS_KBD_VERSION_PATCH)
+

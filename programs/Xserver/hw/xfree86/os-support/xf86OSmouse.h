@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.20 2002/12/17 20:55:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.21 2003/08/24 17:37:03 dawes Exp $ */
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
  *
@@ -111,6 +111,24 @@ typedef struct {
  */
 
 extern OSMouseInfoPtr xf86OSMouseInit(int flags);
+
+/* Adjust this when the mouse interface changes. */
+
+/*
+ * History:
+ *
+ *  1.0.0 - Everything up to when versioning was started.
+ *
+ */
+
+#define OS_MOUSE_VERSION_MAJOR 1
+#define OS_MOUSE_VERSION_MINOR 0
+#define OS_MOUSE_VERSION_PATCH 0
+
+#define OS_MOUSE_VERSION_CURRENT					\
+	BUILTIN_INTERFACE_VERSION_NUMERIC(OS_MOUSE_VERSION_MAJOR,	\
+					  OS_MOUSE_VERSION_MINOR,	\
+					  OS_MOUSE_VERSION_PATCH)
 
 /*
  * Mouse device record.  This is shared by the mouse driver and the OSMouse

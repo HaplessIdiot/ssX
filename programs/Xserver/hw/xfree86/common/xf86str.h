@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.92 2003/04/03 16:20:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.93 2003/08/24 17:36:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -1051,5 +1051,29 @@ typedef enum {
     ACTION_SWITCHSCREEN_PREV,
     ACTION_MESSAGE		= 9999  /* Generic message passing */
 } ActionEvent;
+
+/* xf86Versions.c */
+/*
+ * Never change existing values, and always assign values explicitly.
+ * NUM_BUILTIN_IFS must always be the last entry.
+ */
+typedef enum {
+    BUILTIN_IF_OSMOUSE = 0,
+    BUILTIN_IF_OSKBD = 1,
+    NUM_BUILTIN_IFS
+} BuiltinInterface;
+
+/*
+ * These are intentionally the same as the module version macros.
+ * It is possible to register a module as providing a specific interface,
+ * in which case the module's version is used.  This feature isn't
+ * really ready for use yet though.
+ */
+
+#define BUILTIN_INTERFACE_VERSION_NUMERIC(maj, min, patch) \
+	((((maj) & 0xFF) << 24) | (((min) & 0xFF) << 16) | (patch & 0xFFFF))
+#define GET_BUILTIN_INTERFACE_MAJOR_VERSION(vers)	(((vers) >> 24) & 0xFF)
+#define GET_BUILTIN_INTERFACE_MINOR_VERSION(vers)	(((vers) >> 16) & 0xFF)
+#define GET_BUILTIN_INTERFACE_PATCH_VERSION(vers)	((vers) & 0xFFFF)
 
 #endif /* _XF86STR_H */

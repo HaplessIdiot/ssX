@@ -1,4 +1,7 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 396. Add a facility for assigning version numbers to builtin XFree86 server
+      interfaces and allowing modules to query them.  Assign versions for
+      the os-mouse and os-kbd interfaces (David Dawes).
  395. Include uname(2) information in the server's banner messages
       (Marc La France). 
  394. Fix bug in detection of multi-function PCI devices (Marc La France, in
@@ -17594,7 +17597,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2819 2003/08/24 17:43:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2820 2003/08/24 19:37:14 tsi Exp $
 
 
 

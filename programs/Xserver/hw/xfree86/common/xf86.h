@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.169 2003/02/13 10:49:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.170 2003/08/24 17:36:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -424,6 +424,12 @@ void xf86RandRSetInitialMode (ScreenPtr pScreen);
 /* xf86VidModeExtentionInit.c */
 
 Bool VidModeExtensionInit(ScreenPtr pScreen);
+
+/* xf86Versions.c */
+CARD32 xf86GetBuiltinInterfaceVersion(BuiltinInterface iface, int flag);
+Bool xf86RegisterBuiltinInterfaceVersion(BuiltinInterface iface,
+					 CARD32 version, int flags);
+
 
 #endif /* _NO_XF86_PROTOTYPES */
 

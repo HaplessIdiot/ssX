@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.233 2003/05/25 03:53:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.234 2003/08/24 17:37:02 dawes Exp $ */
 
 /*
  *
@@ -642,6 +642,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(VidModeGetGammaRamp)
    SYMFUNC(VidModeGetGammaRampSize)
 #endif
+
+   /* xf86Versions.c */
+   SYMFUNC(xf86GetBuiltinInterfaceVersion)
+   SYMFUNC(xf86RegisterBuiltinInterfaceVersion)
 
    /* xf86MiscExt.c */
 #ifdef XF86MISC
