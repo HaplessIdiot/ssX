@@ -351,7 +351,6 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     I810Ptr pI810 = I810PTR(pScrn);
     int src, dst;
     int w_back = w;
-    int mwidth;
 
     if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
 	ErrorF( "I810SubsequentScreenToScreenCopy %d,%d - %d,%d %dx%d\n",
@@ -361,15 +360,12 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
      * This was developed empirically so it may not catch all
      * cases.
      */
-    if (pI810->depth > 16)
-	mwidth = 4;
-    else
-	mwidth = 8;
+#define I810_MWIDTH 8
 
     if ( !(pI810->BR[13] & BR13_RIGHT_TO_LEFT) && (y2 - y1) < 3 
-	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + mwidth)
-	 && (w > mwidth))
-	w = mwidth;
+	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + I810_MWIDTH)
+	 && (w > I810_MWIDTH))
+	w = I810_MWIDTH;
     do {
 
 	if (pI810->BR[13] & BR13_PITCH_SIGN_BIT) {
@@ -407,8 +403,8 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	    break;
 	x2 += w;
 	x1 += w;
-	if (w_back > mwidth)
-	    w = mwidth;
+	if (w_back > I810_MWIDTH)
+	    w = I810_MWIDTH;
 	else
 	    w = w_back;
     }  while (1);
