@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.1 2000/06/17 00:03:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.2 2000/06/20 20:34:38 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -982,6 +982,11 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
     if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "R128DRIScreenInit failed (libdri.a too old)\n");
+      return FALSE;
+    }
    
     /* Check the DRI version */
     DRIQueryVersion(&major, &minor, &patch);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.8 2000/06/17 00:03:25 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.9 2000/06/20 20:54:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -6,11 +6,7 @@
 #include "xf86Priv.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
+#include "fb.h"
 #include "miline.h"
 #include "GL/glxtokens.h"
 #include "tdfx.h"
@@ -280,6 +276,11 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
     if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "TDFXDRIScreenInit failed (libdri.a too old)\n");
+      return FALSE;
+    }
 
   /* Check the DRI version */
   {

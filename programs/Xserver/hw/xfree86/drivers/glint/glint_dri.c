@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.16 2000/06/17 10:00:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.17 2000/06/21 13:51:27 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -341,6 +341,11 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
     if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "GLINTDRIScreenInit failed (libdri.a too old)\n");
+      return FALSE;
+    }
 
     /* Check the DRI version */
     {

@@ -1,4 +1,7 @@
 XFree86 4.0f (23 June 2000)
+ 372. Update DRI drivers sunffb,mga,i810,glint,r128,tdfx to check for 
+      DRIQueryVersion, overcomes an older libdri issue (Alan Hourihane).
+ 371. Change tdfx driver to use fb instead of cfb (Alan Hourihane).
  370. Make using libpthread optional for OpenBSD 2.7.
  369. Fix a problem when calling XF86VidModeSwitchMode() when the switched
       screen is different from the one that has the pointer (#4024,
@@ -10717,4 +10720,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1206 2000/06/23 19:51:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1207 2000/06/23 22:42:01 dawes Exp $
