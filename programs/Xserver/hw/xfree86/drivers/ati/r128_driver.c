@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.58 2002/01/25 21:55:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.60 2002/04/29 04:15:53 anderson Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1994,6 +1994,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef XF86DRI
 				/* Turn off the CCE for now. */
     info->CCEInUse     = FALSE;
+    info->indirectBuffer = NULL;
 #endif
 
     if (!R128MapMem(pScrn)) return FALSE;

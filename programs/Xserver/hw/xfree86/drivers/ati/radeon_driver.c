@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.53 2002/01/29 17:47:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.55 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2705,6 +2705,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef XF86DRI
 				/* Turn off the CP for now. */
     info->CPInUse = FALSE;
+    info->indirectBuffer = NULL;
 #endif
 
     pScrn->fbOffset = 0;
