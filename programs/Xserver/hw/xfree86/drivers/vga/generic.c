@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.49 2001/01/06 20:58:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.51 2001/02/15 18:20:49 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -162,7 +162,7 @@ static XF86ModuleVersionInfo GenericVersionRec =
 
 /*
  * This data is accessed by the loader.  The name must be the module name
- * followed by "ModuleInit".
+ * followed by "ModuleData".
  */
 XF86ModuleData vgaModuleData = { &GenericVersionRec, GenericSetup, NULL };
 
