@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxsigio.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -42,17 +42,18 @@
 #include "dmxevents.h"
 #include <signal.h>
 #include <unistd.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
+#ifdef sun
+# define BSD_COMP
+#endif
+#include <sys/ioctl.h>
 
 static int  dmxFdCount      = 0;
 static Bool dmxInputEnabled = TRUE;
 
 /* Define equivalents for non-POSIX systems (e.g., SGI IRIX) */
-#ifndef O_ASYNC
+#if !defined(O_ASYNC) && defined(FASYNC)
 #define O_ASYNC FASYNC
-#endif
-#ifndef O_NONBLOCK
-#define O_NONBLOCK FNONBLK
 #endif
 
 static void dmxSigioHandler(int sig)
@@ -137,12 +138,17 @@ static void dmxSigioAdd(DMXInputInfo *dmxInput)
     for (i = 0; i < dmxInput->sigioFdCount; i++) {
         if (!dmxInput->sigioAdded[i]) {
             int fd = dmxInput->sigioFd[i];
-        
+
+#ifdef O_ASYNC
             fcntl(fd, F_SETOWN, getpid());
             flags = fcntl(fd, F_GETFL);
-            flags |= O_ASYNC|O_NONBLOCK;
+            flags |= O_ASYNC;
             fcntl(fd, F_SETFL, flags);
-    
+#else
+            flags = 1;
+            ioctl(fd, FIOASYNC, &flags);
+#endif
+
             AddEnabledDevice(fd);
             dmxInput->sigioAdded[i] = TRUE;
 
@@ -168,10 +174,15 @@ static void dmxSigioRemove(DMXInputInfo *dmxInput)
         
             dmxInput->sigioAdded[i] = FALSE;
             RemoveEnabledDevice(fd);
-        
+
+#ifdef O_ASYNC
             flags = fcntl(fd, F_GETFL);
-            flags &= ~(O_ASYNC|O_NONBLOCK);
+            flags &= ~O_ASYNC;
             fcntl(fd, F_SETFL, flags);
+#else
+            flags = 0;
+            ioctl(fd, FIOASYNC, &flags);
+#endif
 
             if (!--dmxFdCount) dmxSigioUnhook();
         }
