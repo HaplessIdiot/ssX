@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>9 March 2005
+<date>12 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.130tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.131 2005/03/10 17:18:38 tsi Exp $
 </ident>
 
 <abstract>
@@ -163,7 +163,9 @@ url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0687">, <url
 name="CAN-2004-0688"
 url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0688">, <url
 name="CAN-2004-0914"
-url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914">).
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2004-0914">, <url
+name="CAN-2005-0605"
+url="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CAN-2005-0605">).
 
 <item>Potential security issues related to wrap-around of memory allocation
 requests in font handling and other areas.
