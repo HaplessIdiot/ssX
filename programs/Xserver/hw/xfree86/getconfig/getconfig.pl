@@ -47,7 +47,7 @@
 # Author: David Dawes <dawes@XFree86.Org>.
 #
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.pl,v 1.2 2003/12/12 00:39:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.pl,v 1.3 2005/02/01 00:01:16 dawes Exp $
 
 #
 # This script takes PCI id information, compares it against an ordered list
@@ -135,6 +135,14 @@ while (@ARGV[0] =~ /^-[A-Za-z]$/) {
 	    $vendor = oct(shift);
 	    if (!defined($vendor)) {
 		print STDERR "$myname: -v requires the vendor id.\n";
+		exit 1;
+	    }
+	    last SWITCH;
+	}
+	if ($f eq "-S") {
+	    $sbuspath = shift;
+	    if (!defined($sbuspath)) {
+		print STDERR "$myname: -S requires the SBUS path.\n";
 		exit 1;
 	    }
 	    last SWITCH;
@@ -281,6 +289,10 @@ if ($debug) {
 # VMware
 ['$vendor == 0x15ad',
 	'vmware'],
+
+# Sun ffb
+['$sbuspath =~ /,ffb\@/',
+	'sunffb'],
 
 );
 

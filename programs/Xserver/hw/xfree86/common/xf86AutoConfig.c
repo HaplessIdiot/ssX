@@ -46,7 +46,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.4 2005/01/07 23:03:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.5 2005/01/26 05:31:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -54,6 +54,11 @@
 #include "xf86Config.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86Bus.h"
+
+#if defined(__sparc__) && !defined(__OpenBSD__)
+#define SBUS_SUPPORT
+#endif
 
 /*
  * Sections for the default built-in configuration.
@@ -191,11 +196,16 @@ xf86AutoConfig(void)
     char *driver = NULL;
     FILE *gp = NULL;
     XF86ConfigPtr pConfig;
+    Bool foundDev = FALSE;
+#ifdef SBUS_SUPPORT
+    char *promPath;
+#endif
 
     /* Find the primary device, and get some information about it. */
     if (xf86PciVideoInfo) {
 	for (pciptr = xf86PciVideoInfo; (info = *pciptr); pciptr++) {
 	    if (xf86IsPrimaryPci(info)) {
+		foundDev = TRUE;
 		break;
 	    }
 	}
@@ -205,8 +215,36 @@ xf86AutoConfig(void)
     } else {
 	ErrorF("xf86PciVideoInfo is not set\n");
     }
+#ifdef SBUS_SUPPORT
+    if (!foundDev) {
+	sbusDevicePtr psdp, *psdpp;
+	Bool useProm = FALSE;
 
-    if (info) {
+	if (xf86SbusInfo) {
+	    if (sparcPromInit() >= 0)
+		useProm = TRUE;
+	    for (psdpp = xf86SbusInfo; (psdp = *psdpp); psdpp++) {
+		if (psdp->fd == -2)
+		    continue;
+		foundDev = TRUE;
+		if (useProm && psdp->node.node)
+		    promPath = sparcPromNode2Pathname(&psdp->node);
+		else
+		    xasprintf(&promPath, "fb%d", psdp->fbNum);
+		break;
+	    }
+	    if (useProm)
+		sparcPromClose();
+	} else {
+	    ErrorF("xf86SbusInfo is not set.\n");
+	}
+    }
+#endif
+
+    if (!foundDev)
+	xf86Msg(X_WARNING, "Cannot detect the primary video device.\n");
+
+    if (foundDev) {
 	char *tmp;
 	char *path = NULL, *a, *b;
 	char *searchPath = NULL;
@@ -271,10 +309,18 @@ xf86AutoConfig(void)
 	}
 	strcat(searchPath, GETCONFIG_DIR);
 
-	ErrorF("xf86AutoConfig: Primary PCI is %d:%d:%d\n",
-	       info->bus, info->device, info->func);
+	if (info) {
+	    ErrorF("xf86AutoConfig: Primary PCI is %d:%d:%d\n",
+		   info->bus, info->device, info->func);
+	}
+#ifdef SBUS_SUPPORT
+	else if (promPath) {
+	    ErrorF("xf86AutoConfig: Primary SBUS is %s\n", promPath);
+	}
+#endif
 
-	snprintf(buf, sizeof(buf), "%s"
+	if (info) {
+	    snprintf(buf, sizeof(buf), "%s"
 #ifdef DEBUG
 		 " -D"
 #endif
@@ -288,6 +334,23 @@ xf86AutoConfig(void)
 		 info->vendor, info->chipType, info->chipRev,
 		 info->subsysVendor, info->subsysCard,
 		 info->class << 8 | info->subclass);
+	}
+#ifdef SBUS_SUPPORT
+	else if (promPath) {
+	    snprintf(buf, sizeof(buf), "%s"
+#ifdef DEBUG
+		 " -D"
+#endif
+		 " -X %d"
+		 " -I %s"
+		 " -S %s",
+		 path,
+		 (unsigned int)xf86GetVersion(),
+		 searchPath,
+		 promPath);
+	    xfree(promPath);
+	}
+#endif
 	ErrorF("Running \"%s\"\n", buf);
 	gp = Popen(buf, "r");
 	if (gp) {

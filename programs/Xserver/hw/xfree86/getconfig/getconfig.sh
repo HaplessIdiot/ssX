@@ -49,7 +49,7 @@
 # Author: David Dawes <dawes@XFree86.Org>.
 #
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.3 2005/02/01 00:01:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/getconfig.sh,v 1.4 2005/02/01 04:11:23 dawes Exp $
 
 # A simple wrapper to execute the real getconfig program.  So long as perl
 # is in $PATH, we don't need to know where it is this way.
@@ -73,6 +73,10 @@ perl_vers=`perl -e 'print int $];'`
 if [ $perl_vers -lt 5 ]; then
 	echo "$0: perl version is too old (need 5 or later)." >&2 
 	exit 1
+fi
+
+if [ "X$1" = "X-D" ]; then
+	echo "executing: perl ${DIR}getconfig.pl $@" >&2
 fi
 
 exec perl ${DIR}getconfig.pl "$@"
