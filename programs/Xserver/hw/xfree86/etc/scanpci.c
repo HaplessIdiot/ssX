@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.87 2002/07/31 04:24:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.88tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -60,6 +60,9 @@ static void print_mach64(pciConfigPtr pcr);
 static void print_i128(pciConfigPtr pcr);
 static void print_dc21050(pciConfigPtr pcr);
 static void print_simba(pciConfigPtr pcr);
+static void print_460gx_sac(pciConfigPtr pcr);
+static void print_460gx_pxb(pciConfigPtr pcr);
+static void print_460gx_gxb(pciConfigPtr pcr);
 
 #define MAX_DEV_PER_VENDOR 40
 
@@ -119,6 +122,12 @@ static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
 	{ 0x0000, NULL } } },
     { PCI_VENDOR_SUN, {
 	{ PCI_CHIP_SIMBA, print_simba },
+	{ 0x0000, NULL } } },
+    { PCI_VENDOR_INTEL, {
+	{ PCI_CHIP_460GX_SAC, print_460gx_sac },
+	{ PCI_CHIP_460GX_PXB, print_460gx_pxb },
+	{ PCI_CHIP_460GX_GXB_1, print_460gx_gxb },
+	{ PCI_CHIP_460GX_WXB, print_460gx_pxb },	/* Uncertain */
 	{ 0x0000, NULL } } },
     { 0x0000, {
 	{ 0x0000, NULL } } }
@@ -626,6 +635,114 @@ print_simba(pciConfigPtr pcr)
     for (i = 0;  i < 8;  i++)
 	if (mem & (1 << i))
 	    printf("  BUS MEM  0x%08x-0x%08x\n", i << 29, ((i + 1) << 29) - 1);
+}
+
+static int cbn_460gx = -1;
+
+static void
+print_460gx_sac(pciConfigPtr pcr)
+{
+    CARD32 tmp;
+
+    /* Print generalities */
+    printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
+	   pcr->pci_status, pcr->pci_command);
+    printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
+	   pcr->pci_base_class, pcr->pci_sub_class, pcr->pci_prog_if,
+	   pcr->pci_rev_id);
+
+    tmp = pcr->pci_user_config;
+    pcr->pci_user_config = 0;
+    print_default_class(pcr);
+    pcr->pci_user_config = tmp;
+
+    /* Only print what XFree86 might be interested in */
+    if (pcr->busnum == 0) {
+	if ((pcr->devnum != 0x10) || (pcr->funcnum != 0))
+	    return;
+
+	/* Get Chipset Bus Number */
+	cbn_460gx = (unsigned int)pciReadByte(pcr->tag, 0x0040);
+	printf("  CBN       0x%02x  CBUSES 0x%02x\n",
+	       cbn_460gx, pciReadByte(pcr->tag, 0x0044));
+
+	return;
+    }
+
+    if ((pcr->busnum != cbn_460gx) || (pcr->funcnum != 0))
+	return;
+
+    switch (pcr->devnum) {
+    case 0:
+	printf("  F16NUM    0x%02x  F16CPL 0x%02x  DEVNPRES 0x%08lx\n",
+	       pciReadByte(pcr->tag, 0x0060), pciReadByte(pcr->tag, 0x0078),
+	       (long)pciReadLong(pcr->tag, 0x0070));
+
+	return;
+
+    case 0x10:
+	printf("  TOM       0x%04x  IORD  0x%04x\n",
+	       pciReadWord(pcr->tag, 0x0050), pciReadWord(pcr->tag, 0x008E));
+	/* Fall through */
+
+    case 0x11:  case 0x12:  case 0x13:
+    case 0x14:  case 0x15:  case 0x16:  case 0x17:
+	printf("  BUSNO     0x%02x    SUBNO 0x%02x\n",
+	       pciReadByte(pcr->tag, 0x0048), pciReadByte(pcr->tag, 0x0049));
+	printf("  VGASE     0x%02x    PCIS  0x%02x    IOR 0x%02x\n",
+	       pciReadByte(pcr->tag, 0x0080), pciReadByte(pcr->tag, 0x0084),
+	       pciReadByte(pcr->tag, 0x008C));
+	/* Fall through */
+
+    default:
+	return;
+    }
+}
+
+static void
+print_460gx_pxb(pciConfigPtr pcr)
+{
+    CARD32 tmp;
+
+    /* Print generalities */
+    printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
+	   pcr->pci_status, pcr->pci_command);
+    printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
+	   pcr->pci_base_class, pcr->pci_sub_class, pcr->pci_prog_if,
+	   pcr->pci_rev_id);
+
+    tmp = pcr->pci_user_config;
+    pcr->pci_user_config = 0;
+    print_default_class(pcr);
+    pcr->pci_user_config = tmp;
+
+    /* Only print what XFree86 might be interested in */
+    printf("  ERRCMD    0x%02x  GAPEN 0x%02x\n",
+	   pciReadByte(pcr->tag, 0x0046), pciReadByte(pcr->tag, 0x0060));
+}
+
+static void
+print_460gx_gxb(pciConfigPtr pcr)
+{
+    CARD32 tmp;
+
+    /* Print generalities */
+    printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
+	   pcr->pci_status, pcr->pci_command);
+    printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
+	   pcr->pci_base_class, pcr->pci_sub_class, pcr->pci_prog_if,
+	   pcr->pci_rev_id);
+
+    tmp = pcr->pci_user_config;
+    pcr->pci_user_config = 0;
+    print_default_class(pcr);
+    pcr->pci_user_config = tmp;
+
+    /* Only print what XFree86 might be interested in */
+    printf("  BAPBASE   0x%08lx%08lx   AGPSIZ  0x%02x   VGAGE     0x%02x\n",
+	   (long)pciReadLong(pcr->tag, 0x009C),
+	   (long)pciReadLong(pcr->tag, 0x0098),
+	   pciReadByte(pcr->tag, 0x00A2), pciReadByte(pcr->tag, 0x0060));
 }
 
 #include "xf86getpagesize.c"

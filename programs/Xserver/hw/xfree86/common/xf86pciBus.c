@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.61tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -2086,11 +2086,11 @@ xf86GetPciBridgeInfo(void)
 			     &PciBus->secondary,
 			     &PciBus->subordinate);
 		}
-#ifndef __ia64__	/* Temporary */
+
 		PciBus->brbus = pcrp->busnum;
 		PciBus->brdev = pcrp->devnum;
 		PciBus->brfunc = pcrp->funcnum;
-#endif		/* Temporary */
+
 		PciBus->subclass = sub_class;
 
 		if (pBusInfo && pBusInfo->funcs->pciControlBridge)

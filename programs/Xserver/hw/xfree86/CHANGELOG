@@ -1,4 +1,13 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 363. In certain circumstances, allow VGA-rerouting through Simba bridges.
+      This only affects UltraSPARC-IIi systems.  This is a small but
+      necessary step in eradicating SparcArchitecture's need to compile the ati
+      dribver with -DAVOID_CPIO (Marc La France).
+ 362. In int10, ignore interrupts whose simulation isn't yet implemented.
+      Previously, such interrupts caused the emulation to stop.  (Egbert Eich,
+      Marc La France).
+ 361. Add full support for multi-head on 460GX-based Itanium systems
+      (Marc La France, with documentation loaned by Intel under NDA).
  360. Fix Darwin build problems with libXrandr and the new FreeType2 backend
       (Torrey T. Lyons).
  359. Savage driver updates.
@@ -15240,4 +15249,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2322 2002/10/02 20:39:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2323 2002/10/02 22:00:17 torrey Exp $
