@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.15 2001/07/19 03:01:39 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.16 2001/07/19 04:42:10 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -356,7 +356,9 @@ PictureFinishInit (void)
     int	    s;
 
     for (s = 0; s < screenInfo.numScreens; s++)
-	PictureInitIndexedFormats (screenInfo.screens[s]);
+	if (!PictureInitIndexedFormats (screenInfo.screens[s]))
+	    return FALSE;
+    return TRUE;
 }
 
 PictFormatPtr
