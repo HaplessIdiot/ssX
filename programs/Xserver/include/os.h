@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.33 2000/05/25 23:24:30 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.34 2000/06/16 01:50:21 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -543,6 +543,18 @@ extern int OsInitColors(
     void
 #endif
 );
+
+void OsBlockSignals (
+#if NeedFunctionPrototypes
+		     void
+#endif		     
+		     );
+
+void OsReleaseSignals (
+#if NeedFunctionPrototypes
+		     void
+#endif		     
+		     );
 
 #if !defined(WIN32) && !defined(__EMX__)
 extern int System(char *);

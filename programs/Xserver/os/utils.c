@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.59 2000/06/17 00:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.60 2000/08/01 20:05:44 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1644,12 +1644,65 @@ SmartScheduleInit (void)
 	perror ("scheduling timer");
 	return FALSE;
     }
+    /* stop the timer and wait for WaitForSomething to start it */
+    SmartScheduleStopTimer ();
     return TRUE;
 #else
     return FALSE;
 #endif
 }
 #endif
+
+#ifdef SIG_BLOCK
+static sigset_t	PreviousSignalMask;
+static int	BlockedSignalCount;
+#endif
+
+void
+OsBlockSignals (void)
+{
+#ifdef SIG_BLOCK
+    if (BlockedSignalCount++ == 0)
+    {
+	sigset_t    set;
+	
+	sigemptyset (&set);
+#ifdef SIGALRM
+	sigaddset (&set, SIGALRM);
+#endif
+#ifdef SIGVTALRM
+	sigaddset (&set, SIGVTALRM);
+#endif
+#ifdef SIGWINCH
+	sigaddset (&set, SIGWINCH);
+#endif
+#ifdef SIGIO
+	sigaddset (&set, SIGIO);
+#endif
+#ifdef SIGTSTP
+	sigaddset (&set, SIGTSTP);
+#endif
+#ifdef SIGTTIN
+	sigaddset (&set, SIGTTIN);
+#endif
+#ifdef SIGTTOU
+	sigaddset (&set, SIGTTOU);
+#endif
+	sigprocmask (SIG_BLOCK, &set, &PreviousSignalMask);
+    }
+#endif
+}
+
+void
+OsReleaseSignals (void)
+{
+#ifdef SIG_BLOCK
+    if (--BlockedSignalCount == 0)
+    {
+	sigprocmask (SIG_SETMASK, &PreviousSignalMask, 0);
+    }
+#endif
+}
 
 #if !defined(WIN32) && !defined(__EMX__)
 /*
@@ -1759,6 +1812,9 @@ Popen(command, type)
 	_exit(127);
     }
 
+    /* Avoid EINTR during stdio calls */
+    OsBlockSignals ();
+    
     /* parent */
     if (*type == 'r') {
 	iop = fdopen(pdes[0], type);
@@ -1772,12 +1828,6 @@ Popen(command, type)
     cur->pid = pid;
     cur->next = pidlist;
     pidlist = cur;
-
-#ifdef SMART_SCHEDULE
-    if (!SmartScheduleDisable && !SmartScheduleTimerStopped) {
-	SmartScheduleStopTimer();
-    }
-#endif
 
 #ifdef DEBUG
     ErrorF("Popen: `%s', fp = %p\n", command, iop);
@@ -1816,6 +1866,9 @@ Pclose(iop)
 	last->next = cur->next;
     xfree(cur);
 
+    /* allow EINTR again */
+    OsReleaseSignals ();
+    
     return pid == -1 ? -1 : pstat;
 }
 #endif /* !WIN32 && !__EMX__ */
