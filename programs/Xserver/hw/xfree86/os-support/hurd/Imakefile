@@ -1,16 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.4 1999/04/04 00:20:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.5 1999/05/22 08:40:11 dawes Exp $
 
 #include <Server.tmpl>
 
 BIOS_MOD = bios_mmap
 
-#if NewInput
 MOUSESRC = hurd_mouse.c
 MOUSEOBJ = hurd_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c \
        mapVT_noop.c VTsw_noop.c posix_tty.c std_kbdEv.c $(MOUSESRC) \
@@ -34,10 +29,6 @@ NormalLibraryObjectRule()
 LinkSourceFile(VTsw_noop.c,../shared)
 LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)

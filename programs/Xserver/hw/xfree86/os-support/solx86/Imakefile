@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.11 1999/06/10 12:37:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.12 1999/07/18 15:37:25 dawes Exp $
 
 
 
@@ -13,13 +13,8 @@ PROWORKS_INOUT_SRC = solx86_iout.s
 PROWORKS_INOUT_OBJ = solx86_iout.o
 #endif
 
-#if NewInput
 MOUSESRC = solx86_mouse.c
 MOUSEOBJ = solx86_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = solx86_init.c solx86_vid.c solx86_bios.c sysv_io.c \
 	VTsw_usl.c sysv_kbd.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
@@ -43,10 +38,6 @@ NormalAsmObjectRule()
 LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(sysv_kbd.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(sysv_io.c,../sysv)
 LinkSourceFile(libc_wrapper.c,../shared)

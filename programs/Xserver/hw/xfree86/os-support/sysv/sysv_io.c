@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.7 1999/05/07 02:56:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_io.c,v 3.8 1999/05/22 08:40:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -65,31 +65,3 @@ xf86SetKbdLeds(int leds)
 #endif
 }
 
-#ifndef NEW_INPUT
-void
-xf86MouseInit(MouseDevPtr mouse)
-{
-	return;
-}
-
-int
-xf86MouseOn(MouseDevPtr mouse)
-{
-	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
-	{
-	    if (xf86Info.allowMouseOpenFail) {
-		xf86Msg(X_WARNING, "Cannot open mouse (%s) - Continuing...\n",
-			strerror(errno));
-		return(-2);
-	    }
-	    FatalError("Cannot open mouse (%s)\n", strerror(errno));
-	}
-
-	xf86SetupMouse(mouse);
-
-	/* Flush any pending input */
-	ioctl(mouse->mseFd, TCFLSH, 0);
-
-	return(mouse->mseFd);
-}
-#endif

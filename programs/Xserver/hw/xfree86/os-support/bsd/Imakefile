@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.29 1999/08/14 10:50:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.30 1999/08/22 11:59:50 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -39,13 +39,8 @@ IOPERM_SRC = ioperm_noop.c
 IOPERM_OBJ = ioperm_noop.o
 #endif
 
-#if NewInput
 MOUSESRC = bsd_mouse.c
 MOUSEOBJ = bsd_mouse.o
-#else
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 #if HasMTRRSupport
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
@@ -89,10 +84,6 @@ InstallDynamicModule(bsd_jstk.o,$(MODULEDIR))
 LinkSourceFile(ioperm_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)

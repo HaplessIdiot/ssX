@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.16 1999/07/17 06:30:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.17 1999/08/01 07:57:32 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -41,10 +41,6 @@
 #include "Xproto.h"
 
 #include "compiler.h"
-
-#ifndef NEW_INPUT
-#define NEW_INPUT
-#endif
 
 #include "xf86.h"
 

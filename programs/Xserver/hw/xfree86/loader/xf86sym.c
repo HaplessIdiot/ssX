@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.108 1999/08/22 05:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.109 1999/09/04 09:14:22 dawes Exp $ */
 
 /*
  *
@@ -40,9 +40,7 @@
 #ifdef XINPUT
 #include "xf86Xinput.h"
 #endif
-#ifdef NEW_INPUT
 #include "xf86OSmouse.h"
-#endif
 #include "xf86xv.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
@@ -219,9 +217,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetSerialModemState)
    SYMFUNC(xf86SerialModemSetBits)
    SYMFUNC(xf86SerialModemClearBits)
-#ifdef NEW_INPUT
    SYMFUNC(xf86OSMouseInit)
-#endif
 
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.10 1999/06/06 15:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.11 1999/06/27 14:08:31 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -21,13 +21,7 @@ void printInputSection(FILE *f, XF86ConfInputPtr ptr);
 void freeInputList(XF86ConfInputPtr ptr);
 int validateInput (XF86ConfigPtr p);
 /* Keyboard.c */
-#ifndef NEW_INPUT
-XF86ConfKeyboardPtr parseKeyboardSection(void);
-void printKeyboardSection(FILE *cf, XF86ConfKeyboardPtr ptr);
-void freeKeyboard(XF86ConfKeyboardPtr ptr);
-#else
 XF86ConfInputPtr parseKeyboardSection(void);
-#endif
 /* Layout.c */
 XF86ConfLayoutPtr parseLayoutSection(void);
 void printLayoutSection(FILE *cf, XF86ConfLayoutPtr ptr);
@@ -53,13 +47,7 @@ void freeModesList(XF86ConfModesPtr ptr);
 void freeModeLineList(XF86ConfModeLinePtr ptr);
 int validateMonitor(XF86ConfigPtr p, XF86ConfScreenPtr screen);
 /* Pointer.c */
-#ifndef NEW_INPUT
-XF86ConfPointerPtr parsePointerSection(void);
-void printPointerSection(FILE *cf, XF86ConfPointerPtr ptr);
-void freePointer(XF86ConfPointerPtr ptr);
-#else
 XF86ConfInputPtr parsePointerSection(void);
-#endif
 /* Screen.c */
 XF86ConfDisplayPtr parseDisplaySubSection(void);
 XF86ConfScreenPtr parseScreenSection(void);

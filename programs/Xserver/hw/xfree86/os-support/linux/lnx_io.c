@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.7 1999/05/22 08:40:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.8 1999/07/04 06:39:15 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -108,32 +108,3 @@ xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
-#ifndef NEW_INPUT
-void
-xf86MouseInit(MouseDevPtr mouse)
-{
-	return;
-}
-
-int
-xf86MouseOn(MouseDevPtr mouse)
-{
-	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
-	{
-		if (xf86Info.allowMouseOpenFail) {
-			xf86Msg(X_WARNING,
-				"Cannot open mouse (%s) - Continuing...\n",
-				strerror(errno));
-			return(-2);
-		}
-		FatalError("Cannot open mouse (%s)\n", strerror(errno));
-	}
-
-	xf86SetupMouse(mouse);
-
-	/* Flush any pending input */
-	tcflush(mouse->mseFd, TCIFLUSH);
-
-	return(mouse->mseFd);
-}
-#endif

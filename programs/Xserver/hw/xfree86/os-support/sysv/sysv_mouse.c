@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_mouse.c,v 1.1 1999/05/22 08:40:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_mouse.c,v 1.2 1999/07/10 12:17:39 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -8,9 +8,7 @@
 #include "xf86.h"
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
-#ifdef NEW_INPUT
 #include "xqueue.h"
-#endif
 
 static int
 SupportedInterfaces(void)

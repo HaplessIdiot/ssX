@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.5 1999/04/04 00:20:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.6 1999/05/22 08:40:08 dawes Exp $
 
 
 
@@ -7,13 +7,8 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:23:38 rws $
 
 #include <Server.tmpl>
 
-#if NewInput
 MOUSESRC = bsdi_mouse.c
 MOUSEOBJ = bsdi_mouse.o
-#else 
-MOUSESRC = std_mouse.c std_mseEv.c
-MOUSEOBJ = std_mouse.o std_mseEv.o
-#endif
 
 SRCS = bsdi_init.c bsdi_video.c bsdi_io.c bios_devmem.c \
        mapVT_noop.c VTsw_noop.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
@@ -38,10 +33,6 @@ LinkSourceFile(mapVT_noop.c,../shared)
 LinkSourceFile(VTsw_noop.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
-#if !NewInput
-LinkSourceFile(std_mouse.c,../shared)
-LinkSourceFile(std_mseEv.c,../shared)
-#endif
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 
