@@ -1,5 +1,5 @@
 /* dri_dispatch.c
-   $Id: dri_dispatch.c,v 1.1 2003/06/30 01:45:10 torrey Exp $
+   $Id: dri_dispatch.c,v 1.2 2003/08/12 00:28:57 torrey Exp $
 
    Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
 
@@ -27,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
@@ -114,28 +114,6 @@ ret gl ## gn proto					\
 
 #include "dri_dispatch.h"
 
-static CGLContextObj
-allocate_context (void)
-{
-    CGLContextObj ctx = NULL;
-
-    CGLPixelFormatObj pf;
-    CGLPixelFormatAttribute attr;
-    long n;
-
-    attr = 0;
-    pf = NULL;
-    CGLChoosePixelFormat (&attr, &pf, &n);
-
-    if (pf != NULL)
-    {
-	CGLCreateContext (pf, NULL, &ctx);
-	CGLDestroyPixelFormat (pf);
-    }
-
-    return ctx;
-}
-
 __private_extern__ const CGLContextObj
 XAppleDRIGetIndirectContext (void)
 {
@@ -146,18 +124,18 @@ XAppleDRIGetIndirectContext (void)
     if (ctx != NULL)
 	return ctx;
 
-    ctx = allocate_context ();
+    /* initialize gl */
+    CGLSetOption (kCGLGOResetLibrary, 0);
 
-    if (ctx == NULL)
-    {
-	fprintf (stderr, "gl: couldn't allocate CGLContextObj\n");
-	return NULL;
-    }
+    /* create an empty "context" for dispatching purposes */
+    ctx = Xcalloc (1, sizeof (struct _CGLContextObject));
 
+    /* fill it with no-op vectors */
     t = (void **) &ctx->disp;
     for (i = 0; i < (sizeof (ctx->disp) / sizeof (t[0])); i++)
-	t[i] = &indirect_noop;
+        t[i] = &indirect_noop;
 
+    /* then install the functions we actually support */
     INDIRECT_DISPATCH_INIT (((void **) (&ctx->disp)), indirect__);
 
     return ctx;
