@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+   4. Fix problems with assembler file dependencies when using gccmakedep
+      with the build (Frederic Lepied).
    3. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
    2. Update XDarwin man pages, help files, and version info. Add option to
       build XDarwin.app bundle for deployment (Torrey Lyons).
@@ -13311,4 +13313,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1788 2001/05/21 21:43:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1789 2001/05/21 23:21:19 torrey Exp $
