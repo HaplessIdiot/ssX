@@ -1,7 +1,7 @@
 #ifndef _glx_ansic_h_
 #define _glx_ansic_h_
 
-/* $XFree86: xc/programs/Xserver/GL/include/GL/glx_ansic.h,v 1.3 1999/07/11 08:49:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/include/GL/glx_ansic.h,v 1.4 2001/03/21 16:39:37 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -103,6 +103,7 @@
 #define __glXStrtok(s, delim)		strtok(s, delim)
 #define __glXStrcspn(s, reject)		strcspn(s, reject)
 #define __glXGetenv(a)			getenv(a)
+#define __glXAtoi(a)			atoi(a)
 
 #endif /* _glx_ansic_h_ */
 
