@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h,v 1.73 95/01/09 20:56:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.6 1994/12/17 10:09:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.7 1995/01/28 16:15:35 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -313,7 +313,7 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || defined(linux) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__))
+#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || defined(linux) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || defined(Lynx))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

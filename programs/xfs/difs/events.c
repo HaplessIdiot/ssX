@@ -1,4 +1,5 @@
 /* $XConsortium: events.c,v 1.5 94/04/17 19:56:14 gildea Exp $ */
+/* $XFree86$ */
 /*
  * event handling stuff
  */
@@ -51,7 +52,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	"clientstr.h"
 #include	"FSproto.h"
 #include	"globals.h"
-#include	"events.h"
+#include	"fsevents.h"
 
 extern void (*EventSwapVector[NUM_EVENT_VECTORS]) ();
 

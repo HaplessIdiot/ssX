@@ -1,4 +1,5 @@
 /* $XConsortium: resource.c,v 1.8 94/04/17 19:56:18 dpw Exp $ */
+/* $XFree86$ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -68,7 +69,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "FS.h"
 #include "misc.h"
 #include "os.h"
-#include "resource.h"
+#include "fsresource.h"
 #include "clientstr.h"
 #include "globals.h"
 

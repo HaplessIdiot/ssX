@@ -1,5 +1,5 @@
 # $XConsortium: Makefile.std,v 1.4 95/01/06 20:56:42 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.5 1994/12/18 12:49:19 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.6 1995/01/28 15:47:09 dawes Exp $
 #
 # Installation parameters
 #
@@ -65,6 +65,10 @@ OS_OBJ = OS_SYSV.o
 #OS_SRC = OS_Os2.c
 #OS_OBJ = OS_Os2.o
 #OS_LIB = -lemxio
+# LynxOS
+#OS_DEF =
+#OS_SRC = OS_LynxOS.c
+#OS_OBJ = OS_LynxOS.o
 
 HDRS = Probe.h
 BASE_SRC = MDA.c Herc.c CGA.c VGA.c RamDac.c MemProbe.c

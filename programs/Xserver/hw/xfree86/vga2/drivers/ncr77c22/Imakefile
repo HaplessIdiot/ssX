@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 21:18:39 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/ncr77c22/Imakefile,v 3.0 1994/05/30 08:26:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/ncr77c22/Imakefile,v 3.2 1995/01/28 17:07:15 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ncr_driver.c ncr_bank.s
@@ -7,7 +7,7 @@ SRCS = ncr_driver.c ncr_bank.s
 OBJS = ncr_driver.o ncr_bank.o
 
 #if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../..
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)

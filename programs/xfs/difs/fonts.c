@@ -1,4 +1,5 @@
 /* $XConsortium: fonts.c,v 1.25 94/04/17 19:56:15 gildea Exp $ */
+/* $XFree86$ */
 /*
  * font control
  */
@@ -53,7 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 #include	<stdio.h>
 #include	<X11/Xos.h>
 #include	"clientstr.h"
-#include	"resource.h"
+#include	"fsresource.h"
 #include	"difsfnst.h"
 #include	"fontstruct.h"
 #include	"closestr.h"

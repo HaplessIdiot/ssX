@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:57:24 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/tvga8900/Imakefile,v 3.0 1994/05/30 08:25:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/drivers/tvga8900/Imakefile,v 3.2 1995/01/28 17:05:40 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = t89_driver.c t89_bank.s
@@ -7,7 +7,7 @@ SRCS = t89_driver.c t89_bank.s
 OBJS = t89_driver.o t89_bank.o
 
 #if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../..
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)

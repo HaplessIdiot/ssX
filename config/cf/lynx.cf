@@ -1,0 +1,128 @@
+XCOMM platform:  $XFree86: $
+
+#define OSName			LynxOS AT
+#define OSVendor		(LYNX Real-Time Systems, Inc)
+#define OSMajorVersion		2
+#define OSMinorVersion		3
+#define OSTeenyVersion		0
+
+#define HasGcc			YES
+#define HasGcc2			YES
+#ifndef HasGcc2ForCplusplus
+# define HasGcc2ForCplusplus	YES
+#endif
+#define GccUsesGas		YES
+#define UseGas			YES
+#define GnuCpp			YES
+#define HasShadowPasswd		NO
+#ifndef HasLibCrypt
+# define HasLibCrypt		NO
+#endif
+#define HasPutenv		YES
+#define HasShm			YES
+#define HasSockets		YES
+#define HasVFork		NO
+
+#define HasPosixThreads		YES
+#define ThreadedX		YES
+#define ThreadsCompileFlags	-mposix -mthreads
+#define ThreadsCplusplusCompileFlags	-mposix -mthreads
+
+#define AvoidNullMakeCommand	YES
+#define StripInstalledPrograms	YES
+#define CompressAllFonts	YES
+#define Malloc0ReturnsNull	NO
+#define NeedConstPrototypes	YES
+#define NeedFunctionPrototypes	YES
+#define NeedNestedPrototypes	YES
+#define NeedVarargsPrototypes	YES
+#define NeedWidePrototypes	NO
+
+#define CplusplusCmd		g++ -mposix
+#define CcCmd			gcc -mposix
+#define AsCmd			as
+#define LdCmd			ld
+#define AsmDefines		-DUSE_GAS
+#define CppCmd			/lib/cpp
+#define YaccCmd			bison -y
+#define LexCmd			/bin/flex
+#define LexLib			-lfl
+/* /lib/libm.a is a symbolic link to /lib/libc.a, so we
+ * screw up some POSIX functionality when -lm comes
+ * before -lc_p in out ld argument list. For LynxOS-AT
+ * we don't need -lm but for others we do (e.g. SPARC)
+ */
+#define MathLibrary		-lc_p -lm
+#define PreProcessCmd		CcCmd -E
+#define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
+#define LdCombineFlags		-r
+#define OptimizedCDebugFlags	-O2 -m486
+#define StandardDefines		-DLynx
+#define StandardCppDefines	-traditional StandardDefines
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#define ServerExtraSysLibs	$(CBRT) MathLibrary
+#define ConnectionFlags		-DUNIXCONN -DTCPCONN
+#define ExtraLibraries		-lbsd
+
+#define ManSourcePath   $(MANPATH)/cat
+
+#ifndef ManSuffix
+# define ManSuffix	1x
+#endif
+#ifndef ManDir
+# define ManDir		$(MANSOURCEPATH)1
+#endif
+#ifndef LibManSuffix
+# define LibManSuffix	3x
+#endif
+#ifndef LibmanDir
+# define LibmanDir	$(MANSOURCEPATH)3
+#endif
+#ifndef FileManSuffix
+# define FileManSuffix	5x
+#endif
+#ifndef FileManDir
+# define FileManDir	$(MANSOURCEPATH)5
+#endif
+
+/* groff 1.09 compiles right out of the box with LynxOS 2.3,
+ * so if you want to have manual pages you should install groff 1.09
+ * before you run 'make install.man'
+ */
+#ifndef InstallManPageLong
+#define InstallManPageLong(file,destdir,dest)                           @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
+	groff -e -t -man -Tascii file.man >/tmp/file.man		@@\
+	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man $(DESTDIR)destdir/dest.$(MANSUFFIX) @@\
+	$(RM) /tmp/file.man
+#endif
+
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
+	groff -e -t -man -Tascii file.man >/tmp/file.man		@@\
+	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man $(DESTDIR)destdir/dest.suffix @@\
+	$(RM) /tmp/file.man
+#endif
+
+#ifndef InstallMultipleMan
+#define InstallMultipleMan(list,dest)                                   @@\
+install.man:: list                                                      @@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	for i in list; do \						@@\
+		(set -x; \						@@\
+		MNAME=`echo $$i | cut -f1 -d.`; \			@@\
+		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
+		groff -e -t -man -Tascii $$i >/tmp/$$i; \		@@\
+		$(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \      @@\
+		$(RM) /tmp/$$i); \					@@\
+	done
+#endif
+
+#include <xfree86.cf>

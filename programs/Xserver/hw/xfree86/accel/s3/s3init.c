@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.63 1995/05/27 03:10:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.64 1995/05/28 11:48:35 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2220,11 +2220,13 @@ s3Init(mode)
 
       n = 255;
       outb(vgaCRIndex, 0x54);
-      if (S3_x64_SERIES(s3ChipId)) {
+      if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	 int clock,mclk;
 	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
 	 if (s3InfoRec.s3MClk > 0) 
 	    mclk = s3InfoRec.s3MClk;
+	 else if (S3_805_I_SERIES(s3ChipId))
+	    mclk = 50000;  /* 50 MHz, guess for 805i limit */
 	 else
 	    mclk = 60000;  /* 60 MHz, limit for 864 */
 	 if (s3InfoRec.videoRam < 2048) clock *= 2;

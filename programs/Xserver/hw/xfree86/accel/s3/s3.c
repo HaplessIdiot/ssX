@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.78 1995/05/27 03:10:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.79 1995/06/01 08:25:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1698,8 +1698,9 @@ s3Probe()
       numClocks = 3;
       if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
 	 mclk = 55000;
-	 ErrorF("%s %s: Setting MCLK to %1.3f MHz for #9GXE64 Pro\n",
-		XCONFIG_PROBED, s3InfoRec.name, mclk / 1000.0);
+	 if (xf86Verbose)
+	    ErrorF("%s %s: Setting MCLK to %1.3f MHz for #9GXE64 Pro\n",
+		   XCONFIG_PROBED, s3InfoRec.name, mclk / 1000.0);
 	 Ti3025SetClock(2 * mclk, TI_MCLK_PLL_DATA, s3ProgramTi3025Clock);
 	 mcc = s3InTiIndReg(TI_MCLK_DCLK_CONTROL);
 	 s3OutTiIndReg(TI_MCLK_DCLK_CONTROL,0x00, (mcc & 0xf0) | 0x08);
@@ -1725,73 +1726,76 @@ s3Probe()
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions) ||
 	      OFLG_ISSET(CLOCK_OPTION_ICS5342,  &s3InfoRec.clockOptions)) {
+      unsigned char saveCR55;
+      int i,m,n,n1,n2, mclk;
+      
       s3ClockSelectFunc = s3GendacClockSelect;
-      if (xf86Verbose) {
-	 unsigned char saveCR55;
-	 int i,m,n,n1,n2, mclk;
+      
+      outb(vgaCRIndex, 0x55);
+      saveCR55 = inb(vgaCRReg);
+      outb(vgaCRReg, saveCR55 | 1);
+      
+      outb(0x3C7, 10); /* read MCLK */
+      m = inb(0x3C9);
+      n = inb(0x3C9);
+      
+      outb(vgaCRIndex, 0x55);
+      outb(vgaCRReg, saveCR55);	 
+      
+      m &= 0x7f;
+      n1 = n & 0x1f;
+      n2 = (n>>5) & 0x03;
+      mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
 
-	 outb(vgaCRIndex, 0x55);
-	 saveCR55 = inb(vgaCRReg);
-	 outb(vgaCRReg, saveCR55 | 1);
-
-	 outb(0x3C7, 10); /* read MCLK */
-	 m = inb(0x3C9);
-	 n = inb(0x3C9);
-
-	 outb(vgaCRIndex, 0x55);
-	 outb(vgaCRReg, saveCR55);	 
-
-	 m &= 0x7f;
-	 n1 = n & 0x1f;
-	 n2 = (n>>5) & 0x03;
-	 mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+      if (xf86Verbose)
 	 ErrorF("%s %s: Using %s programmable clock (MCLK %1.3f MHz)\n"
 		,clockchip_probed, s3InfoRec.name
 		,OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)
-			? "ICS5342" : "S3 Gendac/SDAC"
+		? "ICS5342" : "S3 Gendac/SDAC"
 		,mclk / 1000.0);
-	 if (s3InfoRec.s3MClk > 0) {
+      if (s3InfoRec.s3MClk > 0) {
+	 if (xf86Verbose)
 	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
-		   XCONFIG_GIVEN, s3InfoRec.s3MClk / 1000.0);
-	 }
-	 else {
-	    s3InfoRec.s3MClk = mclk;
-	 }
+		   XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.s3MClk / 1000.0);
+      }
+      else {
+	 s3InfoRec.s3MClk = mclk;
       }
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+      unsigned char sr8;
+      int i,m,n,n1,n2, mclk;
+
       s3ClockSelectFunc = s3GendacClockSelect;
       numClocks = 3;
-      if (xf86Verbose) {
-	 unsigned char sr8;
-	 int i,m,n,n1,n2, mclk;
-
-	 outb(0x3c4, 0x08);
-	 sr8 = inb(0x3c5);
-	 outb(0x3c5, 0x06);
-	 
-	 outb(0x3c4, 0x11);
-	 m = inb(0x3c5);
-	 outb(0x3c4, 0x10);
-	 n = inb(0x3c5);
-	 
-	 outb(0x3c4, 0x08);
-	 outb(0x3c5, sr8);
-
-	 m &= 0x7f;
-	 n1 = n & 0x1f;
-	 n2 = (n>>5) & 0x03;
-	 mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+      
+      outb(0x3c4, 0x08);
+      sr8 = inb(0x3c5);
+      outb(0x3c5, 0x06);
+      
+      outb(0x3c4, 0x11);
+      m = inb(0x3c5);
+      outb(0x3c4, 0x10);
+      n = inb(0x3c5);
+      
+      outb(0x3c4, 0x08);
+      outb(0x3c5, sr8);
+      
+      m &= 0x7f;
+      n1 = n & 0x1f;
+      n2 = (n>>5) & 0x03;
+      mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+      if (xf86Verbose)
 	 ErrorF("%s %s: Using Trio32/64 programmable clock (MCLK %1.3f MHz)\n"
 		,clockchip_probed, s3InfoRec.name
 		,mclk / 1000.0);
-	 if (s3InfoRec.s3MClk > 0) {
+      if (s3InfoRec.s3MClk > 0) {
+	 if (xf86Verbose)
 	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
-		   XCONFIG_GIVEN, s3InfoRec.s3MClk / 1000.0);
-	 }
-	 else {
-	    s3InfoRec.s3MClk = mclk;
-	 }
+		   XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.s3MClk / 1000.0);
+      }
+      else {
+	 s3InfoRec.s3MClk = mclk;
       }
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = icd2061ClockSelect;

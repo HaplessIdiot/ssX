@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.19 95/01/05 19:24:32 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.12 1995/01/27 10:27:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.13 1995/01/28 15:40:15 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -449,6 +449,14 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.12 1995/01/27 10:27:58 dawes Exp $
 #define LinuxArchitecture
 #define i386Architecture
 #endif /* linux */
+
+#if defined(Lynx) && defined(i386)
+#define MacroIncludeFile <lynx.cf>
+#define MacroFile lynx.cf
+#undef Lynx
+#define LynxOSArchitecture
+#define i386Architecture
+#endif /* LynxOS AT */
 
 #ifdef __uxp__
 #define MacroIncludeFile <fujitsu.cf>

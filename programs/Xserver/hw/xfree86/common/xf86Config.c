@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.44 1995/03/19 13:48:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.45 1995/05/27 03:10:37 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,6 +49,12 @@ static char   *configPath;                /* path to config file */
 static char   *fontPath = NULL;           /* font path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
+
+static int scr_index = 0; 
+static int n_monitors = 0;
+static MonPtr monitor_list = NULL;
+static int n_devices = 0;
+static GDevPtr device_list = NULL;
 
 static int screenno = -100;      /* some little number ... */
 
@@ -808,6 +814,12 @@ xf86Config (vtopen)
   Xfree(configRBuf);
   Xfree(configPath);
 
+  /* These aren't needed after the XF86Config file has been read */
+  if (monitor_list)
+    Xfree(monitor_list);
+  if (device_list)
+    Xfree(device_list);
+
 #if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
     /* Wait for the child */
@@ -1321,11 +1333,6 @@ configPointerSection()
   }
 }
       
-static int scr_index = 0; 
-
-static int n_devices = 0;
-static GDevPtr device_list = NULL;
-
 static void
 configDeviceSection()
 {
@@ -1368,6 +1375,7 @@ configDeviceSection()
   devp->MemBase = 0;
   devp->s3Madjust = 0;
   devp->s3Nadjust = 0;
+  devp->s3MClk = 0;
 
   while ((token = getToken(DeviceTab)) != ENDSECTION) {
     switch (token) {
@@ -1623,9 +1631,6 @@ configDeviceSection()
     }
   }
 }
-
-static int n_monitors = 0;
-static MonPtr monitor_list = NULL;
 
 static void
 configMonitorSection()
@@ -2142,6 +2147,7 @@ configScreenSection()
             screen->instance = device_list[i].instance;
           screen->s3Madjust = device_list[i].s3Madjust;
           screen->s3Nadjust = device_list[i].s3Nadjust;
+	  screen->s3MClk = device_list[i].s3MClk;
           break;
         }
       }
@@ -2163,7 +2169,8 @@ configScreenSection()
             monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
                                                    monitor_list[i].Modes,
                                                    screen);
-            screen->monitor = &monitor_list[i];
+	    screen->monitor = xalloc(sizeof(MonRec));
+	    memcpy(screen->monitor, &monitor_list[i], sizeof(MonRec));
           }
           break;
         }

@@ -1,4 +1,5 @@
 /* $XConsortium: dispatch.c,v 1.24 94/04/17 19:56:13 gildea Exp $ */
+/* $XFree86$ */
 /*
  * protocol dispatcher
  */
@@ -56,11 +57,11 @@ in this Software without prior written authorization from the X Consortium.
 #include	"osstruct.h"
 #include	"extentst.h"
 #include	"globals.h"
-#include	"resource.h"
+#include	"fsresource.h"
 #include	"difsfnst.h"
 #include	"fontstruct.h"
 #include	"site.h"
-#include	"events.h"
+#include	"fsevents.h"
 #include	"cache.h"
 
 static void kill_all_clients();
