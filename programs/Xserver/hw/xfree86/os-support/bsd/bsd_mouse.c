@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.28 2004/02/06 17:15:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.29 2004/02/13 23:58:46 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2003 by The XFree86 Project, Inc.
@@ -450,6 +450,7 @@ wsconsReadInput(InputInfoPtr pInfo)
 	default:
 	    xf86Msg(X_WARNING, "%s: bad wsmouse event type=%d\n", pInfo->name,
 		    event->type);
+	    ++event;
 	    continue;
 	}
 
