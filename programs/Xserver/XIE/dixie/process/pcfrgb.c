@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfrgb.c,v 3.2 1998/10/04 09:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfrgb.c,v 3.3 1998/10/05 13:22:11 dawes Exp $ */
 
 #define _XIEC_PCFRGB
 
@@ -83,13 +83,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -102,32 +96,9 @@ terms and conditions:
 #include <memory.h>
 
 /*
- *  routines referenced by other modules
- */
-peDefPtr	MakeConvertFromRGB();
-Bool		CopyPConvertFromRGBCIE();
-Bool		CopyPConvertFromRGBYCC();
-Bool		CopyPConvertFromRGBYCbCr();
-Bool		PrepPConvertFromRGBCIE();
-Bool		PrepPConvertFromRGBYCC();
-Bool		PrepPConvertFromRGBYCbCr();
-
-/*
- * white adjust techniques, utilities, defined in ConvertToRGB
- */
-extern Bool	CopyPWhiteAdjustNone();
-extern Bool	CopyPWhiteAdjustCIELabShift();
-extern Bool	PrepPWhiteAdjustNone();
-extern Bool	PrepPWhiteAdjustCIELabShift();
-
-extern void	copy_floats();
-extern void	swap_floats();
-
-
-/*
  *  routines internal to this module
  */
-static Bool	PrepPConvertFromRGB();
+static Bool PrepPConvertFromRGB(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie element entry points
@@ -139,10 +110,7 @@ static diElemVecRec pConvertFromRGBVec = {
 /*------------------------------------------------------------------------
 ------------------ routine: make a ConvertFromRBG element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeConvertFromRGB(flo,tag,pe)
-floDefPtr      flo;
-xieTypPhototag tag;
-xieFlo        *pe;
+peDefPtr MakeConvertFromRGB(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloConvertFromRGB);
@@ -171,7 +139,7 @@ xieFlo        *pe;
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValConvertFromRGB,  raw->convert)) ||
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 0)))
     TechniqueError(flo,ped,xieValConvertFromRGB,raw->convert,raw->lenParams,
 		   return(ped));
 
@@ -187,11 +155,13 @@ xieFlo        *pe;
 /*------------------------------------------------------------------------
 ------ routine: copy routine for CIELab and CIEXYZ techniques  -----------
 ------------------------------------------------------------------------*/
-Bool CopyPConvertFromRGBCIE(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieTecRGBToCIELab *sparms, *rparms; 	 /* same as xieTecRGBToCIEXYZ */
-CARD16	tsize;
+
+#undef  sparms
+#define sparms ((xieTecRGBToCIELab *)sParms)
+#undef  rparms
+#define rparms ((xieTecRGBToCIELab *)rParms)
+
+Bool CopyPConvertFromRGBCIE(TECHNQ_COPY_ARGS)
 {
    pTecRGBToCIEDefPtr pvt;
 
@@ -213,7 +183,7 @@ CARD16	tsize;
    }
 
    if(!(pvt->whiteTec = FindTechnique(xieValWhiteAdjust, pvt->whiteAdjusted)) ||
-      !(pvt->whiteTec->copyfnc(flo, ped, &sparms[1], pvt->whitePoint, 
+      !(TECH_WADJ_FUNC(pvt->whiteTec)(flo, ped, &sparms[1], pvt->whitePoint, 
 					 pvt->whiteTec, pvt->lenWhiteParams,
 			                 pvt->whiteAdjusted == xieValDefault)))
        TechniqueError(flo,ped,xieValWhiteAdjust,pvt->whiteAdjusted,
@@ -225,11 +195,13 @@ CARD16	tsize;
 /*------------------------------------------------------------------------
 ---------- routine: copy routine for YCbCr and YCC techniques ------------
 ------------------------------------------------------------------------*/
-Bool CopyPConvertFromRGBYCbCr(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieTecRGBToYCbCr *sparms, *rparms;
-CARD16	tsize;
+
+#undef  sparms
+#define sparms ((xieTecRGBToYCbCr *)sParms)
+#undef  rparms
+#define rparms ((xieTecRGBToYCbCr *)rParms)
+
+Bool CopyPConvertFromRGBYCbCr(TECHNQ_COPY_ARGS)
 {
    pTecRGBToYCbCrDefPtr pvt;
 
@@ -257,11 +229,12 @@ CARD16	tsize;
    return (TRUE);
 }
 
-Bool CopyPConvertFromRGBYCC(flo, ped, sparms, rparms, tsize) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieTecRGBToYCC *sparms, *rparms;
-CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecRGBToYCC *)sParms)
+#undef  rparms
+#define rparms ((xieTecRGBToYCC *)rParms)
+
+Bool CopyPConvertFromRGBYCC(TECHNQ_COPY_ARGS)
 {
    pTecRGBToYCCDefPtr pvt;
 
@@ -289,15 +262,18 @@ CARD16	tsize;
    return (TRUE);
 }
 
+#undef  sparms
+#undef  rparms
+
 /*------------------------------------------------------------------------
 -- routine: prep routine for RGB to CIElab and CIEXYZ techniques ---------
 ------------------------------------------------------------------------*/
 
-Bool PrepPConvertFromRGBCIE(flo, ped, raw, tec) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieFloConvertFromRGB *raw;
-xieTecRGBToCIELab *tec;   /* same as xieTecRGBToCIEXYZ */
+Bool PrepPConvertFromRGBCIE(
+  floDefPtr  flo,
+  peDefPtr   ped,
+  xieFloConvertFromRGB *raw,
+  xieTecRGBToCIELab *tec)   /* same as xieTecRGBToCIEXYZ */
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;
@@ -324,11 +300,11 @@ xieTecRGBToCIELab *tec;   /* same as xieTecRGBToCIEXYZ */
 /*------------------------------------------------------------------------
 -- routine: prep routine for RGB to YCbCr and YCC techniques -------------
 ------------------------------------------------------------------------*/
-Bool PrepPConvertFromRGBYCbCr(flo, ped, raw, tec) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieFloConvertFromRGB *raw;
-xieTecRGBToYCbCr *tec;
+Bool PrepPConvertFromRGBYCbCr(
+  floDefPtr  flo,
+  peDefPtr   ped,
+  xieFloConvertFromRGB *raw,
+  xieTecRGBToYCbCr *tec)
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;
@@ -353,11 +329,11 @@ xieTecRGBToYCbCr *tec;
   return(TRUE);
 }
 
-Bool PrepPConvertFromRGBYCC(flo, ped, raw, tec) 
-floDefPtr  flo;
-peDefPtr   ped;
-xieFloConvertFromRGB *raw;
-xieTecRGBToYCC *tec;
+Bool PrepPConvertFromRGBYCC(
+  floDefPtr  flo,
+  peDefPtr   ped,
+  xieFloConvertFromRGB *raw,
+  xieTecRGBToYCC *tec)
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;
@@ -390,9 +366,7 @@ xieTecRGBToYCC *tec;
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
 
-static Bool PrepPConvertFromRGB(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepPConvertFromRGB(floDefPtr flo, peDefPtr ped)
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;

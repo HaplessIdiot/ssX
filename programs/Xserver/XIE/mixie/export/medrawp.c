@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley && Larry Hare -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/medrawp.c,v 3.2 1998/10/04 09:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/medrawp.c,v 3.3 1998/10/05 13:22:30 dawes Exp $ */
 
 #define _XIEC_MEDRAWP
 #define _XIEC_EDRAWP
@@ -108,16 +108,17 @@ extern Bool	DrawableAndGC();
 /*
  *  routines referenced by other DDXIE modules
  */
-int	miAnalyzeEDrawP();
+extern int miAnalyzeEDrawP(floDefPtr flo, peDefPtr ped);
 
 /*
  *  routines used internal to this module
  */
-static int CreateEDrawP();
-static int InitializeEDrawP();
-static int ActivateEDrawP(), ActivateEDrawPTrans();
-static int ResetEDrawP();
-static int DestroyEDrawP();
+static int CreateEDrawP(floDefPtr flo, peDefPtr ped);
+static int InitializeEDrawP(floDefPtr flo, peDefPtr ped);
+static int ActivateEDrawP(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ActivateEDrawPTrans(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetEDrawP(floDefPtr flo, peDefPtr ped);
+static int DestroyEDrawP(floDefPtr flo, peDefPtr ped);
 
 /*
  * DDXIE ExportDrawable entry points
@@ -139,9 +140,7 @@ typedef struct _medrawp {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeEDrawP(floDefPtr flo, peDefPtr ped)
 {
   /* for now just stash our entry point vector in the peDef */
   ped->ddVec = EDrawPVec;
@@ -152,9 +151,7 @@ int miAnalyzeEDrawP(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateEDrawP(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return MakePETex(flo, ped, sizeof(meDrawPRec), NO_SYNC, NO_SYNC);
@@ -163,9 +160,7 @@ static int CreateEDrawP(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeEDrawP(floDefPtr flo, peDefPtr ped)
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
   eDrawPDefPtr	dix = (eDrawPDefPtr) ped->elemPvt;
@@ -194,10 +189,7 @@ static int InitializeEDrawP(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEDrawP(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEDrawP(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
   eDrawPDefPtr	 dix = (eDrawPDefPtr) ped->elemPvt;
@@ -236,7 +228,8 @@ static int ActivateEDrawP(flo,ped,pet)
 				 (char*)src		  /* data buffer */
 				 );
     }
-    while(src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP));
+    while ((src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP)) != 0)
+	    ;
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
@@ -244,10 +237,7 @@ static int ActivateEDrawP(flo,ped,pet)
   return(TRUE);
 }                               /* end ActivateEDrawP */
 
-static int ActivateEDrawPTrans(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEDrawPTrans(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportDrawablePlane *raw = (xieFloExportDrawablePlane *) ped->elemRaw;
   eDrawPDefPtr	dix = (eDrawPDefPtr) ped->elemPvt;
@@ -370,7 +360,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 		);
 	    src += bnd->pitch * ny; /* gack */
 	}
-    } while(src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,FALSE)) ;
+    } while ((src = (BytePixel*)GetSrc(flo,pet,bnd,bnd->maxLocal,FALSE)) != 0);
 
     /* make sure the scheduler knows how much src we used */
     FreeData(flo,pet,bnd,bnd->current);
@@ -389,9 +379,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetEDrawP(floDefPtr flo, peDefPtr ped)
 {
   meDrawPPtr ddx = (meDrawPPtr) ped->peTex->private;
 
@@ -406,9 +394,7 @@ static int ResetEDrawP(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyEDrawP(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyEDrawP(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   if(ped->peTex)

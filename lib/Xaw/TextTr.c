@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.4 1998/10/03 08:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.5 1998/10/10 15:25:09 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -87,8 +87,8 @@ char _XawDefaultTextTranslations[] =
 "s m<Key>Delete:"	"backward-kill-word()\n"
 "~s m<Key>BackSpace:"	"delete-previous-word()\n"
 "s m<Key>BackSpace:"	"backward-kill-word()\n"
-"c<Key>Left:"		"backward-word()\n"
-"c<Key>Right:"		"forward-word()\n"
+"c<Key>Left:"		"backward-word(AlphaNumeric)\n"
+"c<Key>Right:"		"forward-word(AlphaNumeric)\n"
 "c<Key>Up:"		"backward-paragraph()\n"
 "c<Key>Down:"		"forward-paragraph()\n"
 "<Key>Home:"		"beginning-of-file()\n"
@@ -126,8 +126,8 @@ char _XawDefaultTextTranslations[] =
 ":<Key>7:"		"numeric(7)\n"
 ":<Key>8:"		"numeric(8)\n"
 ":<Key>9:"		"numeric(9)\n"
-":c<Key>_:"		"undo()\n"
 #endif
+":c<Key>_:"		"undo()\n"
 "<Ctrl>Q,<Key>:"	"insert-char()\n"
 "<Key>:"		"insert-char()\n"
 "<Enter>:"		"enter-window()\n"

@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden, Robert NC Shelley  AGE Logic, Inc.  April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/photomap.c,v 3.1 1998/10/04 09:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/photomap.c,v 3.2 1998/10/05 13:22:20 dawes Exp $ */
 
 #define _XIEC_PHOTOMAP
 
@@ -96,6 +96,7 @@ terms and conditions:
 #include <macro.h>
 #include <memory.h>
 #include <photomap.h>
+#include <tables.h>
 
 
 /*
@@ -117,8 +118,7 @@ int  DeletePhotomap();
 /*------------------------------------------------------------------------
 ------------------------ CreatePhotomap Procedures ----------------------
 ------------------------------------------------------------------------*/
-int ProcCreatePhotomap(client)
-     ClientPtr client;
+int ProcCreatePhotomap(ClientPtr client)
 {
   int b;
   photomapPtr map;
@@ -145,8 +145,7 @@ int ProcCreatePhotomap(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyPhotomap Procedures ---------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyPhotomap(client)
-     ClientPtr client;
+int ProcDestroyPhotomap(ClientPtr client)
 {
   photomapPtr map;
   REQUEST( xieDestroyPhotomapReq );
@@ -166,8 +165,7 @@ int ProcDestroyPhotomap(client)
 /*------------------------------------------------------------------------
 ------------------------ QueryPhotomap Procedures -----------------------
 ------------------------------------------------------------------------*/
-int ProcQueryPhotomap(client)
-     ClientPtr client;
+int ProcQueryPhotomap(ClientPtr client)
 {
   xieQueryPhotomapReply rep;
   photomapPtr map;
@@ -236,9 +234,9 @@ int ProcQueryPhotomap(client)
 /*------------------------------------------------------------------------
 ----------------------- deleteFunc: DeletePhotomap ----------------------
 ------------------------------------------------------------------------*/
-int DeletePhotomap(map, id)
-     photomapPtr   map;
-     xieTypPhotomap id;
+int DeletePhotomap(
+     photomapPtr   map,
+     xieTypPhotomap id)
 {
   int i;
   
@@ -261,8 +259,7 @@ int DeletePhotomap(map, id)
   return(Success);
 }                               /* end DeletePhotomap */
 
-int SProcCreatePhotomap(client)
-     ClientPtr client;
+int SProcCreatePhotomap(ClientPtr client)
 {
   register int n;
   REQUEST(xieCreatePhotomapReq);
@@ -272,8 +269,7 @@ int SProcCreatePhotomap(client)
   return (ProcCreatePhotomap(client));
 }                               /* end SProcCreatePhotomap */
 
-int SProcDestroyPhotomap(client)
-     ClientPtr client;
+int SProcDestroyPhotomap(ClientPtr client)
 {
   register int n;
   REQUEST( xieDestroyPhotomapReq );
@@ -283,8 +279,7 @@ int SProcDestroyPhotomap(client)
   return (ProcDestroyPhotomap(client));
 }                               /* end SProcDestroyPhotomap */
 
-int SProcQueryPhotomap(client)
-     ClientPtr client;
+int SProcQueryPhotomap(ClientPtr client)
 {
   register int n;
   REQUEST( xieQueryPhotomapReq );

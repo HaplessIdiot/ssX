@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. May 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcnst.c,v 3.2 1998/10/04 09:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcnst.c,v 3.3 1998/10/05 13:22:12 dawes Exp $ */
 
 #define _XIEC_PCNST
 
@@ -83,13 +83,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -101,20 +95,10 @@ terms and conditions:
 #include <difloat.h>
 #include <memory.h>
 
-
-/*
- *  routines referenced by other modules
- */
-peDefPtr	MakeConstrain();
-Bool		CopyPConstrainStandard();
-Bool		CopyPConstrainClipScale();
-Bool		PrepPConstrainStandard();
-Bool		PrepPConstrainClipScale();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepPConstrain();
+static Bool PrepPConstrain(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie element entry points
@@ -126,10 +110,7 @@ static diElemVecRec pConstrainVec = {
 /*------------------------------------------------------------------------
 -------------------- routine: make a constrain element ------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeConstrain(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeConstrain(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloConstrain);
@@ -162,7 +143,7 @@ peDefPtr MakeConstrain(flo,tag,pe)
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValConstrain, raw->constrain)) ||
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 0)))
     TechniqueError(flo,ped,xieValConstrain,raw->constrain,raw->lenParams,
 		   return(ped));
 
@@ -179,11 +160,7 @@ peDefPtr MakeConstrain(flo,tag,pe)
 ---------------- routine: copy routine for no param techniques -------------
 ------------------------------------------------------------------------*/
 
-Bool CopyPConstrainStandard(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
+Bool CopyPConstrainStandard(TECHNQ_COPY_ARGS)
 {
   return(tsize == 0);
 }
@@ -192,11 +169,12 @@ Bool CopyPConstrainStandard(flo, ped, sparms, rparms, tsize)
 ---------------- routine: copy routine for Clip-Scale technique  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyPConstrainClipScale(flo, ped, sparms, rparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecClipScale *sparms, *rparms;
-     CARD16	tsize;
+#undef  sparms
+#define sparms ((xieTecClipScale *)sParms)
+#undef  rparms
+#define rparms ((xieTecClipScale *)rParms)
+
+Bool CopyPConstrainClipScale(TECHNQ_COPY_ARGS)
 {
      pCnstDefPtr pvt;
 
@@ -240,20 +218,22 @@ Bool CopyPConstrainClipScale(flo, ped, sparms, rparms, tsize)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for no param techniques -------------
 ------------------------------------------------------------------------*/
-Bool PrepPConstrainStandard(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer raw, tec;
+Bool PrepPConstrainStandard(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     pointer raw,
+     pointer tec)
 {
   return(TRUE);
 }
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for Clip Scale technique ----------
 ------------------------------------------------------------------------*/
-Bool PrepPConstrainClipScale(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecClipScale *raw, *tec;
+Bool PrepPConstrainClipScale(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     xieTecClipScale *raw,
+     xieTecClipScale *tec)
 {
   pCnstDefPtr pvt = (pCnstDefPtr)ped->techPvt;
 
@@ -278,9 +258,9 @@ Bool PrepPConstrainClipScale(flo, ped, raw, tec)
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
 
-static Bool PrepPConstrain(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepPConstrain(
+     floDefPtr  flo,
+     peDefPtr   ped)
 {
   inFloPtr inf = &ped->inFloLst[SRCtag];
   outFloPtr src = &inf->srcDef->outFlo;

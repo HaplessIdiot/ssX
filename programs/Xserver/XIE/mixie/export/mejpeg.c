@@ -66,7 +66,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. Oct, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mejpeg.c,v 3.3 1998/10/04 09:36:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mejpeg.c,v 3.4 1998/10/05 13:22:31 dawes Exp $ */
 
 #define _XIEC_MEPHOTO
 #define _XIEC_EPHOTO
@@ -106,14 +106,14 @@ terms and conditions:
 /*
  *  routines referenced by other DDXIE modules
  */
-int CreateEPhotoJPEGBaseline();
-int InitializeEPhotoJPEGBaseline();
-int ActivateEPhotoJPEGBaseline();
-int ResetEPhotoJPEGBaseline();
-int DestroyEPhotoJPEGBaseline();
+extern int CreateEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped);
+extern int InitializeEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped);
+extern int ActivateEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+extern int ResetEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped);
+extern int DestroyEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped);
 
 /* Create routines are shared */
-int InitializeECPhotoJPEGBaseline();
+int InitializeECPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped);
 /* Activate routines are shared */
 /* Reset    routines are shared */
 /* Destroy  routines are shared */
@@ -126,10 +126,6 @@ int InitializeECPhotoJPEGBaseline();
  * Local Declarations
  */
 
-static int sub_fun();
-static int common_init();
-
-static int FlushJpegEncodeData();
 typedef struct _jpeg_encode_pvt {
   int 	(*encodptr)();		/* function used to encode the data 	*/
 
@@ -149,12 +145,32 @@ typedef struct _jpeg_encode_pvt {
   unsigned char 		output_buffer[3][JPEG_BUF_SIZE];
 } jpegPvtRec, *jpegPvtPtr;
 
+static int sub_fun(
+     floDefPtr flo,
+     peDefPtr  ped,
+     peTexPtr  pet,
+     jpegPvtPtr texpvt,
+     JpegEncodeState *state,
+     bandPtr     sbnd,
+     bandPtr     dbnd,
+     bandPtr     sbnd1,
+     bandPtr     sbnd2);
+
+static int common_init(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeJPEGBaseline *tec,
+     CARD16    encodeTechnique);
+
+static int FlushJpegEncodeData(
+     bandPtr           dbnd,
+     register unsigned char *dst,
+     JpegEncodeState *state);
+
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-int CreateEPhotoJPEGBaseline(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int CreateEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return(MakePETex(flo, ped, sizeof(jpegPvtRec), NO_SYNC, NO_SYNC));
@@ -162,9 +178,7 @@ int CreateEPhotoJPEGBaseline(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-int InitializeEPhotoJPEGBaseline(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int InitializeEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
@@ -173,9 +187,7 @@ int InitializeEPhotoJPEGBaseline(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-int InitializeECPhotoJPEGBaseline(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int InitializeECPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   peTexPtr pet = ped->peTex;
@@ -196,11 +208,11 @@ int InitializeECPhotoJPEGBaseline(flo,ped)
 /*------------------------------------------------------------------------
 ------- lots of stuff shared between ECPhoto and EPhoto. . . -------------
 ------------------------------------------------------------------------*/
-static int common_init(flo,ped,tec,encodeTechnique)
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieTecEncodeJPEGBaseline *tec;
-     CARD16    encodeTechnique;
+static int common_init(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieTecEncodeJPEGBaseline *tec,
+     CARD16    encodeTechnique)
 {
   peTexPtr pet = ped->peTex;
   eTecEncodeJPEGBaselineDefPtr pedpvt=(eTecEncodeJPEGBaselineDefPtr) 
@@ -301,10 +313,7 @@ static int common_init(flo,ped,tec,encodeTechnique)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-int ActivateEPhotoJPEGBaseline(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+int ActivateEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   receptorPtr  rcp = pet->receptor;
   bandPtr    sbnd  = &rcp->band[0];	/* "red" (or gray) input */
@@ -331,8 +340,8 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1  &&
        (texpvt->notify == xieValNewData   ||
-	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.output[0].flink->start))
+	(texpvt->notify == xieValFirstData &&
+	!ped->outFlo.output[0].flink->start)))
       SendExportAvailableEvent(flo,ped,0,0,0,0);
     
     return( status );
@@ -352,8 +361,8 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1 &&
        (texpvt->notify == xieValNewData   ||
-	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.output[0].flink->start))
+	(texpvt->notify == xieValFirstData &&
+	!ped->outFlo.output[0].flink->start)))
       SendExportAvailableEvent(flo,ped,0,0,0,0);
     
     return( status );
@@ -374,8 +383,8 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
     
     if(texpvt->notify && ~was_ready & ped->outFlo.ready & 1<<d &&
        (texpvt->notify == xieValNewData   ||
-	texpvt->notify == xieValFirstData &&
-	!ped->outFlo.output[d].flink->start))
+	(texpvt->notify == xieValFirstData &&
+	!ped->outFlo.output[d].flink->start)))
       SendExportAvailableEvent(flo,ped,d,0,0,0);
     
     if (status == FALSE)
@@ -386,13 +395,16 @@ int ActivateEPhotoJPEGBaseline(flo,ped,pet)
 /*------------------------------------------------------------------------
 -------------------- *really* crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int sub_fun(flo,ped,pet,texpvt,state,sbnd,dbnd,sbnd1,sbnd2)
- floDefPtr flo;
- peDefPtr  ped;
- peTexPtr  pet;
- jpegPvtPtr texpvt;
- JpegEncodeState *state;
- bandPtr     sbnd,sbnd1,sbnd2,dbnd;
+static int sub_fun(
+     floDefPtr flo,
+     peDefPtr  ped,
+     peTexPtr  pet,
+     jpegPvtPtr texpvt,
+     JpegEncodeState *state,
+     bandPtr     sbnd,
+     bandPtr     dbnd,
+     bandPtr     sbnd1,
+     bandPtr     sbnd2)
 {
 BytePixel	*dst;
 int status;
@@ -429,8 +441,8 @@ int status;
   	FreeData(flo,pet,sbnd,sbnd->maxGlobal);
 	return(TRUE);
     }
-    while (dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
-					 state->strip_req_newbytes,FLUSH)) {
+    while ((dst = (BytePixel*)GetDstBytes(flo,pet,dbnd,dbnd->current,
+					 state->strip_req_newbytes,FLUSH)) != 0) {
       if (state->flush_output) {
 
 	status = FlushJpegEncodeData(dbnd,dst,state);
@@ -562,10 +574,10 @@ int status;
 /*------------------------------------------------------------------------
 -------------------  flush JPEG buffer to output strip -------------------
 ------------------------------------------------------------------------*/
-static int FlushJpegEncodeData(dbnd,dst,state)
-bandPtr           dbnd;
-register unsigned char *dst;
-JpegEncodeState *state;
+static int FlushJpegEncodeData(
+     bandPtr           dbnd,
+     register unsigned char *dst,
+     JpegEncodeState *state)
 {
 register unsigned char *jpeg_odata = state->jpeg_output_bpos;
 int bytes_left_in_strip;
@@ -592,9 +604,7 @@ register int i,max_can_do;
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-int ResetEPhotoJPEGBaseline(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int ResetEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped)
 {
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -618,9 +628,7 @@ int ResetEPhotoJPEGBaseline(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-int DestroyEPhotoJPEGBaseline(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int DestroyEPhotoJPEGBaseline(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

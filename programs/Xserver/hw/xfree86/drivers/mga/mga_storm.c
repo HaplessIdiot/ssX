@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.30 1998/10/05 13:23:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.31 1998/10/11 10:20:31 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -106,6 +106,7 @@ extern void MGAFillMono8x8PatternRectsTwoPass(ScrnInfoPtr pScrn, int fg, int bg,
 extern void MGANonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 				NonTEGlyphPtr glyphs, BoxPtr pbox,
 				int fg, int rop, unsigned int planemask);
+extern void MGAValidatePolyArc(GCPtr, unsigned long, DrawablePtr);
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -279,6 +280,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				MGAFillMono8x8PatternRectsTwoPass;
     }
 
+    if(pMga->UsePCIRetry) {
+	infoPtr->ValidatePolyArc = MGAValidatePolyArc;
+	infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
+				GCLineStyle | GCFillStyle;
+    }
 
     if((pScrn->bitsPerPixel == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
     infoPtr->ImageWriteFlags |= NO_PLANEMASK;
@@ -532,9 +538,15 @@ MGANAME(SubsequentScreenToScreenCopy_FastBlit)(
 #endif
     	) {
 	if(pMga->MaxFastBlitY) {
-	   if(((srcY + h) > pMga->MaxFastBlitY) ||
+	   if(pMga->BltScanDirection & BLIT_UP) {
+		if((srcY >= pMga->MaxFastBlitY) ||
+				(dstY >= pMga->MaxFastBlitY)) 
+			goto FASTBLIT_BAILOUT;
+	   } else {
+		if(((srcY + h) > pMga->MaxFastBlitY) ||
 				((dstY + h) > pMga->MaxFastBlitY)) 
-	   goto FASTBLIT_BAILOUT;
+			goto FASTBLIT_BAILOUT;
+	   }
 	}
 
 	/* Millennium 1 fastblit bug fix */
@@ -1522,6 +1534,24 @@ void MGANonTEGlyphRenderer(
 
     DISABLE_CLIP();
     SET_SYNC_FLAG(infoRec);
+}
+
+void
+MGAValidatePolyArc(
+   GCPtr 	pGC,
+   unsigned long changes,
+   DrawablePtr pDraw
+){
+   MGAPtr pMga = MGAPTR(xf86Screens[pGC->pScreen->myNum]);
+
+   if((pMga->AccelFlags & MGA_NO_PLANEMASK) & (pGC->planemask != ~0))
+	return;
+
+   if(!pGC->lineWidth && (pGC->fillStyle == FillSolid) &&
+	(pGC->lineStyle == LineSolid) && 
+	((pGC->alu != GXcopy) || (pGC->planemask != ~0))) {
+	pGC->ops->PolyArc = MGAPolyArcThinSolid;
+   }
 }
 
 #endif

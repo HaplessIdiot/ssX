@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. September 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbands.c,v 3.1 1998/10/04 09:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbands.c,v 3.2 1998/10/05 13:22:11 dawes Exp $ */
 
 #define _XIEC_PBANDS
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -96,16 +90,10 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeBandSel();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepBandSel();
+static Bool PrepBandSel(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -118,10 +106,7 @@ static diElemVecRec pBandSelVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a blend element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeBandSel(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeBandSel(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr  ped;
   inFloPtr  inFlo;
@@ -159,9 +144,7 @@ peDefPtr MakeBandSel(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepBandSel(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepBandSel(floDefPtr flo, peDefPtr ped)
 {
   xieFloBandSelect  *raw = (xieFloBandSelect *)ped->elemRaw;
   inFloPtr           inf = &ped->inFloLst[SRCtag]; 

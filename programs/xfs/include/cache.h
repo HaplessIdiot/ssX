@@ -1,13 +1,8 @@
-/* $XConsortium: cache.h,v 1.5 94/04/17 19:55:53 dpw Exp $ */
+/* $TOG: cache.h /main/6 1998/02/11 10:03:18 kaleb $ */
 /* 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +10,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation 
  * 
@@ -50,6 +45,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 #ifndef _CACHE_H_
 #define	_CACHE_H_
+
 #include	"misc.h"
 
 #define	CacheWasReset		1
@@ -58,17 +54,16 @@ in this Software without prior written authorization from the X Consortium.
 
 typedef unsigned long CacheID;
 typedef unsigned long Cache;
-typedef void (*CacheFree) ();
+typedef void (*CacheFree) (CacheID cid, pointer, int flag);
 
 typedef struct _cache *CachePtr;
 
-extern CacheID CacheStoreMemory();
-extern int  CacheFreeMemory();
-extern void CacheSimpleFree();
-extern Cache CacheInit();
-extern void CacheReset();
-extern void CacheResize();
-extern pointer CacheFetchMemory();
-extern void CacheStats();
+extern Cache CacheInit(unsigned long maxsize);
+extern CacheID CacheStoreMemory(Cache cid, pointer data, unsigned long size, CacheFree free_func);
+extern void CacheFreeMemory(CacheID cid, Bool notify);
+extern pointer CacheFetchMemory(CacheID cid, Bool update);
+extern void CacheReset(void);
+extern void CacheResize(Cache cid, unsigned newsize);
+extern void CacheSimpleFree(CacheID cid, pointer data, int reason);
 
 #endif				/* _CACHE_H_ */

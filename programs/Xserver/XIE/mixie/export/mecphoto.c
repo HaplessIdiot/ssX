@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley && Dean Verheiden -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mecphoto.c,v 3.2 1998/10/04 09:36:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mecphoto.c,v 3.3 1998/10/05 13:22:29 dawes Exp $ */
 #define _XIEC_MECPHOTO
 #define _XIEC_ECPHOTO
 #define _XIEC_EPHOTO
@@ -103,22 +103,22 @@ terms and conditions:
 
 /* routines referenced by other DDXIE modules
  */
-int	miAnalyzeECPhoto();
+extern int miAnalyzeECPhoto(floDefPtr flo, peDefPtr ped);
 
 /* routines used internal to this module
  */
-static int CreateECPhotoUncomByPlane();
-static int InitializeECPhotoStream();
-static int InitializeECPhotoUncomByPlane();
-static int ActivateECPhotoUncomByPlane();
-static int ActivateECPhotoStream();
-static int ResetECPhoto();
-static int DestroyECPhotoUn();
+static int CreateECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped);
+static int InitializeECPhotoStream(floDefPtr flo, peDefPtr ped);
+static int InitializeECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped);
+static int ActivateECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ActivateECPhotoStream(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetECPhoto(floDefPtr flo, peDefPtr ped);
+static int DestroyECPhotoUn(floDefPtr flo, peDefPtr ped);
 
 #if XIE_FULL
-static int CreateECPhotoUncomByPixel();
-static int InitializeECPhotoUncomByPixel();
-static int ActivateECPhotoUncomByPixel();
+static int CreateECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped);
+static int InitializeECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped);
+static int ActivateECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped, peTexPtr pet);
 #endif /* XIE_FULL */
 
 /*
@@ -195,9 +195,7 @@ static ddElemVecRec ECPhotoJPEGBaselineVec = {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeECPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeECPhoto(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   
@@ -264,9 +262,7 @@ int miAnalyzeECPhoto(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateECPhotoUncomByPlane(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return(MakePETex(flo, ped, xieValMaxBands * sizeof(meUncompRec), NO_SYNC, 
@@ -277,9 +273,7 @@ static int CreateECPhotoUncomByPlane(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeECPhotoUncomByPlane(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped)
 {
   peTexPtr                 pet = ped->peTex;
   formatPtr	           inf = ped->inFloLst[SRCtag].format;
@@ -441,9 +435,7 @@ static int InitializeECPhotoUncomByPlane(flo,ped)
 }                               /* end InitializeEPhotoUncomByPlane */
 
 
-static int InitializeECPhotoStream(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeECPhotoStream(floDefPtr flo, peDefPtr ped)
 {
   return(InitReceptors(flo, ped, NO_DATAMAP, 1) && 
 	 InitEmitter(flo, ped, NO_DATAMAP, NO_INPLACE));
@@ -453,10 +445,7 @@ static int InitializeECPhotoStream(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateECPhotoUncomByPlane(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECPhotoUncomByPlane(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto*)ped->elemRaw;
   meUncompPtr              pvt = (meUncompPtr)pet->private;
@@ -471,7 +460,7 @@ static int ActivateECPhotoUncomByPlane(flo,ped,pet)
     d        = pvt->bandMap;
     dbnd     = &pet->emitter[d];
     pitch    = dbnd->format->pitch;
-    nlen = pvt->bitOff + pitch + 7 >> 3;
+    nlen     = (pvt->bitOff + pitch + 7) >> 3;
     src      = GetCurrentSrc(flo,pet,sbnd);
     dst      = GetDstBytes(flo,pet,dbnd,dbnd->current,nlen,KEEP);
     
@@ -479,9 +468,9 @@ static int ActivateECPhotoUncomByPlane(flo,ped,pet)
       
       (*pvt->action)(src,dst,pvt); 
       
-      pvt->bitOff = pvt->bitOff + pitch & 7;
+      pvt->bitOff = (pvt->bitOff + pitch) & 7;
       olen        = pvt->bitOff ? nlen  - 1 : nlen;
-      nlen        = pvt->bitOff + pitch + 7 >> 3;
+      nlen        = (pvt->bitOff + pitch + 7) >> 3;
       src = GetNextSrc(flo,pet,sbnd,FLUSH);
       dst = GetDstBytes(flo,pet,dbnd,dbnd->current+olen,nlen,KEEP);
     }
@@ -495,17 +484,14 @@ static int ActivateECPhotoUncomByPlane(flo,ped,pet)
 
     if(~ready & ped->outFlo.ready & 1<<d &&
        (raw->notify == xieValNewData   ||
-	raw->notify == xieValFirstData && !ped->outFlo.output[d].flink->start))
+	(raw->notify == xieValFirstData && !ped->outFlo.output[d].flink->start)))
       SendExportAvailableEvent(flo,ped,d,0,0,0);
   }
   return(TRUE);
 }                               /* end ActivateECPhotoUncomByPlane */
 
 
-static int ActivateECPhotoStream(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECPhotoStream(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto*)ped->elemRaw;
   bandPtr     sbnd =  pet->receptor[SRCtag].band;
@@ -531,7 +517,7 @@ static int ActivateECPhotoStream(flo,ped,pet)
      */
     if(~ready & oflo->ready & 1<<b &&
        (raw->notify == xieValNewData   ||
-	raw->notify == xieValFirstData && !oflo->output[b].flink->start))
+	(raw->notify == xieValFirstData && !oflo->output[b].flink->start)))
       SendExportAvailableEvent(flo,ped,b,0,0,0);
   }
   return(TRUE);
@@ -541,9 +527,7 @@ static int ActivateECPhotoStream(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetECPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetECPhoto(floDefPtr flo, peDefPtr ped)
 {
   meUncompPtr pvt = (meUncompPtr)ped->peTex->private;
   int i;
@@ -560,9 +544,7 @@ static int ResetECPhoto(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyECPhotoUn(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyECPhotoUn(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);
@@ -582,9 +564,7 @@ static int DestroyECPhotoUn(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateECPhotoUncomByPixel(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return(MakePETex(flo, ped, xieValMaxBands * sizeof(meUncompRec), NO_SYNC, 
@@ -594,9 +574,7 @@ static int CreateECPhotoUncomByPixel(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeECPhotoUncomByPixel(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped)
 {
   peTexPtr                 pet = ped->peTex;
   meUncompPtr              pvt = (meUncompPtr)pet->private;
@@ -752,9 +730,9 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
 				     [depth1 <= 8 ? 0 : 1] 
 				     [depth2 <= 8 ? 0 : 1] 
 				     [depth3 <= 8 ? 0 : 1];
-      if(depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(pvt[0].width+7)) ||
-         depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(pvt[1].width+7)) ||
-         depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(pvt[2].width+7)))
+      if((depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(pvt[0].width+7))) ||
+         (depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(pvt[1].width+7))) ||
+         (depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(pvt[2].width+7))))
              AllocError(flo,ped, return(FALSE));
   }
 
@@ -767,10 +745,7 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateECPhotoUncomByPixel(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECPhotoUncomByPixel(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientPhoto *raw = (xieFloExportClientPhoto*)ped->elemRaw;
   meUncompPtr pvt = (meUncompPtr)pet->private;
@@ -785,7 +760,7 @@ static int ActivateECPhotoUncomByPixel(flo,ped,pet)
   if (pvt->unaligned) {
     CARD32 stride   = dbnd->format->stride;
     CARD32 width    = dbnd->format->width;
-    CARD32 nextdlen = pvt->bitOff + pitch + 7 >> 3, olddlen;
+    CARD32 nextdlen = (pvt->bitOff + pitch + 7) >> 3, olddlen;
     if((sp0 = GetCurrentSrc(flo,pet,sb0)) &&
        (sp1 = GetCurrentSrc(flo,pet,sb1)) && 
        (sp2 = GetCurrentSrc(flo,pet,sb2)) &&
@@ -800,9 +775,9 @@ static int ActivateECPhotoUncomByPixel(flo,ped,pet)
 	sp0         = GetNextSrc(flo,pet,sb0,FLUSH);
 	sp1         = GetNextSrc(flo,pet,sb1,FLUSH);
 	sp2         = GetNextSrc(flo,pet,sb2,FLUSH);
-	pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
+	pvt->bitOff = (pvt->bitOff + pitch) & 7;  /* Set next */
 	olddlen     = (pvt->bitOff) ? nextdlen - 1 : nextdlen;
-	nextdlen    = pvt->bitOff + pitch + 7 >> 3;
+	nextdlen    = (pvt->bitOff + pitch + 7) >> 3;
 	dst         = GetDstBytes(flo,pet,dbnd,dbnd->current+olddlen, 
 				  nextdlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
@@ -839,7 +814,7 @@ static int ActivateECPhotoUncomByPixel(flo,ped,pet)
   
   if(~ready & ped->outFlo.ready & 1  &&
      (raw->notify == xieValNewData   ||
-      raw->notify == xieValFirstData && !ped->outFlo.output[0].flink->start))
+      (raw->notify == xieValFirstData && !ped->outFlo.output[0].flink->start)))
     SendExportAvailableEvent(flo,ped,0,0,0,0);
 
   return(TRUE);

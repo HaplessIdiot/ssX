@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/ppaste.c,v 3.1 1998/10/04 09:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/ppaste.c,v 3.2 1998/10/05 13:22:15 dawes Exp $ */
 
 #define _XIEC_PPASTE
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakePasteUp();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepPasteUp();
+static Bool PrepPasteUp(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pPasteUpVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a arithmetic element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakePasteUp(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakePasteUp(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int t;
   CARD16 inputs;
@@ -196,9 +181,7 @@ peDefPtr MakePasteUp(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepPasteUp(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepPasteUp(floDefPtr flo, peDefPtr ped)
 {
   xieFloPasteUp *raw = (xieFloPasteUp *)ped->elemRaw;
   inFloPtr  in  = &ped->inFloLst[0];

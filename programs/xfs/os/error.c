@@ -42,7 +42,9 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include	<stdio.h>
+#include	<stdarg.h>
 #include	<X11/Xos.h>
+
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -75,7 +77,7 @@ Bool        UseSyslog;
 char        ErrorFile[PATH_MAX];
 
 static void
-abort_server()
+abort_server(void)
 {
     fflush(stderr);
 
@@ -87,7 +89,7 @@ abort_server()
 }
 
 void
-InitErrors()
+InitErrors(void)
 {
     int         i;
 
@@ -111,7 +113,7 @@ InitErrors()
 }
 
 void
-CloseErrors()
+CloseErrors(void)
 {
 #ifdef USE_SYSLOG
     if (UseSyslog) {
@@ -123,8 +125,7 @@ CloseErrors()
 }
 
 void
-Error(str)
-    char       *str;
+Error(char *str)
 {
     /* XXX this should also go to syslog() */
     perror(str);
@@ -135,18 +136,7 @@ Error(str)
  */
 /* VARARGS1 */
 void
-NoticeF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
-    char       *f;
-    char       *s0,
-               *s1,
-               *s2,
-               *s3,
-               *s4,
-               *s5,
-               *s6,
-               *s7,
-               *s8,
-               *s9;
+NoticeF(char *f, ...)
 {
 
 #ifdef USE_SYSLOG
@@ -157,113 +147,42 @@ NoticeF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
 #endif
 
     /* XXX should Notices just be ignored if not using syslog? */
+    va_list args;
+    va_start(args, f);
     fprintf(stderr, "%s notice: ", progname);
-    fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    vfprintf(stderr, f, args);
+    va_end(args);
 }
 
 /*
  * used for non-fatal error messages
  */
 /* VARARGS1 */
-#if defined(MetroLink)
 void
-ErrorF(
-#if NeedVarargsPrototypes
-    char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+ErrorF(char * f, ...)
 {
-#if NeedVarargsPrototypes
+#ifdef USE_SYSLOG
+    if (UseSyslog) {
+	syslog(LOG_ERR, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+	return;
+    }
+#endif
     va_list args;
     va_start(args, f);
     fprintf(stderr, "%s error: ", progname);
     vfprintf(stderr, f, args);
     va_end(args);
-#else
-#ifdef USE_SYSLOG
-    if (UseSyslog) {
-	syslog(LOG_ERR, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-	return;
-    }
-#endif
-    fprintf(stderr, "%s error: ", progname);
-    fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
 }
-#else
-void
-ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
-    char       *f;
-    char       *s0,
-               *s1,
-               *s2,
-               *s3,
-               *s4,
-               *s5,
-               *s6,
-               *s7,
-               *s8,
-               *s9;
-{
-
-#ifdef USE_SYSLOG
-    if (UseSyslog) {
-	syslog(LOG_ERR, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-	return;
-    }
-#endif
-
-    fprintf(stderr, "%s error: ", progname);
-    fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-}
-#endif
 
 /* VARARGS1 */
-#if defined(MetroLink)
 void
-FatalError(
-#if NeedVarargsPrototypes
-    char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+FatalError(char * f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
     va_start(args, f);
     fprintf(stderr, "%s error: ", progname);
     vfprintf(stderr, f, args);
     va_end(args);
-#else
-    ErrorF("Fatal font server error:\n");
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    abort_server();
-    /* NOTREACHED */
-#endif
-}
-#else
-void
-FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
-    char       *f;
-    char       *s0,
-               *s1,
-               *s2,
-               *s3,
-               *s4,
-               *s5,
-               *s6,
-               *s7,
-               *s8,
-               *s9;
-{
-    ErrorF("Fatal font server error:\n");
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     abort_server();
     /* NOTREACHED */
 }
-#endif

@@ -1,15 +1,10 @@
-/* $XConsortium: meuncomp.h,v 1.4 94/04/17 20:35:01 rws Exp $ */
+/* $TOG: meuncomp.h /main/5 1998/02/09 16:17:50 kaleb $ */
 /**** module miuncomp.h ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -91,32 +86,50 @@ typedef struct _meuncompdef {
   pointer  buf;
 } meUncompRec, *meUncompPtr;
 
-#ifdef _XIEC_MEUNCOMP
+#define MEUNCOMP_BP_ARGS BytePixel *src, BytePixel *dst, meUncompPtr pvt
+#define MEUNCOMP_PP_ARGS PairPixel *src, PairPixel *dst, meUncompPtr pvt
+#define MEUNCOMP_QP_ARGS QuadPixel *src, QuadPixel *dst, meUncompPtr pvt
 
 /* Action routines for encoding pixel planes */
-void btoS(), sbtoS(), btoIS(), sbtoIS();
-void BtoS(), PtoS(), sPtoS(), QtoS(), sQtoS(), QtoIS(), sQtoIS();
+extern void btoS(MEUNCOMP_BP_ARGS);
+extern void sbtoS(MEUNCOMP_BP_ARGS);
+extern void btoIS(MEUNCOMP_BP_ARGS);
+extern void sbtoIS(MEUNCOMP_BP_ARGS);
+extern void BtoS(MEUNCOMP_BP_ARGS);
+extern void PtoS(MEUNCOMP_PP_ARGS);
+extern void sPtoS(MEUNCOMP_PP_ARGS);
+extern void QtoS(MEUNCOMP_QP_ARGS);
+extern void sQtoS(MEUNCOMP_QP_ARGS);
+extern void QtoIS(MEUNCOMP_QP_ARGS);
+extern void sQtoIS(MEUNCOMP_QP_ARGS);
 
 /* Action routines used by Triple band by pixel encoding */
-void BtoIS(), PtoIS(), sPtoIS(), BtoISb(), btoISb();
+extern void BtoIS(MEUNCOMP_BP_ARGS);
+extern void PtoIS(MEUNCOMP_PP_ARGS);
+extern void sPtoIS(MEUNCOMP_PP_ARGS);
+extern void BtoISb(MEUNCOMP_BP_ARGS);
+extern void btoISb(MEUNCOMP_BP_ARGS);
+
+#define MEUNCOMP_UB_ARGS BytePixel *src, CARD8 *dst, meUncompPtr pvt	
+#define MEUNCOMP_UP_ARGS PairPixel *src, CARD8 *dst, meUncompPtr pvt	
+#define MEUNCOMP_UQ_ARGS QuadPixel *src, CARD8 *dst, meUncompPtr pvt	
 
 /* Unaligned data packing routines */
-void BtoLLUB(), BtoLMUB(), BtoMLUB(), BtoMMUB();
-void PtoLLUP(), PtoLMUP(), PtoMLUP(), PtoMMUP();
-void QtoLLUQ(), QtoLMUQ(), QtoMLUQ(), QtoMMUQ();
+extern void BtoLLUB(MEUNCOMP_UB_ARGS);
+extern void BtoLMUB(MEUNCOMP_UB_ARGS);
+extern void BtoMLUB(MEUNCOMP_UB_ARGS);
+extern void BtoMMUB(MEUNCOMP_UB_ARGS);
+extern void PtoLLUP(MEUNCOMP_UP_ARGS);
+extern void PtoLMUP(MEUNCOMP_UP_ARGS);
+extern void PtoMLUP(MEUNCOMP_UP_ARGS);
+extern void PtoMMUP(MEUNCOMP_UP_ARGS);
+extern void QtoLLUQ(MEUNCOMP_UQ_ARGS);
+extern void QtoLMUQ(MEUNCOMP_UQ_ARGS);
+extern void QtoMLUQ(MEUNCOMP_UQ_ARGS);
+extern void QtoMMUQ(MEUNCOMP_UQ_ARGS);
 
 
-#else /* ifdef _XIEC_MEUNCOMP */
-
-/* Action routines for encoding pixel planes */
-extern void btoS(), sbtoS(), btoIS(), sbtoIS();
-extern void BtoS(), PtoS(), sPtoS(), QtoS(), sQtoS(), QtoIS(), sQtoIS();
-
-/* Action routines used by Triple band by pixel encoding */
-extern void BtoIS(), PtoIS(), sPtoIS(), BtoISb(), btoISb();
-extern void BtoLLUB(), BtoLMUB(), BtoMLUB(), BtoMMUB();
-extern void PtoLLUP(), PtoLMUP(), PtoMLUP(), PtoMMUP();
-extern void QtoLLUQ(), QtoLMUQ(), QtoMLUQ(), QtoMMUQ();
+#ifndef _XIEC_MEUNCOMP
 
 #if XIE_FULL
 /* Array of pointers to actions routines for unaligned triple band by pixel */

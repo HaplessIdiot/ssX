@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare && Dean Verheiden -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mecroi.c,v 3.2 1998/10/04 09:36:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mecroi.c,v 3.3 1998/10/05 13:22:29 dawes Exp $ */
 
 #define _XIEC_MECROI
 #define _XIEC_ECROI
@@ -101,15 +101,15 @@ terms and conditions:
 
 /* routines referenced by other DDXIE modules
  */
-int	miAnalyzeECROI();
+extern int miAnalyzeECROI(floDefPtr flo, peDefPtr ped);
 
 /* routines used internal to this module
  */
-static int CreateECROI();
-static int InitializeECROI();
-static int ActivateECROI();
-static int ResetECROI();
-static int DestroyECROI();
+static int CreateECROI(floDefPtr flo, peDefPtr ped);
+static int InitializeECROI(floDefPtr flo, peDefPtr ped);
+static int ActivateECROI(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetECROI(floDefPtr flo, peDefPtr ped);
+static int DestroyECROI(floDefPtr flo, peDefPtr ped);
 
 /* DDXIE ExportClientROI entry points
  */
@@ -124,14 +124,12 @@ static ddElemVecRec ECROIVec =
 };
 
 /* Local routines */
-static void ConvertToRect();
+static void ConvertToRect(ROIPtr proi, xieTypRectangle *prect);
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeECROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+int miAnalyzeECROI(floDefPtr flo, peDefPtr ped)
 {
 	/* for now just stash our entry point vector in the peDef */
 	ped->ddVec = ECROIVec;
@@ -141,9 +139,7 @@ peDefPtr  ped;
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateECROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+static int CreateECROI(floDefPtr flo, peDefPtr ped)
 {
 	/* attach an execution context to the roi element definition */
 	return MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC);
@@ -152,9 +148,7 @@ peDefPtr  ped;
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeECROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+static int InitializeECROI(floDefPtr flo, peDefPtr ped)
 {
 	return InitReceptors(flo,ped,NO_DATAMAP,1) &&
 	         InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -163,10 +157,7 @@ peDefPtr  ped;
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateECROI(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECROI(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientROI *raw = (xieFloExportClientROI*)ped->elemRaw;
   receptorPtr       rcp  = pet->receptor;
@@ -199,9 +190,7 @@ static int ActivateECROI(flo,ped,pet)
   return TRUE;
 }                               /* end ActivateECROI */
 
-static void ConvertToRect(proi,prect) 
-ROIPtr	        proi;
-xieTypRectangle *prect;
+static void ConvertToRect(ROIPtr proi, xieTypRectangle *prect)
 {
 	CARD32	nrects = 0;
 	linePtr lp;
@@ -228,9 +217,7 @@ xieTypRectangle *prect;
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetECROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+static int ResetECROI(floDefPtr flo, peDefPtr ped)
 {
 	ResetReceptors(ped);
 	ResetEmitter(ped);
@@ -241,9 +228,7 @@ peDefPtr  ped;
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyECROI(flo,ped)
-floDefPtr flo;
-peDefPtr  ped;
+static int DestroyECROI(floDefPtr flo, peDefPtr ped)
 {
 	/* get rid of the peTex structure  */
 	ped->peTex = (peTexPtr) XieFree(ped->peTex);

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.10 1998/10/03 08:42:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.11 1998/10/10 15:25:06 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -94,7 +94,7 @@ static void LoadPieces(AsciiSrcObject, FILE*, char*);
 static void RemoveOldStringOrFile(AsciiSrcObject, Bool);
 static void RemovePiece(AsciiSrcObject, Piece*);
 static String StorePiecesInString(AsciiSrcObject);
-static Bool WriteToFile(String, String);
+static Bool WriteToFile(String, String, unsigned);
 
 /*
  * More Prototypes
@@ -481,7 +481,7 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 	  ptr = start_piece->text + (startPos - start_first);
 	  memmove(ptr + fill, ptr,
 		  (unsigned)(start_piece->used - (startPos - start_first)));
-	  strncpy(ptr, text->ptr + firstPos, (unsigned)fill);
+	  memcpy(ptr, text->ptr + firstPos, (unsigned)fill);
 
 	  startPos += fill;
 	  firstPos += fill;
@@ -570,6 +570,7 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
     case XawstEOL:
     case XawstParagraph:
     case XawstWhiteSpace:
+    case XawstAlphaNumeric:
       for (; cnt > 0; cnt--)
 	{
 	  Bool non_space = False, first_eol = True;
@@ -598,7 +599,15 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 	      ptr += inc;
 	      position += inc;
 
-	      if (type == XawstWhiteSpace)
+	      if (type == XawstAlphaNumeric) {
+		  if (!isalnum(c)) {
+		      if (non_space)
+			  break;
+		  }
+		  else
+		      non_space = True;
+	      }
+	      else if (type == XawstWhiteSpace)
 		{
 		  if (isspace(c))
 		    {
@@ -697,7 +706,7 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
     }
 
   buf = XtMalloc((unsigned)sizeof(unsigned char) * text->length);
-  strncpy(buf, (text->ptr + text->firstPos), (unsigned)text->length);
+  memcpy(buf, (text->ptr + text->firstPos), (unsigned)text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
 
@@ -964,7 +973,7 @@ XawAsciiSave(Widget w)
 
       string = StorePiecesInString(src);
 
-      if (WriteToFile(string, src->ascii_src.string) == False)
+      if (WriteToFile(string, src->ascii_src.string, src->ascii_src.length) == False)
 	{
 	  XtFree(string);
 	  return (False);
@@ -1019,7 +1028,7 @@ XawAsciiSaveAsFile(Widget w, _Xconst char *name)
 
   string = StorePiecesInString(src); 
 
-  ret = WriteToFile(string, (String)name);
+  ret = WriteToFile(string, (String)name, src->ascii_src.length);
   XtFree(string);
 
   return (ret);
@@ -1086,12 +1095,12 @@ RemoveOldStringOrFile(AsciiSrcObject src, Bool checkString)
  *	returns True if sucessful, False otherwise
  */
 static Bool
-WriteToFile(String string, String name)
+WriteToFile(String string, String name, unsigned length)
 {
   int fd;
 
   if ((fd = creat(name, 0666)) == -1
-      || write(fd, string, sizeof(unsigned char) * strlen(string)) == -1)
+      || write(fd, string, length) == -1)
     return (False);
 
   if (close(fd) == -1)
@@ -1121,7 +1130,7 @@ StorePiecesInString(AsciiSrcObject src)
 
   for (first = 0, piece = src->ascii_src.first_piece ; piece != NULL; 
        first += piece->used, piece = piece->next) 
-    strncpy(string + first, piece->text, (unsigned)piece->used);
+    memcpy(string + first, piece->text, (unsigned)piece->used);
 
   string[src->ascii_src.length] = '\0';
 
@@ -1299,7 +1308,7 @@ LoadPieces(AsciiSrcObject src, FILE *file, char *string)
     piece->text = XtMalloc((unsigned)src->ascii_src.piece_size);
     piece->used = Min(left, src->ascii_src.piece_size);
     if (piece->used != 0)
-      strncpy(piece->text, ptr, (unsigned)piece->used);
+      memcpy(piece->text, ptr, (unsigned)piece->used);
 
     left -= piece->used;
     ptr += piece->used;
@@ -1451,7 +1460,7 @@ BreakPiece(AsciiSrcObject src, Piece *piece)
   Piece *cnew = AllocNewPiece(src, piece);
 
   cnew->text = XtMalloc((unsigned)src->ascii_src.piece_size);
-  strncpy(cnew->text, piece->text + HALF_PIECE,
+  memcpy(cnew->text, piece->text + HALF_PIECE,
 	  (unsigned)(src->ascii_src.piece_size - HALF_PIECE));
   piece->used = HALF_PIECE;
   cnew->used = src->ascii_src.piece_size - HALF_PIECE;

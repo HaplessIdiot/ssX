@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. October 1993
   
 *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meuncomp.c,v 1.3 1998/10/06 10:35:17 dawes Exp $ */
 
 #define _XIEC_MEUNCOMP
 
@@ -106,29 +106,23 @@ terms and conditions:
 /* Band by Plane action routines */
 
 /* bits to stream */
-void btoS(src,dst,pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void btoS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
-	memcpy((char *)dst,(char *)src, (int)pvt->width + 7 >> 3);
+	memcpy((char *)dst,(char *)src, (int)(pvt->width + 7) >> 3);
 }
 
 /* swapped bits to stream */
-void sbtoS(src,dst,pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void sbtoS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 int   i, count;
 
-	count = pvt->width  + 7 >> 3; /* Pack down to bits */
+	count = (pvt->width  + 7) >> 3; /* Pack down to bits */
 
 	for (i = 0; i < count; i++) *dst++ = _ByteReverseTable[*src++];
 }
 
 /* bits to stream with pad */
-void btoIS(src,dst,pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void btoIS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 CARD32 stride = pvt->stride;
 CARD32  width = pvt->width;
@@ -137,9 +131,9 @@ CARD32      j = pvt->bitOff;
 CARD32 i;
 
 	if (j) /* Don't bzero partial byte left from last scanline */
-	    bzero(dst + 1,(j + pitch + 7 >> 3) - 1); 
+	    bzero(dst + 1, ((j + pitch + 7) >> 3) - 1); 
 	else
-	    bzero(dst,pitch + 7 >> 3);
+	    bzero(dst, (pitch + 7) >> 3);
 
 	for (i = 0; i < width; i++, j += stride) {
 	    if (LOGBYTE_tstbit(src,i) != 0) {
@@ -149,9 +143,7 @@ CARD32 i;
 }
 
 /* swapped bits to stream with pad */
-void sbtoIS(src,dst,pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void sbtoIS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 CARD32 stride = pvt->stride;
 CARD32  width = pvt->width;
@@ -160,9 +152,9 @@ CARD32      j = pvt->bitOff;
 CARD32 i, s;
 
 	if (j) /* Don't bzero partial byte left from last scanline */
-	    bzero(dst + 1,(j + pitch + 7 >> 3) - 1); 
+	    bzero(dst + 1, ((j + pitch + 7) >> 3) - 1); 
 	else
-	    bzero(dst,pitch + 7 >> 3);
+	    bzero(dst, (pitch + 7) >> 3);
 
 	for (i = 0; i < width; i++, j += stride) {
 	    s = j ^ 7; /* Larry swap */
@@ -173,9 +165,7 @@ CARD32 i, s;
 }
 
 /* BytePixel to Stream, no offsets */
-void BtoS(src, dst, pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void BtoS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 int   width = pvt->width;
 
@@ -183,9 +173,7 @@ int   width = pvt->width;
 }
 
 /* PairPixel to Stream, no swapping */
-void PtoS(src, dst, pvt)
-PairPixel *src, *dst;
-meUncompPtr pvt;
+void PtoS(PairPixel *src, PairPixel *dst, meUncompPtr pvt)
 {
 int   width = pvt->width << 1;
 
@@ -193,19 +181,15 @@ int   width = pvt->width << 1;
 }
 
 /* PairPixel to Stream, with swapping */
-void sPtoS(src, dst, pvt)
-PairPixel *src, *dst;
-meUncompPtr pvt;
+void sPtoS(PairPixel *src, PairPixel *dst, meUncompPtr pvt)
 {
-int   i;
+CARD32   i;
 
 	for (i = 0; i < pvt->width; i++) { cpswaps(src[i],dst[i]); }
 }
 
 /* QuadPixel to Stream, no swapping */
-void QtoS(src, dst, pvt)
-QuadPixel *src, *dst;
-meUncompPtr pvt;
+void QtoS(QuadPixel *src, QuadPixel *dst, meUncompPtr pvt)
 {
 int   width = pvt->width << 2;
 
@@ -213,43 +197,35 @@ int   width = pvt->width << 2;
 }
 
 /* QuadPixel to Stream, with swapping */
-void sQtoS(src, dst, pvt)
-QuadPixel *src, *dst;
-meUncompPtr pvt;
+void sQtoS(QuadPixel *src, QuadPixel *dst, meUncompPtr pvt)
 {
-int   i;
+CARD32   i;
 
 	for (i = 0; i < pvt->width; i++) { cpswapl(src[i],dst[i]); }
 }
 
 /* QuadPixel (unswapped) to padded Stream */
-void QtoIS(src, dst, pvt)
-QuadPixel *src, *dst;
-meUncompPtr pvt;
+void QtoIS(QuadPixel *src, QuadPixel *dst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
-int i;
+CARD32 i;
 	for (i = 0; i < width; i++, dst += Bstride) *dst = *src++;
 }
 
 /* QuadPixel (swapped) to padded Stream */
-void sQtoIS(src, dst, pvt)
-QuadPixel *src, *dst;
-meUncompPtr pvt;
+void sQtoIS(QuadPixel *src, QuadPixel *dst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
-int i;
+CARD32 i;
 	for (i = 0; i < width; i++, dst += Bstride) { cpswapl(src[i], *dst); }
 }
 
 /* Triple Band Byte by Pixel Action routines */
 
 /* Bits to Interleaved stream bits */
-void btoISb(isrc, dst, pvt)
-BytePixel *isrc, *dst;
-meUncompPtr pvt;
+void btoISb(BytePixel *isrc, BytePixel *dst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
@@ -264,15 +240,13 @@ int i;
 }
 
 /* BytePixels to Interleaved Stream in bits */
-void BtoISb(src, dst, pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void BtoISb(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
 CARD8     mask = pvt->mask;
 CARD8    shift = pvt->shift;
-int i;
+CARD32 i;
 
 	dst += pvt->dstoffset;
 	for (i = 0; i < width; i++, dst += Bstride) 
@@ -280,13 +254,11 @@ int i;
 }
 
 /* BytePixel to Interleaved Stream */
-void BtoIS(src, dst, pvt)
-BytePixel *src, *dst;
-meUncompPtr pvt;
+void BtoIS(BytePixel *src, BytePixel *dst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
-int i;
+CARD32 i;
 
 	dst += pvt->dstoffset;
 	for (i = 0; i < width; i++, dst += Bstride) 
@@ -294,27 +266,23 @@ int i;
 }
 
 /* PairPixel (unswapped) to Interleaved Stream */
-void PtoIS(src, idst, pvt)
-PairPixel *src, *idst;
-meUncompPtr pvt;
+void PtoIS(PairPixel *src, PairPixel *idst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
 CARD8 *dst = ((CARD8 *)idst) + pvt->dstoffset;
-int i;
+CARD32 i;
 	for (i = 0; i < width; i++, dst += Bstride) 
 		*((PairPixel *)dst) = *src++;
 }
 
 /* PairPixel (swapped) to Interleaved Stream */
-void sPtoIS(src, idst, pvt)
-PairPixel *src, *idst;
-meUncompPtr pvt;
+void sPtoIS(PairPixel *src, PairPixel *idst, meUncompPtr pvt)
 {
 CARD32 Bstride = pvt->Bstride;
 CARD32   width = pvt->width;
 CARD8 *dst = ((CARD8 *)idst) + pvt->dstoffset;
-int i;
+CARD32 i;
 	for (i = 0; i < width; i++, dst += Bstride) {
 		PairPixel sval = *src++;
 		*dst = (sval >> 8) | (sval << 8);
@@ -390,7 +358,7 @@ CARD32 pad    = stride - depth;
 	    outb |= (CARD8)(sval << bits) >> bits;/* Chop off top bits*/
 	    *dst++ = (CARD8)outb;
 	    if (bits + depth <= 16) {
-	        outb = (CARD8)(sval >> 8 - bits) << 16 - depth - bits;
+	        outb = (CARD8)(sval >> (8 - bits)) << (16 - depth - bits);
 	        bits = bits + depth - 8;  /* watch those signs */
 		if (bits + depth == 16) {
 		    *dst++ = (CARD8)outb;
@@ -450,9 +418,9 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits += depth;
 	} else if (bits + depth <= 16) {
-	    outb |= (CARD8)(sval >> depth + bits - 8) << bits;
+	    outb |= (CARD8)(sval >> (depth + bits - 8)) << bits;
 	    *dst++ = (CARD8)outb;
-	    outb = (CARD8)(sval << 16 - depth - bits) >> 16 - depth - bits;
+	    outb = (CARD8)(sval << (16 - depth - bits)) >> (16 - depth - bits);
 	    if (bits + depth == 16) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -502,7 +470,7 @@ CARD32 pad    = stride - depth;
 	CARD8 sval = *src++;
 
 	if (bits + depth <= 8) {	/* Pack into existing byte only  */
-	    outb |= sval << 8 - depth - bits;
+	    outb |= sval << (8 - depth - bits);
 	    if (bits + depth == 8) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -510,9 +478,9 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits += depth;
 	} else if (bits + depth <= 16) {
-	    outb |= sval >> depth + bits - 8;
+	    outb |= sval >> (depth + bits - 8);
 	    *dst++ = (CARD8)outb;
-	    outb = sval << 16 - depth - bits;
+	    outb = sval << (16 - depth - bits);
 	    if (bits + depth == 16) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -599,9 +567,9 @@ CARD32 pad    = stride - depth;
 	CARD16 sval = *src++;
 
         if (bits + depth <= 16) { 
-            outb |= (CARD16)(sval << 8 + bits) >> 8 + bits;
+            outb |= (CARD16)(sval << (8 + bits)) >> (8 + bits);
 	    *dst++ = (CARD8)outb;
-	    outb = (CARD8)(sval >> 8 - bits) << 16 - depth - bits;
+	    outb = (CARD8)(sval >> (8 - bits)) << (16 - depth - bits);
 	    if (bits + depth == 16) {
 	        *dst++ = (CARD8)outb;
 	        outb = 0;
@@ -609,10 +577,10 @@ CARD32 pad    = stride - depth;
 	    } else 
 	        bits = bits + depth - 8;  /* watch those signs */
        	} else { 
-            outb |= (CARD16)(sval << 8 + bits) >>  8 + bits;
+            outb |= (CARD16)(sval << (8 + bits)) >>  (8 + bits);
 	    *dst++ = (CARD8)outb;
  	    *dst++ = (CARD8)((CARD16)(sval << bits) >> 8);
-	    outb = (CARD8)(sval >> 16 - bits) << 24 - depth - bits;
+	    outb = (CARD8)(sval >> (16 - bits)) << (24 - depth - bits);
 	    if (bits + depth == 24) {
 	        *dst++ = (CARD8)outb;
 	        outb = 0;
@@ -663,9 +631,9 @@ CARD32 pad    = stride - depth;
 	CARD16 sval = *src++;
 
 	if (bits + depth <= 16) {
-	    outb |= (sval >> depth + bits - 8) << bits;
+	    outb |= (sval >> (depth + bits - 8)) << bits;
 	    *dst++ = (CARD8)outb;
-	    outb = (CARD16)(sval << 24 - depth - bits) >> 24 - depth - bits; 
+	    outb = (CARD16)(sval << (24 - depth - bits)) >> (24 - depth - bits); 
 	    if (bits + depth == 16) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -673,10 +641,10 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits = bits + depth - 8;
 	} else {
-	    outb |= (sval >> depth + bits - 8) << bits;
+	    outb |= (sval >> (depth + bits - 8)) << bits;
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    outb = (CARD8)(sval << 24 - depth - bits) >> 24 - depth - bits;
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    outb = (CARD8)(sval << (24 - depth - bits)) >> (24 - depth - bits);
 	    if (bits + depth == 24) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -726,9 +694,9 @@ CARD32 pad    = stride - depth;
 	CARD16 sval = *src++;
 
 	if (bits + depth <= 16) {
-	    outb |= sval >> depth + bits - 8;
+	    outb |= sval >> (depth + bits - 8);
 	    *dst++ = (CARD8)outb;
-	    outb = sval << 16 - depth - bits;
+	    outb = sval << (16 - depth - bits);
 	    if (bits + depth == 16) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -736,10 +704,10 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits = bits + depth - 8;
 	} else {
-	    outb |= sval >> depth + bits - 8;
+	    outb |= sval >> (depth + bits - 8);
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    outb = sval << 24 - depth - bits;
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    outb = sval << (24 - depth - bits);
 	    if (bits + depth == 24) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -836,10 +804,10 @@ CARD32 pad    = stride - depth;
 	CARD32 sval = *src++;
 
         if (bits + depth <= 24) { 
-            outb |= (sval << 24 + bits) >> 24 + bits;
+            outb |= (sval << (24 + bits)) >> (24 + bits);
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> 8 - bits);
-	    outb = (CARD8)(sval >> 16 - bits) << 24 - depth - bits;
+	    *dst++ = (CARD8)(sval >> (8 - bits));
+	    outb = (CARD8)(sval >> (16 - bits)) << (24 - depth - bits);
 	    if (bits + depth == 24) {
 	        *dst++ = (CARD8)outb;
 	        outb = 0;
@@ -847,11 +815,11 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits = bits + depth - 16;  /* watch those signs */
        	} else { 
-            outb |= (sval << 24 + bits) >> 24 + bits;
+            outb |= (sval << (24 + bits)) >> (24 + bits);
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> 8 - bits);
-	    *dst++ = (CARD8)(sval >> 16 - bits);
-	    outb = (CARD8)(sval >> 24 - bits) << 32 - depth - bits;
+	    *dst++ = (CARD8)(sval >> (8 - bits));
+	    *dst++ = (CARD8)(sval >> (16 - bits));
+	    outb = (CARD8)(sval >> (24 - bits)) << (32 - depth - bits);
 	    if (bits + depth == 32) {
 	        *dst++ = (CARD8)outb;
 	        outb = 0;
@@ -902,10 +870,10 @@ CARD32 pad    = stride - depth;
 	CARD32 sval = *src++;
 
 	if (bits + depth <= 24) {
-	    outb |= (sval >> depth + bits - 8) << bits;
+	    outb |= (sval >> (depth + bits - 8)) << bits;
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    outb = (sval << 48 - depth - bits) >> 48 - depth - bits; 
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    outb = (sval << (48 - depth - bits)) >> (48 - depth - bits); 
 	    if (bits + depth == 24) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -913,11 +881,11 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits = bits + depth - 16;
 	} else {
-	    outb |= (sval >> depth + bits - 8) << bits;
+	    outb |= (sval >> (depth + bits - 8)) << bits;
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    *dst++ = (CARD8)(sval >> depth + bits - 24);
-	    outb = (sval << 56 - depth - bits) >> 56 - depth - bits;
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    *dst++ = (CARD8)(sval >> (depth + bits - 24));
+	    outb = (sval << (56 - depth - bits)) >> (56 - depth - bits);
 	    if (bits + depth == 32) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -969,10 +937,10 @@ CARD32 pad    = stride - depth;
 	CARD32 sval = *src++;
 
 	if (bits + depth <= 24) {
-	    outb |= sval >> depth + bits - 8;
+	    outb |= sval >> (depth + bits - 8);
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    outb = (sval << 48 - depth - bits) >> 24;
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    outb = (sval << (48 - depth - bits)) >> 24;
 	    if (bits + depth == 24) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -980,11 +948,11 @@ CARD32 pad    = stride - depth;
 	    } else
 	        bits = bits + depth - 16;	
 	} else {
-	    outb |= sval >> depth + bits - 8;
+	    outb |= sval >> (depth + bits - 8);
 	    *dst++ = (CARD8)outb;
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);
-	    *dst++ = (CARD8)(sval >> depth + bits - 24);
-	    outb = (sval << 56 - depth - bits) >> 24;
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));
+	    *dst++ = (CARD8)(sval >> (depth + bits - 24));
+	    outb = (sval << (56 - depth - bits)) >> 24;
 	    if (bits + depth == 32) {
 		*dst++ = (CARD8)outb;
 		outb = 0;
@@ -1019,14 +987,19 @@ CARD32 pad    = stride - depth;
 
 /* Pack a triple band by pixel line of pixels          */
 /* Pixel Order = LSB, Fill Order = LSB */
+
+#define ProtoLLTB(fname,itype0,itype1,itype2)				\
+void fname(								\
+     itype0 *src0,							\
+     itype1 *src1,							\
+     itype2 *src2,							\
+     CARD8 *dst,							\
+     CARD32 tristride,							\
+     meUncompPtr pvt)
+
 #define ConvertToLLTB(fname,itype0,itype1,itype2)			\
-void fname(src0, src1, src2, dst, tristride, pvt)			\
-itype0 *src0;								\
-itype1 *src1;								\
-itype2 *src2;								\
-CARD8 *dst;								\
-CARD32 tristride;							\
-meUncompPtr pvt;							\
+extern ProtoLLTB(fname,itype0,itype1,itype2);				\
+ProtoLLTB(fname,itype0,itype1,itype2)					\
 {									\
 itype0 *send = &src0[pvt->width];/* All three bands are same width */	\
 CARD32 pitch  = pvt->pitch;     					\
@@ -1094,14 +1067,18 @@ CARD32 tripad = tristride - pvt[0].depth - pvt[1].depth;		\
     } else 								\
        pvt->leftOver = 0;						
 
+#define ProtoLMTB(fname,xietype0,xietype1,xietype2)			\
+void fname(								\
+     xietype0 *src0,							\
+     xietype1 *src1,							\
+     xietype2 *src2,							\
+     CARD8 *dst,							\
+     CARD32 tristride,							\
+     meUncompPtr pvt)
+
 #define ConvertToLMTB(fname,xietype0,xietype1,xietype2)			\
-void fname(src0, src1, src2, dst, tristride, pvt)			\
-xietype0 *src0;								\
-xietype1 *src1;								\
-xietype2 *src2;								\
-CARD8 *dst;								\
-CARD32 tristride;							\
-meUncompPtr pvt;							\
+extern ProtoLMTB(fname,xietype0,xietype1,xietype2);			\
+ProtoLMTB(fname,xietype0,xietype1,xietype2)				\
 {									\
 xietype0 *send = &src0[pvt->width];/* All three bands are same width */	\
 CARD32 pitch    = pvt->pitch;     					\
@@ -1116,7 +1093,7 @@ CARD32 b;								\
 	  CARD16 sval  = svals[b];					\
 	  CARD32 depth = pvt[b].depth;					\
 	  if (bits + depth <= 8) {	/* Pack into existing byte only  */\
-	      outb |= sval << 8 - depth - bits;				\
+	      outb |= sval << (8 - depth - bits);			\
 	      if (bits + depth == 8) {					\
 		  *dst++ = (CARD8)outb;					\
 		  outb = 0;						\
@@ -1124,9 +1101,9 @@ CARD32 b;								\
 	      } else							\
 	          bits += depth;					\
           } else if (bits + depth <= 16) { 				\
-              outb |= (CARD16)(sval << 8 + bits) >> 8 + bits;		\
+              outb |= (CARD16)(sval << (8 + bits)) >> (8 + bits);	\
 	      *dst++ = (CARD8)outb;					\
-	      outb = (CARD8)(sval >> 8 - bits) << 16 - depth - bits;	\
+	      outb = (CARD8)(sval >> (8 - bits)) << (16 - depth - bits);\
 	      if (bits + depth == 16) {					\
 	          *dst++ = (CARD8)outb;					\
 	          outb = 0;						\
@@ -1134,10 +1111,10 @@ CARD32 b;								\
 	      } else 							\
 	          bits = bits + depth - 8;  /* watch those signs */	\
        	  } else { 							\
-              outb |= (CARD16)(sval << 8 + bits) >>  8 + bits;		\
+              outb |= (CARD16)(sval << (8 + bits)) >>  (8 + bits);	\
 	      *dst++ = (CARD8)outb;					\
  	      *dst++ = (CARD8)((CARD16)(sval << bits) >> 8);		\
-	      outb = (CARD8)(sval >> 16 - bits) << 24 - depth - bits;	\
+	      outb = (CARD8)(sval >> (16 - bits)) << (24 - depth - bits);\
 	      if (bits + depth == 24) {					\
 	          *dst++ = (CARD8)outb;					\
 	          outb = 0;						\
@@ -1174,14 +1151,18 @@ CARD32 b;								\
     } else 								\
        pvt->leftOver = 0;						
 
+#define ProtoMLTB(fname,itype0,itype1,itype2)				\
+void fname(								\
+     itype0 *src0,							\
+     itype1 *src1,							\
+     itype2 *src2,							\
+     CARD8 *dst,							\
+     CARD32 tristride,							\
+     meUncompPtr pvt)
+
 #define ConvertToMLTB(fname,itype0,itype1,itype2)			\
-void fname(src0, src1, src2, dst, tristride, pvt)			\
-itype0 *src0;								\
-itype1 *src1;								\
-itype2 *src2;								\
-CARD8 *dst;								\
-CARD32 tristride;							\
-meUncompPtr pvt;							\
+extern ProtoMLTB(fname,itype0,itype1,itype2);				\
+ProtoMLTB(fname,itype0,itype1,itype2)					\
 {									\
 itype0 *send = &src0[pvt->width];/* All three bands are same width */	\
 CARD32 pitch    = pvt->pitch;     					\
@@ -1204,9 +1185,9 @@ CARD32 b;								\
 	    } else							\
 	        bits += depth;						\
 	} else if (bits + depth <= 16) {				\
-	    outb |= (sval >> depth + bits - 8) << bits;			\
+	    outb |= (sval >> (depth + bits - 8)) << bits;		\
 	    *dst++ = (CARD8)outb;					\
-	    outb = (CARD16)(sval << 24 - depth - bits) >> 24 - depth - bits; \
+	    outb = (CARD16)(sval << (24 - depth - bits)) >> (24 - depth - bits); \
 	    if (bits + depth == 16) {					\
 		*dst++ = (CARD8)outb;					\
 		outb = 0;						\
@@ -1214,10 +1195,10 @@ CARD32 b;								\
 	    } else							\
 	        bits = bits + depth - 8;				\
 	} else {							\
-	    outb |= (sval >> depth + bits - 8) << bits;			\
+	    outb |= (sval >> (depth + bits - 8)) << bits;		\
 	    *dst++ = (CARD8)outb;					\
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);		\
-	    outb = (CARD8)(sval << 24 - depth - bits) >> 24 - depth - bits;\
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));		\
+	    outb = (CARD8)(sval << (24 - depth - bits)) >> (24 - depth - bits);\
 	    if (bits + depth == 24) {					\
 		*dst++ = (CARD8)outb;					\
 		outb = 0;						\
@@ -1254,14 +1235,18 @@ CARD32 b;								\
     } else 								\
        pvt->leftOver = 0;						
 
+#define ProtoMMTB(fname,itype0,itype1,itype2)				\
+void fname(								\
+     itype0 *src0,							\
+     itype1 *src1,							\
+     itype2 *src2,							\
+     CARD8 *dst,							\
+     CARD32 tristride,							\
+     meUncompPtr pvt)
+
 #define ConvertToMMTB(fname,itype0,itype1,itype2)			\
-void fname(src0, src1, src2, dst, tristride, pvt)			\
-itype0 *src0;								\
-itype1 *src1;								\
-itype2 *src2;								\
-CARD8 *dst;								\
-CARD32 tristride;							\
-meUncompPtr pvt;							\
+extern ProtoMMTB(fname,itype0,itype1,itype2);				\
+ProtoMMTB(fname,itype0,itype1,itype2)					\
 {									\
 itype0 *send = &src0[pvt->width];/* All three bands are same width */   \
 CARD32 pitch    = pvt->pitch;     					\
@@ -1277,7 +1262,7 @@ CARD32 b;								\
 	CARD32 depth;							\
 	depth = pvt[b].depth;						\
 	if (bits + depth <= 8) {/* Pack into existing byte only  */	\
-	    outb |= sval << 8 - depth - bits;				\
+	    outb |= sval << (8 - depth - bits);				\
 	    if (bits + depth == 8) {					\
 		*dst++ = (CARD8)outb;					\
 		outb = 0;						\
@@ -1285,9 +1270,9 @@ CARD32 b;								\
 	    } else							\
 	        bits += depth;						\
 	} else if (bits + depth <= 16) {				\
-	    outb |= sval >> depth + bits - 8;				\
+	    outb |= sval >> (depth + bits - 8);				\
 	    *dst++ = (CARD8)outb;					\
-	    outb = sval << 16 - depth - bits;				\
+	    outb = sval << (16 - depth - bits);				\
 	    if (bits + depth == 16) {					\
 		*dst++ = (CARD8)outb;					\
 		outb = 0;						\
@@ -1295,10 +1280,10 @@ CARD32 b;								\
 	    } else							\
 	        bits = bits + depth - 8;				\
 	} else {							\
-	    outb |= sval >> depth + bits - 8;				\
+	    outb |= sval >> (depth + bits - 8);				\
 	    *dst++ = (CARD8)outb;					\
-	    *dst++ = (CARD8)(sval >> depth + bits - 16);		\
-	    outb = sval << 24 - depth - bits;				\
+	    *dst++ = (CARD8)(sval >> (depth + bits - 16));		\
+	    outb = sval << (24 - depth - bits);				\
 	    if (bits + depth == 24) {					\
 		*dst++ = (CARD8)outb;					\
 		outb = 0;						\

@@ -1,15 +1,10 @@
-/* $XConsortium: technq.h,v 1.4 94/04/17 20:34:08 rws Exp $ */
+/* $TOG: technq.h /main/5 1998/02/10 10:28:19 kaleb $ */
 /**** module technq.h ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -77,29 +72,89 @@ terms and conditions:
 
 #include <flostr.h>
 
+#define TECHNQ_COPY_ARGS \
+			floDefPtr flo, \
+			peDefPtr ped, \
+			pointer sParms, \
+			pointer rParms, \
+			CARD16 tsize, \
+			Bool isDefault
+
+#define TECHNQ_WADJ_ARGS \
+			floDefPtr flo, \
+			peDefPtr ped, \
+			pointer sparms, \
+			double *pvtf, \
+			techVecPtr tv, \
+			CARD16 tsize, \
+			Bool isDefault
+
+typedef Bool (*techCopyFunc)(TECHNQ_COPY_ARGS);	/* the normal case */
+typedef Bool (*techWadjFunc)(TECHNQ_WADJ_ARGS);	/* ...an exception */
+typedef Bool (*techGamuFunc)(CARD16);		/* ...an exception */
+
+#define TECH_WADJ_FUNC(func) ((techWadjFunc)(func->copyfnc))
+#define TECH_GAMU_FUNC(func) ((techGamuFunc)(func->copyfnc))
+
 /*
  * dixie import client photo technique entry points
  */
-extern Bool	CopyICPhotoUnSingle();
-extern Bool	CopyICPhotoG31D();
-extern Bool	CopyICPhotoG32D();
-extern Bool	CopyICPhotoG42D();
-extern Bool	CopyICPhotoTIFF2();
-extern Bool	CopyICPhotoTIFFPackBits();
-extern Bool	PrepICPhotoUnSingle();
-extern Bool	PrepICPhotoG31D();
-extern Bool	PrepICPhotoG32D();
-extern Bool	PrepICPhotoG42D();
-extern Bool	PrepICPhotoTIFF2();
-extern Bool	PrepICPhotoTIFFPackBits();
+extern Bool	CopyICPhotoUnSingle(TECHNQ_COPY_ARGS);
+extern Bool	CopyICPhotoG31D(TECHNQ_COPY_ARGS);
+extern Bool	CopyICPhotoG32D(TECHNQ_COPY_ARGS);
+extern Bool	CopyICPhotoG42D(TECHNQ_COPY_ARGS);
+extern Bool	CopyICPhotoTIFF2(TECHNQ_COPY_ARGS);
+extern Bool	CopyICPhotoTIFFPackBits(TECHNQ_COPY_ARGS);
+extern Bool	PrepICPhotoUnSingle(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeUncompressedSingle *tec);
+extern Bool	PrepICPhotoG31D(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeG31D *tec);
+extern Bool	PrepICPhotoG32D(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeG32D *tec);
+extern Bool	PrepICPhotoG42D(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeG42D *tec);
+extern Bool	PrepICPhotoTIFF2(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeTIFF2 *tec);
+extern Bool	PrepICPhotoTIFFPackBits(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeTIFFPackBits *tec);
 #if XIE_FULL
-extern Bool	CopyICPhotoUnTriple();
-extern Bool	PrepICPhotoUnTriple();
-extern Bool	CopyICPhotoJPEGBaseline();
-extern Bool	PrepICPhotoJPEGBaseline();
+extern Bool	CopyICPhotoUnTriple(TECHNQ_COPY_ARGS);
+extern Bool	PrepICPhotoUnTriple(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeUncompressedTriple *tec);
+extern Bool	CopyICPhotoJPEGBaseline(TECHNQ_COPY_ARGS);
+extern Bool	PrepICPhotoJPEGBaseline(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeJPEGBaseline *tec);
 #ifdef	BEYOND_SI
-extern Bool	CopyICPhotoJPEGLossless();
-extern Bool	PrepICPhotoJPEGLossless();
+extern Bool	CopyICPhotoJPEGLossless(TECHNQ_COPY_ARGS);
+extern Bool	PrepICPhotoJPEGLossless(
+			floDefPtr flo,
+			peDefPtr  ped,
+			xieFloImportClientPhoto *raw,
+			xieTecDecodeJPEGLossless *tec);
 #endif /* BEYOND_SI */
 #endif
 
@@ -107,20 +162,32 @@ extern Bool	PrepICPhotoJPEGLossless();
  * dixie constrain technique entry points
  */
 #if XIE_FULL
-extern Bool	CopyPConstrainStandard();
-extern Bool	CopyPConstrainClipScale();
-extern Bool	PrepPConstrainStandard();
-extern Bool	PrepPConstrainClipScale();
+extern Bool	CopyPConstrainStandard(TECHNQ_COPY_ARGS);
+extern Bool	CopyPConstrainClipScale(TECHNQ_COPY_ARGS);
+extern Bool	PrepPConstrainStandard(
+			floDefPtr flo,
+			peDefPtr ped,
+			pointer raw,
+			pointer tec);
+extern Bool	PrepPConstrainClipScale(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecClipScale *raw,
+			xieTecClipScale *tec);
 #endif
 
 /*
  * dixie convolve technique entry points
  */
 #if XIE_FULL
-extern Bool     CopyConvolveConstant();
-extern Bool     PrepConvolveStandard();
+extern Bool     CopyConvolveConstant(TECHNQ_COPY_ARGS);
+extern Bool     PrepConvolveStandard(
+			floDefPtr flo,
+			peDefPtr ped,
+			pointer raw,
+			pointer tec);
 #ifdef	BEYOND_SI
-extern Bool     CopyConvolveReplicate();
+extern Bool     CopyConvolveReplicate(TECHNQ_COPY_ARGS);
 #endif /* BEYOND_SI */
 #endif 
 
@@ -128,74 +195,129 @@ extern Bool     CopyConvolveReplicate();
  * dixie dither technique entry points
  */
 #if XIE_FULL
-extern Bool	CopyPDitherErrorDiffusion();
-extern Bool	PrepPDitherErrorDiffusion();
-extern Bool	CopyPDitherOrdered();
-extern Bool	PrepPDitherOrdered();
+extern Bool	CopyPDitherErrorDiffusion(TECHNQ_COPY_ARGS);
+extern Bool	PrepPDitherErrorDiffusion(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloDither *raw,
+			pointer tec);
+extern Bool	CopyPDitherOrdered(TECHNQ_COPY_ARGS);
+extern Bool	PrepPDitherOrdered(
+			floDefPtr  flo,
+			peDefPtr   ped,
+			xieFloDither *raw,
+			xieTecDitherOrdered *tec);
 #endif
 
 /*
  * dixie geometry technique entry points
  */
-extern Bool     CopyGeomNearestNeighbor();
-extern Bool     PrepGeomNearestNeighbor();
-extern Bool     CopyGeomAntiAlias();
-extern Bool     PrepGeomAntiAlias();
+extern Bool     CopyGeomNearestNeighbor(TECHNQ_COPY_ARGS);
+extern Bool     PrepGeomNearestNeighbor(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloGeometry *raw,
+			pointer tec);
+extern Bool     CopyGeomAntiAlias(TECHNQ_COPY_ARGS);
+extern Bool     PrepGeomAntiAlias(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloGeometry *raw,
+			pointer tec);
 #if XIE_FULL
-extern Bool     CopyGeomBilinearInterp();
-extern Bool     PrepGeomBilinearInterp();
-extern Bool     CopyGeomGaussian();
-extern Bool     PrepGeomGaussian();
+extern Bool     CopyGeomBilinearInterp(TECHNQ_COPY_ARGS);
+extern Bool     PrepGeomBilinearInterp(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloGeometry *raw,
+			pointer tec);
+extern Bool     CopyGeomGaussian(TECHNQ_COPY_ARGS);
+extern Bool     PrepGeomGaussian(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloGeometry *raw,
+			pointer tec);
 #endif
 
 /*
  * dixie match histogram technique entry points
  */
 #if XIE_FULL
-extern Bool	CopyPHistogramFlat();
-extern Bool	CopyPHistogramGaussian();
-extern Bool	CopyPHistogramHyperbolic();
-extern Bool	PrepPHistogramFlat();
-extern Bool	PrepPHistogramGaussian();
-extern Bool	PrepPHistogramHyperbolic();
+extern Bool	CopyPHistogramFlat(TECHNQ_COPY_ARGS);
+extern Bool	CopyPHistogramGaussian(TECHNQ_COPY_ARGS);
+extern Bool	CopyPHistogramHyperbolic(TECHNQ_COPY_ARGS);
+extern Bool     PrepPHistogramFlat(floDefPtr flo, peDefPtr ped);
+extern Bool     PrepPHistogramGaussian(floDefPtr flo, peDefPtr ped);
+extern Bool     PrepPHistogramHyperbolic(floDefPtr flo, peDefPtr ped);
 #endif
 
 /*
  * dixie convert to index technique entry points
  */
 #if XIE_FULL
-extern Bool 	CopyCtoIAllocAll();
-extern Bool 	PrepCtoIAllocAll();
+extern Bool 	CopyCtoIAllocAll(TECHNQ_COPY_ARGS);
+extern Bool 	PrepCtoIAllocAll(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertToIndex *raw,
+			xieTecColorAllocAll *tec);
 #ifdef	BEYOND_SI
-extern Bool 	CopyCtoIAllocMatch();
-extern Bool 	CopyCtoIAllocRequantize();
+extern Bool 	CopyCtoIAllocMatch(TECHNQ_COPY_ARGS);
+extern Bool 	CopyCtoIAllocRequantize(TECHNQ_COPY_ARGS);
 #endif /* BEYOND_SI */
 #endif
 
 /*
  * dixie export client photo technique entry points
  */
-extern Bool	CopyECPhotoUnSingle();
-extern Bool	CopyECPhotoG31D();
-extern Bool	CopyECPhotoG32D();
-extern Bool	CopyECPhotoG42D();
-extern Bool	CopyECPhotoTIFF2();
-extern Bool	CopyECPhotoTIFFPackBits();
+extern Bool	CopyECPhotoUnSingle(TECHNQ_COPY_ARGS);
+extern Bool	CopyECPhotoG31D(TECHNQ_COPY_ARGS);
+extern Bool	CopyECPhotoG32D(TECHNQ_COPY_ARGS);
+extern Bool	CopyECPhotoG42D(TECHNQ_COPY_ARGS);
+extern Bool	CopyECPhotoTIFF2(TECHNQ_COPY_ARGS);
+extern Bool	CopyECPhotoTIFFPackBits(TECHNQ_COPY_ARGS);
 
-extern Bool	PrepECPhotoUnSingle();
-extern Bool	PrepECPhotoG31D();
-extern Bool	PrepECPhotoG32D();
-extern Bool	PrepECPhotoG42D();
-extern Bool	PrepECPhotoTIFF2();
-extern Bool	PrepECPhotoTIFFPackBits();
+extern Bool	PrepECPhotoUnSingle(
+			floDefPtr flo,
+			peDefPtr  ped,
+			xieTecEncodeUncompressedSingle *tec);
+extern Bool	PrepECPhotoG31D(
+			floDefPtr flo,
+			peDefPtr  ped,
+			xieTecEncodeG31D *tec);
+extern Bool	PrepECPhotoG32D(
+			floDefPtr flo,
+			peDefPtr  ped,
+			xieTecEncodeG32D *tec);
+extern Bool	PrepECPhotoG42D(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeG42D *tec);
+extern Bool	PrepECPhotoTIFF2(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeTIFF2 *tec);
+extern Bool	PrepECPhotoTIFFPackBits(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeTIFFPackBits *tec);
 #if XIE_FULL
-extern Bool	CopyECPhotoUnTriple();
-extern Bool	PrepECPhotoUnTriple();
-extern Bool	CopyECPhotoJPEGBaseline();
-extern Bool	PrepECPhotoJPEGBaseline();
+extern Bool	CopyECPhotoUnTriple(TECHNQ_COPY_ARGS);
+extern Bool	PrepECPhotoUnTriple(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeUncompressedTriple *tec);
+extern Bool	CopyECPhotoJPEGBaseline(TECHNQ_COPY_ARGS);
+extern Bool	PrepECPhotoJPEGBaseline(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeJPEGBaseline *tec);
 #ifdef	BEYOND_SI
-extern Bool	CopyECPhotoJPEGLossless();
-extern Bool	PrepECPhotoJPEGLossless();
+extern Bool	CopyECPhotoJPEGLossless(TECHNQ_COPY_ARGS);
+extern Bool	PrepECPhotoJPEGLossless(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecEncodeJPEGLossless *tec);
 #endif /* BEYOND_SI */
 #endif
 
@@ -203,25 +325,69 @@ extern Bool	PrepECPhotoJPEGLossless();
  * dixie convert to and from RBG technique entry points
  */
 #if XIE_FULL
-extern Bool     CopyPConvertFromRGBCIE();
-extern Bool     CopyPConvertFromRGBYCC();
-extern Bool     CopyPConvertFromRGBYCbCr();
-extern Bool     CopyPConvertToRGBCIE();
-extern Bool     CopyPConvertToRGBYCC();
-extern Bool     CopyPConvertToRGBYCbCr();
-extern Bool     CopyPWhiteAdjustNone();
-extern Bool     CopyPWhiteAdjustCIELabShift();
-extern Bool     CopyPGamut();
+extern Bool     CopyPConvertFromRGBCIE(TECHNQ_COPY_ARGS);
+extern Bool     CopyPConvertFromRGBYCC(TECHNQ_COPY_ARGS);
+extern Bool     CopyPConvertFromRGBYCbCr(TECHNQ_COPY_ARGS);
+extern Bool     CopyPConvertToRGBCIE(TECHNQ_COPY_ARGS);
+extern Bool     CopyPConvertToRGBYCC(TECHNQ_COPY_ARGS);
+extern Bool     CopyPConvertToRGBYCbCr(TECHNQ_COPY_ARGS);
+extern Bool     CopyPWhiteAdjustNone(
+			floDefPtr flo,
+			peDefPtr ped,
+			pointer sparms,
+			double *pvtf,
+			techVecPtr tv,
+			CARD16 tsize,
+			Bool isDefault);
+extern Bool     CopyPWhiteAdjustCIELabShift(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieTecWhiteAdjustCIELabShift *sparms,
+			double *pvtf,
+			techVecPtr tv,
+			CARD16 tsize,
+			Bool isDefault);
+extern Bool     CopyPGamut(CARD16 tsize);
 
-extern Bool     PrepPConvertFromRGBCIE();
-extern Bool     PrepPConvertFromRGBYCC();
-extern Bool     PrepPConvertFromRGBYCbCr();
-extern Bool     PrepPConvertToRGBCIE();
-extern Bool     PrepPConvertToRGBYCC();
-extern Bool     PrepPConvertToRGBYCbCr();
-extern Bool     PrepPWhiteAdjustNone();
-extern Bool     PrepPWhiteAdjustCIELabShift();
-extern Bool     PrepPGamut();
+extern Bool     PrepPConvertFromRGBCIE(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertFromRGB *raw,
+			xieTecRGBToCIELab *tec);
+extern Bool     PrepPConvertFromRGBYCC(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertFromRGB *raw,
+			xieTecRGBToYCC *tec);
+extern Bool     PrepPConvertFromRGBYCbCr(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertFromRGB *raw,
+			xieTecRGBToYCbCr *tec);
+extern Bool     PrepPConvertToRGBCIE(
+			floDefPtr  flo,
+			peDefPtr   ped,
+			xieFloConvertToRGB *raw,
+			xieTecCIELabToRGB *tec);
+extern Bool     PrepPConvertToRGBYCC(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertToRGB *raw,
+			xieTecYCCToRGB *tec);
+extern Bool     PrepPConvertToRGBYCbCr(
+			floDefPtr flo,
+			peDefPtr ped,
+			xieFloConvertToRGB *raw,
+			xieTecYCbCrToRGB *tec);
+extern Bool     PrepPWhiteAdjustNone(
+			floDefPtr flo,
+			peDefPtr ped,
+			double *pwp);
+extern Bool     PrepPWhiteAdjustCIELabShift(
+			floDefPtr flo,
+			peDefPtr ped,
+			double *pwp);
+extern Bool     PrepPGamut(void);
 #endif
 
 /* Global definitions for referencing techniques */
@@ -233,7 +399,7 @@ typedef struct _techvec {
   BOOL		pad;
   CARD16	techSize;     /* size of parameters (possibly optional)     */
   CARD16        number;
-  xieBoolProc   copyfnc;      /* function to copy parameter from client     */
+  techCopyFunc  copyfnc;      /* function to copy parameter from client     */
   xieBoolProc   prepfnc;      /* function to prepare for activation         */
 } techVecRec;
 
@@ -243,18 +409,17 @@ typedef struct _techvec {
 */
 			 
 
-#define VALIDATE_TECHNIQUE_SIZE(tv, size, isDefault) 			\
-	if (isDefault && size || (!isDefault && 			\
-	    (tv->FixedTech && 						\
-		(!tv->OptionalTech && tv->techSize != size ||		\
-	          tv->OptionalTech && size && tv->techSize != size)) ||	\
-	    (!tv->FixedTech &&						\
-		(!tv->OptionalTech && tv->techSize > size ||		\
-		  tv->OptionalTech && size && tv->techSize > size))))	\
+#define VALIDATE_TECHNIQUE_SIZE(tv, size, isDefault) 			   \
+	if ((isDefault && size) || ((!isDefault && 			   \
+	    (tv->FixedTech && 						   \
+		((!tv->OptionalTech && tv->techSize != size) ||		   \
+	          (tv->OptionalTech && size && tv->techSize != size)))) || \
+	    (!tv->FixedTech &&						   \
+		((!tv->OptionalTech && tv->techSize > size) ||		   \
+		  (tv->OptionalTech && size && tv->techSize > size)))))	   \
 	     return(FALSE);
 
 
-#if defined(_XIEC_TECHNQ)
 /*
  *  Technique resource definition
  */
@@ -286,6 +451,8 @@ typedef struct _techtable {
 	TechGroupPtr 		techgroups;
 } TechTable;
 
+#if defined(_XIEC_TECHNQ)
+
 #define DEFAULT_SPEED		128
 
 #define NO_DEFAULT		0
@@ -303,8 +470,8 @@ typedef struct _techtable {
  * support the use of sizeof(static string) at compile time
  */
 
-static Bool NoParamCheck();
-static Bool NoTechYet(); 
+static Bool NoParamCheck(floDefPtr flo, pointer rparms, pointer cparms, CARD16 tsize);
+static Bool NoTechYet(floDefPtr flo, peDefPtr ped, pointer parm, pointer tech);
 
 #if XIE_FULL
 /* Array of techniques for coloralloc */
@@ -905,7 +1072,7 @@ TechRec		Tgamut[] = {
 			UNINITIALIZED,	
                         sz_xieTecGamutNone / 4,
                         xieValGamutNone,
-                        CopyPGamut, 
+                        (techCopyFunc) CopyPGamut, 
                         PrepPGamut
                 }
 	}
@@ -920,7 +1087,7 @@ TechRec		Tgamut[] = {
 			UNINITIALIZED,	
                         sz_xieTecGamutClipRGB / 4,
                         xieValGamutClipRGB,
-                        CopyPGamut, 
+                        (techCopyFunc) CopyPGamut, 
                         PrepPGamut
                 }
 	}
@@ -1090,7 +1257,7 @@ TechRec		Twhiteadjust[] = {
 			UNINITIALIZED,	
                         sz_xieTecWhiteAdjustNone / 4,
                         xieValWhiteAdjustNone,
-                        CopyPWhiteAdjustNone, 
+                        (techCopyFunc) CopyPWhiteAdjustNone, 
                         PrepPWhiteAdjustNone
                 }
 	}
@@ -1105,7 +1272,7 @@ TechRec		Twhiteadjust[] = {
 			UNINITIALIZED,	
                         sz_xieTecWhiteAdjustCIELabShift / 4,
                         xieValWhiteAdjustCIELabShift,
-                        CopyPWhiteAdjustCIELabShift, 
+                        (techCopyFunc) CopyPWhiteAdjustCIELabShift, 
                         PrepPWhiteAdjustCIELabShift
                 }
 	}
@@ -1229,13 +1396,14 @@ TechTable	techTable = {
 	techArray
 };
 
-#else	/* if defined(_XIEC_TECHNQ) */
+#endif	/* if defined(_XIEC_TECHNQ) */
 
-extern	Bool 		technique_init();
+extern	Bool 		technique_init(void);
+extern	techVecPtr 	FindTechnique(xieTypTechniqueGroup group, CARD16 number);
+
+#if 0
 extern	Bool 		TechNeedsParams();
 extern	CARD16 		TechDefault();
-extern	techVecPtr 	FindTechnique();
-
-#endif	/* if defined(_XIEC_TECHNQ) */
+#endif
 
 #endif /* end _XIEH_TECHNQ */

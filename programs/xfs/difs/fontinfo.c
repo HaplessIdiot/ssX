@@ -1,17 +1,12 @@
-/* $XConsortium: fontinfo.c,v 1.13 94/04/17 19:56:15 gildea Exp $ */
+/* $TOG: fontinfo.c /main/14 1998/02/11 10:02:45 kaleb $ */
 /*
  * font data query
  */
 /*
  
-Copyright (c) 1990, 1991  X Consortium
+Copyright 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -19,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
@@ -57,13 +52,33 @@ in this Software without prior written authorization from the X Consortium.
 #include        "fontstruct.h"
 #include        "closestr.h"
 #include        "globals.h"
+#include	<swapreq.h>
+#include	<swaprep.h>
 
 extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
 
+extern int
+QueryBitmaps(
+    ClientPtr   client,
+    ClientFontPtr cfp,
+    int         item_size,
+    fsBitmapFormat format,
+    int         nranges,
+    Bool        range_flag,
+    pointer     range_data);
+extern int
+QueryExtents(
+    ClientPtr   client,
+    ClientFontPtr cfp,
+    int         item_size,
+    int         nranges,
+    Bool        range_flag,
+    pointer     range_data);
+
 void
-CopyCharInfo(ci, dst)
-    CharInfoPtr ci;
-    fsXCharInfo *dst;
+CopyCharInfo(
+    CharInfoPtr ci,
+    fsXCharInfo *dst)
 {
     xCharInfo  *src = &ci->metrics;
 
@@ -77,9 +92,9 @@ CopyCharInfo(ci, dst)
 
 
 int
-convert_props(pinfo, props)
-    FontInfoPtr pinfo;
-    fsPropInfo **props;
+convert_props(
+    FontInfoPtr pinfo,
+    fsPropInfo **props)
 {
     int i;
     int data_len, cur_off;
@@ -156,18 +171,18 @@ convert_props(pinfo, props)
  * a list of ranges
  */
 static fsRange *
-build_range(type, src, item_size, num, all, pfi)
-    Bool        type;
-    pointer     src;
-    int         item_size;
-    int        *num;
-    Bool       *all;
-    FontInfoPtr	pfi;
+build_range(
+    Bool        type,
+    pointer     src,
+    int         item_size,
+    int        *num,
+    Bool       *all,
+    FontInfoPtr	pfi)
 {
     fsRange    *new = (fsRange *) 0,
                *np;
     unsigned long src_num;
-    int         i;
+    unsigned long i;
 
     if (type) {			/* range flag is set, deal with data as a list
 				 * of char2bs */
@@ -243,9 +258,7 @@ build_range(type, src, item_size, num, all, pfi)
  * the bytes of char2b backwards
  */
 static void
-swap_char2b (values, number)
-    fsChar2b *values;
-    int number;
+swap_char2b (fsChar2b *values, int number)
 {
     fsChar2b temp;
     int i;
@@ -257,11 +270,10 @@ swap_char2b (values, number)
     }
 }
 
+#define pPtr ((QEclosurePtr) data)
 
 static Bool
-do_query_extents(client, c)
-    ClientPtr   client;
-    QEclosurePtr c;
+do_query_extents(ClientPtr client, pointer data)
 {
     int         err;
     unsigned long lendata,
@@ -269,55 +281,55 @@ do_query_extents(client, c)
     fsXCharInfo *extents;
     fsQueryXExtents8Reply reply;
 
-    err = GetExtents (c->client, c->pfont,
-		     c->flags, c->nranges, c->range, &num_extents, &extents);
+    err = GetExtents (pPtr->client, pPtr->pfont,
+		     pPtr->flags, pPtr->nranges, pPtr->range, &num_extents, &extents);
     if (err == Suspended) {
-	if (!c->slept) {
-	    c->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
-	    c->slept = TRUE;
-	    ClientSleep(client, do_query_extents, (pointer) c);
+	if (!pPtr->slept) {
+	    pPtr->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
+	    pPtr->slept = TRUE;
+	    ClientSleep(client, do_query_extents, (pointer) pPtr);
 	}
 	return TRUE;
     }
     if (err != Successful) {
-	SendErrToClient(c->client, FontToFSError(err), (pointer) 0);
+	SendErrToClient(pPtr->client, FontToFSError(err), (pointer) 0);
 	goto finish;
     }
     reply.type = FS_Reply;
-    reply.sequenceNumber = c->client->sequence;
+    reply.sequenceNumber = pPtr->client->sequence;
     reply.num_extents = num_extents;
     lendata = SIZEOF(fsXCharInfo) * num_extents;
     reply.length = (SIZEOF(fsQueryXExtents8Reply) + lendata) >> 2;
     if (client->swapped)
 	SwapExtents(extents, num_extents);
-    WriteReplyToClient(c->client, SIZEOF(fsQueryXExtents8Reply), &reply);
-    (void) WriteToClient(c->client, lendata, (char *) extents);
+    WriteReplyToClient(pPtr->client, SIZEOF(fsQueryXExtents8Reply), &reply);
+    (void) WriteToClient(pPtr->client, lendata, (char *) extents);
     fsfree((char *) extents);
 finish:
-    if (c->slept)
-	ClientWakeup(c->client);
-    if (c->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
-	(*c->pfont->unload_glyphs)(c->pfont);
-    fsfree(c->range);
-    fsfree(c);
+    if (pPtr->slept)
+	ClientWakeup(pPtr->client);
+    if (pPtr->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
+	(*pPtr->pfont->unload_glyphs)(pPtr->pfont);
+    fsfree(pPtr->range);
+    fsfree(pPtr);
     return TRUE;
 }
 
 int
-QueryExtents(client, cfp, item_size, nranges, range_flag, range_data)
-    ClientPtr   client;
-    ClientFontPtr cfp;
-    int         item_size;
-    int         nranges;
-    Bool        range_flag;
-    pointer     range_data;
+QueryExtents(
+    ClientPtr   client,
+    ClientFontPtr cfp,
+    int         item_size,
+    int         nranges,
+    Bool        range_flag,
+    pointer     range_data)
 {
     QEclosurePtr c;
     fsRange    *fixed_range;
     Bool        all_glyphs = FALSE;
 
     if (item_size == 2  &&  client->major_version == 1)
-	swap_char2b (range_data, nranges);
+	swap_char2b ((fsChar2b *)range_data, nranges);
 
     fixed_range = build_range(range_flag, range_data, item_size,
 			      &nranges, &all_glyphs, &cfp->font->info);
@@ -337,14 +349,15 @@ QueryExtents(client, cfp, item_size, nranges, range_flag, range_data)
     c->nranges = nranges;
     c->range = fixed_range;
 
-    (void) do_query_extents(client, c);
+    (void) do_query_extents(client, (pointer) c);
     return FSSuccess;
 }
 
+#undef pPtr
+#define pPtr ((QBclosurePtr) data)
+
 static Bool
-do_query_bitmaps(client, c)
-    ClientPtr   client;
-    QBclosurePtr c;
+do_query_bitmaps(ClientPtr client, pointer data)
 {
     int         err;
     unsigned long num_glyphs, data_size;
@@ -353,65 +366,65 @@ do_query_bitmaps(client, c)
     fsQueryXBitmaps8Reply reply;
     int		freedata;
 
-    err = GetBitmaps (c->client, c->pfont, c->format,
-				    c->flags, c->nranges, c->range,
+    err = GetBitmaps (pPtr->client, pPtr->pfont, pPtr->format,
+				    pPtr->flags, pPtr->nranges, pPtr->range,
 			     &data_size, &num_glyphs, &offsets, &glyph_data, &freedata);
 
     if (err == Suspended) {
-	if (!c->slept) {
-	    c->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
-	    c->slept = TRUE;
-	    ClientSleep(client, do_query_bitmaps, (pointer) c);
+	if (!pPtr->slept) {
+	    pPtr->pfont->unload_glyphs = 0;  /* Not a safe call for this font */
+	    pPtr->slept = TRUE;
+	    ClientSleep(client, do_query_bitmaps, (pointer) pPtr);
 	}
 	return TRUE;
     }
     if (err != Successful) {
-	SendErrToClient(c->client, FontToFSError(err), (pointer) 0);
+	SendErrToClient(pPtr->client, FontToFSError(err), (pointer) 0);
 	goto finish;
     }
     reply.type = FS_Reply;
-    reply.sequenceNumber = c->client->sequence;
+    reply.sequenceNumber = pPtr->client->sequence;
     reply.replies_hint = 0;
     reply.num_chars = num_glyphs;
     reply.nbytes = data_size;
     reply.length = (SIZEOF(fsQueryXBitmaps8Reply) + data_size +
 		    (SIZEOF(fsOffset32) * num_glyphs) + 3) >> 2;
 
-    WriteReplyToClient(c->client, SIZEOF(fsQueryXBitmaps8Reply), &reply);
+    WriteReplyToClient(pPtr->client, SIZEOF(fsQueryXBitmaps8Reply), &reply);
     if (client->swapped)
 	SwapLongs((long *)offsets, num_glyphs * 2);
-    (void) WriteToClient(c->client, (num_glyphs * SIZEOF(fsOffset32)),
+    (void) WriteToClient(pPtr->client, (num_glyphs * SIZEOF(fsOffset32)),
 			 (char *) offsets);
-    (void) WriteToClient(c->client, data_size, (char *) glyph_data);
+    (void) WriteToClient(pPtr->client, data_size, (char *) glyph_data);
     fsfree((char *) offsets);
     if (freedata)
 	fsfree((char *) glyph_data);
 finish:
-    if (c->slept)
-	ClientWakeup(c->client);
-    if (c->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
-	(*c->pfont->unload_glyphs)(c->pfont);
-    fsfree(c->range);
-    fsfree(c);
+    if (pPtr->slept)
+	ClientWakeup(pPtr->client);
+    if (pPtr->pfont->unload_glyphs)  /* For rasterizers that want to save memory */
+	(*pPtr->pfont->unload_glyphs)(pPtr->pfont);
+    fsfree(pPtr->range);
+    fsfree(pPtr);
     return TRUE;
 }
 
 int
-QueryBitmaps(client, cfp, item_size, format, nranges, range_flag, range_data)
-    ClientPtr   client;
-    ClientFontPtr cfp;
-    int         item_size;
-    fsBitmapFormat format;
-    int         nranges;
-    Bool        range_flag;
-    pointer     range_data;
+QueryBitmaps(
+    ClientPtr   client,
+    ClientFontPtr cfp,
+    int         item_size,
+    fsBitmapFormat format,
+    int         nranges,
+    Bool        range_flag,
+    pointer     range_data)
 {
     QBclosurePtr c;
     fsRange    *fixed_range;
     Bool        all_glyphs = FALSE;
 
     if (item_size == 2  &&  client->major_version == 1)
-	swap_char2b (range_data, nranges);
+	swap_char2b ((fsChar2b *)range_data, nranges);
 
     fixed_range = build_range(range_flag, range_data, item_size,
 			      &nranges, &all_glyphs, &cfp->font->info);
@@ -431,6 +444,6 @@ QueryBitmaps(client, cfp, item_size, format, nranges, range_flag, range_data)
     c->range = fixed_range;
     c->format = format;
 
-    (void) do_query_bitmaps(client, c);
+    (void) do_query_bitmaps(client, (pointer) c);
     return FSSuccess;
 }

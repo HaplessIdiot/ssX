@@ -73,13 +73,13 @@ extern void FourByteSwap();
 static CharInfoRec  junkDefault;
 
 static int
-getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
-    FontPtr	pfont;
-    int		num_ranges;
-    fsRange	*range;
-    Bool	ink_metrics;
-    int		*nump;		/* return */
-    CharInfoPtr	**retp;		/* return */
+getCharInfos (
+    FontPtr	pfont,
+    int		num_ranges,
+    fsRange	*range,
+    Bool	ink_metrics,
+    int		*nump,		/* return */
+    CharInfoPtr	**retp)		/* return */
 {
     CharInfoPtr	*xchars, *xci;
     int		nchars;
@@ -165,7 +165,7 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
 		    return err;
 		}
 		if (glyphCount != 1 || 
-		    *xci == defaultPtr && defaultCh != ((r<<8)+c))
+		   (*xci == defaultPtr && defaultCh != ((r<<8)+c)))
 		    *xci = &junkDefault;
 		xci++;
 	    }
@@ -177,14 +177,14 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
 }
 
 int
-GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
-    ClientPtr     client;
-    FontPtr     pfont;
-    Mask        flags;
-    unsigned long num_ranges;
-    fsRange    *range;
-    unsigned long *num_extents;	/* return */
-    fsXCharInfo **data;		/* return */
+GetExtents(
+    ClientPtr   client,
+    FontPtr     pfont,
+    Mask        flags,
+    unsigned long num_ranges,
+    fsRange    *range,
+    unsigned long *num_extents,	/* return */
+    fsXCharInfo **data)		/* return */
 {
     unsigned long size;
     fsXCharInfo *ci;
@@ -235,19 +235,18 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
 }
 
 static int
-packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
-		offsets, data, freeData)
-    ClientPtr   client;
-    FontPtr     pfont;
-    int         format;
-    Mask        flags;
-    unsigned long num_ranges;
-    fsRange    *range;
-    int        *tsize;
-    unsigned long *num_glyphs;
-    fsOffset32  **offsets;
-    pointer    *data;
-    int		*freeData;
+packGlyphs (
+    ClientPtr   client,
+    FontPtr     pfont,
+    int         format,
+    Mask        flags,
+    unsigned long num_ranges,
+    fsRange    *range,
+    int        *tsize,
+    unsigned long *num_glyphs,
+    fsOffset32  **offsets,
+    pointer     *data,
+    int		*freeData)
 {
     int         i;
     fsOffset32	*lengths, *l;
@@ -258,7 +257,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     int		height, dstbpr, charsize;
     int		dst_off, src_off;
     Bool	contiguous, reformat;
-    long	nchars;
+    int		nchars;
     int         src_glyph_pad = pfont->glyph;
     int         src_bit_order = pfont->bit;
     int         src_byte_order = pfont->byte;
@@ -595,19 +594,18 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
 
 /* ARGSUSED */
 int
-GetBitmaps(client, pfont, format, flags, num_ranges, range,
-		 size, num_glyphs, offsets, data, freeData)
-    ClientPtr     client;
-    FontPtr     pfont;
-    fsBitmapFormat format;
-    Mask        flags;
-    unsigned long num_ranges;
-    fsRange    *range;
-    int        *size;
-    unsigned long *num_glyphs;
-    fsOffset32  **offsets;
-    pointer    *data;
-    int		*freeData;
+GetBitmaps(
+    ClientPtr   client,
+    FontPtr     pfont,
+    fsBitmapFormat format,
+    Mask        flags,
+    unsigned long num_ranges,
+    fsRange    *range,
+    int        *size,
+    unsigned long *num_glyphs,
+    fsOffset32  **offsets,
+    pointer    *data,
+    int		*freeData)
 {
     int err;
 

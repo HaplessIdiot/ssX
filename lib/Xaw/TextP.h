@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.5 1998/10/03 08:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.6 1998/10/10 15:25:09 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -81,7 +81,7 @@ extern Cardinal _XawTextActionsTableCount;
 typedef struct {
   XawTextPosition position;
   Position y;
-  Dimension textWidth;
+  unsigned int textWidth;
 } XawTextLineTableEntry, *XawTextLineTableEntryPtr;
 
 typedef struct {
@@ -166,16 +166,16 @@ typedef struct _TextPart {
     XawTextSelection	s;
   XawTextSelectType *sarray;	     /* Array to cycle for selections */
     XawTextSelectionSalt    *salt;	     /* salted away selections */
+#if 0
     int			options;	     /* wordbreak, scroll, etc. */
+#else
+    int			left_margin;	     /* options is not used */
+#endif
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
     Boolean		display_caret;	     /* insertion pt visible iff T */
     Boolean             auto_fill;           /* Auto fill mode? */
-#ifndef notdef
   XawTextScrollMode scroll_vert, scroll_horiz;
-#else
-  Boolean scroll_vert, scroll_horiz; /* show vertical scrollbar? */
-#endif
   XawTextWrapMode wrap;		     /* The type of wrapping */
 #ifndef notdef
   XawTextResizeMode text1;

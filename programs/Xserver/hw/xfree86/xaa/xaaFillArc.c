@@ -21,7 +21,7 @@
  * 
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillArc.c,v 1.1.2.2 1998/07/18 18:14:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillArc.c,v 1.2 1998/07/25 16:58:44 dawes Exp $ */
  
 /*
  * Filled solid arcs, based on cfbfillarc.c.
@@ -47,8 +47,6 @@
 #include "xaalocal.h"
 #include "mifillarc.h"
 #include "mi.h"
-#define PSZ 8	/* PSZ doesn't matter */
-#include "cfb.h"
 
 /*
  * This is based on the integer-math versions from mi. Perhaps on a
@@ -171,7 +169,7 @@ XAAPolyFillArcSolid(pDraw, pGC, narcs, parcs)
     BoxRec box;
     RegionPtr cclip;
 
-    cclip = cfbGetCompositeClip(pGC);
+    cclip = pGC->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))

@@ -67,7 +67,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. May 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/ppoint.c,v 3.1 1998/10/04 09:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/ppoint.c,v 3.2 1998/10/05 13:22:15 dawes Exp $ */
 
 #define _XIEC_PPOINT
 #define _XIEC_POINT
@@ -84,13 +84,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -99,16 +93,12 @@ terms and conditions:
 #include <element.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakePoint();
+extern peDefPtr MakePoint(floDefPtr flo, xieTypPhototag tag, xieFlo *pe);
 
 /*
  *  routines internal to this module
  */
-static Bool	PrepPoint();
+static Bool PrepPoint(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -121,10 +111,7 @@ static diElemVecRec pPointVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a point element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakePoint(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakePoint(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs;
   peDefPtr ped;
@@ -176,9 +163,7 @@ peDefPtr MakePoint(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepPoint(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepPoint(floDefPtr flo, peDefPtr ped)
 {
   xieFloPoint *raw = (xieFloPoint *)ped->elemRaw;
 

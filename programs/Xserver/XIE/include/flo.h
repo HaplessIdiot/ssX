@@ -1,15 +1,10 @@
-/* $XConsortium: flo.h,v 1.4 94/04/17 20:34:03 rws Exp $ */
+/* $TOG: flo.h /main/5 1998/02/10 10:27:46 kaleb $ */
 /**** module flo.h ****/
 /****************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -75,6 +70,8 @@ terms and conditions:
 #ifndef _XIEH_FLO
 #define _XIEH_FLO
 
+#include <XIEprotost.h>
+
 /* various structure pointers
  */
 typedef struct _flotex          *ddFloTexPtr;
@@ -94,14 +91,20 @@ typedef void		(*xieVoidProc)();
 
 
 #ifndef _XIEC_FLO
-extern	struct _flodef *MakeFlo();
-extern	Bool            EditFlo();
-extern  void		PrepFlo();
-extern	struct _flodef *FreeFlo();
-extern	struct _pedef  *MakePEDef();
-extern	struct _pedef  *FreePEDef();
-extern  void		SendClientData();
-extern  Bool		UpdateFormatfromLevels();
+extern  struct _flodef *MakeFlo(ClientPtr client, CARD16 peCnt, xieFlo *peLst);
+extern  Bool            EditFlo(struct _flodef * flo, xieTypPhototag start, xieTypPhototag end, xieFlo *peLst);
+extern  void		PrepFlo(struct _flodef * flo);
+extern	struct _flodef *FreeFlo(struct _flodef * flo);
+extern	struct _pedef  *MakePEDef(CARD32 inFloCnt, CARD32 rawLen, CARD32 pvtLen);
+extern	struct _pedef  *FreePEDef(struct _pedef * ped);
+extern  void		SendClientData(
+				struct _flodef * flo,
+				struct _pedef * ped,
+				CARD8   *data,
+				CARD32  bytes,
+				CARD8   swapUnits,
+				CARD8   state);
+extern  Bool		UpdateFormatfromLevels(struct _pedef * ped);
 #endif
 
 #ifndef _XIEC_EVENT

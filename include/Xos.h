@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.24 1998/08/16 10:24:05 dawes Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.25 1998/10/02 07:38:50 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -268,6 +268,7 @@ typedef unsigned long fd_mask;
 #ifdef __GNU__
 #define PATH_MAX 4096
 #define MAXPATHLEN 4096
+#define OPEN_MAX 256 /* We define a reasonable limit.  */
 #endif
 
 /* use POSIX name for signal */

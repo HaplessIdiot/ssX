@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pmath.c,v 3.1 1998/10/04 09:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pmath.c,v 3.2 1998/10/05 13:22:14 dawes Exp $ */
 
 #define _XIEC_PMATH
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -96,16 +90,10 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeMath();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepMath();
+static Bool PrepMath(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pMathVec =
 /*------------------------------------------------------------------------
 ----------------------- routine: make a math element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeMath(flo,tag,pe)
-	floDefPtr      flo;
-	xieTypPhototag tag;
-	xieFlo        *pe;
+peDefPtr MakeMath(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
 	int inputs;
 	peDefPtr ped;
@@ -169,9 +154,7 @@ peDefPtr MakeMath(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepMath(flo,ped)
-	floDefPtr  flo;
-	peDefPtr   ped;
+static Bool PrepMath(floDefPtr flo, peDefPtr ped)
 {
 	xieFloMath *raw = (xieFloMath *)ped->elemRaw;
 	inFloPtr  ind, in = &ped->inFloLst[SRCt1];

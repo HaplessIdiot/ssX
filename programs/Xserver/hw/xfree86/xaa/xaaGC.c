@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.4 1998/09/05 06:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.5 1998/10/05 13:23:17 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -28,6 +28,8 @@ GCFuncs XAAGCFuncs = {
     XAAChangeClip, XAADestroyClip, XAACopyClip
 };
 
+extern GCOps XAAPixmapOps;
+
 Bool
 XAACreateGC(GCPtr pGC)
 {
@@ -42,9 +44,10 @@ XAACreateGC(GCPtr pGC)
     pGCPriv->wrapOps = NULL;
     pGCPriv->wrapFuncs = pGC->funcs;
     pGCPriv->XAAOps = &XAAFallbackOps;
-    pGCPriv->isPixmap = TRUE;
+    pGCPriv->flags = 0;
     pGCPriv->DashLength = 0;
     pGCPriv->DashPattern = NULL;
+    pGCPriv->changes = 0;
     /* initialize any other private fields here */
 
     pGC->funcs = &XAAGCFuncs;
@@ -60,24 +63,51 @@ XAAValidateGC(
    GCPtr         pGC,
    unsigned long changes,
    DrawablePtr   pDraw 
-)
-{
+){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     XAA_GC_FUNC_PROLOGUE(pGC);
+
     (*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
 
-    if(!infoRec->pScrn->vtSema || (pDraw->type != DRAWABLE_WINDOW)) {
-	pGCPriv->isPixmap = TRUE;
-	pGCPriv->wrapOps = NULL;
-    } else {
-	pGCPriv->wrapOps = pGC->ops;
+    if(pGC->bgPixel == -1)
+	pGC->bgPixel &= infoRec->FullPlanemask;
+
+    if(pDraw->type != DRAWABLE_WINDOW) {
+	pGCPriv->flags = OPS_ARE_PIXMAP;
+        pGCPriv->changes |= changes;
+    } 
+    else if(!infoRec->pScrn->vtSema) {
+	pGCPriv->flags = 0;
+        pGCPriv->changes |= changes;
+    }
+    else {
+	if(!(pGCPriv->flags & OPS_ARE_ACCEL)) {
+	    changes |= pGCPriv->changes;
+	    pGCPriv->changes = 0;
+	}
+	pGCPriv->flags = OPS_ARE_ACCEL;
     }
 
     XAA_GC_FUNC_EPILOGUE(pGC);
 
-    if(!pGCPriv->wrapOps) return;
+    if(!(pGCPriv->flags & OPS_ARE_ACCEL)) return;
 
-    /* if we get here, we are going to be using acceleration */
+    if((changes & GCTile) && !pGC->tileIsPixel && pGC->tile.pixmap){
+	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+		
+	if(pixPriv->flags & DIRTY) {
+	    pixPriv->flags = 0;
+	    pGC->tile.pixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	}
+    }
+    if((changes & GCStipple) && pGC->stipple){
+	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+		
+	if(pixPriv->flags & DIRTY) {
+	    pixPriv->flags = 0;
+	    pGC->stipple->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	}
+    }
 
     /* If our Ops are still the default ones we need to allocate new ones */
     if(pGC->ops == &XAAFallbackOps) {
@@ -89,11 +119,6 @@ XAAValidateGC(
 	memcpy(pGCPriv->XAAOps, &XAAFallbackOps, sizeof(GCOps));
 	pGC->ops = pGCPriv->XAAOps;
 	changes = ~0;
-    }
-
-    if(pGCPriv->isPixmap) {
-	changes = ~0;
-	pGCPriv->isPixmap = FALSE;
     }
 
     if((changes & GCDashList) && infoRec->ComputeDash)
@@ -224,3 +249,331 @@ XAADestroyClip(GCPtr pGC)
     (* pGC->funcs->DestroyClip)(pGC);
     XAA_GC_FUNC_EPILOGUE (pGC);
 }
+ 
+/**** Pixmap Wrappers ****/
+
+
+
+static void
+XAAFillSpansPixmap(
+    DrawablePtr pDraw,
+    GC		*pGC,
+    int		nInit,	
+    DDXPointPtr pptInit,	
+    int *pwidthInit,		
+    int fSorted 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);    
+    (*pGC->ops->FillSpans)(pDraw, pGC, nInit, pptInit, pwidthInit, fSorted);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAASetSpansPixmap(
+    DrawablePtr		pDraw,
+    GCPtr		pGC,
+    char		*pcharsrc,
+    register DDXPointPtr ppt,
+    int			*pwidth,
+    int			nspans,
+    int			fSorted 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->SetSpans)(pDraw, pGC, pcharsrc, ppt, pwidth, nspans, fSorted);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAPutImagePixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		depth, 
+    int x, int y, int w, int h,
+    int		leftPad,
+    int		format,
+    char 	*pImage 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PutImage)(pDraw, pGC, depth, x, y, w, h, 
+		leftPad, format, pImage);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static RegionPtr
+XAACopyAreaPixmap(
+    DrawablePtr pSrc,
+    DrawablePtr pDst,
+    GC *pGC,
+    int srcx, int srcy,
+    int width, int height,
+    int dstx, int dsty 
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    RegionPtr ret;
+
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDst);
+
+    if(infoRec->pScrn->vtSema && (pSrc->type == DRAWABLE_WINDOW)){
+	if(infoRec->NeedToSync) {
+	   (*infoRec->Sync)(infoRec->pScrn);
+	    infoRec->NeedToSync = FALSE;
+	}
+    }    
+
+    ret = (*pGC->ops->CopyArea)(pSrc, pDst,
+            pGC, srcx, srcy, width, height, dstx, dsty);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+    return ret;
+}
+
+static RegionPtr
+XAACopyPlanePixmap(
+    DrawablePtr	pSrc,
+    DrawablePtr	pDst,
+    GCPtr pGC,
+    int	srcx, int srcy,
+    int	width, int height,
+    int	dstx, int dsty,
+    unsigned long bitPlane 
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    RegionPtr ret;
+
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDst);
+
+    if(infoRec->pScrn->vtSema && (pSrc->type == DRAWABLE_WINDOW)){
+	if(infoRec->NeedToSync) {
+	   (*infoRec->Sync)(infoRec->pScrn);
+	    infoRec->NeedToSync = FALSE;
+	}
+    }    
+
+    ret = (*pGC->ops->CopyPlane)(pSrc, pDst,
+	       pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+    return ret;
+}
+
+static void
+XAAPolyPointPixmap(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int mode,
+    int npt,
+    xPoint *pptInit 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyPoint)(pDraw, pGC, mode, npt, pptInit);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+
+static void
+XAAPolylinesPixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		mode,		
+    int		npt,		
+    DDXPointPtr pptInit 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->Polylines)(pDraw, pGC, mode, npt, pptInit);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void 
+XAAPolySegmentPixmap(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		nseg,
+    xSegment	*pSeg 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolySegment)(pDraw, pGC, nseg, pSeg);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAPolyRectanglePixmap(
+    DrawablePtr  pDraw,
+    GCPtr        pGC,
+    int	         nRectsInit,
+    xRectangle  *pRectsInit 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyRectangle)(pDraw, pGC, nRectsInit, pRectsInit);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAPolyArcPixmap(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		narcs,
+    xArc	*parcs 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyArc)(pDraw, pGC, narcs, parcs);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAFillPolygonPixmap(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		shape,
+    int		mode,
+    int		count,
+    DDXPointPtr	ptsIn 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->FillPolygon)(pDraw, pGC, shape, mode, count, ptsIn);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+
+static void 
+XAAPolyFillRectPixmap(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		nrectFill, 
+    xRectangle	*prectInit 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+
+static void
+XAAPolyFillArcPixmap(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		narcs,
+    xArc	*parcs 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyFillArc)(pDraw, pGC, narcs, parcs);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static int
+XAAPolyText8Pixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		x, 
+    int 	y,
+    int 	count,
+    char	*chars 
+){
+    int ret;
+
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    ret = (*pGC->ops->PolyText8)(pDraw, pGC, x, y, count, chars);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+    return ret;
+}
+
+static int
+XAAPolyText16Pixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		x,
+    int		y,
+    int 	count,
+    unsigned short *chars 
+){
+    int ret;
+
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    ret = (*pGC->ops->PolyText16)(pDraw, pGC, x, y, count, chars);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+    return ret;
+}
+
+static void
+XAAImageText8Pixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		x, 
+    int		y,
+    int 	count,
+    char	*chars 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->ImageText8)(pDraw, pGC, x, y, count, chars);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+static void
+XAAImageText16Pixmap(
+    DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		x,
+    int		y,
+    int 	count,
+    unsigned short *chars 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->ImageText16)(pDraw, pGC, x, y, count, chars);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+
+static void
+XAAImageGlyphBltPixmap(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int xInit, int yInit,
+    unsigned int nglyph,
+    CharInfoPtr *ppci,
+    pointer pglyphBase 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, xInit, yInit, nglyph, 
+					ppci, pglyphBase);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAPolyGlyphBltPixmap(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int xInit, int yInit,
+    unsigned int nglyph,
+    CharInfoPtr *ppci,
+    pointer pglyphBase 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PolyGlyphBlt)(pDraw, pGC, xInit, yInit, nglyph, 
+				ppci, pglyphBase);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+static void
+XAAPushPixelsPixmap(
+    GCPtr	pGC,
+    PixmapPtr	pBitMap,
+    DrawablePtr pDraw,
+    int	dx, int dy, int xOrg, int yOrg 
+){
+    XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw);
+    (*pGC->ops->PushPixels)(pGC, pBitMap, pDraw, dx, dy, xOrg, yOrg);
+    XAA_PIXMAP_OP_EPILOGUE(pGC);
+}
+
+GCOps XAAPixmapOps = {
+    XAAFillSpansPixmap, XAASetSpansPixmap, 
+    XAAPutImagePixmap, XAACopyAreaPixmap, 
+    XAACopyPlanePixmap, XAAPolyPointPixmap, 
+    XAAPolylinesPixmap, XAAPolySegmentPixmap, 
+    XAAPolyRectanglePixmap, XAAPolyArcPixmap, 
+    XAAFillPolygonPixmap, XAAPolyFillRectPixmap, 
+    XAAPolyFillArcPixmap, XAAPolyText8Pixmap, 
+    XAAPolyText16Pixmap, XAAImageText8Pixmap, 
+    XAAImageText16Pixmap, XAAImageGlyphBltPixmap, 
+    XAAPolyGlyphBltPixmap, XAAPushPixelsPixmap,
+#ifdef NEED_LINEHELPER
+    NULL,
+#endif
+    {NULL}		/* devPrivate */
+};

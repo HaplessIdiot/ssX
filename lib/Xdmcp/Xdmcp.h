@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.1 1996/01/05 13:12:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.2 1998/10/10 15:25:18 dawes Exp $ */
 
 #ifndef _XDMCP_H_
 #define _XDMCP_H_
@@ -105,9 +105,9 @@ extern int XdmcpWriteARRAY16(XdmcpBufferPtr buffer, ARRAY16Ptr array);
 extern int XdmcpWriteARRAY32(XdmcpBufferPtr buffer, ARRAY32Ptr array);
 extern int XdmcpWriteARRAY8(XdmcpBufferPtr buffer, ARRAY8Ptr array);
 extern int XdmcpWriteARRAYofARRAY8(XdmcpBufferPtr buffer, ARRAYofARRAY8Ptr array);
-extern int XdmcpWriteCARD16(XdmcpBufferPtr buffer, CARD16 value);
-extern int XdmcpWriteCARD32(XdmcpBufferPtr buffer, CARD32 value);
-extern int XdmcpWriteCARD8(XdmcpBufferPtr buffer, CARD8 value);
+extern int XdmcpWriteCARD16(XdmcpBufferPtr buffer, unsigned value);
+extern int XdmcpWriteCARD32(XdmcpBufferPtr buffer, unsigned value);
+extern int XdmcpWriteCARD8(XdmcpBufferPtr buffer, unsigned value);
 extern int XdmcpWriteHeader(XdmcpBufferPtr  buffer, XdmcpHeaderPtr  header);
 
 extern int XdmcpFlush(int fd, XdmcpBufferPtr buffer, XdmcpNetaddr to, int tolen);

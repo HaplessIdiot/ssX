@@ -1,15 +1,10 @@
-/* $XConsortium: miuncomp.h,v 1.4 94/04/17 20:35:03 rws Exp $ */
+/* $TOG: miuncomp.h /main/5 1998/02/09 16:18:02 kaleb $ */
 /**** module miuncomp.h ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -72,10 +67,18 @@ terms and conditions:
   
 *****************************************************************************/
 
+#define MIUNCOMP_BP_ARGS \
+     BytePixel *src, \
+     BytePixel *dst, \
+     CARD32 count, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
+
 typedef struct _miuncompdef {
   stripPtr next_strip;	    /* used by import photomap only */
-  void   (*action)();
-  void	 (*tripleaction)(); /* need to brush up on this */
+  void   (*action)(/*MIUNCOMP_BP_ARGS*/);
+  void	 (*tripleaction)(MIUNCOMP_BP_ARGS); /* (unknown params; not used?) */
   CARD32 Bstride;
   CARD8	 srcoffset;	    /* Number of bytes offset to this pixel's band*/
   CARD8  mask;	            /* For obtaining subbyte pixels 	 	*/
@@ -91,46 +94,124 @@ typedef struct _miuncompdef {
 #ifdef _XIEC_MIUNCOMP
 
 /* Bit reversal routine for single band uncompressed bitonal images */
-void CPreverse_bits(), CPpass_bits();
-void CPextractstreambits(), CPextractswappedstreambits();
+extern void CPreverse_bits(MIUNCOMP_BP_ARGS);
+extern void CPpass_bits(MIUNCOMP_BP_ARGS);
+extern void CPextractstreambits(MIUNCOMP_BP_ARGS);
+extern void CPextractswappedstreambits(MIUNCOMP_BP_ARGS);
 
 /* Byte copy routine for nicely aligned data */
-void CPpass_bytes();
+extern void CPpass_bytes(MIUNCOMP_BP_ARGS);
+
+#define MIUNCOMP_PP_ARGS \
+     PairPixel *src, \
+     PairPixel *dst, \
+     CARD32 count, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
 
 /* Pairpixel copy routine for nicely aligned data */
-void CPpass_pairs(), CPswap_pairs();
+extern void CPpass_pairs(MIUNCOMP_PP_ARGS);
+extern void CPswap_pairs(MIUNCOMP_PP_ARGS);
+
+#define MIUNCOMP_QP_ARGS \
+     QuadPixel *src, \
+     QuadPixel *dst, \
+     CARD32 count, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
 
 /* Quadpixel copy routine for nicely aligned data */
-void CPpass_quads(), CPswap_quads();
+extern void CPpass_quads(MIUNCOMP_QP_ARGS);
+extern void CPswap_quads(MIUNCOMP_QP_ARGS);
 
 #if XIE_FULL
+
+#define MIUNCOMP_SP_ARGS \
+     PairPixel *isrc, \
+     PairPixel *dst, \
+     CARD32 count, \
+     miUncompPtr pvt
+
+#define MIUNCOMP_SB_ARGS \
+     BytePixel *src, \
+     BytePixel *dst, \
+     CARD32 count, \
+     miUncompPtr pvt
+
 /* Action routines used by Triple band by pixel decoding */
-void StoB(), StoP(), StosP(), SbtoB(), Sbtob();
+extern void StoB(MIUNCOMP_SB_ARGS);
+extern void StoP(MIUNCOMP_SP_ARGS);
+extern void StosP(MIUNCOMP_SP_ARGS);
+extern void SbtoB(MIUNCOMP_SB_ARGS);
+extern void Sbtob(MIUNCOMP_SB_ARGS);
 #endif /* XIE_FULL */
 
+#define MIUNCOMP_UB_ARGS \
+     CARD8 *src, \
+     BytePixel *dst, \
+     CARD32 numcmp, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
+
+#define MIUNCOMP_UP_ARGS \
+     CARD8 *src, \
+     PairPixel *dst, \
+     CARD32 numcmp, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
+
+#define MIUNCOMP_UQ_ARGS \
+     CARD8 *src, \
+     QuadPixel *dst, \
+     CARD32 numcmp, \
+     CARD32 leftpad, \
+     CARD32 depth, \
+     CARD32 stride
+
 /* Single band unaligned Stream to Pixel conversion routines */
-void LLUBtoB(), LMUBtoB(), MLUBtoB(), MMUBtoB();
-void LLUPtoP(), LMUPtoP(), MLUPtoP(), MMUPtoP();
-void LLUQtoQ(), LMUQtoQ(), MLUQtoQ(), MMUQtoQ();
+extern void LLUBtoB(MIUNCOMP_UB_ARGS);
+extern void LMUBtoB(MIUNCOMP_UB_ARGS);
+extern void MLUBtoB(MIUNCOMP_UB_ARGS);
+extern void MMUBtoB(MIUNCOMP_UB_ARGS);
+extern void LLUPtoP(MIUNCOMP_UP_ARGS);
+extern void LMUPtoP(MIUNCOMP_UP_ARGS);
+extern void MLUPtoP(MIUNCOMP_UP_ARGS);
+extern void MMUPtoP(MIUNCOMP_UP_ARGS);
+extern void LLUQtoQ(MIUNCOMP_UQ_ARGS);
+extern void LMUQtoQ(MIUNCOMP_UQ_ARGS);
+extern void MLUQtoQ(MIUNCOMP_UQ_ARGS);
+extern void MMUQtoQ(MIUNCOMP_UQ_ARGS);
 
 #else /* ifdef _XIEC_MIUNCOMP */
 
 /* Bit reversal routine for single band uncompressed bitonal images */
-extern void CPreverse_bits(), CPpass_bits();
-extern void CPextractstreambits(), CPextractswappedstreambits();
+extern void CPreverse_bits();
+extern void CPpass_bits();
+extern void CPextractstreambits();
+extern void CPextractswappedstreambits();
 
 /* Byte copy routine for nicely aligned data */
 extern void CPpass_bytes();
 
 /* Pairpixel copy routine for nicely aligned data */
-extern void CPpass_pairs(), CPswap_pairs();
+extern void CPpass_pairs();
+extern void CPswap_pairs();
 
 /* Quadpixel copy routine for nicely aligned data */
-extern void CPpass_quads(), CPswap_quads();
+extern void CPpass_quads();
+extern void CPswap_quads();
 
 #if XIE_FULL
 /* Action routines used by Triple band by pixel decoding */
-extern void StoB(), StoP(), StosP(), SbtoB(), Sbtob();
+extern void StoB();
+extern void StoP();
+extern void StosP();
+extern void SbtoB();
+extern void Sbtob();
 
 /* Array of pointers to actions routines for unaligned triple band by pixel */
 extern void (*ExtractTripleFuncs[2][2][2][2][2])();
@@ -138,8 +219,17 @@ extern void (*ExtractTripleFuncs[2][2][2][2][2])();
 #endif /* XIE_FULL */
 
 /* Single band unaligned Stream to Pixel conversion routines */
-extern void LLUBtoB(), LMUBtoB(), MLUBtoB(), MMUBtoB();
-extern void LLUPtoP(), LMUPtoP(), MLUPtoP(), MMUPtoP();
-extern void LLUQtoQ(), LMUQtoQ(), MLUQtoQ(), MMUQtoQ();
+extern void LLUBtoB();
+extern void LMUBtoB();
+extern void MLUBtoB();
+extern void MMUBtoB();
+extern void LLUPtoP();
+extern void LMUPtoP();
+extern void MLUPtoP();
+extern void MMUPtoP();
+extern void LLUQtoQ();
+extern void LMUQtoQ();
+extern void MLUQtoQ();
+extern void MMUQtoQ();
 
 #endif /* ifdef _XIEC_MIUNCOMP */

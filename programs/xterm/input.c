@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.22 1998/08/29 05:44:15 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.23 1998/10/10 15:25:49 dawes Exp $
  */
 
 /*
@@ -28,11 +28,7 @@
 
 /* input.c */
 
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
-
-#include "ptyx.h"		/* gets Xt headers, too */
+#include <xterm.h>
 
 #include <X11/keysym.h>
 #if HAVE_X11_DECKEYSYM_H
@@ -40,10 +36,8 @@
 #endif
 
 #include <X11/Xutil.h>
-#include <stdio.h>
 
-#include "xterm.h"
-#include "data.h"
+#include <data.h>
 
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";

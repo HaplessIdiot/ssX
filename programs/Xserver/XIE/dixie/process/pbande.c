@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbande.c,v 3.1 1998/10/04 09:35:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbande.c,v 3.2 1998/10/05 13:22:10 dawes Exp $ */
 
 #define _XIEC_PBANDE
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeBandExt();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepBandExt();
+static Bool PrepBandExt(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pBandExtVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a blend element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeBandExt(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeBandExt(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   double        *coef;
   peDefPtr       ped;
@@ -172,9 +157,7 @@ peDefPtr MakeBandExt(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepBandExt(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepBandExt(floDefPtr flo, peDefPtr ped)
 {
   xieFloBandExtract *raw = (xieFloBandExtract *)ped->elemRaw;
   inFloPtr           inf = &ped->inFloLst[SRCtag]; 

@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley  -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iroi.c,v 3.1 1998/10/04 09:35:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/iroi.c,v 3.2 1998/10/05 13:22:08 dawes Exp $ */
 
 #define _XIEC_IROI
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
@@ -99,17 +93,11 @@ terms and conditions:
 #include <element.h>
 #include <error.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeIROI();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepIROI();
-static Bool    DebriefIROI();
+static Bool PrepIROI(floDefPtr flo, peDefPtr ped);
+static Bool DebriefIROI(floDefPtr flo, peDefPtr ped, Bool ok);
 
 /*
  * dixie entry points
@@ -123,10 +111,7 @@ static diElemVecRec iROIVec =
 /*------------------------------------------------------------------------
 ----------------- routine: make an ImportROI element ----------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeIROI(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeIROI(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   inFloPtr inFlo;
@@ -161,9 +146,7 @@ peDefPtr MakeIROI(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepIROI(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepIROI(floDefPtr flo, peDefPtr ped)
 {
   xieFloImportROI *raw = (xieFloImportROI *)ped->elemRaw;
   iROIDefPtr pvt = (iROIDefPtr) ped->elemPvt;
@@ -191,10 +174,7 @@ static Bool PrepIROI(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------- routine: post execution cleanup -------------------
 ------------------------------------------------------------------------*/
-static Bool DebriefIROI(flo,ped,ok)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     Bool	ok;
+static Bool DebriefIROI(floDefPtr flo, peDefPtr ped, Bool ok)
 {
   xieFloImportROI *raw = (xieFloImportROI *)ped->elemRaw;
   iROIDefPtr pvt = (iROIDefPtr)ped->elemPvt;

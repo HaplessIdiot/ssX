@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.24 1998/09/26 13:24:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.25 1998/10/05 13:23:10 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -186,5 +186,7 @@ Bool Mga8AccelInit(ScreenPtr pScreen);
 Bool Mga16AccelInit(ScreenPtr pScreen);
 Bool Mga24AccelInit(ScreenPtr pScreen);
 Bool Mga32AccelInit(ScreenPtr pScreen);
+
+void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
 
 #endif

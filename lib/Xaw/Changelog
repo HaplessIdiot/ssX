@@ -567,5 +567,54 @@ will not allways be displayed correctly.
   supported platforms (surely it will not work 'as is' with OS/2).
 
 
+#2083 18 Oct 1998
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.8 1998/09/05 06:36:06 dawes Exp $
+-- XAW --
++ Changed the functions {Ascii,Multi}Sink.c:CharWidth and PaintText, to
+  improve speed, and avoid too much recalculations. On normal files, it
+  becames about 5:1 faster, but can go up to 20:1 when editting files with
+  very large lines. Besides this speed improvement, I believe it can
+  surely be made faster (based on comparition with some popular X editors).
++ Changed the way the AsciiSink prints characters with value bigger than
+  126 decimal. Now it prints DEL as ^?, and the other characters as \XXX
+  where 'X' is an octal digit. The MultiSink widget was unchanged in this  
+  respect, i.e. when calling xedit with something like:
+  xedit -xrm '*international: true'
++ Converted all calls to strncpy, in AsciiSrc.c to memcpy, so that the (ascii)
+  text widget will work properly with data containing nulls. Hmm, xedit would
+  not only loads junk data when trying to edit libXaw.a as it would also
+  core dump very badly (this is fixed with this patch).
++ Added a experimental 'Xaw Scan Type' XawstAlphaNumeric, that shoud make
+  edition of C (or any other language) easier in xedit (i.e. the text widget).
+  It can be tested with Ctrl-Left and Ctrl-Right, by now.
++ Changed the TextWidget to handle text lines that would result in more than
+  32767 pixels. Besides the text widget is not meant to be used in the
+  edition of binary files, this change allows it.
++ Changed Text.c:TextScroll() to be smarter when calculating the offset of
+  the line table on scroll up.
++ Added a nice feature, to show the matching '(', '[' or '{', when a ')',
+  ']' or '}' is typped.
++ Changed TextAction.c:FormParagraph() to generate only one undo/redo step.
+  
+-- xedit --
++ Changed the defaults file to enable backups and made the backup suffix
+  the character '~'.
++ Replaced all instances of sprintf by XmuSnprintf.
++ Changed xedit to set the label when saving a file also, to reflect what
+  is being edited correctly.
++ Corrected a bug in the new action 'file-completion', to replace correctly  
+  the home directory, and keep correctly whatever was after the '~'. This
+  isn't the correct place to this code (xedit/commands.c), since there are
+  several other file name prompt windows in Xaw, but since it is required
+  another window to show the possible matches, I'll study a better way to
+  implement it.
++ Added a 'hints' feature to xedit. Instead of a 'dead'
+  "Use Control-S and Control-R to Search." label, now it allows the label
+  string being changed at user settable intervals. Since english is not
+  string being changed at user settable intervals. Since english is not
+  my first language, I would like a review of the sample text I added.
+  This is intended to help new users, but we can hardcode it and sell that
+  space ;-)
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.9 1998/10/10 15:25:07 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.1 1998/08/16 10:25:47 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -11,7 +11,8 @@ OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o mapVT_noo
        VTsw_noop.o posix_tty.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC)
+           -I$(XINCLUDESRC) \
+           -I$(SERVERSRC)/mi
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()

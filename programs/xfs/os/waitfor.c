@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.5 1997/01/18 07:02:48 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.6 1998/10/04 09:41:15 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -105,8 +105,8 @@ long        LastReapTime;
  * - room to write data to clients
  */
 
-WaitForSomething(pClientsReady)
-    int        *pClientsReady;
+int
+WaitForSomething(int *pClientsReady)
 {
     struct timeval *wt,
                 waittime;
@@ -224,8 +224,8 @@ WaitForSomething(pClientsReady)
 /*
  * This is not always a macro
   */
-ANYSET(src)
-    long       *src;
+int
+ANYSET(long *src)
 {
     int         i;
 

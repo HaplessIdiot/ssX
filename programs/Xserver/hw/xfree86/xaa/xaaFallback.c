@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFallback.c,v 1.1.2.1 1998/05/23 09:31:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFallback.c,v 1.2 1998/07/25 16:58:43 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -76,7 +76,7 @@ XAACopyAreaFallback(
     RegionPtr ret;
 
     XAA_GC_OP_PROLOGUE(pGC);
-    if((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
+    if((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
 	SYNC_CHECK(pGC);
     }
     ret = (*pGC->ops->CopyArea)(pSrc, pDst,
@@ -98,7 +98,7 @@ XAACopyPlaneFallback(
     RegionPtr ret;
 
     XAA_GC_OP_PROLOGUE(pGC);
-    if((pSrc == DRAWABLE_WINDOW) || (pDst == DRAWABLE_WINDOW)) {
+    if((pSrc->type == DRAWABLE_WINDOW) || (pDst->type == DRAWABLE_WINDOW)) {
 	SYNC_CHECK(pGC);
     }
     ret = (*pGC->ops->CopyPlane)(pSrc, pDst,

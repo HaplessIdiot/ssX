@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. June 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pconv.c,v 3.2 1998/10/04 09:35:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pconv.c,v 3.3 1998/10/05 13:22:12 dawes Exp $ */
 
 #define _XIEC_PCONV
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -102,19 +96,9 @@ terms and conditions:
 
 
 /*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeConvolve();
-Bool		CopyConvolveConstant();
-Bool		PrepConvolveStandard();
-#ifdef  BEYOND_SI
-Bool		CopyConvolveReplicate();
-#endif /* BEYOND_SI */
-
-/*
  *  routines internal to this module
  */
-static Bool	PrepConvolve();
+static Bool PrepConvolve(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -127,10 +111,7 @@ static diElemVecRec pConvolveVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a convolution element --------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeConvolve(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeConvolve(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs;
   peDefPtr ped;
@@ -217,12 +198,12 @@ peDefPtr MakeConvolve(flo,tag,pe)
 ---------------- routine: copy routine for Constant technique  ---------
 ------------------------------------------------------------------------*/
 
-Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecConvolveConstant *sparms, *rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+#undef  sparms
+#define sparms ((xieTecConvolveConstant *)sParms)
+#undef  rparms
+#define rparms ((xieTecConvolveConstant *)rParms)
+
+Bool CopyConvolveConstant(TECHNQ_COPY_ARGS)
 {
      pTecConvolveConstantDefPtr pvt;
 
@@ -253,24 +234,20 @@ Bool CopyConvolveConstant(flo, ped, sparms, rparms, tsize, isDefault)
 ---------------- routine: copy routine for no param techniques -------------
 ------------------------------------------------------------------------*/
 
-Bool CopyConvolveReplicate(flo, ped, sparms, rparms, tsize, isDefault) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer sparms, rparms;
-     CARD16	tsize;
-     Bool	isDefault;
+Bool CopyConvolveReplicate(TECHNQ_COPY_ARGS)
 {
   return(tsize == 0);
 }
 #endif /* BEYOND_SI */
 
+#undef  sparms
+#undef  rparms
+
 
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepConvolve(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepConvolve(floDefPtr flo, peDefPtr ped)
 {
   xieFloConvolve *raw = (xieFloConvolve *)ped->elemRaw;
   inFloPtr  ind, in = &ped->inFloLst[SRCtag];
@@ -309,10 +286,11 @@ static Bool PrepConvolve(flo,ped)
 /*------------------------------------------------------------------------
 ---------------- routine: prep routine for no param techniques -----------
 ------------------------------------------------------------------------*/
-Bool PrepConvolveStandard(flo, ped, raw, tec) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     pointer raw, tec;
+Bool PrepConvolveStandard(
+     floDefPtr  flo,
+     peDefPtr   ped,
+     pointer    raw,
+     pointer    tec)
 {
   return(TRUE);
 }

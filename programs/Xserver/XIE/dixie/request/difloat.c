@@ -67,7 +67,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
 
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/difloat.c,v 1.5 1998/10/06 10:35:14 dawes Exp $ */
 
 #ifndef XIE_IEEE_IS_NATIVE
 #define _XIEC_DIFLOAT
@@ -86,14 +86,7 @@ terms and conditions:
 #include <misc.h>
 #include "macro.h"
 
-/*
- *  routines referenced by other modules.
- */
-double ConvertIEEEtoNative();
-
-
-double ConvertIEEEtoNative(ieee)
-     CARD32 ieee;
+double ConvertIEEEtoNative(CARD32 ieee)
 {
   double sign;
   double exponent;

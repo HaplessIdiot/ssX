@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/medraw.c,v 3.2 1998/10/04 09:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/medraw.c,v 3.3 1998/10/05 13:22:30 dawes Exp $ */
 
 #define _XIEC_MEDRAW
 #define _XIEC_EDRAW
@@ -106,20 +106,20 @@ terms and conditions:
 /*
  *  routines referenced by other DDXIE modules
  */
-int	miAnalyzeEDraw();
+extern int miAnalyzeEDraw(floDefPtr flo, peDefPtr ped);
 
 /*
  *  routines used internal to this module
  */
-static int CreateEDraw();
-static int InitializeEDraw();
-static int ActivateEDrawAlign();
-static int ActivateEDrawStrip();
-static int ResetEDraw();
-static int DestroyEDraw();
+static int CreateEDraw(floDefPtr flo, peDefPtr ped);
+static int InitializeEDraw(floDefPtr flo, peDefPtr ped);
+static int ActivateEDrawAlign(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ActivateEDrawStrip(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetEDraw(floDefPtr flo, peDefPtr ped);
+static int DestroyEDraw(floDefPtr flo, peDefPtr ped);
 
-static void adjustStride8to4();
-static void adjustStride32to24();
+static void adjustStride8to4(char *dst, char *src, CARD32 width);
+static void adjustStride32to24(char *dst, char *src, CARD32 width);
 
 extern Bool	DrawableAndGC();
 
@@ -144,9 +144,7 @@ typedef struct _medraw {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeEDraw(floDefPtr flo, peDefPtr ped)
 {
   /* for now just stash our entry point vector in the peDef */
   ped->ddVec = EDrawVec;
@@ -157,9 +155,7 @@ int miAnalyzeEDraw(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateEDraw(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return MakePETex(flo, ped, sizeof(meDrawRec), NO_SYNC, NO_SYNC);
@@ -168,9 +164,7 @@ static int CreateEDraw(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeEDraw(floDefPtr flo, peDefPtr ped)
 {
   peTexPtr    pet = ped->peTex;
   meDrawPtr   ddx = (meDrawPtr) pet->private;
@@ -204,10 +198,7 @@ static int InitializeEDraw(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEDrawAlign(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEDrawAlign(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportDrawable  *raw = (xieFloExportDrawable *) ped->elemRaw;
   eDrawDefPtr		 dix = (eDrawDefPtr) ped->elemPvt;
@@ -236,7 +227,7 @@ static int ActivateEDrawAlign(flo,ped,pet)
 			       ZPixmap,		  	  /* data format   */
 			       dst			  /* data buffer   */
 			       );
-  } while(src = (char*)GetNextSrc(flo,pet,bnd,KEEP));
+  } while ((src = (char*)GetNextSrc(flo,pet,bnd,KEEP)) != 0);
   
   /* make sure the scheduler knows how much src we used */
   FreeData(flo,pet,bnd,bnd->current);
@@ -248,10 +239,7 @@ static int ActivateEDrawAlign(flo,ped,pet)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEDrawStrip(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEDrawStrip(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportDrawable  *raw = (xieFloExportDrawable *) ped->elemRaw;
   eDrawDefPtr		 pvt = (eDrawDefPtr) ped->elemPvt;
@@ -273,7 +261,7 @@ static int ActivateEDrawStrip(flo,ped,pet)
 				 ZPixmap,		  /* data format */
 				 src			  /* data buffer */
 				 );
-    while(src = (char*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP));
+    while ((src = (char*)GetSrc(flo,pet,bnd,bnd->maxLocal,KEEP)) != 0);
   }
   /* make sure the scheduler knows how much src we used */
   FreeData(flo,pet,bnd,bnd->current);
@@ -285,9 +273,7 @@ static int ActivateEDrawStrip(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetEDraw(floDefPtr flo, peDefPtr ped)
 {
   meDrawPtr ddx = (meDrawPtr) ped->peTex->private;
 
@@ -303,9 +289,7 @@ static int ResetEDraw(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyEDraw(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyEDraw(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   if(ped->peTex)
@@ -325,13 +309,10 @@ static int DestroyEDraw(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- alignment routines --------------------------
 ------------------------------------------------------------------------*/
-static void adjustStride32to24(dst,src,width)
-     char      *dst;
-     char      *src;
-     CARD32	width;
+static void adjustStride32to24(char *dst, char *src, CARD32 width)
 {
   register char *ip, *op;
-  int   i;
+  CARD32   i;
   
 #if (BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER)
   ip = src;
@@ -361,13 +342,10 @@ static void adjustStride32to24(dst,src,width)
 #endif
 }
 
-static void adjustStride8to4(dst,src,width)
-     char      *dst;
-     char      *src;
-     CARD32	width;
+static void adjustStride8to4(char *dst, char *src, CARD32 width)
 {
   register char *ip = src, *op = dst;
-  int   i;
+  CARD32   i;
   
   for(i = 0; i < width; ip += 2, ++i) {
 #if (BITMAP_BIT_ORDER == LSBFirst)

@@ -64,7 +64,7 @@ terms and conditions:
 
 	Dean Verheiden && Robert NC Shelley  AGE Logic, Inc.  Jan 1994
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/schoice.c,v 3.2 1998/10/04 09:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/schoice.c,v 3.3 1998/10/05 13:22:32 dawes Exp $ */
 
 #define _XIEC_SCHOICE
 #define _XIEC_IPHOTO
@@ -99,10 +99,10 @@ terms and conditions:
 #include <xiemd.h>
 #include <memory.h>
 
-static Bool		PrepSCCanonic();
-static Bool		PrepSCSmuggle();
-static Bool		PrepSCPackBits();
-static Bool		PrepSCG42D();
+static Bool PrepSCCanonic(floDefPtr flo, peDefPtr ped);
+static Bool PrepSCSmuggle(floDefPtr flo, peDefPtr ped);
+static Bool PrepSCPackBits(floDefPtr flo, peDefPtr ped);
+static Bool PrepSCG42D(floDefPtr flo, peDefPtr ped);
 
 
 extern Bool		BuildDecodeFromEncode();
@@ -129,9 +129,7 @@ extern pointer		GetImportTechnique();
 /*------------------------------------------------------------------------
 ----------------------- choose an encode technique -----------------------
 ------------------------------------------------------------------------*/
-xieBoolProc GetServerChoice(flo, eped)
-     floDefPtr flo;
-     peDefPtr eped;
+xieBoolProc GetServerChoice(floDefPtr flo, peDefPtr eped)
 {
   ePhotoDefPtr           pvt = (ePhotoDefPtr)eped->elemPvt;
   xieFloExportPhotomap  *raw = (xieFloExportPhotomap *)eped->elemRaw;
@@ -221,9 +219,7 @@ xieBoolProc GetServerChoice(flo, eped)
 /*------------------------------------------------------------------------
 ---------------------- server choice prep routines -----------------------
 ------------------------------------------------------------------------*/
-static Bool PrepSCCanonic(flo,ped)
-     floDefPtr flo;
-     peDefPtr ped;
+static Bool PrepSCCanonic(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
@@ -281,9 +277,7 @@ static Bool PrepSCCanonic(flo,ped)
 } /* PrepSCCanonic */
 
 
-static Bool PrepSCSmuggle(flo,ped)
-     floDefPtr flo;
-     peDefPtr ped;
+static Bool PrepSCSmuggle(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   peDefPtr    iped = ped->inFloLst[SRCtag].srcDef;
@@ -303,9 +297,7 @@ static Bool PrepSCSmuggle(flo,ped)
 } /* PrepECSmuggle */
 
 
-static Bool PrepSCPackBits(flo, ped)
-     floDefPtr flo;
-     peDefPtr ped;
+static Bool PrepSCPackBits(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   formatPtr    fmt = ped->outFlo.format;
@@ -327,9 +319,7 @@ static Bool PrepSCPackBits(flo, ped)
 } /* PrepSCPackBits */
 
 
-static Bool PrepSCG42D(flo, ped)
-     floDefPtr flo;
-     peDefPtr ped;
+static Bool PrepSCG42D(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
   formatPtr    fmt = ped->outFlo.format;

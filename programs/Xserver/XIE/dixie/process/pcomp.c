@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcomp.c,v 3.1 1998/10/04 09:35:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcomp.c,v 3.2 1998/10/05 13:22:12 dawes Exp $ */
 
 #define _XIEC_PCOMP
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_p.h>
   /*
    *  Server XIE Includes
    */
@@ -97,16 +91,10 @@ terms and conditions:
 #include <element.h>
 #include <difloat.h>
 
-
-/*
- *  routines referenced by other modules.
- */
-peDefPtr	MakeCompare();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepCompare();
+static Bool PrepCompare(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie entry points
@@ -119,10 +107,7 @@ static diElemVecRec pCompareVec = {
 /*------------------------------------------------------------------------
 ----------------------- routine: make a arithmetic element --------------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeCompare(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeCompare(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   int inputs;
   peDefPtr ped;
@@ -186,9 +171,7 @@ peDefPtr MakeCompare(flo,tag,pe)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepCompare(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepCompare(floDefPtr flo, peDefPtr ped)
 {
   xieFloCompare *raw = (xieFloCompare *)ped->elemRaw;
   inFloPtr  ind, in2, in1 = &ped->inFloLst[SRCt1];
@@ -244,13 +227,13 @@ static Bool PrepCompare(flo,ped)
 
   /* In this case, all src bands must have the same dimension */
   if (sr1->bands == 3 && raw->combine &&
-      ((bandMask & 3 == 3 && 
+      (((bandMask & 3) == 3 && 
 	 (sr1->format[0].width  != sr1->format[1].width  ||
           sr1->format[0].height != sr1->format[1].height)) ||
-       (bandMask & 5 == 5 && 
+       ((bandMask & 5) == 5 && 
 	 (sr1->format[0].width  != sr1->format[2].width  ||
           sr1->format[0].height != sr1->format[2].height)) ||
-       (bandMask & 6 == 6 && 
+       ((bandMask & 6) == 6 && 
 	 (sr1->format[1].width  != sr1->format[2].width  ||
           sr1->format[1].height != sr1->format[2].height))))
       MatchError(flo,ped, return(FALSE));

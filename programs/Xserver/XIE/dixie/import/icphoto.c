@@ -66,7 +66,7 @@ terms and conditions:
 	Robert NC Shelley, Dean Verheiden -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/import/icphoto.c,v 3.1 1998/10/04 09:35:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/import/icphoto.c,v 3.2 1998/10/05 13:22:07 dawes Exp $ */
 
 #define _XIEC_ICPHOTO
 
@@ -82,13 +82,7 @@ terms and conditions:
   /*
    *  XIE Includes
    */
-#include <XIE.h>
-#include <XIEproto.h>
-  /*
-   *  more X server includes.
-   */
-#include <misc.h>
-#include <dixstruct.h>
+#include <dixie_i.h>
   /*
    *  Server XIE Includes
    */
@@ -98,39 +92,10 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 
-
-/*
- *  routines referenced by other modules
- */
-peDefPtr	MakeICPhoto();
-Bool		CopyICPhotoUnSingle();
-Bool		CopyICPhotoUnTriple();
-Bool		CopyICPhotoG31D();
-Bool		CopyICPhotoG32D();
-Bool		CopyICPhotoG42D();
-Bool		CopyICPhotoJPEGBaseline();
-#ifdef  BEYOND_SI
-Bool		CopyICPhotoJPEGLossless();
-#endif /* BEYOND_SI */
-Bool		CopyICPhotoTIFF2();
-Bool		CopyICPhotoTIFFPackBits();
-
-Bool		PrepICPhotoUnSingle();
-Bool		PrepICPhotoUnTriple();
-Bool		PrepICPhotoG31D();
-Bool		PrepICPhotoG32D();
-Bool		PrepICPhotoG42D();
-Bool		PrepICPhotoJPEGBaseline();
-#ifdef  BEYOND_SI
-Bool		PrepICPhotoJPEGLossless();
-#endif /* BEYOND_SI */
-Bool		PrepICPhotoTIFF2();
-Bool		PrepICPhotoTIFFPackBits();
-
 /*
  *  routines internal to this module
  */
-static Bool	PrepICPhoto();
+static Bool PrepICPhoto(floDefPtr flo, peDefPtr ped);
 
 /*
  * dixie element entry points
@@ -143,10 +108,7 @@ static diElemVecRec iCPhotoVec = {
 /*------------------------------------------------------------------------
 --------------- routine: make an import client photo element -------------
 ------------------------------------------------------------------------*/
-peDefPtr MakeICPhoto(flo,tag,pe)
-     floDefPtr      flo;
-     xieTypPhototag tag;
-     xieFlo        *pe;
+peDefPtr MakeICPhoto(floDefPtr flo, xieTypPhototag tag, xieFlo *pe)
 {
   peDefPtr ped;
   ELEMENT(xieFloImportClientPhoto);
@@ -186,19 +148,19 @@ peDefPtr MakeICPhoto(flo,tag,pe)
    * copy technique data (if any)
    */
   if(!(ped->techVec = FindTechnique(xieValDecode, raw->decodeTechnique)) ||
-     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams)))
+     !(ped->techVec->copyfnc(flo, ped, &stuff[1], &raw[1], raw->lenParams, 0)))
     TechniqueError(flo,ped,xieValDecode,raw->decodeTechnique,raw->lenParams,
 		   return(ped));
 
   return(ped);
 }                               /* end MakeICPhoto */
 
+#undef  rparms
+#define rparms ((xieTecDecodeUncompressedSingle *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeUncompressedSingle *)rParms)
 
-Bool CopyICPhotoUnSingle(flo, ped, rparms, cparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeUncompressedSingle *rparms, *cparms;
-     CARD16	tsize;
+Bool CopyICPhotoUnSingle(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -208,11 +170,12 @@ Bool CopyICPhotoUnSingle(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoUnTriple(flo, ped, rparms, cparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeUncompressedTriple *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeUncompressedTriple *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeUncompressedTriple *)rParms)
+
+Bool CopyICPhotoUnTriple(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -222,11 +185,12 @@ Bool CopyICPhotoUnTriple(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoG31D(flo, ped, rparms, cparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeG31D *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeG31D *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeG31D *)rParms)
+
+Bool CopyICPhotoG31D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -236,11 +200,12 @@ Bool CopyICPhotoG31D(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoG32D(flo, ped, rparms, cparms, tsize) 
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeG32D *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeG32D *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeG32D *)rParms)
+
+Bool CopyICPhotoG32D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -250,11 +215,12 @@ Bool CopyICPhotoG32D(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoG42D(flo, ped, rparms, cparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeG42D *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeG42D *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeG42D *)rParms)
+
+Bool CopyICPhotoG42D(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -264,11 +230,12 @@ Bool CopyICPhotoG42D(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoJPEGBaseline(flo, ped, rparms, cparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeJPEGBaseline *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeJPEGBaseline *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeJPEGBaseline *)rParms)
+
+Bool CopyICPhotoJPEGBaseline(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -279,11 +246,13 @@ Bool CopyICPhotoJPEGBaseline(flo, ped, rparms, cparms, tsize)
 }
 
 #ifdef  BEYOND_SI
-Bool CopyICPhotoJPEGLossless(flo, ped, rparms, cparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeJPEGLossless *rparms, *cparms;
-     CARD16	tsize;
+
+#undef  rparms
+#define rparms ((xieTecDecodeJPEGLossless *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeJPEGLossless *)rParms)
+
+Bool CopyICPhotoJPEGLossless(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -294,11 +263,12 @@ Bool CopyICPhotoJPEGLossless(flo, ped, rparms, cparms, tsize)
 }
 #endif /* BEYOND_SI */
 
-Bool CopyICPhotoTIFF2(flo, ped, rparms, cparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeTIFF2 *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeTIFF2 *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeTIFF2 *)rParms)
+
+Bool CopyICPhotoTIFF2(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -308,11 +278,12 @@ Bool CopyICPhotoTIFF2(flo, ped, rparms, cparms, tsize)
   return(TRUE);
 }
 
-Bool CopyICPhotoTIFFPackBits(flo, ped, rparms, cparms, tsize)
-     floDefPtr  flo;
-     peDefPtr   ped;
-     xieTecDecodeTIFFPackBits *rparms, *cparms;
-     CARD16	tsize;
+#undef  rparms
+#define rparms ((xieTecDecodeTIFFPackBits  *)sParms)
+#undef  cparms
+#define cparms ((xieTecDecodeTIFFPackBits  *)rParms)
+
+Bool CopyICPhotoTIFFPackBits(TECHNQ_COPY_ARGS)
 {
   VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, FALSE);
   
@@ -326,9 +297,7 @@ Bool CopyICPhotoTIFFPackBits(flo, ped, rparms, cparms, tsize)
 /*------------------------------------------------------------------------
 ---------------- routine: prepare for analysis and execution -------------
 ------------------------------------------------------------------------*/
-static Bool PrepICPhoto(flo,ped)
-     floDefPtr  flo;
-     peDefPtr   ped;
+static Bool PrepICPhoto(floDefPtr flo, peDefPtr ped)
 {
   int i;
   xieFloImportClientPhoto *raw = (xieFloImportClientPhoto *)ped->elemRaw;
@@ -389,11 +358,11 @@ static Bool PrepICPhoto(flo,ped)
 ------------------------------------------------------------------------*/
 
 /* Prep routine for uncompressed single band data */
-Bool PrepICPhotoUnSingle(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeUncompressedSingle *tec;
+Bool PrepICPhotoUnSingle(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeUncompressedSingle *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   CARD32  padmod =   tec->scanlinePad * 8;
@@ -410,10 +379,10 @@ Bool PrepICPhotoUnSingle(flo, ped, raw, tec)
     return(FALSE);
   if(tec->pixelStride < inf->format[0].depth)       /* check pixel-stride   */
     return(FALSE);
-  if(ALIGNMENT == xieValAlignable && !aligned ||    /* alignment & left-pad */
-     ALIGNMENT == xieValAlignable &&  aligned &&
+  if((ALIGNMENT == xieValAlignable && !aligned) ||  /* alignment & left-pad */
+     (ALIGNMENT == xieValAlignable &&  aligned &&
     (tec->leftPad % tec->pixelStride ||
-     tec->leftPad % 8))
+     tec->leftPad % 8)))
     return(FALSE);
   if(tec->scanlinePad & (tec->scanlinePad-1) ||     /* check scanline-pad   */
      tec->scanlinePad > 16)
@@ -442,11 +411,11 @@ Bool PrepICPhotoUnSingle(flo, ped, raw, tec)
 } /* PrepICPhotoUnSingle */
 
 /* Prep routine for uncompressed triple band data */
-Bool PrepICPhotoUnTriple(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeUncompressedTriple *tec;
+Bool PrepICPhotoUnTriple(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeUncompressedTriple *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -482,10 +451,10 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
         return(FALSE);
       if(inf->format[i].depth > MAX_DEPTH(3)) 	      /* check pixel-depth   */
  	return(FALSE);
-      if(ALIGNMENT == xieValAlignable && !aligned ||  /* alignment & left-pad */
-         ALIGNMENT == xieValAlignable &&  aligned &&
-         (tec->leftPad[i] % tec->pixelStride[i] ||
-          tec->leftPad[i] % 8))
+      if((ALIGNMENT == xieValAlignable && !aligned) || /* alignment & left-pad */
+         (ALIGNMENT == xieValAlignable &&  aligned &&
+          (tec->leftPad[i] % tec->pixelStride[i] ||
+           tec->leftPad[i] % 8)))
              return(FALSE);
       if(tec->scanlinePad[i] & (tec->scanlinePad[i] - 1) || 
          tec->scanlinePad[i] > 16)              /*check scanline-pad*/
@@ -511,11 +480,11 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
  	return(FALSE);
       if(tec->pixelStride[0] < tdepth)  /* check overall pixel-stride   */
  	return(FALSE);
-      if(ALIGNMENT == xieValAlignable && !aligned ||  /* alignment & left-pad */
-         ALIGNMENT == xieValAlignable &&  aligned &&
-         (tec->leftPad[0] % tec->pixelStride[0] ||
-          tec->leftPad[0] % 8))
-             return(FALSE);
+      if((ALIGNMENT == xieValAlignable && !aligned) ||  /* alignment & left-pad */
+         (ALIGNMENT == xieValAlignable &&  aligned &&
+          (tec->leftPad[0] % tec->pixelStride[0] ||
+           tec->leftPad[0] % 8)))
+              return(FALSE);
       if(tec->scanlinePad[0] & (tec->scanlinePad[0] - 1) || 
          tec->scanlinePad[0] > 16)              /*check scanline-pad*/
         return(FALSE);
@@ -544,11 +513,11 @@ Bool PrepICPhotoUnTriple(flo, ped, raw, tec)
   return(TRUE);
 } /* PrepICPhotoUnTriple */
 
-Bool PrepICPhotoG31D(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeG31D *tec;
+Bool PrepICPhotoG31D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeG31D *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -575,11 +544,11 @@ Bool PrepICPhotoG31D(flo, ped, raw, tec)
 
 } /* PrepICPhotoG31D */
 
-Bool PrepICPhotoG32D(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeG32D *tec;
+Bool PrepICPhotoG32D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeG32D *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -607,11 +576,11 @@ Bool PrepICPhotoG32D(flo, ped, raw, tec)
 
 } /* PrepICPhotoG32D */
 
-Bool PrepICPhotoG42D(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeG42D *tec;
+Bool PrepICPhotoG42D(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeG42D *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -639,11 +608,11 @@ Bool PrepICPhotoG42D(flo, ped, raw, tec)
 
 } /* PrepICPhotoG42D */
 
-Bool PrepICPhotoJPEGBaseline(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeJPEGBaseline *tec;
+Bool PrepICPhotoJPEGBaseline(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeJPEGBaseline *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -695,11 +664,11 @@ Bool PrepICPhotoJPEGBaseline(flo, ped, raw, tec)
 } /* PrepICPhotoJPEGBaseline */
 
 #ifdef  BEYOND_SI
-Bool PrepICPhotoJPEGLossless(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeJPEGLossless *tec;
+Bool PrepICPhotoJPEGLossless(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeJPEGLossless *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -742,11 +711,11 @@ Bool PrepICPhotoJPEGLossless(flo, ped, raw, tec)
 } /* PrepICPhotoJPEGLossless */
 #endif /* BEYOND_SI */
 
-Bool PrepICPhotoTIFF2(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeTIFF2 *tec;
+Bool PrepICPhotoTIFF2(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeTIFF2 *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;
@@ -774,11 +743,11 @@ Bool PrepICPhotoTIFF2(flo, ped, raw, tec)
 
 } /* PrepICPhotoTIFF2 */
 
-Bool PrepICPhotoTIFFPackBits(flo, ped, raw, tec) 
-     floDefPtr flo;
-     peDefPtr  ped;
-     xieFloImportClientPhoto *raw;
-     xieTecDecodeTIFFPackBits *tec;
+Bool PrepICPhotoTIFFPackBits(
+     floDefPtr flo,
+     peDefPtr  ped,
+     xieFloImportClientPhoto *raw,
+     xieTecDecodeTIFFPackBits *tec)
 {
   inFloPtr   inf =  &ped->inFloLst[IMPORT];
   int i;

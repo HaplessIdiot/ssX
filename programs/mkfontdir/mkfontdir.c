@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: mkfontdir.c /main/13 1996/09/28 17:17:17 rws $ */
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.3 1996/05/06 06:00:44 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.4 1996/12/23 07:10:37 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -124,9 +124,9 @@ extern int errno;
 char *progName;
 
 static Bool
-WriteFontTable(dirName, table)
-    char	    *dirName;
-    FontTablePtr    table;
+WriteFontTable(
+    char	    *dirName,
+    FontTablePtr    table)
 {
     int		    i;
     FILE	    *file;
@@ -159,8 +159,7 @@ WriteFontTable(dirName, table)
 }
 
 static char *
-NameForAtomOrNone (a)
-    Atom    a;
+NameForAtomOrNone (Atom a)
 {
     char    *name;
 
@@ -171,9 +170,7 @@ NameForAtomOrNone (a)
 }
 
 static Bool
-GetFontName(file_name, font_name)
-    char    *file_name;
-    char    *font_name;
+GetFontName(char *file_name, char *font_name)
 {
     FontInfoRec	info;
     int		i;
@@ -199,9 +196,7 @@ GetFontName(file_name, font_name)
 }
 
 static char *
-FontNameExists (table, font_name)
-    FontTablePtr    table;
-    char	    *font_name;
+FontNameExists (FontTablePtr table, char *font_name)
 {
     FontNameRec	    name;
     FontEntryPtr    entry;
@@ -215,9 +210,11 @@ FontNameExists (table, font_name)
     return 0;
 }
 
-AddEntry (table, fontName, fileName)
-    FontTablePtr    table;
-    char	    *fontName, *fileName;
+int
+AddEntry (
+    FontTablePtr    table,
+    char	    *fontName,
+    char	    *fileName)
 {
     FontEntryRec    prototype;
 
@@ -230,10 +227,10 @@ AddEntry (table, fontName, fileName)
 }
 
 static Bool
-ProcessFile (dirName, fileName, table)
-    char		*dirName;
-    char		*fileName;
-    FontTablePtr	table;
+ProcessFile (
+    char		*dirName,
+    char		*fileName,
+    FontTablePtr	table)
 {
     char	    font_name[PATH_MAX];
     char	    full_name[PATH_MAX];
@@ -249,7 +246,7 @@ ProcessFile (dirName, fileName, table)
 
     CopyISOLatin1Lowered (font_name, font_name, strlen(font_name));
 
-    if (existing = FontNameExists (table, font_name))
+    if ((existing = FontNameExists (table, font_name)) != 0)
     {
 	fprintf (stderr, "%s: Duplicate font names %s\n", progName, font_name);
 	fprintf (stderr, "\t%s %s\n", existing, fileName);
@@ -258,10 +255,10 @@ ProcessFile (dirName, fileName, table)
     return AddEntry (table, font_name, fileName);
 }
 
-static
-Estrip(ext,name)
-    char	*ext;
-    char	*name;
+static void
+Estrip(
+    char	*ext,
+    char	*name)
 {
     name[strlen(name) - strlen(ext)] = '\0';
 }
@@ -279,8 +276,7 @@ typedef struct _nameBucket {
 #define HASH_SIZE   1024
 
 char *
-MakeName(name)
-    char	*name;
+MakeName(char *name)
 {
     char    *new;
 
@@ -290,22 +286,19 @@ MakeName(name)
 }
 
 int
-Hash(name)
-    char	*name;
+Hash(char *name)
 {
     int	    i;
     char    c;
 
     i = 0;
-    while (c = *name++)
+    while ((c = *name++) != 0)
 	i = (i << 1) ^ c;
     return i & (HASH_SIZE - 1);
 }
 
 static Bool
-LoadDirectory (dirName, table)
-    char	    *dirName;
-    FontTablePtr    table;
+LoadDirectory (char *dirName, FontTablePtr table)
 {
 #ifdef WIN32
     HANDLE		dirh;
@@ -390,9 +383,8 @@ LoadDirectory (dirName, table)
     return TRUE;
 }
 
-LoadScalable (dirName, table)
-    char	    *dirName;
-    FontTablePtr    table;
+int
+LoadScalable (char *dirName, FontTablePtr table)
 {
     char    file_name[MAXFONTFILENAMELEN];
     char    font_name[MAXFONTNAMELEN];
@@ -435,8 +427,7 @@ LoadScalable (dirName, table)
 }
 
 static Bool
-DoDirectory(dirName)
-    char	*dirName;
+DoDirectory(char *dirName)
 {
     FontTableRec	table;
     Bool		status;
@@ -460,29 +451,31 @@ DoDirectory(dirName)
     return status;
 }
 
-GetDefaultPointSize ()
+int
+GetDefaultPointSize (void)
 {
     return 120;
 }
 
-FontResolutionPtr GetClientResolutions ()
+FontResolutionPtr GetClientResolutions (int *num)
 {
     return 0;
 }
 
-RegisterFPEFunctions ()
+void
+RegisterFPEFunctions (void)
 {
 }
 
-ErrorF ()
+void
+ErrorF (void)
 {
 }
 
 /***====================================================================***/
 
-main (argc, argv)
-    int argc;
-    char **argv;
+int
+main (int argc, char **argv)
 {
     int i;
 

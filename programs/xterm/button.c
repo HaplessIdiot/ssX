@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.24 1998/08/29 05:44:12 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.25 1998/10/10 15:25:47 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -30,11 +30,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 
-#ifdef HAVE_CONFIG_H
-#include <xtermcfg.h>
-#endif
-
-#include "ptyx.h"		/* Xlib headers included here. */
+#include <xterm.h>
 
 #include <X11/Xatom.h>
 
@@ -47,12 +43,10 @@ button.c	Handles button events in the terminal emulator.
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>
 
-#include "data.h"
-#include "error.h"
-#include "menu.h"
-
-#include "xterm.h"
-#include "xcharmouse.h"
+#include <data.h>
+#include <error.h>
+#include <menu.h>
+#include <xcharmouse.h>
 
 #define KeyState(x) (((x) & (ShiftMask|ControlMask)) + (((x) & Mod1Mask) ? 2 : 0))
     /* adds together the bits:
@@ -412,7 +406,7 @@ static void SelectionReceived(
 	struct _SelectionList* list = (struct _SelectionList*)client_data;
 	if (list != NULL) {
 	    _GetSelection(w, list->time, list->params, list->count);
-	    XtFree(client_data);
+	    XtFree((char *)client_data);
 	}
 	return;
     }
@@ -433,8 +427,8 @@ static void SelectionReceived(
     if (lag != end)
 	v_write(pty, lag, end - lag);
 
-    XtFree(client_data);
-    XtFree(value);
+    XtFree((char *)client_data);
+    XtFree((char *)value);
 }
 
 
@@ -987,7 +981,7 @@ ComputeSelect(
 	register TScreen *screen = &term->screen;
 	register Char *ptr;
 	register int length;
-	register int class;
+	register int cclass;
 
 	if (Coordinate(startRow, startCol) <= Coordinate(endRow, endCol)) {
 		startSRow = startRRow = startRow;
@@ -1019,7 +1013,7 @@ ComputeSelect(
 			} else {
 				ptr = SCRN_BUF_CHARS(screen, startSRow+screen->topline)
 				 + startSCol;
-				class = charClass[*ptr];
+				cclass = charClass[*ptr];
 				do {
 					--startSCol;
 					--ptr;
@@ -1031,7 +1025,7 @@ ComputeSelect(
 						 + startSCol;
 					}
 				} while (startSCol >= 0
-				 && charClass[*ptr] == class);
+				 && charClass[*ptr] == cclass);
 				++startSCol;
 			}
 			if (endSCol > (LastTextCol(endSRow) + 1)) {
@@ -1041,7 +1035,7 @@ ComputeSelect(
 				length = LastTextCol(endSRow);
 				ptr = SCRN_BUF_CHARS(screen, endSRow+screen->topline)
 				 + endSCol;
-				class = charClass[*ptr];
+				cclass = charClass[*ptr];
 				do {
 					++endSCol;
 					++ptr;
@@ -1054,7 +1048,7 @@ ComputeSelect(
 						 + endSCol;
 					}
 				} while (endSCol <= length
-				 && charClass[*ptr] == class);
+				 && charClass[*ptr] == cclass);
 				/* Word select selects if pointing to any char
 				   in "word", especially in that it includes
 				   the last character in a word.  So no --endSCol
@@ -1225,7 +1219,7 @@ SaltTextAway(
 	/* now get some memory to save it in */
 
 	if (screen->selection_size <= j) {
-	    if((line = malloc((unsigned) j + 1)) == (char *)NULL)
+	    if((line = (char *)malloc((unsigned) j + 1)) == 0)
 		SysError(ERROR_BMALLOC2);
 	    XtFree(screen->selection);
 	    screen->selection = line;
@@ -1280,7 +1274,7 @@ ConvertSelection(
 	unsigned long std_length;
 	XmuConvertStandardSelection(
 		    w, screen->selection_time, selection,
-		    target, type, (caddr_t*)&std_targets, &std_length, format
+		    target, type, (XtPointer *)&std_targets, &std_length, format
 		   );
 	*length = std_length + 5;
 	targetP = (Atom*)XtMalloc(sizeof(Atom)*(*length));
@@ -1346,7 +1340,7 @@ ConvertSelection(
     }
     if (XmuConvertStandardSelection(w, screen->selection_time, selection,
 				    target, type,
-				    (caddr_t *)value, length, format))
+				    (XtPointer *)value, length, format))
 	return True;
 
     /* else */

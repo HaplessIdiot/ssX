@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaawrap.h,v 1.1.2.1 1998/05/23 09:31:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaawrap.h,v 1.2 1998/07/25 16:58:55 dawes Exp $ */
 
 #define XAA_SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
@@ -11,15 +11,16 @@
 #define XAA_GC_FUNC_PROLOGUE(pGC)\
     XAAGCPtr   pGCPriv = (XAAGCPtr) (pGC)->devPrivates[XAAGCIndex].ptr;\
     (pGC)->funcs = pGCPriv->wrapFuncs;\
-    if(pGCPriv->wrapOps)\
+    if(pGCPriv->flags)\
 	(pGC)->ops = pGCPriv->wrapOps
 
 #define XAA_GC_FUNC_EPILOGUE(pGC)\
     pGCPriv->wrapFuncs = (pGC)->funcs;\
     (pGC)->funcs = &XAAGCFuncs;\
-    if(pGCPriv->wrapOps) {\
+    if(pGCPriv->flags) {\
 	pGCPriv->wrapOps = (pGC)->ops;\
-	(pGC)->ops = pGCPriv->XAAOps;\
+	(pGC)->ops = (pGCPriv->flags & OPS_ARE_ACCEL) ? pGCPriv->XAAOps :\
+				&XAAPixmapOps;\
     }
 
 
@@ -34,6 +35,22 @@
     pGCPriv->wrapOps = pGC->ops;\
     pGC->funcs = oldFuncs;\
     pGC->ops   = pGCPriv->XAAOps
+
+
+#define XAA_PIXMAP_OP_PROLOGUE(pGC, pDraw)\
+    XAAGCPtr pGCPriv = (XAAGCPtr)(pGC->devPrivates[XAAGCIndex].ptr);\
+    XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE((PixmapPtr)(pDraw));\
+    GCFuncs *oldFuncs = pGC->funcs;\
+    pGC->funcs = pGCPriv->wrapFuncs;\
+    pGC->ops = pGCPriv->wrapOps
+
+    
+#define XAA_PIXMAP_OP_EPILOGUE(pGC)\
+    pGCPriv->wrapOps = pGC->ops;\
+    pGC->funcs = oldFuncs;\
+    pGC->ops   = &XAAPixmapOps;\
+    pixPriv->flags |= DIRTY
+
 
 
 /* This also works fine for drawables */

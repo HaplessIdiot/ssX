@@ -60,9 +60,8 @@ terms and conditions:
      Title to this software shall at all times remain with AGE
      Logic, Inc.
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/lut.c,v 3.1 1998/10/04 09:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/lut.c,v 3.2 1998/10/05 13:22:19 dawes Exp $ */
 
-#define _XIEC_LUT
 /*
  *  Include files
  */
@@ -90,27 +89,18 @@ terms and conditions:
 #include <memory.h>
 #include <flodata.h>
 #include <lut.h>
-
-
-/*
- *  Xie protocol proceedures called from the dispatcher
- */
-int  ProcCreateLUT();
-int  ProcDestroyLUT();
-int  SProcCreateLUT();
-int  SProcDestroyLUT();
+#include <tables.h>
 
 /*
  *  routines referenced by other modules.
  */
-int  DeleteLUT();
+extern int DeleteLUT(lutPtr lut, xieTypLUT id);
 
 
 /*------------------------------------------------------------------------
 --------------------------- CreateLUT Procedures -------------------------
 ------------------------------------------------------------------------*/
-int ProcCreateLUT(client)
-     ClientPtr client;
+int ProcCreateLUT(ClientPtr client)
 {
   int b;
   lutPtr lut;
@@ -136,8 +126,7 @@ int ProcCreateLUT(client)
 /*------------------------------------------------------------------------
 ------------------------ DestroyLUT Procedures --------------------------
 ------------------------------------------------------------------------*/
-int ProcDestroyLUT(client)
-     ClientPtr client;
+int ProcDestroyLUT(ClientPtr client)
 {
   lutPtr lut;
   REQUEST( xieDestroyLUTReq );
@@ -157,9 +146,7 @@ int ProcDestroyLUT(client)
 /*------------------------------------------------------------------------
 ------------------------ deleteFunc: DeleteLUT ---------------------------
 ------------------------------------------------------------------------*/
-int DeleteLUT(lut, id)
-     lutPtr   lut;
-     xieTypLUT id;
+int DeleteLUT(lutPtr lut, xieTypLUT id)
 {
   int i;
   
@@ -179,8 +166,7 @@ int DeleteLUT(lut, id)
 }                               /* end DeleteLUT */
 
 
-int SProcCreateLUT(client)
-     ClientPtr client;
+int SProcCreateLUT(ClientPtr client)
 {
   register int n;
   REQUEST(xieCreateLUTReq);
@@ -190,8 +176,7 @@ int SProcCreateLUT(client)
   return (ProcCreateLUT(client));
 }                               /* end SProcCreateLUT */
 
-int SProcDestroyLUT(client)
-     ClientPtr client;
+int SProcDestroyLUT(ClientPtr client)
 {
   register int n;
   REQUEST( xieDestroyLUTReq );

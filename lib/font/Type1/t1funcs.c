@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.7 1998/09/06 04:46:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.8 1998/10/03 09:07:17 dawes Exp $ */
 
 /*
 
@@ -123,7 +123,6 @@ static void fillrun();
 extern psfont *FontP;
 extern psobj *ISOLatin1EncArrayP, *ISOLatin2EncArrayP;
 
-extern unsigned long *Xalloc();
 static void fill();
  
 /*ARGSUSED*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.9 1998/09/13 05:23:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.10 1998/09/27 04:43:46 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -51,18 +51,23 @@ typedef struct _XAAScreen {
    void                		(*LeaveVT)(int, int);
 } XAAScreenRec, *XAAScreenPtr;
 
+#define	OPS_ARE_PIXMAP		0x00000001
+#define OPS_ARE_ACCEL		0x00000002
+
 typedef struct _XAAGC {
     GCOps 	*wrapOps;
     GCFuncs 	*wrapFuncs;
     GCOps 	*XAAOps;
-    Bool	isPixmap;
     int		DashLength;
     unsigned char* DashPattern;
+    unsigned long changes;
+    unsigned long flags;
 } XAAGCRec, *XAAGCPtr;
 
 #define REDUCIBILITY_CHECKED	0x00000001
 #define REDUCIBLE_TO_8x8	0x00000002
 #define REDUCIBLE_TO_2_COLOR	0x00000004
+#define DIRTY			0x00010000
 
 typedef struct _XAAPixmap {
     int flags;

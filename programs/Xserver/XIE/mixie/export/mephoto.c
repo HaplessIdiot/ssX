@@ -67,7 +67,7 @@ terms and conditions:
 	Dean && Ben - various additions to handle different techniques
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mephoto.c,v 3.2 1998/10/04 09:36:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mephoto.c,v 3.3 1998/10/05 13:22:31 dawes Exp $ */
 
 #define _XIEC_MEPHOTO
 #define _XIEC_EPHOTO
@@ -103,25 +103,19 @@ terms and conditions:
 #include <meuncomp.h>
 #include <memory.h>
 
-
-/*
- *  routines referenced by other DDXIE modules
- */
-int	miAnalyzeEPhoto();
-
 /*
  *  routines used internal to this module
  */
-static int CreateEPhotoUncom();
-static int InitializeEPhotoBypass();
-static int InitializeEPhotoUncomByPlane();
-static int ActivateEPhotoUncomByPlane();
-static int ResetEPhoto();
-static int DestroyEPhoto();
+static int CreateEPhotoUncom(floDefPtr flo, peDefPtr ped);
+static int InitializeEPhotoBypass(floDefPtr flo, peDefPtr ped);
+static int InitializeEPhotoUncomByPlane(floDefPtr flo, peDefPtr ped);
+static int ActivateEPhotoUncomByPlane(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetEPhoto(floDefPtr flo, peDefPtr ped);
+static int DestroyEPhoto(floDefPtr flo, peDefPtr ped);
 
 #if XIE_FULL
-static int InitializeEPhotoUncomByPixel();
-static int ActivateEPhotoUncomByPixel();
+static int InitializeEPhotoUncomByPixel(floDefPtr flo, peDefPtr ped);
+static int ActivateEPhotoUncomByPixel(floDefPtr flo, peDefPtr ped, peTexPtr pet);
 #endif /* XIE_FULL */
 
 
@@ -195,9 +189,7 @@ static ddElemVecRec EPhotoJPEGBaselineVec = {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeEPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeEPhoto(floDefPtr flo, peDefPtr ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
@@ -255,9 +247,7 @@ int miAnalyzeEPhoto(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateEPhotoUncom(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateEPhotoUncom(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return(MakePETex(flo, ped, xieValMaxBands * sizeof(meUncompRec), 
@@ -267,9 +257,7 @@ static int CreateEPhotoUncom(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEPhotoBypass(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeEPhotoBypass(floDefPtr flo, peDefPtr ped)
 {
   /* Allows data manager to bypass element entirely */
   return(InitReceptor(flo, ped, ped->peTex->receptor,
@@ -279,9 +267,7 @@ static int InitializeEPhotoBypass(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEPhotoUncomByPlane(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeEPhotoUncomByPlane(floDefPtr flo, peDefPtr ped)
 {
   peTexPtr              pet = ped->peTex;
   meUncompPtr           pvt = (meUncompPtr)pet->private;
@@ -466,10 +452,7 @@ static int InitializeEPhotoUncomByPlane(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEPhotoUncomByPlane(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEPhotoUncomByPlane(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   meUncompPtr           pvt = (meUncompPtr)pet->private;
   receptorPtr           rcp = pet->receptor;
@@ -484,7 +467,7 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
     width    = sbnd->format->width;
     pitch    = dbnd->format->pitch;
     stride   = dbnd->format->stride;
-    nextdlen = pvt->bitOff + pitch + 7 >> 3;
+    nextdlen = (pvt->bitOff + pitch + 7) >> 3;
     
     if (!(pet->scheduled & 1<<b)) continue;	/* This band is bypassed */
     
@@ -496,9 +479,9 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
       (*pvt->action)(src,dst,pvt);
       
       src         = GetNextSrc(flo,pet,sbnd,FLUSH);
-      pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
+      pvt->bitOff = (pvt->bitOff + pitch) & 7;  /* Set next */
       olddlen     = (pvt->bitOff) ? nextdlen - 1: nextdlen;
-      nextdlen    = pvt->bitOff + pitch + 7 >> 3;
+      nextdlen    = (pvt->bitOff + pitch + 7) >> 3;
       dst         = (CARD8*)GetDstBytes(flo,pet,dbnd,dbnd->current+olddlen,
 					nextdlen,KEEP);
     }
@@ -520,9 +503,7 @@ static int ActivateEPhotoUncomByPlane(flo,ped,pet)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeEPhotoUncomByPixel(flo,ped) 
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeEPhotoUncomByPixel(floDefPtr flo, peDefPtr ped)
 {
   peTexPtr                 pet = ped->peTex;
   meUncompPtr              pvt = (meUncompPtr)pet->private;
@@ -664,9 +645,9 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
 				   [depth1 <= 8 ? 0 : 1]
 				   [depth2 <= 8 ? 0 : 1]
 				   [depth3 <= 8 ? 0 : 1];
-    if(depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(pvt[0].width+7)) ||
-       depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(pvt[1].width+7)) ||
-       depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(pvt[2].width+7)))
+    if((depth1 == 1 && !(pvt[0].buf = (pointer)XieMalloc(pvt[0].width+7))) ||
+       (depth2 == 1 && !(pvt[1].buf = (pointer)XieMalloc(pvt[1].width+7))) ||
+       (depth3 == 1 && !(pvt[2].buf = (pointer)XieMalloc(pvt[2].width+7))))
       AllocError(flo,ped, return(FALSE));
   }
   pet->bandSync = SYNC;
@@ -679,10 +660,7 @@ static int InitializeEPhotoUncomByPixel(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateEPhotoUncomByPixel(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateEPhotoUncomByPixel(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   meUncompPtr pvt = (meUncompPtr)pet->private;
   bandPtr   sb0 = &pet->receptor[SRCtag].band[pvt[0].bandMap];
@@ -697,7 +675,7 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
   if (pvt->unaligned) {
     CARD32 stride   = dbnd->format->stride;
     CARD32 width    = dbnd->format->width;
-    CARD32 nextdlen = pvt->bitOff + pitch + 7 >> 3, olddlen;
+    CARD32 nextdlen = (pvt->bitOff + pitch + 7) >> 3, olddlen;
     if((sp0 = GetCurrentSrc(flo,pet,sb0)) &&
        (sp1 = GetCurrentSrc(flo,pet,sb1)) && 
        (sp2 = GetCurrentSrc(flo,pet,sb2)) &&
@@ -713,9 +691,9 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 	sp0         = GetNextSrc(flo,pet,sb0,FLUSH);
 	sp1         = GetNextSrc(flo,pet,sb1,FLUSH);
 	sp2         = GetNextSrc(flo,pet,sb2,FLUSH);
-	pvt->bitOff = pvt->bitOff + pitch & 7;  /* Set next */
+	pvt->bitOff = (pvt->bitOff + pitch) & 7;  /* Set next */
 	olddlen     = (pvt->bitOff) ? nextdlen - 1 : nextdlen;
-	nextdlen    = pvt->bitOff + pitch + 7 >> 3;
+	nextdlen    = (pvt->bitOff + pitch + 7) >> 3;
 	dst         = (BytePixel*)GetDstBytes(flo,pet,dbnd,
 					dbnd->current+olddlen,nextdlen,KEEP);
       } while(dst && sp0 && sp1 && sp2);
@@ -762,9 +740,7 @@ static int ActivateEPhotoUncomByPixel(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetEPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetEPhoto(floDefPtr flo, peDefPtr ped)
 {
   meUncompPtr pvt = (meUncompPtr)ped->peTex->private;
   int i;
@@ -781,9 +757,7 @@ static int ResetEPhoto(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyEPhoto(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyEPhoto(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

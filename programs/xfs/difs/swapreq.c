@@ -1,17 +1,12 @@
-/* $XConsortium: swapreq.c,v 1.7 94/04/17 19:56:19 gildea Exp $ */
+/* $TOG: swapreq.c /main/9 1998/02/11 10:03:30 kaleb $ */
 /*
  * swapped requests
  */
 /*
  
-Copyright (c) 1990, 1991  X Consortium
+Copyright 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -19,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
@@ -48,17 +43,14 @@ in this Software without prior written authorization from the X Consortium.
  * THIS SOFTWARE.
  */
 
-#include	"misc.h"
+#include	<swapreq.h>
+
 #include	"FSproto.h"
 #include	"clientstr.h"
 #include	"globals.h"
 
-extern int  (*ProcVector[NUM_PROC_VECTORS]) ();
-
 void
-SwapLongs(list, count)
-    long       *list;
-    unsigned long count;
+SwapLongs(long *list, unsigned long count)
 {
     int         n;
     register char *longs = (char *)list;
@@ -86,9 +78,7 @@ SwapLongs(list, count)
 /* Byte swap a list of shorts */
 
 void
-SwapShorts(list, count)
-    short *list;
-    register unsigned long count;
+SwapShorts(short *list, unsigned long count)
 {
     register char *shorts = (char *)list;
     register int n;
@@ -125,8 +115,7 @@ SwapShorts(list, count)
  * used for all requests that have nothing but 'length' swapped
  */
 int
-SProcSimpleRequest(client)
-    ClientPtr   client;
+SProcSimpleRequest(ClientPtr client)
 {
     REQUEST(fsReq);
     stuff->length = lswaps(stuff->length);
@@ -137,8 +126,7 @@ SProcSimpleRequest(client)
  * used for all requests that have nothing but 'length' & a resource id swapped
  */
 int
-SProcResourceRequest(client)
-    ClientPtr   client;
+SProcResourceRequest(ClientPtr client)
 {
     REQUEST(fsResourceReq);
     stuff->length = lswaps(stuff->length);
@@ -147,9 +135,7 @@ SProcResourceRequest(client)
 }
 
 static void
-swap_auth(data, num)
-    pointer     data;
-    int         num;
+swap_auth(pointer data, int num)
 {
     pointer     p;
     unsigned char t;
@@ -175,8 +161,7 @@ swap_auth(data, num)
 }
 
 int
-SProcCreateAC(client)
-    ClientPtr   client;
+SProcCreateAC(ClientPtr client)
 {
     REQUEST(fsCreateACReq);
     stuff->length = lswaps(stuff->length);
@@ -186,8 +171,7 @@ SProcCreateAC(client)
 }
 
 int
-SProcSetResolution(client)
-    ClientPtr   client;
+SProcSetResolution(ClientPtr client)
 {
     REQUEST(fsSetResolutionReq);
     stuff->length = lswaps(stuff->length);
@@ -199,18 +183,15 @@ SProcSetResolution(client)
 
 
 int
-SProcQueryExtension(client)
-    ClientPtr   client;
+SProcQueryExtension(ClientPtr client)
 {
     REQUEST(fsQueryExtensionReq);
     stuff->length = lswaps(stuff->length);
-    stuff->nbytes = lswaps(stuff->nbytes);
     return ((*ProcVector[FS_QueryExtension]) (client));
 }
 
 int
-SProcListCatalogues(client)
-    ClientPtr   client;
+SProcListCatalogues(ClientPtr client)
 {
     REQUEST(fsListCataloguesReq);
     stuff->length = lswaps(stuff->length);
@@ -220,8 +201,7 @@ SProcListCatalogues(client)
 }
 
 int
-SProcListFonts(client)
-    ClientPtr   client;
+SProcListFonts(ClientPtr client)
 {
     REQUEST(fsListFontsReq);
     stuff->length = lswaps(stuff->length);
@@ -231,8 +211,7 @@ SProcListFonts(client)
 }
 
 int
-SProcListFontsWithXInfo(client)
-    ClientPtr   client;
+SProcListFontsWithXInfo(ClientPtr client)
 {
     REQUEST(fsListFontsWithXInfoReq);
     stuff->length = lswaps(stuff->length);
@@ -242,8 +221,7 @@ SProcListFontsWithXInfo(client)
 }
 
 int
-SProcOpenBitmapFont(client)
-    ClientPtr   client;
+SProcOpenBitmapFont(ClientPtr client)
 {
     REQUEST(fsOpenBitmapFontReq);
     stuff->length = lswaps(stuff->length);
@@ -254,8 +232,7 @@ SProcOpenBitmapFont(client)
 }
 
 int
-SProcQueryXExtents(client)
-    ClientPtr   client;
+SProcQueryXExtents(ClientPtr client)
 {
     REQUEST(fsQueryXExtents8Req); /* 8 and 16 are the same here */
     stuff->length = lswaps(stuff->length);
@@ -266,8 +243,7 @@ SProcQueryXExtents(client)
 }
 
 int
-SProcQueryXBitmaps(client)
-    ClientPtr   client;
+SProcQueryXBitmaps(ClientPtr client)
 {
     REQUEST(fsQueryXBitmaps8Req); /* 8 and 16 are the same here */
     stuff->length = lswaps(stuff->length);
@@ -278,8 +254,8 @@ SProcQueryXBitmaps(client)
     return ((*ProcVector[stuff->reqType]) (client));
 }
 
-SwapConnClientPrefix(pCCP)
-    fsConnClientPrefix *pCCP;
+void
+SwapConnClientPrefix(fsConnClientPrefix *pCCP)
 {
     pCCP->major_version = lswaps(pCCP->major_version);
     pCCP->minor_version = lswaps(pCCP->minor_version);

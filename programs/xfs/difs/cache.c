@@ -1,13 +1,8 @@
-/* $XConsortium: cache.c,v 1.7 94/04/17 19:56:11 dpw Exp $ */
+/* $TOG: cache.c /main/8 1998/02/11 10:02:13 kaleb $ */
 /*
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +10,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 
  *
@@ -80,8 +75,7 @@ static int  num_caches = 1;
  */
 
 Cache
-CacheInit(maxsize)
-    unsigned long maxsize;
+CacheInit(unsigned long maxsize)
 {
     Cache       id = (Cache) num_caches;
     CachePtr    cache;
@@ -109,8 +103,7 @@ CacheInit(maxsize)
 }
 
 static int
-hash(cid)
-    CacheID     cid;
+hash(CacheID cid)
 {
     CachePtr    cache = caches[CACHE_ID(cid)];
 
@@ -142,8 +135,7 @@ hash(cid)
 }
 
 static void
-rebuild_cache(cache)
-    CachePtr    cache;
+rebuild_cache(CachePtr cache)
 {
     int         j;
     CacheEntryPtr cp,
@@ -187,7 +179,7 @@ rebuild_cache(cache)
  * throws out all existing entries
  */
 void
-CacheReset()
+CacheReset(void)
 {
     CacheEntryPtr cp;
     CachePtr    cache;
@@ -212,9 +204,7 @@ CacheReset()
 }
 
 static void
-flush_cache(cache, needed)
-    CachePtr    cache;
-    unsigned long needed;
+flush_cache(CachePtr cache, unsigned long needed)
 {
 /* XXX -- try to set oldprev properly inside search loop */
     CacheEntryPtr cp,
@@ -235,19 +225,19 @@ flush_cache(cache, needed)
 		oldest = cp;
 	    }
 	    while (cp) {
-	    if (cp->timestamp < oldest->timestamp) {
+		if (cp->timestamp < oldest->timestamp) {
 		oldest = cp;
 		    oldbucket = i;
-	    }
+		}
 		cp = cp->next;
-	}
+	    }
 	}
 	/* fixup list */
 	oldprev = &cache->entries[oldbucket];
 	cp = *oldprev;
-	for (; cp = *oldprev; oldprev = &cp->next) {
+	for (; (cp = *oldprev) != 0; oldprev = &cp->next) {
 	    if (cp == oldest) {
-	*oldprev = oldest->next;
+		*oldprev = oldest->next;
 		break;
 	    }
 	}
@@ -260,8 +250,7 @@ flush_cache(cache, needed)
 }
 
 void
-CacheResize(cid, newsize)
-    Cache       cid;
+CacheResize(Cache cid, unsigned newsize)
 {
     CachePtr    cache = caches[cid];
 
@@ -276,11 +265,11 @@ CacheResize(cid, newsize)
 }
 
 CacheID
-CacheStoreMemory(cid, data, size, free_func)
-    Cache       cid;
-    pointer     data;
-    unsigned long size;
-    CacheFree   free_func;
+CacheStoreMemory(
+    Cache       cid,
+    pointer     data,
+    unsigned long size,
+    CacheFree   free_func)
 {
     CacheID     id;
     CacheEntryPtr cp,
@@ -318,9 +307,9 @@ CacheStoreMemory(cid, data, size, free_func)
 }
 
 pointer
-CacheFetchMemory(cid, update)
-    CacheID     cid;
-    Bool        update;
+CacheFetchMemory(
+    CacheID     cid,
+    Bool        update)
 {
     CachePtr    cache = caches[CACHE_ID(cid)];
     CacheEntryPtr cp,
@@ -342,10 +331,10 @@ CacheFetchMemory(cid, update)
     return (pointer) 0;
 }
 
-int
-CacheFreeMemory(cid, notify)
-    CacheID     cid;
-    Bool        notify;
+void
+CacheFreeMemory(
+    CacheID     cid,
+    Bool        notify)
 {
     CachePtr    cache = caches[CACHE_ID(cid)];
     CacheEntryPtr cp,
@@ -380,10 +369,10 @@ CacheFreeMemory(cid, notify)
 
 /* ARGSUSED */
 void
-CacheSimpleFree(cid, data, reason)
-    CacheID     cid;
-    pointer     data;
-    int         reason;
+CacheSimpleFree(
+    CacheID     cid,
+    pointer     data,
+    int         reason)
 {
     fsfree(data);
 }

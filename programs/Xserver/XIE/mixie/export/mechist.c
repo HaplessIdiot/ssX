@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mechist.c,v 3.2 1998/10/04 09:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mechist.c,v 3.3 1998/10/05 13:22:28 dawes Exp $ */
 
 #define _XIEC_MECHIST
 #define _XIEC_ECHIST
@@ -99,18 +99,13 @@ terms and conditions:
 #include <xiemd.h>
 #include <memory.h>
 
-
-/* routines referenced by other DDXIE modules
- */
-int	miAnalyzeECHist();
-
 /* routines used internal to this module
  */
-static int CreateECHist();
-static int InitializeECHist();
-static int ActivateECHist();
-static int ResetECHist();
-static int DestroyECHist();
+static int CreateECHist(floDefPtr flo, peDefPtr ped);
+static int InitializeECHist(floDefPtr flo, peDefPtr ped);
+static int ActivateECHist(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetECHist(floDefPtr flo, peDefPtr ped);
+static int DestroyECHist(floDefPtr flo, peDefPtr ped);
 
 /* DDXIE ExportClientHist entry points
  */
@@ -131,15 +126,16 @@ typedef struct {
     void	(*histproc) ();
 } miECHistRec, *miECHistPtr;
 
-void	doHistQ(), doHistP(), doHistB(), doHistb();
+extern void doHistQ(pointer svoid, CARD32 *hist, CARD32 clip, CARD32 x, CARD32 dx);
+extern void doHistP(pointer svoid, CARD32 *hist, CARD32 clip, CARD32 x, CARD32 dx);
+extern void doHistB(pointer svoid, CARD32 *hist, CARD32 clip, CARD32 x, CARD32 dx);
+extern void doHistb(pointer svoid, CARD32 *hist, CARD32 clip, CARD32 x, CARD32 dx);
 
 
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+int miAnalyzeECHist(floDefPtr flo, peDefPtr ped)
 {
     /* for now just stash our entry point vector in the peDef */
     ped->ddVec = ECHistVec;
@@ -150,9 +146,7 @@ int miAnalyzeECHist(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+static int CreateECHist(floDefPtr flo, peDefPtr ped)
 {
     /* attach an execution context to the photo element definition */
 
@@ -163,9 +157,7 @@ static int CreateECHist(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+static int InitializeECHist(floDefPtr flo, peDefPtr ped)
 {
     xieFloExportClientHistogram *raw =
 				(xieFloExportClientHistogram *)ped->elemRaw;
@@ -204,10 +196,7 @@ static int InitializeECHist(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateECHist(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECHist(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientHistogram *raw =
 			(xieFloExportClientHistogram *)ped->elemRaw;
@@ -220,7 +209,7 @@ static int ActivateECHist(flo,ped,pet)
   src = GetCurrentSrc(flo,pet,sbnd);
   while(src && SyncDomain(flo,ped,sbnd,FLUSH)) {
     INT32 x = 0, dx;
-    while (dx = GetRun(flo,pet,sbnd)) {
+    while ((dx = GetRun(flo,pet,sbnd)) != 0) {
       if (dx > 0) {
 	(*(pvt->histproc)) (src,pvt->histdata,pvt->histsize,x,dx);
 	x += dx;
@@ -277,9 +266,7 @@ static int ActivateECHist(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+static int ResetECHist(floDefPtr flo, peDefPtr ped)
 {
     miECHistPtr pvt = (miECHistPtr) ped->peTex->private;
 
@@ -296,9 +283,7 @@ static int ResetECHist(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyECHist(flo,ped)
-    floDefPtr flo;
-    peDefPtr  ped;
+static int DestroyECHist(floDefPtr flo, peDefPtr ped)
 {
     /* get rid of the peTex structure  */
     ped->peTex = (peTexPtr) XieFree(ped->peTex);
@@ -318,9 +303,12 @@ static int DestroyECHist(flo,ped)
 ------------------------ action procs to do histogram --------------------
 ------------------------------------------------------------------------*/
 
-void doHistQ(svoid,hist,clip,x,dx)
-    pointer	svoid;
-    CARD32	*hist, clip, x, dx;
+void doHistQ(
+     pointer	svoid,
+     CARD32	*hist,
+     CARD32	clip,
+     CARD32	x,
+     CARD32	dx)
 {
     QuadPixel *src = (QuadPixel *) svoid;
 
@@ -328,9 +316,12 @@ void doHistQ(svoid,hist,clip,x,dx)
 	hist[*src++ & clip]++;
 }
 
-void doHistP(svoid,hist,clip,x,dx)
-   pointer	svoid;
-    CARD32	*hist, clip, x, dx;
+void doHistP(
+     pointer	svoid,
+     CARD32	*hist,
+     CARD32	clip,
+     CARD32	x,
+     CARD32	dx)
 {
     PairPixel *src = (PairPixel *) svoid;
 
@@ -338,9 +329,12 @@ void doHistP(svoid,hist,clip,x,dx)
 	hist[*src++ & clip]++;
 }
 
-void doHistB(svoid,hist,clip,x,dx)
-   pointer	svoid;
-    CARD32	*hist, clip, x, dx;
+void doHistB(
+     pointer	svoid,
+     CARD32	*hist,
+     CARD32	clip,
+     CARD32	x,
+     CARD32	dx)
 {
     BytePixel *src = (BytePixel *) svoid;
 
@@ -348,9 +342,12 @@ void doHistB(svoid,hist,clip,x,dx)
 	hist[*src++ & clip]++;			/* could pad to 256 .. */
 }
 
-void doHistb(svoid,hist,clip,x,dx)
-   pointer	svoid;
-    CARD32	*hist, clip, x, dx;
+void doHistb(
+     pointer	svoid,
+     CARD32	*hist,
+     CARD32	clip,
+     CARD32	x,
+     CARD32	dx)
 {
     LogInt *src = (LogInt *) svoid;
     CARD32 cnt0 = 0, cnt1 = 0;

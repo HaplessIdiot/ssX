@@ -1,15 +1,10 @@
-/* $XConsortium: tables.h,v 1.4 94/04/17 20:34:08 rws Exp $ */
+/* $TOG: tables.h /main/5 1998/02/10 10:28:15 kaleb $ */
 /**** module tables.h ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -76,127 +71,64 @@ terms and conditions:
 #define _XIEH_TABLES
 
 #include <flostr.h>
+#include <protoflo.h>
 
 #define DDAnalyzeIndex		0
 #define DDServerChoiceIndex	1
 
 #ifndef _XIEC_TABLES
 
-extern	void		init_proc_tables();     
 extern	peDefPtr	(*MakeTable[])();
 extern  xieVoidProc 	DDInterface[];
 
-#else  /* _XIEC_TABLES */
+#endif /* _XIEC_TABLES */
 
 	/* dd entry points for di */
 
-extern int DAGalyze();
-extern xieBoolProc GetServerChoice();
+extern int DAGalyze(floDefPtr);
+extern xieBoolProc GetServerChoice(floDefPtr, peDefPtr);	/* FIXME: mixie */
 
-	/* flo.c */
-extern  int		ProcAbort();
-extern  int		ProcAwait();
-extern  int		ProcGetClientData();
-extern  int		ProcPutClientData();
-extern  int		ProcQueryPhotoflo();
-extern  int		SProcAbort();
-extern  int		SProcAwait();
-extern  int		SProcGetClientData();
-extern  int		SProcPutClientData();
-extern  int		SProcQueryPhotoflo();
-	/* immediate.c */
-extern	int		ProcCreatePhotospace();
-extern	int		ProcDestroyPhotospace();
-extern  int		ProcExecuteImmediate();
-extern	int		SProcCreatePhotospace();
-extern	int		SProcDestroyPhotospace();
-extern  int		SProcExecuteImmediate();
-/* lut.c */
-extern	int		ProcCreateLUT();
-extern	int		ProcDestroyLUT();
-extern	int		SProcCreateLUT();
-extern	int		SProcDestroyLUT();
+	/* lut.c */
+extern	int		ProcCreateLUT(ClientPtr);
+extern	int		ProcDestroyLUT(ClientPtr);
+extern	int		SProcCreateLUT(ClientPtr);
+extern	int		SProcDestroyLUT(ClientPtr);
 	/* photomap.c */
-extern	int		ProcCreatePhotomap();
-extern	int		ProcDestroyPhotomap();
-extern	int		ProcQueryPhotomap();
-extern	int		SProcCreatePhotomap();
-extern	int		SProcDestroyPhotomap();
-extern	int		SProcQueryPhotomap();
-	/* stored.c */
-extern	int		ProcCreatePhotoflo();
-extern	int		ProcDestroyPhotoflo();
-extern	int		ProcExecutePhotoflo();
-extern	int		ProcModifyPhotoflo();
-extern	int		ProcRedefinePhotoflo();
-extern	int		SProcCreatePhotoflo();
-extern	int		SProcDestroyPhotoflo();
-extern	int		SProcExecutePhotoflo();
-extern	int		SProcModifyPhotoflo();
-extern	int		SProcRedefinePhotoflo();
+extern	int		ProcCreatePhotomap(ClientPtr);
+extern	int		ProcDestroyPhotomap(ClientPtr);
+extern	int		ProcQueryPhotomap(ClientPtr);
+extern	int		SProcCreatePhotomap(ClientPtr);
+extern	int		SProcDestroyPhotomap(ClientPtr);
+extern	int		SProcQueryPhotomap(ClientPtr);
 	/* technq.c */
-extern	int		ProcQueryTechniques();
-extern	int		SProcQueryTechniques();
+extern	int		ProcQueryTechniques(ClientPtr);
+extern	int		SProcQueryTechniques(ClientPtr);
 
 #if XIE_FULL
-	/* colorlist.c */
-extern	int		ProcCreateColorList();
-extern	int		ProcDestroyColorList();
-extern	int		ProcPurgeColorList();
-extern	int		ProcQueryColorList();
-extern	int		SProcCreateColorList();
-extern	int		SProcDestroyColorList();
-extern	int		SProcPurgeColorList();
-extern	int		SProcQueryColorList();
+	/* colorlst.c */
+extern	int		ProcCreateColorList(ClientPtr);
+extern	int		ProcDestroyColorList(ClientPtr);
+extern	int		ProcPurgeColorList(ClientPtr);
+extern	int		ProcQueryColorList(ClientPtr);
+extern	int		SProcCreateColorList(ClientPtr);
+extern	int		SProcDestroyColorList(ClientPtr);
+extern	int		SProcPurgeColorList(ClientPtr);
+extern	int		SProcQueryColorList(ClientPtr);
 	/* roi.c */
-extern	int		ProcCreateROI();
-extern	int		ProcDestroyROI();
-extern	int		SProcCreateROI();
-extern	int		SProcDestroyROI();
+extern	int		ProcCreateROI(ClientPtr);
+extern	int		ProcDestroyROI(ClientPtr);
+extern	int		SProcCreateROI(ClientPtr);
+extern	int		SProcDestroyROI(ClientPtr);
 #endif
 
 /* elements */
-extern	peDefPtr	MakeIDraw();
-extern	peDefPtr	MakeIDrawP();
-extern	peDefPtr	MakeICLUT();
-extern	peDefPtr	MakeILUT();
-extern	peDefPtr	MakeICPhoto();
-extern	peDefPtr	MakeIPhoto();
-extern	peDefPtr	MakeGeometry();
-extern	peDefPtr	MakePoint();
-extern	peDefPtr	MakeEDraw();
-extern	peDefPtr	MakeEDrawPlane();
-extern	peDefPtr	MakeECLUT();
-extern	peDefPtr	MakeELUT();
-extern	peDefPtr	MakeECPhoto();
-extern	peDefPtr	MakeEPhoto();
+#include <dixie_i.h>
+#include <dixie_e.h>
+#include <dixie_p.h>
 
-#if XIE_FULL
-extern	peDefPtr	MakeICROI();
-extern	peDefPtr	MakeIROI();
-extern	peDefPtr	MakeArith();
-extern	peDefPtr	MakeBandCom();
-extern	peDefPtr	MakeBandExt();
-extern	peDefPtr	MakeBandSel();
-extern	peDefPtr	MakeBlend();
-extern	peDefPtr	MakeCompare();
-extern	peDefPtr	MakeConstrain();
-extern	peDefPtr	MakeConvertFromIndex();
-extern	peDefPtr	MakeConvertFromRGB();
-extern	peDefPtr	MakeConvertToIndex();
-extern	peDefPtr	MakeConvertToRGB();
-extern	peDefPtr	MakeConvolve();
-extern	peDefPtr	MakeDither();
-extern	peDefPtr	MakeLogic();
-extern	peDefPtr	MakeMatchHistogram();
-extern	peDefPtr	MakeMath();
-extern	peDefPtr	MakePasteUp();
-extern	peDefPtr	MakeUnconstrain();
-extern	peDefPtr	MakeECHistogram();
-extern	peDefPtr	MakeECROI();
-extern	peDefPtr	MakeEROI();
-#endif
-
-#endif /* _XIEC_TABLES */
+extern	void		init_proc_tables(
+				CARD16 minorVersion,
+				int (**ptable[])(ClientPtr),
+				int (**sptable[])(ClientPtr));
 
 #endif /* _XIEH_TABLES */

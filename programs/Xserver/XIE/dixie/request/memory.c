@@ -67,7 +67,7 @@ terms and conditions:
 	Dean Verheiden, AGE Logic, Inc., April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.3 1998/10/04 09:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.4 1998/10/05 13:22:20 dawes Exp $ */
 
 #define _XIEC_MEMORY
 
@@ -87,8 +87,7 @@ terms and conditions:
 
 int ALLOCS = 0; /* DEBUG */
 
-pointer XieMalloc(size)
- unsigned size;
+pointer XieMalloc(unsigned size)
 {
   char *memptr = (char *)xalloc(size);
 
@@ -98,15 +97,12 @@ pointer XieMalloc(size)
 }
 
 
-pointer XieRealloc(ptr,size)
- char *ptr;
- unsigned size;
+pointer XieRealloc(pointer ptr, unsigned size)
 {
     return (pointer )xrealloc(ptr,size);    
 }
 
-pointer XieCalloc(size)
- unsigned size;
+pointer XieCalloc(unsigned size)
 {
   char *memptr = (char *)xalloc(size);
 
@@ -117,8 +113,7 @@ pointer XieCalloc(size)
   return (pointer )(memptr);
 }
 
-pointer XieFree(ptr)
- char *ptr;
+pointer XieFree(pointer ptr)
 {
   if(ptr) {
     --ALLOCS; /* DEBUG */

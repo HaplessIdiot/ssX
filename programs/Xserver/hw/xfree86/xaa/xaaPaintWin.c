@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.1.2.3 1998/07/18 17:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.2 1998/07/25 16:58:50 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -76,6 +76,11 @@ XAAPaintWindow(
 		 pBgWin->backgroundState == ParentRelative;
 		 pBgWin = pBgWin->parent);
 	}
+
+	if(pPriv->flags & DIRTY) {
+	    pPriv->flags = 0;
+	    pPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+        }
 
     	if(!(pPriv->flags & REDUCIBILITY_CHECKED) &&
 	    (infoRec->CanDoMono8x8 || infoRec->CanDoColor8x8)) {

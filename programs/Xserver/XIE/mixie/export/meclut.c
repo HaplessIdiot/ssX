@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. July, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meclut.c,v 3.2 1998/10/04 09:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/meclut.c,v 3.3 1998/10/05 13:22:29 dawes Exp $ */
 
 #define _XIEC_MECLUT
 #define _XIEC_ECLUT
@@ -100,17 +100,13 @@ terms and conditions:
 #include <memory.h>
 
 
-/* routines referenced by other DDXIE modules
- */
-int	miAnalyzeECLUT();
-
 /* routines used internal to this module
  */
-static int CreateECLUT();
-static int InitializeECLUT();
-static int ActivateECLUT();
-static int ResetECLUT();
-static int DestroyECLUT();
+static int CreateECLUT(floDefPtr flo, peDefPtr ped);
+static int InitializeECLUT(floDefPtr flo, peDefPtr ped);
+static int ActivateECLUT(floDefPtr flo, peDefPtr ped, peTexPtr pet);
+static int ResetECLUT(floDefPtr flo, peDefPtr ped);
+static int DestroyECLUT(floDefPtr flo, peDefPtr ped);
 
 /* DDXIE ExportClientLUT entry points
  */
@@ -126,9 +122,7 @@ static ddElemVecRec ECLUTVec = {
 /*------------------------------------------------------------------------
 ------------------- see if we can handle this element --------------------
 ------------------------------------------------------------------------*/
-int miAnalyzeECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+int miAnalyzeECLUT(floDefPtr flo, peDefPtr ped)
 {
   /* for now just stash our entry point vector in the peDef */
   ped->ddVec = ECLUTVec;
@@ -139,9 +133,7 @@ int miAnalyzeECLUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- create peTex . . . --------------------------
 ------------------------------------------------------------------------*/
-static int CreateECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int CreateECLUT(floDefPtr flo, peDefPtr ped)
 {
   /* attach an execution context to the photo element definition */
   return MakePETex(flo, ped, NO_PRIVATE, NO_SYNC, NO_SYNC);
@@ -150,9 +142,7 @@ static int CreateECLUT(flo,ped)
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
 ------------------------------------------------------------------------*/
-static int InitializeECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int InitializeECLUT(floDefPtr flo, peDefPtr ped)
 {
   return InitReceptors(flo,ped,NO_DATAMAP,1) &&
 	 InitEmitter(flo,ped,NO_DATAMAP,NO_INPLACE);
@@ -161,10 +151,7 @@ static int InitializeECLUT(flo,ped)
 /*------------------------------------------------------------------------
 ----------------------------- crank some data ----------------------------
 ------------------------------------------------------------------------*/
-static int ActivateECLUT(flo,ped,pet)
-     floDefPtr flo;
-     peDefPtr  ped;
-     peTexPtr  pet;
+static int ActivateECLUT(floDefPtr flo, peDefPtr ped, peTexPtr pet)
 {
   xieFloExportClientLUT *raw = (xieFloExportClientLUT *)ped->elemRaw;
   receptorPtr	rcp = pet->receptor;
@@ -213,9 +200,7 @@ static int ActivateECLUT(flo,ped,pet)
 /*------------------------------------------------------------------------
 ------------------------ get rid of run-time stuff -----------------------
 ------------------------------------------------------------------------*/
-static int ResetECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int ResetECLUT(floDefPtr flo, peDefPtr ped)
 {
   ResetReceptors(ped);
   ResetEmitter(ped);
@@ -226,9 +211,7 @@ static int ResetECLUT(flo,ped)
 /*------------------------------------------------------------------------
 -------------------------- get rid of this element -----------------------
 ------------------------------------------------------------------------*/
-static int DestroyECLUT(flo,ped)
-     floDefPtr flo;
-     peDefPtr  ped;
+static int DestroyECLUT(floDefPtr flo, peDefPtr ped)
 {
   /* get rid of the peTex structure  */
   ped->peTex = (peTexPtr) XieFree(ped->peTex);

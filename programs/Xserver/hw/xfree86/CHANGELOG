@@ -1,4 +1,32 @@
-XFree86 3.9Nk (18 October 1998)
+XFree86 3.9Nk (25 October 1998)
+1928. Some XAA GC validation bug fixes and optimisations.  This includes
+      wrapping pixmap rendering to determine when pixmap cache invalidation
+      is required (#2126, Mark Vojkovich).
+1927. Backout the dix fb,bg planemask manipulation added in a previous version
+      (#2125, Mark Vojkovich).
+1926. Fix an MGA fastblt bug (#2124, Mark Vojkovich).
+1925. Accelerate zero width arcs on MGA (only use for rops other than
+      GXcopy and when PCI retries are enabled) (#2124, Mark Vojkovich).
+1924. Restore default-promotion to the Xdmcp library (#2103, Thomas Dickey).
+1923. Prototype/ansification cleanup for Xserver/XIE, xfs, fontlib, mkfontdir,
+      and fix some bugs found along the way (#2103, Thomas Dickey).
+1922. Set HasPoll to YES for Linux with glibc2 (#2095, Kars de Jong).
+1921. Fix some MGA modeline problems and change the G200 MCLK to 143MHz
+      (#2088, Radislaw Kapitan).
+1920. Move xedit from the contrib tree to the main tree.
+1919. Xaw and xedit updates (see the changelog in the Xaw directory for
+      details) (#2083, Paulo Cesar Pereira de Andrade).
+1918. Add support for BSD 4.4 style long file names in ar archives to
+      the loader (#2066, Matthieu Herrb).
+1917. Some GNU/Hurd config/build updates (#2057, UCHIYAMA Yasushi).
+1916. Do a soft reset for secondary MGA cards prior to probing for the
+      video memory size (#2052, Radislaw Kapitan).
+1915. sigset_t isn't an integer type on NetBSD (and some other OSs) so
+      don't try to print it in xdm (#2048, Matthieu Herrb).
+1914. NetBSD's preprocessor and emits a warning when it sees '#ifdef unix',
+      which makes imake noisy (#2048, Matthieu Herrb).
+1913. xterm patches 85, 86, 87 (see xterm.log.html for details) (#2043, 2056,
+      2097, Thomas Dickey).
 1912. Change "fcd8859-15" to "iso8859-15".
 1911. Some updates to the "dacG" mga reset code, and enable it by default
       since it helps initialising an inactive secondary G200 (#2032,
@@ -12,7 +40,7 @@ XFree86 3.9Nj (11 October 1998)
 1908. Add mga overlay support for the TVP3026 (#2040, Mark Vojkovich).
 1907. Ansifiy and remove most warnings from the Xdmcp library and xdm
       (#2038, Thomas Dickey).
-1906. xterm patch 84 (see see xterm.log.html for details) (#2036,
+1906. xterm patch 84 (see xterm.log.html for details) (#2036,
       Thomas Dickey, Bjorn Helgaas).
 1905. Enhancements for xedit (#2028, 2033, Paulo Cesar Pereira de Andrade).
 1904. Patch to make editres work properly (#2028,
@@ -6649,4 +6677,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.637 1998/10/11 10:20:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.638 1998/10/21 06:12:03 dawes Exp $

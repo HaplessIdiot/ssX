@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/event.c,v 3.1 1998/10/04 09:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/event.c,v 3.2 1998/10/05 13:22:19 dawes Exp $ */
 
 #define _XIEC_EVENT
 
@@ -95,16 +95,10 @@ terms and conditions:
 #include <macro.h>
 #include <flostr.h>
 
-/*
- *  routines referenced by other modules.
- */
-void		SendFloEvent();
-
 /*------------------------------------------------------------------------
 ----------------------------- Send Flo Event -----------------------------
 ------------------------------------------------------------------------*/
-void SendFloEvent(flo)
-     floDefPtr flo;
+void SendFloEvent(floDefPtr flo)
 {
   int status = Success;
   register int n;

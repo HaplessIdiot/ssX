@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.3 1998/08/13 14:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.4 1998/09/27 04:43:44 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -149,7 +149,10 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScreenPriv->GetSpans = pScreen->GetSpans;
     pScreen->GetSpans = XAAGetSpans;
     pScreenPriv->SourceValidate = pScreen->SourceValidate;
+#if 0
+    /* shouldn't need this now that we wrap pixmaps */
     pScreen->SourceValidate = XAASourceValidate;
+#endif
     pScreenPriv->PaintWindowBackground = pScreen->PaintWindowBackground;
     pScreen->PaintWindowBackground =  XAAPaintWindow;
     pScreenPriv->PaintWindowBorder = pScreen->PaintWindowBorder;
@@ -157,7 +160,10 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScreenPriv->CopyWindow = pScreen->CopyWindow;
     pScreen->CopyWindow = XAACopyWindow;
     pScreenPriv->ClearToBackground = pScreen->ClearToBackground;
+#if 0
+    /* Is really just a wrapper for PaintWindowBackground */
     pScreen->ClearToBackground = XAAClearToBackground;
+#endif
     pScreenPriv->CreatePixmap = pScreen->CreatePixmap;
     pScreen->CreatePixmap = XAACreatePixmap;
     pScreenPriv->BackingStoreFuncs.RestoreAreas = 
