@@ -1,7 +1,7 @@
 S3 ViRGE 4.0 devel notes
 
 rev: 
-7 Nov 2000 KJB
+27 Nov 2000 KJB
 
 
 Function		Implemented
@@ -23,11 +23,24 @@ S3VRestore		X
 
 Status
 ------
+11/27/00 KJB
+Ver 1.5.0
+Clean up, bump version for 4.0.2 submission.
+CR3A, bit 0x40 (reserved) cleared for MX/GX2.  Update man page.
+
+11/24/00 KJB
+Disable CPU to screen color expansion on GX2, causes lockups on GX2 with
+'locate html' in an xterm.  Add WaitCmd code to prevent accelerator and
+reg command path activity at the same time on GX2.
+XVideo fixes, left side clipping fixed for video windows extending off left
+side of screen.  Add horizontal filtering modes for 1-2x and >3x scaling.
+
 11/7/00 KJB
 Ver 1.4.0
 Enable MX fixes, testing with accel BLT_BUG set is worse on GX2, so left
 it out.  BLT_BUG wasn't being enabled on ViRGE & VX because of case usage,
 enabled now.  Re-enable silken mouse for GX2.  Add Render/fbPicture support.
+Fix a few compiler warnings.
 
 11/5/00 KJB
 Continued work on GX2, much stabler now, but I think there is a lockup case
@@ -246,4 +259,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.16 2000/10/23 12:10:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.17 2000/11/14 16:54:52 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.9 2000/03/31 20:13:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.10 2000/11/14 16:54:53 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -99,9 +99,7 @@ in this Software without prior written authorization from the XFree86 Project.
 /* Switchable per chipset, must be initialized prior to a mode */
 /* switch! */
 #define WAITFIFO(n) ((*ps3v->pWaitFifo)(ps3v,n))
-
-/* gx2 only (16 slots), not used yet */
-#define WAITCMD() while(((INREG(ADV_FUNC_CNTR) >> 6) & 0x1f) != 16){}
+#define WAITCMD() ((*ps3v->pWaitCmd)(ps3v))
 
 #define WAITIDLE()\
   do { int loop=0; mem_barrier(); \

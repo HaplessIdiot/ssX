@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.19 2000/10/23 12:10:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.20 2000/11/14 16:54:52 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -63,11 +63,14 @@ static void S3VSubsequentImageWriteRect(ScrnInfoPtr, int, int, int, int, int);
 static void S3VSubsequentSolidHorVertLine(ScrnInfoPtr, int, int, int, int);
 static void S3VSubsequentSolidHorVertLinePlaneMask(ScrnInfoPtr, int, int, 
 				int, int);
+#if 0
 static void S3VSubsequentSolidBresenhamLine(ScrnInfoPtr, int, int, int, 
 				int, int, int, int);
 static void S3VPolylinesThinSolidWrapper(DrawablePtr, GCPtr, int, int, 
 				DDXPointPtr);
 static void S3VPolySegmentThinSolidWrapper(DrawablePtr, GCPtr, int, xSegment*);
+#endif
+static void S3VNopAllCmdSets(ScrnInfoPtr pScrn);
 
 
 Bool 
@@ -126,23 +129,34 @@ S3VAccelInit(ScreenPtr pScreen)
 
 
 #ifndef __alpha__
-    /* CPU to screen color expansion */
-    infoPtr->CPUToScreenColorExpandFillFlags =  ROP_NEEDS_SOURCE |
+
+    /* disable color expand on GX2 until we trace down */
+    /* lockups.  locate 'html'  in an xterm is a good  */
+    /* test case for an AGP GX2. */
+    if (!S3_ViRGE_GX2_SERIES(ps3v->Chipset)) 
+      {
+
+	
+	/* CPU to screen color expansion */
+	infoPtr->CPUToScreenColorExpandFillFlags =  ROP_NEEDS_SOURCE |
 					CPU_TRANSFER_PAD_DWORD |
                                         SCANLINE_PAD_DWORD |
                                         BIT_ORDER_IN_BYTE_MSBFIRST |
                                   	LEFT_EDGE_CLIPPING;
 
-    if(ps3v->AccelFlags & MONO_TRANS_BUG)
-	infoPtr->CPUToScreenColorExpandFillFlags |=  NO_TRANSPARENCY;
+	if(ps3v->AccelFlags & MONO_TRANS_BUG)
+	  infoPtr->CPUToScreenColorExpandFillFlags |=  NO_TRANSPARENCY;
 
-    infoPtr->ColorExpandRange = 0x8000;
-    infoPtr->ColorExpandBase = ps3v->MapBaseDense;
-    infoPtr->SetupForCPUToScreenColorExpandFill =
+	infoPtr->ColorExpandRange = 0x8000;
+	infoPtr->ColorExpandBase = ps3v->MapBaseDense;
+	infoPtr->SetupForCPUToScreenColorExpandFill =
                 S3VSetupForCPUToScreenColorExpand;
-    infoPtr->SubsequentCPUToScreenColorExpandFill =
+	infoPtr->SubsequentCPUToScreenColorExpandFill =
                 S3VSubsequentCPUToScreenColorExpand;
-    
+
+      } /* if(!GX2...) */
+
+
     /* Image Writes */
     infoPtr->ImageWriteFlags =  	ROP_NEEDS_SOURCE |
 					NO_TRANSPARENCY |
@@ -573,6 +587,7 @@ S3VSubsequentSolidFillRect(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
 
@@ -592,6 +607,7 @@ S3VSubsequentSolidFillRectPlaneMask(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
 }
@@ -654,6 +670,7 @@ S3VSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     WAITFIFO(3);
     OUTREG(RWIDTH_HEIGHT, (w << 16) | h);
     OUTREG(RSRC_XY, (x1 << 16) | y1);
+    WAITCMD();
     OUTREG(RDEST_XY, (x2 << 16) | y2);
 }
 
@@ -714,6 +731,7 @@ S3VSubsequentMono8x8PatternFillRect(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
 
@@ -733,6 +751,7 @@ S3VSubsequentMono8x8PatternFillRectPlaneMask(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
@@ -792,6 +811,7 @@ S3VSubsequentCPUToScreenColorExpand(
     WAITFIFO(3);
     OUTREG(CLIP_L_R, ((x + skipleft) << 16) | 0xffff);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
 
@@ -842,6 +862,7 @@ S3VSubsequentImageWriteRect(
     WAITFIFO(3);
     OUTREG(CLIP_L_R, ((x + skipleft) << 16) | 0xffff);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
 
@@ -849,6 +870,9 @@ S3VSubsequentImageWriteRect(
 	/***********\
 	|   Lines   |
 	\***********/
+
+
+#if 0   /* Some line funcs are disabled at the moment */
 
 static void 
 S3VPolylinesThinSolidWrapper(
@@ -885,6 +909,8 @@ S3VPolySegmentThinSolidWrapper(
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
 }
 
+#endif
+
 static void
 S3VSubsequentSolidHorVertLine(
     ScrnInfoPtr pScrn,
@@ -904,6 +930,7 @@ S3VSubsequentSolidHorVertLine(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 }
 
@@ -926,18 +953,20 @@ S3VSubsequentSolidHorVertLinePlaneMask(
 
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
+    WAITCMD();
     OUTREG(RDEST_XY, (x << 16) | y);
 
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
 }
 
 
+#if 0   /* Line funcs are disabled at the moment */
+
 static void (*LineFuncs[3])() = {
   cfbBresS,
   cfb16BresS,
   cfb24BresS
 };
-
 
 static void 
 S3VSubsequentSolidBresenhamLine( 
@@ -1012,6 +1041,7 @@ fbBres (DrawablePtr     pDrawable,
       } /*if(fb)*/
 }
 
+#endif
 
 
 void
@@ -1030,6 +1060,19 @@ S3VWaitFifoMain(S3VPtr ps3v, int slots )
     while(((INREG(SUBSYS_STAT_REG) >> 8) & 0x1f) < slots){}
 }
 
+
+void
+S3VWaitCmdGX2(S3VPtr ps3v)
+{
+  while(((INREG(ADV_FUNC_CNTR) >> 6) & 0x1f) != 16){}
+}
+
+
+void
+S3VWaitDummy(S3VPtr ps3v)
+{
+  /* do nothing */
+}
 
 /*EOF*/
 
