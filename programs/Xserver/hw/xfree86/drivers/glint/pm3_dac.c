@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.19 2001/02/27 18:47:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.20 2001/03/19 22:50:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -308,14 +308,14 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     temp3 = 0;
 
     if (pGlint->UseFlatPanel) {
-    	temp2 |= 0x80;
-    	temp3 |= 0x40;
+    	temp2 |= PM3RD_DACControl_BLANK_PEDESTAL_ENABLE;
+    	temp3 |= PM3RD_MiscControl_VSB_OUTPUT_ENABLE;
     	STOREREG(VSConfiguration, 0x06); 
     	STOREREG(VSBBase, 1<<14);
     }
 
-    if (mode->Flags & V_PHSYNC) temp1 |= 0x01; /* invert hsync */
-    if (mode->Flags & V_PVSYNC) temp1 |= 0x08; /* invert vsync */
+    if (mode->Flags & V_PHSYNC) temp1 |= PM3RD_SyncControl_HSYNC_ACTIVE_HIGH;
+    if (mode->Flags & V_PVSYNC) temp1 |= PM3RD_SyncControl_VSYNC_ACTIVE_HIGH;
 
     STOREREG(PM2VDACRDIndexControl, 0x00);
     STOREDAC(PM2VDACRDSyncControl, temp1);
