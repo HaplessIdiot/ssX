@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.12 2001/09/07 01:28:35 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.13 2001/10/08 22:28:53 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -199,6 +199,10 @@ NVDACLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
     pVga = &VGAHWPTR(pScrn)->ModeReg;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACLoadPalette\n"));
+
+    if((pNv->riva.Architecture == NV_ARCH_03) && 
+       (pNv->CurrentLayout.depth != 8))
+           return;
 
     switch(pNv->CurrentLayout.depth) {
     case 15:
