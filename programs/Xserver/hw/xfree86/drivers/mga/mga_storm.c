@@ -181,6 +181,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	pMga->AccelFlags = 0;
         break;
     case PCI_CHIP_MGAG100:
+    case PCI_CHIP_MGAG100_PCI:
     default:
 	pMga->AccelFlags = MGA_NO_PLANEMASK;
         break;
@@ -529,7 +530,8 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
-    if (pMga->Chipset == PCI_CHIP_MGAG100)
+    if ((pMga->Chipset == PCI_CHIP_MGAG100) 
+	|| (pMga->Chipset == PCI_CHIP_MGAG100_PCI))
     	maccess = 1 << 14;
     
     switch( pLayout->bitsPerPixel )
@@ -571,7 +573,8 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_MACCESS, maccess);
     pMga->MAccess = maccess;
     pMga->PlaneMask = ~0;
-    if(pMga->Chipset != PCI_CHIP_MGAG100)
+    if((pMga->Chipset != PCI_CHIP_MGAG100) 
+       && (pMga->Chipset != PCI_CHIP_MGAG100))
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
     pMga->FgColor = 0;
     OUTREG(MGAREG_FCOL, pMga->FgColor);
