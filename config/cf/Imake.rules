@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.78 2000/09/25 19:06:09 eich Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.79 2000/10/24 22:45:00 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1319,7 +1319,7 @@ clean::									@@\
 install.man:: file.suffix.html						@@\
 	@SUF=`expr suffix \: '\(.\)'`; \				@@\
 	for i in aliases; do (set -x; \					@@\
-	  RemoveFile($(DESTDIR)$(DOCHTMLDIR)/$$i.suffix.html); \	@@\
+	  RemoveFile($(DESTDIR)$(DOCHTMLDIR)/$$i.$$SUF.html); \		@@\
 	  (cd $(DESTDIR)$(DOCHTMLDIR); \				@@\
 	    $(LN) file.$$SUF.html $$i.$$SUF.html)); \			@@\
 	done
