@@ -1,4 +1,6 @@
 XFree86 3.9.18a (24 February 2000)
+3840. Add DDC probing to the -configure option and enable it in the trident
+      driver (Alan Hourihane).
 3839. Bring xditview over from the contrib dist.
 3838. Fix drm free list bug (Jeff Hartmann and Rik Faith, Precision Insight).
 3837. Remove deprecated keywords (Kevin Martin).
