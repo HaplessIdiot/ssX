@@ -1,0 +1,10 @@
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF86S3VDrivers
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3_virge)
+
