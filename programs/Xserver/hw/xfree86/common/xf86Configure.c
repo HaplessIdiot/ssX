@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.16 2000/02/23 19:16:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.17 2000/02/24 05:36:50 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -315,7 +315,7 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
     	    sprintf(ptr->dev_identifier, "%s %s",
 		xf86PCIVendorNameInfo[vendor1].name, 
 		xf86PCIVendorInfo[vendor2].Device[card].DeviceName);
-    	    ptr->dev_busid = xalloc(9 + 1);
+    	    ptr->dev_busid = xalloc(16);
 	    sprintf(ptr->dev_busid, "PCI:%d:%d:%d", xf86PciCard->bus,
 	    				xf86PciCard->device, xf86PciCard->func);
 	}
@@ -550,7 +550,7 @@ configureDDCMonitorSection (void)
 void
 DoConfigure()
 {
-    int i,j;
+    int i,j,k;
     Bool probeResultPci = FALSE;
     Bool probeResultIsa = FALSE;
     char *foundDriver = NULL;
@@ -598,11 +598,11 @@ DoConfigure()
 	/* Then fallback later if no driver found */
 	if (strcmp(*vl,"vga")) {
 	    if (xf86DriverList[i]->Probe != NULL)
-	    	probeResultPci = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECTPCI);
+	    	probeResultPci = (*xf86DriverList[i]->Probe)(
+		    xf86DriverList[i], PROBE_DETECTPCI);
 		if (!probeResultPci)
-	    	    probeResultIsa = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECTISA);
+	    	    probeResultIsa = (*xf86DriverList[i]->Probe)(
+			xf86DriverList[i], PROBE_DETECTISA);
 	} else {
 	    haveVGA = i;
 	}
@@ -613,9 +613,9 @@ DoConfigure()
 	    if (foundDriver == NULL) {
 	        foundDriver = *vl;
 	        if (xf86DriverList[i]->Identify != NULL)
-	    	    xf86DriverList[i]->Identify(0);
+	    	    (*xf86DriverList[i]->Identify)(0);
 		if (xf86DriverList[i]->AvailableOptions != NULL)
-		    options = xf86DriverList[i]->AvailableOptions(
+		    options = (*xf86DriverList[i]->AvailableOptions)(
 				(ConfiguredPciCard->vendor << 16) | 
 				 ConfiguredPciCard->chipType, BUS_PCI);
 	    }
@@ -625,9 +625,9 @@ DoConfigure()
 	    if (foundDriver == NULL) {
 	        foundDriver = *vl;
 	        if (xf86DriverList[i]->Identify != NULL)
-	    	    xf86DriverList[i]->Identify(0);
+	    	    (*xf86DriverList[i]->Identify)(0);
 		if (xf86DriverList[i]->AvailableOptions != NULL)
-		    options = xf86DriverList[i]->AvailableOptions(
+		    options = (*xf86DriverList[i]->AvailableOptions)(
 				 ConfiguredIsaCard, BUS_ISA);
 	    }
 	}
@@ -641,12 +641,11 @@ DoConfigure()
 	probeResultIsa = FALSE;
 	
 	if (xf86DriverList[haveVGA]->Probe != NULL) {
-	    	probeResultPci = 
-			xf86DriverList[haveVGA]->Probe(xf86DriverList[haveVGA],
-						   PROBE_DETECTPCI);
+	    	probeResultPci = (*xf86DriverList[haveVGA]->Probe)(
+		    xf86DriverList[haveVGA], PROBE_DETECTPCI);
 		if (!probeResultPci)
-			xf86DriverList[haveVGA]->Probe(xf86DriverList[haveVGA],
-						   PROBE_DETECTISA);
+		    probeResultIsa = (*xf86DriverList[haveVGA]->Probe)(
+			xf86DriverList[haveVGA], PROBE_DETECTISA);
 	} 
 	
 	/* Bail when we find the primary card ! */
@@ -655,10 +654,10 @@ DoConfigure()
 	    ErrorF("We have found a PCI vga driver\n");
 	    foundDriver = "vga";
 	    if (xf86DriverList[haveVGA]->Identify != NULL)
-	        xf86DriverList[haveVGA]->Identify(0);
+	        (*xf86DriverList[haveVGA]->Identify)(0);
 	    if (xf86DriverList[haveVGA]->AvailableOptions != NULL)
-		options = xf86DriverList[i]->AvailableOptions((
-				ConfiguredPciCard->vendor << 16) | 
+		options = (*xf86DriverList[haveVGA]->AvailableOptions)(
+				(ConfiguredPciCard->vendor << 16) | 
 				ConfiguredPciCard->chipType, BUS_PCI);
 	}
 	if (probeResultIsa) {
@@ -666,9 +665,9 @@ DoConfigure()
 	    ErrorF("We have found an ISA vga driver\n");
 	    foundDriver = "vga";
 	    if (xf86DriverList[haveVGA]->Identify != NULL)
-	        xf86DriverList[haveVGA]->Identify(0);
+	        (*xf86DriverList[haveVGA]->Identify)(0);
 	    if (xf86DriverList[haveVGA]->AvailableOptions != NULL)
-		options = xf86DriverList[i]->AvailableOptions(
+		options = (*xf86DriverList[haveVGA]->AvailableOptions)(
 				ConfiguredIsaCard, BUS_ISA);
 	}
     }
@@ -731,29 +730,29 @@ DoConfigure()
 	    /* All this might not be necessary, but for now.... */
 	    xf86DoConfigurePass1 = FALSE;
 	    xf86ResourceBrokerInit();
-	    xf86DriverList[i]->Probe(xf86DriverList[i], 0);
+	    (*xf86DriverList[i]->Probe)(xf86DriverList[i], 0);
 	    xf86SetPciVideo(NULL,NONE);
     	    xf86PostProbe();
     	    xf86EntityInit();
 
     	    for (j = 0; j < xf86NumScreens - 1; j++) {
-		for (i = 0; i < xf86NumScreens - j - 1; i++) {
-	    	    if (xf86Screens[i + 1]->confScreen->screennum <
-			xf86Screens[i]->confScreen->screennum) {
-			ScrnInfoPtr tmpScrn = xf86Screens[i + 1];
-			xf86Screens[i + 1] = xf86Screens[i];
-			xf86Screens[i] = tmpScrn;
+		for (k = 0; k < xf86NumScreens - j - 1; k++) {
+	    	    if (xf86Screens[k + 1]->confScreen->screennum <
+			xf86Screens[k]->confScreen->screennum) {
+			ScrnInfoPtr tmpScrn = xf86Screens[k + 1];
+			xf86Screens[k + 1] = xf86Screens[k];
+			xf86Screens[k] = tmpScrn;
 	    	    }
 		}
     	    }
 
-    	    for (i = 0; i < xf86NumScreens; i++) {
-		xf86Screens[i]->scrnIndex = i;
+    	    for (j = 0; j < xf86NumScreens; j++) {
+		xf86Screens[j]->scrnIndex = j;
     	    }
     
-    	    for (i = 0; i < xf86NumScreens; i++) {
-		xf86EnableAccess(xf86Screens[i]);
-		xf86Screens[i]->PreInit(xf86Screens[i], PROBE_DETECT);
+    	    for (j = 0; j < xf86NumScreens; j++) {
+		xf86EnableAccess(xf86Screens[j]);
+		(*xf86Screens[j]->PreInit)(xf86Screens[j], PROBE_DETECT);
     	    }
 	    xf86DoConfigurePass1 = TRUE;
 	}
