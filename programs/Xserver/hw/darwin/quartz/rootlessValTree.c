@@ -3,7 +3,7 @@
  *
  * This file is very closely based on mivaltree.c.
  */
- /* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessValTree.c,v 1.1 2001/06/26 23:29:13 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessValTree.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 /*
  * mivaltree.c --
@@ -579,20 +579,11 @@ RootlessMiValidateTree (pRoot, pChild, kind)
 				     * affected */
     VTKind    	  	kind;       /* What kind of configuration caused call */
 {
-    RegionRec	  	totalClip;  /* Total clipping region available to
-				     * the marked children. pRoot's clipList
-				     * merged with the borderClips of all
-				     * the marked children. */
     RegionRec	  	childClip;  /* The new borderClip for the current
 				     * child */
-    RegionRec		childUnion; /* the space covered by borderSize for
-				     * all marked children */
     RegionRec		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
-    Bool		overlap;
-    int			viewvals;
-    Bool		forward;
 
     pScreen = pRoot->drawable.pScreen;
     if (pChild == NullWindow)
@@ -601,144 +592,49 @@ RootlessMiValidateTree (pRoot, pChild, kind)
     REGION_INIT(pScreen, &childClip, NullBox, 0);
     REGION_INIT(pScreen, &exposed, NullBox, 0);
 
-    /*
-     * compute the area of the parent window occupied
-     * by the marked children + the parent itself.  This
-     * is the area which can be divied up among the marked
-     * children in their new configuration.
-     */
-    REGION_INIT(pScreen, &totalClip, NullBox, 0);
-    viewvals = 0;
     if (REGION_BROKEN (pScreen, &pRoot->clipList) &&
 	!REGION_BROKEN (pScreen, &pRoot->borderClip))
     {
-	kind = VTBroken;
-	/*
-	 * When rebuilding clip lists after out of memory,
-	 * assume everything is busted.
-	 */
-	forward = TRUE;
-	REGION_COPY (pScreen, &totalClip, &pRoot->borderClip);
-	REGION_INTERSECT (pScreen, &totalClip, &totalClip, &pRoot->winSize);
-	
-	for (pWin = pRoot->firstChild; pWin != pChild; pWin = pWin->nextSib)
-	{
-	    if (pWin->viewable)
-		REGION_SUBTRACT (pScreen, &totalClip, &totalClip, &pWin->borderSize);
-	}
-	for (pWin = pChild; pWin; pWin = pWin->nextSib)
-	    if (pWin->valdata && pWin->viewable)
-		viewvals++;
-	
-	REGION_EMPTY (pScreen, &pRoot->clipList);
-	ErrorF("ValidateTree: BUSTED!\n");
-    }
-    else 
-    {
-	if ((pChild->drawable.y < pRoot->lastChild->drawable.y) ||
-	    ((pChild->drawable.y == pRoot->lastChild->drawable.y) &&
-	     (pChild->drawable.x < pRoot->lastChild->drawable.x)))
-	{
-	    forward = TRUE;
-	    for (pWin = pChild; pWin; pWin = pWin->nextSib)
-	    {
-		if (pWin->valdata)
-		{
-		    REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
-		    if (pWin->viewable)
-			viewvals++;
-		}
-	    }
-	}
-	else
-	{
-	    forward = FALSE;
-	    pWin = pRoot->lastChild;
-	    while (1)
-	    {
-		if (pWin->valdata)
-		{
-		    REGION_APPEND( pScreen, &totalClip, &pWin->borderClip);
-		    if (pWin->viewable)
-			viewvals++;
-		}
-		if (pWin == pChild)
-		    break;
-		pWin = pWin->prevSib;
-	    }
-	}
-	REGION_VALIDATE( pScreen, &totalClip, &overlap);
+        // fixme this might not work, but hopefully doesn't happen anyway.
+        kind = VTBroken;
+        REGION_EMPTY (pScreen, &pRoot->clipList);
+        ErrorF("ValidateTree: BUSTED!\n");
     }
 
-
-    // calculate childUnion so we can subtract it from totalClip later
-    REGION_INIT(pScreen, &childUnion, NullBox, 0);
-    if (kind != VTStack) {
-      if (forward)
-	{
-	  for (pWin = pChild; pWin; pWin = pWin->nextSib)
-	    if (pWin->valdata && pWin->viewable)
-	      REGION_APPEND( pScreen, &childUnion,
-			     &pWin->borderSize);
-	}
-      else
-	{
-	  pWin = pRoot->lastChild;
-	  while (1)
-	    {
-	      if (pWin->valdata && pWin->viewable)
-		REGION_APPEND( pScreen, &childUnion,
-			       &pWin->borderSize);
-	      if (pWin == pChild)
-		break;
-	      pWin = pWin->prevSib;
-	    }
-	}
-      REGION_VALIDATE(pScreen, &childUnion, &overlap);
-    }
-
-
-    /*
-     * Now go through the children of the root and figure their new
-     * borderClips from the totalClip, passing that off to miComputeClips
-     * to handle recursively. Once that's done, we remove the child
-     * from the totalClip to clip any siblings below it.
+    /* 
+     * Recursively compute the clips for all children of the root. 
+     * They don't clip against each other or the root itself, so 
+     * childClip is always reset to that child's size.
      */
 
     for (pWin = pChild;
 	 pWin != NullWindow;
 	 pWin = pWin->nextSib)
     {
-      if (pWin->viewable) {
-	if (pWin->valdata) {
-	  REGION_COPY( pScreen, &childClip, &pWin->borderSize);
-	  RootlessComputeClips (pWin, pScreen, &childClip, kind, &exposed);
-	} else if (pWin->visibility == VisibilityNotViewable) {
-	  RootlessTreeObscured(pWin);
-	}
-      } else {
-	if (pWin->valdata) {
-	  REGION_EMPTY( pScreen, &pWin->clipList);
-	  if (pScreen->ClipNotify)
-	    (* pScreen->ClipNotify) (pWin, 0, 0);
-	  REGION_EMPTY( pScreen, &pWin->borderClip);
-	  pWin->valdata = (ValidatePtr)NULL;
-	}
-      }
+        if (pWin->viewable) {
+            if (pWin->valdata) {
+                REGION_COPY( pScreen, &childClip, &pWin->borderSize);
+                RootlessComputeClips (pWin, pScreen, &childClip, kind, &exposed);
+            } else if (pWin->visibility == VisibilityNotViewable) {
+                RootlessTreeObscured(pWin);
+            }
+        } else {
+            if (pWin->valdata) {
+                REGION_EMPTY( pScreen, &pWin->clipList);
+                if (pScreen->ClipNotify)
+                    (* pScreen->ClipNotify) (pWin, 0, 0);
+                REGION_EMPTY( pScreen, &pWin->borderClip);
+                pWin->valdata = (ValidatePtr)NULL;
+            }
+        }
     }
 
     REGION_UNINIT( pScreen, &childClip);
-    
-    // REGION_SUBTRACT(pScreen, &totalClip, &totalClip, &childUnion);
-    REGION_UNINIT(pScreen, &childUnion);
 
+    /* The root is never clipped by its children, so nothing on the root 
+       is ever exposed by moving or mapping its children. */
     REGION_INIT( pScreen, &pRoot->valdata->after.exposed, NullBox, 0);
     REGION_INIT( pScreen, &pRoot->valdata->after.borderExposed, NullBox, 0);
 
-
-    REGION_UNINIT( pScreen, &totalClip);
-    REGION_UNINIT( pScreen, &exposed);
-    //if (pScreen->ClipNotify)
-    //(*pScreen->ClipNotify) (pRoot, 0, 0);
-    return (1);
+    return 1;
 }
