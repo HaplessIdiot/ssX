@@ -26,6 +26,7 @@
 #define _XFTINT_H_
 
 #include <X11/Xlib.h>
+#include <fontconfig/fontconfig.h>
 #ifdef FREETYPE2
 #include "XftFreetype.h"
 #else
@@ -84,6 +85,10 @@ extern XftFontSet	*_XftGlobalFontSet;
 extern XftDisplayInfo	*_XftDisplayInfo;
 extern char		**XftConfigDirs;
 extern XftFontSet	*_XftFontSet;
+
+typedef struct _FcPatternElt FcPatternElt;
+
+typedef FcPatternElt XftPatternElt;
 
 #define XFT_NMISSING	256
 
@@ -432,11 +437,6 @@ XftListValueCompare (XftValue	v1,
 		     XftValue	v2);
 
 Bool
-XftListValueListCompare (XftValueList	*v1orig,
-			 XftValueList	*v2orig,
-			 XftQual	qual);
-
-Bool
 XftListMatch (XftPattern    *p,
 	      XftPattern    *font,
 	      XftQual	    qual);
@@ -454,6 +454,12 @@ Bool
 XftNameConstant (char *string, int *result);
 
 /* xftpat.c */
+
+extern FcPatternElt *
+FcPatternFind (FcPattern *p, const char *object, FcBool insert);
+
+XftPatternElt *
+XftPatternFind (XftPattern *p, const char *object, FcBool insert);
 
 /* xftrender.c */
 

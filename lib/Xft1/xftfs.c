@@ -28,47 +28,17 @@
 XftFontSet *
 XftFontSetCreate (void)
 {
-    XftFontSet	*s;
-
-    s = (XftFontSet *) malloc (sizeof (XftFontSet));
-    if (!s)
-	return 0;
-    s->nfont = 0;
-    s->sfont = 0;
-    s->fonts = 0;
-    return s;
+    return FcFontSetCreate ();
 }
 
 void
 XftFontSetDestroy (XftFontSet *s)
 {
-    int	    i;
-
-    for (i = 0; i < s->nfont; i++)
-	XftPatternDestroy (s->fonts[i]);
-    if (s->fonts)
-	free (s->fonts);
-    free (s);
+    FcFontSetDestroy (s);
 }
 
 Bool
 XftFontSetAdd (XftFontSet *s, XftPattern *font)
 {
-    XftPattern	**f;
-    int		sfont;
-    
-    if (s->nfont == s->sfont)
-    {
-	sfont = s->sfont + 32;
-	if (s->fonts)
-	    f = (XftPattern **) realloc (s->fonts, sfont * sizeof (XftPattern *));
-	else
-	    f = (XftPattern **) malloc (sfont * sizeof (XftPattern *));
-	if (!f)
-	    return False;
-	s->sfont = sfont;
-	s->fonts = f;
-    }
-    s->fonts[s->nfont++] = font;
-    return True;
+    return FcFontSetAdd (s, font);
 }

@@ -26,6 +26,7 @@
 #define _XFT_H_
 
 #include <X11/extensions/Xrender.h>
+#include <fontconfig/fontconfig.h>
 #include <stdarg.h>
 
 #include <X11/Xfuncproto.h>
@@ -85,58 +86,32 @@ typedef unsigned int	XftChar32;
 #define XFT_RGBA_VRGB	    3
 #define XFT_RGBA_VBGR	    4
 
-typedef enum _XftType {
-    XftTypeVoid, 
-    XftTypeInteger, 
-    XftTypeDouble, 
-    XftTypeString, 
-    XftTypeBool,
-    XftTypeMatrix
-} XftType;
+typedef FcType XftType;
 
-typedef struct _XftMatrix {
-    double xx, xy, yx, yy;
-} XftMatrix;
+typedef FcMatrix XftMatrix;
 
-#define XftMatrixInit(m)	((m)->xx = (m)->yy = 1, \
-				 (m)->xy = (m)->yx = 0)
+#define XftMatrixInit(m)	FcMatrixInit(m)
 
-typedef enum _XftResult {
-    XftResultMatch, XftResultNoMatch, XftResultTypeMismatch, XftResultNoId
-} XftResult;
+typedef FcResult XftResult;
 
-typedef struct _XftValue {
-    XftType	type;
-    union {
-	char    *s;
-	int	i;
-	Bool	b;
-	double	d;
-	XftMatrix *m;
-    } u;
-} XftValue;
+#define XftResultMatch		FcResultMatch
+#define XftResultNoMatch	FcResultNoMatch
+#define XftResultTypeMismatch	FcResultTypeMismatch
+#define XftResultNoId		FcResultNoId
 
-typedef struct _XftValueList {
-    struct _XftValueList    *next;
-    XftValue		    value;
-} XftValueList;
+#define XftTypeVoid	FcTypeVoid
+#define XftTypeInteger	FcTypeInteger
+#define XftTypeDouble	FcTypeDouble
+#define XftTypeString	FcTypeString
+#define XftTypeBool	FcTypeBool
+#define XftTypeMatrix	FcTypeMatrix
 
-typedef struct _XftPatternElt {
-    const char	    *object;
-    XftValueList    *values;
-} XftPatternElt;
+typedef FcValue	XftValue;
 
-typedef struct _XftPattern {
-    int		    num;
-    int		    size;
-    XftPatternElt   *elts;
-} XftPattern;
 
-typedef struct _XftFontSet {
-    int		nfont;
-    int		sfont;
-    XftPattern	**fonts;
-} XftFontSet;
+typedef FcPattern XftPattern;
+
+typedef FcFontSet XftFontSet;
 
 typedef struct _XftFontStruct	XftFontStruct;
 
@@ -164,11 +139,7 @@ typedef struct _XftColor {
     XRenderColor    color;
 } XftColor;
 
-typedef struct _XftObjectSet {
-    int		nobject;
-    int		sobject;
-    const char	**objects;
-} XftObjectSet;
+typedef FcObjectSet XftObjectSet;
 
 _XFUNCPROTOBEGIN
 
@@ -202,9 +173,6 @@ XftColorFree (Display	*dpy,
 /* xftdbg.c */
 void
 XftValuePrint (XftValue v);
-
-void
-XftValueListPrint (XftValueList *l);
 
 void
 XftPatternPrint (XftPattern *p);
@@ -440,13 +408,7 @@ void
 XftValueDestroy (XftValue v);
 
 void
-XftValueListDestroy (XftValueList *l);
-    
-void
 XftPatternDestroy (XftPattern *p);
-
-XftPatternElt *
-XftPatternFind (XftPattern *p, const char *object, Bool insert);
 
 Bool
 XftPatternAdd (XftPattern *p, const char *object, XftValue value, Bool append);
