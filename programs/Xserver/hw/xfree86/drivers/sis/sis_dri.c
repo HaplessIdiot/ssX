@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.19 2001/10/31 22:50:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.21 2002/04/04 14:05:48 eich Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -15,9 +15,8 @@
 
 #include "sis.h"
 #include "sis_dri.h"
-#if 0
 #include "xf86drmSiS.h"
-#endif
+
 #define BR(x)   (0x8200 | (x) << 2)
 #define SiSIdle \
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
