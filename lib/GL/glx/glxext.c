@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.9 2000/12/07 20:26:03 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.10 2001/01/16 05:10:55 martin Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -211,7 +211,7 @@ static void FreeScreenConfigs(__GLXdisplayPrivate *priv)
 	    psc->configs = 0;	/* NOTE: just for paranoia */
 	}
 
-#if GLX_DIRECT_RENDERING
+#ifdef GLX_DIRECT_RENDERING
 	/* Free the direct rendering per screen data */
 	if (psc->driScreen.private)
 	    (*psc->driScreen.destroyScreen)(priv->dpy, i,
