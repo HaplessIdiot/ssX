@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.21 2001/08/17 22:08:09 tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.22 2001/10/28 03:32:30 tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -295,7 +295,9 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     }
 #endif
 
+#if defined(LOCALCONN) && defined(TCPCONN)
   connect:
+#endif
     /*
      * This seems kind of backwards, but we need to put the protocol,
      * host, and port back together to pass to _X11TransOpenCOTSClient().
