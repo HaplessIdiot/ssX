@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.14 2004/10/23 15:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.15tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -322,6 +322,6 @@ xf86freeModulesList (XF86ConfModulePtr ptr)
 		TestFree (ptr->mod_comment);
 		mprev = ptr;
 		ptr = ptr->list.next;
-		xf86conffree (ptr);
+		xf86conffree (mprev);
 	}
 }
