@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.7 2000/05/11 18:14:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.8 2000/06/17 00:03:25 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -275,13 +275,11 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) return FALSE;
   }
 
-#if XFree86LOADER
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
        for canonical symbols in each module. */
-    if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
-    if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
-    if (!LoaderSymbol("drmAvailable"))        return FALSE;
-#endif
+    if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
+    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
 
   /* Check the DRI version */
   {
