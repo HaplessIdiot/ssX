@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/display.c,v 1.3 2002/09/05 07:55:17 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/display.c,v 1.4 2002/11/23 02:34:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -296,10 +296,15 @@ XcursorSetTheme (Display *dpy, const char *theme)
 
     if (!info)
 	return XcursorFalse;
-    copy = malloc (strlen (theme) + 1);
-    if (!copy)
-	return XcursorFalse;
-    strcpy (copy, theme);
+    if (theme)
+    {
+	copy = malloc (strlen (theme) + 1);
+	if (!copy)
+	    return XcursorFalse;
+	strcpy (copy, theme);
+    }
+    else
+	copy = 0;
     if (info->theme)
 	free (info->theme);
     info->theme = copy;
