@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.8 1996/08/26 10:47:47 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.9 1996/08/27 03:23:41 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -141,7 +141,12 @@ proc writeXF86Config {filename args} {
 	puts $fd ""
 	puts $fd {Section "Keyboard"}
 	puts $fd "   Protocol        \"$Keyboard(Protocol)\""
-	if { [string length $Keyboard(ServerNumLock)] } {
+	set xkbvars ""
+	foreach key [array names Keyboard {Xkb[ABCE-Z]*}] {
+		append xkbvars $Keyboard($key)
+	}
+	if { ![string length $xkbvars]
+			&& [string length $Keyboard(ServerNumLock)] } {
 		puts $fd "   ServerNumLock"
 	}
 	foreach key { AutoRepeat LeftAlt RightAlt ScrollLock RightCtl XLeds } {
@@ -184,7 +189,7 @@ proc writeXF86Config {filename args} {
 		} else {
 		    puts $fd "   Device          \"$realdev\""
 		}
-	} else {
+	} elseif { [string length $Pointer(Device)] } {
 		puts $fd "   Device          \"$Pointer(Device)\""
 	}
 	foreach key {BaudRate Emulate3Timeout SampleRate} {

@@ -397,3 +397,19 @@
 			Updated xmseconfig to work with new mouse
 			  device name changes
 
+1.01	30 Aug 1996	Fixed bug in setting default PS/2 device name
+			  (Thomas Mueller)
+			Fixed bug in changing stack limit (the
+			  sys/resource.h file wasn't being included)
+			Existing link to mouse device is read even if
+			  not reading existing config file
+			Recursively read the X symlink
+			Prevent ServerNumLock from being selected
+			  when writing a config file that uses XKB
+			Fixed dialog core dump due to too long of
+			  line length in VGA16 server not found mesg
+			Set keyboard focus to "Okay" button when
+			  user selects "Done"
+			Add gpmdata to list of mouse device patterns
+			Improved code that creates symlink to X server
+

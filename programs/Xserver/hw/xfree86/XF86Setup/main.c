@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.6 1996/08/20 12:26:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.7 1996/08/24 12:50:47 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -34,6 +34,10 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX)
+#include <sys/resource.h>
+#endif
 
 #if TK_MAJOR_VERSION < 4
 #error You must use Tk 4.0 or newer

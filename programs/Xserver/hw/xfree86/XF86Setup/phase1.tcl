@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.9 1996/08/26 10:47:43 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.10 1996/08/27 03:23:40 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -153,11 +153,15 @@ proc set_xf86config_defaults {} {
 	    set varname Device_${devid}(Server)
 	    if { ![info exists $varname] ||
 		    [lsearch -exact $ServerList [set $varname]] < 0} {
-		if { [file type $Xwinhome/bin/X] == "link" } {
-		    set $varname [string range [file tail \
-			[file readlink $Xwinhome/bin/X]] 5 end]
+		set filename $Xwinhome/bin/X
+		for {set nlinks 0} \
+			{[file type $filename]=="link" && $nlinks<20} \
+			{incr nlinks} {
+		    set filename [readlink $filename]
 		}
-		if { [lsearch -exact $ServerList [set $varname]] < 0} {
+		set $varname [string range [file tail $filename] 5 end]
+		if { [lsearch -exact $ServerList [set $varname]] < 0
+			|| $nlinks == 20} {
 		    set $varname SVGA
 		}
 	    }
@@ -218,7 +222,7 @@ if { [string length $ConfigFile] > 0 } {
 		    exit 1
 		}
 		if { ![file exists $Xwinhome/bin/XF86_VGA16] } {
-		    mesg "The VGA16 server is required when using\
+		    mesg "The VGA16 server is required when using\n\
 			this program to set the initial configuration" okay
 		    exit 1
 		}
@@ -248,17 +252,7 @@ if { [string length $ConfigFile] > 0 } {
 set clicks2 [clock clicks]
 
 if { ![getuid] } {
-    if { $UseConfigFile } {
-	if [string length $Pointer(Device)] {
-	    if {[file exists $Pointer(Device)]
-		    && [file type $Pointer(Device)] == "link" } {
-	        set Pointer(RealDev) [readlink $Pointer(Device)]
-	        set Pointer(OldLink) $Pointer(Device)
-	    } else {
-		set Pointer(RealDev) $Pointer(Device)
-	    }
-	}
-    } else {
+    if { !$UseConfigFile } {
 	# Check for the SysV Xqueue mouse driver
 	if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
@@ -311,7 +305,16 @@ if ![mkdir $TmpDir 0700] {
 check_tmpdirs
 
 if { ![getuid] } {
-	set Pointer(Device) $TmpDir/mouse
+	if [string length $Pointer(Device)] {
+	    if {[file exists $Pointer(Device)]
+		    && [file type $Pointer(Device)] == "link" } {
+	        set Pointer(RealDev) [readlink $Pointer(Device)]
+	        set Pointer(OldLink) $Pointer(Device)
+	    } else {
+		set Pointer(RealDev) $Pointer(Device)
+	    }
+	    set Pointer(Device) $TmpDir/mouse
+	}
 	if [info exists Pointer(RealDev)] {
 	    link $Pointer(RealDev) $Pointer(Device)
 	}

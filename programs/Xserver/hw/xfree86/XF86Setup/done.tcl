@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.3 1996/08/24 12:50:44 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/done.tcl,v 3.4 1996/08/26 10:47:39 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -34,6 +34,7 @@ proc Done_create_widgets { win } {
 proc Done_activate { win } {
 	set w [winpathprefix $win]
 	pack $w.done -side top -fill both -expand yes
+	focus $w.done.pad.okay
 }
 
 proc Done_deactivate { win } {

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.12 1996/08/27 03:23:39 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.13 1996/09/01 04:15:06 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -13,7 +13,8 @@
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
 
-set msePatterns { tty[0-9A-Za-o]* cua* *bm *mse* *mouse* ps*x psm* m320 pms* }
+set msePatterns [list {tty[0-9A-Za-o]*} cua* *bm *mse* *mouse* \
+			ps*x psm* m320 pms* gpmdata ]
 set mseDevices ""
 foreach pat $msePatterns {
 	if ![catch {glob /dev/$pat}] {
@@ -569,13 +570,13 @@ proc Mouse_defaultdevice { mousetype } {
 
 	switch $mousetype {
 		PS/2	 { set idx [lsearch -regexp $mseDevices \
-					/dev/p\[ms\].*] }
+					{/dev/p[ms].*} ] }
 		BusMouse { set idx [lsearch -regexp $mseDevices \
-					/dev/.*bm|/dev/mse.*]  }
+					/dev/.*bm|/dev/mse.* ] }
 		OsMouse  -
 		Xqueue	 { return "" }
 		default	 { set idx [lsearch -regexp $mseDevices \
-					/dev/cua*|/dev/tty*] }
+					/dev/cua*|/dev/tty* ] }
 	}
 	if { $idx == -1 } {
 		set idx 0
