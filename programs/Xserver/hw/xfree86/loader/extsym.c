@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/extsym.c,v 1.4 2000/03/30 18:20:58 mvojkovi Exp $ */
 
 /*
  *
@@ -31,9 +31,11 @@
 #include "panoramiX.h"
 #endif
 
+#ifdef HAS_SHM
 extern int ShmCompletionCode;
 extern int BadShmSegCode;
 extern RESTYPE ShmSegType, ShmPixType;
+#endif
 
 #ifdef PANORAMIX
 extern Bool noPanoramiXExtension;
@@ -50,9 +52,11 @@ extern int XineramaDeleteResource(pointer, XID);
 
 LOOKUP extLookupTab[] = {
 
+#ifdef HAS_SHM
  SYMVAR(ShmCompletionCode)
  SYMVAR(BadShmSegCode)
  SYMVAR(ShmSegType)
+#endif
 
 #ifdef PANORAMIX
  SYMFUNC(XineramaRegisterConnectionBlockCallback)

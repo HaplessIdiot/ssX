@@ -1,4 +1,6 @@
 XFree86 4.0.1e (x November 2000)
+ 836. Allow loader to be build if HasShm == NO (Marcus Brinkmann)
+ 835. Allow the log file to be set in the config files (Stuart Anderson)
  834. Fix Rage128/Radeon drivers to free correct scratch buffer on LeaveVT
       (Alan Hourihane).
  833. Xterm patch #148 (#4213, Thomas Dickey).
@@ -11365,4 +11367,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1363 2000/11/01 01:12:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1364 2000/11/01 10:34:20 alanh Exp $
