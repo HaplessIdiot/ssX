@@ -1,12 +1,12 @@
-XFree86 3.9.16d (xx December 1999)
+XFree86 3.9.16e (5 December 1999)
 
-3352. Misc. bug/typo fixes. (Egbert Eich)
-3351. Fixed scanpci to generate better output on Alphas (Harald Koenig, 
+3354. Misc. bug/typo fixes. (Egbert Eich)
+3353. Fixed scanpci to generate better output on Alphas (Harald Koenig, 
       Egbert Eich)
-3350. Added initial VESA VBE support. This includes initialization
+3352. Added initial VESA VBE support. This includes initialization
       and DDC. (Egbert Eich)
-3349. Added support for 64bit PCI devices (untested) (Egbert Eich.
-3348. Added support to read PCI memory and io ranges from kernel on
+3351. Added support for 64bit PCI devices (untested) (Egbert Eich.
+3350. Added support to read PCI memory and io ranges from kernel on
       Linux 2.3 (untested). (Egbert Eich)
 3349. introduced "#undef" before definitions in xf86_libc.h to keep
       gcc on Alpha quite. (Egbert Eich)
@@ -9118,4 +9118,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.852 1999/11/19 14:46:42 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.855 1999/12/03 19:17:19 eich Exp $
