@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.24 2003/01/21 15:32:58 dawes Exp $
+# $XFree86: xc/Makefile,v 3.25 2003/02/08 01:08:46 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -47,6 +47,7 @@ World:
 	@echo ""
 	@echo Building XFree86`$(VERSPROG)`.
 	@echo ""
+	@$(RM) $(VERSPROG)
 	@case "x$(BOOTSTRAPCFLAGS)" in x) \
 	echo I hope you checked the configuration parameters in $(IRULESRC) ; \
 	echo to see if you need to pass BOOTSTRAPCFLAGS. ; \
@@ -86,7 +87,10 @@ World:
 	@echo ""
 	@date
 	@echo ""
+	@$(RM) $(VERSPROG)
+	@$(CC) $(VERSINC) -o $(VERSPROG) $(VERSSRC)
 	@echo Full build of XFree86`$(VERSPROG)` complete.
+	@$(RM) $(VERSPROG)
 	@echo ""
 
 .PRECIOUS: Makefile
