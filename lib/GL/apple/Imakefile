@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.1 2003/06/30 01:45:10 torrey Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.2 2003/10/09 23:42:32 torrey Exp $
 
 #include <Threads.tmpl>
 
@@ -28,14 +28,9 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 -I$(GLXLIBSRC)/include
 #endif
 
-#if GlxBuiltInTdfx
-    TDFX_DEFS = -DUSE_TDFX
-#endif
-
            AS = /System/Library/Frameworks/ApplicationServices.framework
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(GLX_DEFS) \
-                -DXP_NO_X_HEADERS=1
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(GLX_DEFS) -DXP_NO_X_HEADERS=1
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(DRI_INCS) \
                 -F$(AS)/Frameworks
          SRCS = appledri.c $(DRI_SRCS)

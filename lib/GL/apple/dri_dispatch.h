@@ -2242,6 +2242,74 @@ DEFUN_LOCAL_VOID (GetCompressedTexImageARB,
     (void *rend, GLenum target, GLint level, void * img),
     (target, level, img))
 
+DEFUN_LOCAL_VOID (SecondaryColor3bEXT,
+    (void *rend, GLbyte red, GLbyte green, GLbyte blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3bvEXT,
+    (void *rend, const GLbyte * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3dEXT,
+    (void *rend, GLdouble red, GLdouble green, GLdouble blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3dvEXT,
+    (void *rend, const GLdouble * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3fEXT,
+    (void *rend, GLfloat red, GLfloat green, GLfloat blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3fvEXT,
+    (void *rend, const GLfloat * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3iEXT,
+    (void *rend, GLint red, GLint green, GLint blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3ivEXT,
+    (void *rend, const GLint * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3sEXT,
+    (void *rend, GLshort red, GLshort green, GLshort blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3svEXT,
+    (void *rend, const GLshort * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3ubEXT,
+    (void *rend, GLubyte red, GLubyte green, GLubyte blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3ubvEXT,
+    (void *rend, const GLubyte * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3uiEXT,
+    (void *rend, GLuint red, GLuint green, GLuint blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3uivEXT,
+    (void *rend, const GLuint * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColor3usEXT,
+    (void *rend, GLushort red, GLushort green, GLushort blue),
+    (red, green, blue))
+
+DEFUN_LOCAL_VOID (SecondaryColor3usvEXT,
+    (void *rend, const GLushort * v),
+    (v))
+
+DEFUN_LOCAL_VOID (SecondaryColorPointerEXT,
+    (void *rend, GLint size, GLenum type, GLsizei stride, const GLvoid * pointer),
+    (size, type, stride, pointer))
+
 DEFUN_EXTERN (GLboolean, AreProgramsResidentNV,
     (GLsizei n, const GLuint * ids, GLboolean * residences),
     (n, ids, residences))
@@ -3094,6 +3162,23 @@ do { \
     (d)[383] = (void *) &p ## CompressedTexSubImage2DARB; \
     (d)[384] = (void *) &p ## CompressedTexSubImage1DARB; \
     (d)[385] = (void *) &p ## GetCompressedTexImageARB; \
+    (d)[386] = (void *) &p ## SecondaryColor3bEXT; \
+    (d)[387] = (void *) &p ## SecondaryColor3bvEXT; \
+    (d)[388] = (void *) &p ## SecondaryColor3dEXT; \
+    (d)[389] = (void *) &p ## SecondaryColor3dvEXT; \
+    (d)[390] = (void *) &p ## SecondaryColor3fEXT; \
+    (d)[391] = (void *) &p ## SecondaryColor3fvEXT; \
+    (d)[392] = (void *) &p ## SecondaryColor3iEXT; \
+    (d)[393] = (void *) &p ## SecondaryColor3ivEXT; \
+    (d)[394] = (void *) &p ## SecondaryColor3sEXT; \
+    (d)[395] = (void *) &p ## SecondaryColor3svEXT; \
+    (d)[396] = (void *) &p ## SecondaryColor3ubEXT; \
+    (d)[397] = (void *) &p ## SecondaryColor3ubvEXT; \
+    (d)[398] = (void *) &p ## SecondaryColor3uiEXT; \
+    (d)[399] = (void *) &p ## SecondaryColor3uivEXT; \
+    (d)[400] = (void *) &p ## SecondaryColor3usEXT; \
+    (d)[401] = (void *) &p ## SecondaryColor3usvEXT; \
+    (d)[402] = (void *) &p ## SecondaryColorPointerEXT; \
     (d)[403] = (void *) &p ## VertexArrayRangeNV; \
     (d)[405] = (void *) &p ## DrawRangeElements; \
     (d)[406] = (void *) &p ## ColorTable; \
