@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.51 2003/12/30 19:10:40 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.52tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -777,7 +777,7 @@ DefineSelf (int fd)
 	    continue;
 #if defined(IPv6) && defined(AF_INET6)
 	if (family == FamilyInternet6) 
-	    in6_fillscopeid((struct sockaddr_in6 *)ifr->ifa_addr);
+	    in6_fillscopeid((struct sockaddr_in6 *)&IFR_IFR_ADDR);
 #endif
 #ifdef DEF_SELF_DEBUG
 	if (family == FamilyInternet) 
