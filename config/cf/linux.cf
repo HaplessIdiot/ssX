@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.17 1994/12/10 01:16:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.18 1994/12/11 10:48:16 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -46,6 +46,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.17 1994/12/10 01:16:44 dawe
 #define CcCmd			gcc
 #define AsCmd			as
 #define LdCmd			ld
+#define AsmDefines		-DUSE_GAS
 #endif
 #define CppCmd			/lib/cpp
 #define YaccCmd			bison -y
@@ -55,7 +56,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.17 1994/12/10 01:16:44 dawe
 #define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
 #define LdCombineFlags		-r
 #define OptimizedCDebugFlags	-O2 -m486
-#define AsmDefines		-DUSE_GAS
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 #define StandardCppDefines	-traditional StandardDefines
