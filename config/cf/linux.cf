@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.220 2003/12/30 22:38:33 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.221tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -903,6 +903,14 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* AMD64Architecture */
+
+/* We never build these, on any architecture */
+#undef  XsunServer
+#define XsunServer		NO
+#undef  XsunMonoServer
+#define XsunMonoServer		NO
+#undef  Xsun24Server
+#define Xsun24Server		NO
 
 #ifndef StandardDefines
 # define StandardDefines	-Dlinux LinuxMachineDefines LinuxSourceDefines
