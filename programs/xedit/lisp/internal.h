@@ -27,13 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.3 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.4 2001/09/21 05:08:43 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
 
-#include "lisp.h"
 #include <stdio.h>
+#include "lisp.h"
 
 /*
  * Defines
@@ -53,8 +53,8 @@
 	(obj->data.opaque.type == typ || obj->data.opaque.type == 0)
 #define GCPRO()			LispGC(mac, NIL, NIL); GCProtect()
 #define GCUPRO()		GCUProtect()
-#define PROTECT(list)		list->prot = LispTrue_t
-#define UPROTECT(list)		list->prot = LispNil_t
+#define PROTECT(list)		LispProtect(list, LispTrue_t)
+#define UPROTECT(list)		LispProtect(list, LispNil_t)
 
 #define	GCProtect()		++gcpro
 #define	GCUProtect()		--gcpro
@@ -89,7 +89,7 @@ typedef enum _LispFunType {
 } LispFunType;
 
 struct _LispObj {
-    unsigned int type : 6;
+    LispType type : 6;
     unsigned int mark : 1;	/* gc protected */
     unsigned int dirty : 1;
     unsigned int prot: 1;	/* protection for constant/unamed variables */
@@ -109,16 +109,21 @@ struct _LispObj {
 	struct {
 	    char *name;		/* if name is NULL, it is a lambda expression */
 	    LispObj *code;
-	    LispFunType num_args : 30;
+	    unsigned int num_args : 12;
 	    LispFunType type : 2;
+	    unsigned int key : 1;
+	    unsigned int optional : 1;
+	    unsigned int rest : 1;
 	} lambda;
 	struct {
-	    LispObj *list;	/* stored as a linear list */
-	    LispObj *dim;	/* dimensions of array */
-	    int rank : 8;	/* i.e. array-rank-limit => 256 */
-	    int type : 7;	/* converted to LispType, if not Lisp{Nil,True}_t
-				 * only accepts given type in array fields */
-	    int zero : 1;	/* at least one of the dimensions is zero */
+	    LispObj *list;		/* stored as a linear list */
+	    LispObj *dim;		/* dimensions of array */
+	    unsigned int rank : 8;	/* i.e. array-rank-limit => 256 */
+	    unsigned int type : 7;	/* converted to LispType, if not
+					 * Lisp{Nil,True}_t only accepts given
+					 * type in array fields */
+	    unsigned int zero : 1;	/* at least one of the dimensions
+					 * is zero */
 	} array;
 	struct {
 	    LispObj *fields;	/* structure fields */
@@ -172,7 +177,8 @@ LispObj *LispNewString(LispMac*, char*);
 LispObj *LispNewQuote(LispMac*, LispObj*);
 LispObj *LispNewCons(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, char*, LispObj*);
-LispObj *LispNewLambda(LispMac*, char*, LispObj*, LispObj*, unsigned, unsigned);
+LispObj *LispNewLambda(LispMac*, char*, LispObj*, LispObj*,
+		       int, LispFunType, int, int, int);
 LispObj *LispNewStruct(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewOpaque(LispMac*, void*, int);
 
@@ -199,6 +205,8 @@ int LispRegisterOpaqueType(LispMac*, char*);
 
 int LispPrintf(LispMac*, LispObj*, char*, ...);
 int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
+
+void LispProtect(LispObj*, int);
 
 /*
  * Initialization

@@ -29,6 +29,7 @@
 
 /* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/AsciiSink.h>
 #include <X11/Xaw/AsciiSrc.h>
@@ -69,15 +70,23 @@
  */
 int xawLoadModule(LispMac*);
 
+LispObj *Lisp_XawCoerceToListReturnStruct(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawListHighlight(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawListUnhighlight(LispMac*, LispObj*, char*);
+LispObj *Lisp_XawTextGetSource(LispMac*, LispObj*, char*);
+
+
 /*
  * Initialization
  */
+#include "xawtable.c"
+
 LispModuleData xawLispModuleData = {
-    NULL,
+    xawFindFun,
     xawLoadModule
 };
 
-static int xawWidgetClass_t;
+static int xawWidget_t, xawWidgetClass_t, xawListReturnStruct_t, charpp_t;
 
 /*
  * Implementation
@@ -87,7 +96,12 @@ xawLoadModule(LispMac *mac)
 {
     char *fname = "INTERNAL:XAW-LOAD-MODULE";
 
+    xawWidget_t = LispRegisterOpaqueType(mac, "Widget");
     xawWidgetClass_t = LispRegisterOpaqueType(mac, "WidgetClass");
+    xawListReturnStruct_t = LispRegisterOpaqueType(mac, "XawListReturnStruct");
+    charpp_t = LispRegisterOpaqueType(mac, "char**");
+
+    LispExecute(mac, "(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
 
     GCPRO();
     (void)LispSetVariable(mac, ATOM2("asciiSinkObjectClass"),
@@ -189,4 +203,58 @@ xawLoadModule(LispMac *mac)
     GCUPRO();
 
     return (1);
+}
+
+LispObj *
+Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispObj *list, char *fname)
+{
+    XawListReturnStruct *retlist;
+
+    if (!CHECKO(CAR(list), xawListReturnStruct_t))
+	LispDestroy(mac, "cannot convert %s to XawListReturnStruct, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    retlist = (XawListReturnStruct*)(CAR(list)->data.opaque.data);
+
+    return (EVAL(CONS(ATOM("MAKE-XAW-LIST-RETURN-STRUCT"),
+		      CONS(ATOM(":STRING"),
+			   CONS(STRING(retlist->string),
+				CONS(ATOM(":INDEX"),
+				     CONS(REAL(retlist->list_index), NIL)))))));
+}
+
+LispObj *
+Lisp_XawTextGetSource(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    return (OPAQUE(XawTextGetSource((Widget)(CAR(list)->data.opaque.data)),
+		   xawWidget_t));
+}
+
+LispObj *
+Lisp_XawListHighlight(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    if (CAR(CDR(list))->type != LispReal_t)
+	LispDestroy(mac, "expecting number, at %s", fname);
+    XawListHighlight((Widget)(CAR(list)->data.opaque.data),
+		     (int)(CAR(CDR(list))->data.real));
+
+    return (NIL);
+}
+
+LispObj *
+Lisp_XawListUnhighlight(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xawWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    XawListUnhighlight((Widget)(CAR(list)->data.opaque.data));
+
+    return (NIL);
 }

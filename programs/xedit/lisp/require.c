@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.2 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.3 2001/09/21 05:08:43 paulo Exp $ */
 
 #include "require.h"
 
@@ -148,6 +148,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 	    LispDestroy(mac, "cannot find LispModuleData for %s",
 			LispStrObj(mac, feat));
 	}
+	LispMused(mac, module);
 	module->next = mac->module;
 	mac->module = module;
 	if (module->data->load)

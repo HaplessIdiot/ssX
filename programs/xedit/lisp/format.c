@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.3 2001/09/16 22:21:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.4 2001/09/21 05:08:42 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -1982,6 +1982,12 @@ format_done:
 		break;
 	}
 	LispDestroy(mac, "expecting ~%c, at %s", c, fname);
+    }
+
+    if (stream != NIL && stream->data.stream.size >= 0) {
+	if (stream->data.stream.source.str == NULL)
+	    return (STRING(""));
+	return (STRING(stream->data.stream.source.str));
     }
 
     return (stream);

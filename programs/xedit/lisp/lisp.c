@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.5 2001/09/16 22:21:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.6 2001/09/21 05:08:43 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -208,7 +208,7 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     for (j = 0; j < numseg; j++)
 	for (i = 0, entry = objseg[j]; i < segsize; i++, entry++) {
 	    if (entry->prot)
-		LispMark(entry);
+		entry->dirty = entry->mark = LispTrue_t;
 	    else if (entry->mark)
 		entry->mark = LispNil_t;
 	    else if (entry->dirty) {
@@ -422,6 +422,7 @@ LispRegisterOpaqueType(LispMac *mac, char *desc)
     opaque->desc = LispDoGetString(mac, desc, 1)->string;
     opaque->next = mac->opqs[ii];
     mac->opqs[ii] = opaque;
+    LispMused(mac, opaque);
 
     return (opaque->type = ++mac->opaque);
 }
@@ -567,6 +568,62 @@ LispMark(LispObj *obj)
 	    break;
     }
     obj->mark = LispTrue_t;
+}
+
+void
+LispProtect(LispObj *obj, int state)
+{
+    state = !!state;
+
+    if (obj->prot == state)
+	return;
+
+    switch (obj->type) {
+	case LispNil_t:
+	    if (obj == NIL)
+		return;
+	    break;
+	case LispTrue_t:
+	    if (obj == T)
+		return;
+	    break;
+	case LispSymbol_t:
+	    if (obj->data.symbol.obj)
+		LispProtect(obj->data.symbol.obj, state);
+	    LispProtect(obj->data.symbol.plist, state);
+	    break;
+	case LispLambda_t:
+	    LispProtect(obj->data.lambda.code, state);
+	    break;
+	case LispQuote_t:
+	    LispProtect(obj->data.quote, state);
+	    break;
+	case LispCons_t:
+	    /* circular list on car */
+	    if (CAR(obj) == obj) {
+		obj->mark = LispTrue_t;
+		obj = CDR(obj);
+	    }
+	    for (; obj->type == LispCons_t && obj->mark == LispNil_t;
+		 obj = CDR(obj)) {
+		LispProtect(CAR(obj), state);
+		obj->prot = state;
+	    }
+	    if (obj->type != LispCons_t)
+		LispProtect(obj, state);
+	    return;
+	case LispArray_t:
+	    LispProtect(obj->data.array.list, state);
+	    LispProtect(obj->data.array.dim, state);
+	    break;
+	case LispStruct_t:
+	    /* def is protected when protecting STR */
+	    LispProtect(obj->data.struc.fields, state);
+	    break;
+	default:
+	    break;
+    }
+    obj->prot = state;
 }
 
 static int
@@ -773,8 +830,8 @@ LispNewCons(LispMac *mac, LispObj *car, LispObj *cdr)
 }
 
 LispObj *
-LispNewLambda(LispMac *mac, char *name, LispObj *args, LispObj *code, 
-	      unsigned num_args, LispFunType type)
+LispNewLambda(LispMac *mac, char *name, LispObj *args, LispObj *code,
+	      int num_args, LispFunType type, int key, int optional, int rest)
 {
     LispObj *fun = LispNew(mac, args, code);
 
@@ -785,6 +842,9 @@ LispNewLambda(LispMac *mac, char *name, LispObj *args, LispObj *code,
     GCUProtect();
     fun->data.lambda.num_args = num_args;
     fun->data.lambda.type = type;
+    fun->data.lambda.key = key;
+    fun->data.lambda.optional = optional;
+    fun->data.lambda.rest = rest;
 
     return (fun);
 }
@@ -1360,35 +1420,165 @@ LispEval(LispMac *mac, LispObj *obj)
     }
 
     if (fun != NIL) {
-	LispObj *args;
+	LispObj *args = NIL;
 
-	cdr = CDR(cons);
-	num_objs = 0;
-	while (cdr != NIL) {
-	    ++num_objs;
-	    cdr = CDR(cdr);
-	}
-	if (num_objs != fun->data.lambda.num_args)
-	    LispDestroy(mac, "%u is a bad number of arguments to %s, needs %u",
-			num_objs, name, fun->data.lambda.num_args);
-
-	if (fun->data.lambda.type == LispMacro)
-	    args = CDR(cons);
-	else if (num_objs) {
-	    LispObj *arg = CDR(cons);
-
-	    res = EVAL(CAR(arg));
-	    args = cdr = CONS(res, NIL);
-	    FRM = CONS(args, FRM);
-	    arg = CDR(arg);
-	    while (arg != NIL) {
-		CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
+	if (!fun->data.lambda.key && !fun->data.lambda.optional &&
+	    !fun->data.lambda.rest) {
+	    cdr = CDR(cons);
+	    num_objs = 0;
+	    while (cdr != NIL) {
+		++num_objs;
 		cdr = CDR(cdr);
+	    }
+	    if (num_objs != fun->data.lambda.num_args)
+		LispDestroy(mac, "%u is a bad number of arguments to %s,"
+			    " needs %u", num_objs, name,
+			    fun->data.lambda.num_args);
+
+	    if (fun->data.lambda.type == LispMacro)
+		args = CDR(cons);
+	    else if (num_objs) {
+		LispObj *arg = CDR(cons);
+
+		res = EVAL(CAR(arg));
+		args = cdr = CONS(res, NIL);
+		FRM = CONS(args, FRM);
 		arg = CDR(arg);
+		while (arg != NIL) {
+		    CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
+		    cdr = CDR(cdr);
+		    arg = CDR(arg);
+		}
 	    }
 	}
-	else
-	    args = NIL;
+	else {
+	    int rest, optional, key;
+	    LispObj *arg, *list = CAR(fun->data.lambda.code), *keyword = NIL;
+
+	    /* build argument list */
+	    while (list != NIL) {
+		if (CAR(list)->data.atom[0] != '&') {
+		    if (args == NIL) {
+			args = cdr = CONS(list, NIL);
+			FRM = CONS(args, FRM);
+		    }
+		    else {
+			CDR(cdr) = CONS(list, NIL);
+			cdr = CDR(cdr);
+		    }
+		}
+		list = CDR(list);
+	    }
+
+	    /* fill argument list */
+	    list = CAR(fun->data.lambda.code);
+	    rest = optional = key = 0;
+	    cdr = CDR(cons);
+	    arg = args;
+	    while (list != NIL) {
+		if (CAR(list)->data.atom[0] == '&') {
+		    if (strcmp(CAR(list)->data.atom + 1, "KEY") == 0)
+			key = 1;
+		    else if (strcmp(CAR(list)->data.atom + 1, "REST") == 0) {
+			rest = 1;
+			break;
+		    }
+		    else /* "OPTIONAL" */
+			optional = 1;
+		}
+		else {
+		    if (cdr == NIL) {
+			if (key || optional)
+			    break;
+			else
+			    LispDestroy(mac, "too few arguments to %s", name);
+		    }
+		    else {
+			if (key) {
+			    if (CAR(cdr)->data.atom[0] != ':')
+				LispDestroy(mac, "&KEY needs arguments as pairs,"
+					    " at %s", name);
+			    else if (CDR(cdr) == NIL)
+				LispDestroy(mac, "expecting %s value, at %s",
+					    CAR(cdr)->data.atom, name);
+			    keyword = CAR(cdr);
+			    cdr = CDR(cdr);
+			}
+			if (fun->data.lambda.type == LispMacro)
+			    res = CAR(cdr);
+			else
+			    res = EVAL(CAR(cdr));
+			if (key) {
+			    LispObj *atmp, *cmp,
+				    *ltmp = CAR(fun->data.lambda.code);
+
+			    for (; ltmp != NIL; ltmp = CDR(ltmp)) {
+				if ((cmp = CAR(ltmp))->type == LispCons_t)
+				    cmp = CAR(cmp);
+				else if (cmp->data.atom[0] == '&')
+				    continue;
+				if (strcmp(cmp->data.atom,
+					   keyword->data.atom + 1) == 0)
+				    break;
+			    }
+			    if (ltmp == NIL)
+				LispDestroy(mac, "%s is not an argument to %s",
+					    keyword->data.atom, name);
+			    for (atmp = args; atmp != NIL; atmp = CDR(atmp))
+				if (CAR(atmp) == ltmp) {
+				    CAR(atmp) = res;
+				    break;
+				}
+				/* else, silently ignore setting argument
+				 * more than once? */
+			}
+			else
+			    CAR(arg) = res;
+			cdr = CDR(cdr);
+		    }
+		    arg = CDR(arg);
+		}
+		list = CDR(list);
+	    }
+	    if (rest) {
+		if (cdr == NIL)
+		    CAR(arg) = NIL;
+		else if (fun->data.lambda.type == LispMacro)
+		    CAR(arg) = CONS(cdr, NIL);
+		else {
+		    res = EVAL(CAR(cdr));
+		    CAR(arg) = CONS(res, NIL);
+		    arg = CAR(arg);
+		    cdr = CDR(cdr);
+		    while (cdr != NIL) {
+			res = EVAL(CAR(cdr));
+			CDR(arg) = CONS(res, NIL);
+			arg = CDR(arg);
+			cdr = CDR(cdr);
+		    }
+		}
+	    }
+	    else if (cdr != NIL)
+		LispDestroy(mac, "too many arguments to %s", name);
+
+	    /* set to NIL or default any unspecified arguments */
+	    if (key || optional) {
+		arg = args;
+		list = CAR(fun->data.lambda.code);
+
+		for (; list != NIL; list = CDR(list))
+		    if (CAR(list)->data.atom[0] != '&') {
+			if (CAR(arg) == list) {
+			    if (CAR(list)->type == LispCons_t &&
+				CDR(CAR(list))->type == LispCons_t)
+				CAR(arg) = CAR(CDR(CAR(list)));
+			    else
+				CAR(arg) = NIL;
+			}
+			arg = CDR(arg);
+		    }
+	    }
+	}
 
 	res = LispRunFunMac(mac, fun->data.lambda.code, args,
 			    fun->data.lambda.type);
@@ -1418,8 +1608,16 @@ LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list, LispFunType type)
     LEX = ENV;
     SYM = CONS(LEX, SYM);
 
-    for (; args != NIL; args = CDR(args), list = CDR(list))
-	LispAddVar(mac, CAR(args)->data.atom, CAR(list));
+    for (; args != NIL; args = CDR(args)) {
+	if (CAR(args)->type == LispCons_t) {
+	    LispAddVar(mac, CAR(CAR(args))->data.atom, CAR(list));
+	    list = CDR(list);
+	}
+	else if (CAR(args)->data.atom[0] != '&') {
+	    LispAddVar(mac, CAR(args)->data.atom, CAR(list));
+	    list = CDR(list);
+	}
+    }
 
     res = Lisp_Progn(mac, code,
 		     type == LispLambda ? "#<LAMBDA>" : fun->data.lambda.name);
@@ -1961,6 +2159,7 @@ LispPrint(LispMac *mac, LispObj *obj)
     /* XXX maybe should check for newlines in object */
     mac->column = LispPrintObj(mac, NIL, obj, 1);
     mac->newline = 0;
+    fflush(lisp_stdout);
 }
 
 /* Needs a rewrite to either allow only one LispMac per process or some
