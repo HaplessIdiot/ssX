@@ -1,6 +1,9 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 357. When XDarwin is launched from the Finder, start X clients in an
+      interactive shell if user's shell is Bourne-based (Torrey T. Lyons).
  356. Add CaseSensitiveFileSystem definition, which defaults to YES, except
-      on Darwin, Cygwin, and OS/2 (Torrey T. Lyons).
+      on Darwin, Cygwin, and OS/2. Fix another case problem spotted by
+      NAKAHASHI Ichiro (Torrey T. Lyons).
  355. Enable Vendor specific FatalError for Cygwin/XFree86 and create 
       the Xserver as a windows executable (#4967, Harold Hunt).
  354. Add i830 2D and DRI driver (#A.604, VA Linux Systems, 2D3D).
@@ -13973,4 +13976,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1976 2001/10/04 20:02:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1977 2001/10/06 01:20:44 torrey Exp $
