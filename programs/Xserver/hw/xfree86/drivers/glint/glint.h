@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.20 1999/07/11 08:49:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.24 2000/01/18 18:40:12 alanh Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -137,6 +137,7 @@ typedef struct {
     DrawablePtr		CurrentDrawable;
     I2CBusPtr		DDCBus, VSBus;
     CARD8*		XAAScanlineColorExpandBuffers[2];
+    CARD32		RasterizerSwap;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
