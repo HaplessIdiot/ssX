@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -588,7 +588,7 @@ static void dmxCollectAll(DMXInputInfo *dmxInput)
 static void dmxBlockHandler(pointer blockData, OSTimePtr pTimeout,
                             pointer pReadMask)
 {
-    DMXInputInfo    *dmxInput = &dmxInputs[(int)blockData];
+    DMXInputInfo    *dmxInput = &dmxInputs[(long)blockData];
     static unsigned long generation = 0;
     
     if (generation != serverGeneration) {
@@ -615,7 +615,7 @@ static void dmxSwitchReturn(pointer p)
 
 static void dmxWakeupHandler(pointer blockData, int result, pointer pReadMask)
 {
-    DMXInputInfo *dmxInput = &dmxInputs[(int)blockData];
+    DMXInputInfo *dmxInput = &dmxInputs[(long)blockData];
     int          i;
 
     if (dmxInput->vt_switch_pending) {
@@ -1057,7 +1057,7 @@ void dmxInputInit(DMXInputInfo *dmxInput)
     
     RegisterBlockAndWakeupHandlers(dmxBlockHandler,
                                    dmxWakeupHandler,
-                                   (void *)dmxInput->inputIdx);
+                                   (void *)(long)dmxInput->inputIdx);
 }
 
 static void dmxInputFreeLocal(DMXLocalInputInfoRec *local)
