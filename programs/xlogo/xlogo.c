@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xlogo.c,v 1.20 94/04/17 20:24:10 converse Exp $
- * $XFree86$
+ * $XConsortium: xlogo.c /main/21 1996/01/14 16:51:25 kaleb $
+ * $XFree86: xc/programs/xlogo/xlogo.c,v 3.0 1994/06/28 12:33:21 dawes Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -31,6 +31,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Shell.h>
 #include "Logo.h"
 #include <X11/Xaw/Cardinals.h>
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#endif
 
 extern void exit();
 static void quit();
@@ -138,7 +141,11 @@ static void quit(w, event, params, num_params)
 
     if (event->type == ClientMessage && 
 	event->xclient.data.l[0] != wm_delete_window) {
+#ifdef XKB
+	XkbStdBell(XtDisplay(w), XtWindow(w), 0, XkbBI_BadValue);
+#else
 	XBell(XtDisplay(w), 0);
+#endif
     } else {
 	/* resign from the session */
 	XtSetArg(arg, XtNjoinSession, False);

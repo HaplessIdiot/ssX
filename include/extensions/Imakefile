@@ -1,16 +1,21 @@
 XCOMM $XConsortium: Imakefile /main/41 1995/12/08 11:48:38 dpw $
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.3 1995/12/09 11:03:14 dawes Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.4 1996/01/05 13:10:04 dawes Exp $
 
+#if BuildScreenSaverLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
+#endif
 
-#ifdef XFree86Version
+#if BuildXF86MiscLibrary
+XF86MISCHEADERS = xf86misc.h xf86mscstr.h
+#endif
+#if BuildXF86VidMoeLibrary
 XF86VIDMODEHEADERS = xf86vmode.h xf86vmstr.h
+#endif
+#if BuildXF86DGALibrary
 XF86DGAHEADERS = xf86dga.h xf86dgastr.h
 #endif
 
-#if BuildExtraExtensionLibrary
-EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS)
-#endif
+EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XF86MISCHEADERS)
 
 
 

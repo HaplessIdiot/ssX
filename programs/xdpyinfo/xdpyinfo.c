@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.1 1996/01/05 13:21:12 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.2 1996/01/13 12:23:37 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -654,11 +654,13 @@ print_XF86VidMode_info(dpy, extname)
     if (mode_line.flags & V_DBLSCAN)   printf(" doublescan");
     printf("\n");
 
+#if 0
     if (!XF86VidModeGetSaver(dpy, DefaultScreen(dpy), &suspendTime, &offTime))
 	return 0;
     printf("  Powersaver Settings:\n");
     printf("    Suspend Time: %d,  Off Time: %d\n",
         suspendTime/1000, offTime/1000);
+#endif
 
     return 1;
 }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.0 1996/01/10 05:51:45 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -95,7 +95,7 @@ extern char *strindex PROTO((char *s1, char *s2));
 extern int XStrCmp PROTO((char *s1, char *s2));
 extern int xerror PROTO((Display *d, XErrorEvent *ev));
 extern int xioerror PROTO((Display *dpy));
-extern void Bell PROTO((void));
+extern void Bell PROTO((int which, int percent));
 extern void Changename PROTO((char *name));
 extern void Changetitle PROTO((char *name));
 extern void Cleanup PROTO((int code));

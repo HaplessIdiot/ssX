@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y /main/5 1995/12/07 21:43:26 kaleb $ */
+/* $XConsortium: xkbparse.y /main/7 1996/01/14 16:48:48 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,7 +26,7 @@
  ********************************************************/
 %token
 	END_OF_FILE	0
-	ERROR		255
+	ERROR_TOK	255
 	XKB_KEYMAP	1
 	XKB_KEYCODES	2
 	XKB_TYPES	3
@@ -42,7 +42,7 @@
 	VIRTUAL_MODS	20
 	TYPE		21
 	INTERPRET	22
-	ACTION		23
+	ACTION_TOK	23
 	KEY		24
 	ALIAS		25
 	GROUP		26
@@ -90,6 +90,14 @@
 #include "xkbparse.h"
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
+
+_XFUNCPROTOBEGIN
+extern	int yylex(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+_XFUNCPROTOEND
 %}
 %right	EQUALS
 %left	PLUS MINUS
@@ -205,7 +213,7 @@ FileType	:	XKB_KEYCODES		{ $$= XkmKeyNamesIndex; }
 		;
 
 OptFlags	:	Flags			{ $$= $1; }
-		|				{ $$= NULL; }
+		|				{ $$= 0; }
 		;
 
 Flags		:	Flags Flag		{ $$= (($1)|($2)); }
@@ -536,7 +544,7 @@ FieldSpec	:	Ident			{ $$= $1; }
 		|	Element			{ $$= $1; }
 		;
 
-Element		:	ACTION		
+Element		:	ACTION_TOK		
 			{ $$= XkbInternAtom(NULL,"action",False); }
 		|	INTERPRET
 			{ $$= XkbInternAtom(NULL,"interpret",False); }
@@ -714,7 +722,6 @@ KeySym		:	IDENT
 			}
 		|	SECTION
 			{
-			    KeySym sym;
 			    $$= XK_section;
 			}
 		|	Integer		
@@ -752,8 +759,12 @@ MapName		:	STRING 	{ $$= scanStr; scanStr= NULL; }
 		;
 %%
 void
+#if NeedFunctionPrototypes
+yyerror(char *s)
+#else
 yyerror(s)
 char	*s;
+#endif
 {
     if (warningLevel>0) {
 	(void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
@@ -766,8 +777,12 @@ char	*s;
 
 
 int
+#if NeedFunctionPrototypes
+yywrap(void)
+#else
 yywrap()
+#endif
 {
-   return(1);
+   return 1;
 }
 

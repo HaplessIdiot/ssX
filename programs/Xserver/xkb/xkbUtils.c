@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c /main/17 1996/01/01 10:57:34 kaleb $ */
+/* $XConsortium: xkbUtils.c /main/18 1996/01/14 16:46:50 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -172,7 +172,7 @@ DeviceIntPtr dev = NULL;
     return dev;
 }
 
-static void
+void
 #if NeedFunctionPrototypes
 XkbSetActionKeyMods(XkbDescPtr xkb,XkbAction *act,unsigned mods)
 #else
@@ -199,6 +199,37 @@ register unsigned	tmp;
 	    break;
     }
     return;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbCheckActionVMods(XkbDescPtr xkb,XkbAction *act,unsigned changed)
+#else
+XkbCheckActionVMods(xkb,act,changed)
+    XkbDescPtr	xkb;
+    XkbAction *	act;
+    unsigned	changed;
+#endif
+{
+register unsigned	tmp;
+
+    switch (act->type) {
+	case XkbSA_SetMods: case XkbSA_LatchMods: case XkbSA_LockMods:
+	    if (((tmp= XkbModActionVMods(&act->mods))&changed)!=0) {
+		act->mods.mask= act->mods.real_mods;
+		act->mods.mask|= XkbMaskForVMask(xkb,tmp);
+		return True;
+	    }
+	    break;
+	case XkbSA_ISOLock:
+	    if ((((tmp= XkbModActionVMods(&act->iso))!=0)&changed)!=0) {
+		act->iso.mask= act->iso.real_mods;
+		act->iso.mask|= XkbMaskForVMask(xkb,tmp);
+		return True;
+	    }
+	    break;
+    }
+    return False;
 }
 
 /***====================================================================***/
@@ -316,16 +347,18 @@ XkbKeyTypePtr	type;
 
 Bool
 #if NeedFunctionPrototypes
-XkbApplyVirtualModChanges(	XkbSrvInfoPtr	xkbi,
-				unsigned	changed,
-				XkbChangesPtr	changes,
-				unsigned *	needChecksRtrn)
+XkbApplyVModChanges(	XkbSrvInfoPtr		xkbi,
+			unsigned		changed,
+			XkbChangesPtr		changes,
+			unsigned *		needChecksRtrn,
+			XkbEventCausePtr	cause)
 #else
-XkbApplyVirtualModChanges(xkbi,changed,changes,needChecksRtrn)
-    XkbSrvInfoPtr	 xkbi;
-    unsigned		 changed;
-    XkbChangesPtr	 changes;
-    unsigned *		 needChecksRtrn;
+XkbApplyVModChanges(xkbi,changed,changes,needChecksRtrn,cause)
+    XkbSrvInfoPtr	xkbi;
+    unsigned		changed;
+    XkbChangesPtr	changes;
+    unsigned *		needChecksRtrn;
+    XkbEventCausePtr	cause;
 #endif
 {
 register unsigned 	i,n;
@@ -407,26 +440,10 @@ register unsigned bit;
 	    register XkbAction *pAct;
 	    pAct= XkbKeyActionsPtr(xkb,i);
 	    for (n=XkbKeyNumActions(xkb,i);n>0;n--,pAct++) {
-		register unsigned tmp;
-		switch (pAct->type) {
-		    case XkbSA_SetMods: case XkbSA_LatchMods: case XkbSA_LockMods:
-			if (((tmp= XkbModActionVMods(&pAct->mods))!=0)&&
-							((tmp&changed)!=0)) {
-			    pAct->mods.mask= pAct->mods.real_mods;
-			    pAct->mods.mask|= XkbMaskForVMask(xkb,tmp);
-			    if (lowChange<0)	lowChange= i;
-			    highChange= i;
-			}
-			break;
-		    case XkbSA_ISOLock:
-			if (((tmp= XkbModActionVMods(&pAct->iso))!=0)&&
-							((tmp&changed)!=0)) {
-			    pAct->iso.mask= pAct->iso.real_mods;
-			    pAct->iso.mask|= XkbMaskForVMask(xkb,tmp);
-			    if (lowChange<0)	lowChange= i;
-			    highChange= i;
-			}
-			break;
+		if ((pAct->type!=XkbSA_NoAction)&&
+				XkbCheckActionVMods(xkb,pAct,changed)) {
+		    if (lowChange<0)	lowChange= i;
+		    highChange=		i;
 		}
 	    }
 	}
@@ -444,6 +461,7 @@ register unsigned bit;
 	changes->map.first_key_act= lowChange;
 	changes->map.num_key_acts= (highChange-lowChange)+1;
     }
+    XkbApplyVModChangesToAllDevices(xkbi->device,xkb,changed,cause);
     if (check&XkbStateNotifyMask)
 	check|= XkbIndicatorStateNotifyMask;
     if (needChecksRtrn!=NULL) 
@@ -455,348 +473,6 @@ register unsigned bit;
 }
 
 /***====================================================================***/
-
-unsigned
-#if NeedFunctionPrototypes
-XkbIndicatorsToUpdate(DeviceIntPtr keybd,unsigned long modsChanged)
-#else
-XkbIndicatorsToUpdate(keybd,modsChanged)
-    DeviceIntPtr	keybd;
-    unsigned long	 modsChanged;
-#endif
-{
-register unsigned	update=	0;
-XkbSrvInfoPtr		xkbi = keybd->key->xkbInfo;
-
-    if (modsChanged&(XkbModifierStateMask|XkbGroupStateMask))
-	update|= xkbi->iAccel.usesEffective;
-    if (modsChanged&(XkbModifierBaseMask|XkbGroupBaseMask))
-	update|= xkbi->iAccel.usesBase;
-    if (modsChanged&(XkbModifierLatchMask|XkbGroupLatchMask))
-	update|= xkbi->iAccel.usesLatched;
-    if (modsChanged&(XkbModifierLockMask|XkbGroupLockMask))
-	update|= xkbi->iAccel.usesLocked;
-    if (modsChanged&XkbCompatStateMask)
-	update|= xkbi->iAccel.usesCompat;
-    return update;
-}
-
-Bool
-#if NeedFunctionPrototypes
-XkbApplyLEDChangeToKeyboard(	XkbSrvInfoPtr		xkbi,
-				XkbIndicatorMapPtr	map,
-				Bool			on,
-				XkbChangesPtr		change)
-#else
-XkbApplyLEDChangeToKeyboard(xkbi,map,on,change)
-    XkbSrvInfoPtr	xkbi;
-    XkbIndicatorMapPtr	map;
-    Bool		on;
-    XkbChangesPtr	change;
-#endif
-{
-Bool		ctrlChange,stateChange;
-XkbStatePtr	state;
-
-    if ((map->flags&XkbIM_NoExplicit)||((map->flags&XkbIM_LEDDrivesKB)==0))
-	return False;
-    ctrlChange= stateChange= False;
-    if (map->ctrls) {
-	XkbControlsPtr	ctrls= xkbi->desc->ctrls;
-	unsigned 	old;
-
-	old= ctrls->enabled_ctrls;
-	if (on)	ctrls->enabled_ctrls|= map->ctrls;
-	else	ctrls->enabled_ctrls&= ~map->ctrls;
-	if (old!=ctrls->enabled_ctrls) {
-	    change->ctrls.changed_ctrls= XkbControlsEnabledMask;
-	    change->ctrls.enabled_ctrls_changes= old^ctrls->enabled_ctrls;
-	    ctrlChange= True;
-	}
-    }
-    state= &xkbi->state;
-    if ((map->groups)&&((map->which_groups&(~XkbIM_UseBase))!=0)) {
-	register int i;
-	register unsigned bit,match;
-
-	if (on)	match= (map->groups)&XkbAllGroupsMask;
-	else 	match= (~map->groups)&XkbAllGroupsMask;
-	if (map->which_groups&(XkbIM_UseLocked|XkbIM_UseEffective)) {
-	    for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
-		if (bit&match)
-		    break;
-	    }
-	    if (map->which_groups&XkbIM_UseLatched)
-		XkbLatchGroup(xkbi->device,0); /* unlatch group */
-	    state->locked_group= i;
-	    stateChange= True;
-	}
-	else if (map->which_groups&(XkbIM_UseLatched|XkbIM_UseEffective)) {
-	    for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
-		if (bit&match)
-		    break;
-	    }
-	    state->locked_group= 0;
-	    XkbLatchGroup(xkbi->device,i);
-	    stateChange= True;
-	}
-    }
-    if ((map->mods.mask)&&((map->which_mods&(~XkbIM_UseBase))!=0)) {
-	if (map->which_mods&(XkbIM_UseLocked|XkbIM_UseEffective)) {
-	    register unsigned long old;
-	    old= state->locked_mods;
-	    if (on)	state->locked_mods|= map->mods.mask;
-	    else	state->locked_mods&= ~map->mods.mask;
-	    if (state->locked_mods!=old)
-		stateChange= True;
-	}
-	if (map->which_mods&(XkbIM_UseLatched|XkbIM_UseEffective)) {
-	    register unsigned long newmods;
-	    newmods= state->latched_mods;
-	    if (on)	newmods|=  map->mods.mask;
-	    else	newmods&= ~map->mods.mask;
-	    if (newmods!=state->locked_mods) {
-		newmods&= map->mods.mask;
-		XkbLatchModifiers(xkbi->device,map->mods.mask,newmods);
-		stateChange= True;
-	    }
-	}
-    }
-    return (stateChange || ctrlChange);
-}
-
-void
-#if NeedFunctionPrototypes
-XkbSetIndicators(	DeviceIntPtr		keybd,
-			CARD32			affect,
-			CARD32			values,
-			XkbChangesPtr		pChanges,
-			XkbEventCausePtr	pCause)
-#else
-XkbSetIndicators(keybd,affect,values,pChanges,pCause)
-    DeviceIntPtr	keybd;
-    CARD32		affect;
-    CARD32		values;
-    XkbChangesPtr	pChanges;
-    XkbEventCausePtr	pCause;
-#endif
-{
-XkbSrvInfoPtr		xkbi=	keybd->key->xkbInfo;
-XkbChangesRec		changes;
-XkbEventCauseRec	cause;
-register CARD32		led_changes;
-
-    if (pChanges==NULL) {
-	pChanges= &changes;
-	bzero((char *)pChanges,sizeof(XkbChangesRec));
-    }
-    if (pCause==NULL) {
-	pCause= &cause;
-	XkbSetCauseCoreReq(pCause,X_ChangeKeyboardMapping);
-    }
-    xkbi->iStateExplicit&= ~affect;
-    xkbi->iStateExplicit|= (affect&values);
-
-    led_changes= (xkbi->iStateEffective&affect);
-    led_changes^= (affect&values);
-    if (led_changes) {
-	register int 		i;
-	register unsigned	bit;
-	CARD8			flags;
-	XkbStateRec		old;
-	XkbIndicatorPtr	map;
-	old= xkbi->state;
-	map= xkbi->desc->indicators;
-	for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
-	    Bool on;
-	    if ((led_changes&bit)==0)
-		continue;
-	    flags= map->maps[i].flags;
-	    if ((flags&XkbIM_NoExplicit)||((flags&XkbIM_LEDDrivesKB)==0))
-		continue;
-	    on= ((values&bit)!=0);
-	    if (XkbApplyLEDChangeToKeyboard(xkbi,&map->maps[i],on,pChanges)) {
-		XkbComputeDerivedState(xkbi);
-		pChanges->state_changes|= 
-					XkbStateChangedFlags(&old,&xkbi->state);
-	    }
-	    xkbi->iStateExplicit&= ~bit;
-	}
-    }
-    XkbUpdateIndicators(keybd,affect,&pChanges->indicators);
-    if (pChanges==&changes)
-	XkbSendNotification(keybd,pChanges,pCause);
-    return;
-}
-
-void
-#if NeedFunctionPrototypes
-XkbUpdateIndicators(	DeviceIntPtr		keybd,
-			register CARD32		update,
-			XkbIndicatorChangesPtr	pChanges)
-#else
-XkbUpdateIndicators(keybd,update,pChanges)
-    DeviceIntPtr		keybd;
-    register CARD32		update;
-    XkbIndicatorChangesPtr	pChanges;
-#endif
-{
-register int	i,bit;
-XkbSrvInfoPtr	xkbi= keybd->key->xkbInfo;
-XkbStatePtr	kbdState = &xkbi->state;
-CARD32		oldState;
-unsigned	changedLEDs;
-
-
-    oldState= xkbi->iStateEffective;
-    for (i=0,bit=1;update;i++,bit<<=1) {
-	if (update&bit) {
-	    int on;
-	    CARD8 		mods,group;
-	    XkbIndicatorMapPtr	map= &xkbi->desc->indicators->maps[i];
-	    on= mods= group= 0;
-	    if (map->which_mods&XkbIM_UseBase)
-		mods|= kbdState->base_mods;
-	    if (map->which_groups&XkbIM_UseBase)
-		group|= (1L << kbdState->base_group);
-
-	    if (map->which_mods&XkbIM_UseLatched)
-		mods|= kbdState->latched_mods;
-	    if (map->which_groups&XkbIM_UseLatched)
-		group|= (1L << kbdState->latched_group);
-
-	    if (map->which_mods&XkbIM_UseLocked)
-		mods|= kbdState->locked_mods;
-	    if (map->which_groups&XkbIM_UseLocked)
-		group|= (1L << kbdState->locked_group);
-
-	    if (map->which_mods&XkbIM_UseEffective)
-		mods|= kbdState->mods;
-	    if (map->which_groups&XkbIM_UseEffective)
-		group|= (1L << kbdState->group);
-
-	    if (map->which_mods&XkbIM_UseCompat)
-		mods|= kbdState->compat_state;
-
-	    if ((map->which_mods|map->which_groups)&XkbIM_UseAnyMods) {
-		on = ((map->mods.mask&mods)!=0);
-		on = on||((mods==0)&&(map->mods.mask==0)&&(map->mods.vmods==0));
-		on = on&&(((map->groups&group)!=0)||(map->groups==0));
-	    }
-	    if (map->ctrls)
-		on = on || (xkbi->desc->ctrls->enabled_ctrls&map->ctrls);
-
-	    if (on)	xkbi->iStateAuto|= bit;
-	    else	xkbi->iStateAuto&= ~bit;
-
-	    if ((map->flags&XkbIM_NoExplicit)==0) {
-		if ((map->flags&XkbIM_NoAutomatic)!=0)
-		    on= FALSE;
-		on= on||((xkbi->iStateExplicit&bit)!=0);
-	    }
-
-	    if (on)	xkbi->iStateEffective|= bit;
-	    else	xkbi->iStateEffective&= ~bit;
-	    update&= ~bit;
-	}
-    }
-    changedLEDs= xkbi->iStateEffective^oldState;
-    if (changedLEDs!=0) {
-#ifdef DEBUG
-	if (xkbDebugFlags&0x2) {
-	    ErrorF("changedLEDs= 0x%x, effective= 0x%x\n",changedLEDs,
-	    						xkbi->iStateEffective);
-	}
-#endif
-	XkbDDXUpdateIndicators(keybd,oldState,xkbi->iStateEffective);
-	if (pChanges)
-	    pChanges->state_changes|= changedLEDs;
-	else {
-	    xkbIndicatorNotify	in;
-	    in.changed= changedLEDs;
-	    in.state = xkbi->iStateEffective;
-	    XkbSendIndicatorNotify(keybd,XkbIndicatorStateNotify,&in);
-	}
-	if (XkbAX_NeedFeedback(xkbi->desc->ctrls,XkbAX_IndicatorFBMask)) {
-	    unsigned on,off,beepType;
-	    on= changedLEDs&xkbi->iStateEffective;
-	    off= changedLEDs&(~on);
-
-	    if (on && off)	beepType= _BEEP_LED_CHANGE;
-	    else if (on)	beepType= _BEEP_LED_ON;
-	    else if (off)	beepType= _BEEP_LED_OFF;
-	    else		beepType= _BEEP_NONE;
-	    if (beepType!=_BEEP_NONE)
-		XkbDDXAccessXBeep(keybd,beepType,0);
-	}
-    }
-    if (xkbi->device->kbdfeed)
-	xkbi->device->kbdfeed->ctrl.leds= xkbi->iStateEffective;
-    return;
-}
-
-void
-#if NeedFunctionPrototypes
-XkbCheckIndicatorMaps(XkbSrvInfoPtr xkbi,unsigned which)
-#else
-XkbCheckIndicatorMaps(xkbi,which)
-    XkbSrvInfoPtr	xkbi;
-    unsigned		which;
-#endif
-{
-register unsigned	i,bit;
-XkbIndicatorPtr		leds;
-
-    leds= xkbi->desc->indicators;
-    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
-	if (which&bit) {
-	    CARD8		what;
-	    XkbIndicatorMapPtr	map= &leds->maps[i];
-
-	    what= (map->which_mods|map->which_groups);
-	    if (what&XkbIM_UseBase)
-		 xkbi->iAccel.usesBase|= bit;
-	    else xkbi->iAccel.usesBase&= ~bit;
-	    if (what&XkbIM_UseLatched)
-		 xkbi->iAccel.usesLatched|= bit;
-	    else xkbi->iAccel.usesLatched&= ~bit;
-	    if (what&XkbIM_UseLocked)
-		 xkbi->iAccel.usesLocked|= bit;
-	    else xkbi->iAccel.usesLocked&= ~bit;
-	    if (what&XkbIM_UseEffective)
-		 xkbi->iAccel.usesEffective|= bit;
-	    else xkbi->iAccel.usesEffective&= ~bit;
-	    if (what&XkbIM_UseCompat)
-		 xkbi->iAccel.usesCompat|= bit;
-	    else xkbi->iAccel.usesCompat&= ~bit;
-	    if (map->ctrls)
-		 xkbi->iAccel.usesControls|= bit;
-	    else xkbi->iAccel.usesControls&= ~bit;
-
-	    if (map->ctrls || 
-		(map->which_groups && map->groups) ||
-		(map->which_mods && map->mods.real_mods))
-		 xkbi->iAccel.haveMap|= bit;
-	    else xkbi->iAccel.haveMap&= ~bit;
-	    if (map->mods.vmods!=0) {
-		map->mods.mask= map->mods.real_mods;
-		map->mods.mask|= XkbMaskForVMask(xkbi->desc,map->mods.vmods);
-	    }
-	}
-    }
-    xkbi->iAccel.usedComponents= 0;
-    if (xkbi->iAccel.usesBase)
-	xkbi->iAccel.usedComponents|= XkbModifierBaseMask|XkbGroupBaseMask;
-    if (xkbi->iAccel.usesLatched)
-	xkbi->iAccel.usedComponents|= XkbModifierLatchMask|XkbGroupLatchMask;
-    if (xkbi->iAccel.usesLocked)
-	xkbi->iAccel.usedComponents|= XkbModifierLockMask|XkbGroupLockMask;
-    if (xkbi->iAccel.usesEffective)
-	xkbi->iAccel.usedComponents|= XkbModifierStateMask|XkbGroupStateMask;
-    if (xkbi->iAccel.usesCompat)
-	xkbi->iAccel.usedComponents|= XkbCompatStateMask;
-    return;
-}
 
 #if NeedFunctionPrototypes
 void
@@ -1033,19 +709,21 @@ CARD8			 mods;
 
 #if NeedFunctionPrototypes
 void
-XkbUpdateActions(	DeviceIntPtr	 pXDev,
-			KeyCode		 first,
-			CARD8		 num,
-			XkbChangesPtr	 pChanges,
-			unsigned *	 needChecksRtrn)
+XkbUpdateActions(	DeviceIntPtr	 	pXDev,
+			KeyCode		 	first,
+			CARD8		 	num,
+			XkbChangesPtr	 	pChanges,
+			unsigned *	 	needChecksRtrn,
+			XkbEventCausePtr	cause)
 #else
 void
-XkbUpdateActions(pXDev,first,num,pChanges,needChecksRtrn)
+XkbUpdateActions(pXDev,first,num,pChanges,needChecksRtrn,cause)
     DeviceIntPtr 	pXDev;
     KeyCode 		first;
     CARD8 		num;
     XkbChangesPtr 	pChanges;
     unsigned *		needChecksRtrn;
+    XkbEventCausePtr	cause;
 #endif
 {
 XkbSrvInfoPtr		xkbi;
@@ -1200,8 +878,9 @@ CARD16		 	changedVMods;
 	    if (origVMods[i]!=xkb->server->vmods[i])
 		changedVMods|= bit;
 	}
-	if (changedVMods)
-	   XkbApplyVirtualModChanges(xkbi,changedVMods,pChanges,needChecksRtrn);
+	if (changedVMods) {
+	   XkbApplyVModChanges(xkbi,changedVMods,pChanges,needChecksRtrn,cause);
+	}
     }
     if (pChanges->map.changed&XkbKeyActionsMask) {
 	CARD8 oldLast,newLast;
@@ -1402,19 +1081,20 @@ void
 XkbApplyMappingChange(	DeviceIntPtr	kbd,
 			CARD8		 request,
 			KeyCode		 firstKey,
-			CARD8		 num)
+			CARD8		 num,
+			ClientPtr	 client)
 #else
 void
-XkbApplyMappingChange(kbd,request,firstKey,num)
+XkbApplyMappingChange(kbd,request,firstKey,num,client)
     DeviceIntPtr kbd;
-    CARD8 request;
-    KeyCode firstKey;
-    CARD8 num;
+    CARD8 	request;
+    KeyCode 	firstKey;
+    CARD8 	num;
+    ClientPtr	client;
 #endif
 {
 XkbEventCauseRec	cause;
 XkbChangesRec	 	changes;
-int		 	req;
 unsigned	 	check;
 
     if (kbd->key->xkbInfo==NULL)
@@ -1422,27 +1102,28 @@ unsigned	 	check;
     bzero(&changes,sizeof(XkbChangesRec));
     check= 0;
     if (request==MappingKeyboard) {
+	XkbSetCauseCoreReq(&cause,X_ChangeKeyboardMapping,client);
 	XkbUpdateKeyTypesFromCore(kbd,firstKey,num,&changes);
-	XkbUpdateActions(kbd,firstKey,num,&changes,&check);
+	XkbUpdateActions(kbd,firstKey,num,&changes,&check,&cause);
 	if (check)
-	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes);
-	req= X_ChangeKeyboardMapping;
+	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes,&cause);
     }
     else if (request==MappingModifier) {
 	XkbDescPtr	xkb= kbd->key->xkbInfo->desc;
+
+	XkbSetCauseCoreReq(&cause,X_SetModifierMapping,client);
+
 	num = xkb->max_key_code-xkb->min_key_code+1;
 	memcpy(xkb->map->modmap,kbd->key->modifierMap,xkb->max_key_code+1);
 
 	changes.map.changed|= XkbModifierMapMask;
 	changes.map.first_modmap_key= xkb->min_key_code;
 	changes.map.num_modmap_keys= num;
-	XkbUpdateActions(kbd,xkb->min_key_code,num,&changes,&check);
+	XkbUpdateActions(kbd,xkb->min_key_code,num,&changes,&check,&cause);
 	if (check)
-	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes);
-	req= X_SetModifierMapping;
+	    XkbCheckSecondaryEffects(kbd->key->xkbInfo,check,&changes,&cause);
     }
     /* 3/26/94 (ef) -- XXX! Doesn't deal with input extension requests */
-    XkbSetCauseCoreReq(&cause,req);
     XkbSendNotification(kbd,&changes,&cause);
     return;
 }
@@ -1594,7 +1275,8 @@ unsigned	grp;
 
     grp= state->locked_group+state->base_group+state->latched_group;
     if (grp>=ctrls->num_groups)
-	state->group= XkbAdjustGroup(grp,ctrls);
+	 state->group= XkbAdjustGroup(grp,ctrls);
+    else state->group= grp;
     XkbComputeCompatState(xkbi);
     return;
 }
@@ -1603,14 +1285,16 @@ unsigned	grp;
 
 void
 #if NeedFunctionPrototypes
-XkbCheckSecondaryEffects(	XkbSrvInfoPtr	xkbi,
-				unsigned	which,
-				XkbChangesPtr 	changes)
+XkbCheckSecondaryEffects(	XkbSrvInfoPtr		xkbi,
+				unsigned		which,
+				XkbChangesPtr 		changes,
+				XkbEventCausePtr	cause)
 #else
-XkbCheckSecondaryEffects(xkbi,which,changes)
+XkbCheckSecondaryEffects(xkbi,which,changes,cause)
     XkbSrvInfoPtr	xkbi;
     unsigned		which;
     XkbChangesPtr	changes;
+    XkbEventCausePtr	cause;
 #endif
 {
     if (which&XkbStateNotifyMask) {
@@ -1620,8 +1304,8 @@ XkbCheckSecondaryEffects(xkbi,which,changes)
 	XkbComputeDerivedState(xkbi);
     }
     if (which&XkbIndicatorStateNotifyMask)
-	XkbUpdateIndicators(xkbi->device,XkbAllIndicatorsMask,
-							&changes->indicators);
+	XkbUpdateIndicators(xkbi->device,XkbAllIndicatorsMask,True,changes,
+									cause);
     return;
 }
 
@@ -1653,19 +1337,20 @@ Bool
 XkbChangeEnabledControls(	XkbSrvInfoPtr		xkbi,
 				unsigned long		change,
 				unsigned long		newValues,
-				XkbEventCausePtr	cause,
-				XkbChangesPtr		changes)
+				XkbChangesPtr		changes,
+				XkbEventCausePtr	cause)
 #else
-XkbChangeEnabledControls(xkbi,change,newValues,cause,changes)
+XkbChangeEnabledControls(xkbi,change,newValues,changes,cause)
     XkbSrvInfoPtr	xkbi;
     unsigned long	change;
     unsigned long	newValues;
-    XkbEventCausePtr	cause;
     XkbChangesPtr	changes;
+    XkbEventCausePtr	cause;
 #endif
 {
 XkbControlsPtr		ctrls;
 unsigned 		old;
+XkbSrvLedInfoPtr	sli;
 
     ctrls= xkbi->desc->ctrls;
     old= ctrls->enabled_ctrls;
@@ -1696,11 +1381,8 @@ unsigned 		old;
 	     changes->ctrls.changed_ctrls|= XkbControlsEnabledMask;
 	else changes->ctrls.changed_ctrls&= ~XkbControlsEnabledMask;
     }
-    if (xkbi->iAccel.usesControls) {
-	XkbIndicatorChangesPtr	ic;
-	ic= (changes?(&changes->indicators):NULL);
-	XkbUpdateIndicators(xkbi->device,xkbi->iAccel.usesControls,ic);
-    }
+    sli= XkbFindSrvLedInfo(xkbi->device,XkbDfltXIClass,XkbDfltXIId,0);
+    XkbUpdateIndicators(xkbi->device,sli->usesControls,True,changes,cause);
     return True;
 }
 

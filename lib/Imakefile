@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/1 1995/12/11 20:58:09 mor $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.6 1996/01/08 08:48:07 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.7 1996/01/10 08:49:51 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -19,12 +19,25 @@ XKBLIBDIR = xkbfile
 THRSTUBLIB = XThrStub
 #endif
 
-#if BuildExtraExtensionLibrary
-EXEXTLIB = XExExt
+#if BuildScreenSaverLibrary
+SSLIB = Xss
+#endif
+
+#if BuildXF86MiscLibrary
+XF86MISCLIB = Xxf86misc
+#endif
+
+#if BuildXF86VidModeLibrary
+XF86VMLIB = Xxf86vm
+#endif
+
+#if BuildXF86DGALibrary
+XF86DGALIB = Xxf86dga
 #endif
 
 #if !BuildServersOnly
-LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext $(EXEXTLIB) \
+LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext \
+	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
 	     Xt Xmu Xaw XIE Xi Xtst FS PEX5 $(XKBLIBDIR)
 #else
 /* For ServersOnly */

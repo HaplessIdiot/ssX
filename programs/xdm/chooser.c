@@ -1,6 +1,6 @@
 /*
- * $XConsortium: chooser.c /main/25 1995/12/08 13:57:37 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.7 1995/06/14 07:54:24 dawes Exp $
+ * $XConsortium: chooser.c /main/26 1996/01/14 16:51:09 kaleb $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.8 1996/01/05 13:20:59 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -109,6 +109,10 @@ in this Software without prior written authorization from the X Consortium.
 #if (BSD >= 199103)
 #define VARIABLE_IFREQ
 #endif
+#endif
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
 #endif
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
@@ -1086,7 +1090,11 @@ DoAccept (w, event, params, num_params)
 
     r = XawListShowCurrent (list);
     if (r->list_index == XAW_LIST_NONE)
+#ifdef XKB
+	XkbStdBell(XtDisplay(toplevel),XtWindow(w),0,XkbBI_MinorError);
+#else
 	XBell (XtDisplay (toplevel), 0);
+#endif
     else
     {
 	for (h = hostNamedb; h; h = h->next)

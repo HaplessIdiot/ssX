@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c /main/51 1996/01/01 10:54:10 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.2 1996/01/05 13:17:53 dawes Exp $ */
+/* $XConsortium: devices.c /main/52 1996/01/14 16:44:49 kaleb $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.3 1996/01/07 03:46:45 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -121,7 +121,6 @@ AddInputDevice(deviceProc, autoStart)
     dev->leds = (LedFeedbackPtr)NULL;
     dev->next = inputInfo.off_devices;
 #ifdef XKB
-    dev->xkb_devi= NULL;
     dev->xkb_interest= NULL;
 #endif
     inputInfo.off_devices = dev;
@@ -219,6 +218,10 @@ CloseDevice(dev)
 	xfree(dev->key);
     }
     xfree(dev->valuator);
+#ifdef XKB
+    if ((dev->button)&&(dev->button->xkb_acts))
+	xfree(dev->button->xkb_acts);
+#endif
     xfree(dev->button);
     if (dev->focus)
     {
@@ -229,6 +232,10 @@ CloseDevice(dev)
     for (k=dev->kbdfeed; k; k=knext)
     {
 	knext = k->next;
+#ifdef XKB
+	if (k->xkb_sli)
+	    XkbFreeSrvLedInfo(k->xkb_sli);
+#endif
 	xfree(k);
     }
     for (p=dev->ptrfeed; p; p=pnext)
@@ -256,11 +263,13 @@ CloseDevice(dev)
     for (l=dev->leds; l; l=lnext)
     {
 	lnext = l->next;
+#ifdef XKB
+	if (l->xkb_sli)
+	    XkbFreeSrvLedInfo(l->xkb_sli);
+#endif
 	xfree(l);
     }
 #ifdef XKB
-    if (dev->xkb_devi)
-	XkbFreeDeviceInfo(dev->xkb_devi,XkbXI_AllDeviceFeaturesMask,True);
     while (dev->xkb_interest) {
 	XkbRemoveResourceClient((DevicePtr)dev,dev->xkb_interest->resource);
     }
@@ -284,6 +293,43 @@ CloseDownDevices()
 	next = dev->next;
 	CloseDevice(dev);
     }
+}
+
+void
+RemoveDevice(dev)
+    register DeviceIntPtr dev;
+{
+    register DeviceIntPtr prev,tmp,next;
+
+    prev= NULL;
+    for (tmp= inputInfo.devices; tmp; (prev = tmp), (tmp = next)) {
+	next = tmp->next;
+	if (tmp==dev) {
+	    CloseDevice(tmp);
+	    if (prev==NULL)
+		inputInfo.devices = next;
+	    else
+		prev->next = next;
+	    inputInfo.numDevices--;
+	    return;
+	}
+    }
+
+    prev= NULL;
+    for (tmp= inputInfo.off_devices; tmp; (prev = tmp), (tmp = next)) {
+	next = tmp->next;
+	if (tmp==dev) {
+	    CloseDevice(tmp);
+	    if (prev==NULL)
+		inputInfo.off_devices = next;
+	    else
+		prev->next = next;
+	    inputInfo.numDevices--;
+	    return;
+	}
+    }
+    ErrorF("Internal Error! Attempt to remove a non-existent device\n");
+    return;
 }
 
 int
@@ -526,6 +572,9 @@ InitButtonClassDeviceStruct(dev, numButtons, map)
     butc->state = 0;
     butc->motionMask = 0;
     bzero((char *)butc->down, DOWN_LENGTH);
+#ifdef XKB
+    butc->xkb_acts=	NULL;
+#endif
     dev->button = butc;
     return TRUE;
 }
@@ -600,8 +649,9 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
 #ifdef XKB
+    feedc->xkb_sli= NULL;
     if (!noXkbExtension)
-	XkbUpdateAutoRepeat(dev);
+	XkbFinishDeviceInit(dev);
 #endif
     (*dev->kbdfeed->CtrlProc)(dev,&dev->kbdfeed->ctrl);
     return TRUE;
@@ -731,6 +781,9 @@ InitLedFeedbackClassDeviceStruct (dev, controlProc)
     feedc->ctrl.id = 0;
     if ( (feedc->next = dev->leds) )
 	feedc->ctrl.id = dev->leds->ctrl.id + 1;
+#ifdef XKB
+    feedc->xkb_sli= NULL;
+#endif
     dev->leds = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -790,9 +843,10 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers, bellProc, controlProc)
 }
 
 void
-SendMappingNotify(request, firstKeyCode, count)
+SendMappingNotify(request, firstKeyCode, count, client)
     unsigned int request, count;
     unsigned int firstKeyCode;
+    ClientPtr	client;
 {
     int i;
     xEvent event;
@@ -806,8 +860,10 @@ SendMappingNotify(request, firstKeyCode, count)
     }
 #ifdef XKB
     if (!noXkbExtension &&
-	((request == MappingKeyboard) || (request == MappingModifier)))
-	XkbApplyMappingChange(inputInfo.keyboard, request, firstKeyCode, count);
+	((request == MappingKeyboard) || (request == MappingModifier))) {
+	XkbApplyMappingChange(inputInfo.keyboard,request,firstKeyCode,count,
+									client);
+    }
 #endif
 
    /* 0 is the server client */
@@ -983,7 +1039,7 @@ ProcSetModifierMapping(client)
     }
 
     if (rep.success == MappingSuccess)
-        SendMappingNotify(MappingModifier, 0, 0);
+        SendMappingNotify(MappingModifier, 0, 0, client);
 
     WriteReplyToClient(client, sizeof(xSetModifierMappingReply), &rep);
 
@@ -1048,7 +1104,8 @@ ProcChangeKeyboardMapping(client)
 #ifdef LBX
     LbxFlushKeyboardMapTag();
 #endif
-    SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes);
+    SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes,
+									client);
     return client->noClientException;
 
 }
@@ -1088,7 +1145,7 @@ ProcSetPointerMapping(client)
 	}
     for (i = 0; i < stuff->nElts; i++)
 	mouse->button->map[i + 1] = map[i];
-    SendMappingNotify(MappingPointer, 0, 0);
+    SendMappingNotify(MappingPointer, 0, 0, client);
     WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
     return Success;
 }
@@ -1284,9 +1341,11 @@ ProcChangeKeyboardControl (client)
 	    }
 #ifdef XKB
 	    if (!noXkbExtension) {
+		XkbEventCauseRec	cause;
+		XkbSetCauseCoreReq(&cause,X_ChangeKeyboardControl,client);
 		keybd->kbdfeed->ctrl.leds = ctrl.leds;
 		XkbSetIndicators(keybd,((led == DO_ALL) ? ~0L : (1L<<(led-1))),
-				 			ctrl.leds, NULL, NULL);
+				 			ctrl.leds, &cause);
 	    }
 #endif
 	    break;

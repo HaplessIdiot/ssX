@@ -1,7 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xvidtune/Imakefile,v 3.2 1995/06/08 08:17:43 dawes Exp $
 
-        DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
+        DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
+LOCAL_LIBRARIES = XawClientLibs $(XXF86VMLIB)
            SRCS = xvidtune.c
            OBJS = xvidtune.o
 

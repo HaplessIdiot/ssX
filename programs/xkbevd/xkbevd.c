@@ -1,5 +1,5 @@
-/* $XConsortium: xkbevd.c /main/2 1995/12/07 21:28:17 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbevd.c /main/4 1996/01/14 16:49:16 kaleb $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.0 1996/01/10 05:43:36 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -210,19 +210,19 @@ GetDisplay(program,dpyName,opcodeRtrn,evBaseRtrn)
     int *	opcodeRtrn;
     int *	evBaseRtrn;
 {
-int	xkb_major,xkb_minor,error;
+int	mjr,mnr,error;
 Display	*dpy;
 
-    xkb_major= XkbMajorVersion;
-    xkb_minor= XkbMinorVersion;
-    dpy= XkbOpenDisplay(dpyName,evBaseRtrn,NULL,&xkb_major,&xkb_minor,&error);
+    mjr= XkbMajorVersion;
+    mnr= XkbMinorVersion;
+    dpy= XkbOpenDisplay(dpyName,evBaseRtrn,NULL,&mjr,&mnr,&error);
     if (dpy==NULL) {
 	switch (error) {
 	    case XkbOD_BadLibraryVersion:
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("X library supports incompatible version %d.%02d\n",
-				xkb_major,xkb_minor);
+				mjr,mnr);
 		break;
 	    case XkbOD_ConnectionRefused:
 		uError("Cannot open display \"%s\"\n",dpyName);
@@ -234,7 +234,7 @@ Display	*dpy;
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("Server %s uses incompatible version %d.%02d\n",
-				dpyName,xkb_major,xkb_minor);
+				dpyName,mjr,mnr);
 		break;
 	    default:
 		uInternalError("Unknown error %d from XkbOpenDisplay\n",error);
@@ -243,7 +243,7 @@ Display	*dpy;
     else if (synch)
 	XSynchronize(dpy,True);
     if (opcodeRtrn)
-	XkbQueryExtension(dpy,opcodeRtrn,evBaseRtrn,NULL,&xkb_major,&xkb_minor);
+	XkbQueryExtension(dpy,opcodeRtrn,evBaseRtrn,NULL,&mjr,&mnr);
     return dpy;
 }
 
@@ -290,7 +290,7 @@ unsigned	priv= 0;
 	    case XkbAccessXNotify:
 		priv= 0;
 		if (name==NULL)		
-		     priv= XkbAXN_AllEventsMask;
+		     priv= XkbAllNewKeyboardEventsMask;
 		else if (uStrCaseEqual(name,"skpress"))	
 		     priv= XkbAXN_SKPressMask;
 		else if (uStrCaseEqual(name,"skaccept"))

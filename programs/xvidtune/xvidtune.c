@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.18 1995/07/19 12:46:15 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.19 1995/12/07 08:03:52 dawes Exp $ */
 
 /*
 
@@ -23,7 +23,7 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the Kaleb S. KEITHLEY 
+Except as contained in this notice, the name of Kaleb S. KEITHLEY 
 shall not be used in advertising or otherwise to promote the sale, use 
 or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY.
@@ -1379,8 +1379,10 @@ static void usage()
     fprintf(stderr, "        -prev                             Switch to previous video mode\n");
     fprintf(stderr, "        -unlock                           Enable mode switch hot-keys\n");
     fprintf(stderr, "        -query                            Print current monitor sync info\n");
+#if 0
     fprintf(stderr, "                                             and power-saver settings\n");
     fprintf(stderr, "        -saver <suspendtime> [<offtime>]  Set power-saver settings\n");
+#endif
     exit(1);
 }
 
@@ -1434,6 +1436,7 @@ int main (argc, argv)
     /* This should probably be done differently */
     if (argc > 1) {
 	int i = 0;
+#if 0
 	if ((argc == 3 || argc == 4) && !strcmp(argv[1], "-saver")) {
 	    XF86VidModeGetSaver(XtDisplay (top),
 				DefaultScreen (XtDisplay (top)),
@@ -1452,6 +1455,7 @@ int main (argc, argv)
 	    XSync(XtDisplay (top), True);
 	    return 0;
 	}
+#endif
 	if (argc != 2)
 		usage();
 	if (!strcmp(argv[1], "-next"))
@@ -1463,11 +1467,13 @@ int main (argc, argv)
 	    XSync(XtDisplay (top), True);
 	    return 0;
 	} else if (!strcmp(argv[1], "-query")) {
+#if 0
 	    if (MinorVersion > 2) {
 		XF86VidModeGetSaver(XtDisplay (top),
 				    DefaultScreen (XtDisplay (top)),
 				    &suspendTime, &offTime);
 	    }
+#endif
 	    query = TRUE;
 	} else
 		usage();
@@ -1484,7 +1490,7 @@ int main (argc, argv)
     }
 
     if (query) {
-	if (MinorVersion > 2)
+	if (MajorVersion > 0 || (MajorVersion == 0 && MinorVersion > 2))
 	    printf("Suspend time: %d seconds, Off time: %d seconds\n",
 		    suspendTime / 1000, offTime / 1000);
 	return 0;

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: charproc.c /main/189 1996/01/10 17:15:44 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.14 1996/01/11 10:38:57 dawes Exp $
+ * $XConsortium: charproc.c /main/190 1996/01/14 16:52:40 kaleb $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.15 1996/01/12 14:42:01 dawes Exp $
  */
 
 /*
@@ -834,7 +834,7 @@ static void VTparse()
 
 		 case CASE_BELL:
 			/* bell */
-			Bell();
+			Bell(XkbBI_TerminalBell,0);
 			break;
 
 		 case CASE_BS:
@@ -2040,8 +2040,8 @@ dpmodes(termw, func)
 			else
 				CloseLog(screen);
 #else
-			Bell();
-			Bell();
+			Bell(XkbBI_Info,0);
+			Bell(XkbBI_Info,0);
 #endif /* ALLOWLOGFILEONOFF */
 			break;
 #endif
@@ -3435,7 +3435,12 @@ static void HandleBell(w, event, params, param_count)
 {
     int percent = (*param_count) ? atoi(params[0]) : 0;
 
+#ifdef XKB
+    int which= XkbBI_TerminalBell;
+    XkbStdBell(XtDisplay(w),XtWindow(w),percent,which);
+#else
     XBell( XtDisplay(w), percent );
+#endif
 }
 
 
@@ -3475,7 +3480,7 @@ DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     char *val = (char *)value;
     int len;
     if (*type != XA_STRING  ||  *format != 8) {
-	Bell();
+	Bell(XkbBI_MinorError,0);
 	return;
     }
     len = strlen(val);
@@ -3488,7 +3493,7 @@ DoSetSelectedFont(w, client_data, selection, type, value, length, format)
 	if (len > 1000  ||  strchr(val, '\n'))
 	    return;
 	if (!LoadNewFont (&term->screen, val, NULL, True, fontMenu_fontsel))
-	    Bell();
+	    Bell(XkbBI_MinorError,0);
     }
 }
 
@@ -3562,11 +3567,11 @@ HandleSetFont(w, event, params, param_count)
 	  case 's': case 'S':
 	    fontnum = fontMenu_fontsel; maxparams = 2; break;
 	  default:
-	    Bell();
+	    Bell(XkbBI_MinorError,0);
 	    return;
 	}
 	if (*param_count > maxparams) {	 /* see if extra args given */
-	    Bell();
+	    Bell(XkbBI_MinorError,0);
 	    return;
 	}
 	switch (*param_count) {		/* assign 'em */
@@ -3591,7 +3596,7 @@ void SetVTFont (i, doresize, name1, name2)
     TScreen *screen = &term->screen;
 
     if (i < 0 || i >= NMENUFONTS) {
-	Bell();
+	Bell(XkbBI_MinorError,0);
 	return;
     }
     if (i == fontMenu_fontsel) {	/* go get the selection */
@@ -3600,7 +3605,7 @@ void SetVTFont (i, doresize, name1, name2)
     }
     if (!name1) name1 = screen->menu_font_names[i];
     if (!LoadNewFont(screen, name1, name2, doresize, i)) {
-	Bell();
+	Bell(XkbBI_MinorError,0);
     }
     return;
 }

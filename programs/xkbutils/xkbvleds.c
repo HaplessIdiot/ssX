@@ -1,5 +1,5 @@
-/* $XConsortium: xkbvleds.c /main/2 1995/12/07 21:31:21 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbvleds.c /main/5 1996/01/14 18:42:34 kaleb $ */
+/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.0 1996/01/10 05:43:52 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -158,20 +158,20 @@ GetDisplay(program,dpyName)
     char *	program;
     char *	dpyName;
 {
-int		xkb_major,xkb_minor,error;
+int		mjr,mnr,error;
 Window		topWin;
 Display	*	dpy;
 
-    xkb_major= XkbMajorVersion;
-    xkb_minor= XkbMinorVersion;
-    dpy= XkbOpenDisplay(dpyName,&evBase,&errBase,&xkb_major,&xkb_minor,&error);
+    mjr= XkbMajorVersion;
+    mnr= XkbMinorVersion;
+    dpy= XkbOpenDisplay(dpyName,&evBase,&errBase,&mjr,&mnr,&error);
     if (dpy==NULL) {
 	switch (error) {
 	    case XkbOD_BadLibraryVersion:
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("X library supports incompatible version %d.%02d\n",
-				xkb_major,xkb_minor);
+				mjr,mnr);
 		break;
 	    case XkbOD_ConnectionRefused:
 		uError("Cannot open display \"%s\"\n",dpyName);
@@ -183,7 +183,7 @@ Display	*	dpy;
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("Server %s uses incompatible version %d.%02d\n",
-				dpyName,xkb_major,xkb_minor);
+				dpyName,mjr,mnr);
 		break;
 	    default:
 		uInternalError("Unknown error %d from XkbOpenDisplay\n",error);

@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.74 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: Clock.c /main/75 1996/01/14 16:50:48 kaleb $ */
 
 /***********************************************************
 
@@ -67,6 +67,10 @@ extern Time_t time ();
 #else
 #include <time.h>
 #define Time_t time_t
+#endif
+
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
 #endif
 
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
@@ -353,9 +357,19 @@ static void clock_tic(client_data, id)
 	    if (((tm.tm_min == 30) || (tm.tm_min == 0)) 
 		&& (!w->clock.beeped)) {
 		w->clock.beeped = TRUE;
+#ifdef XKB
+		if (tm.tm_min==0) {
+		    XkbStdBell(dpy,win,50,XkbBI_ClockChimeHour);
+		    XkbStdBell(dpy,win,50,XkbBI_RepeatingLastBell);
+		}
+		else {
+		    XkbStdBell(dpy,win,50,XkbBI_ClockChimeHalf);
+		}
+#else
 		XBell(dpy, 50);	
 		if (tm.tm_min == 0)
 		  XBell(dpy, 50);
+#endif
 	    }
 	}
 	if( w->clock.analog == FALSE ) {

@@ -1,5 +1,5 @@
-/* $XConsortium: xkbprint.c /main/2 1996/01/01 10:58:20 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: xkbprint.c /main/3 1996/01/14 16:49:26 kaleb $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.0 1996/01/10 05:43:46 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -554,19 +554,19 @@ GetDisplay(program,dpyName)
     char *	program;
     char *	dpyName;
 {
-int	xkb_major,xkb_minor,error;
+int	mjr,mnr,error;
 Display	*dpy;
 
-    xkb_major= XkbMajorVersion;
-    xkb_minor= XkbMinorVersion;
-    dpy= XkbOpenDisplay(dpyName,NULL,NULL,&xkb_major,&xkb_minor,&error);
+    mjr= XkbMajorVersion;
+    mnr= XkbMinorVersion;
+    dpy= XkbOpenDisplay(dpyName,NULL,NULL,&mjr,&mnr,&error);
     if (dpy==NULL) {
 	switch (error) {
 	    case XkbOD_BadLibraryVersion:
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("X library supports incompatible version %d.%02d\n",
-				xkb_major,xkb_minor);
+				mjr,mnr);
 		break;
 	    case XkbOD_ConnectionRefused:
 		uError("Cannot open display \"%s\"\n",dpyName);
@@ -578,7 +578,7 @@ Display	*dpy;
 		uInformation("%s was compiled with XKB version %d.%02d\n",
 				program,XkbMajorVersion,XkbMinorVersion);
 		uError("Server %s uses incompatible version %d.%02d\n",
-				dpyName,xkb_major,xkb_minor);
+				dpyName,mjr,mnr);
 		break;
 	    default:
 		uInternalError("Unknown error %d from XkbOpenDisplay\n",error);
@@ -646,14 +646,14 @@ XkbFileInfo 	result;
 	}
     }
     if ((inDpy==NULL) && (outDpy==NULL)) {
-	int	xkb_major,xkb_minor,error;
-	xkb_major= XkbMajorVersion;
-	xkb_minor= XkbMinorVersion;
-	if (!XkbLibraryVersion(&xkb_major,&xkb_minor)) {
+	int	mjr,mnr,error;
+	mjr= XkbMajorVersion;
+	mnr= XkbMinorVersion;
+	if (!XkbLibraryVersion(&mjr,&mnr)) {
 	    uInformation("%s was compiled with XKB version %d.%02d\n",
 				argv[0],XkbMajorVersion,XkbMinorVersion);
 	    uError("X library supports incompatible version %d.%02d\n",
-				xkb_major,xkb_minor);
+				mjr,mnr);
 	    uAction("Exiting\n");
 	    exit(1);
 	}

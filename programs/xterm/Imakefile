@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.62 94/04/10 16:02:56 rws Exp $
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.2 1995/01/21 07:20:51 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/63 1996/01/14 16:52:24 kaleb $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.3 1995/09/17 06:33:08 dawes Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -37,9 +37,8 @@ XCOMM
    MAIN_DEFINES = $(UTMPDEF) $(TTYGROUPDEF) $(PUCCPTYDDEF) \
 		  -DOSMAJORVERSION=$(OSMAJORVERSION) \
 		  -DOSMINORVERSION=$(OSMINORVERSION)
-   MISC_DEFINES = /* -DALLOWLOGFILEEXEC */
-        DEFINES = $(I18NDEF)
-
+   MISC_DEFINES = /* -DALLOWLOGFILEEXEC */ XkbClientDefines
+  EXTRA_DEFINES = XkbClientDefines
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c $(EXTRASRC)
@@ -51,7 +50,7 @@ XCOMM
            SRCS = $(SRCS1) $(SRCS2)
            OBJS = $(OBJS1) $(OBJS2)
        PROGRAMS = resize xterm
-       DEPLIBS1 = XawClientDepLibs
+       DEPLIBS1 = XkbClientDepLibs XawClientDepLibs
        DEPLIBS2 = 
        PROGRAMS = xterm resize
 
@@ -76,9 +75,9 @@ SpecialCObjectRule(misc,$(_NOOP_),$(MISC_DEFINES))
 SpecialCObjectRule(charproc,$(_NOOP_),$(MISC_DEFINES))
 
 #if InstallXtermSetUID
-SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+SetUIDProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XkbClientLibs XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #else
-NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XkbClientLibs XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
 #endif
 
 #if InstallXtermSetUID && defined(SunArchitecture) && HasSharedLibraries && OSMajorVersion < 5
