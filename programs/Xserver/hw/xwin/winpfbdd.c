@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.5 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -362,13 +362,6 @@ winAdjustVideoModePrimaryDD (ScreenPtr pScreen)
   HDC			hdc = NULL;
   DWORD			dwDepth;
 
-  /* Are we fullscreen? */
-  if (pScreenInfo->fFullScreen)
-    {
-      /* We don't need to adjust the video mode for fullscreen */
-      return TRUE;
-    }
-
   /* We're in serious trouble if we can't get a DC */
   hdc = GetDC (NULL);
   if (hdc == NULL)
@@ -380,12 +373,29 @@ winAdjustVideoModePrimaryDD (ScreenPtr pScreen)
   /* Query GDI for current display depth */
   dwDepth = GetDeviceCaps (hdc, BITSPIXEL);
 
-  /* Is GDI using a depth different than command line parameter? */
-  if (dwDepth != pScreenInfo->dwDepth)
+  /* DirectDraw can only change the depth in fullscreen mode */
+  if (pScreenInfo->dwDepth == WIN_DEFAULT_DEPTH)
     {
-      /* Warn user if GDI depth is different than depth specified */
-      ErrorF ("winAdjustVideoModePrimaryDD () - Command line depth: %d, "\
-	      "using depth: %d\n", pScreenInfo->dwDepth, dwDepth);
+      /* No -depth parameter passed, let the user know the depth being used */
+      ErrorF ("winAdjustVideoModePrimaryDD () - Using Windows display "
+	      "depth of %d bits per pixel\n", dwDepth);
+
+      /* Use GDI's depth */
+      pScreenInfo->dwDepth = dwDepth;
+    }
+  else if (pScreenInfo->fFullScreen
+	   && pScreenInfo->dwDepth != dwDepth)
+    {
+      /* FullScreen, and GDI depth differs from -depth parameter */
+      ErrorF ("winAdjustVideoModePrimaryDD () - FullScreen, using command "
+	      "line depth: %d\n", pScreenInfo->dwDepth);
+    }
+  else if (dwDepth != pScreenInfo->dwDepth)
+    {
+      /* Windowed, and GDI depth differs from -depth parameter */
+      ErrorF ("winAdjustVideoModePrimaryDD () - Windowed, command line "
+	      "depth: %d, using depth: %d\n",
+	      pScreenInfo->dwDepth, dwDepth);
 
       /* We'll use GDI's depth */
       pScreenInfo->dwDepth = dwDepth;

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.8 2001/05/31 09:11:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.9 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -216,6 +216,7 @@ winScreenInit (int index,
 {
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
+  unsigned int		i;
 
   /* Allocate privates for this screen */
   winAllocatePrivates (pScreen);
@@ -245,6 +246,20 @@ winScreenInit (int index,
     {
       ErrorF ("winScreenInit () - winAdjustVideoMode () failed\n");
       return FALSE;
+    }
+
+  /* Check for supported display depth */
+  if (!(WIN_SUPPORTED_DEPTHS & (1 << (pScreenInfo->dwDepth - 1))))
+    {
+      ErrorF ("winScreenInit () - Unsupported display depth: %d\n" \
+	      "Change your Windows display depth to 15, 16, 24, or 32 bits "
+	      "per pixel.\n",
+	      pScreenInfo->dwDepth);
+      ErrorF ("winScreenInit () - Supported depths: %08x\n",
+	      WIN_SUPPORTED_DEPTHS);
+#if WIN_CHECK_DEPTH
+      return FALSE;
+#endif
     }
 
   /* Call the engine dependent screen initialization procedure */
@@ -335,10 +350,8 @@ winFinishScreenInitFB (int index,
   miDCInitialize (pScreen, &g_winPointerCursorFuncs);
 
   /* Create a default colormap */
-#if CYGDEBUG
-  ErrorF ("winFinishScreenInitFB () - Calling fbCreateDefColormap ()\n");
-#endif
-  fReturn = fbCreateDefColormap (pScreen);
+  ErrorF ("winFinishScreenInitFB () - Calling winCreateDefColormap ()\n");
+  fReturn = winCreateDefColormap (pScreen);
   if (!fReturn)
     {
       ErrorF ("winFinishScreenInitFB () - Could not create colormap\n");
@@ -801,9 +814,6 @@ winFinishScreenInitNativeGDI (int index,
 
   ErrorF ("winScreenInit () - nDepths: %d, nRootDepth: %d, nVisuals: %d\n",
 	  nDepths, nRootDepth, nVisuals);
-  
-  ErrorF ("winScreenInit () - calling miSetZeroLineBias()\n");
-  miSetZeroLineBias (pScreen, pScreenInfo->dwLineBias);
 
   miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
 
@@ -819,7 +829,7 @@ winFinishScreenInitNativeGDI (int index,
     }
 
   ErrorF ("winScreenInit () - calling winCreateDefColormap()\n");
-  fReturn = winCreateDefColormapNativeGDI (pScreen);
+  fReturn = winCreateDefColormap (pScreen);
 
 #ifdef RENDER
   ErrorF ("winScreenInit () - calling miPictureInit()\n");

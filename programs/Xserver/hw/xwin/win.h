@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.7 2001/05/31 09:11:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.8 2001/06/04 13:04:41 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -82,11 +82,19 @@
 
 #define WIN_DEFAULT_WIDTH	640
 #define WIN_DEFAULT_HEIGHT	480
-#define WIN_DEFAULT_DEPTH	16
+#define WIN_DEFAULT_DEPTH	0
 #define WIN_DEFAULT_WHITEPIXEL	255
 #define WIN_DEFAULT_BLACKPIXEL	0
 #define WIN_DEFAULT_LINEBIAS	0
 #define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
+
+/*
+ * Build a supported display depths mask by shifting one to the left
+ * by the number of bits in the supported depth.
+ */
+#define WIN_SUPPORTED_DEPTHS	( (1 << (32-1)) | (1 << (24-1)) \
+				| (1 << (16-1)) | (1 << (15-1)) | (1 << (8-1)))
+#define WIN_CHECK_DEPTH		YES
 
 #define WIN_E3B_OFF		-1
 #define WIN_E3B_TIMER_ID	1
@@ -225,9 +233,6 @@ typedef struct
   char			*pfb;
   XWDColor		*pXWDCmap;
   XWDFileHeader		*pXWDHeader;
-  Pixel			pixelBlack;
-  Pixel			pixelWhite;
-  DWORD			dwLineBias;
   DWORD			dwEngine;
   DWORD			dwEnginePreferred;
   DWORD			dwEnginesSupported;
@@ -403,7 +408,7 @@ winExpandDirectColorsNativeGDI (ColormapPtr pmap, int ndef,
 				xColorItem *indefs, xColorItem *outdefs);
 
 Bool
-winCreateDefColormapNativeGDI (ScreenPtr pScreen);
+winCreateDefColormap (ScreenPtr pScreen);
 
 Bool
 winSetVisualTypesNativeGDI (int nDepth, int nVisuals, int nBitsPerRGB);
