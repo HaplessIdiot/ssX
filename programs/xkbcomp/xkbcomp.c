@@ -1,5 +1,5 @@
-/* $XConsortium: xkbcomp.c /main/11 1996/08/31 12:15:58 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.5 1996/08/26 10:52:29 dawes Exp $ */
+/* $XConsortium: xkbcomp.c /main/12 1996/12/27 21:17:23 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.6 1996/12/23 07:11:39 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -703,10 +703,6 @@ Status		status;
 #ifdef DEBUG
     if (debugFlags&0x2)
 	yydebug= 1;
-#ifdef sgi
-    if (debugFlags&0x4)
-	mallopt(M_DEBUG,1);
-#endif
 #endif
     if (preErrorMsg)
 	uSetPreErrorMessage(preErrorMsg);

@@ -1,4 +1,4 @@
-/* $XConsortium: xfwp.c /main/37 1996/12/12 16:56:38 swick $ */
+/* $XConsortium: xfwp.c /main/38 1996/12/27 16:18:32 kaleb $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -33,7 +33,7 @@ from the X Consortium.
   under contract to X Consortium, Inc.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.3 1996/12/26 01:52:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

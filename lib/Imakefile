@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/38 1996/11/03 19:32:18 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.13 1996/12/23 05:58:44 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.14 1996/12/24 02:22:21 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -63,7 +63,7 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     Xp $(ZLIBDIR)
 #else
 /* For ServersOnly */
-LINTSUBDIRS = Xau Xdmcp X11 $(XKBLIBDIR) $(XKBUILIBDIR) \
+LINTSUBDIRS = Xau Xdmcp X11 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) \
 	      $(XF86EXTLIBS) $(ZLIBDIR)
 #endif
 

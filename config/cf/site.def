@@ -1,5 +1,5 @@
-XCOMM site:  $XConsortium: site.def /main/revisionist/3 1996/10/15 09:31:04 swick $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.11 1996/12/24 11:49:38 dawes Exp $
+XCOMM site:  $XConsortium: site.def /main/168 1996/12/27 16:33:21 kaleb $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.12 1996/12/25 04:01:12 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -48,9 +48,9 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.11 1996/12/24 11:49:38 dawes Ex
  * the two following macros need to be defined directly (where "X11" is
  * really whatever the TopLevelProject macro is defined to be).
  */
-# if defined(SunArchitecture) || defined(AIXArchitecture) \
-     || defined(USLArchitecture) || defined(UXPArchitecture) \
-     || defined(SCOArchitecture) || defined(SVR4Architecture)
+# if defined(AIXArchitecture) || defined(SVR4Architecture) || \
+     defined(SCOArchitecture) || defined(Win32Architecture) || \
+     defined(SunArchitecture)
 #  ifndef ProjectRulesFile
 #   define ProjectRulesFile	<X11.rules>
 #  endif

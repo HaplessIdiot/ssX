@@ -1,4 +1,4 @@
-/* $XConsortium: xkbtext.c /main/6 1996/08/31 12:45:41 kaleb $ */
+/* $XConsortium: xkbtext.c /main/7 1996/12/28 05:39:31 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/xkbtext.c,v 3.5 1996/12/28 11:12:49 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

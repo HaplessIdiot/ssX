@@ -1,4 +1,4 @@
-/* $XConsortium: XpPrinter.c /main/2 1996/11/16 15:21:58 rws $ */
+/* $XConsortium: XpPrinter.c /main/3 1996/12/27 16:21:53 kaleb $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.2 1996/12/26 01:37:49 dawes Exp $ */
 
 #define NEED_REPLIES
 
@@ -162,7 +162,7 @@ XpGetPrinterList (
 		}
 
 		_XReadPad (dpy, (char *) dataVR, (long) dataLenVR);
-		dataVR[dataLenVR] = '\0';	/* add NULL termination */
+		dataVR[dataLenVR] = 0;
 		ptr_list[i].name = (char *) dataVR;
 	    }
 	    else {
@@ -184,7 +184,7 @@ XpGetPrinterList (
 		}
 
 		_XReadPad (dpy, (char *) dataVR, (long) dataLenVR);
-		dataVR[dataLenVR] = '\0';	/* add NULL termination */
+		dataVR[dataLenVR] = 0;
 		ptr_list[i].desc = (char *) dataVR;
 	    }
 	    else {

@@ -1,7 +1,0 @@
-// $XConsortium: us_sun4 /main/2 1995/12/07 21:38:45 kaleb $
-default xkb_keymap "sun4 US layout" {
-    xkb_keycodes	{ include "sun(type4)"	};
-    xkb_types		{ include "default"	};
-    xkb_compatibility	{ include "default"	};
-    xkb_symbols 	{ include "us(sun4)"	};
-};

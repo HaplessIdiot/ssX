@@ -1,8 +1,0 @@
-
-        DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs
-           SRCS = vgahelp.c
-           OBJS = vgahelp.o
-
-ComplexProgramTarget(vgahelp)
-InstallAppDefaults(Vgahelp)

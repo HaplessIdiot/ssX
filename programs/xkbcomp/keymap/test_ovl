@@ -1,8 +1,0 @@
-// $XConsortium: test_ovl /main/2 1995/12/07 21:38:24 kaleb $
-hidden default xkb_keymap "3 level 3 group test" {
-    // xkb_keycodes	{ include "sgi(pc102)"	};
-    xkb_keycodes	{ include "xfree86"	};
-    xkb_types		{ include "complete"	};
-    xkb_compatibility	{ include "complete"	};
-    xkb_symbols 	{ include "test_ovl"	};
-};

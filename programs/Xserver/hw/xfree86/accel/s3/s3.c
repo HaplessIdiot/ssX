@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.150 1996/12/09 11:51:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.151 1996/12/23 06:41:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -32,7 +32,7 @@
  * Rather severely reorganized by MArk Vojkovich (mvojkovi@ucsd.edu)
  * 
  */
-/* $XConsortium: s3.c /main/46 1996/10/25 10:22:18 kaleb $ */
+/* $XConsortium: s3.c /main/48 1996/12/28 15:54:30 kaleb $ */
 
 #include "misc.h"
 #include "cfb.h"
