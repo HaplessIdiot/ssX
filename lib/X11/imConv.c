@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.16 1999/05/30 02:27:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.17 1999/06/06 14:05:53 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -801,7 +801,8 @@ static int lookup_string (event, buffer, nbytes, keysym, status)
     XkbSetXlibControls (event->display, 
 			XkbLC_ForceLatin1Lookup, XkbLC_ForceLatin1Lookup);
     ret = XLookupString(event, (char *)buffer, nbytes, keysym, status);
-    XkbSetXlibControls (event->display, ctrls, ctrls);
+    XkbSetXlibControls (event->display,
+			XkbLC_ForceLatin1Lookup, ctrls);
     return ret;
 }
 #endif

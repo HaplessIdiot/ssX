@@ -1,4 +1,6 @@
 XFree86 3.9.16Z (xx December 1999)
+3402. Use ForceLatin1Lookup mode after XmbLookupString/XwcLookupString
+      (#3510, Ivan Pascal).
 3401. Export symbols for SGI driver (#3505, Terence Ripperda).
 3400. Fix problem with compilation of static server on SVR4.0
       (#3497,3514 Takaaki Nomura).
@@ -9194,4 +9196,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.897 1999/12/27 01:33:53 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.898 1999/12/27 02:22:32 robin Exp $
