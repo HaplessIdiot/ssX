@@ -5,6 +5,8 @@
 
 // converted from the nl-latin.map of the Linux kbd package by
 // Pablo Saratxaga <srtxg@f2219.n293.z2.fidonet.org>
+//
+// $XFree86$
 
 default partial alphanumeric_keys
 xkb_symbols "basic" {

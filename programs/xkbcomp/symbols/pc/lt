@@ -1,6 +1,8 @@
 
 // based on
 // Lithuanian keyboard map by Rièardas Èepas <rch@richard.eu.org>
+//
+// $XFree86$
 
 partial default alphanumeric_keys modifier_keys
 xkb_symbols "basic" {

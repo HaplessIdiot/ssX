@@ -3,6 +3,8 @@
 // Slovenian keyboards
 // by Marko Samastur (markos@elite.org) and
 // Primoz Peterlin (primoz.peterlin@biofiz.mf.uni-lj.si)
+//
+// $XFree86$
 
 default partial alphanumeric_keys
 xkb_symbols "basic" {

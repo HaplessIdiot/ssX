@@ -2,6 +2,8 @@
 //  based on
 //  Georgian keyboard map, in the so called "latin" layout.
 //  1999, Pablo Saratxaga <srtxg@chanae.alphanet.ch>
+//
+// $XFree86$
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
