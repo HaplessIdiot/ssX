@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.250 2005/01/28 19:56:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.251 2005/02/17 03:46:49 dawes Exp $ */
 
 /*
  *
@@ -678,6 +678,7 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(xf86CheckModeForMonitor)
     SYMFUNC(xf86InitialCheckModeForDriver)
     SYMFUNC(xf86CheckModeForDriver)
+    SYMFUNC(xf86SetMonitorParameters)
     SYMFUNC(xf86ValidateModes)
     SYMFUNC(xf86DeleteMode)
     SYMFUNC(xf86PruneDriverModes)

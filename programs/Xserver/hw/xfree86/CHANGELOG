@@ -1,4 +1,7 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 341. Separate monitor parameter initialisation out from mode validation,
+      and ensure that monitor parameters are initialised before the vbe module
+      sets up its mode pool (David Dawes).
  340. Add Kyrgyz locale (Bugzilla #1556, Timur Jamakeev).
  339. Add a standard Kyrgyz keyboard layout (Bugzilla #1555, Timur Jamakeev).
 
@@ -19408,7 +19411,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3448 2005/02/21 01:16:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3449 2005/02/25 18:25:35 dawes Exp $
 
 
 
