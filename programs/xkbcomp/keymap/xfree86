@@ -1,0 +1,79 @@
+// $XConsortium $
+default xkb_keymap "us" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "us(pc101)"		};
+    xkb_geometry	{ include "northgate"		};
+};
+xkb_keymap "us_microsoft" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "us(microsoft)"	};
+    xkb_geometry	{ include "microsoft"		};
+};
+xkb_keymap "us_flexpro" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "us(pc101)"		};
+    xkb_geometry	{ include "keytronic(FlexPro)"	};
+};
+xkb_keymap "en_US" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols 	{ include "en_US(pc101)"	};
+    xkb_geometry 	{ include "northgate"		};
+};
+xkb_keymap "de"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ 
+	include "en_US(pc101)"
+	override "de"
+    };
+    xkb_geometry 	{ include "northgate"		};
+};
+xkb_keymap "fr"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ 
+	include "en_US(pc101)"
+	override "fr"
+    };
+    xkb_geometry 	{ include "northgate"		};
+};
+xkb_keymap "th"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{
+	include "en_US(pc101)"
+	override "th"
+    };
+    xkb_geometry 	{ include "northgate"		};
+};
+xkb_keymap "de_CH"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{
+	include "en_US(pc101)"
+	override "de_CH"
+    };
+    xkb_geometry 	{ include "northgate"		};
+};
+xkb_keymap "fr_CH"	{
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ 
+	include "en_US(pc101)"	
+	override "fr_CH"	
+    };
+    xkb_geometry 	{ include "northgate"		};
+};
