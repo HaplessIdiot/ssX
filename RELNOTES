@@ -17,7 +17,7 @@ significant redesign of the XFree86 X server.  Not all of the hardware
 drivers from 3.3.x have been ported to 4.x yet, but conversely, 4.x has some
 hardware support not present in 3.3.x.  Our Driver Status document summarizes
 how the hardware driver support compares between 3.3.6 and 4.0.2.  Please
-check there first before downloading  4.0.2.
+check there first before downloading 4.0.2.
 
 The 4.0.1 release introduced a new graphical configuration tool, "xf86cfg",
 and a text mode interface was added to it for the 4.0.2 release.  It is work
@@ -824,34 +824,35 @@ via DDC, you may want to add that information to XF86Config.
 
 To allow a graceful transition for applications moving from core text render-
 ing to the Render extension, Xft can use either core fonts or FreeType and
-the Render extension for text.  By default, Xft is configured to support only
-core fonts, see the section on building FreeType support for the changes
-needed to add FreeType/Render fonts.
+the Render extension for text.  By default, Xft is configured to support both
+core fonts and FreeType fonts using the supplied version of FreeType 2.  See
+the section on FreeType support in Xft for instructions on configuring
+XFree86 to use an existing FreeType installation.
 
 The Xft library uses a configuration file, XftConfig, which contains informa-
 tion about which directories contain font files and also provides a sophisti-
 cated font aliasing mechanism.  Documentation for that file is included in
 the Xft man page.
 
-4.11.2  Building FreeType support for Xft
+4.11.2  FreeType support in Xft
 
-XFree86 4.0.2 includes sources for FreeType version 2.0.1, but they are not
-built and installed automatically.  As a result, Xft is configured to provide
-only core fonts by default.
+XFree86 4.0.2 includes sources for FreeType version 2.0.1, and, by default,
+they are built and installed automatically.
 
-To build FreeType support for Xft, first FreeType must be built and
-installed, either from the sources included in XFree86 in extras/freetype2 or
-from another FreeType (version 2.0.1 or later) release.  Early FreeType ver-
-sion 2 releases used a different header file installation and aren't compati-
-ble with XFree86. Instructions for building and installing FreeType can be
-found in the INSTALL file included with the FreeType release.
+If you prefer, you can configure XFree86 4.0.2 to use an existing Freetype2
+installation by telling XFree86 not to build the internal copy and indicating
+where that external version has been installed. Edit (or create) con-
+fig/cf/host.def to include:
 
-Second, XFree86 needs to know the installed location for FreeType, usually
-/usr/local.  Edit (or create) config/cf/host.def to include:
+   o #define BuildFreetype2Library NO
 
-     #define Freetype2Dir     /usr/local
+   o #define Freetype2Dir /usr/local
 
-Finally, build XFree86 with "make World" from the top.
+Note that XFree86 assumes you'll be using a release FreeType no older than
+version 2.0.1.  Early FreeType version 2 releases used a different header
+file installation and aren't compatible with XFree86. Instructions for build-
+ing and installing FreeType can be found in the INSTALL file included with
+the FreeType release.
 
 4.11.3  Application Support For Anti-Aliased Text
 
@@ -871,8 +872,8 @@ instead:
 Xditview will use Xft instead of the core API by default.  X11perf includes
 tests to measure the performance of text rendered in three ways, anti-
 aliased, anti-aliased with sub-pixel sampling and regular chunky text, but
-through the Render extension, a path which has not been optimized within the
-X server yet.
+through the Render extension, a path which is currently somewhat slower than
+core text.
 
 4.12  Other extensions
 
@@ -1081,7 +1082,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.58 2000/12/17 23:01:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.60 2001/03/02 17:40:48 dawes Exp $
 
 
 $XFree86$
