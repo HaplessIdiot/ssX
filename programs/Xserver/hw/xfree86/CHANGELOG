@@ -1,4 +1,16 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 880. Fix the Xcursor include path in the man page (#5617, Kevin Brosius).
+ 879. Update ViRGE documentation (#5617, Kevin Brosius).
+ 878. Fix mkfontscale so that it doesn't include characters forbidden in XLFD
+      in the names it generates (#5616, Mike Fabian and Juliusz Chroboczek).
+ 877. Fix a rounding problem in the "freetype" module, which fixes the problem
+      worked around in entry 864 below (#5615, Juliusz Chroboczek).
+ 876. Fix incorrect alias for lv_LV.iso885913, and add some missing lv_LV
+      aliases (#5614, Aivils Stoss).
+ 875. Fix a bug where xauth may write an incomplete authority file and delete
+      the old one if there is insufficient disk space (#5612, Harald Hoyer).
+ 874. DPMSClose() wasn't correctly setting its devPrivate to NULL (based
+      on #A.1594, Denis Zaitsev).
  873. Fix scanpci's printing of routing information for PCI-to-PCI bridges
       (Marc La France).
  872. Bring Cygwin/XFree86 up-to-date (#5613)
@@ -16328,4 +16340,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2544 2003/02/12 15:01:35 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2545 2003/02/12 15:55:29 tsi Exp $

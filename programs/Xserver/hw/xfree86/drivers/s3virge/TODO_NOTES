@@ -275,6 +275,8 @@ mode is not recovered.
 
 TODO items
 ----------
+1/30/03 General option "videoram" is ignored by the virge driver.
+  (Meelis Roos)
 3/24/02 Xv reported to not work as secondary in Xinerama multihead.
   (xav on irc)
 3/24/02 DPMS doesn't fully disable the screen.  Blue line across the
@@ -321,4 +323,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.21 2002/01/14 18:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.22 2003/02/04 02:20:49 dawes Exp $
