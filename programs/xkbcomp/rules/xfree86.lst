@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.60 2003/01/20 03:48:38 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.61 2003/01/26 02:38:14 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -48,6 +48,7 @@
   hpi6		Hewlett-Packard Internet Keyboard
   hp2501	Hewlett-Packard SK-2501 Multimedia Keyboard
   hp2505	Hewlett-Packard SK-2505 Internet Keyboard
+  hp5181	Hewlett-Packard 5181 Internet Keyboard
   hpxe3gc	Hewlett-Packard Omnibook XE3 GC
   hpxe3gf	Hewlett-Packard Omnibook XE3 GF
   hpxt1000	Hewlett-Packard Omnibook XT1000
