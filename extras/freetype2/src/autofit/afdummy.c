@@ -1,3 +1,4 @@
+/* $XFree86$ */
 #include "afdummy.h"
 
 
@@ -17,6 +18,7 @@
                         FT_Outline*    outline )
   {
     af_glyph_hints_save( hints, outline );
+    return 0;
   }
 
 
