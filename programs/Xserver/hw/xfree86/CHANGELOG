@@ -1,4 +1,10 @@
 XFree86 4.4.99.8 (xx June 2004)
+ 137. Fixes and updates for XKB keymaps:
+    - Update Serbian keymap with new variant (Bugzilla #1176, Zvezdan Petkovic).
+    - Add Genius KB-12e model to inet keymap (Ricardo Cruz).
+    - Update ABNT2 geometry file and change Brasilian keymap to avoid ABNT2
+      spcific keycodes section (Bugzilla #1387, busmanus).
+    - Add 'Classical Latin' keymap (Bugzilla #1393, busmanus).
  136. Make XDarwin not default to StaticColor on ix86 (Shantonu Sen).
 
 XFree86 4.4.99.7 (12 June 2004)
@@ -18995,7 +19001,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3279 2004/06/12 11:02:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3280 2004/06/17 23:27:40 torrey Exp $
 
 
 
