@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 286. Document the maximum number of buttons currently supported by the
+      mouse driver (Bugzilla #1537, reported by Julian Cable).
 
 XFree86 4.4.99.22 (27 January 2005)
  285. Print the XFree86 command line in the log file (David Dawes).
@@ -19304,7 +19306,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3398 2005/01/26 18:22:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3399 2005/01/27 12:02:38 dawes Exp $
 
 
 
