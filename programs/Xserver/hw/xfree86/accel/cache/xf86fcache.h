@@ -1,4 +1,5 @@
 /* $XConsortium: xf86fcache.h,v 1.1 94/03/28 21:02:28 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Data structures and function prototypes for the font cache.
  */
