@@ -16,7 +16,7 @@ mga \- Matrox video driver
 .B mga 
 is an XFree86 driver for Matrox video cards.  The driver is fully
 accelerated, and provides support for the following framebuffer depths:
-8, 15, 16, 24, and an 8+24 overlay mode (all chips except G100).  All
+8, 15, 16, 24, and an 8+24 overlay mode.  All
 visual types are supported for depth 8, and both TrueColor and DirectColor
 visuals are supported for the other depths except 8+24 mode which supports
 PseudoColor, GrayScale and TrueColor.  Multi-head configurations
@@ -81,7 +81,9 @@ Enable or disable the HW cursor.  Default: on.
 .BI "Option ""MGASDRAM"" """ boolean """
 Specify whether G100 and G200 cards have SDRAM.  The driver attempts to
 auto-detect this based on the card's PCI subsystem ID.  This option may
-be used to override that auto-detection.  Default: auto-detected.
+be used to override that auto-detection.  The mga driver is not able to 
+auto-detect the prescence SDRAM on secondary heads in multihead configurations.
+Default: auto-detected.
 .TP
 .BI "Option ""NoAccel"" """ boolean """
 Disable or enable acceleration.  Default: acceleration is enabled.
@@ -91,7 +93,10 @@ Set clocks to values used by some commercial X-Servers (G100, G200 and G400
 only).  Default: off.
 .TP
 .BI "Option ""Overlay""
-Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
+Enable 8+24 overlay mode.  Only appropriate for depth 24. (
+.B Note: 
+the G100 is unaccelerated in the 8+24 overlay mode due to a missing 
+hardware feature) Default: off.
 .TP
 .BI "Option ""PciRetry"" """ boolean """
 Enable or disable PCI retries.  Default: off.
@@ -114,6 +119,10 @@ Default: off.
 Enable or disable use of on OS-specific fb interface (and is not supported
 on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
+.TP
+.BI "Option ""VideoKey"" """ integer """
+This sets the default pixel value for the YUV video overlay key.
+Default: undefined.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
 .SH AUTHORS
