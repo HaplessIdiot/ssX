@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.52 2000/02/11 17:25:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.53 2000/02/12 20:45:22 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -13,6 +13,9 @@
 
 #ifndef MGA_H
 #define MGA_H
+
+/* Temporarily turn off building in DRI support */
+#undef XF86DRI
 
 #include "compiler.h"
 #include "xaa.h"

@@ -1,6 +1,6 @@
 /* vm.c -- Memory mapping for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 16:54:35 1999 by faith@precisioninsight.com
+ * Revised: Mon Feb 14 00:16:45 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.7 1999/08/21 02:48:34 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.2 1999/12/14 01:33:58 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.3 2000/02/11 17:26:09 dawes Exp $
  *
  */
 
@@ -251,10 +251,9 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	switch (map->type) {
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
-	case _DRM_AGP:
 		if (VM_OFFSET(vma) >= __pa(high_memory)) {
 #if defined(__i386__)
-			if (boot_cpu_data.x86 > 3 && map->type != _DRM_AGP) {
+			if (boot_cpu_data.x86 > 3) {
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
 				pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
 			}

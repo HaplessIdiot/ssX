@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.1 2000/02/11 17:25:51 dawes Exp $ */
 
 /*
  * Authors:
@@ -36,6 +36,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _I810_H_
 #define _I810_H_
+
+/* Temporarily turn off building in DRI support */
+#undef XF86DRI
 
 
 #include "xf86PciInfo.h"

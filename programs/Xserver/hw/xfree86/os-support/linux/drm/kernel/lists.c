@@ -1,6 +1,6 @@
 /* lists.c -- Buffer list handling routines -*- linux-c -*-
  * Created: Mon Apr 19 20:54:22 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 16:04:44 1999 by faith@precisioninsight.com
+ * Revised: Sun Feb 13 23:37:52 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.3 1999/08/20 15:07:02 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.2 1999/12/14 01:33:57 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lists.c,v 1.3 2000/02/11 17:26:05 dawes Exp $
  *
  */
 
@@ -154,7 +154,7 @@ int drm_freelist_put(drm_device_t *dev, drm_freelist_t *bl, drm_buf_t *buf)
 	buf->list	= DRM_LIST_FREE;
 	do {
 		old       = bl->next;
-		buf->next  = old;
+		bl->next  = old;
 		prev      = cmpxchg(&bl->next, old, buf);
 		if (++count > DRM_LOOPING_LIMIT) {
 			DRM_ERROR("Looping\n");

@@ -1,6 +1,6 @@
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
- * Revised: Mon Dec  6 16:06:49 1999 by faith@precisioninsight.com
+ * Revised: Sun Feb 13 23:34:30 2000 by kevin@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
@@ -25,14 +25,12 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.58 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.3 2000/01/20 07:25:34 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.4 2000/02/11 17:26:03 dawes Exp $
  * 
  */
 
 #ifndef _DRM_P_H_
 #define _DRM_P_H_
-
-#define DRM_AGP 1
 
 #ifdef __KERNEL__
 #include <linux/module.h>
@@ -55,10 +53,6 @@
 #include <asm/spinlock.h>
 #include <linux/poll.h>
 #endif
-#ifdef DRM_AGP
-#include <linux/types.h>
-#include <linux/agp_backend.h>
-#endif
 #include "drm.h"
 
 #define DRM_DEBUG_CODE 2	  /* Include debugging code (if > 1, then
@@ -76,27 +70,21 @@
 #define DRM_FLAG_DEBUG	  0x01
 #define DRM_FLAG_NOCTX	  0x02
 
-#define DRM_MEM_DMA	   0
-#define DRM_MEM_SAREA	   1
-#define DRM_MEM_DRIVER	   2
-#define DRM_MEM_MAGIC	   3
-#define DRM_MEM_IOCTLS	   4
-#define DRM_MEM_MAPS	   5
-#define DRM_MEM_VMAS	   6
-#define DRM_MEM_BUFS	   7
-#define DRM_MEM_SEGS	   8
-#define DRM_MEM_PAGES	   9
-#define DRM_MEM_FILES	  10
-#define DRM_MEM_QUEUES	  11
-#define DRM_MEM_CMDS	  12
-#define DRM_MEM_MAPPINGS  13
-#define DRM_MEM_BUFLISTS  14
-#define DRM_MEM_AGPLISTS  15
-#define DRM_MEM_TOTALAGP  16
-#define DRM_MEM_BOUNDAGP  17
-#define DRM_MEM_CTXBITMAP 18
-
-#define DRM_MAX_CTXBITMAP (PAGE_SIZE * 4 * 8)
+#define DRM_MEM_DMA	  0
+#define DRM_MEM_SAREA	  1
+#define DRM_MEM_DRIVER	  2
+#define DRM_MEM_MAGIC	  3
+#define DRM_MEM_IOCTLS	  4
+#define DRM_MEM_MAPS	  5
+#define DRM_MEM_VMAS	  6
+#define DRM_MEM_BUFS	  7
+#define DRM_MEM_SEGS	  8
+#define DRM_MEM_PAGES	  9
+#define DRM_MEM_FILES	 10
+#define DRM_MEM_QUEUES	 11
+#define DRM_MEM_CMDS	 12
+#define DRM_MEM_MAPPINGS 13
+#define DRM_MEM_BUFLISTS 14
 
 				/* Backward compatibility section */
 				/* _PAGE_WT changed to _PAGE_PWT in 2.2.6 */
@@ -248,7 +236,6 @@ typedef struct drm_buf {
 	int		  used;	       /* Amount of buffer in use (for DMA)  */
 	unsigned long	  offset;      /* Byte offset (used internally)	     */
 	void		  *address;    /* Address of buffer		     */
-	unsigned long	  bus_address; /* Bus address of buffer		     */
 	struct drm_buf	  *next;       /* Kernel-only: used for free list    */
 	__volatile__ int  waiting;     /* On kernel DMA queue		     */
 	__volatile__ int  pending;     /* On hardware DMA queue		     */
@@ -264,11 +251,6 @@ typedef struct drm_buf {
 		DRM_LIST_PRIO	 = 4,
 		DRM_LIST_RECLAIM = 5
 	}		  list;	       /* Which list we're on		     */
-
-
-	void *dev_private;
-	int dev_priv_size;
-
 #if DRM_DMA_HISTOGRAM
 	cycles_t	  time_queued;	   /* Queued to kernel DMA queue     */
 	cycles_t	  time_dispatched; /* Dispatched to hardware	     */
@@ -395,9 +377,6 @@ typedef struct drm_device_dma {
 	int		  page_count;
 	unsigned long	  *pagelist;
 	unsigned long	  byte_count;
-	enum {
-	   _DRM_DMA_USE_AGP = 0x01
-	} flags;
 
 				/* DMA support */
 	drm_buf_t	  *this_buffer;	/* Buffer being sent		   */
@@ -405,40 +384,6 @@ typedef struct drm_device_dma {
 	drm_queue_t	  *next_queue;	/* Queue from which buffer selected*/
 	wait_queue_head_t waiting;	/* Processes waiting on free bufs  */
 } drm_device_dma_t;
-
-#ifdef DRM_AGP
-typedef struct drm_agp_mem {
-	unsigned long      handle;
-	agp_memory         *memory;
-	unsigned long      bound; /* address */
-	int                pages;
-	struct drm_agp_mem *prev;
-	struct drm_agp_mem *next;
-} drm_agp_mem_t;
-
-typedef struct drm_agp_head {
-	agp_kern_info      agp_info;
-	const char         *chipset;
-	drm_agp_mem_t      *memory;
-	unsigned long      mode;
-	int                enabled;
-	int                acquired;
-	unsigned long      base;
-} drm_agp_head_t;
-
-typedef struct {
-	void       (*free_memory)(agp_memory *);
-	agp_memory *(*allocate_memory)(size_t, u32);
-	int        (*bind_memory)(agp_memory *, off_t);
-	int        (*unbind_memory)(agp_memory *);
-	void       (*enable)(u32);
-	int        (*acquire)(void);
-	void       (*release)(void);
-	void       (*copy_info)(agp_kern_info *);
-} drm_agp_func_t;
-
-extern drm_agp_func_t drm_agp;
-#endif
 
 typedef struct drm_device {
 	const char	  *name;	/* Simple driver name		   */
@@ -518,12 +463,6 @@ typedef struct drm_device {
 	struct fasync_struct *buf_async;/* Processes waiting for SIGIO	   */
 	wait_queue_head_t buf_readers;	/* Processes waiting to read	   */
 	wait_queue_head_t buf_writers;	/* Processes waiting to ctx switch */
-	
-#ifdef DRM_AGP
-	drm_agp_head_t    *agp;
-#endif
-	unsigned long     *ctx_bitmap;
-	void		  *dev_private;
 } drm_device_t;
 
 
@@ -594,14 +533,6 @@ extern void	     drm_free_pages(unsigned long address, int order,
 				    int area);
 extern void	     *drm_ioremap(unsigned long offset, unsigned long size);
 extern void	     drm_ioremapfree(void *pt, unsigned long size);
-
-#ifdef DRM_AGP
-extern agp_memory    *drm_alloc_agp(int pages, u32 type);
-extern int           drm_free_agp(agp_memory *handle, int pages);
-extern int           drm_bind_agp(agp_memory *handle, unsigned int start);
-extern int           drm_unbind_agp(agp_memory *handle);
-#endif
-
 
 				/* Buffer management support (bufs.c) */
 extern int	     drm_order(unsigned long size);
@@ -708,42 +639,9 @@ extern int	     drm_lock_free(drm_device_t *dev,
 				   unsigned int context);
 extern int	     drm_finish(struct inode *inode, struct file *filp,
 				unsigned int cmd, unsigned long arg);
-
-/* Let a driver manage a single queue efficiently:
- */
-extern int drm_flush_queue(drm_device_t *dev, int context);
-extern int drm_flush_unblock_queue(drm_device_t *dev, int context);
-
 extern int	     drm_flush_unblock(drm_device_t *dev, int context,
 				       drm_lock_flags_t flags);
 extern int	     drm_flush_block_and_flush(drm_device_t *dev, int context,
 					       drm_lock_flags_t flags);
-
-				/* Context Bitmap support (ctxbitmap.c) */
-extern int	     drm_ctxbitmap_init(drm_device_t *dev);
-extern void	     drm_ctxbitmap_cleanup(drm_device_t *dev);
-extern int	     drm_ctxbitmap_next(drm_device_t *dev);
-extern void	     drm_ctxbitmap_free(drm_device_t *dev, int ctx_handle);
-
-#ifdef DRM_AGP
-				/* AGP/GART support (agpsupport.c) */
-extern drm_agp_head_t *drm_agp_init(void);
-extern int            drm_agp_acquire(struct inode *inode, struct file *filp,
-				      unsigned int cmd, unsigned long arg);
-extern int            drm_agp_release(struct inode *inode, struct file *filp,
-				      unsigned int cmd, unsigned long arg);
-extern int            drm_agp_enable(struct inode *inode, struct file *filp,
-				     unsigned int cmd, unsigned long arg);
-extern int            drm_agp_info(struct inode *inode, struct file *filp,
-				   unsigned int cmd, unsigned long arg);
-extern int            drm_agp_alloc(struct inode *inode, struct file *filp,
-				    unsigned int cmd, unsigned long arg);
-extern int            drm_agp_free(struct inode *inode, struct file *filp,
-				   unsigned int cmd, unsigned long arg);
-extern int            drm_agp_unbind(struct inode *inode, struct file *filp,
-				     unsigned int cmd, unsigned long arg);
-extern int            drm_agp_bind(struct inode *inode, struct file *filp,
-				   unsigned int cmd, unsigned long arg);
-#endif
 #endif
 #endif

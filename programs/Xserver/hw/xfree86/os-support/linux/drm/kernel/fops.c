@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.3 1999/08/20 15:36:45 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.3 2000/01/20 07:25:35 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.4 2000/02/11 17:26:04 dawes Exp $
  *
  */
 
@@ -228,15 +228,6 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
 	drm_file_t   *priv = filp->private_data;
 	drm_device_t *dev  = priv->dev;
 
-	poll_wait(filp, &dev->buf_readers, wait);
-	if (dev->buf_wp != dev->buf_rp) return POLLIN | POLLRDNORM;
-	return 0;
-}
-
-unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
-{
-	drm_file_t   *priv = filp->private_data;
-	drm_device_t *dev  = priv->dev;
 	poll_wait(filp, &dev->buf_readers, wait);
 	if (dev->buf_wp != dev->buf_rp) return POLLIN | POLLRDNORM;
 	return 0;

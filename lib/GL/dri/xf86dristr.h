@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.2 1999/06/27 14:07:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.3 2000/02/11 17:25:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -239,13 +239,9 @@ typedef struct {
     INT16	drawableWidth B16;
     INT16	drawableHeight B16;
     CARD32	numClipRects B32;
-    INT16       auxX B16;
-    INT16       auxY B16;
-    CARD32      numAuxClipRects B32;
+    CARD32	pad6 B32;
 } xXF86DRIGetDrawableInfoReply;
-
-#define sz_xXF86DRIGetDrawableInfoReply	36
-
+#define sz_xXF86DRIGetDrawableInfoReply	32
 
 typedef struct _XF86DRIGetDeviceInfo {
     CARD8	reqType;		/* always DRIReqCode */
