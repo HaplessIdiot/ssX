@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.32 1998/12/20 13:16:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.33 1999/03/28 15:33:10 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -458,15 +458,9 @@ SOFTWARE.
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
  * you) used and the number of times the ddx routine has to be called.
- * 
- * for a 1024 x 864 bit monochrome screen  with a 32 bit word we get 
- * 8192/4 words per buffer 
- * (1024/32) = 32 words per scanline
- * 2048 words per buffer / 32 words per scanline = 64 scanlines per buffer
- * 864 scanlines / 64 scanlines = 14 buffers to draw a full screen
  */
 #ifndef IMAGE_BUFSIZE
-#define IMAGE_BUFSIZE		8192
+#define IMAGE_BUFSIZE		(64*1024)
 #endif
 
 /* pad scanline to a longword */

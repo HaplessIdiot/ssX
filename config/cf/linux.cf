@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.100 1999/08/31 08:39:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.101 1999/09/04 09:14:06 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -274,7 +274,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define TermcapLibrary		-lncurses
 #else
 #define TermcapLibrary		-ltermcap
-#endif
 #endif
 #endif
 #endif

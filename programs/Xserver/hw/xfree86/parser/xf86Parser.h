@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.16 1999/06/27 14:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.17 1999/09/04 13:04:55 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -280,6 +280,15 @@ typedef struct
 }
 XF86ConfInputrefRec, *XF86ConfInputrefPtr;
 
+/* Values for adj_where */
+#define CONF_ADJ_OBSOLETE	-1
+#define CONF_ADJ_ABSOLUTE	0
+#define CONF_ADJ_RIGHTOF	1
+#define CONF_ADJ_LEFTOF		2
+#define CONF_ADJ_ABOVE		3
+#define CONF_ADJ_BELOW		4
+#define CONF_ADJ_RELATIVE	5
+
 typedef struct
 {
 	GenericListRec list;
@@ -294,6 +303,10 @@ typedef struct
 	char *adj_left_str;
 	XF86ConfScreenPtr adj_right;
 	char *adj_right_str;
+	int adj_where;
+	int adj_x;
+	int adj_y;
+	char *adj_refscreen;
 }
 XF86ConfAdjacencyRec, *XF86ConfAdjacencyPtr;
 

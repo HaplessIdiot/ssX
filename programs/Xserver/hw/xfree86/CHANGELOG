@@ -1,4 +1,30 @@
-XFree86 3.9.16a (5 September 1999)
+XFree86 3.9.16a (6 September 1999)
+3150. Add support to the parser for a new way of specifying the screen
+      positions (not made use of yet) (David Dawes).
+3149. Remove a spurious #endif in linux.cf (#3215, Jarno Paananen).
+3148. Add driver option VIDEO_OVERLAID_STILLS for the Xv DDX (untested)
+      (#3214, Mark Vojkovich).
+3147. Comment out the MGASoftReset() call in the mga driver to fix a
+      multi-head problem (#3213, Mark Vojkovich).
+3146. xman updates, including some app-defaults file tuning, change some
+      widget names for better consistency, reformat the help file and
+      update the man page (#3212, Carlos A M dos Santos)..
+3145. Add support for DG/ux systems to xload (#3212,
+      Takis Psarogiannakopoulos).
+3144. App-defaults file updates for xcalc (#3212, Carlos A M dos Santos).
+3143. Fix some prototypes/casts in viewres (#3212, Carlos A M dos Santos).
+3142. Add an XtSetLanguageProc() call to all contrib programs except xman
+      (#3212, Carlos A M dos Santos).
+3141. Fix a zero-height bug in the xaa text code (#3211, Mark Vojkovich).
+3142. Add an XtSetLanguageProc() call to all contrib programs except xman
+      Mark Vojkovich).
+3141. Fix a zero-height bug in the xaa text code (#3211, Mark Vojkovich).
+3140. ScreenToScreenColorExpansion bug fix for the G400 (#3210,
+      Mark Vojkovich).
+3139. Xineramify ShmGetImage (#3209, Mark Vojkovich).
+3138. Rewrite PanoramiXGetImage so that it passes xtest (#3209,
+      Mark Vojkovich).
+3137. Increase IMAGE_BUFSIZE to 64k (#3208, Mark Vojkovich).
 3136. Remove the "old input" code (David Dawes).
 3135. Fix a problem with xman that prevents it form recognising the
       XM_DELETE_WINDOW message when xman is run with the "topbox" disabled
@@ -8707,4 +8733,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.827 1999/09/04 09:14:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.828 1999/09/04 13:04:24 dawes Exp $

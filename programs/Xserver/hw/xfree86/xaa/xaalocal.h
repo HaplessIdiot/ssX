@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.18 1999/05/16 10:13:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.19 1999/06/20 08:41:40 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1384,7 +1384,9 @@ XAACacheMono8x8Pattern(ScrnInfoPtr Scrn, int pat0, int pat1);
 XAACacheInfoPtr
 XAACacheColor8x8Pattern(ScrnInfoPtr Scrn, PixmapPtr pPix, int fg, int bg);
 
-
+void 
+XAATileCache(ScrnInfoPtr pScrn, XAACacheInfoPtr pCache, int w, int h);
+ 
 void XAAClosePixmapCache(ScreenPtr pScreen);
 void XAAInvalidatePixmapCache(ScreenPtr pScreen);
 

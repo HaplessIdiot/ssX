@@ -1,12 +1,12 @@
 /* 
 
-   XFree86 Xv DDX written by Mark Vojkovich (mvojkovi@ucsd.edu) 
+   XFree86 Xv DDX written by Mark Vojkovich (markv@valinux.com) 
 
    Copyright (C) 1998, 1999 - The XFree86 Project Inc.
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.11 1999/04/11 13:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.12 1999/05/23 06:33:47 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -821,18 +821,16 @@ xf86XVWindowExposures(
 	xf86XVUpdateCompositeClip((DrawablePtr)pWin, WinPriv->PortRec);
 	if(WinPriv->PortRec->type == XvInputMask)
 	    xf86XVReputVideo(WinPriv->PortRec);
-	else
+	else if(WinPriv->PortRec->type == XvOutputMask)
 	    xf86XVRegetVideo(WinPriv->PortRec); 
 	WinPriv = WinPriv->next;
   }
 }
 
-static Bool
-xf86XVUnrealizeWindow(WindowPtr pWin)
+
+static void
+xf86TurnOffPorts(WindowPtr pWin)
 {
-  XvScreenPtr pxvs = 
-   (XvScreenPtr) pWin->drawable.pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
   XF86XVWindowPtr WinPriv = 
 		(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
   XvPortRecPrivatePtr pPriv;
@@ -843,10 +841,26 @@ xf86XVUnrealizeWindow(WindowPtr pWin)
     if(pPriv->isOn) { 
 	(*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+
 	pPriv->isOn = FALSE;
     }	
+
     WinPriv = WinPriv->next;
+
+    if(!pPriv->type) /* still */
+	xf86XVRemovePortFromWindow(pWin, pPriv);
   }
+}
+
+
+static Bool
+xf86XVUnrealizeWindow(WindowPtr pWin)
+{
+  XvScreenPtr pxvs = 
+   (XvScreenPtr) pWin->drawable.pScreen->devPrivates[XF86XvScreenIndex].ptr;
+  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+
+  xf86TurnOffPorts(pWin);
 
   return((* ScreenPriv->UnrealizeWindow)(pWin));
 }
@@ -857,21 +871,9 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
   XvScreenPtr pxvs = 
    (XvScreenPtr) pWin->drawable.pScreen->devPrivates[XF86XvScreenIndex].ptr;
   XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
-  XF86XVWindowPtr WinPriv = 
-		(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
-  XvPortRecPrivatePtr pPriv;
 
-  while(WinPriv) {
-    pPriv = WinPriv->PortRec;
-
-    if(pPriv->isOn) { 
-	(*pPriv->AdaptorRec->StopVideo)(
-			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	pPriv->isOn = FALSE;
-    }	
-    WinPriv = WinPriv->next;
-  }
-  
+  xf86TurnOffPorts(pWin);
+ 
   if(ScreenPriv->ClipNotify)
 	(* ScreenPriv->ClipNotify)(pWin, dx, dy);
 }
@@ -885,20 +887,8 @@ xf86XVCopyWindow(
   XvScreenPtr pxvs = 
    (XvScreenPtr) pWin->drawable.pScreen->devPrivates[XF86XvScreenIndex].ptr;
   XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
-  XF86XVWindowPtr WinPriv = 
-		(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
-  XvPortRecPrivatePtr pPriv;
 
-  while(WinPriv) {
-    pPriv = WinPriv->PortRec;
-
-    if(pPriv->isOn) { 
-	(*pPriv->AdaptorRec->StopVideo)(
-			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
-	pPriv->isOn = FALSE;
-    }	
-    WinPriv = WinPriv->next;
-  }
+  xf86TurnOffPorts(pWin);
 
   (*ScreenPriv->CopyWindow)(pWin, ptOldOrg, prgnSrc);
 }
@@ -994,6 +984,9 @@ xf86XVLeaveVT(int index, int flags)
 		(*pPriv->AdaptorRec->StopVideo)(
 			pPriv->pScrn, pPriv->DevPriv.ptr, TRUE);
 		pPriv->isOn = FALSE;
+
+		if(!pPriv->type && pPriv->pDraw) /* still */
+		    xf86XVRemovePortFromWindow((WindowPtr)pPriv->pDraw, pPriv);
 	    }
 	}
     }
@@ -1109,7 +1102,13 @@ xf86XVPutStill(
   if(!REGION_NOTEMPTY(pScreen, &ClipRegion))
 	goto PUT_STILL_BAILOUT; 
 
-  if(portPriv->isOn) { 
+  if(portPriv->isOn) {
+     if(portPriv->AdaptorRec->flags & VIDEO_OVERLAID_STILLS) {
+	if(portPriv->type) /* ignore if video is already on */
+	    goto PUT_STILL_BAILOUT;
+	else if	(portPriv->pDraw) /* replace other stills */
+	   xf86XVRemovePortFromWindow((WindowPtr)(portPriv->pDraw), portPriv);	
+     }
      WasOn = TRUE;
      (*portPriv->AdaptorRec->StopVideo)(
 	portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
@@ -1133,6 +1132,17 @@ xf86XVPutStill(
 		pDraw->x  + drw_x, pDraw->y + drw_y,
 		vid_w, vid_h, drw_w, drw_h,
 		&ClipRegion, portPriv->DevPriv.ptr);
+
+  if((ret == Success) &&
+	(portPriv->AdaptorRec->flags & VIDEO_OVERLAID_STILLS)) {
+
+     xf86XVEnlistPortInWindow((WindowPtr)pDraw, portPriv);
+     portPriv->isOn = TRUE;
+     portPriv->pDraw = pDraw;
+     portPriv->type = 0;  /* no mask means it's transient and should
+			     not be reput once it's removed */
+  }
+
 
 PUT_STILL_BAILOUT:
 

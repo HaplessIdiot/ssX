@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.20 1999/07/04 06:39:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.21 1999/08/22 05:57:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1378,7 +1378,7 @@ XAACheckTileReducibility(PixmapPtr pPixmap, Bool checkMono)
 }
 
 
-static void XAATileCache(
+void XAATileCache(
    ScrnInfoPtr pScrn, 
    XAACacheInfoPtr pCache,
    int w, int h

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.246 1999/08/29 12:20:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.247 1999/09/04 09:14:06 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -18,17 +18,13 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define XConfigDir		$(LIBDIR)
 #endif
 
-#ifndef NewInput
-#define NewInput YES
-#endif
-
 /*
  * Default settings for which X Servers to build.
  */
 
 /* XInput drivers */
 #ifndef XInputDrivers
-#if NewInput
+#if 1
 #define XInputDrivers		dynapro microtouch wacom
 #else
 #define XInputDrivers		dynapro elo2300 elographics magellan \
@@ -778,15 +774,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #endif
 
-/* A temporary addition for testing the new input device code. */
-#ifndef NewInputDefines
-#if NewInput
-#define NewInputDefines -DNEW_INPUT
-#else
-#define NewInputDefines /**/
-#endif
-#endif
-
 #if !HasSnprintf
 #define ServerSnprintfDefines -DNEED_SNPRINTF
 #else
@@ -800,7 +787,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				XFree86LoaderDefines -DXFree86Server \
 				VidModeExtensionDefines \
 				ServerSnprintfDefines \
-				-DX_BYTE_ORDER=ByteOrder NewInputDefines
+				-DX_BYTE_ORDER=ByteOrder
 #endif
 
 #ifndef XFree86ServerOSDefines

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.8 1999/07/10 12:17:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.9 1999/07/11 08:49:30 dawes Exp $ */
 
 /********************************************************************
 
@@ -325,7 +325,7 @@ PolyGlyphBltAsSingleBitmap (
 	pbox++; nbox--;
     }
 
-    while(nbox && (Bottom >= pbox->y1)) {
+    while(nbox && (Bottom > pbox->y1)) {
 	LeftEdge = max(Left, pbox->x1);
 	RightEdge = min(Right, pbox->x2);
 

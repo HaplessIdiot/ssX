@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.7 1999/06/27 14:07:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.8 1999/07/04 06:38:33 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -44,6 +44,7 @@
 #include "panoramiXproto.h"
 #include "panoramiXsrv.h"
 #include "globals.h"
+#include "servermd.h"
 
 static unsigned char PanoramiXReqCode = 0;
 /*
@@ -151,6 +152,8 @@ typedef struct {
   CloseScreenProcPtr	CloseScreen;
 } PanoramiXScreenRec, *PanoramiXScreenPtr;
 
+RegionRec XineramaScreenRegions[MAXSCREENS];
+
 static void XineramaValidateGC(GCPtr, unsigned long, DrawablePtr);
 static void XineramaChangeGC(GCPtr, unsigned long);
 static void XineramaCopyGC(GCPtr, unsigned long, GCPtr);
@@ -182,6 +185,8 @@ XineramaCloseScreen (int i, ScreenPtr pScreen)
 
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
     pScreen->CreateGC = pScreenPriv->CreateGC;
+
+    REGION_UNINIT(pScreen, &XineramaScreenRegions[pScreen->myNum]);
 
     xfree ((pointer) pScreenPriv);
 
@@ -443,82 +448,6 @@ void PanoramiXExtensionInit(int argc, char *argv[])
      *  command line options. 
      */
 
-#if 0
-    for (PhyScrNum = PanoramiXNumScreens - 1; PhyScrNum >= 0; PhyScrNum--) {
-	if (wsRemapPhysToLogScreens)
-	    i = wsPhysToLogScreens[PhyScrNum];
-	else 
-	    i = PhyScrNum;
-	if (i < 0)
-	    continue;
-	panoramiXdataPtr[i].width = (screenInfo.screens[i])->width;
-	panoramiXdataPtr[i].height = (screenInfo.screens[i])->height;
-	if (screenArgs[i].flags & ARG_EDGE_L) {
-	    ArgScrNum = screenArgs[PhyScrNum].edge_left;
-	    if (ArgScrNum < 0)
-	       j = -1;
-	    else { 
-	       if (wsRemapPhysToLogScreens)
-	           j = wsPhysToLogScreens[ArgScrNum];
-	       else 
-		   j = ArgScrNum;
-	    }
-	    panoramiXdataPtr[i].left = j;
-	    panoramiXEdgePtr[i].no_edges = FALSE;
-	    if ( j >= 0) 
-	        panoramiXdataPtr[j].right = i;
-	    else {
-		if ( i >= 1 ) 
-		   panoramiXdataPtr[i - 1].right = -1;
-	    }
-	}
-	if (screenArgs[i].flags & ARG_EDGE_R) {
-	    ArgScrNum = screenArgs[PhyScrNum].edge_right;
-	    if (ArgScrNum < 0)
-	       j = -1;
-	    else { 
-	       if (wsRemapPhysToLogScreens)
-	           j = wsPhysToLogScreens[ArgScrNum];
-	       else 
-		   j = ArgScrNum;
-	    }
-	    panoramiXdataPtr[i].right = j;
-	    panoramiXEdgePtr[i].no_edges = FALSE;
-	    if ( j >= 0) 
-	        panoramiXdataPtr[j].left = i;
-	}
-	if (screenArgs[i].flags & ARG_EDGE_T) {
-	    ArgScrNum = screenArgs[PhyScrNum].edge_top;
-	    if (ArgScrNum < 0)
-	       j = -1;
-	    else { 
-	       if (wsRemapPhysToLogScreens)
-	           j = wsPhysToLogScreens[ArgScrNum];
-	       else 
-		   j = ArgScrNum;
-	    }
-	    panoramiXdataPtr[i].above = j;
-	    panoramiXEdgePtr[i].no_edges = FALSE;
-	    if ( j >= 0)
-	        panoramiXdataPtr[j].below = i;
-	}
-	if (screenArgs[i].flags & ARG_EDGE_B) {
-	    ArgScrNum = screenArgs[PhyScrNum].edge_bottom;
-	    if (ArgScrNum < 0)
-	       j = -1;
-	    else { 
-	       if (wsRemapPhysToLogScreens)
-	           j = wsPhysToLogScreens[ArgScrNum];
-	       else 
-		   j = ArgScrNum;
-	    }
-	    panoramiXdataPtr[i].below = j;
-	    panoramiXEdgePtr[i].no_edges = FALSE;
-	    if ( j >= 0)
-	        panoramiXdataPtr[j].above = i;
-	}
-    }
-#else
     for (PhyScrNum = PanoramiXNumScreens - 1; PhyScrNum >= 0; PhyScrNum--) {
 	i = PhyScrNum;
 	if (i < 0)
@@ -526,7 +455,6 @@ void PanoramiXExtensionInit(int argc, char *argv[])
 	panoramiXdataPtr[i].width = (screenInfo.screens[i])->width;
 	panoramiXdataPtr[i].height = (screenInfo.screens[i])->height;
     }
-#endif
     
     /*
      *	Find the upper-left screen and then locate all the others
@@ -536,6 +464,18 @@ void PanoramiXExtensionInit(int argc, char *argv[])
         if (panoramiXtempPtr->above == -1 && panoramiXtempPtr->left == -1)
             break;
     locate_neighbors(PanoramiXNumScreens - i);
+
+
+    for (i = 0; i < PanoramiXNumScreens; i++) {
+	BoxRec TheBox;
+
+	TheBox.x1 = panoramiXdataPtr[i].x;
+	TheBox.x2 = TheBox.x1 + panoramiXdataPtr[i].width;
+	TheBox.y1 = panoramiXdataPtr[i].y;
+	TheBox.y2 = TheBox.y1 + panoramiXdataPtr[i].height;
+
+	REGION_INIT(pScreen, &XineramaScreenRegions[i], &TheBox, 1);
+    }
 
     /*
      *	Put our processes into the ProcVector
@@ -719,7 +659,7 @@ Bool PanoramiXCreateScreenRegion(WindowPtr pWin)
    ScreenPtr   pScreen;
    BoxRec      box;
    int         i;
-   Bool	       ret;
+   Bool	       ret = FALSE;
    
    pScreen = pWin->drawable.pScreen;
    for (i = 0; i < PanoramiXNumScreens; i++) {
@@ -729,8 +669,7 @@ Bool PanoramiXCreateScreenRegion(WindowPtr pWin)
         box.y2 = box.y1 + PanoramiXPixHeight;
         REGION_INIT(pScreen, &PanoramiXScreenRegion[i], &box, 1);
         ret = REGION_NOTEMPTY(pScreen, &PanoramiXScreenRegion[i]);
-        if (!ret)
-           return ret;
+        if (!ret) break;
    }
    return ret;
 }
@@ -1077,4 +1016,176 @@ ProcPanoramiXDispatch (ClientPtr client)
 	     return ProcPanoramiXGetScreenSize(client);
     }
     return BadRequest;
+}
+
+
+
+#define SHIFT_L(v,s) (v) << (s)
+#define SHIFT_R(v,s) (v) >> (s)
+
+
+static void
+CopyBits(char *dst, int shiftL, char *src, int bytes)
+{
+   /* Just get it to work.  Worry about speed later */
+    int shiftR = 8 - shiftL;
+
+    while(bytes--) {
+	*dst |= SHIFT_L(*src, shiftL);
+	*(dst + 1) |= SHIFT_R(*src, shiftR);
+	dst++; src++;
+    }     
+}
+
+
+/* Caution.  This doesn't support 2 and 4 bpp formats.  We expect
+   1 bpp and planar data to be already cleared when presented
+   to this function */
+
+void
+XineramaGetImageData(
+    DrawablePtr *pDrawables,
+    int left,
+    int top,
+    int width, 
+    int height,
+    unsigned int format,
+    unsigned long planemask,
+    char *data,
+    int pitch,
+    Bool isRoot
+){
+    RegionRec SrcRegion, GrabRegion;
+    BoxRec SrcBox, *pbox;
+    int x, y, w, h, i, j, nbox, size, sizeNeeded, ScratchPitch, inOut, depth;
+    DrawablePtr pDraw = pDrawables[0];
+    ScreenPtr pScreen = pDraw->pScreen;
+    char *ScratchMem = NULL;
+
+    size = 0;
+
+    /* find box in logical screen space */
+    SrcBox.x1 = left;
+    SrcBox.y1 = top;
+    if(!isRoot) {
+	SrcBox.x1 += pDraw->x + panoramiXdataPtr[0].x;
+	SrcBox.y1 += pDraw->y + panoramiXdataPtr[0].y;
+    }
+    SrcBox.x2 = SrcBox.x1 + width;
+    SrcBox.y2 = SrcBox.y1 + height;
+    
+    REGION_INIT(pScreen, &SrcRegion, &SrcBox, 1);
+    REGION_INIT(pScreen, &GrabRegion, NullBox, 1);
+
+    depth = (format == XYPixmap) ? 1 : pDraw->depth;
+
+    for(i = 0; i < PanoramiXNumScreens; i++) {
+	pDraw = pDrawables[i];
+
+	inOut = RECT_IN_REGION(pScreen,&XineramaScreenRegions[i],&SrcBox);
+
+	if(inOut == rgnIN) {	   
+	    (*pDraw->pScreen->GetImage)(pDraw, 
+			SrcBox.x1 - pDraw->x - panoramiXdataPtr[i].x,
+			SrcBox.y1 - pDraw->y - panoramiXdataPtr[i].y, 
+			width, height, format, planemask, data);
+	    break;
+	} else if (inOut == rgnOUT)
+	    continue;
+
+	REGION_INTERSECT(pScreen, &GrabRegion, &SrcRegion, 
+					&XineramaScreenRegions[i]);
+
+	nbox = REGION_NUM_RECTS(&GrabRegion);
+
+	if(nbox) {
+	    pbox = REGION_RECTS(&GrabRegion);
+
+	    while(nbox--) {
+		w = pbox->x2 - pbox->x1;
+		h = pbox->y2 - pbox->y1;
+		ScratchPitch = PixmapBytePad(w, depth);
+		sizeNeeded = ScratchPitch * h;
+
+		if(sizeNeeded > size) {
+		    char *tmpdata = ScratchMem;
+		    ScratchMem = xrealloc(ScratchMem, sizeNeeded);
+		    if(ScratchMem)
+			size = sizeNeeded;
+		    else {
+			ScratchMem = tmpdata;
+			break;
+		    }	
+		}
+
+		x = pbox->x1 - pDraw->x - panoramiXdataPtr[i].x;
+		y = pbox->y1 - pDraw->y - panoramiXdataPtr[i].y;
+
+		(*pDraw->pScreen->GetImage)(pDraw, x, y, w, h, 
+					format, planemask, ScratchMem);
+		
+		/* copy the memory over */
+
+		if(depth == 1) {
+		   int k, shift, leftover, index, index2;
+		
+		   x = pbox->x1 - SrcBox.x1;
+		   y = pbox->y1 - SrcBox.y1;
+		   shift = x & 7;
+		   x >>= 3;
+		   leftover = w & 7;
+		   w >>= 3;
+
+		   /* clean up the edge */
+		   if(leftover) {
+			int mask = (1 << leftover) - 1;
+			for(j = h, k = w; j--; k += ScratchPitch)
+			    ScratchMem[k] &= mask;
+		   }
+
+		   for(j = 0, index = (pitch * y) + x, index2 = 0; j < h;
+		       j++, index += pitch, index2 += ScratchPitch) 
+		   {
+			if(w) {
+			    if(!shift)
+				memcpy(data + index, ScratchMem + index2, w);
+			    else
+				CopyBits(data + index, shift, 
+						ScratchMem + index2, w);
+			}
+	
+			if(leftover) {
+			    data[index + w] |= 
+				SHIFT_L(ScratchMem[index2 + w], shift);
+			    if((shift + leftover) > 8)
+				data[index + w + 1] |= 
+				  SHIFT_R(ScratchMem[index2 + w],(8 - shift));
+			}
+		    }
+		} else {
+		    j = pDraw->bitsPerPixel >> 3;
+		    x = (pbox->x1 - SrcBox.x1) * j;
+		    y = pbox->y1 - SrcBox.y1;
+		    w *= j;
+
+		    for(j = 0; j < h; j++) {
+			memcpy(data + (pitch * (y + j)) + x, 
+				ScratchMem + (ScratchPitch * j), w);
+		    }
+		}
+		pbox++;
+	    }
+
+	    REGION_SUBTRACT(pScreen, &SrcRegion, &SrcRegion, &GrabRegion);
+	    if(!REGION_NOTEMPTY(pScreen, &SrcRegion))
+		break;
+	}
+	
+    }
+
+    if(ScratchMem)
+	xfree(ScratchMem);
+
+    REGION_UNINIT(pScreen, &SrcRegion);
+    REGION_UNINIT(pScreen, &GrabRegion);
 }

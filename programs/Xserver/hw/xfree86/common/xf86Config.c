@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.191 1999/07/18 08:14:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.192 1999/09/04 13:04:31 dawes Exp $ */
 
 
 /*
- * Copyright 1991-1997 by The XFree86 Project, Inc.
+ * Copyright 1991-1999 by The XFree86 Project, Inc.
  * Copyright 1997 by Metro Link, Inc.
  *
  * Loosely based on code bearing the following copyright:
@@ -556,7 +556,7 @@ static OptionInfoRec FlagOptions[] = {
 };
 
 static Bool
-detectPC98()
+detectPC98(void)
 {
 #ifdef SUPPORT_PC98
     unsigned char buf[2];
@@ -1009,6 +1009,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     screenLayoutPtr slp;
     GDevPtr gdp;
     IDevPtr indp;
+    int i, j;
 
     if (!servlayoutp)
 	return FALSE;
@@ -1064,9 +1065,89 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 	if (!configScreen(slp[count].screen, adjp->adj_screen, scrnum,
 			  X_CONFIG))
 	    return FALSE;
+	slp[count].x = adjp->adj_x;
+	slp[count].y = adjp->adj_y;
+	slp[count].refname = adjp->adj_refscreen;
+	switch (adjp->adj_where) {
+	case CONF_ADJ_OBSOLETE:
+	    slp[count].where = PosObsolete;
+	    break;
+	case CONF_ADJ_ABSOLUTE:
+	    slp[count].where = PosAbsolute;
+	    break;
+	case CONF_ADJ_RIGHTOF:
+	    slp[count].where = PosRightOf;
+	    break;
+	case CONF_ADJ_LEFTOF:
+	    slp[count].where = PosLeftOf;
+	    break;
+	case CONF_ADJ_ABOVE:
+	    slp[count].where = PosAbove;
+	    break;
+	case CONF_ADJ_BELOW:
+	    slp[count].where = PosBelow;
+	    break;
+	case CONF_ADJ_RELATIVE:
+	    slp[count].where = PosRelative;
+	    break;
+	}
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
     }
+
+    /* XXX Need to tie down the upper left screen. */
+
+    /* Fill in the refscreen values */
+    for (i = 0; i < count; i++) {
+	if (slp[i].refname) {
+	    for (j = 0; j < count; j++) {
+		if (strcmp(slp[i].refname, slp[j].screen->id) == 0) {
+		    slp[i].refscreen = slp[j].screen;
+		    break;
+		}
+	    }
+	}
+    }
+
+#define LAYOUT_DEBUG
+#ifdef LAYOUT_DEBUG
+    ErrorF("Layout \"%s\"\n", conf_layout->lay_identifier);
+    for (i = 0; i < count; i++) {
+	ErrorF("Screen: \"%s\" (%d):\n", slp[i].screen->id,
+	       slp[i].screen->screennum);
+	switch (slp[i].where) {
+	case PosObsolete:
+	    ErrorF("\tObsolete format\n");
+	    break;
+	case PosAbsolute:
+	    if (slp[i].x == -1)
+		if (slp[i].screen->screennum == 0)
+		    ErrorF("\tImplicitly left-most\n");
+		else
+		    ErrorF("\tImplicitly right of screen %d\n",
+			   slp[i].screen->screennum - 1);
+	    else
+		ErrorF("\t%d %d\n", slp[i].x, slp[i].y);
+	    break;
+	case PosRightOf:
+	    ErrorF("\tRight of \"%s\"\n", slp[i].refscreen->id);
+	    break;
+	case PosLeftOf:
+	    ErrorF("\tLeft of \"%s\"\n", slp[i].refscreen->id);
+	    break;
+	case PosAbove:
+	    ErrorF("\tAbove \"%s\"\n", slp[i].refscreen->id);
+	    break;
+	case PosBelow:
+	    ErrorF("\tBelow \"%s\"\n", slp[i].refscreen->id);
+	    break;
+	case PosRelative:
+	    ErrorF("\t%d %d relative to \"%s\"\n", slp[i].x, slp[i].y,
+		   slp[i].refscreen->id);
+	    break;
+	}
+    }
+#endif
     /*
      * Count the number of inactive devices.
      */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.15 1999/05/15 06:24:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.16 1999/06/20 08:41:26 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -56,6 +56,7 @@ in this Software without prior written authorization from The Open Group.
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
+#include "panoramiXsrv.h"
 extern int PanoramiXNumScreens;
 extern Bool noPanoramiXExtension;
 extern PanoramiXWindow *PanoramiXWinRoot;
@@ -454,7 +455,6 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 static int 
 ProcPanoramiXShmPutImage(register ClientPtr client)
 {
-    GC		 	 *pGC;
     DrawablePtr 	 pDraw;
     int			 j;
     PanoramiXWindow 	 *pPanoramiXWin;
@@ -493,6 +493,201 @@ ProcPanoramiXShmPutImage(register ClientPtr client)
 	BREAK_IF(result != client->noClientException);
     }
     return(result);
+}
+
+static int 
+ProcPanoramiXShmGetImage(ClientPtr client)
+{
+    PanoramiXWindow	*pPanoramiXWin = PanoramiXWinRoot;
+    DrawablePtr 	drawables[MAXSCREENS];
+    DrawablePtr 	pDraw;
+    xShmGetImageReply	xgi;
+    ShmDescPtr		shmdesc;
+    int         	x, y, w, h, format;
+    Mask		plane, planemask;
+    long		lenPer, length, widthBytesLine;
+    Bool		isRoot;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    long                widthBytesLineProto;
+    long                lenPerProto,lengthProto;
+    char                *tmpImage;
+    int                 tmpAlloced = 0;
+#endif
+
+
+    REQUEST(xShmGetImageReq);
+
+    REQUEST_SIZE_MATCH(xShmGetImageReq);
+
+    if ((stuff->format != XYPixmap) && (stuff->format != ZPixmap)) {
+	client->errorValue = stuff->format;
+        return(BadValue);
+    }
+
+    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
+
+    if (pDraw->type == DRAWABLE_PIXMAP)
+	return ProcShmGetImage(client);
+
+    VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
+
+    x = stuff->x;
+    y = stuff->y;
+    w = stuff->width;
+    h = stuff->height;
+    format = stuff->format;
+    planemask = stuff->planeMask;
+    isRoot = (stuff->drawable == pPanoramiXWin->info[0].id);
+
+    if(isRoot) {
+      if( /* check for being onscreen */
+	x < 0 || x + w > PanoramiXPixWidth ||
+	y < 0 || y + h > PanoramiXPixHeight )
+	    return(BadMatch);
+    } else {
+      if( /* check for being onscreen */
+	panoramiXdataPtr[0].x + pDraw->x + x < 0 ||
+	panoramiXdataPtr[0].x + pDraw->x + x + w > PanoramiXPixWidth ||
+        panoramiXdataPtr[0].y + pDraw->y + y < 0 ||
+	panoramiXdataPtr[0].y + pDraw->y + y + h > PanoramiXPixHeight ||
+	 /* check for being inside of border */
+       	x < - wBorderWidth((WindowPtr)pDraw) ||
+	x + w > wBorderWidth((WindowPtr)pDraw) + (int)pDraw->width ||
+	y < -wBorderWidth((WindowPtr)pDraw) ||
+	y + h > wBorderWidth ((WindowPtr)pDraw) + (int)pDraw->height)
+	    return(BadMatch);
+
+	PANORAMIXFIND_ID(pPanoramiXWin, stuff->drawable);
+    }
+
+    xgi.visual = wVisual(((WindowPtr)pDraw));
+    xgi.type = X_Reply;
+    xgi.length = 0;
+    xgi.sequenceNumber = client->sequence;
+    xgi.depth = pDraw->depth;
+
+    if(format == ZPixmap) {
+	widthBytesLine = PixmapBytePad(w, pDraw->depth);
+	length = widthBytesLine * h;
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLineProto =  PixmapBytePadProto(w, pDraw->depth);
+	lengthProto = widthBytesLineProto * h;
+#endif
+    } else {
+	widthBytesLine = PixmapBytePad(w, 1);
+	lenPer = widthBytesLine * h;
+	plane = ((Mask)1) << (pDraw->depth - 1);
+	length = lenPer * Ones(planemask & (plane | (plane - 1)));
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	widthBytesLineProto = PixmapBytePadProto(w, 1);
+	lenPerProto = widthBytesLineProto * h;
+	lengthProto = (length / lenPer) * lenPerProto;
+#endif
+    }
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, lengthProto, client);
+    xgi.size = lengthProto;
+#else
+    VERIFY_SHMSIZE(shmdesc, stuff->offset, length, client);
+    xgi.size = length;
+#endif
+
+    if (length == 0) {/* nothing to do */ }
+    else if (format == ZPixmap) {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+        /* check for protocol/server padding differences.
+	 */
+        if ((widthBytesLine != widthBytesLineProto) ||
+	    ((unsigned long)shmdesc->addr + stuff->offset & (sizeof(long)-1))) 
+	{
+	    /* temp stuff for 64 bit alignment stuff */
+	    char * bufPtr, * protoPtr;
+	    int i;
+
+	    if(!(tmpImage = (char *) xalloc(length))) 
+	      return (BadAlloc);
+	    tmpAlloced = 1;
+	    
+	    XineramaGetImageData(drawables, x, y, w, h, format, planemask,
+					 tmpImage, widthBytesLine, isRoot);
+	    
+	    
+	    /* for 64-bit server, convert image to pad to 32 bits */
+	    bzero(shmdesc->addr + stuff->offset,lengthProto);
+	    
+	    for (i=0,bufPtr=tmpImage,protoPtr=shmdesc->addr + stuff->offset; 
+		 i < h;
+		 bufPtr += widthBytesLine,protoPtr += widthBytesLineProto, 
+		 i++)
+		memmove(protoPtr,bufPtr,widthBytesLineProto);
+	} else 
+#endif
+	    XineramaGetImageData(drawables, x, y, w, h, format, planemask,
+					shmdesc->addr + stuff->offset,
+					widthBytesLine, isRoot);
+    } else {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+	/* check for protocol/server padding differences.
+	 */
+	if ((widthBytesLine != widthBytesLineProto) ||
+	    ((unsigned long)shmdesc->addr + stuff->offset & 
+	     (sizeof(long)-1))) 
+	{
+	    if(!(tmpImage = (char *) xalloc(length)))
+	      return (BadAlloc);
+	    tmpAlloced = 1;
+	}
+#endif
+
+	length = stuff->offset;
+        for (; plane; plane >>= 1) {
+	    if (planemask & plane) {
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+		if ((widthBytesLine != widthBytesLineProto) ||
+		    ((unsigned long)shmdesc->addr + stuff->offset & 
+		     (sizeof(long)-1))) 
+		{
+		    /* get image for each plane. */
+
+		    XineramaGetImageData(drawables, x, y, w, h 
+					format, plane, tmpImage,
+					widthBytesLine, isRoot);
+
+		    
+		    /* for 64-bit server, convert image to pad to 32 bits */
+		    bzero(shmdesc->addr+length, widthBytesLine);
+		    memmove(shmdesc->addr+length, tmpImage, 
+							widthBytesLineProto);
+		    /* increment length */
+		    length += lenPerProto;
+		} else /* no diff between protocol and server */
+#endif
+		{
+		    XineramaGetImageData(drawables, x, y, w, h, 
+					format, plane, shmdesc->addr + length,
+					widthBytesLine, isRoot);
+		    length += lenPer;
+		}
+	    }
+	}
+    }
+    
+    if (client->swapped) {
+	register int n;
+    	swaps(&xgi.sequenceNumber, n);
+    	swapl(&xgi.length, n);
+	swapl(&xgi.visual, n);
+	swapl(&xgi.size, n);
+    }
+    WriteToClient(client, sizeof(xShmGetImageReply), (char *)&xgi);
+
+#ifdef INTERNAL_VS_EXTERNAL_PADDING
+    if (tmpAlloced)
+	xfree(tmpImage);
+#endif
+
+    return(client->noClientException);
 }
 #endif
 
@@ -1016,6 +1211,10 @@ ProcShmDispatch (client)
 #endif
 	return ProcShmPutImage(client);
     case X_ShmGetImage:
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	   return ProcPanoramiXShmGetImage(client);
+#endif
 	return ProcShmGetImage(client);
     case X_ShmCreatePixmap:
 	return ProcShmCreatePixmap(client);

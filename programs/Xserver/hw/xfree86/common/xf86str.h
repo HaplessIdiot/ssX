@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.47 1999/08/22 05:57:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.48 1999/09/04 13:04:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -333,12 +333,27 @@ typedef struct _confscreenrec {
     pointer		options;
 } confScreenRec, *confScreenPtr;
 
+typedef enum {
+    PosObsolete = -1,
+    PosAbsolute = 0,
+    PosRightOf,
+    PosLeftOf,
+    PosAbove,
+    PosBelow,
+    PosRelative
+} PositionType;
+
 typedef struct _screenlayoutrec {
     confScreenPtr	screen;
     confScreenPtr	top;
     confScreenPtr	bottom;
     confScreenPtr	left;
     confScreenPtr	right;
+    PositionType	where;
+    int			x;
+    int			y;
+    char *		refname;
+    confScreenPtr	refscreen;
 } screenLayoutRec, *screenLayoutPtr;
 
 typedef struct _serverlayoutrec {

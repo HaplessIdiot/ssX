@@ -30,7 +30,7 @@
 <date>Last modified 17 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.8 1999/07/17 07:18:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.9 1999/07/18 03:26:51 dawes Exp $
 </ident>
 
 
@@ -3411,6 +3411,16 @@ typedef struct {
 	   still be clipped against the screen bounds.  This flag is
 	   meant for showing all the contents of the [root] window, if
 	   the administrator has no hesitations regarding security.
+
+	</quote>
+
+	&s.code;VIDEO_OVERLAID_STILLS&e.code;
+	<quote><p>
+	   Implementing PutStill for hardware that does video as an
+	   overlay can be awkward since it's unclear how long to leave
+	   the video up for.  When this flag is set, StopVideo will be
+	   called whenever the destination gets clipped or moved so that
+	   the still can be left up until then.
 
 	</quote>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.4 1999/03/28 15:32:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.5 1999/05/23 06:33:47 dawes Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -9,6 +9,7 @@
 #define VIDEO_NO_CLIPPING			0x00000001
 #define VIDEO_INVERT_CLIPLIST			0x00000002
 #define VIDEO_EXPOSE				0x00000004
+#define VIDEO_OVERLAID_STILLS			0x00000008
 
 
 typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
