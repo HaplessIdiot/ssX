@@ -1,3 +1,8 @@
+XFree86 3.0Bb (13 June 1994)
+ 88. Code to program S3 GENDAC clock (Clocks "s3gendac") (Jon Tombs).
+ 87. Fix some build problems with lbx.
+ 86. Build servers with -DAVOID_GLYPHBLT.
+
 XFree86 3.0Ba (11 June 1994)
  85. Preliminary ELSA Winner 2000PRO support (S3 964) (Dirk Hohndel).
  84. Updates to S3 864 support (Harald Koenig).
