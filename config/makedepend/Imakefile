@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.9 2001/06/07 18:30:41 alanh Exp $
+XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.10 2001/06/25 08:12:31 alanh Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -29,8 +29,8 @@ STDINC_DEFINES = -DINCLUDEDIR=\"$(STDINCDIR)\"
 POSTINCDIR = PostIncDir
 POSTINC_DEFINES = -DPOSTINCDIR=\"$(POSTINCDIR)\"
 #endif
-#ifdef cygwinArchitecture
-EXTRAINCDIR = /usr/include/w32api
+#ifdef ExtraIncDir
+EXTRAINCDIR = ExtraIncDir
 EXTRAINC_DEFINES = -DEXTRAINCDIR=\"$(EXTRAINCDIR)\"
 #endif
 INC_DEFINES = $(PREINC_DEFINES) $(STDINC_DEFINES) $(POSTINC_DEFINES) \

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.31 2001/10/04 20:02:32 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.32 2001/10/06 01:20:46 torrey Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -120,6 +120,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.31 2001/10/04 20:02:32 ala
 
 #ifndef PostIncDir
 #define PostIncDir              `CcCmd --print-libgcc-file-name | sed 's,\\\\,/,g' | sed 's,libgcc.a,include,'`
+#endif
+#ifndef ExtraIncDir
+#define ExtraIncDir		/usr/include/w32api
 #endif
 
 #define LdCombineFlags          -r
