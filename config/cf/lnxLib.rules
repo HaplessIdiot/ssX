@@ -1,4 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
+XCOMM $XFree86$
 
 /*
  * Linux shared library rules (DLL version)
@@ -408,7 +409,7 @@ install:: $(JUMP_SA) $(JUMP_SO)						@@\
 		(T=$(DESTDIR)dest/`echo $(JUMP_SO)|sed 's/\.[^\.]*$$//'`;\
 		set -x; \
 		$(INSTALL) -s -c $(INSTSOLIBFLAGS) $(JUMP_SO) $(DESTDIR)dest; \
-		$(RM) $$T && $(LN) $(DESTDIR)dest/$(JUMP_SO) $$T); fi	@@\
+		$(RM) $$T && $(LN) $(JUMP_SO) $$T); fi	                @@\
 	$(INSTALL) -c $(INSTLIBFLAGS) $(JUMP_SA) $(DESTDIR)dest
 #endif /* InstallSharedLibrary */
 

@@ -1,4 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
+XCOMM platform:  $XFree86$
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -112,6 +113,10 @@ install.man:: 								@@\
 	done
 
 #define NetBSDArchitecture
+
+#ifndef ExtraFilesToClean
+#define ExtraFilesToClean *.core
+#endif
 
 #include <bsdLib.rules>
 

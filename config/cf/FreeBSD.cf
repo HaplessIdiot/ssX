@@ -1,4 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
+XCOMM platform:  $XFree86$
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -53,6 +54,10 @@ XCOMM operating system:  OSName
 #define HasLibCrypt	YES
 
 #define AvoidNullMakeCommand YES
+
+#ifndef ExtraFilesToClean
+#define ExtraFilesToClean *.core
+#endif
 
 #include <bsdLib.rules>
 

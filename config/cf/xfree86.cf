@@ -1,4 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
+XCOMM $XFree86$
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -85,11 +86,11 @@ XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
  */
 #ifndef XF86Vga256Drivers
 # define XF86Vga256Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak
+				ncr77c22 compaq oak s3_svga
 #endif
 
 #ifndef XF86Vga16Drivers
-# define XF86Vga16Drivers	et4000 ncr77c22 generic tvga8900
+# define XF86Vga16Drivers	et4000 ncr77c22 tvga8900 generic
 #endif
 
 #ifndef XF86Vga2Drivers
@@ -163,7 +164,7 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3000
+#define XFree86Version	3001
 #endif
 
 #ifndef UseRgbTxt
