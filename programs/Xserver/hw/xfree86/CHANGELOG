@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 160. Remove a CYGWIN define from Xserver/include/windowstr.h 
+      (#4832, Harold Hunt).
  159. Fix a casting problem which causes bdftopcf to write corrupted
       fonts on buffer boundaries (#A.522, Jakub Bogusz).
  158. Cygwin/XFree86 updates (#4824, #4826 Harold Hunt).
@@ -13590,4 +13592,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1890 2001/07/31 09:46:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1891 2001/07/31 16:44:56 alanh Exp $
