@@ -1,4 +1,7 @@
 XFree86 4.0.1Zb (?? December 2000)
+1177. Fix recognition of valid depth/fbbpp combinations in ATI driver
+      (Marc La France).
+1176. Fix 1bpp in ATI driver (Marc La France).
 1175. Fix ATI DPMS support on panels by mimicking BIOS behaviour more closely
       (Marc La France).
 
@@ -12049,4 +12052,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1469 2000/12/12 23:24:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1470 2000/12/13 00:25:08 tsi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.8 2000/06/19 15:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.9 2000/08/04 21:07:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -183,14 +183,30 @@ ATIDACPreInit
 
         if (pATI->depth == 1)
         {
-            rgb blackColour = pScreenInfo->display->whiteColour,
+            rgb blackColour = pScreenInfo->display->blackColour,
                 whiteColour = pScreenInfo->display->whiteColour;
 
-            /* Check for defaults */
-            if (!blackColour.red && !blackColour.green && !blackColour.blue &&
-                !whiteColour.red && !whiteColour.green && !whiteColour.blue)
-                whiteColour.red = whiteColour.green = whiteColour.blue =
-                    maxColour;
+            if (blackColour.red > maxColour)
+                blackColour.red = maxColour;
+            if (blackColour.green > maxColour)
+                blackColour.green = maxColour;
+            if (blackColour.blue > maxColour)
+                blackColour.blue = maxColour;
+            if (whiteColour.red > maxColour)
+                whiteColour.red = maxColour;
+            if (whiteColour.green > maxColour)
+                whiteColour.green = maxColour;
+            if (whiteColour.blue > maxColour)
+                whiteColour.blue = maxColour;
+
+            if ((blackColour.red == whiteColour.red) &&
+                (blackColour.green == whiteColour.green) &&
+                (blackColour.blue == whiteColour.blue))
+            {
+                blackColour.red = whiteColour.red ^ maxColour;
+                blackColour.green = whiteColour.green ^ maxColour;
+                blackColour.blue = whiteColour.blue ^ maxColour;
+            }
 
             pATIHW->lut[(MONO_BLACK * 3) + 0] = blackColour.red;
             pATIHW->lut[(MONO_BLACK * 3) + 1] = blackColour.green;
