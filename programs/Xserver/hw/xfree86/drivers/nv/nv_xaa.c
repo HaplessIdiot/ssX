@@ -296,6 +296,65 @@ NVSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     pNv->BgColor = bg;
 }
 
+static void
+NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    int t = pNv->expandWidth, i;
+    CARD32 *pbits = (CARD32*)pNv->expandBuffer;
+    CARD32 *d = (CARD32*)pNv->expandFifo;
+    
+    while(t >= 16) 
+    {
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, 16);
+	d[0]  = pbits[0];
+	d[1]  = pbits[1];
+	d[2]  = pbits[2];
+	d[3]  = pbits[3];
+	d[4]  = pbits[4];
+	d[5]  = pbits[5];
+	d[6]  = pbits[6];
+	d[7]  = pbits[7];
+	d[8]  = pbits[8];
+	d[9]  = pbits[9];
+	d[10] = pbits[10];
+	d[11] = pbits[11];
+	d[12] = pbits[12];
+	d[13] = pbits[13];
+	d[14] = pbits[14];
+	d[15] = pbits[15];
+	t -= 16; pbits += 16;
+    }
+    if(t) {
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, t);
+	while(t >= 4) 
+	{
+	    d[0]  = pbits[0];
+	    d[1]  = pbits[1];
+	    d[2]  = pbits[2];
+	    d[3]  = pbits[3];
+	    t -= 4; pbits += 4;
+	}
+	while(t--) 
+	    *(d++) = *(pbits++); 
+    }
+
+    if (!(--pNv->expandRows))
+	while (pNv->riva.Busy(&pNv->riva));
+}
+
+static void
+NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    if ( --pNv->expandRows ) {
+       RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
+    } else {
+	while (pNv->riva.Busy(&pNv->riva));
+    }
+}
 
 static void
 NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
@@ -333,72 +392,20 @@ NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
         pNv->riva.Bitmap->PointE          = (y << 16) | (x & 0xFFFF);
     }
 
-    if ( pNv->useFifo )
-    {
-        /* Using fifo writes, set it up */
-        pNv->expandRows = h;
+    pNv->expandRows = h;
+
+    if(pNv->expandWidth > (pNv->riva.FifoEmptyCount >> 2)) {
+	pNv->AccelInfoRec->ScanlineColorExpandBuffers = &pNv->expandBuffer;
+	pNv->AccelInfoRec->SubsequentColorExpandScanline = 
+				NVSubsequentColorExpandScanline;
+    } else {
+	pNv->AccelInfoRec->ScanlineColorExpandBuffers = &pNv->expandFifo;
+	pNv->AccelInfoRec->SubsequentColorExpandScanline = 
+				NVSubsequentColorExpandScanlineFifo;
 	RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
     }
 
     while (pNv->riva.Busy(&pNv->riva));
-}
-
-
-static void
-NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
-{
-    NVPtr pNv = NVPTR(pScrn);
-
-    int t = pNv->expandWidth, i;
-    CARD32 *pbits = (CARD32*)pNv->expandBuffer;
-    CARD32 *d = (CARD32*)pNv->expandFifo;
-    
-    while(t >= 16) 
-    {
-	RIVA_FIFO_FREE(pNv->riva, Bitmap, 16);
-	d[0]  = pbits[0];
-	d[1]  = pbits[1];
-	d[2]  = pbits[2];
-	d[3]  = pbits[3];
-	d[4]  = pbits[4];
-	d[5]  = pbits[5];
-	d[6]  = pbits[6];
-	d[7]  = pbits[7];
-	d[8]  = pbits[8];
-	d[9]  = pbits[9];
-	d[10] = pbits[10];
-	d[11] = pbits[11];
-	d[12] = pbits[12];
-	d[13] = pbits[13];
-	d[14] = pbits[14];
-	d[15] = pbits[15];
-	t -= 16; pbits += 16;
-    }
-    if(t) {
-	RIVA_FIFO_FREE(pNv->riva, Bitmap, t);
-    }
-    while(t >= 4) 
-    {
-	d[0]  = pbits[0];
-	d[1]  = pbits[1];
-	d[2]  = pbits[2];
-	d[3]  = pbits[3];
-	t -= 4; pbits += 4;
-    }
-    while(t--) 
-	*(d++) = *(pbits++); 
-}
-
-static void
-NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
-{
-    NVPtr pNv = NVPTR(pScrn);
-
-    if ( --pNv->expandRows ) {
-       RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
-    } else {
-	while (pNv->riva.Busy(&pNv->riva));
-    }
 }
 
 
@@ -416,13 +423,15 @@ NVSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
                                    int w, int h, int skipleft)
 {
     NVPtr pNv = NVPTR(pScrn);
+    int bw;
 
     pNv->expandWidth = ((w * pScrn->bitsPerPixel) + 31) >> 5;
+    bw = (pNv->expandWidth << 2) / (pScrn->bitsPerPixel >> 3);
 
     RIVA_FIFO_FREE( pNv->riva, Pixmap, 3 );
     pNv->riva.Pixmap->TopLeft         = (y << 16) | (x & 0xFFFF);
     pNv->riva.Pixmap->WidthHeight     = (h << 16) | w;
-    pNv->riva.Pixmap->WidthHeightIn   = (h << 16) | w;
+    pNv->riva.Pixmap->WidthHeightIn   = (h << 16) | bw;
 
     while (pNv->riva.Busy(&pNv->riva));
 }
@@ -460,17 +469,17 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     }
     if(t) {
 	RIVA_FIFO_FREE(pNv->riva, Pixmap, t);
+	while(t >= 4) 
+	{
+	    d[0]  = pbits[0];
+	    d[1]  = pbits[1];
+	    d[2]  = pbits[2];
+	    d[3]  = pbits[3];
+	    t -= 4; pbits += 4;
+	}
+	while(t--) 
+	    *(d++) = *(pbits++); 
     }
-    while(t >= 4) 
-    {
-	d[0]  = pbits[0];
-	d[1]  = pbits[1];
-	d[2]  = pbits[2];
-	d[3]  = pbits[3];
-	t -= 4; pbits += 4;
-    }
-    while(t--) 
-	*(d++) = *(pbits++); 
 }
 
 
@@ -668,8 +677,7 @@ NVAccelInit(ScreenPtr pScreen)
 				NO_PLANEMASK | 
 				CPU_TRANSFER_PAD_DWORD |
 				LEFT_EDGE_CLIPPING | 		
-				LEFT_EDGE_CLIPPING_NEGATIVE_X |
-				SYNC_AFTER_COLOR_EXPAND;
+				LEFT_EDGE_CLIPPING_NEGATIVE_X;
 
     infoPtr->NumScanlineColorExpandBuffers = 1;
     infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
@@ -684,24 +692,10 @@ NVAccelInit(ScreenPtr pScreen)
     pNv->expandBuffer = xnfalloc(((pScrn->virtualX*pScrn->bitsPerPixel)/8) + 8);
 
 
-    if ( pNv->riva.Architecture == 3 )
-    {
-        /* Riva 128(ZX) can't use direct fifo writes, so we use buffer */
-        pNv->useFifo = FALSE;
-        infoPtr->ScanlineColorExpandBuffers = &pNv->expandBuffer;
-        infoPtr->SubsequentColorExpandScanline = 
-            NVSubsequentColorExpandScanline;
-    }
-    else
-    {
-        /* TNT(2) can */
-        pNv->useFifo = TRUE;
-        infoPtr->ScanlineColorExpandBuffers = &pNv->expandFifo;
-        infoPtr->SubsequentColorExpandScanline = 
-            NVSubsequentColorExpandScanlineFifo;
-    }
+    infoPtr->ScanlineColorExpandBuffers = &pNv->expandBuffer;
+    infoPtr->SubsequentColorExpandScanline = NVSubsequentColorExpandScanline;
 
-    if ( pNv->riva.Architecture == 4 && pScrn->bitsPerPixel == 32)
+    if (pNv->riva.Architecture == 4 && pScrn->bitsPerPixel == 32)
     {
     /* Image writes */
         infoPtr->ScanlineImageWriteFlags = CPU_TRANSFER_PAD_DWORD |
