@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.75tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.76 2004/06/10 17:28:11 tsi Exp $ */
 /*
  * Copyright 1999 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1065,11 +1065,9 @@ ATIPreInit
                 ((FrequencyTable + 0x20U) <= BIOSSize))
             {
                 for (i = 0;  i < 16;  i++)
-                {
-                    pATI->BIOSClocks[i] = BIOSWord(FrequencyTable);
-                    FrequencyTable += 2;
-                }
+                    pATI->BIOSClocks[i] = BIOSWord(FrequencyTable + (i * 2));
             }
+
             pATI->ProgrammableClock = BIOSByte(ClockTable);
             pATI->ClockNumberToProgramme = BIOSByte(ClockTable + 0x06U);
             switch (BIOSWord(ClockTable + 0x08U) / 10)
