@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.2 2003/04/22 15:20:20 tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -461,8 +461,10 @@ xf86PreScanZX1(void)
 	return FALSE;
 
     /* Look for ZX1's SBA and IOC */
-    if ((MIO_LONG(MIO_FUNCTION0 + PCI_ID_REG) != DEVID(HP, ZX1_SBA)) ||
-	(MIO_LONG(MIO_FUNCTION1 + PCI_ID_REG) != DEVID(HP, ZX1_IOC))) {
+    if ((MIO_LONG(MIO_FUNCTION0 + PCI_ID_REG) !=
+	 DEVID(VENDOR_HP, CHIP_ZX1_SBA)) ||
+	(MIO_LONG(MIO_FUNCTION1 + PCI_ID_REG) !=
+	 DEVID(VENDOR_HP, CHIP_ZX1_IOC))) {
 	xf86UnMapVidMem(-1, pZX1mio, mapSize);
 	pZX1mio = NULL;
 	return FALSE;
@@ -525,8 +527,9 @@ xf86PreScanZX1(void)
 	    /* Poke for an ioa */
 	    tmp = IOA_LONG(i, PCI_ID_REG);
 	    switch ((CARD32)tmp) {
-	    case DEVID(HP, ELROY):	/* Expected vendor/device id's */
-	    case DEVID(HP, ZX1_LBA):
+	    case DEVID(VENDOR_HP, CHIP_ELROY):
+	    case DEVID(VENDOR_HP, CHIP_ZX1_LBA):
+		/* Expected vendor/device IDs */
 		zx1_busno[i] =
 		    (unsigned int)IOA_BYTE(i, IOA_SECONDARY_BUS);
 		zx1_subno[i] =
@@ -904,9 +907,9 @@ xf86PostScanZX1(void)
     ppPCI = ppPCI2 = xf86scanpci(0);	/* Recursion is only apparent */
     while ((pPCI = *ppPCI2++)) {
 	switch (pPCI->pci_device_vendor) {
-	case DEVID(HP, ZX1_SBA):
-	case DEVID(HP, ZX1_IOC):
-	case DEVID(HP, ZX1_LBA):
+	case DEVID(VENDOR_HP, CHIP_ZX1_SBA):
+	case DEVID(VENDOR_HP, CHIP_ZX1_IOC):
+	case DEVID(VENDOR_HP, CHIP_ZX1_LBA):
 	    xfree(pPCI);		/* Remove it */
 	    continue;
 
@@ -979,7 +982,7 @@ xf86PostScanZX1(void)
     pPCI->tag = PCI_MAKE_TAG(zx1_fakebus, 0, 0);
     pPCI->busnum = zx1_fakebus;
  /* pPCI->devnum = pPCI->funcnum = 0; */
-    pPCI->pci_device_vendor = DEVID(HP, ZX1_SBA);
+    pPCI->pci_device_vendor = DEVID(VENDOR_HP, CHIP_ZX1_SBA);
     pPCI->pci_base_class = PCI_CLASS_BRIDGE;
  /* pPCI->pci_sub_class = PCI_SUBCLASS_BRIDGE_HOST; */
     pPCI->fakeDevice = TRUE;
@@ -1013,7 +1016,7 @@ xf86PostScanZX1(void)
 	pPCI->devnum = i | 0x10;
      /* pPCI->funcnum = 0; */
 	pPCI->tag = PCI_MAKE_TAG(zx1_fakebus, pPCI->devnum, 0);
-	pPCI->pci_device_vendor = DEVID(HP, ZX1_LBA);
+	pPCI->pci_device_vendor = DEVID(VENDOR_HP, CHIP_ZX1_LBA);
 	pPCI->pci_base_class = PCI_CLASS_BRIDGE;
 	pPCI->pci_sub_class = PCI_SUBCLASS_BRIDGE_PCI;
 	pPCI->pci_header_type = 1;

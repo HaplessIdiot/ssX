@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/460gxPCI.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/460gxPCI.c,v 1.2 2003/01/10 22:05:45 tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -217,7 +217,7 @@ xf86PreScan460GX(void)
 
     /* First look for a 460GX's primary host bridge */
     tag = PCI_MAKE_TAG(0, 0x10, 0);
-    if (pciReadLong(tag, PCI_ID_REG) != DEVID(INTEL, 460GX_SAC)) {
+    if (pciReadLong(tag, PCI_ID_REG) != DEVID(VENDOR_INTEL, CHIP_460GX_SAC)) {
 	cbn_460gx = -1;
 	return FALSE;
     }
@@ -239,7 +239,7 @@ xf86PreScan460GX(void)
     }
 
     tag = PCI_MAKE_TAG(cbn_460gx, 0, 0);
-    if (pciReadLong(tag, PCI_ID_REG) != DEVID(INTEL, 460GX_SAC)) {
+    if (pciReadLong(tag, PCI_ID_REG) != DEVID(VENDOR_INTEL, CHIP_460GX_SAC)) {
 	/* Sanity check failed */
 	cbn_460gx = -1;
 	return TRUE;
@@ -253,7 +253,8 @@ xf86PreScan460GX(void)
 
     for (i = 0, devno = 0x10;  devno <= 0x17;  i++, devno++) {
 	tag = PCI_MAKE_TAG(cbn_460gx, devno, 0);
-	if (pciReadLong(tag, PCI_ID_REG) != DEVID(INTEL, 460GX_SAC)) {
+	if (pciReadLong(tag, PCI_ID_REG) !=
+	    DEVID(VENDOR_INTEL, CHIP_460GX_SAC)) {
 	    /* Sanity check failed */
 	    cbn_460gx = -1;
 	    return TRUE;
@@ -272,8 +273,8 @@ xf86PreScan460GX(void)
 	tag = PCI_MAKE_TAG(cbn_460gx, devno, 1);
 	tmp = pciReadLong(tag, PCI_ID_REG);
 	switch (tmp) {
-	case DEVID(INTEL, 460GX_PXB):
-	case DEVID(INTEL, 460GX_WXB):
+	case DEVID(VENDOR_INTEL, CHIP_460GX_PXB):
+	case DEVID(VENDOR_INTEL, CHIP_460GX_WXB):
 	    if (cbdevs_460gx & (1 << devno)) {
 		/* Sanity check failed */
 		cbn_460gx = -1;
@@ -289,7 +290,7 @@ xf86PreScan460GX(void)
 	    has_err_460gx[i] = 1;
 	    break;
 
-	case DEVID(INTEL, 460GX_GXB_1):
+	case DEVID(VENDOR_INTEL, CHIP_460GX_GXB_1):
 	    if (cbdevs_460gx & (1 << devno)) {
 		/* Sanity check failed */
 		cbn_460gx = -1;

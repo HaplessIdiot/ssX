@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.38 2003/06/12 14:12:35 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -98,7 +98,7 @@
 #endif
 
 #define DEVID(vendor, device) \
-    ((CARD32)((PCI_CHIP_##device << 16) | PCI_VENDOR_##vendor))
+    ((CARD32)((PCI_##device << 16) | PCI_##vendor))
 
 #ifndef PCI_DOM_MASK
 # define PCI_DOM_MASK 0x0ffu

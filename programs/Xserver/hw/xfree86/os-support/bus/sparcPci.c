@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.12 2003/01/02 18:11:32 tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -852,7 +852,7 @@ simbaVerifyBus(int bus)
     pciConfigPtr pPCI;
     if ((bus < 0) || (bus >= pciNumBuses) ||
 	!pciBusInfo[bus] || !(pPCI = pciBusInfo[bus]->bridge) ||
-	(pPCI->pci_device_vendor != DEVID(SUN, SIMBA)))
+	(pPCI->pci_device_vendor != DEVID(VENDOR_SUN, CHIP_SIMBA)))
 	return NULL;
 
     return pPCI;
@@ -1012,7 +1012,7 @@ void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI)
     pciBusInfo_t *pBusInfo;
     CARD16 pcicommand;
 
-    if (pPCI->pci_device_vendor != DEVID(SUN, SIMBA))
+    if (pPCI->pci_device_vendor != DEVID(VENDOR_SUN, CHIP_SIMBA))
 	return;
 
     pBusInfo = pPCI->businfo;
