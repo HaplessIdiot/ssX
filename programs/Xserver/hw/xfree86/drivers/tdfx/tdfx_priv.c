@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.3 2000/02/08 17:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.4 2000/02/15 07:13:44 martin Exp $ */
 
 
 #include <sys/time.h>
@@ -182,6 +182,7 @@ GetReadPtr(TDFXPtr pTDFX)
   return read_ptr;
 }
 
+#ifdef XF86DRI
 void TDFXSwapContextPrivate(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
@@ -240,6 +241,7 @@ void TDFXLostContext(ScreenPtr pScreen) {
     /* ErrorF("Out FifoPtr=%d FifoRead=%d\n", sPriv->fifoPtr, sPriv->fifoRead); */
   }
 }
+#endif
 
 static void 
 TDFXMakeSpace(TDFXPtr pTDFX, uint32 slots)
