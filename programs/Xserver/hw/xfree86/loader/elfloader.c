@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.44 2002/09/19 13:22:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.45 2002/10/29 22:50:03 herrb Exp $ */
 
 /*
  *
@@ -1114,6 +1114,7 @@ int		force;
 #if defined(__alpha__) 
     unsigned int *dest32h;	/* address of the high 32 bit place being modified */
     unsigned long *dest64;
+    unsigned short *dest16;
 #endif
 #if  defined(__x86_64__)
     unsigned long *dest64;
@@ -1440,6 +1441,51 @@ int		force;
 	    ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 # endif
 	  break;
+
+	case R_ALPHA_GPRELLOW:
+ 	    {
+ 	    dest64=(unsigned long *)(secp+rel->r_offset);
+ 	    dest16=(unsigned short *)dest64;
+ 
+ 	    symval += rel->r_addend;
+ 	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
+ 
+ 	    *dest16=symval;
+ 	    break;
+ 	    }
+ 	case R_ALPHA_GPRELHIGH:
+ 	    {
+ 	    dest64=(unsigned long *)(secp+rel->r_offset);
+ 	    dest16=(unsigned short *)dest64;
+ 
+ 	    symval += rel->r_addend;
+ 	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
+ 	    symval = ((long)symval >> 16) + ((symval >> 15) & 1);
+ 	    if( (long)symval > 0x7fff ||
+ 	        (long)symval < -(long)0x8000 ) {
+ 		FatalError("R_ALPHA_GPRELHIGH symval-got is too large for %s:%lx\n",
+ 			ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)),symval);
+ 	    }
+ 
+ 	    *dest16=symval;
+ 	    break;
+ 	    }
+ 	case R_ALPHA_GPREL16:
+ 	    {
+ 	    dest64=(unsigned long *)(secp+rel->r_offset);
+ 	    dest16=(unsigned short *)dest64;
+ 
+ 	    symval += rel->r_addend;
+ 	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
+ 	    if( (long)symval > 0x7fff ||
+ 	        (long)symval < -(long)0x8000 ) {
+ 		FatalError("R_ALPHA_GPREL16 symval-got is too large for %s:%lx\n",
+ 			ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)),symval);
+ 	    }
+ 
+ 	    *dest16=symval;
+ 	    break;
+  	    }
 	  
 #endif /* alpha */
 #if defined(__mc68000__)

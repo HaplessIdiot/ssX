@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 443. Add new relocation entries for Alpha architecture to the loader which
+      are used when compiling with gcc >3.1 (#A.819, Thorsten Kranzkowski).
  442. Fix server crash when using Xinerama when application closes. 
       (#A.808, Tsukahara Ken).
  441. Import Mesa-4.0.4, and resync with the DRI trunk (DRI Project).
@@ -15430,4 +15432,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2357 2002/10/30 12:52:07 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2358 2002/10/30 17:30:09 alanh Exp $
