@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.5 1999/11/26 03:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.6 1999/11/26 03:26:02 dawes Exp $ */
 /*
  * includes
  */
@@ -64,12 +64,12 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 #endif
 
   /* open file and read ELF-header */
-  if (-1 == (fd=open(file_name, O_RDONLY))) {
+  if (-1 == (fd=xf86open(file_name, O_RDONLY))) {
     ErrorF("RENDITION: Cannot open microcode %s\n", file_name); 
     return -1;
   }
 
-  if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+  if (xf86read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
     ErrorF("RENDITION: Cannot read microcode header %s\n", file_name); 
     return -1;
   }
