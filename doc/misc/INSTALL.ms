@@ -1,6 +1,6 @@
 .\" $TOG: INSTALL.ms /main/10 1998/02/05 15:35:11 kaleb $
 .\" X11R6.4 Installation instructions. Use troff -ms macros
-.\" $XFree86$
+.\" $XFree86: xc/doc/misc/INSTALL.ms,v 1.2 2000/12/14 21:11:46 dawes Exp $
 .ds Ts 30 January, 1998\"
 .\"
 .ie t \{
@@ -91,9 +91,10 @@ Group's X11R6.4 release.  If you're building XFree86, it can be used as
 a rough guide.  Be aware that most of the details are not targetted
 specifically at the current XFree86 source tree.  XFree86-specific
 documentation can be found in the \fBxc/programs/Xserver/hw/xfree86/doc\fP
-directory.  Some of the documentation there is out of date, so also be
-aware of that.  There is currently no up to date document specifically
-targetted at building XFree86 from source.
+directory and on-line at http://www.xfree86.org/current/.  Some of the
+documentation there is out of date, so also be aware of that.  There is
+currently no up to date document specifically targetted at building
+XFree86 from source.
 
 .nH 1 "Easy Build Instructions"
 .\"
