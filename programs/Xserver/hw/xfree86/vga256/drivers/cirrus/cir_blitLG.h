@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.1 1996/09/29 13:39:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.2 1996/12/18 03:12:50 dawes Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -82,7 +82,6 @@ enum {                            /* OR these together to form a bitBLT mode */
 extern int lgCirrusRop[16];  /* Defined in cir_blitLG.c */
 
 
-#if 0
 /* Use the function call as opposed to the macro.  The reason is that
    the function call uses a volatile variable, which is necessary for 
    forcing the STATUS register to be read each time.  Using just the macro,
@@ -92,7 +91,6 @@ int LgReady(void);
 #define LgREADY() \
   ((*(unsigned char *)(cirrusMMIOBase + STATUS) & 0x07) == 0x00)
 */
-#endif
 
 #define LgSETROP(rop) \
   *(unsigned short *)(cirrusMMIOBase + DRAWDEF) = (rop);
