@@ -1,4 +1,4 @@
-XFree86 3.9Ae (21 March 1998)
+XFree86 3.9Ae (22 March 1998)
 1621. Bring over some of the new mouse code from the 3.3.2 tree.
 1620. Link X11 apps against libxpg4 on FreeBSD to get multibyte locale
       support.
@@ -6031,4 +6031,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.574 1998/03/21 11:08:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.575 1998/03/21 14:14:17 hohndel Exp $
