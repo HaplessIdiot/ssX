@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/80 1996/01/14 18:35:47 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.13 1996/09/01 04:49:49 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.14 1996/09/22 05:14:44 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -12,7 +12,7 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.13 1996/09/01 04:49:49 dawes Exp $
 #endif
 
 #ifndef BuildBoth
-#define BuildBoth (defined(LinuxArchitecture) && !SharedLibXdmGreet)
+#define BuildBoth (defined(LinuxArchitecture) && !SharedLibXdmGreet && !(defined(AlphaArchitecture) && !UseElfFormat))
 #endif
 
 #if HasXdmAuth
