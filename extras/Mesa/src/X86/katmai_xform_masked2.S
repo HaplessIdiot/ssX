@@ -1,4 +1,7 @@
+/* $XFree86$ */
+
 #include "assyntax.h"
+
 /** TODO:
   * - insert PREFETCH instructions to avoid cache-misses !
   * - some more optimizations are possible...

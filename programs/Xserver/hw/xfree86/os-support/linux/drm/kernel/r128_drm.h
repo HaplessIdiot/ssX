@@ -27,6 +27,7 @@
  * Authors: Kevin E. Martin <martin@valinux.com>
  *
  */
+/* $XFree86$ */
 
 #ifndef _R128_DRM_H_
 #define _R128_DRM_H_
@@ -57,9 +58,9 @@ typedef struct drm_r128_init {
 } drm_r128_init_t;
 
 typedef struct drm_r128_packet {
-	unsigned long *buffer;
-	int            count;
-	int            flags;
+	void *buffer;
+	int  count;
+	int  flags;
 } drm_r128_packet_t;
 
 typedef enum drm_r128_prim {

@@ -1,4 +1,6 @@
 // $XConsortium: macintosh /main/10 1996/01/29 19:54:54 kaleb $
+// $XFree86$
+//
 
 xkb_symbols "extended" {
 

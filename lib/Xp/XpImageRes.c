@@ -34,14 +34,14 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpImageRes.c,v 1.2 2000/01/25 18:37:33 dawes Exp $ */
 
 
 #define NEED_REPLIES
 
 #include "Printstr.h"
 #include "Xlibint.h"
-#include "extutil.h"
+#include "XpExtUtil.h"
 
 
 Bool

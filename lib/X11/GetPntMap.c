@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/GetPntMap.c,v 1.2 1998/06/28 08:41:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetPntMap.c,v 1.3 1998/10/03 08:41:18 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -116,7 +116,7 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
 	    SyncHandle();
 	    return (KeySym *) NULL;
 	}
-	_XRead32 (dpy, (char *) mapping, nbytes);
+	_XRead32 (dpy, (long *) mapping, nbytes);
     }
     *keysyms_per_keycode = rep.keySymsPerKeyCode;
     UnlockDisplay(dpy);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.32 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.34 2000/09/19 19:19:22 eich Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -96,7 +96,7 @@ typedef struct {
     int			planemask;
     int			realMXWidth;
     CARD32		IOAddress;
-    CARD32		FbAddress;
+    unsigned long	FbAddress;
     int                 irq;
     unsigned char *     IOBase;
     unsigned char *     IOBaseVGA;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.3 1999/06/06 08:48:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.4 1999/09/25 14:38:16 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,7 +71,7 @@ vga16DoBitblt
     unsigned long   planemask
 )
 {
-    unsigned long *psrcBase, *pdstBase;	
+    CARD32 *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
     int widthSrc, widthDst;	/* add to get to same position in next line */
 

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.1 2000/05/18 16:30:00 dawes Exp $
  */
 
 /*
@@ -494,7 +494,8 @@ VideoModeInitialize(void)
 	XmuSnprintf(name, sizeof(name), "%s.%d", dispstr, i);
 	rep = XtCreateManagedWidget(name, smeBSBObjectClass, screenp,
 				    NULL, 0);
-	XtAddCallback(rep, XtNcallback, ChangeScreenCallback, (XtPointer)i);
+	XtAddCallback(rep, XtNcallback, ChangeScreenCallback,
+	    (XtPointer)(long)i);
 	if (i == 0) {
 	    screenb = XtVaCreateManagedWidget("screenB", menuButtonWidgetClass,
 					      vtune,
@@ -782,7 +783,7 @@ AdjustMonitorCallback(Widget w, XtPointer client_data, XtPointer call_data)
 {
     if (repeater != w)
 	return;
-    switch ((int)client_data) {
+    switch ((long)client_data) {
 	case LEFT:
 	    if (modeline.hsyncend + 4 < modeline.htotal) {
 		modeline.hsyncstart += 4;
@@ -936,7 +937,7 @@ ApplyCallback(Widget w, XtPointer call_data, XtPointer client_data)
 static void
 AutoCallback(Widget w, XtPointer call_data, XtPointer client_data)
 {
-    autoflag = (Bool)client_data;
+    autoflag = (Bool)(long)client_data;
     XtSetSensitive(apply, !autoflag);
 }
 
@@ -970,7 +971,7 @@ SelectCallback(Widget w, XtPointer call_data, XtPointer client_data)
 static void
 SwitchCallback(Widget w, XtPointer call_data, XtPointer client_data)
 {
-    int direction = (int)call_data;
+    int direction = (long)call_data;
     Arg args[1];
     Bool result;
     char label[32];
@@ -1021,7 +1022,7 @@ ChangeScreenCallback(Widget w, XtPointer call_data, XtPointer client_data)
 {
     Arg args[1];
 
-    screenno = (int)call_data;
+    screenno = (long)call_data;
     if (screenno > computer.num_vidmodes || screenno < 0 ||
 	vidtune == computer.vidmodes[screenno])
 	return;
@@ -1105,7 +1106,7 @@ PopdownForce(Widget w, XtPointer user_data, XtPointer call_data)
 {
     asking_force = 0;
     XtPopdown(forceshell);
-    do_force = (int)user_data;
+    do_force = (long)user_data;
 }
 
 void

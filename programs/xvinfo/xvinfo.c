@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.1 2000/09/18 18:09:52 mvojkovi Exp $ */
+/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.2 2000/09/18 19:03:23 mvojkovi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -17,8 +17,10 @@ PrintUsage(void)
 int main(int argc, char *argv[])
 {
     Display *dpy;
-    int ver, rev, eventB, reqB, errorB, i, j, k, n; 
-    int nencode, nscreens, nadaptors, nattr, numImages;
+    unsigned int ver, rev, eventB, reqB, errorB; 
+    int i, j, k, n; 
+    unsigned int nencode, nadaptors;
+    int nscreens, nattr, numImages;
     XvAdaptorInfo *ainfo;
     XvAttribute *attributes;
     XvEncodingInfo *encodings;

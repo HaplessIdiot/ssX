@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.c,v 1.2 2000/08/04 03:51:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init300.c,v 1.3 2000/09/22 11:35:46 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -1062,7 +1062,7 @@ USHORT CalcRefreshRate(ScrnInfoPtr pScrn, DisplayModePtr mode)
           break;
     
    }
-   while(RefreshRate[Index][i] != NULL)
+   while(RefreshRate[Index][i] != 0)
    {
       if(temp == RefreshRate[Index][i])
       {  

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.1 2000/04/04 22:37:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -242,7 +242,7 @@ static void
 DepthCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     if (call_data != NULL)
-	default_depth = (int)user_data;
+	default_depth = (long)user_data;
 }
 
 /*ARGSUSED*/
@@ -325,7 +325,7 @@ void
 RotateCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     if (call_data != NULL)
-	rotate = (int)user_data;
+	rotate = (long)user_data;
     else
 	rotate = 0;
 }

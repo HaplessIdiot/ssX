@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.27 2000/08/24 22:20:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.28 2000/08/28 14:20:45 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -995,7 +995,7 @@ ATIProbe
 #   define              PrefixSize    0x50U
 #   define              BIOSSignature 0x30U
     CARD8               BIOS[PrefixSize];
-#   define              BIOSWord(_n)  (*((CARD16 *)(BIOS + (_n))))
+#   define              BIOSWord(_n)  (BIOS[_n] | (BIOS[(_n) + 1] << 8))
 
 #endif /* AVOID_CPIO */
 

@@ -22,6 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
+/* $XFree86$ */
 
 /*****************************************************************************\
 * parse.c:                                                                    *
@@ -40,6 +41,7 @@
 
 #include "XpmI.h"
 #include <ctype.h>
+#include <string.h>
 
 LFUNC(ParsePixels, int, (xpmData *data, unsigned int width,
 			 unsigned int height, unsigned int ncolors,

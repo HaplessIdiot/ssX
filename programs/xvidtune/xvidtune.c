@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.24 1998/12/20 11:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.25 1999/03/21 07:35:41 dawes Exp $ */
 
 /*
 
@@ -576,7 +576,7 @@ ShowCB(Widget w, XtPointer client, XtPointer call)
 static void
 AdjustCB(Widget w, XtPointer client, XtPointer call)
 {
-   int what = (int) client;
+   int what = (long) client;
    Boolean state;
    
    switch (what) {
@@ -807,7 +807,7 @@ ChangeBlankCB (Widget w, XtPointer client, XtPointer call)
     fields findex;
     ScrollData* sdp;
     Boolean state;
-    int what = (int)client;
+    int what = (long) client;
 
 
     if (what < 0)
@@ -878,7 +878,7 @@ ScrollCB (Widget w, XtPointer client, XtPointer call)
 {
     float percent = *(float*) call;
     int ipercent = percent * 100;
-    int fieldindex = (int) client;
+    int fieldindex = (long) client;
     ScrollData* sdp = &AppRes.field[fieldindex];
 
 
@@ -915,7 +915,7 @@ SwitchCB (Widget w, XtPointer client, XtPointer call)
     XF86VidModeLockModeSwitch(XtDisplay(w), DefaultScreen (XtDisplay (w)),
 			      FALSE);
     XF86VidModeSwitchMode(XtDisplay(w), DefaultScreen (XtDisplay (w)),
-			  (int)client);
+			  (int)(long) client);
     XF86VidModeLockModeSwitch(XtDisplay(w), DefaultScreen (XtDisplay (w)),
 			      TRUE);
     FetchCB(w, NULL, NULL);

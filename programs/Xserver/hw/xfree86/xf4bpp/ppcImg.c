@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.2 1998/07/25 16:59:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.3 1999/06/06 08:49:00 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -76,7 +76,7 @@ xf4bppGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
     int	    depth, i, linelength, width ;
     DDXPointRec	pt ;
     char *pbits ;
-    unsigned long int	gcv[2] ;
+    XID gcv[2] ;
     PixmapPtr	pPixmap = (PixmapPtr) NULL ;
     GCPtr	pGC ;
     char *pDst = pdstLine ;

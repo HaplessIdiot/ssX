@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.21 2000/06/21 17:28:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.23 2000/09/19 12:46:16 eich Exp $ */
 
 /*
  * Authors:
@@ -1447,7 +1447,7 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   hwp = VGAHWPTR(pScrn);
 
   if (!I740MapMem(pScrn)) return FALSE;
-  pScrn->memPhysBase = (int)pI740->FbBase;
+  pScrn->memPhysBase = (unsigned long)pI740->FbBase;
   pScrn->fbOffset = 0;
 
   if (!pI740->usePIO)

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.1 2000/06/13 23:15:51 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -737,7 +737,8 @@ Html_Commit(Html_Parser *parser)
 				       position, length, Qli);
 	    else
 		XawTextSourceAddEntity(parser->source, 0, /*XAW_TENT_LITEM,*/
-				       XAW_TENTF_HIDE, (XtPointer)head->li++,
+				       XAW_TENTF_HIDE,
+				       (XtPointer)(long)head->li++,
 				       position, length, Qli);
 	}
 	else if (quark == Qhide)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.12 2000/08/04 21:07:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.13 2000/08/22 21:54:29 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -80,6 +80,8 @@ const char *ATIChipNames[] =
     "ATI Rage 128 Pro",
     "ATI Rage 128 Mobility",
     "ATI unknown Rage 128"
+    "ATI Radeon",
+    "ATI Rage HDTV"
 };
 
 const char *ATIFoundryNames[] =
@@ -275,8 +277,10 @@ ATIMach64ChipID
             break;
 
         case OldChipID('G', 'V'):
+        case OldChipID('G', 'Y'):
             pATI->ChipType = OldToNewChipID(pATI->ChipType);
         case NewChipID('G', 'V'):
+        case NewChipID('G', 'Y'):
             pATI->ChipRevision =
                 GetBits(pATI->config_chip_id, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264GT2C;
@@ -485,6 +489,7 @@ ATIChipID
 
         case OldChipID('G', 'V'):  case NewChipID('G', 'V'):
         case OldChipID('G', 'W'):  case NewChipID('G', 'W'):
+        case OldChipID('G', 'Y'):  case NewChipID('G', 'Y'):
         case OldChipID('G', 'Z'):  case NewChipID('G', 'Z'):
             return ATI_CHIP_264GT2C;
 
@@ -555,7 +560,20 @@ ATIChipID
 
         case OldChipID('L', 'E'):  case NewChipID('L', 'E'):
         case OldChipID('L', 'F'):  case NewChipID('L', 'F'):
+        case OldChipID('L', 'K'):  case NewChipID('L', 'K'):
+        case OldChipID('L', 'L'):  case NewChipID('L', 'L'):
+        case OldChipID('M', 'F'):  case NewChipID('M', 'F'):
+        case OldChipID('M', 'L'):  case NewChipID('M', 'L'):
             return ATI_CHIP_RAGE128MOBILITY;
+
+        case OldChipID('Q', 'D'):  case NewChipID('Q', 'D'):
+        case OldChipID('Q', 'E'):  case NewChipID('Q', 'E'):
+        case OldChipID('Q', 'F'):  case NewChipID('Q', 'F'):
+        case OldChipID('Q', 'G'):  case NewChipID('Q', 'G'):
+            return ATI_CHIP_RADEON;
+
+        case OldChipID('H', 'D'):  case NewChipID('H', 'D'):
+            return ATI_CHIP_HDTV;
 
         default:
             /*

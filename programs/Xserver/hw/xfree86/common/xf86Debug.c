@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <sys/time.h>
 #include <unistd.h> 
 #include "X.h"

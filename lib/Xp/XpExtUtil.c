@@ -34,14 +34,14 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpExtUtil.c,v 1.2 2000/01/25 18:37:32 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Printstr.h"
 #include "Xlibint.h"
-#include "extutil.h"
+#include "XpExtUtil.h"
 #include <X11/Xos.h>
 
 #define ENQUEUE_EVENT   True

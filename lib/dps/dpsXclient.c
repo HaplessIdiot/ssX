@@ -35,10 +35,12 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <unistd.h>	/* sleep() */
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #ifdef VMS

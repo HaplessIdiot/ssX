@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.14 1999/08/28 09:00:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.15 2000/06/15 20:49:58 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -34,6 +34,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1004,7 +1005,7 @@ static Cardinal num_prop_lists;
 static int
 bcmp_qident(_Xconst void *left, _Xconst void *right)
 {
-    return ((int)left - (*(XawTextProperty**)right)->identifier);
+    return ((long)left - (*(XawTextProperty**)right)->identifier);
 }
 
 static int

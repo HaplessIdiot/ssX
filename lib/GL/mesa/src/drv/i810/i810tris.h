@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.4 2000/08/28 02:43:11 tsi Exp $ */
 
 #ifndef I810TRIS_INC
 #define I810TRIS_INC
@@ -53,7 +53,7 @@ static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
    GLuint *vb = i810AllocDwordsInline( imesa, 3 * vertsize );
     int j;
 
-#if 1
+#ifdef __i386__
     __asm__ __volatile__( "rep ; movsl"
 			  : "=%c" (j)
 			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)

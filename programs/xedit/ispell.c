@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.12 1999/07/11 08:49:31 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.13 1999/08/15 13:00:55 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -1343,7 +1343,7 @@ IspellStartProcess(void)
 static void
 PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 {
-    (void)IspellEndProcess((Bool)client_data, True);
+    (void)IspellEndProcess((Bool)(long)client_data, True);
     XtPopdown(ispell.shell);
     *ispell.sentbuf = '\0';
 }
@@ -1627,7 +1627,7 @@ AddIspell(Widget w, XtPointer client_data, XtPointer call_data)
 {
     Arg args[1];
     char *text;
-    int cmd = (int)client_data;
+    int cmd = (long)client_data;
 
     if (!ispell.lock || ispell.repeat)
 	return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.31 2000/05/14 20:04:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.32 2000/06/20 05:08:44 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1308,6 +1308,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		if (p->type & M_T_BUILTIN)
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
 			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+		else if (p->type & M_T_DEFAULT)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Default mode \"%s\" deleted (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 		else
 		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,

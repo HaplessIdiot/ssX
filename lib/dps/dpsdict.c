@@ -35,12 +35,14 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 /***********/
 /* Imports */
 /***********/
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "dpsint.h"
 

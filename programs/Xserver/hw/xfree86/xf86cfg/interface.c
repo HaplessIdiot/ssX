@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.3 2000/06/13 23:15:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.5 2000/08/04 16:13:44 eich Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -400,7 +400,7 @@ WriteConfig(Widget w, XtPointer user_data, XtPointer call_data)
 {
     asking_cf = 0;
     XtPopdown(shell_cf);
-    write_cf = (int)user_data;
+    write_cf = (long)user_data;
 }
 
 /*ARGSUSED*/
@@ -1151,7 +1151,7 @@ SetTip(xf86cfgDevice *device)
 void
 AddDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    AddDevice((int)user_data, NULL, 6, 6);
+    AddDevice((long)user_data, NULL, 6, 6);
 }
 
 void
@@ -1785,7 +1785,7 @@ DrawCable(Display *display, Window window, int o_x, int o_y, int d_x, int d_y)
 void
 SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    int i, mode = (int)user_data;
+    int i, mode = (long)user_data;
     Arg args[3];
     char *ptr;
     static Dimension height;

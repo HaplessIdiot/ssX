@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -45,7 +46,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;  \
    __GLSiScontext *hwcx = (__GLSiScontext *) xmesa->private; \
    GLuint pitch = hwcx->swRenderPitch;			\
-   char *buf = hwcx->swRenderBase			
+   char *buf = (char *)hwcx->swRenderBase			
 
 #define CLIPPIXEL(_x,_y) (_x >= minx && _x < maxx && \
 			  _y >= miny && _y < maxy)

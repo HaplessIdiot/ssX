@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.9 2000/02/18 12:20:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.10 2000/06/17 00:03:24 martin Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -149,8 +149,8 @@ typedef struct _TDFXRec {
   int MaxClock;
   int ChipType;
   pciVideoPtr PciInfo;
-  int LinearAddr[MAXCHIPS];
-  int MMIOAddr[MAXCHIPS];
+  unsigned long LinearAddr[MAXCHIPS];
+  unsigned long MMIOAddr[MAXCHIPS];
   EntityInfoPtr pEnt;
   int numChips;
   PCITAG PciTag[MAXCHIPS];

@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * protocol extensions.  THESE INTERFACES ARE NOT PART OF THE X STANDARD AND
  * ARE SUBJECT TO CHANGE!
  */
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/extutil.h,v 1.3 2000/08/26 00:33:41 keithp Exp $ */
 
 #ifndef _EXTUTIL_H_
 #define _EXTUTIL_H_
@@ -188,7 +188,7 @@ XExtDisplayInfo *proc (Display *dpy) \
     return dpyinfo; \
 }
 
-#define XEXT_FIND_DISLPAY_PROTO(proc) \
+#define XEXT_FIND_DISPLAY_PROTO(proc) \
 	XExtDisplayInfo *proc(Display *dpy)
 
 #define XEXT_GENERATE_CLOSE_DISPLAY(proc,extinfo) \

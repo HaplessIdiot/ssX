@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_drm_public.h,v 1.2 2000/08/04 03:51:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_drm.h,v 1.1 2000/09/24 13:51:39 alanh Exp $ */
 
 #ifndef _sis_drm_public_h_
 #define _sis_drm_public_h_
@@ -7,7 +7,7 @@ typedef struct {
   int context;
   unsigned int offset;
   unsigned int size;
-  unsigned int free;
+  unsigned long free;
 } drm_sis_mem_t; 
 
 typedef struct { 

@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.36 2000/08/25 21:51:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.38 2000/09/19 12:46:05 eich Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -1729,10 +1729,10 @@ static void
 HScroll(Widget w, XtPointer closure, XtPointer callData)
 {
     TextWidget ctx = (TextWidget)closure;
-    int pixels = (int)callData;
+    long pixels = (long)callData;
 
     if (pixels > 0) {
-	int max;
+	long max;
 
 	max = (int)GetWidestLine(ctx) + ctx->text.left_margin -
 	      ctx->text.r_margin.left;
@@ -1753,7 +1753,7 @@ HJump(Widget w, XtPointer closure, XtPointer callData)
 {
     TextWidget ctx = (TextWidget)closure;
     float percent = *(float *)callData;
-    int pixels;
+    long pixels;
 
     pixels = ctx->text.left_margin -
 	     (ctx->text.r_margin.left - (int)(percent * GetWidestLine(ctx)));
@@ -1821,12 +1821,12 @@ static void
 VScroll(Widget w, XtPointer closure, XtPointer callData)
 {
     TextWidget ctx = (TextWidget)closure;
-    int height, lines = (int)callData;
+    long height, lines = (long)callData;
 
-    height = (int)XtHeight(ctx) - (int)VMargins(ctx);
+    height = XtHeight(ctx) - VMargins(ctx);
     if (height < 1)
 	height = 1;
-    lines = (int)(lines * (int)ctx->text.lt.lines) / height;
+    lines = (lines * ctx->text.lt.lines) / height;
     _XawTextPrepareToUpdate(ctx);
     XawTextScroll(ctx, lines, 0);
     _XawTextExecuteUpdate(ctx);

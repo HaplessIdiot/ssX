@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Authors:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xext/XMultibuf.c,v 1.2 1999/07/12 05:57:22 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -419,7 +419,7 @@ Status XmbufGetWindowAttributes (dpy, w, attr)
 	    SyncHandle();
 	    return (0);
 	}
-	_XRead32 (dpy, (char *) attr->buffers, nbytes);
+	_XRead32 (dpy, (long *) attr->buffers, nbytes);
     }
     attr->displayed_index = rep.displayedBuffer;
     attr->update_action = rep.updateAction;

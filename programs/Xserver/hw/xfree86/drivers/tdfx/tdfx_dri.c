@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.10 2000/06/23 23:43:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.11 2000/09/24 13:51:30 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -307,7 +307,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo = DRICreateInfoRec();
   if (!pDRIInfo) {
     xf86DrvMsg(pScreen->myNum, X_ERROR,
-               "DRICreatInfoRect() failed, disabling DRI.\n");
+               "DRICreateInfoRect() failed, disabling DRI.\n");
     return FALSE;
   }
 
@@ -449,10 +449,6 @@ TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual,
 		  drmContext hwContext, void *pVisualConfigPriv,
 		  DRIContextType contextStore)
 {
-  TDFXConfigPrivPtr pTDFXConfig = (TDFXConfigPrivPtr)pVisualConfigPriv;
-  TDFXDRIContextPtr ctx;
-
-  ctx=(TDFXDRIContextPtr)contextStore;
   return TRUE;
 }
 
@@ -460,8 +456,6 @@ static void
 TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
 		   DRIContextType contextStore)
 {
-  TDFXDRIContextPtr ctx;
-  ctx=(TDFXDRIContextPtr)contextStore;
 }
 
 Bool

@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.2 2000/08/23 22:10:00 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.3 2000/08/31 19:03:54 tsi Exp $ */
 
 /*****************************************************************************\
 * XpmI.h:                                                                     *
@@ -56,7 +56,7 @@
 extern FILE *popen();
 #endif
 
-#if defined(SYSV) || defined(SVR4) || defined(VMS) || defined(WIN32)
+#if defined(SYSV) || defined(SVR4) || defined(VMS) || defined(WIN32) || defined(linux)
 #include <string.h>
 
 #ifndef index
@@ -228,8 +228,8 @@ FUNC(xpmHashTableFree, void, (xpmHashTable *table));
 FUNC(xpmHashSlot, xpmHashAtom *, (xpmHashTable *table, char *s));
 FUNC(xpmHashIntern, int, (xpmHashTable *table, char *tag, void *data));
 
-#define HashAtomData(i) ((void *)i)
-#define HashColorIndex(slot) ((unsigned int)((*slot)->data))
+#define HashAtomData(i) ((void *)(long)i)
+#define HashColorIndex(slot) ((unsigned long)((*slot)->data))
 #define USE_HASHTABLE (cpp > 2 && ncolors > 4)
 
 /* I/O utility */

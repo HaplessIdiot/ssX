@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.7 2000/08/24 22:20:08 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.8 2000/09/24 13:51:10 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -164,8 +164,7 @@ LinkSourceFile(xdriP.h, ../../X)
 		../../vertices.c \
 		../../winpos.c \
 		../../xform.c \
-		../../zoom.c \
-		../../X86/common_x86.c
+		../../zoom.c
 
      MESAOBJS = ../../aatriangle.o \
 		../../accum.o \

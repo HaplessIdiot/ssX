@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.32 1999/05/03 12:16:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.34 2000/09/19 12:46:14 eich Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -1559,8 +1559,8 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     bytesPerLine = w * (bpp >> 3);
     byteWidthSrc = ((srcwidth * (bpp >> 3) + 3L) & ~0x3L);
     cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
-    skipleft = (unsigned int)src & 0x7;
-    src = (unsigned char *)((unsigned int)src & ~0x7L);
+    skipleft = (unsigned long)src & 0x7;
+    src = (unsigned char *)((unsigned long)src & ~0x7L);
     dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
     destaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
     destpitch = pScrn->displayWidth * (bpp >> 3);

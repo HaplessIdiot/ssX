@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -181,7 +182,7 @@ sis_TexImage (GLcontext * ctx, GLenum target,
   if (area->Format == GL_RGB8)
     {
       int i;
-      GLbyte *src = image->Data;
+      GLbyte *src = (GLbyte *)image->Data;
       GLbyte *dst = area->Data;
 
       for (i = 0; i < area->Size / 4; i++)
@@ -231,7 +232,7 @@ sis_TexSubImage (GLcontext * ctx, GLenum target,
 
   if (area->Format == GL_RGB8)
     {
-      src = image->Data + (xoffset + yoffset * image->Width) * 3;
+      src = (GLbyte *)image->Data + (xoffset + yoffset * image->Width) * 3;
       dst = area->Data + (xoffset + yoffset * image->Width) * 4;
       soffset = (image->Width - width) * 3;
       doffset = (image->Width - width) * 4;
@@ -252,7 +253,8 @@ sis_TexSubImage (GLcontext * ctx, GLenum target,
       GLuint texelSize = area->texelSize;
       GLuint copySize = texelSize * width;
 
-      src = image->Data + (xoffset + yoffset * image->Width) * texelSize;
+      src = (GLbyte *)image->Data +
+	(xoffset + yoffset * image->Width) * texelSize;
       dst = area->Data + (xoffset + yoffset * image->Width) * texelSize;
       soffset = image->Width * texelSize;
 
@@ -773,11 +775,11 @@ sis_set_texobj_parm (GLcontext * ctx, GLtextureObject * object, int hw_unit)
 
 	switch(area->memType){
 	case VIDEO_TYPE:
-	  texOffset = ((GLuint) area->Data - (GLuint) GET_FbBase (hwcx));
+	  texOffset = ((char *) area->Data - (char *) GET_FbBase (hwcx));
 	  break;
 	case AGP_TYPE:
-	  texOffset = ((GLuint) area->Data - (GLuint) GET_AGPBase (hwcx) +
-	               (GLuint) hwcx->AGPAddr);
+	  texOffset = ((char *) area->Data - (char *) GET_AGPBase (hwcx)) +
+	               (unsigned long) hwcx->AGPAddr;
           current->texture[hw_unit].hwTextureMip |= (0x40000 << i);
           break;
         default:

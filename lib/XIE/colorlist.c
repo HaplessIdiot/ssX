@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/XIE/colorlist.c,v 1.3 1999/06/13 16:18:08 dawes Exp $ */
 
 #include "XIElibint.h"
 
@@ -142,7 +142,7 @@ XieQueryColorList (
       *colors_ret = (unsigned long *) Xmalloc (
 	rep.length * sizeof (unsigned long));
 
-      _XRead32 (display, *colors_ret, rep.length << 2);
+      _XRead32 (display, (long *)(*colors_ret), rep.length << 2);
     }
     else
 	*colors_ret = NULL;

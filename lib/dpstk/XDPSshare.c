@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dpstk/XDPSshare.c,v 1.2 2000/06/07 22:03:01 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -576,7 +576,6 @@ void XDPSFreeDisplayInfo(Display *display)
 		XFreeGC(display, d->gcForDepth[i][j]);
 	    }
 	}
-	free((char *) d->depthsForScreen[i]);
     }
 
     free((char *) d->depthsForScreen);

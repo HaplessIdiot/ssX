@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxpix.c,v 1.2 1999/06/14 07:31:31 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -67,8 +67,8 @@ Free(__GLdrawableBuffer *buf, __GLdrawablePrivate *glPriv)
 {
     __GLPixBufferInfo *bufferInfo;
 
-    if (LookupIDByType((XID)buf->handle, __glXPixmapRes)) {
-	FreeResource((XID)buf->handle, FALSE);
+    if (LookupIDByType((XID)(long)buf->handle, __glXPixmapRes)) {
+	FreeResource((XID)(long)buf->handle, FALSE);
 	buf->handle = NULL;
     }
 
@@ -96,7 +96,7 @@ __glXInitPix(__GLdrawableBuffer *buf, __GLdrawablePrivate *glPriv,
     buf->elementSize = ((bits-1) / 8) + 1;
     buf->elementSizeLog2 = __glFloorLog2(buf->elementSize);
 
-    buf->handle = (void *) glxpixmapId;
+    buf->handle = (void *)(long) glxpixmapId;
     pGlxPixmap->refcnt++;
 
     buf->resize = Resize;

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.11 1999/03/21 07:34:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.12 1999/12/27 00:39:24 robin Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -694,7 +694,7 @@ SendCommand(Widget w, Atom sel, ResIdent ident, EditresCommand command,
 static int
 qcmp_widget_list(register _Xconst void *left, register _Xconst void *right)
 { 
-  return ((int)*(Widget **)left - (int)*(Widget **)right);
+  return (int)((long)*(Widget **)left - (long)*(Widget **)right);
 }
 
 /*

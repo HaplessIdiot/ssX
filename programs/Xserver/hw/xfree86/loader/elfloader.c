@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.25 2000/09/07 14:40:26 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.26 2000/09/18 03:01:17 keithp Exp $ */
 
 /*
  *
@@ -798,7 +798,7 @@ int		maxalign;
     ELFDEBUG( "ELFCreateGOT: %x entries in the GOT\n", elffile->gotsize/8 );
 #endif
 
-#if ELFDEBUG
+#ifdef ELFDEBUG
     /*
      * Hmmm. Someone is getting here without any got entries, but they
      * may still have R_ALPHA_GPDISP relocations against the got.

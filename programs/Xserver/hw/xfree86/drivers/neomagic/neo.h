@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.14 2000/09/19 12:46:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.15 2000/09/25 23:57:08 mvojkovi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -190,12 +190,12 @@ typedef struct neoRec
     EntityInfoPtr pEnt;
     XAAInfoRecPtr	AccelInfoRec;
     NEOACLRec Accel;
-    unsigned int NeoMMIOAddr;
-    unsigned int NeoLinearAddr;
+    unsigned long NeoMMIOAddr;
+    unsigned long NeoLinearAddr;
     unsigned char* NeoMMIOBase;
     unsigned char* NeoFbBase;
     long NeoFbMapSize;
-    unsigned int vgaIOBase;
+    unsigned long vgaIOBase;
     DGAModePtr		DGAModes;
     int			numDGAModes;
     Bool		DGAactive;

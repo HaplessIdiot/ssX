@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.2 2000/03/03 20:02:20 dawes Exp $ */
+/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.3 2000/03/03 23:16:25 dawes Exp $ */
 
 #if ( !defined(lint) && !defined(SABER))
   static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
@@ -329,18 +329,18 @@ Page(Widget w, XEvent * event, String * params, Cardinal *num_params)
    case 'f':
    case 'F':
      /* move one page forward */
-     VerticalScroll(bar, NULL, (XtPointer)((int) bar->core.height));
+     VerticalScroll(bar, NULL, (XtPointer)((long) bar->core.height));
      break;
    case 'b':
    case 'B':
      /* move one page backward */
-     VerticalScroll(bar, NULL,  (XtPointer)(- (int) bar->core.height));
+     VerticalScroll(bar, NULL,  (XtPointer)(- (long) bar->core.height));
      break;
    case 'L':
    case 'l':
      /* move one line forward */
      VerticalScroll(bar, NULL, 
-		    (XtPointer)((int) atoi(params[1]) * sblw->scroll.font_height));
+		(XtPointer)((long) atoi(params[1]) * sblw->scroll.font_height));
      break;
    default:
      return;

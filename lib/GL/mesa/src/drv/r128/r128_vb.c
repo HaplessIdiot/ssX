@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.4 2000/08/25 13:42:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.5 2000/09/24 13:51:10 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -413,7 +413,8 @@ void r128DDResizeVB(struct vertex_buffer *VB, GLuint size)
 	exit(1);
     }
 
-    r128vb->verts = (r128VertexPtr)(((CARD32)r128vb->vert_store + 31) & ~31);
+    r128vb->verts =
+	(r128VertexPtr)(((unsigned long)r128vb->vert_store + 31) & ~31);
 
     gl_vector1ui_free(&r128vb->clipped_elements);
     gl_vector1ui_alloc(&r128vb->clipped_elements,
@@ -445,7 +446,8 @@ void r128DDRegisterVB(struct vertex_buffer *VB)
 	exit(1);
     }
 
-    r128vb->verts = (r128VertexPtr)(((CARD32)r128vb->vert_store + 31) & ~31);
+    r128vb->verts =
+	(r128VertexPtr)(((unsigned long)r128vb->vert_store + 31) & ~31);
 
     gl_vector1ui_alloc(&r128vb->clipped_elements,
 		       VEC_WRITABLE, r128vb->size, 32);

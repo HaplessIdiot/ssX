@@ -26,6 +26,7 @@
  *
  *	Id: fontcache.c,v 1.19 1999/01/31 13:06:00 akiyama Exp $
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,7 +236,7 @@ FontCacheOpenCache(void *arg)
             return NULL;
     }
 
-    linesize = (int) arg;
+    linesize = (long)arg;
 #if defined(HASH_DEBUG) || defined(DEBUG)
 fprintf(stderr, "FontCacheOpenCache: line size=%d\n", linesize);
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.4 1999/06/06 08:48:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.5 1999/09/25 14:38:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -295,9 +295,9 @@ return 0 ;
 
 void
 xf4bppValidateGC( pGC, changes, pDrawable )
-    register GCPtr	pGC ;
-    register Mask	changes ;
-    DrawablePtr		pDrawable ;
+    GCPtr         pGC;
+    unsigned long changes;
+    DrawablePtr   pDrawable;
 {
     register ppcPrivGCPtr devPriv ;
     WindowPtr pWin ;

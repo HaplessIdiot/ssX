@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.4 2000/06/20 05:08:50 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.5 2000/08/01 20:05:43 dawes Exp $
  */
 
 #include "config.h"
@@ -368,7 +368,7 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(timeoutToggle, args, 1);
-    ScaleEnableCallback(enable, (XtPointer)timeout, (XtPointer)(int)state);
+    ScaleEnableCallback(enable, (XtPointer)timeout, (XtPointer)(long)state);
     if (xkb_info->xkb->ctrls->ax_timeout > 60)
 	val = (float)(xkb_info->xkb->ctrls->ax_timeout - 60) /
 	      (float)(MAX_TIMEOUT * 60);
@@ -378,11 +378,11 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(sticky, args, 1);
-    EnableCallback(sticky, (XtPointer)stickyForm, (XtPointer)(int)state);
+    EnableCallback(sticky, (XtPointer)stickyForm, (XtPointer)(long)state);
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(mouse, args, 1);
-    EnableCallback(mouse, (XtPointer)mouseForm, (XtPointer)(int)state);
+    EnableCallback(mouse, (XtPointer)mouseForm, (XtPointer)(long)state);
     if (xkb_info->xkb->ctrls->mk_time_to_max > 10)
 	val = (float)((xkb_info->xkb->ctrls->mk_time_to_max * (40. / 10.))) /
 	      (float)(MAX_MOUSE_TIME * 100);
@@ -408,7 +408,7 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(repeat, args, 1);
-    EnableCallback(repeat, (XtPointer)repeatForm, (XtPointer)(int)state);
+    EnableCallback(repeat, (XtPointer)repeatForm, (XtPointer)(long)state);
     if (xkb_info->xkb->ctrls->repeat_interval > 5)
 	val = (float)(xkb_info->xkb->ctrls->repeat_interval - 5) /
 	      (float)(MAX_REPEAT_RATE * 1000);
@@ -426,7 +426,7 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(slowToggle, args, 1);
-    EnableCallback(slowToggle, (XtPointer)slowForm, (XtPointer)(int)state);
+    EnableCallback(slowToggle, (XtPointer)slowForm, (XtPointer)(long)state);
     if (xkb_info->xkb->ctrls->slow_keys_delay > 10)
 	val = (float)(xkb_info->xkb->ctrls->repeat_delay - 10) /
 	      (float)(MAX_SLOW_TIME * 1000);
@@ -436,7 +436,7 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(bounceToggle, args, 1);
-    EnableCallback(bounceToggle, (XtPointer)bounceForm, (XtPointer)(int)state);
+    EnableCallback(bounceToggle, (XtPointer)bounceForm, (XtPointer)(long)state);
     if (xkb_info->xkb->ctrls->debounce_delay > 10)
 	val = (float)(xkb_info->xkb->ctrls->debounce_delay - 10) /
 	      (float)(MAX_BOUNCE_TIME * 1000);
@@ -446,7 +446,7 @@ AccessXInitialize(void)
 
     XtSetArg(args[0], XtNstate, &state);
     XtGetValues(enable, args, 1);
-    EnableCallback(enable, (XtPointer)form, (XtPointer)(int)state);
+    EnableCallback(enable, (XtPointer)form, (XtPointer)(long)state);
 }
 
 void
@@ -467,7 +467,7 @@ AccessXConfigureEnd(void)
 static void
 EnableCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    XtSetSensitive((XtPointer)user_data, (int)call_data);
+    XtSetSensitive(user_data, (long)call_data);
 }
 
 /*ARGSUSED*/
@@ -476,9 +476,9 @@ ScaleEnableCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Scale *scale = (Scale*)user_data;
 
-    XtSetSensitive(scale->label, (int)call_data);
-    XtSetSensitive(scale->number, (int)call_data);
-    XtSetSensitive(scale->scroller, (int)call_data);
+    XtSetSensitive(scale->label, (long)call_data);
+    XtSetSensitive(scale->number, (long)call_data);
+    XtSetSensitive(scale->scroller, (long)call_data);
 }
 
 static void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.3 2000/02/11 22:35:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.4 2000/02/29 03:09:06 dawes Exp $ */
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -112,7 +112,7 @@ Bool XF86RushLockPixmap(Display *dpy, int screen, Pixmap pixmap, void **addr)
     return False;
   }
   if (addr)
-      *addr = (void *)rep.addr;
+      *addr = (void *)(long)rep.addr;
   UnlockDisplay(dpy);
   SyncHandle();
   return True;

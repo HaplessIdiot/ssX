@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.7 1999/05/09 10:50:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.8 2000/01/29 18:58:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -953,7 +953,7 @@ _XimEncodeLineSpace(info, top, val)
     int			*out;
 
     out = (int *)((char *)top + info->offset);
-    *out = (int)val;
+    *out = (long)val;
     return True;
 }
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "../../X86/assyntax.h"
 
 #define SETUP_RGBA  0x1

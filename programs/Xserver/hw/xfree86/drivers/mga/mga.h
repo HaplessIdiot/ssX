@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.61 2000/08/21 00:36:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.62 2000/09/24 13:51:27 alanh Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -187,11 +187,11 @@ typedef struct {
     int			YDstOrg;
     int			DstOrg;
     int			SrcOrg;
-    CARD32		IOAddress;
-    CARD32		FbAddress;
-    CARD32		ILOADAddress;
+    unsigned long	IOAddress;
+    unsigned long	FbAddress;
+    unsigned long	ILOADAddress;
     int			FbBaseReg;
-    CARD32		BiosAddress;
+    unsigned long	BiosAddress;
     MessageType		BiosFrom;
     unsigned char *     IOBase;
     unsigned char *     IOBaseDense;
@@ -292,7 +292,7 @@ typedef struct {
     void		(*SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
 					     int x, int y, int w, int h);
     void		(*RestoreAccelState)(ScrnInfoPtr pScrn);
-    int			allowedWidth;
+    int		allowedWidth;
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     void		(*PaletteLoadCallback)(ScrnInfoPtr);
     MGAPaletteInfo	palinfo[256];  /* G400 hardware bug workaround */

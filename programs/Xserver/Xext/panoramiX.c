@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.19 2000/03/28 22:37:34 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.22 2000/05/25 21:12:30 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -963,8 +963,8 @@ ProcPanoramiXGetScreenSize(ClientPtr client)
     	if (client->swapped) {
 	    swaps (&rep.sequenceNumber, n);
 	    swapl (&rep.length, n);
-	    swaps (rep.width, n);
-	    swaps (rep.height, n);
+	    swaps (&rep.width, n);
+	    swaps (&rep.height, n);
 	}	
 	WriteToClient (client, sizeof (xPanoramiXGetScreenSizeReply), (char *) &rep);
 	return client->noClientException;

@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imRmAttr.c,v 1.3 1999/05/09 10:50:37 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -629,7 +629,7 @@ _XimValueToAttribute(res, buf, buf_size, value, len, mode, param)
 	    return False;
 	}
 
-	*((CARD32 *)buf) = (CARD32)value;
+	*((CARD32 *)buf) = (CARD32)(long)value;
 	*len = ret_len;
 	break;
 

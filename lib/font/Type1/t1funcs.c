@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.20 1999/09/04 09:14:10 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.21 1999/09/25 14:36:39 dawes Exp $ */
 
 /*
 
@@ -987,7 +987,7 @@ CIDGetGlyphs(FontPtr pFont,
             if (c >= firstCol && c <= pFont->info.lastCol) {
                 code = c - firstCol;
                 if (!(pci = (CharInfoRec *)cid->glyphs[code]) ||
-                    (pci && (int)pci->bits == CID_BITMAP_UNDEFINED)) {
+                    ((long)pci->bits == CID_BITMAP_UNDEFINED)) {
                     /* load font if not already loaded */
                     if(!cid_valid) {
                         if(!CIDfontfcnA(cid->CIDFontName, cid->CMapName, &rc)) {                            FontP = NULL;
@@ -1022,7 +1022,7 @@ CIDGetGlyphs(FontPtr pFont,
                 char_col = char_col - pFont->info.firstCol;
                 code = char_row * code + char_col;
                 if (!(pci = (CharInfoRec *)cid->glyphs[code]) ||
-                    (pci && (int)pci->bits == CID_BITMAP_UNDEFINED)) {
+                    ((long)pci->bits == CID_BITMAP_UNDEFINED)) {
                     /* load font if not already loaded */
                     if(!cid_valid) {
                         if(!CIDfontfcnA(cid->CIDFontName, cid->CMapName, &rc)) {                            FontP = NULL;
@@ -1060,7 +1060,7 @@ CIDGetGlyphs(FontPtr pFont,
                 char_col = char_col - pFont->info.firstCol;
                 code = char_row * code + char_col;
                 if (!(pci = (CharInfoRec *)cid->glyphs[code]) ||
-                    (pci && (int)pci->bits == CID_BITMAP_UNDEFINED)) {
+                    ((long)pci->bits == CID_BITMAP_UNDEFINED)) {
                     /* load font if not already loaded */
                     if(!cid_valid) {
                         if(!CIDfontfcnA(cid->CIDFontName, cid->CMapName, &rc)) {                            FontP = NULL;
@@ -1564,7 +1564,7 @@ CIDRenderGlyph(FontPtr pFont, psobj *charstringP, psobj *subarrayP,
 
        addmemory(pool, size);
 
-       if (pci && (int)pci->bits == CID_BITMAP_UNDEFINED)
+       if (pci && (long)pci->bits == CID_BITMAP_UNDEFINED)
            glyphs = pci;
        else {
            if (!(glyphs = (CharInfoRec *)xalloc(sizeof(CharInfoRec)))) {

@@ -34,14 +34,13 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
-
+/* $XFree86: xc/lib/Xp/XpPageDim.c,v 1.2tsi Exp $ */
 
 #define NEED_REPLIES
 
 #include "Printstr.h"
 #include "Xlibint.h"
-#include "extutil.h"
+#include "XpExtUtil.h"
 
 
 Status

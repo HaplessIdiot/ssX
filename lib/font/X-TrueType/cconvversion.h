@@ -1,3 +1,4 @@
+/* $XFree86$ */
 #if (!defined(__CODECONV_H))
 #define __CODECONV_H
 
@@ -67,7 +68,7 @@ static pointer \
 name ## Setup(pointer module, pointer opts, int *errmaj, int *errmin) \
 { \
 	ModuleSetupArg *moduleArg = (ModuleSetupArg*)opts; \
-	return (pointer) name ## _entrypoint (\
+	return (pointer)(long) name ## _entrypoint (\
 		moduleArg->charSetHints,\
 		moduleArg->refCodeConverterInfo,\
 		moduleArg->refMapID); \
@@ -78,7 +79,7 @@ static pointer \
 name ## Setup(pointer module, pointer opts, int *errmaj, int *errmin) \
 { \
 	ModuleSetupArg *moduleArg = (ModuleSetupArg*)opts; \
-	return (pointer) name ## _entrypoint (\
+	return (pointer)(long) name ## _entrypoint (\
 		moduleArg->charSetHints,\
 		moduleArg->refCodeConverterInfo,\
 		moduleArg->refMapID); \

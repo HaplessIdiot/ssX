@@ -49,7 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.6 2000/01/29 18:58:18 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.7 2000/02/12 02:54:15 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -477,7 +477,7 @@ _XlcCopyFromArg(src, dst, size)
 	*((long *) dst) = (long) src;
 #ifdef LONG64
     else if (size == sizeof(int))
-	*((int *) dst) = (int) src;
+	*((int *) dst) = (int)(long) src;
 #endif
     else if (size == sizeof(short))
 	*((short *) dst) = (short)(long) src;

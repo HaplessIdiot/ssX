@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.161 2000/09/07 19:06:52 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.163 2000/09/19 12:46:21 eich Exp $ */
 
 /*
  *
@@ -110,9 +110,18 @@ extern void* __remqu(long, long);
 #endif
 
 #if defined(__ia64__)
-extern long __divdi3(long, long);
-extern long __moddi3(long, long);
 extern long __divdf3(long, long);
+extern long __divdi3(long, long);
+extern long __divsf3(long, long);
+extern long __moddi3(long, long);
+extern long __udivdi3(long, long);
+extern long __umoddi3(long, long);
+extern void _outb(char val, unsigned short port);
+extern void _outw(short val, unsigned short port);
+extern void _outl(int val, unsigned short port);
+extern unsigned int _inb(unsigned short port);
+extern unsigned int _inw(unsigned short port);
+extern unsigned int _inl(unsigned short port);
 #endif
 
 #if defined(__sparc__) && defined(__GNUC__)
@@ -1002,9 +1011,18 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 #endif
 #if defined(__ia64__)
-   SYMFUNC(__divdi3)
-   SYMFUNC(__moddi3)
    SYMFUNC(__divdf3)
+   SYMFUNC(__divdi3)
+   SYMFUNC(__divsf3)
+   SYMFUNC(__moddi3)
+   SYMFUNC(__udivdi3)
+   SYMFUNC(__umoddi3)
+   SYMFUNC(_outw)
+   SYMFUNC(_outb)
+   SYMFUNC(_outl)
+   SYMFUNC(_inb)
+   SYMFUNC(_inw)
+   SYMFUNC(_inl)
 #endif
 
 #ifdef __FreeBSD__

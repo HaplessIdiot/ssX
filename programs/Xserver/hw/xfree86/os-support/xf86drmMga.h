@@ -1,5 +1,7 @@
+/* $XFree86$ */
 
-/* WARNING: If you change any of these defines, make sure to change
+/*
+ * WARNING: If you change any of these defines, make sure to change
  * the kernel include file as well (mga_drm.h)
  */
 

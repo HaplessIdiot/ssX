@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.6 1999/08/28 09:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.7 1999/09/27 06:30:09 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -362,7 +362,7 @@ EditCallback(Widget sme, XtPointer client_data, XtPointer call_data)
     Boolean auto_fill;
     XawTextScrollMode scroll;
 
-    switch ((int)client_data) {
+    switch ((long)client_data) {
 	case WRAP_NEVER:
 	    XtSetArg(args[0], XtNwrap, XawtextWrapNever);
 	    break;
@@ -530,7 +530,7 @@ SetColumns(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	(params[0][0] == 'o' || params[0][0] == 'O'))
 	ok = True;
 
-    ProcessColumnsCallback(w, (XtPointer)ok, NULL);
+    ProcessColumnsCallback(w, (XtPointer)(long)ok, NULL);
 }
 
 /*ARGSUSED*/
