@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.5 1996/01/20 02:49:18 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.6 1996/01/24 22:04:39 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -637,11 +637,13 @@ print_XF86VidMode_info(dpy, extname)
                monitor.vsync[i].hi);
     }
 
-    if (!XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &modecount, &modelines))
+    if ((majorrev > 0) || (majorrev == 0 && minorrev > 5)) {
+      if (!XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &modecount,
+				      &modelines))
 	return 0;
-    printf("  Available Video Mode Settings (current first):\n");
-    printf("     Clock   Hdsp Hbeg Hend Httl   Vdsp Vbeg Vend Vttl  Flags\n");
-    for (i = 0; i < modecount; i++) {
+      printf("  Available Video Mode Settings (current first):\n");
+      printf("     Clock   Hdsp Hbeg Hend Httl   Vdsp Vbeg Vend Vttl  Flags\n");
+      for (i = 0; i < modecount; i++) {
         printf("    %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d ",
             (float)modelines[i]->dotclock/1000.0,
             modelines[i]->hdisplay, modelines[i]->hsyncstart,
@@ -658,6 +660,7 @@ print_XF86VidMode_info(dpy, extname)
         if (modelines[i]->flags & V_PCSYNC)    printf(" -csync");
         if (modelines[i]->flags & V_DBLSCAN)   printf(" doublescan");
         printf("\n");
+      }
     }
 
     return 1;
@@ -669,11 +672,9 @@ print_XF86VidMode_info(dpy, extname)
 char *kbdtable[] = { "Unknown", "84-key", "101-key", "Other", "Xqueue" };
 char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 		     "Logitech", "BusMouse", "Mouseman", "PS/2", "MMHitTab",
-		     "Unknown", "Unknown", "Xqueue", "OSMouse" };
+		     "GlidePoint", "Unknown", "Xqueue", "OSMouse" };
 char *flgtable[] = { "None", "ClearDTR", "ClearCTS",
 		     "ClearDTR and ClearCTS" };
-#define MF_CLEAR_DTR 1
-#define MF_CLEAR_CTS 2
 
 print_XF86Misc_info(dpy, extname)
     Display *dpy;
@@ -692,25 +693,27 @@ print_XF86Misc_info(dpy, extname)
     printf("  Powersaver Settings-  Suspend Time: %d, Off Time: %d\n",
         suspendTime, offTime);
 
-    if (!XF86MiscGetKbdSettings(dpy, &kbdinfo))
+    if ((majorrev > 0) || (majorrev == 0 && minorrev > 0)) {
+      if (!XF86MiscGetKbdSettings(dpy, &kbdinfo))
 	return 0;
-    printf("  Keyboard Settings-    Type: %s, Rate: %d, Delay: %d, ServerNumLock: %s\n",
+      printf("  Keyboard Settings-    Type: %s, Rate: %d, Delay: %d, ServerNumLock: %s\n",
 	kbdtable[kbdinfo.type], kbdinfo.rate, kbdinfo.delay,
 	(kbdinfo.servnumlock? "yes": "no"));
 
-    if (!XF86MiscGetMouseSettings(dpy, &mouseinfo))
+      if (!XF86MiscGetMouseSettings(dpy, &mouseinfo))
 	return 0;
-    printf("  Mouse Settings-       Device: %s, Type: %s\n",
+      printf("  Mouse Settings-       Device: %s, Type: %s\n",
 	strlen(mouseinfo.device) == 0 ? "None": mouseinfo.device,
 	msetable[mouseinfo.type+1]);
-    printf("                        BaudRate: %d, SampleRate: %d\n",
+      printf("                        BaudRate: %d, SampleRate: %d\n",
 	mouseinfo.baudrate, mouseinfo.samplerate);
-    printf("                        Emulate3Buttons: %s, Emulate3Timeout: %d ms\n",
+      printf("                        Emulate3Buttons: %s, Emulate3Timeout: %d ms\n",
 	mouseinfo.emulate3buttons? "yes": "no", mouseinfo.emulate3timeout);
-    printf("                        ChordMiddle: %s, Flags: %s\n",
+      printf("                        ChordMiddle: %s, Flags: %s\n",
 	mouseinfo.chordmiddle? "yes": "no",
 	flgtable[(mouseinfo.flags & MF_CLEAR_DTR? 1: 0)
 		+(mouseinfo.flags & MF_CLEAR_CTS? 1: 0)] );
+    }
 
     return 1;
 }

@@ -1,4 +1,5 @@
-/* $XConsortium: ddxLoad.c /main/2 1995/12/07 21:22:17 kaleb $ */
+/* $XConsortium: ddxLoad.c /main/4 1996/01/14 16:45:59 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -40,6 +41,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
+#ifdef CSRG_BASED
+#include <paths.h>
+#endif
+
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define	PATH_MAX MAXPATHLEN
@@ -48,8 +53,25 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 #endif
 
-extern	CARD16	xkbDebugFlags;
-extern	char *	XkbBaseDirectory;
+	/*
+	 * If XKM_OUTPUT_DIR specifies a path without a leading slash, it is
+	 * relative to the top-level XKB configuration directory.
+	 * Making the server write to a subdirectory of that directory
+	 * requires some work in the general case (install procedure
+	 * has to create links to /var or somesuch on many machines),
+	 * so we just compile into /usr/tmp for now.
+	 */
+#ifndef XKM_OUTPUT_DIR
+#ifdef NOTYET
+#define	XKM_OUTPUT_DIR	"compiled"
+#else
+#ifdef _PATH_VARTMP
+#define XKM_OUTPUT_DIR	_PATH_VARTMP
+#else
+#define	XKM_OUTPUT_DIR	"/usr/tmp"
+#endif
+#endif
+#endif
 
 #define	PRE_ERROR_MSG "\"The XKB keymap compiler (xkbcomp) reports:\""
 #define	ERROR_PREFIX	"\"> \""
@@ -57,11 +79,18 @@ extern	char *	XkbBaseDirectory;
 #define	POST_ERROR_MSG2 "\"End of messages from xkbcomp\""
 
 Bool
+#if NeedFunctionPrototypes
+XkbDDXCompileNamedKeymap(	XkbDescPtr		xkb,
+				XkbComponentNamesPtr	names,
+				char *			nameRtrn,
+				int			nameRtrnLen)
+#else
 XkbDDXCompileNamedKeymap(xkb,names,nameRtrn,nameRtrnLen)
     XkbDescPtr			xkb;
     XkbComponentNamesPtr	names;
     char *			nameRtrn;
     int				nameRtrnLen;
+#endif
 {
 char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
 
@@ -83,17 +112,19 @@ char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
     else outFile= _XkbDupString(file);
     XkbEnsureSafeMapName(outFile);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s %s compiled/%s.xkm",
+	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s/%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,outFile);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
+		XKM_OUTPUT_DIR,outFile);
     }
     else {
-	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s %s compiled/%s.xkm",
+	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s/%s.xkm",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		(map?"-m ":""),(map?map:""),
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,outFile);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
+		XKM_OUTPUT_DIR,outFile);
     }
 #ifdef DEBUG
     if (xkbDebugFlags) {
@@ -119,6 +150,14 @@ char 	cmd[PATH_MAX],file[PATH_MAX],*map,*outFile;
 }
         	
 Bool    	
+#if NeedFunctionPrototypes
+XkbDDXCompileKeymapByNames(	XkbDescPtr		xkb,
+				XkbComponentNamesPtr	names,
+				unsigned		want,
+				unsigned		need,
+				char *			nameRtrn,
+				int			nameRtrnLen)
+#else
 XkbDDXCompileKeymapByNames(xkb,names,want,need,nameRtrn,nameRtrnLen)
     XkbDescPtr			xkb;
     XkbComponentNamesPtr	names;
@@ -126,6 +165,7 @@ XkbDDXCompileKeymapByNames(xkb,names,want,need,nameRtrn,nameRtrnLen)
     unsigned			need;
     char *			nameRtrn;
     int				nameRtrnLen;
+#endif
 {
 FILE *	out;
 char	buf[PATH_MAX],keymap[PATH_MAX];;
@@ -140,16 +180,16 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 
     XkbEnsureSafeMapName(keymap);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s compiled/%s.xkm",
+	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s %s/%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,keymap);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
     else {
-	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s compiled/%s.xkm",
+	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s %s/%s.xkm",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
-		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,keymap);
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
     out= popen(buf,"w");
     if (out!=NULL) {
@@ -182,19 +222,23 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 }
 
 FILE *
+#if NeedFunctionPrototypes
+XkbDDXOpenConfigFile(char *mapName,char *fileNameRtrn,int fileNameRtrnLen)
+#else
 XkbDDXOpenConfigFile(mapName,fileNameRtrn,fileNameRtrnLen)
     char *	mapName;
     char *	fileNameRtrn;
     int		fileNameRtrnLen;
+#endif
 {
 char	buf[PATH_MAX];
 FILE *	file;
 
     buf[0]= '\0';
     if (mapName!=NULL) {
-	if (XkbBaseDirectory!=NULL)
-	     sprintf(buf,"%s/compiled/%s.xkm",XkbBaseDirectory,mapName);
-	else sprintf(buf,"compiled/%s.xkm",mapName);
+	if ((XkbBaseDirectory!=NULL)&&(XKM_OUTPUT_DIR[0]!='/'))
+	     sprintf(buf,"%s/%s/%s.xkm",XkbBaseDirectory,XKM_OUTPUT_DIR,mapName);
+	else sprintf(buf,"%s/%s.xkm",XKM_OUTPUT_DIR,mapName);
 	file= fopen(buf,"r");
     }
     else file= NULL;
@@ -206,6 +250,15 @@ FILE *	file;
 }
 
 unsigned
+#if NeedFunctionPrototypes
+XkbDDXLoadKeymapByNames(	DeviceIntPtr		keybd,
+				XkbComponentNamesPtr	names,
+				unsigned		want,
+				unsigned		need,
+				XkbFileInfo *		finfoRtrn,
+				char *			nameRtrn,
+				int 			nameRtrnLen)
+#else
 XkbDDXLoadKeymapByNames(keybd,names,want,need,finfoRtrn,nameRtrn,nameRtrnLen)
     DeviceIntPtr		keybd;
     XkbComponentNamesPtr	names;
@@ -214,6 +267,7 @@ XkbDDXLoadKeymapByNames(keybd,names,want,need,finfoRtrn,nameRtrn,nameRtrnLen)
     XkbFileInfo *		finfoRtrn;
     char *			nameRtrn;
     int 			nameRtrnLen;
+#endif
 {
 XkbDescPtr	xkb;
 FILE	*	file;
