@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.12 1997/11/22 00:00:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.13 1997/12/28 21:28:33 hohndel Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -218,6 +218,21 @@ void tseng_terminate_acl()
     WAIT_ACL;
     *ACL_SUSPEND_TERMINATE = 0x00;
   }
+}
+
+void tseng_recover_timeout()
+{
+    if (!Is_ET6K)
+    {
+      *tsengCPU2ACLBase = 0L; /* try unlocking the bus when CPU-to-accel gets stuck */
+    }
+
+    if (Is_W32p)   /* flush the accelerator pipeline */
+    {
+      *ACL_SUSPEND_TERMINATE = 0x00;
+      *ACL_SUSPEND_TERMINATE = 0x02;
+      *ACL_SUSPEND_TERMINATE = 0x00;
+    }
 }
 
 void tseng_init_acl()

@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.7 1997/11/22 00:00:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.h,v 1.8 1997/12/28 21:28:31 hohndel Exp $ */
 
 extern int TVGAchipset;
 extern Bool IsCyber;
@@ -68,8 +68,11 @@ extern Bool IsCyber;
 #define IsTGUI9685	((TVGAchipset == TGUI9685))
 #define IsAdvCyber	((TVGAchipset == CYBER9382) || \
 			 (TVGAchipset == CYBER9385) || \
-			 (TVGAchipset == CYBER9388) || \
-			 (TVGAchipset == CYBER9397))
+			 (TVGAchipset == CYBER9388))
+#define Is3Dchip	((TVGAchipset == CYBER9397) || \
+			 (TVGAchipset == CYBER9520) || \
+			 (TVGAchipset == IMAGE975) || \
+			 (TVGAchipset == IMAGE985))
 
 #ifdef INITIALIZE_LIMITS
 /* Clock Limits */

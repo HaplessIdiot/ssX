@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.8 1997/09/25 16:13:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.9 1997/11/22 00:00:13 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -239,13 +239,13 @@ s3RamdacInfo s3Ramdacs[] = {
 /* 16 */	{"ibm_rgb525", {170000,170000,170000,170000}, IBMRGB525_Probe, 
 			IBMRGB52x_PreInit,IBMRGB52x_Restore,IBMRGB52x_Save,
 			IBMRGB52x_Init},
-/* 17 */	{"ibm_rgb528", {170000,170000,170000,170000}, IBMRGB528_Probe, 	
+/* 17 */	{"ibm_rgb528", {170000,170000,170000,170000}, IBMRGB528_Probe,
 			IBMRGB52x_PreInit,IBMRGB52x_Restore,IBMRGB52x_Save,
 			IBMRGB52x_Init},
-/* 18 */	{"s3_sdac", {135000,135000,135000,135000}, S3_SDAC_Probe,
+/* 18 */	{"s3_sdac", {135000,110000,0,55000}, S3_SDAC_Probe,
 		 	S3_SDAC_GENDAC_PreInit,S3_SDAC_GENDAC_Restore,
 			S3_SDAC_GENDAC_Save,S3_SDAC_Init},
-/* 19 */	{"s3_gendac", {110000,110000,110000,110000}, S3_GENDAC_Probe,
+/* 19 */	{"s3_gendac", {110000,55000,0,27500}, S3_GENDAC_Probe,
 		 	S3_SDAC_GENDAC_PreInit,S3_SDAC_GENDAC_Restore,
 			S3_SDAC_GENDAC_Save,S3_GENDAC_Init},
 /* 20 */	{"att20c490", {110000,110000,110000,110000}, ATT20C490_Probe, 
@@ -254,7 +254,7 @@ s3RamdacInfo s3Ramdacs[] = {
 /* 21 */	{"ss2410", {110000,110000,110000,110000}, SS2410_Probe, 
 			MISC_HI_COLOR_PreInit, SS2410_Restore, SS2410_Save, 
 			SS2410_Init},
-/* 22 */	{"sc1148x", {110000,110000,110000,110000}, SC1148x_Probe, 	
+/* 22 */	{"sc1148x", {110000,110000,110000,110000}, SC1148x_Probe,
 			MISC_HI_COLOR_PreInit,SC1148x_Restore,SC1148x_Save,
 			SC1148x_Init},
 /* 23 */	{"s3_trio64v2", {170000,110000,0,60000}, S3_TRIO64V2_Probe, 
@@ -450,7 +450,7 @@ static int BT485_SERIES_PreInit()
 	 s3clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
       else {
 	 if (vga256InfoRec.dacSpeeds[0] < 150000)    /* 110 and 135 */
 	    vga256InfoRec.maxClock = 90000;
@@ -462,7 +462,7 @@ static int BT485_SERIES_PreInit()
 	 s3clockDoublingPossible = TRUE;
       /* These limits are based on the LCLK rating, and may be too high */
       if (s3Bt485PixMux && s3Bpp < 4)
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
       else {
 	 if (vga256InfoRec.dacSpeeds[0] < 110000)	  /* 85 */
 	    vga256InfoRec.maxClock = 85000;
@@ -955,7 +955,7 @@ static int TI3020_3025_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    s3clockDoublingPossible = TRUE;
-   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 
    return 1;
 }
@@ -1349,6 +1349,22 @@ static int TI3020_3025_Init(DisplayModePtr mode)
       /* for some reason the bios doesn't set this properly          */
       s3OutTiIndReg(TI_SENSE_TEST, 0x00, 0x00);
 
+      /* True color modes need the palette initialized. */
+      if (s3Bpp > 1) {
+	  int i;
+
+	  outb(0x3C6, 0xFF);
+	  outb(0x3C8, 0x00);
+	  for (i = 0; i < 768; i++) {
+	      outb(0x3C9, i);
+	      DACDelay;
+	      outb(0x3C9, i);
+	      DACDelay;
+	      outb(0x3C9, i);
+	      DACDelay;
+	  }
+      }
+
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
 
@@ -1389,14 +1405,9 @@ static Bool ATT409_498_Probe(int type)
 		found = ATT498_DAC;
 	
 	xf86setdaccomm(olddaccomm);
-     } else if ((mir == 0x84) && (dir == 0x09)) {
+    } else if ((mir == 0x84) && (dir == 0x09)) {
 	found = ATT20C409_DAC;
-	if (!OFLG_ISSET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions)) {
-		OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-		OFLG_SET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions);
-		s3ClockChipProbed = XCONFIG_PROBED;
-	}
-     } else if ((mir == 0x84) && (dir == 0x99)) {
+    } else if ((mir == 0x84) && (dir == 0x99)) {
 	/*
 	 * according to the 21C499 data sheet it is fully compatible
 	 * with the 22C409. So we will only miss its new features
@@ -1410,14 +1421,17 @@ static Bool ATT409_498_Probe(int type)
 		"Please report to XFree86@XFree86.Org\n",
 		XCONFIG_PROBED, vga256InfoRec.name);
    	}
-	if (!OFLG_ISSET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions)) {
-		OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-		OFLG_SET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions);
-		s3ClockChipProbed = XCONFIG_PROBED;
-	}
-      }
+    }
 
-     return (found == type);
+    if (found == ATT20C409_DAC) {
+	if (!OFLG_ISSET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_ATT409, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	}
+    }
+
+    return (found == type);
 }
 
 static Bool ATT498_Probe()
@@ -1511,7 +1525,7 @@ static int ATT409_498_PreInit()
 
 
    if (s3ATT498PixMux) {
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
    } else {
@@ -1927,7 +1941,7 @@ static int STG17xx_PreInit()
 	clock doubling, etc...  s3Probe will do some last minute
 	clock sanity checks when we return */
    if (s3ATT498PixMux) {
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 	 if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
    }
@@ -2263,7 +2277,7 @@ static int S3_SDAC_GENDAC_PreInit()
 	clock sanity checks when we return */
     if(DAC_IS_SDAC) {
     	if (s3ATT498PixMux) {
-	  vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	  vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 	  if (s3Bpp == 1)	/* XXXX is this right?? */
 	    s3clockDoublingPossible = TRUE;
         } else {
@@ -2278,7 +2292,7 @@ static int S3_SDAC_GENDAC_PreInit()
 	  }
         }
      } else  /* DAC_IS_GENDAC */
-        vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0] / s3Bpp;
+        vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 
       return 1;
 }
@@ -2916,7 +2930,7 @@ static int TI3030_3026_PreInit()
       OtherClocksSetup();
 
    s3clockDoublingPossible = TRUE;
-   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+   vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
    dacOutTi3026IndReg = s3OutTi3026IndReg;
    dacInTi3026IndReg = s3InTi3026IndReg;
 
@@ -3345,7 +3359,7 @@ static int IBMRGB52x_PreInit()
       int m0,m1,n0,n1;
       double f0,f1,f,fdiff;
 	 
-      s3maxRawClock = vga256InfoRec.dacSpeeds[0]; /* Is this right?? */
+      s3maxRawClock = vga256InfoRec.dacSpeeds[s3Bpp - 1]; /* Is this right?? */
       s3ClockSelectFunc = IBMRGBClockSelect;
       s3numClocks = 3;
 
@@ -3483,7 +3497,7 @@ static int IBMRGB52x_PreInit()
    if ((vga256InfoRec.dacSpeeds[0] * s3Bpp) / 8 > 100000)  
 	 vga256InfoRec.maxClock = (100000 * 8) / s3Bpp; 
    else
-	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+	 vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 
    return 1;
 }
@@ -3543,8 +3557,10 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 	 if (pixels > 15) pixels = 15;
 	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, pixels);
       }
-      else
+      else if (s3Bpp < 3)
 	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, 0);
+      else
+	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, 2);
       s3OutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~8, s3DACSyncOnGreen ? 8 : 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~2, 1 /* fast slew */ ? 2 : 0);
@@ -3647,7 +3663,10 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 	    else
 	       outb(vgaCRReg, 0x00);
 	 else if (s3Bpp == 4)
-	    outb(vgaCRReg, 0x00);
+	    if (DAC_IS_IBMRGB && S3_968_SERIES(s3ChipId))
+	       outb(vgaCRReg, 0x10);
+	    else
+	       outb(vgaCRReg, 0x00);
 	 else
 	    if (S3_968_SERIES(s3ChipId))
 	       outb(vgaCRReg, 0x11);
@@ -3846,7 +3865,7 @@ static int MISC_HI_COLOR_PreInit()
 	function for external clocks*/
     OtherClocksSetup();
 
-    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
     /* Halve it for 16bpp (32bpp not supported) */
     if (s3Bpp > 1) {
 	 vga256InfoRec.maxClock /= 2;
@@ -4017,7 +4036,7 @@ static int NORMAL_PreInit()
     OtherClocksSetup();
     
     /* anything else */
-    vga256InfoRec.maxClock = 100; /* ???? MArk */ 
+    vga256InfoRec.maxClock = 100000; /* ???? MArk */ 
 
     return 1;
 }
@@ -4562,7 +4581,7 @@ IBMRGBClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 } 
-	 (void)IBMRGBSetClock(freq, 2, vga256InfoRec.dacSpeeds[0], 
+	 (void)IBMRGBSetClock(freq, 2, vga256InfoRec.maxClock,
 					vga256InfoRec.s3RefClk);
       }
    }
@@ -4709,19 +4728,19 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
    if (match1 == NULL)
       return NULL;
 
-   l1 = xf86strlen(match1);
+   l1 = strlen(match1);
    if (match2 != NULL) 
-      l2 = xf86strlen(match2);
+      l2 = strlen(match2);
    else	/* for compiler-warnings */
       l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
-      if (bios[i] == match1[0] && !xf86memcmp(&bios[i],match1,l1))
+      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
 	 if (match2 == NULL) 
 	    return &bios[i+l1];
 	 else
 	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
-	       if (bios[j] == match2[0] && !xf86memcmp(&bios[j],match2,l2))
+	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
 		  return &bios[j+l2];
    return NULL;
 }

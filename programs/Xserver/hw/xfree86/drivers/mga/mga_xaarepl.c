@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_xaarepl.c,v 1.2 1997/10/26 15:46:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_xaarepl.c,v 1.3 1997/11/01 15:04:50 hohndel Exp $ */
 
 
 #define PSZ 8
@@ -108,7 +108,7 @@ void MGAWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
 	    destptr = (CARD32*)xf86AccelInfoRec.CPUToScreenColorExpandBase;
     }    
 
-    SET_SYNC_FLAG;	
+    MGAStormSync();
 }
 
 
@@ -353,5 +353,5 @@ MGAFillRectStippled(pDrawable, pGC, nBoxInit, pBoxInit)
 	}
     }	/* end for loop through each rectangle to draw */
 
-    SET_SYNC_FLAG;
+    MGAStormSync();
 }

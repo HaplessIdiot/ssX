@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.22 1997/12/20 14:20:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.23 1997/12/28 21:28:31 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -117,7 +117,6 @@ typedef struct {
 	unsigned char AltClock;		/* For Alternate Clock Selection*/
 	unsigned char CurConReg;	/* For HW Cursor Control	*/
 	unsigned char CursorRegs[16];	/* For Cursor Registers 	*/
-	unsigned char CyberCont;	/* For Cyber Control LCD	*/
 	unsigned char CyberVExp;	/* For Cyber VDisplay Control   */
 	unsigned char CyberHExp;	/* For Cyber HDisplay Control   */
 	unsigned char CyberEnhance;	/* For Cyber Enhancement	*/
@@ -1053,6 +1052,7 @@ TVGA8900Probe()
 	case TGUI9685:
 	case CYBER9382:
 	case CYBER9385:
+	case CYBER9388:
 	case CYBER9397:
 	case CYBER9520:
 		tridentHasAcceleration = TRUE;
@@ -1089,7 +1089,6 @@ TVGA8900Probe()
 				break;
 			case 0x23:
 				REV = "Cyber 9397";
-				tridentHasAcceleration = FALSE; /* noaccel */
 				TVGAchipset = CYBER9397;
 				NewClockCode = TRUE;
 				IsCyber = TRUE;
@@ -1097,6 +1096,7 @@ TVGA8900Probe()
 			case 0x30:
 			case 0x33: /* Guessing */
 			case 0x34:
+			case 0x35:
 			case 0xB3:
 				REV = "Cyber 9385";
 				TVGAchipset = CYBER9385;
@@ -1144,8 +1144,15 @@ TVGA8900Probe()
 		tridentDACtype = TGUIDAC;
 		if (vgaBitsPerPixel >= 8)
 			TRIDENT.ChipUse2Banks = TRUE;
-		tridentHasAcceleration = FALSE; /* Engine completely changed */
 		break;
+	}
+
+	if (Is3Dchip) {
+		/* Accelerator engine changed, so let's go for 
+	 	 * no acceleration until we implement it 
+		 * Cyber9397, Cyber9520, 3DImage975, 3DImage985 so far */
+
+		tridentHasAcceleration = FALSE;
 	}
 
 	if (IsCyber)
@@ -1865,7 +1872,6 @@ TVGA8900Restore(restore)
 	{
 		if (IsCyber) 
 		{
-			outw(0x3CE, ((restore->CyberCont) << 8) | 0x30);
 			outw(0x3CE, ((restore->CyberVExp) << 8) | 0x52);
 			outw(0x3CE, ((restore->CyberHExp) << 8) | 0x53);
 			outw(0x3CE, ((restore->CyberEnhance) << 8) | 0x31);
@@ -2041,8 +2047,6 @@ TVGA8900Save(save)
 		{
 			outb(0x3CE, 0x31);
 			save->CyberEnhance = inb(0x3CF);
-			outb(0x3CE, 0x30);
-			save->CyberCont = inb(0x3CF);
 			outb(0x3CE, 0x52);
 			save->CyberVExp = inb(0x3CF);
 			outb(0x3CE, 0x53);
@@ -2302,6 +2306,8 @@ TVGA8900Init(mode)
 		outb(vgaIOBase + 4, 0x2A);
 		new->VLBusReg = inb(vgaIOBase + 5) | 0x40; /* 32bit mode */
 		new->MiscExtFunc |= 0x07; /* Set Dual Banks */
+		if (TVGAchipset >= CYBER9397)
+			new->MiscExtFunc |= 0x10;
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
@@ -2407,8 +2413,6 @@ TVGA8900Init(mode)
 			else
 			if (mode->CrtcVDisplay > 480)
 				new->CyberEnhance |= 0x10;
-			outb(0x3CE, 0x30);
-			new->CyberCont = inb(0x3CF) & 0x7E;
 			outb(0x3CE, 0x52);
 			new->CyberVExp = inb(0x3CF);
 			outb(0x3CE, 0x53);
@@ -2430,9 +2434,7 @@ TVGA8900Init(mode)
 				/* Center */
 				new->CyberVExp |= 0x80;
 				new->CyberHExp |= 0x80;
-			}
-			else
-			{
+			} else {
 				/* Don't Center */
 				new->CyberVExp &= 0x7F;
 				new->CyberHExp &= 0x7F;
