@@ -9,7 +9,7 @@
 <date>7 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.35 2000/03/08 05:38:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.36 2000/03/08 15:14:47 dawes Exp $
 </ident>
 
 <abstract>
@@ -657,52 +657,24 @@ The VESA(R) Display Data Channel (DDC&trade;) standard allows the monitor
 to tell the video card (or on some cases the computer directly) about
 itself; particularly the supported screen resolutions and refresh rates.
 
-Partial or complete DDC support is available in the following hardware modules:
-<itemize>
-  <item>APM
-  <item>Chips
-  <item>Cirrus
-  <item>Glint
-  <item>MGA 
-  <item>Neomagic
-  <item>S3 ViRGE
-  <item>SIS
-  <item>Trident
-</itemize>
-
-DDC is enabled by default, but can be disabled 
-with a "Device" section entry:
-<tt>Option "NoDDC"</tt>.
-We have support for DDC versions 1 and 2; these can be disabled independently
-with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC2"</tt>.
+Partial or complete DDC support is available in most of the video drivers.
+DDC is enabled by default, but can be disabled with a "Device" section
+entry:  <tt>Option "NoDDC"</tt>.  We have support for DDC versions 1
+and 2; these can be disabled independently with <tt>Option "NoDDC1"</tt>
+and <tt>Option "NoDDC2"</tt>.
 
 At startup the server prints out DDC information from the display,
-but it does not yet use it the determine modelines.
+but it does not yet use it the determine modelines.  For some drivers,
+the X server's new <tt>-configure</tt> option uses the DDC information
+when generating the config file.
 
-<!--  Is this still true?
 Changed behavior caused by DDC. Several drivers uses DDC information to
-set the monitor gamma (brightness) curve, and the screen size and
-pitch.
-<itemize>
-  <item>The gamma is particularly noticeable; every monitor I have tried has
-	a gamma setting >&nbsp;2, which means that the picture is much
-	lighter than under 3.3.x or without DDC. To revert to the previous
-	behavior put
+set the screen size and pitch.  This can be overridden by explicitly
+resetting it to the and non-DDC default value 75 with the <tt>-dpi
+75</tt> command line option for the X server, or by specifying appropriate
+screen dimensions with the "DisplaySize" keyword in the "Monitor" section
+of the config file.
 
-	<tscreen>
-Gamma 1.0 1.0 1.0
-	</tscreen>
-
-	in the appropriate "Monitor" section of the config file.
-
-  <item>Similarly, you can override the DDC probed "dpi" value by explicitly
-	resetting it to the 3.3.x and non-DDC default value 75 with the
-	<tt>-dpi 75</tt> command line option for the X server, or by
-	specifying appropriate screen dimensions with the "DisplaySize"
-	keyword in the "Monitor" section of the config file.
-
-</itemize>
--->
 
 <sect1>GLX and the Direct Rendering Infrastructure (DRI)
 <p>
@@ -854,7 +826,7 @@ information.
 
 The MGA driver supports the same range or hardware as XFree86 3.3.4,
 but has a number of enhancements including multi-head support and
-support for overlays (8-bit + 24-bit).
+support for (non-destructive) overlays (8-bit + 24-bit).
 
 Option <tt>"overlay"</tt> when the server is started in 32bpp
 (<tt>-fbbpp&nbsp;32</tt>) will enable the 8+24 mode.  The current
