@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -46,6 +46,24 @@
 /*
  * Prototypes
  */
+/*
+ (do ({(var [init [step]])}*)
+	(end-test {result}*)
+	{declaration}* {tag | statement}*)
+ (do* ({(var [init [step]])}*)
+	(end-test {result}*)
+	{declaration}* {tag | statement}*)
+ */
+LispObj *_LispDo(LispMac*, LispObj*, char*, int);
+
+/*
+ (dolist (var listform [resultform])
+	{declaration}* {tag | statement}*)
+ (dotimes (var countform [resultform])
+	{declaration}* {tag | statement}*)
+ */
+LispObj *_LispDoListTimes(LispMac*, LispObj*, char*, int);
+
 /*
  (equal x y)
  * called directly by several functions */

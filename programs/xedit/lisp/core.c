@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.6 2001/09/29 06:37:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.7 2001/09/30 20:31:59 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -328,6 +328,31 @@ Lisp_Atom(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Block(LispMac *mac, LispObj *list, char *fname)
+{
+    int did_jump;
+    LispObj *res;
+    LispBlock *block;
+
+    if (CAR(list) != NIL && CAR(list) != T && CAR(list)->type != LispAtom_t)
+	LispDestroy(mac, "%s is not a symbol, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    res = NIL;
+    did_jump = 1;
+    block = LispBeginBlock(mac, CAR(list), 0);
+    if (setjmp(block->jmp) == 0) {
+	res = Lisp_Progn(mac, CDR(list), fname);
+	did_jump = 0;
+    }
+    LispEndBlock(mac, block);
+    if (did_jump)
+	res = mac->block.block_ret;
+
+    return (res);
+}
+
+LispObj *
 Lisp_Butlast(LispMac *mac, LispObj *list, char *fname)
 {
     LispObj *res, *obj, *cdr;
@@ -407,33 +432,67 @@ Lisp_Car(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Case(LispMac *mac, LispObj *list, char *fname)
+{
+    static char *other = "OTHERWISE";
+    LispObj *key, *res;
+
+    res = NIL;
+    key = EVAL(CAR(list));
+
+    for (list = CDR(list); list != NIL; list = CDR(list)) {
+	if (CAR(list)->type != LispCons_t)
+	    LispDestroy(mac, "expecting list, at %s", fname);
+	else if (CAR(CAR(list)) == T) {
+	    if (CDR(list) != NIL)
+		LispDestroy(mac, "T must be the last clause, at %s", fname);
+	    res = CDR(CAR(list));
+	    break;
+	}
+	else if (CAR(CAR(list))->type == LispAtom_t &&
+		 strcmp(other, CAR(CAR(list))->data.atom) == 0) {
+	    if (CDR(list) != NIL)
+		LispDestroy(mac, "%s must be the last clause, at %s",
+			    other, fname);
+	    res = CDR(CAR(list));
+	    break;
+	}
+	else if (CAR(CAR(list))->type == LispCons_t) {
+	    LispObj *keylist = CAR(CAR(list));
+
+	    for (; keylist->type == LispCons_t; keylist = CDR(keylist))
+		if (_LispEqual(mac, key, CAR(keylist)) == T) {
+		    res = CDR(CAR(list));
+		    break;
+		}
+	    if (keylist->type == LispCons_t)	/* if found match */
+		break;
+	}
+	else if (_LispEqual(mac, key, CAR(CAR(list))) == T) {
+	    res = CDR(CAR(list));
+	    break;
+	}
+    }
+
+    return (res->type == LispCons_t ? Lisp_Progn(mac, res, fname) : NIL);
+}
+
+LispObj *
 Lisp_Catch(LispMac *mac, LispObj *list, char *fname)
 {
-    int mlevel = mac->level, did_throw = 1;
-    unsigned blevel = mac->block.block_level + 1;
+    int did_jump;
     LispObj *res;
     LispBlock *block;
 
-    if (blevel >= mac->block.block_size) {
-	if ((block = (LispBlock*)realloc(mac->block.block,
-					 sizeof(LispBlock) * blevel)) == NULL)
-	    LispDestroy(mac, "out of memory, at %s", fname);
-	mac->block.block = block;
-	mac->block.block_size = blevel;
-    }
-    block = &(mac->block.block[mac->block.block_level]);
-    memcpy(&(block->tag), EVAL(CAR(list)), sizeof(LispObj));
-    mac->block.block_level = blevel;
     res = NIL;
+    did_jump = 1;
+    block = LispBeginBlock(mac, CAR(list), 1);
     if (setjmp(block->jmp) == 0) {
 	res = Lisp_Progn(mac, CDR(list), fname);
-	did_throw = 0;
+	did_jump = 0;
     }
-
-    mac->level = mlevel;
-    mac->block.block_level = blevel - 1;
-
-    if (did_throw)
+    LispEndBlock(mac, block);
+    if (did_jump)
 	res = mac->block.block_ret;
 
     return (res);
@@ -616,6 +675,30 @@ Lisp_Defstruct(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Do(LispMac *mac, LispObj *list, char *fname)
+{
+    return (_LispDo(mac, list, fname, 0));
+}
+
+LispObj *
+Lisp_DoP(LispMac *mac, LispObj *list, char *fname)
+{
+    return (_LispDo(mac, list, fname, 1));
+}
+
+LispObj *
+Lisp_DoList(LispMac *mac, LispObj *list, char *fname)
+{
+    return (_LispDoListTimes(mac, list, fname, 0));
+}
+
+LispObj *
+Lisp_DoTimes(LispMac *mac, LispObj *list, char *fname)
+{
+    return (_LispDoListTimes(mac, list, fname, 1));
+}
+
+LispObj *
 Lisp_Equal(LispMac *mac, LispObj *list, char *fname)
 {
     return (_LispEqual(mac, CAR(list), CAR(CDR(list))));
@@ -749,6 +832,9 @@ Lisp_Length(LispMac *mac, LispObj *list, char *fname)
 	case LispString_t:
 	    length = strlen(obj->data.atom);
 	    break;
+	case LispArray_t:
+	    obj = obj->data.array.list;
+	    /*FALLTROUGH*/
 	case LispCons_t:
 	    while (obj->type == LispCons_t) {
 		++length;
@@ -817,6 +903,24 @@ Lisp_Listp(LispMac *mac, LispObj *list, char *fname)
 	    return (NIL);
     }
     /*NOTREACHED*/
+}
+
+LispObj *
+Lisp_Loop(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *res;
+    LispBlock *block;
+
+    res = NIL;
+    block = LispBeginBlock(mac, NIL, 0);
+    if (setjmp(block->jmp) == 0) {
+	for (;;)
+	    (void)Lisp_Progn(mac, list, fname);
+    }
+    LispEndBlock(mac, block);
+    res = mac->block.block_ret;
+
+    return (res);
 }
 
 LispObj *
@@ -1191,12 +1295,20 @@ Lisp_Or(LispMac *mac, LispObj *list, char *fname)
 }
 
 LispObj *
+Lisp_Prin1(LispMac *mac, LispObj *list, char *fname)
+{
+    LispPrint(mac, CAR(list), 0);
+
+    return (CAR(list));
+}
+
+LispObj *
 Lisp_Princ(LispMac *mac, LispObj *list, char *fname)
 {
     int princ = mac->princ;
 
     mac->princ = 1;
-    LispPrint(mac, CAR(list));
+    LispPrint(mac, CAR(list), 0);
     mac->princ = princ;
 
     return (CAR(list));
@@ -1205,7 +1317,8 @@ Lisp_Princ(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Print(LispMac *mac, LispObj *list, char *fname)
 {
-    LispPrint(mac, CAR(list));
+    LispPrint(mac, CAR(list), 1);
+
     return (CAR(list));
 }
 
@@ -1310,7 +1423,65 @@ Lisp_Read(LispMac *mac, LispObj *list, char *fname)
 
     obj = LispRun(mac);
 
-    return (EVAL(obj));
+    return (obj);
+}
+
+LispObj *
+Lisp_Return(LispMac *mac, LispObj *list, char *fname)
+{
+    unsigned blevel = mac->block.block_level;
+
+    while (blevel) {
+	LispBlock *block = &(mac->block.block[--blevel]);
+
+	if (block->tag.type == LispNil_t) {
+	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
+	    longjmp(block->jmp, 0);
+	}
+    }
+    LispDestroy(mac, "no NIL block, at %s", fname);
+    /*NOTREACHED*/
+
+    return (NIL);
+}
+
+LispObj *
+Lisp_ReturnFrom(LispMac *mac, LispObj *list, char *fname)
+{
+    LispObj *tag = CAR(list);
+    unsigned blevel = mac->block.block_level;
+
+    if (tag != NIL && tag != T && tag->type != LispAtom_t)
+	LispDestroy(mac, "%s is not a symbol, at %s",
+		    LispStrObj(mac, tag), fname);
+
+    list = CDR(list);
+    while (blevel) {
+	int jmp = 1;
+	LispBlock *block = &(mac->block.block[--blevel]);
+
+	if (tag->type == block->tag.type) {
+	    switch (tag->type) {
+		case LispNil_t:
+		case LispTrue_t:
+		    break;
+		case LispAtom_t:
+		    jmp = tag->data.atom == block->tag.data.atom;
+		    break;
+		default:
+		    /* only atom, nil or t can be used */
+		    break;
+	    }
+	}
+	if (jmp) {
+	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
+	    longjmp(block->jmp, 0);
+	}
+    }
+    LispDestroy(mac, "no block named %s, at %s", LispStrObj(mac, tag), fname);
+    /*NOTREACHED*/
+
+    return (NIL);
 }
 
 LispObj *

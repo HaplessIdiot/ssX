@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.4 2001/09/16 22:21:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.5 2001/09/21 05:08:43 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -58,6 +58,8 @@
 #define COD	mac->codlist
 #define FRM	mac->frmlist
 #define STR	mac->strlist
+#define RUN	mac->runlist
+#define RES	mac->reslist
 
 /*
  * Types
@@ -92,6 +94,8 @@ struct _LispOpaque {
 struct _LispBlock {
     LispObj tag;
     jmp_buf jmp;
+    int level;
+    int block_level;
 };
 
 struct _LispModule {
@@ -150,6 +154,8 @@ struct _LispMac {
     LispObj *codlist;		/* current code */
     LispObj *frmlist;		/* input data */
     LispObj *strlist;		/* structure definitions */
+    LispObj *runlist[3];	/* +, ++, and +++ */
+    LispObj *reslist[3];	/* *, **, and *** */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);
@@ -165,6 +171,7 @@ struct _LispMac {
  */
 LispObj *LispEnvRun(LispMac*, LispObj*, LispFunPtr, char*, int);
 LispObj *LispGetVar(LispMac*, char*, int);
+LispObj *LispAddVar(LispMac*, char*, LispObj*);
 LispObj *LispSetVar(LispMac*, char*, LispObj*, int);
 
 /* destructive fast reverse, note that don't receive a LispMac* argument */
@@ -177,6 +184,11 @@ LispObj *LispRun(LispMac*);
 extern struct _LispBuiltin *LispFindBuiltin(const char*, unsigned int);
 
 /* (print) */
-void LispPrint(LispMac*, LispObj*);
+void LispPrint(LispMac*, LispObj*, int);
+
+LispBlock *LispBeginBlock(LispMac*, LispObj*, int);
+void LispEndBlock(LispMac*, LispBlock*);
+
+void LispUpdateResults(LispMac*, LispObj*, LispObj*);
 
 #endif /* Lisp_private_h */

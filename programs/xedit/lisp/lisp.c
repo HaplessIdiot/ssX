@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.9 2001/09/29 06:37:26 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.10 2001/09/30 20:32:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +46,7 @@
 /*
  * Prototypes
  */
-LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*, LispFunType);
+LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*);
 void LispTopLevel(LispMac*);
 
 static int LispGet(LispMac*);
@@ -63,7 +63,6 @@ void LispCheckMemLevel(LispMac*);
 
 void LispAllocSeg(LispMac*);
 void LispMark(LispObj*);
-LispObj *LispAddVar(LispMac*, char*, LispObj*);
 
 #ifdef SIGNALRETURNSINT
 int LispAbortSignal(int);
@@ -138,14 +137,13 @@ LispTopLevel(LispMac *mac)
     mac->setf = NULL;
     mac->cdr = mac->princ = mac->justsize = 0;
     if (mac->stream.stream_level) {
-	if (mac->stream.stream[mac->stream.stream_level].fp) {
-	    /* i.e. if not called from LispExecute */
-	    free(mac->st);
+	free(mac->st);
+	if (mac->stream.stream[mac->stream.stream_level].fp)
 	    fclose(mac->stream.stream[mac->stream.stream_level].fp);
-	}
-	--mac->stream.stream_level;	/* the current stream buffer is in mac->st */
+	--mac->stream.stream_level;
 	while (mac->stream.stream_level) {
-	    fclose(mac->stream.stream[mac->stream.stream_level].fp);
+	    if (mac->stream.stream[mac->stream.stream_level].fp)
+		fclose(mac->stream.stream[mac->stream.stream_level].fp);
 	    free(mac->stream.stream[mac->stream.stream_level].st);
 	    --mac->stream.stream_level;
 	}
@@ -239,11 +237,6 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 		    case LispSymbol_t:
 			LispDoGetString(mac, entry->data.symbol.name, 0)
 			    ->mark = LispTrue_t;
-			break;
-		    case LispLambda_t:
-			if (entry->data.lambda.name)
-			    LispDoGetString(mac, entry->data.lambda.name, 0)
-				->mark = LispTrue_t;
 			break;
 		    default:
 			break;
@@ -537,6 +530,7 @@ LispMark(LispObj *obj)
 	    LispMark(obj->data.symbol.plist);
 	    break;
 	case LispLambda_t:
+	    LispMark(obj->data.lambda.name);
 	    LispMark(obj->data.lambda.code);
 	    break;
 	case LispQuote_t:
@@ -593,6 +587,7 @@ LispProtect(LispObj *obj, int state)
 	    LispProtect(obj->data.symbol.plist, state);
 	    break;
 	case LispLambda_t:
+	    LispProtect(obj->data.lambda.name, state);
 	    LispProtect(obj->data.lambda.code, state);
 	    break;
 	case LispQuote_t:
@@ -830,7 +825,7 @@ LispNewCons(LispMac *mac, LispObj *car, LispObj *cdr)
 }
 
 LispObj *
-LispNewLambda(LispMac *mac, char *name, LispObj *args, LispObj *code,
+LispNewLambda(LispMac *mac, LispObj *name, LispObj *args, LispObj *code,
 	      int num_args, LispFunType type, int key, int optional, int rest)
 {
     LispObj *fun = LispNew(mac, args, code);
@@ -1010,7 +1005,6 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 			LispStrObj(mac, env), fname);
     }
 
-    GCProtect();
     for (; env != NIL; env = CDR(env)) {
 	LispObj *var = NIL, *val = NIL;
 
@@ -1037,8 +1031,10 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 	else
 	    LispDestroy(mac, "%s is not of type list, at %s",
 			LispStrObj(mac, pair), fname);
+	val = EVAL(val);
 	if (!refs) {
-	    pair = CONS(var, EVAL(val));
+	    GCProtect();
+	    pair = CONS(var, val);
 	    if (list == NIL) {
 		list = CONS(pair, NIL);
 		FRM = CONS(list, FRM);
@@ -1047,9 +1043,10 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 		CDR(list) = CONS(CAR(list), CDR(list));
 		CAR(list) = pair;
 	    }
+	    GCUProtect();
 	}
 	else
-	    LispAddVar(mac, var->data.atom, EVAL(val));
+	    LispAddVar(mac, var->data.atom, val);
     }
 
     if (!refs && list != NIL) {
@@ -1059,7 +1056,6 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
 	    LispAddVar(mac, CAR(pair)->data.atom, CDR(pair));
 	}
     }
-    GCUProtect();
 
     res = fn(mac, CDR(args), fname);
 
@@ -1068,6 +1064,38 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
     FRM = old_frm;
 
     return (res);
+}
+
+LispBlock *
+LispBeginBlock(LispMac *mac, LispObj *tag, int eval)
+{
+    unsigned blevel = mac->block.block_level + 1;
+    LispBlock *block;
+
+    if (blevel >= mac->block.block_size) {
+	if ((block = (LispBlock*)realloc(mac->block.block,
+					 sizeof(LispBlock) * blevel)) == NULL)
+	    LispDestroy(mac, "out of memory");
+	mac->block.block = block;
+	mac->block.block_size = blevel;
+    }
+    block = &(mac->block.block[mac->block.block_level]);
+    if (eval)
+	tag = EVAL(tag);
+    memcpy(&(block->tag), tag, sizeof(LispObj));
+    mac->block.block_level = blevel;
+
+    block->level = mac->level;
+    block->block_level = blevel - 1;
+
+    return (block);
+}
+
+void
+LispEndBlock(LispMac *mac, LispBlock *block)
+{
+    mac->level = block->level;
+    mac->block.block_level = block->block_level;
 }
 
 static int
@@ -1205,8 +1233,9 @@ LispRun(LispMac *mac)
 		str[strlen(str) - 1] = '\0';
 		res = STRING(str + 1);
 	    }
-	    else if (isdigit(str[0]) || str[0] == '-' ||
-		     (str[0] == '.' && isdigit(str[1])) || str[0] == '+') {
+	    else if (isdigit(str[0]) ||
+		     ((str[0] == '-' || str[0] == '.' || str[0] == '+') &&
+		      isdigit(str[1]))) {
 		double value;
 		char *cp;
 
@@ -1271,6 +1300,8 @@ LispEval(LispMac *mac, LispObj *obj)
 	case LispCons_t:
 	    cons = obj;
 	    break;
+	default:
+	    return (obj);
     }
     car = CAR(cons);
     fun = NIL;
@@ -1381,7 +1412,7 @@ LispEval(LispMac *mac, LispObj *obj)
 
 	    cdr = CDR(cons);
 	    num_objs = 0;
-	    while (cdr != NIL) {
+	    while (cdr->type == LispCons_t) {
 		++num_objs;
 		cdr = CDR(cdr);
 	    }
@@ -1398,7 +1429,7 @@ LispEval(LispMac *mac, LispObj *obj)
 		FRM = CONS(args, FRM);
 		GCUProtect();
 		arg = CDR(arg);
-		while (arg != NIL) {
+		while (arg->type == LispCons_t) {
 		    CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
 		    cdr = CDR(cdr);
 		    arg = CDR(arg);
@@ -1412,11 +1443,12 @@ LispEval(LispMac *mac, LispObj *obj)
 	    res = fn->fn(mac, args, name);
 	    FRM = frm;
 	    --mac->level;
+
 	    return (res);
 	}
 
 	for (fun = FUN; fun != NIL; fun = CDR(fun))
-	    if (CAR(fun)->data.lambda.name == name) {
+	    if (CAR(fun)->data.lambda.name->data.atom == name) {
 		fun = CAR(fun);
 		break;
 	    }
@@ -1429,7 +1461,7 @@ LispEval(LispMac *mac, LispObj *obj)
 	    !fun->data.lambda.rest) {
 	    cdr = CDR(cons);
 	    num_objs = 0;
-	    while (cdr != NIL) {
+	    while (cdr->type == LispCons_t) {
 		++num_objs;
 		cdr = CDR(cdr);
 	    }
@@ -1449,7 +1481,7 @@ LispEval(LispMac *mac, LispObj *obj)
 		FRM = CONS(args, FRM);
 		GCUProtect();
 		arg = CDR(arg);
-		while (arg != NIL) {
+		while (arg->type == LispCons_t) {
 		    CDR(cdr) = CONS(EVAL(CAR(arg)), NIL);
 		    cdr = CDR(cdr);
 		    arg = CDR(arg);
@@ -1558,7 +1590,7 @@ LispEval(LispMac *mac, LispObj *obj)
 		    CAR(arg) = CONS(res, NIL);
 		    arg = CAR(arg);
 		    cdr = CDR(cdr);
-		    while (cdr != NIL) {
+		    while (cdr->type == LispCons_t) {
 			res = EVAL(CAR(cdr));
 			CDR(arg) = CONS(res, NIL);
 			arg = CDR(arg);
@@ -1588,10 +1620,11 @@ LispEval(LispMac *mac, LispObj *obj)
 	    }
 	}
 
-	res = LispRunFunMac(mac, fun->data.lambda.code, args,
-			    fun->data.lambda.type);
+	res = LispRunFunMac(mac, fun, args);
+
 	FRM = frm;
 	--mac->level;
+
 	return (res);
     }
 
@@ -1602,16 +1635,17 @@ LispEval(LispMac *mac, LispObj *obj)
 }
 
 LispObj *
-LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list, LispFunType type)
+LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list)
 {
+    LispFunType type = fun->data.lambda.type;
     LispObj *old_env, *old_sym, *old_lex, *args, *code, *res;
 
     old_env = ENV;
     old_sym = SYM;
     old_lex = LEX;
 
-    args = CAR(fun);
-    code = CDR(fun);
+    args = CAR(fun->data.lambda.code);
+    code = CDR(fun->data.lambda.code);
 
     LEX = ENV;
     SYM = CONS(LEX, SYM);
@@ -1627,8 +1661,22 @@ LispRunFunMac(LispMac *mac, LispObj *fun, LispObj *list, LispFunType type)
 	}
     }
 
-    res = Lisp_Progn(mac, code,
-		     type == LispLambda ? "#<LAMBDA>" : fun->data.lambda.name);
+    if (type != LispMacro) {
+	int did_jump = 1;
+	LispBlock *block = LispBeginBlock(mac, fun->data.lambda.name, 0);
+
+	res = NIL;
+	if (setjmp(block->jmp) == 0) {
+	    res = Lisp_Progn(mac, code, fun->data.lambda.name->data.atom);
+	    did_jump = 0;
+	}
+	LispEndBlock(mac, block);
+	if (did_jump)
+	    res = mac->block.block_ret;
+    }
+    else
+	res = Lisp_Progn(mac, code, "#<LAMBDA>");
+
     LEX = old_lex;
     SYM = old_sym;
     ENV = old_env;
@@ -1869,6 +1917,8 @@ snprint_array_done:
 	    *len -= sz;
 	    *str += sz;
 	}   break;
+	default:
+	    break;
     }
 }
 
@@ -2126,11 +2176,11 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 		    break;
 		case LispFunction:
 		    len += LispPrintf(mac, stream, "<#FUNCTION# %s ",
-				      obj->data.lambda.name);
+				      obj->data.lambda.name->data.atom);
 		    break;
 		case LispMacro:
 		    len += LispPrintf(mac, stream, "<#MACRO# %s ",
-				      obj->data.lambda.name);
+				      obj->data.lambda.name->data.atom);
 		    break;
 	    }
 	    len += LispPrintObj(mac, stream, obj->data.lambda.code, 1);
@@ -2156,11 +2206,11 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 }
 
 void
-LispPrint(LispMac *mac, LispObj *obj)
+LispPrint(LispMac *mac, LispObj *obj, int newline)
 {
     if (!obj)
 	LispDestroy(mac, "internal error, at INTERNAL:PRINT");
-    if (!mac->newline) {
+    if (newline && !mac->newline) {
 	LispPrintf(mac, NIL, "\n");
 	mac->column = 0;
     }
@@ -2168,6 +2218,22 @@ LispPrint(LispMac *mac, LispObj *obj)
     mac->column = LispPrintObj(mac, NIL, obj, 1);
     mac->newline = 0;
     fflush(lisp_stdout);
+}
+
+void
+LispUpdateResults(LispMac *mac, LispObj *cod, LispObj *res)
+{
+    LispSetVar(mac, RUN[2]->data.atom,
+	       LispGetVar(mac, RUN[1]->data.atom, 0), 0);
+    LispSetVar(mac, RUN[1]->data.atom,
+	       LispGetVar(mac, RUN[0]->data.atom, 0), 0);
+    LispSetVar(mac, RUN[0]->data.atom, cod, 0);
+
+    LispSetVar(mac, RES[2]->data.atom,
+	       LispGetVar(mac, RES[1]->data.atom, 0), 0);
+    LispSetVar(mac, RES[1]->data.atom,
+	       LispGetVar(mac, RES[0]->data.atom, 0), 0);
+    LispSetVar(mac, RES[0]->data.atom, res, 0);
 }
 
 /* Needs a rewrite to either allow only one LispMac per process or some
@@ -2207,7 +2273,7 @@ LispFPESignal(int signum)
 void
 LispMachine(LispMac *mac)
 {
-    LispObj *obj;
+    LispObj *cod, *obj;
 
     /*CONSTCOND*/
     while (1) {
@@ -2218,10 +2284,11 @@ LispMachine(LispMac *mac)
 	    if (mac->interactive && mac->prompt)
 		fprintf(lisp_stdout, "%s", mac->prompt);
 	    mac->level = 0;
-	    if ((obj = LispRun(mac)) != NULL) {
-		obj = EVAL(obj);
+	    if ((cod = LispRun(mac)) != NULL) {
+		obj = EVAL(cod);
+		LispUpdateResults(mac, cod, obj);
 		if (mac->interactive)
-		    LispPrint(mac, obj);
+		    LispPrint(mac, obj, 1);
 		if (!mac->newline) {
 		    LispPrintf(mac, NIL, "\n");
 		    mac->newline = 1;
@@ -2269,35 +2336,41 @@ LispExecute(LispMac *mac, char *str)
     memset(mac->stream.stream + mac->stream.stream_level, 0, sizeof(LispStream));
     mac->stream.stream[mac->stream.stream_level].fp = NULL;
     mac->fp = NULL;
-    mac->st = mac->cp = str;
+    mac->st = mac->cp = LispStrdup(mac, str);
     mac->tok = 0;
 
     level = mac->level;
     mac->level = 0;
 
-    /*CONSTCOND*/
-    while (1) {
-	if ((obj = LispRun(mac)) != NULL) {
-	    GCProtect();
-	    (void)EVAL(obj);
-	    GCUProtect();
+    if (setjmp(mac->jmp) == 0) {
+	/*CONSTCOND*/
+	while (1) {
+	    if ((obj = LispRun(mac)) != NULL) {
+		GCProtect();
+		(void)EVAL(obj);
+		GCUProtect();
+	    }
+	    if (mac->tok == EOF)
+		break;
 	}
-	if (mac->tok == EOF)
-	    break;
+
+	LispFree(mac, mac->st);
+	mac->level = level;
+	--mac->stream.stream_level;
+
+	mac->fp = mac->stream.stream[mac->stream.stream_level].fp;
+	mac->st = mac->stream.stream[mac->stream.stream_level].st;
+	mac->cp = mac->stream.stream[mac->stream.stream_level].cp;
+	mac->tok = mac->stream.stream[mac->stream.stream_level].tok;
     }
-
-    mac->level = level;
-    --mac->stream.stream_level;
-
-    mac->fp = mac->stream.stream[mac->stream.stream_level].fp;
-    mac->st = mac->stream.stream[mac->stream.stream_level].st;
-    mac->cp = mac->stream.stream[mac->stream.stream_level].cp;
-    mac->tok = mac->stream.stream[mac->stream.stream_level].tok;
 }
 
 LispMac *
 LispBegin(int argc, char *argv[])
 {
+    int i;
+    char results[4];
+    char *fname = "INTERNAL:BEGIN";
     LispMac *mac = malloc(sizeof(LispMac));
 
     if (mac == NULL)
@@ -2339,6 +2412,20 @@ LispBegin(int argc, char *argv[])
     mac->column = 0;
 
     mac->errexit = !mac->interactive;
+
+    /* add +, ++, +++, *, **, and *** */
+    for (i = 0; i < 3; i++) {
+	results[i] = '+';
+	results[i + 1] = '\0';
+	RUN[i] = ATOM2(results);
+	_LispSet(mac, RUN[i], NIL, fname, 0);
+    }
+    for (i = 0; i < 3; i++) {
+	results[i] = '*';
+	results[i + 1] = '\0';
+	RES[i] = ATOM2(results);
+	_LispSet(mac, RES[i], NIL, fname, 0);
+    }
 
     return (mac);
 }

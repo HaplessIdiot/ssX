@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.106 2001/08/27 17:40:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.107 2001/09/29 17:38:41 herrb Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -208,6 +208,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef BuildRman
 #define BuildRman YES
+#endif
+
+#ifndef HasGperf
+#define HasGperf		NO
+#endif
+
+#ifndef GperfCmd
+#define GperfCmd		gperf
 #endif
 
 #ifndef RmanCmd
