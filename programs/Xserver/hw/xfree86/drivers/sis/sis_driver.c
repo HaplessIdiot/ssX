@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.70 2001/12/19 18:55:13 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -1590,15 +1590,15 @@ Bool
 SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    SISPtr pSiS = SISPTR(pScrn);
 #if 0
+    SISPtr pSiS = SISPTR(pScrn);
     if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
-            (pSiS->Chipset == PCI_CHIP_SIS630) ||
-            (pSiS->Chipset == PCI_CHIP_SIS540))
-        return SiSSetMode(xf86Screens[scrnIndex], mode);
+        (pSiS->Chipset == PCI_CHIP_SIS630) ||
+        (pSiS->Chipset == PCI_CHIP_SIS540))
+        return SiSSetMode(pScrn, mode);
     else
 #endif
-        return SISModeInit(xf86Screens[scrnIndex], mode);
+        return SISModeInit(pScrn, mode);
 }
 
 /*
@@ -1690,23 +1690,20 @@ static Bool
 SISEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#if defined(XF86DRI) || 0
     SISPtr pSiS = SISPTR(pScrn);
-
-#ifdef XF86DRI
-    ScreenPtr pScreen;
 #endif
 
 #ifdef XF86DRI
     if (pSiS->directRenderingEnabled) {
-        pScreen = screenInfo.screens[scrnIndex];
-        DRIUnlock(pScreen);
+        DRIUnlock(screenInfo.screens[scrnIndex]);
     }
 #endif
 #if 0
     /* Should we re-save the text mode on each VT enter? */
-    if((pSiS->Chipset == PCI_CHIP_SIS300) ||
-            (pSiS->Chipset == PCI_CHIP_SIS630) ||
-            (pSiS->Chipset == PCI_CHIP_SIS540)) {
+    if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
+        (pSiS->Chipset == PCI_CHIP_SIS630) ||
+        (pSiS->Chipset == PCI_CHIP_SIS540)) {
         SiSPreSetMode(pScrn);
         if (!SiSSetMode(pScrn, pScrn->currentMode))
            return FALSE;
