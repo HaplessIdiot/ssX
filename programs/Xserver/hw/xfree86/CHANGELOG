@@ -1,7 +1,9 @@
 XFree86 4.0.99.x (xx April 2001)
+ 367. Make the ramdac module for the IBM RGB640 DAC work at depth 15
+      (Alan Hourihane).
  366. Fix interference between acceleration and hardware cursors on Mach64
       variants (Marc La France).
- 365. Fix xload so it is functional on Darwin (Rob Braun).
+ 365. Fix xload so it is functional on XDarwin (Rob Braun).
  364. Mac OS X specific fixes:
        - Fix typo in XDarwin startup program that could cause crash with
          many command line options.
@@ -12915,4 +12917,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1676 2001/04/08 05:00:10 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1677 2001/04/08 23:19:26 tsi Exp $
