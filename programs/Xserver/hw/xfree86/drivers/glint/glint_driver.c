@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.125 2001/05/16 07:56:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.126 2001/05/24 19:55:04 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1282,13 +1282,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	}
     }
 
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) {
-    	if (xf86ReturnOptValBool(pGlint->Options, OPTION_FIREGL3000, FALSE)) {
-	    /* Can't we detect a Fire GL 3000 ????? and remove this ? */
-	    pGlint->UseFireGL3000 = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+    if (xf86ReturnOptValBool(pGlint->Options, OPTION_FIREGL3000, FALSE)) {
+	/* Can't we detect a Fire GL 3000 ????? and remove this ? */
+	pGlint->UseFireGL3000 = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			"Diamond FireGL3000 mode enabled\n");
-    	}
     }
 
     if (!FBDevProbed) {
