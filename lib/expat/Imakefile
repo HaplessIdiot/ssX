@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #define DoNormalLib NormalLibExpat
 #define DoSharedLib SharedLibExpat
 #define DoExtraLib SharedLibExpat
@@ -20,7 +22,14 @@ EXPATINC = $(EXPATTOP)/lib
 
 INCLUDES = -I$(EXPATINC) -I$(EXPATTOP) -I.
 
-DEFINES = -DVERSION=\"ExpatVersion\"
+/*
+ * Endianness (for short's)
+ *
+ * XML_BYTE_ORDER == 12			big endian
+ * XML_BYTE_ORDER == 21			little endian
+ * XML_BYTE_ORDER == anything else	determined at run-time.
+ */
+DEFINES = -DVERSION=\"ExpatVersion\" -DXML_BYTE_ORDER=0
 REQUIREDLIBS=$(LDPRELIBS)
 
 SRCS = xmlparse.c xmltok.c xmlrole.c
