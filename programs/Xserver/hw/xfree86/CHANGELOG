@@ -1,4 +1,6 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 529. Re-fix the Trident Video scaler support for Blade series chips 
+      (Alan Hourihane).
  528. Fixed lbx to handle endian swapping without core dump (Egbert Eich).
  527. Fixed MTRR region splitting (Egbert Eich).
  526. Cleaned up option handling in int10 code (Egbert Eich).
@@ -13247,4 +13249,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1768 2001/05/15 02:53:01 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1769 2001/05/15 10:19:34 eich Exp $
