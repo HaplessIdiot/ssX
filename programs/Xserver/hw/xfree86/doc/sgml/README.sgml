@@ -12,10 +12,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>25 May 2001
+<date>1 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.113 2001/03/16 22:13:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.114 2001/05/25 21:25:57 dawes Exp $
 </ident>
 
 <abstract>
@@ -79,8 +79,10 @@ video hardware are available.  Please check the <htmlurl name="Driver
 Status document" url="Status.html"> first to see whether your hardware
 is supported before upgrading to the 4.x series.
 
+<![ %haverelnotes [
 Specific release enhancements can be viewed in the
 <htmlurl name="Release Notes" url="RELNOTES.html">.
+]]>
 
 The XFree86 version numbering system has had some changes as of the
 4.0.2 release.  Information about this can be found in the

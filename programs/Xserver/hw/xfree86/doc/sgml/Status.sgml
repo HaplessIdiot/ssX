@@ -6,10 +6,10 @@
 
 <title>Driver Status for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>4 December 2000
+<date>1 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.29 2001/04/04 01:34:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.30 2001/05/29 16:12:18 tsi Exp $
 </ident>
 
 <abstract>
@@ -18,7 +18,7 @@ This document provides information about the status of the driver and
 hardware support in XFree86 &relvers; compared with that in XFree86
 &legacyvers;.  Please send updates for this document to
 <email>fixes@xfree86.org</email>.  Please do not send requests for
-information or support to that address.
+information or support to that address (they will not be answered).
 
 </abstract>
 

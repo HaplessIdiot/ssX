@@ -1,4 +1,4 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.16 2001/02/09 04:15:36 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.17 2001/05/25 21:25:57 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
@@ -34,4 +34,7 @@
 <!ENTITY % laterrel 'INCLUDE'>
 <!ENTITY % fullrel 'INCLUDE'>
 <!ENTITY % updaterel 'IGNORE'>
+
+<!-- Set this to INCLUDE when references to the RELNOTES are to be included -->
+<!ENTITY % haverelnotes 'INCLUDE'>
 

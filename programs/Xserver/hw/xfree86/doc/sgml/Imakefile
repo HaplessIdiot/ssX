@@ -3,14 +3,23 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.71 2001/03/02 02:45:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.72 2001/05/27 17:11:49 herrb Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
 
+/* Set this to YES if the RELNOTES file is up to date (and during devel) */
+#ifndef BuildRelnotes
+#define BuildRelnotes YES
+#endif
+
+#if BuildRelnotes
+RELNOTES=RELNOTES.sgml
+#endif
+
 SGMLDEPENDS = defs.ent
 MANSGMLDEPENDS = mdefs.ent
-  INDEXLIST = README.sgml RELNOTES.sgml Status.sgml LICENSE.sgml Install.sgml \
+  INDEXLIST = README.sgml $(RELNOTES) Status.sgml LICENSE.sgml Install.sgml \
 	      DESIGN.sgml Versions.sgml \
 	      mouse.sgml fonts.sgml DRI.sgml DRIcomp.sgml dps.sgml \
 	      Darwin.sgml isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml \
@@ -105,7 +114,9 @@ LinuxDocTarget(LICENSE)
 LinuxDocTargetLong(QStart.sgml,QuickStart.doc,QuickStart)
 #endif
 LinuxDocTarget(README)
+#if BuildRelnotes
 LinuxDocTarget(RELNOTES)
+#endif
 LinuxDocTarget(Status)
 
 /* Other docs */
@@ -149,6 +160,8 @@ clean::
 
 FORMATTEDDIR = ..
 
+#if BuildRelnotes
 /* Update RELNOTES at top level */
 UpdateFormattedDoc(RELNOTES,$(TOP))
+#endif
 
