@@ -1,8 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmI830.c,v 1.1 2001/10/04 18:28:22 alanh Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # include "xf86Priv.h"
 # define _DRM_MALLOC xalloc
@@ -35,6 +36,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -47,7 +49,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #endif
 
 #include "xf86drm.h"
-#include "drm.h"
 #include "xf86drmI830.h"
 
 Bool drmI830CleanupDma(int driSubFD)

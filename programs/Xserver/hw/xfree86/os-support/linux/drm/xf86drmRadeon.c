@@ -27,11 +27,12 @@
  *   Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRadeon.c,v 1.4 2001/08/27 17:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRadeon.c,v 1.5 2002/02/22 21:45:16 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -61,6 +62,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -73,7 +75,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #endif
 #include "xf86drm.h"
 #include "xf86drmRadeon.h"
-#include "drm.h"
 
 #define RADEON_BUFFER_RETRY	32
 #define RADEON_IDLE_RETRY	16

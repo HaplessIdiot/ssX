@@ -27,11 +27,12 @@
  *   Gareth Hughes <gareth@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmMga.c,v 1.5 2001/04/10 16:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmMga.c,v 1.6 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -61,6 +62,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -73,7 +75,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #endif
 #include "xf86drm.h"
 #include "xf86drmMga.h"
-#include "drm.h"
 
 #define MGA_IDLE_RETRY		2048
 
