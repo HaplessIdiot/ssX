@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.71 2003/01/23 16:22:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.72 2003/04/25 15:28:38 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -573,7 +573,7 @@ Bool
 pciMfDev(int busnum, int devnum)
 {
     PCITAG tag0, tag1;
-    unsigned long id0, id1;
+    unsigned long id0, id1, val;
 
     /* Detect a multi-function device that complies to the PCI 2.0 spec */
 
@@ -582,7 +582,8 @@ pciMfDev(int busnum, int devnum)
     if (id0 == 0xffffffff)
 	return FALSE;
 
-    if (pciReadLong(tag0, PCI_HEADER_MISC) & PCI_HEADER_MULTIFUNCTION)
+    val = pciReadLong(tag0, PCI_HEADER_MISC) & 0x00ff0000;
+    if ((val != 0x00ff0000) && (val & PCI_HEADER_MULTIFUNCTION))
 	return TRUE;
 
     /*
