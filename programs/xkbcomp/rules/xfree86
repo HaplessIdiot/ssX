@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.68 2003/08/09 14:30:49 pascal Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.69 2003/08/11 13:27:33 pascal Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -25,6 +25,7 @@
   powerpcps2	=	powerpcps2
   pc98		=	xfree98(pc98)
   abnt2		=	xfree86(abnt2)
+  jp106		=	xfree86(jp106)
   *		=	xfree86
 
 ! $azerty = be fr fr-latin9

@@ -8,6 +8,7 @@
         <description>Generic 101-key PC</description>
         <description xml:lang="bg">Стандартна 101 клавишна PC клавиатура</description>
         <description xml:lang="ru">Обычный 101-клавишный PC</description>
+        <description xml:lang="uk">Звичайний 101-клавішний ПК</description>
       </configItem>
     </model>
     <model>
@@ -16,6 +17,7 @@
         <description>Generic 102-key (Intl) PC</description>
         <description xml:lang="bg">Стандартна 102 клавишна PC клавиатура</description>
         <description xml:lang="ru">Обычный 102-клавишный PC</description>
+        <description xml:lang="uk">Звичайний 102-клавішний ПК</description>
       </configItem>
     </model>
     <model>
@@ -24,6 +26,7 @@
         <description>Generic 104-key PC</description>
         <description xml:lang="bg">Стандартна 104 клавишна PC клавиатура</description>
         <description xml:lang="ru">Обычный 104-клавишный PC</description>
+        <description xml:lang="uk">Звичайний 104-клавішний ПК</description>
       </configItem>
     </model>
     <model>
@@ -32,6 +35,7 @@
         <description>Generic 105-key (Intl) PC</description>
         <description xml:lang="bg">Стандартна 105 клавишна PC клавиатура</description>
         <description xml:lang="ru">Обычный 105-клавишный (инт.) РС</description>
+        <description xml:lang="uk">Звичайний 105-клавішний ПК</description>
       </configItem>
     </model>
     <model>
@@ -40,6 +44,7 @@
         <description>Dell 101-key PC</description>
         <description xml:lang="bg">101 клавишна PC клавиатура на Dell</description>
         <description xml:lang="ru">Dell 101-клавишный PC</description>
+        <description xml:lang="uk">Dell 101-клавішний ПК</description>
       </configItem>
     </model>
     <model>
@@ -78,6 +83,7 @@
         <description>Japanese 106-key</description>
         <description xml:lang="bg">японска 106 клавишна</description>
         <description xml:lang="ru">Японская 106-клавишная</description>
+        <description xml:lang="uk">Японська 101-клавішна</description>
       </configItem>
     </model>
     <model>
@@ -85,6 +91,7 @@
         <name>pc98</name>
         <description>PC-98xx Series</description>
         <description xml:lang="bg">PC-98xx серии</description>
+        <description xml:lang="uk">Родина PC-98xx</description>
       </configItem>
     </model>
     <model>
@@ -92,6 +99,7 @@
         <name>abnt2</name>
         <description>Brazilian ABNT2</description>
         <description xml:lang="bg">бразилска ABNT2</description>
+        <description xml:lang="uk">Бразильська ABTN2</description>
       </configItem>
     </model>
     <model>
@@ -105,6 +113,7 @@
         <name>acpi</name>
         <description>ACPI Standard</description>
         <description xml:lang="ru">Стандартная ACPI</description>
+        <description xml:lang="uk">Типова ACPI</description>
       </configItem>
     </model>
     <model>
@@ -124,6 +133,7 @@
         <name>btc5113rf</name>
         <description>BTC 5113RF Multimedia</description>
         <description xml:lang="ru">BTC 5113RF мультимедия</description>
+        <description xml:lang="uk">BTC 5113RF мультимедія</description>
       </configItem>
     </model>
     <model>
@@ -167,6 +177,7 @@
         <name>cherrybluea</name>
         <description>Cherry Blue Line CyBo@rd (alternate option)</description>
         <description xml:lang="ru">Cherry Blue Line CyBo@rd (альтернативный вариант)</description>
+        <description xml:lang="uk">Cherry Blue Line CyBo@rd (альтернативний варіант)</description>
       </configItem>
     </model>
     <model>
@@ -174,6 +185,7 @@
         <name>chicony</name>
         <description>Chicony Internet Keyboard</description>
         <description xml:lang="bg">Интернет клавиатура на Chicony</description>
+        <description xml:lang="uk">Інтернет-клавіатура Chicony</description>
       </configItem>
     </model>
     <model>
@@ -193,6 +205,7 @@
         <name>compaqik7</name>
         <description>Compaq Internet Keyboard (7 keys)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (7 клавиш)</description>
+        <description xml:lang="uk">Compaq Internet Keyboard (7 клавіш)</description>
       </configItem>
     </model>
     <model>
@@ -200,6 +213,7 @@
         <name>compaqik13</name>
         <description>Compaq Internet Keyboard (13 keys)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (13 клавиш)</description>
+        <description xml:lang="uk">Compaq Internet Keyboard (13 клавіш)</description>
       </configItem>
     </model>
     <model>
@@ -207,6 +221,7 @@
         <name>compaqik18</name>
         <description>Compaq Internet Keyboard (18 keys)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (18 клавиш)</description>
+        <description xml:lang="uk">Compaq Internet Keyboard (18 клавіш)</description>
       </configItem>
     </model>
     <model>
@@ -214,6 +229,7 @@
         <name>armada</name>
         <description>Laptop/notebook Compaq (eg. Armada) Laptop Keyboard</description>
         <description xml:lang="ru">Клавиатура для компьютеров Compaq (например Armada)</description>
+        <description xml:lang="uk">Клавіатура для компьютерів Compaq (напр., Armada)</description>
       </configItem>
     </model>
     <model>
@@ -221,6 +237,7 @@
         <name>presario</name>
         <description>Laptop/notebook Compaq (eg. Presario) Internet Keyboard</description>
         <description xml:lang="ru">&quot;Интернет&quot; клавиатура для компьютеров Compaq (например Presario)</description>
+        <description xml:lang="uk">Інтернет-клавіатура для ноутбуків Compaq (напр., Presario)</description>
       </configItem>
     </model>
     <model>
@@ -240,6 +257,7 @@
         <name>inspiron</name>
         <description>Laptop/notebook Dell Inspiron 8xxx</description>
         <description xml:lang="ru">Настольная/портативная для Dell Inspiron 8xxx</description>
+        <description xml:lang="uk">Для ноутбуків Dell Inspiron 8xxx</description>
       </configItem>
     </model>
     <model>
@@ -254,6 +272,7 @@
         <name>diamond</name>
         <description>Diamond 9801 / 9802 series</description>
         <description xml:lang="ru">Модели Diamond 9801/9802</description>
+        <description xml:lang="uk">Моделі Diamond 9801/9802</description>
       </configItem>
     </model>
     <model>
@@ -624,6 +643,8 @@
     <layout>
       <configItem>
         <name>us</name>
+        <shortDescription>USA</shortDescription>
+        <shortDescription xml:lang="ru">США</shortDescription>
         <description>U.S. English</description>
         <description xml:lang="bg">американска английска</description>
         <description xml:lang="ru">Английская (США)</description>
@@ -633,6 +654,8 @@
     <layout>
       <configItem>
         <name>en_US</name>
+        <shortDescription>USA</shortDescription>
+        <shortDescription xml:lang="ru">США</shortDescription>
         <description>U.S. English w/ ISO9995-3</description>
         <description xml:lang="bg">американска английска с ISO9995-3</description>
         <description xml:lang="ru">Английская (США) с ISO9995-3</description>
@@ -651,6 +674,8 @@
     <layout>
       <configItem>
         <name>us_intl</name>
+        <shortDescription>USA</shortDescription>
+        <shortDescription xml:lang="ru">США</shortDescription>
         <description>U.S. English w/ deadkeys</description>
         <description xml:lang="bg">американска английска със специални клавиши </description>
         <description xml:lang="ru">Английская (США) со специальными клавишами (dead keys)</description>
@@ -660,6 +685,8 @@
     <layout>
       <configItem>
         <name>al</name>
+        <shortDescription>Alb</shortDescription>
+        <shortDescription xml:lang="ru">Алб</shortDescription>
         <description>Albanian</description>
         <description xml:lang="bg">албанска</description>
         <description xml:lang="ru">Албанская</description>
@@ -669,6 +696,8 @@
     <layout>
       <configItem>
         <name>ar</name>
+        <shortDescription>Arb</shortDescription>
+        <shortDescription xml:lang="ru">Арб</shortDescription>
         <description>Arabic</description>
         <description xml:lang="bg">арабска</description>
         <description xml:lang="ru">Арабская</description>
@@ -719,6 +748,8 @@
     <layout>
       <configItem>
         <name>am</name>
+        <shortDescription>Arm</shortDescription>
+        <shortDescription xml:lang="ru">Арм</shortDescription>
         <description>Armenian</description>
         <description xml:lang="bg">арменска</description>
         <description xml:lang="ru">Армянская</description>
@@ -728,6 +759,7 @@
     <layout>
       <configItem>
         <name>az</name>
+        <shortDescription>Aze</shortDescription>
         <description>Azerbaijani</description>
         <description xml:lang="ru">Азербайджанская</description>
       </configItem>
@@ -753,6 +785,7 @@
     <layout>
       <configItem>
         <name>by</name>
+        <shortDescription>Blr</shortDescription>
         <description>Belarusian</description>
         <description xml:lang="bg">беларуска</description>
         <description xml:lang="ru">Белорусская</description>
@@ -771,6 +804,7 @@
     <layout>
       <configItem>
         <name>be</name>
+        <shortDescription>Bel</shortDescription>
         <description>Belgian</description>
         <description xml:lang="bg">белгийска</description>
         <description xml:lang="ru">Бельгийская</description>
@@ -800,11 +834,12 @@
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>ben</name>
+        <shortDescription>Ben</shortDescription>
         <description>Bengali</description>
         <description xml:lang="bg">бенгалска</description>
         <description xml:lang="ru">Бенгальская</description>
@@ -814,6 +849,7 @@
     <layout>
       <configItem>
         <name>bs</name>
+        <shortDescription>Bih</shortDescription>
         <description>Bosnian</description>
         <description xml:lang="ru">Боснийская</description>
       </configItem>
@@ -822,6 +858,7 @@
     <layout>
       <configItem>
         <name>br</name>
+        <shortDescription>Bra</shortDescription>
         <description>Brazilian</description>
         <description xml:lang="bg">бразилска</description>
         <description xml:lang="ru">Бразильская</description>
@@ -847,6 +884,7 @@
     <layout>
       <configItem>
         <name>bg</name>
+        <shortDescription>Bgr</shortDescription>
         <description>Bulgarian</description>
         <description xml:lang="bg">българска</description>
         <description xml:lang="ru">Болгарская</description>
@@ -865,6 +903,7 @@
     <layout>
       <configItem>
         <name>mm</name>
+        <shortDescription>Mmr</shortDescription>
         <description>Burmese</description>
         <description xml:lang="bg">бирманска</description>
         <description xml:lang="ru">Бирманская</description>
@@ -874,6 +913,7 @@
     <layout>
       <configItem>
         <name>ca</name>
+        <shortDescription>Can</shortDescription>
         <description>Canadian</description>
         <description xml:lang="bg">канадска</description>
         <description xml:lang="ru">Канадская</description>
@@ -908,6 +948,7 @@
     <layout>
       <configItem>
         <name>ca_enhanced</name>
+        <shortDescription>Can</shortDescription>
         <description>French Canadian</description>
         <description xml:lang="ru">Французская Канадская</description>
       </configItem>
@@ -928,11 +969,12 @@
             <description xml:lang="ru">простая</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>hr</name>
+        <shortDescription>Hrv</shortDescription>
         <description>Croatian</description>
         <description xml:lang="bg">хърватска</description>
         <description xml:lang="ru">Хорватская</description>
@@ -942,6 +984,7 @@
     <layout>
       <configItem>
         <name>cz</name>
+        <shortDescription>Cze</shortDescription>
         <description>Czech</description>
         <description xml:lang="bg">чехшка</description>
         <description xml:lang="ru">Чешская</description>
@@ -968,6 +1011,7 @@
     <layout>
       <configItem>
         <name>cz_qwerty</name>
+        <shortDescription>Cze</shortDescription>
         <description>Czech (qwerty)</description>
         <description xml:lang="bg">чешка (qwerty)</description>
         <description xml:lang="ru">Чешская (qwerty)</description>
@@ -993,6 +1037,7 @@
     <layout>
       <configItem>
         <name>dk</name>
+        <shortDescription>Dnk</shortDescription>
         <description>Danish</description>
         <description xml:lang="bg">датска</description>
         <description xml:lang="ru">Датская</description>
@@ -1011,6 +1056,7 @@
     <layout>
       <configItem>
         <name>nl</name>
+        <shortDescription>Nld</shortDescription>
         <description>Dutch</description>
         <description xml:lang="bg">холандска</description>
         <description xml:lang="ru">Голландская</description>
@@ -1020,6 +1066,8 @@
     <layout>
       <configItem>
         <name>dvorak</name>
+        <shortDescription>Dvo</shortDescription>
+        <shortDescription xml:lang="ru">Дво</shortDescription>
         <description>Dvorak</description>
         <description xml:lang="bg">Дворак</description>
         <description xml:lang="ru">Дворак</description>
@@ -1052,6 +1100,7 @@
     <layout>
       <configItem>
         <name>ee</name>
+        <shortDescription>Est</shortDescription>
         <description>Estonian</description>
         <description xml:lang="bg">естонска</description>
         <description xml:lang="ru">Эстонская</description>
@@ -1070,7 +1119,8 @@
     <layout>
       <configItem>
         <name>ir</name>
-        <description>Iranian</description>
+        <shortDescription>Irn</shortDescription>
+        <description>Farsi</description>
         <description xml:lang="ru">Фарси</description>
       </configItem>
       <variantList/>
@@ -1094,6 +1144,7 @@
     <layout>
       <configItem>
         <name>fi</name>
+        <shortDescription>Fin</shortDescription>
         <description>Finnish</description>
         <description xml:lang="bg">финландска</description>
         <description xml:lang="ru">Финская</description>
@@ -1112,6 +1163,7 @@
     <layout>
       <configItem>
         <name>fr</name>
+        <shortDescription>Fra</shortDescription>
         <description>French</description>
         <description xml:lang="bg">френска</description>
         <description xml:lang="ru">Французская</description>
@@ -1133,11 +1185,12 @@
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>fr-latin9</name>
+        <shortDescription>Fra</shortDescription>
         <description>French (alternative)</description>
         <description xml:lang="ru">Французская (альтернативная)</description>
       </configItem>
@@ -1157,11 +1210,12 @@
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>ge_la</name>
+        <shortDescription>Geo</shortDescription>
         <description>Georgian (latin)</description>
         <description xml:lang="bg">грузинска (латинска)</description>
         <description xml:lang="ru">Грузинская &quot;латинская&quot;</description>
@@ -1171,6 +1225,7 @@
     <layout>
       <configItem>
         <name>ge_ru</name>
+        <shortDescription>Geo</shortDescription>
         <description>Georgian (russian)</description>
         <description xml:lang="bg">грузинска (руска)</description>
         <description xml:lang="ru">Грузинская &quot;русская&quot;</description>
@@ -1180,6 +1235,7 @@
     <layout>
       <configItem>
         <name>de</name>
+        <shortDescription>Deu</shortDescription>
         <description>German</description>
         <description xml:lang="bg">немска</description>
         <description xml:lang="ru">Немецкая</description>
@@ -1221,6 +1277,7 @@
     <layout>
       <configItem>
         <name>el</name>
+        <shortDescription>Grc</shortDescription>
         <description>Greek</description>
         <description xml:lang="bg">гръцка</description>
         <description xml:lang="ru">Греческая</description>
@@ -1253,6 +1310,7 @@
     <layout>
       <configItem>
         <name>guj</name>
+        <shortDescription>Guj</shortDescription>
         <description>Gujarati</description>
         <description xml:lang="bg">гуджарати</description>
         <description xml:lang="ru">Гуджарати</description>
@@ -1262,6 +1320,7 @@
     <layout>
       <configItem>
         <name>gur</name>
+        <shortDescription>Pan</shortDescription>
         <description>Gurmukhi</description>
         <description xml:lang="bg">гурмуки</description>
         <description xml:lang="ru">Гурмукхи</description>
@@ -1271,6 +1330,7 @@
     <layout>
       <configItem>
         <name>dev</name>
+        <shortDescription>Hin</shortDescription>
         <description>Hindi</description>
         <description xml:lang="bg">хинди</description>
         <description xml:lang="ru">Хинди</description>
@@ -1280,6 +1340,7 @@
     <layout>
       <configItem>
         <name>hu</name>
+        <shortDescription>Hun</shortDescription>
         <description>Hungarian</description>
         <description xml:lang="bg">унгарска</description>
         <description xml:lang="ru">Венгерская</description>
@@ -1442,6 +1503,7 @@
     <layout>
       <configItem>
         <name>hu_qwerty</name>
+        <shortDescription>Hun</shortDescription>
         <description>Hungarian (qwerty)</description>
         <description xml:lang="ru">Венгерская (qwerty)</description>
       </configItem>
@@ -1450,6 +1512,7 @@
     <layout>
       <configItem>
         <name>is</name>
+        <shortDescription>Isl</shortDescription>
         <description>Icelandic</description>
         <description xml:lang="bg">исландска</description>
         <description xml:lang="ru">Исландская</description>
@@ -1475,6 +1538,7 @@
     <layout>
       <configItem>
         <name>iu</name>
+        <shortDescription>Iku</shortDescription>
         <description>Inuktitut</description>
         <description xml:lang="bg">ескимоска</description>
         <description xml:lang="ru">Иннуитская</description>
@@ -1484,6 +1548,7 @@
     <layout>
       <configItem>
         <name>il</name>
+        <shortDescription>Isr</shortDescription>
         <description>Israeli</description>
         <description xml:lang="bg">израелска</description>
         <description xml:lang="ru">Иврит</description>
@@ -1508,6 +1573,7 @@
     <layout>
       <configItem>
         <name>it</name>
+        <shortDescription>Ita</shortDescription>
         <description>Italian</description>
         <description xml:lang="bg">италианска</description>
         <description xml:lang="ru">Итальянская</description>
@@ -1526,6 +1592,7 @@
     <layout>
       <configItem>
         <name>jp</name>
+        <shortDescription>Jpn</shortDescription>
         <description>Japanese</description>
         <description xml:lang="bg">японска</description>
         <description xml:lang="ru">Японская</description>
@@ -1535,6 +1602,7 @@
     <layout>
       <configItem>
         <name>kan</name>
+        <shortDescription>Kan</shortDescription>
         <description>Kannada</description>
         <description xml:lang="ru">Канадская</description>
       </configItem>
@@ -1550,6 +1618,7 @@
     <layout>
       <configItem>
         <name>la</name>
+        <shortDescription>LAm</shortDescription>
         <description>Latin America</description>
         <description xml:lang="bg">латиноамериканска</description>
         <description xml:lang="ru">Латиноамериканская</description>
@@ -1571,11 +1640,12 @@
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>lt</name>
+        <shortDescription>Ltu</shortDescription>
         <description>Lithuanian qwerty &quot;numeric&quot;</description>
         <description xml:lang="bg">литовска &quot;цифрова&quot; qwerty</description>
         <description xml:lang="ru">Литовская &quot;Балтийская&quot; qwerty</description>
@@ -1600,6 +1670,7 @@
     <layout>
       <configItem>
         <name>lt_std</name>
+        <shortDescription>Ltu</shortDescription>
         <description>Lithuanian azerty standard</description>
         <description xml:lang="bg">литовска стандартна azerty</description>
         <description xml:lang="ru">Литовская стандартная azerty</description>
@@ -1621,11 +1692,12 @@
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
           </configItem>
         </variant>
-      </variantList>
+       </variantList>
     </layout>
     <layout>
       <configItem>
         <name>lv</name>
+        <shortDescription>Lva</shortDescription>
         <description>Latvian</description>
         <description xml:lang="bg">латвийска</description>
         <description xml:lang="ru">Латышская</description>
@@ -1635,6 +1707,7 @@
     <layout>
       <configItem>
         <name>mk</name>
+        <shortDescription>Mkd</shortDescription>
         <description>Macedonian</description>
         <description xml:lang="bg">македонска</description>
         <description xml:lang="ru">Македонская</description>
@@ -1653,6 +1726,7 @@
     <layout>
       <configItem>
         <name>ml</name>
+        <shortDescription>Mal</shortDescription>
         <description>Malayalam</description>
         <description xml:lang="ru">Малайская</description>
       </configItem>
@@ -1661,6 +1735,7 @@
     <layout>
       <configItem>
         <name>mt</name>
+        <shortDescription>Mlt</shortDescription>
         <description>Maltese</description>
         <description xml:lang="bg">малтийска</description>
         <description xml:lang="ru">Мальтийская</description>
@@ -1670,6 +1745,7 @@
     <layout>
       <configItem>
         <name>mt_us</name>
+        <shortDescription>Mlt</shortDescription>
         <description>Maltese (US layout)</description>
         <description xml:lang="bg">малтийска (американска подредба)</description>
         <description xml:lang="ru">Мальтийская (Американская раскладка)</description>
@@ -1679,6 +1755,7 @@
     <layout>
       <configItem>
         <name>mn</name>
+        <shortDescription>Mng</shortDescription>
         <description>Mongolian</description>
         <description xml:lang="ru">Монгольская</description>
       </configItem>
@@ -1687,6 +1764,7 @@
     <layout>
       <configItem>
         <name>no</name>
+        <shortDescription>Nor</shortDescription>
         <description>Norwegian</description>
         <description xml:lang="bg">норвежка</description>
         <description xml:lang="ru">Норвежская</description>
@@ -1713,6 +1791,8 @@
     <layout>
       <configItem>
         <name>ogham</name>
+        <shortDescription>Ogh</shortDescription>
+        <shortDescription xml:lang="ru">Огх</shortDescription>
         <description>Ogham</description>
         <description xml:lang="ru">Огхам (древнеирланская)</description>
       </configItem>
@@ -1743,6 +1823,7 @@
     <layout>
       <configItem>
         <name>ori</name>
+        <shortDescription>Ori</shortDescription>
         <description>Oriya</description>
         <description xml:lang="ru">Орийя</description>
       </configItem>
@@ -1751,6 +1832,7 @@
     <layout>
       <configItem>
         <name>pl</name>
+        <shortDescription>Pol</shortDescription>
         <description>Polish</description>
         <description xml:lang="bg">полска</description>
         <description xml:lang="ru">Польская</description>
@@ -1760,6 +1842,7 @@
     <layout>
       <configItem>
         <name>pl2</name>
+        <shortDescription>Pol</shortDescription>
         <description>Polish (qwertz)</description>
         <description xml:lang="bg">полска (qwertz)</description>
         <description xml:lang="ru">Польская (qwertz)</description>
@@ -1769,6 +1852,7 @@
     <layout>
       <configItem>
         <name>pt</name>
+        <shortDescription>Prt</shortDescription>
         <description>Portuguese</description>
         <description xml:lang="bg">португалска</description>
         <description xml:lang="ru">Португальская</description>
@@ -1795,6 +1879,7 @@
     <layout>
       <configItem>
         <name>ro</name>
+        <shortDescription>Rou</shortDescription>
         <description>Romanian</description>
         <description xml:lang="bg">румънска</description>
         <description xml:lang="ru">Румынская</description>
@@ -1811,6 +1896,8 @@
     <layout>
       <configItem>
         <name>ru</name>
+        <shortDescription>Rus</shortDescription>
+        <shortDescription xml:lang="ru">Рус</shortDescription>
         <description>Russian</description>
         <description xml:lang="bg">руска</description>
         <description xml:lang="ru">Русская</description>
@@ -1845,6 +1932,7 @@
     <layout>
       <configItem>
         <name>se_FI</name>
+        <shortDescription>Sme</shortDescription>
         <description>Northern Saami (Finland)</description>
         <description xml:lang="bg">северносамска (Финландия)</description>
         <description xml:lang="ru">Саамская (Финляндия)</description>
@@ -1854,6 +1942,7 @@
     <layout>
       <configItem>
         <name>se_NO</name>
+        <shortDescription>Sme</shortDescription>
         <description>Northern Saami (Norway)</description>
         <description xml:lang="bg">северносамска (Норвегия)</description>
         <description xml:lang="ru">Саамская (Норвегия)</description>
@@ -1863,6 +1952,7 @@
     <layout>
       <configItem>
         <name>se_SE</name>
+        <shortDescription>Sme</shortDescription>
         <description>Northern Saami (Sweden)</description>
         <description xml:lang="bg">северносамска (Швеция)</description>
         <description xml:lang="ru">Саамская (Швеция)</description>
@@ -1872,6 +1962,7 @@
     <layout>
       <configItem>
         <name>sr</name>
+        <shortDescription>Scg</shortDescription>
         <description>Serbian</description>
         <description xml:lang="bg">сръбска</description>
         <description xml:lang="ru">Сербская</description>
@@ -1881,6 +1972,7 @@
     <layout>
       <configItem>
         <name>si</name>
+        <shortDescription>Svn</shortDescription>
         <description>Slovenian</description>
         <description xml:lang="bg">словенска</description>
         <description xml:lang="ru">Словенская</description>
@@ -1891,6 +1983,7 @@
       <configItem>
         <name>sk</name>
         <description>Slovak</description>
+        <shortDescription>Svk</shortDescription>
         <description xml:lang="bg">словашка</description>
         <description xml:lang="ru">Словацкая</description>
       </configItem>
@@ -1915,6 +2008,7 @@
     <layout>
       <configItem>
         <name>sk_qwerty</name>
+        <shortDescription>Svk</shortDescription>
         <description>Slovak (qwerty)</description>
         <description xml:lang="bg">словашка (qwerty)</description>
         <description xml:lang="ru">Словацкая (qwerty)</description>
@@ -1940,6 +2034,7 @@
     <layout>
       <configItem>
         <name>es</name>
+        <shortDescription>Esp</shortDescription>
         <description>Spanish</description>
         <description xml:lang="bg">испанска</description>
         <description xml:lang="ru">Испанская</description>
@@ -1966,6 +2061,7 @@
     <layout>
       <configItem>
         <name>se</name>
+        <shortDescription>Swe</shortDescription>
         <description>Swedish</description>
         <description xml:lang="bg">шведска</description>
         <description xml:lang="ru">Шведская</description>
@@ -1992,6 +2088,7 @@
     <layout>
       <configItem>
         <name>fr_CH</name>
+        <shortDescription>Fra</shortDescription>
         <description>Swiss French</description>
         <description xml:lang="bg">швейцарска френска</description>
         <description xml:lang="ru">Французская (Швейцария)</description>
@@ -2018,6 +2115,7 @@
     <layout>
       <configItem>
         <name>de_CH</name>
+        <shortDescription>Deu</shortDescription>
         <description>Swiss German</description>
         <description xml:lang="bg">швейцарска немска</description>
         <description xml:lang="ru">Немецкая (Швейцария)</description>
@@ -2044,6 +2142,7 @@
     <layout>
       <configItem>
         <name>syr</name>
+        <shortDescription>Syr</shortDescription>
         <description>Syriac</description>
         <description xml:lang="ru">Сирийская</description>
       </configItem>
@@ -2052,6 +2151,7 @@
     <layout>
       <configItem>
         <name>tj</name>
+        <shortDescription>Tjk</shortDescription>
         <description>Tajik</description>
         <description xml:lang="bg">таджикска</description>
         <description xml:lang="ru">Таджикская</description>
@@ -2061,6 +2161,7 @@
     <layout>
       <configItem>
         <name>tml</name>
+        <shortDescription>Tml</shortDescription>
         <description>Tamil</description>
         <description xml:lang="bg">тамилска</description>
         <description xml:lang="ru">Тамильская</description>
@@ -2095,6 +2196,7 @@
     <layout>
       <configItem>
         <name>tel</name>
+        <shortDescription>Tel</shortDescription>
         <description>Telugu</description>
         <description xml:lang="ru">Телугу</description>
       </configItem>
@@ -2103,8 +2205,11 @@
     <layout>
       <configItem>
         <name>th</name>
+        <shortDescription>Tha</shortDescription>
         <description>Thai (Kedmanee)</description>
-      </configItem>
+        <description xml:lang="bg">тайландска</description>
+        <description xml:lang="ru">Таиландская</description>
+       </configItem>
       <variantList/>
     </layout>
     <layout>
@@ -2124,6 +2229,7 @@
     <layout>
       <configItem>
         <name>tr</name>
+        <shortDescription>Tur</shortDescription>
         <description>Turkish </description>
         <description xml:lang="bg">турска</description>
         <description xml:lang="ru">Турецкая</description>
@@ -2148,6 +2254,7 @@
     <layout>
       <configItem>
         <name>ua</name>
+        <shortDescription>Ukr</shortDescription>
         <description>Ukrainian </description>
         <description xml:lang="bg">украинска</description>
         <description xml:lang="ru">Украинская</description>
@@ -2182,6 +2289,7 @@
     <layout>
       <configItem>
         <name>gb</name>
+        <shortDescription>GBr</shortDescription>
         <description>United Kingdom</description>
         <description xml:lang="bg">британска</description>
         <description xml:lang="ru">Английская (Великобритания)</description>
@@ -2198,6 +2306,7 @@
     <layout>
       <configItem>
         <name>vn</name>
+        <shortDescription>Vnm</shortDescription>
         <description>Vietnamese</description>
         <description xml:lang="bg">виетнамска</description>
         <description xml:lang="ru">Вьетнамская</description>
@@ -2207,6 +2316,7 @@
     <layout>
       <configItem>
         <name>yu</name>
+        <shortDescription>Yug</shortDescription>
         <description>Yugoslavian</description>
         <description xml:lang="bg">югославска</description>
         <description xml:lang="ru">Югославская</description>
@@ -2216,6 +2326,7 @@
     <layout>
       <configItem>
         <name>nec/jp</name>
+        <shortDescription>Jpn</shortDescription>
         <description>PC-98xx Series</description>
         <description xml:lang="bg">PC-98xx серии</description>
         <description xml:lang="ru">PC-98xx</description>
@@ -2225,6 +2336,7 @@
     <layout>
       <configItem>
         <name>ie</name>
+        <shortDescription>Irl</shortDescription>
         <description>ie            -  No decription</description>
         <description xml:lang="ru">Ирландская</description>
       </configItem>
@@ -2262,6 +2374,7 @@
     <layout>
       <configItem>
         <name>il_phonetic</name>
+        <shortDescription>Isr</shortDescription>
         <description>il_phonetic   -  No decription</description>
         <description xml:lang="bg">il_phonetic - без описание</description>
         <description xml:lang="ru">Иврит, фонетическая</description>
@@ -2271,6 +2384,7 @@
     <layout>
       <configItem>
         <name>sapmi</name>
+        <shortDescription>Sme</shortDescription>
         <description>sapmi         -  No decription</description>
         <description xml:lang="bg">sapmi - без описание</description>
         <description xml:lang="ru">Саамская</description>

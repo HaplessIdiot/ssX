@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.23 2003/06/30 13:23:09 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.24 2003/08/13 20:29:59 paulo Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -151,14 +151,10 @@ xkb_keycodes "basic" {
 
     alias <HZTG> = <TLDE>;	// Hankaku_Zenkaku toggle
     alias <HKTG> = <FK15>;	// Hiragana_Katakana toggle
-    alias <AB11> = <KPDC>;	// backslash/underscore
+    <AB11> =   211;		// backslash/underscore
     <XFER> =   129;		// Henkan
     <NFER> =   131;		// Muhenkan
     <AE13> =   133;		// Yen
-
-    // Keys that are generated on Japanese keyboards and the
-    // ABNT2 Brazillian keyboards
-    <AC12> = 51;
 
     // Extended keys that may be generated on "Internet" keyboards.
     // These are not standardised, hence the meaningless names.
@@ -318,7 +314,7 @@ xkb_keycodes "basic" {
     <K70> =   208;		// <I50>
     <K71> =   209;		// <I51>
     <K72> =   210;		// <I52>
-    <K73> =   211;		// <I53>
+    alias <K73> = <AB11>;	// <I53>
     <K74> =   219;		// <I5B>
     <K75> =   220;		// <I5C>
     <K76> =   221;		// <I5D>
@@ -377,7 +373,8 @@ xkb_keycodes "102" {
 // All of the keycodes here are now in the basic "xfree86" set.
 //
 xkb_keycodes "jp106" {
-    include "xfree86(xfree86)"
+    include "xfree86(basic)"
+    <AC12> = 51;
 };
 
 
@@ -387,7 +384,6 @@ xkb_keycodes "abnt2" {
     <BKSL> = 94;
     <AC12> = 51;
     <KPPT> = 134;
-    <AB11> = 211;
 };
 
 
