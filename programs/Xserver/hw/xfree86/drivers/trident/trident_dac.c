@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.52 2001/09/24 20:40:14 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.53 2001/09/25 09:01:56 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -563,7 +563,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3x4[LinearAddReg] = 0;
     if (pTrident->Linear) {
 	/* This is used for VLB, when we support it again in 4.0 */
-	if (pTrident->Chipset < PROVIDIA9685)
+	if (pTrident->Chipset < CYBER9385)
     	    pReg->tridentRegs3x4[LinearAddReg] |=
 					((pTrident->FbAddress >> 24) << 6)|
 					((pTrident->FbAddress >> 20) & 0x0F);
@@ -689,7 +689,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3C4(SPKey);
     OUTW_3x4(PreEndControl);
     OUTW_3x4(PreEndFetch);
-    if (pTrident->Chipset >= PROVIDIA9685) OUTW_3x4(Enhancement0);
+    if (pTrident->Chipset >= CYBER9385)    OUTW_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      OUTW_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) OUTW_3x4(New32);
     if (pTrident->IsCyber) {
@@ -792,7 +792,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3C4(SPKey);
     INB_3x4(PreEndControl);
     INB_3x4(PreEndFetch);
-    if (pTrident->Chipset >= PROVIDIA9685) INB_3x4(Enhancement0);
+    if (pTrident->Chipset >= CYBER9385)    INB_3x4(Enhancement0);
     if (pTrident->Chipset >= BLADE3D)      INB_3x4(RAMDACTiming);
     if (pTrident->Chipset == CYBERBLADEE4) INB_3x4(New32);
     if (pTrident->IsCyber) {
