@@ -1,4 +1,6 @@
 XFree86 4.4.99.1 (XX March 2004)
+   8. Fix an off-by-one error that can lead to malloc problems (Bugzilla #512,
+      Kyle Bateman).
    7. Xterm patch #185 (Thomas Dickey).
    6. Do the Linux KDKBDREP ioctl on the correct fd.  This prevents the
       fallback that tries to directly program the keyboard repeat rate,
@@ -18700,7 +18702,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3162 2004/03/03 18:53:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3163 2004/03/04 02:25:08 dickey Exp $
 
 
 
