@@ -30,7 +30,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.2 1998/06/28 08:41:35 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.3 1998/10/03 08:41:35 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
@@ -133,8 +133,6 @@ nexttoken(fp, tokenbuf, lastch)
     char *p;
     int i, j;
 
-#define CHECKBUF() if (p - tokenbuf >= MAXSTRLEN - 1) return ERROR; else
-
     while ((c = nextch(fp, lastch)) == ' ' || c == '\t') {
     }
     switch (c) {
@@ -171,7 +169,6 @@ nexttoken(fp, tokenbuf, lastch)
 		switch (c) {
 		  case '\\':
 		  case '"':
-		    CHECKBUF();
 		    *p++ = c;
 		    break;
 		  case '0':
@@ -190,7 +187,6 @@ nexttoken(fp, tokenbuf, lastch)
 			c = nextch(fp, lastch);
 		    }
 		    putbackch(c, lastch);
-		    CHECKBUF();
 		    *p++ = (char)i;
 		    break;
 		  case 'X':
@@ -216,7 +212,6 @@ nexttoken(fp, tokenbuf, lastch)
 		        goto string_error;
 		    }
 		    putbackch(c, lastch);
-		    CHECKBUF();
 		    *p++ = (char)i;
 #undef ishexch
 		    break;
@@ -226,12 +221,10 @@ nexttoken(fp, tokenbuf, lastch)
 		    token = ERROR;
 		    goto string_error;
 		  default:
-		    CHECKBUF();
 		    *p++ = c;
 		    break;
 		}
 	    } else {
-		CHECKBUF();
 		*p++ = c;
 	    }
 	}
@@ -250,11 +243,9 @@ nexttoken(fp, tokenbuf, lastch)
       default:
 	if (isalnum(c) || c == '_' || c == '-') {
 	    p = tokenbuf;
-	    CHECKBUF();
 	    *p++ = c;
 	    c = nextch(fp, lastch);
 	    while (isalnum(c) || c == '_' || c == '-') {
-		CHECKBUF();
 		*p++ = c;
 		c = nextch(fp, lastch);
 	    }
