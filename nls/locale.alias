@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.23 2000/03/17 16:51:43 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.24 2000/04/04 19:24:45 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -493,13 +493,9 @@ slovene						sl_CS.ISO8859-2
 spanish.iso88591				es_ES.ISO8859-1
 swedish.iso88591				sv_SE.ISO8859-1
 turkish.iso88599				tr_TR.ISO8859-9
-univ.utf8					en_US.utf
+univ.utf8					en_US.UTF-8
 XCOMM Digital Unix utf
-universal.utf8@ucs4				en_US.utf
-#if defined(SVR4) && defined(sun)
-XCOMM Solaris 2.6
-en_US.UTF-8					en_US.utf
-#endif
+universal.utf8@ucs4				en_US.UTF-8
 XCOMM Solaris and SunOS have iso_8859_1 LC_CTYPES to augment LANG=C
 iso_8859_1					en_US.ISO8859-1
 XCOMM Other miscellaneous locale names
@@ -612,8 +608,7 @@ en_US.88591.en:					en_US.ISO8859-1
 en_US.iso88591:					en_US.ISO8859-1
 en_US.ISO_8859-1:				en_US.ISO8859-1
 #if defined(SVR4) && defined(sun)
-en_US.UTF-8:					en_US.utf
-en_US.utf8:					en_US.utf
+en_US.utf8:					en_US.UTF-8
 #endif
 eo:						eo_XX.ISO8859-3
 eo_XX:						eo_XX.ISO8859-3
@@ -991,13 +986,9 @@ slovene:					sl_CS.ISO8859-2
 spanish.iso88591:				es_ES.ISO8859-1
 swedish.iso88591:				sv_SE.ISO8859-1
 turkish.iso88599:				tr_TR.ISO8859-9
-univ.utf8:					en_US.utf
+univ.utf8:					en_US.UTF-8
 XCOMM Digital Unix utf
-universal.utf8@ucs4:				en_US.utf
-#if defined(SVR4) && defined(sun)
-XCOMM Solaris 2.6
-en_US.UTF-8:					en_US.utf
-#endif
+universal.utf8@ucs4:				en_US.UTF-8
 XCOMM Solaris and SunOS have iso_8859_1 LC_CTYPES to augment LANG=C
 iso_8859_1:					en_US.ISO8859-1
 #ifdef WIN32

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.33 2000/06/28 07:51:50 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.35 2000/08/08 08:58:08 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -448,6 +448,10 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->conf_idev = dev;
 
     /* Allocate the MouseDevRec and initialise it. */
+    /*
+     * XXX This should be done by a function in the core server since the
+     * MouseDevRec is defined in the os-support layer.
+     */
     if (!(pMse = xcalloc(sizeof(MouseDevRec), 1)))
 	return pInfo;
     pInfo->private = pMse;
@@ -497,6 +501,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pMse->protocol = protocol;
     pMse->protocolID = protocolID;
     pMse->oldProtocolID = protocolID;  /* hack */
+    pMse->origProtocolID = protocolID;
     pMse->class = ProtocolIDToClass(protocolID);
 
     /* Collect the options, and process the common options. */
@@ -655,7 +660,7 @@ SetupMouse(InputInfoPtr pInfo)
 
     pMse = pInfo->private;
     /* Handle the "Auto" protocol. */
-    if (pMse->protocolID == PROT_AUTO) {
+    if (pMse->origProtocolID == PROT_AUTO) {
 	MouseProtocolID protocolID = PROT_UNKNOWN;
 	
 	automatic = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.7 2000/02/08 13:13:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.10 2000/08/08 08:58:08 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -135,6 +135,7 @@ typedef struct _MouseDevRec {
     unsigned char	inSync;		/* driver in sync with datastream */
     pointer		mousePriv;	/* private area */
     InputInfoPtr	pInfo;
+    int			origProtocolID;
 } MouseDevRec, *MouseDevPtr;
 
 /* Z axis mapping */

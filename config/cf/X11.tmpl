@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.76 2000/10/05 18:05:25 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.77 2000/10/13 13:41:17 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -51,6 +51,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.76 2000/10/05 18:05:25 keithp Exp $
 #endif
 #ifndef BuildFontServer
 #define BuildFontServer		YES
+#endif
+#ifndef XserverStaticFontLib
+#define XserverStaticFontLib	YES
 #endif
 #ifndef BuildSpeedo
 #define BuildSpeedo		YES
@@ -1467,7 +1470,25 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #undef LinkGLToUsrInclude
 #define LinkGLToUsrInclude	NO
 #endif
+/*
+ * Don't make a shared GLw library because is would depend on Motif.
+ */
+#ifndef SharedLibGLw
+#define SharedLibGLw		NO	/* HasSharedLibraries */
 #endif
+#ifndef NormalLibGLw
+#define NormalLibGLw		YES	/* (!SharedLibGLw | ForceNormalLib) */
+#endif
+#ifndef DebugLibGLw
+#define DebugLibGLw		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibGLw
+#define ProfileLibGLw		NO	/* profiled widget library */
+#endif
+#ifndef GLwUseXmStubs
+#define GLwUseXmStubs		NO	/* create stub (weak) Motif symbols */
+#endif
+#endif /* BuildGLXLibrary */
 
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
@@ -1639,7 +1660,16 @@ SharedLibReferences(GLX,GL,$(GLXLIBSRC),SOGLREV,SharedGlxRev)
 #else
 ProjectUnsharedLibReferences(GLX,GL,$(GLXLIBSRC),XBuildLibDir)
 #endif
+    GLWIDGETSRC = $(LIBSRC)/GLw
+#if SharedLibGLw
+#ifndef SharedGLwRev
+#define SharedGLwRev 1.0		/* used to name the shared library */
 #endif
+SharedDSLibReferences(GLW,GLw,$(GLWIDGETSRC),SOGLWREV,SharedGLwRev)
+#else
+ProjectUnsharedLibReferences(GLW,GLw,$(GLWIDGETSRC),XBuildLibDir)
+#endif
+#endif /* BuildGLXLibrary */
 
 #if BuildRenderLibrary
     XRENDERLIBSRC = $(LIBSRC)/Xrender
@@ -2083,7 +2113,7 @@ ProjectUnsharedLibReferences(FS,FS,$(FSLIBSRC),XBuildLibDir)
 #define SharedLibFont HasSharedLibraries
 #endif
 #ifndef NormalLibFont
-#define NormalLibFont (!SharedLibFont | ForceNormalLib)
+#define NormalLibFont (!SharedLibFont | ForceNormalLib | XserverStaticFontLib)
 #endif
 #ifndef DebugLibFont
 #define DebugLibFont		NO	/* debugged Font library */

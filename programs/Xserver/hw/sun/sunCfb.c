@@ -50,7 +50,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.9 1998/06/27 12:53:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.10 1998/10/04 09:38:34 dawes Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -300,7 +300,7 @@ Bool sunTCXInit (screen, pScreen, argc, argv)
 	cfbCreateDefColormap, sunSaveScreen, 0);
 }
 
-#if !defined(i386) && !defined(__bsdi__) /* { */
+#if !defined(i386) /* { */
 
 #ifdef SVR4 /* { */
 #include <sys/cg2reg.h>
@@ -309,13 +309,16 @@ Bool sunTCXInit (screen, pScreen, argc, argv)
 #include <pixrect/cg2reg.h>
 #else
 #if defined(__sparc__) || defined(__sparc) /* { */
+#if !defined(__bsdi__)
 #include <machine/cgtworeg.h>
+#endif
 #else
 #include <machine/cg2reg.h>
 #endif /* } */
 #endif /* } */
 #endif /* } */
 
+#ifndef __bsdi__ /* { */
 typedef struct {
     struct cg2memfb	mem;
     struct cg2fb 	regs;
@@ -418,6 +421,8 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 #endif /* ifndef LOWMEMFTPT */
     return ret;
 }
+
+#endif /* } */
 
 #define	CG4_HEIGHT	900
 #define	CG4_WIDTH	1152

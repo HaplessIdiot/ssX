@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.8 1999/09/27 14:33:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.9 2000/02/10 22:33:43 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -148,9 +148,9 @@ MouseGetPnpProtocol(InputInfoPtr pInfo)
 
     if (((len = pnpgets(pInfo, buf)) <= 0) ||
 	!pnpparse(pInfo, &pnpid, buf, len))
-	return -1;
+	return PROT_UNKNOWN;
     if ((t = pnpproto(&pnpid)) == NULL)
-	return -1;
+	return PROT_UNKNOWN;
     xf86MsgVerb(X_INFO, 2, "%s: PnP-detected protocol ID: %d\n",
 		pInfo->name, t->val);
     return (t->val);
