@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.191 2002/10/11 01:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.192 2002/10/19 20:04:21 herrb Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -20,6 +20,7 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "site.h"
+#include "mi.h"
 
 #include "compiler.h"
 
@@ -1024,7 +1025,7 @@ InitInput(argc, argv)
 #ifdef XINPUT
   xf86eqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #else
-  mieqInit (xf86Info.pKeyboard, xf86Info.pMouse);
+  mieqInit ((DevicePtr)xf86Info.pKeyboard, (DevicePtr)xf86Info.pMouse);
 #endif
 }
 

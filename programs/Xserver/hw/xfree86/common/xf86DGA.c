@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.44 2002/09/16 18:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.45 2002/10/31 00:33:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -13,7 +13,6 @@
 #include "colormapst.h"
 #include "pixmapstr.h"
 #include "inputstr.h"
-#include "XIproto.h"
 #include "globals.h"
 #include "servermd.h"
 #include "micmap.h"

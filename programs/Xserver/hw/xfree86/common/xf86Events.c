@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.136tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.137 2002/11/22 22:56:02 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -46,11 +46,12 @@
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
-#include "xf86Xinput.h"
 #else
 #include "inputstr.h"
 #endif
+#include "xf86Xinput.h"
 
+#include "mi.h"
 #include "mipointer.h"
 
 #ifdef XF86BIGFONT
