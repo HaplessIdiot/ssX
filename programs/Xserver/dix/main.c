@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.40 2003/02/17 16:55:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.41 2003/09/25 13:26:21 pascal Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -319,8 +319,8 @@ main(int argc, char *argv[], char *envp[])
 	}
 	else
 	    ResetWellKnownSockets ();
-        clients[0] = serverClient;
-        currentMaxClients = 1;
+	clients[0] = serverClient;
+	currentMaxClients = 1;
 
 	if (!InitClientResources(serverClient))      /* for root resources */
 	    FatalError("couldn't init server resources");
@@ -418,10 +418,10 @@ main(int argc, char *argv[], char *envp[])
 
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    InitRootWindow(WindowTable[i]);
-        DefineInitialRootWindow(WindowTable[0]);
+	DefineInitialRootWindow(WindowTable[0]);
 	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 #ifdef DPMSExtension
-        SetDPMSTimers();
+	SetDPMSTimers();
 #endif
 
 #ifdef PANORAMIX
@@ -440,6 +440,7 @@ main(int argc, char *argv[], char *envp[])
 	/* Now free up whatever must be freed */
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
+	FreeScreenSaverTimer();
 	CloseDownExtensions();
 
 #ifdef PANORAMIX
@@ -466,7 +467,11 @@ main(int argc, char *argv[], char *envp[])
   	CloseDownEvents();
 	xfree(WindowTable);
 	WindowTable = NULL;
-	FreeFonts ();
+	FreeFonts();
+
+#ifdef DPMSExtension
+	FreeDPMSTimers();
+#endif
 
 	xfree(serverClient->devPrivates);
 	serverClient->devPrivates = NULL;
@@ -474,7 +479,12 @@ main(int argc, char *argv[], char *envp[])
 	if (dispatchException & DE_TERMINATE)
 	{
 	    CloseWellKnownConnections();
-	    OsCleanup();
+	}
+
+	OsCleanup((dispatchException & DE_TERMINATE) != 0);
+
+	if (dispatchException & DE_TERMINATE)
+	{
 	    ddxGiveUp();
 	    break;
 	}
@@ -543,7 +553,7 @@ CreateConnectionBlock()
     i = padlength[setup.nbytesVendor & 3];
     sizesofar += i;
     while (--i >= 0)
-        *pBuf++ = 0;
+	*pBuf++ = 0;
     
     for (i=0; i<screenInfo.numPixmapFormats; i++)
     {

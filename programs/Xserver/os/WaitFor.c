@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.41 2003/09/25 13:26:27 pascal Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.42 2003/10/16 01:33:35 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -568,21 +568,24 @@ ScreenSaverTimeoutExpire(OsTimerPtr timer,CARD32 now,pointer arg)
 }
 
 static OsTimerPtr ScreenSaverTimer = NULL;
-static int ScreenSaverGeneration = -1;
+
+void
+FreeScreenSaverTimer(void)
+{
+    if (ScreenSaverTimer) {
+	TimerFree(ScreenSaverTimer);
+	ScreenSaverTimer = NULL;
+    }
+}
 
 void
 SetScreenSaverTimer(void)
 {
-    if (ScreenSaverGeneration != serverGeneration) {
-	ScreenSaverTimer = NULL;
-	ScreenSaverGeneration = serverGeneration;
-    }
     if (ScreenSaverTime > 0) {
        ScreenSaverTimer = TimerSet(ScreenSaverTimer, 0, ScreenSaverTime,
                                    ScreenSaverTimeoutExpire, NULL);
     } else if (ScreenSaverTimer) {
-       TimerFree(ScreenSaverTimer);
-       ScreenSaverTimer = NULL;
+       FreeScreenSaverTimer();
     }
 }
 
@@ -591,7 +594,6 @@ SetScreenSaverTimer(void)
 static OsTimerPtr DPMSStandbyTimer = NULL;
 static OsTimerPtr DPMSSuspendTimer = NULL;
 static OsTimerPtr DPMSOffTimer = NULL;
-static int DPMSGeneration = -1;
 
 static CARD32
 DPMSStandbyTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
@@ -636,17 +638,27 @@ DPMSOffTimerExpire(OsTimerPtr timer,CARD32 now,pointer arg)
 }
 
 void
+FreeDPMSTimers(void)
+{
+    if (DPMSStandbyTimer) {
+	TimerFree(DPMSStandbyTimer);
+	DPMSStandbyTimer = NULL;
+    }
+    if (DPMSSuspendTimer) {
+	TimerFree(DPMSSuspendTimer);
+	DPMSSuspendTimer = NULL;
+    }
+    if (DPMSOffTimer) {
+	TimerFree(DPMSOffTimer);
+	DPMSOffTimer = NULL;
+    }
+}
+
+void
 SetDPMSTimers(void)
 {
     if (!DPMSEnabled)
         return;
-
-    if (DPMSGeneration != serverGeneration) {
-	DPMSStandbyTimer = NULL;
-	DPMSSuspendTimer = NULL;
-	DPMSOffTimer = NULL;
-	DPMSGeneration = serverGeneration;
-    }
 
     if (DPMSStandbyTime > 0) {
         DPMSStandbyTimer = TimerSet(DPMSStandbyTimer, 0, DPMSStandbyTime,
