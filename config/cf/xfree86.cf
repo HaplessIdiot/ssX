@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.460 2003/09/29 11:25:16 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.461 2003/10/02 13:29:36 eich Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1893,8 +1893,10 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # endif
 #endif
 
-#ifndef GccAliasingArgs
-#define GccAliasingArgs /* */
+#if  (GccMajorVersion == 3) &&  (GccMinorVersion >= 1)
+# define GccAliasingArgs      -fno-strict-aliasing
+#else
+# define GccAliasingArgs      /* */
 #endif
 
 #if HasGcc2 && defined(i386Architecture)

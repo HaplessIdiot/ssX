@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.91 2003/09/17 05:48:30 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.92 2003/10/07 21:09:33 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -476,7 +476,7 @@ install:: fonts.alias							@@\
 # ifndef DefaultGcc2i386Opt
 #   if (OSMajorVersion == 2 && OSMinorVersion >= 3) || OSMajorVersion > 2
       /* The GCC strength-reduce bug is fixed for OpenBSD 2.3 and later */
-#     define DefaultGcc2i386Opt	-O2
+#     define DefaultGcc2i386Opt	-O2 GccAliasingArgs
 #   endif
 # endif
 # define OptimizedCDebugFlags	DefaultGcc2i386Opt
