@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.4 1997/02/18 10:49:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.5 1997/02/18 17:50:07 hohndel Exp $ */
 
 /***********************************************************
 
@@ -184,7 +184,11 @@ PexExtensionInit()
 				     * 1 byte for null */
 				 );
         if (errmsg) {
+#ifdef XFree86LOADER
+          xf86sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
+#else
           sprintf(errmsg, "%s %s", static_message, DEFAULT_PEX_FONT_NAME);
+#endif
 
 	  ErrorF(errmsg);
           xfree(errmsg);
