@@ -1,3 +1,4 @@
+1223. Enable ImageWrites on Rage128 and Radeon (Alan Hourihane).
 1222. Add DRIMoveBuffersHelper function to prevent code duplication in
       the drivers (Mark Vojkovich).
 1221. Bug fixes for endianness problems in Permedia3 driver 
@@ -12137,4 +12138,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1494 2000/12/20 11:12:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1495 2000/12/20 19:50:47 mvojkovi Exp $

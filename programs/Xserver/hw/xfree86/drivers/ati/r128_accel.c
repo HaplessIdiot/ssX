@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.3 2000/11/18 19:37:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.4 2000/12/04 19:21:52 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -77,7 +77,6 @@
  *
  */
 
-#define R128_IMAGEWRITE 0       /* Disable ImageWrites - faster in software */
 #define R128_TRAPEZOIDS 0       /* Trapezoids don't work               */
 
 				/* Driver data structures */
@@ -870,7 +869,6 @@ static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
    x11perf -putimage100   2150.0/sec       1170.0/sec
    x11perf -putimage500    108.0/sec         49.8/sec
  */
-#if R128_IMAGEWRITE
 static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 					   int rop,
 					   unsigned int planemask,
@@ -1003,7 +1001,6 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 	}
     }
 }
-#endif
 
 /* Initialize the acceleration hardware. */
 void R128EngineInit(ScrnInfoPtr pScrn)
@@ -1155,7 +1152,6 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 					  | LINE_PATTERN_POWER_OF_2_ONLY);
 
 				/* ImageWrite */
-#if R128_IMAGEWRITE
     a->NumScanlineImageWriteBuffers    = 1;
     a->ScanlineImageWriteBuffers       = info->scratch_buffer;
     info->scratch_buffer[0]            = info->scratch_save;
@@ -1169,7 +1165,6 @@ static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 					  | LEFT_EDGE_CLIPPING
 					  | LEFT_EDGE_CLIPPING_NEGATIVE_X
 					  | SCANLINE_PAD_DWORD;
-#endif
 }
 
 /* Initialize XAA for supported acceleration and also initialize the
