@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.70 2003/04/03 12:52:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.71 2003/04/03 22:18:31 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -905,6 +905,11 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->private_flags = 0;
     pInfo->always_core_feedback = 0;
     pInfo->conf_idev = dev;
+
+    /* Check if SendDragEvents has been disabled. */
+    if (!xf86SetBoolOption(dev->commonOptions, "SendDragEvents", TRUE)) {
+	pInfo->flags &= ~XI86_SEND_DRAG_EVENTS;
+    }
 
     /* Allocate the MouseDevRec and initialise it. */
     /*
