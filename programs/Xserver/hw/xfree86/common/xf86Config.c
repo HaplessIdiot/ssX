@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.270 2003/03/25 04:18:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.271 2003/08/24 17:36:50 dawes Exp $ */
 
 
 /*
@@ -1354,9 +1354,11 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 {
     Bool havePointer = FALSE, haveKeyboard = FALSE;
     Bool foundPointer = FALSE, foundKeyboard = FALSE;
+    Bool defaultPointer = FALSE, defaultKeyboard = FALSE;
     IDevPtr indp;
     IDevRec Pointer, Keyboard;
     XF86ConfInputPtr confInput;
+    XF86ConfInputRec defPtr, defKbd;
     int count = 0;
     MessageType from = X_DEFAULT;
 
@@ -1394,6 +1396,17 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 		confInput = xf86findInputByDriver("mouse",
 						xf86configptr->conf_input_lst);
 	    }
+	    /*
+	     * If no core pointer config section found, create a
+	     * default one.
+	     */
+	    if (!confInput) {
+		bzero(&defPtr, sizeof(defPtr));
+		defPtr.inp_identifier = "<default pointer>";
+		defPtr.inp_driver = "mouse";
+		confInput = &defPtr;
+		defaultPointer = TRUE;
+	    }
 	}
 	if (confInput)
 	    foundPointer = configInput(&Pointer, confInput, from);
@@ -1416,6 +1429,17 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 		confInput = xf86findInputByDriver("keyboard",
 						xf86configptr->conf_input_lst);
 	    }
+	    /*
+	     * If no core keyboard config section found, create a
+	     * default one.
+	     */
+	    if (!confInput) {
+		bzero(&defKbd, sizeof(defPtr));
+		defKbd.inp_identifier = "<default keyboard>";
+		defKbd.inp_driver = "keyboard";
+		confInput = &defKbd;
+		defaultKeyboard = TRUE;
+	    }
 	}
 	if (confInput)
 	    foundKeyboard = configInput(&Keyboard, confInput, from);
@@ -1427,13 +1451,21 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CorePointer", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
-    } else if (!havePointer) {
-	if (implicitLayout)
-	    xf86Msg(X_ERROR, "Unable to find a core pointer device\n");
-	else
-	    xf86Msg(X_ERROR, "No core pointer device specified\n");
+    } else {
+	/* This should never happen. */
+	xf86Msg(X_ERROR, "Cannot locate a core pointer device.\n");
 	return FALSE;
     }
+    if (defaultPointer) {
+	if (implicitLayout)
+	    xf86Msg(X_WARNING, "Unable to find a core pointer device in the"
+		    " config file.\n");
+	else
+	    xf86Msg(X_WARNING, "No core pointer device specified in the"
+		    " config file.\n");
+	xf86ErrorF("\tUsing a default core pointer configuration.\n");
+    }
+
     if (foundKeyboard) {
 	count++;
 	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
@@ -1441,13 +1473,21 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CoreKeyboard", NULL);
 	indp[count].identifier = NULL;
 	servlayoutp->inputs = indp;
-    } else if (!haveKeyboard) {
-	if (implicitLayout)
-	    xf86Msg(X_ERROR, "Unable to find a core keyboard device\n");
-	else
-	    xf86Msg(X_ERROR, "No core keyboard device specified\n");
+    } else {
+	/* This should never happen. */
+	xf86Msg(X_ERROR, "Cannot locate a core keyboard device\n");
 	return FALSE;
     }
+    if (defaultKeyboard) {
+	if (implicitLayout)
+	    xf86Msg(X_WARNING, "Unable to find a core keyboard device in the"
+		    " config file\n");
+	else
+	    xf86Msg(X_WARNING, "No core keyboard device specified in the"
+		    " config file\n");
+	xf86ErrorF("\tUsing a default core keyboard configuration\n");
+    }
+
     return TRUE;
 }
 
@@ -1802,6 +1842,7 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     int count = 0;
     XF86ConfDisplayPtr dispptr;
     XF86ConfAdaptorLinkPtr conf_adaptor;
+    Bool defaultMonitor = FALSE;
 
     xf86Msg(from, "|-->Screen \"%s\" (%d)\n", conf_screen->scrn_identifier,
 	    scrnum);
@@ -1814,8 +1855,19 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
     screenp->defaultbpp = conf_screen->scrn_defaultbpp;
     screenp->defaultfbbpp = conf_screen->scrn_defaultfbbpp;
     screenp->monitor    = xnfcalloc(1, sizeof(MonRec));
-    if (!configMonitor(screenp->monitor,conf_screen->scrn_monitor))
-	return FALSE;
+    /* If no monitor is specified, create a default one. */
+    if (!conf_screen->scrn_monitor) {
+	XF86ConfMonitorRec defMon;
+
+	bzero(&defMon, sizeof(defMon));
+	defMon.mon_identifier = "<default monitor>";
+	if (!configMonitor(screenp->monitor, &defMon))
+	    return FALSE;
+	defaultMonitor = TRUE;
+    } else {
+	if (!configMonitor(screenp->monitor,conf_screen->scrn_monitor))
+	    return FALSE;
+    }
     screenp->device     = xnfcalloc(1, sizeof(GDevRec));
     configDevice(screenp->device,conf_screen->scrn_device, TRUE);
     screenp->device->myScreenSection = screenp;
@@ -1857,6 +1909,10 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
         conf_adaptor = (XF86ConfAdaptorLinkPtr)conf_adaptor->list.next;
     }
 
+    if (defaultMonitor) {
+	xf86Msg(X_WARNING, "No monitor specified for screen \"%s\".\n"
+		"\tUsing a default monitor configuration.\n", screenp->id);
+    }
     return TRUE;
 }
 

@@ -1,4 +1,12 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 398. Make the specification of a Monitor in the Screen sections of the
+      XF86Config file optional.  Some drivers may need changes (coming later)
+      to maximise the utility of this (David Dawes).
+ 397. When a core keyboard or core pointer cannot be found in the
+      configuration, create default ones.  The pointer part of this
+      requires some changes to the mouse driver (coming later) before
+      the default core pointer configuration will be useful on most
+      platforms (David Dawes).
  396. Add a facility for assigning version numbers to builtin XFree86 server
       interfaces and allowing modules to query them.  Assign versions for
       the os-mouse and os-kbd interfaces (David Dawes).
@@ -17597,7 +17605,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2820 2003/08/24 19:37:14 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2821 2003/08/24 19:57:51 dawes Exp $
 
 
 

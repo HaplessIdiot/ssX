@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.16 2003/05/29 21:48:08 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.17 2003/08/22 03:24:59 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -259,6 +259,10 @@ and
 .IR XFree86(1) ).
 The command line settings override the values specified in the config
 file.
+The
+.B Files
+section is optional, as are all of the entries that may appear in it.
+.PP
 The entries that can appear in this section are:
 .TP 7
 .BI "FontPath \*q" path \*q
@@ -367,7 +371,9 @@ X server options.  All of the entries in this section are
 .BR Options ,
 although for compatibility purposes some of the old style entries are
 still recognised.  Those old style entries are not documented here, and
-using them is discouraged.
+using them is discouraged.  The
+.B ServerFlags
+section is optional, as are the entries that may be specified in it.
 .PP
 .B Options
 specified in this section (with the exception of the
@@ -596,6 +602,9 @@ This section is ignored when the X server is built in static form.
 The types of modules normally loaded in this section are X server
 extension modules, and font rasteriser modules.  Most other module types
 are loaded automatically when they are needed via other mechanisms.
+The
+.B Module
+section is optional, as are all of the entries that may be specified in it.
 .PP
 Entries in this section may be in two forms.   The first and most commonly
 used form is an entry that uses the
@@ -662,7 +671,9 @@ available.
 The config file may have multiple
 .B InputDevice
 sections.  There will normally be at least two: one for the core (primary)
-keyboard, and one of the core pointer.
+keyboard, and one of the core pointer.  If either of these two is missing,
+a default configuration for the missing ones will be used.  Currently these
+may not work as expected on all platforms.
 .PP
 .B InputDevice
 sections have the following format:
@@ -677,6 +688,14 @@ sections have the following format:
 .B  "EndSection"
 .fi
 .RE
+.PP
+The
+.B Identifier
+and
+.B Driver
+entries are required in all
+.B InputDevice
+sections.  All other entries are optional.
 .PP
 The
 .B Identifier
@@ -761,6 +780,14 @@ sections have the following format:
 .B  "EndSection"
 .fi
 .RE
+.PP
+The
+.B Identifier
+and
+.B Driver
+entries are required in all
+.B Device
+sections.  All other entries are optional.
 .PP
 The
 .B Identifier
@@ -925,7 +952,8 @@ Nobody wants to say how this works.  Maybe nobody knows ...
 .SH MONITOR SECTION
 The config file may have multiple
 .B Monitor
-sections.  There must be at least one, for the monitor being used.
+sections.  There should normally be at least one, for the monitor being used,
+but a default configuration will be created when one isn't specified.
 .PP
 .B Monitor
 sections have the following format:
@@ -939,6 +967,12 @@ sections have the following format:
 .B  "EndSection"
 .fi
 .RE
+.PP
+The only mandatory entry in a
+.B Monitor
+section is the
+.B Identifier
+entry.
 .PP
 The
 .B Identifier
@@ -1230,6 +1264,12 @@ sections have the following format:
 .PP
 The
 .B Identifier
+and
+.B Device
+entries are mandatory.  All others are optional.
+.PP
+The
+.B Identifier
 entry specifies the unique name for this screen.  The
 .B Screen
 section provides information specific to the whole screen, including
@@ -1242,7 +1282,7 @@ The entries available
 for this section are:
 .TP 7
 .BI "Device  \*q" device-id \*q
-This specifies the
+This mandatory entry specifies the
 .B Device
 section to be used for this screen.  This is what ties a specific
 graphics card to a screen.  The
@@ -1255,6 +1295,10 @@ section in the config file.
 .TP 7
 .BI "Monitor  \*q" monitor-id \*q
 specifies which monitor description is to be used for this screen.
+If a
+.B Monitor
+name is not specified, a default configuration is used.  Currently the default
+configuration may not function as expected on all platforms.
 .TP 7
 .BI "VideoAdaptor  \*q" xv-id \*q
 specifies an optional Xv video adaptor description to be used with this
@@ -1594,6 +1638,14 @@ sections have the following format:
 .fi
 .RE
 .PP
+Each
+.B ServerLayout
+section must have an
+.B Identifier
+entry and at least one
+.B Screen
+entry.
+.PP
 The
 .B Identifier
 entry specifies the unique name for this server layout.  The
@@ -1659,9 +1711,11 @@ relative to the origin of another screen.
 .RE
 .TP 7
 .BI "InputDevice  \*q" idev-id "\*q \*q" option \*q " ..."
-One of these entries must be given for each input device being used in
+One of these entries should be given for each input device being used in
 a session.  Normally at least two are required, one each for the core
-pointer and keyboard devices.  The
+pointer and keyboard devices.  If either of those is missing, default
+core pointer and core keyboard configurations are used.  Currently these
+may not work as expected on all platforms.  The
 .I idev-id
 field is mandatory, and specifies the name of the
 .B InputDevice
