@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.1 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.2 2001/07/19 04:42:10 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -129,7 +129,7 @@ FindBestGray (miIndexedPtr pIndexed, int first, int num, int gray)
     {
 	CARD32	v = pIndexed->rgba[first];
 
-	r = v >> 16;
+	r = v & 0xff;
 	r = r | (r << 8);
 	dr = gray - (r >> 1);
 	dist = dr * dr;
