@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.21 2003/05/29 03:05:08 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.22 2003/06/08 15:41:13 herrb Exp $ */
 
 #ifndef _FT_H_
 #define _FT_H_
@@ -52,7 +52,9 @@ THE SOFTWARE.
 /* Is x significantly different from 0 w.r.t. y? */
 #define DIFFER0(x,y) (fabs(x)>=NEGLIGIBLE*fabs(y))
 
+#ifndef ABS
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
+#endif
 
 /* Two to the sixteenth power, as a double. */
 #define TWO_SIXTEENTH ((double)(1<<16))

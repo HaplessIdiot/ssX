@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.27 2003/06/08 15:41:13 herrb Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.28 2003/08/25 04:05:58 dawes Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -14,8 +14,8 @@ FT2INCS = -I$(FREETYPE2INCDIR) -I$(FREETYPE2INCDIR)/include
 INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/include $(FT2INCS) -I$(INCLUDESRC)
 
-SRCS = ftfuncs.c ftenc.c fttools.c
-OBJS = ftfuncs.o ftenc.o fttools.o
+SRCS = xttcap.c ftfuncs.c ftenc.c fttools.c
+OBJS = xttcap.o ftfuncs.o ftenc.o fttools.o
 
 #if BuildFontLib
 #define DoNormalLib NormalLibFont
