@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.13 1999/01/13 08:31:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.14 1999/01/31 12:22:08 dawes Exp $ */
 
 
 /*
@@ -95,6 +95,10 @@ typedef void (*vgaHWMiscProcPtr)(vgaHWPtr hwp);
 
 /*
  * vgaHWRec contains per-screen information required by the vgahw module.
+ *
+ * Note, the palette referred to by the paletteEnabled, enablePalette and
+ * disablePalette is the 16-entry (+overscan) EGA-compatible palette accessed
+ * via the first 17 attribute registers and not the main 8-bit palette.
  */
 typedef struct _vgaHWRec {
     pointer			Base;		/* Address of "VGA" memory */

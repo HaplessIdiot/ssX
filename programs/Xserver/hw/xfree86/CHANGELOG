@@ -1,4 +1,12 @@
+XFree86 3.9P (7 February 1999)
+2228. Fix a bug setting the framebuffer pixmap format for depth 4 in
+      xf86SetDepthBpp().
+2227. Fix some misuse of the VGA "Palette" enable/disable functions in the
+      vgahw code, and clarify what they do.  This fixes some display artefacts
+      that were showing up when writing to the colourmap.
+
 XFree86 3.9Nz (1 February 1999)
+2226. Add an 8+16bpp dual framebuffer layer (#2425, Mark Vojkovich).
 2225. Add "ShadowFB" to the mga driver for experimenting with the shadowfb
       layer (#2439, Mark Vojkovich).
 2224. Some cleanups/fixes for Solaris 7 (#2437, David Holland).
@@ -34,7 +42,7 @@ XFree86 3.9Nz (1 February 1999)
       without DDC support if the DDC module is missing (#2427,
       Andrew Aitchison).
 2207. Fix a problem with xsm not acknowledging the SaveYourself message it
-      sends clients with a SaveComplete message (#2425, Robert Bihlmeyer).
+      sends clients with a SaveComplete message (#2426, Robert Bihlmeyer).
 2206. Update the mga driver to use the new XAA clipping (#2424,
       Mark Vojkovich).
 2205. Some enhancements to XAA's HW clipping handling, allowing clipping
@@ -48,7 +56,7 @@ XFree86 3.9Nz (1 February 1999)
 2200. Make the fact that the XAA TE font rendering assembly code is disabled
       by default more obvious (#2416, David Bateman).
 2199. Fix VT switches in 8+32 mode (#2415, Mark Vojkovich).
-2198. Add a common encoding support for the Speedo, Type1 and FreeType
+2198. Add common encoding support for the Speedo, Type1 and FreeType
       font backends (#2385, Juliusz Chroboczek).
 2197. Update lib/font/FreeType to xfsft-1.0.3 (#2385, Juliusz Chroboczek).
 2196. X-TT updates for our loader (X-TT team and Nozomi Ytow).
@@ -7226,4 +7234,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.681 1999/01/31 12:21:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.682 1999/02/01 11:55:54 dawes Exp $
