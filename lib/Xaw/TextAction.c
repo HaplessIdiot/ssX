@@ -2910,9 +2910,12 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
     if (focus[i].widget != w) {
 	Widget old = focus[i].widget;
 
-	if (old != NULL)
-	    TextFocusOut(old, event, p, n);
 	focus[i].widget = w;
+	if (old != NULL) {
+	    TextFocusOut(old, event, p, n);
+	    /* TextFocusOut may set it to NULL */
+	    focus[i].widget = w;
+	}
 	XtAddCallback(w, XtNdestroyCallback,
 		      DestroyFocusCallback, (XtPointer)&focus[i]);
     }
