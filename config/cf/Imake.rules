@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.53 1999/03/02 02:49:11 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.54 1999/03/06 13:12:16 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2756,7 +2756,29 @@ CppFileTarget(dst,src,defs,deplist)					@@\
 includes:: dst								@@\
 									@@\
 depend:: dst
+#endif /* CppSourceFile */
+
+/* Like CppFileTarget, but don't add any default defines */
+#ifndef CppRawFileTarget
+#define CppRawFileTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
+	RemoveFile($@)							@@\
+	ClearmakeOSName \
+	$(RAWCPP) CppNoLineInfoOption defs <src | CppSedMagic >$@	@@\
+									@@\
+clean::									@@\
+	RemoveFiles(dst)
 #endif /* CppFileTarget */
+
+/*
+ * CppManTarget - generates rules to create man source from a file with a .cpp
+ * suffix.  OS-specific man sections are replaced.
+ */
+#ifndef CppManTarget
+#define CppManTarget(name,defs)						@@\
+AllTarget(name.man)							@@\
+CppRawFileTarget(name.man,name.cpp,$(MANDEFS) defs,NullParameter)
+#endif /* CppManTarget */
 
 /*
  * MakeDirectories - generate rules to create a hierarchy of directories.
@@ -2952,5 +2974,10 @@ InstallDynamicModule(Concat3(lib,module,.so),dest,subdir)
 InstallDynamicModule(ModuleLibraryTargetName(module),dest,subdir)
 #endif
 #endif
+#endif
+
+#ifndef InstallModuleManPage
+#define InstallModuleManPage(module)					@@\
+InstallGenManPage(module,$(DRIVERMANDIR),$(DRIVERMANSUFFIX))
 #endif
 

@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.79 1998/12/13 05:32:26 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.80 1998/12/20 11:56:10 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -70,7 +70,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define CcCmd			cc
 #define CppCmd			/usr/libexec/cpp
 #define PreProcessCmd		CppCmd
-#define StandardCppDefines	-traditional
+#define StandardCppOptions	-traditional
+#define StandardCppDefines	/**/
 #if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions	/**/
 #else
