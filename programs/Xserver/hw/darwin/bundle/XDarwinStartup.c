@@ -12,7 +12,7 @@
  * run by XDarwin.app.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.3 2001/04/16 06:51:48 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.4 2001/07/01 02:13:40 torrey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
@@ -53,7 +53,7 @@ int main(
 
             // Find the path to the Quartz executable
             pathLength = readlink(XPATH(XDarwinQuartz), quartzPath, PATH_MAX);
-            if (!pathLength) {
+            if (pathLength == -1) {
                 fprintf(stderr, "The symbolic link " XPATH(XDarwinQuartz)
                         " is not valid.\n");
                 return errno;
@@ -69,7 +69,9 @@ int main(
             newargv[argc+1] = NULL;
 
             execv(newargv[0], newargv);
-            fprintf(stderr, "Could not start XDarwin Quartz X server.\n");
+            fprintf(stderr,
+                    "Could not start XDarwin Quartz X server at %s.\n",
+                    quartzPath);
             return errno;
         }
     }
