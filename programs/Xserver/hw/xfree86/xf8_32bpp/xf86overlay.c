@@ -460,6 +460,11 @@ OverlayPaintWindow(
 	   if(pWin->backgroundState == BackgroundPixmap) {
 		oldPix = pWin->background.pixmap;
 		pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
+		/* have to do this here because alot of applications
+		   incorrectly assume changes to a pixmap that is
+		   a window background go into effect immediatedly */
+		if(pixPriv->dirty & IS_DIRTY)
+		    OverlayRefreshPixmap(pWin->background.pixmap);
 		pWin->background.pixmap = pixPriv->pix32;
 	   }
 	}
@@ -474,6 +479,8 @@ OverlayPaintWindow(
 	if((pWin->drawable.depth == 8) && !pWin->borderIsPixel) {
 	   oldPix = pWin->border.pixmap;
 	   pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
+	   if(pixPriv->dirty & IS_DIRTY)
+		OverlayRefreshPixmap(pWin->border.pixmap);
 	   pWin->border.pixmap = pixPriv->pix32;
         }
 
