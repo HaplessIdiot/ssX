@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.6 1998/10/05 13:23:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.7 1998/10/06 05:22:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -841,6 +841,11 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			       xf86ModeStatusToString(status));
 	    }
 	}
+    }
+
+    if (scrp->modePool == NULL) {
+	xf86DrvMsg(scrp->scrnIndex, X_WARNING, "Mode pool is empty\n");
+	return 0;
     }
 
     /*

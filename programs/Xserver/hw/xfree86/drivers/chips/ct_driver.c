@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.35 1998/09/26 08:34:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.36 1998/10/05 13:23:06 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -2788,7 +2788,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     CHIPSACLPtr cAcl;
     int ret;
     VisualPtr visual;
-    int savedDefaultVisualClass;
     int allocatebase, freespace, currentaddr;
     unsigned int racflag = 0;
 
@@ -2880,13 +2879,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /*
-     * Temporarily set the global defaultColorVisualClass to make
-     * cfbInitVisuals do what we want.
-     */
-    savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-    xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
-
-    /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
@@ -2934,7 +2926,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = FALSE;
 	break;
     }
-    xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
     if (!ret)
 	return FALSE;
 

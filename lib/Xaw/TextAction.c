@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.10 1998/10/03 08:42:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.11 1998/10/10 15:25:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -264,6 +264,7 @@ EndAction(TextWidget ctx)
 {
   _XawTextExecuteUpdate(ctx);
   ctx->text.mult = 1;
+  ctx->text.doing_numeric_hack = False;
 }
 
 struct _SelectionList {

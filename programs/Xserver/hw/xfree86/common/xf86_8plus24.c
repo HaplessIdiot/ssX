@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_8plus24.c,v 1.1 1998/10/05 13:23:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -59,21 +59,37 @@ OverlayFBfuncs diOverlayFBfuncs = {
    OverlayCopyAreas
 };
 
-/* I'm sorry.  
-   I'm not writing out the full prototypes for all of these.
-   Why aren't there typedefs for all of these in the first place? */
-
-static void         OverlayFillSpans(),        OverlaySetSpans();
-static void         OverlayPutImage(),	       OverlayPushPixels();
-static RegionPtr    OverlayCopyArea(),         OverlayCopyPlane();
-static void         OverlayPolyPoint(),        OverlayPolylines();
-static void         OverlayPolySegment(),      OverlayPolyRectangle();
-static void         OverlayPolyArc(),          OverlayFillPolygon();
-static void         OverlayPolyFillRect(),     OverlayPolyFillArc();
-static int          OverlayPolyText8(),        OverlayPolyText16();
-static void         OverlayImageText8(),       OverlayImageText16();
-static void         OverlayImageGlyphBlt(),    OverlayPolyGlyphBlt();
-
+static void	 OverlayFillSpans(DrawablePtr, GCPtr, int, DDXPointPtr, int *,
+				  int);
+static void	 OverlaySetSpans(DrawablePtr, GCPtr, char *, DDXPointPtr,
+				 int *, int, int);
+static void	 OverlayPutImage(DrawablePtr, GCPtr, int, int, int, int, int,
+				 int, int, char *);
+static void	 OverlayPushPixels(GCPtr, PixmapPtr, DrawablePtr, int, int,
+				   int, int);
+static RegionPtr OverlayCopyArea(DrawablePtr, DrawablePtr, GCPtr, int, int,
+				 int, int, int, int);
+static RegionPtr OverlayCopyPlane(DrawablePtr, DrawablePtr, GCPtr, int, int,
+				  int, int, int, int, unsigned long);
+static void	 OverlayPolyPoint(DrawablePtr, GCPtr, int, int, xPoint *);
+static void	 OverlayPolylines(DrawablePtr, GCPtr, int, int, DDXPointPtr);
+static void	 OverlayPolySegment(DrawablePtr, GCPtr, int, xSegment *);
+static void	 OverlayPolyRectangle(DrawablePtr, GCPtr, int, xRectangle *);
+static void	 OverlayPolyArc(DrawablePtr, GCPtr, int, xArc *);
+static void	 OverlayFillPolygon(DrawablePtr, GCPtr, int, int, int,
+				    DDXPointPtr);
+static void	 OverlayPolyFillRect(DrawablePtr, GCPtr, int, xRectangle *);
+static void	 OverlayPolyFillArc(DrawablePtr, GCPtr, int, xArc *);
+static int	 OverlayPolyText8(DrawablePtr, GCPtr, int, int, int, char *);
+static int	 OverlayPolyText16(DrawablePtr, GCPtr, int, int, int,
+				   unsigned short *);
+static void	 OverlayImageText8(DrawablePtr, GCPtr, int, int, int, char *);
+static void	 OverlayImageText16(DrawablePtr, GCPtr, int, int, int,
+				    unsigned short *);
+static void	 OverlayImageGlyphBlt(DrawablePtr, GCPtr, int, int,
+				      unsigned int, CharInfoPtr *, pointer);
+static void	 OverlayPolyGlyphBlt(DrawablePtr, GCPtr, int, int,
+				     unsigned int, CharInfoPtr *, pointer);
 
 static GCFuncs OverlayGCFuncs = {
    OverlayValidateGC, OverlayChangeGC, 
@@ -1141,8 +1157,6 @@ OverlayFillTiledRects(
 }
 
 
-/* This is broken !!! */
-
 static void 
 OverlayCopyAreas(
    WindowPtr pWin,
@@ -1153,9 +1167,8 @@ OverlayCopyAreas(
     ScreenPtr pScreen = pWin->drawable.pScreen;
     OverlayScreenPtr pScreenPriv = 
 	(OverlayScreenPtr) pScreen->devPrivates[OverlayScreenIndex].ptr;
-    int nbox = REGION_NUM_RECTS(pReg);
-    BoxPtr pbox = REGION_RECTS(pReg);
     ChangeGCVal gcval[2];
+    BoxPtr pbox = REGION_RECTS(pReg);
     RegionRec oldClip;
     BoxRec wholeBox;
     GCPtr pGC;
@@ -1172,6 +1185,9 @@ OverlayCopyAreas(
     gcval[1].val = IncludeInferiors;
     dixChangeGC(NullClient, pGC, GCPlaneMask | GCSubwindowMode, NULL, gcval);
 
+    pGC->clientClipType = CT_REGION;
+    pGC->clientClip = pReg;
+
     wholeBox.x1 = wholeBox.y1 = 0;
     wholeBox.x2 = pScreen->width;
     wholeBox.y2 = pScreen->height;
@@ -1182,17 +1198,18 @@ OverlayCopyAreas(
 
     pGC->fExpose = FALSE;
 
-    while(nbox--) {
-	(*pGC->ops->CopyArea)((DrawablePtr)pWin, (DrawablePtr)pWin, pGC,
-		ppnts->x, ppnts->y, pbox->x2 - pbox->x1, 
-		pbox->y2 - pbox->y1, pbox->x1, pbox->y1);
-	pbox++;	
-	ppnts++;	
-    }
+    (*pGC->ops->CopyArea)((DrawablePtr)pWin, (DrawablePtr)pWin, pGC,
+		pReg->extents.x1 + ppnts->x - pbox->x1, 
+		pReg->extents.y1 + ppnts->y - pbox->y1, 
+		pReg->extents.x2 - pReg->extents.x1, 
+		pReg->extents.y2 - pReg->extents.y1, 
+		pReg->extents.x1, pReg->extents.y1);
 
     REGION_UNINIT(pScreen, &pWin->clipList);
     pWin->clipList = oldClip;
 
+    pGC->clientClip = NULL;
+    pGC->clientClipType = CT_NONE;
     FreeScratchGC(pGC);
     pScreenPriv->LockPrivate = FALSE; 
 }
