@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.5 2001/06/08 19:36:36 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.6 2001/07/16 05:04:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -83,6 +83,7 @@ struct _FbCompositeOperand {
     FbCompositeFetch	fetch;
     FbCompositeFetch	fetcha;
     FbCompositeStore	store;
+    miIndexedPtr	indexed;
 };
 
 typedef void (*FbCombineFunc) (FbCompositeOperand	*src,

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.9 2001/01/03 02:54:17 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.10 2001/03/08 03:48:44 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -176,6 +176,8 @@ RenderExtensionInit (void)
     ExtensionEntry *extEntry;
 
     if (!PictureType)
+	return;
+    if (!PictureFinishInit ())
 	return;
     extEntry = AddExtension (RENDER_NAME, 0, RenderNumberErrors,
 			     ProcRenderDispatch, SProcRenderDispatch,

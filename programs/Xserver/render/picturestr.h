@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.12 2001/01/21 21:19:39 tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.13 2001/04/05 17:42:35 dawes Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -43,6 +43,8 @@ typedef struct _PictFormat {
     unsigned char   type;
     unsigned char   depth;
     DirectFormatRec direct;
+    void	    *indexed;	    /* opaque indexed conversion data */
+    VisualPtr	    pVisual;	    /* for indexed formats */
     ColormapPtr	    pColormap;
 } PictFormatRec;
 
@@ -121,6 +123,12 @@ typedef void	(*CompositeRectsProcPtr)    (CARD8	    op,
 					     int	    nRect,
 					     xRectangle	    *rects);
 
+typedef Bool	(*InitIndexedProcPtr)	    (ScreenPtr	    pScreen,
+					     PictFormatPtr  pFormat);
+
+typedef void	(*CloseIndexedProcPtr)	    (ScreenPtr	    pScreen,
+					     PictFormatPtr  pFormat);
+
 typedef struct _PictureScreen {
     int				totalPictureSize;
     unsigned int		*PicturePrivateSizes;
@@ -144,6 +152,9 @@ typedef struct _PictureScreen {
 
     DestroyWindowProcPtr	DestroyWindow;
     CloseScreenProcPtr		CloseScreen;
+
+    InitIndexedProcPtr		InitIndexed;
+    CloseIndexedProcPtr		CloseIndexed;
 
 } PictureScreenRec, *PictureScreenPtr;
 
