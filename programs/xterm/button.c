@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.38 1999/06/27 14:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.39 1999/07/11 08:49:32 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -1847,7 +1847,7 @@ SaveText(
 #endif
     *eol = !ScrnTstWrapped(screen, row);
     for (i = scol; i < ecol; i++) {
-	c = XTERM_CELL(row, i);
+	c = E2A(XTERM_CELL(row, i));
 	if (c == 0) {
 	    c = E2A(' ');
 	} else if (c < E2A(' ')) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.61 1999/06/20 05:23:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.62 1999/06/27 14:08:02 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -199,9 +199,9 @@ static void     chipsHWCursorOff(CHIPSPtr cPtr);
 static void     chipsFixResume(ScrnInfoPtr pScrn);
 static void     chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
-				int *indices, LOCO *colors, short visualClass);
+				int *indices, LOCO *colors, VisualPtr pVisual);
 static void     chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors,
-				int *indices, LOCO *colors, short visualClass);
+				int *indices, LOCO *colors, VisualPtr pVisual);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -3194,7 +3194,7 @@ chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 static void
 chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		 short visualClass)
+		 VisualPtr pVisual)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -3221,7 +3221,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
 static void
 chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
-		 LOCO *colors, short visualClass)
+		 LOCO *colors, VisualPtr pVisual)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     int i, index;

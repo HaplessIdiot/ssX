@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access to colormaps.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.3 1998/11/22 10:37:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.4 1998/12/06 06:08:37 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -42,7 +42,7 @@
 
 void
 RamDacLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		 short visualClass)
+		 VisualPtr pVisual)
 {
     RamDacRecPtr hwp = RAMDACSCRPTR(pScrn);
     int i, index;

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.28 1998/10/10 15:25:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.29 1998/12/20 11:57:59 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -645,7 +645,7 @@ DefineSelf (int fd)
 #endif
     ifc.ifc_len = sizeof (buf);
     ifc.ifc_buf = buf;
-    if (ifioctl (fd, (int) SIOCGIFCONF, (pointer) &ifc) < 0)
+    if (ifioctl (fd, SIOCGIFCONF, (pointer) &ifc) < 0)
         Error ("Getting interface configuration (4)");
 
 #ifdef ISC

@@ -1,4 +1,12 @@
-XFree86 3.9Py (17 July 1999)
+XFree86 3.9Py (18 July 1999)
+2902. Xterm patch #112 (#3031, Thomas Dickey).
+2901. Change the colormap layer's LoadPalette function to take a Visual as
+      an argument rather than just the Visual class (#3030, Mark Vojkovich).
+2900. Add some code to auto-detect Japanese PC98 systems (#3029,
+      Takaaki Nomura).
+2899. Fix a casting problem in DefineSelf() that shows up on FreeBSD/alpha
+      (#3028, Doug Rabson).
+2898. Fix a problem with the GMX2000 DRI support (Jens Owen).
 2897. Work around a problem in mfb that is caused by an optimiser bug
       in egcs-1.1.2 for the alpha (#3027, Doug Rabson).
 2896. Fix a problem that shows up in the s3virge driver after the recent
@@ -8459,4 +8467,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.803 1999/07/17 07:18:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.804 1999/07/17 09:06:39 dawes Exp $

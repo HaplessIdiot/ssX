@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.12 1999/06/20 07:14:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.13 1999/07/04 06:39:06 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -116,7 +116,7 @@ void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
-void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
+void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
 void TGUISetRead(int bank);
 void TGUISetWrite(int bank);
 void TGUISetReadWrite(int bank);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.7 1999/04/11 13:11:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.8 1999/06/13 13:47:48 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -635,7 +635,7 @@ fbdevHWRestore(ScrnInfoPtr pScrn)
 
 void
 fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-		 LOCO *colors, short visualClass)
+		 LOCO *colors, VisualPtr pVisual)
 {
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
 	struct fb_cmap cmap;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.17 1999/07/10 14:42:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.18 1999/07/17 06:30:58 dawes Exp $ */
 
 
 #include "apm.h"
@@ -46,7 +46,7 @@ static void	ApmLock(ApmPtr pApm);
 static void	ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg,
 			    ApmRegPtr ApmReg);
 static void	ApmLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-				LOCO *colors, short visualclass);
+				LOCO *colors, VisualPtr pVisual);
 #ifdef DPMSExtension
 static void	ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
@@ -1673,7 +1673,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 /* mandatory */
 static void
 ApmLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-	       short visualclass)
+	       VisualPtr pVisual)
 {
     APMDECL(pScrn);
     int i, index, last = -1;

@@ -193,7 +193,7 @@ cat <<EOF
   --disable-active-icon   disable X11R6.3 active-icon feature
   --disable-ansi-color    disable ANSI color
   --disable-16-color      disable 16-color support
-  --disable-256-color     enable 256-color support
+  --enable-256-color      enable 256-color support
   --disable-blink-cursor  disable support for blinking cursor
   --disable-bold-color    disable PC-style mapping of bold colors
 EOF
@@ -4343,15 +4343,19 @@ else
 fi
 
 	echo "$ac_t""$enable_256_color" 1>&6
-	test $enable_256_color = yes && cat >> confdefs.h <<\EOF
+	if test $enable_256_color = yes ; then
+		CHARPROC_DEPS="$CHARPROC_DEPS 256colres.h"
+		EXTRAHDRS="$EXTRAHDRS 256colres.h"
+		cat >> confdefs.h <<\EOF
 #define OPT_256_COLORS 1
 EOF
 
+	fi
 
 fi
 
 echo $ac_n "checking if you want blinking cursor""... $ac_c" 1>&6
-echo "configure:4355: checking if you want blinking cursor" >&5
+echo "configure:4359: checking if you want blinking cursor" >&5
 
 # Check whether --enable-blink-cursor or --disable-blink-cursor was given.
 if test "${enable_blink_cursor+set}" = set; then
@@ -4377,7 +4381,7 @@ EOF
 if test $enable_ansi_color = yes ; then
 
 	echo $ac_n "checking if you want bold colors mapped like IBM PC""... $ac_c" 1>&6
-echo "configure:4381: checking if you want bold colors mapped like IBM PC" >&5
+echo "configure:4385: checking if you want bold colors mapped like IBM PC" >&5
 	
 # Check whether --enable-bold-color or --disable-bold-color was given.
 if test "${enable_bold_color+set}" = set; then
@@ -4401,7 +4405,7 @@ EOF
 
 
 	echo $ac_n "checking if you want color-mode enabled by default""... $ac_c" 1>&6
-echo "configure:4405: checking if you want color-mode enabled by default" >&5
+echo "configure:4409: checking if you want color-mode enabled by default" >&5
 	
 # Check whether --enable-color-mode or --disable-color-mode was given.
 if test "${enable_color_mode+set}" = set; then
@@ -4427,7 +4431,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for color highlighting""... $ac_c" 1>&6
-echo "configure:4431: checking if you want support for color highlighting" >&5
+echo "configure:4435: checking if you want support for color highlighting" >&5
 
 # Check whether --enable-highlighting or --disable-highlighting was given.
 if test "${enable_highlighting+set}" = set; then
@@ -4451,7 +4455,7 @@ EOF
 
 
 echo $ac_n "checking if you want support for doublesize characters""... $ac_c" 1>&6
-echo "configure:4455: checking if you want support for doublesize characters" >&5
+echo "configure:4459: checking if you want support for doublesize characters" >&5
 
 # Check whether --enable-doublechars or --disable-doublechars was given.
 if test "${enable_doublechars+set}" = set; then
@@ -4475,7 +4479,7 @@ EOF
 
 
 echo $ac_n "checking if you want fallback-support for box characters""... $ac_c" 1>&6
-echo "configure:4479: checking if you want fallback-support for box characters" >&5
+echo "configure:4483: checking if you want fallback-support for box characters" >&5
 
 # Check whether --enable-boxchars or --disable-boxchars was given.
 if test "${enable_boxchars+set}" = set; then
@@ -4499,7 +4503,7 @@ EOF
 
 
 echo $ac_n "checking if you want support for HP-style function keys""... $ac_c" 1>&6
-echo "configure:4503: checking if you want support for HP-style function keys" >&5
+echo "configure:4507: checking if you want support for HP-style function keys" >&5
 
 # Check whether --enable-hp-fkeys or --disable-hp-fkeys was given.
 if test "${enable_hp_fkeys+set}" = set; then
@@ -4525,7 +4529,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for internationalization""... $ac_c" 1>&6
-echo "configure:4529: checking if you want support for internationalization" >&5
+echo "configure:4533: checking if you want support for internationalization" >&5
 
 # Check whether --enable-i18n or --disable-i18n was given.
 if test "${enable_i18n+set}" = set; then
@@ -4551,7 +4555,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for initial-erase setup""... $ac_c" 1>&6
-echo "configure:4555: checking if you want support for initial-erase setup" >&5
+echo "configure:4559: checking if you want support for initial-erase setup" >&5
 
 # Check whether --enable-initial-erase or --disable-initial-erase was given.
 if test "${enable_initial_erase+set}" = set; then
@@ -4577,7 +4581,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for input-method""... $ac_c" 1>&6
-echo "configure:4581: checking if you want support for input-method" >&5
+echo "configure:4585: checking if you want support for input-method" >&5
 
 # Check whether --enable-input-method or --disable-input-method was given.
 if test "${enable_input_method+set}" = set; then
@@ -4603,7 +4607,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for logging""... $ac_c" 1>&6
-echo "configure:4607: checking if you want support for logging" >&5
+echo "configure:4611: checking if you want support for logging" >&5
 
 # Check whether --enable-logging or --disable-logging was given.
 if test "${enable_logging+set}" = set; then
@@ -4627,7 +4631,7 @@ if test $enable_logging = yes ; then
 EOF
 
 	echo $ac_n "checking if you want to allow logging via a pipe""... $ac_c" 1>&6
-echo "configure:4631: checking if you want to allow logging via a pipe" >&5
+echo "configure:4635: checking if you want to allow logging via a pipe" >&5
 	
 # Check whether --enable-logfile-exec or --disable-logfile-exec was given.
 if test "${enable_logfile_exec+set}" = set; then
@@ -4654,7 +4658,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want support for iconify/maximize translations""... $ac_c" 1>&6
-echo "configure:4658: checking if you want support for iconify/maximize translations" >&5
+echo "configure:4662: checking if you want support for iconify/maximize translations" >&5
 
 # Check whether --enable-maximize or --disable-maximize was given.
 if test "${enable_maximize+set}" = set; then
@@ -4678,7 +4682,7 @@ EOF
 
 
 echo $ac_n "checking if you want NumLock to override keyboard tables""... $ac_c" 1>&6
-echo "configure:4682: checking if you want NumLock to override keyboard tables" >&5
+echo "configure:4686: checking if you want NumLock to override keyboard tables" >&5
 
 # Check whether --enable-num-lock or --disable-num-lock was given.
 if test "${enable_num_lock+set}" = set; then
@@ -4702,7 +4706,7 @@ EOF
 
 
 echo $ac_n "checking if you want support for right-scrollbar""... $ac_c" 1>&6
-echo "configure:4706: checking if you want support for right-scrollbar" >&5
+echo "configure:4710: checking if you want support for right-scrollbar" >&5
 
 # Check whether --enable-rightbar or --disable-rightbar was given.
 if test "${enable_rightbar+set}" = set; then
@@ -4728,7 +4732,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want check for redundant name-change""... $ac_c" 1>&6
-echo "configure:4732: checking if you want check for redundant name-change" >&5
+echo "configure:4736: checking if you want check for redundant name-change" >&5
 
 # Check whether --enable-samename or --disable-samename was given.
 if test "${enable_samename+set}" = set; then
@@ -4752,7 +4756,7 @@ EOF
 
 
 echo $ac_n "checking if you want support for tek4014""... $ac_c" 1>&6
-echo "configure:4756: checking if you want support for tek4014" >&5
+echo "configure:4760: checking if you want support for tek4014" >&5
 
 # Check whether --enable-tek4014 or --disable-tek4014 was given.
 if test "${enable_tek4014+set}" = set; then
@@ -4782,7 +4786,7 @@ else
 fi
 
 echo $ac_n "checking if you want VT52 emulation""... $ac_c" 1>&6
-echo "configure:4786: checking if you want VT52 emulation" >&5
+echo "configure:4790: checking if you want VT52 emulation" >&5
 
 # Check whether --enable-vt52 or --disable-vt52 was given.
 if test "${enable_vt52+set}" = set; then
@@ -4806,7 +4810,7 @@ EOF
 
 
 echo $ac_n "checking if you want wide-character support""... $ac_c" 1>&6
-echo "configure:4810: checking if you want wide-character support" >&5
+echo "configure:4814: checking if you want wide-character support" >&5
 
 # Check whether --enable-wide-chars or --disable-wide-chars was given.
 if test "${enable_wide_chars+set}" = set; then
@@ -4835,7 +4839,7 @@ EOF
 fi
 
 echo $ac_n "checking if you want -ziconbeep option""... $ac_c" 1>&6
-echo "configure:4839: checking if you want -ziconbeep option" >&5
+echo "configure:4843: checking if you want -ziconbeep option" >&5
 
 # Check whether --enable-ziconbeep or --disable-ziconbeep was given.
 if test "${enable_ziconbeep+set}" = set; then
@@ -4860,7 +4864,7 @@ EOF
 
 # development/testing aids
 echo $ac_n "checking if you want debugging traces""... $ac_c" 1>&6
-echo "configure:4864: checking if you want debugging traces" >&5
+echo "configure:4868: checking if you want debugging traces" >&5
 
 # Check whether --enable-trace or --disable-trace was given.
 if test "${enable_trace+set}" = set; then
@@ -4889,7 +4893,7 @@ fi
 
 
 echo $ac_n "checking if you want to see long compiling messages""... $ac_c" 1>&6
-echo "configure:4893: checking if you want to see long compiling messages" >&5
+echo "configure:4897: checking if you want to see long compiling messages" >&5
 
 # Check whether --enable-echo or --disable-echo was given.
 if test "${enable_echo+set}" = set; then
@@ -4929,7 +4933,7 @@ echo "$ac_t""$enableval" 1>&6
 
 
 echo $ac_n "checking if you want magic cookie emulation""... $ac_c" 1>&6
-echo "configure:4933: checking if you want magic cookie emulation" >&5
+echo "configure:4937: checking if you want magic cookie emulation" >&5
 
 # Check whether --enable-xmc-glitch or --disable-xmc-glitch was given.
 if test "${enable_xmc_glitch+set}" = set; then
@@ -4958,7 +4962,7 @@ fi
 
 if test -n "$GCC" ; then
 echo $ac_n "checking if you want to turn on gcc warnings""... $ac_c" 1>&6
-echo "configure:4962: checking if you want to turn on gcc warnings" >&5
+echo "configure:4966: checking if you want to turn on gcc warnings" >&5
 
 # Check whether --enable-warnings or --disable-warnings was given.
 if test "${enable_warnings+set}" = set; then
@@ -4998,9 +5002,9 @@ EOF
 if test -n "$GCC"
 then
 	echo "checking for gcc __attribute__ directives" 1>&6
-echo "configure:5002: checking for gcc __attribute__ directives" >&5
+echo "configure:5006: checking for gcc __attribute__ directives" >&5
 	cat > conftest.$ac_ext <<EOF
-#line 5004 "configure"
+#line 5008 "configure"
 #include "confdefs.h"
 #include "conftest.h"
 #include "conftest.i"
@@ -5038,7 +5042,7 @@ EOF
 EOF
 			;;
 		esac
-		if { (eval echo configure:5042: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+		if { (eval echo configure:5046: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
 			test -n "$verbose" && echo "$ac_t""... $cf_attribute" 1>&6
 			cat conftest.h >>confdefs.h
 #		else
@@ -5055,11 +5059,11 @@ fi
 if test -n "$GCC"
 then
 		cat > conftest.$ac_ext <<EOF
-#line 5059 "configure"
+#line 5063 "configure"
 int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
 		echo "checking for gcc warning options" 1>&6
-echo "configure:5063: checking for gcc warning options" >&5
+echo "configure:5067: checking for gcc warning options" >&5
 	cf_save_CFLAGS="$CFLAGS"
 	EXTRA_CFLAGS="-W -Wall"
 	cf_warn_CONST=""
@@ -5077,7 +5081,7 @@ echo "configure:5063: checking for gcc warning options" >&5
 		Wstrict-prototypes $cf_warn_CONST
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
-		if { (eval echo configure:5081: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+		if { (eval echo configure:5085: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
 			test -n "$verbose" && echo "$ac_t""... -$cf_opt" 1>&6
 			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
 			test "$cf_opt" = Wcast-qual && EXTRA_CFLAGS="$EXTRA_CFLAGS -DXTSTRINGDEFINES"
@@ -5090,6 +5094,7 @@ fi
 
 fi
 fi
+
 
 
 
@@ -5264,6 +5269,7 @@ s%@RULE_CC@%$RULE_CC%g
 s%@SHOW_CC@%$SHOW_CC%g
 s%@ECHO_CC@%$ECHO_CC%g
 s%@EXTRA_CFLAGS@%$EXTRA_CFLAGS%g
+s%@CHARPROC_DEPS@%$CHARPROC_DEPS%g
 s%@EXTRAHDRS@%$EXTRAHDRS%g
 s%@EXTRASRCS@%$EXTRASRCS%g
 s%@EXTRAOBJS@%$EXTRAOBJS%g

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.33 1999/07/04 06:40:15 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.34 1999/07/11 08:49:47 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_112">Patch #112 - 1999/7/17 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A>
 <LI><A HREF="#xterm_110">Patch #110 - 1999/6/29 - XFree86 3.9Pu</A>
 <LI><A HREF="#xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A>
@@ -154,6 +155,55 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_112">Patch #112 - 1999/7/17 - XFree86 3.9Pw</A></H1>
+<ul>
+	<li>add null-pointer check to FlushLog(), fixes a core dump when both
+	  -l and -lf options are used when xterm is configured with wide-character
+	  support.
+
+	<li>remove "ISO" case for SD, which was due to a typographical error in
+	  ECMA-48 (reported by Paul Williams &lt;paul@celigne.co.uk&gt; for
+	  vttest).
+
+	<li>add "FILES" section to manpage.
+
+	<li>generate header file to initialize default resources for colors
+	  16-255.
+
+	<li>patches by Greg Smith for os390:
+	<ul>
+	  <li>add README.os390
+
+	  <li>use the pty_search() function to find an available pty/tty pair.
+
+	  <li>move E2A() call out of getXtermCell() to SaveText() function
+	      so it will be available in all configurations.
+	</ul>
+
+	<li>patches by Todd Larason:
+	<ul>
+	  <li>enable SGR 48 5 in ISO color mode, not just 256 color mode
+
+	  <li>change configure's --disable-256-color option to
+	    --enable-256-color, to match its effect
+
+	  <li>fix OSC 4 xx ?  (report ansi color) to report a string which can
+	    actually be used to set the color back
+
+	  <li>fix OSC 4 xx yy (change ansi color) to not allow setting colors >
+	    15 in 16 color mode
+
+	  <li>simplify the COLOR_ settings a bit in ptyx.h, along with setting
+	    NUM_ANSI_COLORS needed for #1 and #4 above
+
+	  <li>correct string-terminator code passed for reference to OSC
+	    responses; when in 7-bit mode, only the final byte of ST was seen.
+
+	  <li>Allow multiple color #;name pairs in OSC 4,
+	    and document changes to match. 
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_111">Patch #111 - 1999/7/10 - XFree86 3.9Pw</A></H1>
 <ul>
@@ -274,28 +324,28 @@ xc/programs/Xserver/hw/xfree86).
 	<blockquote>
 	The first change is simple - I added ESC[3J to erase the stored lines
 	above the screen.  That's what the changes to util.c and ctlseqs.ms
-	are. 
-	<p> 
+	are.
+	<p>
 	The second change is to get the blinking cursor working.  I took out
 	the cursorBlinkTime resource, and put in cursorBlink (Boolean),
 	cursorOnTime (time cursor is on in msecs) and cursorOffTime, and added
-	a cursorblink item to the vtMenu to enable/disable it. 
+	a cursorblink item to the vtMenu to enable/disable it.
 	</blockquote>
 
 	<li>Integrated a patch from Juliusz Chroboczek &lt;jec@dcs.ed.ac.uk&gt;.
 	  From his description:
 	<blockquote>
-	With this patch, selection conversion works properly: 
-<pre> 
+	With this patch, selection conversion works properly:
+<pre>
 	ISO 8859-1 xterm -&gt; ISO 8859-1 xterm (transferred as STRING);
 	ISO 8859-1 xterm -&gt; UTF-8 xterm (transferred as STRING);
 	UTF-8 xterm -&gt; ISO 8859-1 xterm (transferred as STRING);
 	UTF-8 xterm -&gt; UTF-8 xterm (transferred as UTF-8).
-</pre> 
-	It will not work properly if one xterm is in, say, ISO 8859-2. 
-	Actually, for this case xterm breaks the ICCCM routinely (sending ISO 
-	8859-2 data as STRING), so I wouldn't worry too much about it.  I have 
-	not changed the behaviour in eight-bit mode in any way. 
+</pre>
+	It will not work properly if one xterm is in, say, ISO 8859-2.
+	Actually, for this case xterm breaks the ICCCM routinely (sending ISO
+	8859-2 data as STRING), so I wouldn't worry too much about it.  I have
+	not changed the behaviour in eight-bit mode in any way.
 	</blockquote>
 </ul>
 
@@ -318,7 +368,7 @@ xc/programs/Xserver/hw/xfree86).
 	<li>implement new resource <em>trimSelection</em>, which allows xterm
 	  to trim trailing blanks from selected lines.  This does not affect
 	  the highlighting. (reported by several people using <em>mutt</em>,
-	  including 
+	  including
 	  Hans Morten Kind &lt;edphk@uib.no&gt;,
 	  Jeremy &lt;jeremy@exit109.com&gt;
 	  and (Michael Fuller &lt;msf@mds.rmit.edu.au&gt;).
@@ -333,7 +383,7 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_104">Patch #104 - 1999/5/30 - XFree86 3.9Pn</A></H1>
 This is a resync patch against XFree86 3.9Pn, reflecting changes which were
-submitted by Branden Robinson, who worked with 
+submitted by Branden Robinson, who worked with
 Wichert Akkerman &lt;wichert@cs.leidenuniv.nl&gt;
 to set up ifdef's to handle GNU libc 2.1,
 and use getpt() which lets xterm avoid having to know the actual PTY name.
@@ -355,7 +405,7 @@ the Imakefile defines this).
 	  the patch description:
 	<blockquote>
 	<ul>
-	<li>No longer links xterm against libutil on a glibc2.1 system. 
+	<li>No longer links xterm against libutil on a glibc2.1 system.
 	  libutil is a compatibility library and should only be used when
 	  necessary.  Rather than having get_pty() use openpty() from this
 	  compatibility library, use the real UNIX98 pty support in get_pty()

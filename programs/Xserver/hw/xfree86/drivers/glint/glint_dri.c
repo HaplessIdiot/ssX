@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.3 1999/07/04 06:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.4 1999/07/10 12:17:31 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -929,13 +929,13 @@ GLINTDRISwapContext(
     int	dumpIndex;
     CARD32 readValue;
 
-    if (readContextType != DRI_NO_CONTEXT) {
+    /* Sync here covers both read and write context of contexts */
+    if (pGlint->AccelInfoRec->Sync) {
+	(*pGlint->AccelInfoRec->Sync)(pGlint->AccelInfoRec->pScrn);
+    }
+    pGlint->AccelInfoRec->NeedToSync = FALSE;
 
-				/* Sync before reading registers */
-	if (pGlint->AccelInfoRec->Sync) {
-	    (*pGlint->AccelInfoRec->Sync)(pGlint->AccelInfoRec->pScrn);
-	    pGlint->AccelInfoRec->NeedToSync = FALSE;
-	}
+    if (readContextType != DRI_NO_CONTEXT) {
 
 	/* save the 2D portion of the old context */
 	pRC->MX1.CStartXDom               = GLINT_READ_REG(StartXDom);

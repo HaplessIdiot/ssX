@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.24 1999/06/20 08:41:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.25 1999/06/27 09:20:20 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -79,7 +79,7 @@ static void MGAGRamdacInit(ScrnInfoPtr);
 static void MGAGSave(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static void MGAGRestore(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
 static Bool MGAGInit(ScrnInfoPtr, DisplayModePtr);
-static void MGAGLoadPalette(ScrnInfoPtr, int, int*, LOCO*, short);
+static void MGAGLoadPalette(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
 static Bool MGAG_i2cInit(ScrnInfoPtr pScrn);
 
 /*
@@ -512,7 +512,7 @@ void MGAGLoadPalette(
     int numColors, 
     int *indices,
     LOCO *colors,
-    short visualClass
+    VisualPtr pVisual
 ){
     MGAPtr pMga = MGAPTR(pScrn);
     int i, index;
