@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.15 2000/07/01 01:40:46 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.16 2000/08/11 17:27:14 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -15,6 +15,10 @@
 #include "fbpriv.h"
 
 #include "asm/page.h"	/* #define for PAGE_* */
+
+#ifdef DPMSExtension
+#include "dpms.h"
+#endif
 
 #define DEBUG 0
 
