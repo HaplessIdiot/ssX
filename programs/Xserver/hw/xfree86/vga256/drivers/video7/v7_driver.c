@@ -1,5 +1,5 @@
 /* $XConsortium: v7_driver.c /main/5 1996/01/12 12:18:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.9 1996/02/04 09:14:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.10 1996/03/29 22:18:18 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -221,6 +221,7 @@ vgaVideoChipRec VIDEO7 = {
 	FALSE,
 	0,
 	0,
+	FALSE,
 	FALSE,
 	FALSE,
 	NULL,

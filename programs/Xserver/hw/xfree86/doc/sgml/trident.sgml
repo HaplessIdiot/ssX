@@ -55,16 +55,20 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	80ns DRAM.  This is the default for TGUIs.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
-<tag>Option &dquot;pci_burst_on&dquot;</tag>
-	Turn on PCI burst read/write mode.
-<tag>Option &dquot;pci_burst_off&dquot;</tag>
-	Turn off PCI burst read/write mode.
+<tag>Option &dquot;tgui_pci_read_on&dquot;</tag>
+	Turn on PCI burst read mode.
+<tag>Option &dquot;tgui_pci_read_off&dquot;</tag>
+	Turn off PCI burst read mode.
+<tag>Option &dquot;tgui_pci_write_on&dquot;</tag>
+	Turn on PCI burst write mode.
+<tag>Option &dquot;tgui_pci_write_off&dquot;</tag>
+	Turn off PCI burst write mode.
 	NOTE: PCI modes. By default the read burst and write burst
 	are independant of each other. By not specifying one of the
 	above - the PCI registers are untouched. If you suffer from
-	screen corruption then turn it off. By turning it on
+	screen corruption then try turning them off. By turning them on
 	explicitly may benefit from improved performance, but it
-	may also give strange results. USE WITH CAUTION.
+	may also give screen corruption. USE WITH CAUTION.
 <tag>ClockChip &dquot;tgui&dquot;</tag>
 	Turn on programmable clocks.  This is the default for TGUIs.
 <tag>Option &dquot;no_program_clocks&dquot;</tag>
@@ -138,7 +142,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.10 1996/02/20 14:34:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.11 1996/06/10 09:15:17 dawes Exp $
 
 
 

@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.3 1996/02/22 05:13:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.4 1996/03/29 22:18:08 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -276,6 +276,11 @@ vgaVideoChipRec REALTEK = {
 	 * It most cases it should be FALSE.
 	 */
 	FALSE, /* sorry this will only with linear addressing */
+	/*
+	 * This is TRUE if the driver has support for 24bpp for the detected
+	 * configuration.
+	 */
+	FALSE,
 	/*
 	 * This is TRUE if the driver has support for 32bpp for the detected
 	 * configuration.

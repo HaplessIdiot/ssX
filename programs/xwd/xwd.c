@@ -1,5 +1,5 @@
 /* $XConsortium: xwd.c /main/64 1996/01/14 16:53:13 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.0 1996/06/10 09:20:36 dawes Exp $ */
 
 /*
 
@@ -221,6 +221,12 @@ main(argc, argv)
     exit(0);
 }
 
+#ifdef X_NOT_STDC_ENV
+char *calloc();
+#else
+#include <stdlib.h>
+#endif
+
 static int
 Get24bitDirectColors(colors)
 XColor **colors ;
@@ -244,12 +250,6 @@ XColor **colors ;
  * Window_Dump: dump a window to a file which must already be open for
  *              writting.
  */
-
-#ifdef X_NOT_STDC_ENV
-char *calloc();
-#else
-#include <stdlib.h>
-#endif
 
 Window_Dump(window, out)
      Window window;

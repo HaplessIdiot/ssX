@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.20 1996/02/20 14:35:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.21 1996/03/29 22:18:02 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -234,6 +234,7 @@ vgaVideoChipRec OAK = {
   FALSE,             /* Initially no linear support, don't know if 87 */
   0,
   0,
+  FALSE,
   FALSE,
   FALSE,
   NULL,

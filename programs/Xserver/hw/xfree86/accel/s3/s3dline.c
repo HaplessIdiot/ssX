@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.7 1996/02/04 09:04:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.8 1996/03/05 05:42:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -66,6 +66,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
@@ -158,6 +159,9 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
          break;
       case 16:
 	 cfb16LineSD(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 24:
+	 cfb24LineSD(pDrawable, pGC, mode, npt, pptInit);
          break;
       case 32:
 	 cfb32LineSD(pDrawable, pGC, mode, npt, pptInit);

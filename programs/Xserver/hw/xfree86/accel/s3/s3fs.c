@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.5 1995/01/28 17:02:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.6 1996/02/04 09:05:05 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -79,6 +79,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "misc.h"
 #include  "xf86.h"
@@ -113,6 +114,10 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 cfb16SolidSpansGeneral(pDrawable, pGC,
 				nInit, pptInit, pwidthInit, fSorted);
          break;
+      case 24:
+	 cfb24SolidSpansGeneral(pDrawable, pGC,
+				nInit, pptInit, pwidthInit, fSorted);
+         break;
       case 32:
 	 cfb32SolidSpansGeneral(pDrawable, pGC,
 				nInit, pptInit, pwidthInit, fSorted);
@@ -128,6 +133,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
         case 16:
+        case 24:
         case 32:
 	   ErrorF("should call cfbSolidFillSpans\n");
 	   break;
@@ -208,6 +214,9 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       case 16:
 	 cfb16UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
          break;
+      case 24:
+	 cfb24UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
+         break;
       case 32:
 	 cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
          break;
@@ -222,6 +231,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
 	case 16:
+	case 24:
 	case 32:
 	   ErrorF("should call cfbTiledFillSpans\n");
 	   break;
@@ -301,6 +311,10 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 cfb16UnnaturalStippleFS(pDrawable, pGC,
 				 nInit, pptInit, pwidthInit, fSorted);
          break;
+      case 24:
+	 cfb24UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
       case 32:
 	 cfb32UnnaturalStippleFS(pDrawable, pGC,
 				 nInit, pptInit, pwidthInit, fSorted);
@@ -316,6 +330,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
 	case 16:
+	case 24:
 	case 32:
 	   ErrorF("should call cfbStippleFillSpans\n");
 	   break;
@@ -395,6 +410,10 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 cfb16UnnaturalStippleFS(pDrawable, pGC,
 				 nInit, pptInit, pwidthInit, fSorted);
          break;
+      case 24:
+	 cfb24UnnaturalStippleFS(pDrawable, pGC,
+				 nInit, pptInit, pwidthInit, fSorted);
+         break;
       case 32:
 	 cfb32UnnaturalStippleFS(pDrawable, pGC,
 				 nInit, pptInit, pwidthInit, fSorted);
@@ -410,6 +429,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   break;
 	case 8:
 	case 16:
+	case 24:
 	case 32:
 	   ErrorF("should call cfbOpStippleFillSpans\n");
 	   break;

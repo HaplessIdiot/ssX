@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.22 1996/02/24 04:32:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.23 1996/06/13 07:54:43 dawes Exp $
 XCOMM
 
 /*
@@ -289,9 +289,30 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasTk
 #define HasTk NO
 #endif
-#ifndef TkLibrary
+#ifndef TkLibName
 #if HasTk
-#define TkLibrary -ltk
+#define TkLibName tk
+#else
+#define TkLibName
+#endif
+#endif
+#ifndef TkLibDir
+#if HasTk
+#define TkLibDir /usr/local/lib
+#else
+#define TkLibDir
+#endif
+#endif
+#ifndef TkIncDir
+#if HasTk
+#define TkIncDir /usr/local/include
+#else
+#define TkIncDir
+#endif
+#endif
+#ifndef TkLibrary
+#ifdef HasTk
+#define TkLibrary Concat(-L,TkLibDir) Concat(-l,TkLibName)
 #else
 #define TkLibrary
 #endif
@@ -299,25 +320,32 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasTcl
 #define HasTcl NO
 #endif
-#ifndef TclLibrary
+#ifndef TclLibName
 #if HasTcl
-#define TclLibrary -ltcl
+#define TclLibName tcl
+#else
+#define TclLibName
+#endif
+#endif
+#ifndef TclLibDir
+#if HasTcl
+#define TclLibDir /usr/local/lib
+#else
+#define TclLibDir
+#endif
+#endif
+#ifndef TclIncDir
+#if HasTcl
+#define TclIncDir /usr/local/include
+#else
+#define TclIncDir
+#endif
+#endif
+#ifndef TclLibrary
+#ifdef HasTcl
+#define TclLibrary Concat(-L,TclLibDir) Concat(-l,TclLibName)
 #else
 #define TclLibrary
-#endif
-#endif
-#ifndef StartStaticLib
-#if HasGcc
-#define StartStaticLib	-static
-#else
-#define StartStaticLib
-#endif
-#endif
-#ifndef EndStaticLib
-#if HasGcc
-#define EndStaticLib	-Wl,-Bdynamic
-#else
-#define EndStaticLib
 #endif
 #endif
 #ifndef NeedConstPrototypes
@@ -1142,6 +1170,16 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
+
+XCOMM Not sure this belongs here
+         TKLIBDIR = TkLibDir
+         TKINCDIR = TkIncDir
+        TKLIBNAME = TkLibName
+        TKLIBRARY = TkLibrary
+        TCLLIBDIR = TclLibDir
+        TCLINCDIR = TclIncDir
+       TCLLIBNAME = TclLibName
+       TCLLIBRARY = TclLibrary
 
         MACROFILE = MacroFile
            RM_CMD = $(RM)

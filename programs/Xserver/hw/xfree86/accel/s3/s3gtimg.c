@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.7 1995/01/28 17:02:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.8 1996/02/04 09:05:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -29,6 +29,7 @@
 #include "pixmapstr.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "s3.h"
@@ -60,6 +61,9 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	 break;
       case 16:
          cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 24:
+         cfb24GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	 break;
       case 32:
          cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);

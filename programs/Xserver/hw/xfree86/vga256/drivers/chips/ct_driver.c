@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.11 1996/02/04 09:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.12 1996/03/29 22:17:35 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -230,6 +230,11 @@ vgaVideoChipRec CHIPS = {
 	 * This is TRUE if the driver has support for 16bpp for the detected
 	 * configuration. It must be set in the Probe function.
 	 * It most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 24bpp for the detected
+	 * configuration.
 	 */
 	FALSE,
 	/*

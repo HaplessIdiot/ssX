@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.8 1996/02/19 09:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.9 1996/02/20 14:34:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -66,6 +66,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
@@ -156,6 +157,9 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
          break;
       case 16:
 	 cfb16SegmentSD(pDrawable, pGC, nseg, pSeg);
+         break;
+      case 24:
+	 cfb24SegmentSD(pDrawable, pGC, nseg, pSeg);
          break;
       case 32:
 	 cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);

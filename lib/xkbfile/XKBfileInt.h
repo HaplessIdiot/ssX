@@ -1,7 +1,8 @@
 #ifndef _XKBFILEINT_H_
 #define	_XKBFILEINT_H_ 1
 
-/* $XConsortium: XKBfileInt.h /main/1 1995/11/30 19:00:55 kaleb $ */
+/* $XConsortium: XKBfileInt.h /main/2 1996/01/01 10:52:19 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -39,6 +40,8 @@
 	{ _XkbErrCode= (c); _XkbErrLocation= (l); _XkbErrData= (d); }
 #endif
 
+#ifndef XKB_IN_SERVER
+
 #define	_XkbAlloc(s)		malloc((s))
 #define	_XkbCalloc(n,s)		calloc((n),(s))
 #define	_XkbRealloc(o,s)	realloc((o),(s))
@@ -48,6 +51,8 @@
 	((o)?(t *)realloc((o),(n)*sizeof(t)):_XkbTypedCalloc(n,t))
 #define	_XkbClearElems(a,f,l,t)	bzero(&(a)[f],((l)-(f)+1)*sizeof(t))
 #define	_XkbFree(p)		free(p)
+
+#endif
 
 _XFUNCPROTOBEGIN
 
@@ -63,6 +68,7 @@ extern int	_XkbStrCaseCmp(
 	char *	/* str2 */
 #endif
 );
+#define _XkbStrCaseEqual(s1,s2) (_XkbStrCaseCmp(s1,s2)==0)
 
 _XFUNCPROTOEND
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.90 1996/05/11 11:04:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.91 1996/06/10 09:14:43 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2709,6 +2709,7 @@ configScreenSection()
               break;
           }
           if (dispIndex == numDisps) {
+#if 0
             /* No match.  This time, allow 15/16 and 24/32 to match */
             for (dispIndex = 0; dispIndex < numDisps; dispIndex++) {
               if ((xf86bpp == 15 && dispList[dispIndex].depth == 16) ||
@@ -2716,6 +2717,13 @@ configScreenSection()
                   (xf86bpp == 24 && dispList[dispIndex].depth == 32) ||
                   (xf86bpp == 32 && dispList[dispIndex].depth == 24))
                 break;
+#else
+            /* No match.  This time, allow 15/16 to match */
+            for (dispIndex = 0; dispIndex < numDisps; dispIndex++) {
+              if ((xf86bpp == 15 && dispList[dispIndex].depth == 16) ||
+                  (xf86bpp == 16 && dispList[dispIndex].depth == 15))
+                break;
+#endif
             }
           }
           if (dispIndex == numDisps) {

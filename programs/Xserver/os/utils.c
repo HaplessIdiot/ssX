@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.16 1996/02/09 08:22:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.17 1996/03/29 22:19:41 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -536,7 +536,6 @@ void UseMsg()
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
     ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-nopn                  reject failure to listen on all ports\n");
-    ErrorF("-noscale               don't allow scaling of bitmap fonts\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
     ErrorF("-s #                   screen-saver timeout (minutes)\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.6 1996/03/11 12:37:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.7 1996/04/15 11:30:39 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -86,6 +86,8 @@
 #define   TI_MUX1_3026T_888	0x46     /* 3026 only */
 #define   TI_MUX1_3026T_565	0x45     /* 3026 only */
 #define   TI_MUX1_3026T_555	0x44     /* 3026 only */
+#define   TI_MUX1_3026T_888_P8	0x56     /* 3026 only */
+#define   TI_MUX1_3026T_888_P5	0x5e     /* 3026 only */
 #define TI_MUX_CONTROL_2	0x19
 #define   TI_MUX2_BUS_VGA	0x98
 #define   TI_MUX2_BUS_PC_D8P64	0x1C
@@ -99,7 +101,7 @@
 #define   TI_MUX2_BUS_3026DC_D24P64	0x5C
 #define   TI_MUX2_BUS_3026DC_D16P64	0x54
 #define   TI_MUX2_BUS_3026DC_D15P64	0x54
-#define   TI_MUX2_BUS_3026TC_D24P64	0x5c  /* 0x54 ? */
+#define   TI_MUX2_BUS_3026TC_D24P64	0x5c
 #define   TI_MUX2_BUS_3026TC_D16P64	0x54
 #define   TI_MUX2_BUS_3026TC_D15P64	0x54
 #define   TI_MUX2_BUS_3030PC_D8P128	0x4d

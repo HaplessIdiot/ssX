@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.47 1996/06/10 08:42:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.48 1996/06/13 07:54:39 dawes Exp $
 
 #ifndef OSName
 #define OSName			FreeBSD 2.1
@@ -73,24 +73,12 @@ XCOMM operating system:  OSName
 #define GnuMallocLibrary	-lgnumalloc
 #endif
 
-#ifndef TkLibDir
-#define TkLibDir		/usr/local/lib
-#endif
-#ifndef TkIncDir
-#define TkIncDir		/usr/local/include
-#endif
-#ifndef TkLibrary
-#define TkLibrary		-ltk40
+#ifndef TkLibName
+#define TkLibName		tk40
 #endif
 
-#ifndef TclLibDir
-#define TclLibDir		/usr/local/lib
-#endif
-#ifndef TclIncDir
-#define TclIncDir		/usr/local/include
-#endif
-#ifndef TclLibrary
-#define TclLibrary		-ltcl74
+#ifndef TclLibName
+#define TclLibName		tcl74
 #endif
 
 #undef  InstallCmd
@@ -228,6 +216,10 @@ dirs: .EXEC								@@\
 	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
 									@@\
 .EXEC:
+#endif
+
+#ifndef StaticLibrary
+#define StaticLibrary(libpath,libname) -static Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
 #endif
 
 #include <bsdLib.rules>

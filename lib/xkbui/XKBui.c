@@ -25,12 +25,15 @@
 
  ********************************************************/
 
-#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <math.h>
+#include <X11/Xfuncs.h>
 #include "XKBuiPriv.h"
 #include <X11/extensions/XKBfile.h>
-#include <X11/Xfuncs.h>
+
+#ifndef M_PI
+#define M_PI	3.141592653589793238462
+#endif
 
 static XkbUI_ViewOptsRec dfltOpts = { 
 	XkbUI_AllViewOptsMask	/* present */,

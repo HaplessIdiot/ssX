@@ -12,19 +12,24 @@ proc exit {args} {
 	eval _std_exit $args
 }
 
-set curdir [pwd]
-cd $Xwinhome/lib/X11/xkb
 #exec xkbcomp keymap/sun/us compiled/xfsetup.xkm
 #xkb_read compiled/xfsetup.xkm
 if { [catch {set compspec [xkb_read from_server]} res] } {
-	puts stderr "XKBread failed"
+	puts stderr "Unable to read keyboard information from the server."
 	exit 1
 }
-set comps [xkb_list "" "" "" "" * *]
-set XKBComponents(symbols)  [lindex $comps 4]
-set XKBComponents(geometry) [lindex $comps 5]
-#set xx [xkb_load "" "" "" "" "" microsoft]
-cd $curdir
+#puts "comps:$compspec:"
+if { [catch {set comps [xkb_list "" "" "" "" * *]} res] } {
+	set XKBComponents(symbols)  "fr gb it us"
+	set XKBComponents(geometry) "dell pc keytronic"
+} else {
+	set XKBComponents(symbols)  [lindex $comps 4]
+	set XKBComponents(geometry) [lindex $comps 5]
+}
+#puts "Symbols : $XKBComponents(symbols)"
+#puts "Geometry: $XKBComponents(geometry)"
+#set rules [open $Xwinhome/lib/X11/xkb/rules/xfree86 r]
+#puts [xkb_resolvecomponents $rules dell101 it]
 
 # Colors chosen to work with the VGA16 server
 option add *background			grey
@@ -168,6 +173,7 @@ Monitor_create_widgets	$w
 #Other_create_widgets	$w
 Done_create_widgets	$w
 
+bind $w <Alt-x>		[list I'm an error]
 set CfgSelection Intro
 set prevSelection Intro
 config_select $w

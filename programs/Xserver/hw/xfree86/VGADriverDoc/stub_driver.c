@@ -1,5 +1,5 @@
 /* $XConsortium: stub_driver.c /main/5 1995/09/04 19:45:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.13 1995/05/27 03:02:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.14 1996/02/04 08:57:30 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -219,6 +219,11 @@ vgaVideoChipRec STUB = {
 	 * This is TRUE if the driver has support for 16bpp for the detected
 	 * configuration. It must be set in the Probe function.
 	 * It most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 24bpp for the detected
+	 * configuration.
 	 */
 	FALSE,
 	/*

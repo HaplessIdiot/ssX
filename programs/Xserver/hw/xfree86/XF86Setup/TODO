@@ -2,7 +2,7 @@
 ITEMS THAT SHOULD BE COMPLETED BEFORE FIRST PUBLIC RELEASE:
 ----------------------------------------------------------------------
 
-Finish keyboard configuration
+Finish keyboard configuration (use rules once they're added to XKB)
 
 Complete the info in carddata.tcl
 
@@ -31,7 +31,7 @@ Improve default mouse devices names (e.g. OS specific)
 
 Add configuration of related things that can be set with xset such as
    keyboard repeat rate, mouse acceleration, screen saver settings,
-   etc. ???
+   etc. ???  - this probably should be a separate client
 
 Switch to Tcl 7.5/Tk 4.1 ???
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.73 1996/03/31 11:42:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.74 1996/06/10 08:42:18 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -61,6 +61,40 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.73 1996/03/31 11:42:39 dawes Exp $
  */
 
 /*
+ * If you have Tk (which is required to build XF86Setup), uncomment this
+ * Note: version 4.0 is required, and XF86Setup links it statically by
+ * default.
+ *
+#define HasTk			YES
+ */
+
+/*
+ * Set the paths and names for your Tk library if they don't match the
+ * defaults (check your OS .cf file or Imake.tmpl for the defaults).
+ *
+#define TkLibDir		/usr/local/lib
+#define TkIncDir		/usr/local/include
+#define TkLibName		tk
+ */
+
+/*
+ * If you have Tcl (which is required to build XF86Setup), uncomment this
+ * Note: version 7.4 is required, and XF86Setup links it statically by
+ * default.
+ *
+#define HasTcl			YES
+ */
+
+/*
+ * Set the paths and names for your Tcl library if they don't match the
+ * defaults (check your OS .cf file or Imake.tmpl for the defaults).
+ *
+#define TclLibDir		/usr/local/lib
+#define TclIncDir		/usr/local/include
+#define TclLibName		tcl
+ */
+
+/*
  * Which servers do you wish to build, you can save a lot of disk space
  * by only compiling the server you will be using.  It will also save you
  * considerable compile time.
@@ -119,8 +153,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.73 1996/03/31 11:42:39 dawes Exp $
 /*
  * SVGA server:
  *
-#define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 oak mx al2101 ali cl64xx \
+#define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
+				cirrus ncr77c22 oak mx al2101 ali cl64xx \
 				video7 chips ark realtek generic
  */
 

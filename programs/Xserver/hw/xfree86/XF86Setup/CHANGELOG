@@ -104,3 +104,8 @@
 			Moved the standard modelines and sync ranges
 			  into a separate file (mondata.tcl)
 
+0.7	22 Jun 1996	Added more XKB interface functions
+			Chosen geometry and symbol sets are now loaded
+			  into the server
+			Prepared for intergration into XFree86 tree
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.35 1996/04/15 11:32:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.36 1996/06/10 09:16:25 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -159,6 +159,7 @@ vgaVideoChipRec TVGA8900 = {
   FALSE,			/* Linear Addressing */
   0,
   0,
+  FALSE,
   FALSE,
   FALSE,
   NULL,
@@ -841,9 +842,13 @@ TVGA8900Probe()
 
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
-		OFLG_SET(OPTION_PCI_BURST_ON, 
+		OFLG_SET(OPTION_TGUI_PCI_READ_ON, 
 			&TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_PCI_BURST_OFF,
+		OFLG_SET(OPTION_TGUI_PCI_READ_OFF,
+			&TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_TGUI_PCI_WRITE_ON, 
+			&TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_TGUI_PCI_WRITE_OFF,
 			&TVGA8900.ChipOptionFlags);
 	}
 
@@ -1251,7 +1256,8 @@ TVGA8900Restore(restore)
 #endif
 	}
 
-	outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
+	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+		outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 }
@@ -1395,9 +1401,12 @@ TVGA8900Save(save)
 			save->MiscIntContReg = inb(0x3CF);
 		}
 #endif
-	outb(vgaIOBase + 4, 0x39);
-	save->PCIReg = inb(vgaIOBase + 5);
+	}
 
+	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+	{
+		outb(vgaIOBase + 4, 0x39);
+		save->PCIReg = inb(vgaIOBase + 5);
 	}
 
 #ifndef MONOVGA
@@ -1581,22 +1590,20 @@ TVGA8900Init(mode)
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
 		outb(vgaIOBase + 4, 0x39);
-		if ( (OFLG_ISSET(OPTION_PCI_BURST_ON,
-					&vga256InfoRec.options)) &&
-		     (OFLG_ISSET(OPTION_PCI_BURST_OFF,
-					&vga256InfoRec.options)) )
-		{
-			ErrorF("%s %s: PCI Burst mode - not touched "
-			       "- specified both - remove one.\n",
-			       XCONFIG_GIVEN, vga256InfoRec.name);
-		}
-			
-		if (OFLG_ISSET(OPTION_PCI_BURST_ON, 
+		new->PCIReg = inb(vgaIOBase + 5);
+
+		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_ON, 
 					&vga256InfoRec.options))
-			new->PCIReg = inb(vgaIOBase + 5) | 0x06;
-		if (OFLG_ISSET(OPTION_PCI_BURST_OFF,
+			new->PCIReg |= 0x02;
+		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_OFF,
 					&vga256InfoRec.options))
-			new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
+			new->PCIReg &= 0xFD;
+		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_ON, 
+					&vga256InfoRec.options))
+			new->PCIReg |= 0x04;
+		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_OFF,
+					&vga256InfoRec.options))
+			new->PCIReg &= 0xFB;
 	}
 
 	if (TVGAchipset >= TGUI9440AGi)

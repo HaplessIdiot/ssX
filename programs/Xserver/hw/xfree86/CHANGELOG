@@ -1,3 +1,23 @@
+XFree86 3.1.2Eb (29 June 1996)
+582. Preliminary 24bpp packed support for some S3 cards (Harald Koenig).
+581. Add 24bpp (packed pixel) support for cfb (cfb24), and the required
+     hooks for using it with the SVGA server (NoZomi Ytow).
+580. Fix some xterm background colouring problems (Thomas E. Dickey).
+579. Allow the PCI burst to be separately turned on/off for read and write
+     for the TGUI chips (Alan Hourihane).
+578. vgaHW.c fix (NoZomi Ytow).
+577. Fix for Mach64 block_write problems introduced in 3.1.2E (Kevin Martin).
+576. An alternate fix to the Makedirectories() rule, which causes only
+     one 'sh -c' to be used (Marc Aurele La France).
+575. Some sanity checks for the trident driver (Alan Hourihane).
+574. Another HSkew fix for the ATI SVGA driver (Marc Aurele La France).
+573. Add 256 colour support to the SiS driver (Alan Hourihane).
+572. Fix a stdlib.h -related problem in xwd (Joe Moss).
+571. Fix a stdlib.h -related problem in xfs/os/utils.h (Takaaki Nomura).
+570. Add a new Xserver configuration utility -- XF86Setup (Joe Moss).
+569. Remove the "-noscale" flag from the Xserver usage message (Joe Moss).
+568. Fix session handling of xdm for *BSD (Peter Wemm).
+
 XFree86 3.1.2Ea (10 June 1996)
 567. xf86config.c update in preparation for the XF86Setup utility (Joe Moss).
 566. Fix some Mach64 problems in the SVGA ati driver (Marc Aurele La France).

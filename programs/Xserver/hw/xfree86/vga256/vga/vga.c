@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.50 1996/03/29 22:18:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.51 1996/05/06 05:58:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -59,6 +59,7 @@
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "vgabpp.h"
 #endif
@@ -102,8 +103,8 @@ ScrnInfoRec vga256InfoRec = {
   vgaScreenInit,	/* Bool (* Init)() */
   vgaValidMode,		/* Bool (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
-  (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
-  (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
+  (void (*)())NoopDDA,	/* void (* EnterLeaveMonitor)() */
+  (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
   vgaAdjustFrame,	/* void (* AdjustFrame)() */
   vgaSwitchMode,	/* Bool (* SwitchMode)() */
   vgaPrintIdent,        /* void (* PrintIdent)() */
@@ -254,6 +255,7 @@ Bool vgaUseLinearAddressing;
 int vgaPhysLinearBase;
 int vgaLinearSize;
 int vgaBitsPerPixel = 0;
+int vgaBytesPerPixel = 0;
 
 #ifdef MONOVGA
 int vgaReadseg=0;
@@ -394,8 +396,10 @@ vgaProbe()
       xf86weight = vga256InfoRec.weight;
   }
   vgaBitsPerPixel = xf86bpp;
+  vgaBytesPerPixel = xf86bpp >> 3;
+
   if (vgaBitsPerPixel != 8) {
-      if (vgaBitsPerPixel != 16 && vgaBitsPerPixel != 32) {
+      if (vgaBitsPerPixel != 16 && vgaBitsPerPixel != 24 && vgaBitsPerPixel != 32) {
           ErrorF("\n%s %s: Unsupported bpp for SVGA server (%d)\n",
               XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
 	  return(FALSE);
@@ -408,7 +412,7 @@ vgaProbe()
        * and is much faster with cfb16.
        */
       vga256InfoRec.depth = vgaBitsPerPixel;
-      if (vgaBitsPerPixel == 32)
+      if (vgaBitsPerPixel == 32 || vgaBitsPerPixel == 24)
           xf86weight.red = xf86weight.green = xf86weight.blue = 8;
       vga256InfoRec.weight = xf86weight;
       vga256InfoRec.bitsPerPixel = vgaBitsPerPixel;
@@ -495,6 +499,7 @@ vgaProbe()
 	 * For 8/16/32bpp, needmem is defined as the max. number of pixels.
 	 */
 	needmem /= (vgaBitsPerPixel / 8);
+
 #endif /* XF86VGA16 */
 #endif /* MONOVGA */
 
@@ -567,6 +572,7 @@ vgaProbe()
          * If bpp is 16 or 32, make sure the driver supports it.
          */
         if ((vgaBitsPerPixel == 16 && !Drivers[i]->ChipHas16bpp)
+        || (vgaBitsPerPixel == 24 && !Drivers[i]->ChipHas24bpp)
         || (vgaBitsPerPixel == 32 && !Drivers[i]->ChipHas32bpp)) {
             ErrorF("\n%s %s: %dbpp not supported for this chipset\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
@@ -1020,6 +1026,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   if (!(vgaInitFunc)(vga256InfoRec.modes))
     FatalError("%s: hardware initialisation failed\n", vga256InfoRec.name);
 
+
   /*
    * This function gets called while in graphics mode during a server
    * reset, and this causes the original video state to be corrupted.
@@ -1063,6 +1070,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
           return(FALSE);
   if (vgaBitsPerPixel == 16)
       if (!vga16bppScreenInit(pScreen,
+		     vgaLinearBase,
+		     vga256InfoRec.virtualX,
+		     vga256InfoRec.virtualY,
+		     displayResolution, displayResolution,
+		     vga256InfoRec.displayWidth))
+          return(FALSE);
+  if (vgaBitsPerPixel == 24)
+      if (!vga24bppScreenInit(pScreen,
 		     vgaLinearBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1163,9 +1178,10 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     pointer    vgaPhysPtr;
 
 #if !defined(BANKEDMONOVGA)
-    if (vgaBitsPerPixel > 8)
+    if (vgaBitsPerPixel > 8){
         /* Currently 16/32bpp uses linear addressing. */
         memset(vgaLinearBase, 0, vga256InfoRec.videoRam * 1024);
+      }
     else /* 8bpp: */
 #endif
 
@@ -1232,6 +1248,8 @@ vgaEnterLeaveVT(enter, screen_idx)
           pspix = (PixmapPtr)pScreen->devPrivate;
       if (vgaBitsPerPixel == 16)
           pspix = (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
+      if (vgaBitsPerPixel == 24)
+          pspix = (PixmapPtr)pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr;
       if (vgaBitsPerPixel == 32)
           pspix = (PixmapPtr)pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr;
 #else
@@ -1310,6 +1328,9 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 16)
 	      cfb16DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFF);
+          if (vgaBitsPerPixel == 24)
+	      cfb24DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFF);
           if (vgaBitsPerPixel == 32)
 	      cfb32DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFFFFFF);
@@ -1355,6 +1376,10 @@ vgaEnterLeaveVT(enter, screen_idx)
           if (vgaBitsPerPixel == 16)
 	      cfb16DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFF);
+          if (vgaBitsPerPixel == 24){
+	      cfb24DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
+	          &pixReg, &pixPt, 0xFFFFFF);
+	  }
           if (vgaBitsPerPixel == 32)
 	      cfb32DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy,
 	          &pixReg, &pixPt, 0xFFFFFFFF);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.8 1996/02/22 05:13:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.9 1996/03/29 22:17:44 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -199,6 +199,7 @@ vgaVideoChipRec CL64XX = {
 	FALSE,
 	0,
 	0,
+	FALSE,
 	FALSE,
 	FALSE,
 	NULL,

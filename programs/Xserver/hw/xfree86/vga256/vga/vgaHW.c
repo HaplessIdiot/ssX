@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.32tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.33 1996/06/10 09:16:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -691,10 +691,6 @@ vgaHWRestore(restore)
 #endif
 #endif /* PC98_NEC480 */
 
-  if (vgaIOBase == 0x3B0)
-    restore->MiscOutReg &= 0xFE;
-  else
-    restore->MiscOutReg |= 0x01;
 
   /* Don't change the clock bits when using an external clock program */
   if (restore->NoClock < 0)
@@ -708,6 +704,11 @@ vgaHWRestore(restore)
   }
 #ifndef PC98_NEC480
 #ifndef	PC98_EGC
+  if (vgaIOBase == 0x3B0)
+    restore->MiscOutReg &= 0xFE;
+  else
+    restore->MiscOutReg |= 0x01;
+
   outb(0x3C2, restore->MiscOutReg);
 
   for (i=1; i<5;  i++) outw(0x3C4, (restore->Sequencer[i] << 8) | i);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.34 1996/04/15 11:30:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.35 1996/05/06 05:57:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -347,6 +347,12 @@ Bool s3CreateGC(
 );
 /* s3gc16.c */
 Bool s3CreateGC16(
+#if NeedFunctionPrototypes
+    GCPtr 
+#endif
+);
+/* s3gc24.c */
+Bool s3CreateGC24(
 #if NeedFunctionPrototypes
     GCPtr 
 #endif

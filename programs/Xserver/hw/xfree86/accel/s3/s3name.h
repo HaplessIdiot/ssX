@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.9 1996/02/04 09:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.10 1996/02/20 14:34:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -54,6 +54,7 @@
 #define s3RestoreColor0 CUSTOMNAME(_s3RestoreColor0)
 #define s3CreateGC CUSTOMNAME(_s3CreateGC)
 #define s3CreateGC16 CUSTOMNAME(_s3CreateGC16)
+#define s3CreateGC24 CUSTOMNAME(_s3CreateGC24)
 #define s3CreateGC32 CUSTOMNAME(_s3CreateGC32)
 #define s3SolidFSpans CUSTOMNAME(_s3SolidFSpans)
 #define s3TiledFSpans CUSTOMNAME(_s3TiledFSpans)

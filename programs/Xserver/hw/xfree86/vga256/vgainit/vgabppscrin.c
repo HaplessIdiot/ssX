@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vgainit/vgabppscrin.c,v 3.1 1994/09/24 15:15:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vgainit/vgabppscrin.c,v 3.2 1996/02/04 09:15:35 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -30,15 +30,16 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /*
- * This is the cfb16/32 ScreenInit function, modified for the XFree86
- * 8/16/32bpp SVGA server. The problem is that there doesn't seem to be
+ * This is the cfb16/24/32 ScreenInit function, modified for the XFree86
+ * 8/16/24/32bpp SVGA server. The problem is that there doesn't seem to be
  * a safe way to convince the standard init routines to use the
  * reversed RGB order (blue is at lowest bit number) that is a
  * tradition in PC/VGA devices.
  *
- * This file is compiled twice, with PSZ == 16 and with PSZ == 32.
+ * This file is compiled tree times, with PSZ == 16, 24 and with PSZ == 32.
  *
- * The callable functions are vga16bppScreenInit and vga32bppScreenInit.
+ * The callable functions are vga16bppScreenInit,  vga24bppScreenInit 
+ * and vga32bppScreenInit.
  *
  */
 
@@ -65,6 +66,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #if PSZ == 16
 #define vgabppScreenInit vga16bppScreenInit
+#endif
+#if PSZ == 24
+#define vgabppScreenInit vga24bppScreenInit
 #endif
 #if PSZ == 32
 #define vgabppScreenInit vga32bppScreenInit
@@ -117,7 +121,7 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     /*
      * Now correct the RGB order of direct/truecolor visuals for the
-     * 16/32bpp SVGA server.
+     * 16/24/32bpp SVGA server.
      */
     for (i = 0, visual = visuals; i < nvisuals; i++, visual++)
 	if (visual->class == DirectColor || visual->class == TrueColor) {

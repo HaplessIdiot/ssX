@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ss.c,v 3.5 1995/01/28 17:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ss.c,v 3.6 1996/02/04 09:05:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,6 +71,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 
@@ -113,6 +114,9 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
       case 16:
 	 cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	 break;
+      case 24:
+	 cfb24SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	 break;
       case 32:
 	 cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	 break;
@@ -130,6 +134,9 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	   break;
 	case 16:
 	   cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	   break;
+	case 24:
+	   cfb24SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	   break;
         case 32:
 	   cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);

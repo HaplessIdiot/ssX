@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.9 1996/03/10 12:07:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.10 1996/03/29 22:17:33 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -309,6 +309,11 @@ vgaVideoChipRec ARK = {
 	 * This is TRUE if the driver has support for 16bpp for the detected
 	 * configuration. It must be set in the Probe function.
 	 * It most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 24bpp for the detected
+	 * configuration.
 	 */
 	FALSE,
 	/*

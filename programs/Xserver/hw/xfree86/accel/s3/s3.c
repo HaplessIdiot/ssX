@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.128 1996/05/10 06:58:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.129 1996/05/13 07:29:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1206,6 +1206,18 @@ s3Probe()
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
    case 24:
+      s3InfoRec.depth = 24;
+      s3InfoRec.bitsPerPixel = 32; /* Use packed 24 bpp (RGB) but this 
+				      should be transparant for clients */
+      s3InfoRec.bitsPerPixel = 24; /* not not yet or not here ? HACK24 */ 
+      s3Weight = RGB32_888;
+      /* s3MaxClock = S3_MAX_32BPP_CLOCK; */
+      xf86weight.red =  xf86weight.green = xf86weight.blue = 8;
+      if (s3InfoRec.defaultVisual < 0)
+	 s3InfoRec.defaultVisual = TrueColor;
+      if (defaultColorVisualClass < 0)
+	 defaultColorVisualClass = s3InfoRec.defaultVisual;
+      break;
    case 32:
       xf86bpp = 32;
       s3InfoRec.depth = 24;
@@ -1233,7 +1245,7 @@ s3Probe()
       return(FALSE);
    }
 
-   s3Bpp = s3InfoRec.bitsPerPixel / 8;
+   s3Bpp = xf86bpp / 8;
 
    /* Make sure CR55 is unlocked for Bt485 probe */
    outb(vgaCRIndex, 0x39);
@@ -1790,6 +1802,10 @@ s3Probe()
       else if (S3_911_SERIES(s3ChipId)) {
 	 if (s3Bpp > 1)
 	    reason = "911 and 924 chips";
+      }
+      if (!S3_868_SERIES(s3ChipId) && !S3_968_SERIES(s3ChipId)) {
+	 if (s3Bpp == 3)
+	    reason = "non-868/968 chips";	 
       }
       {
 	 switch (s3RamdacType) {
@@ -3436,6 +3452,10 @@ s3Probe()
 	 ErrorF("%s %s: Using 16 bpp.  Color weight: %1d%1d%1d\n",
 		XCONFIG_GIVEN, s3InfoRec.name, xf86weight.red,
 		xf86weight.green, xf86weight.blue);
+      else if (xf86bpp == 24)
+	 ErrorF("%s %s: Using packed 24 bpp.  Color weight: %1d%1d%1d\n",
+		XCONFIG_GIVEN, s3InfoRec.name, xf86weight.red,
+		xf86weight.green, xf86weight.blue);
       else if (s3InfoRec.bitsPerPixel == 32)
 	 ErrorF("%s %s: Using sparse 32 bpp.  Color weight: %1d%1d%1d\n",
 		XCONFIG_GIVEN, s3InfoRec.name, xf86weight.red,
@@ -3734,7 +3754,8 @@ Gloria8ClockSelect(freq)
 
       Ti3030SetClock(14318 << (3-p), 2, s3Bpp, TI_BOTH_CLOCKS);
       Ti3030SetClock(freq, 2, s3Bpp, TI_LOOP_CLOCK);
-      s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x30, 0x30);
+      s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x38, 0x30);
+      s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x38, 0x38);
 
       outb(vgaCRIndex, 0x42);/* select the clock */
       tmp = inb(vgaCRReg) & 0xf0;

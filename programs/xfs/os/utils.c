@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.3 1996/05/06 06:01:00 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.4 1996/06/10 11:01:39 dawes Exp $ */
 /*
  * misc os utilities
  */
@@ -94,6 +94,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef X_NOT_STDC_ENV
 char *realloc();
 #else
+#ifdef abs
+#undef abs
+#endif
 #include <stdlib.h>
 #endif
 

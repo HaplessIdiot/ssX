@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.44 1996/03/31 11:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.45 1996/04/15 11:30:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -35,6 +35,7 @@
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
@@ -199,7 +200,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    pVal = 0x12345678;
 
 	    s3InitEnvironment();
-	    s3ImageWriteNoMem(0, 0, 4 / s3Bpp, 1, (char *) &pVal, 4 / s3Bpp,
+	    s3ImageWriteNoMem(0, 0, s3Bpp==3 ? 2 : 4 / s3Bpp, 1, (char *) &pVal, 
+			      s3Bpp==3 ? 2 : 4 / s3Bpp,
 			      0, 0, (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
@@ -695,6 +697,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    pScreen->StoreColors = s3StoreColors;
 	    break;       
 	case 16:
+        case 24:
         case 32:
 	    pScreen->InstallColormap = cfbInstallColormap;
 	    pScreen->UninstallColormap = cfbUninstallColormap;
@@ -732,6 +735,10 @@ s3EnterLeaveVT(enter, screen_idx)
         case 16:
             pspix =
                   (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
+            break;
+        case 24:
+            pspix =
+                  (PixmapPtr)pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr;
             break;
         case 32:
             pspix =
@@ -1067,17 +1074,28 @@ s3AdjustFrame(int x, int y)
       else if (s3Bpp>2 && (Base & 0x1f) == 0x1a) 
 	 Base = (Base & ~0x1f) | 0x19;
    }
-   if (S3_964_SERIES(s3ChipId) 
+   if (S3_964_SERIES(s3ChipId)
        && (DAC_IS_TI3025 || DAC_IS_TI3026 || DAC_IS_TI3030 || DAC_IS_IBMRGB)) {
       int px, py, a;
       miPointerPosition(&px, &py);
-      if (s3Bpp==1 && !DAC_IS_TI3030)
-	 a = 4-1;
-      else 
-	 a = 8-1;
-      if (px-x > s3HDisplay/2)
-	 Base = ((origBase + a*4) >> 2) & ~1;
-      Base &= ~a;
+      if (s3Bpp == 3) {
+	 if (DAC_IS_TI3030)
+	    a = 12;
+	 else 
+	    a = 6;
+	 if (px-x > s3HDisplay/2)
+	    Base = ((origBase + (a-1)*4) >> 2) & ~1;
+	 Base -= Base % a;
+      }
+      else {
+	 if (s3Bpp==1 && !DAC_IS_TI3030)
+	    a = 4-1;
+	 else 
+	    a = 8-1;
+	 if (px-x > s3HDisplay/2)
+	    Base = ((origBase + a*4) >> 2) & ~1;
+	 Base &= ~a;
+      }
    }
 
 #if 0

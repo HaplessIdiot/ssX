@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.4 1996/05/06 05:59:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/cir_pc98.c,v 3.5 1996/06/10 11:11:44 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -487,7 +487,7 @@ init_nkvnec(void)
 		outw(0x3c4, rst_SR[i]);
 	for(i=0; i<20; i++)
 		outw(0x3c4, set_SR[i]);
-	outb(0x3c4, 0x340f);		/* outw?? */
+	outw(0x3c4, 0x340f);
 	outb(0x3c2, 0xEF);
 	outw(0x3ce, 0x0506);
 	outw(0x3c4, 0x0300);

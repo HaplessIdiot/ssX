@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.11 1995/11/30 22:10:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.12 1996/02/04 09:14:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -102,6 +102,7 @@ typedef struct {
   				       framebuffer */
   int ChipLinearSize;		    /* Size of the linear framebuffer */
   Bool ChipHas16bpp;		    /* Driver supports 16bpp */
+  Bool ChipHas24bpp;		    /* Driver supports 24bpp */
   Bool ChipHas32bpp;		    /* Driver supports 32bpp */
   DisplayModePtr ChipBuiltinModes;  /* Pointer to builtin mode list */
   int ChipClockScaleFactor;	    /* Factor to divide raw clocks by */
@@ -153,6 +154,7 @@ extern int vgaSegmentMask;
 extern int vgaIOBase;
 extern int vgaInterlaceType;
 extern int vgaBitsPerPixel;
+extern int vgaBytesPerPixel;
 
 #if !defined(S3_SERVER) && !defined(MACH32_SERVER) && !defined(MACH64_SERVER)
 #include "vgaBank.h"

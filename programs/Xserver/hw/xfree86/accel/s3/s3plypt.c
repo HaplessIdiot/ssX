@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.5 1996/02/04 09:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.6 1996/05/06 05:57:24 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -52,6 +52,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "misc.h"
@@ -90,6 +91,9 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
          break;
       case 16:
 	 cfb16PolyPoint(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 24:
+	 cfb24PolyPoint(pDrawable, pGC, mode, npt, pptInit);
          break;
       case 32:
 	 cfb32PolyPoint(pDrawable, pGC, mode, npt, pptInit);

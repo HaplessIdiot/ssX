@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.7 1996/04/15 11:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.8 1996/05/06 05:58:05 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -60,9 +60,9 @@ char which;
       /*
        * And now set up the loop clock for RCLK
        */
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (ln & 0x3f) | 0x80);
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (lm & 0x3f));
-      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, (lp & 3) | 0xf0);
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, ln);
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, lm);
+      s3OutTi3026IndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, lp);
       s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, 0xc8, (lq & 0x0f) | 0x10);
 
       if (which == TI_BOTH_CLOCKS) {
@@ -201,10 +201,29 @@ int buswidth;
 	  best_n, best_n, best_m, best_m, p);
 #endif
 
-   lk = buswidth / 8 / bpp;
-   ln = 65 - 4 * lk;
-   lm = 61;
-   z = 110000.0 / 4 / freq * (100 *  (65-ln)) / lk  ;
+   if (bpp == 3) {
+#if 0  /* TI_MUX1_3026T_888_P5 */
+      lk = buswidth / 8 / bpp;
+      lm = 63;
+      if (buswidth == 64)  /* Ti3026 */
+	 ln = 60;
+      else                 /* Ti3030 */
+	 ln = 55;
+#else  /* TI_MUX1_3026T_888_P8 */
+      lk = buswidth / 8 / bpp;
+      lm = 62;
+      if (buswidth == 64)  /* Ti3026 */
+	 ln = 57;
+      else                 /* Ti3030 */
+	 ln = 49;
+#endif
+   }
+   else {
+      lk = buswidth / 8 / bpp;
+      ln = 65 - 4 * lk;
+      lm = 61;
+   }
+   z = 110000.0 / (65-lm) / freq * (100 *  (65-ln)) / lk  ;
    if (z > 1600) {
       lp = 3;
       lq = (z-1600) / 1600 + 1; /* smallest q greater (z-16)/16 */
@@ -219,6 +238,23 @@ int buswidth;
 	  bpp,lk,ln,lm,z,lp,lq);
 #endif
 
+   if (bpp == 3) {
+      if (buswidth == 64) { /* Ti3026 */
+	 ln = (ln & 0x3f) | 0x80;
+	 lm = (lm & 0x3f) | 0x80;
+	 lp = (lp & 0x03) | 0xf8;
+      }
+      else {                /* Ti3030 */
+	 ln = (ln & 0x3f) | 0xc0;
+	 lm = (lm & 0x3f) | 0x80;
+	 lp = (lp & 0x03) | 0xf8;
+      }
+   }
+   else {
+      ln = (ln & 0x3f) | 0x80;
+      lm = (lm & 0x3f)       ;
+      lp = (lp & 0x03) | 0xf0;
+   }
    s3ProgramTi3026Clock(clk, best_n, best_m, p, ln, lm, lp, lq, which);
 }
 

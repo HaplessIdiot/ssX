@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.15 1996/05/11 12:01:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.16 1996/06/10 09:16:49 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -212,6 +212,7 @@ LinkSourceFile(XF86_W32.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_I128.c,$(XF86SRC)/common)
 LinkSourceFile(atKeynames.h,$(XF86SRC)/common)
 LinkSourceFile(cfb16.h,$(XF86SRC)/common)
+LinkSourceFile(cfb24.h,$(XF86SRC)/common)
 LinkSourceFile(cfb32.h,$(XF86SRC)/common)
 LinkSourceFile(coKeynames.h,$(XF86SRC)/common)
 LinkSourceFile(compiler.h,$(XF86SRC)/common)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.51 1996/05/06 05:57:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.52 1996/05/13 07:29:59 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -186,6 +186,11 @@ typedef struct {
 #define OPTION_PC98TGUI		 170 /* SELECT NEC TGUI9660 */
 /* #endif */
 
+#define OPTION_TGUI_PCI_READ_ON	171 /* Trident TGUI PCI burst read */
+#define OPTION_TGUI_PCI_WRITE_ON 172 /* Trident TGUI PCI burst write */
+#define OPTION_TGUI_PCI_READ_OFF 173 /* Trident */
+#define OPTION_TGUI_PCI_WRITE_OFF 174 /* Trident */
+
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
 #define CLOCK_OPTION_SC11412     3 /* use SC11412 programmable clocks */
@@ -251,6 +256,10 @@ OptFlagRec xf86_OptionTab[] = {
   { "pci_burst_off",	OPTION_PCI_BURST_OFF },
   { "w32_interleave_on",OPTION_W32_INTERLEAVE_ON },
   { "w32_interleave_off",OPTION_W32_INTERLEAVE_OFF },
+  { "tgui_pci_read_on", OPTION_TGUI_PCI_READ_ON },
+  { "tgui_pci_write_on",OPTION_TGUI_PCI_WRITE_ON },
+  { "tgui_pci_read_off",OPTION_TGUI_PCI_READ_OFF },
+  { "tgui_pci_write_off",OPTION_TGUI_PCI_WRITE_OFF },
 
   { "noaccel",		OPTION_NOACCEL },
   { "hw_cursor",	OPTION_HW_CURSOR },

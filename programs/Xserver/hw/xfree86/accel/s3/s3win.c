@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.6 1995/01/28 17:02:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.7 1996/02/04 09:05:26 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -64,6 +64,7 @@ Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "gcstruct.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "mistruct.h"
 #include "regionstr.h"
@@ -96,7 +97,10 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
         case 16:
 	  cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
           break;
-       case 32:
+        case 24:
+	  cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+        case 32:
 	  cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
 	  break;
       }

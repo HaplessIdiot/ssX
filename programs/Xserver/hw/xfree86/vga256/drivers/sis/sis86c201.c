@@ -22,14 +22,14 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  *
- * ToDo: 	Set 256/64K/16M colours
- *		Fix Interlacing
+ * ToDo: 	Set 64K/16M colours
+ *            Fix Clocks ? (only first 4 seem to work ?)
  *		Hardware Cursor ?
- *		(Linear ? - might have done this - can't test)
+ *		(Linear ? - Ain't working - FIXME!)
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.5 1996/02/22 05:13:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.6 1996/03/31 11:49:55 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -49,10 +49,6 @@
 
 #ifdef XF86VGA16
 #define MONOVGA
-#endif
-
-#ifndef MONOVGA
-#error "Not yet supported at 256 colours"
 #endif
 
 typedef struct {
@@ -171,10 +167,9 @@ SISClockSelect(no)
 		 * Do CS0 and CS1 and set them - makes index 7 valid
 		 */
 		temp = inb(0x3CC);
-		outb(0x3C2, (temp & 0xF3) | 0x0C);
+		outb(0x3C2, temp | 0x0C);
 
-		outb(0x3C4, 0x07); temp = inb(0x3C5) & 0xF0;
-		outb(0x3C5, no | temp);
+		outw(0x3C4, (no << 8) | 0x07);
 	}
 	return(TRUE);
 }
@@ -260,7 +255,7 @@ SISProbe()
 	 */
     	if (!vga256InfoRec.clocks)
 	{
-		numClocks = 16;
+		numClocks = 32;
 		vgaGetClocks(numClocks, SISClockSelect);
 	}
 
@@ -408,6 +403,7 @@ SISInit(mode)
 #else
 		(mode->Flags & V_INTERLACE ? 2 : 3);
 
+	new->std.Attribute[16] = 0x01;
 	new->std.CRTC[20] = 0x40;
 	new->std.CRTC[23] = 0xA3;
 
@@ -418,16 +414,16 @@ SISInit(mode)
 	}
 #endif
 	new->BankReg = 0x02;
+	new->DualBanks = 0x08;
+
 	new->std.CRTC[0x13] = offset & 0xFF;
 	new->CRTCOff = (offset & 0xF00) >> 4;
 
 	if (mode->Flags & V_INTERLACE)
 		new->BankReg |= 0x20;
 
-	new->DualBanks = 0x08;
-
 	if (new->std.NoClock >= 0)
-		new->ClockReg = (new->std.NoClock >> 2);
+		new->ClockReg = new->std.NoClock;
 
         return(TRUE);
 }
@@ -466,11 +462,5 @@ static Bool
 SISValidMode(mode)
 DisplayModePtr mode;
 {
-	if (mode->Flags & V_INTERLACE)
-	{
-		ErrorF("%s %s: Chipset does not yet support Interlaced "
-		       "modes.\n", XCONFIG_PROBED, vga256InfoRec.name);
-		return(FALSE);
-	}
 	return TRUE;
 }

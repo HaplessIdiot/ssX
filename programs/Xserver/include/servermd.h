@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/56 1996/01/04 17:19:24 gildea $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.9 1996/01/05 13:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.10 1996/02/10 10:43:05 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -420,15 +420,17 @@ typedef struct _PaddingInfo {
 extern PaddingInfo PixmapWidthPaddingInfo[];
 
 #define PixmapWidthInPadUnits(w, d) \
+    (((d) == 24) ? (((int)(w) * 3 + 3) >> 2) : \
     ((int)((w) + PixmapWidthPaddingInfo[d].padRoundUp) >> \
-	PixmapWidthPaddingInfo[d].padPixelsLog2)
+	PixmapWidthPaddingInfo[d].padPixelsLog2))
 
 /*
  *	Return the number of bytes to which a scanline of the given
  * depth and width will be padded.
  */
 #define PixmapBytePad(w, d) \
-    (PixmapWidthInPadUnits(w, d) << PixmapWidthPaddingInfo[d].padBytesLog2)
+    (((d) == 24) ? (PixmapWidthInPadUnits(w, d) << 2) : \
+    (PixmapWidthInPadUnits(w, d) << PixmapWidthPaddingInfo[d].padBytesLog2))
 
 #define BitmapBytePad(w) \
     (((int)((w) + BITMAP_SCANLINE_PAD - 1) >> LOG2_BITMAP_PAD) << LOG2_BYTES_PER_SCANLINE_PAD)
@@ -448,12 +450,14 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 extern PaddingInfo PixmapWidthPaddingInfoProto[];
 
 #define PixmapWidthInPadUnitsProto(w, d) \
+    (((d) == 24) ? (((int)(w) * 3 + 3) >> 2) : \
     ((int)((w) + PixmapWidthPaddingInfoProto[d].padRoundUp) >> \
-	PixmapWidthPaddingInfoProto[d].padPixelsLog2)
+	PixmapWidthPaddingInfoProto[d].padPixelsLog2))
 
 #define PixmapBytePadProto(w, d) \
+    (((d) == 24) ? (PixmapWidthInPadUnitsProto(w, d) << 2) : \
     (PixmapWidthInPadUnitsProto(w, d) << \
-    PixmapWidthPaddingInfoProto[d].padBytesLog2)
+    PixmapWidthPaddingInfoProto[d].padBytesLog2))
 
 #define BitmapBytePadProto(w) \
     ((((w) + BITMAP_SCANLINE_PAD_PROTO - 1) >> LOG2_BITMAP_PAD_PROTO) \

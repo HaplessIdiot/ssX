@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.6 1995/12/23 09:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.7 1996/02/04 09:05:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -61,6 +61,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "mergerop.h"
@@ -592,6 +593,9 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	 break;
       case 16:
 	 cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	 break;
+      case 24:
+	 cfb24PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
 	 break;
       case 32:
 	 cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);

@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/72 1996/05/25 08:23:02 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.5 1996/05/13 06:50:44 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.6 1996/06/10 09:18:47 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -108,6 +108,7 @@ static SelectUnit selectUnit;
 static int replyToEmacs;
 
 static Boolean ConvertSelection PROTO_XT_CVT_SELECT_ARGS;
+static SelectUnit EvalSelectUnit PROTO((Time buttonDownTime, SelectUnit defaultUnit));
 static char *SaveText PROTO((TScreen *screen, int row, int scol, int ecol, char *lp, int *eol));
 static int LastTextCol PROTO((int row));
 static int Length PROTO((TScreen *screen, int row, int scol, int ecol));
@@ -122,7 +123,6 @@ static void SaltTextAway PROTO((int crow, int ccol, int row, int col, String *pa
 static void SelectSet PROTO((Widget w, XEvent *event, String *params, Cardinal num_params));
 static void SelectionDone PROTO((Widget w, Atom *selection, Atom *target));
 static void SelectionReceived PROTO_XT_SEL_CB_ARGS;
-static void SetSelectUnit PROTO((Time buttonDownTime, SelectUnit defaultUnit));
 static void StartSelect PROTO((int startrow, int startcol));
 static void TrackDown PROTO((XButtonEvent *event));
 static void _GetSelection PROTO((Widget w, Time ev_time, String *params, Cardinal num_params));

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gs.c,v 3.6 1995/01/28 17:02:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gs.c,v 3.7 1996/02/04 09:05:09 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,6 +71,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
 #include "s3.h"
@@ -102,6 +103,9 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
       case 16:
 	 cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
          break;
+      case 24:
+	 cfb24GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+         break;
       case 32:
 	 cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
          break;
@@ -119,6 +123,9 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	   break;
 	case 16:
 	   cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	   break;
+	case 24:
+	   cfb24GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	   break;
         case 32:
 	   cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);

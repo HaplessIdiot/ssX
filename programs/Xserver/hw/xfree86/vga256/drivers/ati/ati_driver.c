@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.32tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -383,6 +383,7 @@ vgaVideoChipRec ATI =
         0,                      /* Linear frame buffer base address */
         0,                      /* Linear frame buffer size */
         FALSE,                  /* No support for 16 bits per pixel (yet) */
+        FALSE,                  /* No support for 24 bits per pixel (yet) */
         FALSE,                  /* No support for 32 bits per pixel (yet) */
         NULL,                   /* List of builtin modes */
         1,                      /* Clock scaling factor */
@@ -3829,6 +3830,24 @@ ATIInit(DisplayModePtr mode)
                 vgaInterlaceType = VGA_DIVIDE_VERT;
         }
 
+        /* Set up default horizontal display enable skew */
+        if ((ATIChip >= ATI_CHIP_28800_2) && (ATIChip <= ATI_CHIP_28800_6) &&
+            !(mode->Flags & V_HSKEW))
+        {
+                /*
+                 * Modes using the higher clock frequencies need a non-zero
+                 * Display Enable Skew.  The following number has been
+                 * empirically determined to be somewhere between 4.2 and 4.7
+                 * MHz.
+                 */
+#               define Display_Enable_Skew_Threshold 4500
+
+                /* Set a reasonable default Display Enable Skew */
+                mode->HSkew = mode->CrtcHSkew =
+                        vga256InfoRec.clock[mode->Clock] /
+                                Display_Enable_Skew_Threshold;
+        }
+
         /*
          * This will allocate the data structure and initialize all of the
          * generic VGA registers.
@@ -4099,28 +4118,6 @@ ATIInit(DisplayModePtr mode)
                         new->bd |= 0x08U;       /* Enable composite synch */
                 if (mode->Flags & V_NCSYNC)
                         new->bd |= 0x09U;       /* Invert csynch polarity */
-
-                /* Set up default horizontal display enable skew */
-                if ((ATIChip >= ATI_CHIP_28800_2) &&
-                    (ATIChip <= ATI_CHIP_28800_6) &&
-                    !(mode->Flags & V_HSKEW))
-                {
-                        /*
-                         * Modes using the higher clock frequencies need a
-                         * non-zero Display Enable Skew.  The following number
-                         * has been empirically determined to be somewhere
-                         * between 4.2 and 4.7 MHz.
-                         */
-#                       define Display_Enable_Skew_Threshold 4500
-
-                        /*
-                         * Set a reasonable default Display Enable Skew.
-                         */
-                        mode->HSkew = mode->CrtcHSkew =
-                                vga256InfoRec.clock[mode->Clock] /
-                                        Display_Enable_Skew_Threshold;
-                }
-
                 if (mode->CrtcHSkew > 0)
                 if (mode->CrtcHSkew <= 3)
                         new->b5 |= 0x01U;

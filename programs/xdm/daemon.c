@@ -1,5 +1,5 @@
 /* $XConsortium: daemon.c,v 1.16 94/12/01 17:10:49 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.4 1994/11/30 20:46:55 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.5 1995/01/28 16:16:50 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -88,6 +88,7 @@ BecomeOrphan ()
     default:
 	/* parent */
 
+#ifndef CSRG_BASED
 #if defined(SVR4)
 	stat = setpgid(child_id, child_id);
 	/* This gets error EPERM.  Why? */
@@ -103,6 +104,7 @@ BecomeOrphan ()
 #endif /* MINIX */
 #endif
 #endif
+#endif /* !CSRG_BASED */
 	exit (0);
     }
 }
@@ -115,6 +117,9 @@ BecomeDaemon ()
      * Close standard file descriptors and get rid of controlling tty
      */
 
+#ifdef CSRG_BASED
+    daemon (0, 0);
+#else
 #if defined(SYSV) || defined(SVR4)
     setpgrp ();
 #else
@@ -161,4 +166,5 @@ BecomeDaemon ()
     (void) open ("/", O_RDONLY);	/* root inode already in core */
     (void) dup2 (0, 1);
     (void) dup2 (0, 2);
+#endif /* CSRG_BASED */
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.11 1995/12/09 11:07:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.12 1996/02/04 09:04:56 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -57,6 +57,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"mi.h"
 #include	"cfb.h"
 #include	"cfb16.h"
+#include	"cfb24.h"
 #include	"cfb32.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
@@ -110,6 +111,9 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 			       srcx, srcy, width, height, dstx, dsty);
 	case 16:
 	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	case 24:
+	    return cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
 				 srcx, srcy, width, height, dstx, dsty);
 	case 32:
 	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
@@ -521,6 +525,9 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
 	case 16:
 	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 24:
+	    return cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
 	case 32:
 	    return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,

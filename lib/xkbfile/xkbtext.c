@@ -1,4 +1,5 @@
 /* $XConsortium: xkbtext.c /main/5 1996/03/01 14:30:35 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -1605,3 +1606,96 @@ register int i;
     return buf;
 }
 
+#ifndef XKB_IN_SERVER
+
+/***====================================================================***/
+
+#define	PIXEL_MAX	65537
+
+Bool
+#if NeedFunctionPrototypes
+XkbLookupCanonicalRGBColor(char *def,XColor *color)
+#else
+XkbLookupCanonicalRGBColor(def,color)
+    char *	def;
+    XColor *	color;
+#endif
+{
+int     tmp;
+
+    if (_XkbStrCaseEqual(def,"black")) {
+	color->red= color->green= color->blue= 0;
+	return True;
+    }
+    else if (_XkbStrCaseEqual(def,"white")) {
+	color->red= color->green= color->blue= PIXEL_MAX;
+	return True;
+    }
+    else if ((sscanf(def,"grey%d",&tmp)==1)||
+        (sscanf(def,"gray%d",&tmp)==1)||
+        (sscanf(def,"Grey%d",&tmp)==1)||
+        (sscanf(def,"Gray%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->red= color->green= color->blue= tmp;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"red")*100))||
+             (sscanf(def,"red%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->red= tmp;
+	    color->green= color->blue= 0;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"green")*100))||
+             (sscanf(def,"green%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->green= tmp;
+	    color->red= color->blue= 0;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"blue")*100))||
+             (sscanf(def,"blue%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->blue= tmp;
+	    color->red= color->green= 0;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"magenta")*100))||
+             (sscanf(def,"magenta%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->green= 0;
+	    color->red= color->blue= tmp;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"cyan")*100))||
+             (sscanf(def,"cyan%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->red= 0;
+	    color->green= color->blue= tmp;
+	    return True;
+	}
+    }
+    else if ((tmp=(_XkbStrCaseEqual(def,"yellow")*100))||
+             (sscanf(def,"yellow%d",&tmp)==1)) {
+	if ((tmp>0)&&(tmp<=100)) {
+	    tmp= (PIXEL_MAX*tmp)/100;
+	    color->blue= 0;
+	    color->red= color->green= tmp;
+	    return True;
+	}
+    }
+    return False;
+}
+
+#endif

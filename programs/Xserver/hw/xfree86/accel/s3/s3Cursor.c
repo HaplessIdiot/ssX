@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.24 1996/03/05 05:42:22 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.25 1996/04/15 11:30:03 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -697,6 +697,7 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	 outb(vgaCRReg, packedcolbg);
 	 outb(vgaCRReg, packedcolbg>>8);
 	 break;
+      case 24:
       case 32:
 	 outb(vgaCRIndex, 0x45);
 	 inb(vgaCRReg);		/* reset stack pointer */

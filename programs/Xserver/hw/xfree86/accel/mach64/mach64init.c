@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.17 1996/05/11 11:03:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.18 1996/05/13 06:38:51 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -1301,14 +1301,18 @@ void mach64ResetEngine()
 		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
 			 BLOCK_WRITE_ENABLE);
-		else
+		else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
+			 GUI_ENGINE_ENABLE);
+		else /* Leave block write alone -- should be setup by BIOS */
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
 		break;
 	    case VRAMx16:
 	    case VRAMx16ssr:
 	    case EnhancedVRAMx16:
 		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
+			 GUI_ENGINE_ENABLE);
 		else
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
 			 BLOCK_WRITE_ENABLE);
@@ -1326,7 +1330,10 @@ void mach64ResetEngine()
 		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
 			 BLOCK_WRITE_ENABLE);
-		else
+		else if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
+			 GUI_ENGINE_ENABLE);
+		else /* Leave block write alone -- should be setup by BIOS */
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
 		break;
 	    case VRAMx16:
@@ -1334,7 +1341,8 @@ void mach64ResetEngine()
 	    case EnhancedVRAMx16:
 	    case EnhancedVRAMx16ssr:
 		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		    regw(GEN_TEST_CNTL, (temp & ~BLOCK_WRITE_ENABLE) |
+			 GUI_ENGINE_ENABLE);
 		else
 		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
 			 BLOCK_WRITE_ENABLE);

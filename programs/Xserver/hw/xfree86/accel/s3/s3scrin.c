@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.9 1995/12/23 09:38:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.10 1996/02/04 09:05:22 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -55,6 +55,7 @@ Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 #include "colormapst.h"
 #include "cfb.h"
 #include "cfb16.h"
+#include "cfb24.h"
 #include "cfb32.h"
 #include "mi.h"
 #include "mistruct.h"
@@ -117,6 +118,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	    && xf86weight.blue == 5)
 	    bitsPerRGB = 5;
 	break;
+    case 24:
     case 32:
 	bitsPerRGB = 8;
 	break;
@@ -171,6 +173,8 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CopyWindow = s3CopyWindow;
     pScreen->RealizeFont = s3RealizeFont;
     pScreen->UnrealizeFont = s3UnrealizeFont;
+    if (xf86bpp == 24) 
+       rootdepth = 24;  /* HACK24 ! */
     switch (rootdepth) {
     case 8:
 	pScreen->CreateGC = s3CreateGC;
@@ -204,6 +208,20 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);	
 	break;
      case 24:
+	pScreen->CreateGC = s3CreateGC24;
+        if (!cfb24AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
+	    &cfbGCPrivateIndex))
+	    return FALSE;
+	pScreen->CreateWindow = cfb24CreateWindow;
+	pScreen->DestroyWindow = cfb24DestroyWindow;
+	pScreen->PositionWindow = cfb24PositionWindow;
+	pScreen->ChangeWindowAttributes = cfb24ChangeWindowAttributes;
+	pScreen->RealizeWindow = cfb24MapWindow;
+	pScreen->UnrealizeWindow = cfb24UnmapWindow;
+	pScreen->CreatePixmap = cfb24CreatePixmap;
+	pScreen->DestroyPixmap = cfb24DestroyPixmap;
+	mfbRegisterCopyPlaneProc (pScreen, s3CopyPlane);	
+	break;
      case 32:
 	pScreen->CreateGC = s3CreateGC32;
         if (!cfb32AllocatePrivates(pScreen, &cfbWindowPrivateIndex,
@@ -235,9 +253,14 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
 			&s3BSFuncRec);
-    if (rootdepth > 16) {
+    if (rootdepth > 24) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+    }
+    if (rootdepth > 16) {
+	pScreen->CreateScreenResources = cfb24CreateScreenResources;
+	pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
     }
     else if (rootdepth > 8) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.90 1996/04/15 11:30:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.91 1996/05/13 07:29:50 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -883,6 +883,15 @@ s3Init(mode)
       pixMuxShift = 0;
 
    if (!mode->CrtcHAdjusted) {
+      if (s3Bpp == 3 && 
+	  (   (S3_968_SERIES(s3ChipId) && DAC_IS_TI3026)
+	   || (S3_968_SERIES(s3ChipId) && DAC_IS_TI3030))) {	 
+	 mode->CrtcHTotal     = (mode->CrtcHTotal     * 3) / 4;
+	 mode->CrtcHDisplay   = (mode->CrtcHDisplay   * 3) / 4;
+	 mode->CrtcHSyncStart = (mode->CrtcHSyncStart * 3) / 4;
+	 mode->CrtcHSyncEnd   = (mode->CrtcHSyncEnd   * 3) / 4;
+	 mode->CrtcHSkew      = (mode->CrtcHSkew      * 3) / 4;
+      }
       if (pixMuxShift > 0) {
 	 /* now divide the horizontal timing parameters as required */
 	 mode->CrtcHTotal     >>= pixMuxShift;
@@ -908,6 +917,7 @@ s3Init(mode)
    { 
       Bool changed=FALSE;
       int oldCrtcHSyncStart, oldCrtcHSyncEnd, oldCrtcHTotal;
+      int p24_fact = 4;
 
       oldCrtcHSyncStart = mode->CrtcHSyncStart;
       oldCrtcHSyncEnd   = mode->CrtcHSyncEnd;
@@ -931,6 +941,16 @@ s3Init(mode)
 	    changed = TRUE;
 	 }
       }
+      if (s3Bpp == 3) {
+	 /* for packed 24bpp CrtcHTotal must be multiple of 3*8... */
+	 if ((mode->CrtcHTotal >> 3) % 3 != 0) {
+	    mode->CrtcHTotal >>= 3;
+	    mode->CrtcHTotal += 3 - mode->CrtcHTotal % 3;
+	    mode->CrtcHTotal <<= 3;
+	    changed = TRUE;
+	    p24_fact = 3;
+	 }
+      }
       if (changed) {
 	 ErrorF("%s %s: mode line has to be modified ...\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -939,10 +959,10 @@ s3Init(mode)
 		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
 		);
 	 ErrorF("\t\tto     %4d %4d %4d %4d   %4d %4d %4d %4d\n"
-		,(mode->CrtcHDisplay   << 8) >> (8-pixMuxShift)
-		,(mode->CrtcHSyncStart << 8) >> (8-pixMuxShift)
-		,(mode->CrtcHSyncEnd   << 8) >> (8-pixMuxShift)
-		,(mode->CrtcHTotal     << 8) >> (8-pixMuxShift)
+		,((mode->CrtcHDisplay   << 8) >> (8-pixMuxShift)) * 4 / p24_fact
+		,((mode->CrtcHSyncStart << 8) >> (8-pixMuxShift)) * 4 / p24_fact
+		,((mode->CrtcHSyncEnd   << 8) >> (8-pixMuxShift)) * 4 / p24_fact
+		,((mode->CrtcHTotal     << 8) >> (8-pixMuxShift)) * 4 / p24_fact
 		,mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal
 		);
       }
@@ -1078,6 +1098,9 @@ s3Init(mode)
 	    Ti3026SetClock(mode->SynthClock / 2, 2, s3Bpp, TI_LOOP_CLOCK);
 	 else 
 	    Ti3026SetClock(mode->SynthClock, 2, s3Bpp, TI_LOOP_CLOCK);	    
+	 s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x20, 0x20);
+      }
+      if ((DAC_IS_TI3026 || DAC_IS_TI3030) && s3Bpp == 3) {
 	 s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, ~0x20, 0x20);
       }
    }
@@ -2119,7 +2142,7 @@ s3Init(mode)
 	 } else {
 	    vclock = TI_OCLK_V1;
 	 }
-	 if (s3InfoRec.bitsPerPixel == 32) {           /* 24bpp */
+	 if (s3InfoRec.bitsPerPixel >= 24) {   /* 32bpp or packed 24bpp */
 	    rclock = TI_OCLK_R2;
 	 } else if ((s3InfoRec.bitsPerPixel == 16) ||
 		    (s3InfoRec.bitsPerPixel == 15)) {  /* 15/16bpp */
@@ -2150,7 +2173,14 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
 
-	 if (s3InfoRec.depth == 24) {                          /* 24bpp */
+	 if (xf86bpp == 24) {                        /* packed 24bpp */
+	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888_P8);
+	    if (DAC_IS_TI3030)
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030TC_D24P128);
+	    else
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D24P64);
+	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
+	 } else if (s3InfoRec.bitsPerPixel == 32) {               /* 32bpp */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030TC_D24P128);
@@ -2561,6 +2591,9 @@ s3Init(mode)
 	case 16:
 	   i |= 0x10;
 	   break;
+	case 24:
+	   i |= 0x20;
+	   break;
 	case 32:
 	   i |= 0x30;
 	   break;
@@ -2602,13 +2635,10 @@ s3Init(mode)
       outb(vgaCRReg, s3Port51);
 
       outb(vgaCRIndex, 0x53);
-      tmp = inb(vgaCRReg);
-      if (s3Mmio928) {
+      tmp = inb(vgaCRReg) & ~0x18;
+      if (s3Mmio928)
 	 tmp |= 0x10;
-      } else {
-	 /* make sure mmio is off */
-	 tmp &= ~0x10;
-      }
+
       /*
        * Now the DRAM interleaving bit for the 801/805 chips
        * Note, we don't touch this bit for 928 chips because they use it
