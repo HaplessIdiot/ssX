@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.6 1999/07/10 12:17:31 dawes Exp $ 
-.TH MGA __drivermansuffix__ "Version 3.9.15"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.7 1999/08/21 13:48:34 dawes Exp $ 
+.TH MGA __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
 .SH SYNOPSIS
@@ -87,14 +87,20 @@ be used to override that auto-detection.  Default: auto-detected.
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
 .BI "Option ""OverclockMem""
-Enable memory overclocking (G100 and G200 only).  Default: off.
+Set clocks to values used by some commercial X-Servers (G100, G200 and G400
+only).  Default: off.
 .TP
 .BI "Option ""Overlay""
-Enable 8+24 overlay mode.  Only appropriate for depth 24, 32 bits per pixel.
-Default: off.
+Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
 .TP
 .BI "Option ""PciRetry"" """ boolean """
 Enable or disable PCI retries.  Default: off.
+.TP
+.BI "Option ""Rotate"" ""CW""
+.TP
+.BI "Option ""Rotate"" ""CCW""
+Rotate the display clockwise or counterclockwise.  This mode is unaccelerated.
+Default: no rotation.
 .TP
 .BI "Option ""ShadowFB"" """ boolean """
 Enable or disable use of the shadow framebuffer layer.  See

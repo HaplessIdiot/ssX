@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.19 1999/06/20 08:41:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.20 1999/07/04 06:39:18 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -16,6 +16,7 @@
 #include "xf86str.h"
 #include "xaa.h"
 #include "xaalocal.h"
+#include "xaawrap.h"
 
 #define MAX_COLOR	32
 #define MAX_MONO	32
@@ -24,7 +25,7 @@
 #define MAX_256		32
 #define MAX_512		16
 
-static CacheInitIndex = -1;
+static int CacheInitIndex = -1;
 #define CACHEINIT(p) ((p)->privates[CacheInitIndex].val)
 	
 
@@ -1856,6 +1857,9 @@ XAAWriteBitmapToCacheLinear(
    DoChangeGC(pGC, GCForeground | GCBackground, gcvals, 0);
    ValidateGC((DrawablePtr)pDstPix, pGC);
 
+   /* We've unwrapped already so these ops miss a sync */
+   SYNC_CHECK(pScrn);
+
    (*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, 1, x, y, w, h, 0,
 						XYBitmap, (pointer)src);
 
@@ -1900,6 +1904,9 @@ XAAWritePixmapToCacheLinear(
    
    pGC = GetScratchGC(depth, pScreen);
    ValidateGC((DrawablePtr)pDstPix, pGC);
+
+   /* We've unwrapped already so these ops miss a sync */
+   SYNC_CHECK(pScrn);
 
    if(bpp == BitsPerPixel(depth))
 	(*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, depth, x, y, w, 

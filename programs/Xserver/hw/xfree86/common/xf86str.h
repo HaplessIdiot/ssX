@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.45 1999/07/18 08:14:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.46 1999/08/01 07:57:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -725,6 +725,7 @@ typedef struct _ScrnInfoRec {
     int			(*SetDGAMode)(int scrnIndex, int num, 
 					DGADevicePtr devRet);
     int			(*ChangeGamma)(int scrnIndex, Gamma gamma);
+    void		(*PointerMoved)(int scrnIndex, int x, int y);
     /*
      * This can be used when the minor ABI version is incremented.
      * The NUM_* parameter must be reduced appropriately to keep the
@@ -748,7 +749,7 @@ typedef struct {
    Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
    void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
    int  (*GetViewport)(ScrnInfoPtr pScrn);
-   void (*Flush)(ScrnInfoPtr);
+   void (*Sync)(ScrnInfoPtr);
    void (*FillRect)(
 	ScrnInfoPtr pScrn, 
 	int x, int y, int w, int h, 

@@ -27,7 +27,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dynapro/xf86Dyna.h,v 1.1 1999/06/12 15:37:10 dawes Exp $ */
 
 #ifndef	_DYNAPRO_H_
 #define _DYNAPRO_H_
@@ -60,6 +60,7 @@ typedef struct _DynaproPrivateRec
 	int screen_width;			/* Width of the associated X screen     */
 	int screen_height;			/* Height of the screen             */
 	int proximity;
+	int swap_xy;
 	XISBuffer *buffer;
 	unsigned char packet[DYNAPRO_PACKET_SIZE];	/* packet being/just read */
 	DynaproState lex_mode;

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.17 1999/07/18 08:14:21 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.18 1999/08/14 10:49:15 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -24,7 +24,7 @@
 #define X_XDGACopyArea			18
 #define X_XDGACopyTransparentArea	19
 #define X_XDGAGetViewportStatus		20
-#define X_XDGAFlush			21
+#define X_XDGASync			21
 #define X_XDGAOpenFramebuffer		22
 #define X_XDGACloseFramebuffer		23
 #define X_XDGASetClientVersion		24
@@ -238,7 +238,7 @@ int XDGAGetViewportStatus(
     int		screen
 );
    
-void XDGAFlush(
+void XDGASync(
     Display	*dpy,
     int		screen
 );

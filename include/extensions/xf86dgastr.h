@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.10 1999/07/10 12:17:12 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.11 1999/07/18 08:14:22 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -245,13 +245,13 @@ typedef struct {
 } xXDGAGetViewportStatusReply;
 #define sz_xXDGAGetViewportStatusReply	32
 
-typedef struct _XDGAFlush {
+typedef struct _XDGASync {
     CARD8	reqType;
     CARD8	dgaReqType;
     CARD16	length B16;
     CARD32	screen B32;
-} xXDGAFlushReq;
-#define sz_xXDGAFlushReq	8
+} xXDGASyncReq;
+#define sz_xXDGASyncReq	8
 
 typedef struct {
     BYTE	type;			
@@ -264,8 +264,8 @@ typedef struct {
     CARD32	pad5 B32;
     CARD32	pad6 B32;
     CARD32	pad7 B32;
-} xXDGAFlushReply;
-#define sz_xXDGAFlushReply	32
+} xXDGASyncReply;
+#define sz_xXDGASyncReply	32
 
 typedef struct _XDGASetClientVersion {
     CARD8	reqType;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.16 1999/02/28 11:19:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.17 1999/06/12 07:18:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -51,7 +51,9 @@ typedef struct {
 
 static Bool xf86CursorOffScreen(ScreenPtr *pScreen, int *x, int *y);
 static void xf86CrossScreen(ScreenPtr pScreen, Bool entering);
-static void   xf86WarpCursor(ScreenPtr pScreen, int x, int y);
+static void xf86WarpCursor(ScreenPtr pScreen, int x, int y);
+
+static void xf86PointerMoved(int scrnIndex, int x, int y);
 
 static miPointerScreenFuncRec xf86PointerScreenFuncs = {
   xf86CursorOffScreen,
@@ -91,6 +93,8 @@ xf86InitViewport(ScrnInfoPtr pScr)
     xf86SetScreenLayout(pScr->scrnIndex, left, right, -1, -1);
   }
 
+  pScr->PointerMoved = xf86PointerMoved;
+
   /*
    * Compute the initial Viewport if necessary
    */
@@ -127,8 +131,17 @@ xf86InitViewport(ScrnInfoPtr pScr)
 void
 xf86SetViewport(ScreenPtr pScreen, int x, int y)
 {
-  Bool          frameChanged = FALSE;
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
+
+  (*pScr->PointerMoved)(pScreen->myNum, x, y);
+}
+
+
+static void 
+xf86PointerMoved(int scrnIndex, int x, int y)
+{
+  Bool          frameChanged = FALSE;
+  ScrnInfoPtr   pScr = xf86Screens[scrnIndex];
 
   /*
    * check wether (x,y) belongs to the visual part of the screen
@@ -161,7 +174,6 @@ xf86SetViewport(ScreenPtr pScreen, int x, int y)
   if (frameChanged && pScr->AdjustFrame != NULL)
     pScr->AdjustFrame(pScr->scrnIndex, pScr->frameX0, pScr->frameY0, 0);
 }
-
 
 /*
  * xf86LockZoom --

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.56 1999/08/01 07:57:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.57 1999/08/15 13:00:53 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -28,9 +28,6 @@
 #include "mga_map.h"
 #include "mga_macros.h"
 
-static void MGANAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
-				int ydir, int rop, unsigned int planemask,
-				int trans);
 static void MGANAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
 				int srcX, int srcY, int dstX, int dstY,
 				int w, int h);
@@ -41,8 +38,6 @@ static void MGANAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int f
 				int bg, int rop, unsigned int planemask);
 static void MGANAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
-static void MGANAME(SetupForSolidFill)(ScrnInfoPtr pScrn, int color, int rop,
-					unsigned int planemask);
 static void MGANAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
 					int x, int y, int w, int h);
 static void MGANAME(SubsequentSolidFillTrap)(ScrnInfoPtr pScrn, int y, int h, 
@@ -132,6 +127,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     if(!infoPtr) return FALSE;
 
     pMga->MaxFastBlitY = 0;
+    pMga->MaxBlitDWORDS = 0x40000 >> 5;
 
     switch (pMga->Chipset) {
     case PCI_CHIP_MGA2064:
@@ -143,9 +139,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 			   TRANSC_SOLID_FILL |
  			   USE_RECTS_FOR_LINES; 
         break;
+    case PCI_CHIP_MGAG400:
+	pMga->MaxBlitDWORDS = 0x400000 >> 5;
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
-    case PCI_CHIP_MGAG400:
         pMga->AccelFlags = TRANSC_SOLID_FILL |
 			   TWO_PASS_COLOR_EXPAND;
 
@@ -457,7 +454,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->PlaneMask = ~0;
     if(pMga->Chipset != PCI_CHIP_MGAG100)
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
-    pMga->FgColor = 1;
+    pMga->FgColor = 0;
     OUTREG(MGAREG_FCOL, pMga->FgColor);
     pMga->BgColor = 0;
     OUTREG(MGAREG_BCOL, pMga->BgColor);
@@ -469,11 +466,17 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YBOT, 0x007FFFFF);	/* maxPixelPointer */ 
     pMga->AccelFlags &= ~CLIPPER_ON;
 
-    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+    switch(pMga->Chipset) {
+    case PCI_CHIP_MGAG400:
+    case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
 	pMga->SrcOrg = 0;
 	pMga->DstOrg = 0;
 	OUTREG(MGAREG_SRCORG, 0);
 	OUTREG(MGAREG_DSTORG, 0);
+	break;
+    default:
+	break;
     }
 }
 
@@ -512,32 +515,39 @@ void MGADisableClipping(ScrnInfoPtr pScrn)
 #define BLIT_LEFT	1
 #define BLIT_UP		4
 
-static void 
+void 
 MGANAME(SetupForScreenToScreenCopy)(
     ScrnInfoPtr pScrn,
     int xdir, int ydir,
     int rop,
     unsigned int planemask,
-    int trans )
-{
+    int trans 
+){
     MGAPtr pMga = MGAPTR(pScrn);
+    CARD32 dwgctl = pMga->AtypeNoBLK[rop] | MGADWG_SHIFTZERO | 
+			MGADWG_BITBLT | MGADWG_BFCOL;
 
     pMga->AccelInfoRec->SubsequentScreenToScreenCopy = 
 		MGANAME(SubsequentScreenToScreenCopy);
+
     pMga->BltScanDirection = 0;
     if(ydir == -1) pMga->BltScanDirection |= BLIT_UP;
-    WAITFIFO(4); 
-    if(xdir == -1) {
+    if(xdir == -1)
 	pMga->BltScanDirection |= BLIT_LEFT;
-    	OUTREG(MGAREG_DWGCTL, pMga->AtypeNoBLK[rop] | MGADWG_SHIFTZERO | 
-			MGADWG_BITBLT | MGADWG_BFCOL);
-    } else {
-	if(pMga->HasFBitBlt && (rop == GXcopy)) 
-	   pMga->AccelInfoRec->SubsequentScreenToScreenCopy = 
+    else if(pMga->HasFBitBlt && (rop == GXcopy) && !pMga->DrawTransparent) 
+	pMga->AccelInfoRec->SubsequentScreenToScreenCopy = 
 		MGANAME(SubsequentScreenToScreenCopy_FastBlit);
-    	OUTREG(MGAREG_DWGCTL, pMga->AtypeNoBLK[rop] | MGADWG_SHIFTZERO | 
-			MGADWG_BITBLT | MGADWG_BFCOL);
-    }
+
+    if(pMga->DrawTransparent) { 
+	dwgctl |= MGADWG_TRANSC;
+	WAITFIFO(2);
+	SET_FOREGROUND(trans);
+	trans = ~0;
+	SET_BACKGROUND(trans);
+    } 
+
+    WAITFIFO(4); 
+    OUTREG(MGAREG_DWGCTL, dwgctl);
     OUTREG(MGAREG_SGN, pMga->BltScanDirection);
     SET_PLANEMASK(planemask);
     OUTREG(MGAREG_AR5, ydir * pMga->CurrentLayout.displayWidth);
@@ -695,7 +705,7 @@ FASTBLIT_BAILOUT:
 	|   Solid Fills    |
 	\******************/
 
-static void 
+void 
 MGANAME(SetupForSolidFill)(
 	ScrnInfoPtr pScrn,
 	int color,
@@ -1343,8 +1353,6 @@ static __inline__ CARD32* MoveDWORDS(
      return(dest+3);
 }
 
-#define MAX_BLIT_DWORDS 	 (0x40000 >> 5)
-
 void
 MGAWriteBitmapColorExpand(
     ScrnInfoPtr pScrn,
@@ -1369,7 +1377,7 @@ MGAWriteBitmapColorExpand(
     w += skipleft;
     x -= skipleft;
     dwords = (w + 31) >> 5;
-    maxlines = MAX_BLIT_DWORDS / dwords;
+    maxlines = pMga->MaxBlitDWORDS / dwords;
     maxptr = destptr + infoRec->ColorExpandRange - dwords;
      
     while(h > maxlines) {
@@ -1436,7 +1444,7 @@ MGAFillColorExpandRects(
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
 	destptr = (CARD32*)infoRec->ColorExpandBase;
 	maxptr = destptr + infoRec->ColorExpandRange - dwords;
-	maxlines = MAX_BLIT_DWORDS / dwords;
+	maxlines = pMga->MaxBlitDWORDS / dwords;
 	y = pBox->y1;
 	h = pBox->y2 - y;
 
@@ -1676,7 +1684,7 @@ void MGANonTEGlyphRenderer(
 	x1 = x + glyphs->start;
 	x2 = x1 + (dwords << 5);
 
-	maxlines = min(MAX_BLIT_DWORDS, infoRec->ColorExpandRange);
+	maxlines = min(pMga->MaxBlitDWORDS, infoRec->ColorExpandRange);
 	maxlines /= dwords; 
      
 	while(h > maxlines) {

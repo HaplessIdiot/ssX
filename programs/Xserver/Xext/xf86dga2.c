@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.11 1999/07/18 08:14:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.12 1999/08/01 07:56:59 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -45,7 +45,7 @@ static DISPATCH_PROC(ProcXDGAFillRectangle);
 static DISPATCH_PROC(ProcXDGACopyArea);
 static DISPATCH_PROC(ProcXDGACopyTransparentArea);
 static DISPATCH_PROC(ProcXDGAGetViewportStatus);
-static DISPATCH_PROC(ProcXDGAFlush);
+static DISPATCH_PROC(ProcXDGASync);
 static DISPATCH_PROC(ProcXDGASetClientVersion);
 static DISPATCH_PROC(ProcXDGAChangePixmapMode);
 static DISPATCH_PROC(ProcXDGACreateColormap);
@@ -556,10 +556,10 @@ ProcXDGAGetViewportStatus(ClientPtr client)
 }
 
 static int
-ProcXDGAFlush(ClientPtr client)
+ProcXDGASync(ClientPtr client)
 {
-    REQUEST(xXDGAFlushReq);
-    xXDGAFlushReply rep;
+    REQUEST(xXDGASyncReq);
+    xXDGASyncReply rep;
 
     if (stuff->screen > screenInfo.numScreens)
         return BadValue;
@@ -567,14 +567,14 @@ ProcXDGAFlush(ClientPtr client)
     if(DGAClients[stuff->screen] != client)
         return DGAErrorBase + XF86DGADirectNotActivated;
 
-    REQUEST_SIZE_MATCH(xXDGAFlushReq);
+    REQUEST_SIZE_MATCH(xXDGASyncReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
 
-    DGAFlush(stuff->screen);
+    DGASync(stuff->screen);
 
-    WriteToClient(client, sizeof(xXDGAFlushReply), (char *)&rep);
+    WriteToClient(client, sizeof(xXDGASyncReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -703,8 +703,8 @@ ProcXDGADispatch (ClientPtr client)
 	return ProcXDGACopyTransparentArea(client);
     case X_XDGAGetViewportStatus:
 	return ProcXDGAGetViewportStatus(client);
-    case X_XDGAFlush:
-	return ProcXDGAFlush(client);
+    case X_XDGASync:
+	return ProcXDGASync(client);
     case X_XDGASetClientVersion:
 	return ProcXDGASetClientVersion(client);
     case X_XDGAChangePixmapMode:

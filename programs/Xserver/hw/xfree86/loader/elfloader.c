@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.20 1999/04/11 13:11:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.21 1999/07/11 09:42:05 dawes Exp $ */
 
 /*
  *
@@ -123,6 +123,9 @@ typedef	struct {
 	unsigned char *bss;	/* Start address of the .bss section */
 	int	bssndx;		/* index of the .bss section */
 	int	bsssize;	/* size of the .bss section */
+	unsigned char *sbss;	/* Start address of the .sbss section */
+	int	sbssndx;        /* index of the .sbss section */
+	int	sbsssize;	/* size of the .sbss section */
 	unsigned char *rodata;	/* Start address of the .rodata section */
 	int	rodatndx;	/* index of the .rodata section */
 	int	rodatsize;	/* size of the .rodata section */
@@ -1747,6 +1750,21 @@ ELFDEBUG(".data1 starts at %lx\n", elffile->data1 );
 	    elffile->bsssize=SecSize(i);
 #ifdef ELFDEBUG
 	    ELFDEBUG(".bss starts at %lx\n", elffile->bss );
+#endif
+	    continue;
+	}
+	/* .sbss */
+	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		   ".sbss" ) == 0 ) {
+	    if( SecSize(i) )
+		elffile->sbss = xf86loadercalloc(1, SecSize(i));
+	    else
+		elffile->sbss=NULL;
+	    elffile->saddr[i]=elffile->sbss;
+	    elffile->sbssndx=i;
+	    elffile->sbsssize=SecSize(i);
+#ifdef ELFDEBUG
+	    ELFDEBUG(".sbss starts at %lx\n", elffile->sbss );
 #endif
 	    continue;
 	}

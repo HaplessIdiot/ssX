@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.22 1999/07/18 08:14:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.23 1999/08/01 07:57:10 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -87,7 +87,7 @@ DGAInit(
     DGAScreenPtr pScreenPriv;
     int i;
 
-    if(!funcs->Flush || !funcs->SetMode || !funcs->SetViewport ||
+    if(!funcs->Sync || !funcs->SetMode || !funcs->SetViewport ||
 	!funcs->GetViewport || !funcs->OpenFramebuffer)
 	return FALSE;
 
@@ -605,13 +605,13 @@ DGAInstallCmap(ColormapPtr cmap)
 }
 
 int
-DGAFlush(int index)
+DGASync(int index)
 {
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
    
    /* We rely on the extension to check that DGA is active */
 
-   (*pScreenPriv->funcs->Flush)(pScreenPriv->pScrn);
+   (*pScreenPriv->funcs->Sync)(pScreenPriv->pScrn);
 
    return Success;
 }
@@ -671,8 +671,8 @@ DGABlitTransRect(
    if(pScreenPriv->funcs->BlitTransRect && 
 	(pScreenPriv->current->mode->flags & DGA_BLIT_RECT_TRANS)) {
 
-	(*pScreenPriv->funcs->BlitRect)(pScreenPriv->pScrn, 	
-		srcx, srcy, w, h, dstx, dsty);
+	(*pScreenPriv->funcs->BlitTransRect)(pScreenPriv->pScrn, 	
+		srcx, srcy, w, h, dstx, dsty, color);
 	return Success;
    }
    return BadMatch;
