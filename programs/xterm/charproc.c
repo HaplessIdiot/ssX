@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.149 2003/10/27 01:07:56 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.150 2003/11/13 01:16:37 dickey Exp $ */
 
 /*
 
@@ -2940,13 +2940,21 @@ dotext(TScreen * screen,
 	}
 
 	while (width_here <= width_available && chars_chomped < (len - offset)) {
-	    width_here += my_wcwidth(buf[chars_chomped + offset]);
+	    if (!screen->utf8_mode
+		|| (screen->vt100_graphics && charset == '0'))
+		width_here++;
+	    else
+		width_here += my_wcwidth(buf[chars_chomped + offset]);
 	    chars_chomped++;
 	}
 
 	if (width_here > width_available) {
 	    chars_chomped--;
-	    width_here -= my_wcwidth(buf[chars_chomped + offset]);
+	    if (!screen->utf8_mode
+		|| (screen->vt100_graphics && charset == '0'))
+		width_here--;
+	    else
+		width_here -= my_wcwidth(buf[chars_chomped + offset]);
 	    need_wrap = 1;
 	}
 
