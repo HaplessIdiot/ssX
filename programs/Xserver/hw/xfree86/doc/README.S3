@@ -88,6 +88,8 @@
 
         o  JAX 8241
 
+        o  SPEA Mirage
+
 
         8 and 15/16 bpp.
 
@@ -128,7 +130,6 @@
 
         Supports 8bit/pixel RGB in 8bpp and gamma correction for 15/16
         and 24bpp modes
-
         24 bpp might get ``snowy'' if the clock is near the limit of
         30MHz. This is not considered dangerous, but limits the
         usability of 24 bpp.
@@ -196,6 +197,9 @@
         Option "number_nine"
 
         The "dac_8_bit" option is recommended.
+
+
+
      S3 864, AT&T20c498, ICS2494 Clockchip
 
         o  MIRO 20SD (BIOS 1.xx)
@@ -258,10 +262,6 @@
         8, 15/16 and 24 bpp
 
         ClockChip "s3_sdac"  (should be detected automatically)
-
-
-
-
      S3 864, ICS5342 RAMDAC and Clockchip
 
         o  Diamond Stealth 64 DRAM (only some cards)
@@ -567,7 +567,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.13 1995/02/04 04:50:48 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.14 1995/05/27 03:11:49 dawes Exp $
 
 
 

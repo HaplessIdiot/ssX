@@ -1,6 +1,6 @@
   Readme for the XFree86 3.1.1 LinkKit
   The XFree86 Project, Inc.
-  7 January 1995
+  15 February 1995
 
   1.  Readme for the XFree86 3.1.1 LinkKit
 
@@ -15,7 +15,7 @@
         others they are included in the `prog' or `dev' package.  Older
         versions are not compatible.
 
-     3. Edit the site.def file to define which servers you want to
+     3. Edit the xf86site.def file to define which servers you want to
         build, and the drivers and extensions you want included.
 
 
@@ -106,11 +106,11 @@
      8. Run `make clean' to remove the files that were created by this
         procedure.
 
-     9. If you edit the site.def file and change the selection of
+     9. If you edit the xf86site.def file and change the selection of
         servers being built or the drivers included in them, repeat the
         above procedure.  If changing the selection of Xserver
         extensions being included it is sufficient to run `make
-        Makefile' instead of `./xmkmf'.
+        Makefile' instead of `./mkmf'.
 
      10.
         It is possible to see which drivers are included in the Xserver
@@ -118,7 +118,7 @@
         extensions are included, start the Xserver and run `xdpyinfo'.
 
   $XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.3 1995/01/28 16:01:36 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.4 1995/05/27 03:11:41 dawes Exp $
 
 
 

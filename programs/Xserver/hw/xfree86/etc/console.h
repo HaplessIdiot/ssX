@@ -15,10 +15,10 @@
  *	DK9210 Aalborg SO	Phone:  +45 9814 8076
  *
  *	from:@(#)console.h	1.1 940105
- *	$Id: console.h,v 3.1 1995/01/28 16:03:54 dawes Exp $
+ *	$Id: console.h,v 3.2 1995/05/27 04:41:19 dawes Exp $
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/console.h,v 3.0 1994/06/05 05:57:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/console.h,v 3.1 1995/01/28 16:03:54 dawes Exp $ */
 
 #ifndef	_CONSOLE_H_
 #define	_CONSOLE_H_

@@ -1,7 +1,7 @@
   README for XFree86[TM] 3.1.1
   The XFree86 Project, Inc
 
-  15 January 1995
+  10 May 1995
 
   XFree86 is a port of X11R6 that supports several versions of Intel-
   based Unix and Unix-like operating systems.  This release consists of
@@ -277,7 +277,7 @@
 
      ATI
         18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
-        68800-6, 68800AX, 68800LX, 88800
+        68800-6, 68800AX, 68800LX, 88800CX, 88800GX
 
      NCR
         77C22, 77C22E, 77C22E+
@@ -995,8 +995,8 @@
 
      o  Asia/Australia:
 
-        +  x.physics.su.oz.au:/pub/XFree86/3.1.1
-           (ftp://x.physics.su.oz.au/pub/XFree86/3.1.1) (source and
+        +  x.physics.usyd.edu.au:/pub/XFree86/3.1.1
+           (ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.1) (source and
            binaries)
 
         +  ftp.hk.super.net:/mirror/XFree86
@@ -1022,7 +1022,7 @@
   building the distribution.
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.21 1995/03/04 06:15:59 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.23 1995/05/27 03:11:47 dawes Exp $
 
 
 
