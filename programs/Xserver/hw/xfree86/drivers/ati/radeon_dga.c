@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.6 2001/05/25 02:44:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.7 2001/11/26 19:36:21 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -76,8 +76,8 @@ static DGAModePtr RADEONSetupDGAMode(ScrnInfoPtr pScrn,
     RADEONInfoPtr  info            = RADEONPTR(pScrn);
     DGAModePtr     newmodes        = NULL, currentMode;
     DisplayModePtr pMode, firstMode;
-    int            size, pitch, Bpp = bitsPerPixel >> 3;
-    Bool           oneMore;
+    unsigned int   size;
+    int            pitch, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
