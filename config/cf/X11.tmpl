@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.89 2000/12/12 23:24:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.90 2000/12/13 03:11:18 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2710,5 +2710,21 @@ install:: deps								@@\
 
 #ifndef InstallRoffDoc
 #define InstallRoffDoc(name) InstallDoc(name,name.PS name.txt)
+#endif
+
+#ifndef InstallHardcopyDoc
+#define InstallHardcopyDoc(name,deps)					@@\
+all:: deps								@@\
+	@if [ -f name.PS.gz ]; then set -x; \				@@\
+	  RemoveFile(name.PS); \					@@\
+	  gzip -d < name.PS.gz > name.PS; \				@@\
+	fi								@@\
+									@@\
+clean::									@@\
+	@if [ -f name.PS.gz ]; then set -x; \				@@\
+	  RemoveFile(name.PS); \					@@\
+	fi								@@\
+									@@\
+InstallDoc(name,deps)
 #endif
 
