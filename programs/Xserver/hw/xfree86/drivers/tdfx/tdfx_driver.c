@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.97 2003/07/16 01:38:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.98 2003/08/23 15:03:15 dawes Exp $ */
 
 /*
  * Authors:
@@ -244,6 +244,8 @@ static const char *int10Symbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddMap",
@@ -268,8 +270,6 @@ static const char *driSymbols[] = {
 };
 
 #endif
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tdfxSetup);
 

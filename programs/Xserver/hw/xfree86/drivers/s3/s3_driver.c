@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.15 2003/07/17 08:19:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.16 2003/08/23 15:03:11 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -743,7 +743,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
  
 #ifdef S3_USEFB
         xf86LoadSubModule(pScrn, "fb");
-        xf86LoaderReqSymbols("fbScreenInit", NULL);
+        xf86LoaderReqSymLists(fbSymbols, NULL);
 #else
 	{
 		switch (pScrn->bitsPerPixel) {

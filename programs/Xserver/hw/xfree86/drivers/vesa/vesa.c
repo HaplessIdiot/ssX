@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.35 2002/12/12 04:52:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.36 2003/01/23 17:20:46 tsi Exp $
  */
 
 #include "vesa.h"
@@ -148,6 +148,7 @@ static const OptionInfoRec VESAOptions[] = {
  * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
+#ifdef XFree86LOADER
 static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
@@ -155,6 +156,7 @@ static const char *miscfbSymbols[] = {
     "mfbScreenInit",
     NULL
 };
+#endif
 
 static const char *fbSymbols[] = {
     "fbPictureInit",
@@ -193,13 +195,13 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86SetDDCproperties",
     NULL
 };
 
-#ifdef XFree86LOADER
 
 /* Module loader interface */
 static MODULESETUPPROTO(vesaSetup);

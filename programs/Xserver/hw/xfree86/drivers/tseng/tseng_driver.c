@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.91tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.92 2003/04/23 21:51:50 tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -243,11 +243,13 @@ static const char *vgaHWSymbols[] = {
   NULL
 };
 
+#ifdef XFree86LOADER
 static const char* miscfbSymbols[] = {
   "xf1bppScreenInit",
   "xf4bppScreenInit",
   NULL
 };
+#endif
 
 static const char* fbSymbols[] = {
   "fbPictureInit",
