@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.14 2000/10/20 14:59:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.15 2000/10/24 22:45:10 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -634,10 +634,12 @@ xf86printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 {
 	int i;
 	XF86ConfModeLinePtr mlptr;
+	XF86ConfModesLinkPtr mptr;
 	XF86OptionPtr optr;
 
 	while (ptr)
 	{
+		mptr = ptr->mon_modes_sect_lst;
 		fprintf (cf, "Section \"Monitor\"\n");
 		if (ptr->mon_comment)
 			fprintf (cf, "\t###          \"%s\"\n", ptr->mon_comment);
@@ -647,6 +649,10 @@ xf86printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 			fprintf (cf, "\tVendorName   \"%s\"\n", ptr->mon_vendor);
 		if (ptr->mon_modelname)
 			fprintf (cf, "\tModelName    \"%s\"\n", ptr->mon_modelname);
+		while (mptr) {
+			fprintf (cf, "\tUseModes     \"%s\"\n", mptr->ml_modes_str);
+			mptr = mptr->list.next;
+		}
 		if (ptr->mon_width)
 			fprintf (cf, "\tDisplaySize  %d\t%d\n",
 					 ptr->mon_width,

@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Wacom.c /main/20 1996/10/27 11:05:20 kaleb $ */
 /*
- * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
+ * Copyright 1995-2000 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.18 2000/03/03 20:36:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.19 2000/08/11 19:10:49 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -49,7 +49,7 @@
  *
  */
 
-static const char identification[] = "$Identification: 18 $";
+static const char identification[] = "$Identification: 19 $";
 
 #include <xf86Version.h>
 
@@ -290,6 +290,7 @@ typedef struct _WacomCommonRec
     int			wcmThreshold;	/* Threshold for counting pressure as a button */
     WacomDeviceState	wcmDevStat[2];	/* device state for each tool */
     int			wcmInitNumber;  /* magic number for the init phasis */
+    unsigned int	wcmLinkSpeed;   /* serial link speed */
 } WacomCommonRec, *WacomCommonPtr;
 
 /******************************************************************************
@@ -323,6 +324,7 @@ typedef struct _WacomCommonRec
 #define RESOLUTION_X	20
 #define RESOLUTION_Y	21
 #define RESOLUTION_Z	22
+#define USB		23
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -349,6 +351,7 @@ static SymTabRec WcmTab[] = {
   { RESOLUTION_X,	"resolutionx" },
   { RESOLUTION_Y,	"resolutiony" },
   { RESOLUTION_Z,	"resolutionz" },
+  { USB,		"usb" },
   { -1,			"" }
 };
 
@@ -368,6 +371,7 @@ static SymTabRec ModeTabRec[] = {
 /******************************************************************************
  * constant and macros declarations
  *****************************************************************************/
+#define DEFAULT_MAXZ 240	/* default value of MaxZ when nothing is configured */
 #define BUFFER_SIZE 256		/* size of reception buffer */
 #define XI_STYLUS "STYLUS"	/* X device name for the stylus */
 #define XI_CURSOR "CURSOR"	/* X device name for the cursor */
@@ -410,6 +414,7 @@ static const char * penpartner_setup_string = WC_PRESSURE_MODE WC_START;
 #define WC_V_MULTI	"MT1\r"
 #define WC_V_ID		"ID1\r"
 #define WC_V_19200	"BA19\r"
+#define WC_V_38400	"BA38\r"
 /*  #define WC_V_9600	"BA96\r" */
 #define WC_V_9600	"$\r"
 
@@ -717,11 +722,14 @@ xf86WcmConfig(LocalDevicePtr    *array,
 	    if (xf86GetToken(NULL) != NUMBER)
 		xf86ConfigError("Option number expected");
 	    switch(val->num) {
+		case 38400:
+		    common->wcmLinkSpeed = 38400;
+		    break;
 		case 19200:
-		    common->wcmFlags = common->wcmFlags | BAUD_19200_FLAG;
+		    common->wcmLinkSpeed = 19200;
 		    break;
 		case 9600:
-		    common->wcmFlags = common->wcmFlags & ~BAUD_19200_FLAG; 
+		    common->wcmLinkSpeed = 9600;
 		    break;
 		default:
 		    xf86ConfigError("Illegal speed value");
@@ -791,6 +799,10 @@ xf86WcmConfig(LocalDevicePtr    *array,
 		ErrorF("%s Wacom resolution y = %d\n", XCONFIG_GIVEN, common->wcmResolZ);
 	    break;
 
+	case USB:
+	    /*  local->read_input=xf86WcmReadUSBInput; */
+	    break;
+	    
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;
@@ -1721,17 +1733,17 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		((common->wcmData[3] & ZAXIS_BIT) >> 2);
 
 	    if (common->wcmMaxZ == 512) {
-		z = z*2 + ((common->wcmData[0] & ZAXIS_BIT) >> 2);
+		z = z*4 + ((common->wcmData[0] & ZAXIS_BIT) >> 1);
 
 		if (common->wcmData[6] & ZAXIS_SIGN_BIT) {
-		    z -= 256;
+		    z /= 2;
 		}
 		DBG(10, ErrorF("graphire pressure(%c)=%d\n",
 			       (common->wcmData[6] & ZAXIS_SIGN_BIT) ? '-' : '+', z));
 	    }
 	    else {
 		if (common->wcmData[6] & ZAXIS_SIGN_BIT) {
-		    z -= 128;
+		    z /= 2;
 		}
 	    }
 	    
@@ -1939,7 +1951,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 			 ((common->wcmData[5] & 0x78) >> 3));
 		if ((common->wcmData[0] & 0xb8) == 0xa0) {
 		    ds->pressure = (((common->wcmData[5] & 0x07) << 7) |
-				    (common->wcmData[6] & 0x7f)) - 512;
+				    (common->wcmData[6] & 0x7f));
 		    ds->buttons = (((common->wcmData[0]) & 0x06) |
 				   (ds->pressure >= common->wcmThreshold));
 		}
@@ -2113,6 +2125,36 @@ xf86WcmOpen(LocalDevicePtr	local)
 
     DBG(1, ErrorF("initializing tablet\n"));    
 
+    /* Set the speed of the serial link to 38400 */
+#ifdef XFREE86_V4
+   if (xf86SetSerialSpeed(local->fd, 38400) < 0) {
+       return !Success;
+   }
+#else
+    if (set_serial_speed(local->fd, B38400) == !Success)
+        return !Success;
+#endif
+    
+    /* Send reset to the tablet */
+    SYSCALL(err = write(local->fd, WC_RESET_BAUD, strlen(WC_RESET_BAUD)));
+    if (err == -1) {
+	ErrorF("Wacom write error : %s\n", strerror(errno));
+	return !Success;
+    }
+    
+    /* Wait 250 mSecs */
+    WAIT(250);
+
+    /* Send reset to the tablet */
+    SYSCALL(err = write(local->fd, WC_RESET, strlen(WC_RESET)));
+    if (err == -1) {
+	ErrorF("Wacom write error : %s\n", strerror(errno));
+	return !Success;
+    }
+    
+    /* Wait 75 mSecs */
+    WAIT(75);
+
     /* Set the speed of the serial link to 19200 */
 #ifdef XFREE86_V4
    if (xf86SetSerialSpeed(local->fd, 19200) < 0) {
@@ -2201,7 +2243,7 @@ xf86WcmOpen(LocalDevicePtr	local)
     if (buffer[2] == 'G' && buffer[3] == 'D') {
 	DBG(2, ErrorF("detected an Intuos model\n"));
 	common->wcmProtocolLevel = 5;
-	common->wcmMaxZ = 1024;		/* max Z value */
+	common->wcmMaxZ = 1023;		/* max Z value */
 	common->wcmResolX = 2540;	/* X resolution in points/inch */
 	common->wcmResolY = 2540;	/* Y resolution in points/inch */
 	common->wcmResolZ = 2540;	/* Z resolution in points/inch */
@@ -2252,7 +2294,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {
@@ -2264,7 +2306,6 @@ xf86WcmOpen(LocalDevicePtr	local)
 	    ErrorF("WACOM: unable to read resolution. Using default.\n");
 	    common->wcmResolX = common->wcmResolY = 1270;
 	}
-	
     }
 
     if (!(common->wcmFlags & GRAPHIRE_FLAG) && !(common->wcmMaxX && common->wcmMaxY)) {
@@ -2305,7 +2346,7 @@ xf86WcmOpen(LocalDevicePtr	local)
 	     * config header don't use buffer+xx because the header size
 	     * varies on different tablets
 	     */
-	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
+	    if (sscanf(buffer, "%[^,],%d,%d,%d,%d", &header, &a, &b, &common->wcmResolX, &common->wcmResolY) == 5) {
 		DBG(6, ErrorF("WC_CONFIG Header = %s\n", header));
 	    }
 	    else {
@@ -2396,12 +2437,37 @@ xf86WcmOpen(LocalDevicePtr	local)
     }
 
     /* change the serial speed if requested */
-    if (common->wcmFlags & BAUD_19200_FLAG) {
+    if (common->wcmLinkSpeed > 9600) {
 	if (common->wcmProtocolLevel == 5) {
-	    DBG(1, ErrorF("Switching serial link to 19200\n"));
-	    
-	    /* Switch the tablet to 19200 */
-	    SYSCALL(err = write(local->fd, WC_V_19200, strlen(WC_V_19200)));
+	    char	*speed_init_string = WC_V_19200;
+#ifndef XFREE86_V4
+	    int		speed = B19200;
+#endif
+	    DBG(1, ErrorF("Switching serial link to %d\n", common->wcmLinkSpeed));
+
+	    if (common->wcmLinkSpeed == 38400 && version < 2.0) {
+		ErrorF("Wacom: 38400 speed not supported with this Intuos firmware (%f)\n", version);
+		ErrorF("Switching to 19200\n");
+		common->wcmLinkSpeed = 19200;
+	    }
+
+	    switch (common->wcmLinkSpeed) {
+	    case 38400:
+		speed_init_string = WC_V_38400;
+#ifndef XFREE86_V4
+		speed = B38400;
+#endif
+		break;
+
+	    case 19200:
+		speed_init_string = WC_V_19200;
+#ifndef XFREE86_V4
+		speed = B19200;
+#endif
+		break;
+	    }
+	    /* Switch the tablet to the requested speed */
+	    SYSCALL(err = write(local->fd, speed_init_string, strlen(speed_init_string)));
 	    if (err == -1) {
 		ErrorF("Wacom write error : %s\n", strerror(errno));
 		return !Success;
@@ -2410,13 +2476,13 @@ xf86WcmOpen(LocalDevicePtr	local)
 	    /* Wait 75 mSecs */
 	    WAIT(75);
     
-	    /* Set the speed of the serial link to 19200 */
+	    /* Set the speed of the serial link to requested speed */
 #ifdef XFREE86_V4
-	    if (xf86SetSerialSpeed(local->fd, 19200) < 0) {
+	    if (xf86SetSerialSpeed(local->fd, common->wcmLinkSpeed) < 0) {
 		return !Success;
 	    }
 #else
-	    if (set_serial_speed(local->fd, B19200) == !Success)
+	    if (set_serial_speed(local->fd, speed) == !Success)
 		return !Success;
 #endif
 	}
@@ -2552,39 +2618,39 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
     /* Check threshold correctness */
     DBG(2, ErrorF("Threshold=%d\n", common->wcmThreshold));
     
-    if (common->wcmThreshold > ((common->wcmMaxZ / 2) - 1) ||
-	common->wcmThreshold < - (common->wcmMaxZ / 2)) {
+    if (common->wcmThreshold > common->wcmMaxZ ||
+	common->wcmThreshold < 0) {
 	if (((common->wcmProtocolLevel == 5) ||
 	     (common->wcmFlags & GRAPHIRE_FLAG)) &&
 	    xf86Verbose &&
 	    common->wcmThreshold != INVALID_THRESHOLD)
 	    ErrorF("%s Wacom invalid threshold %d. Reset to %d\n",
-		   XCONFIG_PROBED, common->wcmThreshold, - (common->wcmMaxZ / 3));
-	common->wcmThreshold = - (common->wcmMaxZ / 3);
+		   XCONFIG_PROBED, common->wcmThreshold, common->wcmMaxZ / 3);
+	common->wcmThreshold = common->wcmMaxZ / 3;
     }
     DBG(2, ErrorF("New threshold=%d\n", common->wcmThreshold));    
 
     /* Set the real values */
     InitValuatorAxisStruct(pWcm,
 			   0,
-			   0, /* min val */
+			   0,		/* min val */
 			   priv->bottomX - priv->topX, /* max val */
 			   mils(common->wcmResolX), /* resolution */
-			   0, /* min_res */
+			   0,		/* min_res */
 			   mils(common->wcmResolX)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   1,
-			   0, /* min val */
+			   0,		/* min val */
 			   priv->bottomY - priv->topY, /* max val */
 			   mils(common->wcmResolY), /* resolution */
-			   0, /* min_res */
+			   0,		/* min_res */
 			   mils(common->wcmResolY)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   2,
-			   - common->wcmMaxZ / 2, /* min val */
-			   (common->wcmMaxZ / 2) - 1, /* max val */
+			   0,		/* min val */
+			   common->wcmMaxZ, /* max val */
 			   mils(common->wcmResolZ), /* resolution */
-			   0, /* min_res */
+			   0,		/* min_res */
 			   mils(common->wcmResolZ)); /* max_res */
     InitValuatorAxisStruct(pWcm,
 			   3,
@@ -2948,7 +3014,7 @@ xf86WcmAllocate(char *  name,
     common->wcmPktLength = 7;		/* length of a packet */
     common->wcmMaxX = 0;		/* max X value */
     common->wcmMaxY = 0;		/* max Y value */
-    common->wcmMaxZ = 240;		/* max Z value */
+    common->wcmMaxZ = DEFAULT_MAXZ;	/* max Z value */
     common->wcmResolX = 0;		/* X resolution in points/inch */
     common->wcmResolY = 0;		/* Y resolution in points/inch */
     common->wcmResolZ = 1270;		/* Z resolution in points/inch */
@@ -2958,6 +3024,7 @@ xf86WcmAllocate(char *  name,
     common->wcmProtocolLevel = 4;	/* protocol level */
     common->wcmThreshold = INVALID_THRESHOLD; /* button 1 threshold for some tablet models */
     common->wcmInitNumber = 0;	        /* magic number for the init phasis */
+    common->wcmLinkSpeed = 9600;        /* serial link speed */
     return local;
 }
 
@@ -3236,6 +3303,10 @@ xf86WcmInit(InputDriverPtr	drv,
 	common->wcmFlags |= TILT_FLAG;
     }
 
+    if (xf86SetBoolOption(local->options, "Usb", 0)) {
+	/*local->read_input = xf86WcmReadUSBInput;*/
+    }
+
     if (xf86SetBoolOption(local->options, "KeepShape", 0)) {
 	priv->flags |= KEEP_SHAPE_FLAG;
 	xf86Msg(X_CONFIG, "%s: keeps shape\n", dev->identifier);
@@ -3279,8 +3350,8 @@ xf86WcmInit(InputDriverPtr	drv,
 	xf86Msg(X_CONFIG, "%s: max x = %d\n", dev->identifier,
 		common->wcmMaxY);
     }
-    common->wcmMaxZ = xf86SetIntOption(local->options, "MaxZ", 0);
-    if (common->wcmMaxZ != 0) {
+    common->wcmMaxZ = xf86SetIntOption(local->options, "MaxZ", DEFAULT_MAXZ);
+    if (common->wcmMaxZ != DEFAULT_MAXZ) {
 	xf86Msg(X_CONFIG, "%s: max x = %d\n", dev->identifier,
 		common->wcmMaxZ);
     }
@@ -3305,14 +3376,17 @@ xf86WcmInit(InputDriverPtr	drv,
 	val = xf86SetIntOption(local->options, "BaudRate", 0);
 
 	switch(val) {
+	case 38400:
+	    common->wcmLinkSpeed = 38400;
+	    break;
 	case 19200:
-	    common->wcmFlags = common->wcmFlags | BAUD_19200_FLAG;
+	    common->wcmLinkSpeed = 19200;
 	    break;
 	case 9600:
-	    common->wcmFlags = common->wcmFlags & ~BAUD_19200_FLAG; 
+	    common->wcmLinkSpeed = 9600;
 	    break;
 	default:
-	    xf86Msg(X_ERROR, "%s: Illegal speed value (must be 9600 or 19200).", dev->identifier);
+	    xf86Msg(X_ERROR, "%s: Illegal speed value (must be 9600 or 19200 or 38400).", dev->identifier);
 	    break;
 	}
 	if (xf86Verbose)
@@ -3330,7 +3404,9 @@ xf86WcmInit(InputDriverPtr	drv,
 	xfree(common);
     if (priv)
 	xfree(priv);
-    return local;
+    if (local)
+	xfree(local);
+    return NULL;
 }
 
 #ifdef XFree86LOADER

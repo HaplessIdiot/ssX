@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.35 2000/09/26 15:57:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.36 2000/10/17 09:07:04 alanh Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -146,6 +146,11 @@ typedef struct {
     int			PM3_Render2D;
     int			PM3_AreaStippleMode;
     int			PM3_VideoControl;
+    Bool		PM3_UseGamma;
+    pciVideoPtr		PM3_GammaPciInfo;
+    PCITAG		PM3_GammaPciTag;
+    CARD32		PM3_GammaIOAddress;
+    unsigned char *     PM3_GammaIOBase;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;

@@ -1,4 +1,13 @@
 XFree86 4.0.1f (xx November 2000)
+ 934. Initial port of the ark driver to 4.x (#4242, Ani Joshi).
+ 933. Wacom input driver update, including support for 38400 link speed
+      and fix wrong advertisement of min/max values (#4241, Frederic Lepied).
+ 932. Parser does not write Modes section and UseModes keyword (#4238, 
+      Paulo Cesar Pereira de Andrade).
+ 931. Fix the name of the Serbian xkb symbols file (rename from yu to sr)
+      (#4237, Ivan Pascal).
+ 930. Fix mkcfm bug (#4236, Juliusz Chroboczek).
+ 929. Glint/permedia3 updates (#4235, 4238, Sven Luther).
  928. Fix an SVR4 loader build problem introduced in 4.0.1d (#4234,
       Takaaki Nomura).
  927. Fix a bug in fontenc that would cause a memory leak whenever an
@@ -11534,4 +11543,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1390 2000/11/14 13:12:17 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1391 2000/11/14 16:54:46 dawes Exp $
