@@ -1,4 +1,14 @@
-XFree86 4.0.1g (xx November 2000)
+XFree86 4.0.1g (28 November 2000)
+ 983. Add some useful default key bindings for the xdm login widget (#4252,
+      Branden Robinson).
+ 982. Change the default xdm Xaccess file to not allow any connections
+      (#4252, Branden Robinson).
+ 981. Set the default glyph caching mode to "CACHE_16_BIT_GLYPHS"
+      (#4251, Branden Robinson).
+ 980. Make the X server use the XAUTHORITY environment variable (if set)
+      when the -authfile command line flag isn't given (#4250,
+      Branden Robinson).
+ 979. Add Debian-specific settings to linux.cf (#4249, Branden Robinson).
  978. Rename Trident Cyber9540 to CyberBlade/e4 and make appropriate 
       changes in driver (Alan Hourihane).
  977. Fix Trident Cyber series to only detect SDRAM (Alan Hourihane).
@@ -11621,4 +11631,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1407 2000/11/22 08:41:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1408 2000/11/26 10:08:50 alanh Exp $

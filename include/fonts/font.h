@@ -1,5 +1,4 @@
 /* $XConsortium: font.h /main/14 1996/09/28 16:32:33 rws $ */
-/* $XFree86: xc/include/fonts/font.h,v 3.2 1997/01/14 22:13:06 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -22,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/include/fonts/font.h,v 3.3 1998/10/25 07:11:11 dawes Exp $ */
 /* $NCDId: @(#)font.h,v 1.7 1991/06/24 17:00:23 lemke Exp $ */
 
 #ifndef FONT_H
@@ -96,7 +96,7 @@ typedef int DrawDirection;
 #define CACHING_OFF 0
 #define CACHE_16_BIT_GLYPHS 1
 #define CACHE_ALL_GLYPHS 2
-#define DEFAULT_GLYPH_CACHING_MODE CACHING_OFF
+#define DEFAULT_GLYPH_CACHING_MODE CACHE_16_BIT_GLYPHS
 extern int glyphCachingMode;
 
 struct _Client;
@@ -104,7 +104,7 @@ struct _Client;
 extern int StartListFontsWithInfo(
     struct _Client * /*client*/,
     int /*length*/,
-    unsigned char */*pattern*/,
+    unsigned char * /*pattern*/,
     int /*max_names*/
 );
 

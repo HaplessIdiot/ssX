@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.9 1998/10/04 09:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.10 1998/10/10 15:25:40 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1128,7 +1128,7 @@ send_failed (
     XdmcpHeader	header;
     ARRAY8	status;
 
-    sprintf (buf, "Session %ld failed for display %s: %s",
+    sprintf (buf, "Session %ld failed for display %.100s: %.100s",
 	     (long) sessionID, name, reason);
     Debug ("Send failed %ld %s\n", (long) sessionID, buf);
     status.length = strlen (buf);
