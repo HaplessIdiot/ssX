@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.8 2001/12/02 13:35:28 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.9 2001/12/04 17:28:10 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -48,6 +48,7 @@ copyright holders.
 ** 
 ********************************************************************/
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
