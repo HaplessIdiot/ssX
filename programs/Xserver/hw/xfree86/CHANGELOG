@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 263. Integrate the currently Panix-specific keycodes into atKeynames.h,
+      since they're not really Panix-specific (David Dawes).
  262. Fix problem with a NULL pointer in Xv Xineramification (Benjamin Monate).
  261. Bug fixes and improvements for mouse 3 button emulation state machine
       (Andrew Pimlott).
@@ -12687,4 +12689,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1623 2001/03/07 16:21:03 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1624 2001/03/07 19:39:27 mvojkovi Exp $
