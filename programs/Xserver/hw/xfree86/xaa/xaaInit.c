@@ -256,11 +256,26 @@ XAAGetImage (
 )
 {
     ScreenPtr pScreen = pDraw->pScreen;
-    XAA_SCREEN_PROLOGUE (pScreen, GetImage);
-    if(xf86Screens[pScreen->myNum]->vtSema && 
-	((pDraw->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pDraw))) {
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    ScrnInfoPtr pScrn = infoRec->pScrn;
+
+    if(pScrn->vtSema && 
+	((pDraw->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pDraw))) 
+    {
+	if(infoRec->ReadPixmap && (format == ZPixmap) && 
+	   ((planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask) &&
+	   (pDraw->bitsPerPixel == BitsPerPixel(pDraw->depth)))
+	{
+	    (*infoRec->ReadPixmap)(pScrn, 
+		   sx + pDraw->x, sy + pDraw->y, w, h, pdstLine,
+		   PixmapBytePad(w, pDraw->depth), 
+		   pDraw->bitsPerPixel, pDraw->depth);
+	    return;
+	}
 	SYNC_CHECK(pDraw);
     }
+
+    XAA_SCREEN_PROLOGUE (pScreen, GetImage);
     (*pScreen->GetImage) (pDraw, sx, sy, w, h, format, planemask, pdstLine);
     XAA_SCREEN_EPILOGUE (pScreen, GetImage, XAAGetImage);
 }

@@ -35,7 +35,6 @@ typedef enum {
     XAAOPT_SCREEN_TO_SCREEN_COL_EXP_FILL,
     XAAOPT_IMAGE_WRITE_RECT,
     XAAOPT_SCANLINE_IMAGE_WRITE_RECT,
-    XAAOPT_IMAGE_READ_RECT,
     XAAOPT_PIXMAP_CACHE,
     XAAOPT_OFFSCREEN_PIXMAPS
 } XAAOpts;
@@ -75,8 +74,6 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_SCANLINE_IMAGE_WRITE_RECT,	"XaaNoScanlineImageWriteRect",
 				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_IMAGE_READ_RECT,		"XaaNoImageReadRect",
-				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_OFFSCREEN_PIXMAPS,		"XaaNoOffscreenPixmaps",
@@ -107,7 +104,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
-    Bool HaveImageReadRect = FALSE;
 
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, XAAOptions);
 
@@ -340,17 +336,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
        !xf86IsOptionSet(XAAOptions, XAAOPT_SCANLINE_IMAGE_WRITE_RECT))
 	HaveScanlineImageWriteRect = TRUE;
 
-    /**** Image Reads ****/
-
-    if(infoRec->SetupForImageRead && infoRec->ImageReadBase &&
-       infoRec->SubsequentImageReadRect &&
-       !xf86IsOptionSet(XAAOptions, XAAOPT_IMAGE_READ_RECT)) {
-
-	infoRec->ImageReadRange >>= 2;	/* convert to DWORDS */
-	if(infoRec->ImageReadFlags & CPU_TRANSFER_BASE_FIXED)
-	   infoRec->ImageReadRange = 0;
-	HaveImageReadRect = TRUE;	
-    } 
 
     if (serverGeneration == 1) {
 	if(HaveScreenToScreenCopy)
@@ -389,8 +374,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	else if(HaveScanlineImageWriteRect)
 	    xf86ErrorF("\tScanline Image Writes\n");
 
-	if(HaveImageReadRect)
-	    xf86ErrorF("\tImage Reads\n");
     }
 
 #define XAAMSG(s) do { if (serverGeneration == 1) xf86ErrorF(s); } while (0)
@@ -861,9 +844,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(infoRec->ReadPixmap) {
 	XAAMSG("\tDriver provided ReadPixmap replacement\n");
-    } else if(HaveImageReadRect) {
-	infoRec->ReadPixmap = XAAReadPixmap;
-	infoRec->ReadPixmapFlags = infoRec->ImageReadFlags;
     } 
 
     /************** GC Level *************/

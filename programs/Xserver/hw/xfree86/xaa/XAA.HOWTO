@@ -24,8 +24,7 @@ document as well.
   2.8  Image Writes
     2.8.1 The Direct Method
     2.8.2 The Indirect Method
-  2.9  Image Reads
-  2.10 Clipping
+  2.9 Clipping
 3)  The Pixmap Cache
 4)  Offscreen Pixmaps
 
@@ -1331,12 +1330,7 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     manipulate these buffers and then send the data to the accelerator.
 
 
-2.9  Image Reads
-
-	/* More to come */
-
-
-2.10 Clipping
+2.9 Clipping
 
     XAA supports hardware clipping rectangles.  To use clipping
     in this way it is expected that the graphics accelerator can

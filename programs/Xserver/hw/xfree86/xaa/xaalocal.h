@@ -149,6 +149,15 @@ XAADoImageWrite(
     DDXPointPtr	    pptSrc
 );
 
+void
+XAADoImageRead(
+    DrawablePtr     pSrc,
+    DrawablePtr     pDst,
+    GC              *pGC,
+    RegionPtr       prgnDst,
+    DDXPointPtr     pptSrc
+);
+
 void 
 XAACopyWindow(
     WindowPtr pWin,
@@ -1257,15 +1266,6 @@ XAAFillPolygonHelper(
     int 	xorg,
     int		yorg,
     XAACacheInfoPtr pCache
-);
-
-void 
-XAAReadPixmap (
-   ScrnInfoPtr pScrn,
-   int x, int y, int w, int h,
-   unsigned char *dst,	
-   int dstwidth,
-   int bpp, int depth
 );
 
 void
