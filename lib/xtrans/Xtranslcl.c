@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.29 1998/12/13 07:37:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.30 1998/12/20 11:57:21 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -160,6 +160,10 @@ char		*peer_sun_path;
 
     sunaddr->sun_family = AF_UNIX;
 
+    if (strlen(sun_path) > sizeof(sunaddr->sun_path) - 1) {
+	PRMSG(1, "FillAddrInfo: path too long\n", 0, 0, 0);
+	return 0;
+    }
     strcpy (sunaddr->sun_path, sun_path);
 #if defined(BSD44SOCKETS) && !defined(Lynx)
     sunaddr->sun_len = strlen (sunaddr->sun_path);
@@ -183,6 +187,10 @@ char		*peer_sun_path;
 
     p_sunaddr->sun_family = AF_UNIX;
 
+    if (strlen(peer_sun_path) > sizeof(p_sunaddr->sun_path) - 1) {
+	PRMSG(1, "FillAddrInfo: peer path too long\n", 0, 0, 0);
+	return 0;
+    }
     strcpy (p_sunaddr->sun_path, peer_sun_path);
 #if defined(BSD44SOCKETS) && !defined(Lynx)
     p_sunaddr->sun_len = strlen (p_sunaddr->sun_path);
