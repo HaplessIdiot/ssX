@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.2 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.3 2002/02/22 21:45:15 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -20,7 +20,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
  * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -29,7 +29,7 @@
 
 /*
  * Authors:
- *   Kevin E. Martin <martin@valinux.com>
+ *   Kevin E. Martin <martin@xfree86.org>
  *   Gareth Hughes <gareth@valinux.com>
  *
  */
@@ -43,8 +43,7 @@
 #ifndef __RADEON_SAREA_DEFINES__
 #define __RADEON_SAREA_DEFINES__
 
-/* What needs to be changed for the current vertex buffer?
- */
+/* What needs to be changed for the current vertex buffer? */
 #define RADEON_UPLOAD_CONTEXT		0x00000001
 #define RADEON_UPLOAD_VERTFMT		0x00000002
 #define RADEON_UPLOAD_LINE		0x00000004
@@ -71,8 +70,7 @@
 #define RADEON_DEPTH			0x4
 #define RADEON_STENCIL                  0x8
 
-/* Primitive types
- */
+/* Primitive types */
 #define RADEON_POINTS			0x1
 #define RADEON_LINES			0x2
 #define RADEON_LINE_STRIP		0x3
@@ -82,19 +80,16 @@
 #define RADEON_3VTX_POINTS		0x9
 #define RADEON_3VTX_LINES		0xa
 
-/* Vertex/indirect buffer size
- */
+/* Vertex/indirect buffer size */
 #define RADEON_BUFFER_SIZE		65536
 
-/* Byte offsets for indirect buffer data
- */
+/* Byte offsets for indirect buffer data */
 #define RADEON_INDEX_PRIM_OFFSET	20
 #define RADEON_HOSTDATA_BLIT_OFFSET	32
 
 #define RADEON_SCRATCH_REG_OFFSET	32
 
-/* Keep these small for testing
- */
+/* Keep these small for testing */
 #define RADEON_NR_SAREA_CLIPRECTS	12
 
 /* There are 2 heaps (local/AGP).  Each region within a heap is a
@@ -228,13 +223,11 @@ typedef struct {
     unsigned int vertsize;
     unsigned int vc_format;
 
-    /* The current cliprects, or a subset thereof
-     */
+    /* The current cliprects, or a subset thereof */
     XF86DRIClipRectRec boxes[RADEON_NR_SAREA_CLIPRECTS];
     unsigned int nbox;
 
-    /* Counters for throttling of rendering clients
-     */
+    /* Counters for throttling of rendering clients */
     unsigned int last_frame;
     unsigned int last_dispatch;
     unsigned int last_clear;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.4 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_misc.c,v 1.5 2002/04/06 19:06:07 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -62,15 +62,14 @@ RADEONSetup
 {
     static Bool Inited = FALSE;
 
-    if (!Inited)
-    {
-        /* Ensure main driver module is loaded, but not as a submodule */
-        if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
-            xf86LoadOneModule(ATI_DRIVER_NAME, Options);
+    if (!Inited) {
+	/* Ensure main driver module is loaded, but not as a submodule */
+	if (!xf86ServerIsOnlyDetecting() && !LoaderSymbol(ATI_NAME))
+	    xf86LoadOneModule(ATI_DRIVER_NAME, Options);
 
-        RADEONLoaderRefSymLists();
+	RADEONLoaderRefSymLists();
 
-        Inited = TRUE;
+	Inited = TRUE;
     }
 
     return (pointer)TRUE;

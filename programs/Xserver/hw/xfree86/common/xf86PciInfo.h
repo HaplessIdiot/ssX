@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.123 2002/03/18 21:45:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.124 2002/04/03 13:02:38 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -342,6 +342,7 @@
 /* AMD */
 #define PCI_CHIP_79C970		0x2000
 #define PCI_CHIP_53C974		0x2020
+#define PCI_CHIP_AMD761		0x700E
 
 /* Trident */
 #define PCI_CHIP_8400		0x8400
