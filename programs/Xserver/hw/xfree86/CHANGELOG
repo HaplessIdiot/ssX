@@ -1,4 +1,6 @@
 XFree86 4.3.99.904 (xx February 2004)
+ 821. Fix Radeon secondary head register initialization (Hui Yu@ATI,
+      Benjamin Herrenschmidt).
  820. ati & atimisc module changes (Marc La France)
       - Allow builds with ATIAvoidNonPCI && !ATIAvoidCPIO;
       - Make handling of unknown Radeon's saner;
@@ -18681,7 +18683,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3154 2004/02/24 01:13:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3155 2004/02/24 16:51:15 tsi Exp $
 
 
 
