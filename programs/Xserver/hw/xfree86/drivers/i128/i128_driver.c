@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.26 2002/01/25 21:56:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.28 2003/02/05 17:45:28 eich Exp $ */
 
 
 /* All drivers should typically include these */
@@ -217,6 +217,7 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 /* XXX The vbe module isn't currently loaded. */
 static const char *vbeSymbols[] = {
     "VBEInit",
@@ -230,6 +231,7 @@ static const char *int10Symbols[] = {
     "xf86FreeInt10",
     NULL
 };
+#endif
 
 
 #ifdef XFree86LOADER

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.9 2000/03/28 01:21:05 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.10 2001/10/28 03:34:04 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -19,8 +19,6 @@
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
 #endif
-
-extern WindowPtr *WindowTable;
 
 void
 XAAPaintWindow(

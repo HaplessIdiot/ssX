@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.22 2002/10/08 22:14:03 tsi Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -9,6 +9,7 @@
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
 #include "xf86DDC.h"
+#include "ddcPriv.h"
 
 #ifdef XFree86LOADER
 static const OptionInfoRec *DDCAvailableOptions(void *unused);
@@ -78,15 +79,6 @@ ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #endif
 
 #define RETRIES 4
-
-extern unsigned char *GetEDID_DDC1(
-    unsigned int *
-);
-
-extern int checksum(
-    unsigned char *,
-    int
-);
 
 static unsigned char *EDIDRead_DDC1(
     ScrnInfoPtr pScrn,
@@ -366,7 +358,7 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
 					* (len));
     for (i=0; i<RETRIES; i++) {
 	if (xf86I2CWriteRead(dev, W_Buffer,w_bytes, R_Buffer,len)) {
-	    if (!checksum(R_Buffer,len)) { 
+	    if (!DDC_checksum(R_Buffer,len)) { 
 		xf86DestroyI2CDevRec(dev,TRUE);
 		return R_Buffer;
 	    }

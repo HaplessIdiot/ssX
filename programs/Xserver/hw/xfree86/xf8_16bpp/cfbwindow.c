@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbwindow.c,v 1.1 1999/01/31 12:22:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbwindow.c,v 1.3 2001/02/15 19:51:14 eich Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -21,8 +21,6 @@
 
 /* We don't bother with cfb's fastBackground/Border so we don't
    need to use the Window privates */
-
-extern WindowPtr *WindowTable;
 
 
 Bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.5 2003/02/12 21:46:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/kbd.c,v 1.6 2003/02/17 15:11:55 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -30,6 +30,7 @@
 #endif
 
 #include "xf86Xinput.h"
+#include "xf86_OSproc.h"
 #include "xf86OSKbd.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
