@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.24 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.25 2002/04/16 17:12:05 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -51,10 +51,12 @@
  */
 #define	STRTBLSZ	23
 
-#define FEAT	mac->featlist
+#define FEATURES					\
+    mac->features->data.atom->a_object ?		\
+	mac->features->data.atom->property->value :	\
+	NIL
 #define PACK	mac->packlist
-#define PACKNAM	mac->package_name
-#define PACKAGE	mac->package
+#define PACKAGE	mac->package->data.atom->property->value
 #define MOD	mac->modlist
 #define COD	mac->codlist
 #define FRM	mac->frmlist
@@ -242,6 +244,7 @@ struct _LispBlock {
     LispBlockType type;
     LispObj tag;
     jmp_buf jmp;
+    int protect;
     int block_level;
     int debug_level;
     int debug_step;
@@ -290,8 +293,7 @@ struct _LispMac {
 	int space;
     } protect;
 
-    LispObj *package_name;	/* atom *PACKAGE* */
-    LispObj *package;		/* current package object */
+    LispObj *package;		/* package object */
     LispPackage *pack;		/* pointer to mac->package->data.package.package */
 
     /* fast access to the KEYWORD package */
@@ -348,7 +350,6 @@ struct _LispMac {
     LispObj *features;
 
     LispObj *modlist;		/* module list */
-    LispObj *featlist;		/* features list */
     LispObj *packlist;		/* list of packages */
     LispObj *codlist;		/* current code */
     LispObj *frmlist;		/* input data */
@@ -417,7 +418,9 @@ char *LispIntToOpaqueType(LispMac*, int);
 void LispPrint(LispMac*, LispObj*, LispObj*, int);
 
 LispBlock *LispBeginBlock(LispMac*, LispObj*, LispBlockType);
-#define BLOCKJUMP(block)	longjmp((block)->jmp, 1)
+#define BLOCKJUMP(block)			\
+    mac->protect.length = (block)->protect;	\
+    longjmp((block)->jmp, 1)
 void LispEndBlock(LispMac*, LispBlock*);
 	/* if unwind-protect active, jump to cleanup code, else do nothing */
 void LispBlockUnwind(LispMac*, LispBlock*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.42 2002/06/03 21:39:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.44 2002/07/16 05:19:38 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -61,6 +61,7 @@ extern void unsetenv(const char *name);
 #define SETEXCLUSIVEOR	4
 #define SUBSETP		5
 LispObj *LispAssocOrMember(LispMac*, LispBuiltin*, int, int);
+LispObj *LispPosition(LispMac*, LispBuiltin*, int);
 LispObj *LispRemoveOrSubstitute(LispMac*, LispBuiltin*, int, int);
 LispObj *LispListSet(LispMac*, LispBuiltin*, int);
 extern LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
@@ -375,9 +376,6 @@ Lisp_Apply(LispMac *mac, LispBuiltin *builtin)
     arg = ARGUMENT(1);
     function = ARGUMENT(0);
 
-    if (function->type != LispLambda_t && !SYMBOL_P(function))
-	LispDestroy(mac, "%s: %s is not a valid function name",
-		    STRFUN(builtin), STROBJ(function));
     if (more_args != NIL) {
  	ERROR_CHECK_LIST(more_args);
     }
@@ -1349,7 +1347,8 @@ Lisp_Keywordp(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (KEYWORD_P(object) ? T : NIL);
+    /* KEYWORD_P only checks the symbol package, not the object type */
+    return (SYMBOL_P(object) && KEYWORD_P(object) ? T : NIL);
 }
 
 LispObj *
@@ -2158,10 +2157,6 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
     list = ARGUMENT(1);
     function = ARGUMENT(0);
 
-    if (!SYMBOL_P(function) && function->type != LispLambda_t)
-	LispDestroy(mac, "%s: %s is a bad function",
-		    STRFUN(builtin), STROBJ(function));
-
     length = mac->protect.length;
     if (length + 2 >= mac->protect.space)
 	LispMoreProtects(mac);
@@ -2215,10 +2210,6 @@ Lisp_Maplist(LispMac *mac, LispBuiltin *builtin)
     more_lists = ARGUMENT(2);
     list = ARGUMENT(1);
     function = ARGUMENT(0);
-
-    if (!SYMBOL_P(function) && function->type != LispLambda_t)
-	LispDestroy(mac, "%s: %s is a bad function",
-		    STRFUN(builtin), STROBJ(function));
 
     length = mac->protect.length;
     if (length + 2 >= mac->protect.space)
@@ -2443,6 +2434,168 @@ Lisp_Or(LispMac *mac, LispBuiltin *builtin)
     }
 
     return (result);
+}
+
+LispObj *
+LispPosition(LispMac *mac, LispBuiltin *builtin, int comparison)
+/*
+ position item sequence &key from-end test test-not start end key
+ position-if predicate sequence &key from-end start end key
+ position-if-not predicate sequence &key from-end start end key
+ */
+{
+    GC_ENTER();
+    int istring;
+    char *string = NULL;
+    long offset = -1, start, end, length, i = comparison == NONE ? 7 : 5;
+    LispObj local1, local2, *arg1, *arg2, *result, **objects = NULL;
+
+    LispObj *item, *predicate, *sequence, *from_end,
+	    *test, *test_not, *ostart, *oend, *key;
+
+    key = ARGUMENT(i);		--i;
+    oend = ARGUMENT(i);		--i;
+    ostart = ARGUMENT(i);	--i;
+    if (comparison == NONE) {
+	test_not = ARGUMENT(i);	--i;
+	test = ARGUMENT(i);	--i;
+    }
+    else
+	test_not = test = NIL;
+    from_end = ARGUMENT(i);	--i;
+    sequence = ARGUMENT(i);	--i;
+    if (comparison == NONE) {
+	item = ARGUMENT(i);
+	predicate = Oeql;
+    }
+    else {
+	predicate = ARGUMENT(i);
+	item = NIL;
+    }
+
+    LispCheckSequenceStartEnd(mac, builtin, sequence, ostart, oend,
+			      &start, &end, &length);
+
+    /* Cannot specify both :test and :test-not */
+    if (test != NIL && test_not != NIL)
+	LispDestroy(mac, "%s: specify either :TEST or :TEST-NOT",
+		    STRFUN(builtin));
+
+    if (comparison == NONE) {
+	if (test != NIL)
+	    predicate = test;
+	else if (test_not != NIL)
+	    predicate = test_not;
+    }
+
+    istring = STRING_P(sequence);
+    if (istring) {
+	local1.type = local2.type = LispCharacter_t;
+	arg1 = &local1;
+	arg2 = &local2;
+	if (comparison == NONE) {
+	    ERROR_CHECK_CHARACTER(item);
+	    local2.data.integer = item->data.integer;
+	}
+	string = THESTR(sequence);
+    }
+    else {
+	arg1 = arg2 = NIL;
+	if (!CONS_P(sequence))
+	    sequence = sequence->data.array.list;
+	if (comparison == NONE)
+	    arg2 = item;
+    }
+
+    if ((length = end - start) == 0)
+	return (NIL);
+
+    if (from_end != NIL && !istring) {
+	objects = LispMalloc(mac, sizeof(LispObj*) * length);
+	for (i = 0; i < start; i++)
+	    sequence = CDR(sequence);
+	for (i = length - 1; i >= 0; i--, sequence = CDR(sequence))
+	    objects[i] = CAR(sequence);
+    }
+
+    for (i = 0; i < length; i++) {
+	if (istring) {
+	    local1.data.integer = string[from_end == NIL ? i + start : end - i - 1];
+	    if (key != NIL) {
+		arg1 = APPLY1(key, &local1);
+		GC_PROTECT(arg1);
+		if (comparison == NONE) {
+		    arg2 = APPLY1(key, &local2);
+		    GC_PROTECT(arg2);
+		}
+	    }
+	}
+	else {
+	    arg1 = from_end == NIL ? CAR(sequence) : objects[i];
+	    if (key != NIL) {
+		arg1 = APPLY1(key, arg1);
+		GC_PROTECT(arg1);
+		if (comparison == NONE) {
+		    arg2 = APPLY1(key, item);
+		    GC_PROTECT(arg2);
+		}
+	    }
+
+	    /* Update list */
+	    if (from_end == NIL)
+		sequence = CDR(sequence);
+	}
+
+	if (comparison == NONE)
+	    result = APPLY2(predicate, arg1, arg2);
+	else
+	    result = APPLY1(predicate, arg1);
+
+	/* Unprotect arg1 and arg2 */
+	GC_LEAVE();
+
+	if ((result == NIL &&
+	     (comparison == IF ||
+	      (comparison == NONE && test_not != NIL))) ||
+	    (result != NIL &&
+	     (comparison == IFNOT ||
+	      (comparison == NONE && test_not == NIL)))) {
+	    offset = from_end == NIL ? i + start : end - i - 1;
+	    break;
+	}
+    }
+
+    if (from_end != NIL && !istring)
+	LispFree(mac, objects);
+
+    return (offset == -1 ? NIL : INTEGER(offset));
+}
+
+LispObj *
+Lisp_Position(LispMac *mac, LispBuiltin *builtin)
+/*
+ position item sequence &key from-end test test-not start end key
+ */
+{
+    return (LispPosition(mac, builtin, NONE));
+}
+
+LispObj *
+Lisp_PositionIf(LispMac *mac, LispBuiltin *builtin)
+/*
+ position-if predicate sequence &key from-end start end key
+ */
+{
+    return (LispPosition(mac, builtin, IF));
+}
+
+LispObj *
+Lisp_PositionIfNot(LispMac *mac, LispBuiltin *builtin)
+/*
+ position-if-not predicate sequence &key from-end start end key
+ */
+{
+    return (LispPosition(mac, builtin, IFNOT));
 }
 
 LispObj *
@@ -4062,10 +4215,8 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate, LispObj *key)
 	}
     }
 
-    if (key != NIL) {
-	mac->protect.objects[protect] = NIL;
-	mac->protect.objects[protect + 1] = NIL;
-    }
+    if (key != NIL)
+	mac->protect.length -= 2;
 
     return (result);
 }

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.6 2002/03/10 04:57:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.8 2002/07/16 05:19:39 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -491,8 +491,6 @@ Lisp_InPackage(LispMac *mac, LispBuiltin *builtin)
     mac->pack = package->data.package.package;
     PACKAGE = package;
 
-    LispSetVar(mac, PACKNAM, package);
-
     return (package);
 }
 
@@ -670,12 +668,17 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
 
     /* Import symbols from use list */
     savepackage = PACKAGE;
+
+    /* Update pointer to package symbol table */
+    mac->pack = package->data.package.package;
     PACKAGE = package;
-    LispSetVar(mac, PACKNAM, PACKAGE);
+
     for (list = use; CONS_P(list); list = CDR(list))
 	LispUsePackage(mac, LispFindPackage(mac, CAR(list)));
+
+    /* Restore pointer to package symbol table */
+    mac->pack = savepackage->data.package.package;
     PACKAGE = savepackage;
-    LispSetVar(mac, PACKNAM, PACKAGE);
 
     return (package);
 }

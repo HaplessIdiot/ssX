@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.7 2002/03/12 23:28:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.8 2002/05/18 01:02:12 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -550,7 +550,6 @@ Lisp_WriteChar(LispMac *mac, LispBuiltin *builtin)
     return (character);
 }
 
-/* XXX must return 2 values */
 LispObj *
 Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -568,104 +567,76 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
 
-    if (input_stream != NIL) {
-	ERROR_CHECK_STREAM(input_stream);
-    }
+    if (input_stream == NIL)
+	/* XXX mac->standard_input must be renamed, stdin is the
+	 * last element of mac->input */
+	for (input_stream = mac->input;
+	     CONS_P(input_stream);
+	     input_stream = CDR(input_stream))
+	    ;
+    ERROR_CHECK_STREAM(input_stream);
 
     result = eof_value;
     string = NULL;
     length = 0;
-    if (STREAM_P(input_stream)) {
-	if (!input_stream->data.stream.readable)
-	    LispDestroy(mac, "%s: stream %s is unreadable",
-			STRFUN(builtin), STROBJ(input_stream));
-	if (input_stream->data.stream.type == LispStreamString) {
-	    unsigned char *start, *end;
 
-	    if (SSTREAMP(input_stream)->input >=
-		SSTREAMP(input_stream)->length) {
-		if (eof_error_p != NIL)
-		    LispDestroy(mac, "%s: EOS found reading %s",
-				STRFUN(builtin), STROBJ(input_stream));
+    if (!input_stream->data.stream.readable)
+	LispDestroy(mac, "%s: stream %s is unreadable",
+		    STRFUN(builtin), STROBJ(input_stream));
+    if (input_stream->data.stream.type == LispStreamString) {
+	unsigned char *start, *end;
 
-		status = T;
-		result = eof_value;
-		goto read_line_done;
-	    }
+	if (SSTREAMP(input_stream)->input >=
+	    SSTREAMP(input_stream)->length) {
+	    if (eof_error_p != NIL)
+		LispDestroy(mac, "%s: EOS found reading %s",
+			    STRFUN(builtin), STROBJ(input_stream));
 
-	    start = SSTREAMP(input_stream)->string +
-		    SSTREAMP(input_stream)->input;
-	    if ((end = (unsigned char*)strchr((char*)start, '\n')) == NULL)
-		/* XXX must return flag in the second return value */
-		end = SSTREAMP(input_stream)->string +
-		      SSTREAMP(input_stream)->length;
-	    length = end - start;
-	    string = LispMalloc(mac, length + 1);
-	    memcpy(string, start, length);
-	    string[length] = '\0';
-	    result = STRING(string);
-	    LispFree(mac, string);
-	    SSTREAMP(input_stream)->input += length;
+	    status = T;
+	    result = eof_value;
+	    goto read_line_done;
 	}
-	else /*if (input_stream->data.stream.type == LispStreamFile ||
-		 input_stream->data.stream.type == LispStreamStandard ||
-		 input_stream->data.stream.type == LispStreamPipe)*/ {
-	    LispFile *file;
 
-	    if (input_stream->data.stream.type == LispStreamPipe)
-		file = IPSTREAMP(input_stream);
-	    else
-		file = FSTREAMP(input_stream);
-
-	    if (file->nonblock) {
-		if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-		    LispDestroy(mac, "%s: fcntl: %s",
-				STRFUN(builtin), strerror(errno));
-		file->nonblock = 0;
-	    }
-
-	    while (1) {
-		ch = LispFgetc(file);
-		if (ch == EOF) {
-		    if (length)
-			/* XXX must return flag in the second return value */
-			break;
-		    if (eof_error_p != NIL)
-			LispDestroy(mac, "%s: EOF found reading %s",
-				    STRFUN(builtin), STROBJ(input_stream));
-		    if (string)
-			LispFree(mac, string);
-
-		    status = T;
-		    result = eof_value;
-		    goto read_line_done;
-		}
-		else if (ch == '\n')
-		    break;
-		else if ((length % 64) == 0)
-		    string = LispRealloc(mac, string, length + 64);
-		string[length++] = ch;
-	    }
-	    if (string) {
-		if ((length % 64) == 0)
-		    string = LispRealloc(mac, string, length + 1);
-		string[length] = '\0';
-		result = STRING(string);
-		LispFree(mac, string);
-	    }
-	    else
-		result = STRING("");
-	}
+	start = SSTREAMP(input_stream)->string +
+		SSTREAMP(input_stream)->input;
+	if ((end = (unsigned char*)strchr((char*)start, '\n')) == NULL)
+	    /* XXX must return flag in the second return value */
+	    end = SSTREAMP(input_stream)->string +
+		  SSTREAMP(input_stream)->length;
+	length = end - start;
+	string = LispMalloc(mac, length + 1);
+	memcpy(string, start, length);
+	string[length] = '\0';
+	result = STRING(string);
+	LispFree(mac, string);
+	SSTREAMP(input_stream)->input += length;
     }
-    else {
-	while ((ch = LispGet(mac)) != '\n') {
+    else /*if (input_stream->data.stream.type == LispStreamFile ||
+	     input_stream->data.stream.type == LispStreamStandard ||
+	     input_stream->data.stream.type == LispStreamPipe)*/ {
+	LispFile *file;
+
+	if (input_stream->data.stream.type == LispStreamPipe)
+	    file = IPSTREAMP(input_stream);
+	else
+	    file = FSTREAMP(input_stream);
+
+	if (file->nonblock) {
+	    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
+		LispDestroy(mac, "%s: fcntl: %s",
+			    STRFUN(builtin), strerror(errno));
+	    file->nonblock = 0;
+	}
+
+	while (1) {
+	    ch = LispFgetc(file);
 	    if (ch == EOF) {
 		if (length)
 		    /* XXX must return flag in the second return value */
 		    break;
 		if (eof_error_p != NIL)
-		    LispDestroy(mac, "%s: EOF found reading *STANDARD-INPUT*",
-				STRFUN(builtin));
+		    LispDestroy(mac, "%s: EOF found reading %s",
+				STRFUN(builtin), STROBJ(input_stream));
 		if (string)
 		    LispFree(mac, string);
 
@@ -673,6 +644,8 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 		result = eof_value;
 		goto read_line_done;
 	    }
+	    else if (ch == '\n')
+		break;
 	    else if ((length % 64) == 0)
 		string = LispRealloc(mac, string, length + 64);
 	    string[length++] = ch;

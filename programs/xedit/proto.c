@@ -1,6 +1,37 @@
+/*
+ * Copyright (c) 2002 by The XFree86 Project, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the XFree86 Project shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from the
+ * XFree86 Project.
+ *
+ * Author: Paulo César Pereira de Andrade
+ */
+
 /* $XFree86$ */
 
 #include "xedit.h"
+#include <X11/Xaw/TextSinkP.h>
+
 #include <stdlib.h>
 #include <limits.h>		/* LONG_MIN and LONG_MAX */
 #include <ctype.h>
@@ -30,7 +61,7 @@ union _XeditReqArg {
 };
 
 /* XXX update if a function with more arguments is defined */
-#define REQUEST_MAX_ARGUMENTS	3
+#define REQUEST_MAX_ARGUMENTS	5
 
 struct _XeditReqArgs {
     XeditReqArg args[REQUEST_MAX_ARGUMENTS];
@@ -87,6 +118,13 @@ static Bool SetBufferFileName(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool SearchForward(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool SearchBackward(XeditReqInfo*, XeditReqArgs*, char**);
 static Bool ReplaceText(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool ReadText(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool Scan(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool AddEntity(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool ClearEntities(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool ConvertPropertyList(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool SetTextPropertyList(XeditReqInfo*, XeditReqArgs*, char**);
+static Bool Wrap_XrmStringToQuark(XeditReqInfo*, XeditReqArgs*, char**);
 
 /* todo */
 #if 0
@@ -107,6 +145,18 @@ static XeditReqTrans trans[] = {
  * (i)nteger:		number
  * (s)tring:		any text, enclosed in "'s
  */
+
+    /* input  = integer list: start, length and identifer of text property
+     * output = boolean: success status */
+    {"add-entity",		AddEntity,		"iii"},
+
+    /* input  = integer list: start and end or region to remove entities
+     * output = string: buffer-identifier */
+    {"clear-entities",		ClearEntities,		"ii"},
+
+    /* input = string list: properties name and properties definitions
+     * output = integer: XrmQuark identifier of the property list */
+    {"convert-property-list",	ConvertPropertyList,	"ss"},
 
     /* input  = string: buffer-name
      * output = string: buffer-identifier */
@@ -184,6 +234,10 @@ static XeditReqTrans trans[] = {
      * output = integer: smallest visible cursor position */
     {"point-min",		PointMin,		""},
 
+    /* input  = integer list: start offset, characters to read
+     * output = string: characters read */
+    {"read-text",		ReadText,		"ii"},
+
     /* input  = string: buffer-identifier
      * output = nil
      */
@@ -193,6 +247,10 @@ static XeditReqTrans trans[] = {
      * output = nil
      */
     {"replace-text",		ReplaceText,		"iis"},
+
+    /* input  = integer list; start-position, type, direction, count, include
+     * output = integer: text position */
+    {"scan",			Scan,			"iiiii"},
 
     /* input  = string: string to be searched and integer: case sensitive flag
      * output = integer: position of text or nil if no match */
@@ -254,6 +312,10 @@ static XeditReqTrans trans[] = {
      * output = nil */
     {"set-right-column",	SetRightColumn,		"i"},
 
+    /* input  = integer: XrmQuark identifier of property-list
+     * output = boolean: success status */
+    {"set-text-properties",	SetTextPropertyList,	"i"},
+
     /* input  = string: one of "always" and "never"
      * output = nil */
     {"set-vert-scrollbar",	SetVertScrollbar,	"s"},
@@ -261,12 +323,19 @@ static XeditReqTrans trans[] = {
     /* input  = string: converter value, one of "never", "line" and "word"
      * output = nil */
     {"set-wrap-mode",		SetWrapMode,		"s"},
+
+    /* input  = string: any string
+     * output = integer: XrmQuark value of string */
+    {"xrm-string-to-quark",	Wrap_XrmStringToQuark,	"s"},
 };
 
 static char buffer[512];
 static char errstr[80];
 
-static char *NIL = "NIL\n", *T = "T\n";
+static char *NIL = "NIL", *T = "T";
+
+static XawTextPropertyList **property_lists;
+static Cardinal num_property_lists;
 
 /*
  * Implementation
@@ -482,7 +551,7 @@ PointMin(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XawTextPosition point = XawTextSourceScan(info->source, 0,
 					      XawstAll, XawsdLeft, 1, True);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
     *result = buffer;
 
     return (True);
@@ -495,7 +564,7 @@ PointMax(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XawTextPosition point = XawTextSourceScan(info->source, 0,
 					      XawstAll, XawsdRight, 1, True);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
     *result = buffer;
 
     return (True);
@@ -507,7 +576,7 @@ GetPoint(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
     XawTextPosition point = XawTextGetInsertionPoint(info->text);
 
-    XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
+    XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
     *result = buffer;
 
     return (True);
@@ -557,7 +626,7 @@ GetForeground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->sink, XtRPixel, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
     *result = buffer;
 
     return (True);
@@ -604,7 +673,7 @@ GetBackground(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->text, XtRPixel, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
     *result = buffer;
 
     return (True);
@@ -651,7 +720,7 @@ GetFont(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->sink, arg, 1);
     XtConvertAndStore(info->text, XtRFontStruct, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", str);
     *result = buffer;
 
     return (True);
@@ -698,7 +767,7 @@ GetWrapMode(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRWrapMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), ":%s\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), ":%s", str);
     *result = buffer;
 
     return (True);
@@ -774,7 +843,7 @@ GetLeftColumn(XeditReqInfo *info, XeditReqArgs *args, char **result)
 
     XtSetArg(arg[0], XtNleftColumn, &left);
     XtGetValues(info->text, arg, 1);
-    XmuSnprintf(buffer, sizeof(buffer), "%d\n", left);
+    XmuSnprintf(buffer, sizeof(buffer), "%d", left);
     *result = buffer;
 
     return (True);
@@ -802,7 +871,7 @@ GetRightColumn(XeditReqInfo *info, XeditReqArgs *args, char **result)
 
     XtSetArg(arg[0], XtNrightColumn, &right);
     XtGetValues(info->text, arg, 1);
-    XmuSnprintf(buffer, sizeof(buffer), "%d\n", right);
+    XmuSnprintf(buffer, sizeof(buffer), "%d", right);
     *result = buffer;
 
     return (True);
@@ -838,7 +907,7 @@ GetJustification(XeditReqInfo *info, XeditReqArgs *args, char **result)
     XtGetValues(info->text, arg, 1);
     XtConvertAndStore(info->text, XtRJustifyMode, &from, XtRString, &to);
     str = to.addr;
-    XmuSnprintf(buffer, sizeof(buffer), ":%s\n", str);
+    XmuSnprintf(buffer, sizeof(buffer), ":%s", str);
     *result = buffer;
 
     return (True);
@@ -954,7 +1023,7 @@ CreateBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 			       NULL, NULL);
 
     item = AddTextSource(source, args->args[0].string, NULL, 0, 0);
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
     *result = buffer;
 
     return (True);
@@ -977,7 +1046,7 @@ GetCurrentBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 	/* this is probably an error */
 	return (True);
 
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
     *result = buffer;
 
     return (True);
@@ -1000,7 +1069,7 @@ GetOtherBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 	/* this is not an error */
 	return (True);
 
-    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT "\n", item);
+    XmuSnprintf(buffer, sizeof(buffer), BUFFERFMT, item);
     *result = buffer;
     return (True);
 }
@@ -1016,7 +1085,7 @@ SetOtherBuffer(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", args->args[0].item->name);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->name);
     *result = buffer;
 
     return (True);
@@ -1034,7 +1103,7 @@ SetBufferName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 static Bool
 GetBufferFileName(XeditReqInfo *info, XeditReqArgs *args, char **result)
 {
-    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"\n", args->args[0].item->filename);
+    XmuSnprintf(buffer, sizeof(buffer), "\"%s\"", args->args[0].item->filename);
     *result = buffer;
 
     return (True);
@@ -1066,7 +1135,7 @@ Search(XeditReqInfo *info, XeditReqArgs *args, char **result,
     point = XawTextSourceSearch(info->source, position, direction, &block);
 
     if (point != XawTextSearchError) {
-	XmuSnprintf(buffer, sizeof(buffer), "%ld\n", point);
+	XmuSnprintf(buffer, sizeof(buffer), "%ld", point);
 	*result = buffer;
     }
 
@@ -1104,3 +1173,181 @@ ReplaceText(XeditReqInfo *info, XeditReqArgs *args, char **result)
 
     return (True);
 }
+
+static Bool
+Scan(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPosition position = args->args[0].integer;
+    XawTextScanType type = args->args[1].integer;
+    XawTextScanDirection direction = args->args[2].integer;
+    int count = args->args[3].integer;
+    Boolean include = args->args[4].integer;
+
+    position = XawTextSourceScan(info->source, position,
+				 type, direction, count, include);
+
+    XmuSnprintf(buffer, sizeof(buffer), "%ld", position);
+    *result = buffer;
+
+    return (True);
+}
+
+static Bool
+ReadText(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPosition from, to;
+    int i, length;
+    XawTextBlock block;
+    char *ptr, *end;
+
+    from = args->args[0].integer;
+    length = args->args[1].integer;
+    to = XawTextSourceRead(info->source, from, &block, length);
+#define MAXLENGTH	(sizeof(buffer) - 2)
+
+    /* XXX If there are no double quotes or backslashes in the string,
+     *     the block->text could be returned (avoiding string copy), or
+     *     if the lisp code did not run in a separate process, it could
+     *     access the buffer directly.
+     * XXX This is assuming there are no nulls in the string.
+     * XXX Only 8 bits characters text.
+     */
+    ptr = block.ptr;
+    end = block.ptr + (to - from);
+    if (end > ptr + MAXLENGTH)
+	end = ptr + MAXLENGTH;
+
+    buffer[0] = '"';		/* start string */
+    i = 1;
+    length = end - ptr;		/* "i" can be at most "length" */
+    for (; ptr < end && i < MAXLENGTH; ptr++) {
+	if (*ptr == '"' || *ptr == '\\') {
+	    buffer[i++] = '\\';
+	    if (i >= MAXLENGTH) {
+		/*  If the 2 byte representation of the escaped character
+		 * will not fit in the string. */
+		--i;
+		break;
+	    }
+	}
+	buffer[i++] = *ptr;
+    }
+    buffer[i++] = '"';		/* finish string */
+    buffer[i] = '\0';
+    *result = buffer;
+
+#undef MAXLENGTH
+    return (True);
+}
+
+/* XXX At some time setting the type, flags and data associated
+ *     should be supported.
+ */
+static Bool
+AddEntity(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPosition offset = args->args[0].integer;
+    Cardinal length = args->args[1].integer;
+    XrmQuark identifier = args->args[2].integer;
+
+    *result = XawTextSourceAddEntity(info->source, 0, 0, NULL,
+				     offset, length, identifier) ?
+	T : NIL;
+
+    return (True);
+}
+
+/*ARGSUSED*/
+static Bool
+ClearEntities(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPosition left = args->args[0].integer;
+    XawTextPosition right = args->args[1].integer;
+
+    XawTextSourceClearEntities(info->source, left, right);
+    /* result defaults to NIL */
+
+    return (True);
+}
+
+static Bool
+ConvertPropertyList(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XawTextPropertyList *property_list;
+    char *name, *definition;
+
+    name = args->args[0].string;
+    definition = args->args[1].string;
+
+    property_list =
+	XawTextSinkConvertPropertyList(name, definition,
+				       topwindow->core.screen,
+				       topwindow->core.colormap,
+				       topwindow->core.depth);
+
+    if (property_list) {
+	Cardinal i;
+
+	XmuSnprintf(buffer, sizeof(buffer), "%ld",
+		    property_list->identifier);
+	*result = buffer;
+
+	for (i = 0; i < num_property_lists; i++)
+	    /* If this is not a new property list */
+	    if (property_lists[i]->identifier == property_list->identifier)
+		break;
+
+	/* Remember this pointer when asked back for it */
+	if (i == num_property_lists) {
+	    property_lists = (XawTextPropertyList**)
+		XtRealloc((XtPointer)property_lists,
+			  sizeof(XawTextPropertyList) *
+			  (num_property_lists + 1));
+	    property_lists[num_property_lists++] = property_list;
+	}
+
+	return (True);
+    }
+
+    XmuSnprintf(errstr, sizeof(errstr),
+		"failed to create property list \"%s\"", name);
+
+    return (False);
+}
+
+static Bool
+SetTextPropertyList(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    Cardinal i;
+    XawTextPropertyList *property_list = NULL;
+    XrmQuark quark = args->args[0].integer;
+
+    for (i = 0; i < num_property_lists; i++)
+	if (property_lists[i]->identifier == quark) {
+	    property_list = property_lists[i];
+	    break;
+	}
+
+    if (property_list) {
+	Arg args[1];
+
+	*result = T;
+	XtSetArg(args[0], XawNtextProperties, property_list);
+	XtSetValues(info->sink, args, 1);
+    }
+    /* result defaults to NIL */
+
+    return (True);
+}
+
+static Bool
+Wrap_XrmStringToQuark(XeditReqInfo *info, XeditReqArgs *args, char **result)
+{
+    XrmQuark quark = XrmStringToQuark(args->args[0].string);
+
+    XmuSnprintf(buffer, sizeof(buffer), "%ld", quark);
+    *result = buffer;
+
+    return (True);
+}
+
