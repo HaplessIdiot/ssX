@@ -435,7 +435,13 @@ Release Notes for XFree86[tm] 3.2A
      for libXext and libICE have been bumped to 6.3.  The others remain the
      same.
 
+   o Xterm's emulation of DECUDK (DEC user-defined keys) now (correctly) inter-
+     prets shifted keys only.
+
    o VT52 emulation has been added to xterm.
+
+   o Xterm's VT100 emulation generates correct codes for PF1-PF4, as well as
+     the keypad "+" and ",".  These codes differ from the VT220 emulation.
 
    o Some xterm bugs have been fixed, including coloured background exposure
      while selection is active, and missing state changes in the VT100 emula-
@@ -447,12 +453,6 @@ Release Notes for XFree86[tm] 3.2A
      has been added to xterm.
 
    o xset includes support for the DPMS extension.
-
-5.27  SuperProbe
-
-   o Add detection of Alliance Pro Motion chips.
-
-   o Add detection of I128-2.
 
 
 
@@ -466,6 +466,12 @@ Release Notes for XFree86[tm] 3.2A
 Release Notes for XFree86[tm] 3.2A
 
 
+
+5.27  SuperProbe
+
+   o Add detection of Alliance Pro Motion chips.
+
+   o Add detection of I128-2.
 
    o Add detection of S3 Trio64UV+ and Aurora64V+.
 
@@ -516,12 +522,6 @@ versions (after backing them up).  The Xservers and font server in previous
 releases cannot read gzipped fonts, so keep a copy of the old fonts if you wish
 to run older servers.
 
-The following X servers are for PC/AT based hardware (i.e., typical Intel ix86
-based PCs).  Choose at least one which matches your hardware, as well as the
-VGA16 server.  The VGA16 server is required by the new configuration utility
-(XF86Setup).
-
-
 
 
 
@@ -531,6 +531,12 @@ VGA16 server.  The VGA16 server is required by the new configuration utility
 
 Release Notes for XFree86[tm] 3.2A
 
+
+
+The following X servers are for PC/AT based hardware (i.e., typical Intel ix86
+based PCs).  Choose at least one which matches your hardware, as well as the
+VGA16 server.  The VGA16 server is required by the new configuration utility
+(XF86Setup).
 
 
 	  X32A8514.tgz	  8514/A server
@@ -581,12 +587,6 @@ is, you don't need any of these.
 
 
 The following are optional.
-
-
-
-
-
-
 
 
 
@@ -688,7 +688,7 @@ ldconfig supports the -m option, you can run:
 Otherwise for these OSs, check /etc/rc to see how ldconfig gets run at boot
 time.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.59 1997/01/27 07:47:32 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.60 1997/05/14 10:33:54 dawes Exp $
 
 
 
@@ -836,7 +836,7 @@ Release Notes for XFree86[tm] 3.2A
    5.24 WD90C24 driver (SVGA server) ........................................ 7
    5.25 Hercules mono driver ................................................ 7
    5.26 Client/Library changes .............................................. 7
-   5.27 SuperProbe .......................................................... 7
+   5.27 SuperProbe .......................................................... 8
    5.28 Fonts ............................................................... 8
 
 6. Installing the XFree86 3.2A Release ...................................... 8
