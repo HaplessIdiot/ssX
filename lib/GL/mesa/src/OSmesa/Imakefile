@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.3 2000/06/26 22:27:41 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -8,7 +8,7 @@ XCOMM $XFree86$
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
-LinkSourceFile(osmesa.c, ../../../../../extras/Mesa/src/OSmesa)
+LinkSourceFile(osmesa.c, $(MESASRCDIR)/src/OSmesa)
 
 
 #if Malloc0ReturnsNull

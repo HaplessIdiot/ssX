@@ -1,4 +1,8 @@
 XFree86 4.0.1a (2 August 2000)
+ 467. Change references to the Mesa source directory in Imakefiles to
+      $(MESASRCDIR) (David Dawes).
+ 467. Fix a typo an error in the example code in the XtAppAddInput man page
+      (#4070, Carlos A. M. dos Santos).
  466. Imstt driver updates, including moving from cfb to fb, fixing fbdev
       bugs and an accel blit bug, and a general cleanup (#4068, Ani Joshi).
  465. Fix the installation path of the xditview bitmap (#4067,
@@ -10898,4 +10902,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1250 2000/08/01 18:53:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1251 2000/08/01 20:05:41 dawes Exp $

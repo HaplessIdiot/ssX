@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.70 2000/06/17 00:02:01 martin Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.71 2000/06/25 20:17:28 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -525,6 +525,9 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #else
 #define GlxDefines /**/
 #endif
+#endif
+#ifndef MesaSrcDir
+#define MesaSrcDir $(TOP)/extras/Mesa
 #endif
 #ifndef ShmDefines
 #if HasShm
@@ -1185,6 +1188,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
         EXTINCSRC = $(XTOP)/include/extensions
       FTSOURCEDIR = FreeTypeSrcDir
      XTTSOURCEDIR = XTrueTypeSrcDir
+       MESASRCDIR = MesaSrcDir
         PSWRAPSRC = $(XTOP)/config/pswrap
      TRANSCOMMSRC = $(LIBSRC)/xtrans
    TRANS_INCLUDES = -I$(TRANSCOMMSRC)
