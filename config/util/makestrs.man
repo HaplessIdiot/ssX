@@ -19,10 +19,8 @@
 .\" dealing in this Software without prior written authorization from The
 .\" Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/config/util/makestrs.man,v 3.6 2001/01/27 18:19:55 dawes Exp $
 .\"
-.\" Shorthand for "#" that survives preprocessing
-.ds h \N'35'
 .TH MAKESTRS 1 __xorgversion__
 .SH NAME
 makestrs \- makes string table C source and header(s)
@@ -84,29 +82,29 @@ no abioptions are specified.
 .SH SYNTAX
 The syntax for string-list file is (items in square brackets are optional):
 .RS 4
-\*hprefix <text>
+\&#prefix <text>
 .RE
 .RS 4
-\*hfeature <text>
+\&#feature <text>
 .RE
 .RS 4
-\*hexternref <text>
+\&#externref <text>
 .RE
 .RS 4
-\*hexterndef [<text>]
+\&#externdef [<text>]
 .RE
 .RS 4
-[\*hctempl <text>]
+[#ctempl <text>]
 .RE
 .LP
 .RS 4
-\*hfile <filename>
+\&#file <filename>
 .RE
 .RS 4
-\*htable <tablename>
+\&#table <tablename>
 .RE
 .RS 4
-[\*hhtempl]
+[#htempl]
 .RE
 .RS 4
 <text>
@@ -118,7 +116,7 @@ The syntax for string-list file is (items in square brackets are optional):
 <text>
 .RE
 .RS 4
-[\*htable <tablename>
+[#table <tablename>
 .RE
 .RS 4
 <text>
@@ -133,13 +131,13 @@ The syntax for string-list file is (items in square brackets are optional):
  ...
 .RE
 .RS 4
-\*htable <tablename>
+\&#table <tablename>
 .RE
 .RS 4
  ...]
 .RE
 .RS 4
-[\*hfile <filename>
+[#file <filename>
 .RE
 .RS 4
  ...]
