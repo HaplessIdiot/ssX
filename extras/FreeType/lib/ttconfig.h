@@ -1,7 +1,3 @@
-/* This is an Xserver-specific version */
-
-/* $XFree86: xc/extras/FreeType/lib/ttconfig.h,v 1.2 1998/09/06 04:29:54 dawes Exp $ */
-
 /*******************************************************************
  *
  *  ttconfig.h                                                1.0
@@ -42,24 +38,6 @@
 /* version of the library.                                                */
 
 /* #define TT_CONFIG_OPTION_THREAD_SAFE */
-
-
-/**************************************************************************/
-/* Definition of various integer sizes. These types are used by ttcalc    */
-/* and ttinterp (for the 64-bit integers) only..                          */
-
-typedef INT32           TT_Int32;
-typedef CARD32          TT_Word32;
-
-
-
-/* LONG64 must be defined when a 64-bit type is available */
-/* INT64 must then be defined to this type..              */
-#ifdef WORD64
-#define LONG64
-#define INT64   long
-#endif
-
 
 /* ------------ general debugging -------------------------------------- */
 

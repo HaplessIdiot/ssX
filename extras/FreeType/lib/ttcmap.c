@@ -15,8 +15,6 @@
  *
  ******************************************************************/
 
-/* $XFree86: xc/extras/FreeType/lib/ttcmap.c,v 1.2 1998/09/06 05:05:29 dawes Exp $ */
-
 #include "ttobjs.h"
 #include "ttdebug.h"
 #include "ttfile.h"
@@ -447,10 +445,6 @@
     seg4 = cmap4->segments[i];
 
     if ( charCode < seg4.startCount )
-      return 0;
-
-    /* Protect against broken fonts */
-    if( seg4.startCount == 0xFFFF )
       return 0;
 
     if ( seg4.idRangeOffset == 0 )
