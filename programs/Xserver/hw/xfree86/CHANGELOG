@@ -1,4 +1,4 @@
-XFree86 3.9g (xx June 1997)
+XFree86 3.9g (20 June 1997)
 1032. Fix SEGV in solx86's xf86MapVidMem() when called without first
       calling xf86LinearVidMem() (David Thompson).
 1031. Fix for pci detection code in S3 server (#683, Harald Koenig).
@@ -4971,4 +4971,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.491 1997/06/18 08:25:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.493 1997/06/20 11:30:31 dawes Exp $
