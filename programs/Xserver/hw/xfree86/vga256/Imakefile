@@ -30,7 +30,10 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 $(DONES): $(SUBDIRS)
 #endif
 
+#if ! DoLoadableServer
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,$(VGADRIVERS))
+#endif
+
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .
@@ -46,5 +49,9 @@ ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(vga256,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(LINKKITDIR))
+
+#if DoLoadableServer
+InstallDynamicModule(libvga256.a,$(MODULEDIR))
+#endif
 
 DependSubdirs($(SUBDIRS))

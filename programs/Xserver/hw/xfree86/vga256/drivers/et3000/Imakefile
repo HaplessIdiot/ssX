@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:26 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/Imakefile,v 3.5 1996/02/04 09:13:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/Imakefile,v 3.6 1996/12/23 06:57:18 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = et3_driver.c et3_bank.s
@@ -31,6 +31,10 @@ ObjectFromSpecialAsmSource(et3_bank,bank,NullParameter)
 InstallLinkKitNonExecFile(et3_driver.c,$(LINKKITDIR)/drivers/vga256/et3000)
 InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/et3000)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/et3000)
+
+#if DoLoadableServer
+InstallDynamicModule(et3_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/11 1996/10/19 18:10:30 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.18 1996/12/23 06:56:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.19 1997/01/05 11:59:37 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -87,5 +87,9 @@ InstallLinkKitNonExecFile(linearline.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(linearline.h,$(LINKKITDIR)/drivers/vga256/cirrus)
 
 #ifndef OS2Architecture
-DependTarget()
+#if DoLoadableServer
 #endif
+InstallDynamicModule(cir_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()

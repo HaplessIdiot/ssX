@@ -54,7 +54,6 @@
 #include "mach32.h"
 #include "regmach32.h"
 
-#define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
 #ifdef XFreeXDGA
@@ -82,6 +81,43 @@ static int mach32ValidMode(
     int
 #endif
 );
+
+#if defined(XFree86LOADER)
+/*
+ * This limit is currently set to 80MHz because this is the limit of many
+ * ramdacs when running in 1:1 mode.  It will be increased when support
+ * is added for using the ramdacs in 2:1 mode.  Increasing this limit
+ * could result in damage to your hardware.
+ */
+#define MAX_MACH32_CLOCK                80000
+#define MAX_MACH32_TLC34075_CLOCK       135000
+#define MAX_MACH32_16BPP_CLOCK          67500
+
+int mach32MaxClock = MAX_MACH32_CLOCK;
+int mach32MaxTlc34075Clock = MAX_MACH32_TLC34075_CLOCK;
+int mach32Max16bppClock = MAX_MACH32_16BPP_CLOCK;
+
+int mach32ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  MEMBASE,
+  -1
+};
+#endif
 
 ScrnInfoRec mach32InfoRec = {
     FALSE,		/* Bool configured */
@@ -151,6 +187,12 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int physSize */
 #endif
 };
+
+ScrnInfoRec *
+ModuleInit()
+{
+return &mach32InfoRec;
+}
 
 short mach32alu[16] = {
     MIX_0,

@@ -1,0 +1,106 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v $ */
+
+
+
+
+/*
+ *
+ * Copyright 1995,96 by Metro Link, Inc.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Metro Link, Inc. not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Metro Link, Inc. makes no
+ * representations about the suitability of this software for any purpose.
+ *  It is provided "as is" without express or implied warranty.
+ *
+ * METRO LINK, INC. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL METRO LINK, INC. BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+#include "sym.h"
+#include "misc.h"
+#include "mi.h"
+#include "mibstore.h"
+#include "cursor.h"
+#include "mipointer.h"
+#include "migc.h"
+#include "miline.h"
+#include "mizerarc.h"
+#include "mifillarc.h"
+#include "mispans.h"
+
+/* mi things */
+
+extern miPointerSpriteFuncRec miSpritePointerFuncs;
+
+LOOKUP miLookupTab[] = {
+   SYMFUNC(miRectIn)
+   SYMFUNC(miZeroLineScreenIndex)
+   SYMFUNC(miZeroClipLine)
+   SYMFUNC(miStepDash)
+   SYMFUNC(miEmptyBox)
+   SYMFUNC(miEmptyData)
+   SYMFUNC(miIntersect)
+   SYMFUNC(miRegionDestroy)
+   SYMFUNC(miTranslateRegion)
+   SYMFUNC(miHandleExposures)
+   SYMFUNC(miPolyFillRect)
+   SYMFUNC(miPolyFillArc)
+   SYMFUNC(miImageGlyphBlt)
+   SYMFUNC(miPolyGlyphBlt)
+   SYMFUNC(miFillPolygon)
+   SYMFUNC(miPolySegment)
+   SYMFUNC(miZeroLine)
+   SYMFUNC(miWideLine)
+   SYMFUNC(miWideDash)
+   SYMFUNC(miZeroPolyArc)
+   SYMFUNC(miPolyArc)
+   SYMFUNC(miCreateGCOps)
+   SYMFUNC(miDestroyGCOps)
+   SYMFUNC(miComputeCompositeClip)
+   SYMFUNC(miChangeGC)
+   SYMFUNC(miCopyGC)
+   SYMFUNC(miDestroyGC)
+   SYMFUNC(miChangeClip)
+   SYMFUNC(miDestroyClip)
+   SYMFUNC(miCopyClip)
+   SYMFUNC(miPolyRectangle)
+   SYMFUNC(miPolyText8)
+   SYMFUNC(miPolyText16)
+   SYMFUNC(miImageText8)
+   SYMFUNC(miImageText16)
+   SYMFUNC(miRegionCreate)
+   SYMFUNC(miPaintWindow)
+   SYMFUNC(miZeroArcSetup)
+   SYMFUNC(miFillArcSetup)
+   SYMFUNC(miFillArcSliceSetup)
+   SYMFUNC(miFindMaxBand)
+   SYMFUNC(miClipSpans)
+   SYMFUNC(miAllocateGCPrivateIndex)
+   SYMFUNC(miRegisterGCPrivateIndex)
+   SYMFUNC(miScreenInit)
+   SYMFUNC(miRectAlloc)
+   SYMFUNC(miInitializeBackingStore)
+   SYMFUNC(miCopyPlane)
+   SYMFUNC(miCreateScreenResources)
+   SYMFUNC(miGetImage)
+   SYMFUNC(miPushPixels)
+   SYMFUNC(miPointerInitialize)
+   SYMFUNC(miPointerPosition)
+   SYMFUNC(miRecolorCursor)
+   SYMFUNC(miPointerWarpCursor)
+   SYMFUNC(miDCInitialize)
+
+   SYMVAR(miSpritePointerFuncs)
+
+  { 0, 0 },
+
+};

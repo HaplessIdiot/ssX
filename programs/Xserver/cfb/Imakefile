@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/67 1996/12/02 10:19:53 lehors $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.8 1996/12/23 06:29:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.9 1997/01/05 11:53:00 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -34,6 +34,9 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
 
+#if !(DoLoadableServer && defined(LinkDirectory))
+CFBCMAP = cfbcmap.o
+#endif
 
 SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbpntwin.c cfbmskbits.c cfbpixmap.c cfbbitblt.c \
@@ -57,7 +60,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbtileoddC.o cfbtileoddG.o cfbtile32C.o cfbtile32G.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o cfballpriv.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o \
-	 cfbcmap.o cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
+	 $(CFBCMAP) cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
 	 cfbfillarcC.o cfbfillarcG.o \
 	 cfbigblt8.o cfbglblt8.o cfbtegblt.o cfbbstore.o \
 	 cfbpolypnt.o \
@@ -229,12 +232,21 @@ stipsprcte32.o: stipsprcte32.s
 
 #if PixelSize == 32
 InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
+#if DoLoadableServer
+InstallDynamicNamedModule(libcfb.a,libcfb32.a,$(MODULEDIR))
+#endif
 #endif
 #if PixelSize == 24
 InstallLinkKitNamedLibrary(cfb,cfb24,$(LINKKITDIR)/lib)
+#if DoLoadableServer
+InstallDynamicNamedModule(libcfb.a,libcfb24.a,$(MODULEDIR))
+#endif
 #endif
 #if PixelSize == 16
 InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)
+#if DoLoadableServer
+InstallDynamicNamedModule(libcfb.a,libcfb16.a,$(MODULEDIR))
+#endif
 #endif
 #if PixelSize == 8
 InstallLinkKitLibrary(cfb,$(LINKKITDIR)/lib)
@@ -243,6 +255,9 @@ InstallLinkKitNonExecFile(cfb8bit.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbmap.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
+#if DoLoadableServer
+InstallDynamicModule(libcfb.a,$(MODULEDIR))
+#endif
 #endif
 
 #ifndef OS2Architecture

@@ -52,6 +52,53 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
+#if XFree86LOADER
+
+#include <xf86.h>
+    /*
+     * this is the module init function that is executed when loading
+     * libcfb as a module. Its name has to be <modulename>ModuleInit.
+     * With this we initialize the function and variable pointers used
+     * in generic parts of XFree86
+     */
+void
+#if PSZ == 8
+libcfbModuleInit(data,magic)
+#endif
+#if PSZ == 16
+libcfb16ModuleInit(data,magic)
+#endif
+#if PSZ == 24
+libcfb24ModuleInit(data,magic)
+#endif
+#if PSZ == 32
+libcfb32ModuleInit(data,magic)
+#endif
+    int * data;
+    int * magic;
+{
+    static int  cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+    	* magic = MAGIC_CCD_DO_BITBLT;
+	* data  = (int *) &cfbDoBitblt;
+	break;
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    case 1:
+    	* magic = MAGIC_CCD_SCREEN_PRIV_IDX;
+	* data  = (int *) &cfbScreenPrivateIndex;
+	break;
+#endif
+    default:
+    	* magic = MAGIC_DONE;
+	break;
+    }
+    return;
+}
+#endif
+
 Bool
 cfbCloseScreen (index, pScreen)
     int		index;

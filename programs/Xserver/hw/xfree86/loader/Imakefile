@@ -1,0 +1,34 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v $ */
+
+
+
+
+#include <Server.tmpl>
+
+#define UseDBMalloc	NO
+
+#if UseDBMalloc
+SYS_LIBRARIES=-ldbmalloc
+DBMALLOCDEFINE=-DDBMALLOC
+#endif
+
+MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
+
+   INCLUDES = -I. -I.. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
+   	      -I$(XF86SRC)/vga256/vga \
+              -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+              -I$(SERVERSRC)/os -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
+
+SRCS = coffloader.c elfloader.c hash.c loader.c loadmod.c dixsym.c misym.c \
+	xf86sym.c
+OBJS = coffloader.o elfloader.o hash.o loader.o loadmod.o dixsym.o misym.o \
+	xf86sym.o
+
+NormalAsmObjectRule()
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(loader,$(OBJS))
+
+SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES))
+
+DependTarget()
