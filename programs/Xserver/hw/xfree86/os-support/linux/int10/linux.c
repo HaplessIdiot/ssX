@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.24 2001/05/15 10:19:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.26 2002/04/04 14:05:54 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -27,6 +27,7 @@
 #define SHMERRORPTR (pointer)(-1)
 
 static int counter = 0;
+static int int10Generation = -1;
 
 static CARD8 read_b(xf86Int10InfoPtr pInt, int addr);
 static CARD16 read_w(xf86Int10InfoPtr pInt, int addr);
@@ -79,6 +80,11 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
     xf86int10BiosLocation bios;
     Bool videoBiosMapped = FALSE;
     
+    if (int10Generation != serverGeneration) {
+	counter = 0;
+	int10Generation = serverGeneration;
+    }
+
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
 
     options = xf86HandleInt10Options(xf86Screens[screen],entityIndex);
