@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.3 2000/08/30 18:00:41 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -87,7 +87,7 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     PictFormatPtr   pFormats;
     int		    i;
 
-    nformats = 3;
+    nformats = 6;
     pFormats = (PictFormatPtr) xalloc (nformats * sizeof (PictFormatRec));
     if (!pFormats)
 	return 0;
@@ -131,6 +131,45 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     pFormats[i].direct.alphaMask = 0x0;
     pFormats[i].pColormap = 0;
     i++;
+    pFormats[i].id = FakeClientID (0);
+    pFormats[i].type = PictTypeDirect;
+    pFormats[i].depth = 16;
+    pFormats[i].direct.red = 11;
+    pFormats[i].direct.redMask = 0x1f;
+    pFormats[i].direct.green = 5;
+    pFormats[i].direct.greenMask = 0x3f;
+    pFormats[i].direct.blue = 0;
+    pFormats[i].direct.blueMask = 0x1f;
+    pFormats[i].direct.alpha = 0;
+    pFormats[i].direct.alphaMask = 0x0;
+    pFormats[i].pColormap = 0;
+    i++;
+    pFormats[i].id = FakeClientID (0);
+    pFormats[i].type = PictTypeDirect;
+    pFormats[i].depth = 15;
+    pFormats[i].direct.red = 10;
+    pFormats[i].direct.redMask = 0x1f;
+    pFormats[i].direct.green = 5;
+    pFormats[i].direct.greenMask = 0x1f;
+    pFormats[i].direct.blue = 0;
+    pFormats[i].direct.blueMask = 0x1f;
+    pFormats[i].direct.alpha = 0;
+    pFormats[i].direct.alphaMask = 0x0;
+    pFormats[i].pColormap = 0;
+    i++;
+    pFormats[i].id = FakeClientID (0);
+    pFormats[i].type = PictTypeDirect;
+    pFormats[i].depth = 16;
+    pFormats[i].direct.red = 10;
+    pFormats[i].direct.redMask = 0x1f;
+    pFormats[i].direct.green = 5;
+    pFormats[i].direct.greenMask = 0x1f;
+    pFormats[i].direct.blue = 0;
+    pFormats[i].direct.blueMask = 0x1f;
+    pFormats[i].direct.alpha = 15;
+    pFormats[i].direct.alphaMask = 0x1;
+    pFormats[i].pColormap = 0;
+    i++;
     *nformatp = i;
     return pFormats;
 }
@@ -139,10 +178,14 @@ PictFormatPtr
 PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 {
     PictureScreenPtr    ps = GetPictureScreen(pScreen);
-    PictFormatPtr	format = ps->formats;
-    int			nformat = ps->nformats;
+    PictFormatPtr	format;
+    int			nformat;
     int			type;
 
+    if (!ps)
+	return 0;
+    format = ps->formats;
+    nformat = ps->nformats;
     switch (pVisual->class) {
     case StaticGray:
     case GrayScale:
