@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.cpp,v 1.1 2000/11/02 16:55:29 tsi Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH R128 __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -62,6 +62,11 @@ Enables or disables the use of 6 bits per color component when in 8 bpp
 mode (emulates VGA mode).  By default, all 8 bits per color component
 are used.  The default is
 .B off.
+.TP
+.BI "Option \*qVideoKey\*q \*q" integer \*q
+This overrides the default pixel value for the YUV video overlay key.
+The default value is
+.B undefined.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
