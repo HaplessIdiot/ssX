@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.13 2002/11/25 14:04:49 eich Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.14 2002/12/17 21:35:09 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -157,5 +157,11 @@
 #define XF86XK_Xfer		0x1008FF8A
 #define XF86XK_ZoomIn		0x1008FF8B
 #define XF86XK_ZoomOut		0x1008FF8C
+
 #define XF86XK_Away		0x1008FF8D
+#define XF86XK_Messenger	0x1008FF8E
+#define XF86XK_WebCam		0x1008FF8F
+#define XF86XK_MailForward	0x1008FF90
+#define XF86XK_Pictures		0x1008FF91
+#define XF86XK_Music		0x1008FF92
 

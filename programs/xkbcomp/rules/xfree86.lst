@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.57 2002/12/20 02:14:49 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.58 2003/01/04 02:57:14 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -64,6 +64,7 @@
   logicdpa2	Logitech Cordless Desktop Pro (alternate option2)
   logicdo	Logitech Cordless Desktop Optical
   logicfn	Logitech Cordless Freedom/Desktop Navigator
+  logicdn	Logitech Cordless Desktop Navigator
   logidak	Logitech Deluxe Access Keyboard
   logiik	Logitech Internet Keyboard
   itouch	Logitech iTouch

@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.21 2002/12/17 21:35:08 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.22 2002/12/17 21:45:03 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -941,6 +941,49 @@ xkb_symbols "logicfn" {
     key <I69>	{	[ XF86Forward		]	};
 };
 
+partial alphanumeric_keys 
+xkb_symbols "logicdn" {
+    name[Group1]= "Logitech Cordless Desktop Navigator";
+
+    // Media keys
+    key <I20>	{	[ XF86AudioMute		]	};
+    key <I6D>	{	[ XF86AudioMedia	]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause ] };
+    key <I24>	{	[ XF86AudioStop		]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+
+    // Left side
+    key <I5F>	{	[ XF86Standby		]	};
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I11>	{	[ XF86Messenger		]	};
+    key <I12>	{	[ XF86WebCam		]	};
+
+    // Right side
+    key <I13>	{	[ XF86VendorHome	]	};
+    key <I65>	{	[ XF86Search		]	};
+    key <I14>	{	[ XF86Shop		]	};
+    key <I66>	{	[ XF86Favorites		]	};
+    key <I32>	{	[ XF86HomePage		]	};
+
+    // Extended function keys
+    key <I3B>	{	[ XF86New		]	};	// F1
+    key <I3C>	{	[ XF86Reply		]	};	// F2
+    key <FK13>	{	[ XF86MailForward	]	};	// F3
+    key <FK14>	{	[ XF86Send		]	};	// F4
+    key <FK15>	{	[ XF86Undo		]	};	// F5
+    key <FK15>	{	[ XF86Redo		]	};	// F6
+    key <FK16>	{	[ XF86Print		]	};	// F7
+    key <I42>	{	[ XF86Save		]	};	// F8
+    key <I43>	{	[ XF86MyComputer	]	};	// F9
+    key <I44>	{	[ XF86Documents		]	};	// F10
+    key <I57>	{	[ XF86Pictures		]	};	// F11
+    key <I58>	{	[ XF86Music		]	};	// F12
+
+};
+
 partial alphanumeric_keys
 xkb_symbols "logidak" {
     name[Group1]= "Logitech Deluxe Access Keyboard";
@@ -1275,7 +1318,7 @@ xkb_symbols "microsoftoffice" {
     key <I59>	{	[ XF86Open		]	};
     key <I5A>	{	[ XF86Close		]	};
     key <I71>	{	[ XF86Reply		]	};
-    key <I72>	{	[ XF86Forward		]	};
+    key <I72>	{	[ XF86MailForward	]	};
     key <I73>	{	[ XF86Send		]	};
     key <I56>	{	[ XF86Spell		]	};
     key <I64>	{	[ XF86Save		]	};
