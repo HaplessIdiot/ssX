@@ -1093,6 +1093,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (pMga->pEnt->location.type != BUS_PCI)
 	return FALSE;
 
+#if 0
+    /* This is causing problems with restoring the card to it's
+       original state.  If this is to be done, it needs to happen
+       after we've saved the original state */
     /* Initialize the card through int10 interface if needed */
     if ( xf86LoadSubModule(pScrn, "int10")){
         xf86Int10InfoPtr pInt;
@@ -1101,6 +1105,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         pInt = xf86InitInt10(pMga->pEnt->index);
         xf86FreeInt10(pInt);
     }
+#endif
 
     /* Find the PCI info for this screen */
     pMga->PciInfo = xf86GetPciInfoForEntity(pMga->pEnt->index);
@@ -1137,8 +1142,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetAccessFuncs(pMga->pEnt, &pMga->Access, &pMga->Access,
 			&pMga->Access, NULL);
 #endif
-
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
