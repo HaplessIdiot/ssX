@@ -1,4 +1,7 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 376. Fix an XAA pixmap cache server crash that can happen in some cases
+      when the off-screen memory is heavily fragmented (David Dawes, based
+      on #5752, Koike Kazuhiko, Chisato Yamauchi).
  375. Fix for the Brazilian ABNT2 keyboard extra key that now translates to
       a different keycode value. Patch suggested by Ivan Pascal.
  374. Fixed XDarwin fullscreen crash in some screen sizes (Torrey T. Lyons).
@@ -17531,7 +17534,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2807 2003/08/13 19:37:09 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2808 2003/08/13 20:30:00 paulo Exp $
 
 
 
