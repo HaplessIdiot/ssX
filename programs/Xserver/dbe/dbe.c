@@ -30,7 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.8 2001/01/17 22:36:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.9 2001/06/23 03:33:21 mvojkovi Exp $ */
 
 
 /* INCLUDES */
@@ -177,7 +177,7 @@ DbeAllocWinPriv(pScreen)
         ptr = (char *)(ppriv + pDbeScreenPriv->winPrivPrivLen);
         for (i = pDbeScreenPriv->winPrivPrivLen; --i >= 0; ppriv++, sizes++)
         {
-            if (size = *sizes)
+            if ((size = *sizes))
             {
                 ppriv->ptr = (pointer)ptr;
                 ptr += size;
@@ -202,13 +202,14 @@ DbeAllocWinPriv(pScreen)
  *
  *****************************************************************************/
 
+#if 0 /* NOT USED */
 static DbeWindowPrivPtr
 DbeFallbackAllocWinPriv(pScreen)
     ScreenPtr	pScreen;
 {
     return (NULL);
-
 } /* DbeFallbackAllocWinPriv() */
+#endif
 
 
 /******************************************************************************
@@ -1755,7 +1756,7 @@ DbeDestroyWindow(pWin)
      **************************************************************************
      */
 
-    if (pDbeWindowPriv = DBE_WINDOW_PRIV(pWin))
+    if ((pDbeWindowPriv = DBE_WINDOW_PRIV(pWin)))
     {
         while (pDbeWindowPriv)
         {
@@ -1814,13 +1815,12 @@ DbeExtensionInit()
 {
     ExtensionEntry	*extEntry;
     register int	i, j;
-    ScreenPtr		pScreen;
+    ScreenPtr		pScreen = NULL;
     DbeScreenPrivPtr	pDbeScreenPriv;
     int			nStubbedScreens = 0;
     Bool		ddxInitSuccess;
 
 #ifdef PANORAMIX
-    extern Bool noPanoramiXExtension;
     if(!noPanoramiXExtension) return;
 #endif
 
