@@ -1,4 +1,4 @@
-XFree86 3.0d (7 May 1994)
+XFree86 3.0d (8 May 1994)
  44. Add missing files to vga2/mfb.
  43. Set VendorString and VendorRelease up for XFree86.
  42. Workaround for STREAMSCONN Xdmcp problems (Xserver and xdm).
