@@ -1,4 +1,6 @@
-XFree86 3.9.17c (29 January 2000)
+XFree86 3.9.17c (27 January 2000)
+3612. Make -configure multihead aware, add loading of all extension modules,
+      setup Layout sections (Alan Hourihane).
 3611. XTextPropertyToTextList doesn't work if incoming XTextProperty has
       encoding field other than STRING or COMPOUND_TEXT (#3606, Ivan Pascal).
 3610. Fix a bug in the X11 generic converters that prevents them from
@@ -23,7 +25,7 @@ XFree86 3.9.17c (29 January 2000)
       this information (David Dawes).
 3599. Force BIOS to be read from 0xc0000 for r128 driver (Kevin Martin).
 3598. Add a XXXAvailableOptions to DriverRec which allows passing available
-      options back to the -configure option.
+      options back to the -configure option (Alan Hourihane).
 3597. Avoid PCI-PCI bridges with an unexpected header type, which avoids
       an infinite loop that can show up in the PCI bus enumeration code
       (Egbert Eich).
