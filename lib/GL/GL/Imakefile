@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.4 2001/03/23 20:56:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.5 2001/04/02 20:32:38 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -53,7 +53,7 @@ NormalLintTarget($(PROFSRC))
      DRMDOBJS = $(GLXLIBSRC)/dri/drm/debugger/?*.o
      DRMPOBJS = $(GLXLIBSRC)/dri/drm/profiled/?*.o
 
-    MESAOBJS = $(COREMESAOBJS) $(MESA_ASM_OBJS)
+    MESAOBJS = $(COREMESAOBJS)  $(MESA_ASM_OBJS)
    MESAUOBJS = $(COREMESAUOBJS) $(MESA_ASM_UOBJS)
    MESADOBJS = $(COREMESADOBJS) $(MESA_ASM_DOBJS)
    MESAPOBJS = $(COREMESAPOBJS) $(MESA_ASM_POBJS)
