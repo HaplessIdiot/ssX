@@ -1,4 +1,4 @@
-                   Release Notes for XFree86[tm] 4.2.99.4
+                  Release Notes for XFree86[tm] 4.2.99.901
 
                           The XFree86 Project, Inc
 
@@ -7,9 +7,9 @@
                                   Abstract
 
      This document contains some information about features present in
-     XFree86 4.2.99.4 and their status.
+     XFree86 4.2.99.901 and their status.
 
-1.  THIS FILE HAS NOT BEEN UPDATED FOR XFree86 4.2.99.4.
+1.  THIS FILE HAS NOT BEEN UPDATED FOR XFree86 4.2.99.901.
 
 2.  Introduction to the 4.x Release Series
 
@@ -18,7 +18,8 @@ XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
 of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
 versely, 4.x has some hardware support not present in 3.3.x.  Our Driver Sta-
 tus document summarizes how the hardware driver support compares between
-3.3.6 and 4.2.99.4.  Please check there first before downloading 4.2.99.4.
+3.3.6 and 4.2.99.901.  Please check there first before downloading
+4.2.99.901.
 
 The 4.0.1 release introduced a new graphical configuration tool, "xf86cfg",
 and a text mode interface was added to it for the 4.0.2 release.  It is work
@@ -29,7 +30,7 @@ built-in to the X server.  It is included in the release, and it works well
 for some hardware.  To try it out, just run (as root) "XFree86 -configure".
 Each of these configuration options will give you a reasonable starting point
 for a suitable configuration file.  We've put some effort into documenting
-the 4.2.99.4 config file format, and you can find that information in the
+the 4.2.99.901 config file format, and you can find that information in the
 XF86Config manual page. Check that, the driver manual pages and the related
 documentation for further information.
 
@@ -226,7 +227,7 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 4.1  Video Drivers
 
-XFree86 4.2.99.4 includes the following video drivers:
+XFree86 4.2.99.901 includes the following video drivers:
 
 +--------------+--------------------------+----------------------------------+
 |Driver Name   | Description              | Further Information              |
@@ -280,7 +281,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.2.99.4 includes the following input drivers:
+XFree86 4.2.99.901 includes the following input drivers:
 
 4.2  Input Drivers
 
@@ -308,16 +309,16 @@ XFree86 4.2.99.4 includes the following input drivers:
 5.  Overview of XFree86 4.x.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
-which drive different hardware, XFree86 4.2.99.4 has a single X server binary
-called XFree86.  This binary can either have one or more video drivers linked
-in statically, or, more usually, dynamically load the video drivers and other
-modules that are needed.
+which drive different hardware, XFree86 4.2.99.901 has a single X server
+binary called XFree86.  This binary can either have one or more video drivers
+linked in statically, or, more usually, dynamically load the video drivers
+and other modules that are needed.
 
-XFree86 4.2.99.4 has X server support for most UNIX(R) and UNIX-like operat-
-ing systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
-IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
-for additional architectures and operating systems is in progress, and is
-planned for future releases.
+XFree86 4.2.99.901 has X server support for most UNIX(R) and UNIX-like oper-
+ating systems on Intel/x86 platforms, plus support for Linux on Alpha, Pow-
+erPC, IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on
+support for additional architectures and operating systems is in progress,
+and is planned for future releases.
 
 5.1  Loader and Modules
 
@@ -335,8 +336,8 @@ they do not need to be recompiled for every different operating system.  In
 the future we plan to take advantage of this to provide more frequent driver
 module updates in between major releases.
 
-The loader in version 4.2.99.4 has support for Intel (x86), Alpha and PowerPC
-platforms.  It also has preliminary support for Sparc platforms.
+The loader in version 4.2.99.901 has support for Intel (x86), Alpha and Pow-
+erPC platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb, cfb,
@@ -683,8 +684,8 @@ Known problems:
 
 5.7  DGA version 2
 
-DGA 2.0 is included in 4.2.99.4, but is not implemented by all drivers.  Pre-
-liminary documentation for the client libraries can be found in the
+DGA 2.0 is included in 4.2.99.901, but is not implemented by all drivers.
+Preliminary documentation for the client libraries can be found in the
 README.DGA document.  A good degree of backwards compatibility with version
 1.0 is provided.
 
@@ -752,7 +753,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.2.99.4 provides a partial implementation of Render sufficient for
+XFree86 4.2.99.901 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -787,10 +788,10 @@ the Xft man page.
 
 5.11.2  FreeType support in Xft
 
-XFree86 4.2.99.4 includes sources for FreeType version 2.0.6, and, by
+XFree86 4.2.99.901 includes sources for FreeType version 2.0.6, and, by
 default, they are built and installed automatically.
 
-If you prefer, you can configure XFree86 4.2.99.4 to use an existing
+If you prefer, you can configure XFree86 4.2.99.901 to use an existing
 Freetype2 installation by telling XFree86 not to build the internal copy and
 indicating where that external version has been installed. Edit (or create)
 config/cf/host.def to include:
@@ -807,7 +808,7 @@ the FreeType release.
 
 5.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.2.99.4 to work with
+Only three applications have been modified in XFree86 4.2.99.901 to work with
 the Render extension and the Xft and FreeType libraries to provide anti-
 aliased text.  Xterm, xditview and x11perf.  Migration of other applications
 may occur in future releases.
