@@ -8,7 +8,7 @@
 <date>12 December 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.6 2000/01/24 19:38:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.7 2000/03/01 00:25:23 dawes Exp $
 </ident>
 
 <toc>
@@ -66,7 +66,7 @@ memory is, on average, slower than the corresponding read/modify/write
 operation in system virtual memory.
 This is normally the case for PCI or AGP adapters, and, so, this option is
 enabled by default unless acceleration is enabled.
-<tag>Rotate</tag>
+<tag>Option "Rotate"</tag>
 The option expect a value "CW" for clockwise or "CCW" for counterclockwise rotation of the screen. This is useful when you need more height then width on the screen. Desktop publishing is one example where a monitor could display the whole page at once on a monitor laying on the side.
 Notice that this option requires "ShadowFB" and automatically enable it. It also disables the acceleration.
 The option is not activated by default.
