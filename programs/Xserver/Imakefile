@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.303tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.304tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -557,7 +557,7 @@ XNEST = Xnest
 #if defined(XVirtualFramebufferServer) && XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if XdmxServer
+#if defined(XdmxServer) && XdmxServer
 XDMX = Xdmx
 #endif
 #if defined(XWinServer) && XWinServer && !MakeDllModules
@@ -568,7 +568,7 @@ XWIN = XWin
     (defined(XVirtualFramebufferServer) && XVirtualFramebufferServer) || \
     (defined(XdmxServer) && XdmxServer) || \
     (!MakeDllModules && defined(XWinServer) && XWinServer)
-MakeMutex($(XF86SERVER) $(XNEST) $(XVFB) $(XWIN))
+MakeMutex($(XF86SERVER) $(XNEST) $(XVFB) $(XDMX) $(XWIN))
 #endif
 MakeMutex($(STDDIRS) mfb fb cfb cfb16 cfb24 cfb32)
 #endif
@@ -1256,7 +1256,7 @@ FBDIR = fb
 FBSUBDIR = fb
 SHADOWDIR = miext/shadow
 XDMXDIRS = $(STDDIRS) $(XDMXDDXDIR) $(SHADOWDIR) $(DEPDIRS) $(FBDIR)
-#if BuildGlxExt
+#if BuildGlxInDmx
 #if BuildXinerama
 GLXPROXY_EXTRAOBJS = hw/dmx/panoramiX.o
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxvisual.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -40,7 +40,7 @@
 
 #include "scrnintstr.h"
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
 
 #include <GL/glxint.h>
 
@@ -75,14 +75,14 @@ Visual *dmxLookupVisual(ScreenPtr pScreen, VisualPtr pVisual)
 {
     DMXScreenInfo *dmxScreen = &dmxScreens[pScreen->myNum];
     int            i;
-#ifdef GLXEXT
+#ifdef GLXPROXY
     Visual        *retval;
 #endif
 
     if (!dmxScreen->beDisplay)
 	return NULL;
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     if ((retval = dmxLookupGLXVisual(pScreen, pVisual)))
 	return retval;
 #endif

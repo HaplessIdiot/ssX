@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmx.h,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -63,7 +63,7 @@
 #include "picturestr.h"
 #endif
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
 #include <GL/glx.h>
 #include <GL/glxint.h>
 #endif
@@ -179,7 +179,7 @@ typedef struct _DMXScreenInfo {
     DMXStatInfo  *stat;             /**< Statistics about XSync  */
     Bool          needsSync;        /**< True if an XSync is pending  */
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
                                   /** Visual information for glxProxy */
     int           numGlxVisuals;
     __GLXvisualConfig *glxVisuals;
@@ -286,7 +286,7 @@ extern int              dmxDepth;               /**< Requested depth if
 extern Bool             dmxNoRender;            /**< True if the RENDER
                                                  * extension should be
                                                  * disabled */
-#ifdef GLXEXT
+#ifdef GLXPROXY
 extern Bool             dmxGLXProxy;            /**< True if glxProxy
 						 * support is enabled */
 extern Bool             dmxGLXSwapGroupSupport; /**< True if glxProxy

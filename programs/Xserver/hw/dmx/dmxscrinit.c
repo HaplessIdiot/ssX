@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxscrinit.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -441,7 +441,7 @@ void dmxBECloseScreen(ScreenPtr pScreen)
     dmxScreen->bePixmapFormats = NULL;
 #endif
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     if (dmxScreen->glxVisuals) {
 	XFree(dmxScreen->glxVisuals);
 	dmxScreen->glxVisuals = NULL;

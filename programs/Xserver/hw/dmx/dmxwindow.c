@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -327,7 +327,7 @@ Bool dmxCreateWindow(WindowPtr pWindow)
 #ifdef RENDER
     pWinPriv->hasPict    = FALSE;
 #endif
-#ifdef GLXEXT
+#ifdef GLXPROXY
     pWinPriv->swapGroup  = NULL;
     pWinPriv->barrier    = 0;
 #endif
@@ -409,7 +409,7 @@ Bool dmxDestroyWindow(WindowPtr pWindow)
     ScreenPtr      pScreen = pWindow->drawable.pScreen;
     DMXScreenInfo *dmxScreen = &dmxScreens[pScreen->myNum];
     Bool           ret = TRUE;
-#ifdef GLXEXT
+#ifdef GLXPROXY
     dmxWinPrivPtr  pWinPriv = DMX_GET_WINDOW_PRIV(pWindow);
 #endif
 
@@ -420,7 +420,7 @@ Bool dmxDestroyWindow(WindowPtr pWindow)
 	dmxSync(dmxScreen, FALSE);
     }
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     if (pWinPriv->swapGroup && pWinPriv->windowDestroyed)
 	pWinPriv->windowDestroyed(pWindow);
 #endif
@@ -668,7 +668,7 @@ Bool dmxUnrealizeWindow(WindowPtr pWindow)
     pWinPriv->offscreen = TRUE;
     pWinPriv->mapped = FALSE;
 
-#ifdef GLXEXT
+#ifdef GLXPROXY
     if (pWinPriv->swapGroup && pWinPriv->windowUnmapped)
 	pWinPriv->windowUnmapped(pWindow);
 #endif
