@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.22 2002/10/17 08:18:17 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.23 2002/12/28 17:32:00 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -476,6 +476,9 @@ $(IMAKE) $(IMAKE).Osuf:							@@\
 AllTarget(basename.RESsuf)						@@\
 basename.RESsuf: basename.RCsuf depends					@@\
 	RemoveFile($@)							@@\
-	ClearmakeOSName \
-	WindresCmd basename.RCsuf options -O coff -o basename.RESsuf
+	ClearmakeOSName \						@@\
+	WindresCmd basename.RCsuf options -O coff -o basename.RESsuf	@@\
+clean::									@@\
+	RemoveFiles(basename.RESsuf)
+
 #endif /* ResourceObjectRule */
