@@ -282,6 +282,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AdjustWaitForDelay)
   SYMVAR(noTestExtensions)
 
+  /* devices.c */
+  SYMFUNC(InitPointerDeviceStruct)
 #ifdef XINPUT
   /* Xi */
   /* exevents.c */

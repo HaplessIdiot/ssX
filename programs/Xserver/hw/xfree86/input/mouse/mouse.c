@@ -1714,3 +1714,39 @@ MousePostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy, int dz)
     }
 }
 
+#ifdef XFree86LOADER
+static void
+xf86MouseUnplug(pointer	p)
+{
+}
+static pointer
+xf86MousePlug(pointer	module,
+	    pointer	options,
+	    int		*errmaj,
+	    int		*errmin)
+{
+    xf86AddInputDriver(&MOUSE, module, 0);
+
+    return module;
+}
+
+static XF86ModuleVersionInfo xf86MouseVersionRec =
+{
+    "mouse",
+    MODULEVENDORSTRING,
+    MODINFOSTRING1,
+    MODINFOSTRING2,
+    XF86_VERSION_CURRENT,
+    1, 0, 0,
+    ABI_CLASS_XINPUT,
+    ABI_XINPUT_VERSION,
+    MOD_CLASS_XINPUT,
+    {0, 0, 0, 0}		/* signature, to be patched into the file by */
+				/* a tool */
+};
+
+XF86ModuleData mouseModuleData = {&xf86MouseVersionRec,
+				  xf86MousePlug,
+				  xf86MouseUnplug};
+
+#endif /* XFree86LOADER */
