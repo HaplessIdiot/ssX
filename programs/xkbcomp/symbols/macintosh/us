@@ -145,6 +145,9 @@ xkb_symbols "extended" {
     modifier_map Mod5   { Scroll_Lock };
     // end modifier mappings
 
+    include "compose(rwin)"
+    include "apple(extended)"
+
 // *** FIXME
 //    key <LSGT> {	[ quoteleft,	asciitilde	]	};
 //    key <AE01> {	[	  1,	exclam 		],

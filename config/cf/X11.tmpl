@@ -3171,8 +3171,6 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #define XftClientLibs $(XFTLIB) FontconfigClientLibs $(XRENDERLIB)
 #endif
 
-XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
-
 #if UseFontconfig
 
 #if BuildFontconfigLibrary
@@ -3299,6 +3297,8 @@ FONTCONFIGDEFINES = -DFONTCONFIG
 #endif
 
 #endif /* UseFontconfig */
+
+XFTINCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES)
 
 #ifdef HasLibpng
 

@@ -477,6 +477,9 @@ static char* stringValued [] = { /* values are atoms */
     "RASTERIZER_NAME",
     "RASTERIZER_VERSION",
 
+    /* other registered font properties (see the X.org Registry, sec. 15) */
+    "_ADOBE_POSTSCRIPT_FONTNAME",
+
     /* unregistered font properties */
     "CHARSET_COLLECTIONS",
     "CLASSIFICATION",
@@ -504,7 +507,12 @@ static void PrintProperty (prop)
 	(void)sprintf (atom, "No such atom = %ld", prop->name);
     }
     printf ("      %s", atom);
-    for (i = strlen(atom); i < 22; i++) printf (" ");
+
+    /* Pad out to a column width of 22, but ensure there is always at
+       least one space between property name & value. */
+    for (i = strlen(atom); i < 21; i++) putchar (' ');
+    putchar(' ');
+
     for (i = 0; ; i++) {
 	if (stringValued[i] == NULL) {
 	    printf ("%ld\n", prop->card32);

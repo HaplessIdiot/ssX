@@ -227,7 +227,7 @@
     <model>
       <configItem>
         <name>armada</name>
-        <description>Laptop/notebook Compaq (eg. Armada) Laptop Keyboard</description>
+        <description>Laptop/notebook Compaq (eg. Armada, Evo) Laptop Keyboard</description>
         <description xml:lang="ru">Клавиатура для компьютеров Compaq (например Armada)</description>
         <description xml:lang="uk">Клавіатура для компьютерів Compaq (напр., Armada)</description>
       </configItem>

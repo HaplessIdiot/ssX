@@ -15,6 +15,8 @@
 // Simple command line usage:
 // setxkbmap 'my_kb_layout' -variant 'my_kb_variant' -model 'my_eak_type'
 
+// All keyboards listed here should be also mentioned in
+// xc/programs/xkbcomp/rules/xfree86, xfree86.lst and xfree86.xml.
 
 // Acer
 
@@ -411,8 +413,12 @@ xkb_symbols "compaqik18" {
 
 partial alphanumeric_keys
 xkb_symbols "armada" {
-    name[Group1]= "Laptop/notebook Compaq (eg. Armada) Laptop Keyboard";
+    name[Group1]= "Laptop/notebook Compaq (eg. Armada, Evo) Laptop Keyboard";
 
+    key <I6F>	{	[ XF86AudioMedia	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
     key <I23>	{	[ XF86WWW		]	};
     key <I1F>	{	[ XF86HomePage		]	};
     key <I1A>	{	[ XF86Search		]	};
@@ -1835,4 +1841,31 @@ xkb_symbols "yahoo" {
     key <I5E>	{	[ XF86PowerOff		]	};
     key <I5F>	{	[ XF86Standby		]	};
     key <I63>	{	[ XF86WakeUp		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "hp5185" {
+    name[Group1]= "Hewlett-Packard 5185 Internet Keyboard";
+
+    key <I10>   {       [ XF86AudioPrev         ]       };
+    key <I65>   {       [ XF86Search            ]       };
+    key <I12>   {       [ XF86Go                ]       };
+    key <I14>   {       [ XF86VendorHome        ]       };
+    key <I15>   {       [ XF86Community         ]       };
+    key <I16>   {       [ XF86AudioMedia        ]       };
+    key <I18>   {       [ XF86Eject             ]       };
+    key <I19>   {       [ XF86AudioNext         ]       };
+    key <I1E>   {       [ XF86Shop              ]       };
+    key <I1F>   {       [ XF86Pictures          ]       };
+    key <I20>   {       [ XF86AudioMute         ]       };
+    key <I22>   {       [ XF86AudioPlay, XF86AudioPause ] };
+    key <I24>   {       [ XF86AudioStop         ]       };
+    key <I26>   {       [ Help                  ]       };
+    key <I27>   {       [ XF86Finance           ]       };
+    key <I2E>   {       [ XF86AudioLowerVolume  ]       };
+    key <I30>   {       [ XF86AudioRaiseVolume  ]       };
+    key <I32>   {       [ XF86WWW               ]       };
+    key <I39>   {       [ Print                 ]       };
+    key <I5F>   {       [ XF86Standby           ]       };
+    key <I6C>   {       [ XF86Mail              ]       };
 };

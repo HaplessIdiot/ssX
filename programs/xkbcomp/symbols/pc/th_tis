@@ -28,7 +28,8 @@ xkb_symbols "basic" {
     key <AD06> {	[ Thai_maihanakat,	Thai_nikhahit	]	};
     key <AD07> {	[ Thai_saraii,		Thai_maitri	]	};
     key <AD08> {	[ Thai_rorua,		Thai_nonen	]	};
-    key <AD09> {	[ Thai_nonu,		Thai_paiyannoi	]	};
+    key <AD09> {type[Group1]="THREE_LEVEL",
+    			[   Thai_nonu,	Thai_paiyannoi,	0x1000e5a]	};
     key <AD10> {	[ Thai_yoyak,		Thai_yoying	]	};
     key <AD11> {	[ Thai_bobaimai,	Thai_thothan	]	};
     key <AD12> {	[ Thai_loling,		comma		]	};

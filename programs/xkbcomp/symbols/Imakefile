@@ -32,7 +32,8 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.60 2003/07/07 15:34:29
 		 tel th th_tis th_pat tj tml tr tr_f \
 		 ua us us_intl us_group2 us_group3 uz \
 		 vn \
-		 yu
+		 yu \
+		 apple
 
        SUBDIRS = digital fujitsu hp macintosh nec sgi sony sun xfree68 pc
 

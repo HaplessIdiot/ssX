@@ -12,6 +12,22 @@ xkb_symbols "switch" {
   modifier_map Mod5   { ISO_Level3_Shift };
 };
 
+// using the level(alt_switch) map, both Alt keys temporarily choose the third
+// group level.  This will mostly be used for imitating Mac OS functionality.
+partial modifier_keys
+xkb_symbols "alt_switch" {
+  include "level3(lalt_switch)"
+  include "level3(ralt_switch)"
+};
+
+partial modifier_keys
+xkb_symbols "lalt_switch" {
+  key <LALT> {
+    type[Group1]="ONE_LEVEL",
+    symbols[Group1] = [ ISO_Level3_Shift ]
+    };
+};
+
 partial modifier_keys
 xkb_symbols "ralt_switch" {
   key <RALT> {
