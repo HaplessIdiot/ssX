@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.64 2005/03/03 18:06:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.65 2005/03/19 01:28:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2754,13 +2754,30 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
    xf86PruneDriverModes(pScrn);
 
-   pScrn->currentMode = pScrn->modes;
-
    if (pScrn->modes == NULL) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No modes.\n");
       PreInitCleanup(pScrn);
       return FALSE;
    }
+
+   /* Now we check the VESA BIOS's displayWidth and reset if necessary */
+   p = pScrn->modes;
+   do {
+      VbeModeInfoData *data = (VbeModeInfoData *) p->Private;
+      VbeModeInfoBlock *modeInfo;
+
+      /* Get BytesPerScanline so we can reset displayWidth */
+      if ((modeInfo = VBEGetModeInfo(pI830->pVbe, data->mode))) {
+         if (pScrn->displayWidth < modeInfo->BytesPerScanline / pI830->cpp) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Correcting stride (%d -> %d)\n", pScrn->displayWidth, modeInfo->BytesPerScanline);
+	    pScrn->displayWidth = modeInfo->BytesPerScanline / pI830->cpp;
+	 }
+      } 
+      p = p->next;
+   } while (p != NULL && p != pScrn->modes);
+
+   pScrn->currentMode = pScrn->modes;
+
 #ifndef USE_PITCHES
 #define USE_PITCHES 1
 #endif
