@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/rgb/rgb.c,v 3.7 2001/10/28 03:34:24 tsi Exp $ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.8tsi Exp $ */
 
 
 /* reads from standard input lines of the form:
@@ -49,6 +49,7 @@ from The Open Group.
 
 #undef NULL
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xos.h>
 #include "rgb.h"
 #include "site.h"
