@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.11 2000/09/25 23:56:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.13tsi Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -186,7 +186,7 @@ XAAPushPixelsSolidColorExpansion(
 	if(!pClipBoxes) return;	
    } else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 
-   nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
+   nboxes = XAAGetRectClipBoxes(pGC, pClipBoxes, 1, &TheRect);
    pbox = pClipBoxes;
 
    while(nboxes--) {

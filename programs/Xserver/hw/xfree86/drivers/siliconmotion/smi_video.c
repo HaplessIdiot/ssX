@@ -41,7 +41,7 @@ Author of changes: Corvin Zahn <zahn@zac.de>
 Date:   2.11.2001
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.12tsi Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -965,7 +965,11 @@ SMI_SetupVideo(
     } else
 	smiPortPtr->I2CDev.SlaveAddr = 0;
 	
+#if defined(REGION_NULL)
+    REGION_NULL(pScreen, &smiPortPtr->clip);
+#else
     REGION_INIT(pScreen, &smiPortPtr->clip, NullBox, 0);
+#endif
     
     pSmi->ptrAdaptor = ptrAdaptor;
     pSmi->BlockHandler = pScreen->BlockHandler;
@@ -1862,8 +1866,9 @@ SMI_ClipVideo(
 	INT32		height
 )
 {
+    ScreenPtr pScreen = pScrn->pScreen;
     INT32 vscale, hscale;
-	BoxPtr extents = REGION_EXTENTS(pScrn, reg);
+	BoxPtr extents = REGION_EXTENTS(pScreen, reg);
 	int diff;
 
 	ENTER_PROC("SMI_ClipVideo");
@@ -1958,9 +1963,9 @@ SMI_ClipVideo(
 	)
 	{
 		RegionRec clipReg;
-		REGION_INIT(pScrn, &clipReg, dst, 1);
-		REGION_INTERSECT(pScrn, reg, reg, &clipReg);
-		REGION_UNINIT(pScrn, &clipReg);
+		REGION_INIT(pScreen, &clipReg, dst, 1);
+		REGION_INTERSECT(pScreen, reg, reg, &clipReg);
+		REGION_UNINIT(pScreen, &clipReg);
 	}
 
     DEBUG((VERBLEV, "ClipVideo(%d): x1=%d y1=%d x2=%d y2=%d\n",  __LINE__, *x1 >> 16, *y1 >> 16, *x2 >> 16, *y2 >> 16));
@@ -2597,7 +2602,7 @@ SMI_DisplaySurface(
 	ptrOffscreen->isOn = TRUE;
     if (pPort->videoStatus & CLIENT_VIDEO_ON)
 	{
-        REGION_EMPTY(pScrn->pScreen, &pPort->clip);
+        REGION_EMPTY(surface->pScrn->pScreen, &pPort->clip);
 		UpdateCurrentTime();
         pPort->videoStatus = FREE_TIMER;
         pPort->freeTime = currentTime.milliseconds + FREE_DELAY;

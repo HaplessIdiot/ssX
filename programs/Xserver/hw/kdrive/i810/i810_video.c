@@ -58,7 +58,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/hw/kdrive/i810/i810_video.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/i810/i810_video.c,v 1.2tsi Exp $ */
 
 /*
  * i810_video.c: i810 KDrive Xv driver. 
@@ -419,7 +419,7 @@ i810SetupImageVideo(ScreenPtr pScreen)
     pPriv->currentBuf = 0;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+    REGION_NULL(pScreen, &pPriv->clip);
 
     i810c->adaptor = adapt;
 

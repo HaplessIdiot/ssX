@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmbitblt.c,v 3.1 1997/01/25 04:21:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmbitblt.c,v 3.2tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -307,7 +307,7 @@ ilbmBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 
 			/* Check to see if the region is empty */
 			if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2) {
-				REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+				REGION_NULL(pGC->pScreen, &rgnDst);
 			} else {
 				REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 			}
@@ -316,7 +316,7 @@ ilbmBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width, height,
 			   a full blown region.  It is intersected with the
 			   composite clip below. */
 			fastClip = 0;
-			REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
+			REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 		}
 	} else
 		REGION_TRANSLATE(pGC->pScreen, &rgnDst, -dx, -dy);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.47 2003/04/05 18:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.48tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2135,8 +2135,8 @@ DefineInitialRootWindow(win)
 #endif
 	sprite.screen = pScreen;
 	/* gotta UNINIT these someplace */
-	REGION_INIT(pScreen, &sprite.Reg1, NullBox, 1);
-	REGION_INIT(pScreen, &sprite.Reg2, NullBox, 1);
+	REGION_NULL(pScreen, &sprite.Reg1);
+	REGION_NULL(pScreen, &sprite.Reg2);
     }
 #endif
 }

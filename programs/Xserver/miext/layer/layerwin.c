@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.6 2002/10/03 22:50:21 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.7tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,16 +35,16 @@ NewLayerList (ScreenPtr pScreen, LayerPtr pLayer)
     pLayList->pNext = 0;
     pLayList->pLayer = pLayer;
     pLayList->inheritClip = TRUE;
-    REGION_INIT (pScreen, &pLayList->clipList, NullBox, 0);
-    REGION_INIT (pScreen, &pLayList->borderClip, NullBox, 0);
+    REGION_NULL (pScreen, &pLayList->clipList);
+    REGION_NULL (pScreen, &pLayList->borderClip);
     return pLayList;
 }
 
 static void
 FreeLayerList (ScreenPtr pScreen, LayerListPtr pLayList)
 {
-    REGION_UNINIT (&pScreen, &pLayList->clipList);
-    REGION_UNINIT (&pScreen, &pLayList->borderClip);
+    REGION_UNINIT (pScreen, &pLayList->clipList);
+    REGION_UNINIT (pScreen, &pLayList->borderClip);
     xfree (pLayList);
 }
 

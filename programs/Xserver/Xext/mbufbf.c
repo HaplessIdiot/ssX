@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.5tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -243,7 +243,7 @@ bufMultibufferInit(pScreen, pMBScreen)
     pMBPriv->rgnChanged = TRUE;
     REGION_INIT(pScreen, &pMBPriv->backBuffer, &box, 1);
     REGION_INIT(pScreen, &pMBPriv->subtractRgn, &box, 1);
-    REGION_INIT(pScreen, &pMBPriv->unionRgn, NullBox, 0);
+    REGION_NULL(pScreen, &pMBPriv->unionRgn);
 
     /* Misc functions */
     pMBPriv->CopyBufferBits  = bufCopyBufferBitsFunc[pScreen->myNum];
@@ -778,7 +778,7 @@ bufPostValidateTree(pParent, pChild, kind)
 			      pUnionRgn);
 
 	/* Paint gained and lost backbuffer areas in select plane */
-	REGION_INIT(pScreen, &exposed, NullBox, 0);
+	REGION_NULL(pScreen, &exposed);
 	REGION_SUBTRACT(pScreen, &exposed, pSubtractRgn, pUnionRgn);
 	(* pMBPriv->DrawSelectPlane)(pScreen, pMBPriv->selectPlane,
 				     &exposed, FRONT_BUFFER);
@@ -913,8 +913,8 @@ bufWindowExposures(pWin, prgn, other_exposed)
     /* miWindowExposures munges prgn and other_exposed. */
     if (handleBuffers)
     {
-	REGION_INIT(pScreen, &tmp_rgn, NullBox, 0);
-	REGION_COPY(pScreen, &tmp_rgn,prgn);
+	REGION_NULL(pScreen, &tmp_rgn);
+	REGION_COPY(pScreen, &tmp_rgn, prgn);
     }
 
     UNWRAP_SCREEN_FUNC(pScreen, pMBPriv, void, WindowExposures);

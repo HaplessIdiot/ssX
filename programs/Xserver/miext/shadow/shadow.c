@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.13 2002/12/02 20:37:23 tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.14tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1473,7 +1473,7 @@ shadowAdd (ScreenPtr	    pScreen,
     pBuf->pPixmap = pPixmap;
     pBuf->update = update;
     pBuf->window = window;
-    REGION_INIT (pScreen, &pBuf->damage, NullBox, 0);
+    REGION_NULL(pScreen, &pBuf->damage);
     pBuf->pNext = pScrPriv->pBuf;
     pBuf->randr = randr;
     pBuf->closure = 0;

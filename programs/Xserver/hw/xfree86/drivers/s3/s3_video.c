@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_video.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_video.c,v 1.4tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -242,7 +242,7 @@ static XF86VideoAdaptorPtr S3SetupImageVideoOverlay(ScreenPtr pScreen)
     	adapt->QueryImageAttributes = S3QueryImageAttributes;
  
     	/* gotta uninit this someplace */
-    	REGION_INIT(pScreen, &(pS3->portPrivate->clip), NullBox, 0);
+	REGION_NULL(pScreen, &(pS3->portPrivate->clip));
        
     	S3ResetVideoOverlay(pScrn);
        

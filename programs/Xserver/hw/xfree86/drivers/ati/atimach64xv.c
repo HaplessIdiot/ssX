@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.5 2003/04/30 16:56:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1438,7 +1438,7 @@ ATIMach64XVInitialiseAdaptor
     pAdaptor->PutImage             = ATIMach64PutImage;
     pAdaptor->QueryImageAttributes = ATIMach64QueryImageAttributes;
 
-    REGION_INIT(pScreen, &pATI->VideoClip, NullBox, 0);
+    REGION_NULL(pScreen, &pATI->VideoClip);
     pATI->ActiveSurface = FALSE;
 
     if (ATIMach64XVAtomGeneration != serverGeneration)

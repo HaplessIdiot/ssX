@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.11tsi Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -340,8 +340,8 @@ A(SetupImageVideo)(ScreenPtr pScreen)
     pPriv[1].contrast = 128;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
-    REGION_INIT(pScreen, &(pPriv + 1)->clip, NullBox, 0);
+    REGION_NULL(pScreen, &pPriv->clip);
+    REGION_NULL(pScreen, &(pPriv + 1)->clip);
 
     pApm->adaptor = adapt;
 
@@ -508,6 +508,7 @@ static int
 A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
 		RegionPtr clipBoxes, pointer pdata)
 {
+    ScreenPtr		pScreen = pScrn->pScreen;
     APMDECL(pScrn);
     ApmPortPrivPtr	pPriv = pdata, pPriv0, pPriv1;
     register int	fx, fy;
@@ -536,7 +537,7 @@ A(ReputImage)(ScrnInfoPtr pScrn, short drw_x, short drw_y,
     reg0 = &pPriv0->clip;
     bzero(&Union, sizeof Union);
     REGION_EMPTY(pScreen, &Union);
-    REGION_INIT(pScreen, &Union, NullBox, 0);
+    REGION_NULL(pScreen, &Union);
     REGION_UNION(pScreen, &Union, reg0, &pPriv1->clip);
     nrects = REGION_NUM_RECTS(&Union);
     rects = REGION_RECTS(&Union);

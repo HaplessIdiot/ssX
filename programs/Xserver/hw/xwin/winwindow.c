@@ -28,7 +28,7 @@
  * Authors:	Harold L Hunt II
  *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.7 2003/07/29 21:25:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.8tsi Exp $ */
 
 #include "win.h"
 
@@ -496,7 +496,7 @@ winReshapePRootless (WindowPtr pWin)
   if (!wBoundingShape (pWin))
     return;
 
-  REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
+  REGION_NULL(pScreen, &rrNewShape);
   REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
   REGION_TRANSLATE(pScreen, &rrNewShape, pWin->borderWidth,
                    pWin->borderWidth);

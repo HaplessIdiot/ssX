@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/kdrive/igs/igsdraw.c,v 1.1 2000/05/06 22:17:43 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/kdrive/igs/igsdraw.c,v 1.3tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1358,7 +1358,7 @@ igsCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
 
-    REGION_INIT (pWin->drawable.pScreen, &rgnDst, NullBox, 0);
+    REGION_NULL(pWin->drawable.pScreen, &rgnDst);
     
     REGION_INTERSECT(pWin->drawable.pScreen, &rgnDst, &pWin->borderClip, prgnSrc);
 

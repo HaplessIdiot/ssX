@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.17tsi Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -869,7 +869,7 @@ SavageSetupImageVideo(ScreenPtr pScreen)
     pPriv->lastKnownPitch = 0;
 
     /* gotta uninit this someplace */
-    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
+    REGION_NULL(pScreen, &pPriv->clip);
 
     psav->adaptor = adapt;
 
@@ -1393,6 +1393,7 @@ SavagePutImage(
 ){
     SavagePortPrivPtr pPriv = (SavagePortPrivPtr)data;
     SavagePtr psav = SAVPTR(pScrn);
+    ScreenPtr pScreen = pScrn->pScreen;
     INT32 x1, x2, y1, y2;
     unsigned char *dst_start;
     int pitch, new_h, offset, offsetV=0, offsetU=0;
@@ -1517,8 +1518,8 @@ SavagePutImage(
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     /* update cliplist */
-    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
-	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
+    if(!REGION_EQUAL(pScreen, &pPriv->clip, clipBoxes)) {
+	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
 	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
@@ -1743,6 +1744,7 @@ SavageDisplaySurface(
 ){
     OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
     ScrnInfoPtr pScrn = surface->pScrn;
+    ScreenPtr pScreen = pScrn->pScreen;
     SavagePortPrivPtr portPriv = GET_PORT_PRIVATE(pScrn);
     INT32 x1, y1, x2, y2;
     BoxRec dstBox;
@@ -1779,7 +1781,7 @@ SavageDisplaySurface(
     pPriv->isOn = TRUE;
 #if 0
     if(portPriv->videoStatus & CLIENT_VIDEO_ON) {
-	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);   
+	REGION_EMPTY(pScreen, &portPriv->clip);
 	UpdateCurrentTime();
 	portPriv->videoStatus = FREE_TIMER;
 	portPriv->freeTime = currentTime.milliseconds + FREE_DELAY;

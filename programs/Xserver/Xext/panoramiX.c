@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.37tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -428,7 +428,7 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     int 	     	i;
     Bool	     	success = FALSE;
     ExtensionEntry 	*extEntry;
-    ScreenPtr		pScreen;
+    ScreenPtr		pScreen = screenInfo.screens[0];
     PanoramiXScreenPtr	pScreenPriv;
     int			w, h;
     
@@ -510,14 +510,16 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     }
   
 
-    REGION_INIT(pScreen, &PanoramiXScreenRegion, NullBox, 1);
+    REGION_NULL(pScreen, &PanoramiXScreenRegion);
     for (i = 0; i < PanoramiXNumScreens; i++) {
 	BoxRec TheBox;
 
+	pScreen = screenInfo.screens[i];
+
 	panoramiXdataPtr[i].x = dixScreenOrigins[i].x;
 	panoramiXdataPtr[i].y = dixScreenOrigins[i].y;
-	panoramiXdataPtr[i].width = (screenInfo.screens[i])->width;
-	panoramiXdataPtr[i].height = (screenInfo.screens[i])->height;
+	panoramiXdataPtr[i].width = pScreen->width;
+	panoramiXdataPtr[i].height = pScreen->height;
 
 	TheBox.x1 = panoramiXdataPtr[i].x;
 	TheBox.x2 = TheBox.x1 + panoramiXdataPtr[i].width;
@@ -1124,6 +1126,7 @@ XineramaGetImageData(
     BoxRec SrcBox, *pbox;
     int x, y, w, h, i, j, nbox, size, sizeNeeded, ScratchPitch, inOut, depth;
     DrawablePtr pDraw = pDrawables[0];
+    ScreenPtr pScreen = pDraw->pScreen;
     char *ScratchMem = NULL;
 
     size = 0;
@@ -1139,7 +1142,7 @@ XineramaGetImageData(
     SrcBox.y2 = SrcBox.y1 + height;
     
     REGION_INIT(pScreen, &SrcRegion, &SrcBox, 1);
-    REGION_INIT(pScreen, &GrabRegion, NullBox, 1);
+    REGION_NULL(pScreen, &GrabRegion);
 
     depth = (format == XYPixmap) ? 1 : pDraw->depth;
 

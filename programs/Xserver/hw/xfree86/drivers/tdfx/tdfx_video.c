@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.20tsi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -239,7 +239,7 @@ TDFXSetupImageVideoOverlay(ScreenPtr pScreen)
     pTDFX->overlayAdaptor = adapt;
 
     pPriv = (TDFXPortPrivPtr)(adapt->pPortPrivates[0].ptr);
-    REGION_INIT(pScreen, &(pPriv->clip), NullBox, 0);
+    REGION_NULL(pScreen, &(pPriv->clip));
 
     TDFXResetVideoOverlay(pScrn);
 

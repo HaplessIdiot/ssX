@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.19 2003/03/06 21:43:17 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.20tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -372,7 +372,7 @@ ShadowCopyWindow(
     RegionRec rgnDst;
 
     if (pPriv->vtSema) {
-        REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
+        REGION_NULL(pWin->drawable.pScreen, &rgnDst);
 	REGION_COPY(pWin->drawable.pScreen, &rgnDst, prgn);
         
         REGION_TRANSLATE(pWin->drawable.pScreen, &rgnDst,

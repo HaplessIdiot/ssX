@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.7 2003/02/17 16:08:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.8tsi Exp $ */
 
 
 #include "X.h"
@@ -67,7 +67,7 @@ cfb8_32CopyWindow(pWin, ptOldOrg, prgnSrc)
     if(doUnderlay)
 	freeReg = miOverlayCollectUnderlayRegions(pWin, &borderClip);
 
-    REGION_INIT(pScreen, &rgnDst, NullBox, 0);
+    REGION_NULL(pScreen, &rgnDst);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;

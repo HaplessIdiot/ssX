@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.35 2003/07/16 01:38:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.36tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1105,7 +1105,7 @@ int PanoramiXCopyArea(ClientPtr client)
 	    RegionRec totalReg;
 	    Bool overlap;
 
-	    REGION_INIT(pScreen, &totalReg, NullBox, 1);
+	    REGION_NULL(pScreen, &totalReg);
 	    FOR_NSCREENS_BACKWARD(j) {
 		if(pRgn[j]) {
 		   if(srcIsRoot) {
@@ -1216,7 +1216,7 @@ int PanoramiXCopyPlane(ClientPtr client)
 	RegionRec totalReg;
 	Bool overlap;
 
-	REGION_INIT(pScreen, &totalReg, NullBox, 1);
+	REGION_NULL(pScreen, &totalReg);
 	FOR_NSCREENS_BACKWARD(j) {
 	    if(pRgn[j]) {
 		REGION_APPEND(pScreen, &totalReg, pRgn[j]);

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.13 2003/10/28 23:08:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/security.c,v 1.14tsi Exp $ */
 
 #include "dixstruct.h"
 #include "extnsionst.h"
@@ -1223,6 +1223,7 @@ SecurityCensorImage(client, pVisibleRegion, widthBytesLine, pDraw, x, y, w, h,
     unsigned int format;
     char * pBuf;
 {
+    ScreenPtr pScreen = pDraw->pScreen;
     RegionRec imageRegion;  /* region representing x,y,w,h */
     RegionRec censorRegion; /* region to obliterate */
     BoxRec imageBox;
@@ -1233,7 +1234,7 @@ SecurityCensorImage(client, pVisibleRegion, widthBytesLine, pDraw, x, y, w, h,
     imageBox.x2 = x + w;
     imageBox.y2 = y + h;
     REGION_INIT(pScreen, &imageRegion, &imageBox, 1);
-    REGION_INIT(pScreen, &censorRegion, NullBox, 0);
+    REGION_NULL(pScreen, &censorRegion);
 
     /* censorRegion = imageRegion - visibleRegion */
     REGION_SUBTRACT(pScreen, &censorRegion, &imageRegion, pVisibleRegion);

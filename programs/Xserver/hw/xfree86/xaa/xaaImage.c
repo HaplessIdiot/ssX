@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.19 2000/04/01 22:42:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.20tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -444,8 +444,7 @@ XAAPutImage(
 	    if(!pClipBoxes) return;	
 	} else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 
-	nboxes = 
-	  XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
+	nboxes = XAAGetRectClipBoxes(pGC, pClipBoxes, 1, &TheRect);
 	pbox = pClipBoxes;
 
 	if(format == XYBitmap) {

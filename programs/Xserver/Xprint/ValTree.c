@@ -1,4 +1,4 @@
-/* $XConsortium: ValTree.c /main/1 1996/09/28 16:58:58 rws $ */
+/* $Xorg: ValTree.c,v 1.3 2000/08/17 19:48:06 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,6 +30,8 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
+
 #include    "X.h"
 #include    "scrnintstr.h"
 #include    "validate.h"
@@ -116,7 +118,7 @@ XpValidateTree (pParent, pChild, kind)
      * borderSize.
      */
     origPrntClip = pParent->clipList;
-    REGION_INIT(pScreen, &tmpPrntClip, NullBox, 0);
+    REGION_NULL(pScreen, &tmpPrntClip);
     REGION_SUBRACT(pScreen, &tmpPrntClip, &pParent->winSize,
 		   &pChild->borderSize);
     pParent->clipList = tmpPrntClip;
@@ -149,7 +151,7 @@ XpValidateTree (pParent, pChild, kind)
      * Compute pParent's AfterValidate structure by subracting the original
      * clipList from the newly computed clipList.
      */
-    REGION_INIT(pScreen, &pParent->valdata->after.exposed, NullBox, 0);
+    REGION_NULL(pScreen, &pParent->valdata->after.exposed);
     REGION_SUBTRACT(pScreen, &pParent->valdata->after.exposed, 
 		    &pParent->clipList, &origPrntClip);
 

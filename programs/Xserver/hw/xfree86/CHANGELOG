@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 573. Rework REGION_* macros to eliminate NEED_SCREEN_REGIONS build failures
+      (Marc La France).
  572. Fix an old bug in the X server and xfs related to usage of
       c->savedName (Bugzilla #818, Owen Taylor).
  571. Fix FontFileListOneFontWithInfo() so that it handles aliases in the
@@ -18145,7 +18147,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2947 2003/11/08 00:18:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2948 2003/11/08 02:02:04 dawes Exp $
 
 
 

@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.7 2003/10/24 00:33:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.8tsi Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -137,7 +137,7 @@ RootlessGetShape(WindowPtr pWin, RegionPtr pShape)
     /* wBoundingShape is relative to *inner* origin of window.
        Translate by borderWidth to get the outside-relative position. */
 
-    REGION_INIT(pScreen, pShape, NullBox, 0);
+    REGION_NULL(pScreen, pShape);
     REGION_COPY(pScreen, pShape, wBoundingShape(pWin));
     REGION_TRANSLATE(pScreen, pShape, pWin->borderWidth, pWin->borderWidth);
 
@@ -302,7 +302,7 @@ RootlessInitializeFrame(WindowPtr pWin, RootlessWindowRec *winRec)
     winRec->borderWidth = bw;
 
 #ifdef ROOTLESS_TRACK_DAMAGE
-    REGION_INIT(pScreen, &winRec->damage, NullBox, 0);
+    REGION_NULL(pScreen, &winRec->damage);
 #endif
 }
 
@@ -609,7 +609,7 @@ RootlessResizeCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg,
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pScreen, prgnSrc, -dx, -dy);
-    REGION_INIT(pScreen, &rgnDst, NullBox, 0);
+    REGION_NULL(pScreen, &rgnDst);
     REGION_INTERSECT(pScreen, &rgnDst, &pWin->borderClip, prgnSrc);
 
     if (gResizeDeathCount == 1) {
@@ -628,7 +628,7 @@ RootlessResizeCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg,
 
         for (i = 0; i < gResizeDeathCount; i++) {
             REGION_INIT(pScreen, &clip, gResizeDeathBounds + 0, 1);
-            REGION_INIT(pScreen, &clipped, NullBox, 0);
+            REGION_NULL(pScreen, &clipped);
             REGION_INTERSECT(pScreen, &rgnDst, &clip, &clipped);
 
             fbCopyRegion(&gResizeDeathPix[i]->drawable,
@@ -673,7 +673,7 @@ RootlessCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pScreen, prgnSrc, -dx, -dy);
 
-    REGION_INIT(pScreen, &rgnDst, NullBox, 0);
+    REGION_NULL(pScreen, &rgnDst);
     REGION_INTERSECT(pScreen, &rgnDst, &pWin->borderClip, prgnSrc);
 
     extents = REGION_EXTENTS(pScreen, &rgnDst);

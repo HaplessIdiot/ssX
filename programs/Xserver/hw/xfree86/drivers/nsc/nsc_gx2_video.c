@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.6tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
- * $Revision: 1.6 $
+ * $Revision: 1.7 $
  * $Author: tsi $
  *
  * File Contents: This file consists of main Xfree video supported routines.
@@ -493,7 +493,7 @@ GX2SetupImageVideo(ScreenPtr pScreen)
 #endif
 
    /* gotta uninit this someplace */
-   REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
+   REGION_NULL(pScreen, &pPriv->clip);
 
    pGeode->adaptor = adapt;
 

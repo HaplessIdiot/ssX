@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.13 2000/03/28 01:21:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.15tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1018,7 +1018,7 @@ XAAClipAndRenderRects(
 
 int
 XAAGetRectClipBoxes(
-    RegionPtr	prgnClip,
+    GCPtr pGC,
     BoxPtr pboxClippedBase,
     int nrectFill,
     xRectangle *prectInit
@@ -1026,7 +1026,7 @@ XAAGetRectClipBoxes(
     int 	Right, Bottom;
     BoxPtr 	pextent, pboxClipped = pboxClippedBase;
     xRectangle	*prect = prectInit;
-
+    RegionPtr   prgnClip = pGC->pCompositeClip;
 
     if (REGION_NUM_RECTS(prgnClip) == 1) {
 	pextent = REGION_RECTS(prgnClip);
