@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.6 2001/07/25 15:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.7 2001/08/27 22:01:21 paulo Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -75,9 +75,6 @@ static int C_Parse2(C_Parser*);
 static int C_Parse3(C_Parser*);
 static int C_Parse4(C_Parser*);
 static void C_ParseCallback(Widget, XtPointer, XtPointer);
-
-extern void _XawTextNeedsUpdating(TextWidget, XawTextPosition, XawTextPosition);
-
 
 /*
  * Initialization

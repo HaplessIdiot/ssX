@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.9 2001/07/25 15:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.10 2001/08/31 15:00:12 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,8 +66,6 @@ static void DoSetTextProperties(xedit_flist_item*, property_info*);
  */
 extern void C_ModeStart(Widget);
 extern void C_ModeEnd(Widget);
-
-extern void _XawTextBuildLineTable(TextWidget, XawTextPosition, _XtBoolean);
 
 /*
  * Initialization

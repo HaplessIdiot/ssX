@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.1 2001/08/31 15:00:12 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -82,6 +82,7 @@ XeditPrintLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params
 {
     if (XawTextGetSource(textwindow) == scratch) {
 	lisp.output = textwindow;
+	XtCallActionProc(w, "newline", event, params, *num_params);
 	XeditDoLispEval(w, event, params, num_params);
     }
     else
@@ -187,6 +188,12 @@ XeditDoLispEval(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    --level;
 	    last = position;
 	} while (level);
+	/* check for quoted expression */
+	if (position) {
+	    (void)XawTextSourceRead(src, position - 1, &block, 1);
+	    if (block.ptr[0] == '\'')
+		--position;
+	}
     }
 
     while (position < end) {
@@ -299,13 +306,6 @@ LispInputCallback(XtPointer closure, int *source, XtInputId *id)
 
 	    block.firstPos = 0;
 	    block.format = FMT8BIT;
-	    if (lisp.expect) {
-		block.length = 1;
-		block.ptr = "\n";
-		XawTextReplace(lisp.output, pos, pos, &block);
-		++pos;
-	    }
-
 	    block.length = len;
 	    block.ptr = str;
 	    XawTextReplace(lisp.output, pos, pos, &block);
