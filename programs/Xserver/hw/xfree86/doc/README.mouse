@@ -2,11 +2,11 @@
 
                                Kazutaka Yokota
 
-                                 4 July 1999
+                               9 February 2000
 
 1.  Introduction
 
-This document describes mouse support in XFree86 3.9.16.
+This document describes mouse support in XFree86 3.9.18.
 
 Mouse configuration has often been mysterious task for novice users.  How-
 ever, once you learn several basics, it is straightforward to write the mouse
@@ -51,6 +51,14 @@ mice.
             a specialized initialization procedure to enable these features.
             Without proper initialization, it behaves as though it were an
             ordinary two or three button mouse.
+
+      USB mouse
+            USB (Universal Serial Bus) ports are present on most modern com-
+            puters. Several devices can be plugged into this bus, including
+            mices and keyboards.
+
+            The XFree86 server includes support for USB mices on some sys-
+            tems.
 
 Many mice nowadays can be used both as a serial mouse and as a PS/2 mouse.
 They has a logic to distinguish which interface it is connected to.  However,
@@ -106,6 +114,10 @@ No testing has been done with BSD/OS.
 FreeBSD supports the "SysMouse" protocol which must be specified when the
 moused daemon is running in versions 2.2.1 or later.
 
+When running the mouseddaemon, you must always specify the /dev/sysmouse
+device and the "SysMouse" protocol to the X server, regardless of the actual
+type of your mouse.
+
 FreeBSD versions 2.2.6 or later include the kernel-level support for extended
 PS/2 mouse protocols and there is no need to specify the exact protocol name
 to the X server.  Instead specify the "PS/2" or "Auto" protocol and the X
@@ -118,6 +130,11 @@ is an old serial model which doesn't support PnP.
 FreeBSD versions 2.2.5 or earlier do not support extended PS/2 mouse proto-
 cols ("xxxPS/2").  Always specify the "PS/2" protocol for any PS/2 mouse in
 these versions regardless of the brand of the mouse.
+
+FreeBSD versions 3.1 or later have support for USB mice.  Specify the "Auto"
+protocol for the /dev/ums0 device.  (If the moused daemon is running for the
+USB mouse, you must use /dev/sysmouse instead of /dev/ums0 as explained
+above.) See the ums(4) manual page for details.
 
 3.4  FreeBSD(98)
 
@@ -338,6 +355,12 @@ the guidelines below.
             If you suspect this is the case with your mouse, please send a
             report to <XFree86@XFree86.Org>.
 
+      USB mouse
+            If your mouse is connected to the USB port, it can either be sup-
+            ported by the "Auto" protocol, or by an OS-specific protocol (see
+            below), or as a generic Human Interface Device by the "usb" pro-
+            tocol.
+
       Standardized protocols
             Mouse device drivers in your OS may use the standardized protocol
             regardless of the model or the class of the mouse.  For example,
@@ -368,6 +391,10 @@ there is no reliable way to automatically detect the correct number.  This
 option is the only means for the X server to obtain it.  The default value is
 three.
 
+Note that if you intend to assign Z axis movement to button events using the
+ZAxisMapping option below, you need to take account of those buttons into N
+too.
+
           Option    "Buttons" "N"
 
 5.2  ZAxisMappping
@@ -377,15 +404,25 @@ axis.
 
           Option    "ZAxisMapping" "X"
           Option    "ZAxisMapping" "Y"
-          Option    "ZAxisMapping" "N M"
+          Option    "ZAxisMapping" "N1 N2"
+          Option    "ZAxisMapping" "N1 N2 N3 N4"
 
 The first example will map the Z axis motion to the X axis motion.  Whenever
 the user moves the wheel/roller, its movement is reported as the X axis
 motion.  When the wheel/roller stays still, the real X axis motion is
-reported as is.  The last example will map negative Z axis motion to the but-
-ton N and positive Z axis motion to the button M.  If this option is used and
-the buttons N or M actually exists in the mouse, their actions won't be
-detected by the X server.
+reported as is.  The third example will map negative Z axis motion to the
+button N1 and positive Z axis motion to the button N2.  If this option is
+used and the buttons N1 or N2 actually exists in the mouse, their actions
+won't be detected by the X server.
+
+The last example is useful for the mouse with two wheels of which the second
+wheel is used to generate horizontal scroll action.  The motion of the second
+wheel will be mapped to the buttons N3, for the negative direction, and N4,
+for the positive direction.  If the buttons N3 and N4 actually exist in this
+mouse, their actions won't be detected by the X server.
+
+Currently this option can not be set in the XF86Setup program.  You need to
+edit the XF86Config file by hand to add this option.
 
 5.3  Resolution
 
@@ -394,7 +431,8 @@ inch, if possible:
 
           Option    "Resolution"   "N"
 
-Not all mice and OSs can support this option.
+Not all mice and OSs can support this option.  This option can be set in the
+XF86Setup program.
 
 6.  Mouse Gallery
 
@@ -403,11 +441,11 @@ appropriate serial port or PS/2 mouse device.
 
 6.1  MS IntelliMouse  (serial, PS/2)
 
-The wheel movement is recognized as the Z axis motion.  This behavior is not
-compatible with XFree86 versions prior to 3.3.2, but is more consistent with
-the support for other mice with wheels or rollers.  If you want to make the
-wheel behave like before, you can use the "ZAxisMapping" option as described
-above.
+This mouse has a wheel which also acts as the button 2 (middle button).  The
+wheel movement is recognized as the Z axis motion.  This behavior is not com-
+patible with XFree86 versions prior to 3.3.2, but is more consistent with the
+support for other mice with wheels or rollers.  If you want to make the wheel
+behave like before, you can use the "ZAxisMapping" option as described above.
 
 IntelliMouse supports the PnP COM device specification.
 
@@ -434,7 +472,28 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.2  Kensington Thinking Mouse (serial, PS/2)
+6.2  MS IntelliMouse Explorer (PS/2, USB)
+
+This mouse has a wheel which also acts as the button 2 (middle button).
+There are two side buttons; they are recognized as the buttons 4 and 5.  The
+wheel movement is recognized as the Z axis motion.
+
+To use this mouse as the PS/2 device and the OS supports PS/2 mouse initial-
+ization:
+
+          Option    "Protocol"     "ExplorerPS/2"
+
+To use this mouse as the PS/2 device but the OS does not support PS/2 mouse
+initialization (the wheel and the side buttons won't work in this case):
+
+          Option    "Protocol"     "PS/2"
+
+To use this mouse as the PS/2 device and the OS supports automatic PS/2 mouse
+detection:
+
+          Option    "Protocol"     "Auto"
+
+6.3  Kensington Thinking Mouse (serial, PS/2)
 
 This mouse has four buttons.  Thinking Mouse supports the PnP COM device
 specification.
@@ -463,7 +522,7 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.3  Genius NetScroll (PS/2)
+6.4  Genius NetScroll (PS/2)
 
 This mouse has four buttons and a roller.  The roller movement is recognized
 as the Z axis motion.
@@ -483,7 +542,7 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.4  Genius NetMouse and NetMouse Pro (serial, PS/2)
+6.5  Genius NetMouse and NetMouse Pro (serial, PS/2)
 
 These mice have a "magic button" which is used like a wheel or a roller.  The
 "magic button" action is recognized as the Z axis motion.  NetMouse Pro is
@@ -516,7 +575,28 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.5  ALPS GlidePoint (serial, PS/2)
+6.6  Genius NetScroll Optical (PS/2, USB)
+
+This mouse has a wheel which also acts as the button 2 (middle button), and
+two side buttons which are recognized as the buttons 4 and 5.  It is compati-
+ble with NetMouse and NetMouse Pro.
+
+To use this mouse as the PS/2 device and the OS supports PS/2 mouse initial-
+ization:
+
+          Option    "Protocol"     "NetMousePS/2"
+
+To use this mouse as the PS/2 device but the OS does not support PS/2 mouse
+initialization (the wheel and the side buttons won't work):
+
+          Option    "Protocol"     "PS/2"
+
+To use this mouse as the PS/2 device and the OS supports automatic PS/2 mouse
+detection:
+
+          Option    "Protocol"     "Auto"
+
+6.7  ALPS GlidePoint (serial, PS/2)
 
 The serial version of this pad device has been supported since XFree86 3.2.
 `Tapping' action is interpreted as the fourth button press.  (IMHO, the
@@ -542,7 +622,7 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.6  ASCII MieMouse (serial, PS/2)
+6.8  ASCII MieMouse (serial, PS/2)
 
 This mouse appears to be OEM from Genius.  Although its shape is quite dif-
 ferent, it works like Genius NetMouse Pro.  This mouse has a "knob" which is
@@ -575,7 +655,7 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-6.7  Logitech MouseMan+ and FirstMouse+ (serial, PS/2)
+6.9  Logitech MouseMan+ and FirstMouse+ (serial, PS/2)
 
 MouseMan+ has two buttons on top, one side button and a roller.  FirstMouse+
 has two buttons and a roller.  The roller movement is recognized as the Z
@@ -608,7 +688,197 @@ detection:
 
           Option    "Protocol"     "Auto"
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.7 1999/08/28 10:43:34 dawes Exp $
+6.10  IBM ScrollPoint (PS/2)
+
+ScrollPoint has a "stick" in between the two buttons.  This "stick" is the
+same as the stick-shaped pointing device often found on notebook computers,
+on which you move the mouse cursor by pushing the stick.  The stick movement
+is recognized as the Z axis motion.  You can push the stick to right and
+left, as well as forward and backward.  Give four numbers to ZAxisMapping
+option to map movement along all these four directions to button actions.
+
+This mouse is compatible with Logitech MouseMan+.  To use this mouse as the
+PS/2 device and the OS supports PS/2 mouse initialization:
+
+          Option    "Protocol"     "MouseManPlusPS/2"
+
+To use this mouse as the PS/2 device but the OS does not support PS/2 mouse
+initialization (the stick won't work):
+
+          Option    "Protocol"     "PS/2"
+
+To use this mouse as the PS/2 device and the OS supports automatic PS/2 mouse
+detection:
+
+          Option    "Protocol"     "Auto"
+
+6.11  8D ScrollMouse (serial, PS/2)
+
+ScrollMouse, also known as GyroMouse, has a "stick" similar to IBM Scroll-
+Point.  The stick movement is recognized as the Z axis motion.  You can push
+the stick to right and left, as well as forward and backward.  Give four num-
+bers to ZAxisMapping option to map movement along all these four directions
+to button actions.
+
+ScrollMouse supports the PnP COM device specification.  When used as a serial
+mouse, it is compatible with MS IntelliMouse.
+
+To use this mouse as a serial device:
+
+          Option    "Protocol"     "Auto"
+
+or:
+
+          Option    "Protocol"     "IntelliMouse"
+
+To use this mouse as the PS/2 device and the OS supports PS/2 mouse initial-
+ization:
+
+          Option    "Protocol"     "IMPS/2"
+
+To use this mouse as the PS/2 device but the OS does not support PS/2 mouse
+initialization (the stick won't work):
+
+          Option    "Protocol"     "PS/2"
+
+To use this mouse as the PS/2 device and the OS supports automatic PS/2 mouse
+detection:
+
+          Option    "Protocol"     "Auto"
+
+6.12  A4 Tech 4D mice (serial, PS/2, USB)
+
+A4 Tech produces quit a number of mice with one or two wheels.  Their mice
+may have 2, 3, or 4 buttons.  The wheels movement is recognized as the Z axis
+motion.  Give four numbers to ZAxisMapping option to map movement of both
+wheels to button actions.
+
+4D mice support the PnP COM device specification.  When used as a serial
+mouse, it is compatible with MS IntelliMouse.
+
+To use this mouse as a serial device:
+
+          Option    "Protocol"     "Auto"
+
+or:
+
+          Option    "Protocol"     "IntelliMouse"
+
+To use this mouse as the PS/2 device and the OS supports PS/2 mouse initial-
+ization:
+
+          Option    "Protocol"     "IMPS/2"
+
+To use this mouse as the PS/2 device but the OS does not support PS/2 mouse
+initialization (the wheels won't work):
+
+          Option    "Protocol"     "PS/2"
+
+To use this mouse as the PS/2 device and the OS supports automatic PS/2 mouse
+detection:
+
+          Option    "Protocol"     "Auto"
+
+7.  Configuration Examples
+
+This section shows some example InputDevice section for popular mice.  All
+the examples assume that the mouse is connected to the PS/2 mouse port, and
+the OS supports the PS/2 mouse initialization.  It is also assumed that
+/dev/mouse is a link to the PS/2 mouse port.
+
+Logitech MouseMan+ has 4 buttons and a wheel.  The following example makes
+the wheel movement available as the button 5 and 6.
+
+     Section "InputDevice"
+          Identifier     "MouseMan+"
+          Driver         "mouse"
+          Option         "Device"  "/dev/mouse"
+          Option         "Protocol"     "MouseManPlusPS/2"
+          Option         "Buttons" "6"
+          Option         "ZAxisMapping" "5 6"
+     EndSection
+
+You can change button number assignment using the xmodmap command AFTER you
+start the X server with the above configuration.  You may not like to use the
+wheel as the button 2 and rather want the side button (button 4) act like the
+button 2.  You may also want to map the wheel movement to the button 4 and 5.
+This can be done by the following command:
+
+          xmodmap -e "pointer = 1 6 3 2 4 5"
+
+After this command is run, the correspondance between the buttons and button
+numbers will be as shown in the following table.
+
+     Physical Buttons    Reported as:
+     ------------------------------------
+     1 Left Button         Button 1
+     2 Wheel Button        Button 6
+     3 Right Button        Button 3
+     4 Side Button         Button 2
+     5 Wheel Negative Move      Button 4
+     6 Wheel Positive Move      Button 5
+
+For the MS IntelliMouse Explorer which as a wheel and 5 buttons, you may have
+the following InputDevice section.
+
+     Section "InputDevice"
+          Identifier     "IntelliMouse Explorer"
+          Driver         "mouse"
+          Option         "Device"  "/dev/mouse"
+          Option         "Protocol"     "ExplorerPS/2"
+          Option         "Buttons" "7"
+          Option         "ZAxisMapping" "6 7"
+     EndSection
+
+The IntelliMouse Explorer has 5 buttons, thus, you should give "7" to the
+Buttons option if you want to map the wheel movement to buttons (6 and 7).
+With this configuration, the correspondance between the buttons and button
+numbers will be as follows:
+
+     Physical Buttons    Reported as:
+     ------------------------------------
+     1 Left Button         Button 1
+     2 Wheel Button        Button 2
+     3 Right Button        Button 3
+     4 Side Button 1            Button 4
+     5 Side Button 2            Button 5
+     6 Wheel Negative Move      Button 6
+     7 Wheel Positive Move      Button 7
+
+You can change button number assignment using xmodmap AFTER you started the X
+server with the above configuration.
+
+          xmodmap -e "pointer = 1 2 3 4 7 5 6"
+
+The above command will moves the side button 2 to the button 7 and make the
+wheel movement reported as the button 5 and 6.  See the table below.
+
+     Physical Buttons    Reported as:
+     ------------------------------------
+     1 Left Button         Button 1
+     2 Wheel Button        Button 2
+     3 Right Button        Button 3
+     4 Side Button 1            Button 4
+     5 Side Button 2            Button 7
+     6 Wheel Negative Move      Button 5
+     7 Wheel Positive Move      Button 6
+
+For the A4 Tech WinEasy mouse which has two wheels and 3 buttons, you may
+have the following InputDevice section.
+
+     Section "InputDevice"
+          Identifier     "WinEasy"
+          Driver         "mouse"
+          Option         "Device"  "/dev/mouse"
+          Option         "Protocol"     "IMPS/2"
+          Option         "Buttons" "7"
+          Option         "ZAxisMapping" "4 5 6 7"
+     EndSection
+
+The movement of the first wheel is mapped to the button 4 and 5.  The second
+wheel's movement will be reported as the buttons 6 and 7.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.8 2000/02/10 22:33:36 dawes Exp $
 
 
 $XFree86$

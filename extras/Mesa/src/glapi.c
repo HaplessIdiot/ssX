@@ -1,4 +1,4 @@
-/* $Id: glapi.c,v 1.3 2000/02/10 18:57:18 dawes Exp $ */
+/* $Id: glapi.c,v 1.4 2000/02/12 05:43:14 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -23,6 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 
 /*

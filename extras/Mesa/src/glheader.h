@@ -1,4 +1,4 @@
-/* $Id: glheader.h,v 1.1 2000/02/08 17:17:16 dawes Exp $ */
+/* $Id: glheader.h,v 1.2 2000/02/12 05:43:16 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -47,13 +47,13 @@
 #else
 #include <assert.h>
 #include <ctype.h>
-#include <float.h>
 #include <math.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #endif
+#include <float.h>
 
 #ifdef HAVE_CONFIG_H
 #include "conf.h"

@@ -3,6 +3,7 @@
  * 8 bit displays, in Copy mode with no clipping.
  */
 
+/* $XFree86$ */
 /*
 
 Copyright 1989, 1998  The Open Group

@@ -2,7 +2,7 @@
 
                     Juliusz Chroboczek, jec@dcs.ed.ac.uk
 
-                                 26 May 1999
+                              10 February 2000
 
 This version of XFree86 includes a number of improvements to the handling of
 fonts, including
@@ -59,7 +59,7 @@ Digital fonts may consist of bitmap data, in which case they are said to be
 bitmap fonts.  They may also consist of a mathematical description of glyph
 shapes, in which case they are said to be scalable fonts.  Common formats for
 scalable font files are Type 1 (sometimes incorrectly called ATM fonts or
-PostScript fonts), and TrueType.
+PostScript fonts), Speedo and TrueType.
 
 The glyph data in a digital font needs to be indexed somehow.  How this is
 done depends on the font file format.  In the case of Type 1 fonts, glyphs
@@ -83,7 +83,7 @@ font instance's encoding.
 Unicode (<URL:http://www.unicode.org>) is a coded character set with the goal
 of uniquely identifying all characters for all scripts, current and histori-
 cal.  While Unicode was explicitly not designed as a glyph encoding scheme,
-it can often be used as such for a large number of scripts.
+it is often possible to use it as such.
 
 Unicode is an open character set, in that codepoint assignments may be added
 to Unicode at any time (once specified, though, an assignment can never be
@@ -101,8 +101,8 @@ their XLFD set to `iso10646-1'.
 
 XFree86 includes two new Unicode-encoded fonts with a large collection of
 non-ideographic glyphs.  While it is possible to use these fonts as main
-fonts, applications are expected to use them as fallbacks when a given glyph
-is not available in the current font.
+fonts, applications may also use them as fallbacks when a given glyph is not
+available in the current font.
 
 2.1  The Unicode `fixed' font
 
@@ -123,15 +123,16 @@ character sets.  This font is compatible with the standard 8-bit fixed font
 and therefore also includes the DEC line-drawing glyphs in the range 0x00 to
 0x1F, which are not part of Unicode or ISO 10646-1.
 
-XFree86 changes the standard aliases `fixed' and `6x13' to stand for this new
-Unicode-encoded font.  The old ISO 8859-1 encoded `fixed' font is still
-available under its full XLFD name
+An ISO 8859-1 version of this font is still available in file
+
+     /usr/X11/lib/X11/fonts/misc/6x13-ISO8859-1.pcf.gz
+
+with XLFD
 
      -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1
 
-in the file
-
-     /usr/X11/lib/X11/fonts/misc/6x13-L1.pcf.gz
+The standard aliases `fixed' and `6x13' still point at the ISO 8859-1 ver-
+sions of the font.
 
 2.2  The ClearlyU Unicode font
 
@@ -150,8 +151,11 @@ and resides in the font file
 Additional ClearlyU fonts include
 
      -mutt-ClearlyU Alternate Glyphs-medium-r-normal--17-120-100-100-p-91-iso10646-1
+
      -mutt-ClearlyU Arabic Extra-medium-r-normal--17-120-100-100-p-103-fontspecific-0
+
      -mutt-ClearlyU Ligature-medium-r-normal--17-120-100-100-p-141-fontspecific-0
+
      -mutt-ClearlyU PUA-medium-r-normal--17-120-100-100-p-111-iso10646-1
 
 3.  Internationalisation of scalable font backends.
@@ -162,6 +166,7 @@ example, a `fonts.dir' file can now contain entries for the Type 1 Courier
 font such as
 
      cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-1
+
      cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-2
 
 which will lead to the font being recoded to ISO 8859-1 and ISO 8859-2
@@ -169,7 +174,7 @@ respectively.
 
 3.1  The `fontenc' layer
 
-Three of the scalable backends (Type 1, Speedo, and the `xfsft' TrueType
+Three of the scalable backends (Type 1, Speedo, and the `freetype' TrueType
 backend) use a common `fontenc' layer for font re-encoding.  This allows
 those backends to share their encoding data, and allows simple configuration
 of new locales independently of font type.
@@ -268,7 +273,7 @@ it if found.  If none is found, the backend defaults to ISO 8859-1.
 
 The Speedo backend limits all encodings to 8-bit codes.
 
-3.2.3  The `xfsft' TrueType backend
+3.2.3  The `freetype' TrueType backend
 
 The TrueType backend scans the mappings in order.  Mappings with a target of
 PostScript are ignored; mappings with a TrueType or Unicode target are
@@ -290,8 +295,11 @@ name should agree with the encoding name defined in the encoding file.  For
 example,
 
      3
+
      mulearabic-0 encodings/mulearabic-0.enc
+
      mulearabic-1 encodings/mulearabic-1.enc
+
      mulearabic-2 encodings/mulearabic-2.enc
 
 Note that the name of an encoding must be specified in the encoding file's
@@ -322,7 +330,9 @@ The encoding file starts with the definition of the name of the encoding, and
 eventually its alternate names (aliases):
 
      STARTENCODING mulearabic-0
+
      ALIAS arabic-0
+
      ALIAS something-else
 
 The names of the encoding should be suitable for use in an XLFD font name,
@@ -366,7 +376,9 @@ the target of the mapping.  In mappings with a Unicode or TrueType mapping,
 codes are mapped to codes:
 
      0x21 0x0660
+
      0x22 0x0661
+
      ...
 
 As an abbreviation, it is possible to map a contiguous range of codes in a
@@ -377,8 +389,11 @@ single line.  A line consisting of three integers
 is an abbreviation for the range of lines
 
      start     target
+
      start+1   target+1
+
      ...
+
      end       target+end-start
 
 For example, the line
@@ -388,8 +403,11 @@ For example, the line
 is an abbreviation for
 
      0x2121 0x8140
+
      0x2122 0x8141
+
      ...
+
      0x215F 0x817E
 
 Codes not listed are assumed to map through the identity (i.e. to the same
@@ -408,7 +426,9 @@ PostScript mappings are different.  Every line in a PostScript mapping maps a
 code to a glyph name
 
      0x41 A
+
      0x42 B
+
      ...
 
 and codes not explicitly listed are undefined.
@@ -499,8 +519,10 @@ ilar to the format of the `fonts.dir' file, except that it maps XLFD names to
 XLFD names. A `fonts.alias' file might look as follows:
 
      1
+
      "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-iso8859-2" \
-     "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
+
+       "-ogonki-alamakota-medium-r-normal--0-0-0-0-p-0-adobe-fontspecific"
 
 (both XLFD names on a single line).  The syntax of the `fonts.alias' file is
 described in the mkfontdir(1) manual page.
@@ -509,10 +531,22 @@ described in the mkfontdir(1) manual page.
 
 4.1  New TrueType backends
 
-This version of XFree86 comes with two TrueType backends, known as `xfsft'
-and `X-TrueType' (`X-TT' for short).  Those two backends are incompatible, in
-that only one can be used at any one time.  Users are invited to chose
-whichever backend they find more useful and stick to it.
+This version of XFree86 comes with two TrueType backends, known as `freetype'
+(formerly `xfsft') and `X-TrueType' (`X-TT' for short).  Those two backends
+are incompatible, in that only one can be used at any one time.  Users are
+invited to chose whichever backend they find more useful and stick to it.
+
+The `freetype' backend resides in the module `freetype'.  Before using it,
+please check that the `Module' section of your `XF86Config' file contains a
+line that reads
+
+     Load    "freetype"
+
+The `X-TrueType' backend resides in module `xtt'.  In order to use it,
+replace the line in your `XF86Config' file that loads the `freetype' module
+with a line reading
+
+     Load    "xtt"
 
 Both TrueType backends delay glyph rasterisation to the time at which a glyph
 is first used.  For this reason, they only provide an approximate value for
@@ -530,12 +564,12 @@ font really to be a character-cell font.  Users are encouraged to make use of
 this optimisation when useful, but be warned that not all monospaced fonts
 are character-cell fonts.
 
-4.1.1  The `xfsft' TrueType backend
+4.1.1  The `freetype' TrueType backend
 
-The `xfsft' backend is a backend based on the FreeType library (see
-www.freetype.org) with support for the `fontenc' style of internationalisa-
-tion (see The fontenc layer (section 3.1, page 1)).  This backend supports
-TrueType Font files (*.ttf) and TrueType Collections (*.ttc).
+The `freetype' backend (formerly `xfsft') is a backend based on the FreeType
+library (see www.freetype.org) with support for the `fontenc' style of inter-
+nationalisation (see The fontenc layer (section 3.1, page 1)).  This backend
+supports TrueType Font files (*.ttf) and TrueType Collections (*.ttc).
 
 In order to access the faces in a TrueType Collection file, the face number
 must be specified in the fonts.dir file before the filename within colons.
@@ -690,7 +724,7 @@ used for horizontal text (e.g. the CMap `KSC-EUC-H' will be used, but not
 `KSC-EUC-V').  This limitation is due to the fact that the core X11 protocol
 only provides support for horizontal writing.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.4 1999/08/28 10:43:33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.5 2000/02/11 18:06:48 dawes Exp $
 
 
 $XFree86$

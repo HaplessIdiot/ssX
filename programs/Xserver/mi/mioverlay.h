@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __MIOVERLAY_H
 #define __MIOVERLAY_H
 
