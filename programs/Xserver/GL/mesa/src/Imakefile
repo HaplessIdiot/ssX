@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.8 2000/02/12 19:15:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.9 2000/02/15 07:13:33 martin Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.9 1999/05/27 03:43:46 jens Exp $
 
 #define IHaveModules
@@ -80,8 +80,6 @@ LinkSourceFile(glthread.h,../../../../../extras/Mesa/src)
 LinkSourceFile(general_clip.h,../../../../../extras/Mesa/src)
 LinkSourceFile(get.c,../../../../../extras/Mesa/src)
 LinkSourceFile(get.h,../../../../../extras/Mesa/src)
-LinkSourceFile(glthread.c,../../../../../extras/Mesa/src)
-LinkSourceFile(glthread.h,../../../../../extras/Mesa/src)
 LinkSourceFile(hash.c,../../../../../extras/Mesa/src)
 LinkSourceFile(hash.h,../../../../../extras/Mesa/src)
 LinkSourceFile(hint.c,../../../../../extras/Mesa/src)
