@@ -1,4 +1,5 @@
 XFree86 3.1.2Dg (6 May 1996)
+500. X98 updates for PANIX(98) support (X98 core team).
 499. Allow halved clocks to be used with the VGA servers (Koen Gadeyne).
 498. Use same xlfd value rounding for alpha as for i386 (Harald Koenig).
 497. Support for Linux/Alpha (Jay Estabrook, Craig Ruff, Harald Koenig
