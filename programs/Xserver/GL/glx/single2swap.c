@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/single2swap.c,v 1.5 2001/03/21 16:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/single2swap.c,v 1.6tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -116,6 +116,7 @@ int __glXDispSwap_RenderMode(__GLXclientState *cl, GLbyte *pc)
     GLubyte *retBuffer = NULL;
     GLenum newMode;
     __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
     int error;
 
     __GLX_SWAP_INT(&((xGLXSingleReq *)pc)->contextTag);
@@ -322,6 +323,7 @@ int __glXDispSwap_GetClipPlane(__GLXclientState *cl, GLbyte *pc)
     int error;
     GLdouble answer[4];
     __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(&((xGLXSingleReq *)pc)->contextTag);
     cx = __glXForceCurrent(cl, __GLX_GET_SINGLE_CONTEXT_TAG(pc), &error);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.5 2001/03/21 16:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmdsswap.c,v 1.6tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -163,6 +163,7 @@ int __glXSwapGetVisualConfigs(__GLXclientState *cl, GLbyte *pc)
     unsigned int screen;
     int i, p;
     __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(&req->screen);
     screen = req->screen;
@@ -377,6 +378,7 @@ void glxSwapQueryExtensionsStringReply(ClientPtr client,
 {
     int length = reply->length;
     __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
     __GLX_SWAP_SHORT(&reply->sequenceNumber);
     __GLX_SWAP_INT(&reply->length);
     __GLX_SWAP_INT(&reply->n);
@@ -403,6 +405,7 @@ void __glXSwapQueryContextInfoEXTReply(ClientPtr client, xGLXQueryContextInfoEXT
 {
     int length = reply->length;
     __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
     __GLX_SWAP_SHORT(&reply->sequenceNumber);
     __GLX_SWAP_INT(&reply->length);
     __GLX_SWAP_INT(&reply->n);
@@ -449,7 +452,7 @@ int __glXSwapRender(__GLXclientState *cl, GLbyte *pc)
     pc += sz_xGLXRenderReq;
     left = (req->length << 2) - sz_xGLXRenderReq;
     while (left > 0) {
-        __GLXrenderSizeData *entry, renderEntry;
+        __GLXrenderSizeData *entry;
         int extra;
 	void (* proc)(GLbyte *);
 
@@ -565,7 +568,7 @@ int __glXSwapRenderLarge(__GLXclientState *cl, GLbyte *pc)
     pc += sz_xGLXRenderLargeReq;
     
     if (cl->largeCmdRequestsSoFar == 0) {
-	__GLXrenderSizeData *entry, renderEntry;
+	__GLXrenderSizeData *entry;
 	int extra;
 	size_t cmdlen;
 	/*
