@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 449. Fix a memory leak when calling _XCloseLC and removing the loadable
+      locales (#A.855 Mark Robinson).
  448. Fix input size of character strings used in lib/X11/lcGetConv.c (#A.828,
       Yong-Jhen Hong).
  447. Add Shape extension support to Cygwin/XFree86 rootless mode (#5431,
@@ -15442,4 +15444,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2364 2002/10/31 23:06:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2365 2002/11/01 09:10:34 alanh Exp $
