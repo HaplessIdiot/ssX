@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.11 2001/04/15 23:16:01 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.12 2001/04/21 23:32:56 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -227,7 +227,7 @@ XAADoComposite (
 		
 	   /* pull out color expandable operations here */
 	   if((pMask->format == PICT_a1) && (alpha == 0xffff) &&
-	       (op == PictOpOver) && infoRec->WriteBitmap &&  
+	       (op == PictOpOver) && infoRec->WriteBitmap && !pMask->repeat &&
 	       !(infoRec->WriteBitmapFlags & NO_TRANSPARENCY) &&
 	       (!(infoRec->WriteBitmapFlags & RGB_EQUAL) || 
 	         (red == green == blue)))
@@ -268,6 +268,10 @@ XAADoComposite (
 	        REGION_UNINIT(pScreen, &region);
 		return TRUE;
 	  }
+
+           if(pMask->repeat &&
+                (infoRec->CPUToScreenAlphaTextureFlags & XAA_RENDER_NO_TILE))
+                return FALSE;
 
 	  if((alpha != 0xffff) &&
               (infoRec->CPUToScreenAlphaTextureFlags & XAA_RENDER_NO_SRC_ALPHA))
@@ -319,6 +323,10 @@ XAADoComposite (
 	   return TRUE;
 	}
     } else {	
+	if(pSrc->repeat &&
+            (infoRec->CPUToScreenTextureFlags & XAA_RENDER_NO_TILE))
+            return FALSE;
+
 	formats = infoRec->CPUToScreenTextureFormats;
 
 	while(*formats != pSrc->format) {
