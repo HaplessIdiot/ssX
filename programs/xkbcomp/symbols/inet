@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.33 2003/09/08 14:25:32 eich Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.34 2003/10/14 13:36:31 pascal Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -1054,7 +1054,7 @@ xkb_symbols "logiciink" {
     // Wheel buttons
     key <I6A>	{	[ XF86Back		]	};
     key <I69>	{	[ XF86Forward		]	};
-    key <I16>	{	[ XF86ScrolClick	]	};
+    key <I16>	{	[ XF86ScrollClick	]	};
 };
 
 partial alphanumeric_keys 
@@ -1087,7 +1087,7 @@ xkb_symbols "logiinkse" {
     // Wheel buttons
     key <I69>	{	[ XF86Forward		]	};
     key <I6A>	{	[ XF86Back		]	};
-    key <I16>	{	[ XF86ScrolClick	]	};
+    key <I16>	{	[ XF86ScrollClick	]	};
 
     // Extended function keys
     key <I3B>	{	[ XF86New		]	};	// F1
