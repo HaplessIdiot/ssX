@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.76 2000/02/13 07:39:01 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -190,7 +190,7 @@ void
 identify_card(pciConfigPtr pcr, int verbose)
 {
 
-    int i = 0; 
+    int i, j; 
     int foundit = 0;
 
     SymTabRec *pvnd;
@@ -204,25 +204,23 @@ identify_card(pciConfigPtr pcr, int verbose)
 	   pcr->busnum, pcr->devnum, pcr->funcnum,
 	   pcr->pci_vendor, pcr->pci_device);
     
-    while (pvnd[i].name != (char *)NULL)
-	if (pvnd[i++].token == pcr->pci_vendor)
+    for (i = 0;  pvnd[i].name;  i++) {
+	if (pvnd[i].token == pcr->pci_vendor) {
 	    printf(" %s ", pvnd[i-1].name);
+	    break;
+	}
+    }
 
-    i = 0;
-    
-    while (pvd[i].VendorID) {
-	int j = 0;
-	while (pvd[i].Device[j].DeviceName != (char *)NULL) {
+    for (i = 0;  pvd[i].VendorID;  i++) {
+	for (j = 0;  pvd[i].Device[j].DeviceName;  j++) {
 	    if (pvd[i].Device[j].DeviceID == pcr->pci_device) {
 		printf("%s", pvd[i].Device[j].DeviceName);
 		foundit = 1;
 		break;
 	    }
-	    j++;
 	}
 	if (foundit)
 	    break;
-	i++;
     }
 
     if (!foundit)
@@ -230,26 +228,24 @@ identify_card(pciConfigPtr pcr, int verbose)
     else {
 	printf("\n");
 	if (verbose) {
-	    while(vdf[i].Vendor) {
+	    for (i = 0;  vdf[i].Vendor;  i++) {
 		if (vdf[i].Vendor == pcr->pci_vendor) {
-		    int j = 0;
-		    while(vdf[i].Device[j].DeviceID) {
+		    for (j = 0;  vdf[i].Device[j].DeviceID;  j++) {
 			if (vdf[i].Device[j].DeviceID == pcr->pci_device) {
 			    vdf[i].Device[j].func(pcr);
 			    return;
 			}
-			j++;
 		    }
 		    break;
 		}
-		i++;
 	    }
 	}
     }
 
     if (verbose) {
-	printf(" CardVendor 0x%04x card 0x%04x\n",
-	       pcr->pci_subsys_vendor, pcr->pci_subsys_card);
+	if (!(pcr->pci_header_type & 0x7f))
+	    printf(" CardVendor 0x%04x card 0x%04x\n",
+		   pcr->pci_subsys_vendor, pcr->pci_subsys_card);
 	if (pcr->pci_status_command)
 	    printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
 		   pcr->pci_status, pcr->pci_command);
@@ -379,6 +375,8 @@ print_mach64(pciConfigPtr pcr)
 {
     CARD32 sparse_io = 0;
 
+    printf(" CardVendor 0x%04x card 0x%04x\n",
+	pcr->pci_subsys_vendor, pcr->pci_subsys_card);
     if (pcr->pci_status_command)
         printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
             pcr->pci_status, pcr->pci_command);
@@ -430,6 +428,8 @@ print_mach64(pciConfigPtr pcr)
 void
 print_i128(pciConfigPtr pcr)
 {
+    printf(" CardVendor 0x%04x card 0x%04x\n",
+	pcr->pci_subsys_vendor, pcr->pci_subsys_card);
     if (pcr->pci_status_command)
         printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
             pcr->pci_status, pcr->pci_command);
