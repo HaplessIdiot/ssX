@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.5 1999/11/19 13:54:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.6 1999/12/14 03:12:10 robin Exp $ */
 /*
  * includes
  */
@@ -132,7 +132,9 @@ int v_initdac(ScrnInfoPtr pScreenInfo, vu8 bpp, vu8 doubleclock)
 			return -1;
 
         case 8:
-            v_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS );
+            v_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS |
+                                            BT485_CR0_8_BIT_DAC);
+                                           
             v_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_8BPP |
                                             BT485_CR1_PIXEL_PORT_AB);
             v_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
@@ -210,9 +212,10 @@ void v_enablecursor(ScrnInfoPtr pScreenInfo, int type, int size)
   
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
+#ifdef DEBUG
     /* ensure proper ranges */
-    type&=3;
-    size&=1;
+    size=1; /* Enforce 64x64 Cursor */
+#endif
 
     /* type goes to command register 2 */
     Bt485_write_masked(iob, BT485_COMMAND_REG_2, ~BT485_CURSOR_MASK, 
@@ -262,21 +265,21 @@ void v_setcursorcolor(ScrnInfoPtr pScreenInfo, vu32 fg, vu32 bg)
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
     vu16 iob=pRendition->board.io_base+RAMDACBASEADDR;
 
-    /* load the cursor color 0, i.e. overscan */
     v_out8(iob+BT485_CURS_WR_ADDR, 0x00);
-    v_out8(iob+BT485_CURS_DATA, 0x00);
-    v_out8(iob+BT485_CURS_DATA, 0x00);
-    v_out8(iob+BT485_CURS_DATA, 0x00);
-
-    /* load the cursor color 1 */
+    /* load the cursor color 0 */
     v_out8(iob+BT485_CURS_DATA, bg&0xff);
     v_out8(iob+BT485_CURS_DATA, (bg>>8)&0xff);
     v_out8(iob+BT485_CURS_DATA, (bg>>16)&0xff);
 
-    /* load the cursor color 2 */
+    /* load the cursor color 1 */
     v_out8(iob+BT485_CURS_DATA, fg&0xff);
     v_out8(iob+BT485_CURS_DATA, (fg>>8)&0xff);
     v_out8(iob+BT485_CURS_DATA, (fg>>16)&0xff);
+
+    /* load the cursor color 2 (not used) */
+    v_out8(iob+BT485_CURS_DATA, 0x00);
+    v_out8(iob+BT485_CURS_DATA, 0x00);
+    v_out8(iob+BT485_CURS_DATA, 0x00);
 
 }
 

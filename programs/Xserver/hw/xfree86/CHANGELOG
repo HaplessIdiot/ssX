@@ -1,4 +1,5 @@
 XFree86 3.9.16Za (xx December 1999)
+3521. Fix HW cursor on rendition V2K (#3532, Dejan Ilic).
 3520. Sync wacom driver with 3.3 (Frederic Lepied).
 3519. Resolve missing symbol in TDFX driver (#3531, Dave Gilbert).
 3518. Allow TDFX driver to build on Linux-axp (#3530, Dave Gilbert).
@@ -9219,4 +9220,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.917 1999/12/30 03:25:26 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.918 1999/12/30 03:29:18 robin Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.12 1999/11/26 03:26:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.13 1999/12/14 03:12:09 robin Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1349,8 +1349,8 @@ static unsigned int renditionDDC1Read (ScrnInfoPtr pScreenInfo)
   vu32 value = 0;
 
   /* wait for Vsync */
-  while (!(v_in32(iob+CRTCTEST) & CRTCTEST_NOTVBLANK));
-  while (v_in32(iob+CRTCTEST) & CRTCTEST_NOTVBLANK);
+  while (!(v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC));
+  while (v_in32(iob+CRTCSTATUS) & CRTCSTATUS_VERT_SYNC);
 
   /* Read the value */
   value = v_in32(iob+CRTCCTL) & CRTCCTL_DDCDATA;
