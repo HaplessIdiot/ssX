@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>22 August 1999
+<date>29 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.14 1999/08/28 09:00:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.15 1999/08/29 12:20:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -27,15 +27,17 @@ This section contains a brief summary of what has changed since the previous
 snapshot.  More detailed information can be found in the sections that follow.
 
 <itemize>
-  <item>The ``apm'' driver has been updated.
+  <item>The "apm" driver has been updated.
 	See the <ref id="apm" name="APM section"> below.
   <item>A driver for NVIDIA chipsets is now included.  The driver is called
-	``nv''.  Some very basic information can be found in the nv(4) man
+	"nv".  Some very basic information can be found in the nv(4) man
 	page.
   <item>The default xdm config file now has a line to disable listening for
 	XDMCP requests.  This is fine when xdm is only managing a local
 	X server.  The line must be commented out when xdm is used to manage
 	external X servers (e.g., X terminals).
+  <item>New driver for Intel i740.  The driver is called "i740".
+  <item>New driver for 3Dfx Banshee and Voodoo 3.  The driver is called "tdfx".
 </itemize>
 
 <sect>X server
@@ -588,12 +590,14 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>fbdev</tt><colsep>Linux fbdev</tabrow>
    <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)</tabrow>
    <tabrow><tt>glint</tt><colsep>3Dlabs</tabrow>
+   <tabrow><tt>i740</tt><colsep>Intel i740</tabrow>
    <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
    <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
    <tabrow><tt>nv</tt><colsep>NVIDIA</tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
    <tabrow><tt>sis</tt><colsep>SiS</tabrow>
+   <tabrow><tt>tdfx</tt><colsep>3Dfx</tabrow>
    <tabrow><tt>tga</tt><colsep>DEC TGA</tabrow>
    <tabrow><tt>trident</tt><colsep>Trident</tabrow>
    <tabrow><tt>tseng</tt><colsep>Tseng Labs</tabrow>
