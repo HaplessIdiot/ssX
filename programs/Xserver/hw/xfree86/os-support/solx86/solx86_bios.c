@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.2 1999/07/18 15:37:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.3 2000/01/23 02:11:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -57,7 +57,9 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
      	 *      as the standard SVR4 /dev/pmem. By default, then used VT
      	 *      is considered the "default" file to open.
      	 */
-	if (Base < 0xFFFFF && xf86Info.vtno >= 0)
+	psize = xf86getpagesize();
+	mlen = (Offset + Len + psize - 1) & ~psize;
+	if (Base >= 0xA0000 && Base + mlen < 0xFFFFF && xf86Info.vtno >= 0)
         	sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	else
 	{
@@ -74,15 +76,14 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 			solx86_vtname, strerror(errno));
         	return(-1);
 	}	
-	psize = xf86getpagesize();
-	mlen = (Offset + Len + psize - 1) & ~psize;
 	/* Base is assumed to be page-aligned. */
 	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
 					MAP_SHARED, fd, (off_t)Base);
 	if (ptr == MAP_FAILED)
 	{
-		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed\n",
-			solx86_vtname);
+		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed "
+			"[0x%05x, 0x%04x]\n",
+			solx86_vtname, Base, mlen);
 		close(fd);
 		return(-1);
 	}
