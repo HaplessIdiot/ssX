@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.2 1999/04/04 08:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.4 1999/11/19 13:54:49 hohndel Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -150,6 +150,7 @@ S3VSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
     /*PVERB5("	S3VSetCursorColors\n");*/
 
+	if (!(S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)))
 	switch( pScrn->bitsPerPixel) {
 	  case 8:
 	  			/* Dup color indexes in low, mid, & high bytes */
@@ -220,6 +221,9 @@ S3VHWCursorInit(ScreenPtr pScreen)
     				 HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
 				 HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
         			 HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
+    if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset))
+       infoPtr->Flags |= HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+	                 HARDWARE_CURSOR_INVERT_MASK;
 
     infoPtr->SetCursorColors = S3VSetCursorColors;
     infoPtr->SetCursorPosition = S3VSetCursorPosition;

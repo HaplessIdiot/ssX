@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3380. Add ViRGE/MX and BIOS probing to the s3virge driver (#3470,
+      Harald Koenig).
 3379. Install NetBSD aperture driver in /usr/local until added to
       the core O/S (#3466, Matthieu Herrb).
 3378. Add QNX/Neutrino support (#3464, Frank Guangxin Liu).
@@ -9161,4 +9163,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.875 1999/12/14 02:10:33 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.876 1999/12/14 02:40:09 robin Exp $
