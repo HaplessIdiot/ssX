@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.45 2001/03/25 05:32:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.46 2001/05/02 16:41:33 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -559,7 +559,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
     else
       mask1 = PCIGETIO(mask1);
   else
-      mask1 = PCIGETROM(mask1);
+    mask1 = PCIGETROM(mask1);
   if (mask1 == 0)
     return 0;
   bits = 0;
@@ -568,7 +568,12 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
     mask1 >>= 1;
   }
   /* I/O maps can be no larger than 8 bits */
+
+#if defined(Lynx) && defined(__powerpc__)
+  if (PCI_MAP_IS_IO(addr1) && bits > 8)
+#else
   if ((index < 6) && PCI_MAP_IS_IO(addr1) && bits > 8)
+#endif
     bits = 8;
   /* ROM maps can be no larger than 24 bits */
   if (index == 6 && bits > 24)
