@@ -100,7 +100,7 @@
 
     while ( z )
     {
-      z = (CARD64)z >> 1;
+      z = (unsigned INT64)z >> 1;
       j++;
     }
     return j - 1;
