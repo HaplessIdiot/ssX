@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.53 2000/02/15 20:06:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.54 2000/02/17 17:06:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1597,12 +1597,22 @@ testinx(unsigned short port, unsigned char ind)
 
 /* Some macros to hide the system dependencies for MMIO accesses */
 #ifdef __alpha__
-#define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
-#define MMIO_IN16(base, offset) xf86ReadMmio16(base, offset)
+extern void (*xf86WriteMmio8)(int Value, void *Base, unsigned long Offset);
+extern void (*xf86WriteMmio16)(int Value, void *Base, unsigned long Offset);
+extern void (*xf86WriteMmio32)(int Value, void *Base, unsigned long Offset);
+extern void (*xf86WriteMmioNB8)(int Value, void *Base, unsigned long Offset);
+extern void (*xf86WriteMmioNB16)(int Value, void *Base, unsigned long Offset);
+extern void (*xf86WriteMmioNB32)(int Value, void *Base, unsigned long Offset);
+extern int  (*xf86ReadMmio8)(void *Base, unsigned long Offset);
+extern int  (*xf86ReadMmio16)(void *Base, unsigned long Offset);
+extern int  (*xf86ReadMmio32)(void *Base, unsigned long Offset);
+
+#define MMIO_IN8(base, offset) (*xf86ReadMmio8)(base, offset)
+#define MMIO_IN16(base, offset) (*xf86ReadMmio16)(base, offset)
 # if defined (JENSEN_SUPPORT)
-#define MMIO_IN32(base, offset) xf86ReadMmio32(base, offset)
-#define MMIO_OUT32(base, offset, val) xf86WriteMmio32(val, base, offset)
-#define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32(val, base, offset)
+#define MMIO_IN32(base, offset) (*xf86ReadMmio32)(base, offset)
+#define MMIO_OUT32(base, offset, val) (*xf86WriteMmio32)(val, base, offset)
+#define MMIO_ONB32(base, offset, val) (*xf86WriteMmioNB32)(val, base, offset)
 # else
 #define MMIO_IN32(base, offset) \
                    *(volatile CARD32 *)(((CARD8*)(base)) + (offset))
@@ -1613,10 +1623,10 @@ testinx(unsigned short port, unsigned char ind)
 #define MMIO_ONB32(base, offset, val) \
                    *(volatile CARD32 *)(((CARD8*)(base)) + (offset)) = (val)
 # endif
-#define MMIO_OUT8(base, offset, val) xf86WriteMmio8(val, base, offset)
-#define MMIO_OUT16(base, offset, val) xf86WriteMmio16(val, base, offset)
-#define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(val, base, offset)
-#define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16(val, base, offset)
+#define MMIO_OUT8(base, offset, val) (*xf86WriteMmio8)(val, base, offset)
+#define MMIO_OUT16(base, offset, val) (*xf86WriteMmio16)(val, base, offset)
+#define MMIO_ONB8(base, offset, val) (*xf86WriteMmioNB8)(val, base, offset)
+#define MMIO_ONB16(base, offset, val) (*xf86WriteMmioNB16)(val, base, offset)
 #else /* !__alpha__ */
 #define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))

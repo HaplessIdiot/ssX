@@ -1,4 +1,4 @@
-DATE:990718
+DATE:000220
                        XFree86 PC98 Server
                         Video System List
 
@@ -29,7 +29,7 @@ NEC
 |WAB-B3   (PC-9801-96)   |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |FC-WAB-A (PC-9821A-E09) |S3-928         |Bt485  |ICS2494 |2|   X   | |
 |FC-WAB-B (PC-9801-91)   |S3-928         |Bt485  |ICS2494 |2|   X   | |
-|FC-WAB-X (PC-9821X-B01) |MGA II         |       |        |2|   X   | |
+|FC-WAB-X (PC-9821X-B01) |MGA II         |Ti3020 |Ti3020  |2|   X   | |
 |FC-WAB-X2(PC-9821X-B03) |MGA2064W       |Ti3026 |Ti3026  |2|  o?   |O|
 |MSWIN KIT(PC-9801B3-E02)|CLGD5428       | B/I   |  B/I   |1|   X   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
@@ -51,12 +51,12 @@ NEC
 |PC9801BX3/U2/W          |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |PC9801BX4/U2            |CLGD5430       | B/I   |  B/I   |1|   X   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
-|PC9821Xt                |MGA II         |       |        |4|   X   | |
+|PC9821Xt                |MGA II         |Ti3020 |Ti3020  |4|   X   | |
 |PC9821Xt13              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
 |PC9821Xt16              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
 |PC9821St15              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
 |PC9821St20              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
-|PC9821Xa                |MGA II         |       |        |2|   X   | |
+|PC9821Xa                |MGA II         |Ti3020 |Ti3020  |2|   X   | |
 |PC9821Xa7/C,K           |TGUI9680       | B/I   |  B/I   |2|   X   |O|
 |PC9821Xa9/C,K           |TGUI9680       | B/I   |  B/I   |2|   X   |O|
 |PC9821Xa10/C,K          |TGUI9680       | B/I   |  B/I   |2|   X   |O|
@@ -74,7 +74,7 @@ NEC
 |PC9821Xc200/M,S         |CLGD5446       | B/I   |  B/I   |2|   X   |X|
 |PC9821Xa7e              |CLGD5440       | B/I   |  B/I   |1|   X   |X|
 |PC9821Xn                |S3-864         |S3-SDAC|S3-SDAC |2|   X   | |
-|PC9821Xf                |MGA II         |       |        |2|   X   | |
+|PC9821Xf                |MGA II         |Ti3020 |Ti3020  |2|   X   | |
 |PC9821Xp                |S3-864         |S3-SDAC|S3-SDAC |2|   X   |O|
 |PC9821Xs                |S3-864         |S3-SDAC|S3-SDAC |2|   X   |O|
 |PC9821Xe                |CLGD5430       | B/I   |  B/I   |1|   X   |X|
@@ -93,13 +93,13 @@ NEC
 |PC9821V13/M7            |TGUI9680       | B/I   |  B/I   |2|   X   |O|
 |PC9821V16/M7            |TGUI9680       | B/I   |  B/I   |2|   X   |O|
 |PC9821V20/M7            |TGUI9680       | B/I   |  B/I   |2|   X   |O|
-|PC9821V166/S            |MGA1064SG      | B/I   |  B/I   |2|  O?   |O|
-|PC9821V200/S            |MGA1064SG      | B/I   |  B/I   |2|  O?   |O|
-|PC9821V200/M7           |MGA1064SG      | B/I   |  B/I   |4|   O   |O|
-|PC9821V200/MZ           |MGA1064SG      | B/I   |  B/I   |4|   O   |O|
-|PC9821V200/M7C2,M7D2    |MGA1064SG      | B/I   |  B/I   |4|   O   |O|
-|PC9821V233/M7           |MGA1064SG      | B/I   |  B/I   |2|  O?   |O|
-|PC9821V233/M7V          |MGA1064SG      | B/I   |  B/I   |4|  O?   |O|
+|PC9821V166/S            |MGA1064SG      | B/I   |  B/I   |2|  o?   |O|
+|PC9821V200/S            |MGA1064SG      | B/I   |  B/I   |2|  o?   |O|
+|PC9821V200/M7           |MGA1064SG      | B/I   |  B/I   |4|   o   |O|
+|PC9821V200/MZ           |MGA1064SG      | B/I   |  B/I   |4|   o   |O|
+|PC9821V200/M7C2,M7D2    |MGA1064SG      | B/I   |  B/I   |4|   o   |O|
+|PC9821V233/M7           |MGA1064SG      | B/I   |  B/I   |2|  o?   |O|
+|PC9821V233/M7V          |MGA1064SG      | B/I   |  B/I   |4|  o?   |O|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821Ce                |CLGD5428       | B/I   |  B/I   |1|   X   |X|
 |PC9821Ce2               |CLGD5428       | B/I   |  B/I   |1|   X   |X|
@@ -297,8 +297,8 @@ MELCO
 |WGP-VG2DX               |S3-ViRGE/DX    | B/I   |  B/I   |2|   X   | |
 |WGP-VG4DX               |S3-ViRGE/DX    | B/I   |  B/I   |4|   X   | |
 |WGP-VX8                 |S3-ViRGE/VX    | B/I   |  B/I   |8|   X   | |
-|WHP-PS8                 |PERMEDIA2      |       |        |8|   X   | |
-|WHP-PS4                 |PERMEDIA2      |       |        |4|   X   | |
+|WHP-PS8                 |PERMEDIA2      |       |        |8|   O?  |O|
+|WHP-PS4                 |PERMEDIA2      |       |        |4|   O?  |O|
 +------------------------+---------------+-------+--------+-+-------+-+
 
 							    
@@ -322,14 +322,14 @@ IO DATA
 |GA-968V2/98PCI          |S3-968         |RGB524 | RGB524 |2|   X   |O|
 |GA-968V4/98PCI          |S3-968         |RGB524 | RGB524 |4|   X   |O|
 |GA-PGDX2/98PCI          |S3-ViRGE/DX    | B/I   |  B/I   |2|   X   | |
-|GA-PGDX4/98PCI          |S3-ViRGE/DX    | B/I   |  B/I   |4|   X   | |
+|GA-PGDX4/98PCI          |S3-ViRGE/DX    | B/I   |  B/I   |4|   D   | |
 |GA-PG3D2/98PCI          |S3-ViRGE       | B/I   |  B/I   |2|   X   | |
 |GA-PG3D4/98PCI          |S3-ViRGE       | B/I   |  B/I   |4|   X   | |
 |GA-PG3DVX4/98PCI        |S3-ViRGE/VX    | B/I   |  B/I   |4|   X   | |
 |GA-PG3DVX8/98PCI        |S3-ViRGE/VX    | B/I   |  B/I   |8|   X   | |
-|GA-PII8/PCI             |PERMEDIA2      |       |        |8|   X   | |
-|GA-PIIH8/PCI            |PERMEDIA2      |       |        |8|   X   | |
-|GA-RUSH6/PCI            |Promotion AT25 |       |        |4|   D   | |
+|GA-PII8/PCI             |PERMEDIA2      |       |        |8|   o?  |O|
+|GA-PIIH8/PCI            |PERMEDIA2      |       |        |8|   o?  |O|
+|GA-RUSH6/PCI            |Promotion AT25 |       |        |4|   o   | |
 |                        |Voodoo RUSH    |       |        |2|       | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
@@ -384,4 +384,4 @@ Force
 |WinFrame928             |S3-928         |       |        |2|   X   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/doc/VideoBoard98,v 1.1 1999/07/11 10:49:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/doc/VideoBoard98,v 1.2 1999/07/19 13:36:17 dawes Exp $ */

@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/dps/cslibint.c,v 1.2 2000/02/18 12:18:54 tsi Exp $ */
 
 /*
  *	XlibInternal.c - Internal support routines for the C subroutine
@@ -1828,7 +1828,7 @@ int iovcnt;
 
 #endif /* CRAY */
 
-#if defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)
+#if defined(SYSV) && defined(i386) && !defined(STREAMSCONN)
 /*
  * SYSV/386 does not have readv so we emulate
  */
@@ -1860,7 +1860,7 @@ int iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 && !STREAMSCONN */
+#endif /* SYSV && i386 && !STREAMSCONN */
 
 #ifdef STREAMSCONN
 /*

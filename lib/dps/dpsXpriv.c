@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <errno.h>
@@ -65,6 +66,10 @@
 #include "DPS/dpsXclient.h"
 #include "DPS/dpsexcept.h"
 #include "dpsassert.h"
+
+#ifdef ISC
+#include <sys/bsdtypes.h>
+#endif
 
 #if defined(hpux) || defined(AIXV3)
 #define SELECT_TYPE int *

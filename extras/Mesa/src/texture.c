@@ -242,15 +242,18 @@ static void palette_sample(const struct gl_texture_object *tObj,
    GLcontext *ctx = gl_get_current_context();  /* THIS IS A HACK */
    GLint i = index;
    const GLubyte *palette;
+   GLenum format;
 
    if (ctx->Texture.SharedPalette) {
       palette = ctx->Texture.Palette.Table;
+      format = ctx->Texture.Palette.Format;
    }
    else {
       palette = tObj->Palette.Table;
+      format = tObj->Palette.Format;
    }
 
-   switch (tObj->Palette.Format) {
+   switch (format) {
       case GL_ALPHA:
          rgba[ACOMP] = palette[index];
          return;

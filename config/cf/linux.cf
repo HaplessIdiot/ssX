@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.113 2000/02/15 02:00:12 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.114 2000/02/18 16:23:08 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -128,7 +128,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define HasLibCrypt		YES
 #endif
 /* netscape wraps select but not poll as of communicator 4.72 */
+#ifndef HasPoll
 #define HasPoll			NO
+#endif
 #else
 #define LinuxSourceDefines	-D_POSIX_SOURCE -D_POSIX_C_SOURCE=2 \
 				-D_BSD_SOURCE -D_SVID_SOURCE \

@@ -1,4 +1,16 @@
-XFree86 3.9.17Za (18 February 2000)
+XFree86 3.9.17Za (21 February 2000)
+3831. Fix some build problems on Interactive Unix (#3739, Michael Rohleder).
+3830. Disable NetBSD aperture driver support by default (#3736,
+      Matthieu Herrb).
+3829. Update OpenBSD and NetBSD docs (#3735, Matthieu Herrb).
+3828. Update the VideoBoard98 file (#3734, Isao Ohishi).
+3827. Fix 'X -scanpci' crash (David Dawes).
+3826. Fix the "ev56" gcc option (#3730, Keith Packard).
+3825. Fix some problems with the MMIO macro use of function pointers on
+      Alpha (#3729, Keith Packard).
+3824. Fix a Mesa bug involving paletted textures and software rendering
+      (#3727, Brian Paul).
+3823. Fix a glx bug involving glFlush() inside glXWaitGL() (#3727, Brian Paul).
 3822. Disable the 3DNow assembler code for now, to avoid problems with
       assemblers that don't recognise the instructions (Brian Paul).
 3821. Fix some problems with the Cards file (#3726,
@@ -9760,4 +9772,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1017 2000/02/18 12:18:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1018 2000/02/18 16:23:14 dawes Exp $

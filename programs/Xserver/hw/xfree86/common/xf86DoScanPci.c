@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.5 1999/03/29 09:41:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.7 2000/02/08 13:13:04 eich Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -23,15 +23,15 @@
 #include "xf86PciInfo.h"
 #include "xf86ScanPci.h"
 
-static void (*xf86ScanPciFunc)(int);
 
 void DoScanPci(int argc, char **argv, int i)
 {
   int j,skip,globalVerbose,scanpciVerbose;
+  void (*xf86ScanPciFunc)(int);
+  void (*DataSetupFunc)(SymTabPtr *, pciVendorDeviceInfo **,
+			pciVendorCardInfo **);
 #ifdef XFree86LOADER
-  pointer DataSetupFunc;
   int errmaj, errmin;
-  char *name;
 #endif
 
   /*
@@ -71,11 +71,7 @@ void DoScanPci(int argc, char **argv, int i)
   /* Tell the loader the default module search path */
   LoaderSetPath(xf86ModulePath);
 
-
-  /* Normalise the module name */
-  name = xf86NormalizeName("scanpci");
-
-  if (!LoadModule(name, NULL, NULL, NULL, NULL, NULL,
+  if (!LoadModule("scanpci", NULL, NULL, NULL, NULL, NULL,
                   &errmaj, &errmin)) {
     LoaderErrorMsg(NULL, name, errmaj, errmin);
     exit(1);
@@ -85,16 +81,14 @@ void DoScanPci(int argc, char **argv, int i)
       xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
   }
   xf86ScanPciFunc = (void (*)(int))LoaderSymbol("xf86DisplayPCICardInfo");
-  DataSetupFunc = LoaderSymbol("xf86SetupPciData");
-  ((void (*)(SymTabPtr*,pciVendorDeviceInfo**,pciVendorCardInfo**))
-   DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo,
-		    &xf86PCICardInfo);
+  DataSetupFunc = LoaderSymbol("xf86SetupScanPci");
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
-  xf86SetupScanPci(&xf86PCIVendorNameInfo,
-		     &xf86PCIVendorInfo,&xf86PCICardInfo);
+  DataSetupFunc = xf86SetupScanPci;
 #endif
 
+  (*DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo,
+		    &xf86PCICardInfo);
   (*xf86ScanPciFunc)(scanpciVerbose);
 
   /*

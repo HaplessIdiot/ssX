@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.5 2000/02/08 13:13:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.8 2000/02/15 02:00:13 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1397,20 +1397,20 @@ getValidBIOSBase(PCITAG tag, int num)
 void
 xf86PciProbe(void)
 {
+    void (* DataSetupFunc)(SymTabPtr *, pciVendorDeviceInfo **,
+			   pciVendorCardInfo **);
 #ifdef XFree86LOADER
     /* 
      * we need to get the pointer to the pci data structures initialized
      */
-    pointer DataSetupFunc;
 
     DataSetupFunc = LoaderSymbol("xf86SetupPciData");
-    ((void(*)(SymTabPtr*,pciVendorDeviceInfo**,pciVendorCardInfo**))
-	DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo, &
-		      xf86PCICardInfo);
 #else
-    xf86SetupScanPci(&xf86PCIVendorNameInfo,
-		     &xf86PCIVendorInfo,&xf86PCICardInfo);
+    DataSetupFunc = xf86SetupPciData;
 #endif
+
+    (*DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo, &
+		      xf86PCICardInfo);
     FindPCIVideoInfo();
 }
 

@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: contrib/programs/xload/get_load.c,v 3.7 1999/09/06 11:27:35 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.1 2000/02/13 03:26:31 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -219,7 +219,7 @@ void GetLoadPoint( w, closure, call_data ) 	/* Apollo version */
      lastNullCpu = info.cpu_total.low32;
 }
 #else /* not apollo */
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
 /*
  * inspired by 'avgload' by John F. Haugh II
  */
@@ -305,7 +305,7 @@ caddr_t	call_data;	/* pointer to (double) return value */
 
     return;
 }
-#else /* not (SYSV && SYSV386) */
+#else /* not (SYSV && i386) */
 #ifdef KVM_ROUTINES
 /*
  *	Sun 386i Code - abstracted to see the wood for the trees
@@ -1017,7 +1017,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* linux else */
 #endif /* AMOEBA else */
 #endif /* KVM_ROUTINES else */
-#endif /* SYSV && SYSV386 else */
+#endif /* SYSV && i386 else */
 
 static xload_error(str1, str2)
 char *str1, *str2;

@@ -6,7 +6,11 @@
 <title>README for XFree86 &relvers; on OpenBSD
 <author>
 Matthieu Herrb
-<Date>Last modified on: 13 November 1999
+<Date>Last modified on: 20 February 2000
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.6 2000/01/24 19:38:28 dawes Exp $
+</ident>
 
 <toc>
 
@@ -17,23 +21,19 @@ Matthieu Herrb
 XFree86 is a port of X11R6.4 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
-and performance improvements as well as many bug fixes.  The release
-is available as source patches against the X Consortium X11R6.3 code, as
-well as binary distributions for many architectures.
+and performance improvements as well as many bug fixes. 
 
 See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
-The sources for XFree86 are available by anonymous ftp from:
+The sources for XFree86 &relvers; are available by anonymous ftp from:
 
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
-url="ftp://ftp.XFree86.org/pub/XFree86/current">
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;"
+url="ftp://ftp.XFree86.org/pub/XFree86/snapshots">
 
-<!--
-Binaries for OpenBSD 2.5 and later are available from:
+Binaries for OpenBSD/i386 2.6 and later are available from:
 
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD">
--->
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;/binaries/OpenBSD"
+url="ftp://ftp.XFree86.org/pub/XFree86/snapshots/&relvers;/binaries/OpenBSD">
 
 A list of mirror sites is provided by
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/MIRRORS"
@@ -48,62 +48,62 @@ XFree86 also builds on other OpenBSD architectures. See section
 <sect>Bug Reports for This Document
 
 <p>
-Send email to <em/matthieu@laas.fr/ (Matthieu Herrb) or
+Send email to <em/herrb@xfree86.org/ (Matthieu Herrb) or
 <em/XFree86@XFree86.org/ if you have comments or suggestions about
 this file and we'll revise it.
 
-<sect>New features in this release
+<sect>New OS dependant features
+<p>
+See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
+non-OS dependent new features in XFree86 &relvers;.
+<sect1>New OS dependent features in 3.9.18
+<p>
+<itemize>
+<item>Support for USB mices has been added on OpenBSD. 
+<item>Soft-booting secondary cards through the int10 BIOS interface is 
+now possible using the x86emu real mode emulator. 
+</itemize>
+
+<sect1>New OS dependent features in 3.9.17
 <p>
 <itemize>
 <item><em>Silken mouse</em> is supported for serial mices, and, under
 post 2.6 OpenBSD-current for PS/2 mices.
 <item>MTRR Write Combining is enabled under post 2.6 OpenBSD-current. 
 </itemize>
-<p>
-See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
-non-OS dependent new features in XFree86 3.9.17
 
-<!--
 <sect>Installing the Binaries
 
 <p>
 Refer to section 5 of the <htmlurl url="RELNOTES.html" name="Release
 Notes">  for detailed installation instructions.
--->
 
 <sect>Configuring X for Your Hardware
-
 <p>
 The <tt>/etc/XF86Config</tt> file tells the X server what kind of
 monitor, 
 video card and mouse you have.  You <em/must/ create it to tell the
 server what specific hardware you have.
 <p>
-<!--
-The easiest way to create this file is to run the <bf/XF86Setup/
-utility as root. Refer to <htmlurl url="QuickStart.html"
-name="QuickStart.doc"> for details about its use.
-<p>
--->
 You'll need info on your hardware:
 <itemize>
 <item>Your mouse type, baud rate and its /dev entry.
 <item>The video card's chipset (e.g. ET4000, S3, etc).
 <item>Your monitor's sync frequencies.
 </itemize>
-
+<!--
 The recommended way to generate an <tt/XF86Config/ file is to use the
 <tt/XF86Setup/ utility.  The xf86config text utility is still there
 for the (few) cases where XF86Setup can't be used. Also, there is a
 sample file installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>,
 which can be used as a starting point.
+-->
 
 For details about the <tt/XF86Config/ file format, refer to the
 <em>XF86Config(5)</em> manual page.
 
 Once you've set up a XF86Config file, you can fine tune the video
 modes with the <tt>xvidtune</tt> utility. 
-
 
 <sect1>About mouse configuration
 
@@ -119,13 +119,6 @@ in that mode.  ``Cooked'' mode is the old BusMouse translation.
 The driver runs in ``raw'' mode when using the <tt>/dev/psm0</tt>
 device name.
 <p>
-On OpenBSD 2.2, only standard PS/2 mice are supported by this
-driver. 
-<p>
-On OpenBSD 2.3 and later include there is support for recent PS/2 
-mice that send more than three bytes at a time (especially
-intellimouse, or mouseman+ with a "3D" roller). 
-<p>
 See <htmlurl url="mouse.html" name="README.mouse">  for general
 instruction on mouse configuration in XFree86.
 
@@ -140,25 +133,21 @@ instruction on mouse configuration in XFree86.
 To start the display manager, log in as root on the console and type:
 ``<tt/xdm -nodaemon/''.
 
-You can start xdm automatically on bootup un-commenting the following
-code in <tt>/etc/rc.local</tt>:
-
+You can start xdm automatically on bootup by changing the line 
 <tscreen><verb>
-  if [ -x /usr/X11R6/bin/xdm ]; then
-    echo -n ' xdm'; /usr/X11R6/bin/xdm
-  fi
+xdm_flags=NO            # for normal use: xdm_flags=""
 </verb></tscreen>
-
-On the default OpenBSD 2.2 installation, you will need to create
-the virtual console device for the X server:
+to:
 <tscreen><verb>
-cd /dev
- ./MAKEDEV ttyC5
+xdm_flags=""            # for normal use: xdm_flags=""
 </verb></tscreen>
+in <tt>/etc/rc.conf</tt>. 
 
 <p>
-Note that the binary distributions of XFree86 for OpenBSD don't include
-support for the XDM-AUTHORIZATION-1 protocol. 
+Note that the binary distributions of XFree86 for OpenBSD on
+ftp.xfree86.org and its mirrors don't include
+support for the XDM-AUTHORIZATION-1 protocol, because of the US export 
+rules. 
 
 <sect1>Running X without the display manager
 <p>
@@ -178,13 +167,14 @@ To make sure X support is enabled under  OpenBSD, the following
 line must be in your config file in <tt>/sys/arch/i386/conf</tt>:
 
 <tscreen>
- options XSERVER
+ option XSERVER
+ option APERTURE
 </tscreen>
 
 <sect1>Console drivers
 <p>
 The server supports the two standard  OpenBSD/i386
-console drivers: pccons and pcvt. They are detected at runtime and no
+console drivers: pcvt and pccons. They are detected at runtime and no
 configuration of the server itself is required.
 
 <p>
@@ -196,29 +186,25 @@ several virtual consoles and international keyboard support.
 <p>
 By default OpenBSD includes the BSD 4.4 kernel security
 feature that disable access to the <tt>/dev/mem</tt> device when in
-multi-users mode. But XFree86 servers can take advantage (or require)
-linear access to the display memory.
-
-The P9000, Mach64 and AGX servers require linear memory access, other
-accelerated servers can take advantage of it, but do not require it.
-Some drivers in the SVGA server require linear memory access too,
-notably the Matrox driver.
+multi-users mode. But the XFree86 server require
+linear access to the display memory in most cases.
 
 OpenBSD now requires the aperture driver to be enabled for all X
 servers, because the aperture driver also controls access to the
 I/O ports of the video boards.
-     
-The aperture driver is part of the kernel.  Add 'option APERTURE' to
-your kernel configuration file, build and install the new kernel and
-run <tt>./MAKEDEV std</tt> in <tt>/dev</tt>. Edit
-<tt>/etc/sysctl.conf</tt> to set the variable
-<bf>machdep.allowaperture</bf> to 1.
 <p>
-Another (less recommended) way to enable linear memory access is to
-disable the kernel security feature by adding ``option INSECURE'' in
-your kernel configuration file and build a new kernel.  In OpenBSD 2.2
-and later, you will also need to comment out the line initializing
-<tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
+To enable the aperture driver, once included in the kernel, set
+<tscreen><verb>
+machdep.allowaperture=1     
+</verb></tscreen>
+in <tt>/etc/sysctl.conf</tt>.
+     
+<p>
+Another (less recommended) way to enable linear memory and I/O ports
+access is to disable the kernel security feature by adding ``option
+INSECURE'' in your kernel configuration file and build a new kernel.
+You will also need to comment out the line
+initializing <tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
 <p>
 <quote>
 <bf/Caveat:/ the aperture driver only allows one access at a time
@@ -286,25 +272,11 @@ pccons and pcvt drivers will be supported.
 <sect1>Building on other architectures<label id="otherarch">
 
 <p>
-XFree86 also compiles on other OpenBSD architectures. 
+XFree86 should also compiles on other OpenBSD architectures. However,
+please note that 3.9.x snapshots have only been tested on the i386 for 
+now. 
 
 <!--
-The XFree86 servers can also been built on OpenBSD/mips. The S3 server
-has been tested on an Acer Mips system with a S3/928 board. Contact
-Per Fogelstrom (pefo@OpenBSD.org) for details.
-
-The Xsun server patches from Dennis Ferguson and Matthew Green for
-NetBSD have been integrated in
-<tt>xc/programs/Xserver/hw/sun</tt>. The Xsun server can be built on
-the sparc and the sun3.
-
-The client side of XFree86 also builds on the alpha, pmax, amiga,
-mac68k and mvme68k architectures.
-
--->
-Problems with this port should be reported directly to the OpenBSD 
-mailing lists rather than to the xfree86 mailing list. 
-
 <p> 
 Note that OpenBSD project has now its own source tree, based on
 the XFree86 source tree, with some local modifications. You may want
@@ -312,7 +284,7 @@ to start with this tree to rebuild from sources.  The OpenBSD X11
 source tree is available by anoncvs from all OpenBSD anoncvs
 servers. See <htmlurl url="http://www.openbsd.org/anoncvs.html"
 name="http://www.openbsd.org/anoncvs.html"> for details on anoncvs.
-
+-->
 
 <sect>Building New X Clients
 
@@ -330,15 +302,5 @@ Many thanks to all people who contributed to make XFree86 work on
 *BSD, in particular, <bf/David Dawes/,
 <bf/Pace Willison/, <bf/Amancio Hasty/, <bf/Christoph Robitschko/,
 <bf/Nate Williams/, <bf/Rod Grimes/, <bf/Jack Velte/ and <bf/Michael Smith/.
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.5 1999/11/26 00:51:51 dawes Exp $
-
-
-
-
-
-$XConsortium$
-</verb>
 
 </article>
