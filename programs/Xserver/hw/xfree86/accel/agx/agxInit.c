@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.23 1995/07/12 15:34:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1182,57 +1182,57 @@ agxClockSelect(no,scale)
        break;
      default:
 
-        if ( XGA_SERIES(agxChipId)) {
-	   if (no < 16) {  /* Internal XGA/VGA clocks */
-   	      outb(agxIdxReg, IR_CLOCK_SEL_1);
-   	      byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
-              byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
-              byteData = 0;
-              byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
-              byteData |= no >> 3;
-   	      outb(agxByteData, byteData);
+        if ( XGA_SERIES(agxChipId) 
+             || (AGX_10_ONLY(agxChipId) && no < 8) ) {
+           /* XGA clock selects */
+   	   outb(agxIdxReg, IR_CLOCK_SEL_1);
+   	   byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
+           byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
+           byteData = 0;
+           byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
+           byteData |= no >> 3;
+   	   outb(agxByteData, byteData);
     
-   	      outb(agxIdxReg, IR_CLOCK_SEL_2);
-              byteData = (no << (IR_CS2_CLOCK_SHIFT - 2)) & IR_CS2_CLOCK_MASK;
-   	      outb(agxByteData, byteData);
-           }
-           else if (AGX_10_ONLY(agxChipId) && no < 16) { 
-               /* AGX-10(?) Extended clocks */
-
-   	      outb(agxIdxReg, IR_M5_MODE_REG_5);
-   	      byteData = inb(agxByteData) & IR_M5_WRITE_MASK 
-                            & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
-   	      outb(agxByteData, byteData);
-
-	      outb(agxIdxReg, IR_M1_AGX10_MODE_REG_1);
-	      byteData = inb(agxByteData)
-                            & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
-              byteData |= ((no << (IR_M1_CS3_SHIFT)) & IR_M1_CS3_MASK);
-              outb(agxByteData, byteData);
-
-              outb(agxIdxReg, IR_CLOCK_SEL_1);
-              byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
-              byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
-              byteData |= IR_CS1_CLOCK_MASK; 
-              byteData |= scale & IR_CS1_SCALE_MASK; 
-              outb(agxByteData, byteData);
-
-              outb(agxIdxReg, IR_CLOCK_SEL_2);
-              byteData = 0;
-              outb(agxByteData, byteData);
-           }
+   	   outb(agxIdxReg, IR_CLOCK_SEL_2);
+           byteData = (no << (IR_CS2_CLOCK_SHIFT - 2)) & IR_CS2_CLOCK_MASK;
+   	   outb(agxByteData, byteData);
         }
-        else {     /* AGX-14 and later - external clocks */
+        else if (AGX_10_ONLY(agxChipId)) { 
+           /* AGX-10 unique clocks */
+           outb(agxIdxReg, IR_M5_MODE_REG_5);
+           byteData = inb(agxByteData) & IR_M5_WRITE_MASK 
+                      & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
+   	   outb(agxByteData, byteData);
+
+	   outb(agxIdxReg, IR_M1_AGX10_MODE_REG_1);
+	   byteData = inb(agxByteData)
+                         & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
+           byteData |= (no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK;
+           outb(agxByteData, byteData);
+
+           outb(agxIdxReg, IR_CLOCK_SEL_1);
+           byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
+           byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
+           byteData |= IR_CS1_CLOCK_MASK; 
+           byteData |= scale & IR_CS1_SCALE_MASK; 
+           outb(agxByteData, byteData);
+
+           outb(agxIdxReg, IR_CLOCK_SEL_2);
+           byteData = 0;
+           outb(agxByteData, byteData);
+        }
+        else { 
+           /* AGX-14 and later - external clocks */
            outb(agxIdxReg, IR_M5_MODE_REG_5);
 	   byteData = inb(agxByteData) & IR_M5_WRITE_MASK & ~IR_M5_CS4_MASK;
            byteData |= IR_M5_EXT_CLOCK;
-           byteData |= ((no << (IR_M5_CS4_SHIFT - 2)) & IR_M5_CS4_MASK);
+           byteData |= (no << (IR_M5_CS4_SHIFT - 2)) & IR_M5_CS4_MASK;
 	   outb(agxByteData, byteData);
 
 	   outb(agxIdxReg, IR_M1_MODE_REG_1);
 	   byteData = inb(agxByteData)
                          & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
-           byteData |= ((no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK);
+           byteData |= (no << IR_M1_CS3_SHIFT) & IR_M1_CS3_MASK;
 	   outb(agxByteData, byteData);
 
            outb(agxIdxReg, IR_CLOCK_SEL_1);

@@ -1,5 +1,5 @@
 /* $XConsortium: ATTDac.c,v 1.1 94/03/28 21:24:32 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.1 1995/11/16 11:18:08 dawes Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *
@@ -25,6 +25,8 @@
 
 
 #include "compiler.h"
+#define NO_OSLIB_PROTOTYPES
+#include "xf86_OSlib.h"
 #include "misc.h"
 
 #define ATT409_CC	0x06

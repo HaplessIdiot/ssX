@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.19 1995/10/21 11:46:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.20 1995/11/16 11:06:34 dawes Exp $
 
 # Cirrus Logic
 
@@ -358,7 +358,10 @@ SEE S3-868 with SDAC (86C716)
 NAME Elsa Winner 1000AVI (AT&T 20C409 version)
 SEE S3-868 with ATT 20C409
 
-NAME Diamond Stealth Video DRAM / Stealth64 Video 2120/2200
+NAME Diamond Stealth Video DRAM
+SEE S3-868 with SDAC (86C716)
+
+NAME Diamond Stealth64 Video 2120/2200
 SEE S3-868 with SDAC (86C716)
 
 NAME SPEA/V7 Mirage P64
@@ -408,16 +411,22 @@ CHIPSET S3-968
 LINE    #Option "slow_vram"
 SEE S3-968 (generic)
 
-NAME Diamond Stealth 64 Video VRAM / Stealth64 Video 3240/3400 (with TI RAMDAC)
+NAME Diamond Stealth 64 Video VRAM (TI RAMDAC)
 CHIPSET S3-968
 LINE    #Option "slow_vram"
 LINE    #DacSpeed 220
 SEE S3-968 (generic)
 
-NAME Diamond Stealth64 Video 3240/3400 (with IBM RAMDAC)
+NAME Diamond Stealth64 Video 3240/3400 (TI RAMDAC)
 CHIPSET S3-968
 LINE    #Option "slow_vram"
-RAMDAC ibm_rgb524
+LINE    #DacSpeed 220
+SEE S3-968 (generic)
+
+NAME Diamond Stealth64 Video 3240/3400 (IBM RAMDAC)
+CHIPSET S3-968
+LINE    #Option "slow_vram"
+RAMDAC ibm_rgb526
 LINE    DacSpeed 220
 SEE S3-968 (generic)
 
@@ -799,7 +808,7 @@ NAME DFI-WG6000
 CHIPSET WD90C33
 SERVER SVGA
 
-NAME Diamond SpeedStar 24X
+NAME Diamond SpeedStar 24X (not fully supported)
 CHIPSET WD90C31
 SERVER SVGA
 

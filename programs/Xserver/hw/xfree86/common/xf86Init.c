@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.24 1995/11/05 07:28:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.25 1995/11/12 09:51:49 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -57,6 +57,7 @@ int  xf86bpp = -1;
 xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
 double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
+char *xf86ServerName = NULL;
 
 static void xf86PrintConfig();
 static void xf86CheckBeta();
@@ -92,6 +93,11 @@ InitOutput(pScreenInfo, argc, argv)
    
 
   if (serverGeneration == 1) {
+
+    if (xf86ServerName = strrchr(argv[0], '/'))
+      xf86ServerName++;
+    else
+      xf86ServerName = argv[0];
 
     xf86CheckBeta();
 
@@ -604,14 +610,14 @@ xf86PrintConfig()
 /*
  * This is for publically released beta server binaries.
  *
- * The current version is written to $HOME/XF86_BETA_FILE
+ * The current version is written to $HOME/.xf86ServerName
  *
  * Defining EXPIRE_SERVER enables the server expiry date.  If EXPIRY_TIME
  * is 0, this is disabled.
  *
  * Defining SHOW_BETA_MESSAGE enables displaying the beta message when first
  * running a new beta version (the current version is checked against the
- * contents of $HOME/XF86_BETA_FILE).
+ * contents of $HOME/.xf86ServerName)
  *
  * If EXPIRE_SERVER is defined, the message will be displayed both with
  * WARNING_DAYS days of expiry and after expiry regardless of
@@ -621,9 +627,6 @@ xf86PrintConfig()
  * message.
  */
 
-#ifndef XF86_BETA_FILE
-#define XF86_BETA_FILE ".XFree86"
-#endif
 #ifndef EXPIRY_TIME
 #define EXPIRY_TIME 0
 #endif
@@ -677,12 +680,12 @@ xf86CheckBeta()
     showmessage = TRUE;
   else {
     if (!(filename =
-	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(XF86_BETA_FILE) + 2)))
+	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(xf86ServerName) + 3)))
       showmessage = TRUE;
     else {
       if (home[0] == '/' && home[1] == '\0')
         home[0] = '\0';
-      sprintf(filename, "%s/%s", home, XF86_BETA_FILE);
+      sprintf(filename, "%s/.%s", home, xf86ServerName);
       writefile = TRUE;
       if (!(f = fopen(filename, "r+")))
         showmessage = TRUE;

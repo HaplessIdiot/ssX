@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.17 1995/08/06 23:27:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.18 1995/11/16 11:06:36 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -801,17 +801,19 @@ static char *devicesettingscomment_text =
 "\n";
 
 static char *ramdaccomment_text =
-"The RAMDAC setting only applies to the S3 and AGX servers. Some RAMDAC's are\n"
-"auto-detected by the server. The detection of a RAMDAC is forced by using a\n"
-"Ramdac \"identifier\" line in the Device section. The identifiers are shown\n"
-"at the right of the following table of RAMDAC types:\n"
+"The RAMDAC setting only applies to the S3, AGX, W32 servers, and some \n"
+"drivers in the SVGA servers. Some RAMDAC's are auto-detected by the server.\n"
+"The detection of a RAMDAC is forced by using a Ramdac \"identifier\" line in\n"
+"the Device section. The identifiers are shown at the right of the following\n"
+"table of RAMDAC types:\n"
 "\n";
 
-#define NU_RAMDACS 19
+#define NU_RAMDACS 23
 
 static char *ramdac_name[NU_RAMDACS] = {
 	"AT&T 20C490 (S3 and AGX servers)",
-	"AT&T 20C498/21C498/22C498 (S3)",
+	"AT&T 20C498/21C498/22C498 (S3, autodetected)",
+	"AT&T 20C409/20C499 (S3, autodetected)",
 	"AT&T 20C505 (S3)",
 	"BrookTree BT481 (AGX)",
 	"BrookTree BT482 (AGX)",
@@ -826,21 +828,25 @@ static char *ramdac_name[NU_RAMDACS] = {
 #endif
 	"STG-1700 (S3, autodetected)",
 	"STG-1703 (S3, autodetected)",
-	"TI 3020 (S3)",
+	"TI 3020 (S3, autodetected)",
 	"TI 3025 (S3, autodetected)",
 	"TI 3026 (S3, autodetected)",
 	"IBM RGB 514 (S3, autodetected)",
 	"IBM RGB 524 (S3, autodetected)",
 	"IBM RGB 525 (S3, autodetected)",
+	"IBM RGB 526 (S3)",
 	"IBM RGB 528 (S3, autodetected)",
+	"ICS5342 (S3, Ark)",
+	"ICS5341 (W32)",
 	"Normal DAC"
 };
 
 static char *ramdac_id[NU_RAMDACS] = {
-	"att20c490", "att20c498", "att20c505", "bt481", "bt482",
+	"att20c490", "att20c498", "att20c409", "att20c505", "bt481", "bt482",
 	"bt485", "sc15025", "s3gendac", "s3_sdac", "stg1700","stg1703",
 	"ti3020", "ti3025", "ti3026", "ibm_rgb514", "ibm_rgb524",
-	"ibm_rgb525", "ibm_rgb528", "normal"
+	"ibm_rgb525", "ibm_rgb526", "ibm_rgb528", "ics5342", "ics5341",
+	"normal"
 };
 
 static char *clockchipcomment_text =
@@ -851,13 +857,14 @@ static char *clockchipcomment_text =
 "Choose from the following list:\n"
 "\n";
 
-#define NU_CLOCKCHIPS 11
+#define NU_CLOCKCHIPS 12
 
 static char *clockchip_name[] = {
-	"Chrontel 8391 (uncertain at the time of writing)",
+	"Chrontel 8391",
 	"ICD2061A and compatibles (ICS9161A, DCS2824)",
 	"ICS2595",
 	"ICS5342 (similar to SDAC, but not completely compatible)",
+	"ICS5341",
 	"S3 GenDAC (86C708) and ICS5300 (autodetected)",
 	"S3 SDAC (86C716)",
 	"STG 1703 (autodetected)",
@@ -868,7 +875,8 @@ static char *clockchip_name[] = {
 };
 
 static char *clockchip_id[] = {
-	"ch8391", "icd2061a", "ics2595", "ics5342", "s3gendac", "s3_sdac",
+	"ch8391", "icd2061a", "ics2595", "ics5342", "ics5341",
+	"s3gendac", "s3_sdac",
 	"stg1703", "sc11412", "ti3025", "ti3026", "ibm_rgb5xx",
 };
 

@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2A (beta version)
   The XFree86 Project, Inc
 
-  16 November 1995
+  18 November 1995
 
   This document describes the rationale and conditions of this beta
   release together with what is new in the XFree86 beta version 3.1.2A
@@ -31,12 +31,15 @@
   give it the widest possible testing, and also to make support for new
   hardware available.
 
-  The XFree86 Project encourages people to test the beta releases, and
+  The XFree86 Project encourages people to test this beta release, and
   to send us a report.  We need both success and failure reports, and we
   also need people using already supported hardware to test these beta
   releases to make sure that we haven't broken anything while adding
-  support for new hardware.  Beta test reports should be sent to
-  Report@XFree86.org.  Please do not send these reports to our usual
+  support for new hardware.  A template for the Beta test reports can be
+  found in the file ``BetaReport'' which should be available from the
+  same place you got this file.  It is also installed in
+  /usr/X11R6/lib/X11/doc/.  Beta test reports should be sent to
+  report@XFree86.org.  Please do not send these reports to our usual
   support address.
 
   2.  New Features in 3.1.2A
@@ -59,9 +62,9 @@
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
 
+
+
   2.2.  Trident driver (SVGA server)
-
-
 
 
      o  Preliminary support is included for the TGUI 9440.
@@ -115,6 +118,18 @@
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
 
+     o  The IBM RGB526 RAMDAC used on the newer Diamond Stealth64 Video
+        3240/3400 cards isn't yet auto-detected, but it will work if the
+        following line is added to the Device section of your XF86Config
+        file:
+
+
+                  Ramdac "ibm_rgb526"
+
+
+
+
+
   2.7.  Mach32 server
 
 
@@ -133,9 +148,9 @@
   2.9.  ET4000/W32 server
 
 
-     o  Preliminary support has been added for the ICS5341 programmable
-        clock.  To enable this, add the following lines to the Device
-        section of your XF86Config file:
+     o  Support has been added for the ICS5341 programmable clock.  To
+        enable this, add the following lines to the Device section of
+        your XF86Config file:
 
 
                   Ramdac    "ics5341"
@@ -145,18 +160,29 @@
 
 
 
-  2.10.  VGA16 server
+     o  Problems that could cause the W32 server to crash at startup or
+        get stuck in a loop at exit have been fixed.
+
+  2.10.  AGX server
 
 
-     o  A problem preventing the StaticGray visual has been fixed.
+     o  Fix for clock probing with AGX-010 chips.
 
-  2.11.  xf86config utility
+  2.11.  VGA16 server
+
+
+     o  A problem preventing the StaticGray visual from working has been
+        fixed.
+
+  2.12.  xf86config utility
 
 
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
-  2.12.  Client/Library changes
+  2.13.  Client/Library changes
 
+
+     o  The xdm security fix from the X Consortium's fix-13 is included.
 
      o  xconsole has been updated for Unixware 2.x.
 
@@ -168,10 +194,50 @@
 
      o  A memory overrun problem in xterm has been fixed.
 
+
+
      o  An "AllowNullPasswd" resource has been added to xdm.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.1 1995/11/16 11:05:54 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.2 1995/11/18 02:31:16 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

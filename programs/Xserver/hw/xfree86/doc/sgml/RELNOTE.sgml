@@ -3,8 +3,8 @@
  <article>
 
  <title>Release Notes for XFree86&tm; 3.1.2A (beta version)
- <author> The XFree86 Project, Inc
- <date>16 November 1995
+ <author>The XFree86 Project, Inc
+ <date>18 November 1995
 
 
 <abstract>
@@ -41,13 +41,16 @@ The reasons for making this beta release publically available are to
 give it the widest possible testing, and also to make support for
 new hardware available.
 
-The XFree86 Project encourages people to test the beta releases, and to
+The XFree86 Project encourages people to test this beta release, and to
 send us a report.  We need both success and failure reports, and we also
 need people using already supported hardware to test these beta releases
 to make sure that we haven't broken anything while adding support for
-new hardware.  Beta test reports should be sent to <htmlurl
-name="Report@XFree86.org" url="mailto:Report@XFree86.org">.  Please do not
-send these reports to our usual support address.
+new hardware.  A template for the Beta test reports can be found in the
+file ``BetaReport'' which should be available from the same place you got
+this file.  It is also installed in <tt>/usr/X11R6/lib/X11/doc/</tt>.
+Beta test reports should be sent to <htmlurl name="report@XFree86.org"
+url="mailto:report@XFree86.org">.  Please do not send these reports to
+our usual support address.
 
 <sect> New Features in 3.1.2A
 <sect1> General X server changes
@@ -109,6 +112,13 @@ send these reports to our usual support address.
   <item>Prelminary support has been added for the AT&amp;T 20C409 and
 	AT&amp;T 20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
 	currently does not work.
+  <item>The IBM RGB526 RAMDAC used on the newer Diamond Stealth64
+        Video 3240/3400 cards isn't yet auto-detected, but it will work
+	if the following line is added to the Device section of your
+	XF86Config file:
+	<tscreen><verb>
+	Ramdac "ibm_rgb526"
+	</verb></tscreen>
 </itemize>
 <sect1> Mach32 server
 <p>
@@ -126,18 +136,26 @@ send these reports to our usual support address.
 <sect1> ET4000/W32 server
 <p>
 <itemize>
-  <item>Preliminary support has been added for the ICS5341 programmable clock.
+  <item>Support has been added for the ICS5341 programmable clock.
 	To enable this, add the following lines to the Device section of your
 	XF86Config file:
 	<tscreen><verb>
 	Ramdac    "ics5341"
 	ClockChip "ics5341"
 	</verb></tscreen>
+  <item>Problems that could cause the W32 server to crash at startup or
+	get stuck in a loop at exit have been fixed.
+</itemize>
+<sect1> AGX server
+<p>
+<itemize>
+  <item>Fix for clock probing with AGX-010 chips.
 </itemize>
 <sect1> VGA16 server
 <p>
 <itemize>
-  <item>A problem preventing the StaticGray visual has been fixed.
+  <item>A problem preventing the StaticGray visual from working has been
+	fixed.
 </itemize>
 <sect1> xf86config utility
 <p>
@@ -147,6 +165,7 @@ send these reports to our usual support address.
 <sect1> Client/Library changes
 <p>
 <itemize>
+  <item>The xdm security fix from the X Consortium's fix-13 is included.
   <item>xconsole has been updated for Unixware 2.x.
   <item>Colour support has been added to xterm.
   <item>XNLS support has been added for KOI8-R.
@@ -157,7 +176,7 @@ send these reports to our usual support address.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.0 1995/11/12 09:52:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.1 1995/11/16 11:05:54 dawes Exp $
 </verb>
 
 </article>
