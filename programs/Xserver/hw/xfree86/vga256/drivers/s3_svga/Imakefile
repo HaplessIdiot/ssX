@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:30:19 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/Imakefile,v 3.4 1996/02/04 09:14:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/Imakefile,v 3.5 1996/12/23 06:58:21 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = s3_driver.c s3_bank.s
@@ -30,5 +30,9 @@ NormalRelocatableTarget(s3_drv, $(OBJS))
 InstallLinkKitNonExecFile(s3_driver.c,$(LINKKITDIR)/drivers/vga256/s3_svga)
 InstallLinkKitNonExecFile(s3_bank.s,$(LINKKITDIR)/drivers/vga256/s3_svga)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/s3_svga)
+
+#if DoLoadableServer
+InstallDynamicModule(s3_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()

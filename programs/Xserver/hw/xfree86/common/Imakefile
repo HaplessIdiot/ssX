@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.47 1996/12/23 06:43:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.48 1997/01/08 20:34:24 dawes Exp $
 
 
 
@@ -118,6 +118,7 @@ SERVERSRCS = \
 	XF86_Mach64.c \
 	XF86_P9000.c \
 	XF86_AGX.c \
+	XF86_LOADER.c \
 	XF86_W32.c \
 	XF86_I128.c \
 	XF86_TGA.c
@@ -132,6 +133,7 @@ SRCS =	\
 	xf86Events.c \
 	xf86Init.c \
 	xf86Init_m.c \
+	xf86Init_L.c \
 	xf86Io.c \
 	xf86Lock.c \
 	xf86_Mouse.c \
@@ -167,12 +169,13 @@ OBJS = \
 OFILES = \
 	xf86Init.o \
 	xf86Init_m.o \
+	xf86Init_L.o \
 	xf86IniExt.o \
 	xf86MIniExt.o \
 	xf86_Option.o
 
    INCLUDES = -I. -I.. -I$(XF86OSSRC) -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-              -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
+              -I$(SERVERSRC)/include -I$(SERVERSRC)/os -I$(XF86SRC)/vga256/vga \
               -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
      OSNAME = OSName
@@ -282,12 +285,17 @@ all:: XF86_I128.o
 SpecialObjectRule(XF86_TGA.o,XF86_TGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_TGA.o
 #endif
+#if XF86LoaderServer
+SpecialObjectRule(XF86_LOADER.o,XF86_LOADER.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_LOADER.o
+#endif
 
 #if NeedXF86Beta
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
+ObjectFromSpecialSource(xf86Init_L,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DLOADER)
 SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
 SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES) -UPEXEXT -UXIE)
 
@@ -328,5 +336,6 @@ InstallLinkKitNonExecFile(XF86_TGA.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(cfb16.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfb24.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(cfb32.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(XF86_LOADER.c,$(LINKKITDIR))
 
 DependTarget()

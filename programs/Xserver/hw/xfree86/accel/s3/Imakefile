@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.19 1996/11/18 13:10:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.20 1996/12/23 06:41:19 dawes Exp $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.18 1996/09/24 13:52:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Imakefile,v 3.20 1996/12/23 06:41:19 dawes Exp $
 
 
 
@@ -60,6 +60,11 @@ InstallLinkKitNonExecFile(confS3.SHsuf,$(LINKKITDIR))
 InstallLinkKitNonExecFile(newmmio.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(regs3.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(s3.h,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(libs3.a,$(MODULEDIR))
+InstallDynamicModule(s3Conf.o,$(MODULEDIR))
+#endif
 
 #ifndef OS2Architecture
 DependTarget()

@@ -399,6 +399,36 @@ static SymTabRec ramdacs[] = {
 	{ -1,		"" },
 };
 
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+ark_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &ARK;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
+
 
 /*
  * ArkIdent --

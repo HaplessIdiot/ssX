@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.7 1997/01/18 06:57:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.8 1997/01/20 12:38:26 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -85,18 +85,23 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifdef VGA256
 #define vgabppScreenInit xf86XAAScreenInitvga256
+#define vgabppModuleInit xaavga256ModuleInit
 #else
 #if PSZ == 8
 #define vgabppScreenInit xf86XAAScreenInit8bpp
+#define vgabppModuleInit xaa8ModuleInit
 #endif
 #if PSZ == 16
 #define vgabppScreenInit xf86XAAScreenInit16bpp
+#define vgabppModuleInit xaa16ModuleInit
 #endif
 #if PSZ == 24
 #define vgabppScreenInit xf86XAAScreenInit24bpp
+#define vgabppModuleInit xaa24ModuleInit
 #endif
 #if PSZ == 32
 #define vgabppScreenInit xf86XAAScreenInit32bpp
+#define vgabppModuleInit xaa32ModuleInit
 #endif
 #endif
 
@@ -294,3 +299,29 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     return vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy,
         width);
 }
+
+#if XFree86LOADER
+/*
+ * this is the module init code when the color depth specific parts of
+ * XAA are loaded at runtime
+ */
+void
+vgabppModuleInit( data, magic )
+    int * data;
+    int * magic;
+{
+    static int  cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+    	* magic = MAGIC_CCD_XAA_SCREEN_INIT;
+	* data  = (int) &vgabppScreenInit;
+	break;
+    default:
+    	* magic = MAGIC_DONE;
+	break;
+    }
+    return;
+}
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.9 1997/01/19 12:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.10 1997/01/20 12:38:20 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.9 1997/01/19 12:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.10 1997/01/20 12:38:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -627,6 +627,8 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
 	{
 	    int i, patternx, patterny;
 
+if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
+	goto no8x8;
             adjLeftX = ((pGC->patOrg.x + drawableXOrg) & 0x07);
             adjTopY = ((pGC->patOrg.y + drawableYOrg) & 0x07);
 
@@ -856,6 +858,8 @@ xf86FillRectTileCached(pDrawable, pGC, nBoxInit, pBoxInit)
                 xf86AccelInfoRec.Sync();
 	    return;
 	} /* end section to handle color-expanded fixed patterns */
+
+no8x8:
 
     if (pGC->fillStyle == FillStippled)
     	/* Setup for transparency compare. */

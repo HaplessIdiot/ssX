@@ -42,5 +42,9 @@ InstallLinkKitNonExecFile(tseng.h,$(LINKKITDIR)/drivers/vga256/et4000)
 InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/et4000)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/et4000)
 
+#if DoLoadableServer
+InstallDynamicModule(et4_drv.o,$(MODULEDIR))
+#endif
+
 DependTarget()
 

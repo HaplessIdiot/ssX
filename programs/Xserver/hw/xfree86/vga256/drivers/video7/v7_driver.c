@@ -245,6 +245,36 @@ static unsigned VIDEO7_ExtPorts[] = { 0x46E8, 0x4BC4, 0x4BC5 };
 static int Num_VIDEO7_ExtPorts =
 	(sizeof(VIDEO7_ExtPorts)/sizeof(VIDEO7_ExtPorts[0]));
 
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+video7_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &VIDEO7;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
+
 
 /*
  * VIDEO7Ident --

@@ -120,12 +120,24 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.101 1997/01/23 10:56:28 dawes Exp 
  */
 
 /*
+ * Build a server that dynamically loads the modules by setting
+ * this to YES.
+ *
+#define DoLoadableServer	YES
+ */
+
+/*
  * Which servers do you wish to build, you can save a lot of disk space
  * by only compiling the server you will be using.  It will also save you
  * considerable compile time.
  *
  * The following servers are supported in Intel x86 platforms
  *
+#define XF86LoaderServer        NO
+#define XF86SVGAModule          NO
+#define XF86S3Module            NO
+#define XF86Mach32Module        NO
+
 #define XF86SVGAServer          NO
 #define XF86VGA16Server         NO
 #define XF86VGA16DualServer	NO

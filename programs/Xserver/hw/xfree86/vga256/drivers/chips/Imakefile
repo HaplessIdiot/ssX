@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.14 1997/01/18 06:56:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.15 1997/01/28 10:54:57 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -105,6 +105,10 @@ InstallLinkKitNonExecFile(ct_colexp.c,$(LINKKITDIR)/drivers/vga256/chips)
 InstallLinkKitNonExecFile(ct_accel.c,$(LINKKITDIR)/drivers/vga256/chips)
 
 #ifndef OS2Architecture
-DependTarget()
+#if DoLoadableServer
 #endif
+InstallDynamicModule(ct_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()
 

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/09/28 17:22:16 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3newmmio/Imakefile,v 3.1 1996/12/24 02:24:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3newmmio/Imakefile,v 3.2 1996/12/27 06:57:16 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
@@ -61,6 +61,10 @@ LinkSourceFile(s3text.c,..)
 LinkSourceFile(s3win.c,..)
 
 InstallLinkKitLibrary(s3newmmio,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(libs3newmmio.a,$(MODULEDIR))
+#endif
 
 #ifndef OS2Architecture
 DependTarget()

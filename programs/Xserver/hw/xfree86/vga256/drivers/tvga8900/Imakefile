@@ -64,5 +64,9 @@ InstallLinkKitNonExecFile(tgui_accel.c,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(tgui_oldacl.c,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/tvga8900)
 
+#if DoLoadableServer
+InstallDynamicModule(tvga89_drv.o,$(MODULEDIR))
+#endif
+
 DependTarget()
 

@@ -213,6 +213,36 @@ vgaVideoChipRec CL64XX = {
 #define new ((vgaCL64XXPtr)vgaNewVideoState)
 
 /*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+cl64xx_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &CL64XX;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
+
+/*
  * CL64XXIdent --
  *
  * Returns the string name for supported chipset 'n'.

@@ -545,6 +545,36 @@ static unsigned char ATIVGAOffset = 0x80U;    /* Index offset for ATIVGAPort */
 #define ATIPutExtReg(_Index, _Value)                            \
         PutReg(ATIVGAPort, _Index, _Value)
 
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+ati_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &ATI;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
+
 static void
 ATIAccessMach64PLLReg(const unsigned char Index, const Bool Write)
 {

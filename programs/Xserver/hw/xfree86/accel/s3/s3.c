@@ -42,7 +42,6 @@
 #include "regs3.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
-#define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "s3linear.h"
 #include "s3Bt485.h"
@@ -89,6 +88,57 @@ extern unsigned char *find_bios_string(
     char *	/* match2 */
 #endif
 );
+
+#if defined(XFree86LOADER)
+
+#define _NO_XF86_PROTOTYPES
+#include "xf86.h"
+/*
+ * This limit is set to 110MHz because this is the limit for
+ * the ramdacs used on many S3 cards Increasing this limit
+ * could result in damage to your hardware.
+ */
+/* Clock limit for non-Bt485, non-Ti3020, non-ATT498 cards */
+#define MAX_S3_CLOCK    110000
+
+int s3MaxClock = MAX_S3_CLOCK;
+
+ScrnInfoPtr xf86Screens[] = 
+{
+  &s3InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
+
+int s3ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  CHIPSET,
+  CLOCKS,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  BIOSBASE,
+  MEMBASE,
+  RAMDAC,
+  DACSPEED,
+  -1
+};
+#endif /* defined(XFree86LOADER) */
 
 ScrnInfoRec s3InfoRec =
 {
@@ -159,6 +209,42 @@ ScrnInfoRec s3InfoRec =
    0,				/* int physSize */
 #endif
 };
+
+ScrnInfoRec *
+ModuleInit()
+{
+return &s3InfoRec;
+}
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be <driver_module_name>ModuleInit()
+ */
+void
+libs3ModuleInit(data,magic)
+    int  * data;
+    int  * magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (int) &s3InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 1:
+        * data = (int) "libmfb.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
 
 typedef struct S3PCIInformation {
    int DevID;

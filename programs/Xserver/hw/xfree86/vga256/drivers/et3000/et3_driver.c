@@ -120,6 +120,36 @@ static int Num_ET3000_ExtPorts =
 	(sizeof(ET3000_ExtPorts)/sizeof(ET3000_ExtPorts[0]));
 
 /*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+et3_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &ET3000;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
+
+/*
  * ET3000ClockSelect --
  *      select one of the possible clocks ...
  */

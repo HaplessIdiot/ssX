@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.27 1996/11/18 13:08:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.28 1996/12/23 06:30:29 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -16,7 +16,7 @@ VGA2SCREEN = vga2
 MONOSCREEN = mono
 #endif
 
-#if XF86SVGAServer
+#if XF86SVGAServer || XF86SVGAModule
 VGA256SCREEN = vga256
 #endif
 
@@ -40,7 +40,7 @@ SCREENS = $(VGA2SCREEN) $(MONOSCREEN) $(VGA16SCREEN) $(VGA256SCREEN)
 
 SUBDIRS = os-support common common_hw xaa $(SCREENS) $(ACCELDIRS) doc \
           reconfig xf86config $(XF86SETUPDIR) etc LinkKit \
-          VGADriverDoc $(SUPERPROBE)
+          VGADriverDoc $(SUPERPROBE) loader
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config

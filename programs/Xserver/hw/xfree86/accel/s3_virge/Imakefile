@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.4 1996/12/27 07:02:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/Imakefile,v 3.5 1997/01/14 22:17:15 dawes Exp $
 
 
 
@@ -59,6 +59,11 @@ InstallLinkKitLibrary(s3v,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confS3V.SHsuf,$(LINKKITDIR))
 InstallLinkKitNonExecFile(s3v.h,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(regs3v.h,$(LINKKITDIR)/drivers)
+
+#if DoLoadableServer
+InstallDynamicModule(libs3v.a,$(MODULEDIR))
+#endif
+
 
 #ifndef OS2Architecture
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.8 1996/10/18 14:59:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.9 1996/12/23 06:38:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -95,6 +95,7 @@ void mach32ValidateGC(
 #endif
 );
 
+/*
 void
 cfbValidateGC(pGC, changes, pDrawable)
     register GCPtr pGC;
@@ -112,12 +113,15 @@ cfb16ValidateGC(pGC, changes, pDrawable)
 {
     mach32ValidateGC(pGC, changes, pDrawable);
 }
+*/
 
+/*
 Bool
 cfbCreateGC(pGC) GCPtr pGC; {return mach32CreateGC(pGC);}
 
 Bool
 cfb16CreateGC(pGC) GCPtr pGC; {return mach32CreateGC(pGC);}
+*/
 
 /* Pointers to cfb routines. */
 static int  (*pcfbReduceRasterOp)();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ELSA.c,v 3.2 1996/10/06 13:15:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ELSA.c,v 3.3 1996/12/27 07:02:20 dawes Exp $ */
 /*
  * s3ELSA.c
  *
@@ -362,6 +362,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    for (i=0; elsa_board_types[i].code; i++)
       if (elsa_board_types[i].code == eedata->board_code) break;
 
+#ifndef XFree86LOADER
    if (pcard) {
       *pcard  = (char*) xalloc(80);
       if (elsa_board_types[i].code)
@@ -370,15 +371,18 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
 	 sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
 		 , eedata->board_code);
    }
+#endif
 
    if (pserno) {
       *pserno = (char*) xalloc(20);
       serno = (eedata->serno_h<<16) | eedata->serno_l;
+#ifndef XFree86LOADER
       sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
 	      (char)('A' + ((serno>>27) & 0x0f)),
 	      ((serno>>17) & 0x3ff) | ((serno>>21) & 0x400),
 	      (serno & 0x1ffff) / 1000,
 	      (serno & 0x1ffff) % 1000);
+#endif
    }
 
    if (max_pix_clock)

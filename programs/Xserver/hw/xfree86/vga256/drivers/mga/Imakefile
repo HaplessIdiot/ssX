@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.6 1996/12/12 09:16:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.7 1996/12/24 02:25:13 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -50,5 +50,9 @@ InstallLinkKitNonExecFile(mga_initacc.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_accel.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mga_map.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/mga)
+
+#if DoLoadableServer
+InstallDynamicModule(mga_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()

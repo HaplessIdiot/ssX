@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 06:20:54 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.8 1997/01/14 22:21:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/Imakefile,v 3.9 1997/01/18 06:56:49 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = sis86c201.c sis_bank.s sis_curs.c sis_BitBlt.c sis_blitter.c\
@@ -33,7 +33,7 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-NormalRelocatableTarget(sis_drv,$(OBJS))
+NormalRelocatableTarget(sis_drv, $(OBJS))
 
 InstallLinkKitNonExecFile(sis86c201.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(sis_bank.s,$(LINKKITDIR)/drivers/vga256/sis)
@@ -53,5 +53,9 @@ InstallLinkKitNonExecFile(sis_FillSt.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(sis_colexp.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(sis_teblt8.c,$(LINKKITDIR)/drivers/vga256/sis)
 InstallLinkKitNonExecFile(sis_textblt.s,$(LINKKITDIR)/drivers/vga256/sis)
+
+#if DoLoadableServer
+InstallDynamicModule(sis_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()

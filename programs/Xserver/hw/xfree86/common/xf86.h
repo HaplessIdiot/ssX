@@ -265,6 +265,19 @@ typedef enum {
     DPMSFullSupport
 } DPMSSupportStatus;
 
+/* These are the magic numbers that ModuleInit functions can return */
+#define MAGIC_DONE			0	/* no more init stuff */
+#define MAGIC_LOAD			1	/* load that module */
+#define MAGIC_ADD_VIDEO_CHIP_REC	2	/* add this as vgaVideoChipPtr*/
+#define MAGIC_CCD_DO_BITBLT		3	/* cur.col.depth specific blit*/
+#define MAGIC_CCD_SCREEN_PRIV_IDX	4	/* cur.col.depth specific idx*/
+#define MAGIC_CCD_XAA_SCREEN_INIT	5	/* cur.col.depth specific init*/
+
+extern int *xf86ccdScreenPrivateIndex;
+extern void (*xf86ccdDoBitblt)();
+extern int  (*xf86ccdXAAScreenInit)();
+extern int xf86xaaloaded;
+
 /* flags for xf86LookupMode */
 #define LOOKUP_DEFAULT		0	/* Use default mode lookup method */
 #define LOOKUP_BEST_REFRESH	1	/* Pick modes with best refresh */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:28:34 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/Imakefile,v 3.4 1996/02/04 09:12:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/Imakefile,v 3.5 1996/12/23 06:55:44 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = al_driver.c al_bank.s
@@ -29,5 +29,9 @@ NormalRelocatableTarget(al_drv, $(OBJS))
 InstallLinkKitNonExecFile(al_driver.c,$(LINKKITDIR)/drivers/vga256/al2101)
 InstallLinkKitNonExecFile(al_bank.s,$(LINKKITDIR)/drivers/vga256/al2101)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/al2101)
+
+#if DoLoadableServer
+InstallDynamicModule(al_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.49 1997/01/19 12:51:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.50 1997/01/20 12:38:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -425,6 +425,10 @@ static Bool
 setExternClock(clock2)
      int clock2;       /* the Clock index */
 {
+#ifndef XFree86LOADER
+    /*
+     * this currently is disabled when using the XFree86 Loader architecture
+     */
     int i;
 #ifdef MACH386
     union wait exit_status;
@@ -518,6 +522,9 @@ setExternClock(clock2)
         }
     }
     currentExternClock = clock2;
+
+#endif /* XFree86LOADER */
+
     return(TRUE);
 }
 

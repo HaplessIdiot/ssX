@@ -260,6 +260,36 @@ vgaVideoChipRec MGA = {
 };
 
 /*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+mga_drvModuleInit(data,magic)
+    int  * data;
+    int  * magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = (int) &MGA;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+    return;
+}
+
+/*
  * This is a convenience macro, so that entries in the driver structure
  * can simply be dereferenced with 'newVS->xxx'.
  * change ajv - new conflicts with the C++ reserved word. 

@@ -49,4 +49,8 @@ InstallLinkKitNonExecFile(s3seg.c,$(LINKKITDIR)/drivers/vga256/s3)
 InstallLinkKitNonExecFile(s3bank.s,$(LINKKITDIR)/drivers/vga256/s3)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/s3)
 
+#if DoLoadableServer
+InstallDynamicModule(s3_drv.o,$(MODULEDIR))
+#endif
+
 DependTarget()

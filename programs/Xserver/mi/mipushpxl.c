@@ -46,12 +46,15 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/mipushpxl.c,v 3.1 1996/12/09 12:02:49 dawes Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "miscstruct.h"
+#ifdef XFree86LOADER
+#define endtab (*LOADERVAR(endtab))
+#endif
 #include "../mfb/maskbits.h"
 
 #define NPT 128

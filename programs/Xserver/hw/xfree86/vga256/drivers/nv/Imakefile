@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/10/27 13:00:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/Imakefile,v 3.1 1996/12/24 02:25:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/Imakefile,v 3.2 1996/12/27 07:05:41 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = nv_driver.c
@@ -32,5 +32,9 @@ NormalRelocatableTarget(nv_drv,$(OBJS))
 InstallLinkKitNonExecFile(nv_driver.c,$(LINKKITDIR)/drivers/vga256/nv)
 InstallLinkKitNonExecFile(nvreg.h,$(LINKKITDIR)/drivers/vga256/nv)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/nv)
+
+#if DoLoadableServer
+InstallDynamicModule(nv_drv.o,$(MODULEDIR))
+#endif
 
 DependTarget()

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h /main/28 1996/12/02 10:22:01 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.4 1996/04/15 11:34:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.5 1996/12/23 07:09:29 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -276,5 +276,19 @@ typedef struct _GrabRec *GrabPtr;
 typedef struct _CharInfo *CharInfoPtr; /* also in fonts/include/font.h */
 #define _XTYPEDEF_CHARINFOPTR
 #endif
+
+#if defined(XFree86LOADER)
+
+#ifndef CATNAME
+#if ((defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)) && !defined(__CPROTO__)
+#define CATNAME(prefix,subname) prefix##subname
+#else
+#define CATNAME(prefix,subname) prefix/**/subname
+#endif
+#endif /* !CATNAME */
+
+#define LOADERVAR(var)	CATNAME(Loader_,var)
+
+#endif /* XFree86LOADER */
 
 #endif /* MISC_H */

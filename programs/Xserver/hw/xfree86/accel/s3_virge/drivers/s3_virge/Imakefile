@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/Imakefile,v 3.2 1996/12/24 02:24:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/Imakefile,v 3.3 1996/12/27 07:03:36 dawes Exp $
 
 
 
@@ -29,6 +29,10 @@ all:: s3_virge.o
 
 InstallLinkKitNonExecFile(s3_virge.c,$(LINKKITDIR)/drivers/s3_virge/s3_virge)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3_virge/s3_virge)
+
+#if DoLoadableServer
+InstallDynamicModule(s3_virge.o,$(MODULEDIR))
+#endif
 
 DependTarget()
 

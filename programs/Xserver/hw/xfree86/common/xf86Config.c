@@ -58,6 +58,12 @@ extern char *getenv();
 #include "xfsconf.h"
 #endif
 
+#ifdef XFree86LOADER
+#include <vga.h>
+extern vgaVideoChipPtr vgaDrivers[];
+int xf86xaaloaded = FALSE;
+#endif
+
 #ifdef XINPUT
 #include "xf86Xinput.h"
 
@@ -2416,10 +2422,30 @@ configMonitorSection()
 #endif
 }
 
+#ifdef XFree86LOADER
+void
+addChipRec(rec)
+    vgaVideoChipRec *rec;
+{
+    int i=0;
+
+    while( vgaDrivers[i] != (vgaVideoChipPtr)-1 )
+    {
+        if( vgaDrivers[i] == NULL )
+	{
+	    vgaDrivers[i] = rec;
+	    break;
+	}
+	i++;
+    }
+}
+#endif
+
 static CONFIG_RETURN_TYPE
 configDynamicModuleSection()
 {
     int		token;
+    ScrnInfoRec *(*ptr)();
  
     while ((token = xf86GetToken(ModuleTab)) != ENDSECTION) {
 	switch (token) {
@@ -2440,7 +2466,11 @@ configDynamicModuleSection()
 			firstTime = FALSE;
 		    }
 		}
+#ifndef XFree86LOADER
 		xf86LoadModule(val.str, modulePath);
+#else
+		LoadModule(val.str, modulePath);
+#endif
 #else
 		ErrorF("Dynamic modules not supported. \"%s\" not loaded\n",
 		       modulePath);
@@ -2457,6 +2487,14 @@ configDynamicModuleSection()
 	    break;
 	}    
     }
+#ifdef XFree86LOADER
+    LoaderResolveSymbols();
+    LoaderFixups();
+
+    ptr=(ScrnInfoRec *(*)())LoaderSymbol("ModuleInit");
+    xf86Screens[0]=(ptr)();
+#endif
+
 #ifdef NEED_RETURN_VALUE
   return RET_OKAY;
 #endif
@@ -2925,6 +2963,81 @@ configScreenSection()
 #endif
     }
   
+#ifdef XFree86LOADER
+    /*
+     * at this point we know which depth this server will be running in.
+     * sounds like a perfect place to load the corresponding cfb routines,
+     * doesn't it?
+     */
+    ErrorF("%s %s: color depth: %dbpp\n",
+                   XCONFIG_GIVEN, screen->name, screen->depth);
+    /*
+     * we always need libmfb, as far as I can tell, so let's just load it
+     * right here.
+     */
+    LoadModule("libmfb.a", modulePath);
+    switch( screen->depth )
+    {
+    case 8:
+	    LoadModule("libcfb.a", modulePath);
+	    if( xf86xaaloaded )
+	        LoadModule("xaavga256.o", modulePath);
+	    break;
+    case 15:
+    case 16:
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb16.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa16.o", modulePath);
+	    }
+	    break;
+    case 24:
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb24.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa24.o", modulePath);
+	    }
+	    break;
+    case 32:
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb32.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa32.o", modulePath);
+	    }
+	    break;
+    default:
+        FatalError("color depth of %d currently not supported by loader\n",
+		screen->depth);
+    }
+    /*
+     * at this point all symbols should be resolvable. If not, we should
+     * issue a fatal error and stop right here. This is disabled while
+     * we are working on this code
+     */
+    if( LoaderCheckUnresolved() )
+    {
+        /*
+	 * disabled
+
+	FatalError("Some symbols couldn't be resolved!\n");
+
+	 * disabled
+	 */
+    }
+
+    /*
+     * now that this is checked we should hook in the current color depth
+     * pointers
+     */
+
+#endif /* XFree86LOADER */
+
     /* Maybe these should be FatalError() instead? */
     if ( !had_monitor ) {
       xf86ConfigError("A screen must specify a monitor");

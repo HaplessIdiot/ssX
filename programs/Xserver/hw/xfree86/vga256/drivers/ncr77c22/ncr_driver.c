@@ -96,8 +96,15 @@ extern void  NCRSetWrite();
 extern void  NCRSetReadWrite();
 #endif
 
-
-vgaVideoChipRec NCR77C22 = {
+/*
+ * may I politely question the idea of calling this driver NCR77C22,
+ * a name that is overwritten with a #define a few lines below...
+ */
+#if XFree86LOADER
+vgaVideoChipRec NCR= {
+#else
+vgaVideoChipRec NCR77C22= {
+#endif
   NCRProbe,
   NCRIdent,
   NCREnterLeave,
@@ -143,6 +150,36 @@ vgaVideoChipRec NCR77C22 = {
 #define NCR77C22	0
 #define NCR77C22E	1
 static unsigned char NCRchipset;
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * its name has to be <driver_module_name>ModuleInit()
+ */
+void
+ncr_drvModuleInit(data,magic)
+    vgaVideoChipPtr * data;
+    int  * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	* data = &NCR;
+	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
+	break;
+    case 1:
+        * data = (int) "libvga256.a";
+	* magic= MAGIC_LOAD;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+	break;
+    }
+
+    return;
+}
 
 /*
  * NCRIdent

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.2 1997/01/04 12:18:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.3 1997/01/18 06:56:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
