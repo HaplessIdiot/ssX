@@ -1,5 +1,5 @@
 XCOMM X-TrueType Server - TrueType rasterizer for X
-XCOMM $XFree86: xc/lib/font/X-TrueType/Imakefile,v 1.4 1999/03/28 15:59:31 dawes Exp $
+XCOMM $XFree86: xc/lib/font/X-TrueType/Imakefile,v 1.6 2000/09/19 12:46:07 eich Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -13,7 +13,8 @@ INCLUDES = -I. -I$(FONTINCSRC) -I../include -I../fontcache \
            -I$(FTSOURCEDIR)/lib -I$(FTSOURCEDIR)/lib/extend \
            -I$(FTSOURCEDIR)/lib/arch/unix -I$(FONTLIBSRC)/FreeType
 
-DEFINES = -DTT_MAKE_OPTION_SINGLE_OBJECT=1  $(FONTMODULEDEF) \
+DEFINES = -DTT_MAKE_OPTION_SINGLE_OBJECT=1  -DTT_CONFIG_OPTION_EXTEND_ENGINE \
+	  $(FONTMODULEDEF) \
 	  $(XTT_DEBUG_FLAGS) $(XTT_CCONV_MOUDLE_DEFINES) \
 	  $(XTT_USE_OPT_ENC_DEFINES)
 
