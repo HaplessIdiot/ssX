@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.35 1998/03/27 23:24:02 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.36 1998/04/05 00:46:11 robin Exp $
  */
 
 /*
@@ -321,6 +321,10 @@ typedef struct {
 #define OPT_HIGHLIGHT_COLOR 1 /* true if xterm supports color highlighting */
 #endif
 
+#ifndef OPT_SAME_NAME
+#define OPT_SAME_NAME   1 /* suppress redundant updates of title, icon, etc. */
+#endif
+
 #ifndef OPT_SUNPC_KBD
 #define OPT_SUNPC_KBD	1 /* true if xterm supports Sun/PC keyboard map */
 #endif
@@ -339,6 +343,10 @@ typedef struct {
 
 #ifndef OPT_XMC_GLITCH
 #define OPT_XMC_GLITCH	0 /* true if xterm supports xmc (magic cookie glitch) */
+#endif
+
+#ifndef OPT_ZICONBEEP
+#define OPT_ZICONBEEP   1 /* true if xterm supports "-ziconbeep" option */
 #endif
 
 /***====================================================================***/

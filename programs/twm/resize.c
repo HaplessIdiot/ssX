@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.81 94/04/17 20:38:21 dave Exp $
+ * $XConsortium: resize.c,v 1.82 94/12/27 19:07:15 mor Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -621,10 +621,10 @@ TwmWindow *tmp_win;
     MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
     XUnmapWindow(dpy, Scr->SizeWindow);
     ConstrainSize (tmp_win, &dragWidth, &dragHeight);
-    AddingX = dragx;
-    AddingY = dragy;
-    AddingW = dragWidth + (2 * tmp_win->frame_bw);
-    AddingH = dragHeight + (2 * tmp_win->frame_bw);
+    AddingX = dragx - tmp_win->frame_bw;
+    AddingY = dragy - tmp_win->frame_bw;
+    AddingW = dragWidth;/* + (2 * tmp_win->frame_bw);*/
+    AddingH = dragHeight;/* + (2 * tmp_win->frame_bw);*/
     SetupWindow (tmp_win, AddingX, AddingY, AddingW, AddingH, -1);
 }
 
@@ -900,6 +900,12 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
 	
 	XConfigureWindow(dpy, tmp_win->title_w, xwcm, &xwc);
     }
+
+    if (tmp_win->attr.width != w)
+	tmp_win->widthEverChangedByUser = True;
+
+    if (tmp_win->attr.height != (h - tmp_win->title_height))
+	tmp_win->heightEverChangedByUser = True;
 
     tmp_win->attr.width = w;
     tmp_win->attr.height = h - tmp_win->title_height;
