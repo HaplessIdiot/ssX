@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.4 2002/09/23 01:25:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.5 2002/09/29 02:55:00 paulo Exp $ */
 
 
 /*
@@ -468,7 +468,6 @@ undefined_function:
 		STRFUN(builtin), STROBJ(name));
 
 finished_compilation:
-    RETURN_CHECK(2);
     RETURN(0) = warnings_p;
     RETURN(1) = failure_p;
     RETURN_COUNT = 2;
@@ -3344,6 +3343,8 @@ OPCODE_LABEL(XBC_CALL):
 	mac->stack.base = mac->stack.length - offset;
 	builtin = builtins[*stream++];
 	reg0 = builtin->function(mac, builtin);
+	if (!builtin->multiple_values)
+	    RETURN_COUNT = 0;
 	mac->stack.length -= offset;
 	NEXT_OPCODE();
 
@@ -3352,6 +3353,8 @@ OPCODE_LABEL(XBC_CALL_SET):
 	mac->stack.base = mac->stack.length - offset;
 	builtin = builtins[*stream++];
 	reg0 = builtin->function(mac, builtin);
+	if (!builtin->multiple_values)
+	    RETURN_COUNT = 0;
 	mac->stack.length -= offset;
 	offset = *stream++;
 	mac->env.values[mac->env.lex + offset] = reg0;
@@ -3429,9 +3432,9 @@ OPCODE_LABEL(XBC_STRUCT):
 	reg1 = constants[*stream++];
 	if (reg0->type != LispStruct_t ||
 	    reg0->data.struc.def != reg1) {
-	    char *name = STRPTR(CAR(reg1->data.struc.def));
+	    char *name = STRPTR(CAR(reg1));
 
-	    for (; offset; offset--)
+	    for (reg1 = CDR(reg1); offset; offset--)
 		reg1 = CDR(reg1);
 	    LispDestroy(mac, "%s-%s: %s is not a %s",
 			name, STRPTR(CAR(reg1)),

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.3 2002/08/25 02:48:32 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.5 2002/09/29 02:55:01 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -41,10 +41,10 @@
 ;; initialization here in a configuration file, since defvar only binds
 ;; the variable if it is unbound or doesn't have a value defined.
 ;;  *auto-modes* is a list of conses where every car is compiled
-;; to a regexp to match the name of the file being loaded. The cdr is
+;; to a regexp to match the name of the file being loaded. The caddr is
 ;; either a string, a pathname, or a syntax-p.
 ;;  When loading a file, if the regexp in the car matches, it will check
-;; the cdr value, and if it is a:
+;; the caddr value, and if it is a:
 ;;	string:		executes (load "progmodes/<the-string>.lsp")
 ;;	pathname:	executes (load <the-pathhame>)
 ;;	syntax-p:	does nothing, already loaded
@@ -53,14 +53,22 @@
 ;; syntax-p, the entry is removed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *auto-modes* '(
-    ("\\.(c|cc|C|h|bm|xbm|xpm|l|y)$"		"c"	. *c*)
-    ("\\.(li?sp|scm)$"				"lisp"	. *lisp*)
-    ("Imakefile|(\\.(cf|rules|tmpl|def|cpp)$)"	"imake"	. *imake*)
-    ("[Mm]akefile.*|\\.mk$"			"make"	. *make*)
-    ("\\.sgml?$"				"sgml"	. *sgml*)
-    ("\\.html?$"				"html"	. *html*)
-    ("\\.(man|\\d)$"				"man"	. *man*)
-    ("app-defaults/\\w+|\\u[A-Za-z0-9_-]+\\.ad"	"xrdb"	. *xrdb*)
+    ("\\.(c|cc|C|cxx|h|bm|xbm|xpm|l|y)$"
+	"C/C++"		"c"	. *c-mode*)
+    ("\\.(li?sp|scm)$"
+	"Lisp/Scheme"	"lisp"	. *lisp-mode*)
+    ("Imakefile|(\\.(cf|rules|tmpl|def|cpp)$)"
+	"X imake"	"imake"	. *imake-mode*)
+    ("[Mm]akefile.*|\\.mk$"
+	"Makefile"	"make"	. *make-mode*)
+    ("\\.sgml?$"
+	"SGML"		"sgml"	. *sgml-mode*)
+    ("\\.html?$"
+	"HTML"		"html"	. *html-mode*)
+    ("\\.(man|\\d)$"
+	"Man page"	"man"	. *man-mode*)
+    ("app-defaults/\\w+|\\u[A-Za-z0-9_-]+\\.ad"
+	"X resource"	"xrdb"	. *xrdb-mode*)
 ))
 
 
@@ -81,7 +89,7 @@
 	(
 	(mode	*auto-modes*	(cdr mode))
 	(regex	(caar mode)	(caar mode))
-	(syntax	(cdar mode)	(cdar mode))
+	(syntax	(cddar mode)	(cddar mode))
 	)
 	((endp mode))
 
@@ -110,7 +118,7 @@
 	    )
 
 	    ;; Pointer to symbol name
-	    (setq syntax (cddar mode))
+	    (setq syntax (cdddar mode))
 	    (if (boundp syntax)
 		(setq syntax (symbol-value syntax))
 	    )
@@ -119,7 +127,7 @@
 
 		;; New syntax table was loaded
 		(progn
-		    (rplacd (car mode) syntax)
+		    (rplacd (cdar mode) syntax)
 		    (return syntax)
 		)
 
@@ -155,14 +163,12 @@
 (defstruct syntax
     name		;;  A unique string to identify the syntax mode.
 			;; Should be the name of the language/file type.
+    options		;;  A hash table of options specified for the
+			;; language.
 
     ;; Field(s) defined at "compile time"
     labels		;;  Not exactly a list of labels, but all syntax
 			;; tables for the module.
-			;; XXX When hash tables be implemented in the
-			;;     interpreter, this should be a hash table
-			;;     to speed up a bit translating labels to
-			;;     syntax tables.
     quark		;;  A XrmQuark associated with the XawTextPropertyList
 			;; used by this syntax mode.
     token-count		;;  Number of distinct syntoken structures in

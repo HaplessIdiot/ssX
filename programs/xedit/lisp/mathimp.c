@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.6 2002/05/16 15:43:30 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.7 2002/09/15 21:32:21 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -53,6 +53,11 @@
 #define XBRD(obj)	mpr_den((obj)->data.mp.ratio)
 #define CXR(obj)	(obj)->data.complex.real
 #define CXI(obj)	(obj)->data.complex.imag
+
+#define DIVIDE_CEIL	1
+#define DIVIDE_FLOOR	2
+#define DIVIDE_ROUND	3
+#define DIVIDE_TRUNC	4
 
 #define XTYPE(obj)	(obj)->type
 #ifdef DEBUG
@@ -105,6 +110,10 @@
     LispDestroy(mac, "%s: %s is not a number",		\
 		STRFUN(builtin), STROBJ(object))
 
+#define NOT_A_REAL_NUMBER(object)			\
+    LispDestroy(mac, "%s: %s is not a real number",	\
+		STRFUN(builtin), STROBJ(object))
+
 #define NOT_AN_INTEGER(object)				\
     LispDestroy(mac, "%s: %s is not an integer",	\
 		STRFUN(builtin), STROBJ(object))
@@ -116,14 +125,20 @@
  */
 static LispObj *math_pi(LispMac*);
 static void add_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static void add_float(LispMac*, LispBuiltin*, LispObj*, double, double);
 static void sub_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static void sub_float(LispMac*, LispBuiltin*, LispObj*, double, double);
 static void mul_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static void mul_float(LispMac*, LispBuiltin*, LispObj*, double, double);
 static void div_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static void div_float(LispMac*, LispBuiltin*, LispObj*, double, double);
 static INLINE void abs_accumulator(LispMac*, LispBuiltin*, LispObj*);
 static INLINE void neg_accumulator(LispMac*, LispBuiltin*, LispObj*);
 static INLINE void mod_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static void gcd_accumulator(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static int math_compare(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static int cmp_float(LispMac*, LispBuiltin*, double, double);
 static INLINE void sqrt_accumulator(LispMac*, LispBuiltin*, LispObj*);
 static INLINE LispObj *copy_number(LispMac*, LispBuiltin*, LispObj*);
 static INLINE LispObj *copy_real(LispMac*, LispBuiltin*, LispObj*);
@@ -149,6 +164,10 @@ static INLINE void mod_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE void mod_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE void mod_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE void mod_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_fi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_fi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_bi_fi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static INLINE void rem_bi_bi(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static void sqrt_fi(LispMac*, LispBuiltin*, LispObj*);
 static void sqrt_fr(LispMac*, LispBuiltin*, LispObj*);
 static INLINE void sqrt_ff(LispMac*, LispBuiltin*, LispObj*);
@@ -296,11 +315,26 @@ static INLINE void sub_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE void mul_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE void div_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
 static INLINE int cmp_br_br(LispMac*, LispBuiltin*, LispObj*, LispObj*);
+static LispObj *math_divide(LispMac*, LispBuiltin*, int, int);
+static LispObj *divide_float(LispMac*, LispBuiltin*, double, double, int, int);
+static LispObj *divide_xi_xi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xi_xr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xr_xi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_xr_xr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fi_fi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fi_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_fr_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_fi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_fr(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_bi(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_ff_br(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_bi_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
+static LispObj *divide_br_ff(LispMac*,LispBuiltin*,LispObj*,LispObj*,int,int);
 
 
 /************************************************************************
  *	HELPER FUNCTIONS
- *	Note: these functions assumes type error check is already done
  ************************************************************************/
 static LispObj *
 math_pi(LispMac *mac)
@@ -384,6 +418,33 @@ add_bad_ope:
 }
 
 static void
+add_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
+	  double op1, double op2)
+{
+    double value = op1 + op2;
+
+    if (!finite(value))
+	XERROR("floating point overflow");
+    switch (XTYPE(accum)) {
+	case FI:
+	case FR:
+	    XTYPE(accum) = FF;
+	    break;
+	case BI:
+	    XCLEAR_BI(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	case BR:
+	    XCLEAR_BR(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	default:
+	    break;
+    }
+    XFF(accum) = value;
+}
+
+static void
 sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
@@ -450,6 +511,33 @@ sub_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
     return;
 sub_bad_ope:
     NOT_A_NUMBER(ope);
+}
+
+static void
+sub_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
+	  double op1, double op2)
+{
+    double value = op1 - op2;
+
+    if (!finite(value))
+	XERROR("floating point overflow");
+    switch (XTYPE(accum)) {
+	case FI:
+	case FR:
+	    XTYPE(accum) = FF;
+	    break;
+	case BI:
+	    XCLEAR_BI(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	case BR:
+	    XCLEAR_BR(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	default:
+	    break;
+    }
+    XFF(accum) = value;
 }
 
 static void
@@ -522,6 +610,33 @@ mul_bad_ope:
 }
 
 static void
+mul_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
+	  double op1, double op2)
+{
+    double value = op1 * op2;
+
+    if (!finite(value))
+	XERROR("floating point overflow");
+    switch (XTYPE(accum)) {
+	case FI:
+	case FR:
+	    XTYPE(accum) = FF;
+	    break;
+	case BI:
+	    XCLEAR_BI(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	case BR:
+	    XCLEAR_BR(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	default:
+	    break;
+    }
+    XFF(accum) = value;
+}
+
+static void
 div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     if (XTYPE(accum) == CX) {
@@ -558,7 +673,7 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
 		    case FF:	div_ff_ff(mac, builtin, accum, ope);	break;
 		    case BI:	div_ff_bi(mac, builtin, accum, ope);	break;
 		    case BR:	div_ff_br(mac, builtin, accum, ope);	break;
-		    default:	break;
+		    default:	goto div_bad_ope;
 		}
 		break;
 	    case BI:
@@ -588,6 +703,709 @@ div_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
     return;
 div_bad_ope:
     NOT_A_NUMBER(ope);
+}
+
+static void
+div_float(LispMac *mac, LispBuiltin *builtin, LispObj *accum,
+	  double op1, double op2)
+{
+    double value;
+
+    if (op2 == 0.0)
+	XERROR("divide by zero");
+    value = op1 / op2;
+    if (!finite(value))
+	XERROR("floating point overflow");
+    switch (XTYPE(accum)) {
+	case FI:
+	case FR:
+	    XTYPE(accum) = FF;
+	    break;
+	case BI:
+	    XCLEAR_BI(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	case BR:
+	    XCLEAR_BR(accum);
+	    XTYPE(accum) = FF;
+	    break;
+	default:
+	    break;
+    }
+    XFF(accum) = value;
+}
+
+static LispObj *
+math_divide(LispMac *mac, LispBuiltin *builtin, int function, int floating)
+{
+    LispObj *number, *divisor;
+
+    divisor = ARGUMENT(1);
+    number = ARGUMENT(0);
+
+    if (divisor == NIL)
+	divisor = &one;
+
+    RETURN_COUNT = 1;
+    if (math_compare(mac, builtin, divisor, &zero) == 0)
+	XERROR("divide by zero");
+    if (math_compare(mac, builtin, number, &zero) == 0)
+	return (RETURN(0) = &zero);
+    switch (XTYPE(number)) {
+	case FI:
+	    switch (XTYPE(divisor)) {
+		case FI: return (divide_fi_fi(mac, builtin, number,
+					      divisor, function, floating));
+		case FR: return (divide_xi_xr(mac, builtin, number,
+					      divisor, function, floating));
+		case FF: return (divide_fi_ff(mac, builtin, number,
+					      divisor, function, floating));
+		case BI: return (divide_xi_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case BR: return (divide_xi_xr(mac, builtin, number,
+					      divisor, function, floating));
+		default: goto divide_bad_divisor;
+	    }
+	    break;
+	case FR:
+	    switch (XTYPE(divisor)) {
+		case FI: return (divide_xr_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case FR: return (divide_xr_xr(mac, builtin, number,
+					      divisor, function, floating));
+		case FF: return (divide_fr_ff(mac, builtin, number,
+					      divisor, function, floating));
+		case BI: return (divide_xr_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case BR: return (divide_xr_xr(mac, builtin, number,
+					      divisor, function, floating));
+		default: goto divide_bad_divisor;
+	    }
+	    break;
+	case FF:
+	    switch (XTYPE(divisor)) {
+		case FI: return (divide_ff_fi(mac, builtin, number,
+					      divisor, function, floating));
+		case FR: return (divide_ff_fr(mac, builtin, number,
+					      divisor, function, floating));
+		case FF: return (divide_ff_ff(mac, builtin, number,
+					      divisor, function, floating));
+		case BI: return (divide_ff_bi(mac, builtin, number,
+					      divisor, function, floating));
+		case BR: return (divide_ff_br(mac, builtin, number,
+					      divisor, function, floating));
+		default: goto divide_bad_divisor;
+	    }
+	    break;
+	case BI:
+	    switch (XTYPE(divisor)) {
+		case FI: return (divide_xi_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case FR: return (divide_xi_xr(mac, builtin, number,
+					      divisor, function, floating));
+		case FF: return (divide_bi_ff(mac, builtin, number,
+					      divisor, function, floating));
+		case BI: return (divide_xi_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case BR: return (divide_xi_xr(mac, builtin, number,
+					      divisor, function, floating));
+		default: goto divide_bad_divisor;
+	    }
+	    break;
+	case BR:
+	    switch (XTYPE(divisor)) {
+		case FI: return (divide_xr_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case FR: return (divide_xr_xr(mac, builtin, number,
+					      divisor, function, floating));
+		case FF: return (divide_br_ff(mac, builtin, number,
+					      divisor, function, floating));
+		case BI: return (divide_xr_xi(mac, builtin, number,
+					      divisor, function, floating));
+		case BR: return (divide_xr_xr(mac, builtin, number,
+					      divisor, function, floating));
+		default: goto divide_bad_divisor;
+	    }
+	    break;
+	default:
+	    NOT_A_REAL_NUMBER(number);
+	    break;
+    }
+divide_bad_divisor:
+    NOT_A_REAL_NUMBER(divisor);
+
+    return (NIL);
+}
+
+static LispObj *
+divide_float(LispMac *mac, LispBuiltin *builtin, double num, double div,
+	     int function, int floating)
+{
+    LispObj *result;
+    double quo, rem, modp, tmp;
+
+    modp = modf(num / div, &quo);
+    rem = num - quo * div;
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rem < 0.0 && div < 0.0) || (rem > 0.0 && div > 0.0)) {
+		quo += 1.0;
+		rem -= div;
+	    }
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rem < 0.0 && div > 0.0) || (rem > 0.0 && div < 0.0)) {
+		quo -= 1.0;
+		rem += div;
+	    }
+	    break;
+	case DIVIDE_ROUND:
+	    if (fabs(modp) != 0.5 || modf(quo * 0.5, &tmp) != 0.0) {
+		if (div > 0.0) {
+		    if (rem > 0.0) {
+			if (rem >= div * 0.5) {
+			    quo += 1.0;
+			    rem -= div;
+			}
+		    }
+		    else {
+			if (rem <= div * -0.5) {
+			    quo -= 1.0;
+			    rem += div;
+			}
+		    }
+		}
+		else {
+		    if (rem > 0.0) {
+			if (rem >= div * -0.5) {
+			    quo -= 1.0;
+			    rem += div;
+			}
+		    }
+		    else {
+			if (rem <= div * 0.5) {
+			    quo += 1.0;
+			    rem -= div;
+			}
+		    }
+		}
+	    }
+	    break;
+    }
+    if (!finite(quo) || !finite(rem))
+	XERROR("floating point overflow");
+
+    RETURN(0) = REAL(rem);
+
+    if (floating)
+	result = REAL(quo);
+    else {
+	if ((long)quo == quo)
+	    result = SMALLINT((long)quo);
+	else {
+	    mpi *bigi = XALLOC(mpi);
+
+	    mpi_init(bigi);
+	    mpi_setd(bigi, quo);
+	    result = BIGINTEGER(bigi);
+	    XMEM(bigi);
+	}
+    }
+
+    return (result);
+}
+
+#define DIVIDE_NOP	0
+#define DIVIDE_ADD	1
+#define DIVIDE_SUB	2
+static LispObj *
+divide_xi_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    int state = DIVIDE_NOP, dsign, rsign;
+    LispObj *result;
+    mpi *quo, *rem;
+
+    quo = XALLOC(mpi);
+    mpi_init(quo);
+    if (XTYPE(num) == FI)
+	mpi_seti(quo, XFI(num));
+    else
+	mpi_set(quo, XBI(num));
+
+    rem = XALLOC(mpi);
+    mpi_init(rem);
+    if (XTYPE(div) == FI)
+	mpi_seti(rem, XFI(div));
+    else
+	mpi_set(rem, XBI(div));
+    dsign = mpi_sgn(rem);
+
+    mpi_divqr(quo, rem, quo, rem);
+    rsign = mpi_sgn(rem);
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
+		state = DIVIDE_ADD;
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
+		state = DIVIDE_SUB;
+	    break;
+	case DIVIDE_ROUND: {
+	    mpi test;
+
+	    mpi_init(&test);
+	    if (XTYPE(div) == FI)
+		mpi_seti(&test, XFI(div));
+	    else
+		mpi_set(&test, XBI(div));
+	    if (dsign > 0) {
+		if (rsign > 0) {
+		    mpi_addi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) >= 0)
+			state = DIVIDE_ADD;
+		}
+		else {
+		    mpi_neg(&test, &test);
+		    mpi_subi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) <= 0)
+			state = DIVIDE_SUB;
+		}
+	    }
+	    else {
+		if (rsign > 0) {
+		    mpi_neg(&test, &test);
+		    mpi_addi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) >= 0)
+			state = DIVIDE_SUB;
+		}
+		else {
+		    mpi_subi(&test, &test, 1);
+		    mpi_divi(&test, &test, 2);
+		    if (mpi_cmp(rem, &test) <= 0)
+			state = DIVIDE_ADD;
+		}
+	    }
+	    mpi_clear(&test);
+	}   break;
+    }
+
+    if (state == DIVIDE_ADD) {
+	mpi_addi(quo, quo, 1);
+	if (XTYPE(div) == FI)
+	    mpi_subi(rem, rem, XFI(div));
+	else
+	    mpi_sub(rem, rem, XBI(div));
+    }
+    else if (state == DIVIDE_SUB) {
+	mpi_subi(quo, quo, 1);
+	if (XTYPE(div) == FI)
+	    mpi_addi(rem, rem, XFI(div));
+	else
+	    mpi_add(rem, rem, XBI(div));
+    }
+
+    if (mpi_fiti(rem)) {
+	RETURN(0) = SMALLINT(mpi_geti(rem));
+	mpi_clear(rem);
+	XFREE(rem);
+    }
+    else {
+	RETURN(0) = BIGINTEGER(rem);
+	XMEM(rem);
+    }
+
+    if (floating) {
+	double dval = mpi_getd(quo);
+
+	mpi_clear(quo);
+	XFREE(quo);
+	if (!finite(dval))
+	    LispDestroy(mac, "floating point overflow");
+	result = REAL(dval);
+    }
+    else {
+	if (mpi_fiti(quo)) {
+	    result = SMALLINT(mpi_geti(quo));
+	    mpi_clear(quo);
+	    XFREE(quo);
+	}
+	else {
+	    result = BIGINTEGER(quo);
+	    XMEM(quo);
+	}
+    }
+
+    return (result);
+}
+
+static LispObj *
+divide_xi_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    int state = DIVIDE_NOP, dsign, rsign;
+    LispObj *result, *remainder;
+    mpi *quo;
+    mpr *rem;
+
+    quo = XALLOC(mpi);
+    mpi_init(quo);
+    if (XTYPE(num) == FI)
+	mpi_seti(quo, XFI(num));
+    else    
+	mpi_set(quo, XBI(num));
+
+    rem = XALLOC(mpr);
+    mpr_init(rem);
+
+    if (XTYPE(div) == FR)
+	mpr_seti(rem, XFRN(div), XFRD(div));
+    else
+	mpr_set(rem, XBR(div));
+    dsign = mpi_sgn(mpr_num(rem));
+    mpi_mul(quo, quo, mpr_den(rem));
+
+    mpi_divqr(quo, mpr_num(rem), quo, mpr_num(rem));
+    mpr_canonicalize(rem);
+
+    rsign = mpi_sgn(mpr_num(rem));
+    if (mpr_fiti(rem)) {
+	remainder = RATIO(mpi_geti(mpr_num(rem)), mpi_geti(mpr_den(rem)));
+	mpr_clear(rem);
+	XFREE(rem);
+    }
+    else {
+	if (mpi_fiti(mpr_den(rem)) && mpi_geti(mpr_den(rem)) == 1) {
+	    remainder = BIGINTEGER(mpr_num(rem));
+	    mpi_clear(mpr_den(rem));
+	    XFREE(rem);
+	}
+	else {
+	    remainder = BIGRATIO(rem);
+	    XMEM(rem);
+	}
+    }
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
+		state = DIVIDE_ADD;
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
+		state = DIVIDE_SUB;
+	    break;
+	case DIVIDE_ROUND: {
+	    LispObj *cmp = copy_real(mac, builtin, div);
+
+	    div_accumulator(mac, builtin, cmp, &two);
+	    if (dsign > 0) {
+		if (rsign > 0) {
+		    if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			state = DIVIDE_ADD;
+		}
+		else {
+		    if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			state = DIVIDE_SUB;
+		}
+	    }
+	    else {
+		if (rsign > 0) {
+		    if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			state = DIVIDE_SUB;
+		}
+		else {
+		    if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			state = DIVIDE_ADD;
+		}
+	    }
+	    XCLEAR_ACCUM(cmp);
+	}   break;
+    }
+
+    if (state == DIVIDE_ADD) {
+	mpi_addi(quo, quo, 1);
+	sub_accumulator(mac, builtin, remainder, div);
+    }
+    else if (state == DIVIDE_SUB) {
+	mpi_subi(quo, quo, 1);
+	add_accumulator(mac, builtin, remainder, div);
+    }
+
+    if (floating) {
+	double dval = mpi_getd(quo);
+
+	mpi_clear(quo);
+	XFREE(quo);
+	if (!finite(dval))
+	    XERROR("floating point overflow");
+	result = REAL(dval);
+    }
+    else {
+	if (mpi_fiti(quo)) {
+	    result = SMALLINT(mpi_geti(quo));
+	    mpi_clear(quo);
+	    XFREE(quo);
+	}
+	else {
+	    result = BIGINTEGER(quo);
+	    XMEM(quo);
+	}
+    }
+
+    RETURN(0) = remainder;
+    return (result);
+}
+
+static LispObj *
+divide_xr_xi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    int state = DIVIDE_NOP, dsign, rsign;
+    LispObj *result, *remainder;
+    mpi *quo;
+    mpr *rem;
+
+    quo = XALLOC(mpi);
+    mpi_init(quo);
+    if (XTYPE(div) == FI) {
+	dsign = XFI(div) < 0 ? -1 : XFI(div) > 0 ? 1 : 0;
+	mpi_seti(quo, XFI(div));
+    }
+    else {
+	dsign = mpi_sgn(XBI(div));
+	mpi_set(quo, XBI(div));
+    }
+
+    rem = XALLOC(mpr);
+    mpr_init(rem);
+    if (XTYPE(num) == FR) {
+	mpr_seti(rem, XFRN(num), XFRD(num));
+	mpi_muli(quo, quo, XFRD(num));
+    }
+    else {
+	mpr_set(rem, XBR(num));
+	mpi_mul(quo, quo, XBRD(num));
+    }
+    mpi_divqr(quo, mpr_num(rem), mpr_num(rem), quo);
+    mpr_canonicalize(rem);
+
+    rsign = mpi_sgn(mpr_num(rem));
+    if (mpr_fiti(rem)) {
+	remainder = RATIO(mpi_geti(mpr_num(rem)), mpi_geti(mpr_den(rem)));
+	mpr_clear(rem);
+	XFREE(rem);
+    }
+    else {
+	remainder = BIGRATIO(rem);
+	XMEM(rem);
+    }
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
+		state = DIVIDE_ADD;
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
+		state = DIVIDE_SUB;
+	    break;
+	case DIVIDE_ROUND: {
+	    int modp;
+
+	    if (XTYPE(remainder) == FR)
+		modp = XFRD(remainder) == 2;
+	    else
+		modp = mpi_cmpi(XBRD(remainder), 2) == 0;
+
+	    if (!modp || (quo->digs[0] & 1) == 1) {
+		LispObj *cmp = copy_real(mac, builtin, div);
+
+		div_accumulator(mac, builtin, cmp, &two);
+		if (dsign > 0) {
+		    if (rsign > 0) {
+			if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			    state = DIVIDE_ADD;
+		    }
+		    else {
+			if (math_compare(mac, builtin, remainder, cmp) >= 0)
+			    state = DIVIDE_SUB;
+		    }
+		}
+		else {
+		    if (rsign > 0) {
+			if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			    state = DIVIDE_SUB;
+		    }
+		    else {
+			if (math_compare(mac, builtin, remainder, cmp) <= 0)
+			    state = DIVIDE_ADD;
+		    }
+		}
+		XCLEAR_ACCUM(cmp);
+	    }
+	}   break;
+    }
+
+    if (state == DIVIDE_ADD) {
+	mpi_addi(quo, quo, 1);
+	sub_accumulator(mac, builtin, remainder, div);
+    }
+    else if (state == DIVIDE_SUB) {
+	mpi_subi(quo, quo, 1);
+	add_accumulator(mac, builtin, remainder, div);
+    }
+
+    if (floating) {
+	double dval = mpi_getd(quo);
+
+	mpi_clear(quo);
+	XFREE(quo);
+	if (!finite(dval))
+	    XERROR("floating point overflow");
+	result = REAL(dval);
+    }
+    else {
+	if (mpi_fiti(quo)) {
+	    result = SMALLINT(mpi_geti(quo));
+	    mpi_clear(quo);
+	    XFREE(quo);
+	}
+	else {
+	    result = BIGINTEGER(quo);
+	    XMEM(quo);
+	}
+    }
+
+    RETURN(0) = remainder;
+    return (result);
+}
+
+static LispObj *
+divide_xr_xr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    int state = DIVIDE_NOP, dsign, rsign;
+    mpr *bigr;
+    mpi *bigi;
+    LispObj *quo, *rem;
+
+    bigr = XALLOC(mpr);
+    mpr_init(bigr);
+    if (XTYPE(num) == FR)
+	mpr_seti(bigr, XFRN(num), XFRD(num));
+    else
+	mpr_set(bigr, XBR(num));
+    rem = BIGRATIO(bigr);
+    XMEM(bigr);
+    if (XTYPE(div) == FR) {
+	dsign = XFRN(div) < 0 ? -1 : XFRN(div) > 0 ? 1 : 0;
+	mpi_muli(mpr_num(bigr), mpr_num(bigr), XFRD(div));
+	mpi_muli(mpr_den(bigr), mpr_den(bigr), XFRN(div));
+    }
+    else {
+	dsign = mpi_sgn(XBRN(div));
+	mpr_div(bigr, bigr, XBR(div));
+    }
+
+    bigi = XALLOC(mpi);
+    mpi_init(bigi);
+    mpi_divqr(bigi, mpr_num(bigr), mpr_num(bigr), mpr_den(bigr));
+    quo = BIGINTEGER(bigi);
+    XMEM(bigi);
+
+    if (XTYPE(div) == FR)
+	mpi_seti(mpr_den(bigr), XFRD(div));
+    else
+	mpi_set(mpr_den(bigr), XBRD(div));
+    if (XTYPE(num) == FR)
+	mpi_muli(mpr_den(bigr), mpr_den(bigr), XFRD(num));
+    else
+	mpi_mul(mpr_den(bigr), mpr_den(bigr), XBRD(num));
+
+    br_canonicalize(mac, builtin, rem);
+    rsign = math_compare(mac, builtin, rem, &zero);
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rsign < 0 && dsign < 0) || (rsign > 0 && dsign > 0))
+		state = DIVIDE_ADD;
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rsign < 0 && dsign > 0) || (rsign > 0 && dsign < 0))
+		state = DIVIDE_SUB;
+	    break;
+	case DIVIDE_ROUND: {
+	    int modp;
+
+	    if (XTYPE(num) == FR)
+		modp = XFRD(num) == 2;
+	    else
+		modp = mpi_cmpi(XBRD(num), 2) == 0;
+
+	    if (!modp || (bigi->digs[0] & 1) == 1) {
+		LispObj *cmp;
+
+		cmp = copy_real(mac, builtin, div);
+		div_accumulator(mac, builtin, cmp, &two);
+		if (dsign > 0) {
+		    if (rsign > 0) {
+			if (math_compare(mac, builtin, rem, cmp) >= 0)
+			    state = DIVIDE_ADD;
+		    }
+		    else {
+			if (math_compare(mac, builtin, rem, cmp) >= 0)
+			    state = DIVIDE_SUB;
+		    }
+		}
+		else {
+		    if (rsign > 0) {
+			if (math_compare(mac, builtin, rem, cmp) <= 0)
+			    state = DIVIDE_SUB;
+		    }
+		    else {
+			if (math_compare(mac, builtin, rem, cmp) <= 0)
+			    state = DIVIDE_ADD;
+		    }
+		}
+		XCLEAR_ACCUM(cmp);
+	    }
+	}   break;
+    }
+
+    if (state == DIVIDE_ADD) {
+	add_accumulator(mac, builtin, quo, &one);
+	sub_accumulator(mac, builtin, rem, div);
+    }
+    else if (state == DIVIDE_SUB) {
+	sub_accumulator(mac, builtin, quo, &one);
+	add_accumulator(mac, builtin, rem, div);
+    }
+
+    if (floating) {
+	double dval = mpi_getd(bigi);
+
+	mpi_clear(bigi);
+	XFREE(bigi);
+	if (!finite(dval))
+	    XERROR("floating point overflow");
+	quo = REAL(dval);
+    }
+    else if (mpi_fiti(bigi)) {
+	long lval = mpi_geti(bigi);
+
+	XCLEAR_BI(quo);
+	quo = SMALLINT(lval);
+    }
+
+    RETURN(0) = rem;
+    return (quo);
 }
 
 static INLINE void
@@ -650,6 +1468,41 @@ mod_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope
     }
     return;
 mod_bad_ope:
+    NOT_AN_INTEGER(ope);
+}
+
+static INLINE void
+rem_accumulator(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+{
+    switch (XTYPE(accum)) {
+	case FI:
+	    switch (XTYPE(ope)) {
+		case FI:
+		    rem_fi_fi(mac, builtin, accum, ope);
+		    break;
+		case BI:
+		    rem_fi_bi(mac, builtin, accum, ope);
+		    break;
+		default:	goto rem_bad_ope;
+	    }
+	    break;
+	case BI:
+	    switch (XTYPE(ope)) {
+		case FI:
+		    rem_bi_fi(mac, builtin, accum, ope);
+		    break;
+		case BI:
+		    rem_bi_bi(mac, builtin, accum, ope);
+		    break;
+		default:	goto rem_bad_ope;
+	    }
+	    break;
+	default:
+	    NOT_AN_INTEGER(accum);
+	    break;
+    }
+    return;
+rem_bad_ope:
     NOT_AN_INTEGER(ope);
 }
 
@@ -770,6 +1623,16 @@ math_compare(LispMac *mac, LispBuiltin *builtin, LispObj *op1, LispObj *op2)
     }
     NOT_A_NUMBER(op2);
     return (-1);
+}
+
+static int
+cmp_float(LispMac *mac, LispBuiltin *builtin, double cmp1, double cmp2)
+{
+    double value = cmp1 - cmp2;
+
+    if (!finite(value))
+	XERROR("floating point overflow");
+    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
 }
 
 static INLINE void
@@ -1684,7 +2547,6 @@ neg_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum)
 
 /************************************************************************
  *	MOD INTEGER
- *	Note: result sign always positive
  ************************************************************************/
 static INLINE void
 mod_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
@@ -1692,21 +2554,10 @@ mod_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     if (XFI(ope) == 0)
 	XERROR("divide by zero");
 
-    XFI(accum) = XFI(accum) % XFI(ope);
-    if (XFI(accum) < 0) {
-	if (XFI(accum) != MINSLONG)
-	    XFI(accum) = -XFI(accum);
-	else {
-	    mpi *bigi = XALLOC(mpi);
-
-	    mpi_init(bigi);
-	    mpi_seti(bigi, XFI(accum));
-	    mpi_neg(bigi, bigi);
-	    XTYPE(accum) = BI;
-	    XBI(accum) = bigi;
-	    XMEM(bigi);
-	}
-    }
+    if ((XFI(accum) < 0) ^ (XFI(ope) < 0))
+	XFI(accum) = (XFI(accum) % XFI(ope)) + XFI(ope);
+    else
+	XFI(accum) = XFI(accum) % XFI(ope);
 }
 
 static INLINE void
@@ -1762,6 +2613,81 @@ mod_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 	XERROR("divide by zero");
 
     mpi_mod(XBI(accum), XBI(accum), XBI(ope));
+    if (mpi_fiti(XBI(accum))) {
+	long mod = mpi_geti(XBI(accum));
+
+	mpi_clear(XBI(accum));
+	XFREE(XBI(accum));
+	XTYPE(accum) = FI;
+	XFI(accum) = mod;
+    }
+}
+
+/************************************************************************
+ *	REM INTEGER
+ ************************************************************************/
+static INLINE void
+rem_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+{
+    if (XFI(ope) == 0)
+	XERROR("divide by zero");
+
+    XFI(accum) = XFI(accum) % XFI(ope);
+}
+
+static INLINE void
+rem_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+{
+    mpi *bigi;
+
+    if (mpi_cmpi(XBI(ope), 0) == 0)
+	XERROR("divide by zero");
+
+    bigi = XALLOC(mpi);
+    mpi_init(bigi);
+    mpi_seti(bigi, XFI(accum));
+    mpi_rem(bigi, bigi, XBI(ope));
+    if (mpi_fiti(bigi)) {
+	XFI(accum) = mpi_geti(bigi);
+	mpi_clear(bigi);
+	XFREE(bigi);
+    }
+    else {
+	XTYPE(accum) = BI;
+	XBI(accum) = bigi;
+	XMEM(bigi);
+    }
+}
+
+static INLINE void
+rem_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+{
+    mpi iop;
+
+    if (XFI(ope) == 0)
+	XERROR("divide by zero");
+
+    mpi_init(&iop);
+    mpi_seti(&iop, XFI(ope));
+    mpi_rem(XBI(accum), XBI(accum), &iop);
+    mpi_clear(&iop);
+    if (mpi_fiti(XBI(accum))) {
+	long mod = mpi_geti(XBI(accum));
+
+	mpi_clear(XBI(accum));
+	XFREE(XBI(accum));
+	XTYPE(accum) = FI;
+	XFI(accum) = mod;
+    }
+}
+
+static INLINE void
+rem_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
+{
+    if (mpi_cmpi(XBI(ope), 0) == 0)
+	XERROR("divide by zero");
+
+    mpi_rem(XBI(accum), XBI(accum), XBI(ope));
     if (mpi_fiti(XBI(accum))) {
 	long mod = mpi_geti(XBI(accum));
 
@@ -2140,6 +3066,64 @@ cmp_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (0);
 }
 
+static LispObj *
+divide_fi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    long quo, rem;
+
+    quo = XFI(num) / XFI(div);
+    rem = XFI(num) % XFI(div);
+
+    switch (function) {
+	case DIVIDE_CEIL:
+	    if ((rem < 0 && XFI(div) < 0) || (rem > 0 && XFI(div) > 0)) {
+		++quo;
+		rem -= XFI(div);
+	    }
+	    break;
+	case DIVIDE_FLOOR:
+	    if ((rem < 0 && XFI(div) > 0) || (rem > 0 && XFI(div) < 0)) {
+		--quo;
+		rem += XFI(div);
+	    }
+	    break;
+	case DIVIDE_ROUND:
+	    if (XFI(div) > 0) {
+		if (rem > 0) {
+		    if (rem >= (XFI(div) + 1) / 2) {
+			++quo;
+			rem -= XFI(div);
+		    }
+		}
+		else {
+		    if (rem <= (-XFI(div) - 1) / 2) {
+			--quo;
+			rem += XFI(div);
+		    }
+		}
+	    }
+	    else {
+		if (rem > 0) {
+		    if (rem >= (-XFI(div) + 1) / 2) {
+			--quo;
+			rem += XFI(div);
+		    }
+		}
+		else {
+		    if (rem <= (XFI(div) - 1) / 2) {
+			++quo;
+			rem -= XFI(div);
+		    }
+		}
+	    }
+	    break;
+    }
+
+    RETURN(0) = SMALLINT(rem);
+    return (floating ? REAL(quo) : SMALLINT(quo));
+}
+
 
 /*
 	FI accumulator - FR operator
@@ -2290,6 +3274,8 @@ cmp_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
 }
 
+/* divide_fi_fr => divide_xi_xr */
+
 
 /*
 	FI accumulator - FF operator
@@ -2297,60 +3283,39 @@ cmp_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFI(accum) + XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    add_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
 sub_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFI(accum) - XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    sub_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
 mul_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFI(accum) * XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    mul_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE void
 div_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value;
-
-    if (XFF(ope) == 0.0)
-	XERROR("divide by zero");
-
-    value = XFI(accum) / XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    div_float(mac, builtin, accum, (double)XFI(accum), XFF(ope));
 }
 
 static INLINE int
 cmp_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFI(accum) - XFF(ope);
+    return (cmp_float(mac, builtin, (double)XFI(accum), XFF(ope)));
+}
 
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_fi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, (double)XFI(num), XFF(div),
+			 function, floating));
 }
 
 
@@ -2446,6 +3411,8 @@ cmp_fi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (-mpi_cmpi(XBI(ope), XFI(accum)));
 }
+
+/* divide_fi_bi => divide_xi_xi */
 
 
 /*
@@ -2546,6 +3513,8 @@ cmp_fi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 
     return (cmp);
 }
+
+/* divide_fi_br => divide_xi_xr */
 
 
 /************************************************************************
@@ -2687,6 +3656,8 @@ cmp_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 
    return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
 }
+
+/* divide_fr_fi => divide_xr_xi */
 
 
 /*
@@ -2876,6 +3847,8 @@ cmp_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (val > 0.0 ? 1 : val < 0.0 ? -1 : 0);
 }
 
+/* divide_fr_fr => divide_xr_xr */
+
 
 /*
 	FR accumulator - FF operator
@@ -2883,65 +3856,44 @@ cmp_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double op1 = XFRN(accum) / (double)XFRD(accum), value = op1 + XFF(ope);
-
-    if (!finite(op1) || !finite(value))
-	XERROR("floating point overflow");
-
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    add_float(mac, builtin, accum,
+	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
 sub_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double op1 = XFRN(accum) / (double)XFRD(accum), value = op1 - XFF(ope);
-
-    if (!finite(op1) || !finite(value))
-	XERROR("floating point overflow");
-
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    sub_float(mac, builtin, accum,
+	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
 mul_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double op1 = XFRN(accum) / (double)XFRD(accum), value = op1 * XFF(ope);
-
-    if (!finite(op1) || !finite(value))
-	XERROR("floating point overflow");
-
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    mul_float(mac, builtin, accum,
+	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE void
 div_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double op1 = XFRN(accum) / (double)XFRD(accum), value;
-
-    if (XFF(ope) == 0.0)
-	XERROR("divide by zero");
-
-    value = op1 / XFF(ope);
-
-    if (!finite(op1) || !finite(value))
-	XERROR("floating point overflow");
-
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    div_float(mac, builtin, accum,
+	      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope));
 }
 
 static INLINE int
 cmp_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double op1 = XFRN(accum) / (double)XFRD(accum), value = op1 - XFF(ope);
+    return (cmp_float(mac, builtin,
+		      (double)XFRN(accum) / (double)XFRD(accum), XFF(ope)));
+}
 
-    if (!finite(op1) || !finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_fr_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, (double)XFRN(num) / (double)XFRD(num),
+			 XFF(div), function, floating));
 }
 
 
@@ -3044,6 +3996,8 @@ cmp_fr_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_fr_bi => divide_xr_xi */
+
 
 /*
 	FR accumulator - BR operator
@@ -3127,6 +4081,8 @@ cmp_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_fr_br => divide_xr_xr */
+
 
 /************************************************************************
  *	FIXNUM (DEFAULT) FLOAT OPERATIONS
@@ -3137,57 +4093,39 @@ cmp_fr_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) + XFI(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    add_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
 sub_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) - XFI(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    sub_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
 mul_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) * XFI(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    mul_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE void
 div_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value;
-
-    if (XFI(ope) == 0)
-	XERROR("divide by zero");
-
-    value = XFF(accum) / XFI(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    div_float(mac, builtin, accum, XFF(accum), (double)XFI(ope));
 }
 
 static INLINE int
 cmp_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) - XFI(ope);
+    return (cmp_float(mac, builtin, XFF(accum), (double)XFI(ope)));
+}
 
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, XFF(num), (double)XFI(div),
+			 function, floating));
 }
 
 
@@ -3197,52 +4135,45 @@ cmp_ff_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double ratio = XFRN(ope) / (double)XFRD(ope), value = XFF(accum) + ratio;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    add_float(mac, builtin, accum, XFF(accum),
+	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
 sub_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double ratio = XFRN(ope) / (double)XFRD(ope), value = XFF(accum) - ratio;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    sub_float(mac, builtin, accum, XFF(accum),
+	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
 mul_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double ratio = XFRN(ope) / (double)XFRD(ope), value = XFF(accum) * ratio;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    mul_float(mac, builtin, accum, XFF(accum),
+	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE void
 div_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double ratio = XFRN(ope) / (double)XFRD(ope), value = XFF(accum) / ratio;
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    div_float(mac, builtin, accum, XFF(accum),
+	      (double)XFRN(ope) / (double)XFRD(ope));
 }
 
 static INLINE int
 cmp_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double ratio = XFRN(ope) / (double)XFRD(ope), value = XFF(accum) - ratio;
+    return (cmp_float(mac, builtin, XFF(accum),
+		      (double)XFRN(ope) / (double)XFRD(ope)));
+}
 
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, XFF(num),
+			 (double)XFRN(div) / (double)XFRD(div),
+			 function, floating));
 }
 
 
@@ -3252,57 +4183,38 @@ cmp_ff_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) + XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    add_float(mac, builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
 sub_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) - XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    sub_float(mac, builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
 mul_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) * XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    mul_float(mac, builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE void
 div_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value;
-
-    if (XFF(ope) == 0.0)
-	XERROR("divide by zero");
-
-    value = XFF(accum) / XFF(ope);
-
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    div_float(mac, builtin, accum, XFF(accum), XFF(ope));
 }
 
 static INLINE int
 cmp_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value = XFF(accum) - XFF(ope);
+    return (cmp_float(mac, builtin, XFF(accum), XFF(ope)));
+}
 
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, XFF(num), XFF(div), function, floating));
 }
 
 
@@ -3312,60 +4224,39 @@ cmp_ff_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(ope));
-
-    value = XFF(accum) + op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    add_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
 sub_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(ope));
-
-    value = XFF(accum) - op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    sub_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
 mul_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(ope));
-
-    value = XFF(accum) * op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    mul_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE void
 div_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(ope));
-
-    if (op == 0.0)
-	XERROR("divide by zero");
-
-    value = XFF(accum) / op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    div_float(mac, builtin, accum, XFF(accum), mpi_getd(XBI(ope)));
 }
 
 static INLINE int
 cmp_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(ope));
+    return (cmp_float(mac, builtin, XFF(accum), mpi_getd(XBI(ope))));
+}
 
-    value = XFF(accum) - op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, XFF(num), mpi_getd(XBI(div)),
+			 function, floating));
 }
 
 
@@ -3375,57 +4266,39 @@ cmp_ff_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(ope));
-
-    value = XFF(accum) + op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    add_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
 sub_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(ope));
-
-    value = XFF(accum) - op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    sub_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
 mul_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(ope));
-
-    value = XFF(accum) * op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    mul_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE void
 div_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(ope));
-
-    value = XFF(accum) / op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XFF(accum) = value;
+    div_float(mac, builtin, accum, XFF(accum), mpr_getd(XBR(ope)));
 }
 
 static INLINE int
 cmp_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(ope));
+    return (cmp_float(mac, builtin, XFF(accum), mpr_getd(XBR(ope))));
+}
 
-    value = XFF(accum) - op;
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_ff_br(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, XFF(num), mpr_getd(XBR(div)),
+			 function, floating));
 }
 
 
@@ -3498,6 +4371,8 @@ cmp_bi_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpi_cmpi(XBI(accum), XFI(ope)));
 }
+
+/* divide_bi_fi => divide_xi_xi */
 
 
 /*
@@ -3603,6 +4478,8 @@ cmp_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_bi_fr => divide_xi_xr */
+
 
 /*
 	BI accumulator - FF operator
@@ -3610,72 +4487,39 @@ cmp_bi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(accum));
-
-    value = op + XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    XCLEAR_BI(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    add_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
 sub_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(accum));
-
-    value = op - XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    XCLEAR_BI(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    sub_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
 mul_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(accum));
-
-    value = op * XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    XCLEAR_BI(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    mul_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE void
 div_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(accum));
-
-    if (XFF(ope) == 0.0)
-	XERROR("divide by zero");
-
-    value = op / XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    XCLEAR_BI(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    div_float(mac, builtin, accum, mpi_getd(XBI(accum)), XFF(ope));
 }
 
 static INLINE int
 cmp_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpi_getd(XBI(accum));
+    return (cmp_float(mac, builtin, mpi_getd(XBI(accum)), XFF(ope)));
+}
 
-    value = op - XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-
-    return (value > 0.0 ? 1 : value < 0.0 ? -1 : 0);
+static LispObj *
+divide_bi_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, mpi_getd(XBI(num)), XFF(div),
+			 function, floating));
 }
 
 
@@ -3724,6 +4568,8 @@ cmp_bi_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpi_cmp(XBI(accum), XBI(ope)));
 }
+
+/* divide_bi_bi => divide_xi_xi */
 
 
 /*
@@ -3823,6 +4669,8 @@ cmp_bi_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_bi_br => divide_xi_xr */
+
 
 /************************************************************************
  *	BIGNUM RATIONAL OPERATIONS
@@ -3883,6 +4731,8 @@ cmp_br_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 
     return (cmp);
 }
+
+/* divide_br_fi => divide_xr_xi */
 
 
 /*
@@ -3950,6 +4800,8 @@ cmp_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_br_fr => divide_xr_xr */
+
 
 /*
 	BR accumulator - FF operator
@@ -3957,76 +4809,39 @@ cmp_br_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 static INLINE void
 add_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(accum));
-
-    value = op + XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XCLEAR_BR(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    add_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
 sub_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(accum));
-
-    value = op - XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XCLEAR_BR(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    sub_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
 mul_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op = mpr_getd(XBR(accum));
-
-    value = op * XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XCLEAR_BR(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    mul_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE void
 div_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    double value, op;
-
-    if (XFF(ope) == 0.0)
-	XERROR("divide by zero");
-
-    op = mpr_getd(XBR(accum));
-
-    value = op / XFF(ope);
-    if (!finite(value))
-	XERROR("floating point overflow");
-    XCLEAR_BR(accum);
-    XFF(accum) = value;
-    XTYPE(accum) = FF;
+    div_float(mac, builtin, accum, mpr_getd(XBR(accum)), XFF(ope));
 }
 
 static INLINE int
 cmp_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
-    mpr rop;
-    int cmp;
-    double op = mpr_getd(XBR(accum));
+    return (cmp_float(mac, builtin, mpr_getd(XBR(accum)), XFF(ope)));
+}
 
-    if (finite(op) && finite(op -= XFF(ope)))
-	return (op > 0.0 ? 1 : op < 0.0 ? -1 : 0);
-
-    mpr_init(&rop);
-    mpr_setd(&rop, XFF(ope));
-    cmp = mpr_cmp(XBR(accum), &rop);
-    mpr_clear(&rop);
-
-    return (cmp);
+static LispObj *
+divide_br_ff(LispMac *mac, LispBuiltin *builtin, LispObj *num, LispObj *div,
+	     int function, int floating)
+{
+    return (divide_float(mac, builtin, mpr_getd(XBR(num)), XFF(div),
+			 function, floating));
 }
 
 
@@ -4091,6 +4906,8 @@ cmp_br_bi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
     return (cmp);
 }
 
+/* divide_br_bi => divide_xr_xi */
+
 
 /*
 	BR accumulator - BR operator
@@ -4128,3 +4945,5 @@ cmp_br_br(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     return (mpr_cmp(XBR(accum), XBR(accum)));
 }
+
+/* divide_br_br => divide_xr_xr */

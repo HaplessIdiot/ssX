@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.19 2002/08/05 03:56:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.20 2002/09/15 21:32:19 paulo Exp $ */
 
 #include <ctype.h>
 #include "io.h"
@@ -177,11 +177,11 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
     switch (call) {
 	case LispDebugCallBegin:
 	    ++mac->debug_level;
-	    GCProtect();
+	    GCDisable();
 	    DBG = CONS(CONS(name, CONS(arg, CONS(SMALLINT(mac->stack.base),
 		       CONS(SMALLINT(mac->env.length),
 			    SMALLINT(mac->env.lex))))), DBG);
-	    GCUProtect();
+	    GCEnable();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
 		if (ATOMID(CAR(CAR(obj))) == ATOMID(name) &&
 		    CAR(CDR(CDR(CAR(obj))))->data.integer == LispDebugBreakFunction)
@@ -536,7 +536,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			;
 		    i = mac->debug_break;
 		    ++mac->debug_break;
-		    GCProtect();
+		    GCDisable();
 		    obj = CONS(ATOM(arg),
 			       CONS(SMALLINT(i),
 				    CONS(SMALLINT(LispDebugBreakFunction),
@@ -545,7 +545,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			BRK = CONS(obj, NIL);
 		    else
 			RPLACD(frm, CONS(obj, NIL));
-		    GCUProtect();
+		    GCEnable();
 		}
 		break;
 	    case DebuggerWatch: {
@@ -605,7 +605,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		for (obj = frm = BRK; obj != NIL; frm = obj, obj = CDR(obj))
 		    ;
 
-		GCProtect();
+		GCDisable();
 		obj = CONS(atom,					  /* NAM */
 			   CONS(SMALLINT(i),				  /* IDX */
 				CONS(SMALLINT(LispDebugBreakVariable),	  /* TYP */
@@ -620,7 +620,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    BRK = CONS(obj, NIL);
 		else
 		    RPLACD(frm, CONS(obj, NIL));
-		GCUProtect();
+		GCEnable();
 	    }	break;
 	    case DebuggerDelete:
 		if (*arg == 0) {

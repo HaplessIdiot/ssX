@@ -48,7 +48,7 @@ o Make more optimizations to get faster execution. Implement byte-code
 o Add more missing Common Lisp features, like &allow-other-keys for function
   definitions, the missing structure features, CLOS etc.
 o Fix the Postgresql module, make it compile everywhere.
-o Readd support for gpm as the math library. This must be optional, gpm is
+o Readd support for gmp as the math library. This must be optional, gmp is
   not present in all systems.
 o Add support for multi-threaded applications?
 o Make it possible to know if a object has only one reference, this is

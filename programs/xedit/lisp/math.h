@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.h,v 1.4 2002/08/25 02:48:31 paulo Exp $ */
 
 #ifndef Lisp_math_h
 #define Lisp_math_h
@@ -52,6 +52,7 @@ LispObj *Lisp_GreaterEqual(LispMac*, LispBuiltin*);	/* >= */
 LispObj *Lisp_NotEqual(LispMac*, LispBuiltin*);		/* /= */
 LispObj *Lisp_Max(LispMac*, LispBuiltin*);		/* max */
 LispObj *Lisp_Min(LispMac*, LispBuiltin*);		/* min */
+LispObj *Lisp_Mod(LispMac*, LispBuiltin*);		/* mod */
 LispObj *Lisp_Abs(LispMac*, LispBuiltin*);		/* abs */
 LispObj *Lisp_Complex(LispMac*, LispBuiltin*);		/* complex */
 LispObj *Lisp_Complexp(LispMac*, LispBuiltin*);		/* complexp */
@@ -83,7 +84,17 @@ LispObj *Lisp_Rationalize(LispMac*, LispBuiltin*);	/* rationalize */
 #endif
 LispObj *Lisp_Rationalp(LispMac*, LispBuiltin*);	/* rationalp */
 LispObj *Lisp_Realpart(LispMac*, LispBuiltin*);		/* realpart */
+LispObj *Lisp_Rem(LispMac*, LispBuiltin*);		/* rem */
 LispObj *Lisp_Sqrt(LispMac*, LispBuiltin*);		/* sqrt */
 LispObj *Lisp_Zerop(LispMac*, LispBuiltin*);		/* zerop */
+LispObj *Lisp_Ceiling(LispMac*, LispBuiltin*);		/* ceiling */
+LispObj *Lisp_Fceiling(LispMac*, LispBuiltin*);		/* fceiling */
+LispObj *Lisp_Floor(LispMac*, LispBuiltin*);		/* floor */
+LispObj *Lisp_Ffloor(LispMac*, LispBuiltin*);		/* ffloor */
+LispObj *Lisp_Round(LispMac*, LispBuiltin*);		/* round */
+LispObj *Lisp_Fround(LispMac*, LispBuiltin*);		/* fround */
+LispObj *Lisp_Truncate(LispMac*, LispBuiltin*);		/* truncate */
+LispObj *Lisp_Ftruncate(LispMac*, LispBuiltin*);	/* ftruncate */
+
 
 #endif /* Lisp_math_h */

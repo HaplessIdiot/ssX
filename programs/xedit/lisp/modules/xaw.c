@@ -144,7 +144,7 @@ xawLoadModule(LispMac *mac)
 
     LispExecute(mac, "(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
 
-    GCProtect();
+    GCDisable();
     (void)LispSetVariable(mac, ATOM2("ASCII-SINK-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
@@ -261,7 +261,7 @@ xawLoadModule(LispMac *mac)
 			  INTEGER(XawsdLeft), fname, 0);
     (void)LispSetVariable(mac, ATOM2("XAWSD-RIGHT"),
 			  INTEGER(XawsdRight), fname, 0);
-    GCUProtect();
+    GCEnable();
 
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
@@ -286,7 +286,7 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
  xaw-coerce-to-list-return-struct opaque
  */
 {
-    LispObj *result, *code, *ofrm = FRM;
+    LispObj *result, *code, *ocod = COD;
     XawListReturnStruct *retlist;
 
     LispObj *opaque;
@@ -299,17 +299,17 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
 
     retlist = (XawListReturnStruct*)(opaque->data.opaque.data);
 
-    GCProtect();
+    GCDisable();
     code = CONS(ATOM("MAKE-XAW-LIST-RETURN-STRUCT"),
 		CONS(KEYWORD("STRING"),
 		       CONS(STRING(retlist->string),
 			    CONS(KEYWORD("INDEX"),
 				 CONS(INTEGER(retlist->list_index), NIL)))));
-    FRM = CONS(code, FRM);
-    GCUProtect();
+    COD = CONS(code, COD);
+    GCEnable();
 
     result = EVAL(code);
-    FRM = ofrm;
+    COD = ocod;
 
     return (result);
 }

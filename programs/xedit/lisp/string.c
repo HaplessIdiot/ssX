@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.12 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.13 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -457,12 +457,44 @@ Lisp_IntChar(LispMac *mac, LispBuiltin *builtin)
     return (character >= 0 && character < 0xffff ? CHAR(character) : NIL);
 }
 
+/* XXX ignoring element-type */
+LispObj *
+Lisp_MakeString(LispMac *mac, LispBuiltin *builtin)
+/*
+ make-string size &key initial-element element-type
+ */
+{
+    long length;
+    char *string, initial;
+
+    LispObj *size, *initial_element, *element_type;
+
+    element_type = ARGUMENT(2);
+    initial_element = ARGUMENT(1);
+    size = ARGUMENT(0);
+
+    ERROR_CHECK_INDEX(size);
+    length = size->data.integer;
+    if (initial_element != NIL) {
+	ERROR_CHECK_CHARACTER(initial_element);
+	initial = initial_element->data.integer;
+    }
+    else
+	initial = 0;
+
+    string = LispMalloc(mac, length);
+    memset(string, initial, length);
+
+    return (LSTRING2(string, length));
+}
+
 LispObj *
 Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
 /*
  parse-integer string &key start end radix junk-allowed
  */
 {
+    GC_ENTER();
     char *ptr, *string;
     int character, junk, sign, overflow;
     long i, start, end, radix, length, integer, check;
@@ -564,11 +596,10 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     else
 	result = SMALLINT(sign ? -integer : integer);
 
-    GCProtect();		/* Protect result from GC */
-    RETURN_CHECK(1);
+    GC_PROTECT(result);
     RETURN(0) = SMALLINT(i);
     RETURN_COUNT = 1;
-    GCUProtect();
+    GC_LEAVE();
 
     return (result);
 }
@@ -606,6 +637,7 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
  read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace
  */
 {
+    GC_ENTER();
     char *string;
     LispObj *stream, *result;
     long length, start, end, bytes_read;
@@ -647,11 +679,10 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: unexpected end of input", STRFUN(builtin));
     }
 
-    GCProtect();		/* Protect result from GC */
-    RETURN_CHECK(1);
+    GC_PROTECT(result);
     RETURN(0) = SMALLINT(bytes_read);
     RETURN_COUNT = 1;
-    GCUProtect();
+    GC_LEAVE();
 
     return (result);
 }

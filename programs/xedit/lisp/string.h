@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.5 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.6 2002/08/25 02:48:31 paulo Exp $ */
 
 #ifndef Lisp_string_h
 #define Lisp_string_h
@@ -55,6 +55,7 @@ LispObj *Lisp_CharInt(LispMac*, LispBuiltin*);		  /* char-int */
 LispObj *Lisp_CharUpcase(LispMac*, LispBuiltin*);	  /* char-upcase */
 LispObj *Lisp_DigitCharP(LispMac*, LispBuiltin*);	  /* digit-char-p */
 LispObj *Lisp_IntChar(LispMac*, LispBuiltin*);		  /* int-char */
+LispObj *Lisp_MakeString(LispMac*, LispBuiltin*);	  /* make-string */
 LispObj *Lisp_ParseInteger(LispMac*, LispBuiltin*);	  /* parse-integer */
 LispObj *Lisp_ReadFromString(LispMac*, LispBuiltin*);	  /* read-from-string */
 LispObj *Lisp_String(LispMac*, LispBuiltin*);		  /* string */

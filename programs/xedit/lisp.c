@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.11 2002/09/18 17:11:53 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.12 2002/09/22 07:09:05 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -101,6 +101,12 @@ SetTextProperties(xedit_flist_item *item)
 	if (source != item->source)
 	    XawTextSetSource(textwindow, source, top);
     }
+}
+
+void
+UnsetTextProperties(xedit_flist_item *item)
+{
+    XeditLispUnsetEditMode(lisp_handler, item);
 }
 
 static void

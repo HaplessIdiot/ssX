@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.28 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.29 2002/09/15 21:32:22 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -51,7 +51,8 @@
 /*
  * Defines
  */
-#define	STRTBLSZ	23
+#define	STRTBLSZ		23
+#define MULTIPLE_VALUES_LIMIT	127
 
 #define FEATURES					\
     mac->features->data.atom->a_object ?		\
@@ -295,8 +296,7 @@ struct _LispMac {
 
     struct {
 	LispObj **values;
-	int length;
-	int space;
+	int count;
     } returns;
 
     struct {

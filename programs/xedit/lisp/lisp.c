@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.61 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.62 2002/09/29 02:55:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -72,6 +72,7 @@
 #include "read.h"
 #include "format.h"
 #include "math.h"
+#include "hash.h"
 #include "package.h"
 #include "pathname.h"
 #include "regex.h"
@@ -240,6 +241,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Catch, "catch tag &rest body"},
     {LispFunction, Lisp_Cdr, "cdr list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Cdr, "rest list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_Ceiling, "ceiling number &optional divisor", 1},
+    {LispFunction, Lisp_Fceiling, "fceiling number &optional divisor", 1},
     {LispFunction, Lisp_Char, "char string index"},
     {LispFunction, Lisp_Char, "schar simple-string index"},
     {LispFunction, Lisp_CharLess, "char< character &rest more-characters"},
@@ -259,6 +262,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_CharUpcase, "char-upcase character"},
     {LispFunction, Lisp_Character, "character object"},
     {LispFunction, Lisp_Characterp, "characterp object"},
+    {LispFunction, Lisp_Clrhash, "clrhash hash-table"},
     {LispFunction, Lisp_Coerce, "coerce object result-type"},
     {LispFunction, Lisp_Compile, "compile name &optional definition", 1},
     {LispFunction, Lisp_Complex, "complex realpart &optional imagpart"},
@@ -339,6 +343,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_FindPackage, "find-package name"},
     {LispFunction, Lisp_Float, "float number &optional (other 1.0)"},
     {LispFunction, Lisp_Floatp, "floatp object"},
+    {LispFunction, Lisp_Floor, "floor number &optional divisor", 1},
+    {LispFunction, Lisp_Ffloor, "ffloor number &optional divisor", 1},
     {LispFunction, Lisp_Fmakunbound, "fmakunbound symbol"},
     {LispFunction, Lisp_Format, "format destination control-string &rest arguments"},
     {LispFunction, Lisp_Funcall, "funcall function &rest arguments"},
@@ -346,7 +352,14 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Gcd, "gcd &rest integers"},
     {LispFunction, Lisp_Gensym, "gensym &optional arg"},
     {LispFunction, Lisp_Get, "get symbol indicator &optional default"},
+    {LispFunction, Lisp_Gethash, "gethash key hash-table &optional default", 1},
     {LispMacro, Lisp_Go, "go tag", 0, 0, Com_Go},
+    {LispFunction, Lisp_HashTableP, "hash-table-p object"},
+    {LispFunction, Lisp_HashTableCount, "hash-table-count hash-table"},
+    {LispFunction, Lisp_HashTableRehashSize, "hash-table-rehash-size hash-table"},
+    {LispFunction, Lisp_HashTableRehashThreshold, "hash-table-rehash-threshold hash-table"},
+    {LispFunction, Lisp_HashTableSize, "hash-table-size hash-table"},
+    {LispFunction, Lisp_HashTableTest, "hash-table-test hash-table"},
     {LispFunction, Lisp_HostNamestring, "host-namestring pathname"},
     {LispMacro, Lisp_If, "if test then &optional else", 0, 0, Com_If},
     {LispFunction, Lisp_Imagpart, "imagpart number"},
@@ -379,21 +392,26 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Logxor, "logxor &rest integers"},
     {LispMacro, Lisp_Loop, "loop &rest body", 0, 0, Com_Loop},
     {LispFunction, Lisp_MakeArray, "make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset"},
+    {LispFunction, Lisp_MakeHashTable, "make-hash-table &key test size rehash-size rehash-threshold initial-contents"},
     {LispFunction, Lisp_MakeList, "make-list size &key initial-element"},
     {LispFunction, Lisp_MakePackage, "make-package package-name &key nicknames (use '(\"LISP\"))"},
     {LispFunction, Lisp_MakePathname, "make-pathname &key host device directory name type version defaults"},
+    {LispFunction, Lisp_MakeString, "make-string size &key initial-element element-type"},
     {LispFunction, Lisp_MakeStringInputStream, "make-string-input-stream string &optional start end"},
     {LispFunction, Lisp_MakeStringOutputStream, "make-string-output-stream &key element-type"},
     {LispFunction, Lisp_GetOutputStreamString, "get-output-stream-string string-output-stream"},
     {LispFunction, Lisp_Makunbound, "makunbound symbol"},
     {LispFunction, Lisp_Mapcar, "mapcar function list &rest more-lists"},
+    {LispFunction, Lisp_Maphash, "maphash function hash-table"},
     {LispFunction, Lisp_Maplist, "maplist function list &rest more-lists"},
     {LispFunction, Lisp_Member, "member item list &key test test-not key"},
     {LispFunction, Lisp_MemberIf, "member-if predicate list &key key"},
     {LispFunction, Lisp_MemberIfNot, "member-if-not predicate list &key key"},
     {LispFunction, Lisp_Minusp, "minusp number"},
+    {LispFunction, Lisp_Mod, "mod number divisor"},
     {LispMacro, Lisp_MultipleValueBind, "multiple-value-bind symbols values &rest body"},
     {LispMacro, Lisp_MultipleValueList, "multiple-value-list form"},
+    {LispMacro, Lisp_MultipleValueSetq, "multiple-value-setq symbols form"},
     {LispFunction, Lisp_Nconc, "nconc &rest lists"},
     {LispFunction, Lisp_Nreverse, "nreverse sequence"},
     {LispFunction, Lisp_NsetDifference, "nset-difference list1 list2 &key test test-not key"},
@@ -454,6 +472,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2"},
     {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace", 1},
     {LispFunction, Lisp_Require, "require module &optional pathname"},
+    {LispFunction, Lisp_Rem, "rem number divisor"},
+    {LispFunction, Lisp_Remhash, "remhash key hash-table"},
     {LispFunction, Lisp_Remove, "remove item sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
@@ -461,6 +481,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Return, "return &optional result", 0, 0, Com_Return},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 0, 0, Com_ReturnFrom},
     {LispFunction, Lisp_Reverse, "reverse sequence"},
+    {LispFunction, Lisp_Round, "round number &optional divisor", 1},
+    {LispFunction, Lisp_Fround, "fround number &optional divisor", 1},
     {LispFunction, Lisp_Rplaca, "rplaca place value", 0, 0, Com_Rplac_},
     {LispFunction, Lisp_Rplacd, "rplacd place value", 0, 0, Com_Rplac_},
     {LispFunction, Lisp_Search, "search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2"},
@@ -511,11 +533,14 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Throw, "throw tag result"},
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
+    {LispFunction, Lisp_Truncate, "truncate number &optional divisor", 1},
+    {LispFunction, Lisp_Ftruncate, "ftruncate number &optional divisor", 1},
     {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
     {LispFunction, Lisp_Union, "union list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Unless, "unless test &rest body", 0, 0, Com_Unless},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
+    {LispFunction, Lisp_Values, "values &rest objects", 1},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
     {LispMacro, Lisp_When, "when test &rest body", 0, 0, Com_When},
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
@@ -525,6 +550,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditEltStore, "lisp::elt-store sequence index value", 0, 1},
     {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 0, 1},
     {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 0, 1},
+    {LispFunction, Lisp_XeditPuthash, "lisp::puthash key hash-table value", 0, 1},
     {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
@@ -869,7 +895,7 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 	LispMark(*pentry);
 
     /* protect multiple return values */
-    for (pentry = mac->returns.values, eentry = pentry + mac->returns.length;
+    for (pentry = mac->returns.values, eentry = pentry + mac->returns.count;
 	 pentry < eentry; pentry++)
 	LispMark(*pentry);
 
@@ -967,6 +993,10 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 		    case LispBytecode_t:
 			free(entry->data.bytecode.bytecode->code);
 			free(entry->data.bytecode.bytecode);
+			entry->type = LispCons_t;
+			break;
+		    case LispHashTable_t:
+			LispFreeHashTable(entry->data.hash.table);
 			entry->type = LispCons_t;
 			break;
 		    case LispCons_t:
@@ -2200,6 +2230,56 @@ mark_stream:
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.bytecode.code;
 	    goto mark_cons;
+	case LispHashTable_t: {
+	    unsigned long i;
+	    LispHashEntry *entry = obj->data.hash.table->entries,
+			  *last = entry + obj->data.hash.table->num_entries;
+
+	    for (; entry < last; entry++) {
+		for (i = 0; i < entry->count; i++) {
+		    switch (entry->keys[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->keys[i]->mark = LispTrue_t;
+			    break;
+			default:
+			    LispMark(entry->keys[i]);
+			    break;
+		    }
+		    switch (entry->values[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->values[i]->mark = LispTrue_t;
+			    break;
+			default:
+			    LispMark(entry->values[i]);
+			    break;
+		    }
+		}
+	    }
+	}   break;
 	default:
 	    break;
     }
@@ -2274,6 +2354,56 @@ immutable_again:
 	    obj->prot = LispTrue_t;
 	    obj = obj->data.bytecode.code;
 	    goto immutable_again;
+	case LispHashTable_t: {
+	    unsigned long i;
+	    LispHashEntry *entry = obj->data.hash.table->entries,
+			  *last = entry + obj->data.hash.table->num_entries;
+
+	    for (; entry < last; entry++) {
+		for (i = 0; i < entry->count; i++) {
+		    switch (entry->keys[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->keys[i]->prot = LispTrue_t;
+			    break;
+			default:
+			    LispImmutable(entry->keys[i]);
+			    break;
+		    }
+		    switch (entry->values[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->values[i]->prot = LispTrue_t;
+			    break;
+			default:
+			    LispImmutable(entry->values[i]);
+			    break;
+		    }
+		}
+	    }
+	}   break;
 	default:
 	    break;
     }
@@ -2318,14 +2448,14 @@ mutable_again:
 		if (CAR(obj)->type <= LispAtom_t)
 		    CAR(obj)->prot = LispNil_t;
 		else
-		    LispImmutable(CAR(obj));
+		    LispMutable(CAR(obj));
 		obj->prot = LispNil_t;
 	    }
 	    if (obj != NIL)
 		goto mutable_again;
 	    return;
 	case LispArray_t:
-	    LispImmutable(obj->data.array.list);
+	    LispMutable(obj->data.array.list);
 	    obj->prot = LispNil_t;
 	    obj = obj->data.array.dim;
 	    goto mutable_again;
@@ -2334,7 +2464,7 @@ mutable_again:
 	    obj = obj->data.struc.fields;
 	    goto mutable_again;
 	case LispStream_t:
-	    LispImmutable(obj->data.stream.pathname);
+	    LispMutable(obj->data.stream.pathname);
 	    if (obj->data.stream.type == LispStreamPipe) {
 		obj->prot = LispNil_t;
 		obj = obj->data.stream.source.program->errorp;
@@ -2348,6 +2478,56 @@ mutable_again:
 	    obj->prot = LispNil_t;
 	    obj = obj->data.bytecode.code;
 	    goto mutable_again;
+	case LispHashTable_t: {
+	    unsigned long i;
+	    LispHashEntry *entry = obj->data.hash.table->entries,
+			  *last = entry + obj->data.hash.table->num_entries;
+
+	    for (; entry < last; entry++) {
+		for (i = 0; i < entry->count; i++) {
+		    switch (entry->keys[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->keys[i]->prot = LispNil_t;
+			    break;
+			default:
+			    LispMutable(entry->keys[i]);
+			    break;
+		    }
+		    switch (entry->values[i]->type) {
+			case LispNil_t:
+			case LispTrue_t:
+			case LispAtom_t:
+			case LispCharacter_t:
+			case LispPackage_t:
+			    break;
+			case LispInteger_t:
+			case LispReal_t:
+			case LispString_t:
+			case LispRatio_t:
+			case LispOpaque_t:
+			case LispBigInteger_t:
+			case LispBigRatio_t:
+			    entry->values[i]->prot = LispNil_t;
+			    break;
+			default:
+			    LispMutable(entry->values[i]);
+			    break;
+		    }
+		}
+	    }
+	}   break;
 	default:
 	    break;
     }
@@ -2646,13 +2826,14 @@ LispNewRatio(LispMac *mac, long num, long den)
 LispObj *
 LispNewVector(LispMac *mac, LispObj *objects)
 {
+    GC_ENTER();
     long count;
     LispObj *array, *dimension;
 
     for (count = 0, array = objects; CONS_P(array); count++, array = CDR(array))
 	;
 
-    GCProtect();
+    GC_PROTECT(objects);
     dimension = CONS(SMALLINT(count), NIL);
     array = LispNew(mac, objects, dimension);
     array->type = LispArray_t;
@@ -2661,7 +2842,7 @@ LispNewVector(LispMac *mac, LispObj *objects)
     array->data.array.rank = 1;
     array->data.array.type = LispTrue_t;
     array->data.array.zero = count == 0;
-    GCUProtect();
+    GC_LEAVE();
 
     return (array);
 }
@@ -3876,19 +4057,6 @@ LispMoreGlobals(LispMac *mac, LispPackage *pack)
 }
 
 void
-LispMoreReturns(LispMac *mac)
-{
-    LispObj **values = realloc(mac->returns.values,
-			       (mac->returns.space + 32) * sizeof(LispObj*));
-
-    if (values == NULL)
-	LispDestroy(mac, "out of memory");
-
-    mac->returns.values = values;
-    mac->returns.space += 32;
-}
-
-void
 LispMoreProtects(LispMac *mac)
 {
     LispObj **objects = realloc(mac->protect.objects,
@@ -4468,7 +4636,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 
 		base = LispMakeEnvironment(mac, alist, arguments,
 					   function, eval, 0);
-		multiple_values = 0;
+		multiple_values = 1;
 		result = LispExecuteBytecode(mac, lambda);
 		mac->env.lex = lex;
 		mac->env.head = mac->env.length = base;
@@ -4483,7 +4651,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		    eval = !macro;
 		base = LispMakeEnvironment(mac, alist, arguments,
 					   function, eval, 0);
-		multiple_values = 0;
+		multiple_values = 1;
 		result = LispRunFunMac(mac, function, lambda, macro, base);
 	    }
 	    else if (atom->a_defstruct &&
@@ -4530,7 +4698,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    lambda = function->data.lambda.code;
 	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 	    base = LispMakeEnvironment(mac, alist, arguments, function, eval, 0);
-	    multiple_values = 0;
+	    multiple_values = 1;
 	    result = LispRunFunMac(mac, function, lambda, 0, base);
 	    break;
 	case LispCons_t:
@@ -4543,7 +4711,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		    lambda = function->data.lambda.code;
 		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
 		    base = LispMakeEnvironment(mac, alist, arguments, NIL, eval, 0);
-		    multiple_values = 0;
+		    multiple_values = 1;
 		    result = LispRunFunMac(mac, NIL, lambda, 0, base);
 		    GC_LEAVE();
 		    break;
@@ -4563,7 +4731,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	LispDebugger(mac, LispDebugCallEnd, function, result);
 #endif
 
-    if (RETURN_COUNT && !multiple_values)
+    if (!multiple_values)
 	RETURN_COUNT = 0;
 
     return (result);
@@ -4969,7 +5137,7 @@ LispBegin(void)
     mac->gc.average = segsize;
 
     /* Don't allow gc in initialization */
-    GCProtect();
+    GCDisable();
 
     /* Initialize package system, the current package is LISP. Order of
      * initialization is very important here */
@@ -4981,8 +5149,8 @@ LispBegin(void)
     /* Allocate space in LISP package */
     LispMoreGlobals(mac, mac->pack);
 
-    /* Allocate initial space for multiple returns */
-    LispMoreReturns(mac);
+    /* Allocate  space for multiple value return values */
+    mac->returns.values = malloc(MULTIPLE_VALUES_LIMIT * (sizeof(LispObj*)));
 
     /*  Create the first atom, do it "by hand" because macro "PACKAGE"
      * cannot yet be used. */
@@ -5107,8 +5275,12 @@ LispBegin(void)
     LispProclaimSpecial(mac, mac->features, object, NIL);
     LispExportSymbol(mac, mac->features);
 
+    object = ATOM2("MULTIPLE-VALUES-LIMIT");
+    LispDefconstant(mac, object, INTEGER(MULTIPLE_VALUES_LIMIT + 1), NIL);
+    LispExportSymbol(mac, object);
+
     /* Reenable gc */
-    GCUProtect();
+    GCEnable();
 
     LispBytecodeInit(mac);
     LispPackageInit(mac);
@@ -5168,10 +5340,10 @@ LispBegin(void)
 #else
     path = STRING("");
 #endif
-    /* XXX When pathname.c be fixed in the gc handling, will need to
-     * protect path here. */
+    GCDisable();
     LispProclaimSpecial(mac, object, APPLY1(Oparse_namestring, path), NIL);
     LispExportSymbol(mac, object);
+    GCEnable();
 
     /* Create and make EXT the current package */
     PACKAGE = ext = LispNewPackage(mac, STRING("EXT"), NIL);

@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.15 2002/09/08 02:29:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.16 2002/09/22 07:09:06 paulo Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -60,6 +60,8 @@ typedef struct _xedit_hints {
 
 typedef enum {NO_READ, READ_OK, WRITE_OK} FileAccess;
 
+typedef struct _XeditLispData XeditLispData;
+
 #define CHANGED_BIT	0x01
 #define EXISTS_BIT	0x02
 #define WRAP_BIT	0x10
@@ -73,6 +75,7 @@ typedef struct _xedit_flist_item {
     int mode;
     XawTextPropertyList *properties;
     XawTextWrapMode wrap;
+    XeditLispData *xldata;
 } xedit_flist_item;
 
 extern struct _xedit_flist {
@@ -158,6 +161,7 @@ void XeditPrintLispEval(Widget, XEvent*, String*, Cardinal*);
 void XeditKeyboardReset(Widget, XEvent*, String*, Cardinal*);
 void XeditLispCleanUp(void);
 void SetTextProperties(xedit_flist_item*);
+void UnsetTextProperties(xedit_flist_item*);
 
 /*	externs for system replacement functions */
 #ifdef NEED_STRCASECMP

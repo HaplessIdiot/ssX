@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.1 2002/09/22 07:09:07 paulo Exp $ */
 
 #ifndef Lisp_xedit_h
 #define Lisp_xedit_h
@@ -41,10 +41,13 @@
 LispObj *Xedit_AddEntity(LispMac*, LispBuiltin*);
 LispObj *Xedit_AutoFill(LispMac*, LispBuiltin*);
 LispObj *Xedit_Background(LispMac*, LispBuiltin*);
+LispObj *Xedit_CharAfter(LispMac*, LispBuiltin*);
+LispObj *Xedit_CharBefore(LispMac*, LispBuiltin*);
 LispObj *Xedit_ClearEntities(LispMac*, LispBuiltin*);
 LispObj *Xedit_ConvertPropertyList(LispMac*, LispBuiltin*);
 LispObj *Xedit_Font(LispMac*, LispBuiltin*);
 LispObj *Xedit_Foreground(LispMac*, LispBuiltin*);
+LispObj *Xedit_GotoChar(LispMac*, LispBuiltin*);
 LispObj *Xedit_HorizontalScrollbar(LispMac*, LispBuiltin*);
 LispObj *Xedit_Insert(LispMac*, LispBuiltin*);
 LispObj *Xedit_Justification(LispMac*, LispBuiltin*);
@@ -67,5 +70,6 @@ LispObj *Xedit_XrmStringToQuark(LispMac*, LispBuiltin*);
 void LispXeditInitialize(LispMac*);
 int XeditLispExecute(LispMac*, Widget, XawTextPosition, XawTextPosition);
 void XeditLispSetEditMode(LispMac*, xedit_flist_item*);
+void XeditLispUnsetEditMode(LispMac*, xedit_flist_item*);
 
 #endif /* Lisp_xedit_h */

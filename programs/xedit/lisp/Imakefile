@@ -57,6 +57,7 @@ SRCS		= $(SYS_SRCS) \
 		core.c \
 		debugger.c \
 		format.c \
+		hash.c \
 		helper.c \
 		io.c \
 		lisp.c \
@@ -77,6 +78,7 @@ OBJS		= $(SYS_OBJS) \
 		core.o \
 		debugger.o \
 		format.o \
+		hash.o \
 		helper.o \
 		io.o \
 		lisp.o \
