@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 279. Convert TGA driver to use fb (Alan Hourihane).
  278. Fix XTRAP typo in miinitext.c (Damien Touraine).
  277. Major updates to the XFree86(1) man page (David Dawes).
  276. A new (perl) version of the mkhtmlindex script that works better than
@@ -12720,4 +12721,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1632 2001/03/15 19:27:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1633 2001/03/16 04:51:33 tsi Exp $
