@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.1 2000/12/02 01:16:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.3 2000/12/06 15:35:23 eich Exp $ */
 
 /* Adapted from ../mga/mga_video.c */
 
@@ -30,6 +30,10 @@
 #define SST_2D_FORMAT_UYVY  0x9
 
 #define YUVBASEADDR             0x80100
+/* This should move to tdfx.h
+ * Only one port for now due to need for better memory allocation. */
+#define TDFX_MAX_PORTS 1
+
 #define YUVSTRIDE               0x80104
 
 #ifndef XvExtension
@@ -127,7 +131,7 @@ static XF86VideoEncodingRec DummyEncoding[1] =
   {   /* blit limit */
    0,
    "XV_IMAGE",
-   1024, PIXMAP_CACHE_LINES,   /* Height is a limitation of pixmap space. */
+   1024, 0,   /* Height is a limitation of pixmap space, and filled in later. */
    {1, 1}
  }
 };
@@ -158,11 +162,29 @@ static XF86ImageRec Images[NUM_IMAGES] =
 static XF86VideoAdaptorPtr
 TDFXAllocAdaptor(ScrnInfoPtr pScrn)
 {
+    DevUnion *devUnions;
+    int i;
     XF86VideoAdaptorPtr adapt;
 
     if(!(adapt = xf86XVAllocateVideoAdaptorRec(pScrn)))
-	return NULL;
-
+      return NULL;
+    /* Allocate a TDFX private structure */
+    /* There is no need for a TDFX private structure at this time.  But a 
+     * DevUnion has to be provided to the core Xv code. */
+    if (!(devUnions = xcalloc (1, sizeof (DevUnion) * TDFX_MAX_PORTS)))
+    {
+      xfree (adapt);
+      return NULL;
+     }
+    adapt->pPortPrivates = &devUnions[0];
+    
+    /* Fill in some of the DevUnion */
+    for (i = 0; i < TDFX_MAX_PORTS; i++)
+    {
+      adapt->pPortPrivates[i].val = i;
+      adapt->pPortPrivates[i].ptr = NULL;  /* No private data */
+    }
+    
     return adapt;
 }
 
@@ -187,7 +209,7 @@ TDFXSetupImageVideo(ScreenPtr pScreen)
     adapt->pEncodings = &DummyEncoding[0];
     adapt->nFormats = NUM_FORMATS_OVERLAY;
     adapt->pFormats = Formats;
-    adapt->nPorts = 1;
+    adapt->nPorts = TDFX_MAX_PORTS;
     adapt->nAttributes = 0;
     adapt->pAttributes = NULL;
     adapt->nImages = 3;
@@ -314,13 +336,14 @@ YUVPlanarToPacked (ScrnInfoPtr pScrn,
    void *dst;
    char *psrc = buf,
      *pdst = 0;
+   int count = 0;
 
   /* Register saves */
    INT32
      yuvBaseAddr,
      yuvStride;
 
-  /* Save these registers I can restore them when we are done. */
+  /* Save these registers so I can restore them when we are done. */
   yuvBaseAddr = TDFXReadLongMMIO(pTDFX, YUVBASEADDR);
   yuvStride =   TDFXReadLongMMIO(pTDFX, YUVSTRIDE);
 
@@ -332,49 +355,79 @@ YUVPlanarToPacked (ScrnInfoPtr pScrn,
 		     pTDFX->stride * (fbarea->box.y1 + pScrn->virtualY) 
 		     + fbarea->box.x1);
   /* Set yuvStride register to reflect stride of U and V planes */
+  /* There is a subtle issue involved with copying the Y plane.  Y is
+   * sampled at twice the rate of the U and V data, in both
+   * directions.  But when packing their needs to be two Y values for
+   * each U,V pair.  So if src_x is odd we will end up missing on
+   * of the Y values.  To correct for this we will always adjust the src
+   * x value.  This adjust is done both in computing the address of the
+   * pixels to copy and when determining the amount of pixels to copy.
+   * Note that care needs to be taken to insure that the offscreen
+   * temporary buffer is allocated with enough space to hold the possible
+   * extra column of data.
+   */
   TDFXWriteLongMMIO (pTDFX, YUVSTRIDE, pTDFX->stride);
-
   psrc = (char*)buf;
 
   /* psrc points to the base of the Y plane, move out to src_x, src_y */
-  psrc += src_x + src_y * width;
-
+  psrc += (src_x & ~0x1) + src_y * width;
   pdst = (char *)pTDFX->MMIOBase[0] + YUV_Y_BASE;
-  for (y = 0; y < height; y++)
+  for (y = 0; y < src_h; y++)
   {   
-    memcpy (pdst, psrc, src_w);
+    memcpy (pdst, psrc, src_w + (src_x & 0x1));
     psrc += width;
+    /* YUV planar region is always 1024 bytes wide */
     pdst += 1024;
   }
 
-  /* The difference between FOURCC_YV12 and FOURCC_I420 is the
-   * order that the U and V planes appear in the buffer.  But I at
-   * this point I just send them in the order they appear.
-   * Depending on the format the order in the packing ends up
-   * different and we handle it in the the way we pick the source
-   * format later on. */
+  /* The difference between FOURCC_YV12 and FOURCC_I420 is the order
+   * that the U and V planes appear in the buffer.  But at this point
+   * I just send the second buffer as V and the third buffer as U.
+   * Depending on the format, the packing will be different and we
+   * handle it in the the way we pick the source format for the blit
+   * later on. */
 
   pdst = (char *)pTDFX->MMIOBase[0] + YUV_V_BASE;
   psrc = (char*)buf + width * height;
-  /* psrc now points to the base of the V plane, move out to src_x, src_y */
+  /* psrc now points to the base of the V plane, move out to src_x/2,
+   * src_y/2 */
   psrc += (src_x >> 1) + (src_y >> 1) * (width >> 1);
-  for (y = 0; y < height >> 1; y++)
+  for (y = 0; y < src_h >> 1; y++)
   {
+    /* YUV planar region is always 1024 bytes wide */
     memcpy (pdst, psrc, src_w >> 1);
     psrc += width >> 1;
     pdst += 1024;
   }
   pdst = (char *)pTDFX->MMIOBase[0] + YUV_U_BASE;
   psrc = (char*)buf + width * height + (width >> 1) * (height >> 1);
-  /* psrc now points to the base of the U plane, move out to src_x, src_y */
+  /* psrc now points to the base of the U plane, move out to src_x/2,
+   * src_y/2 */
   psrc += (src_x >> 1) + (src_y >> 1) * (width >> 1);
-  for (y = 0; y < height >> 1; y++)
+  for (y = 0; y < src_h >> 1; y++)
   {
+    /* YUV planar region is always 1024 bytes wide */
     memcpy (pdst, psrc, src_w >> 1);
     psrc += width >> 1;
     pdst += 1024;
   }
-     
+
+  /* Before restoring trashed registers we have to wait for the conversion
+   * to finish.  We aren't using the FIFO for this but the hardware can
+   * take a little extra time even after we finish all the writes.  If we
+   * restore the registers before it finishes it can store some of the YUV
+   * data to the wrong place.  One particular wrong place is often on top
+   * of the hardware cursor data.  So we wait for the status register
+   * to go idle. */
+  /* XXX Right now wait for the whole chip to go idle.  This is more than 
+   * is required.  Find out which subsystem is handles the YUV packing and
+   * wait only on that status bit. */
+  count = 0;
+  do
+  {
+    count++;
+  } while ((TDFXReadLongMMIO(pTDFX, 0) & SST_BUSY) && count < 1000);
+
   /* Restore trashed registers */
   TDFXWriteLongMMIO(pTDFX, YUVBASEADDR, yuvBaseAddr);
   TDFXWriteLongMMIO(pTDFX, YUVSTRIDE, yuvStride);  
@@ -400,7 +453,7 @@ TDFXPutImage(
 
    FBAreaPtr fbarea;
 
-   /* Make sure we are synced up (this really mean, lock and find the 
+   /* Make sure we are synced up (this really means, lock and find the 
     * fifo pointer. */
    TDFXFirstSync (pScrn);
 
@@ -483,6 +536,8 @@ TDFXPutImage(
       * make sure the next command sent will work. */
      TDFXSendNOP(pScrn);  
      break;
+   /* XXX What am I supposed to do about the sync flag? */
+
    }
 
    return Success;
@@ -608,13 +663,32 @@ TDFXDeallocateOffscreenBuffer (ScrnInfoPtr pScrn, int id)
 static FBAreaPtr
 TDFXAllocateOffscreenBuffer (ScrnInfoPtr pScrn, int id, int width, int height)
 {
+  int myWidth;
   TDFXPtr pTDFX = TDFXPTR(pScrn);
 
   if (!pTDFX)
     return NULL;
-  
+
+  /* We tweak the width slightly */
+  myWidth = width;
+  /* We tweak the width slightly */
+  myWidth = width;
+
+  /* width is measured in pixels.  The pixels in the YUV image are alway
+   * 8 bit YUV data.  But, the xf86 offscreen manager allocates in terms of
+   * desktop pixels, so we adjust. */
+  myWidth = myWidth / pTDFX->cpp;
+  if (width % pTDFX->cpp)
+    myWidth++;
+
+  /* If we are putting up a subimage then we need an extra column of data
+   * if the source width is odd, instead of checkin the width just always
+   * allocate an extra column. */
+  /* XXX is this really necessary? */
+  myWidth++;
+
   if (pTDFX->offscreenYUVBuf != NULL &&
-      width == pTDFX->offscreenYUVBufWidth &&
+      myWidth == pTDFX->offscreenYUVBufWidth &&
       height == pTDFX->offscreenYUVBufHeight)
   {
     /* we already have a buffer, don't do anything. */
@@ -625,8 +699,7 @@ TDFXAllocateOffscreenBuffer (ScrnInfoPtr pScrn, int id, int width, int height)
   if (pTDFX->offscreenYUVBuf != NULL)
   {
     if (!xf86ResizeOffscreenArea (pTDFX->offscreenYUVBuf, 
-				  /* I always want an 8 bit buffer. */
-				  width / pTDFX->cpp + 1, 
+				  myWidth,
 				  height))
     {
       return (NULL);
@@ -637,15 +710,14 @@ TDFXAllocateOffscreenBuffer (ScrnInfoPtr pScrn, int id, int width, int height)
     /* Allocate a brand new buffer */
     pTDFX->offscreenYUVBuf = 
       xf86AllocateOffscreenArea (pScrn->pScreen, 
-				 /* I always want an 8 bit buffer. */
-				 width / pTDFX->cpp + 1, 
+				 myWidth,
 				 height, 
 				 0,
 				 NULL, NULL, NULL);    
   }
 
   /* Return the buffer */
-  pTDFX->offscreenYUVBufWidth = width;
+  pTDFX->offscreenYUVBufWidth = myWidth;
   pTDFX->offscreenYUVBufHeight = height; 
   return (pTDFX->offscreenYUVBuf);
 }

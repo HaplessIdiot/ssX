@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.49 2000/12/06 15:35:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.50 2000/12/07 20:26:23 dawes Exp $ */
 
 /*
  * Authors:
@@ -1674,18 +1674,19 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   /* it to be on a page boundary too, just  */
   /* for giggles.                           */
   pTDFX->fbOffset
-      = (pTDFX->backOffset - (pScrn->virtualY+PIXMAP_CACHE_LINES)
-	 *pTDFX->stride) &~ 0xFFF;
+      = (pTDFX->backOffset - (pScrn->virtualY+pTDFX->pixmapCacheLines)
+	 		     * pTDFX->stride) &~ 0xFFF;
   /* Give the cmd fifo at least             */
   /* CMDFIFO_PAGES pages, but no more than  */
   /* 255.                                   */
   fifoSize = ((255 <= CMDFIFO_PAGES) ? 255 : CMDFIFO_PAGES) << 12;
   /* We give 4096 bytes to the cursor, fifoSize to the */
   /* FIFO, and everything to textures.                 */
-  pTDFX->fifoOffset = 4096+16*1024;
+  /* Bump everything by 64k to move it past VGA memory */
+  pTDFX->fifoOffset = 4096+64*1024;
   pTDFX->fifoSize = fifoSize;
-  pTDFX->cursorOffset = 0+16*1024;
-  texSize = (pTDFX->fbOffset - fifoSize - 4096 - 16*1024);
+  pTDFX->cursorOffset = 0+64*1024;
+  texSize = (pTDFX->fbOffset - fifoSize - 4096 - 64*1024);
   if (texSize < 0) {
     pTDFX->texSize = 0;
     pTDFX->backOffset = -1;
@@ -1693,7 +1694,7 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
     pTDFX->fbOffset = fifoSize + pTDFX->fifoOffset;
 
   } else {
-    pTDFX->texOffset = pTDFX->fbOffset - texSize + 16*1024;
+    pTDFX->texOffset = pTDFX->fbOffset - texSize + 64*1024;
     pTDFX->texSize = texSize;
   }
 #if	0
@@ -1712,7 +1713,8 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "Front Buffer Offset: [0x%08X, 0x%08X)\n",
              pTDFX->fbOffset,
-             pTDFX->fbOffset + (pScrn->virtualY+128)*pTDFX->stride);
+             pTDFX->fbOffset +
+	       (pScrn->virtualY+PIXMAP_CHACHE_LINES)*pTDFX->stride);
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "BackOffset: [0x%08X, 0x%08X)\n",
              pTDFX->backOffset,
@@ -1749,6 +1751,18 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   vgaHWGetIOBase(hwp);
   if (!vgaHWMapMem(pScrn)) return FALSE;
 
+#ifdef XF86DRI
+  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
+  if (!pTDFX->NoAccel 
+     && ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1) )) {
+    doDR = TRUE;
+    pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
+  } else
+#endif
+  {
+    pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES_NODRI;
+  }
+
   allocateMemory(pScrn);
 
 #if 0
@@ -1773,16 +1787,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #else
   pTDFX->sync=TDFXSync;
 #endif
-
-#ifdef XF86DRI
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
-  if (!pTDFX->NoAccel 
-      && ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1) )) {
-      doDR = TRUE;
-      pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
-  } else
-#endif
-      pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES_NODRI;
 
   maxy=pScrn->virtualY+pTDFX->pixmapCacheLines;
   MemBox.y1 = pScrn->virtualY;
@@ -1916,19 +1920,9 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
 #endif
 
-#if 0
-    /* Disable for now, not up with latest XFree release */
 #ifdef XvExtension
-  {
-    XF86VideoAdaptorPtr *ptr;
-    int n;
-    
-    n = xf86XVListGenericAdaptors(pScrn,&ptr);
-    if (n) {
-      xf86XVScreenInit(pScreen, ptr, n);
-    }
-  }
-#endif
+  /* Initialize Xv support */
+  TDFXInitVideo (pScreen);
 #endif
 
   pScreen->SaveScreen = TDFXSaveScreen;
@@ -1993,9 +1987,7 @@ TDFXLeaveVT(int scrnIndex, int flags) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
   ScreenPtr pScreen;
-#ifdef XF86DRI
   TDFXPtr pTDFX;
-#endif
 
   TDFXTRACE("TDFXLeaveVT start\n");
   pScrn = xf86Screens[scrnIndex];
@@ -2003,9 +1995,10 @@ TDFXLeaveVT(int scrnIndex, int flags) {
   TDFXRestore(pScrn);
   vgaHWLock(hwp);
   pScreen = screenInfo.screens[scrnIndex];
+  pTDFX = TDFXPTR(pScrn);
+  pTDFX->sync(pScrn);
   TDFXShutdownFifo(pScreen);
 #ifdef XF86DRI
-  pTDFX = TDFXPTR(pScrn);
   if (pTDFX->directRenderingEnabled) {
     DRILock(pScreen, 0);
     TDFXSwapContextFifo(pScreen);
