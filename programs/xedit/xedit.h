@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.8 1999/04/29 09:13:58 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.9 1999/05/23 06:33:53 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -143,3 +143,19 @@ void SetEditMenu(void);
 
 /*	externs in hook.c	*/
 Bool StartHooks(XtAppContext);
+
+/*	externs for system replacement functions */
+#ifdef NEED_STRCASECMP
+int strcasecmp(const char *s1, const char *s2);
+int strncasecmp(const char *s1, const char *s2, size_t n);
+#endif
+#ifdef NEED_REALPATH
+#include <sys/param.h>
+#if defined(ISC)
+#ifndef MAXPATHLEN
+#define MAXPATHLEN      1024
+#endif
+#endif
+char *realpath(const char *pathname, char resolvedname[MAXPATHLEN]);
+#endif
+

@@ -1,13 +1,22 @@
 XCOMM $XConsortium: Imakefile,v 1.17 93/08/17 20:49:32 rws Exp $
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.7 1999/05/16 10:13:07 dawes Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.8 1999/05/23 06:33:52 dawes Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = MathLibrary
 #if defined(LynxOSArchitecture) || defined(SVR3Architecture)
-       SYS_SRCS = realpath.c
-       SYS_OBJS = realpath.o
+        RP_SRCS = realpath.c
+        RP_OBJS = realpath.o
+     RP_DEFINES = -DNEED_REALPATH
 #endif
-        DEFINES = $(SIGNAL_DEFINES)
+#if !HasStrcasecmp
+   STRCCMP_SRCS = strcasecmp.c
+   STRCCMP_OBJS = strcasecmp.o
+STRCCMP_DEFINES = -DNEED_STRCASECMP
+#endif
+       SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS)
+       SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS)
+    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES)
+        DEFINES = $(SIGNAL_DEFINES) $(SYS_DEFINES)
 
            SRCS = xedit.c commands.c util.c $(SYS_SRCS) ispell.c options.c \
 		  hook.c
