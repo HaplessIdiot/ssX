@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 728. Disable XKB by default in XDarwin (Torrey T. Lyons).
+ 727. Fix manpage build warnings on Panther (Matthieu Herrb).
  726. Make sure that the ring buffer is flushed in I810CloseScreen().  This
       fixes unpredictable behaviour that sometimes shows up after server
       exit/restart or server reset, including memory corruption, spontaneous
@@ -18471,7 +18473,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3073 2004/01/01 17:17:31 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3074 2004/01/02 06:08:03 dawes Exp $
 
 
 
