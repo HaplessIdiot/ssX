@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_tris.c,v 1.2 2003/09/28 21:44:45 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
@@ -19,7 +19,7 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -870,7 +870,6 @@ sisMakeRoomAGP( sisContextPtr smesa, GLint num )
       sisUpdateAGP( smesa );
       while (size > AGP_SpaceLeft) {
          /* Spin until space is available. */
-         usleep(1);
          AGP_ReadPtr = (GLfloat *)((long)MMIO_READ(REG_3D_AGPCmBase) -
             (long)smesa->AGPCmdBufAddr + (long)smesa->AGPCmdBufBase);
          sisUpdateAGP( smesa );

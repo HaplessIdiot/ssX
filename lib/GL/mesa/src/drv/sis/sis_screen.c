@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_screen.c,v 1.1 2003/09/28 20:15:34 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2003 Eric Anholt
@@ -18,10 +18,9 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-USE OR OTHER DEALINGS IN THE SOFTWARE.
+ERIC ANHOLT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
@@ -150,7 +149,7 @@ sis_bitblt_copy_cmd (sisContextPtr smesa, ENGPACKET * pkt)
       *lpdwDest++ = *lpdwSrc++;
 
    MMIO(REG_CMD0, *(GLint *)&pkt->stdwCmd);
-   MMIO(REG_QueueLen, -1);
+   MMIO(REG_CommandQueue, -1);
 }
 
 static void sisCopyBuffer( __DRIdrawablePrivate *dPriv )
@@ -160,7 +159,7 @@ static void sisCopyBuffer( __DRIdrawablePrivate *dPriv )
    ENGPACKET stEngPacket;
   
    while ((*smesa->FrameCountPtr) - MMIO_READ(0x8a2c) > SIS_MAX_FRAME_LENGTH)
-      usleep(1);
+      ;
 
    LOCK_HARDWARE();
 

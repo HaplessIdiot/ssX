@@ -18,13 +18,13 @@ Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
+ERIC ANHOLT OR SILICON INTEGRATED SYSTEMS CORP BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_texstate.c,v 1.1 2003/09/28 20:15:34 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_texstate.c,v 1.2 2003/09/29 11:25:18 alanh Exp $ */
 
 /*
  * Authors:
@@ -60,70 +60,70 @@ sis_set_texture_env0( GLcontext *ctx, struct gl_texture_object *texObj,
 
    sisTexObjPtr t = texObj->DriverData;
 
-   /*
-   current->hwTexBlendClr0 = RGB_STAGE1; 
-   current->hwTexBlendAlpha0 = A_STAGE1;
-   */
-
    switch (texture_unit->EnvMode)
    {
    case GL_REPLACE:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV0, 0);
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr0 = A_REPLACE_RGB_STAGE0;
-         current->hwTexBlendAlpha0 = A_REPLACE_A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CF;
+         current->hwTexBlendAlpha0 = STAGE0_A_AS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr0 = RGB_REPLACE__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGB_REPLACE__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AF;
          break;
       case GL_INTENSITY:
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr0 = RGBA_REPLACE__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGBA_REPLACE__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AS;
          break;
       }
       break;
 
    case GL_MODULATE:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV0, 0);
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr0 = A_MODULATE_RGB_STAGE0;
-         current->hwTexBlendAlpha0 = A_MODULATE_A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CF;
+         current->hwTexBlendAlpha0 = STAGE0_A_AFAS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr0 = RGB_MODULATE__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGB_MODULATE__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFCS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AF;
          break;
       case GL_INTENSITY:
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr0 = RGBA_MODULATE__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGBA_MODULATE__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFCS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AFAS;
          break;
       }
       break;
 
    case GL_DECAL:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV0, 0);
       switch (t->format)
       {
       case GL_RGB:
-         current->hwTexBlendClr0 = RGB_DECAL__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGB_DECAL__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AF;
          break;
       case GL_RGBA:
-         current->hwTexBlendClr0 = RGBA_DECAL__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGBA_DECAL__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFOMAS_CSAS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AF;
          break;
       }
       break;
 
    case GL_BLEND:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV0, 1);
+#if 0 /* XXX Blending broken */
       current->hwTexEnvColor =
          ((GLint) (texture_unit->EnvColor[3])) << 24 |
          ((GLint) (texture_unit->EnvColor[0])) << 16 |
@@ -132,33 +132,34 @@ sis_set_texture_env0( GLcontext *ctx, struct gl_texture_object *texObj,
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr0 = A_BLEND_RGB_STAGE0;
-         current->hwTexBlendAlpha0 = A_BLEND_A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CF;
+         current->hwTexBlendAlpha0 = STAGE0_A_AFAS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr0 = RGB_BLEND__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGB_BLEND__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AF;
          break;
       case GL_INTENSITY:
-         current->hwTexBlendClr0 = I_BLEND__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = I_BLEND__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AFOMAS_ACAS;
          break;
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr0 = RGBA_BLEND__RGB_STAGE0;
-         current->hwTexBlendAlpha0 = RGBA_BLEND__A_STAGE0;
+         current->hwTexBlendColor0 = STAGE0_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha0 = STAGE0_A_AFAS;
          break;
       }
       break;
+#endif
    }
 
-   if ((current->hwTexBlendClr0 != prev->hwTexBlendClr0) ||
+   if ((current->hwTexBlendColor0 != prev->hwTexBlendColor0) ||
        (current->hwTexBlendAlpha0 != prev->hwTexBlendAlpha0) ||
        (current->hwTexEnvColor != prev->hwTexEnvColor))
    {
       prev->hwTexEnvColor = current->hwTexEnvColor;
-      prev->hwTexBlendClr0 = current->hwTexBlendClr0;
+      prev->hwTexBlendColor0 = current->hwTexBlendColor0;
       prev->hwTexBlendAlpha0 = current->hwTexBlendAlpha0;
       smesa->GlobalFlag |= GFLAG_TEXTUREENV;
    }
@@ -178,70 +179,70 @@ sis_set_texture_env1( GLcontext *ctx, struct gl_texture_object *texObj,
 
    sisTexObjPtr t = texObj->DriverData;
 
-   /*
-   current->hwTexBlendClr1 = RGB_STAGE1; current->hwTexBlendAlpha1 =
-   A_STAGE1;
-   */
-
    switch (texture_unit->EnvMode)
    {
    case GL_REPLACE:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV1, 0);
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr1 = A_REPLACE_RGB_STAGE1;
-         current->hwTexBlendAlpha1 = A_REPLACE_A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CF;
+         current->hwTexBlendAlpha1 = STAGE1_A_AS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr1 = RGB_REPLACE__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGB_REPLACE__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AF;
          break;
       case GL_INTENSITY:
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr1 = RGBA_REPLACE__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGBA_REPLACE__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AS;
          break;
       }
       break;
 
    case GL_MODULATE:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV1, 0);
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr1 = A_MODULATE_RGB_STAGE1;
-         current->hwTexBlendAlpha1 = A_MODULATE_A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CF;
+         current->hwTexBlendAlpha1 = STAGE1_A_AFAS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr1 = RGB_MODULATE__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGB_MODULATE__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFCS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AF;
          break;
       case GL_INTENSITY:
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr1 = RGBA_MODULATE__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGBA_MODULATE__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFCS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AFAS;
          break;
       }
       break;
 
    case GL_DECAL:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV1, 0);
       switch (t->format)
       {
       case GL_RGB:
-         current->hwTexBlendClr1 = RGB_DECAL__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGB_DECAL__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AF;
          break;
       case GL_RGBA:
-         current->hwTexBlendClr1 = RGBA_DECAL__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGBA_DECAL__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFOMAS_CSAS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AF;
          break;
       }
       break;
 
    case GL_BLEND:
+      FALLBACK(smesa, SIS_FALLBACK_TEXENV1, 1);
+#if 0 /* XXX Blending broken */
       current->hwTexEnvColor =
          ((GLint) (texture_unit->EnvColor[3])) << 24 |
          ((GLint) (texture_unit->EnvColor[0])) << 16 |
@@ -250,32 +251,33 @@ sis_set_texture_env1( GLcontext *ctx, struct gl_texture_object *texObj,
       switch (t->format)
       {
       case GL_ALPHA:
-         current->hwTexBlendClr1 = A_BLEND_RGB_STAGE1;
-         current->hwTexBlendAlpha1 = A_BLEND_A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CF;
+         current->hwTexBlendAlpha1 = STAGE1_A_AFAS;
          break;
       case GL_LUMINANCE:
       case GL_RGB:
-         current->hwTexBlendClr1 = RGB_BLEND__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGB_BLEND__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AF;
          break;
       case GL_INTENSITY:
-         current->hwTexBlendClr1 = I_BLEND__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = I_BLEND__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AFOMAS_ACAS;
          break;
       case GL_LUMINANCE_ALPHA:
       case GL_RGBA:
-         current->hwTexBlendClr1 = RGBA_BLEND__RGB_STAGE1;
-         current->hwTexBlendAlpha1 = RGBA_BLEND__A_STAGE1;
+         current->hwTexBlendColor1 = STAGE1_C_CFOMCS_CCCS;
+         current->hwTexBlendAlpha1 = STAGE1_A_AFAS;
          break;
       }
       break;
+#endif
    }
 
-   if ((current->hwTexBlendClr1 != prev->hwTexBlendClr1) ||
+   if ((current->hwTexBlendColor1 != prev->hwTexBlendColor1) ||
        (current->hwTexBlendAlpha1 != prev->hwTexBlendAlpha1) ||
        (current->hwTexEnvColor != prev->hwTexEnvColor))
    {
-      prev->hwTexBlendClr1 = current->hwTexBlendClr1;
+      prev->hwTexBlendColor1 = current->hwTexBlendColor1;
       prev->hwTexBlendAlpha1 = current->hwTexBlendAlpha1;
       prev->hwTexEnvColor = current->hwTexEnvColor;
       smesa->GlobalFlag |= GFLAG_TEXTUREENV_1;
@@ -336,8 +338,7 @@ sis_set_texobj_parm( GLcontext *ctx, struct gl_texture_object *texObj,
       GLint b;
 
       /* The mipmap lod biasing is based on experiment.  It seems there's a
-       * limit of around +4/-4 to the bias value; we're being
-       * conservative.
+       * limit of around +4/-4 to the bias value; we're being conservative.
        */
       b = (GLint) (ctx->Texture.Unit[hw_unit].LodBias * 32.0);
       if (b > 127)
@@ -551,27 +552,27 @@ sis_reset_texture_env (GLcontext *ctx, int hw_unit)
 
    if (hw_unit == 1)
    {
-      current->hwTexBlendClr1 = RGB_STAGE1;
-      current->hwTexBlendAlpha1 = A_STAGE1;
+      current->hwTexBlendColor1 = STAGE1_C_CF;
+      current->hwTexBlendAlpha1 = STAGE1_A_AF;
       
-      if ((current->hwTexBlendClr1 != prev->hwTexBlendClr1) ||
+      if ((current->hwTexBlendColor1 != prev->hwTexBlendColor1) ||
           (current->hwTexBlendAlpha1 != prev->hwTexBlendAlpha1) ||
           (current->hwTexEnvColor != prev->hwTexEnvColor))
       {
-         prev->hwTexBlendClr1 = current->hwTexBlendClr1;
+         prev->hwTexBlendColor1 = current->hwTexBlendColor1;
          prev->hwTexBlendAlpha1 = current->hwTexBlendAlpha1;
          prev->hwTexEnvColor = current->hwTexEnvColor;
          smesa->GlobalFlag |= GFLAG_TEXTUREENV_1;
       }
    } else {
-      current->hwTexBlendClr0 = RGB_STAGE1;
-      current->hwTexBlendAlpha0 = A_STAGE1;
+      current->hwTexBlendColor0 = STAGE0_C_CF;
+      current->hwTexBlendAlpha0 = STAGE0_A_AF;
       
-      if ((current->hwTexBlendClr0 != prev->hwTexBlendClr0) ||
+      if ((current->hwTexBlendColor0 != prev->hwTexBlendColor0) ||
           (current->hwTexBlendAlpha0 != prev->hwTexBlendAlpha0) ||
           (current->hwTexEnvColor != prev->hwTexEnvColor))
       {
-         prev->hwTexBlendClr0 = current->hwTexBlendClr0;
+         prev->hwTexBlendColor0 = current->hwTexBlendColor0;
          prev->hwTexBlendAlpha0 = current->hwTexBlendAlpha0;
          prev->hwTexEnvColor = current->hwTexEnvColor;
          smesa->GlobalFlag |= GFLAG_TEXTUREENV;
@@ -579,16 +580,25 @@ sis_reset_texture_env (GLcontext *ctx, int hw_unit)
    }
 }
 
-static GLboolean updateTextureUnit( GLcontext *ctx, int unit )
+static void updateTextureUnit( GLcontext *ctx, int unit )
 {
    sisContextPtr smesa = SIS_CONTEXT( ctx );
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
    struct gl_texture_object *texObj = texUnit->_Current;
+   GLint fallbackbit;
+   
+   if (unit == 0)
+      fallbackbit = SIS_FALLBACK_TEXTURE0;
+   else
+      fallbackbit = SIS_FALLBACK_TEXTURE1;
 
    if (texUnit->_ReallyEnabled & (TEXTURE_1D_BIT | TEXTURE_2D_BIT)) {
-      GLboolean ok = GL_TRUE; /* XXX */
-      if (smesa->TexStates[unit] & NEW_TEXTURING)
+      if (smesa->TexStates[unit] & NEW_TEXTURING) {
+         GLboolean ok;
+
          ok = sis_set_texobj_parm (ctx, texObj, unit);
+         FALLBACK( smesa, fallbackbit, !ok );
+      }
       if (smesa->TexStates[unit] & NEW_TEXTURE_ENV) {
          if (unit == 0)
             sis_set_texture_env0( ctx, texObj, unit );
@@ -596,13 +606,12 @@ static GLboolean updateTextureUnit( GLcontext *ctx, int unit )
             sis_set_texture_env1( ctx, texObj, unit );
       }
       smesa->TexStates[unit] = 0;
-      return ok;
    } else if ( texUnit->_ReallyEnabled ) {
       /* fallback */
-      return GL_FALSE;
+      FALLBACK( smesa, fallbackbit, 1 );
    } else {
       sis_reset_texture_env( ctx, unit );
-      return GL_TRUE;
+      FALLBACK( smesa, fallbackbit, 0 );
    }
 }
 
@@ -610,7 +619,6 @@ static GLboolean updateTextureUnit( GLcontext *ctx, int unit )
 void sisUpdateTextureState( GLcontext *ctx )
 {
    sisContextPtr smesa = SIS_CONTEXT( ctx );
-   GLboolean ok;
    int i;
    __GLSiSHardware *current = &smesa->current;
 
@@ -620,10 +628,8 @@ void sisUpdateTextureState( GLcontext *ctx )
       smesa->TexStates[i] |= (NEW_TEXTURING | NEW_TEXTURE_ENV);
 #endif
 
-   ok = (updateTextureUnit( ctx, 0 ) &&
-	 updateTextureUnit( ctx, 1 ));
-
-   FALLBACK( smesa, SIS_FALLBACK_TEXTURE, !ok );
+   updateTextureUnit( ctx, 0 );
+   updateTextureUnit( ctx, 1 );
 
    /* XXX Issues with the 2nd unit but not the first being enabled? */
    if ( ctx->Texture.Unit[0]._ReallyEnabled &
