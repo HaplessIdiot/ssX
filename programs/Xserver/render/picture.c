@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.27 2002/11/05 05:41:56 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.28 2002/11/06 22:45:36 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -417,8 +417,12 @@ PictureFinishInit (void)
     int	    s;
 
     for (s = 0; s < screenInfo.numScreens; s++)
+    {
 	if (!PictureInitIndexedFormats (screenInfo.screens[s]))
 	    return FALSE;
+	(void) AnimCurInit (screenInfo.screens[s]);
+    }
+
     return TRUE;
 }
 

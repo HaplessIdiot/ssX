@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.20 2002/11/01 00:14:20 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.21 2002/11/06 22:45:36 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -486,6 +486,12 @@ PictureTransformPoint (PictTransformPtr transform,
 		       PictVectorPtr	vector);
 
 void RenderExtensionInit (void);
+
+Bool
+AnimCurInit (ScreenPtr pScreen);
+
+int
+AnimCursorCreate (CursorPtr *cursors, CARD32 *deltas, int ncursor, CursorPtr *ppCursor);
 
 #ifdef PANORAMIX
 void PanoramiXRenderInit (void);
