@@ -6,7 +6,7 @@
 char rcsId_vmwarexaa[] =
     "Id: $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.4 2002/05/14 20:24:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.1 2002/10/16 22:21:51 alanh Exp $ */
 
 #include "vmware.h"
 
@@ -44,7 +44,7 @@ static void vmwareSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
 #define DESTROY_XAA_INFO(pVMWARE) \
     if (pVMWARE->xaaInfo) { XAADestroyInfoRec(pVMWARE->xaaInfo); \
-    pVMWARE->xaaInfo = NULL; } else
+    pVMWARE->xaaInfo = NULL; }
 
 Bool
 vmwareXAAScreenInit(ScreenPtr pScreen)
