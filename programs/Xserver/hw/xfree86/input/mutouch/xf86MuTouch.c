@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.5.2.3 1998/11/12 11:32:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.8 1999/11/19 13:54:56 hohndel Exp $ */
 
 /*
  *******************************************************************************
@@ -1331,8 +1331,11 @@ xf86MuTControl(DeviceIntPtr	dev,
 	  goto not_success;
 	}
 	/*	goto not_success;*/
-
+#ifndef XFREE86_V4
+	xf86AddEnabledDevice(local);
+#else
 	AddEnabledDevice(local->fd);
+#endif
       }
 
       /*
@@ -1408,7 +1411,11 @@ xf86MuTControl(DeviceIntPtr	dev,
     DBG(2, ErrorF("MicroTouch %s close...\n", id_string));
     dev->public.on = FALSE;
     if (local->fd >= 0) {
+#ifdef XFREE86_V4
+      xf86RemoveEnabledDevice(local);
+#else
       RemoveEnabledDevice(local->fd);
+#endif
       SYSCALL(close(local->fd));
       local->fd = -1;
       /*

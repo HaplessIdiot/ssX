@@ -1,4 +1,5 @@
 XFree86 3.9.16f (xx December 1999)
+3372. Generalize the SIGIO way of reading input data (#3450, Frederic Lepied).
 3371. Fix missing quotes in Xt docs (#3443, Matthieu Herrb).
 3370. Add request bounds checking for xfs (#3449, Keith Packard).
 3369. Fix problem where font library fails to match bitmap instances
@@ -9147,4 +9148,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.867 1999/12/13 03:04:51 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.868 1999/12/13 23:26:24 robin Exp $
