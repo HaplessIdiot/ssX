@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.19 2001/03/21 17:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.20 2001/04/10 16:08:02 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -265,26 +265,33 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   TDFXDRIPtr pTDFXDRI;
+  Bool bppOk = FALSE;
 
   switch (pScrn->bitsPerPixel) {
-  case 8:
-    xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "DRI not supported in 8 bpp mode, disabling DRI.\n");
-    return FALSE;
   case 16:
+    bppOk = TRUE;
     break;
-  case 24:
-    xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "DRI not supported in 24 bpp mode, disabling DRI.\n");
-    return FALSE;
   case 32:
-     if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) {
-       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                  "DRI requires Voodoo4/5 in 32 bpp mode, disabling DRI.\n");
-       xf86DrvMsg(pScreen->myNum, X_INFO,
-                  "To use DRI, invoke the server using 16 bpp (depth 16).\n");
-       return FALSE;
-     }
+    if (pTDFX->ChipType > PCI_CHIP_VOODOO3) {
+      bppOk = TRUE;
+    }
+    break;
+  }
+  if (!bppOk) {
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+            "DRI not supported in %d bpp mode, disabling DRI.\n",
+            (pScrn->bitsPerPixel));
+    if (pTDFX->ChipType <= PCI_CHIP_VOODOO3) {
+      xf86DrvMsg(pScreen->myNum, X_INFO,
+              "To use DRI, invoke the server using 16 bpp "
+	      "(-depth 15 or -depth 16).\n");
+    } else {
+      xf86DrvMsg(pScreen->myNum, X_INFO,
+              "To use DRI, invoke the server using 16 bpp "
+	      "(-depth 15 or -depth 16)\n"
+	      "\tor 32 bpp (-depth 24 -fbbpp 32).\n");
+    }
+    return FALSE;
   }
 
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing

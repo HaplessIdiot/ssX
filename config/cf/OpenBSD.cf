@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.51 2001/02/26 18:27:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.52 2001/03/03 09:52:59 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -243,7 +243,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define NeqnCmd			neqn -Tlatin1
 #define NroffCmd		nroff -Tlatin1
 #define	EqnCmd 			eqn -Tps
-#define TroffCmd        	groff -Tps
+#define HasGroff		YES
 
 /*
  * To use the NetBSD Aperture driver

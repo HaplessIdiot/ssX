@@ -2,7 +2,7 @@ XCOMM $Xorg: os2.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.32 2001/01/15 20:56:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.33 2001/01/17 16:22:32 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -62,7 +62,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.32 2001/01/15 20:56:14 dawes 
 #define NeqnCmd		eqn 
 #define NroffCmd	groff -Tascii
 #define	EqnCmd 		eqn -Tascii
-#define TroffCmd        groff -Tps
+#define HasGroff	YES
          NEQN = NeqnCmd
         NROFF = NroffCmd
 
