@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.1 2000/10/04 23:34:58 robin Exp $ */
 /*
  * Number Nine I128 functions
  *
@@ -91,7 +91,10 @@ typedef struct {
     CloseScreenProcPtr  CloseScreen;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
+    I2CBusPtr		I2C;
     Bool		(*ProgramDAC)(ScrnInfoPtr, DisplayModePtr);
+    unsigned int	(*ddc1Read)(ScrnInfoPtr);
+    Bool		(*i2cInit)(ScrnInfoPtr);
 
 } I128Rec, *I128Ptr;
 
@@ -125,5 +128,9 @@ Bool I128TIHWCursorInit(ScrnInfoPtr pScrn);
 Bool I128ProgramTi3025(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool I128ProgramIBMRGB(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool I128ProgramSilverHammer(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+void I128DumpBaseRegisters(ScrnInfoPtr pScrn);
+void I128DumpActiveRegisters(ScrnInfoPtr pScrn);
+void I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile unsigned long *vrbg);
 
 #endif

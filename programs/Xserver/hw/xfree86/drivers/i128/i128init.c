@@ -1,4 +1,4 @@
-/* $XFree86:  $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
 /*
  * Copyright 1995-2000 by Robin Cutshaw <robin@XFree86.Org>
  * Copyright 1998 by Number Nine Visual Technology, Inc.
@@ -39,7 +39,7 @@
 void I128SavePalette(I128Ptr pI128);
 void I128RestorePalette(I128Ptr pI128);
 
-#define VGA_SAVE_COUNT 512*1024
+#define VGA_SAVE_COUNT 4096*1024
 
 
 void
@@ -50,6 +50,13 @@ I128SaveState(ScrnInfoPtr pScrn)
 
         if (pI128->Debug)
         	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "I128SaveState start\n");
+
+	if (pI128->Debug) {
+		unsigned long tmp1 = inl(iR->iobase + 0x1C);
+		unsigned long tmp2 = inl(iR->iobase + 0x20);
+        	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "I128SaveState saving, config1/2 = 0x%x/0x%x\n", tmp1, tmp2);
+		I128DumpActiveRegisters(pScrn);
+	}
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
 	if ((pI128->io.id&0x7) > 0) {
@@ -267,6 +274,13 @@ I128RestoreState(ScrnInfoPtr pScrn)
 		   (pI128->RamdacType == SILVER_HAMMER_DAC)) {
 		CARD32 i;
 
+		if (pI128->Debug) {
+			unsigned long tmp1 = inl(iR->iobase + 0x1C);
+			unsigned long tmp2 = inl(iR->iobase + 0x20);
+       	 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "I128RestoreState restoring, config1/2 = 0x%x/0x%x\n", tmp1, tmp2);
+			I128DumpActiveRegisters(pScrn);
+		}
+
 		for (i=0; i<0x100; i++) {
 			if ((i == IBMRGB_sysclk_vco_div) ||
 			    (i == IBMRGB_sysclk_ref_div))
@@ -290,13 +304,15 @@ I128RestoreState(ScrnInfoPtr pScrn)
 	}
 
 	/* iobase is filled in during the device probe (as well as config 1&2)*/
-	if (((pI128->io.id&0x7) > 0) || (pI128->Chipset == PCI_CHIP_I128_T2R)
-			          || (pI128->Chipset == PCI_CHIP_I128_T2R4)) {
+	if (((pI128->io.id&0x7) > 0) ||
+	    (pI128->Chipset == PCI_CHIP_I128_T2R) ||
+	    (pI128->Chipset == PCI_CHIP_I128_T2R4)) {
 		int i;
 		unsigned char *vidmem = (unsigned char *)pI128->mem.mw0_ad;
 
-		for (i=0; i<VGA_SAVE_COUNT; i++)
-			vidmem[i] = pI128->vgamem[i];
+		if (pI128->Primary)
+			for (i=0; i<VGA_SAVE_COUNT; i++)
+				vidmem[i] = pI128->vgamem[i];
 		outl(iR->iobase + 0x30, iR->vga_ctl);
 	}
 
@@ -330,6 +346,12 @@ I128RestoreState(ScrnInfoPtr pScrn)
 	pI128->mem.rbase_g[CRT_2CON] = iR->i128_base_g[CRT_2CON]; /*  0x005C  */
 									MB;
 
+	if (pI128->Debug) {
+		unsigned long tmp1 = inl(iR->iobase + 0x1C);
+		unsigned long tmp2 = inl(iR->iobase + 0x20);
+        	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "I128RestoreState resetting config1/2 from 0x%x/0x%x to 0x%x/0x%x\n", tmp1, tmp2, iR->config1, iR->config2);
+		I128DumpActiveRegisters(pScrn);
+	}
 	outl(iR->iobase + 0x20, iR->config2);
 	outl(iR->iobase + 0x1C, iR->config1);
 
@@ -398,6 +420,8 @@ I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		tmp |= 0x00000100;
 	if ((pI128->Chipset == PCI_CHIP_I128_T2R4) && pI128->FlatPanel)
 		tmp |= 0x00000100;	/* Turn on digital flat panel support */
+	else
+		tmp &= 0xfffffeff;	/* Turn off digital flat panel */
 	if (pI128->DACSyncOnGreen || (mode->Flags & V_CSYNC))
 		tmp |= 0x00000004;
 	pI128->mem.rbase_g[CRT_1CON] = tmp;
@@ -476,7 +500,7 @@ I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			outl(iR->iobase + 0x24, 0xA1089030);
 		}
 
-		if (!pI128->FontsSaved) {
+		if (!pI128->FontsSaved && pI128->Primary) {
 			int i;
 			unsigned char *vidmem =
 				(unsigned char *)pI128->mem.mw0_ad;
