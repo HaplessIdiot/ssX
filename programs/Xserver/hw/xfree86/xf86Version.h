@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.590 2004/12/12 12:02:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.591 2004/12/27 12:02:37 dawes Exp $ */
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
