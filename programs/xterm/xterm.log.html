@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.94 2003/03/23 02:01:40 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.95 2003/03/23 17:18:58 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_177">Patch #177 - 2003/3/23 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_176">Patch #176 - 2003/3/22 - XFree86 4.3.0</A>
 <LI><A HREF="#xterm_175">Patch #175 - 2003/3/9 - XFree86 4.3.0</A>
@@ -223,6 +224,65 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A></H1>
+<ul>
+	<li>modify default for configure <code>--enable-pty-handshake</code>
+	    option to enable it for Solaris (report by Nelson Beebe).
+
+	<li>modify <code>in_put()</code> function to call
+	    <code>PreeditPosition()</code> only when the cursor's position has
+	    changed.  This addresses report by Stefan Baums of high CPU usage
+	    while xterm with chinput are running in the background (patch by
+	    Yong Li &lt;rigel863@yahoo.com&gt;).
+
+	<li>improved explanation of <code>-ls</code> conflict with
+	    <code>-e</code> option in xterm manpage (adapted from comments by
+	    Henning Makholm).
+
+	<li>correct comment in terminfo file regarding modifier used for
+	    <code>kDC</code> (Debian #189764, report by Henning Makholm).
+
+	<li>correct/extend some of the keypad description in ctlseqs.ms
+	    (report by Henning Makholm).
+
+	<li>correct keypad-mapping table in input.c so <code>XK_KP_Equal</code> 
+	    works (report by Henning Makholm &lt;henning@makholm.net&gt;).
+
+	<li>modified to work with CJK double-width (bi-width/monospace) fonts. 
+	    They're similar to Roman Czbora and David Starner's gnuunifonts in
+	    that Latin letters and numbers have all the same width which is
+	    exactly the half of the width of East Asian characters.  (patch by
+	    Jungshik Shin &lt;jshin@mailaps.org&gt;).
+
+	<li>add configure option <code>--enable-broken-osc</code> and resource
+	    <code>brokenLinuxOSC</code> to accommodate scripts which do not
+	    distinguish between running in the Linux console and running in X.
+	    Linux console recognizes malformed control strings which start
+	    with an <code>OSC</code>, but are fixed-length, with no terminator.
+
+	<li>add configure option <code>--enable-broken-st</code> and resource
+	    <code>brokenStringTerm</code> to allow
+	    user to revert one part of the parsing table corrections from
+	    <a href="#xterm_171">patch #171</a>.  (reports by
+	    Matthias Scheler &lt;tron@zhadum.de&gt;
+	    Kirill Ponomarew &lt;ponomarew@oberon.net&gt; indicate that someone's
+	    network firmware sends an <code>&lt;escape&gt;X</code>).
+
+	<li>modify configure <code>--disable-imake</code> to provide values
+	    for <code>OSMAJORVERSION</code>, <code>OSMINORVERSION</code>,
+	    <code>FUNCPROTO</code> and <code>NARROWPROTO</code> (report by
+	    Heiko Schlichting &lt;heiko@FU-Berlin.DE&gt;).
+
+	<li>correct <code>vttests/16colors.sh</code>, which omitted the
+	    <code>$SUF</code> variable in output strings (patch by Paul
+	    Gilmartin).
+
+	<li>modify shell scripts in <code>vttests</code> directory to attempt
+	    to use named signals in the <code>trap</code> statement, making
+	    this portable to OS/390 (report by Paul Gilmartin).  Tested on
+	    SunOS 4.1.4, which implements only numbers.
+</ul>
+
 <H1><A NAME="xterm_177">Patch #177 - 2003/3/23 - XFree86 4.3.0</A></H1>
 <ul>
 	<li>fix definition of <code>USE_HANDSHAKE</code>, must be numeric
@@ -231,9 +291,10 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_176">Patch #176 - 2003/3/22 - XFree86 4.3.0</A></H1>
 <ul>
-	<li>add configure option to allow one to compile-in support for
-	    the pty handshaking logic, and resource <code>ptyHandshake</code>
-	    to enable or disable it (suggested by Ian Collier).
+	<li>add configure option <code>--enable-pty-handshake</code> to allow
+	    one to compile-in support for the pty handshaking logic, and
+	    resource <code>ptyHandshake</code> to enable or disable it
+	    (suggested by Ian Collier).
 
 	<li>restore <code>USE_HANDSHAKE</code> ifdef removed in
 	    <a href="#xterm_159">patch #159</a>
