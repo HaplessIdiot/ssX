@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.19 2001/04/29 03:21:17 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.20 2002/02/15 07:36:10 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -410,6 +410,17 @@ XftGlyphSpecRender (Display	    *dpy,
 		    int		    nglyphs);
 
 void
+XftCharSpecRender (Display	    *dpy,
+		   int		    op,
+		   Picture	    src,
+		   XftFont	    *public,
+		   Picture	    dst,
+		   int		    srcx, 
+		   int		    srcy,
+		   XftCharSpec	    *chars,
+		   int		    len);
+
+void
 XftGlyphFontSpecRender (Display		    *dpy,
 			int		    op,
 			Picture		    src,
@@ -418,6 +429,16 @@ XftGlyphFontSpecRender (Display		    *dpy,
 			int		    srcy,
 			XftGlyphFontSpec    *glyphs,
 			int		    nglyphs);
+
+void
+XftCharFontSpecRender (Display		    *dpy,
+		       int		    op,
+		       Picture		    src,
+		       Picture		    dst,
+		       int		    srcx,
+		       int		    srcy,
+		       XftCharFontSpec	    *chars,
+		       int		    len);
 
 void
 XftTextRender8 (Display *dpy,

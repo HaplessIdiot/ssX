@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xft/XftCompat.h,v 1.1 2002/02/15 07:37:04 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -153,6 +153,8 @@ typedef FcObjectSet	XftObjectSet;
 #define XftTypeString	FcTypeString
 #define XftTypeBool	FcTypeBool
 #define XftTypeMatrix	FcTypeMatrix
+
+#define XftConfigSubstitute(p) FcConfigSubstitute (0, p, FcMatchPattern)
 
 _XFUNCPROTOBEGIN
 
