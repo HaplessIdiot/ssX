@@ -1,14 +1,17 @@
-.TH ELOGRAPHICS __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86$
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH ELOGRAPHICS __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 elographics \- Elographics input driver
 .SH SYNOPSIS
-.B "Section ""InputDevice"""
+.B "Section \*qInputDevice\*q"
 .br
-.BI "  Identifier """ idevname """"
+.BI "  Identifier \*q" idevname \*q
 .br
-.B  "  Driver ""elographics"""
+.B  "  Driver \*qelographics\*q"
 .br
-.BI "  Option ""Device""   """ devpath """"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
 .br
 \ \ ...
 .br

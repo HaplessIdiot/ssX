@@ -1,14 +1,17 @@
-.TH MUTOUCH __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86$
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH MUTOUCH __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 mutouch \- Microtouch input driver
 .SH SYNOPSIS
-.B "Section ""InputDevice"""
+.B "Section \*qInputDevice\*q"
 .br
-.BI "  Identifier """ idevname """"
+.BI "  Identifier \*q" idevname \*q
 .br
-.B  "  Driver ""mutouch"""
+.B  "  Driver \*qmutouch\*q"
 .br
-.BI "  Option ""Device""   """ devpath """"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
 .br
 \ \ ...
 .br

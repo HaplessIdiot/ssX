@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.5 2000/03/21 19:57:12 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.6 2000/04/04 19:25:05 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH CHIPS __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH CHIPS __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 chips \- Chips and Technologies video driver
 .SH SYNOPSIS

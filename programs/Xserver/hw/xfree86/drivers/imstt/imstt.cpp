@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix.cpp,v 1.3 2000/03/21 19:57:13 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt.cpp,v 1.1 2000/06/14 01:56:08 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH IMSTT __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH IMSTT __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 imstt \- Integrated Micro Solutions Twin Turbo 128 driver
 .SH SYNOPSIS

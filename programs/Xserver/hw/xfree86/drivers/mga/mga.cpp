@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.14 2000/03/20 15:57:55 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.16 2000/06/11 00:01:30 mvojkovi Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH MGA __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
 .SH SYNOPSIS

@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/keyboard.cpp,v 1.2 2000/03/20 15:58:01 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/keyboard.cpp,v 1.3 2000/03/21 19:57:21 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH KEYBOARD __drivermansuffix__ "Version 4.0"  "XFree86"
+.TH KEYBOARD __drivermansuffix__ "Version 4.0.1"  "XFree86"
 .SH NAME
 keyboard \- Keyboard input driver
 .SH SYNOPSIS
