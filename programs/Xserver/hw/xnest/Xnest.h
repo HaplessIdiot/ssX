@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /* 
 ** Machines with a 64 bit library interface and a 32 bit server require
