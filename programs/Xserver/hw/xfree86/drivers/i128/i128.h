@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.3 2000/12/06 01:07:34 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.4 2000/12/11 01:53:00 robin Exp $ */
 /*
  * Number Nine I128 functions
  *
@@ -135,6 +135,6 @@ Bool I128ProgramSilverHammer(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 void I128DumpBaseRegisters(ScrnInfoPtr pScrn);
 void I128DumpActiveRegisters(ScrnInfoPtr pScrn);
-void I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile unsigned long *vrbg);
+void I128DumpIBMDACRegisters(ScrnInfoPtr pScrn, volatile CARD32 *vrbg);
 
 #endif

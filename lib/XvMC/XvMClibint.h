@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _XVMCLIBINT_H
 #define _XVMCLIBINT_H
 #define NEED_REPLIES
@@ -34,6 +36,5 @@
 	dpy->bufptr += sizeof(xvmc/**/name/**/Req);\
 	dpy->request++
 #endif
-
 
 #endif /* XVMCLIBINT_H */

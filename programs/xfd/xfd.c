@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xfd/xfd.c,v 1.3 1999/03/02 11:49:38 dawes Exp $ */
+/* $XFree86: xc/programs/xfd/xfd.c,v 1.4 2001/01/17 23:45:26 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -35,6 +35,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "grid.h"
 
 char *ProgramName;

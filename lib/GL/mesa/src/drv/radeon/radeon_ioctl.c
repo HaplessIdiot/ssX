@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.1 2001/01/08 01:07:27 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.2 2001/03/21 16:14:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -282,10 +282,10 @@ void radeonFlushEltsLocked( radeonContextPtr rmesa )
 {
    if ( rmesa->first_elt != rmesa->next_elt ) {
       radeonFireEltsLocked( rmesa,
-			    ((GLuint)rmesa->first_elt -
-			     (GLuint)rmesa->elt_buf->address),
-			    ((GLuint)rmesa->next_elt -
-			     (GLuint)rmesa->elt_buf->address),
+			    ((char *)rmesa->first_elt -
+			     (char *)rmesa->elt_buf->address),
+			    ((char *)rmesa->next_elt -
+			     (char *)rmesa->elt_buf->address),
 			    0 );
 
       ALIGN_NEXT_ELT( rmesa );

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.43 2000/09/19 12:46:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.44 2001/01/17 22:37:10 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -148,8 +148,8 @@ extern __const__ int _nfiles;
 #endif
 #endif /* WIN32 */
 #include "misc.h"		/* for typedef of pointer */
-#include <X11/Xpoll.h>
 #include "osdep.h"
+#include <X11/Xpoll.h>
 #include "opaque.h"
 #include "dixstruct.h"
 #ifdef XAPPGROUP

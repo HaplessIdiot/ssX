@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #define DoNormalLib NormalLibXvMC
 #define DoSharedLib SharedLibXvMC
 #define DoDebugLib DebugLibXvMC

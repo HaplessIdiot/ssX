@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.6 2000/09/24 13:51:05 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.7 2001/03/21 16:14:22 dawes Exp $ */
 
 /*
  * Authors:
@@ -140,7 +140,7 @@ do {						\
  * rely on the 2D driver data structures rather than taking an explicit
  * base address.
  */
-#define MGA_BASE( reg )		((CARD32)(mmesa->mgaScreen->mmio.map))
+#define MGA_BASE( reg )		((unsigned long)(mmesa->mgaScreen->mmio.map))
 #define MGA_ADDR( reg )		(MGA_BASE(reg) + reg)
 
 #define MGA_DEREF( reg )	*(volatile CARD32 *)MGA_ADDR( reg )

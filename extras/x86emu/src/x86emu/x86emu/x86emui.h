@@ -38,7 +38,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/x86emu/x86emui.h,v 1.3 2000/04/17 16:29:47 eich Exp $ */
 
 #ifndef __X86EMU_X86EMUI_H
 #define __X86EMU_X86EMUI_H
@@ -75,6 +75,7 @@
 #include <xf86_ansic.h>
 #else
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #endif                                                                                           
 /*--------------------------- Inline Functions ----------------------------*/

@@ -28,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -43,8 +44,8 @@ from the X Consortium.
 #include <X11/StringDefs.h>		/* for useful atom names */
 #include <X11/cursorfont.h>		/* for cursor constants */
 #include <X11/Xosdefs.h>		/* for X_NOT_POSIX def */
-#ifdef WIN32
 #include <stdlib.h>
+#ifdef WIN32
 #include <X11/Xw32defs.h>
 #else
 #include <pwd.h>			/* for getting username */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.12 2000/12/20 00:28:44 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.13 2001/03/30 18:50:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "xftint.h"
 #include <X11/Xutil.h>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.26 2000/08/31 19:03:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.27 2001/01/17 22:37:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -73,8 +73,8 @@ extern int errno;
 #ifdef __EMX__
 #define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
 #endif
-#include <X11/Xpoll.h>
 #include "osdep.h"
+#include <X11/Xpoll.h>
 #include "dixstruct.h"
 #include "opaque.h"
 

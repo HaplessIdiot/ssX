@@ -30,9 +30,9 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.1 2000/08/11 19:10:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.2 2001/03/03 22:46:31 tsi Exp $ */
 
-#include <xf86Version.h>
+#include "xf86Version.h"
 
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
 #define XFREE86_V4 1
@@ -46,25 +46,23 @@
 #include <errno.h>
 #endif
 
-#include <misc.h>
-#include <xf86.h>
+#include "misc.h"
+#include "xf86.h"
 #define NEED_XF86_TYPES
 #if !defined(DGUX)
-#include <xf86_ansic.h>
-#include <xisb.h>
+#include "xf86_ansic.h"
+#include "xisb.h"
 #endif
-#include <xf86_OSproc.h>
-#include <xf86Xinput.h>
-#include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
-#include <keysym.h>
-#include <mipointer.h>
+#include "xf86_OSproc.h"
+#include "xf86Xinput.h"
+#include "exevents.h"		/* Needed for InitValuator/Proximity stuff */
+#include "keysym.h"
+#include "mipointer.h"
 
 #ifdef XFree86LOADER
-#include <xf86Module.h>
+#include "xf86Module.h"
 #endif
 
-#undef memset
-#define memset xf86memset
 #undef sleep
 #define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
@@ -135,7 +133,6 @@ static InputDriverPtr dedgeDrv;
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
-#include "xf86Version.h"
 #endif
 
 #if !defined(sun) || defined(i386)

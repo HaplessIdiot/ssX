@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.10 2001/01/26 20:51:15 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.11 2001/03/30 18:50:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "xftint.h"
 
 FT_Library  _XftFTlibrary;

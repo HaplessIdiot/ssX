@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #ifndef MesaBuildDir
 #define MesaBuildDir $(GLXLIBSRC)/mesa/src/

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.5 2000/12/01 18:31:07 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.6 2000/12/08 21:51:06 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -367,7 +367,7 @@ static void
 MoveCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     char *tmp;
-    Bool down = (Bool)user_data;
+    Bool down = (long)user_data;
 
     if (unsel_index < 0 || unsel_index >= ndefmodes)
 	return;

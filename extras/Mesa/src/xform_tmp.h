@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
@@ -970,4 +970,8 @@ static void _XFORMAPI TAG(init_c_transformations)( void )
    TAG_TAB_4[MATRIX_3D]          = TAG(transform_points4_3d);
 
 #undef TAG_TAB
+#undef TAG_TAB_1
+#undef TAG_TAB_2
+#undef TAG_TAB_3
+#undef TAG_TAB_4
 }

@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.6 2000/12/14 20:59:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.7 2001/03/03 22:26:12 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -260,7 +260,7 @@ NewportProbe(DriverPtr drv, int flags)
 					pScrn->ScreenInit    = NewportScreenInit;
 					pScrn->EnterVT       = NewportEnterVT;
 					pScrn->LeaveVT       = NewportLeaveVT;
-					pScrn->driverPrivate = (void*)busID;
+					pScrn->driverPrivate = (void*)(long)busID;
 					foundScreen = TRUE;
 					break;
 				}
@@ -286,7 +286,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pScrn->numEntities != 1)
 		return FALSE;
 
-	busID = (int)(pScrn->driverPrivate);
+	busID = (long)(pScrn->driverPrivate);
 	pScrn->driverPrivate = NULL;
 	
 	/* Fill in the monitor field */

@@ -19,10 +19,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/dpsinfo/dpsinfo.c,v 1.1 2001/03/01 01:23:58 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <X11/X.h>
 #include <DPS/XDPS.h>
 #include <X11/Xlib.h>

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.10 2001/03/30 18:50:18 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.11 2001/03/31 01:57:20 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "xftint.h"
 #include <freetype/ftoutln.h>
 

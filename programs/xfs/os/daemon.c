@@ -27,10 +27,11 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.2 2001/02/13 19:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.3 2001/03/07 15:54:16 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #if defined(SVR4) || defined(USG)
 #include <termios.h>

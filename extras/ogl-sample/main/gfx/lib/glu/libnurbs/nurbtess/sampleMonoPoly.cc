@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -517,7 +518,7 @@ rightChain->print();
        *either this vertex or the botvertex can be used as the right corner
        */
 
-      Real tempI;
+      int tempI;
       //skip those points which are equal to v. (avoid degeneratcy)
       for(tempI = index1; tempI <= leftChainEndIndex; tempI++)
 	if(leftChain->getVertex(tempI)[1] < v) 
@@ -527,7 +528,7 @@ rightChain->print();
       else
 	{
 	  Real tempMax = leftChain->getVertex(tempI)[0];
-	  for(i=(int)tempI; i<= leftChainEndIndex; i++)
+	  for(i=tempI; i<= leftChainEndIndex; i++)
 	    if(leftChain->getVertex(i)[0] > tempMax)
 	      {
 		tempI = i;
@@ -552,7 +553,7 @@ rightChain->print();
 	  else
 	    {
 	      ret_rightCornerWhere = 0;
-	      ret_rightCornerIndex = (int)tempI;
+	      ret_rightCornerIndex = tempI;
 	    }
 	}
       

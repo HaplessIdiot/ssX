@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.21 2000/10/24 22:45:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.22 2001/01/21 21:19:37 tsi Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -527,7 +527,7 @@ fbdevHWUseBuildinMode(ScrnInfoPtr pScrn)
 void
 calculateFbmem_len(fbdevHWPtr fPtr)
 {
-	fPtr->fboff = (unsigned int) fPtr->fix.smem_start & ~PAGE_MASK;
+	fPtr->fboff = (unsigned long) fPtr->fix.smem_start & ~PAGE_MASK;
 	fPtr->fbmem_len = (fPtr->fboff+fPtr->fix.smem_len+~PAGE_MASK) &
 			  PAGE_MASK;
 }
@@ -596,7 +596,7 @@ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 			perror("FBIOPUT_VSCREENINFO");
 			return FALSE;
 		}
-		mmio_off = (unsigned int) fPtr->fix.mmio_start & ~PAGE_MASK;
+		mmio_off = (unsigned long) fPtr->fix.mmio_start & ~PAGE_MASK;
 		fPtr->mmio_len = (mmio_off+fPtr->fix.mmio_len+~PAGE_MASK) &
 				  PAGE_MASK;
 		if (NULL == fPtr->fbmem)

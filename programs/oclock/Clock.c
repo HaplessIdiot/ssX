@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/oclock/Clock.c,v 1.3 1999/02/20 15:07:16 hohndel Exp $ */
+/* $XFree86: xc/programs/oclock/Clock.c,v 1.4 2001/01/17 23:45:01 dawes Exp $ */
 
 /*
  * Clock.c
@@ -33,6 +33,7 @@ in this Software without prior written authorization from The Open Group.
 #include "ClockP.h"
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <X11/extensions/shape.h>
 

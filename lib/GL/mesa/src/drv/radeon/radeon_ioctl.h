@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.h,v 1.1 2001/01/08 01:07:27 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -131,7 +131,7 @@ do {									\
 #define ALIGN_NEXT_ELT( rmesa )						\
 do {									\
    rmesa->next_elt = (GLushort *)					\
-      (((GLuint)rmesa->next_elt + 7) & ~0x7);				\
+      (((unsigned long)rmesa->next_elt + 7) & ~0x7);			\
    rmesa->next_elt = (GLushort *)					\
       ((GLubyte *)rmesa->next_elt + RADEON_INDEX_PRIM_OFFSET);		\
 } while (0)

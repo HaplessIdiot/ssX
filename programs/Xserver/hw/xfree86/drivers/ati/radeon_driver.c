@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.15 2001/01/22 02:16:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.16 2001/03/21 17:02:22 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1662,16 +1662,19 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* Reserve space for textures */
 	info->textureOffset = (info->FbMapSize - info->textureSize +
-			       RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+			       RADEON_BUFFER_ALIGN) &
+			      ~(CARD32)RADEON_BUFFER_ALIGN;
 
 				/* Reserve space for the shared depth buffer */
 	info->depthOffset = (info->textureOffset - bufferSize +
-			     RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+			     RADEON_BUFFER_ALIGN) &
+			    ~(CARD32)RADEON_BUFFER_ALIGN;
 	info->depthPitch = pScrn->displayWidth;
 
 				/* Reserve space for the shared back buffer */
 	info->backOffset = (info->depthOffset - bufferSize +
-			    RADEON_BUFFER_ALIGN) & ~RADEON_BUFFER_ALIGN;
+			    RADEON_BUFFER_ALIGN) &
+			   ~(CARD32)RADEON_BUFFER_ALIGN;
 	info->backPitch = pScrn->displayWidth;
 
 	scanlines = info->backOffset / width_bytes - 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.34 2001/01/08 16:33:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.35 2001/01/11 03:36:59 tsi Exp $ */
 
 /*
  *
@@ -71,6 +71,10 @@ typedef Elf64_Sym Elf_Sym;
 typedef Elf64_Rel Elf_Rel;
 typedef Elf64_Rela Elf_Rela;
 typedef Elf64_Addr Elf_Addr;
+typedef Elf64_Half Elf_Half;
+typedef Elf64_Off Elf_Off;
+typedef Elf64_Sword Elf_Sword;
+typedef Elf64_Word Elf_Word;
 #define ELF_ST_BIND ELF64_ST_BIND
 #define ELF_ST_TYPE ELF64_ST_TYPE
 #define ELF_R_SYM ELF64_R_SYM
@@ -132,6 +136,10 @@ typedef Elf32_Sym Elf_Sym;
 typedef Elf32_Rel Elf_Rel;
 typedef Elf32_Rela Elf_Rela;
 typedef Elf32_Addr Elf_Addr;
+typedef Elf32_Half Elf_Half;
+typedef Elf32_Off Elf_Off;
+typedef Elf32_Sword Elf_Sword;
+typedef Elf32_Word Elf_Word;
 #define ELF_ST_BIND ELF32_ST_BIND
 #define ELF_ST_TYPE ELF32_ST_TYPE
 #define ELF_R_SYM ELF32_R_SYM
@@ -237,7 +245,7 @@ typedef	struct {
 typedef struct _elf_reloc {
 	Elf_Rel_t	*rel;
 	ELFModulePtr	file;
-	unsigned char	*secp;
+	Elf_Word	secn;
 	struct _elf_reloc	*next;
 } ELFRelocRec;
 
@@ -259,14 +267,14 @@ static int ELFhashCleanOut(void *, itemPtr);
 static char *ElfGetStringIndex(ELFModulePtr, int, int);
 static char *ElfGetString(ELFModulePtr, int);
 static char *ElfGetSectionName(ELFModulePtr, int);
-static ELFRelocPtr ElfDelayRelocation(ELFModulePtr, unsigned char *, Elf_Rel_t *);
+static ELFRelocPtr ElfDelayRelocation(ELFModulePtr, Elf_Word, Elf_Rel_t *);
 static ELFCommonPtr ElfAddCOMMON(Elf_Sym *);
 static int ElfCOMMONSize(void);
 static int ElfCreateCOMMON(ELFModulePtr,LOOKUP *);
 static char *ElfGetSymbolNameIndex(ELFModulePtr, int, int);
 static char *ElfGetSymbolName(ELFModulePtr, int);
 static Elf_Addr ElfGetSymbolValue(ELFModulePtr, int);
-static ELFRelocPtr Elf_RelocateEntry(ELFModulePtr, unsigned char *, Elf_Rel_t *, int);
+static ELFRelocPtr Elf_RelocateEntry(ELFModulePtr, Elf_Word, Elf_Rel_t *, int);
 static ELFRelocPtr ELFCollectRelocations(ELFModulePtr, int);
 static LOOKUP *ELF_GetSymbols(ELFModulePtr, unsigned short **);
 static void ELFCollectSections(ELFModulePtr, int, int *, int *);
@@ -340,9 +348,9 @@ itemPtr item ;
  * Manage listResolv
  */
 static ELFRelocPtr
-ElfDelayRelocation(elffile,secp,rel)
+ElfDelayRelocation(elffile, secn, rel)
 ELFModulePtr	elffile;
-unsigned char	*secp;
+Elf_Word	secn;
 Elf_Rel_t	*rel;
 {
     ELFRelocPtr	reloc;
@@ -352,13 +360,13 @@ Elf_Rel_t	*rel;
 	return 0;
     }
     reloc->file=elffile;
-    reloc->secp=secp;
+    reloc->secn=secn;
     reloc->rel=rel;
     reloc->next=0;
 #ifdef ELFDEBUG
-    ELFDEBUG("ElfDelayRelocation %lx: file %lx, sec %lx,"
+    ELFDEBUG("ElfDelayRelocation %lx: file %lx, sec %d,"
 	     " r_offset 0x%lx, r_info 0x%x",
-	     reloc, elffile, secp, rel->r_offset, rel->r_info);
+	     reloc, elffile, secn, rel->r_offset, rel->r_info);
 #if defined(__powerpc__) || \
     defined(__mc68000__) || \
     defined(__alpha__) || \
@@ -799,6 +807,10 @@ int		maxalign;
     ELFGotPtr gots;
 #endif
     int gotsize;
+
+    /*
+     * XXX:  Is it REALLY needed to ensure GOT's are non-null?
+     */
 #ifdef ELFDEBUG
     ELFDEBUG( "ELFCreateGOT: %x entries in the GOT\n", elffile->gotsize/8 );
 
@@ -1069,6 +1081,7 @@ long			value;
     case 2: memcpy((char *)data128 + 10, &data, 6); break;
     default: FatalError("Unexpected slot in IA64InstallReloc()\n");
     }
+    ia64_flush_cache(data128);
 #ifdef ELFDEBUG
     ELFDEBUG( "After  [%016lx%016lx]\n", data128[1], data128[0]);
 #endif
@@ -1083,12 +1096,13 @@ long			value;
  * LoaderDefaultFunc) otherwise, the relocation will be deferred.
  */
 static ELFRelocPtr
-Elf_RelocateEntry(elffile, secp, rel, force)
+Elf_RelocateEntry(elffile, secn, rel, force)
 ELFModulePtr	elffile;
-unsigned char *secp;	/* Begining of the target section */
+Elf_Word	secn;
 Elf_Rel_t	*rel;
 int		force;
 {
+    unsigned char *secp = elffile->saddr[secn];
     unsigned int *dest32;	/* address of the 32 bit place being modified */
 #if defined(__powerpc__) || defined(__mc68000__) || defined(__sparc__)
     unsigned short *dest16;	/* address of the 16 bit place being modified */
@@ -1132,7 +1146,7 @@ int		force;
 		ELFDEBUG("***Unable to resolve symbol %s\n",
 			 ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)));
 #endif
-		return ElfDelayRelocation(elffile,secp,rel);
+		return ElfDelayRelocation(elffile, secn, rel);
 	    }
 	}
     }
@@ -1975,6 +1989,7 @@ int		force;
 	    if (rel->r_addend)
 		FatalError("\nAddend not supported for R_IA64_FPTR64LSB\n");
 	    *dest64 = symval;
+	    ia64_flush_cache(dest64);
 	    break;
 
 	case R_IA64_DIR64LSB:
@@ -1987,6 +2002,7 @@ int		force;
 	    ELFDEBUG( "dest64=%lx\n", dest64 );
 #endif
 	    *dest64 = symval + rel->r_addend;
+	    ia64_flush_cache(dest64);
 	    break;
 
 	case R_IA64_GPREL22:
@@ -2022,14 +2038,9 @@ int	index; /* The section to use as relocation data */
     Elf_Shdr	*sect=&(elffile->sections[index]);
     Elf_Rel_t	*rel=(Elf_Rel_t *)elffile->saddr[index];
     Elf_Sym	*syms;
-    unsigned char *secp;	/* Begining of the target section */
     ELFRelocPtr reloc_head = NULL;
     ELFRelocPtr tmp;
 
-    secp=(unsigned char *)elffile->saddr[sect->sh_info];
-    if (secp == NULL) {
-	secp=(unsigned char *)(long)sect->sh_info;
-    }
     syms = (Elf_Sym *) elffile->saddr[elffile->symndx];
 
     numrel=sect->sh_size/sect->sh_entsize;
@@ -2055,7 +2066,7 @@ int	index; /* The section to use as relocation data */
 	    }
 	}
 #endif
-	tmp = ElfDelayRelocation(elffile,secp,&(rel[i]));
+	tmp = ElfDelayRelocation(elffile, sect->sh_info, &(rel[i]));
 	tmp->next = reloc_head;
 	reloc_head = tmp;
     }
@@ -2840,11 +2851,6 @@ LOOKUP **ppLookup;
 	}
     xf86loaderfree(secttable);
 
-    for (elf_reloc = _LoaderGetRelocations(v)->elf_reloc;
-	 elf_reloc; elf_reloc = elf_reloc->next)
-	if ((unsigned long)elf_reloc->secp < elffile->numsh)
-	    elf_reloc->secp = (unsigned char *)elffile->saddr[(unsigned long)elf_reloc->secp];
-
 #if defined(__ia64__)
     ELFCreateOPD(elffile);
 #endif
@@ -2886,10 +2892,10 @@ void *mod;
     newlist = 0;
     for (p = _LoaderGetRelocations(mod)->elf_reloc; p; ) {
 #ifdef ELFDEBUG
-	ErrorF("ResolveSymbols: file %lx, sec %lx, r_offset 0x%x, r_info 0x%lx\n",
-	       p->file, p->secp, p->rel->r_offset, p->rel->r_info);
+	ErrorF("ResolveSymbols: file %lx, sec %d, r_offset 0x%x, r_info 0x%lx\n",
+	       p->file, p->secn, p->rel->r_offset, p->rel->r_info);
 #endif
-	tmp = Elf_RelocateEntry(p->file, p->secp, p->rel, FALSE);
+	tmp = Elf_RelocateEntry(p->file, p->secn, p->rel, FALSE);
 	if (tmp) {
 	    /* Failed to relocate.  Keep it in the list. */
 	    tmp->next = newlist;
@@ -2914,7 +2920,7 @@ void	*mod;
 	return 0;
 
     while( erel ) {
-	Elf_RelocateEntry(erel->file, erel->secp, erel->rel, TRUE);
+	Elf_RelocateEntry(erel->file, erel->secn, erel->rel, TRUE);
 	name = ElfGetSymbolName(erel->file, ELF_R_SYM(erel->rel->r_info));
 	flag = _LoaderHandleUnresolved(
 	    name, _LoaderHandleToName(erel->file->handle));

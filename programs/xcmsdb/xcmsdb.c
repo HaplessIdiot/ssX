@@ -29,13 +29,14 @@
  *		Characterization Data from the root window of the screen.
  *
  */
-/* $XFree86: xc/programs/xcmsdb/xcmsdb.c,v 1.4 1999/03/02 11:49:36 dawes Exp $ */
+/* $XFree86: xc/programs/xcmsdb/xcmsdb.c,v 1.5 2001/01/17 23:45:19 dawes Exp $ */
 
 /*
  *      INCLUDES
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>

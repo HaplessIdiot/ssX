@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.8 2001/03/21 19:46:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.9 2001/03/25 05:32:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -375,7 +375,7 @@ static CARD32 radeon_mba_z16(RADEONInfoPtr info,
     address |= (ba & 0x3) << 8;			/* a[8..9] = ba[0..1]    */
     address |= (y & 0x8) << 7;			/* a[10]   = y[3]        */
     address |= ((x & 0x10) ^ (y & 0x10)) << 7;	/* a[11]   = x[4] ^ y[4] */
-    address |= (ba & ~0x3) << 10;		/* a[12..] = ba[2..]     */
+    address |= (ba & ~0x3u) << 10;		/* a[12..] = ba[2..]     */
 
     return address;
 }
@@ -397,7 +397,7 @@ static CARD32 radeon_mba_z32(RADEONInfoPtr info,
     address |= (y & 0x8) << 7;			/* a[10]   = y[3]        */
     address |=
 	(((x & 0x8) << 1) ^ (y & 0x10)) << 7;	/* a[11]   = x[3] ^ y[4] */
-    address |= (ba & ~0x3) << 10;		/* a[12..] = ba[2..]     */
+    address |= (ba & ~0x3u) << 10;		/* a[12..] = ba[2..]     */
 
     return address;
 }
@@ -1078,9 +1078,10 @@ static void RADEONDRISAREAInit(ScreenPtr pScreen,
     ctx->pp_rot_matrix_0 = 0x00000000;
     ctx->pp_rot_matrix_1 = 0x00000000;
 
-    ctx->rb3d_stencilrefmask = ((0x000 << RADEON_STENCIL_REF_SHIFT) |
-				(0x0ff << RADEON_STENCIL_MASK_SHIFT) |
-				(0x0ff << RADEON_STENCIL_WRITEMASK_SHIFT));
+    ctx->rb3d_stencilrefmask =
+	(CARD32)((0x000 << RADEON_STENCIL_REF_SHIFT) |
+		 (0x0ff << RADEON_STENCIL_MASK_SHIFT) |
+		 (0x0ff << RADEON_STENCIL_WRITEMASK_SHIFT));
 
     ctx->rb3d_ropcntl   = 0x00000000;
     ctx->rb3d_planemask = 0xffffffff;

@@ -22,9 +22,10 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/xlsclients/xlsclients.c,v 1.3 1999/03/07 14:23:35 dawes Exp $ */
+/* $XFree86: xc/programs/xlsclients/xlsclients.c,v 1.4 2001/01/17 23:46:17 dawes Exp $ */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
