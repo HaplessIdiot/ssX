@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.4 1994/06/26 13:03:46 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.5 1994/07/15 06:55:30 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -33,9 +33,10 @@ is an 8-bit PseudoColor and 16-bit TrueColor server for ATI Mach32
 graphic accelerator boards.
 .PP
 .I XF86_P9000
-is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor frame
-buffer server for Weitek P9000 graphic accelerator boards.  This
-server is still experimental and should be considered a beta version.
+is an 8-bit PseudoColor, 16-bit HighColor, and 24-bit TrueColor
+server for Weitek Power 9000 (P9000) graphic accelerator boards. 
+Portions of this server is still experimental and should be considered a
+beta version.
 .PP
 .I XF86_8514
 is an 8-bit PseudoColor server for 8514/A graphic accelerator boards.  
@@ -60,7 +61,8 @@ XF86_Mach32:
 ATI Mach32
 .TP 13
 XF86_P9000:
-Diamond Viper VLB (Weitek P9000)
+Diamond Viper VLB, Diamond Viper PCI, Orchid P9000, and some clones
+(Weitek P9000)
 .TP 13
 XF86_8514:
 IBM 8514/A and true clones
@@ -147,7 +149,14 @@ XF86_P9000:
 .RE
 .RS 1.5i
 .PP
-p9000
+vipervlb
+(for the Diamond Viper VLB)
+.TP 12
+viperpci
+(for the Diamond Viper PCI - disabled)
+.TP 12
+orchidp9000
+(for the Orchid P9000 and many generic P9000-based boards)
 .RE
 .RS 8
 .PP
@@ -171,6 +180,10 @@ server, a programmable clock generator is assumed and only frequencies
 from the \fBclocks\fP lines will be used.  In this case, the ordering
 of the clocks is unimportant.  Clocks over 110 MHz are not recommended
 or supported in the P9000 server.
+.TP 8
+.B iobase \fIioaddress\fP
+specified the base address for extended IO registers.  This is only
+used by the P9000 server for the Viper PCI.
 .TP 8
 .B membase \fImemaddress\fP
 specifies the hard-wired part of the linear framebuffer base address.  This
@@ -200,6 +213,8 @@ allows the user to select certain options provided by the drivers.  Currently
 the following strings are recognized:
 .sp
 \fBnomemaccess\fP - (S3) disable direct access to video memory.
+.sp
+\fBnoaccel\fP - (P9000) disable hardware acceleration.
 .sp
 \fBnolinear\fP - (S3 and Mach32) disable use of a linear-mapped framebuffer.
 .sp
@@ -376,7 +391,6 @@ Development and improvement of the Mach32 specific code.
 Erik Nygren, \fInygren@mit.edu\fP
 Harry Langenbacher, \fIharry@brain.jpl.nasa.gov\fP
 Chris Mason, \fImason@mail.csh.rit.edu\fP
-David Moews, \fIdmoews@xraysgi.ims.uconn.edu\fP
 .fi
 .RS 8
 Development and improvement of the P9000 specific code.
@@ -395,13 +409,14 @@ other than ther Diamond Viper VLB (I have not yet been able to get
 programming information from any companies other than Diamond and
 Weitek).  Restoration of colors in text mode doesn't always work but
 should now be fixed.  Using physical resolutions different from the
-virtual resolution is not supported and is probably not possible.  
+virtual resolution is not supported and is not possible.  
 No screen saver is yet implemented for 16 and 32 bpp modes.  Use
 at dot-clocks greater than 110 MHz is not recommended and not
 supported.  Diamond claims that 135 MHz is the maximum clock speed,
 but some of their bt485's are not rated that high.  If you do not have
 a 135 MHz bt485 on your Viper, contact Diamond tech support and they
 will send you an RMA number to replace the board.
+Acceleration is being added in slowly and not all features work yet.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to

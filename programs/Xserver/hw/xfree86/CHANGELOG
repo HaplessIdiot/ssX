@@ -1,3 +1,36 @@
+XFree86 3.0Df (31 August 1994)
+213. Amoeba support updates (Kees Verstoep).
+212. Fixes for Viper PCI support (Matt Thomas).
+211. MoveWindow acceleration for all depths on P9000, and acceleration
+     now enabled by default (Chris Mason).
+210. P9000 updates.  Includes updates to sysconfig code, Orchid and PCI
+     support now enabled by default (Erik Nygren).
+209. SuperProbe and ModeDB updates (David Wexelblat).
+208. Support for the S3 805i and 16-bit RAMDACS (including ATT20C498, 
+     STG1700, SDAC) (Bernhard Bender).
+207. Support for the S3 SDAC with S3 864 (Bernhard Bender).
+206. Basic support for ET4000W32 chipsets in the VGA servers.  Includes
+     chipset detection and code to handle up to 4MB video memory (Harm
+     Hanemaayer).
+205. Mach32 server modified to use generic cache code (Mike Bernson).
+204. Allow pixmap expansion for display widths <= 800 in S3 server.
+203. Updates for SCO (including 3.2.4 and international crypt support)
+     (David McCullough).
+202. Use mi cursor for 32bpp on S3 928 because HW cursor is broken (Harald
+     Koenig).
+201. Fix nomemaccess code in s3im.c (Harald Koenig).
+200. Code to auto-detect ELSA Winner cards, and automatically enable the
+     icd2061a clock (Harald Koenig).
+199. Fix for 32bpp S3 font cache problems (Harald Koenig).
+198. Support for a linear addressing mode in the Cirrus driver (Harm
+     Hanemaayer).
+197. Performance improvements for the "fastvga256" asm code (Harm Hanemaayer).
+196. Fix for Cirrus problem caused by pvga1 probe.
+195. Code added to S3, Mach8 and VGA servers to delete modes from the
+     "Modes" line which would previously have caused the server to
+     not start (Stuart Anderson).  Note: the Mach32 server already had
+     this code.
+
 XFree86 3.0De (20 August 1994)
 194. Add run-time check for SHM kernel support on FreeBSD and NetBSD.
 193. Updates to xload for Solx86 (David Holland).
@@ -5,7 +38,7 @@ XFree86 3.0De (20 August 1994)
 191. xconsole and doc updates for NetBSD 1.0_BETA (Matthieu Herrb).
 190. Major Cirrus driver update.  Includes faster solid, stipple and tile
      filling, improved text acceleration, blt in background, shadow I/O
-     registers, optional MMIO support for 543x (Harm Hannemayer).
+     registers, optional MMIO support for 543x (Harm Hanemaayer).
 189. Support for the miroCRYSTAL 20SV (S3 964) (Eddy Olk).
 188. Preliminary 32bpp S3 support (Harald Koenig).
 187. Make Trucolor the default root visual for 15/16/24bpp S3 (Harald Koenig).
@@ -48,7 +81,7 @@ XFree86 3.0D (1 August 1994)
 165. Fix for text restore problems with cl6420 driver (Manfred Brands).
 164. Change S3 screensaver code to do the same thing as the vga256 code
      (Bernhard Bender).
-163. Update Cirrus driver for vga256 changes (Harm Hannemaayer).
+163. Update Cirrus driver for vga256 changes (Harm Hanemaayer).
 162. Fixes for font scaling problems on SVR4 (David Wexelblat).
 161. Remove all of the old unused pixmap cache code (David Wexelblat).
 160. Use generic font cache code for S3 server (David Wexelblat).
@@ -136,7 +169,7 @@ XFree86 3.0C (22 June 1994)
 108. Fix for 4-pixel border problem with S3 864 pixmux (Harald Koenig).
 107. Allow the S3 SVGA driver to recognise the 864 and 964 (Harald Koenig).
 106. Improved 5434 support, and accelerated copyPlane1to8 for cirrus
-     (Harm Hannemaayer).
+     (Harm Hanemaayer).
 
 XFree86 3.0Bc (19 June 1994)
 105. Fix VT switch problem in 16bpp Mach32 when sharing cfb.
