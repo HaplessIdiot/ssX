@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.25 2001/03/25 05:32:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.26 2001/05/25 02:44:35 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -377,6 +377,7 @@ typedef struct _ATIRec
      * Driver options.
      */
     CARD8 OptionAccel;          /* Use hardware draw engine */
+    CARD8 OptionBlend;          /* Force horizontal blending */
     CARD8 OptionCRT;            /* Prefer CRT over digital panel */
     CARD8 OptionCSync;          /* Use composite sync */
     CARD8 OptionDevel;          /* Intentionally undocumented */

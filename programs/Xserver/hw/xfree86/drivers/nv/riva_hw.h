@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.10 2001/02/21 00:42:58 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.11 2001/07/11 22:15:08 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -416,10 +416,7 @@ typedef struct _riva_hw_state
     U032 pitch2;
     U032 pitch3;
 } RIVA_HW_STATE;
-/*
- * External routines.
- */
-int RivaGetConfig(NVPtr);
+
 /*
  * FIFO Free Count. Should attempt to yield processor if RIVA is busy.
  */

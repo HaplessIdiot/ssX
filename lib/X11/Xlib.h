@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.18 2000/12/04 18:49:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.19 2001/01/17 19:41:50 dawes Exp $ */
 
 
 /*
@@ -4610,6 +4610,12 @@ extern Status XCloseIM(
 );
 
 extern char *XGetIMValues(
+#if NeedVarargsPrototypes
+    XIM /* im */, ...
+#endif
+);
+
+extern char *XSetIMValues(
 #if NeedVarargsPrototypes
     XIM /* im */, ...
 #endif

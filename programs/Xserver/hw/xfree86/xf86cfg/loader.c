@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.10 2001/07/07 20:19:08 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.11 2001/07/09 23:45:24 paulo Exp $
  */
 
 #include "config.h"
@@ -57,7 +57,7 @@ void sig_handler(int);
 int sig_handler(int);
 #endif	/* SIGNALRETURNSINT */
 
-static Bool EnumDatabase(XrmDatabase, XrmBindingList, XrmQuarkList,
+static Bool EnumDatabase(XrmDatabase*, XrmBindingList, XrmQuarkList,
 			 XrmRepresentation*, XrmValue*, XPointer);
 extern void CheckChipsets(xf86cfgModuleOptions*, int*);
 
@@ -133,7 +133,7 @@ CheckMsg(int code, char *fmt, ...)
 }
 
 static Bool
-EnumDatabase(XrmDatabase db, XrmBindingList bindings, XrmQuarkList quarks,
+EnumDatabase(XrmDatabase *db, XrmBindingList bindings, XrmQuarkList quarks,
 	     XrmRepresentation *type, XrmValue *value, XPointer closure)
 {
     char *res = XrmQuarkToString(quarks[1]);
@@ -315,8 +315,8 @@ LoaderInitializeOptions(void)
 				    names[0] = XrmPermStringToQuark(module_options->name);
 				    classes[0] = XrmPermStringToQuark("Option");
 				    names[1] = classes[1] = NULLQUARK;
-				    (void)XrmEnumerateDatabase(options_xrm, &names, &classes, XrmEnumOneLevel,
-							       EnumDatabase, NULL);
+				    (void)XrmEnumerateDatabase(options_xrm, (XrmNameList)&names, (XrmClassList)&classes,
+							       XrmEnumOneLevel, EnumDatabase, NULL);
 				}
 			    }
 			    else {

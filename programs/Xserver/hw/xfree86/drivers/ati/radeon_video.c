@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.10 2001/01/25 02:27:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.11 2001/03/03 22:26:11 tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -205,7 +205,7 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
 
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
-    adapt->name = "ATI Rage128 Video Overlay";
+    adapt->name = "ATI Radeon Video Overlay";
     adapt->nEncodings = 1;
     adapt->pEncodings = &DummyEncoding;
     adapt->nFormats = NUM_FORMATS;

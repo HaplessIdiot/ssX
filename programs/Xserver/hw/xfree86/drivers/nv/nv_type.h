@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.24 2001/05/09 00:39:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.25 2001/07/09 23:52:00 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -128,6 +128,8 @@ void NVRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void NVRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void NVRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void NVPointerMoved(int index, int x, int y);
+
+int RivaGetConfig(NVPtr);
 
 #define NV_CHIP_RIVA128    ((PCI_VENDOR_NVIDIA_SGS << 16)| PCI_CHIP_RIVA128)
 #define NV_CHIP_TNT        ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT)

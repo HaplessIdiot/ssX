@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.41 2001/01/17 16:38:55 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.42 2001/06/07 18:30:40 alanh Exp $ */
 
 /*
  * 
@@ -1054,8 +1054,13 @@ get_ld_version(FILE *inFile)
     } while (c != EOF && !isdigit (c));
     ungetc (c, ldprog);
     (void) fscanf (ldprog, "%d.%d", &ldmajor, &ldminor);
+    /* Start conversion to a more rational number */
+    if ((ldmajor > 2) || ((ldmajor == 2) && (ldminor > 9)))
+	ldmajor *= 100;
+    else
+	ldmajor *= 10;
     fprintf(inFile, "#define DefaultLinuxBinUtilsMajorVersion %d\n", 
-	    ldmajor * 10 + ldminor);    
+	    ldmajor + ldminor);    
     pclose (ldprog);
   }
 }

@@ -1,4 +1,22 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 145. Fix typos in radeon and wacom drivers.
+ 144. Don't disable the secondary CRTC on ATI Rage XL adapters (it doesn't
+      exist) (Marc La France).
+ 143. Speed up ix86 block moves in ATI driver (Marc La France).
+ 142. Temporarily disable hardware cursor support for ATI GX & CX adapters
+      (Marc La France).
+ 141. Make composite sync the default in the ATI driver (David S. Miller).
+ 140. Rework stretching of small DFP modes in ATI driver (Marc La France).
+ 139. Add an interesting PCI ID (Marc La France).
+ 138. Allow ChipValidMode() functions to pre-calculate a mode's horizontal
+      sync and vertical refresh rates (Marc La France).
+ 137. Another fix for mode switch and cursor interactions (Marc La France).
+ 136. Temporary fix for endianness problems in ATI driver (Marc La France).
+ 135. Add XGetIMValues() prototype to Xlib.h (Marc La France).
+ 134. Use a more reasonable numbering for recent binutils versions on Linux
+      (Marc La France).
+ 133. Fix dependencies for building drivers in a static server
+      (Marc La France).
  132. Update XDarwin Japanese localization to include rootless UI changes
       (Toshimitsu Tanaka).
  131. Fix potential XDarwin bug in translating Darwin keymappings to X11
@@ -13551,4 +13569,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1875 2001/07/15 03:12:21 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1876 2001/07/15 07:36:22 torrey Exp $

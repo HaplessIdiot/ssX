@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.26 2001/04/01 14:00:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.27 2001/05/18 23:35:33 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -3785,12 +3785,12 @@ xf86WcmInit(InputDriverPtr	drv,
     }
     common->wcmResolY = xf86SetIntOption(local->options, "ResolutionY", common->wcmResolY);
     if (common->wcmResolY != 0) {
-	xf86Msg(X_CONFIG, "%s: resol x = %d\n", dev->identifier,
+	xf86Msg(X_CONFIG, "%s: resol y = %d\n", dev->identifier,
 		common->wcmResolY);
     }
     common->wcmResolZ = xf86SetIntOption(local->options, "ResolutionZ", common->wcmResolZ);
     if (common->wcmResolZ != 0) {
-	xf86Msg(X_CONFIG, "%s: resol x = %d\n", dev->identifier,
+	xf86Msg(X_CONFIG, "%s: resol z = %d\n", dev->identifier,
 		common->wcmResolZ);
     }
 
