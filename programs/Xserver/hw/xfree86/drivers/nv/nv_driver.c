@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.112 2003/08/18 21:40:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.113 2003/08/23 15:03:10 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -246,12 +246,14 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeFree",
     "vbeDoEDID",
     NULL
 };
+#endif
 
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",

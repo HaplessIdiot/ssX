@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.88 2003/06/01 21:55:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.89 2003/08/23 15:03:11 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -55,6 +55,10 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
+
+#ifndef USE_INT10
+#define USE_INT10 0
+#endif
 
 /*
  * Internals
@@ -330,12 +334,15 @@ static const char *fbSymbols[] = {
   NULL
 };
 
+#if USE_INT10
 static const char *int10Symbols[] = {
     "xf86InitInt10",
     "xf86FreeInt10",
     NULL
 };
+#endif
 
+#ifdef XFree86LOADER
 static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
@@ -348,8 +355,6 @@ static const char *cfbSymbols[] = {
     "cfb32BresS",
     NULL
 };
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(s3virgeSetup);
 
@@ -395,7 +400,10 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
-			  int10Symbols, vbeSymbols, shadowSymbols, 
+#if USE_INT10
+			  int10Symbols,
+#endif
+			  vbeSymbols, shadowSymbols, 
 			  fbSymbols, NULL);
 			  
 	/*
@@ -905,7 +913,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-#if 0
+#if USE_INT10
     if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86Int10InfoPtr pInt;
  	xf86LoaderReqSymLists(int10Symbols, NULL);

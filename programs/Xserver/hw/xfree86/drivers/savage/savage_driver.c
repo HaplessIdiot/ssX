@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.41 2003/07/07 15:34:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.42 2003/08/23 15:03:12 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -256,6 +256,7 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *vbeOptSymbols[] = {
     "vbeModeInit",
     "VBESetVBEMode",
@@ -263,6 +264,7 @@ static const char *vbeOptSymbols[] = {
     "VBEFreeVBEInfo",
     NULL
 };
+#endif
 
 static const char *ddcSymbols[] = {
     "xf86DoEDID_DDC1",

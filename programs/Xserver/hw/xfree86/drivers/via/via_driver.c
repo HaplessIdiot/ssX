@@ -29,7 +29,7 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.6 2003/08/04 10:32:27 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.7 2003/08/23 15:03:17 dawes Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -296,6 +296,7 @@ static const char *cfbSymbols[] = {
 };
 #endif
 
+#ifdef XFree86LOADER
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -339,8 +340,6 @@ static const char *driSymbols[] = {
     NULL
 };
 #endif
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(VIASetup);
 

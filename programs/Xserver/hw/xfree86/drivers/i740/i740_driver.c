@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.45 2003/08/11 17:41:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.46 2003/08/23 15:02:58 dawes Exp $ */
 
 /*
  * Authors:
@@ -40,6 +40,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Overlay planes
  * DGA
  */
+
+#ifndef USE_DDC2
+#define USE_DDC2 0
+#endif
 
 /*
  * These are X and server generic header files.
@@ -216,6 +220,7 @@ static const char *vgahwSymbols[] = {
     0
 };
 
+#ifdef XFree86LOADER
 static const char *fbSymbols[] = {
 #ifdef USE_FB
     "fbScreenInit",
@@ -230,11 +235,7 @@ static const char *fbSymbols[] = {
     "cfb24_32ScreenInit",
     NULL
 };
-
-static const char *xf8_32bppSymbols[] = {
-    "xf86Overlay8Plus32Init",
-    NULL
-};
+#endif
 
 static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
@@ -254,13 +255,16 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
+#endif
 
+#if USE_DDC2
 static const char *ddcSymbols[] = {
   "xf86PrintEDID",
   "xf86DoEDID_DDC1",
@@ -273,6 +277,7 @@ static const char *i2cSymbols[] = {
   "xf86I2CBusInit",
     NULL
 };
+#endif
 
 
 #ifdef XFree86LOADER
@@ -316,9 +321,11 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
-			  ddcSymbols, i2cSymbols, NULL /* shadowSymbols */,
-			  NULL /* fbdevsymbols */, NULL);
+			  ramdacSymbols, vbeSymbols,
+#if USE_DDC2
+			  ddcSymbols, i2cSymbols,
+#endif
+			  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -829,6 +836,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
       I740FreeRec(pScrn);
       return FALSE;
     }
+    xf86LoaderReqSymLists(xaaSymbols, NULL);
   }
 
   if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
@@ -863,7 +871,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     pI740->usevgacompat=FALSE;
 
 
-#if 0 /*DDC2*/
+#if USE_DDC2 /*DDC2*/
   { /*PL*/
 
    if (xf86LoadSubModule(pScrn, "ddc")) {
