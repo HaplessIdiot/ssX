@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.9 1998/01/25 08:28:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.10 1998/03/20 21:07:02 hohndel Exp $ */
 
 
 
@@ -322,12 +322,13 @@ LOOKUP **
 );
 void DLResolveSymbols(
 #if NeedFunctionPrototypes
-void
+void *
 #endif
 );
 int DLCheckForUnresolved(
 #if NeedFunctionPrototypes
-int
+int,
+void *
 #endif
 );
 void DLUnloadModule(
