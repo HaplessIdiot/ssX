@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.5 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.6 2001/10/22 15:21:12 alanh Exp $ */
 
 #include "win.h"
 
@@ -66,26 +66,26 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
       /* Select the drawable pixmap into a DC */
       hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
       if (hbmpOrig == NULL)
-	FatalError ("winSetSpans () - DRAWABLE_PIXMAP - SelectObject () "
+	FatalError ("winSetSpans - DRAWABLE_PIXMAP - SelectObject () "
 		    "failed on pPixmapPriv->hBitmap\n");
 
       /* Branch on the raster operation type */
       switch (pGC->alu)
 	{
 	case GXclear:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXclear\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXclear\n");
 	  break;
 
 	case GXand:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXand\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXand\n");
 	  break;
 
 	case GXandReverse:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXandReverse\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXandReverse\n");
 	  break;
 
 	case GXcopy:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopy %08x\n",
+	  ErrorF ("winSetSpans - DRAWABLE_PIXMAP - GXcopy %08x\n",
 		  pDrawable);
 
 	  /* Loop through spans */
@@ -124,31 +124,31 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case GXandInverted:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXandInverted\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXandInverted\n");
 	  break;
 
 	case GXnoop:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnoop\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXnoop\n");
 	  break;
 
 	case GXxor:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXxor\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXxor\n");
 	  break;
 
 	case GXor:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXor\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXor\n");
 	  break;
 
 	case GXnor:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnor\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXnor\n");
 	  break;
 
 	case GXequiv:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXequiv\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXequiv\n");
 	  break;
 
 	case GXinvert:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXinvert %08x\n",
+	  ErrorF ("winSetSpans - DRAWABLE_PIXMAP - GXinvert %08x\n",
 		  pDrawable);
 
 	  /* Create a temporary DC */
@@ -162,7 +162,7 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 
 	      /* Create a one-line DIB for the bit data */
 	      hBitmap = winCreateDIBNativeGDI (*piWidth, 1, pDrawable->depth,
-					       (BITMAPINFO *) &pbmih, NULL);
+					       NULL, (BITMAPINFO **) &pbmih);
 
 	      /* Select the span line line bitmap into the temporary DC */
 	      hbmpOrig = SelectObject (hdcMem, hBitmap);
@@ -208,8 +208,6 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	      hBitmap = NULL;
 	    }
 
-	 
-
 	  /*
 	   * REMOVE - Visual verification only.
 	   */
@@ -227,27 +225,27 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case GXorReverse:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXorReverse\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXorReverse\n");
 	  break;
 
 	case GXcopyInverted:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopyInverted\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXcopyInverted\n");
 	  break;
 
 	case GXorInverted:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXorInverted\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXorInverted\n");
 	  break;
 
 	case GXnand:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXnand\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXnand\n");
 	  break;
 
 	case GXset:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXset\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - GXset\n");
 	  break;
 
 	default:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - Unknown ROP\n");
+	  FatalError ("winSetSpans - DRAWABLE_PIXMAP - Unknown ROP\n");
 	  break;
 	}
 

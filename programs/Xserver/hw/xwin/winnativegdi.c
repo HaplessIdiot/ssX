@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.6 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.7 2001/10/29 21:10:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -335,7 +335,7 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
   hBitmap = CreateDIBSection (NULL,
 			      (BITMAPINFO *) pbmih,
 			      DIB_RGB_COLORS,
-			      ppbBits,
+			      (void **) ppbBits,
 			      NULL,
 			      0);
   if (hBitmap == NULL)

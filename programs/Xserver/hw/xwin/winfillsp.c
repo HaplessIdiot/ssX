@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.6 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.8 2001/10/30 15:39:09 alanh Exp $ */
 
 #include "win.h"
 
@@ -64,60 +64,61 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
   switch (pDrawable->type)
     {
     case DRAWABLE_PIXMAP:
+      ErrorF ("winFillSpans - DRAWABLE_PIXMAP\n");
 #if 0
       /* Branch on the raster operation type */
       switch (pGC->alu)
 	{
 	case GXclear:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXclear\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXclear\n");
 	  break;
 	case GXand:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXand\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXand\n");
 	  break;
 	case GXandReverse:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXandReverse\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXandReverse\n");
 	  break;
 	case GXcopy:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXcopy\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXcopy\n");
 	  break;
 	case GXandInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXandInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXandInverted\n");
 	  break;
 	case GXnoop:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXnoop\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXnoop\n");
 	  break;
 	case GXxor:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXxor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXxor\n");
 	  break;
 	case GXor:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXor\n");
 	  break;
 	case GXnor:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXnor\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXnor\n");
 	  break;
 	case GXequiv:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXequiv\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXequiv\n");
 	  break;
 	case GXinvert:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXinvert\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXinvert\n");
 	  break;
 	case GXorReverse:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXorReverse\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXorReverse\n");
 	  break;
 	case GXcopyInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXcopyInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXcopyInverted\n");
 	  break;
 	case GXorInverted:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXorInverted\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXorInverted\n");
 	  break;
 	case GXnand:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXnand\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXnand\n");
 	  break;
 	case GXset:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXset\n");
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - GXset\n");
 	  break;
 	default:
-	  FatalError ("winFillSpans () - DRAWABLE_PIXMAP - Unknown ROP\n");
+	  FatalError ("winFillSpans - DRAWABLE_PIXMAP - Unknown ROP\n");
 	  break;
 	}
 #endif
@@ -129,14 +130,14 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       /* Select the drawable pixmap into memory hdc */
       hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
       if (hbmpOrig == NULL)
-	FatalError ("winFillSpans () - DRAWABLE_PIXMAP - "
+	FatalError ("winFillSpans - DRAWABLE_PIXMAP - "
 		    "SelectObject () failed on pPixmapPriv->hBitmap\n");
       
       /* Branch on the fill type */
       switch (pGC->fillStyle)
 	{
 	case FillSolid:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - FillSolid %08x\n",
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - FillSolid %08x\n",
 		  pDrawable);
 	  
 	  /*
@@ -186,7 +187,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case FillStippled:
-	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - FillStippled %08x\n",
+	  ErrorF ("winFillSpans - DRAWABLE_PIXMAP - FillStippled %08x\n",
 		  pDrawable);
 
 	  /*
@@ -345,19 +346,18 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case FillTiled:
-	  ErrorF ("\nwinFillSpans () - DRAWABLE_PIXMAP - FillTiled\n\n");
+	  FatalError ("\nwinFillSpans - DRAWABLE_PIXMAP - FillTiled\n\n");
 	  break;
 
 	case FillOpaqueStippled:
-	  FatalError ("winFillSpans () - DRAWABLE_PIXMAP - OpaqueStippled\n");
+	  FatalError ("winFillSpans - DRAWABLE_PIXMAP - OpaqueStippled\n");
 	  break;
 
 	default:
-	  FatalError ("winFillSpans () - DRAWABLE_PIXMAP - Unknown "
+	  FatalError ("winFillSpans - DRAWABLE_PIXMAP - Unknown "
 		      "fillStyle\n");
 	  break;
 	}
-
       break;
   
     case DRAWABLE_WINDOW:
@@ -388,7 +388,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case FillStippled:
-	  ErrorF ("\nwinFillSpans - DRAWABLE_WINDOW - FillStippled\n\n");
+	  FatalError ("winFillSpans - DRAWABLE_WINDOW - FillStippled\n\n");
 	  break;
 
 	case FillTiled:
@@ -499,7 +499,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       break;
   
     case UNDRAWABLE_WINDOW:
-      ErrorF ("\nwinFillSpans - UNDRAWABLE_WINDOW\n\n");
+      FatalError ("winFillSpans - UNDRAWABLE_WINDOW\n\n");
 
       switch (pGC->fillStyle)
 	{

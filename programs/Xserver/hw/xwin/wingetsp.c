@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.5 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.6 2001/10/30 15:39:09 alanh Exp $ */
 
 #include "win.h"
 
@@ -58,7 +58,7 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
   switch (pDrawable->type)
     {
     case DRAWABLE_PIXMAP:
-      ErrorF ("winGetSpans () - DRAWABLE_PIXMAP %08x\n",
+      ErrorF ("winGetSpans - DRAWABLE_PIXMAP %08x\n",
 	      pDrawable);
 
       pPixmap = (PixmapPtr) pDrawable;
@@ -87,11 +87,11 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       break;
 
     case DRAWABLE_WINDOW:
-      ErrorF ("winGetSpansNativeGDI - DRAWABLE_WINDOW\n");
+      ErrorF ("winGetSpans - DRAWABLE_WINDOW\n");
 
       /*
        * FIXME: Making huge assumption here that we are copying the
-       * area behind where the cursor will be display.  We already
+       * area behind where the cursor will be displayed.  We already
        * know the size of the cursor, so this works, for now.
        */
 
@@ -111,7 +111,7 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       /* Transfer the window bits to the window bitmap */
       BitBlt (hdcMem,
 	      0, 0,
-	      *piWidths, *piWidths, /* FIXME: Assuming square */
+	      *piWidths, *piWidths, /* FIXME: Assuming square region */
 	      pScreenPriv->hdcScreen,
 	      pPoints->x, pPoints->y,
 	      SRCCOPY);
@@ -124,8 +124,6 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       hdcMem = NULL;
 
       iByteWidth = PixmapBytePad (*piWidths, pDrawable->depth);
-
-      ErrorF ("winGetSpansNativeGDI - DRAWABLE_WINDOW - Looping spans\n");
 
       /* Loop through spans */
       for (iSpan = 0; iSpan < iSpans; ++iSpan)
@@ -152,15 +150,15 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
       break;
 
     case UNDRAWABLE_WINDOW:
-      FatalError ("winGetSpansNativeGDI - UNDRAWABLE_WINDOW\n");
+      FatalError ("winGetSpans - UNDRAWABLE_WINDOW\n");
       break;
 
     case DRAWABLE_BUFFER:
-      FatalError ("winGetSpansNativeGDI - DRAWABLE_BUFFER\n");
+      FatalError ("winGetSpans - DRAWABLE_BUFFER\n");
       break;
       
     default:
-      FatalError ("winGetSpansNativeGDI - Unknown drawable type\n");
+      FatalError ("winGetSpans - Unknown drawable type\n");
       break;
     }
 }
