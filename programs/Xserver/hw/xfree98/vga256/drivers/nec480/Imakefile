@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/Imakefile,v 3.1 1995/12/23 09:40:33 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = nec480_dr.c
@@ -18,8 +18,8 @@ NormalAsmObjectRule()
 
 NormalRelocatableTarget(nec480_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(cpq_driver.c,$(LINKKITDIR)/drivers/vga256/nec480)
-InstallLinkKitNonExecFile(cpq_bank.s,$(LINKKITDIR)/drivers/vga256/nec480)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(cpq_driver.c,$(XF98LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(cpq_bank.s,$(XF98LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga256/nec480)
 
 DependTarget()

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/06 20:59:07 kaleb Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xf86config/Imakefile,v 3.0 1995/12/17 10:07:01 dawes Exp $
 
             SRCS = xf86config.c cards.c
             OBJS = xf86config.o cards.o
@@ -10,16 +10,20 @@ XCOMM $XFree86$
 
 AllTarget(ProgramTargetName(xf86config))
 
-NormalProgramTarget(xf86config,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
-InstallProgram(xf86config,$(BINDIR))
-DependTarget()
-
-InstallNonExecFile(Cards,$(LIBDIR))
-InstallManPageLong(xf86conf,$(MANDIR),xf86config)
-
 LinkSourceFile(Cards,$(XF86SRC)/xf86config)
 LinkSourceFile(cards.c,$(XF86SRC)/xf86config)
 LinkSourceFile(cards.h,$(XF86SRC)/xf86config)
 LinkSourceFile(xf86conf.man,$(XF86SRC)/xf86config)
 LinkSourceFile(xf86config.c,$(XF86SRC)/xf86config)
+
+NormalProgramTarget(xf86config,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
+#ifndef DontInstallPC98Version
+InstallProgram(xf86config,$(BINDIR))
+#endif
+DependTarget()
+
+#ifndef DontInstallPC98Version
+InstallNonExecFile(Cards,$(LIBDIR))
+InstallManPageLong(xf86conf,$(MANDIR),xf86config)
+#endif
 
