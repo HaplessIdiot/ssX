@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.43 2001/10/16 18:17:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.44 2001/10/28 03:33:25 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -616,6 +616,13 @@ static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 		       "This support is untested and may not "
 		       "function properly\n");
 	}
+    }
+
+    if (!info->PanelXRes || !info->PanelYRes) {
+        info->HasPanelRegs = FALSE;
+        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Can't determine panel dimensions, and none specified. \
+		              Disabling programming of FP registers.\n");
     }
 
     return TRUE;
