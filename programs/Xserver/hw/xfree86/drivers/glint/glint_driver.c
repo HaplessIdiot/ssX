@@ -966,8 +966,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     const char *s;
     const char **syms = NULL;
 
-    xf86Int10InfoPtr pInt;
-
     TRACE_ENTER("GLINTPreInit");
 
     /*
@@ -1398,49 +1396,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	       (unsigned long)pGlint->IOAddress);
 
     pGlint->irq = pGlint->pEnt->device->irq;
-
-    /* Initialize the card through int10 interface if needed */
-    if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
-        pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
-	!xf86IsPrimaryPci(pGlint->PciInfo)) {
-
-#if defined(__alpha__)
-        /* Fixes for various GLINT multiheads on Alpha */
-
-        /* Fix for multiple VX1s */
-        if ( IS_OXYGENVX1PCI(pGlint) || IS_OXYGENVX1AGP(pGlint) ) {
-
-	    /*
-	     * Search through all the Entities for the VX1 we are on and
-	     * enable it. If it is the first non primary VX1, disable the
-	     * primary (if there is one). Run int10. The VX1 we are on gets 
-	     * re-disabled at the end of PreInit. If it is the last non 
-	     * primary VX1, re-enable the primary VX1 (if there is one) and 
-	     * run int10 on it so its setup correctly. Disabling and then
-	     * re-enabling a VX1 causes everything the BIOS setup to get
-	     * messed up.
-	     */
-	  
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "VX1 secondary enabling VGA before int10\n");
-
-	    /* Enable VGA on the current card */
-  	    pciWriteByte( pGlint->PciTag, 0xf8, 0 );
-	    pciWriteByte( pGlint->PciTag, 0xf4, 0 );
-	    pciWriteByte( pGlint->PciTag, 0xfc, 0 );
-
-	    /* The card we are on should be VGA-enabled now, so run int10. */
-
-	} /* end IS_OXYGENVX1xxx */
-#endif /* __alpha__ */
-
-	if (xf86LoadSubModule(pScrn, "int10")){
-	    xf86LoaderReqSymLists(int10Symbols, NULL);
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
-	    pInt = xf86InitInt10(pGlint->pEnt->index);
-	    xf86FreeInt10(pInt);
-	}
-    }
 
     /* Register all entities */
     for (i = 0; i < pScrn->numEntities; i++) {
@@ -1909,6 +1864,20 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "FIFO Size is %d DWORDS\n",
 	       pGlint->FIFOSize);
 
+    /* Initialize the card through int10 interface if needed */
+    if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
+	pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
+	!xf86IsPrimaryPci(pGlint->PciInfo)) {
+    	if ( xf86LoadSubModule(pScrn, "int10")){
+	    xf86Int10InfoPtr pInt;
+
+	    xf86LoaderReqSymLists(int10Symbols, NULL);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
+	    pInt = xf86InitInt10(pGlint->pEnt->index);
+	    xf86FreeInt10(pInt);
+        }
+    }
+
     /* Set the min pixel clock */
     pGlint->MinClock = 16250;	/* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
@@ -2365,23 +2334,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     
-#if defined(__alpha__)
-    /* Disable VGA on the current card */
-    if ( pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA && 
-	 pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_DELTA &&
-	 !xf86IsPrimaryPci(pGlint->PciInfo) &&
-	 (IS_OXYGENVX1PCI(pGlint) || IS_OXYGENVX1AGP(pGlint)) ) {
-
-        /* Disable VGA on the card on which we just ran int10 */
-        pciWriteByte( pGlint->PciTag, 0xf8, 0x70 );
-        pciWriteByte( pGlint->PciTag, 0xf4, 0x01 );
-	pciWriteByte( pGlint->PciTag, 0xfc, 0x00 );
-
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "VX1 secondary disabling VGA after int10\n");
-    }
-#endif /* __alpha__ */
-
     TRACE_EXIT("GLINTPreInit");
     return TRUE;
 }
