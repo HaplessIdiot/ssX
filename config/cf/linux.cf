@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.194 2002/12/10 03:17:24 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.195 2002/12/10 03:24:40 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -702,7 +702,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # endif
 #endif
 #ifndef CppCmd
-# define CppCmd			/lib/cpp
+# define CppCmd			/usr/bin/cpp
 #endif
 /* Some Linux distributions have yacc, some don't. All have bison. */
 #define YaccCmd			bison -y
