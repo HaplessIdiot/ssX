@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texmem.c,v 1.7 2002/12/16 16:18:59 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texmem.c,v 1.1.1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -56,7 +56,7 @@ void
 radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
 {
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, t, t->base.tObj );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, (void *)t, (void *)t->base.tObj );
    }
 
    if ( rmesa != NULL ) {
@@ -189,7 +189,7 @@ static void uploadSubImage( radeonContextPtr rmesa, radeonTexObjPtr t,
 
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
       fprintf( stderr, "%s( %p, %p ) level/width/height/face = %d/%d/%d/%u\n", 
-	       __FUNCTION__, t, t->base.tObj, level, width, height, face );
+	       __FUNCTION__, (void *)t, (void *)t->base.tObj, level, width, height, face );
    }
 
    ASSERT(face < 6);
@@ -325,7 +325,7 @@ int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t, GLuint fac
 
    if ( RADEON_DEBUG & (DEBUG_TEXTURE|DEBUG_IOCTL) ) {
       fprintf( stderr, "%s( %p, %p ) sz=%d lvls=%d-%d\n", __FUNCTION__,
-	       rmesa->glCtx, t->base.tObj, t->base.totalSize,
+	       (void *)rmesa->glCtx, (void *)t->base.tObj, t->base.totalSize,
 	       t->base.firstLevel, t->base.lastLevel );
    }
 

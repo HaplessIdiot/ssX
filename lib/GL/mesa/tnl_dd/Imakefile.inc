@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/tnl_dd/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaTnlDdBuildDir
 #define MesaTnlDdBuildDir $(GLXLIBSRC)/mesa/tnl_dd/
@@ -24,6 +24,9 @@ LinkSourceFile(t_dd_vertex.h, $(MESASRCDIR)/src/mesa/tnl_dd)
 
  MESA_TNL_DD_OBJS = $(MESATNLDDBUILDDIR)t_dd.o \
 		    $(MESATNLDDBUILDDIR)t_dd_vb.o
+
+MESA_TNL_DD_EOBJS = $(MESATNLDDBUILDDIR)$(EXTRASUBDIR)/t_dd.o \
+		    $(MESATNLDDBUILDDIR)$(EXTRASUBDIR)/t_dd_vb.o
 
 #if defined(DoSharedLib) && DoSharedLib
 MESA_TNL_DD_UOBJS = $(MESATNLDDBUILDDIR)unshared/t_dd.o \

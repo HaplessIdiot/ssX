@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile.inc,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/x11/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaXBuildDir
 #define MesaXBuildDir $(GLXLIBSRC)/src/mesa/drivers/x11/
@@ -48,6 +48,20 @@ XMESA_GLX_OBJS = $(MESAXBUILDDIR)fakeglx.o \
 		$(MESAXBUILDDIR)xm_line.o \
 		$(MESAXBUILDDIR)xm_span.o \
 		$(MESAXBUILDDIR)xm_tri.o
+
+#ifndef MesaInXServer
+XMESA_GLX_EOBJS = $(MESAXBUILDDIR)$(EXTRASUBDIR)/fakeglx.o \
+		  $(MESAXBUILDDIR)$(EXTRASUBDIR)/glxapi.o \
+		  $(MESAXBUILDDIR)$(EXTRASUBDIR)/realglx.o \
+		  $(MESAXBUILDDIR)$(EXTRASUBDIR)/xfonts.o
+#endif
+
+  XMESA_EOBJS = $(XMESA_GLX_EOBJS) \
+		$(MESAXBUILDDIR)$(EXTRASUBDIR)/xm_api.o \
+		$(MESAXBUILDDIR)$(EXTRASUBDIR)/xm_dd.o \
+		$(MESAXBUILDDIR)$(EXTRASUBDIR)/xm_line.o \
+		$(MESAXBUILDDIR)$(EXTRASUBDIR)/xm_span.o \
+		$(MESAXBUILDDIR)$(EXTRASUBDIR)/xm_tri.o
 
 #if defined(DoSharedLib) && DoSharedLib
 #ifndef MesaInXServer

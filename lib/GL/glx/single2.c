@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/single2.c,v 1.12 2004/04/08 10:07:33 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/single2.c,v 1.13tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -904,7 +904,7 @@ const GLubyte *glGetString(GLenum name)
 	    gc->renderer = s;
 	    break;
 	  case GL_VERSION: {
-	     double server_version = strtod(s, NULL);
+	     double server_version = strtod((char *)s, NULL);
 	     double client_version = strtod(__glXGLClientVersion, NULL);
 
 	     if ( server_version <= client_version ) {
@@ -912,7 +912,7 @@ const GLubyte *glGetString(GLenum name)
 	     }
 	     else {
 		gc->version = Xmalloc( strlen(__glXGLClientVersion)
-				       + strlen(s) + 4 );
+				       + strlen((char *)s) + 4 );
 		if ( gc->version == NULL ) {
 		   /* If we couldn't allocate memory for the new string,
 		    * make a best-effort and just copy the client-side version
@@ -921,10 +921,10 @@ const GLubyte *glGetString(GLenum name)
 		    * for a short string, the system is probably going to die
 		    * soon anyway.
 		    */
-		   strcpy(s, __glXGLClientVersion);
+		   strcpy((char *)s, __glXGLClientVersion);
 		}
 		else {
-		   sprintf( gc->version, "%s (%s)", __glXGLClientVersion, s );
+		   sprintf( (char *)gc->version, "%s (%s)", __glXGLClientVersion, s );
 		   Xfree( s );
 		   s = gc->version;
 		}
@@ -932,7 +932,8 @@ const GLubyte *glGetString(GLenum name)
 	     break;
 	  }
 	  case GL_EXTENSIONS:
-	    gc->extensions = __glXCombineExtensionStrings( s, __glXGLClientExtensions );
+	    gc->extensions = __glXCombineExtensionStrings( (char *)s,
+				__glXGLClientExtensions );
 	    XFree( s );
 	    s = gc->extensions;
 	    break;

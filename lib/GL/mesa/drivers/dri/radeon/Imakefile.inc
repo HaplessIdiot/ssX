@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile.inc,v 1.3 2002/02/22 21:45:00 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/radeon/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -16,7 +16,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=ByteOrder
+  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
 		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
@@ -80,6 +80,30 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
    RADEONOBJS += $(MESADRVRADEONBUILDDIR)radeon_vtxfmt_x86.o \
 		$(MESADRVRADEONBUILDDIR)radeon_vtxtmp_x86.o \
 		$(MESADRVRADEONBUILDDIR)radeon_vtxfmt_sse.o 
+#endif
+
+   RADEONEOBJS = $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_context.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_compat.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_ioctl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_lock.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_maos.o \
+	        $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_sanity.o \
+	        $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_screen.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_span.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_state.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_state_init.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_swtcl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_tcl.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_tex.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_texmem.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_texstate.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_c.o
+
+#ifdef i386Architecture
+   RADEONEOBJS += $(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_x86.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxtmp_x86.o \
+		$(MESADRVRADEONBUILDDIR)$(EXTRASUBDIR)/radeon_vtxfmt_sse.o 
 #endif
 
    RADEONUOBJS = $(MESADRVRADEONBUILDDIR)unshared/radeon_context.o \

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaTnlBuildDir
 #define MesaTnlBuildDir $(GLXLIBSRC)/mesa/tnl/
@@ -81,6 +81,27 @@ LinkSourceFile(t_vtx_exec.c, $(MESASRCDIR)/src/mesa/tnl)
 		  $(MESATNLBUILDDIR)t_vtx_api.o \
 		  $(MESATNLBUILDDIR)t_vtx_eval.o \
 		  $(MESATNLBUILDDIR)t_vtx_exec.o
+
+ MESA_TNL_EOBJS = $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_array_api.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_array_import.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_context.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_pipeline.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_save_api.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_save_loopback.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_save_playback.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_fog.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_light.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_normals.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_points.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_program.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_render.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_texgen.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_texmat.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vb_vertex.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vertex.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vtx_api.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vtx_eval.o \
+		  $(MESATNLBUILDDIR)$(EXTRASUBDIR)/t_vtx_exec.o
 
 #if defined(DoSharedLib) && DoSharedLib
  MESA_TNL_UOBJS = $(MESATNLBUILDDIR)unshared/t_array_api.o \

@@ -1,4 +1,5 @@
 /* $Id$ */
+/* $XFree86$ */
 
 /*
  * Mesa 3-D graphics library
@@ -31,6 +32,7 @@
   *   data (trans-matrix, src_vert, dst_vert) needs to be 16byte aligned !
   */
 
+#ifdef USE_SSE_ASM
 #include "matypes.h"
 #include "xform_args.h"
 
@@ -431,3 +433,4 @@ LLBL(K_GTP13P3DR_finish):
 	POP_L( ESI )
 	RET
 #undef FRAME_OFFSET
+#endif

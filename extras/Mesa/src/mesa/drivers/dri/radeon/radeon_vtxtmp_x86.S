@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxtmp_x86.S,v 1.1 2002/10/30 12:51:58 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_vtxtmp_x86.S,v 1.1.1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 2002 Tungsten Graphics Inc., Cedar Park, Texas.
@@ -391,6 +391,7 @@ GLOBL( _x86_MultiTexCoord2f_2 )
 	ret
 GLOBL( _x86_MultiTexCoord2f_2_end )
 
+#if defined(USE_SSE_ASM)
 /**
  * This can be used as a template for either Color3fv (when the color
  * target is also a 3f) or Normal3fv.
@@ -490,3 +491,4 @@ GLOBL( _sse_MultiTexCoord2f_2 )
 	movlps	%xmm0, (%eax)
 	ret
 GLOBL( _sse_MultiTexCoord2f_2_end )
+#endif

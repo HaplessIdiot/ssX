@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_texmem.c,v 1.1 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texmem.c,v 1.1.1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -245,7 +245,7 @@ void r128UploadTexImages( r128ContextPtr rmesa, r128TexObjPtr t )
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s( %p, %p )\n",
-	       __FUNCTION__, rmesa->glCtx, t );
+	       __FUNCTION__, (void *)rmesa->glCtx, (void *)t );
    }
 
    assert(t);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/common/Imakefile,v 1.1 2004/04/08 10:07:35 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/common/Imakefile,v 1.2tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -38,7 +38,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/common/Imakefile,v 1.1 2004/04/08 10:
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

@@ -1,4 +1,5 @@
 /* $Id$ */
+/* $XFree86$ */
 
 /*
  * Mesa 3-D graphics library
@@ -30,7 +31,7 @@
  *
  * Written by Holger Waechtler <holger@akaflieg.extern.tu-berlin.de>
  * Changed by Andre Werthmann <wertmann@cs.uni-potsdam.de> for using the
- * new Katmai functions
+ * new SSE functions
  *
  * Reimplemented by Gareth Hughes in a more
  * future-proof manner, based on code in the Linux kernel.

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /*
  * Clip testing in SPARC assembly
  */
@@ -24,6 +26,13 @@
 #define VEC_SIZE_2   	3
 #define VEC_SIZE_3   	7
 #define VEC_SIZE_4   	15
+
+#ifdef SVR4
+        /* Solaris requires this for 64-bit. */
+        .register %g2, #scratch
+        .register %g3, #scratch
+        .register %g7, #scratch
+#endif
 
 	.text
 	.align		64

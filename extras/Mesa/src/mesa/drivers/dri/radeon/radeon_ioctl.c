@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.11 2003/01/29 22:04:59 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.1.1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -49,6 +49,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tcl.h"
 #include "radeon_sanity.h"
 
+#define STANDALONE_MMIO
 #include "radeon_macros.h"  /* for INREG() */
 
 #include "vblank.h"
@@ -750,12 +751,10 @@ static CARD32 radeonGetLastFrame (radeonContextPtr rmesa)
    else
       ret = -EINVAL;
 
-#ifndef __alpha__
    if ( ret == -EINVAL ) {
       frame = INREG( RADEON_LAST_FRAME_REG );
       ret = 0;
    } 
-#endif
    if ( ret ) {
       fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
       exit(1);
@@ -844,7 +843,7 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
    rmesa = (radeonContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( RADEON_DEBUG & DEBUG_IOCTL ) {
-      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, rmesa->glCtx );
+      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, (void *)rmesa->glCtx );
    }
 
    RADEON_FIREVERTICES( rmesa );
@@ -1043,12 +1042,10 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       } else
 	ret = -EINVAL;
 
-#ifndef __alpha__
       if ( ret == -EINVAL ) {
 	 clear = INREG( RADEON_LAST_CLEAR_REG );
 	 ret = 0;
       }
-#endif
       if ( ret ) {
 	 fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
 	 exit(1);

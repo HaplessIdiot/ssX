@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* $Id$ */
 
 /*
@@ -28,6 +29,8 @@
  * 3Dnow assembly code by Holger Waechtler
  */
 
+#ifdef USE_3DNOW_ASM
+
 #include "matypes.h"
 #include "norm_args.h"
 
@@ -41,7 +44,7 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_normalize_normals)
 GLNAME(_mesa_3dnow_transform_normalize_normals):
 
- #define FRAME_OFFSET 12
+#define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -67,8 +70,8 @@ GLNAME(_mesa_3dnow_transform_normalize_normals):
     PUSH_L     ( EAX )
     PUSH_L     ( EDX )                  /*  save counter & pointer for   */
                                         /*  the normalize pass           */
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 24
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 24
 
     MOVQ       ( M(0), MM3 )            /*  m1              | m0         */
     MOVQ       ( M(4), MM4 )            /*  m5              | m4         */
@@ -218,8 +221,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_normalize_normals_no_rot)
 GLNAME(_mesa_3dnow_transform_normalize_normals_no_rot):
 
- #undef FRAME_OFFSET
- #define FRAME_OFFSET 12
+#undef FRAME_OFFSET
+#define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -357,8 +360,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_rescale_normals_no_rot)
 GLNAME(_mesa_3dnow_transform_rescale_normals_no_rot):
 
- #undef FRAME_OFFSET
- #define FRAME_OFFSET 12
+#undef FRAME_OFFSET
+#define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -428,8 +431,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_rescale_normals)
 GLNAME(_mesa_3dnow_transform_rescale_normals):
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 8
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 8
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -525,8 +528,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_normals_no_rot)
 GLNAME(_mesa_3dnow_transform_normals_no_rot):
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 8
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 8
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -591,8 +594,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_transform_normals)
 GLNAME(_mesa_3dnow_transform_normals):
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 8
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 8
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -675,8 +678,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_normalize_normals)
 GLNAME(_mesa_3dnow_normalize_normals):
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 12
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 12
 
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
@@ -786,8 +789,8 @@ ALIGNTEXT16
 GLOBL GLNAME(_mesa_3dnow_rescale_normals)
 GLNAME(_mesa_3dnow_rescale_normals):
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 8
+#undef  FRAME_OFFSET
+#define FRAME_OFFSET 8
     PUSH_L     ( EDI )
     PUSH_L     ( ESI )
 
@@ -834,3 +837,5 @@ LLBL (G3R_end):
     POP_L      ( ESI )
     POP_L      ( EDI )
     RET
+
+#endif

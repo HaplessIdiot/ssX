@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i810/Imakefile,v 1.1 2004/04/08 10:07:35 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i810/Imakefile,v 1.2tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -57,17 +57,17 @@ REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB) $(XONLYLIB) ExpatLibrary
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(I810OBJS))
+AllTarget($(I810OBJS))
 NormalLintTarget($(SRCS))
 
 #if !GlxUseBuiltInDRIDriver
 LIBNAME = i810_dri.so
-SharedDriModuleTarget($(LIBNAME),DONE $(OBJS),$(OBJS))
+SharedDriModuleTarget($(LIBNAME),$(OBJS),$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
 SOPROF_LIBNAME = _i810_dri_p
-NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE $(OBJS),$(OBJS))
+NormalDepLibraryTarget($(SOPROF_LIBNAME),$(OBJS),$(OBJS))
 InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
 #endif
 #endif

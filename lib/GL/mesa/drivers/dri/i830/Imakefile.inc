@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i830/Imakefile.inc,v 1.1 2001/10/04 18:28:21 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/i830/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -16,7 +16,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if BuildXF86DRI
-  DRI_DEFINES = GlxDefines
+  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
 		-I$(XINCLUDESRC) \
 		-I$(GLXLIBSRC)/glx \
@@ -59,6 +59,18 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		$(MESADRVI830BUILDDIR)i830_texmem.o \
 		$(MESADRVI830BUILDDIR)i830_texstate.o \
 		$(MESADRVI830BUILDDIR)i830_tris.o
+
+    I830EOBJS = $(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_context.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_debug.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_ioctl.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_render.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_screen.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_span.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_state.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_tex.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_texmem.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_texstate.o \
+		$(MESADRVI830BUILDDIR)$(EXTRASUBDIR)/i830_tris.o 
 
     I830UOBJS = $(MESADRVI830BUILDDIR)unshared/i830_context.o \
 		$(MESADRVI830BUILDDIR)unshared/i830_debug.o \

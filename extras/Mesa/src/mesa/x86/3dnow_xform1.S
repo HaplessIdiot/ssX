@@ -1,4 +1,5 @@
 /* $Id$ */
+/* $XFree86$ */
 
 /*
  * Mesa 3-D graphics library
@@ -24,6 +25,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef USE_3DNOW_ASM
 #include "matypes.h"
 #include "xform_args.h"
 
@@ -421,3 +423,5 @@ LLBL( G3TP3R_3 ):
     POP_L     ( EDI )
     POP_L     ( ESI )
     RET
+
+#endif
