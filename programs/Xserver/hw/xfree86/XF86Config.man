@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.9 2002/10/11 01:40:27 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.10 2002/10/12 16:06:43 herrb Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -1265,6 +1265,12 @@ the driver.  There are many options to disable specific acclerated
 operations, listed below.  Note that disabling an operation will have no
 effect if the operation is not accelerated (whether due to lack of support
 in the hardware or in the driver).
+.TP 7
+.BI "Option \*qNoMTRR\*q"
+Disables MTRR (Memory Type Range Register) support, a feature of modern
+processors which can improve video performance by a factor of up to 2.5.
+Some hardware has buggy MTRR support, and some video drivers have been
+known to exhibit problems when MTRR's are used.
 .TP 7
 .BI "Option \*qXaaNoCPUToScreenColorExpandFill\*q"
 Disables accelerated rectangular expansion blits from source patterns
