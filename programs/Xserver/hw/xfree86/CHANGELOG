@@ -1,4 +1,5 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 534. Fix hw/vfb for compilation on Cygwin/XFree86 (#4655, Harold Hunt).
  533. Fix some Sparc platform issues with Pci resources and the glint
       driver (#4641-4641,4644-4648 David S. Miller).
  532. Update glide, imstt, newport, rendition, suncg14, suncg3, suncg6,
@@ -13260,4 +13261,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1773 2001/05/16 06:48:07 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1774 2001/05/16 07:56:05 alanh Exp $
