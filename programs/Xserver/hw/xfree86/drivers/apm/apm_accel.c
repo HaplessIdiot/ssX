@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.14 2000/06/30 18:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.15 2001/01/06 21:29:10 tsi Exp $ */
 
 
 #define COMPILER_H_EXTRAS
@@ -159,7 +159,7 @@ ApmCopyAreaPixmap(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GC *pGC,
     register int Scanlines;
     int is;
     int id;
-    int sx, sy, dx, dy, pitch;
+    int sx = 0, sy = 0, dx = 0, dy = 0, pitch;
     RegionPtr pReg;
 
     if (APMPTR(xf86Screens[(pGC)->pScreen->myNum])->Chipset == AT3D) {
