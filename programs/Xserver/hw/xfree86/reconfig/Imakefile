@@ -1,9 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/Imakefile,v 3.0 1994/09/03 02:52:14 dawes Exp $
 
           YFLAGS = -d
             SRCS = lex.c reconfig.c
             OBJS = lex.o reconfig.o
  LOCAL_LIBRARIES = $(LEXLIB)
+         DEPLIBS =
 
 all::
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.32 1994/09/19 13:43:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.33 1994/09/19 14:20:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -379,10 +379,14 @@ s3Probe()
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
+   /* ELSA_W1000PRO isn't really required any more */
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
+#if 0
+   /* These aren't needed any more */
    OFLG_SET(OPTION_STEALTH64, &validOptions);
    OFLG_SET(OPTION_MIRO_CRYSTAL20SV, &validOptions);
+#endif
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
@@ -422,6 +426,7 @@ s3Probe()
       do {
 	 switch (card_id) {
 	 case ELSA_WINNER_1000PRO:
+	    /* This option isn't required at the moment */
 	    OFLG_SET(OPTION_ELSA_W1000PRO,  &s3InfoRec.options);
 	    break;
 	 case ELSA_WINNER_2000PRO:
@@ -976,8 +981,7 @@ s3Probe()
       s3Bt485PixMux = TRUE;
 
    if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC) && 
-       (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
-        OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
+       (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)))
       if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
    /* Set the pix-mux description based on the ramdac type */
@@ -986,22 +990,21 @@ s3Probe()
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
-      if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options) ||
-          (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) &&
-	   DAC_IS_TI3025)) {
+      if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
+	 if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+	    /* Should this be done for the ELSA W2000pro too? */
+	    pixMuxLimitedWidths = FALSE;
+	 }
       }
    } else if (s3ATT498PixMux) {
-      if (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
-          OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
-	 pixMuxPossible = TRUE;
-	 nonMuxMaxClock = 67500;
-	 allowPixMuxInterlace = FALSE;
-	 allowPixMuxSwitching = TRUE;
-	 pixMuxLimitedWidths = FALSE;
-	 pixMuxMinWidth = 0;
-      }
+      pixMuxPossible = TRUE;
+      nonMuxMaxClock = 67500;
+      allowPixMuxInterlace = FALSE;
+      allowPixMuxSwitching = TRUE;
+      pixMuxLimitedWidths = FALSE;
+      pixMuxMinWidth = 0;
    } else if (s3Bt485PixMux) {
       /* XXXX Are the defaults for the other parameters correct? */
       pixMuxPossible = TRUE;
@@ -1059,13 +1062,21 @@ s3Probe()
       if (xf86Verbose)
 	 ErrorF("%s %s: Using Sierra SC11412 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
-	 numClocks = 3;
+      numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = s3GendacClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
-	 numClocks = 3;
+      numClocks = 3;
+#ifdef ICS2595
+   } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = icd2061ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using ICS2595 programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+      numClocks = 3;
+#endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -1100,6 +1111,10 @@ s3Probe()
 	 maxRawClock = 110000;
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
+#ifdef ICS2595
+      } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
+#endif
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -1491,7 +1506,7 @@ s3Probe()
 	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3025_DAC:
-	    if (pMode->SynthClock > 100000) {
+	    if (pMode->SynthClock > 80000) {
                /* the SynthClock will be divided and clock doubled by the PLL */
 	       pMode->Flags |= V_DBLCLK;
 	    }
@@ -1810,6 +1825,10 @@ icd2061ClockSelect(freq)
 	    AltICD2061SetClock(freq, 2);
 	 } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
 	    result = SC11412SetClock((long)freq/1000);
+#ifdef ICS2595
+	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+	    result = ICS2595SetClock((long)freq/1000);
+#endif
 	 } else { /* Should never get here */
 	    result = FALSE;
 	    break;

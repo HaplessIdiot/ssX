@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.18 1994/09/18 08:48:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.19 1994/09/19 13:43:18 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1159,7 +1159,7 @@ configPointerSection()
 
 #if defined(MACH) || defined(AMOEBA)
       mouseType = (char *) xalloc (strlen (val.str) + 1);
-      strcpy (mousetype, val.str);
+      strcpy (mouseType, val.str);
 #else
       mouseType = (char *)strdup(val.str); /* GJA -- should we free this? */
 #endif

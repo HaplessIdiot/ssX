@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.1 1994/09/13 15:08:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.2 1994/09/19 13:42:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -210,11 +210,6 @@ ET4000W32Probe()
 
     if (et4000w32_id)
 	return TRUE;
-
-#if 0
-    if ((GlennDebug = fopen("/tmp/glenn", "w")) == NULL)
-	FatalError("Failed to open debug file\n");
-#endif
 
     if (strcmp(vga256InfoRec.chipset, "et4000") == 0)
 	return FALSE;

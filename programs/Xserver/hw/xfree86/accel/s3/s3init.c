@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.23 1994/09/18 08:48:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.24 1994/09/19 14:20:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -367,10 +367,7 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
-      if (OFLG_ISSET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options) ||
-          DAC_IS_TI3025 ||
-          OFLG_ISSET(OPTION_MIRO_CRYSTAL20SV,  &s3InfoRec.options))
-	 /* XXXX For STEALTH64 too?? */
+      if (S3_964_SERIES(s3ChipId))
          s3SAM256 = 0x40;
       else
          s3SAM256 = 0x00;
@@ -1348,6 +1345,15 @@ s3Init(mode)
 	       s3OutTiIndReg( TI_GENERAL_IO_DATA , 0x00 , TI_GID_W2000_6BIT );
             else
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
+         }
+         if (DAC_IS_TI3025) {
+            outb(vgaCRIndex, 0x6D);             /* set blank delay */
+            if (s3InfoRec.bitsPerPixel == 32)
+               outb(vgaCRReg, 0x70);
+            else if (s3InfoRec.bitsPerPixel == 16)
+               outb(vgaCRReg, 0x70);
+            else
+               outb(vgaCRReg, 0x01);
          }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.12 1994/09/07 15:47:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.13 1994/09/11 00:36:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1163,21 +1163,7 @@ agxSaveScreen (pScreen, on)
 
       oldIndex = inb(agxIdxReg);
       if (on) {
-
-         if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-            outb(agxByteData, 0x00);
-            outb(agxIdxReg, IR_PAL_DATA);
-            palDataReg = agxByteData;
-         }
-         else {
-            outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-            outb(VGA_PAL_WRITE_INDEX, 0x00);
-            palDataReg = VGA_PAL_DATA;
-         }
-	 outb(palDataReg, 0xFF);
-	 outb(palDataReg, 0xFF);
-	 outb(palDataReg, 0xFF);
+         agxRestoreColor0(savepScreen);
 
          if(XGA_PALETTE_CONTROL(agxChipId)) {
             outb(agxIdxReg, IR_PAL_MASK);
@@ -1188,20 +1174,15 @@ agxSaveScreen (pScreen, on)
          }
       }
       else {
+         agxClearColor0();
+   
          if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
+            outb(agxIdxReg, IR_PAL_MASK);
             outb(agxByteData, 0x00);
-            outb(agxIdxReg, IR_PAL_DATA);
-            palDataReg = agxByteData;
          }
          else {
-            outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-            outb(VGA_PAL_WRITE_INDEX, 0x00);
-            palDataReg = VGA_PAL_DATA;
+            outb(VGA_PAL_MASK, 0x00);
          }
-	 outb(palDataReg, 0);
-	 outb(palDataReg, 0);
-	 outb(palDataReg, 0);
       }
       outb(agxIdxReg, oldIndex); 
    }

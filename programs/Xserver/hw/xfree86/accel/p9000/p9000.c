@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.14 1994/09/11 00:50:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.16 1994/09/17 13:46:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -304,9 +304,7 @@ p9000Probe()
       {
       case 8:
 	break;
-      case 15:
       case 16:
-	xf86bpp = 15;
 	p9000InfoRec.depth = 16;  /* if 555, set to 15 below */
 	p9000InfoRec.bitsPerPixel = 16;
 	p9000InfoRec.defaultVisual = TrueColor;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.6 1994/09/07 15:47:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.7 1994/09/11 00:36:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -319,6 +319,15 @@ agxInitDisplay(screen_idx, crtcRegs)
 
    if ((inb(agxDAReg+DA_OP_MODE) & DA_OM_DISP_XGA_MODE) != DA_OM_DISP_XGA_MODE )
       agxSavedState = agxHWSave( agxSavedState, sizeof(agxSaveBlock) );
+
+   agxClearColor0();
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0x00);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0x00);
+   }
 
    /*
     * set the CRTC registers

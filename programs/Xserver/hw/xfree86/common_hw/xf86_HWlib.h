@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.1 94/03/28 21:25:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.1 1994/07/24 11:50:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.2 1994/09/08 14:27:44 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -82,6 +82,14 @@ extern Bool SC11412SetClock(
      long 
 #endif
 );
+
+/*  ICS2595.c */
+extern Bool ICS2595SetClock(
+#if NeedFunctionPrototypes
+     long
+#endif
+);
+
 
 /* xf86_ClkPr.c */
 extern void xf86GetClocks(
