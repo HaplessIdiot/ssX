@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 605. Fix an incorrect check for the "StrangeLockups" option in the
+      neomagic driver (#5505, Mike Harris).
  604. Rename geode driver to nsc and add GX2 support (Sarma Kolluru, NatSemi).
  603. Add the missing XKB definition for keysym "ISO_Level3_Lock" (#5526,
       Séamus Ó Ciardhuáin).
@@ -15745,4 +15747,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2440 2002/12/10 04:45:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2441 2002/12/10 15:12:12 alanh Exp $
