@@ -1,33 +1,29 @@
-/* $XConsortium: XSecurity.c /main/5 1996/11/12 12:13:50 swick $ */
+/* $TOG: XSecurity.c /main/6 1998/02/06 14:51:57 kaleb $ */
 /*
-Copyright (c) 1996  X Consortium
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Copyright 1996, 1998  The Open Group
 
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
+All Rights Reserved.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-Except as contained in this notice, the name of the X Consortium shall
-not be used in advertising or otherwise to promote the sale, use or
-other dealings in this Software without prior written authorization
-from the X Consortium.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
 */
+/* $XFree86$ */
 
 #include <X11/Xlibint.h>
+#include <stdio.h>
 #include "Xext.h"
 #include "extutil.h"
 #include "securstr.h"
@@ -218,7 +214,6 @@ XSecurityGenerateAuthorization(
     XExtDisplayInfo *info = find_display (dpy);
     register xSecurityGenerateAuthorizationReq *req;
     xSecurityGenerateAuthorizationReply rep;
-    char *auth_data;
     Xauth *auth_return;
     unsigned long values[3];
     unsigned long *value = values;
@@ -272,8 +267,8 @@ XSecurityGenerateAuthorization(
      * XSecurityAllocXauth; in both cases, you just free one pointer.
      */
 
-    if (auth_return = (Xauth *)Xcalloc(1,
-		(sizeof(Xauth) + auth_in->name_length + rep.dataLength)))
+    if ((auth_return = (Xauth *)Xcalloc(1,
+		(sizeof(Xauth) + auth_in->name_length + rep.dataLength))))
     {
 	auth_return->data_length = rep.dataLength;
 	auth_return->data = (char *)&auth_return[1];

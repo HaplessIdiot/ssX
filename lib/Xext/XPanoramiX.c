@@ -19,6 +19,8 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
+
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
@@ -39,8 +41,6 @@ static /* const */ char *panoramiX_extension_name = PANORAMIX_PROTOCOL_NAME;
   XextSimpleCheckExtension (dpy, i, panoramiX_extension_name)
 
 static int close_display();
-static Bool wire_to_event();
-static Status event_to_wire();
 static /* const */ XExtensionHooks panoramiX_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
@@ -206,7 +207,6 @@ XcupStoreColors(dpy, colormap, colors_in_out, ncolors)
     xXcupStoreColorsReq *req;
     xColorItem rbuf[256];
     xColorItem citem;
-    Status status;
     int i;
     XColor* xcp;
 

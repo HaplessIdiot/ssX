@@ -22,8 +22,11 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
+/* $XFree86$ */
+
 #define NEED_EVENTS
 #define NEED_REPLIES
+#include <stdio.h>
 #include "Xlibint.h"
 #include "XLbx.h"
 #include "lbxstr.h"
@@ -39,8 +42,6 @@ static /* const */ char *lbx_extension_name = LBXNAME;
 
 static int close_display();
 static char *error_string();
-static Bool wire_to_event();
-static Status event_to_wire();
 static /* const */ XExtensionHooks lbx_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */

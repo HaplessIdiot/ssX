@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.4 1997/11/16 06:17:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.5 1998/10/03 08:42:54 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -230,8 +230,6 @@ XagCreateNonembeddedApplicationGroup(dpy, app_group_return)
     XExtDisplayInfo *info = find_display (dpy);
     xXagCreateReq *req;
     struct xagstuff stuff;
-    unsigned long values[8];
-    unsigned long* value = values;
 
     XagCheckExtension (dpy, info, False);
 

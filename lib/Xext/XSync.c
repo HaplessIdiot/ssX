@@ -1,15 +1,9 @@
-/* $XConsortium: XSync.c,v 1.8 94/04/17 20:22:56 rws Exp $ */
+/* $TOG: XSync.c /main/10 1998/02/06 14:52:15 kaleb $ */
 /*
 
-Copyright (c) 1991, 1993  X Consortium
+Copyright 1991, 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -258,8 +252,11 @@ XSyncInitialize(dpy, major_version_return, minor_version_return)
     SyncHandle();
     *major_version_return = rep.majorVersion;
     *minor_version_return = rep.minorVersion;
-    return ((rep.majorVersion == SYNC_MAJOR_VERSION) &&
-	    (rep.minorVersion >= SYNC_MINOR_VERSION));
+    return ((rep.majorVersion == SYNC_MAJOR_VERSION)
+#if SYNC_MINOR_VERSION > 0	/* avoid compiler warning */
+	    && (rep.minorVersion >= SYNC_MINOR_VERSION)
+#endif
+	    );
 }
 
 XSyncSystemCounter *
@@ -573,7 +570,7 @@ XSyncCreateAlarm(dpy, values_mask, values)
     req->id = aid = XAllocID(dpy);
     values_mask &= XSyncCACounter | XSyncCAValueType | XSyncCAValue
     			| XSyncCATestType | XSyncCADelta | XSyncCAEvents;
-    if (req->valueMask = values_mask)
+    if ((req->valueMask = values_mask))
 	_XProcessAlarmAttributes(dpy, (xSyncChangeAlarmReq *) req,
 				 values_mask, values);
     UnlockDisplay(dpy);
@@ -660,7 +657,7 @@ XSyncChangeAlarm(dpy, alarm, values_mask, values)
     req->alarm = alarm;
     values_mask &= XSyncCACounter | XSyncCAValueType | XSyncCAValue
 		 | XSyncCATestType | XSyncCADelta | XSyncCAEvents;
-    if (req->valueMask = values_mask)
+    if ((req->valueMask = values_mask))
 	_XProcessAlarmAttributes(dpy, req, values_mask, values);
     UnlockDisplay(dpy);
     SyncHandle();

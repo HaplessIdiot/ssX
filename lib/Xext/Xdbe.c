@@ -30,10 +30,12 @@
  *     Xlib DBE code
  *
  *****************************************************************************/
+/* $XFree86$ */
 
 
 #define NEED_EVENTS
 #define NEED_REPLIES
+#include <stdio.h>
 #include <X11/Xlibint.h>
 #include "Xext.h"
 #include "extutil.h"
@@ -454,7 +456,6 @@ XdbeScreenVisualInfo *XdbeGetVisualInfo (dpy, screen_specifiers, num_screens)
          * padding may be different in the two structures.
          */
         for (j = 0; j < scrVisInfo[i].count; j++) {
-            char data;
             xDbeVisInfo xvi;
 
             _XRead (dpy, (char *)&xvi, sizeof(xDbeVisInfo));

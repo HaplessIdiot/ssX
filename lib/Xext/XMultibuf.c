@@ -1,14 +1,9 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.31 94/04/17 20:22:54 rws Exp $
+ * $TOG: XMultibuf.c /main/32 1998/02/06 14:51:46 kaleb $
  *
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,20 +11,22 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
  *
  * Authors:  Jim Fulton, MIT X Consortium
  */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
+#include <stdio.h>
 #include "Xext.h"			/* in ../include */
 #include "extutil.h"			/* in ../include */
 #include "multibufst.h"			/* in ../include */
@@ -308,7 +305,7 @@ int XmbufCreateBuffers (dpy, w, count, update_action, update_hint, buffers)
     XExtDisplayInfo *info = find_display (dpy);
     xMbufCreateImageBuffersReply rep;
     register xMbufCreateImageBuffersReq *req;
-    int i, result;
+    int result;
 
     MbufCheckExtension (dpy, info, 0);
 
@@ -412,7 +409,7 @@ Status XmbufGetWindowAttributes (dpy, w, attr)
 	return 0;
     }
     attr->buffers = (Multibuffer *) NULL; 
-    if (attr->nbuffers = rep.length) {
+    if ((attr->nbuffers = rep.length)) {
 	int nbytes = rep.length * sizeof(Multibuffer);
 	attr->buffers = (Multibuffer *) Xmalloc((unsigned) nbytes);
 	nbytes = rep.length << 2;
@@ -454,7 +451,7 @@ void XmbufChangeWindowAttributes (dpy, w, valuemask, attr)
     LockDisplay (dpy);
     MbufGetReq (MbufSetMBufferAttributes, req, info);
     req->window = w;
-    if (req->valueMask = valuemask) {	/* stolen from lib/X/XWindow.c */
+    if ((req->valueMask = valuemask)) {	/* stolen from lib/X/XWindow.c */
 	unsigned long values[1];	/* one per element in if stmts below */
 	unsigned long *v = values;
 	unsigned int nvalues;
@@ -524,7 +521,7 @@ void XmbufChangeBufferAttributes (dpy, b, valuemask, attr)
     LockDisplay (dpy);
     MbufGetReq (MbufSetBufferAttributes, req, info);
     req->buffer = b;
-    if (req->valueMask = valuemask) {	/* stolen from lib/X/XWindow.c */
+    if ((req->valueMask = valuemask)) {	/* stolen from lib/X/XWindow.c */
 	unsigned long values[1];	/* one per element in if stmts below */
 	unsigned long *v = values;
 	unsigned int nvalues;
@@ -652,7 +649,7 @@ Window XmbufCreateStereoWindow (dpy, parent, x, y, width, height, border_width,
 		     CWBackingStore|CWBackingPlanes|CWBackingPixel|
 		     CWOverrideRedirect|CWSaveUnder|CWEventMask|
 		     CWDontPropagate|CWColormap|CWCursor);
-    if (req->mask = valuemask) {
+    if ((req->mask = valuemask)) {
 	unsigned long values[32];
 	register unsigned long *value = values;
 	unsigned int nvalues;
