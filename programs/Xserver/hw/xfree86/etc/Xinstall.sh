@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.62 2003/12/06 01:10:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.63 2003/12/09 00:26:34 torrey Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -106,10 +106,13 @@ RUNDIR=$ROOTDIR/usr/X11R6
 ETCDIR=$ROOTDIR/etc
 VARDIR=$ROOTDIR/var
 
-OLDFILES=""
+OLDFILES=" \
+	$RUNDIR/include/freetype2/ft2build.h \
+	"
 
 OLDDIRS=" \
 	$RUNDIR/lib/X11/xkb/compiled \
+	$RUNDIR/lib/X11/xkb/geometry/hp \
 	"
 
 OLDMODULES=" \
