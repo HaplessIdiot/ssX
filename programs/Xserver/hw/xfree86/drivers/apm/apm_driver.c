@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.27 2000/02/10 18:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.28 2000/02/11 22:35:56 dawes Exp $ */
 
 
 #include "apm.h"
@@ -473,8 +473,10 @@ static unsigned int
 ddc1Read(ScrnInfoPtr pScrn)
 {
     APMDECL(pScrn);
+    unsigned char tmp;
 
-    WRXB_IOP(0xD0, RDXB_IOP(0xD0) & 0x07);
+    tmp = RDXB_IOP(0xD0);
+    WRXB_IOP(0xD0, tmp & 0x07);
     while (STATUS_IOP() & 0x800);             
     while (!(STATUS_IOP() & 0x800));             
     return (STATUS_IOP() & STATUS_SDA) != 0;
