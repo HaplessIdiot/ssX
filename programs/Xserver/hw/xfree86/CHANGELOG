@@ -1,4 +1,6 @@
-XFree86 4.3.99.6 (xx May 2003)
+XFree86 4.3.99.7 (xx June 2003)
+
+XFree86 4.3.99.6 (10 June 2003)
  207. Add support for the Mac's KP_Equal key (untested) (David Dawes).
  206. Import fontconfig 2.1.0 as an external package, and update the build
       to use this version (David Dawes).
@@ -17053,7 +17055,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2728 2003/06/09 15:11:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2729 2003/06/09 19:59:42 dawes Exp $
 
 
 
