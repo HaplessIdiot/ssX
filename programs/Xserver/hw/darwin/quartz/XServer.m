@@ -8,7 +8,7 @@
 //
 /*
  * Copyright (c) 2001 Andreas Monitzer. All Rights Reserved.
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.6 2002/11/20 23:51:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.7 2003/01/02 07:05:12 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -99,6 +99,7 @@ extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
+extern void QuartzReallySetCursor();
 static void childDone(int sig);
 static void powerDidChange(void *x, io_service_t y, natural_t messageType,
                            void *messageArgument);
@@ -126,7 +127,7 @@ static io_connect_t root_port;
     serverVisible = NO;
     rootlessMenuBarVisible = YES;
     queueShowServer = YES;
-    appQuitting = NO;
+    quartzServerQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
     windowClass = [NSWindow class];
@@ -152,7 +153,7 @@ static io_connect_t root_port;
 {
     // Quit if the X server is not running
     if ([serverLock tryLock]) {
-        appQuitting = YES;
+        quartzServerQuitting = YES;
         serverState = server_Done;
         if (clientPID != 0)
             kill(clientPID, SIGINT);
@@ -182,7 +183,7 @@ static io_connect_t root_port;
         }
     }
 
-    appQuitting = YES;
+    quartzServerQuitting = YES;
     if (clientPID != 0)
         kill(clientPID, SIGINT);
 
@@ -513,7 +514,7 @@ static io_connect_t root_port;
         [self forceShowServer:queueShowServer];
     }
 
-    if (appQuitting) {
+    if (quartzServerQuitting) {
         [self quitServer];
         [NSApp replyToApplicationShouldTerminate:YES];
     }
@@ -849,6 +850,10 @@ static io_connect_t root_port;
     xe.u.u.type = kXDarwinQuit;
     [self sendXEvent:&xe];
 
+    // Revert to the Mac OS X arrow cursor. The main thread sets the cursor
+    // and it won't be responding to future requests to change it.
+    [[NSCursor arrowCursor] set];
+
     serverState = server_Quitting;
 }
 
@@ -897,9 +902,13 @@ static io_connect_t root_port;
         case kQuartzServerDied:
             sendServerEvents = NO;
             serverState = server_Done;
-            if (!appQuitting) {
+            if (!quartzServerQuitting) {
                 [NSApp terminate:nil];	// quit if we aren't already
             }
+            break;
+
+        case kQuartzCursorUpdate:
+            QuartzReallySetCursor();
             break;
 
         case kQuartzPostEvent:
@@ -925,7 +934,7 @@ static io_connect_t root_port;
         NSLog(@"X client process terminated abnormally.");
     }
 
-    if (!appQuitting) {
+    if (!quartzServerQuitting) {
         [NSApp terminate:nil];	// quit if we aren't already
     }
 }

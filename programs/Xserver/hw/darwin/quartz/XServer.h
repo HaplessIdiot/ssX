@@ -3,7 +3,7 @@
 //
 /*
  * Copyright (c) 2001 Andreas Monitzer. All Rights Reserved.
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.6 2002/11/20 23:51:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.7 2003/01/02 07:05:12 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -44,7 +44,6 @@
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
     BOOL queueShowServer;
-    BOOL appQuitting;
     UInt32 mouseState;
     Class windowClass;
 

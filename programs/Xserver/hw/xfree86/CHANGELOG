@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 769. Fix intermittent XDarwin crash on Mac OS X 10.1.x when changing cursors
+      on dual processor machines (Torrey T. Lyons).
  768. Correction to 'is' keymap (reported by Richard Allen).
  767. Fix GLX library mis-use of LockDisplay()/UnlockDisplay() sequences
       (reported by Alexis Vartanian).
@@ -16089,4 +16091,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2488 2003/01/20 21:58:52 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2489 2003/01/21 00:52:19 dawes Exp $

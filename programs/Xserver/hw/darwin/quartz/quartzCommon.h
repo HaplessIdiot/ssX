@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.6 2003/01/15 02:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.7 2003/01/19 06:52:54 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -74,6 +74,7 @@ extern int              quartzUseAGL;
 
 // Other shared data
 extern int              quartzServerVisible;
+extern int              quartzServerQuitting;
 extern int              quartzScreenIndex;
 extern int              aquaMenuBarHeight;
 
@@ -90,6 +91,7 @@ enum {
     kQuartzServerHidden,
     kQuartzServerStarted,
     kQuartzServerDied,
+    kQuartzCursorUpdate,
     kQuartzPostEvent
 };
 

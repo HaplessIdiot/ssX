@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.5 2003/01/15 02:34:06 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.6 2003/01/19 06:52:54 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -57,6 +57,7 @@ int                     quartzRootless = -1;
 int                     quartzUseSysBeep = 0;
 int                     quartzUseAGL = 1;
 int                     quartzServerVisible = TRUE;
+int                     quartzServerQuitting = FALSE;
 int                     quartzScreenIndex = 0;
 int                     aquaMenuBarHeight = 0;
 int                     noPseudoramiXExtension = TRUE;
@@ -288,6 +289,8 @@ void QuartzProcessEvent(
  */
 void QuartzGiveUp(void)
 {
+#if 0
+// Trying to switch cursors when quitting causes deadlock
     int i;
 
     for (i = 0; i < screenInfo.numScreens; i++) {
@@ -295,6 +298,8 @@ void QuartzGiveUp(void)
             QuartzSuspendXCursor(screenInfo.screens[i]);
         }
     }
+#endif
+
     if (!quartzRootless)
         QuartzFSRelease();
 }
