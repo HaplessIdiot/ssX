@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.13 1995/07/03 08:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.14 1995/07/12 15:43:14 dawes Exp $ */
 
 /*
 
@@ -42,6 +42,7 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/StdSel.h>
+#include <X11/Xmd.h>
 #include <X11/extensions/xf86vmode.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -54,7 +55,7 @@ int dot_clock, mode_flags;
 
 /* Minimum extension version required */
 #define MINMAJOR 0
-#define MINMINOR 2
+#define MINMINOR 4
 
 /* Mode flags -- ignore flags not in V_FLAG_MASK */
 #define V_FLAG_MASK	0x1FF;
@@ -70,6 +71,7 @@ int dot_clock, mode_flags;
 
 typedef enum { HDisplay, HSyncStart, HSyncEnd, HTotal,
 	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, 
+	InvertVclk, BlankDelay1, BlankDelay2, EarlySc,
 	PixelClock, HSyncRate, VSyncRate, fields_num } fields;
 
 typedef struct {
@@ -98,6 +100,10 @@ static struct _AppResources {
 	{ VSyncEnd, VDisplay, },
 	{ VTotal, VDisplay, },
 	{ Flags, },
+	{ InvertVclk, },
+	{ BlankDelay1, },
+	{ BlankDelay2, },
+	{ EarlySc, },
 	{ PixelClock, },
 	{ HSyncRate, },
 	{ VSyncRate, },
@@ -128,12 +134,15 @@ static XtResource Resources[] = {
 	XtRImmediate, (XtPointer)80 },
 };
 
+static XtTranslations trans;
+
 static Atom wm_delete_window;
 static Widget invalid_mode_popup;
 static Widget testing_popup;
 static Widget Top;
 static Widget auto_apply_toggle;
 
+static Bool S3Specials = False;
 static char modebuf[160];
 
 static void UpdateSyncRates();
@@ -175,6 +184,13 @@ static Bool GetModeLine (dpy, scrn)
     AppRes.field[Flags].val = mode_flags & V_FLAG_MASK;
     AppRes.field[PixelClock].val = dot_clock;
     UpdateSyncRates(FALSE);
+    if (mode_line.privsize && mode_line.private) {
+	S3Specials = True;
+	AppRes.field[InvertVclk].val = mode_line.private[1];
+	AppRes.field[BlankDelay1].val = mode_line.private[2] & 7;
+	AppRes.field[BlankDelay2].val = (mode_line.private[2] >> 4) & 7;
+	AppRes.field[EarlySc].val = mode_line.private[3];
+    }
 
     for (i = HDisplay; i < fields_num; i++) 
 	AppRes.orig[i] = AppRes.field[i].val;
@@ -265,10 +281,10 @@ static void ApplyCB (w, client, call)
     XtPointer client, call;
 {
     XF86VidModeModeLine mode_line;
-#if 0
-    char* string;
+    CARD32 S3private[4];
     int i;
-#endif
+    char* string;
+    Boolean state;
 
     mode_line.hdisplay = AppRes.field[HDisplay].val;
     mode_line.hsyncstart = AppRes.field[HSyncStart].val;
@@ -285,6 +301,30 @@ static void ApplyCB (w, client, call)
     (void) sscanf (string, "%x", &i);
 #endif
     mode_line.flags = mode_flags;
+    if (S3Specials) {
+	mode_line.privsize = 4;
+	mode_line.private = S3private;
+	mode_line.private[0] = 0;
+	XtVaGetValues(AppRes.field[InvertVclk].textwidget,
+			XtNstate, &state, NULL);
+	AppRes.field[InvertVclk].val = state ? 1 : 0;
+	mode_line.private[1] = AppRes.field[InvertVclk].val;
+	XtVaGetValues (AppRes.field[BlankDelay1].textwidget,
+			XtNstring, &string, NULL);
+	(void) sscanf (string, "%x", &i);
+	AppRes.field[BlankDelay1].val = i;
+	mode_line.private[2] = AppRes.field[BlankDelay1].val;
+	XtVaGetValues (AppRes.field[BlankDelay2].textwidget,
+			XtNstring, &string, NULL);
+	(void) sscanf (string, "%x", &i);
+	AppRes.field[BlankDelay2].val = i;
+	mode_line.private[2] |= AppRes.field[BlankDelay2].val << 4;
+	XtVaGetValues(AppRes.field[EarlySc].textwidget,
+			XtNstate, &state, NULL);
+	AppRes.field[EarlySc].val = state ? 1 : 0;
+	mode_line.private[3] = AppRes.field[EarlySc].val;
+    } else
+	mode_line.privsize = 0;
     
    hitError = 0;
 
@@ -310,7 +350,9 @@ fields i;
 	 (void) sprintf (buf, "%04x", sdp->val);
       else if (i >= PixelClock && i <= VSyncRate)
 	 (void) sprintf (buf, "%6.2f", (float)sdp->val / 1000.0);
-      else
+      else if (i == BlankDelay1 || i == BlankDelay2) {
+	 (void) sprintf (buf, "%d", sdp->val);
+      } else
 	 (void) sprintf (buf, "%5d", sdp->val);
 	 
       sdp->lastpercent = -1;
@@ -322,7 +364,16 @@ fields i;
 	 text.ptr = buf;
 	 text.format = XawFmt8Bit;
 	 XawTextReplace (sdp->textwidget, 0, 4, &text);
-      } else 
+      } else if (i == BlankDelay1 || i == BlankDelay2) {
+	 XawTextBlock text;
+
+	 text.firstPos = 0;
+	 text.length = 1;
+	 text.ptr = buf;
+	 XawTextReplace (sdp->textwidget, 0, 1, &text);
+      } else if (i == InvertVclk || i == EarlySc) {
+	XtVaSetValues (sdp->textwidget, XtNstate, sdp->val, NULL);
+      } else
 	XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
    }
 
@@ -628,7 +679,6 @@ static void FlagsEditCB (w, client, call)
     int i, len;
     char* string;
     fields findex = (fields) client;
-    ScrollData* sdp = &AppRes.field[findex];
 
     XtVaGetValues (w, XtNstring, &string, NULL);
     len = strlen (string);
@@ -637,8 +687,37 @@ static void FlagsEditCB (w, client, call)
 
 	XBell (XtDisplay(XtParent(w)), 100);
 	(void) strncpy (buf, string, 4);
-	XtVaSetValues (sdp->textwidget, XtNstring, buf, NULL);
-	XawTextSetInsertionPoint (sdp->textwidget, 4);
+	buf[4] = '\0';
+	XtVaSetValues (w, XtNstring, buf, NULL);
+	XawTextSetInsertionPoint (w, 4);
+    }
+
+    for (i = 0; i < len; i++) {
+	if (!isxdigit (string[i])) {
+	    XBell (XtDisplay(XtParent(w)), 100);
+	}
+    }
+}
+
+static void BlankEditCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+    int i, len;
+    char* string;
+    fields findex = (fields) client;
+    ScrollData* sdp = &AppRes.field[findex];
+
+    XtVaGetValues (w, XtNstring, &string, NULL);
+    len = strlen (string);
+    if (len > 1) {
+	char buf[2];
+
+	XBell (XtDisplay(XtParent(w)), 100);
+	(void) strncpy (buf, string, 1);
+	buf[1] = 0;
+	XtVaSetValues (w, XtNstring, buf, NULL);
+	XawTextSetInsertionPoint (w, 1);
     }
 
     for (i = 0; i < len; i++) {
@@ -830,14 +909,62 @@ static void displayWarning(top)
 
 
 
+#if 0
+static void s3Special(top)
+    Widget top;
+{
+    Widget w, popup, form, invert_vclk_toggle, wids[6];
+    char buf1[5] = {'\0',};
+    int x, y;
+
+    x =  DisplayWidth(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 3;
+    y =  DisplayHeight(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 3;
+
+    popup = XtVaCreatePopupShell("S3Adjust", 
+			    transientShellWidgetClass, top,
+			    XtNtitle, "S3Adjust",
+			    XtNx, x,
+			    XtNy, y,
+			    NULL);
+
+    form = XtVaCreateManagedWidget(
+               "S3Box",
+               formWidgetClass,
+               popup,
+               NULL);
+
+    w = XtVaCreateManagedWidget( "S3Title",
+                                     labelWidgetClass,
+				     form,
+                                     NULL);
+
+    invert_vclk_toggle = XtVaCreateManagedWidget( "InvertVclk-toggle",
+                                     toggleWidgetClass,
+				     form,
+                                     NULL);
+
+    wids[0] = XtCreateWidget ("Blank1-label", labelWidgetClass,
+		form, NULL, 0);
+    wids[1] = XtVaCreateWidget ("Blank1-text", asciiTextWidgetClass,
+		form, XtNstring, buf1, NULL);
+    AddCallback (wids[1], XtNcallback, FlagsEditCB, (XtPointer) NULL);
+
+    XtManageChildren (wids, 2);
+
+    XtPopup(popup, XtGrabNone);
+    
+}
+#endif
+
+
+
 static void CreateHierarchy(top)
     Widget top;
 {
     char buf[5];
-    Widget form, forms[14];
+    Widget form, forms[14], s3form;
     Widget wids[8];
     Widget boxW,messageW, popdownW, w;   
-    XtTranslations trans;
     int i;
     int x, y;
     static String form_names[] = {
@@ -854,7 +981,7 @@ static void CreateHierarchy(top)
 	"PixelClock-form",
 	"HSyncRate-form",
 	"VSyncRate-form",
-	"Buttons2-form"
+	"Buttons2-form",
 	};
 
     form = XtCreateWidget ("form", formWidgetClass, top, NULL, 0);
@@ -927,23 +1054,6 @@ static void CreateHierarchy(top)
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-VTotal);
    
-    trans = XtParseTranslationTable ("\
-	<Key>0: insert-char()\n<Key>1: insert-char()\n\
-	<Key>2: insert-char()\n<Key>3: insert-char()\n\
-	<Key>4: insert-char()\n<Key>5: insert-char()\n\
-	<Key>6: insert-char()\n<Key>7: insert-char()\n\
-	<Key>8: insert-char()\n<Key>9: insert-char()\n\
-	<Key>a: insert-char()\n<Key>b: insert-char()\n\
-	<Key>c: insert-char()\n<Key>d: insert-char()\n\
-	<Key>e: insert-char()\n<Key>f: insert-char()\n\
-	<Key>BackSpace: delete-previous-character()\n\
-	<Key>Right: forward-character()\n<Key>KP_Right: forward-character()\n\
-	<Key>Left: backward-character()\n<Key>KP_Left: backward-character()\n\
-	<Key>Delete: delete-previous-character()\n\
-	<Key>KP_Delete: delete-previous-character()\n\
-	<EnterWindow>: enter-window()\n<LeaveWindow>: leave-window()\n\
-	<FocusIn>: focus-in()\n<FocusOut>: focus-out()\n\
-	<Btn1Down>: select-start()\n");
     (void) sprintf (buf, "%04x", AppRes.field[Flags].val);
     wids[0] = XtCreateWidget ("Flags-label", labelWidgetClass,
 		forms[8], NULL, 0);
@@ -1002,6 +1112,36 @@ static void CreateHierarchy(top)
     XtManageChildren (wids, 4);
 
     XtManageChildren (forms, 14);
+
+    if (S3Specials) {
+	char buf[2] = "0";
+	s3form = XtCreateWidget ("S3-form", formWidgetClass, 
+		form, NULL, 0);
+	wids[0] = XtVaCreateWidget("InvertVclk-toggle", toggleWidgetClass,
+			s3form, XtNstate, AppRes.field[InvertVclk].val, NULL);
+	AppRes.field[InvertVclk].textwidget = wids[0];
+	wids[1] = XtVaCreateWidget("EarlySc-toggle", toggleWidgetClass,
+			s3form, XtNstate, AppRes.field[EarlySc].val, NULL);
+	AppRes.field[EarlySc].textwidget = wids[1];
+	wids[2] = XtCreateWidget("Blank1-label", labelWidgetClass, s3form,
+			NULL, 0);
+	(void) sprintf (buf, "%d", AppRes.field[BlankDelay1].val);
+	wids[3] = XtVaCreateWidget("Blank1-text", asciiTextWidgetClass,
+			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
+	AddCallback(wids[3], XtNcallback, BlankEditCB, BlankDelay1);
+	AppRes.field[BlankDelay1].textwidget = wids[3];
+
+	wids[4] = XtCreateWidget("Blank2-label", labelWidgetClass, s3form,
+			NULL, 0);
+	(void) sprintf (buf, "%d", AppRes.field[BlankDelay2].val);
+	wids[5] = XtVaCreateWidget("Blank2-text", asciiTextWidgetClass,
+			s3form, XtNstring, buf, XtNtranslations, trans, NULL);
+	AddCallback(wids[5], XtNcallback, BlankEditCB, BlankDelay2);
+	AppRes.field[BlankDelay2].textwidget = wids[5];
+	XtManageChildren (wids, 6);
+	XtManageChild(s3form);
+    }
+
     XtManageChild (form);
 
     SetScrollbars ();
@@ -1136,15 +1276,6 @@ int main (argc, argv)
     if (argc > 1) {
 	int i = 0;
 	if ((argc == 3 || argc == 4) && !strcmp(argv[1], "-saver")) {
-	    if (MinorVersion < 3) {
-		fprintf(stderr,
-		    "Xserver is running an old XFree86-VidModeExtension"
-		    " version (%d.%d)\n", MajorVersion, MinorVersion);
-		fprintf(stderr,
-		    "Minimum required version for -saver is %d.%d\n",
-		    MINMAJOR, 3);
-		exit(2);
-	    }
 	    XF86VidModeGetSaver(XtDisplay (top),
 				DefaultScreen (XtDisplay (top)),
 				&suspendTime, &offTime);
@@ -1239,6 +1370,23 @@ int main (argc, argv)
     /* really we should run our own event dispatching here until the
      * warning has been read...
      */
+    trans = XtParseTranslationTable ("\
+	<Key>0: insert-char()\n<Key>1: insert-char()\n\
+	<Key>2: insert-char()\n<Key>3: insert-char()\n\
+	<Key>4: insert-char()\n<Key>5: insert-char()\n\
+	<Key>6: insert-char()\n<Key>7: insert-char()\n\
+	<Key>8: insert-char()\n<Key>9: insert-char()\n\
+	<Key>a: insert-char()\n<Key>b: insert-char()\n\
+	<Key>c: insert-char()\n<Key>d: insert-char()\n\
+	<Key>e: insert-char()\n<Key>f: insert-char()\n\
+	<Key>BackSpace: delete-previous-character()\n\
+	<Key>Right: forward-character()\n<Key>KP_Right: forward-character()\n\
+	<Key>Left: backward-character()\n<Key>KP_Left: backward-character()\n\
+	<Key>Delete: delete-previous-character()\n\
+	<Key>KP_Delete: delete-previous-character()\n\
+	<EnterWindow>: enter-window()\n<LeaveWindow>: leave-window()\n\
+	<FocusIn>: focus-in()\n<FocusOut>: focus-out()\n\
+	<Btn1Down>: select-start()\n");
     XtAppMainLoop (app);
 
     return 0;

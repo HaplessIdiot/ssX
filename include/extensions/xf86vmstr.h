@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.4 1995/07/02 07:42:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.5 1995/07/02 08:28:45 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -38,7 +38,7 @@ from the Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	3
+#define XF86VIDMODE_MINOR_VERSION	4
 
 typedef struct _VGAHelpQueryVersion {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -88,8 +88,9 @@ typedef struct {
     CARD16	vsyncend B16;
     CARD16	vtotal B16;
     CARD32	flags B32;
+    CARD32	privsize B32;
 } xVGAHelpGetModeLineReply;
-#define sz_xVGAHelpGetModeLineReply	32
+#define sz_xVGAHelpGetModeLineReply	36
 
 typedef struct _VGAHelpModModeLine {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -105,7 +106,7 @@ typedef struct _VGAHelpModModeLine {
     CARD16	vsyncend B16;
     CARD16	vtotal B16;
     CARD32	flags B32;
-    CARD32	pad B32;
+    CARD32	privsize B32;
 } xVGAHelpModModeLineReq;
 #define sz_xVGAHelpModModeLineReq	32
 

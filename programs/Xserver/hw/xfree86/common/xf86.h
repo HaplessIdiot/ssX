@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.22 1995/07/12 15:37:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,8 @@ typedef struct _DispM {
   int		CrtcVTotal;
   Bool		CrtcHAdjusted;
   Bool		CrtcVAdjusted;
+  int		PrivSize;
+  CARD32 	*Private;
 } DisplayModeRec, *DisplayModePtr;
 
 #define V_PHSYNC    0x0001

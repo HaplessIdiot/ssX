@@ -19,7 +19,7 @@
 # chipset/server and untested.
 # 
 # $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.8 1995/02/12 02:41:50 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.9 1995/07/13 14:16:12 dawes Exp $
 
 # Cirrus Logic
 
@@ -587,25 +587,45 @@ SERVER Mach64
 # AGX
 
 NAME AGX (generic)
-CHIPSET AGX
+CHIPSET AGX-014/15/16
 SERVER AGX
 
-NAME Boca Vortex
-SEE AGX (generic)
+NAME Boca Vortex (Sierra RAMDAC)
+CHIPSET AGX-015
+SERVER AGX
+RAMDAC sc15025
+LINE     Option "dac_8_bit"
+LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
 
 NAME EIZO (VRAM)
 SEE AGX (generic)
 
-NAME Hercules Graphite Pro
-CHIPSET AGX-014/15/16
+NAME Orchid Celsius (AT&T RAMDAC)
+CHIPSET AGX-015
 SERVER AGX
+RAMDAC att20c490
+LINE     Option "dac_8_bit"
+LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
 
-NAME Hercules Graphite Power
-CHIPSET AGX-016
+NAME Orchid Celsius (Sierra RAMDAC)
+CHIPSET AGX-015
 SERVER AGX
+RAMDAC sc15025
+LINE     Option "dac_8_bit"
+LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
 
-NAME Orchid Celsius
-SEE AGX (generic)
+
+NAME Spider Black Widow
+CHIPSET AGX-015
+SERVER AGX
+RAMDAC sc15025
+LINE     Option "dac_8_bit"
+LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
+
 
 NAME Spider Black Widow Plus
 CHIPSET AGX-016
@@ -613,6 +633,8 @@ SERVER AGX
 RAMDAC sc15025
 LINE     Option "dac_8_bit"
 LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
+LINE     #Option "fifo_aggressive" # 3x bus bw - may result in random pixels
 LINE	 #Probable clocks:
 LINE     #Clocks 25.2  28.3  39.9  72.2  50.0  76.9  36.1  44.8
 LINE     #Clocks 89.0  119.8 79.9  31.5 110.0  64.9  74.9  94.9
@@ -625,12 +647,11 @@ DACSPEED 85
 LINE     Chipset "AGX-014"
 LINE     Option "dac_8_bit"
 LINE     Option "no_wait_state"
-LINE     #Option "fast_dram"
 LINE     #Probable clocks:
 LINE     #Clocks 25.0  28.0  32.0  36.0  40.0  45.0  50.0  65.0
 LINE     #Clocks 70.0  75.0  80.0  85.0  90.0  95.0 100.0 110.0
 
-NAME Hercules Graphite VL Pro HG720
+NAME Hercules Graphite Pro
 CHIPSET AGX-015
 SERVER AGX
 # Card specific DAC, doesn't appear in ramdac menu
@@ -638,11 +659,39 @@ LINE     Ramdac "herc_dual_dac"
 LINE     Chipset "AGX-015"
 LINE     Option "dac_8_bit"
 LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
 LINE     #Probable clocks:
-LINE     #Clocks 25.2  28.3  32.5  36.0  40.0  45.0  50.4  65.0
-LINE     #Clocks 70.0  75.0  80.0  85.0  0.00  0.00  0.00  0.00
-LINE     #Clocks 0.00  0.00  0.00  0.00  0.00  90.0  100   130
-LINE     #Clocks 0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+LINE     #Clocks 25.0  28.0  32.0  36.0  40.0  45.0  50.0  65.0
+LINE     #Clocks 70.0  75.0  80.0  85.0  90.0  95.0 100.0 110.0
+
+NAME Hercules Graphite Power
+CHIPSET AGX-016
+SERVER AGX
+# Card specific DAC, doesn't appear in ramdac menu
+LINE     Ramdac "herc_dual_dac"
+LINE     Chipset "AGX-016"
+LINE     Option "dac_8_bit"
+LINE     Option "no_wait_state"
+LINE     #Option "fifo_moderate"   # 2x bus bw - may result in random pixels
+LINE     #Option "fifo_aggressive" # 3x bus bw - may result in random pixels
+LINE     #Probable clocks:
+LINE     #Clocks 25.0  28.0  32.0  36.0  40.0  45.0  50.0  65.0
+LINE     #Clocks 70.0  75.0  80.0  85.0  90.0  95.0 100.0 110.0
+
+NAME XGA-2  (ISA bus)
+CHIPSET XGA-2  
+SERVER AGX
+NOCLOCKPROBE
+LINE     #Instance  7           # XGA instance 0-7
+LINE     #COPbase   0xC8F00     # XGA memory-mapped register address
+LINE     #POSbase   0           # Disable probing if above are specified
+
+NAME XGA-1  (ISA bus)
+CHIPSET XGA-1
+SERVER AGX
+LINE     #Instance  7           # XGA instance 0-7
+LINE     #COPbase   0xC8F00     # XGA memory-mapped register address
+LINE     #POSbase   0           # Disable probing if above are specified
 
 # WD
 

@@ -1,4 +1,15 @@
-XFree86 3.1.1Ce (13 July 1995)
+XFree86 3.1.1D (15 July 1995)
+213. xterm fix for crash when inputMethod is set to kinput2 (Manabe Keishi).
+212. Code to detect the AT&T20C490, and Sierra 1148[234579] ramdacs
+     (Joe Moss).
+211. Update the VidMode extension to handle extra mode-specific parameters,
+     and update xvidtune for extra S3 parameters.
+210. Allow some S3 parameters to be set in the Display SubSection for
+     individual modes.
+209. xf86config Cards database upates.
+208. Updates to README.WstDig for the 90C24 (Brad Bosch).
+207. Updates to LynxOS support, including support for version 2.2.1, and
+     a README.LynxOS (Thomas Mueller).
 206. Support for the SC1148{2,3,4} ramdacs at 15bpp, and the SC1148{5,7,9}
      ramdacs at 15 and 16bpp in the S3 server (Joe Moss).
 205. Fix for problems with some WD90C24 TFT systems (Brad Bosch).

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.29 1995/07/02 07:52:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.30 1995/07/03 08:50:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -466,6 +466,9 @@ static SymTabRec PointerTab[] = {
 #define WHITE		75
 #define DEPTH		76
 #define WEIGHT		77
+#define INVERTVCLK	78
+#define BLANKDELAY	79
+#define EARLYSC		80
 
 #ifdef INIT_CONFIG
 static SymTabRec DisplayTab[] = {
@@ -479,6 +482,9 @@ static SymTabRec DisplayTab[] = {
   { DEPTH,		"depth" },
   { WEIGHT,		"weight" },
   { OPTION,		"option" },
+  { INVERTVCLK,		"invert_vclk" },
+  { BLANKDELAY,		"blank_delay" },
+  { EARLYSC,		"early_sc" },
   { -1,			"" },
 };
 #endif /* INIT_CONFIG */
@@ -504,6 +510,11 @@ static SymTabRec VisualTab[] = {
 #endif /* INIT_CONFIG */
 
 #endif /* XCONFIG_FLAGS_ONLY */
+
+#define S3_MODEPRIV_SIZE	4
+#define S3_INVERT_VCLK		1
+#define S3_BLANK_DELAY		2
+#define S3_EARLY_SC		3
 
 /* 
  * XF86Config flags to record which options were defined in the XF86Config file

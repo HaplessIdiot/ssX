@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.5 1995/06/29 13:34:39 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.6 1995/07/07 15:47:23 dawes Exp $
  */
 
 /*
@@ -2628,7 +2628,7 @@ static void VTInitI18N()
 
     if (term->misc.input_method) {
 	strcpy(tmp, term->misc.input_method);
-	for(s=tmp; *s;) {
+	for(ns=s=tmp; ns && *s;) {
 	    while (*s && isspace(*s)) s++;
 	    if (!*s) break;
 	    if (!(ns = end = index(s, ',')))

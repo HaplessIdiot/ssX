@@ -2,7 +2,7 @@
  * xrdb - X resource manager database utility
  *
  * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xrdb/xrdb.c,v 3.0 1994/12/17 10:10:46 dawes Exp $
  */
 
 /*
@@ -1034,7 +1034,11 @@ Process(scrno, doScreen, execute)
     Window root;
     Atom res_prop;
     FILE *input, *output;
+#ifndef Lynx
     char cmd[BUFSIZ];
+#else
+    char cmd[1024];
+#endif
 
     defines[defines_base] = '\0';
     buffer.used = 0;

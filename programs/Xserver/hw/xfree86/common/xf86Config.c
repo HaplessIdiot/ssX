@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.53 1995/07/03 08:50:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.54 1995/07/07 15:39:47 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2480,6 +2480,8 @@ DispPtr disp;
 	{
 	  pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
 	  pNew->name = val.str;
+	  pNew->PrivSize = 0;
+	  pNew->Private = NULL;
 
 	  if (pLast) 
 	    {
@@ -2501,15 +2503,14 @@ DispPtr disp;
     case WHITE:
       {
         unsigned char rgb[3];
-        int i, savetoken;
+        int i;
         
-        savetoken = token;
         for (i = 0; i < 3; i++)
         {
           if (getToken(NULL) != NUMBER) configError("RGB value expected");
           rgb[i] = val.num & 0x3F;
         }
-        if (savetoken == BLACK)
+        if (token == BLACK)
         {
           disp->blackColour.red = rgb[0];
           disp->blackColour.green = rgb[1];
@@ -2548,6 +2549,61 @@ DispPtr disp;
         configError("Unknown option string");
       break;
 
+    /* The following should really go in the S3 server */
+    case INVERTVCLK:
+    case BLANKDELAY:
+    case EARLYSC:
+     {
+      DisplayModePtr p = disp->modes;
+      if (getToken(NULL) != STRING) configError("Mode name expected");
+      if (disp->modes == NULL) configError("This must be after the Modes line");
+      {
+	 Bool found = FALSE;
+	 do {
+	   if (strcmp(p->name, val.str) == 0) {
+	     found = TRUE;
+	     break;
+	   }
+	   p = disp->modes->next;
+         } while (p != disp->modes);
+         if (!found) configError("No mode of that name in the Modes line");
+      }
+      if (!p->PrivSize || !p->Private) {
+	p->PrivSize = S3_MODEPRIV_SIZE;
+	p->Private = xalloc(S3_MODEPRIV_SIZE * sizeof(CARD32));
+	p->Private[0] = 0;
+      }
+      switch (token) {
+      case INVERTVCLK:
+	if (getToken(NULL) != NUMBER || val.num < 0 || val.num > 1)
+	  configError("0 or 1 expected");
+	p->Private[0] |= (1 << S3_INVERT_VCLK);
+	p->Private[S3_INVERT_VCLK] = val.num;
+	break;
+    
+      case BLANKDELAY:
+	if (getToken(NULL) != NUMBER || val.num < 0 || val.num > 7)
+	 configError("number(s) 0..7 expected");
+	p->Private[0] |= (1 << S3_BLANK_DELAY);
+	p->Private[S3_BLANK_DELAY] = val.num;
+	if ((token=getToken(NULL)) == NUMBER) {
+	  if (val.num < 0 || val.num > 7) configError("number2 0..7 expected");
+	  p->Private[S3_BLANK_DELAY] |= val.num << 4;
+	}
+	else pushToken = token;
+        break;
+    
+      case EARLYSC:
+	if (getToken(NULL) != NUMBER || val.num < 0 || val.num > 1)
+	  configError("0 or 1 expected");
+	p->Private[0] |= (1 << S3_EARLY_SC);
+	p->Private[S3_EARLY_SC] = val.num;
+	break;
+      }
+     }
+     break;
+    
+    
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break; /* :-) */

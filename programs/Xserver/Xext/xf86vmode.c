@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.6 1995/06/14 09:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.7 1995/07/02 07:44:06 dawes Exp $ */
 
 /*
 
@@ -53,6 +53,8 @@ static int ProcVGAHelpDispatch(), SProcVGAHelpDispatch();
 static void VGAHelpResetProc();
 
 static unsigned char VGAHelpReqCode = 0;
+
+extern void Swap32Write();
 
 /* The XF86VIDMODE_EVENTS code is far from complete */
 
@@ -331,6 +333,7 @@ ProcVGAHelpGetModeLine(client)
     register int n;
     ScrnInfoPtr vptr;
     DisplayModePtr mptr;
+    int privsize;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
@@ -338,9 +341,15 @@ ProcVGAHelpGetModeLine(client)
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     mptr = vptr->modes;
 
+    if (!mptr->Private)
+	privsize = 0;
+    else
+	privsize = mptr->PrivSize;
+
     REQUEST_SIZE_MATCH(xVGAHelpGetModeLineReq);
     rep.type = X_Reply;
-    rep.length = 0;
+    rep.length = (SIZEOF(xVGAHelpGetModeLineReply) - SIZEOF(xGenericReply) +
+		  privsize * sizeof(CARD32)) >> 2;
     rep.sequenceNumber = client->sequence;
     rep.dotclock = vptr->clock[mptr->Clock];
     rep.hdisplay = mptr->HDisplay;
@@ -352,6 +361,7 @@ ProcVGAHelpGetModeLine(client)
     rep.vsyncend = mptr->VSyncEnd;
     rep.vtotal = mptr->VTotal;
     rep.flags = mptr->Flags;
+    rep.privsize = privsize;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
@@ -365,8 +375,14 @@ ProcVGAHelpGetModeLine(client)
     	swaps(&rep.vsyncend, n);
     	swaps(&rep.vtotal, n);
 	swapl(&rep.flags, n);
+	swapl(&rep.privsize, n);
     }
     WriteToClient(client, sizeof(xVGAHelpGetModeLineReply), (char *)&rep);
+    if (privsize) {
+	client->pSwapReplyFunc = Swap32Write;
+	WriteSwappedDataToClient(client, privsize * sizeof(CARD32),
+				 mptr->Private);
+    }
     return (client->noClientException);
 }
 
@@ -379,6 +395,7 @@ ProcVGAHelpModModeLine(client)
     ScrnInfoPtr vptr;
     DisplayModePtr mptr;
     DisplayModeRec modetmp;
+    int len;
 
     if (stuff->screen > screenInfo.numScreens)
 	return BadValue;
@@ -386,7 +403,10 @@ ProcVGAHelpModModeLine(client)
     vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
     mptr = vptr->modes;
 
-    REQUEST_SIZE_MATCH(xVGAHelpModModeLineReq);
+    REQUEST_AT_LEAST_SIZE(xVGAHelpModModeLineReq);
+    len = client->req_len - (sizeof(xVGAHelpModModeLineReq) >> 2);
+    if (len != stuff->privsize)
+	return BadLength;
 
     if (stuff->hsyncstart < stuff->hdisplay   ||
 	stuff->hsyncend   < stuff->hsyncstart ||
@@ -397,6 +417,10 @@ ProcVGAHelpModModeLine(client)
 	return BadValue;
 
     memcpy(&modetmp, mptr, sizeof(DisplayModeRec));
+    if (mptr->PrivSize && mptr->Private) {
+	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(CARD32));
+	memcpy(modetmp.Private, mptr->Private, mptr->PrivSize * sizeof(CARD32));
+    }
     modetmp.HDisplay   = stuff->hdisplay;
     modetmp.HSyncStart = stuff->hsyncstart;
     modetmp.HSyncEnd   = stuff->hsyncend;
@@ -406,6 +430,12 @@ ProcVGAHelpModModeLine(client)
     modetmp.VSyncEnd   = stuff->vsyncend;
     modetmp.VTotal     = stuff->vtotal;
     modetmp.Flags      = stuff->flags;
+    if (mptr->PrivSize && stuff->privsize) {
+	if (mptr->PrivSize != stuff->privsize)
+	    return BadValue;
+	memcpy(modetmp.Private, &stuff[1],
+	       mptr->PrivSize * sizeof(CARD32));
+    }
 
     /* Check that the mode is consistent with the monitor specs */
     switch (xf86CheckMode(vptr, &modetmp, vptr->monitor, FALSE)) {
@@ -446,6 +476,9 @@ ProcVGAHelpModModeLine(client)
 	mptr->CrtcVSyncEnd *= 2;
 	mptr->CrtcVTotal *= 2;
 	mptr->CrtcVAdjusted = TRUE;
+    }
+    if (mptr->PrivSize && stuff->privsize) {
+	memcpy(mptr->Private, &stuff[1], mptr->PrivSize * sizeof(CARD32));
     }
 
     (vptr->SwitchMode)(mptr);
@@ -568,6 +601,7 @@ ProcVGAHelpGetMonitor(client)
     	swapl(&rep.bandwidth, n);
     }
     WriteToClient(client, SIZEOF(xVGAHelpGetMonitorReply), (char *)&rep);
+    client->pSwapReplyFunc = Swap32Write;
     WriteSwappedDataToClient(client, mptr->n_hsync * sizeof(CARD32),
 			     hsyncdata);
     WriteSwappedDataToClient(client, mptr->n_vrefresh * sizeof(CARD32),
@@ -693,7 +727,7 @@ SProcVGAHelpModModeLine(client)
     register int n;
     REQUEST(xVGAHelpModModeLineReq);
     swaps(&stuff->length, n);
-    REQUEST_SIZE_MATCH(xVGAHelpModModeLineReq);
+    REQUEST_AT_LEAST_SIZE(xVGAHelpModModeLineReq);
     swapl(&stuff->screen, n);
     swaps(&stuff->hdisplay, n);
     swaps(&stuff->hsyncstart, n);
@@ -704,6 +738,8 @@ SProcVGAHelpModModeLine(client)
     swaps(&stuff->vsyncend, n);
     swaps(&stuff->vtotal, n);
     swapl(&stuff->flags, n);
+    swapl(&stuff->privsize, n);
+    SwapRestL(stuff);
     return ProcVGAHelpModModeLine(client);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.5 1995/06/14 09:39:23 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.6 1995/07/02 07:42:25 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -43,6 +43,7 @@ from the Kaleb S. KEITHLEY
 #define X_XF86VidModeLockModeSwitch	5
 #define X_XF86VidModeGetSaver		6
 #define X_XF86VidModeSetSaver		7
+#define X_XF86VidModeGetServerName	8
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -74,6 +75,8 @@ typedef struct {
     unsigned short	vsyncend;
     unsigned short	vtotal;
     unsigned int	flags;
+    int			privsize;
+    CARD32		*private;
 } XF86VidModeModeLine;
 
 typedef struct {

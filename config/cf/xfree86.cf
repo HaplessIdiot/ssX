@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.62tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.63 1995/07/12 15:27:42 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -192,7 +192,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.62tsi Exp $
 #endif
 
 #ifndef UseInternalMalloc
-#define UseInternalMalloc	YES
+#define UseInternalMalloc	NO
 #endif
 
 /*
@@ -225,7 +225,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.62tsi Exp $
  * Build scanpci?
  */
 #ifndef BuildScanpci
-#if SystemV || SystemV4 || defined(LinuxArchitecture) || defined(i386BsdArchitecture)
+#if SystemV || SystemV4 || defined(LinuxArchitecture) || defined(i386BsdArchitecture) || defined(LynxOSArchitecture)
 #define BuildScanpci		YES
 #else
 #define BuildScanpci		NO

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.6 1995/07/07 15:40:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.7 1995/07/07 16:04:48 dawes Exp $
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
@@ -19,6 +19,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.6 1995/07/07 15
 #else
    MISCFILES = 2key.c xcode.xfree86
 #endif
+#endif
+
+#ifdef LynxOSArchitecture
+ CONFIGFILES = pty.cfg
+   MISCFILES = BM-Lynx.shar 
 #endif
 
 /* Are these really needed? */
@@ -87,6 +92,10 @@ InstallNamedProg(svr3_rem_pch,svr3_patch_rem,$(LIBDIR)/etc)
 #if SystemV4 && !defined(SunArchitecture)
 InstallNamedProg(svr4_patch,svr4_patch,$(LIBDIR)/etc)
 InstallNamedProg(svr4_rem_pch,svr4_patch_rem,$(LIBDIR)/etc)
+#endif
+#if defined(LynxOSArchitecture) && OSMinorVersion < 3
+NormalProgramTarget(ld-wrapper,ld-wrapper.o,NullParameter,NullParameter,NullParameter)
+InstallProgram(ld-wrapper,$(LIBDIR)/etc)
 #endif
 
 #if !BuildServersOnly

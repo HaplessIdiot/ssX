@@ -398,12 +398,6 @@
         instead of 135MHz part used on the other boards.
 
 
-           ClockChip "icd2061a"
-
-
-
-
-
 
      S3 764 (Trio64)
 
@@ -459,26 +453,28 @@
   mode but a real 3 bytes/pixel mode).
 
 
-
   3.  List of Supported Clock Chips
 
 
 
-       ICD2061A                                ==> ClockChip "icd2061a"
-       ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
-       DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
-       S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
-       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
-       S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
-       ICS5342 GENDAC                          ==> ClockChip "ics5342"
 
-       Sierra SC11412                          ==> ClockChip "sc11412"
-       ICS2595                                 ==> ClockChip "ics2595"
-       TI3025                                  ==> ClockChip "ti3025"
+  ICD2061A                                ==> ClockChip "icd2061a"
+  ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
+  DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
-       Chrontel 8391                           ==> ClockChip "ch8391"
+  S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
+  ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
+
+  S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
+  ICS5342 GENDAC                          ==> ClockChip "ics5342"
+
+  Sierra SC11412                          ==> ClockChip "sc11412"
+  ICS2595                                 ==> ClockChip "ics2595"
+  TI3025                                  ==> ClockChip "ti3025"
+
+  Chrontel 8391                           ==> ClockChip "ch8391"
 
 
 
@@ -526,9 +522,13 @@
 
   chips labeled -80 or -8  should use `DacSpeed 80' in the device
   section
-       S3716-ME SDAC  ==>  DacSpeed 110
-       SC15025-8      ==>  DacSpeed  80
-       ATT20C490-80   ==>  DacSpeed  80
+
+
+
+
+  S3716-ME SDAC  ==>  DacSpeed 110
+  SC15025-8      ==>  DacSpeed  80
+  ATT20C490-80   ==>  DacSpeed  80
 
 
 
@@ -633,7 +633,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.21 1995/07/08 01:36:18 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.22 1995/07/13 14:14:57 dawes Exp $
 
 
 

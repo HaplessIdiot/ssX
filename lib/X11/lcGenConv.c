@@ -1,5 +1,5 @@
 /* $XConsortium: lcGenConv.c,v 1.7 95/02/22 22:03:01 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.1 1995/01/28 15:42:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.2 1995/06/14 07:07:39 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -29,7 +29,7 @@
 #include "XlcGeneric.h"
 #include <stdio.h>
 
-#if !defined(X_NOT_STDC_ENV) && !defined(macII)
+#if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22)
 #define STDCVT
 #endif
 

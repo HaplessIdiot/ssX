@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.37tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.38 1995/07/12 15:34:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -947,7 +947,7 @@ for information on how to manually configure.\n",
 
       for (i = 0; i < agxInfoRec.clocks; i++) {
          if (i % 8 == 0)
-            ErrorF("\n%s %s: Dot-clocks:",
+            ErrorF("\n%s %s:            ",
                    OFLG_ISSET(XCONFIG_CLOCKS,&agxInfoRec.xconfigFlag)
                    ? XCONFIG_GIVEN : XCONFIG_PROBED,
                    agxInfoRec.name);

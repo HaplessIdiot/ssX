@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.70 1995/07/12 15:36:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.71 1995/07/13 14:14:17 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2522,11 +2522,19 @@ s3Init(mode)
       outb(vgaCRReg, ~0x20 & tmp);
    }
 
+#if 0
    if (OFLG_ISSET(OPTION_S3_INVERT_VCLK, &s3InfoRec.options)) {
       outb(vgaCRIndex, 0x67);
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, tmp ^ 1);
    }
+#else
+   if (mode->Private && mode->Private[S3_INVERT_VCLK]) {
+      outb(vgaCRIndex, 0x67);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp ^ 1);
+   }
+#endif
 
    if (OFLG_ISSET(OPTION_SLOW_VRAM, &s3InfoRec.options)) {
       /* 
@@ -2541,10 +2549,17 @@ s3Init(mode)
 	 outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
    }
 
+#if 0
    if (s3InfoRec.s3BlankDelay >= 0) {
       outb(vgaCRIndex, 0x6d);
       outb(vgaCRReg, s3InfoRec.s3BlankDelay);
    }
+#else
+   if (mode->Private && (int)mode->Private[S3_BLANK_DELAY] >= 0) {
+      outb(vgaCRIndex, 0x6d);
+      outb(vgaCRReg, mode->Private[S3_BLANK_DELAY]);
+   }
+#endif
 
    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {

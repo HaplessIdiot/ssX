@@ -15,7 +15,7 @@ and performance improvements as well as many bug fixes.  The release
 is available as source patches against the X Consortium X11R6 code, as
 well as binary distributions for many architectures.
 
-See the Copyright Notice in COPYRIGHT.
+See the Copyright Notice in <url url="COPYRIGHT.html" name="COPYRIGHT">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
@@ -299,6 +299,6 @@ few little adjustments to your system:
   </verb></tscreen>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.0 1995/07/15 04:26:14 dawes Exp $
 </verb>
 </article>

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.6 1995/06/14 09:48:41 dawes Exp $
+! $XFree86: xc/programs/xvidtune/Xvidtune.ad,v 3.7 1995/06/17 12:21:58 dawes Exp $
 !
 *adInstalled: true
 *borderWidth: 0
@@ -137,3 +137,21 @@ DEALINGS IN THE SOFTWARE.\n\n
 
 
 	
+*S3-form.fromVert: Buttons2-form
+*EarlySc-toggle.fromHoriz: InvertVclk-toggle
+*Blank1-label.fromHoriz: EarlySc-toggle
+*Blank1-text.fromHoriz: Blank1-label
+*Blank2-label.fromHoriz: Blank1-text
+*Blank2-text.fromHoriz: Blank2-label
+*InvertVclk-toggle.borderWidth: 1
+*EarlySc-toggle.borderWidth: 1
+*Blank1-text.borderWidth: 1
+*Blank2-text.borderWidth: 1
+*Blank1-text*editType: edit
+*Blank2-text*editType: edit
+*Blank1-text*width: 20
+*Blank2-text*width: 20
+*InvertVclk-toggle.label: InvertVCLK
+*EarlySc-toggle.label:EarlySC
+*Blank1-label.label: Blank Delay 1
+*Blank2-label.label: Blank Delay 2

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.12 1995/06/10 13:20:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.13 1995/07/05 12:41:24 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -810,7 +810,7 @@ static char *ramdaccomment_text =
 #define NU_RAMDACS 13
 
 static char *ramdac_name[NU_RAMDACS] = {
-	"AT&T 20C490 (S3 server)",
+	"AT&T 20C490 (S3 and AGX servers)",
 	"AT&T 20C498/21C498/22C498 (S3)",
 	"AT&T 20C505 (S3)",
 	"BrookTree BT481 (AGX)",

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c,v 1.21 95/01/05 21:04:06 kaleb Exp $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.3 1994/11/30 20:46:32 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.4 1995/01/28 16:16:39 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -140,7 +140,7 @@ static XrmOptionDescRec options[] = {
 #endif
 #endif
 
-#if defined(TIOCCONS) || defined(SRIOCSREDIR)
+#if defined(TIOCCONS) || defined(SRIOCSREDIR) || defined(Lynx)
 #define USE_PTY
 static int  tty_fd, pty_fd;
 static char ttydev[64], ptydev[64];
@@ -156,6 +156,16 @@ static int child_pid;
 
 static void inputReady ();
 
+#ifdef Lynx
+static
+RestoreConsole()
+{
+    int fd;
+    if ((fd = open("/dev/con", O_RDONLY)) >= 0)
+    	newconsole(fd);
+}
+#endif
+
 static
 OpenConsole ()
 {
@@ -166,7 +176,7 @@ OpenConsole ()
 	{
 	    struct stat sbuf;
 	    /* must be owner and have read/write permission */
-#ifndef __NetBSD__
+#if !defined(__NetBSD__) && !defined(Lynx)
 	    if (!stat("/dev/console", &sbuf) &&
 		(sbuf.st_uid == getuid()) &&
 		!access("/dev/console", R_OK|W_OK))
@@ -183,6 +193,7 @@ OpenConsole ()
 		    if (ioctl (tty_fd, TIOCCONS, (char *) &on) != -1)
 			input = fdopen (pty_fd, "r");
 #else
+#ifndef Lynx
 		    int consfd = open("/dev/console", O_RDONLY);
 		    if (consfd >= 0)
 		    {
@@ -190,6 +201,15 @@ OpenConsole ()
 			    input = fdopen (pty_fd, "r");
 			close(consfd);
 		    }
+#else
+		    if (newconsole(tty_fd) < 0)
+		    	perror("newconsole");
+		    else
+		    {
+			input = fdopen (pty_fd, "r");
+			atexit(RestoreConsole);
+		    }
+#endif
 #endif
 		}
 #endif

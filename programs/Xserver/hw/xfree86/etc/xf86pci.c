@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.2 1995/06/24 10:28:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.3 1995/07/12 15:41:28 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -66,6 +66,9 @@
 #  include <sys/tss.h>
 #  include <sys/sysi86.h>
 #  include <sys/v86.h>
+#endif
+#if defined(Lynx_22)
+#  define GCCUSESGAS
 #endif
 
 

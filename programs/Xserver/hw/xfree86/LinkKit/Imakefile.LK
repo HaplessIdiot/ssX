@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.24tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.25 1995/07/12 15:33:08 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -96,7 +96,15 @@ XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
   XF86LIBS = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
  XF86MLIBS = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 
+#ifndef LynxOSArchitecture
 all:: xf86IniExt.o xf86MIniExt.o
+#else
+all:: xf86IniExt.o xf86MIniExt.o main.o
+
+main.o : $(DIX)
+	$(RM) $@
+	ar x $(DIX) $@
+#endif
 
 LinkFile(xf86IniExt.c,miinitext.c)
 LinkFile(xf86MIniExt.c,miinitext.c)
@@ -346,7 +354,11 @@ SetUIDServerTarget(XF86_AGX,$(XF86AGXSUBDIRS),$(XF86AGXOBJS),$(XF86AGXLIBS),$(XF
 XCOMM
 XCOMM Server with Xlib-based ddx
 XCOMM
+#ifndef LynxOSArchitecture
 XNESTOBJS = miinitext.o
+#else
+XNESTOBJS = miinitext.o main.o
+#endif
 XNESTDIRS =
 XNEST = lib/libxnest.a
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)

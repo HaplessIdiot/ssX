@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.30 1995/07/03 08:41:14 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.31 1995/07/03 10:06:01 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -56,7 +56,7 @@ is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor
 server for Weitek Power 9000 (P9000) graphic accelerator boards. 
 .PP
 .I XF86_AGX
-is an 8-bit PseudoColor server for AGX/XGA graphic accelerator boards.
+is an 8-bit PseudoColor and 16-bit TrueColor server for AGX/XGA graphic accelerator boards.
 .PP
 .I XF86_W32
 is an 8-bit PseudoColor server for ET4000/W32, ET4000/W32i and ET4000/W32p
@@ -141,8 +141,9 @@ as described in the
 manpage.
 .sp
 The Mach64, Mach32, S3, P9000 and AGX servers now support more than 8 bit color.
-The Mach32 supports 16 bit TrueColor and the Mach64, S3, P9000, and AGX servers support
-16 and 32 bit TrueColor.  The 32 bit TrueColor mode only uses
+The Mach32 and AGX servers support 16 bit TrueColor and the Mach64, S3, 
+and P9000 servers support 16 and 32 bit TrueColor.  
+The 32 bit TrueColor mode only uses
 24 bits per pixel for color information (giving you 16 million
 colors).  These modes may be used by specifying the \fB\-bpp\fP
 option as specified in the
@@ -600,7 +601,7 @@ The 8, 16, and 24-bit color X server for Mach64
 The 8, 16, and 24-bit color X server for the P9000
 .TP 30
 <XRoot>/bin/XF86_AGX
-The 8-bit color X server for AGX and XGA
+The 8, and 16-bit color X server for AGX and XGA
 .TP 30
 <XRoot>/bin/XF86_W32
 The 8-bit color X server for ET4000/W32

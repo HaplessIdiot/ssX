@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.91 1995/07/12 15:36:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.92 1995/07/13 14:14:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -957,11 +957,6 @@ s3Probe()
    outb(vgaCRIndex, 0x39);
    outb(vgaCRReg, 0xA5);
 
-   /*
-    * For chipsets other than 928, 805i or 864/964, there is only one RAMDAC
-    * type possible.  Only probe for 928, 805i and 864/964.
-    */
-
    if (S3_TRIOxx_SERIES(s3ChipId)) {
       if (s3RamdacType != UNKNOWN_DAC && !DAC_IS_TRIO) {
 	 ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Ramdac\n",
@@ -1301,6 +1296,71 @@ s3Probe()
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	    clockchip_probed = XCONFIG_PROBED;
 	 }
+      }
+   }
+   
+   /* probe for some of the other HiColor DACs */
+
+   if (S3_8XX_9XX_SERIES(s3ChipId)) {
+      if (s3RamdacType == UNKNOWN_DAC) {
+#define Setcomm(v)        (xf86dactocomm(),outb(0x3C6,v),\
+                        xf86dactocomm(),inb(0x3C6))
+         unsigned char tmp, olddacpel, olddaccomm, notdaccomm;
+
+         (void) xf86dactocomm();
+         olddaccomm = inb(0x3C6);
+         xf86dactopel();
+         olddacpel = inb(0x3C6);
+
+         notdaccomm = ~olddaccomm;
+         outb(0x3C6, notdaccomm);
+         (void) xf86dactocomm();
+
+         if (inb(0x3C6) != notdaccomm) {
+            /* Looks like a HiColor RAMDAC */
+            if ((Setcomm(0xE0) & 0xE0) == 0xE0) {
+               if ((Setcomm(0x60) & 0xE0) == 0x00) {
+                  if ((Setcomm(0x02) & 0x02) != 0x00) {
+                     s3RamdacType = ATT20C490_DAC;
+                  }
+               } else {
+                  tmp = Setcomm(olddaccomm);
+                  if (inb(0x3C6) != notdaccomm) {
+                     (void) inb(0x3C6);
+                     (void) inb(0x3C6);
+                     (void) inb(0x3C6);
+                     if (inb(0x3C6) != notdaccomm) {
+                        xf86dactopel();
+                        outb(0x3C6, 0xFF);
+                        (void) inb(0x3C6);
+                        (void) inb(0x3C6);
+                        (void) inb(0x3C6);
+                        switch (inb(0x3C6)) {
+                        case 0x44:
+                        case 0x82:
+                        case 0x8E:
+                            break;
+                        default:
+                            xf86dactopel();
+                            outb(0x3C6, olddacpel & 0xFB);
+                            xf86dactocomm();
+                            outb(0x3C6, olddaccomm & 0x04);
+                            tmp = inb(0x3C6);
+                            outb(0x3C6, tmp & 0xFB);
+                            if ((tmp & 0x04) == 0) {
+                               s3RamdacType = SC1148x_M2_DAC;
+                            }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+         (void) xf86dactocomm();
+         outb(0x3C6, olddaccomm);
+         xf86dactopel();
+         outb(0x3C6, olddacpel);
+#undef Setcomm
       }
    }
 
@@ -2810,6 +2870,72 @@ s3Probe()
 	 pMode = pMode->next;
       } while (pMode != pEnd);
    }
+
+   pEnd = pMode = s3InfoRec.modes;
+   do {
+      /* Setup the Mode.Private if required */
+      if (S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
+	 if (!pMode->PrivSize || !pMode->Private) {
+	    pMode->PrivSize = S3_MODEPRIV_SIZE;
+	    pMode->Private = xalloc(S3_MODEPRIV_SIZE * sizeof(CARD32));
+	    pMode->Private[0] = 0;
+	 }
+	 /* Set default for invert_vclk */
+	 if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
+	    if (OFLG_ISSET(OPTION_S3_INVERT_VCLK, &s3InfoRec.options))
+	       pMode->Private[S3_INVERT_VCLK] = 1;
+	    else
+	       pMode->Private[S3_INVERT_VCLK] = 0;
+	 }
+	 /* Set default for blank_delay */
+	 if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
+	    if (s3InfoRec.s3BlankDelay >= 0)
+	       pMode->Private[S3_BLANK_DELAY] = s3InfoRec.s3BlankDelay;
+	    else {
+	       if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+		  if ((pMode->Flags & V_DBLCLK) || s3Bpp > 1)
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+	       } else if (DAC_IS_TI3025) {
+		  if (s3Bpp == 1)
+		     if (pMode->Flags & V_DBLCLK)
+			pMode->Private[S3_BLANK_DELAY] = 0x02;
+		     else
+			pMode->Private[S3_BLANK_DELAY] = 0x03;
+		  else if (s3Bpp == 2)
+		     if (pMode->Flags & V_DBLCLK)
+			pMode->Private[S3_BLANK_DELAY] = 0x00;
+		     else
+			pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  else /* (s3Bpp == 4) */
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       } else if (DAC_IS_TI3026) {
+		  if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options))
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  else
+			pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       } else if (DAC_IS_IBMRGB) {
+		  if (s3Bpp == 1)
+		     pMode->Private[S3_BLANK_DELAY] = 0x21;
+		  else if (s3Bpp == 2)
+		     pMode->Private[S3_BLANK_DELAY] = 0x10;
+		  else /* if (s3Bpp == 4) */
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       } else {
+		  pMode->Private[S3_BLANK_DELAY] = (CARD32)-1;
+	       }
+	    }
+	 }
+	 /* Set default for early_sc */
+	 if (!(pMode->Private[0] & (1 << S3_EARLY_SC))) {
+	    /* XXX how should this be set? */
+	    pMode->Private[S3_EARLY_SC] = 0;
+	 }
+      }
+      pMode = pMode->next;
+   } while (pMode != pEnd);
+
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES || DAC_IS_TI3026 
        || DAC_IS_IBMRGB) {
       if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)

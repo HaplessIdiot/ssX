@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.21 1995/07/12 15:35:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1038,7 +1038,7 @@ mach64EnterLeaveVT(enter, screen_idx)
         }
     }
 
-    if (pScreen)
+    if (pScreen && !xf86Exiting && !xf86Resetting)
         WalkTree(pScreen, mach64NewSerialNumber, 0);
 
     if (enter) {
