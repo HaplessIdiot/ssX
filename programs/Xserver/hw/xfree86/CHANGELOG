@@ -1,4 +1,5 @@
 XFree86 3.1.2Bl (21 January 1996)
+264. Fix xterm IM problem if *inputMethod == "" (Kaleb Keithley).
 263. Xvfb fix for systems that have mmap, but not the MS_ASYNC flag for
      msync().
 262. XC fix-trackers to seq-4060 (some XKB and config updates).

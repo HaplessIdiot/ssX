@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/190 1996/01/14 16:52:40 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.16 1996/01/16 15:09:40 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.17 1996/01/17 12:51:47 dawes Exp $
  */
 
 /*
@@ -2887,7 +2887,10 @@ static void VTInitI18N()
 
     if (!term->misc.open_im) return;
 
-    if (term->misc.input_method) {
+    if (!term->misc.input_method || !*term->misc.input_method) {
+	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
+	    xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL);
+    } else {
 	strcpy(tmp, term->misc.input_method);
 	for(ns=s=tmp; ns && *s;) {
 	    while (*s && isspace(*s)) s++;
@@ -2905,9 +2908,6 @@ static void VTInitI18N()
 
 	    s = ns + 1;
 	}
-    } else {
-	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
-	    xim = XOpenIM(XtDisplay(term), NULL, NULL, NULL);
     }
 
     if (xim == NULL && (p = XSetLocaleModifiers("")) != NULL && *p)
