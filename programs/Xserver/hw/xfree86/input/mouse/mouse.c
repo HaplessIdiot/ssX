@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.52 2002/04/04 14:05:51 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.53 2002/04/14 21:04:10 herrb Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1254,7 +1254,8 @@ MouseReadInput(InputInfoPtr pInfo)
 	    dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
 	    /* FreeBSD sysmouse sends additional data bytes */
 	    if (pMse->protoPara[4] >= 8) {
-		dz = ((char)(pBuf[5] << 1) + (char)(pBuf[6] << 1)) / 2;
+		dz = ((signed char)(pBuf[5] << 1) +
+		      (signed char)(pBuf[6] << 1)) >> 1;
 		buttons |= (int)(~pBuf[7] & 0x07) << 3;
 	    }
 	    break;

@@ -1,4 +1,10 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 244. Fix 'su' usage for FreeBSD in the default xdm config (Eric Anholt).
+ 243. Fix a FreeBSD scrollwheel problem that shows up with gcc 3.1
+      (Eric Anholt).
+ 242. Make C++ libraries on FreeBSD get linked with $(CXX), fixing libGLU
+      (Eric Anholt).
+ 241. FreeBSD.cf updates, including enabling SSE/3DNow support (Eric Anholt).
  240. Intel 830 and 845G DRI support, including i830 support updated for
       Mesa 4.x (#5288, Jeff Hartmann, 2D3D).
  239. [SECURITY] Fix an Xlib problem that made it possible to load arbitrary
@@ -15003,4 +15009,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2290 2002/09/04 03:09:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2291 2002/09/09 19:18:44 dawes Exp $
