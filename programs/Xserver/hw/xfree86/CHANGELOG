@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 278. Define X_LOCALE on Darwin as Darwin's setlocale() does not work
+      properly (Torrey T. Lyons).
  277. Fix problems with XDarwin multi-monitor support for some screen
       arrangements (Gregory Parker).
  276. Preliminary big endian (PowerPC) support for the "nv" driver
@@ -13812,4 +13814,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1945 2001/09/19 23:42:43 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1946 2001/09/20 19:35:06 torrey Exp $
