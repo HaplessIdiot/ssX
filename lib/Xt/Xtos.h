@@ -31,13 +31,13 @@ Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -48,7 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Xtos.h,v 3.11 2003/06/12 14:12:28 eich Exp $ */
+/* $XFree86: xc/lib/Xt/Xtos.h,v 3.12tsi Exp $ */
 
 #ifndef _Xtos_h
 #define _Xtos_h
@@ -67,14 +67,9 @@ SOFTWARE.
     defined(__sparc64__) || \
     defined(__s390x__) || \
     (defined(__hppa__) && defined(__LP64__)) || \
-    defined(__AMD64__) || defined(AMD64)
+    defined(__AMD64__) || defined(AMD64) || \
+    (defined(sgi) && (_MIPS_SZLONG == 64))
 #define LONG64
-#endif
-
-#ifdef __sgi
-#if (_MIPS_SZLONG == 64)
-#define LONG64
-#endif
 #endif
 
 #endif /* _Xtos_h */
