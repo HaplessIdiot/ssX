@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.13 2000/12/08 19:15:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.14 2000/12/22 05:27:45 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1828,16 +1828,21 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     else
 #endif
     {
-	MemBox.x1 = 0;
-	MemBox.y1 = 0;
-	MemBox.x2 = pScrn->displayWidth;
-	MemBox.y2 = (info->FbMapSize
+	int y;
+
+	y = (info->FbMapSize
 		     / (pScrn->displayWidth *
 			info->CurrentLayout.pixel_bytes));
+	
 				/* The acceleration engine uses 14 bit
 				   signed coordinates, so we can't have any
 				   drawable caches beyond this region. */
-	if (MemBox.y2 > 8191) MemBox.y2 = 8191;
+	if (y > 8191) y = 8191;
+
+	MemBox.x1 = 0;
+	MemBox.y1 = 0;
+	MemBox.x2 = pScrn->displayWidth;
+	MemBox.y2 = y;
 
 	if (!xf86InitFBManager(pScreen, &MemBox)) {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
