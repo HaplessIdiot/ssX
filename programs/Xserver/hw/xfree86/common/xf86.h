@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.148 2001/03/21 16:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.149 2001/03/21 19:46:25 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -42,6 +42,8 @@ extern Bool fbSlotClaimed;
 #ifdef __sparc__
 extern Bool sbusSlotClaimed;
 #endif
+extern confDRIRec xf86ConfigDRI;
+
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))
 
 #define XF86FLIP_PIXELS() \

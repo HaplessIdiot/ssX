@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.6 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.7 2001/02/02 21:39:02 herrb Exp $ */
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
@@ -125,19 +125,9 @@ extern void DeleteClientFontStuff(ClientPtr /*client*/);
 #endif
 extern void InitFonts(void);
 
-extern int GetDefaultPointSize(void);
-
 extern void FreeFonts(void);
 
 extern FontPtr find_old_font(XID /*id*/);
-
-extern Font GetNewFontClientID(void);
-
-extern int StoreFontClientFont(FontPtr /*pfont*/,
-			       Font /*id*/);
-
-extern void DeleteFontClientID(Font /*id*/);
-
 
 extern void GetGlyphs(FontPtr     /*font*/,
 		      unsigned long /*count*/,
@@ -161,8 +151,5 @@ extern Bool ParseGlyphCachingMode(char * /*str*/);
 extern void InitGlyphCaching(void);
 
 extern void SetGlyphCachingMode(int /*newmode*/);
-
-extern void
-ResetFontPrivateIndex(void);
 
 #endif				/* DIXFONT_H */

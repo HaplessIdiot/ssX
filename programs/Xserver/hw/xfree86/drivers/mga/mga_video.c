@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.21 2000/12/05 20:03:45 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.22 2000/12/21 00:10:56 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -163,10 +163,6 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	XVIMAGE_I420,
 	XVIMAGE_UYVY
 };
-
-#define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
-#define outMGAdac(reg, val) \
-        (outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
 
 static void 
 MGAResetVideoOverlay(ScrnInfoPtr pScrn) 

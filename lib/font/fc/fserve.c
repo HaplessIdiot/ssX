@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.17 2000/01/21 01:11:52 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.18 2001/01/17 19:43:28 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -91,8 +91,6 @@ extern Time_t time ();
 			     (pci)->descent || \
 			     (pci)->characterWidth)
 
-
-extern FontPtr find_old_font(FSID id);
 
 static int fs_read_glyphs ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );
 static int fs_read_list ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );

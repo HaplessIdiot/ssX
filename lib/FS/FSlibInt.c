@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.7 1999/12/27 00:39:20 robin Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.8 2001/01/17 19:41:28 dawes Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -946,6 +946,7 @@ _SysErrorMsg(n)
  * _FSDefaultIOError - Default fatal system error reporting routine.  Called
  * when an X internal system error is encountered.
  */
+int
 _FSDefaultIOError(svr)
     FSServer   *svr;
 {
@@ -968,7 +969,7 @@ _FSDefaultIOError(svr)
 	"      The connection was probably broken by a server shutdown.\r\n");
     }
     exit(1);
-    return 0;
+    /* NOTREACHED */
 }
 
 /*

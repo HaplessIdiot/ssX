@@ -24,7 +24,7 @@
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
  */
-/* $XFree86: xc/lib/font/fc/fserve.h,v 1.3 1999/12/13 02:52:52 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.h,v 1.4 2001/01/17 19:43:29 dawes Exp $ */
 
 #ifndef _FSERVE_H_
 #define _FSERVE_H_
@@ -83,8 +83,6 @@ extern int fs_load_all_glyphs ( FontPtr pfont );
 extern int _fs_load_glyphs ( pointer client, FontPtr pfont, Bool range_flag, 
 			     unsigned int nchars, int item_size, 
 			     unsigned char *data );
-extern void fs_register_fpe_functions ( void );
-extern void check_fs_register_fpe_functions ( void );
 
 /*
  * These should be declared elsewhere, but I'm concerned that moving them

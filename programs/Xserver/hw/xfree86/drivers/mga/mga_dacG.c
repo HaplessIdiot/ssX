@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.42 2000/12/06 15:35:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.43 2001/02/13 19:19:15 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -48,33 +48,6 @@
 #define OPTION3_MASK	0xFFFFFFFF
 
 #define OPTION1_MASK_PRIMARY	0xFFFC0FF
-
-/*
- * Read/write to the DAC via MMIO 
- */
-
-/*
- * These were functions.  Use macros instead to avoid the need to
- * pass pMga to them.
- */
-
-#define inMGAdreg(reg) INREG8(RAMDAC_OFFSET + (reg))
-
-#define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
-
-#define inMGAdac(reg) \
-	(outMGAdreg(MGA1064_INDEX, reg), inMGAdreg(MGA1064_DATA))
-
-#define outMGAdac(reg, val) \
-	(outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
-
-#define outMGAdacmsk(reg, mask, val) \
-	do { /* note: mask and reg may get evaluated twice */ \
-	    unsigned char tmp = (mask) ? (inMGAdac(reg) & (mask)) : 0; \
-	    outMGAdreg(MGA1064_INDEX, reg); \
-	    outMGAdreg(MGA1064_DATA, tmp | (val)); \
-	} while (0)
-
 
 static void MGAGRamdacInit(ScrnInfoPtr);
 static void MGAGSave(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
@@ -280,7 +253,21 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	MGARegPtr pReg;
 	vgaRegPtr pVga;
 	MGAFBLayout *pLayout;
-	
+	xMODEINFO ModeInfo;
+
+	ModeInfo.ulDispWidth = mode->HDisplay;
+        ModeInfo.ulDispHeight = mode->VDisplay;
+        ModeInfo.ulFBPitch = mode->HDisplay; 
+        ModeInfo.ulBpp = pScrn->bitsPerPixel;    
+        ModeInfo.flSignalMode = 0;
+        ModeInfo.ulPixClock = mode->Clock;
+        ModeInfo.ulHFPorch = mode->HSyncStart - mode->HDisplay;
+        ModeInfo.ulHSync = mode->HSyncEnd - mode->HSyncStart;
+        ModeInfo.ulHBPorch = mode->HTotal - mode->HSyncEnd;
+        ModeInfo.ulVFPorch = mode->VSyncStart - mode->VDisplay;
+        ModeInfo.ulVSync = mode->VSyncEnd - mode->VSyncStart;
+        ModeInfo.ulVBPorch = mode->VTotal - mode->VSyncEnd;
+
 	pMga = MGAPTR(pScrn);
 	pReg = &pMga->ModeReg;
 	pVga = &VGAHWPTR(pScrn)->ModeReg;
@@ -545,6 +532,21 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	/* This disables the VGA memory aperture */
 	pVga->MiscOutReg &= ~0x02;
+
+	/* Urgh. Why do we define our own xMODEINFO structure instead 
+	 * of just passing the blinkin' DisplayModePtr? If we're going to
+	 * just cut'n'paste routines from the HALlib, it would be better
+	 * just to strip the MacroVision stuff out of the HALlib and release
+	 * that, surely?
+	 */
+        /*********************  Second Crtc programming **************/
+        /* Writing values to crtc2[] array */
+        if (pMga->SecondCrtc)
+        {
+            CRTC2Get(pScrn, &ModeInfo); 
+            CRTC2GetPitch(pScrn, &ModeInfo); 
+            CRTC2GetDisplayStart(pScrn, &ModeInfo,0,0,0);
+        }
 	return(TRUE);
 }
 
@@ -652,62 +654,81 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	MGAPtr pMga = MGAPTR(pScrn);
 	CARD32 optionMask;
 
-	MGA_NOT_HAL(
-	/*
-	 * Code is needed to get things back to bank zero.
-	 */
-	 
-	/* restore DAC registers 
-	 * according to the docs we shouldn't write to reserved regs*/
-	for (i = 0; i < DACREGSIZE; i++) {
-	    if( (i <= 0x03) ||
-	    	(i == 0x07) ||
-	    	(i == 0x0b) ||
-	    	(i == 0x0f) ||
-	       ((i >= 0x13) && (i <= 0x17)) ||
-	    	(i == 0x1b) ||
-	    	(i == 0x1c) ||
-	       ((i >= 0x1f) && (i <= 0x29)) ||
-	       ((i >= 0x30) && (i <= 0x37)) ||
-	        (MGAISG450(pMga) &&
-			 ((i == 0x2c) || (i == 0x2d) || (i == 0x2e) ||
-			  (i == 0x4c) || (i == 0x4d) || (i == 0x4e))))
-	       		continue; 
-	    outMGAdac(i, mgaReg->DacRegs[i]);
-	}
+        if(!pMga->SecondCrtc) {
+MGA_NOT_HAL(
+	   /*
+	    * Code is needed to get things back to bank zero.
+	    */
+	   
+	   /* restore DAC registers 
+	    * according to the docs we shouldn't write to reserved regs*/
+	   for (i = 0; i < DACREGSIZE; i++) {
+	      if( (i <= 0x03) ||
+		  (i == 0x07) ||
+		  (i == 0x0b) ||
+		  (i == 0x0f) ||
+		  ((i >= 0x13) && (i <= 0x17)) ||
+		  (i == 0x1b) ||
+		  (i == 0x1c) ||
+		  ((i >= 0x1f) && (i <= 0x29)) ||
+		  ((i >= 0x30) && (i <= 0x37)) ||
+		  (MGAISG450(pMga) &&
+		   ((i == 0x2c) || (i == 0x2d) || (i == 0x2e) ||
+		    (i == 0x4c) || (i == 0x4d) || (i == 0x4e))))
+		 continue; 
+	      outMGAdac(i, mgaReg->DacRegs[i]);
+	   }
+	   
+	   /* Do not set the memory config for primary cards as it
+	      should be correct already */
+	   optionMask = (pMga->Primary) ? OPTION1_MASK_PRIMARY : OPTION1_MASK; 
+	   
+	   if (!MGAISG450(pMga)) {
+	      /* restore pci_option register */
+	      pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
+			     mgaReg->Option);
+	      if (pMga->Chipset != PCI_CHIP_MGA1064)
+		 pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
+				mgaReg->Option2);
+	      if (pMga->Chipset == PCI_CHIP_MGAG400)
+		 pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
+				mgaReg->Option3);
+	   }
+);	/* MGA_NOT_HAL */
+	
+	   /* restore CRTCEXT regs */
+           for (i = 0; i < 6; i++)
+	      OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
 
-	/* Do not set the memory config for primary cards as it
-	   should be correct already */
-	optionMask = (pMga->Primary) ? OPTION1_MASK_PRIMARY : OPTION1_MASK; 
-
-	if (!MGAISG450(pMga)) {
-		/* restore pci_option register */
-		pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
-			       mgaReg->Option);
-		if (pMga->Chipset != PCI_CHIP_MGA1064)
-			pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
-				       mgaReg->Option2);
-		if (pMga->Chipset == PCI_CHIP_MGAG400)
-			pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
-				       mgaReg->Option3);
-	}
-	);	/* MGA_NOT_HAL */
-
-	/* restore CRTCEXT regs */
-	for (i = 0; i < 6; i++)
-		OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
-
-	/*
-	 * This function handles restoring the generic VGA registers.
-	 */
-	vgaHWRestore(pScrn, vgaReg,
+	   /*
+	    * This function handles restoring the generic VGA registers.
+	    */
+	   vgaHWRestore(pScrn, vgaReg,
 			VGA_SR_MODE | (restoreFonts ? VGA_SR_FONTS : 0));
-	MGAGRestorePalette(pScrn, vgaReg->DAC);
+	   MGAGRestorePalette(pScrn, vgaReg->DAC);
+	   
+	   /*
+	    * this is needed to properly restore start address
+	    */
+	   OUTREG16(0x1FDE, (mgaReg->ExtVga[0] << 8) | 0);
+	} else {
+	   /* Second Crtc */
+	   xMODEINFO ModeInfo;
 
-	/*
-	 * this is needed to properly restore start address
-	 */
-	OUTREG16(0x1FDE, (mgaReg->ExtVga[0] << 8) | 0);
+	   /* Enable Dual Head */
+	   CRTC2Set(pScrn, &ModeInfo); 
+	   EnableSecondOutPut(pScrn, &ModeInfo); 
+	   CRTC2SetPitch(pScrn, &ModeInfo); 
+	   CRTC2SetDisplayStart(pScrn, &ModeInfo,0,0,0);
+            
+	   for (i = 0x80; i <= 0xa0; i ++) {
+                if (i== 0x8d) {
+		   i = 0x8f;
+		   continue;
+		}
+                outMGAdac(i,   mgaReg->dac2[ i - 0x80]);
+	   }           
+        } /* endif pMga->SecondCrtc */
 
 #ifdef DEBUG		
 	ErrorF("Setting DAC:");
@@ -740,7 +761,13 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
 
-	if(pMga->SecondCrtc == TRUE) return;
+	if(pMga->SecondCrtc == TRUE) {
+	   for(i = 0x80; i < 0xa0; i++)
+	      mgaReg->dac2[i-0x80] = inMGAdac(i);
+
+	   return;
+	}
+
 	MGA_NOT_HAL(
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {

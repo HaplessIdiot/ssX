@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.17 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.18 2001/04/03 17:51:59 paulo Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -46,6 +46,8 @@ from The Open Group.
 #define   MAX(a,b)    (((a)>(b)) ? a : b)
 #endif
 
+/* Should get this from elsewhere */
+extern int serverGeneration;
 
 static void bitmapUnloadScalable (FontPtr pFont);
 static void ScaleBitmap ( FontPtr pFont, CharInfoPtr opci, 
@@ -722,7 +724,6 @@ ComputeScaledProperties(FontInfoPtr sourceFontInfo, /* the font to be scaled */
     char       *ptr3;
     FontPropPtr fp;
     fontProp   *fpt;
-    extern int  serverGeneration;
     char	*isStringProp;
     int		nProps;
 

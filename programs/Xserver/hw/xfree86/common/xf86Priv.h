@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.68 2000/10/30 23:02:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.69 2000/12/07 15:43:40 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -63,7 +63,6 @@ extern const char *xf86LogFile;
 extern MessageType xf86LogFileFrom;
 extern serverLayoutRec xf86ConfigLayout;
 extern Pix24Flags xf86ConfigPix24;
-extern confDRIRec xf86ConfigDRI;
 
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];

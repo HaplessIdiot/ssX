@@ -1,6 +1,6 @@
-.\" Copyright (c) 2000 Peter Kunzmann <support@@citron.de>
+.\" Copyright (c) 2000-2001 Peter Kunzmann <support@@citron.de>
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.man,v 1.1 2001/01/24 00:06:35 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.man,v 1.2 2001/01/27 18:20:57 dawes Exp $
 .\"
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
@@ -278,6 +278,20 @@ Higher values result in longer pulse widths.
 .PP
 .I Default:
 "255" (max. brightness)
+
+.RE
+.TP 7
+.BI "Option \*qPWMFreq\*q \*q" value \*q
+This value determines the
+.I PWM
+frequency in Hertz.
+.RS 7
+.PP
+.I Range:
+"39" - "9803"
+.PP
+.I Default:
+"9803" (max. frequency)
 
 .RE
 .TP 7
@@ -610,6 +624,20 @@ every 20ms.
 
 .RE
 .TP 7
+.BI "Option \*qZEnterCount\*q \*q" count \*q
+Number of skipped "enter reports" while in pressure
+sensitive mode. Reports are sent approx. every 20ms.
+.RS 7
+.PP
+.I Range:
+"0" - "31"
+.PP
+.I Default:
+"1" (1 skipped messages = 20ms)
+
+
+.RE
+.TP 7
 .BI "Option \*qDualCount\*q \*q" count \*q
 Number of skipped "dual touch error". Reports are sent approx. 
 every 20ms. This option is only available for "ZPress" and 
@@ -626,4 +654,4 @@ every 20ms. This option is only available for "ZPress" and
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
-2000 - written  by  Citron GmbH (support@citron.de)
+2000-2001 \- written  by  Citron GmbH (support@citron.de)

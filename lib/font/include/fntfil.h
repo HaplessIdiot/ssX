@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfil.h,v 1.5 1999/08/21 13:48:06 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfil.h,v 1.6 2001/01/17 19:43:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -165,11 +165,5 @@ extern int FontFileMatchBitmapSource ( FontPathElementPtr fpe,
 
 extern int FontFileReadDirectory ( char *directory, FontDirectoryPtr *pdir );
 extern Bool FontFileDirectoryChanged ( FontDirectoryPtr dir );
-
-extern void FontFileCheckRegisterFpeFunctions ( void );
-
-extern void PrinterFontRegisterFpeFunctions ( void );
-
-extern void FontFileRegisterFpeFunctions ( void );
 
 #endif /* _FONTFILE_H_ */

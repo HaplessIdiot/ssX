@@ -127,10 +127,10 @@ typedef struct fc_cache_statistics FontCacheStatistics, *FontCacheStatisticsPtr;
 
 /* Function prototypes */
 
-int			FontCacheInitialize();
+int			FontCacheInitialize(void);
 FCCBPtr			FontCacheOpenCache(void * /* arg */);
 void			FontCacheCloseCache(FCCBPtr /* this */);
-FontCacheEntryPtr	FontCacheGetEntry();
+FontCacheEntryPtr	FontCacheGetEntry(void);
 int			FontCacheSearchEntry(FCCBPtr /* this */, int /* key */,
 					     FontCacheEntryPtr * /* value */);
 int			FontCacheInsertEntry(FCCBPtr /* this */, int /* key */,
