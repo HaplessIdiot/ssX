@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.133 94/07/08 12:23:12 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.6 1994/08/20 07:26:53 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.7 1994/09/17 04:03:28 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -50,6 +50,7 @@ XCOMM operating system:  OSName
  *
  * For SunPro C++, define HasSunCplusplus to YES in site.def
  * For CenterLine C++, define HasCenterLineCplusplus to YES in site.def
+ * For Gnu g++ 2.6.x, define HasGcc2ForCplusplus to YES in site.def
  * For other compilers, define HasCplusplus to YES in site.def, and 
  *    check to see if you need to provide values for CplusplusOptions
  *    and/or DefaultCplusplusOptions.
@@ -103,12 +104,23 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
+/*
+ * Gnu g++ 2.6.0 cannot build working C++ shared libraries under Solaris 2
+ */
+#if HasGcc2ForCplusplus && OSMajorVersion > 4
+#ifndef SharedLibFresco
+#define SharedLibFresco NO
+#endif
+#ifndef SharedLibXtf
+#define SharedLibXtf NO
+#endif
+#endif
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
 #define BootstrapCFlags   -DNOSTDHDRS
 #define StandardDefines   -DNOSTDHDRS
-#define XawI18nDefines     -DUSE_X_WCHAR_STRING -DUSE_XMBTOWC
+#define XawI18nDefines     -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #endif
 
 #if OSMajorVersion == 4 
