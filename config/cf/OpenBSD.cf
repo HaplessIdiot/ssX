@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.60 2001/10/10 19:06:35 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.61 2001/11/26 20:01:58 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -55,7 +55,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef HasKrbIV
 #define HasKrbIV		YES
 #endif
-#define HasDlopen		YES
 #define HasUsableFileMmap	YES
 
 #define HasNCurses		YES
@@ -321,29 +320,34 @@ install:: fonts.alias							@@\
 #ifdef AlphaArchitecture
 
 # define OptimizedCDebugFlags	-O2
-# define ServerOSDefines 	-DDDXOSINIT
-# define ServerExtraDefines	GccGasOption -D_XSERVER64 -DXFree86Server
 
 # define HasWeakSymbols		NO
 
-# if (OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 9))
+# if (OSMajorVersion >= 3)
 #  define UseElfFormat		YES
-# endif
-# if 1
+# else
 #  define HasSharedLibraries	NO
 #  define SharedLibXThrStub	NO
-# else /* NOT YET */
-#  define HasSharedLibraries	YES
 # endif
-
 
 # define XF86Server		NO
 
-# define BuildDPMSLibrary	NO
-# define BuildDPMSExt		NO
+/* Definitions for building the XFree86 server */
+# if XF86Server
+#   define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
+#   define ServerExtraDefines	GccGasOption -D_XSERVER64 XFree86ServerDefines
+#   ifndef DoLoadableServer
+#     define DoLoadableServer	YES
+#   endif
+#   ifndef XFree86ConsoleDefines
+#     define XFree86ConsoleDefines -DWSCONS_SUPPORT
+#   endif
 
-# define BuildXF86DGALibrary	NO
-# define BuildXF86DGA		NO
+# endif /* XF86Server */
+
+/* FreeType2 don't work on 64bit machines */
+# define BuildFreetype2Library  NO
+# define BuildXftLibrary	NO
 
 # include <xfree86.cf>
 
@@ -677,7 +681,6 @@ install:: fonts.alias							@@\
 
 # define HasWeakSymbols		NO
 # define UseElfFormat		YES
-# define HasSharedLibraries	YES
 
 # ifndef XF86Server
 #  define XF86Server		NO
@@ -792,6 +795,10 @@ install:: fonts.alias							@@\
 # else
 #  define OSBinaryType			/**/
 # endif
+#endif
+
+#ifndef HasDlopen
+# define HasDlopen		YES
 #endif
 
 #ifndef DlLibrary
