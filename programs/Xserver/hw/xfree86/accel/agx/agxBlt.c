@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.1 1994/06/18 16:23:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.2 1994/07/15 06:57:02 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -42,9 +42,7 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
-#include	"cfbmskbits.h"
-#include	"cfb8bit.h"
+#include	"vga256.h"
 #include	"fastblt.h"
 
 #include	"regagx.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.4 1994/07/15 06:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.5 1994/07/21 13:46:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -49,8 +49,7 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "cfb.h"
-#include "cfbfuncs.h"
+#include "vga256.h"
 #include "agx.h"
 #include "regagx.h"
 #include "xf86RamDac.h"
@@ -396,7 +395,7 @@ agxProbe()
    vgaWriteFlag = FALSE;
    vgaUse2Banks = FALSE;
    vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
+   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
    useSpeedUp = 0;
 
    if( !StrCaseCmp( agxInfoRec.chipset, "XGA-1" ) )
@@ -897,7 +896,7 @@ agxInit (scr_index, pScreen, argc, argv)
    /*
     * For the bootstrap server we will use one bank cfb.banked
     */
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
+   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
 
    vgaVirtBase = (pointer)VGABASE;
    vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
@@ -946,7 +945,7 @@ agxInit (scr_index, pScreen, argc, argv)
 		      agxInfoRec.virtualX))
       return(FALSE);
 
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
+   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
    pScreen->CloseScreen = agxCloseScreen;
    pScreen->SaveScreen = agxSaveScreen;
    pScreen->InstallColormap = agxInstallColormap;
@@ -1038,7 +1037,7 @@ agxEnterLeaveVT(enter, screen_idx)
 					         pScreen->rootDepth ),
 				  0, 0, MIX_SRC, ~0 );
 #else
-            cfbDoBitblt( &ppix->drawable, 
+            vga256DoBitblt( &ppix->drawable, 
                          &pspix->drawable,
                          GXcopy, &pixReg, 
                          &pixPt, 0xFF     );
@@ -1082,7 +1081,7 @@ agxEnterLeaveVT(enter, screen_idx)
 					       pScreen->rootDepth ),
 				0, 0, ~0 );
 #else
-            cfbDoBitblt( &pspix->drawable, 
+            vga256DoBitblt( &pspix->drawable, 
                          &ppix->drawable, 
                          GXcopy, &pixReg,
                          &pixPt, 0xFF );

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.0 1994/06/15 15:35:39 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -42,20 +42,7 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 ********************************************************/
 
 
-#include "X.h"
-#include "Xmd.h"
-#include "servermd.h"
-#include "scrnintstr.h"
-#include "pixmapstr.h"
-#include "resource.h"
-#include "colormap.h"
-#include "colormapst.h"
-#include "cfb.h"
-#include "mi.h"
-#include "mistruct.h"
-#include "dix.h"
-#include "cfbmskbits.h"
-#include "mibstore.h"
+#include "vga256.h"
 #include "agx.h"
 #include "xf86RamDac.h"
 
@@ -160,17 +147,17 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
-    pScreen->GetImage = cfbGetImage;
-    pScreen->GetSpans = cfbGetSpans;
+    pScreen->GetImage = vga256GetImage;
+    pScreen->GetSpans = vga256GetSpans;
     pScreen->CreateWindow = cfbCreateWindow;
     pScreen->DestroyWindow = cfbDestroyWindow;
     pScreen->PositionWindow = cfbPositionWindow;
     pScreen->ChangeWindowAttributes = cfbChangeWindowAttributes;
     pScreen->RealizeWindow = cfbMapWindow;
     pScreen->UnrealizeWindow = cfbUnmapWindow;
-    pScreen->PaintWindowBackground = miPaintWindow;
-    pScreen->PaintWindowBorder = miPaintWindow;
-    pScreen->CopyWindow = cfbCopyWindow;
+    pScreen->PaintWindowBackground = miPaintWindow; /* vga256PaintWindow ?? */
+    pScreen->PaintWindowBorder = miPaintWindow; /* vga256PaintWindow ?? */
+    pScreen->CopyWindow = vga256CopyWindow;
     pScreen->CreatePixmap = cfbCreatePixmap;
     pScreen->DestroyPixmap = cfbDestroyPixmap;
     pScreen->RealizeFont = agxRealizeFont;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.0 1994/06/15 15:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGC.c,v 3.1 1994/07/15 06:57:07 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,38 +29,22 @@ $XConsortium: cfbgc.c,v 1.2 91/07/18 23:00:53 keith
 
 ******************************************************************/
 
-#include "X.h"
-#include "Xmd.h"
-#include "Xproto.h"
-#include "cfb.h"
-#include "fontstruct.h"
-#include "dixfontstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "region.h"
-
-#include "mistruct.h"
-#include "mibstore.h"
-
-#include "cfbmskbits.h"
-#include "cfb8bit.h"
+#include "vga256.h"
 
 #include "agx.h"
 
-static void agxValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-static void cfbDestroyOps();
+static void agxValidateGC(), agxChangeGC(), agxCopyGC(), agxDestroyGC();
+static void agxChangeClip(), agxDestroyClip(), agxCopyClip();
+static void agxDestroyOps();
 
-static GCFuncs cfbFuncs = {
+static GCFuncs agxFuncs = {
     agxValidateGC,
-    cfbChangeGC,
-    cfbCopyGC,
-    cfbDestroyGC,
-    cfbChangeClip,
-    cfbDestroyClip,
-    cfbCopyClip,
+    agxChangeGC,
+    agxCopyGC,
+    agxDestroyGC,
+    agxChangeClip,
+    agxDestroyClip,
+    agxCopyClip,
 };
 
 static GCOps	agxOps = {
@@ -69,133 +53,133 @@ static GCOps	agxOps = {
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    cfbPolyPoint,
+    vga256PolyPoint,
     miWideLine,
     miPolySegment,
     miPolyRectangle,
     miPolyArc,
     miFillPolygon,
     agxPolyFillRect,
-    cfbPolyFillArcSolidCopy,
+    vga256PolyFillArcSolidCopy,
     agxPolyText8,
     miPolyText16,
     agxImageText8,
     miImageText16,
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    vga256TEGlyphBlt8,
+    vga256PolyGlyphBlt8,
+    vga256PushPixels8,
     NULL,
 };
 
-static GCOps	cfbTEOps1Rect = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
+static GCOps	agxTEOps1Rect = {
+    vga256SolidSpansCopy,
+    vga256SetSpans,
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    vga256PolyPoint,
+    vga256LineSS,
+    vga256SegmentSS,
     miPolyRectangle,
 #if PPW == 4
-    cfbZeroPolyArcSS8Copy,
+    vga256ZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
 #endif
-    cfbFillPoly1RectCopy,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
+    vga256FillPoly1RectCopy,
+    vga256PolyFillRect,
+    vga256PolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    vga256TEGlyphBlt8,
+    vga256PolyGlyphBlt8,
+    vga256PushPixels8,
     NULL,
 };
 
-static GCOps	cfbTEOps = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
+static GCOps	agxTEOps = {
+    vga256SolidSpansCopy,
+    vga256SetSpans,
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    vga256PolyPoint,
+    vga256LineSS,
+    vga256SegmentSS,
     miPolyRectangle,
 #if PPW == 4
-    cfbZeroPolyArcSS8Copy,
+    vga256ZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
 #endif
     miFillPolygon,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
+    vga256PolyFillRect,
+    vga256PolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    vga256TEGlyphBlt8,
+    vga256PolyGlyphBlt8,
+    vga256PushPixels8,
     NULL,
 };
 
-static GCOps	cfbNonTEOps1Rect = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
+static GCOps	agxNonTEOps1Rect = {
+    vga256SolidSpansCopy,
+    vga256SetSpans,
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    vga256PolyPoint,
+    vga256LineSS,
+    vga256SegmentSS,
     miPolyRectangle,
 #if PPW == 4
-    cfbZeroPolyArcSS8Copy,
+    vga256ZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
 #endif
-    cfbFillPoly1RectCopy,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
+    vga256FillPoly1RectCopy,
+    vga256PolyFillRect,
+    vga256PolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
     cfbImageGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    vga256PolyGlyphBlt8,
+    vga256PushPixels8,
     NULL,
 };
 
-static GCOps	cfbNonTEOps = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
+static GCOps	agxNonTEOps = {
+    vga256SolidSpansCopy,
+    vga256SetSpans,
     cfbPutImage,
     agxCopyArea,
     agxCopyPlane,
-    cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    vga256PolyPoint,
+    vga256LineSS,
+    vga256SegmentSS,
     miPolyRectangle,
 #if PPW == 4
-    cfbZeroPolyArcSS8Copy,
+    vga256ZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
 #endif
     miFillPolygon,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
+    vga256PolyFillRect,
+    vga256PolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
     cfbImageGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    vga256PolyGlyphBlt8,
+    vga256PushPixels8,
     NULL,
 };
 
@@ -223,14 +207,14 @@ matchCommon (pGC, devPriv)
 #endif
 	)
 	    if (devPriv->oneRect)
-		return &cfbTEOps1Rect;
+		return &agxTEOps1Rect;
 	    else
-		return &cfbTEOps;
+		return &agxTEOps;
 	else
 	    if (devPriv->oneRect)
-		return &cfbNonTEOps1Rect;
+		return &agxNonTEOps1Rect;
 	    else
-		return &cfbNonTEOps;
+		return &agxNonTEOps;
     }
     return 0;
 }
@@ -247,7 +231,7 @@ agxCreateGC(pGC)
     case PSZ:
 	break;
     default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
+	ErrorF("agxCreateGC: unsupported depth: %d\n", pGC->depth);
 	return FALSE;
     }
     pGC->clientClip = NULL;
@@ -260,8 +244,8 @@ agxCreateGC(pGC)
      * on being a color frame buffer, they don't change 
      */
 
-    pGC->ops = &cfbNonTEOps;
-    pGC->funcs = &cfbFuncs;
+    pGC->ops = &agxNonTEOps;
+    pGC->funcs = &agxFuncs;
 
     /* cfb wants to translate before scan conversion */
     pGC->miTranslate = 1;
@@ -277,7 +261,7 @@ agxCreateGC(pGC)
 
 /*ARGSUSED*/
 static void
-cfbChangeGC(pGC, mask)
+agxChangeGC(pGC, mask)
     GC		    *pGC;
     BITS32	    mask;
 {
@@ -285,7 +269,7 @@ cfbChangeGC(pGC, mask)
 }
 
 static void
-cfbDestroyGC(pGC)
+agxDestroyGC(pGC)
     GC 			*pGC;
 {
     cfbPrivGC *pPriv;
@@ -295,7 +279,7 @@ cfbDestroyGC(pGC)
 	cfbDestroyPixmap(pPriv->pRotatedPixmap);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    cfbDestroyOps (pGC->ops);
+    agxDestroyOps (pGC->ops);
 }
 
 /*
@@ -303,7 +287,7 @@ cfbDestroyGC(pGC)
  */
 
 static GCOps *
-cfbCreateOps (prototype)
+agxCreateOps (prototype)
     GCOps	*prototype;
 {
     GCOps	*ret;
@@ -320,7 +304,7 @@ cfbCreateOps (prototype)
 }
 
 static void
-cfbDestroyOps (ops)
+agxDestroyOps (ops)
     GCOps   *ops;
 {
     if (ops->devPrivate.val)
@@ -666,9 +650,9 @@ agxValidateGC(pGC, changes, pDrawable)
     if (pWin && pGC->ops->devPrivate.val != 2)
     {
 	if (pGC->ops->devPrivate.val == 1)
-	    cfbDestroyOps (pGC->ops);
+	    agxDestroyOps (pGC->ops);
 
-	pGC->ops = cfbCreateOps (&agxOps);
+	pGC->ops = agxCreateOps (&agxOps);
 	pGC->ops->devPrivate.val = 2;
 
 	/* Make sure that everything is properly initialized the first time through */
@@ -681,7 +665,7 @@ agxValidateGC(pGC, changes, pDrawable)
 	if (newops = matchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
-		cfbDestroyOps (pGC->ops);
+		agxDestroyOps (pGC->ops);
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -689,13 +673,13 @@ agxValidateGC(pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		pGC->ops = cfbCreateOps (pGC->ops);
+		pGC->ops = agxCreateOps (pGC->ops);
 		pGC->ops->devPrivate.val = 1;
 	    }
 	    else if (pGC->ops->devPrivate.val != 1)
 	    {
-		cfbDestroyOps (pGC->ops);
-		pGC->ops = cfbCreateOps (&cfbNonTEOps);
+		agxDestroyOps (pGC->ops);
+		pGC->ops = agxCreateOps (&agxNonTEOps);
 		pGC->ops->devPrivate.val = 1;
 		new_rrop = new_line = new_text = new_fillspans = new_fillarea = TRUE;
 	    }
@@ -723,8 +707,8 @@ agxValidateGC(pGC, changes, pDrawable)
 		     pGC->ops->PolySegment = agxSegment;
                   }
                   else {
-		     pGC->ops->Polylines = cfbLineSS;
-		     pGC->ops->PolySegment = cfbSegmentSS;
+		     pGC->ops->Polylines = vga256LineSS;
+		     pGC->ops->PolySegment = vga256SegmentSS;
                   }
 		}
  		else
@@ -737,16 +721,16 @@ agxValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->Polylines = miWideDash;
             if ((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid))
             {
-                pGC->ops->Polylines = cfbLineSD;
-                pGC->ops->PolySegment = cfbSegmentSD;
+                pGC->ops->Polylines = vga256LineSD;
+                pGC->ops->PolySegment = vga256SegmentSD;
 	    }
 	    break;
 	case LineDoubleDash:
 	    pGC->ops->Polylines = miWideDash;
             if ((pGC->lineWidth == 0) && (pGC->fillStyle == FillSolid))
             {
-                pGC->ops->Polylines = cfbLineSD;
-                pGC->ops->PolySegment = cfbSegmentSD;
+                pGC->ops->Polylines = vga256LineSD;
+                pGC->ops->PolySegment = vga256SegmentSD;
 	    }
 	    break;
 	}
@@ -758,10 +742,10 @@ agxValidateGC(pGC, changes, pDrawable)
 	{
 	    switch (devPriv->rop) {
 	    case GXcopy:
-		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		pGC->ops->FillPolygon = vga256FillPoly1RectCopy;
 		break;
 	    default:
-		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		pGC->ops->FillPolygon = vga256FillPoly1RectGeneral;
 		break;
 	    }
 	}
@@ -773,13 +757,13 @@ agxValidateGC(pGC, changes, pDrawable)
 		switch (devPriv->rop)
 		{
 		case GXxor:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Xor;
+		    pGC->ops->PolyArc = vga256ZeroPolyArcSS8Xor;
 		    break;
 		case GXcopy:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
+		    pGC->ops->PolyArc = vga256ZeroPolyArcSS8Copy;
 		    break;
 		default:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8General;
+		    pGC->ops->PolyArc = vga256ZeroPolyArcSS8General;
 		    break;
 		}
 	    }
@@ -797,8 +781,8 @@ agxValidateGC(pGC, changes, pDrawable)
 	    {
 		if (pGC->fillStyle == FillSolid)
 		{
-		    pGC->ops->Polylines = cfbLineSS;
-		    pGC->ops->PolySegment = cfbSegmentSS;
+		    pGC->ops->Polylines = vga256LineSS;
+		    pGC->ops->PolySegment = vga256SegmentSS;
 		}
  		else
 		    pGC->ops->Polylines = miZeroLine;
@@ -810,8 +794,8 @@ agxValidateGC(pGC, changes, pDrawable)
 	case LineDoubleDash:
 	    if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
 	    {
-		pGC->ops->Polylines = cfbLineSD;
-		pGC->ops->PolySegment = cfbSegmentSD;
+		pGC->ops->Polylines = vga256LineSD;
+		pGC->ops->PolySegment = vga256SegmentSD;
 	    } else
 		pGC->ops->Polylines = miWideDash;
 	    break;
@@ -838,9 +822,9 @@ agxValidateGC(pGC, changes, pDrawable)
 	    if (pGC->fillStyle == FillSolid)
 	    {
 		if (devPriv->rop == GXcopy)
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		    pGC->ops->PolyGlyphBlt = vga256PolyGlyphBlt8;
 		else
-		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
+		    pGC->ops->PolyGlyphBlt = vga256PolyGlyphRop8;
 	    }
 	    else
 #endif
@@ -854,9 +838,9 @@ agxValidateGC(pGC, changes, pDrawable)
 		)
 	    {
 #if PPW == 4
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
+                pGC->ops->ImageGlyphBlt = vga256TEGlyphBlt8;
 #else
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
+                pGC->ops->ImageGlyphBlt = vga256TEGlyphBlt;
 #endif
 	    }
             else
@@ -897,44 +881,41 @@ agxValidateGC(pGC, changes, pDrawable)
 	   case FillSolid:
 	     switch (devPriv->rop) {
 	       case GXcopy:
-	         pGC->ops->FillSpans = cfbSolidSpansCopy;
+	         pGC->ops->FillSpans = vga256SolidSpansCopy;
 		 break;
 	       case GXxor:
-	  	 pGC->ops->FillSpans = cfbSolidSpansXor;
+	  	 pGC->ops->FillSpans = vga256SolidSpansXor;
 		 break;
 	       default:
-		 pGC->ops->FillSpans = cfbSolidSpansGeneral;
+		 pGC->ops->FillSpans = vga256SolidSpansGeneral;
 		 break;
 	     }
 	     break;
 	   case FillTiled:
 	     if (devPriv->pRotatedPixmap) {
-               extern void cfbTile32FS();
 	       if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK) 
-		  /*pGC->ops->FillSpans = cfbTile32FSCopy;*/
-		  pGC->ops->FillSpans = cfbTile32FS;
+		  pGC->ops->FillSpans = vga256Tile32FSCopy;
 	       else
-		  /*pGC->ops->FillSpans = cfbTile32FSGeneral;*/
-		  pGC->ops->FillSpans =  cfbTile32FS;
+		  pGC->ops->FillSpans = vga256Tile32FSGeneral;
 	     }
 	     else
-	       pGC->ops->FillSpans = cfbUnnaturalTileFS;
+	       pGC->ops->FillSpans = vga256UnnaturalTileFS;
 	     break;
 	   case FillStippled:
 #if PPW == 4
 	      if (devPriv->pRotatedPixmap)
-		 pGC->ops->FillSpans = cfb8Stipple32FS;
+		 pGC->ops->FillSpans = vga2568Stipple32FS;
 	      else
 #endif
-	  	 pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+	  	 pGC->ops->FillSpans = vga256UnnaturalStippleFS;
 	      break;
 	   case FillOpaqueStippled:
 #if PPW == 4
 	      if (devPriv->pRotatedPixmap)
-	 	 pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
+	 	 pGC->ops->FillSpans = vga2568OpaqueStipple32FS;
 	      else
 #endif
-	  	 pGC->ops->FillSpans = cfbUnnaturalStippleFS;
+	  	 pGC->ops->FillSpans = vga256UnnaturalStippleFS;
 	      break;
 
 	   default:
@@ -954,13 +935,13 @@ agxValidateGC(pGC, changes, pDrawable)
 #if PPW != 4
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled) {
-	   pGC->ops->PolyFillRect = cfbPolyFillRect;
+	   pGC->ops->PolyFillRect = vga256PolyFillRect;
 	}
 #endif
 #if PPW == 4
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
-	    pGC->ops->PushPixels = cfbPushPixels8;
+	    pGC->ops->PushPixels = vga256PushPixels8;
 #endif
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	if (pGC->fillStyle == FillSolid)
@@ -968,10 +949,10 @@ agxValidateGC(pGC, changes, pDrawable)
 	    switch (devPriv->rop)
 	    {
 	    case GXcopy:
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
+		pGC->ops->PolyFillArc = vga256PolyFillArcSolidCopy;
 		break;
 	    default:
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidGeneral;
+		pGC->ops->PolyFillArc = vga256PolyFillArcSolidGeneral;
 		break;
 	    }
 	}
@@ -980,7 +961,7 @@ agxValidateGC(pGC, changes, pDrawable)
 }
 
 static void
-cfbDestroyClip(pGC)
+agxDestroyClip(pGC)
     GCPtr	pGC;
 {
     if(pGC->clientClipType == CT_NONE)
@@ -1001,13 +982,13 @@ cfbDestroyClip(pGC)
 }
 
 static void
-cfbChangeClip(pGC, type, pvalue, nrects)
+agxChangeClip(pGC, type, pvalue, nrects)
     GCPtr	pGC;
     int		type;
     pointer	pvalue;
     int		nrects;
 {
-    cfbDestroyClip(pGC);
+    agxDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
 	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
@@ -1030,7 +1011,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
 }
 
 static void
-cfbCopyClip (pgcDst, pgcSrc)
+agxCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
     RegionPtr prgnNew;
@@ -1041,21 +1022,21 @@ cfbCopyClip (pgcDst, pgcSrc)
 	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
 	/* Fall through !! */
       case CT_NONE:
-        cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
+        agxChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
 		      0);
         break;
       case CT_REGION:
         prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
         (*pgcSrc->pScreen->RegionCopy)(prgnNew,
                                        (RegionPtr)(pgcSrc->clientClip));
-        cfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
+        agxChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
         break;
     }
 }
 
 /*ARGSUSED*/
 static void
-cfbCopyGC (pGCSrc, changes, pGCDst)
+agxCopyGC (pGCSrc, changes, pGCDst)
     GCPtr	pGCSrc;
     Mask 	changes;
     GCPtr	pGCDst;
