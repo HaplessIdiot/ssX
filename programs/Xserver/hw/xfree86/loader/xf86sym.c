@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.150 2000/06/25 13:59:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.151 2000/06/25 14:02:59 alanh Exp $ */
 
 /*
  *
@@ -846,8 +846,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmat)
    SYMFUNC(xf86shmdt)
    SYMFUNC(xf86shmctl)
+#ifdef XF86DRI
+				/* These may have more general uses, but
+                                   for now, they are only used by the DRI.
+                                   Loading them only when the DRI is built
+                                   may make porting (the non-DRI portions
+                                   of the X server) easier. */
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
+#endif
    SYMFUNC(xf86BlockSIGIO)
    SYMFUNC(xf86UnblockSIGIO)
   
