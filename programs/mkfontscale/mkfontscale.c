@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.14 2003/10/24 20:38:13 tsi Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.15 2003/11/17 01:01:31 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1051,7 +1051,7 @@ checkEncoding(FT_Face face, char *encoding_name)
                 for(i = encoding->first; i < encoding->size; i++) {
                     c = FontEncRecode(i, mapping);
                     if(CODE_IGNORED(c) ||
-                       (koi8 && (c >= 0x2200 && c < 0x2600 || c == 0x00b2))) {
+                       (koi8 && ((c >= 0x2200 && c < 0x2600) || c == 0x00b2))) {
                         continue;
                     } else {
                         if(FT_Get_Char_Index(face, c) == 0) {
