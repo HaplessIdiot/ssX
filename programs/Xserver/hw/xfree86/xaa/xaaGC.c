@@ -68,10 +68,14 @@ XAAValidateGC(
 
     (*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
 
-    if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
-	pGC->bgPixel = 0x7fffffff; 
-    if(pGC->fgPixel == -1) /* -1 is reserved for transparency */
-	pGC->fgPixel = 0x7fffffff; 
+    if((changes & GCPlaneMask) &&
+       ((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))
+	pGC->planemask = ~0;
+
+    if(pGC->depth != 32) {
+	if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
+	    pGC->bgPixel = 0x7fffffff; 
+    }
 
     if((pDraw->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pDraw)){
 	pGCPriv->flags = OPS_ARE_PIXMAP;
