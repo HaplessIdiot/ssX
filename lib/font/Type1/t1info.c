@@ -95,7 +95,7 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.9 1999/05/03 05:58:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.10 1999/05/04 09:35:23 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -111,12 +111,14 @@ from The Open Group.
 #include "t1intf.h"
  
 #ifdef BUILDCID
+#ifndef FONTMODULE
 #ifdef _XOPEN_SOURCE
 #include <math.h>
 #else
 #define _XOPEN_SOURCE
 #include <math.h>
 #undef _XOPEN_SOURCE
+#endif
 #endif
 #include "range.h"
 #endif
