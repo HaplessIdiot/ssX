@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.15 2001/02/02 11:45:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.16 2001/02/02 14:12:22 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -105,7 +105,7 @@ Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
 	    MMIO_OUT32(pGlint->FbBase, i*1024*1024, i*0x00345678);
 	    mem_barrier();
 	    temp1 = MMIO_IN32(pGlint->FbBase, i*1024*1024);
-	    temp1 = MMIO_IN32(pGlint->FbBase, (i-32)*1024*1024);
+	    temp2 = MMIO_IN32(pGlint->FbBase, (i-32)*1024*1024);
     	    /* Let's check for wrapover */
 	    if ( (temp1 == (i*0x00345678)) && (temp2 == 0) )
 	        size = i;
@@ -497,7 +497,9 @@ void Permedia3LoadPalette(
     LOCO *colors,
     VisualPtr pVisual
 ){
+#if 0 /* NOT YET */
     GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
     int i, index, shift = 0, j, repeat = 1;
 
     if (pScrn->depth == 15) {
@@ -532,7 +534,9 @@ void Permedia3LoadPalette16(
     LOCO *colors,
     VisualPtr pVisual
 ){
+#if 0 /* NOT YET */
     GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
     int i, index, j;
 
     for(i = 0; i < numColors; i++) {
