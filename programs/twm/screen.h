@@ -32,7 +32,7 @@ in this Software without prior written authorization from The Open Group.
  * 11-3-88 Dave Payne, Apple Computer			File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/screen.h,v 1.4 2001/01/17 23:45:08 dawes Exp $ */
+/* $XFree86: xc/programs/twm/screen.h,v 1.6 2003/08/04 10:32:30 eich Exp $ */
 
 #ifndef _SCREEN_
 #define _SCREEN_
@@ -204,12 +204,14 @@ typedef struct ScreenInfo
     int BorderWidth;		/* border width of twm windows */
     int IconBorderWidth;	/* border width of icon windows */
     int MenuBorderWidth;	/* border width of twm menus */
+    int IconMaxWidth;		/* maximum width of the icon */
     int UnknownWidth;		/* width of the unknown icon */
     int UnknownHeight;		/* height of the unknown icon */
     int TitleHeight;		/* height of the title bar window */
     TwmWindow *Focus;		/* the twm window that has focus */
     int EntryHeight;		/* menu entry height */
     int FramePadding;		/* distance between decorations and border */
+    int TitleIndent;		/* amount to indent a text in titlebar */
     int TitlePadding;		/* distance between items in titlebar */
     int ButtonIndent;		/* amount to shrink buttons on each side */
     int NumAutoRaises;		/* number of autoraise windows on screen */

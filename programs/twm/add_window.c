@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.11 2002/04/04 14:05:58 eich Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.13 2003/08/04 10:32:30 eich Exp $ */
 /*****************************************************************************/
 /*
 
@@ -1214,7 +1214,7 @@ void ComputeCommonTitleOffsets ()
       Scr->TBInfo.leftx += Scr->ButtonIndent;
     Scr->TBInfo.titlex = (Scr->TBInfo.leftx +
 			  (Scr->TBInfo.nleft * buttonwidth) - Scr->TBInfo.pad +
-			  Scr->TitlePadding);
+			  Scr->TitlePadding + Scr->TitleIndent);
     if (Scr->TBInfo.nright > 0)
       Scr->TBInfo.rightoff += (Scr->ButtonIndent +
 			       ((Scr->TBInfo.nright * buttonwidth) -
