@@ -1,4 +1,4 @@
-/* $TOG: imInt.c /main/4 1997/04/28 16:39:57 barstow $ */
+/* $TOG: imInt.c /main/5 1998/05/30 21:11:16 kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imInt.c,v 3.2 1997/07/05 15:15:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imInt.c,v 3.3 1998/06/28 08:41:35 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -183,27 +183,25 @@ _XimMakeImName(lcd)
     XLCd	   lcd;
 #endif
 {
-    char	   buf[BUFSIZE];
-    register char *mod;
-    register int   i = 0;
-    char	  *ret;
+    char* begin;
+    char* end;
+    char* ret;
+    int	i = 0;
+    char* ximmodifier = XIMMODIFIER;
 
-    buf[0] = '\0';
-    if (lcd->core->modifiers != (char *)NULL &&
-	strlen(lcd->core->modifiers) >= sizeof(buf))
-	return NULL;
-    if(lcd->core->modifiers != (char *)NULL && *lcd->core->modifiers != '\0') {
-	mod = _XimStrstr(lcd->core->modifiers, XIMMODIFIER);
-	if(mod) {
-	    mod += strlen(XIMMODIFIER);
-	    while (*mod && *mod != '@')
-		buf[i++] = *mod++;
-	    buf[i] = '\0';
+    if(lcd->core->modifiers != NULL && *lcd->core->modifiers != '\0') {
+	begin = _XimStrstr(lcd->core->modifiers, ximmodifier);
+	if (begin != NULL) {
+	    end = begin += strlen(ximmodifier);
+	    while (*end && *end != '@')
+		end++;
 	}
     }
-    if(!(ret = Xmalloc(i + 1)))
-	return NULL;
-    (void)strcpy(ret, buf);
+    ret = Xmalloc(end - begin + 2);
+    if (ret != NULL) {
+    	(void)strncpy(ret, begin, end - begin + 1);
+	ret[end - begin + 1] = '\0';
+    }
     return ret;
 }
 

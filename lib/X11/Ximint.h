@@ -1,4 +1,4 @@
-/* $TOG: Ximint.h /main/10 1997/04/28 16:40:16 barstow $ */
+/* $TOG: Ximint.h /main/12 1998/06/16 16:05:08 kaleb $ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.2 1997/07/05 15:15:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.3 1998/06/28 08:41:34 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -341,7 +341,7 @@ extern void _XimInitialResourceInfo(
 #endif
 );
 
-extern int	 XimParseStringFile(
+extern void	 _XimParseStringFile(
 #if NeedFunctionPrototypes
     FILE        *fp,
     DefTree     **ptop
@@ -853,7 +853,7 @@ extern int	_XimLookupMBText(
 #if NeedFunctionPrototypes
     Xic			 ic,
     XKeyEvent		*event,
-    unsigned char	*buffer,
+    char		*buffer,
     int			 nbytes,
     KeySym		*keysym,
     XComposeStatus	*status

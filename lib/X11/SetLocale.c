@@ -1,4 +1,4 @@
-/* $TOG: SetLocale.c /main/37 1997/06/02 17:27:45 kaleb $ */
+/* $TOG: SetLocale.c /main/42 1998/06/17 14:47:35 kaleb $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -30,15 +30,9 @@
  */
 /*
 
-Copyright (c) 1987  X Consortium
+Copyright 1987,1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -46,18 +40,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.8 1997/11/22 09:58:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.9 1998/06/28 08:41:31 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -133,7 +127,16 @@ _Xsetlocale(category, name)
  * _XlcMapOSLocaleName is an implementation dependent routine that derives
  * the LC_CTYPE locale name as used in the sample implementation from that
  * returned by setlocale.
+ *
  * Should match the code in Xt ExtractLocaleName.
+ * 
+ * This function name is a bit of a misnomer. Even the siname parameter
+ * name is a misnomer. On most modern operating systems this function is 
+ * a no-op, simply returning the osname; but on older operating systems 
+ * like Ultrix, or HPUX 9.x and earlier, when you set LANG=german.88591 
+ * then the string returned by setlocale(LC_ALL, "") will look something 
+ * like: "german.88591 german.88591 ... german.88591". Then this function
+ * will pick out the LC_CTYPE component and return a pointer to that.
  */
 
 char *
@@ -164,7 +167,7 @@ _XlcMapOSLocaleName(osname, siname)
 #define ENDCHAR ';'
 #define WHITEFILL
 #else
-#if defined(__osf__) || defined(AIXV3)
+#if defined(__osf__) || (defined(AIXV3) && !defined(AIXV4))
 #define STARTCHAR ' '
 #define ENDCHAR ' '
 #else

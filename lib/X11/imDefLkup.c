@@ -1,4 +1,4 @@
-/* $TOG: imDefLkup.c /main/17 1997/06/21 21:30:12 kaleb $ */
+/* $TOG: imDefLkup.c /main/18 1998/04/28 17:33:12 kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.3 1996/02/09 08:18:53 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefLkup.c,v 3.4 1997/06/22 10:16:51 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define  NEED_EVENTS
@@ -1114,8 +1114,7 @@ _XimProtoMbLookupString(xic, ev, buffer, bytes, keysym, state)
 	_XimUnregCommitInfo(ic);
 
     } else  if (ev->type == KeyPress) {
-	ret = _XimLookupMBText(ic, ev, (unsigned char *)buffer,
-							bytes, keysym, NULL);
+	ret = _XimLookupMBText(ic, ev, buffer, bytes, keysym, NULL);
 	if (ret > 0) {
 	    if (keysym && *keysym != NoSymbol)
 		*state = XLookupBoth;

@@ -1,5 +1,4 @@
-/* $XConsortium: FSlibInt.c /main/19 1996/09/28 16:32:39 rws $ */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.2 1996/12/23 05:58:50 dawes Exp $ */
+/* $TOG: FSlibInt.c /main/23 1998/05/01 11:42:57 kaleb $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -28,14 +27,9 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -43,15 +37,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.3 1998/04/05 00:45:41 robin Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -127,6 +122,7 @@ static fsReq _dummy_request = {
  * action is taken.  This routine correctly handles incremental writes.
  * This routine may have to be reworked if int < long.
  */
+void 
 _FSFlush(svr)
     register FSServer *svr;
 {
@@ -211,6 +207,7 @@ _FSEventsQueued(svr, mode)
 /* _FSReadEvents - Flush the output queue,
  * then read as many events as possible (but at least 1) and enqueue them
  */
+void 
 _FSReadEvents(svr)
     register FSServer *svr;
 {
@@ -268,6 +265,7 @@ _FSReadEvents(svr)
  * _FSRead - Read bytes from the socket taking into account incomplete
  * reads.  This routine may have to be reworked if int < long.
  */
+void 
 _FSRead(svr, data, size)
     register FSServer *svr;
     register char *data;
@@ -342,7 +340,7 @@ _FSRead(svr, data, size)
  *            into a long (64 bits on a CRAY computer).
  *
  */
-static
+static void 
 _doFSRead32(svr, data, size, packbuffer)
     register FSServer *svr;
     register long *data;
@@ -374,6 +372,7 @@ _doFSRead32(svr, data, size, packbuffer)
     }
 }
 
+void
 _FSRead32(svr, data, len)
     FSServer   *svr;
     long       *data;
@@ -395,7 +394,7 @@ _FSRead32(svr, data, len)
  *            into a long (64 bits on a CRAY computer).
  *
  */
-static
+static void 
 _doFSRead16(svr, data, size, packbuffer)
     register FSServer *svr;
     register short *data;
@@ -427,6 +426,7 @@ _doFSRead16(svr, data, size, packbuffer)
     }
 }
 
+void 
 _FSRead16(svr, data, len)
     FSServer   *svr;
     short      *data;
@@ -441,6 +441,7 @@ _FSRead16(svr, data, len)
     _doFSRead16(svr, data, len, packbuffer);
 }
 
+void 
 _FSRead16Pad(svr, data, size)
     FSServer   *svr;
     short      *data;
@@ -463,6 +464,7 @@ _FSRead16Pad(svr, data, size)
  * reads.  If the number of bytes is not 0 mod 32, read additional pad
  * bytes. This routine may have to be reworked if int < long.
  */
+void 
 _FSReadPad(svr, data, size)
     register FSServer *svr;
     register char *data;
@@ -524,6 +526,7 @@ _FSReadPad(svr, data, size)
  * transmission is used, if size is not 0 mod 4, extra bytes are transmitted.
  * This routine may have to be reworked if int < long;
  */
+void 
 _FSSend(svr, data, size)
     register FSServer *svr;
     char       *data;
@@ -826,6 +829,7 @@ _EatData32(svr, n)
  * note that no squishing of move events in V11, since there
  * is pointer motion hints....
  */
+void 
 _FSEnq(svr, event)
     register FSServer *svr;
     register fsEvent *event;
@@ -833,7 +837,7 @@ _FSEnq(svr, event)
     register _FSQEvent *qelt;
 
 /*NOSTRICT*/
-    if (qelt = _FSqfree) {
+    if ((qelt = _FSqfree) != NULL) {
 	/* If _FSqfree is non-NULL do this, else malloc a new one. */
 	_FSqfree = qelt->next;
     } else if ((qelt =
@@ -941,6 +945,7 @@ _SysErrorMsg(n)
  * _FSDefaultIOError - Default fatal system error reporting routine.  Called
  * when an X internal system error is encountered.
  */
+int
 _FSDefaultIOError(svr)
     FSServer   *svr;
 {
@@ -1005,16 +1010,20 @@ _FSPrintDefaultError(svr, event, fp)
     char        number[32];
     char       *mtype = "FSlibMessage";
     register _FSExtension *ext = (_FSExtension *) NULL;
+    extern int	FSGetErrorText();
+    extern int	FSGetErrorDatabaseText();
 
-    FSGetErrorText(svr, event->error_code, buffer, BUFSIZ);
-    FSGetErrorDatabaseText(svr, mtype, "FSError", "FS Error", mesg, BUFSIZ);
+    (void) FSGetErrorText(svr, event->error_code, buffer, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "FSError", "FS Error", mesg, 
+				  BUFSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
-    FSGetErrorDatabaseText(svr, mtype, "MajorCode", "Request Major code %d",
-			   mesg, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "MajorCode", 
+				  "Request Major code %d", mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->request_code);
     if (event->request_code < 128) {
 	sprintf(number, "%d", event->request_code);
-	FSGetErrorDatabaseText(svr, "FSRequest", number, "", buffer, BUFSIZ);
+	(void) FSGetErrorDatabaseText(svr, "FSRequest", number, "", buffer, 
+				      BUFSIZ);
     } else {
 	for (ext = svr->ext_procs;
 		ext && (ext->codes.major_opcode != event->request_code);
@@ -1025,25 +1034,26 @@ _FSPrintDefaultError(svr, event, fp)
 	    buffer[0] = '\0';
     }
     (void) fprintf(fp, " (%s)\n  ", buffer);
-    FSGetErrorDatabaseText(svr, mtype, "MinorCode", "Request Minor code %d",
-			   mesg, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "MinorCode", 
+				  "Request Minor code %d", mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->minor_code);
     if (ext) {
 	sprintf(mesg, "%s.%d", ext->name, event->minor_code);
-	FSGetErrorDatabaseText(svr, "FSRequest", mesg, "", buffer, BUFSIZ);
+	(void) FSGetErrorDatabaseText(svr, "FSRequest", mesg, "", buffer, 
+				      BUFSIZ);
 	(void) fprintf(fp, " (%s)", buffer);
     }
     fputs("\n  ", fp);
-    FSGetErrorDatabaseText(svr, mtype, "ResourceID", "ResourceID 0x%x",
-			   mesg, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "ResourceID", "ResourceID 0x%x",
+				  mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->resourceid);
     fputs("\n  ", fp);
-    FSGetErrorDatabaseText(svr, mtype, "ErrorSerial", "Error Serial #%d",
-			   mesg, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "ErrorSerial", "Error Serial #%d",
+				  mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->serial);
     fputs("\n  ", fp);
-    FSGetErrorDatabaseText(svr, mtype, "CurrentSerial", "Current Serial #%d",
-			   mesg, BUFSIZ);
+    (void) FSGetErrorDatabaseText(svr, mtype, "CurrentSerial", 
+				  "Current Serial #%d", mesg, BUFSIZ);
     (void) fprintf(fp, mesg, svr->request);
     fputs("\n", fp);
     return 1;
@@ -1082,10 +1092,12 @@ _FSAllocScratch(svr, nbytes)
     return (svr->scratch_buffer);
 }
 
+int 
 FSFree(data)
     char       *data;
 {
     FSfree(data);
+    return 1;
 }
 
 unsigned char *
@@ -1127,7 +1139,7 @@ Data(svr, data, len)
  * "len" is the length in bytes of the data.
  */
 
-static
+static void
 doData16(svr, data, len, packbuffer)
     register FSServer *svr;
     short      *data;
@@ -1165,6 +1177,7 @@ doData16(svr, data, len, packbuffer)
     Data(svr, packbuffer, len);
 }
 
+void
 Data16(svr, data, len)
     FSServer   *svr;
     short      *data;
@@ -1225,6 +1238,7 @@ doData32(svr, data, len, packbuffer)
     Data(svr, packbuffer, len);
 }
 
+void
 Data32(svr, data, len)
     FSServer   *svr;
     short      *data;

@@ -1,15 +1,10 @@
-/* $XConsortium: Form.c,v 1.52 94/04/17 20:12:06 kaleb Exp $ */
+/* $TOG: Form.c /main/54 1998/05/14 14:55:45 kaleb $ */
 
 /***********************************************************
 
-Copyright (c) 1987, 1988, 1994  X Consortium
+Copyright 1987, 1988, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +12,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -48,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.6 1998/06/28 12:32:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.7 1998/08/16 10:24:14 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -310,13 +305,12 @@ _CvtStringToEdgeType(XrmValuePtr args, Cardinal *num_args,
 	edgeType = XtChainBottom;
   else if (q == Qrubber)
 	edgeType = XtRubber;
-  else
-    {
-      XtStringConversionWarning(fromVal->addr, XtREdgeType);
-      toVal->size = 0;
-      toVal->addr = NULL;
-      return;
-    }
+  else {
+	XtStringConversionWarning(fromVal->addr, XtREdgeType);
+	toVal->size = 0;
+	toVal->addr = NULL;
+	return;
+  }
 
   toVal->size = sizeof(XtEdgeType);
   toVal->addr = (XPointer)&edgeType;

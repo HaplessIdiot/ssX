@@ -1,15 +1,9 @@
-/* $TOG: XlibInt.c /main/185 1997/12/05 15:06:26 kaleb $ */
+/* $TOG: XlibInt.c /main/186 1998/02/06 18:02:22 kaleb $ */
 /*
 
-Copyright (c) 1985, 1986, 1987  X Consortium
+Copyright 1985, 1986, 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,20 +11,20 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.12 1997/12/14 02:55:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.13 1998/06/28 08:41:34 dawes Exp $ */
 
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.9.2.2 1998/05/18 14:08:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.13 1998/06/28 08:41:34 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -3253,6 +3247,7 @@ _XANYSET(src)
 #endif
 
 #if defined(WIN32)
+
 /*
  * These functions are intended to be used internally to Xlib only.
  * These functions will always prefix the path with a DOS drive in the
@@ -3268,7 +3263,6 @@ static int access_file (path, pathbuf, len_pathbuf, pathret)
     int len_pathbuf;
     char** pathret;
 {
-    *pathret = pathbuf;
     if (access (path, F_OK) == 0) {
 	if (strlen (path) < len_pathbuf)
 	    *pathret = pathbuf;
@@ -3411,6 +3405,4 @@ int _XAccessFile(path)
 }
 
 #endif
-
-
 

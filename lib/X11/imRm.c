@@ -1,4 +1,4 @@
-/* $TOG: imRm.c /main/12 1997/12/24 13:09:32 kaleb $ */
+/* $TOG: imRm.c /main/14 1998/06/01 09:55:01 kaleb $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.3 1998/01/11 03:48:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.4 1998/06/28 08:41:36 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -68,25 +68,6 @@ typedef struct _XimValueOffsetInfo {
 			 );
 } XimValueOffsetInfoRec, *XimValueOffsetInfo;
 
-static void
-_XimGetResourceName(im, res_name, res_class, size)
-    Xim		 im;
-    char	*res_name;
-    char	*res_class;
-    int		size;
-{
-    if(im->core.res_name == NULL) {
-	strcpy(res_name, "*xim.");
-    } else {
-	_XSnprintf(res_name, size, "%s.xim.", im->core.res_name);
-    }
-    if(im->core.res_class == NULL) {
-	strcpy(res_class, "*Xim.");
-    } else {
-	_XSnprintf(res_class, size, "%s.Xim.", im->core.res_class);
-    }
-}
-
 #ifdef XIM_CONNECTABLE
 Private Bool
 _XimCheckBool(str)
@@ -103,23 +84,37 @@ Public void
 _XimSetProtoResource(im)
     Xim		 im;
 {
-    char	 xim_res_name[256];
-    char	 xim_res_class[256];
-    char	 res_name[256];
-    char	 res_class[256];
-    char	*str_type;
-    XrmValue	 value;
-    XIMStyle	 preedit_style = 0;
-    XIMStyle	 status_style = 0;
-    XIMStyles	*imstyles;
+    char	res_name_buf[256];
+    char*	res_name;
+    char	res_class_buf[256];
+    char*	res_class;
+    char*	str_type;
+    XrmValue	value;
+    XIMStyle	preedit_style = 0;
+    XIMStyle	status_style = 0;
+    XIMStyles*	imstyles;
+    char*	dotximdot = ".xim.";
+    char*	ximdot = "xim.";
+    char*	dotXimdot = ".Xim.";
+    char*	Ximdot = "Xim.";
 
     if (!im->core.rdb)
 	return;
 
-    _XimGetResourceName(im, xim_res_name, xim_res_class, 256);
+    if (strlen (im->core.res_name) < 200) res_name = res_name_buf;
+    else res_name = Xmalloc (strlen (im->core.res_name) + 50);
+    if (strlen (im->core.res_class) < 200) res_class = res_class_buf;
+    else res_class = Xmalloc (strlen (im->core.res_class) + 50);
+    /* pretend malloc always works */
 
-    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name, "useAuth");
-    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class, "UseAuth");
+    (void) sprintf (res_name, "%s%s%s", 
+	im->core.res_name != NULL ? im->core.res_name : "*",
+	im->core.res_name != NULL ? dotximdot : ximdot,
+	"useAuth");
+    (void) sprintf (res_class, "%s%s%s", 
+	im->core.res_class != NULL ? im->core.res_class : "*",
+	im->core.res_class != NULL ? dotXimdot : Ximdot,
+	"UseAuth");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -127,10 +122,14 @@ _XimSetProtoResource(im)
 	}
     }
 
-    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
-	       "delaybinding");
-    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
-	       "Delaybinding");
+    (void) sprintf (res_name, "%s%s%s", 
+	im->core.res_name != NULL ? im->core.res_name : "*",
+	im->core.res_name != NULL ? dotximdot : ximdot,
+	"delaybinding");
+    (void) sprintf (res_class, "%s%s%s", 
+	im->core.res_class != NULL ? im->core.res_class : "*",
+	im->core.res_class != NULL ? dotXimdot : Ximdot,
+	"Delaybinding");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -138,9 +137,14 @@ _XimSetProtoResource(im)
 	}
     }
 
-    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name, "reconnect");
-    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
-	       "Reconnect");
+    (void) sprintf (res_name, "%s%s%s", 
+	im->core.res_name != NULL ? im->core.res_name : "*",
+	im->core.res_name != NULL ? dotximdot : ximdot,
+	"reconnect");
+    (void) sprintf (res_class, "%s%s%s", 
+	im->core.res_class != NULL ? im->core.res_class : "*",
+	im->core.res_class != NULL ? dotXimdot : Ximdot,
+	"Reconnect");
     bzero(&value, sizeof(XrmValue));
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(_XimCheckBool(value.addr)) {
@@ -148,13 +152,20 @@ _XimSetProtoResource(im)
 	}
     }
 
-    if(!IS_CONNECTABLE(im))
+    if(!IS_CONNECTABLE(im)) {
+	if (res_name != res_name_buf) Xfree (res_name);
+	if (res_class != res_class_buf) Xfree (res_class);
 	return;
+    }
 
-    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
-	       "preeditDefaultStyle");
-    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
-	       "PreeditDefaultStyle");
+    (void) sprintf (res_name, "%s%s%s", 
+	im->core.res_name != NULL ? im->core.res_name : "*",
+	im->core.res_name != NULL ? dotximdot : ximdot,
+	"preeditDefaultStyle");
+    (void) sprintf (res_class, "%s%s%s", 
+	im->core.res_class != NULL ? im->core.res_class : "*",
+	im->core.res_class != NULL ? dotXimdot : Ximdot,
+	"PreeditDefaultStyle");
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(!strcmp(value.addr, "XIMPreeditArea"))
 	    preedit_style = XIMPreeditArea;
@@ -170,10 +181,14 @@ _XimSetProtoResource(im)
     if(!preedit_style)
 	preedit_style = XIMPreeditNothing;
 
-    _XSnprintf(res_name, sizeof(res_name), "%s%s", xim_res_name,
-	       "statusDefaultStyle");
-    _XSnprintf(res_class, sizeof(res_class), "%s%s", xim_res_class,
-	       "StatusDefaultStyle");
+    (void) sprintf (res_name, "%s%s%s", 
+	im->core.res_name != NULL ? im->core.res_name : "*",
+	im->core.res_name != NULL ? dotximdot : ximdot,
+	"statusDefaultStyle");
+    (void) sprintf (res_class, "%s%s%s", 
+	im->core.res_class != NULL ? im->core.res_class : "*",
+	im->core.res_class != NULL ? dotXimdot : Ximdot,
+	"StatusDefaultStyle");
     if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
 	if(!strcmp(value.addr, "XIMStatusArea"))
 	    status_style = XIMStatusArea;
@@ -187,13 +202,18 @@ _XimSetProtoResource(im)
     if(!status_style)
 	status_style = XIMStatusNothing;
 
-    if(!(imstyles = (XIMStyles *)Xmalloc(sizeof(XIMStyles) + sizeof(XIMStyle))))
+    if(!(imstyles = (XIMStyles *)Xmalloc(sizeof(XIMStyles) + sizeof(XIMStyle)))){
+	if (res_name != res_name_buf) Xfree (res_name);
+	if (res_class != res_class_buf) Xfree (res_class);
 	return;
+    }
     imstyles->count_styles = 1;
     imstyles->supported_styles =
 			(XIMStyle *)((char *)imstyles + sizeof(XIMStyles));
     imstyles->supported_styles[0] = preedit_style | status_style;
     im->private.proto.default_styles = imstyles;
+    if (res_name != res_name_buf) Xfree (res_name);
+    if (res_class != res_class_buf) Xfree (res_class);
 }
 #endif /* XIM_CONNECTABLE */
 
@@ -405,22 +425,14 @@ _XimDefaultResName(info, top, parm, mode)
 {
     Xic			  ic = (Xic)parm;
     Xim			  im = (Xim)ic->core.im;
-    int			  len;
-    char		 *name;
     char		**out;
 
     if(im->core.res_name == (char *)NULL) {
 	return True;
     }
-    len = strlen(im->core.res_name);
-    if(!(name = (char *)Xmalloc(len + 1))) {
-	return False;
-    }
-    (void)strcpy(name, im->core.res_name);
-    name[len] = '\0';
 
     out = (char **)((char *)top + info->offset);
-    *out = name;
+    *out = im->core.res_name;
     return True;
 }
 
@@ -433,22 +445,14 @@ _XimDefaultResClass(info, top, parm, mode)
 {
     Xic			  ic = (Xic)parm;
     Xim			  im = (Xim)ic->core.im;
-    int			  len;
-    char		 *class;
     char		**out;
 
     if(im->core.res_class == (char *)NULL) {
 	return True;
     }
-    len = strlen(im->core.res_class);
-    if(!(class = (char *)Xmalloc(len + 1))) {
-	return False;
-    }
-    (void)strcpy(class, im->core.res_class);
-    class[len] = '\0';
 
     out = (char **)((char *)top + info->offset);
-    *out = class;
+    *out = im->core.res_class;
     return True;
 }
 

@@ -1,4 +1,4 @@
-/* $TOG: imLcIm.c /main/11 1997/08/27 12:12:44 kaleb $ */
+/* $TOG: imLcIm.c /main/12 1998/06/16 16:05:15 kaleb $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -186,7 +186,7 @@ _XimCreateDefaultTree(im)
     Xfree(name);
     if (fp == (FILE *)NULL)
 	 return;
-    (void)XimParseStringFile(fp, &im->private.local.top);
+    _XimParseStringFile(fp, &im->private.local.top);
     fclose(fp);
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKBGetMap.c /main/7 1996/01/14 16:43:27 kaleb $ */
+/* $TOG: XKBGetMap.c /main/11 1998/06/17 13:24:49 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,7 +25,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.2 1998/06/28 08:41:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.3 1998/08/20 08:55:49 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -264,19 +264,26 @@ _XkbReadKeyActions(buf,info,rep)
 #endif
 {
 int		i;
-CARD8		numDesc[248];
+CARD8		numDescBuf[248];
+CARD8*		numDesc = NULL;
 register int	nKeyActs;
-
-    if (rep->nKeyActs > sizeof(numDesc))
-	return BadLength;
+Status		ret = Success;
 
     if ( (nKeyActs=rep->nKeyActs)>0 ) {
 	XkbSymMapPtr	symMap;
-	if (!_XkbCopyFromReadBuffer(buf, (char *)numDesc, nKeyActs))
-	    return BadLength;
+
+	if (nKeyActs < sizeof numDescBuf) numDesc = numDescBuf;
+	else numDesc = Xmalloc (nKeyActs * sizeof(CARD8));
+
+	if (!_XkbCopyFromReadBuffer(buf, (char *)numDesc, nKeyActs)) {
+	    ret = BadLength;
+	    goto done;
+	}
 	i= XkbPaddedSize(nKeyActs)-nKeyActs;
-	if ((i>0)&&(!_XkbSkipReadBufferData(buf,i)))
-	    return BadLength;
+	if ((i>0)&&(!_XkbSkipReadBufferData(buf,i))) {
+	    ret = BadLength;
+	    goto done;
+	}
 	symMap = &info->map->key_sym_map[rep->firstKeyAct];
 	for (i=0;i<(int)rep->nKeyActs;i++,symMap++) {
 	    if (numDesc[i]==0) {
@@ -288,15 +295,21 @@ register int	nKeyActs;
 		/*                 either zero or XkbKeyNumSyms(info,key) */
 		newActs=XkbResizeKeyActions(info,i+rep->firstKeyAct,
 								numDesc[i]);
-		if (newActs==NULL)
-		    return BadAlloc;
+		if (newActs==NULL) {
+		    ret = BadAlloc;
+		    goto done;
+		}
 		if (!_XkbCopyFromReadBuffer(buf,(char *)newActs,
-					(int)(numDesc[i]*sizeof(XkbAction))))
-		    return BadLength;
+					(int)(numDesc[i]*sizeof(XkbAction)))) {
+		    ret = BadLength;
+		    goto done;
+		}
 	    }
 	}
     }
-    return Success;
+done:
+    if (numDesc != NULL && numDesc != numDescBuf) Xfree (numDesc);
+    return ret;
 }
 
 static Status

@@ -1,4 +1,4 @@
-/* $XConsortium: FSWrap.c /main/14 1996/09/28 16:33:40 rws $ */
+/* $TOG: FSWrap.c /main/16 1998/05/29 14:46:29 kaleb $ */
 
 /*
  * Copyright 1991 by the Open Software Foundation
@@ -30,15 +30,9 @@
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -46,19 +40,19 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/FSWrap.c,v 1.1.1.3.2.2 1998/05/18 14:08:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.2 1998/06/28 08:41:29 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -66,14 +60,14 @@ from the X Consortium.
 #include <X11/Xos.h>
 
 
-#define	MAXLIST	256
+#define	XMAXLIST	256
 
 char **
 _XParseBaseFontNameList(str, num)
     char           *str;
     int            *num;
 {
-    char           *plist[MAXLIST];
+    char           *plist[XMAXLIST];
     char          **list;
     char           *ptr;
 
@@ -91,7 +85,8 @@ _XParseBaseFontNameList(str, num)
     }
     strcpy(ptr, str);
 
-    while (*num < sizeof(plist) / sizeof(plist[0])) {
+    /* somebody who specifies more than XMAXLIST basefontnames will lose */
+    while (*num < (sizeof plist / sizeof plist[0])) {
 	char	*back;
 
 	plist[*num] = ptr;
