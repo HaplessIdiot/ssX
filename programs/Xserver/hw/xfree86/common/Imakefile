@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.119 2000/08/04 16:13:21 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.121 2000/09/19 12:46:12 eich Exp $
 
 
 
@@ -53,7 +53,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.119 2000/08/
 #endif
 
 MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
-LOGDEFINES = -DDEFAULT_LOGPREFIX=\"$(LOGDIRECTORY)/XFree86.\"
+LOGDEFINES = -DDEFAULT_LOGPREFIX=\"$(LOGDIRECTORY)/XLogFile.\"
 
 #if DoLoadableServer
 EXT_MODULES_DEFINES = $(GLX_DEFINES)
