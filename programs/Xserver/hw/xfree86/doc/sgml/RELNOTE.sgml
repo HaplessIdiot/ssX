@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2D (beta version)
  <author>The XFree86 Project, Inc
- <date>24 February 1996
+ <date>2 March 1996
 
 
 <abstract>
@@ -380,7 +380,7 @@ It is expected that it will reappear in some form in a future release.
 	  <item>VT switching does not work for cards with the CH8398 and
 		AT&amp;T20C409 RAMDACs.
 	  <item>The background colour of the cursor in xterms for the
-		CH8398 and T&amp;T20C409 RAMDACs is blue instead of
+		CH8398 and AT&amp;T20C409 RAMDACs is blue instead of
 		black in 16bpp and 32bpp modes.
 	  <item>When using the software cursor, after switching to the
 		console and back, it leaves ``droppings'' when entering
@@ -637,9 +637,12 @@ If you already have a version of XFree86 installed, <bf>MAKE A BACKUP OF</bf>
 <tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.  The standard
 installation procedure will overwrite your existing version of XFree86.
 
-If you have a previous version of XFree86 installed, you can upgrade
-to the new version by extracting the required .tgz files over the
-previous version in <tt>/usr/X11R6</tt>.
+If you have a previous version of XFree86 installed, you can upgrade to
+the new version by first running the script <tt>preinst.sh</tt>, and
+then extracting the required .tgz files over the previous version in
+<tt>/usr/X11R6</tt>.  The <tt>preinst.sh</tt> script removes symbolic
+links that are going to be replaced by either files or new links in this
+version (tar won't overwrite existing symbolic links).
 
 If you are installing from scratch, create a directory called
 <tt>/usr/X11R6</tt>, then extract the required <tt>.tgz</tt> files.
@@ -659,6 +662,12 @@ file you need:
 </verb></tscreen>
 
 Note that there is no postinst.sh script to be run for this release.
+However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD), you
+should either run ldconfig or reboot to complete the installation.
+On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you should
+at least include <tt>/usr/lib</tt> and <tt>/usr/X11R6/lib</tt> on the
+command line.  Check <tt>/etc/rc</tt> to see how ldconfig gets run at
+boot time.
 
 <!--
 If you don't already have XFree86 3.1.2 installed, first install that.
@@ -691,7 +700,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.19 1996/02/24 10:19:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.20 1996/02/25 01:25:48 dawes Exp $
 </verb>
 
 </article>

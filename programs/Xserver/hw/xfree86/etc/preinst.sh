@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.0 1996/03/02 02:28:29 dawes Exp $
 #
 # preinst.sh
 #
@@ -46,7 +46,7 @@ if [ ! -d $RUNDIR/. ]; then
 fi
 
 echo ""
-echo "You are strongly advised to back your /usr/X11R6 directory before"
+echo "You are strongly advised to backup your /usr/X11R6 directory before"
 echo "proceeding with this installation.  This installation will overwrite"
 echo "existing files."
 echo ""

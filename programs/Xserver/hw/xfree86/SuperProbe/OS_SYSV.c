@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.9 1995/07/08 10:28:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.10 1996/02/04 08:56:59 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -27,6 +27,11 @@
  */
 /* $XConsortium: OS_SYSV.c /main/9 1995/11/13 11:12:55 kaleb $ */
 
+#if defined(sun)
+/* Fix for Solaris */
+#define __EXTENSIONS__
+#endif
+
 #include "Probe.h"
 
 #include <fcntl.h>
@@ -54,10 +59,6 @@
 #include <sys/immu.h>
 #if !defined(sun)
 # include <sys/region.h>
-#endif
-#if defined(sun)
-/* Fix for Solaris */
-#define __EXTENSIONS__
 #endif
 #include <sys/proc.h>
 #include <sys/tss.h>

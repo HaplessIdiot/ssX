@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules /main/12 1996/01/03 14:51:18 kaleb $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.20 1996/02/12 11:10:20 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.21 1996/02/24 04:32:51 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -96,7 +96,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
  */
 #ifndef SharedLibraryTarget
 #ifdef UseInstalled
-#define LinkBuildSonameLibrary(lib) $(_NULLCMD_)
+#define LinkBuildSonameLibrary(lib) true
 #else
 #define LinkBuildSonameLibrary(lib) (RemoveFile($(BUILDLIBDIR)/lib); \
 	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/lib .)
@@ -110,7 +110,7 @@ Concat(lib,libname.so.rev):  solist					@@\
 	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
 		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
 		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
-		LinkBuildSonameLibrary($$SONAME); \			@@\
+		LinkBuildSonameLibrary($$SONAME)			@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\

@@ -26,13 +26,11 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.28 1996/02/22 05:11:13 dawes Exp $ */
 
 /*
  * Includes
  */
-
-#include "PCI.h"
 
 #if defined(__STDC__) && defined(__GNUC__)
 #define inline __inline__
@@ -58,6 +56,8 @@
 # define strrchr(a,b) 	rindex((a),(b))
 #endif /* _MINIX */
 #endif
+
+#include "PCI.h"
 
 #ifdef __STDC__
 # define CONST const

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.39 1996/02/22 05:11:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -47,7 +47,6 @@
 #include "windowstr.h"
 
 #include "compiler.h"
-#include "xf86_PCI.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -58,6 +57,8 @@
 #ifdef PIXPRIV
 #include "mach64im.h"
 #endif
+
+#include "xf86_PCI.h"
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf /main/151 1996/02/02 18:59:56 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.25 1996/01/26 08:59:17 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.26 1996/02/10 10:35:26 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -163,17 +163,17 @@ XCOMM operating system:  OSName
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
 #if OSMajorVersion > 4
-#define BootstrapCFlags	  /* none needed */
 #ifndef XawI18nDefines
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
 #define ToolkitStringsABIOptions	-intelabi -earlyR6bc
-#define BootstrapCFlags   -DSVR4 -Di386 -Dsun
+#define BootstrapCFlags   -Dsun
 #else
 #define StandardDefines	  -Dsun -Dsparc -DSVR4
 #define ToolkitStringsABIOptions	-sparcabi
+#define BootstrapCFlags   /* none needed */
 #endif
 #ifndef BootstrapCFlags
 #define BootstrapCFlags	  -DSVR4
@@ -231,15 +231,10 @@ XCOMM operating system:  OSName
 #ifndef XsunMonoServer
 #define XsunMonoServer	  NO		/* monochrome only */
 #endif
-#endif /* not i386Architecture */
 #ifndef BuildPexExt
 #define BuildPexExt	  (XsunServer || Xsun24Server)
 #endif
-#ifndef BuildXKB
-#if !((OSMajorVersion > 4) && defined(i386Architecture))
-#define	BuildXKB	  YES
-#endif
-#endif
+#endif /* not i386Architecture */
 
 #if (OSMajorVersion > 4) && defined(i386Architecture)
 #ifndef HasSolx86ApertureDriver
