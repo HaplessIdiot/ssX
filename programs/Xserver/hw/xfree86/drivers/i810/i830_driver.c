@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.42 2003/10/21 01:55:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.43 2003/10/21 02:11:27 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1082,7 +1082,7 @@ TweakMemorySize(ScrnInfoPtr pScrn, CARD32 newsize, Bool preinit)
     CARD32 ret = 0;
     int i,j = 0;
     PCITAG tag =pciTag(0,0,0);
-    
+
     if(!pI830->PciInfo 
        || !(pI830->PciInfo->chipType == PCI_CHIP_I855_GM
 	    || pI830->PciInfo->chipType == PCI_CHIP_I865_G))
@@ -1098,7 +1098,7 @@ TweakMemorySize(ScrnInfoPtr pScrn, CARD32 newsize, Bool preinit)
 
 	if (!preinit)
 	    return 0;
-	
+
 	/* Search for MAGIC string */
 	for (i = 0; i < SIZE; i++) {
 	    if (biosAddr[i] == MAGICstring[j]) {
@@ -1110,7 +1110,7 @@ TweakMemorySize(ScrnInfoPtr pScrn, CARD32 newsize, Bool preinit)
 	    }
 	}
 	if (j < len) return 0;
-    
+
 	pI830->BIOSMemSizeLoc =  (i - j + 1 + IDOFFSET);
     }
 
@@ -1132,7 +1132,7 @@ TweakMemorySize(ScrnInfoPtr pScrn, CARD32 newsize, Bool preinit)
 	vbeFree(pI830->pVbe);
 	pI830->pVbe = VBEInit(NULL, pI830->pEnt->index);
 	pI830->vbeInfo = VBEGetVBEInfo(pI830->pVbe);
-	
+
 	/* verify that change was successful */
 	if (pI830->vbeInfo->TotalMemory * 64 * 1024 != pI830->newBIOSMemSize) {
 	    ret = 0;
@@ -1708,7 +1708,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    pVbe = pI830->pVbe;
- 
+
    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Pre-allocated VideoRAM: %ld kByte\n",
 	      pI830->StolenMemory.Size / 1024);
    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n", pScrn->videoRam);
