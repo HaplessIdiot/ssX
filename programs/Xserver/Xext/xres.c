@@ -13,6 +13,7 @@
 #include "extnsionst.h"
 #include "swaprep.h"
 #include "XResproto.h"
+#include "pixmapstr.h"
 
 extern RESTYPE lastResourceType;
 extern RESTYPE TypeMask;
@@ -147,7 +148,7 @@ ProcXResQueryClientResources (ClientPtr client)
         swapl (&rep.length, n);
         swapl (&rep.num_types, n);
     }   
-    WriteToClient (client, sizeof (xXResQueryClientsReply), (char *) &rep);
+    WriteToClient (client,sizeof(xXResQueryClientResourcesReply),(char*)&rep);
 
     if(rep.num_types) {
         xXResType scratch;
@@ -178,6 +179,61 @@ ProcXResQueryClientResources (ClientPtr client)
     return (client->noClientException);
 }
 
+static void 
+ResFindPixmaps (pointer value, XID id, pointer cdata)
+{
+   unsigned long *bytes = (unsigned long *)cdata;
+   PixmapPtr pix = (PixmapPtr)value;
+
+   *bytes += (pix->devKind * pix->drawable.height);
+}
+
+static int
+ProcXResQueryClientPixmapBytes (ClientPtr client)
+{
+    REQUEST(xXResQueryClientPixmapBytesReq);
+    xXResQueryClientPixmapBytesReply rep;
+    int clientID;
+    unsigned long bytes;
+
+    REQUEST_SIZE_MATCH(xXResQueryClientPixmapBytesReq);
+
+    clientID = CLIENT_ID(stuff->xid);
+
+    /* we could remove the (clientID == 0) check if we wanted to allow
+       probing the X-server's resource usage */
+    if(!clientID || (clientID >= currentMaxClients) || !clients[clientID]) {
+        client->errorValue = stuff->xid;
+        return BadValue;
+    }
+
+    bytes = 0;
+
+    FindClientResourcesByType(clients[clientID], RT_PIXMAP, ResFindPixmaps, 
+                              (pointer)(&bytes));
+
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.length = 0;
+    rep.bytes = bytes;
+#ifdef XSERVER64
+    rep.bytes_overflow = bytes >> 32;
+#else
+    rep.bytes_overflow = 0;
+#endif
+    if (client->swapped) {
+        int n;
+        swaps (&rep.sequenceNumber, n);
+        swapl (&rep.length, n);
+        swapl (&rep.bytes, n);
+        swapl (&rep.bytes_overflow, n);
+    }
+    WriteToClient (client,sizeof(xXResQueryClientPixmapBytesReply),(char*)&rep);
+
+    return (client->noClientException);
+}
+
+
 static void
 ResResetProc (ExtensionEntry *extEntry) { }
 
@@ -192,12 +248,13 @@ ProcResDispatch (ClientPtr client)
         return ProcXResQueryClients(client);
     case X_XResQueryClientResources:
         return ProcXResQueryClientResources(client);
+    case X_XResQueryClientPixmapBytes:
+        return ProcXResQueryClientPixmapBytes(client);
     default: break;
     }
 
     return BadRequest;
 }
-
 
 static int
 SProcXResQueryVersion (ClientPtr client)
@@ -223,6 +280,17 @@ SProcXResQueryClientResources (ClientPtr client)
 }
 
 static int
+SProcXResQueryClientPixmapBytes (ClientPtr client)
+{
+    REQUEST(xXResQueryClientPixmapBytesReq);
+    int n;
+
+    REQUEST_SIZE_MATCH (xXResQueryClientPixmapBytesReq);
+    swaps(&stuff->xid,n);
+    return ProcXResQueryClientPixmapBytes(client);
+}
+
+static int
 SProcResDispatch (ClientPtr client)
 {
     REQUEST(xReq);
@@ -237,6 +305,8 @@ SProcResDispatch (ClientPtr client)
         return ProcXResQueryClients(client);
     case X_XResQueryClientResources:
         return SProcXResQueryClientResources(client);
+    case X_XResQueryClientPixmapBytes:
+        return SProcXResQueryClientPixmapBytes(client);
     default: break;
     }
 
