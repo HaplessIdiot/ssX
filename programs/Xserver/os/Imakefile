@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:53:40 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.33 2001/08/01 00:44:59 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.35 2002/04/03 19:51:10 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -55,6 +55,10 @@ KRB5SRCS = k5auth.c k5encode.c
 
 #if HasBSD44Sockets
    SOCK_DEFINES = -DBSD44SOCKETS
+#endif
+
+#if HasGetIfAddrs
+   IFADDRS_DEFINES = -DHAS_GETIFADDRS
 #endif
 
 #if BuildLBX
@@ -142,7 +146,7 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialCObjectRule(access,$(ICONFIGFILES),$(XDMCP_DEFINES) $(SOCK_DEFINES))
+SpecialCObjectRule(access,$(ICONFIGFILES),$(XDMCP_DEFINES) $(SOCK_DEFINES) $(IFADDRS_DEFINES))
 SpecialCObjectRule(auth,$(ICONFIGFILES),$(XDMCP_DEFINES))
 SpecialCObjectRule(xdmauth,$(ICONFIGFILES),$(XDMCP_DEFINES))
 SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES) $(XDMCP_DEFINES))
