@@ -1,4 +1,6 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 255. Fix the omission of the Mesa shader component from the GLcore module
+      (David Dawes).
  254. Fixups for protocol autodetection for Sun mice (Marc La France).
  253. Fix omission in BUILD instructions (Reported by Boris Dusek).
  252. Bump DGA client library minor version (Marc La France).
@@ -19234,7 +19236,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3373 2004/12/31 15:07:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3374 2005/01/05 18:25:06 tsi Exp $
 
 
 
