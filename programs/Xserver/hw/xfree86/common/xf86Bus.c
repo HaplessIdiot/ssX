@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.25 1999/06/12 14:15:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.26 1999/06/13 05:18:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1171,7 +1171,7 @@ disableAccess(void)
  * xf86AccessInit() - set up everything needed for access control
  * called only once on first server generation.
  */
-static Bool ValidatePci(void);
+static void ValidatePci(void);
 
 void
 xf86AccessInit(void)
@@ -1382,18 +1382,6 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	return;
     }
 }
-
-
-#if 0
-/*
- * DisableHWAccess() -- Disable access to resources of _all_
- * video devices on buses which allow this.
- */
-static void 
-DisableHWAccess(void)
-{
-}
-#endif
 
 void
 xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io, xf86AccessPtr p_mem,
@@ -2137,7 +2125,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
 static Bool fixPciResource(unsigned int prt, CARD32 alignment,
 			   pciVideoPtr pvp, long type);
 
-static Bool
+static void
 ValidatePci(void)
 {
     pciVideoPtr pvp, pvp1;
@@ -2150,7 +2138,7 @@ ValidatePci(void)
     resRange range;
     int n = 0, m, i;
 
-    if (!xf86PciVideoInfo) return TRUE;
+    if (!xf86PciVideoInfo) return;
     
     /*
      * The order the video devices are listed in is
@@ -2277,7 +2265,7 @@ ValidatePci(void)
 	xf86FreeResList(avoid);
 	xf86FreeResList(Sys);
     }
-    return TRUE;
+    return;
 }
 
     
@@ -3427,11 +3415,12 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 	break;
     case pciBios:
 	type |= ResMem;
-	res_n = 0xff;
+	res_n = 0xff;	/* special flag for bios rom */
 	p_base = &(pvp->biosBase);
 	p_size = &(pvp->biosSize);
 	/* XXX This should also include the PCI_MAP_MEMORY_TYPE_MASK part */
-	p_type = PCI_MAP_MEMORY_CACHABLE;
+	/* bios is always in the 32 bit address range */
+	p_type = 0;
 	break;
     default:
 	return FALSE;
@@ -3464,7 +3453,9 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
     while (pbp) {
 	if (pbp->secondary == pvp->bus) {
 	    if (type & ResMem) {
-		if ((p_type & PCI_MAP_MEMORY_CACHABLE) && pbp->pmem) {
+		if (((p_type & PCI_MAP_MEMORY_CACHABLE)
+		     || (res_n == 0xff)) /* bios should also be prefetchable */
+		    && pbp->pmem) {
 		    start_w = pbp->pmem->block_begin;
 		    end_w = pbp->pmem->block_end;
 		    if (pbp->mem) {
@@ -3585,7 +3576,9 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 		}
 	    break;
 	}
-	/* XXX return here if prt == 0? */
+
+	if (!prt) return pRes;
+
 	pResTmp = pRes->next;
 	if (! fixPciResource(prt, 0, pvp, pRes->r_type)) {
 	    pRes->next = pBad;
