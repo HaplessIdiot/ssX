@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.21 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.23 2002/04/04 14:05:51 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -169,12 +169,12 @@ void x_outw(CARD16 port, CARD16 val);
 CARD32 x_inl(CARD16 port);
 void x_outl(CARD16 port, CARD32 val);
 
-CARD8 Mem_rb(int addr);
-CARD16 Mem_rw(int addr);
-CARD32 Mem_rl(int addr);
-void Mem_wb(int addr, CARD8 val);
-void Mem_ww(int addr, CARD16 val);
-void Mem_wl(int addr, CARD32 val);
+CARD8 Mem_rb(CARD32 addr);
+CARD16 Mem_rw(CARD32 addr);
+CARD32 Mem_rl(CARD32 addr);
+void Mem_wb(CARD32 addr, CARD8 val);
+void Mem_ww(CARD32 addr, CARD16 val);
+void Mem_wl(CARD32 addr, CARD32 val);
 
 /* helper_mem.c */
 void setup_int_vect(xf86Int10InfoPtr pInt);
