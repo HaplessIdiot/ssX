@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.17 2002/06/03 22:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.18 2002/10/15 01:45:03 dawes Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.
@@ -372,7 +372,7 @@ CloneMyself(void)
 		   "-ls", old_listen_arg,
 		   "-cf", configfilename,
 		   "-port", portnum,
-		   NULL);
+		   (void *)NULL);
 
 	InitErrors();		/* reopen errors, since we don't want to lose
 				 * this */

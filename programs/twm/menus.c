@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.14 2002/09/19 13:22:04 tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.15 2002/09/24 21:00:28 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2315,7 +2315,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
         }
 	break;
    case F_STARTWM:
-	execlp("/bin/sh", "sh", "-c", action, NULL);
+	execlp("/bin/sh", "sh", "-c", action, (void *)NULL);
 	fprintf (stderr, "%s:  unable to start:  %s\n", ProgramName, *Argv);
 	break;
 

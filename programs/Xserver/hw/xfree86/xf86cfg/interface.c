@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.34 2002/03/14 18:53:26 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.35 2002/07/05 23:57:23 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -504,7 +504,7 @@ main(int argc, char *argv[])
 		char path[PATH_MAX];
 
 		XmuSnprintf(path, sizeof(path), "%s/bin/twm", XFree86Dir);
-		execl(path, "twm", NULL);
+		execl(path, "twm", (void *)NULL);
 		exit(-127);
 	    }	break;
 	    case -1:
