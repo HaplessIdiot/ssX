@@ -40,6 +40,8 @@
  *	code without payment of royalties or the necessity of notification as
  *	long as this notice (all the text under "LEGAL") is included.
  *
+ *	Reference: $Id: mkg3states.c,v 1.1 1995/01/25 03:35:33 dawes Exp $
+ *
  *	This program is offered without any warranty of any kind. It includes
  *	no warranty of merchantability or fitness for any purpose. Testing and
  *	suitability for any use are the sole responsibility of the user.
