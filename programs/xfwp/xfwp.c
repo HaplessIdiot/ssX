@@ -33,7 +33,7 @@ from the X Consortium.
   under contract to X Consortium, Inc.
  */
 
-/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.3 1996/12/26 01:52:48 dawes Exp $ */
+/* $XFree86: xc/programs/xfwp/xfwp.c,v 1.4 1996/12/29 13:56:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,7 +72,12 @@ from the X Consortium.
 #define SOMAXCONN 128
 #endif
 
+#ifdef __EMX__
+typedef unsigned short ushort;
+#else
 extern int errno;
+#endif
+
 struct clientDataStruct global_data;  /* necessary for ICE callbacks */
 struct pm_conn_buf *  	pm_conn_array[MAX_PM_CONNS];
 struct server_list * 	server_array[MAX_SERVERS];

@@ -47,6 +47,11 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: osdep.h /main/8 1996/11/17 14:52:31 rws $ */
 
+
+
+
+/* $XFree86$ */
+
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
@@ -64,6 +69,10 @@ SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
+#endif
+
+#ifdef __EMX__
+#define OPEN_MAX 256
 #endif
 
 #ifndef OPEN_MAX
