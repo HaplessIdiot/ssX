@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.472 2004/06/01 00:16:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.473 2004/06/02 22:42:53 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -430,7 +430,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.472 2004/06/01 00:16:53 dawes Exp $
 # endif
 
 # ifndef DriDrivers
-#  define DriDrivers		gamma i810 i830 mga r128 radeon r200 \
+#  define DriDrivers		gamma i810 i915 mga r128 radeon r200 \
 				sis tdfx DevelDRIDrivers
 # endif
 #endif
@@ -1283,8 +1283,8 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  ifndef GlxBuiltInI810
 #    define GlxBuiltInI810         NO
 #  endif
-#  ifndef GlxBuiltInI830
-#    define GlxBuiltInI830         NO
+#  ifndef GlxBuiltInI915
+#    define GlxBuiltInI915         NO
 #  endif
 #  ifndef GlxBuiltInR128
 #    define GlxBuiltInR128         NO
@@ -1305,7 +1305,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  if GlxBuiltInTdfx || \
       GlxBuiltInMga || \
       GlxBuiltInI810 || \
-      GlxBuiltInI830 || \
+      GlxBuiltInI915 || \
       GlxBuiltInR128 || \
       GlxBuiltInRadeon || \
       GlxBuiltInR200 || \
@@ -1320,7 +1320,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
       GlxBuiltInTdfx || \
       GlxBuiltInMga || \
       GlxBuiltInI810 || \
-      GlxBuiltInI830 || \
+      GlxBuiltInI915 || \
       GlxBuiltInR128 || \
       GlxBuiltInRadeon || \
       GlxBuiltInR200 || \
@@ -1347,8 +1347,8 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    if GlxBuiltInI810
 #      define DriDrivers i810
 #    endif
-#    if GlxBuiltInI830
-#      define DriDrivers i830
+#    if GlxBuiltInI915
+#      define DriDrivers i915
 #    endif
 #    if GlxBuiltInR128
 #      define DriDrivers r128
