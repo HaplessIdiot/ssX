@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.15tsi Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.16 2003/11/17 15:18:05 tsi Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -44,7 +44,7 @@ MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(fontconfig,$(LIBMANDIR))
 DependTarget()
 
-FONTCONFIG_REVISION=1
+FONTCONFIG_VERSION=2.1.0
 
 #ifndef FontconfigFontsConfDir
 #if NothingOutsideProjectRoot
@@ -74,7 +74,7 @@ SUBSTVARS=prefix=$(PROJECTROOT) \
           libdir=$(USRLIBDIR) \
 	  hardcode_libdir_flag_spec=$(RPATH_CFLAG) \
           includedir=$(INCROOT) \
-          PACKAGE_VERSION=$(SOFONTCONFIGREV).$(FONTCONFIG_REVISION)
+          PACKAGE_VERSION=$(FONTCONFIG_VERSION)
 
 CONFIG_SUBST_PROG=sh $(FONTCONFIGSRC)/config/config-subst
 
