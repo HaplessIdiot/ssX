@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.25 2000/09/04 13:26:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.26 2000/09/04 19:48:38 alanh Exp $ */
 
 /*
  * Authors:
@@ -57,14 +57,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "micmap.h"
 
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "fb.h"
 #include "miscstruct.h"
 #include "xf86xv.h"
 #include "Xv.h"
@@ -156,13 +149,8 @@ static const char *vgahwSymbols[] = {
    0
 };
 
-static const char *cfbSymbols[] = {
-   "cfbScreenInit",
-   "cfb16ScreenInit",
-   "cfb24ScreenInit",
-   "cfb32ScreenInit",
-   "cfb8_32ScreenInit",
-   "cfb24_32ScreenInit",
+static const char *fbSymbols[] = {
+   "fbScreenInit",
    NULL
 };
 
@@ -194,12 +182,6 @@ static const char *ramdacSymbols[] = {
    "xf86DestroyCursorInfoRec",
    NULL
 };
-
-/*
- * This is intentionally screen-independent.  It indicates the binding
- * choice made in the first PreInit.
- */
-static int pix24bpp = 0;
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
@@ -300,7 +282,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
        * might refer to.
        */
       LoaderRefSymLists(vgahwSymbols, 
-			cfbSymbols, 
+			fbSymbols, 
 			xaaSymbols, 
 			xf8_32bppSymbols, 
 			ramdacSymbols,
@@ -456,7 +438,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    ClockRangePtr clockRanges;
    int i;
    MessageType from;
-   char *mod=0, *reqSym=0;
    int flags24;
    rgb defaultWeight = {0, 0, 0};
 
@@ -494,14 +475,13 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    /* Set pScrn->monitor */
    pScrn->monitor = pScrn->confScreen->monitor;
 
-   /* No support for 32bpp.
-    */
    flags24=Support24bppFb | PreferConvert32to24 | SupportConvert32to24;
    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
       return FALSE;
    } else {
       switch (pScrn->depth) {
       case 8:
+      case 15:
       case 16:
       case 24:
 	 break;
@@ -514,9 +494,17 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    }
    xf86PrintDepthBpp(pScrn);
 
-   /* Get the depth24 pixmap format */
-   if (pScrn->depth == 24 && pix24bpp == 0)
-        pix24bpp = xf86GetBppFromDepth(pScrn, 24);
+   switch (pScrn->bitsPerPixel) {
+      case 8:
+      case 16:
+      case 24:
+         break;
+      default:
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                    "Given bpp (%d) is not supported by i810 driver\n",
+                    pScrn->bitsPerPixel);
+        return FALSE;
+   }
 
    pScrn->rgbBits=8;
    if (xf86ReturnOptValBool(I810Options, OPTION_DAC_6BIT, FALSE))
@@ -529,7 +517,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       return FALSE;
 
    /* We don't currently support DirectColor at > 8bpp */
-   if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+   if ((pScrn->depth > 8) && (pScrn->defaultVisual != TrueColor)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
 		 " (%s) is not supported at depth %d\n",
 		 xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
@@ -637,8 +625,10 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    /* Default to 4MB framebuffer, which is sufficient for all
     * supported 2d resolutions.  If the user has specified a different
     * size in the XF86Config, use that amount instead.
+    * 
+    *  Changed to 8 Meg so we can have acceleration by default (Mark).
     */
-   pScrn->videoRam = 4096;	
+   pScrn->videoRam = 8192;	
    from = X_PROBED;
    if (pI810->pEnt->device->videoRam) {
       pScrn->videoRam = pI810->pEnt->device->videoRam;
@@ -676,7 +666,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       case 24:
 	 pI810->MaxClock = pI810->pEnt->device->dacSpeeds[DAC_BPP24];
 	 break;
-      case 32:
+      case 32:  /* not supported */
 	 pI810->MaxClock = pI810->pEnt->device->dacSpeeds[DAC_BPP32];
 	 break;
       }
@@ -694,7 +684,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       case 24:
 	 pI810->MaxClock = 136000;
 	 break;
-      case 32:
+      case 32:  /* not supported */
 	 pI810->MaxClock = 86000;
       }
    }
@@ -738,34 +728,11 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    xf86SetDpi(pScrn, 0, 0);
 
-   switch (pScrn->bitsPerPixel) {
-   case 8:
-      mod = "cfb";
-      reqSym = "cfbScreenInit";
-      break;
-   case 16:
-      mod = "cfb16";
-      reqSym = "cfb16ScreenInit";
-      break;
-   case 24:
-      if (pix24bpp == 24) {
-	mod = "cfb24";
-	reqSym = "cfb24ScreenInit";
-      } else {
-	mod = "xf24_32bpp";
-	reqSym = "cfb24_32ScreenInit";
-      }
-      break;
-   case 32:
-      mod = "cfb32";
-      reqSym = "cfb32ScreenInit";
-      break;
-   }
-   if (mod && !xf86LoadSubModule(pScrn, mod)) {
+   if (!xf86LoadSubModule(pScrn, "fb")) {
       I810FreeRec(pScrn);
       return FALSE;
    }
-   xf86LoaderReqSymbols(reqSym, NULL);
+   xf86LoaderReqSymbols("fbScreenInit", NULL);
 
    if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1340,7 +1307,7 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    vgaRegPtr pVga = &VGAHWPTR(pScrn)->ModeReg;
    double dclk = mode->Clock/1000.0;
 
-   switch (pScrn->depth) {
+   switch (pScrn->bitsPerPixel) {
    case 8:
       pVga->CRTC[0x13]        = pScrn->displayWidth >> 3;
       i810Reg->ExtOffset      = pScrn->displayWidth >> 11;
@@ -1358,23 +1325,11 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
       i810Reg->BitBLTControl = COLEXP_16BPP;
       break;
    case 24:
-      if (pScrn->bitsPerPixel == 24) {
-	 pVga->CRTC[0x13]       = (pScrn->displayWidth * 3) >> 3;
-	 i810Reg->ExtOffset     = (pScrn->displayWidth * 3) >> 11;
-      } else {
-	 /* never happens */
-	 pVga->CRTC[0x13]       = pScrn->displayWidth >> 1;
-	 i810Reg->ExtOffset     = pScrn->displayWidth >> 9;
-      }
+      pVga->CRTC[0x13]       = (pScrn->displayWidth * 3) >> 3;
+      i810Reg->ExtOffset     = (pScrn->displayWidth * 3) >> 11;
+
       i810Reg->PixelPipeCfg1 = DISPLAY_24BPP_MODE;
       i810Reg->BitBLTControl = COLEXP_24BPP;
-      break;
-   case 32:
-      /* never happens */
-      pVga->CRTC[0x13]       = pScrn->displayWidth >> 1;
-      i810Reg->ExtOffset     = pScrn->displayWidth >> 9;
-      i810Reg->PixelPipeCfg1 = DISPLAY_32BPP_MODE;
-      i810Reg->BitBLTControl = COLEXP_RESERVED; /* Not implemented on i810 */
       break;
    default:
       break;
@@ -1696,67 +1651,31 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    I810SaveScreen(pScreen, FALSE);
    I810AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
-   switch (pScrn->bitsPerPixel) {
-   case 8:
-      if (!cfbScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset, 
-			 pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi,
-			 pScrn->displayWidth))
-	 return FALSE;
-      break;
-   case 16:
-      if (!cfb16ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset, 
-			   pScrn->virtualX, pScrn->virtualY,
-			   pScrn->xDpi, pScrn->yDpi,
-			   pScrn->displayWidth))
-	 return FALSE;
-      break;
-   case 24:
-      if (pix24bpp == 24) {
-            if (!cfb24ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
-                        pScrn->virtualX, pScrn->virtualY,
+   if(!fbScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
+		        pScrn->virtualX, pScrn->virtualY,
                         pScrn->xDpi, pScrn->yDpi,
-                        pScrn->displayWidth))
-		return FALSE;
-      } else {
-            if (!cfb24_32ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
-                        pScrn->virtualX, pScrn->virtualY,
-                        pScrn->xDpi, pScrn->yDpi,
-                        pScrn->displayWidth))
-		return FALSE;
-      }
-      break;
-   case 32:
-      if (!cfb32ScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset, 
-			   pScrn->virtualX, pScrn->virtualY,
-			   pScrn->xDpi, pScrn->yDpi,
-			   pScrn->displayWidth))
-	 return FALSE;
-      break;
-   default:
-      xf86DrvMsg(scrnIndex, X_ERROR,
-		 "Internal error: invalid bpp (%d) in I810ScrnInit\n",
-		 pScrn->bitsPerPixel);
-      return FALSE;
+                        pScrn->displayWidth, pScrn->bitsPerPixel))
+       return FALSE;
+
+
+   if (pScrn->bitsPerPixel > 8) {
+        /* Fixup RGB ordering */
+        visual = pScreen->visuals + pScreen->numVisuals;
+        while (--visual >= pScreen->visuals) {
+            if ((visual->class | DynamicClass) == DirectColor) {
+                visual->offsetRed = pScrn->offset.red;
+                visual->offsetGreen = pScrn->offset.green;
+                visual->offsetBlue = pScrn->offset.blue;
+                visual->redMask = pScrn->mask.red;
+                visual->greenMask = pScrn->mask.green;
+                visual->blueMask = pScrn->mask.blue;
+            }
+        }
    }
 
    xf86SetBlackWhitePixels(pScreen);
 
    I810DGAInit(pScreen);
-
-   if (pScrn->bitsPerPixel>8) {
-      visual = pScreen->visuals + pScreen->numVisuals;
-      while (--visual >= pScreen->visuals) {
-	 if ((visual->class | DynamicClass) == DirectColor) {
-	    visual->offsetRed = pScrn->offset.red;
-	    visual->offsetGreen = pScrn->offset.green;
-	    visual->offsetBlue = pScrn->offset.blue;
-	    visual->redMask = pScrn->mask.red;
-	    visual->greenMask = pScrn->mask.green;
-	    visual->blueMask = pScrn->mask.blue;
-	 }
-      }
-   }
 
    miInitializeBackingStore(pScreen);
    xf86SetBackingStore(pScreen);
@@ -1765,7 +1684,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    if (!miCreateDefColormap(pScreen)) return FALSE;
 
-#if 0   /* palettes do not work at the moment */
+#if 0   /* palettes do not work */
    if (pScrn->bitsPerPixel==16) {
       if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette16, 0,
 			       CMAP_PALETTED_TRUECOLOR|

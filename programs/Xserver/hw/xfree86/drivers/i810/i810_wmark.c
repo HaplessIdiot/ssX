@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_wmark.c,v 1.3 2000/08/28 18:15:13 dawes Exp $ */
 
 /*
  * Authors:
@@ -255,7 +255,7 @@ unsigned int I810CalcWatermark( ScrnInfoPtr pScrn, double freq, Bool dcache )
    int i;
 
    if (pI810->LmFreqSel == 100) {
-      switch(pScrn->depth) {
+      switch(pScrn->bitsPerPixel) {
       case 8:
 	 tab = i810_wm_8_100;
 	 nr = Elements(i810_wm_8_100);
@@ -265,7 +265,6 @@ unsigned int I810CalcWatermark( ScrnInfoPtr pScrn, double freq, Bool dcache )
 	 nr = Elements(i810_wm_16_100);
 	 break;
       case 24:
-      case 32:
 	 tab = i810_wm_24_100;
 	 nr = Elements(i810_wm_24_100);
 	 break;
@@ -273,7 +272,7 @@ unsigned int I810CalcWatermark( ScrnInfoPtr pScrn, double freq, Bool dcache )
 	 return 0;
       }
    } else {
-      switch(pScrn->depth) {
+      switch(pScrn->bitsPerPixel) {
       case 8:
 	 tab = i810_wm_8_133;
 	 nr = Elements(i810_wm_8_133);
@@ -283,7 +282,6 @@ unsigned int I810CalcWatermark( ScrnInfoPtr pScrn, double freq, Bool dcache )
 	 nr = Elements(i810_wm_16_133);
 	 break;
       case 24:
-      case 32:
 	 tab = i810_wm_24_133;
 	 nr = Elements(i810_wm_24_133);
 	 break;
