@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.31 2002/05/31 18:45:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.32 2002/10/16 00:37:26 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -778,7 +778,9 @@ _XEventsQueued (dpy, mode)
 #endif /* XCONN_CHECK_FREQ */
 	if (!(len = pend)) {
 	    /* _XFlush can enqueue events */
-	    UnlockNextEventReader(dpy);
+	    if (cvl) {
+		UnlockNextEventReader(dpy);
+	    }
 	    return(dpy->qlen);
 	}
       /* Force a read if there is not enough data.  Otherwise,
@@ -822,7 +824,9 @@ _XEventsQueued (dpy, mode)
 		if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
 		    memcpy(dpy->lock->reply_awaiters->buf, read_buf,
 			   len);
-		UnlockNextEventReader(dpy);
+		if (cvl) {
+		    UnlockNextEventReader(dpy);
+		}
 		return(dpy->qlen); /* we read, so we can return */
 	    } else if (read_buf != buf.buf)
 		memcpy(buf.buf, read_buf, len);
@@ -846,7 +850,9 @@ _XEventsQueued (dpy, mode)
 	    }
 	} ENDITERATE
 
-	UnlockNextEventReader(dpy);
+	if (cvl) {
+	    UnlockNextEventReader(dpy);
+	}
 	return(dpy->qlen);
 }
 
