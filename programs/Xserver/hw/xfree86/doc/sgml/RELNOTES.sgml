@@ -9,7 +9,7 @@
 <date>14 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.110 2004/02/15 19:15:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.111 2004/02/17 04:31:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -396,7 +396,7 @@ scroll-back(1, page-2)
 	file support and extensions section below">.
 
 <item>The Bitstream Vera TrueType fonts that Bitstream, Inc donated to
-	the Gnome Foundation are included with this release.
+	the GNOME Foundation are included with this release.
 
 </itemize>
 
@@ -1123,9 +1123,9 @@ or the 'cvs log' information for individual source files.
   <tag>Xterm fixes, maintenance and enhancements:</tag>Thomas E. Dickey.
   <tag>Mac OS X enhancements:</tag>Torrey T. Lyons, John Harper.
   <tag>GNU/Hurd updates and preliminary GNU/KFreeBSD and GNU/KNetBSD
-	support:</tag> Robert Millan.
+	support:</tag>Robert Millan.
   <tag>SCO support updates:</tag>Kean Johnston.
-  <tag>Bitstream Vera fonts:</tag>Bitstream, Inc, and the Gnome Foundation.
+  <tag>Bitstream Vera fonts:</tag>Bitstream, Inc, and the GNOME Foundation.
   </descrip>
 <tag>Integration:</tag>
   <descrip>
@@ -1308,7 +1308,6 @@ Jens Schweikhardt,
 Danilo Segan,
 Shantonu Sen,
 Stas Sergeev,
-JungShik Shin,
 Jungshik Shin,
 Nikola Smolenski,
 Andreas Stenglein,
