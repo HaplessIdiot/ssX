@@ -59,8 +59,9 @@ extern ScrollByLineClassRec scrollByLineClassRec;
 
 /* New fields for the ScrollByLine widget record */
 typedef struct _ScrollByLinePart {
-  Pixel foreground;		/* The color for the forground of the text. */
-  Boolean force_vert,		/* Must have scrollbar visable */
+  Pixel foreground;		/* The color for the foreground of the text. */
+  Boolean force_vert,		/* Must have scrollbar visible */
+    half_lines,			/* adjust for half-line spacing */
     use_right;			/* put scroll bar on right side of window. */
   FILE * file;			/* The file to display. */
   Dimension indent;		/* amount to indent the file. */
