@@ -1,3 +1,7 @@
+XFree86 3.2g (19 December 1996)
+ 110. Enable accelerated copy plane for 24bpp in XAA.
+ 109. Fix some compile problems related to the recent Cirrus changes.
+
 XFree86 3.2f (18 December 1996)
  108. Enable the XAA driver for cirrus chips with a BitBLT engine and
       the driver for Laguna family chips (Harm Hanemaayer).
