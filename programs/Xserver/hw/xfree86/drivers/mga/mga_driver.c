@@ -839,11 +839,11 @@ MGACountRam(ScrnInfoPtr pScrn)
 	OUTREG8(0x1FDE, 3);
 	tmp = INREG8(0x1FDF);
 	OUTREG8(0x1FDF, tmp | 0x80);
-	OUTREG8(MGAREG_CRTC_INDEX, 0);  /* flush the cache */
 	
 	/* write, read and compare method */
 	for(i = ProbeSize; i > 2048; i -= 2048) {
 	    base[(i * 1024) - 1] = 0xAA;
+	    OUTREG8(MGAREG_CRTC_INDEX, 0);  /* flush the cache */
 	    if(base[(i * 1024) - 1] == 0xAA) {
 		SizeFound = i;
 		break;
