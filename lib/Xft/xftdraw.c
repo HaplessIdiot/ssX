@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.5 2000/12/05 03:13:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.6 2000/12/05 07:42:30 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -48,6 +48,88 @@ XftDrawCreate (Display   *dpy,
     return draw;
 }
 
+XftDraw *
+XftDrawCreateBitmap (Display	*dpy,
+		     Pixmap	bitmap)
+{
+    XftDraw	*draw;
+
+    draw = (XftDraw *) malloc (sizeof (XftDraw));
+    if (!draw)
+	return 0;
+    draw->dpy = dpy;
+    draw->drawable = (Drawable) bitmap;
+    draw->visual = 0;
+    draw->colormap = 0;
+    draw->core_set = False;
+    draw->render_set = False;
+    draw->render_able = False;
+    draw->clip = 0;
+    return draw;
+}
+
+static XRenderPictFormat *
+_XftDrawFormat (XftDraw	*draw)
+{
+    if (draw->visual == 0)
+    {
+	XRenderPictFormat   pf;
+
+	pf.type = PictTypeDirect;
+	pf.depth = 1;
+	pf.direct.alpha = 0;
+	pf.direct.alphaMask = 1;
+	return XRenderFindFormat (draw->dpy,
+				  (PictFormatType|
+				   PictFormatDepth|
+				   PictFormatAlpha|
+				   PictFormatAlphaMask),
+				  &pf,
+				  0);
+    }
+    else
+	return XRenderFindVisualFormat (draw->dpy, draw->visual);
+}
+
+static XRenderPictFormat *
+_XftDrawFgFormat (XftDraw	*draw)
+{
+    XRenderPictFormat   pf;
+
+    if (draw->visual == 0)
+    {
+	pf.type = PictTypeDirect;
+	pf.depth = 1;
+	pf.direct.alpha = 0;
+	pf.direct.alphaMask = 1;
+	return XRenderFindFormat (draw->dpy,
+				  (PictFormatType|
+				   PictFormatDepth|
+				   PictFormatAlpha|
+				   PictFormatAlphaMask),
+				  &pf,
+				  0);
+    }
+    else
+    {
+	pf.type = PictTypeDirect;
+	pf.depth = 32;
+	pf.direct.redMask = 0xff;
+	pf.direct.greenMask = 0xff;
+	pf.direct.blueMask = 0xff;
+	pf.direct.alphaMask = 0xff;
+	return XRenderFindFormat (draw->dpy,
+				  (PictFormatType|
+				   PictFormatDepth|
+				   PictFormatRedMask|
+				   PictFormatGreenMask|
+				   PictFormatBlueMask|
+				   PictFormatAlphaMask),
+				  &pf,
+				  0);
+    }
+}
+
 void
 XftDrawChange (XftDraw	*draw,
 	       Drawable	drawable)
@@ -88,18 +170,13 @@ XftDrawRenderPrepare (XftDraw	*draw,
     if (!draw->render_set)
     {
 	XRenderPictFormat	    *format;
-	XRenderPictFormat	    pf, *pix_format;
+	XRenderPictFormat	    *pix_format;
 	XRenderPictureAttributes    pa;
 
 	draw->render_set = True;
 	draw->render_able = False;
-	format = XRenderFindVisualFormat (draw->dpy, draw->visual);
-	pf.depth = 32;
-	pf.type = PictTypeDirect;
-	pix_format = XRenderFindFormat (draw->dpy, 
-					PictFormatType|PictFormatDepth, 
-					&pf, 
-					0);
+	format = _XftDrawFormat (draw);
+	pix_format = _XftDrawFgFormat (draw);
 	if (format && pix_format)
 	{
 	    draw->render_able = True;
@@ -115,8 +192,8 @@ XftDrawRenderPrepare (XftDraw	*draw,
 							 CPRepeat, &pa);
 	    draw->render.fg_color.red = ~color->color.red;
 	    if (draw->clip)
-	    XRenderSetPictureClipRegion (draw->dpy, draw->render.pict,
-					 draw->clip);
+		XRenderSetPictureClipRegion (draw->dpy, draw->render.pict,
+					     draw->clip);
 	}
     }
     if (!draw->render_able)
