@@ -905,6 +905,10 @@ static XrmOptionDescRec optionDescList[] = {
 #ifndef NO_ACTIVE_ICON
 {"-fi",		"*iconFont",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif /* NO_ACTIVE_ICON */
+#ifdef XRENDERFONT
+{"-fn",		"*faceName",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fs",		"*faceSize",	XrmoptionSepArg,	(caddr_t) NULL},
+#endif
 #if OPT_WIDE_CHARS
 {"-fw",		"*wideFont",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif
