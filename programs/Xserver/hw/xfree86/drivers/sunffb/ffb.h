@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.8tsi Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -277,14 +277,12 @@ extern struct fastfill_parms ffb_fastfill_parms[];
 
 #define FFB_FFPARMS(__fpriv)	(ffb_fastfill_parms[(__fpriv)->ffb_res])
 
-extern int  CreatorScreenPrivateIndex;
 extern int  CreatorGCPrivateIndex;
 extern int  CreatorWindowPrivateIndex;
 
 #define GET_FFB_FROM_SCRN(p)	((FFBPtr)((p)->driverPrivate))
 
-#define GET_FFB_FROM_SCREEN(s)						\
-((FFBPtr)(s)->devPrivates[CreatorScreenPrivateIndex].ptr)
+#define GET_FFB_FROM_SCREEN(s)	GET_FFB_FROM_SCRN(xf86Screens[(s)->myNum])
 
 #define CreatorGetGCPrivate(g)						\
 ((CreatorPrivGCPtr) (g)->devPrivates [CreatorGCPrivateIndex].ptr)
