@@ -1,7 +1,7 @@
 .\"
-.\" $Id$
+.\" Id: ttf2bdf.man,v 1.14 1999/10/21 16:31:54 mleisher Exp $
 .\"
-.TH TTF2BDF 1 "26 June 1998" "X Version 11"
+.TH TTF2BDF 1 "21 October 1999" "X Version 11"
 .SH NAME 
 ttf2bdf \- TrueType to BDF font converter
 
@@ -30,17 +30,18 @@ set the desired point size (see default value by running the program with the
 .TP 8
 .I -r n
 set both the horizontal and the vertical resolution (see default value by
-running the program with the -h option).
+running the program with the -h option).  The minimum is 10dpi and the maximum
+is 1200dpi.
 .PP
 .TP 8
 .I -rh n
 set the horizontal resolution (see default value by running the program with
-the -h option).
+the -h option).  The minimum is 10dpi and the maximum is 1200dpi.
 .PP
 .TP 8
 .I -rv n
 set the vertical resolution (see default value by running the program with
-the -h option).
+the -h option).  The minimum is 10dpi and the maximum is 1200dpi.
 .PP
 .TP 8
 .I -o outfile
@@ -132,12 +133,11 @@ REGISTRY ISO8859
 .br
 ENCODING 2
 .sp
-The remapping data should be two columns of hexadecimal numbers,
-separated by spaces or tabs.  The first column should be the hexadecimal
-code of the glyph in the "cmap" table ttf2bdf is using.  The second
-column should have the code which should be used in the BDF font.  An
-example mapping file is provided which will map fonts from Unicode
-(default cmap table) to ISO8859-2.
+The remapping data should be two columns of hexadecimal numbers, separated by
+spaces or tabs.  The first column should have the code which should be used in
+the BDF font.  The second column should be the hexadecimal code of the glyph
+in the "cmap" table ttf2bdf is using.  An example mapping file is provided
+which will map fonts from Unicode (the default "cmap" table) to ISO8859-2.
 .sp
 Unicode is not the only option.  If you choose another platform and
 encoding ID on the command line, then the remapping is assumed to map
@@ -180,6 +180,12 @@ Oleg N. Yakovlev <yashka@optima.dnepropetrovsk.ua> for pointing out a problem.
 Bertrand Petit <elrond@phoe.frmug.org> for additional functionality.
 .br
 Roman Czyborra <czyborra@cs.tu-berlin.de> for pointing out some problems.
+.br
+Mike Blazer <blazer@mail.nevalink.ru> for some Window's compilation advice.
+.br
+Solofo Ramangalahy <solofo@mpi-sb.mpg.de> for contributing some mapping
+tables.
+Antoine Leca <Antoine.Leca@renault.fr> for mapping table suggestions.
 .SH AUTHOR
 Mark Leisher
 .br

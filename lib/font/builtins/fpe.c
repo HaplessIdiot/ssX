@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * Id: fpe.c,v 1.2 1999/11/02 06:16:48 keithp Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $ */
+/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.3 1999/12/30 02:29:51 robin Exp $ */
 
 #include    "fntfilst.h"
 

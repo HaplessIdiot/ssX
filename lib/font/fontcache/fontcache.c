@@ -24,7 +24,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id$
+ *	Id: fontcache.c,v 1.19 1999/01/31 13:06:00 akiyama Exp $
  */
 
 #include <stdio.h>

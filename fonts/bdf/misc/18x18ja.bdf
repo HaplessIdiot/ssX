@@ -2,7 +2,7 @@ STARTFONT 2.1
 COMMENT This font contains 16x16 kanji glyphs
 COMMENT from Japanese Industrial Standard, JIS X 9051-1984
 COMMENT padded with one pixel on all sides.
-COMMENT $Id$
+COMMENT Id: 18x18ja.bdf,v 1.9 1999-11-07 15:51:24+00 mgk25 Rel mgk25 $
 COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Medium-R-Normal-ja-18-120-100-100-C-180-ISO10646-1
 SIZE 12 100 100

@@ -40,7 +40,7 @@
  *  /usr/include/sys/queue.h, modified for X-TrueType Server by
  *  Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
  *
- *	$Id$
+ *	Id: fcqueue.h,v 1.1 1999/01/06 13:36:42 akiyama Exp $
  */
 
 #ifndef _FCQUEUE_H_

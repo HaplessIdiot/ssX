@@ -1,3 +1,15 @@
+/****************************************************************************/
+/*                                                                          */
+/*  The FreeType project -- a free and portable quality TrueType renderer.  */
+/*                                                                          */
+/*  Copyright 1996-1999 by                                                  */
+/*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
+/*                                                                          */
+/*  common.c: Various utility functions.                                    */
+/*                                                                          */
+/****************************************************************************/
+
+
 /*
  *  This is a cheap replacement for getopt() because that routine is not
  *  available on some platforms and behaves differently on other platforms.
@@ -11,18 +23,19 @@
 
 #ifndef lint
 #ifdef __GNUC__
-  static char rcsid[] __attribute__ ((unused)) = "$Id$";
+  static char  rcsid[] __attribute__ ((unused)) = "Id: common.c,v 1.14 1999/08/13 12:54:34 werner Exp $";
 #else
-  static char rcsid[] = "$Id$";
+  static char  rcsid[] = "Id: common.c,v 1.14 1999/08/13 12:54:34 werner Exp $";
 #endif
 #endif
 
-#include "common.h"
-
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "common.h"
+#include "freetype.h" /* TT_Raster_Map */
 
   /*
    *  Externals visible to programs.
@@ -46,6 +59,7 @@
   static char**  cmdav;
 #endif
 
+
   int
 #ifdef __STDC__
   ft_getopt( int  ac, char* const*  av, const char*  pat )
@@ -64,6 +78,7 @@
     char*  p;
     char*  pp;
 #endif
+
 
     /*
      *  If there is no pattern, indicate the parsing is done.
@@ -95,6 +110,7 @@
         if ( *p == '/' || *p == '\\' )
           cmdname = p;
       }
+
       /*
        *  Skip the path separator if the name was assigned.
        */
@@ -175,11 +191,6 @@
 
 /****************************************************************************/
 /*                                                                          */
-/*  The FreeType project -- a free and portable quality TrueType renderer.  */
-/*                                                                          */
-/*  Copyright 1996-1998 by                                                  */
-/*  D. Turner, R.Wilhelm, and W. Lemberg                                    */
-/*                                                                          */
 /* ft_basename():                                                           */
 /*                                                                          */
 /* a stupid but useful function...                                          */
@@ -190,10 +201,10 @@
 
   char*
 #ifdef __STDC__
-  ft_basename ( const char*  name )
+  ft_basename( const char*  name )
 #else
-  ft_basename ( name )
-    char* name;
+  ft_basename( name )
+    char*  name;
 #endif
   {
 #ifdef __STDC__
@@ -224,11 +235,12 @@
   }
 
 
+  void
 #ifdef __STDC__
-  void Panic( const char*  fmt, ... )
+  Panic( const char*  fmt, ... )
 #else
-  void Panic( fmt )
-    const char* fmt;
+  Panic( fmt )
+    const char*  fmt;
 #endif
   {
     va_list  ap;
@@ -239,6 +251,59 @@
     va_end( ap );
 
     exit( EXIT_FAILURE );
+  }
+
+
+  void
+#ifdef __STDC__
+  Show_Single_Glyph( const TT_Raster_Map*  map )
+#else
+  Show_Single_Glyph( map )
+    const TT_Raster_Map*  map;
+#endif
+  {
+    int             y;
+
+    unsigned char*  line = map->bitmap;
+
+
+    for ( y = 0; y < map->rows; y++, line += map->cols )
+    {
+      unsigned char*  ptr = line;
+      int             x;
+      unsigned char   mask = 0x80;
+
+
+      for ( x = 0; x < map->width; x++ )
+      {
+        printf( "%c", (ptr[0] & mask) ? '*' : '.' );
+        mask >>= 1;
+        if ( mask == 0 )
+        {
+          mask = 0x80;
+          ptr++;
+        }
+      }
+      printf( "\n" );
+    }
+  }
+
+
+  void
+#ifdef __STDC__
+  separator_line( FILE*  out, const int  length )
+#else
+  separator_line( out, length )
+    FILE*  out;
+    int    length;
+#endif
+  {
+    int  i;
+
+
+    for ( i = 0; i < length; i++ )
+      fputc( '-', out );
+    fprintf( out, "\n\n" );
   }
 
 
