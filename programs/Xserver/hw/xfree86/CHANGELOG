@@ -1,4 +1,5 @@
 XFree86 3.1.0d (19 November 1994)
+ 87. Updates for SCO (David McCullough).
  86. Don't require the Virtual size to be specifed for the Mach32 server.
  85. Allow virtual widths < 1024 for Mach32 server (currently untested).
  84. Some preliminary support for ISC (SVR3) 4.x (Michael Rohleder).

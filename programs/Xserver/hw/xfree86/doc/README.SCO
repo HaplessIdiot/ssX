@@ -31,13 +31,18 @@ the new version and NNN is the previous version:
 
     XFNNN-XXX.tz          Files to upgrade from all NNN versions to XXX
 
-    XFXXX-8514.tz         The 8514 server
-    XFXXX-Mch32.tz        The Mach32 server
-    XFXXX-Mch8.tz         The Mach8 server
+						  This file may not be present if the upgrade is
+						  too substantial (ie., X11R5 -> X11R6).
+
     XFXXX-Mono.tz         The Mono server
-    XFXXX-S3.tz           The S3 server
-    XFXXX-SVGA.tz         The Super VGA server
     XFXXX-VGA16.tz        The 16 colour VGA server
+    XFXXX-SVGA.tz         The Super VGA server
+    XFXXX-S3.tz           The S3 server
+				
+				          There will most likely be more servers than
+						  listed here.  You should select the server you
+						  need.  Check the directory listing for any other
+						  servers that may be there.
 
 *   XFXXX-cfg.tz          The local configuration files for xdm/fs/xinit.
 *   XFXXX-bin.tz          The bin directory, contains most executables.
@@ -111,18 +116,13 @@ up the shared library count in the kernel.  This is only required for
 The SCO xterm terminfo description is not compatible with the xterm
 in the R5 distribution.
 
-If you are going to be using a mouse other than a serial mouse you will
-require the appropriate mouse drivers to be installed.  To do this run
-"mkdev mouse" and configure it as required.  Then use the mouse device
-created in /dev/mouse in your XF86Config file along with the appropriate type.
-If you are unsure which device to use the SCO manual pages offer a description
-of the various mouse/device associations ("man mouse").
-
 To use a Bus/Keyboard or PS2 mouse you should configure the mouse drivers
 under SCO as above using 'mkdev mouse'. You may then use the OsMouse option
 in your XF86Config to specify that XFree86 should use the SCO mouse drivers.
 To do this, set the Protocol to "OsMouse" in the Pointer section of your
-XF86Config file.
+XF86Config file.  You can also use "OsMouse" for your serial mouse,
+especially if you are having trouble getting your mouse to work using the
+XFree86 mouse drivers.
 
 If you are using an Accelerated Localbus/EISA card you may wish to install
 the "dmmap" driver.  This driver allows the server to use a linear address
@@ -158,9 +158,9 @@ man pages.
 
 By default the man pages are compressed using "pack" under 3.2.2 and
 "compress" under 3.2.4 to conserve space.  If you do not want to compress
-the man pages change CompressManPages to NO in your site.def.  Those using
-the binary distribution can use "unpack" or "uncompress" as appropriate to
-uncompress the man pages.
+the man pages change CompressManPages to NO in your xf86site.def.  Those
+using the binary distribution can use "unpack" or "uncompress" as appropriate
+to uncompress the man pages.
 
 
 6) Using SCO binaries/servers.
@@ -181,15 +181,15 @@ compiling your own XFree86 there is no reason why this cannot be changed.
 Check in the X11 config/README on how to change your ProjectRoot.
 
 The defaults are set such that you should only require minimal changes to
-the site.def file.  The BOOTSTRAPCFLAGS do most of the work for you. The
-defaults will use gcc 2 or above and the sdbm library.  They also compile
+the site.def or the xf85site.def file.  The BOOTSTRAPCFLAGS do most of the
+work for you. The defaults will use gcc 2 or above and they also compile
 for shared libraries and setup formatted man pages using compression. The
 most likely Parameters you will be interested in changing are:
 
     1.  What Fonts etc get compiled.
     2.  What gets installed (XdmConfig, FSConfig, ...)
 
-Use gcc, preferably 2.3.3 or later but an earlier version may still do the job.
+Use gcc, preferably 2.5.8 or later but an earlier version may still do the job.
 Configure it with "./configure i386-*-sco".
 
 Make sure you do the fixincludes for gcc.
@@ -230,31 +230,16 @@ D) create a <sys/time.h> under the gnu include directory containing the
     #include </usr/include/sys/time.h>
     #endif /* _SYS_TIME_H_ */
 
-Get a copy of the sdbm library, SCO has one but its operation is a
-little different to other OS's.  Set HasNdbm and HasSdbm in site.def
-to YES, put libsdbm.a in /lib or /usr/lib and sdbm.h in /usr/include.
-Compile sdbm with "cc" and do not enable the optimiser.  There were
-some problems early on when using sdbm compiled with gcc or with the
-optimisation enabled.  These may have been fixed.
+You also need to obtain a copy of libcrypt or the international crypt
+supplement from SCO.  The supplement is available on the SCO ftp site,
+sosco.sco.com (The name may have changed) as an SLS, lng225.  This is
+required for the correct compilation of "xdm".
 
 To compile from here, follow the XFree86 README, basically after
 obtaining X11r5, applying the XFree86 patches and completing the above
 changes you should only need to run:
 
     make BOOTSTRAPCFLAGS="-DSYSV -DSYSV386 -DSCO" World
-
-xdm doesn't have password checking yet as verify.c under mit/clients/xdm
-requires the crypt() library function.  SCO do not ship the crypt library
-but you can obtain it if you live in the USA.  If you require password
-checking, and you live in the USA, and you have the crypt library look for
-SCO_USA defines in the mit/clients/xdm directory to find what needs to be
-changed to get this working.  Defining SCO_USA in the CDEBUGFLAGS should
-do it.  This will be fixed in a later version.
-
-The Fontserver has not been compiled.  Avoid compiling this by setting the
-BuildFontServer in site.def to NO.  The default currently is NO however
-this may change.  You should also set the InstallFSConfig to NO so that
-the Makefiles do not try to install it. Otherwise its defaults all the way.
 
 The install script mit/util/scripts/bsdinst.sh will not set 's' bit
 permissions when installing over the top of a previously installed
@@ -283,9 +268,9 @@ are installing through symbolic links then leave this one alone.
 8) Compiling XFree86 under 3.2.4
 --------------------------------
 
-Compiling gcc2.3.3 is accomplished after doing the following.
+Compiling gcc2.5.8 is accomplished after doing the following.
 
-    ./configure i386-*-sco3.2v4
+    ./configure i386-*-sco3.2v4.2
 
 DO NOT USE "./configure i386-*-sco" it will not work.
 
@@ -301,37 +286,13 @@ tree so that it will still compile.
 
 Compiling XFree86,
 
-A)  Create the "net/errno.h" and "sys/bsdtypes.h" as per the 3.2.2
-    instructions above.
+A)  Check that you have a "sys/uio.h" as there have been reports of
+    systems which have it and systems which don't!  If you already have
+    one it need not be changed.  Otherwise see the 3.2.2 section above on
+	how to create one.
 
-B)  Get and compile the "sdbm" as per the 3.2.2 instructions above.
-    Be sure not to use gcc or optimisation when compiling sdbm.
-
-C)  Check that you have a "sys/uio.h" as there have been reports of
-    system which have it and systems which don't!  If you already have
-    one it need not be changed.
-
-D)  Edit the gnu "unistd.h" include file and remove the non prototyped
-    version of close (Look for "close()" and remove that line), do not
-    remove the prototyped declaration.
-
-E)  Create a "sys/stat.h" under the gnu include directory containing
-    this:
-
-    #ifndef _XFREE86_STAT
-    #define _XFREE86_STAT 1
-
-    #ifndef _NO_PROTOTYPE
-    #include </usr/include/sys/stat.h>
-    #else
-    #undef _NO_PROTOTYPE
-    #include </usr/include/sys/stat.h>
-    #define _NO_PROTOTYPE 1
-    #endif /* _NO_PROTOTYPE */
-
-    #endif /* _XFREE86_STAT */
-    
-F)  Check the paragraph on site.def in the compiling for 3.2.2 section.
+B)  Check the paragraph on site.def/xf86site.def in the compiling for
+    3.2.2 section.
 
 G)  Add a -DSCO324 to the BOOTSTRAPCFLAGS when you do the make World.
 
@@ -388,7 +349,7 @@ the following files.
 
     README       - the standard XFree86 README (/usr/X11R6/lib/X11/doc)
     README.SVR3  - Although a lot of this readme is based on Interactive
-               a substantial proportion is still relevant.
+                   a substantial proportion is still relevant.
     All of the VGA/Config documentation.
                /usr/X11R6/lib/X11/doc/VideoModes.doc and the README
                files for particular video cards.
@@ -401,11 +362,9 @@ After running the server you may see some strange characters in your
 input to the shell.  This is due to some unprocessed scancodes and is
 of no concern.  This will be fixed in a future release.
 
-Using the SCO installed mouse devices with XFree86 may not work (ie, for a
-bus mouse).  The best way to use these mouse devices is to specify
-"OsMouse" in the XF86Config file.
-
 Not all of the applications in /usr/X11R6/bin have been debugged.
+
+Shared libraries are not implemented in XFree86 3.1 yet.
 
 
 11) Trouble Shooting
@@ -450,7 +409,7 @@ Causes:
             "ls -al /dev/ttyp0 /dev/ptyp0" to get the major numbers for the
             slave and master drivers.  Use mknod to create the extra
             devices using the naming schemes ttyp[0-9a-f] and ptyp[0-9a-f].
-    3.2.4   Run "mkdev ptty" and increase the number od ptty's.
+    3.2.4   Run "mkdev ptty" and increase the number of ptty's.
 
 Problem:
     When running curses/termcap applications in an xterm the output gets
@@ -561,10 +520,12 @@ for XFree86 development.
 
 Thanks also to Peter Eubert (peter.eubert@iwb.mw.tu-muenchen.dbp.de)
 and Kent Hamilton (kenth@stl.scscom.COM) for input on compiling under 3.2.4 
-systems.  And of course the beta list for its input on everything.
+systems.  Larry Plona (faxi@world.std.com) and Didier Poirot (dp@chorus.fr)
+for their input on xdm and 3.2.4 compilation under 3.1.   And of course the
+beta list for its input on everything.
 
 Special thanks to Jerry Whelan (guru@stasi.bradley.edu) for providing an
 ftp site for the binary distribution.
 
     
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.0 1994/08/31 04:40:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.1 1994/09/26 15:33:13 dawes Exp $
