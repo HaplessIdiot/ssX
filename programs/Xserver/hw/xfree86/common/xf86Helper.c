@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.111 2001/05/15 18:22:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.112 2001/05/24 19:43:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2413,6 +2413,30 @@ xf86LoaderReqSymbols(const char *sym0, ...)
 
     va_start(ap, sym0);
     LoaderVReqSymbols(sym0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderRefSymLists(const char **list0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVRefSymLists(list0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderRefSymbols(const char *sym0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVRefSymbols(sym0, ap);
     va_end(ap);
 #endif
 }
