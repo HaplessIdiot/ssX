@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.13 2001/01/06 20:19:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.14 2001/01/06 20:58:07 tsi Exp $ */
 /*
  * Copyright 1994 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -52,9 +52,6 @@
 
 #define SPARSE_IO_PORT		(SPARSE_IO_BASE | IO_BYTE_SELECT)
 #define BLOCK_IO_PORT		(BLOCK_IO_BASE | IO_BYTE_SELECT)
-
-#define IsATIBlockIOBase(_Base) \
-    (((_Base) & BLOCK_IO_BASE) && !((_Base) & BLOCK_IO_SELECT))
 
 #define IOPortTag(_SparseIOSelect, _BlockIOSelect)	\
 	(SetBits(_SparseIOSelect, SPARSE_IO_SELECT) |	\

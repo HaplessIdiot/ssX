@@ -1,4 +1,6 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 121. Fix misdetection of sparse I/O PCI bases and handling of unassigned PCI
+      bases in ATI driver (Marc La France).
  120. Extend libc wrapper's emulation of gettimeofday() and add emulation of PC
       and PC98 interval timers to int10 (Marc La France).
  119. An attempt at fixing the handling of unassigned PCI resources by
@@ -12394,4 +12396,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1569 2001/02/12 01:25:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1570 2001/02/12 01:34:50 tsi Exp $
