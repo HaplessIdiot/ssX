@@ -136,7 +136,7 @@ static void __inline__ i830_draw_triangle( i830ContextPtr imesa,
    fprintf(stderr, "0x%x\n", v2->ui[15]);
 #endif
 
-#if 1
+#if defined(USE_X86_ASM)
     __asm__ __volatile__( "rep ; movsl"
 			  : "=%c" (j)
 			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)
