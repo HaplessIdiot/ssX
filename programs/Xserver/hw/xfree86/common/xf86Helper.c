@@ -1656,13 +1656,22 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     if (xf86DoProbe) return 1;
 
     if (xf86DoConfigure) {
+	pciVideoPtr ConfCard;
+	ConfiguredPciCard = xnfrealloc((pciVideoPtr)ConfiguredPciCard, sizeof(pciVideoRec) * (allocatedInstances + FoundPciCards));
+	ConfCard = ConfiguredPciCard;
+	for (i = 0; i < FoundPciCards; i++) 
+	    ConfCard++;
 	for (i = 0; i < allocatedInstances; i++) {
 	    pPci = instances[i].pci;
-	    ConfiguredID = ((pPci->vendor << 16) | pPci->chipType);
-	    if (xf86IsPrimaryPci(pPci))
-		return 1;
+	    ConfCard->vendor = pPci->vendor;
+	    ConfCard->chipType = pPci->chipType;
+	    ConfCard->device = pPci->device;
+	    ConfCard->bus = pPci->bus;
+	    ConfCard->func = pPci->func;
+	    ConfCard++;
 	}
-	return 0;
+	FoundPciCards += allocatedInstances;
+	return 1;
     }
 
 #ifdef DEBUG
@@ -1852,7 +1861,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     	for (i = 0; i < numDevs; i++) {
 	    if (xf86IsPrimaryIsa()) {
 	    	dev = devList[i];
-	    	if (FindIsaDevice) ConfiguredID = (*FindIsaDevice)(dev);
+	    	if (FindIsaDevice) ConfiguredIsaCard = (*FindIsaDevice)(dev);
  		return 1;
 	    }
 	}

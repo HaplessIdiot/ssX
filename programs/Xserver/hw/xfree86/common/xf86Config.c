@@ -1879,6 +1879,12 @@ xf86HandleConfigFile(void)
 	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
 	    return FALSE;
 	  }
+	} else {
+	  if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
+			  NULL)) {
+	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
+	    return FALSE;
+	  }
 	}
     }
 

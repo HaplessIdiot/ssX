@@ -214,7 +214,7 @@ typedef struct _DriverRec {
     char *		driverName;
     void		(*Identify)(int flags);
     Bool		(*Probe)(struct _DriverRec *drv, int flags);
-    OptionInfoPtr	(*AvailableOptions)(int chipid);
+    OptionInfoPtr	(*AvailableOptions)(int chipid, int bustype);
     pointer		module;
     int			refCount;
 } DriverRec, *DriverPtr;
@@ -628,9 +628,11 @@ typedef struct {
 /*
  * Flags for driver Probe() functions.
  */
-#define PROBE_DEFAULT	0x00
-#define PROBE_DETECT	0x01
-#define PROBE_TRYHARD	0x02
+#define PROBE_DEFAULT	  0x00
+#define PROBE_DETECTPCI	  0x01
+#define PROBE_DETECTISA	  0x02
+#define PROBE_DETECTFBDEV 0x03
+#define PROBE_DETECT	(PROBE_DETECTPCI | PROBE_DETECTISA | PROBE_DETECTFBDEV)
 
 /*
  * ScrnInfoRec
@@ -830,7 +832,6 @@ typedef struct {
     int			token;		/* id of the token */
     const char *	name;		/* token name */
 } SymTabRec, *SymTabPtr;
-
 
 /* flags for xf86LookupMode */
 typedef enum {

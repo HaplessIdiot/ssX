@@ -87,7 +87,6 @@ extern int xf86Verbose;                 /* verbosity level */
 extern int xf86LogVerbose;		/* log file verbosity level */
 extern Bool xf86ProbeOnly;
 extern Bool xf86DoProbe;
-extern Bool xf86DoConfigure;
 
 #ifndef DEFAULT_VERBOSE
 #define DEFAULT_VERBOSE		1

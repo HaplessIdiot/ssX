@@ -22,7 +22,10 @@
 #include "propertyst.h"
 
 /* General parameters */
-extern int ConfiguredID;
+extern int xf86DoConfigure;
+extern int FoundPciCards;
+extern pciVideoPtr ConfiguredPciCard;
+extern int ConfiguredIsaCard;
 extern int xf86ScreenIndex;		/* Index into pScreen.devPrivates */
 extern int xf86CreateRootWindowIndex;	/* Index into pScreen.devPrivates */
 extern int xf86PixmapIndex;
