@@ -1,0 +1,29 @@
+XCOMM $XFree86: $
+
+#define DoNormalLib NormalLibXRes
+#define DoSharedLib SharedLibXRes
+#define DoDebugLib DebugLibXRes
+#define DoProfileLib ProfileLibXRes
+#define LibName XRes
+#define SoRev SOXRESREV
+#define LibHeaders NO
+
+#include <Threads.tmpl>
+
+#ifdef SharedXResReqs
+REQUIREDLIBS = SharedXResReqs
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+      DEFINES = $(ALLOC_DEFINES)
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+         SRCS = XRes.c
+         OBJS = XRes.o
+     LINTLIBS = $(LINTXLIB)
+
+#include <Library.tmpl>
+
+DependTarget()
