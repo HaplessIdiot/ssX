@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2000/12/12 13:00:42 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/nls/Imakefile,v 1.10 2002/05/31 18:45:52 dawes Exp $
+XCOMM $XFree86: xc/nls/Imakefile,v 1.11 2004/03/18 07:06:30 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -24,7 +24,7 @@ DependSubdirs($(SUBDIRS))
 all::
 
 #ifndef R63Compat
-#define R63Compat YES
+#define R63Compat NO
 #endif
 
 #ifndef Win32Architecture
