@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
 
@@ -96,7 +97,7 @@ static XtResource Resources[] = {
 
 static Atom wm_delete_window;
 
-static void GetModeLine (dpy, scrn)
+static Bool GetModeLine (dpy, scrn)
     Display* dpy;
     int scrn;
 {
@@ -104,7 +105,8 @@ static void GetModeLine (dpy, scrn)
     int dot_clock;
     fields i;
 
-    XVGAHelpGetModeLine (dpy, scrn, &dot_clock, &mode_line);
+    if (!XVGAHelpGetModeLine (dpy, scrn, &dot_clock, &mode_line))
+	return FALSE;
 
     AppRes.field[HDisplay].val = mode_line.hdisplay;
     AppRes.field[HSyncStart].val = mode_line.hsyncstart;
@@ -117,6 +119,7 @@ static void GetModeLine (dpy, scrn)
     AppRes.field[Flags].val = mode_line.flags;
     for (i = HDisplay; i < fields_num; i++) 
 	AppRes.orig[i] = AppRes.field[i].val;
+    return TRUE;
 }
 
 static void SetScrollbars ()
@@ -179,7 +182,7 @@ static void FetchCB (w, client, call)
     XtPointer client, call;
 {
     fields i;
-    GetModeLine(XtDisplay (w), DefaultScreen (XtDisplay (w)));
+    (void) GetModeLine(XtDisplay (w), DefaultScreen (XtDisplay (w)));
     SetScrollbars ();
     for (i = HDisplay; i < fields_num; i++) { 
 	ScrollData* sdp = &AppRes.field[i];
@@ -509,7 +512,8 @@ int main (argc, argv)
 	return 0;
     }
 
-    GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top)));
+    if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top))))
+	return 0;
 
     CreateHierarchy (top);
 

@@ -15,6 +15,7 @@ xc/lib/Xau/
 xc/lib/Xdmcp/
 xc/lib/font/
 xc/lib/xtrans/
+xc/nls/
 xc/programs/Imakefile
 xc/programs/Xserver/Xserver.man
 xc/programs/Xserver/Imakefile
@@ -38,14 +39,27 @@ To include XIE support in the server, the following directory is also required:
 
 xc/programs/Xserver/XIE
 
+To include LBX support in the server, the following directory is also required:
+
+xc/workInProgress/lbx
+
 Notes:
 
 1. the Xnest server cannot be built with this cut-down tree since it
 requires libX11.
 
-2. Support for building a server with LBX support is not yet allowed for
-with this cut-down source tree.
+To get a cut-down source tree when starting form the full source tree,
+do the following:
+
+cd xc
+rm -fr doc fonts test util
+rm -fr lib/FS lib/ICE lib/PEX5 lib/SM lib/X11 lib/XExExt lib/XIE
+rm -fr lib/Xaw lib/Xbsd lib/Xext lib/Xi lib/Xmu lib/Xt lib/Xtst lib/oldX
+rm -fr programs/[a-z]*
+rm -fr programs/Xserver/hw/[a-wy-z]*
+rm -fr workInProgress/Fresco workInProgress/MTXserver
+rm -fr workInProgress/Xtf workInProgress/record workInProgress/xsm
 
 
 $XConsortium: ServersOnly,v 1.2 94/11/21 21:48:41 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.0 1994/07/24 11:50:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.1 1995/01/28 15:59:43 dawes Exp $

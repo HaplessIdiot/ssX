@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.6 1995/01/21 07:15:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.7 1995/01/28 15:53:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -229,9 +229,9 @@ char	*mach64ramdac_names[] = {
 	"ATI-68875/TLC34075/Bt885",
 	"Bt47[68]/INMOS17[68]",
 	"AT&T20C49[01]/Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]",
-	"ATI-68860",
-	"unknown",
-	"unknown",
+	"ATI-68860/ATI-68880",
+	"STG1700 (or similar)",
+	"SC15021 (or similar)",
 };
 
 int	mach64RamdacSubType;

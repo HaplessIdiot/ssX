@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
 
@@ -177,7 +178,26 @@ ProcVGAHelpModModeLine(client)
     mptr->VSyncStart = stuff->vsyncstart;
     mptr->VSyncEnd   = stuff->vsyncend;
     mptr->VTotal     = stuff->vtotal;
+    /* Should call ValidMode */
+    mptr->CrtcHDisplay   = stuff->hdisplay;
+    mptr->CrtcHSyncStart = stuff->hsyncstart;
+    mptr->CrtcHSyncEnd   = stuff->hsyncend;
+    mptr->CrtcHTotal     = stuff->htotal;
+    mptr->CrtcVDisplay   = stuff->vdisplay;
+    mptr->CrtcVSyncStart = stuff->vsyncstart;
+    mptr->CrtcVSyncEnd   = stuff->vsyncend;
+    mptr->CrtcVTotal     = stuff->vtotal;
+    mptr->CrtcVAdjusted = FALSE;
+    mptr->CrtcHAdjusted = FALSE;
     mptr->Flags      = stuff->flags;
+    if (mptr->Flags & V_DBLSCAN)
+    {
+	mptr->CrtcVDisplay *= 2;
+	mptr->CrtcVSyncStart *= 2;
+	mptr->CrtcVSyncEnd *= 2;
+	mptr->CrtcVTotal *= 2;
+	mptr->CrtcVAdjusted = TRUE;
+    }
 
     (vptr->SwitchMode)(mptr);
 
