@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.102 2001/07/19 02:22:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.103 2001/07/25 08:04:40 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -252,6 +252,7 @@
 #define PCI_CHIP_RAGE128RG	0x5247
 #define PCI_CHIP_RAGE128RK	0x524B
 #define PCI_CHIP_RAGE128RL	0x524C
+#define PCI_CHIP_RAGE128SM	0x534D
 #define PCI_CHIP_RAGE128TF	0x5446
 #define PCI_CHIP_RAGE128TL	0x544C
 #define PCI_CHIP_RAGE128TR	0x5452
@@ -854,6 +855,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RADEON_QZ,	"Radeon VE QZ",0},
 				{PCI_CHIP_RADEON_LY,	"Radeon Mobility M6 LY",0},
 				{PCI_CHIP_RADEON_LZ,	"Radeon Mobility M6 LZ",0},
+				{PCI_CHIP_RAGE128SM,	"Rage 128 SM",0},
 				{PCI_CHIP_RAGE128RE,	"Rage 128 RE",0},
 				{PCI_CHIP_RAGE128RF,	"Rage 128 RF",0},
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK",0},

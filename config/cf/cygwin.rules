@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.11 2001/06/25 08:12:30 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.12 2001/06/25 11:02:26 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -274,38 +274,18 @@ clean::									@@\
 
 
 /*
- * ComplexProgramTarget_X, where 1 <= X <= 10, are all broken.
- * 1 is broken because 2 and 3 are not built during the make World pass,
- * 2 and 3 are only built later, during the make install pass.
- * 1 is also broken because there are now 10 ComplexProgramTargets instead
- * of 3.
- * 
- * 1's problem is that PROGRAM2 and PROGRAM3 are not defined at the time
- * that 1 is processed, so the AllTarget(), DependTarget(), and LintTarget()
- * only apply to PROGRAM1, not to PROGRAM2 and PROGRAM3.  However, we can't
- * simply set the AllTarget() to PROGRAMS, as Imake.rules does, as the
- * executable names in PROGRAMS are not wrapped in ProgramTargetName().
- * 
- * Fixing the ComplexProgramTargets will require some way of pulling out
- * each exectuable name from PROGRAMS, wrapping it in ProgramTargetName(),
- * then concatenating the resulting list back into PROGRAMS.  We would
- * then only have to define ComplexProgramTarget_1, letting 2 through 10
- * be defined by Imake.rules.
- *
- * Good luck.  For now I am inclined to leave these rules slightly broken.
- */
-
-
-/*
- * ComplexProgramTarget_1
+ * ComplexProgramTarget_1 - Imake.rules doesn't wrap the program names
+ * with ProgramTargetName(), so we need this rule for Cygwin.
  */
 
 #define ComplexProgramTarget_1(program,locallib,syslib)			@@\
-        OBJS = $(OBJS1) $(OBJS2) $(OBJS3)				@@\
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3)				@@\
-        PROGRAM1 = ProgramTargetName(program)				@@\
+  OBJS = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(OBJS5) \			@@\
+         $(OBJS6) $(OBJS7) $(OBJS8) $(OBJS9) $(OBJS10)			@@\
+  SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5) \			@@\
+         $(SRCS6) $(SRCS7) $(SRCS8) $(SRCS9) $(SRCS10)			@@\
+  PROGS_EXE = $(foreach prog,$(PROGRAMS),ProgramTargetName($(prog)))	@@\
 									@@\
-AllTarget($(PROGRAM1) $(PROGRAM2) $(PROGRAM3))				@@\
+AllTarget($(PROGS_EXE))							@@\
 									@@\
 ProgramTargetHelper(program,SRCS1,OBJS1,DEPLIBS1,locallib,syslib)	@@\
 									@@\
@@ -313,27 +293,7 @@ DependTarget()								@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\
-	for i in $(PROGRAMS); do $(RM) ProgramTargetName($$i); done
-
-
-/*
- * ComplexProgramTarget_2
- */
-
-#define ComplexProgramTarget_2(program,locallib,syslib)			@@\
-        PROGRAM2 = ProgramTargetName(program)				@@\
-									@@\
-ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
-
-
-/*
- * ComplexProgramTarget_3
- */
-
-#define ComplexProgramTarget_3(program,locallib,syslib)			@@\
-        PROGRAM3 = ProgramTargetName(program)				@@\
-									@@\
-ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
+	RemoveFiles($(PROGS_EXE))
 
 
 /*

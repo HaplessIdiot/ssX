@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.15 2001/07/25 08:04:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.16 2001/08/18 02:51:11 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -714,6 +714,7 @@ static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
     case PCI_CHIP_RAGE128RF:
     case PCI_CHIP_RAGE128RG:
     case PCI_CHIP_RAGE128RL:
+    case PCI_CHIP_RAGE128SM:
     case PCI_CHIP_RAGE128PF:
     case PCI_CHIP_RAGE128TF:
     case PCI_CHIP_RAGE128TL:
