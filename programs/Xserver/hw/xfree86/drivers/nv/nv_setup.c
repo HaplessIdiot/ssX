@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.17 2002/03/15 05:16:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.18 2002/08/05 20:47:06 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -414,7 +414,10 @@ NVCommonSetup(ScrnInfoPtr pScrn)
            }
         }
     }
-    pNv->riva.flatPanel = (pNv->FlatPanel > 0) ? TRUE : FALSE;
+    pNv->riva.flatPanel = (pNv->FlatPanel > 0) ? FP_ENABLE : 0;
+    if(pNv->riva.flatPanel && pNv->FPDither && (pScrn->depth == 24))
+       pNv->riva.flatPanel |= FP_DITHER;
+
 }
 
 void

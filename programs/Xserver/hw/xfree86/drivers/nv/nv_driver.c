@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.90 2002/10/08 22:14:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.91 2002/10/09 22:24:12 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -336,6 +336,7 @@ typedef enum {
     OPTION_ROTATE,
     OPTION_VIDEO_KEY,
     OPTION_FLAT_PANEL,
+    OPTION_FP_DITHER,
     OPTION_CRTC_NUMBER
 } NVOpts;
 
@@ -350,6 +351,7 @@ static const OptionInfoRec NVOptions[] = {
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FLAT_PANEL,	"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FP_DITHER, 	"FPDither",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_CRTC_NUMBER,	"CrtcNumber",	OPTV_INTEGER,	{0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
@@ -1161,6 +1163,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
         pNv->FlatPanel = -1;   /* autodetect later */
     }
+
+    pNv->FPDither = FALSE;
+    if (xf86GetOptValBool(pNv->Options, OPTION_FP_DITHER, &(pNv->FPDither))) 
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "enabling flat panel dither\n");
 
     if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER, 
                                 &pNv->forceCRTC)) 

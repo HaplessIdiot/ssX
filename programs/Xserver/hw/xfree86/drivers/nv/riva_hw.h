@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.19 2002/03/14 20:35:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.20 2002/10/09 22:24:12 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -295,6 +295,9 @@ typedef volatile struct
 *                                                                           *
 \***************************************************************************/
 
+#define FP_ENABLE  1
+#define FP_DITHER  2
+
 struct _riva_hw_inst;
 struct _riva_hw_state;
 /*
@@ -318,7 +321,7 @@ typedef struct _riva_hw_inst
     U032 FifoFreeCount;
     U032 FifoEmptyCount;
     U032 CursorStart;
-    Bool flatPanel;
+    U032 flatPanel;
     Bool twoHeads;
     /*
      * Non-FIFO registers.
@@ -379,6 +382,7 @@ typedef struct _riva_hw_state
     U032 repaint1;
     U032 screen;
     U032 scale;
+    U032 dither;
     U032 extra;
     U032 pixel;
     U032 horiz;

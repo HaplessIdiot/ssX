@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.24 2001/09/19 23:40:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.25 2002/08/15 20:05:38 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -602,10 +602,16 @@ NVAccelInit(ScreenPtr pScreen)
 				LEFT_EDGE_CLIPPING_NEGATIVE_X;
 
     infoPtr->NumScanlineColorExpandBuffers = 1;
-    infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
-        NVSetupForScanlineCPUToScreenColorExpandFill;
-    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
-        NVSubsequentScanlineCPUToScreenColorExpandFill;
+
+    if((pNv->Chipset & 0x0ff0) < 0x0250) {
+       /* The bios sets the clocks too low on NV25 and higher to 
+          accelerated color expansion without corruption and we
+          don't know enough about clocks to fiddle with them */
+       infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
+           NVSetupForScanlineCPUToScreenColorExpandFill;
+       infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+           NVSubsequentScanlineCPUToScreenColorExpandFill;
+    }
 
     pNv->expandFifo = (unsigned char*)&pNv->riva.Bitmap->MonochromeData01E;
     
