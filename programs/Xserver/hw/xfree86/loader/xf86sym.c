@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.63 1999/02/07 06:18:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.64 1999/02/12 22:52:09 hohndel Exp $ */
 
 /*
  *
@@ -34,6 +34,8 @@
 #define XF86_OS_PRIVS
 #include "xf86_OSproc.h"
 #include "xf86Pci.h"
+#define DECLARE_CARD_DATASTRUCTURES
+#include "xf86PciInfo.h"
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #ifdef XINPUT
@@ -208,7 +210,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPrimaryPci)
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
-
+   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
    SYMFUNC(xf86SetScreenLayout)
@@ -298,7 +300,6 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
    SYMFUNC(xf86GetBppFromDepth)
-   SYMFUNC(xf86ScanPciRegister)
 
    /* xf86Mode.c */
    SYMFUNC(xf86GetNearestClock)
@@ -715,6 +716,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PixmapIndex)
    SYMVAR(xf86Screens)
    SYMVAR(byte_reversed)
+
+   /* variables for PCI devices and cards from xf86Bus.c */
+   SYMVAR(xf86PCICardInfo)
+   SYMVAR(xf86PCIVendorInfo)
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)

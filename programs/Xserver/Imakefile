@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.148 1999/02/01 11:55:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.149 1999/02/12 22:51:47 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -12,7 +12,7 @@ XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.148 1999/02/01 11:55:50 dawes 
 #include <Server.tmpl>
 
 #ifdef XFree86Version
-/* Don't strip server binaries */
+/* Do not strip server binaries */
 INSTPGMFLAGS = 
 #endif
 
