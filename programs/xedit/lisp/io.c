@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.12 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.13 2002/11/30 23:13:12 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -290,8 +290,12 @@ LispFflush(LispFile *file)
 	int length = (*file->io_write)(file->descriptor,
 				       file->buffer, file->length);
 
-	if (length > 0)
+	if (length > 0) {
+	    if (file->length > length)
+		memmove(file->buffer, file->buffer + length,
+			file->length - length);
 	    file->length -= length;
+	}
 	return (length);
     }
 

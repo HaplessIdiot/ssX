@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.23 2002/10/06 17:11:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.24 2002/11/10 23:21:56 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -63,18 +63,18 @@ extern XawTextWrapMode wrapmodes[3];
 void
 XeditPrintf(char *str)
 {
-  XawTextBlock text;
-  static XawTextPosition pos = 0;
+    XawTextBlock text;
+    XawTextPosition pos = XawTextSourceScan(XawTextGetSource(messwidget),
+					    0, XawstAll, XawsdRight, 1, True);
 
-  text.length = strlen(str);
-  text.ptr = str;
-  text.firstPos = 0;
-  text.format = FMT8BIT;
+    text.length = strlen(str);
+    text.ptr = str;
+    text.firstPos = 0;
+    text.format = FMT8BIT;
 
-  XawTextReplace( messwidget, pos, pos, &text);
+    XawTextReplace(messwidget, pos, pos, &text);
 
-  pos += text.length;
-  XawTextSetInsertionPoint(messwidget, pos);
+    XawTextSetInsertionPoint(messwidget, pos + text.length);
 }
 
 Widget
@@ -186,6 +186,7 @@ AddTextSource(Widget source, char *name, char *filename, int flags,
     item->display_position = item->insert_position = 0;
     item->mode = 0;
     item->properties = NULL;
+    item->xldata = NULL;
 
     flist.itens = (xedit_flist_item**)
 	XtRealloc((char*)flist.itens, sizeof(xedit_flist_item*)
@@ -878,14 +879,18 @@ DirWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
 
     dir = ResolveName(path);
-    strncpy(path, dir, sizeof(path) - 2);
-    path[sizeof(path) - 2] = '\0';
-    if (*path && path[strlen(path) - 1] != '/')
-	strcat(path, "/");
+    if (dir != NULL) {
+	strncpy(path, dir, sizeof(path) - 2);
+	path[sizeof(path) - 2] = '\0';
+	if (*path && path[strlen(path) - 1] != '/')
+	    strcat(path, "/");
 
-    XtSetArg(args[0], XtNlabel, "");
-    XtSetValues(dirlabel, args, 1);
+	XtSetArg(args[0], XtNlabel, "");
+	XtSetValues(dirlabel, args, 1);
 
-    SwitchDirWindow(True);
-    DirWindowCB(dirwindow, path, NULL);
+	SwitchDirWindow(True);
+	DirWindowCB(dirwindow, path, NULL);
+    }
+    else
+	Feep();
 }

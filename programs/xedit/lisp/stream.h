@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.5 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.h,v 1.6 2002/11/15 07:01:30 paulo Exp $ */
 
 #ifndef Lisp_stream_h
 #define Lisp_stream_h
@@ -49,9 +49,6 @@ LispObj *Lisp_PipeErrorDescriptor(LispBuiltin*);
 LispObj *Lisp_Close(LispBuiltin*);
 LispObj *Lisp_Listen(LispBuiltin*);
 LispObj *Lisp_Streamp(LispBuiltin*);
-LispObj *Lisp_WriteChar(LispBuiltin*);
-LispObj *Lisp_WriteLine(LispBuiltin*);
-LispObj *Lisp_WriteString(LispBuiltin*);
 LispObj *Lisp_MakeStringInputStream(LispBuiltin*);
 LispObj *Lisp_MakeStringOutputStream(LispBuiltin*);
 LispObj *Lisp_GetOutputStreamString(LispBuiltin*);

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/math.lsp,v 1.3 2002/11/23 08:26:54 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/stream.lsp,v 1.1 2002/11/30 23:13:14 paulo Exp $
 ;;
 
 ;; most format tests from the cltl second edition samples
@@ -412,3 +412,260 @@
 ;; parse-namestring			- function
 (equal-eval '(#P"foo" 3) '(multiple-value-list (parse-namestring "foo")))
 (equal-eval '(#P"foo" 0) '(multiple-value-list (parse-namestring #P"foo")))
+
+
+
+;; read					- function
+(setq is (make-string-input-stream " foo "))
+(eq-test t #'streamp is)
+(eq-test t #'input-stream-p is)
+(eq-test nil #'output-stream-p is)
+(eq-test 'foo #'read is)
+(eq-test t #'close is)
+(setq is (make-string-input-stream "xfooy" 1 4))
+(eq-test 'foo #'read is)
+(eq-test t #'close is)
+(setq is (make-string-input-stream ""))
+(eq-test nil #'read is nil)
+(eq-test 'end-of-string #'read is nil 'end-of-string)
+(close is)
+(error-test #'read is)
+(error-test #'read is nil)
+(error-test #'read is nil 'end-of-string)
+(eq-test t #'streamp is)
+(eq-test nil #'input-stream-p is)
+(eq-test nil #'streamp "test")
+(error-test #'input-stream-p "test")
+
+;; read-char				- function
+(setq is (make-string-input-stream "0123"))
+(setq test nil)
+(equal-eval '(#\0 #\1 #\2 #\3)
+  '(do ((c (read-char is) (read-char is nil 'the-end)))
+      ((not (characterp c)) test)
+   (setq test (append test (list c)))))
+(close is)
+(setq is (make-string-input-stream "abc"))
+(eql-test #\a #'read-char is)
+(eql-test #\b #'read-char is)
+(eql-test #\c #'read-char is)
+(error-test #'read-char is)
+(eq-test nil #'read-char is nil)
+(eq-test :end-of-string #'read-char is nil :end-of-string)
+(eq-test t #'close is)
+
+;; read-char-no-hang			- function
+(setq is (make-string-input-stream "0123"))
+(setq test nil)
+(equal-eval '(#\0 #\1 #\2 #\3)
+  '(do ((c (read-char-no-hang is) (read-char-no-hang is nil 'the-end)))
+      ((not (characterp c)) test)
+   (setq test (append test (list c)))))
+(close is)
+(setq is (make-string-input-stream "abc"))
+(eql-test #\a #'read-char-no-hang is)
+(eql-test #\b #'read-char-no-hang is)
+(eql-test #\c #'read-char-no-hang is)
+(error-test #'read-char-no-hang is)
+(eq-test nil #'read-char-no-hang is nil)
+(eq-test :end-of-string #'read-char-no-hang is nil :end-of-string)
+(eq-test t #'close is)
+#+(and xedit unix)
+(progn
+    ;; wait one second for input pooling every 0.1 seconds
+    (defun wait-for-cat ()
+	(let ((time 0.0))
+	    (loop
+		(and (listen is) (return))
+		(sleep 0.1)
+		(when (>= (incf time 0.1) 1.0)
+		    (format t "Cat is sleeping~%")
+		    (return)))))
+    (setq is (make-pipe "/bin/cat" :direction :io))
+    (equal-test "dog" #'write-line "dog" is)
+    (wait-for-cat)
+    (eql-test #\d #'read-char-no-hang is)
+    (eql-test #\o #'read-char-no-hang is)
+    (eql-test #\g #'read-char-no-hang is)
+    (eql-test #\Newline #'read-char-no-hang is)
+    (eql-test nil #'read-char-no-hang is)
+    (eql-test nil #'read-char-no-hang is)
+    (equal-test "mouse" #'write-line "mouse" is)
+    (wait-for-cat)
+    (eql-test #\m #'read-char-no-hang is)
+    (eql-test #\o #'read-char-no-hang is)
+    (eql-test #\u #'read-char-no-hang is)
+    (eql-test #\s #'read-char-no-hang is)
+    (eql-test #\e #'read-char-no-hang is)
+    (eql-test #\Newline #'read-char-no-hang is)
+    (eql-test nil #'read-char-no-hang is)
+    (eq-test t #'close is)
+    (error-test #'read-char-no-hang is)
+    (error-test #'read-char-no-hang is nil)
+    (error-test #'read-char-no-hang is nil t)
+)
+
+;; read-from-string			- function
+(equal-eval '(3 5)
+  '(multiple-value-list (read-from-string " 1 3 5" t nil :start 2)))
+(equal-eval '((a b c) 7)
+  '(multiple-value-list (read-from-string "(a b c)")))
+(error-test #'read-from-string "")
+(eq-test nil #'read-from-string "" nil)
+(eq-test 'end-of-file #'read-from-string "" nil 'end-of-file)
+
+;; read-line				- function
+(setq is (make-string-input-stream "line 1
+line 2"))
+(equal-eval '("line 1" nil) '(multiple-value-list (read-line is)))
+(equal-eval '("line 2" t) '(multiple-value-list (read-line is)))
+(error-test #'read-line is)
+(equal-eval '(nil t) '(multiple-value-list (read-line is nil)))
+(equal-eval '(end-of-string t)
+  '(multiple-value-list (read-line is nil 'end-of-string)))
+
+
+;; write				- function
+;; XXX several write options still missing
+(setq os (make-string-output-stream))
+(equal-test '(1 2 3 4) #'write '(1 2 3 4) :stream os)
+(equal-test "(1 2 3 4)" #'get-output-stream-string os)
+(eq-test t #'streamp os)
+(eq-test t #'output-stream-p os)
+(eq-test nil #'input-stream-p os)
+(equal-test '(:foo :bar) #'write '(:foo :bar) :case :downcase :stream os)
+(equal-test "(:foo :bar)" #'get-output-stream-string os)
+(equal-test '(:foo :bar) #'write '(:foo :bar) :case :capitalize :stream os)
+(equal-test "(:Foo :Bar)" #'get-output-stream-string os)
+(equal-test '(:foo :bar) #'write '(:foo :bar) :case :upcase :stream os)
+(equal-test "(:FOO :BAR)" #'get-output-stream-string os)
+(equal-test '(foo bar baz) #'write '(foo bar baz) :length 2 :stream os)
+(equal-test "(FOO BAR ...)" #'get-output-stream-string os)
+(equal-test '(foo (bar) baz) #'write '(foo (bar) baz) :level 1 :stream os)
+(equal-test "(FOO # BAZ)" #'get-output-stream-string os)
+(setq circle '#1=(1 #1#))
+(eq-test circle #'write circle :circle t :stream os)
+(equal-test "#1=(1 #1#)" #'get-output-stream-string os)
+(eq-test #\Space #'write #\Space :stream os)
+(equal-test "#\\Space" #'get-output-stream-string os)
+(eq-test #\Space #'write #\Space :escape nil :stream os)
+(equal-test " " #'get-output-stream-string os)
+(eq-test t #'close os)
+(eq-test nil #'output-stream-p os)
+(error-test #'output-stream-p "test")
+(error-test #'write 'foo :stream "bar")
+
+;; fresh-line				- function
+(setq os (make-string-output-stream))
+(equal-test "some text" #'write-string "some text" os)
+(eq-test t #'fresh-line os)
+(eq-test nil #'fresh-line os)
+(equal-test "more text" #'write-string "more text" os)
+(equal-test "some text
+more text" #'get-output-stream-string os)
+(equal-test nil #'fresh-line os)
+(equal-test nil #'fresh-line os)
+(equal-test "" #'get-output-stream-string os)
+(close os)
+(error-test #'fresh-line 1)
+
+;; prin1				- function
+;;  (prin1 object stream) ==
+;;	(write object :stream stream :escape t)
+(setq p-os (make-string-output-stream) w-os (make-string-output-stream))
+(dolist (object (list #\a 1 "string" 2.5d0 '(a . b) '(a b c) #P"foo"
+		     *package* *standard-input* #c(1 2) #(1 2 3)
+		     (make-hash-table)))
+    (eq-test object #'prin1 object p-os)
+    (eq-test object #'write object :stream w-os :escape t)
+    (equal-test (get-output-stream-string p-os)
+	#'get-output-stream-string w-os))
+(close p-os)
+(close w-os)
+(error-test #'prin1 1 1)
+
+;; princ				- function
+;;  (princ object stream) ==
+;;	(write object :stream stream :escape nil :readably nil)
+;; XXX readably not yet implemented
+(setq p-os (make-string-output-stream) w-os (make-string-output-stream))
+(dolist (object (list #\a 1 "string" 2.5d0 '(a . b) '(a b c) #P"foo"
+		     *package* *standard-input* #c(1 2) #(1 2 3)
+		     (make-hash-table)))
+    (eq-test object #'princ object p-os)
+    (eq-test object #'write object :stream w-os :escape nil)
+    (equal-test (get-output-stream-string p-os)
+	#'get-output-stream-string w-os))
+(close p-os)
+(close w-os)
+(error-test #'princ 1 1)
+
+;; print				- function
+;;  (print object stream) ==
+;;	(progn
+;;	    (terpri stream)
+;;	    (write object :stream stream :escape t)
+;;	    (write-char #\Space stream))
+(setq p-os (make-string-output-stream) w-os (make-string-output-stream))
+(dolist (object (list #\a 1 "string" 2.5d0 '(a . b) '(a b c) #P"foo"
+		     *package* *standard-input* #c(1 2) #(1 2 3)
+		     (make-hash-table)))
+    (eq-test object #'print object p-os)
+    (progn
+	(eq-test nil #'terpri w-os)
+	(eq-test object #'write object :stream w-os :escape t)
+	(eq-test #\Space #'write-char #\Space w-os))
+    (equal-test (get-output-stream-string p-os)
+	#'get-output-stream-string w-os))
+(close p-os)
+(close w-os)
+(error-test #'print 1 1)
+
+;; terpri				- function
+(setq os (make-string-output-stream))
+(equal-test "some text" #'write-string "some text" os)
+(eq-test nil #'terpri os)
+(eq-test nil #'terpri os)
+(equal-test "more text" #'write-string "more text" os)
+(equal-test "some text
+
+more text" #'get-output-stream-string os)
+(equal-test nil #'terpri os)
+(equal-test nil #'terpri os)
+(equal-test "
+
+" #'get-output-stream-string os)
+(close os)
+(error-test #'terpri 1)
+
+;; write-char				- function
+(equal-eval "a b"
+    '(with-output-to-string (s) 
+	(write-char #\a s)
+	(write-char #\Space s)
+	(write-char #\b s)))
+(error-test #'write-char 1)
+
+;; write-line				- function
+(setq os (make-string-output-stream))
+(equal-test "text" #'write-line "text" os)
+(equal-test "text
+" #'get-output-stream-string os)
+(eql-test #\< #'write-char #\< os)
+(equal-test "text" #'write-line "text" os :start 1 :end 3)
+(eql-test #\> #'write-char #\> os)
+(equal-test "<ex
+>" #'get-output-stream-string os)
+(error-test #'write-line 1)
+(close os)
+
+;; write-string				- function
+(setq os (make-string-output-stream))
+(equal-test "text" #'write-string "text" os)
+(equal-test "text" #'get-output-stream-string os)
+(eql-test #\< #'write-char #\< os)
+(equal-test "text" #'write-string "text" os :start 1 :end 3)
+(eql-test #\> #'write-char #\> os)
+(equal-test "<ex>" #'get-output-stream-string os)
+(error-test #'write-string #\a)
+(close os)

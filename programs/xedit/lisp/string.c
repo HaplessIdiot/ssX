@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.20 2002/11/25 02:35:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.21 2002/11/26 04:06:29 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -744,6 +744,9 @@ Lisp_ReadFromString(LispBuiltin *builtin)
 	length = end - start;
     stream = LSTRINGSTREAM(string + start, STREAM_READ, length);
 
+    if (eof_value == UNSPEC)
+	eof_value = NIL;
+
     LispPushInput(stream);
     result = LispRead();
     /* stream->data.stream.source.string->input is
@@ -759,7 +762,7 @@ Lisp_ReadFromString(LispBuiltin *builtin)
     }
 
     GC_PROTECT(result);
-    RETURN(0) = FIXNUM(bytes_read);
+    RETURN(0) = FIXNUM(start + bytes_read);
     RETURN_COUNT = 1;
     GC_LEAVE();
 

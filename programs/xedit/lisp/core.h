@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.32 2002/11/25 02:35:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.33 2002/11/26 04:06:28 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -197,7 +197,6 @@ LispObj *Lisp_SymbolPackage(LispBuiltin*);
 LispObj *Lisp_SymbolPlist(LispBuiltin*);
 LispObj *Lisp_SymbolValue(LispBuiltin*);
 LispObj *Lisp_Tagbody(LispBuiltin*);
-LispObj *Lisp_Terpri(LispBuiltin*);
 LispObj *Lisp_Throw(LispBuiltin*);
 LispObj *Lisp_The(LispBuiltin*);
 LispObj *Lisp_TreeEqual(LispBuiltin*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.27 2002/11/26 04:06:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.28 2002/11/30 23:13:13 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -139,6 +139,33 @@ LispWriteInit(void)
 }
 
 LispObj *
+Lisp_FreshLine(LispBuiltin *builtin)
+/*
+ fresh-line &optional output-stream
+ */
+{
+    LispObj *output_stream;
+
+    output_stream = ARGUMENT(0);
+
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
+    else if (output_stream != NIL) {
+	CHECK_STREAM(output_stream);
+    }
+    if (LispGetColumn(output_stream)) {
+	LispWriteChar(output_stream, '\n');
+	if (output_stream == NIL ||
+	    (output_stream->data.stream.type == LispStreamStandard &&
+	     output_stream->data.stream.source.file == Stdout))
+	    LispFflush(Stdout);
+	return (T);
+    }
+
+    return (NIL);
+}
+
+LispObj *
 Lisp_Prin1(LispBuiltin *builtin)
 /*
  prin1 object &optional output-stream
@@ -192,9 +219,35 @@ Lisp_Print(LispBuiltin *builtin)
 
     if (output_stream == UNSPEC)
 	output_stream = NIL;
-    LispPrint(object, output_stream, 1);
+    LispWriteChar(output_stream, '\n');
+    LispPrint(object, output_stream, 0);
+    LispWriteChar(output_stream, ' ');
 
     return (object);
+}
+
+LispObj *
+Lisp_Terpri(LispBuiltin *builtin)
+/*
+ terpri &optional output-stream
+ */
+{
+    LispObj *output_stream;
+
+    output_stream = ARGUMENT(0);
+
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
+    else if (output_stream != NIL) {
+	CHECK_STREAM(output_stream);
+    }
+    LispWriteChar(output_stream, '\n');
+    if (output_stream == NIL ||
+	(output_stream->data.stream.type == LispStreamStandard &&
+	 output_stream->data.stream.source.file == Stdout))
+	LispFflush(Stdout);
+
+    return (NIL);
 }
 
 LispObj *
@@ -246,6 +299,48 @@ Lisp_Write(LispBuiltin *builtin)
 
     return (object);
 }
+
+LispObj *
+Lisp_WriteChar(LispBuiltin *builtin)
+/*
+ write-char character &optional output-stream
+ */
+{
+    int ch;
+
+    LispObj *character, *output_stream;
+
+    output_stream = ARGUMENT(1);
+    character = ARGUMENT(0);
+
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
+    CHECK_SCHAR(character);
+    ch = SCHAR_VALUE(character);
+
+    LispWriteChar(output_stream, ch);
+
+    return (character);
+}
+
+LispObj *
+Lisp_WriteLine(LispBuiltin *builtin)
+/*
+ write-line string &optional output-stream &key start end
+ */
+{
+    return (LispWriteString_(builtin, 1));
+}
+
+LispObj *
+Lisp_WriteString(LispBuiltin *builtin)
+/*
+ write-string string &optional output-stream &key start end
+ */
+{
+    return (LispWriteString_(builtin, 0));
+}
+
 
 int
 LispWriteObject(LispObj *stream, LispObj *object)

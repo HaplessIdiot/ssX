@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.79 2002/11/26 04:06:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.80 2002/11/30 23:13:12 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -360,6 +360,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Ffloor, "ffloor number &optional divisor", 1},
     {LispFunction, Lisp_Fmakunbound, "fmakunbound symbol"},
     {LispFunction, Lisp_Format, "format destination control-string &rest arguments"},
+    {LispFunction, Lisp_FreshLine, "fresh-line &optional output-stream"},
     {LispFunction, Lisp_Funcall, "funcall function &rest arguments", 1},
     {LispFunction, Lisp_Functionp, "functionp object"},
     {LispFunction, Lisp_Gc, "gc &optional car cdr"},
@@ -4641,8 +4642,9 @@ LispFuncall(LispObj *function, LispObj *arguments, int eval)
 #endif
 
     switch (OBJECT_TYPE(function)) {
-	case LispAtom_t:
 	case LispFunction_t:
+	    function = function->data.atom->object;
+	case LispAtom_t:
 	    atom = function->data.atom;
 	    if (atom->a_builtin) {
 		builtin = atom->property->fun.builtin;
@@ -4850,8 +4852,6 @@ LispRunFunMac(LispObj *name, LispObj *code, int macro, int base)
 	LispObj **pcode, **presult;
 	LispBlock *block;
 
-	if (FUNCTIONP(name))
-	    name = name->data.atom->object;
 	block = LispBeginBlock(name, LispBlockClosure);
 	lisp__data.env.lex = base;
 	if (setjmp(block->jmp) == 0) {
@@ -4871,6 +4871,11 @@ LispRunFunMac(LispObj *name, LispObj *code, int macro, int base)
 
 	for (; CONSP(code); code = CDR(code))
 	    result = EVAL(CAR(code));
+	/* FIXME this does not work if macro has &aux variables,
+	 * but there are several other missing features, like
+	 * destructuring and more lambda list keywords still missing.
+	 * TODO later.
+	 */
 	lisp__data.env.head = lisp__data.env.length = base;
 
 	GC_PROTECT(result);
