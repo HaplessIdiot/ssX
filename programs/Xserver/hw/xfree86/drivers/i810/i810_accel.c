@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.20 2003/12/22 12:27:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.21 2004/01/02 20:22:17 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -92,10 +92,7 @@ I810AccelInit(ScreenPtr pScreen)
 
    pI810->bufferOffset = 0;
    infoPtr->Flags = LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
-   /* There is a bit blt bug in 24 bpp.  This is a problem, but
-    * at least without the pixmap cache we can pass the test suite */
-   if (pScrn->depth != 24)
-      infoPtr->Flags |= PIXMAP_CACHE;
+   infoPtr->Flags |= PIXMAP_CACHE;
 
    /* Sync
     */
@@ -363,9 +360,12 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
      * This was developed empirically so it may not catch all
      * cases.
      */
+#define I810_MWIDTH 8
+
     if ( !(pI810->BR[13] & BR13_RIGHT_TO_LEFT) && (y2 - y1) < 3 
-	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + 4) && (w > 4))
-	w = 4;
+	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + I810_MWIDTH)
+	 && (w > I810_MWIDTH))
+	w = I810_MWIDTH;
     do {
 
 	if (pI810->BR[13] & BR13_PITCH_SIGN_BIT) {
@@ -403,7 +403,10 @@ I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	    break;
 	x2 += w;
 	x1 += w;
-	w = w_back;
+	if (w_back > I810_MWIDTH)
+	    w = I810_MWIDTH;
+	else
+	    w = w_back;
     }  while (1);
 }
 
