@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.24 1994/10/23 13:01:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.25 1994/12/29 10:21:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -233,6 +233,13 @@ static void (* saveSetReadWriteFunc)();
 
 vgaHWCursorRec vgaHWCursor;
 
+#ifdef MONOVGA
+static int validDepth = 1;
+#endif
+#ifdef XF86VGA16
+static int validDepth = 4;
+#endif
+
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern int defaultColorVisualClass;
 
@@ -375,6 +382,13 @@ vgaProbe()
 		 xf86VisualNames[defaultColorVisualClass]);
 	  return(FALSE);
       }
+  }
+#else
+  if (vga256InfoRec.depth != validDepth) {
+    ErrorF("\n%s %s: Unsupported bpp for %s server (%d)\n",
+           XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.name,
+           vga256InfoRec.depth);
+	  return(FALSE);
   }
 #endif
 

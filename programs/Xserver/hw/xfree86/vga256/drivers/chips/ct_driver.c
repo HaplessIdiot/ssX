@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.0 1994/11/05 23:51:53 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  *
@@ -73,8 +73,10 @@ static Bool         CHIPSInit();
 static void *       CHIPSSave();
 static void         CHIPSRestore();
 static void         CHIPSAdjust();
+#if 0
 static void         CHIPSSaveScreen();
 static void         CHIPSGetMode();
+#endif
 /*
  * These are the bank select functions.  There are defined in chips_bank.s
  */

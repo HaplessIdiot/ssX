@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.0 1994/10/30 04:21:48 dawes Exp $
  */
 
 #include "X.h"
@@ -65,7 +65,9 @@ static Bool     ALIInit();	/* 2nd most important routine */
 static void *   ALISave();
 static void     ALIRestore();
 static void     ALIAdjust();
+#if 0
 static void     ALIFbInit();
+#endif
 extern void     ALISetRead();
 extern void     ALISetWrite();
 extern void     ALISetReadWrite();
