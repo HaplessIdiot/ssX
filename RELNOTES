@@ -1,4 +1,4 @@
-                    Release Notes for XFree86® 4.4.99.901
+                    Release Notes for XFree86® 4.4.99.902
 
                           The XFree86 Project, Inc
 
@@ -7,7 +7,7 @@
                                   Abstract
 
       This document contains information about features and their status
-     in XFree86 4.4.99.901.
+     in XFree86 4.4.99.902.
 
 1.  Introduction to the 4.x Release Series
 
@@ -285,7 +285,7 @@ complete list):
 
 4.1  Video Drivers
 
-XFree86 4.4.99.901 includes the following video drivers:
+XFree86 4.4.99.902 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -341,7 +341,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.4.99.901 includes the following input drivers:
+XFree86 4.4.99.902 includes the following input drivers:
 
 4.2  Input Drivers
 
@@ -402,7 +402,7 @@ either have one or more video and input drivers linked in statically, or more
 usually, dynamically, and in that manner load the video drivers, input driv-
 ers, and other modules that are needed.
 
-XFree86 4.4.99.901 has X server support for most UNIX® and UNIX-like operat-
+XFree86 4.4.99.902 has X server support for most UNIX® and UNIX-like operat-
 ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
 on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
@@ -420,7 +420,7 @@ be loaded by an X server running on Solaris/x86, or FreeBSD, or even OS/2.
 
 A main benefit of this, is that when modules are updated, they do not need to
 be recompiled for every different operating system.  The loader in version
-4.4.99.901 has support for Intel (x86), Alpha and PowerPC platforms.  It also
+4.4.99.902 has support for Intel (x86), Alpha and PowerPC platforms.  It also
 has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
@@ -503,7 +503,7 @@ Known problems:
 
 6.7  DGA version 2
 
-DGA 2.0 is included in 4.4.99.901.  Documentation for the client libraries
+DGA 2.0 is included in 4.4.99.902.  Documentation for the client libraries
 can be found in the XDGA(3) man page.  A good degree of backwards compatibil-
 ity with version 1.0 is provided.
 
@@ -558,7 +558,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.4.99.901 provides a partial implementation of Render sufficient for
+XFree86 4.4.99.902 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -593,12 +593,12 @@ the Xft(3) man page.
 
 6.11.2  FreeType support in Xft
 
-XFree86 4.4.99.901 includes sources for FreeType version 2.1.4, and, by
+XFree86 4.4.99.902 includes sources for FreeType version 2.1.4, and, by
 default, they are built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.4.99.901 to work with
+Only three applications have been modified in XFree86 4.4.99.902 to work with
 the Render extension and the Xft and FreeType libraries to provide anti-
 aliased text.  Xterm, xditview and x11perf.  Migration of other applications
 may occur in future releases.
@@ -805,7 +805,7 @@ source files.
                         X-Oz Technologies
 
                   Intel i915GM support, dual head i830/i855/i915 support:
-                        Tungsten Grahpics, Alan Hourihane, Keith Whitwell
+                        Tungsten Graphics, Alan Hourihane, Keith Whitwell
 
                   Automatic configuration enhancements:
                         X-Oz Technologies, David Dawes
@@ -820,7 +820,7 @@ source files.
                         Pascal.
 
                   DRI Integration:
-                        Alan Hourihane.
+                        Alan Hourihane, David H. Dawes.
 
       Release Engineering:
             David H. Dawes.
@@ -841,30 +841,30 @@ source files.
             Nicolas George, Frank Giessler, Fred Gleason, Dmitry Golubev,
             Alexander Gottwald, Herbert Graeber, Miroslav Halas, John Harper,
             Harshula, John Heasley, Matthieu Herrb, David Holl, Alex Holland,
-            Peng Hongbo, Alan Hourihane, Harold L Hunt II, Alan Iwi, Paul
-            Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis, Kaleb Keith-
-            ley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi Kimura, Michael
-            Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton Kovalenko, Joachim
-            Kuebart, Marc La France, David Laight, Zarick Lau, Pierre Lalet,
-            Michael Lampe, Lanka Linux User Group, Nolan Leake, Werner Lem-
-            berg, Dejan Lesjak, Noah Levitt, Greg Lewis, Bernhard R Link,
-            Jonas Lund, S. Lussos, Torrey T. Lyons, Roland Mainz, N Marci,
-            Kevin Martin, Stephen McCamant, Luke Mewburn, Petr Mladek, Bram
-            Moolenaar, Steve Murphy, Ishikawa MUTSUMI, Radu Octavian, Lee
-            Olsen, Greg Parker, Ivan Pascal, Alexander E. Patrakov, Mike
-            Pechkin, Soós Péter, Zvezdan Petkovic, Alexander Pohoyda, Xie
-            Qian, Bill Randle, Adam J. Richter, Tim Roberts, Bernhard
-            Rosenkraenzer, Andreas Rüden, Steve Rumble, Oleg Safiullin, Ty
-            Sarna, Leo Savernik, Barry Scott, Shantonu Sen, Yu Shao, Andreas
-            Schwab, Matthias Scheler, Dan Shearer, Michael Shell, Paul Shu-
-            pak, Alexander Stohr, Marius Strobl, Mikko Markus Torni, Jess
-            Thrysoee, Izumi Tsutsui, Tungsten Grahpics, Ryan Underwood, Tris-
-            tan Van Berkom, Michael van Elst, Phillip Vandry, Roman Vasylyev,
-            Luc Verhaegen, Rodion Vshevtsov, Mark Vojkovich, Edi Werner,
-            Keith Whitwell, Scot Wilcoxon, Dave Williss, Thomas Winischhofer,
-            Kuang-che Wu, X-Oz Technologies, Chisato Yamauchi, Michael
-            Yaroslavtsev, David Yerger, Su Yong, Hui Yu, Sagi Zeevi, Chris-
-            tian Zietz
+            Peng Hongbo, Alan Hourihane, Harold L Hunt II, Alan Iwi, Timur
+            Jamakeev, Paul Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis,
+            Kaleb Keithley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi
+            Kimura, Michael Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton
+            Kovalenko, Joachim Kuebart, Marc La France, David Laight, Zarick
+            Lau, Pierre Lalet, Michael Lampe, Lanka Linux User Group, Nolan
+            Leake, Werner Lemberg, Dejan Lesjak, Noah Levitt, Greg Lewis,
+            Bernhard R Link, Jonas Lund, S. Lussos, Torrey T. Lyons, Roland
+            Mainz, N Marci, Kevin Martin, Stephen McCamant, Mesa Developers,
+            Luke Mewburn, Petr Mladek, Bram Moolenaar, Steve Murphy, Ishikawa
+            MUTSUMI, Radu Octavian, Lee Olsen, Greg Parker, Ivan Pascal,
+            Alexander E. Patrakov, Mike Pechkin, Soós Péter, Zvezdan
+            Petkovic, Alexander Pohoyda, Xie Qian, Bill Randle, Adam J.
+            Richter, Tim Roberts, Bernhard Rosenkraenzer, Andreas Rüden,
+            Steve Rumble, Oleg Safiullin, Ty Sarna, Leo Savernik, Barry
+            Scott, Shantonu Sen, Yu Shao, Andreas Schwab, Matthias Scheler,
+            Dan Shearer, Michael Shell, Paul Shupak, Alexander Stohr, Marius
+            Strobl, Mikko Markus Torni, Jess Thrysoee, Izumi Tsutsui, Tung-
+            sten Graphics, Ryan Underwood, Tristan Van Berkom, Michael van
+            Elst, Phillip Vandry, Roman Vasylyev, Luc Verhaegen, Rodion
+            Vshevtsov, Mark Vojkovich, Edi Werner, Keith Whitwell, Scot
+            Wilcoxon, Dave Williss, Thomas Winischhofer, Kuang-che Wu, X-Oz
+            Technologies, Chisato Yamauchi, Michael Yaroslavtsev, David
+            Yerger, Su Yong, Hui Yu, Sagi Zeevi, Christian Zietz
 
       Webmaster:
             Georgina O. Economou
@@ -878,7 +878,7 @@ THIS IS A DRAFT OF THE XFree86 4.5.0 CREDITS SECTION.  If you find missing
 credits, incorrect attributions, or other errors, please send details to
 <devel@XFree86.org>.
 
-This section lists the credits for the XFree86 4.4.99.901 release.  For a
+This section lists the credits for the XFree86 4.4.99.902 release.  For a
 more detailed breakdown, refer to the CHANGELOG file in the XFree86 source
 tree, the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
 mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
@@ -1022,7 +1022,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.123 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.127 dawes Exp $
 
 
 $XFree86$

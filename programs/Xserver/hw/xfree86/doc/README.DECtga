@@ -6,7 +6,7 @@
 
 1.  DEC 21030
 
-   o The DEC 21030 is supported by XFree86 4.4.99.901.  The driver is now
+   o The DEC 21030 is supported by XFree86 4.4.99.902.  The driver is now
      partially accelerated.  The built-in graphics on the Multia is supported
      in 8-plane mode, and PCI cards with 8 or 16 MB framebuffers are sup-
      ported in 24-plane mode.  TGA2 (aka PowerStorm 3D30/4D20) cards are not

@@ -12,30 +12,35 @@
 
 1.  Development, Branches, and Releases
 
-XFree86 development happens on the trunk of the CVS repository.  Releases are
+XFree86 development happens on the trunk of the CVS repository with releases
 cut from this development trunk at the end of each release cycle.  A mainte-
-nance branch is created at around the time of each release, which may be used
+nance branch is then created sometime around each release, which can be used
 for important post-release fixes and security updates.
 
-XFree86 release cycles occur approximately every 12 months.  The development
-phase typically ends 1-3 months before the release date and is signified by
-the feature freeze.  The timing of releases and the length of the release
-cycles may vary according to the resources available to The XFree86 Project,
-which is an entirely volunteer organisation.
+XFree86 release cycles occur approximately every 12 months and coincide with
+the calendar year.  For example 4.0 was released in 2000; 4.1 in 2001; 4.2 in
+2002; 4.3 in 2003; 4.4 in 2004 and 4.5 in 2005.  So it is safe to say that
+4.6 will be released early in 2006.
 
-XFree86 releases consist of full source code tarballs, plus full binary dis-
-tributions for a broad range of supported platforms.  Update/bugfix releases
-may be made from time to time as required and as resource availability
-allows.  Such update releases typically consist of source code patches plus
-binary updates that may be layered on top of the previous release.
+The development phase typically ends 1-3 months before the release date and
+is marked by the start of a feature freeze .  The timing of releases and the
+length of the release cycles may vary according to the resources available to
+The XFree86 Project, an entirely volunteer organisation.
+
+XFree86 consist of full source code tarballs, plus full binary distributions
+for a broad range of supported platforms.  Update/bugfix releases may be made
+from time to time as required and as resource availability allows.  Such
+update releases typically consist of source code patches plus binary updates
+that may be layered on top of the previous release.
 
 XFree86 is currently in the feature freeze period for version 4.5.0.  The
-current release candidate is 4.4.99.901 (4.5.0 RC1).
+current release candidate is 4.4.99.902 (4.5.0 RC1).
 
 Aside from releases, snapshots of the development trunk are tagged in the CVS
-repository at regular intervals.  Each such snapshot has an identifiable ver-
-sion number.  Information about the latest snapshot can be found at the
-XFree86 snapshots page <URL:http://www.xfree86.org/develsnaps/>.
+repository at regular intervals, normally every two weeks.  Each snapshot has
+an identifiable sequential version number.  Further information about the
+latest snapshot can be found at the XFree86 snapshots page
+<URL:http://www.xfree86.org/develsnaps/>.
 
 2.  Current Version Numbering Scheme
 
@@ -57,16 +62,19 @@ Immediately after forming a release stable branch, the patch level number for
 the main development branch is bumped to 99, and the snapshot number is
 reset.  The snapshot number is incremented for each tagged development snap-
 shot.  The CVS tag for snapshots is "xf-M_m_P_s".  When the development
-branch enters feature freeze, the snapshot number may be bumped to 901.  The
-snapshot number is incremented from there until the release is finalised.
-These snapshots are called "release candidates," and the release candidate
-number is the snapshot number minus 900.  When the release is finalised, the
-minor version is incremented, the patch level is set to zero, and the snap-
-shot number removed.  Somewhere around the time of the release, a maintenance
-branch is created.  This branch is called "xf-M_m-branch".
+branch enters the feature freeze, the snapshot number is bumped to 901, and
+the snapshot number is incremented sequentially until the release is
+finalised.  Snapshots made during the feature freeze are called "release can-
+didates," and are numbered by the snapshot number minus 900.  An example of
+this is snapshot number 901 would be release candidate 1 (RC1).
 
-Here's an example which shows the version number sequence for the development
-leading up to version 4.4.0:
+When the release is finalised, the minor version is incremented, the patch
+level is reset to zero, and the snapshot number removed.  Somewhere around
+the time of the release, a maintenance branch is created.  This branch is
+usually called "xf-M_m-branch".
+
+Here is an example which shows the version number sequence for the develop-
+ment leading up to version 4.4.0:
 
       4.3.99.1
             The first snapshot of the pre-4.4 development trunk.
@@ -79,7 +87,7 @@ leading up to version 4.4.0:
             didate.
 
       4.3.99.903
-            The third 4.4.0 release candidate.
+            The third 4.4.0 release candidate (RC3).
 
       4.4.0
             The 4.4.0 release.
@@ -95,8 +103,8 @@ dates may be tagged on maintenance branches from time to time.  When an
 update release is cut, the patch level value (P) is incremented and the snap-
 shot number dropped.
 
-Here's an example which shows the version number sequence for the 4.2.x main-
-tenance branch.
+Here is an example which shows the version number sequence for the 4.2.x
+maintenance branch.
 
       4.2.0.1
             The first snapshot on the 4.2.x maintenance branch.
@@ -304,7 +312,7 @@ VendorRelease information can be interpreted.
              }
          }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.6 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.7 dawes Exp $
 
 
 $XFree86$
