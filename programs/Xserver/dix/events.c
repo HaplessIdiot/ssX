@@ -2898,7 +2898,8 @@ ProcessPointerEvent (xE, mouse, count)
 	{
 	case ButtonPress: 
 	    mouse->valuator->motionHintWindow = NullWindow;
-	    butc->buttonsDown++;
+	    if (!(*kptr & bit))
+		butc->buttonsDown++;
 	    butc->motionMask = ButtonMotionMask;
 	    *kptr |= bit;
 #if !defined(XFree86Server) || !defined(XINPUT)
@@ -2915,7 +2916,9 @@ ProcessPointerEvent (xE, mouse, count)
 	    break;
 	case ButtonRelease: 
 	    mouse->valuator->motionHintWindow = NullWindow;
-	    if (!--butc->buttonsDown)
+	    if (*kptr & bit)
+		--butc->buttonsDown;
+	    if (!butc->buttonsDown)
 		butc->motionMask = 0;
 	    *kptr &= ~bit;
 #if !defined(XFree86Server) || !defined(XINPUT)
