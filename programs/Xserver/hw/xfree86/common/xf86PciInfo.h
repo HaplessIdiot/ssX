@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.122 2002/02/21 03:16:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.123 2002/03/18 21:45:55 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -350,7 +350,6 @@
 #define PCI_CHIP_8520		0x8520
 #define PCI_CHIP_8600		0x8600
 #define PCI_CHIP_8620		0x8620
-#define PCI_CHIP_8800		0x8800
 #define PCI_CHIP_8820		0x8820
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9388		0x9388
@@ -366,7 +365,6 @@
 #define PCI_CHIP_9850		0x9850
 #define PCI_CHIP_9880		0x9880
 #define PCI_CHIP_9910		0x9910
-#define PCI_CHIP_9930		0x9930
 
 /* ALI */
 #define PCI_CHIP_M1435		0x1435
@@ -1012,15 +1010,13 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_9850,		"3DImage985",0},
 				{PCI_CHIP_9880,		"Blade3D",0},
 				{PCI_CHIP_9910,		"Cyber/BladeXP",0},
-				{PCI_CHIP_9930,		"CyberBlade/XPm",0},
 				{PCI_CHIP_8400,		"CyberBlade/i7",0},
 				{PCI_CHIP_8420,		"CyberBlade/DSTN/i7",0},
 				{PCI_CHIP_8500,		"CyberBlade/i1",0},
 				{PCI_CHIP_8520,		"CyberBlade/DSTN/i1",0},
 				{PCI_CHIP_8600,		"CyberBlade/Ai1",0},
 				{PCI_CHIP_8620,		"CyberBlade/DSTN/Ai1",0},
-				{PCI_CHIP_8800,		"CyberBlade/XP/Ai1",0},
-				{PCI_CHIP_8820,		"CyberBlade/XP/DSTN/Ai1",0},
+				{PCI_CHIP_8820,		"CyberBlade/XP/Ai1",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_ALI, {
