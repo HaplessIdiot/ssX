@@ -1,0 +1,115 @@
+XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+#include <lnxdoc.rules>
+
+#if defined(BSD386Architecture) || BuildAllDocs
+LinuxDocReadmeTarget(Bsdi)
+#endif
+#if defined(FreeBSDArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(FreeBSD)
+#endif
+#if defined(NetBSDArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(NetBSD)
+#endif
+#if defined(i386MachArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(Mach)
+#endif
+#if defined(LinuxArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(Linux)
+#endif
+#if defined(LynxOSArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(LynxOS)
+#endif
+#if (defined(MinixArchitecture) || BuildAllDocs) && 0
+LinuxDocReadmeTarget(Minix)
+#endif
+#if (defined(AmoebaArchitecture) || BuildAllDocs) && 0
+LinuxDocReadmeTarget(Amoeba)
+#endif
+#if defined(SVR3Architecture) || BuildAllDocs
+# if defined(i386ScoArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SCO)
+# endif
+# if defined(i386IscArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(isc)
+# endif
+# if 0
+LinuxDocReadmeTarget(SVR3)
+# endif
+#endif
+#if defined(SVR4Architecture) || BuildAllDocs
+# if defined(SunArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SOLX86)
+# endif
+# if !defined(SunArchitecture) || BuildAllDocs
+LinuxDocReadmeTarget(SVR4)
+# endif
+#endif
+
+/* Hardware docs */
+LinuxDocReadmeTarget(Mach64)
+LinuxDocReadmeTarget(Oak)
+LinuxDocReadmeTarget(P9000)
+LinuxDocReadmeTarget(Video7)
+LinuxDocReadmeTarget(S3)
+LinuxDocReadmeTarget(W32)
+LinuxDocReadmeTarget(WstDig)
+LinuxDocReadmeTarget(agx)
+LinuxDocReadmeTarget(ati)
+LinuxDocReadmeTarget(cirrus)
+LinuxDocReadmeTarget(trident)
+LinuxDocReadmeTarget(tseng)
+LinuxDocReadmeTarget(ark)
+
+/* Main docs */
+LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
+LinuxDocTargetLong(RELNOTE.sgml,RELNOTES,RELNOTES)
+LinuxDocReadmeTarget(Config)
+LinuxDocTarget(INSTALL)
+LinuxDocTarget(README)
+LinuxDocTarget(DocIndex)
+
+/* Other docs */
+LinuxDocReadmeTarget(LinkKit)
+LinuxDocReadmeTarget(clkprog)
+LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
+LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
+
+LinkSourceFile(Bsdi.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(CPYRIGHT.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Config.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(DocIndex.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(FreeBSD.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(INSTALL.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(LinkKit.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Linux.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(LynxOS.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Mach.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Mach64.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(NetBSD.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Oak.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(P9000.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(README.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(S3.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(SCO.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(SOLX86.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(SVR4.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(VGADriv.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(VidModes.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Video7.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(W32.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(WstDig.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(agx.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(ark.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(ati.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(cirrus.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(clkprog.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(isc.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(trident.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(tseng.sgml,$(XF86SRC)/doc/sgml)
+
+InstallLinkKitNamedNonExec(README.LinkKit,README,$(LINKKITDIR))
+InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
+

@@ -1,0 +1,25 @@
+
+#include <Server.tmpl>
+
+SRCS = nec480_dr.c
+OBJS = nec480_dr.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) \
+	   -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+DEFINES = -DPC98 -DPC98_NEC480
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(nec480_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(cpq_driver.c,$(LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(cpq_bank.s,$(LINKKITDIR)/drivers/vga256/nec480)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/nec480)
+
+DependTarget()

@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = gen_driver.c
+
+OBJS = gen_driver.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) \
+           -I../../../vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+DEFINES = -DXF86VGA16 -DPC98 -DPC98_EGC
+
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(gen_drv, $(OBJS))
+
+LinkSourceFile(gen_driver.c,$(XF86VGA2DRIVERSRC)/generic)
+
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga16/generic)
+
+DependTarget()
+

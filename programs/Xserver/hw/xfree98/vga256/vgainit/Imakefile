@@ -1,0 +1,22 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = 	vgabppscrin.c
+
+OBJS = 	vga16scrin.o vga32scrin.o
+
+INCLUDES = -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(XF98HWSRC) -I../../vga256/vga \
+           -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+LinkSourceFile(vgabpp.h,$(XF86SRC)/vga256/vgainit)
+LinkSourceFile(vgabppscrin.c,$(XF86SRC)/vga256/vgainit)
+
+ObjectFromSpecialSource(vga16scrin, vgabppscrin, -DPSZ=16)
+ObjectFromSpecialSource(vga32scrin, vgabppscrin, -DPSZ=32)
+
+DependTarget()

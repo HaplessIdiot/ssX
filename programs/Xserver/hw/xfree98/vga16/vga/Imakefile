@@ -1,0 +1,27 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s
+
+OBJS = 	vgaHW.o vga.o vgaCmap.o vgaBank.o
+
+INCLUDES = -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(XF98HWSRC) \
+	   -I$(XF98SRC)/vga256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/cfb -I$(SERVERSRC)/include -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+#if DirtyStartup
+STARTUPDEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = -DXF86VGA16 $(STARTUPDEFINES) -DPC98 -DPC98_EGC
+
+ObjectFromSpecialSource(vga,$(XF98SRC)/vga256/vga/vga,/**/)
+ObjectFromSpecialSource(vgaHW,$(XF98SRC)/vga256/vga/vgaHW,/**/)
+ObjectFromSpecialSource(vgaCmap,$(XF98SRC)/vga256/vga/vgaCmap,/**/)
+ObjectFromSpecialAsmSource(vgaBank,$(XF98SRC)/vga256/vga/vgaBank,/**/)
+
+DependTarget()

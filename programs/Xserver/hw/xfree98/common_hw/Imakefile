@@ -1,0 +1,22 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+#if XF98NECS3Server
+NECS3DIR = nec
+#endif
+#if XF98PWSKBServer
+PWSKBDIR = pwskb
+#endif
+#if XF98PWLBServer
+PWLBDIR = pwlb
+#endif
+#if (XF98GANBWAPServer) || (XF98NEC480Server) || (XF98NECCIRServer) || \
+    (XF98NKVServer)     || (XF98WABSServer)   || (XF98EGCServer)
+GENERICDIR = generic
+#endif
+
+SUBDIRS = $(NECS3DIR) $(PWSKBDIR) $(PWLBDIR) $(GENERICDIR)
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

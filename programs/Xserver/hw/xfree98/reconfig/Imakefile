@@ -1,0 +1,26 @@
+XCOMM $XConsortium: Imakefile,v 1.2 94/11/21 21:55:13 kaleb Exp $
+XCOMM $XFree86$
+
+          YFLAGS = -d
+            SRCS = reconfig.c lex.c copyright.c
+            OBJS = reconfig.o lex.o copyright.o
+ LOCAL_LIBRARIES = $(LEXLIB)
+         DEPLIBS =
+
+all::
+
+LexFile(lex)
+
+YaccFile(reconfig,$(YFLAGS))
+
+ComplexProgramTarget(reconfig)
+
+LinkSourceFile(README,$(XF86SRC)/reconfig)
+LinkSourceFile(copyright.c,$(XF86SRC)/reconfig)
+LinkSourceFile(keyword.i,$(XF86SRC)/reconfig)
+LinkSourceFile(lex.l,$(XF86SRC)/reconfig)
+LinkSourceFile(os.h,$(XF86SRC)/reconfig)
+LinkSourceFile(reconfig.man,$(XF86SRC)/reconfig)
+LinkSourceFile(reconfig.y,$(XF86SRC)/reconfig)
+LinkSourceFile(strlist.h,$(XF86SRC)/reconfig)
+

@@ -1,0 +1,44 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = vga ibm mfb drivers misc
+
+SRCS = vga/?*.c ibm/?*.c mfb/?*.c
+
+OBJS = vga/?*.o ibm/?*.o mfb/?*.o
+
+DONES = vga/DONE ibm/DONE mfb/DONE
+
+INCLUDES = -I../vga256/vga -I$(XF98COMSRC) -I$(XF98OSSRC) \
+	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
+
+VGA16DRIVERS = XF98Vga16Drivers
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
+
+#ifdef OS2Architecture
+all:: DONE
+	cp $(OBJS) .
+
+NormalDepLibraryTarget(vga16,$(SUBDIRS) $(DONES),?*.o)
+#else
+NormalDepLibraryTarget(vga16,$(SUBDIRS) $(DONES),$(OBJS))
+#endif
+ConfigTargetNoDepend(vga16Conf,$(ICONFIGFILES),cvga16.SHsuf,$(VGA16DRIVERS))
+
+NormalLibraryObjectRule()
+
+ForceSubdirs($(SUBDIRS))
+
+LinkSourceFile(BUGS,$(XF86SRC)/vga16)
+LinkSourceFile(cvga16.cmd,$(XF86SRC)/vga16)
+LinkSourceFile(cvga16.sh,$(XF86SRC)/vga16)
+
+InstallLinkKitLibrary(vga16,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(cvga16.SHsuf,$(XF98LINKKITDIR))
+
+DependSubdirs($(SUBDIRS))
