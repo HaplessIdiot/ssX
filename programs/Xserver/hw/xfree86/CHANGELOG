@@ -1,4 +1,7 @@
-XFree86 3.0Ac (30 May 1994)
+XFree86 3.0Ac (31 May 1994)
+ 71. Preliminary support for the ELSA Winner 1000PRO-VL-2 (Harald Koenig).
+ 70. Add "weight" and "displayWidth" entries to ScrnInfoRec.
+ 69. Banked vga2 server (Pascal Haible).
  68. Font cache changes for the Mach8 and 8514 servers.  This allows them
      to work without a font cache, and should allow their use with 512k
      Mach8 cards.  (Hans Nasten)

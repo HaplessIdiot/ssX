@@ -1,7 +1,7 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.1 1994/05/15 02:59:48 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.2 1994/05/29 02:04:53 dawes Exp $
 .\" XF86_Acc.man
-.TH XF86_Accel 1 "Version 3.0"  "XFree86"
+.TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_Accel - 8 bit accelerated X Window System servers for UNIX on x86
 platforms with an S3, Mach8, Mach32, P9000 or 8514/A accelerator board

@@ -1,6 +1,7 @@
 .\" $XConsortium: Xconfig.man,v 1.2 94/04/11 16:03:14 matt Exp $
+.\" $XFree86$
 .\" Xconfig.man
-.TH Xconfig 4/5 "Version 3.0"  "XFree86"
+.TH Xconfig 4/5 "Version 3.1"  "XFree86"
 .SH NAME
 Xconfig - Configuration File for XFree86
 .SH DESCRIPTION
