@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.145 2000/02/28 19:53:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.147 2000/03/01 20:14:40 alanh Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -366,6 +366,12 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 static const char *fbdevHWSymbols[] = {
 	"fbdevHWInit",
 	"fbdevHWUseBuildinMode",
@@ -438,7 +444,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols,
-			  fbdevHWSymbols,
+			  fbdevHWSymbols, vbeSymbols,
 #ifdef XF86DRI 
 			  drmSymbols, driSymbols,
 #endif

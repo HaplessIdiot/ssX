@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.88 2000/02/27 02:45:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.89 2000/03/01 16:01:25 tsi Exp $ */
 
 #include "cfb24_32.h"
 
@@ -431,6 +431,12 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tridentSetup);
@@ -459,7 +465,7 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, vbeSymbols,
 			  xaaSymbols, shadowSymbols, NULL);
 	return (pointer)TRUE;
     } 
@@ -798,10 +804,10 @@ TRIDENTProbe(DriverPtr drv, int flags)
 		   TRIDENTChipsets, TRIDENTPciChipsets, devSections,
 		   numDevSections, drv, &usedChips);
 
-	if (numUsed > 0)
-	if (flags & PROBE_DETECT)
+	if (numUsed > 0) {
+	  if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
-    	else for (i = 0; i < numUsed; i++) {
+    	  else for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
@@ -823,6 +829,8 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	    foundScreen = TRUE;
 	    xf86ConfigActivePciEntity(pScrn, usedChips[i], TRIDENTPciChipsets,
 				  NULL, NULL, NULL, NULL, NULL);
+	  }
+	  xfree(usedChips);
     	}
     }
 
@@ -853,12 +861,10 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],TRIDENTISAchipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
+	xfree(usedChips);
     }
     if (devSections)
 	xfree(devSections);
-    devSections = NULL;
-    xfree(usedChips);
-    usedChips = NULL;
     return foundScreen;
 }
 	

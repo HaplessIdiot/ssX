@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.82 2000/03/01 16:01:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.83 2000/03/05 16:59:12 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -699,6 +699,11 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(chipsSetup);
@@ -743,7 +748,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, ddcSymbols, i2cSymbols,
-			  shadowSymbols, NULL);
+			  shadowSymbols, vbeSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -857,6 +862,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 		foundScreen = TRUE;
 		xf86ConfigActivePciEntity(pScrn,usedChips[i],CHIPSPCIchipsets,
 					  NULL,NULL,NULL,NULL,NULL);
+	    }
+	    xfree(usedChips);
 	}
     }
     
@@ -864,7 +871,7 @@ CHIPSProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
 				     drv,chipsFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
-    if(numUsed > 0)
+    if (numUsed > 0) {
 	if (flags & PROBE_DETECT)
 	    foundScreen = TRUE;
 	else for (i = 0; i < numUsed; i++) {
@@ -886,6 +893,7 @@ CHIPSProbe(DriverPtr drv, int flags)
 	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],CHIPSISAchipsets,
 				      NULL,NULL,NULL,NULL,NULL);
 	}
+	xfree(usedChips);
     }
     xfree(devSections);
     return foundScreen;
@@ -1038,12 +1046,10 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
     }
 #endif
-#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	
 	cPtr->pVbe =  VBEInit(NULL,cPtr->pEnt->index);
     }
-#endif
     
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
