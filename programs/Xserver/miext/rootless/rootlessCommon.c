@@ -28,12 +28,13 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.c,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.c,v 1.3 2003/06/30 01:45:13 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
 unsigned int rootless_CopyBytes_threshold = 0;
 unsigned int rootless_FillBytes_threshold = 0;
+unsigned int rootless_CompositePixels_threshold = 0;
 unsigned int rootless_CopyWindow_threshold = 0;
 #ifdef ROOTLESS_GLOBAL_COORDS
 int rootlessGlobalOffsetX = 0;

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.3 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.4 2003/09/16 00:36:20 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -85,7 +85,28 @@ extern int rootlessGlobalOffsetY;
    available. */
 extern unsigned int rootless_CopyBytes_threshold;
 extern unsigned int rootless_FillBytes_threshold;
+extern unsigned int rootless_CompositePixels_threshold;
 extern unsigned int rootless_CopyWindow_threshold;
+
+/* Operations used by CompositePixels */
+enum rl_composite_op_enum {
+    RL_COMPOSITE_SRC = 0,
+    RL_COMPOSITE_OVER,
+};
+
+/* Data formats for depth field and composite functions */
+enum rl_depth_enum {
+    RL_DEPTH_NIL = 0,			/* null source when compositing */
+    RL_DEPTH_ARGB8888,
+    RL_DEPTH_RGB555,
+    RL_DEPTH_A8,			/* for masks when compositing */
+    RL_DEPTH_INDEX8,
+};
+
+/* Macro to form the composite function for CompositePixels */
+#define RL_COMPOSITE_FUNCTION(op, src_depth, mask_depth, dest_depth) \
+    (((op) << 24) | ((src_depth) << 16) \
+     | ((mask_depth) << 8) | ((dest_depth) << 0))
 
 /* Gravity for window contents during resizing */
 enum rl_gravity_enum {
@@ -278,6 +299,32 @@ typedef void (*RootlessFillBytesProc)
      void *dst, unsigned int dstRowBytes);
 
 /*
+ * Composite pixels from source and mask to destination. (Optional)
+ *  This will never be called if rootless_CompositePixels_threshold == 0.
+ *
+ *  width, height   Size of area to composite to in pizels
+ *  function        Composite function built with RL_COMPOSITE_FUNCTION
+ *  src             Source data
+ *  srcRowBytes     Width of source in bytes (Passing NULL means source
+ *                  is a single pixel.
+ *  mask            Mask data
+ *  maskRowBytes    Width of mask in bytes
+ *  dst             Destination data
+ *  dstRowBytes     Width of destination in bytes
+ *
+ *  For src and dst, the first element of the array is the color data. If
+ *  the second element is non-null it implies there is alpha data (which
+ *  may be meshed or planar). Data without alpha is assumed to be opaque.
+ *
+ *  An X11 error code is returned.
+ */
+typedef int (*RootlessCompositePixelsProc)
+    (unsigned int width, unsigned int height, unsigned int function,
+     void *src[2], unsigned int srcRowBytes[2],
+     void *mask, unsigned int maskRowBytes,
+     void *dst[2], unsigned int dstRowBytes[2]);
+
+/*
  * Copy area in frame to another part of frame. (Optional)
  *  This will never be called if rootless_CopyWindow_threshold == 0.
  *
@@ -316,6 +363,7 @@ typedef struct _RootlessFrameProcs {
     /* Optional acceleration functions */
     RootlessCopyBytesProc CopyBytes;
     RootlessFillBytesProc FillBytes;
+    RootlessCompositePixelsProc CompositePixels;
     RootlessCopyWindowProc CopyWindow;
 } RootlessFrameProcsRec, *RootlessFrameProcsPtr;
 

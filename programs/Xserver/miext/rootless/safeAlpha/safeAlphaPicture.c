@@ -3,6 +3,7 @@
  */
 /*
  * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002 Apple Computer, Inc. All Rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,7 +32,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaPicture.c,v 1.3 2002/09/28 00:00:03 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.1 2003/09/16 00:36:20 torrey Exp $ */
 
 #ifdef RENDER
 
@@ -57,6 +58,154 @@ SafeAlphaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
 // Defined in fbcompose.c
 extern FbCombineFunc fbCombineFuncU[];
 extern FbCombineFunc fbCombineFuncC[];
+
+/* A bunch of macros from fbpict.c */
+#define cvt0565to8888(s)    (((((s) << 3) & 0xf8) | (((s) >> 2) & 0x7)) | \
+			     ((((s) << 5) & 0xfc00) | (((s) >> 1) & 0x300)) | \
+			     ((((s) << 8) & 0xf80000) | (((s) << 3) & 0x70000)))
+
+#if IMAGE_BYTE_ORDER == MSBFirst
+#define Fetch24(a)  ((unsigned long) (a) & 1 ? \
+		     ((*(a) << 16) | *((CARD16 *) ((a)+1))) : \
+		     ((*((CARD16 *) (a)) << 8) | *((a)+2)))
+#define Store24(a,v) ((unsigned long) (a) & 1 ? \
+		      ((*(a) = (CARD8) ((v) >> 16)), \
+		       (*((CARD16 *) ((a)+1)) = (CARD16) (v))) : \
+		      ((*((CARD16 *) (a)) = (CARD16) ((v) >> 8)), \
+		       (*((a)+2) = (CARD8) (v))))
+#else
+#define Fetch24(a)  ((unsigned long) (a) & 1 ? \
+		     ((*(a)) | (*((CARD16 *) ((a)+1)) << 8)) : \
+		     ((*((CARD16 *) (a))) | (*((a)+2) << 16)))
+#define Store24(a,v) ((unsigned long) (a) & 1 ? \
+		      ((*(a) = (CARD8) (v)), \
+		       (*((CARD16 *) ((a)+1)) = (CARD16) ((v) >> 8))) : \
+		      ((*((CARD16 *) (a)) = (CARD16) (v)),\
+		       (*((a)+2) = (CARD8) ((v) >> 16))))
+#endif
+		      
+#define fbComposeGetSolid(pict, bits) { \
+    FbBits	*__bits__; \
+    FbStride	__stride__; \
+    int		__bpp__; \
+    int		__xoff__,__yoff__; \
+\
+    fbGetDrawable((pict)->pDrawable,__bits__,__stride__,__bpp__,__xoff__,__yoff__); \
+    switch (__bpp__) { \
+    case 32: \
+	(bits) = *(CARD32 *) __bits__; \
+	break; \
+    case 24: \
+	(bits) = Fetch24 ((CARD8 *) __bits__); \
+	break; \
+    case 16: \
+	(bits) = *(CARD16 *) __bits__; \
+	(bits) = cvt0565to8888(bits); \
+	break; \
+    default: \
+	return; \
+    } \
+    /* manage missing src alpha */ \
+    if ((pict)->pFormat->direct.alphaMask == 0) \
+	(bits) |= 0xff000000; \
+}
+
+#define fbComposeGetStart(pict,x,y,type,stride,line,mul) {\
+    FbBits	*__bits__; \
+    FbStride	__stride__; \
+    int		__bpp__; \
+    int		__xoff__,__yoff__; \
+\
+    fbGetDrawable((pict)->pDrawable,__bits__,__stride__,__bpp__,__xoff__,__yoff__); \
+    (stride) = __stride__ * sizeof (FbBits) / sizeof (type); \
+    (line) = ((type *) __bits__) + (stride) * ((y) - __yoff__) + (mul) * ((x) - __xoff__); \
+}
+
+
+/* Optimized version of fbCompositeSolidMask_nx8x8888 */
+void
+SafeAlphaCompositeSolidMask_nx8x8888(
+    CARD8      op,
+    PicturePtr pSrc,
+    PicturePtr pMask,
+    PicturePtr pDst,
+    INT16      xSrc,
+    INT16      ySrc,
+    INT16      xMask,
+    INT16      yMask,
+    INT16      xDst,
+    INT16      yDst,
+    CARD16     width,
+    CARD16     height)
+{
+    CARD32	src, srca;
+    CARD32	*dstLine, *dst, d, dstMask;
+    CARD8	*maskLine, *mask, m;
+    FbStride	dstStride, maskStride;
+    CARD16	w;
+
+    fbComposeGetSolid(pSrc, src);
+
+    dstMask = FbFullMask (pDst->pDrawable->depth);
+    srca = src >> 24;
+    if (src == 0)
+	return;
+
+    fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
+    fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
+
+    if (dstMask == FB_ALLONES && pDst->pDrawable->bitsPerPixel == 32 &&
+	rootless_CompositePixels_threshold &&
+        width * height > rootless_CompositePixels_threshold)
+    {
+	void *srcp[2], *destp[2];
+	unsigned int dest_rowbytes[2];
+	unsigned int fn;
+
+	srcp[0] = &src; srcp[1] = &src;
+	/* null rowbytes pointer means use first value as a constant */
+	destp[0] = dstLine; destp[1] = dstLine;
+	dest_rowbytes[0] = dstStride * 4; dest_rowbytes[1] = dest_rowbytes[0];
+	fn = RL_COMPOSITE_FUNCTION(RL_COMPOSITE_OVER, RL_DEPTH_ARGB8888,
+                                   RL_DEPTH_A8, RL_DEPTH_ARGB8888);
+
+	if (SCREENREC(pDst->pDrawable->pScreen)->imp->CompositePixels(
+                width, height, fn, srcp, NULL,
+                maskLine, maskStride,
+                destp, dest_rowbytes) == Success)
+	{
+	    return;
+	}
+    }
+
+    while (height--)
+    {
+	dst = dstLine;
+	dstLine += dstStride;
+	mask = maskLine;
+	maskLine += maskStride;
+	w = width;
+
+	while (w--)
+	{
+	    m = *mask++;
+	    if (m == 0xff)
+	    {
+		if (srca == 0xff)
+		    *dst = src & dstMask;
+		else
+		    *dst = fbOver (src, *dst) & dstMask;
+	    }
+	    else if (m)
+	    {
+		d = fbIn (src, m);
+		*dst = fbOver (d, *dst) & dstMask;
+	    }
+	    dst++;
+	}
+    }
+}
+
 
 void
 SafeAlphaCompositeGeneral(
@@ -172,9 +321,12 @@ SafeAlphaComposite(
     CompositeFunc   func;
     Bool	    srcRepeat = pSrc->repeat;
     Bool	    maskRepeat = FALSE;
+    Bool            srcAlphaMap = pSrc->alphaMap != 0;
     Bool	    maskAlphaMap = FALSE;
+    Bool            dstAlphaMap = pDst->alphaMap != 0;
     int		    x_msk, y_msk, x_src, y_src, x_dst, y_dst;
     int		    w, h, w_this, h_this;
+    int		    dstDepth = pDst->pDrawable->depth;
 
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
@@ -202,10 +354,181 @@ SafeAlphaComposite(
 				   height))
 	return;
 
-    // To preserve the alpha channel we only use a special,
+    // To preserve the alpha channel we have a special,
     // non-optimzied compositor.
     func = SafeAlphaCompositeGeneral;
 
+    /*
+     * We can use the more optimized fbpict code, but it sets bits above
+     * the depth to zero. Temporarily adjust destination depth if needed.
+     */
+    if (pDst->pDrawable->type == DRAWABLE_WINDOW
+	&& pDst->pDrawable->depth == 24
+	&& pDst->pDrawable->bitsPerPixel == 32)
+    {
+	pDst->pDrawable->depth = 32;
+    }
+
+    if (!pSrc->transform && !(pMask && pMask->transform))
+    if (!maskAlphaMap && !srcAlphaMap && !dstAlphaMap)
+    switch (op) {
+    case PictOpOver:
+	if (pMask)
+	{
+	    if (srcRepeat && 
+		pSrc->pDrawable->width == 1 &&
+		pSrc->pDrawable->height == 1)
+	    {
+		srcRepeat = FALSE;
+		if (PICT_FORMAT_COLOR(pSrc->format)) {
+		    switch (pMask->format) {
+		    case PICT_a8:
+			switch (pDst->format) {
+			case PICT_r5g6b5:
+			case PICT_b5g6r5:
+			    func = fbCompositeSolidMask_nx8x0565;
+			    break;
+			case PICT_r8g8b8:
+			case PICT_b8g8r8:
+			    func = fbCompositeSolidMask_nx8x0888;
+			    break;
+			case PICT_a8r8g8b8:
+			case PICT_x8r8g8b8:
+			case PICT_a8b8g8r8:
+			case PICT_x8b8g8r8:
+			    func = SafeAlphaCompositeSolidMask_nx8x8888;
+			    break;
+			}
+			break;
+		    case PICT_a8r8g8b8:
+			if (pMask->componentAlpha) {
+			    switch (pDst->format) {
+			    case PICT_a8r8g8b8:
+			    case PICT_x8r8g8b8:
+				func = fbCompositeSolidMask_nx8888x8888C;
+				break;
+			    case PICT_r5g6b5:
+				func = fbCompositeSolidMask_nx8888x0565C;
+				break;
+			    }
+			}
+			break;
+		    case PICT_a8b8g8r8:
+			if (pMask->componentAlpha) {
+			    switch (pDst->format) {
+			    case PICT_a8b8g8r8:
+			    case PICT_x8b8g8r8:
+				func = fbCompositeSolidMask_nx8888x8888C;
+				break;
+			    case PICT_b5g6r5:
+				func = fbCompositeSolidMask_nx8888x0565C;
+				break;
+			    }
+			}
+			break;
+		    case PICT_a1:
+			switch (pDst->format) {
+			case PICT_r5g6b5:
+			case PICT_b5g6r5:
+			case PICT_r8g8b8:
+			case PICT_b8g8r8:
+			case PICT_a8r8g8b8:
+			case PICT_x8r8g8b8:
+			case PICT_a8b8g8r8:
+			case PICT_x8b8g8r8:
+			    func = fbCompositeSolidMask_nx1xn;
+			    break;
+			}
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    switch (pSrc->format) {
+	    case PICT_a8r8g8b8:
+	    case PICT_x8r8g8b8:
+		switch (pDst->format) {
+		case PICT_a8r8g8b8:
+		case PICT_x8r8g8b8:
+		    func = fbCompositeSrc_8888x8888;
+		    break;
+		case PICT_r8g8b8:
+		    func = fbCompositeSrc_8888x0888;
+		    break;
+		case PICT_r5g6b5:
+		    func = fbCompositeSrc_8888x0565;
+		    break;
+		}
+		break;
+	    case PICT_a8b8g8r8:
+	    case PICT_x8b8g8r8:
+		switch (pDst->format) {
+		case PICT_a8b8g8r8:
+		case PICT_x8b8g8r8:
+		    func = fbCompositeSrc_8888x8888;
+		    break;
+		case PICT_b8g8r8:
+		    func = fbCompositeSrc_8888x0888;
+		    break;
+		case PICT_b5g6r5:
+		    func = fbCompositeSrc_8888x0565;
+		    break;
+		}
+		break;
+	    case PICT_r5g6b5:
+		switch (pDst->format) {
+		case PICT_r5g6b5:
+		    func = fbCompositeSrc_0565x0565;
+		    break;
+		}
+		break;
+	    case PICT_b5g6r5:
+		switch (pDst->format) {
+		case PICT_b5g6r5:
+		    func = fbCompositeSrc_0565x0565;
+		    break;
+		}
+		break;
+	    }
+	}
+	break;
+    case PictOpAdd:
+	if (pMask == 0)
+	{
+	    switch (pSrc->format) {
+	    case PICT_a8r8g8b8:
+		switch (pDst->format) {
+		case PICT_a8r8g8b8:
+		    func = fbCompositeSrcAdd_8888x8888;
+		    break;
+		}
+		break;
+	    case PICT_a8b8g8r8:
+		switch (pDst->format) {
+		case PICT_a8b8g8r8:
+		    func = fbCompositeSrcAdd_8888x8888;
+		    break;
+		}
+		break;
+	    case PICT_a8:
+		switch (pDst->format) {
+		case PICT_a8:
+		    func = fbCompositeSrcAdd_8000x8000;
+		    break;
+		}
+		break;
+	    case PICT_a1:
+		switch (pDst->format) {
+		case PICT_a1:
+		    func = fbCompositeSrcAdd_1000x1000;
+		    break;
+		}
+		break;
+	    }
+	}
+	break;
+    }
     n = REGION_NUM_RECTS (&region);
     pbox = REGION_RECTS (&region);
     while (n--)
@@ -264,6 +587,9 @@ SafeAlphaComposite(
 	pbox++;
     }
     REGION_UNINIT (pDst->pDrawable->pScreen, &region);
+
+    // Reset destination depth to its true value
+    pDst->pDrawable->depth = dstDepth;
 }
 
 #endif /* RENDER */

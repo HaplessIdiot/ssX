@@ -26,13 +26,13 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aqua.h,v 1.3 2003/01/20 05:42:52 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlpha.h,v 1.1 2003/09/16 00:36:20 torrey Exp $ */
 
 #ifndef _SAFEALPHA_H
 #define _SAFEALPHA_H
 
 #include "picturestr.h"
-#include "rootlessConfig.h"
+#include "rootlessCommon.h"
 
 void SafeAlphaPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
 

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.2 2003/07/22 01:16:59 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.3 2003/09/16 00:36:14 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -381,6 +381,7 @@ static RootlessFrameProcsRec CRRootlessProcs = {
     CRDamageRects,
     NULL,
     NULL,
+    NULL,
     NULL
 };
 
@@ -395,6 +396,7 @@ CRInit(ScreenPtr pScreen)
 
     rootless_CopyBytes_threshold = 0;
     rootless_FillBytes_threshold = 0;
+    rootless_CompositePixels_threshold = 0;
     rootless_CopyWindow_threshold = 0;
 
     return TRUE;
