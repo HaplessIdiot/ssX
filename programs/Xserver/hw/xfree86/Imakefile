@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.72 2001/03/04 04:45:54 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.73 2001/03/21 17:36:47 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -196,7 +196,7 @@ InstallDriverSDKNonExecFile($(XF86CONFIG),$(DRIVERSDKDIR))
 InstallDriverSDKNonExecFile($(XF98CONFIG),$(DRIVERSDKDIR))
 #endif
 
-EXTRAMANCPPDEFS=-D__logdir__=$(LOGDIRECTORY)
+EXTRAMANDEFS=-D__logdir__=$(LOGDIRECTORY)
 InstallManPage(XFree86,$(MANDIR))
 InstallGenManPage(XF86Config,$(FILEMANDIR),$(FILEMANSUFFIX))
 
