@@ -1013,18 +1013,18 @@ SiSOptions(ScrnInfoPtr pScrn)
 		   pSiS->FSTN = TRUE;
 		}
 #ifdef ENABLE_YPBPR
-	     } else if((!xf86NameCmp(strptr,"HIVISION")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	     } else if(!xf86NameCmp(strptr,"HIVISION1080I")) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_HIVISION;
-	     } else if((!xf86NameCmp(strptr,"YPBPR525I")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	     } else if((!xf86NameCmp(strptr,"YPBPR525I")) && (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR525I;
-	     } else if((!xf86NameCmp(strptr,"YPBPR525P")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	     } else if((!xf86NameCmp(strptr,"YPBPR525P")) && (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR525P;
-	     } else if((!xf86NameCmp(strptr,"YPBPR750P")) && (pSiS->Chipset == PCI_CHIP_SIS660)) {
+	     } else if((!xf86NameCmp(strptr,"YPBPR750P")) && (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR750P;
@@ -1036,8 +1036,8 @@ SiSOptions(ScrnInfoPtr pScrn)
 		    "\t\"SVIDEO+COMPOSITE\", \"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\"; on the SiS550\n"
 		    "\talso \"DSTN\" and \"FSTN\""
 #ifdef ENABLE_YPBPR
-		    				"; on the SiS661/741/760 also \"HIVISION\",\n"
-		    "\t\"YPBPR525I\", \"YPBPR525P\" and \"YPBPR750P\""
+		    				"; on SiS bridges also \"HIVISION1080I\", and on the\n"
+		    "\tSiS315/330 series with SiS bridge also \"YPBPR525I\", \"YPBPR525P\" and \"YPBPR750P\""
 #endif
 		    "\n");
 	     }

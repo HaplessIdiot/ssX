@@ -1051,16 +1051,23 @@ SiS_GetVBInfo(SiS_Private *SiS_Pr, USHORT ModeNo,
        	      if((temp & (EnableDualEdge | SetToLCDA)) == (EnableDualEdge | SetToLCDA)) {
           	 tempbx |= SetCRT2ToLCDA;
 	      }
-	      if(HwInfo->jChipType >= SIS_661) {
-	         if(SiS_Pr->SiS_VBType & (VB_SIS301C|VB_SIS301LV|VB_SIS302LV|VB_SIS302ELV)) {
-	            if(temp & 0x04) {
-		       temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35) & 0xe0;
-		       if(temp == 0x60) tempbx |= SetCRT2ToHiVision;
-		       else             tempbx |= SetCRT2ToYPbPr525750;
-		    }
-	         }
-  	      }
-    	   }
+	   }
+	   if(HwInfo->jChipType >= SIS_661) {
+	      tempbx &= ~(SetCRT2ToYPbPr525750 | SetCRT2ToHiVision);
+	      temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
+	      if(SiS_Pr->SiS_VBType & (VB_SIS301C|VB_SIS301LV|VB_SIS302LV|VB_SIS302ELV)) {
+	         if(temp & 0x04) {
+		    temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35) & 0xe0;
+		    if(temp == 0x60) tempbx |= SetCRT2ToHiVision;
+		    else             tempbx |= SetCRT2ToYPbPr525750;
+		 }
+	      } else if(SiS_Pr->SiS_VBType & (VB_SIS301 | VB_SIS301B | VB_SIS302B)) {
+	         if(temp & 0x04) {
+		    temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35) & 0xe0;
+		    if(temp == 0x60) tempbx |= SetCRT2ToHiVision;
+		 }
+	      }
+  	   }
 
 	   if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
 	      temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
@@ -1254,15 +1261,16 @@ SiS_SetYPbPr(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    */
 
   SiS_Pr->SiS_YPbPr = 0;
-#ifdef SIS315H
-  if((HwInfo->jChipType >= SIS_315H) && (HwInfo->jChipType < SIS_661)) {
-     if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
-        if(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision) {
-	   SiS_Pr->SiS_YPbPr = ((SiS_GetReg(SiS_Pr->SiS_P3d4,0x38) & 0x38) >> 3);
-	}
+  if(HwInfo->jChipType >= SIS_661) return;
+
+  if(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision) {
+     if((HwInfo->jChipType >= SIS_315H) && (SiS_Pr->SiS_VBType & (VB_SIS301LV302LV | VB_SIS301C))) {
+	SiS_Pr->SiS_YPbPr = ((SiS_GetReg(SiS_Pr->SiS_P3d4,0x38) & 0x38) >> 3);
+     } else if(SiS_Pr->SiS_VBType) {
+	SiS_Pr->SiS_YPbPr = YPbPrHiVision;
      }
   }
-#endif /* SIS315H */
+
 }
 
 /*********************************************/
@@ -1407,6 +1415,7 @@ SiS_SetTVMode(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex, PSIS_HW_IN
 
      if(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision) {
         SiS_Pr->SiS_TVMode |= TVSetPAL;
+	SiS_Pr->SiS_TVMode &= ~(TVSetPALM | TVSetPALN);
      } else if(SiS_Pr->SiS_VBInfo & SetCRT2ToYPbPr525750) {
         if(SiS_Pr->SiS_TVMode & (TVSetYPbPr525i | TVSetYPbPr525p | TVSetYPbPr750p)) {
 	   SiS_Pr->SiS_TVMode &= ~(TVSetPAL | TVSetNTSCJ | TVSetPALM | TVSetPALN);
@@ -1444,7 +1453,7 @@ SiS_SetTVMode(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex, PSIS_HW_IN
   SiS_Pr->SiS_VBInfo &= ~SetPALTV;
 
 #ifdef TWDEBUG
-  xf86DrvMsg(0, X_INFO, "(init301.c: TVMode %x)\n", SiS_Pr->SiS_TVMode);
+  xf86DrvMsg(0, X_INFO, "(init301: TVMode %x, VBInfo %x)\n", SiS_Pr->SiS_TVMode, SiS_Pr->SiS_VBInfo);
 #endif 
 
 }
@@ -6999,7 +7008,7 @@ SiS_GetGroup2CLVXPtr(SiS_Private *SiS_Pr, int tabletype, PSIS_HW_INFO HwInfo)
       b = SiS_Pr->SiS_VDE;
    }
 
-   if((ROMAddr = (UCHAR *)HwInfo->pjVirtualRomBase) && SiS_Pr->SiS_UseROM) {
+   if((HwInfo->jChipType >= SIS_661) && (ROMAddr = (UCHAR *)HwInfo->pjVirtualRomBase) && SiS_Pr->SiS_UseROM) {
 
       if(a < b) {
          p = ROMAddr[0x278] | (ROMAddr[0x279] << 8);
@@ -11171,8 +11180,10 @@ GetTVPtrIndex(SiS_Private *SiS_Pr)
   USHORT index;
 
   index = 0;
-  if(SiS_Pr->SiS_TVMode & TVSetPAL) index++;
-  if(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision) index++;  /* HiVision uses PAL */
+  if(SiS_Pr->SiS_TVMode & TVSetPAL) index = 1;
+  if(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision) index = 2;
+
+  if(SiS_Pr->SiS_VBInfo & SetCRT2ToYPbPr525750) index = 0;
 
   index <<= 1;
 
@@ -11320,20 +11331,15 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
            if(SiS_IsNotM650orLater(SiS_Pr, HwInfo)) {
 
               if((ROMAddr) && SiS_Pr->SiS_UseROM) {
-#if 0	         /* Always use the second pointer on 650; some BIOSes */
+	         /* Always use the second pointer on 650; some BIOSes */
                  /* still carry old 301 data at the first location    */
-	         romptr = ROMAddr[0x120] | (ROMAddr[0x121] << 8);
-	         if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-#endif
-	            romptr = ROMAddr[0x122] | (ROMAddr[0x123] << 8);
+	         /* romptr = ROMAddr[0x120] | (ROMAddr[0x121] << 8);  */
+	         /* if(SiS_Pr->SiS_VBType & VB_SIS302LV)              */
+	         romptr = ROMAddr[0x122] | (ROMAddr[0x123] << 8);
 	         if(!romptr) return;
 	         delay = ROMAddr[(romptr + index)];
 	      } else {
-                 delay = SiS310_LCDDelayCompensation_650301B[myindex];
-#if 0
-	         if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-	            delay = SiS310_LCDDelayCompensation_650301B[myindex];
-#endif
+                 delay = SiS310_LCDDelayCompensation_650301LV[myindex];
 	      }
 
           } else {
@@ -11347,31 +11353,25 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
         } else if((ROMAddr) && SiS_Pr->SiS_UseROM &&
 	          (SiS_Pr->SiS_LCDResInfo != SiS_Pr->SiS_Panel1280x1024)) {
 
+	   /* Data for 1280x1024 wrong in BIOS */
            romptr = GetLCDromptr(SiS_Pr, HwInfo);
 	   if(!romptr) return;
 	   delay = ROMAddr[(romptr + index)];
 
         } else if(SiS_Pr->SiS_IF_DEF_LVDS == 1) {
 
-	   if(IS_SIS650) {
-              delay = SiS310_LCDDelayCompensation_LVDS650[myindex];
-	   } else {
-	      delay = SiS310_LCDDelayCompensation_LVDS740[myindex];
-	   }
+	   if(IS_SIS740) delay = 0x03;
+	   else          delay = 0x00;
 
 	} else {
 
            delay = SiS310_LCDDelayCompensation_301[myindex];
-           if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
-#if 0 	      /* This data is (like the one in the BIOS) wrong. */
-	      if(IS_SIS550650740660) {
-	         delay = SiS310_LCDDelayCompensation_650301B[myindex];
-	      } else {
-#endif
-                 delay = SiS310_LCDDelayCompensation_3xx301B[myindex];
-#if 0
-	      }
-#endif
+	   if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
+	      if(IS_SIS740) delay = 0x01;
+	      else          delay = SiS310_LCDDelayCompensation_650301LV[myindex];
+	   } else if(SiS_Pr->SiS_VBType & VB_SIS301B302B) {
+	      if(IS_SIS740) delay = 0x01;
+	      else          delay = SiS310_LCDDelayCompensation_3xx301B[myindex];
 	   }
 
         }
@@ -11392,22 +11392,18 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
         if(SiS_IsNotM650orLater(SiS_Pr,HwInfo)) {
 
            if((ROMAddr) && SiS_Pr->SiS_UseROM) {
-#if 0	      /* Always use the second pointer on 650; some BIOSes */
+	      /* Always use the second pointer on 650; some BIOSes */
               /* still carry old 301 data at the first location    */
-              romptr = ROMAddr[0x114] | (ROMAddr[0x115] << 8);
-	      if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-#endif
-	         romptr = ROMAddr[0x11a] | (ROMAddr[0x11b] << 8);
+              /* romptr = ROMAddr[0x114] | (ROMAddr[0x115] << 8);  */
+	      /* if(SiS_Pr->SiS_VBType & VB_SIS302LV) */
+	      romptr = ROMAddr[0x11a] | (ROMAddr[0x11b] << 8);
 	      if(!romptr) return;
 	      delay = ROMAddr[romptr + index];
 
 	   } else {
 
 	      delay = SiS310_TVDelayCompensation_301B[index];
-#if 0
-	      if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-	         delay = SiS310_TVDelayCompensation_301B[index];
-#endif		
+
 	   }
 
         } else {
@@ -11519,7 +11515,7 @@ SetAntiFlicker(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      index = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].VB_ExtTVFlickerIndex;
 
   temp = GetTVPtrIndex(SiS_Pr);
-  temp >>= 1;  	  /* 0: NTSC, 1: PAL, 2: HiTV */
+  temp >>= 1;  	  /* 0: NTSC/YPbPr, 1: PAL, 2: HiTV */
   temp1 = temp;
 
   if(ROMAddr && SiS_Pr->SiS_UseROM) {
@@ -11553,7 +11549,7 @@ SetEdgeEnhance(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
   USHORT index,temp,temp1,romptr=0;
 
   temp = GetTVPtrIndex(SiS_Pr);
-  temp >>= 1;              	/* 0: NTSC, 1: PAL, 2: HiTV */
+  temp >>= 1;              	/* 0: NTSC/YPbPr, 1: PAL, 2: HiTV */
   temp1 = temp;
 
   if(ModeNo<=0x13)
@@ -11642,7 +11638,7 @@ SetYFilter(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
   index = oldindex;
 
   temp = GetTVPtrIndex(SiS_Pr);
-  temp >>= 1;  			/* 0: NTSC, 1: PAL, 2: HiTV */
+  temp >>= 1;  			/* 0: NTSC/YPbPr, 1: PAL, 2: HiTV */
 
   if(SiS_Pr->SiS_TVMode & TVSetNTSCJ)	     temp = 1;  /* NTSC-J uses PAL */
   else if(SiS_Pr->SiS_TVMode & TVSetPALM)    temp = 3;  /* PAL-M */
@@ -11744,19 +11740,19 @@ SetPhaseIncr(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
      }
   }
 
-  if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
-     if((!(SiS_Pr->SiS_TVMode & TVSetPAL)) && (ModeNo > 0x13)) {
+  if((SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) && (!(SiS_Pr->SiS_VBInfo & SetCRT2ToHiVision))) {
+     if((!(SiS_Pr->SiS_TVMode & (TVSetPAL | TVSetYPbPr525p | TVSetYPbPr750p))) && (ModeNo > 0x13)) {
         if((resinfo == SIS_RI_640x480) ||
 	   (resinfo == SIS_RI_800x600)) {
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x31,0x21);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x32,0xf0);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x33,0xf5);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x34,0x7f);
-	} else if (resinfo == SIS_RI_1024x768) {
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x31,0x1e);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x32,0x8b);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x33,0xfb);
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x34,0x7b);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x31,0x21);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x32,0xf0);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x33,0xf5);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x34,0x7f);
+	} else if(resinfo == SIS_RI_1024x768) {
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x31,0x1e);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x32,0x8b);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x33,0xfb);
+	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x34,0x7b);
 	}
      }
   }
@@ -11771,12 +11767,12 @@ SiS_OEM310Setting(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
    if(SiS_Pr->UseCustomMode) return;
 
    if((SiS_Pr->SiS_VBType & VB_SISVB) && (SiS_Pr->SiS_VBInfo & SetCRT2ToTV)) {
-       SetAntiFlicker(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
-       SetPhaseIncr(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
-       SetYFilter(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
-       if(!(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV)) {
-          SetEdgeEnhance(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
-       }
+      SetAntiFlicker(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
+      SetPhaseIncr(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
+      SetYFilter(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
+      if(!(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV)) {
+         SetEdgeEnhance(SiS_Pr,HwInfo,ModeNo,ModeIdIndex);
+      }
    }
 }
 

@@ -102,7 +102,7 @@
 #define SetNotSimuMode          0x0400
 #define SetNotSimuTVMode        SetNotSimuMode
 #define SetDispDevSwitch        0x0800
-#define SetCRT2ToYPbPr525750    0x0800   /* 661 */
+#define SetCRT2ToYPbPr525750    0x0800   
 #define LoadDACFlag             0x1000
 #define DisableCRT2Display      0x2000
 #define DriverMode              0x4000
@@ -182,10 +182,10 @@
 #define TVRPLLDIV2XO		0x1000
 #define TVSetNTSC1024		0x2000
 
-/* YPbPr flag (>=315, <661; YPbPr not supported yet) */
+/* YPbPr flag (>=315, <661) */
 #define YPbPr750                0x0001	/* 750p (must be a single bit, checked logially) */
 #define YPbPr525                0x0002	/* 525p (must be a single bit, checked logially) */
-#define YPbPrHiVision           0x0003	/* HiVision */
+#define YPbPrHiVision           0x0003	/* HiVision 1080i*/
 #define YPbPrModeMask           (YPbPr750 | YPbPr525 | YPbPrHiVision)
 #define YPbPrSetSVideo     	0x0004	/* (sets SVIDEO flag) */
 
@@ -223,11 +223,11 @@
    [2]    1 = PALM (if D0 = 1)
    [3]    1 = PALN (if D0 = 1)
    [4]    1 = Overscan (Chrontel only)
-   [7:5]  (only if D2 in CR38 is set; not supported yet)
+   [7:5]  (only if D2 in CR38 is set)
           000  525i
  	  001  525p
 	  010  750p
-	  011  HiVision (Should be 1080i, but...)
+	  011  HiVision 1080i
 
    These bits are being translated to TVMode flag.
 
@@ -286,7 +286,7 @@
 #define EnableCHYPbPr           0x08   /* YPbPr on Ch7019 (480i HDTV); only on 650/Ch7019 systems */
 #define EnableYPbPr750          0x08   /* Enable 750P YPbPr mode (30xLV/301C only) (not supported) */
 #define EnableYPbPr525          0x10   /* Enable 525P YPbPr mode (30xLV/301C only) (not supported) */
-#define EnableYPbPrHiVision     0x18   /* Enable HiVision (not supported) */
+#define EnableYPbPrHiVision     0x18   /* Enable HiVision 1080i */
 #define EnableYPbPrsetSVideo    0x20   /* Enable YPbPr and set SVideo */
 #define EnablePALM              0x40   /* 1 = Set PALM */
 #define EnablePALN              0x80   /* 1 = Set PALN */

@@ -3917,7 +3917,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISCRT2PreInit(pScrn);
 
     /* Backup detected CRT2 devices */
-    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA|TV_AVIDEO|TV_SVIDEO|TV_SCART);
+    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA|TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR);
 
     /* Setup SD flags */
     pSiS->SiS_SD_Flags |= SiS_SD_ADDLSUPFLAG;
@@ -3927,12 +3927,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef ENABLE_YPBPR
-    if((pSiS->Chipset == PCI_CHIP_SIS660) &&
+    if((pSiS->VGAEngine == SIS_315_VGA) &&
        (pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV))) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTYPBPR;
     }
-    if((pSiS->Chipset == PCI_CHIP_SIS660) &&
-       (pSiS->VBFlags & (VB_301B|VB_301C|VB_301LV|VB_302LV))) {
+    if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_301LV|VB_302LV)) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTHIVISION;
     }
 #endif
@@ -3940,14 +3939,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)) {
        if((pSiS->ForceTVType != -1) && (pSiS->ForceTVType & TV_YPBPR)) {
           pSiS->ForceTVType = -1;
-	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "YPbPr not supported\n");
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "YPbPr TV not supported\n");
        }
     }
-    
+
     if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTHIVISION)) {
        if((pSiS->ForceTVType != -1) && (pSiS->ForceTVType & TV_HIVISION)) {
           pSiS->ForceTVType = -1;
-	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "HiVision not supported\n");
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "HiVision TV not supported\n");
        }
     }
 
@@ -7138,13 +7137,20 @@ SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags)
     if(pSiS->DualHeadMode) return FALSE;
 #endif
 
-#define SiS_NewVBMask (CRT2_ENABLE|CRT1_LCDA|TV_PAL|TV_NTSC|TV_PALM|TV_PALN|TV_NTSCJ|TV_AVIDEO|TV_SVIDEO|TV_SCART)
+#define SiS_NewVBMask (CRT2_ENABLE|CRT1_LCDA|TV_PAL|TV_NTSC|TV_PALM|TV_PALN|TV_NTSCJ| \
+		       TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR|TV_YPBPRALL)
 
     newvbflags &= SiS_NewVBMask;
     newvbflags |= pSiS->VBFlags & ~SiS_NewVBMask;
 
     if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTLCDA)) {
        newvbflags &= ~CRT1_LCDA;
+    }
+    if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTHIVISION)) {
+       newvbflags &= ~TV_HIVISION;
+    }
+    if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)) {
+       newvbflags &= ~TV_YPBPR;
     }
 
 #ifdef SISMERGED
@@ -8673,6 +8679,12 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 	        CR35 |= 0x60;
 	     } else {
 	        CR30 |= 0x80;
+		if(pSiS->VGAEngine == SIS_315_VGA) {
+		   if(vbflag & (VB_301LV | VB_302LV | VB_301C)) {
+		      CR38 &= ~0x38;
+		      CR38 |= (0x03 << 3);
+		   }
+		}
 	     }
 	     CR31 |= 0x01;
 	     CR35 |= 0x01;
@@ -8683,6 +8695,14 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 		else if(vbflag & TV_YPBPR750P) CR35 |= 0x40;
 		CR31 &= ~0x01;
 		CR35 &= ~0x01;
+	     } else if(pSiS->VGAEngine == SIS_315_VGA) {
+	        if(vbflag & (VB_301LV | VB_302LV | VB_301C)) {
+	           CR30 |= 0x80;
+		   CR38 &= ~0x38;
+	           if(vbflag & TV_YPBPR525P)      CR38 |= (0x02 << 3);
+		   else if(vbflag & TV_YPBPR750P) CR38 |= (0x01 << 3);
+		   else 			  CR38 |= (0x06 << 3);
+		}
 	     }
           } else {				/* All */
 	     if(vbflag & TV_SCART)  CR30 |= 0x10;
@@ -9621,7 +9641,7 @@ void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
 
    if(!(pSiS->VBFlags & CRT2_TV)) return;
    if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
-   if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return;
+   if(pSiS->VBFlags & TV_HIVISION) return;
 
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);

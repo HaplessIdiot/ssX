@@ -444,7 +444,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 
     if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO)) {
        if(pSiS->VGAEngine == SIS_300_VGA) {
-	  /* TW: Should be SR38, but this does not work. */
+	  /* Should be SR38, but this does not work. */
 	  if(SR16 & 0x20)
 	     pSiS->VBFlags |= TV_PAL;
           else
@@ -496,7 +496,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     }
 
     if(pSiS->VBFlags & TV_HIVISION) {
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports HiVision TV\n");
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports HiVision 1080i TV\n");
     }
 
     if(pSiS->VBFlags & (TV_CHSCART|TV_CHYPBPR525I)) {
