@@ -5,7 +5,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* $Id: adler32.c,v 1.2 1997/03/10 10:10:24 hohndel Exp $ */
+/* Id: adler32.c /main/3 1997/02/26 17:42:20 kaleb $ */
 
 #include "zlib.h"
 
