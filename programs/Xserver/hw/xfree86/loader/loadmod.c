@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.69 2003/08/24 17:37:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.70 2003/09/11 10:08:38 eich Exp $ */
 
 /*
  *
@@ -293,26 +293,26 @@ static const char **
 InitSubdirs(const char **subdirlist)
 {
 	int i;
-	char **tmp_subdirlist = NULL;
+	const char **tmp_subdirlist = NULL;
 	char **subdirs = NULL;
 	const char **s, **stmp = NULL;
-    const char *osname;
-    const char *slash;
-    int oslen = 0, len;
-    Bool indefault;
+	const char *osname;
+	const char *slash;
+	int oslen = 0, len;
+	Bool indefault;
 
-    if (subdirlist == NULL) {
-	    subdirlist = tmp_subdirlist = xalloc(2 * sizeof(char *));
-	    if (subdirlist == NULL)
+	if (subdirlist == NULL) {
+		subdirlist = tmp_subdirlist = xalloc(2 * sizeof(char *));
+		if (subdirlist == NULL)
 			return NULL;
 		subdirlist[0] = DEFAULT_LIST;
 		subdirlist[1] = NULL;
 	}
 	
-    LoaderGetOS(&osname, NULL, NULL, NULL);
-    oslen = strlen(osname);
+	LoaderGetOS(&osname, NULL, NULL, NULL);
+	oslen = strlen(osname);
 
-    {
+	{
 		/* Count number of entries and check for invalid paths */
 		for (i = 0, s = subdirlist; *s; i++, s++) {
 			if (*s == DEFAULT_LIST) {
@@ -574,7 +574,7 @@ LoaderFreeDirList(char **list)
 
 static Bool
 CheckVersion (const char *module, XF86ModuleVersionInfo *data,
-				const XF86ModReqInfo *req)
+			  const XF86ModReqInfo *req)
 {
 	int vercode[4];
 	char verstr[4];
@@ -615,7 +615,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 					data->minorversion, data->patchlevel);
 	}
 
-    if (data->moduleclass)
+	if (data->moduleclass)
 		xf86ErrorFVerb(2, "\tModule class: %s\n", data->moduleclass);
 		
 	ver = -1;
@@ -637,7 +637,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 		abimaj = GET_ABI_MAJOR(data->abiversion);
 		abimin = GET_ABI_MINOR(data->abiversion);
 		xf86ErrorFVerb(2, "\tABI class: %s, version %d.%d\n",
-			       data->abiclass, abimaj, abimin);
+				   data->abiclass, abimaj, abimin);
 		if (ver != -1) {
 			vermaj = GET_ABI_MAJOR(ver);
 			vermin = GET_ABI_MINOR(ver);
@@ -744,14 +744,14 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 		ErrorF ("\t*** Checksum field is 0 - this module is untrusted!\n");
 	}
 #endif
-    return TRUE;
+	return TRUE;
 }
 
 ModuleDescPtr
 LoadSubModule(ModuleDescPtr parent, const char *module,
-	      const char **subdirlist, const char **patternlist,
-	      pointer options, const XF86ModReqInfo *modreq,
-	      int *errmaj, int *errmin)
+			  const char **subdirlist, const char **patternlist,
+			  pointer options, const XF86ModReqInfo *modreq,
+			  int *errmaj, int *errmin)
 {
 	ModuleDescPtr submod;
 
@@ -1070,7 +1070,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 
 ModuleDescPtr
 LoadDriver (const char *module, const char *path, int handle, pointer options,
-	    int *errmaj, int *errmin)
+			int *errmaj, int *errmin)
 {
 return LoadModule (module, path, NULL, NULL, options, NULL, errmaj, errmin);
 }
@@ -1090,22 +1090,22 @@ UnloadDriver (ModuleDescPtr mod)
 static void
 UnloadModuleOrDriver (ModuleDescPtr mod)
 {
-    if (mod == NULL || mod->name == NULL)
+	if (mod == NULL || mod->name == NULL)
 	return;
 
-    xf86MsgVerb(X_INFO, 3, "UnloadModule: \"%s\"\n", mod->name);
+	xf86MsgVerb(X_INFO, 3, "UnloadModule: \"%s\"\n", mod->name);
 
-    if ((mod->TearDownProc) && (mod->TearDownData))
-        mod->TearDownProc (mod->TearDownData);
-    LoaderUnload (mod->handle);
+	if ((mod->TearDownProc) && (mod->TearDownData))
+		mod->TearDownProc (mod->TearDownData);
+	LoaderUnload (mod->handle);
 
-    if (mod->child)
-        UnloadModuleOrDriver (mod->child);
-    if (mod->sib)
-        UnloadModuleOrDriver (mod->sib);
-    TestFree (mod->name);
-    TestFree (mod->filename);
-    xfree (mod);
+	if (mod->child)
+		UnloadModuleOrDriver (mod->child);
+	if (mod->sib)
+		UnloadModuleOrDriver (mod->sib);
+	TestFree (mod->name);
+	TestFree (mod->filename);
+	xfree (mod);
 #ifdef __alpha__
 	istream_mem_barrier();
 #endif
@@ -1114,23 +1114,23 @@ UnloadModuleOrDriver (ModuleDescPtr mod)
 void
 UnloadSubModule(ModuleDescPtr mod)
 {
-    if (mod == NULL || mod->name == NULL)
+	if (mod == NULL || mod->name == NULL)
 	return;
 
-    xf86MsgVerb(X_INFO, 3, "UnloadSubModule: \"%s\"\n", mod->name);
+	xf86MsgVerb(X_INFO, 3, "UnloadSubModule: \"%s\"\n", mod->name);
 
-    if ((mod->TearDownProc) && (mod->TearDownData))
-        mod->TearDownProc (mod->TearDownData);
-    LoaderUnload (mod->handle);
+	if ((mod->TearDownProc) && (mod->TearDownData))
+		mod->TearDownProc (mod->TearDownData);
+	LoaderUnload (mod->handle);
 
-    RemoveChild(mod);
+	RemoveChild(mod);
 
-    if (mod->child)
-        UnloadModuleOrDriver (mod->child);
+	if (mod->child)
+		UnloadModuleOrDriver (mod->child);
 
-    TestFree (mod->name);
-    TestFree (mod->filename);
-    xfree (mod);
+	TestFree (mod->name);
+	TestFree (mod->filename);
+	xfree (mod);
 }
 
 void
@@ -1184,8 +1184,8 @@ NewModuleDesc (const char *name)
 ModuleDescPtr
 AddSibling (ModuleDescPtr head, ModuleDescPtr new)
 {
-    new->sib = head;
-    return (new);
+	new->sib = head;
+	return (new);
 
 }
 
@@ -1322,10 +1322,10 @@ LoaderGetCanonicalName(const char *modname, PatternPtr patterns)
 unsigned long
 LoaderGetModuleVersion (ModuleDescPtr mod)
 {
-    if (!mod || !mod->VersionInfo)
+	if (!mod || !mod->VersionInfo)
 		return 0;
 
-    return MODULE_VERSION_NUMERIC(mod->VersionInfo->majorversion,
+	return MODULE_VERSION_NUMERIC(mod->VersionInfo->majorversion,
 								  mod->VersionInfo->minorversion,
 								  mod->VersionInfo->patchlevel);
 }
