@@ -34,8 +34,6 @@
  * 3. Transformation of a point p by a matrix M is: p' = M * p
  */
 
-#include <math.h>
-
 #include "glheader.h"
 #include "macros.h"
 #include "mmath.h"
@@ -219,6 +217,5 @@ _math_init( void )
 {
    _math_init_transformation();
    _math_init_translate();
-   _math_init_vertices();
    _math_init_eval();
 }

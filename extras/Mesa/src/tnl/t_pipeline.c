@@ -23,12 +23,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #include "glheader.h"
 #include "context.h"
-#include "mem.h"
+#include "imports.h"
 #include "mmath.h"
 #include "state.h"
 #include "mtypes.h"
@@ -185,7 +185,7 @@ void _tnl_run_pipeline( GLcontext *ctx )
  *
  * - inserting optimized (but specialized) stages ahead of the
  *   general-purpose fallback implementation.  For example, the old
- *   fastpath mechanism, which only works when the VERT_ELT input is
+ *   fastpath mechanism, which only works when the VERT_BIT_ELT input is
  *   available, can be duplicated by placing the fastpath stage at the
  *   head of this pipeline.  Such specialized stages are currently
  *   constrained to have no outputs (ie. they must either finish the *
@@ -202,6 +202,9 @@ const struct gl_pipeline_stage *_tnl_default_pipeline[] = {
    &_tnl_texgen_stage,
    &_tnl_texture_transform_stage,
    &_tnl_point_attenuation_stage,
+#if FEATURE_NV_vertex_program
+   &_tnl_vertex_program_stage,
+#endif
    &_tnl_render_stage,
    0
 };

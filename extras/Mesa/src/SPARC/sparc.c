@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.3
+ * Version:  5.0.1
  * 
- * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2003  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,6 @@
 
 
 #include "context.h"
-#include "math/m_vertices.h"
 #include "math/m_xform.h"
 #include "tnl/t_context.h"
 #include "sparc.h"
@@ -118,6 +117,8 @@ void _mesa_init_all_sparc_transform_asm(void)
    _mesa_clip_tab[4] = _mesa_sparc_cliptest_points4;
    _mesa_clip_np_tab[4] = _mesa_sparc_cliptest_points4_np;
 #endif
+#if 0
+   /* disable these too.  See bug 673938 */
    _mesa_normal_tab[NORM_TRANSFORM | NORM_NORMALIZE] =
 	   _mesa_sparc_transform_normalize_normals;
    _mesa_normal_tab[NORM_TRANSFORM_NO_ROT | NORM_NORMALIZE] =
@@ -134,6 +135,7 @@ void _mesa_init_all_sparc_transform_asm(void)
 	   _mesa_sparc_normalize_normals;
    _mesa_normal_tab[NORM_RESCALE] =
 	   _mesa_sparc_rescale_normals;
+#endif
 
 #ifdef DEBUG
    _math_test_all_transform_functions("sparc");

@@ -1,5 +1,4 @@
 /* This may look like C code, but it is really -*- C++ -*-  */
-/* $Id$ */
 
 /*
  * DebugGL

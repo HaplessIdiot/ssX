@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mmath.c,v 1.5 2001/12/11 09:18:54 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mmath.c,v 1.6 2002/02/22 19:25:36 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -24,12 +24,8 @@
  */
 
 
-#ifdef PC_HEADER
-#include "all.h"
-#else
 #include "glheader.h"
 #include "mmath.h"
-#endif
 
 
 static int in_fast_math;
@@ -66,7 +62,7 @@ static void init_sqrt(void)
        */
 
       fi.i = (i << 16) | (127 << 23);
-      fi.f = sqrt(fi.f);
+      fi.f = _mesa_sqrt(fi.f);
 
       /*
        * Take the square root then strip the first 7 bits of
@@ -119,7 +115,7 @@ float gl_sqrt( float x )
    num.i = ((sqrttab[num.i >> 16]) << 16) | ((e + 127) << 23);
    return num.f;
 #else
-   return (GLfloat) sqrt(x);
+   return (GLfloat) _mesa_sqrt(x);
 #endif
 }
 
@@ -149,8 +145,8 @@ _mesa_init_math(void)
 
 #if defined(_FPU_GETCW) && defined(_FPU_SETCW)
       {
-         const char *debug = getenv("MESA_DEBUG");
-         if (debug && strcmp(debug, "FP")==0) {
+         const char *debug = _mesa_getenv("MESA_DEBUG");
+         if (debug && _mesa_strcmp(debug, "FP")==0) {
             /* die on FP exceptions */
             fpu_control_t mask;
             _FPU_GETCW(mask);
