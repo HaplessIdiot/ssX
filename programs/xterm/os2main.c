@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.11 1997/12/28 21:28:43 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.12 1998/01/11 03:48:41 dawes Exp $ */
 
 /***********************************************************
 
@@ -340,6 +340,9 @@ static XrmOptionDescRec optionDescList[] = {
 #ifndef NO_ACTIVE_ICON
 {"-fi",		"*iconFont",	XrmoptionSepArg,	(caddr_t) NULL},
 #endif /* NO_ACTIVE_ICON */
+#if OPT_HIGHLIGHT_COLOR
+{"-hc",		"*highlightColor", XrmoptionSepArg,	(caddr_t) NULL},
+#endif
 {"-j",		"*jumpScroll",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+j",		"*jumpScroll",	XrmoptionNoArg,		(caddr_t) "off"},
 /* parse logging options anyway for compatibility */
@@ -439,6 +442,9 @@ static struct _options {
 { "-/+cu",                 "turn on/off curses emulation" },
 { "-/+dc",		   "turn off/on dynamic color selection" },
 { "-fb fontname",          "bold text font" },
+#if OPT_HIGHLIGHT_COLOR
+{ "-hc",		   "selection background color" },
+#endif
 { "-/+im",		   "use insert mode for TERMCAP" },
 { "-/+j",                  "turn on/off jump scroll" },
 #ifdef ALLOWLOGGING
@@ -768,7 +774,7 @@ char **envp;
 	if (argc > 1) {
 		if (!strncmp(argv[1], "-v", 2))
 			Version();
-		if (!strncmp(argv[1], "-h", 2))
+		if (!strncmp(argv[1], "-h", 2) && strncmp(argv[1], "-hc", 2))
 			Help();
 	}
 

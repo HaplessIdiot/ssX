@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.16 1997/12/28 21:28:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.17 1998/01/11 03:48:25 dawes Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -708,10 +708,17 @@ InitLUT(void)
 		    currentglintdac[i].b = xf86bGammaMap[i];
 		}
 	    } else {
-		mr = (1<<nr)-1;
-		mg = (1<<ng)-1;
-		mb = (1<<nb)-1;
-		
+		if (IS_3DLABS_PM2_CLASS(coprotype)) {
+		    for (i=0;i<256;i++) {
+		    	currentglintdac[i].r = xf86rGammaMap[i];
+		    	currentglintdac[i].g = xf86gGammaMap[i];
+		    	currentglintdac[i].b = xf86bGammaMap[i];
+		    }
+		} else {
+		    mr = (1<<nr)-1;
+		    mg = (1<<ng)-1;
+		    mb = (1<<nb)-1;
+		}
 		for (i=0;i<256;i++) {
 		    r = (i >> (6-nr)) & mr;
 		    g = (i >> (6-ng)) & mg;

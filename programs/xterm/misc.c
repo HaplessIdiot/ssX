@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.23 1997/12/28 21:28:43 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.24 1998/01/11 03:48:40 dawes Exp $
  */
 
 /*
@@ -871,6 +871,19 @@ hexvalue(c)
 }
 
 void
+reset_decudk()
+{
+	int n;
+	for (n = 0; n < MAX_UDK; n++) {
+		if (user_keys[n].str != 0) {
+			free(user_keys[n].str);
+			user_keys[n].str = 0;
+			user_keys[n].len = 0;
+		}
+	}
+}
+
+void
 do_dcs(dcsbuf, dcslen)
 Char *dcsbuf;
 Size_t dcslen;
@@ -964,16 +977,8 @@ Size_t dcslen;
 		if (*cp++ != '|')
 			return;
 
-		if (clear_all) {
-			int n;
-			for (n = 0; n < MAX_UDK; n++) {
-				if (user_keys[n].str != 0) {
-					free(user_keys[n].str);
-					user_keys[n].str = 0;
-					user_keys[n].len = 0;
-				}
-			}
-		}
+		if (clear_all)
+			reset_decudk();
 
 		while (*cp) {
 			char *str = malloc(strlen(cp) + 2);

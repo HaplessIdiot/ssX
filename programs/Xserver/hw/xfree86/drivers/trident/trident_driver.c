@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.23 1997/12/28 21:28:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.24 1998/01/11 03:36:50 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -117,6 +117,7 @@ typedef struct {
 	unsigned char AltClock;		/* For Alternate Clock Selection*/
 	unsigned char CurConReg;	/* For HW Cursor Control	*/
 	unsigned char CursorRegs[16];	/* For Cursor Registers 	*/
+	unsigned char CyberCont;	/* For Cyber Shadow Control	*/
 	unsigned char CyberVExp;	/* For Cyber VDisplay Control   */
 	unsigned char CyberHExp;	/* For Cyber HDisplay Control   */
 	unsigned char CyberEnhance;	/* For Cyber Enhancement	*/
@@ -382,6 +383,8 @@ TGUISetClock(no)
 		freq *= 2; 
 	if ((TVGAchipset < TGUI96xx) && (vgaBitsPerPixel == 24))
 		freq *= 3;
+	if (vgaBitsPerPixel == 32)
+		freq *= 2;
 
 	for (k=0;k<=endk;k++)
 	  for (n=startn;n<=endn;n++)
@@ -1058,7 +1061,6 @@ TVGA8900Probe()
 		tridentHasAcceleration = TRUE;
 		TRIDENT.ChipHas16bpp = TRUE;
 		TRIDENT.ChipHas32bpp = TRUE;
-		TRIDENT.ChipHas24bpp = TRUE;
 		/* We've found a 96xx graphics engine */
 		/* Let's probe furthur */
 		switch (revision) {
@@ -1082,11 +1084,6 @@ TVGA8900Probe()
 				OFLG_SET(OPTION_PCI_RETRY, &TRIDENT.ChipOptionFlags);
 				break;
 			case 0x22:
-				REV = "Cyber 9388";
-				TVGAchipset = CYBER9388;
-				NewClockCode = TRUE;
-				IsCyber = TRUE;
-				break;
 			case 0x23:
 				REV = "Cyber 9397";
 				TVGAchipset = CYBER9397;
@@ -1109,6 +1106,7 @@ TVGA8900Probe()
 				NewClockCode = TRUE;
 				IsCyber = TRUE;
 				break;
+			case 0x3A:
 			case 0x40:
 			case 0x42: /* Guessing */
 				REV = "Cyber 9382";
@@ -1524,30 +1522,42 @@ TVGA8900Probe()
 static void TVGA8900DisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
-	unsigned char Cont;
+	unsigned char DPMSCont, PMCont, temp;
 	if (!xf86VTSema) return;
-	outb(0x3CE, 0x23); /* Read DPMS Control */
-	Cont = inb(0x3CF) & 0xFC;
+	outb(0x3C4, 0x0E);
+	temp = inb(0x3C5);
+	outb(0x3C5, 0xC2);
+	outb(0x83C8, 0x04); /* Read DPMS Control */
+	PMCont = inb(0x83C6) & 0xFC;
+	outb(0x3CE, 0x23);
+	DPMSCont = inb(0x3CF) & 0xFC;
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
 		/* Screen: On, HSync: On, VSync: On */
-		Cont |= 0x00;
+		PMCont |= 0x03;
+		DPMSCont |= 0x00;
 		break;
 	case DPMSModeStandby:
 		/* Screen: Off, HSync: Off, VSync: On */
-		Cont |= 0x01;
+		PMCont |= 0x02;
+		DPMSCont |= 0x01;
 		break;
 	case DPMSModeSuspend:
 		/* Screen: Off, HSync: On, VSync: Off */
-		Cont |= 0x02;
+		PMCont |= 0x02;
+		DPMSCont |= 0x02;
 		break;
 	case DPMSModeOff:
 		/* Screen: Off, HSync: Off, VSync: Off */
-		Cont |= 0x03;
+		PMCont |= 0x00;
+		DPMSCont |= 0x03;
 		break;
 	}
-	outb(0x3CF, Cont);
+	outb(0x3CF, DPMSCont);
+	outb(0x83C8, 0x04);
+	outb(0x83C6, PMCont);
+	outw(0x3C4, (temp<<8) | 0x0E);
 }
 #endif
 
@@ -1872,6 +1882,7 @@ TVGA8900Restore(restore)
 	{
 		if (IsCyber) 
 		{
+			outw(0x3CE, ((restore->CyberCont) << 8) | 0x30);
 			outw(0x3CE, ((restore->CyberVExp) << 8) | 0x52);
 			outw(0x3CE, ((restore->CyberHExp) << 8) | 0x53);
 			outw(0x3CE, ((restore->CyberEnhance) << 8) | 0x31);
@@ -2045,6 +2056,8 @@ TVGA8900Save(save)
 	{
 		if (IsCyber) 
 		{
+			outb(0x3CE, 0x30);
+			save->CyberCont = inb(0x3CF);
 			outb(0x3CE, 0x31);
 			save->CyberEnhance = inb(0x3CF);
 			outb(0x3CE, 0x52);
@@ -2413,6 +2426,8 @@ TVGA8900Init(mode)
 			else
 			if (mode->CrtcVDisplay > 480)
 				new->CyberEnhance |= 0x10;
+			outb(0x3CE, 0x30);
+			new->CyberCont = inb(0x3CF) & 0x7E;
 			outb(0x3CE, 0x52);
 			new->CyberVExp = inb(0x3CF);
 			outb(0x3CE, 0x53);
@@ -2539,6 +2554,7 @@ TVGA8900Init(mode)
 		if (vgaBitsPerPixel == 32)
 		{
 			new->std.Attribute[17] = 0x00;
+			new->MiscExtFunc |= 0x08; /* Clock Div by 2 */
 			new->CommandReg = 0xD0; /* 32bpp */
 			new->PixelBusReg |= 0x09; /* 16bit bus */
 			GE_OP |= 0x02; /* 32bpp in GE */

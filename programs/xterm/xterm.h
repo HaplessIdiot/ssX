@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.20 1997/12/28 21:28:45 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.21 1998/01/11 03:48:43 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -68,7 +68,7 @@ extern void SetVTFont PROTO((int i, Bool doresize, char *name1, char *name2));
 extern void ShowCursor PROTO((void));
 extern void SwitchBufPtrs PROTO((TScreen *screen));
 extern void ToggleAlternate PROTO((TScreen *screen));
-extern void VTReset PROTO((int full));
+extern void VTReset PROTO((int full, int saved));
 extern void VTRun PROTO((void));
 extern void dotext PROTO((TScreen *screen, int charset, Char *buf, Char *ptr));
 extern void set_cursor_gcs PROTO((TScreen *screen));
@@ -154,6 +154,7 @@ extern void end_tek_mode PROTO((void));
 extern void end_vt_mode PROTO((void));
 extern void hide_tek_window PROTO((void));
 extern void hide_vt_window PROTO((void));
+extern void reset_decudk PROTO((void));
 extern void set_tek_visibility PROTO((int on));
 extern void set_vt_visibility PROTO((int on));
 extern void switch_modes PROTO((Bool tovt));

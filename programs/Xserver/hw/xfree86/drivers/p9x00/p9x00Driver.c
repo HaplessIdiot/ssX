@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/p9x00/p9x00Driver.c,v 1.1 1998/01/11 03:36:45 dawes Exp $ */
 
 #define P9X00DRIVER_C
 /*
@@ -107,7 +107,7 @@ static void	p9x00FbInit();
  * initialized with the functions that make up the driver and some data 
  * that defines how the driver operates.
  */
-vgaVideoChipRec p9x00InfoRec = {
+vgaVideoChipRec P9X00 = {
 	p9x00Probe,
 	p9x00Ident,
 	p9x00EnterLeave,
@@ -175,7 +175,7 @@ void ModuleInit(pointer *data,INT32 *magic)
 	* magic= MAGIC_VERSION;
 	break;
     case 1:
-        * data = (pointer) &p9x00InfoRec;
+        * data = (pointer) &P9X00;
         * magic= MAGIC_ADD_VIDEO_CHIP_REC;
         break;
     default:
@@ -703,6 +703,7 @@ void p9x00EnterNativeMode(vgap9x00Ptr state)
       ibm525SetPort(state,P9X_SET_VRAMPORT);
       ibm525SetClock(state,P9X_SET_PIXCLK);
       break;
+#if 0
     case P9X_V_ATT511 :
       att511SetClock(state,P9X_SET_PIXCLK);
       att511SetPort(state,P9X_SET_VRAMPORT);
@@ -712,6 +713,7 @@ void p9x00EnterNativeMode(vgap9x00Ptr state)
       bt485SetClock(state,P9X_SET_PIXCLK);
       bt485SetPort(state,P9X_SET_VRAMPORT);
       break;
+#endif
   }
   /* These MUST come after setting up the dac ! */
   P9X_R_MEMCFG=state->memctrl;
@@ -743,6 +745,7 @@ void p9x00EnterNativeMode(vgap9x00Ptr state)
     case P9X_V_IBM525 :
       ibm525SetClock(state,P9X_SET_MEMCLK);
       break;
+#if 0
     case P9X_V_ATT511 :
       att511SetClock(state,P9X_SET_MEMCLK);
       break;
@@ -750,6 +753,7 @@ void p9x00EnterNativeMode(vgap9x00Ptr state)
     default :
       bt485SetClock(state,P9X_SET_MEMCLK);
       break;
+#endif
   }
 
   usleep(4000);
@@ -765,6 +769,7 @@ static void p9x00LeaveNativeMode(vgap9x00Ptr state)
       ibm525SetPort(state,P9X_SET_VGAPORT);
       ibm525SetClock(state,P9X_SET_PIXCLK);
       break;
+#if 0
     case P9X_V_ATT511 :
       att511SetClock(state,P9X_SET_PIXCLK);
       att511SetPort(state,P9X_SET_VGAPORT);
@@ -774,6 +779,7 @@ static void p9x00LeaveNativeMode(vgap9x00Ptr state)
       bt485SetClock(state,P9X_SET_PIXCLK);
       bt485SetPort(state,P9X_SET_VGAPORT);
       break;
+#endif
   }
 
 /* Restore the DAC regs before leaving Native mode
@@ -913,11 +919,11 @@ static void p9x00GetMode(DisplayModePtr mode)
 static void p9x00FbInit()
 {
   if (P9X_CFG_CHIP==P9X_V_P9100)
-    p9x00InfoRec.ChipLinearBase = vga256InfoRec.MemBase+0x800000;
+    P9X00.ChipLinearBase = vga256InfoRec.MemBase+0x800000;
   else
-    p9x00InfoRec.ChipLinearBase = vga256InfoRec.MemBase+0x200000;
-  p9x00InfoRec.ChipLinearSize = vga256InfoRec.videoRam * 1024;
-  p9x00InfoRec.ChipUseLinearAddressing=TRUE;
+    P9X00.ChipLinearBase = vga256InfoRec.MemBase+0x200000;
+  P9X00.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+  P9X00.ChipUseLinearAddressing=TRUE;
   /* Map the registers */
   p9x00Init_Access();
   			
