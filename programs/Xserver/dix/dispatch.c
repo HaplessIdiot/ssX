@@ -2717,7 +2717,7 @@ ProcAllocColor(client)
 	        return (retval);
 	}
 #ifdef PANORAMIX
-	if (noPanoramiXExtension)
+	if (noPanoramiXExtension || !pmap->pScreen->myNum)
 #endif
         WriteReplyToClient(client, sizeof(xAllocColorReply), &acr);
 	return (client->noClientException);
@@ -2776,7 +2776,7 @@ ProcAllocNamedColor           (client)
     	            return(retval);
 	    }
 #ifdef PANORAMIX
-	    if (noPanoramiXExtension)
+	    if (noPanoramiXExtension || !pcmp->pScreen->myNum)
 #endif
             WriteReplyToClient(client, sizeof (xAllocNamedColorReply), &ancr);
 	    return (client->noClientException);
@@ -2846,7 +2846,7 @@ ProcAllocColorCells           (client)
 	        return(retval);
 	}
 #ifdef PANORAMIX
-	if (noPanoramiXExtension)
+	if (noPanoramiXExtension || !pcmp->pScreen->myNum)
 #endif
 	{
 	    accr.type = X_Reply;
@@ -2925,7 +2925,7 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = length >> 2;
 #ifdef PANORAMIX
-	if (noPanoramiXExtension)
+	if (noPanoramiXExtension || !pcmp->pScreen->myNum)
 #endif
 	{
 	    WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);

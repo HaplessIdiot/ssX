@@ -1426,7 +1426,7 @@ bail:
     if (c->err != Success) err = c->err;
     if (err != Success && c->client != serverClient) {
 #ifdef PANORAMIX
-        if (noPanoramiXExtension)
+        if (noPanoramiXExtension || !c->pGC->pScreen->myNum)
 #endif
 	    SendErrorToClient(c->client, c->reqType, 0, 0, err);
     }

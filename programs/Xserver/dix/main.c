@@ -440,8 +440,6 @@ main(argc, argv)
 	if (!noPanoramiXExtension) {
 	    if (!PanoramiXCreateConnectionBlock())
 		FatalError("could not create connection block info");
-	    if (!PanoramiXCreateScreenRegion(WindowTable[0]))
-		FatalError("could not create PanoramiX Screen Region");
 	} else
 #endif
 	{
