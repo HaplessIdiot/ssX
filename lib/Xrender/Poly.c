@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Poly.c,v 1.5 2002/05/17 06:54:33 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Poly.c,v 1.6 2002/05/21 20:39:50 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -296,4 +296,5 @@ XRenderCompositeDoublePoly (Display		    *dpy,
     ntraps = XRenderComputeTrapezoids (edges, nedges, winding, traps);
     /* XXX adjust xSrc/xDst */
     XRenderCompositeTrapezoids (dpy, op, src, dst, maskFormat, xSrc, ySrc, traps, ntraps);
+    Xfree (edges);
 }
