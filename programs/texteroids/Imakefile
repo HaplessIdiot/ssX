@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/texteroids/Imakefile,v 1.1 2001/03/01 01:23:59 dawes Exp $
 
 LOCAL_LIBRARIES = $(XTOOLLIB) $(DPSLIB) $(XLIB)
   SYS_LIBRARIES = MathLibrary
@@ -17,6 +17,8 @@ DERIVED_FILES = twraps.h twraps.c
 
 .psw.h : ProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-a -h $*.h $< > /dev/null)
+
+depend:: $(DERIVED_FILES)
 
 ComplexProgramTarget(texteroids)
 
