@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.5 1994/08/12 13:56:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.6 1994/08/20 07:32:02 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -42,7 +42,8 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"vga256.h"
+#include	"mi.h"
+#include	"cfb.h"
 #include	"fastblt.h"
 
 #include	"regagx.h"
@@ -422,7 +423,7 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
             }
 
             DEALLOCATE_LOCAL(ordering);
-	    GE_WAIT_IDLE();
+	    GE_WAIT_IDLE_EXIT();
 
 	}
         else if ( pSrcDrawable->type == DRAWABLE_WINDOW 
@@ -600,7 +601,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
     if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	(pDstDrawable->type == DRAWABLE_WINDOW) &&
 	(pSrcDrawable->bitsPerPixel != 1)) {
-#if 0
+#if 1
 	 /*
 	  * Shortcut - we can do Pixmap->Window when the source depth is
 	  * 8 by using the handy-dandy cfbCopyPlane8to1 to create a bitmap
@@ -624,7 +625,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
         FreeScratchGC(pGC1);
         pSrcDrawable = (DrawablePtr)pBitmap;
 #else
-        return vga256CopyPlane(pSrcDrawable, pDstDrawable,
+        return xxxCopyPlane(pSrcDrawable, pDstDrawable,
                pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
 #endif
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
@@ -1003,7 +1004,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
             }
          }
          DEALLOCATE_LOCAL(ordering);
-	 GE_WAIT_IDLE();
+	 GE_WAIT_IDLE_EXIT();
       } 
 #if 1 
       else if ( pSrcDrawable->type == DRAWABLE_WINDOW 

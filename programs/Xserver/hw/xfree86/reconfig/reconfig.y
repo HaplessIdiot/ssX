@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.0 1994/09/03 02:52:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/reconfig.y,v 3.1 1994/09/04 10:49:17 dawes Exp $ */
 
 %{
 #include <stdio.h>
@@ -97,6 +97,7 @@ struct screen_struct {
 	char *Chipset;				/* device */
 	char *Ramdac;				/* device */
 	char *Dacspeed;				/* device */
+	char *Clockchip;			/* device */
 	string_list_list *Clocks;		/* device */
 	char *Displaysize1,*Displaysize2 ;	/* screen.display */
 	string_list *Modes;			/* screen.display */
@@ -202,9 +203,12 @@ top :
 		{ gen.mouse_device = $2;
 		  gen.mouse_name = "mmhittab"; } |
 
-	XQUE string keyboardconfig mouseconfig
-		{ gen.mouse_device = $2;
-		  gen.mouse_name = "xqueue"; } |
+	XQUE keyboardconfig mouseconfig
+		{ gen.mouse_name = "xqueue"; } |
+
+	OSMOUSE mouseconfig
+		{ gen.mouse_name = "osmouse"; } |
+
 	OSMOUSE string mouseconfig
 		{ gen.mouse_device = $2;
 		  gen.mouse_name = "osmouse"; } |
@@ -263,6 +267,7 @@ gstmt :
 	CHIPSET string { SCRN.Chipset = $2; } |
 	RAMDAC string { SCRN.Ramdac = $2; } |
 	DACSPEED number { SCRN.Dacspeed = $2; } |
+	CLOCKS string { SCRN.Clockchip = $2; } |
 	CLOCKS clocks { SCRN.Clocks = add_list(SCRN.Clocks,$2); } |
 	DISPLAYSIZE number number
 		{ SCRN.Displaysize1 = $2; SCRN.Displaysize2 = $3; } |
@@ -424,6 +429,7 @@ main()
 	if ( ! yyparse() ) {
 		dump();
 	}
+	exit(0);
 }
 
 yyerror(s)
@@ -583,6 +589,9 @@ dump()
 	}
 	if ( SCRN.Dacspeed ) {
 		printf("    Dacspeed %s\n",SCRN.Dacspeed);
+	}
+	if ( SCRN.Clockchip ) {
+		printf("    Clockchip %s\n",SCRN.Clockchip);
 	}
 	if ( SCRN.Clocks ) {
 		/* j is used to go over the screens. */

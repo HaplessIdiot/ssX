@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.16 1994/08/31 04:29:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.17 1994/09/04 10:47:02 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -505,7 +505,7 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
-   else if (S3_x64_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
+   else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
       /* Stealth64 and Miro Crystal 20SV */
       pixMuxShift =  s3ClockDouble ? 1 : 0;
    else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
@@ -858,7 +858,7 @@ s3Init(mode)
 	          }
 	          else 
                   {  /* set Mode 3: 16-bit (565) direct color */
-	             daccomm |= 0x08;
+	             daccomm |= 0xc8;
                      pixmode  = 0x03;
                      s3mux    = 0x50 | invert_vclk; 
 	          }
@@ -953,8 +953,9 @@ s3Init(mode)
       outb(vgaCRIndex, 0x6D);
       outb(vgaCRReg, blank_delay);             /* set blank delay */
 
+      outb(vgaCRIndex, 0x55);
       tmp3 = inb(vgaCRReg);
-      outb(vgaCRReg, tmp3 & ~1); /* XXXX should this be writing CR55? */
+      outb(vgaCRReg, tmp3 & ~1);
 
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
@@ -995,7 +996,7 @@ s3Init(mode)
 	    tmp |= 0x08;
          outb(vgaCRReg, tmp);
 
-	 if (S3_x64_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+	 if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
 	    /* Stealth 64 and Miro Crystal 20SV */
 	    if (s3ClockDouble) {
 	       /* Set VCLK = DCLCK/2 */

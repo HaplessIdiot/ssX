@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.4 1994/08/01 12:15:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.5 1994/08/31 04:44:00 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -49,14 +49,14 @@
  *
  * This rewrite exists to fix interlacing, virtual console switching, virtual
  * window scrolling and clock selection, implement clock probing, allow for an
- * external clock selection program, enhance support for V3, Mach8, Mach32 and
- * Mach64 boards, add support for up to 4M of video memory and for the
- * monochrome and 16-colour servers and lots of other nitpicky reasons I don't
- * recall right now.
+ * external clock selection program, enhance support for V3, Mach32 and Mach64
+ * boards, add support for the monochrome and 16-colour servers, add (as yet
+ * partial) support for more than 1M of video memory and lots of other nitpicky
+ * reasons I don't recall right now.
  *
  * The driver is intended to support ATI VGA Wonder V3, V4, V5, PLUS, XL and
- * XL24 boards.  It will also work with Mach8, Mach32 and Mach64 boards but
- * will not use their accelerated features.
+ * XL24 boards.  It will also work with Mach32 and Mach64 boards but will not
+ * use their accelerated features.
  *
  * The ATI x8800 chips use special registers for their extended features.
  * These registers are accessible through an index I/O port and a data I/O
@@ -83,7 +83,7 @@
  * generator chip.  V3 and V4 boards differ when it comes to choosing clock
  * frequencies.
  *
- * V3/V4 Board Clock Frequencies
+ * VGA Wonder V3/V4 Board Clock Frequencies
  * R E G I S T E R S
  * 1CE(*)    3C2     3C2    Frequency
  * B2h/BEh
@@ -102,17 +102,19 @@
  *
  * V5, PLUS, XL and XL24 usually have an ATI 18810 clock generator chip, but
  * some have an ATI 18811-0, and it's quite conceivable that some exist with
- * ATI 18811-1's or ATI 18811-2's.  Mach8 and Mach32 boards are known to use
- * any one of these clock generators.  The possibilities for Mach64 boards also
- * include two different flavours of the newer 18818 chips.  ATI says there is
- * no reliable way for the driver to determine which clock generator is on the
- * board (their BIOS's are tailored to the board).
+ * ATI 18811-1's or ATI 18811-2's.  Mach32 boards are known to use any one of
+ * these clock generators.  The possibilities for Mach64 boards also include
+ * two different flavours of the newer 18818 chips.  I have yet to figure out
+ * how BIOS initialization sets up the board for a particular set of
+ * frequencies.  Mach64 boards also use a different dot clock ordering.  ATI
+ * says there is no reliable way for the driver to determine which clock
+ * generator is on the board (their BIOS's are tailored to the board).
  *
- * V5/PLUS/XL/XL24 Board Clock Frequencies
+ * VGA Wonder V5/PLUS/XL/XL24 and Mach32 Board Clock Frequencies
  * R E G I S T E R S
  *   1CE     1CE     3C2     3C2    Frequency
- *   B9h     BEh                    (MHz)             18811-1
- *  Bit 1   Bit 4   Bit 3   Bit 2    18810   18811-0  18811-2  18818-?  18818-?
+ *   B9h     BEh                     (MHz)   18811-0  18811-1
+ *  Bit 1   Bit 4   Bit 3   Bit 2    18810   18812-0  18811-2  18818-?  18818-?
  * ------- ------- ------- -------  -------  -------  -------  -------  -------
  *    0       0       0       0      30.240   30.240  135.000     (*3)     (*3)
  *    0       0       0       1      32.000   32.000   32.000  110.000  110.000
@@ -130,6 +132,33 @@
  *    1       1       0       1      56.640   56.640   56.640   44.900   44.900
  *    1       1       1       0        (*2)     (*3)     (*3)   49.500   49.500
  *    1       1       1       1      44.900   44.900   44.900   50.000   50.000
+ *
+ * (*1) External 0 (supposedly 16.657 Mhz)
+ * (*2) External 1 (supposedly 28.322 MHz)
+ * (*3) This setting doesn't seem to generate anything
+ *
+ * Mach64 Board Clock Frequencies
+ * R E G I S T E R S
+ *   1CE     1CE     3C2     3C2    Frequency
+ *   B9h     BEh                     (MHz)   18811-0  18811-1
+ *  Bit 1   Bit 4   Bit 3   Bit 2    18810   18812-0  18811-2  18818-?  18818-?
+ * ------- ------- ------- -------  -------  -------  -------  -------  -------
+ *    0       0       0       0      42.954   42.954  100.000   50.350   25.175
+ *    0       0       0       1      48.771   48.771  126.000   56.644   28.322
+ *    0       0       1       0        (*1)   92.400   92.400   63.000   31.500
+ *    0       0       1       1      36.000   36.000   36.000   72.000   36.000
+ *    0       1       0       0      50.350   50.350   50.350   40.000   40.000
+ *    0       1       0       1      56.640   56.640   56.640   44.900   44.900
+ *    0       1       1       0        (*2)     (*3)     (*3)   49.500   49.500
+ *    0       1       1       1      44.900   44.900   44.900   50.000   50.000
+ *    1       0       0       0      30.240   30.240  135.000     (*3)     (*3)
+ *    1       0       0       1      32.000   32.000   32.000  110.000  110.000
+ *    1       0       1       0      37.500  110.000  110.000  126.000  126.000
+ *    1       0       1       1      39.000   80.000   80.000  135.000  135.000
+ *    1       1       0       0      40.000   39.910   39.910     (*3)     (*3)
+ *    1       1       0       1      56.644   44.900   44.900   80.000   80.000
+ *    1       1       1       0      75.000   75.000   75.000   75.000   75.000
+ *    1       1       1       1      65.000   65.000   65.000   65.000   65.000
  *
  * (*1) External 0 (supposedly 16.657 Mhz)
  * (*2) External 1 (supposedly 28.322 MHz)
@@ -253,6 +282,8 @@ vgaVideoChipRec ATI =
 	FALSE,			/* No linear fb */
 	0,			/* Linear fb base address */
 	0,			/* Linear fb size */
+	FALSE,			/* Support 16bpp */
+	FALSE,			/* Support 32bpp */
 };
 
 /*
@@ -492,11 +523,11 @@ unsigned char old_b2, new_b2;
 /*
  * ATIClockSelect --
  *
- * This function selects the dot-clock with index 'no'.  In most cases
- * this is done my setting the correct bits in various registers (generic
- * VGA uses two bits in the Miscellaneous Output Register to select from
- * 4 clocks).  Care must be taken to protect any other bits in these
- * registers by fetching their values and masking off the other bits.
+ * This function selects the dot-clock with index 'no'.  This is done by
+ * setting bits in various registers (generic VGA uses two bits in the
+ * Miscellaneous Output Register to select from 4 clocks).  Care is taken to
+ * protect any other bits in these registers by fetching their values and
+ * masking off the other bits.
  */
 static Bool
 ATIClockSelect(no)
@@ -1009,6 +1040,16 @@ ATIProbe()
 
                         if (ATIBoard == ATI_BOARD_MACH32)
                         {
+                                IO_Value = inw(CONFIG_STATUS_1);
+                                if (IO_Value & _8514_ONLY)
+                                {
+                                        ErrorF(
+              "Mach32 detected but VGA Wonder capability cannot be enabled\n");
+                                        xf86DisableIOPorts(
+                                                vga256InfoRec.scrnIndex);
+                                        return (FALSE);
+                                }
+
                                 switch (inw(CHIP_ID) & 0x3FF)
                                 {
                                       case 0x0000:
@@ -1032,7 +1073,7 @@ ATIProbe()
                                               break;
                                 }
 
-                                ATIDac = (inw(CONFIG_STATUS_1) & DACTYPE) >> 9;
+                                ATIDac = (IO_Value & DACTYPE) >> 9;
                                 MachvideoRam =
                                         videoRamSizes[((inw(MISC_OPTIONS) &
                                                 MEM_SIZE_ALIAS) >> 2) + 2];
@@ -1113,6 +1154,8 @@ ATIProbe()
                 ATIExtReg = *((short *)(BIOS_Data + 0x10));
                 if (ATIExtReg == 0)
                         ATIExtReg = 0x01CE;
+                outw(0x03CE, ((ATIExtReg & 0x00FF) << 8) | 0x0050);
+                outw(0x03CE,  (ATIExtReg & 0x0300)       | 0x8051);
         }
         ATI_IOPorts[0] = ATIExtReg;
         ATI_IOPorts[1] = ATIExtReg + 1;
@@ -1258,6 +1301,12 @@ ATIProbe()
                         Number_Of_Clocks = 16*4;
                         Calibration_Clock_Number = 10 /* or 11 */;
                         Calibration_Clock_Value = 75000 /* or 65000 */;
+                        if (ATIBoard >= ATI_BOARD_MACH32)
+                        {
+                                Number_Of_Clocks = 16*2;
+                                if (ATIBoard >= ATI_BOARD_MACH64)
+                                        Calibration_Clock_Number = 14;
+                        }
                 }
                 if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
                         Number_Of_Clocks <<= 1 + (ATIBoard == ATI_BOARD_V4);
@@ -1362,7 +1411,7 @@ Bool enter;
                 /* Protect CRTC[0-7] */
                 outb(vgaIOBase + 4, 0x11);
                 tmp = inb(vgaIOBase + 5);
-                outb(vgaIOBase + 5, (tmp & 0x7F) | 0x80);
+                outb(vgaIOBase + 5, tmp | 0x80);
 
                 /* Restore protection bits in ATI extended registers */
                 tmp = ATIGetExtReg(0xB4);
@@ -1760,7 +1809,7 @@ int x, y;
                 {
                         tmp = ATIGetExtReg(0xAD);
                         ATIPutExtReg(0xAD,
-                                (tmp & 0xFB) | ((Base & 0x040000) >> 12));
+                                (tmp & 0xFB) | ((Base & 0x040000) >> 16));
                 }
         }
 }

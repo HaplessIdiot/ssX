@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.9 1994/08/20 07:35:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.10 1994/08/31 04:33:07 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -74,6 +74,7 @@ typedef struct {
 #define OPTION_FIFO_AGGRESSIVE	28 /* (cirrus) (agx) */
 #define OPTION_MMIO		29 /* Use MMIO for Cirrus 543x */
 #define OPTION_LINEAR		30 /* Use linear fb for Cirrus */
+#define OPTION_FIFO_MODERATE  	31 /* (agx) */
 
 /* Accel/cursor features */
 #define OPTION_NOACCEL		40 /* Disable accel support in SVGA server */
@@ -82,21 +83,13 @@ typedef struct {
 #define OPTION_NO_BITBLT	43 /* Disable hardware bitblt (cirrus) */
 #define OPTION_FAVOUR_BITBLT	44 /* Favour use of BitBLT (cirrus) */
 
-/* RAMDAC options -- many should go now there is a ramdac keyword */
-#define OPTION_NORMAL_DAC	50 /* Override probes for Bt, Ti ramdacs (S3) */
-#define OPTION_BT485		51 /* Has BrookTree Bt485 RAMDAC */
-#define OPTION_BT485_CURS	52 /* Override Bt485 RAMDAC probe */
-#define OPTION_20C505		53 /* Has AT&T 20C505 RAMDAC */
-#define OPTION_TI3020_CURS	54 /* Use 3020 RAMDAC cursor (default) */
-#define OPTION_NO_TI3020_CURS	55 /* Override 3020 RAMDAC cursor use */
-#define OPTION_DAC_8_BIT	56 /* 8-bit DAC operation */
-#define OPTION_SC15025          57 /* Sierra SC15025/6 RAMDAC */
-#define OPTION_SYNC_ON_GREEN	58 /* Set Sync-On-Green in RAMDAC */
-#define OPTION_BT481            59 /* Has BrookTree Bt481 RAMDAC */
-#define OPTION_BT482            60 /* Has BrookTree Bt482 RAMDAC */
-#define OPTION_BT482_CURS       61 /* Use Bt482 RAMDAC cursor */
-#define OPTION_HERC_DUAL_DAC    62 /* Use Herc Dual DAC probe */
-#define OPTION_HERC_SMALL_DAC   63 /* Change Herc Dual DAC defualt to small */
+/* RAMDAC options */
+#define OPTION_BT485_CURS	50 /* Override Bt485 RAMDAC probe */
+#define OPTION_TI3020_CURS	51 /* Use 3020 RAMDAC cursor (default) */
+#define OPTION_NO_TI3020_CURS	52 /* Override 3020 RAMDAC cursor use */
+#define OPTION_DAC_8_BIT	53 /* 8-bit DAC operation */
+#define OPTION_SYNC_ON_GREEN	54 /* Set Sync-On-Green in RAMDAC */
+#define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
 
 /* Vendor specific pixmux enabling options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -172,6 +165,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "intel_gx",		OPTION_INTEL_GX },
   { "no_2mb_banksel",	OPTION_NO_2MB_BANKSEL },
   { "fifo_conservative",OPTION_FIFO_CONSERV },
+  { "fifo_moderate",    OPTION_FIFO_MODERATE },
   { "fifo_aggressive",	OPTION_FIFO_AGGRESSIVE },
   { "mmio",		OPTION_MMIO },
   { "linear",		OPTION_LINEAR },
@@ -183,20 +177,12 @@ OptFlagRec xf86_OptionTab[] = {
   { "favour_bitblt",	OPTION_FAVOUR_BITBLT },
   { "favor_bitblt",	OPTION_FAVOUR_BITBLT },
 
-  { "normal_dac",	OPTION_NORMAL_DAC },
-  { "bt485",		OPTION_BT485 },
   { "bt485_curs",	OPTION_BT485_CURS },
-  { "20c505",		OPTION_20C505 },
   { "ti3020_curs",	OPTION_TI3020_CURS },
   { "no_ti3020_curs",	OPTION_NO_TI3020_CURS },
   { "dac_8_bit",	OPTION_DAC_8_BIT },
-  { "sc15025",          OPTION_SC15025 },
   { "sync_on_green",    OPTION_SYNC_ON_GREEN },
-  { "bt481",		OPTION_BT481 },
-  { "bt482",		OPTION_BT482 },
   { "bt482_curs",	OPTION_BT482_CURS },
-  { "herc_dual_dac",	OPTION_HERC_DUAL_DAC },
-  { "herc_small_dac",	OPTION_HERC_SMALL_DAC },
 
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },

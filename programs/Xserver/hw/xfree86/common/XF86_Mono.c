@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_Mono.c,v 1.1 94/03/28 21:21:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mono.c,v 3.2 1994/05/30 08:24:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mono.c,v 3.3 1994/06/28 12:29:09 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -44,7 +44,6 @@ int vga2ValidTokens[] =
   STATICGRAY,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   SCREENNO,
   OPTION,
@@ -67,7 +66,6 @@ int monoValidTokens[] =
   OPTION,
   MEMBASE,
   SCREENNO,
-  DISPLAYSIZE,
   VIRTUAL,
   VIEWPORT,
   -1

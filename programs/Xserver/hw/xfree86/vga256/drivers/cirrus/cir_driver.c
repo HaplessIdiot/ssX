@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.8 1994/08/31 04:44:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.9 1994/09/04 10:50:40 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -116,9 +116,6 @@ unsigned char *cirrusMMIOBase = NULL;
 Bool cirrusUseLinear = FALSE;
 Bool cirrusFavourBLT = FALSE;
 
-/* This is only here temporarily */
-static int vgaBitsPerPixel = 8;
-
 #define CLGD5420_ID 0x22
 #define CLGD5422_ID 0x23
 #define CLGD5424_ID 0x25
@@ -211,6 +208,8 @@ vgaVideoChipRec CIRRUS = {
   FALSE,			/* ChipUseLinearAddressing */
   0,				/* ChipLinearBase */
   0x100000,			/* ChipLinearSize */
+  TRUE,				/* ChipHas16bpp */
+  TRUE,				/* ChipHas32bpp */
 };
 
 /*
@@ -701,8 +700,7 @@ cirrusProbe()
          ErrorF("%s %s: %s: Cirrus 62x5 and 5420 chipsets not supported "
              "in 16bpp mode\n",
              XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
-         cirrusEnterLeave(LEAVE);
-         return(FALSE);
+         CIRRUS.ChipHas16bpp = FALSE;
      }
 #endif
 
@@ -853,8 +851,7 @@ cirrusProbe()
      (cirrusChip != CLGD5434 || vga256InfoRec.videoRam < 2048)) {
          ErrorF("%s %s: %s: Only clgd5434 with 2048K supports 32bpp\n",
              XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
-         cirrusEnterLeave(LEAVE);
-         return(FALSE);
+         CIRRUS.ChipHas32bpp = FALSE;
      }
 #endif
 
@@ -1011,7 +1008,7 @@ cirrusFbInit()
       SRF = inb(0x3c5);
       outb(0x3c4, 0x1f);
       ErrorF(
-	"%s %s: %s: Internal memory clock register value is 0x%02x (%s RAS)\n",
+	"%s %s: %s: Internal memory clock register is 0x%02x (%s RAS)\n",
         XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, inb(0x3c5),
         (SRF & 4) ? "Standard" : "Extended");
       

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.2 1994/06/18 16:22:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.3 1994/08/31 04:20:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -211,6 +211,14 @@ vgaVideoChipRec STUB = {
 	 * Set it to 0 when not in use.
 	 */
 	0,
+	/*
+	 * This is TRUE if the driver has support for 16bpp
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 32bpp
+	 */
+	FALSE,
 };
 
 /*

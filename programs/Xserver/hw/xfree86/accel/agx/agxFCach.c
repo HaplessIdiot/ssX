@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.4 1994/08/01 12:08:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.5 1994/08/12 13:56:36 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -610,6 +610,6 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
       }
    }
 
-   GE_WAIT_IDLE_SHORT();
+   GE_WAIT_IDLE_EXIT();
    return;
 }

@@ -112,7 +112,9 @@ ibm8514CopyWindow(pWin, ptOldOrg, prgnSrc)
 	return;
     }
 
-    ibm8514FindOrdering(pWin, pWin, &dummyGC, nbox, pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x, pWin->drawable.y, ordering);
+    ibm8514FindOrdering((DrawablePtr)pWin, (DrawablePtr)pWin, &dummyGC, nbox,
+			pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x,
+			pWin->drawable.y, ordering);
 
     WaitQueue(3);
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);

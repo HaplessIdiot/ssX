@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_video.c,v 1.1 94/03/28 21:28:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.1 1994/05/04 15:01:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.2 1994/07/15 07:04:11 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -61,10 +61,9 @@ static Bool useDevMem = FALSE;
 static int  devMemFd = -1;
 
 #ifdef HAS_APERTURE_DRV
-#define DEV_MEM "/dev/xf86"
-#else
-#define DEV_MEM "/dev/mem"
+#define DEV_APERTURE "/dev/xf86"
 #endif
+#define DEV_MEM "/dev/mem"
 
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
@@ -77,36 +76,82 @@ Bool warn;
 	pointer base;
 
 	devMemChecked = TRUE;
-	if ((fd = open(DEV_MEM, O_RDWR)) < 0)
+	if ((fd = open(DEV_MEM, O_RDWR)) >= 0)
 	{
-	    if (warn)
-	    {
-	        ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
-		       DEV_MEM, strerror(errno));
-	        ErrorF("\tlinear fb access unavailable\n");
-	    }
-	    useDevMem = FALSE;
-	    return;
-	}
-	/* Try to map a page at the VGA address */
-	base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
-			     MAP_FILE, fd, (off_t)0xA0000);
-	devMemFd = fd;
+	    /* Try to map a page at the VGA address */
+	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+				 MAP_FILE, fd, (off_t)0xA0000);
 	
-	if (base == (pointer)-1)
+	    if (base != (pointer)-1)
+	    {
+		munmap((caddr_t)base, 4096);
+		devMemFd = fd;
+		useDevMem = TRUE;
+		return;
+	    } else {
+		if (warn)
+		{
+		     ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
+			    DEV_MEM, strerror(errno));
+		}
+	    }
+	} else {
+	    if (warn)
+	    { 
+		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
+		       DEV_MEM, strerror(errno));
+	    }
+	}
+#ifndef HAS_APERTURE_DRV
+	if (warn) 
 	{
+	    ErrorF("\tlinear fb access unavailable\n");
+	} 
+	useDevMem = FALSE;
+	return;
+#else
+	/* Failed to mmap /dev/mem, try the aperture driver */
+	if (warn)
+	{
+	    ErrorF("\ttrying aperture driver\n");
+	}
+
+	if ((fd = open(DEV_APERTURE, O_RDWR)) >= 0)
+	{
+	    /* Try to map a page at the VGA address */
+	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+			     MAP_FILE, fd, (off_t)0xA0000);
+	
+	    if (base != (pointer)-1)
+	    {
+		munmap((caddr_t)base, 4096);
+		devMemFd = fd;
+		useDevMem = TRUE;
+		return;
+	    } else {
+
+		if (warn)
+		{
+		    ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
+			   DEV_APERTURE, strerror(errno));
+		}
+	    }
+	} else {
 	    if (warn)
 	    {
-	        ErrorF("checkDevMem: warning: failed to mmap %s (%s)\n",
-		       DEV_MEM, strerror(errno));
-	        ErrorF("\tlinear fb access unavailable\n");
+		ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
+		   DEV_APERTURE, strerror(errno));
 	    }
-	    useDevMem = FALSE;
-	    return;
 	}
-	munmap((caddr_t)base, 4096);
-	useDevMem = TRUE;
+	
+	if (warn)
+	{
+	    ErrorF("\tlinear fb access unavailable\n");
+	}
+	useDevMem = FALSE;
 	return;
+
+#endif
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.1 1994/08/01 12:08:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.2 1994/08/12 13:56:37 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -233,7 +233,7 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
 	      pboxClipped++;
 	   }
-           GE_WAIT_IDLE();
+           GE_WAIT_IDLE_EXIT();
 	   break;
 
 	case FillTiled:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.0 1994/08/31 04:29:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.1 1994/09/04 10:47:00 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -127,10 +127,8 @@ static int read_eeprom_data(unsigned short **pdata)
 
    if (eedata->wnr_type != ('S' | '3'<<8)) {
       free(data);
-      return -1;
-   }
-
-   if (eedata->eeprom_size > ndata) {
+      ndata = -1;
+   } else if (eedata->eeprom_size > ndata) {
       ndata = eedata->eeprom_size;
       data = (unsigned short*) realloc(data, ndata*sizeof(unsigned short));
       for (; i<ndata; i++)
@@ -154,7 +152,8 @@ static int read_eeprom_data(unsigned short **pdata)
 #endif
 #endif
 
-   *pdata = data;
+   if (ndata != -1)
+      *pdata = data;
    return ndata;
 }
 

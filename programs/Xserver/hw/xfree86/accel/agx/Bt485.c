@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86Bt485.c,v 3.0 1994/06/15 15:35:51 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -350,10 +350,10 @@ xf86Bt485HWRestore( save )
    union xf86RamDacSave *save;
 #endif
 {
-   xf86OutBt485IndReg( BT485_COMMAND_REG_3, 0xFF, save->Bt485.Com3 );
-   xf86OutRamDacReg( BT485_COMMAND_REG_2, 0xFF, save->Bt485.Com2 );
-   xf86OutRamDacReg( BT485_COMMAND_REG_1, 0xFF, save->Bt485.Com1 );
-   xf86OutRamDacReg( BT485_COMMAND_REG_1, 0xFF, save->Bt485.Com0 );
+   xf86OutBt485IndReg( BT485_COMMAND_REG_3, 0x00, save->Bt485.Com3 );
+   xf86OutRamDacReg( BT485_COMMAND_REG_2, 0x00, save->Bt485.Com2 );
+   xf86OutRamDacReg( BT485_COMMAND_REG_1, 0x00, save->Bt485.Com1 );
+   xf86OutRamDacReg( BT485_COMMAND_REG_0, 0x00, save->Bt485.Com0 );
 }
 
 #ifdef __STDC__
@@ -365,12 +365,12 @@ xf86Bt485Init()
 #endif
 {
    if (xf86Dac8Bit)
-      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xFD, 0x02 );
+      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xFC, 0x02 );
    else
-      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xFD, 0x00 );
+      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xFC, 0x00 );
 
    if (xf86DacSyncOnGreen)
-      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xE3, 0x04 );
+      xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xE3, 0x08 );
    else
       xf86OutRamDacReg( BT485_COMMAND_REG_0, 0xE3, 0x00 );
 }

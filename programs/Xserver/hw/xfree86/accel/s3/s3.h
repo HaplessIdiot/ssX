@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.1 94/03/28 21:13:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.10 1994/08/20 07:33:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.11 1994/08/31 04:29:44 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -570,6 +570,20 @@ int s3NoCPolyText(
     Bool 
 #endif
 );
+
+void s3FontStipple(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int,
+    int,
+    unsigned char *,
+    int,
+    Pixel
+#endif
+);
+
+
 int s3NoCImageText(
 #if NeedFunctionPrototypes
     DrawablePtr,

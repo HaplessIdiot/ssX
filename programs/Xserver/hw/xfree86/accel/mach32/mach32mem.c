@@ -375,7 +375,8 @@ MyPixel Colour;
     /*
      * Set up the engine to paint to the screen.
      */
-    WaitQueue(8);
+    WaitQueue(9);  
+    outw(WRT_MASK, 0x0FFFF);
     outw(DP_CONFIG, FG_COLOR_SRC_FG | DRAW | READ_WRITE);
     outw(ALU_FG_FN, MIX_FN_PAINT);
     outw(FRGD_COLOR, Colour);

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.2 1994/05/31 06:45:30 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.3 1994/06/18 16:21:25 dawes Exp $
 .\" XF86_SVGA.man
 .TH XF86_SVGA 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -12,7 +12,7 @@ x86 platforms
 .I XF86_SVGA
 is an 8-bit PseudoColor server for Super-VGA cards.  It is derived from
 the
-.I XF86
+.I X386
 server provided with X11R5.
 .SH CONFIGURATIONS
 .PP
@@ -25,8 +25,8 @@ up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
 .RS .5i
 .TP 4
 ATI:
-18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 28800-a, 28800-c, 38800,
-68800, Mach8, Mach32
+18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
+68800LX, 88800
 .TP 4
 Tseng:
 ET3000, ET4000, ET4000/W32
@@ -39,9 +39,6 @@ GVGA
 .TP 4
 Trident:
 TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000
-.TP 4
-ATI:
-28800-4, 28800-5, 28800-a
 .TP 4
 NCR:
 77C22, 77C22E
@@ -102,9 +99,6 @@ gvga
 .TP 4
 Trident:
 tvga8800cs, tvga8900b, tvga8900c, tvga8900cl, tvga9000 
-.TP 4
-ATI:
-ati
 .TP 4
 NCR:
 ncr77c22, ncr77c22e

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.3 1994/08/31 05:45:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.4 1994/09/04 10:52:12 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -117,7 +117,7 @@ mach32FontCache8Init()
             xf86AddToCachePool(FontPool, x, y, w, h, BitPlane);
 	 }
 
-         xf86InitFontCache(FontPool, w, h, mach32ImageOpStipple, mach32alu);
+         xf86InitFontCache(FontPool, w, h, mach32FontOpStipple);
          xf86InitText(mach32GlyphWrite, mach32NoCPolyText, mach32NoCImageText );
          ErrorF("%s %s: Using %d planes of %dx%d at (%d,%d) aligned %d as font cache\n",
                 XCONFIG_PROBED, mach32InfoRec.name,
@@ -175,12 +175,13 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * Reset the GE context to a known state before calling
 		   * the xf86loadfontblock function.
 		   */
-		  WaitQueue(8);
+		  WaitQueue(9);
 		  outw(EXT_SCISSOR_T, 0);
 		  outw(EXT_SCISSOR_L, 0);
 		  outw(EXT_SCISSOR_R, mach32MaxX); 
 		  outw(EXT_SCISSOR_B, mach32MaxY);
 		  outw(RD_MASK, 0xFFFF);
+		  outw(WRT_MASK, 0xFFFF);
 		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
                   outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
                   outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
@@ -268,12 +269,13 @@ mach32GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
       Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox);
    }
 
-   WaitQueue(8);
+   WaitQueue(9);
    outw(EXT_SCISSOR_T, 0);
    outw(EXT_SCISSOR_L, 0);
    outw(EXT_SCISSOR_R, mach32MaxX);
    outw(EXT_SCISSOR_B, mach32MaxY);
    outw(RD_MASK, 0xFFFF);
+   outw(WRT_MASK, 0xFFFF);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

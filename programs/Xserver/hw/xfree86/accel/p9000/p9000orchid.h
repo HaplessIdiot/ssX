@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.h,v 3.0 1994/07/24 11:47:50 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -23,7 +23,9 @@
 #define ORCHID_OCR_ENABLE_W5186      0x00
 #define ORCHID_OCR_SYNC_POSITIVE     0x20
 #define ORCHID_OCR_SYNC_NEGATIVE     0x00
-
+#define ORCHID_CLKSELBITS_MASK       0xF3 /* mask for clock slect bits in misc reg */
+#define ORCHID_CLKSELBITS_P9000      0x0C /* value to use in clock select */
+                                          /* bits when in p9000 mode */
 /* The location and text of the Orchid P9000 signature for autodetection */
 #define ORCHID_BIOS_OFFSET           0x37
 #define ORCHID_BIOS_LENGTH           54

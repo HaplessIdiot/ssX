@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.4 1994/08/01 12:08:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.5 1994/08/20 07:32:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -213,6 +213,10 @@ agxHWSave( save, size )
    unsigned char newmode;
    unsigned char oldmode;
    Bool          saveRamDac = FALSE;
+
+   if( hercBigDAC ) {
+      hercSwitchToLittleDac();
+   }
 
    /* save VGA state */
    if (save == NULL) {
@@ -469,7 +473,7 @@ agxSetCRTCRegs(crtcRegs)
      agxCRTCRegPtr crtcRegs;
 {
    unsigned char byteData;
-   unsigned char scale = 0;
+   Bool          usingHercBigDAC = FALSE;
 
    /*
     * Now initialize the display controller.
@@ -477,6 +481,13 @@ agxSetCRTCRegs(crtcRegs)
     */
 
    if (AGX_SERIES(agxChipId)) {
+      if( hercBigDAC && crtcRegs->clock_sel > 15 ) {
+         usingHercBigDAC = TRUE;
+         hercSwitchToBigDac();
+      }
+      else if( hercSmallDAC || hercBigDAC ) {
+         hercSwitchToLittleDac();
+      }
       (*xf86RamDacInit)();
    }
 
@@ -503,16 +514,24 @@ agxSetCRTCRegs(crtcRegs)
           byteData |= IR_M1_INTERLACED;         
       else
           byteData &= ~IR_M1_INTERLACED;
+      /* alternate AGX-016 clock doubling method?  
+      if (usingHercBigDAC)
+          byteData |= IR_M1_PCLK_DIV_2; */
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M2_MODE_REG_2); 
       byteData = inb(agxByteData) & IR_M2_PRESERVE_MASK;
+      byteData &= ~( IR_M2_CCLK_DIV_2 | IR_M2_DELAY_DISPLAY 
+                    | IR_M2_84DAC_SELECT | IR_M2_COPROC_CLK_DIV_2 );
       if (OFLG_ISSET(OPTION_VRAM_128, &agxInfoRec.options)) 
           byteData &= ~IR_M2_VRAM_256;
       if (OFLG_ISSET(OPTION_VRAM_256, &agxInfoRec.options)) 
           byteData |= IR_M2_VRAM_256;
-      byteData = ~( IR_M2_CCLK_DIV_2 | IR_M2_DELAY_DISPLAY 
-                    | IR_M2_84DAC_SELECT | IR_M2_COPROC_CLK_DIV_2 );
+      if (usingHercBigDAC) {
+          byteData |= IR_M2_84DAC_SELECT;
+          byteData |= IR_M2_DELAY_DISPLAY;
+          byteData |= IR_M2_CCLK_DIV_2;  /* for AGX-015/016 clock doubling */
+      }
       outb(agxByteData,byteData);
 
       outb(agxIdxReg,IR_M3_MODE_REG_3); 
@@ -530,8 +549,8 @@ agxSetCRTCRegs(crtcRegs)
       outb(agxIdxReg,IR_M5_MODE_REG_5); 
       byteData = 0;
       /*
-       * Some boards only need refresh split at higher resolutions
-       * Others need it at all. Haven't found any problems leaving
+       * Some boards only need refresh split at higher resolutions,
+       * others need it at always. Haven't found any problems leaving
        * it on all the time.
        */
       byteData |= IR_M5_REFRESH_SPLIT;
@@ -541,10 +560,11 @@ agxSetCRTCRegs(crtcRegs)
 
       outb(agxIdxReg,IR_M7_MODE_REG_7); 
       byteData = inb(agxByteData) & IR_M7_PRESERVE_MASK;
-      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
-          byteData &= ~IR_M7_BUFFER_ENABLE;
-      else
+      byteData &= ~IR_M7_BUFFER_ENABLE;
+      if (OFLG_ISSET(OPTION_FIFO_MODERATE, &agxInfoRec.options))
           byteData |= IR_M7_BUFFER_ENABLE;
+      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
+          byteData &= ~IR_M7_BUFFER_ENABLE;  /* actually the default */
       if (OFLG_ISSET(OPTION_VLB_A, &agxInfoRec.options)) 
           byteData &= ~IR_M7_VLB_B;
       if (OFLG_ISSET(OPTION_VLB_B, &agxInfoRec.options)) 
@@ -640,23 +660,34 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_CRTC_HDISP_END_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HBLANK_START_LO);
-   outb(agxByteData, crtcRegs->hblnk_strt_lo);
+   if (usingHercBigDAC)
+      outb(agxByteData, crtcRegs->hdisp_end_lo - 2 );
+   else
+      outb(agxByteData, crtcRegs->hblnk_strt_lo);
    outb(agxIdxReg, IR_CRTC_HBLANK_START_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HBLANK_END_LO);
-   outb(agxByteData, crtcRegs->hblnk_end_lo);
+   if (usingHercBigDAC)
+      outb(agxByteData, crtcRegs->htotal_lo + 1);
+   else
+      outb(agxByteData, crtcRegs->hblnk_end_lo);
    outb(agxIdxReg, IR_CRTC_HBLANK_END_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HSYNC_START_LO); 
-   outb(agxByteData, crtcRegs->hsync_strt_lo);
+   if (usingHercBigDAC)
+      outb(agxByteData, crtcRegs->hsync_strt_lo);
+   else
+      outb(agxByteData, crtcRegs->hsync_strt_lo);
    outb(agxIdxReg, IR_CRTC_HSYNC_START_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HSYNC_END_LO);
    outb(agxByteData, crtcRegs->hsync_end_lo);
    outb(agxIdxReg, IR_CRTC_HSYNC_END_HI);
-   outb(agxByteData, 0x00);
+   outb(agxByteData, 0x00); 
+/*
    outb(agxIdxReg, IR_CRTC_HSYNC_POS1);
    outb(agxByteData, 0x40);
+*/
    outb(agxIdxReg, IR_CRTC_HSYNC_POS2);
    outb(agxByteData, 0x04);
 
@@ -705,7 +736,7 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxByteData, IR_PS_FRMT_RGB);
 
    /* Clock select register */
-   (*agxClockSelectFunc)(crtcRegs->clock_sel,scale);
+   (*agxClockSelectFunc)(crtcRegs->clock_sel,0);
 
    agxResetCRTC(CRTC_RESET);
    agxResetCRTC(CRTC_RUN);
@@ -723,6 +754,7 @@ Bool
 agxSwitchMode(mode)
     DisplayModePtr mode;
 {
+   extern LUTENTRY agxsavedLUT[256];
 
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    if (vgaPhysBase) {
@@ -732,9 +764,16 @@ agxSwitchMode(mode)
       xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
    }
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
+
+   if( hercBigDAC )
+      agxSaveLUT(agxsavedLUT);
+
    agxCalcCRTCRegs(&agxCRTCRegs, mode);
    agxInited = FALSE;
    agxInitDisplay(agxInfoRec.scrnIndex,&agxCRTCRegs);
+
+   if( hercBigDAC )
+      agxRestoreLUT(agxsavedLUT);
 
    /* enable DAC output */
    outb(agxIdxReg, 0);
@@ -750,6 +789,48 @@ agxSwitchMode(mode)
 
    return(TRUE);
 }
+
+/*
+ *  agxAddDoubledCLocks() - 
+ *     add usable doubled clocks and 
+ *     zero out clocks > greater than max direct clock rate    
+ *     or that conflict with the doubled clock.
+ */
+
+Bool
+agxAddDoubledClocks(InfoRec)
+   ScrnInfoRec *InfoRec;
+{
+   int num = InfoRec->clocks;
+   int i;
+
+   /* second group are the usable doubled clocks */
+   for( i=0; i < num; i++ ) {
+      int try = InfoRec->clock[i]; 
+      if( try >= xf86MinClockDoubled && try <= xf86MaxClockDoubled )
+         InfoRec->clock[i + num] = try << 1;
+      else
+         InfoRec->clock[i + num] = 0;
+   }
+
+   /* clear out low order clocks that are too large */
+   for( i=0; i < num; i++ ) {
+      if( InfoRec->clock[i] > xf86MaxClockDirect )
+         InfoRec->clock[i] = 0;
+   }
+
+   /* clear out low order clocks that conflict with the doubled clocks */
+   for( i=0; i < num; i++ ) {
+      int j;
+      for( j=0; j < num; j++ ) {
+         if( InfoRec->clock[i] == InfoRec->clock[num+j] )
+            InfoRec->clock[i] = 0;
+      }
+   }
+
+   InfoRec->clocks = num << 1;
+}
+
 
 /*
  *  agxGetClocks() - derived from xf86GetClocks(). The XGA has  
@@ -979,7 +1060,7 @@ agxClockSelect(no,scale)
 {
    unsigned char byteData; 
 
-   switch(no)
+   switch(no&&0x0F)
    {
      case CLK_REG_SAVE:
        break;
@@ -1263,6 +1344,11 @@ agxProbeClocks(scale)
    
    agxValidateClocks(5);
 
+   if( AGX_SERIES(agxChipId) && xf86MinClockDoubled > -1 ) {
+      /* massage clocks for RAMDAC clock doubling */
+      agxAddDoubledClocks( &agxInfoRec );
+   }
+
    if (xf86Verbose) {
       int i;
 
@@ -1455,7 +1541,7 @@ agxImageClear()
                   | GE_OPW_SRC_MAP_A 
                   | GE_OPW_DEST_MAP_A   );
 
-   GE_WAIT_IDLE();
+   GE_WAIT_IDLE_EXIT();
 }
 
 

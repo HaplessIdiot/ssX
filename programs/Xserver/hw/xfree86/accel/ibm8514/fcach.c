@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514fcac.c,v 1.1 94/03/28 21:03:58 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fcac.c,v 3.0 1994/05/30 08:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514fcac.c,v 3.1 1994/07/15 06:57:48 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -73,7 +73,7 @@ ibm8514FontCache8Init()
         for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )
 	  xf86AddToCachePool( FontPool, x, y, w, h, BitPlane );
 
-        xf86InitFontCache( FontPool, w, h, ibm8514ImageOpStipple, ibm8514alu );
+        xf86InitFontCache( FontPool, w, h, ibm8514FontOpStipple );
         xf86InitText( ibm8514GlyphWrite, ibm8514NoCPolyText,
 		      ibm8514NoCImageText );
 

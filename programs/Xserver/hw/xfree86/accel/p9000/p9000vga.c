@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.2 1994/07/15 06:59:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.3 1994/08/31 04:23:14 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -33,7 +33,6 @@
 #include "p9000.h"
 #include "p9000reg.h"
 #include "p9000Bt485.h"
-
 
 /* Virtual Terminal / VGA values to be saved and restored */
 static short vga_dac_mask = 0xff;
@@ -128,12 +127,14 @@ int p9000VGASaveRegs(unsigned char *regs)
        outb(SEQ_INDEX_REG, i); 
        regs[SEQ+i] = inb(SEQ_PORT); 
   }
-
   /* This save and restore is used for switching into
    * 640x400x16 and does not conflict with the one
    * done in the vendor specific code */
-  regs[MIS] = inb(MISC_IN_REG);
-
+  regs[MIS] = inb(MISC_IN_REG); 
+#ifdef DEBUG
+  ErrorF("p9000VGASaveRegs: debug info: regs[MIS]=inb(MISC_IN_REG)=0x%X\n" ,
+	 (int)regs[MIS]);
+#endif
   return CRT_C + ATT_C + GRA_C + SEQ_C + 1 + i;
 }
 
@@ -143,12 +144,17 @@ int p9000VGASetRegs(const unsigned char *regs)
   int tmp;
 
   /* update misc output register */
+  usleep(20000) ;
   /* This save and restore is used for switching into
    * 640x400x16 and does not conflict with the one
    * done in the vendor specific code */
   outb(MISC_OUT_REG, regs[MIS]);         
+#ifdef DEBUG
+  ErrorF("p9000VGASetRegs: debug info: outb(MISC_OUT_REG, regs[MIS]) regs[MIS]=0x%X\n",
+	 (int)regs[MIS]);
+#endif
 
-  usleep(50000);  /* Wait for the clock to settle */
+  usleep(30000);  /* Wait at least 10 ms for the clock to change */
 
   /* synchronous reset on */
   outb(SEQ_INDEX_REG, 0x00); 

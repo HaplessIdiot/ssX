@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.1 1994/07/15 06:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.2 1994/08/01 12:09:02 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -428,5 +428,5 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 	} /* sloped line */
     } /* while (nline--) */
 
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }

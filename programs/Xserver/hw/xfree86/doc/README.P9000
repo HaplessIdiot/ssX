@@ -1,11 +1,18 @@
 
 	       XFree86 P9000 Server Beta Release Notes
-		       Last Modified 1994.08.29
+		       Last Modified 1994.09.05
 		     Erik Nygren (nygren@mit.edu)
 
 ----====<<<<< Change Log >>>>>====----
 
-1994.08.29: (This patch)
+1994.09.05: (this patch)
+	* Fixed BIOS probe for Viper PCI (Bob Hollinger)
+	* Fixes to Orchid P9000 support (Harry Langenbacher)
+	* Changing of datatypes in clock code (Harry Langenbacher)
+	* Fixed clock and misc reg restoration so now works fine with svgalib
+	  (Chris Mason, Harry, Erik)
+
+1994.08.29:
 	* Increased number of memory regions in xf86_OSlib.h from 2 to 3
 	  as needed by the Viper PCI (Erik Nygren)
 	* Changed method of short pauses in p9000vga.c to outb(0x80,0) (Erik)
@@ -34,7 +41,8 @@
 The code is stable and various incarnations of it have been tested by
 many people.  However, it should still be considered as Beta code.  No
 hardware acceleration is in place except for a hardware cursor.  Use
-with interlaced monitors is untested.
+with interlaced monitors is untested.  There are currently problems with
+the server when used in conjunction with xdm.
 
 I've started adding in support for other cards and for acceleration.
 Due to its untested nature, it is disabled.  A define at the top of
@@ -67,13 +75,17 @@ obtain these values with PCIDUMP.EXE.  This program may be obtained
 by sending email to xserver@summit.novell.com with the two lines:
 send
 *p9k
-It is very likely that this server will now work.  You may have
-to enable the Viper PCI first through the kernel...  :-(
+This server should now work.  There are reports of problems with
+clock and RAMDAC restoration.  There are also reports that is may
+cause some monitors to go into powersave mode.  Eventually we would
+like to autodetect the IOBase and memBase, but this doesn't yet work.
 
 Orchid P9000
 ------------
-The Orchid P9000 code is untested and may or may not work.
-It is waiting on some mods to the clock code by Harry.  
+The Orchid P9000 code should now work but hasn't been tested.
+In addition to the Orchid P9000, it should also work with other
+boards based on the Weitek design.  Talk to harry@brain.jpl.nasa.gov
+if you have problems with this.
 
 Acceleration
 ------------
@@ -102,6 +114,7 @@ Example problems:
 	xv 3.00    - Works fine in 32 bpp and in 16 bpp with 24 bit images.
 		     Has problems with colors in 8 bit images in 8 bpp mode.
 	Mosaic 2.1 - Has problems with colormap in both 16 bpp and 32 bpp.
+		     Newer versions of Mosaic _do_ work.
 	mpeg_play  - Doesn't work at all in 16 bpp mode.  Works fine
   		     24 bpp mode when compiled with -DRS6000 and when
 		     run with "-dither color"
@@ -113,7 +126,8 @@ There is not yet support for screen blanking in either 16 or 32 bpp modes/
 Please send me a patch to do this if you have a good idea...
 
 Text restoration should now be fixed.  Color restoration should
-also be fixed.
+also be fixed.  You can now even run the server at the same time as svgalib
+programs!!!
 
 The modes line in the Xconfig file is now handled differently.
 The virtual line is now ignored entirely.  Each mode on the mode
@@ -182,4 +196,4 @@ whose banking patch could unfortunately not be included.
 --------------------------------------------------------------------
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.2 1994/07/24 11:50:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.P9000,v 3.3 1994/08/31 04:40:10 dawes Exp $

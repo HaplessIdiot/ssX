@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.1 1994/08/12 13:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.2 1994/08/20 07:32:08 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -62,8 +62,9 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+#include "cfb.h"
+#include "mi.h"
 
-#include "vga256.h"
 #include "agx.h"
 #include "regagx.h"
 
@@ -159,7 +160,7 @@ agxPaintWindow(pWin, pRegion, what)
 	}
 	break;
     }
-    vga256PaintWindow (pWin, pRegion, what);
+    miPaintWindow (pWin, pRegion, what);
 }
 
 void
@@ -207,5 +208,5 @@ agxFillBoxSolid (pDrawable, nBox, pBox, pixel)
                           | GE_OPW_DEST_MAP_A   );
 	}
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }

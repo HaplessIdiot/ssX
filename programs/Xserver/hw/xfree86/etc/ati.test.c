@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.2 1994/07/24 11:51:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.3 1994/08/01 12:14:23 dawes Exp $ */
 /* ati.test.c -- Gather information about ATI VGA WONDER cards
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -1020,6 +1020,11 @@ main(void)
 			}
 			else if (ATIBoard == ATI_BOARD_MACH32)
 			{
+				IO_Value = inw(CONFIG_STATUS_1);
+				if (IO_Value & _8514_ONLY)
+					printf(
+	      "Mach32 detected but VGA Wonder capability cannot be enabled\n");
+
 				switch (inw(CHIP_ID) & 0x3FF)
 				{
 				      case 0x0000:
@@ -1043,7 +1048,7 @@ main(void)
 					      break;
 				}
 
-				ATIDac = (inw(CONFIG_STATUS_1) & DACTYPE) >> 9;
+				ATIDac = (IO_Value & DACTYPE) >> 9;
 				MachvideoRam =
 					videoRamSizes[((inw(MISC_OPTIONS) &
 						MEM_SIZE_ALIAS) >> 2) + 2];

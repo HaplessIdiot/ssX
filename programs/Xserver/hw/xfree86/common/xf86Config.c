@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.8 1994/09/04 10:47:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.9 1994/09/04 12:06:48 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,10 +34,6 @@
 #include "xf86_OSlib.h"
 
 #include "xf86Procs.h"
-
-#ifndef SERVER_CONFIG_FILE
-#define SERVER_CONFIG_FILE "/usr/XF86/XF86Config"
-#endif
 
 #define INIT_CONFIG
 #include "xf86_Config.h"
@@ -109,7 +105,8 @@ static void configMonitorSection(
 static DisplayModePtr xf86PruneModes(
 #if NeedFunctionPrototypes
     MonPtr monp,
-    DisplayModePtr allmodes
+    DisplayModePtr allmodes,
+    char *scrname
 #endif
 );
 static void readVerboseMode(
@@ -120,7 +117,8 @@ static void readVerboseMode(
 static Bool mode_fits(
 #if NeedFunctionPrototypes
     DisplayModePtr dispmp,
-    MonPtr monp
+    MonPtr monp,
+    char *scrname
 #endif
 );
 
@@ -524,7 +522,8 @@ DisplayModePtr	dispmp;
 	if(dispmp->next == dispmp)
 		FatalError("No valid modes found.\n");
 
-	ErrorF("Removing mode \"%s\" from list of valid modes.\n",dispmp->name);
+	ErrorF("%s %s: Removing mode \"%s\" from list of valid modes.\n",
+	       XCONFIG_PROBED, infoptr->name, dispmp->name);
 	dispmp->prev->next = dispmp->next;
 	dispmp->next->prev = dispmp->prev;
 
@@ -1029,7 +1028,7 @@ configKeyboardSection()
 #else
          xf86Info.kbdEvents  = xf86KbdEvents;
 #endif
-      } else if ( StrCaseCmp(val.str,"xqueue") ) {
+      } else if ( StrCaseCmp(val.str,"xqueue") == 0 ) {
 #ifdef XQUEUE
         xf86Info.kbdProc   = xf86XqueKbdProc;
         xf86Info.kbdEvents = xf86XqueEvents;
@@ -1366,40 +1365,43 @@ configDeviceSection()
       OFLG_SET(XCONFIG_DACSPEED,&(devp->xconfigFlag));
       break;
 
+    case CLOCKCHIP:
+       /* Only allow one Clock string */
+       if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions)))
+       {
+	  configError("Only one Clock chip may be specified.");
+	  break;
+       }
+       if (devp->clocks == 0)
+       {
+	  i = 0;
+	  while (xf86_ClockOptionTab[i].token != -1)
+	  {
+	     if (StrCaseCmp(val.str, xf86_ClockOptionTab[i].name) == 0)
+	     {
+		OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions));
+		OFLG_SET(xf86_ClockOptionTab[i].token,
+			 &(devp->clockOptions));
+		break;
+	     }
+	     i++;
+	  }
+	  if (xf86_ClockOptionTab[i].token == -1) {
+	     configError("Unknown clock chip");
+	     break;
+	  }
+       }
+       else
+       {
+	  configError("Clocks previously specified by value");
+       }
+       break;
+
     case CLOCKS:
       OFLG_SET(XCONFIG_CLOCKS,&(devp->xconfigFlag));
       if ((token = getToken(NULL)) == STRING)
       {
-	 /* Only allow one Clock string */
-	 if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions)))
-	 {
-	    configError("Only one Clock string may be specified.");
-	    break;
-	 }
-	 if (devp->clocks == 0)
-	 {
-	    i = 0;
-	    while (xf86_ClockOptionTab[i].token != -1)
-	    {
-	       if (StrCaseCmp(val.str, xf86_ClockOptionTab[i].name) == 0)
-	       {
-  		  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions));
-		  OFLG_SET(xf86_ClockOptionTab[i].token,
-			   &(devp->clockOptions));
-
-		  break;
-	       }
-	       i++;
-	    }
-	    if (xf86_ClockOptionTab[i].token == -1) {
-	       configError("Unknown clock string");
-	       break;
-	    }
-	 }
-	 else
-	 {
-	    configError("Clocks previously specified by value");
-	 }
+	 configError("Use ClockChip to specify a programmable clock");
 	 break;
       }
       if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions)))
@@ -1501,41 +1503,48 @@ configDeviceSection()
     case BIOSBASE:
       if (getToken(NULL) != NUMBER) configError("BIOS base address expected");
       devp->BIOSbase = val.num;
+      OFLG_SET(XCONFIG_BIOSBASE, &(devp->xconfigFlag));
       break;
 
     case MEMBASE:
       if (getToken(NULL) != NUMBER) configError("Memory base address expected");
       devp->MemBase = val.num;
+      OFLG_SET(XCONFIG_MEMBASE, &(devp->xconfigFlag));
       break;
 
     case IOBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("Direct access register I/O base address expected");
-       devp->IObase = val.num;
-       break;
+      if (getToken(NULL) != NUMBER)
+        configError("Direct access register I/O base address expected");
+      devp->IObase = val.num;
+      OFLG_SET(XCONFIG_IOBASE, &(devp->xconfigFlag));
+      break;
 
     case DACBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("DAC base I/O address expected");
-       devp->DACbase = val.num;
-       break;
+      if (getToken(NULL) != NUMBER)
+        configError("DAC base I/O address expected");
+      devp->DACbase = val.num;
+      OFLG_SET(XCONFIG_DACBASE, &(devp->xconfigFlag));
+      break;
 
     case COPBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("Coprocessor base memory address expected");
-       devp->COPbase = val.num;
-       break;
+      if (getToken(NULL) != NUMBER)
+        configError("Coprocessor base memory address expected");
+      devp->COPbase = val.num;
+      OFLG_SET(XCONFIG_COPBASE, &(devp->xconfigFlag));
+      break;
 
     case POSBASE:
-       if (getToken(NULL) != NUMBER) configError("POS base address expected");
-       devp->POSbase = val.num;
-       break;
+      if (getToken(NULL) != NUMBER) configError("POS base address expected");
+      devp->POSbase = val.num;
+      OFLG_SET(XCONFIG_POSBASE, &(devp->xconfigFlag));
+      break;
 
     case INSTANCE:
-       if (getToken(NULL) != NUMBER)
-         configError("Video adapter instance number expected");
-       devp->instance = val.num;
-       break;
+      if (getToken(NULL) != NUMBER)
+        configError("Video adapter instance number expected");
+      devp->instance = val.num;
+      OFLG_SET(XCONFIG_INSTANCE, &(devp->xconfigFlag));
+      break;
 
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
@@ -1778,8 +1787,11 @@ configMonitorSection()
       break;
     }
   }
+#if 0
+  /* DHD -- do this later so errors only show up for the monitor in use */
   /* GJA -- check the modes against the monitor specs. */
   monp->Modes = xf86PruneModes(monp,monp->Modes);
+#endif
 }
 
 static void
@@ -1976,6 +1988,10 @@ configScreenSection()
       for ( i = 0 ; i < n_devices ; i++ ) {
         if ( strcmp(device_list[i].identifier,val.str) == 0 ) {
           /* Copy back */
+          if (!dummy && xf86Verbose) {
+            ErrorF("%s %s: Graphics device ID: \"%s\"\n",
+                   XCONFIG_GIVEN, screen->name, device_list[i].identifier);
+          }
           screen->clocks = device_list[i].clocks;
           for ( j = 0 ; j < MAXCLOCKS ; j++ ) {
              screen->clock[j] = device_list[i].clock[j];
@@ -1990,13 +2006,20 @@ configScreenSection()
           screen->speedup = device_list[i].speedup;
           screen->clockprog = device_list[i].clockprog;
           textClockValue = device_list[i].textClockValue;
-          screen->BIOSbase = device_list[i].BIOSbase;
-          screen->MemBase = device_list[i].MemBase;
-          screen->IObase = device_list[i].IObase;
-          screen->DACbase = device_list[i].DACbase;
-          screen->COPbase = device_list[i].COPbase;
-          screen->POSbase = device_list[i].POSbase;
-          screen->instance = device_list[i].instance;
+          if (OFLG_ISSET(XCONFIG_BIOSBASE, &screen->xconfigFlag))
+            screen->BIOSbase = device_list[i].BIOSbase;
+          if (OFLG_ISSET(XCONFIG_MEMBASE, &screen->xconfigFlag))
+            screen->MemBase = device_list[i].MemBase;
+          if (OFLG_ISSET(XCONFIG_IOBASE, &screen->xconfigFlag))
+            screen->IObase = device_list[i].IObase;
+          if (OFLG_ISSET(XCONFIG_DACBASE, &screen->xconfigFlag))
+            screen->DACbase = device_list[i].DACbase;
+          if (OFLG_ISSET(XCONFIG_COPBASE, &screen->xconfigFlag))
+            screen->COPbase = device_list[i].COPbase;
+          if (OFLG_ISSET(XCONFIG_POSBASE, &screen->xconfigFlag))
+            screen->POSbase = device_list[i].POSbase;
+          if (OFLG_ISSET(XCONFIG_INSTANCE, &screen->xconfigFlag))
+            screen->instance = device_list[i].instance;
           break;
         }
       }
@@ -2010,6 +2033,13 @@ configScreenSection()
       if (getToken(NULL) != STRING) configError("Monitor name expected");
       for ( i = 0 ; i < n_monitors ; i++ ) {
         if ( strcmp(monitor_list[i].id,val.str) == 0 ) {
+          if (!dummy && xf86Verbose) {
+            ErrorF("%s %s: Monitor ID: \"%s\"\n",
+                   XCONFIG_GIVEN, screen->name, monitor_list[i].id);
+          }
+          monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
+                                                 monitor_list[i].Modes,
+                                                 screen->name);
           screen->pModes = monitor_list[i].Modes;
           break;
         }
@@ -2192,27 +2222,27 @@ configScreenSection()
      * a bit.
      */
     if (xf86Verbose) {
-       if ( driver->IObase ) 
+       if (OFLG_ISSET(XCONFIG_IOBASE, &driver->xconfigFlag)) 
            ErrorF("%s %s: Direct Access Register I/O Base Address: %x\n",
                   XCONFIG_GIVEN, driver->name, driver->IObase);
 
-       if ( driver->DACbase )
+       if (OFLG_ISSET(XCONFIG_DACBASE, &driver->xconfigFlag)) 
            ErrorF("%s %s: DAC Base I/O Address: %x\n",
                   XCONFIG_GIVEN, driver->name, driver->DACbase);
 
-       if ( driver->COPbase )
+       if (OFLG_ISSET(XCONFIG_COPBASE, &driver->xconfigFlag)) 
            ErrorF("%s %s: Coprocessor Base Memory Address: %x\n",
                   XCONFIG_GIVEN, driver->name, driver->COPbase);
 
-       if ( driver->POSbase )
+       if (OFLG_ISSET(XCONFIG_POSBASE, &driver->xconfigFlag)) 
            ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, driver->name,
                 driver->POSbase);
 
-      if ( driver->BIOSbase )
+       if (OFLG_ISSET(XCONFIG_BIOSBASE, &driver->xconfigFlag)) 
           ErrorF("%s %s: BIOS Base Address: %x\n", XCONFIG_GIVEN, driver->name,
 	         driver->BIOSbase);
 
-      if ( driver->MemBase)
+       if (OFLG_ISSET(XCONFIG_MEMBASE, &driver->xconfigFlag)) 
           ErrorF("%s %s: Memory Base Address: %x\n", XCONFIG_GIVEN,
                  driver->name, driver->MemBase);
 
@@ -2292,17 +2322,6 @@ DispPtr disp;
       disp->modes->prev = pLast;
       pushToken = token;
       break;
-
-#if 0
-    /* We don't (and probably never will) use this */
-    case DISPLAYSIZE:
-      OFLG_SET(XCONFIG_DISPLAYSIZE,&(disp->xconfigFlag));
-      if (getToken(NULL) != NUMBER) configError("Display Width expected");
-      disp->width = val.num;
-      if (getToken(NULL) != NUMBER) configError("Display Height expected");
-      disp->height = val.num;
-      break;
-#endif
 
     case BLACK:
     case WHITE:
@@ -2411,8 +2430,8 @@ xf86LookupMode(target, driver)
 
           if (i >= MAXCLOCKS)
           {
-            ErrorF("Too many programmable clocks used (limit %d)!\n",
-                   MAXCLOCKS);
+            ErrorF("%s %s: Too many programmable clocks used (limit %d)!\n",
+                   XCONFIG_PROBED, driver->name, MAXCLOCKS);
             return FALSE;
           }
 
@@ -2468,15 +2487,16 @@ xf86LookupMode(target, driver)
     }
   }
   else if (!found_mode)
-    ErrorF("There is no mode definition named \"%s\"\n", target->name);
+    ErrorF("%s %s: There is no mode definition named \"%s\"\n",
+	   XCONFIG_PROBED, driver->name, target->name);
   else if (clock_too_high)
-    ErrorF("Clocks for mode \"%s\" %s\n\tLimit is %7.3f (MHz)\n",
-           target->name,
-           "are too high for the configured hardware.",
+    ErrorF("%s %s: Clock for mode \"%s\" %s\n\tLimit is %7.3f (MHz)\n",
+           XCONFIG_PROBED, driver->name, target->name,
+           "is too high for the configured hardware.",
            driver->maxClock / 1000.0);
   else
-    ErrorF("There is no defined dot-clock matching mode \"%s\"\n",
-           target->name);
+    ErrorF("%s %s: There is no defined dot-clock matching mode \"%s\"\n",
+           XCONFIG_PROBED, driver->name, target->name);
 
   return (best_mode != NULL);
 }
@@ -2509,9 +2529,10 @@ xf86VerifyOptions(allowedOptions, driver)
  * Initially this is just singly linked.
  */
 static DisplayModePtr
-xf86PruneModes(monp,allmodes)
+xf86PruneModes(monp, allmodes, scrname)
 MonPtr monp;			/* Monitor specification */
 DisplayModePtr allmodes;	/* List to be pruned */
+char *scrname;			/* Screen name for use in error messages */
 {
 	DisplayModePtr dispmp;	/* To walk the list */
 	DisplayModePtr olddispmp; /* The one being freed. */
@@ -2522,7 +2543,7 @@ DisplayModePtr allmodes;	/* List to be pruned */
 	/* The first modes to be deleted require that the pointer to the
 	 * mode list is updated. Also, they have no predecessor in the list.
 	 */
-	while ( dispmp && !mode_fits(dispmp,monp) ) {
+	while ( dispmp && !mode_fits(dispmp, monp, scrname) ) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
 		xfree(olddispmp->name);
@@ -2534,7 +2555,7 @@ DisplayModePtr allmodes;	/* List to be pruned */
 	}
 	remainder = dispmp;
 	while ( dispmp->next ) {
-		if ( !mode_fits(dispmp->next,monp) ) {
+		if ( !mode_fits(dispmp->next, monp, scrname) ) {
 			olddispmp = dispmp->next;
 			dispmp->next = dispmp->next->next;
 			xfree(olddispmp->name);
@@ -2550,9 +2571,10 @@ DisplayModePtr allmodes;	/* List to be pruned */
  * we can make up for the monitor pointed to by monp.
  * FALSE otherwise.
  */
-static Bool mode_fits(dispmp,monp)
+static Bool mode_fits(dispmp, monp, scrname)
 DisplayModePtr	dispmp;
 MonPtr monp;
+char *scrname;
 {
 	int i;
 	float dotclock, hsyncfreq, vrefreshrate;
@@ -2561,8 +2583,8 @@ MonPtr monp;
 	/* max dotclock != monitor bandwidth, do exclude this check */
 	dotclock = (float)(dispmp->Clock);
 	if ( dotclock > monp->bandwidth * 1000.0 ) {
-		ErrorF("Mode \"%s\" needs %f MHz bandwidth. Deleted.\n",
-			dispmp->name, dotclock/1000.0);
+		ErrorF("%s %s: Mode \"%s\" needs %f MHz bandwidth. Deleted.\n",
+			XCONFIG_PROBED, scrname, dispmp->name, dotclock/1000.0);
 		return FALSE;
 	}
 #endif
@@ -2576,8 +2598,8 @@ MonPtr monp;
 				break; /* Matches close enough. */
 			}
 		} else {
-			if ( (hsyncfreq > monp->hsync[i].lo) &&
-			     (hsyncfreq < monp->hsync[i].hi) )
+			if ( (hsyncfreq > 0.999 * monp->hsync[i].lo) &&
+			     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
 			{
 				break; /* In range. */
 			}
@@ -2585,8 +2607,9 @@ MonPtr monp;
 	}
 	/* Now see whether we ran out of sync frequencies */
 	if ( i == monp->n_hsync ) {
-		ErrorF("Mode \"%s\" needs hsync freq of %f kHz. Deleted.\n",
-			dispmp->name, hsyncfreq);
+		ErrorF(
+		  "%s %s: Mode \"%s\" needs hsync freq of %f kHz. Deleted.\n",
+		  XCONFIG_PROBED, scrname, dispmp->name, hsyncfreq);
 		return FALSE;
 	}
 			
@@ -2602,8 +2625,8 @@ MonPtr monp;
 				break; /* Matches close enough. */
 			}
 		} else {
-			if ( (vrefreshrate > monp->vrefresh[i].lo) &&
-			     (vrefreshrate < monp->vrefresh[i].hi) )
+			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].lo) &&
+			     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )
 			{
 				break; /* In range. */
 			}
@@ -2611,8 +2634,9 @@ MonPtr monp;
 	}
 	/* Now see whether we ran out of refresh rates */
 	if ( i == monp->n_vrefresh ) {
-		ErrorF("Mode \"%s\" needs refresh rate of %f Hz. Deleted.\n",
-			dispmp->name, vrefreshrate);
+		ErrorF(
+		  "%s %s: Mode \"%s\" needs refresh rate of %f Hz. Deleted.\n",
+		  XCONFIG_PROBED, scrname, dispmp->name, vrefreshrate);
 		return FALSE;
 	}
 

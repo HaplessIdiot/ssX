@@ -10,8 +10,8 @@
      several features and differs on others, there's an outside 
      chance that this driver might also work with true XGA clones, 
      but has had no testing on such boards (see the notes at the end 
-     of this document). This version should be considered an early
-     beta level server and very much a work-in-progress.
+     of this document). This version should be considered a beta level 
+     server and very much a work-in-progress.
 
      While Hercules uses Brooktree and AT&T RAMDACS, most other
      AGX based vendors use Sierra RAMDAC's (15025 and 15021).
@@ -52,7 +52,7 @@
 
      a) Address the above known problems.
 
-     b) Add support for the Graphite Pros's "BIG", 84-pin, RAMDAC, 
+     b) Complete support for the Graphite Pros's "BIG", 84-pin, RAMDAC.
         currently only the 85Mhz "small", 44-pin, RAMDAC is supported 
         (the 2MB version of the Graphite Pro has both RAMDAC's, 
         the 1Mb only the "small").
@@ -101,6 +101,7 @@
 
 (tested)    "normal_dac"      -  normal vga style RAMDAC (6-bit DAC),
                                  default if none specified.
+
 (tested)    "bt481"           -  bt481 RAMDAC  (supports 8-bit DAC)
 (tested)    "bt482"           -  bt482 RAMDAC  (supports 8-bit DAC)
                                  The Hercules Graphite HG210 uses 
@@ -108,24 +109,37 @@
                                  difference between these two is the
                                  BT482's HW cursor (not yet supported).
                                  The BT481/2 are limited to 85Mhz.
-            "bt485"           -  bt485 RAMDAC  (supports 8-bit DAC)
-                                 Not yet supported on the Grapite Pro's.
-            "20c505"          -  AT&T 20c505 RAMDAC  (supports 8-bit DAC)
-                                 The Bt485 and 20c505 aren't fully 
-                                 supported yet and are limited to 85Mhz.
-                                 Not yet supported on the Grapite Pro's.
+
 (tested)    "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
                                  (supports 8-bit DAC). The SC15025 is
                                  limited to 110Mhz, and the SC150021
                                  135Mhz. Check RAMDAC's actual rating. 
-(tested)    "herc_dual_dac"   -  Herc. Graphite Pro RAMDAC PROBE
-                                 currently only supports the small RAMDAC.
+
+(tested)    "herc_dual_dac"   -  Herc. Graphite Pro RAMDAC probe.
+                                 If the 84-pin Big-RAMDAC is installed
+                                 (2MB models), will use the Big RAMDAC,
+                                 but only clocks-doubled, pixel-
+                                 multiplexed modes (higher clock values
+                                 only!). In the future lower clocks and
+                                 resolutions will be supported by switching
+                                 to the Small 44-pin RAMDAC. Clocks differ 
+                                 significantly for this RAMDAC, and a     
+                                 clock probe should be run with this option
+                                 specified if you are going to use it 
+                                 (see additional notes in the clock 
+                                 section, only a few clocks are currently 
+                                 usable). 
+
                                  Not supported by the HG210 Graphite.
-(tested)    "herc_small_dac"  -  Herc. Graphite Pro RAMDAC probe,
-                                 forces use of only the samll RAMDAC
+
+(tested)    "herc_small_dac"  -  Herc. Graphite Pro RAMDAC probe.
+                                 Forces use of only the samll RAMDAC.
+
                                  Not supported by the HG210 Graphite.
+
 (tested)    "dac_8_bit"       -  Sets supported RAMDAC's to 8-bit DAC mode
                                  (all but normal_dac).
+
             "sync_on_green"   -  Composite sync on green for DAC's that 
                                  support this feature (currently bt481
                                  & bt482).
@@ -163,14 +177,17 @@
            "fifo_conserv"    - Disable Memory I/O Buffer, AGX-015 and AGX-016. 
                                MS-Windows driver default. Required by some
                                VLB systems with aggresive timing. The default
-                               for this server is to enable the buffer.
-                               A good test for whether this is required 
-                               is the xbench or x11perf dashed lines tests,
-                               if random dots are drawn, fifo_conserv is
-                               required.
+                               for this server is to disable the buffer.
+
+           "fifo_moderate:   - Enable the AGX-015's Memory I/O buffer.
            "fifo_aggressive: - Enable the AGX-016's extra-large buffer.
                                May result in garbage being left about the
-                               screen, disabled by default.
+                               screen, disabled by default. A good test 
+                               is the xbench or x11perf dashed lines tests,
+                               if random dots are drawn, fifo_conserv is
+                               required. So far, no boards have been reported
+                               that worked correctly with the buffers 
+                               enabled.
 
       Memory Timing:
 
@@ -231,17 +248,29 @@
           Probing is supported, but of course the usual warnings and
           disclaimers apply. Probing may momementarily subject your
           monitor to sweep frequencies in excess of it's rating.
-          My experience is that the probe seems to stress my monitor
-          less than the VGA and Mach8 clock probes. The cautious may 
-          wish to turn off the monitor while the probe is running. 
-          Once clocks are known they can be entered into the Xconfig 
-          accel section, then subsequent runs won't probe clocks and 
-          will be quicker to startup. For the clock probe it is 
-          recommended that the X server be run with the -probeonly option. 
+          The cautious may wish to turn off the monitor while the 
+          probe is running.
+
+          Once clocks are known they can be entered into XF86Config,
+          then subsequent runs won't probe clocks and will be quicker 
+          to startup. For the clock probe it is recommended that the 
+          X server be run with the -probeonly option. The ramdac option 
+          you're going to use should also be specified, as this may 
+          affect the results in some cases.
+
+          For the AGX-014 and later AGX chips, the first 16 clocks
+          will be the values generated by the external clock chip.
+
+          For the dual-RAMDAC 2MB Hercules Graphites, the probe will
+          generate an additional 16 clocks with values double the 
+          corresponding values from the first set. Unusable values 
+          will be zero-ed out, currently all of the first 16, and 
+          most of the second.  
 
           Clock probing assumes that the first clock is 25.175Mhz and
           uses that to derive the rest. A warning is displayed  if the
-          second is not about 28.322Mhz.
+          second is not about 28.322Mhz. If this warning appears, you
+          should not use the probed clock values.
 
           In the case of the AGX-014 an later, only the external 
           clock select lines are used, this means the clock values
@@ -256,7 +285,7 @@
           check your RAMDAC, some RAMDAC's used on AGX based boards are 
           produced in versions rated to lesser values than the server
           assumes. You should check the rating and limit yourself to 
-          that value.
+          that value. 
 
 
        Modes:
@@ -265,27 +294,8 @@
          CRTC doesn't like the start of the horz sync to be equal to 
          horz blank start (vert sync may have the same problem, I 
          need to test some more). Interlaced and +/-sync flags are
-         supported but have had a little testing.
+         supported but have had little testing.
  
-       This is the accel entry from my Xconfig for a 
-       Hercules Graphite VL Pro (note your clocks may differ):
-
-          
-          accel
-            Chipset       "AGX-015"
-            VideoRam      2048
-            Virtual       1280 1024
-            ViewPort      0 0
-            Option        "herc_dual_dac"
-            Option        "dac_8_bit"
-            Option        "no_wait_state"
-            Option        "fifo_conserv"
-         
-            Clocks        25 29 32 36 40 45 50 65
-                          70 75 80 85 90 95 100 110
-          
-            Modes         "1152x900" "1024x768" "800x600" "640x480"
-
 
 6)     XGA configuration
 
@@ -337,4 +347,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.4 1994/08/01 12:14:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.5 1994/08/20 07:35:18 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.10 1994/09/03 02:50:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.11 1994/09/04 10:43:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -49,7 +49,8 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "vga256.h"
+#include "cfb.h"
+#include "mi.h"
 #include "agx.h"
 #include "regagx.h"
 #include "xf86RamDac.h"
@@ -114,53 +115,9 @@ ScrnInfoRec agxInfoRec = {
     1,                  /* int instance     */
 };
 
-#if 0
-short agxalu[16] = {
-    MIX_0,
-    MIX_AND,
-    MIX_SRC_AND_NOT_DST,
-    MIX_SRC,
-    MIX_NOT_SRC_AND_DST,
-    MIX_DST,
-    MIX_XOR,
-    MIX_OR,
-    MIX_NOR,
-    MIX_XNOR,
-    MIX_NOT_DST,
-    MIX_SRC_OR_NOT_DST,
-    MIX_NOT_SRC,
-    MIX_NOT_SRC_OR_DST,
-    MIX_NAND,
-    MIX_1
-};
-#endif
-
-#if 0
-void (* vgaEnterLeaveFunc)() = agxEnterLeaveVT;
-Bool (* vgaInitFunc)() = agxInit;
-void (* vgaSaveScreenFunc)() = (void (*)())agxSaveScreen;
-void *(* vgaSaveFunc)() = vgaHWSave;
-void (* vgaRestoreFunc)() = vgaHWRestore;
-void (* vgaSetReadFunc)() = agxSetRead;
-void (* vgaSetWriteFunc)() = agxSetWrite;
-void (* vgaSetReadWriteFunc)() = agxSetReadWrite;
-int vgaMapSize = 0x10000;
-int vgaSegmentSize = 0x10000;
-int vgaSegmentShift = 16;
-int vgaSegmentMask = 0xFFFF;
-void *vgaReadBottom = (pointer) 0x00000;
-void *vgaReadTop = (pointer) 0x10000;
-void *vgaWriteBottom = (pointer) 0x00000;
-void *vgaWriteTop = (pointer) 0x10000;
-Bool vgaReadFlag;
-Bool vgaWriteFlag;
-Bool vgaUse2Banks = FALSE;
-int  vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-#endif
-int vga256ValidTokens[2] = {0,0};
-extern void OneBankvgaBitBlt();
-vgaVideoChipPtr vgaDrivers;
-
+int vgaInterlaceType = VGA_NO_DIVIDE_VERT;
+void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+pointer vgaNewVideoState = NULL;
 
 static Bool LUTissaved = FALSE;
 static ScreenPtr savepScreen = NULL;
@@ -169,9 +126,26 @@ static PixmapPtr ppix = NULL;
 static unsigned agxDAIOPorts[ DA_NUM_IO_REG ] = {0, };
 static unsigned agxPOSIOPorts[ POS_NUM_IO_REG ] = {0, };
 
+static SymTabRec agxDacTable[] = {
+   { NORMAL_DAC,        "normal" },
+   { BT481_DAC,         "bt481" },
+   { BT482_DAC,         "bt482" },
+#if 0  /* not yet directly supported */
+   { BT485_DAC,         "bt485" },
+   { ATT20C505_DAC,     "att20c505" },
+#endif
+   { SC15025_DAC,       "sc15025" },
+   { HERC_DUAL_DAC,     "herc_dual_dac" },
+   { HERC_SMALL_DAC,    "herc_small_dac" },
+   { -1,                "" },
+};
+
+
 unsigned short agxMemorySize = 0;
 pointer  agxPhysVidMem = NULL;
 pointer  vgaPhysBase = NULL;
+pointer  vgaBase = NULL;
+pointer  vgaVirtBase = NULL;
 pointer  agxVideoMem = NULL;
 unsigned int  agxVideoBase = 0x0;
 unsigned char agxPOSMemBase = 0x0;
@@ -213,7 +187,6 @@ extern int agxPixMux;
 extern int agxBusType;
 
 agxCRTCRegRec agxCRTCRegs;
-
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
@@ -377,23 +350,6 @@ agxProbe()
    vgaBase = NULL;
    vgaVirtBase = NULL;
    vgaPhysBase = NULL;
-   vgaMapSize = 0x10000;
-   vgaSegmentSize = 0x10000;
-   vgaSegmentShift = 16;
-   vgaSegmentMask = 0xFFFF;
-   vgaReadBottom = (pointer) 0x00000;
-   vgaReadTop = (pointer) 0x10000;
-   vgaWriteBottom = (pointer) 0x00000;
-   vgaWriteTop = (pointer) 0x10000;
-   vgaSetReadFunc = agxSetRead;
-   vgaSetWriteFunc = agxSetWrite;
-   vgaSetReadWriteFunc = agxSetReadWrite;
-   vgaReadFlag = FALSE;
-   vgaWriteFlag = FALSE;
-   vgaUse2Banks = FALSE;
-   vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
-   useSpeedUp = 0;
 
    if( !StrCaseCmp( agxInfoRec.chipset, "XGA-1" ) )
       agxChipId = XGA_1;
@@ -506,20 +462,12 @@ agxProbe()
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
 
    agxMemBase = ( (agxPOSMemBase&0xFE)<<24 | (agxInfoRec.instance&0x07)<<22 );
-   
+
    OFLG_ZERO(&validOptions);
-   OFLG_SET(OPTION_NORMAL_DAC, &validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
-   OFLG_SET(OPTION_BT485, &validOptions);
-   OFLG_SET(OPTION_BT481, &validOptions);
-   OFLG_SET(OPTION_BT482, &validOptions);
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_BT482_CURS, &validOptions);
-   OFLG_SET(OPTION_20C505, &validOptions);
-   OFLG_SET(OPTION_SC15025, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
-   OFLG_SET(OPTION_HERC_DUAL_DAC, &validOptions);
-   OFLG_SET(OPTION_HERC_SMALL_DAC, &validOptions);
    OFLG_SET(OPTION_NOACCEL, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_8_BIT_BUS, &validOptions);
@@ -533,6 +481,7 @@ agxProbe()
    OFLG_SET(OPTION_SPRITE_REFRESH, &validOptions);
    OFLG_SET(OPTION_SCREEN_REFRESH, &validOptions);
    OFLG_SET(OPTION_FIFO_CONSERV, &validOptions);
+   OFLG_SET(OPTION_FIFO_MODERATE, &validOptions);
    OFLG_SET(OPTION_FIFO_AGGRESSIVE, &validOptions);
    OFLG_SET(OPTION_VLB_A, &validOptions);
    OFLG_SET(OPTION_VLB_B, &validOptions);
@@ -579,47 +528,25 @@ agxProbe()
    xf86InRamDacReg   = hercInRamDacReg;
 
    /*
-    * Handle RAMDAC Option flags first.
+    * Handle RAMDAC Option flags.
     */
-   if(AGX_SERIES(agxChipId)) { 
-      xf86RamDacType = UNKNOWN_DAC;
-      xf86DacSyncOnGreen = FALSE;
-      if (OFLG_ISSET(OPTION_NORMAL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = NORMAL_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT481, &agxInfoRec.options)) {
-         xf86RamDacType = BT481_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT482, &agxInfoRec.options)) {
-         xf86RamDacType = BT482_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT485, &agxInfoRec.options)) {
-         xf86RamDacType = BT485_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_20C505, &agxInfoRec.options)) {
-         xf86RamDacType = ATT20C505_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_SC15025, &agxInfoRec.options)) {
-         xf86RamDacType = SC15025_DAC;
-         xf86MaxClock = 110000;
-      }
-      else if (OFLG_ISSET(OPTION_HERC_DUAL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = HERC_DUAL_DAC;
-         hercProbeRamDac();
-      }
-      else if (OFLG_ISSET(OPTION_HERC_SMALL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = HERC_SMALL_DAC;
-         hercProbeRamDac();
-      }
-      else {
-         xf86RamDacType = NORMAL_DAC;   /* for now we don't probe */
-         /*
-          * Any RAMDAC probe activity must restore the video board's
-          * state before return
-          */
-         /* xf86ProbeRamDac(); */
+   if(AGX_SERIES(agxChipId)) {
+
+      if (agxInfoRec.ramdac) {
+         xf86RamDacType = xf86StringToToken(agxDacTable, agxInfoRec.ramdac);
+         if (xf86RamDacType < 0 && AGX_SERIES(agxChipId)) {
+            ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+                   agxInfoRec.name, agxInfoRec.ramdac);
+            xf86RamDacType = NORMAL_DAC; 
+         }
       }
 
+      if( xf86RamDacType == HERC_DUAL_DAC
+          || xf86RamDacType == HERC_SMALL_DAC ) {
+         hercProbeRamDac();
+      }
+
+      xf86DacSyncOnGreen = FALSE;
       if ( DAC_IS_BT485_SERIES || DAC_IS_BT481_SERIES ) {
          if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &agxInfoRec.options)) {
             xf86DacSyncOnGreen = TRUE;
@@ -628,8 +555,9 @@ agxProbe()
                    XCONFIG_GIVEN, agxInfoRec.name);
          } 
       }
-
-      xf86SetUpRamDac();
+ 
+      if( !hercBigDAC )
+         xf86SetUpRamDac();
       agxInfoRec.maxClock = xf86MaxClock;
    }
 
@@ -648,6 +576,9 @@ memory size in your Xconfig file.\n",
    if (agxClockSelectFunc != xgaNiClockSelect) {
       if (!agxInfoRec.clocks)
          agxProbeClocks(1);
+      else if (!hercBigDAC)   /* mask out doubled clocks */
+         if (agxInfoRec.clocks > 16)         
+            agxInfoRec.clocks = 16;
    }
 
 
@@ -826,7 +757,7 @@ adjusting to %d\n",
 void
 agxPrintIdent()
 {
-    ErrorF("  %s: not so accelerated server for AGX/XGA graphics adaptors ",
+    ErrorF("  %s: Accelerated server for AGX graphics adaptors ",
 	   agxInfoRec.name);
     ErrorF("(Patchlevel %s)\n", agxInfoRec.patchLevel);
 }
@@ -894,20 +825,7 @@ agxInit (scr_index, pScreen, argc, argv)
    }
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
 
-   /*
-    * For the bootstrap server we will use one bank cfb.banked
-    */
-   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
-
    vgaVirtBase = (pointer)VGABASE;
-   vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
-		      + (unsigned int)vgaBase); 
-   vgaReadTop     = (void *)((unsigned int)vgaReadTop
-		      + (unsigned int)vgaBase); 
-   vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom
-		      + (unsigned int)vgaBase); 
-   vgaWriteTop    = (void *)((unsigned int)vgaWriteTop
-		      + (unsigned int)vgaBase); 
 
    agxCalcCRTCRegs(&agxCRTCRegs, agxInfoRec.modes);
    agxInited = FALSE;
@@ -946,7 +864,6 @@ agxInit (scr_index, pScreen, argc, argv)
 		      agxInfoRec.virtualX))
       return(FALSE);
 
-   vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
    pScreen->CloseScreen = agxCloseScreen;
    pScreen->SaveScreen = agxSaveScreen;
    pScreen->InstallColormap = agxInstallColormap;
@@ -1030,20 +947,12 @@ agxEnterLeaveVT(enter, screen_idx)
                && ppix ) {
 	    pspix->devPrivate.ptr = vgaVirtBase;
             GE_WAIT_IDLE();
-#if 1
             (*agxImageWriteFunc)( 0, 0, 
                                   pScreen->width, pScreen->height,
 		 	          ppix->devPrivate.ptr,
 				  PixmapBytePad( pScreen->width,
 					         pScreen->rootDepth ),
 				  0, 0, MIX_SRC, ~0 );
-#else
-            vga256DoBitblt( &ppix->drawable, 
-                         &pspix->drawable,
-                         GXcopy, &pixReg, 
-                         &pixPt, 0xFF     );
-
-#endif
 	 }
          outb(VGA_PAL_MASK,0xFF);
       }
@@ -1074,20 +983,12 @@ agxEnterLeaveVT(enter, screen_idx)
 
 	 if (ppix) {
             GE_WAIT_IDLE();
-#if 1
    	    (agxImageReadFunc)( 0, 0, 
 				pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
 				PixmapBytePad( pScreen->width,
 					       pScreen->rootDepth ),
 				0, 0, ~0 );
-#else
-            vga256DoBitblt( &pspix->drawable, 
-                         &ppix->drawable, 
-                         GXcopy, &pixReg,
-                         &pixPt, 0xFF );
-#endif
-
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }

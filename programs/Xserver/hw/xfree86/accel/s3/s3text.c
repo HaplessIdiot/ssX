@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.4 1994/08/20 07:34:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.5 1994/08/31 04:29:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -45,6 +45,40 @@
 #include	"regs3.h"
 
 extern unsigned char s3SwapBits[256];
+
+
+__inline__ s3SimpleStipple(x, y, width, height, pb, pwidth)
+int x, y;
+int  width, height, pwidth;
+unsigned char *pb;
+{
+	    WaitQueue(5);
+	    S3_OUTW (CUR_X, (short) x);
+	    S3_OUTW (CUR_Y, (short) y);
+	    S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
+	    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (height-1));   
+	    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
+	     DRAW | PLANAR | WRTDATA);
+
+	    
+	    { /* The stipple code */
+#define SWPBIT(s) (s3SwapBits[pb[(s)]])
+
+	       int i, h, pix;
+	       unsigned short getbuf;
+
+	       for (h = 0; h < height; h++) {
+		  pix = 0;
+	       
+		  for (i = 0; i < width; i += 16) {
+		     getbuf = (getbuf << 8) | SWPBIT (pix++);
+		     getbuf = (getbuf << 8) | SWPBIT (pix++);
+		     S3_OUTW (PIX_TRANS, getbuf);		  
+		  }
+		  pb += pwidth;
+	       }
+	    }
+}
 
 /*
  * The guts of this should possibly be tidied up and put in s3im.c.
@@ -115,39 +149,39 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		pb = pbits;
 	    }
 
-	    BLOCK_CURSOR;
-	    WaitQueue(5);
-	    S3_OUTW (CUR_X, (short) x + pci->metrics.leftSideBearing);
-	    S3_OUTW (CUR_Y, (short) y - pci->metrics.ascent);
-	    S3_OUTW (MAJ_AXIS_PCNT, (short) (gWidth - 1));
-	    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (gHeight-1));   
-	    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
-	     DRAW | PLANAR | WRTDATA);
-
-	    
-	    { /* The stipple code */
-#define SWPBIT(s) (s3SwapBits[pb[(s)]])
-
-	       int h, pix;
-	       unsigned short getbuf;
-
-	       for (h = 0; h < gHeight; h++) {
-		  pix = 0;
-	       
-		  for (i = 0; i < gWidth; i += 16) {
-		     getbuf = (getbuf << 8) | SWPBIT (pix++);
-		     getbuf = (getbuf << 8) | SWPBIT (pix++);
-		     S3_OUTW (PIX_TRANS, getbuf);		  
-		  }
-		  pb += nbyPadGlyph;
-	       }
-	    }
-	    UNBLOCK_CURSOR;
+	    s3SimpleStipple(x + pci->metrics.leftSideBearing,
+			    y - pci->metrics.ascent,
+			    gWidth, gHeight, pb, nbyPadGlyph);
 	}
 
 	x += pci->metrics.characterWidth;
     }
     DEALLOCATE_LOCAL(pbits);
+}
+
+void s3FontStipple(x, y, width, height, pb, pwidth, id)
+int x, y;
+int width, height, pwidth;
+Pixel id;
+unsigned char *pb;
+{
+   BLOCK_CURSOR;
+
+   WaitQueue16_32(5,8);
+   S3_OUTW32 (WRT_MASK, id);
+   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | s3alu[GXcopy]);
+   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | s3alu[GXcopy]);
+   S3_OUTW32 (FRGD_COLOR,  ~0);
+   S3_OUTW32 (BKGD_COLOR,  0);
+   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+
+   s3SimpleStipple(x, y, width, height, pb, pwidth);
+   WaitQueue(3);
+   S3_OUTW (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+   S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+
+   UNBLOCK_CURSOR;
 }
 
 int

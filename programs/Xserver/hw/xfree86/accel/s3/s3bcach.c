@@ -1,5 +1,5 @@
 /* $XConsortium: s3bcach.c,v 1.1 94/03/28 21:14:19 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.3 1994/08/11 06:55:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.4 1994/08/20 07:33:45 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -58,8 +58,8 @@ unsigned int id;
    S3_OUTW(BKGD_MIX, BSS_BITBLT | MIX_SRC);
 
    WaitQueue16_32(6,8);		/* now shift the cache */
-   S3_OUTW32(WRT_MASK, 1 << id);
-   S3_OUTW32(RD_MASK, 1 << id);
+   S3_OUTW32(WRT_MASK, id);
+   S3_OUTW32(RD_MASK, id);
    S3_OUTW(CUR_Y, srcy);
    S3_OUTW(CUR_X, srcx);
    S3_OUTW(DESTX_DIASTP, dstx);

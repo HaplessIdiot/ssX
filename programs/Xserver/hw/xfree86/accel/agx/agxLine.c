@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.0 1994/06/15 15:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.1 1994/07/15 06:57:10 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -488,5 +488,5 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
 	}
     }
 
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }

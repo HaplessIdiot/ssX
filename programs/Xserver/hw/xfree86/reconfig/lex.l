@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.0 1994/09/03 02:52:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.1 1994/09/04 10:49:14 dawes Exp $ */
 
 %{
 #include "os.h"
@@ -64,7 +64,7 @@ identifier	[-+]?[a-zA-Z][a-zA-Z0-9]*
 hexnum		0[xX]{hexdigit}+
 octnum		0{octdigit}+
 decnum		(([1-9]{digit}*)|0)
-flonum		{decnum}"."{decnum}
+flonum		{decnum}"."{digit}*
 string		\"[^\"\n]*\"
 
 comment		\#([^\n]*)

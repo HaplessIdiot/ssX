@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.0 1994/08/31 04:21:39 dawes Exp $$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.1 1994/09/04 10:52:07 dawes Exp $$ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -85,7 +85,8 @@ unsigned int id;
     outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
     WaitQueue(4);		/* sanity returns */
-    outw(RD_MASK, 0xff);
+    outw(RD_MASK, 0xffff);
+    outw(WRT_MASK, 0xffff);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);

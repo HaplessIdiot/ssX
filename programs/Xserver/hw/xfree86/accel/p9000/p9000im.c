@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.0 1994/07/24 11:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000im.c,v 3.1 1994/08/31 04:23:08 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -92,6 +92,10 @@ p9000ImageInit()
 }
 
 static void
+#if NeedFunctionPrototypes
+p9000ImageWrite(int x, int y, int w, int h, unsigned char *psrc, int pwidth,
+		int px, int py, short alu, short planemask)
+#else
 p9000ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			x;
     int			y;
@@ -103,6 +107,7 @@ p9000ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			py;
     short		alu; /* expected to be a xfree86 alu,not an igm_mask */
     short		planemask;
+#endif
 {
     unsigned char *curvm;
     int byteCount;
@@ -172,6 +177,10 @@ p9000ImageWriteNoMem(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 }
 
 static void
+#if NeedFunctionPrototypes
+p9000ImageRead(int x, int y, int w, int h, unsigned char *psrc, int pwidth,
+	       int px, int py, short planemask)
+#else
 p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			x;
     int			y;
@@ -182,6 +191,7 @@ p9000ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			px;
     int			py;
     short		planemask;
+#endif
 {
     register int j;
     register unsigned char *curvm;

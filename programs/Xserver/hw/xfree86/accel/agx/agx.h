@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.2 1994/08/01 12:08:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.3 1994/08/12 13:56:32 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -566,6 +566,19 @@ void agxFSpansStipple(
     unsigned int,
     unsigned int,
     unsigned int
+#endif
+);
+/* agxGtImg.c */
+void agxGetImage(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    int,
+    int,
+    int,
+    int,
+    unsigned int,
+    unsigned long,
+    char * 
 #endif
 );
 /* agxGS.c */

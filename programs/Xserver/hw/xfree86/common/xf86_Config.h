@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.5 1994/09/03 02:51:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.7 1994/09/04 10:52:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -37,12 +37,17 @@
 #ifdef SCROLLLOCK
 #undef SCROLLLOCK
 #endif
+#ifdef MONO
+#undef MONO
+#endif
 
 typedef struct {
   int           num;                  /* returned number */
   char          *str;                 /* private copy of the return-string */
   double        realnum;              /* returned number as a real */
 } LexRec, *LexPtr;
+
+#ifndef OLD_XCONFIG
 
 /* Monitor and device records. */
 #define MAX_HSYNC 8
@@ -102,62 +107,39 @@ typedef struct {
    OFlagSet xconfigFlag;
 } DispRec, *DispPtr;
 
+/*
+ * We use the convention that tokens >= 1000 or < 0 do not need to be
+ * present in a screen's list of valid tokens in order to be valid.
+ * Also, each token should have a unique value regardless of the section
+ * it is used in.
+ */
+
 #define LOCK_TOKEN  -3
 #define ERROR_TOKEN -2
-#define NUMBER      10000                  
-#define STRING      10001
+#define NUMBER		10000                  
+#define STRING		10001
 
 /* GJA -- gave those high numbers since they occur in many sections. */
-#define SECTION       10002
-#define SUBSECTION    10003  /* Only used at one place now. */
-#define ENDSECTION    10004
-#define ENDSUBSECTION 10005
-#define IDENTIFIER    10006
-#define VENDOR        10007
-#define DASH          10008
-#define COMMA         10009
+#define SECTION		10002
+#define SUBSECTION	10003  /* Only used at one place now. */
+#define ENDSECTION	10004
+#define ENDSUBSECTION	10005
+#define IDENTIFIER	10006
+#define VENDOR		10007
+#define DASH		10008
+#define COMMA		10009
 
 #ifdef INIT_CONFIG
-static SymTabRec GlobalTab[] = {
-  { SECTION,	"section" } /* endsection is in the sections. */
+static SymTabRec TopLevelTab[] = {
+  { SECTION,   "section" },
+  { -1,         "" },
 };
 #endif /* INIT_CONFIG */
 
-/* XConfig sections */
-#define FONTPATH   0
-#define RGBPATH    1
-#define SHAREDMON  2
-#define NOTRAPSIGNALS 3
+#define HRZ	1001	/* Silly name to avoid conflict with linux/param.h */
+#define KHZ	1002
+#define MHZ	1003
 
-#ifdef OLD_XCONFIG
-#define KEYBOARD   10
-#endif
-
-#define MICROSOFT  20
-#define MOUSESYS   21
-#define MMSERIES   22
-#define LOGITECH   23
-#define BUSMOUSE   24
-#define LOGIMAN    25
-#define PS_2       26
-#define MMHITTAB   27
-#define XQUE       30
-#define OSMOUSE    31
-
-#define SVGA       40
-#define VGA2       41
-#undef MONO /* used on Linux in /usr/include/linux/kd.h */
-#define MONO       42
-#define VGA16      43
-#define ACCEL      44
-
-#define MODEDB     60
-
-#ifndef OLD_XCONFIG
-
-#define HRZ 1	/* Silly name to avoid conflict with linux/param.h */
-#define KHZ 2
-#define MHZ 3
 #ifdef INIT_CONFIG
 static SymTabRec UnitTab[] = {
   { HRZ,	"hz" },
@@ -166,6 +148,12 @@ static SymTabRec UnitTab[] = {
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
+
+#define SVGA	1010
+#define VGA2	1011
+#define MONO	1012
+#define VGA16	1013
+#define ACCEL	1014
 
 #ifdef INIT_CONFIG
 static SymTabRec DriverTab[] = {
@@ -179,63 +167,179 @@ static SymTabRec DriverTab[] = {
 };
 #endif /* INIT_CONFIG */
 
+#define MICROSOFT	1020
+#define MOUSESYS	1021
+#define MMSERIES	1022
+#define LOGITECH	1023
+#define BUSMOUSE	1024
+#define LOGIMAN		1025
+#define PS_2		1026
+#define MMHITTAB	1027
+#define XQUE      	1030
+#define OSMOUSE   	1031
+
 #ifdef INIT_CONFIG
 static SymTabRec MouseTab[] = {
-  { MICROSOFT,  "microsoft" },
-  { MOUSESYS,   "mousesystems" },
-  { MMSERIES,   "mmseries" },
-  { LOGITECH,   "logitech" },
-  { BUSMOUSE,   "busmouse" },
-  { LOGIMAN,    "mouseman" },
-  { PS_2,       "ps/2" },
-  { MMHITTAB,   "mmhittab" },
-  { XQUE,       "xqueue" },
-  { OSMOUSE,    "osmouse" },
-  { -1,         "" },
+  { MICROSOFT,	"microsoft" },
+  { MOUSESYS,	"mousesystems" },
+  { MMSERIES,	"mmseries" },
+  { LOGITECH,	"logitech" },
+  { BUSMOUSE,	"busmouse" },
+  { LOGIMAN,	"mouseman" },
+  { PS_2,	"ps/2" },
+  { MMHITTAB,	"mmhittab" },
+  { XQUE,	"xqueue" },
+  { OSMOUSE,	"osmouse" },
+  { -1,		"" },
 };
 #endif /* INIT_CONFIG */
+
+#define FONTPATH	1040
+#define RGBPATH		1041
 
 #ifdef INIT_CONFIG
 static SymTabRec FilesTab[] = {
-  { ENDSECTION, "endsection"},
-  { FONTPATH,   "fontpath" },
-  { RGBPATH,    "rgbpath" },
-  { -1,         "" },
+  { ENDSECTION,	"endsection"},
+  { FONTPATH,	"fontpath" },
+  { RGBPATH,	"rgbpath" },
+  { -1,		"" },
 };
 #endif /* INIT_CONFIG */
 
-#ifdef INIT_CONFIG
-static SymTabRec TopLevelTab[] = {
-  { SECTION,   "section" },
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
+#define NOTRAPSIGNALS	1050
+#define DONTZAP		1051
 
 #ifdef INIT_CONFIG
 static SymTabRec ServerFlagsTab[] = {
   { ENDSECTION, "endsection"},
   { NOTRAPSIGNALS, "notrapsignals" },
+  { DONTZAP,	"dontzap" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
 
-#define CHIPSET     10
-#define CLOCKS      11
-#define OPTION      12
-#define VIDEORAM    13
-#define BOARD       14
-#define IOBASE      15
-#define DACBASE     16
-#define COPBASE     17
-#define POSBASE     18
-#define INSTANCE    19
-#define RAMDAC      20
-#define DACSPEED    21
-#define SPEEDUP     22
-#define NOSPEEDUP   23
-#define CLOCKPROG   24
-#define BIOSBASE    25
-#define MEMBASE     26
+#define DISPLAYSIZE	1060
+#define MODELINE	1061
+#define MODEL		1062
+#define BANDWIDTH	1063
+#define HORIZSYNC	1064
+#define VERTREFRESH	1065
+#define MODE		1066
+
+#ifdef INIT_CONFIG
+static SymTabRec MonitorTab[] = {
+  { ENDSECTION,	"endsection"},
+  { IDENTIFIER,	"identifier"}, 
+  { VENDOR,	"vendorname"},
+  { MODEL,	"modelname"}, 
+  { MODELINE,	"modeline"},
+  { DISPLAYSIZE,"displaysize" },
+  { BANDWIDTH,	"bandwidth" },
+  { HORIZSYNC,	"horizsync" },
+  { VERTREFRESH,"vertrefresh" },
+  { MODE,	"mode" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+#define DOTCLOCK	1070
+#define HTIMINGS	1071
+#define VTIMINGS	1072
+#define FLAGS		1073
+#define ENDMODE		1074
+
+#ifdef INIT_CONFIG
+static SymTabRec ModeTab[] = {
+  { DOTCLOCK,	"dotclock"},
+  { HTIMINGS,	"htimings"}, 
+  { VTIMINGS,	"vtimings"},
+  { FLAGS,	"flags"}, 
+  { ENDMODE,	"endmode"},
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+#define DRIVER		1080
+#define MDEVICE		1081
+#define MONITOR		1082
+#define SCREENNO	1083
+
+#ifdef INIT_CONFIG
+static SymTabRec ScreenTab[] = {
+  { ENDSECTION, "endsection"},
+  { DRIVER,	"driver" },
+  { MDEVICE,	"device" },
+  { MONITOR,	"monitor" },
+  { SCREENNO,	"screenno" },
+  { SUBSECTION,	"subsection" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+/* Mode timing keywords */
+#define INTERLACE	1090
+#define PHSYNC		1091
+#define NHSYNC		1092
+#define PVSYNC		1093
+#define NVSYNC		1094
+#define CSYNC		1095
+
+#ifdef INIT_CONFIG
+static SymTabRec TimingTab[] = {
+  { INTERLACE,	"interlace"},
+  { PHSYNC,	"+hsync"},
+  { NHSYNC,	"-hsync"},
+  { PVSYNC,	"+vsync"},
+  { NVSYNC,	"-vsync"},
+  { CSYNC,	"composite"},
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+/* Indexes for the specialKeyMap array */
+#define K_INDEX_LEFTALT		0
+#define K_INDEX_RIGHTALT	1
+#define K_INDEX_SCROLLLOCK	2
+#define K_INDEX_RIGHTCTL	3
+
+/* Values for the specialKeyMap array */
+#define K_META		0
+#define K_COMPOSE	1
+#define K_MODESHIFT	2
+#define K_MODELOCK	3
+#define K_SCROLLLOCK	4
+#define K_CONTROL	5
+
+#ifdef INIT_CONFIG
+static SymTabRec KeyMapTab[] = {
+  { K_META,		"meta" },
+  { K_COMPOSE,		"compose" },
+  { K_MODESHIFT,	"modeshift" },
+  { K_MODELOCK,		"modelock" },
+  { K_SCROLLLOCK,	"scrolllock" },
+  { K_CONTROL,		"control" },
+  { -1,			"" },
+};
+#endif /* INIT_CONFIG */
+
+#define CHIPSET		10
+#define CLOCKS		11
+#define OPTION		12
+#define VIDEORAM	13
+#define BOARD		14
+#define IOBASE		15
+#define DACBASE		16
+#define COPBASE		17
+#define POSBASE		18
+#define INSTANCE	19
+#define RAMDAC		20
+#define DACSPEED	21
+#define SPEEDUP		22
+#define NOSPEEDUP	23
+#define CLOCKPROG	24
+#define BIOSBASE	25
+#define MEMBASE		26
+#define CLOCKCHIP	27
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -243,21 +347,173 @@ static SymTabRec DeviceTab[] = {
   { IDENTIFIER, "identifier"},
   { VENDOR, 	"vendorname"},
   { BOARD, 	"boardname"},
-  { CHIPSET,    "chipset" },
+  { CHIPSET,	"chipset" },
   { RAMDAC,	"ramdac" },
-  { DACSPEED,   "dacspeed"},
-  { CLOCKS,     "clocks" },
-  { OPTION,     "option" },
-  { VIDEORAM,   "videoram" },
+  { DACSPEED,	"dacspeed"},
+  { CLOCKS,	"clocks" },
+  { OPTION,	"option" },
+  { VIDEORAM,	"videoram" },
+  { SPEEDUP,	"speedup" },
+  { NOSPEEDUP,	"nospeedup" },
+  { CLOCKPROG,	"clockprog" },
+  { BIOSBASE,	"biosbase" },
+  { MEMBASE,	"membase" },
   { IOBASE,	"iobase" },
   { DACBASE,	"dacbase" },
   { COPBASE,	"copbase" },
   { POSBASE,	"posbase" },
   { INSTANCE,	"instance" },
+  { CLOCKCHIP,	"clockchip" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+/* Keyboard keywords */
+#define AUTOREPEAT	30
+#define SERVERNUM	31
+#define XLEDS		32
+#define VTINIT		33
+#define LEFTALT		34
+#define RIGHTALT	35
+#define SCROLLLOCK	36
+#define RIGHTCTL	37
+#define VTSYSREQ	38
+#define DEVICE		39
+
+#ifdef INIT_CONFIG
+static SymTabRec KeyboardTab[] = {
+  { ENDSECTION,	"endsection"},
+  { DEVICE,	"device" },
+  { AUTOREPEAT,	"autorepeat" },
+  { SERVERNUM,	"servernumlock" },
+  { XLEDS,	"xleds" },
+  { VTINIT,	"vtinit" },
+  { LEFTALT,	"leftalt" },
+  { RIGHTALT,	"rightalt" },
+  { RIGHTALT,	"altgr" },
+  { SCROLLLOCK,	"scrolllock" },
+  { RIGHTCTL,	"rightctl" },
+  { VTSYSREQ,	"vtsysreq" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+#define P_MS		0			/* Microsoft */
+#define P_MSC		1			/* Mouse Systems Corp */
+#define P_MM		2			/* MMseries */
+#define P_LOGI		3			/* Logitech */
+#define P_BM		4			/* BusMouse ??? */
+#define P_LOGIMAN	5			/* MouseMan / TrackMan
+						   [CHRIS-211092] */
+#define P_PS2		6			/* PS/2 mouse */
+#define P_MMHIT		7			/* MM_HitTab */
+
+#define EMULATE3	50
+#define BAUDRATE	51
+#define SAMPLERATE	52
+#define CLEARDTR	53
+#define CLEARRTS	54
+#define CHORDMIDDLE	55
+#define PROTOCOL	56
+#define PDEVICE		57
+
+#ifdef INIT_CONFIG
+static SymTabRec PointerTab[] = {
+  { PDEVICE,	"device"},
+  { ENDSECTION,	"endsection"},
+  { PROTOCOL,	"protocol" },
+  { BAUDRATE,	"baudrate" },
+  { EMULATE3,	"emulate3buttons" },
+  { SAMPLERATE,	"samplerate" },
+  { CLEARDTR,	"cleardtr" },
+  { CLEARRTS,	"clearrts" },
+  { CHORDMIDDLE,"chordmiddle" },
+  { -1,		"" },
+};
+#endif /* INIT_CONFIG */
+
+/* OPTION is defined to 12 above */
+#define MODES		70
+#define VIRTUAL		71
+#define VIEWPORT	72
+#define VISUAL		73
+#define BLACK		74
+#define WHITE		75
+#define DEPTH		76
+#define WEIGHT		77
+
+#ifdef INIT_CONFIG
+static SymTabRec DisplayTab[] = {
+  { ENDSUBSECTION,	"endsubsection" },
+  { MODES,		"modes" },
+  { VIEWPORT,		"viewport" },
+  { VIRTUAL,		"virtual" },
+  { VISUAL,		"visual" },
+  { BLACK,		"black" },
+  { WHITE,		"white" },
+  { DEPTH,		"depth" },
+  { WEIGHT,		"weight" },
+  { OPTION,		"option" },
+  { -1,			"" },
+};
+#endif /* INIT_CONFIG */
+
+/* Graphics keywords */
+#define STATICGRAY	90
+#define GRAYSCALE	91
+#define STATICCOLOR	92
+#define PSEUDOCOLOR	93
+#define TRUECOLOR	94
+#define DIRECTCOLOR	95
+
+#ifdef INIT_CONFIG
+static SymTabRec VisualTab[] = {
+  { STATICGRAY,	"staticgray" },
+  { GRAYSCALE,	"grayscale" },
+  { STATICCOLOR,"staticcolor" },
+  { PSEUDOCOLOR,"pseudocolor" },
+  { TRUECOLOR,	"truecolor" },
+  { DIRECTCOLOR,"directcolor" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
+
 #else /* OLD_XCONFIG */
+/* This stuff will be removed soon */
+
+#define LOCK_TOKEN  -3
+#define ERROR_TOKEN -2
+#define NUMBER      10000                  
+#define STRING      10001
+
+/* XConfig sections */
+#define FONTPATH   0
+#define RGBPATH    1
+#define SHAREDMON  2
+#define NOTRAPSIGNALS 3
+
+#define KEYBOARD   10
+
+#define MICROSOFT  20
+#define MOUSESYS   21
+#define MMSERIES   22
+#define LOGITECH   23
+#define BUSMOUSE   24
+#define LOGIMAN    25
+#define PS_2       26
+#define MMHITTAB   27
+#define XQUE       30
+#define OSMOUSE    31
+
+#define VGA256     40
+#define VGA2       41
+#undef MONO /* used on Linux in /usr/include/linux/kd.h */
+#define MONO       42
+#define VGA16      43
+#define ACCEL      44
+
+#define MODEDB     60
+
 #ifdef INIT_CONFIG
 static SymTabRec SymTab[] = {
   { FONTPATH,   "fontpath" },
@@ -290,7 +546,6 @@ static SymTabRec SymTab[] = {
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
-#endif /* OLD_XCONFIG */
 
 #define P_MS		0			/* Microsoft */
 #define P_MSC		1			/* Mouse Systems Corp */
@@ -313,14 +568,9 @@ static SymTabRec SymTab[] = {
 #define SCROLLLOCK 7
 #define RIGHTCTL   8
 #define VTSYSREQ   9
-#define DEVICE    10
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyboardTab[] = {
-#ifndef OLD_XCONFIG
-  { ENDSECTION, "endsection"},
-  { DEVICE, "device" },
-#endif
   { AUTOREPEAT, "autorepeat" },
   { DONTZAP,    "dontzap" },
   { SERVERNUM,  "servernumlock" },
@@ -364,31 +614,13 @@ static SymTabRec KeyMapTab[] = {
 #endif /* INIT_CONFIG */
 
 /* Mouse keywords */
-#define EMULATE3    0
-#define BAUDRATE    1
-#define SAMPLERATE  2
-#define CLEARDTR    3
-#define CLEARRTS    4
+#define EMULATE3   0
+#define BAUDRATE   1
+#define SAMPLERATE 2
+#define CLEARDTR   3
+#define CLEARRTS   4
 #define CHORDMIDDLE 5
-#define PROTOCOL    6
-#define PDEVICE     7
 
-#ifndef OLD_XCONFIG
-#ifdef INIT_CONFIG
-static SymTabRec PointerTab[] = {
-  { PDEVICE, "device"},
-  { ENDSECTION, "endsection"},
-  { PROTOCOL,   "protocol" },
-  { BAUDRATE,   "baudrate" },
-  { EMULATE3,   "emulate3buttons" },
-  { SAMPLERATE, "samplerate" },
-  { CLEARDTR,   "cleardtr" },
-  { CLEARRTS,   "clearrts" },
-  { CHORDMIDDLE,"chordmiddle" },
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
-#else
 #ifdef INIT_CONFIG
 static SymTabRec MouseTab[] = {
   { BAUDRATE,   "baudrate" },
@@ -400,119 +632,7 @@ static SymTabRec MouseTab[] = {
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
-#endif
 
-#ifndef OLD_XCONFIG
-#define DISPLAYSIZE 12
-#define SCREENNO    14
-#define MODELINE    26
-#define MODEL       27
-#define BANDWIDTH   28
-#define HORIZSYNC   29
-#define VERTREFRESH 30
-#define MODE	    31
-
-#ifdef INIT_CONFIG
-static SymTabRec MonitorTab[] = {
-  { ENDSECTION,  "endsection"},
-  { IDENTIFIER,  "identifier"}, 
-  { VENDOR, 	 "vendorname"},
-  { MODEL, 	 "modelname"}, 
-  { MODELINE,    "modeline"},
-  { DISPLAYSIZE, "displaysize" },
-  { SCREENNO,    "screenno" },
-  { SPEEDUP,     "speedup" },
-  { NOSPEEDUP,   "nospeedup" },
-  { CLOCKPROG,   "clockprog" },
-  { BIOSBASE,    "biosbase" },
-  { MEMBASE,	 "membase" },
-  { BANDWIDTH,   "bandwidth" },
-  { HORIZSYNC,   "horizsync" },
-  { VERTREFRESH, "vertrefresh" },
-  { MODE, "mode" },
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
-
-#define DOTCLOCK 1
-#define HTIMINGS 2
-#define VTIMINGS 3
-#define FLAGS    4
-#define ENDMODE  5
-
-#ifdef INIT_CONFIG
-static SymTabRec ModeTab[] = {
-  { DOTCLOCK,  "dotclock"},
-  { HTIMINGS,  "htimings"}, 
-  { VTIMINGS,  "vtimings"},
-  { FLAGS,     "flags"}, 
-  { ENDMODE,   "endmode"},
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
-
-/* OPTION is defined to 12 above */
-#define MODES       13
-#define VIRTUAL     18
-#define VIEWPORT    17
-#define VISUAL	    19 /* GJA -- ?? */
-#define BLACK       23
-#define WHITE       24
-#define DEPTH       25
-#define WEIGHT      26
-
-#ifdef INIT_CONFIG
-static SymTabRec DisplayTab[] = {
-  { ENDSUBSECTION, "endsubsection" },
-  { MODES,      "modes" },
-  { VIEWPORT,   "viewport" },
-  { VIRTUAL,    "virtual" },
-  { VISUAL,	"visual" },
-  { BLACK,	"black" },
-  { WHITE,	"white" },
-  { DEPTH,	"depth" },
-  { WEIGHT,	"weight" },
-  { OPTION,	"option" },
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
-
-#define DRIVER 1
-#define MDEVICE 2
-#define MONITOR 3
-
-/* Graphics keywords */
-#define STATICGRAY  10 	/* Enum! */
-#define GRAYSCALE   11 	/* Enum! */
-#define STATICCOLOR 12 	/* Enum! */
-#define PSEUDOCOLOR 13 	/* Enum! */
-#define TRUECOLOR   14 	/* Enum! */
-#define DIRECTCOLOR 15 	/* Enum! */
-
-#ifdef INIT_CONFIG
-static SymTabRec VisualTab[] = {
-  { STATICGRAY,	"staticgray" },
-  { GRAYSCALE,	"grayscale" },
-  { STATICCOLOR,"staticcolor" },
-  { PSEUDOCOLOR,"pseudocolor" },
-  { TRUECOLOR,	"truecolor" },
-  { DIRECTCOLOR,"directcolor" },
-  { -1,         "" },
-};
-#endif /* INIT_CONFIG */
-
-#ifdef INIT_CONFIG
-static SymTabRec ScreenTab[] = {
-  { ENDSECTION, "endsection"},
-
-  { DRIVER,	"driver" },
-  { MDEVICE,	"device" },
-  { MONITOR,	"monitor" },
-  { SUBSECTION,	"subsection" },
-  { -1,		"" },
-};
-#endif /* INIT_CONFIG */
-#else /* OLD_XCONFIG */
 /* Graphics keywords */
 #define STATICGRAY  0
 #define GRAYSCALE   1
@@ -544,6 +664,7 @@ static SymTabRec ScreenTab[] = {
 #define INSTANCE    30
 #define RAMDAC      31
 #define DACSPEED    32
+
 
 #ifdef INIT_CONFIG
 static SymTabRec GraphicsTab[] = {
@@ -581,7 +702,6 @@ static SymTabRec GraphicsTab[] = {
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */
-#endif
 
 /* Mode timing keywords */
 #define INTERLACE 0
@@ -603,6 +723,8 @@ static SymTabRec TimingTab[] = {
 };
 #endif /* INIT_CONFIG */
 
+#endif /* OLD_XCONFIG */
+
 #endif /* XCONFIG_FLAGS_ONLY */
 
 /* 
@@ -621,6 +743,12 @@ static SymTabRec TimingTab[] = {
 #define XCONFIG_INSTANCE        11      /* Xconfig or default */
 #define XCONFIG_RAMDAC          12      /* Xconfig or default */
 #define XCONFIG_DACSPEED        13      /* Xconfig or default */
+#define XCONFIG_BIOSBASE        14      /* Xconfig or default */
+#define XCONFIG_MEMBASE         15      /* Xconfig or default */
+#define XCONFIG_IOBASE          16      /* Xconfig or default */
+#define XCONFIG_DACBASE         17      /* Xconfig or default */
+#define XCONFIG_COPBASE         18      /* Xconfig or default */
+#define XCONFIG_POSBASE         19      /* Xconfig or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.21 1994/09/03 02:51:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.22 1994/09/04 10:46:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -76,7 +76,7 @@ ScrnInfoRec s3InfoRec =
    (Bool (*)())NoopDDA,		/* Bool (* SwitchMode)() */
    s3PrintIdent,		/* void (* PrintIdent)() */
    8,				/* int depth */
-   {0, 0, 0},			/* xrgb weight */
+   {5, 6, 5},			/* xrgb weight */
    8,				/* int bitsPerPixel */
    PseudoColor,			/* int defaultVisual */
    -1, -1,			/* int virtualX,virtualY */
@@ -280,7 +280,7 @@ s3Probe()
    Bool pixMuxNeeded = FALSE;
    int pixMuxMinWidth = 1024;
    int nonMuxMaxClock = 0;
-   int nonMuxMaxMemory = 4096;
+   int nonMuxMaxMemory = 8192;
    Bool pixMuxLimitedWidths = TRUE;
    Bool pixMuxInterlaceOK = TRUE;
    Bool pixMuxWidthOK = TRUE;
@@ -559,8 +559,7 @@ s3Probe()
    if (xf86bpp < 0) {
       xf86bpp = s3InfoRec.depth;
    }
-   if (s3InfoRec.weight.red != 0 && s3InfoRec.weight.green != 0 &&
-       s3InfoRec.weight.blue != 0) {
+   if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
       xf86weight = s3InfoRec.weight;
    }
    switch (xf86bpp) {
@@ -879,7 +878,7 @@ s3Probe()
 	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
-	S3_x64_SERIES(s3ChipId)))
+	S3_964_SERIES(s3ChipId)))
       s3Bt485PixMux = TRUE;
 
    if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC) && 
@@ -960,7 +959,7 @@ s3Probe()
 	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = FALSE;
 	 pixMuxMinWidth = 1024;
-      } else if (S3_x64_SERIES(s3ChipId)) {
+      } else if (S3_964_SERIES(s3ChipId)) {
          nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
 	 pixMuxLimitedWidths = FALSE;
@@ -1103,14 +1102,15 @@ s3Probe()
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else if ((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
 		 s3InfoRec.videoRam * 1024) {
-	 ErrorF("%s: Too little memory for mode \"%s\"\n", s3InfoRec.name,
-		pMode->name);
-	 ErrorF("%s: NB. 1 scan line is required for the hardware cursor\n",
-	        s3InfoRec.name);
+	 ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
+		s3InfoRec.name, pMode->name);
+	 ErrorF("%s %s: NB. 1 scan line is required for the hardware cursor\n",
+	        XCONFIG_PROBED, s3InfoRec.name);
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else if (((tx > 0) && (pMode->HDisplay > tx)) ||
 		 ((ty > 0) && (pMode->VDisplay > ty))) {
-	 ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+	 ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+		XCONFIG_PROBED, s3InfoRec.name,
 		pMode->HDisplay, pMode->VDisplay, tx, ty);
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else {
@@ -1247,7 +1247,7 @@ s3Probe()
          s3DAC8Bit = TRUE;
    }
 
-   if (s3DAC8Bit && xf86Verbose)
+   if (s3InfoRec.bitsPerPixel == 8 && s3DAC8Bit && xf86Verbose)
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
          XCONFIG_GIVEN, s3InfoRec.name);
 

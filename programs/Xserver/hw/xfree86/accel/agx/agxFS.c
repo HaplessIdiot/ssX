@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.2 1994/08/01 12:08:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.3 1994/08/12 13:56:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -202,7 +202,7 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);
 
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }
 
 void

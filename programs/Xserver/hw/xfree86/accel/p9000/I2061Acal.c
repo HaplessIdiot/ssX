@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/ICD2061Acal.c,v 3.0 1994/05/29 02:05:29 dawes Exp $ */
 /* Id: ICD2061Acal.c,v 4.0 1994/05/28 01:24:17 nygren Exp */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved.
@@ -55,7 +55,7 @@
 
 /* Index register frequency ranges for ICD2061A chip */
 /* "The Index Field is used to preset the VCO to an appropriate range." pg. 13 */
-static int vclk_range[14] =
+static long vclk_range[14] =
  {
      51000000,
      53200000,
@@ -70,11 +70,11 @@ static int vclk_range[14] =
      91500000,
     100000000,
     120000000,
-    135000000    /* BE WARNED THIS COULD BE VERY VERY BAD!!!!!!! */
+    135000000    /* BE WARNED THIS COULD BE VERY VERY BAD (i.e. , I'm guessing)!!!!!!! */
  } ;
 
-unsigned int ICD2061ACalcClock
-             ( int frequency , int chipreg )  /* frequency in Hz */
+unsigned long ICD2061ACalcClock
+             ( long frequency , int chipreg )  /* frequency in Hz */
  /* chipreg - select one of 3 registers in icd2061a to be selected
                                           to hold new frequency parameters */
  {
@@ -83,9 +83,10 @@ unsigned int ICD2061ACalcClock
   int Mux ; /* divider after vco */
 
   register int      index;
-  int               temp;
-  int               Best_Qdivider, Best_Pdivider, min_diff;
-  int               diff;
+  unsigned long     temp;
+  int               Best_Qdivider, Best_Pdivider;
+  long              min_diff;
+  long               diff;
 
   min_diff = 0xFFFFFFF;
   Best_Pdivider = 1;
@@ -155,10 +156,10 @@ unsigned int ICD2061ACalcClock
   /* Pack the control word for the frequency snthesizer ,
      packed into bits 0-23, not 1-24 like before */
 
-  temp = ( chipreg            << 21 ) |
-         ( index              << 17 ) |
-         ( ( P_Divider  - 3 ) << 10 ) |
-         ( Mux                <<  7 ) |
+  temp = ( (long) chipreg            << 21 ) |
+         ( (long) index              << 17 ) |
+         ( (long) ( P_Divider  - 3 ) << 10 ) |
+         ( (long) Mux                <<  7 ) |
          ( Q_Divider - 2 )         ;
 
 #ifdef DEBUG
@@ -181,7 +182,7 @@ int ICD2061AGCD ( int number1 , int number2 )
   return number2 ;
  }
 
-unsigned int ICD2061AGetClock ( unsigned int control_word )
+unsigned int ICD2061AGetClock ( unsigned long control_word )
     /* value now in bits 0-23 ( not 1-24 like before ) */
  {
   unsigned int Q_Divider ;
@@ -224,10 +225,10 @@ unsigned int ICD2061AGetClock ( unsigned int control_word )
   return FinalFreq ;
  }
 
-unsigned int CalcVCOfreq
+unsigned long CalcVCOfreq
       ( unsigned int Q_Divider , unsigned int Feedback_Divider_P )
  {
-  unsigned int VCO_Freq ;
+  unsigned long VCO_Freq ;
 
   /* f(VCO) = Prescale * f(ref) * P / Q */
   /* where Prescale is determined by a bit in the control reg, and will

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.3 1994/08/01 12:09:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.4 1994/08/20 07:32:09 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -706,6 +706,8 @@ typedef struct {
                                            __FILE__,__LINE__); \
                                  } \
                                }
+
+#define GE_WAIT_IDLE_EXIT()    {}
 
 #define GE_START_CMD( cmd )    GE_OUT_D(0x7C, (cmd))
 #define GE_START_CMDW( cmd )   GE_OUT_W(0x7E, (cmd))

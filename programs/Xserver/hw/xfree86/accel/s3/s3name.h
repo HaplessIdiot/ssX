@@ -1,5 +1,5 @@
 /* $XConsortium: s3name.h,v 1.1 94/03/28 21:16:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.1 1994/07/16 10:20:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.2 1994/08/01 12:12:25 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -83,6 +83,8 @@
 #define s3RealizeFont CUSTOMNAME(_s3RealizeFont)
 #define s3UnrealizeFont CUSTOMNAME(_s3UnrealizeFont)
 #define s3NoCPolyText CUSTOMNAME(_s3NoCPolyText)
+#define s3SimpleStipple CUSTOMNAME(_s3SimpleStipple)
+#define s3FontStipple CUSTOMNAME(_s3FontStipple)
 #define s3NoCImageText CUSTOMNAME(_s3NoCImageText)
 #define s3CursorInit CUSTOMNAME(_s3CursorInit)
 #define s3ShowCursor CUSTOMNAME(_s3ShowCursor)

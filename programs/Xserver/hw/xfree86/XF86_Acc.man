@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.5 1994/07/15 06:55:30 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.6 1994/08/31 04:03:38 dawes Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -417,6 +417,7 @@ but some of their bt485's are not rated that high.  If you do not have
 a 135 MHz bt485 on your Viper, contact Diamond tech support and they
 will send you an RMA number to replace the board.
 Acceleration is being added in slowly and not all features work yet.
+The P9000 server also does NOT work with xdm.  This is being investigated.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to

@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514gc.c,v 1.2 94/04/17 20:30:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514gc.c,v 3.0 1994/08/01 12:09:40 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -79,10 +79,10 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 static void cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-static void cfbDestroyOps();
+static void cfbDestroyOps(), ibm8514ValidateGC();
 
 static GCFuncs cfbFuncs = {
-    cfbValidateGC,
+    ibm8514ValidateGC,
     cfbChangeGC,
     cfbCopyGC,
     cfbDestroyGC,
@@ -366,7 +366,7 @@ cfbDestroyOps (ops)
 */
 
 static void
-cfbValidateGC(pGC, changes, pDrawable)
+ibm8514ValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;
     DrawablePtr	    pDrawable;
@@ -904,7 +904,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->FillSpans = ibm8514OStipFSpans;
 	    break;
 	default:
-	    FatalError("cfbValidateGC: illegal fillStyle\n");
+	    FatalError("ibm8514ValidateGC: illegal fillStyle\n");
 	}
       } else {
 	switch (pGC->fillStyle) {
@@ -949,7 +949,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
-	    FatalError("cfbValidateGC: illegal fillStyle\n");
+	    FatalError("ibm8514ValidateGC: illegal fillStyle\n");
 	}
       }
     } /* end of new_fillspans */

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_VGA16.c,v 1.1 94/03/28 21:22:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_VGA16.c,v 3.1 1994/05/30 08:24:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_VGA16.c,v 3.2 1994/06/28 12:29:13 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -47,7 +47,6 @@ int vga16ValidTokens[] =
   GRAYSCALE,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   SCREENNO,
   OPTION,
@@ -68,7 +67,6 @@ int monoValidTokens[] =
   OPTION,
   MEMBASE,
   SCREENNO,
-  DISPLAYSIZE,
   VIRTUAL,
   VIEWPORT,
   -1

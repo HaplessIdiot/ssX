@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/ICD2061Aset.c,v 3.0 1994/05/29 02:05:30 dawes Exp $ */
 /* Id: ICD2061Aset.c,v 4.0 1994/05/28 01:24:17 nygren Exp */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved. 
@@ -31,11 +31,11 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation.  Harry Langenbacher 
- * makes no representations about the suitability of this software for any 
- * purpose.  It is provided "as is" without express or implied warranty.
+ * the above copyright notices appear in all copies and that both that
+ * copyright notices and this permission notice appear in supporting
+ * documentation. Harry Langenbacher makes no representations about the
+ * suitability of this software for any purpose. It is provided "as is"
+ * without express or implied warranty.
  */
 
 #include        "X.h"
@@ -45,7 +45,7 @@
 #include	"ICD2061A.h"
 #include        "p9000reg.h"
 
-void ICD2061ASetClock ( unsigned int control_word )
+void ICD2061ASetClock ( unsigned long control_word )
    /* value now in bits 0-23 ( not 1-24 like #9 ) */
  {
   register int index;
@@ -73,15 +73,15 @@ void ICD2061ASetClock ( unsigned int control_word )
      quit wiggling the sel/clk/data inputs */
 
   /* Set up the bits and regs for sending serial data to the icd2061 */
-#define CLOCK(xx) outb(MISC_OUT_REG, (savemisc & 0xF3)| (xx) )
+#define CLOCK(xx) outb((short)MISC_OUT_REG, (char)(savemisc & 0xF3)| (xx) )
 #define C_DATA  8
 #define C_CLK   4
 #define C_BOTH  0xC
 #define C_NONE  0
 
-  savemisc = inb ( MISC_IN_REG ) ;  /* read MISCOUT reg */
+  savemisc = inb ( (short) MISC_IN_REG ) ;  /* read MISCOUT reg */
 #ifdef DEBUG
-  ErrorF("savemisc=0x%X\n" , (int) savemisc ) ;
+  ErrorF("ICD2061ASetClock: Debug info: savemisc=MISC_IN_REG=0x%X\n" , (int) savemisc ) ;
 #endif
 
   /* refer to ICD2061A data sheet, and Power 9000 EISA App. Note, pg 16 */
@@ -134,9 +134,21 @@ void ICD2061ASetClock ( unsigned int control_word )
   /* select bits, otherwise set new select video freq. reg. */
 
   if ( ( select >= 0 ) && ( select <= 2 ) ) /* if it's a vclk reg */
+   {
     CLOCK ( select << 2 ) ; /* this will set SEL1 (bit 3) and SEL0 (bit 2) */
+#ifdef DEBUG
+  ErrorF("ICD2061ASetClock: Debug info: savemisc=MISC_IN_REG=0x%X\n" ,
+               (int) ((savemisc & 0xF3)| (select << 2) ) ) ;
+#endif
+   }
   else
-    outb ( MISC_OUT_REG , savemisc ) ; /* not a vclk reg restore old select bits so that old vclk is selected */
+   {
+    outb ( (short) MISC_OUT_REG , (char) savemisc ) ; /* not a vclk reg restore old select bits so that old vclk is selected */
+#ifdef DEBUG
+  ErrorF("ICD2061ASetClock: Debug info: MISC_OUT_REG set to=0x%X\n" ,
+               (int) savemisc ) ;
+#endif
+   }
 }
 
 

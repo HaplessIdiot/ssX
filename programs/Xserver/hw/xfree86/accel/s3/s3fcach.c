@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.4 1994/08/20 07:33:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.6 1994/08/31 05:46:05 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -109,10 +109,10 @@ s3FontCache8Init()
       if( first ) {
          FontPool = xf86CreateCachePool(ALIGNMENT);
          for( BitPlane = s3InfoRec.bitsPerPixel-1; BitPlane >= 0; BitPlane-- ) {
-            xf86AddToCachePool(FontPool, x, y, w, h, BitPlane );
+            xf86AddToCachePool(FontPool, x, y, w, h, 1<<BitPlane );
 	 }
 
-         xf86InitFontCache(FontPool, w, h, s3ImageOpStipple, s3alu );
+         xf86InitFontCache(FontPool, w, h, s3FontStipple);
          xf86InitText(s3GlyphWrite, s3NoCPolyText, s3NoCImageText );
          ErrorF("%s %s: Using %d planes of %dx%d at (%d,%d) aligned %d as font cache\n",
                 XCONFIG_PROBED, s3InfoRec.name,
@@ -204,8 +204,8 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	       /*
 		* Is thre readmask altered
 		*/
-	       if (!pmsk || pmsk != (1 << block->id)) {
-		  pmsk = 1 << block->id;
+	       if (!pmsk || pmsk != block->id) {
+		  pmsk = block->id;
 	       	  S3_OUTW32(RD_MASK, pmsk);
 	       }
 	       xoff = block->x;

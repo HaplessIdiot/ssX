@@ -1,3 +1,30 @@
+XFree86 3.0Di (7 September 1994)
+239. Fix display start address in vgawonder driver for Mach32 and Mach64
+     boards (Marc Aurele La France).
+238. Fix clock probling in vgawonder driver for Mach64 boards
+     (Marc Aurele La France).
+237. vgawonder driver now detects and rejects Mach32 boards without
+     VGA Wonder functionality (Marc Aurele La France).
+236. Add ClockChip XF86Config keyword for programmable clock chips.
+235. Add a FIFO_MODERATE option for AGX server (Henry Worth).
+234. Limited support for Big-RAMDAC and dual-RAMDAC for 2MB Hercules
+     Graphite cards (Henry Worth).
+233. Eliminate use of libvga256 in AGX server (Henry Worth).
+232. Convert AGX code to use the Ramdac keyword instead of Options (Henry
+     Worth).
+231. Fix (?) ELSA probe code's register restoral.
+230. Auto-detection code for the NetBSD aperture driver (Matthieu Herrb).
+229. Change OpStipple interface in font code (Hans Nasten and Jon Tombs).
+228. Fix clock and register restoration in P9000 server (Chris Mason,
+     Harry Langenbacher, Erik Nygren).
+227. Fix Orchid P9000 support (Harry Langenbacher).
+226. Fix BIOS Probe for Viper PCI (Bob Hollinger).
+225. 16bpp/32bpp support code for SVGA server.  Cirrus 16bpp/32bpp support
+     is now enabled (Harm Hanemaayer).
+224. Fix Mach32 cache problems (Mike Bernson).
+223. Fix Mach32 memory probe.
+222. xf86Config and reconfig bug fixes.
+
 XFree86 3.0Dh (4 September 1994)
 221. Added minimal reconfig(1) man page so that 'make install.man'
      doesn't fail.

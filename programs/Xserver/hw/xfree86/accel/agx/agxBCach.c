@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.2 1994/06/26 13:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.3 1994/07/15 06:57:01 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -303,7 +303,7 @@ agxCReturnBlock(block)
          tmpb->next = block->next;
       }
 
-      GE_WAIT_IDLE();
+      GE_WAIT_IDLE_EXIT();
    }
 
    ERROR_F(("----------To---------------\n"));

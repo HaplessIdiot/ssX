@@ -1,102 +1,113 @@
-This is the README for the XFree86 ATI SVGA driver.
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.1 1994.09.01 Exp $
 
-Last Revised: Mon May 16 1994 by tsi@gpu.srv.ualberta.ca
+This is the README for the XFree86 ATI VGA Wonder driver used in the XF86_Mono,
+XF86_VGA16 and XF86_SVGA servers.
 
-NOTE: Users of boards with the ATI Mach8 or Mach32 chipsets should be
-      using the accelerated servers (XF86_Mach8 or XF86_Mach32).  The
-      SVGA server still works, but this is a waste of capabilities.
-
-
-Q. What's new?
-
-This is complete rewrite of the ATI SVGA driver found in XFree86 2.0 and 2.1.
-The major changes are a complete overhaul of clock selection and the addition
-of support for the 16-colour and monochrome servers.  
-
-WARNING:  The clocks specification used with previous versions of the driver
-          SHOULD NOT BE USED with this one.
-
-Q. What is the ATI SVGA driver?
-
-The ATI SVGA driver is a 256-colour, 16-colour and monochrome driver for
-XFree86.  The driver was written for the ATI VGAWONDER series of graphics
-adapters.  The following approximate maximum resolutions are possible
-depending on the video memory available on the board:
-
-  256K	 640x400x256	 800x600x16 
-  512K	 800x600x256	1296x800x16
-  1M	1296x800x256	1600x1200x16
-
-Maximum monochrome resolutions are the same as those for 16-colour mode.
+Users of ATI boards based on the Mach8 or Mach32 accelerators should be using
+the accelerated servers (XF86_Mach8 or XF86_Mach32).  The unaccelerated servers
+(XF86_Mono, XF86_VGA16 and XF86_SVGA) still work, but are a waste of
+capabilities.
 
 
-Q. What is the ATI SVGA driver *NOT*?
+What's new?
+----------
 
-The ATI SVGA driver does not (yet) support more than 8 bits of pixel depth.
-This is because XFree86 does not yet include a 15-bit, 16-bit or 24-bit server.
-Therefore, even though your manual says that your graphics adapter supports
-modes using more than 256 colors, the ATI SVGA driver will not use these
-modes.
+This is a complete rewrite of the ATI VGA Wonder driver that was included in
+XFree86 releases prior to 2.1.1.  The major changes are a complete overhaul of
+clock selection and the addition of support for the monochrome and 16-colour
+servers, and a greater selection of boards.
 
-The ATI SVGA driver is not an accelerated driver.  If you have an ATI
-GRAPHICS ULTRA series card, the ATI SVGA driver will not use the
-accelerated hardware.  It will only use the SVGA hardware.  This will
-probably not be any faster than a VGA WONDER card, unless the card is on a
-local bus (and then, it won't be faster than a VGA WONDER card on a local
-bus, if a card of this type existed).
+**WARNING**:  The clocks specification used with previous versions of this
+**WARNING**:  driver SHOULD NOT BE USED with this driver!  See below for
+**WARNING**:  upgrade information.
 
 
-Q. What cards will the driver work with?
+What is the ATI VGA Wonder driver?
+---------------------------------
 
-This is a difficult question, because there are many different ATI video
-cards, and it is sometimes difficult to tell them apart.  The best way is
-to look on the card itself for the ATI chip numbers.  Here is a partial
-list of ATI VGA WONDER cards.
+The ATI VGA Wonder driver is a 256-colour, 16-colour and monochrome driver for
+XFree86.  The driver is intended for all ATI video adapters except those that
+do not provide SuperVGA functionality (such as some early Mach8 and Mach32
+boards).  The following approximate maximum resolutions (based on the Golden
+Ratio of x/y = (1 + sqrt(5))/2) are possible depending on the video memory
+available on the board (and the capabilities of your monitor):
 
-Adapter version     Dot clock       Chip version
+    256k    640x409x256    896x585x16
+    512k    896x585x256   1280x819x16
+    1M     1280x819x256  1824x1149x16
 
-VGA WONDER V3       Crystals        ATI18800        Supported
-VGA WONDER V4       Crystals        ATI18800-1      Supported
-VGA WONDER V5       ATI18810        ATI18800-1      Supported
-VGA WONDER + (V6)   ATI18810        ATI28800-2      Supported
-VGA WONDER (1 MB)   ATI18810        ATI28800-4      Supported
-VGA WONDER (1 MB)   ATI18810        ATI28800-5      Supported
-VGA WONDER XL       ATI18810        ATI28800-5      Supported
-VGA WONDER XL24     ATI18810(?)     ATI28800-6      Supported
-VGA 1024 D/XL/DXL   ATI18811-0      ATI28800-5      Supported 
-
-Other combinations are possible.  Note that the ATI SVGA driver code has
-hooks and some support for all of the cards listed.  However, with the
-earlier cards, there are serious differences in the programmer's interface.
-The only people who have ever worked on the code have had 28800-4 and
-28800-5 chips, so these chips are the only ones that are actually known
-to work.  
-
-The ATI GRAPHICS ULTRA chips seem to have SVGA support which is equivalent
-to the 28800-4, 28800-5, and 28800-a, although I can find no documentation
-on this in the technical manuals provided by ATI.  The ULTRA PLUS and ULTRA
-PRO boards have been tested to some extent, and seem to work fine, but the
-original ULTRA may have some problems at greater than 640x480 resolution.
+Maximum monochrome resolutions are the same as those for 16-colour mode,
+because the monochrome server uses a maximum of one fourth of the available
+video memory.
 
 
-Q. What should I put in my Xconfig file?
+What is the ATI VGA Wonder driver *not*?
+---------------------------------------
 
-The Chipset will be automatically detected.  The chipset name for this
-driver is "vgawonder".  If you specify "ati" instead, any clocks 
+This driver does not yet support more than 8 bits of pixel depth.  This is
+because XFree86 does not yet include an unaccelerated server for more than
+8-bit colour.  Therefore, even if your manual says that your graphics adapter
+supports modes using more than 256 colours, the ATI VGA Wonder driver will not
+use these modes.
+
+The ATI VGA Wonder driver is not an accelerated driver.  If your board is based
+on the Mach8, Mach32 or Mach64 video controllers, this driver will not use the
+accelerated functions of the hardware.  It will only use the VGA Wonder
+hardware (which, for Mach32's and Mach64's, is integrated into the
+accelerator).  This can make opaque moves, for example, quite jerky.
+
+
+What video adapters will the driver work with?
+---------------------------------------------
+
+Most boards harbouring the following ATI video controller chips will work with
+this driver:
+
+    VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
+    Mach32 series:      68800-3, 68800-6, 68800AX, 68800LX
+    Mach64 series:      88800
+
+Some early Mach32 boards will not work with this driver because they do not
+provide VGA Wonder functionality.  Also, early Mach8 boards will not work for
+the same reason, unless the board also has a video controller from the VGA
+Wonder series (or is connected to one through the VGA passthrough connector).
+
+These boards are available with a variety of clock generators and RAMDACs.  See
+the Xconfig section below for details.  These boards are available with or
+without a mouse.  When they do have a mouse (ISA boards only), it is either a
+proprietary ATIXL busmouse, or one that uses the Logitech busmouse protocol.
+
+VGA Wonder V3 boards use a 18800 video controller and generate dot clocks with
+crystals.  VGA Wonder V4 boards have a 18800-1 and also use crystals.  VGA
+Wonder V5 boards also use a 18800-1, but have a 18810 clock generator.  VGA
+Wonder+ boards use a 28800-2 and a 18810.  Other than these, ATI's board naming
+convention (if it can be said that one exists) starts to fall apart.
+
+
+What should I put in my Xconfig file?
+------------------------------------
+
+The chipset will be automatically detected.  The chipset name for this driver
+is "vgawonder".  If you specify "ati" or "mach64" instead, any clocks
 specification in Xconfig will be ignored (which means the clocks will be
 probed).  This is done to ensure you are aware that the clocks specification
 for previous versions of the driver is not supported by this version.
 
-One of the following clocks specifications (or an initial subset thereof) 
-can be used depending on what the board uses to generate dot clocks:
+The clocks line to be specified in your Xconfig depend on what the board uses
+to generate dot clocks, and on whether or not the board is based on the Mach64
+accelerator.
 
-Crystals:
+For all boards, except those based on the Mach64, one of the following clocks
+specifications (or an initial subset thereof) can be used depending on what the
+board uses to generate dot clocks:
+
+Crystals (VGA Wonder V3 and V4 boards only):
 
   Clocks  50.175  56.644   0.000  44.900  44.900  50.175   0.000  36.000
           25.088  28.322   0.000  22.450  22.450  25.088   0.000  18.000
           16.725  18.881   0.000  14.967  14.967  16.725   0.000  12.000
           12.544  14.161   0.000  11.225  11.225  12.544   0.000   9.000
- 
+
 ATI 18810 clock generator:
 
   Clocks  30.240  32.000  37.500  39.000  42.954  48.771   0.000  36.000
@@ -108,7 +119,7 @@ ATI 18810 clock generator:
            7.560   8.000   9.375   9.750  10.739  12.193   0.000   9.000
           10.000  14.161  18.750  16.250  12.586  14.160   0.000  11.225
 
-ATI 18811-0 clock generator:
+ATI 18811-0 and ATI 18812-0 clock generators:
 
   Clocks  30.240  32.000 110.000  80.000  42.954  48.771  92.400  36.000
           39.910  44.900  75.000  65.000  50.350  56.640   0.000  44.900
@@ -130,35 +141,97 @@ ATI 18811-1 and ATI 18811-2 clock generators:
           33.750   8.000  27.500  20.000  25.000  31.500  23.100   9.000
            9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
-The order of the clocks *is* important.  Also, expect the server to zero
-duplicate clocks.  A clock probe might show values for those that are 0.000
-above.  The probed values are approximate and the above are "spec'ed"
-values.  If your probe shows a large discrepancy from the above, please
-e-mail me the stderr output.
+For Mach64 boards, one of the following clocks specifications (or an initial
+subset thereof) can be used depending on what the board uses to generate dot
+clocks:
 
-If you have an Xconfig for XFree86 versions earlier than 2.1.1, you will
-need to change it to use it for this version.  Specifically, you should run
-the server with the -probeonly flag and the Xconfig you used with the older
-XFree86.  This will cause the clocks to be probed.  You should replace the
-Xconfig clocks with the set above that is closest to the clocks reported by
-the probe.  You can then change the chipset specification to "vgawonder".
+ATI 18810 clock generator (unlikely, but inserted for completeness):
 
-Note that probed clock values should not be used for "production" purposes,
-as they are approximate and will vary depending on system load and other
-factors.  Clock frequencies taken from the clock generator's specification
-will always provide more consistent (and predictable) results.
+  Clocks  42.954  48.771   0.000  36.000  50.350  56.640   0.000  44.900
+          30.240  32.000  37.500  39.000  40.000  56.644  75.000  65.000
+          21.477  24.386   0.000  18.000  25.175  28.320   0.000  22.450
+          15.120  16.000  18.750  19.500  20.000  28.322  37.500  32.500
+
+ATI 18811-0 and ATI 18812-0 clock generators:
+
+  Clocks  42.954  48.771  92.400  36.000  50.350  56.640   0.000  44.900
+          30.240  32.000 110.000  80.000  39.910  44.900  75.000  65.000
+          21.477  24.386  46.200  18.000  25.175  28.320   0.000  22.450
+          15.120  16.000  55.000  40.000  19.955  22.450  37.500  32.500
+
+ATI 18811-1 and ATI 18811-2 clock generators:
+
+  Clocks 100.000 126.000  92.400  36.000  50.350  56.640   0.000  44.900
+         135.000  32.000 110.000  80.000  39.910  44.900  75.000  65.000
+          50.000  63.000  46.200  18.000  25.175  28.320   0.000  22.450
+          67.500  16.000  55.000  40.000  19.955  22.450  37.500  32.500
+
+The discerning eye will notice that the Mach64 clocks are the same as their
+non-Mach64 counterparts, except that only the first 32 clocks are to be
+specified in a different order.  This situation might change in a future
+XFree86 release.
+
+However, Mach64 boards are more likely to use the newer ATI 18818 clock
+generator chip.  At bootup, video BIOS initialization can set up the 18818 to
+generate two slightly different sets of dot clocks.  A way to duplicate this
+behaviour in the driver has not yet been found.  In the meantime, one of the
+following clocks specification can be used:
+
+ATI 18818 clock generator (possibility 1):
+
+  Clocks  50.350  56.644  63.000  72.000  40.000  44.900  49.500  50.000
+           0.000 110.000 126.000 135.000   0.000  80.000  75.000  65.000
+          25.175  28.322  31.500  36.000  20.000  22.450  24.750  25.000
+           0.000  55.000  63.000  67.500   0.000  40.000  37.500  32.500
+
+ATI 18818 clock generator (possibility 2):
+
+  Clocks  25.175  28.322  31.500  36.000  40.000  44.900  49.500  50.000
+           0.000 110.000 126.000 135.000   0.000  80.000  75.000  65.000
+          12.588  14.161  15.750  18.000  20.000  22.450  24.750  25.000
+           0.000  55.000  63.000  67.500   0.000  40.000  37.500  32.500
+
+Other clock generators that have been used on ATI boards (which can all be said
+to be clones of one of the above) might generate non-zero frequencies for those
+that are zero above, or vice-versa.
+
+The order of the clocks *is* very important.  Mach32 owners should note that
+this order is different than what they would use for the accelerated servers.
+
+A clock probe, done with the command "X -probeonly", will help you decide which
+of the above to use for your particular board.  The probed clocks are
+approximate and should not be used on a regular basis.  Instead, use the clocks
+line above that is closest to the probed values.  If your probe shows a large
+discrepancy from the above, please e-mail me the stderr output.
 
 
-Q. What is the history of the driver?
+Upgrading from other releases
+-----------------------------
 
-The complete history of the driver is rather cloudy.  The following is
-probably incomplete and inaccurate.
+If you have an Xconfig for XFree86 versions earlier than 2.1.1, or for the
+alpha Mach64 server, you will need to change it to use it for this version.
+Specifically, you should run the server with the -probeonly flag and the
+Xconfig you used with the older XFree86.  This will cause the clocks to be
+probed.  You should replace the Xconfig clocks with the set above that is
+closest to the clocks reported by the probe.  You can then change the chipset
+specification to "vgawonder".
 
-Apparently, Per Lindqvist (pgd@compuram.bbt.se) first got an ATI driver
-working with an early ATI card under X386 1.1a.  (This original driver may
-have actually been based on an non-functional ATI driver written by Roell.)
-Then Doug Evans (dje@cygnus.com) ported the driver to the ATI XL, trying in
-the process to make the driver work with all other ATI cards.
+You should not need to change your mode definitions except for those that are
+already driving your monitor close to its tolerance limits.  You might need to
+change the dot clock used to one with the next lower (or higher) frequency.
+
+
+What is the history of the driver?
+---------------------------------
+
+The complete history of the driver is rather cloudy.  The following is probably
+incomplete and inaccurate.
+
+Apparently, Per Lindqvist (pgd@compuram.bbt.se) first got an ATI driver working
+with an early ATI card under X386 1.1a.  This original driver may have actually
+been based on an non-functional ATI driver written by Roell.  Then Doug Evans
+(dje@cygnus.com) ported the driver to the ATI XL, trying in the process to make
+the driver work with all other ATI cards.
 
 Rik Faith (faith@cs.unc.edu) obtained the X11R4 driver from Doug Evans in the
 summer of 1992, and ported the code to the X386 part of X11R5.  This
@@ -180,9 +253,20 @@ the ATI BBS which was dated 3Jul91 and which may have been named
 PROGINFO.DOC.
 
 
-Q. What is the future of the driver?
+Miscellaneous notes
+-------------------
 
-Please e-mail me any bug reports, comments, etc...
+There is still a problem with some 512k boards that causes a resolution that
+uses more than 256k to be scrambled.
 
+Dot clocks greater than 80MHz cannot be used as a way still needs to be
+discovered to make the VGA Wonder controller do pixel multiplexing.
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.0 1994/05/29 02:06:24 dawes Exp $
+The different clock ordering for Mach64's needs to be addressed.
+
+Support for the ATI 18818 clock generator needs to be cleaned up.
+
+Support for modes that use more than 1M of video memory is still incomplete.
+
+Please e-mail any bug reports, comments, etc. to Marc Aurele La France,
+tsi@gpu.srv.ualberta.ca

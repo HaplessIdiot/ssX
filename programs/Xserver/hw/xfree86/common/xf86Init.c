@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.2 1994/08/20 07:35:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.3 1994/09/04 10:47:37 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -51,7 +51,7 @@ Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = -1;
-xrgb xf86weight = { 5, 6, 5 } ;	/* RGB weighting at 16 bpp */
+xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
 static double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 

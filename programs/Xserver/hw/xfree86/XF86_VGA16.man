@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.2 94/04/11 16:03:12 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.0 1994/05/31 06:45:32 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.1 1994/06/18 16:21:31 dawes Exp $
 .\" XF86_VGA16.man
 .TH XF86_VGA16 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -19,12 +19,12 @@ other XFree86 servers.
 .PP
 The
 .I XF86_VGA16
-server supports the following popular SVGA chipset in 16-colour mode.
+server supports the following popular SVGA chipsets in 16-colour mode.
 .RS .5i
 .TP 4
 ATI:
-18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 28800-a, 28800-c, 38800,
-68800, Mach8, Mach32
+18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
+68800LX, 88800
 .TP 4
 Tseng:
 ET4000

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32text.c,v 1.1 94/03/28 21:09:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.2 1994/08/31 04:21:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.3 1994/09/04 10:52:19 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -242,7 +242,8 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
 
    }
 
-   WaitQueue(7);
+   WaitQueue(8);
+   outw (WRT_MASK, 0xffff);   
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    outw (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
@@ -378,7 +379,8 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
 
    }
 
-   WaitQueue(7);
+   WaitQueue(8);
+   outw (WRT_MASK, 0xffff);
    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);

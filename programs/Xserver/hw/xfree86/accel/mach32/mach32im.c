@@ -1,5 +1,5 @@
 /* $XConsortium: mach32im.c,v 1.1 94/03/28 21:08:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.0 1994/05/08 05:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.1 1994/08/31 04:21:50 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -902,3 +902,20 @@ mach32ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, fgPixel, bgPixe
     mach32ImageStipple(x, y, w, h , psrc, pwidth, pw, ph, pox, poy,
 		       fgPixel, bgPixel, alu, planemask, 1);
 }
+
+void
+mach32FontOpStipple(x, y, w, h, psrc, pwidth, id)
+    int			x;
+    int			y;
+    int			w;
+    int			h;
+    unsigned char	*psrc;
+    int			pwidth;
+    Pixel		id;
+{
+    extern unsigned short *mach32cachemask;
+
+    mach32ImageStipple(x, y, w, h, psrc, pwidth, w, h, x, y,
+		       ~0, 0, mach32alu[GXcopy], mach32cachemask[id], 1);
+}
+

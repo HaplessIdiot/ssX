@@ -1,5 +1,5 @@
 /* $XConsortium: vga.h,v 1.1 94/03/28 21:55:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.1 1994/08/31 04:49:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.2 1994/09/04 10:51:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -100,6 +100,8 @@ typedef struct {
   int ChipLinearBase;		    /* Physical base address of the linear
   				       framebuffer */
   int ChipLinearSize;		    /* Size of the linear framebuffer */
+  Bool ChipHas16bpp;		    /* Driver supports 16bpp */
+  Bool ChipHas32bpp;		    /* Driver supports 32bpp */
   
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
@@ -122,6 +124,7 @@ extern int vgaSegmentShift;
 extern int vgaSegmentMask;
 extern int vgaIOBase;
 extern int vgaInterlaceType;
+extern int vgaBitsPerPixel;
 
 #if !defined(S3_SERVER) && !defined(MACH32_SERVER)
 #include "vgaBank.h"

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.1 1994/06/18 16:22:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.2 1994/06/28 12:27:38 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -76,6 +76,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.1 1994/06
 
 /* The P9000 server */
 #define XF86P9000Server		YES
+
+/* The AGX server */
+#define XF86AGXServer			YES
 
 /*
  * Set the default server (ie the one that gets the sym-link to "X")

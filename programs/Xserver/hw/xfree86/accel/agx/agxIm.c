@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.2 1994/08/01 12:08:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.3 1994/08/12 13:56:42 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -591,7 +591,7 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
 
        srcLine += srcStripHeight;
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 } 
 
 #if 0
@@ -616,10 +616,6 @@ agxImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     GE_WAIT_IDLE();
 
     if ((planemask & PMask) != PMask) {
-	vgaImageRead( psrc, agxVideoMem,
-                      agxVirtX, pwidth,
-                      x, y, px, py, w, h, 
-                      1, 1, MIX_SRC, planemask );
 	return;
     }
 
@@ -655,13 +651,11 @@ agxImageReadBank(x, y, w, h, psrc, pwidth, px, py, planemask)
 
     GE_WAIT_IDLE();
 
+#if 0
     if ((planemask & 0xff) != 0xff) {
-	vgaImageRead( psrc, agxVideoMem,
-                      agxVirtX, pwidth,
-                      x, y, px, py, w, h, 
-                      1, 1, MIX_SRC, planemask );
-	return;
+        /* ??? */
     }
+#endif
 
     psrc += pwidth * py + (px << BytesPerPixelShift);
     offset = x + (y << BytesPerPixelShift) * screenStride;
@@ -1121,7 +1115,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
           srcLine -= ph; 
        vStripFirstY += srcStripHeight;
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }
 
 
@@ -1461,7 +1455,7 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        srcLine -= ph; 
        vStripFirstY += srcStripHeight;
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }
 
 
@@ -1590,7 +1584,7 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
                             | GE_OPW_DEST_MAP_A   );
           }
       }
-      GE_WAIT_IDLE();
+      GE_WAIT_IDLE_EXIT();
    }
 }
  
@@ -1698,7 +1692,7 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
                             | GE_OPW_DEST_MAP_A   );
           }
       }
-      GE_WAIT_IDLE();
+      GE_WAIT_IDLE_EXIT();
    }
 }
 
@@ -1956,7 +1950,7 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
        ppts++;
        pwidth++;
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }
     
 
@@ -2183,6 +2177,6 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
        ppts++;
        pwidth++;
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }
     

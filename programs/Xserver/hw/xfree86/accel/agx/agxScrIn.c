@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.1 1994/07/24 11:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.2 1994/08/01 12:09:01 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -41,8 +41,8 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 
 ********************************************************/
 
-
-#include "vga256.h"
+#include "mi.h"
+#include "cfb.h"
 #include "agx.h"
 #include "xf86RamDac.h"
 
@@ -147,7 +147,7 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
-    pScreen->GetImage = vga256GetImage;
+    pScreen->GetImage = agxGetImage;
     pScreen->GetSpans = agxGetSpans;
     pScreen->CreateWindow = cfbCreateWindow;
     pScreen->DestroyWindow = cfbDestroyWindow;

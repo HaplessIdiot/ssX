@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.10 1994/09/03 02:51:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.11 1994/09/04 10:46:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -79,7 +79,7 @@ ScrnInfoRec p9000InfoRec = {
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
-    {0, 0, 0},		/* xrgb weight */
+    {5, 6, 5},		/* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
@@ -298,8 +298,7 @@ p9000Probe()
     if (xf86bpp < 0) {
         xf86bpp = p9000InfoRec.depth;
     }
-    if (p9000InfoRec.weight.red != 0 && p9000InfoRec.weight.green != 0 &&
-        p9000InfoRec.weight.blue != 0) {
+    if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
         xf86weight = p9000InfoRec.weight;
     }
     switch (xf86bpp)
@@ -389,15 +388,20 @@ p9000Probe()
 		 pMode->name);
 	else if ((pNewModeRing) && (pNewModeRing->VDisplay != pMode->VDisplay)
 		 && (pNewModeRing->HDisplay != pMode->HDisplay))
-	  ErrorF("%s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n",
+          ErrorF("%s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s)\n",
 		 p9000InfoRec.name, pMode->name, pNewModeRing->name);
+	/* We should do a better test than this...  *TO*DO* */
 	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
-	else if (pMode->HDisplay > 1280) 
-	  ErrorF("%s: The width of mode %s is too large (max 1280)\n",
-		 p9000InfoRec.name, pMode->name);
-	else if (pMode->VDisplay > 1024) 
-	  ErrorF("%s: The height of mode %s is too large (max 1024)\n",
-		 p9000InfoRec.name, pMode->name);
+	else if ( (pMode->HDisplay > 1344 ) && (p9000InfoRec.bitsPerPixel== 8) ||
+                  (pMode->HDisplay > 1152 ) && (p9000InfoRec.bitsPerPixel==16) ||
+                  (pMode->HDisplay >  832 ) && (p9000InfoRec.bitsPerPixel==32) )
+          ErrorF("%s: The width of mode %s is too large for %dbpp\n",
+	              p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
+        else if ( (pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel== 8) ||
+                  (pMode->VDisplay >  910) && (p9000InfoRec.bitsPerPixel==16) ||
+                  (pMode->VDisplay >  632) && (p9000InfoRec.bitsPerPixel==32) )
+          ErrorF("%s: The height of mode %s is too large for %dbpp\n",
+	              p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
 	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
 	  ErrorF("%s: The clock speed of mode %s is too high (max %ld MHz)\n",
 		 p9000InfoRec.name, pMode->name, p9000MaxClock/1000);	  

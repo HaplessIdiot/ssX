@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.0 1994/06/15 15:42:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_AGX.c,v 3.1 1994/06/28 12:29:06 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -43,7 +43,6 @@ int agxValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,

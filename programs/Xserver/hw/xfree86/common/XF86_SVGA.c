@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_SVGA.c,v 1.1 94/03/28 21:22:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.2 1994/08/31 04:33:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_SVGA.c,v 3.3 1994/09/04 10:47:25 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -33,7 +33,6 @@ int vga256ValidTokens[] =
   DIRECTCOLOR,
   CHIPSET,
   CLOCKS,
-  DISPLAYSIZE,
   MODES,
   OPTION,
   VIDEORAM,

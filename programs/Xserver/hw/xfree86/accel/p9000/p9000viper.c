@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.4 1994/08/01 12:11:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000viper.c,v 3.5 1994/08/31 04:23:15 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -35,8 +35,9 @@
 
 #include <string.h>
 
-static unsigned p9000ViperSaveMisc;        /* Stored value of misc register  */
-static unsigned p9000ViperInited = FALSE;  /* Has the Viper been initialized */
+static unsigned p9000ViperSaveMisc;       /* Stored value of misc register  */
+static unsigned p9000ViperNewClockReg;    /* misc reg setting used by server */
+static unsigned p9000ViperInited = FALSE; /* Has the Viper been initialized  */
 static unsigned MemBaseFlags = VPR_VLB_OCR_BASE_80000000;
 
 extern Bool xf86Verbose;
@@ -210,7 +211,19 @@ p9000ViperVlbEnable(crtcRegs)
   unsigned char OutputCtlBits;  /* Bits to output to output control register */
   extern unsigned MemBaseFlags;
 
-  p9000ViperSaveMisc = inb(MISC_IN_REG);       /* Save VGA Clocks */
+  if (!p9000ViperInited)       /* If not saved yet */
+   {
+     p9000ViperSaveMisc = inb((short)MISC_IN_REG);       /* Save VGA Clocks */
+#ifdef DEBUG
+     ErrorF ("p9000ViperVlbEnable:debug info:p9000ViperSaveMisc=inb(MISC_IN_REG)=0x%02X\n",
+	     (int)p9000ViperSaveMisc);
+#endif
+     /* p9000ViperNewClockReg: 0 becomes 1, 1 becomes 2, 2 becomes 0,
+      * 3 (means 2) becomes 1 */
+     p9000ViperNewClockReg = 
+       (((p9000ViperSaveMisc>>2)&3) + 1) 
+	 % (NUM_PROGRAMMABLE_CLOCKS);
+   }
 
   if (p9000InfoRec.MemBase == 0xA0000000)
     MemBaseFlags = VPR_VLB_OCR_BASE_A0000000;
@@ -297,9 +310,14 @@ void p9000ViperVlbDisable()
 
   p9000LockVGAExtRegs();
 
-  outb(MISC_OUT_REG, p9000ViperSaveMisc);	/* Restore VGA Clocks */
+  outb(MISC_OUT_REG, p9000ViperSaveMisc);  /* Restore VGA Clock select bits */
+#ifdef DEBUG
+  ErrorF ( "p9000ViperVlbDisable - debug info:MISC_OUT set to 0x%02X\n",
+          (int) p9000ViperSaveMisc ) ;
+#endif
   
-  usleep(30000);      /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
+  usleep(30000);   /* Wait at least 10 msecs (ICD2061 timeout) for the
+		    * clock to change */
 
   p9000BtRestore();
 
@@ -383,7 +401,17 @@ p9000ViperPciEnable(crtcRegs)
   unsigned char OutputCtlBits;  /* Bits to output to output control register */
   extern unsigned MemBaseFlags;
 
-  p9000ViperSaveMisc = inb(MISC_IN_REG);       /* Save VGA Clocks */
+  if (!p9000ViperInited)       /* If not saved yet */
+   {
+    p9000ViperSaveMisc = inb((short)MISC_IN_REG);  /* Save VGA Clock 
+						    * select bits */
+#ifdef DEBUG
+    ErrorF ( "p9000ViperPciEnable:debug info:p9000ViperSaveMisc=inb(MISC_IN_REG)=0x%02X\n", (int)p9000ViperSaveMisc);
+#endif
+    p9000ViperNewClockReg = 
+      (((p9000ViperSaveMisc>>2)&3) + 1) 
+	% (NUM_PROGRAMMABLE_CLOCKS);
+   }
 
   p9000BtEnable(crtcRegs);
 
@@ -403,11 +431,17 @@ p9000ViperPciEnable(crtcRegs)
   outb(SEQ_INDEX_REG, SEQ_OUTPUT_CTL_INDEX);
   outb(SEQ_PORT, OutputCtlBits);
 
-  outb(MISC_OUT_REG,
+  outb((short)MISC_OUT_REG,
        (0x3F & p9000ViperSaveMisc)
        | (crtcRegs->hp)<<6 /* Horiz Sync Polarity */
        | (crtcRegs->vp)<<7 /* Vert Sync Polarity */
        );
+#ifdef DEBUG
+  ErrorF ( "p9000ViperPciEnable - debug info:MISC_OUT set to 0x%02X\n",
+          (int)( (0x3F & p9000ViperSaveMisc)
+       | (crtcRegs->hp)<<6 /* Horiz Sync Polarity */
+       | (crtcRegs->vp)<<7 )) ;
+#endif
 
   p9000LockVGAExtRegs();
 
@@ -457,10 +491,15 @@ void p9000ViperPciDisable()
 
   p9000LockVGAExtRegs();
 
-  outb(MISC_OUT_REG, p9000ViperSaveMisc);	/* Restore VGA Clocks */
+  outb(MISC_OUT_REG, p9000ViperSaveMisc);  /* Restore VGA Clock select bits */
+#ifdef DEBUG
+  ErrorF ( "p9000ViperPciDisable - debug info:MISC_OUT set to 0x%02X\n",
+          (int) p9000ViperSaveMisc ) ;
+#endif
   
-  usleep(30000);      /* Wait at least 10 msecs (ICD2061 timeout) for the clock to change */
-
+  usleep(30000);  /* Wait at least 10 msecs (ICD2061 timeout)
+		   * for the clock freq to change */
+  
   p9000BtRestore();
 
   /* Turn video screen back on */
@@ -525,7 +564,7 @@ void p9000ViperSetClock(dotclock, memclock)
 
   /* The register used (0) should be different than the register
    * used for (vga) text mode */
-  clock_ctrl_word = ICD2061ACalcClock (dotclock, 0);  
+  clock_ctrl_word =  ICD2061ACalcClock (dotclock, p9000ViperNewClockReg );  
   ICD2061ASetClock (clock_ctrl_word);
   ActualHertz = ICD2061AGetClock (clock_ctrl_word);
   

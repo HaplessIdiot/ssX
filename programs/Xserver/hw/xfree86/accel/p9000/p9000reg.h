@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.3 1994/07/24 11:47:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.4 1994/08/31 04:23:11 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -70,13 +70,13 @@
 #define MEMSPEED      50000000L /* The primary value for the memory clock */
 #define MEMSPEED_ALT  55000000L /* alternate: default to 55MHz (0x65AC3DL) */
 
-#define P9000_MAX_32BPP_CLOCK 80000   /* The maximum clock at 32 bpp 
-				       * (I think it's really 90 but I'd
-				       * rather be safe given that you can't
-				       * do over 800x600 anyways.  */
+#define P9000_MAX_32BPP_CLOCK 90000   /* The maximum clock at 32 bpp 
+				       * see page 34 of the bt485 data sheet -
+                                       * Maximum Lclk rate for either a
+				       * 110Mhz or 135 Mhz Bt485 */
 
-#define P9000_MAX_ORCHID_CLOCK 110000 /* Do they all have 135 MHz bt485's? 
-				       * Lets be safe. */
+#define P9000_MAX_ORCHID_CLOCK 120000 /* they have ICD2061A's which max
+				       * out at 120 Mhz */
 
 /************* P9000 Registers and Contents ****************/
 /* Note: Registers relative to CtlBase */

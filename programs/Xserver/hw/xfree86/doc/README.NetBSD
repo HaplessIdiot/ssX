@@ -328,9 +328,16 @@ See /usr/X11R6/lib/Server/README for more info.
 See /usr/X11R6/lib/X11/etc/INSTALL for instructions on unbundling and
 building the source distribution.
 
-If you don't already have the header files 'console.h' and 'pccons.h'
-installed in /usr/include/machine, then install the copies that are
-supplied in lib/Server/etc
+If you don't already have the header files 'console.h' and
+'ioctl_pc.h' installed in /usr/include/machine, then install the
+copies that are supplied in lib/Server/etc (or in
+xc/programs/Xserver/hw/xfree86/etc if you got the full source
+distribution). If you run NetBSD-current you probably want to install
+them in /usr/src/sys/arch/i386/include too, so that they get
+reinstalled each time you make install in /usr/src/include. 
+
+If you have installed the syscons or codrv console drivers, these
+files should be taken from your installed version of the driver.
 
 You should configure the distribution by editing xc/config/cf/site.def
 before compiling.  To compile the sources, invoke
@@ -406,7 +413,8 @@ Many thanks to
 Rich  Murphey
 David Dawes
 Marc  Wandschneider
+Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.0 1994/05/31 14:22:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.1 1994/08/20 07:35:16 dawes Exp $
