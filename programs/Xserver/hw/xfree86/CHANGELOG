@@ -1,4 +1,7 @@
 XFree86 3.9.17b (23 January 2000)
+3577. Put an OS-independent version of the int10 module/library in
+      xfree86/int10, but still allow an OS-specific version to override
+      it (David Dawes).
 3576. Import a minimal subset of the x86emu 0.6 distribution (David Dawes).
 3575. Register the required/referenced int10 symbols in the nv driver
       so that there are no warnings on platforms that don't have this
@@ -9321,4 +9324,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.947 2000/01/23 04:23:08 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.948 2000/01/23 04:30:04 dawes Exp $
