@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.289 2000/06/14 00:16:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.290 2000/06/14 02:01:27 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -151,7 +151,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Drivers under development, but not ready for binary releases */
 # ifndef DevelDrivers
 #  if XFree86Devel
-#   define DevelDrivers		imstt
+#   define DevelDrivers		/*imstt*/  /* has build problems */
 #  else
 #   define DevelDrivers		/**/
 #  endif
