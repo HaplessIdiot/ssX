@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.10 2001/07/07 23:00:43 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.8 2001/04/01 14:00:15 tsi Exp $
  */
 
 #include "config.h"
@@ -304,6 +304,8 @@ extern void InitializeDevices(void);
 extern void SelectLayoutCallback(Widget, XtPointer, XtPointer);
 extern void UpdateMenuDeviceList(int);
 extern void SetConfigModeCallback(Widget, XtPointer, XtPointer);
+extern void DefaultLayoutCallback(Widget, XtPointer, XtPointer);
+extern void RemoveLayoutCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization
@@ -331,7 +333,7 @@ void
 ExpertConfigureEnd(void)
 {
     int i, save_config_mode = config_mode;
-    Widget sme, layoutsme = NULL;
+    Widget sme, layopt, layoutsme = NULL;
     XF86ConfLayoutPtr lay;
 
     XtVaSetValues(optionsShell, XtNtransientFor, toplevel, NULL, 0);
@@ -389,20 +391,32 @@ ExpertConfigureEnd(void)
     UpdateMenuDeviceList(MONITOR);
 
     /* Update layout menu */
-        /* first entry is "New server layout" */
+	/* first entry is "New server layout" */
     for (i = 1; i < ((CompositeWidget)layoutp)->composite.num_children; i++)
 	XtDestroyWidget(((CompositeWidget)layoutp)->composite.children[i]);
+    for (i = 0; i < layoutp->core.num_popups; i++)
+	XtDestroyWidget(layoutp->core.popup_list[i]);
     lay = XF86Config->conf_layout_lst;
     while (lay != NULL) {
 	sme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
 				      layoutp,
 				      XtNlabel, lay->lay_identifier,
-				      XtNmenuName, "options",
+				      XtNmenuName, lay->lay_identifier,
 				      XtNleftBitmap, menuPixmap,
 				      NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
 	if (layoutsme == NULL)
 	    layoutsme = sme;
+	layopt = XtCreatePopupShell(lay->lay_identifier, simpleMenuWidgetClass,
+				    layoutp, NULL, 0);
+	sme = XtCreateManagedWidget("default", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, DefaultLayoutCallback, NULL);
+	sme = XtCreateManagedWidget("remove", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, RemoveLayoutCallback, NULL);
+	XtRealizeWidget(layopt);
+
 	lay = (XF86ConfLayoutPtr)(lay->list.next);
     }
     computer.layout = NULL;
