@@ -77,6 +77,8 @@
 	"RPM spec"	"rpm"	. *rpm-mode*)
     ("\\<XFree86\\.\\d+\\.log$"
 	"XFree86 log"	"xlog"	. *xlog-mode*)
+    ("\\.(diff|patch)"
+	"Patch file"	"patch"	. *patch-mode*)
 ))
 
 
