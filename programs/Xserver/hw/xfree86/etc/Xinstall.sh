@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.67 2004/01/28 07:16:02 torrey Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.68 2004/02/15 18:38:32 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -754,7 +754,10 @@ FindDistName()
 				DistName="Solaris-8"
 				;;
 			5.9*)
-				Message="No Solaris/x86 binaries available for this version.  Try Solaris-8."
+				DistName="Solaris-9"
+				;;
+			5.10*)
+				Message="No Solaris/x86 binaries available for this version.  Try Solaris-9."
 				;;
 			esac
 			;;
