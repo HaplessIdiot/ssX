@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 483. Fix fontconfig to obey NothingOutsideProjectRoot, so that the directory
+      /usr/share/fonts is ignored in this case (#A.1325, Joe Moss).
  482. Fix a segfault when using xkbcomp's -I option, and update the man
       page to correctly document the way this option works (#5447, Joe Moss).
  481. Don't assume mmap returns the pointer hint requested.  This is in
@@ -15501,4 +15503,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2387 2002/11/15 00:55:02 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2388 2002/11/15 03:17:09 dawes Exp $
