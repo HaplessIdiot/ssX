@@ -40,6 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #include    <stdio.h>
 
 extern char **environ;
+extern etext;
 
 #ifndef FALSE
 #define FALSE 0
@@ -95,17 +96,20 @@ typedef struct _head {
 
 typedef struct _tail {
     int		    tailMagic;
+#ifdef __alpha
+    int		    tailPad;
+#endif
 } TailRec, *TailPtr;
 
 #define Header(p)	((HeadPtr) (((char *) (p)) - sizeof (HeadRec)))
+#define DataForHead(h)	((mem *) ((h) + 1))
 #define Tailer(p)	((TailPtr) (((char *) (p)) + Header(p)->size))
-#define TailForHead(h)	(Tailer((h) + 1))
+#define TailForHead(h)	(Tailer(DataForHead(h)))
 #define RoundSize	(sizeof (mem))
 #define RoundUp(s)	(((s) + RoundSize - 1) & ~(RoundSize - 1))
 #define TotalSize(s)	((s) + sizeof (HeadRec) + sizeof (TailRec))
 #define CheckInit()	if (!endOfStaticMemory) endOfStaticMemory = sbrk(0)
-#define BlockContains(h,p)  ((mem *) ((h) + 1) <= (p) && (p) < (mem *) TailForHead(h))
-#define DataForHead(h)	((mem *) (h + 1))
+#define BlockContains(h,p)  (DataForHead(h) <= (p) && (p) < (mem *) TailForHead(h))
 
 typedef HeadRec		tree;
 typedef mem		*tree_data;
@@ -122,7 +126,7 @@ typedef mem		*tree_data;
 #define GREATER_THAN(a,b,s) COMPARE(a,b,>,s)
 
 #define SEARCH(top,result,p) for (result = top; result;) {\
-    if ((mem *) (p) < (mem *) (result + 1)) \
+    if ((mem *) (p) < DataForHead(result)) \
 	result = result->left; \
     else if ((mem *) TailForHead(result) < (mem *) (p)) \
 	result = result->right; \
@@ -182,7 +186,7 @@ MemError (s, h, ourRet)
     if (h)
     {
 	fprintf (stderr, "%s 0x%08x (size %d) (from 0x%x)\n",
-	     s, (mem *) (h+1), h->desiredsize, h->from);
+	     s, DataForHead(h), h->desiredsize, h->from);
 #ifdef HAS_GET_RETURN_ADDRESS
 	PrintReturnStack ("Saved return stack", h->returnStack);
 #endif
@@ -234,7 +238,7 @@ MarkActiveBlock (p, from)
 	    h->marked |= marked;
 	    h->from = from;
 	    if (!oldMarked)
-		MarkMemoryRegion ((mem *) (h + 1), (mem *) TailForHead(h));
+		MarkMemoryRegion (DataForHead(h), (mem *) TailForHead(h));
 	}
 	return;
     }
@@ -362,7 +366,7 @@ ValidateTree (head, headMagic, tailMagic, bodyMagic, mesg)
 	MemError (mesg, head, FALSE);
     if (bodyMagic) {
 	i = head->size / sizeof (mem);
-	p = (mem *) (head + 1);
+	p = DataForHead(head);
 	while (i--) {
 	    if (*p++ != bodyMagic)
 		MemError (mesg, head, FALSE);
@@ -409,7 +413,7 @@ AddActiveBlock (h)
     h->headMagic = ACTIVE_HEAD_MAGIC;
     t->tailMagic = ACTIVE_TAIL_MAGIC;
     i = h->size / sizeof (mem);
-    p = (mem *) (h + 1);
+    p = DataForHead(h);
     while (i--)
 	*p++ = ACTIVE_DATA_MAGIC;
     activeMemoryTotal += h->desiredsize;
@@ -447,7 +451,7 @@ AddFreedBlock (h)
     h->headMagic = FREED_HEAD_MAGIC;
     t->tailMagic = FREED_TAIL_MAGIC;
     i = h->size / sizeof (mem);
-    p = (mem *) (h + 1);
+    p = DataForHead(h);
     while (i--)
 	*p++ = FREED_DATA_MAGIC;
     freedMemoryTotal += h->desiredsize;
@@ -539,7 +543,7 @@ malloc (desiredsize)
 	CheckMemory ();
     size = RoundUp(desiredsize);
     totalsize = TotalSize (size);
-    
+
     h = deadMemory;
     while (h)
     {
@@ -570,7 +574,7 @@ malloc (desiredsize)
     getStackTrace (h->returnStack, MAX_RETURN_STACK);
 #endif
     AddActiveBlock (h);
-    return (char *) (h + 1);
+    return (char *) DataForHead(h);
 }
 
 void
@@ -603,7 +607,7 @@ free (p)
 	    MemError ("Freeing something never allocated", h, TRUE);
 	return;
     }
-    if ((mem *) (h + 1) != (mem *) p)
+    if (DataForHead(h) != (mem *) p)
     {
 	MemError ("Freeing pointer to middle of allocated block", h, TRUE);
 	return;
@@ -637,21 +641,21 @@ realloc (old, desiredsize)
     {
 	SEARCH(freedMemory, fh, old);
 	if (fh)
-	    MemError ("Reallocing from freed data", fh);
+	    MemError ("Reallocing from freed data", fh, TRUE);
 	else
-	    MemError ("Reallocing from something not allocated", h);
+	    MemError ("Reallocing from something not allocated", h, TRUE);
     }
     else
     {
-	if ((mem *) (h + 1) != (mem *) old)
+	if (DataForHead(h) != (mem *) old)
 	{
-	    MemError ("Reallocing from pointer to middle of allocated block", h);
+	    MemError ("Reallocing from pointer to middle of allocated block", h, TRUE);
 	}
 	else
 	{
 	    if (h->headMagic != ACTIVE_HEAD_MAGIC ||
 		TailForHead(h)->tailMagic != ACTIVE_TAIL_MAGIC)
-		MemError ("Reallocing corrupted data", h);
+		MemError ("Reallocing corrupted data", h, TRUE);
 	    copysize = desiredsize;
 	    if (h->desiredsize < desiredsize)
 		copysize = h->desiredsize;

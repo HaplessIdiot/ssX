@@ -27,6 +27,14 @@ GRA_OBJS = getretspar.o sparcstack.o
 GRA_SRCS = getretspar.c
 #endif
 
+#ifdef i386BsdArchitecture
+#define HasGetReturnAddress	YES
+#define TopOfStack 'GC_get_stack_base()'
+#define BottomOfData \&etext
+GRA_OBJS = getreti386.o stackbottom.o
+GRA_SRCS = getreti386.c stackbottom.c
+#endif
+
 #ifndef HasGetReturnAddress
 #define HasGetReturnAddress NO
 #endif
