@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.3 1999/05/15 14:31:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.4 1999/05/16 06:55:53 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -360,9 +360,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	    if (osInfo->PreInit) {
 		MouseInfoPtr pMInfo = xnfalloc(sizeof(MouseInfoRec));
 		pMInfo->PostEvent = MousePostEvent;
-		if (!osInfo->PreInit(pInfo, protocol, pMInfo, 0))
-		    return pInfo;
-		return pInfo;
+		osInfo->PreInit(pInfo, protocol, pMInfo, 0);
 	    }
 	    return pInfo;
 	}
@@ -459,13 +457,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     /* XXX Add parsing of the ZAxisMapping option. */
-#if 0
-    pMse->buffer = XisbNew(pInfo->fd, 64);
-    if (!pMse->buffer) {
-	xfree(pMse);
-	xf86CloseSerial(pInfo->fd);
-    }
-#endif
+
     pInfo->flags |= XI86_CONFIGURED;
     return pInfo;
 }
@@ -1295,7 +1287,7 @@ post_event:
 		dx, dy);
 #endif
 
-	/* post an event (XXX Check this) */
+	/* post an event */
 	MousePostEvent(pInfo, buttons, dx, dy);
 
 	/* 
