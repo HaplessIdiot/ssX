@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.12 2004/06/23 19:40:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_memory.c,v 1.13 2005/01/09 20:47:19 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -90,7 +90,7 @@ AllocFromPool(ScrnInfoPtr pScrn, I830MemRange *result, I830MemPool *pool,
 	    end = pool->Free.End;
 
 	 start = ROUND_DOWN_TO(end - size, alignment);
-	 needed = pool->Free.End - start;
+	 needed = end - start;
       }
    }
    if (needed > pool->Free.Size) {
@@ -123,10 +123,9 @@ AllocFromPool(ScrnInfoPtr pScrn, I830MemRange *result, I830MemPool *pool,
       pool->Free.Start += needed;
       result->End = pool->Free.Start;
    } else {
-      result->Start = ROUND_DOWN_TO(pool->Free.End - size, alignment) -
-			pool->Total.End;
-      result->End = pool->Free.End - pool->Total.End;
+      result->Start = ROUND_DOWN_TO(pool->Free.End - size, alignment);
       pool->Free.End -= needed;
+      result->End = result->Start + needed;
    }
    pool->Free.Size = pool->Free.End - pool->Free.Start;
    result->Size = result->End - result->Start;
