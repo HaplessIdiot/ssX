@@ -79,6 +79,7 @@
  * local function prototypes
  */
 
+static OptionInfoPtr renditionAvailableOptions(int);
 static void       renditionIdentify(int);
 static Bool       renditionProbe(DriverPtr, int);
 static Bool       renditionPreInit(ScrnInfoPtr, int);
@@ -106,6 +107,7 @@ DriverRec RENDITION={
     "rendition driver",
     renditionIdentify,
     renditionProbe,
+    renditionAvailableOptions,
     NULL,
     0
 };
@@ -250,6 +252,13 @@ static PciChipsets renditionPCIchipsets[] = {
 /*
  * functions
  */
+
+static
+OptionInfoPtr
+renditionAvailableOptions(int chipid)
+{
+    return renditionOptions;
+}
 
 static void
 renditionIdentify(int flags)

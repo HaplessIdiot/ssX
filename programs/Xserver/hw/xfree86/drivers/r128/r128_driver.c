@@ -109,6 +109,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 				/* Forward definitions for driver functions */
+static OptionInfoPtr R128AvailableOptions(int chipid);
 static Bool R128Probe(DriverPtr drv, int flags);
 static void R128Identify(int flags);
 static Bool R128PreInit(ScrnInfoPtr pScrn, int flags);
@@ -136,6 +137,7 @@ DriverRec R128 = {
     "ATI Rage 128",
     R128Identify,
     R128Probe,
+    R128AvailableOptions,
     NULL
 };
 
@@ -519,6 +521,13 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 	       pll->xclk);
 
     return TRUE;
+}
+
+static
+OptionInfoPtr
+R128AvailableOptions(int chipid)
+{
+    return R128Options;
 }
 
 /* Return the string name for supported chipset 'n'; NULL otherwise. */

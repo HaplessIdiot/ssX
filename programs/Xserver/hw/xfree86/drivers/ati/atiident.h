@@ -25,6 +25,8 @@
 #define ___ATIIDENT_H___ 1
 
 #include "atiproto.h"
+#include "xf86str.h"
+#include "xf86Opt.h"
 
 typedef enum
 {
@@ -44,5 +46,6 @@ extern const char *ATIChipsetNames[];
 
 extern void ATIIdentify   FunctionPrototype((int));
 extern int  ATIIdentProbe FunctionPrototype((const char *));
+extern OptionInfoPtr ATIAvailableOptions FunctionPrototype((int));
 
 #endif /* ___ATIIDENT_H___ */

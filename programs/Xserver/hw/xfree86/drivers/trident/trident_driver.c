@@ -72,6 +72,7 @@
 #include "xf86xv.h"
 #endif
 
+static OptionInfoPtr TRIDENTAvailableOptions(int chipid);
 static void	TRIDENTIdentify(int flags);
 static Bool	TRIDENTProbe(DriverPtr drv, int flags);
 static Bool	TRIDENTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -125,6 +126,7 @@ DriverRec TRIDENT = {
 #endif
     TRIDENTIdentify,
     TRIDENTProbe,
+    TRIDENTAvailableOptions,
     NULL,
     0
 };
@@ -533,6 +535,13 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
     OUTW(0x3C4, (temp<<8) | 0x0E);
 }
 #endif
+
+static 
+OptionInfoPtr
+TRIDENTAvailableOptions(int chipid)
+{
+    return TRIDENTOptions;
+}
 
 /* Mandatory */
 static void
@@ -1133,7 +1142,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
     }
-    pTrident->MUXThreshold = 100000; /* 100MHz */
+    pTrident->MUXThreshold = 80000; /* 100MHz */
     if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MUX_THRESHOLD, 
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",

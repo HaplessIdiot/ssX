@@ -42,6 +42,26 @@ typedef enum
     ATI_OPTION_MAX      /* Must be last */
 } ATIOptionType;
 
+OptionInfoRec  Option[] =
+{
+        {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
+        {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
+};
+
+static
+OptionInfoPtr
+ATIAvailableOptions(int chipid)
+{
+    return Option;
+}
+
 /*
  * ATIProcessOptions --
  *
@@ -55,19 +75,6 @@ ATIProcessOptions
     ATIPtr      pATI
 )
 {
-    OptionInfoRec  Option[] =
-    {
-        {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
-        {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
-    };
-
 #   define Accel       Option[ATI_OPTION_ACCEL].value.bool
 #   define CRTScreen   Option[ATI_OPTION_CRT].value.bool
 #   define CSync       Option[ATI_OPTION_CSYNC].value.bool

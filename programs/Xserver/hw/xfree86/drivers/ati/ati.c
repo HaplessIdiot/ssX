@@ -79,6 +79,7 @@ DriverRec ATI =
     "ati",
     ATIIdentify,
     ATIProbe,
+    ATIAvailableOptions,
     NULL,
     0
 };
