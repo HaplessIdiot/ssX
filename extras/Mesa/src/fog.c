@@ -25,7 +25,7 @@
  */
 
 
-/* $XFree86: xc/lib/GL/mesa/src/fog.c,v 1.4 1999/04/04 00:20:24 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/fog.c,v 1.1 1999/12/14 01:31:33 robin Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -44,7 +44,7 @@
 #include "xform.h"
 #endif
 
-
+#include <float.h>
 
 void gl_Fogfv( GLcontext *ctx, GLenum pname, const GLfloat *params )
 {
