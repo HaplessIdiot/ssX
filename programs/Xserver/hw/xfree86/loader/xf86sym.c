@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.90 1999/05/09 06:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.91 1999/05/09 12:31:10 dawes Exp $ */
 
 /*
  *
@@ -32,15 +32,15 @@
 #include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
-#ifdef NEW_INPUT
-#include "xf86OSmouse.h"
-#endif
 #define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
 #include "xf86Parser.h"
 #include "xf86Config.h"
 #ifdef XINPUT
 #include "xf86Xinput.h"
+#endif
+#ifdef NEW_INPUT
+#include "xf86OSmouse.h"
 #endif
 #include "xf86xv.h"
 #include "xf86cmap.h"
