@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.79 2002/10/29 23:24:18 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.80 2003/01/15 02:52:12 dawes Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -717,7 +717,7 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  endif
 #  undef __k6
 # endif /* __k6 */
-XCOMM Keep this order! s390x has also __s390__ defined.
+/* Keep this order! s390x has also __s390__ defined */
 # if defined(__s390x__)
 #  define s390xArchitecture
 #  undef __s390x__
@@ -824,7 +824,7 @@ XCOMM Keep this order! s390x has also __s390__ defined.
 #  endif
 #  undef __SH4__
 # endif /* __SH4__ */
-XCOMM  for compatibility with 3.3.x 
+/* for compatibility with 3.3.x */
 # ifdef PpcArchitecture
 #  define PowerPCArchitecture
 # endif
