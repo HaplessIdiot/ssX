@@ -1,6 +1,4 @@
-XCOMM $XFree86$
-
-#include "../../Xi18nLib.conf"
+XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/Utf8/Imakefile,v 1.3 2003/10/24 15:34:01 tsi Exp $
 
  EXTRA_INCLUDES = -I../../..
       XI18NLIBNAME = xlibi18n
@@ -10,4 +8,7 @@ XCOMM $XFree86$
 
 LinkSourceFile(lcUTF8Load.c, ../../..)
 
-Xi18nLibraryTarget(xlcUTF8Load)
+#define LibName xlcUTF8Load
+
+#include "../../Xi18nLib.conf"
+

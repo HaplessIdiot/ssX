@@ -1,4 +1,6 @@
 XFree86 4.4.99.2 (xx March 2004)
+  37. Use the standard shared library build mechanism for the i18n modules
+      rather than redefining its own (David Dawes).
   36. Add missing PCI definition for Creative Labs.  This completes the
       implementation of change 555 previously made in 4.2.99.3
       (Marc La France).
@@ -18752,7 +18754,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3190 2004/03/21 11:27:05 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3191 2004/03/22 17:01:13 tsi Exp $
 
 
 

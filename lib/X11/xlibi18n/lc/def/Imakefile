@@ -1,6 +1,4 @@
-XCOMM $XFree86$
-
-#include "../../Xi18nLib.conf"
+XCOMM $XFree86: xc/lib/X11/xlibi18n/lc/def/Imakefile,v 1.3 2003/10/24 15:34:01 tsi Exp $
 
  EXTRA_INCLUDES = -I../../..
       XI18NLIBNAME = xlcDef
@@ -10,4 +8,7 @@ XCOMM $XFree86$
 
 LinkSourceFile(lcDefConv.c, ../../..)
 
-Xi18nLibraryTarget(xlcDef)
+#define LibName xlcDef
+
+#include "../../Xi18nLib.conf"
+
