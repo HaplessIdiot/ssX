@@ -16,8 +16,8 @@ Contents
 
 1 - What is XFree86?
 --------------------
-  XFree86 is a added-value pack for X11R6 that supports several versions
-  of Intel-based Unix and Unix-like operating systems.  XFree86-3.0 was
+  XFree86 is a added-value package for X11R6 that supports several versions
+of Intel-based Unix and Unix-like operating systems.  XFree86-3.0 was
 part of the X11R6 core distribution.  This release XFree86-3.1 consists of
 many new features and performance improvements as well as many bug fixes.
 The release is available as source patches against the X Consortium X11R6
@@ -508,8 +508,8 @@ and the following mirror sites:
     ftp.bsdi.com:/contrib/X11/XFree86        (source and BSD/386 binaries)
     ref.tfs.com:/pub/mirrors/XFree86         (source and FreeBSD binaries)
     ftp.iastate.edu:/pub/netbsd/XFree86/XFree86-3.1 (source and NetBSD binaries)
-    tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries only)
-    ftp.eecs.umich.edu:/BSD/Xfree86          (source and binaries)
+    tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries and source diffs)
+    ftp.eecs.umich.edu:/BSD/XFree86          (source and binaries)
     sunsite.unc.edu:/pub/X11/XFree86         (source and binaries)
     abode.ccd.bnl.gov:/pub/XFree86           (Solaris, SVR4, SCO binaries)
 
@@ -517,11 +517,10 @@ and the following mirror sites:
     ftp.fee.vutbr.cz:/pub/XFree86            (source and binaries)
     ftp.gwdg.de:/pub/xfree86                 (source and binaries)
     ftp.uni-stuttgart.de:/pub/X11/Xfree86    (source and binaries)
-    ftp.funet.fi:/pub/X11/XFree86            (source diffs only)
+    ftp.funet.fi:/pub/X11/XFree86            (source and binaries)
     ftp.laas.fr:/pub/NetBSD/XFree86-3.1      (NetBSD binaries only)
-    ftp.unipi.it:/pub/mirrors/XFree86        (source and binaries)
+    ftp.unipi.it:/pub/mirrors/XFree86-3.1    (source and binaries)
     nova.pvv.unit.no:/pub/XFree86/current    (source and binaries)
-    sprocket.ict.pwr.wroc.pl:                (under consideration)
     ftp.demon.co.uk:/pub/xwindows/XFree86    (source and binaries)
 
     Middle East:
@@ -543,6 +542,6 @@ older releases as well.  Each binary distribution will contain a README
 file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
-28 September 1994
+2 October 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.4 1994/09/29 14:28:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.5 1994/10/01 01:48:16 dawes Exp $
