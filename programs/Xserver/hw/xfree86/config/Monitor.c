@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.1.2.3 1997/07/22 13:50:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/config/Monitor.c,v 1.1 1998/01/24 16:57:45 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -363,6 +363,7 @@ parseMonitorSection (void)
 		case MODE:
 			HANDLE_LIST (mon_modeline_lst, parseVerboseMode,
 						 XF86ConfModeLinePtr);
+			break;
 		case MODELINE:
 			HANDLE_LIST (mon_modeline_lst, parseModeLine,
 						 XF86ConfModeLinePtr);
