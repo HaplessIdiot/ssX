@@ -348,6 +348,17 @@ be used depending on what the adapter uses to generate dot clocks:
                33.750   8.000  27.500  20.000  25.000  31.500  23.100   9.000
                 9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
+     ICS 2494-AM clock generators (found on some Dell motherboards):
+
+       Clocks  75.000  77.500  80.000  90.000  25.175  28.322  31.500  36.000
+              100.000 110.000 126.000 135.000  40.000  44.900  50.000  65.000
+               37.500  38.750  40.000  45.000  12.588  14.161  15.750  18.000
+               50.000  55.000  63.000  67.500  20.000  22.450  25.000  32.500
+               25.000  25.833  26.667  30.000   8.392   9.441  10.500  12.000
+               33.333  36.667  42.000  45.000  13.333  14.767  16.667  21.667
+               18.750  19.375  20.000  22.500   6.294   7.081   7.875   9.000
+               25.000  27.500  31.500  33.750  10.000  11.225  12.500  16.250
+
 VGAWonder VLB, VGA 1024 VLB, Mach32 and Mach64 owners should only specify up
 to the first 32 frequencies.
 
@@ -562,7 +573,6 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.28 1999/10/26 15:58:15 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.29 2000/02/18 12:19:08 tsi Exp $
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.41 1999/10/14 03:31:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.43 1999/10/26 16:56:29 tsi Exp $
