@@ -7,7 +7,7 @@
 <date>2001 October 01
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.3 2002/01/25 21:55:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.4tsi Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -210,6 +210,11 @@ There is no known work around.<p>
 The SPARC port is still quite new, so instability is to be expected (and
 reported!).
 It might even have broken some aspects of the x86 port.<p>
+<item>
+On SPARC, xload should be updated to deal with both 32-bit and 64-bit SunOS
+kernels.
+It currently is compiled as a 32-bit binary and cannot handle a 64-bit
+kernel.<p>
 </enum>
 <sect>Bug Notification<p>
 Bug reports should be sent to <email>XFree86@XFree86.org</email>.

@@ -1,4 +1,6 @@
 XFree86 4.4.99.5 (xx April 2004)
+  94. Update README.Solaris to mention xload's limitations on sun4u SunOS
+      (Marc La France).
   93. Retire X-TT 1.x and FreeType 1.x (David Dawes).
   92. Fix Mac OS X build after FreeType 2.1.8 merge (Torrey T. Lyons).
   91. Fix TinyX touchscreen problem on server reset (Roman Vasylyev).
@@ -18891,7 +18893,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3243 2004/04/29 17:55:37 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3244 2004/05/01 01:30:02 dawes Exp $
 
 
 
