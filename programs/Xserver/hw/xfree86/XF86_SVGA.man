@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.13 1994/10/30 04:57:11 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.14 1995/01/08 06:58:29 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -65,7 +65,9 @@ Avance Logic:
 AL2101, ALI2301, ALI2302, ALI2308, ALI2401
 .TP 4
 Chips & Technology:
+.ig
 82C451, 82C452, 82C453, 82C455, 82C456, 82C457,
+..
 65520, 65530, 65540, 65545
 .TP 4
 MX:\ \ 
@@ -143,7 +145,9 @@ Avance Logic:
 al2101, ali2301, ali2302, ali2308, ali2401
 .TP 4
 Chips & Technology:
+.ig
 ct451, ct452, ct453, ct455, ct456, ct457,
+..
 ct65520, ct65530, ct65540, ct65545
 .TP 4
 MX:\ \ 

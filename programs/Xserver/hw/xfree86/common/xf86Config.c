@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.32 1994/12/29 10:07:25 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.33 1995/01/10 10:23:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -976,6 +976,7 @@ configServerFlagsSection()
   int            i, j;
       
   xf86Info.dontZap       = FALSE;
+  xf86Info.dontZoom      = FALSE;
 
   while ((token = getToken(ServerFlagsTab)) != ENDSECTION) {
     switch (token) {
@@ -984,6 +985,9 @@ configServerFlagsSection()
       break;
     case DONTZAP:
       xf86Info.dontZap = TRUE;
+      break;
+    case DONTZOOM:
+      xf86Info.dontZoom = TRUE;
       break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");

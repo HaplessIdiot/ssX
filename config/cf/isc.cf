@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.0 1994/11/30 20:26:18 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.1 1994/12/17 09:32:43 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -52,6 +52,8 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.0 1994/11/30 20:26:18 dawes E
 
 #define ServerExtraSysLibs	$(CBRT)
 
+#define ServerExtraDefines	SVR3mmapFlags XFree86ServerDefines
+
 #if IscVersion > 300
 # ifndef HasSymLinks
 #  define HasSymLinks             YES
@@ -75,6 +77,10 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.0 1994/11/30 20:26:18 dawes E
 
 #if HasGcc2
 # define CcCmd gcc 
+#endif
+
+#ifndef DefaultCplusplusOptions
+#define DefaultCplusplusOptions	-fno-implicit-templates
 #endif
 
 #ifndef ConnectionFlags

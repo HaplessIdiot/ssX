@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.4 1995/01/02 05:03:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.5 1995/01/07 04:14:01 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1460,8 +1460,14 @@ static char *XF86Config_firstchunk_text =
 "#    NoTrapSignals\n"
 "\n"
 "# Uncomment this to disable the <Crtl><Alt><BS> server abort sequence\n"
+"# This allows clients to receive this key event.\n"
 "\n"
 "#    DontZap\n"
+"\n"
+"# Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching\n"
+"# sequences.  This allows clients to receive these key events.\n"
+"\n"
+"#    DontZoom\n"
 "\n"
 "EndSection\n"
 "\n"

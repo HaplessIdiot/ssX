@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.57 1995/01/10 10:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.58 1995/01/10 10:54:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -74,7 +74,7 @@ ScrnInfoRec s3InfoRec =
    -1,				/* int scrnIndex */
    s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
-   (Bool (*)())s3ValidMode,	/* Bool (* ValidMode)() */
+   s3ValidMode,			/* Bool (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -508,7 +508,6 @@ s3Probe()
       if ((s3Drivers[i]->ChipProbe)()) {
 	 xf86ProbeFailed = FALSE;
 	 s3InfoRec.Init = s3Drivers[i]->ChipInitialize;
-	 s3InfoRec.ValidMode = s3Drivers[i]->ChipValidMode;
 	 s3InfoRec.EnterLeaveVT = s3Drivers[i]->ChipEnterLeaveVT;
 	 s3InfoRec.AdjustFrame = s3Drivers[i]->ChipAdjustFrame;
 	 s3InfoRec.SwitchMode = s3Drivers[i]->ChipSwitchMode;
@@ -559,6 +558,7 @@ s3Probe()
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
+   OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
    if (S3_x64_SERIES(s3ChipId))
@@ -1311,10 +1311,14 @@ s3Probe()
       }
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
-      if (S3_864_SERIES(s3ChipId) && !DAC_IS_ATT22C498)
-	 nonMuxMaxClock = 95000; /* 864 DCLK limit */
-      else if (S3_805_I_SERIES(s3ChipId) && !DAC_IS_ATT22C498)
-	 nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
+      if (DAC_IS_ATT20C498 && !DAC_IS_ATT22C498) {
+	 if (S3_864_SERIES(s3ChipId))
+	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
+	 else if (S3_805_I_SERIES(s3ChipId))
+	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
+	 else
+	    nonMuxMaxClock = 67500;
+      }
       else
 	 nonMuxMaxClock = 67500;
       allowPixMuxInterlace = FALSE;

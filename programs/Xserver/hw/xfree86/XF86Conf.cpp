@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.8 1994/12/11 10:51:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.9 1995/01/02 04:45:27 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -68,8 +68,14 @@ XCOMM provide a better stack trace in the core dump to aid in debugging
 XCOMM    NoTrapSignals
 
 XCOMM Uncomment this to disable the <Crtl><Alt><BS> server abort sequence
+XCOMM This allows clients to receive this key event.
 
 XCOMM    DontZap
+
+XCOMM Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching
+XCOMM sequences.  This allows clients to receive these key events.
+
+XCOMM    DontZoom
 
 EndSection
 

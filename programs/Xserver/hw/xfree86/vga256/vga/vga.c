@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.26 1995/01/02 05:02:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.27 1995/01/10 10:35:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1248,8 +1248,8 @@ vgaEnterLeaveVT(enter, screen_idx)
       
       vgaInitFunc = (Bool (*)())saveDummy;
       vgaSaveFunc = (void * (*)())saveDummy;
-      vgaRestoreFunc = saveDummy;
-      vgaAdjustFunc = saveDummy;
+      vgaRestoreFunc = (void (*)())saveDummy;
+      vgaAdjustFunc = (void (*)())saveDummy;
       vgaSaveScreenFunc = saveDummy;
       vgaSetReadFunc = saveDummy;
       vgaSetWriteFunc = saveDummy;

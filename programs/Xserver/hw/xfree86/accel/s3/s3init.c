@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.42 1994/12/29 10:06:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.43 1995/01/10 10:23:04 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1908,6 +1908,12 @@ s3Init(mode)
 	  ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6) |
 	  ((mode->CrtcHSyncStart & 0x800) >> 7);
 
+      if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
+	 i |= 0x20;   /* add another 32 DCLKs to hsync pulse width */
+
+      if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 64)
+	 i |= 0x08;   /* add another 64 DCLKs to blank pulse width */
+
       outb(vgaCRIndex, 0x3b);
       itmp = (  new->CRTC[0] + ((i&0x01)<<8)
 	      + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
@@ -1918,7 +1924,7 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x5d);
       tmp = inb(vgaCRReg);
-      outb(vgaCRReg, (tmp & ~0x57) | i);
+      outb(vgaCRReg, (tmp & 0x80) | i);
 
       i = 255;
       if (s3InfoRec.s3Nadjust != 0) {
@@ -1950,6 +1956,16 @@ s3Init(mode)
    }
 
    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+      if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	 /* 
+	  * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
+	  * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
+	  */ 
+	 outb(vgaCRIndex, 0x68);
+	 tmp = inb(vgaCRReg);
+	 if (tmp & 0x30 == 0x30) 		/* 3.5 MCLKs */
+	    outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
+      }
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 
@@ -1981,7 +1997,7 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x67);
 	 cr67 = inb(vgaCRReg);
 
-	 for(last=i=0; i<30; i++) { /* should be an even number */
+	 for(last=i=30; --i;) {
 	    VerticalRetraceWait();
 	    VerticalRetraceWait();
 	    if ((inb(port) & bit) == 0) { /* if GD2 is low then */
@@ -1993,15 +2009,19 @@ s3Init(mode)
 	       ErrorF("inverted VCLK %d  to 0x%02x\n",i,tmp ^ 0x01);
 #endif
 	    }
-	    if (i-last > 4) break;
+	    if (last-i > 4) break;
+	 }
+	 if (!i) {  /* didn't get stable input, restore original CR67 value */
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, cr67);
 	 }
 	 if (port == 0x3c8) {
 	    outb(vgaCRIndex, 0x55);
 	    outb(vgaCRReg, cr55); 
 	 }
+#if 0
 	 outb(vgaCRIndex, 0x67);
 	 tmp = inb(vgaCRReg);
-#if 0
 	 /* if ((cr67 ^ tmp) & 0x01)  */ 
 	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i,cr67,tmp);
 #endif

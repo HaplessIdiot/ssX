@@ -184,8 +184,7 @@ In addition, the following SVGA chipsets are supported:
     <tag/Avance Logic /
 	ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
     <tag/Chips &amp; Technology /
-	82C451, 82C452, 82C453, 82C455, 82C456, 82C457, 65520, 65530,
-	65540, 65545
+	65520, 65530, 65540, 65545
     <tag/MX /
 	MX68000, MX680010 
     <tag> Video 7/Headland Technologies </tag>
@@ -742,7 +741,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.3 1995/01/02 07:44:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.4 1995/01/08 07:00:03 dawes Exp $
 </verb>
 
 </article>

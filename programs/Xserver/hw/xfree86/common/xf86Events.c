@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.6 1994/12/17 10:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.7 1995/01/10 10:23:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -453,7 +453,7 @@ xf86PostKbdEvent(key)
 	
       case KEY_BackSpace:
 	if (!xf86Info.dontZap) GiveUp(0);
-	return;
+	break;
 	
 	/*
 	 * The idea here is to pass the scancode down to a list of
@@ -461,12 +461,18 @@ xf86PostKbdEvent(key)
 	 * for processing certain keys.
 	 */
       case KEY_KP_Minus:   /* Keypad - */
-	if (down) xf86ZoomViewport(xf86Info.currentScreen, -1);
-	return;
+	if (!xf86Info.dontZoom) {
+	  if (down) xf86ZoomViewport(xf86Info.currentScreen, -1);
+	  return;
+	}
+	break;
 	
       case KEY_KP_Plus:   /* Keypad + */
-	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
-	return;
+	if (!xf86Info.dontZoom) {
+	  if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
+	  return;
+	}
+	break;
 
 #if defined(linux) || (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)))
 	/*

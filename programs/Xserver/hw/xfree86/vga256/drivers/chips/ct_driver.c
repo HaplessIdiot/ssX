@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.3 1995/01/08 07:01:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.4 1995/01/10 10:30:38 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@>
@@ -255,16 +255,19 @@ static unsigned CHIPS_ExtPorts[] = {0x46E8, 0x103, 0x3D6, 0x3D7 };
 static int Num_CHIPS_ExtPorts =
 	(sizeof(CHIPS_ExtPorts)/sizeof(CHIPS_ExtPorts[0]));
 
+#define CT_520   0
+#define CT_530   1
+#define CT_540   2
+#define CT_545   3
+#ifdef CT45X_SUPPORT
+/* CT_451 - CT457 are not supproted */
 #define CT_451   0
 #define CT_452   1
 #define CT_453   2
 #define CT_455   3
 #define CT_456   4
 #define CT_457   5
-#define CT_520   6
-#define CT_530   7
-#define CT_540   8
-#define CT_545   9
+#endif
 
 static unsigned char CHIPSchipset;
 
@@ -285,9 +288,13 @@ static char *
 CHIPSIdent(n)
 int n;
 {
-    static char *chipsets[] = { "ct451", "ct452", "ct453", "ct455",
-				"ct456", "ct457", "ct65520", "ct65530",
-			        "ct65540", "ct65545" };
+    static char *chipsets[] = { 
+				"ct65520", "ct65530", "ct65540", "ct65545",
+#ifdef CT45X_SUPPORT
+				"ct451", "ct452", "ct453", "ct455",
+				"ct456", "ct457",
+#endif
+			      };
 #ifdef DEBUG	
     ErrorF("CHIPSIdent\n");
 #endif
@@ -437,27 +444,31 @@ CHIPSProbe()
 		 * nested conditionals here (see the Trident and WD drivers
 		 * for examples).
 		 */
-        if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(0))) {
-            CHIPSchipset = CT_451;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(1))) {
-            CHIPSchipset = CT_452;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(2))) {
-            CHIPSchipset = CT_453;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(3))) {
-            CHIPSchipset = CT_455;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(4))) {
-            CHIPSchipset = CT_456;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(5))) {
-            CHIPSchipset = CT_457;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(6))) {
+        if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_520))) {
             CHIPSchipset = CT_520;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(7))) {
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_530))) {
             CHIPSchipset = CT_530;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(8))) {
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_540))) {
             CHIPSchipset = CT_540;
-        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(9))) {
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_545))) {
             CHIPSchipset = CT_545;
-        } else {
+        }
+#ifdef CT54x_SUPPORT
+	else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_451))) {
+            CHIPSchipset = CT_451;
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_452))) {
+            CHIPSchipset = CT_452;
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_453))) {
+            CHIPSchipset = CT_453;
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_455))) {
+            CHIPSchipset = CT_455;
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_456))) {
+            CHIPSchipset = CT_456;
+        } else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_457))) {
+            CHIPSchipset = CT_457;
+        }
+#endif
+	else {
 /*	    ErrorF("bomb 0\n"); */
             return (FALSE);
         }

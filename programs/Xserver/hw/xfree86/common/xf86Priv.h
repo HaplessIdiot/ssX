@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.1 94/03/28 21:23:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.3 1995/01/07 04:07:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.4 1995/01/10 10:23:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -91,6 +91,7 @@ typedef struct {
   Bool          vtRequestsPending;
   Bool          inputPending;
   Bool          dontZap;
+  Bool		dontZoom;
   Bool          notrapSignals;           /* don't exit cleanly - die at fault */
   Bool          caughtSignal;
 
