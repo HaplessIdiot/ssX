@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.19 2002/10/30 12:52:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.20 2004/06/30 20:33:14 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -38,6 +38,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "scrnintstr.h"
 #include "xf86dri.h"
+#include <xf86str.h>
 
 typedef int DRISyncType;
 
