@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.27 2001/10/31 22:50:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.28 2002/05/07 12:57:07 alanh Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -267,6 +267,8 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 	for (i = 0; i < 8; i++) {
 		sprintf(filename,"/dev/fb%d",i);
 		if (-1 == (fd = open(filename,O_RDWR,0))) {
+			xf86DrvMsg(-1, X_WARNING,
+				   "open %s: %s\n", filename, strerror(errno));
 			continue;
 		}
 		if (-1 == ioctl(fd,FBIOGET_FSCREENINFO,(void*)&fix)) {
@@ -371,8 +373,14 @@ fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device)
 		fPtr->fd = fbdev_open_pci(pPci,NULL);
 	else
 		fPtr->fd = fbdev_open(pScrn->scrnIndex,device,NULL);
-	if (-1 == fPtr->fd)
+	if (-1 == fPtr->fd) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Failed to open framebuffer device, consult warnings"
+			   " and/or errors above for possible reasons\n"
+			   "\t(you may have to look at the server log to see"
+			   " warnings)\n");
 		return FALSE;
+	}
 
 	/* get current fb device settings */
 	if (-1 == ioctl(fPtr->fd,FBIOGET_FSCREENINFO,(void*)(&fPtr->fix))) {
