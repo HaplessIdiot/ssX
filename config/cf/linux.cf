@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.214 2003/11/14 17:28:41 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.215 2003/11/17 20:23:17 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -329,40 +329,12 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # endif
 #endif
 
-#if 0
 /*
  * Building the DRM module requires kernel source be installed.  It's safest
  * to just not enable it by default.
  */
-
-/* The DRM module requires kernel services that appeared in late 2.1.x
-   kernels and are known to be present in 2.2.x kernels.  Unfortunately,
-   the kernel API is a moving target and the module may break with new
-   kernel revisions.  So, we'll only build the module for kernels that are
-   known to be supported by the module. */
 #ifndef BuildXF86DRM
-#  if defined(i386Architecture) || defined(ia64Architecture) || defined(SparcArchitecture) || defined(AlphaArchitecture) || defined(AMD64Architecture)
-#    if OSMajorVersion == 2
-       /* Only tested for Linux 2.2.0 through 2.2.12 */
-#      if OSMinorVersion == 2 && OSTeenyVersion <= 12
-#        define BuildXF86DRM	YES
-#      else
-         /* Only tested for Linux 2.3.0 through 2.3.18 */
-#        if OSMinorVersion == 3 && OSTeenyVersion <= 18
-#          define BuildXF86DRM	YES
-#        else
-           /* Note: add more conditions when 2.4.x and 2.5.x are released */
-#          define BuildXF86DRM	NO
-#        endif
-#      endif
-#    else
-       /* Note: add more conditions when 3.0.x and 3.1.x are released */
-#      define BuildXF86DRM	NO
-#    endif
-#  else
-#    define BuildXF86DRM	NO
-#  endif
-#endif
+#define BuildXF86DRM	NO
 #endif
 
 #ifndef HasAgpGart
