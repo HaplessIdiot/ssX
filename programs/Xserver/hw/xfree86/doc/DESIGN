@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                        Last modified 25 October 1999
+                        Last modified 31 October 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2784,12 +2784,12 @@ DGAInit.
 
      void FillRect (pScrn, x, y, w, h, color)
 
-          This optional function should fill a rectangle w × h
+          This optional function should fill a rectangle w  h
           located at (x,y) in the given color.
 
      void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)
 
-          This optional function should copy an area w × h located
+          This optional function should copy an area w  h located
           at (srcx,srcy) to location (dstx,dsty).  This function
           will need to handle copy directions as appropriate.
 
@@ -2982,8 +2982,8 @@ The XF86VideoAdaptorRec:
                RegionPtr clipBoxes, pointer data )
 
           This indicates that the driver should take a subsection
-          vid_w × vid_h at location (vid_x,vid_y) from the video
-          stream and direct it into the rectangle rw_w × drw_h at
+          vid_w  vid_h at location (vid_x,vid_y) from the video
+          stream and direct it into the rectangle rw_w  drw_h at
           location (drw_x,drw_y) on the screen, scaling as neces-
           sary.  Due to the large variations in capabilities of the
           various hardware expected to be used with this extension,
@@ -3086,8 +3086,8 @@ The XF86VideoAdaptorRec:
 
           QueryBestSize provides the client with a way to query
           what the destination dimensions would end up being if
-          they were to request that an area vid_w × vid_h from the
-          video stream be scaled to rectangle of drw_w × drw_h on
+          they were to request that an area vid_w  vid_h from the
+          video stream be scaled to rectangle of drw_w  drw_h on
           the screen.  Since it is not expected that all hardware
           will be able to get the target dimensions exactly, it is
           important that the driver provide this function.  The
@@ -4150,12 +4150,26 @@ the helpers.
 
                     first usable mode in list
 
+               The following options can also be combined
+               (OR'ed) with one of the above:
+
                LOOKUP_CLKDIV2
 
                     Allow halved clocks
 
-               LOOKUP_CLKDIV2 can be combined (OR'ed) with one
-               of the others.
+               LOOKUP_OPTIONAL_TOLERANCES
+
+                    Allow missing horizontal sync and/or
+                    vertical refresh ranges in the
+                    XF86Config Monitor section
+
+               LOOKUP_OPTIONAL_TOLERANCES should only be spec-
+               ified when the driver can ensure all modes it
+               generates can sync on, or at least not damage,
+               the monitor or digital flat panel.  Horizontal
+               sync and/or vertical refresh ranges specified
+               by the user will still be honoured (and acted
+               upon).
 
           This function requires that the following fields of the
           ScrnInfoRec are initialised prior to calling it:
@@ -5982,6 +5996,6 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.13 1999/10/26 15:58:14 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.14 1999/11/02 16:16:33 tsi Exp $
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.8 1999/10/26 16:32:30 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.9 1999/10/26 16:56:28 tsi Exp $
