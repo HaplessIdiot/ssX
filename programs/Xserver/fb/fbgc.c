@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.13 2003/12/09 12:12:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgc.c,v 1.14 2003/12/18 15:22:32 alanh Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -253,13 +253,15 @@ fbValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
     }
     if (changes & GCStipple)
     {
+	pPriv->evenStipple = FALSE;
+
 	if (pGC->stipple) {
+
+	    /* can we do an even stipple ?? */
 	    if (FbEvenStip (pGC->stipple->drawable.width,
 						pDrawable->bitsPerPixel) &&
 	       (fbCanEvenStipple (pGC->stipple, pDrawable->bitsPerPixel)))
 	   	pPriv->evenStipple = TRUE;
-	    else
-	    	pPriv->evenStipple = FALSE;
 
 	    if (pGC->stipple->drawable.width * pDrawable->bitsPerPixel < FB_UNIT)
 		fbPadPixmap (pGC->stipple);
