@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.6 1994/10/20 06:00:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.7 1994/11/19 07:32:15 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -70,8 +70,8 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.6 1994/10/20 06:00:07 dawes Exp $
 #define MacroIncludeFile <FreeBSD.cf>
 #define MacroFile FreeBSD.cf
 #undef __FreeBSD__
-#ifdef __i386__
 #define FreeBSDArchitecture
+#ifdef __i386__
 #define i386BsdArchitecture
 #define i386Architecture
 #endif

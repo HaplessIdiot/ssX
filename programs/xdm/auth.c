@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.5 1994/10/20 06:15:06 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.6 1994/11/19 13:57:29 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -751,7 +751,7 @@ ifioctl (fd, cmd, arg)
  * for this fd and add them to the selfhosts list.
  * TLI version, written without sufficient documentation.
  */
-static
+static void
 DefineSelf (fd, file, auth)
     int fd;
     FILE	*file;
@@ -783,7 +783,7 @@ DefineSelf (fd, file, auth)
 #include <netinet/in.h>
 #include <netinet/in_var.h>
 
-void
+static void
 DefineSelf (fd, file, auth)
     int fd;
     FILE *file;
@@ -860,7 +860,7 @@ DefineSelf (fd, file, auth)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
-static
+static void
 DefineSelf (fd, file, auth)
     int fd;
     FILE	*file;
@@ -935,7 +935,7 @@ DefineSelf (fd, file, auth)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
-static
+static void
 DefineSelf (fd, file, auth)
     int fd;
 {
