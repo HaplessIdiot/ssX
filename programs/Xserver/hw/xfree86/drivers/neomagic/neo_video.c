@@ -26,7 +26,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /*
  * Copyright 2002 SuSE Linux AG, Author: Egbert Eich
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_video.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_video.c,v 1.5tsi Exp $ */
 
 #include "neo.h"
 #include "neo_video.h"
@@ -986,7 +986,7 @@ NEOAllocSurface(ScrnInfoPtr pScrn, int id,
 		unsigned short width, unsigned short height,
 		XF86SurfacePtr surface)
 {
-    int pitch, bpp, size;
+    int pitch, size;
     NEOOffscreenPtr pPriv;
     FBLinearPtr linear;
 
@@ -998,7 +998,6 @@ NEOAllocSurface(ScrnInfoPtr pScrn, int id,
     }
 
     width = (width + 1) & ~1;
-    bpp = ((pScrn->bitsPerPixel + 1) >> 3);
     pitch = ((width << 1) + 15) & ~15;
     size = pitch * height;
 

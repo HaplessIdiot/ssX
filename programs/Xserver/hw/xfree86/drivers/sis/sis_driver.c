@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.148tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -113,7 +113,6 @@ static int      	SISEntityIndex = -1;
 #ifdef SISMERGED
 #ifdef SISXINERAMA
 static Bool 		SiSnoPanoramiXExtension = TRUE;
-static unsigned char 	SiSXineramaReqCode = 0;
 int 			SiSXineramaPixWidth = 0;
 int 			SiSXineramaPixHeight = 0;
 int 			SiSXineramaNumScreens = 0;
@@ -1563,7 +1562,6 @@ static void
 SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
 {
     SISPtr pSiS = SISPTR(pScrn1);
-    ScrnInfoPtr pScrn2 = NULL;
     int crt1scrnnum = 0, crt2scrnnum = 1;
     int x1=0, x2=0, y1=0, y2=0, h1=0, h2=0, w1=0, w2=0;
     DisplayModePtr currentMode, firstMode;
@@ -1579,8 +1577,6 @@ SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
        crt1scrnnum = 1;
        crt2scrnnum = 0;
     }
-
-    pScrn2 = pSiS->CRT2pScrn;
 
     /* Attention: Usage of RandR may lead into virtual X and Y values
      * actually smaller than our MetaModes! To avoid this, we calculate
@@ -2062,8 +2058,6 @@ SiSXineramaExtensionInit(ScrnInfoPtr pScrn)
 					StandardMinorOpcode);
 
 	  if(!pSiS->XineramaExtEntry) break;
-
-	  SiSXineramaReqCode = (unsigned char)pSiS->XineramaExtEntry->base;
 
 	  if(!(SiSXineramadataPtr = (SiSXineramaData *)
 	        xcalloc(SiSXineramaNumScreens, sizeof(SiSXineramaData)))) break;
@@ -5469,8 +5463,7 @@ SISSave(ScrnInfoPtr pScrn)
 static void
 SiS_WriteAttr(SISPtr pSiS, int index, int value)
 {
-    CARD8 tmp;
-    tmp = inb(pSiS->IODBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    (void) inb(pSiS->IODBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
     index |= 0x20;
     outb(pSiS->IODBase + VGA_ATTR_INDEX, index);
     outb(pSiS->IODBase + VGA_ATTR_DATA_W, value);
@@ -5479,8 +5472,7 @@ SiS_WriteAttr(SISPtr pSiS, int index, int value)
 static int
 SiS_ReadAttr(SISPtr pSiS, int index)
 {
-    CARD8 tmp;
-    tmp = inb(pSiS->IODBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    (void) inb(pSiS->IODBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
     index |= 0x20;
     outb(pSiS->IODBase + VGA_ATTR_INDEX, index);
     return(inb(pSiS->IODBase + VGA_ATTR_DATA_R));
@@ -5657,16 +5649,15 @@ SISVESASaveRestore(ScrnInfoPtr pScrn, vbeSaveRestoreFunction function)
 
     /* Save/Restore Super VGA state */
     if(function != MODE_QUERY) {
-       Bool retval = TRUE;
 
        if(pSiS->vesamajor > 1) {
 	  if(function == MODE_RESTORE) {
 	     memcpy(pSiS->state, pSiS->pstate, pSiS->stateSize);
 	  }
 
-	  if((retval = VBESaveRestore(pSiS->pVbe,function,
+	  if(VBESaveRestore(pSiS->pVbe, function,
 				      (pointer)&pSiS->state,
-				      &pSiS->stateSize,&pSiS->statePage)) &&
+			    &pSiS->stateSize, &pSiS->statePage) &&
 	     (function == MODE_SAVE)) {
 	     /* don't rely on the memory not being touched */
 	     if(!pSiS->pstate) {

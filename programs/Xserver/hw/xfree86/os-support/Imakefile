@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.59 2003/10/02 13:30:04 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.60tsi Exp $
 
 
 
@@ -17,7 +17,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 	(defined(NetBSDArchitecture) && defined(AlphaArchitecture)) || \
 	(defined(NetBSDArchitecture) && defined(PpcArchitecture)) || \
 	(defined(NetBSDArchitecture) && defined(SparcArchitecture)) || \
-	defined(OpenBSDArchitecture) || \
+	defined(OpenBSDArchitecture) || defined(SGIArchitecture) || \
 	(defined(LynxOSArchitecture) && defined(PpcArchitecture)) || \
 	defined(AMD64Architecture) || defined(LinuxArchitecture)
 BUS_SUBDIR = bus
@@ -46,6 +46,8 @@ OS_SUBDIR = sunos
 OS_SUBDIR = pmax
 # elif defined(DguxArchitecture)
 OS_SUBDIR = dgux
+# elif defined(SGIArchitecture)
+OS_SUBDIR = irix
 # else
 OS_SUBDIR = sysv
 # endif

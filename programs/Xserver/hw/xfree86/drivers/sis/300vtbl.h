@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/300vtbl.h,v 1.17tsi Exp $ */
 /*
  * Register settings for SiS 300 series
  *
@@ -730,7 +730,7 @@ static const UCHAR  SiS300_ScreenOffset[] =
 static UCHAR SiS300_SR07 = 0x10;
 #endif
 
-static const UCHAR  SiS300_SR15[8][4] =
+static const DRAM4Type SiS300_SR15[8] =
 {
 	{0x01,0x09,0xa3,0x00},
 	{0x43,0x43,0x43,0x00},

@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.3tsi Exp $ */
 
 #include <sys/types.h>
 #include "xf86Version.h"
@@ -80,15 +80,10 @@ xf86JS_XReadInput(LocalDevicePtr local)
    JS_XDevPtr priv = local->private;
    struct hiddev_event event;
    int x = priv->jsxOldX, y = priv->jsxOldY, press = priv->jsxOldPress;
-   int btn = priv->jsxOldBtn, len = 0;
+   int btn = priv->jsxOldBtn;
    int btn_notify = priv->jsxOldNotify;
 
-#if 0
-   SYSCALL(len = read(local->fd, &event, sizeof(struct hiddev_event)));
-   if (len < sizeof(struct hiddev_event))
-      return;
-#endif
-   while ((len = read(local->fd, &event, sizeof(struct hiddev_event)))
+   while (read(local->fd, &event, sizeof(struct hiddev_event))
 	  == sizeof(struct hiddev_event)) {
       switch (event.hid) {
       case JSX_XCOORD:

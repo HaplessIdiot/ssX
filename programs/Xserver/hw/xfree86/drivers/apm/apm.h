@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.18 2002/01/25 21:55:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.19tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -146,7 +146,7 @@ typedef struct {
     struct ApmStippleCacheRec {
 	XAACacheInfoRec		apmStippleCache;
 	FBAreaPtr		area;
-	int			apmStippleCached:1;
+	unsigned int		apmStippleCached:1;
     }			apmCache[APM_CACHE_NUMBER];
     int			apmCachePtr;
     unsigned char	regcurr[0x54];

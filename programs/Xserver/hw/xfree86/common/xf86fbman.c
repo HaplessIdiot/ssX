@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.26 2003/10/09 12:40:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.27tsi Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -1036,7 +1036,7 @@ static Bool
 localResizeOffscreenLinear(FBLinearPtr resize, int length)
 {
    FBManagerPtr offman;
-   FBLinearLinkPtr pLink, pLinkPrev = NULL;
+   FBLinearLinkPtr pLink;
    ScreenPtr pScreen = resize->pScreen;
 
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
@@ -1045,7 +1045,6 @@ localResizeOffscreenLinear(FBLinearPtr resize, int length)
    if(!pLink) return FALSE;  
  
    while(&(pLink->linear) != resize) {
-        pLinkPrev = pLink;
         pLink = pLink->next;
         if(!pLink) return FALSE;
    }

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.96 2003/10/30 17:37:15 tsi Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.97tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -358,7 +358,7 @@ TsengFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-static t_tseng_type
+static Bool
 TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
@@ -465,7 +465,7 @@ TsengLock(void)
 static Bool
 ET4000MinimalProbe(void)
 {
-    unsigned char temp, origVal, newVal;
+    unsigned char origVal, newVal;
     int iobase;
 
     PDEBUG("	ET4000MinimalProbe\n");
@@ -479,7 +479,7 @@ ET4000MinimalProbe(void)
      * Check first that there is a ATC[16] register and then look at
      * CRTC[33]. If both are R/W correctly it's a ET4000 !
      */
-    temp = inb(iobase + 0x0A);
+    (void) inb(iobase + 0x0A);
     TsengUnlock();		       /* only ATC 0x16 is protected by KEY */
     outb(0x3C0, 0x16 | 0x20);
     origVal = inb(0x3C1);
@@ -620,7 +620,8 @@ TsengPreInitPCI(ScrnInfoPtr pScrn)
     if (pTseng->pEnt->device->chipset && *pTseng->pEnt->device->chipset) {
 	/* chipset given as a string in the config file */
 	pScrn->chipset = pTseng->pEnt->device->chipset;
-	pTseng->ChipType = xf86StringToToken(TsengChipsets, pScrn->chipset);
+	pTseng->ChipType =
+	    (t_tseng_type)xf86StringToToken(TsengChipsets, pScrn->chipset);
 	/* FIXME: still need to probe for W32p revision here */
 	from = X_CONFIG;
     } else if (pTseng->pEnt->device->chipID >= 0) {
@@ -899,7 +900,8 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn)
     if (pTseng->pEnt->device->chipset && *pTseng->pEnt->device->chipset) {
 	/* chipset given as a string in the config file */
 	pScrn->chipset = pTseng->pEnt->device->chipset;
-	pTseng->ChipType = xf86StringToToken(TsengChipsets, pScrn->chipset);
+	pTseng->ChipType =
+	    (t_tseng_type)xf86StringToToken(TsengChipsets, pScrn->chipset);
 	from = X_CONFIG;
     } else if (pTseng->pEnt->device->chipID > 0) {
 	/* chipset given as a PCI ID in the config file */
@@ -2975,14 +2977,12 @@ static void
 TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg,
 	     int flags)
 {
-    vgaHWPtr hwp;
     TsengPtr pTseng;
     unsigned char tmp;
     int iobase = VGAHWPTR(pScrn)->IOBase;
 
     PDEBUG("	TsengRestore\n");
 
-    hwp = VGAHWPTR(pScrn);
     pTseng = TsengPTR(pScrn);
 
     TsengProtect(pScrn, TRUE);

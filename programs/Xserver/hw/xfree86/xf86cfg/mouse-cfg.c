@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.10 2003/02/15 05:37:58 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.11tsi Exp $
  */
 
 #include "xf86config.h"
@@ -325,7 +325,7 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
     int i;
 
     if (first) {
-	Widget label, viewport;
+	Widget viewport;
 	struct dirent *ent;
 	DIR *dir;
 	char **list;
@@ -362,7 +362,7 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
 	    }
 	}
 
-	label = XtCreateManagedWidget("labelD", labelWidgetClass,
+	(void) XtCreateManagedWidget("labelD", labelWidgetClass,
 				      mouse_dp, NULL, 0);
 	text = XtVaCreateManagedWidget("device", asciiTextWidgetClass,
 				       mouse_dp,
@@ -379,7 +379,7 @@ MouseDeviceAndProtocol(XF86SetupInfo *info)
 	XtAddCallback(listD, XtNcallback, MouseDeviceCallback, (XtPointer)text);
 
 	/* PROTOCOL */
-	label = XtCreateManagedWidget("labelP", labelWidgetClass,
+	(void) XtCreateManagedWidget("labelP", labelWidgetClass,
 				      mouse_dp, NULL, 0);
 	viewport = XtCreateManagedWidget("viewportP", viewportWidgetClass,
 					 mouse_dp, NULL, 0);

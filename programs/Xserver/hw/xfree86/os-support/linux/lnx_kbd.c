@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.3tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -27,7 +27,7 @@
 
 static KbdProtocolRec protocols[] = {
    {"standard", PROT_STD },
-   { NULL, PROT_UNKNOWN }
+   { NULL, PROT_UNKNOWN_KBD }
 };
 
 extern Bool VTSwitchEnabled;

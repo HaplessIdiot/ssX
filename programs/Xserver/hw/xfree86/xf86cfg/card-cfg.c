@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.9 2001/07/06 02:04:10 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.11tsi Exp $
  */
 
 #include "xf86config.h"
@@ -368,7 +368,7 @@ CardModel(XF86SetupInfo *info)
     static Widget model;
 
     if (first) {
-	Widget label, viewport;
+	Widget viewport;
 
 	first = 0;
 
@@ -376,7 +376,7 @@ CardModel(XF86SetupInfo *info)
 
 	model = XtCreateWidget("cardModel", formWidgetClass,
 			       configp, NULL, 0);
-	label = XtCreateManagedWidget("label", labelWidgetClass,
+	(void) XtCreateManagedWidget("label", labelWidgetClass,
 				      model, NULL, 0);
 	filter = XtVaCreateManagedWidget("filter", asciiTextWidgetClass,
 					 model,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.28 2003/08/24 17:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.29tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -94,7 +94,6 @@ static int StringToToken (char *, xf86ConfigSymTabRec *);
 static FILE *configFile = NULL;
 static const char **builtinConfig = NULL;
 static int builtinIndex = 0;
-static int configStart = 0;		/* start of the current token */
 static int configPos = 0;		/* current readers position */
 static int configLineNo = 0;	/* linenumber */
 static char *configBuf, *configRBuf;	/* buffer for lines */
@@ -206,7 +205,7 @@ again:
 				return (pushToken = EOF_TOKEN);
 			}
 			configLineNo++;
-			configStart = configPos = 0;
+			configPos = 0;
 			eol_seen = 1;
 		}
 
@@ -246,16 +245,13 @@ again:
 		/* GJA -- handle '-' and ','  * Be careful: "-hsync" is a keyword. */
 		else if ((c == ',') && !isalpha (configBuf[configPos]))
 		{
-			configStart = configPos;
 			return COMMA;
 		}
 		else if ((c == '-') && !isalpha (configBuf[configPos]))
 		{
-			configStart = configPos;
 			return DASH;
 		}
 
-		configStart = configPos;
 		/* 
 		 * Numbers are returned immediately ...
 		 */
@@ -689,7 +685,6 @@ xf86openConfigFile(const char *path, const char *cmdline, const char *projroot)
 	int cmdlineUsed = 0;
 
 	configFile = NULL;
-	configStart = 0;		/* start of the current token */
 	configPos = 0;		/* current readers position */
 	configLineNo = 0;	/* linenumber */
 	pushToken = LOCK_TOKEN;

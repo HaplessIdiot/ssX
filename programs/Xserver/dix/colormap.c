@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.9 2002/02/19 11:09:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.10tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -635,7 +635,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
     int		channel, client;
     ColormapPtr	pmapSrc, pmapDst;
 {
-    int		z, npix, oldFree;
+    int		z, npix;
     EntryPtr	pentSrcFirst, pentDstFirst;
     EntryPtr	pentSrc, pentDst;
     Pixel	*ppix;
@@ -649,21 +649,18 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 	npix = (pmapSrc->numPixelsRed)[client];
 	pentSrcFirst = pmapSrc->red;
 	pentDstFirst = pmapDst->red;
-	oldFree = pmapSrc->freeRed;
 	break;
       case GREENMAP:
 	ppix = (pmapSrc->clientPixelsGreen)[client];
 	npix = (pmapSrc->numPixelsGreen)[client];
 	pentSrcFirst = pmapSrc->green;
 	pentDstFirst = pmapDst->green;
-	oldFree = pmapSrc->freeGreen;
 	break;
       case BLUEMAP:
 	ppix = (pmapSrc->clientPixelsBlue)[client];
 	npix = (pmapSrc->numPixelsBlue)[client];
 	pentSrcFirst = pmapSrc->blue;
 	pentDstFirst = pmapDst->blue;
-	oldFree = pmapSrc->freeBlue;
 	break;
     }
     nalloc = 0;

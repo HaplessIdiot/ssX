@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.186 2003/10/30 17:37:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.187tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2603,11 +2603,8 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     TRIDENTRegPtr tridentReg;
-    int clock;
 
     TridentFindClock(pScrn,mode->Clock);
-
-    clock = pTrident->currentClock;
 
     switch (pTrident->Chipset) {
 	case TGUI9660:
@@ -2746,7 +2743,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* The vgaHW references will disappear one day */
     ScrnInfoPtr pScrn;
     vgaHWPtr hwp;
-    int vgaIOBase;
     TRIDENTPtr pTrident;
     int ret;
     VisualPtr visual;
@@ -2792,8 +2788,6 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	/* Initialize the MMIO vgahw functions */
     	vgaHWSetMmioFuncs(hwp, pTrident->IOBase, 0);
     }
-
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     /* Save the current state */
     TRIDENTSave(pScrn);
@@ -3109,12 +3103,10 @@ TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TRIDENTPtr pTrident;
-    vgaHWPtr hwp;
     int base = y * pScrn->displayWidth + x;
     int vgaIOBase;
     CARD8 temp;
 
-    hwp = VGAHWPTR(pScrn);
     pTrident = TRIDENTPTR(pScrn);
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 

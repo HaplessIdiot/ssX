@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.28 2003/09/24 02:43:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.29tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -550,7 +550,6 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     CARD32 physbase, padsize;
-    int CYRIXisOldChipRevision;
     int device_step, device_revision;
     int vgaIOBase;
     unsigned char gcr;
@@ -634,8 +633,6 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     device_revision &= 0xFF;
     xf86ErrorF("%s: MediaGX processor ID %d revision %d\n", 
 		CYRIX_NAME, device_step, device_revision);
-
-    CYRIXisOldChipRevision = (device_step == 0 && device_revision < 40);
 
     /* Some  MediaGX systems have different blit buffer offsets than
      * is  indicated by the scratchpad size.  Make sure that we have
@@ -1011,7 +1008,7 @@ CYRIXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     int ret = -1;
     vgaHWPtr hwp;
-    vgaRegPtr vgaReg;
+/*    vgaRegPtr vgaReg; */
     CYRIXPrvPtr pCyrix;
     CYRIXRegPtr cyrixReg;
 
@@ -1032,7 +1029,7 @@ CYRIXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
 
     /* Program the registers */
-    vgaReg = &hwp->ModeReg;
+/*    vgaReg = &hwp->ModeReg; */
     cyrixReg = &pCyrix->ModeReg;
 
     CyrixRestore(pScrn, cyrixReg);
@@ -1049,13 +1046,13 @@ CYRIXRestore(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp;
     vgaRegPtr vgaReg;
-    CYRIXPrvPtr pCyrix;
-    CYRIXRegPtr cyrixReg;
+    /*CYRIXPrvPtr pCyrix;*/
+    /*CYRIXRegPtr cyrixReg*/;
 
     hwp = VGAHWPTR(pScrn);
-    pCyrix = CYRIXPTR(pScrn);
+    /*pCyrix = CYRIXPTR(pScrn);*/
     vgaReg = &hwp->SavedReg;
-    cyrixReg = &pCyrix->SavedReg;
+    /*cyrixReg = &pCyrix->SavedReg*/;
 
     vgaHWProtect(pScrn, TRUE);
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_gpioi2c.c,v 1.2tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -251,9 +251,6 @@ static Bool GPIOI2C_SENDNACKNOWLEDGE(VIABIOSInfoPtr pBIOSInfo)
 static Bool GPIOI2C_WriteData(VIABIOSInfoPtr pBIOSInfo, CARD8 Data)
 {
     int     i;
-    CARD8   d;
-
-    d = Data;
 
     if (!GPIOI2C_WriteBit(pBIOSInfo, (Data >> 7) & 1, BYTETIMEOUT))
 	    return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.18 2003/09/24 02:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.19tsi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -889,7 +889,7 @@ TDFXPutImageOverlay(
    TDFXPortPrivPtr pPriv = (TDFXPortPrivPtr)data;
    INT32 xa, xb, ya, yb;
    unsigned char *dst_start;
-   int pitch, new_size, offset;
+   int new_size, offset;
    int s2offset = 0, s3offset = 0;
    int srcPitch = 0, srcPitch2 = 0;
    int dstPitch;
@@ -935,7 +935,6 @@ TDFXPutImageOverlay(
    dstBox.y2 -= pScrn->frameY0;
 
    bpp = pScrn->bitsPerPixel >> 3;
-   pitch = bpp * pScrn->displayWidth;
 
    switch(id) {
    case FOURCC_YV12:
@@ -1164,7 +1163,7 @@ TDFXAllocateSurface(
 ){
     TDFXPtr pTDFX = TDFXPTR(pScrn);
     FBLinearPtr linear;
-    int pitch, fbpitch, size, bpp;
+    int pitch, size, bpp;
     OffscreenPrivPtr pPriv;
 
     if((w > 2048) || (h > 2048))
@@ -1173,7 +1172,6 @@ TDFXAllocateSurface(
     w = (w + 1) & ~1;
     pitch = ((w << 1) + 15) & ~15;
     bpp = pScrn->bitsPerPixel >> 3;
-    fbpitch = bpp * pScrn->displayWidth;
     size = ((pitch * h) + bpp - 1) / bpp;
 
     if(!(linear = TDFXAllocateMemoryLinear(pScrn, NULL, size)))

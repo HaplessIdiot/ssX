@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.29tsi Exp $ */
 /*
  * 2D Acceleration for SiS 315 and 330 series
  * (315/550/650/740/M650/651/652/M652/330/660/661/M661/741/M741/760/M760)
@@ -218,12 +218,12 @@ SiS315AccelInit(ScreenPtr pScreen)
 	int		topFB;
 	int             reservedFbSize;
 	int             UsableFbSize;
-	unsigned char   *AvailBufBase;
 	BoxRec          Avail;
 #ifdef SISDUALHEAD
         SISEntPtr       pSiSEnt = NULL;
 #endif
 #ifdef CTSCE
+	unsigned char   *AvailBufBase;
 #ifndef CTSCE_DIRECT
 	int             i;
 #endif
@@ -442,8 +442,8 @@ SiS315AccelInit(ScreenPtr pScreen)
 	 *   UsableFbSize  ColorExpandBuffers |  DRI-Heap   HWCursor  CommandQueue
 	 *                                 topFB
 	 */
-	AvailBufBase = pSiS->FbBase + UsableFbSize;
 #ifdef CTSCE
+	AvailBufBase = pSiS->FbBase + UsableFbSize;
 	if(pSiS->ColorExpandBufferNumber) {
 #ifdef CTSCE_DIRECT
 	   infoPtr->ColorExpandBase = (unsigned char *)AvailBufBase;

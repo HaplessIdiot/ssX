@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.49tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -858,13 +858,13 @@ DefineSelf (int fd)
 	    	struct ifreq    broad_req;
     
 	    	broad_req = *ifr;
-		if (ifioctl (fd, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+		if (ifioctl (fd, SIOCGIFFLAGS, (pointer) &broad_req) != -1 &&
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
-		    if (ifioctl (fd, SIOCGIFBRDADDR, &broad_req) != -1)
+		    if (ifioctl (fd, SIOCGIFBRDADDR, (pointer) &broad_req) != -1)
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;
@@ -1283,6 +1283,7 @@ Bool LocalClient(ClientPtr client)
 int
 LocalClientCred(ClientPtr client, int *pUid, int *pGid)
 {
+#if defined(HAS_GETPEEREID) || defined(SO_PEERCRED)
     int fd;
     XtransConnInfo ci;
 #ifdef HAS_GETPEEREID
@@ -1317,6 +1318,7 @@ LocalClientCred(ClientPtr client, int *pUid, int *pGid)
     if (pGid != NULL)
 	    *pGid = peercred.gid;
     return 0;
+#endif
 #else
     /* No system call available to get the credentials of the peer */
     return -1;

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.32 2003/09/24 03:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.33tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -521,7 +521,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     I128Ptr pI128;
     vgaHWPtr hwp;
     int i;
-    int bytesPerPixel;
     ClockRangePtr clockRanges;
     MessageType from;
     IOADDRESS iobase;
@@ -628,8 +627,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-
-    bytesPerPixel = pScrn->bitsPerPixel / 8;
 
     /* We use a programmable clock */
     pScrn->progClock = TRUE;
@@ -1789,20 +1786,15 @@ I128SaveScreen(ScreenPtr pScreen, int mode)
 }
 
 
-static const int DDC_SDA_IN_SHIFT = 1;
-static const int DDC_SDA_OUT_SHIFT = 2;
-static const int DDC_SCL_IN_SHIFT = 3;
-static const int DDC_SCL_OUT_SHIFT = 0;
-
 static const int DDC_SDA_IN_MASK = 1 << 1;
 static const int DDC_SDA_OUT_MASK = 1 << 2;
 static const int DDC_SCL_IN_MASK = 1 << 3;
 static const int DDC_SCL_OUT_MASK = 1 << 0;
 
-static const int DDC_MODE_SHIFT = 8;
 static const int DDC_MODE_MASK = 3 << 8;
-static const int DDC_MODE_DIS  = 0;
+#if 0
 static const int DDC_MODE_DDC1 = 1 << 8;
+#endif
 static const int DDC_MODE_DDC2 = 2 << 8;
 
 #if 0

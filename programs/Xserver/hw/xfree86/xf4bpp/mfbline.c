@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.3 1999/06/06 08:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.4tsi Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -182,13 +182,14 @@ DoV16LineSS (pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    int		    alu;
+#ifndef POLYSEGMENT
+    int	     alu = pGC->alu; /* GJA */
+#endif
 
     if (!(pGC->planemask & 0x0F))
 	return;
 
     cclip = pGC->pCompositeClip;
-    alu = pGC->alu; /* GJA */
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -803,10 +804,7 @@ dontStep:	;
 		(y2 <  pbox->y2))
 	    {
 		unsigned long _mask;
-		int ink;
 
-		ink = fgink;
-		if (dashIndex & 1) ink = bgink;
 		_mask = mask[x2 & PIM];
 		addrl = mfbScanline(addrl, x2, y2, nlwidth);
 		UPDRW(addrl,_mask);

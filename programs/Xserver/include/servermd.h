@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.55 2003/08/13 19:05:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.56tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -495,19 +495,8 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst
 #define BITMAP_BIT_ORDER	MSBFirst
-
-#if (_MIPS_SZLONG == 64)
-
-# define GLYPHPADBYTES		4
-# define GETLEFTBITS_ALIGNMENT	1
-
-#else
-
-#define GLYPHPADBYTES		2
-#define GETLEFTBITS_ALIGNMENT	4
-
-#endif
-
+#define GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
 #define AVOID_MEMORY_READ
 #define FAST_CONSTANT_OFFSET_MODE
 #define LARGE_INSTRUCTION_CACHE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.68 2002/10/11 01:40:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.69tsi Exp $ */
 /*
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -879,7 +879,6 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     int				valuator[6];
     int				oldaxis[6];
     int				*axisvals;
-    AxisInfoPtr			axes;
     int				dx = 0, dy = 0;
     float			mult;
     int				x, y;
@@ -908,7 +907,6 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     }
 
     axisvals = val->axisVal;
-    axes = val->axes;
     
     va_start(var, num_valuators);
 

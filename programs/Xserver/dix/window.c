@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.32 2003/01/12 02:44:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.33tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -2197,7 +2197,6 @@ ReflectStackChange(pWin, pSib, kind)
 /* Note that pSib might be NULL */
 
     Bool WasViewable = (Bool)pWin->viewable;
-    WindowPtr pParent;
     Bool anyMarked;
     WindowPtr pFirstChange;
 #ifdef DO_SAVE_UNDERS
@@ -2207,8 +2206,8 @@ ReflectStackChange(pWin, pSib, kind)
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
     /* if this is a root window, can't be restacked */
-    if (!(pParent = pWin->parent))
-	return ;
+    if (!pWin->parent)
+	return;
 
     pFirstChange = MoveWindowInStack(pWin, pSib);
 

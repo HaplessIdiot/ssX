@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.2 1998/07/25 16:59:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.3tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -98,16 +98,16 @@ xf4bppSolidWindowFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
 	return ;
 
     n = nInit * miFindMaxBand( pGC->pCompositeClip ) ;
-    if ( !( pwidth = (int *) ALLOCATE_LOCAL( n * sizeof( int ) ) ) )
+    if ( !( pwidthFree = (int *) ALLOCATE_LOCAL( n * sizeof( int ) ) ) )
 	return ;
-    pwidthFree = pwidth ;
+    pwidth = pwidthFree ;
 
-    if ( !( ppt = (DDXPointRec *)
+    if ( !( pptFree = (DDXPointRec *)
 			ALLOCATE_LOCAL( n * sizeof( DDXPointRec ) ) ) ) {
 	DEALLOCATE_LOCAL( pwidth ) ;
 	return ;
     }
-    pptFree = ppt ;
+    ppt = pptFree ;
 
     n = miClipSpans( pGC->pCompositeClip, pptInit, pwidthInit, nInit,
 	ppt, pwidth, fSorted ) ;
@@ -164,8 +164,8 @@ int fSorted ;
     if ( ( alu = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.alu ) == GXnoop )
 	return ;
 
-    SETSPANPTRS( nInit, n, pwidthInit, pwidth, pptInit,
-		 ppt, pwidthFree, pptFree, fSorted ) ;
+    SETSPANPTRS( nInit, n, pwidthInit, pwidthFree, pptInit,
+		 pptFree, pwidth, ppt, fSorted ) ;
 
     pm = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.planemask ;
     fg = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.fgPixel ;
@@ -216,8 +216,8 @@ int fSorted ;
     if ( ( alu = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.alu ) == GXnoop )
 	return ;
 
-    SETSPANPTRS( nInit, n, pwidthInit, pwidth, pptInit,
-		 ppt, pwidthFree, pptFree, fSorted ) ;
+    SETSPANPTRS( nInit, n, pwidthInit, pwidthFree, pptInit,
+		 pptFree, pwidth, ppt, fSorted ) ;
 
     pm = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.planemask ;
     fg = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.fgPixel ;
@@ -261,8 +261,8 @@ int fSorted ;
     if ( ( alu = ( (ppcPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr )->colorRrop.alu ) == GXnoop )
 	return ;
 
-    SETSPANPTRS( nInit, n, pwidthInit, pwidth, pptInit,
-		 ppt, pwidthFree, pptFree, fSorted ) ;
+    SETSPANPTRS( nInit, n, pwidthInit, pwidthFree, pptInit,
+		 pptFree, pwidth, ppt, fSorted ) ;
 
     xSrc = pGC->patOrg.x + pDrawable->x ;
     ySrc = pGC->patOrg.y + pDrawable->y ;

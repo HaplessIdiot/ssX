@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.8 2003/09/11 10:08:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.9tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -102,11 +102,9 @@ static int viaPutVideo(ScrnInfoPtr ,
 static int viaQueryImageAttributesG(ScrnInfoPtr, 
         int, unsigned short *, unsigned short *,  int *, int *);
 
-static Atom xvBrightness, xvContrast, xvColorKey,xvGivenMpg,xvHue,xvSaturation
-            ,xvLuminance,xvNTSC,xvPAL,xvPort,xvCompose,xvAV,xvSVIDEO,xvTV,xvEncoding
-            ,xvTVChannel,xvTVPAL,xvTVNTSC ,xvMute, xvVolume, xvFreq, xvAudioCtrl,xvHQV
-            ,xvBOB,xvExitTV, xvExitSWOVerlay;
-
+static Atom xvBrightness, xvContrast, xvColorKey, xvHue, xvSaturation, xvPort,
+	    xvCompose, xvEncoding, xvMute, xvVolume, xvFreq, xvAudioCtrl,
+	    xvHQV, xvBOB, xvExitTV;
 
 /*
  *  S T R U C T S
@@ -139,36 +137,27 @@ static XF86VideoFormatRec FormatsG[NUM_FORMATS_G] =
   {24, DirectColor}
 };
 
-#define NUM_ATTRIBUTES_G 26
+#define NUM_ATTRIBUTES_G 17
 
 static XF86AttributeRec AttributesG[NUM_ATTRIBUTES_G] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -1000, 1000, "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, -1000, 1000, "XV_CONTRAST"},
-   {XvSettable | XvGettable, 0, 2, "XV_GIVENMPG"},
    {XvSettable | XvGettable,-1000,1000,"XV_SATURATION"},
    {XvSettable | XvGettable,-1000,1000,"XV_HUE"},
-   {XvSettable | XvGettable,-1000,1000,"XV_LUMINANCE"},
    {XvSettable | XvGettable,0,255,"XV_MUTE"},
    {XvSettable | XvGettable,0,255,"XV_VOLUME"},
-   {XvSettable | XvGettable,0,2,"XV_NTSC"},
-   {XvSettable | XvGettable,0,2,"XV_PAL"},
    {XvSettable,0,2,"XV_PORT"},
    {XvSettable,0,2,"XV_COMPOSE"},
-   {XvSettable,0,2,"XV_AV"},
    {XvSettable,0,2,"XV_SVIDEO"},
    {XvSettable | XvGettable,0, 255,"XV_ENCODING"},
    {XvSettable | XvGettable,0, 255, "XV_CHANNEL"},
-   {XvSettable,0,2,"XV_TVPAL"},
-   {XvSettable,0,2,"XV_TVNTSC"},
-   {XvSettable,0,2,"XV_TV"},
    {XvSettable,0,-1,"XV_FREQ"},
    {XvSettable,0,2,"XV_AUDIOCTRL"},
    {XvSettable,0,2,"XV_HIGHQVDO"},
    {XvSettable,0,2,"XV_BOB"},
    {XvSettable,0,2,"XV_EXITTV"},
-   {XvSettable,0,2,"XV_EXITSWOV"},
 };
 
 #define NUM_IMAGES_G 2
@@ -448,29 +437,18 @@ viaSetupImageVideoG(ScreenPtr pScreen)
     xvBrightness      = MAKE_ATOM("XV_BRIGHTNESS");
     xvContrast        = MAKE_ATOM("XV_CONTRAST");
     xvColorKey        = MAKE_ATOM("XV_COLORKEY");
-    xvGivenMpg        = MAKE_ATOM("XV_GIVENMPG");
     xvHue             = MAKE_ATOM("XV_HUE");
     xvSaturation      = MAKE_ATOM("XV_SATURATION");
-    xvLuminance       = MAKE_ATOM("XV_LUMINANCE");
     xvMute            = MAKE_ATOM("XV_MUTE");
     xvVolume          = MAKE_ATOM("XV_VOLUME");
-    xvNTSC            = MAKE_ATOM("XV_NTSC");
-    xvPAL             = MAKE_ATOM("XV_PAL");
     xvPort            = MAKE_ATOM("XV_PORT");
     xvCompose         = MAKE_ATOM("XV_COMPOSE");
-    xvAV              = MAKE_ATOM("XV_AV");
-    xvTV              = MAKE_ATOM("XV_TV");
-    xvTVChannel       = MAKE_ATOM("XV_CHANNEL");
-    xvTVNTSC          = MAKE_ATOM("XV_TVNTSC");
-    xvTVPAL           = MAKE_ATOM("XV_TVPAL");
-    xvSVIDEO          = MAKE_ATOM("XV_SVIDEO");
     xvEncoding        = MAKE_ATOM("XV_ENCODING");
     xvFreq            = MAKE_ATOM("XV_FREQ");
     xvAudioCtrl       = MAKE_ATOM("XV_AUDIOCTRL");
     xvHQV             = MAKE_ATOM("XV_HIGHQVDO");
     xvBOB             = MAKE_ATOM("XV_BOB");    
     xvExitTV          = MAKE_ATOM("XV_EXITTV");
-    xvExitSWOVerlay   = MAKE_ATOM("XV_EXITSWOV");
 
     /* AllocatePortPriv();*/
     for ( i = 0; i< XV_PORT_NUM; i ++ ) {
@@ -757,7 +735,6 @@ viaSetPortAttributeG(
     VIAPtr  pVia = VIAPTR(pScrn);
     vmmtr   viaVidEng = (vmmtr) pVia->VidMapBase;    
     viaPortPrivPtr pPriv = (viaPortPrivPtr)data;
-    struct video_channel chan;
     int attr, avalue;
 
     DBG_DD(ErrorF(" via_video.c : viaSetPortAttributeG : \n"));
@@ -832,46 +809,6 @@ viaSetPortAttributeG(
             DBG_DD(ErrorF("     xvEncoding = %d. \n",value));
 
             pPriv->dwEncoding = value;
-            switch ( value )
-            {
-                case NTSC_COMPOSITE     :
-                    chan.channel = 0;       /* Composite input */
-                    chan.norm    = VIDEO_MODE_NTSC;
-                    break;
-
-                case NTSC_TUNER         :
-                    chan.channel = 1;       /* Tuner input */
-                    chan.norm    = VIDEO_MODE_NTSC;
-                    break;
-
-                case NTSC_SVIDEO        :
-                    chan.channel = 2;       /* S-Video input */
-                    chan.norm    = VIDEO_MODE_NTSC;
-                    break;
-
-                case PAL_SVIDEO         :
-                    chan.channel = 2;       /* S-Video input */
-                    chan.norm    = VIDEO_MODE_PAL;
-                    break;
-
-                case PAL_60_COMPOSITE   :
-                    chan.channel = 0;       /* Composite input */
-                    chan.norm    = VIDEO_MODE_PAL;
-                    break;
-
-                case PAL_60_TUNER       :
-                    chan.channel = 1;       /* Tuner input */
-                    chan.norm    = VIDEO_MODE_PAL;
-                    break;
-
-                case PAL_60_SVIDEO      :
-                    chan.channel = 2;       /* S-Video input */
-                    chan.norm    = VIDEO_MODE_PAL;
-                    break;
-
-              default :
-                   break;
-            }
 
     /* VIA Proprietary Attribute for Video control */
     } else if (attribute == xvPort ){
@@ -901,6 +838,8 @@ viaSetPortAttributeG(
     }
     
     /* attr,avalue hardware processing goes here */
+    (void)attr;
+    (void)avalue;
     
     return Success;
 }
@@ -1113,7 +1052,6 @@ viaPutImageG(
                 int srcYSize, srcUVSize;
                 int dstYSize, dstUVSize;
                 unsigned long dwUseExtendedFIFO=0;
-                unsigned long dwStartAddr = 0;   /* for startaddr select */
 
                 DBG_DD(ErrorF(" via_video.c :              : S/W Overlay! \n"));
 
@@ -1198,9 +1136,6 @@ viaPutImageG(
                 }
 
 
-                dwStartAddr = pPriv->ddLock.SWDevice.dwSWPhysicalAddr[pVia->dwFrameNum&1];
-
-                DBG_DD(ErrorF("             : dwStartAddr: %x\n", dwStartAddr));
                 DBG_DD(ErrorF("             : Flip\n"));
                 Flip(pVia, pPriv, id, pVia->dwFrameNum&1);
 

@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.38 2003/09/24 02:43:30 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.39tsi Exp $
  */
 
 #include "vesa.h"
@@ -439,7 +439,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     const char *reqSym = NULL;
     Gamma gzeros = {0.0, 0.0, 0.0};
     rgb rzeros = {0, 0, 0};
-    pointer pVbeModule, pDDCModule;
+    pointer pDDCModule;
     int i;
     int flags24 = 0;
     int defaultDepth = 0;
@@ -462,7 +462,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     /* Load vbe module */
-    if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
+    if (!xf86LoadSubModule(pScrn, "vbe"))
         return (FALSE);
 
     xf86LoaderReqSymLists(vbeSymbols, NULL);
@@ -1250,9 +1250,7 @@ VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 static void
 WriteAttr(VESAPtr pVesa, int index, int value)
 {
-    CARD8 tmp;
-
-    tmp = inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    (void) inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
     outb(pVesa->ioBase + VGA_ATTR_INDEX, index);
@@ -1262,9 +1260,7 @@ WriteAttr(VESAPtr pVesa, int index, int value)
 static int
 ReadAttr(VESAPtr pVesa, int index)
 {
-    CARD8 tmp;
-
-    tmp = inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    (void) inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
     outb(pVesa->ioBase + VGA_ATTR_INDEX, index);

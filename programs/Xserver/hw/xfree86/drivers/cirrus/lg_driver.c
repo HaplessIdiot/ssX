@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.47 2003/09/24 03:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.48tsi Exp $ */
 
 #define EXPERIMENTAL
 
@@ -371,10 +371,6 @@ LgDoDDC(ScrnInfoPtr pScrn)
 	if (!CirMapMem(pCir, pScrn->scrnIndex))
 		return FALSE;
 
-	{
-	    ErrorF("RIF Control %#04x,  RAC Control %#04x\n",
-		   memrw(0x200), memrw(0x201));
-	}
 #if LGuseI2C
 	if (!LgI2CInit(pScrn)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
@@ -951,7 +947,6 @@ static Bool
 LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	vgaHWPtr hwp;
-	vgaRegPtr vgaReg;
 	CirPtr pCir;
 	int width;
 	Bool VDiv2 = FALSE;
@@ -1002,8 +997,6 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifdef LG_DEBUG
 	ErrorF("SynthClock = %d\n", mode->SynthClock);
 #endif
-	vgaReg = &hwp->ModeReg;
-
 	hwp->IOBase = 0x3D0;
 	hwp->ModeReg.MiscOutReg |= 0x01;
 #if 0 /* Mono address */

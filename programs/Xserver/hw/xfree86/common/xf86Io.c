@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.54 2003/08/24 17:36:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.55tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -149,7 +149,7 @@ xf86KbdLeds ()
 #endif
 #endif
   xf86SetKbdLeds(real_leds);
-  return;
+  (void)leds;
 }
 
 /*
@@ -291,6 +291,7 @@ Bool init;
 #endif /* INHERIT_LOCK_STATE */
       xf86SetKbdLeds(leds);
 #endif /* LED_CAP */
+      (void)leds;
 
       if      (xf86Info.kbdDelay <= 375) rad = 0x00;
       else if (xf86Info.kbdDelay <= 625) rad = 0x20;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.46 2003/10/08 15:48:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.47tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -646,7 +646,7 @@ static Bool SavageProbe(DriverPtr drv, int flags)
 	for (i=0; i<numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
-	    pScrn->driverVersion = (int)DRIVER_VERSION;
+	    pScrn->driverVersion = SAVAGE_VERSION;
 	    pScrn->driverName = DRIVER_NAME;
 	    pScrn->name = "SAVAGE";
 	    pScrn->Probe = SavageProbe;
@@ -1683,7 +1683,7 @@ static void SavageSave(ScrnInfoPtr pScrn)
 static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 			    SavageRegPtr restore, Bool Entering)
 {
-    unsigned char tmp, cr3a, cr66, cr67;
+    unsigned char tmp, cr3a, cr66;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     SavagePtr psav = SAVPTR(pScrn);
     int vgaCRIndex, vgaCRReg, vgaIOBase;
@@ -1853,7 +1853,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 		VGAIN8(VGA_MISC_OUT_R) | 0x0C);
 	/* Some BIOSes turn on clock doubling on non-doubled modes */
 	if (pScrn->bitsPerPixel < 24) {
-	    VGAOUT8(vgaCRIndex,0x67);
+	    VGAOUT8(vgaCRIndex, 0x67);
 	    if (!(VGAIN8(vgaCRReg) & 0x10)) {
 		VGAOUT8(0x3c4, 0x15);
 		VGAOUT8(0x3c5, VGAIN8(0x3C5) & ~0x10);
@@ -1899,7 +1899,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     }
 
     VGAOUT8(vgaCRIndex, 0x67);
-    cr67 = VGAIN8(vgaCRReg);
+    (void) VGAIN8(vgaCRReg);
     VGAOUT8(vgaCRReg, restore->CR67 & ~0x0c); /* no STREAMS yet */
 
     /* restore extended regs */
@@ -2965,10 +2965,6 @@ void SavageLoadPaletteSavage4(ScrnInfoPtr pScrn, int numColors, int *indicies,
     int i, index;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-    int vgaCRIndex, vgaCRReg, vgaIOBase;
-    vgaIOBase = hwp->IOBase;
-    vgaCRIndex = vgaIOBase + 4;
-    vgaCRReg = vgaIOBase + 5;
     VerticalRetraceWait(psav);
 
     for (i=0; i<numColors; i++) {

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.116 2003/10/30 17:37:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.117 2003/11/02 20:21:19 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -796,7 +796,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     NVPtr pNv;
     MessageType from;
     int i, max_width, max_height;
-    int bytesPerPixel;
     ClockRangePtr clockRanges;
     const char *s;
 
@@ -963,8 +962,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
-
-    bytesPerPixel = pScrn->bitsPerPixel / 8;
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw")) {

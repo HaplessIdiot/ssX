@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.77 2003/08/24 17:36:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.78tsi Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1605,7 +1605,6 @@ xf86GetSparse(unsigned long type,  memType fixed_bits,
     memType new_mask;
     memType mask1;
     memType base;
-    memType bits;
     memType counter = 0;
     memType counter1;
     memType max_counter = ~(memType)0;
@@ -1677,7 +1676,6 @@ xf86GetSparse(unsigned long type,  memType fixed_bits,
     counter = 0;
     
     while (1) {
-	bits = make_base(counter,new_mask) | fixed_bits; 
 	counter1 = 0;
 	while (1) {
 	    base = make_base(counter1,mask1);

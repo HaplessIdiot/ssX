@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_utility.c,v 1.3tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -37,7 +37,6 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
     UTUSERSETTINGptr pUTUSERSETTING = pBIOSInfo->pUTUSERSETTING;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     CARD8 *TV = NULL;
-    CARD16 *DotCrawl = NULL;
     int i, HPos, VPos, ADWHS, ADWHE;
     unsigned int tvIndx = pBIOSInfo->resTVMode;
     CARD32 dwFunc, dwAction = 0, dwInData = 0;
@@ -89,14 +88,12 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	} else {
 	    switch (pBIOSInfo->TVVScan) {
 	    case VIA_TVNORMAL:
-		DotCrawl = pViaModeTable->tv2Table[tvIndx].DotCrawlNTSC;
 		if (pBIOSInfo->TVOutput == TVOUTPUT_COMPOSITE)
 		    TV = pViaModeTable->tv2Table[tvIndx].TVNTSCC;
 		else
 		    TV = pViaModeTable->tv2Table[tvIndx].TVNTSCS;
 		break;
 	    case VIA_TVOVER:
-		DotCrawl = pViaModeTable->tv2OverTable[tvIndx].DotCrawlNTSC;
 		if (pBIOSInfo->TVOutput == TVOUTPUT_COMPOSITE)
 		    TV = pViaModeTable->tv2OverTable[tvIndx].TVNTSCC;
 		else
@@ -119,11 +116,9 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    switch (pBIOSInfo->TVVScan) {
 	    case VIA_TVNORMAL:
 		TV = pViaModeTable->tv3Table[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->tv3Table[tvIndx].DotCrawlNTSC;
 		break;
 	    case VIA_TVOVER:
 		TV = pViaModeTable->tv3OverTable[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->tv3OverTable[tvIndx].DotCrawlNTSC;
 		break;
 	    }
 	}
@@ -143,11 +138,9 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    switch (pBIOSInfo->TVVScan) {
 	    case VIA_TVNORMAL:
 		TV = pViaModeTable->vt1622aTable[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->vt1622aTable[tvIndx].DotCrawlNTSC;
 		break;
 	    case VIA_TVOVER:
 		TV = pViaModeTable->vt1622aOverTable[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->vt1622aOverTable[tvIndx].DotCrawlNTSC;
 		break;
 	    }
 	}
@@ -167,11 +160,9 @@ void VIAXVUtilityProc(ScrnInfoPtr pScrn, unsigned char *buf)
 	    switch (pBIOSInfo->TVVScan) {
 	    case VIA_TVNORMAL:
 		TV = pViaModeTable->ch7019Table[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->ch7019Table[tvIndx].DotCrawlNTSC;
 		break;
 	    case VIA_TVOVER:
 		TV = pViaModeTable->ch7019OverTable[tvIndx].TVNTSC;
-		DotCrawl = pViaModeTable->ch7019OverTable[tvIndx].DotCrawlNTSC;
 		break;
 	    }
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.28tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -770,7 +770,7 @@ R128PutImage(
    R128InfoPtr info = R128PTR(pScrn);
    R128PortPrivPtr pPriv = (R128PortPrivPtr)data;
    INT32 xa, xb, ya, yb;
-   int pitch, new_size, offset, s1offset, s2offset, s3offset;
+   int new_size, offset, s1offset, s2offset, s3offset;
    int srcPitch, srcPitch2, dstPitch;
    int d1line, d2line, d3line, d1offset, d2offset, d3offset;
    int top, left, npixels, nlines, bpp;
@@ -826,7 +826,6 @@ R128PutImage(
    dstBox.y2 -= pScrn->frameY0;
 
    bpp = pScrn->bitsPerPixel >> 3;
-   pitch = bpp * pScrn->displayWidth;
 
    switch(id) {
    case FOURCC_YV12:

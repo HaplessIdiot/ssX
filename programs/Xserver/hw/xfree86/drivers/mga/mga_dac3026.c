@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.55 2000/11/02 02:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.57tsi Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -277,16 +277,12 @@ MGATi3026CalcClock (
 static void
 MGATi3026SetMCLK( ScrnInfoPtr pScrn, long f_out )
 {
-	double f_pll;
 	int mclk_m, mclk_n, mclk_p;
 	int pclk_m, pclk_n, pclk_p;
 	int mclk_ctl;
 	MGAPtr pMga = MGAPTR(pScrn);
 
-	f_pll = MGATi3026CalcClock(
-		f_out, TI_MAX_MCLK_FREQ,
-		& mclk_m, & mclk_n, & mclk_p
-	);
+	MGATi3026CalcClock(f_out, TI_MAX_MCLK_FREQ, &mclk_m, &mclk_n, &mclk_p);
 
 	/* Save PCLK settings */
 	outTi3026( TVP3026_PLL_ADDR, 0, 0xfc );

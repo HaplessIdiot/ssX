@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.59 2003/04/23 21:51:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.60tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -1498,10 +1498,9 @@ TGAEnterVT(int scrnIndex, int flags)
 static void
 TGALeaveVT(int scrnIndex, int flags)
 {
-    TGAPtr pTga;
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+/*     TGAPtr pTga = TGAPTR(pScrn); */
 
-    pTga = TGAPTR(pScrn);
     TGARestore(pScrn);
 
     /* no longer necessary with new VT switching code */

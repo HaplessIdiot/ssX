@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.242 2003/10/30 18:37:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.243tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -979,12 +979,10 @@ MGAdoDDC(ScrnInfoPtr pScrn)
 {
   vgaHWPtr hwp;
   MGAPtr pMga;
-  MGARamdacPtr MGAdac;
   xf86MonPtr MonInfo = NULL;
 
   hwp = VGAHWPTR(pScrn);
   pMga = MGAPTR(pScrn);
-  MGAdac = &pMga->Dac;
 
   /* Load DDC if we have the code to use it */
   /* This gives us DDC1 */
@@ -3503,9 +3501,6 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     FILE* fdOut;
 # endif
 #endif
-    MGAPtr pMga;
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    pMga = MGAPTR(pScrn);
  
     if  (mode->Flags & 0x80000000) {
 #ifdef USEMGAHAL
@@ -3517,6 +3512,7 @@ MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 #  define MWB(x)
 #  define MWB_COND(x) 1
 # endif
+	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
 	MGA_HAL(
 	fdIn = fopen("/tmp/mgaDriverIn", "rt");

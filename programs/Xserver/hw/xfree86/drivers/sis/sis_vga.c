@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.33tsi Exp $ */
 /*
  * Mode setup and basic video bridge detection
  *
@@ -1001,7 +1001,7 @@ SISSense30x(ScrnInfoPtr pScrn)
     unsigned char cvbs_cl, cvbs_ch;
     unsigned char vga2_bl, vga2_bh;
     unsigned char vga2_cl, vga2_ch;
-    int myflag, result=0, i, j, haveresult;
+    int myflag, result=0, i, j;
     unsigned short temp;
 
     inSISIDXREG(SISPART4,0x0d,backupP4_0d);
@@ -1185,7 +1185,6 @@ SISSense30x(ScrnInfoPtr pScrn)
     		vga2_bh, vga2_bl, vga2_ch, vga2_cl);
 #endif
 
-       haveresult = 0;
        for(j = 0; j < 10; j++) {
           result = 0;
           for(i = 0; i < 3; i++) {
@@ -1226,7 +1225,6 @@ SISSense30x(ScrnInfoPtr pScrn)
        orSISIDXREG(SISPART4,0x0d,0x04);
     }
 
-    haveresult = 0;
     for(j = 0; j < 10; j++) {
        result = 0;
        for(i = 0; i < 3; i++) {
@@ -1245,7 +1243,6 @@ SISSense30x(ScrnInfoPtr pScrn)
 
     if((biosflag & 0x02) || (!(result))) {
 
-       haveresult = 0;
        for(j = 0; j < 10; j++) {
           result = 0;
           for(i = 0; i < 3; i++) {
@@ -1279,6 +1276,7 @@ SiS6326TVDelay(ScrnInfoPtr pScrn, int delay)
     for(i=0; i<delay; i++) {
     	inSISIDXREG(SISSR, 0x05, temp);
     }
+    (void)temp;
 }
 
 static int

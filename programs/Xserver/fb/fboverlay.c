@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fboverlay.c,v 1.3 2000/08/09 17:50:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fboverlay.c,v 1.5tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -210,12 +210,9 @@ fbOverlayCopyWindow(WindowPtr	pWin,
     FbOverlayScrPrivPtr	pScrPriv = fbOverlayGetScrPriv(pWin->drawable.pScreen);
     RegionRec		rgnDst;
     int			dx, dy;
-    WindowPtr		pwinRoot;
     int			i;
     RegionRec		layerRgn[FB_OVERLAY_MAX];
     PixmapPtr		pPixmap;
-
-    pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.18 2003/08/05 21:08:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.19tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -958,7 +958,7 @@ static int NVPutImage
     NVPtr pNv = NVPTR(pScrnInfo);
     INT32 xa, xb, ya, yb;
     unsigned char *dst_start;
-    int pitch, newSize, offset, s2offset, s3offset;
+    int newSize, offset, s2offset, s3offset;
     int srcPitch, srcPitch2, dstPitch;
     int top, left, right, bottom, npixels, nlines, bpp;
     Bool skip = FALSE;
@@ -1011,7 +1011,6 @@ static int NVPutImage
     }
 
     bpp = pScrnInfo->bitsPerPixel >> 3;
-    pitch = bpp * pScrnInfo->displayWidth;
 
     switch(id) {
     case FOURCC_YV12:

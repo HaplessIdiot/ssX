@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.4 1999/06/06 08:48:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.5tsi Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -77,7 +77,7 @@ static VisualRec vgaVisuals[] = {
 } ;
 #endif
 
-int
+void
 xf4bppNeverCalled()
 {
 	FatalError("xf4bppNeverCalled was nevertheless called\n");

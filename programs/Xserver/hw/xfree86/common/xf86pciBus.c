@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.75 2003/08/29 21:07:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.76tsi Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -2335,7 +2335,6 @@ ValidatePci(void)
     pciConfigPtr pcrp, *pcrpp;
     CARD32 *basep;
     resPtr Sys;
-    resPtr Fix;
     resRange range;
     int n = 0, m, i;
 
@@ -2523,7 +2522,6 @@ ValidatePci(void)
 	xf86MsgVerb(X_INFO, 3,"MEM/IO:\n");
 	xf86PrintResList(3,res_m_io);
 #endif
-	Fix = NULL;
 	for (i = 0; i < 6; i++) {
 	    int j;
 	    resPtr own = NULL;

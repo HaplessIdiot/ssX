@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.31 2003/08/16 01:11:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.32tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -321,13 +321,11 @@ ConvertAllPartialsTo8x8(
    Bool DoMono  = (infoRec->PixmapCacheFlags & CACHE_MONO_8x8);
    CacheLinkPtr pLink = ListPartial;
    CacheLinkPtr MonoList = *ListMono, ColorList = *ListColor;
-   int MonosPerColor = 1;
 
    if(DoColor && DoMono) { 
 	/* we assume color patterns take more space than color ones */
 	if(MonoH > ColorH) ColorH = MonoH;
 	if(MonoW > ColorW) ColorW = MonoW;
-	MonosPerColor = (ColorH/MonoH) * (ColorW/MonoW);
    }
 
    /* Break up the area into as many Color and Mono slots as we can */

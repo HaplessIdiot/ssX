@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.1 2003/02/17 17:06:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.2tsi Exp $
  */
 
 #include "xf86.h"
@@ -120,7 +120,7 @@ static DisplayModePtr
 CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	  int flags)
 {
-    CARD16 major, minor;
+    CARD16 major;
     VbeModeInfoBlock *mode;
     DisplayModePtr pMode, p;
     VbeModeInfoData *data;
@@ -128,7 +128,6 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
     ModeStatus status = MODE_OK;
 
     major = (unsigned)(vbe->VESAVersion >> 8);
-    minor = vbe->VESAVersion & 0xff;
 
     if ((mode = VBEGetModeInfo(pVbe, id)) == NULL)
 	return NULL;

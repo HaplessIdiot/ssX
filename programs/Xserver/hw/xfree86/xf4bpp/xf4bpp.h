@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.8tsi Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -639,7 +639,7 @@ int wm3_set_regs(
 );
 
 /* ppcIO.c */
-int xf4bppNeverCalled(
+void xf4bppNeverCalled(
 #if NeedFunctionPrototypes
     void
 #endif

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.34 2003/10/02 13:30:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.35tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -512,7 +512,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	unsigned char config, m, n, shift;
 	int mclk;
 	vgaHWPtr hwp;
-	int vgaCRIndex, vgaCRReg, vgaIOBase;
+	int vgaCRIndex, vgaIOBase;
 	vbeInfoPtr pVbe = NULL;
 	
 	ENTER_PROC("SMI_PreInit");
@@ -942,7 +942,6 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	hwp = VGAHWPTR(pScrn);
 	vgaIOBase  = hwp->IOBase;
 	vgaCRIndex = vgaIOBase + VGA_CRTC_INDEX_OFFSET;
-	vgaCRReg   = vgaIOBase + VGA_CRTC_DATA_OFFSET;
 	pSmi->PIOBase = hwp->PIOOffset;
 
 	xf86ErrorFVerb(VERBLEV, "\tSMI_PreInit vgaCRIndex=%x, vgaIOBase=%x, "
@@ -2718,7 +2717,7 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	if (pSmi->MCLK > 0)
 	{
-		SMI_CommonCalcClock(pScrn->scrnIndex,pSmi->MCLK, 
+		SMI_CommonCalcClock(pScrn->scrnIndex, pSmi->MCLK,
 				    1, 1, 31, 0, 2, pSmi->minClock,
 				    pSmi->maxClock, &new->SR6A, &new->SR6B);
 	}
@@ -3149,7 +3148,7 @@ SMI_DisableMmio(ScrnInfoPtr pScrn)
 static void
 SMI_PrintRegs(ScrnInfoPtr pScrn)
 {
-	unsigned char i, tmp;
+	unsigned char i;
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	SMIPtr pSmi = SMIPTR(pScrn);
 	int vgaCRIndex = hwp->IOBase + VGA_CRTC_INDEX_OFFSET;
@@ -3198,13 +3197,13 @@ SMI_PrintRegs(ScrnInfoPtr pScrn)
 			"    x0 x1 x2 x3  x4 x5 x6 x7  x8 x9 xA xB  xC xD xE xF");
 	for (i = 0x00; i <= 0x14; i++)
 	{
-		tmp = VGAIN8(pSmi, vgaStatus);
+		(void) VGAIN8(pSmi, vgaStatus);
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
 		if ((i & 0x3) == 0x0) xf86ErrorFVerb(VERBLEV, " ");
 		xf86ErrorFVerb(VERBLEV, "%02X ",
 				VGAIN8_INDEX(pSmi, VGA_ATTR_INDEX, VGA_ATTR_DATA_R, i));
 	}
-	tmp = VGAIN8(pSmi, vgaStatus);
+	(void) VGAIN8(pSmi, vgaStatus);
 	VGAOUT8(pSmi, VGA_ATTR_INDEX, 0x20);
 
 	xf86ErrorFVerb(VERBLEV, "\n\nDPR    x0       x4       x8       xC");

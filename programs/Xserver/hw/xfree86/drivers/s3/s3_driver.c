@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.18 2003/08/25 18:44:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.19tsi Exp $ */
 
 
 #include "xf86.h"
@@ -953,14 +953,9 @@ static void S3Save(ScrnInfoPtr pScrn)
 	S3RegPtr save = &pS3->SavedRegs;
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
         vgaRegPtr pVga = &hwp->SavedReg;
-	RamDacHWRecPtr pRAMDAC;
-	RamDacRegRecPtr RAMDACreg;
 	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 	int i;
 	unsigned char cr5c = 0;
-
-	pRAMDAC = RAMDACHWPTR(pScrn);
-	RAMDACreg = &pRAMDAC->SavedReg;
 
 	S3BankZero(pScrn);
 

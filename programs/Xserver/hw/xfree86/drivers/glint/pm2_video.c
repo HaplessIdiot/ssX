@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.24tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -737,8 +737,9 @@ AllocateBuffers(PortPrivPtr pPPriv,
 	    j = pPPriv->BufferStride / bytespp;
 
 	    if (j <= w && j <= 2048 && (j & 31) == 0 &&
-		(pPPriv->BufferPProd = partprodPermedia[j >> 5]) >= 0)
+		partprodPermedia[j >> 5] >= 0)
 	    {
+		pPPriv->BufferPProd = partprodPermedia[j >> 5];
 		pPPriv->pFBArea[i] = xf86AllocateOffscreenArea(pScrn->pScreen,
     		    w, h, 8 >> BPPSHIFT(pGlint), NULL, NULL, (pointer) pPPriv);
 

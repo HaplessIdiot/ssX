@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.18 2003/01/12 02:44:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.19tsi Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -148,8 +148,8 @@ extern Bool SmartScheduleDisable;
 extern Bool SmartScheduleIdle;
 extern Bool SmartScheduleTimerStopped;
 extern Bool SmartScheduleStartTimer(void);
-#define SMART_MAX_PRIORITY  20
-#define SMART_MIN_PRIORITY  -20
+#define SMART_MAX_PRIORITY  (20)
+#define SMART_MIN_PRIORITY  (-20)
 
 extern Bool SmartScheduleInit(void);
 

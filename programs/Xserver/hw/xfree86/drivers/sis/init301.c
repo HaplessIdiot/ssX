@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.44tsi Exp $ */
 /*
  * Mode initializing code (CRT2 section)
  * for SiS 300/305/540/630/730 and
@@ -7236,7 +7236,7 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,USHORT Refr
   const       SiS_Part2PortTblStruct *CRT2Part2Ptr = NULL;
   USHORT      resindex, CRT2Index;
 #endif
-  USHORT      modeflag, resinfo, crt2crtc;
+  USHORT      modeflag, crt2crtc;
   ULONG       longtemp, tempeax;
 #ifdef SIS300
   const UCHAR atable[] = {
@@ -7251,16 +7251,13 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,USHORT Refr
 
   if(ModeNo <= 0x13) {
      modeflag = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ModeFlag;
-     resinfo = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ResInfo;
      crt2crtc = SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_CRT2CRTC;
   } else {
      if(SiS_Pr->UseCustomMode) {
         modeflag = SiS_Pr->CModeFlag;
-	resinfo = 0;
 	crt2crtc = 0;
      } else {
         modeflag = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_ModeFlag;
-    	resinfo = SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO;
     	crt2crtc = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex].Ext_CRT2CRTC;
      }
   }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.14tsi Exp $ */
 /*
  * 2D Acceleration for SiS300, SiS540, SiS630, SiS730, SiS530, SiS620
  * Definitions for the SIS engine communication
@@ -229,6 +229,7 @@
 		} else { \
 		   unsigned long temp; \
 		   temp = MMIO_IN32(pSiS->IOBase, BR(16)); \
+		   (void) temp; \
 		} \
 
 /* Line */

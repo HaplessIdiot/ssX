@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.59 2003/10/15 16:58:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.60tsi Exp $ */
 
 /*
  *
@@ -2478,11 +2478,8 @@ ELFCollectRelocations(elffile, index)
     int i, numrel;
     Elf_Shdr *sect = &(elffile->sections[index]);
     Elf_Rel_t *rel = (Elf_Rel_t *) elffile->saddr[index];
-    Elf_Sym *syms;
     ELFRelocPtr reloc_head = NULL;
     ELFRelocPtr tmp;
-
-    syms = (Elf_Sym *) elffile->saddr[elffile->symndx];
 
     numrel = sect->sh_size / sect->sh_entsize;
 
@@ -2503,6 +2500,8 @@ ELFCollectRelocations(elffile, index)
 	}
 	if (ELF_R_TYPE(rel[i].r_info) == R_IA64_LTOFF_FPTR22
 	    || ELF_R_TYPE(rel[i].r_info) == R_IA64_FPTR64LSB) {
+	    Elf_Sym *syms = (Elf_Sym *) elffile->saddr[elffile->symndx];
+
 	    if (ELF_ST_BIND(syms[ELF_R_SYM(rel[i].r_info)].st_info) ==
 		STB_LOCAL) {
 		ElfAddOPD(elffile, ELF_R_SYM(rel[i].r_info), NULL);

@@ -31,7 +31,7 @@
  * Author: David Dawes <dawes@XFree86.Org>.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.1tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -260,12 +260,12 @@ xf86AutoConfig(void)
 #ifdef DEBUG
 		 " -D"
 #endif
-		 " -X %ld"
+		 " -X %d"
 		 " -I %s"
 		 " -v 0x%04x -d 0x%04x -r 0x%02x -s 0x%04x"
 		 " -b 0x%04x -c 0x%04x",
 		 path,
-		 xf86GetVersion(),
+		 (unsigned int)xf86GetVersion(),
 		 searchPath,
 		 info->vendor, info->chipType, info->chipRev,
 		 info->subsysVendor, info->subsysCard,
