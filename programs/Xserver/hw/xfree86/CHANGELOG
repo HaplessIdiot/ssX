@@ -1,3 +1,19 @@
+XFree86 3.0Bc (19 June 1994)
+101. Option "power_saver" to enable power-down mode on "green" monitors.
+     So far this is implemented only for VGA (all depths) and S3 servers.
+100. Remove old "memaccess" S3 option.
+ 99. Add Option "pci_hack" to work around a lockup problem reported with
+     some 928-P cards.
+ 98. Fix S3 928-P detection/reporting.
+ 97. Don't allow S3 "nomemaccess" option for 864/964 chipsets.
+ 96. Make cbrt a library -- removes the need for NeedCbrt on Linux
+     (Marc Aurele La France).
+ 95. Change ATI SVGA driver to Marc Aurele La France's version
+     (includes support for Vga2 and Vga16).
+ 94. Function prototyping for AGX, and prototype cleanup in vga16 (Stuart
+     Anderson).
+ 93. Fix problem with dual-headed servers.
+
 XFree86 3.0Bb (16 June 1994)
  92. AGX server (Henry Worth).
  91. Accelerated support for 90C33 (Bill Conn).
