@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.62 2003/07/24 13:50:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.63 2003/09/24 02:43:36 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -308,6 +308,7 @@ CreateWellKnownSockets(void)
     int		i;
     int		partial;
     char 	port[20];
+    OsSigHandlerPtr handler;
 
     FD_ZERO(&AllSockets);
     FD_ZERO(&AllClients);
@@ -377,8 +378,10 @@ CreateWellKnownSockets(void)
      * useful
      */
 #if !defined(WIN32)
-    if (OsSignal (SIGUSR1, SIG_IGN) == SIG_IGN)
+    handler = OsSignal (SIGUSR1, SIG_IGN);
+    if ( handler == SIG_IGN)
 	RunFromSmartParent = TRUE;
+    OsSignal(SIGUSR1, handler);
     ParentProcess = getppid ();
 #ifdef __UNIXOS2__
     /*
