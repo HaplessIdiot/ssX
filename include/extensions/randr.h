@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randr.h,v 1.2 2001/06/03 21:52:44 keithp Exp $
+ * $XFree86: xc/include/extensions/randr.h,v 1.3 2001/06/07 17:54:01 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -26,10 +26,10 @@
 #ifndef _RANDR_H_
 #define _RANDR_H_
 
-typedef CARD16	Rotation;
-typedef CARD16	VisualGroupID;
-typedef CARD16	GroupOfVisualGroupID;
-typedef CARD16	SizeID;
+typedef unsigned short	Rotation;
+typedef unsigned short	VisualGroupID;
+typedef unsigned short	GroupOfVisualGroupID;
+typedef unsigned short	SizeID;
 
 #define RANDR_NAME		"RANDR"
 #define RANDR_MAJOR		0
