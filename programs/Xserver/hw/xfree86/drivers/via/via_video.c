@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.12 2003/11/10 18:22:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.13 2003/12/31 05:42:05 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -906,6 +906,10 @@ static void CopyDataYUV422(
     /*  copy YUY2 data to video memory,
      *  do 32 bits alignment.
      */
+     
+    w <<= 1;		/* Each pixel is YU or YV - 16 bits */
+    srcPitch <<= 1;
+    
     count = h;
     while(count--) {
         memcpy(dst, src, w);
