@@ -1,4 +1,6 @@
 XFree86 3.9c (xx May 1997)
+ 775. Undo change 623; the post dividers were incorrect (#435, Marc Aurele
+      La France).
  774. Move the Tk/Tcl include dirs after all the others in the XF86Setup
       Imakefile to make sure they don't cause installed X headers to be
       incorrectly used.
@@ -4537,4 +4539,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.466 1997/05/12 14:22:49 dawes Exp $
+$XFree86: $
