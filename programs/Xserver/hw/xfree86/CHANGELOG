@@ -1,4 +1,7 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 123. Add IconMaxWidth and TitleIndent configuration parameters for twm
+      (Bugzilla #1124, Alexander Pohoyda).
+ 122. Add support for XPM icons to twm (Bugzilla #968, Alexander Pohoyda).
  121. Xvfb is not ensuring that the root window depth and visuals are
       set correctly (David Dawes, reported by Peng Hongbo).
  120. Fix a problem where a bigrequest length of zero does not generate
@@ -18962,7 +18965,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3268 2004/06/08 00:21:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3269 2004/06/08 00:59:49 dawes Exp $
 
 
 
