@@ -1,4 +1,15 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 114. Add to XLookupString an automatic search of the layout which keysym can
+      be converted to a control-code when Control modifier is set (Ivan Pascal).
+ 113. Fix xkbcomp crash with some combinations of layouts in a multi-layout
+      keyboard map (Ivan Pascal).
+ 112. Keyboard maps cleanups, including:
+      - fix incorrect aliases in a keycodes file.
+      - remove unneeded type declarations.
+      - remove ThirdLevel modifier key descriptions in maps and replace them
+        with references to a common one in 'level3' file.
+      - some cosmetic changes.
+      (Ivan Pascal).
  111. Fix some function definition conflicts from Xlib cleanup when X_LOCALE
       or NeedWidePrototypes is set (Torrey T. Lyons).
  110. Resync the BSD drm modules with the DRI trunk (Eric Anholt).
@@ -16793,4 +16804,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2644 2003/04/17 19:12:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2645 2003/04/18 18:21:41 torrey Exp $
