@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.9 2001/01/22 21:32:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.10 2001/02/06 19:25:58 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1169,7 +1169,7 @@ static void CalcStateExt
     /*
      * Save mode parameters.
      */
-    state->bpp    = bpp;
+    state->bpp    = bpp;    /* this is not bitsPerPixel, it's 8,15,16,32 */
     state->width  = width;
     state->height = height;
     /*
@@ -1231,6 +1231,10 @@ static void CalcStateExt
             state->repaint1 = hDisplaySize < 1280 ? 0x04 : 0x00;
             break;
     }
+
+    if((bpp != 8) && (chip->Architecture != NV_ARCH_03)) /* DirectColor */
+	state->general |= 0x00000030;
+
     state->vpll     = (p << 16) | (n << 8) | m;
     state->screen   = ((hTotal   & 0x040) >> 2)
                     | ((vDisplay & 0x400) >> 7)

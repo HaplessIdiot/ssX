@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.57 2001/02/15 11:03:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.58 2001/02/17 23:20:17 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1636,14 +1636,11 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup the visuals we support. */
 
-#ifndef NV_USE_FB
-      if (pScrn->bitsPerPixel > 8) {
+    if ((pScrn->bitsPerPixel > 8) && (pNv->riva.Architecture == NV_ARCH_03)) {
           if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
                                 pScrn->defaultVisual))
               return FALSE;
-    } else 
-#endif
-    {
+    } else {
           if (!miSetVisualTypes(pScrn->depth, 
                                 miGetDefaultVisualMask(pScrn->depth),
                                 pScrn->rgbBits, pScrn->defaultVisual))
@@ -1771,8 +1768,9 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialize colormap layer.  
 	Must follow initialization of the default colormap */
     if(!xf86HandleColormaps(pScreen, 256, 8,
-		(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
-		NULL, CMAP_RELOAD_ON_MODE_SWITCH))
+	(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
+	NULL, CMAP_RELOAD_ON_MODE_SWITCH | 
+  	((pNv->riva.Architecture != NV_ARCH_03) ? CMAP_PALETTED_TRUECOLOR : 0)))
 	return FALSE;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Palette loaded\n"));
