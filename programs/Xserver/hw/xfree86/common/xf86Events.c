@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.141 2002/12/20 02:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.142 2003/01/15 03:29:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -600,12 +600,11 @@ special:
   }
 #endif /* defined (__sparc__) */
 
-  if (
 #ifdef XKB
-	(xf86Info.ddxSpecialKeys == SKWhenNeeded &&
-	     !xf86Info.ActionKeyBindingsSet) || noXkbExtension ||
+  if ((xf86Info.ddxSpecialKeys == SKWhenNeeded &&
+       !xf86Info.ActionKeyBindingsSet) ||
+      noXkbExtension || xf86Info.ddxSpecialKeys == SKAlways) {
 #endif
-	xf86Info.ddxSpecialKeys == SKAlways) {
   if (!(ModifierDown(ShiftMask)) &&
       ((ModifierDown(ControlMask | AltMask)) ||
        (ModifierDown(ControlMask | AltLangMask))))
