@@ -1,4 +1,4 @@
-/* $TOG: lcGeneric.c /main/11 1997/07/17 21:48:57 kaleb $ */
+/* $TOG: lcGeneric.c /main/12 1998/06/25 16:09:44 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.4 1997/07/19 05:43:01 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.5 1998/06/28 08:41:38 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -301,7 +301,7 @@ static char *getscope(str,scp)
 char *str;
 FontScope scp;
 {
-    char *next;
+    char* next;
     unsigned long start=0,end=0,dest=0,shift=0,direction=0;
     sscanf(str,"[\\x%lx,\\x%lx]->\\x%lx", &start, &end,&dest);
     if( dest ){
@@ -430,8 +430,10 @@ XLCdGenericPart *gen;
         sprintf(name, "%s.%s", csd , "charset_name");
         _XlcGetResource(lcd, "XLC_CHARSET_DEFINE", name, &value, &num);
         _XlcDbg_printValue(name,value,num);
-        if (num > 0 && strlen(value[0]) + 5 <= sizeof(cset_name)) {
-            strcpy(cset_name,value[0]);
+        if (num > 0) {
+	    /* hackers will get truncated -- C'est la vie */
+            strncpy(cset_name,value[0], sizeof cset_name - 1);
+	    cset_name[sizeof cset_name - 1] = '\0';
             sprintf(name, "%s.%s", csd , "side");
             _XlcGetResource(lcd, "XLC_CHARSET_DEFINE", name, &value, &num);
             if (num > 0) {
@@ -658,8 +660,8 @@ char **value;
 int num;
 {
     ExtdSegment ret;
-    char *ptr;
-    char *cset_name = NULL;
+    char* ptr;
+    char* cset_name = NULL;
     int i,new;
     FontScope scope;
     ret = (ExtdSegment)Xmalloc(sizeof(ExtdSegmentRec));
@@ -669,18 +671,19 @@ int num;
     if(strchr(value[0],':')){
         ret->name = (char *)Xmalloc(strlen(value[0])+1);
         if(ret->name == NULL){
-	    Xfree(ret);
+	    Xfree (ret);
             return NULL;
         }
         strcpy(ret->name,value[0]);
         ptr = strchr(ret->name,':');
         *ptr = '\0';
         ptr++;
-	cset_name = (char *)Xmalloc(strlen(ret->name) + 5 + 1);
-	if (cset_name == NULL){
-	    Xfree(ret);
-            return NULL;
-        }
+	cset_name = (char*) Xmalloc (strlen (ret->name) + 6);
+	if (cset_name == NULL) {
+	    Xfree (ret->name);
+	    Xfree (ret);
+	    return NULL;
+	}
         if( !_XlcNCompareISOLatin1(ptr, "none", 4) ){
             ret->side =  XlcNONE ;
             sprintf(cset_name,"%s:%s",ret->name,"none");
@@ -695,14 +698,15 @@ int num;
     } else {
         ret->name = (char *)Xmalloc(strlen(value[0])+1);
         if(ret->name == NULL){
-	    Xfree(ret);
+	    Xfree (ret);
             return NULL;
         }
         strcpy(ret->name,value[0]);
     }
     ret->area = (FontScope)Xmalloc((num - 1)*sizeof(FontScopeRec));
     if(ret->area == NULL){
-	Xfree(ret);
+	Xfree (ret->name);
+	Xfree (ret);
         return NULL;
     }
     ret->area_num  = num - 1;
@@ -712,13 +716,12 @@ int num;
                 &scope[i-1].start,&scope[i-1].end);
     }
     ret->charset = srch_charset_define(cset_name,&new);
-    if(new){
-	ret->charset->name = cset_name;
-    } else {
-	if (cset_name != NULL)
-	    Xfree(cset_name);
-    }
-    return(ret);
+    if (new)
+        ret->charset->name = cset_name;
+    else
+	Xfree (cset_name);
+
+    return ret;
 }
 /* For VW/UDC end */
 
@@ -838,9 +841,8 @@ load_generic(lcd)
 			break;
 		    }
 		}
-		if (strlen(tmp) >= sizeof(encoding))
-			goto err;
-		if (string_to_encoding(tmp, encoding) == False)
+		if (strlen (tmp) > sizeof encoding || 
+		    string_to_encoding(tmp, encoding) == False)
 			goto err;
 		add_parse_list(gen, type, encoding, codeset);
 	    }
@@ -867,8 +869,8 @@ load_generic(lcd)
 	    if (codeset == NULL && (codeset = add_codeset(gen)) == NULL)
 		goto err;
 	    for ( ; num-- > 0; value++) {
-		if (strlen(*value) >= sizeof(name))
-			continue;
+		if (strlen (*value) > sizeof name)
+		    goto err;
 		string_to_encoding(*value, name);
 		charset = NULL;
 		if ((encoding = strchr(name, ':')) &&

@@ -1,4 +1,4 @@
-/* $TOG: lcUTF.c /main/19 1997/11/13 18:54:51 kaleb $ */
+/* $TOG: lcUTF.c /main/25 1998/05/20 14:47:50 kaleb $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -25,7 +25,11 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.6 1997/11/22 06:50:13 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.7 1997/11/22 12:50:11 dawes Exp $ */
+
+
+#ifdef X_LOCALE
+
 #include "XlcUTF.h"
 
 static int getutfrune(
@@ -102,6 +106,36 @@ static void	init_latin4tab(
     wchar_t
 #endif
 );
+static void	init_cyrillictab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_koi8rtab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_arabictab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_greektab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_hebrewtab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
 static void	init_latin5tab(
 #if NeedFunctionPrototypes
     int*,
@@ -109,18 +143,6 @@ static void	init_latin5tab(
 #endif
 );
 static void	init_latin6tab(
-#if NeedFunctionPrototypes
-    int*,
-    wchar_t
-#endif
-);
-static void	init_latin7tab(
-#if NeedFunctionPrototypes
-    int*,
-    wchar_t
-#endif
-);
-static void	init_latin8tab(
 #if NeedFunctionPrototypes
     int*,
     wchar_t
@@ -173,16 +195,20 @@ static XlcUTFDataRec default_utf_data[] =
     {"ISO8859-3", XlcGR, init_latin3tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-4", XlcGL, init_latin4tab, latin2rune, N11n_none, 0x20},
     {"ISO8859-4", XlcGR, init_latin4tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-5", XlcGL, init_latin5tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-5", XlcGR, init_latin5tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-6", XlcGL, init_latin6tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-6", XlcGR, init_latin6tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-7", XlcGL, init_latin7tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-7", XlcGR, init_latin7tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-8", XlcGL, init_latin8tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-8", XlcGR, init_latin8tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-9", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
-    {"ISO8859-9", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-5", XlcGL, init_cyrillictab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-5", XlcGR, init_cyrillictab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-6", XlcGL, init_arabictab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-6", XlcGR, init_arabictab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-7", XlcGL, init_greektab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-7", XlcGR, init_greektab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-8", XlcGL, init_hebrewtab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-8", XlcGR, init_hebrewtab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-9", XlcGL, init_latin5tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-9", XlcGR, init_latin5tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-10", XlcGL, init_latin6tab, latin2rune, N11n_none, 0x20},
+    {"ISO8859-10", XlcGR, init_latin6tab, latin2rune, N11n_none, 0x20},
+    {"FCD8859-15", XlcGL, init_latin9tab, latin2rune, N11n_none, 0x20},
+    {"FCD8859-15", XlcGR, init_latin9tab, latin2rune, N11n_none, 0x20},
     {"JISX0201.1976-0", XlcGL, init_jis0201tab, jis02012rune, N11n_none, 0x20},
     {"JISX0201.1976-0", XlcGR, init_jis0201tab, jis02012rune, N11n_none, 0x20},
     {"JISX0208.1983-0", XlcGL, init_jis0208tab, jis02082rune, N11n_ja, 0x2222},
@@ -191,6 +217,8 @@ static XlcUTFDataRec default_utf_data[] =
     {"KSC5601.1987-0", XlcGR, init_ksc5601tab, ksc2rune, N11n_ko, 0x2160},
     {"GB2312.1980-0", XlcGL, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
     {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
+    {"KOI8-R", XlcGL, init_koi8rtab, latin2rune, N11n_none, 0x20},
+    {"KOI8-R", XlcGR, init_koi8rtab, latin2rune, N11n_none, 0x20},
 };
 
 
@@ -260,12 +288,12 @@ static char TBL_DATA_DIR[] = "tbl_data";
 
 static void
 #if NeedFunctionPrototypes
-init_latin_tab(
+init_8859_tab(
     int*	tbl,
     wchar_t	fb_default,
     char*	which)
 #else
-init_latin_tab(tbl, fb_default, which)
+init_8859_tab(tbl, fb_default, which)
     int*	tbl;
     wchar_t	fb_default;
     char*	which;
@@ -371,7 +399,7 @@ init_latin1tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_1);
+    init_8859_tab (tbl, fb_default, tab8859_1);
 }
 
 static void
@@ -385,7 +413,7 @@ init_latin2tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_2);
+    init_8859_tab (tbl, fb_default, tab8859_2);
 }
 
 static void
@@ -399,7 +427,7 @@ init_latin3tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_3);
+    init_8859_tab (tbl, fb_default, tab8859_3);
 }
 
 static void
@@ -413,7 +441,77 @@ init_latin4tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_4);
+    init_8859_tab (tbl, fb_default, tab8859_4);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_cyrillictab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_cyrillictab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tab8859_5);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_koi8rtab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_koi8rtab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabkoi8_r);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_arabictab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_arabictab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tab8859_6);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_greektab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_greektab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tab8859_7);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_hebrewtab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_hebrewtab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tab8859_8);
 }
 
 static void
@@ -427,7 +525,7 @@ init_latin5tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_5);
+    init_8859_tab (tbl, fb_default, tab8859_9);
 }
 
 static void
@@ -441,35 +539,7 @@ init_latin6tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_6);
-}
-
-static void
-#if NeedFunctionPrototypes
-init_latin7tab(
-    int*	tbl,
-    wchar_t	fb_default)
-#else
-init_latin7tab(tbl, fb_default)
-    int*	tbl;
-    wchar_t	fb_default;
-#endif
-{
-    init_latin_tab (tbl, fb_default, tab8859_7);
-}
-
-static void
-#if NeedFunctionPrototypes
-init_latin8tab(
-    int*	tbl,
-    wchar_t	fb_default)
-#else
-init_latin8tab(tbl, fb_default)
-    int*	tbl;
-    wchar_t	fb_default;
-#endif
-{
-    init_latin_tab (tbl, fb_default, tab8859_8);
+    init_8859_tab (tbl, fb_default, tab8859_10);
 }
 
 static void
@@ -483,7 +553,7 @@ init_latin9tab(tbl, fb_default)
     wchar_t	fb_default;
 #endif
 {
-    init_latin_tab (tbl, fb_default, tab8859_9);
+    init_8859_tab (tbl, fb_default, tab8859_15);
 }
 
 static void
@@ -553,8 +623,9 @@ make_entry()
 }
 
 static int	once = 0;
+
 static int
-_XlcInitUTFInfo(lcd)
+InitUTFInfo(lcd)
 XLCd	lcd;
 {
     if(!once) {
@@ -1321,7 +1392,7 @@ create_conv(lcd, methods)
     conv->methods = methods;
 
     conv->state = NULL;
-    _XlcInitUTFInfo(lcd);
+    InitUTFInfo(lcd);
 
     return conv;
 }
@@ -1433,3 +1504,7 @@ _XlcUtfLoader(name)
 
     return lcd;
 }
+
+#else
+typedef int dummy;
+#endif /* X_LOCALE */

@@ -1,4 +1,4 @@
-/* $TOG: lcPublic.c /main/9 1997/11/13 09:43:43 kaleb $ */
+/* $TOG: lcPublic.c /main/11 1998/06/01 16:15:27 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -190,7 +190,9 @@ initialize(lcd)
     XLCdPublicPart *pub = XLC_PUBLIC_PART(lcd);
     char *name;
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
-    char siname[256];
+    int len;
+    char sinamebuf[256];
+    char* siname;
     char *_XlcMapOSLocaleName();
 #endif
 
@@ -201,11 +203,25 @@ initialize(lcd)
 
     name = lcd->core->name;
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+    /* 
+     * _XlMapOSLOcaleName will return the same string or a substring 
+     * of name, so strlen(name) is okay 
+     */
+    if ((len = strlen(name)) < sizeof sinamebuf) siname = sinamebuf;
+    else siname = Xmalloc (len + 1);
+    if (siname == NULL) return False;
     name = _XlcMapOSLocaleName(name, siname);
 #endif
-	
-    if (_XlcResolveLocaleName(name, pub) == 0)
+    /* _XlcResolveLocaleName will lookup the SI's name for the locale */
+    if (_XlcResolveLocaleName(name, pub) == 0) {
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+	if (siname != sinamebuf) Xfree (siname);
+#endif
 	return False;
+    }
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+    if (siname != sinamebuf) Xfree (siname);
+#endif
 
     if (pub->default_string == NULL)
 	pub->default_string = "";

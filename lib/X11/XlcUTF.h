@@ -1,4 +1,4 @@
-/* $TOG: XlcUTF.h /main/8 1997/09/23 18:14:24 kaleb $ */
+/* $TOG: XlcUTF.h /main/10 1998/05/20 14:47:44 kaleb $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -52,9 +52,12 @@ typedef unsigned short Rune;		/* 16 bits */
 #define		tab8859_7	"tab8859_7"
 #define		tab8859_8	"tab8859_8"
 #define		tab8859_9	"tab8859_9"
+#define		tab8859_10	"tab8859_10"
+#define		tab8859_15	"tab8859_15"
 #define		jis0208		"jis0208"
 #define		ksc5601		"ksc5601"
 #define		gb2312		"gb2312"
+#define		tabkoi8_r	"tabkoi8_r"
 
 #define emit(x)    *r = (Rune)x;
 

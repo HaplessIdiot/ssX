@@ -1,15 +1,9 @@
-/* $TOG: lcWrap.c /main/25 1997/06/02 17:28:04 kaleb $ */
+/* $TOG: lcWrap.c /main/28 1998/06/01 16:15:36 kaleb $ */
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 /*
@@ -271,14 +265,23 @@ _XOpenLC(name)
     XlcLoaderList loader;
     XLCdList cur;
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
-    char siname[256];
+    int len;
+    char sinamebuf[256];
+    char* siname;
     char *_XlcMapOSLocaleName();
 #endif
 
     if (name == NULL) {
 	name = setlocale (LC_CTYPE, (char *)NULL);
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
-	name = _XlcMapOSLocaleName (name, siname); 
+    /* 
+     * _XlMapOSLOcaleName will return the same string or a substring 
+     * of name, so strlen(name) is okay 
+     */
+    if ((len = strlen(name)) < sizeof sinamebuf) siname = sinamebuf;
+    else siname = Xmalloc (len + 1);
+    if (siname == NULL) return NULL;
+    name = _XlcMapOSLocaleName(name, siname);
 #endif
     }
 
@@ -320,6 +323,11 @@ _XOpenLC(name)
 
 found:
     _XUnlockMutex(_Xi18n_lock);
+
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+    if (siname != sinamebuf) Xfree(siname);
+#endif
+
     return lcd;
 }
 

@@ -1,4 +1,4 @@
-/* $TOG: lcFile.c /main/11 1997/11/13 17:32:51 kaleb $ */
+/* $TOG: lcFile.c /main/13 1998/05/28 14:21:35 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.14 1998/06/04 16:43:06 hohndel Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.15 1998/08/20 13:22:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -94,7 +94,7 @@ parse_line(line, argv, argsize)
 	    break;
 	}
 	argv[argc++] = p;
-	while(! isspace(*p) && *p != '\0'){
+	while(*p != ':' && *p != '\n' && *p != '\0'){
 	    ++p;
 	}
 	if(*p == '\0'){
@@ -116,9 +116,11 @@ _XlcParsePath(path, argv, argsize)
     char *p = path;
     int i, n;
 
+#if 0
     while((p = strchr(p, LC_PATHDELIM)) != NULL){
 	*p = ' ';	/* place space on delimter */
     }
+#endif
     n = parse_line(path, argv, argsize);
     if(n == 0){
 	return 0;

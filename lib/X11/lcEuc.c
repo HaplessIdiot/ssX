@@ -1,4 +1,4 @@
-/* $TOG: lcEuc.c /main/16 1997/11/13 18:54:22 kaleb $ */
+/* $TOG: lcEuc.c /main/21 1998/04/30 11:02:13 kaleb $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -30,7 +30,10 @@ OF THIS SOFTWARE.
              Yoshiyuki Segawa		(segawa@ossi.com)
 
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcEuc.c,v 3.5 1997/11/22 12:50:09 dawes Exp $ */
+
+
+#ifdef X_LOCALE
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -1498,3 +1501,7 @@ _XlcEucLoader(name)
 
     return lcd;
 }
+
+#else
+typedef int dummy;
+#endif /* X_LOCALE */

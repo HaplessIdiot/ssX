@@ -746,7 +746,7 @@ EXPORTS
  XcmsRGBiColorSpace
  XcmsTekHVCColorSpace
  XcmsUNDEFINEDColorSpace
- XimParseStringFile
+ _XimParseStringFile	/* unspecified, retain slot for binary compat */
  XkbAddGeomColor
  XkbAddGeomDoodad
  XkbAddGeomKey
@@ -806,4 +806,4 @@ EXPORTS
  XkbUpdateKeyTypeVirtualMods
  XkbUpdateMapFromCore
  XkbXlibControlsImplemented
-/* $TOG: X11-def.cpp /main/18 1998/01/04 12:31:30 kaleb $ */
+/* $TOG: X11-def.cpp /main/19 1998/06/16 16:04:58 kaleb $ */

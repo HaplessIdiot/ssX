@@ -1,15 +1,10 @@
-/* $XConsortium: TextPop.c,v 1.32 95/01/16 20:10:20 kaleb Exp $ */
+/* $TOG: TextPop.c /main/34 1998/06/24 11:53:54 kaleb $ */
 
 /*
 
-Copyright (c) 1989, 1994  X Consortium
+Copyright 1989, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,17 +12,17 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.4 1998/06/28 12:32:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.5 1998/08/16 10:24:39 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -68,15 +63,14 @@ in this Software without prior written authorization from the X Consortium.
 extern int errno;
 #endif
 
-#define INSERT_FILE		"Enter Filename:"
-
-#define SEARCH_LABEL_1		"Use <Tab> to change fields."
-#define SEARCH_LABEL_2		"Use ^q<Tab> for <Tab>."
-#define DISMISS_NAME		"cancel"
+static char* INSERT_FILE = "Enter Filename:";
+static char* SEARCH_LABEL_1 = "Use <Tab> to change fields.";
+static char* SEARCH_LABEL_2 = "Use ^q<Tab> for <Tab>.";
+static char* DISMISS_NAME = "cancel";
 #define DISMISS_NAME_LEN 6
-#define FORM_NAME		"form"
-#define LABEL_NAME		"label"
-#define TEXT_NAME		"text"
+static char* FORM_NAME = "form";
+static char* LABEL_NAME = "label";
+static char* TEXT_NAME = "text";
 
 #define R_OFFSET      1
 

@@ -1,4 +1,4 @@
-/* $TOG: lcDB.c /main/13 1997/08/27 12:12:53 kaleb $ */
+/* $TOG: lcDB.c /main/16 1998/06/26 14:37:14 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.7 1998/06/28 08:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.8 1998/08/20 08:55:50 dawes Exp $ */
 
 
 
@@ -337,7 +337,7 @@ read_line(fd, line)
 	if(cur + len + 1 > line->maxsize){
 	    /* need to reallocate buffer. */
 	    if(! realloc_line(line, line->maxsize + BUFSIZE)){
-		goto err;	/* realloc error. */
+		return -1;	/* realloc error. */
 	    }
 	    str = line->str;
 	}
@@ -368,12 +368,9 @@ read_line(fd, line)
     }
     if(quoted){
 	/* error.  still in quoted state. */
-	goto err;
+	return -1;
     }
     return line->cursize = cur;
-
- err:;
-    return -1;
 }
 
 /************************************************************************/
@@ -404,14 +401,10 @@ get_token(str)
     }
 }
 
-#define CHECKWORD(n) \
-	if (w - word + (n) >= size - 1) {*word = 0; return 0;} else
-
 static int
-get_word(str, word, size)
+get_word(str, word)
     char *str;
     char *word;
-    int size;
 {
     char *p = str, *w = word;
     Token token;
@@ -431,7 +424,6 @@ get_word(str, word, size)
 		 token != T_DEFAULT){
 	    break;
 	}
-	CHECKWORD(token_len);
 	strncpy(w, p, token_len);
 	p += token_len; w += token_len;
     }
@@ -440,10 +432,9 @@ get_word(str, word, size)
 }
 
 static int
-get_quoted_word(str, word, size)
+get_quoted_word(str, word)
     char *str;
     char *word;
-    int size;
 {
     char *p = str, *w = word;
     Token token;
@@ -467,7 +458,6 @@ get_quoted_word(str, word, size)
 	    token = get_token(p);
 	    token_len = token_tbl[token].len;
 	}
-	CHECKWORD(token_len);
 	strncpy(w, p, token_len);
 	p += token_len; w += token_len;
     }
@@ -546,7 +536,7 @@ append_value_list()
     parse_info.bufsize = 0;
     return 1;
 
- err:;
+ err:
     if(value_list){
 	Xfree((char **)value_list);
     }
@@ -635,7 +625,7 @@ store_to_database(db)
 
     return 1;
 
- err:;
+ err:
     if(new){
 	if(new->category){
 	    Xfree(new->category);
@@ -696,20 +686,16 @@ f_newline(str, token, db)
     case S_CATEGORY:
 	break;
     case S_NAME:
-	goto err; /* no value */
+	return 0; /* no value */
     case S_VALUE:
-	if(!store_to_database(db)){
-	    goto err;
-	}
+	if(!store_to_database(db))
+	    return 0;
 	parse_info.pre_state = S_CATEGORY;
 	break;
     default:
-	goto err;
+	return 0;
     }
     return token_tbl[token].len;
-
- err:;
-    return 0;
 }
 
 static int
@@ -753,20 +739,16 @@ f_semicolon(str, token, db)
     case S_NULL:
     case S_CATEGORY:
     case S_NAME:
-	goto err;
+	return 0;
     case S_VALUE:
-	if(! append_value_list()){
-	    goto err;
-	}
+	if(! append_value_list())
+	    return 0;
 	parse_info.pre_state = S_VALUE;
 	break;
     default:
-	goto err;
+	return 0;
     }
     return token_tbl[token].len;
-
- err:;
-    return 0;
 }
 
 static int
@@ -778,23 +760,19 @@ f_left_brace(str, token, db)
     switch(parse_info.pre_state){
     case S_NULL:
     case S_CATEGORY:
-	goto err;
+    case S_VALUE:
+	return 0;
     case S_NAME:
 	if(parse_info.name[parse_info.nest_depth] == NULL ||
-	   parse_info.nest_depth + 1 > MAX_NAME_NEST){
-	    goto err;
-	}
+	   parse_info.nest_depth + 1 > MAX_NAME_NEST)
+	    return 0;
 	++parse_info.nest_depth;
 	parse_info.pre_state = S_CATEGORY;
 	break;
-    case S_VALUE:
     default:
-	goto err;
+	return 0;
     }
     return token_tbl[token].len;
-
- err:
-    return 0;
 }
 
 static int
@@ -803,18 +781,16 @@ f_right_brace(str, token, db)
     Token token;
     Database *db;
 {
-    if(parse_info.nest_depth < 1){
-	goto err;
-    }
+    if(parse_info.nest_depth < 1)
+	return 0;
 
     switch(parse_info.pre_state){
     case S_NULL:
     case S_NAME:
-	goto err;
+	return 0;
     case S_VALUE:
-	if(! store_to_database(db)){
-	    goto err;
-	}
+	if(! store_to_database(db))
+	    return 0;
 	/* fall into next case */
     case S_CATEGORY:
 	if(parse_info.name[parse_info.nest_depth] != NULL){
@@ -825,12 +801,9 @@ f_right_brace(str, token, db)
 	parse_info.pre_state = S_CATEGORY;
 	break;
     default:
-	goto err;
+	return 0;
     }
     return token_tbl[token].len;
-
- err:;
-    return 0;
 }
 
 static int
@@ -840,34 +813,44 @@ f_double_quote(str, token, db)
     Database *db;
 {
     char word[BUFSIZE];
-    int len = 0;
+    char* wordp;
+    int len;
 
+    if ((len = strlen (str)) < sizeof word)
+	wordp = word;
+    else
+	wordp = Xmalloc (len + 1);
+    if (wordp == NULL)
+	return 0;
+
+    len = 0;
     switch(parse_info.pre_state){
     case S_NULL:
     case S_CATEGORY:
 	goto err;
     case S_NAME:
     case S_VALUE:
-	len = get_quoted_word(str, word, sizeof(word));
-	if(len < 1){
+	len = get_quoted_word(str, wordp);
+	if(len < 1)
 	    goto err;
-	}
-	if( (parse_info.bufsize + (int)strlen(word) +1) 
+	if( (parse_info.bufsize + (int)strlen(wordp) +1) 
 					>= parse_info.bufMaxSize){
-	    if(realloc_parse_info(strlen(word) +1) == False){
+	    if(realloc_parse_info(strlen(wordp) +1) == False){
 		goto err;
 	    }
 	}
-	strcpy(&parse_info.buf[parse_info.bufsize], word);
-	parse_info.bufsize += strlen(word);
+	strcpy(&parse_info.buf[parse_info.bufsize], wordp);
+	parse_info.bufsize += strlen(wordp);
 	parse_info.pre_state = S_VALUE;
 	break;
     default:
 	goto err;
     }
+    if (wordp != word) Xfree (wordp);
     return len;	/* including length of token */
 
- err:;
+err:
+    if (wordp != word) Xfree (wordp);
     return 0;
 }
 
@@ -887,8 +870,16 @@ f_numeric(str, token, db)
     Database *db;
 {
     char word[BUFSIZE], *p;
+    char* wordp;
     int len;
     int token_len;
+
+    if ((len = strlen (str)) < sizeof word)
+	wordp = word;
+    else
+	wordp = Xmalloc (len + 1);
+    if (wordp == NULL)
+	return 0;
 
     switch(parse_info.pre_state){
     case S_NULL:
@@ -898,27 +889,27 @@ f_numeric(str, token, db)
     case S_VALUE:
 	token_len = token_tbl[token].len;
 	p = str + token_len;
-	len = get_word(p, word, sizeof(word));
-	if(len < 1){
+	len = get_word(p, wordp);
+	if(len < 1)
 	    goto err;
-	}
-	if( (parse_info.bufsize + token_len + (int)strlen(word) +1) 
+	if( (parse_info.bufsize + token_len + (int)strlen(wordp) +1) 
 					>= parse_info.bufMaxSize){
-	    if(realloc_parse_info(token_len + strlen(word) +1) == False){
+	    if(realloc_parse_info(token_len + strlen(wordp) +1) == False)
 		goto err;
-	    }
 	}
 	strncpy(&parse_info.buf[parse_info.bufsize], str, token_len);
-	strcpy(&parse_info.buf[parse_info.bufsize + token_len], word);
-	parse_info.bufsize += token_len + strlen(word);
+	strcpy(&parse_info.buf[parse_info.bufsize + token_len], wordp);
+	parse_info.bufsize += token_len + strlen(wordp);
 	parse_info.pre_state = S_VALUE;
 	break;
     default:
 	goto err;
     }
+    if (wordp != word) Xfree (wordp);
     return len + token_len;
 
- err:;
+err:
+    if (wordp != word) Xfree (wordp);
     return 0;
 }
 
@@ -929,23 +920,28 @@ f_default(str, token, db)
     Database *db;
 {
     char word[BUFSIZE], *p;
+    char* wordp;
     int len;
 
-    len = get_word(str, word, sizeof(word));
-    if(len < 1){
+    if ((len = strlen (str)) < sizeof word)
+	wordp = word;
+    else
+	wordp = Xmalloc (len + 1);
+    if (wordp == NULL)
+	return 0;
+
+    len = get_word(str, wordp);
+    if(len < 1)
 	goto err;
-    }
 
     switch(parse_info.pre_state){
     case S_NULL:
-	if(parse_info.category != NULL){
+	if(parse_info.category != NULL)
 	    goto err;
-	}
-	p = (char *)Xmalloc(strlen(word) + 1);
-	if(p == NULL){
+	p = (char *)Xmalloc(strlen(wordp) + 1);
+	if(p == NULL)
 	    goto err;
-	}
-	strcpy(p, word);
+	strcpy(p, wordp);
 	parse_info.category = p;
 	parse_info.pre_state = S_CATEGORY;
 	break;
@@ -959,11 +955,10 @@ f_default(str, token, db)
 		break;
 	    }
 	}
-	p = (char *)Xmalloc(strlen(word) + 1);
-	if(p == NULL){
+	p = (char *)Xmalloc(strlen(wordp) + 1);
+	if(p == NULL)
 	    goto err;
-	}
-	strcpy(p, word);
+	strcpy(p, wordp);
 	if(parse_info.name[parse_info.nest_depth] != NULL){
 	    Xfree(parse_info.name[parse_info.nest_depth]);
 	}
@@ -972,22 +967,23 @@ f_default(str, token, db)
 	break;
     case S_NAME:
     case S_VALUE:
-	if( (parse_info.bufsize + (int)strlen(word) +1 ) 
+	if( (parse_info.bufsize + (int)strlen(wordp) +1 ) 
 					>= parse_info.bufMaxSize){
-	    if(realloc_parse_info(strlen(word) +1) == False){
+	    if(realloc_parse_info(strlen(wordp) +1) == False)
 		goto err;
-	    }
 	}
-	strcpy(&parse_info.buf[parse_info.bufsize], word);
-	parse_info.bufsize += strlen(word);
+	strcpy(&parse_info.buf[parse_info.bufsize], wordp);
+	parse_info.bufsize += strlen(wordp);
 	parse_info.pre_state = S_VALUE;
 	break;
     default:
 	goto err;
     }
+    if (wordp != word) Xfree (wordp);
     return len;
 
- err:;
+err:
+    if (wordp != word) Xfree (wordp);
     return 0;
 }
 

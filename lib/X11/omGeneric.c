@@ -1,4 +1,4 @@
-/* $TOG: omGeneric.c /main/24 1997/11/12 17:33:55 kaleb $ */
+/* $TOG: omGeneric.c /main/28 1998/06/25 16:15:55 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -28,10 +28,21 @@
  * This is source code modified by FUJITSU LIMITED under the Joint
  * Development Agreement for the CDE/Motif PST.
  *
- * Modifier: Takanori Tateno   FUJITSU LIMITED
+ * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.8 1997/11/16 06:17:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.9 1998/06/28 08:41:38 dawes Exp $ */
+
+/*
+ * Fixed the algorithms in parse_fontname() and parse_fontdata()
+ * to improve the logic for determining which font should be
+ * returned for a given CharSet.  We even added some comments
+ * so that you can figure out what in the heck we're doing. We
+ * realize this is a departure from the norm, but hey, we're
+ * rebels! :-) :-)
+ * 
+ * Modifiers: Jeff Walls, Paul Anderson: HEWLETT-PACKARD
+ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
@@ -219,6 +230,28 @@ load_fontdata(oc, font_data, font_data_num)
 }
 
 static Bool
+load_fontset_data(oc, font_set)
+    XOC		oc;
+    FontSet	font_set;
+{
+    Display	*dpy = oc->core.om->core.display;
+
+    if(font_set->font_name == (char *)NULL) return False ;
+
+   /* If font_set->font is not NULL, it contains the *best*
+    * match font for this FontSet.  
+    * -- jjw/pma (HP)
+    */
+    if(font_set->font == NULL) {
+       font_set->font = XLoadQueryFont(dpy, font_set->font_name);
+       if (font_set->font == NULL){
+		return False;
+       }
+    }
+    return True;
+}
+
+static Bool
 load_font(oc)
     XOC oc;
 {
@@ -231,6 +264,9 @@ load_font(oc)
 	if (font_set->font_name == NULL)
 	    continue;
 
+        if (load_fontset_data (oc, font_set) != True)
+	    return False;
+
 	if(load_fontdata(oc, font_set->font_data,
 			 font_set->font_data_count) != True)
 	    return False;
@@ -239,8 +275,26 @@ load_font(oc)
 			 font_set->substitute_num) != True)
 	    return False;
 
-	if(font_set->font_data_count > 0 && font_set->font_data->font) {
-	    font_set->font = font_set->font_data->font;
+#if 0
+        /* ### This code is no longer needed.  This block essentially
+	 * ### took the font used for this FontSet and figured out
+	 * ### which font structure to use.  This is now accomplished
+	 * ### via load_fontset_data(), which takes the *best* font
+	 * ### for this FontSet and performs an XLoadQueryFont() to
+	 * ### obtain the font structure.  Note that this should work
+	 * ### for either Primary or Substitute fonts.
+	 * ### -- jjw/pma (HP)
+	 */
+	if(font_set->font_data_count > 0  && font_set->font_data->font ) {
+	    for (i=0; i<font_set->font_data_count; i++)
+	    {
+                 if (!strcmp (font_set->font_data[i].xlfd_name,
+			      font_set->font_name))
+		 {
+	              font_set->font = font_set->font_data[i].font;
+		      break;
+		 }
+	    }
 	} else if(font_set->substitute_num > 0 ) {
 	    for(i=0;i<font_set->substitute_num;i++){
 		if(font_set->substitute[i].font != NULL){
@@ -249,6 +303,7 @@ load_font(oc)
 		}
 	    }
 	}
+#endif
 
 /* Add 1996.05.20 */
         if( oc->core.orientation == XOMOrientation_TTB_RTL ||
@@ -497,7 +552,7 @@ static char
     int pixel_size = 0;
     int field_num = 0, len = 0;
 
-    if(font_name == (char *) NULL || (len = strlen(font_name)) <= 0)
+    if(font_name == (char *) NULL || (len = strlen(font_name)) <= 0 || len > 255)
 	return NULL;
 
     pattern = (char *)Xmalloc(len + 1);
@@ -505,7 +560,7 @@ static char
 	return NULL;
     strcpy(pattern, font_name);
 
-    memset(fields, '\0', sizeof(char *) * 14);
+    memset(fields, 0, sizeof(char *) * 14);
     ptr = pattern;
     while(isspace(*ptr)) {
 	ptr++;
@@ -593,6 +648,34 @@ is_match_charset(font_data, font_name)
     return False;
 }
 
+static char *
+get_font_name_from_list(oc, pattern, font_data)
+    XOC oc;
+    char *pattern;
+    FontData    font_data;
+{
+    char **list, *name = (char *)NULL, *fname;
+    int count = 0, i;
+
+    list = XListFonts(oc->core.om->core.display, pattern, MAXFONTS, &count);
+    if (list == NULL)
+	return NULL;
+
+    for (i = 0; i < count; i++) {
+        fname = list[i];
+        if(is_match_charset(font_data, fname) == True) {
+             name = (char *) Xmalloc(strlen(fname) + 1);
+             if (name)
+	         strcpy(name, fname);
+             break;
+        }
+    }
+    
+    XFreeFontNames(list);
+
+    return name;
+}
+
 static int
 parse_all_name(oc, font_data, pattern)
     XOC		oc;
@@ -652,49 +735,96 @@ parse_omit_name(oc, font_data, pattern)
     char*	last = (char *) NULL;
     char*	base_name;
     char	buf[BUFSIZE]; /* no XLFD name should be this long */
-    char*	bufp;
     int		length = 0;
     int		num_fields;
 
+   /* If the font specified by "pattern" is expandable to be
+    * a member of "font_data"'s FontSet, we've found a match.
+    */
     if(is_match_charset(font_data, pattern) == True) {
 	if ((font_data->xlfd_name = get_font_name(oc, pattern)) != NULL) {
 	    return True;
 	}
     }
 
-    /* 
-     * If an XLFD name is arbitrarily (too) long, allocate a buffer,
+    /* If an XLFD name is arbitrarily (too) long, allocate a buffer,
      * and some extra space to tack stuff on the end.
+     *
+     * ### This is a hack.  What happens is, we substitute pattern's
+     * ### encoding with the default encoding for the FontSet and
+     * ### try to find a match.  For example, we may change pattern
+     * ### from:
+     * ###     -*-*-*-*-*-*-14-*-*-*-*-*-jisx0212.1990-0 to
+     * ###     -*-*-*-*-*-*-14-*-*-*-*-*-JISX0208.1990-0
+     * ### So, the length of the original pattern may not be enough
+     * ### to store the "new" encoding (e.g., going from ISO8859-1 to
+     * ### JISX0208.1990-0), so the author decided to simply allocate
+     * ### a *bunch* of extra space to handle the potentially longer
+     * ### encoding.
+     * ###
+     * ### The real way to do this would be to figure out the length
+     * ### of the original encoding and the length of the new encoding.
+     * ### Re-alloc the array with the difference.  Since it doesn't
+     * ### hurt anything keeping the extra-large buffer, I'll leave
+     * ### it the way it is. --jjw/pma (HP)
+     * ###
      */
-    length = strlen(pattern);
-    if (length > BUFSIZE/2) bufp = Xmalloc (length * 2);
-    else bufp = buf;
-
-    strcpy(bufp, pattern);
-    last = bufp + length - 1;
 
     /* 
-     * Plug in the charset/encoding specified in the XLC_LOCALE file
-     * into the *right* place in the XLFD name.
+     * since BUFSIZE is much bigger than any legal XLFD name
+     * we'll allow the first half for the XLFD pattern, and the
+     * second half for the charset-plus-encoding. If we wanted to
+     * be accomodating, we could allocate memory, but that's
+     * overkill for this. Hackers who are trying to do bad things
+     * don't deserve to be accomodated like that.
      */
-    for (num_fields = 0, base_name = bufp; *base_name != '\0'; base_name++)
+    if ((length = strlen (pattern)) > BUFSIZE/2) return -1;
+
+    strcpy(buf, pattern);
+    last = buf + length - 1;
+
+    /* Replace the original encoding with the encoding for this FontSet. */
+
+    /* Figure out how many fields have been specified in this xlfd. */
+    for (num_fields = 0, base_name = buf; *base_name != '\0'; base_name++)
 	if (*base_name == '-') num_fields++;
 
     switch (num_fields) {
     case 12:
-	/* this is the best way to have specifed the fontset */
+	/* This is the best way to have specifed the fontset.  In this
+	 * case, there is no original encoding. E.g., 
+         *       -*-*-*-*-*-*-14-*-*-*-*-*
+	 * To this, we'll append a dash:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-
+	 * then append the encoding to get:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-JISX0208.1990-0 
+	 */
 	*++last = '-';
 	break;
     case 13:
-	/* got the charset, not the encoding, zap the charset */
-	last = strrchr (bufp, '-');
+	/* Got the charset, not the encoding, zap the charset  In this
+	 * case, there is no original encoding, but there is a charset. E.g., 
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-jisx0212.1990
+	 * To this, we remove the charset:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-
+	 * then append the new encoding to get:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-JISX0208.1990-0
+	 */
+	last = strrchr (buf, '-');
 	num_fields = 12;
 	break;
     case 14:
-	/* got the charset and the encoding, zap 'em */
-	last = strrchr (bufp, '-');
+	/* Both the charset and the encoding are specified.  Get rid
+	 * of them so that we can append the new charset encoding.  E.g.,
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-jisx0212.1990-0 
+	 * To this, we'll remove the encoding and charset to get:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-
+	 * then append the new encoding to get:
+         *       -*-*-*-*-*-*-14-*-*-*-*-*-JISX0208.1990-0 
+	 */
+	last = strrchr (buf, '-');
 	*last = '\0';
-	last = strrchr (bufp, '-');
+	last = strrchr (buf, '-');
 	num_fields = 12;
 	break;
     default:
@@ -706,30 +836,60 @@ parse_omit_name(oc, font_data, pattern)
 		last--;
 	} else {
 	    *++last = '-';
-	}
+	
 	break;
     }
     last++;
 
-    strcpy(last, font_data->name);
-    if ((font_data->xlfd_name = get_font_name(oc, bufp)) != NULL) {
-	if (bufp != buf) Xfree (bufp);
-	return True;
-    }
+   /* At this point, "last" is pointing to the last "-" in the 
+    * xlfd, and all xlfd's at this point take a form similar to:
+    *       -*-*-*-*-*-*-14-*-*-*-*-*-
+    * (i.e., no encoding).
+    * After the strcpy, we'll end up with something similar to:
+    *       -*-*-*-*-*-*-14-*-*-*-*-*-JISX0208.1990-0 
+    *
+    * If the modified font is found in the current FontSet, 
+    * we've found a match.
+    */
 
+    /* don't let hackers trounce the stack... */
+    if (strlen (font_data->name) > BUFSIZE/2)
+	return -1;
+
+    /* ...otherwise there's plenty of room to tack on the charset/encoding */
+    strcpy(last, font_data->name);
+    if ((font_data->xlfd_name = get_font_name(oc, buf)) != NULL)
+	return True;
+
+    /* This happens if the client specifies less than 12 fields
+     * (e.g., -*-*-*) for some reason.  We'll keep appending 
+     * "-*" until we find something that matches.  This "feels"
+     * as if we're being overly nice to "lazy" client programs,
+     * but that's the way X is...nice :-)
+     */
     while (num_fields < 12) {
 	*last = '*';
 	*(last + 1) = '-';
 	strcpy(last + 2, font_data->name);
 	num_fields++; 
 	last+=2;
-	if ((font_data->xlfd_name = get_font_name(oc, bufp)) != NULL) {
-	    if (bufp != buf) Xfree (bufp);
+	if ((font_data->xlfd_name = get_font_name(oc, buf)) != NULL)
 	    return True;
-	}
     }
 
-    if (bufp != buf) Xfree (bufp);
+/*
+    I'm not sure what Teeks was trying to do here.  It
+    seems to me that if "get_font_name()" fails, 
+    "get_font_name_from_list()" would also fail.  I wouldn't 
+    put this in the SI until I understood it better.  
+    -- jjw/pma (HP)
+
+    Couldn't resolve the wild base fontname !
+    -  Teeks
+*/
+    if ((font_data->xlfd_name = get_font_name_from_list(oc, buf, font_data)) != NULL)
+	return True;
+
     return False;
 }
 
@@ -737,22 +897,25 @@ parse_omit_name(oc, font_data, pattern)
 typedef enum{C_PRIMARY, C_SUBSTITUTE, C_VMAP, C_VROTATE } ClassType;
 
 static int
-parse_fontdata(oc, font_data, font_data_count, name_list, name_list_count,
-		class)
-    XOC		oc;
-    FontData	font_data;
-    int		font_data_count;
-    char	**name_list;
-    int		name_list_count;
-    ClassType	class;
+parse_fontdata(oc, font_set, font_data, font_data_count, name_list, name_list_count,
+		class, font_data_return)
+    XOC		 oc;
+    FontSet      font_set;
+    FontData	 font_data;
+    int		 font_data_count;
+    char	 **name_list;
+    int		 name_list_count;
+    ClassType	 class;
+    FontDataRec *font_data_return;
 {
+
     char	**cur_name_list = name_list;
-    char	*font_name = (char *) NULL;
-    char	*pattern = (char *) NULL;
-    int		found_num = 0, ret = 0;
-    int		fd_count = font_data_count;
-    int		count = name_list_count;
-    Bool	is_found = False;
+    char	*font_name      = (char *) NULL;
+    char	*pattern        = (char *) NULL;
+    int		found_num       = 0, ret = 0;
+    int		fd_count        = font_data_count;
+    int		count           = name_list_count;
+    Bool	is_found        = False;
 
     if(name_list == NULL || count <= 0) {
 	return False;
@@ -762,73 +925,159 @@ parse_fontdata(oc, font_data, font_data_count, name_list, name_list_count,
 	return False;
     }
 
+    /* Loop through each FontSet defined in the "font_data" CharSet. */
     for ( ; font_data_count-- > 0; font_data++) {
 	is_found = False;
 	font_name = (char *) NULL;
 	count = name_list_count;
 	cur_name_list = name_list;
+
+       /* Loop through each font specified by the user in the call to XCreateFontset(). */
 	while (count-- > 0) {
             pattern = *cur_name_list++;
 	    if (pattern == NULL || *pattern == '\0')
 		continue;
 
 
-	    /* When the font name is specified a full name. */
+	    /* If the current font is fully specified (i.e., the xlfd contains
+	     * no wildcards) and the font exists on the X Server, we have a match.
+	     */
 	    if (strchr(pattern, '*') == NULL &&
 		(font_name = get_font_name(oc, pattern))) {
 
+               /* Find the full xlfd name for this font.  If the font is already
+		* in xlfd format, it is simply returned.  If the font is an
+		* alias for another font, the xlfd of the aliased font is returned.
+		*/
 		ret = parse_all_name(oc, font_data, font_name);
 		Xfree(font_name);
 
-		if(ret == -1)
-		    return ret;
-		else if (ret == True) {
-		    found_num++;
-		    is_found = True;
-		    break;
-		} else
-		    continue;
+                if (ret == -1)    return -1;
+	        if (ret == False) continue;
+
+               /* Since there was an exact match of a fully-specified font
+		* or a font alias, we can return now since the desired font 
+		* was found for the current FontSet for this CharSet.
+		*
+		* Previous implementations of this algorithm would
+		* not return here. Instead, they continued searching 
+		* through the FontSets for this CharSet.  The side-effect 
+		* of that behavior is you may return a "substitute" match 
+		* instead of an "exact" match.  We believe there should be a 
+		* preference on exact matches.  Therefore, as soon as we
+		* find one, we bail. 
+		*
+		* Also, previous implementations seemed to think it was
+		* important to find either a primary or substitute font
+		* for each FontSet in the CharSet before returning an
+		* acceptable font.  We don't believe this is necessary.
+		* All the client cares about is finding a reasonable font
+		* for what was passed in.  If we find an exact match,
+		* there's no reason to look any further.  
+		*
+		* -- jjw/pma (HP)
+		*/
+		font_data_return->xlfd_name = (char *)Xmalloc
+			(strlen(font_data->xlfd_name) + 1);
+                if (!font_data_return->xlfd_name) return -1;
+
+	        strcpy (font_data_return->xlfd_name, font_data->xlfd_name);
+
+		font_data_return->side      = font_data->side;
+
+		return True;
 	    }
 
-	    /* When the font name is specified a omited name. */
+	    /* If the font name is not fully specified (i.e., it has wildcards), 
+	     * we have more work to do.  See the comments in parse_omit_name()
+	     * for the list of things to do.
+	     */
 	    ret = parse_omit_name(oc, font_data, pattern);
-	    if(ret == -1)
-		    return ret;
-	    else if (ret == True) {
-		    found_num++;
-		    is_found = True;
-		    break;
-	    } else
-		    continue;
+
+            if (ret == -1)    return -1;
+	    if (ret == False) continue;
+
+           /* A font which matched the wild-carded specification was found. 
+	    * Only update the return data if a font has not yet been found.
+	    * This maintains the convention that FontSets listed higher in
+	    * a CodeSet in the Locale Database have higher priority than
+	    * those FontSets listed lower in the CodeSet.  In the following
+	    * example:
+	    *
+	    * fs1 {
+	    *        charset     HP-JIS:GR
+	    *        font        JISX0208.1990-0:GL;\
+	    *                    JISX0208.1990-1:GR;\
+	    *                    JISX0208.1983-0:GL;\
+	    *                    JISX0208.1983-1:GR
+	    * }
+	    *
+	    * a font found in the JISX0208.1990-0 FontSet will have a
+	    * higher priority than a font found in the JISX0208.1983-0
+	    * FontSet.  
+	    */
+	    if (font_data_return->xlfd_name == NULL)
+	    {
+		
+		font_data_return->xlfd_name = (char *)Xmalloc
+			(strlen(font_data->xlfd_name) + 1);
+                if (!font_data_return->xlfd_name) return -1;
+
+	        strcpy (font_data_return->xlfd_name, font_data->xlfd_name);
+	        font_data_return->side      = font_data->side;
+	    }
+
+	    found_num++;
+	    is_found = True;
 	}
 
 	switch(class) {
 	  case C_PRIMARY:
-	    if(is_found != True)
-		return False;
-		break;
+	       if(is_found == False)
+	       {
+		 /* Did not find a font for the current FontSet.  Check the
+		  * FontSet's "substitute" font for a match.  If we find a
+		  * match, we'll keep searching in hopes of finding an exact 
+		  * match later down the FontSet list.
+		  */
+		  ret = parse_fontdata(oc, font_set, font_set->substitute,
+				       font_set->substitute_num, name_list, 
+				       name_list_count, C_SUBSTITUTE, 
+				       font_data_return);
+                  if (ret == -1)    return -1;
+		  if (ret == False) continue;
+
+		  found_num++;
+		  is_found = True;
+               }
+
+	       break;
+
 	  case C_SUBSTITUTE:
 	  case C_VMAP:
-	    if(is_found == True)
-		return True;
-	    break;
-	  case C_VROTATE:
-	    if(is_found == True) {
-		char	*rotate_name;
+	       if(is_found == True)
+		  return True;
+	       break;
 
-		if((rotate_name = get_rotate_fontname(font_data->xlfd_name)) !=
+	  case C_VROTATE:
+	       if(is_found == True) {
+		  char	*rotate_name;
+
+		  if((rotate_name = get_rotate_fontname(font_data->xlfd_name)) !=
 				  NULL) {
-		    Xfree(font_data->xlfd_name);
-		    font_data->xlfd_name = rotate_name;
-		    return True;
-		}
-		Xfree(font_data->xlfd_name);
-		return False;
-	    }
+		      Xfree(font_data->xlfd_name);
+		      font_data->xlfd_name = rotate_name;
+
+		      return True;
+		  }
+		  Xfree(font_data->xlfd_name);
+		  return False;
+	       }
+	       break;
 	}
     }
 
-    if(class == C_PRIMARY && found_num == fd_count)
+    if(class == C_PRIMARY && found_num >= 1)
 	return True;
 
     return False;
@@ -843,19 +1092,20 @@ parse_vw(oc, font_set, name_list, count)
     int		count;
 {
     FontData	vmap = font_set->vmap;
+    FontDataRec font_data_return;
     VRotate	vrotate = font_set->vrotate;
     int		vmap_num = font_set->vmap_num;
     int		vrotate_num = font_set->vrotate_num;
     int		ret = 0, i = 0;
 
     if(vmap_num > 0) {
-	if(parse_fontdata(oc, vmap, vmap_num, name_list, count, C_VMAP) == -1)
+	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list, count, C_VMAP) == -1)
 	    return (-1);
     }
 
     if(vrotate_num > 0) {
-	ret = parse_fontdata(oc, (FontData) vrotate, vrotate_num,
-			     name_list, count, C_VROTATE);
+	ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
+			     name_list, count, C_VROTATE, &font_data_return);
 	if(ret == -1) {
 	    return (-1);
 	} else if(ret == False) {
@@ -888,8 +1138,8 @@ parse_vw(oc, font_set, name_list, count)
 		font_set->vrotate = (VRotate)NULL;
 	    }
 
-	    ret = parse_fontdata(oc, (FontData) vrotate, vrotate_num,
-				 name_list, count, C_VROTATE);
+	    ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
+				 name_list, count, C_VROTATE, &font_data_return);
 	    if(ret == -1)
 		return (-1);
 	}
@@ -903,7 +1153,8 @@ parse_fontname(oc)
     XOC oc;
 {
     XOCGenericPart *gen = XOC_GENERIC(oc);
-    FontSet font_set;
+    FontSet     font_set;
+    FontDataRec font_data_return;
     char *base_name, **name_list;
     int font_set_num = 0;
     int found_num = 0;
@@ -918,72 +1169,67 @@ parse_fontname(oc)
     font_set = gen->font_set;
     font_set_num = gen->font_set_num;
 
+   /* Loop through all of the CharSets defined in the Locale
+    * database for the current Locale.
+    */
     for( ; font_set_num-- > 0 ; font_set++) {
 	if(font_set->font_name)
 	    continue;
 
 	if(font_set->font_data_count > 0) {
-	    ret = parse_fontdata(oc, font_set->font_data,
+
+           /* If there are a non-zero number of FontSets defined 
+	    * for this CharSet.
+	    */
+	    font_data_return.name       = NULL;
+	    font_data_return.side       = XlcUnknown;
+	    font_data_return.scopes_num = 0;
+	    font_data_return.scopes     = NULL;
+	    font_data_return.xlfd_name  = NULL;
+	    font_data_return.font       = NULL;
+
+           /* Try to find a font for this CharSet.  If we find an
+	    * acceptable font, we save the information for return
+	    * to the client.  If we do not find an acceptable font,
+	    * a "missing_charset" will be reported to the client 
+	    * for this CharSet.
+	    */
+	    ret = parse_fontdata(oc, font_set, font_set->font_data,
 				 font_set->font_data_count,
-				 name_list, count, C_PRIMARY);
+				 name_list, count, C_PRIMARY,
+				 &font_data_return);
 	    if(ret == -1) {
 		goto err;
 	    } else if(ret == True) {
 		font_set->font_name = (char *)Xmalloc
-			(strlen(font_set->font_data->xlfd_name) + 1);
+			(strlen(font_data_return.xlfd_name) + 1);
 		if(font_set->font_name == (char *) NULL)
 		    goto err;
-		strcpy(font_set->font_name, font_set->font_data->xlfd_name);
-		font_set->side = font_set->font_data->side;
+		strcpy(font_set->font_name, font_data_return.xlfd_name);
+		font_set->side = font_data_return.side;
+
+                Xfree (font_data_return.xlfd_name);
 
 		if(parse_vw(oc, font_set, name_list, count) == -1)
 		    goto err;
 		found_num++;
-
-	    /* The substitute font is serched, when the primary fonts */
-	    /* is not found. */
-	    } else {
-		/* The primary information is free from FontSet structure */
-		font_set->font_data_count = 0;
-		if(font_set->font_data) {
-		    Xfree(font_set->font_data);
-		    font_set->font_data = (FontData) NULL;
-		}
-
-		/* A vrotate member is replaced to substitute information */
-		/* from primary information. */
-		font_set->vrotate_num = 0;
-		if(font_set->vrotate) {
-		    Xfree(font_set->vrotate);
-		    font_set->vrotate = (VRotate) NULL;
-		}
-
-		ret = parse_fontdata(oc, font_set->substitute,
-				     font_set->substitute_num,
-				     name_list, count, C_SUBSTITUTE);
-		if(ret == -1) {
-		    goto err;
-		} else if(ret == True) {
-		    for(i=0;i<font_set->substitute_num;i++){
-			if(font_set->substitute[i].xlfd_name != NULL){
-				break;
-			}
-		    }
-		    font_set->font_name = (char *)Xmalloc
-				(strlen(font_set->substitute[i].xlfd_name) + 1);
-		    if(font_set->font_name == (char *) NULL)
-			goto err;
-		    strcpy(font_set->font_name,font_set->substitute[i].xlfd_name);
-		    font_set->side = font_set->substitute[i].side;
-		    if(parse_vw(oc, font_set, name_list, count) == -1)
-			goto err;
-		    found_num++;
-		}
 	    }
+
 	} else if(font_set->substitute_num > 0) {
-	    ret = parse_fontdata(oc, font_set->substitute,
+
+           /* If there are no FontSets defined for this 
+	    * CharSet.  We can only find "substitute" fonts.
+	    */
+	    font_data_return.name       = NULL;
+	    font_data_return.side       = XlcUnknown;
+	    font_data_return.scopes_num = 0;
+	    font_data_return.scopes     = NULL;
+	    font_data_return.xlfd_name  = NULL;
+	    font_data_return.font       = NULL;
+
+	    ret = parse_fontdata(oc, font_set, font_set->substitute,
 				 font_set->substitute_num,
-				 name_list, count, C_SUBSTITUTE);
+				 name_list, count, C_SUBSTITUTE, &font_data_return);
 	    if(ret == -1) {
 		goto err;
 	    } else if(ret == True) {
@@ -1013,7 +1259,7 @@ parse_fontname(oc)
     strcpy(base_name, oc->core.base_name_list);
     oc->core.base_name_list = base_name;
 
-    XFreeStringList(name_list);		
+    XFreeStringList(name_list);
 
     return found_num;
 

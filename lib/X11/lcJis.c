@@ -1,4 +1,4 @@
-/* $TOG: lcJis.c /main/3 1997/11/13 18:54:40 kaleb $ */
+/* $TOG: lcJis.c /main/8 1998/04/30 11:02:21 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -23,7 +23,10 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcJis.c,v 1.3 1997/11/22 12:50:10 dawes Exp $ */
+
+
+#ifdef X_LOCALE
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -308,7 +311,7 @@ wcstocs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static CodeSet
-_XlcGetCodeSetFromCharSet(lcd, charset)
+GetCodeSetFromCharSet(lcd, charset)
     XLCd lcd;
     XlcCharSet charset;
 {
@@ -361,7 +364,7 @@ cstombs(conv, from, from_left, to, to_left, args, num_args)
     
     charset = (XlcCharSet) args[0];
 
-    codeset = _XlcGetCodeSetFromCharSet(state->lcd, charset);
+    codeset = GetCodeSetFromCharSet(state->lcd, charset);
     if (codeset == NULL)
 	return -1;
 
@@ -463,7 +466,7 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
     if (num_args < 1)
 	return -1;
     
-    codeset = _XlcGetCodeSetFromCharSet(lcd, (XlcCharSet) args[0]);
+    codeset = GetCodeSetFromCharSet(lcd, (XlcCharSet) args[0]);
     if (codeset == NULL)
 	return -1;
 
@@ -918,3 +921,7 @@ _XlcJisLoader(name)
 
     return lcd;
 }
+
+#else
+typedef int dummy;
+#endif /* X_LOCALE */

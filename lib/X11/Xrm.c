@@ -1,4 +1,4 @@
-/* $TOG: Xrm.c /main/93 1997/08/27 12:12:17 kaleb $ */
+/* $TOG: Xrm.c /main/94 1998/02/06 18:03:25 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -24,15 +24,9 @@ SOFTWARE.
 ******************************************************************/
 /*
 
-Copyright (c) 1987, 1988, 1990  X Consortium
+Copyright 1987, 1988, 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -40,18 +34,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.9 1998/06/04 16:43:06 hohndel Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.10 1998/08/20 08:55:50 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -300,7 +294,7 @@ typedef unsigned char XrmBits;
 static XrmBits Const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
     0,SPACE,EOL,0,0,
-#if defined(WIN32) || defined(__EMX__)
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
                     EOL,	/* treat CR the same as LF, just in case */
 #else
                     0,

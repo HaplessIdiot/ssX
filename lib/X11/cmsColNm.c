@@ -1,4 +1,4 @@
-/* $TOG: cmsColNm.c /main/31 1997/08/27 12:12:32 kaleb $" */
+/* $TOG: cmsColNm.c /main/32 1998/03/13 14:14:50 barstow $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.2 1995/07/08 10:24:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.3 1997/10/26 13:24:46 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -442,7 +442,7 @@ Retry:
     /*
      * Now, remove spaces.
      */
-    for (i = 0, j = 0; i < len; j++) {
+    for (i = 0, j = 0; j < len; j++) {
 	if (!isspace(name_lowered[j])) {
 	    name_lowered[i++] = name_lowered[j];
 	}

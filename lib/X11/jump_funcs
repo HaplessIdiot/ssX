@@ -1,5 +1,5 @@
-# $XConsortium: jump_funcs,v 1.7 95/01/27 22:17:51 kaleb Exp $
-# $XFree86: xc/lib/X11/jump_funcs,v 3.8 1996/05/13 07:23:40 dawes Exp $
+# $TOG: jump_funcs /main/8 1998/06/17 15:34:53 kaleb $
+# $XFree86: xc/lib/X11/jump_funcs,v 3.9 1996/12/30 13:58:21 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
 00000000 T _XFindContext        libX11         Context
@@ -797,7 +797,7 @@
 00000000 T __XimLocalOpenIM     libX11         imLcIm
 00000000 T __XimLocalMbLookupString libX11         imLcLkup
 00000000 T __XimLocalWcLookupString libX11         imLcLkup
-00000000 T _XimParseStringFile  libX11         imLcPrs
+00000000 T __XimParseStringFile  libX11         imLcPrs
 00000000 T __XimSetICValueData  libX11         imLcSIc
 00000000 T __XimLocalSetICValues libX11         imLcSIc
 00000000 T __XimSetIMResourceList libX11         imRm

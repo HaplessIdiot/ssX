@@ -1,4 +1,4 @@
-/* $TOG: lcSjis.c /main/20 1997/11/13 18:54:45 kaleb $ */
+/* $TOG: lcSjis.c /main/25 1998/04/30 11:02:27 kaleb $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -35,7 +35,10 @@ OR PERFORMANCE OF THIS SOFTWARE.
 				makoto@sm.sony.co.jp
 
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcSjis.c,v 3.4 1997/11/22 12:50:11 dawes Exp $ */
+
+
+#ifdef X_LOCALE
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -1562,3 +1565,7 @@ _XlcSjisLoader(name)
 
     return lcd;
 }
+
+#else
+typedef int dummy;
+#endif /* X_LOCALE */

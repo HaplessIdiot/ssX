@@ -1,4 +1,4 @@
-/* $XConsortium: imLcLkup.c,v 1.7 95/06/07 22:41:51 kaleb Exp $ */
+/* $TOG: imLcLkup.c /main/9 1998/04/28 17:34:55 kaleb $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
@@ -79,8 +79,7 @@ _XimLocalMbLookupString(xic, ev, buffer, bytes, keysym, status)
 	}
 	return (ret);
     } else { /* Throughed Event */
-	ret = _XimLookupMBText(ic, ev, (unsigned char *)buffer, bytes, keysym,
-			       NULL);
+	ret = _XimLookupMBText(ic, ev, buffer, bytes, keysym, NULL);
 	if(ret > 0) {
 	    if(keysym && *keysym != NoSymbol) {
 		if(status) *status = XLookupBoth;

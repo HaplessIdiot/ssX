@@ -1,4 +1,4 @@
-/* $XConsortium: imLcPrs.c /main/7 1996/11/20 18:13:05 kaleb $ */
+/* $TOG: imLcPrs.c /main/11 1998/06/17 12:19:31 kaleb $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.
@@ -30,15 +30,16 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.1.1.3.2.2 1998/05/19 07:31:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.2 1998/06/28 08:41:35 dawes Exp $ */
 
-#include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Ximint.h"
+#include <sys/stat.h>
+#include <stdio.h>
 
 extern int _Xmbstowcs(
 #if NeedFunctionPrototypes
@@ -113,8 +114,6 @@ putbackch(c, lastch)
 #define STRING 7
 #define KEY 8
 #define ERROR 9
-
-#define MAXSTRLEN 100
 
 #ifndef isalnum
 #define isalnum(c)      \
@@ -308,11 +307,10 @@ modmask(name)
 #define SEQUENCE_MAX	10
 
 static int
-parseline(fp, top, tokenbuf, lastch)
+parseline(fp, top, tokenbuf)
     FILE *fp;
     DefTree **top;
-    char *tokenbuf;
-    int *lastch;
+    char* tokenbuf;
 {
     int token;
     unsigned modifier_mask;
@@ -324,6 +322,7 @@ parseline(fp, top, tokenbuf, lastch)
     KeySym rhs_keysym;
     char *rhs_string_mb;
     int l;
+    int lastch = 0;
     wchar_t local_wc_buf[LOCAL_WC_BUFSIZE], *rhs_string_wc;
 
     struct DefBuffer {
@@ -336,7 +335,7 @@ parseline(fp, top, tokenbuf, lastch)
     int i, n;
 
     do {
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
     } while (token == ENDOFLINE);
     
     if (token == ENDOFFILE) {
@@ -348,23 +347,23 @@ parseline(fp, top, tokenbuf, lastch)
 	if ((token == KEY) && (strcmp("None", tokenbuf) == 0)) {
 	    modifier = 0;
 	    modifier_mask = AllMask;
-	    token = nexttoken(fp, tokenbuf, lastch);
+	    token = nexttoken(fp, tokenbuf, &lastch);
 	} else {
 	    modifier_mask = modifier = 0;
 	    exclam = False;
 	    if (token == EXCLAM) {
 		exclam = True;
-		token = nexttoken(fp, tokenbuf, lastch);
+		token = nexttoken(fp, tokenbuf, &lastch);
 	    }
 	    while (token == TILDE || token == KEY) {
 		tilde = False;
 		if (token == TILDE) {
-		    token = nexttoken(fp, tokenbuf, lastch);
+		    token = nexttoken(fp, tokenbuf, &lastch);
 		    tilde = True;
 		    if (token != KEY)
 			goto error;
 		}
-		token = nexttoken(fp, tokenbuf, lastch);
+		token = nexttoken(fp, tokenbuf, &lastch);
 		tmp = modmask(tokenbuf);
 		if (!tmp) {
 		    goto error;
@@ -385,12 +384,12 @@ parseline(fp, top, tokenbuf, lastch)
 	    goto error;
 	}
 
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
 	if (token != KEY) {
 	    goto error;
 	}
 
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
 	if (token != GREATER) {
 	    goto error;
 	}
@@ -406,22 +405,22 @@ parseline(fp, top, tokenbuf, lastch)
 	n++;
 	if( n >= SEQUENCE_MAX )
 	    goto error;
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
     } while (token != COLON);
 
-    token = nexttoken(fp, tokenbuf, lastch);
+    token = nexttoken(fp, tokenbuf, &lastch);
     if (token == STRING) {
 	if( (rhs_string_mb = Xmalloc(strlen(tokenbuf) + 1)) == NULL )
 	    goto error;
 	strcpy(rhs_string_mb, tokenbuf);
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
 	if (token == KEY) {
 	    rhs_keysym = XStringToKeysym(tokenbuf);
 	    if (rhs_keysym == NoSymbol) {
 		Xfree(rhs_string_mb);
 		goto error;
 	    }
-	    token = nexttoken(fp, tokenbuf, lastch);
+	    token = nexttoken(fp, tokenbuf, &lastch);
 	}
 	if (token != ENDOFLINE && token != ENDOFFILE) {
 	    Xfree(rhs_string_mb);
@@ -432,7 +431,7 @@ parseline(fp, top, tokenbuf, lastch)
 	if (rhs_keysym == NoSymbol) {
 	    goto error;
 	}
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
 	if (token != ENDOFLINE && token != ENDOFFILE) {
 	    goto error;
 	}
@@ -493,22 +492,28 @@ parseline(fp, top, tokenbuf, lastch)
     return(n);
 error:
     while (token != ENDOFLINE && token != ENDOFFILE) {
-	token = nexttoken(fp, tokenbuf, lastch);
+	token = nexttoken(fp, tokenbuf, &lastch);
     }
     return(0);
 }
 
-int
-XimParseStringFile(fp, ptop)
+void
+_XimParseStringFile(fp, ptop)
     FILE *fp;
     DefTree **ptop;
 {
-    int max_ev_seq = 0, i;
-    char tokenbuf[MAXSTRLEN];
-    int lastch = 0;
+    char tb[65535];
+    char* tbp;
+    struct stat st;
 
-    while ((i = parseline(fp, ptop, tokenbuf, &lastch)) >= 0) {
-	if (i > max_ev_seq) max_ev_seq = i;
+    if (fstat (fileno (fp), &st) != -1) {
+	unsigned long size = (unsigned long) st.st_size;
+	if (size < sizeof tb) tbp = tb;
+	else tbp = malloc (size);
+
+	if (tbp != NULL) {
+	    while (parseline(fp, ptop, tbp) >= 0) {}
+	    if (tbp != tb) free (tbp);
+	}
     }
-    return (max_ev_seq);
 }
