@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.21 2001/05/07 21:59:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.22 2001/06/16 21:57:42 mvojkovi Exp $ */
 
 #ifndef _XF86XV_H_
 #define _XF86XV_H_
@@ -223,7 +223,6 @@ xf86XVClipVideoHelper(
 extern int XF86XvScreenIndex;
 
 typedef struct {
-   CreateWindowProcPtr		CreateWindow;
    DestroyWindowProcPtr		DestroyWindow;
    ClipNotifyProcPtr		ClipNotify;
    WindowExposuresProcPtr	WindowExposures;
