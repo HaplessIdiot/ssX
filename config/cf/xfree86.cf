@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.441 2003/04/14 20:35:51 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.442 2003/04/15 03:59:04 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -359,7 +359,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				cirrus vmware tseng trident chips apm \
 				GlideDriver fbdev i128 \
 				ati i810 AgpGartDrivers DevelDrivers ark \
-				cyrix siliconmotion \
+				cyrix siliconmotion via \
 				vesa vga \
 				dummy XF86OSCardDrivers XF86ExtraCardDrivers
 #  else
@@ -368,7 +368,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				cirrus vmware tseng trident chips apm \
 				GlideDriver fbdev i128 nsc \
 				ati i810 AgpGartDrivers DevelDrivers ark \
-				cyrix siliconmotion \
+				cyrix siliconmotion via \
 				vesa vga \
 				dummy XF86OSCardDrivers XF86ExtraCardDrivers
 #  endif
