@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.5 2003/09/28 20:15:24 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.6 2003/12/02 13:02:39 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "imports.h"
 #include "context.h"
 
+#define STANDALONE_MMIO
 #include "r200_screen.h"
 #include "r200_context.h"
 #include "r200_ioctl.h"

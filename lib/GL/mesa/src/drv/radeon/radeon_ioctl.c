@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.12 2003/09/28 20:15:27 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.13 2003/12/02 13:02:39 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -46,6 +46,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tcl.h"
 #include "radeon_sanity.h"
 
+#define STANDALONE_MMIO
 #include "radeon_macros.h"  /* for INREG() */
 
 #include "vblank.h"
@@ -715,12 +716,10 @@ static CARD32 radeonGetLastFrame (radeonContextPtr rmesa)
    else
       ret = -EINVAL;
 
-#ifndef __alpha__
    if ( ret == -EINVAL ) {
       frame = INREG( RADEON_LAST_FRAME_REG );
       ret = 0;
    } 
-#endif
    if ( ret ) {
       fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
       exit(1);
@@ -1008,12 +1007,10 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       } else
 	ret = -EINVAL;
 
-#ifndef __alpha__
       if ( ret == -EINVAL ) {
 	 clear = INREG( RADEON_LAST_CLEAR_REG );
 	 ret = 0;
       }
-#endif
       if ( ret ) {
 	 fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
 	 exit(1);
