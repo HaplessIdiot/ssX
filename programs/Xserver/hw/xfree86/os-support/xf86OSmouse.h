@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.13 2001/03/04 01:43:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.14 2001/03/07 16:21:04 paulo Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -140,6 +140,8 @@ typedef struct _MouseDevRec {
     InputInfoPtr	pInfo;
     int			origProtocolID;
     const char *	origProtocol;
+    Bool		emulate3Pending;/* timer waiting */
+    CARD32		emulate3Expires;/* time to fire emulation code */
 } MouseDevRec, *MouseDevPtr;
 
 /* Z axis mapping */
