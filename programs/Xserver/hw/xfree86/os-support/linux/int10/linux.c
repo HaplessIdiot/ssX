@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.16 2000/11/03 18:30:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.17 2000/11/18 19:37:24 tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -57,6 +57,7 @@ xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
     xf86Int10InfoPtr pInt = NULL;
+    CARD8 *bios_base;
     int screen;
     int fd;
     static void* vidMem = NULL;
@@ -65,7 +66,7 @@ xf86InitInt10(int entityIndex)
     int high_mem;
     char *base;
     char *base_high;
-    int pagesize;
+    int pagesize, cs;
     legacyVGARec vga;
 
     screen = (xf86FindScreenForEntity(entityIndex))->scrnIndex;
@@ -154,23 +155,28 @@ xf86InitInt10(int entityIndex)
 	goto error3;
     }
 
-#ifdef DEBUG
-    dprint(0,0x20);
-    dprint(0xa0000,0x20);
-    dprint(0xf0000,0x20);
-#endif
+    /*
+     * Read in everything between V_BIOS and SYS_BIOS as some system BIOSes
+     * have executable code there.  Note that xf86ReadBIOS() can only bring in
+     * 64K bytes at a time.
+     */
+    (void)memset((pointer)V_BIOS, 0, SYS_BIOS - V_BIOS);
+    for (cs = V_BIOS;  cs < SYS_BIOS;  cs += V_BIOS_SIZE)
+	if (xf86ReadBIOS(cs, 0, (pointer)cs, V_BIOS_SIZE) < V_BIOS_SIZE)
+	    xf86DrvMsg(screen, X_WARNING,
+		"Unable to retrieve all of segment 0x%06X.\n", cs);
     
     if (xf86IsEntityPrimary(entityIndex)) {
-	int cs = ((CARD16*)0)[(0x10<<1)+1];
-	CARD8 *bios_base = (unsigned char *)(cs << 4);
+	cs = ((CARD16*)0)[(0x10<<1)+1];
+	bios_base = (unsigned char *)(cs << 4);
 	
-	if (!int10_read_bios(screen,cs,bios_base)) {
+	if (!int10_check_bios(screen, cs, bios_base)) {
 	    cs = ((CARD16*)0)[(0x42<<1)+1];
 	    bios_base = (unsigned char *)(cs << 4);
-	    if (!int10_read_bios(screen,cs,bios_base)) {
+	    if (!int10_check_bios(screen, cs, bios_base)) {
 		cs = V_BIOS >> 4;
 		bios_base = (unsigned char *)(cs << 4);
-		if (!int10_read_bios(screen,cs,bios_base)) {
+		if (!int10_check_bios(screen, cs, bios_base)) {
 		    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
 		    goto error3;
 		}

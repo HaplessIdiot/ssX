@@ -35,7 +35,7 @@
 * Description:  Header file for debug definitions.
 *
 ****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/x86emu/debug.h,v 1.3 2000/04/19 15:48:15 tsi Exp $ */
 
 #ifndef __X86EMU_DEBUG_H
 #define __X86EMU_DEBUG_H
@@ -69,7 +69,7 @@
 # define DEBUG_DISASSEMBLE()   	(M.x86.debug & DEBUG_DISASSEMBLE_F)
 # define DEBUG_BREAK()         	(M.x86.debug & DEBUG_BREAK_F)
 # define DEBUG_SVC()           	(M.x86.debug & DEBUG_SVC_F)
-# define DEBUG_SAVE_IP_CS()     (M.x86.debug & DEBUG_SAVE_CS_IP)
+# define DEBUG_SAVE_IP_CS()     (M.x86.debug & DEBUG_SAVE_IP_CS_F)
 
 # define DEBUG_FS()            	(M.x86.debug & DEBUG_FS_F)
 # define DEBUG_PROC()          	(M.x86.debug & DEBUG_PROC_F)

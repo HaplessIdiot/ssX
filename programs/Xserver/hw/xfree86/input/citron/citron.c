@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.3 2000/11/03 00:14:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.4 2000/11/03 13:13:31 tsi Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -120,18 +120,12 @@ char version[]="Touch Driver V2.04  (c) 1999-2000 Citron GmbH";
 #define NEED_XF86_TYPES
 /*#include <xf86Version.h>*/
 #include <xf86_ansic.h>
-/* #define XF86_OS_PRIVS		for xf86SoundKbdBell */
 #include <xf86_OSproc.h>
 #include <xf86Optrec.h>
 #include <xf86Xinput.h>
 #include <xisb.h>
-#include <exevents.h>				/* Needed for InitValuator/Proximity stuff*/
+#include <exevents.h>		/* Needed for InitValuator/Proximity stuff*/
 
-
-/* I have to explicit declare this function, because I get an error if I compile */
-/* with "#define XF86_OS_PRIVS". I also have to put a "SYMVAR(xf86SoundKbdBell)" */
-/* statement into the  "/loader/xf86sym.c file" to be able to access this function (PK) */
-extern void xf86SoundKbdBell(int loudness, int pitch, int duration);
 
 /* #define CI_TIM	*/	/* Enable timer */
 #define CIT_BEEP		/* enable beep feature */

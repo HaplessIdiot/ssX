@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.65 2000/11/14 16:54:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.66 2000/11/15 22:30:05 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -339,8 +339,10 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
+    "cfBresS",
     "cfb16BresS",
     "cfb24BresS",
+    "cfb32BresS",
     NULL
 };
 

@@ -1,4 +1,12 @@
 XFree86 4.0.1g (xx November 2000)
+ 976. Make xf86SoundKbdBell() available to modules (for citron driver)
+      (Marc La France).
+ 975. Fix glide driver's check for glide library presence (Marc La France).
+ 974. Add missing symbol references in r128 and s3virge drivers
+      (Marc La France).
+ 973. Fix int10 debugging and reading in all segments between 0x0C0000 and
+      0x0F0000 (Marc La France).
+ 972. Fix typo in imake.c (Marc La France).
  971. Turn off SGRAM optimization for Trident Blade chips, causes some 
       problems. (Alan Hourihane).
  970. Ignore various ".stab.*" sections for Solaris (Marc La France).
@@ -11610,4 +11618,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1404 2000/11/20 22:12:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1405 2000/11/21 09:03:20 alanh Exp $
