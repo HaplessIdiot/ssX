@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.24 2003/01/04 20:20:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.25 2003/04/25 00:57:24 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -367,7 +367,7 @@ xf86pathIsAbsolute(const char *path)
 		return 1;
 #ifdef __UNIXOS2__
 	if (path && (path[0] == '\\' || (path[1] == ':')))
-		return 0;
+		return 1;
 #endif
 	return 0;
 }
