@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.44 2001/03/02 02:45:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.45 2001/04/10 16:08:00 dawes Exp $ */
 
 /*
  * Authors:
@@ -1753,7 +1753,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    
    if (!I810MapMem(pScrn)) return FALSE;
 
-   pScrn->memPhysBase = (unsigned long)pI810->FbBase;
+   pScrn->memPhysBase = (unsigned long)pI810->LinearAddr;
    pScrn->fbOffset = 0;
 
    vgaHWSetMmioFuncs(hwp, pI810->MMIOBase, 0);

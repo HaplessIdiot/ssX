@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.21 2001/03/04 21:57:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.22 2001/04/05 20:13:47 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -864,7 +864,8 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	    0 == (pPPriv->cap.type & VID_TYPE_OVERLAY)) {
 	    DEBUG(xf86Msg(X_INFO,  "v4l: %s: no overlay support\n",dev));
 	    xfree(pPPriv);
-	    break;
+	    close(fd);
+	    continue;
 	}
 	strncpy(V4L_NAME, dev, 16);
 	V4LBuildEncodings(pPPriv,fd,pPPriv->cap.channels);
