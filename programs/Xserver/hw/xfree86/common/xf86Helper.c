@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.79 2000/03/01 16:00:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.80 2000/03/02 23:15:04 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1558,7 +1558,6 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     return count[i];
 }
 
-#define DEBUG
 struct Inst {
     pciVideoPtr	pci;
     GDevPtr		dev;

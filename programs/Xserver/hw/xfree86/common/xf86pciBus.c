@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.10 2000/02/21 18:09:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.11 2000/02/24 05:36:53 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -7,7 +7,6 @@
 /*
  * This file contains the interfaces to the bus-specific code
  */
-#define DEBUG
 #include <ctype.h>
 #include <stdlib.h>
 #include <unistd.h>

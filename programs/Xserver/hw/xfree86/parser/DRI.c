@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.1 1999/06/27 14:08:30 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.2 2000/02/23 04:47:34 martin Exp $
  * 
  */
 
@@ -42,8 +42,6 @@ static xf86ConfigSymTabRec DRITab[] =
     {MODE,       "mode"},
     {-1,         ""},
 };
-
-#define DEBUG
 
 #define CLEANUP freeBuffersList
 

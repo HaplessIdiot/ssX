@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.8 1999/07/10 07:24:43 dawes Exp $ */
-#define DEBUG
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.12 2000/02/12 23:59:09 eich Exp $ */
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
  */

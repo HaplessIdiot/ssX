@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.211 2000/02/25 17:23:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.212 2000/03/02 17:53:11 dawes Exp $ */
 
 
 /*
@@ -1308,7 +1308,6 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
 	}
     }
 
-#define LAYOUT_DEBUG
 #ifdef LAYOUT_DEBUG
     ErrorF("Layout \"%s\"\n", conf_layout->lay_identifier);
     for (i = 0; i < count; i++) {

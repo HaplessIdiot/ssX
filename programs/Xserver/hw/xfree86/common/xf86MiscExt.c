@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.2 1999/07/18 03:26:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.3 1999/09/04 13:04:34 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -36,7 +36,6 @@
 #include "../input/mouse/mouse.h"
 const char * xf86ProtocolIDToName(ProtocolID id);
 
-#define DEBUG
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else
