@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.7 1994/10/21 11:22:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.8 1994/12/11 10:51:40 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -36,6 +36,10 @@ XCOMM Files section.  This allows default font and rgb paths to be set
 XCOMM **********************************************************************
 
 Section "Files"
+
+XCOMM The location of the RGB database.  Note, this is the name of the
+XCOMM file minus the extension (like ".txt" or ".db").  There is normally
+XCOMM no need to change the default.
 
     RgbPath	RGBPATH
 
