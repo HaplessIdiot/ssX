@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.203 2001/05/25 18:19:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.204 2001/05/28 14:21:55 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -392,6 +392,7 @@ static const char *shadowSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 
