@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 366. Fix lndir's handling of relative symbolic links, and update the man page
+      to document the -withrevinfo flag (H. J. Lu, Marc La France).
  365. Xdm patches: realloc usage, zero malloc()ated memory, enable 
       /dev/urandom on NetBSD 1.4 and later, OpenBSD patches (#5345, 
       Mike A. Harris, #5401, Matthias Scheler, Matthieu Herrb)
@@ -15253,4 +15255,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2325 2002/10/05 18:34:39 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2326 2002/10/06 20:45:19 herrb Exp $

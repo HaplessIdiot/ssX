@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.15 2001/12/14 19:53:22 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.16tsi Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -273,7 +273,54 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 			     basesymlen>=0 ? (char **) 0 : &p))
 		msg ("%s: %s", dp->d_name, symbuf);
 	} else {
-	    if (symlink (basesymlen>=0 ? basesym : buf, dp->d_name) < 0)
+	    char *sympath;
+
+	    if (basesymlen>=0) {
+		if ((buf[0] == '.') && (buf[1] == '.') && (buf[2] == '/') &&
+		    (basesym[0] == '.') && (basesym[1] == '.') &&
+		    (basesym[2] == '/')) {
+		    /* It becomes very tricky here. We have
+		       ../../bar/foo symlinked to ../xxx/yyy. We
+		       can't just use ../xxx/yyy. We have to use
+		       ../../bar/foo/../xxx/yyy.  */
+
+		    int i;
+		    char *start, *end;
+
+		    strcpy (symbuf, buf);
+		    /* Find the first char after "../" in symbuf.  */
+		    start = symbuf;
+		    do {
+			start += 3;
+		    } while ((start[0] == '.') && (start[1] == '.') &&
+			     (start[2] == '/'));
+
+		    /* Then try to eliminate "../"s in basesym.  */
+		    i = 0;
+		    end = strrchr (symbuf, '/');
+		    if (start < end) {
+			do {
+			    i += 3;
+			    end--;
+			    while ((*end != '/') && (end != start))
+				end--;
+			    if (end == start)
+				break;
+			} while ((basesym[i] == '.') &&
+				 (basesym[i + 1] == '.') &&
+				 (basesym[i + 2] == '/'));
+		    }
+		    if (*end == '/')
+			end++;
+		    strcpy (end, &basesym[i]);
+		    sympath = symbuf;
+		}
+		else
+		    sympath = basesym;
+	    }
+	    else
+		sympath = buf;
+	    if (symlink (sympath, dp->d_name) < 0)
 		mperror (dp->d_name);
 	}
     }
