@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.23 2001/08/18 02:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.24 2001/09/27 08:25:03 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -369,6 +369,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    pI810->backHandle = 0;
    pI810->zHandle = 0;
    pI810->cursorHandle = 0;
+   pI810->xvmcHandle = 0;
    pI810->sysmemHandle = 0;
    pI810->agpAcquired = FALSE;
    pI810->dcacheHandle = 0;
@@ -591,7 +592,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
          pI810->MC.Start = pI810->FbMapSize - 8*1024*1024;
       }
       drmAgpAlloc(pI810->drmSubFD, pI810->MC.Size, 0, NULL, &agpHandle);
-      pI810->cursorHandle = agpHandle;
+      pI810->xvmcHandle = agpHandle;
 
       if (agpHandle != 0) {
          if (drmAgpBind(pI810->drmSubFD, agpHandle, pI810->MC.Start) == 0) {
@@ -894,6 +895,7 @@ I810DRICloseScreen(ScreenPtr pScreen)
    if(pI810->backHandle) drmAgpFree(pI810->drmSubFD, pI810->backHandle);
    if(pI810->zHandle) drmAgpFree(pI810->drmSubFD, pI810->zHandle);
    if(pI810->cursorHandle) drmAgpFree(pI810->drmSubFD, pI810->cursorHandle);
+   if(pI810->xvmcHandle) drmAgpFree(pI810->drmSubFD, pI810->xvmcHandle);
    if(pI810->sysmemHandle) drmAgpFree(pI810->drmSubFD, pI810->sysmemHandle);
 
    if(pI810->agpAcquired == TRUE) drmAgpRelease(pI810->drmSubFD);
@@ -901,6 +903,7 @@ I810DRICloseScreen(ScreenPtr pScreen)
    pI810->backHandle = 0;
    pI810->zHandle = 0;
    pI810->cursorHandle = 0;
+   pI810->xvmcHandle = 0;
    pI810->sysmemHandle = 0;
    pI810->agpAcquired = FALSE;
    pI810->dcacheHandle = 0;
