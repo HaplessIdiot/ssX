@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.16 1999/03/06 13:12:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.17 1999/03/07 11:40:40 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -654,21 +654,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pSiS->HWCursor = TRUE;
-    if (xf86IsOptionSet(SISOptions, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(SISOptions, OPTION_HW_CURSOR, &pSiS->HWCursor))
 	from = X_CONFIG;
-	pSiS->HWCursor = TRUE;
-    }
-    if (xf86IsOptionSet(SISOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(SISOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pSiS->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pSiS->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(SISOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(SISOptions, OPTION_NOACCEL, FALSE)) {
 	pSiS->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86IsOptionSet(SISOptions, OPTION_PCI_RETRY)) {
+    if (xf86ReturnOptValBool(SISOptions, OPTION_PCI_RETRY, FALSE)) {
 	pSiS->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
@@ -744,7 +742,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    pSiS->MaxClock = 135000;	
 	    pSiS->TurboQueue = FALSE; 
             xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.3fMHz\n",SiSMclk()/1000.0);
-    	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
+    	    if (xf86ReturnOptValBool(SISOptions, OPTION_NOTURBOQUEUE, FALSE)) {
 		pSiS->TurboQueue = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
     	    }
@@ -754,7 +752,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    pSiS->MaxClock = 175000;	/* XXX Guess, need to check this */
 	    pSiS->TurboQueue = FALSE; /* Turn on for 6326 */
             xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.3fMHz\n",SiSMclk()/1000.0);
-    	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
+    	    if (xf86ReturnOptValBool(SISOptions, OPTION_NOTURBOQUEUE, FALSE)) {
 		pSiS->TurboQueue = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
     	    }

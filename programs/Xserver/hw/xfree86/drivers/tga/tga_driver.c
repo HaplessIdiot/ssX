@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.17 1999/03/06 13:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.18 1999/03/07 11:40:41 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -496,21 +496,19 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pTga->HWCursor = FALSE;
-    if (xf86IsOptionSet(TGAOptions, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(TGAOptions, OPTION_HW_CURSOR, &pTga->HWCursor))
 	from = X_CONFIG;
-	pTga->HWCursor = TRUE;
-    }
-    if (xf86IsOptionSet(TGAOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(TGAOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTga->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTga->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(TGAOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(TGAOptions, OPTION_NOACCEL, FALSE)) {
 	pTga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86IsOptionSet(TGAOptions, OPTION_PCI_RETRY)) {
+    if (xf86ReturnOptValBool(TGAOptions, OPTION_PCI_RETRY, FALSE)) {
 	pTga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.46 1999/03/14 03:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.47 1999/03/14 14:10:48 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -878,25 +878,23 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pTrident->HWCursor = TRUE;
-    if (xf86IsOptionSet(TRIDENTOptions, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(TRIDENTOptions, OPTION_HW_CURSOR, &pTrident->HWCursor))
 	from = X_CONFIG;
-	pTrident->HWCursor = TRUE;
-    }
-    if (xf86IsOptionSet(TRIDENTOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTrident->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTrident->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(TRIDENTOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOACCEL, FALSE)) {
 	pTrident->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86IsOptionSet(TRIDENTOptions, OPTION_NOMMIO)) {
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO disabled\n");
     }
-    if (xf86IsOptionSet(TRIDENTOptions, OPTION_PCI_RETRY)) {
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_PCI_RETRY, FALSE)) {
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }

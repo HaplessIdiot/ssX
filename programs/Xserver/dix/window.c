@@ -66,7 +66,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.10 1999/01/13 08:30:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.11 1999/01/26 10:40:08 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -284,7 +284,8 @@ WalkTree(pScreen, func, data)
 /* hack for forcing backing store on all windows */
 int	defaultBackingStore = NotUseful;
 /* hack to force no backing store */
-Bool	disableBackingStore = TRUE;
+Bool	disableBackingStore = FALSE;
+Bool	enableBackingStore = FALSE;
 /* hack to force no save unders */
 Bool	disableSaveUnders = FALSE;
 
@@ -501,6 +502,8 @@ CreateRootWindow(pScreen)
 
     if (disableBackingStore)
 	pScreen->backingStoreSupport = NotUseful;
+    if (enableBackingStore)
+	pScreen->backingStoreSupport = Always;
 
 #ifdef DO_SAVE_UNDERS
     if ((pScreen->backingStoreSupport != NotUseful) &&

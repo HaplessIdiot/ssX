@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.1 1999/03/06 13:12:33 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -313,7 +313,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	/* handle options */
 	xf86CollectOptions(pScrn, NULL);
 	xf86ProcessOptions(pScrn->scrnIndex, pScrn->device->options, FBDevOptions);
-	if (xf86IsOptionSet(FBDevOptions, OPTION_SHADOW_FB)) {
+	if (xf86ReturnOptValBool(FBDevOptions, OPTION_SHADOW_FB, FALSE)) {
 		fPtr->shadowFB = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB enabled\n");
 	}

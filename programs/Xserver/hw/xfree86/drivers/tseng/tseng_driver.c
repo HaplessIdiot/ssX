@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.47 1999/01/26 05:54:08 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.48 1999/01/26 10:40:33 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -189,7 +189,7 @@ static OptionInfoRec TsengOptions[] =
 	{0}, FALSE},
     {OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_PCI_BURST, "pci_burst", OPTV_TRI,
+    {OPTION_PCI_BURST, "pci_burst", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_SLOW_DRAM, "slow_dram", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -197,13 +197,13 @@ static OptionInfoRec TsengOptions[] =
 	{0}, FALSE},
     {OPTION_FAST_DRAM, "fast_dram", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_W32_INTERLEAVE, "w32_interleave", OPTV_TRI,
+    {OPTION_W32_INTERLEAVE, "w32_interleave", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_NOCLOCKCHIP, "NoClockchip", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_LINEAR, "Linear", OPTV_TRI,
+    {OPTION_LINEAR, "Linear", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_SHOWCACHE, "ShowCache", OPTV_BOOLEAN,
 	{0}, FALSE},
@@ -1201,17 +1201,15 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 
     from = X_DEFAULT;
     pTseng->HWCursor = FALSE;	       /* default */
-    if (xf86IsOptionSet(TsengOptions, OPTION_HW_CURSOR)) {
+    if (xf86GetOptValBool(TsengOptions, OPTION_HW_CURSOR, &pTseng->HWCursor))
 	from = X_CONFIG;
-	if (!Is_ET6K) {
-	    xf86DrvMsg(pScrn->scrnIndex, from,
-		"Hardware Cursor not supported on this chipset\n");
-	} else {
-	    pTseng->HWCursor = TRUE;
-	}
+    if (xf86ReturnOptValBool(TsengOptions, OPTION_SW_CURSOR, FALSE)) {
+	from = X_CONFIG;
+	pTseng->HWCursor = FALSE;
     }
-    if (xf86IsOptionSet(TsengOptions, OPTION_SW_CURSOR)) {
-	from = X_CONFIG;
+    if (pTseng->HWCursor && !Is_ET6K) {
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		"Hardware Cursor not supported on this chipset\n");
 	pTseng->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
@@ -1219,7 +1217,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 
     if (pScrn->bitsPerPixel >= 8) {
 	pTseng->UseAccel = TRUE;
-	if (xf86IsOptionSet(TsengOptions, OPTION_NOACCEL)) {
+	if (xf86ReturnOptValBool(TsengOptions, OPTION_NOACCEL, FALSE)) {
 	    pTseng->UseAccel = FALSE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
 	}
@@ -1275,17 +1273,17 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	(pTseng->UseLinMem) ? "linear" : "banked");
 
     pTseng->ShowCache = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_SHOWCACHE)) {
+    if (xf86ReturnOptValBool(TsengOptions, OPTION_SHOWCACHE, FALSE)) {
 	pTseng->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "(for debugging only:) Visible off-screen memory\n");
     }
     pTseng->Legend = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_LEGEND)) {
+    if (xf86ReturnOptValBool(TsengOptions, OPTION_LEGEND, FALSE)) {
 	pTseng->Legend = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Legend pixel clock selection.\n");
     }
     pTseng->NoClockchip = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_NOCLOCKCHIP)) {
+    if (xf86ReturnOptValBool(TsengOptions, OPTION_NOCLOCKCHIP, FALSE)) {
 	pTseng->NoClockchip = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling clockchip programming.\n");
     }
@@ -1297,7 +1295,7 @@ TsengProcessOptions(ScrnInfoPtr pScrn)
 	pScrn->progClock = FALSE;
 
     pTseng->UsePCIRetry = FALSE;
-    if (xf86IsOptionSet(TsengOptions, OPTION_PCI_RETRY)) {
+    if (xf86ReturnOptValBool(TsengOptions, OPTION_PCI_RETRY, FALSE)) {
 	pTseng->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }

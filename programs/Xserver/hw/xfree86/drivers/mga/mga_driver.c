@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.83 1999/03/14 03:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.84 1999/03/14 11:18:03 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -202,7 +202,7 @@ typedef enum {
 
 static OptionInfoRec MGAOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -1048,33 +1048,33 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
     /* For compatibility, accept this too (as an override) */
-    if (xf86IsOptionSet(MGAOptions, OPTION_SW_CURSOR)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pMga->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pMga->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(MGAOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_NOACCEL, FALSE)) {
 	pMga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_PCI_RETRY)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_PCI_RETRY, FALSE)) {
 	pMga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_SYNC_ON_GREEN)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_SYNC_ON_GREEN, FALSE)) {
 	pMga->SyncOnGreen = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_SHOWCACHE)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_SHOWCACHE, FALSE)) {
 	pMga->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_MGA_SDRAM)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_MGA_SDRAM, FALSE)) {
 	pMga->HasSDRAM = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_8_PLUS_24, FALSE)) {
 	if(pMga->Chipset == PCI_CHIP_MGAG100) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Option \"8Plus24\" is not supported by the G100\n");
@@ -1087,13 +1087,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 		"Option \"8Plus24\" is not supported in this configuration\n");
 	}
     } 
-    if (xf86IsOptionSet(MGAOptions, OPTION_SHADOW_FB)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_SHADOW_FB, FALSE)) {
 	pMga->ShadowFB = TRUE;
 	pMga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    if (xf86IsOptionSet(MGAOptions, OPTION_FBDEV)) {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_FBDEV, FALSE)) {
 	pMga->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using framebuffer device\n");

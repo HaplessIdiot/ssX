@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.15 1999/03/07 11:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.16 1999/03/14 03:22:03 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -170,7 +170,7 @@ typedef enum {
    OPTION_SLOW_EDODRAM, 	
    OPTION_FAST_DRAM, 		
    OPTION_FPM_VRAM, 		
-   OPTION_PCI_BURST_ON, 	
+   OPTION_PCI_BURST, 	
    OPTION_FIFO_CONSERV, 	
    OPTION_FIFO_MODERATE, 	
    OPTION_FIFO_AGGRESSIVE, 	
@@ -194,7 +194,7 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_FAST_DRAM, 		"fast_dram",	OPTV_BOOLEAN,	{0}, FALSE },
   */ 
    { OPTION_FPM_VRAM, 		"fpm_vram",	OPTV_BOOLEAN,	{0}, FALSE },
-   { OPTION_PCI_BURST_ON, 	"pci_burst_on",	OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_PCI_BURST, 		"pci_burst",	OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_FIFO_CONSERV, 	"fifo_conservative", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_FIFO_MODERATE, 	"fifo_moderate", OPTV_BOOLEAN, 	{0}, FALSE },
    { OPTION_FIFO_AGGRESSIVE, 	"fifo_aggressive", OPTV_BOOLEAN, {0}, FALSE },
@@ -647,7 +647,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, S3VOptions);
 
 
-    if (xf86IsOptionSet(S3VOptions, OPTION_PCI_BURST_ON)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_BURST, FALSE)) {
 	ps3v->pci_burst_on = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_burst_on - PCI burst read enabled\n");
     } else
@@ -655,8 +655,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* default */
     ps3v->NoPCIRetry = 1;
    					/* Set option */
-    if (xf86IsOptionSet(S3VOptions, OPTION_PCI_RETRY))
-      if (xf86IsOptionSet(S3VOptions, OPTION_PCI_BURST_ON)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_RETRY, FALSE))
+      if (xf86ReturnOptValBool(S3VOptions, OPTION_PCI_BURST, FALSE)) {
       	ps3v->NoPCIRetry = 0;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
 	}
@@ -700,31 +700,31 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     } else
    	ps3v->fpm_vram = FALSE;
 
-    if (xf86IsOptionSet(S3VOptions, OPTION_NOACCEL)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_NOACCEL, FALSE)) {
 	ps3v->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - Acceleration disabled\n");
     } else
    	ps3v->NoAccel = FALSE;
 
-    if (xf86IsOptionSet(S3VOptions, OPTION_EARLY_RAS_PRECHARGE)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_EARLY_RAS_PRECHARGE, FALSE)) {
 	ps3v->early_ras_precharge = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: early_ras_precharge set\n");
     } else
    	ps3v->early_ras_precharge = FALSE;
 
-    if (xf86IsOptionSet(S3VOptions, OPTION_LATE_RAS_PRECHARGE)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_LATE_RAS_PRECHARGE, FALSE)) {
 	ps3v->late_ras_precharge = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: late_ras_precharge set\n");
     } else
    	ps3v->late_ras_precharge = FALSE;
 	       	   
-    if (xf86IsOptionSet(S3VOptions, OPTION_LCD_CENTER)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_LCD_CENTER, FALSE)) {
 	ps3v->lcd_center = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: lcd_center set\n");
     } else
    	ps3v->lcd_center = FALSE;
 
-    if (xf86IsOptionSet(S3VOptions, OPTION_SHOWCACHE)) {
+    if (xf86ReturnOptValBool(S3VOptions, OPTION_SHOWCACHE, FALSE)) {
 	ps3v->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: show_cache set\n");
     } else
