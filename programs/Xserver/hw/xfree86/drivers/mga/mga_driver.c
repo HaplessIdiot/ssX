@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.197 2001/04/18 15:29:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.198 2001/04/25 14:23:00 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2625,10 +2625,13 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool swap_head
       = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
-    digital1 = ISDIGITAL1(pMga);
-    digital2 = ISDIGITAL2(pMga);
-    tv1 = ISTV1(pMga);
-    tv2 = ISTV2(pMga);
+    if (pMga->pMgaHwInfo)
+    {
+	digital1 = ISDIGITAL1(pMga);
+	digital2 = ISDIGITAL2(pMga);
+	tv1 = ISTV1(pMga);
+	tv2 = ISTV2(pMga);
+    }
 #endif
 
     vgaHWUnlock(hwp);
