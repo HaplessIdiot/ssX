@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.3 2001/09/29 09:54:18 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.4 2001/10/01 17:15:20 alanh Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -2390,7 +2390,6 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 			 XvMCSurface *past_surface,
 			 XvMCSurface *future_surface,
 			 unsigned int flags,
-			 unsigned int scan_order,
 			 unsigned int num_macroblocks,
 			 unsigned int first_macroblock,
 			 XvMCMacroBlockArray *macroblock_array,
@@ -2438,12 +2437,6 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 
   if(macroblock_array->num_blocks < (num_macroblocks + first_macroblock)) {
     printf("Error, Too many macroblocks requested for MB array size.\n");
-    return BadValue;
-  }
-
-  /* Only handle raster scan */
-  if(!scan_order & XVMC_SCAN_ORDER_RASTER) {
-    printf("Error, HWMC contexts only accept raster scan!\n");
     return BadValue;
   }
 
@@ -3341,133 +3334,6 @@ Status XvMCGetSurfaceStatus(Display *display, XvMCSurface *surface,
 
   return Success;
 }
-
-
-/***************************************************************************
-// IDCT Dequantization functions.
-//
-// When a context accelerates starting at the IDCT level, additional state
-// is required for the dquantization. The following functions are provided
-// to set this state. If the particular function is not supported for the 
-// mc_type of the XvMCSurfaceInfo, the function is a no-op. These functions
-// are all no-ops for motion compensation level contexts.
-***************************************************************************/
-
-
-/***************************************************************************
-// Function: XvMCLoadIntraQuantizerMatrix
-// Description: Modify client specified matricies to conform to restrictions
-//              imposed by the mc_type.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   matrix - default matrix to modify.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCLoadIntraQuantizerMatrix(Display *display, XvMCContext *context,
-                                  unsigned char matrix[64]) {
-  return BadMatch;
-
-}
-
-
-/***************************************************************************
-// Function: XvMCLoadNonIntraQuantizerMatrix
-// Description: Modify client specified matricies to conform to restrictions
-//              imposed by the mc_type.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   matrix - default matrix to modify.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCLoadNonIntraQuantizerMatrix(Display *display, 
-                                     XvMCContext *context,
-                                     unsigned char matrix[64]) {
-  return BadMatch;
-}
-
-
-
-/***************************************************************************
-// Function: XvMCLoadChromaIntraQuantizerMatrix
-// Description: Modify client specified matricies to conform to restrictions
-//              imposed by the mc_type.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   matrix - default matrix to modify.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCLoadChromaIntraQuantizerMatrix(Display *display, 
-                                        XvMCContext *context,
-                                        unsigned char matrix[64]) {
-
-  return BadMatch;
-}
-
-
-/***************************************************************************
-// Function: XvMCLoadChromaNonIntraQuantizerMatrix
-// Description: Modify client specified matricies to conform to restrictions
-//              imposed by the mc_type.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   matrix - default matrix to modify.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCLoadChromaNonIntraQuantizerMatrix(Display *display, 
-                                           XvMCContext *context,
-                                           unsigned char matrix[64]) {
-
-  return BadMatch;
-}
-
-
-
-/***************************************************************************
-// Function: XvMCSetQuantizerScale
-// Description: Set the quantizer scale state.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   scale - Set the scale to this value.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCSetQuantizerScale(Display *display, XvMCContext *context,
-                           int scale) {
-
-  return BadMatch;
-}
-
-
-
-/***************************************************************************
-// Function: XvMCSetIntraDCPrecision
-// Description: The requested precision may be clamped or ignored as
-//              required by the mc_type.
-// Arguments:
-//   display - Connection to the X server.
-//   context - Context to use.
-//   prec - Requested precision.
-//
-// Returns: Status
-***************************************************************************/
-Status XvMCSetIntraDCPrecision(Display *display, XvMCContext *context,
-                             int prec) {
-
-  return BadMatch;
-}
-
-
-
-
 
 /***************************************************************************
 // 
