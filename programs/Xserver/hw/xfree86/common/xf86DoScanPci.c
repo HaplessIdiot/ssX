@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.7 2000/02/08 13:13:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.8 2000/02/21 18:05:45 dawes Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -73,7 +73,7 @@ void DoScanPci(int argc, char **argv, int i)
 
   if (!LoadModule("scanpci", NULL, NULL, NULL, NULL, NULL,
                   &errmaj, &errmin)) {
-    LoaderErrorMsg(NULL, name, errmaj, errmin);
+    LoaderErrorMsg(NULL, "scanpci", errmaj, errmin);
     exit(1);
   }
   if (LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
