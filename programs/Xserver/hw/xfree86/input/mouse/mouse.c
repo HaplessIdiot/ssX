@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.62 2002/11/25 14:05:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.63 2002/12/15 01:15:04 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
  * Copyright 2002 by SuSE Linux AG, Author: Egbert Eich
  * Copyright 1994-2002 by The XFree86 Project, Inc.
+ * Copyright 2002 by Paul Elliott
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -37,6 +38,12 @@
  * [TVO-97/03/05] Added microsoft IntelliMouse support
  */
 
+/*
+ * [PME-02/08/11] Added suport for drag lock buttons
+ * for use with 4 button trackballs for convenience
+ * and to help limited dexterity persons
+ */
+
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
@@ -63,6 +70,49 @@
 #include "mouse.h"
 #include "mousePriv.h"
 #include "mipointer.h"
+
+enum {
+    /* number of bits in mapped nibble */
+    NIB_BITS=4,
+    /* size of map of nibbles to bitmask */
+    NIB_SIZE= (1 << NIB_BITS),
+    /* mask for map */
+    NIB_MASK= (NIB_SIZE -1),
+    /* number of maps to map all the buttons */
+    NIB_COUNT = ((MSE_MAXBUTTONS+NIB_BITS-1)/NIB_BITS)
+};
+
+/*data to be used in implementing trackball drag locks.*/
+typedef struct _DragLockRec {
+
+    /* Fields used to implement trackball drag locks. */
+    /* mask for those buttons that are ordinary drag lock buttons */
+    int lockButtonsM;
+
+    /* mask for the master drag lock button if any */
+    int masterLockM;
+
+    /* button state up/down from last time adjusted for drag locks */
+    int lockLastButtons;
+
+    /*
+     * true if master lock state i.e. master drag lock
+     * button has just been pressed
+     */
+    int masterTS;
+
+    /* simulate these buttons being down although they are not */
+    int simulatedDown;
+
+    /*
+     * data to map bits for drag lock buttons to corresponding
+     * bits for the target buttons
+     */
+    int nib_table[NIB_COUNT][NIB_SIZE];
+
+} DragLockRec, *DragLockPtr;
+
+
 
 #ifdef XFree86LOADER
 static const OptionInfoRec *MouseAvailableOptions(void *unused);
@@ -147,7 +197,8 @@ typedef enum {
     OPTION_PARITY,
     OPTION_FLOW_CONTROL,
     OPTION_VTIME,
-    OPTION_VMIN
+    OPTION_VMIN,
+    OPTION_DRAGLOCKBUTTONS
 } MouseOpts;
 
 static const OptionInfoRec mouseOptions[] = {
@@ -185,6 +236,7 @@ static const OptionInfoRec mouseOptions[] = {
     { OPTION_FLOW_CONTROL,	"FlowControl",	  OPTV_STRING,	{0}, FALSE },
     { OPTION_VTIME,		"VTime",	  OPTV_INTEGER,	{0}, FALSE },
     { OPTION_VMIN,		"VMin",		  OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_DRAGLOCKBUTTONS,	"DragLockButtons",OPTV_STRING,	{0}, FALSE },
     /* end serial options */
     { -1,			NULL,		  OPTV_NONE,	{0}, FALSE }
 };
@@ -359,6 +411,114 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	pMse->invY = 1;
     pMse->angleOffset = xf86SetIntOption(pInfo->options, "AngleOffset", 0);
     
+
+    if (pMse->pDragLock)
+	xfree(pMse->pDragLock);
+    pMse->pDragLock = NULL;
+      
+    s = xf86SetStrOption(pInfo->options, "DragLockButtons", NULL);
+
+    if (s) {
+	int lock;             /* lock button */
+	int target;           /* target button */
+	int lockM,targetM;    /* bitmasks for drag lock, target */
+	int i, j;             /* indexes */
+	char *s1;             /* parse input string */
+	DragLockPtr pLock;
+      
+	pLock = pMse->pDragLock = xcalloc(1, sizeof(DragLockRec));
+	/* init code */
+
+	/* initial string to be taken apart */
+	s1 = s;
+      
+	/* keep getting numbers which are buttons */
+	while ((s1 != NULL) && (lock = strtol(s1, &s1, 10)) != 0) {
+
+	    /* check sanity for a button */
+	    if ((lock < 0) || (lock > MSE_MAXBUTTONS)) {
+		xf86Msg(X_WARNING, "DragLock: Invalid button number = %d\n",
+			lock);
+		break;
+	    };
+	    /* turn into a button mask */
+	    lockM = 1 << (lock - 1);
+
+	    /* try to get drag lock button */
+	    if ((s1 == NULL) || ((target=strtol(s1, &s1, 10)) == 0)) {
+		/*if no target, must be a master drag lock button */
+		/* save master drag lock mask */
+		pLock->masterLockM = lockM;
+		xf86Msg(X_CONFIG, 
+			"DragLock button %d is master drag lock", 
+			lock);
+	    } else {
+		/* have target button number*/
+		/* check target button number for sanity */
+		if ((target < 0) || (target > MSE_MAXBUTTONS)) {
+		    xf86Msg(X_WARNING, 
+			    "DragLock: Invalid button number for target=%d\n",
+			    target);
+		    break;
+		}
+
+		/* target button mask */
+		targetM = 1 << (target - 1);
+
+		xf86Msg(X_CONFIG, 
+			"DragLock: button %d is drag lock for button %d\n", 
+			lock,target);
+		lock--;
+
+		/* initialize table that maps drag lock mask to target mask */
+		pLock->nib_table[lock / NIB_SIZE][1 << (lock % NIB_BITS)] = 
+			targetM;
+
+		/* add new drag lock to mask of drag locks */
+		pLock->lockButtonsM |= lockM;
+	    }
+
+	} 
+
+	/*
+	 * fill out rest of map that maps sets of drag lock buttons
+	 * to sets of target buttons, in the form of masks
+	 */
+
+	/* for each nibble */
+	for (i = 0; i < NIB_COUNT; i++) {
+	    /* for each possible set of bits for that nibble */
+	    for (j = 0; j < NIB_SIZE; j++) {
+		int ff, fM, otherbits;
+
+		/* get first bit set in j*/
+		ff = ffs(j) - 1;
+		/* if 0 bits set nothing to do */
+		if (ff >= 0) {
+		    /* form mask for fist bit set */
+		    fM = 1 << ff;
+		    /* mask off first bit set to get remaining bits set*/
+		    otherbits = j & ~fM;
+		    /*
+		     * if otherbits =0 then only 1 bit set
+		     * so j=fM
+		     * nib_table[i][fM] already calculated if fM has
+		     * only 1 bit set.
+		     * nib_table[i][j] has already been filled in
+		     * by previous loop. otherwise
+		     * otherbits < j so nibtable[i][otherbits]
+		     * has already been calculated.
+		     */
+		    if (otherbits)
+			pLock->nib_table[i][j] = 
+				     pLock->nib_table[i][fM] |
+				     pLock->nib_table[i][otherbits];
+
+		}
+	    }
+	}
+    }
+
     s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
     if (s) {
 	int b1 = 0, b2 = 0, b3 = 0, b4 = 0;
@@ -497,6 +657,34 @@ MouseCommonOptions(InputInfoPtr pInfo)
 	from = X_CONFIG;
     xf86Msg(from, "%s: Buttons: %d\n", pInfo->name, pMse->buttons);
     
+}
+/*
+ * map bits corresponding to lock buttons.
+ * for each bit for a lock button,
+ * turn on bit corresponding to button button that the lock
+ * button services.
+ */
+
+static int
+lock2targetMap(DragLockPtr pLock, int lockMask)
+{
+    int result,i;
+    result = 0;
+
+    /*
+     * for each nibble group of bits, use
+     * map for that group to get corresponding
+     * bits, turn them on.
+     * if 4 or less buttons only first map will
+     * need to be used.
+     */
+    for (i = 0; (i < NIB_COUNT) && lockMask; i++) {
+	result |= pLock->nib_table[i][lockMask& NIB_MASK];
+
+	lockMask &= ~NIB_MASK;
+	lockMask >>= NIB_BITS;
+    }
+    return result;
 }
 
 static void
@@ -1831,6 +2019,71 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 	    change = buttons ^ reverseBits(hitachMap, pMse->lastButtons);
 	else
 	    change = buttons ^ reverseBits(reverseMap, pMse->lastButtons);
+
+	/*
+	 * adjust buttons state for drag locks!
+	 * if there is drag locks
+	 */
+        if (pMse->pDragLock) {      
+	    DragLockPtr   pLock;
+	    int tarOfGoingDown, tarOfDown;
+	    int realbuttons;
+
+	    /* get drag lock block */
+	    pLock = pMse->pDragLock;
+	    /* save real buttons */
+	    realbuttons = buttons;
+
+	    /* if drag lock used */
+
+	    /* state of drag lock buttons not seen always up */
+
+	    buttons &= ~pLock->lockButtonsM;
+
+	    /*
+	     * if lock buttons being depressed changes state of
+	     * targets simulatedDown.
+	     */
+	    tarOfGoingDown = lock2targetMap(pLock,
+				realbuttons & change & pLock->lockButtonsM);
+	    pLock->simulatedDown ^= tarOfGoingDown;
+
+	    /* targets of drag locks down */
+	    tarOfDown = lock2targetMap(pLock,
+				realbuttons & pLock->lockButtonsM);
+
+	    /*
+	     * when simulatedDown set and target pressed, 
+	     * simulatedDown goes false 
+	     */
+	    pLock->simulatedDown &= ~(realbuttons & change);
+
+	    /*
+	     * if master drag lock released  
+	     * then master drag lock state on
+	     */
+	    pLock->masterTS |= (~realbuttons & change) & pLock->masterLockM;
+
+	    /* if master state, buttons going down are simulatedDown */
+	    if (pLock->masterTS) 
+		pLock->simulatedDown |= (realbuttons & change);
+
+	    /* if any button pressed, no longer in master drag lock state */
+	    if (realbuttons & change)
+		pLock->masterTS = 0;
+
+	    /* if simulatedDown or drag lock down, simulate down */
+	    buttons |= (pLock->simulatedDown | tarOfDown);
+
+	    /* master button not seen */
+	    buttons &= ~(pLock->masterLockM);
+
+	    /* buttons changed since last time */
+	    change = buttons ^ pLock->lockLastButtons;
+
+	    /* save this time for next last time. */
+	    pLock->lockLastButtons = buttons;
+	}
 
         if (pMse->emulate3Buttons
 	    && (!(buttons & 0x02) || Emulate3ButtonsSoft(pInfo))) {

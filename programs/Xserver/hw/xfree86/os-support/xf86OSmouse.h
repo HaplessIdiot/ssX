@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.18 2002/09/16 18:06:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.19 2002/12/15 01:15:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -162,6 +162,7 @@ typedef struct _MouseDevRec {
     collectDataProc	collectData;
     dataGoodProc	dataGood;
     int			angleOffset;
+    pointer		pDragLock;	/* drag lock area */
 } MouseDevRec, *MouseDevPtr;
 
 /* Z axis mapping */
