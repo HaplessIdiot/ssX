@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.26tsi Exp $ */
 
 
 #include "xf86.h"
@@ -1074,6 +1074,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 	int vgaIOBase = hwp->IOBase;
 	int interlacedived = mode->Flags & V_INTERLACE ? 1 : 0;
+	CARD32 HBlankEnd; 
 	int r, n, m;
 	unsigned char tmp;
 
@@ -1096,6 +1097,8 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			mode->CrtcHSyncStart >>= pS3->pixMuxShift;
 			mode->CrtcHSyncEnd >>= pS3->pixMuxShift;
 			mode->CrtcHSkew >>= pS3->pixMuxShift;
+			mode->CrtcHBlankStart >>= pS3->pixMuxShift;
+			mode->CrtcHBlankEnd >>= pS3->pixMuxShift;
 		} else if (pS3->pixMuxShift < 0) {
 /* 			mode->Flags |= V_PIXMUX; */
 
@@ -1104,6 +1107,8 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			mode->CrtcHSyncStart <<= -pS3->pixMuxShift;
 			mode->CrtcHSyncEnd <<= -pS3->pixMuxShift;
 			mode->CrtcHSkew <<= -pS3->pixMuxShift;
+			mode->CrtcHBlankStart <<= -pS3->pixMuxShift;
+			mode->CrtcHBlankEnd <<= -pS3->pixMuxShift;
 		}
 	}
 
@@ -1113,6 +1118,8 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		mode->CrtcVDisplay >>= interlacedived;
 		mode->CrtcVSyncStart >>= interlacedived;
 		mode->CrtcVSyncEnd >>= interlacedived;
+		mode->CrtcVBlankStart >>= interlacedived;
+		mode->CrtcVBlankEnd >>= interlacedived;
 		mode->CrtcVAdjusted = TRUE;
 	}
 
@@ -1120,8 +1127,11 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (!vgaHWInit(pScrn, mode))
 		return FALSE;
 
-	/* We have horizontal blank end extension bits, so undo KGA workaround */
-	vgaHWHBlankKGA(mode, pVga, 0, 0);
+	/*
+	 * We have horizontal blank end extension bits, so redo KGA workaround.
+	 */
+	HBlankEnd = vgaHWHBlankKGA(mode, pVga, 7,
+				   KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO);
 
 	pVga->MiscOutReg |= 0x0c;
 	pVga->Sequencer[0] = 0x03;
@@ -1329,7 +1339,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
 		    ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
 		    ((((mode->CrtcHBlankStart >> 3) - 1) & 0x100) >> 6) |
-		    ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x040) >> 3) |
+		    (HBlankEnd << 3) |
 		    ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 4) |
 		    ((((mode->CrtcHSyncEnd >> 3) - 1) & 0x040) >> 1);
 
