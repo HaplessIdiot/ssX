@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/luit.c,v 1.8 2002/06/05 22:58:08 dickey Exp $ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.9 2002/10/17 01:06:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,6 +53,7 @@ int ilog = -1;
 int olog = -1;
 int verbose = 0;
 int converter = 0;
+int exitOnChild = 0;
 
 volatile int sigwinch_queued = 0;
 volatile int sigchld_queued = 0;
@@ -95,7 +96,7 @@ help(void)
             "[ -kg0 set ] [ -kg1 set ] "
             "[ -kg2 set ] [ -kg3 set ]\n"
             "  [ -k7 ] [ +kss ] [ +kssgr ] [ -kls ]\n"
-            "  [ -c ] [ -ilog filename ] [ -olog filename ] [ -- ]\n"
+            "  [ -c ] [ -x ] [ -ilog filename ] [ -olog filename ] [ -- ]\n"
             "  [ program [ args ] ]\n");
 
 }
@@ -255,6 +256,9 @@ parseOptions(int argc, char **argv)
                 FatalError("-argv0 requires an argument\n");
             child_argv0 = argv[i + 1];
             i += 2;
+        } else if(!strcmp(argv[i], "-x")) {
+            exitOnChild = 1;
+            i++;
         } else if(!strcmp(argv[i], "-c")) {
             converter = 1;
             i++;
@@ -564,9 +568,8 @@ parent(int pid, int pty)
             setWindowSize(0, pty);
         }
 
-        if(sigchld_queued) {
-            /* quitting now would be a race condition */
-        }
+        if(sigchld_queued && exitOnChild)
+            break;
 
         if(rc > 0) {
             if(rc & 2) {
