@@ -183,7 +183,7 @@ proc writeXF86Config {fd args} {
 		puts $fd "   Gamma           [set Monitor_${id}(Gamma)]"
 	    }
 	    if { [string first -defaultmodes $args] >= 0 } {
-		foreach desc [lsort [array names MonitorStdModes]] {
+		foreach desc [array names MonitorStdModes] {
 			set modeline $MonitorStdModes($desc)
 			puts $fd "# $desc"
 			puts $fd [format {   Modeline  "%dx%d"  %s} \

@@ -150,7 +150,9 @@ TCL_XF86ServerRunning(clientData, interp, argc, argv)
 	if ((display = XOpenDisplay(argv[1])) == (Display *) NULL) {
 		Tcl_SetResult(interp, "0", TCL_STATIC);
 	} else {
+#if 0
 		XCloseDisplay(display);
+#endif
 		Tcl_SetResult(interp, "1", TCL_STATIC);
 	}
 	return TCL_OK;

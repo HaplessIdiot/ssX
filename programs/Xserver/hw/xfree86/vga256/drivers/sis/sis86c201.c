@@ -29,7 +29,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.6 1996/03/31 11:49:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.7 1996/06/29 09:09:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -199,6 +199,8 @@ SISProbe()
 		 */
 		if (!StrCaseCmp(vga256InfoRec.chipset, SISIdent(0)))
 			SISchipset = SIS86C201;
+		else
+			return(FALSE);
     	}
 	else
 	{

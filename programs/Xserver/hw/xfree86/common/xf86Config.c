@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.92 1996/06/29 09:07:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.93 1996/06/29 12:20:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2671,9 +2671,10 @@ configScreenSection()
 	 * Don't do this for VGA2 and VGA16 where it makes no sense, and only
 	 * causes problems
 	 */
-        if (numDisps == 1 && !(driverno >= VGA2 && driverno <= VGA16)) {
+        if (numDisps == 1) {
 #ifndef XF86SETUP
-          if (dispList[0].depth > 0) {
+          if (dispList[0].depth > 0
+	      && !(driverno >= VGA2 && driverno <= VGA16)) {
             xf86bpp = dispList[0].depth;
           }
 #endif

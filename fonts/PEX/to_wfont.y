@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: to_wfont.y,v 5.8 94/11/21 17:11:41 kaleb Exp $ */
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.3 1995/01/28 15:41:47 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.4 1995/06/02 10:00:36 dawes Exp $ */
 
 /*****************************************************************
 
@@ -122,7 +122,6 @@ int             yyerrno;	/* error number */
 %token <nil> WIDTH
 
 %type <cval> fontname
-%type <ival> properties
 %type <dval> top bottom center right
 %type <ival> nstroke nvertice n_pts index num_ch
 %type <ival> closeflag

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.129 1996/05/13 07:29:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.130 1996/06/29 09:06:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2152,6 +2152,15 @@ s3Probe()
     * clock options are now done after the ramdacs because the next
     * generation ramdacs will have a built in clock (i.e. TI 3025)
     */
+
+   /* Diamond Stealth 64 VRAM uses an ICD2061A */
+   if (DAC_IS_BT485_SERIES &&
+       !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+       (s3BiosVendor == DIAMOND_BIOS) && S3_964_ONLY(s3ChipId)) {
+      OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      clockchip_probed = XCONFIG_PROBED;
+   }
 
    if (DAC_IS_TI3025 && 
        !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {

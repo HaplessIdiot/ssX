@@ -383,10 +383,19 @@ proc Mouse_setsettings { w } {
 		bell -displayof $w
 	} else {
 		set Pointer(Protocol) $mseType
-		set Pointer(BaudRate) $baudRate
-		set Pointer(SampleRate) $sampleRate
+		if { [$w.mouse.brate.1200 cget -state] == "disabled" } {
+			set Pointer(BaudRate) ""
+		} else {
+			set Pointer(BaudRate) $baudRate
+		}
+		if { [$w.mouse.srate.scale cget -state] == "disabled" } {
+			set Pointer(SampleRate) ""
+		} else {
+			set Pointer(SampleRate) $sampleRate
+		}
 		set Pointer(Emulate3Buttons) [expr $emulate3Buttons?"ON":""]
-		set Pointer(Emulate3Timeout) $emulate3Timeout
+		set Pointer(Emulate3Timeout) \
+			[expr $emulate3Buttons?$emulate3Timeout:""]
 		set Pointer(ChordMiddle) [expr $chordMiddle?"ON":""]
 		set Pointer(ClearDTR) [expr $clearDTR?"ON":""]
 		set Pointer(ClearRTS) [expr $clearRTS?"ON":""]

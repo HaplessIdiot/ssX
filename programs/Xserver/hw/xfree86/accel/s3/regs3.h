@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.17 1996/01/31 11:46:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.18 1996/02/04 09:04:44 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -87,6 +87,7 @@
 #undef S3_864_SERIES
 #define S3_864_SERIES(chip)	S3_86x_SERIES(chip)
 #define S3_968_SERIES(chip)     ((chip&0xfff0)==0xf0e0)
+#define S3_964_ONLY(chip)	S3_964_SERIES(chip)
 #undef S3_964_SERIES
 #define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))
 #define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
