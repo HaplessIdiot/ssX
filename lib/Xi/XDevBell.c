@@ -1,4 +1,5 @@
 /* $XConsortium: XDevBell.c,v 1.5 94/04/17 20:17:59 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XDeviceBell (dpy, dev, feedbackclass, feedbackid, percent)
@@ -67,7 +69,7 @@ XDeviceBell (dpy, dev, feedbackclass, feedbackid, percent)
     int			percent;
     {       
     xDeviceBellReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Add_XDeviceBell) == -1)

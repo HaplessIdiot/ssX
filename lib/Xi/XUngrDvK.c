@@ -1,4 +1,5 @@
 /* $XConsortium: XUngrDvK.c,v 1.8 94/04/17 20:18:15 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XUngrabDeviceKey (dpy, dev, key, modifiers, modifier_dev, grab_window)
@@ -69,7 +71,7 @@ XUngrabDeviceKey (dpy, dev, key, modifiers, modifier_dev, grab_window)
     Window 			grab_window;
     {
     register xUngrabDeviceKeyReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay(dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

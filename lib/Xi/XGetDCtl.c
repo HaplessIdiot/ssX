@@ -1,4 +1,5 @@
 /* $XConsortium: XGetDCtl.c,v 1.4 94/04/17 20:18:02 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlib.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XDeviceControl
 *XGetDeviceControl (dpy, dev, control)
@@ -74,7 +76,7 @@ XDeviceControl
     xDeviceState *sav = NULL;
     xGetDeviceControlReq *req;
     xGetDeviceControlReply rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)

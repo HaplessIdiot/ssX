@@ -1,4 +1,5 @@
 /* $XConsortium: XCloseDev.c,v 1.7 94/04/17 20:17:58 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "XI.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XCloseDevice(dpy, dev)
@@ -65,7 +67,7 @@ XCloseDevice(dpy, dev)
     register XDevice	*dev;
     {	
     xCloseDeviceReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

@@ -1,4 +1,5 @@
 /* $XConsortium: XSetMode.c,v 1.9 94/04/17 20:18:13 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XSetDeviceMode (dpy, dev, mode)
@@ -67,7 +69,7 @@ XSetDeviceMode (dpy, dev, mode)
     {       
     xSetDeviceModeReq 		*req;
     xSetDeviceModeReply 	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

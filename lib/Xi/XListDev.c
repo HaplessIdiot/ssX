@@ -1,4 +1,5 @@
 /* $XConsortium: XListDev.c,v 1.24 94/04/17 20:18:09 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -61,6 +62,7 @@ SOFTWARE.
 #include "XI.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XDeviceInfo 
 *XListInputDevices(dpy, ndevices)
@@ -78,7 +80,7 @@ XDeviceInfo
     char			*nptr, *Nptr;
     register int 		i,j,k;
     register long 		rlen;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

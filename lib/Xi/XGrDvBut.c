@@ -1,4 +1,5 @@
-/* $XConsortium: XGrDvBut.c,v 1.8 94/04/17 20:18:07 rws Exp $ */
+/* $XConsortium: XGrDvBut.c /main/7 1995/12/05 11:22:35 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,8 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
+#include "XIint.h"
 
 int
 XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device, 
@@ -76,7 +79,7 @@ XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device,
     int 			other_devices_mode;
     {
     register xGrabDeviceButtonReq *req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -105,7 +108,7 @@ XGrabDeviceButton (dpy, dev, button, modifiers, modifier_device,
        statement */
 
     event_count <<= 2;
-    Data (dpy, (char *) event_list, event_count);
+    Data32 (dpy, (long *) event_list, event_count);
 
     UnlockDisplay(dpy);
     SyncHandle();

@@ -1,4 +1,5 @@
-/* $XConsortium: XGetProp.c,v 1.9 94/04/17 20:18:04 rws Exp $ */
+/* $XConsortium: XGetProp.c /main/8 1995/12/05 11:21:43 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XEventClass
 *XGetDeviceDontPropagateList (dpy, window, count)
@@ -70,7 +72,7 @@ XEventClass
     int			rlen;
     xGetDeviceDontPropagateListReq 	*req;
     xGetDeviceDontPropagateListReply 	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -94,7 +96,20 @@ XEventClass
 	rlen = rep.length << 2;
 	list = (XEventClass *) Xmalloc (rlen);
 	if (list)
-	    _XRead (dpy, (char *)list, rlen);
+	    {
+		int i;
+		CARD32 ec;
+
+		/* read and assign each XEventClass separately because
+		 * the library representation may not be the same size
+		 * as the wire representation (64 bit machines)
+		 */
+		for (i = 0; i < rep.length; i++)
+		{
+		    _XRead (dpy, (char *)(&ec), sizeof(CARD32));
+		    list[i] = (XEventClass)ec;
+		}
+	    }
 	else
 	    _XEatData (dpy, (unsigned long) rlen);
 	}

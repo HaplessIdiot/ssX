@@ -1,4 +1,5 @@
 /* $XConsortium: XGetFCtl.c,v 1.15 94/04/17 20:18:02 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlib.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XFeedbackState
 *XGetFeedbackControl (dpy, dev, num_feedbacks)
@@ -74,7 +76,7 @@ XFeedbackState
     xFeedbackState *sav = NULL;
     xGetFeedbackControlReq *req;
     xGetFeedbackControlReply rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

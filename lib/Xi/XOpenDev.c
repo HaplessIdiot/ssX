@@ -1,4 +1,5 @@
 /* $XConsortium: XOpenDev.c,v 1.12 94/04/17 20:18:10 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XDevice
 *XOpenDevice(dpy, id)
@@ -68,7 +70,7 @@ XDevice
     xOpenDeviceReq 	*req;
     xOpenDeviceReply 	rep;
     XDevice 		*dev;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

@@ -1,4 +1,5 @@
 /* $XConsortium: XSetDVal.c,v 1.3 94/04/17 20:18:12 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XSetDeviceValuators (dpy, dev, valuators, first_valuator, num_valuators)
@@ -70,7 +72,7 @@ XSetDeviceValuators (dpy, dev, valuators, first_valuator, num_valuators)
     {       
     xSetDeviceValuatorsReq 		*req;
     xSetDeviceValuatorsReply 	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Add_XSetDeviceValuators) == -1)

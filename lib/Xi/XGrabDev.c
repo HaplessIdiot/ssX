@@ -1,4 +1,5 @@
-/* $XConsortium: XGrabDev.c,v 1.7 94/04/17 20:18:08 rws Exp $ */
+/* $XConsortium: XGrabDev.c /main/6 1995/12/05 11:24:08 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int 
 XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
@@ -74,7 +76,7 @@ XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
     {
     xGrabDeviceReply rep;
     register xGrabDeviceReq *req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -98,7 +100,7 @@ XGrabDevice (dpy, dev, grab_window, ownerEvents, event_count, event_list,
        statement */
 
     event_count <<= 2;
-    Data (dpy, (char *) event_list, event_count);
+    Data32 (dpy, (long *) event_list, event_count);
 
     if (_XReply (dpy, (xReply *) &rep, 0, xTrue) == 0) 
 	rep.status = GrabSuccess;

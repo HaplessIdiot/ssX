@@ -1,4 +1,5 @@
-/* $XConsortium: XSndExEv.c,v 1.8 94/04/17 20:18:13 rws Exp $ */
+/* $XConsortium: XSndExEv.c /main/7 1995/12/05 11:26:22 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 extern Status _XiEventToWire();
 
@@ -77,7 +79,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
     xEvent 			*ev;
     register Status 		(**fp)();
     Status 			status;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -111,7 +113,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
 	Data (dpy, (char *) ev, ev_size);
 
 	count <<= 2;
-	Data (dpy, (char *) list, count);
+	Data32 (dpy, (long *) list, count);
 	XFree ((char *)ev);
 	}
 

@@ -1,4 +1,5 @@
-/* $XConsortium: XGtSelect.c,v 1.11 94/04/17 20:18:09 rws Exp $ */
+/* $XConsortium: XGtSelect.c /main/10 1995/12/05 11:25:34 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list, 
@@ -72,7 +74,7 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
     int		tlen, alen;
     register 	xGetSelectedExtensionEventsReq *req;
     xGetSelectedExtensionEventsReply rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -95,24 +97,32 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
 
     if (rep.length)
 	{
-	tlen = (*this_client_count) * sizeof(XEventClass);
+	int i;
+	CARD32 ec;
+	tlen = (*this_client_count) * sizeof(CARD32);
 	alen = (rep.length << 2) - tlen;
 
 	if (tlen)
 	    {
-	    *this_client_list = (XEventClass *) Xmalloc (tlen);
+	    *this_client_list = (XEventClass *) Xmalloc (
+				    *this_client_count * sizeof(XEventClass));
 	    if (!*this_client_list) 
 		{
 	        _XEatData (dpy, (unsigned long) tlen+alen);
 		return (Success);
 		}
-	    _XRead (dpy, (char *)*this_client_list, tlen);
+	    for (i = 0; i < *this_client_count; i++)
+	        {
+		    _XRead (dpy, (char *)(&ec), sizeof(CARD32));
+		    (*this_client_list)[i] = (XEventClass)ec;
+		}
 	    }
 	else
 	    *this_client_list = (XEventClass *) NULL;
 	if (alen)
 	    {
-	    *all_clients_list = (XEventClass *) Xmalloc (alen);
+	    *all_clients_list = (XEventClass *) Xmalloc (
+				    *all_clients_count * sizeof(XEventClass));
 	    if (!*all_clients_list) 
 		{
 		Xfree((char *)*this_client_list);
@@ -120,7 +130,11 @@ XGetSelectedExtensionEvents (dpy, w, this_client_count, this_client_list,
 	        _XEatData (dpy, (unsigned long) alen);
 		return (Success);
 		}
-	    _XRead (dpy, (char *)*all_clients_list, alen);
+	    for (i = 0; i < *all_clients_count; i++)
+	        {
+		    _XRead (dpy, (char *)(&ec), sizeof(CARD32));
+		    (*all_clients_list)[i] = (XEventClass)ec;
+		}
 	    }
 	else
 	    *all_clients_list = (XEventClass *) NULL;

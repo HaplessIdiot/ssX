@@ -1,4 +1,5 @@
 /* $XConsortium: XChgKMap.c,v 1.6 94/04/17 20:17:56 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XChangeDeviceKeyMapping (dpy, dev, first, syms_per_code, keysyms, count)
@@ -70,7 +72,7 @@ XChangeDeviceKeyMapping (dpy, dev, first, syms_per_code, keysyms, count)
     {
     register long nbytes;
     xChangeDeviceKeyMappingReq *req;
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

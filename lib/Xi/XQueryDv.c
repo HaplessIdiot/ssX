@@ -1,4 +1,5 @@
 /* $XConsortium: XQueryDv.c,v 1.14 94/04/17 20:18:10 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XDeviceState
 *XQueryDeviceState (dpy, dev)
@@ -72,7 +74,7 @@ XDeviceState
     XDeviceState		*state = NULL;
     XInputClass			*any, *Any;
     char			*data;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
