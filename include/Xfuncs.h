@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/include/Xfuncs.h,v 3.4 1999/02/05 04:49:46 dawes Exp $ */
+/* $XFree86: xc/include/Xfuncs.h,v 3.5 1999/12/13 02:12:42 robin Exp $ */
 
 #ifndef _XFUNCS_H_
 #define _XFUNCS_H_
@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xosdefs.h>
 
 /* the old Xfuncs.h, for pre-R6 */
-#if !(defined(XFree86LOADER) && !defined(DONT_DEFINE_WRAPPERS))
+#if !(defined(XFree86LOADER) && defined(IN_MODULE))
 
 #ifdef X_USEBFUNCS
 void bcopy();
@@ -95,6 +95,6 @@ int bcmp();
 #define atexit(f) on_exit(f, 0)
 #endif
 
-#endif /* !(defined(XFree86LOADER) && !defined(DONT_DEFINE_WRAPPERS)) */
+#endif /* !(defined(XFree86LOADER) && defined(IN_MODULE)) */
 
 #endif /* _XFUNCS_H_ */
