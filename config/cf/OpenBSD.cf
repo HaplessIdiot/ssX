@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.53 2001/04/19 19:54:42 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.54 2001/04/22 16:28:18 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -581,32 +581,34 @@ install:: fonts.alias							@@\
 # endif
 
 # ifndef XF86Server
-#   define XF86Server		NO
+#   define XF86Server		YES
 # endif
 
 /* Definitions for building the XFree86 server */
 # if XF86Server
 #   define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
 #   define ServerExtraDefines	GccGasOption XFree86ServerDefines
-#   if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 8)
-#     ifndef DoLoadableServer
-#       define DoLoadableServer	YES
-#     endif
-#     define DevelDrivers cirrus ati
-      /* Support for USB Mices */
-#     define UsbMouseSupport		YES
-#     include <xfree86.cf>
-
-#   else /* 2.7 and earlier */
-#     include <xf86.rules>
-#     ifndef BuildServer
-#       define BuildServer		NO
-#     endif
-
-#     define HasSharedLibraries	NO
-#     define BuildDynamicLoading	NO
+#   ifndef DoLoadableServer
+#     define DoLoadableServer	YES
 #   endif
+#   ifndef XF86CardDrivers
+#    define XF86CardDrivers	ati mga glint s3virge sis savage\
+				trident chips tdfx \
+				DevelDrivers vga \
+				XF86OSCardDrivers XF86ExtraCardDrivers
+#   endif
+#   ifndef DevelDrivers 
+#    define DevelDrivers nv
+#   endif
+
+    /* Support for USB Mices */
+#   ifndef UsbMouseSupport
+#     define UsbMouseSupport		YES
+#   endif
+
 # endif /* XF86Server */
+
+# include <xfree86.cf>
 
 #endif /* PpcArchitecture */
 
