@@ -357,7 +357,7 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
          _mesa_unpack_float_color_span(ctx, width, table->Format,
                                        tempTab,  /* dest */
                                        format, type, data,
-                                       &ctx->Unpack, GL_TRUE, GL_FALSE);
+                                       &ctx->Unpack, GL_FALSE, GL_FALSE);
 
          table->TableType = GL_FLOAT;
          table->Table = MALLOC(comps * width * sizeof(GLfloat));
@@ -421,7 +421,7 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
          _mesa_unpack_ubyte_color_span(ctx, width, table->Format,
                                        (GLubyte *) table->Table,  /* dest */
                                        format, type, data,
-                                       &ctx->Unpack, GL_TRUE);
+                                       &ctx->Unpack, GL_FALSE);
       } /* floatTable */
    } /* proxy */
 
@@ -533,7 +533,7 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
    if (table->TableType == GL_UNSIGNED_BYTE) {
       GLubyte *dest = (GLubyte *) table->Table + start * comps * sizeof(GLubyte);
       _mesa_unpack_ubyte_color_span(ctx, count, table->Format, dest,
-                                    format, type, data, &ctx->Unpack, GL_TRUE);
+                                   format, type, data, &ctx->Unpack, GL_FALSE);
    }
    else {
       GLfloat tempTab[MAX_COLOR_TABLE_SIZE * 4];
@@ -545,7 +545,7 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
       _mesa_unpack_float_color_span(ctx, count, table->Format,
                                     tempTab,  /* dest */
                                     format, type, data,
-                                    &ctx->Unpack, GL_TRUE, GL_FALSE);
+                                    &ctx->Unpack, GL_FALSE, GL_FALSE);
 
       tableF = (GLfloat *) table->Table;
 
@@ -625,7 +625,9 @@ _mesa_CopyColorTable(GLenum target, GLenum internalformat,
       width = MAX_WIDTH;
 
    /* read the data from framebuffer */
+   RENDER_START(ctx);
    gl_read_rgba_span( ctx, ctx->ReadBuffer, width, x, y, data );
+   RENDER_FINISH(ctx);
 
    /* Restore reading from draw buffer (the default) */
    (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer,
@@ -654,7 +656,9 @@ _mesa_CopyColorSubTable(GLenum target, GLsizei start,
       width = MAX_WIDTH;
 
    /* read the data from framebuffer */
+   RENDER_START(ctx);
    gl_read_rgba_span( ctx, ctx->ReadBuffer, width, x, y, data );
+   RENDER_FINISH(ctx);
 
    /* Restore reading from draw buffer (the default) */
    (*ctx->Driver.SetReadBuffer)( ctx, ctx->DrawBuffer,

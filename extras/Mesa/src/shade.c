@@ -38,6 +38,10 @@
 #include "types.h"
 #endif
 
+#if defined(USE_X86_ASM)
+#include "X86/common_x86_asm.h"
+#endif
+
 
 /* Lerp between adjacent values in the f(x) lookup table, giving a
  * continuous function, with adequeate overall accuracy.  (Though
@@ -196,6 +200,10 @@ void gl_init_shade( void )
    init_shade_tab_two_sided_masked();
    init_shade_tab_two_sided_compacted();
    init_shade_tab_two_sided_masked_compacted();
+
+#ifdef USE_X86_ASM
+   gl_init_all_x86_shade_asm();
+#endif
 }
 
 void gl_update_lighting_function( GLcontext *ctx )

@@ -57,6 +57,7 @@
 extern int gl_x86_cpu_features;
 
 extern void gl_init_all_x86_transform_asm( void );
+extern void gl_init_all_x86_shade_asm( void );
 extern void gl_init_all_x86_vertex_asm( void );
 
 #endif

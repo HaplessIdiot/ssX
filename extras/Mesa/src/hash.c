@@ -100,7 +100,6 @@ void *_mesa_HashLookup(const struct _mesa_HashTable *table, GLuint key)
    const struct HashEntry *entry;
 
    assert(table);
-   assert(key);
 
    pos = key & (TABLE_SIZE-1);
    entry = table->Table[pos];
@@ -129,7 +128,6 @@ void _mesa_HashInsert(struct _mesa_HashTable *table, GLuint key, void *data)
    struct HashEntry *entry;
 
    assert(table);
-   assert(key);
 
    _glthread_LOCK_MUTEX(table->Mutex);
 
@@ -171,7 +169,6 @@ void _mesa_HashRemove(struct _mesa_HashTable *table, GLuint key)
    struct HashEntry *entry, *prev;
 
    assert(table);
-   assert(key);
 
    _glthread_LOCK_MUTEX(table->Mutex);
 

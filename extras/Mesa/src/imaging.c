@@ -1254,7 +1254,7 @@ void
 _mesa_CopyConvolutionFilter1D(GLenum target, GLenum internalFormat, GLint x, GLint y, GLsizei width)
 {
    GLenum baseFormat;
-   GLfloat rgba[MAX_CONVOLUTION_WIDTH][4];
+   GLubyte rgba[MAX_CONVOLUTION_WIDTH][4];
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glCopyConvolutionFilter1D");
 
@@ -1275,7 +1275,9 @@ _mesa_CopyConvolutionFilter1D(GLenum target, GLenum internalFormat, GLint x, GLi
    }
 
    /* read pixels from framebuffer */
+   RENDER_START(ctx);
    gl_read_rgba_span(ctx, ctx->ReadBuffer, width, x, y, (GLubyte (*)[4]) rgba);
+   RENDER_FINISH(ctx);
 
    /* store as convolution filter */
    _mesa_ConvolutionFilter1D(target, internalFormat, width,
@@ -1289,7 +1291,7 @@ _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalFormat, GLint x, GLi
    GLenum baseFormat;
    GLint i;
    struct gl_pixelstore_attrib packSave;
-   GLfloat rgba[MAX_CONVOLUTION_HEIGHT][MAX_CONVOLUTION_WIDTH][4];
+   GLubyte rgba[MAX_CONVOLUTION_HEIGHT][MAX_CONVOLUTION_WIDTH][4];
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glCopyConvolutionFilter2D");
 
@@ -1314,10 +1316,12 @@ _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalFormat, GLint x, GLi
    }
 
    /* read pixels from framebuffer */
+   RENDER_START(ctx);
    for (i = 0; i < height; i++) {
       gl_read_rgba_span(ctx, ctx->ReadBuffer, width, x, y + i,
                         (GLubyte (*)[4]) rgba[i]);
    }
+   RENDER_FINISH(ctx);
 
    /*
     * store as convolution filter
@@ -1343,6 +1347,8 @@ _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalFormat, GLint x, GLi
 void
 _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *image)
 {
+   const struct gl_convolution_attrib *filter;
+   GLint row;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glGetConvolutionFilter");
 
@@ -1361,8 +1367,31 @@ _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *im
       return;
    }
 
-   (void) image;
-   /* XXX store image */
+   switch (target) {
+      case GL_CONVOLUTION_1D:
+         filter = &(ctx->Convolution1D);
+         break;
+      case GL_CONVOLUTION_2D:
+         filter = &(ctx->Convolution2D);
+         break;
+      default:
+         gl_error(ctx, GL_INVALID_ENUM, "glGetConvolutionFilter(target)");
+         return;
+   }
+
+   for (row = 0; row < filter->Height; row++) {
+      GLvoid *dst = _mesa_image_address( &ctx->Pack, image, filter->Width,
+                                         filter->Height, format, type,
+                                         0, row, 0);
+      const GLfloat *src = filter->Filter + row * filter->Width * 4;
+      GLubyte img[MAX_WIDTH * 4];
+      GLint i;
+      for (i = 0; i < filter->Width * 4; i++) {
+         img[i] = (GLint) (CLAMP(src[i], 0.0, 1.0) * 255.0);
+      }
+      _mesa_pack_rgba_span(ctx, filter->Width, (const GLubyte (*)[4]) img,
+                           format, type, dst, &ctx->Pack, 0);
+   }
 }
 
 

@@ -395,7 +395,11 @@ void fxDDCheckMergeAndRender( GLcontext *ctx, struct gl_pipeline_stage *d )
    GLuint inputs = ctx->RenderFlags & ~ctx->CVA.pre.outputs;
 
    if (!(ctx->TriangleCaps & DD_TRI_UNFILLED) &&
+#ifdef VAO
+       (ctx->Array.Current->Summary & VERT_OBJ_ANY))
+#else
        (ctx->Array.Summary & VERT_OBJ_ANY))
+#endif
    {
       d->inputs = (VERT_SETUP_PART | VERT_ELT | inputs);   
       d->outputs = 0;

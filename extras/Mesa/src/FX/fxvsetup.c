@@ -378,7 +378,11 @@ void fxDDCheckPartialRasterSetup( GLcontext *ctx, struct gl_pipeline_stage *d )
    /* Indirect triangles must be rendered via the immediate pipeline.  
     * If all rasterization is software, no need to set up.  
     */
+#ifdef VAO
+   if ((ctx->Array.Current->Summary & VERT_OBJ_ANY) == 0)
+#else
    if ((ctx->Array.Summary & VERT_OBJ_ANY) == 0)
+#endif
       return;
    
    if ((ctx->IndirectTriangles & DD_SW_SETUP) ||
@@ -386,7 +390,11 @@ void fxDDCheckPartialRasterSetup( GLcontext *ctx, struct gl_pipeline_stage *d )
       return;
 
    if ((ctx->Texture.ReallyEnabled & 0xf) &&
+#ifdef VAO
+       !(ctx->Array.Current->Flags & VERT_TEX0_ANY))
+#else
        !(ctx->Array.Flags & VERT_TEX0_ANY))
+#endif
    {
       if (ctx->TextureMatrix[0].type == MATRIX_GENERAL ||
 	  ctx->TextureMatrix[0].type == MATRIX_PERSPECTIVE ||
@@ -397,7 +405,11 @@ void fxDDCheckPartialRasterSetup( GLcontext *ctx, struct gl_pipeline_stage *d )
    }
 
    if ((ctx->Texture.ReallyEnabled & 0xf0) &&
+#ifdef VAO
+       !(ctx->Array.Current->Flags & VERT_TEX1_ANY))
+#else
        !(ctx->Array.Flags & VERT_TEX1_ANY))
+#endif
    {
       if (ctx->TextureMatrix[1].type == MATRIX_GENERAL ||
 	  ctx->TextureMatrix[1].type == MATRIX_PERSPECTIVE ||
@@ -420,27 +432,27 @@ void fxDDCheckPartialRasterSetup( GLcontext *ctx, struct gl_pipeline_stage *d )
  */
 void fxDDPartialRasterSetup( struct vertex_buffer *VB )
 {
-   GLuint new = VB->pipeline->new_outputs;
+   GLuint newOut = VB->pipeline->new_outputs;
    fxMesaContext fxMesa = (fxMesaContext)VB->ctx->DriverCtx;
    GLuint ind = 0;
 
    FX_DRIVER_DATA(VB)->last_vert = FX_DRIVER_DATA(VB)->verts + VB->Count;
 
-   if (new & VERT_WIN) {
-      new = VB->pipeline->outputs;
+   if (newOut & VERT_WIN) {
+      newOut = VB->pipeline->outputs;
       ind |= SETUP_XY|SETUP_W|SETUP_Z;
    }
 
-   if (new & VERT_TEX0_ANY)
+   if (newOut & VERT_TEX0_ANY)
       ind |= SETUP_W | fxMesa->tex_dest[0];
 
-   if (new & VERT_TEX1_ANY)
+   if (newOut & VERT_TEX1_ANY)
       ind |= SETUP_W | fxMesa->tex_dest[1];
 
-   if (new & VERT_RGBA)
+   if (newOut & VERT_RGBA)
       ind |= SETUP_W|SETUP_RGBA;
 
-   if ((new & VERT_WIN) == 0)
+   if ((newOut & VERT_WIN) == 0)
       ind &= ~(fxMesa->setupdone & SETUP_W);
       
    fxMesa->setupdone &= ~ind;

@@ -61,7 +61,7 @@ static void draw_points_ANY_pixmap( GLcontext *ctx, GLuint first, GLuint last )
 
    if (xmesa->xm_visual->gl_visual->RGBAflag) {
       /* RGB mode */
-      for (i=first;i<=last;i++) {
+      for (i=first;i<last;i++) {
          if (VB->ClipMask[i]==0) {
             register int x, y;
 	    const GLubyte *color = VB->ColorPtr->data[i];

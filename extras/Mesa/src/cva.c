@@ -201,7 +201,11 @@ void gl_merge_cva( struct vertex_buffer *VB,
    GLcontext *ctx = VB->ctx;
    GLuint *elt = VB->EltPtr->start;
    GLuint count = VB->Count - VB->Start;
+#ifdef VAO
+   GLuint available = ctx->CVA.pre.outputs | ctx->Array.Current->Summary;
+#else
    GLuint available = ctx->CVA.pre.outputs | ctx->Array.Summary;
+#endif
    GLuint required = ctx->CVA.elt.inputs;
    GLuint flags;
 
@@ -391,6 +395,17 @@ _mesa_LockArraysEXT(GLint first, GLsizei count)
    {   
       struct gl_cva *cva = &ctx->CVA;
 
+#ifdef VAO
+      if (!ctx->Array.Current->LockCount) {
+	 ctx->Array.NewArrayState = ~0;
+	 ctx->CVA.lock_changed ^= 1;
+	 ctx->NewState |= NEW_CLIENT_STATE;
+      }
+
+      ctx->Array.Current->LockFirst = first;
+      ctx->Array.Current->LockCount = count;     
+      ctx->CompileCVAFlag = !ctx->CompileFlag;
+#else
       if (!ctx->Array.LockCount) {
 	 ctx->Array.NewArrayState = ~0;
 	 ctx->CVA.lock_changed ^= 1;
@@ -400,6 +415,7 @@ _mesa_LockArraysEXT(GLint first, GLsizei count)
       ctx->Array.LockFirst = first;
       ctx->Array.LockCount = count;     
       ctx->CompileCVAFlag = !ctx->CompileFlag;
+#endif
 
       if (!cva->VB) {
 	 cva->VB = gl_vb_create_for_cva( ctx, ctx->Const.MaxArrayLockSize );
@@ -409,14 +425,23 @@ _mesa_LockArraysEXT(GLint first, GLsizei count)
    } 
    else
    {
+#ifdef VAO
+      if (ctx->Array.Current->LockCount) {
+#else
       if (ctx->Array.LockCount) {
+#endif
 	 ctx->CVA.lock_changed ^= 1;
 	 ctx->NewState |= NEW_CLIENT_STATE;
       }
 
 
+#ifdef VAO
+      ctx->Array.Current->LockFirst = 0;
+      ctx->Array.Current->LockCount = 0;
+#else
       ctx->Array.LockFirst = 0;
       ctx->Array.LockCount = 0;
+#endif
       ctx->CompileCVAFlag = 0;
    }
 }
@@ -433,13 +458,22 @@ _mesa_UnlockArraysEXT( void )
    if (MESA_VERBOSE & VERBOSE_API)
       fprintf(stderr, "glUnlockArrays\n");
 
+#ifdef VAO
+   if (ctx->Array.Current->LockCount) {
+#else
    if (ctx->Array.LockCount) {
+#endif
       ctx->CVA.lock_changed ^= 1;
       ctx->NewState |= NEW_CLIENT_STATE;
    }
 
+#ifdef VAO
+   ctx->Array.Current->LockFirst = 0;
+   ctx->Array.Current->LockCount = 0;
+#else
    ctx->Array.LockFirst = 0;
    ctx->Array.LockCount = 0;
+#endif
    ctx->CompileCVAFlag = 0;
 }
 
@@ -477,11 +511,19 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
    struct gl_cva *cva = &ctx->CVA;
+#ifdef VAO
+   GLuint start = ctx->Array.Current->LockFirst;
+   GLuint n = ctx->Array.Current->LockCount;
+   GLuint enable = ((ctx->Array.NewArrayState & ctx->Array.Current->Summary) |
+		    VB->pipeline->fallback);
+   GLuint disable = ctx->Array.NewArrayState & ~enable;
+#else
    GLuint start = ctx->Array.LockFirst;
    GLuint n = ctx->Array.LockCount;
    GLuint enable = ((ctx->Array.NewArrayState & ctx->Array.Summary) |
 		    VB->pipeline->fallback);
    GLuint disable = ctx->Array.NewArrayState & ~enable;
+#endif
    GLuint i;
 
    if (MESA_VERBOSE&VERBOSE_PIPELINE) {
@@ -519,7 +561,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 elt->start = VEC_ELT(elt, GLuint, 0); 
 	 elt->count = cva->elt_count;
 
+#ifdef VAO
+	 fallback |= (cva->pre.new_inputs & ~ctx->Array.Current->Summary);
+#else
 	 fallback |= (cva->pre.new_inputs & ~ctx->Array.Summary);
+#endif
 	 enable |= fallback;
 	 disable &= ~fallback;
 	 if (MESA_VERBOSE&VERBOSE_PIPELINE) {
@@ -532,7 +578,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
       {
 	 GLvector4ub *col = &cva->v.Color;
 
+#ifdef VAO
+	 client_data = &ctx->Array.Current->Color;
+#else
 	 client_data = &ctx->Array.Color;
+#endif
 	 if (fallback & VERT_RGBA) client_data = &ctx->Fallback.Color;
 
 	 VB->Color[0] = VB->Color[1] = VB->ColorPtr = &cva->v.Color;
@@ -542,7 +592,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 {
 	    col->data = cva->store.Color;
 	    col->stride = 4 * sizeof(GLubyte);
+#ifdef VAO
+	    ctx->Array.Current->ColorFunc( col->data, client_data, start, n );
+#else
 	    ctx->Array.ColorFunc( col->data, client_data, start, n );
+#endif
 	    col->flags = VEC_WRITABLE|VEC_GOOD_STRIDE;
 	 } else {
 	    col->data = (GLubyte (*)[4]) client_data->Ptr;
@@ -560,14 +614,22 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 GLvector1ui *index = VB->IndexPtr = &cva->v.Index; 
 	 VB->Index[0] = VB->Index[1] = VB->IndexPtr;
 
+#ifdef VAO
+	 client_data = &ctx->Array.Current->Index;
+#else
 	 client_data = &ctx->Array.Index;
+#endif
 	 if (fallback & VERT_INDEX) client_data = &ctx->Fallback.Index;
 
 	 if (client_data->Type != GL_UNSIGNED_INT)
 	 {
 	    index->data = cva->store.Index;
 	    index->stride = sizeof(GLuint);
+#ifdef VAO
+	    ctx->Array.Current->IndexFunc( index->data, client_data, start, n );
+#else
 	    ctx->Array.IndexFunc( index->data, client_data, start, n );
+#endif
 	    index->flags = VEC_WRITABLE|VEC_GOOD_STRIDE;
 	 } else {
 	    index->data = (GLuint *) client_data->Ptr;
@@ -584,7 +646,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 if (enable & PIPE_TEX(i)) {
 	    GLvector4f *tc = VB->TexCoordPtr[i] = &cva->v.TexCoord[i];
 
+#ifdef VAO
+	    client_data = &ctx->Array.Current->TexCoord[i];
+#else
 	    client_data = &ctx->Array.TexCoord[i];
+#endif
 
 	    if (fallback & PIPE_TEX(i)) {
 	       client_data = &ctx->Fallback.TexCoord[i];
@@ -604,7 +670,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	    } else {
 	       tc->data = cva->store.TexCoord[i];
 	       tc->stride = 4 * sizeof(GLfloat);
+#ifdef VAO
+	       ctx->Array.Current->TexCoordFunc[i]( tc->data, client_data, start, n );
+#else
 	       ctx->Array.TexCoordFunc[i]( tc->data, client_data, start, n );
+#endif
 	       tc->flags = VEC_WRITABLE|VEC_GOOD_STRIDE;
 	    }		 
 	    tc->count = n;
@@ -616,6 +686,24 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
       {
 	 GLvector4f *obj = VB->ObjPtr = &cva->v.Obj;
 
+#ifdef VAO
+	 if (ctx->Array.Current->Vertex.Type == GL_FLOAT)
+	 {
+	    obj->data = (GLfloat (*)[4]) ctx->Array.Current->Vertex.Ptr;
+	    obj->stride = ctx->Array.Current->Vertex.StrideB;
+	    obj->flags = VEC_NOT_WRITABLE|VEC_GOOD_STRIDE;
+	    if (obj->stride != 4 * sizeof(GLfloat)) 
+	       obj->flags ^= VEC_STRIDE_FLAGS;
+	 } else {
+	    obj->data = cva->store.Obj;
+	    obj->stride = 4 * sizeof(GLfloat);
+	    ctx->Array.Current->VertexFunc( obj->data, &ctx->Array.Current->Vertex, start, n );
+	    obj->flags = VEC_WRITABLE|VEC_GOOD_STRIDE;
+	 }
+	 obj->count = n;
+	 obj->start = VEC_ELT(obj, GLfloat, start);
+	 obj->size = ctx->Array.Current->Vertex.Size;
+#else
 	 if (ctx->Array.Vertex.Type == GL_FLOAT)
 	 {
 	    obj->data = (GLfloat (*)[4]) ctx->Array.Vertex.Ptr;
@@ -632,13 +720,18 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 obj->count = n;
 	 obj->start = VEC_ELT(obj, GLfloat, start);
 	 obj->size = ctx->Array.Vertex.Size;
+#endif
       }
 
       if (enable & VERT_NORM) 
       {
 	 GLvector3f *norm = VB->NormalPtr = &cva->v.Normal;
 
+#ifdef VAO
+	 client_data = &ctx->Array.Current->Normal;
+#else
 	 client_data = &ctx->Array.Normal;
+#endif
 
 	 if (fallback & VERT_NORM) 
 	    client_data = &ctx->Fallback.Normal;
@@ -651,7 +744,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
 	 } else {
 	    norm->data = cva->store.Normal;
 	    norm->stride = 3 * sizeof(GLfloat);
+#ifdef VAO
+	    ctx->Array.Current->NormalFunc( norm->data, client_data, start, n );
+#else
 	    ctx->Array.NormalFunc( norm->data, client_data, start, n );
+#endif
 	 }
 	 norm->flags = 0;
 	 norm->count = n;
@@ -662,7 +759,11 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
       {
 	 GLvector1ub *edge = VB->EdgeFlagPtr = &cva->v.EdgeFlag;
 
+#ifdef VAO
+	 client_data = &ctx->Array.Current->EdgeFlag;
+#else
 	 client_data = &ctx->Array.EdgeFlag;
+#endif
 
 	 if (fallback & VERT_EDGE) 
 	    client_data = &ctx->Fallback.EdgeFlag;
@@ -693,12 +794,20 @@ void gl_prepare_arrays_cva( struct vertex_buffer *VB )
       	 
    if (ctx->Enabled & ENABLE_LIGHT) 
    {
+#ifdef VAO
+      if (ctx->Array.Current->Flags != VB->Flag[0])
+#else
       if (ctx->Array.Flags != VB->Flag[0])
+#endif
 	 VB->FlagMax = 0;
       
       if (VB->FlagMax < n) {
 	 for (i = VB->FlagMax ; i < n ; i++) 
+#ifdef VAO
+	    VB->Flag[i] = ctx->Array.Current->Flags;
+#else
 	    VB->Flag[i] = ctx->Array.Flags;
+#endif
 	 VB->Flag[i] = 0;
 	 VB->FlagMax = n;
       }
