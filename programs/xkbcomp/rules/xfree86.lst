@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.73 2003/09/11 10:08:38 eich Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.74 2003/10/14 13:36:29 pascal Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -168,7 +168,8 @@
   se_FI		Northern Saami (Finland)
   se_NO		Northern Saami (Norway)
   se_SE		Northern Saami (Sweden)
-  sr		Serbian
+  sr		Serbian (Cyrillic)
+  yu		Serbian (Latin)
   si		Slovenian
   sk		Slovak
   sk_qwerty	Slovak (qwerty)
@@ -189,7 +190,6 @@
   gb		United Kingdom
   uz            Uzbek
   vn		Vietnamese
-  yu		Yugoslavian
   nec/jp	PC-98xx Series
 
 ! variant

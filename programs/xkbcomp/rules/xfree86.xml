@@ -615,7 +615,14 @@
         <description xml:lang="bg">американска английска</description>
         <description xml:lang="ru">Английская (США)</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>intl</name>
+            <description>International (MS Windows like)</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
@@ -1856,11 +1863,45 @@
       <configItem>
         <name>sr</name>
         <shortDescription>Scg</shortDescription>
-        <description>Serbian</description>
+        <description>Serbian (Cyrillic)</description>
         <description xml:lang="bg">сръбска</description>
         <description xml:lang="ru">Сербская</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>yz</name>
+            <description>swap Zhe, Ze</description>
+          </configItem>
+        </variant>
+      </variantList>
+    </layout>
+    <layout>
+      <configItem>
+        <name>yu</name>
+        <shortDescription>Scg</shortDescription>
+        <description>Serbian (Latin)</description>
+      </configItem>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>yz</name>
+            <description>swap Zhe, Ze</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>unicode</name>
+            <description>Unicode</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>unicodeyz</name>
+            <description>Unicode with swaped Zhe, Ze</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
@@ -2210,16 +2251,6 @@
         <description>Vietnamese</description>
         <description xml:lang="bg">виетнамска</description>
         <description xml:lang="ru">Вьетнамская</description>
-      </configItem>
-      <variantList/>
-    </layout>
-    <layout>
-      <configItem>
-        <name>yu</name>
-        <shortDescription>Yug</shortDescription>
-        <description>Yugoslavian</description>
-        <description xml:lang="bg">югославска</description>
-        <description xml:lang="ru">Югославская</description>
       </configItem>
       <variantList/>
     </layout>
