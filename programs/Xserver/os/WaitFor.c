@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.0 1994/04/28 12:42:33 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -68,7 +68,12 @@ extern int errno;
 #include "X.h"
 #include "misc.h"
 
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#else
 #include <sys/param.h>
+#endif
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.180 94/04/17 20:23:25 hersh Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.0 1994/04/28 12:46:25 dawes Exp $
  */
 
 /*
@@ -72,6 +72,14 @@ in this Software without prior written authorization from the X Consortium.
 #include <errno.h>
 #include <setjmp.h>
 #include <ctype.h>
+
+#ifdef MINIX
+#include <sys/nbio.h>
+
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#define read(f,b,s) nbio_read(f,b,s)
+#define write(f,b,s) nbio_write(f,b,s)
+#endif
 
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -1352,7 +1360,11 @@ in_put()
 			  "input: read returned unexpected error (%d)\n",
 			  errno);
 	    } else if (bcnt == 0)
+#ifdef MINIX
+		Cleanup(0);
+#else
 		Panic("input: read returned zero\n", 0);
+#endif
 	    else {
 		/* read from pty was successful */
 		if (!screen->output_eight_bits) {

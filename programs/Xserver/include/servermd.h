@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.0 1994/05/04 15:05:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.1 1994/05/06 08:37:45 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -322,7 +322,7 @@ SOFTWARE.
      defined(MACH386) || \
      defined(linux) || \
      (defined(AMOEBA) && defined(i80386)) || \
-     defined(_MINIX))
+     defined(MINIX))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

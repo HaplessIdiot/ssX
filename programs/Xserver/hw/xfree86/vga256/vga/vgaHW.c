@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.0 1994/04/29 14:10:56 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,14 +38,14 @@
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
 #else
-#if defined(_MINIX) || defined(AMOEBA)
+#if defined(MINIX) || defined(AMOEBA)
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>
 #endif
 #endif
 
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
 #define _NEED_SYSI86
 #endif
 
@@ -68,7 +68,7 @@
 #endif
 #endif
 
-#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(_MINIX)
+#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif
@@ -83,7 +83,7 @@
 #endif
 
 /* bytes per plane to save for text */
-#if defined(linux) || defined(_MINIX)
+#if defined(linux) || defined(MINIX)
 #define TEXT_AMOUNT 16384
 #else
 #define TEXT_AMOUNT 4096
@@ -328,7 +328,7 @@ setExternClock(clock)
 	for (i = 0; i < MAXSCREENS; i++)
 	  xf86DisableIOPorts(i);
         setuid(getuid());
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
         /* set stdin, stdout to the consoleFD, and leave stderr alone */
         for (i = 0; i < 2; i++)
         {

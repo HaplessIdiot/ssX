@@ -1,4 +1,5 @@
 /* $XConsortium: mnx_video.c,v 1.1 94/03/28 21:29:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -30,6 +31,7 @@
 #include "input.h"
 #include "scrnintstr.h"
 
+#include "local.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -47,7 +49,7 @@ unsigned long Size;
 {
 	ErrorF("xf86MapVidMem(ScreenNum= %d, Base= %p, Size= 0x%x\n",
 		ScreenNum, Base, Size);
-	return((pointer)xf86Info.screenPtr + ((unsigned)Base-0xA0000));
+	return((pointer)xf86VideoBase + ((unsigned)Base-0xA0000));
 }
 
 /* ARGSUSED */

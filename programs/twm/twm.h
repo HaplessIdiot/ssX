@@ -56,6 +56,7 @@ from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: twm.h,v 1.77 94/04/17 20:38:24 kaleb Exp $
+ * $XFree86$
  *
  * twm include file
  *
@@ -66,6 +67,9 @@ from the X Consortium.
 #ifndef _TWM_
 #define _TWM_
 
+#ifdef MINIX
+#include <X11/Xos.h>
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>

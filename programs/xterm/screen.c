@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: screen.c,v 1.33 94/04/02 17:34:36 gildea Exp $
+ *	$XFree86$
  */
 
 /*
@@ -43,6 +44,10 @@
 #include <sys/termio.h>
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/ptem.h>
+#endif
+
+#ifdef MINIX
+#include <termios.h>
 #endif
 
 extern Char *calloc(), *malloc(), *realloc();

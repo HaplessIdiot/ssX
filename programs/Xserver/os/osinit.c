@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.0 1994/04/28 12:42:45 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -93,8 +93,10 @@ OsInit()
 #endif
 
     if (!been_here) {
+#ifndef MINIX
 	fclose(stdin);
 	fclose(stdout);
+#endif
 	/* hack test to decide where to log errors */
 	if (write (2, fname, 0)) 
 	{
@@ -111,7 +113,7 @@ OsInit()
 		dup2 (fileno (err), 2);
 		fclose (err);
 	    }
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(MINIX)
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);

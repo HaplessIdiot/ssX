@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.0 1994/04/28 12:46:19 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -79,6 +79,14 @@ extern Time_t time ();
 #else
 #include <time.h>
 #define Time_t time_t
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#define read(f,b,s) nbio_read(f,b,s)
+#define write(f,b,s) nbio_write(f,b,s)
 #endif
 
 /*
@@ -733,7 +741,11 @@ again:
 				 "Tinput:read returned unexpected error (%d)\n",
 						 errno);
 				} else if(Tbcnt == 0)
+#ifdef MINIX
+					Cleanup (0);
+#else
 					Panic("input: read returned zero\n", 0);
+#endif
 				else {
 				    if (!screen->output_eight_bits) {
 					register int bc = Tbcnt;

@@ -1,4 +1,5 @@
 /* $XConsortium: mnx_init.c,v 1.1 94/03/28 21:29:45 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,6 +34,7 @@
 
 #include "compiler.h"
 
+#include "local.h"
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -40,38 +42,47 @@
 #define VIDEO_SIZE	0x20000
 #define VIDEO_ALIGN	 0x1000
 
+char *xf86VideoBaseRaw= NULL;
+char *xf86VideoBase= NULL;
+
 void xf86OpenConsole()
 {
     int fd, r, align_diff;
-    char *video_base_raw, *video_base;
     struct mio_map mio_map;
+    uid_t real_uid;
 
     if (serverGeneration == 1)
     {
+    	real_uid= getuid();
+
 	/* check if we're run with euid==0 */
-	if (geteuid() != 0)
+	if (setuid(0) != 0)
 	{
 	    FatalError("xf86OpenConsole: Server must be suid root\n");
 	}
+	setuid(real_uid);
 
 	xf86Config(FALSE); /* Read Xconfig */
 
-	fd = xf86Info.screenFd = open("/dev/vga", O_RDWR);
+	setuid(0);
+	fd = open("/dev/vga", O_RDWR);
 	if (fd == -1)
 	{
 	    FatalError("xf86OpenConsole: Can't open /dev/vga: %s\n", 
 		       strerror(errno));
 	}
-	video_base_raw = xf86Info.screenPtrRaw = Xalloc(VIDEO_SIZE+VIDEO_ALIGN);
-	if (video_base_raw == 0)
+	setuid(real_uid);
+
+	xf86VideoBaseRaw = (char *)Xalloc(VIDEO_SIZE+VIDEO_ALIGN);
+	if (xf86VideoBaseRaw == 0)
 	{
 	    FatalError("xf86OpenConsole: Out of memory\n");
 	}
-	align_diff = (int)video_base_raw;
+	align_diff = (int)xf86VideoBaseRaw;
 	align_diff = VIDEO_ALIGN-(((align_diff-1) & (VIDEO_ALIGN-1))+1);
 	assert(align_diff >= 0 && align_diff < VIDEO_ALIGN);
-	xf86Info.screenPtr = video_base = video_base_raw + align_diff;
-	mio_map.mm_base = (u32_t)video_base;
+	xf86VideoBase = xf86VideoBaseRaw + align_diff;
+	mio_map.mm_base = (u32_t)xf86VideoBase;
 	mio_map.mm_size = VIDEO_SIZE;
 	r = ioctl(fd, MIOCMAP, &mio_map);
 	if (r == -1)

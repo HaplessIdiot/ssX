@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c,v 1.63 94/04/17 20:23:30 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.0 1994/04/28 12:46:35 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -38,6 +38,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/SmeLine.h>
 #include <stdio.h>
 #include <signal.h>
+
+#ifdef MINIX
+#include <X11/Xos.h>
+#endif
 
 extern void FindFontSelection();
 

@@ -1,4 +1,5 @@
 /* $XConsortium: mnx_io.c,v 1.1 94/03/28 21:29:50 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -36,6 +37,9 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
+
+#include <sys/nbio.h>
 
 void xf86SoundKbdBell(loudness, pitch, duration)
 int loudness;
@@ -91,15 +95,20 @@ void xf86KbdInit()
 {
 	static int kbd_fd = -1;
 	int flags, r;
+	uid_t real_uid;
+
+	real_uid= getuid();
 
 	/* Open the keyboard device if not already done so */
 	if (kbd_fd < 0)
 	{
+		setuid(0);
 		kbd_fd = open("/dev/kbd", O_RDONLY);
 		if (kbd_fd == -1)
 			FatalError("Unable to open keyboard\n");
 		else
 			xf86Info.kbdFd = kbd_fd;
+		setuid(real_uid);
 
 		/* Mark the keyboard as asynchronous */
 		flags= fcntl(xf86Info.kbdFd, F_GETFD);
@@ -108,31 +117,26 @@ void xf86KbdInit()
 		r = fcntl(xf86Info.kbdFd, F_SETFD, flags | FD_ASYNCHIO);
 		if (r == -1)
 			FatalError("Unable to set keyboard flags\n");
-		xf86Info.kbdAvail= 0;
-		xf86Info.kbdInprogress= FALSE;
+
+		nbio_register(kbd_fd);
 	}
 }
 
 int xf86KbdOn()
 {
-	if (!xf86Info.kbdInprogress)
+	char waste[16];
+	int r;
+
+	/* Get rid of old data */
+	for (;;)
 	{
-		/* Get rid of old data */
-		for (;;)
-		{
-			int r;
-			r = read(xf86Info.kbdFd, xf86Info.kbdBuf,
-				 sizeof(xf86Info.kbdBuf));
-			if (r > 0)
-				continue;
-			if (r == -1 && errno == EINPROGRESS)
-			{
-				xf86Info.kbdInprogress = TRUE;
-				break;
-			}
-			FatalError("unable to read from keyboard (%s)\n",
-				   strerror(errno));
-		}
+		r = nbio_read(xf86Info.kbdFd, waste, sizeof(waste));
+		if (r > 0)
+			continue;
+		if (r == -1 && errno == EAGAIN)
+			break;
+		FatalError("unable to read from keyboard (%s)\n",
+			   strerror(errno));
 	}
 	return(xf86Info.kbdFd);
 }
@@ -146,75 +150,75 @@ int xf86KbdOff()
 
 void xf86KbdEvents()
 {
-	int i, r;
+	unsigned char rBuf[64];
+	int nBytes, i;
 
-	for (;;)
+	while ((nBytes = nbio_read(xf86Info.kbdFd, (char *)rBuf,
+		sizeof(rBuf))) > 0)
 	{
-		if (xf86Info.kbdInprogress)
-		{
-			/* Nothing to do */
-			return;
-		}
-		if (xf86Info.kbdAvail > 0)
-		{
-			for (i = 0; i < xf86Info.kbdAvail; i++)
-				xf86PostKbdEvent(xf86Info.kbdBuf[i]);
-			xf86Info.kbdAvail = 0;
-		}
-		r = read(xf86Info.kbdFd, xf86Info.kbdBuf,
-			 sizeof(xf86Info.kbdBuf));
-		if (r > 0)
-		{
-			xf86Info.kbdAvail = r;
-			continue;
-		}
-		if (r == -1 && errno == EINPROGRESS)
-		{
-			xf86Info.kbdInprogress = TRUE;
-			AddEnabledDevice(xf86Info.kbdFd);
-			return;
-		}
-		FatalError("unable to read from keyboard (%s)\n",
-			   r == 0 ? "eof" : strerror(errno));
+		for (i = 0; i < nBytes; i++)
+			xf86PostKbdEvent(rBuf[i]);
+	}
+	if (nBytes == 0)
+		ErrorF("xf86KbdEvents: nbio_read returns EOF");
+	else if (errno != EAGAIN)
+	{
+		ErrorF("xf86KbdEvents: nbio_read error: %s",
+			strerror(errno));
 	}
 }
 
 void xf86MouseInit()
 {
-	return;
+	static int mseFd= -1;
+	int r, flags;
+	uid_t real_uid;
+
+	if (mseFd < 0)
+	{
+		real_uid= getuid();
+
+		setuid(0);
+		if ((mseFd = xf86Info.mseFd =
+			open(xf86Info.mseDevice, O_RDWR)) < 0)
+		{
+			FatalError("Cannot open mouse (%s)\n",
+				strerror(errno));
+		}
+		setuid(real_uid);
+
+		xf86SetupMouse();
+
+		/* Mark the mouse as asynchronous */
+		flags = fcntl(xf86Info.mseFd, F_GETFD);
+		if (flags == -1)
+		{
+			FatalError("Unable to get mouse flags (%s)\n",
+				strerror(errno));
+		}
+		r = fcntl(xf86Info.mseFd, F_SETFD, flags | FD_ASYNCHIO);
+		if (r == -1)
+		{
+			FatalError("Unable to set mouse flags (%s)\n",
+				strerror(errno));
+		}
+		nbio_register(xf86Info.mseFd);
+	}
 }
 
 int xf86MouseOn()
 {
-	int r, flags;
-
-	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR)) < 0)
-	{
-		FatalError("Cannot open mouse (%s)\n", strerror(errno));
-	}
-
-	xf86SetupMouse();
-
-	/* Mark the mouse as asynchronous */
-	flags = fcntl(xf86Info.mseFd, F_GETFD);
-	if (flags == -1)
-		FatalError("Unable to get mouse flags (%s)\n", strerror(errno));
-	r = fcntl(xf86Info.mseFd, F_SETFD, flags | FD_ASYNCHIO);
-	if (r == -1)
-		FatalError("Unable to set mouse flags (%s)\n", strerror(errno));
-	xf86Info.mseAvail = 0;
-	xf86Info.mseInprogress = FALSE;
+	char waste[16];
+	int r;
 
 	/* Get rid of old data */
 	for (;;)
 	{
-		r = read(xf86Info.mseFd, xf86Info.mseBuf,
-			 sizeof(xf86Info.mseBuf));
+		r = nbio_read(xf86Info.mseFd, waste, sizeof(waste));
 		if (r > 0)
 			continue;
-		if (r == -1 && errno == EINPROGRESS)
+		if (r == -1 && errno == EAGAIN)
 		{
-			xf86Info.mseInprogress= TRUE;
 			break;
 		}
 		FatalError("unable to read from mouse (%s)\n",
@@ -225,37 +229,25 @@ int xf86MouseOn()
 
 void xf86MouseEvents()
 {
-	int r;
+	unsigned char rBuf[64];
+	int nBytes;
 
-	for (;;)
+	while ((nBytes = nbio_read(xf86Info.mseFd, (char *)rBuf,
+		sizeof(rBuf))) > 0)
 	{
-		if (xf86Info.mseInprogress)
-		{
-			/* Nothing to do */
-			return;
-		}
-		if (xf86Info.mseAvail == 0)
-		{
-			r = read(xf86Info.mseFd, xf86Info.mseBuf,
-				 sizeof(xf86Info.mseBuf));
-			if (r > 0)
-			{
-				xf86Info.mseAvail = r;
-			}
-			else if (r == -1 && errno == EINPROGRESS)
-			{
-				xf86Info.mseInprogress = TRUE;
-				AddEnabledDevice(xf86Info.mseFd);
-				return;
-			}
-			else
-			{
-				FatalError("unable to read from mouse: %s\n",
-					   r == 0 ? "eof" : strerror(errno));
-			}
-		}
-		xf86MouseProtocol((unsigned char *)xf86Info.mseBuf,
-				  xf86Info.mseAvail);
-		xf86Info.mseAvail = 0;
+		xf86MouseProtocol(rBuf, nBytes);
 	}
+	if (nBytes == 0)
+		ErrorF("xf86MouseEvents: nbio_read returns EOF");
+	else if (errno != EAGAIN)
+	{
+		ErrorF("xf86MouseEvents: nbio_read error: %s",
+			strerror(errno));
+	}
+}
+
+int xf86MouseOff(doclose)
+Bool doclose;
+{
+	return(xf86Info.mseFd);
 }

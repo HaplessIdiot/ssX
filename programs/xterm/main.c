@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.0 1994/04/28 12:46:31 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -81,10 +81,6 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
-#if !defined(SOLX86) && defined(sun) && defined(i386) && defined(SVR4)
-#define SOLX86
-#endif
-
 #ifdef linux
 #define USE_SYSV_TERMIO
 #define	USE_SYSV_PGRP
@@ -103,6 +99,25 @@ SOFTWARE.
 #define USE_TERMIOS
 #define USE_POSIX_WAIT
 #define NILCAP ((capability *)NULL)
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+
+#define setpgrp(pid, pgid) setpgid(pid, pgid)
+#define USE_TERMIOS
+#define HAS_UTMP_UT_HOST
+#define MNX_LASTLOG
+#define WTMP
+/* Remap or define non-existing termios flags */
+#define OCRNL	0
+#define ONLRET	0
+#define NLDLY	0
+#define CRDLY	0
+#define TABDLY	0
+#define BSDLY	0
+#define VTDLY	0
+#define FFDLY	0
 #endif
 
 #ifdef att
@@ -229,6 +244,8 @@ static Bool IsPts = False;
 #define HAS_UTMP_UT_HOST
 #endif
 #else /* } !SYSV { */			/* BSD systems */
+#ifdef MINIX /* { */
+#else /* } !MINIX { */
 #ifndef linux
 #include <sgtty.h>
 #include <sys/resource.h>
@@ -239,6 +256,7 @@ static Bool IsPts = False;
 #define setpgrp setpgid
 #endif
 #endif /* !linux */
+#endif /* } MINIX */
 #endif	/* } !SYSV */
 
 #ifdef _POSIX_SOURCE
@@ -248,7 +266,9 @@ static Bool IsPts = False;
 #define USE_POSIX_WAIT
 #endif
 
+#ifndef X_NO_SYS_PARAM
 #include <sys/param.h>	/* for NOFILE */
+#endif
 
 #if (BSD >= 199103)
 #define USE_POSIX_WAIT
@@ -534,11 +554,7 @@ static char bin_login[] = LOGIN_FILENAME;
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
 
-#if defined(TIOCCONS) || defined(SRIOCSREDIR) || defined(SOLX86)
-#ifdef SOLX86
-static int SolX86cons;
-#include <sys/strredir.h>
-#endif /* SOLX86 */
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 static int Console;
 #include <X11/Xmu/SysUtil.h>	/* XmuGetHostname */
 #define MIT_CONSOLE_LEN	12
@@ -744,7 +760,7 @@ static struct _options {
 { "#geom",                 "icon window geometry" },
 { "-T string",             "title name for window" },
 { "-n string",             "icon name for window" },
-#if defined(TIOCCONS) || defined(SRIOCSREDIR) || defined(SOLX86)
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 { "-C",                    "intercept console messages" },
 #else
 { "-C",                    "intercept console messages (not supported)" },
@@ -809,7 +825,7 @@ static void Help ()
     exit (0);
 }
 
-#if defined(TIOCCONS) || defined(SRIOCSREDIR) || defined(SOLX86)
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 /* ARGSUSED */
 static Boolean
 ConvertConsoleSelection(w, selection, target, type, value, length, format)
@@ -909,6 +925,28 @@ char **argv;
 	strcpy (ttydev, TTYDEV);
 	strcpy (ptydev, PTYDEV);
 
+#ifdef MINIX
+	d_tio.c_iflag= TINPUT_DEF;
+	d_tio.c_oflag= TOUTPUT_DEF;
+	d_tio.c_cflag= TCTRL_DEF;
+	d_tio.c_lflag= TLOCAL_DEF;
+	cfsetispeed(&d_tio, TSPEED_DEF);
+	cfsetispeed(&d_tio, TSPEED_DEF);
+	d_tio.c_cc[VEOF]= TEOF_DEF;
+	d_tio.c_cc[VEOL]= TEOL_DEF;
+	d_tio.c_cc[VERASE]= TERASE_DEF;
+	d_tio.c_cc[VINTR]= TINTR_DEF;
+	d_tio.c_cc[VKILL]= TKILL_DEF;
+	d_tio.c_cc[VMIN]= TMIN_DEF;
+	d_tio.c_cc[VQUIT]= TQUIT_DEF;
+	d_tio.c_cc[VTIME]= TTIME_DEF;
+	d_tio.c_cc[VSUSP]= TSUSP_DEF;
+	d_tio.c_cc[VSTART]= TSTART_DEF;
+	d_tio.c_cc[VSTOP]= TSTOP_DEF;
+	d_tio.c_cc[VREPRINT]= TREPRINT_DEF;
+	d_tio.c_cc[VLNEXT]= TLNEXT_DEF;
+	d_tio.c_cc[VDISCARD]= TDISCARD_DEF;
+#else /* !MINIX */
 #ifdef USE_SYSV_TERMIO
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
@@ -1028,6 +1066,7 @@ char **argv;
 #endif	/* TIOCLSET */
 #endif  /* macII */
 #endif	/* USE_SYSV_TERMIO */
+#endif /* MINIX */
 #endif  /* AMOEBA */
 
 	/* Init the Toolkit. */
@@ -1094,7 +1133,7 @@ char **argv;
 		Help ();
 		/* NOTREACHED */
 	     case 'C':
-#if defined(TIOCCONS) || defined(SRIOCSREDIR) || defined(SOLX86)
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 		{
 		    struct stat sbuf;
 
@@ -1208,6 +1247,7 @@ char **argv;
 	if(screen->TekEmu && !TekInit())
 		exit(ERROR_INIT);
 
+#ifndef MINIX
 #ifdef DEBUG
     {
 	/* Set up stderr properly.  Opening this log file cannot be
@@ -1242,6 +1282,7 @@ char **argv;
 	}
     }
 #endif	/* DEBUG */
+#endif /* MINIX */
 
 	/* open a terminal for client */
 	get_terminal ();
@@ -1292,6 +1333,14 @@ char **argv;
 	}
 #endif
 #ifndef AMOEBA
+#ifdef MINIX
+	if ((mode = fcntl(pty, F_GETFD, 0)) == -1)
+		Error();
+	mode |= FD_ASYNCHIO;
+	if (fcntl(pty, F_SETFD, mode) == -1)
+		Error();
+	nbio_register(pty);
+#else /* !MINIX */
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
 		Error();
@@ -1306,6 +1355,7 @@ char **argv;
 	mode = 1;
 	if (ioctl (pty, FIONBIO, (char *)&mode) == -1) SysError (ERROR_FIONBIO);
 #endif	/* USE_SYSV_TERMIO */
+#endif /* MINIX */
 #endif  /* AMOEBA */
 	
 	pty_mask = 1 << pty;
@@ -1819,6 +1869,12 @@ spawn ()
 				jtc = d_jtc;
 #endif /* sony */
 #endif	/* USE_SYSV_TERMIO */
+#ifdef MINIX
+			/* Editing shells interfere with xterms started in
+			 * the background.
+			 */
+			tio = d_tio;
+#endif
 			close (tty);
 			/* tty is no longer an open fd! */
 			tty = -1;
@@ -2170,6 +2226,10 @@ spawn ()
 #ifdef OPOST
 		    tio.c_oflag |= OPOST;
 #endif /* OPOST */		    
+#ifdef MINIX	/* should be ifdef _POSIX_SOURCE */
+		    cfsetispeed(&tio, B9600);
+		    cfsetospeed(&tio, B9600);
+#else /* !MINIX */
 #ifdef BAUD_0
 		    /* baud rate is 0 (don't care) */
 		    tio.c_cflag &= ~(CBAUD);
@@ -2178,6 +2238,7 @@ spawn ()
 		    tio.c_cflag &= ~(CBAUD);
 		    tio.c_cflag |= B9600;
 #endif	/* !BAUD_0 */
+#endif /* MINIX */
 		    /* enable signals, canonical processing (erase, kill, etc),
 		    ** echo
 		    */
@@ -2484,6 +2545,10 @@ spawn ()
 					       sizeof(utmp.ut_line));
 				(void) strncpy(utmp.ut_name, pw->pw_name,
 					       sizeof(utmp.ut_name));
+#ifdef MINIX
+				utmp.ut_pid = getpid();
+				utmp.ut_type = USER_PROCESS;
+#endif /* MINIX */
 #ifdef HAS_UTMP_UT_HOST
 				(void) strncpy(utmp.ut_host, 
 					       XDisplayString (screen->display),
@@ -2522,6 +2587,16 @@ spawn ()
 				    close(i);
 				}
 #endif /* LASTLOG */
+#ifdef MNX_LASTLOG
+				if (term->misc.login_shell &&
+				(i = open(_U_LASTLOG, O_WRONLY)) >= 0) {
+				    lseek(i, (long)(screen->uid *
+					sizeof (struct utmp)), 0);
+				    write(i, (char *)&utmp,
+					sizeof (struct utmp));
+				    close(i);
+				}
+#endif /* MNX_LASTLOG */
 			} else
 				tslot = -tslot;
 		}
@@ -3498,11 +3573,21 @@ int GetBytesAvailable (fd)
     ioctl (fd, FIONREAD, (char *) &arg);
     return (int) arg;
 #else
+#ifdef MINIX
+    /* The answer doesn't have to correct. Calling nbio_isinprogress is
+     * much cheaper than called nbio_select.
+     */
+    if (nbio_isinprogress(fd, ASIO_READ))
+    	return 0;
+    else
+        return 1;
+#else /* !MINIX */
     struct pollfd pollfds[1];
 
     pollfds[0].fd = fd;
     pollfds[0].events = POLLIN;
     return poll (pollfds, 1, 0);
+#endif /* MINIX */
 #endif
 #else
     /*

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.29 93/09/20 17:42:18 hersh Exp $
- *	$XFree86$
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.0 1994/04/28 12:46:42 dawes Exp $
  */
 
 /*
@@ -62,11 +62,19 @@
 #define USE_TERMCAP
 #endif /* SYSV */
 
+#ifdef MINIX
+#define USE_TERMIOS
+#endif
+
 #include <sys/ioctl.h>
 #ifdef USE_SYSV_TERMIO
 #include <sys/termio.h>
 #else /* else not USE_SYSV_TERMIO */
+#ifdef MINIX
+#include <termios.h>
+#else /* !MINIX */
 #include <sgtty.h>
+#endif /* MINIX */
 #endif	/* USE_SYSV_TERMIO */
 
 #ifdef USE_USG_PTYS
@@ -97,6 +105,16 @@ extern struct passwd *getpwuid(); 	/* does ANYBODY need this? */
 #endif /* X_NOT_POSIX */
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
+
+#ifdef USE_TERMIOS
+#define USE_SYSV_TERMIO
+#define termio termios
+#define TCGETA TCGETS
+#define TCSETAW TCSETSW
+#ifndef IUCLC
+#define IUCLC	0
+#endif
+#endif
 
 #define	EMULATIONS	2
 #define	SUN		1
@@ -474,12 +492,13 @@ readstring(fp, buf, str)
 {
 	register int last, c;
 	SIGNAL_T timeout();
-#if !defined(USG) && !defined(AMOEBA)
+#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX)
+	/* What is the advantage of setitimer() over alarm()? */
 	struct itimerval it;
 #endif
 
 	signal(SIGALRM, timeout);
-#if defined(USG) || defined(AMOEBA)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX)
 	alarm (TIMEOUT);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
@@ -498,7 +517,7 @@ readstring(fp, buf, str)
 	last = str[strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last)
 	    ;
-#if defined(USG) || defined(AMOEBA)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX)
 	alarm (0);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
