@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.12 2000/06/17 17:44:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.13 2000/06/30 21:44:37 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -301,6 +301,10 @@ DoOsChecks()
 		ELF)
 			# Check ldconfig
 			LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
+			# if LDSO is empty ldconfig may be Version 2
+			if [ X"$LDSO" = X ]; then
+				LDSO=`/sbin/ldconfig -V | awk 'NR == 1 { print $4 }'`
+			fi
 			LDSOMIN=`echo $LDSO | awk -F[.-] '{ print $3 }'`
 			LDSOMID=`echo $LDSO | awk -F[.-] '{ print $2 }'`
 			LDSOMAJ=`echo $LDSO | awk -F[.-] '{ print $1 }'`
