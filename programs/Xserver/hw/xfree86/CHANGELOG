@@ -1,3 +1,10 @@
+XFree86 3.0d (7 May 1994)
+ 44. Add missing files to vga2/mfb.
+ 43. Set VendorString and VendorRelease up for XFree86.
+ 42. Workaround for STREAMSCONN Xdmcp problems (Xserver and xdm).
+ 41. 16 bit (staticcolor) support for Mach32 (Craig Groeschel).
+ 40. Minix 3886vm support (Philip Homburg).
+
 XFree86 3.0c (6 May 1994)
  39. Fixes for Solaris X86 (Doug Anson).
  38. No longer link the Mono and VGA16 servers with Xserver/mfb/libmfb.a.
@@ -10,7 +17,7 @@ XFree86 3.0c (6 May 1994)
  33. Reorganisation of the mono server (Pascal Haible).  Includes removing
      xfree86/bdm2, xfree86/hga2, and replacing them with xfree86/mono.
  32. Fixes for PEX font compiler (from our 940327a snapshot).
- 31. Fix SIOCGIFCONF code in xdm and Xserver for SVR4 (with Lachman TCP).
+ 31. Fix SIOCGIFCONF code in xdm and Xserver for SVR4 (with Lachman TCP)
      and FreeBSD.  There are still xdm and chooser problems on SVR4.
 
 XFree86 3.0b (29 April 1994)
