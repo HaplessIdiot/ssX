@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.man,v 1.1 2001/01/24 00:06:16 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.man,v 1.2 2001/01/27 18:20:47 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CHIPS __drivermansuffix__ __vendorversion__
@@ -157,6 +157,9 @@ Force the use of a particular video clock speed for use with the
 flat panel at a specified depth
 .TP
 .BI "Option \*qMMIO\*q \*q" boolean \*q
+Force the use of memory mapped IO for acceleration registers. Default: off
+.TP
+.BI "Option \*qFullMMIO\*q \*q" boolean \*q
 Force the use of memory mapped IO where it can be used. Default: off
 .TP
 .BI "Option \*qSuspendHack\*q \*q" boolean \*q
@@ -189,6 +192,19 @@ Default: off.
 .TP
 .BI "Option \*q18bitBus\*q \*q" boolean \*q
 Force the driver to assume that the flat panel has an 18bit data bus.
+Default: off.
+.TP
+.BI "Option \*qCrt2Memory\*q \*q" integer \*q
+In a dual-head mode (69030 only) this option selects the amount of memory
+to set aside for the second head. If not specified, half the memory is used.
+Default: off.
+.TP
+.BI "Option \*qDualRefresh\*q \*q" integer \*q
+The 69030 supports independent refresh rates on its two display channels.
+This mode of operations uses additional memory bandwidth and thus limits
+the maximum colour depth and refresh rate that can be achieved, and so is
+off by default.  Using this option forces the use of an independent refresh
+rate on the two screens.
 Default: off.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
