@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.1 2001/07/20 19:25:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -35,23 +35,6 @@
 #include    "shadow.h"
 #include    "fb.h"
 
-static FbBits
-fetch (FbBits *bits, FbStride stride, int bpp, int x, int y)
-{
-    FbBits  b, mask;
-    
-    bits += y * stride;
-    x *= bpp;
-    bits += x >> FB_SHIFT;
-    b = *bits;
-    x &= FB_MASK;
-
-    b = FbScrRight (b, FB_UNIT - x - bpp);
-    mask = FbScrRight (FB_ALLONES, FB_UNIT - bpp);
-    b &= mask;
-    return b;
-}
-
 void
 shadowUpdateRotatePacked (ScreenPtr	pScreen,
 			  shadowBufPtr	pBuf)
@@ -65,49 +48,50 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
     int		shaBpp;
     int		shaXoff, shaYoff;
     int		box_x1, box_x2, box_y1, box_y2;
-    int		sha_x1, sha_x2, sha_y1, sha_y2, sha_w, sha_h;
+    int		sha_x1, sha_y1;
     int		scr_x1, scr_x2, scr_y1, scr_y2, scr_w, scr_h;
-    int		scr_x, scr_y, sha_x, sha_y;
+    int		scr_x, scr_y;
     int		w;
-    FbBits	startmask, endmask;
-    int		nmiddle;
     int		pixelsPerBits;
     int		pixelsMask;
     FbStride	shaStepOverY, shaStepDownY, shaStepOverX, shaStepDownX;
-    FbBits	*shaUpperLeft;
     FbBits	*shaLine, *sha;
     int		shaHeight = pShadow->drawable.height;
     int		shaWidth = pShadow->drawable.width;
+    FbBits	shaMask;
+    int		shaFirstShift, shaShift;
 
     fbGetDrawable (&pShadow->drawable, shaBits, shaStride, shaBpp, shaXoff, shaYoff);
     pixelsPerBits = (sizeof (FbBits) * 8) / shaBpp;
     pixelsMask = ~(pixelsPerBits - 1);
+    shaMask = FbBitsMask (FB_UNIT-shaBpp, shaBpp);
     /*
      * Compute rotation related constants to walk the shadow
      */
     switch (pBuf->rotate) {
     case 0:
-	shaStepOverX = 1;
+    default:
+	shaStepOverX = shaBpp;
 	shaStepDownX = 0;
 	shaStepOverY = 0;
-	shaStepDownY = 1;
+	shaStepDownY = shaStride;
 	break;
     case 90:
 	shaStepOverX = 0;
-	shaStepDownX = -1;
-	shaStepOverY = 1;
+	shaStepDownX = -shaBpp;
+	shaStepOverY = shaStride;
 	shaStepDownY = 0;
 	break;
     case 180:
-	shaStepOverX = -1;
+	shaStepOverX = -shaBpp;
 	shaStepDownX = 0;
 	shaStepOverY = 0;
-	shaStepDownY = -1;
+	shaStepDownY = -shaStride;
 	break;
     case 270:
 	shaStepOverX = 0;
-	shaStepDownX = 1;
-	shaStepOverY = -1;
+	shaStepDownX = shaBpp;
+	shaStepOverY = -shaStride;
 	shaStepDownY = 0;
 	break;
     }
@@ -124,6 +108,7 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 	 */
 	switch (pBuf->rotate) {
 	case 0:
+	default:
 	    scr_x1 = box_x1 & pixelsMask;
 	    scr_x2 = (box_x2 + pixelsPerBits - 1) & pixelsMask;
 	    scr_y1 = box_y1;
@@ -161,10 +146,16 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 	    break;
 	}
 	scr_w = ((scr_x2 - scr_x1) * shaBpp) >> FB_SHIFT;
-	scr_x = (scr_x1 * shaBpp) >> FB_SHIFT;
 	scr_h = scr_y2 - scr_y1;
-
 	scr_y = scr_y1;
+
+	/* shift amount for first pixel on screen */ 
+	shaFirstShift = FB_UNIT - ((sha_x1 * shaBpp) & FB_MASK) - shaBpp;
+	
+	/* pointer to shadow data first placed on screen */
+	shaLine = (shaBits + 
+		   sha_y1 * shaStride + 
+		   ((sha_x1 * shaBpp) >> FB_SHIFT));
 
 	/*
 	 * Copy the bits, always write across the physical frame buffer
@@ -174,15 +165,15 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 	{
 	    int	    p;
 	    FbBits  bits;
-	    FbBits  *winBase, *winLine, *win;
+	    FbBits  *win;
 	    int	    i;
 	    CARD32  winSize;
 	    
+	    sha = shaLine;
+	    shaShift = shaFirstShift;
 	    w = scr_w;
-	    scr_x = scr_x1;
+	    scr_x = scr_x1 * shaBpp >> FB_SHIFT;
 
-	    sha_x = sha_x1;
-	    sha_y = sha_y1;
 	    while (w)
 	    {
 		/*
@@ -190,7 +181,7 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 		 */
 		win = (FbBits *) (*pBuf->window) (pScreen,
 						  scr_y,
-						  (scr_x * shaBpp) >> 3,
+						  scr_x << 2,
 						  SHADOW_WINDOW_WRITE,
 						  &winSize,
 						  pBuf->closure);
@@ -198,6 +189,7 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 		if (i > w)
 		    i = w;
 		w -= i;
+		scr_x += i;
 		/*
 		 * Copy the portion of the line mapped
 		 */
@@ -205,20 +197,47 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 		{
 		    bits = 0;
 		    p = pixelsPerBits;
+		    /*
+		     * Build one word of output from multiple inputs
+		     * 
+		     * Note that for 90/270 rotations, this will walk
+		     * down the shadow hitting each scanline once.
+		     * This is probably not very efficient.
+		     */
 		    while (p--)
 		    {
 			bits = FbScrLeft(bits, shaBpp);
-			bits |= fetch (shaBits, shaStride, shaBpp, sha_x, sha_y);
-			sha_x += shaStepOverX;
-			sha_y += shaStepOverY;
+			bits |= FbScrRight (*sha, shaShift) & shaMask;
+
+			shaShift -= shaStepOverX;
+			if (shaShift >= FB_UNIT)
+			{
+			    shaShift -= FB_UNIT;
+			    sha--;
+			}
+			else if (shaShift < 0)
+			{
+			    shaShift += FB_UNIT;
+			    sha++;
+			}
+			sha += shaStepOverY;
 		    }
 		    *win++ = bits;
-		    scr_x += pixelsPerBits;
 		}
 	    }
-	    sha_x1 += shaStepDownX;
-	    sha_y1 += shaStepDownY;
 	    scr_y++;
+	    shaFirstShift -= shaStepDownX;
+	    if (shaFirstShift >= FB_UNIT)
+	    {
+		shaFirstShift -= FB_UNIT;
+		shaLine--;
+	    }
+	    else if (shaFirstShift < 0)
+	    {
+		shaFirstShift += FB_UNIT;
+		shaLine++;
+	    }
+	    shaLine += shaStepDownY;
 	}
     }
 }
