@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.336 2000/12/12 23:24:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.337 2000/12/14 16:38:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -13,7 +13,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  */
 
 #ifndef XFree86Devel
-# define XFree86Devel		YES
+# define XFree86Devel		NO
 #endif
 
 #ifndef BuildDebug
