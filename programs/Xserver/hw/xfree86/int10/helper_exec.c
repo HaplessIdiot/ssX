@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.19 2002/04/06 18:11:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.21tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -102,8 +102,13 @@ run_bios_int(int num, xf86Int10InfoPtr pInt)
 #ifndef _PC
     /* check if bios vector is initialized */
     if (MEM_RW(pInt, (num << 2) + 2) == (SYS_BIOS >> 4)) { /* SYS_BIOS_SEG ?*/
-	ErrorF("Card BIOS on non-PC like platform not loaded\n");
-	return 0;
+	xf86DrvMsgVerb(pInt->scrnIndex, X_NOT_IMPLEMENTED, 2,
+	    "Ignoring int 0x%02x call\n", num);
+	if (xf86GetVerbosity() > 3) {
+	    dump_registers(pInt);
+	    stack_trace(pInt);
+	}
+	return 1;
     }
 #endif
 #ifdef PRINT_INT

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.8 2002/09/16 16:55:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.9tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -774,10 +774,73 @@ xf86AccResFromOS(resPtr pRes)
  * not the Sabre would master-abort a VGA access (and kill the system).
  *
  * The trick is to determine when it is safe to re-route VGA, because doing so
- * re-routes much more.  More on this in a later episode of this code...
+ * re-routes much more.
  */
 static PCITAG simbavgaIOTag = 0, simbavgaMemTag = 0;
-static Bool simbavgaRoutingDisallow = TRUE;	/* XXX  For now */
+static Bool simbavgaRoutingAllow = TRUE;
+
+/*
+ * Scan the bus subtree rooted at 'bus' for a non-display device that might be
+ * decoding the bottom 2 MB of I/O space and/or the bottom 512 MB of memory
+ * space.  Reset simbavgaRoutingAllow if such a device is found.
+ *
+ * XXX For now, this is very conservative and should be made less so as the
+ *     need arises.
+ */
+static void
+simbaCheckBus(CARD16 pcicommand, int bus)
+{
+    pciConfigPtr pPCI, *ppPCI = xf86scanpci(0);
+
+    while ((pPCI = *ppPCI++)) {
+	if (pPCI->busnum < bus)
+	    continue;
+	if (pPCI->busnum > bus)
+	    break;
+
+	/* XXX Assume all devices respect PCI disablement */
+	if (!(pcicommand & pPCI->pci_command))
+	    continue;
+
+	/* XXX This doesn't deal with mis-advertised classes */
+	switch (pPCI->pci_base_class) {
+	case PCI_CLASS_PREHISTORIC:
+	    if (pPCI->pci_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
+		continue;	/* Ignore VGA */
+	    break;
+
+	case PCI_CLASS_DISPLAY:
+	    continue;
+
+	case PCI_CLASS_BRIDGE:
+	    switch (pPCI->pci_sub_class) {
+	    case PCI_SUBCLASS_BRIDGE_PCI:
+	    case PCI_SUBCLASS_BRIDGE_CARDBUS:
+		/* Scan secondary bus */
+		/* XXX First check bridge routing? */
+		simbaCheckBus(pcicommand & pPCI->pci_command,
+		    PCI_SECONDARY_BUS_EXTRACT(pPCI->pci_pp_bus_register,
+			pPCI->tag));
+		if (!simbavgaRoutingAllow)
+		    return;
+
+	    default:
+		break;
+	    }
+
+	default:
+	    break;
+	}
+
+	/*
+	 * XXX We could check the device's bases here, but PCI doesn't limit
+	 *     the device's decoding to them.
+	 */
+
+	simbavgaRoutingAllow = FALSE;
+	break;
+    }
+}
 
 static pciConfigPtr
 simbaVerifyBus(int bus)
@@ -812,13 +875,12 @@ simbaControlBridge(int bus, CARD16 mask, CARD16 value)
 	    current |= PCI_PCI_BRIDGE_VGA_EN;
 	    if ((mask & PCI_PCI_BRIDGE_VGA_EN) &&
 		!(value & PCI_PCI_BRIDGE_VGA_EN)) {
-		if (simbavgaRoutingDisallow) {
+		if (!simbavgaRoutingAllow) {
 		    xf86MsgVerb(X_WARNING, 3, "Attempt to disable VGA routing"
 				" through Simba at %x:%x:%x disallowed.\n",
 				pPCI->busnum, pPCI->devnum, pPCI->funcnum);
 		    value |= PCI_PCI_BRIDGE_VGA_EN;
 		} else {
-		    /* XXX  Under construction */
 		    pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
 				 iomap & ~0x01);
 		    pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
@@ -828,18 +890,37 @@ simbaControlBridge(int bus, CARD16 mask, CARD16 value)
 	    }
 	} else {
 	    if (mask & value & PCI_PCI_BRIDGE_VGA_EN) {
-		if (simbavgaRoutingDisallow) {
+		if (!simbavgaRoutingAllow) {
 		    xf86MsgVerb(X_WARNING, 3, "Attempt to enable VGA routing"
 				" through Simba at %x:%x:%x disallowed.\n",
 				pPCI->busnum, pPCI->devnum, pPCI->funcnum);
 		    value &= ~PCI_PCI_BRIDGE_VGA_EN;
 		} else {
-		    /* XXX  Under construction */
-		    pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
-				 iomap | 0x01);
-		    pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
-				 memmap | 0x01);
-		    simbavgaIOTag = simbavgaMemTag = pPCI->tag;
+		    if (pPCI->tag != simbavgaIOTag) {
+			if (simbavgaIOTag) {
+			    tmp = pciReadByte(simbavgaIOTag,
+					      APB_IO_ADDRESS_MAP);
+			    pciWriteByte(simbavgaIOTag, APB_IO_ADDRESS_MAP,
+					 tmp & ~0x01);
+			}
+
+			pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
+				     iomap | 0x01);
+			simbavgaIOTag = pPCI->tag;
+		    }
+
+		    if (pPCI->tag != simbavgaMemTag) {
+			if (simbavgaMemTag) {
+			    tmp = pciReadByte(simbavgaMemTag,
+					      APB_MEM_ADDRESS_MAP);
+			    pciWriteByte(simbavgaMemTag, APB_MEM_ADDRESS_MAP,
+					 tmp & ~0x01);
+			}
+
+			pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
+				     memmap | 0x01);
+			simbavgaMemTag = pPCI->tag;
+		    }
 		}
 	    }
 	}
@@ -883,6 +964,8 @@ simbaGetBridgeResources(int bus,
 
 	if (pPCI->pci_command & PCI_CMD_IO_ENABLE) {
 	    unsigned char iomap = pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP);
+	    if (simbavgaRoutingAllow)
+		iomap |= 0x01;
 	    for (i = 0;  i < 8;  i++) {
 		if (iomap & (1 << i)) {
 		    RANGE(range, i << 21, ((i + 1) << 21) - 1,
@@ -900,6 +983,8 @@ simbaGetBridgeResources(int bus,
 
 	if (pPCI->pci_command & PCI_CMD_MEM_ENABLE) {
 	    unsigned char memmap = pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP);
+	    if (simbavgaRoutingAllow)
+		memmap |= 0x01;
 	    for (i = 0;  i < 8;  i++) {
 		if (memmap & (1 << i)) {
 		    RANGE(range, i << 29, ((i + 1) << 29) - 1,
@@ -920,15 +1005,40 @@ simbaGetBridgeResources(int bus,
 void ARCH_PCI_PCI_BRIDGE(pciConfigPtr pPCI)
 {
     static pciBusFuncs_t simbaBusFuncs;
+    pciBusInfo_t *pBusInfo;
+    CARD16 pcicommand;
 
     if (pPCI->pci_device_vendor != DEVID(SUN, SIMBA))
 	return;
 
-    simbaBusFuncs = *(((pciBusInfo_t *)(pPCI->businfo))->funcs);
+    pBusInfo = pPCI->businfo;
+
+    simbaBusFuncs = *(pBusInfo->funcs);
     simbaBusFuncs.pciControlBridge = simbaControlBridge;
     simbaBusFuncs.pciGetBridgeResources = simbaGetBridgeResources;
 
-    ((pciBusInfo_t *)(pPCI->businfo))->funcs = &simbaBusFuncs;
+    pBusInfo->funcs = &simbaBusFuncs;
+
+    if (!simbavgaRoutingAllow)
+	return;
+
+    pcicommand = 0;
+
+    if (pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP) & 0x01) {
+	pcicommand |= PCI_CMD_IO_ENABLE;
+	simbavgaIOTag = pPCI->tag;
+    }
+
+    if (pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP) & 0x01) {
+	pcicommand |= PCI_CMD_MEM_ENABLE;
+	simbavgaMemTag = pPCI->tag;
+    }
+
+    if (!pcicommand)
+	return;
+
+    simbaCheckBus(pcicommand,
+	PCI_SECONDARY_BUS_EXTRACT(pPCI->pci_pp_bus_register, pPCI->tag));
 }
 
 #endif /* defined(ARCH_PCI_PCI_BRIDGE) */
