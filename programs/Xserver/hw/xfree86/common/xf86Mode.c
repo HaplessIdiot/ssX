@@ -1131,7 +1131,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	  for (i = 0; i < scrp->monitor->nHsync; i++)
 	    if (scrp->monitor->hsync[i].lo == scrp->monitor->hsync[i].hi)
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			 "%s: Using hsync value of %6.2 kHz\n",
+			 "%s: Using hsync value of %6.2f kHz\n",
 			 scrp->monitor->id,
 			 scrp->monitor->hsync[i].lo);
 	    else
