@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 425. Add Swedish localization of XDarwin front end (Patrik Montgomery).
  424. Fill in mode switch characters in XDarwin keymap (Mario Klebsch and
       Torrey T. Lyons).
  423. Linux/PA-RISC portability fixes (#4892, Grant Grundler, Bdale Garbee,
@@ -14069,4 +14070,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2010 2001/11/01 23:35:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2011 2001/11/01 23:56:27 torrey Exp $

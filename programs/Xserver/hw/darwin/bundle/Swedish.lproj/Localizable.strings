@@ -1,0 +1,14 @@
+/* Swedish localized versions of strings used by the Mac OS X front end. */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/English.lproj/Localizable.strings,v 1.1 2001/03/27 20:42:39 torrey Exp $ */
+
+/* Title of alert panel */
+"Quit X server?" = "Avsluta X-servern?";
+
+/* Text of alert panel */
+"Quitting the X server will terminate any running X Window programs." = "Om du avslutar X-servern kommer samtliga program som använder den att avslutas.";
+
+/* Quit */
+"Quit" = "Avsluta";
+
+/* Cancel */
+"Cancel" = "Avbryt";
