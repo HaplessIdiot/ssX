@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.21 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.22 2001/05/16 14:07:16 alanh Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -52,14 +52,6 @@ static void UnmapVRam(xf86Int10InfoPtr pInt);
 
 static void *sysMem = NULL;
 
-typedef enum {
-    INT10OPT_NOINT10
-} INT10Opts;
-
-static const OptionInfoRec INT10Options[] = {
-    { INT10OPT_NOINT10,	"NoInt10",	OPTV_BOOLEAN,	{0},	FALSE },
-    { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
-};
 
 xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
