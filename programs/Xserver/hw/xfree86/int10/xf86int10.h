@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.5 2000/04/17 16:30:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.7 2000/09/29 08:59:47 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -111,6 +111,7 @@ void dump_code(xf86Int10InfoPtr pInt);
 void dump_registers(xf86Int10InfoPtr pInt);
 void stack_trace(xf86Int10InfoPtr pInt);
 xf86Int10InfoPtr getInt10Rec(int entityIndex);
+CARD8 bios_checksum(CARD8 *start, int size);
 void LockLegacyVGA(int screenIndex,legacyVGAPtr vga);
 void UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga);
 int port_rep_inb(xf86Int10InfoPtr pInt,

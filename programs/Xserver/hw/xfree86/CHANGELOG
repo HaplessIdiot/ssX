@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx October 2000)
+ 739. Reinstate BIOS checksum verification but make it non-fatal
+      (Marc La France).
  738. Don't set protection register on older trident chips
       Fixes Vertical line problem. (Alan Hourihane).
  737. Add missing symbols for Solaris (incomplete) (Marc La France).
@@ -11194,4 +11196,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1332 2000/10/05 18:28:48 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1333 2000/10/09 17:09:39 alanh Exp $
