@@ -17,19 +17,19 @@
 We highly recommend using gcc to build XFree86, but it generally also builds
 with the native compiler for each platform;
 
-1.  How to get the XFree86 4.3.99.16 source
+1.  How to get the XFree86 4.3.99.901 source
 
-The recommended way of getting the XFree86 4.3.99.16 source is to get it
+The recommended way of getting the XFree86 4.3.99.901 source is to get it
 directly from the XFree86 CVS repository.  There are several ways of doing
 that, and they are described at our CVS web page
 <URL:http://www.xfree86.org/cvs/>  The CVS tag for this release is
-"xf-4_3_99_16", and the tag for the maintenance branch for this release is
+"xf-4_3_99_901", and the tag for the maintenance branch for this release is
 "xf-4_4-branch".
 
-The source for the XFree86 4.3.99.16 snapshot is available from the XFree86
+The source for the XFree86 4.3.99.901 snapshot is available from the XFree86
 CVS repository.  See See http://www.xfree86.org/cvs/ for details.  The tag
-for this snapshot is "xf-4_3_99_16".  To get the current development version,
-don't specify any tag.
+for this snapshot is "xf-4_3_99_901".  To get the current development ver-
+sion, don't specify any tag.
 
 2.  Configuring the source before building
 

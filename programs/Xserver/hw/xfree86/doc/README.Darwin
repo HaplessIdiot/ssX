@@ -66,7 +66,7 @@ Developers' Tools.
 
 If you don't feel the need to live on the cutting edge, you can save some
 time and effort by using the precompiled binaries available on the XFree86
-FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.3.99.16/binaries/>.
+FTP server at <URL:ftp://ftp.xfree86.org/pub/XFree86/4.3.99.901/binaries/>.
 Follow the instructions in the Install document to install it. This will cre-
 ate two new directory trees, /usr/X11R6 and /etc/X11 For Mac OS X Quartz sup-
 port, download the optional Xquartz.tgz tarball. With Quartz support, the
