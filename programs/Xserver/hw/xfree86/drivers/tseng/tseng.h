@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.7 1997/06/06 06:07:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.8 1997/06/11 12:24:44 dawes Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -94,7 +94,7 @@ typedef enum {
 } t_ramdactype;
 
 extern t_ramdactype TsengRamdacType;
-extern void Check_Tseng_Ramdac();
+t_ramdactype Check_Tseng_Ramdac();
 
 #define DAC_IS_ATT49x ( (TsengRamdacType == ATT20C490_DAC) \
                      || (TsengRamdacType == ATT20C491_DAC) \
