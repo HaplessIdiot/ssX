@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 139. lndir fix for paths containing '//' (H. J. Lu).
  138. Fix blank display problem in trident driver for older TGUI series
       chips, and a few Xv cleanups too (Alan Hourihane).
  137. Enable MIT-SHM extension in Xnest server (#A.795, Steve Schwarz).
@@ -14799,4 +14800,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2217 2002/05/14 21:59:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2218 2002/05/15 20:53:33 alanh Exp $
