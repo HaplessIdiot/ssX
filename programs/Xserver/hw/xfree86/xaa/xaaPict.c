@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.3 2000/10/21 22:26:20 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.4 2000/10/21 22:38:33 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -228,6 +228,7 @@ XAADoComposite (
 	   }
 
 	   SET_SYNC_FLAG(infoRec);
+	   REGION_UNINIT(pScreen, &region);
 	   return TRUE;
 	}
     } else {	
@@ -268,6 +269,7 @@ XAADoComposite (
 	 }
 
 	SET_SYNC_FLAG(infoRec);
+	REGION_UNINIT(pScreen, &region);
 	return TRUE;
     }
 
