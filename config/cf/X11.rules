@@ -1,5 +1,8 @@
 XCOMM $TOG: X11.rules /main/4 1997/04/30 15:23:24 kaleb $
 
+
+XCOMM $XFree86: $
+
 /* Note whether we are the top level project. */
 #ifndef SeenTopLevelProject
 # define SeenTopLevelProject	YES

@@ -1,3 +1,7 @@
+/* $XFree86: $ */
+
+
+
 /* $XConsortium: set.c /main/2 1995/12/16 15:57:16 dpw $ */
 
 /*

@@ -1,3 +1,7 @@
+/* $XFree86: $ */
+
+
+
 /* $XConsortium: xprop.c,v 1.43 94/04/17 20:24:43 rws Exp $*/
 /*
 
