@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.20 2001/04/19 12:40:33 alanh Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -228,6 +228,8 @@ typedef struct {
 #endif
         XF86VideoAdaptorPtr adaptor;
         ScreenBlockHandlerProcPtr BlockHandler;
+
+    OptionInfoPtr Options;
 
 } SISRec, *SISPtr;
 

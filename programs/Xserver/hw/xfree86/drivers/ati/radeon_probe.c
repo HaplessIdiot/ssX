@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.7 2001/04/01 14:00:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.8 2001/05/02 15:06:08 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -92,7 +92,7 @@ PciChipsets RADEONPciChipsets[] = {
 };
 
 /* Return the options for supported chipset 'n'; NULL otherwise */
-OptionInfoPtr
+const OptionInfoRec *
 RADEONAvailableOptions(int chipid, int busid)
 {
     int i;

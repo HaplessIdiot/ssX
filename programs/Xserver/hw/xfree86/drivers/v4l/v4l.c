@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.23 2001/04/18 14:52:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.24 2001/04/26 21:27:53 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -27,7 +27,7 @@
 
 static void     V4LIdentify(int flags);
 static Bool     V4LProbe(DriverPtr drv, int flags);
-static OptionInfoPtr V4LAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * V4LAvailableOptions(int chipid, int busid);
 
 DriverRec V4L = {
         40000,
@@ -663,8 +663,7 @@ V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 			 pPPriv->cenc,drw_w,drw_h,*p_w,*p_h));
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 V4LAvailableOptions(int chipid, int busid)
 {
     return NULL;

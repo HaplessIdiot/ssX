@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.108 2000/12/14 16:33:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.109 2001/01/06 20:19:07 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -947,8 +947,8 @@ xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
     WindowPtr	pWin = WindowTable[pScreen->myNum];
     WindowPtr	pChild;
     Bool	WasViewable = (Bool)(pWin->viewable);
-    Bool	anyMarked;
-    RegionPtr	pOldClip, bsExposed;
+    Bool	anyMarked = FALSE;
+    RegionPtr	pOldClip = NULL, bsExposed;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
@@ -2000,7 +2000,6 @@ xf86GetClocks(ScrnInfoPtr pScrn, int num, Bool (*ClockFunc)(ScrnInfoPtr, int),
 {
     register int status = vertsyncreg;
     unsigned long i, cnt, rcnt, sync;
-    int saved_nice;
 
     /* First save registers that get written on */
     (*ClockFunc)(pScrn, CLK_REG_SAVE);
@@ -2389,12 +2388,10 @@ typedef enum {
    OPTION_BACKING_STORE
 } BSOpts;
 
-static OptionInfoRec BSOptions[] = {
+static const OptionInfoRec BSOptions[] = {
    { OPTION_BACKING_STORE, "BackingStore", OPTV_BOOLEAN, {0}, FALSE },
    { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
 };
-
-#define nBSOptions (sizeof(BSOptions) / sizeof(BSOptions[0]))
 
 void 
 xf86SetBackingStore(ScreenPtr pScreen)
@@ -2402,8 +2399,9 @@ xf86SetBackingStore(ScreenPtr pScreen)
     Bool useBS = FALSE;
     MessageType from = X_DEFAULT;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    OptionInfoRec options[nBSOptions];
+    OptionInfoPtr options;
 
+    options = xnfalloc(sizeof(BSOptions));
     (void)memcpy(options, BSOptions, sizeof(BSOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
@@ -2418,6 +2416,7 @@ xf86SetBackingStore(ScreenPtr pScreen)
 	if (xf86GetOptValBool(options, OPTION_BACKING_STORE, &useBS))
 	    from = X_CONFIG;
     }
+    xfree(options);
     pScreen->backingStoreSupport = useBS ? Always : NotUseful;
     if (serverGeneration == 1)
 	xf86DrvMsg(pScreen->myNum, from, "Backing store %s\n",
@@ -2429,12 +2428,10 @@ typedef enum {
    OPTION_SILKEN_MOUSE
 } SMOpts;
 
-static OptionInfoRec SMOptions[] = {
+static const OptionInfoRec SMOptions[] = {
    { OPTION_SILKEN_MOUSE, "SilkenMouse",   OPTV_BOOLEAN, {0}, FALSE },
    { -1,                   NULL,           OPTV_NONE,    {0}, FALSE }
 };
-
-#define nSMOptions (sizeof(SMOptions) / sizeof(SMOptions[0]))
 
 void 
 xf86SetSilkenMouse (ScreenPtr pScreen)
@@ -2442,8 +2439,9 @@ xf86SetSilkenMouse (ScreenPtr pScreen)
     Bool useSM = TRUE;
     MessageType from = X_DEFAULT;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    OptionInfoRec options[nSMOptions];
+    OptionInfoPtr options;
 
+    options = xnfalloc(sizeof(SMOptions));
     (void)memcpy(options, SMOptions, sizeof(SMOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
     
@@ -2462,6 +2460,7 @@ xf86SetSilkenMouse (ScreenPtr pScreen)
 	if (xf86GetOptValBool(options, OPTION_SILKEN_MOUSE, &useSM))
 	    from = X_CONFIG;
     }
+    xfree(options);
     /*
      * XXX quick hack to report correctly for OSs that can't do SilkenMouse
      * yet.  Should handle this differently so that alternate async methods

@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.7 2001/03/03 22:26:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.8 2001/04/01 14:00:11 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -66,7 +66,7 @@
 
 /* Prototypes ------------------------------------------------------- */
 static void	NewportIdentify(int flags);
-static OptionInfoPtr NewportAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * NewportAvailableOptions(int chipid, int busid);
 static Bool NewportProbe(DriverPtr drv, int flags);
 static Bool NewportPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool NewportScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
@@ -175,7 +175,7 @@ typedef enum {
 } NewportOpts;
 
 /* Supported options */
-static OptionInfoRec NewportOptions [] = {
+static const OptionInfoRec NewportOptions [] = {
 	{ OPTION_BITPLANES, "bitplanes", OPTV_INTEGER, {0}, FALSE },
 	{ OPTION_BUS_ID, "BusID", OPTV_INTEGER, {0}, FALSE },
 	{ -1, NULL, OPTV_NONE, {0}, FALSE }
@@ -352,7 +352,10 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Fill in pScrn->options) */
 	xf86CollectOptions(pScrn, NULL);
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, NewportOptions);
+	if (!(pNewport->Options = xalloc(sizeof(NewportOptions))))
+		return FALSE;
+	memcpy(pNewport->Options, NewportOptions, sizeof(NewportOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pNewport->Options);
 
 	/* Set fields in ScreenInfoRec && NewportRec */
     	pScrn->videoRam = 1280 * (pScrn->bitsPerPixel >> 3);
@@ -369,7 +372,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 		pNewport->board_rev, pNewport->rex3_rev, 
 		pNewport->cmap_rev, pNewport->xmap9_rev);
 
-	if ( (xf86GetOptValInteger(NewportOptions, OPTION_BITPLANES, &pNewport->bitplanes)))
+	if ( (xf86GetOptValInteger(pNewport->Options, OPTION_BITPLANES, &pNewport->bitplanes)))
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, from, "Newport has %d bitplanes\n", pNewport->bitplanes);
 
@@ -622,7 +625,7 @@ NewportSaveScreen(ScreenPtr pScreen, int mode)
 }
 
 
-static OptionInfoPtr
+static const OptionInfoRec *
 NewportAvailableOptions(int chipid, int busid)
 {
 	return NewportOptions;

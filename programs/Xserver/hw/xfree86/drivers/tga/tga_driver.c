@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.52 2001/02/15 11:03:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.53 2001/03/19 11:00:54 alanh Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -74,7 +74,7 @@
 #include "Xv.h"
 #endif
 
-static OptionInfoPtr TGAAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * TGAAvailableOptions(int chipid, int busid);
 static void	TGAIdentify(int flags);
 static Bool	TGAProbe(DriverPtr drv, int flags);
 static Bool	TGAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -158,7 +158,7 @@ typedef enum {
     OPTION_NOXAAPOLYSEGMENT
 } TGAOpts;
 
-static OptionInfoRec TGAOptions[] = {
+static const OptionInfoRec TGAOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -273,8 +273,7 @@ TGAFreeRec(ScrnInfoPtr pScrn)
     return;
 }
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 TGAAvailableOptions(int chipid, int busid)
 {
     return TGAOptions;
@@ -535,23 +534,26 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TGAOptions);
-    if (xf86ReturnOptValBool(TGAOptions, OPTION_PCI_RETRY, FALSE)) {
+    if (!(pTga->Options = xalloc(sizeof(TGAOptions))))
+	return FALSE;
+    memcpy(pTga->Options, TGAOptions, sizeof(TGAOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pTga->Options);
+    if (xf86ReturnOptValBool(pTga->Options, OPTION_PCI_RETRY, FALSE)) {
 	pTga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
 
-    if(xf86ReturnOptValBool(TGAOptions, OPTION_SYNC_ON_GREEN, FALSE)) {
+    if(xf86ReturnOptValBool(pTga->Options, OPTION_SYNC_ON_GREEN, FALSE)) {
 	pTga->SyncOnGreen = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Sync-on-Green enabled\n");
     }
 
-    if(xf86ReturnOptValBool(TGAOptions, OPTION_DAC_6_BIT, FALSE)) {
+    if(xf86ReturnOptValBool(pTga->Options, OPTION_DAC_6_BIT, FALSE)) {
 	pTga->Dac6Bit = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "6 bit DAC enabled\n");
     }
     
-    if(xf86ReturnOptValBool(TGAOptions, OPTION_NOXAAPOLYSEGMENT, FALSE)) {
+    if(xf86ReturnOptValBool(pTga->Options, OPTION_NOXAAPOLYSEGMENT, FALSE)) {
 	pTga->NoXaaPolySegment = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "XAA PolySegment() disabled\n");
     }
@@ -610,9 +612,9 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* determine whether we use hardware or software cursor */
     
     pTga->HWCursor = TRUE;
-    if (xf86GetOptValBool(TGAOptions, OPTION_HW_CURSOR, &pTga->HWCursor))
+    if (xf86GetOptValBool(pTga->Options, OPTION_HW_CURSOR, &pTga->HWCursor))
 	from = X_CONFIG;
-    if (xf86ReturnOptValBool(TGAOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pTga->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTga->HWCursor = FALSE;
     }
@@ -626,7 +628,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTga->HWCursor ? "HW" : "SW");
 
-    if (xf86ReturnOptValBool(TGAOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pTga->Options, OPTION_NOACCEL, FALSE)) {
 	pTga->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }

@@ -1,4 +1,6 @@
 XFree86 4.0.99.x (xx May 2001)
+ 473. Fix option handling in most drivers so that per-screen options work
+      correctly (David Dawes).
  472. Resync with DRI CVS trunk (VA Linux Systems).
  471. Import latest Mesa 3.4.x branch.
  470. Add a PIOOffset value plus readEnable and writeEnable function pointers
@@ -13143,4 +13145,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1740 2001/05/02 14:53:20 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1741 2001/05/02 15:06:05 dawes Exp $

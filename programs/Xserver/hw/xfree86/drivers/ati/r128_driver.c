@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.25 2001/04/03 17:10:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.26 2001/04/10 16:07:59 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -149,7 +149,7 @@ typedef enum {
   OPTION_SHOW_CACHE
 } R128Opts;
 
-OptionInfoRec R128Options[] = {
+const OptionInfoRec R128Options[] = {
   { OPTION_NOACCEL,      "NoAccel",          OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_SW_CURSOR,    "SWcursor",         OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_DAC_6BIT,     "Dac6Bit",          OPTV_BOOLEAN, {0}, FALSE },
@@ -768,7 +768,7 @@ static Bool R128PreInitWeight(ScrnInfoPtr pScrn)
 	if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight)) return FALSE;
     } else {
 	pScrn->rgbBits = 8;
-	if (xf86ReturnOptValBool(R128Options, OPTION_DAC_6BIT, FALSE)) {
+	if (xf86ReturnOptValBool(info->Options, OPTION_DAC_6BIT, FALSE)) {
 	    pScrn->rgbBits = 6;
 	    info->dac6bits = TRUE;
 	}
@@ -876,7 +876,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     }
 
 				/* Flat panel (part 1) */
-    if (xf86GetOptValBool(R128Options, OPTION_PROG_FP_REGS,
+    if (xf86GetOptValBool(info->Options, OPTION_PROG_FP_REGS,
 			  &info->HasPanelRegs)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Turned flat panel register programming %s\n",
@@ -920,7 +920,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
        setting.  BIOS_5_SCRATCH holds the display device on flat panel
        systems only. */
     if (info->HasPanelRegs) {
-	if (xf86ReturnOptValBool(R128Options, OPTION_BIOS_DISPLAY, FALSE))
+	if (xf86ReturnOptValBool(info->Options, OPTION_BIOS_DISPLAY, FALSE))
 	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
 	else
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
@@ -987,12 +987,12 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 				/* Panel width/height overrides */
 	info->PanelXRes = 0;
 	info->PanelYRes = 0;
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_PANEL_WIDTH, &(info->PanelXRes))) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Flat panel width: %d\n", info->PanelXRes);
 	}
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_PANEL_HEIGHT, &(info->PanelYRes))) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		       "Flat panel height: %d\n", info->PanelYRes);
@@ -1001,7 +1001,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 #ifdef XF86DRI
 				/* AGP/PCI */
-    if (xf86ReturnOptValBool(R128Options, OPTION_IS_PCI, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_IS_PCI, FALSE)) {
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forced into PCI-only mode\n");
     } else {
@@ -1153,7 +1153,9 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 /* This is called by R128PreInit to initialize the hardware cursor. */
 static Bool R128PreInitCursor(ScrnInfoPtr pScrn)
 {
-    if (!xf86ReturnOptValBool(R128Options, OPTION_SW_CURSOR, FALSE)) {
+    R128InfoPtr   info = R128PTR(pScrn);
+
+    if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) return FALSE;
     }
     return TRUE;
@@ -1162,7 +1164,9 @@ static Bool R128PreInitCursor(ScrnInfoPtr pScrn)
 /* This is called by R128PreInit to initialize hardware acceleration. */
 static Bool R128PreInitAccel(ScrnInfoPtr pScrn)
 {
-    if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
+    R128InfoPtr   info = R128PTR(pScrn);
+
+    if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) return FALSE;
     }
     return TRUE;
@@ -1186,21 +1190,21 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info = R128PTR(pScrn);
 
-    if (xf86ReturnOptValBool(R128Options, OPTION_CCE_PIO, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_CCE_PIO, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing CCE into PIO mode\n");
 	info->CCEMode = R128_DEFAULT_CCE_PIO_MODE;
     } else {
 	info->CCEMode = R128_DEFAULT_CCE_BM_MODE;
     }
 
-    if (xf86ReturnOptValBool(R128Options, OPTION_USE_CCE_2D, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_USE_CCE_2D, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using CCE for 2D\n");
 	info->CCE2D = TRUE;
     } else {
 	info->CCE2D = FALSE;
     }
 
-    if (xf86ReturnOptValBool(R128Options, OPTION_NO_SECURITY, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_NO_SECURITY, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "WARNING!!!  CCE Security checks disabled!!! **********\n");
 	info->CCESecure = FALSE;
@@ -1217,7 +1221,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
     info->CCEusecTimeout = R128_DEFAULT_CCE_TIMEOUT;
 
     if (!info->IsPCI) {
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_AGP_MODE, &(info->agpMode))) {
 	    if (info->agpMode < 1 || info->agpMode > R128_AGP_MAX_MODE) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1228,7 +1232,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 		       "Using AGP %dx mode\n", info->agpMode);
 	}
 
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_AGP_SIZE, (int *)&(info->agpSize))) {
 	    switch (info->agpSize) {
 	    case 4:
@@ -1246,7 +1250,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	    }
 	}
 
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_RING_SIZE, &(info->ringSize))) {
 	    if (info->ringSize < 1 || info->ringSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1256,7 +1260,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	    }
 	}
 
-	if (xf86GetOptValInteger(R128Options,
+	if (xf86GetOptValInteger(info->Options,
 				 OPTION_BUFFER_SIZE, &(info->bufSize))) {
 	    if (info->bufSize < 1 || info->bufSize >= (int)info->agpSize) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1284,7 +1288,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 	info->agpTexSize = info->agpSize - (info->ringSize + info->bufSize);
     }
 
-    if (xf86GetOptValInteger(R128Options, OPTION_USEC_TIMEOUT,
+    if (xf86GetOptValInteger(info->Options, OPTION_USEC_TIMEOUT,
 			     &(info->CCEusecTimeout))) {
 	/* This option checked by the R128 DRM kernel module */
     }
@@ -1379,23 +1383,25 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 				/* We can't do this until we have a
 				   pScrn->display. */
     xf86CollectOptions(pScrn, NULL);
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, R128Options);
+    if (!(info->Options = xalloc(sizeof(R128Options))))    goto fail;
+    memcpy(info->Options, R128Options, sizeof(R128Options));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, info->Options);
 
     if (!R128PreInitWeight(pScrn))    goto fail;
 
-    if(xf86GetOptValInteger(R128Options, OPTION_VIDEO_KEY, &(info->videoKey))) {
+    if(xf86GetOptValInteger(info->Options, OPTION_VIDEO_KEY, &(info->videoKey))) {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
                                 info->videoKey);
     } else {
         info->videoKey = 0x1E;
     }
 
-    if (xf86ReturnOptValBool(R128Options, OPTION_SHOW_CACHE, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_SHOW_CACHE, FALSE)) {
         info->showCache = TRUE;
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     }
 
-    if (xf86ReturnOptValBool(R128Options, OPTION_FBDEV, FALSE)) {
+    if (xf86ReturnOptValBool(info->Options, OPTION_FBDEV, FALSE)) {
 	info->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Using framebuffer device\n");
@@ -1591,7 +1597,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			   info->CurrentLayout.pixel_bytes);
 	int maxy        = info->FbMapSize / width_bytes;
 
-	if (xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	    xf86DrvMsg(scrnIndex, X_WARNING,
 		       "Acceleration disabled, not initializing the DRI\n");
 	    info->directRenderingEnabled = FALSE;
@@ -1896,7 +1902,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86SetSilkenMouse(pScreen);
 
 				/* Acceleration setup */
-    if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
+    if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (R128AccelInit(pScreen)) {
 	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
 	    info->accelOn = TRUE;
@@ -1915,7 +1921,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
 				/* Hardware cursor setup */
-    if (!xf86ReturnOptValBool(R128Options, OPTION_SW_CURSOR, FALSE)) {
+    if (!xf86ReturnOptValBool(info->Options, OPTION_SW_CURSOR, FALSE)) {
 	if (R128CursorInit(pScreen)) {
 	    int width, height;
 

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.21 2001/04/05 21:29:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.22 2001/04/19 19:54:50 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -218,6 +218,7 @@ typedef struct _TDFXRec {
   void (*VideoTimerCallback)(ScrnInfoPtr, Time);
   XF86VideoAdaptorPtr adaptor;
   ScreenBlockHandlerProcPtr BlockHandler;
+  OptionInfoPtr Options;
 } TDFXRec;
 
 typedef struct {

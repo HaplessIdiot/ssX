@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.37 2001/03/09 17:45:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.38 2001/04/04 12:46:35 alanh Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -138,6 +138,7 @@ typedef struct {
     int			hsync;
     int			vsync;
 #endif
+    OptionInfoPtr	Options;
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {

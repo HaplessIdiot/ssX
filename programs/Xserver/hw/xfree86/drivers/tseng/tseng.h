@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.33 2000/12/06 15:35:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.35 2001/02/15 17:54:57 eich Exp $ */
 
 
 
@@ -262,6 +262,7 @@ typedef struct {
     Bool DGAactive;
     DGAModePtr DGAModes;
     int	DGAViewportStatus;
+    OptionInfoPtr Options;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))

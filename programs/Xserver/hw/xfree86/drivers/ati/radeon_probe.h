@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.2 2000/11/09 03:24:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.3 2000/11/18 19:37:12 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -42,7 +42,7 @@
 #include "xf86str.h"
 
 /* radeon_probe.c */
-extern OptionInfoPtr RADEONAvailableOptions
+extern const OptionInfoRec * RADEONAvailableOptions
 		     FunctionPrototype((int, int));
 extern void          RADEONIdentify
 		     FunctionPrototype((int));
@@ -70,6 +70,6 @@ extern void          RADEONFreeScreen
 extern int           RADEONValidMode
 		     FunctionPrototype((int, DisplayModePtr, Bool, int));
 
-extern OptionInfoRec RADEONOptions[];
+extern const OptionInfoRec RADEONOptions[];
 
 #endif /* _RADEON_PROBE_H_ */

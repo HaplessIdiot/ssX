@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.10 2001/01/16 05:11:06 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.11 2001/04/10 16:07:58 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -351,6 +351,7 @@ typedef struct {
     void              (*VideoTimerCallback)(ScrnInfoPtr, Time);
     int               videoKey;
     Bool              showCache;
+    OptionInfoPtr     Options;
 } R128InfoRec, *R128InfoPtr;
 
 #define R128WaitForFifo(pScrn, entries)                                      \

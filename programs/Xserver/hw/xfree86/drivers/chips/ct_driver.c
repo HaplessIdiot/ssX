@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.104 2000/12/27 04:57:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.106 2001/02/15 18:36:09 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -130,7 +130,7 @@
 #include "ct_driver.h"
 
 /* Mandatory functions */
-static OptionInfoPtr	CHIPSAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	CHIPSAvailableOptions(int chipid, int busid);
 static void     CHIPSIdentify(int flags);
 static Bool     CHIPSProbe(DriverPtr drv, int flags);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
@@ -557,7 +557,7 @@ typedef enum {
     OPTION_NO_TMED
 } CHIPSOpts;
 
-static OptionInfoRec Chips655xxOptions[] = {
+static const OptionInfoRec Chips655xxOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CLKS,		"HWclocks",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -584,7 +584,7 @@ static OptionInfoRec Chips655xxOptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
-static OptionInfoRec ChipsWingineOptions[] = {
+static const OptionInfoRec ChipsWingineOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CLKS,		"HWclocks",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -599,7 +599,7 @@ static OptionInfoRec ChipsWingineOptions[] = {
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
-static OptionInfoRec ChipsHiQVOptions[] = {
+static const OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -797,8 +797,7 @@ CHIPSIdentify(int flags)
 			CHIPSChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 CHIPSAvailableOptions(int chipid, int busid)
 {
     int chip = chipid & 0x0000ffff;
@@ -1337,7 +1336,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    cPtr->Options = (OptionInfoPtr)ChipsHiQVOptions;
+    if (!(cPtr->Options = xalloc(sizeof(ChipsHiQVOptions))))
+	return FALSE;
+    memcpy(cPtr->Options, ChipsHiQVOptions, sizeof(ChipsHiQVOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
 
     /* Set the bits per RGB */
@@ -2191,7 +2192,9 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    cPtr->Options = (OptionInfoPtr)ChipsWingineOptions;
+    if (!(cPtr->Options = xalloc(sizeof(ChipsWingineOptions))))
+	return FALSE;
+    memcpy(cPtr->Options, ChipsWingineOptions, sizeof(ChipsWingineOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
 
     /* Set the bits per RGB */
@@ -2655,7 +2658,9 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    cPtr->Options = (OptionInfoPtr)Chips655xxOptions;
+    if (!(cPtr->Options = xalloc(sizeof(Chips655xxOptions))))
+	return FALSE;
+    memcpy(cPtr->Options, Chips655xxOptions, sizeof(Chips655xxOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, cPtr->Options);
 
     /* Set the bits per RGB */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.14 2001/04/19 14:07:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.15 2001/04/20 02:52:45 tsi Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -35,7 +35,7 @@
 static void SavageEnableMMIO(ScrnInfoPtr pScrn);
 static void SavageDisableMMIO(ScrnInfoPtr pScrn);
 
-static OptionInfoPtr SavageAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * SavageAvailableOptions(int chipid, int busid);
 static void SavageIdentify(int flags);
 static Bool SavageProbe(DriverPtr drv, int flags);
 static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags);
@@ -169,7 +169,7 @@ typedef enum {
 } SavageOpts;
 
 
-static OptionInfoRec SavageOptions[] =
+static const OptionInfoRec SavageOptions[] =
 {
     { OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN, {0}, FALSE  },
     { OPTION_HWCURSOR,	"HWCursor",	OPTV_BOOLEAN, {0}, FALSE },
@@ -551,7 +551,7 @@ static void SavageFreeRec(ScrnInfoPtr pScrn)
 }
 
 
-static OptionInfoPtr SavageAvailableOptions(int chipid, int busid)
+static const OptionInfoRec * SavageAvailableOptions(int chipid, int busid)
 {
     return SavageOptions;
 }
@@ -742,9 +742,12 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->depth == 8)
 	pScrn->rgbBits = 6;
 
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SavageOptions);
+    if (!(psav->Options = xalloc(sizeof(SavageOptions))))
+	return FALSE;
+    memcpy(psav->Options, SavageOptions, sizeof(SavageOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, psav->Options);
 
-    xf86GetOptValBool(SavageOptions, OPTION_PCI_BURST, &psav->pci_burst);
+    xf86GetOptValBool(psav->Options, OPTION_PCI_BURST, &psav->pci_burst);
 
     if (psav->pci_burst) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -752,20 +755,20 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     psav->NoPCIRetry = 1;		/* default */
-    if (xf86ReturnOptValBool(SavageOptions, OPTION_PCI_RETRY, FALSE)) {
-	if (xf86ReturnOptValBool(SavageOptions, OPTION_PCI_BURST, FALSE)) {
+    if (xf86ReturnOptValBool(psav->Options, OPTION_PCI_RETRY, FALSE)) {
+	if (xf86ReturnOptValBool(psav->Options, OPTION_PCI_BURST, FALSE)) {
 	    psav->NoPCIRetry = 0;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
 	} else
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires \"pci_burst\"\n");
     }
 
-    xf86GetOptValBool( SavageOptions, OPTION_SHADOW_FB, &psav->shadowFB );
+    xf86GetOptValBool( psav->Options, OPTION_SHADOW_FB, &psav->shadowFB );
     if (psav->shadowFB) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: shadow FB enabled\n");
     }
 
-    if ((s = xf86GetOptValString(SavageOptions, OPTION_ROTATE))) {
+    if ((s = xf86GetOptValString(psav->Options, OPTION_ROTATE))) {
 	if(!xf86NameCmp(s, "CW")) {
 	    /* accel is disabled below for shadowFB */
 	    psav->shadowFB = TRUE;
@@ -785,7 +788,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    if (xf86GetOptValBool(SavageOptions, OPTION_NOACCEL, &psav->NoAccel))
+    if (xf86GetOptValBool(psav->Options, OPTION_NOACCEL, &psav->NoAccel))
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
 		    "Option: NoAccel - Acceleration Disabled\n");
 
@@ -803,9 +806,9 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     from = X_DEFAULT;
     psav->hwcursor = psav->shadowFB ? FALSE : TRUE;
-    if (xf86GetOptValBool(SavageOptions, OPTION_HWCURSOR, &psav->hwcursor))
+    if (xf86GetOptValBool(psav->Options, OPTION_HWCURSOR, &psav->hwcursor))
 	from = X_CONFIG;
-    if (xf86ReturnOptValBool(SavageOptions, OPTION_SWCURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(psav->Options, OPTION_SWCURSOR, FALSE)) {
 	psav->hwcursor = FALSE;
 	from = X_CONFIG;
     }
@@ -814,17 +817,17 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     from = X_DEFAULT;
     psav->UseBIOS = TRUE;
-    if (xf86GetOptValBool(SavageOptions, OPTION_USEBIOS, &psav->UseBIOS) )
+    if (xf86GetOptValBool(psav->Options, OPTION_USEBIOS, &psav->UseBIOS) )
 	from = X_CONFIG;
     xf86DrvMsg(pScrn->scrnIndex, from, "%ssing video BIOS to set modes\n",
         psav->UseBIOS ? "U" : "Not u" );
 
     psav->LCDClock = 0.0;
-    if( xf86GetOptValFreq( SavageOptions, OPTION_LCDCLOCK, OPTUNITS_MHZ, &psav->LCDClock ) )
+    if( xf86GetOptValFreq( psav->Options, OPTION_LCDCLOCK, OPTUNITS_MHZ, &psav->LCDClock ) )
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG, 
 		    "Option: LCDClock %1.2f MHz\n", psav->LCDClock );
 
-    if( xf86GetOptValBool( SavageOptions, OPTION_SHADOW_STATUS, &psav->ShadowStatus))
+    if( xf86GetOptValBool( psav->Options, OPTION_SHADOW_STATUS, &psav->ShadowStatus))
 	xf86DrvMsg( pScrn->scrnIndex, X_CONFIG,
 		    "Option: ShadowStatus enabled\n" );
 

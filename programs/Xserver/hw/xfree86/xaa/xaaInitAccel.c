@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.28 2001/01/31 15:59:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.29 2001/02/04 03:19:28 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -42,7 +42,7 @@ typedef enum {
     XAAOPT_OFFSCREEN_PIXMAPS
 } XAAOpts;
 
-static OptionInfoRec XAAOptions[] = {
+static const OptionInfoRec XAAOptions[] = {
     {XAAOPT_SCREEN_TO_SCREEN_COPY,	"XaaNoScreenToScreenCopy",
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_SOLID_FILL_RECT,		"XaaNoSolidFillRect",
@@ -89,8 +89,6 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_NONE,	{0}, FALSE }
 };
 
-#define nXAAOptions (sizeof(XAAOptions) / sizeof(XAAOptions[0]))
-
 Bool
 XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 {
@@ -113,10 +111,11 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
-    OptionInfoRec options[nXAAOptions];
+    OptionInfoPtr options;
     int is_shared = 0;
     int i;
 
+    options = xnfalloc(sizeof(XAAOptions));
     (void)memcpy(options, XAAOptions, sizeof(XAAOptions));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
@@ -1430,6 +1429,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	if(BITMAP_SCANLINE_PAD == 64)
 	    infoRec->CachePixelGranularity *= 2;
     }
+
+    xfree(options);
 
     if(!infoRec->CacheTile && infoRec->WritePixmapToCache)
 	infoRec->CacheTile = XAACacheTile;

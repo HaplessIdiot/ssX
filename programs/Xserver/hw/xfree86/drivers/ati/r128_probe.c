@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.8 2001/02/12 04:24:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.9 2001/04/01 14:00:09 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -105,7 +105,7 @@ PciChipsets R128PciChipsets[] = {
 };
 
 /* Return the options for supported chipset 'n'; NULL otherwise */
-OptionInfoPtr
+const OptionInfoRec *
 R128AvailableOptions(int chipid, int busid)
 {
     int i;

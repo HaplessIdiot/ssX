@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.75 2001/01/06 20:19:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.76 2001/04/10 16:07:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -218,7 +218,7 @@ typedef struct _DriverRec {
     char *		driverName;
     void		(*Identify)(int flags);
     Bool		(*Probe)(struct _DriverRec *drv, int flags);
-    OptionInfoPtr	(*AvailableOptions)(int chipid, int bustype);
+    const OptionInfoRec * (*AvailableOptions)(int chipid, int bustype);
     pointer		module;
     int			refCount;
 } DriverRec, *DriverPtr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.17 2001/02/15 19:37:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.18 2001/03/03 22:46:32 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -20,13 +20,11 @@ typedef enum {
     OPT_INIT_PRIMARY
 } INT10Opts;
 
-static OptionInfoRec INT10Options[] = {
+static const OptionInfoRec INT10Options[] = {
     {OPT_NOINT10,       "NoINT10",      OPTV_BOOLEAN,   {0},    FALSE },
     {OPT_INIT_PRIMARY,  "InitPrimary",  OPTV_BOOLEAN,   {0},    FALSE },   
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
-
-#define nINT10Options (sizeof(INT10Options) / sizeof(INT10Options[0]))
 
 #ifdef DEBUG
 void
@@ -203,11 +201,15 @@ int10skip(ScrnInfoPtr pScrn, int entityIndex)
 	    configOptions = pEnt->device->options;
 
 	if (configOptions) {
-	    OptionInfoRec options[nINT10Options];
+	    OptionInfoPtr options;
 
+	    if (!(options = xalloc(sizeof(INT10Options))))
+		return FALSE;
+	     
 	    (void)memcpy(options, INT10Options, sizeof(INT10Options));
 	    xf86ProcessOptions(pScrn->scrnIndex, configOptions, options);
 	    xf86GetOptValBool(options, OPT_NOINT10, &noint10);
+	    xfree(options);
 	}
     }
     xfree(pEnt);
@@ -250,11 +252,15 @@ initPrimary(ScrnInfoPtr pScrn, int entityIndex)
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
     
     if (pEnt->device && pEnt->device->options) {
-	OptionInfoRec options[nINT10Options];
+	OptionInfoPtr options;
 
+	if (!(options = xalloc(sizeof(INT10Options))))
+	    return FALSE;
+	     
 	(void)memcpy(options, INT10Options, sizeof(INT10Options));
 	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options, options);
 	xf86GetOptValBool(options, OPT_INIT_PRIMARY, &initPrimary);
+	xfree(options);
     }
     xfree(pEnt);
 

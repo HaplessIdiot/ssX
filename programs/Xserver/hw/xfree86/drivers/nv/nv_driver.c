@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.62 2001/02/23 01:19:09 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.63 2001/03/28 01:17:43 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -40,7 +40,7 @@
  * Forward definitions for the functions that make up the driver.
  */
 /* Mandatory functions */
-static OptionInfoPtr NVAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * NVAvailableOptions(int chipid, int busid);
 static void    NVIdentify(int flags);
 static Bool    NVProbe(DriverPtr drv, int flags);
 static Bool    NVPreInit(ScrnInfoPtr pScrn, int flags);
@@ -298,7 +298,7 @@ typedef enum {
 } NVOpts;
 
 
-static OptionInfoRec NVOptions[] = {
+static const OptionInfoRec NVOptions[] = {
     { OPTION_SW_CURSOR,         "SWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_HW_CURSOR,         "HWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_NOACCEL,           "NoAccel",      OPTV_BOOLEAN,   {0}, FALSE },
@@ -403,8 +403,7 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 NVAvailableOptions(int chipid, int busid)
 {
     return NVOptions;
@@ -1036,7 +1035,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, NVOptions);
+    if (!(pNv->Options = xalloc(sizeof(NVOptions))))
+	return FALSE;
+    memcpy(pNv->Options, NVOptions, sizeof(NVOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pNv->Options);
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8)
@@ -1048,31 +1050,31 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * The preferred method is to use the "hw cursor" option as a tri-state
      * option, with the default set above.
      */
-    if (xf86GetOptValBool(NVOptions, OPTION_HW_CURSOR, &pNv->HWCursor)) {
+    if (xf86GetOptValBool(pNv->Options, OPTION_HW_CURSOR, &pNv->HWCursor)) {
 	from = X_CONFIG;
     }
     /* For compatibility, accept this too (as an override) */
-    if (xf86ReturnOptValBool(NVOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pNv->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pNv->HWCursor ? "HW" : "SW");
-    if (xf86ReturnOptValBool(NVOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_NOACCEL, FALSE)) {
 	pNv->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(NVOptions, OPTION_SHOWCACHE, FALSE)) {
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_SHOWCACHE, FALSE)) {
 	pNv->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     }
-    if (xf86ReturnOptValBool(NVOptions, OPTION_SHADOW_FB, FALSE)) {
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_SHADOW_FB, FALSE)) {
 	pNv->ShadowFB = TRUE;
 	pNv->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(NVOptions, OPTION_FBDEV, FALSE)) {
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_FBDEV, FALSE)) {
 	pNv->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using framebuffer device\n");
@@ -1091,7 +1093,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->ValidMode     = fbdevHWValidMode;
     }
     pNv->Rotate = 0;
-    if ((s = xf86GetOptValString(NVOptions, OPTION_ROTATE))) {
+    if ((s = xf86GetOptValString(pNv->Options, OPTION_ROTATE))) {
       if(!xf86NameCmp(s, "CW")) {
 	pNv->ShadowFB = TRUE;
 	pNv->NoAccel = TRUE;
@@ -1114,7 +1116,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
     }
-    if(xf86GetOptValInteger(NVOptions, OPTION_VIDEO_KEY, &(pNv->videoKey))) {
+    if(xf86GetOptValInteger(pNv->Options, OPTION_VIDEO_KEY, &(pNv->videoKey))) {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
                                 pNv->videoKey);
     } else {

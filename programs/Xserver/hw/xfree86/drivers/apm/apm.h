@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.15 2000/06/30 18:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.16 2001/04/25 17:46:42 alanh Exp $ */
 
 
 /* All drivers should typically include these */
@@ -175,6 +175,7 @@ typedef struct {
     XF86VideoAdaptorPtr	adaptor;
     int			timerIsOn;
     Time		offTime;
+    OptionInfoPtr	Options;
 } ApmRec, *ApmPtr;
 
 #define curr		((unsigned char *)pApm->regcurr)
@@ -222,6 +223,8 @@ extern void	ApmSetupXAAInfo(ApmPtr pApm, XAAInfoRecPtr pXAAinfo);
 extern Bool     ApmSwitchMode(int scrnIndex, DisplayModePtr mode,
                                   int flags);
 extern void     ApmAdjustFrame(int scrnIndex, int x, int y, int flags);
+extern void	ApmHWCursorReserveSpace(ApmPtr pApm);
+extern void	ApmAccelReserveSpace(ApmPtr pApm);
 
 extern int	ApmPixmapIndex;
 #define APM_GET_PIXMAP_PRIVATE(pix)\

@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -113,13 +113,11 @@ typedef enum {
 	OPTION_NOACCEL
 } VMWAREOpts;
 
-static OptionInfoRec VMWAREOptions[] = {
+static const OptionInfoRec VMWAREOptions[] = {
 	{ OPTION_HW_CURSOR,	"HWcursor",	OPTV_BOOLEAN,	{0},	FALSE },
 	{ OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0},	FALSE },
 	{ -1,			NULL,		OPTV_NONE,	{0},	FALSE }
 };
-
-#define nVMWAREOptions (sizeof(VMWAREOptions) / sizeof(VMWAREOptions[0]))
 
 static Bool
 VMWAREGetRec(ScrnInfoPtr pScrn)
@@ -332,7 +330,7 @@ VMWAREIdentify(int flags)
 	xf86PrintChipsets(VMWARE_NAME, "driver for VMware SVGA", VMWAREChipsets);
 }
 
-static OptionInfoPtr
+static const OptionInfoRec *
 VMWAREAvailableOptions(int chipid, int busid)
 {
 	return VMWAREOptions;
@@ -343,7 +341,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 {
 	MessageType from;
 	VMWAREPtr pVMWARE;
-	OptionInfoRec options[nVMWAREOptions];
+	OptionInfoPtr options;
 	int bpp24flags;
 	uint32 id;
 	int i;
@@ -531,6 +529,8 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
 	xf86CollectOptions(pScrn, NULL);
+	if (!(options = xalloc(sizeof(VMWAREOptions))))
+		return FALSE;
 	memcpy(options, VMWAREOptions, sizeof(VMWAREOptions));
 	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
@@ -567,6 +567,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	pScrn->videoRam = pVMWARE->videoRam / 1024;
 	pScrn->memPhysBase = pVMWARE->memPhysBase;
+	xfree(options);
 
 	{
 		Gamma zeros = { 0.0, 0.0, 0.0 };

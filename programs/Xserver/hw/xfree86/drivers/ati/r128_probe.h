@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.2 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -42,7 +42,7 @@
 #include "xf86str.h"
 
 /* r128_probe.c */
-extern OptionInfoPtr R128AvailableOptions
+extern const OptionInfoRec * R128AvailableOptions
 		     FunctionPrototype((int, int));
 extern void          R128Identify
 		     FunctionPrototype((int));
@@ -70,6 +70,6 @@ extern void          R128FreeScreen
 extern int           R128ValidMode
 		     FunctionPrototype((int, DisplayModePtr, Bool, int));
 
-extern OptionInfoRec R128Options[];
+extern const OptionInfoRec R128Options[];
 
 #endif /* _R128_PROBE_H_ */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.5 2001/04/19 12:40:33 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -19,7 +19,7 @@ typedef enum {
     OPTION_ROTATE
 } SISOpts;
 
-static OptionInfoRec SISOptions[] = {
+static const OptionInfoRec SISOptions[] = {
     { OPTION_SW_CURSOR,         "SWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_HW_CURSOR,         "HWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_PCI_RETRY,         "PciRetry",     OPTV_BOOLEAN,   {0}, FALSE },
@@ -35,7 +35,7 @@ static OptionInfoRec SISOptions[] = {
 };
 
 void SiSOptions(ScrnInfoPtr pScrn);
-OptionInfoPtr SISAvailableOptions(int chipid, int busid);
+const OptionInfoRec * SISAvailableOptions(int chipid, int busid);
 
 void
 SiSOptions(ScrnInfoPtr pScrn)
@@ -49,7 +49,10 @@ SiSOptions(ScrnInfoPtr pScrn)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SISOptions);
+    if (!(pSiS->Options = xalloc(sizeof(SISOptions))))
+	return;
+    memcpy(pSiS->Options, SISOptions, sizeof(SISOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pSiS->Options);
 
     /* initalize some defaults */
     pSiS->FastVram = TRUE;
@@ -68,7 +71,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
 #if 0 /* we only work with a depth greater or equal to 8 */
     if (pScrn->depth <= 8)  {
-        if (xf86GetOptValInteger(SISOptions, OPTION_RGB_BITS,
+        if (xf86GetOptValInteger(pSiS->Options, OPTION_RGB_BITS,
                                 &pScrn->rgbBits))
         {
             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -79,10 +82,10 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     /* sw/hw cursor */
     from = X_DEFAULT;
-    if (xf86GetOptValBool(SISOptions, OPTION_HW_CURSOR, &pSiS->HWCursor)) {
+    if (xf86GetOptValBool(pSiS->Options, OPTION_HW_CURSOR, &pSiS->HWCursor)) {
         from = X_CONFIG;
     }
-    if (xf86ReturnOptValBool(SISOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pSiS->Options, OPTION_SW_CURSOR, FALSE)) {
         from = X_CONFIG;
         pSiS->HWCursor = FALSE;
     }
@@ -90,21 +93,21 @@ SiSOptions(ScrnInfoPtr pScrn)
                                 pSiS->HWCursor ? "HW" : "SW");
 
     /* Accel */
-    if (xf86ReturnOptValBool(SISOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pSiS->Options, OPTION_NOACCEL, FALSE)) {
         pSiS->NoAccel = TRUE;
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
 
     /* PCI retry */
     from = X_DEFAULT;
-    if (xf86GetOptValBool(SISOptions, OPTION_PCI_RETRY, &pSiS->UsePCIRetry)) {
+    if (xf86GetOptValBool(pSiS->Options, OPTION_PCI_RETRY, &pSiS->UsePCIRetry)) {
         from = X_CONFIG;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "PCI retry %s\n",
                          pSiS->UsePCIRetry ? "enabled" : "disabled");
 
     /* Mem clock */
-    if (xf86GetOptValFreq(SISOptions, OPTION_SET_MEMCLOCK, OPTUNITS_MHZ,
+    if (xf86GetOptValFreq(pSiS->Options, OPTION_SET_MEMCLOCK, OPTUNITS_MHZ,
                                                             &temp)) {
         pSiS->MemClock = (int)(temp * 1000.0);
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
@@ -113,7 +116,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     /* fast VRAM */
     from = X_DEFAULT;
-    if (xf86GetOptValBool(SISOptions, OPTION_FAST_VRAM, &pSiS->FastVram)) {
+    if (xf86GetOptValBool(pSiS->Options, OPTION_FAST_VRAM, &pSiS->FastVram)) {
         from = X_CONFIG;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Fast VRAM %s\n",
@@ -121,7 +124,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     /* Turbo QUEUE */
     from = X_DEFAULT;
-    if (xf86GetOptValBool(SISOptions, OPTION_TURBOQUEUE, &pSiS->TurboQueue)) {
+    if (xf86GetOptValBool(pSiS->Options, OPTION_TURBOQUEUE, &pSiS->TurboQueue)) {
         from = X_CONFIG;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "TurboQueue %s\n", 
@@ -129,7 +132,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     /* CRT2 type */
     pSiS->ForceCRT2Type = CRT2_DEFAULT;
-    strptr = (char *)xf86GetOptValString(SISOptions, OPTION_FORCE_CRT2TYPE);
+    strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
     if (strptr != NULL)
     {
         if (!xf86strcmp(strptr,"TV"))
@@ -146,7 +149,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     /* ShadowFB */
     from = X_DEFAULT;
-    if (xf86GetOptValBool(SISOptions, OPTION_SHADOW_FB, &pSiS->ShadowFB)) {
+    if (xf86GetOptValBool(pSiS->Options, OPTION_SHADOW_FB, &pSiS->ShadowFB)) {
         from = X_CONFIG;
     }
 	if (pSiS->ShadowFB) {
@@ -156,7 +159,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	}
 
     /* Rotate */
-    if ((strptr = (char *)xf86GetOptValString(SISOptions, OPTION_ROTATE))) {
+    if ((strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_ROTATE))) {
         if(!xf86NameCmp(strptr, "CW")) {
             pSiS->ShadowFB = TRUE;
             pSiS->NoAccel = TRUE;
@@ -181,7 +184,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     }
 }
 
-OptionInfoPtr
+const OptionInfoRec *
 SISAvailableOptions(int chipid, int busid)
 {
     return SISOptions;

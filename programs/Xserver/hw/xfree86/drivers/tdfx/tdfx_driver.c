@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.70 2001/04/23 15:39:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.71 2001/04/23 16:52:22 dawes Exp $ */
 
 /*
  * Authors:
@@ -98,7 +98,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Required Functions: */
 
-static OptionInfoPtr	TDFXAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	TDFXAvailableOptions(int chipid, int busid);
 /* Print a driver identifying message. */
 static void TDFXIdentify(int flags);
 
@@ -173,7 +173,7 @@ typedef enum {
   OPTION_DRI
 } TDFXOpts;
 
-static OptionInfoRec TDFXOptions[] = {
+static const OptionInfoRec TDFXOptions[] = {
   { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_USE_PIO, "UsePIO", OPTV_BOOLEAN, {0}, FALSE},
@@ -376,8 +376,7 @@ TDFXIdentify(int flags) {
   xf86PrintChipsets(TDFX_NAME, "Driver for 3dfx Banshee/Voodoo3 chipsets", TDFXChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 TDFXAvailableOptions(int chipid, int busid)
 {
     return TDFXOptions;
@@ -701,7 +700,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   match=pTDFX->PciInfo=xf86GetPciInfoForEntity(pTDFX->pEnt->index);
   TDFXFindChips(pScrn, match);
 
-  if (xf86RegisterResources(pTDFX->pEnt->index, 0, ResExclusive)) {
+  if (xf86RegisterResources(pTDFX->pEnt->index, NULL, ResExclusive)) {
       TDFXFreeRec(pScrn);
       return FALSE;
   }
@@ -776,7 +775,10 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   /* Process the options */
   xf86CollectOptions(pScrn, NULL);
-  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TDFXOptions);
+  if (!(pTDFX->Options = xalloc(sizeof(TDFXOptions))))
+    return FALSE;
+  memcpy(pTDFX->Options, TDFXOptions, sizeof(TDFXOptions));
+  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pTDFX->Options);
 
   /*
    * Set the Chipset and ChipRev, allowing config file entries to
@@ -957,33 +959,33 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   }
   xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE)) {
+  if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_NOACCEL, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
       TDFXFreeRec(pScrn);
       return FALSE;
     }
   }
 
-  if (!xf86GetOptValBool(TDFXOptions, OPTION_SHOWCACHE, &(pTDFX->ShowCache))) {
+  if (!xf86GetOptValBool(pTDFX->Options, OPTION_SHOWCACHE, &(pTDFX->ShowCache))) {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache %s\n", pTDFX->ShowCache ? "Enabled" : "Disabled");
   } else {
     pTDFX->ShowCache = FALSE;
   }
 
-  if (xf86GetOptValInteger(TDFXOptions, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
+  if (xf86GetOptValInteger(pTDFX->Options, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n", pTDFX->videoKey);
   } else {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key default 0x%x\n", pTDFX->videoKey = 0x1E);
   }
 
-  if (xf86GetOptValInteger(TDFXOptions, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
+  if (xf86GetOptValInteger(pTDFX->Options, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
                                 		pTDFX->videoKey);
   } else 
 	pTDFX->videoKey = 0x1E;
 
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
+  if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_SW_CURSOR, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "ramdac")) {
       TDFXFreeRec(pScrn);
       return FALSE;
@@ -1008,7 +1010,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   }
 #endif
 
-  if (xf86ReturnOptValBool(TDFXOptions, OPTION_USE_PIO, FALSE)) {
+  if (xf86ReturnOptValBool(pTDFX->Options, OPTION_USE_PIO, FALSE)) {
     pTDFX->usePIO=TRUE;
   }
 
@@ -1835,7 +1837,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
 #if 0
   if (pTDFX->numChips>1) {
-    if (xf86ReturnOptValBool(TDFXOptions, OPTION_NO_SLI, FALSE)) {
+    if (xf86ReturnOptValBool(pTDFX->Options, OPTION_NO_SLI, FALSE)) {
       TDFXSetupSLI(pScrn, FALSE, 0);
     } else {
       TDFXSetupSLI(pScrn, TRUE, 0);
@@ -1888,14 +1890,14 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miSetPixmapDepths ();
     
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
+  pTDFX->NoAccel=xf86ReturnOptValBool(pTDFX->Options, OPTION_NOACCEL, FALSE);
 #ifdef XF86DRI
   /*
    * Setup DRI after visuals have been established, but before fbScreenInit
    * is called.   fbScreenInit will eventually call into the drivers
    * InitGLXVisuals call back.
    */
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_DRI, TRUE) || pTDFX->NoAccel) {
+  if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_DRI, TRUE) || pTDFX->NoAccel) {
       pTDFX->directRenderingEnabled = FALSE;
       driFrom = X_CONFIG;
   } else if ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1)) {
@@ -1958,7 +1960,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
+  if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_SW_CURSOR, FALSE)) {
     if (!TDFXCursorInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Hardware cursor initialization failed\n");

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.133 2001/04/26 15:07:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.134 2001/05/02 14:53:25 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -68,7 +68,7 @@
 #include "xf86xv.h"
 #endif
 
-static OptionInfoPtr TRIDENTAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * TRIDENTAvailableOptions(int chipid, int busid);
 static void	TRIDENTIdentify(int flags);
 static Bool	TRIDENTProbe(DriverPtr drv, int flags);
 static Bool	TRIDENTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -218,7 +218,7 @@ typedef enum {
     OPTION_CYBER_STRETCH
 } TRIDENTOpts;
 
-static OptionInfoRec TRIDENTOptions[] = {
+static const OptionInfoRec TRIDENTOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -633,8 +633,7 @@ TRIDENTBlockHandler (
     }
 }
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 TRIDENTAvailableOptions(int chipid, int busid)
 {
     return TRIDENTOptions;
@@ -1181,7 +1180,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TRIDENTOptions);
+    if (!(pTrident->Options = xalloc(sizeof(TRIDENTOptions))))
+	return FALSE;
+    memcpy(pTrident->Options, TRIDENTOptions, sizeof(TRIDENTOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pTrident->Options);
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth <= 8) {
@@ -1189,7 +1191,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Default to 8 */
 	pScrn->rgbBits = 6;
 #if 0
-	if (xf86GetOptValInteger(TRIDENTOptions, OPTION_RGB_BITS,
+	if (xf86GetOptValInteger(pTrident->Options, OPTION_RGB_BITS,
 				 &pScrn->rgbBits)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
@@ -1198,24 +1200,24 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pTrident->HWCursor = TRUE;
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTrident->HWCursor = FALSE;
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOACCEL, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_NOACCEL, FALSE)) {
 	pTrident->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_PCI_RETRY, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_PCI_RETRY, FALSE)) {
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
     pTrident->UsePCIBurst = TRUE;
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOPCIBURST, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_NOPCIBURST, FALSE)) {
 	pTrident->UsePCIBurst = FALSE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI Burst disbled\n");
     }
-    if(xf86GetOptValInteger(TRIDENTOptions, OPTION_VIDEO_KEY,
+    if(xf86GetOptValInteger(pTrident->Options, OPTION_VIDEO_KEY,
 						&(pTrident->videoKey))) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
 							pTrident->videoKey);
@@ -1225,11 +1227,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 			(((pScrn->mask.blue >> pScrn->offset.blue) - 1)
 			<< pScrn->offset.blue); 
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_NOMMIO, FALSE)) {
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_MMIO_ONLY, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_MMIO_ONLY, FALSE)) {
 	if (pTrident->NoMMIO)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MMIO only cannot be set"
 		       " with NoMMIO\n");
@@ -1238,22 +1240,22 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
 	}
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_SHADOW, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_CYBER_SHADOW, FALSE)) {
 	pTrident->CyberShadow = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow enabled\n");
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_CYBER_STRETCH, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_CYBER_STRETCH, FALSE)) {
 	pTrident->CyberStretch = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Stretch enabled\n");
     }
 
     pTrident->MUXThreshold = 160000; /* 160MHz */
-    if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MUX_THRESHOLD, 
+    if (xf86GetOptValInteger(pTrident->Options, OPTION_MUX_THRESHOLD, 
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
 						pTrident->MUXThreshold);
     }
-    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_SHADOW_FB, FALSE)) {
+    if (xf86ReturnOptValBool(pTrident->Options, OPTION_SHADOW_FB, FALSE)) {
         if (!pTrident->Linear) 
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Ignoring Option SHADOW_FB"
 		       " in non-Linear Mode\n");
@@ -1268,7 +1270,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     pTrident->Rotate = 0;
-    if ((s = xf86GetOptValString(TRIDENTOptions, OPTION_ROTATE))) {
+    if ((s = xf86GetOptValString(pTrident->Options, OPTION_ROTATE))) {
         if (!pTrident->Linear) 
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Ignoring Option ROTATE "
 		       "in non-Linear Mode\n");
@@ -1850,7 +1852,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     pTrident->MCLK = 0;
     mclk = CalculateMCLK(pScrn);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Clock is %3.2f MHz\n", mclk);
-    if (xf86GetOptValFreq(TRIDENTOptions, OPTION_SETMCLK, OPTUNITS_MHZ,
+    if (xf86GetOptValFreq(pTrident->Options, OPTION_SETMCLK, OPTUNITS_MHZ,
 				&real)) {
 	pTrident->MCLK = (int)(real * 1000.0);
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Setting new Memory Clock to %3.2f MHz\n",

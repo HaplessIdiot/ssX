@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.10 2001/01/06 21:29:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.11 2001/01/29 15:15:44 keithp Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -50,7 +50,7 @@
 /*
  * prototypes
  */
-static OptionInfoPtr ARKAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * ARKAvailableOptions(int chipid, int busid);
 static void ARKIdentify(int flags);
 static Bool ARKProbe(DriverPtr drv, int flags);
 static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags);
@@ -107,7 +107,7 @@ typedef enum {
 	OPTION_NOACCEL
 } ARKOpts;
 
-static OptionInfoRec ARKOptions[] = {
+static const OptionInfoRec ARKOptions[] = {
 	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE }
 };
 
@@ -195,7 +195,7 @@ static void ARKFreeRec(ScrnInfoPtr pScrn)
 	pScrn->driverPrivate = NULL;
 }
 
-static OptionInfoPtr ARKAvailableOptions(int chipid, int busid)
+static const OptionInfoRec * ARKAvailableOptions(int chipid, int busid)
 {
 	return ARKOptions;
 }
@@ -323,9 +323,12 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	pARK = ARKPTR(pScrn);
 
 	xf86CollectOptions(pScrn, NULL);
-	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, ARKOptions);
+	if (!(pARK->Options = xalloc(sizeof(ARKOptions))))
+		return FALSE;
+	memcpy(pARK->Options, ARKOptions, sizeof(ARKOptions));
+	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pARK->Options);
 
-	if (xf86ReturnOptValBool(ARKOptions, OPTION_NOACCEL, FALSE)) {
+	if (xf86ReturnOptValBool(pARK->Options, OPTION_NOACCEL, FALSE)) {
 		pARK->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - acceleration disabled\n");
 	} else

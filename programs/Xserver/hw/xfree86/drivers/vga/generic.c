@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.51 2001/02/15 18:20:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.52 2001/02/16 01:45:46 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -74,7 +74,7 @@
 
 
 /* Forward definitions */
-static OptionInfoPtr	  GenericAvailableOptions(int chipid, int busid);
+static const OptionInfoRec *	  GenericAvailableOptions(int chipid, int busid);
 static void       GenericIdentify(int);
 static Bool       GenericProbe(DriverPtr, int);
 static Bool       GenericPreInit(ScrnInfoPtr, int);
@@ -108,7 +108,7 @@ typedef enum {
     OPTION_VGA_CLOCKS
 } GenericOpts;
 
-static OptionInfoRec GenericOptions[] = {
+static const OptionInfoRec GenericOptions[] = {
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_VGA_CLOCKS,        "VGAClocks",    OPTV_BOOLEAN,   {0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
@@ -218,8 +218,7 @@ GenericIdentify(int flags)
         GenericChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 GenericAvailableOptions(int chipid, int busid)
 {
     return GenericOptions;
@@ -380,6 +379,7 @@ typedef struct _GenericRec
     CARD8 * ShadowPtr;
     CARD32 ShadowPitch;
     CloseScreenProcPtr CloseScreen;
+    OptionInfoPtr Options;
 } GenericRec, *GenericPtr;
 
 
@@ -590,8 +590,12 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* Deal with options */
     xf86CollectOptions(pScreenInfo, NULL);
+
+    if (!(pGenericPriv->Options = xalloc(sizeof(GenericOptions))))
+	return FALSE;
+    memcpy(pGenericPriv->Options, GenericOptions, sizeof(GenericOptions));
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, 
-		       GenericOptions);
+		       pGenericPriv->Options);
 
     /*
      * Determine clocks.  Limit them to the first four because that's all that
@@ -604,7 +608,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         for (i = 0;  i < pScreenInfo->numClocks;  i++)
             pScreenInfo->clock[i] = pEnt->device->clock[i];
         From = X_CONFIG;
-    } else  if (xf86ReturnOptValBool(GenericOptions,OPTION_VGA_CLOCKS,FALSE)) {
+    } else  if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_VGA_CLOCKS,FALSE)) {
         pScreenInfo->numClocks = 2;
         pScreenInfo->clock[0] = 25175;
         pScreenInfo->clock[1] = 28322;
@@ -673,7 +677,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* Set display resolution */
     xf86SetDpi(pScreenInfo, 0, 0);
 
-    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+    if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_SHADOW_FB,FALSE)) {
         pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
         pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	pGenericPriv->ShadowFB = TRUE;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.27 2000/12/27 04:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.28 2001/01/21 21:19:27 tsi Exp $ */
 
 /*
  * Authors:
@@ -95,7 +95,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "vbe.h"
 
 /* Required Functions: */
-static OptionInfoPtr I740AvailableOptions(int chipid, int busid);
+static const OptionInfoRec * I740AvailableOptions(int chipid, int busid);
 
 /* Print a driver identifying message. */
 static void I740Identify(int flags);
@@ -137,6 +137,8 @@ static int I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool
 static void I740DisplayPowerManagementSet(ScrnInfoPtr pScrn, 
 					int PowerManagermentMode, int flags);
 
+static void I740ProbeDDC(ScrnInfoPtr pScrn, int index);
+
 #define VERSION 4000
 #define I740_NAME "I740"
 #define I740_DRIVER_NAME "i740"
@@ -177,7 +179,7 @@ typedef enum {
   OPTION_USE_PIO
 } I740Opts;
 
-static OptionInfoRec I740Options[] = {
+static const OptionInfoRec I740Options[] = {
   { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_SDRAM, "SDRAM", OPTV_BOOLEAN, {0}, FALSE},
@@ -325,8 +327,7 @@ I740FreeRec(ScrnInfoPtr pScrn) {
   pScrn->driverPrivate=0;
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 I740AvailableOptions(int chipid, int busid) 
 {
     return I740Options;
@@ -440,7 +441,7 @@ I740Probe(DriverPtr drv, int flags) {
   return foundScreen;
 }
 
-void
+static void
 I740ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -527,7 +528,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   xf86PrintDepthBpp(pScrn);
 
   pScrn->rgbBits=8;
-  if (xf86ReturnOptValBool(I740Options, OPTION_DAC_6BIT, FALSE))
+  if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE))
     pScrn->rgbBits=6;
   if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
     return FALSE;
@@ -552,13 +553,16 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   /* Process the options */
   xf86CollectOptions(pScrn, NULL);
-  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, I740Options);
+  if (!(pI740->Options = xalloc(sizeof(I740Options))))
+    return FALSE;
+  memcpy(pI740->Options, I740Options, sizeof(I740Options));
+  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pI740->Options);
 
   /* 6-BIT dac isn't reasonable for modes with > 8bpp */
-  if (xf86ReturnOptValBool(I740Options, OPTION_DAC_6BIT, FALSE) &&
+  if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE) &&
       pScrn->bitsPerPixel>8) {
     OptionInfoPtr ptr;
-    ptr=xf86TokenToOptinfo(I740Options, OPTION_DAC_6BIT);
+    ptr=xf86TokenToOptinfo(pI740->Options, OPTION_DAC_6BIT);
     ptr->found=FALSE;
   }
 
@@ -637,24 +641,24 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   temp=pI740->readControl(pI740, XRX, DRAM_ROW_CNTL_LO);
   pI740->HasSGRAM = !((temp&DRAM_RAS_TIMING)||(temp&DRAM_RAS_PRECHARGE));
-  if (xf86IsOptionSet(I740Options, OPTION_SDRAM)) {
-    if (xf86IsOptionSet(I740Options, OPTION_SGRAM)) {
+  if (xf86IsOptionSet(pI740->Options, OPTION_SDRAM)) {
+    if (xf86IsOptionSet(pI740->Options, OPTION_SGRAM)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		 "It is nonsensical to set both SDRAM and SGRAM options\n");
       return FALSE;
     }
-    if (xf86ReturnOptValBool(I740Options, OPTION_SDRAM, FALSE)) {
+    if (xf86ReturnOptValBool(pI740->Options, OPTION_SDRAM, FALSE)) {
       pI740->HasSGRAM = FALSE;
     } else {
       pI740->HasSGRAM = TRUE;
     }
   } else {
-    if (xf86IsOptionSet(I740Options, OPTION_SDRAM)) {
+    if (xf86IsOptionSet(pI740->Options, OPTION_SDRAM)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		 "It is nonsensical to set both SDRAM and SGRAM options\n");
       return FALSE;
     }
-    if (xf86ReturnOptValBool(I740Options, OPTION_SGRAM, FALSE)) {
+    if (xf86ReturnOptValBool(pI740->Options, OPTION_SGRAM, FALSE)) {
       pI740->HasSGRAM = TRUE;
     } else {
       pI740->HasSGRAM = FALSE;
@@ -775,14 +779,14 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   }
   xf86LoaderReqSymbols(reqSym, NULL);
 
-  if (!xf86ReturnOptValBool(I740Options, OPTION_NOACCEL, FALSE)) {
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_NOACCEL, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
       I740FreeRec(pScrn);
       return FALSE;
     }
   }
 
-  if (!xf86ReturnOptValBool(I740Options, OPTION_SW_CURSOR, FALSE)) {
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "ramdac")) {
       I740FreeRec(pScrn);
       return FALSE;
@@ -791,7 +795,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   }
 
   /*  We wont be using the VGA access after the probe */
-  if (!xf86ReturnOptValBool(I740Options, OPTION_USE_PIO, FALSE)) {
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_USE_PIO, FALSE)) {
     resRange vgaio[] = { {ResShrIoBlock,0x3B0,0x3BB},
 			 {ResShrIoBlock,0x3C0,0x3DF},
 			 _END };
@@ -1284,7 +1288,7 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   }
 
   /* Turn on 8 bit dac if requested */
-  if (xf86ReturnOptValBool(I740Options, OPTION_DAC_6BIT, FALSE))
+  if (xf86ReturnOptValBool(pI740->Options, OPTION_DAC_6BIT, FALSE))
     i740Reg->PixelPipeCfg0 = DAC_6_BIT;
   else
     i740Reg->PixelPipeCfg0 = DAC_8_BIT;
@@ -1301,7 +1305,7 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
   i740Reg->DisplayControl = HIRES_MODE;
 
   /* Set the MCLK freq */
-  if (xf86ReturnOptValBool(I740Options, OPTION_SLOW_RAM, FALSE))
+  if (xf86ReturnOptValBool(pI740->Options, OPTION_SLOW_RAM, FALSE))
     i740Reg->PLLControl = PLL_MEMCLK__66667KHZ; /*  66 MHz */
   else
     i740Reg->PLLControl = PLL_MEMCLK_100000KHZ; /* 100 MHz -- use as default */
@@ -1556,14 +1560,14 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     return FALSE;
   }
 
-  if (!xf86ReturnOptValBool(I740Options, OPTION_NOACCEL, FALSE)) {
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_NOACCEL, FALSE)) {
     if (!I740AccelInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Hardware acceleration initialization failed\n");
     }
   }
 
-  if (!xf86ReturnOptValBool(I740Options, OPTION_SW_CURSOR, FALSE)) {
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
     if (!I740CursorInit(pScreen)) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Hardware cursor initialization failed\n");

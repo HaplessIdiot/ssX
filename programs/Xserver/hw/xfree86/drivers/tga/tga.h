@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.15 2000/10/20 12:57:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.16 2001/02/15 11:03:58 alanh Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -90,6 +90,7 @@ typedef struct {
     CARD16              line_pattern; /* for dashed lines */
     int                 Bpp; /* bytes per pixel */
     int                 depthflag; /* either BPP8PACKED or BPP24 */
+    OptionInfoPtr	Options;
 } TGARec, *TGAPtr;
 
 /* ?? this is a hack for initial TGA2 support */

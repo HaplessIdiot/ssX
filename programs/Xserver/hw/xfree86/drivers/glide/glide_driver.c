@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.21 2001/01/09 16:34:41 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.22 2001/01/21 21:19:25 tsi Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -126,6 +126,7 @@ typedef struct {
   Bool                OnAtExit;
   Bool                GlideInitiated;
   EntityInfoPtr       pEnt;
+  OptionInfoPtr       Options;
 } GLIDERec, *GLIDEPtr;
 
 static pgrSstQueryBoards_t pgrSstQueryBoards;
@@ -140,7 +141,7 @@ static pgrLfbUnlock_t      pgrLfbUnlock;
 static pgrGlideShutdown_t  pgrGlideShutdown;
 static pgrLfbWriteRegion_t pgrLfbWriteRegion;
 
-static OptionInfoPtr GLIDEAvailableOptions(int chipid, int busid);
+static const OptionInfoRec * GLIDEAvailableOptions(int chipid, int busid);
 static void	GLIDEIdentify(int flags);
 static Bool	GLIDEProbe(DriverPtr drv, int flags);
 static Bool	GLIDEPreInit(ScrnInfoPtr pScrn, int flags);
@@ -192,7 +193,7 @@ typedef enum {
   OPTION_GLIDEDEVICE
 } GLIDEOpts;
 
-static OptionInfoRec GLIDEOptions[] = {
+static const OptionInfoRec GLIDEOptions[] = {
   { OPTION_ON_AT_EXIT, "OnAtExit",       OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_GLIDEDEVICE, "GlideDevice",   OPTV_INTEGER, {0}, FALSE },
   { -1,	               NULL,             OPTV_NONE,    {0}, FALSE }
@@ -352,8 +353,7 @@ GLIDEFreeRec(ScrnInfoPtr pScrn)
 }
 
 
-static 
-OptionInfoPtr
+static const OptionInfoRec *
 GLIDEAvailableOptions(int chipid, int busid)
 {
    return GLIDEOptions;
@@ -544,11 +544,14 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
   xf86CollectOptions(pScrn, NULL);
 
   /* Process the options */
-  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, GLIDEOptions);
+  if (!(pGlide->Options = xalloc(sizeof(GLIDEOptions))))
+    return FALSE;
+  memcpy(pGlide->Options, GLIDEOptions, sizeof(GLIDEOptions));
+  xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pGlide->Options);
 
   pGlide->OnAtExit = FALSE;
   from = X_DEFAULT;
-  if (xf86GetOptValBool(GLIDEOptions, OPTION_ON_AT_EXIT, &(pGlide->OnAtExit)))
+  if (xf86GetOptValBool(pGlide->Options, OPTION_ON_AT_EXIT, &(pGlide->OnAtExit)))
     from = X_CONFIG;
 
   xf86DrvMsg(pScrn->scrnIndex, from, 

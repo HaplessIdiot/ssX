@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.14 2000/12/06 15:35:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.15 2001/02/15 20:00:08 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -215,12 +215,10 @@ typedef enum {
     VBEOPT_NOVBE
 } VBEOpts;
 
-static OptionInfoRec VBEOptions[] = {
+static const OptionInfoRec VBEOptions[] = {
     { VBEOPT_NOVBE,	"NoVBE",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
-
-#define nVBEOptions (sizeof(VBEOptions) / sizeof(VBEOptions[0]))
 
 static unsigned char *
 vbeReadEDID(vbeInfoPtr pVbe)
@@ -230,13 +228,15 @@ vbeReadEDID(vbeInfoPtr pVbe)
     unsigned char *tmp = NULL;
     Bool novbe = FALSE;
     int screen = pVbe->pInt10->scrnIndex;
-    OptionInfoRec options[nVBEOptions];
+    OptionInfoPtr options;
 
     if (!page) return NULL;
 
+    options = xnfalloc(sizeof(VBEOptions));
     (void)memcpy(options, VBEOptions, sizeof(VBEOptions));
     xf86ProcessOptions(screen, xf86Screens[screen]->options, options);
     xf86GetOptValBool(options, VBEOPT_NOVBE, &novbe);
+    xfree(options);
     if (novbe) return NULL;
     
     if (!vbeProbeDDC(pVbe)) goto error;

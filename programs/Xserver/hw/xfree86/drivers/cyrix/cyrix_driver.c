@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.17 2001/01/29 15:14:36 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.18 2001/02/16 01:45:45 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -52,7 +52,7 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-static OptionInfoPtr CYRIXAvailableOptions(int chip, int busid);
+static const OptionInfoRec * CYRIXAvailableOptions(int chip, int busid);
 static void	CYRIXIdentify(int flags);
 static Bool	CYRIXProbe(DriverPtr drv, int flags);
 static Bool	CYRIXPreInit(ScrnInfoPtr pScrn, int flags);
@@ -133,7 +133,7 @@ typedef enum {
     OPTION_NOACCEL
 } CYRIXOpts;
 
-static OptionInfoRec CYRIXOptions[] = {
+static const OptionInfoRec CYRIXOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE  },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -282,8 +282,7 @@ CYRIXIdentify(int flags)
     xf86PrintChipsets(CYRIX_NAME, "driver for Cyrix MediaGX Processors", CYRIXChipsets);
 }
 
-static
-OptionInfoPtr
+static const OptionInfoRec *
 CYRIXAvailableOptions(int chip, int busid)
 {
     return CYRIXOptions;
@@ -612,7 +611,10 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     xf86CollectOptions(pScrn, NULL);
 
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CYRIXOptions);
+    if (!(pCyrix->Options = xalloc(sizeof(CYRIXOptions))))
+	return FALSE;
+    memcpy(pCyrix->Options, CYRIXOptions, sizeof(CYRIXOptions));
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, pCyrix->Options);
 
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) {
@@ -620,7 +622,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Default to 8 */
 	pScrn->rgbBits = 8;
 #if 0
-	if (xf86GetOptValInteger(CYRIXOptions, OPTION_RGB_BITS,
+	if (xf86GetOptValInteger(pCyrix->Options, OPTION_RGB_BITS,
 				 &pScrn->rgbBits)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
@@ -629,17 +631,17 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     }
     from = X_DEFAULT;
     pCyrix->HWCursor = TRUE;
-    if (xf86IsOptionSet(CYRIXOptions, OPTION_HW_CURSOR)) {
+    if (xf86IsOptionSet(pCyrix->Options, OPTION_HW_CURSOR)) {
 	from = X_CONFIG;
 	pCyrix->HWCursor = TRUE;
     }
-    if (xf86IsOptionSet(CYRIXOptions, OPTION_SW_CURSOR)) {
+    if (xf86IsOptionSet(pCyrix->Options, OPTION_SW_CURSOR)) {
 	from = X_CONFIG;
 	pCyrix->HWCursor = FALSE;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCyrix->HWCursor ? "HW" : "SW");
-    if (xf86IsOptionSet(CYRIXOptions, OPTION_NOACCEL)) {
+    if (xf86IsOptionSet(pCyrix->Options, OPTION_NOACCEL)) {
 	pCyrix->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }

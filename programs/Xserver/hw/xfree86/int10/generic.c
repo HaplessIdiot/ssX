@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.18 2001/04/09 09:38:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.19 2001/04/30 14:34:57 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -56,12 +56,10 @@ typedef enum {
     INT10OPT_NOINT10
 } INT10Opts;
 
-static OptionInfoRec INT10Options[] = {
+static const OptionInfoRec INT10Options[] = {
     { INT10OPT_NOINT10,	"NoInt10",	OPTV_BOOLEAN,	{0},	FALSE },
     { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
 };
-
-#define nINT10Options (sizeof(INT10Options) / sizeof(INT10Options[0]))
 
 xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
@@ -77,14 +75,19 @@ xf86InitInt10(int entityIndex)
 #endif
     /* Default Int10 enabled. */
     Bool noint10 = FALSE;
-    OptionInfoRec options[nINT10Options];
+    OptionInfoPtr options;
 
     pScrn = (xf86FindScreenForEntity(entityIndex));
+
+    if (!(options = xalloc(sizeof(INT10Options))))
+	return NULL;
 
     (void)memcpy(options, INT10Options, sizeof(INT10Options));
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, options);
 
     xf86GetOptValBool(options, INT10OPT_NOINT10, &noint10);
+
+    xfree(options);
     
     if (noint10)
 	return NULL;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.7 1999/03/20 08:59:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/opaque.h,v 1.8 2001/01/17 22:36:57 dawes Exp $ */
 
 #ifndef OPAQUE_H
 #define OPAQUE_H
@@ -70,9 +70,6 @@ extern int limitNoFile;
 #endif
 extern Bool permitOldBugs;
 extern Bool defeatAccessControl;
-#ifdef SERVER_LOCK
-static Bool nolock = FALSE;
-#endif
 extern char* protNoListen;
 
 
