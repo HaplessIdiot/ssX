@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.348 2001/03/01 01:23:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.349 2001/03/07 15:54:10 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -689,6 +689,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #if BuildXF86DRI
 
+#ifndef BuildGLXLibrary
+#define BuildGLXLibrary	YES
+#endif
+
 /*
  * One and ONLY one of the GlxBuiltIn* drivers can be defined to be YES.
  * If more than one are defined, the compilation will fail with multiply
@@ -869,6 +873,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 #endif
 
+#if 0
 /*
  * Build the extra extension libs even when not including the extra extensions
  * in the servers
@@ -891,8 +896,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef BuildGLXLibrary
 # define BuildGLXLibrary	YES
 #endif
-#ifndef BuildGLULibrary
-# define BuildGLULibrary	(HasCplusplus && BuildGLXLibrary)
 #endif
 
 /*
