@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* $Xorg: sm_client.c,v 1.4 2001/02/09 02:03:30 xorgcvs Exp $ */
 
 /*
@@ -247,7 +248,7 @@ char 		*errorStringRet;
 		    SIZEOF (smRegisterClientMsg), WORD64COUNT (extra),
 		    smRegisterClientMsg, pMsg, pData);
 
-		STORE_ARRAY8 (pData, 0, NULL);
+		STORE_NULL (pData);
 
 		IceFlush (iceConn);
 

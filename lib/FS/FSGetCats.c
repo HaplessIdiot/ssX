@@ -23,7 +23,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSGetCats.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSGetCats.c,v 1.7tsi Exp $ */
 
 /*
 
@@ -73,8 +73,10 @@ FSGetCatalogues(svr, num)
 	return (char **) NULL;
     }
     if (rep.num_catalogues
-#if (SIZE_MAX >> 2) <= UINT_MAX
+#if (SIZE_MAX >> 2) <= UCHAR_MAX
 	&& rep.num_catalogues <= SIZE_MAX/sizeof(char *)
+#endif
+#if (SIZE_MAX >> 2) <= UINT_MAX
 	&& rep.length <= (SIZE_MAX >> 2)
 #endif
 	) {
