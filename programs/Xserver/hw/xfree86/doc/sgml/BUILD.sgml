@@ -8,7 +8,7 @@
 <Date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.9 2003/01/04 04:20:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.10 2003/02/26 21:59:44 dawes Exp $
 </ident>
 
 <abstract>
@@ -46,18 +46,25 @@ either download the &fullrelvers; source tarballs from the XFree86 ftp
 site<![ %updaterel; [ and the source patch that updates &fullrelvers; to
 &relvers]]>.  The procedure for this is as follows:
 <itemize>
-  <item>The XFree86 &fullrelvers; source is contained in files
-	<tt>X&fullsrcvers;src-1.tgz</tt>, <tt>X&fullsrcvers;src-2.tgz</tt>
-	and <tt>X&fullsrcvers;src-3.tgz</tt>.  These can be found at
+  <item>The XFree86 &fullrelvers; source is contained in the files
+	<tt>X&fullsrcvers;src-1.tgz</tt>, <tt>X&fullsrcvers;src-2.tgz</tt>,
+	<tt>X&fullsrcvers;src-3.tgz</tt>, <tt>X&fullsrcvers;src-4.tgz</tt>,
+	<tt>X&fullsrcvers;src-5.tgz</tt>, <tt>X&fullsrcvers;src-6.tgz</tt>
+	and <tt>X&fullsrcvers;src-7.tgz</tt>.  These can be found at
 	<htmlurl
 	name="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/"
 	url="ftp://ftp.xfree86.org/pub/XFree86/&fullrelvers;/source/">
 	and similar locations on XFree86 mirror sites.
-	<tt>X&fullsrcvers;src-2.tgz</tt> contains the fonts and
-	documentation source.  <tt>X&fullsrcvers;src-3.tgz</tt> contains
-	the hardcopy documentation.  <tt>X&fullsrcvers;src-1.tgz</tt>
-	contains everything else.  If you don't need the docs or fonts
-	you can get by with only <tt>X&fullsrcvers;src-1.tgz</tt>.
+	<tt>X&fullsrcvers;src-4.tgz</tt> and
+	<tt>X&fullsrcvers;src-5.tgz</tt> contains the fonts.
+	<tt>X&fullsrcvers;src-6.tgz</tt> contains the documentation
+	source.  <tt>X&fullsrcvers;src-7.tgz</tt> contains the hardcopy
+	documentation.  <tt>X&fullsrcvers;src-1.tgz</tt>,
+	<tt>X&fullsrcvers;src-2.tgz</tt> and
+	<tt>X&fullsrcvers;src-3.tgz</tt> contains everything else.  If
+	you don't need the docs or fonts you can get by with only
+	<tt>X&fullsrcvers;src-1.tgz</tt>, <tt>X&fullsrcvers;src-2.tgz</tt>
+	and <tt>X&fullsrcvers;src-3.tgz</tt>.
 
   <item>Extract each of these files by running the following from a directory
 	on a filesystem containing enough space (the full source requires
@@ -67,6 +74,10 @@ site<![ %updaterel; [ and the source patch that updates &fullrelvers; to
 	gzip -d &lt; X&fullsrcvers;src-1.tgz | tar vxf -<newline>
 	gzip -d &lt; X&fullsrcvers;src-2.tgz | tar vxf -<newline>
 	gzip -d &lt; X&fullsrcvers;src-3.tgz | tar vxf -<newline>
+	gzip -d &lt; X&fullsrcvers;src-4.tgz | tar vxf -<newline>
+	gzip -d &lt; X&fullsrcvers;src-5.tgz | tar vxf -<newline>
+	gzip -d &lt; X&fullsrcvers;src-6.tgz | tar vxf -<newline>
+	gzip -d &lt; X&fullsrcvers;src-7.tgz | tar vxf -<newline>
 	</tt></quote>
 
 <![ %updaterel; [
@@ -135,8 +146,9 @@ some configuration settings.
 -->
 
 <![ %notsnapshot; [
-If you are using just the <tt>X&srcvers;src-1.tgz</tt> part of the
-source dist, you will need to define <bf>BuildFonts</bf> to
+If you are using just the <tt>X&srcvers;src-1.tgz</tt>,
+<tt>X&srcvers;src-2.tgz</tt> and <tt>X&srcvers;src-3.tgz</tt> parts of
+the source dist, you will need to define <bf>BuildFonts</bf> to
 <bf>NO</bf>.
 ]]>
 
