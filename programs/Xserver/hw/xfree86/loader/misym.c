@@ -159,6 +159,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miOverlayCollectUnderlayRegions)
    SYMFUNC(miInitOverlay)
    SYMFUNC(miOverlayComputeCompositeClip)
+   SYMFUNC(miOverlaySetRootClip)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
    SYMVAR(miPointerScreenIndex)
