@@ -1,4 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -117,6 +118,8 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;                      /* number of spans to fill */
     register DDXPointPtr ppt;   /* pointer to list of start points */
     register int *pwidth;       /* pointer to list of n widths */
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (!xf86VTSema)
     {
@@ -144,8 +147,8 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -177,8 +180,8 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -197,6 +200,8 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->tile.pixmap;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (!xf86VTSema)
     {
@@ -224,8 +229,8 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -276,8 +281,8 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -296,6 +301,8 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (!xf86VTSema)
     {
@@ -323,8 +330,8 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -377,8 +384,8 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -397,6 +404,8 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (!xf86VTSema)
     {
@@ -424,8 +433,8 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -479,8 +488,8 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     	}
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }

@@ -1,4 +1,5 @@
 /* $XConsortium: regmach32.h,v 1.1 94/03/28 21:09:43 dpw Exp $ */
+/* $XFree86$ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -481,15 +482,19 @@ typedef struct {
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty() { while (inw(GP_STAT) & (GPBUSY | 1)); }
 
+#ifdef NO_PROBEWAIT_PROBLEM
 /*
  * This version is for use in mach8Probe() to prevent a server hang if
- * there is no 8514/A-style chip present
+ * there is no ATI chip present
  */
 #define	ProbeWaitIdleEmpty() { int i; \
 			       for (i = 0; i < 100000; i++) \
 			          if (!(inw(GP_STAT) & (GPBUSY | 1))) \
 				     break; \
 			     }
+#else
+#define ProbeWaitIdleEmpty WaitIdleEmpty
+#endif
 
 #define SKIP_2(_v) ((((_v)<<1)&0xfff8)|((_v)&0x3)|(((_v)&0x80)>>5))
 
