@@ -496,6 +496,11 @@ TellNoMap (pwin, pmid)
     Colormap 	*pmid;
 {
     xEvent 	xE;
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension && pwin->drawable.pScreen->myNum)
+	return WT_STOPWALKING;
+#endif
     if (wColormap(pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
@@ -522,6 +527,11 @@ TellLostMap (pwin, value)
 {
     Colormap 	*pmid = (Colormap *)value;
     xEvent 	xE;
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension && pwin->drawable.pScreen->myNum)
+	return WT_STOPWALKING;
+#endif
     if (wColormap(pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */
@@ -544,6 +554,11 @@ TellGainedMap (pwin, value)
 {
     Colormap 	*pmid = (Colormap *)value;
     xEvent 	xE;
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension && pwin->drawable.pScreen->myNum)
+	return WT_STOPWALKING;
+#endif
     if (wColormap (pwin) == *pmid)
     {
 	/* This should be call to DeliverEvent */

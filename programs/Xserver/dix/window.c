@@ -206,33 +206,6 @@ PrintWindowTree()
 }
 #endif
 
-#ifdef PANORAMIX
-Bool
-PanoramiXWindowOffScreen(pWin,w, h)
-    register WindowPtr pWin;
-    unsigned short w, h;
-{
-    int  Scr;
-   
-    Scr = (pWin->drawable.pScreen)->myNum;
-
-    if ((pWin->drawable.x  < 0) && 
-	((pWin->drawable.x + w) < 0))
-       return TRUE;
-    if ((pWin->drawable.x > panoramiXdataPtr[Scr].width) &&
-	((pWin->drawable.x + w) > panoramiXdataPtr[Scr].width))
-       return TRUE;
-    if ((pWin->drawable.y < 0) && 
-	((pWin->drawable.y + h) < 0))
-       return TRUE;
-    if ((pWin->drawable.y > panoramiXdataPtr[Scr].height) && 
-	((pWin->drawable.y + h) > panoramiXdataPtr[Scr].height) )
-       return TRUE;
-
-   return FALSE;
-}
-#endif
-
 int
 TraverseTree(pWin, func, data)
     register WindowPtr pWin;
@@ -581,44 +554,6 @@ ClippedRegionFromBox(pWin, Rgn, x, y, w, h)
     REGION_INTERSECT(pScreen, Rgn, Rgn, &pWin->winSize);
 }
 
-/* Set the region to the intersection of the rectangle and the
- * PanoramiX window size.  The window is typically the parent of the
- * window from which the region came.
- */
-
-#ifdef PANORAMIX
-void
-PanoramiXClippedRegion(pWin, Rgn, x, y, w, h)
-    register WindowPtr pWin;
-    RegionPtr Rgn;
-    register int x, y;
-    int w, h;
-{
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
-    BoxRec box;
-
-    box = *(REGION_EXTENTS(pScreen, &PanoramiXScreenRegion[pScreen->myNum]));
-
-    /* we do these calculations to avoid overflows */
-    if (x > box.x1)
-	box.x1 = x;
-    if (y > box.y1)
-	box.y1 = y;
-    x += w;
-    if (x < box.x2)
-	box.x2 = x;
-    y += h;
-    if (y < box.y2)
-	box.y2 = y;
-    if (box.x1 > box.x2)
-	box.x2 = box.x1;
-    if (box.y1 > box.y2)
-	box.y2 = box.y1;
-    REGION_RESET(pScreen, Rgn, &box);
-    REGION_INTERSECT(pScreen, Rgn, Rgn, &PanoramiXScreenRegion[pScreen->myNum]);
-}
-#endif
-
 WindowPtr
 RealChildHead(pWin)
     register WindowPtr pWin;
@@ -867,9 +802,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	pWin->forcedBS = TRUE;
     }
 
-#ifdef PANORAMIX
-    if(noPanoramiXExtension || !pScreen->myNum)
-#endif
     if (SubSend(pParent))
     {
 	event.u.u.type = CreateNotify;
@@ -945,9 +877,6 @@ CrushTree(pWin)
 	while (1)
 	{
 	    pParent = pChild->parent;
-#ifdef PANORAMIX
-	    if(noPanoramiXExtension || !pChild->drawable.pScreen->myNum)
-#endif
 	    if (SubStrSend(pChild, pParent))
 	    {
 		event.u.u.type = DestroyNotify;
@@ -1000,9 +929,6 @@ DeleteWindow(value, wid)
     CrushTree(pWin);
 
     pParent = pWin->parent;
-#ifdef PANORAMIX
-    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
-#endif
     if (wid && pParent && SubStrSend(pWin, pParent))
     {
 	event.u.u.type = DestroyNotify;
@@ -1465,7 +1391,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    if (pChild->optional->colormap == cmap)
 			CheckWindowOptionalNeed (pChild);
 		}
-
+	
 		xE.u.u.type = ColormapNotify;
 		xE.u.colormap.window = pWin->drawable.id;
 		xE.u.colormap.colormap = cmap;
@@ -1877,10 +1803,7 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 		event.u.gravity.window = pSib->drawable.id;
 		event.u.gravity.x = cwsx - wBorderWidth (pSib);
 		event.u.gravity.y = cwsy - wBorderWidth (pSib);
-#ifdef PANORAMIX
-		if(noPanoramiXExtension || !pScreen->myNum)
-#endif
-		    DeliverEvents (pSib, &event, 1, NullWindow);
+		DeliverEvents (pSib, &event, 1, NullWindow);
 		pSib->origin.x = cwsx;
 		pSib->origin.y = cwsy;
 	    }
@@ -2461,6 +2384,12 @@ ConfigureWindow(pWin, mask, vlist, client)
 	    event.u.u.detail = Above;
 	event.u.configureRequest.x = x;
 	event.u.configureRequest.y = y;
+#ifdef PANORAMIX
+	if(!noPanoramiXExtension && (!pParent || !pParent->parent)) {
+            event.u.configureRequest.x += panoramiXdataPtr[0].x;
+            event.u.configureRequest.y += panoramiXdataPtr[0].y;
+	}
+#endif
 	event.u.configureRequest.width = w;
 	event.u.configureRequest.height = h;
 	event.u.configureRequest.borderWidth = bw;
@@ -2528,9 +2457,6 @@ ConfigureWindow(pWin, mask, vlist, client)
     return(Success);
 
 ActuallyDoSomething:
-#ifdef PANORAMIX
-    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
-#endif
     if (SubStrSend(pWin, pParent))
     {
 	event.u.u.type = ConfigureNotify;
@@ -2541,6 +2467,12 @@ ActuallyDoSomething:
 	    event.u.configureNotify.aboveSibling = None;
 	event.u.configureNotify.x = x;
 	event.u.configureNotify.y = y;
+#ifdef PANORAMIX
+	if(!noPanoramiXExtension && (!pParent || !pParent->parent)) {
+	    event.u.configureNotify.x += panoramiXdataPtr[0].x;
+            event.u.configureNotify.y += panoramiXdataPtr[0].y;
+	}
+#endif
 	event.u.configureNotify.width = w;
 	event.u.configureNotify.height = h;
 	event.u.configureNotify.borderWidth = bw;
@@ -2642,10 +2574,7 @@ CirculateWindow(pParent, direction, client)
     }
 
     event.u.u.type = CirculateNotify;
-#ifdef PANORAMIX
-    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
-#endif
-	DeliverEvents(pWin, &event, 1, NullWindow);
+    DeliverEvents(pWin, &event, 1, NullWindow);
     ReflectStackChange(pWin,
 		       (direction == RaiseLowest) ? pFirst : NullWindow,
 		       VTStack);
@@ -2702,15 +2631,14 @@ ReparentWindow(pWin, pParent, x, y, client)
     event.u.reparent.parent = pParent->drawable.id;
     event.u.reparent.x = x;
     event.u.reparent.y = y;
-    event.u.reparent.override = pWin->overrideRedirect;
 #ifdef PANORAMIX
     if(!noPanoramiXExtension && !pParent->parent) {
 	event.u.reparent.x += panoramiXdataPtr[0].x;
 	event.u.reparent.y += panoramiXdataPtr[0].y;
     }
-    if(noPanoramiXExtension || !pScreen->myNum)
 #endif
-	DeliverEvents(pWin, &event, 1, pParent);
+    event.u.reparent.override = pWin->overrideRedirect;
+    DeliverEvents(pWin, &event, 1, pParent);
 
     /* take out of sibling chain */
 
@@ -2881,9 +2809,6 @@ MapWindow(pWin, client)
 	}
 
 	pWin->mapped = TRUE;
-#ifdef PANORAMIX
-	if(noPanoramiXExtension || !pScreen->myNum)
-#endif
 	if (SubStrSend(pWin, pParent))
 	{
 	    event.u.u.type = MapNotify;
@@ -2988,9 +2913,6 @@ MapSubwindows(pParent, client)
 	    }
     
 	    pWin->mapped = TRUE;
-#ifdef PANORAMIX
-	    if(noPanoramiXExtension || !pScreen->myNum)
-#endif
 	    if (parentNotify || StrSend(pWin))
 	    {
 		event.u.u.type = MapNotify;
@@ -3152,9 +3074,6 @@ UnmapWindow(pWin, fromConfigure)
 
     if ((!pWin->mapped) || (!(pParent = pWin->parent)))
 	return(Success);
-#ifdef PANORAMIX
-    if(noPanoramiXExtension || !pScreen->myNum)
-#endif
     if (SubStrSend(pWin, pParent))
     {
 	event.u.u.type = UnmapNotify;
@@ -3227,9 +3146,6 @@ UnmapSubwindows(pWin)
     {
 	if (pChild->mapped)
 	{
-#ifdef PANORAMIX
-	    if(noPanoramiXExtension || !pScreen->myNum)
-#endif
 	    if (parentNotify || StrSend(pChild))
 	    {
 		event.u.u.type = UnmapNotify;
