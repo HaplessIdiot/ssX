@@ -1,7 +1,7 @@
 
   /*\
    * $XConsortium: utils.c /main/3 1996/01/14 16:48:22 kaleb $
-   * $XFree86: xc/programs/xkbcomp/utils.c,v 3.2 1996/08/25 14:15:03 dawes Exp $
+   * $XFree86: xc/programs/xkbcomp/utils.c,v 3.3 1996/08/26 10:52:25 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -128,11 +128,7 @@ uFree(ptr)
 /***                  FUNCTION ENTRY TRACKING                           ***/
 /***====================================================================***/
 
-#ifndef Lynx
-static	FILE	*entryFile=	stderr;
-#else
 static	FILE	*entryFile=	NULL;
-#endif
 	int	 uEntryLevel;
 
 Boolean
@@ -213,11 +209,7 @@ int	i;
 /***			PRINT FUNCTIONS					***/
 /***====================================================================***/
 
-#ifndef Lynx
-	FILE	*uDebugFile=		stderr;
-#else
 	FILE	*uDebugFile=		NULL;
-#endif
 	int	 uDebugIndentLevel=	0;
 	int	 uDebugIndentSize=	4;
 
@@ -299,11 +291,7 @@ Opaque a1,a2,a3,a4,a5,a6;
 
 /***====================================================================***/
 
-#ifndef Lynx
-static	FILE	*errorFile=	stderr;
-#else
 static	FILE	*errorFile=	NULL;
-#endif
 static	int	 outCount=	0;
 static	char	*preMsg=	NULL;
 static	char	*postMsg=	NULL;

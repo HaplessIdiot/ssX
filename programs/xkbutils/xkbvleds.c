@@ -1,5 +1,5 @@
 /* $XConsortium: xkbvleds.c /main/5 1996/01/14 18:42:34 kaleb $ */
-/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.0 1996/01/10 05:43:52 dawes Exp $ */
+/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.1 1996/01/16 15:09:18 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -218,11 +218,9 @@ static char *	fallback_resources[] = {
     NULL
 };
 
-#ifdef Lynx
     uSetEntryFile(NullString);
     uSetDebugFile(NullString);
     uSetErrorFile(NullString);
-#endif
     bzero(leds,XkbNumIndicators*sizeof(Widget));
     toplevel = XtOpenApplication(&app_con, "XkbLEDPanel", NULL, 0, &argc, argv, 
 				 fallback_resources,
