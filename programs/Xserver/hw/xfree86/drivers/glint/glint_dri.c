@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.9 2000/02/14 20:27:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.10 2000/02/14 20:31:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Author:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.54 1999/08/04 18:18:58 faith Exp $
  */
 
 #include "xf86.h"

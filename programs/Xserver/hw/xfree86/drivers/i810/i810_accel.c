@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Keith Whitwell <keithw@precisioninsight.com>
  *
- * $PI$
  */
 
 #include <math.h>

@@ -24,8 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/drmmodule.c,v 1.1 1999/06/07 13:01:42 faith Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/drmmodule.c,v 1.1 1999/06/14 07:32:01 dawes Exp $
  * 
  */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_mesa.h,v 1.1 1999/06/14 07:23:31 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.h,v 1.1 2000/02/08 17:18:36 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/dri_mesa.h,v 1.5 1999/04/05 05:24:31 martin Exp $
  */
 
 #ifndef _DRI_MESA_H_

@@ -24,13 +24,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_io.c,v 1.2 1999/12/03 19:17:34 eich Exp $ */
 
 /*
  * Authors:
  *   Daryll Strauss <daryll@precisioninsight.com>
  *
- * $PI$
  */
 
 #include "xf86.h"

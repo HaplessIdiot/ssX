@@ -29,7 +29,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Daryll Strauss <daryll@precisioninsight.com>
  *
- * $PI: $
  */
 
 #ifndef _TDFX_INIT_H_

@@ -24,13 +24,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_io.c,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_io.c,v 1.3 1999/12/03 19:17:36 eich Exp $ */
 
 /*
  * Authors:
  *   Daryll Strauss <daryll@precisioninsight.com>
  *
- * $PI$
  */
 
 #include "xf86.h"

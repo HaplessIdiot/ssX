@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.1 1999/06/14 07:31:14 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.2 1999/06/27 14:07:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.4 1999/06/21 05:13:55 martin Exp $
  */
 
 #ifndef _GAMMA_GL_H_

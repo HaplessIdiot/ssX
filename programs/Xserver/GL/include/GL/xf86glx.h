@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/include/GL/xf86glx.h,v 1.2 1999/03/14 03:21:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/include/GL/xf86glx.h,v 1.3 1999/06/14 07:31:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/include/GL/xf86glx.h,v 1.6 1999/06/10 00:31:50 martin Exp $
  */
 
 #include "miscstruct.h"

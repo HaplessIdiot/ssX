@@ -24,8 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/lib/GL/dri/dri_tmm.c,v 1.5 1999/05/18 06:46:11 martin Exp $
- * $XFree86$
+ * $XFree86: xc/lib/GL/dri/dri_tmm.c,v 1.1 1999/06/14 07:23:32 dawes Exp $
  * 
  *
  * DESCRIPTION

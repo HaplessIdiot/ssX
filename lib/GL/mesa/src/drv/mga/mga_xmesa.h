@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Keith Whitwell <keithw@precisioninsight.com>
  *   Daryll Strauss <daryll@precisioninsight.com> (Origninal tdfx driver).
  *
- * $PI: $
  */
 
 #ifndef _MGA_INIT_H_

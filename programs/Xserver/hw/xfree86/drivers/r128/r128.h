@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.6 2000/02/14 19:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.7 2000/02/18 16:23:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -31,7 +31,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Rickard E. Faith <faith@precisioninsight.com>
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI$
  */
 
 #ifndef _R128_H_

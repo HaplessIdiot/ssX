@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.4 2000/02/13 19:33:58 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.5 2000/02/18 16:23:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -40,7 +40,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   RAGE 128 Software Development Manual (Technical Reference Manual P/N
  *   SDK-G04000 Rev. 0.01), ATI Technologies: June 1999.
  *
- * $PI$
  */
 
 #ifndef _R128_REG_H_

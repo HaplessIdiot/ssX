@@ -1,5 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.3 1999/06/14 12:02:04 dawes Exp $
-XCOMM $PI: xc/programs/Xserver/GL/dri/Imakefile,v 1.13 1999/06/07 12:55:30 faith Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.4 1999/08/14 10:49:23 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.3 2000/02/11 17:25:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.4 2000/02/14 06:27:11 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/xf86dristr.h,v 1.11 1999/06/22 03:09:44 jens Exp $
  */
 
 #ifndef _XF86DRISTR_H_

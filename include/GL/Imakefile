@@ -1,6 +1,5 @@
 
-XCOMM $XFree86: xc/include/GL/Imakefile,v 1.5 1999/06/27 14:07:19 dawes Exp $
-XCOMM $PI: xc/include/GL/Imakefile,v 1.7 1999/06/24 03:11:32 faith Exp $
+XCOMM $XFree86: xc/include/GL/Imakefile,v 1.6 1999/08/14 10:49:14 dawes Exp $
 
 #if BuildGLXLibrary
 GLXHEADERS = gl.h glx.h glxint.h glxmd.h glxproto.h glxtokens.h

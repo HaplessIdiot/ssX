@@ -27,8 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.65 2000/02/15 18:01:07 dawes Exp $ */
-/* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/07/02 18:38:31 faith Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.66 2000/02/21 19:23:01 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
