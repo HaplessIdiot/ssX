@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.244 94/08/17 18:57:34 matt Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.8 1994/12/17 09:32:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.9 1994/12/25 12:12:19 dawes Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -77,8 +77,8 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.8 1994/12/17 09:32:41 dawes Exp $
 #ifndef BuildLBX
 #define BuildLBX		NO
 #endif
-#ifndef BuildExtraLBXServerLibs
-#define BuildExtraLBXServerLibs	NO
+#ifndef BuildLBXCompatible
+#define BuildLBXCompatible	NO
 #endif
 #ifndef BuildFresco
 #if HasCplusplus 

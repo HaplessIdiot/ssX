@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.25 1994/12/20 22:38:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.26 1994/12/25 12:12:27 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -129,7 +129,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.25 1994/12/20 22:38:24 dawes Exp $
  * uncomment this.  Note:  BuildLBX should *not* be set when doing this.
  *
  */
-#define BuildExtraLBXServerLibs	YES
+#define BuildLBXCompatible	YES
 
 /*
  * Do you want to install the default system config files, this will overwrite

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.35 1994/12/17 09:32:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.36 1994/12/25 12:12:29 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -388,7 +388,7 @@ XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
 #define BigReqDefines /**/
 #endif
 
-#if BuildExtraLBXServerLibs
+#if BuildLBXCompatible
 #if !BuildLBX
 #define SitePervasiveExtensionDefines -DLBX_COMPAT
 #define SiteExtensionDirs $(TOP)/workInProgress/lbx/lib/lbxutil $(TOP)/workInProgress/lbx/programs/Xserver/lbx

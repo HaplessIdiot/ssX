@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.1 1994/05/31 08:02:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.2 1994/12/25 12:17:13 dawes Exp $
 
 all:: mkmf
 
@@ -8,7 +8,7 @@ InstallLinkKitNamedNonExec(site.def.LK,site.def,$(LINKKITDIR))
 InstallLinkKitNamedProg(mkmf,mkmf,$(LINKKITDIR))
 #if !HasLinuxDoc
 InstallLinkKitNonExecFile(README,$(LINKKITDIR))
-InstallNamedNonExec(README,README.LinkKit,$(LIBDIR)/doc)
+InstallNamedNonExec(README,README.LinkKit,$(XFREE86DOCDIR))
 #endif
 
 DependTarget()
