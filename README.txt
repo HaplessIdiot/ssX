@@ -155,4 +155,4 @@ reproduce and debug your problem.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.146 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/README,v 1.4 2005/03/05 17:59:50 dawes Exp $
