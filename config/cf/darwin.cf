@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.28 2002/08/01 18:30:31 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.29 2002/08/05 01:55:54 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -33,6 +33,17 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifndef HasGroff
 # define HasGroff               YES
+#endif
+
+/* Thread support */
+#define HasPosixThreads         YES
+#define SystemMTDefines         -D_REENTRANT
+#if OSMajorVersion >= 6
+# define HasThreadSafeAPI       YES
+# define MTSafeAPIDefines       -DXUSE_MTSAFE_API -DXNO_MTSAFE_UNISTDAPI
+#else
+# define HasThreadSafeAPI       NO
+# define MTSafeAPIDefines       -DXOS_USE_MTSAFE_NETDBAPI
 #endif
 
 /* Libtool on Darwin always uses minor numbers */
