@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.9 2002/08/08 08:18:01 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.10 2002/10/30 12:52:00 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -815,10 +815,8 @@ GLboolean tdfxInitGlide(tdfxContextPtr tmesa)
    GET_FUNCTION(grDisable, "grDisable");
    GET_FUNCTION(grCoordinateSpace, "grCoordinateSpace");
    GET_FUNCTION(grDepthRange, "grDepthRange");
-#ifdef __linux__ 
    GET_FUNCTION(grStippleMode, "grStippleMode");
    GET_FUNCTION(grStipplePattern, "grStipplePattern");
-#endif /* __linux__ */
    GET_FUNCTION(grViewport, "grViewport");
    GET_FUNCTION(grTexCalcMemRequired, "grTexCalcMemRequired");
    GET_FUNCTION(grTexTextureMemRequired, "grTexTextureMemRequired");
