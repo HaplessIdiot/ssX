@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.20 2001/04/05 17:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.21 2002/10/21 13:32:51 alanh Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -721,7 +721,7 @@ parse_all_name(oc, font_data, pattern)
             return False;
         }
         else if ((is_match_charset(font_data, prop_fname) != True)) {
-            XFree(prop_fname);
+            Xfree(prop_fname);
             XFreeFontInfo(fn_list, fs_list, list_num);
             return False;
         }
@@ -1144,18 +1144,18 @@ parse_vw(oc, font_set, name_list, count)
 	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list, count,
 			  C_VMAP, &font_data_return) == -1) {
 	    if(font_data_return.xlfd_name != NULL)
-		 XFree(font_data_return.xlfd_name);
+		 Xfree(font_data_return.xlfd_name);
 	    return (-1);
 	}
 	if(font_data_return.xlfd_name != NULL)
-	    XFree(font_data_return.xlfd_name);
+	    Xfree(font_data_return.xlfd_name);
     }
 
     if(vrotate_num > 0) {
 	ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
 			     name_list, count, C_VROTATE, &font_data_return);
 	if(font_data_return.xlfd_name != NULL)
-	    XFree(font_data_return.xlfd_name);
+	    Xfree(font_data_return.xlfd_name);
 	if(ret == -1) {
 	    return (-1);
 	} else if(ret == False) {
@@ -1192,7 +1192,7 @@ parse_vw(oc, font_set, name_list, count)
 	    ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
 				 name_list, count, C_VROTATE, &font_data_return);
 	    if(font_data_return.xlfd_name != NULL)
-		XFree(font_data_return.xlfd_name);
+		Xfree(font_data_return.xlfd_name);
 	    if(ret == -1)
 		return (-1);
 	}
@@ -1285,7 +1285,7 @@ parse_fontname(oc)
 				 font_set->substitute_num,
 				 name_list, count, C_SUBSTITUTE, &font_data_return);
 	    if(font_data_return.xlfd_name != NULL) {
-		XFree(font_data_return.xlfd_name);
+		Xfree(font_data_return.xlfd_name);
 		font_data_return.xlfd_name = NULL;
 	    }
 	    if(ret == -1) {
@@ -1326,7 +1326,7 @@ err:
     /* Prevent this from being freed twice */
     oc->core.base_name_list = NULL;
     if(font_data_return.xlfd_name != NULL)
-	XFree(font_data_return.xlfd_name);
+	Xfree(font_data_return.xlfd_name);
 
     return -1;
 }
