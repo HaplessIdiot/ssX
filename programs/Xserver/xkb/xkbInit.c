@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.24 2002/12/20 20:18:35 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.25 2003/02/09 02:28:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -692,12 +692,6 @@ Bool			ok=False;
 XPointer		config;
 XkbComponentNamesRec	cfgNames;
 XkbRF_VarDefsRec	defs;
-Bool freeKeymap = (!names->keymap);
-Bool freeKeycodes = (!names->keycodes);
-Bool freeTypes = (!names->types);
-Bool freeCompat = (!names->compat);
-Bool freeSymbols = (!names->symbols);
-Bool freeGeometry = (!names->geometry);
 
     if ((dev->key!=NULL)||(dev->kbdfeed!=NULL))
 	return False;
@@ -707,6 +701,19 @@ Bool freeGeometry = (!names->geometry);
     bzero(&cfgNames,sizeof(XkbComponentNamesRec));
     rules= XkbGetRulesDflts(&defs);
     config= XkbDDXPreloadConfig(&rules,&defs,&cfgNames,dev);
+
+    /*
+     * The strings are duplicated because it is not guaranteed that
+     * they are allocated, or that they are allocated for every server
+     * generation. Eventually they will be freed at the end of this
+     * function.
+     */
+    if (names->keymap) names->keymap = _XkbDupString(names->keymap);
+    if (names->keycodes) names->keycodes = _XkbDupString(names->keycodes);
+    if (names->types) names->types = _XkbDupString(names->types);
+    if (names->compat) names->compat = _XkbDupString(names->compat);
+    if (names->geometry) names->geometry = _XkbDupString(names->geometry);
+    if (names->symbols) names->geometry = _XkbDupString(names->symbols);
 
     if (defs.model && defs.layout && rules) {
 	XkbComponentNamesRec	rNames;
@@ -830,17 +837,17 @@ Bool freeGeometry = (!names->geometry);
 	pSyms->map= NULL;
     }
 
-    if (names->keymap && freeKeymap) _XkbFree(names->keymap);
+    if (names->keymap) _XkbFree(names->keymap);
     names->keymap = NULL;
-    if (names->keycodes && freeKeycodes) _XkbFree(names->keycodes);
+    if (names->keycodes) _XkbFree(names->keycodes);
     names->keycodes = NULL;
-    if (names->types && freeTypes) _XkbFree(names->types);
+    if (names->types) _XkbFree(names->types);
     names->types = NULL;
-    if (names->compat && freeCompat) _XkbFree(names->compat);
+    if (names->compat) _XkbFree(names->compat);
     names->compat = NULL;
-    if (names->geometry && freeGeometry) _XkbFree(names->geometry);
+    if (names->geometry) _XkbFree(names->geometry);
     names->geometry = NULL;
-    if (names->symbols && freeSymbols) _XkbFree(names->symbols);
+    if (names->symbols) _XkbFree(names->symbols);
     names->symbols = NULL;
 
     return ok;
