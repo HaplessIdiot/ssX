@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.263 2004/07/17 17:22:47 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.264 2004/07/17 17:26:32 herrb Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -662,6 +662,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef Freetype2BuildDefines
 #define Freetype2BuildDefines	/**/
+#endif
+#ifndef UseMkfontscaleForMkfontdir
+#define UseMkfontscaleForMkfontdir	NO
 #endif
 
 #ifndef BuildRandR
@@ -1676,7 +1679,11 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
       MKFONTSCALE = $(CLIENTENVSETUP) $(PRELOADFREETYPESETUP) $(XBUILDBINDIR)/mkfontscale
+#if UseMkfontscaleForMkfontdir
         MKFONTDIR = $(MKFONTSCALE) -b -s -l
+#else
+        MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
+#endif
        XCURSORGEN = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/xcursorgen
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
