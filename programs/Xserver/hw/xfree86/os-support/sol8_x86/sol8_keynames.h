@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_keynames.h,v 1.8 2000/12/18 02:25:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_keynames.h,v 1.9 2001/03/07 19:53:18 dawes Exp $ */
 
 #ifndef _SOL8KEYNAMES_H
 #define _SOL8KEYNAMES_H
@@ -141,7 +141,7 @@ unsigned char sol8map[256] = {
 	KEY_UNKNOWN,		/* 130 */
 	KEY_NFER,		/* 131 */
 	KEY_XFER,		/* 132 */
-	KEY_HKTG		/* 133 */
+	KEY_HKTG,		/* 133 */
 	KEY_UNKNOWN,		/* 134 */
 	/* The rest default to KEY_UNKNOWN */
 };
