@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.27 2001/12/10 23:02:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.28 2001/12/24 22:22:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -152,7 +152,7 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES_OVERLAY] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127, "XV_BRIGHTNESS"},
-   {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
+   {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"},
    {XvSettable | XvGettable, 0, 1, "XV_DOUBLE_BUFFER"}
 };
 
