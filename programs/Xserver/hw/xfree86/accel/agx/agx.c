@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.3 1994/06/28 12:27:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.4 1994/07/15 06:56:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -89,6 +89,7 @@ ScrnInfoRec agxInfoRec = {
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,       	/* char *chipset */
     NULL,       	/* char *ramdac */
+    0,			/* int dacSpeed */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
