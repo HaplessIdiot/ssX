@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.18 1999/12/27 02:27:33 robin Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.19 2000/01/29 18:58:14 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -475,6 +475,34 @@ static struct CodesetRec CodesetTable[] = {
 
 #define NUM_CODESETS sizeof CodesetTable / sizeof CodesetTable[0]
 
+unsigned long *
+#if NeedFunctionPrototypes
+_XGetLocaleCode (
+     char*	name,
+     XPointer*	cset_ret)
+#else
+_XGetLocaleCode (name, cset_ret)
+     char*	name;
+     XPointer*	cset_ret;
+#endif
+{
+  int i;
+  struct CodesetRec* cset = &CodesetTable[0]; /* ISO8859-1 */
+  
+  if (name) {
+    for (i = 0; i < NUM_CODESETS; i++) {
+      if (strcmp (name, CodesetTable[i].locale_name) == 0) {
+        cset = &CodesetTable[i];
+        break;
+      }
+    }
+  }
+  
+  if (cset_ret)
+    *cset_ret = (XPointer) cset;
+  return &(cset->locale_code);
+}
+
 #ifndef XK_emdash
 #define XK_emdash 0xaa9
 #endif
@@ -840,15 +868,11 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    for (cset = NULL, i = 0; i < NUM_CODESETS; i++) {
-	if (strcmp (XLC_PUBLIC(lcd,encoding_name), CodesetTable[i].locale_name) == 0) {
-	    cset = &CodesetTable[i];
-	    break;
-	}
-    }
+    _XGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
+    
     if ((count == 0 && cset != NULL) || 
 	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
-	 cset != NULL && cset->locale_code != 0)) {
+	 cset->locale_code != 0)) {
 	if ((count = _XGetCharCode(cset->locale_code, symbol,
 				   look, sizeof look))) {
 	    strcpy((char*) local_buf, cset->escape_seq);
@@ -903,15 +927,11 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    for (cset = NULL, i = 0; i < NUM_CODESETS; i++) {
-	if (strcmp (XLC_PUBLIC(lcd,encoding_name), CodesetTable[i].locale_name) == 0) {
-	    cset = &CodesetTable[i];
-	    break;
-	}
-    }
+    _XGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
+    
     if ((count == 0 && cset != NULL) ||
-	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
-	 cset != NULL && cset->locale_code != 0)) {
+	(count == 1 && (symbol > 0x7f && symbol < 0xff00) &&
+	 cset->locale_code != 0)) {
 	if ((count = _XGetCharCode(cset->locale_code, symbol,
 				   look, sizeof look))) {
 	    strcpy((char*) local_buf, cset->escape_seq);
