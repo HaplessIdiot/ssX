@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.12 1999/01/12 06:24:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.13 1999/03/28 15:31:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -369,6 +369,7 @@ Bool XF86DGAViewPortChanged(
 #endif
 #include <sys/wait.h>
 #include <signal.h>
+#include <unistd.h>
 extern int errno;
 
 #if defined(SVR4) && !defined(sun) && !defined(SCO325)
@@ -377,141 +378,105 @@ extern int errno;
 #define DEV_MEM "/dev/mem"
 #endif
 
-#if defined(ISC) && defined(HAS_SVR3_MMAP)
-struct kd_memloc XFree86mloc;
-#endif
+typedef struct {
+    unsigned long physaddr;	/* actual requested physical address */
+    unsigned long size;		/* actual requested map size */
+    unsigned long delta;	/* delta to account for page alignment */
+    void *	  vaddr;	/* mapped address, without the delta */
+    int		  refcount;	/* reference count */
+} MapRec, *MapPtr;
 
-static char * _XFree86addr = NULL;
-static int    _XFree86size = 0;
+typedef struct {
+    Display *	display;
+    int		screen;
+    MapPtr	map;
+} ScrRec, *ScrPtr;
 
-/*
- * Still need to find a clean way of detecting the death of a DGA app
- * and returning things to normal - Jon
- * This is here to help debugging without rebooting... Also C-A-BS
- * should restore text mode.
- */
+static int mapFd = -1;
+static int numMaps = 0;
+static int numScrs = 0;
+static MapPtr *mapList = NULL;
+static ScrPtr *scrList = NULL;
 
-int XF86DGAForkApp(int screen)
+static MapPtr
+AddMap(void)
 {
-     pid_t pid;
-     int status;
+    MapPtr *old;
 
-     /* fork the app, parent hangs around to clean up */
-     if ((pid = fork()) > 0) {
-        Display *disp;
-
-	waitpid(pid, &status, 0);
-	disp = XOpenDisplay(NULL);
-	XF86DGADirectVideo(disp, screen, 0);
-	XSync(disp,False);
-        if (WIFEXITED(status))
-	    _exit(0);
-	else
-	    _exit(-1);
-     }
-     return pid;
+    old = mapList;
+    mapList = realloc(mapList, sizeof(MapPtr) * (numMaps + 1));
+    if (!mapList) {
+	mapList = old;
+	return NULL;
+    }
+    mapList[numMaps] = malloc(sizeof(MapRec));
+    if (!mapList[numMaps])
+	return NULL;
+    return mapList[numMaps++];
 }
 
-
-XF86DGADirectVideo(
-    Display *dis,
-    int screen,
-    int enable
-){
-   if (enable&XF86DGADirectGraphics) {
-	 fprintf(stderr, "video memory unprotecting\n");
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) && !defined(__EMX__)
-      if (_XFree86addr && _XFree86size)
-         if (mprotect(_XFree86addr,_XFree86size, PROT_READ|PROT_WRITE)) {
-         fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
-                           strerror(errno));
-		exit (-3);
-	 }
-#endif
-   } else {
-      if (_XFree86addr && _XFree86size)
-	 fprintf(stderr, "video memory protecting\n");
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(__EMX__)
-#ifndef Lynx
-         if (mprotect(_XFree86addr,_XFree86size, PROT_READ)) {
-         fprintf(stderr, "XF86DGADirectVideo: mprotect (%s)\n",
-                           strerror(errno));
-		exit (-4);
-	 }
-#else
-	smem_create(NULL, _XFree86addr, _XFree86size, SM_DETACH);
-	smem_remove("XF86DGA");
-#endif
-#endif
-   }
-   XF86DGADirectVideoLL(dis, screen, enable);
-}
-
-
-static void XF86cleanup(int sig)
+static ScrPtr
+AddScr(void)
 {
-        Display *disp;
-	static beenhere = 0;
+    ScrPtr *old;
 
-	if (beenhere)
-		_exit(3);
-	beenhere = 1;
-	disp = XOpenDisplay(NULL);
-	XF86DGADirectVideo(disp, 0, 0);
-	XSync(disp,False);
-        _exit(3);
+    old = scrList;
+    scrList = realloc(scrList, sizeof(ScrPtr) * (numScrs + 1));
+    if (!scrList) {
+	scrList = old;
+	return NULL;
+    }
+    scrList[numScrs] = malloc(sizeof(ScrRec));
+    if (!scrList[numScrs])
+	return NULL;
+    return scrList[numScrs++];
 }
 
-XF86DGAGetVideo(
-    Display *dis,
-    int screen,
-    char **addr,
-    int *width, 
-    int *bank, 
-    int *ram
-){
-   int offset, fd, pagesize = -1, delta;
-#ifdef __EMX__
-   APIRET rc;
-   ULONG action;
-   HFILE hfd;
-#endif
+static MapPtr
+FindMap(unsigned long address, unsigned long size)
+{
+    int i;
 
-   XF86DGAGetVideoLL(dis, screen , &offset, width, bank, ram);
+    for (i = 0; i < numMaps; i++) {
+	if (mapList[i]->physaddr == address &&
+	    mapList[i]->size == size)
+	    return mapList[i];
+    }
+    return NULL;
+}
 
-#ifndef Lynx
+static ScrPtr
+FindScr(Display *display, int screen)
+{
+    int i;
+
+    for (i = 0; i < numScrs; i++) {
+	if (scrList[i]->display == display &&
+	    scrList[i]->screen == screen)
+	    return scrList[i];
+    }
+    return NULL;
+}
+
+static void *
+MapPhysAddress(unsigned long address, unsigned long size)
+{
+    unsigned long offset, delta;
+    int pagesize = -1;
+    void *vaddr;
+    MapPtr mp;
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
-   if ((fd = open("/dev/mmap", O_RDWR)) < 0)
-   {
-        fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mmap (%s)\n",
-                           strerror(errno));
-	exit(-1);
-   }
-#else
-#ifdef __EMX__
-   /* Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
-    * Consecutive calling of this routine will make PMAP$ driver run out
-    * of memory handles. Some umap/close mechanism should be provided
-    */
+    struct kd_memloc mloc;
+#elif defined(__EMX__)
+    APIRET rc;
+    ULONG action;
+    HFILE hfd;
+#endif
 
-   rc = DosOpen("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
-		OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2)NULL);
-   if (rc != 0) {
-	fprintf(stderr, 
-		"XF86DGAGetVideo: failed to open /dev/pmap$ (rc=%d)\n",
-		rc);
-	exit(-1);
-   }
-#else
-   if ((fd = open(DEV_MEM, O_RDWR)) < 0)
-   {
-        fprintf(stderr, "XF86DGAGetVideo: failed to open %s (%s)\n",
-                           DEV_MEM, strerror(errno));
-        exit (-1);
-   }
-#endif
-#endif
-#endif
+    if ((mp = FindMap(address, size))) {
+	mp->refcount++;
+	return (void *)((unsigned long)mp->vaddr + mp->delta);
+    }
 
 #if defined(_SC_PAGESIZE) && defined(HAS_SC_PAGESIZE)
     pagesize = sysconf(_SC_PAGESIZE);
@@ -531,46 +496,33 @@ XF86DGAGetVideo(
     if (pagesize == -1)
 	pagesize = 4096;
 
-   delta = (unsigned int)offset % pagesize;
-   offset -= delta;   
+   delta = address % pagesize;
+   offset = address - delta;
 
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
-   XFree86mloc.vaddr=(char *) 0;
-   XFree86mloc.physaddr=(char *)offset;
-   XFree86mloc.length=*bank + delta;
-   XFree86mloc.ioflg=1;
+    if (mapFd < 0) {
+	if ((mapFd = open("/dev/mmap", O_RDWR)) < 0)
+	    return NULL;
+    }
+    mloc.vaddr = (char *)0;
+    mloc.physaddr = (char *)offset;
+    mloc.length = size + delta;
+    mloc.ioflg=1;
 
-#define DEBUG_MMAP(state)     fprintf(stderr,"\
-        XF86DGAGetVideo: (%s) \n\
-            vaddr=%x/%x physaddr=%x/%x length=%d/%d\n",\
-        (state) ,\
-        XFree86mloc.vaddr,*addr,\
-        XFree86mloc.physaddr,offset,\
-        XFree86mloc.length,*bank)
+    if ((vaddr = (void *)ioctl(mapFd, MAP, &mloc)) == (void *)-1)
+	return NULL;
+#elif defined (__EMX__)
+    /*
+     * Dragon warning here! /dev/pmap$ is never closed, except on progam exit.
+     * Consecutive calling of this routine will make PMAP$ driver run out
+     * of memory handles. Some umap/close mechanism should be provided
+     */
 
-   DEBUG_MMAP("before MMAP");
-   if ((*addr = (char *) ioctl( fd, MAP, &XFree86mloc)) != (char *)-1) {
-     offset=(int)XFree86mloc.physaddr;
-     *bank=(int)XFree86mloc.length;
-     DEBUG_MMAP("after MMAP");
-   } else {
-     DEBUG_MMAP("after MMAP");
-     fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mmap (%s)\n",
-                           strerror(errno));
-     exit (-2);
-   }
-#else /* !ISC */
-#ifdef Lynx
-   *addr = (void *)smem_create("XF86DGA", (char *)offset, 
-				*bank + delta, SM_READ|SM_WRITE);
-   if (*addr == NULL) {
-        fprintf(stderr, "XF86DGAGetVideo: smem_create() failed (%s)\n",
-                           strerror(errno));
-        exit (-2);
-   }
-#else /* !Lynx */
-#ifdef __EMX__
-   {
+    rc = DosOpen("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
+		 OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2)NULL);
+    if (rc != 0)
+	return NULL;
+    {
 	struct map_ioctl {
 		union {
 			ULONG phys;
@@ -583,52 +535,180 @@ XF86DGAGetVideo(
 #define PMAP_MAP	0x44
 
 	pmap.a.phys = offset;
-	pmap.size = *bank + delta;
+	pmap.size = size + delta;
 	rc = DosDevIOCtl(hfd, XFREE86_PMAP, PMAP_MAP,
 			 (PULONG)&pmap, sizeof(pmap), &plen,
 			 (PULONG)&dmap, sizeof(dmap), &dlen);
-	if (rc==0) {
-		*addr = dmap.a.user;
+	if (rc == 0) {
+		vaddr = dmap.a.user;
 	}
    }
-   if (rc != 0) {
-        fprintf(stderr, 
-		"XF86DGAGetVideo: failed to mmap /dev/pmap$ (rc=%d)\n",
-                rc);
-        exit (-2);
-   }
-#else /* !__EMX__ */
+   if (rc != 0)
+	return NULL;
+#elif defined (Lynx)
+    vaddr = (void *)smem_create("XF86DGA", (char *)offset, 
+				size + delta, SM_READ|SM_WRITE);
+#else
 #ifndef MAP_FILE
 #define MAP_FILE 0
 #endif
-   /* This requires linux-0.99.pl10 or above */
-   *addr = (void *)mmap(NULL, *bank + delta, PROT_READ,
-                        MAP_FILE | MAP_SHARED, fd, (off_t)offset);
-#ifdef DEBUG
-   fprintf(stderr, "XF86DGAGetVideo: physaddr: 0x%08x, size: %d\n",
-	   (long)offset, *bank);
+    if (mapFd < 0) {
+	if ((mapFd = open(DEV_MEM, O_RDWR)) < 0)
+	    return NULL;
+    }
+    vaddr = (void *)mmap(NULL, size + delta, PROT_READ,
+                        MAP_FILE | MAP_SHARED, mapFd, (off_t)offset);
+    if (vaddr == (void *)-1)
+	return NULL;
 #endif
-   if (*addr == (char *) -1) {
-        fprintf(stderr, "XF86DGAGetVideo: failed to mmap %s (%s)\n",
-                           DEV_MEM, strerror(errno));
-        exit (-2);
-   }
-#endif /* !__EMX__*/
-#endif /* !Lynx */
-#endif /* !ISC && !HAS_SVR3_MMAP */
 
-   _XFree86size = *bank + delta;
-   _XFree86addr = *addr;
-   *addr += delta;
-   
-   atexit((void(*)(void))XF86cleanup);
-   /* one shot XF86cleanup attempts */
-   signal(SIGSEGV, XF86cleanup);
-#ifdef SIGBUS
-   signal(SIGBUS, XF86cleanup);
-#endif
-   signal(SIGHUP, XF86cleanup);
-   signal(SIGFPE, XF86cleanup);  
-
-   return 1;
+    if (!vaddr) {
+	if (!(mp = AddMap()))
+	    return NULL;
+	mp->physaddr = address;
+	mp->size = size;
+	mp->delta = delta;
+	mp->vaddr = vaddr;
+	mp->refcount = 1;
+    }
+    return (void *)((unsigned long)vaddr + delta);
 }
+
+/*
+ * Still need to find a clean way of detecting the death of a DGA app
+ * and returning things to normal - Jon
+ * This is here to help debugging without rebooting... Also C-A-BS
+ * should restore text mode.
+ */
+
+int
+XF86DGAForkApp(int screen)
+{
+    pid_t pid;
+    int status;
+    int i;
+
+     /* fork the app, parent hangs around to clean up */
+    if ((pid = fork()) > 0) {
+	ScrPtr sp;
+
+	waitpid(pid, &status, 0);
+	for (i = 0; i < numScrs; i++) {
+	    sp = scrList[i];
+	    XF86DGADirectVideoLL(sp->display, sp->screen, 0);
+	    XSync(sp->display, False);
+	}
+        if (WIFEXITED(status))
+	    _exit(0);
+	else
+	    _exit(-1);
+    }
+    return pid;
+}
+
+
+Bool
+XF86DGADirectVideo(
+    Display *dis,
+    int screen,
+    int enable
+){
+    ScrPtr sp;
+    MapPtr mp = NULL;
+
+    if ((sp = FindScr(dis, screen)))
+	mp = sp->map;
+
+    if (enable & XF86DGADirectGraphics) {
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
+	&& !defined(__EMX__)
+	if (mp && mp->vaddr)
+	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ | PROT_WRITE);
+#endif
+    } else {
+#if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
+	&& !defined(__EMX__)
+	if (mp && mp->vaddr)
+	    mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ);
+#elif defined(Lynx)
+	/* XXX this doesn't allow enable after disable */
+	smem_create(NULL, mp->vaddr, mp->size + mp->delta, SM_DETACH);
+	smem_remove("XF86DGA");
+#endif
+    }
+
+    XF86DGADirectVideoLL(dis, screen, enable);
+    return 1;
+}
+
+
+static void
+XF86cleanup(int sig)
+{
+    ScrPtr sp;
+    int i;
+    static beenhere = 0;
+
+    if (beenhere)
+	_exit(3);
+    beenhere = 1;
+
+    for (i = 0; i < numScrs; i++) {
+	sp = scrList[i];
+	XF86DGADirectVideo(sp->display, sp->screen, 0);
+	XSync(sp->display, False);
+    }
+    _exit(3);
+}
+
+Bool
+XF86DGAGetVideo(
+    Display *dis,
+    int screen,
+    char **addr,
+    int *width, 
+    int *bank, 
+    int *ram
+){
+    /*unsigned long*/ int offset;
+    static int beenHere = 0;
+    ScrPtr sp;
+    MapPtr mp;
+
+    if (!(sp = FindScr(dis, screen))) {
+	if (!(sp = AddScr())) {
+	    fprintf(stderr, "XF86DGAGetVideo: malloc failure\n");
+	    exit(-2);
+	}
+	sp->display = dis;
+	sp->screen = screen;
+	sp->map = NULL;
+    }
+
+    XF86DGAGetVideoLL(dis, screen , &offset, width, bank, ram);
+
+    *addr = MapPhysAddress(offset, *bank);
+    if (*addr == NULL) {
+	fprintf(stderr, "XF86DGAGetVideo: failed to map video memory (%s)\n",
+		strerror(errno));
+	exit(-2);
+    }
+
+    if ((mp = FindMap(offset, *bank)))
+	sp->map = mp;
+
+    if (!beenHere) {
+	beenHere = 1;
+	atexit((void(*)(void))XF86cleanup);
+	/* one shot XF86cleanup attempts */
+	signal(SIGSEGV, XF86cleanup);
+#ifdef SIGBUS
+	signal(SIGBUS, XF86cleanup);
+#endif
+	signal(SIGHUP, XF86cleanup);
+	signal(SIGFPE, XF86cleanup);  
+    }
+
+    return 1;
+}
+

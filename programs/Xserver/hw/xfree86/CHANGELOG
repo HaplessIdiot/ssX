@@ -1,4 +1,23 @@
 XFree86 3.9Ph (5 April 1999)
+2694. Add code to XF86Setup for mode adjustment (like xvidtune), addition,
+      and removal (#2646, Joe Moss).
+2693. Remove the use of the `dialog' program from XF86Setup, and add
+      various curses routines and the start of a text mode user-interface
+      (both curses & plain text).  Also remove some obsolete Tk 4.0-specific
+      code (#2645, Joe Moss).
+2692. Add code to XF86Setup to convert all of the config file sections
+      to/from Tcl variables (#2644, Joe Moss).
+2691. Allow fbdev to handle non-page-aligned framebuffers correctly (#2643,
+      Gerd Knorr).
+2690. Add RAC code to the fbdev driver (if there is a PCI BusID specified
+      in the config file it will "check in" this into access control)
+      (#2643, Gerd Knorr).
+2689. Cleanup in sysv_video.c (#2642, Michael Rohleder).
+2688. Update xedit's realpath.c for IUS (#2642, Michael Rohleder).
+2687. Add support for InputDevice sections to the parser (not used yet)
+      (David Dawes).
+2686. A first cut at cleaning up the handling of memory mapping and client
+      exit/crash in the DGA library (David Dawes).
 2685. Shadowfb support for the generic VGA driver at depths 4 and 1
       (Dirk Hohndel and Mark Vojkovich).
 2684. Fix the printMonitorSection and printDeviceSection functions in
@@ -7701,4 +7720,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.720 1999/04/04 07:03:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.721 1999/04/04 08:46:07 dawes Exp $

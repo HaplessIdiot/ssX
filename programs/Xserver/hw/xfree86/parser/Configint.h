@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.6 1999/03/21 07:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.7 1999/03/29 09:41:34 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -137,6 +137,8 @@ else\
 "The Weight keyword must be followed by red, green and blue values."
 #define SCREEN_MSG \
 "The Screen keyword must be followed by an optional number and 1 or 5 \n\tscreen names in quotes."
+#define INPUTDEV_MSG \
+"The InputDevice keyword must be followed by an input device name in quotes."
 #define INACTIVE_MSG \
 "The Inactive keyword must be followed by a Device name in quotes."
 #define UNDEFINED_SCREEN_MSG \
@@ -153,12 +155,16 @@ else\
 "VideoAdaptor \"%s\" already referenced by Screen \"%s\"."
 #define UNDEFINED_DEVICE_LAY_MSG \
 "Undefined Device \"%s\" referenced by ServerLayout \"%s\"."
+#define UNDEFINED_INPUT_MSG \
+"Undefined InputDevice \"%s\" referenced by ServerLayout \"%s\"."
 #define NO_IDENT_MSG \
 "This section must have an Identifier line."
 #define ONLY_ONE_MSG \
 "This section must have only one of either %s line."
 #define UNDEFINED_DRIVER_MSG \
 "Device section \"%s\" must have a Driver line."
+#define UNDEFINED_INPUTDRIVER_MSG \
+"InputDevice section \"%s\" must have a Driver line."
 #define INVALID_GAMMA_MSG \
 "gamma correction value(s) expected\n either one value or three r/g/b values."
 

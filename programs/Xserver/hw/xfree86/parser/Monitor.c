@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.6 1999/03/21 16:20:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.7 1999/04/04 08:46:23 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -707,9 +707,7 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 void
 printModesSection (FILE * cf, XF86ConfModesPtr ptr)
 {
-	int i;
 	XF86ConfModeLinePtr mlptr;
-	XF86OptionPtr optr;
 
 	while (ptr)
 	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.4 1999/03/21 07:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.5 1999/03/29 09:41:35 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -15,6 +15,11 @@ void freeFiles(XF86ConfFilesPtr p);
 XF86ConfFlagsPtr parseFlagsSection(void);
 void printServerFlagsSection(FILE *f, XF86ConfFlagsPtr flags);
 void freeFlags(XF86ConfFlagsPtr flags);
+/* Input.c */
+XF86ConfInputPtr parseInputSection(void);
+void printInputSection(FILE *f, XF86ConfInputPtr ptr);
+void freeInputList(XF86ConfInputPtr ptr);
+int validateInput (XF86ConfigPtr p);
 /* Keyboard.c */
 XF86ConfKeyboardPtr parseKeyboardSection(void);
 void printKeyboardSection(FILE *cf, XF86ConfKeyboardPtr ptr);
@@ -24,6 +29,7 @@ XF86ConfLayoutPtr parseLayoutSection(void);
 void printLayoutSection(FILE *cf, XF86ConfLayoutPtr ptr);
 void freeLayoutList(XF86ConfLayoutPtr ptr);
 void freeAdjacencyList(XF86ConfAdjacencyPtr ptr);
+void freeInputrefList(XF86ConfInputrefPtr ptr);
 int validateLayout(XF86ConfigPtr p);
 /* Module.c */
 XF86LoadPtr parseModuleSubSection(XF86LoadPtr head, char *name);
@@ -31,13 +37,6 @@ XF86ConfModulePtr parseModuleSection(void);
 void printModuleSection(FILE *cf, XF86ConfModulePtr ptr);
 XF86LoadPtr addNewLoadDirective(XF86LoadPtr head, char *name, int type, XF86OptionPtr opts);
 void freeModules(XF86ConfModulePtr ptr);
-/* Video.c */
-XF86ConfVideoPortPtr parseVideoPortSubSection(void);
-XF86ConfVideoAdaptorPtr parseVideoAdaptorSection(void);
-void printVideoAdaptorSection(FILE *cf, XF86ConfVideoAdaptorPtr ptr);
-void freeVideoAdaptorList(XF86ConfVideoAdaptorPtr ptr);
-void freeVideoPortList(XF86ConfVideoPortPtr ptr);
-XF86ConfVideoAdaptorPtr xf86FindVideoAdaptor(const char *ident, XF86ConfVideoAdaptorPtr p);
 /* Monitor.c */
 XF86ConfModeLinePtr parseModeLine(void);
 XF86ConfModeLinePtr parseVerboseMode(void);
@@ -48,6 +47,7 @@ void printModesSection(FILE *cf, XF86ConfModesPtr ptr);
 void freeMonitorList(XF86ConfMonitorPtr ptr);
 void freeModesList(XF86ConfModesPtr ptr);
 void freeModeLineList(XF86ConfModeLinePtr ptr);
+int validateMonitor(XF86ConfigPtr p, XF86ConfScreenPtr screen);
 /* Pointer.c */
 XF86ConfPointerPtr parsePointerSection(void);
 void printPointerSection(FILE *cf, XF86ConfPointerPtr ptr);
@@ -65,7 +65,12 @@ int validateScreen(XF86ConfigPtr p);
 XF86ConfVendorPtr parseVendorSection(void);
 void freeVendorList(XF86ConfVendorPtr p);
 void printVendorSection(FILE * cf, XF86ConfVendorPtr ptr);
-/* read.c */
+/* Video.c */
+XF86ConfVideoPortPtr parseVideoPortSubSection(void);
+XF86ConfVideoAdaptorPtr parseVideoAdaptorSection(void);
+void printVideoAdaptorSection(FILE *cf, XF86ConfVideoAdaptorPtr ptr);
+void freeVideoAdaptorList(XF86ConfVideoAdaptorPtr ptr);
+void freeVideoPortList(XF86ConfVideoPortPtr ptr);
 int validateConfig(XF86ConfigPtr p);
 /* scan.c */
 unsigned int StrToUL(char *str);

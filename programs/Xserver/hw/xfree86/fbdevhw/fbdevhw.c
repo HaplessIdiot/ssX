@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.4 1999/03/28 15:32:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.5 1999/04/04 08:46:22 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -13,8 +13,10 @@
 
 #include "fbdevhw.h"
 #include "fb.h"
-#include "sys/user.h"
-#define DEBUG 1
+
+#include "asm/page.h"	/* #define for PAGE_* */
+
+#define DEBUG 0
 
 #if DEBUG
 # define TRACE_ENTER(str)	ErrorF("fbdevHW: " str " %d\n",pScrn->scrnIndex)
@@ -84,6 +86,7 @@ typedef struct {
 	char*				device;
 	int				fd;
 	void*				fbmem;
+	int				fboff;
 	void*				mmio;
 
 	/* current hardware state */
@@ -488,6 +491,7 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 
 	TRACE_ENTER("MapVidmem");
 	if (NULL == fPtr->fbmem) {
+		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
 		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
 				   MAP_SHARED, fPtr->fd, 0);
 		if (-1 == (int)fPtr->fbmem) {
@@ -498,6 +502,15 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 	pScrn->memPhysBase = (unsigned long)fPtr->fix.smem_start & (unsigned long)(PAGE_MASK);
 	pScrn->fbOffset = (unsigned long)fPtr->fix.smem_start & (unsigned long)(~PAGE_MASK);
 	return fPtr->fbmem;
+}
+
+int
+fbdevHWLinearOffset(ScrnInfoPtr pScrn)
+{
+	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+
+	TRACE_ENTER("LinearOffset");
+	return fPtr->fboff;
 }
 
 Bool

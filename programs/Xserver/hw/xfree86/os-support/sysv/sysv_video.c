@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.12 1999/01/14 13:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.13 1999/03/28 15:33:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -194,7 +194,8 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	mmapStat(Base,Size);
 	xf86MsgVerb(X_INFO, MMAP_DEBUG,
 			"xf86MapVidMem: [s=%x,a=%x,b=%x]\n", Size, Base, base);
-	xf86Msg(X_WARNING, "xf86MapVidMem: SUCCEED Mapping FrameBuffer \n");
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+			"xf86MapVidMem: SUCCEED Mapping FrameBuffer \n");
 #endif /* HAS_SVR3_MMAPDRV */
 #endif /* SVR4 */
 	return((pointer)base);
@@ -207,9 +208,9 @@ void xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	munmap(Base, Size);
 #else /* SVR4 */
 #ifdef HAS_SVR3_MMAPDRV
-	   ErrorF("# xf86UnMapVidMem: UNMapping FrameBuffer\n");
-	   mmapStat(Base,Size);
-	}
+	xf86MsgVerb(X_INFO, MMAP_DEBUG,
+	        "# xf86UnMapVidMem: UNMapping FrameBuffer\n");
+	mmapStat(Base,Size);
 	ioctl(mmapFd, UNMAPRM , Base);
 	mmapStat(Base,Size);
 	xf86MsgVerb(X_INFO, MMAP_DEBUG,
