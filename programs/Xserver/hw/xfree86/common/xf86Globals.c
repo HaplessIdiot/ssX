@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.24 1999/10/13 16:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.25 1999/10/13 22:32:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -146,7 +146,6 @@ MessageType xf86LogFileFrom = X_DEFAULT;
 serverLayoutRec xf86ConfigLayout = {NULL, };
 confDRIRec xf86ConfigDRI = {0, };
 XF86ConfigPtr xf86configptr = NULL;
-Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86Initialising = FALSE;
 Bool xf86ProbeFailed = FALSE;

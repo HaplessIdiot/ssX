@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.77 1999/09/25 14:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.78 1999/10/13 22:32:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1000,10 +1000,10 @@ xf86VTSwitch()
 
 #ifdef DEBUG
     ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
-	   BOOLTOSTRING(xf86Exiting));
+	   BOOLTOSTRING((dispatchException & DE_TERMINATE) ? TRUE : FALSE));
 #endif
     for (i = 0; i < xf86NumScreens; i++) {
-      if (!xf86Exiting)
+      if (!(dispatchException & DE_TERMINATE))
 	if (xf86Screens[i]->SaveRestoreImage)
 	  xf86Screens[i]->SaveRestoreImage(i, SaveImage);
     }
@@ -1039,7 +1039,7 @@ xf86VTSwitch()
 	  FatalError("EnterVT failed for screen %d\n", i);
       }
       xf86EnterServerState(OPERATING);
-      if (!xf86Exiting) {
+      if (!(dispatchException & DE_TERMINATE)) {
 	for (i = 0; i < xf86NumScreens; i++) {
 	  if (xf86Screens[i]->SaveRestoreImage)
 	    xf86Screens[i]->SaveRestoreImage(i, RestoreImage);

@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.33 1999/10/14 01:59:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.34 1999/10/14 04:25:01 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -111,12 +111,11 @@ extern void xf86WrapperInit(void);
 /*
  * This is to prevent re-entrancy to FatalError() when aborting.
  * Anything that can be called as a result of AbortDDX() should use this
- * instead of FatalError(). (xf86Exiting gets set to TRUE the first time
- * AbortDDX() is called.)
+ * instead of FatalError().
  */
 
 #define xf86FatalError(a, b) \
-	if (xf86Exiting) { \
+	if (dispatchException & DE_TERMINATE) { \
 		ErrorF(a, b); \
 		return; \
 	} else FatalError(a, b)
@@ -126,6 +125,7 @@ extern void xf86WrapperInit(void);
 /***************************************************************************/
 
 #include <X11/Xfuncproto.h>
+#include "opaque.h"
 
 _XFUNCPROTOBEGIN
 

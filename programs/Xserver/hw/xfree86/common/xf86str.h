@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.52 1999/10/13 22:33:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.53 1999/10/26 15:58:13 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -810,22 +810,14 @@ typedef struct {
 } SymTabRec, *SymTabPtr;
 
 
-/* These are the possible flags for ValidMode */
-typedef enum {
-    MODE_USED,		/* this mode is really being used in the */
-			/* modes line of the Display Subsection  */
-    MODE_SUGGESTED,	/* this mode is included in the available*/
-			/* modes in the Monitor Section */
-    MODE_VID		/* this is called from the VidMode extension */
-} ValidModeFlags;
-
 /* flags for xf86LookupMode */
 typedef enum {
     LOOKUP_DEFAULT		= 0,	/* Use default mode lookup method */
     LOOKUP_BEST_REFRESH,		/* Pick modes with best refresh */
     LOOKUP_CLOSEST_CLOCK,		/* Pick modes with the closest clock */
     LOOKUP_LIST_ORDER,			/* Pick first useful mode in list */
-    LOOKUP_CLKDIV2		= 0x0100 /* Allow half clocks */
+    LOOKUP_CLKDIV2		= 0x0100, /* Allow half clocks */
+    LOOKUP_OPTIONAL_TOLERANCES	= 0x0200  /* Allow missing hsync/vrefresh */
 } LookupModeFlags;
 
 #define NoDepth24Support	0x00

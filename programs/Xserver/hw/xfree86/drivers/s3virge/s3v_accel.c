@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.13 1999/06/27 14:08:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.14 1999/10/14 02:45:25 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -791,7 +791,7 @@ S3VSubsequentSolidHorVertLinePlaneMask(
 }
 
 
-void (*LineFuncs[3])() = {
+static void (*LineFuncs[3])() = {
   cfbBresS,
   cfb16BresS,
   cfb24BresS

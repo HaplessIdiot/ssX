@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.3 1999/08/28 09:01:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.6 1999/11/01 17:34:02 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -536,7 +536,7 @@ NVSubsequentSolidHorVertLine(
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
 }
 
-void (*LineFuncs[4])() = {
+static void (*LineFuncs[4])() = {
   cfbBresS,
   cfb16BresS,
   NULL,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.61 1999/10/13 22:32:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.62 1999/10/14 04:24:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2046,7 +2046,7 @@ xf86GetServerName()
 Bool
 xf86ServerIsExiting()
 {
-    return xf86Exiting;
+    return (dispatchException & DE_TERMINATE) == DE_TERMINATE;
 }
 
 

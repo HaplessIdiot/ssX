@@ -27,10 +27,16 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 25 October 1999
+<date>Last modified 31 October 1999
+
+
+
+
+
+
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.12tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.13 1999/10/26 15:58:14 tsi Exp $
 </ident>
 
 
@@ -4917,11 +4923,21 @@ be catered for the by the helpers.
 		<quote>mode with closest matching clock</quote>
                 &s.code;LOOKUP_LIST_ORDER&e.code;
 		<quote>first usable mode in list</quote>
+
+		The following options can also be combined (OR'ed) with
+		one of the above:
+
                 &s.code;LOOKUP_CLKDIV2&e.code;
 		<quote>Allow halved clocks</quote>
+		&s.code;LOOKUP_OPTIONAL_TOLERANCES&e.code;
+		<quote>Allow missing horizontal sync and/or vertical refresh
+		ranges in the XF86Config Monitor section</quote>
 
-		&s.code;LOOKUP_CLKDIV2&e.code; can be combined (OR'ed)
-		with one of the others.
+		&s.code;LOOKUP_OPTIONAL_TOLERANCES&e.code; should only be
+		specified when the driver can ensure all modes it generates
+		can sync on, or at least not damage, the monitor or digital
+		flat panel.  Horizontal sync and/or vertical refresh ranges
+		specified by the user will still be honoured (and acted upon).
 
 	</quote>
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.5 1999/07/06 11:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.6 1999/09/27 06:29:42 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -41,25 +41,43 @@ ATIPrintBIOS
     const unsigned int End
 )
 {
+    unsigned char *Char = NULL;
     unsigned int Index = Start & ~(16U - 1U);
+    unsigned char Printable[17];
+
+    memset(Printable, 0, SizeOf(Printable));
 
     xf86ErrorFVerb(4, "\n BIOS data at 0x%08X:", Start + pATI->BIOSBase);
 
-    for (;  Index < End;  Index++)
+    for (;  Index < ((End + (16U - 1U)) & ~(16U - 1U));  Index++)
     {
         if (!(Index & (4U - 1U)))
         {
             if (!(Index & (16U - 1U)))
+            {
+                if (Printable[0])
+                    xf86ErrorFVerb(4, "  |%s|", Printable);
+                Char = Printable;
                 xf86ErrorFVerb(4, "\n 0x%08X: ", Index + pATI->BIOSBase);
+            }
             xf86ErrorFVerb(4, " ");
         }
-        if (Index < Start)
+        if ((Index < Start) || (Index >= End))
+        {
             xf86ErrorFVerb(4, "  ");
+            *Char++ = ' ';
+        }
         else
+        {
             xf86ErrorFVerb(4, "%02X", BIOS[Index]);
+            if (isprint(BIOS[Index]))
+                *Char++ = BIOS[Index];
+            else
+                *Char++ = '.';
+        }
     }
 
-    xf86ErrorFVerb(4, "\n");
+    xf86ErrorFVerb(4, "  |%s|\n", Printable);
 }
 
 /*
@@ -458,7 +476,32 @@ ATIPrintRegisters
         }
     }
 
-    xf86ErrorFVerb(4, "\n\n");
+    if (pATI->pBank)
+        xf86ErrorFVerb(4, "\n\n Banked aperture at 0x%08X.\n",
+            pATI->pBank);
+    else
+        xf86ErrorFVerb(4, "\n\n No banked aperture.\n");
+
+    if (pATI->pMemory != pATI->pBank)
+        xf86ErrorFVerb(4, " Linear aperture at 0x%08X.\n", pATI->pMemory);
+    else
+        xf86ErrorFVerb(4, " No linear aperture.\n");
+
+    if (pATI->pBlock[0])
+    {
+        xf86ErrorFVerb(4, " Block 0 aperture at 0x%08X.\n", pATI->pBlock[0]);
+        if (inl(pATI->CPIOBase) == *((CARD32 *)pATI->pBlock[0]))
+            xf86ErrorFVerb(4, " MMIO registers are correctly mapped.\n");
+        else
+            xf86ErrorFVerb(4, " MMIO mapping is in error!\n");
+        if (pATI->pBlock[1])
+            xf86ErrorFVerb(4, " Block 1 aperture at 0x%08X.\n",
+                pATI->pBlock[1]);
+    }
+    else
+        xf86ErrorFVerb(4, " No MMIO aperture.\n");
+
+    xf86ErrorFVerb(4, "\n");
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.21 1999/10/13 04:21:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.22 1999/10/26 15:58:12 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -651,33 +651,37 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 	mode->VSyncStart >= mode->VSyncEnd || mode->VSyncEnd >= mode->VTotal)
 	return MODE_V_ILLEGAL;
 
-    /* Check hsync against the allowed ranges */
-    hsync = (float)mode->Clock / (float)mode->HTotal;
-    for (i = 0; i < monitor->nHsync; i++)
-	if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-	    (hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
-	    break;
+    if (monitor->nHsync > 0) {
+	/* Check hsync against the allowed ranges */
+	hsync = (float)mode->Clock / (float)mode->HTotal;
+	for (i = 0; i < monitor->nHsync; i++)
+	    if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
+		break;
 
-    /* Now see whether we ran out of sync ranges without finding a match */
-    if (i == monitor->nHsync)
-	return MODE_HSYNC;
+	/* Now see whether we ran out of sync ranges without finding a match */
+	if (i == monitor->nHsync)
+	    return MODE_HSYNC;
+    }
 
-    /* Check vrefresh against the allowed ranges */
-    vrefresh = mode->Clock * 1000.0 / (mode->HTotal * mode->VTotal);
-    if (mode->Flags & V_INTERLACE)
-	vrefresh *= 2.0;
-    if (mode->Flags & V_DBLSCAN)
-	vrefresh /= 2.0;
-    if (mode->VScan > 1)
-	vrefresh /= (float)(mode->VScan);
-    for (i = 0; i < monitor->nVrefresh; i++)
-	if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-	    (vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
-	    break;
+    if (monitor->nVrefresh > 0) {
+	/* Check vrefresh against the allowed ranges */
+	vrefresh = mode->Clock * 1000.0 / (mode->HTotal * mode->VTotal);
+	if (mode->Flags & V_INTERLACE)
+	    vrefresh *= 2.0;
+	if (mode->Flags & V_DBLSCAN)
+	    vrefresh /= 2.0;
+	if (mode->VScan > 1)
+	    vrefresh /= (float)(mode->VScan);
+	for (i = 0; i < monitor->nVrefresh; i++)
+	    if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
+		break;
 
-    /* Now see whether we ran out of refresh ranges without finding a match */
-    if (i == monitor->nVrefresh)
-	return MODE_VSYNC;
+	/* Now see whether we ran out of refresh ranges without finding a match */
+	if (i == monitor->nVrefresh)
+	    return MODE_VSYNC;
+    }
 
     /* Force interlaced modes to have an odd VTotal */
     if (mode->Flags & V_INTERLACE)
@@ -808,27 +812,32 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	return MODE_ERROR;
     }
 
-    /* Check hsync against the allowed ranges */
-    hsync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
-    for (i = 0; i < monitor->nHsync; i++)
-	if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-	    (hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
-	    break;
+    if (monitor->nHsync > 0) {
+	/* Check hsync against the allowed ranges */
+	hsync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
+	for (i = 0; i < monitor->nHsync; i++)
+	    if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
+		break;
 
-    /* Now see whether we ran out of sync ranges without finding a match */
-    if (i == monitor->nHsync)
-	return MODE_HSYNC;
+	/* Now see whether we ran out of sync ranges without finding a match */
+	if (i == monitor->nHsync)
+	    return MODE_HSYNC;
+    }
 
-    /* Check vrefresh against the allowed ranges */
-    vrefresh = mode->SynthClock * 1000.0 / (mode->CrtcHTotal * mode->CrtcVTotal);
-    for (i = 0; i < monitor->nVrefresh; i++)
-	if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-	    (vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
-	    break;
+    if (monitor->nVrefresh > 0) {
+	/* Check vrefresh against the allowed ranges */
+	vrefresh = (mode->SynthClock * 1000.0) /
+		   (mode->CrtcHTotal * mode->CrtcVTotal);
+	for (i = 0; i < monitor->nVrefresh; i++)
+	    if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
+		break;
 
-    /* Now see whether we ran out of refresh ranges without finding a match */
-    if (i == monitor->nVrefresh)
-	return MODE_VSYNC;
+	/* Now see whether we ran out of refresh ranges without finding a match */
+	if (i == monitor->nVrefresh)
+	    return MODE_VSYNC;
+    }
 
     /* Force interlaced modes to have an odd VTotal */
     if (mode->Flags & V_INTERLACE)
@@ -924,17 +933,18 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		  int minHeight, int maxHeight, int virtualX, int virtualY,
 		  int apertureSize, LookupModeFlags strategy)
 {
-    DisplayModePtr p, q, new, last, *endp;
+    DisplayModePtr p, q, r, new, last, *endp;
     int i, numModes = 0;
     ModeStatus status;
     int linePitch = -1, virtX = 0, virtY = 0;
     int newLinePitch, newVirtX, newVirtY;
     int pixelArea = scrp->videoRam * (1024 * 8);	/* in bits */
+    int modeSize;					/* in pixels */
     int bitsPerPixel, pixmapPad;
     PixmapFormatRec *BankFormat;
 
     /* Some sanity checking */
-    if (scrp == NULL || scrp->name == NULL ||
+    if (scrp == NULL || scrp->name == NULL || !scrp->monitor ||
 	(!scrp->progClock && scrp->numClocks == 0)) {
 	ErrorF("xf86ValidateModes: called with invalid scrnInfoRec\n");
 	return -1;
@@ -954,6 +964,25 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if ((virtualX > 0) != (virtualY > 0)) {
 	ErrorF("xf86ValidateModes: called with invalid virtual resolution\n");
 	return -1;
+    }
+
+    /*
+     * If requested by the driver, allow missing hsync and/or vrefresh ranges
+     * in the monitor section.
+     */
+    if (strategy & LOOKUP_OPTIONAL_TOLERANCES) {
+	strategy &= ~LOOKUP_OPTIONAL_TOLERANCES;
+    } else {
+	if (scrp->monitor->nHsync <= 0) {
+	    ErrorF("xf86ValidateModes: called with missing monitor horizontal"
+		   " sync rates\n");
+	    return -1;
+	}
+	if (scrp->monitor->nVrefresh <= 0) {
+	    ErrorF("xf86ValidateModes: called with missing monitor vertical"
+		   " refresh rates\n");
+	    return -1;
+	}
     }
 
     /* Determine which pixmap format to pass to miScanLineWidth() */
@@ -1044,6 +1073,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	virtY = virtualY;
 	scrp->virtualFrom = X_CONFIG;
     }
+
     /* Print clock ranges and scaled clocks */
     xf86ShowClockRanges(scrp, clockRanges);
 
@@ -1122,12 +1152,15 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     for (p = scrp->modes; ; p = p->next) {
 	/*
 	 * If the supplied mode names don't produce a valid mode, scan through
-	 * unconsidered modePool members until one survives validation.
+	 * unconsidered modePool members until one survives validation.  This
+	 * is done in decreasing order by mode pixel area.
 	 */
 	if (p == NULL) {
 	    if (numModes > 0)
 		break;
 
+	    r = NULL;
+	    modeSize = 0;
 	    for (q = scrp->modePool;  q != NULL;  q = q->next) {
 		if ((q->prev == NULL) && (q->status == MODE_OK)) {
 		    /*
@@ -1140,14 +1173,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 			    break;
 		    }
 
-		    if (p == NULL)
-			break;
-
-		    q->prev = p;
+		    if (p != NULL)
+			q->prev = p;
+		    else if (modeSize < (q->HDisplay * q->VDisplay)) {
+			r = q;
+			modeSize = q->HDisplay * q->VDisplay;
+		    }
 		}
 	    }
 
-	    if (q == NULL)
+	    if (r == NULL)
 		break;
 
 	    p = xnfalloc(sizeof(DisplayModeRec));
@@ -1155,8 +1190,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    p->status = MODE_OK;
 	    p->prev = last;
 	    p->next = NULL;
-	    p->name = xnfalloc(strlen(q->name) + 1);
-	    strcpy(p->name, q->name);
+	    p->name = xnfalloc(strlen(r->name) + 1);
+	    strcpy(p->name, r->name);
 	    if (p->prev)
 		p->prev->next = p;
 	    *endp = last = p;
@@ -1379,8 +1414,8 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
     do {
 	xf86SetModeCrtc(p, adjustFlags);
 #ifdef DEBUG
-	ErrorF("%s %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
-	       (p->type & M_T_DEFAULT) ? "(VESA)Mode" : "Mode",
+	ErrorF("%sMode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
+	       (p->type & M_T_DEFAULT) ? "Default " : "",
 	       p->name, p->CrtcHDisplay, p->CrtcHBlankStart,
 	       p->CrtcHSyncStart, p->CrtcHSyncEnd, p->CrtcHBlankEnd,
 	       p->CrtcHTotal, p->CrtcVDisplay, p->CrtcVBlankStart,
@@ -1429,7 +1464,7 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	if (p->type & M_T_BUILTIN)
 	    prefix = "Built-in mode";
 	else if (p->type & M_T_DEFAULT)
-	    prefix = "VESA mode";
+	    prefix = "Default mode";
 	else
 	    prefix = "Mode";
 	if (p->Clock == p->SynthClock) {

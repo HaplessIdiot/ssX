@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.5 1999/09/25 14:37:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.6 1999/10/26 15:58:17 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -85,6 +85,9 @@ ATIValidMode
         if ((pMode->HDisplay > pATI->LCDHorizontal) ||
             (pMode->VDisplay > pATI->LCDVertical))
             return MODE_PANEL;
+
+        if (!pATI->OptionDevel)
+            return MODE_OK;
 
         /* Adjust effective timings for monitor checks */
         pMode->SynthClock = pATI->LCDClock;

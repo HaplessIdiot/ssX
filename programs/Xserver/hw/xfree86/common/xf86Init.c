@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.139 1999/10/13 22:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.140 1999/10/13 22:50:14 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -750,7 +750,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     
   if (serverGeneration != 1) {
     xf86Resetting = TRUE;
-    xf86Exiting = FALSE;
 #ifdef HAS_USL_VTS
     /* All screens are in the same state, so just check the first */
     if (!xf86Screens[0]->vtSema) {
@@ -1021,13 +1020,6 @@ void
 AbortDDX()
 {
   int i;
-
-#if 0
-  if (xf86Exiting)
-    return;
-#endif
-
-  xf86Exiting = TRUE;
 
   /*
    * try to deinitialize all input devices

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.6 1999/09/25 14:37:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.7 1999/10/26 15:58:18 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -106,7 +106,8 @@ ATIVGAPreInit
         pATIHW->gra[5] = 0x02U;
     else if (pATI->Chip >= ATI_CHIP_264CT)
         pATIHW->gra[5] = 0x40U;
-    if (pATI->UseSmallApertures && (pATI->Chip >= ATI_CHIP_264VTB))
+    if (pATI->UseSmallApertures && (pATI->Chip >= ATI_CHIP_264CT) &&
+        ((pATI->Chip >= ATI_CHIP_264VT) || pATI->Block0Base))
         pATIHW->gra[6] = 0x01U;         /* 128kB aperture */
     else
         pATIHW->gra[6] = 0x05U;         /* 64kB aperture */

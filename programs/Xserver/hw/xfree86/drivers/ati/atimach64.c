@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.7 1999/10/13 04:21:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.8 1999/10/26 15:58:16 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -77,7 +77,8 @@ ATIMach64PreInit
     else
         pATIHW->config_cntl &= ~CFG_MEM_VGA_AP_EN;
     if (pATI->LinearBase &&
-        (pATI->BusType != ATI_BUS_PCI) && (pATI->BusType != ATI_BUS_AGP))
+        ((pATI->Chip < ATI_CHIP_264CT) ||
+         ((pATI->BusType != ATI_BUS_PCI) && (pATI->BusType != ATI_BUS_AGP))))
     {
         /* Replace linear aperture size and address */
         pATIHW->config_cntl &= ~(CFG_MEM_AP_LOC | CFG_MEM_AP_SIZE);

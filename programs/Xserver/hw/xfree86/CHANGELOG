@@ -1,3 +1,20 @@
+3285. Ensure miInitializeBanking() fails when a bank clip region cannot be
+      allocated (Marc La France).
+3284. Static server fix for s3virge and nv drivers (Marc La France).
+3283. Map MMIO areas on ATI adapters (Marc La France).
+3282. Disable DirectColor and gamma support for the original ATI integrated
+      controllers (Marc La France).
+3281. Linear aperture fixes for ATI 88800 and CT controllers (Marc La France).
+3280. Make LCD mode validation changes in ATI driver (CHANGELOG #3271)
+      into a development option, restoring the previous behaviour by
+      default (Marc La France).
+3279. When display subsection mode names run out without yeilding a valid mode,
+      continue validation with the largest unvalidated modePool member, rather
+      than the first (Marc La France).
+3278. Allow drivers to specify whether or not sync/refresh rates in monitor
+      sections are optional and use this for ATI LCD support (Marc La France).
+3277. Replace xf86Exiting with its DIX counterpart, dispatchException's
+      DE_TERMINATE bit (Marc La France).
 3276. Nvidia driver changes (Mark Vojkovich):
       - Improved shadowfb support (screen rotation).
       - Improved acceleration (color expansion, lines).
@@ -8991,4 +9008,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.842 1999/10/24 18:01:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.844 1999/11/01 00:33:27 mvojkovi Exp $

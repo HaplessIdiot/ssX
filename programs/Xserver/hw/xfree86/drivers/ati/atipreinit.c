@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.7 1999/10/13 16:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.8 1999/10/26 15:58:16 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1103,7 +1103,9 @@ ATIPreInit
     }
 
     if ((pScreenInfo->depth > 8) &&
-        ((pScreenInfo->defaultVisual | DynamicClass) != DirectColor))
+        (((pScreenInfo->defaultVisual | DynamicClass) != DirectColor) ||
+         ((pScreenInfo->defaultVisual == DirectColor) &&
+          (pATI->DAC == ATI_DAC_INTERNAL))))
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Driver does not support default visual %s for depth %d.\n",
@@ -1247,6 +1249,11 @@ ATIPreInit
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
     {
+        /* Set MMIO address from PCI configuration space, if available */
+        if (pATI->PCIInfo &&
+            (pATI->Block0Base = pATI->PCIInfo->memBase[2]))
+            pATI->Block0Base += 0x0400U;
+            
         /* Possibly set up for linear aperture */
         if ((pScreenInfo->depth >= 8) && pATI->OptionLinear)
         {
@@ -1260,23 +1267,30 @@ ATIPreInit
             if ((pATI->BusType != ATI_BUS_PCI) &&
                 (pATI->BusType != ATI_BUS_AGP))
             {
-                if (pATI->Chip >= ATI_CHIP_88800GXE)
+                if (pATI->Chip == ATI_CHIP_88800CX)
+                    IOValue2 = ~((unsigned long)((1 << 23) - 1));
+                else if (pATI->Chip >= ATI_CHIP_88800GXE) 
                     IOValue2 = ~((unsigned long)((1 << 24) - 1));
                 else if (pATI->VideoRAM >= 4096)
                     IOValue2 = ~((unsigned long)((1 << 23) - 1));
                 else
                     IOValue2 = ~((unsigned long)((1 << 22) - 1));
+
                 if ((IOValue2 &= pGDev->MemBase) &&
                     (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
                     pATI->LinearBase = IOValue2;
+            }
 
-                if (pATI->LinearBase)
+            if (pATI->LinearBase)
+            {
+                if (pATI->VideoRAM < 4096)
+                    pATI->LinearSize = 4 * 1024 * 1024;
+                else
+                    pATI->LinearSize = 8 * 1024 * 1024;
+
+                if ((pATI->BusType != ATI_BUS_PCI) &&
+                    (pATI->BusType != ATI_BUS_AGP))
                 {
-                    if (pATI->VideoRAM < 4096)
-                        pATI->LinearSize = 4 * 1024 * 1024;
-                    else
-                        pATI->LinearSize = 8 * 1024 * 1024;
-
                     Resources[0].type = ResExcMemBlock;
                     Resources[0].rBegin = pATI->LinearBase;
                     Resources[0].rEnd = pATI->LinearBase +
@@ -1310,10 +1324,18 @@ ATIPreInit
             }
             else
             {
+                /*
+                 * Unless specified in PCI configuration space, set MMIO
+                 * address to tail end of linear aperture.
+                 */
+                if (!pATI->Block0Base)
+                    pATI->Block0Base =
+                        pATI->LinearBase + pATI->LinearSize - 0x00000400U;
+
                 AcceleratorVideoRAM = (pATI->LinearSize >> 10) - 2; /* 4? */
                 if (AcceleratorVideoRAM < pATI->VideoRAM)
                 {
-                    if (pATI->Chip < ATI_CHIP_264CT)
+                    if (pATI->Chip < ATI_CHIP_264VTB)
                     {
                         /*
                          * Don't allow virtual resolution to overlay register
@@ -1376,6 +1398,35 @@ ATIPreInit
                 pATI->BankInfo.SetDestinationBank = ATIMach64SetWritePacked;
                 pATI->BankInfo.SetSourceAndDestinationBanks =
                     ATIMach64SetReadWritePacked;
+            }
+
+            /*
+             * Unless specified in PCI configuration space, or at the top of
+             * of a linear aperture, set MMIO address to the one just above the
+             * VGA aperture.  This does not work on the CT (maybe others).
+             */
+            if (!pATI->Block0Base &&
+                ((pATI->Chip < ATI_CHIP_264CT) ||
+                 (pATI->Chip >= ATI_CHIP_264VT) ||
+                 pATI->OptionDevel))
+                pATI->Block0Base = 0x000BFC00U;
+        }
+
+        if (pATI->Block0Base)
+        {
+            pATI->PageSize = getpagesize();
+            pATI->MMIOBase = pATI->Block0Base & ~(pATI->PageSize - 1);
+
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                "Using Block 0 MMIO aperture at 0x%08X.\n", pATI->Block0Base);
+
+            /* Set Block1 MMIO address if supported */
+            if (pATI->Chip >= ATI_CHIP_264VT)
+            {
+                pATI->Block1Base = pATI->Block0Base - 0x00000400U;
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                    "Using Block 1 MMIO aperture at 0x%08X.\n",
+                    pATI->Block1Base);
             }
         }
     }
@@ -1739,6 +1790,16 @@ ATIPreInit
     }
 
     maxPitch *= minPitch;
+
+    if (!pATI->OptionCRT && pATI->LCDPanelID >= 0)
+    {
+        /*
+         * Given LCD modes are more tightly controlled than CRT modes, allow
+         * the user the option of not specifying a panel's horizontal sync
+         * and/or vertical refresh tolerances.
+         */
+        Strategy |= LOOKUP_OPTIONAL_TOLERANCES;
+    }
 
     i = xf86ValidateModes(pScreenInfo,
             pScreenInfo->monitor->Modes, pScreenInfo->display->modes,
