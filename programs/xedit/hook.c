@@ -925,9 +925,13 @@ confirm_label:
 
 	/* Execute expression */
 	einfo.mats[0].rm_so = 0;
-	einfo.mats[0].rm_eo = to - from - !(to == from);
+	einfo.mats[0].rm_eo = to - from - !(from == to || to == last);
 	ecode = reexec(&einfo.regex, line,
 		       einfo.sref + 1, &einfo.mats[0], flags);
+
+	if (replace && einfo.mats[0].rm_so == einfo.mats[0].rm_eo)
+	    /* Ignore empty matches */
+	    ecode = RE_NOMATCH;
 
 	if (ecode == 0 && confirm &&
 	    (einfo.soff == O_ALL || nth == einfo.soff)) {
@@ -1017,6 +1021,10 @@ no_substitute_label:
 		    nth = 0;
 		    to = RSCAN(from, 1, True);
 		    from = LSCAN(to, 1, False);
+		    if (to == last) {
+			XawTextSetInsertionPoint(w, from + len);
+			break;
+		    }
 		}
 		else
 		    flags |= RE_NOTBOL;
