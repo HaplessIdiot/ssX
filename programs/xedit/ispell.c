@@ -339,14 +339,31 @@ IspellSetStatus(char *label)
 static void
 IspellSetRepeated(Bool state)
 {
+    static char *mispelled, *repeated;
+    Arg args[1];
+
+    if (mispelled == NULL) {
+	XtSetArg(args[0], XtNlabel, &mispelled);
+	XtGetValues(ispell.mispelled, args, 1);
+	mispelled = XtNewString(mispelled);
+    }
+    if (repeated == NULL) {
+	XtSetArg(args[0], XtNlabel, &repeated);
+	XtGetValues(ispell.repeated, args, 1);
+	repeated = XtNewString(repeated);
+    }
     XtSetSensitive(ispell.replaceAll, !state);
     XtSetSensitive(ispell.ignoreAll, !state);
     XtSetSensitive(ispell.add, !state);
     XtSetSensitive(ispell.addUncap, !state);
-    if (state && XtIsManaged(ispell.mispelled))
-	XtChangeManagedSet(&ispell.mispelled, 1, NULL, NULL, &ispell.repeated, 1);
-    else if (!state && XtIsManaged(ispell.repeated))
-	XtChangeManagedSet(&ispell.repeated, 1, NULL, NULL, &ispell.mispelled, 1);
+    if (!state) {
+	XtSetArg(args[0], XtNlabel, mispelled);
+	XtSetValues(ispell.mispelled, args, 1);
+    }
+    else {
+	XtSetArg(args[0], XtNlabel, repeated);
+	XtSetValues(ispell.mispelled, args, 1);
+    }
 }
 
 static void
