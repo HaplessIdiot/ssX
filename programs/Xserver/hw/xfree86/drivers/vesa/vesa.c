@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.39tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.40 2003/11/03 05:11:45 tsi Exp $
  */
 
 #include "vesa.h"
@@ -783,6 +783,12 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!VESASetMode(pScrn, pScrn->currentMode))
 	return (FALSE);
 
+    /* set the viewport */
+    VESAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+
+    /* Blank the screen for aesthetic reasons. */
+    VESASaveScreen(pScreen, SCREEN_SAVER_ON);
+
     /* mi layer */
     miClearVisualTypes();
     if (!xf86SetDefaultVisual(pScrn, -1))
@@ -975,8 +981,12 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 static Bool
 VESAEnterVT(int scrnIndex, int flags)
 {
-    return (VESASetMode(xf86Screens[scrnIndex],
-			xf86Screens[scrnIndex]->currentMode));
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+
+    if (!VESASetMode(pScrn, pScrn->currentMode))
+	return FALSE;
+    VESAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    return TRUE;
 }
 
 static void
