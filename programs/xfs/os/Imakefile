@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 94/03/31 17:49:40 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 95/04/07 19:42:56 kaleb Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -17,15 +17,17 @@ SOCK_DEFINES = -DBSD44SOCKETS
 
 /* ERROR_DEFINES = -DUSE_SYSLOG */
 
+OS_DEFINES = ServerOSDefines
+
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
 
-SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES) $(SOCK_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES) $(SOCK_DEFINES) $(OS_DEFINES))
 
 SpecialCObjectRule(io,$(ICONFIGFILES),$(CONN_DEFINES))
 
 SpecialCObjectRule(error,$(ICONFIGFILES),$(ERROR_DEFINES))
 
-SpecialCObjectRule(osglue,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCObjectRule(osglue,$(ICONFIGFILES),$(CONN_DEFINES) $(OS_DEFINES))
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.1 1995/02/12 09:57:22 dawes Exp $ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.2 1995/03/19 10:21:26 dawes Exp $ */
 
 /*
 
@@ -542,16 +542,18 @@ int main (argc, argv)
 	return 0;
 
     if (MinorVersion > 0 || MajorVersion > 0) {
-	if (!strcmp(argv[1], "-next")) {
-	    XVGAHelpSwitchMode(XtDisplay (top), DefaultScreen (XtDisplay (top)),
-			       1);
-	    XSync(XtDisplay (top), True);
-	    return 0;
-	} else if (!strcmp(argv[1], "-prev")) {
-	    XVGAHelpSwitchMode(XtDisplay (top), DefaultScreen (XtDisplay (top)),
-			       -1);
-	    XSync(XtDisplay (top), True);
-	    return 0;
+	if (argc > 1) {
+	    int i = 0;
+	    if (!strcmp(argv[1], "-next"))
+		i = 1;
+	    else if (!strcmp(argv[1], "-prev"))
+		i = -1;
+	    if (i != 0) {
+		XVGAHelpSwitchMode(XtDisplay (top),
+				   DefaultScreen (XtDisplay (top)), i);
+		XSync(XtDisplay (top), True);
+		return 0;
+	    }
 	}
 	if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	    return 0;

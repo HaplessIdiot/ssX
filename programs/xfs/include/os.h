@@ -1,4 +1,5 @@
-/* $XConsortium: os.h,v 1.8 94/04/17 19:55:59 dpw Exp $ */
+/* $XConsortium: os.h,v 1.9 94/09/16 19:00:32 kaleb Exp $ */
+/* $XFree86$ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -72,14 +73,53 @@ extern void FSfree();
 #define	fsrealloc(ptr, size)	FSrealloc((pointer)ptr, (unsigned long)size)
 #define	fsfree(ptr)		FSfree((pointer)ptr)
 
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#endif
+#ifndef NO_ALLOCA
+/*
+ * os-dependent definition of local allocation and deallocation
+ * If you want something other than FSalloc/FSfree for ALLOCATE/DEALLOCATE
+ * LOCAL then you add that in here.
+ */
+#ifdef __HIGHC__
 
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
+#ifndef NCR
+extern char *alloca();
+
+#if HCVERSION < 21003
+#define ALLOCATE_LOCAL(size)    alloca((int)(size))
+pragma on(alloca);
+#else /* HCVERSION >= 21003 */
+#define ALLOCATE_LOCAL(size)    _Alloca((int)(size))
+#endif /* HCVERSION < 21003 */
+#else /* NCR */
+#define ALLOCATE_LOCAL(size)	alloca(size)
+#endif /* NCR */
+
+#define DEALLOCATE_LOCAL(ptr)	/* as nothing */
+
+#endif /* __HIGHC__ */
+
+#ifdef __GNUC__
+#ifndef alloca
+#define alloca __builtin_alloca
+#endif /* !alloca */
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#else
+
+/*
+ * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
+ * Test is easy, the new one is named __builtin_alloca and comes
+ * from alloca.h which #defines alloca.
+ */
+#ifndef NCR
+#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 #define	ALLOCATE_LOCAL(size)		alloca((int)size)
 #define	DEALLOCATE_LOCAL(ptr)
 #endif
+#endif /* NCR */
+#endif /* __GNUC__ */
+
+#endif /* NO_ALLOCA */
 
 #ifndef ALLOCATE_LOCAL
 #define	ALLOCATE_LOCAL(size)	FSalloc((unsigned long)size)
