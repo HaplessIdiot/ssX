@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.56 2003/01/15 03:01:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.57 2003/02/17 16:37:19 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -127,7 +127,7 @@ AXP_SRC=bsd_ev56.c xf86Axp.c bsd_axp.c
 AXP_OBJ=bsd_ev56.o xf86Axp.o bsd_axp.o
 #endif
 
-#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)) && HasAgpGart
+#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)) && HasAgpGart
 AGP_SRC=lnx_agp.c
 AGP_OBJ=lnx_agp.o
 #else
@@ -218,7 +218,7 @@ LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 LinkSourceFile(sigio.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
-#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture)) && HasAgpGart
+#if (defined(FreeBSDArchitecture) || defined(NetBSDArchitecture) || defined(OpenBSDArchitecture)) && HasAgpGart
 LinkSourceFile(lnx_agp.c,../linux)
 #else
 LinkSourceFile(agp_noop.c,../shared)
