@@ -1,7 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.4 2000/02/15 07:13:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.5 2000/02/16 15:12:42 dawes Exp $ */
 
 
+#if 0
 #include <sys/time.h>
+#endif
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
