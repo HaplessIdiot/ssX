@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.3 1994/08/31 04:23:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000vga.c,v 3.4 1994/09/07 15:50:51 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -28,7 +28,6 @@
 
 #include "misc.h"
 #include "vgaBank.h"
-#include "cfbfuncs.h"
 
 #include "p9000.h"
 #include "p9000reg.h"

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.21 1994/09/20 12:41:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.22 1994/09/21 10:40:04 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -164,13 +164,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.21 1994/09/20 12:41:56 dawes Exp $
  */
 #ifndef BuildXIE
 #define BuildXIE		XF86AccelServer || XF86SVGAServer
-#endif
-
-/*
- * Build DIS by default when XIE is enabled
- */
-#ifndef BuildDIS
-#define BuildDIS		BuildXIE
 #endif
 
 /*

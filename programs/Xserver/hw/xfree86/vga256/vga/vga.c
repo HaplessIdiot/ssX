@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.19 1994/09/14 10:41:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.20 1994/09/17 04:07:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -338,6 +338,8 @@ vgaProbe()
        * and is much faster with cfb16.
        */
       vga256InfoRec.depth = vgaBitsPerPixel;
+      if (vgaBitsPerPixel == 32)
+          xf86weight.red = xf86weight.green = xf86weight.blue = 8;
       vga256InfoRec.weight = xf86weight;
       vga256InfoRec.bitsPerPixel = vgaBitsPerPixel;
       vga256InfoRec.blackColour.red = 0;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.20 1994/09/20 12:46:44 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.21 1994/09/21 10:48:57 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2667,7 +2667,7 @@ char *scrname;
 	/* Now see whether we ran out of sync frequencies */
 	if ( i == monp->n_hsync ) {
 		ErrorF(
-		  "%s %s: Mode \"%s\" needs hsync freq of %f kHz. Deleted.\n",
+		  "%s %s: Mode \"%s\" needs hsync freq of %.2f kHz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, hsyncfreq);
 		return FALSE;
 	}
@@ -2694,7 +2694,7 @@ char *scrname;
 	/* Now see whether we ran out of refresh rates */
 	if ( i == monp->n_vrefresh ) {
 		ErrorF(
-		  "%s %s: Mode \"%s\" needs vertical refresh rate of %f Hz. Deleted.\n",
+		  "%s %s: Mode \"%s\" needs vert refresh rate of %.2f Hz. Deleted.\n",
 		  XCONFIG_PROBED, scrname, dispmp->name, vrefreshrate);
 		return FALSE;
 	}

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.35 1994/09/20 13:07:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.36 1994/09/21 10:46:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -391,6 +391,13 @@ s3Probe()
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
+
+   if (S3_x64_SERIES(s3ChipId))
+      if (OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
+	 ErrorF("%s %s: Option \"nomemaccess\" is ignored for 864/964\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_CLR(OPTION_NO_MEM_ACCESS, &s3InfoRec.options);
+      }
 
    /* LocalBus or EISA or PCI */
    s3Localbus = ((config & 0x03) <= 2) || S3_928_P(s3ChipId);
@@ -1068,13 +1075,17 @@ s3Probe()
 	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
-#ifdef ICS2595
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
+#ifdef ICS2595
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using ICS2595 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
+#else
+      ErrorF("ICS2595 clock chip support is not yet included\n");
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return(FALSE);
 #endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
@@ -1832,20 +1843,7 @@ icd2061ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-#ifdef ICS2595
-	 if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
-	    outb(vgaCRIndex, 0x42);/* select the clock */
-	    outb(vgaCRReg, 0x04);
-	    outb(vgaCRIndex, 0x5c);
-	    outb(vgaCRReg, 0x20);
-	    outb(vgaCRReg, 0x00);
-	    outb(vgaCRIndex, 0x5c);
-	    outb(vgaCRReg, 0x04);
-	    outb(vgaCRIndex, 0x42);
-	    outb(vgaCRReg, 0x04);
-	 } else
-#endif
-	 {
+	 if (!OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    outb(vgaCRIndex, 0x42);/* select the clock */
 	    outb(vgaCRReg, 0x02);
 	 }

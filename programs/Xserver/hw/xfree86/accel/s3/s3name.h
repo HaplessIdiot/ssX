@@ -1,5 +1,5 @@
 /* $XConsortium: s3name.h,v 1.1 94/03/28 21:16:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.2 1994/08/01 12:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.3 1994/09/07 15:51:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -54,6 +54,8 @@
 #define s3UninstallColormap CUSTOMNAME(_s3UninstallColormap)
 #define s3RestoreColor0 CUSTOMNAME(_s3RestoreColor0)
 #define s3CreateGC CUSTOMNAME(_s3CreateGC)
+#define s3CreateGC16 CUSTOMNAME(_s3CreateGC16)
+#define s3CreateGC32 CUSTOMNAME(_s3CreateGC32)
 #define s3SolidFSpans CUSTOMNAME(_s3SolidFSpans)
 #define s3TiledFSpans CUSTOMNAME(_s3TiledFSpans)
 #define s3StipFSpans CUSTOMNAME(_s3StipFSpans)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.0 1994/05/31 08:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.1 1994/09/17 13:47:14 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -30,7 +30,13 @@ extern int vgaSaveReadseg;
 #define VGABASE 0xF0000000
 #endif
 
+#if 0 /* disable this -- there are problems */
 #if __GNUC__ > 1
+#define USE_GCC_INLINE
+#endif
+#endif
+
+#ifdef USE_GCC_INLINE
 #define gcc_inline __inline__
 #else
 #define gcc_inline /**/
@@ -87,7 +93,7 @@ void
 
 #ifndef BANK_DEBUG
 
-#if __GNUC__ > 1
+#ifdef USE_GCC_INLINE
 #define DO_BANK_READ(_bank)						\
 __asm__ __volatile__							\
 ("call *%0"								\

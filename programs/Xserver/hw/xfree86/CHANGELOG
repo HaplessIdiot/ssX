@@ -1,4 +1,19 @@
+XFree86 3.0Fb (22 September 1994)
+343. Fix problem with S3 mmio usage at 16bpp and 32bpp (Hans Nasten).
+342. Fix Mono VGA server crashes when compiled with gcc2.
+341. Updates to xterm for Linux to handle its UTMP style and lastlog
+     (Helmut Geyer).
+340. Remove some dependencies on removed cfb.banked.
+339. Fix Mach32 SW cursor SEGV.
+338. Prevent "nomemaccess" being used for S3 864/964.
+337. Change FreeBSD.cf to use gnumalloc for FreeBSD 2.x (Rich Murphey).
+336. Set weights correctly for Cirrus 32bpp (Harm Hanemaayer).
+335. Fix signal handling in xinit for SVR4 (David Holland).
+
 XFree86 3.0Fa (21 September 1994)
+334. Fix problems with cirrus top/left edge handling with HW cursor
+     (Simon Cooper).
+333. Fix GC problem causing S3 server crash at 16bpp and 32bpp.
 332. Added copyright to the output of reconfig.
 331. Fixes for vgawonder driver (Marc Aurele La France).
 330. Update README.ati and ati.test.c (Marc Aurele La France).

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.0 1994/09/20 12:46:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICS2595.c,v 3.1 1994/09/21 10:51:00 dawes Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  94/09/19 */
 
@@ -20,30 +20,62 @@ Bool
 ICS2595SetClock(frequency)
 register long frequency;
 {  
-   unsigned int FeedDiv, BigD, Location;
+   int vgaCRIndex = vgaIOBase + 4;
+   int vgaCRReg = vgaIOBase + 5; 
+   unsigned int i, FeedDiv, BigD, Location=17;
+   unsigned int VCLK_preprog[16]={100, 126, 92,  38, 50, 56, 28,
+                                    45, 135, 32, 110, 80, 40, 45, 75, 65};
+  for(i=0;i<16;i++)
+    if ((frequency<(VCLK_preprog[i]+0.5)*1000) && 
+       (frequency>(VCLK_preprog[i]-0.5)*1000)) {
+      Location=i;
+      break; }        /* check whether one of preprogrammed VCLKs fits */
 
+  if (Location==17)
+  { /* programm ICS2595 clocks */
   if (frequency>MAX_ICS2595_FREQ)
    return FALSE;        /* Frequency too high! */
-
+       
+     
   /* calculate POST-DIVIDER */
-   BigD = 3;
-  if (frequency < MIN_ICS2595_FREQ)
-   BigD = 2;
-  if (frequency < MIN_ICS2595_FREQ / 2)
-   BigD = 1;
-  if (frequency < MIN_ICS2595_FREQ / 4)
-   BigD = 0;
-  frequency <<= (~BigD)&3;         /* negation, two last bits significant */	
+    BigD = 3;
+   if (frequency < MIN_ICS2595_FREQ)
+    BigD = 2;
+   if (frequency < MIN_ICS2595_FREQ / 2)
+    BigD = 1;
+   if (frequency < MIN_ICS2595_FREQ / 4)
+    BigD = 0;
+   frequency <<= (~BigD)&3;         /* negation, two last bits significant */	
 
- if (frequency<MIN_ICS2595_FREQ)
-   return FALSE; 	/* Frequency too low!  */ 
+  if (frequency<MIN_ICS2595_FREQ)
+    return FALSE; 	/* Frequency too low!  */ 
 
- FeedDiv = (unsigned int) ((frequency/QUARZFREQ)*43);
- FeedDiv -= 257;
+  FeedDiv = (unsigned int) ((frequency/QUARZFREQ)*46);
+  FeedDiv -= 257;
+ 
 
- Location = 0x04; 		/* what clock to reprogram */    		
+  Location = 0x0a; 		/* what clock to reprogram */    		
 
- return SetICS2595( FeedDiv, BigD, Location);
+  SetICS2595( FeedDiv, BigD, Location);
+ }
+   if (Location!=0x06)
+      
+     {  outb(vgaCRIndex,  0x42);       /* set VCLK */
+        outb(vgaCRReg,    Location);
+        outb(vgaCRIndex,  0x5c);
+        outb(vgaCRReg,    0x20);
+        outb(vgaCRReg,    0x00);
+        outb(vgaCRIndex,  0x5c);        
+        outb(vgaCRReg,    0x04);
+        outb(vgaCRIndex,  0x42);
+        outb(vgaCRReg,    0x04);}
+   else { outb(vgaCRIndex, 0x42);
+	  outb(vgaCRReg,   0x01);
+          outb(vgaCRIndex, 0x5c);
+          outb(vgaCRReg,   0x20);
+          outb(vgaCRReg,   0x00); } 
+
+return TRUE;
 
 }	/* end of ICS2595SetClock */
 
@@ -103,16 +135,6 @@ unsigned int N, D, L;
         wrtICS2595bit(1);		/* STOP1			*/
         wrtICS2595bit(1);		/* STOP2			*/
         
-        outb(vgaCRIndex, 0x42);
-	outb(vgaCRReg, L);
-	outb(vgaCRIndex, 0x5c);
-	outb(vgaCRReg, 0x20);
-	outb(vgaCRReg, 0x00);
-	outb(vgaCRIndex, 0x5c);        /* might be incorrect  */
-	outb(vgaCRReg, L);	       
-        outb(vgaCRIndex, 0x42);
-	outb(vgaCRReg, L);
-
         return TRUE;         
 }		
 

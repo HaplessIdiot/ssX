@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.4 1994/08/01 12:11:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.5 1994/08/31 04:22:56 dawes Exp $
 XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
 
 #include <Server.tmpl>
@@ -16,7 +16,6 @@ OBJS = 	p9000.o p9000cmap.o p9000init.o p9000viper.o p9000orchid.o \
 INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(SERVERSRC)/include \
            -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTSRC)/include \
-	   -I$(XF86SRC)/vga256/cfb.banked \
            -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86HWSRC) \
            -I$(FONTINCSRC) -I$(XF86OSSRC)
 

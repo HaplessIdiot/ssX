@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.4 1994/09/07 15:46:10 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.5 1994/09/14 10:37:42 dawes Exp $
 .\" XF86_SVGA.man
 .TH XF86_SVGA 1 "Version 3.1"  "XFree86"
 .SH NAME
@@ -23,6 +23,8 @@ Virtual resolutions up to (approximately) 1152x900 are supported, using
 (up to) 1Mb of display memory.  The Western Digital WD90C33 and some of
 the Cirrus chipsets support
 up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
+Some of the Cirrus chipsets also support 16bpp and 32bpp (truecolor) modes
+on certain configurations.
 .RS .5i
 .TP 4
 ATI:
@@ -45,8 +47,9 @@ NCR:
 77C22, 77C22E
 .TP 4
 Cirrus Logic:
-CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD6205,
-CLGD6215, CLGD6225, CLGD6235
+CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
+CLGD5430, CLGD5434,
+CLGD6205, CLGD6215, CLGD6225, CLGD6235
 .TP 4
 Compaq:
 AVGA
@@ -106,8 +109,9 @@ NCR:
 ncr77c22, ncr77c22e
 .TP 4
 Cirrus Logic:
-clgd5420, clgd5422, clgd5424, clgd5426, clgd5428, clgd6205,
-clgd6215, clgd6225, clgd6235
+clgd5420, clgd5422, clgd5424, clgd5426, clgd5428, clgd5429,
+clgd5430, clgd5434,
+clgd6205, clgd6215, clgd6225, clgd6235
 .TP 4
 Compaq:
 cpq_avga
@@ -171,8 +175,7 @@ on the screen during BitBLT operations
 .sp
 \fBfifo_aggressive\fP - for Cirrus chipsets.  This option sets the CRT
 FIFO threshold to an aggressive value for dot clocks above 65MHz.  This
-increases performance, and is probably only appropriate for the clgd5434
-chip.
+may increase performance.
 .sp
 \fBslow_dram\fP - for Cirrus chipsets.  This option sets the DRAM timings
 for slow DRAM chips.
@@ -186,6 +189,14 @@ Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
 .sp
 \fBno_bitblt\fP - for Cirrus chipsets.  This option disables use of
 hardware BitBLT.
+.sp
+\fBlinear\fP - Attempt a linear mapping of the framebuffer into high
+memory. Currently only supported for some Cirrus configurations.
+.sp
+\fBmed_dram, favour_bitblt, sw_cursor, clgd6225_lcd, mmio\fP
+- more Cirrus-specific options. Refer to
+/usr/X11R6/lib/X11/doc/README.cirrus for a detailed description of Cirrus
+options.
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)
 extern_disp (use external display for laptops -- WD90C2x)

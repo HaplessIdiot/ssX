@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.3 1994/09/19 13:39:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.4 1994/09/21 10:43:46 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -152,8 +152,8 @@ XCOMM Bandwidth is in MHz unless units are specified
 XCOMM HorizSync is in kHz unless units are specified.
 XCOMM HorizSync may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
-XCOMM NOTE: the values here are examples only.  Refer to your monitor's
-XCOMM user manual for the correct numbers.
+XCOMM NOTE: THE VALUES HERE ARE EXAMPLES ONLY.  REFER TO YOUR MONITOR'S
+XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
     HorizSync   31.5  # typical for a single frequency fixed-sync monitor
 
@@ -164,8 +164,8 @@ XCOMM    HorizSync	15-25, 30-50  # multiple ranges of sync frequencies
 XCOMM VertRefresh is in Hz unless units are specified.
 XCOMM VertRefresh may be a comma separated list of discrete values, or a
 XCOMM comma separated list of ranges of values.
-XCOMM NOTE: the values here are examples only.  Refer to your monitor's
-XCOMM user manual for the correct numbers.
+XCOMM NOTE: THE VALUES HERE ARE EXAMPLES ONLY.  REFER TO YOUR MONITOR'S
+XCOMM USER MANUAL FOR THE CORRECT NUMBERS.
 
     VertRefresh 60  # typical for a single frequency fixed-sync monitor
 

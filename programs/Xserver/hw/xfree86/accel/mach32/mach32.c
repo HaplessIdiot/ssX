@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.18 1994/09/17 13:45:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.19 1994/09/18 08:48:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -832,22 +832,23 @@ mach32Initialize (scr_index, pScreen, argc, argv)
     pScreen->CloseScreen = mach32CloseScreen;
     pScreen->SaveScreen = mach32SaveScreen;
 
+    switch (mach32InfoRec.bitsPerPixel) {
+    case 8:
+	pScreen->InstallColormap = mach32InstallColormap;
+	pScreen->UninstallColormap = mach32UninstallColormap;
+	pScreen->ListInstalledColormaps = mach32ListInstalledColormaps;
+	pScreen->StoreColors = mach32StoreColors;
+	break;
+    case 16:
+	pScreen->InstallColormap = cfbInstallColormap;
+	pScreen->UninstallColormap = cfbUninstallColormap;
+	pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+	pScreen->StoreColors = (void (*)())NoopDDA;
+    }
+
     if (OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options)) {
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
     } else {
-	switch (mach32InfoRec.bitsPerPixel) {
-	case 8:
-	    pScreen->InstallColormap = mach32InstallColormap;
-	    pScreen->UninstallColormap = mach32UninstallColormap;
-	    pScreen->ListInstalledColormaps = mach32ListInstalledColormaps;
-	    pScreen->StoreColors = mach32StoreColors;
-	    break;
-	case 16:
-	    pScreen->InstallColormap = cfbInstallColormap;
-	    pScreen->UninstallColormap = cfbUninstallColormap;
-	    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-	    pScreen->StoreColors = (void (*)())NoopDDA;
-	}
 	pScreen->QueryBestSize = mach32QueryBestSize;
 	xf86PointerScreenFuncs.WarpCursor = mach32WarpCursor;
 	(void)mach32CursorInit(0, pScreen);
