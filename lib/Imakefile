@@ -101,13 +101,13 @@ LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     Xmu Xpm Xaw $(XAW6LIBDIR) XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
 	     Xp $(XVLIB) $(XANTILIB) $(GLXLIB) $(DPSLIB) $(DPSTKLIB) \
-	     $(PSRESLIB) $(ZLIBDIR) $(REGEXDIR)
+	     $(PSRESLIB) $(ZLIBDIR) $(REGEXDIR) Xinerama
 #else
 #if XnestServer || BuildGLXLibrary
 XEXTDIR = Xext
 #endif
 
-LINTSUBDIRS = Xau Xdmcp X11 $(XEXTDIR) $(XKBLIBDIR) $(XKBUILIBDIR) \
+LINTSUBDIRS = Xau Xdmcp X11 Xinerama $(XEXTDIR) $(XKBLIBDIR) $(XKBUILIBDIR) \
 	      $(LBXUTILDIR) $(XF86EXTLIBS) $(XVLIB) $(GLXLIB) $(ZLIBDIR) \
 	      $(REGEXDIR)
 #endif
