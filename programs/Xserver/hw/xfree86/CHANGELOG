@@ -1,30 +1,54 @@
 XFree86 3.9z (14 December 1997)
-1302. Fix build problem on Solaris 2.6/x86 with gcc 2.7.2.3.
-1301. Fix Solaris 2.x + gcc build problem in xfwp (#1272, Takaaki Nomura).
-1300. Xkb{Get,Set}PerClientControls missing from XKBlib.h (#1283,
+1516. Fix loss of sync while panning problem and attempt to fix the occasional
+      crashes of the Millennium II by restricting the MGACountRam function
+      to test the first 8MB, only (#1280, Mark Vojkovich).
+1515. Fix XF86Setup to create a (symbolic) link of /usr/X11R6/bin/X when it
+      doesn't exist (#1279, Matthieu Herrb).
+1514. Fix solid trap/rect fill bugain the mga server for the Millennium II 
+      that was hurting performance severely (#1277, Mark Vojkovich).
+1513. Reenable BitBlt accelerations for Millennium II (#1271, Mark Vojkovich).
+1512. Fix mmap memory leak in IGS driver. ARM32/NetBSD specific fix for
+      xf86MapInfoMap (#1265, Katrina Maffey).
+1511. Resync change 1474 for PC98 and fix a reference to usleep on SVR4
+      (#1264, Takaaki Nomura).
+1510. Add BLK opaque color expansion for 2164 and change the mga code to use
+      a lookup table for XFree->mga rop conversions (#1261, Mark Vojkovich).
+1509. Fix XAA hardware cursor support for BT485 ramdacs
+      in the S3/SVGA server (#1260, Mark Vojkovich).
+1508. Fix VT switching hang in FreeBSD (#1259, Joerg Wunsch).
+1507. Enable MMIO / linear FB on Cirrus 7548. Experimental patch for screen
+      expansion (640x480 on 800x600 LCD) which doesn't seem to work, yet
+      (#1258, Achim Oppelt).
+1506. Fix gc validation (#1257,1262 Mark Vojkovich).
+1505. Fix SIGSEGV in xf86setup (Dirk Hohndel).
+1504. Extend XF86Setup to allow selecting the modes and the default color
+      depth (Dirk Hohndel).
+1503. Fix build problem on Solaris 2.6/x86 with gcc 2.7.2.3.
+1502. Fix Solaris 2.x + gcc build problem in xfwp (#1272, Takaaki Nomura).
+1501. Xkb{Get,Set}PerClientControls missing from XKBlib.h (#1283,
       Kaleb Keithley).
-1299. BSD 4.4 sockets not handled correctly in xfwp/transport.c (#1276, 1281,
+1500. BSD 4.4 sockets not handled correctly in xfwp/transport.c (#1276, 1281,
       Kaleb Keithley).
-1298. Local connection doesn't work for lbxproxy on AIX (#1275,
+1499. Local connection doesn't work for lbxproxy on AIX (#1275,
       Arthur Barstow).
-1297. Get fcntl flags in Xtrans before setting them (#1268, Kaleb Keithley).
-1296. Fix 'Xnest -query' on IBM (#1263, Kaleb Keithley).
-1295. Fix X server core dump after disconnecting from a font server
+1498. Get fcntl flags in Xtrans before setting them (#1268, Kaleb Keithley).
+1497. Fix 'Xnest -query' on IBM (#1263, Kaleb Keithley).
+1496. Fix X server core dump after disconnecting from a font server
       (#1256, Arthur Barstow).
-1294. Xserver:Security Policy parsing code returns bogus value on suceess
+1495. Xserver:Security Policy parsing code returns bogus value on suceess
       (#1254, M.S. Ramesh).
-1293. Install app-defaults in /var (#1253, Kaleb Keithley).
-1292. Some xfwp fixes (#1252, Arthur Barstow).
-1291. Fix some Win32 problems (#1251, 1255, Kaleb Keithley).
-1290. DPMS was missing from pandix main.c (#1246, Kaleb Keithley).
-1289. Solaris 2.x LOCALCONN updates (#1269 Kaleb Keithley).
-1288. DPMS updates (#1229, Kaleb Keithley).
-1287. KeyPress event doesn't use XKB state when GrabsUseXKBStateMask is set
+1494. Install app-defaults in /var (#1253, Kaleb Keithley).
+1493. Some xfwp fixes (#1252, Arthur Barstow).
+1492. Fix some Win32 problems (#1251, 1255, Kaleb Keithley).
+1491. DPMS was missing from pandix main.c (#1246, Kaleb Keithley).
+1490. Solaris 2.x LOCALCONN updates (#1269 Kaleb Keithley).
+1489. DPMS updates (#1229, Kaleb Keithley).
+1488. KeyPress event doesn't use XKB state when GrabsUseXKBStateMask is set
       (#1227, Kaleb Keithley).
-1286. Add EVI (Extended Visual Information) server extension (#1225, 1282,
+1487. Add EVI (Extended Visual Information) server extension (#1225, 1282,
       Kaleb Keithley).
-1285. Fix some Xmb man pages and specs docs (#1220, 1270, Kaleb Keithley).
-1284. Plugin fixes (#1219, 1221, 1224, 1226, 1247, 1273, Kaleb Keithley).
+1486. Fix some Xmb man pages and specs docs (#1220, 1270, Kaleb Keithley).
+1485. Plugin fixes (#1219, 1221, 1224, 1226, 1247, 1273, Kaleb Keithley).
 
 XFree86 3.9y (6 December 1997)
 1484. Fix some initialization problems in the xkb programs (#1233,
@@ -5747,4 +5771,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.556 1997/12/14 04:21:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.557 1997/12/14 05:15:50 dawes Exp $

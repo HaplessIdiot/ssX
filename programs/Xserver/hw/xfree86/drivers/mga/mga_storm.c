@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.10 1997/11/08 16:24:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.11 1997/12/05 22:01:46 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -58,6 +58,12 @@ static int mga_useBLKopaqueExpand;
 
 static CARD32 mgaDashedPatternBuf[4];	/* allocate 128 bits */
 static CARD32 mgaStylelen;
+static CARD32 MGARop[16] = {
+   0x00000000, 0x00080000, 0x00040000, 0x000c0000,
+   0x00020000, 0x000a0000, 0x00060000, 0x000e0000,
+   0x00010000, 0x00090000, 0x00050000, 0x000d0000,
+   0x00030000, 0x000b0000, 0x00070000, 0x000f0000
+};
 
 /*
  * The following function sets up the supported acceleration. Call it
@@ -84,11 +90,6 @@ void MGANAME(AccelInit)()
                              LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
                              NO_SYNC_AFTER_CPU_COLOR_EXPAND |
 			     DELAYED_SYNC;
-    /*
-     * Currently, no ScreenToScreenCopy for this chip -- why?
-     */
-    if( MGAchipset == PCI_CHIP_MGA2164_AGP ) 
-      xf86AccelInfoRec.Flags &= ~PIXMAP_CACHE;
 
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -141,8 +142,6 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.SubsequentFillTrapezoidSolid =
     				MGANAME(SubsequentFillTrapezoidSolid);
 
-    if( MGAchipset != PCI_CHIP_MGA2164_AGP ) 
-    {
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
      * copying a rectangular area from one location on the screen to
@@ -162,7 +161,6 @@ void MGANAME(AccelInit)()
         			MGANAME(SetupForScreenToScreenCopy);
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         			MGANAME(SubsequentScreenToScreenCopy);
-    }
     /*
      * color expansion
      */
@@ -177,7 +175,7 @@ void MGANAME(AccelInit)()
 #endif
 
     /* Mystique can't do opaque color expansion in BLOCK access type */
-    mga_useBLKopaqueExpand = (MGAchipset == PCI_CHIP_MGA2064);
+    mga_useBLKopaqueExpand = (MGAchipset != PCI_CHIP_MGA1064);
     
     xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
     			MGANAME(SetupForScreenToScreenColorExpand);
@@ -476,6 +474,9 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
     mga_cmd = MGADWG_TRAP | MGADWG_NOZCMP | MGADWG_SOLID | MGADWG_ARZERO | 
     	       MGADWG_SGNZERO | MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
 
+    if(MGAchipset == PCI_CHIP_MGA2164_AGP || MGAchipset == PCI_CHIP_MGA2164) 
+	mga_cmd |= MGADWG_TRANSC;
+
     /* set atype - foreground color only used (mga2064w pp 5-23) */
     SETACCESS1(mga_cmd,rop,color);
 
@@ -620,7 +621,7 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
      */
         /* alignment constraints (SDK 5-30)
         */
-    if( (MGAchipset != PCI_CHIP_MGA2164_AGP) &&
+    if(
 
 #if PSZ == 32
         !((xsrc ^ xdst) & 31)
@@ -688,8 +689,6 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
     OUTREG(MGAREG_YDSTLEN, (ydst << 16) | h);
     OUTREG(MGAREG_AR3, srcStart);
     OUTREG(MGAREG_AR0 + MGAREG_EXEC, srcStop);
-    if( MGAchipset == PCI_CHIP_MGA2164_AGP )
-    	MGAStormSync();
 }
 
 /*

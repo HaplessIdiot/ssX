@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.7 1996/08/20 12:29:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.8 1996/12/23 06:51:01 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -103,7 +103,7 @@ unsigned cflag;
 		cfsetospeed(&tty, B1200);
 	}
 
-	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSANOW, &tty) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
@@ -153,7 +153,7 @@ unsigned cflag;
 	}
 	usleep(100000);
 
-	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
+	if (tcsetattr(mouse->mseFd, TCSANOW, &tty) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
 			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",

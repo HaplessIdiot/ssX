@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.7 1997/11/08 16:24:27 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3cursor.c,v 1.8 1997/12/05 22:01:47 hohndel Exp $
 *
 */
 
@@ -81,9 +81,10 @@ void S3CursorInit()
 
     if(DAC_IS_BT485_SERIES) {
     	XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+				HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
 				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
-				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
-				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |		
+				HARDWARE_CURSOR_PROGRAMMED_ORIGIN |
+				HARDWARE_CURSOR_AND_SOURCE_WITH_MASK | 	 
 				HARDWARE_CURSOR_CHAR_BIT_FORMAT |
 				HARDWARE_CURSOR_PROGRAMMED_BITS;
 	XAACursorInfoRec.SetCursorColors = s3BtSetCursorColors;

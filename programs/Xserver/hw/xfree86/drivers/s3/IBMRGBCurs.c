@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/IBMRGBCurs.c,v 1.2 1997/08/26 10:01:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/IBMRGBCurs.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -139,12 +139,8 @@ s3IBMRGBLoadCursorImage(bits, xorigin, yorigin)
    unsigned char *bits;
    int xorigin, yorigin;
 {
-   unsigned char tmp, tmp2, tmpcurs;
+   unsigned char tmp, tmp2;
    register int i;
-
-   /* turn the cursor off */
-   if ((tmpcurs = s3InIBMRGBIndReg(IBMRGB_curs)) & 0x03)
-      s3IBMRGBHideCursor();
 
    UNLOCK_SYS_REGS;
 
@@ -174,9 +170,6 @@ s3IBMRGBLoadCursorImage(bits, xorigin, yorigin)
 
    LOCK_SYS_REGS;
 
-   /* turn the cursor on */
-   if (tmpcurs & 0x03)
-      s3IBMRGBShowCursor();
 }
 
 

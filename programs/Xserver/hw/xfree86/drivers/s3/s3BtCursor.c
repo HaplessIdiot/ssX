@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.3 1997/09/25 16:13:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3BtCursor.c,v 1.4 1997/09/30 04:51:02 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -310,12 +310,7 @@ s3BtLoadCursorImage(bits, xorigin, yorigin)
    int xorigin, yorigin;
 {
    register int   i, j;
-   unsigned char *p, tmpcurs;
-
-
-   /* turn the cursor off */
-   if ((tmpcurs = s3InBtReg(BT_COMMAND_REG_2)) & 0x03)
-      s3BtHideCursor();
+   unsigned char *p, *mask = bits + 1;
 
    UNLOCK_SYS_REGS;
 
@@ -330,15 +325,14 @@ s3BtLoadCursorImage(bits, xorigin, yorigin)
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
       for (i=0; i < 64; i++) {		/* 64 rows in cursor */
-	 p = bits + (((i % 2) ? i-1 : i+1)*8);
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = mask + (((i % 2) ? i-1 : i+1)*16);
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
-      bits += 512;
       for (i=0; i < 64; i++) {		/* 64 rows in cursor */
-	 p = bits + (((i % 2) ? i-1 : i+1)*8);
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = bits + (((i % 2) ? i-1 : i+1)*16);
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
@@ -351,23 +345,22 @@ s3BtLoadCursorImage(bits, xorigin, yorigin)
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
       for (i=0; i < 32; i++) {		/* 64 rows in cursor */
-	 p = bits + i * 8;
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = mask + i * 16;
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
-	 p = bits + i * 8;
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = mask + i * 16;
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
-      bits += 512;
       for (i=0; i < 32; i++) {		/* 64 rows in cursor */
-	 p = bits + i * 8;
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = bits + i * 16;
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
-	 p = bits + i * 8;
-	 for (j=0; j < 8; j++,p++) {	/* 8 bytes per row */
+	 p = bits + i * 16;
+	 for (j=0; j < 8; j++,p+=2) {	/* 8 bytes per row */
             s3OutBtData(BT_CURS_RAM_DATA, *p);
 	 }
       }
@@ -380,8 +373,10 @@ s3BtLoadCursorImage(bits, xorigin, yorigin)
       /* Start data output */
       s3StartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 
-      for (i = 0; i < 1024; i++)
-         s3OutBtData(BT_CURS_RAM_DATA, *bits++);
+      for (i = 0; i < 512; i++, mask+=2)
+         s3OutBtData(BT_CURS_RAM_DATA, *mask);
+      for (i = 0; i < 512; i++, bits+=2)
+         s3OutBtData(BT_CURS_RAM_DATA, *bits);
 
       s3EndBtData();
 
@@ -391,7 +386,4 @@ s3BtLoadCursorImage(bits, xorigin, yorigin)
 
    LOCK_SYS_REGS;
 
-   /* turn the cursor on */
-   if (tmpcurs & 0x03)
-      s3BtShowCursor();
 }
