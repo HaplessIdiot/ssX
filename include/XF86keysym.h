@@ -1,9 +1,9 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.14 2002/12/17 21:35:09 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.15 2003/01/04 03:40:25 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
  *
- * The XFree86 keysym range is 0x1008FF01 - 0x1008FFFF.
+ * The XFree86 keysym range is 0x10080001 - 0x1008FFFF.
  *
  * When adding new entries, the xc/lib/XKeysymDB file should also be
  * updated to make the new entries visible to Xlib.
@@ -164,4 +164,23 @@
 #define XF86XK_MailForward	0x1008FF90
 #define XF86XK_Pictures		0x1008FF91
 #define XF86XK_Music		0x1008FF92
+
+/* Keys for special action keys (hot keys) */
+#define XF86XK_Switch_VT_1	0x1008FE01
+#define XF86XK_Switch_VT_2	0x1008FE02
+#define XF86XK_Switch_VT_3	0x1008FE03
+#define XF86XK_Switch_VT_4	0x1008FE04
+#define XF86XK_Switch_VT_5	0x1008FE05
+#define XF86XK_Switch_VT_6	0x1008FE06
+#define XF86XK_Switch_VT_7	0x1008FE07
+#define XF86XK_Switch_VT_8	0x1008FE08
+#define XF86XK_Switch_VT_9	0x1008FE09
+#define XF86XK_Switch_VT_10	0x1008FE0A
+#define XF86XK_Switch_VT_11	0x1008FE0B
+#define XF86XK_Switch_VT_12	0x1008FE0C
+
+#define XF86XK_Ungrab		0x1008FE20
+#define XF86XK_ClearGrab	0x1008FE21
+#define XF86XK_Next_VMode	0x1008FE22
+#define XF86XK_Prev_VMode	0x1008FE23
 
