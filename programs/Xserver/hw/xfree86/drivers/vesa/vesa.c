@@ -26,8 +26,9 @@
  * Conectiva Linux.
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
+ *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.31 2002/07/04 17:04:19 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.32 2002/08/06 13:46:27 dawes Exp $
  */
 
 #include "vesa.h"
@@ -129,12 +130,14 @@ static IsaChipsets VESAISAchipsets[] = {
 };
 
 typedef enum {
-    OPTION_SHADOW_FB
+    OPTION_SHADOW_FB,
+    OPTION_DFLT_REFRESH
 } VESAOpts;
 
 static const OptionInfoRec VESAOptions[] = {
-    { OPTION_SHADOW_FB,	"ShadowFB",	OPTV_BOOLEAN,	{0},	FALSE },
-    { -1,		NULL,		OPTV_NONE,	{0},	FALSE }
+    { OPTION_SHADOW_FB,    "ShadowFB",		OPTV_BOOLEAN,	{0},	FALSE },
+    { OPTION_DFLT_REFRESH, "DefaultRefresh",	OPTV_BOOLEAN,	{0},	FALSE },
+    { -1,		   NULL,		OPTV_NONE,	{0},	FALSE }
 };
 
 /*
@@ -562,9 +565,9 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 				      V_MODETYPE_VBE);
 
     xf86ErrorFVerb(DEBUG_VERB, "\n");
-    xf86ErrorFVerb(DEBUG_VERB,
-	"Total Memory: %d 64KB banks (%dMB)\n", vbe->TotalMemory,
-	   (vbe->TotalMemory * 65536) / (1024 * 1024));
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, DEBUG_VERB,
+		   "Total Memory: %d 64KB banks (%dkB)\n", vbe->TotalMemory,
+		   (vbe->TotalMemory * 65536) / 1024);
 
     pVesa->mapSize = vbe->TotalMemory * 65536;
     if (pScrn->modePool == NULL) {
@@ -691,8 +694,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	return (FALSE);
     }
 
-    VBESetModeParameters(pScrn, pVesa->pVbe);
-
     /* options */
     xf86CollectOptions(pScrn, NULL);
     if (!(pVesa->Options = xalloc(sizeof(VESAOptions)))) {
@@ -705,6 +706,12 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Use shadow by default */
     if (xf86ReturnOptValBool(pVesa->Options, OPTION_SHADOW_FB, TRUE)) 
 	pVesa->shadowFB = TRUE;
+
+    if (xf86ReturnOptValBool(pVesa->Options, OPTION_DFLT_REFRESH, FALSE))
+	pVesa->defaultRefresh = TRUE;
+
+    if (!pVesa->defaultRefresh)
+	VBESetModeParameters(pScrn, pVesa->pVbe);
 
     mode = ((VbeModeInfoData*)pScrn->modes->Private)->data;
     switch (mode->MemoryModel) {
