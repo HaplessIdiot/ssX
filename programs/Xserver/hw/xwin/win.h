@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.18 2001/08/31 07:58:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.19 2001/09/07 08:41:54 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -53,7 +53,7 @@ gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/
 /*
  * Build toggles for experimental features
  */
-#define WIN_NATIVE_GDI_SUPPORT	YES
+#define WIN_NATIVE_GDI_SUPPORT	NO
 #define WIN_LAYER_SUPPORT	YES
 
 /* Turn debug messages on or off */
@@ -61,7 +61,7 @@ gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/
 
 /* Debugging macros */
 #if CYGDEBUG || YES
-#define DEBUG_MSG(str) if (fDebugProcMsg == TRUE) MessageBox(NULL, str, szFunctionName, MB_OK )
+#define DEBUG_MSG(str) if (fDebugProcMsg == TRUE) MessageBox (NULL, str, szFunctionName, MB_OK)
 #else
 #define DEBUG_MSG(str)
 #endif
@@ -73,16 +73,14 @@ gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/
 #endif
 
 #if CYGDEBUG || YES
-#define DEBUGVARS BOOL fDebugProcCon = FALSE, fDebugProcMsg = FALSE
+#define DEBUGVARS BOOL fDebugProcMsg = FALSE
 #else
 #define DEBUGVARS
 #endif
 
 #if CYGDEBUG || YES
-#define DEBUGPROC_CON fDebugProcCon = TRUE
 #define DEBUGPROC_MSG fDebugProcMsg = TRUE
 #else
-#define DEBUGPROC_CON
 #define DEBUGPROC_MSG
 #endif
 
@@ -401,7 +399,6 @@ extern int			g_iGCPrivateIndex;
 extern int			g_iPixmapPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
-extern HBITMAP			g_hbmpGarbage;
 
 /*
  * Screen privates macros
@@ -746,6 +743,17 @@ winMouseButtonsHandle (ScreenPtr pScreen,
  * winnativegdi.c
  */
 
+HBITMAP
+winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
+		       void **ppvBits, BITMAPINFO **ppbmi);
+
+Bool
+winAllocateFBNativeGDI (ScreenPtr pScreen);
+
+void
+winShadowUpdateNativeGDI (ScreenPtr pScreen, 
+			  shadowBufPtr pBuf);
+
 Bool
 winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen);
 
@@ -756,14 +764,34 @@ Bool
 winAdjustVideoModeNativeGDI (ScreenPtr pScreen);
 
 Bool
-winActivateAppNativeGDI (ScreenPtr pScreen);
+winBltExposedRegionsNativeGDI (ScreenPtr pScreen);
 
-HBITMAP
-winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
-		       void **ppvBits);
+Bool
+winActivateAppNativeGDI (ScreenPtr pScreen);
 
 Bool
 winSetEngineFunctionsNativeGDI (ScreenPtr pScreen);
+
+Bool
+winRedrawScreenNativeGDI (ScreenPtr pScreen);
+
+Bool
+winRealizeInstalledPaletteNativeGDI (ScreenPtr pScreen);
+
+Bool
+winInstallColormapNativeGDI (ColormapPtr pColormap);
+
+Bool
+winStoreColorsNativeGDI (ColormapPtr pmap, 
+			 int ndef,
+			 xColorItem *pdefs);
+
+Bool
+winCreateColormapNativeGDI (ColormapPtr pColormap);
+
+Bool
+winDestroyColormapNativeGDI (ColormapPtr pColormap);
+
 
 
 /*
@@ -939,7 +967,7 @@ Bool
 winCreateColormapShadowDD (ColormapPtr pColormap);
 
 Bool
-winDestoryColormapShadowDD (ColormapPtr pColormap);
+winDestroyColormapShadowDD (ColormapPtr pColormap);
 
 
 /*

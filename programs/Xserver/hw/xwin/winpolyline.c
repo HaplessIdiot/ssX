@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpolyline.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpolyline.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -39,5 +39,5 @@ winPolyLineNativeGDI (DrawablePtr	pDrawable,
 		      int		npt,
 		      DDXPointPtr	ppt)
 {
-  ErrorF ("winPolyLine()\n");
+  FatalError ("winPolyLine()\n");
 }

@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.5 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.6 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -39,12 +39,11 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
 			  int nWidth, int nHeight,
 			  int nDepth)
 {
-#if WIN_NATIVE_GDI_SUPPORT
   winPrivPixmapPtr	pPixmapPriv = NULL;
   PixmapPtr		pPixmap = NULL;
   BITMAPINFOHEADER	*pbmih = NULL;
   HDC			hdcMem = NULL;
-  
+
   /* Allocate pixmap memory */
   pPixmap = AllocatePixmap (pScreen, 0);
   if (!pPixmap)
@@ -155,9 +154,6 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
 #endif
 
   return pPixmap;
-#else 
-  return NullPixmap;
-#endif
 }
 
 
@@ -174,19 +170,22 @@ winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
   
   ErrorF ("winDestroyPixmapNativeGDI ()\n");
 
+  /* Bail early if there is not a pixmap to destroy */
   if (pPixmap == NULL)
     {
       ErrorF ("winDestroyPixmapNativeGDI () - No pixmap to destroy\n");
       return TRUE;
     }
 
+  /* Get a handle to the pixmap privates */
   pPixmapPriv = winGetPixmapPriv (pPixmap);
 
   ErrorF ("winDestroyPixmapNativeGDI - pPixmapPriv->hBitmap: %08x\n",
 	  pPixmapPriv->hBitmap);
 
   /* Decrement reference count, return if nonzero */
-  if (--pPixmap->refcnt)
+  --pPixmap->refcnt;
+  if (pPixmap->refcnt != 0)
     return TRUE;
 
   /* Free GDI bitmap */
@@ -219,7 +218,7 @@ winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
 				int devKind,
 				pointer pPixData)
 {
-  ErrorF ("winModifyPixmapHeaderNativeGDI ()\n");
+  FatalError ("winModifyPixmapHeaderNativeGDI ()\n");
   return TRUE;
 }
 
