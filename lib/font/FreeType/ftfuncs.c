@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.21 2001/10/28 03:32:43 tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.24tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -987,9 +987,8 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
     }
 
     info->props[i].name  = MakeAtom("FONT_TYPE", 9, TRUE);
-    info->props[i].value = MakeAtom(FT_Get_X11_Font_Format(face->face), 
-                                    strlen(FT_Get_X11_Font_Format(face->face)),
-                                    TRUE);
+    vp = (char *)FT_Get_X11_Font_Format(face->face);
+    info->props[i].value = MakeAtom(vp, strlen(vp), TRUE);
     info->isStringProp[i] = 1;
     i++;
     
