@@ -1,4 +1,8 @@
 XFree86 3.9.16 (31 August 1999)
+3127. Potential fix for a server crash when connecting from a byte-swapped
+      client in Xinerama mode (based on #3196, Attila Fülöp).
+3126. Build xterm/resize with -lncurses on Debian (#3197, Attila Fülöp).
+3125. Allow inclusion of Xvlib.h into C++ code (#3195, Vladimir Dergachev).
 3124. Modify the ISO-8859-{6,7,10} to Unicode tables so that they agree with
       the tables found on ftp.unicode.org (#3172, Bruno Haible).
 3123. Some minor C&T bug fixes (#3194, David Bateman).
@@ -8688,4 +8692,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.824 1999/08/30 13:09:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.825 1999/08/30 14:36:17 dawes Exp $

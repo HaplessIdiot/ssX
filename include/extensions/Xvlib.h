@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/Xvlib.h,v 1.1 1999/05/23 06:33:22 dawes Exp $ */
 
 #ifndef XVLIB_H
 #define XVLIB_H
@@ -53,6 +53,7 @@ SOFTWARE.
 **
 */
 
+#include <X11/Xfuncproto.h>
 #include <X11/extensions/Xv.h>
 
 typedef struct {
@@ -117,6 +118,8 @@ typedef union {
   XvPortNotifyEvent xvport;
   long pad[24];
 } XvEvent;
+
+_XFUNCPROTOBEGIN
 
 extern int XvQueryExtension(
 #if NeedFunctionPrototypes
@@ -307,5 +310,7 @@ extern void XvFreeEncodingInfo(
   XvEncodingInfo*         /* encodings */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* XVLIB_H */

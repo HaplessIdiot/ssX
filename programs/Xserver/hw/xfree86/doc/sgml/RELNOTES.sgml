@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>30 August 1999
+<date>31 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.16 1999/08/29 12:53:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.17 1999/08/30 13:09:23 dawes Exp $
 </ident>
 
 <abstract>
@@ -23,9 +23,12 @@ in XFree86 &relvers; and their status.
 
 <sect>Summary of new features in &relvers; compared with &prevrelvers;.
 <p>
-This section contains a brief summary of what has changed since the previous
-snapshot.  The sections that follow this one have details of features that
-are new to the pre-4.0 snapshot series.
+This section contains a brief summary of what has changed since the
+previous snapshot.  Unfortunately, only a small number of changes are
+listed here.  For detailed information, refer to the <tt>CHANGELOG</tt>
+file in the <tt>xc/programs/Xserver/hw/xfree86</tt> directory in the
+source tree.  The sections that follow this one have details of features
+that are new to the pre-4.0 snapshot series.
 
 <itemize>
   <item>The "apm" driver has been updated.
