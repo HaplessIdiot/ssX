@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.42tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.43 2004/06/23 19:40:17 tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * DRI wrapper for 300 and 315 series
@@ -526,6 +526,14 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
        drmSiSAgpInit(pSIS->drmSubFD, AGP_VTXBUF_SIZE,(pSIS->agpSize - AGP_VTXBUF_SIZE));
+#else
+       {
+   	   drm_sis_agp_t agp;
+      
+           agp.offset = AGP_VTXBUF_SIZE;
+           agp.size = pSIS->agpSize - AGP_VTXBUF_SIZE;
+           drmCommandWrite(pSIS->drmSubFD, DRM_SIS_AGP_INIT, &agp, sizeof(agp));
+       }
 #endif
 #endif
     } else {
@@ -540,6 +548,14 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,4,99,7,0)
        drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(pSIS->agpSize - AGP_CMDBUF_SIZE));
+#else
+       {
+   	   drm_sis_agp_t agp;
+      
+           agp.offset = AGP_CMDBUF_SIZE;
+           agp.size = pSIS->agpSize - AGP_CMDBUF_SIZE;
+           drmCommandWrite(pSIS->drmSubFD, DRM_SIS_AGP_INIT, &agp, sizeof(agp));
+       }
 #endif
     }
   }
