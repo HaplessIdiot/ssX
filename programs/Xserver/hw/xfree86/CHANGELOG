@@ -1,4 +1,7 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 568. XEditResCheckMessages trashed XtMalloced memory on some widget
+      hierarchies, due to using incorrect indexes when removing
+      duplicates (A.1409, Rob Arthan).
  567. xprop updates (Mihael Hategan).
  566. Fix SEGV in ICE library (Petter Reinholdtsen).
  565. Fix interaction between backing store and miext/shadow (adapted from
@@ -15662,4 +15665,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2419 2002/12/02 21:50:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2420 2002/12/02 22:10:24 tsi Exp $
