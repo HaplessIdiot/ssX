@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.14 2002/11/18 22:47:27 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.15 2002/12/04 21:08:03 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -9,7 +9,9 @@ XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.14 2002/11/18 22:47:27 dawes Exp $
 #define DoProfileLib ProfileLibGlx
 
 #ifndef ShLibBindGlobals
+#if !HasGcc2 || (GccMajorVersion > 2) || (GccMinorVersion > 7)
 #define ShlibBindGlobals YES
+#endif
 #endif
 
      LIBNAME = GL
