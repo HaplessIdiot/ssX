@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.21 1999/06/06 08:48:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.22 1999/06/12 07:18:53 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -344,11 +344,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    pReg->Option = 0x4049cd21;
 		break;
 	}
-#if 0
-	/* If non-Vga card, disable BIOS and VGA I/O */
-	if( ! pMga->SavedReg.VgaEnable)
-		pReg->Option &= ~0x40000100;
-#endif
 
 	if(pMga->UsePCIRetry)
 		pReg->Option &= ~0x20000000;
