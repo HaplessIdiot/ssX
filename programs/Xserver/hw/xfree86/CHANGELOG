@@ -1,4 +1,7 @@
 XFree86 4.4.99.2 (xx March 2004)
+  36. Add missing PCI definition for Creative Labs.  This completes the
+      implementation of change 555 previously made in 4.2.99.3
+      (Marc La France).
   35. Add OpenBSD/amd64 support (Matthieu Herrb, Todd Fries).
   34. Fix Rage 128 XV support for interlaced and doublescanned modes
       (Marc La France).
@@ -18749,7 +18752,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3189 2004/03/21 02:30:16 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3190 2004/03/21 11:27:05 herrb Exp $
 
 
 
