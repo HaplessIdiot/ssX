@@ -1,4 +1,5 @@
 XFree86 3.9Pl (3 May 1999)
+2800. Add support for CID fonts (#2728, Ivan Bach, SGI).
 2799. Quick fix for cirrus driver problem introduced in 3.9Pk.
 2798. Fix a problem with pcitweak that was preventing it from working with
       buses other than bus 0 (David Dawes).
@@ -7915,4 +7916,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.739 1999/04/29 09:13:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.740 1999/05/03 04:35:29 dawes Exp $

@@ -26,7 +26,24 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.1.1.1.14.2 1998/07/03 14:40:56 dawes Exp $ */
+/* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
+ *
+ * The contents of this file are subject to the CID Font Code Public Licence
+ * Version 1.0 (the "License"). You may not use this file except in compliance
+ * with the Licence. You may obtain a copy of the License at Silicon Graphics,
+ * Inc., attn: Legal Services, 2011 N. Shoreline Blvd., Mountain View, CA
+ * 94043 or at http://www.sgi.com/software/opensource/cid/license.html.
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis.
+ * ALL WARRANTIES ARE DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED
+ * WARRANTIES OF MERCHANTABILITY, OF FITNESS FOR A PARTICULAR PURPOSE OR OF
+ * NON-INFRINGEMENT. See the License for the specific language governing
+ * rights and limitations under the License.
+ *
+ * The Original Software is CID font code that was developed by Silicon
+ * Graphics, Inc.
+ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.4 1998/07/25 06:56:57 dawes Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -244,7 +261,11 @@ char *Trace1(),*Trace2(),*Trace3(),*Trace4(),*Trace5(),*Trace6();
  
 extern char MustCheckArgs  INITIALIZED(TRUE);
 extern char MustTraceCalls INITIALIZED(FALSE);
+#ifdef BUILDCID
+extern char MustCrash      INITIALIZED(FALSE);
+#else
 extern char MustCrash      INITIALIZED(TRUE);
+#endif
 extern char InternalTrace  INITIALIZED(TRUE);
 extern char LineIOTrace    INITIALIZED(TRUE);
  

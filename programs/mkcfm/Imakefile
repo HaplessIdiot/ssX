@@ -1,0 +1,20 @@
+XCOMM $XFree86$
+
+#if BuildCID
+SYS_LIBRARIES = -lm
+LOCAL_LIBRARIES = $(FONTLIB)
+DEPLIBS = $(DEPFONTLIB)
+
+INCLUDES = -I$(FONTINCSRC) -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/Type1
+
+DEFINES = -DBUILDCID -DCID_ALL_CHARS
+
+SRCS =          \
+       mkcfm.c
+
+OBJS =          \
+       mkcfm.o
+
+ComplexProgramTarget(mkcfm)
+LinkBuildBinary(ProgramTargetName(mkcfm))
+#endif

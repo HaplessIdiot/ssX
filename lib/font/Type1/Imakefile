@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
-XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.6 1999/01/31 04:59:28 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.7 1999/03/02 02:49:14 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -10,6 +10,15 @@ SUBDIRS = module
 
 INCLUDES = -I$(FONTINCSRC) -I../include -I$(XTOP)/include \
 	   -I$(SERVERSRC)/include
+
+#if BuildCID
+CIDSRCS = cidchar.c afm.c
+CIDOBJS = cidchar.o afm.o
+#if HasUsableFileMmap
+MMAPDEFINES = -DUSE_MMAP
+#endif
+DEFINES = -DBUILDCID -DHAVE_CFM $(MMAPDEFINES)
+#endif
 
 SRCS =          \
        arith.c         \
@@ -27,10 +36,11 @@ SRCS =          \
        t1io.c          \
        t1malloc.c      \
        t1snap.c        \
-       t1stub.c       \
+       t1stub.c        \
        token.c         \
        type1.c         \
-       util.c \
+       util.c          \
+       $(CIDSRCS)      \
        t1unicode.c
 	
 
@@ -50,10 +60,11 @@ OBJS =          \
        t1io.o          \
        t1malloc.o      \
        t1snap.o        \
-       t1stub.o       \
+       t1stub.o        \
        token.o         \
        type1.o         \
-       util.o \
+       util.o          \
+       $(CIDOBJS)      \
        t1unicode.o
 
 #define DoNormalLib NormalLibFont

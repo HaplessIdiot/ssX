@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.41 1999/03/07 08:29:23 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -58,6 +58,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
 #ifndef BuildType1
 #define BuildType1		YES
 #endif
+#ifndef BuildCID
+#define BuildCID		NO
+#endif
 #ifndef BuildFreeType
 #define BuildFreeType		NO
 #endif
@@ -78,6 +81,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
 #endif
 #ifndef BuildType1Fonts
 #define BuildType1Fonts		YES
+#endif
+#ifndef BuildCIDFonts
+#define BuildCIDFonts		NO
 #endif
 #ifndef BuildLatin2Fonts
 #define BuildLatin2Fonts	NO
@@ -325,16 +331,24 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
 #endif
 #ifndef DefaultFontPath
 	/*
-	 * Turn off building Speedo and Type1 fonts if you are building for
-	 * low memory footprint
+	 * Turn off building Speedo, Type1 and CID fonts if you are building
+	 * for low memory footprint
 	 */
 #if BuildLowMem
 #define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
 #else
 #if PrimaryScreenResolution < 88		/* (75 + 100) / 2 */
+#if BuildCIDFonts
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/CID/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#else
 #define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#endif
+#else
+#if BuildCIDFonts
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/CID/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #else
 #define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#endif
 #endif
 #endif
 #endif
@@ -345,11 +359,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.40 1999/03/01 02:13:57 dawes Exp $
          */
 #if BuildLowMem
 #if PrimaryScreenResolution < 88                /* (75 + 100) / 2 */
-#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,
-$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/CID/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
 #else
-#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,
-$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/CID/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #endif
 #else
 #define DefaultFSFontPath DefaultFontPath
