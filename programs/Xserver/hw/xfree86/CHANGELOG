@@ -1,4 +1,18 @@
-XFree86 3.1.1b (5 March 1995)
+XFree86 3.1.1b (7 March 1995)
+ 26. Fix FIFO detection problem and bug reading BIOS video max modes in
+     Mach64 server (Kevin Martin).
+ 25. Support for Chrontel 8398 and STG1703 clock programming in the Mach64
+     server (Kevin Martin).
+ 24. Add "no_block_write" option to turn of block write mode in the Mach64
+     server (Kevin Martin).
+ 23. Add "override_bios" option to override the Mach64 server's BIOS mode
+     checking (Kevin Martin).
+ 22. Allow Membase to be given in XF86Config for the Mach64 server
+     (Kevin Martin).
+ 21. Fix bug in Mach64 ATI68860 RAMDAC code which causes noisy display
+     (Kevin Martin).
+ 20. Add support for STG1702, STG1703, ATI68875, CH8398 RAMDACs to Mach64
+     server (Kevin Martin).
  19. Post events for initial lock key state differently to avoid calling
      ProcessKeyboardEvents() before all the data it uses is initialised.
  18. Fix and extend ISO8859-1 Compose file (Peter Dalgaard).

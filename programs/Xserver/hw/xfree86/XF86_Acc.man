@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.24 1995/01/22 03:04:16 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.25 1995/01/28 15:46:22 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -122,6 +122,11 @@ Refer to \fIREADME.agx\fP for configuration details.
 .PP
 For the P9000, the virtual and physical resolutions must be the
 same.  With sufficient memory, resolutions up to 1280x1024 are supported.
+.PP
+All the servers which support 24 bit visuals do so using a 32 bit
+per pixel configuration where 8 bits in every 32 bits is unused.  This needs
+to be taken into account when calculating the maximum virtual display size
+that can be supported at this depth.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, these servers accept some more command line switches,
