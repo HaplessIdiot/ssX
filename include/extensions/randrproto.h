@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randrproto.h,v 1.1 2001/05/23 03:29:38 keithp Exp $
+ * $XFree86: xc/include/extensions/randrproto.h,v 1.3 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation
  *
@@ -130,7 +130,7 @@ typedef struct {
 
 typedef struct {
     BYTE    type;   /* X_Reply */
-    BOOL    success;
+    CARD8   status;
     CARD16  sequenceNumber B16;
     CARD32  length B32;
     Time    newTimestamp B32;  
@@ -157,15 +157,19 @@ typedef struct {
  * event
  */
 typedef struct {
-    CARD8 type;			/* always eventBase + ScreenChangeNotify */
-    BOOL resident;
+    CARD8 type;				/* always evBase + ScreenChangeNotify */
+    CARD8 rotation;			/* new rotation */
     CARD16 sequenceNumber B16;
-    Time timestamp B32;
-    Time configTimestamp B32;
-    Window root B32;		/* root window being notified */
-    SizeID sizeIndex B16;
-    Rotation rotation B16;
-    xScreenSizes new;		/* size is 12 bytes */
+    Time timestamp B32;			/* time screen was changed */
+    Time configTimestamp B32;		/* time config data was changed */
+    Window root B32;			/* root window */
+    Window window B32;			/* window requesting notification */
+    SizeID sizeID B16;			/* new size ID */
+    VisualGroupID visualGroupID B16;	/* new visual group ID */
+    CARD16 widthInPixels B16;		/* new size */
+    CARD16 heightInPixels B16;
+    CARD16 widthInMillimeters B16;
+    CARD16 heightInMillimeters B16;
 } xRRScreenChangeNotifyEvent;
 #define sz_xRRScreenChangeNotifyEvent	32
 

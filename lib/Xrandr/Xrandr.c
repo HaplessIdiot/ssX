@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.3 2001/06/03 21:52:44 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.4 2001/06/07 15:33:43 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -67,16 +67,17 @@ static Bool XRRWireToEvent(Display *dpy, XEvent *event, xEvent *wire)
 					      (xGenericReply *) wire);
 	aevent->send_event = (awire->type & 0x80) != 0;
 	aevent->display = dpy;
+	aevent->window = awire->window;
+	aevent->root = awire->root;
 	aevent->timestamp = awire->timestamp;
 	aevent->config_timestamp = awire->configTimestamp;
-	aevent->root = awire->root;
-	aevent->size_index = awire->sizeIndex;
+	aevent->size_index = awire->sizeID;
+	aevent->visual_group_index = awire->visualGroupID;
 	aevent->rotation = awire->rotation;
-	aevent->new.width = awire->new.widthInPixels;
-	aevent->new.height = awire->new.heightInPixels;
-	aevent->new.mwidth = awire->new.widthInMillimeters;
-	aevent->new.mheight = awire->new.heightInMillimeters;
-	aevent->new.group = awire->new.visualGroup;
+	aevent->width = awire->widthInPixels;
+	aevent->height = awire->heightInPixels;
+	aevent->mwidth = awire->widthInMillimeters;
+	aevent->mheight = awire->heightInMillimeters;
 	return True;
     }
 
@@ -97,17 +98,18 @@ static Status XRREventToWire(Display *dpy, XEvent *event, xEvent *wire)
 	awire = (xRRScreenChangeNotifyEvent *) wire;
 	aevent = (XRRScreenChangeNotifyEvent *) event;
 	awire->type = aevent->type | (aevent->send_event ? 0x80 : 0);
+	awire->rotation = (CARD8) aevent->rotation;
 	awire->sequenceNumber = aevent->serial & 0xFFFF;
 	awire->timestamp = aevent->timestamp;
 	awire->configTimestamp = aevent->config_timestamp;
 	awire->root = aevent->root;
-	awire->sizeIndex = aevent->size_index;
-	awire->rotation = aevent->rotation;
-	awire->new.widthInPixels = aevent->new.width;
-	awire->new.heightInPixels = aevent->new.height;
-	awire->new.widthInMillimeters = aevent->new.mwidth;
-	awire->new.heightInMillimeters = aevent->new.mheight;
-	awire->new.visualGroup = aevent->new.group;
+	awire->window = aevent->window;
+	awire->sizeID = aevent->size_index;
+	awire->visualGroupID = aevent->visual_group_index;
+	awire->widthInPixels = aevent->width;
+	awire->heightInPixels = aevent->height;
+	awire->widthInMillimeters = aevent->mwidth;
+	awire->heightInMillimeters = aevent->mheight;
 	return True;
     }
     return False;
@@ -442,7 +444,7 @@ Status XRRSetScreenConfig (Display *dpy,
     req->configTimestamp = config->config_timestamp;
     (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
 
-    if (rep.success == xTrue) {
+    if (rep.status == RRSetConfigSuccess) {
       /* if we succeed, set our view of reality to what we set it to */
       config->config_timestamp = rep.newConfigTimestamp;
       config->timestamp = rep.newTimestamp;
@@ -453,5 +455,5 @@ Status XRRSetScreenConfig (Display *dpy,
     }
     UnlockDisplay (dpy);
     SyncHandle ();
-    return(rep.success);
+    return(rep.status);
 }

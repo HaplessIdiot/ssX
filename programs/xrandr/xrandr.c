@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.3 2001/06/03 21:52:47 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.4 2001/06/07 15:33:44 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -67,26 +67,24 @@ main (int argc, char **argv)
 	rotation = rot;
 	
 	XRRScreenChangeSelectInput (dpy, root, True);
-        do {
-	  printf("calling XRRSetScreenConfig\n");
-	  status = XRRSetScreenConfig (dpy, sc, DefaultRootWindow (dpy), 
-			       (SizeID) n, 0, rotation, CurrentTime);
-	    if (!status) {
-	      fprintf(stderr, "status = %d\n", status);
-	    }
-	    
-	}   while (status == False);
-	printf("operation succeeded!\n");
-	XNextEvent(dpy, (XEvent *) &event);
-	printf("Got and event!\n");
-	printf("timestamp = %ld, config_timestamp = %ld\n",
-	       event.timestamp, event.config_timestamp);
-	printf("root = %ld, size_index = %d, rotation, %d\n", 
-		root, event.size_index, event.rotation);
-	printf("%dX%d pixels, %dX%d mm, group = %d\n",
-	       event.new.width, event.new.height,
-	       event.new.mwidth, event.new.mheight,
-	       event.new.group);
+	printf("calling XRRSetScreenConfig\n");
+	status = XRRSetScreenConfig (dpy, sc, DefaultRootWindow (dpy), 
+				     (SizeID) n, 0, rotation, CurrentTime);
+	printf ("status = %d\n", status);
+	if (status == RRSetConfigSuccess)
+	{
+	    printf("operation succeeded!\n");
+	    XNextEvent(dpy, (XEvent *) &event);
+	    printf("Got an event!\n");
+	    printf("timestamp = %ld, config_timestamp = %ld\n",
+		   event.timestamp, event.config_timestamp);
+	    printf("window = %ld, root = %ld, size_index = %d, visual_group_index %d, rotation, %d\n", 
+		   event.window, event.root, 
+		   event.size_index, event.visual_group_index, event.rotation);
+	    printf("%dX%d pixels, %dX%d mm\n",
+		   event.width, event.height,
+		   event.mwidth, event.mheight);
+	}
 	XRRFreeScreenInfo(sc);
     }
 }

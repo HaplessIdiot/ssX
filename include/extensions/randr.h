@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/randr.h,v 1.1 2001/05/23 03:29:38 keithp Exp $
+ * $XFree86: xc/include/extensions/randr.h,v 1.2 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -49,5 +49,10 @@ typedef CARD16	SizeID;
 #define RR_Rotate_90		2
 #define RR_Rotate_180		4
 #define RR_Rotate_270		8
+
+#define RRSetConfigSuccess		0
+#define RRSetConfigInvalidConfigTime	1
+#define RRSetConfigInvalidTime		2
+#define RRSetConfigFailed		3
 
 #endif	/* _RANDR_H_ */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.3 2001/06/03 21:52:44 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.4 2001/06/07 15:33:43 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -53,14 +53,18 @@ typedef struct {
     unsigned long serial;	/* # of last request processed by server */
     Bool send_event;		/* true if this came from a SendEvent request */
     Display *display;		/* Display the event was read from */
+    Window window;		/* window which selected for this event */
+    Window root;		/* Root window for changed screen */
     Time timestamp;
     Time config_timestamp;
-    Window root;
     SizeID size_index;
+    VisualGroupID visual_group_index;
     Rotation rotation;
-    XRRScreenSize new;
+    int width;
+    int height;
+    int mwidth;
+    int mheight;
 } XRRScreenChangeNotifyEvent;
-
 
 /* internal representation is private to the library */
 typedef struct _XRRScreenConfiguration XRRScreenConfiguration;	
