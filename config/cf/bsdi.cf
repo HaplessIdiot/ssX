@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf /main/22 1996/09/28 16:09:30 rws $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.28 2000/05/18 00:33:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.29 2000/05/23 04:47:34 dawes Exp $
 
 #ifndef OSName
 #define OSName		DefaultOSName
@@ -73,7 +73,7 @@ XCOMM xf86site.def
 # ifndef HasGcc2ForCplusplus
 #  define HasGcc2ForCplusplus	YES
 # endif
-# ifdef __i386__
+# ifdef i386Architecture
 #  define CcCmd			gcc /* shlicc */
 #  define CplusplusCmd		g++ /* shlicc++ */
 #  define OptimizedCDebugFlags	-O2 -m486
@@ -114,7 +114,13 @@ XCOMM xf86site.def
 # define GccGasOption /**/
 #endif
 
-#ifdef __i386__
+#ifdef i386Architecture
+#ifndef BuildXF86DRI
+#define BuildXF86DRI            NO
+#endif
+#endif
+
+#ifdef i386Architecture
 # define HasTk        YES
 # define TkLibName    tk4.2
 # define TkLibDir     /usr/contrib/lib
@@ -138,12 +144,12 @@ XCOMM xf86site.def
 # endif
 #endif
 
-#ifdef __sparc__
+#ifdef SparcArchitecture
 # define ServerExtraDefines
 # define ServerOSDefines   -DDDXOSINIT
 #endif
 
-#ifdef __powerpc__
+#ifdef PpcArchitecture
 # define BuildServer		NO
 #endif
 
@@ -232,13 +238,13 @@ install.man:: 								@@\
 /*
  * These seem redundant, but leave them in for now.
  */
-#ifdef __i386__
+#ifdef i386Architecture
 #define i386Bsd 1
 #define i386Bsdi 1
 #include <xfree86.cf>
 #endif
 
-#ifdef __sparc__
+#ifdef SparcArchitecture
 #ifndef       XsunMonoServer
 #define       XsunMonoServer  NO              /* monochrome only */
 #endif
@@ -270,5 +276,5 @@ olor */
 #define       BuildXKB        YES
 #endif
 
-#endif /* __sparc__ */
+#endif /* SparcArchitecture */
 

@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 
@@ -17,7 +18,6 @@
 #ifdef execl
 #undef execl
 #endif
-
 
 
 /*
@@ -56,22 +56,33 @@ int xf86LoadKernelModule(const char *modName)
 
    /* now fork/exec the modprobe command */
    switch (pid = fork()) {
-      case 0:  /* child */
-         n = execl(mpPath, "modprobe", modName, NULL);
-         exit(EXIT_FAILURE);  /* if we get here the child's exec failed */
-         break;
-      case -1:  /* fork failed */
-         return 0;
-      default:  /* fork worked */
-         if (waitpid(pid, &status, 0) == -1) {
+   case 0:  /* child */
+      n = execl(mpPath, "modprobe", modName, NULL);
+      exit(EXIT_FAILURE);  /* if we get here the child's exec failed */
+      break;
+   case -1:  /* fork failed */
+      return 0;
+   default:  /* fork worked */
+      {
+         /* XXX we loop over waitpid() because it sometimes fails on
+          * the first attempt.  Don't know why!
+          */
+         int count = 0, p;
+         do {
+            p = waitpid(pid, &status, 0);
+         } while (p == -1 && count++ < 4);
+
+         if (p == -1) {
             return 0;
          }
+
          if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
             return 1;  /* success! */
          }
          else {
             return 0;
          }
+      }
    }
 
    /* never get here */

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.3 2000/06/20 05:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.4 2000/06/23 19:29:45 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -483,17 +483,25 @@ FFBProbeBoardType(FFBPtr pFfb)
 
 	afb_fem = ((volatile unsigned int *) ((char *)ffb + 0x1540));
 	val = *afb_fem;
-	val &= 0xff;
+	val &= 0x7f;
 
 	xf86Msg(X_INFO, "%s: ", pFfb->psdp->device);
-	if (val == 0x3f || val == 0x07) {
-		if (val == 0x3f) {
+	if (val == 0x3f || val == 0x07 || val == 0x01) {
+		/* When firmware has not been loaded onto AFB we
+		 * just assume it is an M6 board.
+		 */
+		if (val == 0x3f || val != 0x07) {
 			pFfb->ffb_type = afb_m6;
 			ErrorF("AFB: Detected Elite3D/M6.\n");
 		} else {
 			pFfb->ffb_type = afb_m3;
 			ErrorF("AFB: Detected Elite3D/M3.\n");
 		}
+
+		/* These attributes are invariant on AFB. */
+		pFfb->has_double_res = 0;
+		pFfb->has_z_buffer = 1;
+		pFfb->has_double_buffer = 1;
 	} else {
 		unsigned char sbits;
 
@@ -811,13 +819,17 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 
 #ifdef XF86DRI
-    pFfb->dri_enabled = FFBDRIScreenInit(pScreen);
-    if (pFfb->dri_enabled == TRUE)
-	    xf86Msg(X_INFO, "%s: DRM initialized\n",
-		    pFfb->psdp->device);
-    else
-	    xf86Msg(X_INFO, "%s: DRM setup failed\n",
-		    pFfb->psdp->device);
+    if (pFfb->ffb_type != afb_m3 && pFfb->ffb_type != afb_m6) {
+	    pFfb->dri_enabled = FFBDRIScreenInit(pScreen);
+	    if (pFfb->dri_enabled == TRUE)
+		    xf86Msg(X_INFO, "%s: DRM initialized\n",
+			    pFfb->psdp->device);
+	    else
+		    xf86Msg(X_INFO, "%s: DRM setup failed\n",
+			    pFfb->psdp->device);
+    } else {
+	    pFfb->dri_enabled = FALSE;
+    }
 #endif
 
     /*

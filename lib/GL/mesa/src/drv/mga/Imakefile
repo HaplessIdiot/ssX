@@ -14,7 +14,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if defined(LinuxArchitecture)
 OS_SUBDIR = linux
 #endif
-#if defined(FreeBSDArchitecture)
+#if defined(FreeBSDArchitecture) || defined(BSDOSArchitecture)
 OS_SUBDIR = bsd
 #endif
 

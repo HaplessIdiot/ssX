@@ -1,5 +1,5 @@
 /*
- * Platform specific SBUS and OpenPROM access declarations.
+ * BW2 framebuffer - defines.
  *
  * Copyright (C) 2000 Jakub Jelinek (jakub@redhat.com)
  *
@@ -20,21 +20,31 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.1 2000/05/18 23:21:42 dawes Exp $ */
+/* $XFree86:$ */
 
-#ifndef _XF86_SBUS_H
-#define _XF86_SBUS_H
+#ifndef BW2_H
+#define BW2_H
 
-#ifdef linux
-#include <asm/types.h>
-#include <asm/fbio.h>
-#include <asm/openpromio.h>
-#elif defined(SVR4)
-#include <sys/fbio.h>
-#elif define(CSRG_BASED)
-#include <machine/fbio.h>
-#else
-#include <sun/fbio.h>
-#endif
+#include "xf86.h"
+#include "xf86_OSproc.h"
+#include "xf86_ansic.h"
+#include "xf86RamDac.h"
+#include "Xmd.h"
+#include "gcstruct.h"
+#include "xf86sbusBus.h"
 
-#endif /* _XF86_SBUS_H */
+/* Various offsets in virtual (ie. mmap()) spaces Linux and Solaris support. */
+#define BW2_RAM_VOFF	0
+
+typedef struct {
+	unsigned char	*fb;
+	int		width;
+	int		height;
+
+	sbusDevicePtr	psdp;
+	CloseScreenProcPtr CloseScreen;
+} Bw2Rec, *Bw2Ptr;
+
+#define GET_BW2_FROM_SCRN(p)    ((Bw2Ptr)((p)->driverPrivate))
+
+#endif /* BW2_H */

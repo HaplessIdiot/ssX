@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.56 2000/06/15 20:49:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.57 2000/06/24 01:34:47 mvojkovi Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -53,10 +53,19 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.56 2000/06/15 20:49:55 dawes Exp $
 # define MacroIncludeFile <bsdi.cf>
 # define MacroFile bsdi.cf
 # undef bsdi
-# define BSD386Architecture
-# define i386BsdArchitecture
-# define i386Architecture
-# undef i386
+# define BSDOSArchitecture
+# if defined(__i386__) || defined(i386)
+#  define i386BsdArchitecture
+#  define i386Architecture
+#  undef i386
+#  undef __i386__
+# endif
+# if defined(__sparc__) || defined(__sparc_v9__) || defined(sparc)
+#  define SparcArchitecture
+#  undef sparc
+#  undef __sparc__
+#  undef __sparc_v9__
+# endif
 #endif /* bsdi */
 
 #ifdef __OpenBSD__

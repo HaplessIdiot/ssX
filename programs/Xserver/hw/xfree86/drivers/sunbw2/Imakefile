@@ -1,20 +1,20 @@
 XCOMM
-XCOMM This is an Imakefile for the cg6 driver.
+XCOMM This is an Imakefile for the bw2 driver.
 XCOMM
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/Imakefile,v 1.1 2000/05/23 04:47:43 dawes Exp $
+XCOMM $XFree86:$
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = cg6_driver.c cg6_cursor.c
-OBJS = cg6_driver.o cg6_cursor.o
+SRCS = bw2_driver.c
+OBJS = bw2_driver.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-           -I$(SERVERSRC)/Xext -I$(SERVERSRC)/cfb \
+           -I$(SERVERSRC)/Xext -I$(XF86SRC)/xf1bpp \
 	   -I$(XF86SRC)/ramdac \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(EXTINCSRC)
@@ -26,13 +26,13 @@ SubdirLibraryRule($(OBJS))
 
 ModuleObjectRule()
 
-ObjectModuleTarget(suncg6,$(OBJS))
+ObjectModuleTarget(sunbw2,$(OBJS))
 
-InstallObjectModule(suncg6,$(MODULEDIR),drivers)
+InstallObjectModule(sunbw2,$(MODULEDIR),drivers)
 
 #if !defined(XF86DriverSDK)
-CppManTarget(suncg6,)
-InstallModuleManPage(suncg6)
+CppManTarget(sunbw2,)
+InstallModuleManPage(sunbw2)
 #endif
 
 DependTarget()

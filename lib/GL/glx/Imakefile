@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.8 2000/02/15 19:19:17 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.9 2000/06/20 05:08:37 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -115,6 +115,10 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 #include <Library.tmpl>
 
 LibraryObjectRule()
+
+#if BuildXF86DRI && defined(i386Architecture)
+ObjectFromAsmSource(glapi_x86, NullParameter)
+#endif
 
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))

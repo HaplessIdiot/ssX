@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.50 2000/06/20 05:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.51 2000/06/20 18:03:00 alanh Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1641,6 +1641,7 @@ xf86GetResourcesImplicitly(int entityIndex)
     switch (xf86Entities[entityIndex]->bus.type) {
     case BUS_ISA:
     case BUS_NONE:
+    case BUS_SBUS:
 	return NULL;
     case BUS_PCI:
 	return GetImplicitPciResources(entityIndex);
@@ -1880,6 +1881,7 @@ busTypeSpecific(EntityPtr pEnt, xf86State state, xf86AccessPtr *acc_mem,
     
     switch (pEnt->bus.type) {
     case BUS_ISA:
+    case BUS_SBUS:
 	    *acc_mem = *acc_io = *acc_mem_io = &AccessNULL;
 	    break;
 	break;

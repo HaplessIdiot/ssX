@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.25 2000/06/24 16:14:07 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.26 2000/06/26 22:27:41 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -27,7 +27,7 @@ REQUIREDLIBS = SharedGLReqs
 #endif
 
 #if BuildXF86DRI && defined(i386Architecture)
-	GLAPI_OBJ = glx/glapi_x86.o
+   GLAPI_OBJ = glx/glapi_x86.o
 #endif
 
      GLXOBJS = glx/?*.o

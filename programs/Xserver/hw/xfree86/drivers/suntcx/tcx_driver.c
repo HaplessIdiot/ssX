@@ -1,5 +1,5 @@
 /*
- * GX and Turbo GX framebuffer driver.
+ * TCX framebuffer driver.
  *
  * Copyright (C) 2000 Jakub Jelinek (jakub@redhat.com)
  *
@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.1 2000/05/23 04:47:43 dawes Exp $ */
+/* $XFree86:$ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -32,38 +32,41 @@
 #include "micmap.h"
 
 #include "cfb.h"
+#undef PSZ
+#include "cfb32.h"
 #include "xf86cmap.h"
-#include "cg6.h"
+#include "tcx.h"
 
-static OptionInfoPtr CG6AvailableOptions(int chipid, int busid);
-static void	CG6Identify(int flags);
-static Bool	CG6Probe(DriverPtr drv, int flags);
-static Bool	CG6PreInit(ScrnInfoPtr pScrn, int flags);
-static Bool	CG6ScreenInit(int Index, ScreenPtr pScreen, int argc,
+static OptionInfoPtr TCXAvailableOptions(int chipid, int busid);
+static void	TCXIdentify(int flags);
+static Bool	TCXProbe(DriverPtr drv, int flags);
+static Bool	TCXPreInit(ScrnInfoPtr pScrn, int flags);
+static Bool	TCXScreenInit(int Index, ScreenPtr pScreen, int argc,
 			      char **argv);
-static Bool	CG6EnterVT(int scrnIndex, int flags);
-static void	CG6LeaveVT(int scrnIndex, int flags);
-static Bool	CG6CloseScreen(int scrnIndex, ScreenPtr pScreen);
-static Bool	CG6SaveScreen(ScreenPtr pScreen, int mode);
+static Bool	TCXEnterVT(int scrnIndex, int flags);
+static void	TCXLeaveVT(int scrnIndex, int flags);
+static Bool	TCXCloseScreen(int scrnIndex, ScreenPtr pScreen);
+static Bool	TCXSaveScreen(ScreenPtr pScreen, int mode);
+static void	TCXInitCplane24(ScrnInfoPtr pScrn);
 
 /* Required if the driver supports mode switching */
-static Bool	CG6SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+static Bool	TCXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 /* Required if the driver supports moving the viewport */
-static void	CG6AdjustFrame(int scrnIndex, int x, int y, int flags);
+static void	TCXAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
-static void	CG6FreeScreen(int scrnIndex, int flags);
-static int	CG6ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+static void	TCXFreeScreen(int scrnIndex, int flags);
+static int	TCXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 
-void CG6Sync(ScrnInfoPtr pScrn);
+void TCXSync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
-#define CG6_NAME "SUNCG6"
-#define CG6_DRIVER_NAME "suncg6"
-#define CG6_MAJOR_VERSION 1
-#define CG6_MINOR_VERSION 0
-#define CG6_PATCHLEVEL 0
+#define TCX_NAME "SUNTCX"
+#define TCX_DRIVER_NAME "suntcx"
+#define TCX_MAJOR_VERSION 1
+#define TCX_MINOR_VERSION 0
+#define TCX_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the driver
@@ -73,57 +76,55 @@ void CG6Sync(ScrnInfoPtr pScrn);
  * an upper-case version of the driver name.
  */
 
-DriverRec SUNCG6 = {
+DriverRec SUNTCX = {
     VERSION,
-    CG6_DRIVER_NAME,
-    CG6Identify,
-    CG6Probe,
-    CG6AvailableOptions,
+    TCX_DRIVER_NAME,
+    TCXIdentify,
+    TCXProbe,
+    TCXAvailableOptions,
     NULL,
     0
 };
 
 typedef enum {
     OPTION_SW_CURSOR,
-    OPTION_HW_CURSOR,
-    OPTION_NOACCEL
-} CG6Opts;
+    OPTION_HW_CURSOR
+} TCXOpts;
 
-static OptionInfoRec CG6Options[] = {
+static OptionInfoRec TCXOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
 #ifdef XFree86LOADER
 
-static MODULESETUPPROTO(cg6Setup);
+static MODULESETUPPROTO(tcxSetup);
 
-static XF86ModuleVersionInfo suncg6VersRec =
+static XF86ModuleVersionInfo suntcxVersRec =
 {
-	"suncg6",
+	"suntcx",
 	MODULEVENDORSTRING,
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	CG6_MAJOR_VERSION, CG6_MINOR_VERSION, CG6_PATCHLEVEL,
+	TCX_MAJOR_VERSION, TCX_MINOR_VERSION, TCX_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
 	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-XF86ModuleData suncg6ModuleData = { &suncg6VersRec, cg6Setup, NULL };
+XF86ModuleData suntcxModuleData = { &suntcxVersRec, tcxSetup, NULL };
 
 pointer
-cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+tcxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
 
     if (!setupDone) {
 	setupDone = TRUE;
-	xf86AddDriver(&SUNCG6, module, 0);
+	xf86AddDriver(&SUNTCX, module, 0);
 
 	/*
 	 * Modules that this driver always requires can be loaded here
@@ -144,29 +145,29 @@ cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 #endif /* XFree86LOADER */
 
 static Bool
-CG6GetRec(ScrnInfoPtr pScrn)
+TCXGetRec(ScrnInfoPtr pScrn)
 {
     /*
-     * Allocate an Cg6Rec, and hook it into pScrn->driverPrivate.
+     * Allocate an TcxRec, and hook it into pScrn->driverPrivate.
      * pScrn->driverPrivate is initialised to NULL, so we can check if
      * the allocation has already been done.
      */
     if (pScrn->driverPrivate != NULL)
 	return TRUE;
 
-    pScrn->driverPrivate = xnfcalloc(sizeof(Cg6Rec), 1);
+    pScrn->driverPrivate = xnfcalloc(sizeof(TcxRec), 1);
     return TRUE;
 }
 
 static void
-CG6FreeRec(ScrnInfoPtr pScrn)
+TCXFreeRec(ScrnInfoPtr pScrn)
 {
-    Cg6Ptr pCg6;
+    TcxPtr pTcx;
 
     if (pScrn->driverPrivate == NULL)
 	return;
 
-    pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    pTcx = GET_TCX_FROM_SCRN(pScrn);
 
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
@@ -176,22 +177,22 @@ CG6FreeRec(ScrnInfoPtr pScrn)
 
 static 
 OptionInfoPtr
-CG6AvailableOptions(int chipid, int busid)
+TCXAvailableOptions(int chipid, int busid)
 {
-    return CG6Options;
+    return TCXOptions;
 }
 
 /* Mandatory */
 static void
-CG6Identify(int flags)
+TCXIdentify(int flags)
 {
-    xf86Msg(X_INFO, "%s: driver for CGsix (GX and Turbo GX)\n", CG6_NAME);
+    xf86Msg(X_INFO, "%s: driver for TCX\n", TCX_NAME);
 }
 
 
 /* Mandatory */
 static Bool
-CG6Probe(DriverPtr drv, int flags)
+TCXProbe(DriverPtr drv, int flags)
 {
     int i;
     GDevPtr *devSections = NULL;
@@ -220,7 +221,7 @@ CG6Probe(DriverPtr drv, int flags)
      * specified.
      */
 
-    if ((numDevSections = xf86MatchDevice(CG6_DRIVER_NAME,
+    if ((numDevSections = xf86MatchDevice(TCX_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
 	 * There's no matching device section in the config file, so quit
@@ -235,7 +236,7 @@ CG6Probe(DriverPtr drv, int flags)
      * file info to override any contradictions.
      */
 
-    numUsed = xf86MatchSbusInstances(CG6_NAME, SBUS_DEVICE_CG6,
+    numUsed = xf86MatchSbusInstances(TCX_NAME, SBUS_DEVICE_TCX,
 		   devSections, numDevSections,
 		   drv, &usedChips);
 				    
@@ -261,17 +262,17 @@ CG6Probe(DriverPtr drv, int flags)
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = CG6_DRIVER_NAME;
-	    pScrn->name		 = CG6_NAME;
-	    pScrn->Probe	 = CG6Probe;
-	    pScrn->PreInit	 = CG6PreInit;
-	    pScrn->ScreenInit	 = CG6ScreenInit;
-  	    pScrn->SwitchMode	 = CG6SwitchMode;
-  	    pScrn->AdjustFrame	 = CG6AdjustFrame;
-	    pScrn->EnterVT	 = CG6EnterVT;
-	    pScrn->LeaveVT	 = CG6LeaveVT;
-	    pScrn->FreeScreen	 = CG6FreeScreen;
-	    pScrn->ValidMode	 = CG6ValidMode;
+	    pScrn->driverName	 = TCX_DRIVER_NAME;
+	    pScrn->name		 = TCX_NAME;
+	    pScrn->Probe	 = TCXProbe;
+	    pScrn->PreInit	 = TCXPreInit;
+	    pScrn->ScreenInit	 = TCXScreenInit;
+  	    pScrn->SwitchMode	 = TCXSwitchMode;
+  	    pScrn->AdjustFrame	 = TCXAdjustFrame;
+	    pScrn->EnterVT	 = TCXEnterVT;
+	    pScrn->LeaveVT	 = TCXLeaveVT;
+	    pScrn->FreeScreen	 = TCXFreeScreen;
+	    pScrn->ValidMode	 = TCXValidMode;
 	    xf86AddEntityToScreen(pScrn, pEnt->index);
 	    foundScreen = TRUE;
 	}
@@ -282,12 +283,13 @@ CG6Probe(DriverPtr drv, int flags)
 
 /* Mandatory */
 static Bool
-CG6PreInit(ScrnInfoPtr pScrn, int flags)
+TCXPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    Cg6Ptr pCg6;
-    sbusDevicePtr psdp;
+    TcxPtr pTcx;
+    sbusDevicePtr psdp = NULL;
     MessageType from;
     int i;
+    int hwCursor, lowDepth;
 
     if (flags & PROBE_DETECT) return FALSE;
 
@@ -304,11 +306,11 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
-    /* Allocate the Cg6Rec driverPrivate */
-    if (!CG6GetRec(pScrn)) {
+    /* Allocate the TcxRec driverPrivate */
+    if (!TCXGetRec(pScrn)) {
 	return FALSE;
     }
-    pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    pTcx = GET_TCX_FROM_SCRN(pScrn);
     
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -320,25 +322,47 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
     for (i = 0; i < pScrn->numEntities; i++) {
 	EntityInfoPtr pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
 
-	/* CG6 is purely SBUS */
+	/* TCX is purely AFX, but we handle it like SBUS */
 	if (pEnt->location.type == BUS_SBUS) {
 	    psdp = xf86GetSbusInfoForEntity(pEnt->index);
-	    pCg6->psdp = psdp;
+	    pTcx->psdp = psdp;
 	} else
 	    return FALSE;
+    }
+    if (psdp == NULL)
+	return FALSE;
+
+    /**********************
+    check card capabilities
+    **********************/
+    hwCursor = 0;
+    lowDepth = 1;
+    if (sparcPromInit() >= 0) {
+	hwCursor = sparcPromGetBool(&psdp->node, "hw-cursor");
+	lowDepth = sparcPromGetBool(&psdp->node, "tcx-8-bit");
+	sparcPromClose();
     }
 
     /*********************
     deal with depth
     *********************/
     
-    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, NoDepth24Support)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0,
+			 lowDepth ? NoDepth24Support : Support32bppFb)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
 	case 8:
 	    /* OK */
+	    break;
+	case 32:
+	    /* unless lowDepth OK */
+	    if (lowDepth) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			   "Given depth (32) not supported by hardware\n");
+		return FALSE;
+	    }
 	    break;
 	default:
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -351,10 +375,32 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CG6Options);
-    
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, TCXOptions);
+
+    /*
+     * This must happen after pScrn->display has been set because
+     * xf86SetWeight references it.
+     */
+    if (pScrn->depth > 8) {
+	rgb weight = {10, 11, 11};
+	rgb mask = {0xff, 0xff00, 0xff0000};
+                                       
+	if (!xf86SetWeight(pScrn, weight, mask)) {
+	    return FALSE;
+	}
+    }
+                                                                           
     if (!xf86SetDefaultVisual(pScrn, -1))
 	return FALSE;
+    else if (pScrn->depth > 8) {
+	/* We don't currently support DirectColor */
+	if (pScrn->defaultVisual != TrueColor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
+		       " (%s) is not supported\n",
+		       xf86GetVisualName(pScrn->defaultVisual));
+	    return FALSE;
+	}
+    }                                                                                                  
 
     /*
      * The new cmap code requires this to be initialised.
@@ -368,34 +414,32 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* Set the bits per RGB for 8bpp mode */
-    from = X_DEFAULT;
-
     /* determine whether we use hardware or software cursor */
     
-    pCg6->HWCursor = TRUE;
-    if (xf86GetOptValBool(CG6Options, OPTION_HW_CURSOR, &pCg6->HWCursor))
-	from = X_CONFIG;
-    if (xf86ReturnOptValBool(CG6Options, OPTION_SW_CURSOR, FALSE)) {
-	from = X_CONFIG;
-	pCg6->HWCursor = FALSE;
+    from = X_PROBED;
+    pTcx->HWCursor = FALSE;
+    if (hwCursor) {
+	from = X_DEFAULT;
+	pTcx->HWCursor = TRUE;
+	if (xf86GetOptValBool(TCXOptions, OPTION_HW_CURSOR, &pTcx->HWCursor))
+	    from = X_CONFIG;
+	if (xf86ReturnOptValBool(TCXOptions, OPTION_SW_CURSOR, FALSE)) {
+	    from = X_CONFIG;
+	    pTcx->HWCursor = FALSE;
+	}
     }
     
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pCg6->HWCursor ? "HW" : "SW");
+		pTcx->HWCursor ? "HW" : "SW");
 
-    if (xf86ReturnOptValBool(CG6Options, OPTION_NOACCEL, FALSE)) {
-	pCg6->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
-    }
-        
-    if (xf86LoadSubModule(pScrn, "cfb") == NULL) {
-	CG6FreeRec(pScrn);
+    if (xf86LoadSubModule(pScrn, pScrn->depth > 8 ? "cfb32" : "cfb") ==
+	NULL) {
+	TCXFreeRec(pScrn);
 	return FALSE;
     }
 
-    if (pCg6->HWCursor && xf86LoadSubModule(pScrn, "ramdac") == NULL) {
-	CG6FreeRec(pScrn);
+    if (pTcx->HWCursor && xf86LoadSubModule(pScrn, "ramdac") == NULL) {
+	TCXFreeRec(pScrn);
 	return FALSE;
     }
 
@@ -407,12 +451,12 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
 
     if(pScrn->display->virtualX || pScrn->display->virtualY) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "CG6 does not support a virtual desktop\n");
+		   "TCX does not support a virtual desktop\n");
 	pScrn->display->virtualX = 0;
 	pScrn->display->virtualY = 0;
     }
 
-    xf86SbusUseBuiltinMode(pScrn, pCg6->psdp);
+    xf86SbusUseBuiltinMode(pScrn, pTcx->psdp);
     pScrn->currentMode = pScrn->modes;
     pScrn->displayWidth = pScrn->virtualX;
 
@@ -427,10 +471,11 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
 /* This gets called at the start of each server generation */
 
 static Bool
-CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
-    Cg6Ptr pCg6;
+    TcxPtr pTcx;
+    VisualPtr visual;
     int ret;
 
     /* 
@@ -438,22 +483,34 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     pScrn = xf86Screens[pScreen->myNum];
 
-    pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    pTcx = GET_TCX_FROM_SCRN(pScrn);
 
-    /* Map the CG6 memory */
-    pCg6->fbc =
-	xf86MapSbusMem (pCg6->psdp, CG6_FBC_VOFF,
-			CG6_RAM_VOFF - CG6_FBC_VOFF +
-			(pCg6->psdp->width * pCg6->psdp->height));
+    /* Map the TCX memory */
+    if (pScrn->depth == 8)
+	pTcx->fb =
+	    xf86MapSbusMem (pTcx->psdp, TCX_RAM8_VOFF,
+			    (pTcx->psdp->width * pTcx->psdp->height));
+    else {
+	pTcx->fb =
+	    xf86MapSbusMem (pTcx->psdp, TCX_RAM24_VOFF,
+			    (pTcx->psdp->width * pTcx->psdp->height * 4));
+	pTcx->cplane =
+	    xf86MapSbusMem (pTcx->psdp, TCX_CPLANE_VOFF,
+			    (pTcx->psdp->width * pTcx->psdp->height * 4));
+	if (! pTcx->cplane)
+	    return FALSE;
+    }
+    if (pTcx->HWCursor == TRUE) {
+	pTcx->thc = xf86MapSbusMem (pTcx->psdp, TCX_THC_VOFF, 8192);
+	if (! pTcx->thc)
+	    return FALSE;
+    }
 
-    if (! pCg6->fbc)
+    if (! pTcx->fb)
 	return FALSE;
 
-    pCg6->fb = (unsigned char *)pCg6->fbc + CG6_RAM_VOFF - CG6_FBC_VOFF;
-    pCg6->thc = (Cg6ThcPtr)((char *)pCg6->fbc + CG6_THC_VOFF - CG6_FBC_VOFF);
-
     /* Darken the screen for aesthetic reasons and set the viewport */
-    CG6SaveScreen(pScreen, SCREEN_SAVER_ON);
+    TCXSaveScreen(pScreen, SCREEN_SAVER_ON);
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -469,12 +526,15 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     miClearVisualTypes();
 
-    /* Set the bits per RGB for 8bpp mode */
-    pScrn->rgbBits = 8;
+    if (pScrn->depth == 8)
+	/* Set the bits per RGB for 8bpp mode */
+	pScrn->rgbBits = 8;
 
     /* Setup the visuals we support. */
 
-    if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
+    if (!miSetVisualTypes(pScrn->depth,
+			  pScrn->depth != 8 ? TrueColorMask :
+				miGetDefaultVisualMask(pScrn->depth),
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
@@ -483,9 +543,17 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
-    ret = cfbScreenInit(pScreen, pCg6->fb, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			pScrn->virtualX);
+    if (pScrn->depth == 8)
+	ret = cfbScreenInit(pScreen, pTcx->fb, pScrn->virtualX,
+			    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			    pScrn->virtualX);
+    else {
+	TCXInitCplane24(pScrn);
+	ret = cfb32ScreenInit(pScreen, pTcx->fb, pScrn->virtualX,
+			      pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			      pScrn->virtualX);
+    }
+
     if (!ret)
 	return FALSE;
 
@@ -495,42 +563,47 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-#if 0
-    if (!pCg6->NoAccel) {
-	extern Bool CG6AccelInit(ScreenPtr pScreen, Cg6Ptr pCg6);
-
-	if (!CG6AccelInit(pScreen, pCg6))
-	    return FALSE;
-	xf86Msg(X_INFO, "%s: Using acceleration\n", pCg6->psdp->device);
+    if (pScrn->bitsPerPixel > 8) {
+	/* Fixup RGB ordering */
+	visual = pScreen->visuals + pScreen->numVisuals;
+	while (--visual >= pScreen->visuals) {
+	    if ((visual->class | DynamicClass) == DirectColor) {
+		visual->offsetRed = pScrn->offset.red;
+		visual->offsetGreen = pScrn->offset.green;
+		visual->offsetBlue = pScrn->offset.blue;
+		visual->redMask = pScrn->mask.red;
+		visual->greenMask = pScrn->mask.green;
+		visual->blueMask = pScrn->mask.blue;
+	    }
+	}
     }
-#endif
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialize HW cursor layer. 
        Must follow software cursor initialization*/
-    if (pCg6->HWCursor) { 
-	extern Bool CG6HWCursorInit(ScreenPtr pScreen);
+    if (pTcx->HWCursor) { 
+	extern Bool TCXHWCursorInit(ScreenPtr pScreen);
 
-	if(!CG6HWCursorInit(pScreen)) {
+	if(!TCXHWCursorInit(pScreen)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
-	xf86SbusHideOsHwCursor(pCg6->psdp);
+	xf86SbusHideOsHwCursor(pTcx->psdp);
     }
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if(!xf86SbusHandleColormaps(pScreen, pCg6->psdp))
+    if(pScrn->depth == 8 && !xf86SbusHandleColormaps(pScreen, pTcx->psdp))
 	return FALSE;
 
-    pCg6->CloseScreen = pScreen->CloseScreen;
-    pScreen->CloseScreen = CG6CloseScreen;
-    pScreen->SaveScreen = CG6SaveScreen;
+    pTcx->CloseScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = TCXCloseScreen;
+    pScreen->SaveScreen = TCXSaveScreen;
 
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
@@ -538,7 +611,7 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* unblank the screen */
-    CG6SaveScreen(pScreen, SCREEN_SAVER_OFF);
+    TCXSaveScreen(pScreen, SCREEN_SAVER_OFF);
 
     /* Done */
     return TRUE;
@@ -547,7 +620,7 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 /* Usually mandatory */
 static Bool
-CG6SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+TCXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return TRUE;
 }
@@ -559,7 +632,7 @@ CG6SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
  */
 /* Usually mandatory */
 static void 
-CG6AdjustFrame(int scrnIndex, int x, int y, int flags)
+TCXAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     /* we don't support virtual desktops */
     return;
@@ -572,15 +645,18 @@ CG6AdjustFrame(int scrnIndex, int x, int y, int flags)
 
 /* Mandatory */
 static Bool
-CG6EnterVT(int scrnIndex, int flags)
+TCXEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
 
-    if (pCg6->HWCursor) {
-	xf86SbusHideOsHwCursor (pCg6->psdp);
-	pCg6->CursorFg = 0;
-	pCg6->CursorBg = 0;
+    if (pTcx->HWCursor) {
+	xf86SbusHideOsHwCursor (pTcx->psdp);
+	pTcx->CursorFg = 0;
+	pTcx->CursorBg = 0;
+    }
+    if (pTcx->cplane) {
+	TCXInitCplane24 (pScrn);
     }
     return TRUE;
 }
@@ -592,7 +668,7 @@ CG6EnterVT(int scrnIndex, int flags)
 
 /* Mandatory */
 static void
-CG6LeaveVT(int scrnIndex, int flags)
+TCXLeaveVT(int scrnIndex, int flags)
 {
     return;
 }
@@ -605,17 +681,25 @@ CG6LeaveVT(int scrnIndex, int flags)
 
 /* Mandatory */
 static Bool
-CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
+TCXCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
 
     pScrn->vtSema = FALSE;
-    xf86UnmapSbusMem(pCg6->psdp, pCg6->fbc,
-		     CG6_RAM_VOFF - CG6_FBC_VOFF +
-		     (pCg6->psdp->width * pCg6->psdp->height));
+    if (pScrn->depth == 8)
+	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb,
+			 (pTcx->psdp->width * pTcx->psdp->height));
+    else {
+	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb,
+			 (pTcx->psdp->width * pTcx->psdp->height * 4));
+	xf86UnmapSbusMem(pTcx->psdp, pTcx->cplane,
+			 (pTcx->psdp->width * pTcx->psdp->height * 4));
+    }
+    if (pTcx->thc)
+	xf86UnmapSbusMem(pTcx->psdp, pTcx->fb, 8192);
     
-    pScreen->CloseScreen = pCg6->CloseScreen;
+    pScreen->CloseScreen = pTcx->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;
 }
@@ -625,9 +709,9 @@ CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
 /* Optional */
 static void
-CG6FreeScreen(int scrnIndex, int flags)
+TCXFreeScreen(int scrnIndex, int flags)
 {
-    CG6FreeRec(xf86Screens[scrnIndex]);
+    TCXFreeRec(xf86Screens[scrnIndex]);
 }
 
 
@@ -635,7 +719,7 @@ CG6FreeScreen(int scrnIndex, int flags)
 
 /* Optional */
 static int
-CG6ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
+TCXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
 	return(MODE_BAD);
@@ -647,7 +731,7 @@ CG6ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 /* Mandatory */
 static Bool
-CG6SaveScreen(ScreenPtr pScreen, int mode)
+TCXSaveScreen(ScreenPtr pScreen, int mode)
     /* this function should blank the screen when unblank is FALSE and
        unblank it when unblank is TRUE -- it doesn't actually seem to be
        used for much though */
@@ -659,7 +743,27 @@ CG6SaveScreen(ScreenPtr pScreen, int mode)
  * This is the implementation of the Sync() function.
  */
 void
-CG6Sync(ScrnInfoPtr pScrn)
+TCXSync(ScrnInfoPtr pScrn)
 {
     return;
+}
+
+/*
+ * This initializes CPLANE for 24 bit mode.
+ */
+static void
+TCXInitCplane24(ScrnInfoPtr pScrn)
+{
+    TcxPtr pTcx = GET_TCX_FROM_SCRN(pScrn);
+    int size;
+    unsigned int *p, *q;
+
+    if (!pTcx->cplane)
+	return;
+
+    size = pScrn->virtualX * pScrn->virtualY;
+    memset (pTcx->fb, 0, size * 4);
+    p = pTcx->cplane;
+    for (q = pTcx->cplane + size; p != q; p++)
+	*p = (*p & 0xffffff) | TCX_CPLANE_MODE;
 }

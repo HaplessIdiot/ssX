@@ -583,7 +583,10 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
    /* This may be called redundantly - dispatch_age may trail what
     * has actually been sent and processed by the hardware.
     */
-   if (GET_DISPATCH_AGE( mmesa ) < mmesa->sarea->last_enqueue) {
+#if 0
+   if (GET_DISPATCH_AGE( mmesa ) < mmesa->sarea->last_enqueue)
+#endif
+   {
       LOCK_HARDWARE( mmesa );
       if (0) fprintf(stderr, "mgaDDFlush %d %d\n", GET_DISPATCH_AGE( mmesa ),  mmesa->sarea->last_enqueue);
       mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );

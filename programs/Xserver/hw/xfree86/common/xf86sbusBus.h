@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.1 2000/05/18 23:21:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.2 2000/05/23 04:47:41 dawes Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -75,6 +75,14 @@ pointer xf86MapSbusMem(sbusDevicePtr psdp, unsigned long offset,
 		       unsigned long size);
 void xf86UnmapSbusMem(sbusDevicePtr psdp, pointer addr, unsigned long size);
 void xf86SbusHideOsHwCursor(sbusDevicePtr psdp);
+void xf86SbusSetOsHwCursorCmap(sbusDevicePtr psdp, int bg, int fg);
 Bool xf86SbusHandleColormaps(ScreenPtr pScreen, sbusDevicePtr psdp);
+int sparcPromInit(void);
+void sparcPromClose(void);
+char * sparcPromGetProperty(sbusPromNodePtr pnode, const char *prop, int *lenp);
+int sparcPromGetBool(sbusPromNodePtr pnode, const char *prop);
+void sparcPromAssignNodes(void);
+char * sparcPromNode2Pathname(sbusPromNodePtr pnode);
+int sparcPromPathname2Node(const char *pathName);
 
 #endif /* _XF86_SBUSBUS_H */

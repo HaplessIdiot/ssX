@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dac.c,v 1.1 2000/05/23 04:47:44 dawes Exp $ */
 
 #include "ffb.h"
 #include "ffb_rcache.h"
@@ -348,18 +348,26 @@ init_dac_flags(FFBPtr pFfb)
 	unsigned int did, manuf_rev, partnum;
 	char *device;
 
-	p->flags = 0;
+	/* For AFB, assume it is PAC2 which also implies not having
+	 * the inverted cursor control attribute.
+	 */
+	if (pFfb->ffb_type == afb_m3 || pFfb->ffb_type == afb_m6) {
+		p->flags = FFB_DAC_PAC2;
+		manuf_rev = 4;
+	} else {
+		p->flags = 0;
 
-	did = DACCFG_READ(dac, FFBDAC_CFG_DID);
+		did = DACCFG_READ(dac, FFBDAC_CFG_DID);
 
-	manuf_rev = DACCFG_READ(dac, FFBDAC_CFG_UCTRL);
-	manuf_rev = (manuf_rev & FFBDAC_UCTRL_MANREV) >> 8;
+		manuf_rev = DACCFG_READ(dac, FFBDAC_CFG_UCTRL);
+		manuf_rev = (manuf_rev & FFBDAC_UCTRL_MANREV) >> 8;
 
-	partnum = ((did & FFBDAC_CFG_DID_PNUM) >> 12);
-	if (partnum == 0x236e)
-		p->flags |= FFB_DAC_PAC2;
-	else
-		p->flags |= FFB_DAC_PAC1;
+		partnum = ((did & FFBDAC_CFG_DID_PNUM) >> 12);
+		if (partnum == 0x236e)
+			p->flags |= FFB_DAC_PAC2;
+		else
+			p->flags |= FFB_DAC_PAC1;
+	}
 
 	device = pFfb->psdp->device;
 	if ((p->flags & FFB_DAC_PAC1) != 0) {

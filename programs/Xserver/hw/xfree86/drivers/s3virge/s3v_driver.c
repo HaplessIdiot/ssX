@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.60 2000/06/21 17:28:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.61 2000/06/24 02:26:41 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -2422,7 +2422,14 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
-  xf86SetSilkenMouse(pScreen);
+  /* Problem with accel appears to crash GX2 on mouse moves */
+  /* re-enable this when fixed. */
+  if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
+  {}
+  else
+    {
+    xf86SetSilkenMouse(pScreen);
+    }
   						/* hardware cursor needs to wrap this layer */
   S3VDGAInit(pScreen);
 

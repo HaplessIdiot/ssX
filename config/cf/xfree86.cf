@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.297 2000/06/20 05:08:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.298 2000/06/25 14:10:42 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -309,7 +309,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Pure SBUS and PCI drivers should go first */
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers	sunffb sunleo suncg6 fbdev XF86OSCardDrivers XF86ExtraCardDrivers
+#  define XF86CardDrivers	sunffb sunleo suncg6 suncg3 suncg14 suntcx \
+				sunbw2 ati glint fbdev \
+				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 
 #endif

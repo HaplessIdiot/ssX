@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.63 2000/06/23 09:49:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.64 2000/06/23 19:04:18 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -543,6 +543,7 @@
 #define PCI_CHIP_NM2160		0x0004
 #define PCI_CHIP_NM2200		0x0005
 #define PCI_CHIP_NM2360		0x0006
+#define PCI_CHIP_NM2380		0x0016
 
 /* Intel */
 #define PCI_CHIP_I815_BRIDGE		0x1130
@@ -1127,6 +1128,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_NM2160,	"NM2160",0},
 				{PCI_CHIP_NM2200,	"NM2200",0},
 				{PCI_CHIP_NM2360,	"NM2360",0},
+				{PCI_CHIP_NM2380,	"NM2380",0},
 #ifdef VENDOR_INCLUDE_NONVIDEO
 				{0x8005,			"NM2360 MagicMedia 256ZX Audio",0},
 #endif
@@ -1470,18 +1472,15 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 #endif
 	/* ATI card info deleted;  unmaintainable */
 #ifdef VENDOR_INCLUDE_NONVIDEO
-#ifdef INCLUDE_EMPTY_LISTS
 	{ PCI_VENDOR_COMPAQ, {
+                        { 0xC001, "NC3121",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
-#endif
-#ifdef VENDOR_INCLUDE_NONVIDEO
 	{ PCI_VENDOR_NCR_1, {
 	                { 0x1000, "SCSI HBA",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
     { PCI_VENDOR_REALTEC, {
                         { 0x8139, "Generic",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
-#endif
 	{ PCI_VENDOR_CREATIVE_2, {
 			{ 0x1017, "3D Blaster Banshee",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
