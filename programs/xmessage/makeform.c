@@ -243,7 +243,6 @@ Widget make_queryform(parent, msgstr, msglen,
 	 XtNtop, XtChainTop,
 	 XtNbottom, XtChainBottom,
 	 XtNdisplayCaret, False,
-	 XtNuseStringInPlace, True,
 	 XtNlength, msglen,
 	 XtNstring, msgstr,
 	 NULL);
