@@ -2,6 +2,7 @@
 
 #include "savage_driver.h"
 #include "savage_vbe.h"
+#include "vbe.h"
 
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 #define B_O16(x)  (x) 
@@ -13,7 +14,6 @@
 #endif
 #define L_ADD(x)  (B_O32(x) & 0xffff) + ((B_O32(x) >> 12) & 0xffff00)
 
-Bool vbeModeInit( vbeInfoPtr, int );
 
 static void
 SavageClearVM86Regs( xf86Int10InfoPtr pInt )
@@ -54,7 +54,7 @@ SavageSetVESAMode( SavagePtr psav, int n, int Refresh )
 
     /* Now, make this mode current. */
 
-    if( !vbeModeInit( psav->pVbe, n ) )
+    if( !VBESetVBEMode( psav->pVbe, n, NULL ) )
     {
 	ErrorF("Set video mode failed\n");
     }
