@@ -1,11 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.19 1998/08/13 14:45:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.20 1998/08/19 07:49:14 dawes Exp $ */
 
 
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
-#include "compiler.h"
 
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
@@ -19,7 +18,7 @@
 #include "xf86fbman.h"
 #include "miline.h"
 
-#include "vgaHW.h"
+#include "vgaHWmmio.h"
 
 #include "mga_bios.h"
 #include "mga.h"
@@ -101,21 +100,22 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     pMga->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
 
-    pMga->UsePCIRetry = TRUE;   /* fix this */
     pMga->MaxFastBlitY = 0;
 
-    pMga->AccelFlags = 0;
-
-    if(pMga->Chipset != PCI_CHIP_MGA1064)
-    	pMga->AccelFlags |= BLK_OPAQUE_EXPANSION;
-
-    if(pMga->Chipset == PCI_CHIP_MGA2064)
-    	pMga->AccelFlags |= FASTBLT_BUG;
-
-    if((pMga->Chipset == PCI_CHIP_MGA2164) || 
-	(pMga->Chipset == PCI_CHIP_MGA2164_AGP)) {
-    	pMga->AccelFlags |= TRANSC_SOLID_FILL;
-    	pMga->AccelFlags |= USE_RECTS_FOR_LINES; 
+    switch (pMga->Chipset) {
+    case PCI_CHIP_MGA2064:
+    	pMga->AccelFlags = BLK_OPAQUE_EXPANSION | FASTBLT_BUG;
+	break;
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+    	pMga->AccelFlags = BLK_OPAQUE_EXPANSION |
+			   TRANSC_SOLID_FILL |
+ 			   USE_RECTS_FOR_LINES; 
+        break;
+    case PCI_CHIP_MGA1064:
+    default:
+	pMga->AccelFlags = 0;
+        break;
     }
   
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.4 1998/08/13 14:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.5 1998/08/19 07:49:27 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -27,7 +27,8 @@ XAAValidateCopyArea(
 
    if(infoRec->CopyArea &&
 	CHECK_PLANEMASK(pGC,infoRec->CopyAreaFlags) &&
-	CHECK_ROP(pGC,infoRec->CopyAreaFlags)
+	CHECK_ROP(pGC,infoRec->CopyAreaFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->CopyAreaFlags)
 	)
 	pGC->ops->CopyArea = infoRec->CopyArea;
    else
@@ -45,6 +46,7 @@ XAAValidatePutImage(
    if(infoRec->PutImage &&
 	CHECK_PLANEMASK(pGC,infoRec->PutImageFlags) &&
 	CHECK_ROP(pGC,infoRec->PutImageFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->PutImageFlags) &&
 	CHECK_COLORS(pGC,infoRec->PutImageFlags)
 	)
 	pGC->ops->PutImage = infoRec->PutImage;
@@ -63,6 +65,7 @@ XAAValidateCopyPlane(
    if(infoRec->CopyPlane &&
 	CHECK_PLANEMASK(pGC,infoRec->CopyPlaneFlags) &&
 	CHECK_ROP(pGC,infoRec->CopyPlaneFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->CopyPlaneFlags) &&
 	CHECK_COLORS(pGC,infoRec->CopyPlaneFlags)
 	)
 	pGC->ops->CopyPlane = infoRec->CopyPlane;
@@ -82,6 +85,7 @@ XAAValidatePushPixels(
 	(pGC->fillStyle == FillSolid) &&
 	CHECK_PLANEMASK(pGC,infoRec->PushPixelsFlags) &&
 	CHECK_ROP(pGC,infoRec->PushPixelsFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->PushPixelsFlags) &&
 	CHECK_FG(pGC,infoRec->PushPixelsFlags) &&
 	(!(infoRec->PushPixelsFlags & TRANSPARENCY_GXCOPY_ONLY) ||
 	  (pGC->alu == GXcopy))
@@ -125,6 +129,7 @@ XAAValidateFillSpans(
 	if(infoRec->FillSpansSolid &&
 		CHECK_PLANEMASK(pGC,infoRec->FillSpansSolidFlags) &&
 		CHECK_ROP(pGC,infoRec->FillSpansSolidFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->FillSpansSolidFlags) &&
 		CHECK_FG(pGC,infoRec->FillSpansSolidFlags)
 		) {
 	     pGC->ops->FillSpans = infoRec->FillSpansSolid;
@@ -221,6 +226,7 @@ XAAValidatePolyGlyphBlt(
 	if(infoRec->PolyGlyphBltNonTE &&
 	    CHECK_PLANEMASK(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
 	    CHECK_ROP(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
+	    CHECK_ROPSRC(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
 	    CHECK_FG(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
 	    (!(infoRec->PolyGlyphBltNonTEFlags & TRANSPARENCY_GXCOPY_ONLY) ||
 	  	(pGC->alu == GXcopy))
@@ -233,6 +239,7 @@ XAAValidatePolyGlyphBlt(
 	if(infoRec->PolyGlyphBltTE &&
 	    CHECK_PLANEMASK(pGC,infoRec->PolyGlyphBltTEFlags) &&
 	    CHECK_ROP(pGC,infoRec->PolyGlyphBltTEFlags) &&
+	    CHECK_ROPSRC(pGC,infoRec->PolyGlyphBltNonTEFlags) &&
 	    CHECK_FG(pGC,infoRec->PolyGlyphBltTEFlags) &&
 	    (!(infoRec->PolyGlyphBltTEFlags & TRANSPARENCY_GXCOPY_ONLY) ||
 	  	(pGC->alu == GXcopy))
@@ -334,6 +341,7 @@ XAAValidatePolylines(
 	   if(infoRec->PolyRectangleThinSolid &&
 		CHECK_PLANEMASK(pGC,infoRec->PolyRectangleThinSolidFlags) &&
 		CHECK_ROP(pGC,infoRec->PolyRectangleThinSolidFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolyRectangleThinSolidFlags) &&
 		CHECK_FG(pGC,infoRec->PolyRectangleThinSolidFlags)) {
 
 		pGC->ops->PolyRectangle = infoRec->PolyRectangleThinSolid;
@@ -342,6 +350,7 @@ XAAValidatePolylines(
 	   if(infoRec->PolySegmentThinSolid &&
 		CHECK_PLANEMASK(pGC,infoRec->PolySegmentThinSolidFlags) &&
 		CHECK_ROP(pGC,infoRec->PolySegmentThinSolidFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolySegmentThinSolidFlags) &&
 		CHECK_FG(pGC,infoRec->PolySegmentThinSolidFlags)) {
 
 		pGC->ops->PolySegment = infoRec->PolySegmentThinSolid;
@@ -350,6 +359,7 @@ XAAValidatePolylines(
 	   if(infoRec->PolylinesThinSolid &&
 		CHECK_PLANEMASK(pGC,infoRec->PolylinesThinSolidFlags) &&
 		CHECK_ROP(pGC,infoRec->PolylinesThinSolidFlags) &&
+		CHECK_ROPSRC(pGC,infoRec->PolylinesThinSolidFlags) &&
 		CHECK_FG(pGC,infoRec->PolylinesThinSolidFlags)) {
 
 		pGC->ops->Polylines = infoRec->PolylinesThinSolid;
@@ -363,6 +373,7 @@ XAAValidatePolylines(
 	(pGC->lineStyle == LineSolid) &&
 	CHECK_PLANEMASK(pGC,infoRec->PolylinesWideSolidFlags) &&
 	CHECK_ROP(pGC,infoRec->PolylinesWideSolidFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->PolylinesWideSolidFlags) &&
 	CHECK_FG(pGC,infoRec->PolylinesWideSolidFlags)) {
 
 	pGC->ops->Polylines = infoRec->PolylinesWideSolid;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.2 1998/07/25 16:57:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.3 1998/07/26 09:56:21 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -29,6 +29,9 @@
 
 #ifndef _xf86_tokens_h
 #define _xf86_tokens_h
+
+/* Undefine symbols that some OSs might define */
+#undef IOBASE
 
 /* 
  * Each token should have a unique value regardless of the section

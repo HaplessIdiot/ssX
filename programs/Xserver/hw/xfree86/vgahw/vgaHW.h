@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.2 1998/07/25 16:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.3 1998/08/19 07:49:24 dawes Exp $ */
 
 
 /*
@@ -34,6 +34,9 @@
 /*
  * access macro
  */
+
+extern unsigned char defaultDAC[768];
+extern int vgaRamdacMask;
 extern int vgaHWPrivateIndex;
 extern int vgaHWGetIndex(void);
 #define VGAHWPTR(p) ((vgaHWPtr)((p)->privates[vgaHWGetIndex()].ptr))
@@ -57,6 +60,7 @@ typedef struct {
     pointer   Base;              /* Address of "VGA" memory */
     int       MapSize;           /* Size of "VGA" memory */
     int       IOBase;            /* I/O Base address */
+    int	      MemBase;           /* MemBase + port addr = register addr */
     pointer   FontInfo1;         /* save area for fonts in plane 2 */ 
     pointer   FontInfo2;         /* save area for fonts in plane 3 */ 
     pointer   TextInfo;          /* save area for text */ 
@@ -132,6 +136,7 @@ void vgaHWGetIOBase(vgaHWPtr hwp);
 void vgaHWLock(vgaHWPtr hwp);
 void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
+
 
 /* vgaCmap.c */
 

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.41 1998/07/04 14:48:28 robin Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.42 1998/07/17 12:05:24 dawes Exp $
  */
 
 /*
@@ -609,8 +609,12 @@ typedef struct {
 #endif
 	int		border;		/* inner border			*/
 	Cursor		arrow;		/* arrow cursor			*/
+	unsigned long	event_mask;
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
 					/* and position information	*/
+	int		mouse_button;	/* current button pressed	*/
+	int		mouse_row;	/* ...and its row		*/
+	int		mouse_col;	/* ...and its column		*/
 	int		select;		/* xterm selected		*/
 	Boolean		visualbell;	/* visual bell mode		*/
 	Boolean		allowSendEvents;/* SendEvent mode		*/

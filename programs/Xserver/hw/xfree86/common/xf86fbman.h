@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.1.2.1 1998/06/22 13:53:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.2 1998/07/25 16:55:20 dawes Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -58,6 +58,13 @@ typedef FBAreaPtr (*AllocateOffscreenAreaProcPtr) (
    MoveAreaCallbackProcPtr MoveAreaCallback,
    pointer privData
 );
+
+typedef Bool (*ResizeOffscreenAreaProcPtr) (
+   ScreenPtr pScreen, 
+   int w, int h,
+   FBAreaPtr area
+);
+
 
 typedef void (*FreeOffscreenAreaProcPtr) (FBAreaPtr area);
 

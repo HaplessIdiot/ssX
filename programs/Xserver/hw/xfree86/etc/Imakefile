@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.24 1998/01/24 16:58:30 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.25 1998/07/26 09:56:17 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -115,7 +115,7 @@ InstallNamedProg(svr3_rem_pch,svr3_patch_rem,$(LIBDIR)/etc)
 InstallNamedProg(svr4_patch,svr4_patch,$(LIBDIR)/etc)
 InstallNamedProg(svr4_rem_pch,svr4_patch_rem,$(LIBDIR)/etc)
 #endif
-#if defined(LynxOSArchitecture) && OSMinorVersion < 3
+#if defined(LynxOSArchitecture) && (OSMajorVersion == 2 && OSMinorVersion < 3)
 NormalProgramTarget(ld-wrapper,ld-wrapper.o,NullParameter,NullParameter,NullParameter)
 InstallProgram(ld-wrapper,$(LIBDIR)/etc)
 #endif

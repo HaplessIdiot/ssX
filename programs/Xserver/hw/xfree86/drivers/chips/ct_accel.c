@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.24 1998/08/19 07:49:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.25 1998/08/20 08:55:57 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -144,6 +144,9 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      */
     cAcl->BytesPerPixel = pScrn->bitsPerPixel >> 3;
     cAcl->PitchInBytes = pScrn->displayWidth * cAcl->BytesPerPixel;
+    cAcl->planemask = -1;
+    cAcl->bgColor = -1;
+    cAcl->fgColor = -1;    
 
     /*
      * Set up the main acceleration flags.
@@ -238,7 +241,8 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 #ifdef CHIPS_HIQV 
     infoPtr->CPUToScreenColorExpandFillFlags =
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
-	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
+	ROP_NEEDS_SOURCE;
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
 	LEFT_EDGE_CLIPPING;
         
@@ -248,7 +252,8 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     }
 #else
     infoPtr->CPUToScreenColorExpandFillFlags =
-	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD;
+	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD |
+	ROP_NEEDS_SOURCE;
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST;
     infoPtr->CacheColorExpandDensity = 8;
 
@@ -324,7 +329,7 @@ chips_imagewrite:
     /* Setup for the Image Write functions */
 #ifdef CHIPS_HIQV
     infoPtr->WritePixmapFlags = CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
-        | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+        | LEFT_EDGE_CLIPPING_NEGATIVE_X | ROP_NEEDS_SOURCE;
 
     if (!(cPtr->Flags & ChipsColorTransparency))
         infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
@@ -337,7 +342,8 @@ chips_imagewrite:
     infoPtr->SubsequentImageWriteRect = CTNAME(SubsequentImageWriteRect);
     infoPtr->ImageWriteBase = (unsigned char *)cAcl->BltDataWindow;
     infoPtr->ImageWriteRange = 64 * 1024;
-    infoPtr->ImageWriteFlags = NO_TRANSPARENCY | CPU_TRANSFER_PAD_DWORD;
+    infoPtr->ImageWriteFlags = NO_TRANSPARENCY | CPU_TRANSFER_PAD_DWORD
+	| ROP_NEEDS_SOURCE;
     if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
         infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
@@ -448,8 +454,11 @@ CTNAME(24SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
  
-    cAcl->rgb24equal = ((((color & 0xFF) == ((color & 0xFF00) >> 8)) && 
-		       ((color & 0xFF) == ((color & 0xFF0000) >> 16))));
+    cAcl->rgb24equal = (((((color & 0xFF) == ((color & 0xFF00) >> 8)) && 
+		       ((color & 0xFF) == ((color & 0xFF0000) >> 16)))) ||
+		       /* Check the rop for paranoid reasons */
+		       (rop == GXclear) || (rop == GXnoop) ||
+		       (rop == GXinvert) || (rop == GXset));
     if (cAcl->rgb24equal) {
 	cAcl->CommandFlags = ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM |
 	         ctLEFT2RIGHT | ctPATSOLID | ctPATMONO;

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.29 1998/04/28 02:51:01 robin Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.30 1998/06/04 16:43:59 hohndel Exp $
  */
 
 /*
@@ -48,6 +48,7 @@
 #include <X11/Xmu/WinUtil.h>
 
 #include "xterm.h"
+#include "xcharmouse.h"
 
 #include "VTparse.h"
 #include "data.h"
@@ -141,6 +142,12 @@ xevents(void)
 		else
 		if(OUR_EVENT(event, LeaveNotify))
 		  DoSpecialLeaveNotify (&event.xcrossing);
+		else if (screen->send_mouse_pos == ANY_EVENT_MOUSE
+		 && event.xany.type == MotionNotify
+		 && event.xcrossing.window == XtWindow(term)) {
+		    SendMousePosition((Widget)term, &event);
+		    continue;
+		}
 
 		if (!event.xany.send_event ||
 		    screen->allowSendEvents ||

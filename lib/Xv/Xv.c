@@ -146,6 +146,8 @@ XvAdaptorInfo **p_pAdaptors;
       /* XXX lock isn't defined */
       _XUnlockMutex(&lock);
 #endif
+      UnlockDisplay(dpy);
+      SyncHandle();
       return(XvBadAlloc);
     }
   _XRead (dpy, buffer, size);
@@ -310,6 +312,8 @@ XvEncodingInfo **p_pEncodings;
       /* XXX lock isn't defined */
       _XUnlockMutex(&lock);
 #endif
+      UnlockDisplay(dpy);
+      SyncHandle();
       return(XvBadAlloc);
     }
   _XRead (dpy, buffer, size);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.33 1998/08/14 13:35:49 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.34 1998/08/19 07:49:16 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1467,7 +1467,6 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-    VGAHWPTR(pScrn)->MapSize = 0x10000;
 
     /*
      * Since, the capabilities are determined by the chipset, the very first
@@ -1654,6 +1653,12 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	if (!TsengGetLinFbAddress(pScrn))
 	    return FALSE;
     }
+
+    if (pTseng->UseAccel)
+	VGAHWPTR(pScrn)->MapSize = 0x20000;  /* accelerator apertures and MMIO */
+    else
+	VGAHWPTR(pScrn)->MapSize = 0x10000;
+    
     /* hibit processing (TsengProcessOptions() must have been called first) */
     pTseng->save_divide = 0x40;	       /* default */
     if (!Is_ET6K) {
@@ -1677,8 +1682,6 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam);
 
     /* do all clock-related setup */
-    pTseng->clockRange[0] = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
-    pTseng->clockRange[1] = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
     tseng_clock_setup(pScrn);
     
     /*
@@ -1755,8 +1758,14 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     /* Load XAA if needed */
-    if (pTseng->UseAccel || pTseng->HWCursor)
+    if (pTseng->UseAccel)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    TsengFreeRec(pScrn);
+	    return FALSE;
+	}
+    /* Load ramdac if needed */
+    if (pTseng->HWCursor)
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -2021,7 +2030,13 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * [ FIXME: why here double-buffering and in colexp triple-buffering? ]
 	 */
 	req_videoram = 2 * (pScrn->virtualX * pTseng->Bytesperpixel);
-	if (offscreen_videoram < req_videoram) {
+	/* banked mode uses an 8kb aperture for imagewrite */
+	if ((req_videoram > 8192) && (!pTseng->UseLinMem)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		"Accelerated ImageWrites disabled (banked %dbpp virtual width must be <= %d)\n",
+		pScrn->bitsPerPixel, 8192 / (2*pTseng->Bytesperpixel));
+	    pTseng->AccelImageWriteBufferOffsets[0] = 0;
+	} else if (offscreen_videoram < req_videoram) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		"Accelerated ImageWrites disabled (%d more bytes of free video memory required)\n",
 		req_videoram - offscreen_videoram);
@@ -2182,7 +2197,7 @@ TsengSaveScreen(ScreenPtr pScreen, Bool unblank)
 
     PDEBUG("	TsengSaveScreen\n");
 
-    if (Is_ET6K || !pTseng->UseLinMem) {
+    if (Is_ET6K) {
 	return vgaHWSaveScreen(pScreen, unblank);
     } else {
        if (unblank)
@@ -2204,14 +2219,22 @@ TsengMapMem(ScrnInfoPtr pScrn)
 
     /* Map the VGA memory */
 
-    if (!vgaHWMapMem(pScrn))
+    if (!vgaHWMapMem(pScrn)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    "Could not mmap standard VGA memory aperture.\n");
 	return FALSE;
+    }
 
     if (pTseng->UseLinMem) {
 	pTseng->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 	    pTseng->PciTag,
 	    (pointer) ((unsigned long)pTseng->LinFbAddress),
 	    pTseng->FbMapSize);
+	if (pTseng->FbBase == NULL) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		"Could not mmap linear video memory.\n");
+	    return FALSE;
+	}
     } else {
 	pTseng->FbBase = VGAHWPTR(pScrn)->Base;
     }
@@ -2417,7 +2440,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 	    min_n2 = 0;
 	TsengcommonCalcClock(mode->SynthClock, 1, 1, 31, min_n2, 3,
-	    100000, pTseng->MaxClock * 2 + 1,
+	    100000, pTseng->max_vco_freq,
 	    &(new->pll.f2_M), &(new->pll.f2_N));
 
 	new->pll.w_idx = 0;
@@ -2449,7 +2472,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     } else if (Is_ET6K) {
 	/* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
 	TsengcommonCalcClock(mode->SynthClock, 1, 1, 31, 1, 3, 100000,
-	    pTseng->MaxClock * 2,
+	    pTseng->max_vco_freq,
 	    &(new->pll.f2_M), &(new->pll.f2_N));
 	/* above 130MB/sec, we enable the "LOW FIFO threshold" */
 	if (mode->Clock * pTseng->Bytesperpixel > 130000) {

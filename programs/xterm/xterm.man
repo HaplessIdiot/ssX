@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.29 1998/06/04 16:44:05 hohndel Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.30 1998/07/04 14:48:34 robin Exp $
 .\"
 .\" updated by Thomas Dickey <dickey@clark.net> for XFree86, July 1996.
 .TH XTERM 1 "Release 6.3" "X Version 11"
@@ -134,11 +134,14 @@ Additionally, in VT102 mode,
 \fIxterm\fP implements the window-manipulation control
 sequences from \fIdtterm\fP, such as resizing the window, setting its location
 on the screen.
+
 .PP
 .I Xterm
 allows character-based applications to receive mouse events (currently
-button-press and release events only) as keyboard control sequences.
+button-press and release events, and button-motion events)
+as keyboard control sequences.
 See \fIXterm Control Sequences\fP for details.
+
 .SH OPTIONS
 The \fIxterm\fP terminal emulator 
 accepts all of the standard X Toolkit command line options as well as
@@ -2074,5 +2077,6 @@ Mark Vandevoorde (MIT-Athena), Bob McNamara (DEC-MAD),
 Jim Gettys (MIT-Athena), Bob Scheifler (MIT X Consortium), Doug Mink (SAO),
 Steve Pitschke (Stellar), Ron Newman (MIT-Athena), Jim Fulton (MIT X 
 Consortium), Dave Serisky (HP), Jonathan Kamens (MIT-Athena),
-David Wexelblat and
+Jason Bacon <acadix@execpc.com>,
+David Wexelblat, and
 Thomas Dickey (XFree86 Project).

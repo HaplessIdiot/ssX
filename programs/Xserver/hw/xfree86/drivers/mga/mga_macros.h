@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.2 1998/07/25 16:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.3 1998/08/13 14:45:55 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -14,6 +14,8 @@
 #endif
 
 #define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff)) 
+
+#define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 
 #define WAITFIFO(n) if(!pMga->UsePCIRetry) \
 	{while(INREG8(MGAREG_FIFOSTATUS) < (n));}

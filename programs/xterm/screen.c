@@ -25,7 +25,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.26 1998/04/27 03:15:05 robin Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.27 1998/06/04 16:44:01 hohndel Exp $ */
 
 /* screen.c */
 
@@ -37,6 +37,7 @@
 #include "error.h"
 #include "data.h"
 #include "xterm.h"
+#include "xcharmouse.h"
 
 #include <stdio.h>
 #include <signal.h>
@@ -643,7 +644,7 @@ ScrnRefresh (
 		* apparent).
 	        */
 	       if (screen->highlight_selection
-		&& screen->send_mouse_pos != 3) {
+		&& screen->send_mouse_pos != VT200_HIGHLIGHT_MOUSE) {
 		   hi_col = screen->max_col;
 	           while (hi_col > 0 && !(attrs[hi_col] & CHARDRAWN))
                        hi_col--;

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.3 1998/08/13 14:45:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.4 1998/08/20 08:56:01 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -64,6 +64,9 @@ typedef struct {
     RamDacRecPtr	RamDacRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    int                 CardType;
+    unsigned char       Bt463modeReg[59];
+    unsigned char       Bt463saveReg[59];
 } TGARec, *TGAPtr;
 
 /* Prototypes */
@@ -82,6 +85,9 @@ void tgaBTWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void tgaBTReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void tgaBTWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char tgaBTReadData(ScrnInfoPtr pScrn);
+
+void BT463ramdacSave(ScrnInfoPtr pScrn, unsigned char *data);
+void BT463ramdacRestore(ScrnInfoPtr pScrn, unsigned char *data);
 
 #endif /* _TGA_H_ */
 

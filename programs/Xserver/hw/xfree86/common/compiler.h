@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.33 1998/08/19 12:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.34 1998/08/19 13:13:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -73,10 +73,10 @@ extern unsigned int inw(unsigned short);
 extern unsigned int inl(unsigned short);
 extern unsigned long ldq_u(unsigned long *);
 extern unsigned long ldl_u(unsigned int *);
-extern unsigned short ldw_u(unsigned short *);
+extern unsigned long ldw_u(unsigned short *);
 extern void stq_u(unsigned long, unsigned long *);
 extern void stl_u(unsigned long, unsigned int *);
-extern void stw_u(unsigned short, unsigned short *);
+extern void stw_u(unsigned long, unsigned short *);
 extern void mem_barrier(void);
 extern void write_mem_barrier(void);
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
@@ -364,39 +364,9 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 
 #elif defined(Lynx) && defined(__powerpc__)
 
+extern volatile unsigned char *ioBase;
 
-#define eieio() \
-  __asm__ __volatile__ ("eieio")
-
-#define stl_brx(val, base, ndx) \
-  __asm__ ( "stwbrx %0,%1,%2" : : "r" (val), "r" (base), "r" (ndx) : "memory" )
-
-#define stw_brx(val, base, ndx) \
-  __asm__ ( "sthbrx %0,%1,%2" : : "r" (val), "r" (base), "r" (ndx) : "memory" )
-
-static __inline__ unsigned long
-ldl_brx(volatile unsigned char *base, int ndx)
-{
-        register unsigned long rv;
-        __asm__ ( "lwbrx %0,%1,%2"
-                  : "=r" (rv) 
-                  : "r" (base), "r" (ndx)
-        );
-        return(rv);
-}
-
-static __inline__ unsigned short
-ldw_brx(volatile unsigned char *base, int ndx)
-{
-	register unsigned short rv;
-        __asm__ ( "lhbrx %0,%1,%2"
-                  : "=r" (rv) 
-                  : "r" (base), "r" (ndx)
-        );
-	return(rv);
-}
- 
-extern unsigned char *ioBase;
+#define eieio()		__asm__ __volatile__ ("eieio")
 
 static __inline__ void
 outb(unsigned short port, unsigned char value)
@@ -407,39 +377,60 @@ outb(unsigned short port, unsigned char value)
 static __inline__ void
 outw(unsigned short port, unsigned short value)
 {
-	stw_brx(value, ioBase, port); eieio();
+	__asm__ __volatile__ (
+		"sthbrx %0,%1,%2\n\t"
+		"eieio"
+                  : 
+		  : "r" (value), "r" (ioBase), "r" (port) 
+		  : "memory"
+        );
 }
 
 static __inline__ void
 outl(unsigned short port, unsigned int value)
 {
-	stl_brx(value, ioBase, port); eieio();
+	__asm__ __volatile__ (
+		"stwbrx %0,%1,%2\n\t"
+		"eieio"
+                  : 
+		  : "r" (value), "r" (ioBase), "r" (port) 
+		  : "memory"
+        );
 }
 
-static __inline__ unsigned char
+static __inline__ unsigned int
 inb(unsigned short port)
 {
 	unsigned char val;
 
-	val = *((volatile unsigned char *)(ioBase + port)); eieio();
+	val = *((volatile unsigned char *)(ioBase + port));
+	eieio();
 	return(val);
 }
 
-static __inline__ unsigned short
+static __inline__ unsigned int
 inw(unsigned short port)
 {
-	unsigned short val;
+	register unsigned short val;
 
-	val = ldw_brx(ioBase, port); eieio();
+        __asm__ ("lhbrx %0,%1,%2\n\t"
+        	 "eieio"
+                  : "=r" (val) 
+                  : "r" (ioBase), "r" (port)
+        );
 	return(val);
 }
 
-static __inline__ unsigned long
+static __inline__ unsigned int
 inl(unsigned short port)
 {
-	unsigned long val;
+	register unsigned long val;
 
-	val = ldl_brx(ioBase, port); eieio();
+        __asm__ ("lwbrx %0,%1,%2\n\t"
+        	 "eieio"
+                  : "=r" (val) 
+                  : "r" (ioBase), "r" (port)
+        );
 	return(val);
 }
 
@@ -448,15 +439,14 @@ inl(unsigned short port)
 			(*((unsigned char *)(p)+1)<<8)	| \
 			(*((unsigned char *)(p)+2)<<16)	| \
 			(*((unsigned char *)(p)+3)<<24))
-#define ldw_u(p)	((*(unsigned char *)(p)) | (*((unsigned char *)(p)+1)<<8))
+#define ldw_u(p)	((*(unsigned char *)(p)) | \
+			(*((unsigned char *)(p)+1)<<8))
 
 #define stq_u(v,p)	stl_u(v,p)
-/* ?? */
 #define stl_u(v,p)	(*(unsigned char *)(p)) = (v); \
 			(*((unsigned char *)(p)+1)) = ((v) >> 8);  \
 			(*((unsigned char *)(p)+2)) = ((v) >> 16); \
 			(*((unsigned char *)(p)+3)) = ((v) >> 24)
-
 #define stw_u(v,p)	(*(unsigned char *)(p)) = (v); \
 			(*((unsigned char *)(p)+1)) = ((v) >> 8)
 

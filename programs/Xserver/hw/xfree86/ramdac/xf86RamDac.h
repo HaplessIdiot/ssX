@@ -1,7 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.3 1998/08/13 14:46:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.4 1998/08/20 08:56:04 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
+
+#include "xf86Cursor.h"
 
 /* Define unique vendor codes for RAMDAC's */
 #define VENDOR_IBM	0x0000
@@ -16,7 +18,7 @@ typedef struct _RamDacRegRec {
 /* This is probably the nastiest assumption, we allocate 1024 slots for
  * ramdac registers, should be enough. I've checked IBM and TVP series 
  * and they seem o.k 
- * Then we allocate 768 entries for the DAC - this is standard though.
+ * Then we allocate 768 entries for the DAC too. IBM640 needs 1024 -FIXME
  */
     unsigned short DacRegs[0x400];	/* register set */
     unsigned char DAC[0x300];		/* colour map */
@@ -80,6 +82,10 @@ typedef struct _RamDacHelperRec {
     void (*SetBpp)(
 	ScrnInfoPtr pScrn,
 	RamDacRegRecPtr ramdacReg
+    );
+
+    void (*HWCursorInit)(
+	XAACursorInfoPtr infoPtr
     );
 } RamDacHelperRec, *RamDacHelperRecPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.3 1998/08/16 10:25:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.4 1998/08/19 07:49:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -391,6 +391,7 @@ typedef struct _ScrnInfoRec {
 
     AllocateOffscreenAreaProcPtr AllocateOffscreenArea;
     FreeOffscreenAreaProcPtr FreeOffscreenArea;
+    ResizeOffscreenAreaProcPtr ResizeOffscreenArea;
 
     /*
      * These can be used when the minor ABI version is incremented.

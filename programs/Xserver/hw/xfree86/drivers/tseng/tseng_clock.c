@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.8 1998/08/02 05:17:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.9 1998/08/19 07:49:15 dawes Exp $ */
 
 
 
@@ -118,6 +118,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP32];
 	    break;
 	}
+	pTseng->max_vco_freq = pScrn->device->dacSpeeds[0]*2+1;
 	/* if a bpp-specific DacSpeed is not defined, use the "default" one (=8bpp) */
 	if (dacspeed == 0)
 	    dacspeed = pScrn->device->dacSpeeds[0];
@@ -149,17 +150,21 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
 	    dacspeed	= 135000;
 	    mem_bw	= 225000;
 	} else {
-	    if ((pTseng->DacInfo.DacPort16) && (pScrn->bitsPerPixel == 8)) 
-		dacspeed = 135000;              /* we can do PIXMUX */
+	    if ( (pTseng->DacInfo.DacPort16) &&
+		(pScrn->bitsPerPixel == 8) &&
+		(!(DAC_is_GenDAC && pTseng->NoClockchip)) ) {
+		    dacspeed = 135000;              /* we can do PIXMUX */
+		}
 	    mem_bw	= 90000;
 	    if (pScrn->videoRam > 1024)
 		mem_bw	= 150000;               /* interleaved DRAM gives 70% more bandwidth */
 	}
+	pTseng->max_vco_freq = dacspeed*2+1;
 	/*
-	 * maxpixclock does not take RAMDAC-specific features into account: it just takes 
-	 * .note that the vga code will scale the maxclock using
-	 * ClockMulFactor and ClockDivFactor, so we have to take this into
-	 * account here.
+	 * "dacspeed" is the theoretical limit imposed by the RAMDAC.
+	 * "mem_bw" is the max memory bandwidth in mb/sec available
+	 * for the pixel FIFO.
+	 * The lowest of the two determines the actual pixel clock limit.
 	 */
 	dacspeed = min(dacspeed, (mem_bw / pTseng->Bytesperpixel));
     }
@@ -170,6 +175,7 @@ void tseng_clock_setup(ScrnInfoPtr pScrn)
      *
      * First, we set up the default case, and modify it later if needed.
      */
+    pTseng->clockRange[0] = (ClockRangePtr) xnfalloc(sizeof(ClockRange));
     pTseng->clockRange[0]->next = NULL;
     pTseng->clockRange[0]->minClock = pTseng->MinClock;
     pTseng->clockRange[0]->maxClock = dacspeed;

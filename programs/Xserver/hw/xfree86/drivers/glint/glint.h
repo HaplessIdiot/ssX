@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.5 1998/08/13 14:45:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.6 1998/08/20 08:55:58 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -30,7 +30,6 @@
 #ifndef _GLINT_H_
 #define _GLINT_H_
 
-#include "xaacursor.h"
 #include "xaa.h"
 #include "xf86RamDac.h"
 
@@ -120,6 +119,7 @@ void Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool Permedia2AccelInit(ScreenPtr pScreen);
+Bool Permedia2HWCursorInit(ScreenPtr pScreen);
 
 void PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void PermediaSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);

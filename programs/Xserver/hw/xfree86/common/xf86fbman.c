@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.2 1998/07/25 16:55:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.3 1998/08/02 05:16:56 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -16,10 +16,8 @@ static FBAreaPtr xf86AllocateFBArea (
    MoveAreaCallbackProcPtr callback,
    pointer privData
 );
-
 static void xf86FreeFBArea(FBAreaPtr area);
-
-
+static Bool xf86ResizeFBArea(ScreenPtr pScreen, int w, int h, FBAreaPtr resize);
 static Bool xf86FBCloseScreen(int i, ScreenPtr pScreen);
 static unsigned long xf86FBGeneration = 0;
 int xf86FBScreenIndex = -1;
@@ -78,6 +76,7 @@ xf86InitFBManager(
 
    pScrn->AllocateOffscreenArea = xf86AllocateFBArea;
    pScrn->FreeOffscreenArea = xf86FreeFBArea;
+   pScrn->ResizeOffscreenArea = xf86ResizeFBArea;
 
    REGION_UNINIT(pScreen, &ScreenRegion);
 
@@ -138,7 +137,7 @@ xf86AllocateFBArea(
 	    if(tmp) x += (granularity - tmp);
 	}
 
-	if(((boxp->y2 - boxp->y1) <= h) || ((boxp->x2 - x) <= w))
+	if(((boxp->y2 - boxp->y1) < h) || ((boxp->x2 - x) < w))
 	   continue;
 
 	link = (FBLinkPtr)xalloc(sizeof(FBLink));
@@ -208,7 +207,7 @@ xf86FreeFBArea(FBAreaPtr area)
 
    if(pLink != pLinkPrev)
 	pLinkPrev->next = pLink->next;
-   else offman->UsedAreas = NULL;
+   else offman->UsedAreas = pLink->next;
 
    FREE_FBLINK(pLink); 
    offman->NumUsedAreas--;
@@ -218,6 +217,135 @@ xf86FreeFBArea(FBAreaPtr area)
 		pScreen, offman->FreeBoxes,  offman->devPrivate.ptr);
 }
    
+
+
+static Bool
+xf86ResizeFBArea(
+   ScreenPtr pScreen, 
+   int w, int h,
+   FBAreaPtr resize
+){
+   FBManagerPtr offman;
+   BoxRec OrigArea;
+   RegionRec FreedReg;
+   RegionRec NewReg;
+   FBLinkPtr link = NULL;
+   FBAreaPtr area = NULL;
+   FBLinkPtr pLink, pLinkPrev;
+   BoxPtr boxp;
+   int num, i, x;
+
+   if(!resize || (xf86FBScreenIndex == -1)) return FALSE;
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+   if(!offman) return FALSE;   
+
+   /* find this link */
+   pLinkPrev = pLink = offman->UsedAreas;
+   if(!pLink) return FALSE;  
+ 
+   while(&(pLink->area) != resize) {
+	pLinkPrev = pLink;
+	pLink = pLink->next;
+	if(!pLink) return FALSE;
+   }
+
+   OrigArea.x1 = resize->box.x1;
+   OrigArea.x2 = resize->box.x2;
+   OrigArea.y1 = resize->box.y1;
+   OrigArea.y2 = resize->box.y2;
+
+   /* if it's smaller, this is easy */
+
+   if((w <= (resize->box.x2 - resize->box.x1)) && 
+      (h <= (resize->box.y2 - resize->box.y1))) {
+
+	resize->box.x2 = resize->box.x1 + w;
+	resize->box.y2 = resize->box.y1 + h;
+
+        if((resize->box.y2 == OrigArea.y2) &&
+	   (resize->box.x2 == OrigArea.x2))
+		return TRUE;
+
+	REGION_INIT(pScreen, &FreedReg, &OrigArea, 1); 
+	REGION_INIT(pScreen, &NewReg, &(resize->box), 1); 
+	REGION_SUBTRACT(pScreen, &FreedReg, &FreedReg, &NewReg);
+	REGION_UNION(pScreen, offman->FreeBoxes, offman->FreeBoxes, &FreedReg);
+	REGION_UNINIT(pScreen, &FreedReg); 
+	REGION_UNINIT(pScreen, &NewReg); 
+
+	if(offman->FreeBoxesUpdateCallback)
+	     (*offman->FreeBoxesUpdateCallback)(
+		pScreen, offman->FreeBoxes, offman->devPrivate.ptr);
+
+	return TRUE;
+   }
+
+
+   /* otherwise we remove the old region */
+
+   REGION_INIT(pScreen, &FreedReg, &OrigArea, 1); 
+   REGION_UNION(pScreen, offman->FreeBoxes, offman->FreeBoxes, &FreedReg);
+  
+   /* and try to add a new one */
+
+   boxp = REGION_RECTS(offman->FreeBoxes);
+   num = REGION_NUM_RECTS(offman->FreeBoxes);
+
+   for(i = 0; i < num; i++, boxp++) {
+	x = boxp->x1;
+	if(resize->granularity) {
+	    int tmp = x % resize->granularity;
+	    if(tmp) x += (resize->granularity - tmp);
+	}
+
+	if(((boxp->y2 - boxp->y1) < h) || ((boxp->x2 - x) < w))
+	   continue;
+
+	link = (FBLinkPtr)xalloc(sizeof(FBLink));
+	if(!link) break;
+
+        area = &(link->area);
+	
+	area->pScreen = pScreen;
+	area->granularity = resize->granularity;
+	area->box.x1 = x;
+	area->box.x2 = x + w;
+	area->box.y1 = boxp->y1;
+	area->box.y2 = boxp->y1 + h;
+	area->MoveAreaCallback = resize->MoveAreaCallback;
+	area->devPrivate.ptr = resize->devPrivate.ptr;
+
+        REGION_INIT(pScreen, &NewReg, &(area->box), 1);
+	REGION_SUBTRACT(pScreen, offman->FreeBoxes, offman->FreeBoxes, &NewReg);
+	REGION_UNINIT(pScreen, &NewReg);
+
+	/* remove the old link */
+	if(pLink != pLinkPrev)
+	    pLinkPrev->next = pLink->next;
+	else offman->UsedAreas = pLink->next;
+
+	FREE_FBLINK(pLink); 
+
+	link->next = offman->UsedAreas;
+	offman->UsedAreas = link;
+   }
+
+   if(!area) {
+	/* reinstate the old region */
+      REGION_SUBTRACT(pScreen, offman->FreeBoxes, offman->FreeBoxes, &FreedReg);
+      REGION_UNINIT(pScreen, &FreedReg); 
+      return FALSE;
+   }
+
+   REGION_UNINIT(pScreen, &FreedReg); 
+
+   if(offman->FreeBoxesUpdateCallback)
+	(*offman->FreeBoxesUpdateCallback)(
+		pScreen, offman->FreeBoxes, offman->devPrivate.ptr);
+
+   return TRUE;
+}
+
 
 
 static Bool

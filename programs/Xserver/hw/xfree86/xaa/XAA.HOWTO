@@ -121,9 +121,16 @@ The common ones are as follows:
    GXCOPY_ONLY
 
      This indicates that the accelerator only supports GXcopy
-     for the particular primitive.  If this flag is not defined,
-     it is assumed that the accelerator supports all 16 raster
-     operations (rops) for that primitive.
+     for the particular primitive.
+
+   ROP_NEEDS_SOURCE
+
+     This indicates that the accelerator doesn't supports a
+     particular primitive with rops that don't involve the source.
+     These rops are GXclear, GXnoop, GXinvert and GXset. If neither
+     this flag nor GXCOPY_ONLY is defined, it is assumed that the
+     accelerator supports all 16 raster operations (rops) for that
+     primitive.
 
    NO_PLANEMASK
 
@@ -156,8 +163,8 @@ descriptions of those primitives below.
    video memory.  To accelerate this primitive the driver should
    provide both the SetupFor and Subsequent functions and indicate
    the hardware restrictions via the ScreenToScreenCopyFlags.  The
-   NO_PLANEMASK and GXCOPY_ONLY flags as described in Section 2.0
-   are valid as well as the following:
+   NO_PLANEMASK, GXCOPY_ONLY and ROP_NEEDS_SOURCE flags as described
+   in Section 2.0 are valid as well as the following:
 
     NO_TRANSPARENCY
      
@@ -222,8 +229,8 @@ void SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
    functions and indicate the hardware restrictions via the SolidFillFlags.
    The driver may optionally provide a SubsequentSolidFillTrap if
    it is capable of rendering the primitive correctly.  
-   The GXCOPY_ONLY, NO_PLANEMASK and RGB_EQUAL flags as described
-   in Section 2.0 are valid.
+   The GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags
+   as described in Section 2.0 are valid.
 
   
 void SetupForSolidFill(ScrnInfoPtr pScrn, 
@@ -286,9 +293,9 @@ void SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
     will be supplied for you.
 
     The flags field associated with Solid Lines is SolidLineFlags and 
-    the GXCOPY_ONLY, NO_PLANEMASK and RGB_EQUAL flags as described
-    in Section 2.0 are valid restrictions.  Additionally, the following
-    flag is valid:
+    the GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags as
+    described in Section 2.0 are valid restrictions.  Additionally, the
+    following flag is valid:
 
       HARDWARE_CLIP_LINE
 
@@ -455,8 +462,8 @@ SolidBresenhamLineErrorTermBits
     and CPUToScreen routines.
 
     For both ScreenToScreen and CPUToScreen interfaces, the GXCOPY_ONLY,
-    NO_PLANEMASK and RGB_EQUAL flags described in Section 2.0 are valid 
-    as well as the following:
+    ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags described in
+    Section 2.0 are valid as well as the following:
 
     /* bit order requirements (one of these must be set) */
    
@@ -751,8 +758,9 @@ void SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     passed as two DWORDS to the 8x8 mono pattern functions or
     they can be cached in offscreen memory and their locations
     passed to the 8x8 mono pattern functions.  In addition to the
-    GXCOPY_ONLY, NO_PLANEMASK and RGB_EQUAL flags defined in Section 
-    2.0, the following are defined for the Mono8x8PatternFillFlags:
+    GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags
+    defined in Section 2.0, the following are defined for the
+    Mono8x8PatternFillFlags:
 
     HARDWARE_PATTERN_PROGRAMMED_BITS
 
@@ -951,9 +959,9 @@ void SubsequentMono8x8PatternFillTrap( ScrnInfoPtr pScrn,
     X Window system so you might consider passing this primitive
     by if you already can do mono patterns, especially if they 
     require alot of cache area.  Color8x8PatternFillFlags is
-    the flags field for this primitive and the GXCOPY_ONLY and 
-    NO_PLANEMASK flags as described in Section 2.0 are valid
-    as well as the following:
+    the flags field for this primitive and the GXCOPY_ONLY,
+    ROP_NEEDS_SOURCE and NO_PLANEMASK flags as described in
+    Section 2.0 are valid as well as the following:
 
 
     HARDWARE_PATTERN_PROGRAMMED_ORIGIN
@@ -1077,9 +1085,9 @@ void SubsequentColor8x8PatternFillTrap( ScrnInfoPtr pScrn,
     The direct and indirect methods have separate flags fields, the
     ImageWriteFlags and ScanlineImageWriteFlags respectively.
     Flags specific to one method or the other are described in sections 
-    2.8.1 and 2.8.2 but for both cases the GXCOPY_ONLY and NO_PLANEMASK 
-    flags described in Section 2.0 are valid as well as the 
-    following:
+    2.8.1 and 2.8.2 but for both cases the GXCOPY_ONLY, ROP_NEEDS_SOURCE
+    and NO_PLANEMASK flags described in Section 2.0 are valid as well as
+    the following:
 
     NO_GXCOPY
 
@@ -1305,4 +1313,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.4 1998/08/13 14:46:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.5 1998/08/19 07:49:25 dawes Exp $

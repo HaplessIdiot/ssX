@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.18 1998/08/13 14:45:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.19 1998/08/19 07:49:15 dawes Exp $ */
 
 
 
@@ -147,7 +147,7 @@ LongP MemW32BackgroundPong;
 LongP MemW32PatternPing;
 LongP MemW32PatternPong;
 
-LongP tsengCPU2ACLBase;
+unsigned char * tsengCPU2ACLBase;
 
 int tseng_powerPerPixel, tseng_neg_x_pixel_offset;
 int tseng_line_width;
@@ -232,7 +232,7 @@ tseng_init_acl(ScreenPtr pScreen)
 	 * to only 2MB, supposing we ONLY redirect MMU aperture 2 to the CPU.
 	 * (see data book W32p, page 207)
 	 */
-	tsengCPU2ACLBase = (LongP) ((long)pTseng->FbBase + 0x200000);	/* MMU aperture 2 */
+	tsengCPU2ACLBase = (unsigned char*) ((long)pTseng->FbBase + 0x200000);	/* MMU aperture 2 */
     } else {
 	MMioBase = (long)pTseng->FbBase + 0x1FF00L;
 	/*
@@ -249,7 +249,7 @@ tseng_init_acl(ScreenPtr pScreen)
 	/*
 	 * tsengCPU2ACLBase is used for CPUtoSCreen...() operations on < ET6000 devices
 	 */
-	tsengCPU2ACLBase = (LongP) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
+	tsengCPU2ACLBase = (unsigned char*) ((long)pTseng->FbBase + 0x1C000L);	/* MMU aperture 2 */
 	/*      *((LongP) (MMioBase + 0x08)) = 200000; *//* TEST */
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.5 1998/08/13 14:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.6 1998/08/19 07:49:26 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -37,7 +37,7 @@
 ---------         ---
  7           NO_TRANSPARENCY
  6           TRANSPARENCY_ONLY
- 5                 .
+ 5           ROP_NEEDS_SOURCE
  4           TRIPLE_BITS_24BPP
  3           RGB_EQUAL
  2           NO_PLANEMASK
@@ -65,6 +65,7 @@
 #define NO_PLANEMASK			0x00000004
 #define RGB_EQUAL			0x00000008
 #define TRIPLE_BITS_24BPP		0x00000010
+#define ROP_NEEDS_SOURCE		0x00000020
 
 /* transparency restrictions */
 #define TRANSPARENCY_ONLY		0x00000040

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.22 1998/08/16 10:25:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.23 1998/08/19 12:48:31 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -33,9 +33,6 @@
  * new server design (DHD).
  */                     
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"   
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -47,11 +44,10 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-/* All drivers using the vgahw module need this */
-/* This driver needs to be modified to not use vgaHW for multihead operation */
-#include "vgaHW.h"
+/* We use the mmio version of vgaHW */
+#include "vgaHWmmio.h"
 
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -59,6 +55,14 @@
 
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
 #define MCLK_FROM_XCONFIG 0
+
+#define OPTION_MASK 0x20001000  /* pci_retry | interleave */
+
+
+static void MGA3026StoreColors(ScrnInfoPtr, xColorItem*, int);
+static void MGA3026SavePalette(ScrnInfoPtr, unsigned char*);
+static void MGA3026RestorePalette(ScrnInfoPtr, unsigned char*);
+
 
 /*
  * implementation
@@ -97,23 +101,6 @@ static unsigned char MGADACbpp32[DACREGSIZE] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
 	   0
 };
-
-#if 0
-/*
- * This is a convenience macro, so that entries in the driver structure
- * can simply be dereferenced with 'newVS->xxx'.
- * change ajv - new conflicts with the C++ reserved word.
- */
-#define newVS ((vgaMGAPtr)vgaNewVideoState)
-
-typedef struct {
-	vgaHWRec std;                           /* good old IBM VGA */
-	unsigned long DAClong;
-	unsigned char DACclk[6];
-	unsigned char DACreg[sizeof(MGADACregs)];
-	unsigned char ExtVga[6];
-} vgaMGARec, *vgaMGAPtr;
-#endif
     
 /*
  * Read/write to the DAC via MMIO 
@@ -168,13 +155,10 @@ typedef struct {
 #define TI_REF_FREQ      14318.18
 
 static double
-MGATi3026CalcClock ( f_out, f_max, m, n, p )
-	long f_out;
-	long f_max;
-	int *m;
-	int *n;
-	int *p;
-{
+MGATi3026CalcClock (
+   long f_out, long f_max,
+   int *m, int *n, int *p
+){
 	int best_m, best_n;
 	double f_pll, f_vco;
 	double m_err, inc_m, calc_m;
@@ -254,7 +238,7 @@ MGATi3026SetMCLK( ScrnInfoPtr pScrn, long f_out )
 	double f_pll;
 	int mclk_m, mclk_n, mclk_p;
 	int pclk_m, pclk_n, pclk_p;
-	int mclk_ctl, rfhcnt;
+	int mclk_ctl;
 	MGAPtr pMga = MGAPTR(pScrn);
 
 	f_pll = MGATi3026CalcClock(
@@ -304,17 +288,6 @@ MGATi3026SetMCLK( ScrnInfoPtr pScrn, long f_out )
 	while (( inTi3026( TVP3026_MEM_CLK_DATA ) & 0x40 ) == 0 ) {
 		;
 	}
-	
-	/* Set the WRAM refresh divider */
-	rfhcnt = ( 332.0 * f_pll / 1280000.0 );
-	if ( rfhcnt > 15 )
-		rfhcnt = 0;
-	pciWriteLong( pMga->PciTag, PCI_OPTION_REG, ( rfhcnt << 16 ) |
-		( pciReadLong( pMga->PciTag, PCI_OPTION_REG ) & ~0xf0000 ));
-
-#ifdef DEBUG
-	ErrorF( "rfhcnt=%d\n", rfhcnt );
-#endif
 
 	/* Output MCLK PLL on MCLK pin */
 	outTi3026( TVP3026_MCLK_CTL, 0, ( mclk_ctl & 0xe7 ) | 0x10 );
@@ -485,13 +458,11 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
 	int i, index_1d;
 	unsigned char* initDAC;
-	MGAPtr pMga;
-	MGARegPtr pReg;
-	vgaRegPtr pVga;
+	MGAPtr pMga = MGAPTR(pScrn);
+	MGARamdacPtr MGAdac = &pMga->Dac;
+	MGARegPtr pReg = &pMga->ModeReg;
+	vgaRegPtr pVga = &VGAHWPTR(pScrn)->ModeReg;
 
-	pMga = MGAPTR(pScrn);
-	pReg = &pMga->ModeReg;
-	pVga = &VGAHWPTR(pScrn)->ModeReg;
 
 	/* Allocate the DacRegs space if not done already */
 	if (pReg->DacRegs == NULL) {
@@ -648,16 +619,21 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pMga->SyncOnGreen)
 	    pReg->DacRegs[index_1d] |= 0x20;
 
-	pReg->DacLong = pMga->Interleave << 12;
+	pReg->Option = pMga->Interleave << 12;
 
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */
 	MGATi3026SetPCLK( pScrn, mode->Clock, 1 << pMga->BppShift );
 
+	/* this one writes registers rather than writing to the 
+	   mgaReg->ModeReg and letting Restore write to the hardware
+	   but that's no big deal since we will Restore right after
+	   this function */
+	MGATi3026SetMCLK( pScrn, MGAdac->MemoryClock );
 
 #ifdef DEBUG		
 	ErrorF("%6ld: %02X %02X %02X	%02X %02X %02X	%08lX\n", mode->Clock,
-		pReg->DacClk[0], pReg->DacClk[1], pReg->DacClk[2], pReg->DacClk[3], pReg->DacClk[4], pReg->DacClk[5], pReg->DacLong);
+		pReg->DacClk[0], pReg->DacClk[1], pReg->DacClk[2], pReg->DacClk[3], pReg->DacClk[4], pReg->DacClk[5], pReg->Option);
 	for (i=0; i<sizeof(MGADACregs); i++) ErrorF("%02X ", pReg->DacRegs[i]);
 	for (i=0; i<6; i++) ErrorF(" %02X", pReg->ExtVga[i]);
 	ErrorF("\n");
@@ -683,10 +659,13 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 * Code is needed to get things back to bank zero.
 	 */
 	for (i = 0; i < 6; i++)
-		outw(0x3DE, (mgaReg->ExtVga[i] << 8) | i);
+		OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
 
-	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->DacLong |
-		(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & ~0x1000));
+        if(pMga->UsePCIRetry) mgaReg->Option &= ~0x20000000;
+	else mgaReg->Option |= 0x20000000;
+
+	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option |
+		(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & ~OPTION_MASK));
 
 	/* select pixel clock PLL as clock source */
 	outTi3026(TVP3026_CLK_SEL, 0, mgaReg->DacRegs[3]);
@@ -699,7 +678,8 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestore(pScrn, vgaReg, restoreFonts);
+	vgaHWRestoreMMIO(pScrn, vgaReg, restoreFonts);
+	MGA3026RestorePalette(pScrn, vgaReg->DAC);
 
 	/*
 	 * Code to restore SVGA registers that have been saved/modified
@@ -738,7 +718,7 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 
 #ifdef DEBUG
 	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
-		!!(mgaReg->DacLong & 0x20000000));
+		!!(mgaReg->Option & 0x20000000));
 #endif		 
 }
 
@@ -762,13 +742,14 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	/*
 	 * Code is needed to get back to bank zero.
 	 */
-	outw(0x3DE, 0x0004);
+	OUTREG16(0x1FDE, 0x0004);
 	
 	/*
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	vgaHWSave(pScrn, vgaReg, saveFonts);
+	vgaHWSaveMMIO(pScrn, vgaReg, saveFonts);
+	MGA3026SavePalette(pScrn, vgaReg->DAC);
 
 	/*
 	 * The port I/O code necessary to read in the extended registers 
@@ -776,8 +757,8 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 */
 	for (i = 0; i < 6; i++)
 	{
-		outb(0x3DE, i);
-		mgaReg->ExtVga[i] = inb(0x3DF);
+		OUTREG8(0x1FDE, i);
+		mgaReg->ExtVga[i] = INREG8(0x1FDF);
 	}
 	
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
@@ -793,7 +774,7 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	for (i = 0; i < DACREGSIZE; i++)
 		mgaReg->DacRegs[i]	 = inTi3026(MGADACregs[i]);
 	
-	mgaReg->DacLong = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
+	mgaReg->Option = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	
 }
 
@@ -902,6 +883,8 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
 				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 				HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
 
+    MGAdac->StoreColors 	= MGA3026StoreColors;
+
     MGAdac->ClockFrom = X_PROBED;
     if ( pMga->Chipset == PCI_CHIP_MGA2064 && pMga->Bios2.PinID == 0 )
     {
@@ -991,15 +974,47 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
      * Should initialise a sane default when the probed value is
      * obviously garbage.
      */
+}
 
-#if 0
-/* XXX This is a huge hack -- and must be fixed */
-    /*
-     * This goes elsewhere since this function is called from PreInit */
-     * MGATi3026SetMCLK should be set in the ModeInit,and should probably
-     * be done in the same way as the PCLK is set.
-     */
-ErrorF("Setting MCLK to %d\n", MGAdac->MemoryClock);
-    MGATi3026SetMCLK( pScrn, MGAdac->MemoryClock );
-#endif
+static void
+MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    vgaRegPtr pReg = &hwp->ModeReg;
+    unsigned char *pal;
+    int i;
+
+    if(ndef > 256) ndef = 256;
+
+    for(i = 0; i < ndef; i++) {
+        outTi3026dreg(TVP3026_WADR_PAL, pdef[i].pixel);
+        pal = pReg->DAC + (pdef[i].pixel * 3);
+        outTi3026dreg(TVP3026_COL_PAL, pal[0]);
+        outTi3026dreg(TVP3026_COL_PAL, pal[1]);
+        outTi3026dreg(TVP3026_COL_PAL, pal[2]);
+    }
+}
+
+
+static void
+MGA3026SavePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i = 768;
+
+    outTi3026dreg(TVP3026_RADR_PAL, 0x00);
+    while(i--)
+        *(pntr++) = inTi3026dreg(TVP3026_COL_PAL);
+}
+
+static void
+MGA3026RestorePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    int i = 768;
+
+    outTi3026dreg(TVP3026_WADR_PAL, 0x00);
+    while(i--) 
+        outTi3026dreg(TVP3026_COL_PAL, *(pntr++));
 }

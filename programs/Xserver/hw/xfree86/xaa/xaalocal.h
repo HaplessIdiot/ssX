@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.4 1998/08/13 14:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.5 1998/08/19 07:49:29 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1585,6 +1585,11 @@ extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
 
 #define CHECK_ROP(pGC, flags) \
 	(!(flags & GXCOPY_ONLY) || (pGC->alu == GXcopy))
+
+#define CHECK_ROPSRC(pGC, flags) \
+	(!(flags & ROP_NEEDS_SOURCE) || ((pGC->alu != GXclear) && \
+	(pGC->alu != GXnoop) && (pGC->alu != GXinvert) && \
+	(pGC->alu != GXset)))
 
 #define CHECK_PLANEMASK(pGC, flags) \
 	(!(flags & NO_PLANEMASK) || (pGC->planemask == ~0))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.4 1998/08/02 05:17:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.5 1998/08/19 07:49:28 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -2008,6 +2008,7 @@ XAAStippledFillChooser(GCPtr pGC)
 	   ((pGC->alu == GXcopy) || !(infoRec->FillSpansMono8x8PatternFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
 	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
 	   CHECK_FG(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
 
@@ -2019,6 +2020,7 @@ XAAStippledFillChooser(GCPtr pGC)
 	   ((pGC->alu == GXcopy) || !(infoRec->FillSpansColor8x8PatternFlags &
 		TRANSPARENCY_GXCOPY_ONLY)) &&
 	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
 
 	      return DO_COLOR_8x8;
@@ -2033,6 +2035,7 @@ XAAStippledFillChooser(GCPtr pGC)
 	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheExpandFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
 	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheExpandFlags) &&
 	CHECK_FG(pGC,infoRec->FillSpansCacheExpandFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
 
@@ -2049,6 +2052,7 @@ XAAStippledFillChooser(GCPtr pGC)
 	((pGC->alu == GXcopy) || !(infoRec->FillSpansCacheBltFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
 	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
 
 	      return DO_CACHE_BLT;
@@ -2059,6 +2063,7 @@ XAAStippledFillChooser(GCPtr pGC)
 	((pGC->alu == GXcopy) || !(infoRec->FillSpansColorExpandFlags & 
 		TRANSPARENCY_GXCOPY_ONLY)) &&
 	CHECK_ROP(pGC,infoRec->FillSpansColorExpandFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansColorExpandFlags) &&
 	CHECK_FG(pGC,infoRec->FillSpansColorExpandFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansColorExpandFlags)) {
 
@@ -2087,6 +2092,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 	if(infoRec->CanDoMono8x8 && 
 	   !(infoRec->FillSpansMono8x8PatternFlags & TRANSPARENCY_ONLY) && 
 	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
 	   CHECK_COLORS(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
 
@@ -2095,6 +2101,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 
 	if(infoRec->CanDoColor8x8 && 
 	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
 
 	      return DO_COLOR_8x8;
@@ -2107,6 +2114,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 	 infoRec->CacheColorExpandDensity) &&
 	!(infoRec->FillSpansCacheExpandFlags & TRANSPARENCY_ONLY) && 
 	CHECK_ROP(pGC,infoRec->FillSpansCacheExpandFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheExpandFlags) &&
 	CHECK_COLORS(pGC,infoRec->FillSpansCacheExpandFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheExpandFlags)) {
 
@@ -2119,6 +2127,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
 	(pPixmap->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableTileWidth) &&
 	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
 
 	      return DO_CACHE_BLT;
@@ -2127,6 +2136,7 @@ XAAOpaqueStippledFillChooser(GCPtr pGC)
     if(infoRec->FillSpansColorExpand && 
 	!(infoRec->FillSpansColorExpandFlags & TRANSPARENCY_ONLY) && 
 	CHECK_ROP(pGC,infoRec->FillSpansColorExpandFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansColorExpandFlags) &&
 	CHECK_COLORS(pGC,infoRec->FillSpansColorExpandFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansColorExpandFlags)) {
 
@@ -2156,6 +2166,7 @@ XAATiledFillChooser(GCPtr pGC)
 	   infoRec->CanDoMono8x8 && 
 	   !(infoRec->FillSpansMono8x8PatternFlags & TRANSPARENCY_ONLY) && 
 	   CHECK_ROP(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansMono8x8PatternFlags) &&
 	   (!(infoRec->FillSpansMono8x8PatternFlags & RGB_EQUAL) || 
 		(CHECK_RGB_EQUAL(pPriv->fg) && CHECK_RGB_EQUAL(pPriv->bg))) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansMono8x8PatternFlags)) {
@@ -2165,6 +2176,7 @@ XAATiledFillChooser(GCPtr pGC)
 
 	if(infoRec->CanDoColor8x8 && 
 	   CHECK_ROP(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
+	   CHECK_ROPSRC(pGC,infoRec->FillSpansColor8x8PatternFlags) &&
 	   CHECK_PLANEMASK(pGC,infoRec->FillSpansColor8x8PatternFlags)) {
 
 	      return DO_COLOR_8x8;
@@ -2176,6 +2188,7 @@ XAATiledFillChooser(GCPtr pGC)
 	(pPixmap->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	(pPixmap->drawable.width <= infoRec->MaxCacheableTileWidth) &&
 	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
 	      return DO_CACHE_BLT;
     }

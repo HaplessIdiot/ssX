@@ -4,7 +4,7 @@
 
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.1 1998/08/13 14:45:48 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1245,7 +1245,7 @@ xf86XVStopVideo(
 
   if(portPriv->isOn) { 
      (*portPriv->AdaptorRec->StopVideo)(
-	portPriv->pScrn, portPriv->DevPriv.ptr, FALSE);
+	portPriv->pScrn, portPriv->DevPriv.ptr, TRUE);
      portPriv->isOn = FALSE;
   }
 

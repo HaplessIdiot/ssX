@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.8 1998/07/04 14:48:31 robin Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.9 1998/07/17 12:05:27 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A>
 <LI><A HREF="#xterm_82">Patch #82 - 1998/7/15 - XFree86 3.9Aj</A>
 <LI><A HREF="#xterm_81">Patch #81 - 1998/7/14 - XFree86 3.9Aj</A>
 <LI><A HREF="#xterm_80">Patch #80 - 1998/6/29 - XFree86 3.9Ai</A>
@@ -124,6 +125,33 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A></H1>
+Several small fixes and enhancements:
+<ul>
+	<li>add configure test to infer if xterm should be installed setuid
+	  based on previously installed xterm (reported by Stephen Marley
+	  and Stefan Dalibor).
+
+	<li>integrate/extend patch by Jason Bacon to implement quasi-continuous
+	  mouse reporting.
+
+	<li>correct control sequences transmitted by function keys F1 to F4
+	  when sunFunctionKeys resource is true (it was still using the
+	  VT100 control sequences).
+
+	<li>modify handling of backarrow key so that the control modifier
+	  toggles the backspace/delete interpretation set by the
+	  backarrowKey resource.
+
+	<li>limit the row and column values used to report mouse position.
+</ul>
+
+From resync with XFree86 3.9Nb:
+<ul>
+	<li>add support for the VSTATUS control character (patch by
+	  Robert Earl &lt;rearl@teleport.com&gt;).
+</ul>
 
 <H1><A NAME="xterm_82">Patch #82 - 1998/7/15 - XFree86 3.9Aj</A></H1>
 Bug fix for patch #81:

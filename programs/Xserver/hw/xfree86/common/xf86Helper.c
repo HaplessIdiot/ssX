@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.2 1998/07/25 16:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.3 1998/08/13 14:45:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1002,7 +1002,7 @@ xf86ShowClocks(ScrnInfoPtr scrp, MessageType from)
 {
     int j;
 
-    xf86DrvMsg(scrp->scrnIndex, from, "Effective pixel clocks available:");
+    xf86DrvMsg(scrp->scrnIndex, from, "Pixel clocks available:");
     for (j=0; j < scrp->numClocks; j++) {
 	if ((j % 8) == 0) {
 	    xf86ErrorF("\n");

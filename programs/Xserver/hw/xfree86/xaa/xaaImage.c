@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.3 1998/08/02 05:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.4 1998/08/13 14:46:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -302,11 +302,13 @@ XAAPutImage(
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
 	     !((infoRec->ImageWriteFlags & NO_GXCOPY) && 
 	     (pGC->alu == GXcopy))) ||
        ((format == XYBitmap) && infoRec->WriteBitmap &&
 	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_COLORS(pGC,infoRec->WriteBitmapFlags) &&
 	     !(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY))){

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.30 1998/08/14 13:35:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.31 1998/08/16 10:25:50 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -296,8 +296,9 @@ InitConnectionLimits()
     }
     MaxClients = lastfdesc;
 
-    /* For debugging only */
+#ifdef DEBUG
     ErrorF("InitConnectionLimits: MaxClients = %d\n", MaxClients);
+#endif
 
 #ifndef WIN32
     ConnectionTranslation = (int *)xnfalloc(lastfdesc + 1);
@@ -788,9 +789,10 @@ AllocNewConnection (trans_conn, fd, conn_time)
 	}
     }
 
-    /* For debugging */
+#ifdef DEBUG
     ErrorF("AllocNewConnection: client index = %d, socket fd = %d\n",
 	   client->index, fd);
+#endif
 
     return client;
 }

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.14 1998/07/25 16:56:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.15 1998/08/13 14:45:59 dawes Exp $ */
 
 
 
@@ -119,7 +119,7 @@ extern LongP MemW32PatternPong;
  * prepended with "tseng" to avoid name clashes with other modules.
  */
 
-extern LongP tsengCPU2ACLBase;
+extern unsigned char * tsengCPU2ACLBase;
 
 extern int tseng_powerPerPixel;
 extern int tseng_neg_x_pixel_offset;
@@ -251,6 +251,6 @@ void tseng_init_acl(ScreenPtr pScreen);
 
 Bool TsengXAAInit(ScreenPtr pScreen);
 
-void TsengXAAInit_Colexp(ScrnInfoPtr pScrn);
+Bool TsengXAAInit_Colexp(ScrnInfoPtr pScrn);
 
 #endif

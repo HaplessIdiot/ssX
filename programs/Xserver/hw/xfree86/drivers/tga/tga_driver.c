@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.3 1998/08/13 14:45:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.4 1998/08/20 08:56:01 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -213,6 +213,13 @@ static unsigned int fb_offset_presets[4] = {
 	TGA_24PLUSZ_FB_OFFSET
 };
 
+static char *tga_cardnames[4] = {
+	"TGA 8 Plane",
+	"TGA 24 Plane",
+	NULL,
+	"TGA 24 Plane 3D"
+};
+
 static Bool
 TGAGetRec(ScrnInfoPtr pScrn)
 {
@@ -393,6 +400,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     char *mod = NULL;
+    pointer Base;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -416,17 +424,13 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * The first thing we should figure out is the depth, bpp, etc.
-     * Our default depth is 8, so pass it to the helper function.
-     * Our preference for depth 24 is 24bpp, so tell it that too.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
 	case 8:
-	case 15:
-	case 16:
 	case 24:
 	    /* OK */
 	    break;
@@ -594,10 +598,38 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pTga->FbAddress = pTga->PciInfo->memBase[0] & 0xFF800000;
     }
 
+    /* Check what sort of TGA card we have */
+    Base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+			 pTga->PciTag, (pointer)pTga->FbAddress, 4);
+    pTga->CardType = (*(unsigned int *)Base >> 12) & 0xf;
+    xf86UnMapVidMem(pScrn->scrnIndex, Base, 4); 
+
+    switch (pTga->CardType) {
+        case TYPE_TGA_8PLANE:
+        case TYPE_TGA_24PLANE:
+        case TYPE_TGA_24PLUSZ:
+            xf86DrvMsg(pScrn->scrnIndex, from, "Card Name: \"%s\"\n", 
+			tga_cardnames[pTga->CardType]);
+	    break;
+	default:
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                 "Card \"0x%02x\" is not recognised\n", pTga->CardType);
+	    return FALSE;
+    }
+
+    if (!(((pScrn->depth ==  8) && (pTga->CardType == TYPE_TGA_8PLANE)) ||
+	  ((pScrn->depth == 24) && (pTga->CardType == TYPE_TGA_24PLANE)) ||
+	  ((pScrn->depth == 24) && (pTga->CardType == TYPE_TGA_24PLUSZ)))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Given depth (%d) is not supported by this card\n",
+		   pScrn->depth);
+	return FALSE;
+    }
+
     /* Adjust MMIO region */
     pTga->IOAddress = pTga->FbAddress + TGA_REGS_OFFSET;
-    /* Adjust framebuffer for 8plane TGA (we only support this for now !) */
-    pTga->FbAddress += fb_offset_presets[0];
+    /* Adjust framebuffer for card type */
+    pTga->FbAddress += fb_offset_presets[pTga->CardType];
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pTga->FbAddress);
@@ -617,7 +649,17 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Need to access MMIO to determine videoRam */
         TGAMapMem(pScrn);
 #endif
-	pScrn->videoRam = 2048;
+	switch (pTga->CardType) {
+        case TYPE_TGA_8PLANE:
+                pScrn->videoRam = 2*1024;
+                break;
+        case TYPE_TGA_24PLANE:
+                pScrn->videoRam = 8*1024;
+                break;
+        case TYPE_TGA_24PLUSZ:
+                pScrn->videoRam = 16*1024;
+                break;
+	}	  
 #if 0
         TGAUnmapMem(pScrn);
 #endif
@@ -632,6 +674,11 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pTga->Chipset)
     {
 	case PCI_CHIP_DEC21030:
+	    if (pTga->CardType != TYPE_TGA_8PLANE) {
+	        pTga->RamDacRec = NULL;
+	        pTga->RamDac = NULL;
+	        break;
+	    }
 	    pTga->RamDacRec = RamDacCreateInfoRec();
 	    pTga->RamDacRec->ReadDAC = tgaBTInIndReg;
 	    pTga->RamDacRec->WriteDAC = tgaBTOutIndReg;
@@ -932,15 +979,19 @@ TGASave(ScrnInfoPtr pScrn)
     RamDacRegRecPtr BTreg;
 
     pTga = TGAPTR(pScrn);
-    pBT = RAMDACHWPTR(pScrn);
     tgaReg = &pTga->SavedReg;
-    BTreg = &pBT->SavedReg;
 
     switch (pTga->Chipset)
     {
     case PCI_CHIP_DEC21030:
 	DEC21030Save(pScrn, tgaReg);
-	(*pTga->RamDac->Save)(pScrn, pTga->RamDacRec, BTreg);
+	if (pTga->RamDac) {
+	    pBT = RAMDACHWPTR(pScrn);
+	    BTreg = &pBT->SavedReg;
+	    (*pTga->RamDac->Save)(pScrn, pTga->RamDacRec, BTreg);
+	} else {
+	    BT463ramdacSave(pScrn, pTga->Bt463saveReg);
+	}
 	break;
     }
 }
@@ -962,7 +1013,6 @@ TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     RamDacRegRecPtr BTreg;
 
     pTga = TGAPTR(pScrn);
-    pBT = RAMDACHWPTR(pScrn);
 
     pScrn->vtSema = TRUE;
 
@@ -977,12 +1027,17 @@ TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Program the registers */
     tgaReg = &pTga->ModeReg;
-    BTreg = &pBT->ModeReg;
 
     switch (pTga->Chipset) {
     case PCI_CHIP_DEC21030:
 	DEC21030Restore(pScrn, tgaReg);
-	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	if (pTga->RamDac != NULL) {
+	    pBT = RAMDACHWPTR(pScrn);
+	    BTreg = &pBT->ModeReg;
+	    (*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	} else {
+	    BT463ramdacRestore(pScrn, pTga->Bt463modeReg);
+	}
 	break;
     }
 
@@ -1001,9 +1056,7 @@ TGARestore(ScrnInfoPtr pScrn)
     RamDacRegRecPtr BTreg;
 
     pTga = TGAPTR(pScrn);
-    pBT = RAMDACHWPTR(pScrn);
     tgaReg = &pTga->SavedReg;
-    BTreg = &pBT->SavedReg;
 
     /* Initial Text mode clock */
     tgaReg->tgaRegs[0x0A] = 25175;
@@ -1011,7 +1064,13 @@ TGARestore(ScrnInfoPtr pScrn)
     switch (pTga->Chipset) {
     case PCI_CHIP_DEC21030:
 	DEC21030Restore(pScrn, tgaReg);
-	(*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	if (pTga->RamDac != NULL) {
+	    pBT = RAMDACHWPTR(pScrn);
+	    BTreg = &pBT->SavedReg;
+	    (*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	} else {
+	    BT463ramdacRestore(pScrn, pTga->Bt463saveReg);
+	}
 	break;
     }
 }
@@ -1115,6 +1174,11 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
+    case 32:
+	ret = cfb32ScreenInit(pScreen, pTga->FbBase, pScrn->virtualX,
+			      pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			      pScrn->displayWidth);
+	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
 		   "Internal error: invalid bpp (%d) in TGAScrnInit\n",
@@ -1145,7 +1209,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		visual->blueMask = pScrn->mask.blue;
 	    }
 	}
-	RamDacSetGamma(pScrn, TRUE);
+/*	RamDacSetGamma(pScrn, TRUE); */
     }
 
     if (!pTga->NoAccel) {
@@ -1218,7 +1282,8 @@ TGAEnterVT(int scrnIndex, int flags)
     if (!TGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
 
-    RamDacRestoreDACValues(pScrn);
+    /* This is done by TGAModeInit -tor */
+    /* RamDacRestoreDACValues(pScrn); */
     return TRUE;
 }
 

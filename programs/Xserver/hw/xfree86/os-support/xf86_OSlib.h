@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.53 1998/08/16 10:25:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.54 1998/08/16 12:28:58 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -299,7 +299,7 @@ extern int errno;
 /* LynxOS 2.5.1 has these */
 # ifdef LED_NUMLOCK
 #  define LED_CAP	LED_CAPSLOCK
-#  define LED_CAP	LED_NUMLOCK
+#  define LED_NUM	LED_NUMLOCK
 #  define LED_SCR	LED_SCROLLOCK
 # endif
 

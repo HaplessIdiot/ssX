@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.3 1998/08/13 14:45:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.4 1998/08/20 08:56:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -87,57 +87,60 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
+    CARD32 temp1, temp2, temp3, temp4;
 
-    pReg->glintRegs[0x00] = 0;
-    pReg->glintRegs[0x01] = 0;
+    pReg->glintRegs[Aperture0 >> 3] = 0;
+    pReg->glintRegs[Aperture1 >> 3] = 0;
 
     if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[0x04] = 1;
-	pReg->glintRegs[0x05] = 3;
+	pReg->glintRegs[DFIFODis >> 3] = 1;
+	pReg->glintRegs[FIFODis >> 3] = 3;
     } else {
-	pReg->glintRegs[0x04] = 0;
-	pReg->glintRegs[0x05] = 1;
+	pReg->glintRegs[DFIFODis >> 3] = 0;
+	pReg->glintRegs[FIFODis >> 3] = 1;
     }
 
-    pReg->glintRegs[0x50] = mode->CrtcHSyncStart - mode->CrtcHDisplay;
-    pReg->glintRegs[0x51] = mode->CrtcVSyncStart - mode->CrtcVDisplay;
-    pReg->glintRegs[0x52] = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
-    pReg->glintRegs[0x53] = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
+    temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
+    temp2 = mode->CrtcVSyncStart - mode->CrtcVDisplay;
+    temp3 = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
+    temp4 = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 
-    pReg->glintRegs[0x54] = Shiftbpp(pScrn,mode->CrtcHTotal);
-    pReg->glintRegs[0x55] = Shiftbpp(pScrn,pReg->glintRegs[0x50] + 
-					   pReg->glintRegs[0x52]);
-    pReg->glintRegs[0x56] = Shiftbpp(pScrn,pReg->glintRegs[0x50]);
-    pReg->glintRegs[0x57] = Shiftbpp(pScrn,mode->CrtcHTotal-mode->CrtcHDisplay);
+    pReg->glintRegs[VTGHLimit >> 3] = Shiftbpp(pScrn,mode->CrtcHTotal);
+    pReg->glintRegs[VTGHSyncEnd >> 3] = Shiftbpp(pScrn, temp1 + temp3);
+    pReg->glintRegs[VTGHSyncStart >> 3] = Shiftbpp(pScrn, temp1);
+    pReg->glintRegs[VTGHBlankEnd >> 3] = Shiftbpp(pScrn, mode->CrtcHTotal -
+							mode->CrtcHDisplay);
 
-    pReg->glintRegs[0x59] = mode->CrtcVTotal;
-    pReg->glintRegs[0x5A] = pReg->glintRegs[0x51] + pReg->glintRegs[0x53];
-    pReg->glintRegs[0x5B] = pReg->glintRegs[0x51];
-    pReg->glintRegs[0x5C] = mode->CrtcVTotal - mode->CrtcVDisplay;
+    pReg->glintRegs[VTGVLimit >> 3] = mode->CrtcVTotal;
+    pReg->glintRegs[VTGVSyncEnd >> 3] = temp2 + temp4;
+    pReg->glintRegs[VTGVSyncStart >> 3] = temp2;
+    pReg->glintRegs[VTGVBlankEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
-    pReg->glintRegs[0x5D] = (((mode->Flags & V_PHSYNC) ? 0 : 2) << 2) |
+    pReg->glintRegs[VTGPolarity >> 3] = (((mode->Flags & V_PHSYNC) ? 0:2)<<2) |
 			     ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0);
 
-    pReg->glintRegs[0x5E] = 0; /* VClkCtl */
-    pReg->glintRegs[0x5F] = pReg->glintRegs[0x5C] - 1; /* VTGVGateStart */
-    pReg->glintRegs[0x61] = pReg->glintRegs[0x5C]; /* VTGVGateEnd */
+    pReg->glintRegs[VClkCtl >> 3] = 0; 
+    pReg->glintRegs[VTGVGateStart >> 3] = pReg->glintRegs[VTGVBlankEnd>>3] - 1; 
+    pReg->glintRegs[VTGVGateEnd >> 3] = pReg->glintRegs[VTGVBlankEnd>>3];
     /*
      * tell DAC to use the ICD chip clock 0 as ref clock 
      * and set up some more video timining generator registers
      */
-    pReg->glintRegs[0x62] = 0x05; /* VTGSerialClk */
+    pReg->glintRegs[VTGSerialClk >> 3] = 0x05; 
 
     /* This is ugly */
     if (pGlint->UseFireGL3000) {
-	pReg->glintRegs[0x60] = pReg->glintRegs[0x57] - 1; /* VTGHGateStart */
-	pReg->glintRegs[0x65] = pReg->glintRegs[0x54] - 1; /* VTGHGateEnd */
-	pReg->glintRegs[0x63] = 0x907; /* FBModeSel */
-	pReg->glintRegs[0x64] = 0x00; /* VTGModeCtl */
+	pReg->glintRegs[VTGHGateStart >> 3] = 
+					pReg->glintRegs[VTGHBlankEnd>>3] - 1;
+	pReg->glintRegs[VTGHGateEnd >> 3] = pReg->glintRegs[VTGHLimit>>3] - 1;
+	pReg->glintRegs[FBModeSel >> 3] = 0x907;
+	pReg->glintRegs[VTGModeCtl >> 3] = 0x00;
     } else {
-	pReg->glintRegs[0x60] = pReg->glintRegs[0x57] - 2; /* VTGHGateStart */
-	pReg->glintRegs[0x65] = pReg->glintRegs[0x54] - 2; /* VTGHGateEnd */
-	pReg->glintRegs[0x63] = 0x0A07; /* FBModeSel */
-	pReg->glintRegs[0x64] = 0x44; /* VTGModeCtl */
+	pReg->glintRegs[VTGHGateStart >> 3] = 
+					pReg->glintRegs[VTGHBlankEnd>>3] - 2;
+	pReg->glintRegs[VTGHGateEnd >> 3] = pReg->glintRegs[VTGHLimit>>3] - 2;
+	pReg->glintRegs[FBModeSel >> 3] = 0x0A07;
+	pReg->glintRegs[VTGModeCtl >> 3] = 0x44;
     }
 
     switch (pGlint->RamDac->RamDacType) {
@@ -173,7 +176,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[IBMRGB_sysclk_c] = c;
     }
     ramdacReg->DacRegs[IBMRGB_misc1] = SENS_DSAB_DISABLE | VRAM_SIZE_64;
-    ramdacReg->DacRegs[IBMRGB_misc2] = COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL;
+    ramdacReg->DacRegs[IBMRGB_misc2] = COL_RES_8BIT|PORT_SEL_VRAM|PCLK_SEL_PLL;
     ramdacReg->DacRegs[IBMRGB_misc3] = 0;
     ramdacReg->DacRegs[IBMRGB_misc_clock] = 1;
     ramdacReg->DacRegs[IBMRGB_sync] = 0;
@@ -212,7 +215,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[RGB640_VRAM_MASK1] = 0xFF; 
     ramdacReg->DacRegs[RGB640_VRAM_MASK2] = 0x0F; 
     
-    pReg->glintRegs[0x64] = 0x04; /* VTGModeCtl */
+    pReg->glintRegs[VTGModeCtl >> 3] = 0x04;
     }
 
     /* Now use helper routines to setup bpp for this driver */
@@ -226,29 +229,29 @@ TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    glintReg->glintRegs[0x00]  = GLINT_READ_REG(Aperture0);
-    glintReg->glintRegs[0x01]  = GLINT_READ_REG(Aperture1);
+    glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
+    glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
 
-    glintReg->glintRegs[0x04]  = GLINT_READ_REG(DFIFODis);
-    glintReg->glintRegs[0x05]  = GLINT_READ_REG(FIFODis);
+    glintReg->glintRegs[DFIFODis >> 3]  = GLINT_READ_REG(DFIFODis);
+    glintReg->glintRegs[FIFODis >> 3]  = GLINT_READ_REG(FIFODis);
 
-    glintReg->glintRegs[0x5E] = GLINT_READ_REG(VClkCtl);
-    glintReg->glintRegs[0x5D] = GLINT_READ_REG(VTGPolarity);
-    glintReg->glintRegs[0x54] = GLINT_READ_REG(VTGHLimit);
-    glintReg->glintRegs[0x57] = GLINT_READ_REG(VTGHBlankEnd);
-    glintReg->glintRegs[0x56] = GLINT_READ_REG(VTGHSyncStart);
-    glintReg->glintRegs[0x55] = GLINT_READ_REG(VTGHSyncEnd);
-    glintReg->glintRegs[0x59] = GLINT_READ_REG(VTGVLimit);
-    glintReg->glintRegs[0x5C] = GLINT_READ_REG(VTGVBlankEnd);
-    glintReg->glintRegs[0x5B] = GLINT_READ_REG(VTGVSyncStart);
-    glintReg->glintRegs[0x5A] = GLINT_READ_REG(VTGVSyncEnd);
-    glintReg->glintRegs[0x5F] = GLINT_READ_REG(VTGVGateStart);
-    glintReg->glintRegs[0x61] = GLINT_READ_REG(VTGVGateEnd);
-    glintReg->glintRegs[0x62] = GLINT_READ_REG(VTGSerialClk);
-    glintReg->glintRegs[0x63] = GLINT_READ_REG(FBModeSel);
-    glintReg->glintRegs[0x64] = GLINT_READ_REG(VTGModeCtl);
-    glintReg->glintRegs[0x60] = GLINT_READ_REG(VTGHGateStart);
-    glintReg->glintRegs[0x65] = GLINT_READ_REG(VTGHGateEnd);
+    glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
+    glintReg->glintRegs[VTGPolarity >> 3] = GLINT_READ_REG(VTGPolarity);
+    glintReg->glintRegs[VTGHLimit >> 3] = GLINT_READ_REG(VTGHLimit);
+    glintReg->glintRegs[VTGHBlankEnd >> 3] = GLINT_READ_REG(VTGHBlankEnd);
+    glintReg->glintRegs[VTGHSyncStart >> 3] = GLINT_READ_REG(VTGHSyncStart);
+    glintReg->glintRegs[VTGHSyncEnd >> 3] = GLINT_READ_REG(VTGHSyncEnd);
+    glintReg->glintRegs[VTGVLimit >> 3] = GLINT_READ_REG(VTGVLimit);
+    glintReg->glintRegs[VTGVBlankEnd >> 3] = GLINT_READ_REG(VTGVBlankEnd);
+    glintReg->glintRegs[VTGVSyncStart >> 3] = GLINT_READ_REG(VTGVSyncStart);
+    glintReg->glintRegs[VTGVSyncEnd >> 3] = GLINT_READ_REG(VTGVSyncEnd);
+    glintReg->glintRegs[VTGVGateStart >> 3] = GLINT_READ_REG(VTGVGateStart);
+    glintReg->glintRegs[VTGVGateEnd >> 3] = GLINT_READ_REG(VTGVGateEnd);
+    glintReg->glintRegs[VTGSerialClk >> 3] = GLINT_READ_REG(VTGSerialClk);
+    glintReg->glintRegs[FBModeSel >> 3] = GLINT_READ_REG(FBModeSel);
+    glintReg->glintRegs[VTGModeCtl >> 3] = GLINT_READ_REG(VTGModeCtl);
+    glintReg->glintRegs[VTGHGateStart >> 3] = GLINT_READ_REG(VTGHGateStart);
+    glintReg->glintRegs[VTGHGateEnd >> 3] = GLINT_READ_REG(VTGHGateEnd);
 }
 
 void
@@ -263,27 +266,27 @@ TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     };
 #endif
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x00], Aperture0);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x01], Aperture1);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x04], DFIFODis);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x05], FIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FIFODis >> 3], FIFODis);
 
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5D], VTGPolarity);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5E], VClkCtl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x62], VTGSerialClk);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x64], VTGModeCtl);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x54], VTGHLimit);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x56], VTGHSyncStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x55], VTGHSyncEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x57], VTGHBlankEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x59], VTGVLimit);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5B], VTGVSyncStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5A], VTGVSyncEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5C], VTGVBlankEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x5F], VTGVGateStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x61], VTGVGateEnd);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x63], FBModeSel);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x60], VTGHGateStart);
-    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[0x65], VTGHGateEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGPolarity >> 3], VTGPolarity);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VClkCtl >> 3], VClkCtl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGSerialClk >> 3], VTGSerialClk);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGModeCtl >> 3], VTGModeCtl);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHLimit >> 3], VTGHLimit);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHSyncStart >> 3],VTGHSyncStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHSyncEnd >> 3], VTGHSyncEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHBlankEnd >> 3], VTGHBlankEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVLimit >> 3], VTGVLimit);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVSyncStart >> 3],VTGVSyncStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVSyncEnd >> 3], VTGVSyncEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVBlankEnd >> 3], VTGVBlankEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVGateStart >> 3],VTGVGateStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGVGateEnd >> 3], VTGVGateEnd);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[FBModeSel >> 3], FBModeSel);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHGateStart >> 3],VTGHGateStart);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[VTGHGateEnd >> 3], VTGHGateEnd);
 }

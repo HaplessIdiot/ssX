@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.3 1998/07/31 10:41:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.4 1998/08/20 08:55:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -350,7 +350,6 @@ Permedia2LoadCursorImage(
 )
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    unsigned char temp;
     int i;
        
     GLINT_SLOW_WRITE_REG(0, PM2DACIndexReg);

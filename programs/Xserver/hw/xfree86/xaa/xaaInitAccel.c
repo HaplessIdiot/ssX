@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.5 1998/08/13 14:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.6 1998/08/19 07:49:27 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1205,7 +1205,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(!infoRec->ValidateCopyArea && infoRec->CopyArea) {
 	infoRec->CopyAreaMask = GCWhenForced;
-	if(infoRec->CopyAreaFlags & GXCOPY_ONLY)
+	if((infoRec->CopyAreaFlags & GXCOPY_ONLY) ||
+		(infoRec->CopyAreaFlags & ROP_NEEDS_SOURCE))
 	    infoRec->CopyAreaMask |= GCFunction;
 	if(infoRec->CopyAreaFlags & NO_PLANEMASK)
 	    infoRec->CopyAreaMask |= GCPlaneMask;
@@ -1214,7 +1215,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(!infoRec->ValidateCopyPlane && infoRec->CopyPlane) {
 	infoRec->CopyPlaneMask = GCWhenForced;
-	if(infoRec->CopyPlaneFlags & GXCOPY_ONLY)
+	if((infoRec->CopyPlaneFlags & GXCOPY_ONLY) ||
+		(infoRec->CopyPlaneFlags & ROP_NEEDS_SOURCE))
 	    infoRec->CopyPlaneMask |= GCFunction;
 	if(infoRec->CopyPlaneFlags & NO_PLANEMASK)
 	    infoRec->CopyPlaneMask |= GCPlaneMask;
@@ -1225,7 +1227,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(!infoRec->ValidatePutImage && infoRec->PutImage) {
 	infoRec->PutImageMask = GCWhenForced;
-	if(infoRec->PutImageFlags & GXCOPY_ONLY)
+	if((infoRec->PutImageFlags & GXCOPY_ONLY) ||
+		(infoRec->PutImageFlags & ROP_NEEDS_SOURCE))
 	    infoRec->PutImageMask |= GCFunction;
 	if(infoRec->PutImageFlags & NO_PLANEMASK)
 	    infoRec->PutImageMask |= GCPlaneMask;
@@ -1238,6 +1241,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if(!infoRec->ValidatePushPixels && infoRec->PushPixelsSolid) {
 	infoRec->PushPixelsMask = GCFillStyle;
 	if((infoRec->PushPixelsFlags & GXCOPY_ONLY) ||
+		(infoRec->PushPixelsFlags & ROP_NEEDS_SOURCE) ||
 		(infoRec->PushPixelsFlags & TRANSPARENCY_GXCOPY_ONLY))
 	    infoRec->PushPixelsMask |= GCFunction;
 	if(infoRec->PushPixelsFlags & NO_PLANEMASK)
@@ -1265,7 +1269,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
 	infoRec->FillSpansMask = GCFillStyle | GCTile | GCStipple;
 
-	if(compositeFlags & GXCOPY_ONLY)
+	if((compositeFlags & GXCOPY_ONLY) ||
+		(compositeFlags & ROP_NEEDS_SOURCE))
 	    infoRec->FillSpansMask |= GCFunction;
 	if(compositeFlags & NO_PLANEMASK)
 	    infoRec->FillSpansMask |= GCPlaneMask;
@@ -1287,6 +1292,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
  
 	infoRec->PolyGlyphBltMask = GCFillStyle | GCFont;
 	if((compositeFlags & GXCOPY_ONLY) ||
+		(compositeFlags & ROP_NEEDS_SOURCE) ||
 		(infoRec->PolyGlyphBltNonTEFlags & TRANSPARENCY_GXCOPY_ONLY))
 	    infoRec->PolyGlyphBltMask |= GCFunction;
 	if(compositeFlags & NO_PLANEMASK)
@@ -1327,7 +1333,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
 	if(compositeFlags & NO_PLANEMASK)
 	    infoRec->PolylinesMask |= GCPlaneMask;
-	if(compositeFlags & GXCOPY_ONLY)
+	if((compositeFlags & GXCOPY_ONLY) ||
+		(compositeFlags & ROP_NEEDS_SOURCE))
 	    infoRec->PolylinesMask |= GCFunction;
 	if(compositeFlags & RGB_EQUAL)
 	    infoRec->PolylinesMask |= GCForeground;

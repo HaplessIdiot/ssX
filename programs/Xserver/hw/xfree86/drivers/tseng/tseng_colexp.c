@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.5 1998/08/13 14:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.6 1998/08/19 07:49:16 dawes Exp $ */
 
 
 
@@ -40,21 +40,18 @@ void TsengSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 void TsengSubsequentColorExpandScanline(ScrnInfoPtr pScrn,
     int bufno);
 
-#ifdef TODO
-/* for color expansion via scanline buffer in system memory */
-#define COLEXP_BUF_SIZE 1024
-static CARD32 colexp_buf[COLEXP_BUF_SIZE / 4];
-static CARD32 ColExpLUT[256];
+void TsengSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+    int fg, int bg, int rop, unsigned int planemask);
 
-/* one of these will be assigned to the TsengSubsequentScanlineCPUToScreenColorExpand() function */
-static void TsengSubsequentScanlineCPUToScreenColorExpand_8bpp();
-static void TsengSubsequentScanlineCPUToScreenColorExpand_16bpp();
-static void TsengSubsequentScanlineCPUToScreenColorExpand_24bpp();
-static void TsengSubsequentScanlineCPUToScreenColorExpand_32bpp();
+void TsengSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h, int skipleft);
 
-#endif
+void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno);
+void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno);
+void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno);
+void TsengSubsequentColorExpandScanline_32bpp(ScrnInfoPtr pScrn, int bufno);
 
-void
+Bool
 TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
 {
     int i, j, r;
@@ -84,60 +81,83 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
 	LEFT_EDGE_CLIPPING |
 	NO_PLANEMASK;
 
-    pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
-	BIT_ORDER_IN_BYTE_LSBFIRST |
-	SCANLINE_PAD_DWORD |
-	NO_PLANEMASK;
-
-#ifdef TODO
-
-    if (!Is_ET6K) {
-	/*
-	 * We'll use an intermediate memory buffer and fake
-	 * scanline-screen-to-screen color expansion, because the XAA
-	 * CPU-to-screen color expansion causes the accelerator to hang.
-	 * Reason unkown (yet). This also allows us to do 16, 24 and 32 bpp color
-	 * expansion by first doubling the bitmap pattern before
-	 * color-expanding it, because W32s can only do 8bpp color expansion.
-	 *
-	 * XAA doesn't support scanline-CPU-to-SCreen color expansion yet.
-	 */
-
-	pXAAInfo->PingPongBuffers = 1;
-	pXAAInfo->ScratchBufferSize = COLEXP_BUF_SIZE / tseng_bytesperpixel;
-	pXAAInfo->ScratchBufferAddr = 1;	/* any non-zero value will do -- not used */
-	pXAAInfo->ScratchBufferBase = (void *)colexp_buf;
-
-	pXAAInfo->SetupForScanlineScreenToScreenColorExpand =
-	    TsengSetupForScanlineCPUToScreenColorExpand;
-
-	switch (pScrn->bitsPerPixel) {
-	case 8:
-	    pXAAInfo->SubsequentScanlineScreenToScreenColorExpand =
-		TsengSubsequentScanlineCPUToScreenColorExpand_8bpp;
-	    break;
-	case 15:
-	case 16:
-	    pXAAInfo->SubsequentScanlineScreenToScreenColorExpand =
-		TsengSubsequentScanlineCPUToScreenColorExpand_16bpp;
-	    break;
-	case 24:
-	    pXAAInfo->SubsequentScanlineScreenToScreenColorExpand =
-		TsengSubsequentScanlineCPUToScreenColorExpand_24bpp;
-	    break;
-	case 32:
-	    pXAAInfo->SubsequentScanlineScreenToScreenColorExpand =
-		TsengSubsequentScanlineCPUToScreenColorExpand_32bpp;
-	    break;
-	}
-    }
-#endif
 #if 1
     if (Is_ET6K || (Is_W32p && (pScrn->bitsPerPixel == 8))) {
 	pXAAInfo->SetupForScreenToScreenColorExpandFill =
 	    TsengSetupForScreenToScreenColorExpandFill;
 	pXAAInfo->SubsequentScreenToScreenColorExpandFill =
 	    TsengSubsequentScreenToScreenColorExpandFill;
+    }
+#endif
+
+    /*
+     * Scanline CPU to screen color expansion for all W32 engines.
+     *
+     * real CPU-to-screen color expansion is extremely tricky, and only
+     * works for 8bpp anyway.
+     *
+     * This also allows us to do 16, 24 and 32 bpp color expansion by first
+     * doubling the bitmap pattern before color-expanding it, because W32s
+     * can only do 8bpp color expansion.
+     */
+
+    pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
+	BIT_ORDER_IN_BYTE_LSBFIRST |
+	SCANLINE_PAD_DWORD |
+	NO_PLANEMASK;
+
+#if 1
+    if (!Is_ET6K) {
+	pTseng->XAAScanlineColorExpandBuffers[0] =
+	    (unsigned char *) xnfalloc(((pScrn->virtualX + 31)/32) * 4 * pTseng->Bytesperpixel);
+	if (pTseng->XAAScanlineColorExpandBuffers[0] == NULL) {
+	    xf86Msg(X_ERROR, "Could not malloc color expansion scanline buffer.\n");
+	    return FALSE;
+	}
+	pXAAInfo->NumScanlineColorExpandBuffers = 1;
+	pXAAInfo->ScanlineColorExpandBuffers = pTseng->XAAScanlineColorExpandBuffers;
+
+	pXAAInfo->SetupForScanlineCPUToScreenColorExpandFill =
+	    TsengSetupForCPUToScreenColorExpandFill;
+
+	pXAAInfo->SubsequentScanlineCPUToScreenColorExpandFill =
+	    TsengSubsequentScanlineCPUToScreenColorExpandFill;
+
+	switch (pScrn->bitsPerPixel) {
+	case 8:
+	    pXAAInfo->SubsequentColorExpandScanline =
+		TsengSubsequentColorExpandScanline_8bpp;
+	    break;
+	case 15:
+	case 16:
+	    pXAAInfo->SubsequentColorExpandScanline =
+		TsengSubsequentColorExpandScanline_16bpp;
+	    break;
+	case 24:
+	    pXAAInfo->SubsequentColorExpandScanline =
+		TsengSubsequentColorExpandScanline_24bpp;
+	    break;
+	case 32:
+	    pXAAInfo->SubsequentColorExpandScanline =
+		TsengSubsequentColorExpandScanline_32bpp;
+	    break;
+	}
+	/* create color expansion LUT (used for >8bpp only) */
+	pTseng->ColExpLUT = xnfalloc(sizeof(CARD32)*256);
+	if (pTseng->ColExpLUT == NULL) {
+	    xf86Msg(X_ERROR, "Could not malloc color expansion tables.\n");
+	    return FALSE;
+	}
+	for (i = 0; i < 256; i++) {
+	    r = 0;
+	    for (j = 7; j >= 0; j--) {
+		r <<= pTseng->Bytesperpixel;
+		if ((i >> j) & 1)
+		    r |= (1 << pTseng->Bytesperpixel) - 1;
+	    }
+	    pTseng->ColExpLUT[i] = r;
+	    /* ErrorF("0x%08X, ",r ); if ((i%8)==7) ErrorF("\n"); */
+	}
     }
 #endif
 #if 1
@@ -179,8 +199,6 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
     }
 #endif
 
-#ifdef TODO
-
 #if TSENG_CPU_TO_SCREEN_COLOREXPAND
     /*
      * CPU-to-screen color expansion doesn't seem to be reliable yet. The
@@ -205,39 +223,27 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
      * The same thing goes for PAD_BYTE: this also works (with the same
      * problems as SCANLINE_PAD_DWORD, although less prominent)
      */
-    if (Is_W32_any && (pScrn->bitsPerPixel == 8)) {
-	/*
-	 * CPU_TRANSFER_PAD_DWORD is implied by XAA, and I'm not sure this is
-	 * OK, because the W32 might be trying to expand the padding data.
-	 */
-	pXAAInfo->ColorExpandFlags |=
-	    SCANLINE_NO_PAD | CPU_TRANSFER_PAD_DWORD;
 
-	pXAAInfo->SetupForCPUToScreenColorExpand =
-	    TsengSetupForCPUToScreenColorExpand;
-	pXAAInfo->SubsequentCPUToScreenColorExpand =
-	    TsengSubsequentCPUToScreenColorExpand;
+    pXAAInfo->CPUToScreenColorExpandFillFlags =
+	BIT_ORDER_IN_BYTE_LSBFIRST |
+	SCANLINE_PAD_DWORD |   /* no other choice */
+	CPU_TRANSFER_PAD_DWORD |
+	NO_PLANEMASK;
+
+    if (Is_W32_any && (pScrn->bitsPerPixel == 8)) {
+	pXAAInfo->SetupForCPUToScreenColorExpandFill =
+	    TsengSetupForCPUToScreenColorExpandFill;
+	pXAAInfo->SubsequentCPUToScreenColorExpandFill =
+	    TsengSubsequentCPUToScreenColorExpandFill;
 
 	/* we'll be using MMU aperture 2 */
-	pXAAInfo->CPUToScreenColorExpandBase = tsengCPU2ACLBase;
+	pXAAInfo->ColorExpandBase = tsengCPU2ACLBase;
 	/* ErrorF("tsengCPU2ACLBase = 0x%x\n", tsengCPU2ACLBase); */
 	/* aperture size is 8kb in banked mode. Larger in linear mode, but 8kb is enough */
-	pXAAInfo->CPUToScreenColorExpandRange = 8192;
+	pXAAInfo->ColorExpandRange = 8192;
     }
 #endif
-
-    /* Fill color expansion LUT (used for >8bpp only) */
-    for (i = 0; i < 256; i++) {
-	r = 0;
-	for (j = 7; j >= 0; j--) {
-	    r <<= tseng_bytesperpixel;
-	    if ((i >> j) & 1)
-		r |= (1 << tseng_bytesperpixel) - 1;
-	}
-	ColExpLUT[i] = r;
-	/* ErrorF("0x%08X, ",r ); if ((i%8)==7) ErrorF("\n"); */
-    }
-#endif
+    return TRUE;
 }
 
 #define SET_FUNCTION_COLOREXPAND \
@@ -250,8 +256,13 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
     *ACL_ROUTING_CONTROL = 0x02;
 
 static CARD32 ColorExpandDst;
-static int colexp_width;
 static int ce_skipleft;
+static int colexp_width_dwords;
+static int colexp_width_bytes;
+
+extern long MMioBase;
+
+
 
 void
 TsengSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
@@ -259,12 +270,22 @@ TsengSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 {
     TsengPtr pTseng = TsengPTR(pScrn);
 
-    colexp_width = w;		       /* only needed for 1-to-2-to-16 color expansion */
+    if (!Is_ET6K) {
+	/* the accelerator needs DWORD padding, and "w" is in PIXELS... */
+	colexp_width_dwords = (MULBPP(pTseng, w) + 31) >> 5;
+	colexp_width_bytes = (MULBPP(pTseng, w) + 7) >> 3;
+    }
+
     ColorExpandDst = FBADDR(pTseng, x, y);
     ce_skipleft = skipleft;
 
     wait_acl_queue(pTseng);
 
+#if 0
+    *ACL_MIX_Y_OFFSET = w - 1;
+
+    ErrorF(" W=%d", w);
+#endif
     SET_XY(pTseng, w, 1);
 }
 
@@ -292,61 +313,36 @@ TsengSubsequentColorExpandScanline(ScrnInfoPtr pScrn,
      */
 }
 
-#ifdef TODO
+
+
 /*
  * We use this intermediate CPU-to-Screen color expansion because the one
  * provided by XAA seems to lock up the accelerator engine.
+ *
+ * One of the main differences between the XAA approach and this one is that
+ * transfers are done per byte. I'm not sure if that is needed though.
  */
 
-static int colexp_width_dwords;
-static int colexp_width_bytes;
-
-void
-TsengSetupForScanlineCPUToScreenColorExpand(x, y, w, h, bg, fg, rop, planemask)
-    int x, y;
-    int w, h;
-    int bg, fg;
-    int rop;
-    unsigned int planemask;
+void TsengSubsequentColorExpandScanline_8bpp(ScrnInfoPtr pScrn, int bufno)
 {
-    /* the accelerator needs DWORD padding, and "w" is in PIXELS... */
-    colexp_width_dwords = (MULBPP(w) + 31) >> 5;
-    colexp_width_bytes = (MULBPP(w) + 7) >> 3;
-
-    ColorExpandDst = FBADDR(x, y);
-
-    TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask);
-
-    *ACL_MIX_Y_OFFSET = w - 1;
-
-    ErrorF(" W=%d", w);
-    SET_XY(w, 1);
-}
-
-extern long MMioBase;
-
-void
-TsengSubsequentScanlineCPUToScreenColorExpand_8bpp(srcaddr)
-    int srcaddr;
-{
+    TsengPtr pTseng = TsengPTR(pScrn);
     CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
     int i;
     CARD8 *bufptr;
 
     i = colexp_width_bytes;
-    ErrorF(".%d", i);
-    bufptr = (CARD8 *) (colexp_buf);
+    bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
 
     wait_acl_queue(pTseng);
-/*  START_ACL (ColorExpandDst); */
-    *((LongP) (MMioBase + 0x08)) = (CARD32) ColorExpandDst;
+    START_ACL (pTseng, ColorExpandDst);
+
+/*  *((LongP) (MMioBase + 0x08)) = (CARD32) ColorExpandDst;*/
 /*  *(CARD32*)tsengCPU2ACLBase = (CARD32)ColorExpandDst; */
 
     /* Copy scanline data to accelerator MMU aperture byte by byte */
-    while (--i) {		       /* FIXME: we need to take care of PCI bursting and MMU overflow here! */
+    while (i--) {		       /* FIXME: we need to take care of PCI bursting and MMU overflow here! */
 	*dest++ = *bufptr++;
     }
-/*  MoveDWORDS (tsengCPU2ACLBase, colexp_buf, colexp_width_dwords); */
 
     /* move to next scanline */
     ColorExpandDst += pTseng->line_width;
@@ -358,23 +354,22 @@ TsengSubsequentScanlineCPUToScreenColorExpand_8bpp(srcaddr)
  * to expand the incoming data to 2bpp first.
  */
 
-static void
-TsengSubsequentScanlineCPUToScreenColorExpand_16bpp(srcaddr)
-    CARD32 *srcaddr;
+void TsengSubsequentColorExpandScanline_16bpp(ScrnInfoPtr pScrn, int bufno)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
     CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
     int i;
     CARD8 *bufptr;
     register CARD32 bits16;
 
     i = colexp_width_dwords * 2;
-    bufptr = (CARD8 *) (colexp_buf);
+    bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
 
     wait_acl_queue(pTseng);
-    START_ACL(ColorExpandDst);
+    START_ACL(pTseng, ColorExpandDst);
 
     while (i--) {
-	bits16 = ColExpLUT[*bufptr++];
+	bits16 = pTseng->ColExpLUT[*bufptr++];
 	*dest++ = bits16 & 0xFF;
 	*dest++ = (bits16 >> 8) & 0xFF;
     }
@@ -389,27 +384,26 @@ TsengSubsequentScanlineCPUToScreenColorExpand_16bpp(srcaddr)
  * to expand the incoming data to 3bpp first.
  */
 
-static void
-TsengSubsequentScanlineCPUToScreenColorExpand_24bpp(srcaddr)
-    CARD32 *srcaddr;
+void TsengSubsequentColorExpandScanline_24bpp(ScrnInfoPtr pScrn, int bufno)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
     CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
     int i, j = -1;
-    CARD8 ind, *bufptr;
+    CARD8 *bufptr;
     register CARD32 bits24;
 
     i = colexp_width_dwords * 4;
-    bufptr = (CARD8 *) (colexp_buf);
+    bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
 
     wait_acl_queue(pTseng);
-    START_ACL(ColorExpandDst);
+    START_ACL(pTseng, ColorExpandDst);
 
     /* take 8 input bits, expand to 3 output bytes */
-    bits24 = ColExpLUT[*bufptr++];
+    bits24 = pTseng->ColExpLUT[*bufptr++];
     while (i--) {
 	if ((j++) == 2) {	       /* "i % 3" operation is much to expensive */
 	    j = 0;
-	    bits24 = ColExpLUT[*bufptr++];
+	    bits24 = pTseng->ColExpLUT[*bufptr++];
 	}
 	*dest++ = bits24 & 0xFF;
 	bits24 >>= 8;
@@ -425,23 +419,22 @@ TsengSubsequentScanlineCPUToScreenColorExpand_24bpp(srcaddr)
  * to expand the incoming data to 4bpp first.
  */
 
-static void
-TsengSubsequentScanlineCPUToScreenColorExpand_32bpp(srcaddr)
-    CARD32 *srcaddr;
+void TsengSubsequentColorExpandScanline_32bpp(ScrnInfoPtr pScrn, int bufno)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
     CARD8 *dest = (CARD8 *) tsengCPU2ACLBase;
     int i;
-    CARD8 ind, *bufptr;
+    CARD8 *bufptr;
     register CARD32 bits32;
 
     i = colexp_width_dwords;	       /* amount of blocks of 8 bits to expand to 32 bits (=1 DWORD) */
-    bufptr = (CARD8 *) (colexp_buf);
+    bufptr = (CARD8 *) (pTseng->XAAScanlineColorExpandBuffers[bufno]);
 
     wait_acl_queue(pTseng);
-    START_ACL(ColorExpandDst);
+    START_ACL(pTseng, ColorExpandDst);
 
     while (i--) {
-	bits32 = ColExpLUT[*bufptr++];
+	bits32 = pTseng->ColExpLUT[*bufptr++];
 	*dest++ = bits32 & 0xFF;
 	*dest++ = (bits32 >> 8) & 0xFF;
 	*dest++ = (bits32 >> 16) & 0xFF;
@@ -457,12 +450,11 @@ TsengSubsequentScanlineCPUToScreenColorExpand_32bpp(srcaddr)
  *   This is for ET4000 only (The ET6000 cannot do this)
  */
 
-void
-TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
-    int bg, fg;
-    int rop;
-    unsigned int planemask;
+void TsengSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+    int fg, int bg, int rop, unsigned int planemask)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
+
 /*  ErrorF("X"); */
 
     PINGPONG();
@@ -474,7 +466,7 @@ TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
     SET_XYDIR(0);
 
-    SET_FG_BG_COLOR(fg, bg);
+    SET_FG_BG_COLOR(pTseng, fg, bg);
 
     SET_FUNCTION_COLOREXPAND_CPU;
 
@@ -492,13 +484,11 @@ TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
  * though)
  */
 
-void
-TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
-    int x, y;
-    int w, h;
-    int skipleft;
+void TsengSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h, int skipleft)
 {
-    int destaddr = FBADDR(x, y);
+    TsengPtr pTseng = TsengPTR(pScrn);
+    int destaddr = FBADDR(pTseng, x, y);
 
     /* ErrorF(" %dx%d|%d ",w,h,skipleft); */
     if (skipleft)
@@ -509,11 +499,10 @@ TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
     WAIT_INTERFACE;
 
     *ACL_MIX_Y_OFFSET = w - 1;
-    SET_XY(w, h);
-    START_ACL(destaddr);
+    SET_XY(pTseng, w, h);
+    START_ACL(pTseng, destaddr);
 }
 
-#endif
 
 void
 TsengSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,

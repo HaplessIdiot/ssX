@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.10 1998/08/19 07:49:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.11 1998/08/20 08:55:57 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -30,7 +30,7 @@
 
 #include "xaa.h"
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
-#include "xaacursor.h"
+#include "xf86Cursor.h"
 
 /* Clock related */
 typedef struct {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.26 1998/07/31 10:41:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.27 1998/08/19 07:49:11 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -762,8 +762,7 @@ CHIPSClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	    Clock->msr = 3 << 2;
 	    Clock->xr33 = 0;
 	    Clock->xr54 = Clock->msr;
-	    Clock->Clock = pScrn->currentMode->Clock;
-	    Clock->Clock *= cPtr->ClockMulFactor;
+	    Clock->Clock = pScrn->currentMode->SynthClock;
 	}
 	break;
     case OLD_STYLE:
@@ -788,8 +787,7 @@ CHIPSClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 	} else {
 	    Clock->msr = 3 << 2;
 	    Clock->xr33 = 0;
-	    Clock->Clock = pScrn->currentMode->Clock;
-	    Clock->Clock *= cPtr->ClockMulFactor;
+	    Clock->Clock = pScrn->currentMode->SynthClock;
 	}
 	break;
     }
@@ -1458,6 +1456,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->minClock = cPtr->MinClock;
     clockRanges->maxClock = cPtr->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
+    clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     if (cPtr->PanelType & ChipsLCD)
 	clockRanges->interlaceAllowed = FALSE;
     else
@@ -1553,8 +1552,14 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
-    if ((cPtr->Flags & ChipsAccelSupport) || (cPtr->Flags & ChipsHWCursor))
+    if (cPtr->Flags & ChipsAccelSupport)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    CHIPSFreeRec(pScrn);
+	    return FALSE;
+	}
+
+    if (cPtr->Flags & ChipsHWCursor)
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -2493,8 +2498,6 @@ CHIPSPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		pScrn->clock[i] = pScrn->device->clock[i];
 	    from = X_CONFIG;
 	}
-	for (i = 0; i < pScrn->numClocks; i++)
-	    pScrn->clock[i] /= cPtr->ClockMulFactor;
 	xf86ShowClocks(pScrn, from);
     }
       
@@ -3078,8 +3081,6 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		pScrn->clock[i] = pScrn->device->clock[i];
 	    from = X_CONFIG;
 	}
-	for (i = 0; i < pScrn->numClocks; i++)
-	    pScrn->clock[i] /= cPtr->ClockMulFactor;
 	xf86ShowClocks(pScrn, from);
     }
 
@@ -3120,9 +3121,6 @@ CHIPSPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	   break;
 	case 24:
 	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
-	   break;
-	case 32:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
 	   break;
 	}
 	if (speed == 0)
@@ -3179,6 +3177,7 @@ CHIPSLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned char tmp;
 
 #if 0
@@ -3231,6 +3230,11 @@ CHIPSLeaveVT(int scrnIndex, int flags)
 	    }
 	}
     }
+
+    /* Invalidate the cached acceleration registers */
+    cAcl->planemask = -1;
+    cAcl->fgColor = -1;
+    cAcl->bgColor = -1;
 
     CHIPSRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &cPtr->SavedReg, TRUE);
     CHIPSLock(pScrn);
@@ -3890,6 +3894,11 @@ CHIPSModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew->CR[0x31] = ((mode->CrtcVDisplay - 1) & 0xF00) >> 8;
     ChipsNew->CR[0x32] = (mode->CrtcVSyncStart & 0xF00) >> 8;
     ChipsNew->CR[0x33] = (mode->CrtcVBlankStart & 0xF00) >> 8;
+    if (cPtr->Chipset == CHIPS_CT69000) {
+	/* The 69000 has overflow bits for the horizontal values as well */
+	ChipsNew->CR[0x38] = (((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8;
+	ChipsNew->CR[0x3C] = ((mode->CrtcHSyncEnd >> 3) & 0xC0);
+    }
     ChipsNew->CR[0x40] |= 0x80;
 
     /* centering/stretching */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.3 1998/08/13 14:46:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -34,6 +34,7 @@ XAACopyArea(
 	if(pSrcDrawable->type == DRAWABLE_WINDOW) {
 	    if(infoRec->ScreenToScreenBitBlt &&
 	     CHECK_ROP(pGC,infoRec->ScreenToScreenBitBltFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->ScreenToScreenBitBltFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->ScreenToScreenBitBltFlags))
             return (XAABitBlt( pSrcDrawable, pDstDrawable,
 		pGC, srcx, srcy, width, height, dstx, dsty,
@@ -41,6 +42,7 @@ XAACopyArea(
 	} else {
 	    if(infoRec->WritePixmap &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
 	     !((infoRec->ImageWriteFlags & NO_GXCOPY) && 
 	     (pGC->alu == GXcopy))) 

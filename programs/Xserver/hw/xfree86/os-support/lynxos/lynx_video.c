@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.6 1997/10/25 13:50:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.7 1998/01/24 16:58:34 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -76,11 +76,8 @@ smemCleanup()
 	}
 }
 
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	static int once;
 	int	free_slot = -1;
@@ -95,7 +92,8 @@ unsigned long Size;
 	{
 		if (!*smems[i].name && free_slot == -1)
 			free_slot = i;
-		if (smems[i].Base == Base && smems[i].Size == Size && *smems[i].name) {
+		if (smems[i].Base == Base && smems[i].Size == Size 
+		    && *smems[i].name) {
 			smems[i].RefCnt++;
 			return smems[i].ptr;
 		}
@@ -111,16 +109,13 @@ unsigned long Size;
 	smems[i].Base = Base;
 	smems[i].Size = Size;
 	
-	if (xf86Verbose > 1)
-		ErrorF("xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
+        xf86Msg(X_INFO, "xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
 
 #if defined(__powerpc__)
 	if (((unsigned long)Base & PHYS_IO_MEM_START) != PHYS_IO_MEM_START) {
 		Base = (pointer)((unsigned long)Base | PHYS_IO_MEM_START);
 	}
 #endif
-	if (xf86Verbose > 1)
-		ErrorF("xf86MapVidMem: Base=0x%x, Size=0x%x\n", Base, Size);
 
 	smems[i].ptr = smem_create(smems[i].name, Base, Size, SM_READ|SM_WRITE);
 	smems[i].RefCnt = 1;
@@ -128,9 +123,9 @@ unsigned long Size;
 	{
 		/* check if there is a stale segment around */
 		if (smem_remove(smems[i].name) == 0) {
-			if (xf86Verbose > 1)
-		        	ErrorF("xf86MapVidMem: removed stale smem_ segment %s\n",
-		        		smems[i].name);
+	        	xf86Msg(X_INFO,
+			    "xf86MapVidMem: removed stale smem_ segment %s\n",
+		            smems[i].name);
 			smems[i].ptr = smem_create(smems[i].name, 
 						Base, Size, SM_READ|SM_WRITE);
 		}
@@ -143,11 +138,8 @@ unsigned long Size;
 	return smems[i].ptr;
 }
 
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	int	i;
 
@@ -157,19 +149,24 @@ unsigned long Size;
 		{
 			if (--smems[i].RefCnt > 0)
 				return;
+
 			(void)smem_create(NULL, smems[i].ptr, 0, SM_DETACH);
-			if (xf86Verbose > 1)
-				ErrorF("xf86UnMapVidMem: smem_create(%s, 0x%08x, ... SM_DETACH)\n", smems[i].name, smems[i].ptr);
+			xf86Msg(X_INFO,
+                           "xf86UnMapVidMem: smem_create(%s, 0x%08x, ... "
+                           "SM_DETACH)\n", smems[i].name, smems[i].ptr);
 			(void)smem_remove(smems[i].name);
 			*smems[i].name = '\0';
 			smems[i].RefCnt = 0;
 			return;
 		}
 	}
-	ErrorF("xf86UnMapVidMem: no SMEM found for Base = %lx Size = %lx\n", Base, Size);
+	xf86Msg(X_WARNING,
+		"xf86UnMapVidMem: no SMEM found for Base = %lx Size = %lx\n",
+	       	Base, Size);
 }
 
-Bool xf86LinearVidMem()
+Bool
+xf86LinearVidMem()
 {
 	return(TRUE);
 }
@@ -179,12 +176,14 @@ Bool xf86LinearVidMem()
 /* Interrupt Handling section                                              */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool
+xf86DisableInterrupts()
 {
 	return(TRUE);
 }
 
-void xf86EnableInterrupts()
+void
+xf86EnableInterrupts()
 {
 	return;
 }
@@ -195,45 +194,41 @@ void xf86EnableInterrupts()
 
 #if defined(__powerpc__)
 
-unsigned char *ioBase = MAP_FAILED;
+volatile unsigned char *ioBase = MAP_FAILED;
 static int IOEnabled;
 
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86EnableIO()
 {
 	if (IOEnabled++ == 0) {
        		ioBase = (unsigned char *) smem_create("IOBASE",
        			(char *)0x80000000, 64*1024, SM_READ|SM_WRITE);
 	       	if (ioBase == MAP_FAILED) {
        			--IOEnabled;
-			FatalError("xf86EnableIOPorts: Failed to map I/O\n");
+			FatalError("xf86EnableIO: Failed to map I/O\n");
        		}
 	}        
 	return;
 }
 
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86DisableIO()
 {
 	if (!IOEnabled)
 		return;
 
-#if defined(MetroLink)
         if (--IOEnabled == 0) {
         	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
-#else
-        if (IOEnabled) {
-        	IOEnabled = 0;
-        	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
-#endif
         	smem_remove("IOBASE");
         	ioBase = MAP_FAILED;
         }
+	xf86Msg(X_INFO, "xf86DisableIO: leaving with IOEnabled %d ioBase 0x%x\n",
+		IOEnabled, ioBase);
 	return;
 }
 
-void xf86DisableIOPrivs()
+void
+xf86DisableIOPrivs()
 {
 	return;
 }
@@ -241,7 +236,7 @@ void xf86DisableIOPrivs()
 void *
 ppcPciIoMap(int bus)
 {
-	xf86EnableIOPorts(0);
+	xf86EnableIO();
 }
 
 #endif
