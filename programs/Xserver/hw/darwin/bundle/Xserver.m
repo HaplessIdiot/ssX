@@ -12,6 +12,14 @@
 #import "Preferences.h"
 #import "quartzShared.h"
 
+// Macros to build the path name
+#ifndef XBINDIR
+#define XBINDIR /usr/X11R6/bin
+#endif
+#define STR(s) #s
+#define XSTRPATH(s) STR(s)
+#define XPATH(file) XSTRPATH(XBINDIR) "/" STR(file)
+
 extern int argcGlobal;
 extern char **argvGlobal;
 extern char **envpGlobal;
@@ -129,6 +137,10 @@ extern char **envpGlobal;
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self withObject:nil];
 
+    // Start the X clients if started from GUI
+    if (quartzStartClients)
+        [NSThread detachNewThreadSelector:@selector(startClients) toTarget:self withObject:nil];
+
     // Make sure the menu bar gets drawn
     [NSApp setWindowsNeedUpdate:YES];
 
@@ -152,6 +164,22 @@ extern char **envpGlobal;
     [pool release];
     if (!appQuitting)
         [NSApp terminate:nil];	// quit if we aren't already
+}
+
+// Start the X clients in a separate thread
+- (void)startClients {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    char *home;
+
+    // Change to user's home directory (so xterms etc. start there)
+    home = getenv("HOME");
+    if (home) chdir(home);
+
+    [Xserver append:@":" toEnv:@"PATH"];
+    [Xserver append:@XSTRPATH(XBINDIR) toEnv:@"PATH"];
+    system(XPATH(startx -- -idle &));
+    // FIXME: quit when startx dies
+    [pool release];
 }
 
 // Close the help splash screen and show the X server
