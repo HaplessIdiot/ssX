@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/ImUtil.h,v 1.1 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.h,v 1.2 2003/04/15 22:10:07 herrb Exp $ */
 
 #ifndef _IMUTIL_H_
 #define _IMUTIL_H_
@@ -8,7 +8,7 @@ _XGetScanlinePad(
     Display *dpy,
     int depth);
 
-int
+extern int
 _XGetBitsPerPixel(
  Display *dpy,
  int depth);
