@@ -6,12 +6,19 @@
 *HSyncStart-form.fromVert: HDisplay-form
 *HSyncEnd-form.fromVert: HSyncStart-form
 *HTotal-form.fromVert: HSyncEnd-form
-*VDisplay-form.fromVert: HTotal-form
 *VSyncStart-form.fromVert: VDisplay-form
 *VSyncEnd-form.fromVert: VSyncStart-form
 *VTotal-form.fromVert: VSyncEnd-form
-*Flags-form.fromVert: VTotal-form
+*Flags-form.fromVert: HTotal-form
 *Buttons-form.fromVert: Flags-form
+*Left.fromVert: HTotal-scrollbar
+*Right.fromVert: HTotal-scrollbar
+*Thiner.fromVert: HTotal-scrollbar
+*Wider.fromVert: HTotal-scrollbar
+*Up.fromVert: VTotal-scrollbar
+*Down.fromVert: VTotal-scrollbar
+*Shorter.fromVert: VTotal-scrollbar
+*Higher.fromVert: VTotal-scrollbar
 *HDisplay-text.fromHoriz: HDisplay-label
 *HSyncStart-text.fromHoriz: HSyncStart-label
 *HSyncStart-scrollbar.fromVert: HSyncStart-label
@@ -19,9 +26,16 @@
 *HSyncEnd-text.fromHoriz: HSyncEnd-label
 *HSyncEnd-scrollbar.fromVert: HSyncEnd-label
 *HSyncEnd-scrollbar.orientation: horizontal
+*Right.fromHoriz: Left
+*Wider.fromHoriz: Right
+*Thiner.fromHoriz: Wider
 *HTotal-text.fromHoriz: HTotal-label
 *HTotal-scrollbar.fromVert: HTotal-label
 *HTotal-scrollbar.orientation: horizontal
+*VDisplay-form.fromHoriz: HSyncStart-form
+*VTotal-form.fromHoriz: HSyncStart-form
+*VSyncStart-form.fromHoriz: HSyncStart-form
+*VSyncEnd-form.fromHoriz: HSyncStart-form
 *VDisplay-text.fromHoriz: VDisplay-label
 *VSyncStart-text.fromHoriz: VSyncStart-label
 *VSyncStart-scrollbar.fromVert: VSyncStart-label
@@ -42,6 +56,9 @@
 *VSyncStart-label.label: VSyncStart:
 *VSyncEnd-label.label: VSyncEnd:
 *VTotal-label.label: VTotal:
+*Down.fromHoriz: Up
+*Shorter.fromHoriz: Down
+*Higher.fromHoriz: Shorter
 *Flags-label.label: Flags (hex):
 *Flags-text.borderWidth: 1
 *Flags-text*editType: edit
@@ -52,3 +69,5 @@
 *Test-button.fromHoriz: Apply-button
 *Test-button.label: Test
 *Apply-button.fromHoriz: Fetch-button
+*Show-button.label: Show
+*Show-button.fromHoriz: Test-button

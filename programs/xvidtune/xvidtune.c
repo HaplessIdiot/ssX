@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.2 1995/03/19 10:21:26 dawes Exp $ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.3 1995/04/09 13:54:55 dawes Exp $ */
 
 /*
 
@@ -38,10 +38,12 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Box.h>
 #include <X11/extensions/VGAHelp.h>
 #include <stdio.h>
 
 int MajorVersion, MinorVersion;
+int EventBase, ErrorBase;
 
 typedef enum { HDisplay, HSyncStart, HSyncEnd, HTotal,
 	VDisplay, VSyncStart, VSyncEnd, VTotal, Flags, fields_num } fields;
@@ -99,6 +101,8 @@ static XtResource Resources[] = {
 };
 
 static Atom wm_delete_window;
+static Widget invalid_mode_popup;
+static Widget testing_popup;
 
 static Bool GetModeLine (dpy, scrn)
     Display* dpy;
@@ -148,6 +152,23 @@ static Bool GetMonitor (dpy, scrn)
     return TRUE;
 }
 
+static int hitError = 0;
+static int (*xtErrorfunc)();
+
+static int vgahelpError(dis, err)
+Display *dis;
+XErrorEvent *err;
+{
+  if (err->error_code >= ErrorBase &&
+      err->error_code < ErrorBase + VGAHelpNumberErrors) {
+     hitError=1;
+  } else {
+     if (xtErrorfunc) 
+	(*xtErrorfunc)(dis, err);
+  }
+  return 0; /* ignored */
+}
+
 static void SetScrollbars ()
 {
     fields i;
@@ -178,6 +199,13 @@ static void QuitCB (w, client, call)
 #endif
 }
 
+popdownInvalid(w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+   XtPopdown((Widget)client);
+}
+
 static void ApplyCB (w, client, call)
     Widget w;
     XtPointer client, call;
@@ -198,9 +226,41 @@ static void ApplyCB (w, client, call)
 		XtNstring, &string, NULL);
     (void) sscanf (string, "%x", &i);
     mode_line.flags = i;
+    
+   hitError = 0;
 
-    XVGAHelpModModeLine (XtDisplay (w), DefaultScreen (XtDisplay (w)), 
+   XVGAHelpModModeLine (XtDisplay (w), DefaultScreen (XtDisplay (w)), 
 		&mode_line);
+   XSync(XtDisplay (w), False); /* process errors  */
+   if (hitError) {
+       XBell(XtDisplay (w), 80);
+       XtPopup(invalid_mode_popup, XtGrabExclusive /*XtGrabNone*/);
+   }
+}
+
+
+static void SetLabel(i)
+fields i;
+{
+   ScrollData* sdp = &AppRes.field[i];
+
+   if (sdp->textwidget != (Widget) NULL) {
+      char buf[6];
+
+      (void) sprintf (buf, i == Flags ? "%04x" : "%5d", sdp->val);
+      sdp->lastpercent = -1;
+      if (i == Flags) {
+	 XawTextBlock text;
+
+	 text.firstPos = 0;
+	 text.length = 4;
+	 text.ptr = buf;
+	 text.format = XawFmt8Bit;
+	 XawTextReplace (sdp->textwidget, 0, 4, &text);
+      } else 
+	XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
+   }
+
 }
 
 static void FetchCB (w, client, call)
@@ -210,26 +270,9 @@ static void FetchCB (w, client, call)
     fields i;
     (void) GetModeLine(XtDisplay (w), DefaultScreen (XtDisplay (w)));
     SetScrollbars ();
-    for (i = HDisplay; i < fields_num; i++) { 
-	ScrollData* sdp = &AppRes.field[i];
-
-	if (sdp->textwidget != (Widget) NULL) {
-	    char buf[6];
-
-	    (void) sprintf (buf, i == Flags ? "%04x" : "%5d", sdp->val);
-	    sdp->lastpercent = -1;
-	    if (i == Flags) {
-		XawTextBlock text;
-
-		text.firstPos = 0;
-		text.length = 4;
-		text.ptr = buf;
-		text.format = XawFmt8Bit;
-		XawTextReplace (sdp->textwidget, 0, 4, &text);
-	    } else 
-		XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
-	}
-    }
+    for (i = HDisplay; i < fields_num; i++) {
+        SetLabel(i);
+    }   
 }
 
 static void TestTO (client, id)
@@ -243,18 +286,107 @@ static void TestTO (client, id)
     SetScrollbars ();
 
     ApplyCB ((Widget) client, NULL, NULL);
-
+    XtPopdown(testing_popup);
 }
 
 static void TestCB (w, client, call)
     Widget w;
     XtPointer client, call;
 {
+    XtPopup(testing_popup, XtGrabExclusive /*XtGrabNone*/);
+    XSync(XtDisplay(w), False);   
     XtAppAddTimeOut (XtWidgetToApplicationContext (w),
 		5000, TestTO, (XtPointer) w);
 
     ApplyCB (w, client, call);
 }
+
+static void ShowCB(w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+    printf("\"%dx%d\"\t%d %d %d %d\t%d %d %d %d [FLAGS!!!]\n",
+	   AppRes.field[HDisplay].val, AppRes.field[VDisplay].val,
+	   AppRes.field[HDisplay].val,
+	   AppRes.field[HSyncStart].val,
+	   AppRes.field[HSyncEnd].val,
+	   AppRes.field[HTotal].val,
+	   AppRes.field[VDisplay].val,
+	   AppRes.field[VSyncStart].val,
+	   AppRes.field[VSyncEnd].val,
+	   AppRes.field[VTotal].val);
+}
+
+
+static void AdjustCB(w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+   int what = (int) client;
+   
+   switch (what) {
+    case HSyncStart:
+      if (AppRes.field[HSyncEnd].val + 4 < AppRes.field[HTotal].val) {
+	 AppRes.field[HSyncEnd].val += 4;
+	 AppRes.field[HSyncStart].val += 4;
+	 SetLabel(HSyncStart);	 
+	 SetLabel(HSyncEnd);		 
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+    case -HSyncStart:
+      if (AppRes.field[HSyncStart].val - 4 > AppRes.field[HDisplay].val) {
+	 AppRes.field[HSyncEnd].val -= 4;
+	 AppRes.field[HSyncStart].val -= 4;
+	 SetLabel(HSyncStart);	 
+	 SetLabel(HSyncEnd);	 	 	 
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+    case HTotal:
+      AppRes.field[HTotal].val += 4;
+      SetLabel(HTotal);	       
+      break;      
+    case -HTotal:
+      if (AppRes.field[HTotal].val - 4 >  AppRes.field[HSyncEnd].val) {	 
+	AppRes.field[HTotal].val -= 4;
+	SetLabel(HTotal);	 
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+    case VSyncStart:
+      if (AppRes.field[VSyncEnd].val + 4 < AppRes.field[VTotal].val) {
+	 AppRes.field[VSyncEnd].val += 4;
+	 AppRes.field[VSyncStart].val += 4;
+	 SetLabel(VSyncStart);	 
+	 SetLabel(VSyncEnd); 	 
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+    case -VSyncStart:
+      if (AppRes.field[VSyncStart].val - 4 > AppRes.field[VDisplay].val) {
+	 AppRes.field[VSyncEnd].val -= 4;
+	 AppRes.field[VSyncStart].val -= 4;
+	 SetLabel(VSyncStart);	 
+	 SetLabel(VSyncEnd);	 	 
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+    case VTotal:
+      AppRes.field[VTotal].val += 4;
+      SetLabel(VTotal);      
+      break;      
+    case -VTotal:
+      if (AppRes.field[VTotal].val - 4 >  AppRes.field[VSyncEnd].val) {	 
+	AppRes.field[VTotal].val -= 4;
+	SetLabel(VTotal);
+      } else
+	XBell(XtDisplay(w), 80);
+      break;
+   }  
+   SetScrollbars ();
+}
+
 
 #if 0
 static void EditCB (w, client, call)
@@ -359,6 +491,42 @@ static void FlagsEditCB (w, client, call)
     }
 }
 
+static int isValid(val, field)
+int val, field;
+{
+   switch(field) {
+     case HSyncStart:
+	if (val+8 > AppRes.field[HSyncEnd].val)
+	   val = AppRes.field[HSyncEnd].val - 8;
+        break;
+     case HSyncEnd:
+        if (val-8 < AppRes.field[HSyncStart].val)
+	    val = AppRes.field[HSyncStart].val + 8;
+        if (val > AppRes.field[HTotal].val)
+	    val = AppRes.field[HTotal].val;
+        break;
+     case HTotal:
+	if (val < AppRes.field[HSyncEnd].val)
+	   val = AppRes.field[HSyncEnd].val;
+         break;
+     case VSyncStart:
+	if (val+8 > AppRes.field[VSyncEnd].val)
+	   val = AppRes.field[VSyncEnd].val - 8;
+        break;
+     case VSyncEnd:
+        if (val-8 < AppRes.field[VSyncStart].val)
+	    val = AppRes.field[VSyncStart].val + 8;
+        if (val > AppRes.field[VTotal].val)
+	    val = AppRes.field[VTotal].val;
+        break;
+     case VTotal:
+	if (val < AppRes.field[VSyncEnd].val)
+	   val = AppRes.field[VSyncEnd].val;
+        break;
+   }
+   return val;
+}
+
 static void ScrollCB (w, client, call)
     Widget w;
     XtPointer client, call;
@@ -368,17 +536,33 @@ static void ScrollCB (w, client, call)
     int fieldindex = (int) client;
     ScrollData* sdp = &AppRes.field[fieldindex];
 
-    if (ipercent != sdp->lastpercent) {
 
+    
+    if (ipercent != sdp->lastpercent) {
+        int tmp_val;
 	char buf[6];
 
-	sdp->val = AppRes.field[sdp->use].val;
-	sdp->val += (int) (((float)sdp->range) * percent);
+	tmp_val = AppRes.field[sdp->use].val;
+	tmp_val += (int) (((float)sdp->range) * percent);
+
+        sdp->val = isValid(tmp_val, fieldindex);
+        
 	sdp->lastpercent = ipercent;
 	(void) sprintf (buf, "%5d", sdp->val);
 	XtVaSetValues (sdp->textwidget, XtNlabel, buf, NULL);
+        if (sdp->val != tmp_val) {
+            int base;
+            float percent;
+
+            base = AppRes.field[sdp->use].val;
+            percent = ((float)(sdp->val - base)) / ((float)sdp->range);
+            /* This doesn't always work, why? */
+            XawScrollbarSetThumb (sdp->scrollwidget, percent, 0.0);
+	}
     }
 }
+
+
 
 static void AddCallback (w, callback_name, callback, client_data)
     Widget w;
@@ -423,10 +607,12 @@ static void CreateHierarchy(top)
 {
     char buf[5];
     Widget form, forms[10];
-    Widget wids[4];
+    Widget wids[5];
+    Widget boxW,messageW, popdownW, w;   
     XawTextBlock text;
     XtTranslations trans;
     int i;
+    int x, y;
     static String form_names[] = {
 	"HDisplay-form",
 	"HSyncStart-form",
@@ -452,6 +638,35 @@ static void CreateHierarchy(top)
 		"HSyncEnd-scrollbar");
     CreateTyp (forms[3], HTotal, "HTotal-label", "HTotal-text", 
 		"HTotal-scrollbar");
+
+    w = XtVaCreateManagedWidget(
+                                     "Left",
+                                     commandWidgetClass,
+                                     forms[3],
+                                     XtNlabel, "Left",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)HSyncStart);
+    w = XtVaCreateManagedWidget(
+                                     "Right",
+                                     commandWidgetClass,
+                                     forms[3],
+                                     XtNlabel, "Right",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-HSyncStart);
+    w=  XtVaCreateManagedWidget(
+                                     "Wider",
+                                     commandWidgetClass,
+                                     forms[3],
+                                     XtNlabel, "Wider",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-HTotal);
+    w = XtVaCreateManagedWidget(
+                                     "Thiner",
+                                     commandWidgetClass,
+                                     forms[3],
+                                     XtNlabel, "Thiner",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)HTotal);
     CreateTyp (forms[4], VDisplay, "VDisplay-label", "VDisplay-text", NULL);
     CreateTyp (forms[5], VSyncStart, "VSyncStart-label",
 		"VSyncStart-text", "VSyncStart-scrollbar");
@@ -459,7 +674,35 @@ static void CreateHierarchy(top)
 		"VSyncEnd-scrollbar");
     CreateTyp (forms[7], VTotal, "VTotal-label", "VTotal-text", 
 		"VTotal-scrollbar");
-
+    w = XtVaCreateManagedWidget(
+                                     "Up",
+                                     commandWidgetClass,
+                                     forms[7],
+                                     XtNlabel, "Up",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)VSyncStart);
+    w = XtVaCreateManagedWidget(
+                                     "Down",
+                                     commandWidgetClass,
+                                     forms[7],
+                                     XtNlabel, "Down",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-VSyncStart);   
+    w=  XtVaCreateManagedWidget(
+                                     "Shorter",
+                                     commandWidgetClass,
+                                     forms[7],
+                                     XtNlabel, "Shorter",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)VTotal);   
+    w = XtVaCreateManagedWidget(
+                                     "Higher",
+                                     commandWidgetClass,
+                                     forms[7],
+                                     XtNlabel, "Higher",
+                                     NULL);
+    XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-VTotal);
+   
     trans = XtParseTranslationTable ("\
 	<Key>0: insert-char()\n<Key>1: insert-char()\n\
 	<Key>2: insert-char()\n<Key>3: insert-char()\n\
@@ -498,12 +741,63 @@ static void CreateHierarchy(top)
     wids[3] = XtCreateWidget ("Test-button", commandWidgetClass, 
 		forms[9], NULL, 0);
     XtAddCallback (wids[3], XtNcallback, TestCB, NULL);
-    XtManageChildren (wids, 4);
+   
+    wids[4] = XtCreateWidget ("Show-button", commandWidgetClass, 
+		forms[9], NULL, 0);
+    XtAddCallback (wids[4], XtNcallback, ShowCB, NULL);   
+    XtManageChildren (wids, 5);
 
     XtManageChildren (forms, 10);
     XtManageChild (form);
 
     SetScrollbars ();
+    x = DisplayWidth(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 2;
+    y = DisplayHeight(XtDisplay (top),DefaultScreen (XtDisplay (top))) / 2;
+    invalid_mode_popup = XtVaCreatePopupShell("invalidMode", 
+			    transientShellWidgetClass, top,
+			    XtNtitle, "Invalid Mode requested",
+			    XtNx, x - 20,
+			    XtNy, y - 40,
+			    NULL);
+
+    testing_popup = XtVaCreatePopupShell("testing", 
+			    transientShellWidgetClass, top,
+			    XtNtitle, "Testing_1_2_3",
+			    XtNx, x - 20,
+			    XtNy, y - 40,
+			    NULL);
+
+    w = XtVaCreateManagedWidget(
+		   "testingMessage",
+                   labelWidgetClass,
+                   testing_popup,
+                   XtNlabel, 
+	           "Mode test current in progress\n\n     Please wait",
+                   NULL);
+
+    boxW = XtVaCreateManagedWidget(
+                                   "invalidBox",
+                                   boxWidgetClass,
+                                   invalid_mode_popup,
+                                   NULL);
+        
+    messageW = XtVaCreateManagedWidget(
+		   "errorMess",
+                   labelWidgetClass,
+                   boxW,
+                   XtNlabel, 
+	           "Sorry: Requested the mode\nline is not valid",
+                   NULL);
+
+   popdownW = XtVaCreateManagedWidget(
+                                     "ackError",
+                                     commandWidgetClass,
+                                     boxW,
+                                     XtNlabel, "Acknowledged",
+                                     NULL);
+
+   XtAddCallback (popdownW, XtNcallback, (XtCallbackProc)popdownInvalid, 
+		  (XtPointer) invalid_mode_popup);
 }
 
 static void QuitAction (w, e, vector, count)
@@ -541,6 +835,9 @@ int main (argc, argv)
     if (!XVGAHelpQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion))
 	return 0;
 
+    if (!XVGAHelpQueryExtension(XtDisplay (top), &EventBase, &ErrorBase))
+	return 0;
+
     if (MinorVersion > 0 || MajorVersion > 0) {
 	if (argc > 1) {
 	    int i = 0;
@@ -565,6 +862,7 @@ int main (argc, argv)
     if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	return 0;
 
+    xtErrorfunc = XSetErrorHandler(vgahelpError); 
 
     CreateHierarchy (top);
 
