@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.11 2001/04/27 19:34:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elf.h,v 1.14 2002/09/16 18:06:10 eich Exp $ */
 
 
 typedef unsigned int	Elf32_Addr;
@@ -265,7 +265,7 @@ extern Elf32_Dyn _DYNAMIC [];
 #define R_ALPHA_GPVALUE		16
 #define R_ALPHA_GPRELHIGH	17
 #define R_ALPHA_GPRELLOW	18
-#define R_ALPHA_IMMED_GP_16	19
+#define R_ALPHA_GPREL16		19
 #define R_ALPHA_IMMED_GP_HI32	20
 #define R_ALPHA_IMMED_SCN_HI32	21
 #define R_ALPHA_IMMED_BR_HI32	22
