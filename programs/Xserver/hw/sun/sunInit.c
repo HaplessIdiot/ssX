@@ -15,7 +15,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.7 1998/10/04 09:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.8 2001/01/17 22:36:50 dawes Exp $ */
 
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -669,7 +669,7 @@ void InitInput(argc, argv)
     int     	  argc;
     char    	  **argv;
 {
-    DevicePtr	p, k;
+    pointer	p, k;
     extern Bool mieqInit();
 
     p = AddInputDevice(sunMouseProc, TRUE);
@@ -853,9 +853,17 @@ sunCfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     return ret;
 }
 
-extern BSFuncRec	cfbBSFuncRec, cfb16BSFuncRec, cfb32BSFuncRec;
-extern int  cfb16ScreenPrivateIndex, cfb32ScreenPrivateIndex;
-extern Bool cfbCloseScreen(), cfb16CloseScreen(), cfb32CloseScreen();
+/* Adapt cfb logic */
+#undef CFB_NEED_SCREEN_PRIVATE
+#if !defined(SINGLEDEPTH) || defined(FORDE_SEPARATE_PRIVATE)
+#define CFB_NEED_SCREEN_PRIVATE
+#endif
+
+extern BSFuncRec cfbBSFuncRec, cfb16BSFuncRec, cfb32BSFuncRec;
+extern Bool	 cfbCloseScreen(), cfb16CloseScreen(), cfb32CloseScreen();
+#ifdef CFB_NEED_SCREEN_PRIVATE
+extern int	 cfb16ScreenPrivateIndex, cfb32ScreenPrivateIndex;
+#endif
 
 Bool
 sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
@@ -866,7 +874,9 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     int width;			/* pixel width of frame buffer */
     int bpp;
 {
+#ifdef CFB_NEED_SCREEN_PRIVATE
     pointer	oldDevPrivate;
+#endif
     VisualPtr	visuals;
     int		nvisuals;
     DepthPtr	depths;
@@ -877,7 +887,9 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     if (!cfbInitVisuals(&visuals, &depths, &nvisuals, &ndepths,
 			&rootdepth, &defaultVisual, 1 << (bpp - 1), 8))
 	return FALSE;
+#ifdef CFB_NEED_SCREEN_PRIVATE
     oldDevPrivate = pScreen->devPrivate;
+#endif
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals))
@@ -890,17 +902,21 @@ sunCfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
 	break;
     case 16:
 	pScreen->CloseScreen = cfb16CloseScreen;
+	pScreen->BackingStoreFuncs = cfb16BSFuncRec;
+#ifdef CFB_NEED_SCREEN_PRIVATE
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr =
 	    pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
-	pScreen->BackingStoreFuncs = cfb16BSFuncRec;
+#endif
 	break;
     case 32:
 	pScreen->CloseScreen = cfb32CloseScreen;
+	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
+#ifdef CFB_NEED_SCREEN_PRIVATE
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr =
 	    pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
-	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
+#endif
 	break;
     }
     return TRUE;

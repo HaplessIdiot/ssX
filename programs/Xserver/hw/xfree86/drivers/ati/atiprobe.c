@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.37 2001/01/06 20:19:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.38 2001/01/06 20:58:07 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -620,7 +620,9 @@ ATIMach64Probe
          * apertures can be enabled/disabled only through PCI, this probes no
          * further.
          */
-        if ((pVideo->size[2] >= 12) && (pATI->Block0Base = pVideo->memBase[2]))
+        if ((pVideo->size[2] >= 12) &&
+            (pATI->Block0Base = pVideo->memBase[2]) &&
+            (pATI->Block0Base < (CARD32)(-1 << pVideo->size[2])))
         {
             pATI->Block0Base += 0x00000400U;
             goto LastProbe;

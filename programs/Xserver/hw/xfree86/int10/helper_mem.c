@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.14 2000/12/02 15:31:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.15 2001/01/06 20:19:13 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -190,12 +190,23 @@ int10skip(ScrnInfoPtr pScrn, int entityIndex)
     Bool noint10 = FALSE;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
 
-    if (pEnt->device && pEnt->device->options) {
-	OptionInfoRec options[nINT10Options];
+    if (pEnt->device) {
+	pointer configOptions = NULL;
 
-	(void)memcpy(options, INT10Options, sizeof(INT10Options));
-	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options, options);
-	xf86GetOptValBool(options, OPT_NOINT10, &noint10);
+	/* Check if xf86CollectOptions() has already been called */
+	if (((pEnt->index < 0) ||
+	    !xf86Screens[pEnt->index] ||
+	    !(configOptions = xf86Screens[pEnt->index]->options)) &&
+	    pEnt->device)
+	    configOptions = pEnt->device->options;
+
+	if (configOptions) {
+	    OptionInfoRec options[nINT10Options];
+
+	    (void)memcpy(options, INT10Options, sizeof(INT10Options));
+	    xf86ProcessOptions(pScrn->scrnIndex, configOptions, options);
+	    xf86GetOptValBool(options, OPT_NOINT10, &noint10);
+	}
     }
     xfree(pEnt);
 
