@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.60tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.61 2003/11/03 05:11:51 tsi Exp $
 
 
 
@@ -12,14 +12,15 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 
 #if defined(i386Architecture) || defined(ia64Architecture) || \
 	(defined(SunArchitecture) && defined(SparcArchitecture)) || \
-	(defined(FreeBSDArchitecture) && defined(AlphaArchitecture)) || \
-	(defined(FreeBSDArchitecture) && defined(Sparc64Architecture)) || \
-	(defined(NetBSDArchitecture) && defined(AlphaArchitecture)) || \
-	(defined(NetBSDArchitecture) && defined(PpcArchitecture)) || \
-	(defined(NetBSDArchitecture) && defined(SparcArchitecture)) || \
-	defined(OpenBSDArchitecture) || defined(SGIArchitecture) || \
+	(defined(KFreeBSDArchitecture) && defined(AlphaArchitecture)) || \
+	(defined(KFreeBSDArchitecture) && defined(Sparc64Architecture)) || \
+	(defined(KNetBSDArchitecture) && defined(AlphaArchitecture)) || \
+	(defined(KNetBSDArchitecture) && defined(PpcArchitecture)) || \
+	(defined(KNetBSDArchitecture) && defined(SparcArchitecture)) || \
+	defined(KOpenBSDArchitecture) || defined(SGIArchitecture) || \
 	(defined(LynxOSArchitecture) && defined(PpcArchitecture)) || \
-	defined(AMD64Architecture) || defined(LinuxArchitecture)
+	defined(AMD64Architecture) || defined(LinuxArchitecture) || \
+	defined(GNUMachArchitecture)
 BUS_SUBDIR = bus
 #endif
 
