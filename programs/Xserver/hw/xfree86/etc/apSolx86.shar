@@ -3,10 +3,10 @@
 # To extract the files from this archive, save it to a file, remove
 # everything above the "!/bin/sh" line above, and type "sh file_name".
 #
-# made 09/22/1994 21:15 UTC by davidh@dorite
+# made 09/25/1994 14:29 UTC by davidh@barite
 # Source directory /usr10/davidh/aperture
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apSolx86.shar,v 3.1 1994/09/23 10:18:25 dawes Exp $
 #
 # existing files will NOT be overwritten unless -c is specified
 #
@@ -18,7 +18,7 @@
 #     95 -rw-r--r-- aperture/devlink.tab
 #   2914 -rw-r--r-- aperture/README
 #  20528 -rw-r--r-- aperture/aperture.c
-#    816 -rw-r--r-- aperture/aperture.conf
+#    518 -rw-r--r-- aperture/aperture.conf
 #   3530 -rw-r--r-- aperture/aptest.c
 #   2174 -rw-r--r-- aperture/DISCLAIMER
 #
@@ -1121,30 +1121,25 @@ sed 's/^X//' << 'SHAR_EOF' > 'aperture/aperture.conf' &&
 #
 # Copyright 1994	Doug Anson, danson@lgc.com & David Holland, davidh@use.com
 #
-# File:   fbmem.conf
+# File:   aperture.conf
 # Author: Doug Anson (danson@lgc.com)
 # 
 # Modified: David Holland (davidh@use.com)
 # Log:		Change comments		2/23/94
+# Log:		Change defaults/comments	9/25/94
 #
-# Purpose: 	This conf file is used by the aperture Framebuffer mmap 
-# 			driver. The only portion of this configuration file 
-# 			should be changed is possibly the last entry in the
-#			'reg' propery.  This entry controls the maximum address
-#			the driver is allowed to access.  It is set to
-#			128Megs (0x8000000).  If your framebuffer apperture
-# 			happens to lay at a address greater than this
-#			change it appropriately. Do NOT! change the first
-#			two numbers of of the 'reg' property. They should be
-#			0, and 0x0, respectivly.
+# Purpose: 	This conf file is used by the aperture Framebuffer aperture
+# 			driver. Do NOT! change the first two numbers of of 
+# 			the 'reg' property. They should be 0, and 0x0, 
+#			respectivly.
 #
-name="aperture" class="sysbus" reg=0,0x0,0x8000000;
+name="aperture" class="sysbus" reg=0,0x0,0x7fffffff;
 SHAR_EOF
 chmod 0644 aperture/aperture.conf ||
 echo 'restore of aperture/aperture.conf failed'
 Wc_c="`wc -c < 'aperture/aperture.conf'`"
-test 816 -eq "$Wc_c" ||
-	echo 'aperture/aperture.conf: original size 816, current size' "$Wc_c"
+test 518 -eq "$Wc_c" ||
+	echo 'aperture/aperture.conf: original size 518, current size' "$Wc_c"
 fi
 # ============= aperture/aptest.c ==============
 if test -f 'aperture/aptest.c' -a X"$1" != X"-c"; then

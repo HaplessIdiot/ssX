@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.29 1994/09/24 15:12:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.30 1994/09/25 12:28:39 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -170,7 +170,7 @@ s3CleanUp(void)
    }
 
    /* Restore S3 SDAC Command and PLL registers */
-   if (DAC_IS_SDAC)
+   if (DAC_IS_SDAC || DAC_IS_GENDAC)
    {
       outb(vgaCRIndex, 0x55);
       tmp = inb(vgaCRReg);
@@ -416,7 +416,7 @@ s3Init(mode)
       }
 
       /* Save S3 SDAC Command and PLL registers */
-      if (DAC_IS_SDAC)
+      if (DAC_IS_SDAC || DAC_IS_GENDAC)
       {
          outb(vgaCRIndex, 0x55);
 	 tmp = inb(vgaCRReg);
@@ -572,7 +572,6 @@ s3Init(mode)
       CR5C = inb(vgaCRReg);
       outb(vgaCRReg, CR5C & 0xDF);
 
-      oldS3->Ti3020[TI_CURS_CONTROL] = s3InTiIndReg(TI_CURS_CONTROL);
       /* clear TI_PLANAR_ACCESS bit */
       s3OutTiIndReg(TI_CURS_CONTROL, 0x7F, 0x00);
    }
@@ -748,7 +747,7 @@ s3Init(mode)
       }
    }
 
-   /* NO 8bit mode for S3 SDAC */
+   /* NO 8bit mode for S3 SDAC or GENDAC */
 
    /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
@@ -757,7 +756,7 @@ s3Init(mode)
       unsigned char aux=0, comm=0, prr=0;
 
       LOCK_SYS_REGS;
-      if (s3DAC8Bit) aux=1;
+      if (s3DAC8Bit || s3InfoRec.bitsPerPixel > 8) aux=1;
       switch (s3InfoRec.bitsPerPixel) {
       case 8: 
 	 comm = 0;  /* repack mode 0, color mode 0 */
@@ -1012,7 +1011,7 @@ s3Init(mode)
                break;
 
             case 16: /* 15/16-bit color, 1VCLK/pixel */
-               if (s3Weight = RGB16_555)
+               if (s3Weight == RGB16_555)
                   pixmux = 0x50;
                else
                   pixmux = 0x30;
@@ -1035,6 +1034,45 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x6D);
       outb(vgaCRReg, blank_delay);             /* set blank delay */
+
+      outb(vgaCRIndex, 0x55);
+      tmp3 = inb(vgaCRReg);
+      outb(vgaCRReg, tmp3 & ~1);
+
+      outb(0x3C4, 1);
+      outb(0x3C5, tmp2);        /* unblank the screen */
+   }
+
+   if (DAC_IS_GENDAC)
+   {
+      int daccomm = 0;           /* GENDAC command */
+      unsigned char tmp3;
+
+      outb(0x3C4, 1);
+      tmp2 = inb(0x3C5);
+      outb(0x3C5, tmp2 | 0x20); /* blank the screen */
+
+      switch (s3InfoRec.bitsPerPixel) 
+      {
+         case 8:  /* 8-bit color, 1 VCLK/pixel */
+            break;
+
+         case 16: /* 15/16-bit color, 2VCLK/pixel */
+            if (s3Weight == RGB16_555)
+               daccomm = 0x20;
+            else
+               daccomm = 0x60;
+            break;
+
+         case 32: /* 32-bit color, 3VCLK/pixel */
+            daccomm = 0x40;
+      }
+
+      outb(vgaCRIndex, 0x55);
+      tmp3 = inb(vgaCRReg);
+      outb(vgaCRReg, tmp3 | 1);
+
+      outb(0x3c6, daccomm);                     /* set GENDAC mux mode */
 
       outb(vgaCRIndex, 0x55);
       tmp3 = inb(vgaCRReg);
@@ -1263,16 +1301,16 @@ s3Init(mode)
 	 }
 	 /* the input clock is already set to clk1 or clk1double (s3.c) */
 
-	 /* set aux control to self clocked, window function complement */
 	 if (DAC_IS_TI3025) {
 	    if (s3InfoRec.bitsPerPixel > 8)
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
+	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, 0x00);
             else
 	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_W_CMPL);
-         } else
+         } else {
+	    /* set aux control to self clocked, window function complement */
 	    s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
 		          TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL);
-
+         }
 	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
 	    /*
 	     * The 964 needs different VCLK division depending on the 
@@ -1402,12 +1440,19 @@ s3Init(mode)
          }
          if (DAC_IS_TI3025) {
             outb(vgaCRIndex, 0x6D);             /* set blank delay */
-            if (s3InfoRec.bitsPerPixel == 32)
-               outb(vgaCRReg, 0x40);
-            else if (s3InfoRec.bitsPerPixel == 16)
-               outb(vgaCRReg, 0x70);
-            else
-               outb(vgaCRReg, 0x01);
+            if (s3InfoRec.bitsPerPixel == 32) {
+               outb(vgaCRReg, 0x00);
+            } else if (s3InfoRec.bitsPerPixel == 16) {
+               if (mode->Flags & V_DBLCLK)
+                  outb(vgaCRReg, 0x00);
+	       else
+                  outb(vgaCRReg, 0x01);
+            } else if (s3InfoRec.bitsPerPixel == 8) {
+               if (mode->Flags & V_DBLCLK)
+                  outb(vgaCRReg, 0x01);
+	       else
+                  outb(vgaCRReg, 0x04);
+            }
          }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
@@ -1422,9 +1467,16 @@ s3Init(mode)
 
          /* the input clock is already set to clk1 or clk1double (s3.c) */
 
-         /* set aux control to self clocked only                        */
-         s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
-
+	 if (DAC_IS_TI3025) {
+	    if (s3InfoRec.bitsPerPixel > 8)
+	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, 0);
+	    else
+	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_W_CMPL);
+	 }
+	 else {
+            /* set aux control to self clocked only                        */
+            s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
+	 }
          /*
           * set output clocking to default of VGA.
           */
@@ -1523,12 +1575,6 @@ s3Init(mode)
       }
    }
 
-   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
-      outb(vgaCRIndex, 0x5C);
-      outb(vgaCRReg, 0x20);
-      outb(0x3C7, 0x00);
-   }
-
    outb(vgaCRIndex, 0x43);
    switch (s3InfoRec.depth) {
    case 24:
@@ -1542,7 +1588,7 @@ s3Init(mode)
       break;
    case 15:
    case 16:
-      if (DAC_IS_ATT490) /* JON */
+      if (DAC_IS_ATT490 || DAC_IS_GENDAC) /* JON */
 	 outb(vgaCRReg, 0x80);
       else if (DAC_IS_TI3025)
 	 outb(vgaCRReg, 0x10);

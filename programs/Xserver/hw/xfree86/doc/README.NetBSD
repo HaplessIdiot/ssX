@@ -27,14 +27,13 @@ well as binary distributions for many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-    ftp.x.org:/contrib/XFree86
-    ftp.XFree86.org:/XFree86.
+    ftp.XFree86.org:/pub/XFree86.
 
 Binaries for NetBSD 1.0_BETA will be available from:
 
     ftp.laas.fr:/pub/NetBSD/XFree86-3.1
-    ftp.netbsd.org:/pub/NetBSD/ports
     ftp.iastate.edu:/pub/netbsd/XFree86-3.1
+    ftp.eecs.umich.edu:/BSD/NetBSD/ports/XFree86-3.1
 
 If you're running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
@@ -90,9 +89,9 @@ XFree86 binary distribution.
     other-fonts - the other fonts (100dpi, scaled, Japanese, Chinese, etc)
     linkkit	- X server reconfiguration kit
 
-    If this is your first time, then you should be able to safely
-install all of the packages.  As a minimal install, you'll need doc,
-bin, fonts lib, config, and one X server.
+    If this is your first time, then you can safely install all of the
+packages.  As a minimal install, you'll need doc, bin, fonts lib,
+config, and one X server.
 
     To unpack and install the archives:
 
@@ -119,6 +118,25 @@ bin, fonts lib, config, and one X server.
 	/usr/X11R6, run the following from wherever all the archive
 	files are (replace /usr/X11R6 with wherever you wish them to
 	go if that isn't the place):
+
+	cd /usr/X11R6
+
+	cat xf86-3.0F-bin.tar.gz.* | tar xzf -
+	cat xf86-3.0F-fonts.tar.gz.* | tar xzf -
+	cat xf86-3.0F-linkkit.tar.gz.* | tar xzf -
+	cat xf86-3.0F-other-fonts.tar.gz.* | tar xzf -
+
+	tar xzf xf86-3.0F-config.tar.gz
+	tar xzf xf86-3.0F-doc.tar.gz
+	tar xzf xf86-3.0F-fs.tar.gz
+	tar xzf xf86-3.0F-lib.tar.gz 
+	tar xzf xf86-3.0F-man.tar.gz
+	tar xzf xf86-3.0F-man.tar.gz
+	tar xzf xf86-3.0F-prog.tar.gz
+
+	And unpack the server(s) you need:
+
+	tar xzf xf86-<server>.tar.gz
 
      3. Set the XWINHOME environment variable to the path where you
 	installed XFree86. Under csh  type:
@@ -192,17 +210,9 @@ entry in /etc/ttys:
 5 - Configuring X for Your Hardware
 -----------------------------------
 
-The Xconfig file tells the X server what kind of monitor, video card
+The XF86Config file tells the X server what kind of monitor, video card
 and mouse you have.  You *must* create it to tell the xerver what
 specific hardware you have.
-
-Unpack the xconfig archive and print a copy of ConfigXF86.txt or
-ConfigXF86.PS and follow the step-by-step instructions on running
-ConfigXF86.  It will ask you:
-
-     Your mouse type, /dev entry and baud rate.
-     The brand of your video card
-     The brand of your monitor
 
 If you plan to fine tune the screen size or position on your monitor
 you'll also need the specs for sync frequencies from your monitor's
@@ -377,6 +387,17 @@ See /usr/X11R6/lib/Server/README for more info.
 See /usr/X11R6/lib/X11/etc/INSTALL for instructions on unbundling and
 building the source distribution.
 
+You should configure the distribution by editing xc/config/cf/site.def
+and xc/config/cf/xf86site.def before compiling.  To compile the
+sources, invoke
+
+    make World
+
+in the xc directory.
+
+	console.h and ioctl_pc.h files:
+	=-----------------------------=
+
 If you don't already have the header files 'console.h' and
 'ioctl_pc.h' installed in /usr/include/machine, then install the
 copies that are supplied in lib/Server/etc (or in
@@ -385,16 +406,14 @@ distribution). If you run NetBSD-current you probably want to install
 them in /usr/src/sys/arch/i386/include too, so that they get
 reinstalled each time you make install in /usr/src/include. 
 
+Another way to keep these files accessible is to make a symbolic link
+like this in the 'xc' directory (suggested by Andrew Cagney
+<cagney@highland.com.au>):
+
+	ln -s programs/Xserver/hw/xfree86/etc machine
+
 If you have installed the syscons or codrv console drivers, these
 files should be taken from your installed version of the driver.
-
-You should configure the distribution by editing xc/config/cf/site.def
-and xc/config/cf/xf86site.def before compiling.  To compile the
-sources, invoke
-
-    make World
-
-in the xc directory.
 
     Support for shared libs under NetBSD 1.0_BETA
     =-------------------------------------------=
@@ -412,10 +431,11 @@ in the xc directory.
 xmkmf if an Imakefile is included in the sources.  Type 'xmkmf -a' to
 create the Makefiles, check the configuration if necessary and type
 'make'.  Whenever you install additional man pages you should update
-whatis.db by running 'makewhatis /usr/X11R6/man'.  To avoid the
-`Virtual memory exhausted' message from cc while compiling, increase
-the data and stack size limits (in csh type `limit datasize 32M' and
-`limit stacksize 16M').
+whatis.db by running 'makewhatis /usr/X11R6/man'.  
+
+To avoid the `Virtual memory exhausted' message from cc while
+compiling, increase the data and stack size limits (in csh type `limit
+datasize 32M' and `limit stacksize 16M').
 
 Note: Starting with XFree86 2.1 and NetBSD 0.9A, the symbol
 "__386BSD__" no longer gets defined either by the compiler or via the
@@ -459,4 +479,4 @@ Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.2 1994/09/07 15:52:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.3 1994/09/18 08:49:07 dawes Exp $

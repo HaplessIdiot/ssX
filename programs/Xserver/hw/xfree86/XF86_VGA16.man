@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.2 94/04/11 16:03:12 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.2 1994/09/07 15:46:12 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.3 1994/09/24 15:11:54 dawes Exp $
 .TH XF86_VGA16 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
@@ -91,7 +91,7 @@ Generic VGA:
 generic 
 .RE
 .TP 8
-.B option \fI"optionstring"\fP
+.B Option \fI"optionstring"\fP
 allows the user to select certain options provided by the drivers.  Currently 
 the following strings are recognized:
 .sp
@@ -126,6 +126,10 @@ using 8900B and 8900C chipsets actually support 16 clocks rather than the
 standard 8 clocks.  Such boards will have a "TCK9002" or "TCK9004" chip
 on them.  Specifying this option will allow the driver to detect and use
 the extra 8 clocks.
+.sp
+\fBpower_saver\fP - This option enables the server
+to use the power saving feature of "green" monitors instead of blanking
+when the screen saver is activated.  This option is experimental.
 ..
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)

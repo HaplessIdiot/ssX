@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.0 1994/05/14 06:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.1 1994/08/31 04:19:59 dawes Exp $ */
 
 /*
  * Includes
@@ -357,7 +357,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_YAMAHA	21
 
 #define NUM_VENDORS	21
-#define CHPS_PER_VENDOR	25
+#define CHPS_PER_VENDOR	26
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -400,17 +400,18 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CL5426	SVGA_TYPE(V_CIRRUS,11)	/* Cirrus 5426		*/
 #define CHIP_CL5428	SVGA_TYPE(V_CIRRUS,12)	/* Cirrus 5428		*/
 #define CHIP_CL5429	SVGA_TYPE(V_CIRRUS,13)	/* Cirrus 5429		*/
-#define CHIP_CL543X	SVGA_TYPE(V_CIRRUS,14)	/* Cirrus 543x		*/
-#define CHIP_CL6205	SVGA_TYPE(V_CIRRUS,15)	/* Cirrus 6205		*/
-#define CHIP_CL6215	SVGA_TYPE(V_CIRRUS,16)	/* Cirrus 6215		*/
-#define CHIP_CL6225	SVGA_TYPE(V_CIRRUS,17)	/* Cirrus 6225		*/
-#define CHIP_CL6235	SVGA_TYPE(V_CIRRUS,18)	/* Cirrus 6235		*/
-#define CHIP_CL5410	SVGA_TYPE(V_CIRRUS,19)	/* Cirrus 6510		*/
-#define CHIP_CL6410	SVGA_TYPE(V_CIRRUS,20)	/* Cirrus 6410		*/
-#define CHIP_CL6412	SVGA_TYPE(V_CIRRUS,21)	/* Cirrus 6412		*/
-#define CHIP_CL6420A	SVGA_TYPE(V_CIRRUS,22)	/* Cirrus 6420A		*/
-#define CHIP_CL6420B	SVGA_TYPE(V_CIRRUS,23)	/* Cirrus 6420B		*/
-#define CHIP_CL6440	SVGA_TYPE(V_CIRRUS,24)	/* Cirrus 6440		*/
+#define CHIP_CL5430	SVGA_TYPE(V_CIRRUS,14)	/* Cirrus 5430		*/
+#define CHIP_CL5434	SVGA_TYPE(V_CIRRUS,15)	/* Cirrus 5434		*/
+#define CHIP_CL6205	SVGA_TYPE(V_CIRRUS,16)	/* Cirrus 6205		*/
+#define CHIP_CL6215	SVGA_TYPE(V_CIRRUS,17)	/* Cirrus 6215		*/
+#define CHIP_CL6225	SVGA_TYPE(V_CIRRUS,18)	/* Cirrus 6225		*/
+#define CHIP_CL6235	SVGA_TYPE(V_CIRRUS,19)	/* Cirrus 6235		*/
+#define CHIP_CL5410	SVGA_TYPE(V_CIRRUS,20)	/* Cirrus 6510		*/
+#define CHIP_CL6410	SVGA_TYPE(V_CIRRUS,21)	/* Cirrus 6410		*/
+#define CHIP_CL6412	SVGA_TYPE(V_CIRRUS,22)	/* Cirrus 6412		*/
+#define CHIP_CL6420A	SVGA_TYPE(V_CIRRUS,23)	/* Cirrus 6420A		*/
+#define CHIP_CL6420B	SVGA_TYPE(V_CIRRUS,24)	/* Cirrus 6420B		*/
+#define CHIP_CL6440	SVGA_TYPE(V_CIRRUS,25)	/* Cirrus 6440		*/
 #define CHIP_CPQ_UNK	SVGA_TYPE(V_COMPAQ,0)	/* Compaq unknown	*/
 #define CHIP_CPQ_IVGS	SVGA_TYPE(V_COMPAQ,1)	/* Compaq Int Vid Gr Sys*/
 #define CHIP_CPQ_AVGA	SVGA_TYPE(V_COMPAQ,2)	/* Compaq Advanced VGA	*/
@@ -477,7 +478,11 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ET4000W32	SVGA_TYPE(V_TSENG,3)	/* Tseng ET4000/W32	*/
 #define CHIP_ET4000W32I	SVGA_TYPE(V_TSENG,4)	/* Tseng ET4000/W32i	*/
 #define CHIP_ET4KW32P_A	SVGA_TYPE(V_TSENG,5)	/* Tseng ET4000/W32p rA	*/
-#define CHIP_ET4KW32P_O	SVGA_TYPE(V_TSENG,6)	/* Tseng ET4000/W32p oth*/
+#define CHIP_ET4KW32I_B	SVGA_TYPE(V_TSENG,6)	/* Tseng ET4000/W32i rB	*/
+#define CHIP_ET4KW32I_C	SVGA_TYPE(V_TSENG,7)	/* Tseng ET4000/W32i rC	*/
+#define CHIP_ET4KW32P_B	SVGA_TYPE(V_TSENG,8)	/* Tseng ET4000/W32p rB	*/
+#define CHIP_ET4KW32P_C	SVGA_TYPE(V_TSENG,9)	/* Tseng ET4000/W32p rC	*/
+#define CHIP_ET4KW32P_D	SVGA_TYPE(V_TSENG,10)	/* Tseng ET4000/W32p rD	*/
 #define CHIP_UMC_408	SVGA_TYPE(V_UMC,0)	/* UMC 85c408		*/
 #define CHIP_V7_UNKNOWN	SVGA_TYPE(V_VIDEO7,0)	/* Video7 unknown	*/
 #define CHIP_V7_FWRITE	SVGA_TYPE(V_VIDEO7,1)	/* Video7 Fastwrite/VRAM*/

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.0 1994/05/14 06:50:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.1 1994/08/31 04:19:31 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -198,8 +198,11 @@ int Class;
 					case 0x27:
 						*Chipset = CHIP_CL5429;
 						break;
-					case 0x29:
-						*Chipset = CHIP_CL543X;
+					case 0x28:
+						*Chipset = CHIP_CL5430;
+						break;
+					case 0x2A:
+						*Chipset = CHIP_CL5434;
 						break;
 					default:
 						Chip_data = Ver;

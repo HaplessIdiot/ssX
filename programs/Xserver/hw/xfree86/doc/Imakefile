@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.4 1994/09/23 10:18:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.5 1994/09/24 15:13:42 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -44,9 +44,11 @@ HWREADME =  README.ati README.trident README.tseng README.WstDig \
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL ServersOnly
 
-OTHERDOCS = VideoModes.doc modeDB.txt AccelCards README.clkprog
+OTHERDOCS = VideoModes.doc README.clkprog
 
-FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS)
+DATABASE = modeDB.txt AccelCards Monitors Devices
+
+FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(DATABASE)
 
 InstallMultipleDestFlags(install,$(FILES),$(LIBDIR)/doc,$(INSTDATFLAGS))
 

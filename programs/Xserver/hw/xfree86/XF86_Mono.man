@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Mono.man,v 1.3 94/04/11 16:03:09 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.2 1994/09/07 15:46:09 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.3 1994/09/24 15:11:51 dawes Exp $
 .TH XF86_Mono 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
@@ -205,6 +205,10 @@ using 8900B and 8900C chipsets actually support 16 clocks rather than the
 standard 8 clocks.  Such boards will have a "TCK9002" or "TCK9004" chip
 on them.  Specifying this option will allow the driver to detect and use
 the extra 8 clocks.
+.sp
+\fBpower_saver\fP - This option enables the server
+to use the power saving feature of "green" monitors instead of blanking
+when the screen saver is activated.  This option is experimental.
 .sp
 \fBsecondary\fP - for the hgc1280 and apollo9 chipsets. This option allows
 to use these cards jumpered to the secondary I/O / memory address.

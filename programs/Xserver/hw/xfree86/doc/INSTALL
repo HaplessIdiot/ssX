@@ -27,7 +27,10 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
 
     - X Consortium X11R6 distribution with fixes 01-05 applied.
 
-    - XFree86-3.1.diff.gz.
+    - XFree86-3.1.tar.gz        (a tar of xc/programs/Xserver/hw/xfree86/)
+
+    - XFree86-3.1.diff.gz       (a patch for everything outside of
+                                 xc/programs/Xserver/hw/xfree86/)
 
     - The full XFree86 source tree requires about 110MB.  An additional
       110MB (more for OSs without shared libraries) is required to build
@@ -58,6 +61,8 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
 2. Starting from the stock X Consortium PL5 distribution, go to the
    directory above your 'xc' directory, and run:
 
+      rm -fr xc/programs/Xserver/hw/xfree86
+      gzip -d < XFree86-3.1.tar.gz | tar vxf -
       gzip -d < XFree86-3.1.diff.gz | patch -p -E
 
    If you are installing in an unmodified tree there shouldn't be any
@@ -241,4 +246,4 @@ following:
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.0 1994/09/24 15:13:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.1 1994/09/25 12:29:44 dawes Exp $

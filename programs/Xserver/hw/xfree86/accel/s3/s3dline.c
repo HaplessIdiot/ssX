@@ -1,5 +1,5 @@
 /* $XConsortium: s3dline.c,v 1.2 94/04/17 20:31:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.1 1994/08/03 13:30:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.2 1994/08/20 07:33:51 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -182,6 +182,9 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    S3_OUTW32(WRT_MASK, pGC->planemask);
    S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+   /* Fix problem writing to the cursor storage area */
+   WaitQueue(1);
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (pDrawable->pScreen->height-1));
    
    xorg = pDrawable->x;
    yorg = pDrawable->y;
@@ -559,9 +562,10 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
 	    pbox++;
       }
    }
-   WaitQueue(3);
+   WaitQueue(4);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);  
+   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    UNBLOCK_CURSOR;
 }

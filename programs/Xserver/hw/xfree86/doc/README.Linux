@@ -59,11 +59,11 @@ Also, a faster graphics card, bus or RAM, will improve server performance.
 	After unpacking the tar files, you need to include /usr/X11R6/lib
 in /etc/ld.so.conf (where it should already be by default) or in your
 LD_LIBRARY_PATH environment variable. Also, the configuration file
-/usr/X11R6/lib/X11/XFConfig *MUST* be properly filled out based on the host
-setup using Xconfig.sample as a starting point and README.Config as
-guideline.  You may damage your hardware if you use a wrong Xconfig file,
+/usr/X11R6/lib/X11/XF86Config *MUST* be properly filled out based on the host
+setup using XF86Config.eg as a starting point and README.Config as
+guideline.  You may damage your hardware if you use a wrong XF86Config file,
 so READ THE DOCS, especially the man pages and the other README files in
-/usr/X11R6/lib/X11/etc.
+/usr/X11R6/lib/X11/doc.
 
 	XFree86 has the ability to perform VT switching to and from the X
 server. When first started, XFree86 will automatically locate the first
@@ -102,11 +102,10 @@ all keys are bound: kernel-specific, multiple keysym, and dead keys are not
 handled by the server. All others are translated to their X equivalents.
 Note that the XFree86 server only allows for four modifier maps: unshifted,
 shifted, modeswitch unshifted and modeswitch shifted.  Depending on what
-the modeswitch key is (it is settable in your Xconfig and defaults to Alt),
+the modeswitch key is (it is settable in your XF86Config and defaults to Alt),
 XFree86 will read those tables into its keymaps.  This means if you use
 certain keys, like left-Control, for Linux modeswitch, that will not be
-mappable to X. Read the manpage XFree86kbd for more information about X
-keyboard handling.
+mappable to X.
 
 	There are some quirks that may need some fixing depending on your
 configuration. In the past, Linux xload used the BSD method of obtaining
@@ -169,4 +168,4 @@ the comp.windows.x.i386unix newsgroup. Questions or comments about Linux
 support or the Linux distribution should be made to orestz@eskimo.com.
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.0 1994/09/17 04:06:46 dawes Exp $

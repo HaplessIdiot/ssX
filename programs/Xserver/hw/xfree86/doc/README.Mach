@@ -22,12 +22,12 @@ Mach 3.0 kernels.  Note: the latest SuperProbe can be used with older
 Mach 3.0 kernels by specifying the command line option -no16.
 
 Autodetection of SVGA clocks will not work at all with the Mach 3.0
-kernel; the clocks must be specified in the Xconfig file.  Mach 2.5
+kernel; the clocks must be specified in the XF86Config file.  Mach 2.5
 kernels can compute the clocks correctly.  (So you might need to use
 Mach 2.5 to get the data for the clock line.)  Autodetection of the
 SVGA chipset requires Mach 2.5 release X142E or later, or Mach 3.0
 release MK76 or later.  Alternatively, you can specify a Chipset line
-in the Xconfig file.
+in the XF86Config file.
 
 Lastly, only the ATI Mach32 Accelerator server (XF86_Mach32) has been
 extensively tested under Mach 3.0.  It works reasonably and the OS
@@ -44,9 +44,9 @@ in /usr/X11R6 make sure you have enough room for it (about 45Meg).
 The previous server for XFree86 2.1 was installed in /usr/misc/.X11;
 thus you can easily keep both servers around.
 
-Mouse selection for Mach is different from that described in the X386
-manual entry.  The `Mouse' keyword in Xconfig is ignored.  The mouse
-device is always /dev/mouse.
+Mouse selection for Mach is different from that described in the XF86Config
+manual entry.  The Pointer Device entry in XF86Config is ignored.  The
+mouse device is always /dev/mouse.
 
 Mach supports several kinds of external mice, the logitech three
 button mouse, the microsoft two button mouse, the PS2 mouse, and the
@@ -160,4 +160,4 @@ necessary for Mach is that the X servers be able to open /dev/iopl for
 read/write.  There are many ways to achieve this effect.
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach,v 3.0 1994/06/05 05:56:40 dawes Exp $

@@ -8,7 +8,7 @@ Currently this implementation of the video7 driver only supports single bank
 mode, which can cause performance degradation, and makes no attempt to
 distinguish between the different video7 chips.
 
-It also does not probe for memory, so in your Xconfig file, make sure that
+It also does not probe for memory, so in your XF86Config file, make sure that
 you use the following line:
 	Videoram XXX
 Where XXX is the amount of RAM in your card. Most of them have at least
@@ -16,11 +16,11 @@ Where XXX is the amount of RAM in your card. Most of them have at least
 
 Also, the clock probing function of XFree86 doesn't seem to correctly
 get the clocks. The documentation I used (vgadoc3) suggests using the
-following values for the Clocks line in your Xconfig file:
+following values for the Clocks line in your XF86Config file:
 	Clocks        25.175 28.322 30.000 32.514 34.000 36.000 38.000 40.000
 
 For 800x600 mode, use a dot clock of 38 instead of 36 or 40 as suggested in
-most of the sample Xconfig files and modeDB.txt. This seems to be what is
+most of the sample XF86Config files and modeDB.txt. This seems to be what is
 used in the BIOS mode (0x69) which is the 800x600 in 256 colors.
 
 Known bugs:
@@ -68,4 +68,4 @@ Disclaimer:
 	USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Video7,v 3.0 1994/05/29 02:06:22 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.4 1994/09/21 10:43:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.5 1994/09/22 15:47:35 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -176,12 +176,13 @@ XCOMM    VertRefresh	40-50, 80-100 # multiple ranges of sync frequencies
 XCOMM Modes can be specified in two formats.  A compact one-line format, or
 XCOMM a multi-line format.
 
+XCOMM A generic VGA 640x480 mode (hsync = 31.5kHz, refresh = 60Hz)
 XCOMM These two are equivalent
 
-XCOMM    ModeLine "640x480" 25 640 664 760 800 480 491 493 525
+XCOMM    ModeLine "640x480" 25.175 640 664 760 800 480 491 493 525
 
     Mode "640x480"
-        DotClock	25
+        DotClock	25.175
         HTimings	640 664 760 800
         VTimings	480 491 493 525
     EndMode
@@ -210,11 +211,15 @@ Section "Device"
     VendorName	"Unknown"
     BoardName	"Unknown"
     Chipset	"generic"
-
 XCOMM    VideoRam	256
-
 XCOMM    Clocks	25.2 28.3
+EndSection
 
+Section "Device"
+    # SVGA server auto-detected chipset
+    Identifier	"Generic SVGA"
+    VendorName	"Unknown"
+    BoardName	"Unknown"
 EndSection
 
 XCOMM Section "Device"
@@ -246,7 +251,7 @@ XCOMM The colour SVGA server
 
 Section "Screen"
     Driver	"svga"
-    Device	"Any Trident TVGA9000"
+    Device	"Generic SVGA"
     Monitor	"Generic Monitor"
     Subsection "Display"
         Depth	    8
@@ -284,22 +289,22 @@ EndSection
 
 XCOMM The accelerated servers (S3, Mach32, Mach8, 8514, P9000, AGX, W32)
 
-Section "Screen"
-    Driver	"accel"
-    Device	"Actix GE32+ 2MB"
-    Monitor	"Generic Monitor"
-    Subsection  "Display"
-        Depth	    8
-        Modes	    "640x480"
-        ViewPort    0 0
-        Virtual	    1280 1024
-    EndSubsection
-    SubSection "Display"
-        Depth	    16
-        Weight	    565
-        Modes	    "640x480"
-        ViewPort    0 0
-        Virtual	    1024 768
-    EndSubsection
-EndSection
+XCOMM Section "Screen"
+XCOMM     Driver	"accel"
+XCOMM     Device	"Actix GE32+ 2MB"
+XCOMM     Monitor	"Generic Monitor"
+XCOMM     Subsection  "Display"
+XCOMM         Depth	    8
+XCOMM         Modes	    "640x480"
+XCOMM         ViewPort    0 0
+XCOMM         Virtual	    1280 1024
+XCOMM     EndSubsection
+XCOMM     SubSection "Display"
+XCOMM         Depth	    16
+XCOMM         Weight	    565
+XCOMM         Modes	    "640x480"
+XCOMM         ViewPort    0 0
+XCOMM         Virtual	    1024 768
+XCOMM     EndSubsection
+XCOMM EndSection
 

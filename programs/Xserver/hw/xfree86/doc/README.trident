@@ -31,7 +31,7 @@ release of XFree86 2.1:
 It must be noted that the 9000i chipset is treated as a 9000 by the server.
 Additionally the 9100B, 9200CX, 9320, 9400CX, and 9420 chipsets are treated 
 as a Trident 8900CL. Therefore it is equivalent to putting 
-'Chipset "tvga8900cl"' or 'Chipset "tvga9000"' in the Xconfig file.  Also, 
+'Chipset "tvga8900cl"' or 'Chipset "tvga9000"' in the XF86Config file.  Also, 
 note that the 9000i, 9100B, and 9320 have not been tested with the server, 
 but should work in this way according to the chipset documentation.
 
@@ -61,9 +61,9 @@ clocks, which will allow 800x600 modes, non-interlaced.
   We have had reports of the server failing to detect the amount of installed
 memory and the correct dot-clocks on older TVGA8900 boards.  If the server 
 fails to detect the correct amount of memory, use the "Videoram" keyword in 
-your Xconfig file to specify it.  (e.g. Videoram 512 or Videoram 1024).  If 
+your XF86Config file to specify it.  (e.g. Videoram 512 or Videoram 1024).  If 
 the server has problems detecting the dot-clocks, try adding the following 
-line to your Xconfig file:
+line to your XF86Config file:
 
         Clocks  25 28 45 36 57 65 50 40
 
@@ -77,8 +77,8 @@ labeled "Trident TCK900x" ("x" has been seen as 2 or 4; there may be others),
 your board may actually have a 4th clock select bit.  The 9002 has twelve
 distinct clocks (the other 4 are duplicates); the 9004 has 16 clocks (the
 same 12 as the 9002 + 4 others).  If you see such a chip on a board with
-an 8900B or 8900C, put the following line in your Xconfig file after the
-"vga256" and/or "vga2" line:
+an 8900B or 8900C, put the following line in the Device section of your
+XF86Config file:
 
         Option "16clocks"
 
@@ -97,4 +97,4 @@ clock speed.  So be prepared for this phenomenon to occur, and have the board
 documentation handy.
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.trident,v 3.0 1994/05/29 02:06:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.trident,v 3.1 1994/09/24 15:13:51 dawes Exp $

@@ -99,9 +99,6 @@ VGA16
 Optional:
 ---------
 
-config
-     (.6Mb) Steve Zwaska's ConfigXF86 hardware configuration utiltiy
-
 doc
      (.3Mb) READMEs and XFree86 specific man pages
 
@@ -503,4 +500,4 @@ David Dawes
 -----------------
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.1 1994/09/20 12:47:13 dawes Exp $

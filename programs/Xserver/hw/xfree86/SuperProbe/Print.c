@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.0 1994/05/14 06:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.1 1994/08/31 04:19:57 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -56,7 +56,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD5422", "Cirrus CL-GD5424", 
 		  "Cirrus CL-GD5426", "Cirrus CL-GD5428",
 		  "Cirrus CL-GD5429",
-		  "Cirrus CL-GD543x",
+		  "Cirrus CL-GD5430", "Cirrus CL-GD5434",
 		  "Cirrus CL-GD6205", "Cirrus CL-GD6215",
 		  "Cirrus CL-GD6225", "Cirrus CL-GD6235",
 		  "Cirrus CL-GD5410",
@@ -104,7 +104,13 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
-		  "Tseng ET4000/W32p Rev A", "Tseng ET4000/W32p (other)" },
+		  "Tseng ET4000/W32p Rev A",
+		  "Tseng ET4000/W32i Rev B",
+		  "Tseng ET4000/W32i Rev C",
+		  "Tseng ET4000/W32p Rev B",
+		  "Tseng ET4000/W32p Rev C",
+		  "Tseng ET4000/W32p Rev D",
+		},
 /* UMC */	{ "UMC 85c408" },
 /* Video7 */	{ "Video7 (chipset unknown)",
 		  "Video7 FastWrite/VRAM (HT208)", "Video7 1024i (HT208A)",

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.40 1994/09/24 15:12:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.41 1994/09/25 12:28:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -157,6 +157,7 @@ static SymTabRec s3DacTable[] = {
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
    { S3_SDAC_DAC,	"s3_sdac" },
+   { S3_GENDAC_DAC,	"s3gendac" },
    { -1,		"" },
 };
 
@@ -847,6 +848,10 @@ s3Probe()
 	 if (!S3_864_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
 	    chips = "864 and 805i chips";
 	 break;
+      case S3_GENDAC_DAC:
+	 if (!S3_801_SERIES(s3ChipId))
+	    chips = "801 and 805 chips";
+	 break;
       }
       if (chips) {
 	 ErrorF("%s %s: Ramdac \"%s\" is only supported with %s\n",
@@ -904,6 +909,7 @@ s3Probe()
 	 case ATT20C498_DAC:
 	 case STG1700_DAC:
 	 case S3_SDAC_DAC:
+	 case S3_GENDAC_DAC:
 	    break;
 	 case SC15025_DAC:
 	    break;
@@ -936,6 +942,7 @@ s3Probe()
 	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case SC15025_DAC:
+      case S3_GENDAC_DAC:
 	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case BT485_DAC:
@@ -1166,17 +1173,17 @@ s3Probe()
 
    switch (s3RamdacType) {
    case BT485_DAC:
-      if (maxRawClock > 67500 && s3Bpp == 1)  /* XXXX is the s3Bpp bit right? */
+      if (maxRawClock > 67500)
 	 clockDoublingPossible = TRUE;
-      if (s3Bt485PixMux)
+      if (s3Bt485PixMux && s3Bpp < 4)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       else
 	 s3InfoRec.maxClock = 85000;
       break;
    case ATT20C505_DAC:
-      if (maxRawClock > 90000 && s3Bpp == 1)  /* XXXX is the s3Bpp bit right? */
+      if (maxRawClock > 90000)
 	 clockDoublingPossible = TRUE;
-      if (s3Bt485PixMux)
+      if (s3Bt485PixMux && s3Bpp < 4)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       else
 	 s3InfoRec.maxClock = 85000;
@@ -1217,6 +1224,9 @@ s3Probe()
       if (s3Bpp > 1)
 	 s3InfoRec.maxClock /= 2;
 	 maxRawClock /= 2;
+      break;
+   case S3_GENDAC_DAC:
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed / s3Bpp;
       break;
    case SC15025_DAC:
       {
@@ -1571,11 +1581,8 @@ s3Probe()
 	    }
 	    break;
 	 case ATT20C490_DAC:
-	    if (s3Bpp > 1) {
-	       pMode->SynthClock *= s3Bpp;
-	    }
-	    break;
 	 case SC15025_DAC:
+	 case S3_GENDAC_DAC:
 	    if (s3Bpp > 1) {
 	       pMode->SynthClock *= s3Bpp;
 	    }
@@ -1588,7 +1595,7 @@ s3Probe()
       } while (pMode != pEnd);
    }
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && s3Bpp == 1)
 	 s3DAC8Bit = TRUE;
       if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
 	 s3DACSyncOnGreen = TRUE;
@@ -1599,11 +1606,11 @@ s3Probe()
    }
 
    if (DAC_IS_ATT490 || DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && s3Bpp == 1)
          s3DAC8Bit = TRUE;
    }
 
-   if (s3InfoRec.bitsPerPixel == 8 && s3DAC8Bit && xf86Verbose)
+   if (s3DAC8Bit && xf86Verbose)
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
          XCONFIG_GIVEN, s3InfoRec.name);
 

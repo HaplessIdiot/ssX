@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.7 1994/09/24 15:11:52 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.8 1994/09/25 13:25:13 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -148,7 +148,7 @@ Generic:
 generic
 .RE
 .TP 8
-.B option \fI"optionstring"\fP
+.B Option \fI"optionstring"\fP
 allows the user to select certain options provided by the drivers.  Currently 
 the following strings are recognized:
 .sp
@@ -185,6 +185,10 @@ the extra 8 clocks.
 set of clocks that are normally used.  Specifying this option will force
 the driver to probe for clocks instead of reporting the built-in defaults.
 This option is for debugging purposes only.
+.sp
+\fBpower_saver\fP - This option enables the server
+to use the power saving feature of "green" monitors instead of blanking
+when the screen saver is activated.  This option is experimental.
 .sp
 \fBnoaccel\fP - for Cirrus and WD chipsets.  This option disables the
 accelerated features for the clgd5426, clgd5428, wd90c31 and wd90c33 chipsets.

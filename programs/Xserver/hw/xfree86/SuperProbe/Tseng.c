@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.0 1994/05/14 06:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.1 1994/08/31 04:20:08 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -81,8 +81,20 @@ int *Chipset;
 				case 0x02:
 					*Chipset = CHIP_ET4KW32P_A;
 					break;
+				case 0x03:
+					*Chipset = CHIP_ET4KW32I_B;
+					break;
+				case 0x04:
+					*Chipset = CHIP_ET4KW32I_C;
+					break;
 				case 0x05:
-					*Chipset = CHIP_ET4KW32P_O;
+					*Chipset = CHIP_ET4KW32P_B;
+					break;
+				case 0x06:
+					*Chipset = CHIP_ET4KW32P_C;
+					break;
+				case 0x07:
+					*Chipset = CHIP_ET4KW32P_D;
 					break;
 				default:
 					Chip_data = ver >> 4;
@@ -149,7 +161,11 @@ int Chipset;
 	case CHIP_ET4000W32:
 	case CHIP_ET4000W32I:
 	case CHIP_ET4KW32P_A:
-	case CHIP_ET4KW32P_O:
+	case CHIP_ET4KW32I_B:
+	case CHIP_ET4KW32I_C:
+	case CHIP_ET4KW32P_B:
+	case CHIP_ET4KW32P_C:
+	case CHIP_ET4KW32P_D:
 		switch (rdinx(CRTC_IDX, 0x37) & 0x09)
 		{
 		case 0x00:
@@ -163,14 +179,11 @@ int Chipset;
 			break;
 		case 0x09:
 			Mem = 1024;
+			if ((Chipset != CHIP_ET4000W32) &&
+			   (rdinx(CRTC_IDX, 0x32) & 0x80))
+			    Mem = 2048;
 			break;
 		}
-		if ((Chipset != CHIP_ET4000W32) &&
-		    (rdinx(CRTC_IDX, 0x32) & 0x80))
-		{
-			Mem *= 2;
-		}
-		break;
 	}
 
 	/* 

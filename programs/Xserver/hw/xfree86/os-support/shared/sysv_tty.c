@@ -1,5 +1,5 @@
 /* $XConsortium: sysv_tty.c,v 1.1 94/03/28 21:32:14 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.0 1994/07/24 11:53:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -36,6 +36,7 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
 
 static Bool not_a_tty = FALSE;
 
@@ -128,10 +129,13 @@ unsigned cflag;
 		tty.c_cflag |= B1200;
 	}
 
-	if (write(xf86Info.mseFd, c, 2) != 2)
+	if (xf86Info.mseType == P_LOGIMAN || xf86Info.mseType == P_LOGI)
 	{
-		FatalError("Unable to write to mouse fd (%s)\n",
-			   strerror(errno));
+		if (write(xf86Info.mseFd, c, 2) != 2)
+		{
+			FatalError("Unable to write to mouse fd (%s)\n",
+				   strerror(errno));
+		}
 	}
 	usleep(100000);
 

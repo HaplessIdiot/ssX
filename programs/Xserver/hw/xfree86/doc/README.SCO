@@ -64,15 +64,15 @@ To install the XFree86 binaries just follow these steps.
 
     as root,
 
-    2) create a directory /usr/X386, permissions 755 should do nicely.
-    3) cd /usr/X386
+    2) create a directory /usr/X11R6, permissions 755 should do nicely.
+    3) cd /usr/X11R6
     4) extract the archives, for example:
 
             gunzip < XFXXX-bin.tz | tar xvf -
     
     5) if you have installed man pages see the later section on
        setting up man pages.
-    6) Look through /usr/X386/lib/X11/etc/INSTALL, especially section 2
+    6) Look through /usr/X11R6/lib/X11/doc/INSTALL, especially section 2
        on configuring and using XFree86.   This should allow you to get
        a server up and running.  Before starting the server check in
        the later section "Before Running XFree86", in this document, to
@@ -114,26 +114,21 @@ in the R5 distribution.
 If you are going to be using a mouse other than a serial mouse you will
 require the appropriate mouse drivers to be installed.  To do this run
 "mkdev mouse" and configure it as required.  Then use the mouse device
-created in /dev/mouse in your Xconfig file along with the appropriate type.
+created in /dev/mouse in your XF86Config file along with the appropriate type.
 If you are unsure which device to use the SCO manual pages offer a description
 of the various mouse/device associations ("man mouse").
 
 To use a Bus/Keyboard or PS2 mouse you should configure the mouse drivers
 under SCO as above using 'mkdev mouse'. You may then use the OsMouse option
-in your Xconfig to specify that XFree86 should use the SCO mouse drivers.
-For example, replace the line:
-
-        Logitech    "/dev/tty1a"
-
-with
-
-        OsMouse
+in your XF86Config to specify that XFree86 should use the SCO mouse drivers.
+To do this, set the Protocol to "OsMouse" in the Pointer section of your
+XF86Config file.
 
 If you are using an Accelerated Localbus/EISA card you may wish to install
 the "dmmap" driver.  This driver allows the server to use a linear address
 mapping in high memory when accessing the card. The dmmap driver comes in
 two forms, a binary archive which is supplied with the full binary
-distribution and a source archive which is located in /usr/X386/lib/X11/etc.
+distribution and a source archive which is located in /usr/X11R6/lib/X11/etc.
 Both distributions provide instuctions for installation/removal within the
 README file. 
 
@@ -152,10 +147,10 @@ should look in mit/server/ddx/x386/common/x386Events.c.
 -----------------------
 
 After compiling the tree, or after installing the binary distribution you
-can get man to recognise the XFree86 man pages by adding /usr/X386/man to
+can get man to recognise the XFree86 man pages by adding /usr/X11R6/man to
 the MANPATH in /etc/default/man, the line should look similar to:
 
-    MANPATH=/usr/man:/usr/X386/man
+    MANPATH=/usr/man:/usr/X11R6/man
 
 This allows all users to view the X man pages.  You may change your own
 MANPATH environment variable if you do not want everyone to access the
@@ -180,7 +175,7 @@ still use the Motif window manager (mwm) if you prefer.
 7) Compiling XFree86 under 3.2.2
 --------------------------------
 
-Currently XFree86 is configured to install under /usr/X386. The binary
+Currently XFree86 is configured to install under /usr/X11R6. The binary
 distribution will be configured to go into this directory.  If you are
 compiling your own XFree86 there is no reason why this cannot be changed.
 Check in the X11 config/README on how to change your ProjectRoot.
@@ -391,11 +386,11 @@ become obsolete or invalid in a later version of XFree86.
 Some relevant documentation for SCO Users and Developers can be found in
 the following files.
 
-    README       - the standard XFree86 README (/usr/X386/lib/X11/etc)
+    README       - the standard XFree86 README (/usr/X11R6/lib/X11/doc)
     README.SVR3  - Although a lot of this readme is based on Interactive
                a substantial proportion is still relevant.
     All of the VGA/Config documentation.
-               /usr/X386/lib/X11/etc/VideoModes.doc and the README
+               /usr/X11R6/lib/X11/doc/VideoModes.doc and the README
                files for particular video cards.
 
 
@@ -408,9 +403,9 @@ of no concern.  This will be fixed in a future release.
 
 Using the SCO installed mouse devices with XFree86 may not work (ie, for a
 bus mouse).  The best way to use these mouse devices is to specify
-"OsMouse" in the Xconfig file.
+"OsMouse" in the XF86Config file.
 
-Not all of the applications in /usr/X386/bin have been debugged.
+Not all of the applications in /usr/X11R6/bin have been debugged.
 
 
 11) Trouble Shooting
@@ -437,8 +432,8 @@ Problem:
     The server starts but the screen is not aligned correctly or is shakey
     and impossible to view.
 Causes:
-    This is most likely due to an incorrect Xconfig setup.  Look for the
-    files README.Config  VideoModes.doc (in /usr/X386/lib/X11/etc with 
+    This is most likely due to an incorrect XF86Config setup.  Look for the
+    files README.Config  VideoModes.doc (in /usr/X11R6/lib/X11/doc with 
     the binary distribution).  These files explains how to fix up your 
     video modes.
 
@@ -475,7 +470,7 @@ Problem:
     2) When starting an X application is dies with the above error.
 Causes:
     1) You do not have the binaries installed in the correct directory.
-       Check that they are in /usr/X386
+       Check that they are in /usr/X11R6
     2) You have upgraded to a new binary distribution which has a new
        version of the shared libraries which are not compatible with your
        old binaries.  To fix this you will need to re-install the old
@@ -572,4 +567,4 @@ Special thanks to Jerry Whelan (guru@stasi.bradley.edu) for providing an
 ftp site for the binary distribution.
 
     
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.0 1994/08/31 04:40:12 dawes Exp $

@@ -726,7 +726,7 @@ Clock Chip		: ICD2061A
 Programmable? (Y/N)	: Y
 Number of clocks	: programmable
 Clocks			: "icd2061a"
-Option Flags		: "Bt485"
+Option Flags		:
 RAMDAC			: BrookTree Bt485
 Submitter		: Marc Evans <marc@xfree86.org>
 Last Edit Date		:
@@ -742,7 +742,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485KPJ135 
 Submitter               : David Wexelblat <dwex@xfree86.org>
 Last Edit Date          : October 16, 1993
@@ -758,7 +758,7 @@ Clock Chip              : ?
 Programmable? (Y/N)     : Yes
 Number of clocks        : Programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Brooktree Bt485
 Submitter               : Orest Zborowski <orestz@microsoft.com>
 Last Edit Date          : Sep 25, 1993
@@ -774,7 +774,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 N}mber of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree Bt485
 Submitter               : Daniel Ling <danzig@eclipse.its.rpi.edu>
 Last Edit Date          :
@@ -790,7 +790,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485KPJ135 [other codes: 006 9320]
 Submitter               : Ed Hall <edhall@rand.org>
 Last Edit Date          : October 15, 1993
@@ -806,7 +806,7 @@ Clock Chip              : icd2061a
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485
 Submitter               : Ted Goldblatt
 Last Edit Date          : 25 October 1993
@@ -822,7 +822,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Yes
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree 485
 Submitter               : Randy Terbush <randyt@cse.unl.edu>
 Last Edit Date          : Oct 25, 1993
@@ -838,7 +838,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 N}mber of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree Bt485 
 Submitter               : Daniel Ling <danzig@eclipse.its.rpi.edu>
 Last Edit Date          : 
@@ -854,7 +854,7 @@ Clock Chip		: ICD2061A
 Programmable? (Y/N)	: Y 
 Number of clocks	: programmable
 Clocks			: "icd2061a"
-Option Flags		: "bt485", "nolinear", "nomemaccess", "bt485_curs"
+Option Flags		: "nolinear", "nomemaccess", "bt485_curs"
 RAMDAC			: BT485
 Submitter		: Andreas Joppich <aj@ms.DeTeMobil.de> 
 Last Edit Date		: March 24,1994 
@@ -871,7 +871,7 @@ Programmable? (Y/N)	: N
 Number of clocks	: 16
 Clocks			: 25 28 40 0 50 77 36 45
 Clocks (cont)		: 130 120 80 31 110 65 75 95
-Option Flags		: "sc15025" "dac_8_bit"
+Option Flags		: "dac_8_bit"
 RAMDAC			: Sierra SC 15025
 Submitter		: Kai Maekisara <Kai.Makisara@vtt.fi>
 Last Edit Date		: March 24, 1994
@@ -903,7 +903,7 @@ Clock Chip		: ICD2061A
 Programmable? (Y/N)	: Y
 Number of clocks        : programmable
 Clocks			: "icd2061a"
-Option Flags		: stb_pegasus,bt485,dac_8_bit,sync_on_green
+Option Flags		: stb_pegasus,dac_8_bit,sync_on_green
 RAMDAC			: Bt485
 Submitter		: David Gadbois
 Last Edit Date		: May 27, 1994
@@ -1670,7 +1670,7 @@ ICS ICS2494-275, ICS2494-305:
 # Blank form for new supported cards.  Fill this in and mail in everything  #
 # below header section.                                                     #
 #---------------------------------------------------------------------------#
-To: xfree86@physics.su.oz.au
+To: XFree86@XFree86.org
 Subject: New accelerated card database entry.
 
 Card Vendor		: 
@@ -1691,4 +1691,4 @@ Last Edit Date		:
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/AccelCards,v 3.0 1994/05/29 02:06:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/AccelCards,v 3.1 1994/08/31 04:40:08 dawes Exp $
