@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.10 1997/09/30 04:51:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.13 1997/11/01 15:04:31 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -218,7 +218,28 @@ GLINTAccelInit ()
 	GLINTSetupFor8x8PatternColorExpand;
       xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
 	GLINTSubsequent8x8PatternColorExpand;
-
+      xf86AccelInfoRec.ImageWriteOffset = glintInfoRec.displayWidth *
+                        glintInfoRec.virtualY * (glintInfoRec.bitsPerPixel /
+8);
+      /* 4 scanlines should be enough */
+      xf86AccelInfoRec.ImageWriteRange = glintInfoRec.displayWidth * 
+                        (glintInfoRec.bitsPerPixel / 8) * 4;
+ 
+      xf86AccelInfoRec.ServerInfoRec = &glintInfoRec;
+ 
+      xf86AccelInfoRec.PixmapCacheMemoryStart =
+        xf86AccelInfoRec.ImageWriteOffset + xf86AccelInfoRec.ImageWriteRange;
+   
+      xf86AccelInfoRec.PixmapCacheMemoryEnd = glintInfoRec.videoRam * 1024;
+ 
+      /* Check Pixmap cache and if enough room, enable ImageWrites */
+      if ( (xf86AccelInfoRec.PixmapCacheMemoryEnd - 
+                xf86AccelInfoRec.ImageWriteOffset) >
+                        xf86AccelInfoRec.ImageWriteRange) {
+        xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY | NO_PLANEMASK;
+        xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy =
+                        GLINTSubsequentScanlineScreenToScreenCopy;
+      }
     }
   else if (IS_3DLABS_PERMEDIA_CLASS (coprotype))
     PermediaAccelInit ();
