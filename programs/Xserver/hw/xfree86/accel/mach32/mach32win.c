@@ -1,4 +1,5 @@
 /* $XConsortium: mach32win.c,v 1.2 94/04/17 20:30:52 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -61,6 +62,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
@@ -81,12 +83,6 @@ mach32CopyWindow(pWin, ptOldOrg, prgnSrc)
     short direction = 0;
     unsigned int *ordering;
     GC dummyGC;
-
-    if (!xf86VTSema)
-    {
-	cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
-	return;
-    }
 
     dummyGC.subWindowMode = ~IncludeInferiors;
 

@@ -1,4 +1,5 @@
 /* $XConsortium: mach32pcach.c,v 1.1 94/03/28 21:08:53 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -145,8 +146,9 @@ mach32CacheInit(w, h)
     int h;
 {
     int i;
-    int free_ram = mach32InfoRec.videoRam * 1024 - w * h;
-    int lines    = free_ram / w;
+    int free_ram = mach32InfoRec.videoRam * 1024 -
+		   w * h * (mach32InfoRec.bitsPerPixel / 8);
+    int lines    = free_ram / (w * (mach32InfoRec.bitsPerPixel / 8));
     int cache_sets;
 
 
@@ -466,7 +468,7 @@ DoCacheOpStipple(pix, size)
     mach32ImageOpStipple(pci->x, pci->y, pci->pix_w, pci->pix_h,
 			  pix->devPrivate.ptr, pix->devKind,
 			  pci->pix_w, pci->pix_h, pci->x, pci->y,
-			  255, 0, MIX_SRC, 0xffff);
+			  ~0, 0, MIX_SRC, 0xffff);
 
     DoCacheExpandPixmap(pci);
 
@@ -587,12 +589,15 @@ mach32CImageStipple(slot, x, y, w, h, pox, poy, fg, alu, planemask)
     WaitQueue(3);
     outw(FRGD_COLOR, fg);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-    outw(RD_MASK, 0x01);
+    if (mach32InfoRec.bitsPerPixel == 8)
+	outw(RD_MASK, 0x01);
+    else
+	outw(RD_MASK, 0x80);
 
     DoCacheImageFill(slot, x, y, w, h, pox, poy, alu, MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
     WaitQueue(2);
-    outw(RD_MASK, 0xff);
+    outw(RD_MASK, 0xffff);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 
     if (!(cInfo[slot].lru = ++pixmap_cache_clock))
@@ -622,12 +627,15 @@ mach32CImageOpStipple(slot, x, y, w, h, pox, poy, fg, bg, alu, planemask)
     outw(FRGD_COLOR, fg);
     outw(BKGD_COLOR, bg);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-    outw(RD_MASK, 0x01);
+    if (mach32InfoRec.bitsPerPixel == 8)
+	outw(RD_MASK, 0x01);
+    else
+	outw(RD_MASK, 0x80);
 
     DoCacheImageFill(slot, x, y, w, h, pox, poy, alu, alu, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
     WaitQueue(2);
-    outw(RD_MASK, 0xff);
+    outw(RD_MASK, 0xffff);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
 
     if (!(cInfo[slot].lru = ++pixmap_cache_clock))

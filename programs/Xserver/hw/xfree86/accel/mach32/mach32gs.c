@@ -1,4 +1,5 @@
 /* $XConsortium: mach32gs.c,v 1.2 94/04/17 20:30:47 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,6 +69,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
 
@@ -86,30 +88,34 @@ mach32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     char		*pdstStart;	/* where to put the bits */
 {
     int			j;
-    unsigned char	*pdst; /* where to put the bits */
+    char		*pdst; /* where to put the bits */
     int			pixmapStride;
 
-    if ((pDrawable->type != DRAWABLE_WINDOW) || (!xf86VTSema)) {
-        switch (pDrawable->depth) {
-            case 1:
+    if (pDrawable->type != DRAWABLE_WINDOW) {
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
 		mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-                break;
-            case 8:
+		break;
+	    case 8:
 		cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+		break;
+	    case 16:
+		cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+		break;
+	    default:
+		ErrorF("mach32GetSpans: Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     pixmapStride = PixmapBytePad(wMax, pDrawable->depth);
-    pdst = (unsigned char *)pdstStart;
+    pdst = pdstStart;
 
     for (; nspans--; ppt++, pwidth++) {
 	(mach32ImageReadFunc)(ppt->x, ppt->y, j = *pwidth, 1, pdst,
 				pixmapStride, 0, 0, ~0);
+	j *= mach32InfoRec.bitsPerPixel / 8;
 	pdst += j;		/* width is in 32 bit words */
 	j = (-j) & 3;
 	while (j--)		/* Pad out to 32-bit boundary */

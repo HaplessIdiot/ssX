@@ -1,4 +1,5 @@
 /* $XConsortium: mach32frect.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -60,6 +61,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 #include "mergerop.h"
 
@@ -90,12 +92,6 @@ mach32PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     PixmapPtr	    pPix;
     int		    pixWidth;
     int		    xrot, yrot;
-
-    if (!xf86VTSema)
-    {
-	cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-	return;
-    }
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;

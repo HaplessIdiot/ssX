@@ -1,4 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -31,6 +32,7 @@
 #include	"Xmd.h"
 #include	"Xproto.h"
 #include	"cfb.h"
+#include	"mach32cfb.h"
 #include	"misc.h"
 #include	"windowstr.h"
 #include	"gcstruct.h"
@@ -44,7 +46,7 @@
 
 extern Bool xf86Verbose;
 
-#define MAX_FONTS      	16	/* For static structure */
+#define MAX_FONTS      	32	/* For static structure */
 #define FC_MAX_WIDTH	24
 #define FC_MAX_HEIGHT	32
 
@@ -57,17 +59,30 @@ typedef struct {
 
 CacheFont8Rec	mach32FontCache[MAX_FONTS];
 static int      NumFonts;
-short		mach32ReadMask[8] = { 2, 4, 8, 16, 32, 64, 128, 1 };
+static short	*mach32ReadMask;
+short		mach32ReadMask8[8] =  { 2, 4, 8, 16, 32, 64, 128, 1 };
+short		mach32ReadMask16[16] = { 1, 2, 4, 8, 0x10, 0x20, 0x40, 0x80,
+					0x100, 0x200, 0x400, 0x800,
+					0x1000, 0x2000, 0x4000, 0x8000 };
+/* This variable is used to turn a cache slot into a cache planemask: */
+static unsigned char mach32FCplanemask;
 
 extern void QueryGlyphExtents();
 
+/* See mach32pcach.c for a picture of the cache layout.
+ * Each font must have <= 256 glyphs, and each glyph must fit in 24x32 bits.
+ * If those conditions are satisfied, the font can fit in a 768x256 bitmap,
+ * arranged as 32x8 glyphs.
+ * Each font is cached on one plane of the display.
+ */
 void
 mach32FontCache8Init(x,y)
     int x, y;
 {
     int        i;
-    int        free_ram    = mach32InfoRec.videoRam * 1024 - x * y;
-    int        lines       = free_ram / y;
+    int        free_ram    = mach32InfoRec.videoRam * 1024 -
+			     x * y * (mach32InfoRec.bitsPerPixel / 8);
+    int        lines       = free_ram / (y * (mach32InfoRec.bitsPerPixel / 8));
     int        cache_sets;
     static int initialized = 0;
 
@@ -80,11 +95,19 @@ mach32FontCache8Init(x,y)
 	     lines = 0;
     
        cache_sets = lines / 256;
-       if (cache_sets > MAX_FONTS / 8)
-	     cache_sets = MAX_FONTS / 8;
+       if (cache_sets > MAX_FONTS / mach32InfoRec.bitsPerPixel)
+	     cache_sets = MAX_FONTS / mach32InfoRec.bitsPerPixel;
        
-       NumFonts = 8 * cache_sets;
+       NumFonts = mach32InfoRec.bitsPerPixel * cache_sets;
        
+	if (mach32InfoRec.bitsPerPixel == 8) {
+		mach32ReadMask = mach32ReadMask8;
+		mach32FCplanemask = 0x07;
+	} else /* bpp == 16 */ {
+		mach32ReadMask = mach32ReadMask16;
+		mach32FCplanemask = 0x0f;
+	}
+
        if (xf86Verbose)
 	     ErrorF("%s %s: Font cache: %d fonts\n", XCONFIG_PROBED,
 		    mach32InfoRec.name, NumFonts );
@@ -94,7 +117,10 @@ mach32FontCache8Init(x,y)
 	mach32FontCache[i].font = (FontPtr)0;
 	mach32FontCache[i].lru = 0xffffffff;
 	mach32FontCache[i].x = 256;
-	mach32FontCache[i].y = y + 256 * (i >> 3);
+	if (mach32InfoRec.bitsPerPixel == 8)
+		mach32FontCache[i].y = y + 256 * (i >> 3);
+	else /* 16 */
+		mach32FontCache[i].y = y + 256 * (i >> 4);
     }
 }
 
@@ -128,6 +154,13 @@ mach32UnCacheFont8(font)
 	}
 }
 
+/*
+ * This routine selects a cache slot for the font using the LRU algorithm.
+ * For each glyph, the glyph metrics are read into the font cache.  If
+ * the glyph width equals the server's desired glyph padding, the glyph
+ * bitmap is read in one chunk, else it is read scanline by scanline.
+ * Finally, the glyph bitmap is stippled onto the display.
+ */
 int
 mach32CacheFont8(font)
     FontPtr font;
@@ -209,8 +242,8 @@ mach32CacheFont8(font)
 					  pb, nbyGlyphWidth, gWidth, gHeight,
 					  mach32FC_X+(c%32)*FC_MAX_WIDTH,
 					  mach32FC_Y+(c/32)*FC_MAX_HEIGHT,
-					  0xff, 0, mach32alu[GXcopy],
-					  (1 << (ret & 0x07)));
+					  0xffff, 0, mach32alu[GXcopy],
+					  (1 << (ret & mach32FCplanemask)));
 		}
 	    }
 	}
@@ -287,7 +320,11 @@ mach32CPolyText8(pDraw, pGC, x, y, count, chars, plane)
     WaitQueue(6);
     outw(FRGD_COLOR, (short)pGC->fgPixel);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-    outw(RD_MASK, mach32ReadMask[plane & 0x07]);
+/*
+ * Get the correct planemask no matter which cache set we're in
+ * or what depth we're at.
+ */
+    outw(RD_MASK, mach32ReadMask[plane & mach32FCplanemask]);
     outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
     outw(WRT_MASK, (short)pGC->planemask);
@@ -327,7 +364,7 @@ mach32CPolyText8(pDraw, pGC, x, y, count, chars, plane)
     outw(EXT_SCISSOR_T, 0);
     outw(EXT_SCISSOR_R, mach32MaxX);
     outw(EXT_SCISSOR_B, mach32MaxY);
-    outw(RD_MASK, 0xff);
+    outw(RD_MASK, 0xffff);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
@@ -359,7 +396,7 @@ mach32CImageText8(pDraw, pGC, x, y, count, chars, plane)
     if(!(ppci = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
 	return;
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
+    GetGlyphs(pGC->font, (unsigned long)count, chars,
 	      Linear8Bit, &n, ppci);
 
     QueryGlyphExtents(pGC->font, ppci, n, &info);

@@ -1,4 +1,5 @@
 /* $XConsortium: mach32dline.c,v 1.2 94/04/17 20:30:43 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -66,6 +67,7 @@ Modified for the mach32 by Mike Bernson    (mike@mbsun.mlb.org)
 #include "miline.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -170,12 +172,6 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
    short fix;
-
-   if (!xf86VTSema)
-   {
-      cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
-      return;
-   }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
    cclip = devPriv->pCompositeClip;
@@ -462,7 +458,7 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
 	       int dlen;
 	       int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
 
-               if (miZeroClipLine(pbox->x1, pbox->y1,
+		if (miZeroClipLine(pbox->x1, pbox->y1,
 					pbox->x2-1, pbox->y2-1,
 					&new_x1, &new_y1,
 					&new_x2, &new_y2,
@@ -476,7 +472,7 @@ mach32Dline(pDrawable, pGC, mode, npt, pptInit)
 		}
 		dashIndexTmp = dashIndex;
 		dashOffsetTmp = dashOffset; 
-			       
+
 		if (axis == X_AXIS) {
 		     dlen = abs(new_x1 - x1);
 		     len = abs(new_x2 - new_x1);

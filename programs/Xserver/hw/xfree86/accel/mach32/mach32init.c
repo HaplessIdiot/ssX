@@ -1,4 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.1 94/03/28 21:08:34 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -9,13 +10,14 @@
  *
  * Additions by Kevin E. Martin (martin@cs.unc.edu)
  *
- * KEVIN E. MARTIN AND RICKARD E. FAITH DISCLAIM ALL WARRANTIES WITH REGARD
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL KEVIN E. MARTIN BE LIABLE FOR ANY
- * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
- * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * KEVIN E. MARTIN, RICKARD E. FAITH, AND CRAIG E. GROESCHEL DISCLAIM ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL KEVIN E. MARTIN, RICKARD E.
+ * FAITH, OR CRAIG E. GROESCHEL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
  *
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
@@ -155,7 +157,7 @@ void mach32SetCRTCRegs(crtcRegs)
     outw(VERT_OVERSCAN, 0);
 
     /* Set the DAC for the currect mode */
-    mach32SetRamdac(crtcRegs->clock_sel);
+    mach32SetRamdac(&crtcRegs->clock_sel);
 
     /* Display control register -- this one turns on the display */
     WaitIdleEmpty();
@@ -224,6 +226,7 @@ void mach32InitLUT()
 */
 void mach32InitEnvironment()
 {
+    WaitQueue(8);
     /* Current mixes, src, foreground active */
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
@@ -324,7 +327,8 @@ void mach32InitAperture(screen_idx)
 	    for (i = 0; i <= mach32MaxY; i++) {
 
 		mach32VideoPageBoundary[i] = 65536 -
-		    ((i*mach32VirtX) - ((i*mach32VirtX)&0xffff0000));
+		    ((i*mach32VirtX*(mach32InfoRec.bitsPerPixel/8)) -
+		    ((i*mach32VirtX*(mach32InfoRec.bitsPerPixel/8))&0xffff0000));
 		if (mach32VideoPageBoundary[i] >= mach32MaxX)
 		    mach32VideoPageBoundary[i] = 0;
 	    }
@@ -347,74 +351,120 @@ void mach32InitAperture(screen_idx)
 }
 
 void mach32SetRamdac(clock)
-    int clock;
+    int *clock;
 {
-    int	old_EXT_GE_CONFIG;
+    unsigned short old_EXT_GE_CONFIG;
+    extern short mach32WeightMask;
+/*
+ * MaskOn is used to set DAC_MASK when programming Type 2 and 4 RAMDACs.
+ * It should be 0x0f for 4bpp (N/A), 0xff for 8bpp, 0x00 otherwise.
+ */
+    int MaskOn;
 
-    switch(mach32Ramdac) {
+    /* get the current value */
+    /* mask off high DAC address bits, multiplex_pixels, and bpp fields */
+    old_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG) & ~0x3130;
 
-    case DAC_TLC34075:
-	/* get the current value */
-	old_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG) & ~0x3100;
-	
-	if (mach32InfoRec.clock[(clock >> 2) & 0xf] > 80000) {
+    WaitQueue(11);
+    /* blank adjust = 0.  pixel delay = 3, except = 1 for 68830 */
+    SET_BLANK_ADJ(mach32Ramdac == DAC_ATI68830 ? 0x04 : 0x0c);
+
+    /* Guarantee low pixel clock */
+    outw(CLOCK_SEL, 0x11);
+
+    switch (mach32InfoRec.bitsPerPixel) {
+    case 8:
+	MaskOn = 0xff;
+	switch(mach32Ramdac) {
+        case DAC_TLC34075:
+	    /* Setup high dac address bits; set the rest of EXT_GE_CONFIG
+	     * to a safe 8 bpp mode (bits 13:12 = 10; bits 5:4 = 01).
+	     */
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000 | PIXEL_WIDTH_8);
+	    old_EXT_GE_CONFIG |= PIXEL_WIDTH_8 |
+		(mach32DAC8Bit ? DAC_8_BIT_EN : 0);
+
+	    if (mach32InfoRec.clock[(*clock >> 2) & 0xf] > 80000) {
 	    
-	    /* Guarantee low pixel clock */
-	    outw(CLOCK_SEL, 0x11);
+		/* pixel clock is SCLK/2 and VCLK/2 */
+		outb(OUTPUT_CLK_SEL, 0x09);
 
-	    /* Make sure that upper 2 address bit are ok */
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000);
+		/* set MUX contol 8/16 to 16 */
+		outb(MUX_CNTL, 0x1d);
 
-	    /* pixel clock is SCLK/2 and VCLK/2 */
-	    outb(OUTPUT_CLK_SEL, 0x09);
+		/* input clock source is CLK3 (must be last) */
+		outb(INPUT_CLK_SEL, 1);
 
-	    /* set MUX contol 8/16 to 16 */
-	    outb(MUX_CNTL, 0x1d);
+		outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | MULTIPLEX_PIXELS);
 
-	    /* Set clock source */
-	    outb(INPUT_CLK_SEL, 1);
+		/* set the blank adj and pixel delay values */
+		SET_BLANK_ADJ(1);
+	    } else {
+		/* Set clock source */
+		outb(INPUT_CLK_SEL, 0);
 
-	    /* set multiplex_pixels */
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x0100);
+		/* PCLK is SCLK/1 and VCLK disabled */
+		outb(OUTPUT_CLK_SEL, 0x30);
 
-	    /*set the blank adj and pixel delay values */
-	    SET_BLANK_ADJ(1);
+		/* set MUX contol 8/16 to 16 */
+		outb(MUX_CNTL, 0x2d);
 
-	    /* allow all 8 bit to go though dac */
-	    outb(DAC_MASK, 0xff);
-
-	    /* restore the pixel clock */
-	    outw(CLOCK_SEL, clock);
-	} else {
-	    /* Guarantee low pixel clock */
-	    outw(CLOCK_SEL, 0x11);
-
-	    /*set the blank adj and pixel delay values */
-	    SET_BLANK_ADJ(0x0c);
-
-	    /* Make sure that upper 2 address bit are ok */
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000);
-
-	    /* Set clock source */
-	    outb(INPUT_CLK_SEL, 0);
-
-	    /* pixel clock is SCLK/1 and VCLK */
-	    outb(OUTPUT_CLK_SEL, 0x30);
-
-	    /* set MUX contol 8/16 to 16 */
-	    outb(MUX_CNTL, 0x2d);
-
-	    /* allow all 8 bit to go though dac none mux */
-	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG);
-
-	    outb(DAC_MASK, 0xff);
-
-	    /* restore the pixel clock */
-	    outw(CLOCK_SEL, clock);
+		/* allow all 8 bit to go though dac none mux */
+		outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG);
+	    }
+	    break;
 	}
 	break;
-    }
+    case 16:
+	MaskOn = 0;
+	switch (mach32Ramdac) {
+	case DAC_TLC34075:
+	    if (mach32InfoRec.clock[(*clock >> 2) & 0xf] > 80000) {
+		ErrorF("Pixel multiplexing not supported at this depth\n");
+		break;
+	    }
+	    SET_BLANK_ADJ(1);
+	    outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | 0x2000 | PIXEL_WIDTH_8);
+	    /* input clock is CLK3 */
+	    outb(INPUT_CLK_SEL, 1);
+
+	    /* Output clock is SCLK/1 and VCLK/1, except if the dot clock
+             * divide-by-2 bit is set.  If so, clear it (double the clock)
+             * and use VCLK/2.
+	     */
+	    if (*clock & 0x40) {
+		*clock &= ~0x40;
+	        outb(OUTPUT_CLK_SEL, 8);
+	    } else
+	        outb(OUTPUT_CLK_SEL, 0);
+
+	    /* set mux to 24/32 */
+	    outb(MUX_CNTL, 0x0d);
+
+/* The example from ATI says "640x480 60 Hz needs longer blank adjust (2)."
+ * Is it the horizontal resolution that determines the need for a longer 
+ * blank adjust, the dot clock, or some combination of both?  Their code
+ * goes on only to check H_DISP, but is that because their BIOS allows only
+ * 640x480 60 Hz?  We will just check to see if the dot clock == 32MHz.
+ */
+	    if ((*clock & (0x0f << 2)) == (9 << 2)) {
+		SET_BLANK_ADJ(2);
+	    }
+
+	    outw(EXT_GE_CONFIG,
+		(PIXEL_WIDTH_16 | mach32WeightMask | DAC_8_BIT_EN | 2));
+	    break;
+	} /* switch mach32Ramdac */
+    } /* switch depth */
+
+    /* set DAC_MASK to enable display */
+    outb(DAC_MASK, MaskOn);
+    /* restore the pixel clock */
+    outw(CLOCK_SEL, *clock);
 }
+
+
+
 
 /*	mach32InitDisplay(screen_idx)
 
@@ -429,6 +479,7 @@ void mach32InitDisplay(screen_idx)
     xf86EnableIOPorts(mach32InfoRec.scrnIndex);
     mach32SaveVGAInfo(screen_idx);
 
+    WaitQueue(10);
     outb(ATIEXT, ATI2E); old_ATI2E = inb(ATIEXT+1);
     outb(ATIEXT, ATI32); old_ATI32 = inb(ATIEXT+1);
     outb(ATIEXT, ATI36); old_ATI36 = inb(ATIEXT+1);
@@ -453,6 +504,7 @@ void mach32InitDisplay(screen_idx)
     old_MISC_CNTL = inw(R_MISC_CNTL);
     old_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG);
 
+    WaitQueue(3);
     outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG & ~0x3000);
     old_DAC_MASK = inb(DAC_MASK);
 
@@ -466,6 +518,7 @@ void mach32InitDisplay(screen_idx)
     switch(mach32Ramdac) {
 
     case DAC_TLC34075:
+	WaitQueue(4);
 	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000) | 0x2000);
 	outw(CLOCK_SEL, 0x11);
 
@@ -478,6 +531,7 @@ void mach32InitDisplay(screen_idx)
 	break;
     }
 
+    WaitQueue(4);
     /* Reset the 8514/A, and disable all interrupts. */
     outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
     outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
@@ -488,17 +542,16 @@ void mach32InitDisplay(screen_idx)
     mach32AdjustFrame(mach32InfoRec.frameX0, mach32InfoRec.frameY0);
 
     /* Save the colormap */
-    mach32InitLUT();
+    if (mach32InfoRec.bitsPerPixel == 8)
+	mach32InitLUT();
 
     /* Save the shadow set registers */
+    WaitQueue(5);
     outw(SHADOW_SET, 1);
     outw(SHADOW_CTL, 0);
     outw(SHADOW_SET, 2);
     outw(SHADOW_CTL, 0);
     outw(SHADOW_SET, 0);
-
-    if (mach32DAC8Bit)
-	outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG | DAC_8_BIT_EN);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 
@@ -514,18 +567,17 @@ void mach32CleanUp()
     if (!mach32Inited)
 	return;
 
+    ProbeWaitIdleEmpty();
     switch(mach32Ramdac) {
 
     case DAC_TLC34075:
 	SET_BLANK_ADJ(0x0c);
 	outw(CLOCK_SEL, 0x11);
-	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3000) | 0x2000);
+	/* should call SetRamdac to set to 8 bpp */
+	outw(EXT_GE_CONFIG, (old_EXT_GE_CONFIG & ~0x3030) | 0x2010);
 	outb(INPUT_CLK_SEL, old_DAC_in_clock);
 	outb(OUTPUT_CLK_SEL, old_DAC_out_clock);
 	outb(MUX_CNTL, old_DAC_mux_clock);
-	outw(EXT_GE_CONFIG, old_EXT_GE_CONFIG & ~0x3000);
-	outb(DAC_MASK, 0xff);
-	outw(CLOCK_SEL, old_clock_sel);
 	break;
     }
 
@@ -540,6 +592,7 @@ void mach32CleanUp()
 	LUTInited = FALSE;
     }
 
+    WaitQueue(11);
     /* Reset the VGA registers */
     outw(ATIEXT, ATI2E | old_ATI2E << 8);
     outw(ATIEXT, ATI32 | old_ATI32 << 8);

@@ -1,4 +1,5 @@
 /* $XConsortium: mach32seg.c,v 1.2 94/04/17 20:30:50 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -105,12 +106,6 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
     register int x1, x2;
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
-
-    if (!xf86VTSema)
-    {
-	cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
-	return;
-    }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     cclip = devPriv->pCompositeClip;
@@ -398,9 +393,8 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
 	} /* sloped line */
     } /* while (nline--) */
 
-    WaitQueue(2);
+    WaitQueue(1);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: cfbply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -44,6 +45,8 @@ void
 RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
+    int		shape;
+    int		mode;
     int		count;
     DDXPointPtr	ptsIn;
 {

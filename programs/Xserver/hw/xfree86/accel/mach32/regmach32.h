@@ -1,5 +1,5 @@
 /* $XConsortium: regmach32.h,v 1.1 94/03/28 21:09:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.0 1994/04/29 14:07:00 dawes Exp $ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -288,6 +288,8 @@
 #define ROM_ADDR_1		0x52ee
 #define READ_SRC_X		0xdaee
 #define CHIP_ID			0xfaee
+#define EXT_CURSOR_COLOR_0	0x3aee
+#define EXT_CURSOR_COLOR_1	0x3eee
 #define EXT_FIFO_STATUS		0x9aee
 #define EXT_GE_CONFIG		0x7aee
 #define R_EXT_GE_CONFIG		0x8eee

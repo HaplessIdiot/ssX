@@ -1,4 +1,5 @@
 /* $XConsortium: mach32bstor.c,v 1.1 94/03/28 21:07:01 dpw Exp $ */
+/* $XFree86$ */
 /*-
  * mach32bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -30,6 +31,7 @@
 
 
 #include    "cfb.h"
+#include    "mach32cfb.h"
 #include    "X.h"
 #include    "mibstore.h"
 #include    "regionstr.h"
@@ -44,7 +46,7 @@ mach32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
     RegionPtr	  	prgnSave; 	/* Region to save (pixmap-relative) */
     int	    	  	xorg;	    	/* X origin of region */
     int	    	  	yorg;	    	/* Y origin of region */
-    WindowPtr  	  	pWin;
+    WindowPtr		pWin;
 {
     register BoxPtr	pBox;
     register int	i;
@@ -52,8 +54,14 @@ mach32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 
     if (!xf86VTSema)
     {
-	cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
-	return;
+	switch (pPixmap->drawable.bitsPerPixel) {
+	case 8:
+	    cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+	    return;
+	case 16:
+	    cfb16SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+	    return;
+	}
     }
 
     i = REGION_NUM_RECTS(prgnSave);
@@ -78,7 +86,7 @@ mach32RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
     RegionPtr	  	prgnRestore; 	/* Region to restore (screen-relative)*/
     int	    	  	xorg;	    	/* X origin of window */
     int	    	  	yorg;	    	/* Y origin of window */
-    WindowPtr  	  	pWin;
+    WindowPtr		pWin;
 {
     register BoxPtr	pBox;
     register int	i;
@@ -86,8 +94,14 @@ mach32RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 
     if (!xf86VTSema)
     {
-	cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
-	return;
+	switch (pPixmap->drawable.bitsPerPixel) {
+	case 8:
+	    cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+	    return;
+	case 16:
+	    cfb16RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+	    return;
+	}
     }
 
     i = REGION_NUM_RECTS(prgnRestore);

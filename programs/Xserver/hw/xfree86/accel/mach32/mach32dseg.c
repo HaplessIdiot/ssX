@@ -1,4 +1,5 @@
 /* $XConsortium: mach32dseg.c,v 1.2 94/04/17 20:30:44 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -65,6 +66,7 @@ Modified for the mach32 by Mike Bernson (mike@mbsun.mlb.org)
 #include "miline.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
@@ -143,12 +145,6 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
    short fix;
-
-   if (!xf86VTSema)
-   {
-      cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
-      return;
-   }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
    cclip = devPriv->pCompositeClip;
@@ -417,7 +413,7 @@ mach32Dsegment (pDrawable, pGC, nseg, pSeg)
 	       int dlen;
 	       int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
 
-               if (miZeroClipLine(pbox->x1, pbox->y1,
+		if (miZeroClipLine(pbox->x1, pbox->y1,
 					pbox->x2-1, pbox->y2-1,
 					&new_x1, &new_y1,
 					&new_x2, &new_y2,

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.0 1994/04/29 14:06:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -102,6 +102,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 
 #include "regmach32.h"
 #include "mach32.h"
@@ -121,26 +122,20 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr initPpt;
     int *initPwidth;
 
-    if (!xf86VTSema)
-    {
-	cfbSolidSpansGeneral(pDrawable, pGC,
-			     nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
-
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
 		ErrorF("should call mfbSolidFillSpans\n");
-                break;
-            case 8:
+		break;
+	    case 8:
+	    case 16:
 		ErrorF("should call cfbSolidFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
@@ -203,26 +198,20 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr initPpt;
     int *initPwidth;
 
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalTileFS(pDrawable, pGC,
-			   nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
-
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbTiledFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbTiledFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbTiledFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbTiledFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
@@ -253,7 +242,7 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#if PIXPRIV
+#ifdef PIXPRIV
     if (mach32CacheTile(pPix)) {
 	while (n--) {
 	    if (*pwidth < 50)
@@ -304,26 +293,20 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr initPpt;
     int *initPwidth;
 
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC,
-			      nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
-
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbStippleFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbStippleFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbStippleFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbStippleFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
@@ -407,26 +390,20 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr initPpt;
     int *initPwidth;
 
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC,
-			      nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
-
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbOpStippleFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbOpStippleFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbOpStippleFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbOpStippleFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))

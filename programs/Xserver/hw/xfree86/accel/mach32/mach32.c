@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.0 1994/05/06 08:50:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -14,11 +14,11 @@
  * about the suitability of this software for any purpose.  It is provided
  * "as is" without express or implied warranty.
  *
- * THOMAS ROELL, KEVIN E. MARTIN, AND RICKARD E. FAITH DISCLAIM ALL
- * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL THE AUTHORS
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * THOMAS ROELL, KEVIN E. MARTIN, RICKARD E. FAITH, AND CRAIG E. GROESCHEL
+ * DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ANY OR ALL OF
+ * THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
@@ -27,6 +27,7 @@
  * Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
+ * Modified for 16 bpp and VTSema-independence by Craig E. Groeschel
  *
  * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vga.c,v 1.2 1991/06/27 00:02:49 root Exp
  */
@@ -41,6 +42,9 @@
 #include "cursorstr.h"
 #include "mi.h"
 #include "cfb.h"
+#include "mach32cfb.h"
+#include "gc.h"
+#include "windowstr.h"
 
 #include "compiler.h"
 
@@ -55,6 +59,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
+extern int defaultColorVisualClass;
 extern int mach32MaxClock;
 extern int mach32MaxTlc34075Clock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
@@ -156,9 +161,15 @@ static unsigned Mach32_IOPorts[] = {
 	R_EXT_GE_CONFIG, EXT_GE_CONFIG, DP_CONFIG, DEST_X_START, DEST_X_END,
 	DEST_Y_END, ALU_FG_FN, MISC_CNTL, R_MISC_CNTL, HORZ_OVERSCAN,
 	VERT_OVERSCAN, EXT_GE_STATUS, LINEDRAW, LINEDRAW_OPT, LINEDRAW_INDEX,
+	EXT_CURSOR_COLOR_0, EXT_CURSOR_COLOR_1,
 };
 static int Num_Mach32_IOPorts = (sizeof(Mach32_IOPorts)/
 				 sizeof(Mach32_IOPorts[0]));
+
+/* mach32WeightMasks must match mach32weights[], below */
+static short mach32WeightMasks[] = { RGB16_565, RGB16_555,
+					RGB16_655, RGB16_664 };
+short mach32WeightMask;
 
 static mach32CRTCRegRec mach32CRTCRegs;
 static ScreenPtr savepScreen = NULL;
@@ -347,6 +358,8 @@ mach32Probe()
     Bool                  sw_cursor_supplied;
     OFlagSet              validOptions;
     int                   tx, ty;
+    xrgb mach32weights[] = { { 5, 6, 5 }, { 5, 5, 5 }, { 6, 5, 5 },
+			     { 6, 6, 4 } };
 
 
     xf86ClearIOPortList(mach32InfoRec.scrnIndex);
@@ -360,14 +373,76 @@ mach32Probe()
 	return(FALSE);
     }
 
-    switch(info->DAC_Type) {
-    case DAC_TLC34075: 
-	mach32InfoRec.maxClock = mach32MaxTlc34075Clock;
+    switch (xf86bpp) {
+    case 8:
+	break;
+    case 16:
+#if 0
+	if (info->DAC_Type == DAC_BT476) {
+/*
+ * Hate to break the news to them, but hopefully this will forestall
+ * queries of, "But you said it supports 16bpp...?"
+ */
+	    ErrorF("Unsupported bpp--this ramdac supports only 8 bpp\n");
+	    return(FALSE);
+	}
+#else
+	if (info->DAC_Type != DAC_TLC34075) {
+	    ErrorF("Unsupported bpp.\n");
+	    return(FALSE);
+	}
+#endif
+	mach32InfoRec.depth = 16;	/* if 555, set to 15, below */
+	mach32InfoRec.bitsPerPixel = 16;
+	mach32InfoRec.defaultVisual = TrueColor;
+	defaultColorVisualClass = TrueColor;
 	break;
     default:
-	mach32InfoRec.maxClock = mach32MaxClock;
-	break;
+#if 0
+	ErrorF("Invalid bpp--valid ");
+	if (info->DAC_Type == DAC_BT476)
+	    ErrorF("number of bpp is 8\n");
+	else
+	    ErrorF("numbers of bpp are 8 and 16\n");
+#else
+	ErrorF("Invalid bpp.\n");
+#endif
+	return(FALSE);
     }
+
+
+    if (xf86bpp == 16) {
+	for (i = 0; i < 4; i++) {
+	    if (xf86weight.red == mach32weights[i].red
+		&& xf86weight.green == mach32weights[i].green
+		&& xf86weight.blue == mach32weights[i].blue)
+	    break;
+	}
+	if (i == 4) {
+	    ErrorF("Invalid color weighting\n");
+	    return(FALSE);
+	}
+	if (i == 1)
+	    mach32InfoRec.depth = 15;
+#if 0
+	if ( (info->DAC_Type == DAC_SC11483 || info->DAC_Type == DAC_BT481)
+	    && (i > 1)) {
+	    ErrorF("Invalid RGB weighting--valid weights are 555 and 565.\n");
+	    return(FALSE);
+	}
+#endif
+	mach32WeightMask = mach32WeightMasks[i];
+    }
+
+
+    /* no pixel multiplexing at 16bpp */
+    mach32InfoRec.maxClock = mach32MaxClock;
+    if (mach32InfoRec.bitsPerPixel == 8)
+	switch(info->DAC_Type) {
+	case DAC_TLC34075: 
+	    mach32InfoRec.maxClock = mach32MaxTlc34075Clock;
+	    break;
+	}
 
     OFLG_ZERO(&validOptions);
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);
@@ -564,7 +639,8 @@ mach32Probe()
 	      mach32InfoRec.videoRam );
     }
 
-    if (((mach32MaxX+1)*(mach32MaxY+1)) > (mach32InfoRec.videoRam*1024)) {
+    if (((mach32MaxX+1) * (mach32MaxY+1) * (mach32InfoRec.bitsPerPixel / 8)) >
+	(mach32InfoRec.videoRam*1024)) {
 	ErrorF("Not enough memory for requested virtual resolution (%dx%d)\n",
 	       mach32VirtX, mach32VirtY);
 	ErrorF("In addition to normal virtual screen size, mach32 X server\n");
@@ -580,7 +656,7 @@ mach32Probe()
 			 */
     
     extra_ram = mach32InfoRec.videoRam * 1024 -
-		(mach32MaxX + 1) * (mach32MaxY + 1 );
+        (mach32MaxX + 1) * (mach32MaxY + 1) * (mach32InfoRec.bitsPerPixel / 8);
 
     sw_cursor_supplied = OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options);
 
@@ -637,13 +713,19 @@ mach32Probe()
      * official feature of the mach32.
      */
     mach32DAC8Bit = OFLG_ISSET(OPTION_DAC_8_BIT, &mach32InfoRec.options)
-		    && (info->DAC_Type == DAC_TLC34075);
+		    && info->DAC_Type == DAC_TLC34075
+		    && mach32InfoRec.bitsPerPixel == 8;
 
-    if (xf86Verbose)
-	ErrorF("%s %s: Using %d bits per RGB value\n",
-		(info->DAC_Type == DAC_TLC34075) ? XCONFIG_GIVEN :
-		XCONFIG_PROBED, mach32InfoRec.name,
+    if (xf86Verbose) {
+	if (mach32InfoRec.bitsPerPixel == 8)
+	    ErrorF("%s %s: Using %d bits per RGB value\n",
+		(info->DAC_Type == DAC_TLC34075) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED, mach32InfoRec.name,
 		mach32DAC8Bit ?  8 : 6);
+	else if (mach32InfoRec.bitsPerPixel == 16)
+	    ErrorF("Color weight: %1d%1d%1d\n", xf86weight.red,
+		xf86weight.green, xf86weight.blue);
+    }
 
     return(TRUE);
 }
@@ -679,6 +761,7 @@ mach32Initialize (scr_index, pScreen, argc, argv)
     int displayResolution = 75;  /* default to 75dpi */
     extern int monitorResolution;
 
+    mach32InitGC();
     mach32InitDisplay(scr_index);
     mach32InitAperture(scr_index);
     mach32CalcCRTCRegs(&mach32CRTCRegs, mach32InfoRec.modes);
@@ -727,17 +810,43 @@ mach32Initialize (scr_index, pScreen, argc, argv)
     if (OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options)) {
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
     } else {
-        pScreen->InstallColormap = mach32InstallColormap;
-        pScreen->UninstallColormap = mach32UninstallColormap;
-        pScreen->ListInstalledColormaps = mach32ListInstalledColormaps;
-        pScreen->StoreColors = mach32StoreColors;
-        pScreen->QueryBestSize = mach32QueryBestSize;
-        xf86PointerScreenFuncs.WarpCursor = mach32WarpCursor;
-        (void)mach32CursorInit(0, pScreen);
+	switch (mach32InfoRec.bitsPerPixel) {
+	case 8:
+	    pScreen->InstallColormap = mach32InstallColormap;
+	    pScreen->UninstallColormap = mach32UninstallColormap;
+	    pScreen->ListInstalledColormaps = mach32ListInstalledColormaps;
+	    pScreen->StoreColors = mach32StoreColors;
+	    break;
+	case 16:
+	    pScreen->InstallColormap = cfbInstallColormap;
+	    pScreen->UninstallColormap = cfbUninstallColormap;
+	    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+	    pScreen->StoreColors = (void (*)())NoopDDA;
+	}
+	pScreen->QueryBestSize = mach32QueryBestSize;
+	xf86PointerScreenFuncs.WarpCursor = mach32WarpCursor;
+	(void)mach32CursorInit(0, pScreen);
     }
 
     return (cfbCreateDefColormap(pScreen));
 }
+
+
+/*
+ *	Assign a new serial number to the window.
+ *	Used to force GC validation on VT switch.
+ */
+
+/*ARGSUSED*/
+static int
+mach32NewSerialNumber(pWin, data)
+    WindowPtr pWin;
+    int data;
+{
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    return WT_WALKCHILDREN;
+}
+
 
 /*
  * mach32EnterLeaveVT -- 
@@ -753,7 +862,10 @@ mach32EnterLeaveVT(enter, screen_idx)
     ScreenPtr pScreen = savepScreen;
 
     if (!xf86Exiting && !xf86Resetting)
-	pspix = (PixmapPtr)pScreen->devPrivate;
+	pspix = (PixmapPtr)pScreen->devPrivate; /* cfbGetScreenPixmap(pScreen) */
+
+    if (pScreen)
+	WalkTree(pScreen, mach32NewSerialNumber, 0);
 
     if (enter) {
 	if (vgaBase)
@@ -798,6 +910,12 @@ mach32EnterLeaveVT(enter, screen_idx)
 					       pScreen->rootDepth),
 				 0, 0, MIX_SRC, ~0);
 	    }
+	    if (pScreen) {
+		pScreen->CopyWindow = mach32CopyWindow;
+		pScreen->GetSpans = mach32GetSpans;
+		pScreen->PaintWindowBackground = mach32PaintWindow;
+		pScreen->PaintWindowBorder = mach32PaintWindow;
+	    }
 	}
 	if (ppix) {
 	    (pScreen->DestroyPixmap)(ppix);
@@ -821,6 +939,24 @@ mach32EnterLeaveVT(enter, screen_idx)
 				0, 0, ~0);
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
+	    switch (mach32InfoRec.bitsPerPixel) {
+	    case 8:
+		pScreen->CopyWindow = cfbCopyWindow;
+		pScreen->GetSpans = cfbGetSpans;
+		pScreen->PaintWindowBackground = cfbPaintWindow;
+		pScreen->PaintWindowBorder = cfbPaintWindow;
+		break;
+	    case 16:
+		pScreen->CopyWindow = cfb16CopyWindow;
+		pScreen->GetSpans = cfb16GetSpans;
+		pScreen->PaintWindowBackground = cfb16PaintWindow;
+		pScreen->PaintWindowBorder = cfb16PaintWindow;
+		break;
+	    }
+	    if (!mach32Use4MbAperture) {
+		pScreen->PaintWindowBackground = miPaintWindow;
+		pScreen->PaintWindowBorder = miPaintWindow;
+	    }
 	}
 
 	mach32CursorOff();
@@ -841,6 +977,7 @@ mach32EnterLeaveVT(enter, screen_idx)
  *      called to ensure video is enabled when server exits.
  */
 
+/*ARGSUSED*/
 Bool
 mach32CloseScreen(screen_idx, pScreen)
      int	screen_idx;
@@ -863,6 +1000,10 @@ mach32CloseScreen(screen_idx, pScreen)
 	    ppix = NULL;
     }
     mach32ClearSavedCursor(screen_idx);
+    if (mach32InfoRec.bitsPerPixel == 8)
+	cfbCloseScreen(screen_idx, savepScreen);
+    else
+	cfb16CloseScreen(screen_idx, savepScreen);
     savepScreen = NULL;
     return(TRUE);
 }
@@ -889,20 +1030,30 @@ mach32SaveScreen (pScreen, on)
 	ext_ge_config = inw(R_EXT_GE_CONFIG) & ~0x3000;
 	outw(EXT_GE_CONFIG, ext_ge_config);
 
+/* Quick and dirty hack:
+ * To save the screen at 16 bpp, disable the CRT controller.  CEG
+ */
 	if (on) {
-	    mach32RestoreColor0(pScreen);
-
-	    outb(DAC_MASK, 0xff);
+	    if (mach32InfoRec.bitsPerPixel == 8) {
+		mach32RestoreColor0(pScreen);
+		outb(DAC_MASK, 0xff);
+	    } else {
+		mach32SetCRTCRegs(&mach32CRTCRegs);
+	    }
 	} else {
-	    outb(DAC_W_INDEX, 0);
-	    outb(DAC_DATA, 0);
-	    outb(DAC_DATA, 0);
-	    outb(DAC_DATA, 0);
-
-	    outb(DAC_MASK, 0x00);
+	    if (mach32InfoRec.bitsPerPixel == 8) {
+		WaitQueue(5);
+		outb(DAC_W_INDEX, 0);
+		outb(DAC_DATA, 0);
+		outb(DAC_DATA, 0);
+		outb(DAC_DATA, 0);
+		outb(DAC_MASK, 0x00);
+	    } else {
+		WaitQueue(1);
+		outb(DISP_CNTL, DISPEN_DISAB);
+	    }
 	}
     }
-
     return(TRUE);
 }
 
@@ -914,9 +1065,12 @@ void
 mach32AdjustFrame(x, y)
     int x, y;
 {
-    int byte_offset = (x + y*mach32VirtX) >> 2;
+    /* cursor offset in units of bytes/4 */
+    int byte_offset = ((x + y*mach32VirtX) *
+			(mach32InfoRec.bitsPerPixel / 8)) >> 2;
 
     mach32CursorOff();
+    WaitQueue(2);
     outw(CRT_OFFSET_LO, byte_offset & 0xffff);
     outw(CRT_OFFSET_HI, (byte_offset >> 16) & 0xf);
     mach32RepositionCursor(savepScreen);

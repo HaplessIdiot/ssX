@@ -1,5 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:06:24 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = cfb cfb16
 
 SRCS = 	mach32.c mach32cmap.c mach32gc.c mach32fs.c mach32ss.c \
 	mach32gs.c mach32win.c mach32init.c mach32im.c mach32bstor.c \
@@ -30,9 +35,13 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(mach32,$(OBJS))
 
+MakeSubdirs($(SUBDIRS))
+
 ObjectFromSpecialSource(vgaHW,../../vga256/vga/vgaHW,/**/)
 ObjectFromSpecialSource(mach32line1r,mach32line,-DONE_RECT)
 
 InstallLinkKitLibrary(mach32,$(LINKKITDIR)/drivers)
 
 DependTarget()
+
+DependSubdirs($(SUBDIRS))

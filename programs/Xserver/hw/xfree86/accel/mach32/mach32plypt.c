@@ -1,4 +1,5 @@
 /* $XConsortium: mach32plypt.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,6 +53,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "regionstr.h"
 #include "scrnintstr.h"
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 #include "regmach32.h"
 #include "mach32.h"
@@ -77,12 +79,6 @@ mach32PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int		    off;
     cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
-
-    if (!xf86VTSema)
-    {
-	cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
-	return;
-    }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (pGC->alu == GXnoop)

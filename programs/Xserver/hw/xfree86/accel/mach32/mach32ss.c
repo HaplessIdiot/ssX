@@ -1,4 +1,5 @@
 /* $XConsortium: mach32ss.c,v 1.2 94/04/17 20:30:51 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,6 +69,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "mach32cfb.h"
 #include "cfbmskbits.h"
 
 #include "mach32.h"
@@ -82,7 +84,7 @@ void
 mach32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    char	*psrc;
+    char		*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -98,15 +100,18 @@ mach32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 /* ErrorF("Set Spans: n = %d, (%d, %d, %d)\n", nspans, ppt->x, ppt->y, *pwidth); */
 
     if ((pDrawable->type != DRAWABLE_WINDOW) || (!xf86VTSema)) {
-	switch (pDrawable->depth) {
+	switch (pDrawable->bitsPerPixel) {
 	    case 1:
 		mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 		break;
 	    case 8:
 		cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 		break;
+	    case 16:
+		cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+		break;
 	    default:
-		ErrorF("Unsupported pixmap depth\n");
+		ErrorF("mach32SetSpans: Unsupported pixmap depth\n");
 		break;
 	}
 	return;
@@ -168,8 +173,9 @@ mach32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 		    pdstBase, widthDst, pGC->planemask);
 ***************/
 		(mach32ImageWriteFunc)(xStart, ppt->y, xEnd-xStart, 1,
-				  psrc + (xStart-ppt->x), xEnd-xStart, 0, 0,
-				  mach32alu[alu], pGC->planemask);
+			  psrc + ((xStart-ppt->x) * (pDrawable->bitsPerPixel / 8)),
+			  PixmapBytePad(xEnd-xStart, pDrawable->depth), 0, 0,
+			  mach32alu[alu], pGC->planemask);
 		if(ppt->x + *pwidth <= pbox->x2)
 		{
 		    /* End of the line, as it were */
@@ -181,7 +187,7 @@ mach32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    /* We've tried this line against every box; it must be outside them
 	     * all.  move on to the next point */
 	    ppt++;
-	    psrc += PixmapBytePad(*pwidth, PSZ);
+	    psrc += PixmapBytePad(*pwidth, pDrawable->depth);
 	    pwidth++;
 	}
     }
@@ -217,13 +223,14 @@ mach32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 			    pdstBase, widthDst, pGC->planemask);
 **************/
 			(mach32ImageWriteFunc)(xStart, ppt->y, xEnd-xStart, 1,
-					  psrc + (xStart-ppt->x), xEnd-xStart, 0, 0,
-					  mach32alu[alu], pGC->planemask);
+			  psrc + ((xStart-ppt->x) * (pDrawable->bitsPerPixel / 8)),
+			  PixmapBytePad(xEnd-xStart, pDrawable->depth), 0, 0,
+			  mach32alu[alu], pGC->planemask);
 		    }
 
 		}
 	    }
-	psrc += PixmapBytePad(*pwidth, PSZ);
+	psrc += PixmapBytePad(*pwidth, pDrawable->depth);
 	ppt++;
 	pwidth++;
 	}

@@ -1,0 +1,13 @@
+XCOMM $XFree86$
+#define PixelSize	16
+#define LinkDirectory ../cfb
+
+#include "../cfb/Imakefile"
+
+/*
+ * XF86_Mach32 uses PseudoColor cfb8 and StaticColor cfb16.
+ * -DMULTICFB is to avoid multiple definitions of cfbResolveColor et al.
+ */
+SpecialObjectRule(cfbcmap.o,cfbcmap.c,-DMULTICFB -DSTATIC_COLOR)
+SpecialObjectRule(cfbscrinit.o,cfbscrinit.c,-DMULTICFB -DSTATIC_COLOR)
+
