@@ -25,6 +25,8 @@ typedef struct {
 } DarwinFramebufferRec;
 
 void DarwinKeyboardInit(DeviceIntPtr pDev);
+int DarwinModifierKeycode(int modifier, int side);
+void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 
 #undef assert
 #define assert(x) { if ((x) == 0) \
@@ -37,7 +39,6 @@ void DarwinKeyboardInit(DeviceIntPtr pDev);
 
 // Global variables from darwin.c
 extern DarwinFramebufferRec dfb;
-extern unsigned char        darwinKeyCommandL, darwinKeyOptionL;
 extern int                  darwinEventFD;
 extern Bool                 quartz;
 extern UInt32               darwinDesiredWidth, darwinDesiredHeight;

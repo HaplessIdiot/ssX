@@ -10,7 +10,7 @@
 #include "X11/Xproto.h"
 #include "screenint.h"
 
-void XFIOKitStoreColors(ColormapPtr pmap, int numEntries, xColorItem *pdefs);
+Bool XFIOKitAddScreen(ScreenPtr pScreen);
 Bool XFIOKitInitCursor(ScreenPtr pScreen);
 void XFIOKitOsVendorInit(void);
 void XFIOKitGiveUp(void);
