@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/truetype/ttgload.c,v 1.9 2002/06/20 08:25:29 keithp Exp $ */
+
 
 #include <ft2build.h>
 #include FT_INTERNAL_DEBUG_H

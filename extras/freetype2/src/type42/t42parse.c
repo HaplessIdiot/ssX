@@ -13,7 +13,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/type42/t42parse.c,v 1.2 2002/09/18 17:11:39 tsi Exp $ */
+
 
 #include "t42parse.h"
 #include "t42error.h"
