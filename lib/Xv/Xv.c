@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.16 2002/10/16 00:37:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.17 2003/04/28 16:56:27 dawes Exp $ */
 /*
 ** File: 
 **
@@ -395,6 +395,7 @@ XvQueryEncodings(
   *p_nEncodings = rep.num_encodings;
   *p_pEncodings = pes;
 
+  Xfree(buffer);
   UnlockDisplay(dpy);
   SyncHandle();
 
