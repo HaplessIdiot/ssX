@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.14 2003/04/05 18:18:57 dawes Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.15 2003/09/24 02:43:38 dawes Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -1581,7 +1581,7 @@ Parse_Format_Mapping (int *argc, char ***argv)
 	Fatal_Error("Bad format: %s.", format);
 
     dformat = NULL;
-    if (ARGC>0 && Is_A_DFormat(ARGV[1])) {
+    if (ARGC>1 && Is_A_DFormat(ARGV[1])) {
 	ARGV++; ARGC--; dformat = OPTION;
     }
 
