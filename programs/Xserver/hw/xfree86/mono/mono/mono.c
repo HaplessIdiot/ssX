@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.0 1994/05/04 15:01:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.1 1994/05/31 08:11:50 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -259,7 +259,7 @@ monoPrintIdent()
 
     ErrorF("  %s: server for interlaced and banked monochrome graphics adaptors",
 		monoInfoRec.name);
-    ErrorF(" (Patchlevel %s):\n      ", monoInfoRec.patchLevel);
+    ErrorF("\n        (Patchlevel %s):\n      ", monoInfoRec.patchLevel);
 
     for (i=0; monoDrivers[i]; i++)
 	for (j = 0; (id = (monoDrivers[i]->ChipIdent)(j)); j++, n++) {
