@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.13 2000/02/08 17:19:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.14 2001/01/17 22:37:13 dawes Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -324,7 +324,6 @@ XdmcpOptions(int argc, char **argv, int i)
 	return (i + 1);
     }
     if (strcmp(argv[i], "-class") == 0) {
-	++i;
         if (++i == argc)  {
 	    ErrorF("Xserver: missing class name in command line\n");
 	    exit(1);

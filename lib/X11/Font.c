@@ -28,7 +28,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.11 2000/09/26 15:56:51 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.12 2001/01/17 19:41:35 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -39,11 +39,7 @@ authorization from the X Consortium and the XFree86 Project.
 #ifdef USE_XF86BIGFONT
 #include <sys/types.h>
 #ifdef HAS_SHM
-#ifndef __CYGWIN__
 #include <sys/ipc.h>
-#else
-#include <sys/cygipc.h>
-#endif
 #include <sys/shm.h>
 #endif
 
