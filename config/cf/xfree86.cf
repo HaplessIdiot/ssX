@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.219 1999/04/28 05:36:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.220 1999/05/03 05:58:42 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -571,7 +571,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 #ifndef BuildCID
-#define BuildCID		NO
+#define BuildCID		YES
 #endif
 
 #ifndef BuildFreeType

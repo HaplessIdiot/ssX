@@ -1,4 +1,4 @@
-/* $Header: /vol1/history/xf86/xc/programs/mkcfm/mkcfm.c,v 1.1 1999/05/03 05:58:59 dawes Exp $ */
+/* $Header: /vol1/history/xf86/xc/programs/mkcfm/mkcfm.c,v 1.2 1999/05/04 09:35:28 dawes Exp $ */
 /* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
  *
  * The contents of this file are subject to the CID Font Code Public Licence
@@ -16,9 +16,6 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86$ */
-
-#ifdef BUILDCID
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,15 +33,7 @@ extern void CIDRegisterFontFileFunctions(void);
 
 extern int CIDOpenScalable();
  
-static void Display(CharInfoRec *);
-
-static void ChangePixelSize(int);
-
 void CIDFillVals(FontScalablePtr);
-
-FontResolutionPtr GetClientResolutions(int *);
-
-void Xfree(pointer);
 
 static Bool DoDirectory(char *dirName);
  
@@ -218,17 +207,16 @@ void Xfree(pointer p)
        free((char *)p);
 }
  
-FontDefaultFormat() { ; }
+void FontDefaultFormat() { ; }
  
-FontFileRegisterRenderer() { ; }
+Bool FontFileRegisterRenderer() { return TRUE; }
  
-GenericGetBitmaps() { ; }
-GenericGetExtents() { ; }
+void GenericGetBitmaps() { ; }
+void GenericGetExtents() { ; }
  
-FontParseXLFDName() { ; }
-FontComputeInfoAccelerators() { ; }
+Bool FontParseXLFDName() { return TRUE; }
+void FontComputeInfoAccelerators() { ; }
 
-FatalError() { ; }
+void FatalError() { ; }
 
-ErrorF() { ; }
-#endif
+void ErrorF() { ; }

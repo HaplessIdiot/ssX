@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.42 1999/04/11 13:11:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.43 1999/04/29 09:13:55 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -70,6 +70,9 @@ extern int mmapFd;
 #endif
 #ifndef NO_MMAP
 #include <sys/mman.h>
+#ifndef MAP_FAILED
+#define MAP_FAILED ((caddr_t)-1)
+#endif
 #endif
 #if !defined(ISC)
 #include <stdlib.h>
@@ -379,6 +382,23 @@ xf86close(int fd)
     return status;
 }
 
+long
+xf86lseek(int fd, long offset, int whence)
+{
+	switch (whence) {
+	case XF86_SEEK_SET:
+		whence = SEEK_SET;
+		break;
+	case XF86_SEEK_CUR:
+		whence = SEEK_CUR;
+		break;
+	case XF86_SEEK_END:
+		whence = SEEK_END;
+		break;
+	}
+	return (long)lseek(fd, (off_t)offset, whence);
+}
+
 int
 xf86ioctl(int fd, unsigned long request, pointer argp)
 {
@@ -425,7 +445,10 @@ xf86mmap(void *start, xf86size_t length, int prot,
     rc = mmap(start,(size_t)length,p,f,fd,(off_t)offset);
 
     xf86errno = xf86GetErrno();
-    return rc;
+    if (rc == MAP_FAILED)
+	return XF86_MAP_FAILED;
+    else
+	return rc;
 #else
 #ifdef HAS_SVR3_MMAPDRV
     void *rc;
@@ -434,7 +457,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
       if ((mmapFd = open("/dev/mmap", O_RDWR)) == -1) {
           ErrorF("Warning: failed to open /dev/mmap \n");
           xf86errno = xf86_ENOSYS;
-          return NULL;
+          return XF86_MAP_FAILED;
       }
     }
 #endif
@@ -445,11 +468,14 @@ xf86mmap(void *start, xf86size_t length, int prot,
 
     rc = (pointer)ioctl(mmapFd, MAP, &MapDSC);
     xf86errno = xf86GetErrno();
-    return rc;
+    if (rc == NULL)
+	return XF86_MAP_FAILED;
+    else
+	return rc;
 #else
     ErrorF("Warning: mmap() is not supported on this platform\n");
     xf86errno = xf86_ENOSYS;
-    return NULL;
+    return XF86_MAP_FAILED;
 #endif
 #endif
 }
@@ -743,23 +769,23 @@ xf86fwrite(const void* buf, xf86size_t sz, xf86size_t cnt, XF86FILE* f)
 }
 
 int
-xf86fseek(XF86FILE* f, long pos, int loc)
+xf86fseek(XF86FILE* f, long offset, int whence)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
 	_xf86checkhndl(fp,"xf86fseek");
-	switch (pos) {
+	switch (whence) {
 	case XF86_SEEK_SET:
-		pos = SEEK_SET;
+		whence = SEEK_SET;
 		break;
 	case XF86_SEEK_CUR:
-		pos = SEEK_CUR;
+		whence = SEEK_CUR;
 		break;
 	case XF86_SEEK_END:
-		pos = SEEK_END;
+		whence = SEEK_END;
 		break;
 	}
-	return fseek(fp->filehnd,pos,loc);
+	return fseek(fp->filehnd,offset,whence);
 }
 
 long
@@ -990,7 +1016,7 @@ xf86ungetc(int c,XF86FILE* f)
 	return ungetc(c,fp->filehnd);
 }
 
-/* misc functions */
+/* Misc functions. Some are ANSI C, some are not. */
 
 void
 xf86usleep(usec)
@@ -1033,6 +1059,13 @@ xf86getenv(const char * a)
 		return NULL;
 	else
 		return(getenv(a));
+}
+
+void *
+xf86bsearch(const void *key, const void *base, xf86size_t nmemb,
+	    xf86size_t size, int (*compar)(const void *, const void *))
+{
+	return bsearch(key, base, (size_t)nmemb, (size_t)size, compar);
 }
 
 /*VARARGS1*/
@@ -1129,48 +1162,6 @@ xf86execl(const char *pathname, const char *arg, ...)
 #endif /* __EMX__ Disable this crazy business for now */
 }
 
-/* XXX What uses this? */
-#if 0
-Bool
-xf86setexternclock(pathname, clock_arg, clock_index)
-    char *pathname;
-    int clock_arg;
-    int clock_index;
-{
-#ifndef __EMX__
-    char *progname, *clockarg, *clockindex;
-    int ret;
-
-    if ((progname = strrchr(pathname, '/')))
-	progname++;
-    else
-	progname = pathname;
-
-    /*
-     * Not everything has snprintf, but this should be safe given the
-     * range checks.
-     */
-    if (clock_arg > 1000000.0 || clock_arg < 0.0)
-	return FALSE;
-    if (clock_index > MAXCLOCKS || clock_index < 0)
-	return FALSE;
-
-    /* Largest value is 1000.000 (1GHz) */
-    clockarg = xalloc(10);
-    /* Largest value is MAXCLOCKS (currently 128) */
-    clockindex = xalloc(5);
-    sprintf(clockarg, "%.3f", clock_arg / 1000.0);
-    sprintf(clockindex, "%d", clock_index);
-    ret = xf86execl(pathname, progname, clockarg, clockindex);
-    xfree(clockarg);
-    xfree(clockindex);
-    return ret ? FALSE : TRUE;
-#else
-    return FALSE;
-#endif /* __EMX__ Disable this for now*/
-}
-#endif
-
 void
 xf86abort(void)
 {
@@ -1194,7 +1185,8 @@ typedef struct _xf86_dir_ {
 	XF86DIRENT	*dirent;
 } XF86DIR_priv;
 
-static void _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
+static void
+_xf86checkdirhndl(XF86DIR_priv* f,const char *func)
 {
 	if (!f || f->magic != XF86DIR_magic || !f->dir || !f->dirent) {
 		FatalError("libc_wrapper error: passed invalid DIR handle to %s\n",
@@ -1203,7 +1195,8 @@ static void _xf86checkdirhndl(XF86DIR_priv* f,const char *func)
 	}
 }
 
-XF86DIR*	xf86opendir(const char *name)
+XF86DIR *
+xf86opendir(const char *name)
 {
 	XF86DIR_priv *dp;
 	DIR *dirp;
@@ -1552,7 +1545,6 @@ xf86realloc(void* p, xf86size_t n)
 {
 	return xrealloc(p,n);
 }
-
 
 #define mapnum(e) case (e): return (xf86_##e)
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.21 1999/03/29 07:06:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.22 1999/04/17 07:31:53 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -122,6 +122,8 @@ extern double xf86atan2(double,double);
 extern double xf86atof(const char*);
 extern int xf86atoi(const char*);
 extern long xf86atol(const char*);
+extern void *xf86bsearch(const void *, const void *, xf86size_t, xf86size_t,
+			 int (*)(const void *, const void *));
 extern double xf86ceil(double);
 extern void* xf86calloc(xf86size_t,xf86size_t);
 extern void xf86clearerr(XF86FILE*);
@@ -227,6 +229,7 @@ extern int xf86vsprintf(char*,const char*,...);
 
 extern int xf86open(const char*, int,...);
 extern int xf86close(int);
+extern long xf86lseek(int, long, int);
 extern int xf86ioctl(int, unsigned long, pointer);
 extern xf86ssize_t xf86read(int, void *, xf86size_t);
 extern xf86ssize_t xf86write(int, const void *, xf86size_t);

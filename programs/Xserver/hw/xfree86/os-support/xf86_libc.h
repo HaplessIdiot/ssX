@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.34 1999/03/28 15:32:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.35 1999/04/11 13:11:06 dawes Exp $ */
 
 
 
@@ -78,6 +78,7 @@ typedef signed long xf86ssize_t;
 #define XF86_MAP_FIXED		0x0001
 #define XF86_MAP_SHARED		0x0002
 #define XF86_MAP_PRIVATE	0x0004
+#define XF86_MAP_FAILED		((void *)-1)
 
 /* for fseek */
 #define XF86_SEEK_SET	0
@@ -133,6 +134,7 @@ typedef signed long xf86ssize_t;
 #define atof(ccp)		xf86atof(ccp)
 #define atoi(ccp)		xf86atoi(ccp)
 #define atol(ccp)		xf86atol(ccp)
+#define bsearch(a,b,c,d,e)	xf86bsearch(a,b,c,d,e)
 #define ceil(d)			xf86ceil(d)
 #define calloc(I1,I2)		xf86calloc(I1,I2)
 #undef clearerr
@@ -290,6 +292,7 @@ typedef signed long xf86ssize_t;
  */
 #define open(a,b,c)		xf86open(a,b,c)
 #define close(a)		xf86close(a)
+#define lseek(a,b,c)		xf86lseek(a,b,c)
 #define ioctl(a,b,c)		xf86ioctl(a,b,c)
 #define read(a,b,c)		xf86read(a,b,c)
 #define write(a,b,c)		xf86write(a,b,c)
@@ -306,6 +309,7 @@ typedef signed long xf86ssize_t;
 #define MAP_FIXED		XF86_MAP_FIXED
 #define MAP_SHARED		XF86_MAP_SHARED
 #define MAP_PRIVATE		XF86_MAP_PRIVATE
+#define MAP_FAILED		XF86_MAP_FAILED
 #ifndef __EMX__
 #define errno			xf86errno
 #endif
