@@ -1,7 +1,9 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dga.c,v 1.2 2001/04/19 12:40:33 alanh Exp $ */
 /*
+ * SiS DGA handling
+ *
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales, UK.
- * Copyright 2002 by Thomas Winischhofer, Vienna, Austria
+ * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
  * Portions from radeon_dga.c which is
  *          Copyright 2000 ATI Technologies Inc., Markham, Ontario, and

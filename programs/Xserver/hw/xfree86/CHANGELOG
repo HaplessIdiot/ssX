@@ -1,4 +1,12 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 160. SiS driver fixes:
+      - Added MergedFB mode (including HWCursor and Xv)
+      - Xv enhancements and fixes for all chipsets
+      - New Xv properties (SWITCHCRT, TVPOSITION, etc)
+      - Added support for custom LCD resolutions (via DDC)
+      - Fixed DVI output (DVI-D and DVI-A), automatic detection
+      - Numerous bugfixes and enhancements
+      (Thomas Winischhofer)
  159. Make freetype-config more useful on NetBSD (#5693, Thomas Klausner).
  158. Small fixes in keyboard maps:
       - add an explicit type declaration in level3(ralt_switch)
@@ -16926,7 +16934,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2681 2003/05/05 12:11:07 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2682 2003/05/05 16:12:29 dawes Exp $
 
 
 

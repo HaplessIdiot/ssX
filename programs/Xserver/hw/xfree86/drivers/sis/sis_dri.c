@@ -1,10 +1,8 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.19 2001/10/31 22:50:29 tsi Exp $ */
-
 /*
  *  DRI wrapper for 300, 540, 630, 730
- *  (310/325 series experimental and incomplete)
  *
- * taken and modified from tdfx_dri.c, mga_dri.c
+ *  Taken and modified from tdfx_dri.c, mga_dri.c
  */
 
 #include "xf86.h"
@@ -31,9 +29,9 @@
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   MMIO_IN16(pSiS->IOBase, 0x8240);
 
-/* TW: Idle function for 310/325 series */
+/* TW: Idle function for 315 series */
 #define Q_STATUS 0x85CC
-#define SiS310Idle \
+#define SiS315Idle \
   { \
   while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000){}; \
   while( (MMIO_IN16(pSiS->IOBase, Q_STATUS+2) & 0x8000) != 0x8000){}; \
@@ -527,11 +525,11 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
 
     /* frame control */
     saPriv->FrameCount = 0;
-    if (pSiS->VGAEngine == SIS_315_VGA) {	/* 310/325 series */
+    if (pSiS->VGAEngine == SIS_315_VGA) {	/* 315 series */
 #if 0
-       *(unsigned long *)(pSiS->IOBase+0x8a2c) = 0;	/* FIXME: Where is this on the 310 series ? */
+       *(unsigned long *)(pSiS->IOBase+0x8a2c) = 0;	/* FIXME: Where is this on the 315 series ? */
 #endif
-       SiS310Idle
+       SiS315Idle
     } else {					/* 300 series (and below) */
        *(unsigned long *)(pSiS->IOBase+0x8a2c) = 0;
        SiSIdle
@@ -567,8 +565,8 @@ SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
    */
   if (pSiS->VGAEngine == SIS_315_VGA) {
 #if 0
-        *(pSiS->IOBase + 0x8B50) = 0xff;		/* FIXME: Where is this on 310 series */
-  	*(unsigned int *)(pSiS->IOBase + 0x8B60) = -1;  /* FIXME: Where is this on 310 series */
+        *(pSiS->IOBase + 0x8B50) = 0xff;		/* FIXME: Where is this on 315 series */
+  	*(unsigned int *)(pSiS->IOBase + 0x8B60) = -1;  /* FIXME: Where is this on 315 series */
 #endif
   } else {
   	*(pSiS->IOBase + 0x8B50) = 0xff;
@@ -584,7 +582,7 @@ SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
   SISPtr pSiS = SISPTR(pScrn);
 
   if (pSiS->VGAEngine == SIS_315_VGA) {
-  	SiS310Idle		/* 310/325 series */
+  	SiS315Idle		/* 315 series */
   } else {
     	SiSIdle			/* 300 series */
   }
@@ -599,7 +597,7 @@ SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
   SISPtr pSiS = SISPTR(pScrn);
 
   if (pSiS->VGAEngine == SIS_315_VGA) {
-  	SiS310Idle		/* 310/325 series */
+  	SiS315Idle		/* 315 series */
   } else {
   	SiSIdle			/* 300 series and below */
   }

@@ -1,18 +1,14 @@
-/* $XFree86$ */
 
 /* OS depending defines */
 
 /* The choices are: */
-/* #define WINCE_HEADER */      /* Incomplete! */
-/* #define WIN2000 */           /* Incomplete! */
-/* #define TC */                /* Incomplete! */
 /* #define LINUX_KERNEL	 */  	/* Kernel framebuffer */
 #define LINUX_XF86    		/* XFree86 */
 
 /**********************************************************************/
 #ifdef LINUX_KERNEL /* ----------------------------*/
-
 #include <linux/config.h>
+
 #ifdef CONFIG_FB_SIS_300
 #define SIS300
 #endif
@@ -21,62 +17,25 @@
 #define SIS315H
 #endif
 
-#else	/* if not LINUX_KERNEL --------------------- */
-/*	#define SIS300*/
-#define SIS315H
+#if 1
+#define SISFBACCEL	/* Include 2D acceleration */
+#endif
 
-#endif  /* if LINUX_KERNEL ------------------------ */
+#endif
 
-#ifdef LINUX_XF86 /* Linux Xfree86 ---------------- */
-
+#ifdef LINUX_XF86 /* ----------------------------- */
 #define SIS300
-/* #define SIS315H */ /* TW: done above */
+#define SIS315H
 #endif
 
 /**********************************************************************/
-#ifdef TC
-#endif
-#ifdef WIN2000
-#endif
-#ifdef WINCE_HEADER
-#endif
-#ifdef LINUX_XF86
-#endif
-#ifdef LINUX_KERNEL
-#endif
-/**********************************************************************/
-#ifdef TC
-#define SiS_SetMemory(MemoryAddress,MemorySize,value) memset(MemoryAddress, value, MemorySize);
-#endif
-#ifdef WIN2000
-#define SiS_SetMemory(MemoryAddress,MemorySize,value) MemFill((PVOID) MemoryAddress,(ULONG) MemorySize,(UCHAR) value);
-#endif
-#ifdef WINCE_HEADER
-#define SiS_SetMemory(MemoryAddress,MemorySize,value) memset(MemoryAddress, value, MemorySize);
-#endif
-#ifdef LINUX_XF86
-#define SiS_SetMemory(MemoryAddress,MemorySize,value) memset(MemoryAddress, value, MemorySize)
-#endif
 #ifdef LINUX_KERNEL
 #define SiS_SetMemory(MemoryAddress,MemorySize,value) memset(MemoryAddress, value, MemorySize)
-#endif
-/**********************************************************************/
-
-/**********************************************************************/
-
-#ifdef TC
-#define SiS_MemoryCopy(Destination,Soruce,Length) memmove(Destination, Soruce, Length);
-#endif
-#ifdef WIN2000
-#define SiS_MemoryCopy(Destination,Soruce,Length)  /*VideoPortMoveMemory((PUCHAR)Destination , Soruce,length);*/
-#endif
-#ifdef WINCE_HEADER
-#define SiS_MemoryCopy(Destination,Soruce,Length) memmove(Destination, Soruce, Length);
-#endif
-#ifdef LINUX_XF86
 #define SiS_MemoryCopy(Destination,Soruce,Length) memcpy(Destination,Soruce,Length)
 #endif
-#ifdef LINUX_KERNEL
+
+#ifdef LINUX_XF86
+#define SiS_SetMemory(MemoryAddress,MemorySize,value) memset(MemoryAddress, value, MemorySize)
 #define SiS_MemoryCopy(Destination,Soruce,Length) memcpy(Destination,Soruce,Length)
 #endif
 
@@ -107,16 +66,16 @@
 #endif /* InPortLong */
 
 /**********************************************************************/
-/*  TC                                                                */
+/*  LINUX KERNEL                                                      */
 /**********************************************************************/
 
-#ifdef TC
-#define OutPortByte(p,v) outp((unsigned short)(p),(unsigned char)(v))
-#define OutPortWord(p,v) outp((unsigned short)(p),(unsigned short)(v))
-#define OutPortLong(p,v) outp((unsigned short)(p),(unsigned long)(v))
-#define InPortByte(p)    inp((unsigned short)(p))
-#define InPortWord(p)    inp((unsigned short)(p))
-#define InPortLong(p)    ((inp((unsigned short)(p+2))<<16) | inp((unsigned short)(p)))
+#ifdef LINUX_KERNEL
+#define OutPortByte(p,v) outb((u8)(v),(u16)(p))
+#define OutPortWord(p,v) outw((u16)(v),(u16)(p))
+#define OutPortLong(p,v) outl((u32)(v),(u16)(p))
+#define InPortByte(p)    inb((u16)(p))
+#define InPortWord(p)    inw((u16)(p))
+#define InPortLong(p)    inl((u16)(p))
 #endif
 
 /**********************************************************************/
@@ -132,38 +91,3 @@
 #define InPortLong(p)    inl((CARD16)(p))
 #endif
 
-#ifdef LINUX_KERNEL
-#define OutPortByte(p,v) outb((u8)(v),(u16)(p))
-#define OutPortWord(p,v) outw((u16)(v),(u16)(p))
-#define OutPortLong(p,v) outl((u32)(v),(u16)(p))
-#define InPortByte(p)    inb((u16)(p))
-#define InPortWord(p)    inw((u16)(p))
-#define InPortLong(p)    inl((u16)(p))
-#endif
-
-/**********************************************************************/
-/*  WIN 2000                                                          */
-/**********************************************************************/
-
-#ifdef WIN2000
-#define OutPortByte(p,v) VideoPortWritePortUchar ((PUCHAR) (p), (UCHAR) (v))
-#define OutPortWord(p,v) VideoPortWritePortUshort((PUSHORT) (p), (USHORT) (v))
-#define OutPortLong(p,v) VideoPortWritePortUlong ((PULONG) (p), (ULONG) (v))
-#define InPortByte(p)    VideoPortReadPortUchar  ((PUCHAR) (p))
-#define InPortWord(p)    VideoPortReadPortUshort ((PUSHORT) (p))
-#define InPortLong(p)    VideoPortReadPortUlong  ((PULONG) (p))
-#endif
-
-
-/**********************************************************************/
-/*  WIN CE                                                          */
-/**********************************************************************/
-
-#ifdef WINCE_HEADER
-#define OutPortByte(p,v) WRITE_PORT_UCHAR ((PUCHAR) (p), (UCHAR) (v))
-#define OutPortWord(p,v) WRITE_PORT_USHORT((PUSHORT) (p), (USHORT) (v))
-#define OutPortLong(p,v) WRITE_PORT_ULONG ((PULONG) (p), (ULONG) (v))
-#define InPortByte(p)    READ_PORT_UCHAR  ((PUCHAR) (p))
-#define InPortWord(p)    READ_PORT_USHORT ((PUSHORT) (p))
-#define InPortLong(p)    READ_PORT_ULONG  ((PULONG) (p))
-#endif

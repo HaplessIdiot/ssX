@@ -1,20 +1,25 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.h,v 0.1 2002/04/17 12:40:33 tw Exp $ */
 /*
- * Copyright 2002 by Thomas Winischhofer, Vienna, Austria
+ * 2D Acceleration for SiS 315 series (315, 550, 650, 740, M650, 651, 652)
+ * Definitions for the SIS engine communication.
+ *
+ * Does this work on the Xabre/660?
+ *
+ * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Winischhofer not be used in
+ * documentation, and that the name of the copyright holder not be used in
  * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Winischhofer makes no representations
+ * specific, written prior permission.  The copyright holder makes no representations
  * about the suitability of this software for any purpose.  It is provided
  * "as is" without express or implied warranty.
  *
- * THOMAS WINISCHHOFER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS WINISCHHOFER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -22,12 +27,9 @@
  *
  * Based on sis300_accel.h
  *
- * Author:  Thomas Winischhofer <thomas@winischhofer.net>
+ *      Author:  Thomas Winischhofer <thomas@winischhofer.net>
  *
  */
-
-/* Definitions for the SIS engine communication. */
-
 
 /* SiS310 engine commands */
 #define BITBLT                  0x00000000  /* Blit */
@@ -37,11 +39,11 @@
 #define LINE                    0x00000004  /* Draw line */
 #define TRAPAZOID_FILL          0x00000005  /* Fill trapezoid */
 #define TRANSPARENT_BITBLT      0x00000006  /* Transparent Blit */
-#define ALPHA_BLEND		0x00000007  /* Alpha blend ? */
+#define ALPHA_BLEND		0x00000007  /* Alpha blending BitBlt */
 #define A3D_FUNCTION		0x00000008  /* 3D command ? */
 #define	CLEAR_Z_BUFFER		0x00000009  /* ? */
 #define GRADIENT_FILL		0x0000000A  /* Gradient fill */
-#define STRETCH_BITBLT		0x0000000B  /* Stretched Blit */
+#define STRETCH_BITBLT		0x0000000B  /* Stretched BitBlit */
 
 /* Command bits */
 
@@ -62,9 +64,12 @@
 #define CLIPENABLE              0x00040000
 #define CLIPWITHOUTMERGE        0x04040000
 
-/* Transparency */
+/* Subfunctions for BitBlt: Transparency */
 #define OPAQUE                  0x00000000
 #define TRANSPARENT             0x00100000
+
+/* Subfunctions for Alpha Blending BitBlt */
+#define A_UNKNOWN		0x00100000   /* (Blits solid?) */
 
 /* ? */
 #define DSTAGP                  0x02000000
@@ -132,6 +137,8 @@
 #define TRANS_SRC_KEY_HIGH	SRC_FGCOLOR
 #define TRANS_SRC_KEY_LOW	SRC_BGCOLOR
 
+#define ALPHA_ALPHA		PAT_FGCOLOR
+
 /* Trapezoid registers */
 #define TRAP_YH                 SRC_Y    /* 0x8208 */
 #define TRAP_LR                 DST_Y    /* 0x820C */
@@ -146,7 +153,7 @@
 #define Q_READ_PTR		0x85C8  /* Current read pointer (?) */
 #define Q_STATUS		0x85CC  /* queue status */
 
-/* Macros to do useful things with the SIS 310 BitBLT engine */
+/* Macros to do useful things with the SIS 315 BitBLT engine */
 
 /* Q_STATUS:
    bit 31 = 1: All engines idle and all queues empty
@@ -162,7 +169,7 @@
    bits 7:0:   2D counter 1
 
    Where is the command queue length (current amount of commands the queue
-   can accept) on the 310 series? (The current implementation is taken
+   can accept) on the 315 series? (The current implementation is taken
    from 300 series and certainly wrong...)
 */
 
@@ -338,4 +345,15 @@ int     CmdQueLen;
       MMIO_OUT32(pSiS->IOBase, TRAP_ER, eR);\
       CmdQueLen --;
 
+/* Alpha blending BitBlt (alpha = 8 bit) */
+#define SiSSetupAlpha(alpha) \
+      if (CmdQueLen <= 0)  SiSIdle;\
+      MMIO_OUT32(pSiS->IOBase, ALPHA_ALPHA, alpha);\
+      CmdQueLen--;
+
+/* Set Pattern register */    
+#define SiSSetPattern(num, value) \
+      if (CmdQueLen <= 0)  SiSIdle; \
+      MMIO_OUT32(pSiS->IOBase, (PATTERN_REG + (num * 4)), value); \
+      CmdQueLen--;
 

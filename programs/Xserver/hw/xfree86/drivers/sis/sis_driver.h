@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.6 2003/01/29 15:42:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.h,v 1.0 2001/11/30 12:12:00 eich Exp $ */
 /*
- * sis_driver.h
+ * Global data and definitions
  *
- * Copyright 2002 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,30 +22,56 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:   Thomas Winischhofer <thomas@winischhofer.net>:
- *              - 310/325 series (315/550/650/651/740/M650) support
- *              - new mode switching code for 300 and 310/325 series
- *              - many fixes for 300/540/630/730 chipsets,
- *              - many fixes for 5597/5598, 6326 and 530/620 chipsets,
- *              - VESA mode switching (deprecated),
- *              - extended CRT2/video bridge handling support,
- *              - dual head support on 300 and 310/325 series
- *              - 650/LVDS (up to 1400x1050), 650/Chrontel 701x support
- *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325 series)
- *              - Xv support for 5597/5598, 6326, 530/620 and 310/325 series
- *              - video overlay enhancements for 300 series
- *              - etc.
+ * Author:
+ *      	Thomas Winischhofer <thomas@winischhofer.net>
+ *
  */
 
+/* Mode numbers for 300/315/330 series */
+const UShort  ModeIndex_320x200[]      = {0x59, 0x41, 0x00, 0x4f};
+const UShort  ModeIndex_320x240[]      = {0x50, 0x56, 0x00, 0x53};
+const UShort  ModeIndex_320x480[]      = {0x5a, 0x5b, 0x00, 0x00};  /* DSTN/FSTN */
+const UShort  ModeIndex_400x300[]      = {0x51, 0x57, 0x00, 0x54};
+const UShort  ModeIndex_512x384[]      = {0x52, 0x58, 0x00, 0x5c};
+const UShort  ModeIndex_640x400[]      = {0x2f, 0x5d, 0x00, 0x5e};
+const UShort  ModeIndex_640x480[]      = {0x2e, 0x44, 0x00, 0x62};
+const UShort  ModeIndex_720x480[]      = {0x31, 0x33, 0x00, 0x35};
+const UShort  ModeIndex_720x576[]      = {0x32, 0x34, 0x00, 0x36};
+const UShort  ModeIndex_768x576[]      = {0x5f, 0x60, 0x00, 0x61};
+const UShort  ModeIndex_800x480[]      = {0x70, 0x7a, 0x00, 0x76};
+const UShort  ModeIndex_800x600[]      = {0x30, 0x47, 0x00, 0x63};
+const UShort  ModeIndex_848x480[]      = {0x39, 0x3b, 0x00, 0x3e};
+const UShort  ModeIndex_856x480[]      = {0x3f, 0x42, 0x00, 0x45};
+const UShort  ModeIndex_1024x768[]     = {0x38, 0x4a, 0x00, 0x64};
+const UShort  ModeIndex_1024x576[]     = {0x71, 0x74, 0x00, 0x77};
+const UShort  ModeIndex_1024x600[]     = {0x20, 0x21, 0x00, 0x22};  /* 300 series only */
+const UShort  ModeIndex_1280x1024[]    = {0x3a, 0x4d, 0x00, 0x65};
+const UShort  ModeIndex_1280x960[]     = {0x7c, 0x7d, 0x00, 0x7e};
+const UShort  ModeIndex_1152x768[]     = {0x23, 0x24, 0x00, 0x25};  /* 300 series only */
+const UShort  ModeIndex_1152x864[]     = {0x29, 0x2a, 0x00, 0x2b};
+const UShort  ModeIndex_300_1280x768[] = {0x55, 0x5a, 0x00, 0x5b};
+const UShort  ModeIndex_310_1280x768[] = {0x23, 0x24, 0x00, 0x25};
+const UShort  ModeIndex_1280x720[]     = {0x79, 0x75, 0x00, 0x78};
+const UShort  ModeIndex_1360x768[]     = {0x48, 0x4b, 0x00, 0x4e};
+const UShort  ModeIndex_1400x1050[]    = {0x26, 0x27, 0x00, 0x28};  /* 315 series only */
+const UShort  ModeIndex_1600x1200[]    = {0x3c, 0x3d, 0x00, 0x66};
+const UShort  ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
+const UShort  ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
+const UShort  ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
+ 
 /* VESA */
-/* TW: The following is included because there are BIOSes out there that
+/*     The following is included because there are BIOSes out there that
  *     report incomplete mode lists. These are 630 BIOS versions <2.01.2x
  *
- *     -) VBE 3.0 on SiS300 and 310/325 series do not support 24 fpp modes
- *     -) Only SiS310/325 series support 1920x1440x32
+ *     -) VBE 3.0 on SiS300 and 315 series do not support 24 fpp modes
+ *     -) Only SiS315 series support 1920x1440x32
  */
 				             /*     8      16    (24)    32   */
+static const UShort  VESAModeIndex_320x200[]   = {0x138, 0x10e, 0x000, 0x000};
+static const UShort  VESAModeIndex_320x240[]   = {0x132, 0x135, 0x000, 0x000};
+static const UShort  VESAModeIndex_400x300[]   = {0x133, 0x136, 0x000, 0x000};
 static const UShort  VESAModeIndex_512x384[]   = {0x134, 0x137, 0x000, 0x000};
+static const UShort  VESAModeIndex_640x400[]   = {0x100, 0x139, 0x000, 0x000};
 static const UShort  VESAModeIndex_640x480[]   = {0x101, 0x111, 0x000, 0x13a};
 static const UShort  VESAModeIndex_800x600[]   = {0x103, 0x114, 0x000, 0x13b};
 static const UShort  VESAModeIndex_1024x768[]  = {0x105, 0x117, 0x000, 0x13c};
@@ -53,7 +79,7 @@ static const UShort  VESAModeIndex_1280x1024[] = {0x107, 0x11a, 0x000, 0x13d};
 static const UShort  VESAModeIndex_1600x1200[] = {0x130, 0x131, 0x000, 0x13e};
 static const UShort  VESAModeIndex_1920x1440[] = {0x13f, 0x140, 0x000, 0x141};
 
-/* TW: For calculating refresh rate index (CR33) */
+/* For calculating refresh rate index (CR33) */
 static const struct _sis_vrate {
     CARD16 idx;
     CARD16 xres;
@@ -61,6 +87,9 @@ static const struct _sis_vrate {
     CARD16 refresh;
     BOOLEAN SiS730valid32bpp;
 } sisx_vrate[] = {
+	{1,  320,  200,  70,  TRUE},
+	{1,  320,  240,  60,  TRUE},
+	{1,  400,  300,  60,  TRUE},
         {1,  512,  384,  60,  TRUE},
 	{1,  640,  400,  72,  TRUE},
 	{1,  640,  480,  60,  TRUE}, {2,  640,  480,  72,  TRUE}, {3,  640,  480,  75,  TRUE}, 
@@ -74,18 +103,18 @@ static const struct _sis_vrate {
 	{7,  800,  600, 120,  TRUE}, {8,  800,  600, 160,  TRUE},
 	{1,  848,  480,  39,  TRUE}, {2,  848,  480,  60,  TRUE},
 	{1,  856,  480,  39,  TRUE}, {2,  856,  480,  60,  TRUE},
-	{1, 1024,  768,  43,  TRUE}, {2, 1024,  768,  60,  TRUE}, {3, 1024,  768,  70, FALSE}, 
-	{4, 1024,  768,  75, FALSE}, {5, 1024,  768,  85,  TRUE}, {6, 1024,  768, 100,  TRUE}, 
-	{7, 1024,  768, 120,  TRUE},
 	{1, 1024,  576,  60,  TRUE}, {2, 1024,  576,  75,  TRUE}, {3, 1024,  576,  85,  TRUE},
 	{1, 1024,  600,  60,  TRUE},
+	{1, 1024,  768,  43,  TRUE}, {2, 1024,  768,  60,  TRUE}, {3, 1024,  768,  70, FALSE},
+	{4, 1024,  768,  75, FALSE}, {5, 1024,  768,  85,  TRUE}, {6, 1024,  768, 100,  TRUE},
+	{7, 1024,  768, 120,  TRUE},
 	{1, 1152,  768,  60,  TRUE},
 	{1, 1152,  864,  75,  TRUE}, {2, 1152,  864,  84,  TRUE},
 	{1, 1280,  720,  60,  TRUE}, {2, 1280,  720,  75,  TRUE}, {3, 1280,  720,  85,  TRUE},
 	{1, 1280,  768,  60,  TRUE},
-	{1, 1280, 1024,  43,  TRUE}, {2, 1280, 1024,  60,  TRUE}, {3, 1280, 1024,  75,  TRUE}, 
-	{4, 1280, 1024,  85,  TRUE},
 	{1, 1280,  960,  60,  TRUE}, {2, 1280,  960,  85,  TRUE},
+	{1, 1280, 1024,  43,  TRUE}, {2, 1280, 1024,  60,  TRUE}, {3, 1280, 1024,  75,  TRUE},
+	{4, 1280, 1024,  85,  TRUE},
 	{1, 1360,  768,  60,  TRUE},
 	{1, 1400, 1050,  60,  TRUE}, {2, 1400, 1050,  75,  TRUE},
 	{1, 1600, 1200,  60,  TRUE}, {2, 1600, 1200,  65,  TRUE}, {3, 1600, 1200,  70,  TRUE}, 
@@ -98,7 +127,7 @@ static const struct _sis_vrate {
 	{0,    0,    0,   0, FALSE}
 };
 
-/* TW: Some 300-series laptops have a badly designed BIOS and make it
+/*     Some 300-series laptops have a badly designed BIOS and make it
  *     impossible to detect the correct panel delay compensation. This
  *     table used to detect such machines by their PCI subsystem IDs;
  *     however, I don't know how reliable this method is. (With Asus
@@ -115,7 +144,7 @@ static const chswtable mychswtable[] = {
 	{ 0,      0,      ""       , ""       }
 };
 
-/* TW: Our TV modes for the 6326. The data in these structures
+/*     Our TV modes for the 6326. The data in these structures
  *     is mainly correct, but since we use our private CR and
  *     clock values anyway, small errors do no matter.
  */
@@ -159,7 +188,7 @@ static DisplayModeRec SiS6326PAL800x600Mode = {
 	0.0		/* VRefresh */
 };
 
-/* TW: Due to the scaling method this mode uses, the vertical data here
+/*     Due to the scaling method this mode uses, the vertical data here
  *     does not match the CR data. But this does not matter, we use our
  *     private CR data anyway.
  */
@@ -326,7 +355,7 @@ static DisplayModeRec SiS6326NTSC640x480Mode = {
 	0.0		/* VRefresh */
 };
 
-/* TW: Due to the scaling method this mode uses, the vertical data here
+/*     Due to the scaling method this mode uses, the vertical data here
  *     does not match the CR data. But this does not matter, we use our
  *     private CR data anyway.
  */
@@ -413,7 +442,7 @@ static DisplayModeRec SiS6326NTSC640x400Mode = {
 	0.0		/* VRefresh */
 };
 
-/* TW: Built-in hi-res modes for the 6326.
+/*     Built-in hi-res modes for the 6326.
  *     For some reason, our default mode lines and the
  *     clock calculation functions in sis_dac.c do no
  *     good job on higher clocks. It seems, the hardware
@@ -509,4 +538,11 @@ static DisplayModeRec SiS6326SIS1600x1200_60Mode = {
 	0.0,		/* HSync */
 	0.0		/* VRefresh */
 };
+
+USHORT 	      SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
+USHORT        SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags);
+unsigned char SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
+
+void          SISMergePointerMoved(int scrnIndex, int x, int y);
+
 

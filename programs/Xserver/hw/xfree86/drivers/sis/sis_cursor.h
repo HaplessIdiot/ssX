@@ -1,7 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.h,v 1.4 2003/01/29 15:42:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.h,v 1.2 2001/04/19 12:40:33 alanh Exp $ */
 /*
+ * SiS hardware cursor handling
+ * Definitions
+ *
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -227,7 +230,7 @@
   MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
   }
 
-/* 310/325/330 series CRT1 */
+/* 315/330 series CRT1 */
 
 /* 80000000 = RGB(1) - MONO(0)
  * 40000000 = enable(1) - disable(0)
@@ -318,7 +321,7 @@
   MMIO_OUT32(pSiS->IOBase,CS(0),temp); \
   }
 
-/* 310/325/330 series CRT2 */
+/* 315/330 series CRT2 */
 
 /* 80000000 = RGB(1) - MONO(0)
  * 40000000 = enable(1) - disable(0)
@@ -339,31 +342,31 @@
   }
   
 #define sis301EnableHWCursor310()\
-   { \
-   unsigned long temp, temp1, temp2; \
-   temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-   temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-   temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-   temp &= 0x0fffffff; \
-   temp |= 0x40000000; \
-   MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-   MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-   MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-   }
-
+  { \
+  unsigned long temp, temp1, temp2; \
+  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
+  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
+  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
+  temp &= 0x0fffffff; \
+  temp |= 0x40000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
+  }
+  
 #define sis301EnableHWARGBCursor310()\
-   { \
-   unsigned long temp, temp1, temp2; \
-   temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-   temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-   temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-   temp &= 0x0FFFFFFF; \
-   temp |= 0xE0000000; \
-   MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-   MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-   MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-   }
-
+  { \
+  unsigned long temp, temp1, temp2; \
+  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
+  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
+  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
+  temp &= 0x0FFFFFFF; \
+  temp |= 0xE0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
+  }
+  
 #define sis301SwitchToRGBCursor310() \
   { \
   unsigned long temp; \

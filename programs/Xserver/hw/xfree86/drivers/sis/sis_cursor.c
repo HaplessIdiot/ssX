@@ -1,7 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.9 2003/01/29 15:42:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.6 2001/09/28 07:47:22 alanh Exp $ */
 /*
+ * SiS hardware cursor handling
+ *
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
- * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
+ * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -40,10 +42,13 @@
 
 #if 0
 #define SIS300_USE_ARGB16
+#else
+#undef  SIS300_USE_ARGB16
 #endif
 
 extern void    SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 extern void    SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
+extern Bool    InRegion(int x, int y, region r);
 
 static void
 SiSShowCursor(ScrnInfoPtr pScrn)
@@ -121,12 +126,12 @@ SiS300ShowCursor(ScrnInfoPtr pScrn)
 #endif
 }
 
-/* TW: 310/325 series */
+/* TW: 315 series */
 static void
 SiS310ShowCursor(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-
+    
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -208,7 +213,7 @@ SiS300HideCursor(ScrnInfoPtr pScrn)
 #endif
 }
 
-/* TW: 310/325 series */
+/* TW: 315 series */
 static void
 SiS310HideCursor(ScrnInfoPtr pScrn)
 {
@@ -241,11 +246,12 @@ SiS310HideCursor(ScrnInfoPtr pScrn)
 static void
 SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    SISPtr        pSiS     = SISPTR(pScrn);
-    unsigned char x_preset = 0;
-    unsigned char y_preset = 0;
-    int           temp;
-    unsigned char sridx, cridx;
+    SISPtr         pSiS     = SISPTR(pScrn);
+    DisplayModePtr mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    unsigned char  x_preset = 0;
+    unsigned char  y_preset = 0;
+    int            temp;
+    unsigned char  sridx, cridx;
 
     sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
 
@@ -263,11 +269,8 @@ SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
         y = 0;
     }
 
-    /* are we in interlaced/doublescan mode? */
-    if (pScrn->currentMode->Flags & V_INTERLACE)
-        y /= 2;
-    else if (pScrn->currentMode->Flags & V_DBLSCAN)
-        y *= 2;
+    if(mode->Flags & V_INTERLACE)     y /= 2;
+    else if(mode->Flags & V_DBLSCAN)  y *= 2;
 
     outSISIDXREG(SISSR, 0x1A, x & 0xff);
     outSISIDXREG(SISSR, 0x1B, (x & 0xff00) >> 8);
@@ -283,12 +286,86 @@ SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
 }
 
+#ifdef SISMERGED
+static void
+SiSSetCursorPositionMerged(ScrnInfoPtr pScrn1, int x, int y)
+{
+    SISPtr         pSiS = SISPTR(pScrn1);
+    ScrnInfoPtr    pScrn2 = pSiS->CRT2pScrn;
+    DisplayModePtr mode1 = CDMPTR->CRT1;
+    DisplayModePtr mode2 = CDMPTR->CRT2;
+    unsigned short x1_preset = 0, x2_preset = 0;
+    unsigned short y1_preset = 0, y2_preset = 0;
+    unsigned short maxpreset;
+    int            x1, y1, x2, y2;
+
+    x += pScrn1->frameX0;
+    y += pScrn1->frameY0;
+
+    x1 = x - pSiS->CRT1frameX0;
+    y1 = y - pSiS->CRT1frameY0;
+
+    x2 = x - pScrn2->frameX0;
+    y2 = y - pScrn2->frameY0;
+
+    maxpreset = 63;
+    if((pSiS->VGAEngine == SIS_300_VGA) && (pSiS->UseHWARGBCursor)) maxpreset = 31;
+
+    if(x1 < 0) {
+        x1_preset = (-x1);
+	if(x1_preset > maxpreset) x1_preset = maxpreset;
+        x1 = 0;
+    }
+    if(y1 < 0) {
+        y1_preset = (-y1);
+	if(y1_preset > maxpreset) y1_preset = maxpreset;
+        y1 = 0;
+    }
+    if(x2 < 0) {
+        x2_preset = (-x2);
+	if(x2_preset > maxpreset) x2_preset = maxpreset;
+        x2 = 0;
+    }
+    if(y2 < 0) {
+        y2_preset = (-y2);
+	if(y2_preset > maxpreset) y2_preset = maxpreset;
+        y2 = 0;
+    }
+
+    if(mode1->Flags & V_INTERLACE)     { y1 /= 2; y1_preset /= 2; }
+    else if(mode1->Flags & V_DBLSCAN)  { y1 *= 2; y1_preset *= 2; }
+
+    if(mode2->Flags & V_INTERLACE)     { y2 /= 2; y2_preset /= 2; }
+    else if(mode2->Flags & V_DBLSCAN)  { y2 *= 2; y2_preset *= 2; }
+
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+       sis300SetCursorPositionX(x1, x1_preset)
+       sis300SetCursorPositionY(y1, y1_preset)
+       sis301SetCursorPositionX(x2 + 13, x2_preset)
+       sis301SetCursorPositionY(y2, y2_preset)
+    } else {
+       sis310SetCursorPositionX(x1, x1_preset)
+       sis310SetCursorPositionY(y1, y1_preset)
+       sis301SetCursorPositionX310(x2 + 17, x2_preset)
+       sis301SetCursorPositionY310(y2, y2_preset)
+    }
+}
+#endif
+
 static void
 SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    SISPtr        pSiS = SISPTR(pScrn);
-    unsigned char x_preset = 0;
-    unsigned char y_preset = 0;
+    SISPtr         pSiS = SISPTR(pScrn);
+    DisplayModePtr mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    unsigned short x_preset = 0;
+    unsigned short y_preset = 0;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       SiSSetCursorPositionMerged(pScrn, x, y);
+       return;
+    }
+#endif
 
     if (x < 0) {
         x_preset = (-x);
@@ -299,11 +376,8 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
         y = 0;
     }
 
-    /* are we in interlaced/doublescan mode? */
-    if(pScrn->currentMode->Flags & V_INTERLACE)
-        y /= 2;
-    else if(pScrn->currentMode->Flags & V_DBLSCAN)
-        y *= 2;
+    if(mode->Flags & V_INTERLACE)     y /= 2;
+    else if(mode->Flags & V_DBLSCAN)  y *= 2;
 
 #ifdef SISDUALHEAD
     if (pSiS->DualHeadMode) {
@@ -313,7 +387,7 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     		sis300SetCursorPositionY(y, y_preset)
         } else {
 		/* TW: Head 1 is always CRT2 */
-		sis301SetCursorPositionX(x+13, x_preset)
+		sis301SetCursorPositionX(x + 13, x_preset)
       		sis301SetCursorPositionY(y, y_preset)
 	}
     } else {
@@ -321,7 +395,7 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     	sis300SetCursorPositionX(x, x_preset)
     	sis300SetCursorPositionY(y, y_preset)
     	if(pSiS->VBFlags & CRT2_ENABLE) {
-      		sis301SetCursorPositionX(x+13, x_preset)
+      		sis301SetCursorPositionX(x + 13, x_preset)
       		sis301SetCursorPositionY(y, y_preset)
     	}
 #ifdef SISDUALHEAD
@@ -332,9 +406,17 @@ SiS300SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 static void
 SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    SISPtr        pSiS = SISPTR(pScrn);
-    unsigned char x_preset = 0;
-    unsigned char y_preset = 0;
+    SISPtr         pSiS = SISPTR(pScrn);
+    DisplayModePtr mode = pSiS->CurrentLayout.mode;
+    unsigned short x_preset = 0;
+    unsigned short y_preset = 0;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       SiSSetCursorPositionMerged(pScrn, x, y);
+       return;
+    }
+#endif
 
     if (x < 0) {
         x_preset = (-x);
@@ -345,15 +427,12 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
         y = 0;
     }
 
-    /* are we in interlaced/doublescan mode? */
-    if(pScrn->currentMode->Flags & V_INTERLACE)
-        y /= 2;
-    else if(pScrn->currentMode->Flags & V_DBLSCAN)
-        y *= 2;
+    if(mode->Flags & V_INTERLACE)     y /= 2;
+    else if(mode->Flags & V_DBLSCAN)  y *= 2;
 
 #ifdef SISDUALHEAD
-    if (pSiS->DualHeadMode) {
-	if (pSiS->SecondHead) {
+    if(pSiS->DualHeadMode) {
+	if(pSiS->SecondHead) {
 		/* TW: Head 2 is always CRT1 */
 		sis310SetCursorPositionX(x, x_preset)
     		sis310SetCursorPositionY(y, y_preset)
@@ -366,7 +445,7 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 #endif
     	sis310SetCursorPositionX(x, x_preset)
     	sis310SetCursorPositionY(y, y_preset)
-    	if (pSiS->VBFlags & CRT2_ENABLE) {
+    	if(pSiS->VBFlags & CRT2_ENABLE) {
       		sis301SetCursorPositionX310(x + 17, x_preset)
       		sis301SetCursorPositionY310(y, y_preset)
     	}
@@ -374,6 +453,7 @@ SiS310SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     }
 #endif
 }
+
 
 static void
 SiSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
@@ -439,7 +519,7 @@ static void
 SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     SISPtr pSiS = SISPTR(pScrn);
-
+    
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -467,10 +547,11 @@ SiS310SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 static void
 SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
-    SISPtr        pSiS = SISPTR(pScrn);
-    int           cursor_addr;
-    unsigned char temp;
-    unsigned char sridx, cridx;
+    SISPtr         pSiS = SISPTR(pScrn);
+    DisplayModePtr mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    int            cursor_addr;
+    unsigned char  temp;
+    unsigned char  sridx, cridx;
 
     sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
 
@@ -479,7 +560,7 @@ SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 #endif
 
     cursor_addr = pScrn->videoRam - 1;
-    if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+    if(mode->Flags & V_DBLSCAN) {
       int i;
       for(i = 0; i < 32; i++) {
          memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i),
@@ -518,6 +599,7 @@ static void
 SiS300LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr pSiS = SISPTR(pScrn);
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
     int cursor_addr;
     CARD32 status1 = 0, status2 = 0;
 
@@ -530,7 +612,7 @@ SiS300LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
     	/* TW: Use the global (real) FbBase in DHM */
-	if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+	if(mode->Flags & V_DBLSCAN) {
            int i;
            for(i = 0; i < 32; i++) {
               memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i),
@@ -543,7 +625,7 @@ SiS300LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	}
     } else 
 #endif
-      if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+      if(mode->Flags & V_DBLSCAN) {
         int i;
         for(i = 0; i < 32; i++) {
            memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i),
@@ -594,6 +676,7 @@ static void
 SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr pSiS = SISPTR(pScrn);
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
     int cursor_addr;
     CARD32 status1 = 0, status2 = 0;
 
@@ -606,7 +689,7 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 #ifdef SISDUALHEAD
     if (pSiS->DualHeadMode) {
     	/* TW: Use the global (real) FbBase in DHM */
-	if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+	if(mode->Flags & V_DBLSCAN) {
            int i;
            for(i = 0; i < 32; i++) {
               memcpy((unsigned char *)pSiSEnt->FbBase + (cursor_addr * 1024) + (32 * i),
@@ -619,7 +702,7 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	}
     } else
 #endif
-      if(pSiS->CurrentLayout.mode->Flags & V_DBLSCAN) {
+      if(mode->Flags & V_DBLSCAN) {
         int i;
         for(i = 0; i < 32; i++) {
            memcpy((unsigned char *)pSiS->FbBase + (cursor_addr * 1024) + (32 * i),
@@ -657,7 +740,7 @@ SiS310LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	    sis301DisableHWCursor310()
 	    SISWaitRetraceCRT2(pScrn); 
 	    sis301SwitchToMONOCursor310();   
-	}
+	}  
         sis301SetCursorAddress310(cursor_addr)
         sis301SetCursorPatternSelect310(0)
 	if(status2) sis301SetCursorStatus310(status2)
@@ -670,9 +753,9 @@ static Bool
 SiSUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    DisplayModePtr  mode = pScrn->currentMode;
     SISPtr  pSiS = SISPTR(pScrn);
-
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    
     if(pSiS->Chipset != PCI_CHIP_SIS6326) return TRUE;
     if(!(pSiS->SiS6326Flags & SIS6326_TVDETECTED)) return TRUE;
     if((strcmp(mode->name, "PAL800x600U") == 0) ||
@@ -704,6 +787,7 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
       case PCI_CHIP_SIS330:
+      case PCI_CHIP_SIS660:
         if(mode->Flags & V_INTERLACE)
             return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
@@ -726,8 +810,8 @@ static Bool
 SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    DisplayModePtr  mode = pScrn->currentMode;
     SISPtr  pSiS = SISPTR(pScrn);
+    DisplayModePtr  mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
     	
     switch (pSiS->Chipset)  {
       case PCI_CHIP_SIS300:
@@ -746,6 +830,7 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
       case PCI_CHIP_SIS330:
+      case PCI_CHIP_SIS660:
         if(mode->Flags & V_INTERLACE)
             return FALSE;
 	if(pCurs->bits->height > 64 || pCurs->bits->width > 64)
@@ -1013,10 +1098,8 @@ SiSHWCursorInit(ScreenPtr pScreen)
     SISPtr pSiS = SISPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
 
-    PDEBUG(ErrorF("HW Cursor Init\n"));
     infoPtr = xf86CreateCursorInfoRec();
-    if(!infoPtr) 
-        return FALSE;
+    if(!infoPtr) return FALSE;
 
     pSiS->CursorInfoPtr = infoPtr;
     pSiS->UseHWARGBCursor = FALSE;
@@ -1057,6 +1140,7 @@ SiSHWCursorInit(ScreenPtr pScreen)
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
       case PCI_CHIP_SIS330:
+      case PCI_CHIP_SIS660:
         infoPtr->MaxWidth  = 64;   
         infoPtr->MaxHeight = 64;
         infoPtr->ShowCursor = SiS310ShowCursor;
