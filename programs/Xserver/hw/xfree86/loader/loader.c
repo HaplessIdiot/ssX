@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.9 1997/02/28 13:32:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.10 1997/03/03 15:55:25 hohndel Exp $ */
 
 
 
@@ -150,7 +150,7 @@ if( buf[0] == 0x00 && buf[1] == 0x86 && buf[2] == 0x01 && buf[3] == 0x07) {
         /* AOUTMAGIC */
         return LD_AOUTOBJECT;
         }
-if( buf[0] == 0x07 && buf[1] == 0x01 && buf[2] == 0x64) {
+if( buf[0] == 0x07 && buf[1] == 0x01 && (buf[2] == 0x64 || buf[2] == 0x86)) {
         /* AOUTMAGIC, (Linux OMAGIC, old impure format, also used by OS/2 */
         return LD_AOUTOBJECT;
         }

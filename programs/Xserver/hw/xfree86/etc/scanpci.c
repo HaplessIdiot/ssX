@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.34 1997/01/03 07:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.36 1997/03/07 00:29:38 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -736,6 +736,9 @@ struct pci_vendor_device {
                             { 0xA0A1, "2000MT", NF },
                             { 0xA0A9, "2000MI", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x109E, "Brooktree", {
+                           { 0x0350, "BT-848", NF},
+                           { 0x0000, (char *)NULL, NF } } },
         { 0x0000, (char *)NULL, {
                             { 0x0000, (char *)NULL, NF } } }
 };

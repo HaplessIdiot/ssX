@@ -1,8 +1,11 @@
-XFree86 3.2Ak ( 4 March 1997)
+XFree86 3.2Al ( 7 March 1997)
+ 549. Fix a.out loader for FreeBSD (#126, Takaaki Nomura).
+ 548. Add the BT-848 to scanpci (#121, Dejan Ilic).
  547. Change the way dynamic loading of vga2. vga16, vga256 modules is done
-      (just one module per driver for all color depths) (# 123, Alan Hourihane).
- 546. Add support for 3DLabs GLINT chipsets to scanpci and SuperProbe
-      (Dirk Hohndel).
+      (just one module per driver for all color depths, all the drivers are
+      moved to xfree86/drivers) (#122-124, Alan Hourihane, Dirk Hohndel).
+ 546. Add support for 3DLabs GLINT chipsets to scanpci and SuperProbe, start
+      working on a 2D server for Elsa Gloria L (Dirk Hohndel, Stefan Dirsch).
 
 XFree86 3.2Ak ( 4 March 1997)
  545. Make Mono drivers loadable and clean up some of XF86_LOADER; this
@@ -4130,4 +4133,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.424 1997/03/07 00:28:41 hohndel Exp $
