@@ -2693,9 +2693,14 @@ ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #if UseFreetype2
 
 #if BuildFreetype2Library
-FREETYPE2INCLUDES=$(TOP_X_INCLUDES)/freetype2
-FREETYPE2DEFINES=-DFREETYPE2
+
+#if UseInstalled
+FREETYPE2INCDIR=$(INCDIR)/freetype2
 #else
+FREETYPE2INCDIR=$(TOP_X_INCLUDES)/freetype2
+#endif
+
+#else /* BuildFreetype2Library */
 
 #if HasFreetype2
 
@@ -2714,13 +2719,18 @@ FREETYPE2DEFINES=-DFREETYPE2
 FREETYPE2DIR = Freetype2Dir
 FREETYPE2LIBDIR = Freetype2LibDir
 FREETYPE2INCDIR = Freetype2IncDir
-FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)
 FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
+
+#endif /* HasFreetype2 */
+
+#endif /* else BuildFreetype2Library */
+
+#if BuildFreetype2Library || HasFreetype2
+FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)
 FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
-#endif
-#endif
+#endif /* UseFreetype2 */
 
 #ifndef SharedLibLibxml2
 #define SharedLibLibxml2 HasSharedLibraries
@@ -2955,7 +2965,12 @@ ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLib
 
 #if BuildFontconfigLibrary
 
-FONTCONFIGINCLUDES=$(TOP_X_INCLUDES)
+#if UseInstalled
+FONTCONFIGINCDIR=$(INCDIR)
+#else
+FONTCONFIGINCDIR=$(TOP_X_INCLUDES)
+#endif
+
 #else /* BuildFontconfigLibrary */
 
 #if HasFontconfig
@@ -2975,13 +2990,17 @@ FONTCONFIGINCLUDES=$(TOP_X_INCLUDES)
 FONTCONFIGDIR = FontconfigDir
 FONTCONFIGLIBDIR = FontconfigLibDir
 FONTCONFIGINCDIR = FontconfigIncDir
-FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
 FONTCONFIGLIB = -L$(FONTCONFIGLIBDIR) -lfontconfig
-FONTCONFIGDEFINES = -DFONTCONFIG
 
 #endif /* HasFontconfig */
 
 #endif /* else BuildFontconfigLibrary */
+
+#if BuildFontconfigLibrary || HasFontconfig
+FONTCONFIGINCLUDES = -I$(FONTCONFIGINCDIR)
+FONTCONFIGDEFINES = -DFONTCONFIG
+#endif
+
 #endif /* UseFontconfig */
 
 #ifndef XmuuClientDepLibs
