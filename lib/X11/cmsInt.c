@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsInt.c,v 1.3 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsInt.c,v 1.4 2003/04/13 19:22:20 dawes Exp $ */
 
 /* #define NEED_EVENTS */
 #include <stdio.h>
@@ -62,7 +62,7 @@ static void _XcmsFreeDefaultCCCs(Display *dpy);
  *
  *	SYNOPSIS
  */
-static XPointer *
+XPointer *
 _XcmsCopyPointerArray(
     XPointer *pap)
 /*
@@ -95,7 +95,7 @@ _XcmsCopyPointerArray(
  *
  *	SYNOPSIS
  */
-static void
+void
 _XcmsFreePointerArray(
     XPointer *pap)
 /*

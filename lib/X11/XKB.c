@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKB.c,v 1.7 2002/12/10 04:30:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKB.c,v 1.8 2003/04/13 19:22:18 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_REPLIES
@@ -442,13 +442,8 @@ XkbGetXlibControls(dpy)
     return dpy->xkb_info->xlib_ctrls;
 }
 
-static
 unsigned int
-#if NeedFunctionPrototypes
 XkbXlibControlsImplemented(void)
-#else
-XkbXlibControlsImplemented()
-#endif
 {
 #ifdef __sgi
     return XkbLC_AllControls;

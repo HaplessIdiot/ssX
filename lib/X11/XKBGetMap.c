@@ -25,7 +25,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.7 2003/02/04 03:49:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBGetMap.c,v 1.8 2003/04/13 19:22:18 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -896,16 +896,8 @@ XkbGetKeyModifierMap(dpy,first,num,xkb)
     return status;
 }
 
-static Status
-#if NeedFunctionPrototypes
+Status
 XkbGetKeyVirtualModMap(Display *dpy,unsigned first,unsigned num,XkbDescPtr xkb)
-#else
-XkbGetKeyVirtualModMap(dpy,first,num,xkb)
-    Display *dpy;
-    unsigned first;
-    unsigned num;
-    XkbDescPtr xkb;
-#endif
 {
     register xkbGetMapReq *req;
     Status status;

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.14 2002/11/01 13:43:31 alanh Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.15 2003/04/13 19:22:19 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -961,6 +961,19 @@ extern void _XlcVaToArgList(
     va_list		var,
     int			count,
     XlcArgList*		args_return
+);
+
+
+extern void _XlcCopyFromArg(
+    char *		src,
+    char *		dst,
+    int			size
+);
+
+extern void _XlcCopyToArg(
+    char *		src,
+    char **		dst,
+    int			size
 );
 
 extern void _XlcCompileResourceList(

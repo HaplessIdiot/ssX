@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.24 2002/05/31 18:45:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.25 2003/04/13 19:22:19 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -1108,6 +1108,8 @@ extern Status _XUnknownNativeEvent(
 extern Bool _XWireToEvent(Display *dpy, XEvent *re, xEvent *event);
 extern Bool _XDefaultWireError(Display *display, XErrorEvent *he, xError *we);
 extern Bool _XPollfdCacheInit(Display *dpy);
+extern void _XPollfdCacheAdd(Display *dpy, int fd);
+extern void _XPollfdCacheDel(Display *dpy, int fd);
 extern XID _XAllocID(Display *dpy);
 extern void _XAllocIDs(Display *dpy, XID *ids, int count);
 
