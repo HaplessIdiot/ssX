@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.12 2001/11/04 08:09:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.13 2001/11/07 23:19:21 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -82,8 +82,7 @@
 
 #define AltMask         Mod1Mask
 #define MetaMask        Mod2Mask
-#define AltLangMask     Mod3Mask
-#define FunctionMask    Mod4Mask
+#define FunctionMask    Mod3Mask
 
 // FIXME: It would be nice to support some of the extra keys in XF86keysym.h,
 // at least the volume controls that now ship on every Apple keyboard.
@@ -544,8 +543,7 @@ void DarwinKeyboardInit(
                                 (left ? XK_Control_L : XK_Control_R);
                         break;
                     case NX_MODIFIERKEY_ALTERNATE:
-                        modMap[keyCode + MIN_KEYCODE] =
-                                (left ? AltLangMask : AltMask);
+                        modMap[keyCode + MIN_KEYCODE] = AltMask;
                         map[keyCode * GLYPHS_PER_KEY] =
                                 (left ? XK_Mode_switch : XK_Alt_R);
                         break;
