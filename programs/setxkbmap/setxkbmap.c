@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/setxkbmap/setxkbmap.c,v 3.3 1999/02/20 15:07:20 hohndel Exp $ */
+/* $XFree86: xc/programs/setxkbmap/setxkbmap.c,v 3.4 2001/03/01 00:56:55 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -243,10 +243,14 @@ dumpNames(wantRules,wantCNames)
 #endif
 {
     if (wantRules) {
-	if (cfgResult.model)	MSG1("model:      %s\n",cfgResult.model);
-	if (cfgResult.layout)	MSG1("layout:     %s\n",cfgResult.layout);
-	if (cfgResult.variant)	MSG1("variant:    %s\n",cfgResult.variant);
-	if (cfgResult.options)	MSG1("options:    %s\n",cfgResult.options);
+	if (svValue[MODEL_NDX])	 MSG1("model:      %s\n",svValue[MODEL_NDX]);
+	if (svValue[LAYOUT_NDX])  MSG1("layout:     %s\n",svValue[LAYOUT_NDX]);
+	if (svValue[VARIANT_NDX]) MSG1("variant:    %s\n",svValue[VARIANT_NDX]);
+	if (options) {
+	   char *opt_str=stringFromOptions(NULL, numOptions, options);
+	   MSG1("options:    %s\n", opt_str);
+	   free(opt_str);
+	}
     }
     if (wantCNames) {
 	if (svValue[KEYMAP_NDX])
@@ -320,6 +324,7 @@ char *	opt;
 	return True;
     }
     ndx++;
+    *arg= ndx;
     if (svValue[which]!=NULL) {
 	if (svSrc[which]==src) {
 	    VMSG2(0,"More than one %s on %s\n",svName[which],srcName[src]);
@@ -335,7 +340,6 @@ char *	opt;
     }
     svSrc[which]= src;
     svValue[which]= argv[ndx];
-    *arg= ndx;
     return True;
 }
 
@@ -391,6 +395,8 @@ unsigned	present;
 	    if ((i>=argc-1)||(argv[i+1][0]=='\0')||(argv[i+1][0]=='-')) {
 		clearOptions= True;
 		ok= addToList(&szOptions,&numOptions,&options,"");
+                if (argv[i+1][0]=='\0')
+                   i++;
 	    }
 	    else {
 		ok= addToList(&szOptions,&numOptions,&options,argv[++i]);
@@ -724,6 +730,8 @@ char *	rfName;
 	char 			buf[PATH_MAX];
 	XkbComponentNamesRec	rnames;
 
+        if(svSrc[VARIANT_NDX] < svSrc[LAYOUT_NDX])
+            svValue[VARIANT_NDX] = NULL;
 
 	rdefs.model= svValue[MODEL_NDX];
 	rdefs.layout= svValue[LAYOUT_NDX];
@@ -780,7 +788,7 @@ char *	rfName;
 	}
 	if (verbose>6) {
 	    MSG1("Applied rules from %s:\n",svValue[RULES_NDX]);
-	    dumpNames(False,True);
+	    dumpNames(True,False);
 	}
     }
     else if (verbose>6) {
@@ -861,7 +869,7 @@ applyComponentNames()
 
     if (verbose>5) {
 	MSG("Trying to build keymap using the following components:\n");
-	dumpNames(True,True);
+	dumpNames(False,True);
     }
     if (dpy) {
 	XkbComponentNamesRec	cmdNames;
