@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.13 2002/09/09 21:52:14 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.14 2002/10/29 18:19:43 alanh Exp $ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID
@@ -116,6 +116,11 @@ GLNAME( _mesa_identify_x86_cpu_features ):
 	MOV_L	( CONST(0x1), EAX )
 	CPUID
 	MOV_L	( EDX, EAX )
+
+	/* Mask out highest bit, which is used by AMD for 3dnow.
+	 * Newer Intel have this bit set, but do not support 3dnow.
+	 */
+	AND_L	( CONST(0X7FFFFFFF), EAX)
 	JMP	( LLBL(cpuid_done) )
 
 LLBL(cpuid_amd):
