@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.140 2001/09/11 14:12:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.141 2001/09/12 13:39:20 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -166,8 +166,8 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBERBLADEI1D,		"cyberbladei1d" },
     { CYBERBLADEAI1,		"cyberbladeAi1" },
     { CYBERBLADEAI1D,		"cyberbladeAi1d" },
-    { CYBERBLADEXP,		"cyberbladeXP" },
-    { CYBERBLADEXPm,		"cyberbladeXPm" },
+    { CYBERBLADEXPm8,		"cyberbladeXPm/8" },
+    { CYBERBLADEXPm16,		"cyberbladeXPm/16" },
     { -1,				NULL }
 };
 
@@ -208,8 +208,8 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBERBLADEI1D,	PCI_CHIP_8520,	RES_SHARED_VGA },
     { CYBERBLADEAI1,	PCI_CHIP_8600,	RES_SHARED_VGA },
     { CYBERBLADEAI1D,	PCI_CHIP_8620,	RES_SHARED_VGA },
-    { CYBERBLADEXP,	PCI_CHIP_9910,	RES_SHARED_VGA },
-    { CYBERBLADEXPm,	PCI_CHIP_9930,	RES_SHARED_VGA },
+    { CYBERBLADEXPm8,	PCI_CHIP_9910,	RES_SHARED_VGA },
+    { CYBERBLADEXPm16,	PCI_CHIP_9930,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -1795,19 +1795,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
-	case CYBERBLADEXP:
-	    pTrident->ddc1Read = Tridentddc1Read;
-	    ramtype = "SGRAM";
-	    pTrident->HasSGRAM = TRUE;
-	    pTrident->NoAccel = TRUE; /* Disable acceleration */
-	    pTrident->HWCursor = FALSE;
-	    /* pTrident->IsCyber = TRUE; */
-	    Support24bpp = TRUE;
-	    chipset = "Cyber/BladeXP";
-	    pTrident->NewClockCode = TRUE;
-	    pTrident->frequency = NTSC;
-	    break;
-	case CYBERBLADEXPm:
+	case CYBERBLADEXPm8:
 	    pTrident->ddc1Read = Tridentddc1Read;
 	    ramtype = "SGRAM";
 	    pTrident->HasSGRAM = TRUE;
@@ -1815,7 +1803,19 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->HWCursor = FALSE;
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
-	    chipset = "CyberBlade/XPm";
+	    chipset = "CyberBladeXPm/8";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    break;
+	case CYBERBLADEXPm16:
+	    pTrident->ddc1Read = Tridentddc1Read;
+	    ramtype = "SGRAM";
+	    pTrident->HasSGRAM = TRUE;
+	    pTrident->NoAccel = TRUE; /* Disable acceleration */
+	    pTrident->HWCursor = FALSE;
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "CyberBladeXPm/16";
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
@@ -1862,6 +1862,16 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pTrident->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
+      if (pTrident->Chipset == CYBERBLADEXPm8) {
+	pScrn->videoRam = 8192;
+      } else
+      if (pTrident->Chipset == CYBERBLADEXPm16) {
+	pScrn->videoRam = 16384;
+      } else
+      if (pTrident->Chipset == CYBER9525DVD) {
+	pScrn->videoRam = 2560;
+      } else
+      {
 	OUTB(vgaIOBase + 4, SPR);
 	videoram = INB(vgaIOBase + 5);
 	if (pTrident->Chipset < TGUI9440AGi)
@@ -1878,7 +1888,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x04: /* 8MB, but - hw cursor can't store above 4MB */
 		   /* So, we force to 4MB for now */
 	    	   /* pScrn->videoRam = 8192; */
-	    /* Appearantly this isn't true for the CYBER9397DVD */
+	    /* Apparantly this isn't true for the CYBER9397DVD */
 	    /* maybe some other chipsets aren't affected either */
 	    /* XXX this needs to be investigated further */
 	  if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD)) {
@@ -1890,8 +1900,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case 0x07:
 	    pScrn->videoRam = 2048;
-	    if (pTrident->Chipset == CYBER9525DVD)
-		pScrn->videoRam = 2560;
 	    break;
 	case 0x0F:
 	    pScrn->videoRam = 4096;
@@ -1903,6 +1911,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 				pScrn->videoRam);
 	    break;
 	}
+      }
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -2352,8 +2361,8 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEE4:
 	case CYBER9397:
 	case CYBER9397DVD:
-	case CYBERBLADEXP:
-	case CYBERBLADEXPm:
+	case CYBERBLADEXPm8:
+	case CYBERBLADEXPm16:
 	    /* Get ready for MUX mode */
 	    if (pTrident->MUX && 
 		pScrn->bitsPerPixel == 8 && 

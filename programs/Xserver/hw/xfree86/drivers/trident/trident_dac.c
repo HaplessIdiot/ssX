@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.46 2001/05/23 20:32:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.47 2001/06/14 02:23:50 keithp Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -405,8 +405,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
-	case CYBERBLADEXP:
-	case CYBERBLADEXPm:
+	case CYBERBLADEXPm8:
+	case CYBERBLADEXPm16:
 	case CYBERBLADEI7:
 	case CYBERBLADEI7D:
 	case CYBERBLADEI1:
