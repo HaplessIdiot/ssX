@@ -3,14 +3,14 @@
 !
 !
 !
-! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.7 2001/01/17 23:45:24 dawes Exp $
+! $XFree86: xdm-conf.cpp,v 1.8 2001/10/01 21:36:51 herrb Exp $
 !
 DisplayManager.errorLogFile:	XDMLOGDIR/xdm-errors
 DisplayManager.pidFile:		XDMPIDDIR/xdm-pid
 DisplayManager.keyFile:		XDMDIR/xdm-keys
 DisplayManager.servers:		XDMDIR/Xservers
 DisplayManager.accessFile:	XDMDIR/Xaccess
-DisplayManager.willing:		su nobody -c XDMDIR/Xwilling
+DisplayManager.willing:		SU nobody -c XDMDIR/Xwilling
 ! All displays should use authorization, but we cannot be sure
 ! X terminals will be configured that way, so by default
 ! use authorization only for local displays :0, :1, etc.
