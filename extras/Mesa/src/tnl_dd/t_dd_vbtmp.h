@@ -404,6 +404,34 @@ static void TAG(emit)( GLcontext *ctx,
 	       v->v.v1 = tc1[i][1];
 	    }
 	 }
+	 if (DO_TEX2) {
+	    if (DO_PTEX) {
+	       v->pv.u2 = tc2[i][0];
+	       v->pv.v2 = tc2[i][1];
+	       if (tc2_size == 4) 
+		  v->pv.q2 = tc2[i][3];
+	       else
+		  v->pv.q2 = 1.0;
+	    } 
+	    else {
+	       v->v.u2 = tc2[i][0];
+	       v->v.v2 = tc2[i][1];
+	    }
+	 } 
+	 if (DO_TEX3) {
+	    if (DO_PTEX) {
+	       v->pv.u3 = tc3[i][0];
+	       v->pv.v3 = tc3[i][1];
+	       if (tc3_size == 4) 
+		  v->pv.q3 = tc3[i][3];
+	       else
+		  v->pv.q3 = 1.0;
+	    } 
+	    else {
+	       v->v.u3 = tc3[i][0];
+	       v->v.v3 = tc3[i][1];
+	    }
+	 } 
       }
    }
 }

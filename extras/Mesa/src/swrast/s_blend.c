@@ -781,7 +781,7 @@ _mesa_blend_span( GLcontext *ctx, const struct sw_span *span,
 
    ASSERT(span->end <= MAX_WIDTH);
    ASSERT(span->arrayMask & SPAN_RGBA);
-   ASSERT(!ctx->Color.ColorLogicOpEnabled);
+   ASSERT(!ctx->Color._LogicOpEnabled);
 
    /* Read span of current frame buffer pixels */
    if (span->arrayMask & SPAN_XY) {
