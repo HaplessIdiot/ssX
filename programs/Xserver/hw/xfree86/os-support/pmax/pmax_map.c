@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.6 2000/02/11 22:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.7 2000/06/27 14:27:31 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -170,6 +170,8 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
 	int	mlen;
 
 	psize = xf86getpagesize();
+	Offset += Base & (psize - 1);
+	Base &= ~(psize - 1);
 	mlen = (Offset + Len + psize - 1) & ~(psize - 1);
 	base = pmax_iomap((unsigned long)hostbase, mlen);
 	if (base == MAP_FAILED)	{
