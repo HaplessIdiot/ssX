@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_accel.c,v 3.3 1997/02/25 16:04:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.1 1997/03/06 23:16:49 hohndel Exp $ */
 
 
 /*
@@ -16,7 +16,7 @@
 
 #include "sis_driver.h"
 #include "sis_Blitter.h"
-extern Bool sisUseLinear ;
+extern Bool sisUseXAAcolorExp ;
 /* 
  * Include any definitions for communicating with the coprocessor here.
  * In this sample driver, the following macros are defined:
@@ -94,11 +94,7 @@ void SISAccelInit()
        
 
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | 
-	(sisUseLinear ? PIXMAP_CACHE : 0 ) |
-	    HARDWARE_PATTERN_PROGRAMMED_BITS | 
-		HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
-		    HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
-			HARDWARE_PATTERN_MONO_TRANSPARENCY ;
+	(sisUseXAAcolorExp ? PIXMAP_CACHE : 0 ) ;
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -146,7 +142,7 @@ void SISAccelInit()
 					SCANLINE_PAD_DWORD |
 					GXCOPY_ONLY |
 					NO_PLANEMASK;
-	if ( sisUseLinear ) {
+	if ( sisUseXAAcolorExp ) {
 	    xf86AccelInfoRec.SetupForScreenToScreenColorExpand = 
 		SISSetupForScreenToScreenColorExpand;
 	    xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
@@ -177,7 +173,10 @@ void SISAccelInit()
 	/*
 	 * 8x8 color expand pattern fill
 	 */
-
+	xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_PROGRAMMED_BITS | 
+	    HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+		HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
+		    HARDWARE_PATTERN_MONO_TRANSPARENCY ;
 	xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    SISSetupFor8x8PatternColorExpand;
 	xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
@@ -190,7 +189,7 @@ void SISAccelInit()
      * to the end of video memory minus 1K, can be used. If you haven't
      * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
-    if (sisUseLinear) {
+    if (sisUseXAAcolorExp) {
 	cacheStart =
 	    vga256InfoRec.virtualY * vga256InfoRec.displayWidth
 		* vga256InfoRec.bitsPerPixel / 8;
@@ -246,6 +245,7 @@ void SISSetupForFillRectSolid(color, rop, planemask)
     unsigned planemask;
 {
 
+    sisBLTWAIT;
     sisSETFGCOLOR(color);
     sisSETROP(sisALUConv[rop & 0xF]);
     sisSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel, 
@@ -280,6 +280,7 @@ void SISSubsequentFillRectSolid(x, y, w, h)
      * latter is often unnecessary, and it does impact performance).
      */
     /* ChipSync(); */
+    sisBLTWAIT;
     sisSETHEIGHTWIDTH(h-1, w * vgaBytesPerPixel-1);
     sisSETDSTADDR(destaddr);
     sisSETCMD(op);
@@ -308,6 +309,7 @@ transparency_color)
      * xdir can be either 1 (left-to-right) or -1 (right-to-left).
      * ydir can be either 1 (top-to-bottom) or -1 (bottom-to-top).
      */
+    sisBLTWAIT;
     sisSETPITCH(vga256InfoRec.displayWidth * vgaBytesPerPixel, 
 		vga256InfoRec.displayWidth * vgaBytesPerPixel);
     sisSETROP(sisALUConv[rop & 0xF]);
@@ -364,6 +366,7 @@ void SISSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
      * finish when using BACKGROUND_OPERATIONS.
      */
     /* SISSync(); */
+    sisBLTWAIT;
     sisSETSRCADDR(srcaddr);
     sisSETDSTADDR(destaddr);
     sisSETHEIGHTWIDTH(h-1, w * vgaBytesPerPixel-1);
@@ -387,6 +390,7 @@ void SISSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 
     /*ErrorF("SISSetupScreenToScreenColorExpand()\n");*/
 
+    sisBLTWAIT;
     op  = sisCMDCOLEXP | sisTOP2BOTTOM | sisLEFT2RIGHT ;
 
     /*
@@ -429,10 +433,12 @@ void SISSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, ww, h)
      */
     destpitch = vga256InfoRec.displayWidth * vgaBytesPerPixel ;
     srcpitch =  ((ww + 31)& ~31) /8 ;
+    sisBLTWAIT;
     sisSETPITCH(srcpitch, destpitch);
     widthTodo = ww ;
     do { 
 	w = widthTodo < maxWidth ? widthTodo : maxWidth ;
+	sisBLTWAIT;
 	sisSETDSTADDR(destaddr);
 	sisSETSRCADDR(srcaddr);
 	sisSETHEIGHTWIDTH(h-1, w*vgaBytesPerPixel-1);
@@ -457,6 +463,7 @@ planemask)
     int pitch = vga256InfoRec.displayWidth * vgaBytesPerPixel ;
     int destaddr = y * pitch + x * vgaBytesPerPixel;
 
+    sisBLTWAIT;
     op  = sisCMDCOLEXP | sisTOP2BOTTOM | sisLEFT2RIGHT | 
 	sisPATFG | sisSRCBG | sisCMDENHCOLEXP ;
     /*
@@ -497,6 +504,7 @@ void SISSubsequentScanlineScreenToScreenColorExpand(srcaddr)
     do { 
 	w = widthTodo < maxWidth ? widthTodo : maxWidth ;
 	srcpitch =  ((w + 31)& ~31) /8 ;
+	sisBLTWAIT;
 	sisSETPITCH(srcpitch, sisDstPitch);    
 	sisSETHEIGHTWIDTH(0, w*vgaBytesPerPixel-1);
 	sisSETSRCADDR(srcaddr/8);
@@ -531,7 +539,10 @@ void SISSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg,
     int 	isTransparent = ( bg == -1 );
     int 	op  = sisCMDCOLEXP | sisTOP2BOTTOM | sisLEFT2RIGHT | 
 	              sisPATFG | sisSRCBG ;
-
+    
+    /*ErrorF("SISSetupFor8x8PatternColorExpand(%d %d %d %d %d %x)\n",
+	   patternx, patterny, bg, fg, rop, planemask);*/
+    sisBLTWAIT;
     dstpitch = vga256InfoRec.displayWidth * vgaBytesPerPixel ;
     /*
      * check transparency 

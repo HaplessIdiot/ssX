@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.20 1996/12/20 06:44:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.21 1996/12/23 06:43:44 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -28,6 +28,10 @@
 
 /*
  * [JCH-96/01/21] Added fourth button support for P_GLIDEPOINT mouse protocol.
+ */
+
+/*
+ * [TVO-97/03/05] Added microsoft IntelliMouse support
  */
 
 #define NEED_EVENTS
@@ -95,6 +99,7 @@ Bool xf86SupportedMouseTypes[] =
 	TRUE,	/* PS/2 */
 	TRUE,	/* Hitachi Tablet */
 	TRUE,	/* ALPS GlidePoint */
+	TRUE,   /* Microsoft IntelliMouse */
 };
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
@@ -120,6 +125,7 @@ unsigned short xf86MouseCflags[] =
 	0,						     /* PS/2 */
 	(CS8                   | CREAD | CLOCAL | HUPCL ),   /* mmhitablet */
 	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* GlidePoint */
+	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* IntelliMouse */
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -293,7 +299,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
   static unsigned char pBuf[8];
   MouseDevPtr          mouse = MOUSE_DEV(device);
   
-  static unsigned char proto[9][5] = {
+  static unsigned char proto[10][5] = {
     /*  hd_mask hd_id   dp_mask dp_id   nobytes */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* MicroSoft */
     {	0xf8,	0x80,	0x00,	0x00,	5	},  /* MouseSystems */
@@ -305,6 +311,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
     {	0xc0,	0x00,	0x00,	0x00,	3	},  /* PS/2 mouse */
     {	0xe0,	0x80,	0x80,	0x00,	3	},  /* MM_HitTablet */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* GlidePoint */
+    { 	0x40,	0x40,	0x40,	0x00,	4 	}   /* IntelliMouse */
   };
   
   for ( i=0; i < nBytes; i++) {
@@ -392,7 +399,6 @@ xf86MouseProtocol(device, rBuf, nBytes)
 
     pBuf[pBufP++] = rBuf[i];
     if (pBufP != proto[mouse->mseType][4]) continue;
-
     /*
      * assembly full package
      */
@@ -460,11 +466,39 @@ xf86MouseProtocol(device, rBuf, nBytes)
       dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;
 #endif
+    case P_MSINTELLIMOUSE:              /* Microsoft IntelliMouse */
+      dx = (char) ((pBuf[0] & 0x03) << 6 | pBuf[1]);
+      dy = (char) ((pBuf[0] & 0x0c) << 4 | pBuf[2]);
+      buttons = 
+	((pBuf[0] & 0x10) ? 1 : 0) |
+	((pBuf[3] & 0x10) ? 2 : 0) |
+	((pBuf[0] & 0x20) ? 4 : 0) |
+	((pBuf[3] & 0x08) ? 8 : 0) |
+	(((!(pBuf[3] & 0x08)) && (pBuf[3] & 0x07)) ? 16 : 0);
+      /*
+       * {
+       *   static int seqno = 0;
+       *   fprintf (stderr, "%d - dx=%4d dy=%4d buttons=%c%c%c%c%c\n", 
+       *	    seqno++, dx, dy,
+       *	    (buttons &  1) ? 'R' : ' ',
+       *	    (buttons &  2) ? 'M' : ' ',
+       *	    (buttons &  4) ? 'L' : ' ',
+       *	    (buttons &  8) ? 'U' : ' ',
+       *	    (buttons & 16) ? 'D' : ' ');
+       * }
+       */
+      break;
     default: /* There's a table error */
 	continue;
     }
 
     xf86PostMseEvent(device, buttons, dx, dy);
+
+    if ((mouse->mseType == P_MSINTELLIMOUSE)  &&
+	(buttons & (8 + 16))) {
+      xf86PostMseEvent(device, buttons & ~ (8 + 16), 0, 0);
+    }
+
     pBufP = 0;
   }
 }

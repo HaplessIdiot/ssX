@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.2 1997/04/08 10:12:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.3 1997/04/12 13:45:18 hohndel Exp $ */
 
 
 #define CT_EXTRA_WAIT
@@ -190,13 +190,15 @@ void _ctAccelInit() {
 #else
         ;
 #endif
+    if (vga256InfoRec.bitsPerPixel == 24)
+        xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #else
     xf86AccelInfoRec.ColorExpandFlags =
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_DWORD;
     if (vga256InfoRec.bitsPerPixel == 24)
 	xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP |
-	    RGB_EQUAL;
+	    RGB_EQUAL | NO_PLANEMASK;
 #endif
 
 #if 0 /* I have trouble with these, on both a 65545 and 65550. So Disable

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.3 1997/04/08 10:12:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.4 1997/04/14 07:05:14 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -304,6 +304,9 @@ static void CHIPSDisplayPowerManagementSet();
 extern void CHIPSSetRead();
 extern void CHIPSSetWrite();
 extern void CHIPSSetReadWrite();
+extern void CHIPSSetReadPlanar();
+extern void CHIPSSetWritePlanar();
+extern void CHIPSSetReadWritePlanar();
 extern void CHIPSWINSetRead();
 extern void CHIPSWINSetWrite();
 extern void CHIPSWINSetReadWrite();
@@ -1533,10 +1536,14 @@ Bool ctProbeHiQV()
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = TRUE;
-    if (vgaBitsPerPixel == 1)
-        CHIPS.ChipSegmentShift -= 2;
-    else if (vgaBitsPerPixel == 4)
-        CHIPS.ChipSegmentShift -= 1;
+#if 0
+    /* I'm not sure this is needed for the HiQV chips yet */
+    if (vgaBitsPerPixel < 8) {
+	CHIPS.ChipSetRead = CHIPSHiQVSetReadPlanar;
+	CHIPS.ChipSetWrite = CHIPSHiQVSetWritePlanar;
+	CHIPS.ChipSetReadWrite = CHIPSHiQVSetReadWritePlanar;
+    }
+#endif
 
     /* allowed options */
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -1793,10 +1800,14 @@ Bool ctProbeWINGINE()
 
   vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
   vga256InfoRec.bankedMono = TRUE;
-  if (vgaBitsPerPixel == 1)
-      CHIPS.ChipSegmentShift -= 2;
-  else if (vgaBitsPerPixel == 4)
-      CHIPS.ChipSegmentShift -= 1;
+#if 0
+  /* I'm not sure this is necessary for the Wingine yet */
+  if (vgaBitsPerPixel < 8) {
+      CHIPS.ChipSetRead = CHIPSWINSetReadPlanar;
+      CHIPS.ChipSetWrite = CHIPSWINSetWritePlanar;
+      CHIPS.ChipSetReadWrite = CHIPSWINSetReadWritePlanar;
+  }
+#endif
   
   /* allowed options */
   OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -2258,10 +2269,13 @@ Bool ctProbe()
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = TRUE;
-    if (vgaBitsPerPixel == 1)
-        CHIPS.ChipSegmentShift -= 2;
-    else if (vgaBitsPerPixel == 4)
-        CHIPS.ChipSegmentShift -= 1;
+
+    /* Use the Planar versions of the banking functions */
+    if (vgaBitsPerPixel < 8) {
+	CHIPS.ChipSetRead = CHIPSSetReadPlanar;
+	CHIPS.ChipSetWrite = CHIPSSetWritePlanar;
+	CHIPS.ChipSetReadWrite = CHIPSSetReadWritePlanar;
+    }
 
     /* allowed options */
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
@@ -2877,7 +2891,7 @@ CHIPSInit655xx(mode)
     }
 
     /* some generic settings */
-    if (vgaBitsPerPixel < 8) {
+    if (vgaBitsPerPixel == 1) {
 	new->std.Attribute[0x10] = 0x03;   /* mode */
     } else {
 	new->std.Attribute[0x10] = 0x01;   /* mode */
@@ -3338,7 +3352,7 @@ CHIPSInitWINGINE(mode)
     }
 
     /* some generic settings */
-    if (vgaBitsPerPixel < 8) {
+    if (vgaBitsPerPixel == 1) {
 	new->std.Attribute[0x10] = 0x03;   /* mode */
     } else {
 	new->std.Attribute[0x10] = 0x01;   /* mode */
@@ -3549,7 +3563,7 @@ CHIPSInitHiQV32(mode)
      */
 
     /* some generic settings */
-    if (vgaBitsPerPixel < 8) {
+    if (vgaBitsPerPixel == 1) {
 	new->std.Attribute[0x10] = 0x03;   /* mode */
     } else {
 	new->std.Attribute[0x10] = 0x01;   /* mode */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.41 1996/12/23 06:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.42 1996/12/24 08:48:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -273,8 +273,10 @@ static char stateTab[48][3] = {
  * And we remap them (MSBit described first) :
  * 0 | 4th | 3rd | 2nd | 1st
  */
-static char reverseMap[16] = {0,  4,  2,  6,  1,  5,  3,  7,
-			      8, 12, 10, 14,  9, 13, 11, 15};
+static char reverseMap[32] = { 0,  4,  2,  6,  1,  5,  3,  7,
+			       8, 12, 10, 14,  9, 13, 11, 15,
+			      16, 20, 18, 22, 17, 21, 19, 23,
+			      24, 28, 26, 30, 25, 29, 27, 31};
 
 
 static char hitachMap[16] = {  0,  2,  1,  3, 
@@ -1227,10 +1229,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * is the reverse of the button mapping reported to the server.
        */
       if (private->mseType == P_MMHIT)
-        change = buttons ^ hitachMap[private->lastButtons];
+	change = buttons ^ hitachMap[private->lastButtons];
       else
-        change = buttons ^ reverseMap[private->lastButtons];
-
+	change = buttons ^ reverseMap[private->lastButtons];
       while (change)
 	{
 	  id = ffs(change);

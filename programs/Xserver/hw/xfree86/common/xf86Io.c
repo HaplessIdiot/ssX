@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.27 1996/12/23 06:43:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.28 1997/01/05 11:58:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -442,7 +442,7 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
      int		*fd;
      PtrCtrlProcPtr	ctrl;
 {
-  unsigned char                map[5];
+  unsigned char                map[6];
   int                          nbuttons;
   int                          mousefd;
 
@@ -455,13 +455,19 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
       map[2] = 2;
       map[3] = 3;
       map[4] = 4;
+      map[5] = 5;
 
       /*
        * [JCH-96/01/21] The ALPS GlidePoint pad, extends the MS protocol
        * with a fourth button activated by tapping the pad.
+       *
+       * [TVO-97/03/10] the wheel on the intellimouse is sending us button
+       * 4 and 5 events, hence we have 5 buttons.
        */
       if (mouse->mseType == P_MMHIT || mouse->mseType == P_GLIDEPOINT)
         nbuttons = 4;
+      else if (mouse->mseType == P_MSINTELLIMOUSE)
+	nbuttons = 5;
       else
         nbuttons = 3;
 

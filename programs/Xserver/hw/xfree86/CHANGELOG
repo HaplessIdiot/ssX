@@ -1,5 +1,33 @@
-XFree86 3.2Au (xx April 1997)
- 686. Add a Hungarian XKB symbols file (Peter Soos).
+XFree86 3.9a (17 April 1997)
+ 704. Add a Hungarian XKB symbols file (Peter Soos).
+ 703. Add support for Microsoft Intellimouse (#304, Thomas Vogler).
+ 702. Add ViRGE/VX support to SVGA/S3V server; this isn't really working, yet
+      (#299,301, Harald Koenig).
+ 701. Add memory, FIFO, and PCI retry options to SVGA/S3V server (#293,300,
+      Sebastien Marineau).
+ 700. Add support for 15bpp and 32bpp to SVGA/S3V server. 32bpp only with
+      very limited acceleration (#293,300, Sebastien Marineau).
+ 699. Only build libX11 while doing BuildServersOnly if Xnest is enabled (295,
+      Harald Koenig).
+ 698. Disable color expansion with planemask at 24bpp in chips driver (#303,
+      David Bateman).
+ 697. Fix small bug in SVGA/S3 dash line code (#302, Mark Vojkovich).
+ 696. Allow trident 96xx chips to restore text mode (#298, Alan Hourihane).
+ 695. Fix virtual resolutions for trident driver at 24bpp (#298, Massimiliano
+      Ghilardi).
+ 694. TGUI driver updates for PC98 (#297, Akio Morita)
+ 693. Fix building PC98 modules, resync PC98 Imakefile (#297, Takaaki Nomura).
+ 692. Fix ch8398 ramdac command byte for 8bpp in tseng driver (#294,
+      Krajcsovits Gyorgy).
+ 691. Fix NonTE fonts in XAA (#292, David Bateman).
+ 690. Disable XAA matchcommon logic to fix problem with grayed out fonts
+      (#291, David Bateman).
+ 689. Fix sis driver for 8x8 color expand pattern fill pattern flags and XAA's  
+      new synching policy (#290, Xavier Ducoin).
+ 688. LynxOS updates (#289, Thomas Mueller).
+ 687. Enable 1bpp and 4bpp for the chips driver (#288, David Bateman).
+ 686. Jump version number to document that this is the branch working towards
+      XFree86-4.0.
 
 XFree86 3.2At (14 April 1997)
  685. Fix ImageText fallback (#287, David Bateman).

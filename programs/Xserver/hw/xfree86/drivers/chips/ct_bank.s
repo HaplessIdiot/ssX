@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.8 1997/01/22 11:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_bank.s,v 1.1 1997/03/06 23:14:56 hohndel Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
@@ -35,17 +35,15 @@
 	GLOBL	GLNAME(CHIPSSetReadWrite)
 	GLOBL	GLNAME(CHIPSSetWrite)
 	GLOBL	GLNAME(CHIPSSetRead)
+	GLOBL	GLNAME(CHIPSSetReadWritePlanar)
+	GLOBL	GLNAME(CHIPSSetWritePlanar)
+	GLOBL	GLNAME(CHIPSSetReadPlanar)
 	GLOBL	GLNAME(CHIPSWINSetReadWrite)
 	GLOBL	GLNAME(CHIPSWINSetWrite)
 	GLOBL	GLNAME(CHIPSWINSetRead)
 	GLOBL	GLNAME(CHIPSHiQVSetReadWrite)
 	GLOBL	GLNAME(CHIPSHiQVSetWrite)
 	GLOBL	GLNAME(CHIPSHiQVSetRead)
-#if 0
-	GLOBL	GLNAME(ctPrintReadWrite)
-	GLOBL	GLNAME(ctPrintWrite)		
-	GLOBL	GLNAME(ctPrintRead)
-#endif
 	
 GLNAME(CHIPSSetReadWrite):
 	MOV_B	(AL, AH)		/* Move bank to high half */
@@ -69,6 +67,33 @@ GLNAME(CHIPSSetWrite):
 GLNAME(CHIPSSetRead):
 	MOV_B	(AL, AH)		/* Move bank to high half */
 	SHL_B	(CONST(3), AH)
+	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_W				/* Output read bank */
+	RET
+		
+GLNAME(CHIPSSetReadWritePlanar):
+	MOV_B	(AL, AH)		/* Move bank to high half */
+	SHL_B	(CONST(5), AH)
+	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_W				/* Output read bank */
+	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_W				/* Output read bank */
+	RET
+
+GLNAME(CHIPSSetWritePlanar):
+	MOV_B	(AL, AH)		/* Move bank to high half */
+	SHL_B	(CONST(5), AH)
+	MOV_B	(CONST(0x11),AL)	/* Put write index in low byte */
+	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
+	OUT_W				/* Output read bank */
+	RET
+
+GLNAME(CHIPSSetReadPlanar):
+	MOV_B	(AL, AH)		/* Move bank to high half */
+	SHL_B	(CONST(5), AH)
 	MOV_B	(CONST(0x10),AL)	/* Put read index in low byte */
 	MOV_L	(CONST(0x3D6),EDX)	/* Store 0x3D6 register */
 	OUT_W				/* Output read bank */

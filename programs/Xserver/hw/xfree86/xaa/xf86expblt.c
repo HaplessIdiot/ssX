@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.10 1997/03/18 11:37:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.11 1997/04/14 07:05:37 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -708,17 +708,20 @@ unsigned int *xf86DrawTextBytePad(base, glyphp, height, nglyph, glyphwidth)
 }
 
 
-unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
+unsigned int 
+*xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph, addleft, addright)
     unsigned int *base;
     NonTEGlyphInfo *glyphinfop;
     int line;
     int nglyph;
+    int addleft;
+    int addright;
 {
     UINT64_DECLARE(bits);
     int shift, i;
 
     UINT64_ASSIGN(bits, 0, 0);
-    shift = 0;
+    shift = addleft;
     i = 0;
     while (i < nglyph) {
         /* Check whether the current glyph has bits for this scanline. */
@@ -738,6 +741,7 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
         }
         i++;
     }
+    shift += addright;
     if (shift > 0) {
         WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
 #ifndef FIXEDBASE
@@ -797,17 +801,20 @@ unsigned int *xf86DrawTextScanline3(base, glyphp, line, nglyph, glyphwidth)
 }
 
 
-unsigned int *xf86DrawNonTETextScanline3(base, glyphinfop, line, nglyph)
+unsigned int 
+*xf86DrawNonTETextScanline3(base, glyphinfop, line, nglyph, addleft, addright)
     unsigned int *base;
     NonTEGlyphInfo *glyphinfop;
     int line;
     int nglyph;
+    int addleft;
+    int addright;
 {
     UINT64_DECLARE(bits);
     int shift, i;
 
     UINT64_ASSIGN(bits, 0, 0);
-    shift = 0;
+    shift = addleft;
     i = 0;
     while (i < nglyph) {
         /* Check whether the current glyph has bits for this scanline. */
@@ -827,6 +834,7 @@ unsigned int *xf86DrawNonTETextScanline3(base, glyphinfop, line, nglyph)
         }
         i++;
     }
+    shift += addright;
     if (shift > 0) {
         WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
 #ifndef FIXEDBASE

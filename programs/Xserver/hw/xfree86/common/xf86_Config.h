@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.63 1997/04/08 10:11:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.64 1997/04/12 13:45:08 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -186,6 +186,7 @@ static SymTabRec DriverTab[] = {
 #define PS_2		1026
 #define MMHITTAB	1027
 #define GLIDEPOINT	1028
+#define INTELLIMOUSE    1029
 #define XQUE      	1030
 #define OSMOUSE   	1031
 
@@ -200,6 +201,7 @@ static SymTabRec MouseTab[] = {
   { PS_2,	"ps/2" },
   { MMHITTAB,	"mmhittab" },
   { GLIDEPOINT,	"glidepoint" },
+  { INTELLIMOUSE,"intellimouse" },
   { XQUE,	"xqueue" },
   { OSMOUSE,	"osmouse" },
   { -1,		"" },
@@ -522,6 +524,7 @@ static SymTabRec KeyboardTab[] = {
 #define P_PS2		6			/* PS/2 mouse */
 #define P_MMHIT		7			/* MM_HitTab */
 #define P_GLIDEPOINT	8			/* ALPS GlidePoint */
+#define P_MSINTELLIMOUSE  9                     /* Microsoft IntelliMouse */
 
 #define EMULATE3	50
 #define BAUDRATE	51

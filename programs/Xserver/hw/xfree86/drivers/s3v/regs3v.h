@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.3 1997/03/28 09:42:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.4 1997/04/08 10:13:09 hohndel Exp $ */
 
 /* regs3v.h
  *
@@ -345,7 +345,7 @@ typedef struct {
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	 do { mem_barrier(); while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8)); } while (0)
+#define	WaitQueue(v)	 if (s3vPriv.NoPCIRetry) { do { mem_barrier(); while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8)); } while (0); }
 
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty()  do { mem_barrier(); while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.2 1997/03/28 09:42:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.h,v 1.3 1997/04/08 10:13:13 hohndel Exp $ */
 
 /* Header file for ViRGE server */
 
@@ -11,15 +11,16 @@ extern vgaCRIndex, vgaCRReg;
 /* Driver data structure; this should contain all neeeded info for a mode */
 typedef struct {     
    vgaHWRec std;
-   unsigned char SR10, SR11, SR12, SR13, SR15, SR18; /* SR9-SR1C, extended sequencer */
+   unsigned char SR10, SR11, SR12, SR13, SR15, SR18; /* SR9-SR1C, ext seq. */
    unsigned char Clock;
    unsigned char s3DacRegs[0x101];
    unsigned char CR31, CR32, CR33, CR34, CR36, CR3A, CR3B, CR3C, CR42, CR43;
    unsigned char CR51, CR53, CR58;   
-   unsigned char CR59, CR5A, CR5D,CR5E, CR61, CR63, CR65, CR66, CR67, CR69; /* Video attrib. */
+   unsigned char CR59, CR5A, CR5D,CR5E;
+   unsigned char CR61, CR63, CR65, CR66, CR67, CR68, CR69; /* Video attrib. */
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
    unsigned int  STREAMS[22];   /* Streams regs */
-   unsigned int  MMPR0, MMPR2, MMPR3;   /* Memory port cont. regs 0, 2, 3 */
+   unsigned int  MMPR0, MMPR1, MMPR2, MMPR3;   /* MIU regs */
 } vgaS3VRec, *vgaS3VPtr;
 
 /*
@@ -54,6 +55,7 @@ typedef struct {
    unsigned PlaneMask;
    int bltbug_width1, bltbug_width2;
    int MCLK;
+   Bool NoPCIRetry;
 } S3VPRIV;
 
 
@@ -107,7 +109,7 @@ static __inline__ int S3VCheckLSPN(int w, int dir)
 
 /* This next function determines if the Source operand is present in the
  * given ROP. The rule is that both the lower and upper nibble of the rop
- * have to be either 0x00, 0x05, 0x0a or 0x0f. If a CPU-Screen blit is done
+ * have to be neither 0x00, 0x05, 0x0a or 0x0f. If a CPU-Screen blit is done
  * with a ROP which does not contain the source, the virge will hang when
  * data is written to the image transfer area. 
  */
