@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/mirect.c,v 1.2 2000/12/05 03:13:32 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -40,8 +40,10 @@ miCompositeRects (CARD8		op,
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
     CARD32		pixel;
     GCPtr		pGC;
-    XID			tmpval[3];
+    CARD32		tmpval[4];
+    unsigned long	mask;
     int			error;
+    RegionPtr		pClip;
     
     if (color->alpha == 0xffff)
     {
@@ -60,8 +62,20 @@ miCompositeRects (CARD8		op,
 	    return;
 	tmpval[0] = GXcopy;
 	tmpval[1] = pixel;
+	mask = GCFunction | GCForeground;
+	if (pDst->clientClipType == CT_REGION)
+	{
+	    tmpval[2] = pDst->clipOrigin.x;
+	    tmpval[3] = pDst->clipOrigin.y;
+	    mask |= CPClipXOrigin|CPClipYOrigin;
+	    
+	    pClip = REGION_CREATE (pScreen, NULL, 1);
+	    REGION_COPY (pScreen, pClip,
+			 (RegionPtr) pDst->clientClip);
+	    (*pGC->funcs->ChangeClip) (pGC, CT_REGION, pClip, 0);
+	}
 
-	ChangeGC (pGC, GCFunction | GCForeground, tmpval);
+	ChangeGC (pGC, mask, tmpval);
 	ValidateGC (pDst->pDrawable, pGC);
 	(*pGC->ops->PolyFillRect) (pDst->pDrawable, pGC, nRect, rects);
 	FreeScratchGC (pGC);
