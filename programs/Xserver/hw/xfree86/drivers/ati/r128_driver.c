@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.41 2001/10/01 13:44:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.42 2001/10/02 11:44:16 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -939,7 +939,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		     "Option \"Display\" ignored "
 		     "(framebuffer device determines display type)\n");
-	else if (!display || !xf86NameCmp(display, "FP"))
+	else if (!Display || !xf86NameCmp(Display, "FP"))
 	    info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
 	else if (!xf86NameCmp(Display, "BIOS"))
 	    info->BIOSDisplay = INREG8(R128_BIOS_5_SCRATCH);
