@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.5 2003/09/11 10:08:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.5tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -437,7 +437,7 @@ unsigned char VIAGetActiveDisplay(VIABIOSInfoPtr pBIOSInfo)
 
 unsigned char VIASensorCH7019(VIABIOSInfoPtr pBIOSInfo)
 {
-    unsigned char   tv20, tmp = 0, ret = 0x06;
+    unsigned char   tv20, ret = 0x06;
     I2CDevPtr       dev;
     unsigned char   W_Buffer[2];
     unsigned char   R_Buffer[1];
@@ -465,7 +465,6 @@ unsigned char VIASensorCH7019(VIABIOSInfoPtr pBIOSInfo)
         xf86I2CWriteRead(dev, W_Buffer,2, NULL,0);
         /* read the status bits */
         xf86I2CWriteRead(dev, W_Buffer,1, R_Buffer,1);
-        tmp = R_Buffer[0];
         xf86DestroyI2CDevRec(dev,TRUE);
     }
     else {
@@ -8086,13 +8085,11 @@ Bool VIAGetBIOSTable(VIABIOSInfoPtr pBIOSInfo)
 
 int VIAFindSupportRefreshRate(VIABIOSInfoPtr pBIOSInfo, int resIndex)
 {
-    VIABIOSInfoPtr  pVia;
     int             bppIndex, refIndex;
     int             needRefresh;
     const int       *supRefTab;
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAFindSupportRefreshRate\n"));
-    pVia = pBIOSInfo;
     bppIndex = 0;
     supRefTab = NULL;
     needRefresh = pBIOSInfo->Refresh;
@@ -8499,7 +8496,7 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia = pBIOSInfo;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    CARD8           modeNum;
+    CARD8           modeNum, tmp;
     int             resIdx;
     int             port, offset, data;
     int             resMode = pBIOSInfo->resMode;
@@ -8540,7 +8537,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
     /* Set LClk */
     VGAOUT8(0x3d4, 0x17);
-    VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+    tmp = VGAIN8(0x3d5);
+    VGAOUT8(0x3d5, tmp & 0x7F);
 
     if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
         VGAOUT8(0x3c4, 0x44);
@@ -8555,17 +8553,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
         VGAOUT8(0x3c5, (pViaModeTable->lcdTable[i].InitTb.LCDClk & 0xFF));
     }
     VGAOUT8(0x3d4, 0x17);
-    VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+    tmp = VGAIN8(0x3d5);
+    VGAOUT8(0x3d5, tmp | 0x80);
 
     VGAOUT8(0x3c4, 0x40);
-    VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+    tmp = VGAIN8(0x3c5);
+    VGAOUT8(0x3c5, tmp | 0x04);
     VGAOUT8(0x3c4, 0x40);
-    VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+    tmp = VGAIN8(0x3c5);
+    VGAOUT8(0x3c5, tmp & 0xFB);
 
     if (!pBIOSInfo->IsSecondary) {
         /* Set VClk */
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp & 0x7F);
 
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
             VGAOUT8(0x3c4, 0x46);
@@ -8580,12 +8582,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, (pViaModeTable->lcdTable[i].InitTb.VClk & 0xFF));
         }
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x80);
 
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp | 0x02);
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp & 0xFD);
     }
 
     /* Use external clock */
@@ -8607,7 +8612,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
         (pBIOSInfo->CrtcVDisplay == pBIOSInfo->panelY)) {
         /* Set LClk */
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp & 0x7F);
 
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
             VGAOUT8(0x3c4, 0x44);
@@ -8623,17 +8629,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
         }
 
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x80);
 
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp | 0x04);
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp & 0xFB);
 
         if (!pBIOSInfo->IsSecondary) {
             /* Set VClk */
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                 VGAOUT8(0x3c4, 0x46);
@@ -8649,12 +8659,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
             }
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
         }
 
         /* Use external clock */
@@ -8718,7 +8731,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
             /* Set LClk */
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                 VGAOUT8(0x3c4, 0x44);
@@ -8738,17 +8752,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
             }
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             if (!pBIOSInfo->IsSecondary) {
                 /* Set VClk */
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp & 0x7F);
 
                 if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                     VGAOUT8(0x3c4, 0x46);
@@ -8768,12 +8786,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                 }
 
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x80);
 
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp | 0x02);
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp & 0xFD);
             }
             }
 
@@ -8804,7 +8825,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
             /* Set LClk */
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                 VGAOUT8(0x3c4, 0x44);
@@ -8824,17 +8846,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
             }
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             if (!pBIOSInfo->IsSecondary) {
                 /* Set VClk */
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp & 0x7F);
 
                 if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                     VGAOUT8(0x3c4, 0x46);
@@ -8854,12 +8880,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                 }
 
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x80);
 
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp | 0x02);
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp & 0xFD);
             }
             }
 
@@ -8904,7 +8933,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
                 /* Set LClk */
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp & 0x7F);
 
                 if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                     VGAOUT8(0x3c4, 0x44);
@@ -8924,17 +8954,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                 }
 
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x80);
 
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp | 0x04);
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp & 0xFB);
 
                 if (!pBIOSInfo->IsSecondary) {
                     /* Set VClk */
                     VGAOUT8(0x3d4, 0x17);
-                    VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		    tmp = VGAIN8(0x3d5);
+                    VGAOUT8(0x3d5, tmp & 0x7F);
 
                     if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                         VGAOUT8(0x3c4, 0x46);
@@ -8954,12 +8988,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                     }
 
                     VGAOUT8(0x3d4, 0x17);
-                    VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		    tmp = VGAIN8(0x3d5);
+                    VGAOUT8(0x3d5, tmp | 0x80);
 
                     VGAOUT8(0x3c4, 0x40);
-                    VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+		    tmp = VGAIN8(0x3c5);
+                    VGAOUT8(0x3c5, tmp | 0x02);
                     VGAOUT8(0x3c4, 0x40);
-                    VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+		    tmp = VGAIN8(0x3c5);
+                    VGAOUT8(0x3c5, tmp & 0xFD);
                 }
             }
 
@@ -8992,7 +9029,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
                 /* Set LClk */
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp & 0x7F);
 
                 if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                     VGAOUT8(0x3c4, 0x44);
@@ -9012,17 +9050,21 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                 }
 
                 VGAOUT8(0x3d4, 0x17);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x80);
 
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp | 0x04);
                 VGAOUT8(0x3c4, 0x40);
-                VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+		tmp = VGAIN8(0x3c5);
+                VGAOUT8(0x3c5, tmp & 0xFB);
 
                 if (!pBIOSInfo->IsSecondary) {
                     /* Set VClk */
                     VGAOUT8(0x3d4, 0x17);
-                    VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+		    tmp = VGAIN8(0x3d5);
+                    VGAOUT8(0x3d5, tmp & 0x7F);
 
                     if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
                         VGAOUT8(0x3c4, 0x46);
@@ -9042,12 +9084,15 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
                     }
 
                     VGAOUT8(0x3d4, 0x17);
-                    VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+		    tmp = VGAIN8(0x3d5);
+                    VGAOUT8(0x3d5, tmp | 0x80);
 
                     VGAOUT8(0x3c4, 0x40);
-                    VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+		    tmp = VGAIN8(0x3c5);
+                    VGAOUT8(0x3c5, tmp | 0x02);
                     VGAOUT8(0x3c4, 0x40);
-                    VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+		    tmp = VGAIN8(0x3c5);
+                    VGAOUT8(0x3c5, tmp & 0xFD);
                 }
             }
 
@@ -9087,7 +9132,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
     if (!pBIOSInfo->IsSecondary) {
         /* CRT Display Source Bit 6 - 0: CRT, 1: LCD */
         VGAOUT8(0x3c4, 0x16);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x40);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp | 0x40);
 
         /* Enable Simultaneous */
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
@@ -9104,7 +9150,8 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
         }
         else {
             VGAOUT8(0x3d4, 0x6B);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x08);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x08);
             VGAOUT8(0x3d4, 0x93);
             VGAOUT8(0x3d5, 0x0);
         }
@@ -9114,12 +9161,14 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
     else {
         /* CRT Display Source Bit 6 - 0: CRT, 1: LCD */
         VGAOUT8(0x3c4, 0x16);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) & ~0x40);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp & ~0x40);
 
         /* Enable SAMM */
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
             VGAOUT8(0x3d4, 0x6B);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x20);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x20);
             if (pBIOSInfo->Chipset == VIA_CLE266 && pBIOSInfo->ChipRev < 15) {
                 VGAOUT8(0x3d4, 0x93);
                 VGAOUT8(0x3d5, 0xB1);
@@ -9142,7 +9191,6 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     CARD8           *TV;
     CARD16          *DotCrawl, *Patch2;
@@ -9155,7 +9203,6 @@ void VIAPreSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned char   R_Buffer[1];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetTV2Mode\n"));
-    pVia = pBIOSInfo;
     TV = NULL;
     DotCrawl = NULL;
     Patch2 = NULL;
@@ -9261,7 +9308,6 @@ void VIAPreSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     CARD8           *TV;
     CARD16          *DotCrawl, *Patch2;
@@ -9274,7 +9320,6 @@ void VIAPreSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned char   R_Buffer[1];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetCH7019Mode\n"));
-    pVia = pBIOSInfo;
     DotCrawl = NULL;
     Patch2 = NULL;
     TV = NULL;
@@ -9375,9 +9420,7 @@ void VIAPreSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    VIABIOSFS454TVMASKTablePtr TVMaskTbl;
     CARD16          *TV, *DotCrawl, *RGB, *YCbCr;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             tvType = pBIOSInfo->TVType;
@@ -9387,14 +9430,12 @@ void VIAPreSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
     I2CDevPtr       dev;
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetFS454Mode\n"));
-    pVia = pBIOSInfo;
     TV = NULL;
     DotCrawl = NULL;
     RGB = NULL;
     YCbCr = NULL;
     W_Buffer[0] = 0;
 
-	TVMaskTbl = &pViaModeTable->fs454MaskTable;
     switch (pBIOSInfo->TVVScan) {
         case VIA_TVNORMAL:
             TV = pViaModeTable->fs454Table[tvIndx].TVNTSC;
@@ -9463,7 +9504,6 @@ void VIAPreSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     CARD8           *TV;
     CARD16          *RGB, *YCbCr, *Patch2;
@@ -9475,7 +9515,6 @@ void VIAPreSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
     I2CDevPtr       dev;
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetSAA7108Mode\n"));
-    pVia = pBIOSInfo;
     RGB = NULL;
     YCbCr = NULL;
     Patch2 = NULL;
@@ -9616,7 +9655,6 @@ void VIAPreSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetVT1623Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     VIABIOSTVMASKTablePtr TVMaskTbl;
     CARD8           *TV;
@@ -9630,7 +9668,6 @@ void VIAPreSetVT1623Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned char   R_Buffer[1];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetVT1623Mode\n"));
-    pVia = pBIOSInfo;
     DotCrawl = NULL;
     RGB = NULL;
     YCbCr = NULL;
@@ -9753,7 +9790,7 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2;
+    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2, tmp;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j, data;
 
@@ -9855,7 +9892,8 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->ch7019MaskTable.misc2 & 0x18) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x44);
             VGAOUT8(0x3c5, Misc2[j++]);
@@ -9863,12 +9901,15 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc2[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -9876,11 +9917,14 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
         }
 
         VGAOUT8(0x3d4, 0x6A);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0xC0);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0xC0);
         VGAOUT8(0x3d4, 0x6B);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
 
         /* Disable LCD Scaling */
         if (!pBIOSInfo->SAMM || pBIOSInfo->FirstInit) {
@@ -9900,12 +9944,13 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
         j = 0;
 
         VGAOUT8(0x3d4, 0x33);
+	tmp = VGAIN8(0x3d5);
         if (Misc1[j] & 0x20) {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+            VGAOUT8(0x3d5, tmp | 0x20);
             j++;
         }
         else {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+            VGAOUT8(0x3d5, tmp & 0xdf);
             j++;
         }
         VGAOUT8(0x3d4, 0x6A);
@@ -9924,7 +9969,8 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->ch7019MaskTable.misc1 & 0x30) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x46);
             VGAOUT8(0x3c5, Misc1[j++]);
@@ -9932,12 +9978,15 @@ void VIAPostSetCH7019Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc1[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -9950,52 +9999,24 @@ void VIAPostSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2;
+    CARD8           *CRTC1, *Misc1, tmp;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j, data;
 
 
     pVia = pBIOSInfo;
     CRTC1 = NULL;
-    CRTC2 = NULL;
     Misc1 = NULL;
-    Misc2 = NULL;
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPostSetFS454Mode\n"));
     switch (pBIOSInfo->TVVScan) {
         case VIA_TVNORMAL:
             CRTC1 = pViaModeTable->fs454Table[tvIndx].CRTCNTSC1;
-            switch (pBIOSInfo->bitsPerPixel) {
-                case 8:
-                    CRTC2 = pViaModeTable->fs454Table[tvIndx].CRTCNTSC2_8BPP;
-                    break;
-                case 16:
-                    CRTC2 = pViaModeTable->fs454Table[tvIndx].CRTCNTSC2_16BPP;
-                    break;
-                case 24:
-                case 32:
-                    CRTC2 = pViaModeTable->fs454Table[tvIndx].CRTCNTSC2_32BPP;
-                    break;
-            }
             Misc1 = pViaModeTable->fs454Table[tvIndx].MiscNTSC1;
-            Misc2 = pViaModeTable->fs454Table[tvIndx].MiscNTSC2;
             break;
         case VIA_TVOVER:
             CRTC1 = pViaModeTable->fs454OverTable[tvIndx].CRTCNTSC1;
-            switch (pBIOSInfo->bitsPerPixel) {
-                case 8:
-                    CRTC2 = pViaModeTable->fs454OverTable[tvIndx].CRTCNTSC2_8BPP;
-                    break;
-                case 16:
-                    CRTC2 = pViaModeTable->fs454OverTable[tvIndx].CRTCNTSC2_16BPP;
-                    break;
-                case 24:
-                case 32:
-                    CRTC2 = pViaModeTable->fs454OverTable[tvIndx].CRTCNTSC2_32BPP;
-                    break;
-            }
             Misc1 = pViaModeTable->fs454OverTable[tvIndx].MiscNTSC1;
-            Misc2 = pViaModeTable->fs454OverTable[tvIndx].MiscNTSC2;
             break;
     }
 
@@ -10010,12 +10031,13 @@ void VIAPostSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
     j = 0;
 
     VGAOUT8(0x3d4, 0x33);
+    tmp = VGAIN8(0x3d5);
     if (Misc1[j] & 0x20) {
-        VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+        VGAOUT8(0x3d5, tmp | 0x20);
         j++;
     }
     else {
-        VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+        VGAOUT8(0x3d5, tmp & 0xdf);
         j++;
     }
     VGAOUT8(0x3d4, 0x6A);
@@ -10034,7 +10056,8 @@ void VIAPostSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
 
     if (pViaModeTable->fs454MaskTable.misc1 & 0x30) {
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp & 0x7F);
 
         VGAOUT8(0x3c4, 0x46);
         VGAOUT8(0x3c5, Misc1[j++]);
@@ -10042,12 +10065,15 @@ void VIAPostSetFS454Mode(VIABIOSInfoPtr pBIOSInfo)
         VGAOUT8(0x3c5, Misc1[j++]);
 
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x80);
 
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp | 0x02);
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10059,7 +10085,7 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2;
+    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2, tmp;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j, data;
 
@@ -10161,7 +10187,8 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->saa7108MaskTable.misc2 & 0x18) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x44);
             VGAOUT8(0x3c5, Misc2[j++]);
@@ -10169,12 +10196,15 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc2[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10182,11 +10212,14 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
         }
 
         VGAOUT8(0x3d4, 0x6A);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0xC0);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0xC0);
         VGAOUT8(0x3d4, 0x6B);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
 
         /* Disable LCD Scaling */
         if (!pBIOSInfo->SAMM || pBIOSInfo->FirstInit) {
@@ -10206,12 +10239,13 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
         j = 0;
 
         VGAOUT8(0x3d4, 0x33);
+	tmp = VGAIN8(0x3d5);
         if (Misc1[j] & 0x20) {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+            VGAOUT8(0x3d5, tmp | 0x20);
             j++;
         }
         else {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+            VGAOUT8(0x3d5, tmp & 0xdf);
             j++;
         }
 
@@ -10231,7 +10265,8 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->saa7108MaskTable.misc1 & 0x30) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x46);
             VGAOUT8(0x3c5, Misc1[j++]);
@@ -10239,12 +10274,15 @@ void VIAPostSetSAA7108Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc1[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10257,7 +10295,7 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
-    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2;
+    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2, tmp;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j, data;
 
@@ -10359,7 +10397,8 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->tv2MaskTable.misc2 & 0x18) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x44);
             VGAOUT8(0x3c5, Misc2[j++]);
@@ -10367,12 +10406,15 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc2[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10380,11 +10422,14 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
         }
 
         VGAOUT8(0x3d4, 0x6A);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0xC0);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0xC0);
         VGAOUT8(0x3d4, 0x6B);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
 
         /* Disable LCD Scaling */
     	if (!pBIOSInfo->SAMM || pBIOSInfo->FirstInit) {
@@ -10404,12 +10449,13 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
         j = 0;
 
         VGAOUT8(0x3d4, 0x33);
+	tmp = VGAIN8(0x3d5);
         if (Misc1[j] & 0x20) {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+            VGAOUT8(0x3d5, tmp | 0x20);
             j++;
         }
         else {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+            VGAOUT8(0x3d5, tmp & 0xdf);
             j++;
         }
 
@@ -10422,7 +10468,8 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (pViaModeTable->tv2MaskTable.misc1 & 0x30) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x46);
             VGAOUT8(0x3c5, Misc1[j++]);
@@ -10430,12 +10477,15 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, Misc1[j++]);
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10446,7 +10496,6 @@ void VIAPostSetTV2Mode(VIABIOSInfoPtr pBIOSInfo)
 
 void VIAPreSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
 {
-    VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     VIABIOSTVMASKTablePtr TVMaskTbl;
     CARD8           *TV;
@@ -10461,7 +10510,6 @@ void VIAPreSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
     unsigned char   R_Buffer[1];
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIAPreSetTV3Mode\n"));
-    pVia = pBIOSInfo;
     DotCrawl = NULL;
     RGB = NULL;
     YCbCr = NULL;
@@ -10636,7 +10684,7 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
     VIABIOSInfoPtr  pVia;
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     VIABIOSTVMASKTablePtr TVMaskTbl;
-    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2;
+    CARD8           *CRTC1, *CRTC2, *Misc1, *Misc2, tmp;
     unsigned int    tvIndx = pBIOSInfo->resTVMode;
     int             i, j, data;
 
@@ -10820,16 +10868,19 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (TVMaskTbl->misc2 & 0x18) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             /* CLE266Ax use 2x XCLK */
             if ((pBIOSInfo->Chipset == VIA_CLE266) &&
                 (pBIOSInfo->ChipRev < 15)) {
                 VGAOUT8(0x3d4, 0x6B);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x20);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x20);
                 if (pBIOSInfo->A2) {
                     VGAOUT8(0x3d4, 0x6C);
-                    VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x1C);
+		    tmp = VGAIN8(0x3d5);
+                    VGAOUT8(0x3d5, tmp | 0x1C);
                 }
                 VGAOUT8(0x3c4, 0x44);
                 VGAOUT8(0x3c5, 0x47);
@@ -10844,12 +10895,15 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
             }
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x04);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x04);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFB);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFB);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -10857,11 +10911,14 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
         }
 
         VGAOUT8(0x3d4, 0x6A);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0xC0);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0xC0);
         VGAOUT8(0x3d4, 0x6B);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
 
         /* Disable LCD Scaling */
         if (!pBIOSInfo->SAMM || pBIOSInfo->FirstInit) {
@@ -10881,12 +10938,13 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
         j = 0;
 
         VGAOUT8(0x3d4, 0x33);
+	tmp = VGAIN8(0x3d5);
         if (Misc1[j] & 0x20) {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+            VGAOUT8(0x3d5, tmp | 0x20);
             j++;
         }
         else {
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+            VGAOUT8(0x3d5, tmp & 0xdf);
             j++;
         }
         VGAOUT8(0x3d4, 0x6A);
@@ -10911,7 +10969,8 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
 
         if (TVMaskTbl->misc1 & 0x30) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             /* CLE266Ax use 2x XCLK */
             if ((pBIOSInfo->Chipset == VIA_CLE266) &&
@@ -10929,23 +10988,29 @@ void VIAPostSetTV3Mode(VIABIOSInfoPtr pBIOSInfo)
             }
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
             VGAOUT8(0x3c2, data);
         }
         VGAOUT8(0x3d4, 0x6A);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x40);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x40);
         VGAOUT8(0x3d4, 0x6B);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x01);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x01);
     }
 }
 
@@ -11022,7 +11087,7 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     int             countWidthByQWord, offsetWidthByQWord;
     int             i, j, k, m, n;
     unsigned char   cr13, cr35, sr1c, sr1d;
-    CARD8           misc;
+    CARD8           misc, tmp;
 
     pVia = pBIOSInfo;
     mode = pBIOSInfo->mode;
@@ -11031,8 +11096,9 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIASetModeUseBIOSTable\n"));
     /* Turn off Screen */
-    VGAOUT8(0x3d4, 17);
-    VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0x7f));
+    VGAOUT8(0x3d4, 0x17);
+    tmp = VGAIN8(0x3d5);
+    VGAOUT8(0x3d5, tmp & 0x7f);
 
     /* Clean Second Path Status */
 #if 0
@@ -11042,14 +11108,17 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3d5, 0x40);
             if (pBIOSInfo->Chipset == VIA_CLE266 && pBIOSInfo->ChipRev < 15) {
                 VGAOUT8(0x3d4, 0x6B);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5 | 0x3E));
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp | 0x3E);
             }
             else {
                 VGAOUT8(0x3d4, 0x6B);
-                VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x0E);
+		tmp = VGAIN8(0x3d5);
+                VGAOUT8(0x3d5, tmp & 0x0E);
             }
             VGAOUT8(0x3d4, 0x6C);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0xFE);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0xFE);
             VGAOUT8(0x3d4, 0x93);
             VGAOUT8(0x3d5, 0x0);
         }
@@ -11276,7 +11345,8 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
         k = refresh;
 
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp & 0x7F);
 
         VGAOUT8(0x3c4, 0x46);
         VGAOUT8(0x3c5, (pViaModeTable->refreshTable[j][k].VClk >> 8));
@@ -11284,12 +11354,15 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
         VGAOUT8(0x3c5, (pViaModeTable->refreshTable[j][k].VClk & 0xFF));
 
         VGAOUT8(0x3d4, 0x17);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x80);
 
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp | 0x02);
         VGAOUT8(0x3c4, 0x40);
-        VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	tmp = VGAIN8(0x3c5);
+        VGAOUT8(0x3c5, tmp & 0xFD);
 
         m = 0;
         VGAOUT8(0x3d4, 0x0);
@@ -11318,7 +11391,8 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     else {
         if (pViaModeTable->Modes[i].VClk != 0) {
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) & 0x7F);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0x7F);
 
             VGAOUT8(0x3c4, 0x46);
             VGAOUT8(0x3c5, (pViaModeTable->Modes[i].VClk >> 8));
@@ -11326,12 +11400,15 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
             VGAOUT8(0x3c5, (pViaModeTable->Modes[i].VClk & 0xFF));
 
             VGAOUT8(0x3d4, 0x17);
-            VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x80);
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x80);
 
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x02);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp | 0x02);
             VGAOUT8(0x3c4, 0x40);
-            VGAOUT8(0x3c5, VGAIN8(0x3c5) & 0xFD);
+	    tmp = VGAIN8(0x3c5);
+            VGAOUT8(0x3c5, tmp & 0xFD);
 
             /* Use external clock */
             data = VGAIN8(0x3cc) | 0x0C;
@@ -11401,21 +11478,25 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     if ((data & 0x3f) > misc) { /* Is Blanking End overflow ? */
         if (data & 0x40) { /* Blanking Start bit6 = ? */
             VGAOUT8(0x3d4, 0x33); /* bit6 = 1, Blanking End bit6 = 0 */
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0xdf);
         }
         else {
             VGAOUT8(0x3d4, 0x33); /* bit6 = 0, Blanking End bit6 = 1 */
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x20);
         }
     }
     else {
         if (data & 0x40) { /* Blanking Start bit6 = ? */
             VGAOUT8(0x3d4, 0x33); /* bit6 = 1, Blanking End bit6 = 1 */
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) | 0x20));
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp | 0x20);
         }
         else {
             VGAOUT8(0x3d4, 0x33); /* bit6 = 0, Blanking End bit6 = 0 */
-            VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xdf));
+	    tmp = VGAIN8(0x3d5);
+            VGAOUT8(0x3d5, tmp & 0xdf);
         }
     }
 
@@ -11480,7 +11561,8 @@ Bool VIASetModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
     /* Turn off CRT, if user doesn't want crt on */
     if (!(pBIOSInfo->ActiveDevice & VIA_DEVICE_CRT1)) {
         VGAOUT8(0x3d4, 0x36);
-        VGAOUT8(0x3d5, VGAIN8(0x3d5) | 0x30);
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp | 0x30);
     }
 
     /* Open Screen */
@@ -11495,22 +11577,19 @@ Bool VIASetModeForMHS(VIABIOSInfoPtr pBIOSInfo)
 {
     VIABIOSInfoPtr  pVia;
     BOOL            setTV = FALSE;
-    int             mode, resMode, refresh;
+    int             resMode;
     int             countWidthByQWord, offsetWidthByQWord;
-    unsigned char	cr65, cr66, cr67;
-    CARD8           misc;
-
+    unsigned char   cr65, cr66, cr67, tmp;
 
     pVia = pBIOSInfo;
-    mode = pBIOSInfo->mode;
     resMode = pBIOSInfo->resMode;
-    refresh = pBIOSInfo->refresh;
     pBIOSInfo->SetTV = FALSE;
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "VIASetModeForMHS\n"));
     /* Turn off Screen */
-    VGAOUT8(0x3d4, 17);
-    VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0x7f));
+    VGAOUT8(0x3d4, 0x17);
+    tmp = VGAIN8(0x3d5);
+    VGAOUT8(0x3d5, tmp & 0x7f);
 
     if (pBIOSInfo->ActiveDevice & VIA_DEVICE_TV) {
         /* Found TV resmod index */
@@ -11632,7 +11711,8 @@ Bool VIASetModeForMHS(VIABIOSInfoPtr pBIOSInfo)
 
     if (!pBIOSInfo->A2) {
         VGAOUT8(0x3d4, 0x6C);
-        VGAOUT8(0x3d5, (VGAIN8(0x3d5) & 0xE1));
+	tmp = VGAIN8(0x3d5);
+        VGAOUT8(0x3d5, tmp & 0xE1);
     }
 
     if (pBIOSInfo->ActiveDevice & (VIA_DEVICE_DFP | VIA_DEVICE_LCD)) {
@@ -11698,7 +11778,7 @@ Bool VIASetModeForMHS(VIABIOSInfoPtr pBIOSInfo)
     VIAPitchAlignmentPatch(pBIOSInfo);
 
     /* Open Screen */
-    misc = VGAIN8(0x3da);
+    (void) VGAIN8(0x3da);
     VGAOUT8(0x3c0, 0x20);
 
     DEBUG(xf86DrvMsg(pBIOSInfo->scrnIndex, X_INFO, "-- VIASetModeForMHS Done!\n"));
@@ -11986,7 +12066,7 @@ void VIADisableLCD(VIABIOSInfoPtr pBIOSInfo)
     VIAModeTablePtr pViaModeTable = pBIOSInfo->pModeTable;
     I2CDevPtr       dev;
     unsigned char   W_Buffer[2], R_Buffer[1];
-    unsigned char   cr6a;
+    unsigned char   cr6a, tmp;
     int             i, j, k;
     int             port, offset, mask, data;
 
@@ -12037,7 +12117,8 @@ void VIADisableLCD(VIABIOSInfoPtr pBIOSInfo)
         mask = pViaModeTable->powerOff[j].mask[k];
         data = pViaModeTable->powerOff[j].data[k] & mask;
         VGAOUT8(0x300+port, offset);
-        VGAOUT8(0x301+port, (VGAIN8(0x301+port) & ~mask) | data);
+	tmp = VGAIN8(0x301+port);
+        VGAOUT8(0x301+port, (tmp & ~mask) | data);
         usleep(pViaModeTable->powerOff[j].delay[k]);
      }
 }

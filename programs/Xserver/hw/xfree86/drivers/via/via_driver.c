@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.14 2003/09/24 02:43:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.14tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -531,7 +531,7 @@ static Bool VIAProbe(DriverPtr drv, int flags)
             if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
                  VIAPciChipsets, 0, 0, 0, 0, 0)))
             {
-                pScrn->driverVersion = (int)DRIVER_VERSION;
+                pScrn->driverVersion = VIA_VERSION;
                 pScrn->driverName = DRIVER_NAME;
                 pScrn->name = DRIVER_NAME;
                 pScrn->Probe = VIAProbe;
@@ -703,7 +703,6 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     const char      *reqSym = NULL;
 #endif
     vgaHWPtr        hwp;
-    int             vgaCRIndex, vgaCRReg, vgaIOBase;
     int             i, bMemSize = 0, tmp;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VIAPreInit\n"));
@@ -1318,9 +1317,6 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 
     hwp = VGAHWPTR(pScrn);
     vgaHWGetIOBase(hwp);
-    vgaIOBase = hwp->IOBase;
-    vgaCRIndex = vgaIOBase + 4;
-    vgaCRReg = vgaIOBase + 5;
 
     if (!VIAMapMMIO(pScrn)) {
         vbeFree(pVia->pVbe);
@@ -1917,6 +1913,7 @@ static void VIAWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     int             i;
     unsigned char   W_Buffer[3];
     I2CDevPtr       dev = NULL;
+    CARD8           tmp
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VIAWriteMode\n"));
     vgaIOBase = hwp->IOBase;
@@ -2135,7 +2132,8 @@ static void VIAWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 
     VIADisabledExtendedFIFO(pBIOSInfo);
     /* Reset clock */
-    VGAOUT8(0x3c2, VGAIN8(0x3cc));
+    tmp = VGAIN8(0x3cc);
+    VGAOUT8(0x3c2, tmp);
 
     /* If we're going into graphics mode and acceleration was enabled, */
 /*
@@ -2726,8 +2724,6 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
     LPDDLOCK    lpddLock = &ddLock;
     DDUPDATEOVERLAY UpdateOverlay;
     ADJUSTFRAME AdjustFrame;
-    struct video_window      ov_win_v1;
-    struct video_window      ov_win_v3;
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "VIAAdjustFrame\n"));
     vgaIOBase = hwp->IOBase;
@@ -2790,14 +2786,6 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
         ddLock.dwFourCC = FOURCC_TV0;
 
         VIAVidLockSurface(pScrn, &ddLock);
-
-        ov_win_v3.width = ddLock.Capdev_TV0.gdwCAPDstWidth;
-        ov_win_v3.height = ddLock.Capdev_TV0.gdwCAPDstHeight;
-        ov_win_v3.x = ddLock.Capdev_TV0.gdwCAPDstLeft;
-        ov_win_v3.y = ddLock.Capdev_TV0.gdwCAPDstTop;
-        ov_win_v3.flags      = 0;
-        ov_win_v3.chromakey  = 0x080408;
-        ov_win_v3.clipcount  = 0;
     }
 
     if (VIAGETREG(0x354) & 0x1) /* capture 1 (TV1) case */
@@ -2805,14 +2793,6 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
         ddLock.dwFourCC = FOURCC_TV1;
 
         VIAVidLockSurface(pScrn, &ddLock);
-
-        ov_win_v1.width = ddLock.Capdev_TV1.gdwCAPDstWidth;
-        ov_win_v1.height = ddLock.Capdev_TV1.gdwCAPDstHeight;
-        ov_win_v1.x = ddLock.Capdev_TV1.gdwCAPDstLeft;
-        ov_win_v1.y = ddLock.Capdev_TV1.gdwCAPDstTop;
-        ov_win_v1.flags      = 0;
-        ov_win_v1.chromakey  = 0x080408;
-        ov_win_v1.clipcount  = 0;
     }
 
     return;
@@ -2964,7 +2944,6 @@ static void VIADPMS(ScrnInfoPtr pScrn, int mode, int flags)
     vgaHWPtr        hwp = VGAHWPTR(pScrn);
     VIAPtr          pVia = VIAPTR(pScrn);
     VIABIOSInfoPtr  pBIOSInfo = pVia->pBIOSInfo;
-    VIAModeTablePtr pViaModeTable;
     int             vgaCRIndex, vgaCRReg;
     CARD8           val;
 
@@ -2973,7 +2952,6 @@ static void VIADPMS(ScrnInfoPtr pScrn, int mode, int flags)
 
     vgaCRIndex = hwp->IOBase + 4;
     vgaCRReg = hwp->IOBase + 5;
-    pViaModeTable = pBIOSInfo->pModeTable;
 
     /* Clear DPMS setting */
     VGAOUT8(vgaCRIndex, 0x36);
