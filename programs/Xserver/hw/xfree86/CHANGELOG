@@ -1,4 +1,4 @@
-XFree86 3.9j (x July 1997)
+XFree86 3.9j (12 July 1997)
 1108. Fix sqrt problems in miarc (#765, Harald Koenig).
 1107. Remove special Tk 4.0 support in XF86Setup and add C code to match the
       latest vidmode extension changes. Fix a minor bug in the DPMS code
@@ -5110,4 +5110,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.506 1997/07/06 13:12:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.508 1997/07/10 08:17:16 hohndel Exp $
