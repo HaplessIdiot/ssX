@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.7 1994/09/04 10:46:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.8 1994/09/11 00:50:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -435,14 +435,15 @@ mach8Probe()
 		pMode = pModeSv; 
 	  } else if (pMode->HDisplay * pMode->VDisplay > memavail) {
 		pModeSv=pMode->next;
-		ErrorF("%s: Too little memory for mode %s\n", 
-			mach8InfoRec.name, pMode->name);
+		ErrorF("%s %s: Too little memory for mode %s\n", 
+			XCONFIG_PROBED, mach8InfoRec.name, pMode->name);
 		xf86DeleteMode(&mach8InfoRec, pMode);
 		pMode = pModeSv;
 	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
 		     ((ty > 0) && (pMode->VDisplay > ty))) {
 		pModeSv=pMode->next;
-		ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+		ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+			XCONFIG_PROBED, mach8InfoRec.name,
 			pMode->HDisplay, pMode->VDisplay, tx, ty);
 		xf86DeleteMode(&mach8InfoRec, pMode);
 		pMode = pModeSv;

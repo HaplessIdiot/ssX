@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.15 1994/09/07 15:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.16 1994/09/11 00:48:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -582,7 +582,8 @@ mach32Probe()
 	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
 		     ((ty > 0) && (pMode->VDisplay > ty))) {
 		pModeSv=pMode->next;
-		ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+		ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+		       XCONFIG_PROBED, mach32InfoRec.name,
 			pMode->HDisplay, pMode->VDisplay, tx, ty);
 		xf86DeleteMode(&mach32InfoRec, pMode);
 		pMode = pModeSv;
