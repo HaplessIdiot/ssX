@@ -23,14 +23,12 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcStd.c,v 1.5 2001/01/17 19:41:55 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcStd.c,v 1.6 2003/04/13 19:22:21 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
-#define USE_XWCHAR_STRING
-#include "../Xaw/XawI18n.h"
 
-static int
+int
 _Xlcmbtowc(
     XLCd lcd,
     wchar_t *wstr,
@@ -75,7 +73,7 @@ _Xlcmbtowc(
     return (len - from_left);
 }
 
-static int
+int
 _Xlcwctomb(
     XLCd lcd,
     char *str,
@@ -243,7 +241,7 @@ _Xmbstowcs(
     return _Xlcmbstowcs((XLCd) NULL, wstr, str, len);
 }
 
-static int
+int
 _Xwcstombs(
     char *str,
     wchar_t *wstr,
@@ -293,7 +291,7 @@ _Xwcslen(
     return wstr_ptr - wstr;
 }
 
-static int
+int
 _Xwcscmp(
     register wchar_t *wstr1, register wchar_t *wstr2)
 {
@@ -304,7 +302,7 @@ _Xwcscmp(
     return *wstr1 - *wstr2;
 }
 
-static int
+int
 _Xwcsncmp(
     register wchar_t *wstr1, register wchar_t *wstr2,
     register int len)

@@ -1,4 +1,4 @@
-/* $XConsortium: XimTrans.h,v 1.3 94/03/26 16:57:12 rws Exp $ */
+/* $Xorg: XimTrans.h,v 1.3 2000/08/17 19:45:05 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -58,6 +58,15 @@ typedef struct {
  * Prototypes
  */
 
+extern Bool _XimTransRegisterDispatcher(
+    Xim		 im,
+    Bool	 (*callback)(
+			     Xim, INT16, XPointer, XPointer
+			     ),
+    XPointer	 call_data
+);
+
+
 extern Bool _XimTransIntrCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
@@ -68,6 +77,12 @@ extern Bool _XimTransIntrCallback(
 			     ),
     XPointer	 call_data
 #endif
+);
+
+extern Bool _XimTransCallDispatcher(
+    Xim		 im,
+    INT16	 len,
+    XPointer	 data
 );
 
 extern void _XimFreeTransIntrCallback(

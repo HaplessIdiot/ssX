@@ -53,7 +53,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.14 2002/11/01 13:43:31 alanh Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.15 2003/04/13 19:22:22 dawes Exp $ */
 
 #include <stdlib.h>
 #include "Xlibint.h"
@@ -495,7 +495,7 @@ XDefaultString()
     return (*lcd->methods->default_string)(lcd);
 }
 
-static void
+void
 _XlcCopyFromArg(
     char *src,
     char *dst,
@@ -519,7 +519,7 @@ _XlcCopyFromArg(
 	memcpy(dst, (char *) &src, size);
 }
 
-static void
+void
 _XlcCopyToArg(
     char *src,
     char **dst,

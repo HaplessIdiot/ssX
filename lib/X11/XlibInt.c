@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.34 2003/02/18 05:15:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.35 2003/04/13 19:22:19 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -381,7 +381,7 @@ Bool _XPollfdCacheInit(
     return True;
 }
 
-static void _XPollfdCacheAdd(
+void _XPollfdCacheAdd(
     Display *dpy,
     int fd)
 {
@@ -396,7 +396,7 @@ static void _XPollfdCacheAdd(
 }
 
 /* ARGSUSED */
-static void _XPollfdCacheDel(
+void _XPollfdCacheDel(
     Display *dpy,
     int fd)			/* not used */
 {

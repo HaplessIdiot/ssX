@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.9 2001/01/17 19:41:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.10 2003/04/13 19:22:19 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -241,6 +241,14 @@ extern Bool _XInitIM(
 #endif
 );
 
+extern XIM _XimOpenIM(
+    XLCd		/* lcd */,
+    Display *		/* dpy */,
+    XrmDatabase		/* rdb */,
+    char *		/* res_name */,
+    char *		/* res_class */
+);
+
 extern char *_XGetLCValues(
 #if NeedVarargsPrototypes
     XLCd		/* lcd */,
@@ -306,6 +314,10 @@ extern wchar_t *_Xwcscpy(
     wchar_t*		/* wstr2 */
 #endif
 );
+
+extern wchar_t *_Xwcsncpy(wchar_t *wstr1, wchar_t *wstr2, int len);
+extern int _Xwcscmp(wchar_t *wstr1, wchar_t *wstr2);
+extern int _Xwcsncmp(wchar_t *wstr1, wchar_t *wstr2, int len);
 
 /* Compares two ISO 8859-1 strings, ignoring case of ASCII letters.
    Like strcasecmp in an ASCII locale. */

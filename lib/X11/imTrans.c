@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imTrans.c,v 1.2 2003/04/13 19:22:21 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -120,7 +120,7 @@ _XimTransShutdown(
 
 
 
-static Public Bool
+Public Bool
 #if NeedFunctionPrototypes
 _XimTransRegisterDispatcher(
     Xim				 im,
@@ -167,7 +167,7 @@ _XimFreeTransIntrCallback(
 }
 
 
-static Public Bool
+Public Bool
 #if NeedFunctionPrototypes
 _XimTransCallDispatcher(Xim im, INT16 len, XPointer data)
 #else

@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.11 2002/12/14 01:53:56 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.12 2003/04/13 19:22:20 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 #include "Ximint.h"
 
 
-static Public int
+Public int
 _XimCheckDataSize(
     XPointer	 buf,
     int		 len)

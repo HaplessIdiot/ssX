@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.10 2003/03/11 23:26:58 herrb Exp $ */
+/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.11 2003/04/13 19:22:19 dawes Exp $ */
 
 #ifndef _XLCPUBLICI_H_
 #define _XLCPUBLICI_H_
@@ -277,6 +277,24 @@ _Xlcmbstowcs(
     wchar_t *wstr,
     char *str,
     int len);
+extern int
+_Xwcstombs(
+    char *str,
+    wchar_t *wstr,
+    int len);
+extern int
+_Xlcmbtowc(
+    XLCd lcd,
+    wchar_t *wstr,
+    char *str,
+    int len);
+extern int
+_Xlcwctomb(
+    XLCd lcd,
+    char *str,
+    wchar_t wc);
+
+
 
 extern XPointer
 _Utf8GetConvByName(

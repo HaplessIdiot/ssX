@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/Cv.h,v 1.1 2003/04/13 19:22:15 dawes Exp $ */
 
 #ifndef _CV_H_
 #define _CV_H_
@@ -37,7 +37,13 @@ extern XcmsFunctionSet **_XcmsSCCFuncSets;
 extern XcmsRegColorSpaceEntry _XcmsRegColorSpaces[];
 
 /* functions */
-XPointer *
+extern XPointer *
+_XcmsCopyPointerArray(
+    XPointer *pap);
+extern void
+_XcmsFreePointerArray(
+    XPointer *pap);
+extern XPointer *
 _XcmsPushPointerArray(
     XPointer *pap,
     XPointer p,

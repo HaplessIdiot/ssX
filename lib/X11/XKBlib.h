@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBlib.h,v 3.3 2001/08/01 00:44:38 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XKBlib.h,v 3.4 2003/04/13 19:22:18 dawes Exp $ */
 
 #ifndef _XKBLIB_H_
 #define _XKBLIB_H_
@@ -350,6 +350,8 @@ extern	unsigned int	XkbGetXlibControls(
 	Display*		/* dpy */
 #endif
 );
+
+extern	unsigned int	XkbXlibControlsImplemented(void);
 
 typedef	Atom	(*XkbInternAtomFunc)(
 #if NeedFunctionPrototypes
@@ -889,6 +891,13 @@ extern	Status	XkbGetKeyModifierMap(
 	unsigned int		/* nKeys */,
 	XkbDescPtr		/* desc */
 #endif
+);
+
+extern	Status	XkbGetKeyVirtualModMap(
+	Display *		/* dpy */,
+	unsigned int		/* first */,
+	unsigned int		/* num */,
+	XkbDescPtr		/* xkb */
 );
 
 extern	Status	XkbAllocControls(
