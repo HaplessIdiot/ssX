@@ -1133,7 +1133,7 @@ ProcXvShmPutImage(ClientPtr client)
         WriteEventsToClient(client, 1, (xEvent *) &ev);
   }
 
-  return (client->noClientException);
+  return status;
 }
 
 static int 
