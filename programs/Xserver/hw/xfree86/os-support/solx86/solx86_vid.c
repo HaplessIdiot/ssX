@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.14 1999/07/18 08:14:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.15 1999/07/18 14:50:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -42,6 +42,12 @@
 /***************************************************************************/
 
 char *apertureDevName = NULL;
+
+Bool
+xf86CheckMTRR(int ScreenNum)
+{
+	return FALSE;
+}
 
 Bool
 xf86LinearVidMem()
