@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.14tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -698,6 +698,9 @@ ATIModeCalculate
             VDisplay *= pMode->VScan;
         if (pMode->Flags & V_INTERLACE)
             VDisplay >>= 1;
+
+        /* Ensure secondary CRTC is completely disabled */
+        pATIHW->crtc_gen_cntl &= ~(CRTC2_EN | CRTC2_PIX_WIDTH);
 
         if (pATI->Chip == ATI_CHIP_264LT)
             pATIHW->horz_stretching = inr(HORZ_STRETCHING);
