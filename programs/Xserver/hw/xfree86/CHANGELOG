@@ -1,4 +1,6 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 377. Fix the test for 2.5.x with x < 52 Linux kernels for the drm module
+      build (Bugzilla #601, Callum Mackay).
  376. Fix an XAA pixmap cache server crash that can happen in some cases
       when the off-screen memory is heavily fragmented (David Dawes, based
       on #5752, Koike Kazuhiko, Chisato Yamauchi).
@@ -17534,7 +17536,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2808 2003/08/13 20:30:00 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2809 2003/08/16 01:11:37 dawes Exp $
 
 
 
