@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.39 2003/11/07 23:56:28 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.40 2004/02/07 22:56:05 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -292,10 +292,10 @@ static void nv10GetConfig (NVPtr pNv)
     }
 #endif
 
-    if((pNv->Chipset & 0xffff) == 0x01a0) {
+    if(implementation == 0x01a0) {
         int amt = pciReadLong(pciTag(0, 0, 1), 0x7C);
         pNv->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
-    } else if((pNv->Chipset & 0xffff) == 0x01f0) {
+    } else if(implementation == 0x01f0) {
         int amt = pciReadLong(pciTag(0, 0, 1), 0x84);
         pNv->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
     } else {
@@ -304,10 +304,7 @@ static void nv10GetConfig (NVPtr pNv)
 
     pNv->CrystalFreqKHz = (pNv->PEXTDEV[0x0000/4] & (1 << 6)) ? 14318 : 13500;
     
-    if((implementation == 0x0170) ||
-       (implementation == 0x0180) ||
-       (implementation == 0x01F0) ||
-       (implementation >= 0x0250))
+    if(pNv->twoHeads && (implementation != 0x0110))
     {
        if(pNv->PEXTDEV[0x0000/4] & (1 << 22))
            pNv->CrystalFreqKHz = 27000;
@@ -381,7 +378,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->PDIO0    = (U008*)pNv->REGS + 0x00681000;
     pNv->PVIO     = (U008*)pNv->REGS + 0x000C0000;
 
-    pNv->twoHeads =  (implementation >= 0x0110) &&
+    pNv->twoHeads =  (pNv->Architecture >= NV_ARCH_10) &&
+                     (implementation != 0x0100) &&
                      (implementation != 0x0150) &&
                      (implementation != 0x01A0) &&
                      (implementation != 0x0200);
@@ -389,7 +387,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->fpScaler = (pNv->twoHeads && (implementation != 0x0110));
 
     pNv->twoStagePLL = (implementation == 0x0310) ||
-                       (implementation == 0x0340);
+                       (implementation == 0x0340) ||
+                       (pNv->Architecture >= NV_ARCH_40);
 
     /* look for known laptop chips */
     switch(pNv->Chipset & 0xffff) {
@@ -659,6 +658,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     if(pNv->FlatPanel && !pNv->Television) {
        pNv->fpWidth = pNv->PRAMDAC[0x0820/4] + 1;
        pNv->fpHeight = pNv->PRAMDAC[0x0800/4] + 1;
+       pNv->fpSyncs = pNv->PRAMDAC[0x0848/4] & 0x30000033;
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Panel size is %i x %i\n",
                   pNv->fpWidth, pNv->fpHeight);
     }
@@ -666,7 +666,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     if(monitorA)
       xf86SetDDCproperties(pScrn, monitorA);
 
-    if(!pNv->FlatPanel || (pScrn->depth != 24))
+    if(!pNv->FlatPanel || (pScrn->depth != 24) || !pNv->twoHeads)
         pNv->FPDither = FALSE;
 }
 
