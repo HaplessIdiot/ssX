@@ -63,6 +63,8 @@ typedef struct {
 
 typedef struct {
   int flags;	/* XvGettable, XvSettable */
+  int min_value;
+  int max_value;
   char *name;
 } XvAttribute;
 
@@ -118,6 +120,46 @@ typedef union {
   XvPortNotifyEvent xvport;
   long pad[24];
 } XvEvent;
+
+typedef struct {
+  int id;                      /* Unique descriptor for the format */
+  int type;                    /* XvRGB, XvYUV */
+  int byte_order;              /* LSBFirst, MSBFirst */
+  char guid[16];               /* Globally Unique IDentifier */
+  int bits_per_pixel;
+  int format;                  /* XvPacked, XvPlanar */
+  int num_planes;
+
+  /* for RGB formats only */
+  int depth;
+  unsigned int red_mask;       
+  unsigned int green_mask;   
+  unsigned int blue_mask;   
+
+  /* for YUV formats only */
+  unsigned int y_sample_bits;
+  unsigned int u_sample_bits;
+  unsigned int v_sample_bits;   
+  unsigned int horz_y_period;
+  unsigned int horz_u_period;
+  unsigned int horz_v_period;
+  unsigned int vert_y_period;
+  unsigned int vert_u_period;
+  unsigned int vert_v_period;
+  char component_order[32];    /* eg. UYVY */
+  int scanline_order;          /* XvTopToBottom, XvBottomToTop */
+} XvImageFormatValues; 
+
+typedef struct {
+  int id;
+  int width, height;
+  int data_size;              /* bytes */
+  int num_planes;
+  int *pitches;               /* bytes */
+  int *offsets;               /* bytes */
+  char *data;
+  XPointer obdata;     
+} XvImage;
 
 _XFUNCPROTOBEGIN
 
@@ -310,6 +352,80 @@ extern void XvFreeEncodingInfo(
   XvEncodingInfo*         /* encodings */
 #endif
 );
+
+
+extern XvImageFormatValues * XvListImageFormats (
+#if NeedFunctionPrototypes
+   Display 	*display,
+   XvPortID 	port_id,
+   int 		*count_return
+#endif
+);
+
+extern XvImage * XvCreateImage (
+#if NeedFunctionPrototypes
+   Display *display,
+   XvPortID port,
+   int id,
+   char *data,
+   int width, 
+   int height 
+#endif
+);
+
+extern int XvPutImage (
+#if NeedFunctionPrototypes
+  Display *display,
+   XvPortID id,
+   Drawable d,
+   GC gc,
+   XvImage *image,
+   int src_x,
+   int src_y,
+   unsigned int src_w,
+   unsigned int src_h,
+   int dest_x, 
+   int dest_y,
+   unsigned int dest_w,
+   unsigned int dest_h
+#endif
+);
+
+extern int XvShmPutImage (
+#if NeedFunctionPrototypes
+   Display *display,
+   XvPortID id,
+   Drawable d,
+   GC gc,
+   XvImage *image,
+   int src_x,
+   int src_y,
+   unsigned int src_w,
+   unsigned int src_h,
+   int dest_x, 
+   int dest_y,
+   unsigned int dest_w,
+   unsigned int dest_h,
+   Bool send_event
+#endif
+);
+
+#ifdef _XSHM_H_
+
+extern XvImage * XvShmCreateImage (
+#if NeedFunctionPrototypes
+   Display *display,
+   XvPortID port,
+   int id,
+   char* data,
+   int width, 
+   int height,
+   XShmSegmentInfo *shminfo
+#endif
+);
+
+#endif
+
 
 _XFUNCPROTOEND
 

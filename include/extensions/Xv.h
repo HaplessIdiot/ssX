@@ -48,7 +48,7 @@ SOFTWARE.
 
 #define XvName "XVideo"
 #define XvVersion 2
-#define XvRevision 1
+#define XvRevision 2
 
 /* Symbols */
 
@@ -62,15 +62,26 @@ typedef XID XvEncodingID;
 
 #define XvInputMask      (1L<<XvInput)
 #define XvOutputMask     (1L<<XvOutput)
-#define XvPixmapMask	 0x00000004
-#define XvWindowMask	 0x00000008
+#define XvVideoMask	 0x00000004
+#define XvStillMask	 0x00000008
+#define XvImageMask	 0x00000010
 
-#define XvVideoMask	 0x00010000
-#define XvStillMask	 0x00020000
-#define XvImageMask	 0x00040000
+/* These two are not client viewable */
+#define XvPixmapMask	 0x00010000
+#define XvWindowMask	 0x00020000
+
 
 #define XvGettable	0x01
 #define XvSettable	0x02
+
+#define XvRGB		0
+#define XvYUV		1
+
+#define XvPacked	0
+#define XvPlanar	1
+
+#define XvTopToBottom	0
+#define XvBottomToTop	1
 
 
 /* Events */

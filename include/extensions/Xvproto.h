@@ -55,6 +55,7 @@ SOFTWARE.
 
 #define XvPortID CARD32
 #define XvEncodingID CARD32
+#define ShmSeg CARD32
 
 /* Structures */
 
@@ -93,9 +94,47 @@ typedef struct {
 
 typedef struct {
   CARD32 flags B32;
+  INT32 min B32;
+  INT32 max B32;
   CARD32 size  B32;
 } xvAttributeInfo;
-#define sz_xvAttributeInfo 8
+#define sz_xvAttributeInfo 16
+
+typedef struct {
+  CARD32 id B32;
+  CARD8 type;
+  CARD8 byte_order;
+  CARD16 pad1 B16;
+  CARD8 guid[16];
+  CARD8 bpp;
+  CARD8 num_planes;
+  CARD16 pad2 B16;
+  CARD8 depth;
+  CARD8 pad3;
+  CARD16 pad4 B16;
+  CARD32 red_mask B32;
+  CARD32 green_mask B32;
+  CARD32 blue_mask B32;
+  CARD8 format;
+  CARD8 pad5;
+  CARD16 pad6 B16;
+  CARD32 y_sample_bits B32;
+  CARD32 u_sample_bits B32;
+  CARD32 v_sample_bits B32;   
+  CARD32 horz_y_period B32;
+  CARD32 horz_u_period B32;
+  CARD32 horz_v_period B32;
+  CARD32 vert_y_period B32;
+  CARD32 vert_u_period B32;
+  CARD32 vert_v_period B32;
+  CARD8 comp_order[32];
+  CARD8 scanline_order;
+  CARD8 pad7;
+  CARD16 pad8 B16;
+  CARD32 pad9 B32;
+  CARD32 pad10 B32;
+} xvImageFormatInfo;
+#define sz_xvImageFormatInfo 128
 
 
 /* Requests */
@@ -116,9 +155,13 @@ typedef struct {
 #define xv_SetPortAttribute               13
 #define xv_GetPortAttribute               14
 #define xv_QueryPortAttributes            15
-#define xv_LastRequest                    16
+#define xv_ListImageFormats               16
+#define xv_QueryImageAttributes           17
+#define xv_PutImage                       18
+#define xv_ShmPutImage                    19
+#define xv_LastRequest                    xv_ShmPutImage
 
-#define xvNumRequests                     (xv_LastRequest)
+#define xvNumRequests                     (xv_LastRequest + 1)
 
 typedef struct {
   CARD8 reqType;
@@ -298,7 +341,6 @@ typedef struct {
 } xvQueryBestSizeReq;
 #define sz_xvQueryBestSizeReq 20
 
-
 typedef struct {
   CARD8 reqType;
   CARD8 xvReqType;
@@ -306,6 +348,72 @@ typedef struct {
   XvPortID port B32;
 } xvQueryPortAttributesReq;
 #define sz_xvQueryPortAttributesReq 8
+
+typedef struct {
+  CARD8 reqType;
+  CARD8 xvReqType;
+  CARD16 length B16;
+  XvPortID port B32;
+  Drawable drawable B32;
+  GContext gc B32;
+  CARD32 id B32;
+  INT16 src_x B16;
+  INT16 src_y B16;
+  CARD16 src_w B16;
+  CARD16 src_h B16;
+  INT16 drw_x B16;
+  INT16 drw_y B16;
+  CARD16 drw_w B16;
+  CARD16 drw_h B16;
+  CARD16 width B16;
+  CARD16 height B16;
+} xvPutImageReq;
+#define sz_xvPutImageReq 40
+
+typedef struct {
+  CARD8 reqType;
+  CARD8 xvReqType;
+  CARD16 length B16;
+  XvPortID port B32;
+  Drawable drawable B32;
+  GContext gc B32;
+  ShmSeg shmseg B32;
+  CARD32 id B32;
+  CARD32 offset B32;
+  INT16 src_x B16;
+  INT16 src_y B16;
+  CARD16 src_w B16;
+  CARD16 src_h B16;
+  INT16 drw_x B16;
+  INT16 drw_y B16;
+  CARD16 drw_w B16;
+  CARD16 drw_h B16;
+  CARD16 width B16;
+  CARD16 height B16;
+  CARD8 send_event;
+  CARD8 pad1;
+  CARD16 pad2 B16;
+} xvShmPutImageReq;
+#define sz_xvShmPutImageReq 52
+
+typedef struct {
+  CARD8 reqType;
+  CARD8 xvReqType;
+  CARD16 length B16;
+  XvPortID port B32;
+} xvListImageFormatsReq;
+#define sz_xvListImageFormatsReq 8
+
+typedef struct {
+  CARD8 reqType;
+  CARD8 xvReqType;
+  CARD16 length B16;
+  CARD32 port B32;
+  CARD32 id B32;
+  CARD16 width B16;
+  CARD16 height B16;
+} xvQueryImageAttributesReq;
+#define sz_xvQueryImageAttributesReq 16
 
 
 /* Replies */
@@ -398,7 +506,6 @@ typedef struct {
 } xvQueryBestSizeReply;
 #define sz_xvQueryBestSizeReply 32
 
-
 typedef struct {
   BYTE type;  /* X_Reply */
   BYTE padb1;
@@ -413,6 +520,34 @@ typedef struct {
 } xvQueryPortAttributesReply;
 #define sz_xvQueryPortAttributesReply 32
 
+typedef struct {
+  BYTE type;  /* X_Reply */
+  BYTE padb1;
+  CARD16 sequenceNumber B16;
+  CARD32 length B32;
+  CARD32 num_formats B32; 
+  CARD32 padl4 B32;
+  CARD32 padl5 B32;
+  CARD32 padl6 B32;
+  CARD32 padl7 B32;
+  CARD32 padl8 B32;
+} xvListImageFormatsReply;
+#define sz_xvListImageFormatsReply 32
+
+typedef struct {
+  BYTE type;  /* X_Reply */
+  BYTE padb1;
+  CARD16 sequenceNumber B16;
+  CARD32 length B32; 
+  CARD32 num_planes B32; 
+  CARD32 data_size B32;
+  CARD16 width B16;
+  CARD16 height B16;
+  CARD32 padl6 B32;
+  CARD32 padl7 B32;
+  CARD32 padl8 B32;
+} xvQueryImageAttributesReply;
+#define sz_xvQueryImageAttributesReply 32
 
 /* DEFINE EVENT STRUCTURE */
 
@@ -452,6 +587,7 @@ typedef struct {
 
 #undef XvPortID
 #undef XvEncodingID
+#undef ShmSeg
 
 #endif /* XVPROTO_H */
 
