@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.8 2002/02/12 07:17:37 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.9 2002/08/31 06:52:31 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -391,6 +391,7 @@ XRenderCompositeText8 (Display			    *dpy,
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     xRenderCompositeGlyphs8Req	*req;
+    GlyphSet			glyphset;
     long			len;
     long			elen;
     xGlyphElt			*elt;
@@ -420,10 +421,17 @@ XRenderCompositeText8 (Display			    *dpy,
      */
     len = 0;
     
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
-	if (elts[i].glyphset != req->glyphset)
+	/*
+	 * Check for glyphset change
+	 */
+	if (elts[i].glyphset != glyphset)
+	{
+	    glyphset = elts[i].glyphset;
 	    len += (SIZEOF (xGlyphElt) + 4) >> 2;
+	}
 	nchars = elts[i].nchars;
 	/*
 	 * xGlyphElt must be aligned on a 32-bit boundary; this is
@@ -435,26 +443,24 @@ XRenderCompositeText8 (Display			    *dpy,
     }
     
     req->length += len;
-    /* 
-     * If the entire request does not fit into the remaining space in the
-     * buffer, flush the buffer first.
+
+    /*
+     * Send the glyphs
      */
-
-    if (dpy->bufptr + (len << 2) > dpy->bufmax)
-    	_XFlush (dpy);
-
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
 	/*
 	 * Switch glyphsets
 	 */
-	if (elts[i].glyphset != elts[0].glyphset)
+	if (elts[i].glyphset != glyphset)
 	{
+	    glyphset = elts[i].glyphset;
 	    BufAlloc (xGlyphElt *, elt, SIZEOF (xGlyphElt));
 	    elt->len = 0xff;
 	    elt->deltax = 0;
 	    elt->deltay = 0;
-	    Data32(dpy, &elts[i].glyphset, 4);
+	    Data32(dpy, &glyphset, 4);
 	}
 	nchars = elts[i].nchars;
 	xDst = elts[i].xOff;
@@ -495,6 +501,7 @@ XRenderCompositeText16 (Display			    *dpy,
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     xRenderCompositeGlyphs16Req	*req;
+    GlyphSet			glyphset;
     long			len;
     long			elen;
     xGlyphElt			*elt;
@@ -524,10 +531,17 @@ XRenderCompositeText16 (Display			    *dpy,
      */
     len = 0;
     
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
-	if (elts[i].glyphset != elts[0].glyphset)
+	/*
+	 * Check for glyphset change
+	 */
+	if (elts[i].glyphset != glyphset)
+	{
+	    glyphset = elts[i].glyphset;
 	    len += (SIZEOF (xGlyphElt) + 4) >> 2;
+	}
 	nchars = elts[i].nchars;
 	/*
 	 * xGlyphElt must be aligned on a 32-bit boundary; this is
@@ -539,26 +553,21 @@ XRenderCompositeText16 (Display			    *dpy,
     }
     
     req->length += len;
-    /* 
-     * If the entire request does not fit into the remaining space in the
-     * buffer, flush the buffer first.
-     */
 
-    if (dpy->bufptr + (len << 2) > dpy->bufmax)
-    	_XFlush (dpy);
-
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
 	/*
 	 * Switch glyphsets
 	 */
-	if (elts[i].glyphset != elts[0].glyphset)
+	if (elts[i].glyphset != glyphset)
 	{
+	    glyphset = elts[i].glyphset;
 	    BufAlloc (xGlyphElt *, elt, SIZEOF (xGlyphElt));
 	    elt->len = 0xff;
 	    elt->deltax = 0;
 	    elt->deltay = 0;
-	    Data32(dpy, &elts[i].glyphset, 4);
+	    Data32(dpy, &glyphset, 4);
 	}
 	nchars = elts[i].nchars;
 	xDst = elts[i].xOff;
@@ -600,6 +609,7 @@ XRenderCompositeText32 (Display			    *dpy,
 {
     XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
     xRenderCompositeGlyphs32Req	*req;
+    GlyphSet			glyphset;
     long			len;
     long			elen;
     xGlyphElt			*elt;
@@ -613,6 +623,7 @@ XRenderCompositeText32 (Display			    *dpy,
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
 
+    
     GetReq(RenderCompositeGlyphs32, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderCompositeGlyphs32;
@@ -629,36 +640,38 @@ XRenderCompositeText32 (Display			    *dpy,
      */
     len = 0;
     
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
-	if (elts[i].glyphset != req->glyphset)
+	/*
+	 * Check for glyphset change
+	 */
+	if (elts[i].glyphset != glyphset)
+	{
+	    glyphset = elts[i].glyphset;
 	    len += (SIZEOF (xGlyphElt) + 4) >> 2;
+	}
 	nchars = elts[i].nchars;
 	elen = SIZEOF(xGlyphElt) * ((nchars + MAX_32) / MAX_32) + nchars *4;
 	len += (elen + 3) >> 2;
     }
     
     req->length += len;
-    /* 
-     * If the entire request does not fit into the remaining space in the
-     * buffer, flush the buffer first.
-     */
 
-    if (dpy->bufptr + (len << 2) > dpy->bufmax)
-    	_XFlush (dpy);
-
+    glyphset = elts[0].glyphset;
     for (i = 0; i < nelt; i++)
     {
 	/*
 	 * Switch glyphsets
 	 */
-	if (elts[i].glyphset != req->glyphset)
+	if (elts[i].glyphset != glyphset)
 	{
+	    glyphset = elts[i].glyphset;
 	    BufAlloc (xGlyphElt *, elt, SIZEOF (xGlyphElt));
 	    elt->len = 0xff;
 	    elt->deltax = 0;
 	    elt->deltay = 0;
-	    Data32(dpy, &elts[i].glyphset, 4);
+	    Data32(dpy, &glyphset, 4);
 	}
 	nchars = elts[i].nchars;
 	xDst = elts[i].xOff;
