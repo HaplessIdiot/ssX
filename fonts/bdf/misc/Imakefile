@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.13 2000/12/06 22:00:41 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.14 2000/12/08 16:37:16 dawes Exp $
 
 
 /*
@@ -186,6 +186,36 @@ DERIVEDOBJS2 = \
 	FontObj(10x20-ISO8859-10) FontObj(10x20-ISO8859-13) \
 	FontObj(10x20-ISO8859-14) FontObj(10x20-ISO8859-15) \
 	FontObj(10x20-KOI8-R)
+#else
+/*
+ * PREDERIVEDOBJS is the list of fonts referenced by fonts.alias that would
+ * normally be derived from the UCS versions.  This is hopefully a temporary
+ * issue.
+ */
+PREDERIVEDOBJS = \
+	FontObj(5x7-ISO8859-1) \
+	FontObj(5x8-ISO8859-1) \
+	FontObj(6x9-ISO8859-1) \
+	FontObj(6x10-ISO8859-1) \
+	FontObj(6x12-ISO8859-1) \
+	FontObj(6x13-ISO8859-1) \
+	FontObj(6x13B-ISO8859-1) \
+	FontObj(7x13-ISO8859-1) \
+	FontObj(7x13B-ISO8859-1) \
+	FontObj(7x14-ISO8859-1) \
+	FontObj(7x14-JISX0201.1976-0) \
+	FontObj(7x14B-ISO8859-1) \
+	FontObj(8x13-ISO8859-1) \
+	FontObj(8x13B-ISO8859-1) \
+	FontObj(9x15-ISO8859-1) \
+	FontObj(9x15B-ISO8859-1) \
+	FontObj(10x20-ISO8859-1)
+#else
+/*
+ * PREDERIVEDOBJS is the list of fonts referenced by fonts.alias that would
+ * normally be derived from the UCS versions.  This is hopefully a temporary
+ * issue.
+ */
 #endif
 
 MISCOBJS = FontObj(8x16) FontObj(8x16rk) \
@@ -205,7 +235,8 @@ MISCOBJS = FontObj(8x16) FontObj(8x16rk) \
 	FontObj(hanglm16) FontObj(hanglm24) FontObj(gb16fs) FontObj(gb16st) \
 	FontObj(gb24st)
 
-OBJS = $(UCSOBJS) $(DERIVEDOBJS) $(DERIVEDOBJS2) $(MISCOBJS) $(ARABIC24OBJS) $(CLEARLYUOBJS)
+OBJS = $(UCSOBJS) $(DERIVEDOBJS) $(DERIVEDOBJS2) $(PREDERIVEDOBJS) \
+	$(MISCOBJS) $(ARABIC24OBJS) $(CLEARLYUOBJS)
 
 FONTINSTDIR = $(FONTDIR)/misc
 
@@ -528,6 +559,24 @@ FontTarget(10x20-ISO8859-13)
 FontTarget(10x20-ISO8859-14)
 FontTarget(10x20-ISO8859-15)
 FontTarget(10x20-KOI8-R)
+#else
+FontTarget(5x7-ISO8859-1)
+FontTarget(5x8-ISO8859-1)
+FontTarget(6x9-ISO8859-1)
+FontTarget(6x10-ISO8859-1)
+FontTarget(6x12-ISO8859-1)
+FontTarget(6x13-ISO8859-1)
+FontTarget(6x13B-ISO8859-1)
+FontTarget(7x13-ISO8859-1)
+FontTarget(7x13B-ISO8859-1)
+FontTarget(7x14-ISO8859-1)
+FontTarget(7x14-JISX0201.1976-0)
+FontTarget(7x14B-ISO8859-1)
+FontTarget(8x13-ISO8859-1)
+FontTarget(8x13B-ISO8859-1)
+FontTarget(9x15-ISO8859-1)
+FontTarget(9x15B-ISO8859-1)
+FontTarget(10x20-ISO8859-1)
 #endif
 
 /* Other fonts */
@@ -925,6 +974,24 @@ MakeBdfFontFromUCSMaster(10x20,ISO8859-13)
 MakeBdfFontFromUCSMaster(10x20,ISO8859-14)
 MakeBdfFontFromUCSMaster(10x20,ISO8859-15)
 MakeBdfFontFromUCSMaster(10x20,KOI8-R)
+#else
+LinkFile(5x7-ISO8859-1.bdf,5x7-L1.bdf)
+LinkFile(5x8-ISO8859-1.bdf,5x8-L1.bdf)
+LinkFile(6x9-ISO8859-1.bdf,6x9-L1.bdf)
+LinkFile(6x10-ISO8859-1.bdf,6x10-L1.bdf)
+LinkFile(6x12-ISO8859-1.bdf,6x12-L1.bdf)
+LinkFile(6x13-ISO8859-1.bdf,6x13-L1.bdf)
+LinkFile(6x13B-ISO8859-1.bdf,6x13B-L1.bdf)
+LinkFile(7x13-ISO8859-1.bdf,7x13-L1.bdf)
+LinkFile(7x13B-ISO8859-1.bdf,7x13B-L1.bdf)
+LinkFile(7x14-ISO8859-1.bdf,7x14-L1.bdf)
+LinkFile(7x14-JISX0201.1976-0.bdf,7x14-JISX0201.bdf)
+LinkFile(7x14B-ISO8859-1.bdf,7x14B-L1.bdf)
+LinkFile(8x13-ISO8859-1.bdf,8x13-L1.bdf)
+LinkFile(8x13B-ISO8859-1.bdf,8x13B-L1.bdf)
+LinkFile(9x15-ISO8859-1.bdf,9x15-L1.bdf)
+LinkFile(9x15B-ISO8859-1.bdf,9x15B-L1.bdf)
+LinkFile(10x20-ISO8859-1.bdf,10x20-L1.bdf)
 #endif
 
 InstallFonts($(FONTINSTDIR))
