@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c /main/34 1996/12/02 10:23:29 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.10 1998/10/10 15:25:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.11 1998/12/13 07:37:49 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -99,6 +99,7 @@ static char		    *xdmAuthCookie;
 static XdmcpBuffer	    buffer;
 
 static struct sockaddr_in   ManagerAddress;
+static struct sockaddr_in   FromAddress;
 
 static void XdmcpAddHost(
     struct sockaddr_in  *from,
@@ -201,6 +202,8 @@ static void get_manager_by_name(
 #endif
 );
 
+static void get_fromaddr_by_name(int /*argc*/, char **/*argv*/, int /*i*/);
+
 static void receive_packet(
 #if NeedFunctionPrototypes
     void
@@ -266,6 +269,7 @@ static void read_cb(
 
 static short	xdm_udp_port = XDM_UDP_PORT;
 static Bool	OneSession = FALSE;
+static const char 	*xdm_from = NULL;
 
 void
 XdmcpUseMsg (void)
@@ -274,6 +278,7 @@ XdmcpUseMsg (void)
     ErrorF("-broadcast             broadcast for XDMCP\n");
     ErrorF("-indirect host-name    contact named host for indirect XDMCP\n");
     ErrorF("-port port-num         UDP port number to send messages to\n");
+    ErrorF("-from local-address    specify the local address to connect from\n");
     ErrorF("-once                  Terminate server after one session\n");
     ErrorF("-class display-class   specify display class to send in manage\n");
 #ifdef HASXDMAUTH
@@ -305,6 +310,10 @@ XdmcpOptions(int argc, char **argv, int i)
     if (strcmp(argv[i], "-port") == 0) {
 	++i;
 	xdm_udp_port = atoi(argv[i]);
+	return (i + 1);
+    }
+    if (strcmp(argv[i], "-from") == 0) {
+	get_fromaddr_by_name(argc, argv, ++i);
 	return (i + 1);
     }
     if (strcmp(argv[i], "-once") == 0) {
@@ -474,6 +483,13 @@ XdmcpRegisterConnection (
 	XdmcpDisposeARRAY16 (&ConnectionTypes);
 	XdmcpDisposeARRAYofARRAY8 (&ConnectionAddresses);
 	xdmcpGeneration = serverGeneration;
+    }
+    if (addrlen == sizeof(struct in_addr) && xdm_from != NULL)
+    {
+	/* Only register the requested address */
+	if (memcmp(address, &FromAddress.sin_addr, addrlen) != 0) {
+	    return;
+	}
     }
     newAddress = (CARD8 *) xalloc (addrlen * sizeof (CARD8));
     if (!newAddress)
@@ -1044,6 +1060,13 @@ get_xdmcp_sock(void)
 	sizeof(soopts)) < 0)
 	    XdmcpWarning("UDP set broadcast socket-option failed");
 #endif /* SO_BROADCAST */
+    if (xdmcpSocket >= 0 && xdm_from != NULL) {
+	if (bind(xdmcpSocket, (struct sockaddr *)&FromAddress,
+		 sizeof(FromAddress)) < 0) {
+	    ErrorF("Xserver: failed to bind to -from address: %s\n", xdm_from);
+	    exit(1);
+	}
+    }
 #endif /* STREAMSCONN */
 }
 
@@ -1417,6 +1440,46 @@ get_manager_by_name(
 	ErrorF ("Xserver: host on strange network %s\n", argv[i]);
 	exit (1);
     }
+}
+
+static void
+get_fromaddr_by_name(
+    int	    argc,
+    char    **argv,
+    int	    i)
+{
+    struct hostent *hep;
+
+    if (i == argc)
+    {
+	ErrorF("Xserver: missing -from host name in command line\n");
+	exit(1);
+    }
+    if (!(hep = gethostbyname(argv[i])))
+    {
+	ErrorF("Xserver: unknown host: %s\n", argv[i]);
+	exit(1);
+    }
+#ifndef _MINIX
+    if (hep->h_length == sizeof (struct in_addr))
+#else
+    if (hep->h_length == sizeof (ipaddr_t))
+#endif
+    {
+	memset(&FromAddress, 0, sizeof(FromAddress));
+	memmove(&FromAddress.sin_addr, hep->h_addr, hep->h_length);
+#ifdef BSD44SOCKETS
+	FromAddress.sin_len = sizeof(FromAddress);
+#endif
+	FromAddress.sin_family = AF_INET;
+	FromAddress.sin_port = 0;
+    }
+    else
+    {
+	ErrorF ("Xserver: -from host on strange network %s\n", argv[i]);
+	exit (1);
+    }
+    xdm_from = argv[i];
 }
 
 #ifdef MINIX
