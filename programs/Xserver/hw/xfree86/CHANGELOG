@@ -1,4 +1,7 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 399. Implement two new driver-provided options in the common cursor code and
+      use them to work around hardware bug that causes flickering Mach64
+      hardware cursors (Marc La France).
  398. Integrate SiS driver changes (Ademar De Souza Reis).
  397. Initialize Elsa GloriaXXL (GLINT) framebuffer properly (Alan Hourihane).
  396. Fix bug where XDarwin.app would not hide the X display when it was no
@@ -12997,4 +13000,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1697 2001/04/19 09:28:30 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1698 2001/04/19 12:40:31 alanh Exp $

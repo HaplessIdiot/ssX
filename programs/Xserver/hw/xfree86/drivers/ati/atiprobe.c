@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.42 2001/04/01 14:00:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.43 2001/04/16 15:02:10 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1155,15 +1155,15 @@ ATIProbe
         {
             for (i = 0;  (pVideo = xf86PciVideoInfo[i++]);  )
             {
-                if (pVideo->vendor != PCI_VENDOR_ATI)
-                {
-                    pPCI = pVideo->thisCard;
+                if (pVideo->vendor == PCI_VENDOR_ATI)
+                    continue;
 
-                    ATIScanPCIBases(&PCIPorts, &nPCIPort,
-                        &pPCI->pci_base0, pVideo->size,
-                        (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
-                         PCI_CMD_IO_ENABLE) ? 0 : Allowed);
-                }
+                pPCI = pVideo->thisCard;
+
+                ATIScanPCIBases(&PCIPorts, &nPCIPort,
+                    &pPCI->pci_base0, pVideo->size,
+                    (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
+                     PCI_CMD_IO_ENABLE) ? 0 : Allowed);
             }
         }
 
@@ -1172,16 +1172,16 @@ ATIProbe
         {
             for (i = 0;  (pPCI = xf86PciInfo[i++]);  )
             {
-                if ((pPCI->pci_vendor != PCI_VENDOR_ATI) &&
-                    (pPCI->pci_base_class != PCI_CLASS_BRIDGE) &&
-                    !(pPCI->pci_header_type &
+                if ((pPCI->pci_vendor == PCI_VENDOR_ATI) ||
+                    (pPCI->pci_base_class == PCI_CLASS_BRIDGE) ||
+                    (pPCI->pci_header_type &
                       ~GetByte(PCI_HEADER_MULTIFUNCTION, 2)))
-                {
-                    ATIScanPCIBases(&PCIPorts, &nPCIPort,
-                        &pPCI->pci_base0, pPCI->basesize,
-                        (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
-                         PCI_CMD_IO_ENABLE) ? 0 : Allowed);
-                }
+                    continue;
+
+                ATIScanPCIBases(&PCIPorts, &nPCIPort,
+                    &pPCI->pci_base0, pPCI->basesize,
+                    (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
+                     PCI_CMD_IO_ENABLE) ? 0 : Allowed);
             }
         }
 
