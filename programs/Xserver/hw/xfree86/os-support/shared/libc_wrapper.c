@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.91 2003/03/13 21:47:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.92 2003/03/25 04:18:24 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1974,7 +1974,7 @@ int
 xf86setjmp(xf86jmp_buf env)
 {
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
-    return __sigsetjmp(env, xf86setjmp1_arg2());
+    return __sigsetjmp((void *)env, xf86setjmp1_arg2());
 #else
     return xf86setjmp1(env, xf86setjmp1_arg2());
 #endif
