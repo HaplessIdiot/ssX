@@ -1,10 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.24 2002/02/17 03:15:18 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.1 2002/03/28 02:21:18 torrey Exp $
 
 #include <Server.tmpl>
 
 SRCS =  Preferences.m \
         XApplication.m \
-        XCarbonWindow.m \
         XServer.m \
         XView.m \
         fullscreen.c \
@@ -24,7 +23,6 @@ SRCS =  Preferences.m \
 
 OBJS =  Preferences.o \
         XApplication.o \
-        XCarbonWindow.o \
         XServer.o \
         XView.o \
         fullscreen.o \

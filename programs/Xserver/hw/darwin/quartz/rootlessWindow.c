@@ -1,9 +1,38 @@
 /*
  * Rootless window management
- *
- * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.6 2002/06/11 00:11:03 torrey Exp $ */
+/*
+ * Copyright (c) 2001 Greg Parker. All Rights Reserved.
+ * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the sale,
+ * use or other dealings in this Software without prior written authorization.
+ */
+/* Portions of this file are based on fbwindow.c, which contains the
+ * following copyright:
+ *
+ * Copyright © 1998 Keith Packard
+ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.7 2002/06/15 03:59:36 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -160,6 +189,7 @@ RootlessRealizeWindow(WindowPtr pWin)
         RootlessWindowRec *winRec = xalloc(sizeof(RootlessWindowRec));
         int bw = wBorderWidth(pWin);
 
+        RL_DEBUG_MSG("Top level window ");
         if (! winRec) goto windowcreatebad;
 
         winRec->frame.isRoot = (pWin == WindowTable[pScreen->myNum]);
@@ -661,15 +691,87 @@ SetPixmapOfAncestors(WindowPtr pWin)
 }
 
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
+/*
+ * AquaFillRegionTiled
+ *  Fill using a tile while leaving the alpha channel untouched.
+ *  Based on fbfillRegionTiled.
+ */
+void
+AquaFillRegionTiled(DrawablePtr pDrawable,
+                    RegionPtr   pRegion,
+                    PixmapPtr   pTile)
+{
+    FbBits      *dst;
+    FbStride    dstStride;
+    int         dstBpp;
+    int         dstXoff, dstYoff;
+    FbBits      *tile;
+    FbStride    tileStride;
+    int         tileBpp;
+    int         tileXoff, tileYoff; /* XXX assumed to be zero */
+    int         tileWidth, tileHeight;
+    int         n = REGION_NUM_RECTS(pRegion);
+    BoxPtr      pbox = REGION_RECTS(pRegion);
+    int         xRot = pDrawable->x;
+    int         yRot = pDrawable->y;
+    FbBits      planeMask;
+
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension)
+    {
+        int index = pDrawable->pScreen->myNum;
+        if(&WindowTable[index]->drawable == pDrawable)
+        {
+            xRot -= panoramiXdataPtr[index].x;
+            yRot -= panoramiXdataPtr[index].y;
+        }
+    }
+#endif
+    fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
+    fbGetDrawable (&pTile->drawable, tile, tileStride, tileBpp,
+                   tileXoff, tileYoff);
+    tileWidth = pTile->drawable.width;
+    tileHeight = pTile->drawable.height;
+    planeMask = FB_ALLONES & ~AquaAlphaMask(dstBpp);
+
+    while (n--)
+    {
+        fbTile (dst + (pbox->y1 + dstYoff) * dstStride,
+                dstStride,
+                (pbox->x1 + dstXoff) * dstBpp,
+                (pbox->x2 - pbox->x1) * dstBpp,
+                pbox->y2 - pbox->y1,
+                tile,
+                tileStride,
+                tileWidth * dstBpp,
+                tileHeight,
+                GXcopy,
+                planeMask,
+                dstBpp,
+                xRot * dstBpp,
+                yRot - pbox->y1);
+        pbox++;
+    }
+}
+
+
+/*
+ * RootlessPaintWindowBackground
+ *  Paint the window background while filling in the alpha channel with all on.
+ */
 void
 RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
 {
     int oldBackgroundState = 0;
     PixUnion oldBackground;
-    ScreenPtr pScreen = pWin->drawable.pScreen;
 
-    SCREEN_UNWRAP(pScreen, PaintWindowBackground);
-    RL_DEBUG_MSG("paintwindowbackground start (win 0x%x) ", pWin);
+    RL_DEBUG_MSG("paintwindowbackground start (win 0x%x, framed %i) ",
+                 pWin, framed);
     if (IsFramedWindow(pWin)) {
         if (IsRoot(pWin)) {
             // set root background to magic transparent color
@@ -679,6 +781,7 @@ RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
             pWin->background.pixel = 0x00fffffe;
         }
         RootlessStartDrawing(pWin);
+        RootlessDamageRegion(pWin, pRegion);
 
         // For ParentRelative windows, we have to make sure the window
         // pixmap is set correctly all the way up the ancestor chain.
@@ -687,27 +790,55 @@ RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
         }
     }
 
-    pScreen->PaintWindowBackground(pWin, pRegion, what);
-
-    if (IsFramedWindow(pWin)) {
-        RootlessDamageRegion(pWin, pRegion);
-        if (IsRoot(pWin)) {
-            pWin->backgroundState = oldBackgroundState;
-            pWin->background = oldBackground;
+    // We can't use fbPaintWindow because it zeros the alpha channel.
+    switch (pWin->backgroundState) {
+        case None:
+            break;
+        case ParentRelative:
+            do {
+                pWin = pWin->parent;
+            } while (pWin->backgroundState == ParentRelative);
+            (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
+                                                                what);
+            break;
+        case BackgroundPixmap:
+            AquaFillRegionTiled (&pWin->drawable,
+                                  pRegion,
+                                  pWin->background.pixmap);
+            break;
+        case BackgroundPixel:
+        {
+            Pixel pixel = pWin->background.pixel |
+                          AquaAlphaMask(pWin->drawable.bitsPerPixel);
+            fbFillRegionSolid (&pWin->drawable, pRegion, 0,
+                                fbReplicatePixel (pixel,
+                                                  pWin->drawable.bitsPerPixel));
+            break;
         }
     }
-    SCREEN_WRAP(pScreen, PaintWindowBackground);
+    fbValidateDrawable (&pWin->drawable);
+
+    if (IsRoot(pWin)) {
+        pWin->backgroundState = oldBackgroundState;
+        pWin->background = oldBackground;
+    }
+
     RL_DEBUG_MSG("paintwindowbackground end\n");
 }
 
 
+/*
+ * RootlessPaintWindowBorder
+ *  Paint the window border while filling in the alpha channel with all on.
+ */
 void
 RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion, int what)
 {
-    SCREEN_UNWRAP(pWin->drawable.pScreen, PaintWindowBorder);
     RL_DEBUG_MSG("paintwindowborder start (win 0x%x) ", pWin);
+
     if (IsFramedWindow(pWin)) {
         RootlessStartDrawing(pWin);
+        RootlessDamageRegion(pWin, pRegion);
 
         // For ParentRelative windows with tiled borders, we have to make
         // sure the window pixmap is set correctly all the way up the
@@ -719,12 +850,27 @@ RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion, int what)
         }
     }
 
-    pWin->drawable.pScreen->PaintWindowBorder(pWin, pRegion, what);
-
-    if (IsFramedWindow(pWin)) {
-        RootlessDamageRegion(pWin, pRegion);
+    // We can't use fbPaintWindow because it zeros the alpha channel.
+    if (pWin->borderIsPixel)
+    {
+        Pixel pixel = pWin->border.pixel |
+                      AquaAlphaMask(pWin->drawable.bitsPerPixel);
+        fbFillRegionSolid (&pWin->drawable, pRegion, 0,
+                            fbReplicatePixel (pixel,
+                                              pWin->drawable.bitsPerPixel));
     }
-    SCREEN_WRAP(pWin->drawable.pScreen, PaintWindowBorder);
+    else
+    {
+        WindowPtr pBgWin;
+        for (pBgWin = pWin; pBgWin->backgroundState == ParentRelative;
+             pBgWin = pBgWin->parent);
+
+        AquaFillRegionTiled (&pBgWin->drawable,
+                              pRegion,
+                              pWin->border.pixmap);
+    }
+    fbValidateDrawable (&pWin->drawable);
+
     RL_DEBUG_MSG("paintwindowborder end\n");
 }
 

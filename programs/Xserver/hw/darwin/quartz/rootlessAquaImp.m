@@ -1,14 +1,40 @@
 /*
  * Rootless implementation for Mac OS X Aqua environment
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.m,v 1.11 2002/01/17 02:44:27 torrey Exp $ */
+/*
+ * Copyright (c) 2001 Greg Parker. All Rights Reserved.
+ * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the sale,
+ * use or other dealings in this Software without prior written authorization.
+ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
 #include "quartzCommon.h"
 #include "pseudoramiX.h"
 #import <Cocoa/Cocoa.h>
-#include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
 #import "XView.h"
 
 extern void ErrorF(const char *, ...);
@@ -16,15 +42,11 @@ extern void ErrorF(const char *, ...);
 typedef struct {
     NSWindow *window;
     XView *view;
-    WindowRef windowRef;
+    GrafPtr port;
     GWorldPtr rootGWorld;
 } AquaWindowRec;
 
 #define AQUA_WINREC(rw) ((AquaWindowRec *)rw)
-
-static SInt32 customWindowDef(short varCode, WindowRef window, 
-			      SInt16 message, SInt32 param);
-static void customReshapeWindow(WindowRef window, RgnHandle shapeRgn);
 
 
 /*
@@ -153,31 +175,17 @@ void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
 void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
 {
     AquaWindowRec *winRec = (AquaWindowRec *)malloc(sizeof(AquaWindowRec));
-    NSRect viewRect = NSMakeRect(0, 0, w, h);
-    Rect globalRect;
-    WindowRef carbonWindowRef;
+    NSRect frame = NSMakeRect(x, NSHeight([[NSScreen mainScreen] frame]) -
+                              y - h, w, h);
     NSWindow *theWindow;
     XView *theView;
 
-    static WindowDefSpec customWindowDefSpec = {0, {0}};
-
-    if (!customWindowDefSpec.u.defProc) {
-        customWindowDefSpec.defType = kWindowDefProcPtr;
-        customWindowDefSpec.u.defProc = NewWindowDefUPP(customWindowDef);
-    }
-
-    // Create a Carbon window so we can later use Carbon-only features.
-    // <grumble>We should be able to do everything with Cocoa & CG.</grumble>
-    SetRect(&globalRect, x, y, x+w, y+h);
-    CreateCustomWindow(&customWindowDefSpec, kDocumentWindowClass,
-                       kWindowNoAttributes, &globalRect, &carbonWindowRef);
-    if (!isRoot) {
-        ShowWindow(carbonWindowRef);
-    }
-
-    // Create an NSWindow to wrap the Carbon window
-    theWindow = [[NSWindow alloc] initWithWindowRef:carbonWindowRef];
-    if (! theWindow) return NULL;
+    // Create an NSWindow for the new X11 window
+    theWindow = [[NSWindow alloc] initWithContentRect:frame
+                                  styleMask:NSBorderlessWindowMask
+                                  backing:NSBackingStoreBuffered
+                                  defer:YES];
+    if (!theWindow) return NULL;
 
     [theWindow setBackgroundColor:[NSColor clearColor]];  // erase transparent
     [theWindow setAlphaValue:1.0];       // draw opaque
@@ -187,8 +195,9 @@ void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
     [theWindow setAutodisplay:NO];       // See comment above
     [theWindow disableFlushWindow];      // We do all the flushing manually
     [theWindow setHasShadow:!isRoot];    // All windows have shadows except root
+    [theWindow setReleasedWhenClosed:YES]; // Default, but we want to be sure
 
-    theView = [[XView alloc] initWithFrame:viewRect];
+    theView = [[XView alloc] initWithFrame:frame];
     [theWindow setContentView:theView];
     [theWindow setInitialFirstResponder:theView];
 
@@ -199,6 +208,7 @@ void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
     } else {
         if (!isRoot) {
             [theWindow orderFront:nil];
+            winRec->port = NULL;
         }
     }
 
@@ -206,14 +216,20 @@ void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot)
 
     winRec->window = theWindow;
     winRec->view = theView;
-    winRec->windowRef = carbonWindowRef;
 
     if (!isRoot) {
         winRec->rootGWorld = NULL;
+        [theView lockFocus];
+        // Fill the window with white to make sure alpha channel is set
+        NSEraseRect(frame);
+        winRec->port = [theView qdPort];
+        [theView unlockFocus];
     } else {
         // Allocate the offscreen graphics world for root window drawing
         GWorldPtr rootGWorld;
+        Rect globalRect;
 
+        SetRect(&globalRect, x, y, x+w, y+h);
         if (NewGWorld(&rootGWorld, 0, &globalRect, NULL, NULL, 0))
             return NULL;
         winRec->rootGWorld = rootGWorld;
@@ -227,7 +243,8 @@ void AquaDestroyWindow(void *rw)
 {
     AquaWindowRec *winRec = AQUA_WINREC(rw);
 
-    [winRec->window release];
+    [winRec->window orderOut:nil];
+    [winRec->window close];
     [winRec->view release];
     if (winRec->rootGWorld) {
         DisposeGWorld(winRec->rootGWorld);
@@ -239,8 +256,10 @@ void AquaDestroyWindow(void *rw)
 void AquaMoveWindow(void *rw, int x, int y)
 {
     AquaWindowRec *winRec = AQUA_WINREC(rw);
+    NSPoint topLeft = NSMakePoint(x, NSHeight([[NSScreen mainScreen] frame]) -
+                                  y);
 
-    MoveWindow(winRec->windowRef, x, y, FALSE);
+    [winRec->window setFrameTopLeftPoint:topLeft];
 }
 
 
@@ -251,19 +270,10 @@ void AquaMoveWindow(void *rw, int x, int y)
 void AquaStartResizeWindow(void *rw, int x, int y, int w, int h)
 {
     AquaWindowRec *winRec = AQUA_WINREC(rw);
-    WindowRef win = winRec->windowRef;
-    static RgnHandle rgn = NULL; 
+    NSRect frame = NSMakeRect(x, NSHeight([[NSScreen mainScreen] frame]) -
+                              y - h, w, h);
 
-    if (!rgn) rgn = NewRgn();
-
-    // Undo current shape. Need to wait for the next SetShape.
-    SetRectRgn(rgn, 0, 0, w, h);
-    customReshapeWindow(win, rgn);
-
-    SizeWindow(win, w, h, FALSE);
-    MoveWindow(win, x, y, FALSE);
-
-    SetEmptyRgn(rgn);
+    [winRec->window setFrame:frame display:NO];
 }
 
 
@@ -283,48 +293,30 @@ void AquaFinishResizeWindow(void *rw, int x, int y, int w, int h)
 void AquaUpdateRects(void *rw, fakeBoxRec *fakeRects, int count)
 {
     AquaWindowRec *winRec = AQUA_WINREC(rw);
-    WindowRef win = winRec->windowRef;
-    fakeBoxRec *rects = (fakeBoxRec *)fakeRects;
-    fakeBoxRec *end;
+    fakeBoxRec *rects, *end;
     static RgnHandle rgn = NULL;
     static RgnHandle box = NULL;
-    GrafPtr port;
 
     if (!rgn) rgn = NewRgn();
     if (!box) box = NewRgn();
 
-    port = GetWindowPort(win);
-
-#if 0
     if (winRec->rootGWorld) {
-        // FIXME: The root window requires special treatment
-    }
-#endif
+        // FIXME: Draw from the root PixMap to the normally
+        // invisible root window.
+    } else {
+        for (rects = fakeRects, end = fakeRects+count; rects < end; rects++) {
+            Rect qdrect;
+            qdrect.left = rects->x1;
+            qdrect.top = rects->y1;
+            qdrect.right = rects->x2;
+            qdrect.bottom = rects->y2;
 
-    for (rects = fakeRects, end = fakeRects+count; rects < end; rects++) {
-        Rect qdrect;
-        qdrect.left = rects->x1;
-        qdrect.top = rects->y1;
-        qdrect.right = rects->x2;
-        qdrect.bottom = rects->y2;
-
-        RectRgn(box, &qdrect);
-        UnionRgn(rgn, box, rgn);
-#if 0
-        if (winRec->rootGWorld) {
-            // FIXME: Draw from the root PixMap to the normally
-            // invisible root window.
+            RectRgn(box, &qdrect);
+            UnionRgn(rgn, box, rgn);
         }
-#endif
-    }
 
-#if 0
-    if (winRec->rootGWorld) {
-        UnlockPortBits(port);
+        QDFlushPortBuffer(winRec->port, rgn);
     }
-#endif
-
-    QDFlushPortBuffer(port, rgn);
 
     SetEmptyRgn(rgn);
     SetEmptyRgn(box);
@@ -353,28 +345,42 @@ void AquaRestackWindow(void *rw, void *upperw)
 /*
  * AquaReshapeWindow
  *  Set the shape of a window. The rectangles are the areas that are
- *  part of the new shape.
+ *  not part of the new shape.
  */
 void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
 {
     AquaWindowRec *winRec = AQUA_WINREC(rw);
-    WindowRef win = winRec->windowRef;
-    fakeBoxRec *rects, *end;
-    static RgnHandle rgn = NULL;
-    static RgnHandle box = NULL;
+    NSRect frame = [winRec->view frame];
+    int winHeight = NSHeight(frame);
 
-    if (!rgn) rgn = NewRgn();
-    if (!box) box = NewRgn();
+    if (count > 0) {
+        fakeBoxRec *rects, *end;
 
-    for (rects = fakeRects, end = fakeRects+count; rects < end; rects++) {
-        SetRectRgn(box, rects->x1, rects->y1, rects->x2, rects->y2);
-        UnionRgn(rgn, box, rgn);
+        // Make transparent if window is now shaped.
+        [winRec->window setOpaque:NO];
+
+        // Clear the areas outside the window shape
+        [winRec->view lockFocus];
+        [[NSColor clearColor] set];
+        for (rects = fakeRects, end = fakeRects+count; rects < end; rects++) {
+            int rectHeight = rects->y2 - rects->y1;
+            NSRectFill( NSMakeRect(rects->x1,
+                                   winHeight - rects->y1 - rectHeight,
+                                   rects->x2 - rects->x1, rectHeight) );
+        }
+        [[NSGraphicsContext currentContext] flushGraphics];
+        [winRec->view unlockFocus];
+
+        // force update of window shadow
+        [winRec->window setHasShadow:NO];
+        [winRec->window setHasShadow:YES];
+
+    } else {
+        fakeBoxRec bounds = {0, 0, NSWidth(frame), winHeight};
+
+        [winRec->window setOpaque:YES];
+        AquaUpdateRects(rw, &bounds, 1);
     }
-
-    customReshapeWindow(win, rgn);
-
-    SetEmptyRgn(rgn);
-    SetEmptyRgn(box);
 }
 
 
@@ -387,14 +393,15 @@ void AquaReshapeWindow(void *rw, fakeBoxRec *fakeRects, int count)
 void AquaStartDrawing(void *rw, char **bits,
                       int *rowBytes, int *depth, int *bpp)
 {
-    AquaWindowRec *winRec = (AquaWindowRec *)rw;
-    WindowRef win = winRec->windowRef;
+    AquaWindowRec *winRec = AQUA_WINREC(rw);
     PixMapHandle pix;
 
     if (! winRec->rootGWorld) {
-        GrafPtr port = GetWindowPort(win);
-        LockPortBits(port);
-        pix = GetPortPixMap(port);
+        [winRec->view lockFocus];
+        winRec->port = [winRec->view qdPort];
+        LockPortBits(winRec->port);
+        [winRec->view unlockFocus];
+        pix = GetPortPixMap(winRec->port);
     } else {
         pix = GetGWorldPixMap(winRec->rootGWorld);
         LockPixels(pix);
@@ -415,196 +422,12 @@ void AquaStartDrawing(void *rw, char **bits,
  */
 void AquaStopDrawing(void *rw)
 {
-    AquaWindowRec *winRec = (AquaWindowRec *)rw;
-    WindowRef win = winRec->windowRef;
+    AquaWindowRec *winRec = AQUA_WINREC(rw);
 
     if (! winRec->rootGWorld) {
-        GrafPtr port = GetWindowPort(win);
-        UnlockPortBits(port);
+        UnlockPortBits(winRec->port);
     } else {
         PixMapHandle pix = GetGWorldPixMap(winRec->rootGWorld);
         UnlockPixels(pix);
-    }
-}
-
-
-/////////////////////////////////////////////////////////////////
-// Custom window definition
-//
-// We need a custom window definition to make Carbon windows
-// without any frame.
-
-static void getCurrentPortBounds(Rect *inRect)
-{
-    CGrafPtr thePort;
-    GetPort(&thePort);
-    GetPortBounds(thePort, inRect);
-}
-
-static RgnHandle getWindowContentRegion(WindowRef window, RgnHandle result)
-{
-    if (IsWindowCollapsed(window)) {
-        SetEmptyRgn(result);
-    } else {
-        RgnHandle rgn = NULL;
-        Rect windowRect;
-
-        getCurrentPortBounds(&windowRect);
-        GetWindowProperty(window, 'XDar', 'cntR', sizeof(rgn), NULL, &rgn);
-        CopyRgn(rgn, result);
-        OffsetRgn(result, windowRect.left, windowRect.top);
-    }
-
-    return result;
-}
-
-static RgnHandle getWindowStructureRegion(WindowRef window, RgnHandle result)
-{
-    RgnHandle rgn = NULL;
-    Rect windowRect;
-
-    getCurrentPortBounds(&windowRect);
-    GetWindowProperty(window, 'XDar', 'strR', sizeof(rgn), NULL, &rgn);
-    CopyRgn(rgn, result);
-    OffsetRgn(result, windowRect.left, windowRect.top);
-
-    return result;
-}
-
-static SInt32 customWindowInitialize(WindowRef window, SInt32 param)
-{
-    RgnHandle contRgn, structRgn;
-    Rect frame;
-    getCurrentPortBounds(&frame);
-
-    contRgn = NewRgn();
-    SetRectRgn(contRgn, 0, 0,
-               frame.right-frame.left+1, frame.bottom-frame.top+1);
-    structRgn = NewRgn();
-    CopyRgn(contRgn, structRgn);
-
-    SetWindowProperty(window, 'XDar', 'cntR', sizeof(contRgn), &contRgn);
-    SetWindowProperty(window, 'XDar', 'strR', sizeof(structRgn), &structRgn);
-
-    return 0;
-}
-
-static SInt32 customWindowCleanUp(WindowRef window, SInt32 param)
-{
-    RgnHandle rgn;
-
-    GetWindowProperty(window, 'XDar', 'cntR', sizeof(rgn), NULL, &rgn);
-    DisposeRgn(rgn);
-    GetWindowProperty(window, 'XDar', 'strR', sizeof(rgn), NULL, &rgn);
-    DisposeRgn(rgn);
-
-    return 0;
-}
-
-static SInt32 customWindowHitTest(WindowRef window, SInt32 param)
-{
-    Point hitPoint;
-    static RgnHandle rgn = NULL;
-
-    if (!rgn) rgn = NewRgn();
-    SetPt(&hitPoint, LoWord(param), HiWord(param));
-
-    if (PtInRgn(hitPoint, getWindowContentRegion(window, rgn)))
-        return wInContent;
-
-    return wNoHit; // missed
-}
-
-static SInt32 customWindowGetFeatures(WindowRef window, SInt32 param)
-{
-    *(OptionBits*)param = kWindowCanGetWindowRegion |
-                          kWindowDefSupportsColorGrafPort;
-    return 1;
-}
-
-static SInt32 customWindowGetRegion(WindowRef window, SInt32 param)
-{
-    GetWindowRegionPtr rgnRec = (GetWindowRegionPtr)param;
-
-    switch (rgnRec->regionCode) {
-
-        case kWindowStructureRgn:
-            getWindowStructureRegion(window, rgnRec->winRgn);
-            return noErr;
-
-        case kWindowContentRgn:
-            getWindowContentRegion(window, rgnRec->winRgn);
-            return noErr;
-
-        case kWindowTitleBarRgn:
-        case kWindowTitleTextRgn:
-        case kWindowCloseBoxRgn:
-        case kWindowZoomBoxRgn:
-        case kWindowDragRgn:
-        case kWindowGrowRgn:
-        case kWindowCollapseBoxRgn:
-        case kWindowUpdateRgn:
-            SetEmptyRgn(rgnRec->winRgn);
-            return noErr;
-
-        default:
-            return errWindowRegionCodeInvalid;
-    }
-}
-
-static void customReshapeWindow(WindowRef window, RgnHandle shapeRgn)
-{
-    RgnHandle contRgn, structRgn;
-    RgnHandle tempRgn = NULL;
-
-    GetWindowProperty(window, 'XDar', 'cntR', sizeof(contRgn),
-                      NULL, &contRgn);
-    CopyRgn(shapeRgn, contRgn);
-    GetWindowProperty(window, 'XDar', 'strR', sizeof(structRgn),
-                      NULL, &structRgn);
-    CopyRgn(shapeRgn, structRgn);
-
-    // Add pixel (0, 0) to work around shape weirdness
-    if (!tempRgn) tempRgn = NewRgn();
-    SetRectRgn(tempRgn, 0, 0, 1, 1);
-    UnionRgn(structRgn, tempRgn, structRgn);
-    UnionRgn(contRgn, tempRgn, contRgn);
-
-    ReshapeCustomWindow(window);
-}
-
-static SInt32 customWindowDef(short varCode, WindowRef window, 
-			      SInt16 message, SInt32 param)
-{
-    switch (message) {
-        case kWindowMsgInitialize:
-            return customWindowInitialize(window, param);
-
-        case kWindowMsgCleanUp:
-            return customWindowCleanUp(window, param);
-
-        case kWindowMsgHitTest:
-            return customWindowHitTest(window, param);
-
-        case kWindowMsgGetFeatures:
-            return customWindowGetFeatures(window, param);
-
-        case kWindowMsgGetRegion:
-            return customWindowGetRegion(window, param);
-
-        // no-ops
-        case kWindowMsgDraw:
-        case kWindowMsgCalculateShape:
-        case kWindowMsgDrawGrowOutline:
-        case kWindowMsgDrawGrowBox:
-        case kWindowMsgDragHilite:
-        case kWindowMsgModified:
-        case kWindowMsgDrawInCurrentPort:
-        case kWindowMsgSetupProxyDragImage:
-        case kWindowMsgStateChanged:
-        case kWindowMsgMeasureTitle:
-        case kWindowMsgGetGrowImageRegion:
-        default:
-            return 0;
     }
 }

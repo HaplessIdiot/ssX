@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx July 2002)
+ 203. Change XDarwin to use NSQuickDrawView instead of Carbon windows to
+      get a QuickDraw graphics port for rootless windows (Torrey T. Lyons).
  202. Add support for some missing 32-bit address modes to x86emu.  Some
       video BIOSes use them, especially those for some of the integrated
       Intel chipsets, and this fixes int10/vbe support for these on
@@ -14943,4 +14945,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2261 2002/07/15 14:22:35 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2262 2002/07/15 16:49:07 dawes Exp $

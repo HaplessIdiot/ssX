@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.5 2001/11/09 00:12:38 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XView.m,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #import "XView.h"
 
@@ -66,6 +66,7 @@
     // Only X is allowed to restack windows.
     [NSApp preventWindowOrdering];
     if (! [NSApp isActive]) {
+        [NSApp activateIgnoringOtherApps:YES];
         // FIXME: Interleaving with other apps would be nice, but has issues.
         [NSApp arrangeInFront:nil];
     }
