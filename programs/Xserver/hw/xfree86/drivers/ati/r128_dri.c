@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.27 2002/12/16 16:19:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.28 2003/02/07 20:41:14 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1303,7 +1303,7 @@ void R128DRICloseScreen(ScreenPtr pScreen)
 	drmUnmap(info->ring, info->ringMapSize);
 	info->ring = NULL;
     }
-    if (info->agpMemHandle) {
+    if (info->agpMemHandle != DRM_AGP_NO_HANDLE) {
 	drmAgpUnbind(info->drmFD, info->agpMemHandle);
 	drmAgpFree(info->drmFD, info->agpMemHandle);
 	info->agpMemHandle = 0;

@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.32 2003/04/24 02:58:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.33 2003/05/08 09:25:36 herrb Exp $
  *
  */
 
@@ -975,7 +975,8 @@ int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
 		unsigned long *address, unsigned long *handle)
 {
     drm_agp_buffer_t b;
-    *handle = 0;
+
+    *handle = DRM_AGP_NO_HANDLE;
     b.size   = size;
     b.handle = 0;
     b.type   = type;

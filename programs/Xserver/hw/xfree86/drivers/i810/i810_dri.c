@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.37 2003/04/23 14:18:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.39 2003/06/18 16:17:39 eich Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -442,13 +442,13 @@ I810DRIScreenInit(ScreenPtr pScreen)
    xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
 	      pI810DRI->regs);
 
-   pI810->backHandle = 0;
-   pI810->zHandle = 0;
-   pI810->cursorHandle = 0;
-   pI810->xvmcHandle = 0;
-   pI810->sysmemHandle = 0;
+   pI810->backHandle = DRM_AGP_NO_HANDLE;
+   pI810->zHandle = DRM_AGP_NO_HANDLE;
+   pI810->cursorHandle = DRM_AGP_NO_HANDLE;
+   pI810->xvmcHandle = DRM_AGP_NO_HANDLE;
+   pI810->sysmemHandle = DRM_AGP_NO_HANDLE;
    pI810->agpAcquired = FALSE;
-   pI810->dcacheHandle = 0;
+   pI810->dcacheHandle = DRM_AGP_NO_HANDLE;
 
    /* Agp Support - Need this just to get the framebuffer.
     */
@@ -476,6 +476,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
 
    drmAgpAlloc(pI810->drmSubFD, 4096 * 1024, 1, NULL, &dcacheHandle);
    pI810->dcacheHandle = dcacheHandle;
+
    xf86DrvMsg(pScreen->myNum, X_INFO, "[agp] dcacheHandle : %p\n",
 	      dcacheHandle);
 
@@ -499,13 +500,13 @@ I810DRIScreenInit(ScreenPtr pScreen)
    }
 
    sysmem_size = pScrn->videoRam * 1024;
-   if (dcacheHandle != 0) {
+   if (dcacheHandle != DRM_AGP_NO_HANDLE) {
       if (back_size > 4 * 1024 * 1024) {
 	 xf86DrvMsg(pScreen->myNum, X_INFO,
 		    "[dri] Backsize is larger then 4 meg\n");
 	 sysmem_size = sysmem_size - 2 * back_size;
 	 drmAgpFree(pI810->drmSubFD, dcacheHandle);
-	 pI810->dcacheHandle = dcacheHandle = 0;
+	 pI810->dcacheHandle = dcacheHandle = DRM_AGP_NO_HANDLE;
       } else {
 	 sysmem_size = sysmem_size - back_size;
       }
@@ -555,7 +556,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
 
    pI810->SavedSysMem = pI810->SysMem;
 
-   if (dcacheHandle != 0) {
+   if (dcacheHandle != DRM_AGP_NO_HANDLE) {
       if (drmAgpBind(pI810->drmSubFD, dcacheHandle, pI810->DepthOffset) == 0) {
 	 memset(&pI810->DcacheMem, 0, sizeof(I810MemRange));
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -575,7 +576,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		    "[agp] GART: dcache bind failed\n");
 	 drmAgpFree(pI810->drmSubFD, dcacheHandle);
-	 pI810->dcacheHandle = dcacheHandle = 0;
+	 pI810->dcacheHandle = dcacheHandle = DRM_AGP_NO_HANDLE;
       }
    } else {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -584,7 +585,7 @@ I810DRIScreenInit(ScreenPtr pScreen)
    drmAgpAlloc(pI810->drmSubFD, back_size, 0, NULL, &agpHandle);
    pI810->backHandle = agpHandle;
 
-   if (agpHandle != 0) {
+   if (agpHandle != DRM_AGP_NO_HANDLE) {
       if (drmAgpBind(pI810->drmSubFD, agpHandle, pI810->BackOffset) == 0) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		    "[agp] Bound backbuffer memory\n");
@@ -606,11 +607,12 @@ I810DRIScreenInit(ScreenPtr pScreen)
       return FALSE;
    }
 
-   if (dcacheHandle == 0) {
-      drmAgpAlloc(pI810->drmSubFD, back_size, 0, NULL, &agpHandle);
+   if (dcacheHandle == DRM_AGP_NO_HANDLE) {
+     drmAgpAlloc(pI810->drmSubFD, back_size, 0, NULL, &agpHandle);
+
       pI810->zHandle = agpHandle;
 
-      if (agpHandle != 0) {
+      if (agpHandle != DRM_AGP_NO_HANDLE) {
 	 if (drmAgpBind(pI810->drmSubFD, agpHandle, pI810->DepthOffset) == 0) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "[agp] Bound depthbuffer memory\n");
@@ -636,7 +638,8 @@ I810DRIScreenInit(ScreenPtr pScreen)
     * regular framebuffer as well as texture memory.
     */
    drmAgpAlloc(pI810->drmSubFD, sysmem_size, 0, NULL, &agpHandle);
-   if (agpHandle == 0) {
+
+   if (agpHandle == DRM_AGP_NO_HANDLE) {
       xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] drmAgpAlloc failed\n");
       DRICloseScreen(pScreen);
       return FALSE;
@@ -675,9 +678,10 @@ I810DRIScreenInit(ScreenPtr pScreen)
 	 pI810->MC.Start = pI810->FbMapSize - 8 * 1024 * 1024;
       }
       drmAgpAlloc(pI810->drmSubFD, pI810->MC.Size, 0, NULL, &agpHandle);
+      
       pI810->xvmcHandle = agpHandle;
 
-      if (agpHandle != 0) {
+      if (agpHandle != DRM_AGP_NO_HANDLE) {
 	 if (drmAgpBind(pI810->drmSubFD, agpHandle, pI810->MC.Start) == 0) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		       "GART: Allocated 7MB for HWMC\n");
@@ -699,9 +703,10 @@ I810DRIScreenInit(ScreenPtr pScreen)
 
    drmAgpAlloc(pI810->drmSubFD, 4096, 2,
 	       (unsigned long *)&pI810->CursorPhysical, &agpHandle);
+
    pI810->cursorHandle = agpHandle;
 
-   if (agpHandle != 0) {
+   if (agpHandle != DRM_AGP_NO_HANDLE) {
       tom = sysmem_size;
 
       if (drmAgpBind(pI810->drmSubFD, agpHandle, tom) == 0) {
@@ -950,29 +955,29 @@ I810DRICloseScreen(ScreenPtr pScreen)
 
    I810CleanupDma(pScrn);
 
-   if (pI810->dcacheHandle)
+   if (pI810->dcacheHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->dcacheHandle);
-   if (pI810->backHandle)
+   if (pI810->backHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->backHandle);
-   if (pI810->zHandle)
+   if (pI810->zHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->zHandle);
-   if (pI810->cursorHandle)
+   if (pI810->cursorHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->cursorHandle);
-   if (pI810->xvmcHandle)
+   if (pI810->xvmcHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->xvmcHandle);
-   if (pI810->sysmemHandle)
+   if (pI810->sysmemHandle!=DRM_AGP_NO_HANDLE)
       drmAgpFree(pI810->drmSubFD, pI810->sysmemHandle);
 
    if (pI810->agpAcquired == TRUE)
       drmAgpRelease(pI810->drmSubFD);
 
-   pI810->backHandle = 0;
-   pI810->zHandle = 0;
-   pI810->cursorHandle = 0;
-   pI810->xvmcHandle = 0;
-   pI810->sysmemHandle = 0;
+   pI810->backHandle = DRM_AGP_NO_HANDLE;
+   pI810->zHandle = DRM_AGP_NO_HANDLE;
+   pI810->cursorHandle = DRM_AGP_NO_HANDLE;
+   pI810->xvmcHandle = DRM_AGP_NO_HANDLE;
+   pI810->sysmemHandle = DRM_AGP_NO_HANDLE;
    pI810->agpAcquired = FALSE;
-   pI810->dcacheHandle = 0;
+   pI810->dcacheHandle = DRM_AGP_NO_HANDLE;
 
    DRICloseScreen(pScreen);
 
