@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.25 2000/12/20 00:08:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.26 2000/12/20 00:14:15 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1368,8 +1368,14 @@ DRITreeTraversal(WindowPtr pWin, pointer data)
     DRIDrawablePrivPtr pDRIDrawablePriv = DRI_DRAWABLE_PRIV_FROM_WINDOW(pWin);
 
     if(pDRIDrawablePriv) {
+        ScreenPtr pScreen = pWin->drawable.pScreen;
+        DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
         RegionPtr reg = (RegionPtr)data;
+
         REGION_UNION(pScreen, reg, reg, &(pWin->clipList));
+
+        if(pDRIPriv->nrWindows == 1)
+	   return WT_STOPWALKING;
     }
     return WT_WALKCHILDREN;
 }
@@ -1379,22 +1385,25 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-    RegionRec reg;
 
-    REGION_INIT(pScreen, &reg, NullBox, 0);
-    TraverseTree(pWin, DRITreeTraversal, (pointer)(&reg));
+    if(pDRIPriv->nrWindows > 0) {
+       RegionRec reg;
 
-    if(REGION_NOTEMPTY(pScreen, &reg)) {
-        REGION_TRANSLATE(pScreen, &reg, pWin->drawable.x - ptOldOrg.x,  
-                                        pWin->drawable.y - ptOldOrg.y);
-        REGION_INTERSECT(pScreen, &reg, &reg, prgnSrc);
+       REGION_INIT(pScreen, &reg, NullBox, 0);
+       TraverseTree(pWin, DRITreeTraversal, (pointer)(&reg));
 
-        /* The MoveBuffers interface is not ideal */
-        (*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, &reg,
+       if(REGION_NOTEMPTY(pScreen, &reg)) {
+           REGION_TRANSLATE(pScreen, &reg, ptOldOrg.x - pWin->drawable.x,  
+                                        ptOldOrg.y - pWin->drawable.y);
+           REGION_INTERSECT(pScreen, &reg, &reg, prgnSrc);
+
+           /* The MoveBuffers interface is not ideal */
+           (*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, &reg,
 				pDRIPriv->pDriverInfo->ddxDrawableTableEntry);
-    }
+       }
 
-    REGION_UNINIT(pScreen, &reg);
+       REGION_UNINIT(pScreen, &reg);
+    }
 
     /* unwrap */
     pScreen->CopyWindow = pDRIPriv->wrap.CopyWindow;
@@ -1839,17 +1848,61 @@ DRICloseFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable)
     return TRUE;
 }
 
+
+/* 
+ * DRIMoveBuffersHelper swaps the regions rects in place leaving you
+ * a region with the rects in the order that you need to blit them,
+ * but it is possibly (likely) an invalid region afterwards.  If you
+ * need to use the region again for anything you have to call 
+ * REGION_VALIDATE on it, or better yet, save a copy first.
+ */
+
 void
 DRIMoveBuffersHelper(
    ScreenPtr pScreen, 
-   int *xdir, 
-   int *ydir, 
-   int *nbox,
    int dx,
    int dy,
-   DDXPointPtr pnts,
-   BoxPtr pbox,
-   RegionPtr prgnSrc
+   int *xdir, 
+   int *ydir, 
+   RegionPtr reg
 )
 {
+   BoxPtr extents, pbox, firstBox, lastBox;
+   int y, nbox;
+
+   extents = REGION_EXTENTS(pScreen, reg);
+   nbox = REGION_NUM_RECTS(reg);
+   pbox = REGION_RECTS(reg);
+
+   if((dy > 0) && (dy < (extents->y2 - extents->y1))) {
+     *ydir = -1;
+     if(nbox > 1) {
+        firstBox = pbox;
+        lastBox = pbox + nbox - 1;
+        while((unsigned long)firstBox < (unsigned long)lastBox)
+           *firstBox++ = *lastBox--;
+     }
+   } else *ydir = 1;
+
+   if((dx > 0) && (dx < (extents->x2 - extents->x1))) {
+     *xdir = -1;
+     if(nbox > 1) {
+        firstBox = lastBox = pbox;
+        y = pbox->y1;
+        while(--nbox) {
+           pbox++;
+           if(pbox->y1 == y) lastBox++;
+           else {
+              while((unsigned long)firstBox < (unsigned long)lastBox)
+                  *firstBox++ = *lastBox--;
+
+              firstBox = lastBox = pbox;
+              y = pbox->y1;
+           }
+         }
+         while((unsigned long)firstBox < (unsigned long)lastBox)
+            *firstBox++ = *lastBox--;
+     }
+   } else *xdir = 1;
+
 }

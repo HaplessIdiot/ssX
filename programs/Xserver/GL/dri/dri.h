@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.15 2000/12/07 20:26:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.16 2000/12/20 00:08:57 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -305,6 +305,13 @@ extern void DRIAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 extern int  DRIOpenFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable);
 extern int  DRICloseFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable);
+
+extern void DRIMoveBuffersHelper(ScreenPtr pScreen, 
+                                 int dx,
+                                 int dy,
+                                 int *xdir, 
+                                 int *ydir, 
+                                 RegionPtr reg);
 
 #define _DRI_H_
 
