@@ -1,12 +1,13 @@
 STARTFONT 2.1
 COMMENT Copyright (C) 1994-1995 Cronyx Ltd.
+COMMENT Changes Copyright (C) 1996 by Andrey A. Chernov, Moscow, Russia.
 COMMENT Designed by Serge Vakulenko, <vak@cronyx.ru>
 COMMENT This software may be used, modified, copied, distributed, and sold,
 COMMENT in both source and binary form provided that the copyright
 COMMENT and these terms are retained. Under no circumstances is the author
 COMMENT responsible for the proper functioning of this software, nor does
 COMMENT the author assume any responsibility for damages incurred with its use.
-COMMENT $XFree86$
+COMMENT $XFree86: xc/fonts/bdf/cyrillic/koi6x10.bdf,v 3.0 1995/07/22 04:15:19 dawes Exp $
 FONT -Cronyx-Fixed-Medium-R-Normal--10-100-75-75-C-60-KOI8-R
 SIZE 10 75 75
 FONTBOUNDINGBOX 6 10 0 -2
@@ -29,7 +30,7 @@ CHARSET_ENCODING "R"
 FONT_ASCENT 8
 FONT_DESCENT 2
 DEFAULT_CHAR 0
-COPYRIGHT "Copyright (C) 1994 Cronyx Ltd."
+COPYRIGHT "Copyright (C) 1994 Cronyx Ltd., Portions Copyright (C) 1996 by Andrey A. Chernov, Moscow, Russia."
 ENDPROPERTIES
 CHARS 256
 STARTCHAR C000
