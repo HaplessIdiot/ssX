@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.1 1994/05/04 14:54:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.2 1994/06/09 10:41:13 dawes Exp $
 
 /*
  * Linux shared library rules (DLL version)
@@ -382,21 +382,16 @@ down/mk_JUMP_AR: solist							@@\
 clean:: jumpclean							@@\
 									@@\
 jumpclean: jumpclean_$(JUMP_IS_HOST)					@@\
-	$(RM) $(JUMP_SA) $(JUMP_DIR)/__jump.s $(JUMP_DIR)/__jump.o \
-		down/mk_JUMP_AR $(JUMP_AR)				@@\
+	$(RM) $(JUMP_SA) down/mk_JUMP_AR				@@\
 	$(RM) -r $(JUMP_DIR)						@@\
 									@@\
 jumpclean_0:								@@\
 	$(RM) down/mk_JUMP_SA_0						@@\
+	$(RM) $(JUMP_HOST)/$(JUMP_SA)					@@\
 									@@\
 jumpclean_1:								@@\
-	$(RM) $(JUMP_SO) $(JUMP_DIR)/_GCMN_*.s $(JUMP_DIR)/_GVAR_*.s \
-		$(JUMP_DIR)/jump.vars $(JUMP_DIR)/jump.funcs \
-		$(JUMP_DIR)/jump.ignore $(JUMP_DIR)/jump.params \
-		$(JUMP_DIR)/jump.undefs $(JUMP_DIR)/jump.log \
-		$(JUMP_DIR)/jump.import $(JUMP_DIR)/stubs.import \
-		down/mk_JUMP_SA_1 down/mk_JUMP_SO_1 down/mk_JUMP_SO_2 \
-		$(JUMP_DIR)/verify.out
+	$(RM) -r $(JUMP_SO) $(Concat(JUMP_DIR_,libname)) \		@@\
+		down/mk_JUMP_SA_1 down/mk_JUMP_SO_1 down/mk_JUMP_SO_2
 #endif /* SharedLibraryTarget */
 
 /*

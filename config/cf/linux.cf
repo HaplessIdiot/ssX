@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.6 1994/06/05 13:39:07 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.7 1994/06/12 16:30:14 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -49,12 +49,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.6 1994/06/05 13:39:07 dawes
 #define StandardCppDefines	-traditional StandardDefines
 #define ServerOSDefines		-DDDXTIME
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
-#ifndef NeedCbrt
-#define NeedCbrt		NO
-#endif
-#if NeedCbrt
 #define ServerExtraSysLibs	$(CBRT) -lm
-#endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 
 /* Some of these man page defaults are overriden in the above OS sections */

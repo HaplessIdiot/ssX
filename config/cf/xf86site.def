@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.5 1994/06/14 14:09:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.6 1994/06/15 15:31:14 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
