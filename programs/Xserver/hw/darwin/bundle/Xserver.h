@@ -3,27 +3,24 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.8 2001/05/16 06:10:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.9 2001/07/15 01:57:35 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
 #include <drivers/event_status_driver.h>	// for NXEvent
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/syslimits.h>
 
 @interface Xserver : NSObject {
     // server state
     NSLock *serverLock;
-    NSTask *clientTask;
     NSPort *signalPort;
-    BOOL serverRunning;
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
     BOOL appQuitting;
     UInt32 mouseState;
+    Class windowClass;
 
     // server event queue
+    BOOL sendServerEvents;
     int eventWriteFD;
 
     // Aqua interface
@@ -49,7 +46,6 @@
 - (void)killServer;
 - (void)readPasteboard;
 - (void)writePasteboard;
-- (void)clientTaskDone:(NSNotification *)aNotification;
 - (void)sendNXEvent:(NXEvent*)ev;
 - (void)sendShowHide:(BOOL)show;
 

@@ -1,23 +1,22 @@
 /*
  * NSView subclass for Mac OS X rootless X server
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#import "XWindow.h"
 #import "XView.h"
 #include "fakeBoxRec.h"
 
 static const void *infobytes(void *info)
 {
-  return info;
+    return info;
 }
 
 
 @implementation XView
 
--(id) initWithFrame:(NSRect)aRect
+- (id)initWithFrame:(NSRect)aRect
 {
     self = [super initWithFrame:aRect];
     if (!self) return nil;
@@ -32,52 +31,52 @@ static const void *infobytes(void *info)
     return self;
 }
 
--(void) dealloc
+- (void)dealloc
 {
     if (mBits) free(mBits);
     [super dealloc];
 }
 
--(void) drawRect:(NSRect)aRect
+- (void)drawRect:(NSRect)aRect
 {
     // Never draw here.
 }
 
--(BOOL) isFlipped
+- (BOOL)isFlipped
 {
     return NO; // YES inverts the BitmapImageRep too...
 }
 
--(BOOL) isOpaque
+- (BOOL)isOpaque
 {
     // fixme
     return YES;
 }
 
--(BOOL) acceptsFirstResponder
+- (BOOL)acceptsFirstResponder
 {
     return YES;
 }
 
--(BOOL) acceptsFirstMouse:(NSEvent *)theEvent
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     return YES;
 }
 
--(BOOL) shouldDelayWindowOrderingForEvent:(NSEvent *)theEvent
+- (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent *)theEvent
 {
     return YES;
 }
 
 
--(void) mouseDown:(NSEvent *)anEvent
+- (void)mouseDown:(NSEvent *)anEvent
 {
     // Only X is allowed to restack windows.
     [NSApp preventWindowOrdering];
     [[self nextResponder] mouseDown:anEvent];
 }
 
--(void) mouseUp:(NSEvent *)anEvent
+- (void)mouseUp:(NSEvent *)anEvent
 {
     // Bring app to front if necessary
     // Don't bring app to front in mouseDown; mousedown-mouseup is too
@@ -93,25 +92,25 @@ static const void *infobytes(void *info)
 
 // Reallocate bits.
 // setFrame goes through here too.
--(void) setFrameSize:(NSSize)newSize
+- (void)setFrameSize:(NSSize)newSize
 {
     [self allocBitsForSize:newSize];
     [super setFrameSize:newSize];
 }
 
--(void) allocBitsForSize:(NSSize)newSize
+- (void)allocBitsForSize:(NSSize)newSize
 {
     if (mBits) free(mBits);
     mBytesPerRow = newSize.width * mBitsPerPixel / 8;
     mBits = malloc(mBytesPerRow * newSize.height);
 }
 
--(char *) bits
+- (char *)bits
 {
     return mBits;
 }
 
--(void) getBits:(char **)bits
+- (void)getBits:(char **)bits
        rowBytes:(int *)rowBytes
           depth:(int *)depth
    bitsPerPixel:(int *)bpp
@@ -122,7 +121,7 @@ static const void *infobytes(void *info)
     *bpp = mBitsPerPixel;
 }
 
--(void) refreshRects:(fakeBoxRec *)rectList count:(int)count
+- (void)refreshRects:(fakeBoxRec *)rectList count:(int)count
 {
     [self lockFocus];
     [self copyRects:rectList count:count];
@@ -131,7 +130,7 @@ static const void *infobytes(void *info)
 }
 
 // rectList is X-flipped and LOCAL coords
--(void) copyRects:(fakeBoxRec *)rectList count:(int)count
+- (void)copyRects:(fakeBoxRec *)rectList count:(int)count
 {
     unsigned char *offsetbits;
 

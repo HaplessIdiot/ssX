@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 272. Rework XDarwin front end to start X clients in the user's normal
+      environment and fix issues while quitting (Torrey T. Lyons).
  271. SECURITY: fix glyph clipping for large origin (Keith Packard).
       Reported to be remotly exploitable through konqueror or netscape 
       by Georgi Guninski.
@@ -13800,4 +13802,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1939 2001/09/14 13:53:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1940 2001/09/16 19:01:00 herrb Exp $

@@ -1,10 +1,9 @@
 /*
  * NSWindow subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.2 2001/08/01 05:34:06 torrey Exp $ */
 
 #import "XWindow.h"
-#import "Xserver.h"
 
 
 @implementation XWindow
@@ -17,7 +16,7 @@
 // XWindow MUST defer! Otherwise an assertion fails in
 // NSViewHierarchyLock sometimes.
 
--(id) initWithContentRect:(NSRect)aRect
+- (id)initWithContentRect:(NSRect)aRect
                    isRoot:(BOOL)isRoot
 {
     int style;
@@ -35,11 +34,11 @@
     [self setAlphaValue:1.0];  // draw opaque
     // [self setOpaque:NO];
 
-    [self setAutodisplay:FALSE];  // MUST NOT autodisplay! see comment above
-    [self setHasShadow: !isRoot]; // All windows have shadows except the root.
+    [self useOptimizedDrawing:YES]; // Has no overlapping sub-views
+    [self setAutodisplay:NO];       // MUST NOT autodisplay! See comment above
+    [self setHasShadow: !isRoot];   // All windows have shadows except root
 
     // [self setAcceptsMouseMovedEvents:YES]; // MUST be AFTER orderFront?
-    [self setDelegate:self]; // fixme is this still needed?
 
     mView = [[XView alloc] initWithFrame: viewRect];
     [self setContentView:mView];
@@ -48,18 +47,18 @@
     return self;
 }
 
--(void) dealloc
+- (void)dealloc
 {
     [mView release];
     [super dealloc];
 }
 
--(char *) bits
+- (char *)bits
 {
     return [mView bits];
 }
 
--(void) getBits:(char **)bits
+- (void)getBits:(char **)bits
        rowBytes:(int *)rowBytes
           depth:(int *)depth
    bitsPerPixel:(int *)bpp
@@ -69,21 +68,21 @@
 
 
 // rects are X-flip and LOCAL coords
--(void) refreshRects:(fakeBoxRec *)rectList count:(int)count;
+- (void)refreshRects:(fakeBoxRec *)rectList count:(int)count;
 {
     [mView refreshRects:rectList count:count];
 }
 
 
 // Deferred windows don't handle mouse moved events very well.
--(void) orderWindow:(NSWindowOrderingMode)place
+- (void)orderWindow:(NSWindowOrderingMode)place
          relativeTo:(int)otherWindowNumber
 {
     [super orderWindow:place relativeTo:otherWindowNumber];
     [self setAcceptsMouseMovedEvents:YES];
 }
 
--(void) sendEvent:(NSEvent *)anEvent
+- (void)sendEvent:(NSEvent *)anEvent
 {
     [super sendEvent:anEvent];
     [self setAcceptsMouseMovedEvents:YES];
@@ -92,20 +91,14 @@
 // XWindow may be frameless, and frameless windows default to
 // NO key and NO main.
 // update: we *don't* want main or key status after all
--(BOOL) canBecomeMainWindow
+- (BOOL)canBecomeMainWindow
 {
     return NO;
 }
 
--(BOOL) canBecomeKeyWindow
+- (BOOL)canBecomeKeyWindow
 {
     return NO;
-}
-
-// XWindow has no overlapping subviews
--(BOOL) useOptimizedDrawing
-{
-    return YES;
 }
 
 @end
