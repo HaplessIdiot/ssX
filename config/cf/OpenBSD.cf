@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.12 1997/07/06 05:30:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.13 1997/08/26 10:00:40 hohndel Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -67,7 +67,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions 	/**/
 #else
-#define DefaultCCOptions 	-ansi -Dasm=__asm
+#define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
 #endif
 
 #define GccGasOption 		-DGCCUSESGAS
@@ -106,6 +106,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
+#ifndef DoLoadableServer
+#define DoLoadableServer	YES
+#endif
 
 #ifndef ExtraLibraries
 #define ExtraLibraries		/**/
@@ -234,18 +237,12 @@ install.man:: 								@@\
   */
 # define HasSharedLibraries	NO
 # define UseElfFormat		NO
-# ifndef BuildDynamicLoading
-#  define BuildDynamicLoading	NO
-# endif
  /*
   * For the upcoming ELF system
   */
 # if 0 /* NOT YET */
 #  define HasSharedLibraries	YES
 #  define UseElfFormat		YES
-#  ifndef BuildDynamicLoading
-#   define BuildDynamicLoading	YES
-#  endif
 # endif
 
 #endif /* AlphaArchitecture */
@@ -256,9 +253,6 @@ install.man:: 								@@\
  */
 #ifdef i386Architecture
 
-# ifndef BuildDynamicLoading
-#   define BuildDynamicLoading	YES
-# endif
 # include <xfree86.cf>
 
 #endif /* i386Architecture */
@@ -452,10 +446,6 @@ install.man:: 								@@\
 
 #ifndef ForceNormalLib
 # define ForceNormalLib			YES
-#endif
-
-#ifndef BuildDynamicLoading
-# define BuildDynamicLoading		NO
 #endif
 
 /*

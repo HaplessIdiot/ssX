@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.25 1998/04/19 11:10:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.26 1998/04/26 18:31:52 robin Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -208,6 +208,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.25 1998/04/19 11:10:51 dawes Exp $
 #ifndef BuildXF86DGALibrary
 #define BuildXF86DGALibrary	BuildXF86DGA
 #endif
+#ifndef BuildXvExt
+#define BuildXvExt		NO
+#endif
+#ifndef BuildXvLibrary
+#define BuildXvLibrary		BuildXvExt
+#endif
 
 #ifndef BuildFreeType
 #define BuildFreeType		NO
@@ -281,6 +287,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.25 1998/04/19 11:10:51 dawes Exp $
 #endif
 #ifndef UseInternalMalloc
 #define UseInternalMalloc	NO
+#endif
+#ifndef XallocDefines
+#define XallocDefines		/**/
+#endif
+#ifndef ServerErrorDefines
+#define ServerErrorDefines	/**/
 #endif
 #ifndef FontCompilerFlags
 #define FontCompilerFlags -t
@@ -483,6 +495,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.25 1998/04/19 11:10:51 dawes Exp $
 #endif
 #endif
 
+#ifndef XvExtensionDefines
+#if BuildXvExt
+#define XvExtensionDefines -DXV
+#else
+#define XvExtensionDefines /**/
+#endif
+#endif
+
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -533,7 +553,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.25 1998/04/19 11:10:51 dawes Exp $
 	XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines ScreenSaverExtensionDefines \
-	GlxDefines \
+	XvExtensionDefines GlxDefines \
 	DBEDefines DPMSDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
@@ -1007,6 +1027,22 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXvLibrary
+#ifndef SharedLibXv
+#define SharedLibXv		NO
+#endif
+#ifndef NormalLibXv
+#define NormalLibXv		YES
+#endif
+#ifndef DebugLibXv
+#define DebugLibXv		NO
+#endif
+#ifndef ProfileLibXv
+#define ProfileLibXv		NO
+#endif
+#endif
+
+
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
 #endif
@@ -1080,6 +1116,20 @@ SharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),SOXXF86DGAREV,SharedXxf8
 ProjectUnsharedLibReferences(XXF86DGA,Xxf86dga,$(XXF86DGALIBSRC),XBuildLibDir)
 #endif
 #endif
+
+
+#if BuildXvLibrary
+    XVLIBSRC = $(LIBSRC)/Xv
+#if SharedLibXv
+#ifndef SharedXvRev
+#define SharedXvRev 1.0
+#endif
+SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
+#else
+ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
+#endif
+#endif
+
 
 #ifndef SharedLibXau
 #define SharedLibXau NO		/* don't need shared form */

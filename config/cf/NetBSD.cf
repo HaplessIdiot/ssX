@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.61 1997/07/31 07:16:03 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.62 1997/10/25 13:49:52 hohndel Exp $
 
 
 #ifndef OSName
@@ -99,9 +99,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define DefaultCCOptions 	/**/
 #else
 #ifdef Arm32Architecture
-#define DefaultCCOptions 	-ansi -Dasm=__asm -fsigned-char -fomit-frame-pointer
+#define DefaultCCOptions 	-ansi -Dasm=__asm -fsigned-char -fomit-frame-pointer GccWarningOptions
 #else
-#define DefaultCCOptions 	-ansi -Dasm=__asm
+#define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
 #endif
 #endif
 
@@ -133,13 +133,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define DoLoadableServer	YES
 #  endif
 #endif
-#ifndef BuildDynamicLoading
-#if DoLoadableServer
-#define BuildDynamicLoading	NO
-#else
-#define BuildDynamicLoading	YES
-#endif
-#endif
 #endif
 
 #if UseElfFormat
@@ -156,11 +149,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 # endif
 # if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
-#  if BuildDynamicLoading
-#   define ServerExtraSysLibs	-li386 DlLibrary
-#  else
-#   define ServerExtraSysLibs	-li386
-#  endif
+   define ServerExtraSysLibs	-li386
 # endif
 #else
 # define OptimizedCDebugFlags 	-O2
@@ -173,11 +162,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define ServerOSDefines 	/**/
 # endif
 # endif
-# if BuildDynamicLoading 
-#  define ServerExtraSysLibs	DlLibrary
-# else
-#  define ServerExtraSysLibs	/**/
-# endif
+# define ServerExtraSysLibs	/**/
 #endif
 #ifdef i386Architecture
 # define ServerExtraDefines GccGasOption XFree86ServerDefines

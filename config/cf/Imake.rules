@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $TOG: Imake.rules /main/224 1997/08/05 09:22:53 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.44 1997/07/19 05:42:58 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.45 1997/08/12 12:01:50 hohndel Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2682,6 +2682,52 @@ MutexDirective:	targets
 #endif /* LinkBuildNamedModule */
 
 /*
+ * ModuleObjectRule
+ */
+#ifndef ModuleObjectRule
+#define ModuleObjectRule() NormalLibraryObjectRule()
+#endif
+
+/*
+ * ObjectModuleTarget - build a module as a single object file
+ */
+#ifndef ObjectModuleTarget
+#if MakeDllModules
+#define ObjectModuleTarget(module,objects)				@@\
+DynamicModuleTarget(Concat(module,_drv.so), objects)
+#else
+#define ObjectModuleTarget(module,objects)				@@\
+NormalRelocatableTarget(Concat(module,_drv), objects)
+#endif
+#endif
+
+/*
+ * LibraryModuleTarget
+ */
+#ifndef LibraryModuleTarget
+#if MakeDllModules
+#define LibraryModuleTarget(module,objects)				@@\
+DynamicModuleTarget(Concat3(lib,module,.so), objects)
+#else
+#define LibraryModuleTarget(module, objects)				@@\
+NormalLibraryTarget(module, objects)
+#endif
+#endif
+
+/*
+ * DepLibraryModuleTarget
+ */
+#ifndef DepLibraryModuleTarget
+#if MakeDllModules
+#define DepLibraryModuleTarget(module,deplist,objects)			@@\
+DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)
+#else
+#define DepLibraryModuleTarget(module,deplist,objects)			@@\
+NormalDepLibraryTarget(module, deplist, objects)
+#endif
+#endif
+
+/*
  * DynamicModuleTarget - build a module to be dynamically loaded
  */
 #ifndef DynamicModuleTarget
@@ -2691,11 +2737,25 @@ AllTarget(module)							@@\
 module: modlist								@@\
 	RemoveFile($@)							@@\
 	$(LD) -o $@ $(SHLIBLDFLAGS) modlist				@@\
-	LinkBuildModule($@)						@@\
 									@@\
 clean::									@@\
 	RemoveFile(module)
 #endif /* DynamicModuleTarget */
+
+/*
+ * DepDynamicModuleTarget - build a module to be dynamically loaded
+ */
+#ifndef DepDynamicModuleTarget
+#define DepDynamicModuleTarget(module,deplist,modlist)			@@\
+AllTarget(module)							@@\
+									@@\
+module: deplist								@@\
+	RemoveFile($@)							@@\
+	$(LD) -o $@ $(SHLIBLDFLAGS) modlist				@@\
+									@@\
+clean::									@@\
+	RemoveFile(module)
+#endif /* DepDynamicModuleTarget */
 
 /*
  * InstallDynamicModule - install a dynamic module
@@ -2718,5 +2778,33 @@ AllTarget(module)							@@\
 install:: module							@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c module Concat($(DESTDIR)dest/,instname)
+#endif
+
+#ifndef InstallObjectModule
+#if !DoLoadableServer
+#define InstallObjectModule(module,dest)	/**/
+#else
+#if MakeDllModules
+#define InstallObjectModule(module,dest)				@@\
+InstallDynamicModule(Concat(module,_drv.so),dest)
+#else
+#define InstallObjectModule(module,dest)				@@\
+InstallDynamicModule(Concat(module,_drv.o),dest)
+#endif
+#endif
+#endif
+
+#ifndef InstallLibraryModule
+#if !DoLoadableServer
+#define InstallLibraryModule(module,dest)	/**/
+#else
+#if MakeDllModules
+#define InstallLibraryModule(module,dest)				@@\
+InstallDynamicModule(Concat3(lib,module,.so),dest)
+#else
+#define InstallLibraryModule(module,dest)				@@\
+InstallDynamicModule(ModuleLibraryTargetName(module),dest)
+#endif
+#endif
 #endif
 
