@@ -1,3 +1,5 @@
+ 225. Fix i810 driver so it advertises 32bpp pixmaps in depth 24 like the
+      rest of the drivers do (Mark Vojkovich).
  224. Added a call ioperm() to to allow vm86 to execute in/out calls
       directly to avoid problems with certain notebook bioses (Egbert Eich).
  223. Fixed mouse driver to flush pending button press events on
@@ -10425,4 +10427,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1168 2000/05/29 21:49:36 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1170 2000/05/31 07:14:54 eich Exp $
