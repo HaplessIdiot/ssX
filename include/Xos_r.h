@@ -22,7 +22,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.16 2002/04/10 16:20:03 tsi Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.17 2002/08/15 00:14:52 torrey Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -327,7 +327,7 @@ static __inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
   (_Xos_processUnlock), \
   (p).pwp )
 
-#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
 /* SVR4 threads, AIX 4.2.0 and earlier and OSF/1 3.2 and earlier pthreads */
 # define X_NEEDS_PWPARAMS
 typedef struct {

@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 237. Fix threaded libraries on Mac OS X 10.2 (A.1229, Marko Karppinen).
  236. Add hardware accelerated GLX to XDarwin (Greg Parker).
  235. Use Imake custom version variables in XDarwin startup message
       (Torrey T. Lyons).
@@ -14997,4 +14998,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2286 2002/08/27 22:07:02 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2287 2002/08/28 06:41:24 torrey Exp $
