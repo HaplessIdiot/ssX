@@ -246,6 +246,14 @@
   Video memory banking does not work in the 16-colour and monochrome
   servers on V3, V4 and V5 adapters.
 
+  Video memory corruption can still occur during mode switches on V3, V4
+  and V5 adapters.  Symptoms of this problem include garbled fonts on
+  return to text mode, and various effects (snow, dashed lines, etc) on
+  initial entry into a graphics mode.  In the first case, the workaround
+  is to use some other means of restoring the text font.  On Linux, this
+  can be done with the kbd or svgalib packages.  In the second case,
+  xrefresh will usually cleanup the image.
+
   Interlaced modes do not work in the monochrome server on 28800-x
   adapters when using a virtual resolution wider than 1024 pixels.
 
@@ -253,6 +261,7 @@
   264xT adapters.
 
   Support for virtual resolutions using more than 1MB of video memory is
+
   still incomplete.  Specifically, such support works on Mach32
   adapters, and on 264xT adapters, but not on any other Mach64 adapters.
 
@@ -261,7 +270,6 @@
   limited to 135MHz by default.  This limit can only be increased (up to
   a driver-calculated absolute maximum) through the DACSpeed option in
   XF86Config.  Be aware however that doing this is untested and might
-
   damage the adapter.
 
   Future development plans include addressing the above problems and
@@ -271,16 +279,8 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.11 1996/03/31 11:49:01 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.12 1996/05/10 06:58:31 dawes Exp $
   $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
-
-
-
-
-
-
-
-
 
 
 
