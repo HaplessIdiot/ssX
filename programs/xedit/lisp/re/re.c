@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.7 2002/11/15 07:01:32 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.c,v 1.8 2002/11/17 07:51:30 paulo Exp $ */
 
 #include <stdio.h>
 #include "rep.h"
@@ -114,8 +114,8 @@ static int rec_inc_spc(re_inf*);
 static int rec_dec_spc(re_inf*);
 static int rec_add_spc(re_inf*, int);
 static int rec_off_spc(re_inf*);
-static int rec_alt_spc(re_inf*);
-static int rec_rep_spc(re_inf*);
+static int rec_alt_spc(re_inf*, int);
+static int rec_rep_spc(re_inf*, int);
 #ifdef DEBUG
 static void redump(re_cod*);
 #endif
@@ -163,7 +163,7 @@ recomp(re_cod *preg, const char *pattern, int flags)
     if (rec_byte(&inf, flags & (RE_NEWLINE | RE_NOSUB)) == 0 &&
 	rec_byte(&inf, 0xff) == 0 &&
 	rec_build_alt(&inf, inf.alt) == 0 &&
-	rec_rep_spc(&inf) == 0 &&
+	rec_rep_spc(&inf, 0) == 0 &&
 	rec_code(&inf, Re_Done) == 0) {
 	/*  Number of possible references, loops will not leave this
 	 * value correct, but it is cheap to read it from the second
@@ -359,27 +359,30 @@ reset:
 	     * One byte codes, match special emtpy strings	*
 	     ****************************************************/
 	    case Re_Bol:
-		if (newline && eng.str > eng.bas && eng.str[-1] == '\n') {
+		if (eng.str == eng.bas) {
+		    if ((flags & RE_NOTBOL)) {
+			/* String does not start at the beginning of a line */
+			if (newline)
+			    goto fail;
+			goto wont;
+		    }
 		    si = 0;
 		    goto match;
 		}
-		else if ((flags & RE_NOTBOL))
-		    /* String does not start at the beginning of a line */
-		    goto wont;
-		if (eng.str == eng.bas) {
+		if (newline && eng.str[-1] == '\n') {
 		    si = 0;
 		    goto match;
 		}
 		goto fail;
 	    case Re_Eol:
-		if (newline && eng.str < eng.end && eng.str[0] == '\n') {
+		if (eng.str == eng.end) {
+		    if (flags & RE_NOTEOL)
+			/* String does not finish at the end of a line */
+			goto wont;
 		    si = 0;
 		    goto match;
 		}
-		else if (flags & RE_NOTEOL)
-		    /* String does not finish at the end of a line */
-		    goto wont;
-		if (eng.str == eng.end) {
+		if (newline && eng.str[0] == '\n') {
 		    si = 0;
 		    goto match;
 		}
@@ -1262,7 +1265,7 @@ next_lcstl:;
 			    if (eng.cod[5] == Re_Update)
 				eng.gso[eng.goff] = eng.eo[bas] +
 						    (eng.so[bas] > eng.eo[bas]);
-			    else
+			    else if (eng.geo[eng.goff] < eng.so[eng.off])
 				eng.geo[eng.goff] = eng.so[eng.off];
 			}
 
@@ -1356,7 +1359,7 @@ next_lcstl:;
 			    if (eng.cod[5] == Re_Update)
 				eng.gso[eng.goff] = eng.eo[bas] +
 						    (eng.so[bas] > eng.eo[bas]);
-			    else
+			    else if (eng.geo[eng.goff] < eng.so[eng.off])
 				eng.geo[eng.goff] = eng.so[eng.off];
 			}
 
@@ -1467,7 +1470,7 @@ next_lcstl:;
 			    if (eng.cod[5] == Re_Update)
 				eng.gso[eng.goff] = eng.eo[bas] +
 						    (eng.so[bas] > eng.eo[bas]);
-			    else
+			    else if (eng.geo[eng.goff] < eng.so[eng.off])
 				eng.geo[eng.goff] = eng.so[eng.off];
 			}
 
@@ -1857,7 +1860,7 @@ rec_build_alt(re_inf *inf, rec_alt *alt)
 			/* Duplicate patterns up to end of expression */
 			rec_build_pat(inf, inf->apat);
 			/* Restore engine state for next alternative(s) */
-			rec_alt_spc(inf);
+			rec_alt_spc(inf, bas - 1);
 		    }
 
 		    /* If the jump would be so long */
@@ -1879,7 +1882,7 @@ rec_build_alt(re_inf *inf, rec_alt *alt)
 		    /* Duplicate patterns up to end of expression */
 		    rec_build_pat(inf, inf->apat);
 		    /* Restore engine state for next alternative(s) */
-		    rec_alt_spc(inf);
+		    rec_alt_spc(inf, bas - 1);
 		}
 
 		/* If the jump would be so long */
@@ -1904,10 +1907,11 @@ static int
 rec_build_pat(re_inf *inf, rec_pat *pat)
 {
     rec_pat *apat;
-    int length, offset = 0, distance, jump = 0;
+    int length, offset = 0, distance, jump = 0, bas = 0;
 
     while (pat && inf->ecode == 0) {
 	if (pat->rep) {
+	    bas = inf->bas;
 	    if (pat->type == Rep_Group && !inf->par && rec_code(inf, Re_Open))
 		return (inf->ecode);
 	    if (rec_inc_spc(inf))
@@ -1999,8 +2003,13 @@ rec_build_pat(re_inf *inf, rec_pat *pat)
 		break;
 	}
 	if (pat->rep) {
+#if 0
 	    if (rec_dec_spc(inf))
 		return (inf->ecode);
+#else
+	    if (rec_rep_spc(inf, bas))
+		return (inf->ecode);
+#endif
 	    distance = inf->len - offset;
 	    if (distance > 255) {
 		if (rec_code(inf, Re_RepLongJump) ||
@@ -2218,11 +2227,11 @@ rec_add_spc(re_inf *inf, int maybe)
 
 /* Could be joined with rec_rep_spc, code almost identical */
 static int
-rec_alt_spc(re_inf *inf)
+rec_alt_spc(re_inf *inf, int top)
 {
     int distance, i, bas = inf->bas;
 
-    while (inf->bas && inf->sp[inf->bas]) {
+    while ((inf->bas > top) && inf->sp[inf->bas]) {
 	/* Jump to this repetition for cleanup */
 	distance = inf->len - inf->sr[inf->bas];
 
@@ -2272,11 +2281,11 @@ rec_alt_spc(re_inf *inf)
 }
 
 static int
-rec_rep_spc(re_inf *inf)
+rec_rep_spc(re_inf *inf, int top)
 {
     int distance, i, bas = inf->bas;
 
-    while (inf->bas) {
+    while (inf->bas > top) {
 	if (inf->sp[inf->bas]) {
 	    /* Jump to this repetition for cleanup */
 	    distance = inf->len - inf->sr[inf->bas];
