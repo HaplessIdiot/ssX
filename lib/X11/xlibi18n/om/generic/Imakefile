@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/X11/xlibi18n/om/generic/Imakefile,v 1.4 2004/03/23 16:25:46 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/xlibi18n/om/generic/Imakefile,v 1.5tsi Exp $
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,8 +49,8 @@ XCOMM $XFree86: xc/lib/X11/xlibi18n/om/generic/Imakefile,v 1.4 2004/03/23 16:25:
  EXTRA_INCLUDES = -I../../..
            SRCS = omDefault.c omGeneric.c omImText.c omText.c \
 		  omTextEsc.c omTextExt.c omTextPer.c omXChar.c
-
-           OBJS = ${SRCS:.c=.o}
+           OBJS = omDefault.o omGeneric.o omImText.o omText.o \
+		  omTextEsc.o omTextExt.o omTextPer.o omXChar.o
    REQUIREDLIBS = SharedXlibi18nReqs
 
 LinkSourceFile(omDefault.c, ../../..)
@@ -66,3 +66,4 @@ LinkSourceFile(omXChar.c, ../../..)
 
 #include "../../Xi18nLib.conf"
 
+DependTarget()
