@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.2 2001/10/04 04:38:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.4 2001/10/06 02:40:31 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -164,6 +164,8 @@ Subcommands may be abbreviated.\n";
  *		    hitted.
  *		VAR variable to watch a SYMBOL	(not needed for breakpoints)
  *		VAL value of watched variable	(not needed for breakpoints)
+ *		FRM frame where variable started being watched
+ *						(not needed for breakpoints)
  *	new elements are added to the end of the list
  */
 
@@ -228,9 +230,12 @@ watch_again:
 	    if (CAR(CDR(CDR(CAR(obj))))->data.real == LispDebugBreakVariable) {
 		/* the variable */
 		LispObj *wat = CAR(CDR(CDR(CDR(CDR(CAR(obj))))));
+		LispObj *sym = LispGetVar(mac, LispGetString(mac,
+					  CAR(CAR(obj))->data.atom), 1);
+		LispObj *frm = CAR(CDR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))));
 
-		if (LispGetVar(mac,
-		    LispGetString(mac, CAR(CAR(obj))->data.atom), 1) != wat) {
+		if (sym == NULL || (sym != wat &&
+				    frm->data.real > mac->debug_level)) {
 		    fprintf(lisp_stdout, "WATCH #%g> %s delete. Variable does "
 			    "not exist anymore.\n",
 			    CAR(CDR(CAR(obj)))->data.real,
@@ -578,6 +583,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 		break;
 	    case DebuggerWatch: {
+		int vframe;
 		LispObj *sym, *val;
 
 		/* make variable name uppercase, an ATOM */
@@ -596,6 +602,42 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		/* variable is available at the current frame */
 		sym = LispGetVar(mac, LispGetString(mac, arg), 1);
 
+		/* find the lowest frame where the variable is visible */
+		vframe = 0;
+		if (frame) {
+		    for (; vframe < frame; vframe++) {
+			for (frm = DBG, i = mac->debug_level; i > vframe;
+			     frm = CDR(frm), i--)
+			    ;
+			obj = CAR(frm);
+			if (FRM == old_frm) {
+			    /* if first time selecting a new frame */
+			    GCProtect();
+			    FRM = CONS(CONS(ENV, SYM), old_frm);
+			    GCUProtect();
+			}
+			ENV = CAR(CDR(CDR(obj)));
+			SYM = CAR(CDR(CDR(CDR(obj))));
+			LEX = CDR(CDR(CDR(CDR(obj))));
+
+			if (LispGetVar(mac,
+				       LispGetString(mac, arg), 1) == sym)
+			    /* got variable initial frame */
+			    break;
+		    }
+		    vframe = i;
+		    if (vframe != frame) {
+			/* restore environment */
+			for (frm = DBG, i = mac->debug_level; i > frame;
+			     frm = CDR(frm), i--)
+			    ;
+			obj = CAR(frm);
+			ENV = CAR(CDR(CDR(obj)));
+			SYM = CAR(CDR(CDR(CDR(obj))));
+			LEX = CDR(CDR(CDR(CDR(obj))));
+		    }
+		}
+
 		i = mac->debug_break;
 		++mac->debug_break;
 		for (obj = frm = BRK; obj != NIL; frm = obj, obj = CDR(obj))
@@ -608,7 +650,8 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 				     CONS(REAL(0),		      /* HIT */
 					  CONS(sym,		      /* VAR */
 					       CONS(val,	      /* VAL */
-						    NIL))))));
+						    CONS(REAL(vframe),/* FRM */
+							      NIL)))))));
 
 		/* add watchpoint */
 		if (BRK == NIL)
