@@ -5,7 +5,7 @@
 
 <title>Notes for Mach64 X Server
 <author>Kevin E. Martin (martin@cs.unc.edu)
-<date>6 June 1995
+<date>28 November 1995
 
 <!-- Table of contents -->
 <toc>
@@ -44,17 +44,27 @@ STG1703          135MHz       8      1280x1024             2Mb
 STG1703           80MHz      16       1024x768             2Mb
 STG1703           50MHz      32        800x600             2Mb
     
+AT&amp;T20C408       135MHz       8      1280x1024             2Mb
+AT&amp;T20C408        80MHz      16       1024x768             2Mb
+AT&amp;T20C408        40MHz      32        800x600             2Mb
+    
 All Others[*]     80MHz       8      1280x1024             2Mb
 
 </verb>
 &lsqb*&rsqb - The dot clocks are limited to 80MHz and the bpp is limited to 8.
 
 The RAMDAC is reported when you run the Mach64 X server with the
-"<tt>-probeonly</tt>" command line option.    
+"<tt>-probeonly</tt>" command line option, or can be specified in the
+XF86Config file.
 
 The ATI68860 and ATI68880 RAMDACs are usually found on ATI Graphics
 Pro Turbo and ATI WinTurbo cards.  The other RAMDACs are usually found
 on ATI Graphics Xpression cards.
+
+A number of cards now use the ATI Mach64 CT chip (which is a
+combination Mach64 acclerator, RAMDAC and clock chip).  The current
+version of the Mach 64 X server does not support this chip, but a
+future release will.
 
 As advertised, Mach64 graphics cards can use a special 24bpp mode
 (packed pixel mode), but this is not currently supported in the Mach64
@@ -100,9 +110,21 @@ need at least a video memory area of 1024x257.
 
 <sect>XF86Config options<p>
 Several options are supported in the "Device" section for the Mach64 X
-server.  The Mach64 X server reads the Clocks from the BIOS.  The
-"Clocks" lines in the XF86Config file are normally ignored by the
-Mach64 X server unless the "no_bios_clocks" option is given.
+server.  By default, the Mach64 X server will determine the RAMDAC
+type from the BIOS.  If you wish to override the default RAMDAC type
+(not recommended unless the BIOS incorrectly reports your RAMDAC
+type), you can specify the RAMDAC type in the XF86Config file with the
+"Ramdac" entry.  The Mach64 X server will also program the clocks
+based on the clock chip read from the BIOS.  If you with to override
+the default clock chip type (not recommended unless the BIOS
+incorrectly reports your clock chip type), you may specify the clock
+chip in the XF86Config file with the "ClockChip" entry.  If, however,
+you wish to use the preprogrammed clocks, you can turn off the clock
+programming with the "no_program_clocks" option.  In this case, the
+Mach64 X server reads the Clocks from the BIOS.  The "Clocks" lines in
+the XF86Config file are normally ignored by the Mach64 X server unless
+the "no_bios_clocks" option is given.
+
 
 <descrip>
 <tag>Option &dquot;sw_cursor&dquot;</tag>
@@ -148,6 +170,11 @@ Mach64 X server unless the "no_bios_clocks" option is given.
 		server will ignore the Clocks line, but with this
 		option the clocks from the XF86Config file can
 		override the BIOS's clocks.
+<tag>Option &dquot;no_program_clocks&dquot;</tag>
+		This option allows you to disable the clock
+		programming.  Normally the Mach64 server will program
+		the clocks based on the clock chip type unless this
+		option is given.
 <tag>MemBase baseaddress</tag>
 		This entry specifies the video memory aperture
 		address.  Normally the aperture address is
@@ -156,12 +183,57 @@ Mach64 X server unless the "no_bios_clocks" option is given.
 		the Mach64 X server is dying with a seg. fault,
 		then try setting the aperture address to another
 		location.
+<tag>ClockChip &dquot;<it>type</it>&dquot;</tag>
+		This entry specifies the clock chip type.  The
+		following values are valid for <it>type</it>:
+		<itemize>
+		<item> ati18818
+		<item> ics2595
+		<item> stg1703
+		<item> ch8398
+		<item> att20c408
+		</itemize>
+<tag>Ramdac &dquot;<it>type</it>&dquot;</tag>
+		This entry specifies the RAMDAC type.  The following
+		values are valid for <it>type</it>:
+		<itemize>
+		<item> ati68875
+		<item> tlc34075
+		<item> ati68860
+		<item> ati68880
+		<item> stg1702
+		<item> stg1703
+		<item> ch8398
+		<item> att20c408
+		</itemize>
 </descrip>
+
+<sect>Known Problems and Bug Reports<p>
+There are several known problems with the current version of the
+Mach64 X server.  They include:
+<itemize>
+<item> Some RAMDACs are incorrectly reported by the BIOS.  This can be
+       handled by explicitly specifying the RAMDAC in the XF86Config
+       file.
+<item> The Mach64 CT chips are not supported.  They will be in a
+       future release.
+<item> PCI Plug-n-Play capabilities of the card are not handled.  With
+       P-n-P the location of the I/O registers are not determined
+       until boot time.  Newer cards, such as those with the Mach64 CT
+       chip, offer this option.  This will be supported in a future
+       version.
+<item> ISA cards with more than 12Mb of main memory cannot use the
+       server due to the requirement of a video memory aperture.  This
+       a major project.
+</itemize>
+
+Bug reports should be sent to XFree86@XFree86.org or posted to the
+comp.windows.x.i386unix newsgroup.
 
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.4 1995/07/07 15:40:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.5 1995/07/21 14:40:46 dawes Exp $
 </verb>
 
 </article>

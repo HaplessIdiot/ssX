@@ -1,5 +1,5 @@
 /* $XConsortium: lnx_video.c,v 1.1 94/03/28 21:29:02 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.1 1995/04/09 14:13:22 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -48,6 +48,11 @@
 static pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
 #endif
 
+static struct xf86memMap {
+  int offset;
+  int memSize;
+} xf86memMaps[MAXSCREENS];
+
 pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;
 int Region;
@@ -56,7 +61,7 @@ unsigned long Size;
 {
 	pointer base;
       	int fd;
-	
+
 #ifdef ONLY_MMAP_FIXED_WORKS
 	AllocAddress[ScreenNum][Region] = (pointer)xalloc(Size + 0x1000);
 	if (AllocAddress[ScreenNum][Region] == NULL)
@@ -88,7 +93,18 @@ unsigned long Size;
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
 	}
+	xf86memMaps[ScreenNum].offset = (int) Base;
+	xf86memMaps[ScreenNum].memSize = Size;
 	return base;
+}
+
+void xf86GetVidMemData(ScreenNum, Base, Size)
+int ScreenNum;
+int *Base;
+int *Size;
+{
+   *Base = xf86memMaps[ScreenNum].offset;
+   *Size = xf86memMaps[ScreenNum].memSize;
 }
 
 void xf86UnMapVidMem(ScreenNum, Region, Base, Size)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.70 1995/10/21 11:26:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.71 1995/11/30 12:48:24 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -194,6 +194,13 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.70 1995/10/21 11:26:02 dawes Exp $
 #endif
 
 /*
+ * Build the XFree86 DGA support
+ */
+#ifndef BuildXF86DGA
+#define BuildXF86DGA			NO
+#endif
+
+/*
  * Turn Fresco off by default.  It requires gcc 2.6.0 or later, and this
  * is unreliable in may ways on i386 platforms.
  */
@@ -261,9 +268,15 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.70 1995/10/21 11:26:02 dawes Exp $
 #define InstallJapaneseDocs	NO
 #endif
 
+#if BuildXF86DGA
+#define XFree86DGADefines	-DXFreeXDGA
+#else
+#define XFree86DGADefines	/**/
+#endif
+
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines
+#define XFree86ServerDefines	-DSTATIC_COLOR -DAVOID_GLYPHBLT -DPIXPRIV LinkKitDefines XFree86DGADefines
 #endif
 
 #ifndef XFree86ServerOSDefines

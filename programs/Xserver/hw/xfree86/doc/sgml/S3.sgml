@@ -410,11 +410,22 @@ chances are good it might work for you, too.
 	
 <tag>S3 968, Ti3026 RAMDAC, Ti3026 Clockchip</tag>
 	<itemize>
-	<item> Elsa Winner 2000PRO/X
-	<item> Diamond Stealth 64 VIDEO VRAM
+	<item> Elsa Winner 2000PRO/X-2 and /X-4 (Revsions <= F)
+	<item> Elsa Winner 2000AVI-2 and -4 
+	<item> Diamond Stealth 64 VIDEO VRAM 
 	</itemize>
 
 	8/15/16/24 bpp
+
+<tag>S3 968, Ti3026 RAMDAC, ICS9161A Clockchip</tag>
+	<itemize>
+	<item> Elsa Winner 2000PRO/X-2 and /X-4 (Revision G)
+	</itemize>
+
+	8/15/16/24 bpp
+
+	Note: clock doubling doesn't work, yet, therefore the maximum
+	useable dot clock is limited to about 120MHz.
 
 <tag>S3 964, IBM RGB 514/524/525/528 RAMDAC &amp; Clockchip</tag>
 	<itemize>
@@ -705,7 +716,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.28 1995/08/13 09:45:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.29 1995/11/16 11:05:55 dawes Exp $
 </verb>
 
 </article>

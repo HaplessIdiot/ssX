@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86$
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.2 1995/09/23 07:09:24 dawes Exp $
  */
 
 /*
@@ -42,7 +42,7 @@
 Const int groundtable[] =
 {
 /*	NUL		SOH		STX		ETX	*/
-CASE_PRINT,
+CASE_IGNORE,
 CASE_PRINT,
 CASE_PRINT,
 CASE_PRINT,

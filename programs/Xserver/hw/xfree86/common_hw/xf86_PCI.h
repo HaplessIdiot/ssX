@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.0 1995/03/18 11:00:11 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -136,6 +136,21 @@ struct pci_config_reg {
 #define _int_pin  mmii.mmii.int_pin
 #define _min_gnt  mmii.mmii.min_gnt
 #define _max_lat  mmii.mmii.max_lat
+    /* I don't know how accurate or standard this is (DHD) */
+    union {
+	unsigned long user_config;
+	struct {
+	    unsigned char user_config_0;
+	    unsigned char user_config_1;
+	    unsigned char user_config_2;
+	    unsigned char user_config_3;
+	} uc;
+    } uc;
+#define _user_config uc.user_config
+#define _user_config_0 uc.uc.user_config_0
+#define _user_config_1 uc.uc.user_config_1
+#define _user_config_2 uc.uc.user_config_2
+#define _user_config_3 uc.uc.user_config_3
     /* end of official PCI config space header */
     unsigned long _pcibusidx;
     unsigned long _pcinumbus;

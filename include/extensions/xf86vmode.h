@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.7 1995/07/15 14:55:02 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.8 1995/07/16 14:50:31 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -44,6 +44,17 @@ from the Kaleb S. KEITHLEY
 #define X_XF86VidModeGetSaver		6
 #define X_XF86VidModeSetSaver		7
 #define X_XF86VidModeGetServerName	8
+#define X_XF86VidModeGetVideoLL		9
+#define X_XF86VidModeDirectVideo	10
+#define X_XF86VidModeGetViewPort	11
+#define X_XF86VidModeSetViewPort	12
+#define X_XF86VidModeGetVidPage		13
+#define X_XF86VidModeSetVidPage		14
+
+#define XF86VidModeDirectPresent        0x01
+#define XF86VidModeDirectGraphics       0x02
+#define XF86VidModeDirectMouse          0x04
+#define XF86VidModeDirectKeyb           0x08
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -187,6 +198,79 @@ Status XF86VidModeSetSaver(
     int				/* offtime */
 #endif
 );
+
+Status XF86VidModeGetVideoLL(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int *			/* base addr */,
+    int *			/* width */,
+    int *			/* bank_size */,
+    int *			/* ram_size */ 
+#endif
+);
+
+Status XF86VidModeGetVideo(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    char **			/* base addr */,
+    int *			/* width */,
+    int *			/* bank_size */,
+    int *			/* ram_size */ 
+#endif
+);
+
+Status XF86VidModeDirectVideo(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int 			/* enable */
+#endif
+);
+
+Status XF86VidModeDirectVideoLL(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int 			/* enable */
+#endif
+);
+
+Status XF86VidModeGetViewPort(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int *x			/* X */,
+    int *y			/* Y */
+#endif
+);
+
+Status XF86VidModeSetViewPort(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int x			/* X */,
+    int y			/* Y */
+#endif
+);
+
+Status XF86VidModeGetVidPage(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int *			/* vid page */
+#endif
+);
+
+Status XF86VidModeSetVidPage(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int				/* vid page */
+#endif
+);
+
 
 _XFUNCPROTOEND
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.c,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.9 1995/06/24 10:28:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.10 1995/10/21 11:39:37 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -285,6 +285,7 @@ void main()
 	  ,(eedata->max_memclock,eedata->max_memclock*4)/1000.0);
    printf("monitor size %d %d\n",eedata->xsize,eedata->ysize);
    printf("software version %d\n",eedata->sw_vers);
+   printf("hardware config %d\n",eedata->hw_conf);
 
    for (i= 26; i<ndata-9; i+=9) {
       eetim  = (elsa_eeprom_timing_t *) (data + i);
@@ -322,7 +323,7 @@ void main()
 
 #else
 int s3DetectELSA(int BIOSbase, char **pcard, char **pserno, 
-		 int *max_pix_clock, int *max_mem_clock)
+		 int *max_pix_clock, int *max_mem_clock, int *hwconfig)
 {
    int i;
    int ndata;
@@ -379,6 +380,8 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
       *max_pix_clock = eedata->max_pixclock * 4;
    if (max_mem_clock) 
       *max_mem_clock = eedata->max_memclock * 4;
+   if (hwconfig)
+      *hwconfig = eedata->hw_conf;
    
    i = eedata->board_code;
    xfree(data);

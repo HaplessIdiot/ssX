@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.43 1995/11/12 09:53:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.44 1995/11/30 13:05:06 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -93,6 +93,15 @@
 #include "xf86_Config.h"
 #include "vga.h"
 #include "region.h"
+
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86VIDMODE_SERVER_
+#include "extensions/xf86vmstr.h"
+
 
 #ifdef XF86VGA16
 #define MONOVGA
@@ -817,6 +826,12 @@ cirrusProbe()
      vga256InfoRec.chipset = xf86TokenToString(chipsets, cirrusChip);
 
 #ifndef MONOVGA
+#ifdef XFreeXDGA
+     /* we support direct Video mode */
+
+     vga256InfoRec.directMode = XF86VidModeDirectPresent;
+#endif
+
      if (vgaBitsPerPixel == 16 &&
      (Is_62x5(cirrusChip) || cirrusChip == CLGD5420)) {
          ErrorF("%s %s: %s: Cirrus 62x5 and 5420 chipsets not supported "
@@ -1655,6 +1670,13 @@ cirrusEnterLeave(enter)
 {
   static unsigned char temp;
 
+#ifndef MONOVGA
+  if (vga256InfoRec.directMode&XF86VidModeDirectGraphics && !enter)
+     {
+      cirrusHideCursor();
+      return;
+  }
+#endif
   if (enter)
        {
 
@@ -1850,7 +1872,7 @@ cirrusRestore(restore)
   if (Is_754x(cirrusChip)) {
       /* Does something need to be unlocked here?? */
       outb(vgaIOBase + 4, 0x2d);
-      i = inb(vgaIOBase + 5)
+      i = inb(vgaIOBase + 5);
       outb(vgaIOBase + 5, (i & ~0x01) | (restore->CR2D & 0x01));
   }
 

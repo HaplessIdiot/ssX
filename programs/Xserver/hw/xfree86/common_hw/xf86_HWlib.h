@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.14 1995/07/01 10:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.15 1995/10/21 11:43:07 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -195,7 +195,8 @@ extern void Ti3026SetClock(
 #if NeedFunctionPrototypes
 	long,
 	int,
-	int
+	int,
+	char
 #endif
 );
 

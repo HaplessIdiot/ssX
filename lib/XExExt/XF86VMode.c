@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.9 1995/08/13 09:40:58 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.10 1995/09/17 06:28:11 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -246,7 +246,8 @@ Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
     SyncHandle();
     return True;
 }
-    
+
+
 Bool XF86VidModeSetSaver(dpy, screen, suspendTime, offTime)
     Display* dpy;
     int screen;
@@ -389,3 +390,171 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     SyncHandle();
     return True;
 }
+
+
+Bool XF86VidModeGetVideoLL(dpy, screen, offset, width, bank_size, ram_size)
+    Display* dpy;
+    int screen;
+    int *offset;
+    int *width, *bank_size, *ram_size;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetVideoLLReply rep;
+    xXF86VidModeGetVideoLLReq *req;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetVideoLL, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeGetVideoLL;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    *offset = (char *)rep.offset;
+    *width = rep.width;
+    *bank_size = rep.bank_size;
+    *ram_size = rep.ram_size;
+	
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+    
+Bool XF86VidModeDirectVideoLL(dpy, screen, enable)
+    Display* dpy;
+    int screen;
+    int enable;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeDirectVideoReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeDirectVideo, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeDirectVideo;
+    req->screen = screen;
+    req->enable = enable;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy,False);
+    return True;
+}
+
+Bool XF86VidModeGetViewPort(dpy, screen, x, y)
+    Display* dpy;
+    int screen;
+    int *x, *y;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetViewPortReply rep;
+    xXF86VidModeGetViewPortReq *req;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetViewPort, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeGetViewPort;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    *x = rep.x;
+    *y = rep.y;
+	
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+    
+    
+Bool XF86VidModeSetViewPort(dpy, screen, x, y)
+    Display* dpy;
+    int screen;
+    int x, y;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeSetViewPortReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetViewPort, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeSetViewPort;
+    req->screen = screen;
+    req->x = x;
+    req->y = y;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy,False);
+    return True;
+}
+
+    
+Bool XF86VidModeGetVidPage(dpy, screen, vpage)
+    Display* dpy;
+    int screen;
+    int *vpage;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeGetVidPageReply rep;
+    xXF86VidModeGetVidPageReq *req;
+    int i;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetVidPage, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeGetVidPage;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    *vpage = rep.vpage;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+    
+Bool XF86VidModeSetVidPage(dpy, screen, vpage)
+    Display* dpy;
+    int screen;
+    int vpage;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeSetVidPageReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetVidPage, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeSetVidPage;
+    req->screen = screen;
+    req->vpage = vpage;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy,False);
+    return True;
+}
+
+

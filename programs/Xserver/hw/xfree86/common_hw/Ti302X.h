@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.2 1995/07/21 14:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.3 1995/11/30 13:04:33 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -198,3 +198,8 @@
 
 #define TI_REF_FREQ		14.31818  /* 3025 only */
 
+/*
+ * which clocks should be set (just flags...)
+ */
+#define TI_BOTH_CLOCKS	1
+#define TI_LOOP_CLOCK	2

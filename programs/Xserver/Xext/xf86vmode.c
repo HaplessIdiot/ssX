@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.10 1995/07/16 14:52:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.11 1995/09/10 10:22:36 dawes Exp $ */
 
 /*
 
@@ -512,6 +512,7 @@ ProcVGAHelpSwitchMode(client)
     return (client->noClientException);
 }
 
+
 static int
 ProcXF86VidModeLockModeSwitch(client)
     register ClientPtr client;
@@ -529,6 +530,7 @@ ProcXF86VidModeLockModeSwitch(client)
     xf86LockZoom(vptr, (short)stuff->lock);
     return (client->noClientException);
 }
+
 
 static int
 ProcXF86VidModeSetSaver(client)
@@ -660,6 +662,199 @@ ProcXF86VidModeGetSaver(client)
     return (client->noClientException);
 }
 
+
+static int
+ProcXF86VidModeGetVideoLL(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeGetVideoLLReq);
+    xXF86VidModeGetVideoLLReply rep;
+    ScrnInfoPtr vptr;
+    register int n;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+    REQUEST_SIZE_MATCH(xXF86VidModeGetVideoLLReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    xf86GetVidMemData(stuff->screen, &rep.offset, &rep.bank_size);
+    rep.width = vptr->displayWidth;
+    rep.ram_size = vptr->videoRam;
+
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.offset, n);
+    	swapl(&rep.width, n);
+    	swapl(&rep.bank_size, n);
+    	swapl(&rep.ram_size, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86VidModeGetVideoLLReply), (char *)&rep);
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
+static int
+ProcXF86VidModeDirectVideo(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeDirectVideoReq);
+    ScrnInfoPtr vptr;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeDirectVideoReq);
+    if (!(vptr->directMode&XF86VidModeDirectPresent)) {
+       /* chipset doesn't know about directVideoMode */
+       /* should generate a diffent error? */
+	return BadImplementation;
+    }
+    
+    if (stuff->enable&XF86VidModeDirectGraphics) {
+       vptr->directMode = stuff->enable|XF86VidModeDirectPresent;
+       if (xf86VTSema == TRUE) {
+	  vptr->EnterLeaveVT(LEAVE, stuff->screen);
+	  xf86VTSema = FALSE;
+       }
+    } else {
+       if (xf86VTSema == FALSE) {
+          xf86VTSema = TRUE;
+          vptr->EnterLeaveVT(ENTER, stuff->screen);
+       }
+       vptr->directMode = stuff->enable|XF86VidModeDirectPresent;
+    }
+
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
+static int
+ProcXF86VidModeGetViewPort(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeGetViewPortReq);
+    xXF86VidModeGetViewPortReply rep;
+    register int n;
+    ScrnInfoPtr vptr;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeGetViewPortReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.x = 0;
+    rep.y = 0;
+
+    ErrorF("Unimplemented XF86VidModeGetViewPort requested\n");
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.x, n);
+    	swapl(&rep.y, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86VidModeGetViewPortReply), (char *)&rep);
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
+static int
+ProcXF86VidModeSetViewPort(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeSetViewPortReq);
+    ScrnInfoPtr vptr;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeSetViewPortReq);
+
+    if (vptr->AdjustFrame &&
+	(xf86VTSema == TRUE || vptr->directMode&XF86VidModeDirectGraphics))
+	vptr->AdjustFrame(stuff->x, stuff->y);
+    else
+	return BadAccess;
+
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
+static int
+ProcXF86VidModeGetVidPage(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeGetVidPageReq);
+    ScrnInfoPtr vptr;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+    ErrorF("XF86VidModeGetVidPage not yet implemented\n");
+
+    REQUEST_SIZE_MATCH(xXF86VidModeGetVidPageReq);
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
+
+static int
+ProcXF86VidModeSetVidPage(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeSetVidPageReq);
+    ScrnInfoPtr vptr;
+
+#ifdef XFreeXDGA
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86VidModeSetVidPageReq);
+
+    if (xf86VTSema == TRUE) {/* only valid when switched away! */
+       /* should generate which error? */
+	return BadAccess;
+    }
+
+    if (vptr->setBank) {
+	vptr->setBank(stuff->vpage);
+    }
+    return (client->noClientException);
+#else
+    return BadRequest;
+#endif
+}
+
 static int
 ProcVGAHelpDispatch (client)
     register ClientPtr	client;
@@ -683,6 +878,18 @@ ProcVGAHelpDispatch (client)
 	return ProcXF86VidModeGetSaver(client);
     case X_XF86VidModeSetSaver:
 	return ProcXF86VidModeSetSaver(client);
+    case X_XF86VidModeGetVideoLL:
+	return ProcXF86VidModeGetVideoLL(client);
+    case X_XF86VidModeDirectVideo:
+	return ProcXF86VidModeDirectVideo(client);
+    case X_XF86VidModeGetViewPort:
+	return ProcXF86VidModeGetViewPort(client);
+    case X_XF86VidModeSetViewPort:
+	return ProcXF86VidModeSetViewPort(client);
+    case X_XF86VidModeGetVidPage:
+	return ProcXF86VidModeGetVidPage(client);
+    case X_XF86VidModeSetVidPage:
+	return ProcXF86VidModeSetVidPage(client);
     default:
 	return BadRequest;
     }
@@ -785,6 +992,20 @@ SProcXF86VidModeLockModeSwitch(client)
     return ProcXF86VidModeLockModeSwitch(client);
 }
 
+
+static int
+SProcXF86VidModeDirectVideo(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86VidModeDirectVideoReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86VidModeDirectVideoReq);
+    swapl(&stuff->screen, n);
+    swaps(&stuff->enable, n);
+    return ProcXF86VidModeDirectVideo(client);
+}
+
 static int
 SProcVGAHelpGetMonitor(client)
     ClientPtr client;
@@ -820,7 +1041,10 @@ SProcVGAHelpDispatch (client)
 	return SProcXF86VidModeGetSaver(client);
     case X_XF86VidModeSetSaver:
 	return SProcXF86VidModeSetSaver(client);
+    case X_XF86VidModeDirectVideo:
+	return SProcXF86VidModeDirectVideo(client);
     default:
 	return BadRequest;
     }
 }
+

@@ -1,5 +1,5 @@
 /* $XConsortium: s3name.h,v 1.3 95/06/09 20:57:00 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.6 1995/01/28 17:02:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.7 1995/06/14 07:34:42 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -100,6 +100,7 @@
 #define s3FontCache8Init CUSTOMNAME(_s3FontCache8Init)
 #define s3GlyphWrite CUSTOMNAME(_s3GlyphWrite)
 #define s3CacheMoveBlock CUSTOMNAME(_s3CacheMoveBlock)
+#define s3SetVidPage CUSTOMNAME(_s3SetVidPage)
 #endif /* CUSTOMNAME */
 
 #endif /* S3_NAME_H */

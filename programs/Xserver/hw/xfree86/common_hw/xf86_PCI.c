@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.1 1995/03/18 12:06:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.2 1995/06/24 10:28:28 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -139,6 +139,7 @@ xf86scanpci()
             outl(0xCF8, config_cmd | 0x30); pcr._baserom = inl(0xCFC);
             outl(0xCF8, config_cmd | 0x3C); pcr._max_min_ipin_iline
 								= inl(0xCFC);
+            outl(0xCF8, config_cmd | 0x40); pcr._user_config = inl(0xCFC);
 
             /* check for pci-pci bridges (currently we only know Digital) */
             if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
@@ -209,6 +210,7 @@ xf86scanpci()
             pcr._base5 = inl(pcr._ioaddr + 0x24);
             pcr._baserom = inl(pcr._ioaddr + 0x30);
             pcr._max_min_ipin_iline = inl(pcr._ioaddr + 0x3C);
+            pcr._user_config = inl(pcr._ioaddr + 0x40);
 	    outb(0xCFA, 0x00); /* bus 0 for now */
 
             /* check for pci-pci bridges (currently we only know Digital) */

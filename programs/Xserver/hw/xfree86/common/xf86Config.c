@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.61 1995/11/16 11:05:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.62 1995/11/30 13:04:08 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2687,7 +2687,8 @@ xf86LookupMode(target, driver)
   {
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
-      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)))
+      if ((OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions))) &&
+	  !OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(driver->options)))
       {
         if (driver->clocks == 0)
         {
@@ -2721,17 +2722,6 @@ xf86LookupMode(target, driver)
 	       
           target->Clock = i;
           best_mode = p;
-        }
-      }
-      else if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &(driver->options)))
-      {
-        if ((p->Clock / 1000) > (driver->maxClock / 1000))
-          clock_too_high = TRUE;
-	else
-	{
-	  target->SynthClock = p->Clock;
-	  target->Clock = 0;
-	  best_mode = p;
         }
       }
       else
@@ -2800,8 +2790,8 @@ xf86LookupMode(target, driver)
       ErrorF("%s %s: Mode \"%s\": mode clock = %7.3f",
              XCONFIG_GIVEN, driver->name, target->name,
              best_mode->Clock / 1000.0);
-      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)) &&
-	  !OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &(driver->options)))
+      if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions)) ||
+	  OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(driver->options)))
         ErrorF(", clock used = %7.3f", driver->clock[target->Clock] / 1000.0);
       ErrorF("\n");
     }

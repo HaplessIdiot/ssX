@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.35 1995/07/02 07:55:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.36 1995/07/03 10:11:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -43,12 +43,20 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "vga.h"
+
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86VIDMODE_SERVER_
+#include "extensions/xf86vmstr.h"
+
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
 #include "cfb16.h"
 #include "cfb32.h"
 #include "vgabpp.h"
 #endif
+
 
 #ifndef XF86VGA16
 #ifdef MONOVGA
@@ -159,6 +167,8 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int suspendTime */
   0,			/* int offTime */
   -1,			/* int s3BlankDelay */
+  0,                    /* int directMode */
+  NULL,                 /* Set Vid Page */
 };
 
 pointer vgaOrigVideoState = NULL;
@@ -1233,17 +1243,23 @@ vgaEnterLeaveVT(enter, screen_idx)
        * abnormaly. Therefore there MUST be a check whether vgaOrigVideoState
        * is valid or not.
        */
-      if (vgaOrigVideoState)
-	vgaRestore(vgaOrigVideoState);
+      if (!(vga256InfoRec.directMode&XF86VidModeDirectGraphics)) {      
+         if (vgaOrigVideoState)
+            vgaRestore(vgaOrigVideoState);
 
-      (vgaEnterLeaveFunc)(LEAVE);
+            (vgaEnterLeaveFunc)(LEAVE);
 
-      xf86UnMapDisplay(screen_idx, VGA_REGION);
-      if (vgaUseLinearAddressing)
-      {
-        xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+            xf86UnMapDisplay(screen_idx, VGA_REGION);
+            if (vgaUseLinearAddressing)
+            {
+               xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+            }
+      } else {
+         /* make sure we are in linear mode */
+         /* hide any harware cursors */
+         (vgaEnterLeaveFunc)(LEAVE);
       }
-
+  
       saveInitFunc = vgaInitFunc;
       saveSaveFunc = vgaSaveFunc;
       saveRestoreFunc = vgaRestoreFunc;

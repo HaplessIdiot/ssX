@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.77 1995/11/16 11:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.78 1995/11/30 13:03:53 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -922,6 +922,26 @@ s3Init(mode)
 	 outb(vgaCRReg, tmp & 0xDF);
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x00);
+      }
+   }
+
+   if(    (DAC_IS_TI3026) 
+       && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
+      /*
+       * for the boards with Ti3026 and external ICD2061A clock chip we
+       * need to enable clock doubling, if necessary
+       */
+      if( mode->Flags & V_DBLCLK ) {
+#ifdef EXTENDED_DEBUG
+	 ErrorF("Putting Ti3026 into external double clock mode\n");
+#endif
+         s3OutTi3026IndReg(TI_INPUT_CLOCK_SELECT,0x00,0x08);
+      }
+      else {
+#ifdef EXTENDED_DEBUG
+	 ErrorF("Putting Ti3026 into external clock mode\n");
+#endif
+         s3OutTi3026IndReg(TI_INPUT_CLOCK_SELECT,0x00,0x00);
       }
    }
 

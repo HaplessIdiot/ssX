@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.34 1995/11/12 09:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.35 1995/11/16 11:05:04 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -120,7 +120,7 @@ typedef struct {
 #define OPTION_BLOCK_WRITE	96 /* Block write mode for Mach64 */
 #define OPTION_NO_BIOS_CLOCKS	97 /* Override BIOS clocks for Mach64 */
 #define OPTION_S3_INVERT_VCLK	98 /* invert VLCK (CR67:0) (S3) */
-#define OPTION_PROGRAM_CLOCKS	99 /* Turn on programmable clocks (Mach64) */
+#define OPTION_NO_PROGRAM_CLOCKS 99 /* Turn off clock programming */
 
 /* Debugging options */
 #define OPTION_SHOWCACHE	100 /* Allow cache to be seen (S3) */
@@ -172,6 +172,7 @@ typedef struct {
 #define CLOCK_OPTION_ICS5341    14 /* use ICS 5341 (ET4000W32p) */
 #define CLOCK_OPTION_TRIDENT    15 /* use programmable clock on TGUI */
 #define CLOCK_OPTION_ATT409     16 /* use ATT20C409 programmable clock */
+#define CLOCK_OPTION_CH8398     17 /* use Chrontel 8398 programmable clock */
 
 /*
  * Table to map option strings to tokens.
@@ -254,7 +255,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "block_write",	OPTION_BLOCK_WRITE },
   { "no_bios_clocks",	OPTION_NO_BIOS_CLOCKS },
   { "s3_invert_vclk",	OPTION_S3_INVERT_VCLK },
-  { "program_clocks",	OPTION_PROGRAM_CLOCKS },
+  { "no_program_clocks",OPTION_NO_PROGRAM_CLOCKS },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
@@ -317,6 +318,9 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "tgui",		CLOCK_OPTION_TRIDENT },   /* Trident TGUI built-in */
   { "att20c409",	CLOCK_OPTION_ATT409 },    /* ATT20C409 */
   { "att20c499",	CLOCK_OPTION_ATT409 },    /* ATT20C499, 409 compatible */
+  { "att20c408",	CLOCK_OPTION_ATT409 },    /* ATT20C408, 409 compatible */
+  { "ch8398",		CLOCK_OPTION_CH8398 },    /* Chrontel 8398 */
+  { "ati18818",		CLOCK_OPTION_ICS2595 },   /* ATI18818, ICS2595 compatible */
   { "",			-1 },
 };
 

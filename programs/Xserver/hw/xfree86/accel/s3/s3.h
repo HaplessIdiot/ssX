@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.26 1995/07/21 14:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.27 1995/11/16 11:04:47 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -288,6 +288,13 @@ void s3AdjustFrame(
     int 
 #endif
 );
+
+void s3SetVidPage(
+#if NeedFunctionPrototypes
+    int
+#   endif
+);
+
 /* s3cmap.c */
 int s3ListInstalledColormaps(
 #if NeedFunctionPrototypes

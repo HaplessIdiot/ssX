@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.104 1995/11/18 02:30:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.105 1995/11/30 13:03:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -48,6 +48,13 @@
 #include "Ti302X.h"
 #include "IBMRGB.h"
 #include "s3ELSA.h"
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86VIDMODE_SERVER_
+#include "extensions/xf86vmstr.h"
 
 extern int s3MaxClock;
 char s3Mbanks;
@@ -126,6 +133,8 @@ ScrnInfoRec s3InfoRec =
    0,				/* int suspendTime */
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
+   0,				/* int directMode */
+   s3SetVidPage,		/* Set Vid Page */
 };
 
 short s3alu[16] =
@@ -547,7 +556,7 @@ s3Probe()
    int maxDisplayWidth, maxDisplayHeight;
    OFlagSet validOptions;
    char *card, *serno;
-   int card_id, max_pix_clock, max_mem_clock;
+   int card_id, max_pix_clock, max_mem_clock, hwconf;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -806,12 +815,13 @@ s3Probe()
    }
 
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
-			  &max_mem_clock);
+			  &max_mem_clock, &hwconf);
    if (card_id > 0) {
       if (s3BiosVendor == UNKNOWN_BIOS) 
 	 s3BiosVendor = ELSA_BIOS;
-      ErrorF("%s %s: card: %s, Ser.No. %s\n",
-	     XCONFIG_PROBED, s3InfoRec.name, card, serno);
+      if (xf86Verbose)
+         ErrorF("%s %s: card: %s, Ser.No. %s\n",
+	        XCONFIG_PROBED, s3InfoRec.name, card, serno);
       xfree(card);
       xfree(serno);
 
@@ -842,13 +852,30 @@ s3Probe()
 	 case ELSA_WINNER_2000VL:
 	 case ELSA_WINNER_2000PCI:
 	    break;  /* set ICD2061A clock chip */
-	 case ELSA_WINNER_2000PRO_X:
 	 case ELSA_WINNER_2000AVI:
 	    if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
 	       ErrorF("%s %s: for TVP3026 RAMDACs you must not specify Option \"elsa_w2000pro\"\n",
 		      XCONFIG_PROBED, s3InfoRec.name);
 	       OFLG_CLR(OPTION_ELSA_W2000PRO, &s3InfoRec.options);
 	    }
+	 case ELSA_WINNER_2000PRO_X:
+	    if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	       ErrorF("%s %s: for TVP3026 RAMDACs you must not specify Option \"elsa_w2000pro\"\n",
+		      XCONFIG_PROBED, s3InfoRec.name);
+	       OFLG_CLR(OPTION_ELSA_W2000PRO, &s3InfoRec.options);
+	    }
+	    if (hwconf & 2) {
+	       /*
+	        * this version of the Winner 2000PRO/X has an external ICS9164A
+	        * clockchip, so set ICD2061A flag
+	        */
+               if (xf86Verbose)
+	          ErrorF("%s %s: Rev. G Winner 2000PRO/X with external clockchip detected\n",
+		         XCONFIG_PROBED, s3InfoRec.name);
+	       break;
+	    } else {
+	       continue;
+            }
 	 case ELSA_WINNER_1000PRO_TRIO32:
 	 case ELSA_WINNER_1000PRO_TRIO64:
 	 default: 
@@ -1965,12 +1992,8 @@ s3Probe()
       clockchip_probed = XCONFIG_PROBED;
    }
 
-   if (OFLG_ISSET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions)) {
+   if (DAC_IS_TI3026) {
       int mclk, m, n, p;
-      s3ClockSelectFunc = ti3026ClockSelect;
-      OFLG_SET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions);
-      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
-
       s3OutTi3026IndReg(TI_PLL_CONTROL, 0x00, 0x00);
       n = s3InTi3026IndReg(TI_MCLK_PLL_DATA) & 0x3f;
       s3OutTi3026IndReg(TI_PLL_CONTROL, 0x00, 0x04);
@@ -1979,11 +2002,19 @@ s3Probe()
       p = s3InTi3026IndReg(TI_MCLK_PLL_DATA) & 0x03;
       mclk = ((1431818 * ((65-m) * 8)) / (65-n) / (1 << p) + 50) / 100;
       if (xf86Verbose)
-	 ErrorF("%s %s: Using TI 3026 programmable clock (MCLK %1.3f MHz)\n",
+	 ErrorF("%s %s: Using TI 3026 programmable MCLK (MCLK %1.3f MHz)\n",
 		clockchip_probed, s3InfoRec.name, mclk / 1000.0);
       numClocks = 3;
       if (!s3InfoRec.s3MClk)
 	 s3InfoRec.s3MClk = mclk;
+   }
+   if (OFLG_ISSET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = ti3026ClockSelect;
+      OFLG_SET(CLOCK_OPTION_TI3026, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using TI 3026 programmable DCLK\n",
+		clockchip_probed, s3InfoRec.name);
    } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
       int mclk, m, n, p, mcc, cr5c;
       s3ClockSelectFunc = ti3025ClockSelect;
@@ -2929,9 +2960,27 @@ s3Probe()
 	    }
 	    break;
 	 case TI3026_DAC:  /* IBMRGB??? */
-	    if (pMode->SynthClock > 80000) {
-               /* the SynthClock will be divided and clock doubled by the PLL */
-	       pMode->Flags |= V_DBLCLK;
+            if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+               /*
+                * for the mixed Ti3026 + ICD2061A cases we need to split
+                * at 120MHz; Since the ICD2061A clock code dislikes 120MHz
+                * we already double for that
+                */
+	       if (pMode->SynthClock >= 120000) {
+	          pMode->Flags |= V_DBLCLK;
+	          pMode->SynthClock /= 2;
+	       }
+	    } else {
+	       /*
+	        * use the Ti3026 clock
+	        */
+	       if (pMode->SynthClock > 80000) {
+                  /* 
+                   * the SynthClock will be divided and clock doubled 
+                   * by the PLL 
+                   */
+	          pMode->Flags |= V_DBLCLK;
+	       }
 	    }
 	    break;
 	 case IBMRGB52x_DAC:
@@ -3231,7 +3280,6 @@ s3Probe()
       }
    }
    s3BppDisplayWidth = s3Bpp * s3DisplayWidth;
-      
    /*
     * Work out where to locate S3's HW cursor storage.  It must be on a
     * 1k boundary.  When using a RAMDAC cursor, set s3CursorStartY
@@ -3292,6 +3340,10 @@ s3Probe()
    if (OFLG_ISSET(OPTION_POWER_SAVER, &s3InfoRec.options))
       s3PowerSaver = TRUE;
 
+#ifdef XFreeXDGA
+      s3InfoRec.displayWidth = s3DisplayWidth;
+      s3InfoRec.directMode = XF86VidModeDirectPresent;
+#endif
    return TRUE;
 }
 
@@ -3411,6 +3463,12 @@ icd2061ClockSelect(freq)
 	    AltICD2061SetClock(freq, 2);
 	    AltICD2061SetClock(freq, 2);
 	    AltICD2061SetClock(freq, 2);
+	    if (DAC_IS_TI3026) {
+	       /* 
+	        * then we need to setup the loop clock
+	        */
+	       Ti3026SetClock(freq/1000, 2, s3Bpp, TI_LOOP_CLOCK);
+            }
 	 } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
 	    result = SC11412SetClock((long)freq/1000);
 	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
@@ -3428,8 +3486,6 @@ icd2061ClockSelect(freq)
 	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                 S3_964_SERIES(s3ChipId)) /* SPEA Mercury P64 uses bit2/3  */
                  outb(vgaCRReg, tmp | 0x06);   /* for synchronizing reasons (?) */
-	    else if (DAC_IS_TI3026) /* some Ti3026 are used with external clk*/
-		 outb(vgaCRReg, tmp | 0x00);   /* here the clk0 is used */
             else outb(vgaCRReg, tmp | 0x02); 
             usleep(150000);
 	 }
@@ -3588,7 +3644,7 @@ ti3026ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-	 (void) Ti3026SetClock(freq, 2, s3Bpp); /* can't fail */
+	 (void) Ti3026SetClock(freq, 2, s3Bpp, TI_BOTH_CLOCKS); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 tmp = inb(vgaCRReg) & 0xf0;
 	 outb(vgaCRReg, tmp | 0x02);

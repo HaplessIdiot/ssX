@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.29 1995/07/12 15:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.30 1995/07/22 04:17:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -48,6 +48,14 @@
 #include "xf86_Config.h"
 #include "s3linear.h"
 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86VIDMODE_SERVER_
+#include "extensions/xf86vmstr.h"
+ 
 extern char s3Mbanks;
 extern Bool s3Mmio928;
 
@@ -342,7 +350,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    s3LinApOpt = 0x14;
 	 }
       }
-	   
+
+        
       /* Save CR59, CR5A for future calls to s3Init() */
       outb(vgaCRIndex, 0x59);
       s3Port59 = inb(vgaCRReg);
@@ -441,16 +450,17 @@ s3EnterLeaveVT(enter, screen_idx)
 	 ScrnInfoPtr pScr = XF86SCRNINFO(pScreen);
 
          s3Unlock();
-         s3Init(s3InfoRec.modes);
+	 s3Init(s3InfoRec.modes);
          s3InitEnvironment();
-         AlreadyInited = TRUE;
+	 AlreadyInited = TRUE;
 	 s3RestoreDACvalues();
 	 s3ImageInit();
    	 s3FontCache8Init();
 	 s3RestoreColor0(pScreen);
-	 (void)s3CursorInit(0, pScreen); 
+         (void)s3CursorInit(0, pScreen);
 	 s3RestoreCursor(pScreen);
 	 s3AdjustFrame(pScr->frameX0, pScr->frameY0);
+
 
 	 if ((pointer)pspix->devPrivate.ptr != s3VideoMem && ppix) {
 	    pspix->devPrivate.ptr = s3VideoMem;
@@ -483,13 +493,20 @@ s3EnterLeaveVT(enter, screen_idx)
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }
-      if (AlreadyInited) {
+      if (s3InfoRec.directMode & XF86VidModeDirectGraphics) {
+	s3HideCursor();
+      } else if (AlreadyInited) {
 	  s3CleanUp();
-	  AlreadyInited = FALSE;
+          AlreadyInited = FALSE;
       }
+
       xf86UnMapDisplay(screen_idx, VGA_REGION);
       if (s3VideoMem != vgaBase)
-	 xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+         xf86UnMapDisplay(screen_idx, LINEAR_REGION);
+      if (s3InfoRec.directMode & XF86VidModeDirectGraphics) {
+        /* make sure we are in linear mode */
+	s3EnableLinear();
+      }
    }
 }
 
@@ -760,6 +777,11 @@ s3AdjustFrame(int x, int y)
       Base &= ~a;
    }
 
+   /* wait for vertical retrace */
+   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
+   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ;
+   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
+
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
@@ -809,4 +831,11 @@ s3TryAddress(addr, value, physaddr, stage)
       return TRUE;
    else
       return FALSE;
+}
+
+
+void s3SetVidPage(vPage)
+   int vPage;
+{
+  s3BankSelect(vPage);
 }

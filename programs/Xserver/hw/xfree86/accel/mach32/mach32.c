@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.40 1995/07/12 15:35:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.41 1995/07/15 15:04:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -130,6 +130,8 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int suspendTime */
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
+    0,			/* int directMode */
+    NULL,		/* Set Vid Page */
 };
 
 short mach32alu[16] = {

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.38 1995/10/22 11:01:45 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.39 1995/11/04 11:29:22 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -295,6 +295,9 @@ include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"ics2595"\fP,
 \fB"ics5300"\fP, \fB"ics5342"\fP, \fB"ch8391"\fP,
 \fB"stg1703"\fP and \fB"ibm_rgb5xx"\fP.
+Possible values for the Mach64 server include \fB"ati18818"\fP,
+\fB"ics2595"\fP, \fB"stg1703"\fP, \fB"ch8398"\fP, and
+\fB"att20c408"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the S3,
@@ -361,8 +364,8 @@ This must be specified if the server fails to detect it.
 \fBstg1700\fP - (S3) Card has an STG1700 RAMDAC.  This must be specified
 if the server fails to detect it.
 .sp
-\fBstg1703\fP - (S3) Card has an STG1703 RAMDAC.  This must be specified
-if the server fails to detect it.
+\fBstg1703\fP - (S3, Mach64) Card has an STG1703 RAMDAC.  This must be
+specified if the server fails to detect it.
 .sp
 \fBs3gendac\fP - (S3) Card has an S3 86C708 GENDAC.
 This RAMDAC does not support 8 bit per RGB mode (don't specify
@@ -408,6 +411,27 @@ be specified if the server fails to detect the Ti3026.
 .sp
 \fBherc_small_dac\fP - (AGX) Card (Hercules Graphite Pro) has only the
 44-pin (Bt481 or Bt482) RAMDAC installed.
+.sp
+\fBati68875\fP - (Mach64) Card has an ATI 68875 RAMDAC.  This must be
+specified if the server fails to detect it.
+.sp
+\fBtlc34075\fP - (Mach64) Card has a TI 34075 RAMDAC.  This must be
+specified if the server fails to detect it.
+.sp
+\fBati68860\fP - (Mach64) Card has an ATI 68860 RAMDAC.  This must be
+specified if the server fails to detect it.
+.sp
+\fBati68880\fP - (Mach64) Card has an ATI 68860 RAMDAC.  This must be
+specified if the server fails to detect it.
+.sp
+\fBstg1702\fP - (Mach64) Card has an STG1702 RAMDAC.  This must be
+specified if the server fails to detect it.
+.sp
+\fBch8398\fP - (Mach64) Card has an Chrontel 8398 RAMDAC.  This must
+be specified if the server fails to detect it.
+.sp
+\fBatt20c408\fP - (Mach64) Card has an AT&T 20C408 RAMDAC.  This must
+be specified if the server fails to detect it.
 .TP 8
 .B IOBase \fIioaddress\fP
 specified the base address for extended IO registers.  This is only
@@ -523,7 +547,7 @@ signal on cards with Bt485, AT&T 20C505, Ti3020/5/6 or IBM RGB5xx RAMDACs.  \fBN
 Although these RAMDACs support sync on green, it won't work on many cards
 because of the way they are designed.
 .sp
-\fBpower_saver\fP - (S3 and Mach64) This option enables the server
+\fBpower_saver\fP - (S3, Mach64) This option enables the server
 to use the power saving features of VESA DPMS compatible monitors.
 The suspend level is currently only supported for the Mach64 and for
 the 732, 764, 864, 868, 964, 968 S3 chips.  Refer to the \fIXF86Config(4/5)\fP
@@ -603,8 +627,14 @@ automatically determine if the card can handle block write mode, but
 this option will override the probe result.
 .sp
 \fBno_bios_clocks\fP - (Mach64) The Mach64 server normally reads the
-clocks from the bios.  This option overrides the bios clocks and
+clocks from the BIOS.  This option overrides the BIOS clocks and
 forces the server to use the clocks given in the XF86Config file.
+.sp
+\fBno_program_clocks\fP - (Mach64) The Mach64 server will
+automatically detect the clock chip and programs it directly from the
+video modes given.  This option disables the clock chip programming
+and forces the use of the pre-programmed clocks either read from the
+BIOS or given on the Clocks line in the XF86Config file.
 .sp
 There are also numerous tuning options for the AGX server.  Refer to
 \fIREADME.agx\fP for details.

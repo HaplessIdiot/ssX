@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.h,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.4 1995/05/27 03:10:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.5 1995/10/21 11:39:38 dawes Exp $ */
 
 #ifndef _S3ELSA_H_
 #define _S3ELSA_H_
@@ -108,7 +108,8 @@ extern int s3DetectELSA(
 			char **pcard, 
 			char **pserno,
 			int *max_pix_clock, 
-			int *max_mem_clock
+			int *max_mem_clock,
+			int *hwconf
 #endif
 			);
 

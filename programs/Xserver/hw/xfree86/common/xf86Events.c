@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.16 1995/11/04 11:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.17 1995/11/12 09:51:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,6 +38,14 @@
 #include "atKeynames.h"
 
 #include "osdep.h"
+
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86VIDMODE_SERVER_
+#include "extensions/xf86vmstr.h"
+
 
 #define XE_POINTER  1
 #define XE_KEYBOARD 2
@@ -106,7 +114,8 @@ extern unsigned char xf86CodrvMap[];
 #endif
 
 static void xf86VTSwitch();
-
+static void XF86DirectVideoMoveMouse();
+static void XF86DirectVideoKeyEvent();
 /*
  * Lets create a simple finite-state machine:
  *
@@ -833,7 +842,11 @@ xf86PostKbdEvent(key)
     }
   else 
     {
-      ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86VidModeDirectKeyb) {
+	  XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
+      } else {
+         ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+      }
     }
 
   if (updateLeds) xf86KbdLeds();
@@ -892,7 +905,11 @@ xf86PostMseEvent(buttons, dx, dy)
       dy = (dy * xf86Info.num)/ xf86Info.den;
     }
 
-    MOVEPOINTER(dx, dy, mevent.u.keyButtonPointer.time);
+    if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86VidModeDirectMouse) {
+	XF86DirectVideoMoveMouse(dx, dy, mevent.u.keyButtonPointer.time);
+    } else {
+        MOVEPOINTER(dx, dy, mevent.u.keyButtonPointer.time);
+    }
   }
 
   if (xf86Info.emulate3Buttons)
@@ -1164,3 +1181,59 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
 }
 
 #endif /* XTESTEXT1 */
+
+
+#if 1 /* XF86DGA */
+extern void DeliverFocusedEvent();
+extern void DeliverDeviceEvents();
+extern WindowPtr GetSpriteWindow();
+
+static void
+XF86DirectVideoMoveMouse(x, y, mtime)
+     int x;
+     int y;
+     CARD32 mtime;
+{
+  xEvent xE;
+  Bool   deactivateGrab = FALSE;
+
+  xE.u.u.type = MotionNotify;
+  xE.u.keyButtonPointer.time = xf86Info.lastEventTime = mtime;
+  xf86Info.lastEventTime = mtime;
+
+
+  xE.u.keyButtonPointer.eventY = x;
+  xE.u.keyButtonPointer.eventY = y;
+  xE.u.keyButtonPointer.rootX = x;
+  xE.u.keyButtonPointer.rootY = y;
+
+  if (((DeviceIntPtr)(xf86Info.pPointer))->grab)
+     DeliverGrabbedEvent(&xE, (xf86Info.pPointer), FALSE, 1);
+  else
+     DeliverDeviceEvents(GetSpriteWindow(), &xE, NullGrab, NullWindow,
+			   (xf86Info.pPointer), 1);
+
+
+}
+
+static void
+XF86DirectVideoKeyEvent(xE, keycode, etype)
+xEvent *xE;
+int keycode;
+int etype;
+{
+  DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+  KeyClassPtr keyc = keybd->key;
+  BYTE *kptr;
+
+  kptr = &keyc->down[keycode >> 3];
+  xE->u.u.type = etype;
+  xE->u.u.detail = keycode;
+
+  /* clear the keypress state */
+  if (etype == KeyPress) {
+    *kptr &= ~(1 << (keycode & 7));
+  }
+  ProcessKeyboardEvent(xE, keybd, 1);
+}
+#endif

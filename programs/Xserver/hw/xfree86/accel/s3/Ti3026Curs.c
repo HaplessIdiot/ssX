@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.0 1995/04/24 05:20:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.1 1995/05/27 03:09:56 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -68,10 +68,11 @@ unsigned char mask;
 unsigned char data;
 #endif
 {
-   unsigned char tmp, tmp1, tmp2 = 0x00;
+   unsigned char tmp, tmp0, tmp1, tmp2 = 0x00;
 
    outb(vgaCRIndex, 0x55);
-   tmp = inb(vgaCRReg) & 0xFC;
+   tmp0 = inb(vgaCRReg);
+   tmp  = tmp0 & 0xFC;
    outb(vgaCRReg, tmp | 0x00);
    tmp1 = inb(0x3c8);
    outb(0x3c8, reg);
@@ -83,7 +84,11 @@ unsigned char data;
    
    outb(vgaCRReg, tmp | 0x00);
    outb(0x3c8, tmp1);  /* just in case anyone relies on this */
-   outb(vgaCRReg, tmp);
+   outb(vgaCRReg, tmp0);
+
+#ifdef EXTENDED_DEBUG
+   ErrorF("Set Ti Ind 0x%x to 0x%x\n",reg,tmp2|data);
+#endif
 }
 
 #ifdef __STDC__
@@ -93,10 +98,11 @@ unsigned char s3InTi3026IndReg(reg)
 unsigned char reg;
 #endif
 {
-   unsigned char tmp, tmp1, ret;
+   unsigned char tmp, tmp0, tmp1, ret;
 
    outb(vgaCRIndex, 0x55);
-   tmp = inb(vgaCRReg) & 0xFC;
+   tmp0 = inb(vgaCRReg);
+   tmp  = tmp0 & 0xFC;
    outb(vgaCRReg, tmp | 0x00);
    tmp1 = inb(0x3c8);
    outb(0x3c8, reg);
@@ -106,7 +112,7 @@ unsigned char reg;
 
    outb(vgaCRReg, tmp | 0x00);
    outb(0x3c8, tmp1);  /* just in case anyone relies on this */
-   outb(vgaCRReg, tmp);
+   outb(vgaCRReg, tmp0);
 
    return(ret);
 }
