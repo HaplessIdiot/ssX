@@ -123,54 +123,55 @@ int SiS_compute_vclk(
      *
      * ** this function can select VCLK ranged from 18.75 to 250 Mhz
      */
+
     f = (float) Clock;
     f /= 1000.0;
-    if ((f > 250.0) || (f < 18.75))
-        return 0;
+    if((f > 250.0) || (f < 18.75))
+       return 0;
 
     min_error = f;
     y = 1.0;
     x = f;
-    while (x > 31.25) {
-        y *= 2.0;
-        x /= 2.0;
+    while(x > 31.25) {
+       y *= 2.0;
+       x /= 2.0;
     }
-    if (x >= 18.25) {
-        x *= 8.0;
-        y = 8.0 / y;
-    } else if (x >= 15.625) {
-        x *= 12.0;
-        y = 12.0 / y;
+    if(x >= 18.25) {
+       x *= 8.0;
+       y = 8.0 / y;
+    } else if(x >= 15.625) {
+       x *= 12.0;
+       y = 12.0 / y;
     }
 
     t = y;
-    if (t == (float) 1.5) {
-        *out_div = 2;
-        t *= 2.0;
+    if(t == (float) 1.5) {
+       *out_div = 2;
+       t *= 2.0;
     } else {
-        *out_div = 1;
+       *out_div = 1;
     }
-    if (t > (float) 4.0) {
-        *out_sbit = 1;
-        t /= 2.0;
+    if(t > (float) 4.0) {
+       *out_sbit = 1;
+       t /= 2.0;
     } else {
-        *out_sbit = 0;
+       *out_sbit = 0;
     }
 
     *out_scale = (int) t;
 
-    for (dn=2;dn<=32;dn++) {
-        for (n=1;n<=128;n++) {
-            error = x;
-            error -= ((float) 14.318 * (float) n / (float) dn);
-            if (error < (float) 0)
-                    error = -error;
-            if (error < min_error) {
-                min_error = error;
-                best_n = n;
-                best_dn = dn;
-            }
-        }
+    for(dn = 2; dn <= 32; dn++) {
+       for(n = 1; n <= 128; n++) {
+          error = x;
+          error -= ((float) 14.318 * (float) n / (float) dn);
+          if(error < (float) 0)
+             error = -error;
+          if(error < min_error) {
+             min_error = error;
+             best_n = n;
+             best_dn = dn;
+          }
+       }
     }
     *out_n = best_n;
     *out_dn = best_dn;
@@ -217,136 +218,128 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
 #define MAX_PSN      0          /* no pre scaler for this chip */
 #define TOLERANCE    0.01       /* search smallest M and N in this tolerance */
   
-  int M_min = 2; 
+  int M_min = 2;
   int M_max = 128;
-  
-/*  abest=10000.0; */
- 
+
   target = clock * 1000;
- 
-  if (pSiS->Chipset == PCI_CHIP_SIS5597 || pSiS->Chipset == PCI_CHIP_SIS6326){
-        int low_N = 2;
-        int high_N = 5;
- 
-	PSN = 1;
-        P = 1;
-        if (target < MAX_VCO_5597 / 2)
-            P = 2;
-        if (target < MAX_VCO_5597 / 3)
-            P = 3;
-        if (target < MAX_VCO_5597 / 4)
-            P = 4;
-        if (target < MAX_VCO_5597 / 6)
-            P = 6;
-        if (target < MAX_VCO_5597 / 8)
-            P = 8;
- 
-        Fvco = P * target;
- 
-        for (N = low_N; N <= high_N; N++){
-            double M_desired = Fvco / Fref * N;
-            if (M_desired > M_max * max_VLD)
-                continue;
- 
-            if ( M_desired > M_max ) {
-                M = M_desired / 2 + 0.5;
-                VLD = 2;
-            } else {
-                M = Fvco / Fref * N + 0.5;
-                VLD = 1;
-            }
- 
-            Fout = (double)Fref * (M * VLD)/(N * P);
- 
-            error = (target - Fout) / target;
-            aerror = (error < 0) ? -error : error;
-/*          if (aerror < abest && abest > TOLERANCE) */
-            if (aerror < abest) {
-                abest = aerror;
-                bestError = error;
-                bestM = M;
-                bestN = N;
-                bestP = P;
-                bestPSN = PSN;
-                bestVLD = VLD;
-                bestFout = Fout;
-            }
-        }
+
+  if(pSiS->Chipset == PCI_CHIP_SIS5597 || pSiS->Chipset == PCI_CHIP_SIS6326) {
+
+     int low_N = 2;
+     int high_N = 5;
+
+     PSN = 1;
+     P = 1;
+     if(target < MAX_VCO_5597 / 2)  P = 2;
+     if(target < MAX_VCO_5597 / 3)  P = 3;
+     if(target < MAX_VCO_5597 / 4)  P = 4;
+     if(target < MAX_VCO_5597 / 6)  P = 6;
+     if(target < MAX_VCO_5597 / 8)  P = 8;
+
+     Fvco = P * target;
+
+     for(N = low_N; N <= high_N; N++) {
+
+         double M_desired = Fvco / Fref * N;
+         if(M_desired > M_max * max_VLD)  continue;
+
+         if(M_desired > M_max) {
+            M = M_desired / 2 + 0.5;
+            VLD = 2;
+         } else {
+            M = Fvco / Fref * N + 0.5;
+            VLD = 1;
+         }
+
+         Fout = (double)Fref * (M * VLD)/(N * P);
+
+         error = (target - Fout) / target;
+         aerror = (error < 0) ? -error : error;
+         if(aerror < abest) {
+            abest = aerror;
+            bestError = error;
+            bestM = M;
+            bestN = N;
+            bestP = P;
+            bestPSN = PSN;
+            bestVLD = VLD;
+            bestFout = Fout;
+         }
      }
-     else {
-         for (PSNx = 0; PSNx <= MAX_PSN ; PSNx++) {
-            int low_N, high_N;
-            double FrefVLDPSN;
- 
-            PSN = !PSNx ? 1 : 4;
- 
-            low_N = 2;
-            high_N = 32;
- 
-            for ( VLD = 1 ; VLD <= max_VLD ; VLD++ ) {
- 
-                FrefVLDPSN = (double)Fref * VLD / PSN;
-                for (N = low_N; N <= high_N; N++) {
-                    double tmp = FrefVLDPSN / N;
- 
-                    for (P = 1; P <= 4; P++) {  
-                        double Fvco_desired = target * ( P );
-                        double M_desired = Fvco_desired / tmp;
- 
-                        /* Which way will M_desired be rounded?  
-                         *  Do all three just to be safe.  
-                         */
-                        int M_low = M_desired - 1;
-                        int M_hi = M_desired + 1;
- 
-                        if (M_hi < M_min || M_low > M_max)
-                            continue;
- 
-                        if (M_low < M_min)
-                            M_low = M_min;
-                        if (M_hi > M_max)
-                            M_hi = M_max;
- 
-                        for (M = M_low; M <= M_hi; M++) {
-                            Fvco = tmp * M;
-                            if (Fvco <= MIN_VCO)
-                                continue;
-                            if (Fvco > MAX_VCO)
-                                break;
- 
-                            Fout = Fvco / ( P );
- 
-                            error = (target - Fout) / target;
-                            aerror = (error < 0) ? -error : error;
-                            if (aerror < abest) {
-                                abest = aerror;
-                                bestError = error;
-                                bestM = M;
-                                bestN = N;
-                                bestP = P;
-                                bestPSN = PSN;
-                                bestVLD = VLD;
-                                bestFout = Fout;
-                            }
+
+  } else {
+
+     for(PSNx = 0; PSNx <= MAX_PSN ; PSNx++) {
+
+        int low_N, high_N;
+        double FrefVLDPSN;
+
+        PSN = !PSNx ? 1 : 4;
+
+        low_N = 2;
+        high_N = 32;
+
+        for(VLD = 1 ; VLD <= max_VLD ; VLD++) {
+
+           FrefVLDPSN = (double)Fref * VLD / PSN;
+
+	   for(N = low_N; N <= high_N; N++) {
+              double tmp = FrefVLDPSN / N;
+
+              for(P = 1; P <= 4; P++) {
+                 double Fvco_desired = target * ( P );
+                 double M_desired = Fvco_desired / tmp;
+
+                 /* Which way will M_desired be rounded?
+                  *  Do all three just to be safe.
+                  */
+                 int M_low = M_desired - 1;
+                 int M_hi = M_desired + 1;
+
+                 if(M_hi < M_min || M_low > M_max) continue;
+
+		 if(M_low < M_min)  M_low = M_min;
+
+		 if(M_hi > M_max)   M_hi = M_max;
+
+                 for(M = M_low; M <= M_hi; M++) {
+                    Fvco = tmp * M;
+                    if(Fvco <= MIN_VCO) continue;
+                    if(Fvco > MAX_VCO)  break;
+
+                    Fout = Fvco / ( P );
+
+                    error = (target - Fout) / target;
+                    aerror = (error < 0) ? -error : error;
+                    if(aerror < abest) {
+                       abest = aerror;
+                       bestError = error;
+                       bestM = M;
+                       bestN = N;
+                       bestP = P;
+                       bestPSN = PSN;
+                       bestVLD = VLD;
+                       bestFout = Fout;
+                    }
 #ifdef TWDEBUG
-                        xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+                    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
 			       "Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d, P=%d, PSN=%d\n",
                                (float)(clock / 1000.), M, N, P, VLD, PSN);
-                        xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+                    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
 			       "Freq. set: %.2f MHz\n", Fout / 1.0e6);
-#endif			       
-                        }
-                    }
-                }
-            }
-         }
+#endif
+                 }
+              }
+           }
+        }
+     }
   }
 
-  vclk[Midx]    = bestM;
-  vclk[Nidx]    = bestN;
-  vclk[VLDidx]  = bestVLD;
-  vclk[Pidx]    = bestP;
-  vclk[PSNidx]  = bestPSN;
+  vclk[Midx]   = bestM;
+  vclk[Nidx]   = bestN;
+  vclk[VLDidx] = bestVLD;
+  vclk[Pidx]   = bestP;
+  vclk[PSNidx] = bestPSN;
 
   PDEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
                 "Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d, P=%d, PSN=%d\n",
@@ -372,7 +365,7 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    switch (pSiS->Chipset) {
+    switch(pSiS->Chipset) {
         case PCI_CHIP_SIS5597:
            max=0x3C;
            break;
@@ -434,7 +427,7 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-    switch (pSiS->Chipset) {
+    switch(pSiS->Chipset) {
         case PCI_CHIP_SIS5597:
            max = 0x3C;
            break;
@@ -514,19 +507,19 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 #endif
 
     /* Save SR registers */
-    for (i = 0x00; i <= 0x3D; i++) {
-        inSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
+    for(i = 0x00; i <= 0x3D; i++) {
+       inSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
 #ifdef TWDEBUG
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		 "SR%02X - %02X \n", i,sisReg->sisRegs3C4[i]);
 #endif
     }
 
     /* Save CR registers */
-    for (i = 0x00; i < 0x40; i++)  {
-        inSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
+    for(i = 0x00; i < 0x40; i++)  {
+       inSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
 #ifdef TWDEBUG
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		"CR%02X Contents - %02X \n", i,sisReg->sisRegs3D4[i]);
 #endif
     }
@@ -1419,30 +1412,7 @@ SiSMclk(SISPtr pSiS)
     unsigned char Num, Denum, Base;
 
     switch (pSiS->Chipset)  {
-    case PCI_CHIP_SIS5597:
-    case PCI_CHIP_SIS6326:
-    case PCI_CHIP_SIS530:
-        /* Numerator */
-        inSISIDXREG(SISSR, MemClock0, Num);
-        mclk = 14318 * ((Num & 0x7f) + 1);
 
-        /* Denumerator */
-	inSISIDXREG(SISSR, MemClock1, Denum);
-        mclk = mclk / ((Denum & 0x1f) + 1);
-
-        /* Divider. Doesn't seem to work for mclk in older cards */
-        if((Num & 0x80) != 0)  mclk *= 2;
-
-        /* Post-scaler. Values' meaning depends on SR13 bit 7  */
-	inSISIDXREG(SISSR, ClockBase, Base);
-        if((Base & 0x80) == 0) {
-            mclk = mclk / (((Denum & 0x60) >> 5) + 1);
-        } else {
-            /* Values 00 and 01 are reserved */
-            if ((Denum & 0x60) == 0x40)  mclk /= 6;
-            if ((Denum & 0x60) == 0x60)  mclk /= 8;
-        }
-        break;
     case PCI_CHIP_SIS300:
     case PCI_CHIP_SIS540:
     case PCI_CHIP_SIS630:
@@ -1471,11 +1441,34 @@ SiSMclk(SISPtr pSiS)
             mclk = mclk / ((((Denum & 0x60) >> 5) + 1) * 2);
         }
         break;
+
+    case PCI_CHIP_SIS5597:
+    case PCI_CHIP_SIS6326:
+    case PCI_CHIP_SIS530:
     default:
-    	xf86DrvMsg(pSiS->pScrn->scrnIndex, X_ERROR,
-		"Internal error: SiSMClk() called with invalid chipset (0x%x)\n",
-		pSiS->Chipset);
-        mclk = 0;
+        /* Numerator */
+        inSISIDXREG(SISSR, 0x28, Num);
+        mclk = 14318 * ((Num & 0x7f) + 1);
+
+        /* Denumerator */
+	inSISIDXREG(SISSR, 0x29, Denum);
+        mclk = mclk / ((Denum & 0x1f) + 1);
+
+        /* Divider. Doesn't work on older cards */
+	if(pSiS->oldChipset >= OC_SIS5597) {
+           if(Num & 0x80) mclk *= 2;
+	}
+
+        /* Post-scaler. Values' meaning depends on SR13 bit 7  */
+	inSISIDXREG(SISSR, 0x13, Base);
+        if((Base & 0x80) == 0) {
+            mclk = mclk / (((Denum & 0x60) >> 5) + 1);
+        } else {
+            /* Values 00 and 01 are reserved */
+            if ((Denum & 0x60) == 0x40)  mclk /= 6;
+            if ((Denum & 0x60) == 0x60)  mclk /= 8;
+        }
+        break;
     }
 
     return(mclk);
@@ -1741,10 +1734,10 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
                 }
 		total /= magic;
 		if(total > (max / 2)) total = max / 2;
-                return (int)(total);
+                return(int)(total);
 
         default:
-                return 135000;    /* guessed */
+                return(135000);
         }
 }
 
@@ -2019,8 +2012,8 @@ SetBlock(CARD16 port, CARD8 from, CARD8 to, CARD8 *DataPtr)
 {
     CARD8   index;
 
-    for (index=from; index <= to; index++, DataPtr++)  {
-        outSISIDXREG(port, index, *DataPtr);
+    for(index = from; index <= to; index++, DataPtr++) {
+       outSISIDXREG(port, index, *DataPtr);
     }
 }
 

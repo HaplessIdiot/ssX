@@ -73,8 +73,14 @@ typedef enum {
     OPTION_SISTVEDGEENHANCE,
     OPTION_SISTVANTIFLICKER,
     OPTION_SISTVSATURATION,
+    OPTION_SISTVCHROMAFILTER,
+    OPTION_SISTVLUMAFILTER,
+    OPTION_SISTVCOLCALIBFINE,
+    OPTION_SISTVCOLCALIBCOARSE,
     OPTION_TVXPOSOFFSET,
     OPTION_TVYPOSOFFSET,
+    OPTION_TVXSCALE,
+    OPTION_TVYSCALE,
     OPTION_SIS6326ANTIFLICKER,
     OPTION_SIS6326ENABLEYFILTER,
     OPTION_SIS6326YFILTERSTRONG,
@@ -114,6 +120,9 @@ typedef enum {
     OPTION_CRT2HSYNC2,
     OPTION_CRT2VREFRESH2,
     OPTION_CRT2POS2,
+    OPTION_NOSISXINERAMA,
+    OPTION_NOSISXINERAMA2,
+    OPTION_CRT2ISSCRN0,
     OPTION_ENABLESISCTRL,
 #ifdef SIS_CP
     SIS_CP_OPT_OPTIONS
@@ -158,6 +167,12 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_SISTVEDGEENHANCE,		"SISTVEdgeEnhance",	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_SISTVANTIFLICKER,		"SISTVAntiFlicker",	  OPTV_STRING,    {0}, FALSE },
     { OPTION_SISTVSATURATION,		"SISTVSaturation",	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_SISTVCHROMAFILTER,		"SISTVCFilter",      	  OPTV_BOOLEAN,   {0}, -1    },
+    { OPTION_SISTVLUMAFILTER,		"SISTVYFilter",	  	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_SISTVCOLCALIBFINE,		"SISTVColorCalibFine",	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_SISTVCOLCALIBCOARSE,	"SISTVColorCalibCoarse",  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_TVXPOSOFFSET,		"SISTVXScale", 	  	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_TVYPOSOFFSET,		"SISTVYScale", 	  	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_TVXPOSOFFSET,		"TVXPosOffset", 	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_TVYPOSOFFSET,		"TVYPosOffset", 	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_SIS6326ANTIFLICKER,	"SIS6326TVAntiFlicker",   OPTV_STRING,    {0}, FALSE  },
@@ -200,6 +215,11 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_CRT2HSYNC2,		"SecondMonitorHorizSync", OPTV_ANYSTR,	  {0}, FALSE }, 	/* alias */
     { OPTION_CRT2VREFRESH2,		"SecondMonitorVertRefresh",	  OPTV_ANYSTR,    {0}, FALSE }, /* alias */
     { OPTION_CRT2POS2,   		"TwinViewOrientation",	  OPTV_ANYSTR,	  {0}, FALSE }, 	/* alias */
+#ifdef SISXINERAMA
+    { OPTION_NOSISXINERAMA,		"NoMergedXinerama",	  OPTV_BOOLEAN,	  {0}, FALSE },
+    { OPTION_CRT2ISSCRN0,		"MergedXineramaCRT2IsScreen0",	  OPTV_BOOLEAN,	  {0}, FALSE },
+    { OPTION_NOSISXINERAMA2,		"NoTwinviewXineramaInfo",  OPTV_BOOLEAN,  {0}, FALSE }, 	/* alias */
+#endif
 #endif
 #ifdef SIS_CP
     SIS_CP_OPTION_DETAIL
@@ -264,12 +284,18 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->sistvedgeenhance = -1;
     pSiS->sistvantiflicker = -1;
     pSiS->sistvsaturation = -1;
+    pSiS->sistvcfilter = -1;
+    pSiS->sistvyfilter = 1; /* 0 = off, 1 = default, 2-8 = filter no */
+    pSiS->sistvcolcalibc = 0;
+    pSiS->sistvcolcalibf = 0;
     pSiS->sis6326enableyfilter = -1;
     pSiS->sis6326yfilterstrong = -1;
     pSiS->sis6326tvplug = -1;
     pSiS->sis6326fscadjust = 0;
     pSiS->tvxpos = 0;
     pSiS->tvypos = 0;
+    pSiS->tvxscale = 0;
+    pSiS->tvyscale = 0;
     pSiS->NonDefaultPAL = -1;
     pSiS->chtvtype = -1;
     pSiS->restorebyset = TRUE;
@@ -300,6 +326,10 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->CRT2HSync = NULL;
     pSiS->CRT2VRefresh = NULL;
     pSiS->MetaModes = NULL;
+#ifdef SISXINERAMA
+    pSiS->UseSiSXinerama = TRUE;
+    pSiS->CRT2IsScrn0 = FALSE;
+#endif
 #endif
 #ifdef SIS_CP
     SIS_CP_OPT_DEFAULT
@@ -516,17 +546,32 @@ SiSOptions(ScrnInfoPtr pScrn)
 	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_CRT2POS2);
 	  }
       	  if(strptr) {
-       	     if(!xf86NameCmp(strptr,"LeftOf"))
+       	     if(!xf86NameCmp(strptr,"LeftOf")) {
                 pSiS->CRT2Position = sisLeftOf;
- 	     else if(!xf86NameCmp(strptr,"RightOf"))
+#ifdef SISXINERAMA
+		pSiS->CRT2IsScrn0 = TRUE;
+#endif
+ 	     } else if(!xf86NameCmp(strptr,"RightOf")) {
                 pSiS->CRT2Position = sisRightOf;
-	     else if(!xf86NameCmp(strptr,"Above"))
+#ifdef SISXINERAMA
+		pSiS->CRT2IsScrn0 = FALSE;
+#endif
+	     } else if(!xf86NameCmp(strptr,"Above")) {
                 pSiS->CRT2Position = sisAbove;
-	     else if(!xf86NameCmp(strptr,"Below"))
+#ifdef SISXINERAMA
+		pSiS->CRT2IsScrn0 = FALSE;
+#endif
+	     } else if(!xf86NameCmp(strptr,"Below")) {
                 pSiS->CRT2Position = sisBelow;
-	     else if(!xf86NameCmp(strptr,"Clone"))
+#ifdef SISXINERAMA
+		pSiS->CRT2IsScrn0 = TRUE;
+#endif
+	     } else if(!xf86NameCmp(strptr,"Clone")) {
                 pSiS->CRT2Position = sisClone;
-	     else {
+#ifdef SISXINERAMA
+		pSiS->CRT2IsScrn0 = TRUE;
+#endif
+	     } else {
 	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "CRT2Position");
 	    	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	            "Valid parameters are \"RightOf\", \"LeftOf\", \"Above\", \"Below\", or \"Clone\"\n");
@@ -557,9 +602,25 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  } else {
 	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		 "Option \"MergedFB\" (alias \"TwinView\") requires Option \"MetaModes\".\n");
-	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MergedFB (alias TwinView) mode disabled.\n");
+	     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	     	 "MergedFB (alias TwinView) mode disabled.\n");
 	     pSiS->MergedFB = FALSE;
 	  }
+#ifdef SISXINERAMA
+	  if(pSiS->MergedFB) {
+	     if(xf86GetOptValBool(pSiS->Options, OPTION_NOSISXINERAMA, &val)) {
+	        if(val) pSiS->UseSiSXinerama = FALSE;
+	     } else if(xf86GetOptValBool(pSiS->Options, OPTION_NOSISXINERAMA2, &val)) {
+	        if(val) pSiS->UseSiSXinerama = FALSE;
+	     }
+	     if(pSiS->UseSiSXinerama) {
+	        if(xf86GetOptValBool(pSiS->Options, OPTION_CRT2ISSCRN0, &val)) {
+		   if(val) pSiS->CRT2IsScrn0 = TRUE;
+		   else    pSiS->CRT2IsScrn0 = FALSE;
+		}
+	     }
+	  }
+#endif
        }
     }
 #endif
@@ -636,8 +697,14 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  (xf86GetOptValInteger(pSiS->Options, OPTION_SISTVEDGEENHANCE, &vali)) ||
 	  (xf86GetOptValString(pSiS->Options, OPTION_SISTVANTIFLICKER)) ||
 	  (xf86GetOptValInteger(pSiS->Options, OPTION_SISTVSATURATION, &vali)) ||
+	  (xf86GetOptValBool(pSiS->Options, OPTION_SISTVCHROMAFILTER, &val)) ||
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_SISTVLUMAFILTER, &vali)) ||
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_SISTVCOLCALIBCOARSE, &vali)) ||
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_SISTVCOLCALIBFINE, &vali)) ||
 	  (xf86GetOptValInteger(pSiS->Options, OPTION_TVXPOSOFFSET, &vali)) ||
-	  (xf86GetOptValInteger(pSiS->Options, OPTION_TVYPOSOFFSET, &vali))) {
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_TVYPOSOFFSET, &vali)) ||
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_TVXSCALE, &vali)) ||
+	  (xf86GetOptValInteger(pSiS->Options, OPTION_TVYSCALE, &vali))) {
 	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	      "TV related options are only accepted in Master Head's device section");
        }
@@ -1039,6 +1106,25 @@ SiSOptions(ScrnInfoPtr pScrn)
                                 &pSiS->sistvedgeenhance);
 	  xf86GetOptValInteger(pSiS->Options, OPTION_SISTVSATURATION,
                                 &pSiS->sistvsaturation);
+	  xf86GetOptValInteger(pSiS->Options, OPTION_SISTVLUMAFILTER,
+                                &pSiS->sistvyfilter);
+          if((pSiS->sistvyfilter < 0) || (pSiS->sistvyfilter > 8)) {
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	     	"Illegal Y Filter number; valid is 0 (off), 1 (default), 2-8 (filter number 1-7)\n");
+	     pSiS->sistvyfilter = 1;
+	  }
+ 	  xf86GetOptValBool(pSiS->Options, OPTION_SISTVCHROMAFILTER,
+				&pSiS->sistvcfilter);
+	  xf86GetOptValInteger(pSiS->Options, OPTION_SISTVCOLCALIBCOARSE,
+                                &pSiS->sistvcolcalibc);
+          xf86GetOptValInteger(pSiS->Options, OPTION_SISTVCOLCALIBFINE,
+                                &pSiS->sistvcolcalibf);
+	  if((pSiS->sistvcolcalibf > 127) || (pSiS->sistvcolcalibf < -128) ||
+	     (pSiS->sistvcolcalibc > 120) || (pSiS->sistvcolcalibc < -120)) {
+	     pSiS->sistvcolcalibf = pSiS->sistvcolcalibc = 0;
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	     	"Illegal Color Calibration. Range is -128 to 127 (fine), -120 to 120 (coarse)\n");
+	  }
 	  xf86GetOptValInteger(pSiS->Options, OPTION_TVXPOSOFFSET,
                                 &pSiS->tvxpos);
 	  xf86GetOptValInteger(pSiS->Options, OPTION_TVYPOSOFFSET,
@@ -1049,6 +1135,18 @@ SiSOptions(ScrnInfoPtr pScrn)
 	  if(pSiS->tvypos < -32) { pSiS->tvypos = -32;  tmp = 1; }
 	  if(tmp) xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		      "Illegal TV x or y offset. Range is from -32 to 32\n");
+          tmp = 0;
+	  xf86GetOptValInteger(pSiS->Options, OPTION_TVXSCALE,
+                                &pSiS->tvxscale);
+	  xf86GetOptValInteger(pSiS->Options, OPTION_TVYSCALE,
+                                &pSiS->tvyscale);
+	  if(pSiS->tvxscale > 16)  { pSiS->tvxscale = 16;  tmp = 1; }
+	  if(pSiS->tvxscale < -16) { pSiS->tvxscale = -16; tmp = 1; }
+	  if(pSiS->tvyscale > 3)  { pSiS->tvyscale = 3;  tmp = 1; }
+	  if(pSiS->tvyscale < -4) { pSiS->tvyscale = -4; tmp = 1; }
+	  if(tmp) xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		      "Illegal TV x or y scaling parameter. Range is from -16 to 16 (X), -4 to 3 (Y)\n");
+
        }
 
        if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {

@@ -35,8 +35,8 @@
 #define UNLOCK_ALWAYS
 
 #define SISDRIVERVERSIONYEAR    3
-#define SISDRIVERVERSIONMONTH   7
-#define SISDRIVERVERSIONDAY    28
+#define SISDRIVERVERSIONMONTH   8
+#define SISDRIVERVERSIONDAY     7
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -86,6 +86,14 @@ typedef unsigned long IOADDRESS;
 #define SISMERGED	/* Include Merged-FB mode */
 #endif
 
+#ifdef SISMERGED
+#if 1
+#define SISXINERAMA	/* Include SiS Pseudo-Xinerama for MergedFB mode */
+#define SIS_XINERAMA_MAJOR_VERSION  1
+#define SIS_XINERAMA_MINOR_VERSION  1
+#endif
+#endif
+
 #if 0			/* Include code for cycling CRT2 type via keyboard */
 #define CYCLECRT2	/* (not functional yet) */
 #endif
@@ -98,7 +106,16 @@ typedef unsigned long IOADDRESS;
 #define SIS_ARGB_CURSOR
 #endif
 
-/* TW: new for SiS315/550/650/740/330/660 - these should be moved elsewhere! */
+#ifdef SISMERGED
+#ifdef SISXINERAMA
+#define NEED_REPLIES  		/* ? */
+#define EXTENSION_PROC_ARGS void *
+#include "extnsionst.h"  	/* required */
+#include "panoramiXproto.h"  	/* required */
+#endif
+#endif
+
+/* For SiS315/550/650/740/330/660 - these should be moved elsewhere! */
 #ifndef PCI_CHIP_SIS315H
 #define PCI_CHIP_SIS315H		0x0310
 #endif
@@ -263,6 +280,8 @@ typedef unsigned char UChar;
 
 /* oldChipset */
 #define OC_UNKNOWN  0
+#define OC_SIS86201 1
+#define OC_SIS86202 2
 #define OC_SIS6205A 3
 #define OC_SIS6205B 4
 #define OC_SIS82204 5
@@ -279,7 +298,7 @@ typedef unsigned char UChar;
 #define CHRONTEL_701x 1
 
 /* ChipFlags */
-/* Use only lower 16 bit for chip id! */
+/* Use only lower 16 bit for chip id! (sisctrl) */
 #define SiSCF_LARGEOVERLAY 0x00000001
 #define SiSCF_Is651        0x00000002
 #define SiSCF_IsM650       0x00000004
@@ -291,7 +310,9 @@ typedef unsigned char UChar;
 #define SiSCF_IsM760       0x00000200
 #define SiSCF_Is66x        (SiSCF_IsM660 | SiSCF_IsM760)
 #define SiSCF_XabreCore    0x00010000
+#define SiSCF_Glamour3     0x40000000
 #define SiSCF_Integrated   0x80000000
+
 
 /* SiS Direct Xv-API */
 #define SiS_SD_IS300SERIES    0x00000001
@@ -308,6 +329,7 @@ typedef unsigned char UChar;
 #define SiS_SD_ISDEPTH8       0x00000800   /* Depth is 8, no independent gamma correction */
 #define SiS_SD_SUPPORTSOVER   0x00001000   /* Support for Chrontel Super Overscan */
 #define SiS_SD_ENABLED        0x00002000   /* sisctrl is enabled (by option) */
+#define SiS_SD_PSEUDOXINERAMA 0x00004000   /* pseudo xinerama is active */
 
 #define SIS_DIRECTKEY       0x3145792
 
@@ -414,13 +436,22 @@ typedef struct {
     int			sistvedgeenhance;	/* TV settings for SiS bridge */
     int			sistvantiflicker;
     int			sistvsaturation;
-    int			tvxpos;
-    int			tvypos;
+    int       		sistvcolcalibc;
+    int       		sistvcolcalibf;
+    int			sistvcfilter;
+    int			sistvyfilter;
+    int			tvxpos, tvypos;
+    int		      	tvxscale, tvyscale;
     int			ForceTVType;
     int			chtvtype;
     int                 NonDefaultPAL;
     unsigned short	tvx, tvy;
-    unsigned char	p2_01, p2_02, p2_1f;
+    unsigned char	p2_01, p2_02, p2_1f, p2_20;
+    unsigned char	p2_44, p2_45, p2_46;
+    unsigned long       sistvccbase;
+    unsigned char       p2_35, p2_36, p2_37, p2_38, p2_48, p2_49, p2_4a;
+    unsigned char	p2_0a, p2_2f, p2_30, p2_47;
+    unsigned char       scalingp1[9], scalingp4[9];
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
     BOOLEAN		CRT1gamma, CRT2gamma;
@@ -656,9 +687,13 @@ typedef struct {
     int			sistvedgeenhance;	/* TV settings for SiS bridges */
     int			sistvantiflicker;
     int			sistvsaturation;
+    int       		sistvcolcalibc;
+    int       		sistvcolcalibf;
+    int			sistvcfilter;
+    int			sistvyfilter;
     int			OptTVSOver;		/* Chrontel 7005: Superoverscan */
-    int			tvxpos;
-    int			tvypos;
+    int			tvxpos, tvypos;
+    int		      	tvxscale, tvyscale;
     int			SiS6326Flags;		/* SiS6326 TV settings */
     int			sis6326enableyfilter;
     int			sis6326yfilterstrong;
@@ -676,8 +711,13 @@ typedef struct {
     int                 NonDefaultPAL;
     unsigned long       lockcalls;		/* Count unlock calls for debug */
     unsigned short	tvx, tvy;		/* Backup TV position registers */
-    unsigned char	p2_01, p2_02, p2_1f;    /* Backup TV position registers */
+    unsigned char	p2_01, p2_02, p2_1f, p2_20;    /* Backup TV position registers */
     unsigned short      tvx1, tvx2, tvx3, tvy1; /* Backup TV position registers */
+    unsigned char	p2_44, p2_45, p2_46;
+    unsigned long       sistvccbase;
+    unsigned char       p2_35, p2_36, p2_37, p2_38, p2_48, p2_49, p2_4a;
+    unsigned char	p2_0a, p2_2f, p2_30, p2_47;
+    unsigned char       scalingp1[9], scalingp4[9];
     BOOLEAN		ForceCursorOff;
     BOOLEAN		HaveCustomModes;
     BOOLEAN		IsCustom;
@@ -690,7 +730,8 @@ typedef struct {
     Atom		xvInsideChromakey, xvYUVChromakey;
     Atom		xv_QVF, xv_QVV, xv_USD, xv_SVF, xv_QDD, xv_TAF, xv_TSA, xv_TEE, xv_GSF;
     Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
-    Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI;
+    Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI, xv_TXS, xv_TYS, xv_CFI, xv_COC, xv_COF;
+    Atom		xv_YFI;
     BOOLEAN		xv_sisdirectunlocked;
     unsigned long	xv_sd_result;
     int			CRT1isoff;
@@ -704,6 +745,7 @@ typedef struct {
     int			OptUseColorCursorBlend;
     CARD32		OptColorCursorBlendThreshold;
     unsigned short      cursorBufferNum;
+    int                 vb;
     BOOLEAN		restorebyset;
     BOOLEAN		nocrt2ddcdetection;
     BOOLEAN		forcecrt2redetection;
@@ -748,6 +790,16 @@ typedef struct {
     Bool		CheckForCRT2;
     Bool		IsCustomCRT2;
     BOOLEAN 		HaveCustomModes2;
+    int			maxCRT1_X1, maxCRT1_X2, maxCRT1_Y1, maxCRT1_Y2;
+    int			maxCRT2_X1, maxCRT2_X2, maxCRT2_Y1, maxCRT2_Y2;
+    int			maxClone_X1, maxClone_X2, maxClone_Y1, maxClone_Y2;
+#ifdef SISXINERAMA
+    Bool		UseSiSXinerama;
+    Bool		CRT2IsScrn0;
+    ExtensionEntry 	*XineramaExtEntry;
+    int			SiSXineramaVX, SiSXineramaVY;
+    Bool		AtLeastOneNonClone;
+#endif
 #endif
 } SISRec, *SISPtr;
 
@@ -832,6 +884,17 @@ typedef struct _customttable {
     char *optionName;
 } customttable;
 
+#ifdef SISMERGED
+#ifdef SISXINERAMA
+typedef struct _SiSXineramaData {
+    int x;
+    int y;
+    int width;
+    int height;
+} SiSXineramaData;
+#endif
+#endif
+
 extern void  sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *reg2);
 extern void  sisRestoreExtRegisterLock(SISPtr pSiS, unsigned char reg1, unsigned char reg2);
 extern void  SiSOptions(ScrnInfoPtr pScrn);
@@ -858,11 +921,16 @@ extern void  SiS_SetCHTVcontrast(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSISTVedgeenhance(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSISTVantiflicker(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVcfilter(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse);
 extern void  SiS_SetSIS6326TVantiflicker(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSIS6326TVenableyfilter(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetSIS6326TVyfilterstrong(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetTVxscale(ScrnInfoPtr pScrn, int val);
+extern void  SiS_SetTVyscale(ScrnInfoPtr pScrn, int val);
 extern Bool  SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags);
 extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned short index);
 extern Bool  SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff);
@@ -877,9 +945,14 @@ extern int   SiS_GetCHTVcontrast(ScrnInfoPtr pScrn);
 extern int   SiS_GetSISTVedgeenhance(ScrnInfoPtr pScrn);
 extern int   SiS_GetSISTVantiflicker(ScrnInfoPtr pScrn);
 extern int   SiS_GetSISTVsaturation(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVcfilter(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVyfilter(ScrnInfoPtr pScrn);
+extern int   SiS_GetSISTVcolcalib(ScrnInfoPtr pScrn, Bool coarse);
 extern int   SiS_GetSIS6326TVantiflicker(ScrnInfoPtr pScrn);
 extern int   SiS_GetSIS6326TVenableyfilter(ScrnInfoPtr pScrn);
 extern int   SiS_GetSIS6326TVyfilterstrong(ScrnInfoPtr pScrn);
 extern int   SiS_GetTVxposoffset(ScrnInfoPtr pScrn);
 extern int   SiS_GetTVyposoffset(ScrnInfoPtr pScrn);
+extern int   SiS_GetTVxscale(ScrnInfoPtr pScrn);
+extern int   SiS_GetTVyscale(ScrnInfoPtr pScrn);
 #endif

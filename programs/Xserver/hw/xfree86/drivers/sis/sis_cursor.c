@@ -640,7 +640,7 @@ static void
 SiSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
     SISPtr         pSiS = SISPTR(pScrn);
-    DisplayModePtr mode = pSiS->CurrentLayout.mode; /* pScrn->currentMode; */
+    DisplayModePtr mode = pSiS->CurrentLayout.mode;
     int            cursor_addr;
     unsigned char  temp;
     unsigned char  sridx, cridx;
@@ -1337,6 +1337,7 @@ SiSHWCursorInit(ScreenPtr pScreen)
     pSiS->UseHWARGBCursor = FALSE;
 
     switch (pSiS->Chipset)  {
+    
       case PCI_CHIP_SIS300:
       case PCI_CHIP_SIS630:
       case PCI_CHIP_SIS540:
@@ -1366,6 +1367,7 @@ SiSHWCursorInit(ScreenPtr pScreen)
             HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
             HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64;
         break;
+
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
       case PCI_CHIP_SIS315:
@@ -1399,6 +1401,7 @@ SiSHWCursorInit(ScreenPtr pScreen)
             HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
             HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64;
         break;
+
       default:
         infoPtr->MaxWidth  = 64;
 	infoPtr->MaxHeight = 64;

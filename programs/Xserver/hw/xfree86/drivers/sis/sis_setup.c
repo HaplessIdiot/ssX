@@ -99,7 +99,7 @@ static const struct _sis6326mclk {
 	{134, 0, 0x4a, 0xa3 }
 };
 
-/* For 5597, 6326, 530/620 */
+/* For old chipsets, 5597, 6326, 530/620 */
 static  void
 sisOldSetup(ScrnInfoPtr pScrn)
 {
@@ -116,16 +116,21 @@ sisOldSetup(ScrnInfoPtr pScrn)
 #endif
     pciConfigPtr pdptr, *systemPCIdevices = NULL;
 
-    if(pSiS->Chipset == PCI_CHIP_SIS5597) {
-        inSISIDXREG(SISSR, FBSize, temp);
+    if(pSiS->oldChipset <= OC_SIS6225) {
+        inSISIDXREG(SISSR, 0x0F, temp);
+	pScrn->videoRam = (1 << (temp & 0x03)) * 1024;
+	if(pScrn->videoRam > 4096) pScrn->videoRam = 4096;
+	pSiS->BusWidth = 32;
+    } else if(pSiS->Chipset == PCI_CHIP_SIS5597) {
+        inSISIDXREG(SISSR, 0x2F, temp);
 	pScrn->videoRam = ((temp & 0x07) + 1) * 256;
-	inSISIDXREG(SISSR, Mode64, temp);
+	inSISIDXREG(SISSR, 0x0C, temp);
 	if(temp & 0x06) {
 		pScrn->videoRam *= 2;
 		pSiS->BusWidth = 64;
 	} else  pSiS->BusWidth = 32;
     } else {
-        inSISIDXREG(SISSR, RAMSize, temp);
+        inSISIDXREG(SISSR, 0x0C, temp);
         config = ((temp & 0x10) >> 2 ) | ((temp & 0x06) >> 1);
         pScrn->videoRam = ramsize[config] * 1024;
         pSiS->BusWidth = buswidth[config];
@@ -238,9 +243,12 @@ sisOldSetup(ScrnInfoPtr pScrn)
                "Memory clock: %3.3f MHz\n",
 	       pSiS->MemClock/1000.0);
 
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+    if(pSiS->oldChipset > OC_SIS6225) {
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                "DRAM bus width: %d bit\n",
 	       pSiS->BusWidth);
+    }
+
 #ifdef TWDEBUG
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
     	       "oldChipset = %d, Flags %x\n", pSiS->oldChipset, pSiS->Flags);
@@ -336,7 +344,7 @@ sis300Setup(ScrnInfoPtr pScrn)
 	    pSiS->BusWidth);
 }
 
-/* TW: for 315, 315H, 315PRO, 330 */
+/* For 315, 315H, 315PRO, 330 */
 static  void
 sis315Setup(ScrnInfoPtr pScrn)
 {
@@ -560,11 +568,6 @@ SiSSetup(ScrnInfoPtr pScrn)
     pSiS->VBFlags = 0;
 
     switch  (SISPTR(pScrn)->Chipset)  {
-    case    PCI_CHIP_SIS5597:
-    case    PCI_CHIP_SIS6326:
-    case    PCI_CHIP_SIS530:
-        sisOldSetup(pScrn);
-        break;
     case    PCI_CHIP_SIS300:
     case    PCI_CHIP_SIS630:  /* +730 */
     case    PCI_CHIP_SIS540:
@@ -578,13 +581,14 @@ SiSSetup(ScrnInfoPtr pScrn)
 	break;
     case    PCI_CHIP_SIS550:
     case    PCI_CHIP_SIS650: /* + 740 */
-    case    PCI_CHIP_SIS660:
+    case    PCI_CHIP_SIS660: /* + 760 */
         sis550Setup(pScrn);
 	break;
+    case    PCI_CHIP_SIS5597:
+    case    PCI_CHIP_SIS6326:
+    case    PCI_CHIP_SIS530:
     default:
-        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"Internal error: SiSSetup() called with invalid Chipset (0x%x)\n",
-		pSiS->Chipset);
+        sisOldSetup(pScrn);
         break;
     }
 }

@@ -25,12 +25,14 @@
  *
  * Author: Thomas Winischhofer <thomas@winischhofer.net>
  *		- driver entirely rewritten, only basic structure taken from old code
- *		  (except sis_dri.c and parts of sis_dga.c)
+ *		  (except sis_dri.c, sis_shadow.c and parts of sis_dga.c;
+ *		  these were taken over)
  *              - 315 series (315/550/650/651/M650/652/M652/740) support
  *		- Xabre series (330/660/M660/760/M760) support
  *              - new mode switching code for 300, 315 and 330 series
  *              - dual head support on 300, 315 and 330 series
  * 		- merged-framebuffer support on 300, 315 and 330 series
+ *		- Xinerama extension for MergedFB mode
  *              - rewritten for 5597/5598, 6326 and 530/620 chipsets,
  *              - rewritten for 300/540/630/730 chipsets,
  *              - VESA mode switching (deprecated),
@@ -88,6 +90,7 @@
 #include "extensions/xf86dgastr.h"
 
 #include "globals.h"
+
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
@@ -169,14 +172,36 @@ extern BOOLEAN 	SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDe
 				   ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
 #endif
 
-/* TW: For power management for 315 series */
+/* For power management for 315 series */
 extern void SiS_Chrontel701xBLOn(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 extern void SiS_Chrontel701xBLOff(SiS_Private *SiS_Pr);
 extern void SiS_SiS30xBLOn(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 extern void SiS_SiS30xBLOff(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 
+/* Globals (yes, these ARE really required to be global) */
+
 #ifdef SISDUALHEAD
-static int      SISEntityIndex = -1;
+static int      	SISEntityIndex = -1;
+#endif
+
+#ifdef SISMERGED
+#ifdef SISXINERAMA
+static Bool 		SiSnoPanoramiXExtension = TRUE;
+static unsigned char 	SiSXineramaReqCode = 0;
+int 			SiSXineramaPixWidth = 0;
+int 			SiSXineramaPixHeight = 0;
+int 			SiSXineramaNumScreens = 0;
+SiSXineramaData		*SiSXineramadataPtr = NULL;
+static int 		SiSXineramaGeneration;
+
+int SiSProcXineramaQueryVersion(ClientPtr client);
+int SiSProcXineramaGetState(ClientPtr client);
+int SiSProcXineramaGetScreenCount(ClientPtr client);
+int SiSProcXineramaGetScreenSize(ClientPtr client);
+int SiSProcXineramaIsActive(ClientPtr client);
+int SiSProcXineramaQueryScreens(ClientPtr client);
+int SiSSProcXineramaDispatch(ClientPtr client);
+#endif
 #endif
 
 /*
@@ -244,6 +269,7 @@ static const char *xaaSymbols[] = {
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
     "XAAFillSolidRects",
 #endif
+    "XAAFillMono8x8PatternRects",
     "XAAHelpPatternROP",
     "XAAInit",
     NULL
@@ -528,7 +554,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
     SISPtr pSiS = SISPTR(pScrn);
     BOOLEAN docrt1 = TRUE, docrt2 = TRUE;
     unsigned char sr1=0, cr17=0, cr63=0, sr11=0, pmreg=0, sr7=0;
-    unsigned char p1_13=0, p2_0=0;
+    unsigned char p1_13=0, p2_0=0, oldpmreg=0;
     BOOLEAN backlight = TRUE;
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
@@ -657,6 +683,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
        switch(pSiS->VGAEngine) {
        case SIS_OLD_VGA:
        case SIS_530_VGA:
+            inSISIDXREG(SISSR, 0x11, oldpmreg);
             setSISIDXREG(SISCR, 0x17, 0x7f, cr17);
 	    setSISIDXREG(SISSR, 0x11, 0x3f, pmreg);
 	    break;
@@ -667,6 +694,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 	    }
 	    /* fall through */
        default:
+            inSISIDXREG(SISSR, 0x1f, oldpmreg);
             if(!pSiS->CRT1off) {
 	       setSISIDXREG(SISSR, 0x1f, 0x3f, pmreg);
 	    }
@@ -674,6 +702,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 	     * don't go into power-saving mode this in this case!
 	     */
        }
+       oldpmreg &= 0xc0;
     }
 
     if(docrt2) {
@@ -702,7 +731,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
        }
     }
 
-    if(docrt1) {
+    if((docrt1) && (pmreg != oldpmreg)) {
        outSISIDXREG(SISSR, 0x00, 0x01);    /* Synchronous Reset */
        usleep(10000);
        outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
@@ -1016,7 +1045,7 @@ SiSSetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
     }
 }
 
-/* TW: Some helper functions for MergeFB mode */
+/* TW: Some helper functions for MergedFB mode */
 
 #ifdef SISMERGED
 
@@ -1084,6 +1113,9 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
                  DisplayModePtr i, DisplayModePtr j,
 		 SiSScrn2Rel srel)
 {
+#ifdef SISXINERAMA
+    SISPtr pSiS = SISPTR(pScrn);
+#endif
     DisplayModePtr mode;
     int dx = 0,dy = 0;
 
@@ -1100,11 +1132,17 @@ SiSCopyModeNLink(ScrnInfoPtr pScrn, DisplayModePtr dest,
     case sisRightOf:
        dx = min(pScrn->virtualX, i->HDisplay + j->HDisplay)    - mode->HDisplay;
        dy = min(pScrn->virtualY, max(i->VDisplay,j->VDisplay)) - mode->VDisplay;
+#ifdef SISXINERAMA
+       pSiS->AtLeastOneNonClone = TRUE;
+#endif
        break;
     case sisAbove:
     case sisBelow:
        dy = min(pScrn->virtualY, i->VDisplay + j->VDisplay)    - mode->VDisplay;
        dx = min(pScrn->virtualX, max(i->HDisplay,j->HDisplay)) - mode->HDisplay;
+#ifdef SISXINERAMA
+       pSiS->AtLeastOneNonClone = TRUE;
+#endif
        break;
     case sisClone:
        dx = min(pScrn->virtualX, max(i->HDisplay,j->HDisplay)) - mode->HDisplay;
@@ -1163,14 +1201,21 @@ SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
 		    DisplayModePtr i, DisplayModePtr j,
 		    SiSScrn2Rel srel)
 {
+#ifdef SISXINERAMA
+    SISPtr pSiS = SISPTR(pScrn);
+#endif
     char* strmode = str;
     char modename[256];
     Bool gotdash = FALSE;
     SiSScrn2Rel sr;
-
     DisplayModePtr mode1 = NULL;
     DisplayModePtr mode2 = NULL;
     DisplayModePtr result = NULL;
+
+#ifdef SISXINERAMA
+    pSiS->AtLeastOneNonClone = FALSE;
+#endif
+
     do {
         switch(*str) {
         case 0:
@@ -1231,7 +1276,7 @@ SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
                  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
                      "Mode: \"%s\" is not a supported mode for CRT2\n", mode1->name);
                  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-                     "Skipping metamode \"%s\".\n");
+                     "Skipping metamode \"%s\".\n", modename);
                  mode1 = NULL;
               } else {
                  result = SiSCopyModeNLink(pScrn, result, mode1, mode2, sr);
@@ -1247,6 +1292,585 @@ SiSGenerateModeList(ScrnInfoPtr pScrn, char* str,
 
     return result;
 }
+
+/* Pseudo-Xinerama extension for MergedFB mode */
+#ifdef SISXINERAMA
+
+static void
+SiSUpdateXineramaScreenInfo(ScrnInfoPtr pScrn1)
+{
+    SISPtr pSiS = SISPTR(pScrn1);
+    ScrnInfoPtr pScrn2 = NULL;
+    int crt1scrnnum = 0, crt2scrnnum = 1;
+    int x1=0, x2=0, y1=0, y2=0, h1=0, h2=0, w1=0, w2=0;
+    DisplayModePtr currentMode, firstMode;
+    Bool infochanged = FALSE;
+
+    if(!pSiS->MergedFB) return;
+
+    if(SiSnoPanoramiXExtension) return;
+
+    if(!SiSXineramadataPtr) {
+       xf86DrvMsg(pScrn1->scrnIndex, X_ERROR,
+       	"Internal error: SiSUpdateXineramaScreenInfo(): SiSXineramadataPtr is NULL\n");
+       return;
+    }
+
+    if(pSiS->CRT2IsScrn0) {
+       crt1scrnnum = 1;
+       crt2scrnnum = 0;
+    }
+
+    pScrn2 = pSiS->CRT2pScrn;
+
+    /* Attention: Usage of RandR may lead into virtual X and Y values
+     * actually smaller than our MetaModes! To avoid this, we calculate
+     * the maxCRT fields here (and not somewhere else, like in CopyNLink)
+     */
+
+    if((pSiS->SiSXineramaVX != pScrn1->virtualX) || (pSiS->SiSXineramaVY != pScrn1->virtualY)) {
+
+       if(!(pScrn1->modes)) {
+          xf86DrvMsg(pScrn1->scrnIndex, X_ERROR,
+       	     "Internal error: SiSUpdateXineramaScreenInfo(): pScrn->modes is NULL\n");
+	  return;
+       }
+
+       pSiS->maxCRT1_X1 = pSiS->maxCRT1_X2 = 0;
+       pSiS->maxCRT1_Y1 = pSiS->maxCRT1_Y2 = 0;
+       pSiS->maxCRT2_X1 = pSiS->maxCRT2_X2 = 0;
+       pSiS->maxCRT2_Y1 = pSiS->maxCRT2_Y2 = 0;
+       pSiS->maxClone_X1 = pSiS->maxClone_X2 = 0;
+       pSiS->maxClone_Y1 = pSiS->maxClone_Y2 = 0;
+
+       currentMode = firstMode = pScrn1->modes;
+
+       do {
+
+          DisplayModePtr p = currentMode->next;
+          DisplayModePtr i = ((SiSMergedDisplayModePtr)currentMode->Private)->CRT1;
+          DisplayModePtr j = ((SiSMergedDisplayModePtr)currentMode->Private)->CRT2;
+          SiSScrn2Rel srel = ((SiSMergedDisplayModePtr)currentMode->Private)->CRT2Position;
+
+          if((i->HDisplay <= pScrn1->virtualX) && (j->HDisplay <= pScrn1->virtualX) &&
+             (i->VDisplay <= pScrn1->virtualY) && (j->VDisplay <= pScrn1->virtualY)) {
+
+             if(srel != sisClone) {
+                if(pSiS->maxCRT1_X1 <= i->HDisplay) {
+                   pSiS->maxCRT1_X1 = i->HDisplay;      /* Largest CRT1 mode */
+                   if(pSiS->maxCRT1_X2 < j->HDisplay) {
+                      pSiS->maxCRT1_X2 = j->HDisplay;   /* Largest X of CRT2 mode displayed with largest CRT1 mode */
+                   }
+                }
+                if(pSiS->maxCRT2_X2 <= j->HDisplay) {
+                   pSiS->maxCRT2_X2 = j->HDisplay;      /* Largest CRT2 mode */
+                   if(pSiS->maxCRT2_X1 < i->HDisplay) {
+                      pSiS->maxCRT2_X1 = i->HDisplay;   /* Largest X of CRT1 mode displayed with largest CRT2 mode */
+                   }
+                }
+                if(pSiS->maxCRT1_Y1 <= i->VDisplay) {
+                   pSiS->maxCRT1_Y1 = i->VDisplay;
+                   if(pSiS->maxCRT1_Y2 < j->VDisplay) {
+                      pSiS->maxCRT1_Y2 = j->VDisplay;
+                   }
+                }
+                if(pSiS->maxCRT2_Y2 <= j->VDisplay) {
+                   pSiS->maxCRT2_Y2 = j->VDisplay;
+                   if(pSiS->maxCRT2_Y1 < i->VDisplay) {
+                      pSiS->maxCRT2_Y1 = i->VDisplay;
+                   }
+                }
+             } else {
+                if(pSiS->maxClone_X1 < i->HDisplay) {
+                   pSiS->maxClone_X1 = i->HDisplay;
+                }
+                if(pSiS->maxClone_X2 < j->HDisplay) {
+                   pSiS->maxClone_X2 = j->HDisplay;
+                }
+                if(pSiS->maxClone_Y1 < i->VDisplay) {
+                   pSiS->maxClone_Y1 = i->VDisplay;
+                }
+                if(pSiS->maxClone_Y2 < j->VDisplay) {
+                   pSiS->maxClone_Y2 = j->VDisplay;
+                }
+             }
+          }
+          currentMode = p;
+
+       } while((currentMode) && (currentMode != firstMode));
+
+       pSiS->SiSXineramaVX = pScrn1->virtualX;
+       pSiS->SiSXineramaVY = pScrn1->virtualY;
+       infochanged = TRUE;
+
+    }
+
+    /* leftof
+
+        V 1:
+        CRT2: 	x = 0
+		y = 0
+		w = (maxCRT2 X)
+		h = (virtual Y)
+	CRT1:   x = (virtual X) - (maxCRT1 X)
+		y = 0
+		w = (maxCRT1 X)
+		h = (virtual Y)
+
+	V 2:
+       	CRT2: 	x = 0
+		y = 0
+		w = max CRT2 mode X
+		h = virtual Y size
+	CRT1:   x = (max) CRT2 mode X von dem Metamode, wo CRT1 mode maximal breit ist
+		y = 0
+		w = max CRT1 mode X
+		h = virtual Y size
+
+	V 3:  (current)
+	CRT1:   x = (maxCRT2 X von dem MMode, wo maxCRT1 X)
+		y = 0
+		w = (virtual X) - x
+		h = (virtual Y)
+        CRT2: 	x = 0
+		y = 0
+		w = (virtual X) - (maxCRT1 X von dem MMode, wo maxCRT2 X)
+		h = (virtual Y)
+
+    */
+
+    switch(pSiS->CRT2Position) {
+    case sisLeftOf:								/* V 1 */
+       x1 = min(pSiS->maxCRT1_X2, pScrn1->virtualX - pSiS->maxCRT1_X1);		/* pScrn1->virtualX - pSiS->maxCRT1_X1; */
+       if(x1 < 0) x1 = 0;
+       y1 = 0;									/* 0; */
+       w1 = pScrn1->virtualX - x1;						/* pSiS->maxCRT1_X1; */
+       h1 = pScrn1->virtualY;							/* pScrn1->virtualY; */
+       x2 = 0;									/* 0; */
+       y2 = 0;									/* 0; */
+       w2 = max(pSiS->maxCRT2_X2, pScrn1->virtualX - pSiS->maxCRT2_X1); 	/* pSiS->maxCRT2_X2; */
+       if(w2 > pScrn1->virtualX) w2 = pScrn1->virtualX;
+       h2 = pScrn1->virtualY; 							/* pScrn1->virtualY; */
+       break;
+    case sisRightOf:
+       x1 = 0;									/* 0; */
+       y1 = 0;									/* 0; */
+       w1 = max(pSiS->maxCRT1_X1, pScrn1->virtualX - pSiS->maxCRT1_X2);		/* pSiS->maxCRT1_X1; */
+       if(w1 > pScrn1->virtualX) w1 = pScrn1->virtualX;
+       h1 = pScrn1->virtualY;							/* pScrn1->virtualY; */
+       x2 = min(pSiS->maxCRT2_X1, pScrn1->virtualX - pSiS->maxCRT2_X2);		/* pScrn1->virtualX - pSiS->maxCRT2_X2; */
+       if(x2 < 0) x2 = 0;
+       y2 = 0;									/* 0; */
+       w2 = pScrn1->virtualX - x2;						/* pSiS->maxCRT2_X2; */
+       h2 = pScrn1->virtualY;							/* pScrn1->virtualY; */
+       break;
+    case sisAbove:
+       x1 = 0;									/* 0; */
+       y1 = min(pSiS->maxCRT1_Y2, pScrn1->virtualY - pSiS->maxCRT1_Y1);		/* pScrn1->virtualY - pSiS->maxCRT1_Y1; */
+       if(y1 < 0) y1 = 0;
+       w1 = pScrn1->virtualX;							/* pScrn1->virtualX; */
+       h1 = pScrn1->virtualY - y1;						/* pSiS->maxCRT1_Y1; */
+       x2 = 0;									/* 0; */
+       y2 = 0;									/* 0; */
+       w2 = pScrn1->virtualX;							/* pScrn1->virtualX; */
+       h2 = max(pSiS->maxCRT2_Y2, pScrn1->virtualY - pSiS->maxCRT2_Y1);		/* pSiS->maxCRT2_Y2; */
+       if(h2 > pScrn1->virtualY) h2 = pScrn1->virtualY;
+       break;
+    case sisBelow:
+       x1 = 0;									/* 0; */
+       y1 = 0;									/* 0; */
+       w1 = pScrn1->virtualX;							/* pScrn1->virtualX; */
+       h1 = max(pSiS->maxCRT1_Y1, pScrn1->virtualY - pSiS->maxCRT1_Y2);		/* pSiS->maxCRT1_Y1; */
+       if(h1 > pScrn1->virtualY) h1 = pScrn1->virtualY;
+       x2 = 0;									/* 0; */
+       y2 = min(pSiS->maxCRT2_Y1, pScrn1->virtualY - pSiS->maxCRT2_Y2);		/* pScrn1->virtualY - pSiS->maxCRT2_Y2; */
+       if(y2 < 0) y2 = 0;
+       w2 = pScrn1->virtualX;							/* pScrn1->virtualX; */
+       h2 = pScrn1->virtualY - y2;						/* pSiS->maxCRT2_Y2; */
+       break;
+    default:
+       xf86DrvMsg(pScrn1->scrnIndex, X_ERROR,
+       	  "Internal error: UpdateXineramaInfo(): unsupported CRT2Position (%d)\n",
+	  pSiS->CRT2Position);
+    }
+    SiSXineramadataPtr[crt1scrnnum].x = x1;
+    SiSXineramadataPtr[crt1scrnnum].y = y1;
+    SiSXineramadataPtr[crt1scrnnum].width = w1;
+    SiSXineramadataPtr[crt1scrnnum].height = h1;
+    SiSXineramadataPtr[crt2scrnnum].x = x2;
+    SiSXineramadataPtr[crt2scrnnum].y = y2;
+    SiSXineramadataPtr[crt2scrnnum].width = w2;
+    SiSXineramadataPtr[crt2scrnnum].height = h2;
+
+    if(infochanged) {
+       xf86DrvMsg(pScrn1->scrnIndex, X_INFO,
+          "Pseudo-Xinerama: CRT1 (Screen %d) (%d,%d)-(%d,%d)\n",
+          crt1scrnnum, x1, y1, w1+x1-1, h1+y1-1);
+       xf86DrvMsg(pScrn1->scrnIndex, X_INFO,
+          "Pseudo-Xinerama: CRT2 (Screen %d) (%d,%d)-(%d,%d)\n",
+          crt2scrnnum, x2, y2, w2+x2-1, h2+y2-1);
+    }
+}
+
+/* Proc */
+
+int
+SiSProcXineramaQueryVersion(ClientPtr client)
+{
+    xPanoramiXQueryVersionReply	  rep;
+    register int		  n;
+
+    REQUEST_SIZE_MATCH(xPanoramiXQueryVersionReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.majorVersion = SIS_XINERAMA_MAJOR_VERSION;
+    rep.minorVersion = SIS_XINERAMA_MINOR_VERSION;
+    if(client->swapped) {
+        swaps(&rep.sequenceNumber, n);
+        swapl(&rep.length, n);
+        swaps(&rep.majorVersion, n);
+        swaps(&rep.minorVersion, n);
+    }
+    WriteToClient(client, sizeof(xPanoramiXQueryVersionReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+int
+SiSProcXineramaGetState(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetStateReq);
+    WindowPtr			pWin;
+    xPanoramiXGetStateReply	rep;
+    register int		n;
+
+    REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
+    pWin = LookupWindow(stuff->window, client);
+    if(!pWin) return BadWindow;
+
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.state = !SiSnoPanoramiXExtension;
+    if(client->swapped) {
+       swaps (&rep.sequenceNumber, n);
+       swapl (&rep.length, n);
+       swaps (&rep.state, n);
+    }
+    WriteToClient(client, sizeof(xPanoramiXGetStateReply), (char *)&rep);
+    return client->noClientException;
+}
+
+int
+SiSProcXineramaGetScreenCount(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetScreenCountReq);
+    WindowPtr				pWin;
+    xPanoramiXGetScreenCountReply	rep;
+    register int			n;
+
+    REQUEST_SIZE_MATCH(xPanoramiXGetScreenCountReq);
+    pWin = LookupWindow(stuff->window, client);
+    if(!pWin) return BadWindow;
+
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.ScreenCount = SiSXineramaNumScreens;
+    if(client->swapped) {
+       swaps(&rep.sequenceNumber, n);
+       swapl(&rep.length, n);
+       swaps(&rep.ScreenCount, n);
+    }
+    WriteToClient(client, sizeof(xPanoramiXGetScreenCountReply), (char *)&rep);
+    return client->noClientException;
+}
+
+int
+SiSProcXineramaGetScreenSize(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetScreenSizeReq);
+    WindowPtr				pWin;
+    xPanoramiXGetScreenSizeReply	rep;
+    register int			n;
+
+    REQUEST_SIZE_MATCH(xPanoramiXGetScreenSizeReq);
+    pWin = LookupWindow (stuff->window, client);
+    if(!pWin)  return BadWindow;
+
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.width  = SiSXineramadataPtr[stuff->screen].width;
+    rep.height = SiSXineramadataPtr[stuff->screen].height;
+    if(client->swapped) {
+       swaps(&rep.sequenceNumber, n);
+       swapl(&rep.length, n);
+       swaps(&rep.width, n);
+       swaps(&rep.height, n);
+    }
+    WriteToClient(client, sizeof(xPanoramiXGetScreenSizeReply), (char *)&rep);
+    return client->noClientException;
+}
+
+int
+SiSProcXineramaIsActive(ClientPtr client)
+{
+    xXineramaIsActiveReply	rep;
+
+    REQUEST_SIZE_MATCH(xXineramaIsActiveReq);
+
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.state = !SiSnoPanoramiXExtension;
+    if(client->swapped) {
+	register int n;
+	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+	swapl(&rep.state, n);
+    }
+    WriteToClient(client, sizeof(xXineramaIsActiveReply), (char *) &rep);
+    return client->noClientException;
+}
+
+int
+SiSProcXineramaQueryScreens(ClientPtr client)
+{
+    xXineramaQueryScreensReply	rep;
+
+    REQUEST_SIZE_MATCH(xXineramaQueryScreensReq);
+
+    rep.type = X_Reply;
+    rep.sequenceNumber = client->sequence;
+    rep.number = (SiSnoPanoramiXExtension) ? 0 : SiSXineramaNumScreens;
+    rep.length = rep.number * sz_XineramaScreenInfo >> 2;
+    if(client->swapped) {
+       register int n;
+       swaps(&rep.sequenceNumber, n);
+       swapl(&rep.length, n);
+       swapl(&rep.number, n);
+    }
+    WriteToClient(client, sizeof(xXineramaQueryScreensReply), (char *)&rep);
+
+    if(!SiSnoPanoramiXExtension) {
+       xXineramaScreenInfo scratch;
+       int i;
+
+       for(i = 0; i < SiSXineramaNumScreens; i++) {
+	  scratch.x_org  = SiSXineramadataPtr[i].x;
+	  scratch.y_org  = SiSXineramadataPtr[i].y;
+	  scratch.width  = SiSXineramadataPtr[i].width;
+	  scratch.height = SiSXineramadataPtr[i].height;
+	  if(client->swapped) {
+	     register int n;
+	     swaps(&scratch.x_org, n);
+	     swaps(&scratch.y_org, n);
+	     swaps(&scratch.width, n);
+    	     swaps(&scratch.height, n);
+	  }
+	  WriteToClient(client, sz_XineramaScreenInfo, (char *)&scratch);
+       }
+    }
+
+    return client->noClientException;
+}
+
+static int
+SiSProcXineramaDispatch(ClientPtr client)
+{
+    REQUEST(xReq);
+    switch (stuff->data) {
+	case X_PanoramiXQueryVersion:
+	     return SiSProcXineramaQueryVersion(client);
+	case X_PanoramiXGetState:
+	     return SiSProcXineramaGetState(client);
+	case X_PanoramiXGetScreenCount:
+	     return SiSProcXineramaGetScreenCount(client);
+	case X_PanoramiXGetScreenSize:
+	     return SiSProcXineramaGetScreenSize(client);
+	case X_XineramaIsActive:
+	     return SiSProcXineramaIsActive(client);
+	case X_XineramaQueryScreens:
+	     return SiSProcXineramaQueryScreens(client);
+    }
+    return BadRequest;
+}
+
+/* SProc */
+
+static int
+SiSSProcXineramaQueryVersion (ClientPtr client)
+{
+    REQUEST(xPanoramiXQueryVersionReq);
+    register int n;
+    swaps(&stuff->length,n);
+    REQUEST_SIZE_MATCH (xPanoramiXQueryVersionReq);
+    return SiSProcXineramaQueryVersion(client);
+}
+
+static int
+SiSSProcXineramaGetState(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetStateReq);
+    register int n;
+    swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xPanoramiXGetStateReq);
+    return SiSProcXineramaGetState(client);
+}
+
+static int
+SiSSProcXineramaGetScreenCount(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetScreenCountReq);
+    register int n;
+    swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xPanoramiXGetScreenCountReq);
+    return SiSProcXineramaGetScreenCount(client);
+}
+
+static int
+SiSSProcXineramaGetScreenSize(ClientPtr client)
+{
+    REQUEST(xPanoramiXGetScreenSizeReq);
+    register int n;
+    swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xPanoramiXGetScreenSizeReq);
+    return SiSProcXineramaGetScreenSize(client);
+}
+
+static int
+SiSSProcXineramaIsActive(ClientPtr client)
+{
+    REQUEST(xXineramaIsActiveReq);
+    register int n;
+    swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXineramaIsActiveReq);
+    return SiSProcXineramaIsActive(client);
+}
+
+static int
+SiSSProcXineramaQueryScreens(ClientPtr client)
+{
+    REQUEST(xXineramaQueryScreensReq);
+    register int n;
+    swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXineramaQueryScreensReq);
+    return SiSProcXineramaQueryScreens(client);
+}
+
+int
+SiSSProcXineramaDispatch(ClientPtr client)
+{
+    REQUEST(xReq);
+    switch (stuff->data) {
+	case X_PanoramiXQueryVersion:
+	     return SiSSProcXineramaQueryVersion(client);
+	case X_PanoramiXGetState:
+	     return SiSSProcXineramaGetState(client);
+	case X_PanoramiXGetScreenCount:
+	     return SiSSProcXineramaGetScreenCount(client);
+	case X_PanoramiXGetScreenSize:
+	     return SiSSProcXineramaGetScreenSize(client);
+	case X_XineramaIsActive:
+	     return SiSSProcXineramaIsActive(client);
+	case X_XineramaQueryScreens:
+	     return SiSSProcXineramaQueryScreens(client);
+    }
+    return BadRequest;
+}
+
+static void
+SiSXineramaResetProc(ExtensionEntry* extEntry)
+{
+    /* Called by CloseDownExtensions() */
+    if(SiSXineramadataPtr) {
+       Xfree(SiSXineramadataPtr);
+       SiSXineramadataPtr = NULL;
+    }
+}
+
+static void
+SiSXineramaExtensionInit(ScrnInfoPtr pScrn)
+{
+    SISPtr    	pSiS = SISPTR(pScrn);
+    Bool	success = FALSE;
+
+    if(!(SiSXineramadataPtr)) {
+
+       if(!pSiS->MergedFB) {
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+
+       if(!noPanoramiXExtension) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	     "Xinerama active, not initializing SiS Pseudo-Xinerama\n");
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+
+       if(SiSnoPanoramiXExtension) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	      "SiS Pseudo-Xinerama disabled\n");
+          return;
+       }
+
+       if(pSiS->CRT2Position == sisClone) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	     "Running MergedFB in Clone mode, SiS Pseudo-Xinerama disabled\n");
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+
+       if(!(pSiS->AtLeastOneNonClone)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       	     "Only Clone modes defined, SiS Pseudo-Xinerama disabled\n");
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+
+       SiSXineramaNumScreens = 2;
+
+       while(SiSXineramaGeneration != serverGeneration) {
+
+	  pSiS->XineramaExtEntry = AddExtension(PANORAMIX_PROTOCOL_NAME, 0,0,
+					SiSProcXineramaDispatch,
+					SiSSProcXineramaDispatch,
+					SiSXineramaResetProc,
+					StandardMinorOpcode);
+
+	  if(!pSiS->XineramaExtEntry) break;
+
+	  SiSXineramaReqCode = (unsigned char)pSiS->XineramaExtEntry->base;
+
+	  if(!(SiSXineramadataPtr = (SiSXineramaData *)
+	        xcalloc(SiSXineramaNumScreens, sizeof(SiSXineramaData)))) break;
+
+	  SiSXineramaGeneration = serverGeneration;
+	  success = TRUE;
+       }
+
+       if(!success) {
+          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    	"Failed to initialize SiS Pseudo-Xinerama extension\n");
+          SiSnoPanoramiXExtension = TRUE;
+          return;
+       }
+
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+    	  "Initialized SiS Pseudo-Xinerama extension\n");
+
+       pSiS->SiSXineramaVX = 0;
+       pSiS->SiSXineramaVY = 0;
+
+    }
+
+    SiSUpdateXineramaScreenInfo(pScrn);
+
+}
+#endif  /* End of PseudoXinerama */
+
 #endif	/* End of MergedFB helpers */
 
 static xf86MonPtr
@@ -1257,7 +1881,7 @@ SiSInternalDDC(ScrnInfoPtr pScrn, int crtno)
    unsigned char buffer[256];
    xf86MonPtr    pMonitor = NULL;
 
-   /* TW: If CRT1 is off, skip DDC */
+   /* If CRT1 is off, skip DDC */
    if((pSiS->CRT1off) && (!crtno)) return NULL;
 
    if(crtno) {
@@ -1962,10 +2586,16 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* The following identifies the old chipsets. This is only
      * partly used since the really old chips are not supported,
      * but I keep it here for future use.
+     * 205, 215 and 225 are to be treated the same way, 201 and 202
+     * are different.
      */
     if(pSiS->VGAEngine == SIS_OLD_VGA || pSiS->VGAEngine == SIS_530_VGA) {
        switch(pSiS->Chipset) {
-       case PCI_CHIP_SG86C205:    /* Just for making it complete */
+       case PCI_CHIP_SG86C201:
+       	  pSiS->oldChipset = OC_SIS86201; break;
+       case PCI_CHIP_SG86C202:
+       	  pSiS->oldChipset = OC_SIS86202; break;
+       case PCI_CHIP_SG86C205:
           {
 	  unsigned char temp;
 	  sisSaveUnlockExtRegisterLock(pSiS, &srlockReg, &crlockReg);
@@ -1975,9 +2605,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	  		OC_SIS6205C : OC_SIS6205A;
           break;
 	  }
-       case PCI_CHIP_SIS82C204:   /* Just for making it complete */
+       case PCI_CHIP_SIS82C204:
        	  pSiS->oldChipset = OC_SIS82204; break;
-       case 0x6225:		  /* Just for making it complete */
+       case 0x6225:
           pSiS->oldChipset = OC_SIS6225; break;
        case PCI_CHIP_SIS5597:
           pSiS->oldChipset = OC_SIS5597; break;
@@ -2302,8 +2932,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiSEnt->sistvedgeenhance = pSiS->sistvedgeenhance;
 	     pSiSEnt->sistvantiflicker = pSiS->sistvantiflicker;
 	     pSiSEnt->sistvsaturation = pSiS->sistvsaturation;
+	     pSiSEnt->sistvcfilter = pSiS->sistvcfilter;
+	     pSiSEnt->sistvyfilter = pSiS->sistvyfilter;
+	     pSiSEnt->sistvcolcalibc = pSiS->sistvcolcalibc;
+	     pSiSEnt->sistvcolcalibf = pSiS->sistvcolcalibf;
 	     pSiSEnt->tvxpos = pSiS->tvxpos;
 	     pSiSEnt->tvypos = pSiS->tvypos;
+	     pSiSEnt->tvxscale = pSiS->tvxscale;
+	     pSiSEnt->tvyscale = pSiS->tvyscale;
 	     pSiSEnt->CRT1gamma = pSiS->CRT1gamma;
 	     pSiSEnt->CRT2gamma = pSiS->CRT2gamma;
 	     pSiSEnt->XvOnCRT2 = pSiS->XvOnCRT2;
@@ -2361,8 +2997,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->sistvedgeenhance = pSiSEnt->sistvedgeenhance;
 	     pSiS->sistvantiflicker = pSiSEnt->sistvantiflicker;
 	     pSiS->sistvsaturation = pSiSEnt->sistvsaturation;
+	     pSiS->sistvcfilter = pSiSEnt->sistvcfilter;
+	     pSiS->sistvyfilter = pSiSEnt->sistvyfilter;
+	     pSiS->sistvcolcalibc = pSiSEnt->sistvcolcalibc;
+	     pSiS->sistvcolcalibf = pSiSEnt->sistvcolcalibf;
 	     pSiS->tvxpos = pSiSEnt->tvxpos;
 	     pSiS->tvypos = pSiSEnt->tvypos;
+	     pSiS->tvxscale = pSiSEnt->tvxscale;
+	     pSiS->tvyscale = pSiSEnt->tvyscale;
 	     pSiS->CRT1gamma = pSiSEnt->CRT1gamma;
 	     pSiS->CRT2gamma = pSiSEnt->CRT2gamma;
 	     pSiS->XvOnCRT2 = pSiSEnt->XvOnCRT2;
@@ -2482,13 +3124,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * HWCursur setting. Also, initialize some variables used
      * in other modules.
      */
-     
+
     pSiS->cursorOffset = 0;
     pSiS->CurARGBDest = NULL;
     pSiS->CurMonoSrc = NULL;
     pSiS->CurFGCol = pSiS->CurBGCol = 0;
 
     switch (pSiS->VGAEngine) {
+
       case SIS_300_VGA:
       	pSiS->TurboQueueLen = 512;
        	if(pSiS->TurboQueue) {
@@ -2506,6 +3149,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	if(pSiSEnt) pSiSEnt->cursorBufferNum = 0;
 #endif	
 	break;
+
       case SIS_315_VGA:
        	if(pSiS->TurboQueue) {
 			      pSiS->availMem -= (512*1024);  		/* Command Queue is 512k */
@@ -2520,18 +3164,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	if(pSiSEnt) pSiSEnt->cursorBufferNum = 0;
 #endif	
 	break;
+
       default:
-        /* TW: cursorOffset not used in cursor functions for 530 and
-	 *     older chips, because the cursor is *above* the TQ.
-	 *     On 5597 and older revisions of the 6326, the TQ is
-	 *     max 32K, on newer 6326 revisions and the 530 either 30
-	 *     (or 32?) or 62K (or 64?). However, to make sure, we
-	 *     use only 30K (or 32?), but reduce the available memory
-	 *     by 64, and locate the TQ at the beginning of this last
-	 *     64K block. (We do this that way even when using the
-	 *     HWCursor, because the cursor only takes 2K, and the queue
-	 *     does not seem to last that far anyway.)
-	 *     The TQ must be located at 32KB boundaries.
+        /* cursorOffset not used in cursor functions for 530 and
+	 * older chips, because the cursor is *above* the TQ.
+	 * On 5597 and older revisions of the 6326, the TQ is
+	 * max 32K, on newer 6326 revisions and the 530 either 30
+	 * (or 32?) or 62K (or 64?). However, to make sure, we
+	 * use only 30K (or 32?), but reduce the available memory
+	 * by 64, and locate the TQ at the beginning of this last
+	 * 64K block. (We do this that way even when using the
+	 * HWCursor, because the cursor only takes 2K and the
+	 * queue does not seem to last that far anyway.)
+	 * The TQ must be located at 32KB boundaries.
 	 */
 	if(pSiS->RealVideoRam < 3072) {
 	        if(pSiS->TurboQueue) {
@@ -2543,7 +3188,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	pSiS->CmdQueMaxLen = 32;
      	if(pSiS->TurboQueue) {
 	              	      pSiS->availMem -= (64*1024);
-			      pSiS->CmdQueMaxLen = 900;   /* TW: To make sure; should be 992 */
+			      pSiS->CmdQueMaxLen = 900;   /* To make sure; should be 992 */
 	} else if (pSiS->HWCursor) {
 	                      pSiS->availMem -= pSiS->CursorSize;
 	}
@@ -2635,11 +3280,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 	   break;
 	 case PCI_CHIP_SIS315PRO:
-	   /* No idea about 315 and 315H */
 	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	   break;
          case PCI_CHIP_SIS330:
-	   /* Confirmed: has only 1 overlay */
 	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	   break;
 	 case PCI_CHIP_SIS660:
@@ -2701,7 +3344,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		         break;
 		   }
 		} else {
-		   pSiS->hasTwoOverlays = TRUE;  /* ? */
+		   pSiS->hasTwoOverlays = TRUE;  
 		   pSiS->SiS_SD_Flags |= SiS_SD_SUPPORT2OVL;
 		   switch(CR5F) {
 		      case 0x90:
@@ -3714,12 +4357,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        switch(pSiS->VGAEngine) {
        case SIS_OLD_VGA:
        case SIS_530_VGA:
-          maxpitch = 2048;
+          maxpitch = 2040;
           maxheight = 2048;
           break;
        case SIS_300_VGA:
        case SIS_315_VGA:
-          maxpitch = 4096;
+          maxpitch = 4088;
           maxheight = 4096;
           break;
        default:
@@ -3949,10 +4592,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->CheckForCRT2 = TRUE;
        i = xf86ValidateModes(pSiS->CRT2pScrn, pSiS->CRT2pScrn->monitor->Modes,
                       pSiS->CRT2pScrn->display->modes, clockRanges,
-                      NULL, 256, 4096,
+                      NULL, 256, 4088,
                       pSiS->CRT2pScrn->bitsPerPixel * 8, 128, 4096,
-                      pSiS->CRT2pScrn->display->virtualX,
-                      pSiS->CRT2pScrn->display->virtualY,
+                      pScrn->virtualX, /* pSiS->CRT2pScrn->display->virtualX, */
+                      pScrn->virtualY, /* pSiS->CRT2pScrn->display->virtualY, */
                       pSiS->maxxfbmem,
                       LOOKUP_BEST_REFRESH);
        pSiS->CheckForCRT2 = FALSE;
@@ -3994,7 +4637,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		   (strcmp(p->name, "640x400") == 0) ) )  {
 	    	p->status = MODE_BAD;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		    "Not using mode \"%s\" (not suitable for MergeFB mode)\n",
+		    "Not using mode \"%s\" (not suitable for MergedFB mode)\n",
 		    p->name);
 	     }
 	     if((pSiS->VBFlags & CRT2_LCD) && (pSiS->SiS_Pr->SiS_CustomT != CUT_PANEL848)) {
@@ -4012,7 +4655,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        if(i == 0 || pSiS->CRT2pScrn->modes == NULL) {
 
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	      "No valid modes found for CRT2; MergeFB mode disabled\n");
+	      "No valid modes found for CRT2; MergedFB mode disabled\n");
 	  if(pSiS->CRT2pScrn) {
 	     if(pSiS->CRT2pScrn->modes) {
 	        while(pSiS->CRT2pScrn->modes)
@@ -5343,7 +5986,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     pSiS = SISPTR(pScrn);
 
-#ifdef SISDUALHEAD    
+#ifdef SISDUALHEAD
     if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
 #endif    
        if(xf86LoadSubModule(pScrn, "vbe")) {
@@ -5785,12 +6428,22 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Wrap some funcs */
 
+    pSiS->SiS_SD_Flags &= ~(SiS_SD_PSEUDOXINERAMA);
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
        pSiS->PointerMoved = pScrn->PointerMoved;
        pScrn->PointerMoved = SISMergePointerMoved;
        pSiS->Rotate = FALSE;
        pSiS->ShadowFB = FALSE;
+#ifdef SISXINERAMA
+       if(pSiS->UseSiSXinerama) {
+          SiSnoPanoramiXExtension = FALSE;
+          SiSXineramaExtensionInit(pScrn);
+	  if(!SiSnoPanoramiXExtension) {
+	     pSiS->SiS_SD_Flags |= SiS_SD_PSEUDOXINERAMA;
+	  }
+       }
+#endif
     }
 #endif
 
@@ -5798,10 +6451,10 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScreen->CloseScreen = SISCloseScreen;
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode)
-    	pScreen->SaveScreen = SISSaveScreenDH;
+       pScreen->SaveScreen = SISSaveScreenDH;
     else
 #endif
-    	pScreen->SaveScreen = SISSaveScreen;
+       pScreen->SaveScreen = SISSaveScreen;
 
     /* Install BlockHandler */
     pSiS->BlockHandler = pScreen->BlockHandler;
@@ -5809,18 +6462,18 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Report any unused options (only for the first generation) */
     if(serverGeneration == 1) {
-    	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+       xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
     /* Turn on the screen now */
     /* TW: We do this in dual head mode after second head is finished */
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
-        if(pSiS->SecondHead)
-    	     SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
+       if(pSiS->SecondHead)
+    	  SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
     } else
 #endif
-        SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
+       SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
 
     return TRUE;
 }
@@ -5838,7 +6491,19 @@ SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
        }
     }
 
-    return SISModeInit(xf86Screens[scrnIndex], mode);
+    if(!(SISModeInit(xf86Screens[scrnIndex], mode))) return FALSE;
+
+    /* Since RandR (indirectly) uses SwitchMode(), we need to
+     * update our Xinerama info here, too, in case of resizing
+     */
+#ifdef SISMERGED
+#ifdef SISXINERAMA
+    if(pSiS->MergedFB) {
+       SiSUpdateXineramaScreenInfo(pScrn);
+    }
+#endif
+#endif
+    return TRUE;
 }
 
 #ifdef CYCLECRT2
@@ -5988,11 +6653,10 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
        	  vbflags |= CRT2_LCD;
        } else if(cond & SiS_CF2_TV) {
           vbflags |= CRT2_TV;
-	  if(cond & SiS_CF2_TVPAL) {
-	     vbflags |= TV_PAL;
-	     if(cond & SiS_CF2_TVPALM)      vbflags |= TV_PALM;
-	     else if(cond & SiS_CF2_TVPALN) vbflags |= TV_PALN;
-	  } else if(cond & SiS_CF2_TVNTSC)  vbflags |= TV_NTSC;
+	  if(cond & SiS_CF2_TVPAL)  	  vbflags |= TV_PAL;
+	  else if(cond & SiS_CF2_TVPALM)  vbflags |= (TV_PAL | TV_PALM);
+	  else if(cond & SiS_CF2_TVPALN)  vbflags |= (TV_PAL | TV_PALN);
+	  else if(cond & SiS_CF2_TVNTSC)  vbflags |= TV_NTSC;
        } else if(cond & SiS_CF2_VGA2) {
           vbflags |= CRT2_VGA;
        }
@@ -7768,14 +8432,14 @@ void SiS_SetCHTVcvbscolor(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
    if(pSiSEnt) pSiSEnt->chtvcvbscolor = pSiS->chtvcvbscolor;
 #endif
-   
+
    if(!(pSiS->VBFlags & CRT2_TV)) return;
    if(!(pSiS->VBFlags & VB_CHRONTEL)) return;
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
-   
+
    switch(pSiS->ChrontelType) {
        case CHRONTEL_700x:
            if(!val)  SiS_SetCH70xxANDOR(pSiS->SiS_Pr, 0x4003,0x00);
@@ -7785,7 +8449,7 @@ void SiS_SetCHTVcvbscolor(ScrnInfoPtr pScrn, int val)
            if(!val)  SiS_SetCH70xxANDOR(pSiS->SiS_Pr, 0x0002,~0x20);
 	   else      SiS_SetCH70xxANDOR(pSiS->SiS_Pr, 0x2002,0x00);
            break;
-   }	   
+   }
 }
 
 int SiS_GetCHTVcvbscolor(ScrnInfoPtr pScrn)
@@ -7796,8 +8460,8 @@ int SiS_GetCHTVcvbscolor(ScrnInfoPtr pScrn)
 #endif
 
    if(!(pSiS->VBFlags & VB_CHRONTEL && pSiS->VBFlags & CRT2_TV)) {
-#ifdef SISDUALHEAD   
-      if(pSiSEnt && pSiS->DualHeadMode) 
+#ifdef SISDUALHEAD
+      if(pSiSEnt && pSiS->DualHeadMode)
            return (int)pSiSEnt->chtvcvbscolor;
       else
 #endif
@@ -7812,9 +8476,9 @@ int SiS_GetCHTVcvbscolor(ScrnInfoPtr pScrn)
       case CHRONTEL_701x:
 	   return(int)(((SiS_GetCH70xx(pSiS->SiS_Pr, 0x02) & 0x20) >> 5) ^ 0x01);
       default:
-           return -2;   
+           return -2;
       }
-   }    
+   }
 }
 
 void SiS_SetCHTVtextenhance(ScrnInfoPtr pScrn, int val)
@@ -7828,10 +8492,10 @@ void SiS_SetCHTVtextenhance(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
    if(pSiSEnt) pSiSEnt->chtvtextenhance = val;
 #endif
-   
+
    if(!(pSiS->VBFlags & CRT2_TV)) return;
    if(!(pSiS->VBFlags & VB_CHRONTEL)) return;
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -8058,7 +8722,7 @@ void SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val)
 
    if(!(pSiS->VBFlags & CRT2_TV)) return;
    if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -8075,33 +8739,303 @@ int SiS_GetSISTVsaturation(ScrnInfoPtr pScrn)
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
-   
+
    if(!(pSiS->VBFlags & VB_SISBRIDGE && pSiS->VBFlags & CRT2_TV)) {
-#ifdef SISDUALHEAD   
-      if(pSiSEnt && pSiS->DualHeadMode) 
+#ifdef SISDUALHEAD
+      if(pSiSEnt && pSiS->DualHeadMode)
            return (int)pSiSEnt->sistvsaturation;
       else
-#endif      
+#endif
            return (int)pSiS->sistvsaturation;
    } else {
       unsigned char temp;
 #ifdef UNLOCK_ALWAYS
       sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
-#endif      
+#endif
       inSISIDXREG(SISPART4, 0x21, temp);
       return(int)((temp & 0x07) * 2);
    }
+}
+
+void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+   int ccoarse, cfine, cbase = pSiS->sistvccbase;
+   unsigned char temp;
+
+#ifdef SISDUALHEAD
+   if(pSiSEnt) cbase = pSiSEnt->sistvccbase;
+#endif
+
+   if(coarse) {
+      pSiS->sistvcolcalibc = ccoarse = val;
+      cfine = pSiS->sistvcolcalibf;
+#ifdef SISDUALHEAD
+      if(pSiSEnt) {
+         pSiSEnt->sistvcolcalibc = val;
+	 cfine = pSiSEnt->sistvcolcalibf;
+      }
+#endif
+   } else {
+      pSiS->sistvcolcalibf = cfine = val;
+      ccoarse = pSiS->sistvcolcalibc;
+#ifdef SISDUALHEAD
+      if(pSiSEnt) {
+         pSiSEnt->sistvcolcalibf = val;
+         ccoarse = pSiSEnt->sistvcolcalibc;
+      }
+#endif
+   }
+
+   if(!(pSiS->VBFlags & CRT2_TV)) return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+
+#ifdef UNLOCK_ALWAYS
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+   if((cfine >= -128) && (cfine <= 127) && (ccoarse >= -120) && (ccoarse <= 120)) {
+      long finalcc = cbase + (((ccoarse * 256) + cfine) * 256);
+
+      inSISIDXREG(SISPART4,0x1f,temp);
+      if(!(temp & 0x01)) {
+#if 0
+         if(pSiS->VBFlags & TV_NTSC) finalcc += 0x21ed8620;
+	 else if(pSiS->VBFlags & TV_PALM) finalcc += ?;
+	 else if(pSiS->VBFlags & TV_PALM) finalcc += ?;
+	 else finalcc += 0x2a05d300;
+#endif
+      }
+      setSISIDXREG(SISPART2,0x31,0x80,((finalcc >> 24) & 0x7f));
+      outSISIDXREG(SISPART2,0x32,((finalcc >> 16) & 0xff));
+      outSISIDXREG(SISPART2,0x33,((finalcc >> 8) & 0xff));
+      outSISIDXREG(SISPART2,0x34,(finalcc & 0xff));
+   }
+}
+
+int SiS_GetSISTVcolcalib(ScrnInfoPtr pScrn, Bool coarse)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode)
+      if(coarse)
+         return (int)pSiSEnt->sistvcolcalibc;
+      else
+         return (int)pSiSEnt->sistvcolcalibf;
+   else
+#endif
+   if(coarse)
+      return (int)pSiS->sistvcolcalibc;
+   else
+      return (int)pSiS->sistvcolcalibf;
+}
+
+void SiS_SetSISTVcfilter(ScrnInfoPtr pScrn, int val)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+
+   pSiS->sistvcfilter = val ? 1 : 0;
+#ifdef SISDUALHEAD
+   if(pSiSEnt) pSiSEnt->sistvcfilter = pSiS->sistvcfilter;
+#endif
+
+   if(!(pSiS->VBFlags & CRT2_TV)) return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+
+#ifdef UNLOCK_ALWAYS
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+   setSISIDXREG(SISPART2,0x30,~0x10,((pSiS->sistvcfilter << 4) & 0x10));
+}
+
+int SiS_GetSISTVcfilter(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+
+   if(!(pSiS->VBFlags & VB_SISBRIDGE && pSiS->VBFlags & CRT2_TV)) {
+#ifdef SISDUALHEAD
+      if(pSiSEnt && pSiS->DualHeadMode)
+         return (int)pSiSEnt->sistvcfilter;
+      else
+#endif
+         return (int)pSiS->sistvcfilter;
+   } else {
+      unsigned char temp;
+#ifdef UNLOCK_ALWAYS
+      sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+      inSISIDXREG(SISPART2, 0x30, temp);
+      return(int)((temp & 0x10) ? 1 : 0);
+   }
+}
+
+void SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+   unsigned char p35,p36,p37,p38,p48,p49,p4a,p30;
+   int i,j;
+
+   pSiS->sistvyfilter = val;
+#ifdef SISDUALHEAD
+   if(pSiSEnt) pSiSEnt->sistvyfilter = pSiS->sistvyfilter;
+#endif
+
+   if(!(pSiS->VBFlags & CRT2_TV)) return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+
+   p35 = pSiS->p2_35; p36 = pSiS->p2_36;
+   p37 = pSiS->p2_37; p38 = pSiS->p2_38;
+   p48 = pSiS->p2_48; p49 = pSiS->p2_49;
+   p4a = pSiS->p2_4a; p30 = pSiS->p2_30;
+#ifdef SISDUALHEAD
+   if(pSiSEnt) {
+      p35 = pSiSEnt->p2_35; p36 = pSiSEnt->p2_36;
+      p37 = pSiSEnt->p2_37; p38 = pSiSEnt->p2_38;
+      p48 = pSiSEnt->p2_48; p49 = pSiSEnt->p2_49;
+      p4a = pSiSEnt->p2_4a; p30 = pSiSEnt->p2_30;
+   }
+#endif
+   p30 &= 0x20;
+
+#ifdef UNLOCK_ALWAYS
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+   switch(pSiS->sistvyfilter) {
+   case 0:
+      andSISIDXREG(SISPART2,0x30,0xdf);
+      break;
+   case 1:
+      outSISIDXREG(SISPART2,0x35,p35);
+      outSISIDXREG(SISPART2,0x36,p36);
+      outSISIDXREG(SISPART2,0x37,p37);
+      outSISIDXREG(SISPART2,0x38,p38);
+      if(!(pSiS->VBFlags & VB_301)) {
+         outSISIDXREG(SISPART2,0x48,p48);
+         outSISIDXREG(SISPART2,0x49,p49);
+         outSISIDXREG(SISPART2,0x4a,p4a);
+      }
+      setSISIDXREG(SISPART2,0x30,0xdf,p30);
+      break;
+   case 2:
+   case 3:
+   case 4:
+   case 5:
+   case 6:
+   case 7:
+   case 8:
+      if(!(pSiS->VBFlags & (TV_PALM | TV_PALN))) {
+         int yindex301 = -1, yindex301B = -1;
+	 unsigned char p3d4_34;
+
+	 inSISIDXREG(SISCR,0x34,p3d4_34);
+
+	 switch((p3d4_34 & 0x7f)) {
+	 case 0x59:  /* 320x200 */
+	 case 0x41:
+	 case 0x4f:
+	 case 0x50:  /* 320x240 */
+	 case 0x56:
+	 case 0x53:
+	    yindex301  = (pSiS->VBFlags & TV_NTSC) ? 0 : 4;
+	    break;
+	 case 0x2f:  /* 640x400 */
+	 case 0x5d:
+	 case 0x5e:
+	 case 0x2e:  /* 640x480 */
+	 case 0x44:
+	 case 0x62:
+	    yindex301  = (pSiS->VBFlags & TV_NTSC) ? 1 : 5;
+	    yindex301B = (pSiS->VBFlags & TV_NTSC) ? 0 : 4;
+	    break;
+	 case 0x31:   /* 720x480 */
+	 case 0x33:
+	 case 0x35:
+	 case 0x32:   /* 720x576 */
+	 case 0x34:
+	 case 0x36:
+	 case 0x5f:   /* 768x576 */
+	 case 0x60:
+	 case 0x61:
+	    yindex301  = (pSiS->VBFlags & TV_NTSC) ? 2 : 6;
+	    yindex301B = (pSiS->VBFlags & TV_NTSC) ? 1 : 5;
+	    break;
+	 case 0x51:   /* 400x300 */
+	 case 0x57:
+	 case 0x54:
+	 case 0x30:   /* 800x600 */
+	 case 0x47:
+	 case 0x63:
+	    yindex301  = (pSiS->VBFlags & TV_NTSC) ? 3 : 7;
+	    yindex301B = (pSiS->VBFlags & TV_NTSC) ? 2 : 6;
+	    break;
+	 case 0x52:   /* 512x384 */
+	 case 0x58:
+	 case 0x5c:
+	 case 0x38:   /* 1024x768 */
+	 case 0x4a:
+	 case 0x64:
+	    yindex301B = (pSiS->VBFlags & TV_NTSC) ? 3 : 7;
+	    break;
+	 }
+         if(pSiS->VBFlags & VB_301) {
+            if(yindex301 >= 0) {
+	       for(i=0, j=0x35; i<=3; i++, j++) {
+	          outSISIDXREG(SISPART2,j,(SiSTVFilter301[yindex301].filter[pSiS->sistvyfilter-2][i]));
+	       }
+	    }
+         } else {
+            if(yindex301B >= 0) {
+	       for(i=0, j=0x35; i<=3; i++, j++) {
+	          outSISIDXREG(SISPART2,j,(SiSTVFilter301B[yindex301B].filter[pSiS->sistvyfilter-2][i]));
+	       }
+	       for(i=4, j=0x48; i<=6; i++, j++) {
+	          outSISIDXREG(SISPART2,j,(SiSTVFilter301B[yindex301B].filter[pSiS->sistvyfilter-2][i]));
+	       }
+	    }
+         }
+         orSISIDXREG(SISPART2,0x30,0x20);
+      }
+   }
+}
+
+int SiS_GetSISTVyfilter(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode)
+      return (int)pSiSEnt->sistvyfilter;
+   else
+#endif
+      return (int)pSiS->sistvyfilter;
 }
 
 void SiS_SetSIS6326TVantiflicker(ScrnInfoPtr pScrn, int val)
 {
    SISPtr pSiS = SISPTR(pScrn);
    unsigned char tmp;
-   
+
    pSiS->sistvantiflicker = val;
 
    if(!(pSiS->SiS6326Flags & SIS6326_TVDETECTED)) return;
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -8240,7 +9174,7 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -8251,11 +9185,11 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 #endif
 
    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
-   
+
       if(pSiS->VBFlags & CRT2_TV) {
-      
+
          if(pSiS->VBFlags & VB_CHRONTEL) {
-	 
+
 	    int x = pSiS->tvx;
 #ifdef SISDUALHEAD
 	    if(pSiSEnt && pSiS->DualHeadMode) x = pSiSEnt->tvx;
@@ -8270,27 +9204,51 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 	       }
 	       break;
 	    case CHRONTEL_701x:
-	       /* TO DO */
+	       /* Not supported by hardware */
 	       break;
 	    }
-	    
+
 	 } else if(pSiS->VBFlags & VB_SISBRIDGE) {
-	 
+
 	    if((val >= -32) && (val <= 32)) {
 
-	        unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43, p3d4_34;
-
-	        /* P2B = (P1F - 5) & 0x0f | 0x60  */
-		/* P2C = P1F + 1                  */
-		/* P2D = (P2C - 5) & 0x0f | (PAL ? 0x80 : 0xf0) */
+	        unsigned char p2_1f,p2_20,p2_2b,p2_43,p3d4_34;
+		unsigned short temp;
+		int myadd2, mysub;
 
 		p2_1f = pSiS->p2_1f;
+		p2_20 = pSiS->p2_20;
 #ifdef SISDUALHEAD
-	        if(pSiSEnt && pSiS->DualHeadMode) p2_1f = pSiSEnt->p2_1f;
+	        if(pSiSEnt && pSiS->DualHeadMode) {
+		   p2_1f = pSiSEnt->p2_1f;
+		   p2_20 = pSiSEnt->p2_20;
+		}
 #endif
 	        inSISIDXREG(SISCR,0x34,p3d4_34);
 		p3d4_34 &= 0x7f;
 
+		temp = p2_1f | ((p2_20 & 0xf0) << 4);
+		temp += (val * 2);
+
+		p2_1f = temp & 0xff;
+		p2_20 = (temp & 0xf00) >> 4;
+
+		if((pSiS->VBFlags & (TV_NTSC | TV_PALM)) &&
+		   ((p3d4_34 == 0x64) || (p3d4_34 == 0x4a) || (p3d4_34 == 0x38))) {
+		   temp += 1514;
+		   myadd2 = 4;
+		   mysub = 4;
+		} else {
+		   temp += 1363;
+		   myadd2 = 3;
+		   if(pSiS->VBFlags & VB_301) myadd2 += 3;
+		   mysub = 5;
+		}
+
+		p2_2b = ((temp & 0xf00) >> 4) | ((p2_1f - mysub) & 0x0f);
+		p2_43 = p2_1f + myadd2;
+
+#if 0
 		p2_1f += (val * 2);
 		if((pSiS->VBFlags & (TV_NTSC | TV_PALM)) &&
 		   ((p3d4_34 == 0x64) || (p3d4_34 == 0x4a) || (p3d4_34 == 0x38))) {
@@ -8303,32 +9261,34 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 		   p2_2c = p2_1f + 1;
 		   p2_2d = ((p2_2c - 5) & 0x0f) | (pSiS->VBFlags & TV_PAL ? 0x80 : 0xf0);
 		   p2_43 = p2_1f + 3;
+		   if(pSiS->VBFlags & VB_301) p2_43 += 3;
 		}
+#endif
+
 		SISWaitRetraceCRT2(pScrn);
 	        outSISIDXREG(SISPART2,0x1f,p2_1f);
+		setSISIDXREG(SISPART2,0x20,0x0F,p2_20);
 		outSISIDXREG(SISPART2,0x2b,p2_2b);
-		outSISIDXREG(SISPART2,0x2c,p2_2c);
-		outSISIDXREG(SISPART2,0x2d,p2_2d);
 		outSISIDXREG(SISPART2,0x43,p2_43);
 	     }
 	 }
       }
-   
+
    } else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
-   
+
       if(pSiS->SiS6326Flags & SIS6326_TVDETECTED) {
-      
+
          unsigned char tmp;
 	 unsigned short temp1, temp2, temp3;
-	 
+
          tmp = SiS6326GetTVReg(pScrn,0x00);
          if(tmp & 0x04) {
-	    
+
 	    temp1 = pSiS->tvx1;
             temp2 = pSiS->tvx2;
             temp3 = pSiS->tvx3;
             if((val >= -16) && (val <= 16)) {
-	       if(val > 0) {   
+	       if(val > 0) {
 	          temp1 += (val * 4);
 	          temp2 += (val * 4);
 	          while((temp1 > 0x0fff) || (temp2 > 0x0fff)) {
@@ -8368,11 +9328,11 @@ int SiS_GetTVxposoffset(ScrnInfoPtr pScrn)
    SISPtr pSiS = SISPTR(pScrn);
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
-   
-   if(pSiSEnt && pSiS->DualHeadMode) 
+
+   if(pSiSEnt && pSiS->DualHeadMode)
         return (int)pSiSEnt->tvxpos;
    else
-#endif   
+#endif
         return (int)pSiS->tvxpos;
 }
 
@@ -8393,11 +9353,11 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 #endif
 
    if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
-   
+
       if(pSiS->VBFlags & CRT2_TV) {
-      
+
          if(pSiS->VBFlags & VB_CHRONTEL) {
-	 
+
 	    int y = pSiS->tvy;
 #ifdef SISDUALHEAD
 	    if(pSiSEnt && pSiS->DualHeadMode) y = pSiSEnt->tvy;
@@ -8412,12 +9372,12 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 	       }
 	       break;
 	    case CHRONTEL_701x:
-	       /* TO DO */
+	       /* Not supported by hardware */
 	       break;
 	    }
-	    
+
 	 } else if(pSiS->VBFlags & VB_SISBRIDGE) {
-	 
+
 	    if((val >= -32) && (val <= 32)) {
 		char p2_01, p2_02;
 		val /= 4;
@@ -8433,7 +9393,7 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 		p2_02 += (val * 2);
 		while((p2_01 <= 0) || (p2_02 <= 0)) {
 		      p2_01 += 2;   
-		      p2_02 += 2;   
+		      p2_02 += 2;
 		}
 		SISWaitRetraceCRT2(pScrn);
 		outSISIDXREG(SISPART2,0x01,p2_01);
@@ -8441,18 +9401,18 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 	     }
 	 }
 	 
-      } 
+      }
       
    } else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
-   
+
       if(pSiS->SiS6326Flags & SIS6326_TVDETECTED) {
-      
+
          unsigned char tmp;
 	 int temp1, limit;
-	 
+
          tmp = SiS6326GetTVReg(pScrn,0x00);
          if(tmp & 0x04) {
-	 
+
 	    if((val >= -16) && (val <= 16)) {
 	      temp1 = (unsigned short)pSiS->tvy1;
 	      limit = (pSiS->SiS6326Flags & SIS6326_TVPAL) ? 625 : 525;
@@ -8493,17 +9453,311 @@ int SiS_GetTVyposoffset(ScrnInfoPtr pScrn)
    SISPtr pSiS = SISPTR(pScrn);
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
-   
-   if(pSiSEnt && pSiS->DualHeadMode) 
+
+   if(pSiSEnt && pSiS->DualHeadMode)
         return (int)pSiSEnt->tvypos;
-   else 
-#endif   
+   else
+#endif
         return (int)pSiS->tvypos;
 }
 
-/* Disable CRT1 for saving bandwidth. This doesn't work with VESA;
- * VESA uses the bridge in SlaveMode and switching CRT1 off while the
- * bridge is in SlaveMode not that clever...
+void SiS_SetTVxscale(ScrnInfoPtr pScrn, int val)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+
+#ifdef UNLOCK_ALWAYS
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+   pSiS->tvxscale = val;
+#ifdef SISDUALHEAD
+   if(pSiSEnt) pSiSEnt->tvxscale = val;
+#endif
+
+   if(pSiS->VGAEngine == SIS_300_VGA || pSiS->VGAEngine == SIS_315_VGA) {
+
+      if((pSiS->VBFlags & CRT2_TV) && (pSiS->VBFlags & VB_SISBRIDGE)) {
+
+	 if((val >= -16) && (val <= 16)) {
+
+	    unsigned char p2_44,p2_45,p2_46;
+	    int scalingfactor;
+
+	    p2_44 = pSiS->p2_44;
+	    p2_45 = pSiS->p2_45 & 0x3f;
+	    p2_46 = pSiS->p2_46 & 0x07;
+#ifdef SISDUALHEAD
+	    if(pSiSEnt && pSiS->DualHeadMode) {
+	       p2_44 = pSiSEnt->p2_44;
+	       p2_45 = pSiSEnt->p2_45 & 0x3f;
+	       p2_46 = pSiSEnt->p2_46 & 0x07;
+	    }
+#endif
+	    scalingfactor = (p2_46 << 13) | ((p2_45 & 0x1f) << 8) | p2_44;
+
+	    if(val < 0) {
+	       p2_45 &= 0xdf;
+	       scalingfactor += ((-val) * 64);
+	       if(scalingfactor > 0xffff) scalingfactor = 0xffff;
+	    } else if(val > 0) {
+	       p2_45 &= 0xdf;
+	       scalingfactor -= (val * 64);
+	       if(scalingfactor < 1) scalingfactor = 1;
+	    }
+
+	    p2_44 = scalingfactor & 0xff;
+	    p2_45 &= 0xe0;
+	    p2_45 |= ((scalingfactor >> 8) & 0x1f);
+	    p2_46 = ((scalingfactor >> 13) & 0x07);
+
+	    SISWaitRetraceCRT2(pScrn);
+	    outSISIDXREG(SISPART2,0x44,p2_44);
+	    setSISIDXREG(SISPART2,0x45,0xC0,p2_45);
+	    if(!(pSiS->VBFlags & VB_301)) {
+	       setSISIDXREG(SISPART2,0x46,0xF8,p2_46);
+	    }
+	 }
+
+      }
+
+   }
+}
+
+int SiS_GetTVxscale(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode)
+        return (int)pSiSEnt->tvxscale;
+   else
+#endif
+        return (int)pSiS->tvxscale;
+}
+
+void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+#endif
+
+#ifdef UNLOCK_ALWAYS
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+   if(val < -4) val = -4;
+   if(val > 3)  val = 3;
+
+   pSiS->tvyscale = val;
+#ifdef SISDUALHEAD
+   if(pSiSEnt) pSiSEnt->tvyscale = val;
+#endif
+
+   if(pSiS->VBFlags & (TV_HIVISION | TV_HIVISION_LV)) return;
+
+   if(pSiS->VGAEngine == SIS_315_VGA || pSiS->VGAEngine == SIS_315_VGA) {
+
+      if((pSiS->VBFlags & CRT2_TV) && (pSiS->VBFlags & VB_SISBRIDGE)) {
+
+	 int srindex = -1;
+	 int newvde, i=0, j, temp;
+	 int vlimit = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 259 : 309;
+	 unsigned char p3d4_34;
+
+	 inSISIDXREG(SISCR,0x34,p3d4_34);
+
+	 switch((p3d4_34 & 0x7f)) {
+#if 0
+	 case 0x50:   /* 320x240 - hdclk mode */
+	 case 0x56:
+	 case 0x53:
+#endif
+	 case 0x2e:   /* 640x480 */
+	 case 0x44:
+	 case 0x62:
+	    srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 0 : 21;
+	    break;
+	 case 0x31:   /* 720x480 */
+	 case 0x33:
+	 case 0x35:
+	 case 0x32:   /* 720x576 */
+	 case 0x34:
+	 case 0x36:
+	 case 0x5f:   /* 768x576 */
+	 case 0x60:
+	 case 0x61:
+            if(pSiS->VGAEngine == SIS_315_VGA) {
+	       srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 7 : 28;
+	    }
+	    break;
+#if 0
+	 case 0x51:   /* 400x300 - hdclk mode */
+	 case 0x57:
+	 case 0x54:
+#endif
+	 case 0x30:   /* 800x600 */
+	 case 0x47:
+	 case 0x63:
+	    srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 14 : 35;
+	 }
+
+	 if(srindex >= 0) {
+	    Bool found = FALSE;
+	    if(pSiS->tvyscale != 0) {
+	       for(j=0; j<=1; j++) {
+	          for(i=0; i<=6; i++) {
+	             if(SiSTVVScale[srindex+i].sindex == pSiS->tvyscale) {
+		        found = TRUE;
+		        break;
+		     }
+	          }
+		  if(found) break;
+	          if(pSiS->tvyscale > 0) pSiS->tvyscale--;
+		  else pSiS->tvyscale++;
+	       }
+	    }
+#ifdef SISDUALHEAD
+	    if(pSiSEnt) pSiSEnt->tvyscale = pSiS->tvyscale;
+#endif
+	    if(pSiS->tvyscale == 0) {
+	       unsigned char p2_0a = pSiS->p2_0a;
+	       unsigned char p2_2f = pSiS->p2_2f;
+	       unsigned char p2_30 = pSiS->p2_30;
+	       unsigned char p2_46 = pSiS->p2_46;
+	       unsigned char p2_47 = pSiS->p2_47;
+	       unsigned char p1scaling[9], p4scaling[9];
+
+	       for(i=0; i<9; i++) {
+	          p1scaling[i] = pSiS->scalingp1[i];
+	       }
+	       for(i=0; i<9; i++) {
+	          p4scaling[i] = pSiS->scalingp4[i];
+	       }
+#ifdef SISDUALHEAD
+               if(pSiSEnt) {
+	          p2_0a = pSiSEnt->p2_0a;
+		  p2_2f = pSiSEnt->p2_2f;
+	          p2_30 = pSiSEnt->p2_30;
+		  p2_46 = pSiSEnt->p2_46;
+		  p2_47 = pSiSEnt->p2_47;
+	          for(i=0; i<9; i++) {
+	             p1scaling[i] = pSiSEnt->scalingp1[i];
+	          }
+	          for(i=0; i<9; i++) {
+	             p4scaling[i] = pSiSEnt->scalingp4[i];
+	          }
+	       }
+#endif
+               SISWaitRetraceCRT2(pScrn);
+	       for(i=0; i<9; i++) {
+	          outSISIDXREG(SISPART1,SiSScalingP1Regs[i],p1scaling[i]);
+	       }
+	       for(i=0; i<9; i++) {
+	          outSISIDXREG(SISPART4,SiSScalingP4Regs[i],p4scaling[i]);
+	       }
+
+	       setSISIDXREG(SISPART2,0x0a,0x7f,(p2_0a & 0x80));
+	       outSISIDXREG(SISPART2,0x2f,p2_2f);
+	       setSISIDXREG(SISPART2,0x30,0x3f,(p2_30 & 0xc0));
+	       if(!(pSiS->VBFlags & VB_301)) {
+	          setSISIDXREG(SISPART2,0x46,0x9f,(p2_46 & 0x60));
+		  outSISIDXREG(SISPART2,0x47,p2_47);
+	       }
+
+	    } else {
+
+	       int so = (pSiS->VGAEngine == SIS_300_VGA) ? 12 : 0;
+	       int realvde;
+	       unsigned long calctemp;
+
+	       srindex += i;
+	       newvde = SiSTVVScale[srindex].ScaleVDE;
+	       realvde = SiSTVVScale[srindex].RealVDE;
+
+	       do {
+	          inSISIDXREG(SISPART2,0x01,temp);
+	          temp = vlimit - (temp & 0x7f);
+	          if((temp - (((newvde >> 1) - 2) + 9)) > 0) break;
+		  SiS_SetTVyposoffset(pScrn, pSiS->tvypos - 1);
+	       } while(1);
+
+	       SISWaitRetraceCRT2(pScrn);
+	       if(!(pSiS->VBFlags & VB_301)) {
+	          temp = (newvde >> 1) - 3;
+	          setSISIDXREG(SISPART2,0x46,0x9f,((temp & 0x0300) >> 3));
+	          outSISIDXREG(SISPART2,0x47,(temp & 0xff));
+	       }
+	       outSISIDXREG(SISPART1,0x08,(SiSTVVScale[srindex].reg[so+0] & 0xff));
+	       setSISIDXREG(SISPART1,0x09,0x0f,((SiSTVVScale[srindex].reg[so+0] >> 4) & 0xf0));
+	       outSISIDXREG(SISPART1,0x0b,(SiSTVVScale[srindex].reg[so+1] & 0xff));
+	       setSISIDXREG(SISPART1,0x0c,0xf0,((SiSTVVScale[srindex].reg[so+1] >> 8) & 0x0f));
+	       outSISIDXREG(SISPART1,0x0d,(SiSTVVScale[srindex].reg[so+2] & 0xff));
+	       outSISIDXREG(SISPART1,0x0e,(SiSTVVScale[srindex].reg[so+3] & 0xff));
+	       setSISIDXREG(SISPART1,0x12,0xf8,((SiSTVVScale[srindex].reg[so+3] >> 8 ) & 0x07));
+	       outSISIDXREG(SISPART1,0x10,(SiSTVVScale[srindex].reg[so+4] & 0xff));
+	       setSISIDXREG(SISPART1,0x11,0x8f,((SiSTVVScale[srindex].reg[so+4] >> 4) & 0x70));
+	       setSISIDXREG(SISPART1,0x11,0xf0,(SiSTVVScale[srindex].reg[so+5] & 0x0f));
+
+	       setSISIDXREG(SISPART2,0x0a,0x7f,((SiSTVVScale[srindex].reg[so+6] << 7) & 0x80));
+	       outSISIDXREG(SISPART2,0x2f,((newvde / 2) - 2));
+	       setSISIDXREG(SISPART2,0x30,0x3f,((((newvde / 2) - 2) >> 2) & 0xc0));
+
+	       outSISIDXREG(SISPART4,0x13,(SiSTVVScale[srindex].reg[so+7] & 0xff));
+	       outSISIDXREG(SISPART4,0x14,(SiSTVVScale[srindex].reg[so+8] & 0xff));
+	       setSISIDXREG(SISPART4,0x15,0x7f,((SiSTVVScale[srindex].reg[so+8] >> 1) & 0x80));
+
+	       outSISIDXREG(SISPART4,0x16,(SiSTVVScale[srindex].reg[so+9] & 0xff));
+	       setSISIDXREG(SISPART4,0x15,0x87,((SiSTVVScale[srindex].reg[so+9] >> 5) & 0x78));
+
+	       outSISIDXREG(SISPART4,0x17,(SiSTVVScale[srindex].reg[so+10] & 0xff));
+	       setSISIDXREG(SISPART4,0x15,0xf8,((SiSTVVScale[srindex].reg[so+10] >> 8) & 0x07));
+
+	       outSISIDXREG(SISPART4,0x18,(SiSTVVScale[srindex].reg[so+11] & 0xff));
+	       setSISIDXREG(SISPART4,0x19,0xf0,((SiSTVVScale[srindex].reg[so+11] >> 8) & 0x0f));
+
+               temp = 0x40;
+	       if(realvde <= newvde) temp = 0;
+	       else realvde -= newvde;
+
+	       calctemp = (realvde * 256 * 1024) / newvde;
+	       if((realvde * 256 * 1024) % newvde) calctemp++;
+	       outSISIDXREG(SISPART4,0x1b,(calctemp & 0xff));
+	       outSISIDXREG(SISPART4,0x1a,((calctemp >> 8) & 0xff));
+	       setSISIDXREG(SISPART4,0x19,0x8f,(((calctemp >> 12) & 0x30) | temp));
+	    }
+	 }
+
+      }
+
+   }
+}
+
+int SiS_GetTVyscale(ScrnInfoPtr pScrn)
+{
+   SISPtr pSiS = SISPTR(pScrn);
+#ifdef SISDUALHEAD
+   SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode)
+        return (int)pSiSEnt->tvyscale;
+   else
+#endif
+        return (int)pSiS->tvyscale;
+}
+
+/* PostSetMode:
+ * -) Disable CRT1 for saving bandwidth. This doesn't work with VESA;
+ *    VESA uses the bridge in SlaveMode and switching CRT1 off while
+ *    the bridge is in SlaveMode not that clever...
+ * -) Check if overlay can be used (depending on dotclock)
+ * -) Check if Panel Scaler is active on LVDS for overlay re-scaling
+ * -) Save TV registers for further processing
+ * -) Apply TV settings
  */
 void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
@@ -8669,7 +9923,7 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
            Do this even in DualHeadMode:
 	   - if this is called by SetModeCRT1, CRT2 mode has been reset by SetModeCRT1
 	   - if this is called by SetModeCRT2, CRT2 mode has changed (duh!)
-	   -> In both cases, the settings must be re-applied.
+	   -> Hence, in both cases, the settings must be re-applied.
      */
     if(pSiS->VBFlags & CRT2_TV) {
        int val;
@@ -8734,10 +9988,10 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	        pSiSEnt->tvx = pSiS->tvx;
 		pSiSEnt->tvy = pSiS->tvy;
 	     }
-#endif	
+#endif
 	     break;
 	  case CHRONTEL_701x:
-	     /* not supported */
+	     /* Not supported by hardware */
 	     break;
 	  }
 	  if((val = mytvxpos) != 0) {
@@ -8753,7 +10007,7 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           if(pSiSEnt && pSiS->DualHeadMode) {
 	     mysistvedgeenhance = pSiSEnt->sistvedgeenhance;
 	  }
-#endif	  
+#endif
           if((val = mysistvedgeenhance) != -1) {
 	     SiS_SetSISTVedgeenhance(pScrn, val);
 	  }
@@ -8761,39 +10015,120 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
        if(pSiS->VBFlags & VB_SISBRIDGE) {
           int mysistvantiflicker = pSiS->sistvantiflicker;
 	  int mysistvsaturation = pSiS->sistvsaturation;
+	  int mysistvcolcalibf = pSiS->sistvcolcalibf;
+	  int mysistvcolcalibc = pSiS->sistvcolcalibc;
+	  int mysistvcfilter = pSiS->sistvcfilter;
+	  int mysistvyfilter = pSiS->sistvyfilter;
 	  int mytvxpos = pSiS->tvxpos;
 	  int mytvypos = pSiS->tvypos;
+	  int mytvxscale = pSiS->tvxscale;
+	  int mytvyscale = pSiS->tvyscale;
+	  int i;
+	  unsigned long cbase;
+	  unsigned char ctemp;
 #ifdef SISDUALHEAD
           if(pSiSEnt && pSiS->DualHeadMode) {
 	     mysistvantiflicker = pSiSEnt->sistvantiflicker;
 	     mysistvsaturation = pSiSEnt->sistvsaturation;
+	     mysistvcolcalibf = pSiSEnt->sistvcolcalibf;
+	     mysistvcolcalibc = pSiSEnt->sistvcolcalibc;
+	     mysistvcfilter = pSiSEnt->sistvcfilter;
+	     mysistvyfilter = pSiSEnt->sistvyfilter;
 	     mytvxpos = pSiSEnt->tvxpos;
 	     mytvypos = pSiSEnt->tvypos;
+	     mytvxscale = pSiSEnt->tvxscale;
+	     mytvyscale = pSiSEnt->tvyscale;
 	  }
-#endif	  
-          /* Backup default TV position registers */
+#endif
+          /* Backup default TV position, scale and colcalib registers */
 	  inSISIDXREG(SISPART2,0x1f,pSiS->p2_1f);
+	  inSISIDXREG(SISPART2,0x20,pSiS->p2_20);
 	  inSISIDXREG(SISPART2,0x01,pSiS->p2_01);
 	  inSISIDXREG(SISPART2,0x02,pSiS->p2_02);
+	  inSISIDXREG(SISPART2,0x44,pSiS->p2_44);
+	  inSISIDXREG(SISPART2,0x45,pSiS->p2_45);
+	  if(!(pSiS->VBFlags & VB_301)) {
+	    inSISIDXREG(SISPART2,0x46,pSiS->p2_46);
+	  } else {
+	    pSiS->p2_46 = 0;
+	  }
+	  inSISIDXREG(SISPART2,0x0a,pSiS->p2_0a);
+	  inSISIDXREG(SISPART2,0x31,cbase);
+	  cbase = (cbase & 0x7f) << 8;
+	  inSISIDXREG(SISPART2,0x32,ctemp);
+	  cbase = (cbase | ctemp) << 8;
+	  inSISIDXREG(SISPART2,0x33,ctemp);
+	  cbase = (cbase | ctemp) << 8;
+	  inSISIDXREG(SISPART2,0x34,ctemp);
+	  pSiS->sistvccbase = (cbase | ctemp);
+	  inSISIDXREG(SISPART2,0x35,pSiS->p2_35);
+	  inSISIDXREG(SISPART2,0x36,pSiS->p2_36);
+	  inSISIDXREG(SISPART2,0x37,pSiS->p2_37);
+	  inSISIDXREG(SISPART2,0x38,pSiS->p2_38);
+	  if(!(pSiS->VBFlags & VB_301)) {
+	     inSISIDXREG(SISPART2,0x47,pSiS->p2_47);
+	     inSISIDXREG(SISPART2,0x48,pSiS->p2_48);
+	     inSISIDXREG(SISPART2,0x49,pSiS->p2_49);
+	     inSISIDXREG(SISPART2,0x4a,pSiS->p2_4a);
+	  }
+	  inSISIDXREG(SISPART2,0x2f,pSiS->p2_2f);
+	  inSISIDXREG(SISPART2,0x30,pSiS->p2_30);
+	  for(i=0; i<9; i++) {
+	     inSISIDXREG(SISPART1,SiSScalingP1Regs[i],pSiS->scalingp1[i]);
+	  }
+	  for(i=0; i<9; i++) {
+	     inSISIDXREG(SISPART4,SiSScalingP4Regs[i],pSiS->scalingp4[i]);
+	  }
 #ifdef SISDUALHEAD
 	  if(pSiSEnt && pSiS->DualHeadMode) {
-	        pSiSEnt->p2_1f = pSiS->p2_1f;
-		pSiSEnt->p2_01 = pSiS->p2_01;
-		pSiSEnt->p2_02 = pSiS->p2_02;
+	        pSiSEnt->p2_1f = pSiS->p2_1f; pSiSEnt->p2_20 = pSiS->p2_20;
+		pSiSEnt->p2_01 = pSiS->p2_01; pSiSEnt->p2_02 = pSiS->p2_02;
+		pSiSEnt->p2_44 = pSiS->p2_44; pSiSEnt->p2_45 = pSiS->p2_45;
+		pSiSEnt->p2_46 = pSiS->p2_46; pSiSEnt->p2_0a = pSiS->p2_0a;
+		pSiSEnt->sistvccbase = pSiS->sistvccbase;
+		pSiSEnt->p2_35 = pSiS->p2_35; pSiSEnt->p2_36 = pSiS->p2_36;
+		pSiSEnt->p2_37 = pSiS->p2_37; pSiSEnt->p2_38 = pSiS->p2_38;
+		pSiSEnt->p2_48 = pSiS->p2_48; pSiSEnt->p2_49 = pSiS->p2_49;
+		pSiSEnt->p2_4a = pSiS->p2_4a; pSiSEnt->p2_2f = pSiS->p2_2f;
+		pSiSEnt->p2_30 = pSiS->p2_30; pSiSEnt->p2_47 = pSiS->p2_47;
+		for(i=0; i<9; i++) {
+	           pSiSEnt->scalingp1[i] = pSiS->scalingp1[i];
+	        }
+		for(i=0; i<9; i++) {
+	           pSiSEnt->scalingp4[i] = pSiS->scalingp4[i];
+	        }
 	  }
-#endif	
+#endif
           if((val = mysistvantiflicker) != -1) {
 	     SiS_SetSISTVantiflicker(pScrn, val);
 	  }
 	  if((val = mysistvsaturation) != -1) {
 	     SiS_SetSISTVsaturation(pScrn, val);
 	  }
+	  if((val = mysistvcfilter) != -1) {
+	     SiS_SetSISTVcfilter(pScrn, val);
+	  }
+	  if((val = mysistvyfilter) != 1) {
+	     SiS_SetSISTVyfilter(pScrn, val);
+	  }
+	  if((val = mysistvcolcalibc) != 0) {
+	     SiS_SetSISTVcolcalib(pScrn, val, TRUE);
+	  }
+	  if((val = mysistvcolcalibf) != 0) {
+	     SiS_SetSISTVcolcalib(pScrn, val, FALSE);
+	  }
 	  if((val = mytvxpos) != 0) {
 	     SiS_SetTVxposoffset(pScrn, val);
 	  }
 	  if((val = mytvypos) != 0) {
-	     SiS_SetTVyposoffset(pScrn, val); 
-	 }
+	     SiS_SetTVyposoffset(pScrn, val);
+	  }
+	  if((val = mytvxscale) != 0) {
+	     SiS_SetTVxscale(pScrn, val);
+	  }
+	  if((val = mytvyscale) != 0) {
+	     SiS_SetTVyscale(pScrn, val);
+	  }
        }
     }
 
