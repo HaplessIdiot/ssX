@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.6 2000/10/23 21:16:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.7 2000/10/23 21:37:33 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -714,7 +714,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     /* enable all of the memory mapped windows */
 
     pI128->io.config1 &= 0x33000004;
-    pI128->io.config1 |= 0x00131700;
+    pI128->io.config1 |= 0x00331F00;
     outl(iobase + 0x1C, pI128->io.config1);
 
     pI128->MemoryType = I128_MEMORY_UNKNOWN;
@@ -737,7 +737,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	pI128->MemoryType == I128_MEMORY_DRAM ? "DRAM" :
 	pI128->MemoryType == I128_MEMORY_WRAM ? "WRAM" : "UNKNOWN");
 
-    pI128->io.config2 &= 0xFF0FFFFF;
+    pI128->io.config2 &= 0xFF0FFF7F;
     pI128->io.config2 |= 0x00100000;
     if (pI128->MemoryType != I128_MEMORY_SGRAM)
    	pI128->io.config2 |= 0x00400000;
@@ -793,7 +793,8 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
     if (!pI128->Primary)
         I128SoftReset(pScrn);
 
-    if (pI128->Chipset == PCI_CHIP_I128_T2R4) {
+    if ((pI128->Chipset == PCI_CHIP_I128_T2R) ||
+        (pI128->Chipset == PCI_CHIP_I128_T2R4)) {
 	pI128->ddc1Read = NULL /*I128DDC1Read*/;
 	pI128->i2cInit = I128I2CInit;
     }
@@ -2057,7 +2058,7 @@ I128DumpActiveRegisters(ScrnInfoPtr pScrn)
     I128Ptr pI128 = I128PTR(pScrn);
     unsigned short iobase;
     unsigned long rbase_g, rbase_w, rbase_a, rbase_b, rbase_i, rbase_e;
-    unsigned long id, config1, config2, soft_sw, ddc, vga_ctl;
+    unsigned long id, config1, config2, sgram, soft_sw, ddc, vga_ctl;
     volatile unsigned long *vrba, *vrbg, *vrbw;
 
     vrba = pI128->mem.rbase_a;
@@ -2074,6 +2075,7 @@ I128DumpActiveRegisters(ScrnInfoPtr pScrn)
     id = inl(iobase + 0x18);
     config1 = inl(iobase + 0x1C);
     config2 = inl(iobase + 0x20);
+    sgram = inl(iobase + 0x24);
     soft_sw = inl(iobase + 0x28);
     ddc = inl(iobase + 0x2C);
     vga_ctl = inl(iobase + 0x30);
@@ -2124,6 +2126,7 @@ I128DumpActiveRegisters(ScrnInfoPtr pScrn)
     	(config2>>28)&1);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "    PRE %d  RVD %d  SDAC %d\n",
 	(config2>>29)&1, (config2>>30)&1, (config2>>31)&1);
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  SGRAM     0x%08x\n", sgram);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  SOFT_SW   0x%08x\n", soft_sw);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  DDC       0x%08x\n", ddc);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "  VGA_CTL   0x%08x\n", vga_ctl);
