@@ -1,4 +1,4 @@
-XFree86 3.9.17Z (15 February 2000)
+XFree86 3.9.17Z (16 February 2000)
 3799. Fix all other SaveScreen() functions, and add a helper xf86IsUnblank()
       that drivers can use to interpret the SaveScreen mode values
       (David Dawes).
@@ -9716,4 +9716,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1009 2000/02/15 13:51:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1010 2000/02/15 18:00:49 dawes Exp $
