@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.4 2002/09/12 02:20:08 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.5 2002/12/10 01:26:53 dawes Exp $ */
 
 /*
  * Authors:
@@ -72,7 +72,7 @@ int I830_DEBUG = (0);
  * Mesa's Driver Functions
  ***************************************/
 
-#define DRIVER_DATE                     "20021111"
+#define DRIVER_DATE                     "20021115"
 
 static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
 {
