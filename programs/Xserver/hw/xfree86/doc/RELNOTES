@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2E (beta version)
   The XFree86 Project, Inc
 
-  10 May 1996
+  11 May 1996
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2E, 3.1.2D,
@@ -85,6 +85,24 @@
         server with twice as many clocks to choose from.  Add the option
         "clkdiv2" to the "Device" section of XF86Config to enable this.
 
+  3.3.  Mach64 server
+
+
+     o  Screen blanking for Mach64 CT cards running at 16bpp and 32bpp
+        has been fixed.
+
+     o  The Mach64 server will detect the new VT and GT cards, but
+        hasn't yet been tested with them.
+
+  3.4.  Client/Library changes
+
+
+     o  POSIX termios support has been added for xterm on BSD systems.
+        This removes the need for the BSD kernel to built with the
+        COMPAT_43 option.  We've noticed that 'rlogin' on FreeBSD 2.0.5
+        doesn't work when run from the new xterm.  This doesn't appear
+        to be a problem on more recent versions of FreeBSD or on NetBSD.
+
   4.  New Features in 3.1.2D
 
   4.1.  General
@@ -111,6 +129,7 @@
 
      o  A new server extension called "XFree86-Misc" has been added.
         The primary purpose of this is to allow reconfiguration of some
+
         parameters while the server is running.  Some functions
         previously in the VidMode extension (like screen save functions)
         have been moved to this new extension.
@@ -127,8 +146,6 @@
         XF86Config file (see XkbDisable in the XF86Config man page).
         With this extension enabled, you may see some differences in the
         keyboard mappings.
-
-
 
   4.3.  PC98 Support
 
@@ -178,6 +195,7 @@
         previous releases, try removing it and let us know if there are
         any problems.
 
+
      o  Memory parameter calculations for 2MB Trio64 cards have been
         fixed.  If you've needed to add something like "S3MClk 170" to
         your XF86Config with previous versions, you should remove it
@@ -195,7 +213,6 @@
      o  The Mach64 server now correctly initialises Block I/O mode on
         cards which report that it is available.  This fixes the problem
         of some Mach64 CT cards not being recognised in earlier
-
         versions.
 
      o  In addition to the known problems listed below for version
@@ -241,6 +258,10 @@
      o  The ICS5342 clock support (required for the Diamond Stealth64
         Graphics 2001 series) has been fixed.
 
+
+
+
+
   4.10.  ATI driver (SVGA server)
 
 
@@ -258,9 +279,6 @@
 
      o  The ET4000 driver support in the SVGA server was broken in
         3.1.2B for old ET4000 (non-W32) cards.  This has been fixed.
-
-
-
 
   4.12.  Compaq AVGA driver (SVGA server)
 
@@ -324,10 +342,6 @@
 
   5.  New Features in 3.1.2B
 
-
-
-
-
   5.1.  General X server changes
 
 
@@ -378,6 +392,8 @@
      o  A new server for the Number Nine Imagine 128 card is included.
         This server is currently not accelerated.
 
+
+
   5.4.  Trident driver (SVGA server)
 
 
@@ -392,7 +408,6 @@
 
      o  Check README.trident distributed with this release for full
         details.
-
 
      o  Known problems:
 
@@ -444,6 +459,7 @@
 
      o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
         now supported.  This chip has a integrated RAMDAC and clockchip,
+
         and is used on some Graphics Xpression and WinBoost cards.
 
      o  The Mach64 GX-F (GX rev 3) is now supported.
@@ -459,8 +475,7 @@
         section of the XF86Config:
 
 
-
-             Option "no_program_clocks"
+                  Option "no_program_clocks"
 
 
 
@@ -510,6 +525,7 @@
 
 
 
+
      o  Options have been added to allow PCI burst mode and W32
         interleaving to be turned on or off.  The XF86Config Device
         section entries for these are:
@@ -519,8 +535,6 @@
                   Option "pci_burst_off"
                   Option "w32_interleave_on"
                   Option "w32_interleave_off"
-
-
 
 
 
@@ -576,6 +590,8 @@
 
      o  Support has been added for the CL-GD7543.
 
+
+
      o  The programmable clock code has been improved to avoid unstable
         settings.
 
@@ -589,11 +605,8 @@
         your XF86Config file:
 
 
-
-
-
-             Ramdac    "ics5342"
-             ClockChip "ics5342"
+                  Ramdac    "ics5342"
+                  ClockChip "ics5342"
 
 
 
@@ -643,6 +656,8 @@
   6.8.  Mach64 server
 
 
+
+
      o  Hardware cursor mask problem has been fixed.
 
      o  Support for the AT&T 20C408 RAMDAC/Clockchip has been added.
@@ -658,8 +673,8 @@
         your XF86Config file:
 
 
-             Ramdac    "ics5341"
-             ClockChip "ics5341"
+                  Ramdac    "ics5341"
+                  ClockChip "ics5341"
 
 
 
@@ -707,6 +722,8 @@
 
      o  An "AllowNullPasswd" resource has been added to xdm.
 
+
+
      o  libXt bug fix from the X Consortium's fix-13.
 
   7.  Installing the XFree86 3.1.2D Beta Release
@@ -721,15 +738,12 @@
   The following are required for all installations:
 
 
-
-
-
-  BetaReport         Beta test report template form
-  X312Dbin.tgz       Clients, run-time libs, and app-defaults files.
-  X312Ddoc.tgz       Documentation
-  X312Dfnts.tgz      75dpi and misc fonts
-  X312Dlib.tgz       Data files required at run-time.
-  X312Dman.tgz       Manual pages
+       BetaReport         Beta test report template form
+       X312Dbin.tgz       Clients, run-time libs, and app-defaults files.
+       X312Ddoc.tgz       Documentation
+       X312Dfnts.tgz      75dpi and misc fonts
+       X312Dlib.tgz       Data files required at run-time.
+       X312Dman.tgz       Manual pages
 
 
 
@@ -776,16 +790,15 @@
   The following are optional.
 
 
-       X312Df100.tgz     100dpi fonts
-       X312Dfcyr.tgz     Cyrillic fonts
-       X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-       X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
-       X312Dfsrv.tgz     Font server and config files
-       X312Dprog.tgz     X header files, config files and compile-time libs
-       X312Dcfg.tgz      sample config files for xinit, xdm
-       X312Dnest.tgz     Nested X server
-       X312Dvfb.tgz      Virtual framebuffer X server
-
+  X312Df100.tgz     100dpi fonts
+  X312Dfcyr.tgz     Cyrillic fonts
+  X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
+  X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
+  X312Dfsrv.tgz     Font server and config files
+  X312Dprog.tgz     X header files, config files and compile-time libs
+  X312Dcfg.tgz      sample config files for xinit, xdm
+  X312Dnest.tgz     Nested X server
+  X312Dvfb.tgz      Virtual framebuffer X server
 
 
 
@@ -842,6 +855,7 @@
 
 
   Note that there is no postinst.sh script to be run for this release.
+
   However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD),
   you should either run ldconfig or reboot to complete the installation.
   On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you
@@ -849,7 +863,59 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.24 1996/05/10 06:58:30 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.25 1996/05/11 11:04:26 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
