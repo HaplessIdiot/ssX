@@ -1,4 +1,5 @@
 /* $XConsortium: XExtToWire.c,v 1.17 94/04/17 20:18:00 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "XInput.h"
 #include "XIproto.h"
 #include "extutil.h"
+#include "XIint.h"
 
 Status
 _XiEventToWire(dpy, re, event, count)
@@ -67,7 +69,7 @@ _XiEventToWire(dpy, re, event, count)
     register xEvent **event;	/* wire protocol event */
     register int *count;
     {
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
     int i;
 
     switch ((re->type & 0x7f) - info->codes->first_event) 

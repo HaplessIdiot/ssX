@@ -1,4 +1,5 @@
-/* $XConsortium: XChgProp.c,v 1.7 94/04/17 20:17:58 rws Exp $ */
+/* $XConsortium: XChgProp.c /main/6 1995/12/05 11:20:11 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
@@ -69,7 +71,7 @@ XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
     int 		mode;
     {       
     xChangeDeviceDontPropagateListReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -88,7 +90,7 @@ XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
        statement */
 
     count <<= 2;
-    Data (dpy, (char *) events, count);
+    Data32 (dpy, (long *) events, count);
 
     UnlockDisplay(dpy);
     SyncHandle();

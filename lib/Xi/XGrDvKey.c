@@ -1,4 +1,5 @@
-/* $XConsortium: XGrDvKey.c,v 1.9 94/04/17 20:18:07 rws Exp $ */
+/* $XConsortium: XGrDvKey.c /main/8 1995/12/05 11:23:24 dpw $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device, 
@@ -76,7 +78,7 @@ XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device,
     int 			other_devices_mode;
     {
     register xGrabDeviceKeyReq *req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
@@ -107,7 +109,7 @@ XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device,
     if (event_count)
 	{
 	event_count <<= 2;
-	Data (dpy, (char *) event_list, event_count);
+	Data32 (dpy, (long *) event_list, event_count);
 	}
 
     UnlockDisplay(dpy);

@@ -1,4 +1,5 @@
 /* $XConsortium: XSetMMap.c,v 1.8 94/04/17 20:18:12 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int 
 XSetDeviceModifierMapping (dpy, dev, modmap)
@@ -68,7 +70,7 @@ XSetDeviceModifierMapping (dpy, dev, modmap)
     int         mapSize = modmap->max_keypermod << 3;	/* 8 modifiers */
     xSetDeviceModifierMappingReq 	*req;
     xSetDeviceModifierMappingReply 	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

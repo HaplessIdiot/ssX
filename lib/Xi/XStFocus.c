@@ -1,4 +1,5 @@
 /* $XConsortium: XStFocus.c,v 1.5 94/04/17 20:18:14 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XSetDeviceFocus(dpy, dev, focus, revert_to, time)
@@ -68,7 +70,7 @@ XSetDeviceFocus(dpy, dev, focus, revert_to, time)
     Time	time;
     {       
     xSetDeviceFocusReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
 

@@ -1,4 +1,5 @@
 /* $XConsortium: XSetBMap.c,v 1.6 94/04/17 20:18:11 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 #define NEED_REPLIES
 
 /* returns either  DeviceMappingSuccess or DeviceMappingBusy  */
@@ -71,7 +73,7 @@ XSetDeviceButtonMapping (dpy, device, map, nmap)
     {
     register xSetDeviceButtonMappingReq *req;
     xSetDeviceButtonMappingReply rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay(dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

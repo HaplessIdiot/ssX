@@ -1,4 +1,5 @@
 /* $XConsortium: XGetMMap.c,v 1.7 94/04/17 20:18:03 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XModifierKeymap 
 *XGetDeviceModifierMapping (dpy, dev)
@@ -68,7 +70,7 @@ XModifierKeymap
     XModifierKeymap *res;
     xGetDeviceModifierMappingReq *req;
     xGetDeviceModifierMappingReply rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

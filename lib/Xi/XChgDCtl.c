@@ -1,4 +1,5 @@
 /* $XConsortium: XChgDCtl.c,v 1.4 94/04/17 20:17:55 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -59,6 +60,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XChangeDeviceControl (dpy, dev, control, d)
@@ -70,7 +72,7 @@ XChangeDeviceControl (dpy, dev, control, d)
     int length;
     xChangeDeviceControlReq	*req;
     xChangeDeviceControlReply	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Add_XChangeDeviceControl) == -1)

@@ -1,4 +1,5 @@
 /* $XConsortium: XGetVers.c,v 1.10 94/04/17 20:18:06 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "XI.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 XExtensionVersion
 #if NeedFunctionPrototypes
@@ -73,7 +75,7 @@ XExtensionVersion
     xGetExtensionVersionReq 	*req;
     xGetExtensionVersionReply 	rep;
     XExtensionVersion		*ext;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, Dont_Check) == -1)

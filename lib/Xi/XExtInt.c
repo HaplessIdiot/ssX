@@ -1,5 +1,5 @@
 /* $XConsortium: XExtInt.c,v 1.35 94/04/17 20:17:59 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.0 1995/12/23 09:36:55 dawes Exp $ */
 
 /************************************************************
 
@@ -62,6 +62,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 #define ENQUEUE_EVENT	True
 #define DONT_ENQUEUE	False
@@ -134,7 +135,7 @@ _xibaddevice (dpy, error)
     Display *dpy;
     int *error;
     {
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
     *error = info->codes->first_error + XI_BadDevice;
     }
 
@@ -142,7 +143,7 @@ _xibadclass (dpy, error)
     Display *dpy;
     int *error;
     {
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); 
+    XExtDisplayInfo *info = XInput_find_display (dpy); 
     *error = info->codes->first_error + XI_BadClass;
     }
 
@@ -150,7 +151,7 @@ _xibadevent (dpy, error)
     Display *dpy;
     int *error;
     {
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
     *error = info->codes->first_error + XI_BadEvent;
     }
 
@@ -158,7 +159,7 @@ _xibadmode (dpy, error)
     Display *dpy;
     int *error;
     {
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
     *error = info->codes->first_error + XI_BadMode;
     }
 
@@ -166,7 +167,7 @@ _xidevicebusy (dpy, error)
     Display *dpy;
     int *error;
     {
-    XExtDisplayInfo 	*info = (XExtDisplayInfo *) XInput_find_display (dpy); 
+    XExtDisplayInfo *info = XInput_find_display (dpy); 
     *error = info->codes->first_error + XI_DeviceBusy;
     }
 

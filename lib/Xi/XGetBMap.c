@@ -1,4 +1,5 @@
 /* $XConsortium: XGetBMap.c,v 1.7 94/04/17 20:18:01 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,8 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
+
 #ifdef MIN			/* some systems define this in <sys/param.h> */
 #undef MIN
 #endif
@@ -73,7 +76,7 @@ XGetDeviceButtonMapping (dpy, device, map, nmap)
     int	status = 0;
     unsigned char mapping[256];				/* known fixed size */
     long nbytes;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     register xGetDeviceButtonMappingReq *req;
     xGetDeviceButtonMappingReply rep;

@@ -1,4 +1,5 @@
 /* $XConsortium: XChgPnt.c,v 1.8 94/04/17 20:17:57 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XChangePointerDevice (dpy, dev, xaxis, yaxis)
@@ -68,7 +70,7 @@ XChangePointerDevice (dpy, dev, xaxis, yaxis)
     {       
     xChangePointerDeviceReq 	*req;
     xChangePointerDeviceReply 	rep;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)

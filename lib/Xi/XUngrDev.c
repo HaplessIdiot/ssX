@@ -1,4 +1,5 @@
 /* $XConsortium: XUngrDev.c,v 1.6 94/04/17 20:18:14 rws Exp $ */
+/* $XFree86$ */
 
 /************************************************************
 
@@ -58,6 +59,7 @@ SOFTWARE.
 #include "Xlibint.h"
 #include "XInput.h"
 #include "extutil.h"
+#include "XIint.h"
 
 int
 XUngrabDevice (dpy, dev, time)
@@ -66,7 +68,7 @@ XUngrabDevice (dpy, dev, time)
     Time time;
     {
     register xUngrabDeviceReq 	*req;
-    XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    XExtDisplayInfo *info = XInput_find_display (dpy);
 
     LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, XInput_Initial_Release) == -1)
