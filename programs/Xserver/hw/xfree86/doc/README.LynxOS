@@ -11,7 +11,7 @@
   is available as source patches against the X Consortium X11R6 code, as
   well as binary distributions for many architectures.
 
-  See the Copyright Notice in COPYRIGHT.
+  See the Copyright Notice in COPYRIGHT <COPYRIGHT.html>.
 
   The sources for XFree86 are available by anonymous ftp from:
 
@@ -183,7 +183,7 @@
 
   With LynxOS 2.2.1 programs will not be stripped during installation.
   This is due to a problem with the strip program which shows up when
-  installing accross file system boundaries.
+  installing across file system boundaries.
 
   Refer to section 5 for manual page installation.
 
@@ -230,7 +230,7 @@
 
 
   If you plan to use PS/2 or Bus mice refer to the following section
-  befor rebuilding the kernel, if not, you should rebuild the kernel
+  before rebuilding the kernel, if not, you should rebuild the kernel
   now:
 
 
@@ -287,12 +287,12 @@
 
 
 
-  4.5.  X Server debug diagnostics output and other VT pecularities
+  4.5.  X Server debug diagnostics output and other VT peculiarities
 
 
   The XFree86 X servers will produce a lot of diagnostics output on
   stderr during startup. This output will be lost after the server
-  reached a certain point in its console initialition process. You
+  reached a certain point in its console initialization process. You
   should redirect stdout and stderr if you want to analyze the
   diagnostics produced by the server.
 
@@ -348,8 +348,8 @@
 
 
   The /bin/man command of LynxOS 2.2.1 does not support the MANPATH
-  environment variable proberly. The XFree86 manual pages must be copied
-  (or linked) to the standard manual page localtions (/usr/man/catx) in
+  environment variable properly. The XFree86 manual pages must be copied
+  (or linked) to the standard manual page locations (/usr/man/catx) in
   order to be read the man command:
 
 
@@ -364,7 +364,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.0 1995/07/15 04:26:14 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.2 1995/07/15 16:06:28 dawes Exp $
 
 
 
