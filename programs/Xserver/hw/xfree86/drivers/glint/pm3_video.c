@@ -22,7 +22,7 @@
  * Authors: Alan Hourihane, alanh@fairlite.demon.co.uk
  *          Sven Luther <luther@dpt-info.u-strasbg.fr>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.7 2001/08/18 11:37:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.8 2001/10/28 03:33:30 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -506,7 +506,10 @@ HWCopySetup(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    GLINT_WAIT(4);
+    GLINT_WAIT(7);
+    GLINT_WRITE_REG(((y&0x0fff)<<16)|(x&0x0fff), ScissorMinXY);
+    GLINT_WRITE_REG((((y+h)&0x0fff)<<16)|((x+w)&0x0fff), ScissorMaxXY);
+    GLINT_WRITE_REG(1, ScissorMode);
     GLINT_WRITE_REG(0xffffffff, FBHardwareWriteMask);
     GLINT_WRITE_REG(
 	PM3Config2D_ForegroundROPEnable |
@@ -530,16 +533,35 @@ static void
 HWCopyYV12(ScrnInfoPtr pScrn, CARD8 *Y, int w, int h)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    int size = w * h;
-    CARD8 *V = Y + size;
-    CARD8 *U = V + (size >> 2);
+    GLINTPortPrivPtr pPriv = pGlint->adaptor->pPortPrivates[0].ptr;
+    int size;
+    CARD8 *V;
+    CARD8 *U;
     CARD32 *dst;
     int pass2 = 0;
     int dwords, i, x = 0;
+    int align = 0;
 
-    dwords = size >> 1;
+ErrorF("%d %d\n",w,h);
 
+    switch (pPriv->Video_Shift) {
+	case 0:
+		align = 7;
+		break;
+	case 1:
+		align = 15;
+		break;
+	case 2:
+		align = 31;
+		break;
+    }
+
+    w = (w + align) & ~align;
+    size = w * h;
+    V = Y + size;
+    U = V + (size >> 2);
     w >>= 1;
+    dwords = w * h;
 
     while (dwords >= pGlint->FIFOSize) {
 	dst = (CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4);
@@ -584,6 +606,8 @@ HWCopyYV12(ScrnInfoPtr pScrn, CARD8 *Y, int w, int h)
 	    *dst++ = Y[0] + (U[x] << 8) + (Y[1] << 16) + (V[x] << 24);
 	}
     }
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG(0, ScissorMode);
 }
 
 static void
@@ -594,6 +618,21 @@ HWCopyFlat(ScrnInfoPtr pScrn, CARD8 *src, int w, int h)
     int pitch = pScrn->displayWidth;
     CARD8 *tmp_src;
     int dwords;
+    int align;
+
+    switch (pPriv->Video_Shift) {
+	case 0:
+		align = 7;
+		break;
+	case 1:
+		align = 15;
+		break;
+	case 2:
+		align = 31;
+		break;
+    }
+
+    w = (w + align) & ~align;
 
     if (w == pitch) {
     	dwords = (w * h) >> (2 - pPriv->Video_Shift);
@@ -625,8 +664,8 @@ HWCopyFlat(ScrnInfoPtr pScrn, CARD8 *src, int w, int h)
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)src, pGlint->FIFOSize - 1);
-		dwords -= pGlint->FIFOSize - 1;
-		src += pGlint->FIFOSize - 1;
+		dwords -= (pGlint->FIFOSize - 1);
+		src += (pGlint->FIFOSize << 2) - 4;
     	    }
     	    if(dwords) {
 		GLINT_WAIT(dwords + 1);
@@ -635,9 +674,11 @@ HWCopyFlat(ScrnInfoPtr pScrn, CARD8 *src, int w, int h)
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 		(CARD32*)src, dwords);
     	    }
-    	    src = tmp_src + (w << pPriv->Video_Shift);
+    	    src = tmp_src + (w << (2 - pPriv->Video_Shift));
   	}
     }
+    GLINT_WAIT(1);
+    GLINT_WRITE_REG(0, ScissorMode);
 }
 
 static FBAreaPtr
