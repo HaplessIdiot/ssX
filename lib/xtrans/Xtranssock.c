@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.61tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.62 2003/08/24 17:35:13 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -938,6 +938,14 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port, unsigned int 
 	((struct sockaddr_in *)&sockname)->sin_port = htons(sport);
 	((struct sockaddr_in *)&sockname)->sin_addr.s_addr = htonl(INADDR_ANY);
     } else {
+#ifdef IN6ADDR_ANY_INIT
+	/*
+	 * This helps avoid shared library incompatibility problems on some
+	 * platforms.
+	 */
+#define in6addr_any _local_in6addr_any
+	static const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+#endif
 	namelen = sizeof (struct sockaddr_in6);
 #ifdef SIN6_LEN
 	((struct sockaddr_in6 *)&sockname)->sin6_len = sizeof(sockname);
