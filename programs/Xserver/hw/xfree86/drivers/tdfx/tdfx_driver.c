@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.50 2000/12/07 20:26:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.51 2000/12/08 17:14:26 dawes Exp $ */
 
 /*
  * Authors:
@@ -1753,9 +1753,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
 #ifdef XF86DRI
   pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
-  if (!pTDFX->NoAccel 
-     && ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1) )) {
-    doDR = TRUE;
+  if (!pTDFX->NoAccel) {
     pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
   } else
 #endif
@@ -1764,6 +1762,11 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
 
   allocateMemory(pScrn);
+
+#ifdef XF86DRI
+  if ((pTDFX->backOffset) || (pTDFX->depthOffset)) 
+    doDR = TRUE;
+#endif
 
 #if 0
   if (pTDFX->numChips>1) {
