@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmauth.c,v 1.6 2003/09/17 05:48:33 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/xdmauth.c,v 1.7tsi Exp $ */
 /*
  * xdm - display manager daemon
  * Author:  Keith Packard, MIT X Consortium
@@ -43,7 +43,6 @@ from The Open Group.
 #ifdef HASXDMAUTH
 
 static char	auth_name[256];
-static int	auth_name_len;
 
 static void
 XdmPrintDataHex (char *s, char *a, int l)
@@ -69,7 +68,6 @@ XdmInitAuth (unsigned short name_len, char *name)
 {
     if (name_len > 256)
 	name_len = 256;
-    auth_name_len = name_len;
     memmove( auth_name, name, name_len);
 }
 
@@ -182,7 +180,8 @@ XdmGetXdmcpAuth (struct protoDisplay *pdpy,
     XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
     XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
     /* encrypt the session key for its trip back to the server */
-    XdmcpWrap (xdmcpauth->data, (unsigned char *)&pdpy->key, xdmcpauth->data, 8);
+    XdmcpWrap ((unsigned char *)xdmcpauth->data, (unsigned char *)&pdpy->key,
+	       (unsigned char *)xdmcpauth->data, 8);
     pdpy->fileAuthorization = fileauth;
     pdpy->xdmcpAuthorization = xdmcpauth;
 }
