@@ -1062,7 +1062,7 @@ extern void  SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVxscale(ScrnInfoPtr pScrn, int val);
 extern void  SiS_SetTVyscale(ScrnInfoPtr pScrn, int val);
 extern Bool  SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags);
-extern Bool  SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond,
+extern int   SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond,
 					  unsigned short index, Bool quiet);
 extern Bool  SISSwitchCRT1Status(ScrnInfoPtr pScrn, int onoff);
 extern int   SiS_GetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn);

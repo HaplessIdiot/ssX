@@ -887,7 +887,7 @@ SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,
 	        if(VDisplay == 1200) ModeIndex = ModeIndex_1600x1200[Depth];
 	     }
 	     break;
-          }
+      }
 
    } else if(VBFlags & VB_SISBRIDGE) {
 
