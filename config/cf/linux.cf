@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.134 2000/08/23 22:09:58 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.135 2000/08/26 04:30:48 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -283,6 +283,14 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #ifndef UseStaticTermcapLib
 #define UseStaticTermcapLib	NO
+#endif
+
+#ifndef BourneShell
+/*
+ * This will cause builds/installs to terminate on errors, as on other
+ * platforms.
+ */
+#define BourneShell		/bin/sh -e
 #endif
 
 #define MkdirHierCmd		mkdir -p
