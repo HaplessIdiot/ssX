@@ -1,4 +1,6 @@
-XFree86 4.4.99.5 (xx April 2004)
+XFree86 4.4.99.6 (xx May 2004)
+
+XFree86 4.4.99.5 (12 May 2004)
  106. Fixes and updates for XKB keymaps:
       - Replace comma keysym on KPDL key in Brasilian keymap with KP_Separator
         (Rafael Ávila de Espíndola).
@@ -18916,7 +18918,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3252 2004/05/06 21:10:56 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3253 2004/05/08 07:27:42 pascal Exp $
 
 
 
