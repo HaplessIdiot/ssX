@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.6 2000/02/12 03:40:07 dawes Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.7 2000/05/06 22:23:48 keithp Exp $ */
 
 
 /*
@@ -656,6 +656,8 @@ realloc (old, desiredsize)
     new = malloc (desiredsize);
     if (!new)
 	return NULL;
+    if (!old)
+	return new;
     SEARCH(activeMemory, h, old);
     if (!h)
     {

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.2 1999/06/27 14:08:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.4 1999/12/03 19:17:34 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -192,6 +192,9 @@ Neo2200AccelInit(ScreenPtr pScreen)
         nAcl->PixelWidth = 2;
 	break;
     case 24:
+	nAcl->BltModeFlags = NEO_MODE1_DEPTH24;
+        nAcl->PixelWidth = 3;
+	break;
     default:
 	return FALSE;
     }
