@@ -27,7 +27,6 @@
  *    Sung-Ching Lin <sclin@sis.com.tw>
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_ds.h,v 1.2 2000/08/04 03:51:47 tsi Exp $ */
 
 #ifndef _sis_ds_h_
 #define _sis_ds_h_

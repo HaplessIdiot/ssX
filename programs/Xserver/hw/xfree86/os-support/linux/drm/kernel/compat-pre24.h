@@ -26,7 +26,6 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  * 
  */
-/* $XFree86$ */
 
 #ifndef _COMPAT_PRE24_H_
 #define _COMPAT_PRE24_H_

@@ -28,7 +28,6 @@
  *	    Jeff Hartmann <jhartmann@valinux.com>
  * 
  */
-/* $XFree86$ */
 
 #define __NO_VERSION__
 #include "drmP.h"

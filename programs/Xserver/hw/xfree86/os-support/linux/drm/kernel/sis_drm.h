@@ -1,5 +1,3 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_drm.h,v 1.1 2000/09/24 13:51:39 alanh Exp $ */
-
 #ifndef _sis_drm_public_h_
 #define _sis_drm_public_h_
 

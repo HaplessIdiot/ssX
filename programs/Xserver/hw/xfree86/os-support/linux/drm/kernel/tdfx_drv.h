@@ -29,7 +29,6 @@
  *    Daryll Strauss <daryll@valinux.com>
  * 
  */
-/* $XFree86$ */
 
 #ifndef _TDFX_DRV_H_
 #define _TDFX_DRV_H_

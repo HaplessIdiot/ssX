@@ -28,7 +28,6 @@
  * 	    Jeff Hartmann <jhartmann@valinux.com>
  *
  */
-/* $XFree86$ */
 
 #ifndef _I810_DRV_H_
 #define _I810_DRV_H_
