@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -496,6 +496,25 @@ ATIMach64GetPortAttribute
 }
 
 /*
+ * ATIMach64RemoveLinearCallback --
+ *
+ * This is called by the framebuffer manager to release the offscreen XVideo
+ * buffer after the video has been temporarily disabled due to its window being
+ * iconified or completely occluded.
+ */
+static void
+ATIMach64RemoveLinearCallback
+(
+    FBLinearPtr pLinear
+)
+{
+    ATIPtr pATI = ATIPTR(xf86Screens[pLinear->pScreen->myNum]);
+
+    pATI->pXVBuffer = NULL;
+    outf(OVERLAY_SCALE_CNTL, SCALE_EN);
+}
+
+/*
  * ATIMach64StopVideo --
  *
  * This is called to stop displaying a video.  Note that, to prevent jittering
@@ -519,7 +538,14 @@ ATIMach64StopVideo
     REGION_EMPTY(pScreen, &pATI->VideoClip);
 
     if (!Cleanup)
+    {
+        /*
+         * Free offscreen buffer if/when its allocation is needed by XAA's
+         * pixmap cache.
+         */
+        pATI->pXVBuffer->RemoveLinearCallback = ATIMach64RemoveLinearCallback;
         return;
+    }
 
     pATI->pXVBuffer = ATIResizeOffscreenLinear(pScreen, pATI->pXVBuffer, 0);
     outf(OVERLAY_SCALE_CNTL, SCALE_EN);
