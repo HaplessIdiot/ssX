@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.11 2003/07/07 15:34:29 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.12tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -834,10 +834,8 @@ doDirectory(char *dirname_given, int numEncodings, ListPtr encodingsToDo)
 
             if(isBitmap) {
                 BDF_PropertyRec prop;
-                int n;
                 rc = FT_Get_BDF_Property(face, "FONT", &prop);
                 if(rc == 0 && prop.type == BDF_PROPERTY_TYPE_ATOM) {
-                    n = strlen(prop.u.atom);
                     xlfd_name = malloc(strlen(prop.u.atom) + 1);
                     if(xlfd_name == NULL)
                         goto done;
