@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.24 2001/11/14 16:50:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.25 2002/04/24 16:20:39 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -488,6 +488,7 @@ extern void        RADEONWaitForVerticalSync(ScrnInfoPtr pScrn);
 extern void        RADEONSelectBuffer(ScrnInfoPtr pScrn, int buffer);
 
 extern Bool        RADEONAccelInit(ScreenPtr pScreen);
+extern void        RADEONEngineInit(ScrnInfoPtr pScrn);
 extern Bool        RADEONCursorInit(ScreenPtr pScreen);
 extern Bool        RADEONDGAInit(ScreenPtr pScreen);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.8 2001/12/04 17:30:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dga.c,v 1.9 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -263,6 +263,18 @@ static Bool RADEON_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 	pScrn->currentMode = info->CurrentLayout.mode;
 
 	RADEONSwitchMode(indx, pScrn->currentMode, 0);
+#ifdef XF86DRI
+    	if (info->directRenderingEnabled) {
+	    RADEONCP_STOP(pScrn, info);
+    	}
+#endif
+	if (info->accelOn)
+	    RADEONEngineInit(pScrn);
+#ifdef XF86DRI
+    	if (info->directRenderingEnabled) {
+	    RADEONCP_START(pScrn, info);
+    	}
+#endif
 	RADEONAdjustFrame(indx, 0, 0, 0);
 	info->DGAactive = FALSE;
     } else {
@@ -283,6 +295,19 @@ static Bool RADEON_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 	/* RADEONModeInit() will set the mode field */
 
 	RADEONSwitchMode(indx, pMode->mode, 0);
+
+#ifdef XF86DRI
+    	if (info->directRenderingEnabled) {
+	    RADEONCP_STOP(pScrn, info);
+    	}
+#endif
+	if (info->accelOn)
+	    RADEONEngineInit(pScrn);
+#ifdef XF86DRI
+    	if (info->directRenderingEnabled) {
+	    RADEONCP_START(pScrn, info);
+    	}
+#endif
     }
 
     return TRUE;
