@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.5 2001/10/28 03:32:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.6 2001/11/14 21:54:38 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -113,7 +113,6 @@ static int
 ProcXvMCListSurfaceTypes(ClientPtr client)
 {
     XvPortPtr pPort;
-    ScreenPtr pScreen;
     int i;
     XvMCScreenPtr pScreenPriv;
     xvmcListSurfaceTypesReply rep;
@@ -128,14 +127,16 @@ ProcXvMCListSurfaceTypes(ClientPtr client)
         return _XvBadPort;
     }
 
-    pScreen = pPort->pAdaptor->pScreen;
-    pScreenPriv = XVMC_GET_PRIVATE(pScreen);
-
-    for(i = 0; i < pScreenPriv->num_adaptors; i++) {
-        if(pPort->pAdaptor == pScreenPriv->adaptors[i].xv_adaptor) {
-            adaptor = &(pScreenPriv->adaptors[i]);
-            break;
-        }
+    if(XvMCScreenIndex >= 0) { /* any adaptors at all */
+       ScreenPtr pScreen = pPort->pAdaptor->pScreen;
+       if((pScreenPriv = XVMC_GET_PRIVATE(pScreen))) {  /* any this screen */
+          for(i = 0; i < pScreenPriv->num_adaptors; i++) {
+             if(pPort->pAdaptor == pScreenPriv->adaptors[i].xv_adaptor) {
+               adaptor = &(pScreenPriv->adaptors[i]);
+               break;
+             }
+          }
+       }
     }
 
     rep.type = X_Reply;
@@ -183,7 +184,12 @@ ProcXvMCCreateContext(ClientPtr client)
     }
 
     pScreen = pPort->pAdaptor->pScreen;
-    pScreenPriv = XVMC_GET_PRIVATE(pScreen);
+
+    if(XvMCScreenIndex < 0) /* no XvMC adaptors */
+       return BadMatch;
+ 
+    if(!(pScreenPriv = XVMC_GET_PRIVATE(pScreen))) /* none this screen */
+       return BadMatch;
 
     for(i = 0; i < pScreenPriv->num_adaptors; i++) {
 	if(pPort->pAdaptor == pScreenPriv->adaptors[i].xv_adaptor) {
@@ -193,7 +199,7 @@ ProcXvMCCreateContext(ClientPtr client)
 	}
     }
 
-    if(adapt_num < 0) /* that port doesn't support MC */
+    if(adapt_num < 0) /* none this port */
 	return BadMatch;	
 
     for(i = 0; i < adaptor->num_surfaces; i++) {
@@ -461,7 +467,12 @@ ProcXvMCListSubpictureTypes(ClientPtr client)
     }
 
     pScreen = pPort->pAdaptor->pScreen;
-    pScreenPriv = XVMC_GET_PRIVATE(pScreen);
+
+    if(XvMCScreenIndex < 0) /* No XvMC adaptors */
+        return BadMatch;
+
+    if(!(pScreenPriv = XVMC_GET_PRIVATE(pScreen)))
+        return BadMatch;   /* None this screen */
 
     for(i = 0; i < pScreenPriv->num_adaptors; i++) {
         if(pPort->pAdaptor == pScreenPriv->adaptors[i].xv_adaptor) {
@@ -628,4 +639,36 @@ XvMCScreenInit(ScreenPtr pScreen, int num, XvMCAdaptorPtr pAdapt)
    pScreenPriv->adaptors = pAdapt;
 
    return Success;
+}
+
+XvImagePtr XvMCFindXvImage(XvPortPtr pPort, CARD32 id)
+{
+    XvImagePtr pImage = NULL;
+    ScreenPtr pScreen = pPort->pAdaptor->pScreen;
+    XvMCScreenPtr pScreenPriv;
+    XvMCAdaptorPtr adaptor = NULL;
+    int i;
+
+    if(XvMCScreenIndex < 0) return NULL;
+
+    if(!(pScreenPriv = XVMC_GET_PRIVATE(pScreen))) 
+        return NULL;
+
+    for(i = 0; i < pScreenPriv->num_adaptors; i++) {
+       if(pPort->pAdaptor == pScreenPriv->adaptors[i].xv_adaptor) {
+          adaptor = &(pScreenPriv->adaptors[i]);
+          break;
+       }
+    }
+
+    if(!adaptor) return NULL;
+
+    for(i = 0; i < adaptor->num_subpictures; i++) {
+        if(adaptor->subpictures[i]->id == id) {
+            pImage = adaptor->subpictures[i];
+            break;
+        }
+    }
+
+    return pImage;
 }

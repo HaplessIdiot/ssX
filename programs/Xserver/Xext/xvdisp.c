@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.23 2001/10/02 18:23:53 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.24 2001/10/28 03:32:52 tsi Exp $ */
 
 /*
 ** File: 
@@ -1206,6 +1206,9 @@ ProcXvShmPutImage(ClientPtr client)
 }
 #endif
 
+#ifdef XvMCExtension
+XvImagePtr XvMCFindXvImage(XvPortPtr pPort, CARD32 id);
+#endif
 
 static int 
 ProcXvQueryImageAttributes(ClientPtr client)
@@ -1233,6 +1236,11 @@ ProcXvQueryImageAttributes(ClientPtr client)
 	  break;
       }
   }
+
+#ifdef XvMCExtension
+  if(!pImage)
+     pImage = XvMCFindXvImage(pPort, stuff->id);
+#endif
 
   if(!pImage)
      return BadMatch;
