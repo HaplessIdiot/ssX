@@ -36,11 +36,12 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.16 2001/09/07 01:28:35 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.17 2001/09/19 23:40:06 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
 #include "nv_include.h"
+#include "nvreg.h"
 #include "riva_hw.h"
 #include "riva_tbl.h"
 
@@ -1154,17 +1155,9 @@ static void CalcStateExt
     int            bpp,
     int            width,
     int            hDisplaySize,
-    int            hDisplay,
-    int            hStart,
-    int            hEnd,
-    int            hTotal,
     int            height,
-    int            vDisplay,
-    int            vStart,
-    int            vEnd,
-    int            vTotal,
     int            dotClock,
-    int		   doubleScan
+    int		   flags 
 )
 {
     int pixelDepth, VClk, m, n, p;
@@ -1190,7 +1183,7 @@ static void CalcStateExt
                                          chip);
             state->cursor0  = 0x00;
             state->cursor1  = 0x78;
-	    if (doubleScan)
+	    if (flags & V_DBLSCAN)
 		state->cursor1 |= 2;
             state->cursor2  = 0x00000000;
             state->pllsel   = 0x10010100;
@@ -1208,7 +1201,7 @@ static void CalcStateExt
                                          chip);
             state->cursor0  = 0x00;
             state->cursor1  = 0xFC;
-	    if (doubleScan)
+	    if (flags & V_DBLSCAN)
 		state->cursor1 |= 2;
             state->cursor2  = 0x00000000;
             state->pllsel   = 0x10000700;
@@ -1226,7 +1219,7 @@ static void CalcStateExt
             state->cursor0  = 0x80 | (chip->CursorStart >> 17);
             state->cursor1  = (chip->CursorStart >> 11) << 2;
 	    state->cursor2  = chip->CursorStart >> 24;
-	    if (doubleScan)
+	    if (flags & V_DBLSCAN)
 		state->cursor1 |= 2;
             state->pllsel   = 0x10000700;
             state->config   = chip->PFB[0x00000200/4];
@@ -1239,13 +1232,7 @@ static void CalcStateExt
 	state->general |= 0x00000030;
 
     state->vpll     = (p << 16) | (n << 8) | m;
-    state->screen   = ((hTotal   & 0x040) >> 2)
-                    | ((vDisplay & 0x400) >> 7)
-                    | ((vStart   & 0x400) >> 8)
-                    | ((vDisplay & 0x400) >> 9)
-                    | ((vTotal   & 0x400) >> 10);
     state->repaint0 = (((width/8)*pixelDepth) & 0x700) >> 3;
-    state->horiz    = hTotal     < 260 ? 0x00 : 0x01;
     state->pixel    = pixelDepth > 2   ? 3    : pixelDepth;
     state->offset0  =
     state->offset1  =
@@ -1539,6 +1526,7 @@ static void LoadStateExt
     /*
      * Load HW mode state.
      */
+
     VGA_WR08(chip->PCIO, 0x03D4, 0x19);
     VGA_WR08(chip->PCIO, 0x03D5, state->repaint0);
     VGA_WR08(chip->PCIO, 0x03D4, 0x1A);
@@ -1559,6 +1547,10 @@ static void LoadStateExt
     VGA_WR08(chip->PCIO, 0x03D5, state->cursor1);
     VGA_WR08(chip->PCIO, 0x03D4, 0x2F);
     VGA_WR08(chip->PCIO, 0x03D5, state->cursor2);
+    VGA_WR08(chip->PCIO, 0x03D4, 0x39);
+    VGA_WR08(chip->PCIO, 0x03D5, state->interlace);
+    VGA_WR08(chip->PCIO, 0x03D4, 0x41);
+    VGA_WR08(chip->PCIO, 0x03D5, state->extra);
     chip->PRAMDAC[0x00000508/4]  = state->vpll;
     chip->PRAMDAC[0x0000050C/4]  = state->pllsel;
     chip->PRAMDAC[0x00000600/4]  = state->general;
@@ -1611,6 +1603,10 @@ static void UnloadStateExt
     state->cursor1      = VGA_RD08(chip->PCIO, 0x03D5);
     VGA_WR08(chip->PCIO, 0x03D4, 0x2F);
     state->cursor2      = VGA_RD08(chip->PCIO, 0x03D5);
+    VGA_WR08(chip->PCIO, 0x03D4, 0x39);
+    state->interlace    = VGA_RD08(chip->PCIO, 0x03D5);
+    VGA_WR08(chip->PCIO, 0x03D4, 0x41);
+    state->extra        = VGA_RD08(chip->PCIO, 0x03D5);
     state->vpll         = chip->PRAMDAC[0x00000508/4];
     state->pllsel       = chip->PRAMDAC[0x0000050C/4];
     state->general      = chip->PRAMDAC[0x00000600/4];
