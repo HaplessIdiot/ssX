@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.130 2004/12/09 00:21:04 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.131 2005/01/20 01:01:00 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -906,7 +906,7 @@ NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
          xf86DrvMsg(scrnIndex, X_INFO, "Mode \"%s\" is larger than "
                     "BIOS programmed panel size of %d x %d.  Removing.\n",
                      mode->name, pNv->fpWidth, pNv->fpHeight);
-         return (MODE_BAD);
+         return (MODE_PANEL);
       }
     }
 

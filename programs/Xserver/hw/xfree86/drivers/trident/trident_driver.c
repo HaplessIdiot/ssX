@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.191tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.192 2004/11/26 13:45:05 tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -3277,14 +3277,14 @@ TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 		       mode->VDisplay,
 		       LCD[pTrident->lcdMode].display_x,
 		       LCD[pTrident->lcdMode].display_y);
-	    return(MODE_BAD);
+	    return(MODE_PANEL);
 	}
 	if (((float)mode->HDisplay/(float)mode->VDisplay) > 2.0) {
 	    xf86DrvMsg(scrnIndex,X_INFO, "Removing mode (%dx%d) "
 		       "unusual aspect ratio\n",
 		       mode->HDisplay,
 		       mode->VDisplay);
-	    return(MODE_BAD);
+	    return(MODE_ASPECT_RATIO);
 	}
     }
     return (MODE_OK);

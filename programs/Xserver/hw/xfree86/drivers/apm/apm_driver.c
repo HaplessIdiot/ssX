@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.67 2004/11/26 13:44:59 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -2264,7 +2264,7 @@ static ModeStatus
 ApmValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
-	return(MODE_BAD);
+	return(MODE_NO_INTERLACE);
 
     return(MODE_OK);
 }

@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.111 2005/01/31 01:06:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.112 2005/02/02 23:28:04 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2563,7 +2563,7 @@ I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	 xf86DrvMsg(scrnIndex, X_PROBED,
 		    "Removing interlaced mode \"%s\"\n", mode->name);
       }
-      return MODE_BAD;
+      return MODE_NO_INTERLACE;
    }
    return MODE_OK;
 }

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.14 2004/12/05 23:06:37 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1095,7 +1095,7 @@ static ModeStatus
 FFBValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
-	return(MODE_BAD);
+	return(MODE_NO_INTERLACE);
 
     return(MODE_OK);
 }

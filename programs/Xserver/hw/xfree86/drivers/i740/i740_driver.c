@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.51tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.52 2004/11/26 13:45:00 tsi Exp $ */
 
 /*
  * Authors:
@@ -1848,7 +1848,7 @@ I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
 		 "Removing interlaced mode \"%s\"\n",
 		 mode->name);
     }
-    return MODE_BAD;
+    return MODE_NO_INTERLACE;
   }
   return MODE_OK;
 }

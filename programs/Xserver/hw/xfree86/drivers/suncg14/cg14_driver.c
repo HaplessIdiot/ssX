@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg14/cg14_driver.c,v 1.10 2004/12/05 23:06:37 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -631,7 +631,7 @@ static ModeStatus
 CG14ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
-	return(MODE_BAD);
+	return(MODE_NO_INTERLACE);
 
     return(MODE_OK);
 }

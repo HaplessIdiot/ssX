@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg3/cg3_driver.c,v 1.8 2004/12/05 23:06:37 tsi Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -565,7 +565,7 @@ static ModeStatus
 CG3ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     if (mode->Flags & V_INTERLACE)
-	return(MODE_BAD);
+	return(MODE_NO_INTERLACE);
 
     return(MODE_OK);
 }
