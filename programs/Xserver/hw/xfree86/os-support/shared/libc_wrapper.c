@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.39 1999/03/28 15:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.40 1999/03/29 06:23:14 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -190,33 +190,33 @@ xf86strcpy(char* dest, const char* src)
 	return strcpy(dest,src);
 }
 
-INT32
+xf86size_t
 xf86strcspn(const char* s1, const char* s2)
 {
-	return (INT32)strcspn(s1,s2);
+	return (xf86size_t)strcspn(s1,s2);
 }
 
-INT32
+xf86size_t
 xf86strlen(const char* s)
 {
-	return (INT32)strlen(s);
+	return (xf86size_t)strlen(s);
 }
 
 char*
-xf86strncat(char* dest, const char* src, INT32 n)
+xf86strncat(char* dest, const char* src, xf86size_t n)
 {
-	return strncat(dest,src,n);
+	return strncat(dest,src,(size_t)n);
 }
 
 int
-xf86strncmp(const char* s1, const char* s2, INT32 n)
+xf86strncmp(const char* s1, const char* s2, xf86size_t n)
 {
-	return strncmp(s1,s2,n);
+	return strncmp(s1,s2,(size_t)n);
 }
 
 /* Just like the BSD version.  It assumes that tolower() is ANSI-compliant */
 int
-xf86strncasecmp(const char* s1, const char* s2, INT32 n)
+xf86strncasecmp(const char* s1, const char* s2, xf86size_t n)
 {
 	if (n != 0) {
 		const unsigned char *us1 = (const unsigned char *)s1;
@@ -233,9 +233,9 @@ xf86strncasecmp(const char* s1, const char* s2, INT32 n)
 }
 
 char*
-xf86strncpy(char* dest, const char* src, INT32 n)
+xf86strncpy(char* dest, const char* src, xf86size_t n)
 {
-	return strncpy(dest,src,n);
+	return strncpy(dest,src,(size_t)n);
 }
 
 char*
@@ -250,7 +250,7 @@ xf86strrchr(const char* s, int c)
 	return strrchr(s,c);
 }
 
-INT32
+xf86size_t
 xf86strspn(const char* s1, const char* s2)
 {
 	return strspn(s1,s2);
@@ -385,19 +385,19 @@ xf86ioctl(int fd, unsigned long request, pointer argp)
     return status;
 }
 
-unsigned int
-xf86read(int fd, void *buf, INT32 nbytes)
+xf86ssize_t
+xf86read(int fd, void *buf, xf86size_t nbytes)
 {
-    unsigned int n = read(fd, buf, nbytes);
+    xf86ssize_t n = read(fd, buf, (size_t)nbytes);
 
     xf86errno = xf86GetErrno();
     return n;
 }
 
-unsigned int
-xf86write(int fd, const void *buf, INT32 nbytes)
+xf86ssize_t
+xf86write(int fd, const void *buf, xf86size_t nbytes)
 {
-    unsigned int n = write(fd, buf, nbytes);
+    xf86ssize_t n = write(fd, buf, (size_t)nbytes);
 
     xf86errno = xf86GetErrno();
     return n;
@@ -419,7 +419,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
     if (prot  & XF86_PROT_WRITE)	p |= PROT_WRITE;
     if (prot  & XF86_PROT_NONE)		p |= PROT_NONE;
 
-    rc = mmap(start,length,p,f,fd,offset);
+    rc = mmap(start,(size_t)length,p,f,fd,(off_t)offset);
 
     xf86errno = xf86GetErrno();
     return rc;
@@ -455,7 +455,7 @@ int
 xf86munmap(void *start, xf86size_t length)
 {
 #ifndef NO_MMAP
-    int rc = munmap(start,length);
+    int rc = munmap(start,(size_t)length);
 
     xf86errno = xf86GetErrno();
     return rc;
@@ -664,7 +664,8 @@ xf86fscanf(XF86FILE* f, const char *format, char *a0, char *a1, char *a2,
 #endif
 }
 
-char *xf86fgets(char *buf, INT32 n, XF86FILE* f)
+char *
+xf86fgets(char *buf, INT32 n, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -717,8 +718,8 @@ xf86fflush(XF86FILE* f)
 	return fflush(fp->filehnd);
 }
 
-INT32
-xf86fread(void* buf, INT32 sz, INT32 cnt, XF86FILE* f)
+xf86size_t
+xf86fread(void* buf, xf86size_t sz, xf86size_t cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
@@ -726,16 +727,16 @@ xf86fread(void* buf, INT32 sz, INT32 cnt, XF86FILE* f)
 	ErrorF("xf86fread for XF86FILE %p\n", fp);
 #endif
 	_xf86checkhndl(fp,"xf86fread");
-	return fread(buf,sz,cnt,fp->filehnd);
+	return fread(buf,(size_t)sz,(size_t)cnt,fp->filehnd);
 }
 
-INT32
-xf86fwrite(const void* buf, INT32 sz, INT32 cnt, XF86FILE* f)
+xf86size_t
+xf86fwrite(const void* buf, xf86size_t sz, xf86size_t cnt, XF86FILE* f)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 
 	_xf86checkhndl(fp,"xf86fwrite");
-	return fwrite(buf,sz,cnt,fp->filehnd);
+	return fwrite(buf,(size_t)sz,(size_t)cnt,fp->filehnd);
 }
 
 int
@@ -928,7 +929,7 @@ xf86setbuf(XF86FILE* f, char *buf)
 }
 
 int
-xf86setvbuf(XF86FILE* f, char *buf, int mode, INT32 size)
+xf86setvbuf(XF86FILE* f, char *buf, int mode, xf86size_t size)
 {
 	XF86FILE_priv* fp = (XF86FILE_priv*)f;
 	int vbufmode;
@@ -1000,7 +1001,7 @@ xf86usleep(usec)
 }
 
 void
-xf86getsecs(INT32 * secs, INT32 * usecs)
+xf86getsecs(CARD32 * secs, CARD32 * usecs)
 {
 	struct timeval tv;
 
@@ -1415,33 +1416,33 @@ xf86tan(double x)
 
 /* memory functions */
 void*
-xf86memchr(const void* s, int c, INT32 n)
+xf86memchr(const void* s, int c, xf86size_t n)
 {
-	return memchr(s,c,n);
+	return memchr(s,c,(size_t)n);
 }
 
 int
-xf86memcmp(const void* s1, const void* s2, INT32 n)
+xf86memcmp(const void* s1, const void* s2, xf86size_t n)
 {
-	return(memcmp(s1,s2,n));
+	return(memcmp(s1,s2,(size_t)n));
 }
 
 void*
-xf86memcpy(void* dest, const void* src, INT32 n)
+xf86memcpy(void* dest, const void* src, xf86size_t n)
 {
-	return(memcpy(dest,src,n));
+	return(memcpy(dest,src,(size_t)n));
 }
 
 void*
-xf86memmove(void* dest, const void* src, INT32 n)
+xf86memmove(void* dest, const void* src, xf86size_t n)
 {
-	return(memmove(dest,src,n));
+	return(memmove(dest,src,(size_t)n));
 }
 
 void*
-xf86memset(void* s, int c, INT32 n)
+xf86memset(void* s, int c, xf86size_t n)
 {
-	return(memset(s,c,n));
+	return(memset(s,c,(size_t)n));
 }
 
 /* ctype functions */
@@ -1526,7 +1527,7 @@ xf86toupper(int c)
 
 /* memory allocation functions */
 void*
-xf86calloc(INT32 sz,INT32 n)
+xf86calloc(xf86size_t sz,xf86size_t n)
 {
 	return xcalloc(sz, n);
 }
@@ -1538,13 +1539,13 @@ xf86free(void* p)
 }
 
 void*
-xf86malloc(INT32 n)
+xf86malloc(xf86size_t n)
 {
 	return xalloc(n);
 }
 
 void*
-xf86realloc(void* p, INT32 n)
+xf86realloc(void* p, xf86size_t n)
 {
 	return xrealloc(p,n);
 }

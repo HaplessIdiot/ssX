@@ -1,4 +1,5 @@
 XFree86 3.9Pg (29 March 1999)
+2452. Fix some signedness discrepancies in the libc_wrapper code.
 2451. Add missing parts to the parser's printKeyboardSection routine (#2621,
       Joe Moss).
 2450. Finalising the DGA 2.0 driver interface (#2619, Mark Vojkovich).
@@ -7633,4 +7634,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.714 1999/03/22 13:39:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.715 1999/03/28 15:32:15 dawes Exp $
