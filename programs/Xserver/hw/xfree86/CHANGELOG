@@ -1,4 +1,8 @@
 XFree86 3.1.2Bf (11 January 1996)
+213. Xinput updates, including: improved error handling, "Screen" option
+     renamed to "ScreenNo" for consistency, new config options for the
+     Wacom tablet, update to the Linux joystick support, and a fix
+     for xsetmode (Frederic Lepied and Patrick Lecoanet).
 212. Fix core dump when exiting an X server started with XKB enabled.
 211. Update accelerated servers' use of miZeroClipLine().
 210. Include XC fix-trackers to seq-4031 (includes update of RECORD spec
