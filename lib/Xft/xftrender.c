@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.5 2000/12/08 07:51:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.6 2000/12/20 00:28:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -197,6 +197,9 @@ XftRenderExtents8 (Display	    *dpy,
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
+    int		    left, right, top, bottom;
+    int		    overall_left, overall_right;
+    int		    overall_top, overall_bottom;
 
     s = string;
     l = len;
@@ -225,26 +228,39 @@ XftRenderExtents8 (Display	    *dpy,
 	extents->xOff = 0;
 	return;
     }
-    *extents = *gi;
-    x = gi->xOff;
-    y = gi->yOff;
+    x = 0;
+    y = 0;
+    overall_left = x - gi->x;
+    overall_top = y - gi->y;
+    overall_right = overall_left + (int) gi->width;
+    overall_bottom = overall_top + (int) gi->height;
+    x += gi->xOff;
+    y += gi->yOff;
     while (len--)
     {
 	c = *string++;
 	gi = c < font->nrealized ? font->realized[c] : 0;
 	if (!gi)
 	    continue;
-	if (gi->x + x < extents->x)
-	    extents->x = gi->x + x;
-	if (gi->y + y < extents->y)
-	    extents->y = gi->y + y;
-	if (gi->width + x > extents->width)
-	    extents->width = gi->width + x;
-	if (gi->height + y > extents->height)
-	    extents->height = gi->height + y;
+	left = x - gi->x;
+	top = y - gi->y;
+	right = left + (int) gi->width;
+	bottom = top + (int) gi->height;
+	if (left < overall_left)
+	    overall_left = left;
+	if (top < overall_top)
+	    overall_top = top;
+	if (right > overall_right)
+	    overall_right = right;
+	if (bottom > overall_bottom)
+	    overall_bottom = bottom;
 	x += gi->xOff;
 	y += gi->yOff;
     }
+    extents->x = -overall_left;
+    extents->y = -overall_top;
+    extents->width = overall_right - overall_left;
+    extents->height = overall_bottom - overall_top;
     extents->xOff = x;
     extents->yOff = y;
 }
