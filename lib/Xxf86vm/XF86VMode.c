@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.7 1995/07/15 16:15:44 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.8 1995/07/16 14:51:04 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -155,12 +155,16 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     modeline->vtotal     = rep.vtotal;
     modeline->flags      = rep.flags;
     modeline->privsize   = rep.privsize;
-    if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
-	_XEatData(dpy, (rep.privsize) * sizeof(INT32));
-	Xfree(modeline->private);
-	return False;
+    if (rep.privsize > 0) {
+	if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
+	    _XEatData(dpy, (rep.privsize) * sizeof(INT32));
+	    Xfree(modeline->private);
+	    return False;
+	}
+	_XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
+    } else {
+	modeline->private = NULL;
     }
-    _XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

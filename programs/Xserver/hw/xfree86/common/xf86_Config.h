@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.30 1995/07/03 08:50:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.31 1995/07/15 15:07:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -482,8 +482,11 @@ static SymTabRec DisplayTab[] = {
   { DEPTH,		"depth" },
   { WEIGHT,		"weight" },
   { OPTION,		"option" },
+  { INVERTVCLK,		"invertvclk" },
   { INVERTVCLK,		"invert_vclk" },
+  { BLANKDELAY,		"blankdelay" },
   { BLANKDELAY,		"blank_delay" },
+  { EARLYSC,		"earlysc" },
   { EARLYSC,		"early_sc" },
   { -1,			"" },
 };

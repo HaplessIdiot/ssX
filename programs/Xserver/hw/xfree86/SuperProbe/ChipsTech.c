@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: ChipsTech.c,v 1.3 95/01/16 13:16:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.3 1995/01/28 15:46:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.4 1995/08/05 11:52:00 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -107,7 +107,7 @@ int *Chipset;
 				*Chipset = CHIP_CTF65545;
 				break;
 			case 0xb:
-				*Chipset = CHIP_CTF65546;
+				*Chipset = CHIP_CTF65548;
 				break;
 			default:
 				Chip_data = vers;

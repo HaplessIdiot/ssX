@@ -1,5 +1,5 @@
 /* $XConsortium: ppcRslvC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.2 1995/01/28 17:06:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.3 1995/05/07 11:53:08 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -130,6 +130,7 @@ vga16InitializeColormap(pmap)
 		pmap->red[i].co.local.green = (staticgraypalette[i][1]);
 		pmap->red[i].co.local.blue  = (staticgraypalette[i][2]);
 	    }
+	    break;
 	case StaticColor:
 	    for ( i = 0 ; i < 16 ; i++ ) {
 		pmap->red[i].co.local.red   = (defstaticpalette[i][0]);

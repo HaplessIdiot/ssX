@@ -392,6 +392,7 @@ chances are good it might work for you, too.
 <tag>S3 868, S3 86C716 SDAC RAMDAC and Clockchip</tag>
 	<itemize>
 	<item> ELSA Winner 1000AVI
+	<item> Diamond Stealth Video DRAM
 	</itemize>
 
 	8/15/16/24 bpp
@@ -444,6 +445,11 @@ chances are good it might work for you, too.
  s3RefClk   16
  DACspeed  220
  </verb></tscreen>
+	This card may require the line:
+ <tscreen><verb>
+        Invert_VCLK "*" 0
+ </verb></tscreen>
+	in each Display subsection.
 	</itemize>
 
 	8/15/16/24 bpp
@@ -685,7 +691,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.26 1995/07/30 04:15:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.27 1995/08/06 03:01:39 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.97 1995/07/21 14:39:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.98 1995/08/05 11:52:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2949,7 +2949,9 @@ s3Probe()
 			&& s3InfoRec.clock[pMode->Clock] > 125000 
 			&& s3InfoRec.clock[pMode->Clock] < 175000)
 		  pMode->Private[S3_INVERT_VCLK] = 0;
-	       else if (s3BiosVendor == HERCULES_BIOS && S3_968_SERIES(s3ChipId))
+	       else if ((s3BiosVendor == NUMBER_NINE_BIOS ||
+			 s3BiosVendor == HERCULES_BIOS) &&
+			S3_968_SERIES(s3ChipId))
 		  pMode->Private[S3_INVERT_VCLK] = 0;
 	       else
 		  pMode->Private[S3_INVERT_VCLK] = 1;
