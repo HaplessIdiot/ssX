@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.18 2000/12/15 03:01:45 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.19 2000/12/21 18:40:09 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000 by VA Linux Systems, Inc.
@@ -79,7 +79,7 @@ OPTDIST=" \
 	Xps.tgz \
 	"
 
-ETCLINKS=" \
+ETCDLINKS=" \
 	app-defaults \
 	fs \
 	lbxproxy \
@@ -91,6 +91,11 @@ ETCLINKS=" \
 	xsm \
 	xserver \
 	"
+
+ETCFLINKS=" \
+	XftConfig \
+	"
+
 
 XKBDIR="/etc/X11/xkb"
 
@@ -810,22 +815,28 @@ if [ ! -d $RUNDIR/lib/X11/xkb ]; then
 fi
 # Check for config file directories that may need to be moved.
 
-EtcToMove=
+EtcDirToMove=
+EtcFileToMove=
 if [ X"$NoSymLinks" != XYES ]; then
-	for i in $ETCLINKS; do
+	for i in $ETCDLINKS; do
 		if [ -d $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
-			EtcToMove="$EtcToMove $i"
+			EtcDirToMove="$EtcDirToMove $i"
+		fi
+	done
+	for i in $ETCFLINKS; do
+		if [ -f $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
+			EtcFileToMove="$EtcFileToMove $i"
 		fi
 	done
 fi
 
-if [ X"$EtcToMove" != X ]; then
+if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 	echo "XFree86 now installs most customisable configuration files under"
 	echo "$ETCDIR instead of under $RUNDIR/lib/X11, and has symbolic links"
 	echo "under $RUNDIR/lib/X11 that point to $ETCDIR.  You currently have"
 	echo "files under the following subdirectories of $RUNDIR/lib/X11:"
 	echo ""
-	echo "$EtcToMove"
+	echo "$EtcDirToMove $EtcFileToMove"
 	echo ""
 	echo "Do you want to move them to $ETCDIR and create the necessary"
 	Echo "links? (y/n) [y] "
@@ -840,13 +851,19 @@ if [ X"$EtcToMove" != X ]; then
 	esac
 	echo ""
 	if [ X"$NoSymLinks" != XYES ]; then
-		for i in $EtcToMove; do
+		for i in $EtcDirToMove; do
 			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
 			if [ ! -d $ETCDIR/$i ]; then
 				mkdir $ETCDIR/$i
 			fi
 			$TAR -C $RUNDIR/lib/X11/$i -c -f - . | \
 				$TAR -C $ETCDIR/$i -v -x -p -U -f - && \
+				rm -fr $RUNDIR/lib/X11/$i && \
+				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+		done
+		for i in $EtcFileToMove; do
+			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
+			cp -p $RUNDIR/lib/X11/$i $ETCDIR/$i && \
 				rm -fr $RUNDIR/lib/X11/$i && \
 				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
 		done
@@ -862,7 +879,7 @@ echo "Extracting $ETCDIST into a temporary location ..."
 rm -fr .etctmp
 mkdir .etctmp
 (cd .etctmp; $EXTRACT $WDIR/$ETCDIST)
-for i in $ETCLINKS; do
+for i in $ETCDLINKS; do
 	DoCopy=YES
 	if [ -d $RUNDIR/lib/X11/$i ]; then
 		Echo "Do you want to overwrite the $i config files? (y/n) [n] "
@@ -892,6 +909,30 @@ for i in $ETCLINKS; do
 		fi
 		$TAR -C .etctmp/$i -c -f - . | \
 			$TAR -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
+	fi
+done
+for i in $ETCFLINKS; do
+	DoCopy=YES
+	if [ -f $RUNDIR/lib/X11/$i ]; then
+		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
+		read response
+		case "$response" in
+		[yY]*)
+			: OK
+			;;
+		*)
+			DoCopy=NO
+			;;
+		esac
+	fi
+	if [ $DoCopy = YES ]; then
+		echo "Installing the $i config file ..."
+		if [ X"$NoSymLinks" != XYES ]; then
+			if [ ! -f $RUNDIR/lib/X11/$i ]; then
+				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+			fi
+		fi
+		(set -x; cp -p .etctmp/$i $RUNDIR/lib/X11/$i)
 	fi
 done
 if [ X"$XKBDIR" != X ]; then
