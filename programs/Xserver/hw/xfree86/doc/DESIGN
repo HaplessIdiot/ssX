@@ -4541,7 +4541,8 @@ the helpers.
           clockRanges is a linked list of clock ranges allowed by
           the driver.  If a mode doesn't fit in any of the defined
           clockRanges, it is rejected.  The first clockRange that
-          matches all requirements is used.
+          matches all requirements is used.  This structure needs
+          to be initialized to NULL when allocated.
 
           clockRanges contains the following fields:
 
@@ -5506,6 +5507,11 @@ initialisation has already been done.  After allocating it, initialise the
 fields.  By using xnfcalloc() to do the allocation it is zeroed, and if the
 allocation fails the server exits.
 
+NOTE: When allocating structures from inside the driver which are defined on
+the common level it is importand to initialize the structure to zero.  Only
+this guarantees that the server remains source compatible to future changes
+in common level structures.
+
      static Bool
      ZZZGetRec(ScrnInfoPtr pScrn)
      {
@@ -6246,8 +6252,10 @@ pScreen->CloseScreen, and finishes by calling it.
      ZZZCloseScreen(int scrnIndex, ScreenPtr pScreen)
      {
          ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-         ZZZRestore(pScrn);
-         ZZZUnmapMem(pScrn);
+         if (pScrn->vtSema) {
+             ZZZRestore(pScrn);
+             ZZZUnmapMem(pScrn);
+         }
          pScrn->vtSema = FALSE;
          pScreen->CloseScreen = ZZZPTR(pScrn)->CloseScreen;
          return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -6258,7 +6266,16 @@ pScreen->CloseScreen, and finishes by calling it.
 Define the SaveScreen() function (the screen blanking function).  When using
 the vgahw module, this will typically be:
 
-This function is mandatory.
+This function is mandatory. Before modifying any hardware register directly
+this function needs to make sure that the Xserver is active by checking if
+
+     pScrn
+
+ is non-NULL and for
+
+     pScrn->vtSema == TRUE
+
+.
 
      static Bool
      ZZZSaveScreen(ScreenPtr pScreen, int mode)
@@ -6285,7 +6302,6 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.30 2000/06/19 15:00:52 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.31 2000/08/04 16:13:27 eich Exp $
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.25 2000/06/17 17:44:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.26 2000/06/19 15:12:26 tsi Exp $

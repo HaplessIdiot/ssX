@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                2000 June 15
+                                2000 August 3
 
                                   Abstract
 
@@ -80,9 +80,9 @@ sent:
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
 
-The newer Rage 128 chips are not yet supported by this driver.  Rage 128's
-are, however, supported by a separate driver, and Rage 128 owners should read
-the r128 driver's documentation for details.
+The newer Rage 128 and Radeon chips are not yet supported by this driver.
+Rage 128's are, however, supported by a separate driver, and Rage 128 owners
+should read the r128 driver's documentation for details.
 
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
@@ -135,8 +135,12 @@ is used.  XF86Config options are available to disable this aperture, or (for
 non-PCI adapters) enable it or move it to some other address.
 
 By default, the driver provides some acceleration for Mach64 if the accelera-
-tor CRTC is used.  This support is as yet incomplete and can be disabled
-entirely with an XF86Config option.
+tor CRTC is used, and modes whose colour depth greater than or equal to 8 are
+to be used.  This support is as yet incomplete and can be disabled entirely
+with an XF86Config option.
+
+On non-Intel platforms, the driver can, currenly, only support PCI Mach64
+adapters.
 
 4.  Current implementation of generic VGA support for non-ATI adapters
 
@@ -144,7 +148,7 @@ Support for generic VGA with non-ATI adapters is also implemented, but has
 undergone only limited testing.  The driver will intentionally disallow the
 use of this support with ATI adapters.  This support must be explicitly
 requested through an XF86Config ChipSet specification.  This prevents the
-current generic driver from being disabled.
+current VGA generic driver from being disabled.
 
 This driver's generic VGA support is intended as an extension of that pro-
 vided by the current generic driver.  Specifically, within the architectural
@@ -222,6 +226,9 @@ ChipSet name of ``mach32'' or ``mach64'', as appropriate, will force the
 driver to probe for the non-PCI adapter.  These ChipSet names should, there-
 fore, only be used when there is in fact such an adapter in the system.  They
 are otherwise equivalent to ``ati''.
+
+On non-Intel platforms, only ``ati'' and ``mach64'' ChipSet values are opera-
+tive.
 
 5.3  ChipID & ChipRev specifications
 
@@ -375,7 +382,7 @@ be used depending on what the adapter uses to generate dot clocks:
                25.000  27.500  31.500  33.750  10.000  11.225  12.500  16.250
 
 VGAWonder VLB, VGA 1024 VLB, Mach32 and Mach64 owners should only specify up
-to the first 32 frequencies.
+to the first 32 frequencies.  Any more will be ignored.
 
 Other clock generators that have been used on ATI adapters (which can all be
 said to be clones of one of the above) might generate non-zero frequencies
@@ -398,10 +405,9 @@ values used by the adapter.  Any more will be ignored.
 
 This specification is only effective when the driver detects that the
 adapter's BIOS has initialised both the digital flat panel and CRT inter-
-faces.  In such a situation, the driver will normally drive the panel and
-disable the CRT.  This specification causes the driver to disable the digital
-flat panel and display the screen image on the CRT instead.  This specifica-
-tion will be reworked in the near future.
+faces.  In such a situation, the driver will normally drive both the panel
+and the CRT.  This specification causes the driver to disable the digital
+flat panel and display the screen image on the CRT instead.
 
 5.8  Option ``noaccel''
 
@@ -416,6 +422,9 @@ By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator
 CRTC or an integrated Mach64 graphics chip.  This option disables this linear
 aperture.
+
+On non-Intel platforms, the driver requires a linear aperture and, so, this
+option should not be specified.
 
 5.10  Option ``shadowfb''
 
@@ -458,6 +467,26 @@ For PCI and AGP adapters, this address is determined at system bootup accord-
 ing to the PCI Plug'n'Play specification which arbitrates the resource
 requirements of most devices in the system.  This means the driver can not
 easily change the linear aperture address.
+
+5.14  Option ``ReferenceClock'' ``frequency''
+
+This option is only applicable to non-Intel platforms, where an adapter BIOS
+is not available to the driver.  The option specifies the reference frequency
+used by the adapter's clock generator.  The default is 14.318 MHz, and other
+typical values are 28.636, or 29.5 MHz.
+
+5.15  ClockChip ``name''
+
+This option is only applicable to non-Intel platforms, where an adapter BIOS
+is not available to the driver, and the driver cannot reliably determine
+whether the clock generator the adapter uses is a variant of an ATI 18818
+(a.k.a.  ICS 2595) or an unsupported clock generator.  The only values that
+are acted upon are ``ATI 18818-0'' or ``ATI 18818-1''.  From this specifica-
+tion, the driver derives a reference divider of 43 or 46 (respectively) for
+use in clock programming calculations.  The driver's default behaviour, in
+this case, is to assume an unsupported clock generator, which means it will
+treat it as a fixed-frequency clock generator, as described under the heading
+``Clocks for unsupported programmable clock generators'' above.
 
 6.  Video modes
 
@@ -639,7 +668,9 @@ found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4, 3.3.5 and 3.3.6.
 Version 5 is an almost complete restructuring of version 4 to fit in the
 newer driver API of XFree86 4.0 and later.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.31 2000/06/19 15:00:54 tsi Exp $
+The introduction of version 6 is a first swipe at porting the driver to non-
+Intel architectures.
 
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.32 2000/08/04 21:07:11 tsi Exp $
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.48 2000/06/17 17:44:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.49 2000/06/19 15:12:28 tsi Exp $
