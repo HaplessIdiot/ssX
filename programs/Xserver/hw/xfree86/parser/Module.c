@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.12 2003/08/24 17:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.13 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -129,7 +129,6 @@ xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			xf86conffree(ptr);
 			return NULL;
-			break;
 		}
 
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.104tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.105 2004/08/04 16:33:36 tsi Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -913,7 +913,7 @@ xf86ftell(XF86FILE* f)
 	return ftell(fp->filehnd);
 }
 
-#define mapnum(e) case (xf86_##e): err = e; break;
+#define mapnum(e) case (xf86_##e): err = e; break
 
 char*
 xf86strerror(int n)
@@ -2039,6 +2039,8 @@ int
 xf86setjmp1(xf86jmp_buf env, int arg2)
 {
     FatalError("setjmp: type 1 called instead of type %d", xf86getjmptype());
+    /* NOTREACHED */
+    return 0;
 }
 
 #endif  /* HAS_GLIBC_SIGSETJMP */
@@ -2054,5 +2056,7 @@ xf86setjmperror(xf86jmp_buf env)
 {
     FatalError("setjmp: don't know how to handle setjmp() type %d",
 	       xf86getjmptype());
+    /* NOTREACHED */
+    return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.c,v 1.78 2004/06/29 10:17:45 twini Exp $ */
 /* $XdotOrg$ */
 /*
  * Mode initializing code (CRT2 section)
@@ -257,7 +257,6 @@ SiS_AdjustCRT2Rate(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
      infoflag = SiS_Pr->SiS_RefIndex[RefreshRateTableIndex + (*i)].Ext_InfoFlag;
      if(infoflag & checkmask) return TRUE;
   }
-  return TRUE;
 }
 
 /*********************************************/

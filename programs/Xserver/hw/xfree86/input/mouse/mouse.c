@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.81 2004/03/30 10:34:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.82 2004/07/21 20:27:58 herrb Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -772,10 +772,8 @@ ProtocolIDToName(MouseProtocolID id)
     switch (id) {
     case PROT_UNKNOWN:
 	return "Unknown";
-	break;
     case PROT_UNSUP:
 	return "Unsupported";
-	break;
     default:
 	for (i = 0; mouseProtocols[i].name; i++)
 	    if (id == mouseProtocols[i].id)
@@ -805,7 +803,6 @@ ProtocolIDToClass(MouseProtocolID id)
     case PROT_UNKNOWN:
     case PROT_UNSUP:
 	return MSE_NONE;
-	break;
     default:
 	for (i = 0; mouseProtocols[i].name; i++)
 	    if (id == mouseProtocols[i].id)
@@ -822,7 +819,6 @@ GetProtocol(MouseProtocolID id) {
     case PROT_UNKNOWN:
     case PROT_UNSUP:
 	return NULL;
-	break;
     default:
 	for (i = 0; mouseProtocols[i].name; i++)
 	    if (id == mouseProtocols[i].id) {
@@ -982,13 +978,11 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	    xf86Msg(X_ERROR, "%s: Unknown protocol \"%s\"\n",
 		    pInfo->name, protocol);
 	    return pInfo;
-	    break;
 	case PROT_UNSUP:
 	    xf86Msg(X_ERROR,
 		    "%s: Protocol \"%s\" is not supported on this "
 		    "platform\n", pInfo->name, protocol);
 	    return pInfo;
-	    break;
 	default:
 	    break;
 	    

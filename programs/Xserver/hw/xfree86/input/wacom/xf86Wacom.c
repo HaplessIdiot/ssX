@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.45 2003/12/31 01:18:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.46 2004/04/26 22:26:11 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -4222,7 +4222,6 @@ xf86WcmDevProc(DeviceIntPtr       pWcm,
 	default:
 	    ErrorF("wacom unsupported mode=%d\n", what);
 	    return !Success;
-	    break;
 	}
     DBG(2, ErrorF("END   xf86WcmProc Success what=%d dev=%p priv=%p\n",
 		  what, (void *)pWcm, (void *)priv));

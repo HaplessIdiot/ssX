@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.6 2001/12/14 19:55:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XExtInt.c,v 3.8 2003/07/07 15:34:22 eich Exp $ */
 
 /***********************************************************************
  *
@@ -301,7 +301,6 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid	= ev2->deviceid & DEVICE_BITS;
     	    return (DONT_ENQUEUE);
 	    }
-	    break;
 	case XI_DeviceKeyPress:
 	case XI_DeviceKeyRelease:
 	    {
@@ -328,7 +327,6 @@ XInputWireToEvent (dpy, re, event)
 		return (ENQUEUE_EVENT);
 		}
 	    }
-	    break;
 	case XI_DeviceButtonPress:
 	case XI_DeviceButtonRelease:
 	    {
@@ -355,7 +353,6 @@ XInputWireToEvent (dpy, re, event)
 		return (ENQUEUE_EVENT);
 		}
 	    }
-	    break;
 	case XI_ProximityIn:
 	case XI_ProximityOut:
 	    {
@@ -382,7 +379,6 @@ XInputWireToEvent (dpy, re, event)
 		return (ENQUEUE_EVENT);
 		}
 	    }
-	    break;
 	case XI_DeviceValuator:
 	    {
 	    deviceValuator *xev = (deviceValuator *) event;
@@ -490,7 +486,6 @@ XInputWireToEvent (dpy, re, event)
 	    *re = *save;
 	    return (ENQUEUE_EVENT);
 	    }
-	    break;
 	case XI_DeviceFocusIn:
 	case XI_DeviceFocusOut:
 	    {
@@ -506,7 +501,6 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid 		= fev->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
 	    }
-	    break;
 	case XI_DeviceStateNotify:
 	    {
 	    XDeviceStateNotifyEvent *stev = 
@@ -563,7 +557,6 @@ XInputWireToEvent (dpy, re, event)
 	        return (ENQUEUE_EVENT);
 	        }
 	    }
-	    break;
 	case XI_DeviceKeystateNotify:
 	    {
 	    int i;
@@ -593,7 +586,6 @@ XInputWireToEvent (dpy, re, event)
 	        return (ENQUEUE_EVENT);
 	        }
 	    }
-	    break;
 	case XI_DeviceButtonstateNotify:
 	    {
 	    int i;
@@ -624,7 +616,6 @@ XInputWireToEvent (dpy, re, event)
 	        return (ENQUEUE_EVENT);
 	        }
 	    }
-	    break;
 	case XI_DeviceMappingNotify:
 	    {
 	    register XDeviceMappingEvent *ev = (XDeviceMappingEvent *) re;
@@ -639,7 +630,6 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
 	    }
-	    break;
 	case XI_ChangeDeviceNotify:
 	    {
 	    register XChangeDeviceNotifyEvent *ev = 
@@ -653,7 +643,6 @@ XInputWireToEvent (dpy, re, event)
 	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
     	    return (ENQUEUE_EVENT);
 	    }
-	    break;
 	default:
 	    printf ("XInputWireToEvent: UNKNOWN WIRE EVENT! type=%d\n",type);
 	    break;

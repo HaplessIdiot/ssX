@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.c,v 1.5 2000/03/02 16:07:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx_util.c,v 1.1 2004/04/08 10:08:01 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -79,22 +79,18 @@ unsigned long XMesaGetPixel(XMesaImage *image, int x, int y)
     case 8:
 	i8 = (CARD8 *)row;
 	return i8[x];
-	break;
     case 15:
     case 16:
 	i16 = (CARD16 *)row;
 	return i16[x];
-	break;
     case 24: /* WARNING: architecture specific code */
 	i8 = (CARD8 *)row;
 	return (((CARD32)i8[x*3]) |
 		(((CARD32)i8[x*3+1])<<8) |
 		(((CARD32)i8[x*3+2])<<16));
-	break;
     case 32:
 	i32 = (CARD32 *)row;
 	return i32[x];
-	break;
     }
     return 0;
 }

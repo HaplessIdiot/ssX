@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.33 2002/09/08 02:29:47 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.34 2002/09/22 07:09:05 paulo Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -535,10 +535,10 @@ CvtEditModeToString(Display *dpy, XrmValuePtr args, Cardinal *num_args,
 
     switch (*(XawTextEditType *)fromVal->addr) {
 	case XawtextAppend:
+	    buffer = XtEtextAppend;
+	    break;
 	case XawtextRead:
 	    buffer = XtEtextRead;
-	    break;
-	    buffer = XtEtextAppend;
 	    break;
 	case XawtextEdit:
 	    buffer = XtEtextEdit;

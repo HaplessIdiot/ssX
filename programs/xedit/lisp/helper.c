@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.50 2003/05/27 22:27:03 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.51 2003/09/17 22:28:08 paulo Exp $ */
 
 #include "lisp/helper.h"
 #include "lisp/pathname.h"
@@ -467,7 +467,6 @@ LispCoerce(LispBuiltin *builtin,
 		break;
 	    default:
 		goto coerce_fail;
-		break;
 	}
     }
 

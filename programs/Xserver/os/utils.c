@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.97 2004/01/09 00:35:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.98 2004/06/02 22:43:06 dawes Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1463,8 +1463,9 @@ SmartScheduleStartTimer (void)
     timer.it_value.tv_sec = 0;
     timer.it_value.tv_usec = SmartScheduleInterval * 1000;
     return setitimer (ITIMER_REAL, &timer, 0) >= 0;
-#endif
+#else
     return FALSE;
+#endif
 }
 
 #ifdef SMART_SCHEDULE_POSSIBLE

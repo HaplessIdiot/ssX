@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.7 2004/06/25 15:50:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.8 2004/08/04 21:03:14 tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -401,14 +401,14 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
 			  LOOKUP_BEST_REFRESH);
 
     if (i == -1)
-        RETURN;
+        RETURN
 
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
 
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
-	RETURN;
+	RETURN
     }
 
     /*
@@ -431,7 +431,7 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetDpi(pScrn, 0, 0);
 
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
-	RETURN;
+	RETURN
     }
     xf86LoaderReqSymLists(fbSymbols, NULL);
 

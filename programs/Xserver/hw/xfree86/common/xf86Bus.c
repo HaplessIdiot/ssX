@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.82 2004/05/06 00:49:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.83 2004/06/01 01:23:49 dawes Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1836,8 +1836,7 @@ busTypeSpecific(EntityPtr pEnt, xf86State state, xf86AccessPtr *acc_mem,
     switch (pEnt->bus.type) {
     case BUS_ISA:
     case BUS_SBUS:
-	    *acc_mem = *acc_io = *acc_mem_io = &AccessNULL;
-	    break;
+	*acc_mem = *acc_io = *acc_mem_io = &AccessNULL;
 	break;
     case BUS_PCI:
 	ppaccp = xf86PciAccInfo;
@@ -2778,7 +2777,6 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 	    }
 	    xf86FreeResList(tmpList);
 	    return TRUE;
-	    break;
 	case ResSparse:
 	    while (list2) {
 		tmpList = xf86JoinResLists(tmpList,decomposeSparse(list2->val));
@@ -2787,7 +2785,6 @@ x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
 	    ret = x_isSubsetOf(range,tmpList,NULL);
 	    xf86FreeResList(tmpList);
 	    return ret;
-	    break;
 	}
     } else
 	return FALSE;

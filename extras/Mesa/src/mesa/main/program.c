@@ -138,50 +138,78 @@ _mesa_find_line_column(const GLubyte *string, const GLubyte *pos,
 }
 
 
+static struct program * _mesa_init_program_struct( GLcontext *ctx, 
+						   struct program *prog,
+						   GLenum target, GLuint id)
+{
+   if (prog) {
+      prog->Id = id;
+      prog->Target = target;
+      prog->Resident = GL_TRUE;
+      prog->RefCount = 1;
+   }
+
+   return prog;
+}
+
+struct program * _mesa_init_fragment_program( GLcontext *ctx, 
+					      struct fragment_program *prog,
+					      GLenum target, GLuint id)
+{
+   if (prog) 
+      return _mesa_init_program_struct( ctx, &prog->Base, target, id );
+   else
+      return NULL;
+}
+
+struct program * _mesa_init_vertex_program( GLcontext *ctx, 
+					    struct vertex_program *prog,
+					    GLenum target, GLuint id)
+{
+   if (prog) 
+      return _mesa_init_program_struct( ctx, &prog->Base, target, id );
+   else
+      return NULL;
+}
+
 
 /**
- * Allocate and initialize a new fragment/vertex program object
+ * Allocate and initialize a new fragment/vertex program object but
+ * don't put it into the program hash table.  Called via
+ * ctx->Driver.NewProgram.  May be overridden (ie. replaced) by a
+ * device driver function to implement OO deriviation with additional
+ * types not understood by this function.
+ * 
  * \param ctx  context
  * \param id   program id/number
  * \param target  program target/type
  * \return  pointer to new program object
  */
 struct program *
-_mesa_alloc_program(GLcontext *ctx, GLenum target, GLuint id)
+_mesa_new_program(GLcontext *ctx, GLenum target, GLuint id)
 {
-   struct program *prog;
+   switch (target) {
+   case GL_VERTEX_PROGRAM_ARB: /* == GL_VERTEX_PROGRAM_NV */
+      return _mesa_init_vertex_program( ctx, CALLOC_STRUCT(vertex_program),
+					target, id );
 
-   if (target == GL_VERTEX_PROGRAM_NV
-       || target == GL_VERTEX_PROGRAM_ARB) {
-      struct vertex_program *vprog = CALLOC_STRUCT(vertex_program);
-      if (!vprog) {
-         return NULL;
-      }
-      prog = &(vprog->Base);
-   }
-   else if (target == GL_FRAGMENT_PROGRAM_NV
-            || target == GL_FRAGMENT_PROGRAM_ARB) {
-      struct fragment_program *fprog = CALLOC_STRUCT(fragment_program);
-      if (!fprog) {
-         return NULL;
-      }
-      prog = &(fprog->Base);
-   }
-   else {
-      _mesa_problem(ctx, "bad target in _mesa_alloc_program");
+   case GL_FRAGMENT_PROGRAM_NV:
+   case GL_FRAGMENT_PROGRAM_ARB:
+      return _mesa_init_fragment_program( ctx, CALLOC_STRUCT(fragment_program),
+					  target, id );
+
+   default:
+      _mesa_problem(ctx, "bad target in _mesa_new_program");
       return NULL;
    }
-   prog->Id = id;
-   prog->Target = target;
-   prog->Resident = GL_TRUE;
-   prog->RefCount = 1;
-   return prog;
 }
 
 
 /**
  * Delete a program and remove it from the hash table, ignoring the
  * reference count.
+ * Called via ctx->Driver.DeleteProgram.  May be wrapped (OO deriviation)
+ * by a device driver function.
  */
 void
 _mesa_delete_program(GLcontext *ctx, struct program *prog)
@@ -361,6 +389,9 @@ _mesa_lookup_parameter_value(struct program_parameter_list *paramList,
 {
    GLuint i;
 
+   if (!paramList)
+      return NULL;
+
    if (nameLen == -1) {
       /* name is null-terminated */
       for (i = 0; i < paramList->NumParameters; i++) {
@@ -389,6 +420,9 @@ _mesa_lookup_parameter_index(struct program_parameter_list *paramList,
                              GLsizei nameLen, const char *name)
 {
    GLint i;
+
+   if (!paramList)
+      return -1;
 
    if (nameLen == -1) {
       /* name is null-terminated */
@@ -464,8 +498,7 @@ _mesa_fetch_state(GLcontext *ctx, const enum state_index state[],
             _mesa_problem(ctx, "Invalid material state in fetch_state");
             return;
          }
-      };
-      return;
+      }
    case STATE_LIGHT:
       {
          /* state[1] is the light number */
@@ -513,7 +546,6 @@ _mesa_fetch_state(GLcontext *ctx, const enum state_index state[],
             return;
          }
       }
-      return;
    case STATE_LIGHTMODEL_AMBIENT:
       COPY_4V(value, ctx->Light.Model.Ambient);
       return;
@@ -573,7 +605,6 @@ _mesa_fetch_state(GLcontext *ctx, const enum state_index state[],
                return;
          }
       }
-      return;
    case STATE_TEXGEN:
       {
          /* state[1] is the texture unit */
@@ -609,7 +640,6 @@ _mesa_fetch_state(GLcontext *ctx, const enum state_index state[],
             return;
          }
       }
-      return;
    case STATE_TEXENV_COLOR:
       {		
          /* state[1] is the texture unit */
@@ -771,6 +801,10 @@ _mesa_load_state_parameters(GLcontext *ctx,
                             struct program_parameter_list *paramList)
 {
    GLuint i;
+
+   if (!paramList)
+      return;
+
    for (i = 0; i < paramList->NumParameters; i++) {
       if (paramList->Parameters[i].Type == STATE) {
          _mesa_fetch_state(ctx, paramList->Parameters[i].StateIndexes,
@@ -798,6 +832,8 @@ _mesa_BindProgram(GLenum target, GLuint id)
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
+   FLUSH_VERTICES(ctx, _NEW_PROGRAM);
+
    if ((target == GL_VERTEX_PROGRAM_NV
         && ctx->Extensions.NV_vertex_program) ||
        (target == GL_VERTEX_PROGRAM_ARB
@@ -810,7 +846,7 @@ _mesa_BindProgram(GLenum target, GLuint id)
          ctx->VertexProgram.Current->Base.RefCount--;
          /* and delete if refcount goes below one */
          if (ctx->VertexProgram.Current->Base.RefCount <= 0) {
-            _mesa_delete_program(ctx, &(ctx->VertexProgram.Current->Base));
+            ctx->Driver.DeleteProgram(ctx, &(ctx->VertexProgram.Current->Base));
             _mesa_HashRemove(ctx->Shared->Programs, id);
          }
       }
@@ -827,7 +863,7 @@ _mesa_BindProgram(GLenum target, GLuint id)
          ctx->FragmentProgram.Current->Base.RefCount--;
          /* and delete if refcount goes below one */
          if (ctx->FragmentProgram.Current->Base.RefCount <= 0) {
-            _mesa_delete_program(ctx, &(ctx->FragmentProgram.Current->Base));
+            ctx->Driver.DeleteProgram(ctx, &(ctx->FragmentProgram.Current->Base));
             _mesa_HashRemove(ctx->Shared->Programs, id);
          }
       }
@@ -863,7 +899,7 @@ _mesa_BindProgram(GLenum target, GLuint id)
       }
       else {
          /* allocate a new program now */
-         prog = _mesa_alloc_program(ctx, target, id);
+         prog = ctx->Driver.NewProgram(ctx, target, id);
          if (!prog) {
             _mesa_error(ctx, GL_OUT_OF_MEMORY, "glBindProgramNV/ARB");
             return;
@@ -886,6 +922,9 @@ _mesa_BindProgram(GLenum target, GLuint id)
 
    if (prog)
       prog->RefCount++;
+
+   if (ctx->Driver.BindProgram)
+      ctx->Driver.BindProgram(ctx, target, prog);
 }
 
 
@@ -899,7 +938,7 @@ _mesa_DeletePrograms(GLsizei n, const GLuint *ids)
 {
    GLint i;
    GET_CURRENT_CONTEXT(ctx);
-   ASSERT_OUTSIDE_BEGIN_END(ctx);
+   ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx);
 
    if (n < 0) {
       _mesa_error( ctx, GL_INVALID_VALUE, "glDeleteProgramsNV" );
@@ -933,9 +972,17 @@ _mesa_DeletePrograms(GLsizei n, const GLuint *ids)
             }
             prog->RefCount--;
             if (prog->RefCount <= 0) {
-               _mesa_delete_program(ctx, prog);
+               ctx->Driver.DeleteProgram(ctx, prog);
             }
          }
+	 else {
+	    /* This is necessary as we can't tell from HashLookup
+	     * whether the entry exists with data == 0, or if it
+	     * doesn't exist at all.  As GenPrograms creates the first
+	     * case below, need to call Remove() to avoid memory leak:
+	     */
+            _mesa_HashRemove(ctx->Shared->Programs, ids[i]);
+	 }
       }
    }
 }
@@ -965,16 +1012,7 @@ _mesa_GenPrograms(GLsizei n, GLuint *ids)
    first = _mesa_HashFindFreeKeyBlock(ctx->Shared->Programs, n);
 
    for (i = 0; i < (GLuint) n; i++) {
-      const int bytes = MAX2(sizeof(struct vertex_program),
-                             sizeof(struct fragment_program));
-      struct program *prog = (struct program *) _mesa_calloc(bytes);
-      if (!prog) {
-         _mesa_error(ctx, GL_OUT_OF_MEMORY, "glGenPrograms");
-         return;
-      }
-      prog->RefCount = 1;
-      prog->Id = first + i;
-      _mesa_HashInsert(ctx->Shared->Programs, first + i, prog);
+      _mesa_HashInsert(ctx->Shared->Programs, first + i, 0);
    }
 
    /* Return the program names */
@@ -994,15 +1032,13 @@ _mesa_GenPrograms(GLsizei n, GLuint *ids)
 GLboolean GLAPIENTRY
 _mesa_IsProgram(GLuint id)
 {
-   struct program *prog;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL(ctx, GL_FALSE);
 
    if (id == 0)
       return GL_FALSE;
 
-   prog = (struct program *) _mesa_HashLookup(ctx->Shared->Programs, id);
-   if (prog && prog->Target)
+   if (_mesa_HashLookup(ctx->Shared->Programs, id))
       return GL_TRUE;
    else
       return GL_FALSE;

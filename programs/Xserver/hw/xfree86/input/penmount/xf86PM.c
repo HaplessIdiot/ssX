@@ -28,7 +28,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.2 2000/08/11 19:10:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.3 2001/11/26 16:25:53 dawes Exp $ */
 
 #define _PENMOUNT_C_
 
@@ -707,7 +707,6 @@ PenMountGetPacket (PenMountPrivatePtr priv)
 			priv->packet[4] = (unsigned char) c;
 			priv->lex_mode = PenMount_byte0;
 			return (Success);
-			break;
 
 		case PenMount_Response0:
 			if ( c == 0xff )
@@ -723,7 +722,6 @@ PenMountGetPacket (PenMountPrivatePtr priv)
 			priv->packet[2] = (unsigned char) c;
 			priv->lex_mode = PenMount_byte0;
 			return (Success);
-			break;
 		}
 	}
 	return (!Success);

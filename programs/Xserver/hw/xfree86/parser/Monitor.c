@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.28 2003/08/24 17:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.29 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -599,7 +599,6 @@ VertDone:
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			CLEANUP (ptr);
 			return NULL;
-			break;
 		}
 	}
 
@@ -649,7 +648,6 @@ xf86parseModesSection (void)
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			CLEANUP (ptr);
 			return NULL;
-			break;
 		}
 	}
 

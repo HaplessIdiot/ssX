@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.217 2004/06/02 22:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.218 2004/06/23 17:04:14 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -890,7 +890,7 @@ retry:
 
     if (xf86Info.vtno >= 0 ) {
 #define VT_ATOM_NAME         "XFree86_VT"
-      Atom VTAtom=-1;
+      Atom VTAtom;
       CARD32  *VT = NULL;
       int  ret;
 

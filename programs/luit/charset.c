@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/charset.c,v 1.8 2003/12/22 17:48:12 tsi Exp $ */
+/* $XFree86: xc/programs/luit/charset.c,v 1.9 2004/01/27 02:30:30 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -200,7 +200,6 @@ FontencCharsetReverse(unsigned int i, CharsetPtr self)
     switch(self->type) {
     case T_94: case T_96:
         if (IS_GL(n)) return n; else return -1;
-        break;
     case T_128:
         if (n < 0x80) return n; else return -1;
     case T_9494: case T_9696:
@@ -208,13 +207,11 @@ FontencCharsetReverse(unsigned int i, CharsetPtr self)
             return n;
         else
             return -1;
-        break;
     case T_94192:
         if(IS_GL(n>>8) && IS_GL(n&0x7F))
             return n;
         else
             return -1;
-        break;
     default:
         abort();
     }

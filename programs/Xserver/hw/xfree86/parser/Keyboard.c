@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.17 2003/08/24 17:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Keyboard.c,v 1.18 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -190,7 +190,8 @@ xf86parseKeyboardSection (void)
 		case SCROLLLOCK_TOK:
 		case RIGHTCTL:
 			xf86parseWarning(OBSOLETE_MSG, xf86tokenString());
-				break;
+			break;
+#if 0
 			ntoken = xf86getToken (KeyMapTab);
 			switch (ntoken)
 			{
@@ -198,13 +199,13 @@ xf86parseKeyboardSection (void)
 				xf86parseError (UNEXPECTED_EOF_MSG);
 				CLEANUP (ptr);
 				return (NULL);
-				break;
 
 			default:
 				Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 				break;
 			}
 			break;
+#endif
 		case VTINIT:
 			if (xf86getSubToken (&(ptr->inp_comment)) != STRING)
 				Error (QUOTE_MSG, "VTInit");
