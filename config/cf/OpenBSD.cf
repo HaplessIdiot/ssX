@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.64 2001/12/31 18:18:49 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.65 2002/01/02 17:31:01 tsi Exp $
 XCOMM
 
 #ifndef OSName
@@ -140,10 +140,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #else
 #  ifdef  PpcArchitecture
 #    define DefaultCCOptions	-ansi -fsigned-char -Dasm=__asm \
-				GccWarningOptions -Wno-long-long
+				GccWarningOptions
 #  else
-#    define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions \
-				-Wno-long-long
+#    define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
 #  endif
 #endif
 #endif
