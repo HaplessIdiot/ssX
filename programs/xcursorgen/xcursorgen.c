@@ -25,8 +25,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/Xcursor/Xcursor.h>
 
 #include <png.h>
@@ -63,7 +65,7 @@ read_config_file (char *config, struct flist **list)
   FILE *fp;
   char line[4096], pngfile[4000];
   int size, xhot, yhot;
-  struct flist *start = NULL, *end, *curr;
+  struct flist *start = NULL, *end = NULL, *curr;
   int count = 0;
 
   if (strcmp (config, "-") != 0)
@@ -272,6 +274,40 @@ write_cursors (int count, struct flist *list, char *filename)
   return ret ? 0 : 1;
 }
 
+static int
+check_image (char *image)
+{
+  unsigned int width, height;
+  unsigned char *data;
+  int x_hot, y_hot;
+  XImage ximage;
+  unsigned char hash[XCURSOR_BITMAP_HASH_SIZE];
+  int i;
+
+  if (XReadBitmapFileData (image, &width, &height, &data, &x_hot, &y_hot) != BitmapSuccess)
+  {
+    fprintf (stderr, "Can't open bitmap file \"%s\"\n", image);
+    return 1;
+  }
+  ximage.height = height;
+  ximage.width = width;
+  ximage.depth = 1;
+  ximage.bits_per_pixel = 1;
+  ximage.xoffset = 0;
+  ximage.format = XYPixmap;
+  ximage.data = (char *)data;
+  ximage.byte_order = LSBFirst;
+  ximage.bitmap_unit = 8;
+  ximage.bitmap_bit_order = LSBFirst;
+  ximage.bitmap_pad = 8;
+  ximage.bytes_per_line = (width+7)/8;
+  XcursorImageHash (&ximage, hash);
+  printf ("%s: ", image);
+  for (i = 0; i < XCURSOR_BITMAP_HASH_SIZE; i++)
+    printf ("%02x", hash[i]);
+  printf ("\n");
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -292,6 +328,18 @@ main (int argc, char *argv[])
           usage (argv[0]);
           return 0;
         }
+      if (strcmp (argv[1], "-image") == 0)
+        {
+	  int i = 2;
+	  int ret = 0;
+	  while (argv[i])
+	  {
+	    if (check_image (argv[i]))
+	      ret = 1;
+	    i++;
+	  }
+	  return ret;
+	}
 
       filename = argv[1];
     }

@@ -1,9 +1,11 @@
-XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.1 1999/03/14 11:18:11 dawes Exp $
+XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.1 2002/09/03 06:48:28 keithp Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-SUBDIRS=redglass
-
+        SUBDIRS = redglass
+  DEFAULT_THEME = redglass
+        ICONDIR = $(LIBDIR)/icons
+       THEMEDIR = $(ICONDIR)/default
        INCLUDES = $(LIBPNGINC)
         DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XCURSORLIB) $(XLIB) $(LIBPNGLIB)
@@ -15,3 +17,17 @@ LinkBuildBinary(ProgramTargetName(xcursorgen))
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+
+/*
+ * Create an index.theme file that references the
+ * default theme
+ */
+
+all:: index.theme
+
+index.theme:: Imakefile
+	echo '[Icon Theme]' > index.theme
+	echo 'Inherits=$(DEFAULT_THEME)' >> index.theme
+
+InstallTarget(install,index.theme,$(INSTDATAFLAGS),$(THEMEDIR))
+
