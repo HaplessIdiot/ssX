@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile /main/7 1996/02/02 14:22:24 kaleb $
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.4 1996/02/24 06:03:06 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/8 1996/03/01 14:32:23 kaleb $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.5 1996/03/04 05:31:19 dawes Exp $
 #define IHaveSubdirs
 
       TESTDATA = 

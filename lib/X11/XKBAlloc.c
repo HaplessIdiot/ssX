@@ -1,4 +1,5 @@
-/* $XConsortium $ */
+/* $XConsortium: XKBAlloc.c /main/6 1996/02/02 14:09:14 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -54,10 +55,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*ARGSUSED*/
 Status
+#if NeedFunctionPrototypes
+XkbAllocCompatMap(XkbDescPtr xkb,unsigned which,unsigned nSI)
+#else
 XkbAllocCompatMap(xkb,which,nSI)
     XkbDescPtr	xkb;
     unsigned	which;
     unsigned	nSI;
+#endif
 {
 XkbCompatMapPtr	compat;
 
@@ -88,7 +93,7 @@ XkbCompatMapPtr	compat;
     if (nSI>0) {
 	compat->sym_interpret= _XkbTypedCalloc(nSI,XkbSymInterpretRec);
 	if (!compat->sym_interpret) {
-	    Xfree(compat);
+	    xfree(compat);
 	    return BadAlloc;
 	}
     }
@@ -101,10 +106,14 @@ XkbCompatMapPtr	compat;
 
 
 void
+#if NeedFunctionPrototypes
+XkbFreeCompatMap(XkbDescPtr xkb,unsigned which,Bool freeMap)
+#else
 XkbFreeCompatMap(xkb,which,freeMap)
     XkbDescPtr	xkb;
     unsigned	which;
     Bool	freeMap;
+#endif
 {
 register XkbCompatMapPtr compat;
 
@@ -117,12 +126,12 @@ register XkbCompatMapPtr compat;
 	bzero((char *)&compat->groups[0],XkbNumKbdGroups*sizeof(XkbModsRec));
     if (which&XkbSymInterpMask) {
 	if ((compat->sym_interpret)&&(compat->size_si>0))
-	    Xfree(compat->sym_interpret);
+	    xfree(compat->sym_interpret);
 	compat->size_si= compat->num_si= 0;
 	compat->sym_interpret= NULL;
     }
     if (freeMap) {
-	Xfree(compat);
+	xfree(compat);
 	xkb->compat= NULL;
     }
     return;
@@ -131,11 +140,15 @@ register XkbCompatMapPtr compat;
 /***===================================================================***/
 
 Status
+#if NeedFunctionPrototypes
+XkbAllocNames(XkbDescPtr xkb,unsigned which,int nTotalRG,int nTotalAliases)
+#else
 XkbAllocNames(xkb,which,nTotalRG,nTotalAliases)
     XkbDescPtr	xkb;
     unsigned	which;
     int		nTotalRG;
     int		nTotalAliases;
+#endif
 {
 XkbNamesPtr	names;
 
@@ -207,10 +220,14 @@ XkbNamesPtr	names;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbFreeNames(XkbDescPtr xkb,unsigned which,Bool freeMap)
+#else
 XkbFreeNames(xkb,which,freeMap)
     XkbDescPtr	xkb;
     unsigned	which;
     Bool	freeMap;
+#endif
 {
 XkbNamesPtr	names;
 
@@ -238,13 +255,11 @@ XkbNamesPtr	names;
 	names->keys= NULL;
 	names->num_keys= 0;
     }
-#ifndef NO_DEC_BUG_FIX
     if ((which&XkbKeyAliasesMask)&&(names->key_aliases)){
 	_XkbFree(names->key_aliases);
 	names->key_aliases=NULL;
 	names->num_key_aliases=0;
     }
-#endif
     if ((which&XkbRGNamesMask)&&(names->radio_groups)) {
 	_XkbFree(names->radio_groups);
 	names->radio_groups= NULL;
@@ -261,9 +276,13 @@ XkbNamesPtr	names;
 
 /*ARGSUSED*/
 Status
+#if NeedFunctionPrototypes
+XkbAllocControls(XkbDescPtr xkb,unsigned which)
+#else
 XkbAllocControls(xkb,which)
     XkbDescPtr		xkb;
     unsigned		which;
+#endif
 {
     if (xkb==NULL)
 	return BadMatch;
@@ -278,10 +297,14 @@ XkbAllocControls(xkb,which)
 
 /*ARGSUSED*/
 void
+#if NeedFunctionPrototypes
+XkbFreeControls(XkbDescPtr xkb,unsigned which,Bool freeMap)
+#else
 XkbFreeControls(xkb,which,freeMap)
     XkbDescPtr		xkb;
     unsigned		which;
     Bool		freeMap;
+#endif
 {
     if (freeMap && (xkb!=NULL) && (xkb->ctrls!=NULL)) {
 	_XkbFree(xkb->ctrls);
@@ -293,8 +316,12 @@ XkbFreeControls(xkb,which,freeMap)
 /***===================================================================***/
 
 Status 
+#if NeedFunctionPrototypes
+XkbAllocIndicatorMaps(XkbDescPtr xkb)
+#else
 XkbAllocIndicatorMaps(xkb)
     XkbDescPtr	xkb;
+#endif
 {
     if (xkb==NULL)
 	return BadMatch;
@@ -307,8 +334,12 @@ XkbAllocIndicatorMaps(xkb)
 }
 
 void
+#if NeedFunctionPrototypes
+XkbFreeIndicatorMaps(XkbDescPtr xkb)
+#else
 XkbFreeIndicatorMaps(xkb)
     XkbDescPtr	xkb;
+#endif
 {
     if ((xkb!=NULL)&&(xkb->indicators!=NULL)) {
 	_XkbFree(xkb->indicators);
@@ -335,10 +366,14 @@ XkbDescRec *xkb;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbFreeKeyboard(XkbDescPtr xkb,unsigned which,Bool freeAll)
+#else
 XkbFreeKeyboard(xkb,which,freeAll)
     XkbDescPtr	xkb;
     unsigned	which;
     Bool	freeAll;
+#endif
 {
     if (xkb==NULL)
 	return;
@@ -360,5 +395,176 @@ XkbFreeKeyboard(xkb,which,freeAll)
 	XkbFreeControls(xkb,XkbAllControlsMask,True);
     if (freeAll)
 	_XkbFree(xkb);
+    return;
+}
+
+/***====================================================================***/
+
+XkbDeviceLedInfoPtr
+#if NeedFunctionPrototypes
+XkbAddDeviceLedInfo(XkbDeviceInfoPtr devi,unsigned ledClass,unsigned ledId)
+#else
+XkbAddDeviceLedInfo(devi,ledClass,ledId)
+    XkbDeviceInfoPtr	devi;
+    unsigned		ledClass;
+    unsigned		ledId;
+#endif
+{
+XkbDeviceLedInfoPtr	devli;
+register int		i;
+
+    if ((!devi)||(!XkbSingleXIClass(ledClass))||(!XkbSingleXIId(ledId)))
+	return NULL;
+    for (i=0,devli=devi->leds;i<devi->num_leds;i++,devli++) {
+	if ((devli->led_class==ledClass)&&(devli->led_id==ledId))
+	    return devli;
+    }
+    if (devi->num_leds>=devi->sz_leds) {
+	if (devi->sz_leds>0)	devi->sz_leds*= 2;
+	else			devi->sz_leds= 1;
+	devi->leds= _XkbTypedRealloc(devi->leds,devi->sz_leds,
+							XkbDeviceLedInfoRec);
+	if (!devi->leds) {
+	    devi->sz_leds= devi->num_leds= 0;
+	    return NULL;
+	}
+	i= devi->num_leds;
+	for (devli=&devi->leds[i];i<devi->sz_leds;i++,devli++) {
+	    bzero(devli,sizeof(XkbDeviceLedInfoRec));
+	    devli->led_class= XkbXINone;
+	    devli->led_id= XkbXINone;
+	}
+    }
+    devli= &devi->leds[devi->num_leds++];
+    bzero(devli,sizeof(XkbDeviceLedInfoRec));
+    devli->led_class= ledClass;
+    devli->led_id= ledId;
+    return devli;
+}
+
+Status
+#if NeedFunctionPrototypes
+XkbResizeDeviceButtonActions(XkbDeviceInfoPtr devi,unsigned newTotal)
+#else
+XkbResizeDeviceButtonActions(devi,newTotal)
+    XkbDeviceInfoPtr	devi;
+    unsigned		newTotal;
+#endif
+{
+    if ((!devi)||(newTotal>255))
+	return BadValue;
+    if ((devi->btn_acts!=NULL)&&(newTotal==devi->num_btns))
+	return Success;
+    if (newTotal==0) {
+	if (devi->btn_acts!=NULL) {
+	    _XkbFree(devi->btn_acts);
+	    devi->btn_acts= NULL;
+	}
+	devi->num_btns= 0;
+	return Success;
+    }
+    devi->btn_acts= _XkbTypedRealloc(devi->btn_acts,newTotal,XkbAction);
+    if (devi->btn_acts==NULL) {
+	devi->num_btns= 0;
+	return BadAlloc;
+    }
+    if (newTotal>devi->num_btns) {
+	XkbAction *act;
+	act= &devi->btn_acts[devi->num_btns];
+	bzero((char *)act,(newTotal-devi->num_btns)*sizeof(XkbAction));
+    }
+    devi->num_btns= newTotal;
+    return Success;
+}
+
+/*ARGSUSED*/
+XkbDeviceInfoPtr
+#if NeedFunctionPrototypes
+XkbAllocDeviceInfo(unsigned deviceSpec,unsigned nButtons,unsigned szLeds)
+#else
+XkbAllocDeviceInfo(deviceSpec,nButtons,szLeds)
+    unsigned	deviceSpec;
+    unsigned	nButtons;
+    unsigned	szLeds;
+#endif
+{
+XkbDeviceInfoPtr	devi;
+
+    devi= _XkbTypedCalloc(1,XkbDeviceInfoRec);
+    if (devi!=NULL) {
+	devi->device_spec= deviceSpec;
+	devi->has_own_state= False;
+	devi->num_btns= 0;
+	devi->btn_acts= NULL;
+	if (nButtons>0) {
+	    devi->num_btns= nButtons;
+	    devi->btn_acts= _XkbTypedCalloc(nButtons,XkbAction);
+	    if (!devi->btn_acts) {
+		_XkbFree(devi);
+		return NULL;
+	    }
+	}
+	devi->dflt_kbd_fb= XkbXINone;
+	devi->dflt_led_fb= XkbXINone;
+	devi->num_leds= 0;
+	devi->sz_leds= 0;
+	devi->leds= NULL;
+	if (szLeds>0) {
+	    devi->sz_leds= szLeds;
+	    devi->leds= _XkbTypedCalloc(szLeds,XkbDeviceLedInfoRec);
+	    if (!devi->leds) {
+		if (devi->btn_acts)
+		    _XkbFree(devi->btn_acts);
+		_XkbFree(devi);
+		return NULL;
+	    }
+	}
+    }
+    return devi;
+}
+
+
+void 
+#if NeedFunctionPrototypes
+XkbFreeDeviceInfo(XkbDeviceInfoPtr devi,unsigned which,Bool freeDevI)
+#else
+XkbFreeDeviceInfo(devi,which,freeDevI)
+    XkbDeviceInfoPtr	devi;
+    unsigned		which;
+    Bool		freeDevI;
+#endif
+{
+    if (devi) {
+	if (freeDevI) {
+	    which= XkbXI_AllDeviceFeaturesMask;
+	    if (devi->name) {
+		_XkbFree(devi->name);
+		devi->name= NULL;
+	    }
+	}
+	if ((which&XkbXI_ButtonActionsMask)&&(devi->btn_acts)) {
+	    _XkbFree(devi->btn_acts);
+	    devi->num_btns= 0;
+	    devi->btn_acts= NULL;
+	}
+	if ((which&XkbXI_IndicatorsMask)&&(devi->leds)) {
+	    register int i;
+	    if ((which&XkbXI_IndicatorsMask)==XkbXI_IndicatorsMask) {
+		_XkbFree(devi->leds);
+		devi->sz_leds= devi->num_leds= 0;
+		devi->leds= NULL;
+	    }
+	    else {
+		XkbDeviceLedInfoPtr	devli;
+		for (i=0,devli=devi->leds;i<devi->num_leds;i++,devli++) {
+		    if (which&XkbXI_IndicatorMapsMask)
+			 bzero((char *)&devli->maps[0],sizeof(devli->maps));
+		    else bzero((char *)&devli->names[0],sizeof(devli->names));
+		}
+	    }
+	}
+	if (freeDevI)
+	    _XkbFree(devi);
+    }
     return;
 }

@@ -2,6 +2,7 @@
  * @(#)RCSfile: xkbInit.c,v  Revision: 1.1.1.6  (DEC) Date: 1996/02/09 09:44:58 
  */
 /* $XConsortium: xkbInit.c /main/14 1996/03/01 14:31:34 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -255,7 +256,7 @@ Atom		unknown;
     }
 #ifdef DEBUG_RADIO_GROUPS
     if (names->num_rg<1) {
-	names->radio_groups= (Atom *)Xcalloc(RG_COUNT*sizeof(Atom));
+	names->radio_groups= (Atom *)xcalloc(RG_COUNT, sizeof(Atom));
 	if (names->radio_groups) {
 	    names->num_rg = RG_COUNT;
 	    names->radio_groups[RG_BOGUS_FUNCTION_GROUP]= CREATE_ATOM("BOGUS");
@@ -621,7 +622,7 @@ XkbFreeInfo(xkbi)
 #endif
 {
     if (xkbi->radioGroups) {
-	Xfree(xkbi->radioGroups);
+	xfree(xkbi->radioGroups);
 	xkbi->radioGroups= NULL;
     }
     if (xkbi->mouseKeyTimer) {
@@ -653,7 +654,7 @@ XkbFreeInfo(xkbi)
 	XkbFreeKeyboard(xkbi->desc,XkbAllComponentsMask,True);
 	xkbi->desc= NULL;
     }
-    Xfree(xkbi);
+    xfree(xkbi);
     return;
 }
 

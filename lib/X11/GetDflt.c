@@ -1,5 +1,5 @@
-/* $XConsortium: GetDflt.c /main/43 1996/01/17 18:13:55 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.5 1996/01/13 12:19:51 dawes Exp $ */
+/* $XConsortium: GetDflt.c /main/45 1996/02/28 12:16:36 kaleb $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.6 1996/01/21 01:48:03 dawes Exp $ */
 
 /***********************************************************
 
@@ -88,37 +88,40 @@ static char *GetHomeDir (dest)
 #endif
 #endif
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
-#ifdef _POSIX_REENTRANT_FUNCTIONS
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
-#define _POSIX_THREAD_SAFE_FUNCTIONS 1
-#endif
-#endif
-#endif
 #ifdef sun
 #ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
 #undef _POSIX_THREAD_SAFE_FUNCTIONS
 #endif
 #endif
-#define PwDir pws.pw_dir
     struct passwd pws;
     char pwbuf[LINE_MAX];
+#define PwDir pws.pw_dir
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+/* SVR4 threads, AIX 4.1.4 and earlier and OSF/1 3.2 and earlier pthreads */
 #define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf)
 #define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf)
-#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
-#define CallFailed NULL
-    struct passwd *pw;
-#else
+#ifndef SVR4
 #define CallFailed -1
     int pw;
-#endif
-#else
+#else /* SVR4 */
+#define CallFailed NULL
+    struct passwd *pw;
+#endif /* SVR4 */
+#else /* _POSIX_THREAD_SAFE_FUNCTIONS */
+/* Digital UNIX 4.0, but not (beta) T4.0-1 */
+#define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf,&pwp)
+#define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf,&pwp)
+#define CallFailed -1
+    int pw;
+    struct passwd* pwp;
+#endif /* _POSIX_THREAD_SAFE_FUNCTIONS */
+#else /* XTHREADS && XUSE_MTSAFE_API */
 #define Getpwnam(u) getpwnam((u))
 #define Getpwuid(u) getpwuid((u))
 #define CallFailed NULL
 #define PwDir pw->pw_dir
     struct passwd *pw;
-#endif
+#endif /* XTHREADS && XUSE_MTSAFE_API */
     register char *ptr;
 
     if ((ptr = getenv("HOME"))) {

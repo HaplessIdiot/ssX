@@ -1,4 +1,5 @@
 /* $XConsortium: xkbUtils.c /main/21 1996/03/01 14:31:41 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -551,15 +552,15 @@ CARD8			keysPerMod[XkbNumModifiers];
     if (maxKeysPerMod>0) {
 	tmp= maxKeysPerMod*XkbNumModifiers;
 	if (keyc->modifierKeyMap==NULL)
-	    keyc->modifierKeyMap= (KeyCode *)Xcalloc(tmp);
+	    keyc->modifierKeyMap= (KeyCode *)xcalloc(1, tmp);
 	else if (keyc->maxKeysPerModifier<maxKeysPerMod)
-	    keyc->modifierKeyMap= (KeyCode *)Xrealloc(keyc->modifierKeyMap,tmp);
+	    keyc->modifierKeyMap= (KeyCode *)xrealloc(keyc->modifierKeyMap,tmp);
 	if (keyc->modifierKeyMap==NULL)
 	    FatalError("Couldn't allocate modifierKeyMap in UpdateCore\n");
 	bzero(keyc->modifierKeyMap,tmp);
     }
     else if ((keyc->maxKeysPerModifier>0)&&(keyc->modifierKeyMap!=NULL)) {
-	Xfree(keyc->modifierKeyMap);
+	xfree(keyc->modifierKeyMap);
 	keyc->modifierKeyMap= NULL;
     }
     keyc->maxKeysPerModifier= maxKeysPerMod;
