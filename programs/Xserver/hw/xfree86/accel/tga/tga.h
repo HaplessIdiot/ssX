@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.1 1996/09/25 14:16:20 dawes Exp $ */
+/* $XFree86$ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -114,6 +114,11 @@ void tgaPrintIdent(
 Bool tgaProbe(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+Bool tgaValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
 #endif
 );
 /* tgamisc.c */
@@ -569,7 +574,7 @@ void tgaCacheMoveBlock(
     unsigned int
 #endif
 );
-/* tgacurs.c */
+/* tgaCursor.c */
 Bool tgaCursorInit(
 #if NeedFunctionPrototypes
     char *,
@@ -614,12 +619,6 @@ void tgaQueryBestSize(
     unsigned short *,
     unsigned short *,
     ScreenPtr 
-#endif
-);
-/* tgaBtCurs.c */
-void tgaBtRecolorCursor(
-#if NeedFunctionPrototypes
-    ScreenPtr, CursorPtr, Bool
 #endif
 );
 /* tgadline.c */

@@ -1,12 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/filelist.tcl,v 3.2 1996/08/13 11:28:23 dawes Exp $
-#
-# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
-#
-# See the file "LICENSE" for information regarding redistribution terms,
-# and for a DISCLAIMER OF ALL WARRANTIES.
-#
 
-# List of files that are needed by this program or programs spawned by it.
 # These lists are not meant to be exhaustive, but they should be
 # complete enough to ensure that all the needed .tgz files have been
 # installed
@@ -83,8 +75,6 @@ array set FilePermsXKB {
 	lib/X11/xkb/semantics/default		444
 	lib/X11/xkb/symbols/us			444
 	lib/X11/xkb/types/default		444
-	lib/X11/xkb/rules/xfree86		444
-	lib/X11/xkb/rules/xfree86.lst		444
 }
 
 array set FilePermsReadMe {

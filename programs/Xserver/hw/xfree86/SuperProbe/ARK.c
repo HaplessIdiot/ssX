@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ARK.c,v 3.0 1996/09/24 13:52:39 dawes Exp $ */
+/* $XFree86$ */
 
 #include "Probe.h"
 
@@ -70,9 +70,6 @@ int *Chipset;
 			case PCI_CHIP_2000MT:
 				*Chipset = CHIP_ARK2000MT;
 				break;
-			case PCI_CHIP_2000MI:
-				*Chipset = CHIP_ARK2000MI;
-				break;
 			default:
 				Chip_data = pcrp->_device;
 				*Chipset = CHIP_ARK_UNK;
@@ -116,9 +113,6 @@ int *Chipset;
 	case 0x14 :
 		*Chipset = CHIP_ARK2000MT;
 		return TRUE;
-	case 0x15 :
-		*Chipset = CHIP_ARK2000MI;
-		return TRUE;
 	default :
 		/*
 		 * The general ARK check is too weak, so don't assume
@@ -149,8 +143,7 @@ int Chipset;
 			Mem = 1024;
 		else
 			Mem = 2048;
-	if (Chipset == CHIP_ARK2000PV || Chipset == CHIP_ARK2000MT
-	|| Chipset == CHIP_ARK2000MI)
+	if (Chipset == CHIP_ARK2000PV || CHIP_ARK2000MT)
 		if ((SR10 & 0xC0) == 0)
 			Mem = 1024;
 		else

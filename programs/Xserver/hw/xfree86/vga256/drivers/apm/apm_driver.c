@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.2 1996/09/14 13:11:25 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * These are X and server generic header files.
@@ -80,7 +80,7 @@ static char *   ApmIdent();
 static Bool     ApmClockSelect();
 static void     ApmEnterLeave();
 static Bool     ApmInit();
-static int	ApmValidMode();
+static Bool	ApmValidMode();
 static void *   ApmSave();
 static void     ApmRestore();
 static void     ApmAdjust();
@@ -229,14 +229,14 @@ static int apmDacPathWidth, apmMultiplexingThreshold;
 static int apmUse8bitColorComponents;
 static int apmDisplayableMemory;
 
-#define AP6422  0
-#define AT24    1
+#define AT24    0
+#define AP6422  1
 
 static SymTabRec chipsets[] = {
-	{ AP6422,  "AP6422"},
 #if 0
 	{ AT24,    "AT24" },
 #endif
+	{ AP6422,  "AP6422"},
 	{ -1,		"" },
 };
 
@@ -595,8 +595,7 @@ ApmFbInit()
 			vga256InfoRec.chipset, APM.ChipLinearBase,
 			apmBus == PCI ? "PCI bus" : "VL bus");
 
-	apmDisplayableMemory = vga256InfoRec.displayWidth
-		* vga256InfoRec.virtualY
+	apmDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
 		* (vgaBitsPerPixel / 8);
 	offscreen_available = vga256InfoRec.videoRam * 1024 -
 		apmDisplayableMemory;
@@ -853,7 +852,7 @@ DisplayModePtr mode;
 	 */
 	{
 		int offset;
-		offset = (vga256InfoRec.displayWidth *
+		offset = (vga256InfoRec.virtualX *
 			vga256InfoRec.bitsPerPixel / 8)	>> 3;
 		new->std.CRTC[0x13] = offset;
 		/* Bit 8 resides at CR1C bits 7:4. */
@@ -990,19 +989,17 @@ int x, y;
  * ApmValidMode --
  *
  */
-static int
-ApmValidMode(mode, verbose)
+static Bool
+ApmValidMode(mode)
 DisplayModePtr mode;
-Bool verbose;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->VTotal > 2047) {
-	    if (verbose)
 		ErrorF("%s %s: %s: Vertical mode timing overflow (%d)\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.chipset, mode->VTotal);
-	    return MODE_BAD;
+		return FALSE;
 	}
 
-	return MODE_OK;
+	return TRUE;
 }

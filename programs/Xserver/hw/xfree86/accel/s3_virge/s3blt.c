@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.6 1996/10/18 15:01:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.15 1996/09/01 04:15:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -65,7 +65,9 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #include	"misc.h"
 #include	"xf86.h"
-#include	"s3v.h"
+#include	"s3.h"
+#include	"regs3.h"
+#include        "s3linear.h"
 
 extern int s3MAX_SLOTS;
 void  s3FindOrdering();
@@ -82,7 +84,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
      int   width, height;
      int   dstx, dsty;
 {
-   RegionPtr prgnSrcClip=NULL;	/* may be a new region, or just a copy */
+   RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
    Bool  freeSrcClip = FALSE;
 
    RegionPtr prgnExposed;
@@ -98,33 +100,23 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    int   fastClip = 0;		/* for fast clipping with pixmap source */
    int   fastExpose = 0;	/* for fast exposures with pixmap source */
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
+   if (!xf86VTSema ||
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
-	pDstDrawable->type != DRAWABLE_WINDOW)) {
-      RegionPtr ret=NULL;
-
-      if (xf86VTSema) WaitIdleEmpty();
-      switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
-      case 8:
-	 ret = cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-			   srcx, srcy, width, height, dstx, dsty);
-	 break;
-      case 16:
-	 ret = cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
-			     srcx, srcy, width, height, dstx, dsty);
-	 break;
-      case 24:
-	 ret = cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
-			     srcx, srcy, width, height, dstx, dsty);
-	 break;
-      case 32:
-	 ret = cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
-			     srcx, srcy, width, height, dstx, dsty);
-	 break;
-      }
-      if (xf86VTSema) WaitIdleEmpty();
-      return ret;
-   }
+                      pDstDrawable->type != DRAWABLE_WINDOW))
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	case 24:
+	    return cfb24CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	case 32:
+	    return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	}
 
    origSource.x = srcx;
    origSource.y = srcy;
@@ -307,49 +299,61 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	 WaitQueue(1);
 	 ;SET_MIX(FSS_BITBLT | s3alu[pGC->alu],BSS_BKGDCOL | ROP_S);
 	 ;SET_WRT_MASK(pGC->planemask);
+DBGOUT(0x00);
 	 SETB_CMD_SET(s3_gcmd | CMD_BITBLT | CMD_AUTOEXEC
 		  | direction | s3alu[pGC->alu]);
+DBGOUT(0x01);
 
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
+DBGOUT(0x02);
 	       SETB_BLT(prect->x1 + dx, prect->y1 + dy, 
 			prect->x1, prect->y1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			INC_X);
+DBGOUT(0x03);
 	    }
 	 } else if (direction == INC_X) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
+DBGOUT(0x04);
                SETB_BLT(prect->x1 + dx, prect->y2 + dy - 1,
 			prect->x1, prect->y2 - 1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			INC_X);
+DBGOUT(0x05);
 	    }
 	 } else if (direction == INC_Y) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
+DBGOUT(0x06);
                SETB_BLT(prect->x2 + dx - 1, prect->y1 + dy,
 			prect->x2 - 1, prect->y1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			!INC_X);
+DBGOUT(0x07);
 	    }
 	 } else {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
+DBGOUT(0x08);
                SETB_BLT(prect->x2 + dx - 1, prect->y2 + dy - 1,
 			prect->x2 - 1, prect->y2 - 1,
 			prect->x2 - prect->x1 - 1, prect->y2 - prect->y1,
 			!INC_X);
+DBGOUT(0x09);
 	    }
 	 }
 
-	 WaitIdle();
+	 WaitQueue(1);
+DBGOUT(0x0a);
 	 SETB_CMD_SET(CMD_NOP);
 	 UNBLOCK_CURSOR;
+DBGOUT(0x0b);
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
 		 pDstDrawable->type != DRAWABLE_WINDOW) {
@@ -484,7 +488,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
     unsigned long    bitPlane;
 {
    PixmapPtr pBitmap = NULL;
-   RegionPtr prgnSrcClip=NULL;	/* may be a new region, or just a copy */
+   RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
    Bool  freeSrcClip = FALSE;
 
    RegionPtr prgnExposed;
@@ -503,34 +507,25 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
    /*
     * If switched away, or doing pixmap->pixmap copy, just use cfb.
     */
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask) ||
+   if (!xf86VTSema ||
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
-	pDstDrawable->type != DRAWABLE_WINDOW)) {
-      RegionPtr ret=NULL;
-
-      if (xf86VTSema) WaitIdleEmpty();
-      switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
-      case 8:
-	 ret = cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	pDstDrawable->type != DRAWABLE_WINDOW))
+   {
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
-	 break;
-      case 16:
-	 ret = cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	case 16:
+	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	 break;
-      case 24:
-	 ret = cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	case 24:
+	    return cfb24CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	 break;
-      case 32:
-	 ret = cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	case 32:
+	    return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			      srcx, srcy, width, height, dstx, dsty, bitPlane);
-	 break;
-      }
-      if (xf86VTSema) WaitIdleEmpty();
-      return ret;
+	}
    }
-
 #if 0
    /* This can cause server lockups */
    /*
@@ -549,8 +544,10 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	  (pDstDrawable->type != DRAWABLE_WINDOW)) {
          RegionPtr retVal;
 	 BLOCK_CURSOR;
+         s3EnableLinear();
          retVal = cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 			       width, height, dstx, dsty, bitPlane);
+         s3DisableLinear();
 	 UNBLOCK_CURSOR;
          return retVal;
       }
@@ -578,7 +575,6 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    return(NULL);
 	 }
 	 ValidateGC((DrawablePtr)pBitmap, pGC1);
-	 WaitIdleEmpty();
 	 (void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
 			  width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
          FreeScratchGC(pGC1);
@@ -607,7 +603,6 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	 ValidateGC((DrawablePtr)pPixmap, pGC1);
 	 s3CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
 			width, height, 0, 0);
-	 WaitIdleEmpty();
 	 retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                              0, 0, width, height, dstx, dsty, bitPlane);
          FreeScratchGC(pGC1);

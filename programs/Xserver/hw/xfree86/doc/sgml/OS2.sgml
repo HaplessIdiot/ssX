@@ -1,19 +1,14 @@
 <!doctype linuxdoc system>
 
 <article>
-<title>README for XFree86 3.1.2D on OS/2
+<title> README for XFree86 3.1.2D on OS/2
 <author>Holger Veit
-<Date>Last modified on: 20 Feb 1996
+<Date>Last modified on: 17 Feb 1996
 
 <toc>
 
 <sect>Introductory Note about the ALPHA release 3.1.2D
 <p>
-Before looking into this file, please check for any LATEST.OS2 files
-that may come with the binary distribution. Some statements made here
-refer to the official public version of XFree86/OS2, and may not be
-fully functional in the alpha release.
-
 This version of the code is called XFree86/OS2 3.1.2D. The letter ``D'',
 according to the naming rules of XFree86, usually denotes a (public)
 beta version of the code. Since this is the first public version of
@@ -51,7 +46,7 @@ problems. This is XFree86/OS2 which differs in a number of critical aspects
 from any Unix implementation of XFree86.
 
 If you are afraid to try out this code, simply don't use it and wait for
-a future, hopefully more bug-free version.
+a future, hopefully more bugfree version.
 
 
 <sect>What and Where is XFree86?
@@ -76,6 +71,7 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 -->
 
 Binaries for OS/2 2.11 and OS/2 Warp are available from:
+
 <url name="ftp.XFree86.org:/pub/XFree86/beta/binaries/OS2"
 url="ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/OS2">
 <p>
@@ -138,13 +134,14 @@ this file and we'll revise it.
        <item> For OS/2 2.11, IBM TCP/IP 2.0 or later is mandatory.
        <item> Warp comes with the Internet Access Kit (IAK), which is
               sufficient. Warp Connect and Warp Server come with a full
-              version of TCP/IP (3.0). Use of this software is preferred over
+              version of TCP/IP (3.0). Use of this software is prefered over
               IAK then.
        </enum>
        Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's 
        TCP/IP versions, as well as IBM TCP/IP 1.X are not supported. Nor does
        any networking support from DOS (packet drivers, winsock), Netware,
-       or NetBIOS work, and I won't to provide support for that in the future.
+       or NetBIOS work, and it is not intended in the future to provide
+       support for that.
 <item> If you want to write or port applications for XFree86, you are
        encouraged to do so. You will need a complete installation of
        EMX/gcc 0.9B fix 1 or later for doing so. Neither the second (obsolete)
@@ -189,28 +186,28 @@ from the ``contrib'' area will be made available in the future.
     <descrip>
     <tag/312D8514/	the X server for IBM 8514/A and compatible boards
     <tag/312DAGX/	the X server for AGX boards
-    <tag/312DI128/	the X server for &num;9 Imagination 128 boards
-    <tag/312DMa32/	the X server for ATI Mach32 graphics boards
-    <tag/312DMa64/	the X server for ATI Mach64 graphics boards
+    <tag/X312I128/	the X server for &num;9 Imagination 128 boards
+    <tag/X312Ma32/	the X server for ATI Mach32 graphics boards
+    <tag/X312Ma64/	the X server for ATI Mach64 graphics boards
     <tag/312DMa8/	the X server for ATI Mach8 graphics boards
     <tag/312DMono/	the Monochrome X Server
     <tag/312DP9K/	the X server for P9000 based boards
     <tag/312DS3/ 	the X server for S3 based boards
     <tag/312DSvga/	the 8-bit pseudo-color X server for Super VGA cards
     <tag/312Dvg16/	the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/312Dw32/	the X server for et4000w32 based boards
+    <tag/X312w32/	the X server for et4000w32 based boards
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/312Dman/ 	pre-formatted man pages for the X11 interface and clients
+    <tag/312Dman/ 	preformatted man pages for the X11 interface and clients
     <tag/312Df100/	100dpi fonts
     <tag/312Dfscl/	Speedo and Type1 fonts
     <tag/312Dfnon/ 	Japanese, Chinese and other fonts
     <tag/312Dfcyr/	Cyrillic fonts
     <tag/312Dfsrv/	the font server with man pages.
-    <tag/312Dprog/	the X11 header files and programmer's utilities
+    <tag/312prog/	the X11 header files and progrmmer's utilities
 			for compiling other X applications
     <tag/312Dpex/	PEX fonts and libraries required for PEX applications
     <tag/312Dnest/	the Xnest X server
@@ -229,9 +226,8 @@ incompatible hardware, it makes no sense to obtain the other packages in
 the hope that they would magically work.
 
 <sect> Checking Compatibility of Video Hardware
-
 <p>
-In the following, we assume that you want to install XFree86/OS2 on a disk
+In the following, we assume that you want to install Xfree86/OS2 on a disk
 drive with the letter Y: (which you probably don't have). Change the letter
 in all commands accordingly.
 
@@ -246,7 +242,7 @@ in all commands accordingly.
 
 <item> Edit your CONFIG.SYS file to contain the following line somewhere:
 <tscreen><verb>
-DEVICE=Y:\XFree86\lib\xf86sup.sys
+DEVICE=Y:\XFree86\dll\xf86sup.sys
 </verb></tscreen>
        Of course replace ``Y:'' with the correct drive letter.
 
@@ -259,7 +255,7 @@ DEVICE=Y:\XFree86\lib\xf86sup.sys
        reboot to install the driver. XFree86/OS2 will not work without this
        driver.
 
-<item> Start a full screen OS/2 CMD session and enter the following
+<item> Start a fullscreen OS/2 CMD session and enter the following
        command:
 <tscreen><verb>
 [C:\] Y:\XFree86\bin\SuperProbe
@@ -284,7 +280,6 @@ DEVICE=Y:\XFree86\lib\xf86sup.sys
 </enum>
 
 <sect> Installing the packages
-
 <p>
 XFree86/OS2 assumes a directory hierarchy starting from <tt>drive:&bsol;XFree86</tt>.
 This can be changed, but is strictly discouraged.
@@ -307,7 +302,7 @@ correctly. Please add the following settings:
 
 <descrip>
 <tag/TERM/
-	Set the preferred terminal type for the xterm or editor to be used.
+	Set the prefered terminal type for the xterm or editor to be used.
 	Some programs need this setting. I have my type set to
 <tscreen><verb>SET TERM=ansi</verb></tscreen>
 	<tt>&bsol;XFree86&bsol;lib&bsol;X11&bsol;etc&bsol;termcap.x11</tt>
@@ -437,12 +432,12 @@ seek assistance elsewhere.
 After you have added the required settings and setup a working network,
 run the <tt/xf86config/ program to create a standard configuration file
 in <tt>Y:&bsol;XFree86&bsol;lib&bsol;X11&bsol;XConfig</tt> from a windowed
-or full screen OS/2 text session:
+or fullscreen OS/2 text session:
 <tscreen><verb>[C:\] xf86config</verb></tscreen>
 
 This program will ask a number of questions. You will need the information
 obtained from the SuperProbe program here. The program should be 
-self explanatory; if you have problems to understand something though, seek
+selfexplanatory; if you have problems to understand something though, seek
 assistance in the newsgroups.
 
 Alternatively, but not recommended for the non-expert, you can edit the 
@@ -457,21 +452,17 @@ If you know the configuration process from Linux or other XFree86 platform,
 you will encounter a few differences:
 <itemize>
 <item> There is no configuration for the mouse type or device. The mouse
-       device name is fixed to OSMOUSE, and this cannot be changed.
+       devicename is fixed to OSMOUSE, and this cannot be changed.
        If you have a three-button-mouse, install the correct OS/2 driver 
        for it, such as
 <tscreen><verb>
 DEVICE=D:\OS2\BOOT\PCLOGIC.SYS SERIAL=COM1
 DEVICE=D:\OS2\BOOT\MOUSE.SYS TYPE=PCLOGIC$
 </verb></tscreen>
-       for a MouseSystems compatible mouse, for instance.
-<item> Currently, the X server does not read the native OS/2 keyboard map,
-       so you need a xmodmap file for a non-us keyboard. Fortunately, it
-       is the same you use for Linux. The server is compiled with the 
-       XKEYBOARD option, so this might be an alternative. At the time of this
-       documentation, unfortunately, some subtle bug in the OS/2 implementation
-       is still waiting for a fix, so this might not yet work. Read the 
-       LATEST.OS2 file with the binary distribution.
+       for a Mousesystems compatible mouse, for instance.
+<item> You have no options to choose whether you want to use the XKEYBOARD
+       extension or not; you must use it, i.e. you may not enable <tt/XkbDisable/
+       and therefore must choose an appropriate keyboard setting.
 <item> There is no support for the Wacom and Elographics input devices yet.
 </itemize>
 
@@ -534,8 +525,7 @@ necessary and type ``<tt/xmake/''. ``<tt/xmake/'' is a wrapper for the
 GNU make program which defeats the improper SHELL setting typically found
 in a Makefile generated from an Imakefile.
 
-<sect> Acknowledgements
-
+<sect> Thanks
 <p>
 Many thanks to:
 <itemize>
@@ -547,7 +537,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.3 1996/02/24 10:19:18 dawes Exp $
+$XFree86$
 
 
 

@@ -1,17 +1,16 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase3.tcl,v 3.2 1996/08/24 12:50:53 dawes Exp $
-#
-# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
-#
-# See the file "LICENSE" for information regarding redistribution terms,
-# and for a DISCLAIMER OF ALL WARRANTIES.
-#
 
 #
 # Phase III - Commands run after switching back to text mode
 #     - responsible for starting second server
 #
 
-source $tcl_library/init.tcl
+if [info exists env(TMPDIR)] {
+	set TmpDir $env(TMPDIR)
+} else {
+	set TmpDir /tmp
+}
+
+source $tk_library/init.tcl
 source $XF86Setup_library/setuplib.tcl
 source $XF86Setup_library/carddata.tcl
 source $XF86Setup_library/mondata.tcl
@@ -25,7 +24,7 @@ set devid [lindex $DeviceIDs 0]
 global Device_$devid
 set server [set Device_${devid}(Server)]
 
-set ServerPID [start_server $server $Confname-2 ServerOut-2 ]
+set ServerPID [start_server $server $Confname-2 XSout[pid].2 ]
 
 if { $ServerPID == -1 } {
 	set msg "Unable to communicate with X server"
@@ -38,32 +37,16 @@ if { $ServerPID == 0 } {
 if { $ServerPID < 1 } {
 	mesg "$msg\n\nPress \[Enter\] to try configuration again" okay
 	set Phase2FallBack 1
-	set ServerPID [start_server $server $Confname-1 ServerOut-1Bis]
+	if { [info exists $Confname-1g] } {
+		set ServerPID [start_server $server \
+			$Confname-2 XSout[pid].2 ]
+	} else {
+		set ServerPID [start_server $server \
+			$Confname-2 XSout[pid].2 ]
+	}
 	if { $ServerPID < 1 } {
 		mesg "Ack! Unable to get the VGA16 server going again!" info
 		exit 1
-	}
-}
-
-if { ![string length [set Device_${devid}(ClockChip)]] } {
-	set fd [open $TmpDir/ServerOut-2 r]
-	set clockrates ""
-	set zerocount 0
-	while {[gets $fd line] >= 0} {
-		if {[regexp {\(.*: clocks: (.*)$} $line dummy clocks]} {
-			set clocks [string trim [squash_white $clocks]]
-			foreach clock [split $clocks] {
-				lappend clockrates $clock
-				if { $clock < 0.1 } {
-					incr zerocount
-				}
-			}
-		}
-	}
-	close $fd
-	set clockcount [llength $clockrates]
-	if { $clockcount != 0 && 1.0*$zerocount/$clockcount < 0.25 } {
-		set Device_${devid}(Clocks) $clockrates
 	}
 }
 

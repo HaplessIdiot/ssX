@@ -1,7 +1,7 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> Information for Matrox Millennium Users
+<title> Information for Matrox Millenium Users
 <author>The XFree86 Project Inc.
 <date>19 October 1996
 <toc>
@@ -16,9 +16,9 @@ NOTE: This driver is pretty new, and not everything works like you expect
 it to. It shouldn't crash your machine, but you may have video artifacts
 or missing lines. Please report any and all problems to
 <htmlurl name="XFree86@Xfree86.org" url="mailto:XFree86@Xfree86.org">
-using the appropriate bug report sheet. 
+using the appropiate bug report sheet. 
 
-There will be updated drivers in the coming XFree86 beta releases. 
+There will be updated drivers in the comming XFree86 beta releases. 
 
 <sect>Features:
 <p>
@@ -26,7 +26,7 @@ There will be updated drivers in the coming XFree86 beta releases.
 <itemize>
 <item> Basic support for the Matrox Millennium video adapter
 <item> uses linear frame buffer
-<item> it should be possible to reach resolutions up to 1920x1024
+<item> it should be possible to reach resolutions upto 1920x1024
 <item> it should be possible to use pixel depths of 8, 16, 24, and 32 bits
   per pixel (256 pseudo colour, "high colour", "packed true colour",
   "true colour"). 
@@ -65,7 +65,7 @@ This driver only supports the MGA Storm (MGA2064W) chipset with the TI
 these two components, although 135 and 250 MHz RAMDAC parts exist.
 
 We will eventually provide support for the other Matrox chipsets (once the
-Millennium driver is at a far enough stage and more people with other cards
+Millenium driver is at a far enough stage and more people with other cards
 join the effort), including the Impression, Mystique, etc. 
 
 At the moment, however, only the Millennium is supported.
@@ -73,7 +73,7 @@ At the moment, however, only the Millennium is supported.
 <sect>Configuration:
 <p>
 
-The server auto-detects WRAM size and RAMDAC speed. Do not bother putting 
+The server autodetects WRAM size and RAMDAC speed. Do not bother putting 
 these in your "Device" section, as they will be overridden. The TVP3026 has a
 programmable clock generator, so probing and setting clocks is unnecessary as
 well.
@@ -105,7 +105,7 @@ to keep up to date with the latest news, new sources, etc.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.0 1996/10/19 15:15:43 dawes Exp $
+$XFree86$
 </verb>
 
 </article>

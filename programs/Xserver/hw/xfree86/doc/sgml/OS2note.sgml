@@ -17,7 +17,7 @@ with the same name, but also differ sometimes in a subtle way.
 This guide will give you hints if you intend to rebuild the system
 from scratch under OS/2.
 <p>
-Please also read README.OS2 for end-user information, and set at least the
+Please alse read README.OS2 for end-user information, and set at least the
 environment variables described there.
 
 <sect>Tools required
@@ -68,7 +68,7 @@ include space for the postscript and troff documentation files. I have never
 installed them. Nor did I install the test subtree.
 
 <enum>
-<item>Install all the above utilities. Refer to the corresponding documentation.
+<item>Install all the above utilities. Refere to the corresponding documentation.
       Verify that everything works well, particularly EMX.
 <item>It is a good idea to use the same or a similar structure I have.
       I have made a directory <tt>&bsol;x11</tt> on the partition for compiling and have
@@ -100,7 +100,7 @@ installed them. Nor did I install the test subtree.
       </verb>
       Edit <tt/added-file/ with a text editor and remove the <tt/*** / at
       the beginning and the time stamp at the end (search for a TAB and
-      erase to the end of the line). You get a list of file paths, one in a
+      erase to the end of the line). You get a list of filepaths, one in a
       line, which is the input to the added utility.
 <item>After that you can apply the patches in the right order. Usually this
       is done by a command
@@ -169,7 +169,7 @@ Well, you see, this was quite easy :-)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2note.sgml,v 3.0 1996/02/24 05:59:09 dawes Exp $
+$XFree86$
 
 
 

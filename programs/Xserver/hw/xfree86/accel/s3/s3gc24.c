@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.1 1996/08/14 14:32:02 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -260,7 +260,7 @@ s3CreateGC24(pGC)
    if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
        return (mfbCreateGC(pGC));
    if (pGC->depth != s3InfoRec.depth) {
-        ErrorF("s3CreateGC24: unsupported depth: %d\n", pGC->depth);
+        ErrorF("s3CreateGC: unsupported depth: %d\n", pGC->depth);
         return FALSE;
    }
 
@@ -572,7 +572,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   if (!pGC->tileIsPixel) { /* XXX: check constants */
 	      int   width = pGC->tile.pixmap->drawable.width * 24;
 
-	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
+	      if ((width <= 64) && !(width & (width - 1))) {
 		 cfb24CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);

@@ -1,19 +1,9 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.7 1996/08/26 10:47:41 dawes Exp $
 #
-# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
-#
-# See the file "LICENSE" for information regarding redistribution terms,
-# and for a DISCLAIMER OF ALL WARRANTIES.
 #
 
-#
-# Monitor configuration routines
-#
-
-proc Monitor_create_widgets { win } {
+proc Monitor_create_widgets { w } {
 	global MonitorIDs monDevNum monCanvas MonitorDescriptions
 
-	set w [winpathprefix $win]
 	set monDevNum 0
 	frame $w.monitor -width 640 -height 420 \
 		-relief ridge -borderwidth 5
@@ -30,34 +20,32 @@ proc Monitor_create_widgets { win } {
 		label $w.monitor.sync.monsel -text "Monitor selected:" -anchor w
 		pack  $w.monitor.sync.monsel -side left \
 			-in $w.monitor.sync.line1
-		combobox $w.monitor.sync.monselect -state disabled -bd 2
+		combobox $w.monitor.sync.monselect -state disabled
 		pack  $w.monitor.sync.monselect -side left \
 			-in $w.monitor.sync.line1
 		eval [list $w.monitor.sync.monselect linsert end] $MonitorIDs
 		Monitor_cbox_setentry $w.monitor.sync.monselect [lindex $MonitorIDs 0]
 		bind $w.monitor.sync.monselect.popup.list <ButtonRelease-1> \
-			"+Monitor_monselect $win"
-		bind $w.monitor.sync.monselect.popup.list <Return> \
-			"+Monitor_monselect $win"
+			"+Monitor_monselect [list $w]"
 	}
 	frame $w.monitor.sync.horz
 	pack  $w.monitor.sync.horz -side left -padx 10m
 	label $w.monitor.sync.horz.title -text "Horizontal"
-	entry $w.monitor.sync.horz.entry -width 35 -bd 2
+	entry $w.monitor.sync.horz.entry -width 35
 	pack  $w.monitor.sync.horz.title -side left
 	pack  $w.monitor.sync.horz.entry -side left
 
 	frame $w.monitor.sync.vert
 	pack  $w.monitor.sync.vert -side left -padx 10m
 	label $w.monitor.sync.vert.title -text "Vertical"
-	entry $w.monitor.sync.vert.entry -width 35 -bd 2
+	entry $w.monitor.sync.vert.entry -width 35
 	pack  $w.monitor.sync.vert.title -side left
 	pack  $w.monitor.sync.vert.entry -side left 
 
 	set canv $w.monitor.canvas
 	set monCanvas $canv
 	canvas $canv -width 600 -height 330 -highlightthickness 0 \
-		-takefocus 0 -relief sunken -borderwidth 2
+		-takefocus no -relief sunken -borderwidth 2
 	pack $canv -side top -fill x
 
 	frame $canv.list
@@ -68,9 +56,7 @@ proc Monitor_create_widgets { win } {
 	#pack $canv.list.sb -side left -fill y
 	eval [list $canv.list.lb insert end] $MonitorDescriptions
 	bind $canv.list.lb <ButtonRelease-1> \
-		[list Monitor_setstandard $win $canv]
-	bind $canv.list.lb <Return> \
-		[list Monitor_setstandard $win $canv]
+		[list Monitor_setstandard $w $canv]
 
 	$canv create rectangle 150  55 550 305 -fill cyan
 	$canv create rectangle 160  70 540 280 -fill grey
@@ -131,35 +117,29 @@ proc Monitor_create_widgets { win } {
 		[list Monitor_sync_ent $w.monitor.sync.vert.entry $canv vert]
 }
 
-proc Monitor_activate { win } {
-	set w [winpathprefix $win]
+proc Monitor_activate { w } {
 	pack $w.monitor -side top -fill both -expand yes
 
-	Monitor_get_configvars $win
+	Monitor_get_configvars $w
 }
 
-proc Monitor_deactivate { win } {
-	set w [winpathprefix $win]
+proc Monitor_deactivate { w } {
 	pack forget $w.monitor
 
-	Monitor_set_configvars $win
+	Monitor_set_configvars $w
 }
 
-proc Monitor_monselect { win } {
+proc Monitor_monselect { w } {
 	global monDevNum
 
-	set w [winpathprefix $win]
-	if { ![string length [$w.monitor.sync.monselect curselection]] } \
-		return
-	Monitor_set_configvars $win
+	Monitor_set_configvars $w
 	set monDevNum [$w.monitor.sync.monselect curselection]
-	Monitor_get_configvars $win
+	Monitor_get_configvars $w
 }
 
-proc Monitor_set_configvars { win } {
+proc Monitor_set_configvars { w } {
 	global monDevNum MonitorIDs
 
-	set w [winpathprefix $win]
 	set devid [lindex $MonitorIDs $monDevNum]
 	set varname Monitor_$devid
 	global $varname
@@ -167,10 +147,9 @@ proc Monitor_set_configvars { win } {
 	set ${varname}(VertRefresh)	[$w.monitor.sync.vert.entry get]
 }
 
-proc Monitor_get_configvars { win } {
+proc Monitor_get_configvars { w } {
 	global monDevNum MonitorIDs monCanvas
 
-	set w [winpathprefix $win]
 	set devid [lindex $MonitorIDs $monDevNum]
 	set varname Monitor_$devid
 	global $varname
@@ -189,45 +168,22 @@ proc Monitor_cbox_setentry { cb text } {
 		$cb einsert 0 $text
 	}
 	$cb econfig -state disabled
-	set cblist [$cb lget 0 end]
-	set idx [lsearch $cblist $text]
-	if { $idx != -1 } {
-		$cb see $idx
-		$cb lselection clear 0 end
-		$cb lselection set $idx
-		$cb activate $idx
-	}
 }
 
-proc Monitor_popup_help { win } {
-	catch {destroy .monitorhelp}
-        toplevel .monitorhelp -bd 5 -relief ridge
+proc Monitor_popup_help { w } {
+        toplevel .monitorhelp
         wm title .monitorhelp "Help"
 	wm geometry .monitorhelp +30+30
         text .monitorhelp.text
-        .monitorhelp.text insert 0.0 "\n\n\n\
-		Enter the horizontal and vertical sync rates of your\n\
-		monitor.  These should be listed in your manual.\n\n\
-		If you can not find this information, you can pick from the\n\
-		the list of common monitor capabilities, the one that best\n\
-		describes your monitor, and the appropriate sync rates\n\
-		will be filled in for you.\n\n\
-		It is very important that these values be correct!\n\n\
-		Using video modes that require sync rates beyond the\n\
-		capabilities of your monitor may damage it.\n\
-		The server will automatically exclude any video modes\n\
-		that require sync rates beyond those you enter."
-        .monitorhelp.text configure -state disabled
-        button .monitorhelp.ok -text "Dismiss" -command "destroy .monitorhelp"
+        .monitorhelp.text insert 0.0 "Monitor help text"
+        button .monitorhelp.ok -text "Okay" -command "destroy .monitorhelp"
         pack .monitorhelp.text .monitorhelp.ok
 }
 
-proc Monitor_setstandard { win c } {
+proc Monitor_setstandard { w c } {
 	global MonitorHsyncRanges MonitorVsyncRanges
 
-	set w [winpathprefix $win]
 	set monidx [$c.list.lb curselection]
-	if ![string length $monidx] return
 	$w.monitor.sync.horz.entry delete 0 end 
 	$w.monitor.sync.horz.entry insert end $MonitorHsyncRanges($monidx)
 	Monitor_sync_ent $w.monitor.sync.horz.entry $c horz
@@ -236,10 +192,7 @@ proc Monitor_setstandard { win c } {
 	Monitor_sync_ent $w.monitor.sync.vert.entry $c vert
 }
 
-proc Monitor_sync_ent { win c dir } {
-	global tk_version
-
-	set w [winpathprefix $win]
+proc Monitor_sync_ent { w c dir } {
 	if { [string compare $dir horz] == 0 } {
 		set min 20.0
 		set max 110.0
@@ -259,15 +212,6 @@ proc Monitor_sync_ent { win c dir } {
 	set rnglist [split $rng ,]
 	set count 0
 	catch {$c delete ${dir}rng}
-	if { $tk_version == 4.0 } {
-		# workaround a bug in Tk4.0 canvases
-		set beg $min
-		set end $max
-		catch {$c delete blank}
-		$c create rectangle \
-			[expr $x1] [expr $y1] [expr $x2] [expr $y2] \
-			-fill white -tag blank
-	}
 	foreach elem $rnglist {
 		set beg [set end 0]
 		set elem [zap_white $elem]
@@ -277,16 +221,9 @@ proc Monitor_sync_ent { win c dir } {
 		} else {
 			scan $elem %f-%f beg end
 		}
+		if { $beg < $min || $end > $max } continue
 		if { $beg > $end } {
 			set end $beg
-		}
-		if { $beg < $min } {
-			if { $end < $min } continue
-			set beg $min
-		}
-		if { $end > $max } {
-			if { $beg > $max } continue
-			set end $max
 		}
 		incr count
 		$c create rectangle \

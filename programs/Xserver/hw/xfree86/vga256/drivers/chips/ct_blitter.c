@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blitter.c,v 3.2 1996/08/24 12:54:07 dawes Exp $ */
+/* $XFree86$ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -46,17 +46,13 @@
 #include "ct_driver.h"
 
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#include "ct_BltHiQV.h"
-#else
 #include "ct_BlitMM.h"
-#endif
 #else
 #include "ct_Blitter.h"
 #endif
 
 #ifndef CHIPS_MMIO		       /* define this only once */
-/* alu to C&T conversion for use with source data */
+/* alu to C&T conversion */
 int ctAluConv[] =
 {
     0x00,			       /* dest = 0; GXclear, 0 */
@@ -76,37 +72,13 @@ int ctAluConv[] =
     0x77,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
     0xFF,			       /* dest = 0xFF; GXset, 0xF */
 };
-/* alu to C&T conversion for use with pattern data */
-int ctAluConv2[] =
-{
-    0x00,			       /* dest = 0; GXclear, 0 */
-    0xA0,			       /* dest &= src; GXand, 0x1 */
-    0x50,			       /* dest = src & ~dest; GXandReverse, 0x2 */
-    0xF0,			       /* dest = src; GXcopy, 0x3 */
-    0x0A,			       /* dest &= ~src; GXandInverted, 0x4 */
-    0xAA,			       /* dest = dest; GXnoop, 0x5 */
-    0x5A,			       /* dest = ^src; GXxor, 0x6 */
-    0xFC,			       /* dest |= src; GXor, 0x7 */
-    0x03,			       /* dest = ~src & ~dest;GXnor, 0x8 */
-    0xA5,			       /*?? dest ^= ~src ;GXequiv, 0x9 */
-    0x55,			       /* dest = ~dest; GXInvert, 0xA */
-    0xF5,			       /* dest = src|~dest ;GXorReverse, 0xB */
-    0x0F,			       /* dest = ~src; GXcopyInverted, 0xC */
-    0xAF,			       /* dest |= ~src; GXorInverted, 0xD */
-    0x5F,			       /*?? dest = ~src|~dest ;GXnand, 0xE */
-    0xFF,			       /* dest = 0xFF; GXset, 0xF */
-};
 
 #endif
 
 /* Ugly hack to get around setting foreground colour with registers
- * in ct_BitBlt.c, or compiling it multiple times */
+ * in ct_BitBlt.c, or compiling it twice */
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctSetFGColorBPP ctHiQVSetFGColorBPP
-#else
 #define _ctSetFGColorBPP ctMMIOSetFGColorBPP
-#endif
 #else
 #define _ctSetFGColorBPP ctSetFGColorBPP
 #endif
@@ -125,10 +97,9 @@ _ctSetFGColorBPP(fgcolor, mask)
 	mask = 0xFFFF;
 	break;
     case 24:
-#ifdef CHIPS_HIQV
-	ctSETFGCOLOR24(fgcolor);
-#else
-	{
+	if (ctisHiQV32) {
+	    ctSETFGCOLOR24(fgcolor);
+	} else {
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -143,57 +114,7 @@ _ctSetFGColorBPP(fgcolor, mask)
 		ctSETFGCOLOR8(fgcolor);
 	    }
 	}
-#endif
-	mask = 0xFFFFFF;
-	break;
-    }
-    return 0;
-}
-
-#ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctSetBGColorBPP ctHiQVSetBGColorBPP
-#else
-#define _ctSetBGColorBPP ctMMIOSetBGColorBPP
-#endif
-#else
-#define _ctSetBGColorBPP ctSetBGColorBPP
-#endif
-int
-_ctSetBGColorBPP(bgcolor, mask)
-    unsigned long bgcolor;
-    unsigned int mask;
-{
-    switch (vgaBitsPerPixel) {
-    case 8:
-	ctSETBGCOLOR8(bgcolor);
-	mask = 0xFF;
-	break;
-    case 16:
-	ctSETBGCOLOR16(bgcolor);
-	mask = 0xFFFF;
-	break;
-    case 24:
-#ifdef CHIPS_HIQV
-	ctSETBGCOLOR24(bgcolor);
-#else
-	{
-	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
-	     * Though you can do a grey fill, by a little bit of magic
-	     * with the 8bpp fill */
-	    unsigned char red, green, blue;
-
-	    red = bgcolor & 0xFF;
-	    green = (bgcolor >> 8) & 0xFF;
-	    blue = (bgcolor >> 16) & 0xFF;
-	    if (red ^ green || green ^ blue || blue ^ red) {
-		return -1;
-	    } else {
-		ctSETBGCOLOR8(bgcolor);
-	    }
-	}
-#endif
-	mask = 0xFFFFFF;
+	mask = 0xFFFFF;
 	break;
     }
     return 0;
@@ -201,11 +122,7 @@ _ctSetBGColorBPP(bgcolor, mask)
 
 /*lowlevel function */
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctBitBlt ctHiQVBitBlt
-#else
 #define _ctBitBlt ctMMIOBitBlt
-#endif
 #else
 #define _ctBitBlt ctBitBlt
 #endif
@@ -237,18 +154,7 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
     if (alu & 0xF == GXnoop)
 	return;
 
-
-    if (alu & 0x10) {
-	/* Source is Background colour */
-	op = ctAluConv2[alu & 0xF] | ctPATSOLID | ctPATMONO;
-    } else {
-	op = ctAluConv[alu & 0xF];
-    }
-    
-    if (alu & 0x40)
-	op |= ctBGTRANSPARENT;	       /*BG transparent */
-    if (!CHECKSCREEN(psrcBase))
-	op |= ctSRCSYSTEM;	       /*source is system memory */
+    op = ctAluConv[alu & 0xF];
 
 #if 0
     if (xdir == 1 && ydir == 1) {      /* left to right */
@@ -260,7 +166,6 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
 	/* bottom to top */
 	pSrc = (((y + h - 1) * widthSrc) + x + w - 1) * vgaBytesPerPixel;
 	pDst = (((y1 + h - 1) * widthDst) + x1 + w - 1) * vgaBytesPerPixel;
-	op |= (ctBOTTOM2TOP | ctRIGHT2LEFT);
     }
 #else
     if (xdir == 1) {
@@ -268,7 +173,6 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
 	pSrc = x;
 	pDst = x1;
     } else {
-	op |= ctRIGHT2LEFT;
 	pSrc = x + w - 1;
 	pDst = x1 + w - 1;
     }
@@ -277,7 +181,6 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
 	pSrc += y * widthSrc;
 	pDst += y1 * widthDst;
     } else {
-	op |= ctBOTTOM2TOP;
 	pSrc += (y + h - 1) * widthSrc;
 	pDst += (y1 + h - 1) * widthSrc;
     }
@@ -285,11 +188,15 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
     pDst *= vgaBytesPerPixel;
 #endif
 
+    if (alu & 0x10)
+	op |= ctSRCFG;		       /* Source is Foreground colour */
+    if (alu & 0x40)
+	op |= ctBGTRANSPARENT;	       /*BG transparent */
+    if (!CHECKSCREEN(psrcBase))
+	op |= ctSRCSYSTEM;	       /*source is system memory */
+
     ctBLTWAIT;
     ctSETROP(op);
-#ifdef CHIPS_HIQV
-    if (alu & 0x10) ctSETMONOCTL(0);	/* Paranoia */
-#endif
     ctSETSRCADDR(pSrc);
     ctSETDSTADDR(pDst);
     ctSETPITCH(widthSrc * vgaBytesPerPixel, widthDst * vgaBytesPerPixel);
@@ -303,11 +210,7 @@ _ctBitBlt(psrcBase, pdstBase, widthSrc, widthDst, x, y,
  */
 
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctcfbBLT8x8PatternFill ctHiQVBLT8x8PatternFill
-#else
 #define _ctcfbBLT8x8PatternFill ctMMIOBLT8x8PatternFill
-#endif
 #else
 #define _ctcfbBLT8x8PatternFill ctcfbBLT8x8PatternFill
 #endif
@@ -337,15 +240,13 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
     /* The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctHWCursor){
-#ifdef CHIPS_HIQV
+    if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-#else
-	ctGETHWCUR(curreg);
-	ctPUTHWCUR(curreg & 0xFFF7);
-#endif
+    } else {
+	curreg = inl(0xA3D0);
+	outw(0xA3D0, curreg & 0xFFF7);
     }
     if (patternpitch == 8)
 	memcpy((unsigned char *)vgaLinearBase + ctBLTPatternAddress,
@@ -361,15 +262,14 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
     ctSETDSTADDR(destaddr * vgaBytesPerPixel);
     ctSETPATSRCADDR(ctBLTPatternAddress);
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
-    ctBLTWAIT;
-    if (ctHWCursor) {
-#ifdef CHIPS_HIQV
+    if (ctisHiQV32) {
+	ctBLTWAIT;
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
-#else
-	ctPUTHWCUR(curreg);
-#endif
-  }
+    } else {
+	ctBLTWAIT;
+	outw(0xA3D0, curreg);
+    }
 }
 
 /*
@@ -378,11 +278,7 @@ _ctcfbBLT8x8PatternFill(destaddr, w, h, pattern, yrot, patternpitch,
  */
 
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctcfbBLT16x16PatternFill ctHiQVBLT16x16PatternFill
-#else
 #define _ctcfbBLT16x16PatternFill ctMMIOBLT16x16PatternFill
-#endif
 #else
 #define _ctcfbBLT16x16PatternFill ctcfbBLT16x16PatternFill
 #endif
@@ -412,15 +308,13 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
     /* The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctHWCursor) {
-#ifdef CHIPS_HIQV
+    if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-#else
-	ctGETHWCUR(curreg);
-	ctPUTHWCUR(curreg & 0xFFF7);
-#endif
+    } else {
+	curreg = inl(0xA3D0);
+	outw(0xA3D0, curreg & 0xFFF7);
     }
 
     if (vgaBitsPerPixel == 8) {
@@ -617,13 +511,11 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 
 	ctBLTWAIT;
     }
-    if (ctHWCursor) {
-#ifdef CHIPS_HIQV
+    if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
-#else
-	ctPUTHWCUR(curreg);
-#endif
+    } else {
+	outw(0xA3D0, curreg);
     }
 }
 
@@ -641,11 +533,7 @@ _ctcfbBLT16x16PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
  */
 
 #ifdef CHIPS_MMIO
-#ifdef CHIPS_HIQV
-#define _ctcfbBLT32x32PatternFill ctHiQVBLT32x32PatternFill
-#else
 #define _ctcfbBLT32x32PatternFill ctMMIOBLT32x32PatternFill
-#endif
 #else
 #define _ctcfbBLT32x32PatternFill ctcfbBLT32x32PatternFill
 #endif
@@ -677,15 +565,13 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
      * The cursor must be hidden during this operation, otherwise 
      * with the depth set to the wrong value it might be corrupted
      */
-    if (ctHWCursor) {
-#ifdef CHIPS_HIQV
+    if (ctisHiQV32) {
 	outb(0x3D6, 0xA0);
 	curreg = inb(0x3D7);
 	outb(0x3D7, curreg & 0xF7);
-#else
-	ctGETHWCUR(curreg);
-	ctPUTHWCUR(curreg & 0xFFF7);
-#endif
+    } else {
+	curreg = inl(0xA3D0);
+	outw(0xA3D0, curreg & 0xFFF7);
     }
 
     ctSETPITCH(8, destpitch * 4);      /* Four-way interleave */
@@ -838,18 +724,16 @@ _ctcfbBLT32x32PatternFill(destaddr, x, w, h, pattern, yrot, patternpitch,
 	destaddr = saved_destaddr;
     }				       /* for (k = 0; k < 4; k++) */
 
-    ctBLTWAIT;
-#ifdef CHIPS_HIQV
-    outb(0x3D6, 0x20);
-    outb(0x3D7, bltreg);
-    if (ctHWCursor){
+    if (ctisHiQV32) {
+	ctBLTWAIT;
+	outb(0x3D6, 0x20);
+	outb(0x3D7, bltreg);
 	outb(0x3D6, 0xA0);
 	outb(0x3D7, curreg);
+    } else {
+	ctBLTWAIT;
+	outb(0x3D6, 0x40);
+	outb(0x3D7, bltreg);
+	outw(0xA3D0, curreg);
     }
-#else
-    outb(0x3D6, 0x40);
-    outb(0x3D7, bltreg);
-    if (ctHWCursor) 
-        ctPUTHWCUR(curreg);	
-#endif
 }

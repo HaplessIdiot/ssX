@@ -31,7 +31,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nvreg.h,v 3.0 1996/10/10 14:04:58 dawes Exp $ */
+/* $XFree86$ */
 
 #ifndef __NVREG_H_
 #define __NVREG_H_
@@ -51,18 +51,12 @@
 #define NV_PFB_VER_BACK_PORCH     (0x600560/4)
 #define NV_PFB_VER_DISP_WIDTH     (0x600570/4)
 
-#define NV_PFB_BOOT_0_RAM_AMOUNT         1,0
-#define NV_PFB_CONFIG_0_VERTICAL         0,0     /* 1 during blank */
-#define NV_PFB_CONFIG_0_PIXEL_DEPTH      9,8
-#define NV_PFB_CONFIG_0_SCANLINE         20,20
-#define NV_PFB_CONFIG_0_PCLK_VCLK_RATIO  26,24
-#define NV_PFB_CONFIG_0_RESOLUTION       6,4
+#define NV_PFB_BOOT_0_RAM_AMOUNT      1,0
+#define NV_PFB_CONFIG_0_PIXEL_DEPTH   9,8
+#define NV_PFB_CONFIG_0_SCANLINE      20,20
 
 /* Text mode config registers */
-#define NV_PRM_CONFIG_0              (0x6c0200/4)
-#define NV_MEMORY_TRACE              (0x6c1f00/4)
-
-#define NV_PBUS_ACCESS               (0x1200/4)
+#define NV_PRM_CONFIG_0           (0x6c0200/4)
 
 
 /* Addreses for the DAC micro port */
@@ -93,13 +87,9 @@
 #define NV_DAC_CONF_0_PORT_WIDTH      3,2
 #define NV_DAC_CONF_0_VISUAL_DEPTH    1,0
 
-#define NV_DAC_CONF_1_VCLK_IMPEDANCE  3,3
-#define NV_DAC_CONF_1_PCLK_VCLK_RATIO 2,0
-
 #define NV_DAC_SGS_ID                 0x44
 #define NV_DAC_1764_ID                0x64
 #define NV_DAC_1732_ID                0x32
-
 
 
 /* This points at the base of the memory mapped for the NV1

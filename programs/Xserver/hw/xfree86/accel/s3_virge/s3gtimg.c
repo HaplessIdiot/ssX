@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gtimg.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.9 1996/06/29 09:07:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -33,7 +33,7 @@
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
-#include "s3v.h"
+#include "s3.h"
 
 void
 s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)

@@ -13,9 +13,9 @@
   NOTE: This driver is pretty new, and not everything might work like
   you expect it to. It shouldn't crash your machine, but you may have
   video artifacts or missing lines. Please report any and all problems
-  to XFree86@Xfree86.org using the appropriate bug report sheet.
+  to XFree86@Xfree86.org using the appropiate bug report sheet.
 
-  There will be updated drivers in the coming XFree86 beta releases.
+  There will be updated drivers in the comming XFree86 beta releases.
 
   2.  Features:
 
@@ -24,7 +24,7 @@
 
      o  uses linear frame buffer
 
-     o  it should be possible to reach resolutions up to 2048x2048
+     o  it should be possible to reach resolutions upto 2048x2048
 
      o  it should be possible to use pixel depths of 8, 15, and 16
         (24/32 not yet) bits per pixel.
@@ -42,7 +42,7 @@
 
   4.  Configuration:
 
-  The server auto-detects RAM size, RAMDAC and ClockChip. Do not bother
+  The server autodetects RAM size, RAMDAC and ClockChip. Do not bother
   putting these in your "Device" section.  The "nolinear" option is
   unsupported.
 
@@ -64,7 +64,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.0 1996/10/20 13:33:21 dawes Exp $
+  $XFree86$
 
 
 
@@ -130,5 +130,3 @@
 
 
 
-
-$XFree86$

@@ -1,56 +1,31 @@
-MGA Millennium (MGA2064W) with TVP3026 RAMDAC Driver v1.0
-=========================================================
-
-NOTE: This driver is pretty new, and not everything works like you expect
-it to. It shouldn't crash your machine, but you may have video artifacts
-or missing lines. Please report any and all problems to XFree86@Xfree86.org
-using the appropiate bug report sheet. 
-
-Check the file called BUGS to see if a problem you have is already found. If
-not please report it to xfree86@xfree86.org with the subject line "bug in mga
-driver" so it gets to us quickly. 
-
-To keep your driver upto date: keep applying any post XFree86 v3.2 patches
-XFree86 makes available on ftp.xfree86.org, or if you feel a little daring,
-try to use the patches from the Matrox Team's web site at URL:
-
-          http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
+MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v1.0
 
 Features:
----------
 
-* Basic support for the Matrox Millennium video adapter.
-* Uses linear frame buffer whenever possible.
-* It should be possible to reach resolutions up to 1920x1024 or more.
-* It should be possible to use pixel depths of:
-   -  8 bits per pixel (256 pseudo colour)
-   - 16 bits per pixel (high colour)
-   - 24 bits per pixel (packed true colour)
-   - 32 bits per pixel (true colour)
-* The following are accelerated (use the graphics engine):
-  - lines
-  - some bitblts
-  - filled rectangles
+* Basic support for the Matrox Millennium video adapter
+* basic bitblt support
+* uses linear frame buffer whenever possible
+* it should be possible to reach resolutions upto 1920x1024
+* it should be possible to use pixel depths of 8, 16, and 32 bits
+  per pixel (256 pseudo colour, "high colour", "true colour"). 
+  Sorry, 24 bpp is not supported at this time (although we will
+  look into it).
 
-Planned Features
-----------------
+Future Features (in order from highest to lowest priority)
 
-In order from highest to lowest priority:
+=1	more hardware acceleration (hw cursor, more primitive operations, etc)
+=1	3d acceleration (once we work out how that's done)
+2	more chipsets and RAMDACs
 
-* More hardware acceleration (hardware cursor, primitive operations, etc.).
-* 3D acceleration (once we work out how that's done).
-* Support for more chipsets and RAMDACs.
-
-Technical Notes:
-----------------
+Technical Note:
 
 This driver is the work of Radoslaw Kapitan for the most part, when he did
 not have the required Matrox documentation. The driver has been cleaned up
 and corrected, and should work on most Matrox Millennium boards.
 
 !!!!!!!!!!!!!!!!!
-This first release, that was first integrated in XFree86-3.1.2Gg, contains
-several hacks to get it to work. Especially, it doesn't work when the
+This first release that was integrated in XFree86-3.1.2Gg contains
+several hacks to get this to work. Especially, it won't work when the
 MMIO registers aren't mapped correctly. Most of the updated PCI
 detection and access code should at least be rethought.
 !!!!!!!!!!!!!!!!!
@@ -59,48 +34,54 @@ Reference releases, which are quality tested and are known to work are in
 the base XFree86 3.2 and later source tree. If you don't like your machine
 crashing, we suggest you stick to those stable releases.
 
+Radoslaw's board is a 4 MB, 220 MHz Matrox Millennium, and we know that one
+works okay. :-)
+
 Hardware Supported:
--------------------
 
-This driver only supports the Matrox Storm (MGA2064W) chipset with the
-Texas Instruments TVP3026 RAMDAC. Matrox has so far only shipped boards with
-175 MHz and 220 MHz components, although 135 MHz and 250 MHz RAMDAC parts
-do exist.
+This driver only supports the MGA Storm (MGA2064W) chipset with the TI
+(TVP) 3026 RAMDAC. Matrox have only so far made 175 and 220 MHz boards with
+these two components, although 135 and 250 MHz RAMDAC parts exist.
 
-This driver auto-detects the amount of installed WRAM and the RAMDAC speed,
-so you don't need to probe or specify these. Same goes for the clocks, which
-are fully progrmamable on the RAMDAC. The driver takes care of everything
-for you!
+The driver assumes a 2 MB, 175 MHz DAC card. We are trying to get the
+automatic detection of WRAM and DAC Speed worked out. You can configure it
+to use the 220 MHz DAC and more WRAM, but please only do so once you are
+certain that you have the faster RAMDAC and/or more WRAM (see your card's
+technical documentation).
 
-Support for other Matrox cards is planned. This includes the Impression
-and Mystique. At the moment, however, only the Millennium is supported.
+We will eventually provide support for the other Matrox chipsets (once the
+Millenium driver is at a far enough stage and more people with other cards
+join the effort), including the Impression, Mystique, etc. The Mystique may
+even work (depends on how much has changed, whether the RAMDAC is still the
+3026... etc). If you are a non-Millennium Matrox owner, please do not try
+this Xserver out unless you are certain that your board has the required
+RAMDAC and chipset.
 
 Configuration:
---------------
 
-The driver auto-detects all device info, so use the following device
-section in your XF86Config file:
+If you have a 220 MHz board, you must specify in the XF86Config file the
+following line (near where Videoram or Clocks is commented out).
 
-	Section "Device"
-		Identifier	"Matrox Millennium"
-		VendorName	"Matrox"
-		BoardName	"Millennium"
-	EndSection
+DACSpeed 	220000
 
-or let xf86config do this for you.
+If you have more video ram than 2 MB, you MUST specify the amount in the
+following fashion:
 
-Driver Options:
----------------
+4 mb boards:
 
-*** nolinear doesn't currently work
-"nolinear"		- disables linear frame buffer and BitBlt Engine
+Videoram	4096
 
+8 mb boards:
+
+Videoram	8192
+
+Other options:
+
+"nolinear"				- disables linear frame buffer and BitBlt Engine
 "noaccel", "no_bitblt"	- turns off BitBlt Engine
 
 Virtual Widths:
----------------
 
-*** The driver now should take care of the virtual/display width handling
 The following multiples must be honored for virtual widths to work:
 
 bpp		non-interleave	interleave
@@ -117,40 +98,28 @@ accesses for faster throughput. 4 MB boards can work in both interleaved
 and non-interleaved modes. We will work out how to determine this in
 future releases. 
 
+If you don't understand this discussion, don't worry, we don't either (yet)
+and once we get it sorted out, you cannot make a mistake.
+
 For now, stick to nice virtual widths, like 640 800 1024 1152 1280 and so
 on. If you can divide your proposed virtual width by 128, you'll be safe.
 
 Main author:
-------------
 
 Radoslaw Kapitan, Tarnow, Poland
 kapitan@student.uci.agh.edu.pl
 
-Code, Additions and Testing:
-----------------------------
+Additions, corrections, etc:
 
 Andrew Vanderstock, Melbourne, Australia
 vanderaj@mail2.svhm.org.au
 
-Angsar Hockmann
-Ansgar.Hockmann@hrz.uni-dortmund.de
-
-Michael Will
-zxmgv07@student.uni-tuebingen.de
-
-Andrew E. Mileski, Ottawa, Canada
-aem@ott.hookup.net
-
-Stephen Pitts
-pitts2@memphis.online.com
-
 Porting to XFree86-3.1.2Gg:
----------------------------
 
 Dirk Hohndel
 hohndel@XFree86.Org
 
 Visit the Matrox Millennium XServer for XFree86 Home Page:
-    http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
+http://www.bf.rmit.edu.au/~ajv/xf86-matrox.html
 to keep upto date with the latest news, new sources, etc.
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3font.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3font.c,v 3.4 1996/02/04 09:05:03 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -36,7 +36,7 @@
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "scrnintstr.h"
-#include "s3v.h"
+#include "s3.h"
 
 Bool
 s3RealizeFont(pScreen, font)

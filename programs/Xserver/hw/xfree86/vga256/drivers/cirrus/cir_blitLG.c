@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.c,v 3.1 1996/09/29 13:39:39 dawes Exp $ */
+/* $XFree86$ */
 
 #include "vga256.h"
 #include "cfbrrop.h"
@@ -44,12 +44,6 @@
    ** Screen-to-Screen blits
 
    */
-
-static void
-CirrusLgScreen2Screen(pointer pdstBase, pointer psrcBase, 
-		      int widthSrc, int widthDst, 
-		      int nbox, DDXPointPtr pptSrc,
-		      BoxPtr pbox, int xdir, int ydir, int alu);
 
 static void CirrusLgScr2ScrLeft2Right(int srcX, int dstX, int Y, 
 				      int w, int h, int alu);
@@ -118,6 +112,7 @@ CirrusLgDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   void vgaImageRead();            /* Default screen-to-host */
   void vgaImageWrite();           /* Default host-to-screen */
   void vgaPixBitBlt();            /* Default host-to-host (ick!) */
+  void CirrusLgScreen2Screen();   /* Laguna's screen-to-screen */
 
   if (pSrc->type == DRAWABLE_WINDOW)
     {
@@ -309,7 +304,7 @@ void
 CirrusLgScreen2Screen(pdstBase, psrcBase, widthSrc, widthDst, nbox, pptSrc,
 		      pbox, xdir, ydir, alu)
   pointer pdstBase, psrcBase;
-  int widthSrc, widthDst;            /* Unused. */
+  int widthSrc, widthDst;          /* Screen pitch */
   int nbox;
   DDXPointPtr pptSrc;
   BoxPtr pbox;
@@ -446,27 +441,17 @@ extern void cfb16DoBitbltCopy();
 extern void cfb16DoBitbltXor();
 extern void cfb16DoBitbltOr();
 extern void cfb16DoBitbltGeneral();
-extern void cfb16CopyWindow();
-
-extern RegionPtr cfb24BitBlt();
-extern void cfb24DoBitbltCopy();
-extern void cfb24DoBitbltXor();
-extern void cfb24DoBitbltOr();
-extern void cfb24DoBitbltGeneral();
-extern void cfb24CopyWindow();
 
 extern RegionPtr cfb32BitBlt();
 extern void cfb32DoBitbltCopy();
 extern void cfb32DoBitbltXor();
 extern void cfb32DoBitbltOr();
 extern void cfb32DoBitbltGeneral();
-extern void cfb32CopyWindow();
-
 static void CirrusLgBppDoBitbltCopy();
 
 
 /*
- * These functions replaces the cfbXX CopyArea functions. They catch plain
+ * This function replaces the cfb32 CopyArea function. It catches plain
  * on-screen BitBlts in order to do them with the Cirrus BitBLT engine.
  */
 
@@ -488,35 +473,10 @@ CirrusLgCopyArea32(pSrcDrawable, pDstDrawable,
 
     if (doBitBlt == cfb32DoBitbltCopy && 
 	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
+	pDstDrawable->type == DRAWABLE_WINDOW)
       doBitBlt = CirrusLgBppDoBitbltCopy;
     
     return cfb32BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
-		       width, height, dstx, dsty, doBitBlt, 0L);
-}
-
-RegionPtr
-CirrusLgCopyArea24(pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty)
-    register DrawablePtr pSrcDrawable;
-    register DrawablePtr pDstDrawable;
-    GC *pGC;
-    int srcx, srcy;
-    int width, height;
-    int dstx, dsty;
-{
-    void (*doBitBlt) ();
-
-    doBitBlt = cfb24DoBitbltCopy;
-    if ((pGC->planemask & 0xFFFFFF) != 0xFFFFFF)
-      doBitBlt = cfb24DoBitbltGeneral;
-
-    if (doBitBlt == cfb24DoBitbltCopy && 
-	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
-      doBitBlt = CirrusLgBppDoBitbltCopy;
-    
-    return cfb24BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
 		       width, height, dstx, dsty, doBitBlt, 0L);
 }
 
@@ -538,7 +498,7 @@ CirrusLgCopyArea16(pSrcDrawable, pDstDrawable,
 
     if (doBitBlt == cfb16DoBitbltCopy && 
 	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
+	pDstDrawable->type == DRAWABLE_WINDOW)
       doBitBlt = CirrusLgBppDoBitbltCopy;
     
     return cfb16BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
@@ -566,22 +526,6 @@ CirrusLgCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int dx, dy;
     register int i, nbox;
     WindowPtr pwinRoot;
-
-    if (!xf86VTSema)
-        switch (vgaBitsPerPixel) {
-        case 8 :
-            vga256CopyWindow(pWin, ptOldOrg, prgnSrc);
-	    return;
-        case 16 :
-            cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
-	    return;
-        case 24 :
-            cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
-	    return;
-        case 32 :
-            cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
-	    return;
-        }
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
@@ -634,6 +578,7 @@ CirrusLgBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 {
   unsigned long *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
+  int widthSrc, widthDst;	/* add to get to same position in next line */
 
   BoxPtr pbox;
   int nbox;
@@ -647,6 +592,19 @@ CirrusLgBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   int xdir;			/* 1 = left right, -1 = right left/ */
   int ydir;			/* 1 = top down, -1 = bottom up */
   int careful;
+
+#if 0
+  /* This doesn't work because we need to deal with cfb16 and cfb32
+   * at the same time. */
+  cfbGetLongWidthAndPointer (pSrc, widthSrc, psrcBase);
+  cfbGetLongWidthAndPointer (pDst, widthDst, pdstBase);
+#endif
+  if (vgaBitsPerPixel == 8)
+    widthSrc = widthDst = vga256InfoRec.virtualX;
+  else if (vgaBitsPerPixel == 16)
+    widthSrc = widthDst = vga256InfoRec.virtualX * 2;
+  else
+    widthSrc = widthDst = vga256InfoRec.virtualX * 4;
 
   /* XXX we have to err on the side of safety when both are windows,
    * because we don't know if IncludeInferiors is being used.
@@ -666,6 +624,8 @@ CirrusLgBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     {
       /* walk source botttom to top */
       ydir = -1;
+      widthSrc = -widthSrc;
+      widthDst = -widthDst;
 
       if (nbox > 1)
 	{
@@ -754,7 +714,7 @@ CirrusLgBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
       xdir = 1;
     }
   
-  CirrusLgScreen2Screen(pdstBase, psrcBase, 0, 0, nbox,
+  CirrusLgScreen2Screen(pdstBase, psrcBase, widthSrc, widthDst, nbox,
 			pptSrc, pbox, xdir, ydir, GXcopy);
 
   if (pboxNew2)

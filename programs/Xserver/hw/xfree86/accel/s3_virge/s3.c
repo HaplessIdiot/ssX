@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.8 1996/11/24 09:54:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.143 1996/09/03 15:12:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -36,11 +36,13 @@
 #include "cfb.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
-#include "s3v.h"
+#include "s3.h"
+#include "regs3.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+#include "s3linear.h"
 #include "s3ELSA.h"
 #ifdef XFreeXDGA
 #include "X.h"
@@ -57,6 +59,7 @@
 #endif
 
 extern int s3MaxClock;
+char s3Mbanks;
 int s3Weight = RGB8_PSEUDO;
 extern char *xf86VisualNames[];
 char *clockchip_probed = XCONFIG_GIVEN;
@@ -133,8 +136,6 @@ ScrnInfoRec s3InfoRec =
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
-   NULL,                        /* char* DCConfig */
-   NULL,                        /* char* DCOptions */
 #ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
@@ -191,27 +192,6 @@ int s3alu_sp[16] =
    ROP_1
 };
 
-/* ROP  ->  (ROP & P) | (D & ~P) */
-int s3alu_pat[16] =
-{
-   ROP_0PaDPnao,
-   ROP_DSaPaDPnao,
-   ROP_SDnaPaDPnao,
-   ROP_SPaDPnao,
-   ROP_DSnaPaDPnao,
-   ROP_DPaDPnao,
-   ROP_DSxPaDPnao,
-   ROP_DSoPaDPnao,
-   ROP_DSonPaDPnao,
-   ROP_DSxnPaDPnao,
-   ROP_DnPaDPnao,
-   ROP_SDnoPaDPnao,
-   ROP_SnPaDPnao,
-   ROP_DSnoPaDPnao,
-   ROP_DSanPaDPnao,
-   ROP_1PaDPnao
-};
-
 #if 0
 static unsigned S3_IOPorts[] = { };
 static int Num_S3_IOPorts = (sizeof(S3_IOPorts)/sizeof(S3_IOPorts[0]));
@@ -226,7 +206,6 @@ static SymTabRec s3DacTable[] = {
 static SymTabRec s3ChipTable[] = {
    { S3_UNKNOWN,	"unknown" },
    { S3_ViRGE,		"ViRGE" },
-   { S3_ViRGE_VX,	"ViRGE/VX" },
    { -1,		"" },
 };
 
@@ -257,7 +236,6 @@ int s3_968_DashBug = 0;
 unsigned long s3MemBase = 0;
 int s3_gcmd = CMD_NOP;
 int s3bltbug_width1, s3bltbug_width2;
-Bool tmp_useSWCursor = FALSE;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int  xf86Verbose;
@@ -367,9 +345,6 @@ s3GetPCIInfo()
 	 switch (pcrp->_device) {
 	 case PCI_ViRGE:
 	    info.ChipType = S3_ViRGE;
-	    break;
-	 case PCI_ViRGE_VX:
-	    info.ChipType = S3_ViRGE_VX;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
@@ -496,14 +471,13 @@ Bool
 s3Probe()
 {
    DisplayModePtr pMode, pEnd;
-   unsigned char config, config2;
+   unsigned char config;
    int i, j, numClocks;
    int tx, ty;
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
    int lookupFlags;
-   int MemOffScreen = 0;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -617,9 +591,6 @@ s3Probe()
    outb(vgaCRIndex, 0x36);		/* for register CR36 (CONFG_REG1), */
    config = inb(vgaCRReg);		/* get amount of vram installed */
 
-   outb(vgaCRIndex, 0x37);		/* for register CR37 (CONFG_REG2), */
-   config2 = inb(vgaCRReg);		/* get amount of off-screen ram  */
-
    outb(vgaCRIndex, 0x30);
    s3ChipId = inb(vgaCRReg);         /* get chip id */
 
@@ -668,9 +639,12 @@ s3Probe()
    }
 
    OFLG_ZERO(&validOptions);
+   OFLG_SET(OPTION_LEGEND, &validOptions);
    OFLG_SET(OPTION_CLKDIV2, &validOptions);
+   OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
+   OFLG_SET(OPTION_FB_DEBUG, &validOptions);
    OFLG_SET(OPTION_NO_FONT_CACHE, &validOptions);
    OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
@@ -694,8 +668,6 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
-   OFLG_SET(OPTION_FPM_VRAM, &validOptions);
-   OFLG_SET(OPTION_EDO_VRAM, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef PC98
@@ -705,36 +677,27 @@ s3Probe()
 #endif
 
 
-   /* ViRGE is always PCI (or VLB if ever?!),  ViRGE/VX is only PCI */
-   s3Localbus = TRUE;
+   /* LocalBus or EISA or PCI */
+   s3Localbus = ((config & 0x03) <= 2);
 
-   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
-      if (config & 0x02) {
-	 if (xf86Verbose)
-	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
-      } else {
-	 if (xf86Verbose)
-	    ErrorF("%s %s: card type: VLB\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
+   if (xf86Verbose) {
+      switch (config & 0x03) {
+      case 1:
+	 ErrorF("%s %s: card type: 386/486 localbus\n",
+		XCONFIG_PROBED, s3InfoRec.name);
 	 s3VLB = TRUE;
+	 break;
+      case 2:
+	 ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
+	 break;
+      default:
+	 ErrorF("%s %s: unknown bus type %d (please report)\n",
+		XCONFIG_PROBED, s3InfoRec.name, config & 0x03);
       }
    }
 
-   /* reset S3 graphics engine to avoid memory corruption */
-   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
-      outb(vgaCRIndex, 0x66);
-      i = inb(vgaCRReg);
-      outb(vgaCRReg, i |  0x02);
-      usleep(10000);  /* wait a little bit... */
-   }
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
 			  &max_mem_clock, &hwconf);
-   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
-      outb(vgaCRIndex, 0x66);
-      outb(vgaCRReg, i & ~0x02);  /* clear reset flag */
-      usleep(10000);  /* wait a little bit... */
-   }
-
    if (card_id > 0) {
       if (s3BiosVendor == UNKNOWN_BIOS)
 	 s3BiosVendor = ELSA_BIOS;
@@ -770,9 +733,6 @@ s3Probe()
       if (S3_ViRGE_SERIES(s3ChipId)) {
 	 chipname = "ViRGE";
       }
-      else if (S3_ViRGE_VX_SERIES(s3ChipId)) {
-	 chipname = "ViRGE/VX";
-      }
       ErrorF("%s %s: chipset:   %s rev. %x\n",
 	     XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
    }
@@ -785,50 +745,29 @@ s3Probe()
    }
 
    if (!s3InfoRec.videoRam) {
-      if (S3_ViRGE_VX_SERIES(s3ChipId)) {
-	 switch((config2 & 0x60) >> 5) {
-	 case 1:
-	    MemOffScreen = 4 * 1024;
-	    break;
-	 case 2:
-	    MemOffScreen = 2 * 1024;
-	    break;
-	 }
-	 switch ((config & 0x60) >> 5) {
-	 case 0:
-	    s3InfoRec.videoRam = 2 * 1024;
-	    break;
-	 case 1:
-	    s3InfoRec.videoRam = 4 * 1024;
-	    break;
-	 case 2:
-	    s3InfoRec.videoRam = 6 * 1024;
-	    break;
-	 case 3:
-	    s3InfoRec.videoRam = 8 * 1024;
-	    break;
-	 }
-	 s3InfoRec.videoRam -= MemOffScreen;
+      switch ((config & 0xE0) >> 5) {	/* look at bits 7-5 */
+      case 0:
+	 s3InfoRec.videoRam = 4096;
+	 break;
+      case 2:
+	 s3InfoRec.videoRam = 3072;
+	 break;
+      case 3:
+	 s3InfoRec.videoRam = 8192;
+	 break;
+      case 4:
+	 s3InfoRec.videoRam = 2048;
+	 break;
+      case 5:
+	 s3InfoRec.videoRam = 6144;
+	 break;
+      case 6:
+	 s3InfoRec.videoRam = 1024;
+	 break;
       }
-      else {
-	 switch((config & 0xE0) >> 5) {
-	 case 0:
-	    s3InfoRec.videoRam = 4 * 1024;
-	    break;
-	 case 4:
-	    s3InfoRec.videoRam = 2 * 1024;
-	    break;
-	 }
-      }
-
       if (xf86Verbose) {
-	 if (MemOffScreen)
-	    ErrorF("%s %s: videoram:  %dk (plus %dk off-screen)\n",
-		   XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam,
-		   MemOffScreen);
-	 else
-	    ErrorF("%s %s: videoram:  %dk\n",
-		   XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
+         ErrorF("%s %s: videoram:  %dk\n",
+              XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.videoRam);
       }
    } else {
       if (xf86Verbose) {
@@ -836,6 +775,10 @@ s3Probe()
               XCONFIG_GIVEN, s3InfoRec.name, s3InfoRec.videoRam);
       }
    }
+   if (s3InfoRec.videoRam > 1024)
+      s3Mbanks = -1;
+   else
+      s3Mbanks = 0;
 
    if (xf86bpp < 0) {
       xf86bpp = s3InfoRec.depth;
@@ -879,10 +822,8 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#if 1
    case 24:
-#if 1
-/* #ifdef NOT_YET */
+#ifdef NOT_YET
       s3InfoRec.depth = 24;
       s3InfoRec.bitsPerPixel = 32; /* Use packed 24 bpp (RGB) but this
 				      should be transparant for clients */
@@ -910,12 +851,9 @@ s3Probe()
       if (defaultColorVisualClass < 0)
 	 defaultColorVisualClass = s3InfoRec.defaultVisual;
       break;
-#endif
    default:
       ErrorF(
-	"Invalid value for bpp.  Valid values are 8, 15, 16"
-	/*", 24 and 32"*/
-	".\n");
+	"Invalid value for bpp.  Valid values are 8, 15, 16, 24 and 32.\n");
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
    }
@@ -930,7 +868,7 @@ s3Probe()
 
    s3Bpp = xf86bpp / 8;
 
-   if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
+   if (S3_ViRGE_SERIES(s3ChipId)) {
       if (s3RamdacType != UNKNOWN_DAC && !DAC_IS_TRIO) {
 	 ErrorF("%s %s: for ViRGE chips you shouldn't specify a Ramdac\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -987,7 +925,7 @@ s3Probe()
 	 chips = "S3 chips other than S3 ViRGE";
 	 break;
       case S3_TRIO64_DAC:
-	 if (!S3_ANY_ViRGE_SERIES(s3ChipId))
+	 if (!S3_ViRGE_SERIES(s3ChipId))
 	    chips = "ViRGE";
 	 break;
       }
@@ -1001,7 +939,7 @@ s3Probe()
       }
    }
 
-   if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
+   if (S3_ViRGE_SERIES(s3ChipId)) {
       if (!DAC_IS_TRIO) {
 	 ErrorF("%s %s: for ViRGE chips you shouldn't specify a Ramdac\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -1021,10 +959,7 @@ s3Probe()
    if (s3InfoRec.dacSpeed <= 0) {
       switch (s3RamdacType) {
       case S3_TRIO64_DAC:
-	 if (S3_ViRGE_VX_SERIES(s3ChipId))
-	    s3InfoRec.dacSpeed = 220000;
-	 else
-	    s3InfoRec.dacSpeed = 135000;
+	 s3InfoRec.dacSpeed = 135000;
 	 break;
       default:
 	 s3InfoRec.dacSpeed = 800000;
@@ -1042,22 +977,13 @@ s3Probe()
    /* Check when pixmux is supported */
 
    if (DAC_IS_TRIO)
-	 if (S3_ViRGE_VX_SERIES(s3ChipId)) {
-	    if (xf86bpp <= 16) s3ATT498PixMux = TRUE;
-	 }
-	 else
-	    if (xf86bpp <=  8) s3ATT498PixMux = TRUE;
+      if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
    if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
       if (DAC_IS_TRIO) {
-	 if (S3_ViRGE_VX_SERIES(s3ChipId)) {
-	    nonMuxMaxClock = 110000;  /* could be 135000 */
-	    pixMuxMinClock = 110000;  /* could be 135000 */
-	 } else {
-	    nonMuxMaxClock = 80000;
-	    pixMuxMinClock = 80000;
-	 }
+	 nonMuxMaxClock = 80000;
+	 pixMuxMinClock = 80000;
       }
       else {
 	 nonMuxMaxClock = 67500;
@@ -1124,10 +1050,7 @@ s3Probe()
       if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 120000;
       } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
-	 if (S3_ViRGE_VX_SERIES(s3ChipId))
-	    maxRawClock = 220000;
-	 else
-	    maxRawClock = 135000;
+	 maxRawClock = 135000;
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -1146,13 +1069,10 @@ s3Probe()
    case S3_TRIO64_DAC:
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else if (s3Bpp < 4 && !S3_ViRGE_VX_SERIES(s3ChipId))
+      else if (s3Bpp < 4)
 	 s3InfoRec.maxClock = 80000;
       else
-	 if (S3_ViRGE_VX_SERIES(s3ChipId))
-	    s3InfoRec.maxClock = 135000;
-	 else
-	    s3InfoRec.maxClock = 50000;
+	 s3InfoRec.maxClock = 50000;
       break;
    default:
       /* For DACs we don't have special code for, keep this as a limit */
@@ -1533,20 +1453,7 @@ redo_mode_lookup:
       /* Set default for blank_delay */
       if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
 	 pMode->Private[0] |= (1 << S3_BLANK_DELAY);
-	 if (S3_ViRGE_VX_SERIES(s3ChipId))
-	    if (s3Bpp == 1)
-	       pMode->Private[S3_BLANK_DELAY] = 0x20;
-	    else if (s3Bpp == 2)
-	       pMode->Private[S3_BLANK_DELAY] = 0x31;
-	    else
-	       pMode->Private[S3_BLANK_DELAY] = 0x70;
-	 else
-	    if (s3Bpp == 1)
-	       pMode->Private[S3_BLANK_DELAY] = 0x00;
-	    else if (s3Bpp == 2)
-	       pMode->Private[S3_BLANK_DELAY] = 0x02;
-	    else
-	       pMode->Private[S3_BLANK_DELAY] = 0x04;
+	 pMode->Private[S3_BLANK_DELAY] = 0x00;
       }
 
       /* Set default for early_sc */
@@ -1557,11 +1464,6 @@ redo_mode_lookup:
 
       pMode = pMode->next;
    } while (pMode != pEnd);
-
-   if (S3_ViRGE_VX_SERIES(s3ChipId)) {
-      if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)
-	 s3DAC8Bit = TRUE;
-   }
 
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && !s3DAC8Bit) {
       ErrorF("%s %s: Option \"dac_8_bit\" not recognised for RAMDAC \"%s\"\n",

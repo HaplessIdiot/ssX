@@ -1,23 +1,14 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.6 1996/10/20 13:32:37 dawes Exp $
 #
-# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
-#
-# See the file "LICENSE" for information regarding redistribution terms,
-# and for a DISCLAIMER OF ALL WARRANTIES.
-#
-
-#
-# Data used by the monitor configuration routines
 #
 
 array set MonitorVsyncRanges {
 	0	60
 	1	55-60
-	2	60,70,87
-	3	55-90
-	4	55-90
-	5	55-90
-	6	50-90
+	2	60,87
+	3	56,60,87
+	4	55-72
+	5	55-72
+	6	50-76
 	7	50-90
 	8	50-100
 	9	40-100
@@ -26,7 +17,7 @@ array set MonitorVsyncRanges {
 array set MonitorHsyncRanges {
 	0	31.5
 	1	31.5-35.1
-	2	31.5,35.5
+	2	31.5,35,5
 	3	31.5,35.15,35.5
 	4	31.5-37.9
 	5	31.5-48.5
@@ -58,9 +49,7 @@ array set MonitorStdModes {
 	    "36     800  824  896 1024   600  601  603  625"
 	"1024x768 @ 87 Hz interlaced, 35.5 kHz hsync"
 	    "44.9  1024 1048 1208 1264   768  776  784  817 Interlace"
-	" 640x480 @ 67 Hz, 35.0 kHz hsync"
-	    "28     640  664  760  800   480  491  493  525"
-	" 640x480 @ 70 Hz, 36.5 kHz hsync"
+	" 640x480 @ 72 Hz, 36.5 kHz hsync"
 	    "31.5   640  680  720  864   480  488  491  521"
 	" 800x600 @ 60 Hz, 37.8 kHz hsync"
 	    "40     800  840  968 1056   600  601  605  628 +hsync +vsync"
@@ -74,14 +63,6 @@ array set MonitorStdModes {
 	    "80    1280 1296 1512 1568  1024 1025 1037 1165 Interlace"
 	"1024x768 @ 76 Hz, 62.5 kHz hsync"
 	    "85    1024 1032 1152 1360   768  784  787  823"
-	"1152x864 @ 89 Hz interlaced, 44 kHz hsync"
-	    "65    1152 1168 1384 1480   864  865  875  985 Interlace"
-	"1152x864 @ 70 Hz, 62.4 kHz hsync"
-	    "92    1152 1208 1368 1474   864  865  875  895"
-	"1152x864 @ 78 Hz, 70.8 kHz hsync"
-	    "110    1152 1240 1324 1552   864  864  876  908"
-	"1152x864 @ 84 Hz, 76.0 kHz hsync"
-	    "135    1152 1464 1592 1776   864  864  876  908"
 	"1280x1024 @ 61 Hz, 64.2 kHz hsync"
 	    "110    1280 1328 1512 1712  1024 1025 1028 1054"
 	"1280x1024 @ 74 Hz, 78.85 kHz hsync"

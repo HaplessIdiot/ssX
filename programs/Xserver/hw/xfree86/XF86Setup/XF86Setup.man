@@ -1,5 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/XF86Setup.man,v 3.2 1996/08/27 03:23:38 dawes Exp $
-.TH XF86Setup 1 "Version 3.2"  "XFree86"
+.TH XF86Setup 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86Setup - Graphical configuration utility for XFree86
 .SH SYNOPSIS
@@ -7,7 +6,7 @@ XF86Setup - Graphical configuration utility for XFree86
 [ -sync ] [ -name \fIappname\fP ] [ -nodialog ] [ -- \fIarg\fP ...]
 .LP
 .B XF86Setup
-[ -sync ] [ -name \fIappname\fP ] [ -script ]
+[ -sync ] [ -name \fIappname\fP ]
 [ -display \fIdisplay\fP ] [ -geometry \fIgeometry\fP ]
 \fIfilename\fP [ [ -- ] \fIarg\fP ... ]
 .SH DESCRIPTION
@@ -24,25 +23,11 @@ saved.
 For a more complete description see the \fIQuick-Start Guide to
 XFree86 Setup\fP.
 .PP
-When run from within an already running server environment (e.g.
-from an xterm window),
-.I XF86Setup
-can be used to make adjustments to the current server configuration.
-.PP
-Note that when the existing XF86Config file is read, it is used to
-set the default values for various settings, but the complete contents
-of the existing file are not preserved.  For example, when the new
-XF86Config file is written, it will \fInot\fP contain any additional
-comment lines from the original file.
-.PP
 When a filename is specified, it is interpreted as a script file
 containing Tcl/Tk commands to run.  If the filename contains a slash,
 it is assumed that it specifies the path to the file to execute,
-otherwise the file is searched for in the user's PATH, unless the
-\fB-script\fP option is given, in which case, it is expected to
-exist in the \fIscripts\fP subdirectory of the
-\fIXF86Setup\fP library directory.
-.PP
+otherwise the file is expected to exist in the \fIXF86Setup\fP library
+directory.
 The result is entirely dependant on the contents of the file.
 
 .SH ARGUMENTS
@@ -63,11 +48,6 @@ found in the user's PATH, otherwise a simple text interface is used.
 .TP 14
 .BI -geometry " geomspec"
 Specify the initial geometry for the window.
-.TP 14
-.BI -script
-Look for the specified filename in the \fIscripts\fP directory,
-instead of searching the user's PATH (if the filename doesn't
-specify a path).
 .SH ENVIRONMENT
 .TP 14
 .B PATH

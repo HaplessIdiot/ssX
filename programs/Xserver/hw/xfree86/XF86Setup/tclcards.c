@@ -1,26 +1,3 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclcards.c,v 3.2 1996/07/08 10:23:28 dawes Exp $ */
-/*
- * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
- *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Joseph Moss not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Joseph Moss makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
- *
- * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
-
 
 /*
 
@@ -57,17 +34,10 @@ int TCL_XF86GetCardEntry(
 #endif
 );
 
-int lookupcard(
-#if NeedNestedPrototypes
-    char	*name
-#endif
-);
-
 /*
    Adds all the Cards database specific commands to the Tcl interpreter
 */
 
-int
 Cards_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -93,7 +63,6 @@ Cards_Init(interp)
    a list of the cards in the database
 */
 
-int
 TCL_XF86GetCardList(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -124,7 +93,6 @@ TCL_XF86GetCardList(clientData, interp, argc, argv)
    the full info on the given card
 */
 
-int
 TCL_XF86GetCardEntry(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.3 1996/10/18 15:03:48 dawes Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 
@@ -108,7 +108,6 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 
     unsigned long *addrl;	/* address of destination pixmap */
     int xorg, yorg;		/* origin of window */
-    unsigned long pixelCol; 	/* colour of the pixel */
 
     register int y1, y2;
     register int x1, x2;
@@ -140,36 +139,6 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
     ppt = pptInit;
     x2 = ppt->x + xorg;
     y2 = ppt->y + yorg;
-
-    /* set the foreground color for future line drawing ops */
-
-    /* grab the entire 32 bit unmasked pixel */	
-    pixelCol = pGC->fgPixel;
-
-    switch ( vgaBitsPerPixel)
-    {
-    case 8:
-	pixelCol &= 0xff;
-	pixelCol |= (pixelCol << 24) | (pixelCol << 16) | (pixelCol << 8);
-    break;
-
-    case 16:
-	pixelCol &= 0xffff;
-	pixelCol |= pixelCol << 16;
-    break;
-
-    case 24:
-	pixelCol &= 0xffffff;
-    break;
-
-    case 32:
-	pixelCol |= 0xff000000; /* highest alpha channel */
-    break;
-    }
-
-    MGAWAITFIFOSLOTS(1);
-    OUTREG(MGAREG_FCOL, pixelCol);
-
     while(--npt)
     {
 	nbox = nboxInit;
@@ -200,13 +169,14 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 		}
 		else
 		{
-		    MGAWAITFIFOSLOTS(6);
+		    if(!MGAWaitForBlitter())
+        			ErrorF("MGA: BitBlt Engine timeout\n");
 		    OUTREG(MGAREG_CXBNDRY, (((pbox->x2 - 1) << 16) | pbox->x1));
 		    OUTREG(MGAREG_YTOP, MGAScrnWidth * pbox->y1);
 		    OUTREG(MGAREG_YBOT, MGAScrnWidth * pbox->y2);
+		    OUTREG(MGAREG_DWGCTL, 0x040C4803);
 		    OUTREG(MGAREG_XYSTRT, x1 | (y1 << 16));
-		    OUTREG(MGAREG_XYEND,  x2 | (y2 << 16));
-		    OUTREG(MGAREG_DWGCTL + MGAREG_EXEC, 0x040C4803);
+		    OUTREG(MGAREG_XYEND+MGAREG_EXEC,  x2 | (y2 << 16));
 		    pbox++;
 		    if ((oc1 | oc2) == 0)
 		        break;
@@ -235,18 +205,19 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		MGAWAITFIFOSLOTS(6);
-		OUTREG(MGAREG_CXBNDRY, (((pbox->x2 - 1) << 16) | pbox->x1)); 
+		OUTREG(MGAREG_CXBNDRY, (((pbox->x2 - 1) << 16) | pbox->x1));
 		OUTREG(MGAREG_YTOP, MGAScrnWidth * pbox->y1);
 		OUTREG(MGAREG_YBOT, MGAScrnWidth * pbox->y2);
+		OUTREG(MGAREG_DWGCTL, 0x040C4803);
 		OUTREG(MGAREG_XYSTRT, x1 | (y1 << 16));
-		OUTREG(MGAREG_XYEND,  x2 | (y2 << 16));
-		OUTREG(MGAREG_DWGCTL + MGAREG_EXEC, 0x040c4803);
+		OUTREG(MGAREG_XYEND+MGAREG_EXEC,  x2 | (y2 << 16));
 		break;
 	    }
 	    else
 		pbox++;
 	}
     }
-    MGAWAITFREE();
+
+    if(!MGAWaitForBlitter())
+		ErrorF("MGA: BitBlt Engine timeout\n");
 }

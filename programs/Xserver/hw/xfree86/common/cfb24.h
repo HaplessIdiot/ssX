@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb24.h,v 3.0 1996/06/29 09:07:33 dawes Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -530,7 +530,7 @@ extern int cfb24HorzS(
 #endif
 );
 
-extern void cfb24VertS(
+extern int cfb24VertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     unsigned long /*and*/,

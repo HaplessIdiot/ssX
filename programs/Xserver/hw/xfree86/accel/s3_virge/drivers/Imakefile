@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/Imakefile,v 3.1 1996/09/23 13:26:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/Imakefile,v 3.3 1996/02/04 09:05:33 dawes Exp $
 
 
 
@@ -9,10 +9,11 @@ XCOMM $XConsortium: Imakefile /main/4 1995/11/13 11:25:56 kaleb $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-SUBDIRS = XF86S3VDrivers
+SUBDIRS = XF86S3Drivers
+SUBDIRS = s3_generic
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3_virge)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3)
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.9 1996/11/24 09:54:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.53 1996/09/03 15:22:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,12 +39,13 @@
 #include "cfb32.h"
 #include "pixmapstr.h"
 #include "fontstruct.h"
-#include "s3v.h"
+#include "s3.h"
+#include "regs3.h"
 #include "xf86_HWlib.h"
 #include "ICD2061A.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-
+#include "s3linear.h"
 
 #ifdef XFreeXDGA
 #include "X.h"
@@ -59,11 +60,13 @@
 #include "s3pc98.h"
 #endif
 
+extern char s3Mbanks;
 extern Bool s3NewMmio;
 extern unsigned long s3MemBase;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
+static Bool s3TryAddress();
 extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
 extern Bool  s3Localbus;
@@ -106,8 +109,15 @@ s3Initialize(scr_index, pScreen, argc, argv)
 {
    int displayResolution = 75;	/* default to 75dpi */
    extern int monitorResolution;
-   int tmp;
-   char *given;
+   int i,j,k,ok;
+   unsigned char *pat;
+   unsigned short dash_test_pattern = 0xac00;
+   Pixel blackPixel;
+
+   if (xf86FlipPixels && s3Bpp == 1)
+      blackPixel = (Pixel) 1;
+   else
+      blackPixel = (Pixel) 0;
 
    s3Unlock();	  /* for restarts */
 
@@ -186,24 +196,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 }
 	 else if (s3MemBase != 0)  /* checked in s3.c */
 	    base0 = s3MemBase;
-	 else if (s3NewMmio) {
-	    unsigned long orig_base0;
-	    outb(vgaCRIndex, 0x59);
-	    base0 = inb(vgaCRReg) << 24;
-	    outb(vgaCRIndex, 0x5a);
-	    base0 |= inb(vgaCRReg) << 16;
-	    orig_base0 = base0;
-	    base0 &= 0xfc000000;
-	    if (base0 == 0 || base0 != orig_base0) {
-	       /* the aligned address may clash with other devices,
-		  so use a pretty random base address... */
-	       base0 = 0xb4000000;  /* last resort */
-	       ErrorF("%s %s: PCI: base address not correctly aligned\n",
-		      XCONFIG_PROBED, s3InfoRec.name);
-	       ErrorF("\t      base address changed from 0x%08lx to 0x%08lx\n",
-		      orig_base0, base0);
-	    }
-	 }
+	 else if (s3NewMmio)
+	    base0 = 0xf0000000;
 	 else
 	    base0 = 0xf3000000;  /* old default, not good for newmmio */
       }
@@ -218,10 +212,35 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 /* Now, see if we can map a high buffer */
 	 if (s3Localbus &&
 	     !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
+	    long i;
+	    long *poker;
+	    unsigned long pVal;
 	    Bool CachedFrameBuffer = FALSE;
 
-	    s3InitEnvironment();
+	    pVal = 0x12345678;
 
+	    s3InitEnvironment();
+	    s3ImageWriteNoMem(0, 0, s3Bpp==3 ? 2 : 4 / s3Bpp, 1, (char *) &pVal,
+			      s3Bpp==3 ? 2 : 4 / s3Bpp,
+			      0, 0, (short) s3alu[GXcopy], ~0);
+
+	    outb(vgaCRIndex, 0x59);
+	    if (s3InfoRec.MemBase != 0)
+	       outb(vgaCRReg, s3InfoRec.MemBase >> 24);
+	    else if (s3MemBase != 0)
+	       outb(vgaCRReg, s3MemBase >> 24);
+	    else
+	       outb(vgaCRReg, 0xf3);
+
+	    outb(vgaCRIndex, 0x5a);
+	    if (s3InfoRec.MemBase != 0)
+	       outb(vgaCRReg, (s3InfoRec.MemBase >> 16) & 0x80);
+	    else if (s3MemBase != 0)
+	       outb(vgaCRReg, (s3MemBase >> 16) & 0x80);
+	    else
+	       outb(vgaCRReg, 0x00);
+
+	    outb (vgaCRIndex, 0x58);
 	    if (s3InfoRec.videoRam <= 1024) {
 	       s3LinApOpt=0x15;
 	    } else if (s3InfoRec.videoRam <= 2048) {
@@ -230,49 +249,197 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3LinApOpt=0x17;
 	    }
 	    s3BankSize = s3InfoRec.videoRam * 1024;
+	    s3EnableLinear();
 
+	    /*
+	     * XXXX This is for debugging only.  It attempts to find
+	     * which values of LAW are decoded (see s3TryAddress() below).
+	     */
+	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)
+		&& !s3NewMmio) {  /* don't poke around for newmmio */
+	       for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
+		  addr = (i << 24);
+
+	          s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+				          (pointer)addr, 4096);
+	          poker = (long *) s3VideoMem;
+	          s3TryAddress(poker, pVal, addr, 0);
+	          xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem, 4096);
+	       }
+	    }
+
+	    /*
+	     * If a MemBase value was given in the XF86Config, skip the LAW
+	     * probe and use the high 10 bits for the hw part of LAW.
+	     * Normally only 6 bits are set in hw, but the Diamond Stealth
+	     * Pro is different.
+	     */
 	    if (s3InfoRec.MemBase != 0) {
-	       addr = s3InfoRec.MemBase;
-	       given = XCONFIG_GIVEN;
-	    }
-	    else {
-	       outb(vgaCRIndex, 0x59);
-	       addr = inb(vgaCRReg) << 8;
+	       addr = (s3InfoRec.MemBase & 0xffc00000);
+	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+					  (pointer)addr, s3BankSize);
+	       if (s3NewMmio)
+		  s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
+					     (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
+	       s3DisableLinear();
 	       outb(vgaCRIndex, 0x5a);
-	       addr |= inb(vgaCRReg);
-	       addr <<= 16;
-	       given = XCONFIG_PROBED;
+	       outb(vgaCRReg, (addr >> 16) & 0xff);
+	       outb(vgaCRIndex, 0x59);
+	       outb(vgaCRReg, (addr >> 24) & 0xff);
+	       s3EnableLinear();
+
+	       s3LinearAperture = TRUE;
+	       ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n",
+		      XCONFIG_GIVEN, s3InfoRec.name, (addr >> 20));
+	    } else {
+	       if (!(/*s3InfoRec.videoRam > 1024 &&*/ s3VLB)) {
+		  s3DisableLinear();
+	          outb(vgaCRIndex, 0x59);
+	          addr = inb(vgaCRReg) << 8;
+	          outb(vgaCRIndex, 0x5a);
+	          addr |= inb(vgaCRReg);
+	          addr <<= 16;
+		  s3EnableLinear();
+
+                  if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
+		     ErrorF("Read LAW as 0x%08X \n", addr);
+	          }
+		  s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+                                             (pointer)addr, s3BankSize);
+		  if (s3NewMmio)
+		     s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
+						(pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
+		  poker = (long *) s3VideoMem;
+		  if (s3TryAddress(poker, pVal, addr, 1)) {
+		     s3LinearAperture = TRUE;
+		     if (xf86Verbose) {
+			ErrorF("%s %s: Local bus LAW is 0x%08lX\n",
+			       XCONFIG_PROBED, s3InfoRec.name, addr);
+		     }
+		  } else {
+		     s3LinearAperture = FALSE;
+		     CachedFrameBuffer = TRUE;
+		     if (xf86Verbose) {
+			ErrorF("%s %s: Local bus LAW is 0x%08lX %s\n",
+			       XCONFIG_PROBED, s3InfoRec.name, addr,
+			       "but linear fb not usable");
+		     }
+		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
+				     s3BankSize);
+		     if (s3NewMmio)
+			xf86UnMapVidMem(scr_index, MMIO_REGION, s3MmioMem,
+					S3_NEWMMIO_REGSIZE);
+		  }
+	       } else {
+#ifdef PC98_PWLB
+		 if (pc98BoardType == PWLB) {
+		     unsigned long addr = (PWLB_WinAdd << 16) + 0x400000;
+
+		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						(pointer)addr, s3BankSize);
+		     if (s3NewMmio)
+			s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+						  (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
+		     poker = (long *) s3VideoMem;
+
+		     if (s3TryAddress(poker, pVal, addr, 1)) {
+			ErrorF("%s %s: Local bus LAW is 0x%08X\n",
+			     XCONFIG_PROBED, s3InfoRec.name, addr);
+			s3LinearAperture = TRUE;
+		     }
+		 } else {
+#endif
+	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
+		     addr = (i << 24);
+
+		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						(pointer)addr, s3BankSize);
+		     s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+						(pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
+		     poker = (long *) s3VideoMem;
+
+		     if (s3TryAddress(poker, pVal, addr, 1)) {
+			/* We found some ram, but is it ours? */
+
+			s3DisableLinear();
+			/* move it up by 12MB */
+			outb(vgaCRIndex, 0x5a);
+			outb(vgaCRReg, 0xC0);
+			s3EnableLinear();
+
+			if (!s3TryAddress(poker, pVal, addr, 2)) {
+			   addr += (0x0C<<20);
+			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
+					   s3VideoMem, s3BankSize);
+			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						      (pointer)addr,
+						      s3BankSize);
+			   if (s3NewMmio) {
+			      xf86UnMapVidMem(scr_index, MMIO_REGION,
+					      s3MmioMem, S3_NEWMMIO_REGSIZE);
+			      s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+							(pointer)(addr+S3_NEWMMIO_REGBASE),
+							S3_NEWMMIO_REGSIZE);
+			   }
+
+			   if (s3TryAddress((long *)s3VideoMem, pVal,
+					    addr, 3)) {
+			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n",
+				     XCONFIG_PROBED, s3InfoRec.name,
+				     (i << 4 | 0x0c));
+			      s3LinearAperture = TRUE;
+			      break;
+			   }
+			   /*
+			    * Special test for Diamond Stealth Pro.
+			    * On this card, bits 6 and 7 of register 0x5a
+			    * control address bits A29 and A26 rather than
+			    * A22 and A23. Don't ask we why.
+			    */
+			   addr = (i << 24) | 0x24000000;
+			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
+					   s3VideoMem, s3BankSize);
+			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						      (pointer)addr,
+						      s3BankSize);
+			   if (s3NewMmio) {
+			      xf86UnMapVidMem(scr_index, MMIO_REGION,
+					      s3MmioMem, S3_NEWMMIO_REGSIZE);
+			      s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+							 (pointer)(addr+S3_NEWMMIO_REGBASE),
+							 S3_NEWMMIO_REGSIZE);
+			   }
+			   if (s3TryAddress((long *)s3VideoMem, pVal,
+					    addr, 4)) {
+			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n",
+				     XCONFIG_PROBED, s3InfoRec.name,
+				     (i | 0x24) << 4);
+			      s3LinearAperture = TRUE;
+			      break;
+			   }
+			} else {
+			   ErrorF("%s %s: linear framebuffer found, but",
+				  XCONFIG_PROBED, s3InfoRec.name);
+			   ErrorF(" it appears to be in a cachable\n");
+			   ErrorF("\t address range.\n");
+			   CachedFrameBuffer = TRUE;
+			}
+			s3DisableLinear();
+			outb(vgaCRIndex, 0x5a);
+			outb(vgaCRReg, 0x00);	/* reset for next probe */
+			s3EnableLinear();
+		     }
+		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
+				     s3BankSize);
+		     if (s3NewMmio)
+			xf86UnMapVidMem(scr_index, MMIO_REGION, s3MmioMem,
+					S3_NEWMMIO_REGSIZE);
+		  }
+#ifdef PC98_PWLB
+		 }
+#endif
+	       }
 	    }
-	    addr &= 0xfc000000;
-
-	    if (addr == 0)
-	       addr = 0xb4000000;  /* last resort */
-
-	    s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-				       (pointer)addr, s3BankSize);
-	    s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
-				       (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
-
-	    outb(vgaCRIndex, 0x53);	/* disable new mmio mode */
-	    tmp = inb(vgaCRReg) & ~0x18;
-	    outb(vgaCRReg, tmp);
-	    outb (vgaCRIndex, 0x58);	/* disable linear mode */
-	    outb (vgaCRReg, s3SAM256);
-	    
-	    outb(vgaCRIndex, 0x5a);
-	    outb(vgaCRReg, (addr >> 16) & 0xff);
-	    outb(vgaCRIndex, 0x59);
-	    outb(vgaCRReg, (addr >> 24) & 0xff);
-	    
-	    outb(vgaCRIndex, 0x53);	/* enable new mmio mode */
-	    tmp = inb(vgaCRReg) & ~0x18;
-	    outb(vgaCRReg, tmp | 0x08);
-	    outb (vgaCRIndex, 0x58);	/* enable linear mode */
-	    outb (vgaCRReg, (s3LinApOpt & ~0x04) | s3SAM256);
-	    
-	    s3LinearAperture = TRUE;
-	    ErrorF("%s %s: Local bus LAW is 0x%03lXxxxxx\n",
-		   given, s3InfoRec.name, (addr >> 20));
 
             /* The UnMap can unmap all mapped regions, so make sure vgaBase is
 	       still mapped */
@@ -287,6 +454,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3VideoMem = NULL;
 	       addr = 0xA0000;
 	    }
+            s3DisableLinear();
          }
       }
 
@@ -336,6 +504,20 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 }
       }
 
+#if 0
+      if (addr == 0xA0000) {
+	 s3NewMmio = FALSE;
+	 s3MmioMem = xf86MapVidMem(scr_index, EXTENDED_REGION,
+				   (pointer)addr, 64*1024);
+      }
+      else {
+	 s3NewMmio = TRUE;
+	 s3MmioMem = xf86MapVidMem(scr_index, EXTENDED_REGION,
+				   (pointer)(addr | 0x1000000), 64*1024);
+      }
+#endif
+
+
 #ifdef XFreeXDGA
       s3InfoRec.physBase = addr;
       s3InfoRec.physSize = s3BankSize;
@@ -359,7 +541,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       outb(vgaCRReg, 0xa5);
       outb (vgaCRIndex, 0x53);
       tmp = inb(vgaCRReg);
-      outb (vgaCRReg, tmp | 0x08);	/* new mmio enabled */
+      outb (vgaCRReg, tmp | 0x18);	/* old and new mmio enabled */
 
       outb (vgaCRIndex, 0x58);
       outb (vgaCRReg, (s3LinApOpt & ~0x4) | s3SAM256);  /* window size for linear mode */
@@ -374,6 +556,195 @@ s3Initialize(scr_index, pScreen, argc, argv)
    AlreadyInited = TRUE;
 
    s3ImageInit();
+
+
+   /* now testing Trio32 BITBLT bug
+    * using a 2*2 pixel pattern BLT from (0,0) to (0,2) */
+
+   pat = (unsigned char*) xcalloc(s3Bpp, 2 * 2);
+
+   /* init source pattern:   2*2 pixel checker pattern (glyph source) */
+   pat[0 * s3Bpp] = pat[3 * s3Bpp] = 0;
+   pat[1 * s3Bpp] = pat[2 * s3Bpp] = 1;
+   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp,
+		       0, 0, (short) s3alu[GXcopy], ~0);
+
+   /* first test original BITBLT; then workaround */
+   for (s3Trio32FCBug = 0; s3Trio32FCBug < 2; s3Trio32FCBug++) {
+
+      /* init destination (all bits set) */
+      for(i = 0; i < s3Bpp * 2 * 2; i++)
+	 pat[i] = (char)0xff;
+      s3ImageWriteNoMem(0, 2, 2, 2, (char*)pat, 2 * s3Bpp,
+			0, 0, (short) s3alu[GXcopy], ~0);
+
+      BLOCK_CURSOR;
+
+      if (s3Trio32FCBug) {
+	 WaitQueue16_32(2, 3);
+	 SET_BKGD_MIX(BSS_BKGDCOL | ROP_DSo);
+	 SET_BKGD_COLOR(0);
+      } else {
+	 WaitQueue(1);
+	 SET_BKGD_MIX(BSS_BKGDCOL | ROP_D);
+      }
+
+      WaitQueue16_32(3, 6);
+      SET_FRGD_COLOR(1);
+      SET_RD_MASK(1);
+      SET_WRT_MASK(~0);
+
+      WaitQueue(5);
+      SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+      SET_FRGD_MIX(FSS_FRGDCOL | ROP_S);
+	  SET_CURPT(0,0);
+
+      WaitQueue(5);
+	  SET_DESTSTP(0,2);
+      SET_AXIS_PCNT(1, 1);
+
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 0, 0, ~0);
+
+#ifdef DEBUG_TRI32_BITBLT_TEST
+      for(i = 0; i < s3Bpp * 2 * 2; i++)
+	 ErrorF("%s %s: BITBLT %2d %02x\n",
+		XCONFIG_PROBED, s3InfoRec.name, i, pat[i]&0xff);
+      ErrorF("\n");
+
+      ErrorF("%s %s:            ",
+	     XCONFIG_PROBED, s3InfoRec.name);
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+      ErrorF("\n\n");
+#endif
+      if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
+	 break;  /* BITBLT worked */
+   }
+
+   /* clear source and destination patterns on the screen */
+   for(i = 0; i < s3Bpp * 2 * 2; i++)
+      pat[i] = blackPixel;
+   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp,
+		       0, 0, (short) s3alu[GXcopy], ~0);
+   (*s3ImageWriteFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp,
+		       0, 0, (short) s3alu[GXcopy], ~0);
+
+   if (s3Trio32FCBug > 1) {
+      ErrorF("%s %s: WARNING: BITBLT malfunction --\n"
+	     "\tplease report to XFree86@XFree86.Org\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   else if (s3Trio32FCBug) {
+      ErrorF("%s %s: BITBLT malfunction, using workaround code\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   xfree(pat);
+
+   /* restore read mask */
+   WaitQueue16_32(1, 2);
+   SET_RD_MASK(0);
+
+
+
+   /* now testing S3 968 dashed line bug :-(
+    * using an 8 pixel line (0,0) to (7,0) */
+
+   pat = (unsigned char*) xcalloc(s3Bpp, 8);
+
+   /* first test original dashed line code (ROP_D);
+    * then workaround ( ROP_DSo with S=zero) */
+
+   for (s3_968_DashBug = 0; s3_968_DashBug < 2; s3_968_DashBug++) {
+
+      /* init region with backgound pattern */
+      for(i=0; i<s3Bpp*8; i++)
+	 pat[i] = i;
+      (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+			  0, 0, (short) s3alu[GXcopy], ~0);
+
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+
+      BLOCK_CURSOR;
+      WaitQueue16_32(3,4);
+      SET_FRGD_MIX(FSS_FRGDCOL | ROP_DSx);
+      if (s3_968_DashBug) {
+	 SET_BKGD_COLOR(0);
+	 SET_BKGD_MIX(BSS_BKGDCOL | ROP_DSo);
+      }
+      else {
+	 SET_BKGD_MIX(BSS_BKGDCOL | ROP_D);
+      }
+
+      WaitQueue16_32(4,6);
+      SET_WRT_MASK(~0);
+      SET_FRGD_COLOR(~0);
+      SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
+
+      WaitQueue(7);
+	  SET_CURPT(0,0);
+      SET_MAJ_AXIS_PCNT(8-1);
+      SET_DESTSTP(2*(0-8), 2*0);
+      SET_ERR_TERM(2*0 - 8 -1);
+      SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
+	      PCDATA | _16BIT | WRTDATA);
+      SET_PIX_TRANS_W(dash_test_pattern);
+
+      /* read back the destination */
+      WaitIdle();
+      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+
+#ifndef DEBUG_968_DASH_TEST
+      ErrorF("%s %s: DASH968 %d  ",
+	     XCONFIG_PROBED, s3InfoRec.name,s3_968_DashBug);
+      for(i = 0; i < s3Bpp * 8; i++)
+	 ErrorF(" %02x", pat[i]&0xff);
+      ErrorF("\n");
+
+      ErrorF("%s %s:            ",
+	     XCONFIG_PROBED, s3InfoRec.name);
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+      ErrorF("\n\n");
+#endif
+
+      ok = 1;
+      for(i=k=0; i<8; i++)
+	 for(j=0; j<s3Bpp; j++,k++)
+	    if (pat[k] != (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)))
+	       ok = 0;
+      if (ok)
+	 break;  /* dashed line worked */
+   }
+
+   /* clear the test region */
+   for(i=0; i<s3Bpp*8; i++)
+      pat[i] = blackPixel;
+   (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+		       0, 0, (short) s3alu[GXcopy], ~0);
+
+   if (s3_968_DashBug > 1) {
+      ErrorF("%s %s: WARNING: S3 968 dashed line malfunction --\n"
+	     "\tplease report to XFree86@XFree86.Org\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   else if (s3_968_DashBug) {
+      ErrorF("%s %s: S3 968 dashed line malfunction, using workaround code\n",
+	     XCONFIG_PROBED, s3InfoRec.name);
+   }
+   xfree(pat);
+
+
+   WaitQueue16_32(3,4);
+   SET_FRGD_COLOR(1);
+   SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
 
    xf86InitCache(s3CacheMoveBlock);
    s3FontCache8Init();
@@ -392,28 +763,32 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     s3DisplayWidth))
       return (FALSE);
 
-   switch (s3InfoRec.bitsPerPixel) {
-   case 8:
-      pScreen->InstallColormap = s3InstallColormap;
-      pScreen->UninstallColormap = s3UninstallColormap;
-      pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
-      pScreen->StoreColors = s3StoreColors;
-      break;
-   case 16:
-   case 24:
-   case 32:
-      pScreen->InstallColormap = cfbInstallColormap;
-      pScreen->UninstallColormap = cfbUninstallColormap;
-      pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-      pScreen->StoreColors = (void (*)())NoopDDA;
-   }
-   pScreen->QueryBestSize = s3QueryBestSize;
-   xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
-   (void)s3CursorInit(0, pScreen);
-
    pScreen->CloseScreen = s3CloseScreen;
    pScreen->SaveScreen = s3SaveScreen;
 
+
+#if 0
+	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
+#else
+ 	switch (s3InfoRec.bitsPerPixel) {
+	case 8:
+	    pScreen->InstallColormap = s3InstallColormap;
+	    pScreen->UninstallColormap = s3UninstallColormap;
+	    pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
+	    pScreen->StoreColors = s3StoreColors;
+	    break;
+	case 16:
+        case 24:
+        case 32:
+	    pScreen->InstallColormap = cfbInstallColormap;
+	    pScreen->UninstallColormap = cfbUninstallColormap;
+	    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+	    pScreen->StoreColors = (void (*)())NoopDDA;
+	}
+	pScreen->QueryBestSize = s3QueryBestSize;
+	xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
+	(void)s3CursorInit(0, pScreen);
+#endif
    s3savepScreen = pScreen;
    return (cfbCreateDefColormap(pScreen));
 
@@ -429,7 +804,7 @@ s3EnterLeaveVT(enter, screen_idx)
      Bool  enter;
      int screen_idx;
 {
-   PixmapPtr pspix=NULL;
+   PixmapPtr pspix;
    ScreenPtr pScreen = s3savepScreen;
 
    if (!xf86Exiting && !xf86Resetting) {
@@ -524,6 +899,7 @@ s3EnterLeaveVT(enter, screen_idx)
 #ifdef XFreeXDGA
       if (s3InfoRec.directMode & XF86DGADirectGraphics) {
         /* make sure we are in linear mode */
+	s3EnableLinear();
       }
 #endif
 #ifdef PC98
@@ -758,7 +1134,6 @@ s3AdjustFrame(int x, int y)
    unsigned char tmp;
    extern int s3AdjustCursorXPos;  /* for s3Cursor.c */
    extern int s3HDisplay;
-   extern unsigned char s3Port51;
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &s3InfoRec.options)) {
       if ( debugcache & 1)
@@ -775,28 +1150,6 @@ s3AdjustFrame(int x, int y)
    origBase = (y * s3DisplayWidth + x) * s3Bpp;
    Base = (origBase >> 2) & ~1;
 
-    /* STREAMS handler - KJB */
-    if ( s3InfoRec.bitsPerPixel == 32 || 
-         s3InfoRec.bitsPerPixel == 24 ) { 
-      if ( s3MmioMem != NULL ) {
-         #if 0
-				/* Wait for VSYNC */
-         /* while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; */
- 				/* X and Y start coords + 1. */
-  	   #if 1
-         ((mmtr)s3MmioMem)->streams_regs.regs.prim_start_coord = /* 0x00010001; */
-           ( (x + 1) << 16 ) | (y + 1) & 0xf800f800;
-	   #else
-         ((mmtr)s3MmioMem)->streams_regs.regs.second_start_coord = 
-           ( (0x7ff - x) << 16 ) | (0x7ff - y) & 0xf800f800;
-	   #endif
-	 #else
-         ((mmtr)s3MmioMem)->streams_regs.regs.prim_fbaddr0 = 
-		((y * s3DisplayWidth + (x & ~3)) * s3Bpp) /* & ~3 */;
-         #endif
-         }
-      } else {
-
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
@@ -808,7 +1161,6 @@ s3AdjustFrame(int x, int y)
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
-     } /* if!(24bpp) */
 
 #ifdef XFreeXDGA
    if (!(s3InfoRec.directMode & XF86DGADirectMouse)) {
@@ -824,18 +1176,39 @@ s3AdjustFrame(int x, int y)
 #ifdef XFreeXDGA
    }
 #endif
+}
 
-#ifdef XFreeXDGA
-   if (s3InfoRec.directMode & XF86DGADirectGraphics) {
-      /* Wait until vertical retrace is in progress. */
-      while (inb(vgaIOBase + 0xA) & 0x08);
-      while (!(inb(vgaIOBase + 0xA) & 0x08));
+/*
+ * Force optimising compilers to read *addr
+ */
+static Bool
+s3TryAddress(addr, value, physaddr, stage)
+     long *addr;
+     long value;
+     long physaddr;
+     int stage;
+{
+   long tmp;
+
+   tmp = *addr;
+
+   if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
+      if (stage == 0 && tmp != 0xFFFFFFFF) {
+	 ErrorF("Memory found at 0x%08X (read 0x%08X)\n", physaddr, tmp);
+      } else {
+	 ErrorF("Stage %d: address = 0x%08X, read 0x%08X\n", stage, physaddr,
+		tmp);
+      }
    }
-#endif
+   if (tmp == value)
+      return TRUE;
+   else
+      return FALSE;
 }
 
 
 void s3SetVidPage(vPage)
    int vPage;
 {
+  s3BankSelect(vPage);
 }

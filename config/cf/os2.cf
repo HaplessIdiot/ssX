@@ -1,78 +1,53 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes Exp $
+XCOMM platform:  $XFree86$
 
 #define OSName           OS/2
 #define OSVendor	 IBM
-#define OSMajorVersion    3
-#define OSMinorVersion    0
+#define OSMajorVersion    2
+#define OSMinorVersion    1
 
 /*
  * C library features
  */
 #ifdef __EMX__
 
-/* set this to what you like (almost :-) 
- * OS/2 does a nonstandard bootstrap of imake 
- */
-#define BootstrapCFlags   -DBSD43
+#define BootstrapCFlags   -DNOSTDHDRS -DBSD43
+#define StandardDefines   -DNOSTDHDRS
+#define XawI18nDefines     -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
-/* X_WCHAR and X_LOCALE are set in Xosdefs.h */
-#define StandardDefines   /**/
-#define XawI18nDefines    -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+/* Set the following to the path where the emx *.lib files are! 
+ * The following is a correct path:
+ * EMXLIBPATH = q:\foo\bar
+ */
+  EMXLIBPATH = d:\emx\lib
 
 /* This will redirect everything to /XFree86
  * Care will be taken that programs that need a file from this tree
  * will add the environment variable X11ROOT to the search path
  * so you can redirect the stuff to a different drive
  */
-#ifdef ProjectRoot
-#undef ProjectRoot
-#endif
-/* This will be mangled with a drive letter in most OS/2 rules ... */
-#define ProjectRoot	/XFree86
-
-/* ... but not when a user tries to compile something from a different drive 
- * Please report any directories missed to Holger.Veit@gmd.de 
-*/
-#ifdef UseInstalled
-#define IncRoot $(X11ROOT)/XFree86/include
-#define LdPreLib -L$(X11ROOT)/XFree86/lib
-#endif
+#define ProjectRoot /XFree86
 
 /* more directories */
-#define AdmDir		        $(LIBDIR)/adm
-        DESTDIR = $(X11ROOT)
+#define XAppLoadDir	$(LIBDIR)/app_defs
 
-/* for the man pages */
-#define BookFormatManPages	YES
-#define ManDirectoryRoot /XFree86/man/man
-#define ManSuffix	1
-#define LibManSuffix	3
-#define FileManSuffix	4
-#define XmanSearchPath	/XFree86/man/man
-#define ManSourcePath	$(MANPATH)
-
-/* you must have installed groff! */
-#define TblCmd		tbl
-#define ColCmd		cat
-#define NeqnCmd		eqn 
-#define NroffCmd	groff -Tascii
-#define	EqnCmd 		eqn -Tascii
-#define TroffCmd        groff -Tps
-         NEQN = NeqnCmd
-        NROFF = NroffCmd
 
 /* A set of standard defines: */
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
 
-#define BuildXKB		YES
-#define BuildImplibs		YES
+#define BuildPexExt	NO
+#define BuildXInputExt	NO
+#define BuildXIE	NO
+#define BuildXKB	NO
+/* OS/2 bash implementation (or even OS/2 itself) has a bug preventing
+ * proper make clean/include/depend/all in deeper Xfree86 dirs. The following
+ * prevents diving into XFree86 dirs, unless explicitly requested.
+ */
+#define OS2DepthBug	YES
 
-/* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
 #define HasPutenv       	YES
 #define HasSockets		YES
-#define HasSnprintf		YES
 #define HasBsearch		NO
 #define HasLargeTmp		NO
 #define HasPoll			NO
@@ -80,7 +55,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #define HasSecureRPC		NO
 #define	HasSymLinks		NO
 #define HasVFork		NO
-#define Malloc0ReturnsNull	YES
+#define Malloc0ReturnsNull	NO
 #define SetTtyGroup     	NO
 #ifndef HasLibCrypt
 # define HasLibCrypt		NO
@@ -88,19 +63,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #ifndef HasShm
 # define HasShm          	NO
 #endif
-#define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
-#define StdIncDir $(C_INCLUDE_PATH)
-
-/* XF86Setup stuff */
-#define HasTcl			YES
-#define TclLibDir		$(X11ROOT)$(SHLIBDIR)
-#define TclIncDir		$(X11ROOT)$(INCROOT)/tcl
-#define TclLibName		xtcl
-
-#define HasTk			YES
-#define TkLibDir		$(X11ROOT)$(SHLIBDIR)
-#define TkIncDir		$(X11ROOT)$(INCROOT)/tk
-#define TkLibName		xtk
+#define ConnectionFlags		-DTCPCONN
 
 /*
  * Compiler Features
@@ -123,30 +86,32 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #define StandardCppDefines	-traditional
 #define PreProcessCmd	CppCmd
 
+/*
+ * ATTENTION: This is defined, but due to a bug in make/gcc (?) the defines are
+ * hard coded into config/makedepend/main.c.
+ * You must change them there!
+ */
+#define PreIncDir	/emx/include
+
 #define CcCmd	gcc
-#define DefaultCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
-#define LibraryCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
-#define ServerCCOptions		-D__ST_MT_ERRNO  -Zmtd -Zsysv-signals
+#define DefaultCCOptions	-Zmtd
+#define LibraryCCOptions	-Zmtd
 
-#define CplusplusCmd	g++
-#define CplusplusOptions	-Zmtd -Zsysv-signals
-
-#define MakeCmd x11make 
-#define AsCmd	gcc -S
+#define AsCmd	as
 #define GccGasOption	-DGCCUSESGAS
 #define AsmDefines	-DUSE_GAS
 
 #define InstallCmd	install
 
-#define LdCmd	ld
-#define ExtraLoadFlags	/**/
-#define ExtraLibraries	$(LIBRARY_PATH)/binmode.Osuf -lsocket -lbsd
-/*define ServerExtraSysLibs -lemxio*/
+#define LdCmd	gcc
+#define ExtraLoadFlags	-Zmtd
+#define ExtraLibraries	/emx/lib/binmode.o -lnet -lbsd
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
  */
-#define ArCmd	ar cq
+#define CplusplusCmd	g++
+#define ArCmd	ar cr
 #define RanlibCmd	ar s
 #define BourneShell	/**/
 #define LexCmd	flex -l
@@ -157,19 +122,13 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #define CompressCmd	compress
 #define LnCmd cp
 #define CpCmd cp
-#define RmCmd	ImakeHelper 4 
+#define RmCmd	rm -f
 
 #ifndef UseInstalled
 #define ImakeCmd \imake
 #define MkdirHierCmd \mkdirhier
 #define DependCmd \makedepend
-#else
-/* imake and mkdirhier come from Imake.tmpl, but DependCmd must be overriden */
-#define DependCmd makedepend
 #endif
-
-/* "shell scripts" in OS/2 have this extension */
-#define SHsuf cmd
 
 #define InstPgmFlags /**/
 #define InstBinFlags /**/
@@ -181,10 +140,10 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #define InstallFlags /**/
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
-# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+# define OptimizedCDebugFlags 	-m486 -O2
+# define ServerOSDefines	-DDDXTIME
 #else
-# define OptimizedCDebugFlags 	-O
+# define OptimizedCDebugFlags 	-O2
 # define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture
@@ -193,26 +152,21 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes 
 #define ServerExtraDefines GccGasOption
 #endif
 
+
 /*
  * Make & install Features
  */
 
-#define AvoidNullMakeCommand 	YES
+#define AvoidNullMakeCommand 	NO
 _NULLCMD_ = @ rem
-#define NullMakeCommand	@ rem
+/* _NULLCMD_ = @ echo ÿ*/		/*WARNING: ALT-255 IN LINE!*/
 #define StripInstalledPrograms	NO
 #define CompressAllFonts	YES
-#define CompressManPages	YES
-#define DefaultUserPath		.;/os2;/emx/bin;/tcpip/bin;$(BINDIR)
-#define DefaultSystemPath	/os2;/emx/bin;$(BINDIR)
+#define DefaultUserPath		.:/os2:/emx/bin:/tcpip/bin:$(BINDIR)
+#define DefaultSystemPath	/os2:/emx/bin:$(BINDIR)
 
 #ifndef ExtraFilesToClean
-# define ExtraFilesToClean 	*.~* *.exe *.dll *.obj *.lib *.map
-#endif
-
-#if CompressManPages
-#define CompressManCmd	gzip -n
-   COMPRESSMANCMD = CompressManCmd
+# define ExtraFilesToClean 	*.~* *.exe *.dll *.obj *.lib
 #endif
 
 #define ProgramTargetName(target)target.exe
@@ -238,10 +192,31 @@ Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
 
+/*
+ * Documentation formatting
+ */
+#undef	TblCmd
+#define	TblCmd 			/emx/bin/tbl
+#undef	EqnCmd
+#define	EqnCmd 			/emx/bin/eqn -Tascii
+          COL = /usr/bin/col
+         NEQN = /usr/bin/neqn
+        NROFF = /usr/bin/nroff
+#define TroffCmd        	groff -Tps
+
+
+XCOMM Man pages need to be formatted when installed, so override the default
+XCOMM imake rules.
+
+#define ManSuffix		1
+#define ManSourcePath		$(MANPATH)
+
 #include <os2.rules>
 #include <os2Lib.rules>
 
+#ifdef i386Architecture
 # include <xfree86.cf>
+#endif
 
 #else
 #error You must edit os2.cf for your (non-EMX) OS/2 dev system

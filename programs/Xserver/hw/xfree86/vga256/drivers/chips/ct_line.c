@@ -56,8 +56,9 @@ SOFTWARE.
  *   For use with Chips and Technology chipsets
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_line.c,v 3.1 1996/09/29 13:39:23 dawes Exp $ */
+/* $XFree86$ */
 
+#include "site.h"		       /*for VENDOR_RELEASE */
 #include "xf86.h"
 #include "vga256.h"
 #include "vga.h"
@@ -65,13 +66,8 @@ SOFTWARE.
 #include "compiler.h"
 
 #include "ct_lline.h"
-#include "ct_driver.h"
-
-#ifdef CHIPS_HIQV
-#include "ct_BltHiQV.h"
-#else
 #include "ct_BlitMM.h"
-#endif
+#include "ct_driver.h"
 
 /*
  * The following define enables calls to the optimized linear framebuffer
@@ -111,24 +107,6 @@ extern Bool vgaUseLinearAddressing;
  */
 
 void
-#ifdef CHIPS_HIQV
-#ifdef POLYSEGMENT
-ctHiQVSegmentSS(pDrawable, pGC, nseg, pSeg)
-    DrawablePtr pDrawable;
-    GCPtr pGC;
-    int nseg;
-    register xSegment *pSeg;
-
-#else
-ctHiQVLineSS(pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr pGC;
-    int mode;			       /* Origin or Previous */
-    int npt;			       /* number of points */
-    DDXPointPtr pptInit;
-
-#endif
-#else
 #ifdef POLYSEGMENT
 ctMMIOSegmentSS(pDrawable, pGC, nseg, pSeg)
     DrawablePtr pDrawable;
@@ -144,7 +122,6 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     int npt;			       /* number of points */
     DDXPointPtr pptInit;
 
-#endif
 #endif
 {
     int nboxInit;
@@ -182,8 +159,6 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     int alu;
     int adir, xdir, ydir;
     int destpitch;
-    int octant;
-    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     unsigned int op, mask;
 
 #ifdef DEBUG
@@ -243,7 +218,7 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     if (vgaBitsPerPixel == 8) {
 	cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl)
     } else {
-	nlwidth = vga256InfoRec.displayWidth / 4;
+	nlwidth = vga256InfoRec.virtualX / 4;
 	addrl = (unsigned long *)VGABASE;       /* I'm not sure what these values should be yet */
 	}
 #ifdef DEBUG
@@ -270,29 +245,23 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     ErrorF("%d \n", destpitch);
 #endif
 
-    op = ctAluConv2[alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
-	| ctPATMONO;
-
 /* Wait for BiTBLT to be free, then setup the blit parameters */
     ctBLTWAIT;
+    op = ctAluConv[alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
     ctSETSRCADDR(0x0);
     ctSETPITCH(0x0, destpitch * vgaBytesPerPixel);
 
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
-	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
-	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-#ifdef CHIPS_HIQV
-	ctSETFGCOLOR24(pGC->fgPixel);
-	ctSETBGCOLOR24(pGC->fgPixel);
-#else
-	{
+	if (ctisHiQV32) {
+	    ctSETFGCOLOR24(pGC->fgPixel);
+	} else {
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -310,10 +279,8 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
-		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
-#endif
 	break;
     }
 
@@ -395,12 +362,6 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 				 */
 				ctBLTWAIT;
 				ctSETROP(op);
-#ifdef CHIPS_HIQV
-				/* This operation involves colour expansion, */
-				/* so being paranoid, set the monochrome     */
-				/* control register to zero                  */
-				ctSETMONOCTL(0);	
-#endif
 				ctSETDSTADDR(destaddr * vgaBytesPerPixel);
 				ctSETHEIGHTWIDTHGO(height, vgaBytesPerPixel);
 			    } else {
@@ -500,9 +461,6 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 			width = x2t - x1t;
 			ctBLTWAIT;
 			ctSETROP(op);
-#ifdef CHIPS_HIQV
-			ctSETMONOCTL(0);	
-#endif
 			ctSETDSTADDR(destaddr * vgaBytesPerPixel);
 			ctSETHEIGHTWIDTHGO(1, width * vgaBytesPerPixel);
 		    }
@@ -514,21 +472,37 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 	    x2 = ppt->x + xorg;
 #endif
 	} else {		       /* sloped line */
-	    CalcLineDeltas(x1, y1, x2, y2, adx, ady, signdx, signdy, 1, 1, octant);
-	    if (adx > ady) {
+	    signdx = 1;
+	    if ((adx = x2 - x1) < 0) {
+		adx = -adx;
+		signdx = -1;
+	    }
+	    signdy = 1;
+	    if ((ady = y2 - y1) < 0) {
+		ady = -ady;
+		signdy = -1;
+	    }
+	    if (adx >= ady) {
 		axis = X_AXIS;
-	        e1 = ady << 1;
+		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
+#if (VENDOR_RELEASE >= 6100)
+		FIXUP_ERROR(e, signdx, signdy);
+#else
+		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
+#endif
 	    } else {
 		axis = Y_AXIS;
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
-		SetYMajorOctant(octant);
+#if (VENDOR_RELEASE >= 6100)
+		FIXUP_ERROR(e, signdx, signdy);
+#else
+		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
+#endif
 	    }
-
-	    FIXUP_ERROR(e, octant, bias);
 
 	    /* we have bresenham parameters and two points.
 	     * all we have to do now is clip and draw.
@@ -653,11 +627,10 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		    int err;
 
 		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2 - 1,
-				       pbox->y2 - 1,
-				       &new_x1, &new_y1, &new_x2, &new_y2,
-				       adx, ady, 
-				       &clip1, &clip2, 
-				       octant, bias, oc1, oc2) == -1) {
+			    pbox->y2 - 1,
+			    &new_x1, &new_y1, &new_x2, &new_y2,
+			    adx, ady, &clip1, &clip2, axis,
+			    (signdx == signdy), oc1, oc2) == -1) {
 			pbox++;
 			continue;
 		    }
@@ -795,7 +768,6 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
 	    (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	    (ppt == pptInit + 1))) {
-	ctBLTWAIT;
 	nbox = nboxInit;
 	pbox = pboxInit;
 	while (nbox--) {
@@ -806,16 +778,12 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		unsigned long mask;
 		unsigned long scrbits;
 
-		if (vgaUseLinearAddressing && alu == GXcopy &&
-			vgaBitsPerPixel == 8)
+		if (vgaUseLinearAddressing && alu == GXcopy)
 		    *((unsigned char *)vgaLinearBase + y2 * destpitch + x2) =
 			xor;
 		else {
 		    ctBLTWAIT;
 		    ctSETROP(op);
-#ifdef CHIPS_HIQV
-		    ctSETMONOCTL(0);	
-#endif
 		    ctSETDSTADDR((y2 * destpitch + x2) * vgaBytesPerPixel);
 		    ctSETHEIGHTWIDTHGO(1, (vgaBitsPerPixel >> 3));
 		}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.2 1996/10/18 15:01:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3.h,v 3.2 1996/09/29 13:34:16 dawes Exp $ */
 /*
  * regs3v.h
  *
@@ -269,25 +269,6 @@
 #define	ROP_DSo				(0xee<<17)
 #define	ROP_1				(0xff<<17)
 
-/* ROP  ->  (ROP & P) | (D & ~P) */
-#define	ROP_0PaDPnao    /* DPna     */	(0x0a<<17)
-#define	ROP_DSonPaDPnao /* PDSPaox  */	(0x1a<<17)
-#define	ROP_DSnaPaDPnao /* DPSana   */	(0x2a<<17)
-#define	ROP_SnPaDPnao   /* SPDSxox  */	(0x3a<<17)
-#define	ROP_SDnaPaDPnao /* DPSDoax  */	(0x4a<<17)
-#define	ROP_DnPaDPnao   /* DPx      */	(0x5a<<17)
-#define	ROP_DSxPaDPnao  /* DPSax    */	(0x6a<<17)
-#define	ROP_DSanPaDPnao /* DPSDnoax */	(0x7a<<17)
-#define	ROP_DSaPaDPnao  /* DSPnoa   */	(0x8a<<17)
-#define	ROP_DSxnPaDPnao /* DPSnax   */	(0x9a<<17)
-#define	ROP_DPaDPnao    /* D        */	(0xaa<<17)
-#define	ROP_DSnoPaDPnao /* DPSnao   */	(0xba<<17)
-#define	ROP_SPaDPnao    /* DPSDxax  */	(0xca<<17)
-#define	ROP_SDnoPaDPnao /* DPSDanax */	(0xda<<17)
-#define	ROP_DSoPaDPnao  /* DPSao    */  (0xea<<17)
-#define	ROP_1PaDPnao    /* DPo      */	(0xfa<<17)
-
-
 /* S -> P */
 #define	ROP_DPon			(0x05<<17)
 #define	ROP_DPna			(0x0a<<17)
@@ -302,19 +283,21 @@
 #define	ROP_PDno			(0xf5<<17)
 #define	ROP_DPo				(0xfa<<17)
 
-typedef struct {
-   unsigned char r, g, b;
-}
+
+  typedef struct {
+     unsigned char r, g, b;
+  }
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	 do { mem_barrier(); while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8)); } while (0)
+#define	WaitQueue(v)	do {int i=100000; while ((((IN_SUBSYS_STAT()) & 0x1f00) < ((v) << 8)) && i--); } while(0)
 
 /* Wait until GP is idle and queue is empty */
-#define	WaitIdleEmpty()  do { mem_barrier(); while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)
+#define	WaitIdleEmpty() \
+   do { int i=100000000; while (((IN_SUBSYS_STAT() & 0x3f00) != 0x3000) && i--); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle()       do { mem_barrier(); while (!(IN_SUBSYS_STAT() & 0x2000)); } while (0)
+#define WaitIdle() do { int i=100000; while (!(IN_SUBSYS_STAT() & 0x2000) && i--) ; } while (0)
 
 #ifndef NULL
 #define NULL	0

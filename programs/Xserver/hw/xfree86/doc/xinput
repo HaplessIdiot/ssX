@@ -68,7 +68,7 @@
 
         +  Absolute or relative modes.
 
-        +  5 valuators :
+        +  6 valuators :
 
            1. X axis.
 
@@ -79,6 +79,8 @@
            4. X tilt.
 
            5. Y tilt.
+
+           6. macro button number.
 
         +  3 buttons.
 
@@ -86,14 +88,12 @@
 
         +  Motion history capability.
 
-        +  Macro/function buttons are reported as keys.
-
 
      o  Wacom eraser. Features :
 
         +  Absolute or relative modes.
 
-        +  5 valuators :
+        +  6 valuators :
 
            1. X axis.
 
@@ -104,6 +104,8 @@
            4. X tilt.
 
            5. Y tilt.
+
+           6. macro button number.
 
         +  1 button.
 
@@ -111,14 +113,12 @@
 
         +  Motion history capability.
 
-        +  Macro/function buttons are reported as keys.
-
 
      o  Wacom cursor. Features :
 
         +  Absolute or relative modes.
 
-        +  5 valuators :
+        +  6 valuators :
 
            1. X axis.
 
@@ -132,22 +132,9 @@
 
            5. Y tilt.
 
+           6. macro button number.
+
         +  16 buttons.
-
-        +  Proximity report.
-
-        +  Motion history capability.
-
-        +  Macro/function buttons are reported as keys.
-
-
-     o  SummaSketch tablet. Features :
-
-        +  Absolute or relative modes.
-
-        +  2 valuators (x and y axis).
-
-        +  2 button stylus or 4 button puck.
 
         +  Proximity report.
 
@@ -170,7 +157,20 @@
   Consult the man pages for details.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.3 1996/10/16 14:41:17 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.1 1996/05/12 12:41:46 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

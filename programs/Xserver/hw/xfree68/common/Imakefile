@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.2 1996/10/03 08:32:02 dawes Exp $
+XCOMM $XFree86$
 
 
 
@@ -84,12 +84,11 @@ MODULEDEFINES = -DDYNAMIC_MODULE -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 #endif
 
 SERVERSRCS = \
-	XF68_FBDev.c
+	XF86_FBDev.c
 
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
-	xf86DCConf.c \
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
@@ -113,7 +112,6 @@ SRCS =	\
 OBJS = \
 	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
-	xf86DCConf.o \
 	xf86Cursor.o \
 	xf86Events.o \
 	xf86Io.o \
@@ -177,13 +175,12 @@ InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
-SpecialObjectRule(xf86DCConf.o,xf86DCConf.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(KEYB_DEFINES))
 SpecialCObjectRule($(KBD),$(ICONFIGFILES),$(KEYB_DEFINES))
-#if XF68FBDevServer
-SpecialObjectRule(XF68_FBDev.o,XF68_FBDev.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF68_FBDev.o
+#if XF86FBDevServer
+SpecialObjectRule(XF86_FBDev.o,XF86_FBDev.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_FBDev.o
 #endif
 
 #if NeedXF86Beta
@@ -202,11 +199,10 @@ LinkSourceFile(xf86Beta.c,$(XF86SRC)/common)
 #endif
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
-LinkSourceFile(xf86DCConf.c,$(XF86SRC)/common)
-LinkSourceFile(xf86DCConf.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Dl.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Elo.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
+LinkSourceFile(xf86IniExt.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Init.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Io.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Jstk.c,$(XF86SRC)/common)
@@ -222,26 +218,10 @@ LinkSourceFile(compiler.h,$(XF86SRC)/common)
 LinkSourceFile(xf86.h,$(XF86SRC)/common)
 LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Keymap.h,$(XF86SRC)/common)
-LinkSourceFile(xf86Lock.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Priv.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Procs.h,$(XF86SRC)/common)
-LinkSourceFile(xf86Xinput.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
-
-InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86Init_m.o,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86ExtInit.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86Priv.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86Procs.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
-InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86DCConf.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(XF68_FBDev.c,$(LINKKITDIR))
 
 DependTarget()

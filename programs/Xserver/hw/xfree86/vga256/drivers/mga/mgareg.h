@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgareg.h,v 3.1 1996/09/29 13:40:26 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * mga register file 
@@ -92,12 +92,6 @@
 
 #define	MGAREG_OPMODE		0x1e54
 
-/* OPMODE register additives */
-
-#define MGAOPM_DMA_GENERAL	(0x00 << 2)
-#define MGAOPM_DMA_BLIT		(0x01 << 2)
-#define MGAOPM_DMA_VECTOR	(0x10 << 2)
-
 /* DWGCTL register additives */
 
 /* Lines */
@@ -113,39 +107,39 @@
 
 /* BitBlts */
 
-#define MGADWG_BITBLT		0x08
-#define MGADWG_FBITBLT		0x0c
-#define MGADWG_ILOAD		0x09
-#define MGADWG_ILOAD_SCALE	0x0d
-#define MGADWG_ILOAD_FILTER	0x0f
-#define MGADWG_IDUMP		0x0a
+#define MGADWG_BITBLT		0b1000
+#define MGADWG_FBITBLT		0b1100
+#define MGADWG_ILOAD		0b1001
+#define MGADWG_ILOAD_SCALE	0b1101
+#define MGADWG_ILOAD_FILTER	0b1111
+#define MGADWG_IDUMP		0b1010
 
 /* atype access to WRAM */
 
-#define MGADWG_RPL		( 0x00 << 4 )
-#define MGADWG_RSTR		( 0x01 << 4 )
-#define MGADWG_ZI		( 0x03 << 4 )
-#define MGADWG_BLK 		( 0x04 << 4 )
-#define MGADWG_I		( 0x07 << 4 )
+#define MGADWG_RPL		( 0b000 << 4 )
+#define MGADWG_RSTR		( 0b001 << 4 )
+#define MGADWG_ZI		( 0b011 << 4 )
+#define MGADWG_BLK 		( 0b100 << 4 )
+#define MGADWG_I		( 0b111 << 4 )
 
 /* specifies whether bit blits are linear or xy */
 #define MGADWG_LINEAR		( 0x01 << 7 )
 
 /* z drawing mode. use MGADWG_NOZCMP for always */
 
-#define MGADWG_NOZCMP		( 0x00 << 8 )
-#define MGADWG_ZE		( 0x02 << 8 ) 
-#define MGADWG_ZNE		( 0x03 << 8 )
-#define MGADWG_ZLT		( 0x04 << 8 )
-#define MGADWG_ZLTE		( 0x05 << 8 )
-#define MGADWG_GT		( 0x06 << 8 )
-#define MGADWG_GTE		( 0x07 << 8 )
+#define MGADWG_NOZCMP		( 0b000 << 8 )
+#define MGADWG_ZE		( 0b010 << 8 ) 
+#define MGADWG_ZNE		( 0b011 << 8 )
+#define MGADWG_ZLT		( 0b100 << 8 )
+#define MGADWG_ZLTE		( 0b101 << 8 )
+#define MGADWG_GT		( 0b110 << 8 )
+#define MGADWG_GTE		( 0b111 << 8 )
 
 /* use this to force colour expansion circuitry to do its stuff */
 
 #define MGADWG_SOLID		( 0x01 << 11 )
 
-/* ar register at zero */
+/* ar register at zero 
 
 #define MGADWG_ARZERO		( 0x01 << 12 )
 
@@ -157,76 +151,21 @@
 
 /* See table on 4-44 for translucidity masks */
 
-#define MGADWG_BMONOLEF		( 0x00 << 25 )
-#define MGADWG_BMONOWF		( 0x04 << 25 )
-#define MGADWG_BPLAN		( 0x01 << 25 )
+#define MGADWG_BMONOLEF		( 0b0000 << 25 )
+#define MGADWG_BMONOWF		( 0b0100 << 25 )
+#define MGADWG_BPLAN		( 0b0001 << 25 )
 
 /* note that if bfcol is specified and you're doing a bitblt, it causes
    a fbitblt to be performed, so check that you obey the fbitblt rules */
 
-#define MGADWG_BFCOL   		( 0x02 << 25 )
-#define MGADWG_BUYUV		( 0x0e << 25 )
-#define MGADWG_BU32BGR		( 0x03 << 25 )
-#define MGADWG_BU32RGB		( 0x07 << 25 )
-#define MGADWG_BU24BGR		( 0x0b << 25 )
-#define MGADWG_BU24RGB		( 0x0f << 25 )
+#define MGADWG_BFCOL   		( 0b0010 << 25 )
+#define MGADWG_BUYUV		( 0b1110 << 25 )
+#define MGADWG_BU32BGR		( 0b0011 << 25 )
+#define MGADWG_BU32RGB		( 0b0111 << 25 )
+#define MGADWG_BU24BGR		( 0b1011 << 25 )
+#define MGADWG_BU24RGB		( 0b1111 << 25 )
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
 #define MGWDWG_TRANSC		( 0x01 << 30 )
-
-/* MGA registers in PCI config space */
-#define PCI_MGA_INDEX		0x44
-#define PCI_MGA_DATA		0x48
-
-#define RAMDAC_OFFSET		0x3c00
-
-/* TVP3026 direct registers */
-
-#define TVP3026_INDEX		0x00
-#define TVP3026_WADR_PAL	0x00
-#define TVP3026_COL_PAL		0x01
-#define TVP3026_PIX_RD_MSK	0x02
-#define TVP3026_RADR_PAL	0x03
-#define TVP3026_CUR_COL_ADDR	0x04
-#define TVP3026_CUR_COL_DATA	0x05
-#define TVP3026_DATA		0x0a
-#define TVP3026_CUR_RAM		0x0b
-#define TVP3026_CUR_XLOW	0x0c
-#define TVP3026_CUR_XHI		0x0d
-#define TVP3026_CUR_YLOW	0x0e
-#define TVP3026_CUR_YHI		0x0f
-
-/* TVP3026 indirect registers */
-
-#define TVP3026_SILICON_REV	0x01
-#define TVP3026_CURSOR_CTL	0x06
-#define TVP3026_LATCH_CTL	0x0f
-#define TVP3026_TRUE_COLOR_CTL	0x18
-#define TVP3026_MUX_CTL		0x19
-#define TVP3026_CLK_SEL		0x1a
-#define TVP3026_PAL_PAGE	0x1c
-#define TVP3026_GEN_CTL		0x1d
-#define TVP3026_MISC_CTL	0x1e
-#define TVP3026_GEN_IO_CTL	0x2a
-#define TVP3026_GEN_IO_DATA	0x2b
-#define TVP3026_PLL_ADDR	0x2c
-#define TVP3026_PIX_CLK_DATA	0x2d
-#define TVP3026_MEM_CLK_DATA	0x2e
-#define TVP3026_LOAD_CLK_DATA	0x2f
-#define TVP3026_KEY_RED_LOW	0x32
-#define TVP3026_KEY_RED_HI	0x33
-#define TVP3026_KEY_GREEN_LOW	0x34
-#define TVP3026_KEY_GREEN_HI	0x35
-#define TVP3026_KEY_BLUE_LOW	0x36
-#define TVP3026_KEY_BLUE_HI	0x37
-#define TVP3026_KEY_CTL		0x38
-#define TVP3026_MCLK_CTL	0x39
-#define TVP3026_SENSE_TEST	0x3a
-#define TVP3026_TEST_DATA	0x3b
-#define TVP3026_CRC_LSB		0x3c
-#define TVP3026_CRC_MSB		0x3d
-#define TVP3026_CRC_CTL		0x3e
-#define TVP3026_ID		0x3f
-#define TVP3026_RESET		0xff
 
 #endif

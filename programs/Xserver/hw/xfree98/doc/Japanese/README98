@@ -1,6 +1,6 @@
   XFree86 PC98 Dependent Information
   The XFree86 Project Inc. and X98 CORE TEAM著
-  1996年 10 月  9日
+  1996年 2 月  18日
 
   このドキュメントでは、PC98サーバ固有の事項について解説します。 PC-ATと
   共通の事項については、共通のドキュメントを参照してください。このドキュ
@@ -10,7 +10,7 @@
   1.サポートサーバ及び構成
 
   PC98用サーバは、以下の拡張ビデオボード、内蔵ビデオシステムに対応してい
-  ます。個々の対応、動作状況についてはVideoBoard98を参照してください。
+  ます。個々の対応、動作状況についてはVideoBoard.Docを参照してください。
 
   1.1.サポートカード一覧
 
@@ -22,8 +22,6 @@
     MELCO         WAB-EP                                  XF98_WABEP
     MELCO         WSN-A2F                                 XF98_WSNA
     IO Data       GA-98NB I/C,GA-98NB II, GA-98NB IV      XF98_GANBWAP
-                  GA-968V2/PCI, GA-968V4/PCI              XF98_GA968
-                  GA-DRV2/98, GA-DRV4/98                  XF98_TGUI
     NEC           ウィンドウアクセラレータボード A/B      XF98_NECS3
     Canopus       PowerWindow 801, 801+, 928, 928G, 801G, XF98_PWSKB
                   928II, 805i
@@ -38,15 +36,14 @@
     ベンダー      チップセット                             サーバ
     ------------- --------------------------------------- ----------------
     NEC/EPSON     EGC(640x400x16)                         XF98_EGC
-    NEC           PEGC(640x400x256,640x480x256)           XF98_NEC480
+    NEC           PEGC(640x480x256, PC-9821A,C,X,N,L)     XF98_NEC480
     NEC           S3 928(As2等), S3 864(As3等)            XF98_NECS3
     NEC           Cirrus CLGD5428/5430(B-Mate,Xe,CanBe等) XF98_NKVNEC
-    NEC           Trident TGUI9680XGi(X-Mate,ValueStar等) XF98_TGUI
     EPSON         NKV(486MR,MS,MV,586MV等)                XF98_NKVNEC
 
 
 
-  2.共通事項
+  2.全サーバ共通事項
 
 
      xf86config
@@ -60,22 +57,11 @@
         移植されていません。ハングアップやビデオボードを壊す恐れがあるの
         で絶対に使用しないでください。
 
-     XF86Setup
-        PC98用に移植されていません。
-
-     scanpci
-        厳格な動作確認を行っていませんが、動作するようです。
-
      デフォルトのコンパイル時の設定
         以前のPC98用サーバと異なり、XFree86は、GetValesBC NO,BuildPexExt
         YES,BuildXIE YESと定義されています。ご注意ください。xengine等で
         はGetValuesについてソースの修正が必要です。
 
-     16MBシステム空間の設定
-        サーバーによっては、15M-16Mの領域を使用する物があります。シス
-        テムセットアップメニューで、16MBシステム空間を「切り離す」に
-        してサーバーを起動すると、ハングアップ等を引き起こす可能性があ
-        るため、かならず「使用する」にしてください。
 
 
   3.各サーバについて
@@ -128,7 +114,7 @@
   3.3.  XF98_GANBWAP
 
   MELCOのWAP2000/4000, IO DataのGA-98NB I/C,II,IV で動作する VGA256ベー
-  スのサーバです。ICM GI-5434-2M/4Mでも動作するかもしれません。
+  スのサーバです。
 
 
   3.3.1.  XF86Configの設定
@@ -152,7 +138,7 @@
         能にします。FreeBSD(98)ではカーネルconfig時に指定する事で、カー
         ネル側で同等の機能を実現しています。通常はカーネル側で指定し、
         XF86Configではこのオプションを指定しません。NetBSD/pc98(based on
-        NetBSD 1.2)では、必ずこのオプションを指定してください。また、NEC
+        NetBSD 1.1)では、必ずこのオプションを指定してください。また、NEC
         機やGRシリーズより新しいEPSON機ではソフトウエアDIPスイッチで同等
         の機能を実現しますので、このオプションは指定しないでください。
 
@@ -197,7 +183,7 @@
         能にします。FreeBSD(98)ではカーネルconfig時に指定する事で、カー
         ネル側で同等の機能を実現しています。通常はカーネル側で指定し、
         XF86Configではこのオプションを指定しません。NetBSD/pc98(based on
-        NetBSD 1.2)では、必ずこのオプションを指定してください。また、NEC
+        NetBSD 1.1)では、必ずこのオプションを指定してください。また、NEC
         機やGRシリーズより新しいEPSON機ではソフトウエアDIPスイッチで同等
         の機能を実現しますので、このオプションは指定しないでください。
 
@@ -291,8 +277,6 @@
   o  EPSON NOTEでは、twmなどのプルダウンメニューでカーソル位置にゴミが生
      じます。xrefreshなどで除去できますが、解決方法は不明です。
 
-  o  PANIX Ver.5.0 for 98では動作しません。
-
   3.6.3.その他
 
 
@@ -308,14 +292,14 @@
 
   3.7.  XF98_NEC480
 
-  PEGCを用いた、640x400, 640x480ドット256色のサーバです。PC-9821シリー
-  ズの拡張グラフィックアーキテクチャ搭載機で動作します。
+  PEGCを用いた 640x480ドット256色のサーバです。PC-9821A, C, Xシリー
+  ズ,PC-9821N, Lシリーズの一部の拡張グラフィックアーキテクチャ搭載機で動
+  作します。
 
   3.7.1.  XF86Configの設定
 
 
   o  Device,Modesについては、XF86Config.98のとおりにしてください。
-  o  640x400で使用する時は、Clocksを28.322にしてください。
 
 
   3.7.2.報告されている問題
@@ -324,13 +308,13 @@
   o  PC-9821Nm ではバックライトが消える障害があります。
 
   o  GDCの設定を保存できない為、X終了後に同期周波数などが元に戻りませ
-     ん。FreeBSD(98)の場合は、カーネル作成時に options "LINE30"を指定
-     する事により回避できます。
+     ん。
 
   3.7.3.その他
 
 
-  o  仮想スクリーンの機能はありません。Virtualの設定は行わないでください。
+  o  仮想スクリーンの機能はありません。640x480 固定です。Virtualの設定は
+     行わないでください。
 
 
   3.7.4.関連
@@ -407,7 +391,7 @@
         能にします。FreeBSD(98)ではカーネルconfig時に指定する事で、カー
         ネル側で同等の機能を実現しています。通常はカーネル側で指定し、
         XF86Configではこのオプションを指定しません。NetBSD/pc98(based on
-        NetBSD 1.2)では、必ずこのオプションを指定してください。また、NEC
+        NetBSD 1.1)では、必ずこのオプションを指定してください。また、NEC
         機やGRシリーズより新しいEPSON機ではソフトウエアDIPスイッチで同等
         の機能を実現しますので、このオプションは指定しないでください。
         Option ``nomemaccess''を指定している場合には意味を持ちません。
@@ -489,7 +473,7 @@
 
   3.9.1.  XF86Configの設定
 
-  以下のOption等がPC98用に指定できます。これ以外に、README.s3、
+  以下のOption等ががPC98用に指定できます。これ以外に、README.s3、
   XF86_Accell man pageで解説されているオプション等を指定できます。
   PC98固有以外のOption等についてはXF86_Accel man pageを参照してください
 
@@ -518,6 +502,9 @@
      VideoRam 1024
         PW928LB II では、正常に1Mを越えるVRAMを扱えません。この設定で 1M
         VRAMとして使用してください。
+
+     Option    ``pw_localbus''
+        必ず指定してください。
 
      Option    ``dac_8_bit''
         PW928IILB/928GLB では必要です。
@@ -570,7 +557,7 @@
 
   3.10.1.  XF86Configの設定
 
-  以下のOption等がPC98用に指定できます。これ以外に、README.S3、
+  以下のOption等ががPC98用に指定できます。これ以外に、README.S3、
   XF86_Accell man pageで解説されているオプション等を指定できます。
   PC98固有以外のOption等についてはXF86_Accel man pageを参照してください
 
@@ -589,6 +576,9 @@
 
      Clockchip ``s3_sdac''
         内蔵864では必要です。
+
+     Option  ``necwab''
+        常に指定してください。
 
      Option ``nomemaccess''
         NOTE+拡張BOXの場合必要です。
@@ -631,61 +621,40 @@
   README.s3、XF86_Accell man page
 
 
-  3.11.  XF98_GA968
 
 
-  GA-968V2/PCI, GA-968V4/PCI で動作するサーバです。
-
-  3.11.1.  XF86Configの設定
-
-  以下のOption等がPC98用に指定できます。これ以外に、README.s3、
-  XF86_Accell man pageで解説されているオプション等を指定できます。
-  PC98固有以外のOption等についてはXF86_Accel man pageを参照してください
-
-     chipset ``s3_generic''
-        常に指定してください。
 
 
-  3.11.2.  報告されている問題
 
 
-  o  開発後十分なテストが行われていないので動作レポートをお願いします。
 
 
-  3.11.3.参照
-
-  README.s3、XF86_Accell man page
 
 
-  3.12.  XF98_TGUI
-
-  NECの内蔵アクセラレータ(Trident TGUi9680XGi), IO DataのGA-DRV/98 で動
-  作する VGA256ベースのサーバです。
-
-  3.12.1.  XF86Configの設定
-
-  README.trident内に解説されているオプションを指定できます。
-
-  DRAMスピードに関するオプション(fast_dram,med_dram,slow_dram)が指定され
-  ないときは、XF98_TGUI独自のデータベースによる自動設定がなされます。
-
-  3.12.2.  報告されている問題
 
 
-  o  9821Xaシリーズの 16bppでは、hw_cursorが正しく働かない。
-
-  o  GA-DRV/98で、1024x768が正常に表示されない。
 
 
-  3.12.3.  その他
 
 
-  o  GA-DRV/98では16bppは動作しません。
 
-  o  15/24/32bppは動作しません。
 
-  o  まだ十分なテストが行われていないので動作レポートをお願いします。
 
-  3.12.4.  関連
 
-  README.trident、XF86_SVGA man page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/sysv/Imakefile,v 3.2 1996/08/14 14:37:51 dawes Exp $
+$XFree86$
 
 
 
@@ -6,7 +6,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/os-support/sysv/Imakefile,v 3.2 1
 
 #include <Server.tmpl>
 
-#if defined(SVR4Architecture) || defined(i386Sco325Architecture)
+#if defined(SVR4Architecture)
 BIOS_MOD = bios_V4mmap
 #else
 BIOS_MOD = bios_devmem
@@ -19,7 +19,7 @@ OBJS = sysv_init.o sysv_video.o IO_utils.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
        sysv_kbd.o std_kbdEv.o sysv_tty.o std_mouse.o std_mseEv.o xqueue.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
-           -I$(INCLUDESRC) -I$(EXTINCSRC)
+           -I$(INCLUDESRC)
 
 DEFINES = -DPC98
 

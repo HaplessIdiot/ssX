@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.2 1996/10/06 13:15:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.8 1996/08/20 12:27:02 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -84,8 +84,9 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "cfb24.h"
 #include "cfb32.h"
 #include "misc.h"
-#include "xf86.h"
-#include "s3v.h"
+#include  "xf86.h"
+#include "s3.h"
+#include "regs3.h"
 
 extern int s3MAX_SLOTS;
 
@@ -104,9 +105,8 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema)
    {
-      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbSolidSpansGeneral(pDrawable, pGC,
@@ -125,7 +125,6 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 				nInit, pptInit, pwidthInit, fSorted);
          break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
@@ -144,7 +143,6 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -206,9 +204,8 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema)
    {
-      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
@@ -223,7 +220,6 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	 cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
          break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
@@ -242,7 +238,6 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -304,9 +299,8 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema)
    {
-      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbUnnaturalStippleFS(pDrawable, pGC,
@@ -325,7 +319,6 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 				 nInit, pptInit, pwidthInit, fSorted);
          break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
@@ -344,7 +337,6 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -406,9 +398,8 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    DDXPointPtr initPpt;
    int *initPwidth;
 
-   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
+   if (!xf86VTSema)
    {
-      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbUnnaturalStippleFS(pDrawable, pGC,
@@ -427,7 +418,6 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 				 nInit, pptInit, pwidthInit, fSorted);
          break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
@@ -446,7 +436,6 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
-      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))

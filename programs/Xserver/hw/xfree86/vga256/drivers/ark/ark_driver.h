@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.h,v 3.0 1996/09/22 05:05:55 dawes Exp $ */
+/* $XFree86$ */
 
 /* ChipRec declared in ark_driver.c. */
 
@@ -8,8 +8,6 @@ extern vgaVideoChipRec ARK;
 
 extern int arkChip;
 extern unsigned char *arkMMIOBase;
-extern int arkCOPBufferSpaceAddr;
-extern int arkCOPBufferSpaceSize;
 
 /* Framebuffer functions. */
 
@@ -18,8 +16,6 @@ extern RegionPtr Ark16CopyArea();
 extern RegionPtr Ark24CopyArea();
 extern RegionPtr Ark32CopyArea();
 extern void ArkCopyWindow();	/* 16/24/32bpp */
-
-extern void ArkAccelInit();
 
 /* Chip types. */
 

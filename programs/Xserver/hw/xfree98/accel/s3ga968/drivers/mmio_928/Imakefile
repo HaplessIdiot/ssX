@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/drivers/mmio_928/Imakefile,v 3.1 1996/10/08 12:39:32 dawes Exp $
+XCOMM $XFree86$
 
 
 
@@ -27,12 +27,10 @@ NormalAsmObjectRule()
 
 all:: mmio_928.o
 
-#if !XF86LinkKit
 LinkSourceFile(mmio_928.c,$(XF86SRC)/accel/s3/drivers/mmio_928)
-#endif
 
-InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/s3ga968/mmio_928)
-InstallLinkKitNonExecFile(mmio_928.c,$(XF98LINKKITDIR)/drivers98/s3ga968/mmio_928)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/s3/mmio_928)
+InstallLinkKitNonExecFile(mmio_928.c,$(XF98LINKKITDIR)/drivers/s3/mmio_928)
 
 DependTarget()
 

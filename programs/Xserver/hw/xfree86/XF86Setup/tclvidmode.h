@@ -1,4 +1,3 @@
-/* $XFree86$ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Xmd.h>

@@ -1,39 +1,29 @@
 # tkerror.tcl --
 #
-# $XFree86$
-#
-# This file contains a modified version of the tkError procedure.  It
+# This file contains a default version of the tkError procedure.  It
 # posts a dialog box with the error message and gives the user a chance
-# to see a more detailed stack trace. It also saves a copy of the
-# stack trace to a file.
+# to see a more detailed stack trace.
 #
-# Copyright 1996 by Joseph Moss,
-# based on the standard implementation which is:
+# @(#) tkerror.tcl 1.6 95/07/28 09:36:05
+#
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994-1995 Sun Microsystems, Inc.
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-if { $tk_version > 4.0 } {
-	set errprocname bgerror
-} else {
-	set errprocname tkerror
-}
+# tkerror --
+# This is the default version of tkerror.  It posts a dialog box containing
+# the error message and gives the user a chance to ask to see a stack
+# trace.
+# Arguments:
+# err -			The error message.
 
-proc $errprocname err {
+proc tkerror err {
     global errorInfo
     set info $errorInfo
-    set fd [open /tmp/XS[pid].err w]
-    puts $fd $errorInfo
-    close $fd
     set button [tk_dialog .tkerrorDialog "Error in Tcl Script" \
-	    "Error: $err\n\nA copy of the stack trace has been saved\
-	    in the file /tmp/XS[pid].err\n\n\
-	    If you think this error has not been reported before,\
-	    please send a copy of that file, along with details of\
-	    the problem you encountered, to joe@XFree86.org" \
-	    error 0 OK "Skip Messages" "Stack Trace"]
+	    "Error: $err" error 0 OK "Skip Messages" "Stack Trace"]
     if {$button == 0} {
 	return
     } elseif {$button == 1} {
@@ -75,6 +65,3 @@ proc $errprocname err {
 	grab release [grab current .]
     }
 }
-
-unset errprocname
-

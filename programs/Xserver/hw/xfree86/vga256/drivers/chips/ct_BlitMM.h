@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BlitMM.h,v 3.1 1996/08/24 12:54:05 dawes Exp $ */
+/* $XFree86$ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -6,9 +6,7 @@
 
 #define ctPATCOPY               0xF0
 #define ctTOP2BOTTOM            0x100
-#define ctBOTTOM2TOP            0x000
 #define ctLEFT2RIGHT            0x200
-#define ctRIGHT2LEFT            0x000
 #define ctSRCFG                 0x400
 #define ctSRCMONO               0x800
 #define ctPATMONO               0x1000
@@ -24,74 +22,67 @@
 #define ctPATSTART6             0x60000L
 #define ctPATSTART7             0x70000L
 
+/* The offsets in MMIO space to the memory mapped registers */
+#define ct0x83D0                0x83D0
+#define ct0x87D0                0x87D0
+#define ct0x8BD0                0x8BD0
+#define ct0x8FD0                0x8FD0
+#define ct0x93D0                0x93D0
+#define ct0x97D0                0x97D0
+#define ct0x9BD0                0x9BD0
+#define ct0x9FD0                0x9FD0
+
 /* Macros to do useful things with the C&T BitBLT engine */
 #define ctBLTWAIT \
-  {HW_DEBUG(0x4); \
-   while(*(volatile unsigned int *)(ctMMIOBase + DR(0x4)) & \
-   0x00100000){};}
+  while(*(volatile unsigned int *)(ctMMIOBase + ct0x93D0) & \
+	(ctisHiQV32 ? 0x80000000 : 0x00100000)){}
 
 #define ctSETROP(op) \
-  {HW_DEBUG(0x4); *(unsigned int *)(ctMMIOBase + DR(0x4)) = op;}
+  *(unsigned int *)(ctMMIOBase + ct0x93D0) = op
 
 #define ctSETSRCADDR(srcAddr) \
-  {HW_DEBUG(0x5); \
-   *(unsigned int *)(ctMMIOBase + DR(0x5)) = srcAddr&0x7FFFFFL;}
+  *(unsigned int *)(ctMMIOBase + ct0x97D0) = srcAddr&0x7FFFFFL
 
 #define ctSETDSTADDR(dstAddr) \
-{HW_DEBUG(0x6); \
-  *(unsigned int *)(ctMMIOBase + DR(0x6)) = dstAddr&0x7FFFFFL;}
+  *(unsigned int *)(ctMMIOBase + ct0x9BD0) = dstAddr&0x7FFFFFL
 
 #define ctSETPITCH(srcPitch,dstPitch) \
-{HW_DEBUG(0x0); \
-  *(unsigned int *)(ctMMIOBase + DR(0x0)) = ((dstPitch&0xFFFF)<<16)| \
-      (srcPitch&0xFFFF);}
+  *(unsigned int *)(ctMMIOBase + ct0x83D0) = ((dstPitch&0xFFFF)<<16)| \
+      (srcPitch&0xFFFF)
 
 #define ctSETHEIGHTWIDTHGO(Height,Width)\
-{HW_DEBUG(0x7); \
-  *(unsigned int *)(ctMMIOBase + DR(0x7)) = ((Height&0xFFFF)<<16)| \
-      (Width&0xFFFF);}
+  *(unsigned int *)(ctMMIOBase + ct0x9FD0) = ((Height&0xFFFF)<<16)| \
+      (Width&0xFFFF)
 
 #define ctSETPATSRCADDR(srcAddr)\
-{HW_DEBUG(0x1); \
-  *(unsigned int *)(ctMMIOBase + DR(0x1)) = srcAddr&0x1FFFFFL;}
+  *(unsigned int *)(ctMMIOBase + ct0x87D0) = srcAddr&0x1FFFFFL
 
 #define ctSETBGCOLOR8(bgColor)\
-{HW_DEBUG(0x2); \
-  *(unsigned int *)(ctMMIOBase + DR(0x2)) = \
+  *(unsigned int *)(ctMMIOBase + ct0x8BD0) = \
            (((((bgColor&0xFF)<<8)|(bgColor&0xFF))<<16) | \
-	   (((bgColor&0xFF)<<8)|(bgColor&0xFF)));}
+	   (((bgColor&0xFF)<<8)|(bgColor&0xFF)))
 
 #define ctSETBGCOLOR16(bgColor)\
-{HW_DEBUG(0x2); \
-  *(unsigned int *)(ctMMIOBase + DR(0x2)) = \
-           (((bgColor&0xFFFF)<<16)|(bgColor&0xFFFF));}
+  *(unsigned int *)(ctMMIOBase + ct0x8BD0) = \
+           (((bgColor&0xFFFF)<<16)|(bgColor&0xFFFF))
 
 /* As the 6554x doesn't support 24bpp colour expansion this doesn't work,
  * It is here only for later use with the 65550 */
 #define ctSETBGCOLOR24(bgColor)\
-{HW_DEBUG(0x2); \
-  *(unsigned int *)(ctMMIOBase + DR(0x2)) = \
-           (bgColor&0xFFFFFF);}
+  *(unsigned int *)(ctMMIOBase + ct0x8BD0) = \
+           (bgColor&0xFFFFFF)
 
 #define ctSETFGCOLOR8(fgColor)\
-{HW_DEBUG(0x3); \
-  *(unsigned int *)(ctMMIOBase + DR(0x3)) = \
+  *(unsigned int *)(ctMMIOBase + ct0x8FD0) = \
            (((((fgColor&0xFF)<<8)|(fgColor&0xFF))<<16) | \
-	   (((fgColor&0xFF)<<8)|(fgColor&0xFF)));}
+	   (((fgColor&0xFF)<<8)|(fgColor&0xFF)))
 
 #define ctSETFGCOLOR16(fgColor)\
-{HW_DEBUG(0x3); \
-  *(unsigned int *)(ctMMIOBase + DR(0x3)) = \
-           (((fgColor&0xFFFF)<<16)|(fgColor&0xFFFF));}
+  *(unsigned int *)(ctMMIOBase + ct0x8FD0) = \
+           (((fgColor&0xFFFF)<<16)|(fgColor&0xFFFF))
 
 /* As the 6554x doesn't support 24bpp colour expansion this doesn't work,
  * It is here only for later use with the 65550 */
 #define ctSETFGCOLOR24(fgColor)\
-{HW_DEBUG(0x3); \
-  *(unsigned int *)(ctMMIOBase + DR(0x3)) = \
-           (fgColor&0xFFFFFF);}
-
-#define ctGETHWCUR(status) \
-{HW_DEBUG(0x8); status = MMIOmeml(DR(0x8));}
-#define ctPUTHWCUR(status) \
-{HW_DEBUG(0x8); MMIOmemw(DR(0x8)) = status;}
+  *(unsigned int *)(ctMMIOBase + ct0x8FD0) = \
+           (fgColor&0xFFFFFF)

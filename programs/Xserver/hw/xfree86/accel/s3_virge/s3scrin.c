@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3scrin.c,v 3.1 1996/10/03 08:33:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.12 1996/08/13 11:29:49 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -62,7 +62,8 @@ Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 #include "dix.h"
 #include "cfbmskbits.h"
 #include "mibstore.h"
-#include "s3v.h"
+#include "s3.h"
+#include "regs3.h"
 #include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
@@ -103,7 +104,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int	i;
     Bool Rstatus;
     VisualPtr visual;
-    pointer oldDevPrivate=NULL;
+    pointer oldDevPrivate;
 
     rootdepth = 0;
     bitsPerRGB = 6;

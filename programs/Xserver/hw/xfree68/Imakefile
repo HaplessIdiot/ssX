@@ -1,11 +1,11 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/Imakefile,v 3.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.26 1996/06/13 07:58:31 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-SCREENS = fbdev
+SCREENS = $(FBDEVSCREEN)
 
-SUBDIRS = os-support common $(SCREENS) doc $(XF86SETUPDIR) etc LinkKit
+SUBDIRS = os-support common $(SCREENS) doc $(XF86SETUPDIR) etc
 
 XF86CONFIG = XF86Config
 
@@ -61,7 +61,7 @@ DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
 # endif
 #endif
 
-CppFileTarget($(XF86CONFIG), XF68Conf.cpp, \
+CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
     -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH) \
     -DUSE_T1FONTS=$(USE_T1FONTS) -DT1FONTPATH=$(T1FONTPATH) \
     -DUSE_SPFONTS=$(USE_SPFONTS) -DSPFONTPATH=$(SPFONTPATH) \
@@ -74,12 +74,8 @@ CppFileTarget($(XF86CONFIG), XF68Conf.cpp, \
 
 InstallManPage(XFree86,$(MANDIR))
 InstallGenManPageLong(XF86Conf,$(FILEMANDIR),XF86Config,$(FILEMANSUFFIX))
-InstallManPage(XF68_FBDev,$(MANDIR))
+InstallManPage(XF86_FBDev,$(MANDIR))
 InstallNamedNonExec($(XF86CONFIG),XF86Config.eg,$(LIBDIR))
-
-LinkSourceFile(XF86Conf.man,$(XF86SRC))
-LinkSourceFile(XFree86.man,$(XF86SRC))
-LinkSourceFile(xf86Version.h,$(XF86SRC))
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

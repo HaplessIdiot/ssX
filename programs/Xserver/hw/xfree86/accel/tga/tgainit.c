@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.6 1996/10/17 15:18:20 dawes Exp $ */
+/* $XFree86$ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -32,31 +32,35 @@ typedef struct {
 } tgaRegisters;
 static tgaRegisters SR;
 
-unsigned char *tgaVideoMemSave;
-
 static int tgaInitialized = 0;
 static Bool LUTInited = FALSE;
 static LUTENTRY oldlut[256];
 int tgaInitCursorFlag = TRUE;
 int tgaHDisplay;
 extern int tga_type;
+
 extern struct tgamem tgamem;
 extern int tgaWeight;
 extern int tgaDisplayWidth;
+
 
 void
 tgaCalcCRTCRegs(crtcRegs, mode)
 	tgaCRTCRegPtr	crtcRegs;
 	DisplayModePtr	mode;
 {
+	/* This needs better clarification. XVIDTUNE needs this....*/
+	/* Doesn't do exactly, what xvidtune tells it too, but it still */
+	/* does allow the user to muck around with the sync settings */
+	/* Trying to retain some familiarity with normal config methods */
 	crtcRegs->h_active = mode->CrtcHDisplay;
-	crtcRegs->h_fporch = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;
-	crtcRegs->h_sync   = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) / 4;
-	crtcRegs->h_bporch = (mode->CrtcHTotal - mode->CrtcHSyncEnd) / 4;
+	crtcRegs->h_fporch = mode->CrtcHSyncStart - crtcRegs->h_active;
+	crtcRegs->h_sync   = mode->CrtcHSyncEnd - crtcRegs->h_fporch;
+	crtcRegs->h_bporch = mode->CrtcHTotal - crtcRegs->h_sync;
 	crtcRegs->v_active = mode->CrtcVDisplay;
-	crtcRegs->v_fporch = mode->CrtcVSyncStart - mode->CrtcVDisplay;
-	crtcRegs->v_sync   = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
-	crtcRegs->v_bporch = mode->CrtcVTotal - mode->CrtcVSyncEnd;
+	crtcRegs->v_fporch = mode->CrtcVSyncStart - crtcRegs->v_active;
+	crtcRegs->v_sync   = mode->CrtcVSyncEnd - crtcRegs->v_fporch;
+	crtcRegs->v_bporch = mode->CrtcVTotal - crtcRegs->v_sync;
 
 	/*
 	 * We do polarity the Step B way of the 21030 
@@ -72,7 +76,7 @@ tgaCalcCRTCRegs(crtcRegs, mode)
 	else
 		crtcRegs->v_pol = 0;
 
-	crtcRegs->clock_sel = tgaInfoRec.clock[mode->Clock];
+	crtcRegs->clock_sel = mode->Clock;
 }
 
 void
@@ -93,11 +97,18 @@ tgaSetCRTCRegs(crtcRegs)
 		(crtcRegs->v_bporch << 22) |
 		(crtcRegs->v_pol << 30);
 
-	TGA_WRITE_REG(0x00, TGA_VALID_REG); /* Disable Video */
-	ICS1562ClockSelect(crtcRegs->clock_sel);
+	TGA_WRITE_REG(0x03, TGA_VALID_REG); /* Disable Video */
+	tgaClockSelect(crtcRegs->clock_sel);
 	TGA_WRITE_REG(virtX, TGA_HORIZ_REG);
 	TGA_WRITE_REG(virtY, TGA_VERT_REG);
-	TGA_WRITE_REG(0x05, TGA_VALID_REG); /* Enable Video */
+	if (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options))
+	{
+		TGA_WRITE_REG(0x05, TGA_VALID_REG); /* Enable Video & Cursor */
+	}
+	else
+	{
+		TGA_WRITE_REG(0x01, TGA_VALID_REG); /* Enable Video Only */
+	}
 }
 
 void
@@ -149,7 +160,7 @@ restoreTGAstate()
 	 * chosen by Jay Estabrook for Linux....
 	 * Until I can find out how to read the clock register
 	 */
-	ICS1562ClockSelect(25175);
+	tgaClockSelect(14);
 
 	TGA_WRITE_REG(SR.tgaRegs[2], TGA_VALID_REG); /* Re-enable Video */
 }
@@ -163,12 +174,7 @@ void
 tgaCleanUp()
 #endif
 {
-	if (!tgaInitialized)
-		return;
-
 	restoreTGAstate();
-	memcpy(tgaVideoMemSave, (unsigned char *)tgaVideoMem, 0x200000L);
-	memset(tgaVideoMem, 0, 0x200000L);
 }
 
 
@@ -186,29 +192,12 @@ tgaInit(mode)
 	if (!tgaInitialized)
 		saveTGAstate();
 
-	memcpy((unsigned char *)tgaVideoMem, tgaVideoMemSave, 0x200000L);
-
-	tgaInitialized = 1;
 	tgaInitCursorFlag = TRUE;
+	tgaInitialized = 1;
 
 	return(TRUE);
 }
 
-void
-#if NeedFunctionPrototypes
-BT485Enable(void)
-#else
-BT485Enable()
-#endif
-{
-   /* Specific BT485 setup, for UDB(Multia) 8plane TGA */
-   BT485_WRITE(0xA0 | (tgaDAC8Bit ? 2 : 0), BT485_CMD_0);
-   BT485_WRITE(0x01, BT485_ADDR_PAL_WRITE);
-   BT485_WRITE(0x14, BT485_CMD_3); /* 64x64 cursor */
-   BT485_WRITE(0x40, BT485_CMD_1); /* 8bpp */
-   BT485_WRITE(0x20, BT485_CMD_2);
-   BT485_WRITE(0xFF, BT485_PIXEL_MASK);
-}
 
 #if NeedFunctionPrototypes
 static void
@@ -218,8 +207,29 @@ static void
 InitLUT()
 #endif
 {
-   int i;
+   short i, j;
 
+   if (tgaDAC8Bit)
+   {
+   	BT485_WRITE(0xA2, BT485_CMD_0);
+   }
+   else
+   {
+	BT485_WRITE(0xA0, BT485_CMD_0);
+   }
+   BT485_WRITE(0x01, BT485_ADDR_PAL_WRITE);
+   BT485_WRITE(0x14, BT485_CMD_3); /* 64x64 cursor */
+   BT485_WRITE(0x40, BT485_CMD_1); /* 8bpp */
+   if (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options))
+   {
+	BT485_WRITE(0x23, BT485_CMD_2);	/* X11 Cursor */
+   }
+   else
+   {
+   	BT485_WRITE(0x20, BT485_CMD_2); /* Disable BT485 Cursor */
+   }
+   BT485_WRITE(0xFF, BT485_PIXEL_MASK);
+   
    /* Get BT485's pallette */
    BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
    TGA_WRITE_REG(BT485_DATA_PAL, TGA_RAMDAC_SETUP_REG);
@@ -255,12 +265,6 @@ void
 tgaInitEnvironment()
 #endif
 {
-   if (tga_type == TYPE_TGA_8PLANE)
-	BT485Enable();
-#ifdef SUPPORT24
-   else
-	BT463Enable();
-#endif
    InitLUT();
 }
 
@@ -276,16 +280,7 @@ tgaInitAperture()
 	tgaVideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
 					(pointer)(tgaInfoRec.MemBase |
 					fb_offset_presets[tga_type]),
-					tgaInfoRec.videoRam * 1024);
+					0x200000L);	/* 2Mbytes */
 
-	tgaVideoMemSave = (unsigned char *)xalloc(tgaInfoRec.videoRam * 1024);
-	if (tgaVideoMemSave == NULL)
-		FatalError("Unable to allocate save/restore buffer, "
-			   "aborting.....\n");
-
-#ifdef XFreeXDGA
-	tgaInfoRec.physBase = (tgaInfoRec.MemBase + 
-					fb_offset_presets[tga_type]);
-	tgaInfoRec.physSize = tgaInfoRec.videoRam * 1024;
-#endif
+	VidBase = (volatile unsigned long *)((unsigned char *)tgaVideoMem);
 }	

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BitBlt.c,v 3.1 1996/08/24 12:54:04 dawes Exp $ */
+/* $XFree86$ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -115,7 +115,7 @@ ctcfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pboxNew2 = NULL;
     pptNew2 = NULL;
     if (careful && (pptSrc->y < pbox->y1)) {
-	/* walk source bottom to top */
+	/* walk source botttom to top */
 	ydir = -1;
 
 	if (nbox > 1) {
@@ -197,17 +197,9 @@ ctcfbDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 	if (ctUseMMIO) {
-	    if (ctisHiQV32) {
-	        ctHiQVBitBlt((unsigned char *)psrcBase, 
-		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
-		    pptSrc->y, pbox->x1, pbox->y1, w, h, xdir, ydir, alu,
-		    planemask);
-	    } else {
-	        ctMMIOBitBlt((unsigned char *)psrcBase, 
-		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
-		    pptSrc->y, pbox->x1, pbox->y1, w, h, xdir, ydir, alu,
-		    planemask);
-	    }
+	    ctMMIOBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
+		widthSrc, widthDst, pptSrc->x, pptSrc->y, pbox->x1,
+		pbox->y1, w, h, xdir, ydir, alu, planemask);
 	} else {
 	    ctBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
 		widthSrc, widthDst, pptSrc->x, pptSrc->y, pbox->x1,
@@ -255,7 +247,7 @@ ctcfbFillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	} else
 	    /* 16/24 bpp can only get here for screen-screen operation.
 	     * Hence we don't need pdstBase */
-	    widthDst = vga256InfoRec.displayWidth;
+	    widthDst = vga256InfoRec.virtualX;
     } else {
 #ifdef DEBUG
 	ErrorF("!DRAWABLE_WINDOW\n");
@@ -265,7 +257,7 @@ ctcfbFillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	    widthDst = (int)(((PixmapPtr) pDrawable)->devKind);
 	} else {
 	    pdstBase = (unsigned char *)VGABASE;
-	    widthDst = vga256InfoRec.displayWidth;
+	    widthDst = vga256InfoRec.virtualX;
 	}
     }
 
@@ -288,19 +280,19 @@ ctcfbFillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu)
 	return;
     }
     /* This is an ugly hack to get around compiling this file
-     * multiple times. This should probably be done more neatly */
-    if (ctisHiQV32) {
-	ctHiQVSetFGColorBPP(pixel1, mask);
-	ctHiQVSetBGColorBPP(pixel1, mask);
+     * twice. This should probably be done more neatly */
+    if (ctUseMMIO) {
+	int ret;
+
+	ret = ctMMIOSetFGColorBPP(pixel1, mask);
+	if (ret) {
+	    cfb24FillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu);
+	    return;
+	}
     } else {
 	int ret;
-	if (ctUseMMIO) {
-	    ret = ctMMIOSetFGColorBPP(pixel1, mask);
-	    ret += ctMMIOSetBGColorBPP(pixel1, mask);
-	} else {
-	    ret = ctSetFGColorBPP(pixel1, mask);
-	    ret += ctSetBGColorBPP(pixel1, mask);
-	}
+
+	ret = ctSetFGColorBPP(pixel1, mask);
 	if (ret) {
 	    cfb24FillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu);
 	    return;
@@ -309,17 +301,10 @@ ctcfbFillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu)
 
     for (; nBox; nBox--, pBox++) {
 	if (ctUseMMIO) {
-	    if (ctisHiQV32) {
-		ctHiQVBitBlt((unsigned char *)NULL, (unsigned char *)pdstBase,
-		    0, widthDst, 0, 0, pBox->x1, pBox->y1,
-		    pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
-		    1, 1, (alu & 0x0F) | 0x10, mask);
-	    } else {
-		ctMMIOBitBlt((unsigned char *)NULL, (unsigned char *)pdstBase,
-		    0, widthDst, 0, 0, pBox->x1, pBox->y1,
-		    pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
-		    1, 1, (alu & 0x0F) | 0x10, mask);
-	    }
+	    ctMMIOBitBlt((unsigned char *)NULL, (unsigned char *)pdstBase,
+		0, widthDst, 0, 0, pBox->x1, pBox->y1,
+		pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
+		1, 1, (alu & 0x0F) | 0x10, mask);
 	} else {
 	    ctBitBlt((unsigned char *)NULL, (unsigned char *)pdstBase,
 		0, widthDst, 0, 0, pBox->x1, pBox->y1,
@@ -388,81 +373,3 @@ ctcfbFillRectSolidGeneral(pDrawable, pGC, nBox, pBox)
     }
 }
 #endif
-
-extern void cfbCopyPlane1to8();
-
-void ctcfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-planemask, bitplane)
-	DrawablePtr pSrcDrawable;
-	DrawablePtr pDstDrawable;
-	int rop;
-	unsigned long planemask;
-	RegionPtr prgnDst;
-	DDXPointPtr pptSrc;
-	int bitplane;	/* Unused. */
-{
-    unsigned long *psrcBase, *pdstBase;
-    int	widthSrc, widthDst;
-    int pixwidth;
-    int nbox;
-    BoxPtr  pbox;
-
-    cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
-
-    cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
-
-    if (!CHECKSCREEN(pdstBase) || cfb8StippleRRop != GXcopy) {
-    	vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-    		planemask, 1);
-    	return;
-    }
-
-    nbox = REGION_NUM_RECTS(prgnDst);
-    pbox = REGION_RECTS(prgnDst);
-
-    /* The planemask is understood to be 1 for all cases in which */
-    /* this function is called. */
-
-    while (nbox--)
-    {
-	int srcx, srcy, dstx, dsty, width, height;
-	int bg, fg;
-	dstx = pbox->x1;
-	dsty = pbox->y1;
-	srcx = pptSrc->x;
-	srcy = pptSrc->y;
-	width = pbox->x2 - pbox->x1;
-	height = pbox->y2 - pbox->y1;
-	pbox++;
-	pptSrc++;
-
-	fg = cfb8StippleFg;
-	bg = cfb8StippleBg;
-
-	if (width >= 32) {
-	    if (ctUseMMIO) {
-		if (ctisHiQV32) {
-		    ctHiQVBLTWriteBitmap(dstx, dsty, width, height,
-			    psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
-			    widthDst * 4);
-		} else {
-		    ctMMIOBLTWriteBitmap(dstx, dsty, width, height,
-			    psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
-			    widthDst * 4);
-		}
-		
-	    } else {
-		ctcfbBLTWriteBitmap(dstx, dsty, width, height,
-			psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
-			widthDst * 4);
-	    }
-	} else {
-		/* Create singular region. */
-		RegionRec reg;
-		(*pDstDrawable->pScreen->RegionInit)(&reg, pbox - 1, 1);
-		vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
-			&reg, pptSrc - 1, planemask, 1);
-		(*pDstDrawable->pScreen->RegionUninit)(&reg);
-	}
-    }
-}

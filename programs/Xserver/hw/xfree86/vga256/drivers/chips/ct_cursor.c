@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.5 1996/10/17 15:20:43 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -46,17 +46,6 @@
 #include "vga.h"
 #include "ct_driver.h"
 
-#define ctBLITWAIT \
-     if (ctUseMMIO){ \
-     HW_DEBUG(0x93D0); \
- while((*(volatile unsigned int *)(ctMMIOBase + (ctisHiQV32?0x10:0x93D0)))\
- & (ctisHiQV32 ? 0x80000000 : 0x00100000)){}; \
-        } else { \
-	 HW_DEBUG(0x4+2); \
-	 while (inw(DR(0x4)+2) & 0x10) {}; \
-	       };
-
-
 static Bool CHIPSRealizeCursor();
 static Bool CHIPSUnrealizeCursor();
 static void CHIPSSetCursor();
@@ -66,6 +55,7 @@ static void CHIPSHideCursor();
 
 #ifdef DEBUG
 unsigned char *hex2bmp(unsigned char, unsigned char *);
+
 #endif
 
 static miPointerSpriteFuncRec CHIPSPointerSpriteFuncs =
@@ -96,6 +86,42 @@ int ctCursorWidth;
 int ctCursorHeight;
 static CursorPtr ctCursorpCurs;
 
+static unsigned char byte_reversed[256] =
+{
+    0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
+    0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+    0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
+    0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+    0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
+    0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+    0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
+    0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+    0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
+    0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+    0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
+    0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+    0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
+    0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+    0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
+    0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+    0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
+    0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+    0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
+    0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+    0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
+    0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+    0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
+    0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+    0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
+    0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+    0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
+    0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+    0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
+    0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+    0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
+    0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
+};
+
 Bool
 CHIPSCursorInit(pm, pScr)
     char *pm;
@@ -111,21 +137,19 @@ CHIPSCursorInit(pm, pScr)
     ctCursorGeneration = serverGeneration;
 
     /* 1kB alignment. Note this allocation is now done in FbInit. */
+#if 0
+    ctCursorAddress = (((vga256InfoRec.videoRam << 10) - ctFrameBufferSize) 
+       - 2048 + 0x3FF) & 0xFFFFFC00;
+#endif
     /* load address to card when cursor is loaded to card */
     if (ctisHiQV32) {
 	outb(0x3D6, 0xA2);
 	outb(0x3D7, (ctCursorAddress >> 8) & 0xFF);
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
-    } else if (!ctisWINGINE) {
-      if(!ctUseMMIO) {
-	HW_DEBUG(0xC);
-	outl(DR(0xC), ctCursorAddress);
-      } else {
-	HW_DEBUG(0xB3D0);
-	MMIOmeml(0xB3D0) = ctCursorAddress;
-      }
-    }
+    } else
+	outl(0xB3D0, ctCursorAddress);
+
     return TRUE;
 }
 
@@ -136,13 +160,7 @@ CHIPSShowCursor()
     if (ctisHiQV32)
 	outw(0x3D6, 0x11A0);
     else
-      if(!ctUseMMIO) {
-	HW_DEBUG(0x8);
-	outw(DR(0x8), 0x21);
-      } else {
-	HW_DEBUG(0xA3D0);
-	MMIOmemw(0xA3D0) = 0x21;
-      }
+	outw(0xA3D0, 0x21);
     ctHWcursorShown = TRUE;
 }
 
@@ -153,13 +171,7 @@ CHIPSHideCursor()
     if (ctisHiQV32)
 	outw(0x3D6, 0x10A0);
     else
-      if(!ctUseMMIO) {
-	HW_DEBUG(0x8);
-	outw(DR(0x8), 0x20);
-      } else {
-	HW_DEBUG(0xA3D0);
-	MMIOmemw(0xA3D0) = 0x20;
-      }
+	outw(0xA3D0, 0x20);
     ctHWcursorShown = FALSE;
 }
 
@@ -212,57 +224,7 @@ CHIPSRealizeCursor(pScr, pCurs)
     wsrc = PixmapBytePad(bits->width, 1);	/* Bytes per line. */
 
     if (!ctisHiQV32) {
-      if (ctisWINGINE) {
 	for (i = 0; i < MAX_CURS; i++) {
-	    for (j = 0; j < MAX_CURS / 8; j++) {
-		unsigned char mask, source;
-
-		if (i < h && j < wsrc) {
-		    mask = *pServMsk++;
-
-		    if (j < MAX_CURS / 8) {
-			*ram++ = ~byte_reversed[mask];	/*chip depend */
-#ifdef DEBUG
-			ErrorF("m:%s\n", hex2bmp(mask, bmp));
-#endif
-		    }
-		} else {
-		    *ram++ = 0xFF;     /*chip depend */
-		}
-	    }
-	    /*
-	     * if we still have more bytes on this line (j < wsrc),
-	     * we have to ignore the rest of the line.
-	     */
-	    while (j++ < wsrc)
-		pServMsk++;
-	  }
-	 for (i = 0; i < MAX_CURS; i++) {
-	    for (j = 0; j < MAX_CURS / 8; j++) {
-		unsigned char mask, source;
-
-		if (i < h && j < wsrc) {
-		    source = *pServSrc++;
-
-		    if (j < MAX_CURS / 8) {
-		      *ram++ = byte_reversed[source];	      /*chip depend */
-#ifdef DEBUG
-			ErrorF("s:%s\n", hex2bmp(source, bmp));
-#endif
-		    }
-		} else {
-		    *ram++ = 0x00;     /*chip depend */
-		}
-	    }
-	    /*
-	     * if we still have more bytes on this line (j < wsrc),
-	     * we have to ignore the rest of the line.
-	     */
-	    while (j++ < wsrc)
-		pServSrc++;
-	  }
-    } else {
-      for (i = 0; i < MAX_CURS; i++) {
 	    for (j = 0; j < MAX_CURS / 8; j++) {
 		unsigned char mask, source;
 
@@ -289,8 +251,7 @@ CHIPSRealizeCursor(pScr, pCurs)
 	     */
 	    while (j++ < wsrc)
 		pServMsk++, pServSrc++;
-	  }
-    }
+	}
     } else {
 	for (i = 0; i < MAX_CURS; i += 2) {
 	    for (j = 0; j < 2; j++) {
@@ -361,13 +322,14 @@ CHIPSUnrealizeCursor(pScr, pCurs)
 	xfree(priv);
 	pCurs->bits->devPriv[pScr->myNum] = 0x0;
     }
-    if ((--ctRealizedCursorCount == 0) && xf86VTSema) {/* count down to erase cursor when exit the server */
+    if (--ctRealizedCursorCount == 0) {		/* count down to erase cursor when exit the server */
 	if (ctisHiQV32) {
 	    outb(0x3D6, 0x20);
 	    while (inb(0x3D7) & 0x1) {
 	    };
 	} else {
-	  ctBLITWAIT;
+	    while (inw(0x93D2) & 0x10) {
+	    };
 	}
 	CHIPSHideCursor();
     }
@@ -379,7 +341,6 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
     CursorPtr pCurs;
     int x, y;
 {
-  int i;
     unsigned char *cursor_image;
     int index = pScr->myNum;
 
@@ -392,18 +353,12 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	while (inb(0x3D7) & 0x1) {
 	};
     } else {
-      ctBLITWAIT;
+	while (inw(0x93D2) & 0x10) {
+	};
     }
 
     cursor_image = pCurs->bits->devPriv[index];
-    if (ctisWINGINE) {
-      outl(DR(0x8),0x20);
-      for (i=0;i<64;i++)
-	{
-	  outl(DR(0xC),*(unsigned long *)cursor_image);
-	  (cursor_image)+= sizeof (unsigned long);
-	}
-    } else {
+
     if (ctLinearSupport) {
 #ifdef DEBUG
 	ErrorF("CHIPSLoadCursorToCard: memcpy to 0x%X\n",
@@ -431,14 +386,8 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	    CHIPSSetWrite(ctCursorAddress >> 16);
 	    memcpy((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF),
 		cursor_image, 256);
-	    if(!ctUseMMIO) {
-	      HW_DEBUG(0xC);
-	      outl(DR(0xC),
+	    outl(0xB3D0,
 		 (int)((unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF)));
-	    } else {
-	      HW_DEBUG(0xB3D0);
-	      MMIOmeml(0xB3D0) = (int)(unsigned char *)vgaBase + (ctCursorAddress & 0xFFFF);
-	    }
 	}
 	vgaRestoreBank();
 
@@ -450,14 +399,8 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	outb(0x3D6, 0xA3);
 	outb(0x3D7, (ctCursorAddress >> 16) & 0x3F);
     } else
-      if (!ctUseMMIO) {
-	HW_DEBUG(0xC);
-	outl(DR(0xC), ctCursorAddress);
-      } else {
-	HW_DEBUG(0xB3D0);
-	MMIOmeml(0xB3D0) = ctCursorAddress;
-      }
-  }
+	outl(0xB3D0, ctCursorAddress);
+
 }
 
 /*
@@ -497,7 +440,8 @@ CHIPSLoadCursor(pScr, pCurs, x, y)
 	while (inb(0x3D7) & 0x1) {
 	};
     } else {
-      ctBLITWAIT;
+	while (inw(0x93D2) & 0x10) {
+	};
     }
 
     /* Turn it on. */
@@ -582,13 +526,7 @@ CHIPSMoveCursor(pScr, x, y)
 
 	xy = y;
 	xy = (xy << 16) | x;
-	if(!ctUseMMIO) {
-	  HW_DEBUG(0xB);
-	  outl(DR(0xB), xy);
-	} else {
-	  HW_DEBUG(0xAFD);
-	  MMIOmeml(0xAFD0) = xy;
-	}
+	outl(0xAFD0, xy);
     }
 
 }
@@ -631,15 +569,7 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	outb(0x3C9, (pCurs->foreBlue >> 10) & 0xFF);
 	outb(0x3D6, 0x80);
 	outb(0x3D7, xr80);	       /* Enable normal palette addressing */
-    } else if (ctisWINGINE) {
-	outl(DR(0x9), (((pCurs->backBlue) & 0xff00) >> 8) ||
-	     (((pCurs->backGreen) & 0xff00)) ||
-	     (((pCurs->backRed) & 0xff00) << 8));
-	outl(DR(0xA), (((pCurs->foreBlue) & 0xff00) >> 8) ||
-	     (((pCurs->foreGreen) & 0xff00)) ||
-	     (((pCurs->foreRed) & 0xff00) << 8));
     } else {
-#if 0	/* It appears that the colour is always specified in Hi-Color! */
 	if (xf86weight.green == 5) {
 	    packedcolbg = ((pCurs->backRed & 0xf800) >> 1)
 		| ((pCurs->backGreen & 0xf800) >> 6)
@@ -647,9 +577,7 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 1)
 		| ((pCurs->foreGreen & 0xf800) >> 6)
 		| ((pCurs->foreBlue & 0xf800) >> 11);
-	} else
-#endif
-       {
+	} else {
 	    packedcolfg = ((pCurs->foreRed & 0xf800) >> 0)
 		| ((pCurs->foreGreen & 0xfc00) >> 5)
 		| ((pCurs->foreBlue & 0xf800) >> 11);
@@ -658,13 +586,7 @@ CHIPSRecolorCursor(pScr, pCurs, displayed)
 		| ((pCurs->backBlue & 0xf800) >> 11);
 	}
 	packedcolfg = (packedcolfg << 16) | packedcolbg;
-	if(!ctUseMMIO) {
-	  HW_DEBUG(0x9);
-	  outl(DR(0x9), packedcolfg);
-	} else {
-	  MMIOmeml(0xA7D0) = packedcolfg;
-	  HW_DEBUG(0xA7D0);
-	}
+	outl(0xA7D0, packedcolfg);
     }
 }
 
@@ -678,11 +600,10 @@ CHIPSWarpCursor(pScr, x, y)
 }
 
 void
-CHIPSQueryBestSize(class, pwidth, pheight, pScreen)
+CHIPSQueryBestSize(class, pwidth, pheight)
     int class;
     short *pwidth;
     short *pheight;
-    ScreenPtr pScreen;
 {
     if (*pwidth > 0) {
 	switch (class) {
@@ -694,7 +615,7 @@ CHIPSQueryBestSize(class, pwidth, pheight, pScreen)
 	    break;
 
 	default:
-	    (void)mfbQueryBestSize(class, pwidth, pheight, pScreen);
+	    (void)mfbQueryBestSize(class, pwidth, pheight);
 	    break;
 	}
     }

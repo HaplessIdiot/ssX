@@ -92,7 +92,6 @@ source $tk_library/text.tcl
 # ----------------------------------------------------------------------
 
 bind all <Tab> {focus [tk_focusNext %W]}
-bind all <Key-ISO_Left_Tab> {focus [tk_focusPrev %W]}
 bind all <Shift-Tab> {focus [tk_focusPrev %W]}
 
 # tkCancelRepeat --

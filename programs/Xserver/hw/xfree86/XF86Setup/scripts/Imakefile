@@ -1,11 +1,10 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/scripts/Imakefile,v 3.0 1996/08/18 09:47:41 dawes Exp $
+XCOMM $XFree86$
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
       SCRIPTSDIR = $(XF86SETUPLIBDIR)/scripts
 
      SCRIPTFILES = mseconfig.tcl
    
-all::
 
 InstallNamedProg(xmseconfig,xmseconfig,$(BINDIR))
 InstallMultiple($(SCRIPTFILES),$(SCRIPTSDIR))

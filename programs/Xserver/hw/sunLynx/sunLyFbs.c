@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyFbs.c,v 3.0 1996/09/29 12:47:23 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  * This is sunFbs.c modified for LynxOS
@@ -189,23 +189,12 @@ static Bool closeScreen (i, pScreen)
 {
     SetupScreen(pScreen);
     Bool    ret;
-    struct fbcmap sunCmap;
-    unsigned char color;
 
     (void) OsSignal (SIGIO, SIG_IGN);
     sunDisableCursor (pScreen);
     pScreen->CloseScreen = pPrivate->CloseScreen;
     ret = (*pScreen->CloseScreen) (i, pScreen);
     (void) (*pScreen->SaveScreen) (pScreen, SCREEN_SAVER_OFF);
-    /* probably this doesn't belong here: restore black&white cmap */
-    sunCmap.count = 1;
-    sunCmap.index = 0;
-    sunCmap.red = sunCmap.green = sunCmap.blue = &color;
-    color = 0xff;
-    (void) sunIoctl(&sunFbs[pScreen->myNum], FBIOPUTCMAP, &sunCmap);
-    sunCmap.index = 0xff;
-    color = 0;
-    (void) sunIoctl(&sunFbs[pScreen->myNum], FBIOPUTCMAP, &sunCmap);
     xfree ((pointer) pPrivate);
     return ret;
 }

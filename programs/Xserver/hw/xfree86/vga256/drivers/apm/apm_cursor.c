@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_cursor.c,v 3.0 1996/09/01 04:47:29 dawes Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -391,11 +391,10 @@ void ApmWarpCursor(pScr, x, y)
  * It is called by the SVGA server.
  */
 
-void ApmQueryBestSize(class, pwidth, pheight, pScreen)
+void ApmQueryBestSize(class, pwidth, pheight)
 	int class;
-	unsigned short *pwidth;
-	unsigned short *pheight;
-	ScreenPtr pScreen;
+	short *pwidth;
+	short *pheight;
 {
  	if (*pwidth > 0) {
  		if (class == CursorShape) {
@@ -403,7 +402,7 @@ void ApmQueryBestSize(class, pwidth, pheight, pScreen)
 			*pheight = apmCursorHeight;
 		}
 		else
-			(void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
+			(void) mfbQueryBestSize(class, pwidth, pheight);
 	}
 }
 

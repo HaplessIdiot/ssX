@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.16 1996/11/24 09:52:56 dawes Exp $ */ 
+/* $XFree86$ */
 /*
  * PCI Probe
  *
@@ -183,17 +183,6 @@ struct pci_config_reg {
 #define PCI_SUBCLASS_PREHISTORIC_VGA	0x01
 #define PCI_SUBCLASS_DISPLAY_VGA	0x00
 
-/* PCI Configuration address */
-#define	PCI_MODE1_ADDRESS_REG		0xCF8
-#define	PCI_MODE1_DATA_REG		0xCFC
-
-#define	PCI_MODE2_ENABLE_REG		0xCF8
-#ifdef PC98
-#define	PCI_MODE2_FORWARD_REG		0xCF9
-#else
-#define	PCI_MODE2_FORWARD_REG		0xCFA
-#endif
-
 extern struct pci_config_reg *pci_devp[];
 
 void xf86writepci(
@@ -219,10 +208,8 @@ void xf86writepci(
 #define PCI_VENDOR_SIS		0x1039
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
-#define PCI_VENDOR_ALLIANCE	0x1142
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
-#define PCI_VENDOR_3DLABS	0x3D3D
 
 
 /* ATI */
@@ -231,8 +218,6 @@ void xf86writepci(
 #define PCI_CHIP_MACH64CX	0x4358
 #define PCI_CHIP_MACH64CT	0x4354
 #define PCI_CHIP_MACH64ET	0x4554
-#define PCI_CHIP_MACH64VT	0x5654
-#define PCI_CHIP_MACH64GT	0x4754
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -240,29 +225,21 @@ void xf86writepci(
 /* Tseng */
 #define PCI_CHIP_ET4000_W32P_A	0x3202
 #define PCI_CHIP_ET4000_W32P_B	0x3205
-#define PCI_CHIP_ET4000_W32P_D	0x3206
-#define PCI_CHIP_ET4000_W32P_C	0x3207
-#define PCI_CHIP_ET6000		0x3208
+#define PCI_CHIP_ET4000_W32P_C	0x3206
+#define PCI_CHIP_ET4000_W32P_D	0x3207
 
 /* Weitek */
 #define PCI_CHIP_P9000		0x9001
 #define PCI_CHIP_P9100		0x9100
 
 /* Cirrus Logic */
-#define PCI_CHIP_GD7548		0x0038
 #define PCI_CHIP_GD5430		0x00A0
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
-#define PCI_CHIP_GD5446		0x00B8
-#define PCI_CHIP_GD5462		0x00D0
-#define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD7542		0x1200
-#define PCI_CHIP_GD7543		0x1202
-#define PCI_CHIP_GD7541		0x1204
 
 /* Trident */
-#define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
@@ -274,22 +251,12 @@ void xf86writepci(
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
-#define PCI_CHIP_SG86C202	0x0002
-#define PCI_CHIP_SG86C205	0x0205
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
-#define PCI_CHIP_I128_2		0x2339
-
-/* Alliance Semiconductor */
-#define PCI_CHIP_PM6410		0x3210
-#define PCI_CHIP_PM6422		0x6422
-#define PCI_CHIP_PMAT24		0x6424
 
 /* S3 */
 #define PCI_CHIP_TRIO		0x8811
-#define PCI_CHIP_AURORA64VP	0x8812
-#define PCI_CHIP_TRIO64UVP	0x8814
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0
@@ -297,19 +264,40 @@ void xf86writepci(
 #define PCI_CHIP_964_0		0x88D0
 #define PCI_CHIP_964_1		0x88D1
 #define PCI_CHIP_968		0x88F0
-#define PCI_CHIP_ViRGE		0x5631
-#define PCI_CHIP_ViRGE_VX	0x883D
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
 #define PCI_CHIP_2000PV		0xA099
-#define PCI_CHIP_2000MT		0xA0A1
-#define PCI_CHIP_2000MI		0xA0A9
-
-/* 3Dlabs */
-#define PCI_CHIP_3DLABS_300SX      0x0001
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16
+
+typedef struct vgaPCIInformation {
+    int Vendor;
+    int ChipType;
+    int ChipRev;
+    unsigned long MemBase;
+    unsigned long IOBase;
+    struct pci_config_reg *PCIPtr;
+} vgaPCIInformation;
+
+extern vgaPCIInformation *vgaPCIInfo;
+
+typedef struct pciVendorDeviceInfo {
+    unsigned short VendorID;
+    char *VendorName;
+    struct pciDevice {
+	unsigned short DeviceID;
+	char *DeviceName;
+    } Device[MAX_DEV_PER_VENDOR];
+} pciVendorDeviceInfo;
+
+extern pciVendorDeviceInfo xf86PCIVendorInfo[];
+
+extern vgaPCIInformation *vgaGetPCIInfo(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
    
 #endif /* _PCI_H */

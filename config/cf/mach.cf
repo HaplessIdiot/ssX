@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/mach.cf,v 3.5 1995/06/24 10:21:17 dawes Exp $
+XCOMM platform:  $XFree86$
 
 #define OSName           Mach 2.5/3.0
 #define OSVendor          /**/
@@ -12,33 +12,28 @@ XCOMM operating system:  OSName
 #define UseGas			YES
 #define GnuCpp			YES
 #define UseGccMakeDepend	YES
-#ifndef HasGcc2ForCplusplus
+#define HasCplusplus		YES
 #define HasGcc2ForCplusplus	YES
-#endif
 
 #define CcCmd			gcc
 #define CppCmd			/usr/mach3/lib/gcc-lib/i386-mach/2.3.3/cpp
 #define PreProcessCmd		/usr/mach3/lib/gcc-lib/i386-mach/2.3.3/cpp
 #define DefaultCCOptions	/**/
 #define GccGasOption 		-DGCCUSESGAS
-#if HasGcc2 && defined(i386Architecture)
-#define OptimizedCDebugFlags	-m486 DefaultGcc2i386Opt
-#else
 #define OptimizedCDebugFlags	-m486 -O2
-#endif
 
 #define AsmDefines		-DUSE_GAS
 #define BootstrapCFlags		-DNOSTDHDRS
 #define ExtensionOSDefines	/* -DXTESTEXT1 */
 #define ServerExtraSysLibs	/usr/lib/libmach.a
 #ifdef i386Architecture
-#define ServerExtraDefines	GccGasOption XFree86ServerDefines
+#define ServerExtraDefines	GccGasOption LinkKitDefines
 #else
 #define ServerExtraDefines	GccGasOption
 #endif
 #define StandardCppDefines	-traditional
 #define StandardDefines		-DNOSTDHDRS -DMACH386
-#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
+#define ServerOSDefines		-DDDXTIME
 
 #define AvoidNullMakeCommand	YES
 #define CompressAllFonts	YES
@@ -53,10 +48,9 @@ XCOMM operating system:  OSName
 #define NeedWidePrototypes	NO
 #define StripInstalledPrograms	YES
 
-#ifndef GnuMallocLibrary
-#define GnuMallocLibrary	/* -lgnumalloc */
-#endif
+/*#define ExtraLibraries	-lgnumalloc */
 
+#define InstUidFlags		-s -m 4755
 #ifdef InstallCmd
 #undef  InstallCmd
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.3 1996/09/29 14:01:50 dawes Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -119,7 +119,7 @@ Ark16CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb16DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
+    && pDstDrawable->type == DRAWABLE_WINDOW)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb16BitBlt (pSrcDrawable, pDstDrawable,
@@ -161,7 +161,7 @@ Ark24CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb24DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
+    && pDstDrawable->type == DRAWABLE_WINDOW)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb24BitBlt (pSrcDrawable, pDstDrawable,
@@ -204,7 +204,7 @@ Ark32CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb32DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
+    && pDstDrawable->type == DRAWABLE_WINDOW)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb32BitBlt (pSrcDrawable, pDstDrawable,
@@ -234,16 +234,6 @@ ArkCopyWindow(pWin, ptOldOrg, prgnSrc)
     WindowPtr pwinRoot;
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
-
-    if (!xf86VTSema) {
-    	if (vgaBitsPerPixel == 16)
-    		cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
-    	else if (vgaBitsPerPixel == 24)
-    		cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
-    	else if (vgaBitsPerPixel == 32)
-    		cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
-    	return;
-    }
 
     REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
 
@@ -309,7 +299,7 @@ ArkBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
      * pixel addresses (not bytes), except for 24bpp: that is handled
      * in a better place.
      */
-    widthSrc = widthDst = vga256InfoRec.displayWidth;
+    widthSrc = widthDst = vga256InfoRec.virtualX;
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
@@ -448,6 +438,7 @@ BoxPtr pbox;
 int xdir, ydir;
 {
 	unsigned int srcaddr, destaddr;
+	int i;
 
 	for (; nbox; pbox++, pptSrc++, nbox--) {
 		int x, y, x1, y1, w, h, dir;
@@ -482,27 +473,15 @@ int xdir, ydir;
 		WAITUNTILFINISHED();
 		if (vgaBitsPerPixel == 24) {
 			/* Special case; the COP is in 8bpp pixel mode. */
-			if (dir & LEFT) {
-				SETSOURCEADDR(srcaddr * 3 + 2);
-				SETDESTADDR(destaddr * 3 + 2);
-			}
-			else {
-				SETSOURCEADDR(srcaddr * 3);
-				SETDESTADDR(destaddr * 3);
-			}
+			SETSOURCEADDR(srcaddr * 3);
+			SETDESTADDR(destaddr * 3);
 			SETWIDTH(w * 3);
 		}
 		else
 		if (vgaBitsPerPixel == 32 && arkChip == ARK1000PV) {
 			/* Another special case; COP is in 16bpp pixel mode. */
-			if (dir & LEFT) {
-				SETSOURCEADDR(srcaddr * 2 + 1);
-				SETDESTADDR(destaddr * 2 + 1);
-			}
-			else {
-				SETSOURCEADDR(srcaddr * 2);
-				SETDESTADDR(destaddr * 2);
-			}
+			SETSOURCEADDR(srcaddr * 2);
+			SETDESTADDR(destaddr * 2);
 			SETWIDTH(w * 2);
 		}
 		else {

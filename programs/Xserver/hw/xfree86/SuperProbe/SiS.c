@@ -25,8 +25,6 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.1 1996/02/12 12:19:06 dawes Exp $ */
-
 #include "Probe.h"
 
 static Word Ports[] = {0x000, 0x000, SEQ_IDX, SEQ_REG};
@@ -61,12 +59,6 @@ int *Chipset;
 			{
 			case PCI_CHIP_SG86C201:
 				*Chipset = CHIP_SIS86C201;
-				break;
-			case PCI_CHIP_SG86C202:
-				*Chipset = CHIP_SIS86C202;
-				break;
-			case PCI_CHIP_SG86C205:
-				*Chipset = CHIP_SIS86C205;
 				break;
 			default:
 				Chip_data = chip;
