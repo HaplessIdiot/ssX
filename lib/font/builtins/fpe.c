@@ -22,13 +22,11 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.3 1999/12/30 02:29:51 robin Exp $ */
+/* $XFree86: xc/lib/font/builtins/fpe.c,v 1.4tsi Exp $ */
 
 #include    "fntfilst.h"
 
-static int  font_file_type;
-
-const char	builtin_fonts[] = "built-ins";
+const char builtin_fonts[] = "built-ins";
 
 int
 BuiltinNameCheck (name)
@@ -56,9 +54,6 @@ int
 BuiltinResetFPE (fpe)
     FontPathElementPtr	fpe;
 {
-    FontDirectoryPtr	dir;
-
-    dir = (FontDirectoryPtr) fpe->private;
     /* builtins can't change! */
     return Successful;
 }
@@ -71,23 +66,24 @@ BuiltinFreeFPE (fpe)
     return Successful;
 }
 
-BuiltinRegisterFpeFunctions()
+void
+BuiltinRegisterFpeFunctions(void)
 {
     BuiltinRegisterFontFileFunctions ();
 
-    font_file_type = RegisterFPEFunctions(BuiltinNameCheck,
-					  BuiltinInitFPE,
-					  BuiltinFreeFPE,
-					  BuiltinResetFPE,
-					  FontFileOpenFont,
-					  FontFileCloseFont,
-					  FontFileListFonts,
-					  FontFileStartListFontsWithInfo,
-					  FontFileListNextFontWithInfo,
-					  (WakeupFpeFunc) 0,
-					  (ClientDiedFunc) 0,
-					  (LoadGlyphsFunc) 0,
-					  (StartLaFunc) 0,
-					  (NextLaFunc) 0,
-					  (SetPathFunc) 0);
+    RegisterFPEFunctions(BuiltinNameCheck,
+			 BuiltinInitFPE,
+			 BuiltinFreeFPE,
+			 BuiltinResetFPE,
+			 FontFileOpenFont,
+			 FontFileCloseFont,
+			 FontFileListFonts,
+			 FontFileStartListFontsWithInfo,
+			 FontFileListNextFontWithInfo,
+			 (WakeupFpeFunc) 0,
+			 (ClientDiedFunc) 0,
+			 (LoadGlyphsFunc) 0,
+			 (StartLaFunc) 0,
+			 (NextLaFunc) 0,
+			 (SetPathFunc) 0);
 }

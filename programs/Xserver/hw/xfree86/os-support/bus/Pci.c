@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.91tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.92tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1173,11 +1173,11 @@ handlePciBIOS(PCITAG Tag, int basereg,
 	if (i == ROM_BASE_PRESET) {
 	    /* Does the driver have a preference? */
 	    if (basereg > ROM_BASE_PRESET && basereg <= ROM_BASE_FIND)
-		b_reg = basereg;
+		b_reg = (romBaseSource)basereg;
 	    else
-		b_reg = ++i;
+		b_reg = (romBaseSource)++i;
 	} else
-	    b_reg = i;
+	    b_reg = (romBaseSource)i;
 
 	if (!(newbase = getValidBIOSBase(Tag, b_reg)))
 	    continue;  /* no valid address found */
@@ -1335,7 +1335,7 @@ getPciBIOSTypes(PCITAG Tag, CARD8* tmp, ADDRESS hostbase, pointer arg)
     if (data[0x14] >= PCI_BIOS_OTHER)
 	*Buf++ = PCI_BIOS_OTHER;
     else
-	*Buf++ = data[0x14];
+	*Buf++ = (PciBiosType)data[0x14];
 
       n++;
     if (data[0x15] & 0x80)	/* last image */

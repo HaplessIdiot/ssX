@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.19 2004/03/14 00:05:05 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.20tsi Exp $ */
 
 
 /*
@@ -1186,11 +1186,12 @@ predicate:
 
 
 LispObj *
-LispCompileForm(LispObj * volatile form)
+LispCompileForm(LispObj *f)
 {
     GC_ENTER();
     volatile int failed;
     LispCom com;
+    LispObj * volatile form = f;
 
     if (!CONSP(form))
 	/* Incorrect call or NIL */

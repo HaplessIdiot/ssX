@@ -1,7 +1,8 @@
-XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.2 1999/11/19 14:59:08 hohndel Exp $
+XCOMM $XFree86: xc/lib/font/builtins/Imakefile,v 1.3tsi Exp $
 XCOMM 
 XCOMM 
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
+
 #include <Server.tmpl>
 
    INCLUDES = -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include
@@ -10,8 +11,14 @@ XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
        SRCS = dir.c	  file.c    fonts.c   fpe.c	render.c
        OBJS = dir.o	  file.o    fonts.o   fpe.o	render.o
 
+#define DoNormalLib NormalLibFont
+#define DoSharedLib SharedLibFont
+#define DoDebugLib DebugLibFont
+#define DoProfileLib ProfileLibFont
+#include <Library.tmpl>
+LibraryObjectRule()
+
 SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
 NormalLintTarget($(SRCS))
 
 DependTarget()

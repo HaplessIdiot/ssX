@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.154 2005/02/09 19:49:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.155tsi Exp $
 
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
@@ -165,7 +165,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define BuildThreadStubLibrary  YES
 #  if OSRelVersion >= 500043
 #   define NeedUIThrStubs	NO
-#   define ThrStubsForCompat	YES
 #  else
 #   define NeedUIThrStubs	YES
 #  endif

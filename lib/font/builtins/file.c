@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/file.c,v 1.3 1999/12/30 02:29:49 robin Exp $ */
+/* $XFree86: xc/lib/font/builtins/file.c,v 1.4tsi Exp $ */
 
 #include "builtin.h"
 
@@ -63,7 +63,6 @@ BuiltinSkip (f, count)
     int	    curoff;
     int	    fileoff;
     int	    todo;
-    int	    left;
 
     curoff = f->bufp - f->buffer;
     fileoff = curoff + f->left;
