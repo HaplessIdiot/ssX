@@ -1,0 +1,18 @@
+#ifndef __NV_CONST_H__
+#define __NV_CONST_H__
+
+#define VERSION 4000
+#define NV_NAME "NV"
+#define NV_DRIVER_NAME "nv"
+#define NV_MAJOR_VERSION 1
+#define NV_MINOR_VERSION 0
+#define NV_PATCHLEVEL 0
+
+#ifdef DEBUG_PRINT
+#define DEBUG(x) x
+#else
+#define DEBUG(x)
+#endif
+
+#endif /* __NV_CONST_H__ */
+          
