@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.5 1995/01/20 04:21:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.6 1995/05/27 03:10:51 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -130,10 +130,14 @@ long freq_min, freq_max;
 
 
 static void
+#if NeedFunctionPrototypes
+setdacpll(int reg, unsigned char data1, unsigned char data2)
+#else
 setdacpll(reg, data1, data2)
 int reg;
 unsigned char data1;
 unsigned char data2;
+#endif
 {
    unsigned char tmp, tmp1;
    int vgaCRIndex = vgaIOBase + 4;
@@ -156,10 +160,14 @@ unsigned char data2;
 
 
 static void
+#if NeedFunctionPrototypes
+settriopll(int clk, unsigned char m, unsigned char n)
+#else
 settriopll(clk, m, n)
      int clk;
      unsigned char m;
      unsigned char n;
+#endif
 {
    unsigned char tmp;
    int index;

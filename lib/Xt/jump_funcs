@@ -1,5 +1,5 @@
-# $XConsortium: jump_funcs,v 1.2 94/12/07 10:45:51 kaleb Exp $
-# $XFree86: xc/lib/Xt/jump_funcs,v 3.1 1994/05/04 14:56:46 dawes Exp $
+# $XConsortium: jump_funcs,v 1.4 95/06/30 18:48:53 kaleb Exp $
+# $XFree86: xc/lib/Xt/jump_funcs,v 3.2 1995/01/28 15:44:02 dawes Exp $
 #
 00000000 T _XtAppAddActionHook  libXt          ActionHook
 00000000 T _XtRemoveActionHook  libXt          ActionHook

@@ -1,5 +1,5 @@
 /* $XConsortium: Ch8391clk.c,v 1.1 95/01/23 15:03:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ch8391clk.c,v 3.1 1995/01/21 14:07:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ch8391clk.c,v 3.2 1995/01/28 15:58:06 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -88,7 +88,7 @@ extern int vgaIOBase;
    clock 1 is hardwired to 28.322 (on 8391 nothing is hardwired).
    */
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 static void 
 s3ProgramChrontel8391Clock(unsigned char m, unsigned char n, unsigned char k, unsigned int clk)
 #else
@@ -96,7 +96,7 @@ static void s3ProgramChrontel8391Clock(m, n, k, clk)
 unsigned char m;
 unsigned char n;
 unsigned char k;
-unsigned char clk;
+unsigned int clk;
 #endif
 {
    unsigned char tmp, oldCR55, oldPLLwrite, oldCSR, CSR = 0x00;
@@ -244,7 +244,7 @@ unsigned char clk;
 
 
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 void Chrontel8391SetClock(long freq, int clk)
 #else
 void

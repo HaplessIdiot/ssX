@@ -1,5 +1,5 @@
 /* $XConsortium: agxBlt.c,v 1.4 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.12 1995/06/21 11:51:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.13 1995/06/24 10:27:22 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -900,7 +900,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
          GE_WAIT_IDLE();
 
          MAP_SET_DST( GE_MS_MAP_A );
-         GE_OUT_W(GE_FRGD_MIX, MIX_DST << 8 | pGC->alu);
+         GE_OUT_W(GE_FRGD_MIX, pGC->alu << 8 | pGC->alu);
          GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
          GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
          GE_OUT_D(GE_BKGD_CLR, pGC->bgPixel);
@@ -1027,7 +1027,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                              pix->drawable.width, pix->drawable.height,
                              -dx, -dy,
                              pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, MIX_DST,
+                             pGC->alu, pGC->alu,
                              pGC->planemask );
          }
 #endif
@@ -1035,7 +1035,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
                             (PixmapPtr) pSrcDrawable,
                             -dx, -dy,
                              pGC->fgPixel, pGC->bgPixel,
-                             pGC->alu, MIX_DST,
+                             pGC->alu, pGC->alu,
                              pGC->planemask );
       } else {
          /* Pixmap --> Pixmap */

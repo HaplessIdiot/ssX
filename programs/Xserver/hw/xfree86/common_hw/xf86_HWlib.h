@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.12 1995/04/10 12:01:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.13 1995/06/29 13:32:14 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -191,6 +191,14 @@ extern void Chrontel8391SetClock(
 #endif
 );
 
+/* STG1703clk.c */
+extern void STG1703SetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
 /* BUSmemcpy.s */
 extern void BusToMem(
 #if NeedFunctionPrototypes
@@ -245,8 +253,16 @@ extern void s3OutIBMRGBIndReg(
 	unsigned char
 #endif
 );
-extern int  s3IBMRGB_Probe();
-extern void s3IBMRGB_Init();
+extern int  s3IBMRGB_Probe(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+extern void s3IBMRGB_Init(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
 
 _XFUNCPROTOEND
 

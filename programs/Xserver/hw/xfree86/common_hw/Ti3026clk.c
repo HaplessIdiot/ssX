@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.0 1995/04/09 13:47:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.1 1995/04/10 12:01:27 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -13,7 +13,7 @@
 #include "xf86_OSlib.h"
 #include <math.h>
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 static void
 s3ProgramTi3026Clock(int clk, unsigned char n, unsigned char m, 
 		     unsigned char p, unsigned char ln, unsigned char lm, 
@@ -122,7 +122,7 @@ unsigned char lq;
    }
 }
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 void Ti3026SetClock(long freq, int clk, int bpp)
 #else
 void

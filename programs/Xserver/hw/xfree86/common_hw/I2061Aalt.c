@@ -1,5 +1,5 @@
 /* $XConsortium: I2061Aalt.c,v 1.1 95/01/26 15:25:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.3 1995/01/20 04:21:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.4 1995/01/28 15:58:11 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -23,7 +23,7 @@ unsigned short clockreg;
 static double range[15] = {50.0, 51.0, 53.2, 58.5, 60.7, 64.4, 66.8, 73.5, 
 			   75.6, 80.9, 83.2, 91.5, 100.0, 120.0, 120.0000001};
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 #if 0
 static void prtbinary(unsigned int size, unsigned int val);
 #endif
@@ -157,7 +157,7 @@ static void wait_vb()
    }
 
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 static void init_clock(unsigned long setup, unsigned short crtcport)
 #else
 static void init_clock(setup, crtcport)

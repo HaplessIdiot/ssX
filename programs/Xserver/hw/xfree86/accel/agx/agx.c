@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.32 1995/06/24 10:27:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.33 1995/06/29 13:28:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -490,6 +490,9 @@ for information on how to manually configure.\n",
       if( !OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) ) {
          agxInfoRec.instance = 6;
       }
+      if( !OFLG_ISSET(XCONFIG_MEMBASE, &agxInfoRec.xconfigFlag) ) {
+         agxInfoRec.MemBase  = (agxInfoRec.instance&0x07)<<22 ;
+      }
    }
 
    /* configure I/O address */
@@ -634,9 +637,7 @@ for information on how to manually configure.\n",
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
 
    /* determine coprocessor's video memory address base */
-   if( !AGX_SERIES(agxChipId)) {
-      agxMemBase = agxInfoRec.MemBase;
-   }
+   agxMemBase = agxInfoRec.MemBase;
    if (xf86Verbose) {
       ErrorF( "%s %s: Coprocessor's Video Memory Base Address = 0x%06x \
 (MEMBASE)\n",

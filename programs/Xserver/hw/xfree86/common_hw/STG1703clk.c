@@ -1,0 +1,143 @@
+/* $XFree86$ */
+/*
+ * Copyright 1995 The XFree86 Project, Inc
+ *
+ * programming for the STG1703 clock derived from the code in the Mach64
+ * server (by Kevin Martin).
+ */
+
+#include "compiler.h"
+#define NO_OSLIB_PROTOTYPES
+#include "xf86_OSlib.h"
+
+extern int vgaIOBase;
+
+
+/* when RS2 = 0 */
+
+#define PALETTE_RAM_WRITE_ADDRESS            0x03C8
+#define PALETTE_RAM_DATA_REGISTER            0x03C9
+#define PIXEL_READ_MASK_REGISTER             0x03C6
+#define PALETTE_RAM_READ_ADDRESS             0x03C7
+
+/* when RS2 = 1 */
+#define CLOCK_RAM_WRITE_ADDRESS              0x03C8
+#define CLOCK_RAM_DATA_REGISTER              0x03C9
+#define CONTROL_REGISTER                     0x03C6
+#define CLOCK_RAM_READ_ADDRESS               0x03C7
+
+#define MIN_N1		6
+
+#define FREQ_MIN   8500		/* A guess */
+#define FREQ_MAX 135000
+#define STG1703_REF_FREQ 14318 /* A guess */
+
+
+#if NeedFunctionPrototypes
+static void 
+s3ProgramSTG1703Clock(unsigned int program_word, int clk)
+#else
+static void s3ProgramSTG1703Clock(program_word, clk)
+unsigned int program_word;
+int clk;
+#endif
+{
+   unsigned char tmp, oldCR55;
+   int vgaCRAddr, vgaCRData;
+
+   vgaCRAddr = vgaIOBase + 4;
+   vgaCRData = vgaIOBase + 5;
+
+   /* RS2 controlled in CR55 bit 0 */
+   outb(vgaCRAddr, 0x55);
+   oldCR55 = inb(vgaCRData);   /* save value in register 55 */
+   /* set bit 0 of CR55 to 1 to set RS2 to 1 to make sure we are
+      talking to correct registers */
+   outb(vgaCRData, (oldCR55 & 0xFC) | 0x01);
+
+   (void)inb(CONTROL_REGISTER);   /* reset sequence just to make sure */
+   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
+   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
+   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
+   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
+
+   (void)inb(CLOCK_RAM_WRITE_ADDRESS);
+   outb(CLOCK_RAM_WRITE_ADDRESS, (clk << 1) + 0x20);
+   outb(CLOCK_RAM_WRITE_ADDRESS, 0);
+   outb(CLOCK_RAM_WRITE_ADDRESS, (program_word & 0xff00) >> 8);
+   outb(CLOCK_RAM_WRITE_ADDRESS, (program_word & 0xff));
+
+   (void)inb(CONTROL_REGISTER); /* Clear DAC Counter */
+
+   /* that's done, now select clock through register 0x42 on S3 */
+
+   tmp = inb(0x3CC);
+   outb(0x3C2, tmp | 0x0C);
+   outb(vgaCRAddr, 0x042);
+   outb(vgaCRData, clk);
+
+
+   /* we're all done (I think), put things back the way they were */
+
+   /* put the value of 0x55 back */
+   /* if we don't do this, and the server doesn't set CR55 and assumes it
+      is okay, when it tries to write to the DAC it will the clock registers
+   */
+
+   outb(vgaCRAddr, 0x55);
+   outb(vgaCRData, oldCR55);
+}
+
+
+#if NeedFunctionPrototypes
+void STG1703SetClock(long freq, int clk)
+#else
+void
+STG1703SetClock(freq, clk)
+long freq;
+int clk;
+#endif
+{
+   unsigned int program_word;
+   unsigned int temp, tempB;
+   unsigned short tempA, remainder, preRemainder, divider;
+
+   if (freq < FREQ_MIN)
+      freq = FREQ_MIN;
+   else if (freq > FREQ_MAX)
+      freq = FREQ_MAX;
+
+   divider = 0;
+   while (freq < (FREQ_MIN << 3)) {
+      freq <<= 1;
+      divider += 0x20;
+   }
+
+   temp = (unsigned int)(freq);
+   temp = (unsigned int)(temp * (MIN_N1 + 2));
+   temp -= (short)(STG1703_REF_FREQ << 1);
+
+   tempA = MIN_N1;
+   preRemainder = 0xffff;
+
+   do {
+      tempB = temp;
+      remainder = tempB % STG1703_REF_FREQ;
+      tempB = tempB / STG1703_REF_FREQ;
+
+      if ((tempB & 0xffff) <= 127 && (remainder <= preRemainder)) {
+	 preRemainder = remainder;
+	 divider &= ~0x1f;
+	 divider |= tempA;
+	 divider = (divider & 0x00ff) + ((tempB & 0xff) << 8);
+      }
+
+      temp += freq;
+      tempA++;
+   } while (tempA <= (MIN_N1 << 1));
+
+   program_word = divider;
+
+   s3ProgramSTG1703Clock(program_word, clk);
+   return;
+}

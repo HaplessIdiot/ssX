@@ -1,4 +1,4 @@
-! $XConsortium: Bitmap.ad,v 1.18 94/02/09 19:43:57 gildea Exp $
+! $XConsortium: Bitmap.ad,v 1.19 95/06/29 19:25:34 kaleb Exp $
 ! The App-defaults file for Bitmap.
 
 *TransientShell.allowShellResize:	True
@@ -45,7 +45,7 @@
 
 *MenuButton.translations:<EnterWindow>:		highlight()\n\
 			<LeaveWindow>:  	reset()\n\
-			<BtnDown>:  		reset() fix-menu() PopupMenu()
+			Any<BtnDown>:  		reset() fix-menu() PopupMenu()
 
 *Dialog*baseTranslations:#override\
 			<Key>Return:	set-dialog-button(okay, yes, retry)\n\

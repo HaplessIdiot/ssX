@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.17 94/04/17 20:10:54 gildea Exp $
+ * $XConsortium: Xthreads.h,v 1.19 95/06/30 17:58:05 kaleb Exp $
  *
  * 
 Copyright (c) 1993  X Consortium
@@ -63,8 +63,9 @@ typedef struct mutex xmutex_rec;
 #define xcondition_broadcast(cv) condition_broadcast(cv)
 #define xcondition_set_name(cv,str) condition_set_name(cv,str)
 #else
-#if defined(sun) || defined(__sun__)
+#ifdef SVR4
 #include <thread.h>
+#include <synch.h>
 typedef thread_t xthread_t;
 typedef cond_t xcondition_rec;
 typedef mutex_t xmutex_rec;
@@ -152,19 +153,40 @@ extern struct _xthread_waiter *_Xthread_waiter();
 }
 #else
 #include <pthread.h>
+#ifdef AIXV3
+#ifndef _AIX32_THREADS
+#define POSIX_DRAFT7_THREADS
+#endif
+#endif
+/* 
+ * The above would probably be better handled with an imake config
+ * variable, but since AIX 4.X seems to be the only platform implementing
+ * the draft 7 API, this will suffice for now. An imake config variable
+ * would also require changes to the Xlib and Xt Imakefiles to compile 
+ * Xlib's locking.c and  Xt's Threads.c, so this has less impact.
+ */
 typedef pthread_t xthread_t;
 typedef pthread_cond_t xcondition_rec;
 typedef pthread_mutex_t xmutex_rec;
 #define xthread_self pthread_self
-#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
-	pthread_create(&_tmpxthr,pthread_attr_default,func,closure); }
 #define xthread_yield() pthread_yield()
 #define xthread_exit(v) pthread_exit(v)
-#define xmutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
 #define xmutex_clear(m) pthread_mutex_destroy(m)
 #define xmutex_lock(m) pthread_mutex_lock(m)
 #define xmutex_unlock(m) pthread_mutex_unlock(m)
+#ifndef POSIX_DRAFT7_THREADS
+#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
+	pthread_create(&_tmpxthr,pthread_attr_default,func,closure); }
+#define xmutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
 #define xcondition_init(c) pthread_cond_init(c, pthread_condattr_default)
+#else /* POSIX_DRAFT7_THREADS */
+#define xthread_fork(func,closure) { pthread_t _tmpxthr; \
+	pthread_create(&_tmpxthr,&pthread_attr_default,func,closure); }
+#define xmutex_init(m) \
+	pthread_mutex_init(m, &pthread_mutexattr_default)
+#define xcondition_init(c) \
+	pthread_cond_init(c, &pthread_condattr_default)
+#endif /* POSIX_DRAFT7_THREADS */
 #define xcondition_clear(c) pthread_cond_destroy(c)
 #define xcondition_wait(c,m) pthread_cond_wait(c,m)
 #define xcondition_signal(c) pthread_cond_signal(c)

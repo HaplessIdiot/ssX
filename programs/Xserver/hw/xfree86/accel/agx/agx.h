@@ -1,5 +1,5 @@
 /* $XConsortium: agx.h,v 1.6 95/01/23 15:33:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.14 1995/06/21 11:51:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.15 1995/06/24 10:27:17 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -1087,6 +1087,7 @@ extern int agxBpp;
 extern int agxWeight;
 extern int defaultColorVisualClass;
 extern unsigned char agxVideoMapFormat;
+extern unsigned long agxPixMask;
 extern int BytesPerPixelShift;
 
 extern agxCRTCRegRec agxCRTCRegs;

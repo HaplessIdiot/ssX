@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.7 1995/01/26 02:19:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.8 1995/03/18 11:00:05 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -16,7 +16,7 @@
 #include <math.h>
 
 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 void Ti3025SetClock(long freq, int clk, void (*ProgramClockFunc)())
 #else
 void

@@ -1,5 +1,5 @@
 /* $XConsortium: SC11412.c,v 1.3 95/01/05 20:41:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.1 1994/11/05 23:44:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.3 1995/01/28 17:03:54 dawes Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  */
 
@@ -9,7 +9,7 @@
 #include "xf86_OSlib.h"
 
 extern int vgaIOBase;
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 static void wrtSC11412bit(int);
 static Bool SetSC11412(unsigned  int, unsigned int, unsigned int, unsigned int);
 #else
@@ -68,7 +68,7 @@ for (i=0; i<125; i++)
 
 
 static Bool 
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 SetSC11412(unsigned int N, unsigned int M, unsigned int D, unsigned int Clock)
 #else
 SetSC11412(N, M, D, Clock)
