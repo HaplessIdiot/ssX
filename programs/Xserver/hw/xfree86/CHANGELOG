@@ -1,4 +1,16 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 952. A more complete set of dead accent/space compose sequences, add
+      <Multi_key> <slash> for letters with a "stroke", and add some
+      combos for exponent characters, katakana voiced sounds, etc to
+      the en_US.UTF-8 compose file (#5646, David Monniaux).
+ 951. Reinstate the VBEInit() call in the savage driver's PreInit().  This
+      appears to fix a problem on some Savage MX platforms (#5649,
+      Mike Harris).
+ 950. Restore the radeon driver's unconditional RADEONPreInt10Save() call
+      on Alpha platforms because this is needed for Radeon cards where the
+      BIOS ROM can't be read after it's been run once (by the firmware)
+      without this (#5648, Jeff Wiedemeier).
+ 949. Update Newport driver doc (#5647, Guido Guenther).
  948. Fix reversed logic for VGA locking/unlocking (Nat Ersoz).
  947. Luit fixes:
        - Fix a bug with --encoding being too strict with the syntax.
@@ -16500,4 +16512,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2580 2003/02/24 04:08:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2581 2003/02/24 21:29:31 tsi Exp $
