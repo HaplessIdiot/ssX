@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.77 2000/10/21 22:27:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.78 2000/10/27 18:31:04 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -153,6 +153,23 @@ MGASetupForCPUToScreenAlphaTexture (
 );
 
 extern Bool 
+MGASetupForCPUToScreenAlphaTextureFaked (
+	ScrnInfoPtr	pScrn,
+	int		op,
+	CARD16		red,
+	CARD16		green,
+	CARD16		blue,
+	CARD16		alpha,
+	int		alphaType,
+	CARD8		*alphaPtr,
+	int		alphaPitch,
+	int		width,
+	int		height,
+	int		flags
+);
+
+
+extern Bool 
 MGASetupForCPUToScreenTexture (
 	ScrnInfoPtr	pScrn,
 	int		op,
@@ -259,7 +276,7 @@ GetPowerOfTwo(int w)
 static int tex_padw, tex_padh;
 
 Bool 
-MGASetupForCPUToScreenAlphaTexture (
+MGASetupForCPUToScreenAlphaTextureFaked (
    ScrnInfoPtr	pScrn,
    int		op,
    CARD16	red,
@@ -337,6 +354,106 @@ MGASetupForCPUToScreenAlphaTexture (
 
     return TRUE;
 }
+
+Bool 
+MGASetupForCPUToScreenAlphaTexture (
+   ScrnInfoPtr	pScrn,
+   int		op,
+   CARD16	red,
+   CARD16	green,
+   CARD16	blue,
+   CARD16	alpha,
+   int		alphaType,
+   CARD8	*alphaPtr,
+   int		alphaPitch,
+   int		width,
+   int		height,
+   int		flags
+){
+    int log2w, log2h, i, pitch, sizeNeeded, offset;
+    CARD8 *dst;
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    if(op != PictOpOver)  /* only one tested */
+	return FALSE;
+
+    if((width > 2048) || (height > 2048))
+	return FALSE;
+
+    log2w = GetPowerOfTwo(width);
+    log2h = GetPowerOfTwo(height);
+
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
+
+    if(pMga->Overlay8Plus24) {
+        i = 0x00ffffff;
+        WAITFIFO(1);
+        SET_PLANEMASK(i);
+    }
+
+    pitch = (width + 15) & ~15;
+    sizeNeeded = (pitch * height) >> 1;
+    if(pScrn->bitsPerPixel == 32) 
+	sizeNeeded >>= 1;
+
+    if(!AllocateLinear(pScrn, sizeNeeded))
+	return FALSE;
+
+    offset = pMga->LinearScratch->offset << 1;
+    if(pScrn->bitsPerPixel == 32)
+        offset <<= 1;
+
+    if(pMga->AccelInfoRec->NeedToSync) 
+	MGAStormSync(pScrn);
+
+    i = height;
+    dst = pMga->FbStart + offset;
+    while(i--) {
+	memcpy(dst, alphaPtr, width);
+	dst += pitch;
+	alphaPtr += alphaPitch;
+    }
+
+    tex_padw = 1 << log2w;
+    tex_padh = 1 << log2h;
+
+    
+    WAITFIFO(12);
+    OUTREG(MGAREG_DR4, red << 7);  /* red start */
+    OUTREG(MGAREG_DR6, 0);
+    OUTREG(MGAREG_DR7, 0);
+    OUTREG(MGAREG_DR8, green << 7);  /* green start */
+    OUTREG(MGAREG_DR10, 0);
+    OUTREG(MGAREG_DR11, 0);
+    OUTREG(MGAREG_DR12, blue << 7);  /* blue start */
+    OUTREG(MGAREG_DR14, 0);
+    OUTREG(MGAREG_DR15, 0);
+    OUTREG(MGAREG_ALPHASTART, alpha << 7);  /* alpha start */
+    OUTREG(MGAREG_ALPHAXINC, 0);  
+    OUTREG(MGAREG_ALPHAYINC, 0);  
+
+    WAITFIFO(15);
+    OUTREG(MGAREG_TMR0, (1 << 20) / tex_padw);  /* sx inc */
+    OUTREG(MGAREG_TMR1, 0);  /* sy inc */
+    OUTREG(MGAREG_TMR2, 0);  /* tx inc */
+    OUTREG(MGAREG_TMR3, (1 << 20) / tex_padh);  /* ty inc */
+    OUTREG(MGAREG_TMR4, 0x00000000); 
+    OUTREG(MGAREG_TMR5, 0x00000000);
+    OUTREG(MGAREG_TMR8, 0x00010000);
+    OUTREG(MGAREG_TEXORG, offset); 
+    OUTREG(MGAREG_TEXWIDTH,  log2w | (((8 - log2w) & 63) << 9) | 
+                                ((width - 1) << 18));
+    OUTREG(MGAREG_TEXHEIGHT, log2h | (((8 - log2h) & 63) << 9) | 
+                                ((height - 1) << 18));
+    OUTREG(MGAREG_TEXCTL, 0x3A000107 | ((pitch & 0x07FF) << 9));
+    OUTREG(MGAREG_TEXCTL2, 0x00000014);
+    OUTREG(MGAREG_DWGCTL, 0x000c7076);   
+    OUTREG(MGAREG_TEXFILTER, 0x01e00020);
+    OUTREG(MGAREG_ALPHACTRL, 0x02000151);
+
+    return TRUE;
+}
+
 
 Bool 
 MGASetupForCPUToScreenTexture (
@@ -731,12 +848,18 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 #ifdef RENDER
    if(doRender && ((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16)))
    {
-       infoPtr->SetupForCPUToScreenAlphaTexture = 
+       if(pMga->Chipset == PCI_CHIP_MGAG400) {
+           infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
+           infoPtr->SetupForCPUToScreenAlphaTexture = 
 				MGASetupForCPUToScreenAlphaTexture;
+       } else {
+           infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
+					       XAA_RENDER_NO_SRC_ALPHA;
+           infoPtr->SetupForCPUToScreenAlphaTexture = 
+				MGASetupForCPUToScreenAlphaTextureFaked;
+       }
        infoPtr->SubsequentCPUToScreenAlphaTexture = 
 				MGASubsequentCPUToScreenTexture;
-       infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
-					       XAA_RENDER_NO_SRC_ALPHA;
        infoPtr->CPUToScreenAlphaTextureFormats = MGAAlphaTextureFormats;
 
        infoPtr->SetupForCPUToScreenTexture = MGASetupForCPUToScreenTexture;
