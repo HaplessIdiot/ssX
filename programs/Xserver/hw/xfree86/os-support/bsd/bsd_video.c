@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.30 1999/12/14 02:40:15 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.31 1999/12/27 03:35:59 robin Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -316,7 +316,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	}
 
 	psize = xf86getpagesize();
-	mlen = (Offset + Len + psize - 1) & ~psize;
+	mlen = (Offset + Len + psize - 1) & ~(psize - 1);
 	/* Base is assumed to be page-aligned. */
 	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
 					MAP_SHARED, devMemFd, (off_t)Base);

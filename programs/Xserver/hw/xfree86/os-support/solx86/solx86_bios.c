@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.3 2000/01/23 02:11:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.4 2000/01/23 04:18:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -58,7 +58,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
      	 *      is considered the "default" file to open.
      	 */
 	psize = xf86getpagesize();
-	mlen = (Offset + Len + psize - 1) & ~psize;
+	mlen = (Offset + Len + psize - 1) & ~(psize - 1);
 	if (Base >= 0xA0000 && Base + mlen < 0xFFFFF && xf86Info.vtno >= 0)
         	sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	else

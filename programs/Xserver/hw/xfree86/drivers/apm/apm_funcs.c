@@ -1,16 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.7 1999/09/27 06:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.9 2000/02/08 13:13:10 eich Exp $ */
 
-#undef DEBUG
 #define FASTER
 #ifndef PSZ
 #define PSZ	8
 #endif
 #ifdef IOP_ACCESS
-#  if PSZ == 24
-#    define A(s)	Apm##s##24##_IOP
-#  else
-#    define A(s)	Apm##s##_IOP
-#  endif
+#  define APM_SUFF_IOP	"_IOP"
 #  undef	RDXB
 #  undef	RDXW
 #  undef	RDXL
@@ -25,30 +20,25 @@
 #  define WRXW	WRXW_IOP
 #  define WRXL	WRXL_IOP
 #  define ApmWriteSeq(i, v)	wrinx(0x3C4, i, v)
-#  ifdef DEBUG
-#    if PSZ == 24
-#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "24_IOP\n"); fflush(stderr); sync(); } while (0)
-#    else
-#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "_IOP\n"); fflush(stderr); sync(); } while (0)
-#    endif
+#else
+#  define APM_SUFF_IOP	""
+#endif
+#if PSZ == 24
+#  define APM_SUFF_24	"24"
+#  ifdef IOP_ACCESS
+#    define A(s)		Apm##s##24_IOP
+#  else
+#    define A(s)		Apm##s##24
 #  endif
 #else
-#  if PSZ == 24
-#    define A(s)	Apm##s##24
+#  define APM_SUFF_24	""
+#  ifdef IOP_ACCESS
+#    define A(s)		Apm##s##_IOP
 #  else
-#    define A(s)	Apm##s
-#  endif
-#  ifdef DEBUG
-#    if PSZ == 24
-#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "24\n"); fflush(stderr); sync(); } while (0)
-#    else
-#      define DPRINTNAME(s)	do { ErrorF("Apm" #s "\n"); fflush(stderr); sync(); usleep(100000); } while (0)
-#    endif
+#    define A(s)		Apm##s
 #  endif
 #endif
-#ifndef DEBUG
-#  define DPRINTNAME(s)	/**/
-#endif
+#define	DPRINTNAME(s)	do { xf86DrvMsgVerb(pScrn->pScreen->myNum, X_NOTICE, 4, "Apm" #s APM_SUFF_24 APM_SUFF_IOP "\n"); } while (0)
 
 #if PSZ == 24
 #undef SETSOURCEXY
@@ -79,6 +69,7 @@ static void A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 static void A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 					    int x2, int y2, int w, int h);
 #if PSZ != 24
+static void A(Sync6422)(ScrnInfoPtr pScrn);
 static void A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 			    unsigned char *src, int srcwidth, int skipleft,
 			    int fg, int bg, int rop, unsigned int planemask);
@@ -92,8 +83,10 @@ static void A(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
 static void A(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 					        int paty, int x, int y,
 					        int w, int h);
+#if 0
 static void A(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int bg, int fg, int rop, unsigned int planemask);
 static void A(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y, int w, int h, int skipleft);
+#endif
 static void A(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 						     int fg, int bg, int rop,
 						     unsigned int planemask);
@@ -108,6 +101,7 @@ static void A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 						       int srcx, int srcy,
 						       int offset);
 static void A(SubsequentSolidBresenhamLine)(ScrnInfoPtr pScrn, int x1, int y1, int octant, int err, int e1, int e2, int length);
+static void A(SubsequentSolidBresenhamLine6422)(ScrnInfoPtr pScrn, int x1, int y1, int octant, int err, int e1, int e2, int length);
 static void A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2);
 static void A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 			   unsigned char *src, int srcwidth, int rop,
@@ -137,8 +131,12 @@ A(WaitForFifo)(ApmPtr pApm, int slots)
 	break;
     }
     if (i == MAXLOOP) {
-      apm_stopit();
-      FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
+      unsigned int status = STATUS();
+
+      xf86Break1();
+      WRXB(0x1FF, 0);
+      if (!xf86ServerIsExiting())
+	  FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", status);
     }
   }
 }
@@ -241,7 +239,7 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   pApm->apmTransparency = (transparency_color != -1);
 
 #ifdef FASTER
-  A(WaitForFifo)(pApm, 2 + pApm->apmTransparency);
+  A(WaitForFifo)(pApm, 2 + (transparency_color != -1));
   SETDEC(DEC_QUICKSTART_ONDIMX | DEC_OP_BLT | DEC_DEST_UPD_TRCORNER |
 	  (pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0) | pApm->CurrentLayout.Setup_DEC |
 	  ((xdir < 0) ? DEC_DIR_X_NEG : DEC_DIR_X_POS) |
@@ -373,7 +371,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #ifndef FASTER
   SETDEC(c);
 #endif
-  if (i) A(Sync)(pScrn);
+  if (i) A(Sync)(pScrn);	/* Only for AT3D */
 }
 
 
@@ -504,7 +502,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #undef		d
 	    }
 	    else {
-		A(Sync)(pScrn);
+		(*pApm->AccelInfoRec->Sync)(pScrn);
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
@@ -554,7 +552,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #undef		d
 	    }
 	    else {
-		A(Sync)(pScrn);
+		(*pApm->AccelInfoRec->Sync)(pScrn);
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
@@ -624,7 +622,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #undef		d
 	    }
 	    else {
-		A(Sync)(pScrn);
+		(*pApm->AccelInfoRec->Sync)(pScrn);
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
@@ -670,7 +668,7 @@ A(WriteBitmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #undef		d
 	    }
 	    else {
-		A(Sync)(pScrn);
+		(*pApm->AccelInfoRec->Sync)(pScrn);
 		dstPtr = (CARD32 *)pApm->ScratchMemOffset;
 		SETSOURCEOFF(pApm->ScratchMem);
 	    }
@@ -745,14 +743,20 @@ static void A(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     APMDECL(pScrn);
 
     DPRINTNAME(SetupForMono8x8PatternFill);
-    pApm->apmTransparency = (bg == -1);
+    pApm->apmTransparency = (pApm->Chipset >= AT3D) && (bg == -1);
+    pApm->Bg8x8 = bg;
+    pApm->Fg8x8 = fg;
+    pApm->rop = apmROP[rop];
     A(WaitForFifo)(pApm, 3 + pApm->apmClip);
     if (bg == -1)
 	SETBACKGROUNDCOLOR(fg + 1);
     else
 	SETBACKGROUNDCOLOR(bg);
     SETFOREGROUNDCOLOR(fg);
-    SETROP(apmROP[rop] & 0xF0);
+    if (pApm->Chipset >= AT3D)
+	SETROP(apmROP[rop] & 0xF0);
+    else
+	SETROP((apmROP[rop] & 0xF0) | 0x0A);
     if (pApm->apmClip) {
 	SETCLIP_CTRL(0);
 	pApm->apmClip = FALSE;
@@ -766,10 +770,26 @@ static void A(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
     APMDECL(pScrn);
 
     DPRINTNAME(SubsequentMono8x8PatternFillRect);
-    A(WaitForFifo)(pApm, 6);
-    SETPATTERN(patx, paty);
     SETDESTXY(x, y);
     UPDATEDEST(x, y + h + 1);
+    A(WaitForFifo)(pApm, 6);
+    if (pApm->Chipset == AT24 && pApm->Bg8x8 != -1) {
+	SETROP(pApm->rop);
+	SETFOREGROUNDCOLOR(pApm->Bg8x8);
+#ifdef FASTER
+	SETDEC(pApm->CurrentLayout.Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) |
+		DEC_DEST_XY | DEC_QUICKSTART_ONDIMX);
+	SETWIDTHHEIGHT(w, h);
+#else
+	SETWIDTHHEIGHT(w, h);
+	SETDEC(pApm->CurrentLayout.Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) |
+		DEC_DEST_XY | DEC_START);
+#endif
+	A(WaitForFifo)(pApm, 6);
+	SETROP((pApm->rop & 0xF0) | 0x0A);
+	SETFOREGROUNDCOLOR(pApm->Fg8x8);
+    }
+    SETPATTERN(patx, paty);
 #ifdef FASTER
     SETDEC(pApm->CurrentLayout.Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) |
 	    DEC_DEST_XY | DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_TRCORNER |
@@ -785,6 +805,7 @@ static void A(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 #endif
 }
 
+#if 0
 static void
 A(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg, int bg,
 					int rop, unsigned int planemask)
@@ -859,6 +880,7 @@ A(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
   SETDEC(c);
 #endif
 }
+#endif
 
 static void
 A(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
@@ -910,15 +932,23 @@ A(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
   if (pApm->apmTransparency)
     c |= DEC_SOURCE_TRANSPARENCY;
 
-  A(WaitForFifo)(pApm, 7);
+  if (pApm->Chipset >= AT24)
+      A(WaitForFifo)(pApm, 7);
+  else
+      A(WaitForFifo)(pApm, 3);
 #else
-  A(WaitForFifo)(pApm, 6);
+  if (pApm->Chipset >= AT24)
+      A(WaitForFifo)(pApm, 6);
+  else
+      A(WaitForFifo)(pApm, 3);
 #endif
 
   SETCLIP_LEFTTOP(x+skipleft, y);
   SETCLIP_RIGHTBOT(x+w-1, y+h-1);
   SETCLIP_CTRL(0x01);
   pApm->apmClip = TRUE;
+  if (pApm->Chipset < AT24)
+      A(WaitForFifo)(pApm, 4);
   SETSOURCEX(0); /* According to manual, it just has to be zero */
   SETDESTXY(x, y);
   SETWIDTHHEIGHT((w + 3) & ~3, h);
@@ -963,7 +993,11 @@ A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
 	  SETCLIP_CTRL(0x01);
 	  pApm->apmClip = TRUE;
 	  w = pCache->apmStippleCache.w * pApm->CurrentLayout.bitsPerPixel;
-	  x -= srcx - pCache->apmStippleCache.x;
+	  x -= srcx - pCache->apmStippleCache.x + offset;
+	  srcx = (srcy - pCache->apmStippleCache.y) & 7;
+	  srcy -= srcx;
+	  y -= srcx;
+	  h += srcx;
 	  srcx = pCache->apmStippleCache.x;
       }
       else if (pApm->apmClip) {
@@ -1070,6 +1104,68 @@ A(SubsequentSolidBresenhamLine)(ScrnInfoPtr pScrn, int x1, int y1, int e1,
 }
 
 static void
+A(SubsequentSolidBresenhamLine6422)(ScrnInfoPtr pScrn, int x1, int y1, int e1,
+				int e2, int err, int length, int octant)
+{
+  APMDECL(pScrn);
+#ifdef FASTER
+  u32 c = DEC_QUICKSTART_ONDIMX | DEC_OP_VECT_ENDP | DEC_DEST_UPD_LASTPIX |
+	  pApm->CurrentLayout.Setup_DEC;
+#else
+  u32 c = DEC_START | DEC_OP_VECT_ENDP | DEC_DEST_UPD_LASTPIX | pApm->CurrentLayout.Setup_DEC;
+#endif
+  int	tmp;
+
+  DPRINTNAME(SubsequentSolidBresenhamLine6422);
+
+  A(WaitForFifo)(pApm, 1);
+  SETDESTXY(x1,y1);
+  A(WaitForFifo)(pApm, 4);
+  SETDDA_ERRORTERM(err);
+  SETDDA_ADSTEP(e1, e2);
+
+  if (octant & YMAJOR) {
+    c |= DEC_MAJORAXIS_Y;
+    tmp = e1; e1 = e2; e2 = tmp;
+  }
+  else
+    c |= DEC_MAJORAXIS_X;
+
+  if (octant & XDECREASING) {
+    c |= DEC_DIR_X_NEG;
+    e1 = -e1;
+  }
+  else
+    c |= DEC_DIR_X_POS;
+
+  if (octant & YDECREASING) {
+    c |= DEC_DIR_Y_NEG;
+    e2 = -e2;
+  }
+  else
+    c |= DEC_DIR_Y_POS;
+
+#ifdef FASTER
+  SETDEC(c);
+  SETWIDTH(length);
+#else
+  SETWIDTH(length);
+  SETDEC(c);
+#endif
+
+  if (octant & YMAJOR)
+    UPDATEDEST(x1 + e1 / 2, y1 + e2 / 2);
+  else
+    UPDATEDEST(x1 + e2 / 2, y1 + e1 / 2);
+  if (pApm->apmClip)
+  {
+    pApm->apmClip = FALSE;
+    A(WaitForFifo)(pApm, 1);
+    SETCLIP_CTRL(0);
+  }
+}
+
+static void
 A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
 {
   APMDECL(pScrn);
@@ -1082,6 +1178,16 @@ A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
   pApm->apmClip = TRUE;
 }
 
+A(SyncBlt)(ApmPtr pApm)
+{
+    int again = (pApm->Chipset == AP6422);
+
+    do {
+       while (!(STATUS() & STATUS_HOSTBLTBUSY))
+	   ;
+    }
+    while (again--);	/* See remarc in Sync6422 */
+}
 static void
 A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	       unsigned char *src, int srcwidth, int rop,
@@ -1104,8 +1210,9 @@ A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
 	if (skipleft)
 	    skipleft = 4 - skipleft;
-	dwords = (skipright = (w - skipleft) * Bpp) >> 2;
+	dwords = (skipright = w * Bpp - skipleft) >> 2;
 	skipright %= 4;
+	(*pApm->AccelInfoRec->Sync)(pScrn);
 	if (!skipleft && !skipright)
 	    while (h-- > 0) {
 		CARD32 *src2 = (CARD32 *)src;
@@ -1193,8 +1300,7 @@ BAD_ALIGNMENT:
 	PlusOne = mask - (dwords & mask) + 1;
     }
 
-    if (doSetup)
-	A(SetupForImageWrite)(pScrn, rop, planemask, trans, bpp, depth);
+    A(SetupForImageWrite)(pScrn, rop, planemask, trans, bpp, depth);
     A(SubsequentImageWriteRect)(pScrn, x, y, w, h, skipleft);
 
     if (beCareful) {
@@ -1208,8 +1314,7 @@ BAD_ALIGNMENT:
 
     while (h--) {
 	for (count = dwords; count-- > 0; ) {
-	    while (!(STATUS() & STATUS_HOSTBLTBUSY))
-		;
+	    A(SyncBlt)(pApm);
 	    *(CARD32*)pApm->BltMap = *(CARD32*)src;
 	    src += 4;
 	}
@@ -1220,6 +1325,10 @@ BAD_ALIGNMENT:
 	    while (!((status = STATUS()) & STATUS_HOSTBLTBUSY))
 		if (!(status & STATUS_ENGINEBUSY))
 		    break;
+	    if (pApm->Chipset == AP6422)	/* See remark in Sync6422 */
+		while (!((status = STATUS()) & STATUS_HOSTBLTBUSY))
+		    if (!(status & STATUS_ENGINEBUSY))
+			break;
 	    if (status & STATUS_ENGINEBUSY)
 		*(CARD32*)pApm->BltMap = 0x00000000;
 	}
@@ -1231,14 +1340,12 @@ BAD_ALIGNMENT:
 	    int	count;
 
 	    for (count = dwords >> 2; count-- > 0; ) {
-		while (!(STATUS() & STATUS_HOSTBLTBUSY))
-		    ;
+		A(SyncBlt)(pApm);
 		*(CARD32*)pApm->BltMap = *(CARD32*)src;
 		src += 4;
 	    }
        }
-       while (!(STATUS() & STATUS_HOSTBLTBUSY))
-	   ;
+       A(SyncBlt)(pApm);
        *((CARD32*)pApm->BltMap) = *((CARD32*)src) >> shift;
     }
 
@@ -1284,7 +1391,6 @@ A(FillImageWriteRects)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 
 		A(WritePixmap)(pScrn, x, cy, blit_w, h, pSrc + cp * srcwidth,
 				srcwidth, rop, planemask, FALSE, bpp, depth);
-		doSetup = FALSE;
 		cy += h;
 		ch -= h;
 		cp = 0;
@@ -1299,7 +1405,6 @@ A(FillImageWriteRects)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 	pBox++;
     }
 
-    doSetup = TRUE;
     SET_SYNC_FLAG(infoRec);
 }
 
@@ -1376,15 +1481,56 @@ A(Sync)(ScrnInfoPtr pScrn)
       break;
   }
   if (i == MAXLOOP) {
-    apm_stopit();
+    unsigned int status = STATUS();
+
+    xf86Break1();
+    WRXB(0x1FF, 0);
     if (!xf86ServerIsExiting())
-	FatalError("Hung in ApmSync() (Status = 0x%08X)\n", STATUS());
+	FatalError("Hung in ApmSync" APM_SUFF_24 APM_SUFF_IOP "(%d) (Status = 0x%08X)\n", pScrn->pScreen->myNum, status);
   }
   if (pApm->apmClip) {
     SETCLIP_CTRL(0);
     pApm->apmClip = FALSE;
   }
 }
+
+#if PSZ != 24
+static void
+A(Sync6422)(ScrnInfoPtr pScrn)
+{
+  APMDECL(pScrn);
+  volatile u32 i, j, stat;
+
+  for (j = 0; j < 2; j++) {
+      /*
+       * From Henrik Harmsen :
+       *
+       * This is a kludge. We can't trust the status register. Don't
+       * know why... We shouldn't be forced to read the status reg and get
+       * a correct value more than once...
+       */
+      for(i = 0; i < MAXLOOP; i++) {
+	stat = STATUS();
+	if ((!(stat & (STATUS_HOSTBLTBUSY | STATUS_ENGINEBUSY))) &&
+	    ((stat & STATUS_FIFO) >= 4))
+	  break;
+      }
+  }
+  if (i == MAXLOOP) {
+    unsigned int status = STATUS();
+
+    xf86Break1();
+    WRXB(0x1FF, 0);
+    if (!xf86ServerIsExiting())
+	FatalError("Hung in ApmSync6422() (Status = 0x%08X)\n", status);
+  }
+  if (pApm->apmClip) {
+    SETCLIP_CTRL(0);
+    pApm->apmClip = FALSE;
+  }
+}
+#endif
+#include "apm_video.c"
 
 
 #undef	RDXB
@@ -1403,7 +1549,8 @@ A(Sync)(ScrnInfoPtr pScrn)
 #define ApmWriteSeq(idx, val)	do { APMVGAB(0x3C4) = (idx); APMVGAB(0x3C5) = (val); break; } while(1)
 #undef DPRINTNAME
 #undef A
-#undef DEBUG
 #undef DEPTH
 #undef PSZ
 #undef IOP_ACCESS
+#undef APM_SUFF_24
+#undef APM_SUFF_IOP

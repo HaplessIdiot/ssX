@@ -1,4 +1,13 @@
 XFree86 3.9.17e (11 February 2000)
+3709. Glint driver updates: register int10 module's symbols, and add a
+      workaround to set the sync flags in supplied modes to make the HW
+      cursor work with FBDev (#3650, Michel Danzer).
+3708. Don't "normalise" module names in xf86LoadModules (David Dawes).
+3707. Apm driver updates, including updates to the xf86Rush extension (#3649,
+      Loic Grenie).
+3706. Small cosmetic patch to glide driver (#3648, Loic Grenie).
+3705. Fix a bug in the way the BIOS mapping size is calculated in
+      in the ReadBIOS functions (#3647, Loic Grenie).
 3704. Add ReputImage function to the Xv DDX to prevent flickering during
       window moves on some hardware (Loic Grenie).
 3703. Fix a bigfont extension build problem on Interactive UNIX (#3646,
@@ -9553,4 +9562,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.987 2000/02/11 17:25:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.989 2000/02/11 20:45:09 mvojkovi Exp $

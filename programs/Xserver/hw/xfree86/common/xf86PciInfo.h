@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.45 1999/11/19 14:46:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.48 2000/02/08 13:13:05 eich Exp $ */
 /*
  * PCI Probe
  *
@@ -1147,6 +1147,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_AP6410,	"ProMotion 6410",0},
 				{PCI_CHIP_AP6422,	"ProMotion 6422",0},
 				{PCI_CHIP_AT24,		"ProMotion AT24",0},
+				{PCI_CHIP_AT3D,		"ProMotion AT3D",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
 #ifdef INCLUDE_EMPTY_LISTS

@@ -9,7 +9,7 @@
 <date>9 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.6 2000/01/24 22:21:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.7 2000/02/09 20:47:14 dawes Exp $
 </ident>
 
 <abstract>
@@ -86,16 +86,15 @@ dependencies/limitations, other architectures known to work on
 	Support is provided by the XF86_SVGA server with the apm driver.
 
 <tag>&relvers;:</tag>
-	Support (including acceleration?) for the AT25 and AT3D.  This
-	support is provided by the "apm" driver.  This driver currently
-	has no native support for the AP6422 and AT24.  The driver status
-	is uncertain.  Test reports are required.
+	Support (including acceleration?) for the AT24, AT25 and AT3D.
+	This support is provided by the "apm" driver.  This driver
+	currently has only incomplete support for the AP6422.
 	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
 
 <tag>Summary:</tag>
-	The AT24 and AP6422 are supported in &legacyvers; but not in
+	The AP6422 is supported in &legacyvers; but not fully in
 	&relvers;.  The AT25 is supported in &relvers; but not in
-	&legacyvers;.  The status of the driver in &relvers; is uncertain.
+	&legacyvers;.
 
 </descrip>
 

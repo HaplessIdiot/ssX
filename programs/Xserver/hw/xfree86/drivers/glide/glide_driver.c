@@ -34,6 +34,9 @@
    1999-08-22
    - Minor fixes.
 
+   1999-11-22
+   - Minor change in GLIDE_FIND_FUNC by Loïc Grenié, grenie@math.jussieu.fr.
+
    TODO
    * Support for adjusting gamma correction.
    * Support for setting gamma individually for R,G,B when Glide 3 arrives
@@ -42,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.5 1999/08/28 09:01:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.8 2000/01/29 16:55:51 alanh Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -1002,28 +1005,28 @@ GLIDERestore(ScrnInfoPtr pScrn, Bool Closing)
 }
 
 
-#define GLIDE_FIND_FUNC(x,y) \
-  p##x = (p##x##_t)LoaderSymbol(y); \
+#define GLIDE_FIND_FUNC(x) \
+  p##x = (p##x##_t)LoaderSymbol(#x); \
   if (!p##x) \
   { \
-    xf86Msg(X_ERROR, "Could not find " y "() in libglide2x.so.\n"); \
+    xf86Msg(X_ERROR, "Could not find " #x "() in libglide2x.so.\n"); \
     return FALSE; \
   }
 
 static int
 LoadGlide(void)
 {
-  GLIDE_FIND_FUNC(grSstQueryBoards, "grSstQueryBoards");
-  GLIDE_FIND_FUNC(grGlideInit,      "grGlideInit");
-  GLIDE_FIND_FUNC(grSstSelect,      "grSstSelect");
-  GLIDE_FIND_FUNC(grSstWinOpen,     "grSstWinOpen");
-  GLIDE_FIND_FUNC(grRenderBuffer,   "grRenderBuffer");
-  GLIDE_FIND_FUNC(grClipWindow,     "grClipWindow");
-  GLIDE_FIND_FUNC(grBufferClear,    "grBufferClear");
-  GLIDE_FIND_FUNC(grLfbLock,        "grLfbLock");
-  GLIDE_FIND_FUNC(grLfbUnlock,      "grLfbUnlock");
-  GLIDE_FIND_FUNC(grGlideShutdown,  "grGlideShutdown");
-  GLIDE_FIND_FUNC(grLfbWriteRegion, "grLfbWriteRegion");
+  GLIDE_FIND_FUNC(grSstQueryBoards);
+  GLIDE_FIND_FUNC(grGlideInit);
+  GLIDE_FIND_FUNC(grSstSelect);
+  GLIDE_FIND_FUNC(grSstWinOpen);
+  GLIDE_FIND_FUNC(grRenderBuffer);
+  GLIDE_FIND_FUNC(grClipWindow);
+  GLIDE_FIND_FUNC(grBufferClear);
+  GLIDE_FIND_FUNC(grLfbLock);
+  GLIDE_FIND_FUNC(grLfbUnlock);
+  GLIDE_FIND_FUNC(grGlideShutdown);
+  GLIDE_FIND_FUNC(grLfbWriteRegion);
   return TRUE;
 }
 

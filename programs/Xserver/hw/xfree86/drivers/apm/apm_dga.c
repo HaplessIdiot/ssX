@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.5 1999/09/27 06:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.6 1999/12/27 01:33:57 robin Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -76,14 +76,24 @@ ApmSetupDGAMode(ScrnInfoPtr pScrn, DGAModePtr modes, int *num,
    APMDECL(pScrn);
    DGAModePtr mode, newmodes;
    int size, pitch, Bpp = bitsPerPixel >> 3;
+   Bool reduced_pitch = TRUE;
 
 SECOND_PASS:
 
-   pMode = firstMode = pScrn->modes;
+   firstMode = NULL;
 
-   while(1) {
+   for (pMode = pScrn->modes; pMode != firstMode; pMode = pMode->next) {
 
-	pitch = FindSmallestPitch(pApm, Bpp, pMode->HDisplay);
+	if (!firstMode)
+	    firstMode = pMode;
+
+	if (reduced_pitch)
+	    pitch = FindSmallestPitch(pApm, Bpp, pMode->HDisplay);
+	else
+	    pitch = pMode->HDisplay;
+	if (!reduced_pitch && pitch == FindSmallestPitch(pApm, Bpp, pMode->HDisplay))
+	    continue;
+
 	size = pitch * Bpp * pMode->VDisplay;
 
 	if((!secondPitch || (pitch != secondPitch)) &&
@@ -139,13 +149,15 @@ SECOND_PASS:
 	    (*num)++;
 	}
 
-	pMode = pMode->next;
-	if(pMode == firstMode)
-	   break;
     }
 
     if(secondPitch) {
 	secondPitch = 0;
+	goto SECOND_PASS;
+    }
+
+    if (reduced_pitch) {
+	reduced_pitch = FALSE;
 	goto SECOND_PASS;
     }
 
@@ -162,29 +174,29 @@ ApmDGAInit(ScreenPtr pScreen)
 
    /* 8 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 8, 8, 
-		(pScrn->bitsPerPixel == 8),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
 		0, 0, 0, PseudoColor);
 
    /* 15 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
-		(pScrn->bitsPerPixel == 16),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
 		0x7c00, 0x03e0, 0x001f, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
-		(pScrn->bitsPerPixel == 16),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
 		0x7c00, 0x03e0, 0x001f, DirectColor);
 
    /* 16 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
-		(pScrn->bitsPerPixel == 16),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
 		0xf800, 0x07e0, 0x001f, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
-		(pScrn->bitsPerPixel == 16),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
 		0xf800, 0x07e0, 0x001f, DirectColor);
 
@@ -201,12 +213,12 @@ ApmDGAInit(ScreenPtr pScreen)
 
    /* 32 */
    modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
-		(pScrn->bitsPerPixel == 32),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
 		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
 
    modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
-		(pScrn->bitsPerPixel == 32),
+		(pScrn->bitsPerPixel != 24),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
 		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
 
@@ -220,81 +232,54 @@ ApmDGAInit(ScreenPtr pScreen)
 static Bool
 ApmSetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
-    int		index = pScrn->pScreen->myNum, c;
+    int		index = pScrn->pScreen->myNum;
     APMDECL(pScrn);
 
-    if(!pMode) { /* restore the original mode */
+    if (!pMode) { /* restore the original mode */
 	if (pApm->DGAactive) {
 	    memcpy(&pApm->CurrentLayout, &pApm->SavedLayout,
 						sizeof pApm->CurrentLayout);
 	    pApm->DGAactive = FALSE;
 	}
 
-        pScrn->SwitchMode(index, pScrn->currentMode, 0);
-    } else {
+	pScrn->currentMode = pApm->CurrentLayout.pMode;
+        ApmSwitchMode(index, pScrn->currentMode, 0);
+	ApmAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
+#if 0
+	if (pApm->AccelInfoRec)
+	    XAAInit(pScrn->pScreen, pApm->AccelInfoRec);
+#endif
+    }
+    else {
 	if (!pApm->DGAactive) {
 	    memcpy(&pApm->SavedLayout, &pApm->CurrentLayout,
 						sizeof pApm->CurrentLayout);
 	    pApm->DGAactive = TRUE;
 	}
 
-	switch(pMode->bitsPerPixel) {
-	case 8:
-	    c = DEC_BITDEPTH_8;
-	    break;
-
-	case 16:
-	    c = DEC_BITDEPTH_16;
-	    break;
-
-	case 24:
-	    c = DEC_BITDEPTH_24 | DEC_SOURCE_LINEAR | DEC_DEST_LINEAR;
-	    break;
-
-	case 32:
-	    c = DEC_BITDEPTH_32;
-	    break;
-
-	default:
-	    c = 0;
-	    break;
-	}
-
-	switch(pMode->imageWidth) {
-	case 640:
-	    c |= DEC_WIDTH_640;
-	    break;
-       
-	case 800:
-	    c |= DEC_WIDTH_800;
-	    break;
-       
-	case 1024:
-	    c |= DEC_WIDTH_1024;
-	    break;
-       
-	case 1152:
-	    c |= DEC_WIDTH_1152;
-	    break;
-       
-	case 1280:
-	    c |= DEC_WIDTH_1280;
-	    break;
-       
-	case 1600:
-	    c |= DEC_WIDTH_1600;
-	    break;
-	}
-
-	pApm->CurrentLayout.Setup_DEC = (pApm->CurrentLayout.Setup_DEC & ~(DEC_BITDEPTH_MASK|DEC_WIDTH_MASK|DEC_SOURCE_LINEAR|DEC_DEST_LINEAR)) | c;
-	pApm->CurrentLayout.displayWidth	= pMode->bytesPerScanline /
-						    (pMode->bitsPerPixel >> 3);
+	pApm->CurrentLayout.displayWidth	= pMode->imageWidth;
 	pApm->CurrentLayout.displayHeight	= pMode->imageHeight;
-	pApm->CurrentLayout.Scanlines	= pMode->imageHeight + 1;
+	pApm->CurrentLayout.Scanlines		= pMode->imageHeight + 1;
+	pApm->CurrentLayout.depth		= pMode->depth;
 	pApm->CurrentLayout.bitsPerPixel	= pMode->bitsPerPixel;
-	pApm->CurrentLayout.bytesPerScanline= pMode->bytesPerScanline;
+	pApm->CurrentLayout.bytesPerScanline	= pMode->bytesPerScanline;
+	pApm->CurrentLayout.pMode		= pMode->mode;
 
-        pScrn->SwitchMode(index, pMode->mode, 0);
+        ApmSwitchMode(index, pMode->mode, 0);
+	ApmSetupXAAInfo(pApm, NULL);
+
+#if 0
+	if (pApm->DGAXAAInfo)
+	    bzero(pApm->DGAXAAInfo, sizeof(*pApm->DGAXAAInfo));
+	else
+	    pApm->DGAXAAInfo = XAACreateInfoRec();
+	ApmSetupXAAInfo(pApm, pApm->DGAXAAInfo);
+	/* 
+	 * Let's hope this won't fail, that is reinitialize XAA for this
+	 * setup...
+	 */
+	XAAInit(pScrn->pScreen, pApm->DGAXAAInfo);
+#endif
     }
 
     return TRUE;
@@ -362,11 +347,15 @@ ApmFillRect (
 {
     APMDECL(pScrn);
 
-    if(pApm->AccelInfoRec) {
-	(*pApm->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
-	(*pApm->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
-	SET_SYNC_FLAG(pApm->AccelInfoRec);
+    if(pApm->CurrentLayout.depth != 24) {
+	(*pApm->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
+	(*pApm->SubsequentSolidFillRect)(pScrn, x, y, w, h);
     }
+    else {
+	(*pApm->SetupForSolidFill24)(pScrn, color, GXcopy, ~0);
+	(*pApm->SubsequentSolidFillRect24)(pScrn, x, y, w, h);
+    }
+    SET_SYNC_FLAG(pApm->AccelInfoRec);
 }
 
 static void 
@@ -378,17 +367,22 @@ ApmBlitRect(
 )
 {
     APMDECL(pScrn);
+    int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
+    int ydir = (srcy < dsty) ? -1 : 1;
 
-    if(pApm->AccelInfoRec) {
-	int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
-	int ydir = (srcy < dsty) ? -1 : 1;
-
-	(*pApm->AccelInfoRec->SetupForScreenToScreenCopy)(
+    if(pApm->CurrentLayout.depth != 24) {
+	(*pApm->SetupForScreenToScreenCopy)(
 		pScrn, xdir, ydir, GXcopy, ~0, -1);
-	(*pApm->AccelInfoRec->SubsequentScreenToScreenCopy)(
+	(*pApm->SubsequentScreenToScreenCopy)(
 		pScrn, srcx, srcy, dstx, dsty, w, h);
-	SET_SYNC_FLAG(pApm->AccelInfoRec);
     }
+    else {
+	(*pApm->SetupForScreenToScreenCopy24)(
+		pScrn, xdir, ydir, GXcopy, ~0, -1);
+	(*pApm->SubsequentScreenToScreenCopy24)(
+		pScrn, srcx, srcy, dstx, dsty, w, h);
+    }
+    SET_SYNC_FLAG(pApm->AccelInfoRec);
 }
 
 static void 

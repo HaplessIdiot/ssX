@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.1 1999/09/04 09:14:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86rush/XF86Rush.c,v 1.2 1999/09/27 06:29:15 dawes Exp $ */
 /*
 
 Copyright (c) 1998 Daryll Strauss
@@ -104,14 +104,15 @@ Bool XF86RushLockPixmap(Display *dpy, int screen, Pixmap pixmap, void **addr)
   GetReq(XF86RushLockPixmap, req);
   req->reqType = info->codes->major_opcode;
   req->rushReqType = X_XF86RushLockPixmap;
-  req->screen=screen;
-  req->pixmap=pixmap;
+  req->screen = screen;
+  req->pixmap = pixmap;
   if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
     UnlockDisplay(dpy);
     SyncHandle();
     return False;
   }
-  *addr=(void*)rep.addr;
+  if (addr)
+      *addr = (void *)rep.addr;
   UnlockDisplay(dpy);
   SyncHandle();
   return True;
@@ -181,4 +182,42 @@ Bool XF86RushSetPixelStride(Display *dpy, int screen, int stride)
   UnlockDisplay(dpy);
   SyncHandle();
   return True;
+}
+
+int XF86RushOverlayPixmap (Display *dpy, XvPortID port, Drawable d,
+			   GC gc, Pixmap pixmap, int src_x, int src_y,
+			   unsigned int src_w, unsigned int src_h,
+			   int dest_x, int dest_y,
+			   unsigned int dest_w, unsigned int dest_h,
+			   unsigned int id)
+{
+  XExtDisplayInfo *info = find_display(dpy);
+  xXF86RushOverlayPixmapReq *req;
+
+  XF86RushCheckExtension (dpy, info, False);
+
+  FlushGC(dpy, gc);
+
+  LockDisplay(dpy);
+  GetReq(XF86RushOverlayPixmap, req);
+
+  req->reqType = info->codes->major_opcode;
+  req->rushReqType = X_XF86RushOverlayPixmap;
+  req->port = port;
+  req->drawable = d;
+  req->gc = gc->gid;
+  req->id = id;
+  req->pixmap = pixmap;
+  req->src_x = src_x;
+  req->src_y = src_y;
+  req->src_w = src_w;
+  req->src_h = src_h;
+  req->drw_x = dest_x;
+  req->drw_y = dest_y;
+  req->drw_w = dest_w;
+  req->drw_h = dest_h;
+
+  UnlockDisplay(dpy);
+  SyncHandle();
+  return Success;
 }

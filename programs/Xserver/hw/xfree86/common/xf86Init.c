@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.146 2000/02/09 15:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.147 2000/02/10 18:57:30 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1580,8 +1580,10 @@ xf86LoadModules(char **list, pointer *optlist)
 
     for (i = 0; list[i] != NULL; i++) {
 
+#if 0
 	/* Normalise the module name */
 	name = xf86NormalizeName(list[i]);
+#endif
 
 	/* Skip empty names */
 	if (name == NULL || *name == '\0')

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86rushstr.h,v 1.1 1999/09/04 09:14:08 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86rushstr.h,v 1.2 1999/09/27 06:29:07 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -13,7 +13,7 @@ Copyright (c) 1998  Daryll Strauss
 #define XF86RUSHNAME "XFree86-Rush"
 
 #define XF86RUSH_MAJOR_VERSION	1	/* current version numbers */
-#define XF86RUSH_MINOR_VERSION	0
+#define XF86RUSH_MINOR_VERSION	1
 
 typedef struct _XF86RushQueryVersion {
     CARD8	reqType;		/* always RushReqCode */
@@ -98,5 +98,25 @@ typedef struct _XF86RushSetPixelStride {
     CARD32      PixelStride B32;
 } xXF86RushSetPixelStrideReq;
 #define sz_xXF86RushSetPixelStrideReq      12
+
+typedef struct {
+    CARD8	reqType;               /* always RushReqCode */
+    CARD8	rushReqType;           /* always X_RushOverlayPixmap */
+    CARD16	length B16;
+    XvPortID	port B32;
+    Drawable	drawable B32;
+    GContext	gc B32;
+    Pixmap	pixmap B32;
+    CARD32	id B32;
+    INT16	src_x B16;
+    INT16	src_y B16;
+    CARD16	src_w B16;
+    CARD16	src_h B16;
+    INT16	drw_x B16;
+    INT16	drw_y B16;
+    CARD16	drw_w B16;
+    CARD16	drw_h B16;
+} xXF86RushOverlayPixmapReq;
+#define sz_xXF86RushOverlayPixmapReq 40
 
 #endif /* _XF86RUSHSTR_H_ */

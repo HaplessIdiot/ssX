@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.3 1999/08/28 14:32:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_rush.c,v 1.4 1999/09/27 06:29:37 dawes Exp $ */
 /*
  * Copyright Loïc Grenié 1999
  */
@@ -43,8 +43,19 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
     FBAreaPtr area = pXAAPriv->offscreenArea;
     int	p2, width = (pScrn->displayWidth * pScrn->bitsPerPixel) / 8;
 
+    if (strcmp(pScrn->chipset, "AT3D"))
+	return 0;
     pApm->apmLock = TRUE;
     pApmPriv->num = 0;
+    if (area && pApm->pixelStride) {
+	if (area->RemoveAreaCallback) {
+	    (*area->RemoveAreaCallback)(area);
+	    xf86FreeOffscreenArea(area);
+	    area = NULL;
+	}
+	else
+	    return 0;
+    }
     if (area) {
 	/*
 	 * 1) Make it unmovable so that XAA won't know we're playing
@@ -78,6 +89,14 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
 			    pix->drawable.depth) / pScrn->bitsPerPixel) +
 				4095,
 			    pScrn->displayWidth, NULL, NULL, NULL);
+	    if (!area) {
+		xf86PurgeUnlockedOffscreenAreas(pScrn->pScreen);
+		area = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
+			    ((pix->drawable.width * pix->drawable.height *
+			    pix->drawable.depth) / pScrn->bitsPerPixel) +
+				4095,
+			    pScrn->displayWidth, NULL, NULL, NULL);
+	    }
 	    if (area) {
 		if (!pApmPriv->devPriv) {
 		    PixmapLinkPtr pLink;
@@ -126,6 +145,14 @@ xf86RushLockPixmap(int scrnIndex, PixmapPtr pix)
 				    pScrn->bitsPerPixel,
 		    pix->drawable.height + p1,
 		    p2, NULL, NULL, pApmPriv->devPriv);
+	    if (!area) {
+		xf86PurgeUnlockedOffscreenAreas(pScrn->pScreen);
+		area = xf86AllocateOffscreenArea(pScrn->pScreen,
+			(pix->drawable.width * pix->drawable.bitsPerPixel) /
+					pScrn->bitsPerPixel,
+			pix->drawable.height + p1,
+			p2, NULL, NULL, pApmPriv->devPriv);
+	    }
 	    if (area) {
 		int	devKind = (pScrn->bitsPerPixel * pScrn->displayWidth) / 8;
 		int	off = devKind * p1, h;
@@ -220,6 +247,8 @@ xf86RushUnlockPixmap(int scrnIndex, PixmapPtr pix)
     APMDECL(xf86Screens[scrnIndex]);
     PixmapLinkPtr pLink = GET_XAAINFORECPTR_FROM_SCREEN(xf86Screens[scrnIndex]->pScreen)->OffscreenPixmaps;
 
+    if (pApm->Chipset != AT3D)
+	return;
     if (pApm->apmLock) {
 	/*
 	 * This is just an attempt, because Daryll is tampering with MY
@@ -251,6 +280,8 @@ xf86RushUnlockAllPixmaps()
     for (scrnIndex = 0; scrnIndex < screenInfo.numScreens; scrnIndex++) {
 	PixmapLinkPtr pLink = GET_XAAINFORECPTR_FROM_SCREEN(xf86Screens[scrnIndex]->pScreen)->OffscreenPixmaps;
 
+	if (APMPTR(xf86Screens[scrnIndex])->Chipset != AT3D)
+	    continue;
 	while(pLink) {
 	    __xf86UnlockPixmap(APMPTR(xf86Screens[scrnIndex]), pLink);	
 	    pLink = pLink->next;
@@ -285,6 +316,7 @@ static DISPATCH_PROC(ProcXF86RushUnlockPixmap);
 static DISPATCH_PROC(ProcXF86RushUnlockAllPixmaps);
 static DISPATCH_PROC(ProcXF86RushSetCopyMode);
 static DISPATCH_PROC(ProcXF86RushSetPixelStride);
+static DISPATCH_PROC(ProcXF86RushOverlayPixmap);
 
 static int rush_ext_generation = -1;
 
@@ -297,9 +329,15 @@ XFree86RushExtensionInit(ScreenPtr pScreen)
 {
     ExtensionEntry* extEntry;
 
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension)
+	return;
+#endif
     if (rush_ext_generation == serverGeneration) {
-	pScreen->CreatePixmap	= RushCreatePixmap;
-	pScreen->DestroyPixmap	= RushDestroyPixmap;
+	if (APMPTR(xf86Screens[pScreen->myNum])-> Chipset == AT3D) {
+	    pScreen->CreatePixmap	= RushCreatePixmap;
+	    pScreen->DestroyPixmap	= RushDestroyPixmap;
+	}
 	return;
     }
     rush_ext_generation = serverGeneration;
@@ -312,8 +350,10 @@ XFree86RushExtensionInit(ScreenPtr pScreen)
 				StandardMinorOpcode))) {
 	RushReqCode = (unsigned char)extEntry->base;
 	RushErrorBase = extEntry->errorBase;
-	pScreen->CreatePixmap	= RushCreatePixmap;
-	pScreen->DestroyPixmap	= RushDestroyPixmap;
+	if (APMPTR(xf86Screens[pScreen->myNum])-> Chipset == AT3D) {
+	    pScreen->CreatePixmap	= RushCreatePixmap;
+	    pScreen->DestroyPixmap	= RushDestroyPixmap;
+	}
     }
     else {
 	pScreen->CreatePixmap	= APMPTR(xf86Screens[pScreen->myNum])->CreatePixmap;
@@ -438,6 +478,8 @@ ProcXF86RushDispatch (register ClientPtr client)
         return ProcXF86RushSetCopyMode(client);
     case X_XF86RushSetPixelStride:
         return ProcXF86RushSetPixelStride(client);
+    case X_XF86RushOverlayPixmap:
+	return ProcXF86RushOverlayPixmap(client);
     default:
 	return BadRequest;
     }
@@ -447,4 +489,98 @@ int
 SProcXF86RushDispatch (register ClientPtr client)
 {
     return RushErrorBase + XF86RushClientNotLocal;
+}
+
+#include "xvdix.h"
+/*
+ * The one below is just a subtle modification of ProcXvShmPutImage
+ */
+
+static int 
+ProcXF86RushOverlayPixmap(ClientPtr client)
+{
+    DrawablePtr	pDraw;
+    ScrnInfoPtr	pScrn;
+    PixmapPtr	pPixmap;
+    XvPortPtr	pPort;
+    XvImagePtr	pImage = NULL;
+    GCPtr	pGC;
+    int		status, i;
+    char	*offset;
+    ApmPtr	pApm;
+    ApmPixmapPtr	pPriv;
+    REQUEST(xXF86RushOverlayPixmapReq);
+
+    REQUEST_SIZE_MATCH(xXF86RushOverlayPixmapReq);
+
+    VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
+
+    pScrn = xf86Screens[pDraw->pScreen->myNum];
+    if (strcmp(pScrn->chipset, "AT3D"))
+	return (_XvBadPort);
+
+    if(!(pPort = LOOKUP_PORT(stuff->port, client) )) {
+	client->errorValue = stuff->port;
+	return (_XvBadPort);
+    }
+
+    if (pPort->id != stuff->port) {
+	if ((status = (*pPort->pAdaptor->ddAllocatePort)(stuff->port, pPort, &pPort)) != Success) {
+	    client->errorValue = stuff->port;
+	    return (status);
+	}
+    }
+
+    if (!(pPort->pAdaptor->type & XvImageMask) ||
+	!(pPort->pAdaptor->type & XvInputMask)) {
+	client->errorValue = stuff->port;
+	return (BadMatch);
+    }
+
+    status = XVCALL(diMatchPort)(pPort, pDraw);
+    if (status != Success)
+	return status;
+
+    pPixmap = (PixmapPtr)SecurityLookupIDByType(client,
+					stuff->pixmap, RT_PIXMAP, 
+					SecurityReadAccess);
+    if (!pPixmap) {
+	client->errorValue = stuff->pixmap;
+	return (BadPixmap);
+    }
+    status = XVCALL(diMatchPort)(pPort, (DrawablePtr)pPixmap);
+    if (status != Success)
+	return status;
+    pPriv = APM_GET_PIXMAP_PRIVATE(pPixmap);
+    pApm = APMPTR(pScrn);
+    if (pPriv->num == 0) {
+	client->errorValue = stuff->pixmap;
+	return (BadMatch);
+    }
+    offset = (char *)pApm->FbBase +
+	    pApm->RushY[pPriv->num - 1] * pApm->CurrentLayout.bytesPerScanline +
+	    pPixmap->drawable.x * pScrn->bitsPerPixel / 8;
+
+    for(i = 0; i < pPort->pAdaptor->nImages; i++) {
+	if(pPort->pAdaptor->pImages[i].id == stuff->id) {
+	    pImage = &(pPort->pAdaptor->pImages[i]);
+	    break;
+	}
+    }
+
+    if(!pImage)
+	return BadMatch;
+
+    pApm->PutImageStride = pPixmap->devKind;
+    status = XVCALL(diPutImage)(client, pDraw, pPort, pGC,
+				stuff->src_x, stuff->src_y,
+				stuff->src_w, stuff->src_h,
+				stuff->drw_x, stuff->drw_y,
+				stuff->drw_w, stuff->drw_h,
+				pImage, offset, TRUE,
+				pPixmap->drawable.width,
+				pPixmap->drawable.height);
+    pApm->PutImageStride = 0;
+
+    return status;
 }

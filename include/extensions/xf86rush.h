@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86rush.h,v 1.1 1999/09/04 09:14:08 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86rush.h,v 1.2 1999/09/27 06:29:07 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -8,14 +8,18 @@ Copyright (c) 1998  Daryll Strauss
 #ifndef _XF86RUSH_H_
 #define _XF86RUSH_H_
 
+#include <X11/extensions/Xv.h>
 #include <X11/Xfuncproto.h>
 
 #define X_XF86RushQueryVersion		0
 #define X_XF86RushLockPixmap		1
 #define X_XF86RushUnlockPixmap		2
 #define X_XF86RushUnlockAllPixmaps	3
-#define X_XF86RushSetCopyMode		4
-#define X_XF86RushSetPixelStride	5
+#define X_XF86RushGetCopyMode		4
+#define X_XF86RushSetCopyMode		5
+#define X_XF86RushGetPixelStride	6
+#define X_XF86RushSetPixelStride	7
+#define X_XF86RushOverlayPixmap		8
 
 #define XF86RushNumberEvents		0
 
@@ -78,6 +82,25 @@ Bool XF86RushSetPixelStride(
     Display *		/* dpy */,
     int			/* screen */,
     int			/* pixel stride */
+#endif			    
+);
+
+Bool XF86RushOverlayPixmap(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    XvPortID		/* port */,
+    Drawable		/* d */,
+    GC			/* gc */,
+    Pixmap		/* pixmap */,
+    int			/* src_x */,
+    int			/* src_y */,
+    unsigned int	/* src_w */,
+    unsigned int	/* src_h */,
+    int			/* dest_x */,
+    int			/* dest_y */,
+    unsigned int	/* dest_w */,
+    unsigned int	/* dest_h */,
+    unsigned int	/* id */
 #endif			    
 );
 
