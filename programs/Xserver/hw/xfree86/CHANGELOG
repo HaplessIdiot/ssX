@@ -1,4 +1,9 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 942. Correctly initialize the RE_LINE_PATTERN register in the radeon
+      and r200 DRI drivers (Keith Whitwell).
+ 941. Fix a problem where a malformed Ximage can cause Xcursor to step
+      outside the image data (#A.1636, Keith Packard, reported by
+      Michel Dänzer).
  940. Allow xf86setjmp/xf86setlongjmp to work with platforms where
       setjmp() isn't directly available as a function, specifically Linux
       platforms that use glibc 2.0 and 2.1. (David Dawes, Keith Packard).
@@ -16480,4 +16485,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2575 2003/02/21 22:40:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2576 2003/02/22 06:00:36 dawes Exp $
