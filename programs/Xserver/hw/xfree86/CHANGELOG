@@ -1,7 +1,7 @@
 XFree86 3.1.0Ac (20 December 1994)
 143. Imake template and rules for LinuxDoc-SGML formatting.
 142. Documentation converted to LinuxDoc-SGML (Gertjan Akkerman,
-     Jayadev Billa, Matthiew Herrb, Michael Klemme).
+     Jayadev Billa, Matthieu Herrb, Michael Klemme).
 141. Re-enable SO_REUSEADDR code in Xtranssock.
 
 XFree86 3.1.0Ab (18 December 1994)
