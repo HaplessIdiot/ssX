@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.18 2001/02/05 10:44:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.19 2001/02/27 18:47:25 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -305,21 +305,22 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 
     temp1 = 0;
     temp2 = 0;
-#if 0 /* Currently commented out while testing Flat Panel support */
-    temp1 |= 0x40;
-    temp2 |= 0x01;
-    STOREREG(VSConfiguration, 
-			(GLINT_READ_REG(VSConfiguration) & 0xFFFFFFF8) | 0x06));
-    STOREREG(VSBBase, 1<<14);
-#endif
+    temp3 = 0;
+
+    if (pGlint->UseFlatPanel) {
+    	temp2 |= 0x80;
+    	temp3 |= 0x40;
+    	STOREREG(VSConfiguration, 0x06); 
+    	STOREREG(VSBBase, 1<<14);
+    }
+
     if (mode->Flags & V_PHSYNC) temp1 |= 0x01; /* invert hsync */
     if (mode->Flags & V_PVSYNC) temp1 |= 0x08; /* invert vsync */
 
     STOREREG(PM2VDACRDIndexControl, 0x00);
     STOREDAC(PM2VDACRDSyncControl, temp1);
-    STOREDAC(PM2VDACRDDACControl, 0x00);
+    STOREDAC(PM2VDACRDDACControl, temp2);
 
-    temp3 = 0;
     if (pScrn->rgbBits == 8)
 	temp3 |= 0x01; /* 8bit DAC */
 
@@ -400,10 +401,10 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     SAVEREG(PMScreenBase);
     SAVEREG(PMVideoControl);
     SAVEREG(VClkCtl);
-#if 0 /* Currently commented out while testing Flat Panel support */
-    SAVEREG(VSConfiguration);
-    SAVEREG(VSBBase);
-#endif
+    if (pGlint->UseFlatPanel) {
+    	SAVEREG(VSConfiguration);
+    	SAVEREG(VSBBase);
+    }
 
     for (i=0;i<768;i++) {
     	Permedia2ReadAddress(pScrn, i);
@@ -469,10 +470,10 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(PMVsStart);
     RESTOREREG(PMVsEnd);
 
-#if 0 /* Currently commented out while testing Flat Panel support */
-    RESTOREREG(VSConfiguration);
-    RESTOREREG(VSBBase);
-#endif
+    if (pGlint->UseFlatPanel) {
+    	RESTOREREG(VSConfiguration);
+    	RESTOREREG(VSBBase);
+    }
 
     RESTOREREG(PM2VDACRDIndexControl);
     P2VOUT(PM2VDACRDOverlayKey);
