@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                 3 July 2000
+                               6 December 2000
 
                                   Abstract
 
@@ -18,17 +18,18 @@ has some hardware support not present in 3.3.x.  We've attempted to provide
 some information about the second point in our Driver Status document.
 Please check there first before downloading  4.0.2.
 
-The 4.0.1 has a new configuration tool, "xf86cfg".  It is work in progress,
-but definitely worth trying out.  We have also updated the basic text-based
-tool "xf86config" to generate config files in the format required by 4.0.2
-(3.3.x config files won't really work with 4.0.2).  We're also on a configu-
-ration tool that is built-in to the X server.  An early version of this is
-included in the release, and it works well for some hardware.  To try it out,
-just run (as root) "XFree86 -configure".  Each of these configuration options
-will give you a reasonable starting point for a suitable configuration file.
-We've put some effort into documenting the 4.0.2 config file format, and you
-can find that information in the XF86Config manual page. Check that,  the
-driver manual pages and the related documentation for further information.
+The 4.0.1 release introduced a new configuration tool, "xf86cfg".  It is work
+in progress, but definitely worth trying out.  We have also updated the basic
+text-based tool "xf86config" to generate config files in the format required
+by 4.0.2 (3.3.x config files won't really work with 4.0.2).  We're also on a
+configuration tool that is built-in to the X server.  An early version of
+this is included in the release, and it works well for some hardware.  To try
+it out, just run (as root) "XFree86 -configure".  Each of these configuration
+options will give you a reasonable starting point for a suitable configura-
+tion file.  We've put some effort into documenting the 4.0.2 config file for-
+mat, and you can find that information in the XF86Config manual page. Check
+that, the driver manual pages and the related documentation for further
+information.
 
 Oh, another thing you might notice is that our documentation is rather
 patchy.  Most of what is present should be in reasonable shape, but there are
@@ -76,6 +77,14 @@ enough space to cover it all here.
      ments to the MouseKeys support.
 
    o Add generic DGA support to the sis, neomagic and i810 drivers.
+
+   o A driver for ATI Radeon adapters has been added.
+
+   o ATI driver support for multi-head configurations and non-Intel platforms
+     has been improved.
+
+   o The ATI driver has been changed to invoke the appropriate driver for any
+     Rage 128 and Radeon adapters that it finds in the system.
 
    o xf86cfg, a new graphical configuration tool for XFree86 4.0, and can be
      used to either write the initial configuration or make customizations to
@@ -664,6 +673,7 @@ XFree86 4.0.2 includes the following drivers:
              |neomagic    | NeoMagic                            |
              |nv          | NVIDIA                              |
              |r128        | ATI Rage 128                        |
+             |radeon      | ATI Radeon                          |
              |rendition   | Rendition                           |
              |s3virge     | S3 ViRGE                            |
              |sis         | SiS                                 |
@@ -1189,7 +1199,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.43 2000/12/04 16:24:57 alanh Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.44 2000/12/07 15:43:41 tsi Exp $
 
 
 $XFree86$

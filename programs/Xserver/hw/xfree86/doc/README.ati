@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                2000 August 3
+                               2000 December 6
 
                                   Abstract
 
@@ -81,8 +81,10 @@ The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
 
 The newer Rage 128 and Radeon chips are not yet supported by this driver.
-Rage 128's are, however, supported by a separate driver, and Rage 128 owners
-should read the r128 driver's documentation for details.
+Rage 128's and Radeon's are, however, supported by separate drivers, and own-
+ers of such adapters should consult the documentation provided with these
+drivers.  This driver will also invoke the appropriate driver if it finds
+Rage 128 and/or Radeon adapter(s) in the system.
 
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
@@ -671,7 +673,7 @@ newer driver API of XFree86 4.0 and later.
 The introduction of version 6 is a first swipe at porting the driver to non-
 Intel architectures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.33 2000/08/09 02:19:23 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.34 2000/12/07 15:43:41 tsi Exp $
 
 
 $XFree86$
