@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.9 2002/10/06 17:11:48 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.10 2002/10/20 05:58:55 paulo Exp $
 ;;
 
 (require "syntax")
@@ -40,8 +40,8 @@
     :underline	t
 )
 
-;; The default values are my preferred style. It also should to match
-;; the "java" style, with a base indentation of 4 spaces, and adding one
+;; The default values are my preferred style. It also should match
+;; a "java" style, with a base indentation of 4 spaces, and adding one
 ;; indent level to case/default labels.
 (defsynoptions *c-DEFAULT-style*
     ;; Positive number. Basic indentation.
@@ -607,13 +607,29 @@
 	)
 
 	(setq
-	    *indentation*	  (gethash :indentation options 4)
-	    *brace-indent*	  (gethash :brace-indent options nil)
-	    *case-indent*	  (gethash :case-indent options t)
-	    *cont-indent*	  (gethash :cont-indent options t)
-	    *emulate-tabs*	  (gethash :emulate-tabs options nil)
 	    *newline-indent*	  (gethash :newline-indent options nil)
 	    *only-newline-indent* (gethash :only-newline-indent options nil)
+	)
+
+	(or
+	    (if (or *newline-indent* *only-newline-indent*)
+		;; if at bol
+		(= point start)
+		;; or after first char typed
+		(= (1- point) start)
+	    )
+	    ;; or one of these was typed
+	    (member (char-before point) '(#\{ #\} #\; #\: #\] #\)))
+	    ;; else save cpu time...
+	    (return-from c-indent)
+	)
+
+	(setq
+	    *indentation*	(gethash :indentation options 4)
+	    *brace-indent*	(gethash :brace-indent options nil)
+	    *case-indent*	(gethash :case-indent options t)
+	    *cont-indent*	(gethash :cont-indent options t)
+	    *emulate-tabs*	(gethash :emulate-tabs options nil)
 	)
 
 	;; parse until start of line is found
@@ -1015,23 +1031,23 @@
 	)
 
 	;; initialize indent to the indentation of first item in info
-	(setq indent (c-offset-align (cdar info)) flow 0 block 0 bols 0)
+	(setq indent (c-offset-align (cdar info)) flow 0 block 0 bols 0 switch 0)
 
 	;; calculate indentation
 	(dolist (item info)
 	    (case (car item)
 		(:case
 		    (setq bols 0)
-		    (unless switch
-			(setq switch t indent (+ indent *indentation*))
+		    (unless (> switch 0)
+			(setq switch 1 indent (+ indent *indentation*))
 		    )
 		)
 
 		(:switch
 		    (setq
 			bols   0
-			switch t
 			flow   (1+ flow)
+			switch flow
 			indent (+ indent *indentation*)
 		    )
 		    (and *case-indent* (incf indent *indentation*))
@@ -1057,10 +1073,10 @@
 			    flow   (1- flow)
 			    indent (- indent *indentation*)
 			)
-			(and switch *case-indent*
+			(and (> switch 0) (>= switch flow) *case-indent*
 			    (setq
 				indent (- indent *indentation*)
-				switch nil
+				switch 0
 			    )
 			)
 		    )
@@ -1075,7 +1091,7 @@
 			(setq indent (+ indent *indentation*))
 			(progn
 			    (setq flow (1- flow))
-			    (and *brace-indent* (not switch)
+			    (and *brace-indent* (= switch 0)
 				(incf indent *indentation*)
 			    )
 			)
@@ -1114,14 +1130,14 @@
 		((char= char #\{)
 		    (and (> flow 0) (decf indent *indentation*))
 		    (and *brace-indent* (incf indent *indentation*))
-		    (and switch *brace-indent* *case-indent*
+		    (and (> switch 0) *brace-indent* *case-indent*
 			(decf indent *indentation*)
 		    )
 		    (go :indent)
 		)
 		((char= char #\})
 		    (decf indent *indentation*)
-		    (and switch *case-indent*
+		    (and (> switch 0) *case-indent*
 			(decf indent *indentation*)
 		    )
 		    (go :indent)
@@ -1161,7 +1177,7 @@
 	    (when
 		(and
 		    (not test)
-		    (or switch (gethash :label-dedent options))
+		    (or (> switch 0) (gethash :label-dedent options))
 		)
 		;; remove spaces
 		(setq
