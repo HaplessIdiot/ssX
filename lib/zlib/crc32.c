@@ -5,7 +5,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* $Id$ */
+/* Id: crc32.c /main/2 1996/03/07 13:52:56 mor $ */
 
 #include "zlib.h"
 

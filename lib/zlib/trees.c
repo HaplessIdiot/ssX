@@ -31,7 +31,7 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* $Id$ */
+/* Id: trees.c /main/3 1997/02/26 17:43:55 kaleb $ */
 
 #include "deflate.h"
 

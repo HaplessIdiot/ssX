@@ -49,7 +49,7 @@
  *
  */
 
-/* $Id$ */
+/* Id: deflate.c /main/3 1997/02/26 17:42:26 kaleb $ */
 
 #include "deflate.h"
 

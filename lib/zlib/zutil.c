@@ -5,7 +5,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* $Id$ */
+/* Id: zutil.c /main/3 1997/02/26 17:44:19 kaleb $ */
 
 #include <stdio.h>
 

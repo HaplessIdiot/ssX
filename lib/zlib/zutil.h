@@ -10,7 +10,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* $Id$ */
+/* Id: zutil.h /main/3 1997/02/26 17:44:26 kaleb $ */
 
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
