@@ -1,4 +1,5 @@
 XFree86 3.1.0Ae (2 January 1995)
+160. Replace docs with the ascii versions generated from the sgml source.
 159. Major updates to xf86config(1), including the addition of a Cards
      database (Harm Hanemaayer).
 158. Check and reject invalid XF86Config depths for the VGA16 and Mono
