@@ -1169,6 +1169,8 @@ file you need:
 <tscreen><verb>
 	gzip -d < X312Ffile.tgz | tar vxf -
 </verb></tscreen>
+On some OSs, you might get some "Broken Pipe" messages.  Providing there
+are no other messages associated with this, they can be safely ignored.
 
 If you are using NetBSD or FreeBSD, a more reliable way of doing this is
 to extract the <tt>.tgz</tt> files with:
@@ -1228,7 +1230,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.38 1996/09/01 08:19:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.39 1996/09/03 04:12:39 dawes Exp $
 </verb>
 
 </article>
