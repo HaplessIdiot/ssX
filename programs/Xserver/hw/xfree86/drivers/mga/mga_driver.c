@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.15 1997/08/26 10:01:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.16 1997/09/09 10:27:46 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -361,7 +361,8 @@ MGAReadBios()
 		/* check that the pins info is correct */
 		if ( MGABios2.StructLen != 0x40 )
 		{
-			ErrorF( "%s %s: Video BIOS info block not detected!" );
+			ErrorF( "%s %s: Video BIOS info block not detected!\n",
+		                XCONFIG_PROBED, vga256InfoRec.name);
 			return;
 		}
 		/* check that the chksum is correct */
@@ -376,7 +377,8 @@ MGAReadBios()
 
 		if ( chksum )
 		{
-			ErrorF( "%s %s: Video BIOS info block did not checksum!" );
+			ErrorF("%s %s: Video BIOS info block did not checksum!\n",
+		                XCONFIG_PROBED, vga256InfoRec.name);
 			MGABios2.PinID = 0;
 			return;
 		}
@@ -384,12 +386,19 @@ MGAReadBios()
 		/* last check */
 		if ( MGABios2.StructRev == 0 ) 
 		{
-			ErrorF( "%s %s: Video BIOS info block does not have a valid revision!" );
+			ErrorF( "%s %s: Video BIOS info block does not have a valid revision!\n",
+		                XCONFIG_PROBED, vga256InfoRec.name);
 			MGABios2.PinID = 0;
 			return;
 		}
-		ErrorF( "%s %s: Found and verified enhanced Video BIOS info block" );
+		ErrorF( "%s %s: Found and verified enhanced Video BIOS info block\n",
+			XCONFIG_PROBED, vga256InfoRec.name);
 
+#if DEBUG
+		ErrorF( "%s %s: MClk %d Clk4MB %d Clk8MB %d\n",
+			XCONFIG_PROBED, vga256InfoRec.name,
+			MGABios2.ClkMem,MGABios2.Clk4MB,MGABios2.Clk8MB);
+#endif
 	  	/* Set default MCLK values (scaled by 100 kHz) */
 		if ( MGABios2.ClkMem == 0 )
 		    MGABios2.ClkMem = 50;
@@ -1071,12 +1080,10 @@ static void MGAInstallColormap(ColormapPtr pmap)
     int         i;
     int         shift;
 
-    ErrorF("MGAInstallColormap(%p)\n", pmap);
-
     /* Use cfb code to do the server side of things */
     cfbInstallColormap(pmap);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("MGAInstallColormap(%p) visual class %d\n", pmap, pmap->pVisual->class);
     ErrorF("\tColormapEntries %d\n",  pmap->pVisual->ColormapEntries);
     ErrorF("\tredMask 0x%x\toffsetRed %d\n",
@@ -1108,23 +1115,23 @@ static void MGAInstallColormap(ColormapPtr pmap)
       int g = ( (i *  pmap->pVisual->greenMask)/ maxEnt) & pmap->pVisual->greenMask;
       int b = ( (i *  pmap->pVisual->blueMask) / maxEnt) & pmap->pVisual->blueMask;
       ppix[i] = r | g | b ;
-#if DEBUG
+#ifdef DEBUG
       if ( i<8 || i>entries-8 || (i%8)==0 ) { /* keep the logfile manageable */
 	ErrorF("\tppix[%x] = %x = %x %x %x\n", i, ppix[i], r, g, b );
       }
-#endif /* DEBUG */
+#endif
     }
 
     QueryColors( pmap, entries, ppix, prgb);
 
-#if DEBUG
+#ifdef DEBUG
     ErrorF("After QueryColors, before shift\n");
     for (i = 0; i < entries; i++) {
       ErrorF("\tprgb[%x] = (%x %x %x)\n", i,
 	     prgb[i].red, prgb[i].green, prgb[i].blue );
       if ( i > 7 && i < pmap->pVisual->ColormapEntries-8 ) i+=7;
     }
-#endif /* DEBUG */
+#endif
       
     switch (MGAchipset) {
     case PCI_CHIP_MGA2064:
@@ -1139,8 +1146,6 @@ static void MGAInstallColormap(ColormapPtr pmap)
 
     DEALLOCATE_LOCAL(ppix);
     DEALLOCATE_LOCAL(prgb);
-
-    ErrorF("MGAInstallColormap done\n", pmap);
 }
 
 

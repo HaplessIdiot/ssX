@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.12 1997/08/26 10:01:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.13 1997/09/09 10:27:48 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -312,6 +312,8 @@ static
 TGUISetClock(no)
 	int no;
 {
+#define NTSC 14.31818
+#define PAL  17.73448
 	int powerup[4] = { 1,2,4,8 };
 	int clock_diff = 750;
 	int freq, ffreq;
@@ -319,9 +321,22 @@ TGUISetClock(no)
 	int p, q, r, s; 
 	int startn, endn;
 	int endm, endk;
+	float FREQUENCY;
 	unsigned char temp;
 
 	p = q = r = s = 0;
+
+	if ((TVGAchipset == TGUI96xx) && (revision == TGUI9685))
+	{
+		outb(vgaIOBase + 4, 0xCF);
+		temp = inb(vgaIOBase + 5);
+		if (temp & 0x08)
+			FREQUENCY = PAL;
+		else
+			FREQUENCY = NTSC;
+	} else {
+		FREQUENCY = NTSC;
+	}
 
 	if (NewClockCode)
 	{
@@ -351,7 +366,7 @@ TGUISetClock(no)
 	  for (n=startn;n<=endn;n++)
 	    for (m=1;m<=endm;m++)
 	    {
-		ffreq = ( ( ((n + 8) * 14.31818) / ((m + 2) * powerup[k]) ) * 1000);
+		ffreq = ( ( ((n + 8) * FREQUENCY) / ((m + 2) * powerup[k]) ) * 1000);
 		if ((ffreq > freq - clock_diff) && (ffreq < freq + clock_diff)) 
 		{
 /*
@@ -2023,7 +2038,7 @@ TVGA8900Init(mode)
 			if (NewClockCode) {
 				outb(vgaIOBase + 4, 0xCF);
 				new->ClockControl = inb(vgaIOBase + 5);
-				new->ClockControl &= 0xFE;
+				new->ClockControl |= 0x01;
 			}
 			outb(vgaIOBase + 4, 0x2F);
 			new->Performance = inb(vgaIOBase + 5) | 0x10;
@@ -2284,17 +2299,15 @@ TGUIPitchAdjust()
 
 	memory = ((pitch * vga256InfoRec.virtualY) / 1024) * vgaBitsPerPixel/8;
 
+	/* Disable acceleration if resolution requested is greater than
+	 * possible with accelerator enabled.
+	 */
 	if (memory > vga256InfoRec.videoRam)
 	{
-		TVGA8900EnterLeave(LEAVE);
-		FatalError("%s %s: Too Little VideoRam for Accelerator Engine\n"
-			   "%s %s: Required resolution with accelerator is %dx%d.\n"
-			   "%s %s: Reduce your Virtual X resolution to %d, or use Option \"noaccel\".\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-			XCONFIG_PROBED, vga256InfoRec.name,
-			pitch, vga256InfoRec.virtualY,
-			XCONFIG_PROBED, vga256InfoRec.name,
-			pitch/2);
+		ErrorF("%s %s: Disabling Engine due to lack of video memory.\n",
+			XCONFIG_PROBED, vga256InfoRec.name);
+		OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+		return X;
 	}
 
 	return pitch;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.6 1997/09/09 10:27:54 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -44,8 +44,8 @@
 extern unsigned char byte_reversed[256];
 extern unsigned int stipplemask[33];
 
-static __inline__ unsigned int reverse_bitorder(data) {
 #if defined(__GNUC__) && defined(__i386__)
+static __inline__ unsigned int reverse_bitorder(data) {
 #if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
 	__asm__(
 		"movl $0,%%ecx\n"
@@ -80,6 +80,7 @@ static __inline__ unsigned int reverse_bitorder(data) {
 		);
 #endif
 #else	/* If no (gcc on i386), don't use asm. */
+static unsigned int reverse_bitorder(data) {
 	data = byte_reversed[(data & 0xFF)] |
 		(byte_reversed[((data >> 8) & 0xFF)] << 8) |
 		(byte_reversed[((data >> 16) & 0xFF)] << 16) |

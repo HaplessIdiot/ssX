@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.5 1997/08/26 12:47:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.6 1997/09/09 10:27:40 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -258,17 +258,13 @@ int glintDisplayWidth;
 volatile pointer glintVideoMem = NULL;
 volatile pointer GLINTMMIOBase;
 
-/* ### test vga */
-volatile pointer PMIOBase0;
-
-/* volatile pointer RGLINTMMIOBase; */
 Bool AlreadyInited;
 int coprotype = -1;
 int glintLBBase;
 int glintLBvideoRam;
 int GLINTFrameBufferSize, GLINTLocalBufferSize;
 int GLINTWindowBase;
-extern unsigned char *glintVideoMemSave;
+extern unsigned char *glintVideoMemSavegr;
 int glintAdjustCursorXPos = 0;
 static glintCRTCRegRec glintCRTCRegs;
 extern int defaultColorVisualClass;
@@ -676,13 +672,10 @@ glintProbe()
 	  glintInfoRec.MemBase = pcrpglint->_base2;
   } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
     {
-      /* Glint IO */
       GLINTMMIOBase = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpdelta->_base0, 0x40000);
-      PMIOBase0     = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpglint->_base0, 0x20000);
-
       glintLBBase = 0; /* no local buffer on PerMedia cards */
       glintInfoRec.MemBase = pcrpglint->_base2;
-  }
+    }
   ErrorF("%s %s: Framebuffer address at 0x%x\n",XCONFIG_PROBED,
 		glintInfoRec.name, glintInfoRec.MemBase);
 
@@ -1069,7 +1062,7 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 
 	    if (ppix) {
 #if 1
-		ppix->devPrivate.ptr = (pointer)glintVideoMemSave;
+		ppix->devPrivate.ptr = (pointer)glintVideoMemSavegr;
 #else
 		(glintImageReadFunc)(0, 0, pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,

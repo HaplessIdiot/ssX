@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.4 1997/07/06 05:30:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.5 1997/09/09 10:27:41 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -41,8 +41,13 @@ typedef struct {
 } glintRegisters;
 static glintRegisters SR;
 
-/* if < 1MB then framebuffer is not correct !? */
-#define  VGASize 1024*1024
+/* if < graphicsmem then framebuffer is not correct !? */
+/* #define  VGASize glintInfoRec.videoRam*1024 */
+#define  VGASize glintInfoRec.virtualX*glintInfoRec.virtualY*glintInfoRec.bitsPerPixel/8
+
+#if DEBUG
+#define MEMDEBUG 1
+#endif
 
 unsigned char *glintVideoMemSave=NULL;
 unsigned char *glintVideoMemSavegr=NULL;
@@ -247,11 +252,6 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	FatalError("Can't handle pitch %d\n",crtcRegs->pitch);
     }
 
-    /* #ifdef STANDARTMODE */
-    /*   IBMRGB52x_Init_Stdmode(); */
-    /* #endif */
-
-
     if (coprotype == PCI_CHIP_3DLABS_500TX) {
 	GLINT_WRITE_REG(pprod | 0x600,	LBReadMode);
 	GLINT_WRITE_REG(0x01,		LBWriteMode);
@@ -419,10 +419,8 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 
     }
 
-    /*  test permedia */ 
     /* #ifdef STANDARTMODE */
     IBMRGB52x_Init_Stdmode(crtcRegs->clock_sel);
-  
     /* IBMRGBClockSelect(crtcRegs->clock_sel); */
   
     if (coprotype == PCI_CHIP_3DLABS_500TX) 
@@ -522,9 +520,11 @@ restoreGLINTstate(void)
 
 	    GLINT_WRITE_REG(SR.glintRegs[20], PMInterruptLine);
 
+	    /* restore ramdac */
 	    for (i=0; i<0x100; i++) 
 		glintOutIBMRGBIndReg(i, 0, SR.DacRegs[i]);
 
+	    /* restore colors */
 	    GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
 	    for (i=0; i<256; i++) {
 		GLINT_SLOW_WRITE_REG(oldlut[i].r,IBMRGB_RAMDAC_DATA);
@@ -532,18 +532,11 @@ restoreGLINTstate(void)
 		GLINT_SLOW_WRITE_REG(oldlut[i].b,IBMRGB_RAMDAC_DATA);
 	    }
 
+	    /* switch to VGA */
 	    GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
 	    usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
-	    ErrorF("Graphics mode off.\n");
 	    usData |= ((PERMEDIA_VGA_ENABLE | PERMEDIA_VGA_MEMORYACCESS) << 8) | PERMEDIA_VGA_CTRL_INDEX;
 	    GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
-	    ErrorF("EnableVGA Data: 0x%04x\n", usData);
-
-	    /* DAC to VGA */
-	    /*       glintOutIBMRGBIndReg(IBMRGB_misc1, 0x03, 0x03); */
-	    /*       glintOutIBMRGBIndReg(IBMRGB_misc1, 0x40, 0x40); */
-	    /*       glintOutIBMRGBIndReg(IBMRGB_pix_fmt, 0xf8, 4); */
-	    /*       glintOutIBMRGBIndReg(IBMRGB_misc2, 0x01, 0x00); */
 	}
 }
 
@@ -556,23 +549,26 @@ glintCleanUp(void)
     if (!glintInitialized)
 	return;
   
+#if 0
     if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
-	    /* save for X-Console */
-	    ErrorF("Save Gr-Videomem.\n");
-	    /*       xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem,  */
-	    /* 		 glintInfoRec.virtualX * glintInfoRec.virtualY * */
-	    /* 		 glintInfoRec.bitsPerPixel / 8); */
-	    xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem, VGASize);
-	}
+#endif
+      /* save for X-Console */
+      xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem,
+		 glintInfoRec.virtualX * glintInfoRec.virtualY *
+		 glintInfoRec.bitsPerPixel / 8);
 
-    if (glintVideoMemSave && glintVideoMem)
-	{
-	    ErrorF("Restore VGA-Videomem.\n");
-	    xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSave, VGASize);
-	}
+#if MEMDEBUG
+    ErrorF("CleanUp: saving 0x%x bytes GRAPHICS mem\n",
+		 glintInfoRec.virtualX * glintInfoRec.virtualY *
+		 glintInfoRec.bitsPerPixel / 8);
+#endif
+    if (glintVideoMemSave && glintVideoMem) {
+      xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSave, VGASize);
+#if MEMDEBUG
+      ErrorF("CleanUp: restoring 0x%x bytes saved memory\n",VGASize);
+#endif
+    }
 
-    ErrorF("restoreGLINTstate().\n");
     restoreGLINTstate();
 }
 
@@ -608,38 +604,42 @@ glintInit(DisplayModePtr mode)
 
 
     if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-	{
-	    GLINT_WRITE_REG(0x01,       FIFODis); 
-	    GLINT_WRITE_REG(0x00,       Aperture0);
-	    GLINT_WRITE_REG(0x00,       Aperture1);
-	    GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
-	    GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
+    {
+	GLINT_WRITE_REG(0x01,       FIFODis); 
+	GLINT_WRITE_REG(0x00,       Aperture0);
+	GLINT_WRITE_REG(0x00,       Aperture1);
+	GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
+	GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
 
-	    ErrorF("Save VGA-Videomem.\n");
-	    xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, VGASize);
 
-	    /* switch to graphics Mode */
-	    GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
-	    usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
-	    ErrorF("VGA Data: 0x%04x -> 0x%08x\n", usData, PERMEDIA_MMVGA_DATA_REG);
-	    ErrorF("Graphics mode on.\n");
-	    usData &= ~PERMEDIA_VGA_ENABLE;
-	    usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
-	    ErrorF("DisableVGA Data: 0x%04x\n", usData);
-	    GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
-	}
+	/* switch to graphics Mode */
+	GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
+	usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
+	usData &= ~PERMEDIA_VGA_ENABLE;
+	usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
+	GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
+    }
 
-    /* is 0 or graphic */
-    /*   xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSavegr, */
-    /* 	     glintInfoRec.virtualX * glintInfoRec.virtualY * */
-    /* 	     glintInfoRec.bitsPerPixel / 8); */
+    xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, VGASize);
+#if MEMDEBUG
+    ErrorF("Init : vX 0x%x vY 0x%x bpp %d\n",glintInfoRec.virtualX,
+                                             glintInfoRec.virtualY,
+				             glintInfoRec.bitsPerPixel);
+    ErrorF("Init: saving 0x%x bytes VT mem\n",VGASize);
+#endif
+
     if (!glintInitialized)
-	{
-	    xf86memset((unsigned char *)glintVideoMem, 0, glintInfoRec.virtualX * 
-		       glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
-	}
+      xf86memset((unsigned char *)glintVideoMem, 0, glintInfoRec.virtualX *
+ 		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
     else
-	xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSavegr, VGASize);
+      xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSavegr,
+		 glintInfoRec.virtualX * glintInfoRec.virtualY *
+		 glintInfoRec.bitsPerPixel / 8);
+#if MEMDEBUG
+    ErrorF("Init: setting/restoring 0x%x bytes GRAPHICS mem\n",
+    		glintInfoRec.virtualX *
+		glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
+#endif
 
     /*
      * for some reason, the server cannot access the framebuffer
@@ -748,8 +748,6 @@ glintInitAperture(int screen_idx)
 	{
 	    if (!glintInitialized)
 		{
-		    ErrorF("Save State.\n");
-
 		    SR.glintRegs[0]  = GLINT_READ_REG(Aperture0);
 		    SR.glintRegs[1]  = GLINT_READ_REG(Aperture1);
 		    SR.glintRegs[2]  = GLINT_READ_REG(PMFramebufferWriteMask);
@@ -776,22 +774,21 @@ glintInitAperture(int screen_idx)
 	}
 
     if (!glintVideoMemSave) {
-	/*  for VGA */
-	glintVideoMemSave = (unsigned char *)xalloc(VGASize);
-	/* for graphics */
-	/*     glintVideoMemSavegr = (unsigned char *)xalloc(glintInfoRec.virtualX* */
-	/* 						glintInfoRec.virtualY* */
-	/* 						glintInfoRec.bitsPerPixel/8); */
-	glintVideoMemSavegr = (unsigned char *)xalloc(VGASize);
-
-	if (!glintVideoMemSave || !glintVideoMemSavegr)
-	    FatalError("Unable to allocate save/restore buffer for %d "
-		       "bytes, aborting.....\n");
-
-	/*     xf86memset(glintVideoMemSavegr, 0, glintInfoRec.virtualX *  */
-	/* 	       glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8); */
-	xf86memset(glintVideoMemSavegr, 0, VGASize);
-	xf86memset(glintVideoMemSave, 0, VGASize);
+      /*  for VGA */
+      glintVideoMemSave = (unsigned char *)xalloc(VGASize);
+      
+      /* for graphics */
+      glintVideoMemSavegr = (unsigned char *)xalloc(glintInfoRec.virtualX*
+						    glintInfoRec.virtualY*
+						    glintInfoRec.bitsPerPixel/8);
+      
+      if (!glintVideoMemSave || !glintVideoMemSavegr)
+	FatalError("Unable to allocate save/restore buffer for %d "
+		   "bytes, aborting.....\n");
+      
+      xf86memset(glintVideoMemSavegr, 0, glintInfoRec.virtualX * 
+		 glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
+      xf86memset(glintVideoMemSave, 0, VGASize);
     }
 
 #ifdef XFreeXDGA

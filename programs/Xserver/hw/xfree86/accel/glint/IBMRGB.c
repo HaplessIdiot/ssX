@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.1 1997/06/17 08:17:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/IBMRGB.c,v 1.2 1997/09/09 10:27:39 hohndel Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -483,11 +483,13 @@ int IBMRGB52x_Init_Stdmode(int clock)
 	glintOutIBMRGBIndReg(IBMRGB_misc2, 0, COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL);
     }
 
+#if 0
     /* Byteswap for True Color */
     if (glintDoubleBufferMode)
 	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0x81);
     else
 	glintOutIBMRGBIndReg(IBMRGB_misc3, 0, 0x80);
+#endif
 
 
     /*    if (mode->Flags & V_DBLCLK) */
