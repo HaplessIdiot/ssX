@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.3 1999/04/25 10:02:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.5 1999/11/19 13:54:47 hohndel Exp $ */
 /*
  * includes
  */
@@ -355,7 +355,7 @@ void v_loadcursor(ScrnInfoPtr pScreenInfo, vu8 size, vu8 *cursorimage)
 			  (c&1)?(*(src-2)):(*(src+2)));
 
     }
-#if 1
+#if DEBUG
     /* Following line added for the byte-swap fix */
     v_out8(pRendition->board.io_base + MEMENDIAN, memend);
 #endif

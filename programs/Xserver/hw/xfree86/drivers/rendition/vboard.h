@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.2 1999/04/17 07:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.h,v 1.3 1999/10/13 04:21:22 dawes Exp $ */
 /*
  * vboard.h
  *
@@ -24,6 +24,7 @@ int v_initboard(ScrnInfoPtr pScreenInfo);
 int v_resetboard(ScrnInfoPtr pScreenInfo);
 int v_getmemorysize(ScrnInfoPtr pScreenInfo);
 
+void v_check_csucode(ScrnInfoPtr pScreenInfo);
 
 
 #endif /* __VBOARD_H__ */

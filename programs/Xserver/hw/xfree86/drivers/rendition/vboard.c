@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.6 1999/11/19 13:54:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.7 1999/11/26 03:26:01 dawes Exp $ */
 /*
  * includes
  */
@@ -17,11 +17,6 @@
 
 #include "cscode.h"
 
-/* Global imported during compile-time */
-char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
-
-
-
 /*
  * local function prototypes
  */
@@ -37,36 +32,55 @@ int v_initboard(ScrnInfoPtr pScreenInfo)
   vu16 iob=pRendition->board.io_base;
   vu8 *vmb;
   vu32 offset;
-  int c;
-
+  vu8 memendian;
+  int c,pc;
+  
   /* write "monitor" program to memory */
   v1k_stop(pScreenInfo);
   pRendition->board.csucode_base=0x800;
+  memendian=v_in8(iob+MEMENDIAN);
   v_out8(iob+MEMENDIAN, MEMENDIAN_NO);
-
+ 
   /* Note that CS ucode must wait on address in csucode_base
    * when initialized for later context switch code to work. */
+
+  ErrorF("Loading csucode @ 0x%x + 0x800\n", pRendition->board.vmem_base);
   vmb=pRendition->board.vmem_base;
   offset=pRendition->board.csucode_base;
   for (c=0; c<sizeof(csrisc)/sizeof(vu32); c++, offset+=sizeof(vu32))
     v_write_memory32(vmb, offset, csrisc[c]);
 
-  if (V1000_DEVICE == pRendition->board.chip){
-    c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
-  }
-  else {
-    /* V2x00 chip */
-    c=v_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
-  }
+  /* Initialize the CS flip semaphore */
+  v_write_memory32(vmb, 0x7f8, 0);
+  v_write_memory32(vmb, 0x7fc, 0);
 
-  if (c == -1) {
-    ErrorF( "RENDITION: Microcode loading failed !!!\n");
-    return 1;
+  /* Run the code we just transfered to the boards memory */
+  /* ... and start accelerator */
+  v1k_flushicache(pScreenInfo);
+
+  v_out8(iob + STATEINDEX, STATEINDEX_PC);
+  pc = v_in32(iob + STATEDATA);
+  v1k_start(pScreenInfo, pRendition->board.csucode_base);
+
+  /* Get on loading the ucode */
+  v_out8(iob + STATEINDEX, STATEINDEX_PC);
+
+  for (c = 0; c < 0xffffffL; c++){
+    v1k_stop(pScreenInfo);
+    pc = v_in32(iob + STATEDATA);
+    v1k_continue(pScreenInfo);
+    if (pc == pRendition->board.csucode_base)
+      break;
   }
+  if (pc != pRendition->board.csucode_base){
+    ErrorF ("RENDITION: V_INITBOARD -- PC != CSUCODEBASE\n");
+    ErrorF ("RENDITION: PC == 0x%x   --  CSU == 0x%x\n",pc,pRendition->board.csucode_base);
+  }
+  
+  /* reset memory endian */
+  v_out8(iob+MEMENDIAN, memendian);
 
-  pRendition->board.ucode_entry=c;
-
-  ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry);
+  /* upload the u-code here */
 
   /* Everything's OK */
   return 0;
@@ -155,6 +169,44 @@ int v_getmemorysize(ScrnInfoPtr pScreenInfo)
 #undef ONEMEG
 }
 
+void
+v_check_csucode(ScrnInfoPtr pScreenInfo)
+{
+  renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
+  vu16 iob=pRendition->board.io_base;
+  vu8 *vmb;
+  vu32 offset;
+  int c;
+  int memend;
+  int mismatches=0;
+
+  memend=v_in8(iob+MEMENDIAN);
+  v_out8(iob+MEMENDIAN, MEMENDIAN_NO);
+
+  ErrorF("Checking presence of csucode @ 0x%x + 0x800\n",
+	 pRendition->board.vmem_base);
+
+  if (0x800 != pRendition->board.csucode_base)
+    ErrorF("pRendition->board.csucode_base == 0x%x\n",
+	   pRendition->board.csucode_base);
+
+  /* compare word by word */
+  vmb=pRendition->board.vmem_base;
+  offset=pRendition->board.csucode_base;
+  for (c=0; c<sizeof(csrisc)/sizeof(vu32); c++, offset+=sizeof(vu32))
+    if (csrisc[c] != v_read_memory32(vmb, offset)) {
+      ErrorF("csucode mismatch in word %02d: 0x%08x should be 0x%08x\n",
+	     c,
+	     v_read_memory32(vmb, offset),
+	     csrisc[c]);
+      mismatches++;
+    }
+  ErrorF("Encountered %d out of %d possible mismatches\n",
+	 mismatches,
+	 sizeof(csrisc)/sizeof(vu32));
+
+  v_out8(iob+MEMENDIAN, memend);
+}
 
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.h,v 1.2 1999/10/14 04:43:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.h,v 1.3 1999/12/13 02:13:13 robin Exp $ */
 
 #ifndef __RENDITION_H__
 #define __RENDITION_H__
@@ -77,7 +77,7 @@
 
 /* DDC support */
 #include "xf86DDC.h"
-
+#include "commonregs.h"
 
 /* end of __RENDITION_H__ */
 #endif
