@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.7 1997/10/26 13:25:29 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.8 1998/10/04 09:41:27 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -553,18 +553,26 @@ Bool		report;
 
 static Bool
 #if NeedFunctionPrototypes
-AddKeySymbols(SymbolsInfo *info,KeyInfo *key)
+AddKeySymbols(SymbolsInfo *info,KeyInfo *key,XkbDescPtr xkb)
 #else
 AddKeySymbols(info,key)
     SymbolsInfo *	  info;
     KeyInfo *		  key;
+    XkbDescPtr		xkb;
 #endif
 {
 register int i;
+unsigned long real_name;
 
     for (i=0;i<info->nKeys;i++) {
 	if (info->keys[i].name==key->name)
 	    return MergeKeys(info,&info->keys[i],key);
+    }
+    if(FindKeyNameForAlias(xkb, key->name, &real_name)) {
+        for (i=0;i<info->nKeys;i++) {
+	    if (info->keys[i].name==real_name)
+	        return MergeKeys(info,&info->keys[i],key);
+        }
     }
     if (info->nKeys>=info->szKeys) {
 	info->szKeys+= SYMBOLS_CHUNK;
@@ -651,12 +659,14 @@ Bool		clobber;
 
 static void
 #if NeedFunctionPrototypes
-MergeIncludedSymbols(SymbolsInfo *into,SymbolsInfo *from,unsigned merge)
+MergeIncludedSymbols(SymbolsInfo *into,SymbolsInfo *from,
+                     unsigned merge,XkbDescPtr xkb)
 #else
-MergeIncludedSymbols(into,from,merge)
+MergeIncludedSymbols(into,from,merge,xkb)
     SymbolsInfo *	into;
     SymbolsInfo *	from;
     unsigned		merge;
+    XkbDescPtr		xkb;
 #endif
 {
 register int 	i;
@@ -679,7 +689,7 @@ KeyInfo *	key;
     for (i=0,key=from->keys;i<from->nKeys;i++,key++) {
 	if (merge!=MergeDefault)
 	    key->defs.merge= merge;
-	if (!AddKeySymbols(into,key))
+	if (!AddKeySymbols(into,key,xkb))
 	    into->errorCount++;
     }
     if (from->modMap!=NULL) {
@@ -757,7 +767,7 @@ Bool		haveSelf;
 	for (next=stmt->next;next!=NULL;next=next->next) {
 	    if ((next->file==NULL)&&(next->map==NULL)) {
 		haveSelf= True;
-		MergeIncludedSymbols(&included,info,next->merge);
+		MergeIncludedSymbols(&included,info,next->merge,xkb);
 		FreeSymbolsInfo(info);
 	    }
 	    else if (ProcessIncludeFile(next,XkmSymbolsIndex,&rtrn,&op)) {
@@ -765,7 +775,7 @@ Bool		haveSelf;
 		next_incl.fileID= next_incl.dflt.defs.fileID= rtrn->id;
 		next_incl.merge= next_incl.dflt.defs.merge= MergeOverride;
 		(*hndlr)(rtrn,xkb,MergeOverride,&next_incl);
-		MergeIncludedSymbols(&included,&next_incl,op);
+		MergeIncludedSymbols(&included,&next_incl,op,xkb);
 		FreeSymbolsInfo(&next_incl);
 	    }
 	    else {
@@ -777,7 +787,7 @@ Bool		haveSelf;
     if (haveSelf)
 	*info= included;
     else {
-	MergeIncludedSymbols(info,&included,newMerge);
+	MergeIncludedSymbols(info,&included,newMerge,xkb);
 	FreeSymbolsInfo(&included);
     }
     return (info->errorCount==0);
@@ -1442,7 +1452,7 @@ KeyInfo			key;
 	return False;
     }
 
-    if (!AddKeySymbols(info,&key)) {
+    if (!AddKeySymbols(info,&key,xkb)) {
 	info->errorCount++;
 	return False;
     }
@@ -1513,7 +1523,7 @@ HandleSymbolsFile(file,xkb,merge,info)
 {
 ParseCommon	*stmt;
 
-    info->name= file->name;
+    info->name= uStringDup(file->name);
     stmt= file->defs;
     while (stmt) {
 	switch (stmt->stmtType) {
