@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.45 2001/10/28 03:34:00 tsi Exp $ */
+/* $XFree86: bsd_video.c,v 3.46 2002/02/21 03:08:48 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -201,6 +201,10 @@ static void unmapVidMemSparse(int, pointer, unsigned long);
 static pointer ppcMapVidMem(int, unsigned long, unsigned long);
 static void ppcUnmapVidMem(int, pointer, unsigned long);
 #endif
+#ifdef __sparc64__
+static pointer sparc64MapVidMem(int, unsigned long, unsigned long);
+static void sparc64UnmapVidMem(int, pointer, unsigned long);
+#endif
 #ifdef HAS_MTRR_SUPPORT
 static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
 static void undoWC(int, pointer);
@@ -213,7 +217,7 @@ static void NetBSDundoWC(int, pointer);
 #endif
 
 
-#if !defined(__powerpc__)
+#if !defined(__powerpc__) && !defined(__sparc64__)
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
  * "warn" is TRUE.
@@ -308,7 +312,7 @@ checkDevMem(Bool warn)
 void
 xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 {
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__sparc64__)
 	pVidMem->linearSupported = TRUE;
 #else
 	checkDevMem(TRUE);
@@ -335,6 +339,9 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 #elif defined(__powerpc__)
 	pVidMem->mapMem = ppcMapVidMem;
 	pVidMem->unmapMem = ppcUnmapVidMem;
+#elif defined(__sparc64__)
+	pVidMem->mapMem = sparc64MapVidMem;
+	pVidMem->unmapMem = sparc64UnmapVidMem;
 #else
 	pVidMem->mapMem = mapVidMem;
 	pVidMem->unmapMem = unmapVidMem;
@@ -355,7 +362,7 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 	pVidMem->initialised = TRUE;
 }
 
-#if !defined(__powerpc__)
+#if !defined(__powerpc__) && !defined(__sparc64__)
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
@@ -672,12 +679,14 @@ int
 xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	     int Len)
 {
+#if 0
 	int rv;
 	int kmem;
 
- 	kmem = open("/dev/kmem", 2);
+ 	kmem = open("/dev/mem", 2);
  	if (kmem == -1) {
- 		FatalError("xf86ReadBIOS: open /dev/kmem\n");
+		ErrorF("errno: %d\n", errno);
+ 		FatalError("xf86ReadBIOS: open /dev/mem\n");
  	}
 
 #ifdef DEBUG
@@ -686,6 +695,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 
 	if (Base < 0x80000000) {
 		fprintf(stderr, "No VGA\n");
+		close(kmem);
 		return 0;
 	}
 
@@ -695,10 +705,47 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	close(kmem);
 
 	return rv;
+#else
+	return -1;
+#endif
 }
 
-
 #endif /* __powerpc__ */
+
+#ifdef __sparc64__
+
+volatile unsigned char *ioBase = MAP_FAILED;
+
+static pointer
+sparc64MapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+{
+	int fd = xf86Info.screenFd;
+	pointer base;
+
+	fprintf(stderr, "mapVidMem %lx, %lx, fd = %d\n", Base, Size, fd);
+
+	base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, Base);
+	if (base == MAP_FAILED)
+		FatalError("%s: could not mmap screen [s=%x,a=%x] (%s)\n",
+			   "xf86MapVidMem", Size, Base, strerror(errno));
+
+	return base;
+}
+
+static void
+sparc64UnmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+{
+	munmap(Base, Size);
+}
+
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
+{
+	return (0);
+}
+
+#endif
 
 #ifdef USE_I386_IOPL
 /***************************************************************************/
@@ -842,7 +889,7 @@ xf86DisableInterrupts()
 {
 
 #if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__) && \
-    !defined(__powerpc__)
+    !defined(__powerpc__) && !defined(__sparc__)
 #ifdef __GNUC__
 	__asm__ __volatile__("cli");
 #else 
@@ -858,7 +905,7 @@ xf86EnableInterrupts()
 {
 
 #if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__) && \
-    !defined(__powerpc__)
+    !defined(__powerpc__) && !defined(__sparc__)
 #ifdef __GNUC__
 	__asm__ __volatile__("sti");
 #else 
