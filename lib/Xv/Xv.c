@@ -910,12 +910,10 @@ int XvPutImage (
    unsigned int dest_h
 ){
   xvPutImageReq *req;
+  int len;
 
   PREAMBLE(XvBadExtension);
 
-  if(image->data_size > (dpy->max_request_size << 2)) /* FixMe */
-	return BadAlloc;
-  
   FlushGC(dpy, gc);
 
   XvGetReq(PutImage, req);
@@ -934,13 +932,15 @@ int XvPutImage (
   req->drw_h = dest_h;
   req->width = image->width;
   req->height = image->height;
-  req->length += (image->data_size + 3) >> 2;
+
+  len = (image->data_size + 3) >> 2;
+  SetReqLen(req, len, len);
 
   /* Yes it's kindof lame that we are sending the whole thing,
      but for video all of it may be needed even if displaying
      only a subsection, and I don't want to go through the 
      trouble of creating subregions to send */
-  _XSend(dpy, (char *)image->data, image->data_size);
+  Data(dpy, (char *)image->data, image->data_size);
 
   POSTAMBLE;
 
