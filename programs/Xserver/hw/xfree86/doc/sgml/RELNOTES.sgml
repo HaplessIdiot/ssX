@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>31 August 1999
+<date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.22 2000/01/20 21:46:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.23 2000/01/24 19:38:28 dawes Exp $
 </ident>
 
 <abstract>
@@ -29,6 +29,24 @@ listed here.  For detailed information, refer to the <tt>CHANGELOG</tt>
 file in the <tt>xc/programs/Xserver/hw/xfree86</tt> directory in the
 source tree.  The sections that follow this one have details of features
 that are new to the pre-4.0 snapshot series.
+
+<itemize>
+  <item>The NVIDIA (nv) driver now uses MMIO for VGA port access and has
+	DDC support.
+
+  <item>The 8+24 support used by the Matrox (mga) and 3Dlabs (glint)
+	drivers is now a non-destructive overlay.
+
+  <item>The Xinerama extension has been completely rewritten for improved
+	performance and correctness.
+
+  <item>The server can now load/initialise extension modules that it
+	doesn't have built-in knowledge of.
+
+</itemize>
+
+<sect>Summary of new features in 3.9.17 compared with 3.9.16.
+<p>
 
 <itemize>
   <item>The 3dfx driver is now supported by the DRI.
