@@ -725,6 +725,8 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
+    start = end = radix = 0; result = NIL;	/* fix gcc warning */
+
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
@@ -886,10 +888,12 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
+    start = end = 0;	/* fix gcc warning */
+
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
-    string = STRPTR(ostring);
+    string = (char*)STRPTR(ostring);
     length = strlen(string);
 
     if (ostart == NIL)
@@ -922,7 +926,7 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 	string[length] = '\0';
     }
 
-    stream = STRINGSTREAM(string, STREAM_READ);
+    stream = STRINGSTREAM((unsigned char*)string, STREAM_READ);
     if (string != STRPTR(ostring))
 	LispFree(mac, string);
     LispPushInput(mac, stream);

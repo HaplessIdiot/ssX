@@ -1423,7 +1423,7 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
 	string.output = 0;
 	first = 0;
     }
-    string.string = builtin->declaration;
+    string.string = (unsigned char*)builtin->declaration;
     string.length = strlen(builtin->declaration);
     string.input = 0;
 
@@ -2055,14 +2055,14 @@ LispNewStringStream(LispMac *mac, unsigned char *string, int flags)
 
     stream->type = LispStream_t;
     SSTREAMP(stream) = LispCalloc(mac, 1, sizeof(LispString));
-    SSTREAMP(stream)->string = LispStrdup(mac, string);
-    SSTREAMP(stream)->length = strlen(string);
+    SSTREAMP(stream)->string = (unsigned char*)LispStrdup(mac, (char*)string);
+    SSTREAMP(stream)->length = strlen((char*)string);
     LispMused(mac, SSTREAMP(stream));
     LispMused(mac, SSTREAMP(stream)->string);
     stream->data.stream.type = LispStreamString;
     stream->data.stream.readable = (flags & STREAM_READ) != 0;
     stream->data.stream.writable = (flags & STREAM_WRITE) != 0;
-    SSTREAMP(stream)->space = strlen(string) + 1;
+    SSTREAMP(stream)->space = SSTREAMP(stream)->length + 1;
 
     stream->data.stream.pathname = NIL;
 
@@ -3914,7 +3914,7 @@ LispPrintf(LispMac *mac, LispObj *stream, char *fmt, ...)
     n = vsnprintf((char*)stk, size, fmt, ap);
     if (n < 0 || n >= size) {
 	while (1) {
-	    char *tmp;
+	    unsigned char *tmp;
 
 	    va_end(ap);
 	    if (n > size)
@@ -4399,10 +4399,12 @@ LispExecute(LispMac *mac, char *str)
     static int first = 1;
 
     int eof = mac->eof, running = mac->running, length = mac->protect.length;
-    LispObj *result = NIL, *obj;
+    LispObj *result, *obj, **presult = &result;
 
     if (str == NULL || *str == '\0')
 	return (NIL);
+
+    *presult = NIL;
 
     if (length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
@@ -4418,7 +4420,7 @@ LispExecute(LispMac *mac, char *str)
 	string.output = 0;
 	first = 0;
     }
-    string.string = str;
+    string.string = (unsigned char*)str;
     string.length = strlen(str);
     string.input = 0;
 

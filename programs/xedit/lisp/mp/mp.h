@@ -107,9 +107,9 @@
  * Types
  */
 typedef struct _mpi {
+    unsigned int size : 31;
+    unsigned int sign : 1;
     BNI alloc;
-    BNI size : 31;
-    BNI sign : 1;
     BNS *digs;		/* LSF format */
 } mpi;
 
@@ -342,10 +342,10 @@ void mpr_clear(mpr *op);
 	/* set rop to the value of op */
 void mpr_set(mpr *rop, mpr *op);
 
-	/* set rop to the value of si */
+	/* set rop to num/den */
 void mpr_seti(mpr *rop, long num, long den);
 
-	/* set rop to the d */
+	/* set rop to the value of d */
 void mpr_setd(mpr *rop, double d);
 
 	/* initialize rop to number representation in str in the given base.

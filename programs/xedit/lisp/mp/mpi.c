@@ -566,6 +566,8 @@ mpi_divqr(mpi *qrop, mpi *rrop, mpi *num, mpi *den)
 	    rdigs = rrop->digs;
 	}
     }
+    else
+	rdigs = NULL;	/* fix gcc warning */
 
     /* special case, only one word in divisor */
     if (dpos == 0) {

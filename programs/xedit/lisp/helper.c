@@ -246,8 +246,9 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 {
     int length = mac->protect.length;
     long count = 0, end;
-    LispObj *symbol, *value = NIL, *result = NIL, *init, *body,
-	    *ocod, *object;
+    LispObj *symbol, *value = NIL, *result = NIL, *init, *body, *object;
+
+    end = 0;	/* fix gcc warning */
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
@@ -470,6 +471,8 @@ LispGetStringArgs(LispMac *mac, LispBuiltin *builtin,
     ostart1 = ARGUMENT(2);
     ostring2 = ARGUMENT(1);
     ostring1 = ARGUMENT(0);
+
+    length1 = length2 = 0;	/* fix gcc warning */
 
     if (!STRING_P(ostring1) && !SYMBOL_P(ostring1))
 	LispDestroy(mac, "%s: %s is not a string",

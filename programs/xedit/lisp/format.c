@@ -74,7 +74,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     arg = arguments;
 
     if (stream == NIL)
-	stream = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
+	stream = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
     else if (stream == T)
 	stream = NIL;
     else if (!STREAM_P(stream))
@@ -545,7 +545,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    /* format the data in a temporary stream */
 		    GCProtect();
-		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
+		    obj = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
 		    stk[len++] = '(';
 		    if (atsign)
 			stk[len++] = '@';
@@ -952,7 +952,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 		    if (argc > 4 || (padidx != -1 && padidx != 3))
 			LispDestroy(mac, BadArgument, STRFUN(builtin));
 		    GCProtect();
-		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
+		    obj = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
 		    stream = obj;
 		    ilist = CONS(CONS(STRING(stk), obj), ilist);
 		    alist = CONS(CONS(NIL, CONS(obj, NIL)), alist);
@@ -995,7 +995,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 				INTEGER(dtmp);
 			}
 		    }
-		    obj = STRINGSTREAM("", STREAM_READ | STREAM_WRITE);
+		    obj = STRINGSTREAM((unsigned char*)"", STREAM_READ | STREAM_WRITE);
 		    CDR(CAR(alist)) = CONS(obj, CDR(CAR(alist)));
 		    stream = CDR(CAR(ilist)) = obj;
 		    GCUProtect();

@@ -1,6 +1,6 @@
 $XFree86$
 
-LAST UPDATED:	$Date: 2002/01/30 21:00:56 $
+LAST UPDATED:	$Date: 2002/01/31 04:33:27 $
 
   Small todo list
 
@@ -78,3 +78,15 @@ o Write some type of "hyperlinks", this is the only feature missing to even
   allow writting a web browser inside xedit.
 o Write some "demos" (maybe a file manager or a simple mail reader) using the
   Xt/Xaw bindings (needs modules working in all systems).
+o Remove all calls to the macros GCProtect and GCUProtect. Create some
+  function/macro facility to protect temporary results form GC. The current
+  way is too much hard to do, i.e.:
+	int protect = mac->protect.length;
+	while (protect + <number-of-variables-required> <= mac->protect.space)
+	    LispMoreProtects(mac);
+	...
+	mac->protect.objects[mac->protect.length++] = <object-to-protect>;
+	...
+	mac->protect.objects[mac->protect.length++] = <other-object-to-protect>;
+	...
+	mac->protect.length = protect;

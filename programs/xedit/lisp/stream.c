@@ -715,6 +715,8 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
 
+    start = end = 0;	/* fix gcc warning */
+
     if (!STRING_P(ostring))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(ostring));
@@ -751,7 +753,7 @@ Lisp_MakeStringInputStream(LispMac *mac, LispBuiltin *builtin)
 	string[length] = '\0';
     }
 
-    result = STRINGSTREAM(string, STREAM_READ);
+    result = STRINGSTREAM((unsigned char*)string, STREAM_READ);
 
     if (string != STRPTR(ostring))
 	LispFree(mac, string);
@@ -782,7 +784,7 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 			STRFUN(builtin), STROBJ(element_type));
     }
 
-    return (STRINGSTREAM("", STREAM_WRITE));
+    return (STRINGSTREAM((unsigned char*)"", STREAM_WRITE));
 }
 
 LispObj *
@@ -802,7 +804,7 @@ Lisp_GetOutputStreamString(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not an output string stream",
 		    STRFUN(builtin), STROBJ(string_output_stream));
 
-    result = STRING(SSTREAMP(string_output_stream)->string);
+    result = STRING((char*)SSTREAMP(string_output_stream)->string);
 
     /* reset string */
     SSTREAMP(string_output_stream)->string[0] = '\0';

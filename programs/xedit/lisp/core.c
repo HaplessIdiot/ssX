@@ -69,6 +69,7 @@ Lisp_Append(LispMac *mac, LispBuiltin *builtin)
     lists = ARGUMENT(0);
 
     GCProtect();
+    cons = NIL;		/* fix gcc warning */
     result = NIL;
     for (; CONS_P(lists); lists = CDR(lists)) {
 	list = CAR(lists);
@@ -309,6 +310,8 @@ Lisp_Butlast(LispMac *mac, LispBuiltin *builtin)
     long length, count;
     LispObj *result, *cons, *list, *ocount, *olength;
 
+    cons = NIL;		/* fix gcc warning */
+
     olength = ARGUMENT(2);
     ocount = ARGUMENT(1);
     list = ARGUMENT(0);
@@ -357,9 +360,11 @@ Lisp_Car(LispMac *mac, LispBuiltin *builtin)
 
     if (list == NIL)
 	result = NIL;
-    else if (!CONS_P(list))
+    else if (!CONS_P(list)) {
 	LispDestroy(mac, "%s: %s is not a list",
 		    STRFUN(builtin), STROBJ(list));
+	result = NIL;		/* fix gcc warning */
+    }
     else
 	result = CAR(list);
 
@@ -432,12 +437,13 @@ Lisp_Catch(LispMac *mac, LispBuiltin *builtin)
     LispObj *res, **pres = &res;
     LispBlock *block;
 
-    LispObj *tag, *body;
+    LispObj *tag, *body, **pbody = &body;
 
     body = ARGUMENT(1);
     tag = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
+    *pbody = NIL;	/* fix gcc warning */
     *pres = NIL;
     *pdid_jump = 1;
     block = LispBeginBlock(mac, tag, LispBlockCatch);
@@ -603,9 +609,11 @@ Lisp_Cdr(LispMac *mac, LispBuiltin *builtin)
 
     if (list == NIL)
 	result = NIL;
-    else if (!CONS_P(list))
+    else if (!CONS_P(list)) {
 	LispDestroy(mac, "%s: %s is not a list",
 		    STRFUN(builtin), STROBJ(list));
+	result = NIL;		/* fix gcc warning */
+    }
     else
 	result = CDR(list);
 
@@ -867,9 +875,11 @@ Lisp_Documentation(LispMac *mac, LispBuiltin *builtin)
 	    doc_type = LispDocType;
 	else if (atom == mac->setf_atom)
 	    doc_type = LispDocSetf;
-	else
+	else {
 	    LispDestroy(mac, "%s: unknown documentation type %s",
 			STRFUN(builtin), STROBJ(type));
+	    doc_type = 0;		/* fix gcc warning */
+	}
 
 	return (LispGetDocumentation(mac, symbol, doc_type));
     }
@@ -1358,6 +1368,8 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
     init = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
+    cons = NIL;	/* fix gcc warning */
+
     if (init != NIL && !CONS_P(init))
 	LispDestroy(mac, "%s: %s is not a list",
 		    STRFUN(builtin), STROBJ(init));
@@ -1365,6 +1377,8 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
     list = NIL;
     for (; CONS_P(init); init = CDR(init)) {
 	LispObj *var, *val;
+
+	var = val = NIL;	/* fix gcc warning */
 
 	pair = CAR(init);
 	if (SYMBOL_P(pair)) {
@@ -1443,6 +1457,8 @@ Lisp_LetP(LispMac *mac, LispBuiltin *builtin)
 
     for (; CONS_P(init); init = CDR(init)) {
 	LispObj *var, *val;
+
+	var = val = NIL;	/* fix gcc warning */
 
 	pair = CAR(init);
 	if (SYMBOL_P(pair)) {
@@ -1581,6 +1597,8 @@ Lisp_MakeArray(LispMac *mac, LispBuiltin *builtin)
     LispObj *dimensions, *element_type, *initial_element, *initial_contents,
 	    *adjustable, *fill_pointer, *displaced_to,
 	    *displaced_index_offset;
+
+    dim = array = NIL; type = LispNil_t;	/* fix gcc warning */
 
     displaced_index_offset = ARGUMENT(7);
     displaced_to = ARGUMENT(6);
@@ -2329,6 +2347,8 @@ Lisp_Progv(LispMac *mac, LispBuiltin *builtin)
     symbols = ARGUMENT(0);
     MACRO_ARGUMENT3();
 
+    res = NIL;	/* fix gcc warning */
+
     length = mac->protect.length;
     if (mac->protect.length + 3 >= mac->protect.space)
 	LispMoreProtects(mac);
@@ -2459,6 +2479,8 @@ Lisp_Replace(LispMac *mac, LispBuiltin *builtin)
     ostart1 = ARGUMENT(2);
     sequence2 = ARGUMENT(1);
     sequence1 = ARGUMENT(0);
+
+    start1 = end1 = start2 = end2 = 0;	/* fix gcc warning */
 
     length1 = olength1->data.integer;
     length2 = olength2->data.integer;
@@ -2643,6 +2665,8 @@ Lisp_Reverse(LispMac *mac, LispBuiltin *builtin)
     LispObj *sequence;
 
     sequence = ARGUMENT(0);
+
+    list = NIL;		/* fix gcc warning */
 
     switch (sequence->type) {
 	case LispNil_t:
@@ -3402,7 +3426,7 @@ Lisp_UnwindProtect(LispMac *mac, LispBuiltin *builtin)
     int did_jump, *pdid_jump = &did_jump;
     LispBlock *block;
 
-    LispObj *protect, *cleanup, *pcleanup = &cleanup;
+    LispObj *protect, *cleanup, **pcleanup = &cleanup;
 
     cleanup = ARGUMENT(1);
     protect = ARGUMENT(0);
@@ -3421,7 +3445,7 @@ Lisp_UnwindProtect(LispMac *mac, LispBuiltin *builtin)
 	*presult = mac->block.block_ret;
 
     /* run cleanup, unprotected code */
-    if (CONS_P(cleanup))
+    if (CONS_P(*pcleanup))
 	for (; CONS_P(cleanup); cleanup = CDR(cleanup))
 	    (void)EVAL(CAR(cleanup));
     else if (mac->destroyed)
