@@ -293,7 +293,7 @@ Modified terminfo/termcap entries:
      below (section 4.20, page 1).
 
    o The Bitstream Vera TrueType fonts that Bitstream, Inc donated to the
-     Gnome Foundation are included with this release.
+     GNOME Foundation are included with this release.
 
 2.7  OS Support Updates
 
@@ -864,7 +864,7 @@ source files.
                         Kean Johnston.
 
                   Bitstream Vera fonts:
-                        Bitstream, Inc, and the Gnome Foundation.
+                        Bitstream, Inc, and the GNOME Foundation.
 
       Integration:
 
@@ -903,11 +903,11 @@ source files.
             Johnston, Nicolas JOLY, Phil Jones, Roman Kagan, Theppitak
             Karoonboonyanan, Etsushi Kato, Koike Kazuhiko, Aidan Kehoe, Juer-
             gen Keil, Andreas Kies, Thomas Klausner, Mario Klebsch, Egmont
-            Koblinger, Vlatko Kosturjak, Kusanagi Kouichi, Peter Kunzmann,
-            Nick Kurshev, Mashrab Kuvatov, Marc La France, Radics Laszlo,
-            Zarick Lau, Nolan Leake, Michel Lespinasse, Noah Levitt, Dave
-            Love, H.J. Lu, Lubos Lunak, Sven Luther, Torrey T. Lyons, Calum
-            Mackay, Paul Mackerras, Roland Mainz, Kevin Martin, Michal
+            Koblinger, Vlatko Kosturjak, Kusanagi Kouichi, Mel Kravitz, Peter
+            Kunzmann, Nick Kurshev, Mashrab Kuvatov, Marc La France, Radics
+            Laszlo, Zarick Lau, Nolan Leake, Michel Lespinasse, Noah Levitt,
+            Dave Love, H.J. Lu, Lubos Lunak, Sven Luther, Torrey T. Lyons,
+            Calum Mackay, Paul Mackerras, Roland Mainz, Kevin Martin, Michal
             Maruska, Kensuke Matsuzaki, maxim, Stephen McCamant, Ferris
             McCormick, Luke Mewburn, Nicholas Miell, Robert Millan, Hisashi
             MIYASHITA, Gregory Mokhin, Patrik Montgomery, Joe Moss, Josselin
@@ -921,18 +921,18 @@ source files.
             tair M. Robinson, Branden Robinson, Daniel Rock, Ian Romanick,
             Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin, Supphachoke
             Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
-            Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, JungShik
-            Shin, Jungshik Shin, Nikola Smolenski, Andreas Stenglein, Paul
-            Stewart, Alexander Stohr, Alan Strohm, Will Styles, James Su,
-            Mike Sulivan, Ville Syrjala, Slava Sysoltsev, Akira TAGOH,
-            Toshimitsu Tanaka, Akira Taniguchi, Owen Taylor, Neil Terry,
-            Jonathan Thambidurai, John Tillman, Adam Tlalka, Linus Torvalds,
-            Christian Tosta, Warren Turkal, Stephen J. Turnbull, Ted Unangst,
-            Mike Urban, Simon Vallet, Thuraiappah Vaseeharan, Luc Verhaegen,
-            Yann Vernier, Michail Vidiassov, Sebastiano Vigna, Mark
-            Vojkovich, Stephane Voltz, Boris Weissman, Keith Whitwell, Thomas
-            Winischhofer, Eric Wittry, Kim Woelders, Roy Wood, Jason L.
-            Wright, Joerg Wunsch, Chisato Yamauchi, Hui Yu.
+            Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, Jungshik
+            Shin, Nikola Smolenski, Andreas Stenglein, Paul Stewart, Alexan-
+            der Stohr, Alan Strohm, Will Styles, James Su, Mike Sulivan,
+            Ville Syrjala, Slava Sysoltsev, Akira TAGOH, Toshimitsu Tanaka,
+            Akira Taniguchi, Owen Taylor, Neil Terry, Jonathan Thambidurai,
+            John Tillman, Adam Tlalka, Linus Torvalds, Christian Tosta, War-
+            ren Turkal, Stephen J. Turnbull, Ted Unangst, Mike Urban, Simon
+            Vallet, Thuraiappah Vaseeharan, Luc Verhaegen, Yann Vernier,
+            Michail Vidiassov, Sebastiano Vigna, Mark Vojkovich, Stephane
+            Voltz, Boris Weissman, Keith Whitwell, Thomas Winischhofer, Eric
+            Wittry, Kim Woelders, Roy Wood, Jason L. Wright, Joerg Wunsch,
+            Chisato Yamauchi, Hui Yu.
 
       Docbook/XML conversion:
             John Himpel and the XFree86 documentation team.
@@ -962,7 +962,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.111 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.113 herrb Exp $
 
 
 $XFree86: $
