@@ -2868,6 +2868,21 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
     if (event->xfocus.detail == NotifyPointer)
 	return;
 
+    if (event->xfocus.send_event) {
+	Window root, child;
+	int rootx, rooty, x, y;
+	unsigned int mask;
+
+	if (ctx->text.hasfocus)
+	    return;
+
+	if (XQueryPointer(XtDisplay(w), XtWindow(w), &root, &child,
+			  &rootx, &rooty, &x, &y, &mask)) {
+	    if (child)
+		return;
+	}
+    }
+
     /* Let the input method know focus has arrived. */
     _XawImSetFocusValues(w, NULL, 0);
 
