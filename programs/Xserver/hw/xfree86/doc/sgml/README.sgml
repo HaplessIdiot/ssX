@@ -10,7 +10,7 @@
 <date>18 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.92 1999/07/10 07:24:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.93 1999/07/18 15:47:53 dawes Exp $
 </ident>
 
 <abstract>
@@ -31,7 +31,7 @@ development code.  It is <![ %latersnap; [one of]]>
 in a series of snapshot releases leading up the the 4.0 release.  The
 plan is to release a new snapshot every four to six weeks.  The target
 audience for this release is developers and others who are comfortable
-on the bleeding edge.  This release is not targetted at beginners.
+on the bleeding edge.  This release is not targeted at beginners.
 Also, most end users will find life easier using our latest 3.3.x release.
 While we welcome bug reports and feedback about this release, we don't
 have the resources to provide user-level support for it.  If you're not
@@ -73,6 +73,17 @@ XFree86 &relvers; can be found at the <url name="XFree86 ftp server"
 url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers;/">, and at
 mirrors of this server.  This snapshot is available primarily in source
 form.  Binaries for some platforms may be made available at a later time.
+
+The source for version &relvers; is split into three tarballs:
+<tt>X&srcvers;src-1.tgz</tt>, <tt>X&srcvers;src-2.tgz</tt>,
+<tt>X&srcvers;src-3.tgz</tt>.  The first contains everything except the
+fonts and general X11 documentation.  It is sufficient to build XFree86
+is you already have a set of fonts.  The second contains the fonts and
+the source for the general X11 documentation.  The third contains the
+general X11 documentation in hardcopy format.
+
+The contrib part of the distribution can be found in the following tarball:
+<tt>X&srcvers;contrib.tgz</tt>.
 
 <sect>Reporting Bugs
 <p>

@@ -579,7 +579,7 @@ variable points to. These files are described in the xinit and startx
 man pages.
 
 By default, the systemwide <tt/xinitrc/ file (in <tt>Y:/XFree86/lib/X11/xinit/xinitrc.cmd</tt>)
-installs the rather simplicistic <tt/twm/ window manager. You can find better
+installs the rather simplistic <tt/twm/ window manager. You can find better
 window managers on the ported software page at 
 <htmlurl name="http://set.gmd.de/~veit/os2/xf86ported.html" url="http://set.gmd.de/~veit/os2/xf86ported.html"> .
 
@@ -614,7 +614,7 @@ port heavily relies on
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.10 1997/05/18 12:12:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.11 1997/12/05 22:01:37 hohndel Exp $
 
 
 

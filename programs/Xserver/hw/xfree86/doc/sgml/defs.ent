@@ -1,9 +1,10 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.1 1999/07/04 07:58:03 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.2 1999/07/04 12:21:25 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
 <!ENTITY relvers CDATA "3.9.15">
+<!ENTITY srcvers CDATA "3915">
 
 <!-- Swap these for the next snapshot -->
 <!ENTITY % firstsnap 'INCLUDE'>

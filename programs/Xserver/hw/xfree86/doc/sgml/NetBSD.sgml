@@ -82,7 +82,7 @@ non-OS dependent new features in XFree86 3.3.
 
 <p>
 Refer to section 4 of the <htmlurl url="RELNOTES.html" name="Release
-Notes">  for detailled installation instructions.
+Notes">  for detailed installation instructions.
 
 
 <sect1>Installing Xdm, the display manager
@@ -588,7 +588,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.46 1997/04/16 08:34:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.47 1997/06/03 14:11:53 hohndel Exp $
 
 
 

@@ -9,7 +9,7 @@
 <date>19 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.9 1999/07/18 15:47:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.10 1999/07/19 13:36:21 dawes Exp $
 </ident>
 
 <abstract>
@@ -57,7 +57,7 @@ cfb, etc), and internal components used by some drivers (like XAA),
 
 The module interfaces (API and ABI) used in the snapshot releases are
 subject to change without notice.  This means that there is no guarantee
-that modules built for one shapshot release will function with another
+that modules built for one snapshot release will function with another
 snapshot release.  As of the 4.0 release we plan to make every effort
 to provide backward compatibility for the module interfaces (that means
 older modules working with newer core X server binaries).
@@ -76,8 +76,13 @@ older modules working with newer core X server binaries).
 <sect1>Configuration File <label id="config">
 <p>
 
-The X server configuration file format has been extended to handle some of
-the new functionality.
+The X server configuration file format has been extended to handle some
+of the new functionality.  The <tt>xf86config</tt> utility can be used
+to generate a basic config file, that may require some manual editing.
+Alternatively, the sample config file <tt>XF86Config.eg</tt> that is
+installed in <tt>/usr/X11R6/lib/X11</tt> may be used as a starting point.
+The <tt>XF86Setup</tt> utility is currently not usable, but work is
+continuing in this area.
 
 The main changes are:
 
@@ -369,7 +374,7 @@ The following new X server command line options have been changed since 3.3.x:
 <quote><p>
 	This option specifies the verbosity level to use for the server
 	messages that get written to stderr.  It may be specified multiple
-	time to increase the verbositly level (as with 3.3.x), or the
+	time to increase the verbosity level (as with 3.3.x), or the
 	verbosity level may be specified explicitly as a number.  The
 	default verbosity level is 1.
 
@@ -389,10 +394,12 @@ The following new X server command line options have been changed since 3.3.x:
 </quote>
 
 
-<!--
 <sect1>XAA
 <p>
--->
+
+The XFree86 Acceleration Architecture (XAA) has been completely rewritten
+from scratch.  Most drivers implement acceleration by making use of the
+XAA module.
 
 <sect1>Multi-head
 <p>
@@ -423,7 +430,7 @@ an 8-bit screen together with a 16-bit screen in Xinerama mode.
 Xinerama is not enabled by default, and can be enabled with the
 <tt>+xinerama</tt> command line option for the X server.
 
-Xinerama was included with X11R6.4.  The version included in this shapshot
+Xinerama was included with X11R6.4.  The version included in this snapshot
 contains many bug fixes.  This is an area that we are still working on, and
 we expect it to be improved further in future snapshots.
 
@@ -446,10 +453,15 @@ Known problems:
 <!--
 <sect1>XVideo extension
 <p>
+-->
 
 <sect1>DGA version 2
 <p>
--->
+
+The DGA extension has been reworked.  The version present in this snapshot
+is preliminary, not documented, not implemented by many drivers, and
+subject to further change without notice.  Compatibility with version 1.0
+is provided.
 
 <sect1>DDC
 <p>
@@ -520,16 +532,27 @@ added a Direct Rendering Infrastructure.  Direct Rendering provides a
 highly optimized path for sending 3D data directly to the graphics
 hardware.  This release <url name="demonstrates a sample implementation
 of direct rendering" url="http://www.precisioninsight.com/demo.html">
-by providing a single path of 3D hardware accellerated rendering for
+by providing a single path of 3D hardware accelerated rendering for
 the GMX2000 graphics card.  Future releases will support much broader
-implementations of hardware accellerated direct rendering on a wide
+implementations of hardware accelerated direct rendering on a wide
 range of 3D capable graphics devices.
 
 
-<!--
 <sect1>Other extensions
 <p>
--->
+
+The XFree86-Misc extension has not been fully ported to the new server
+architecture yet.  This should be completed in a future snapshot.
+
+The XFree86-VidModeExtension extension has been updated, and mostly
+ported to the new server architecture.  The area of mode validation
+needs further work, and the extension should be used with care.  This
+extension has support for changing the gamma setting at run-time, for
+modes where this is possible.  The new <tt>xgamma</tt> utility makes
+use of this feature.  Compatibility with the 3.3.x version of the
+extension is provided.  The missing parts of this extension and some
+new features should be completed in a future snapshot.
+
 
 <sect1>Drivers
 <p>
@@ -613,8 +636,34 @@ information.
 
 The MGA driver supports the same range or hardware as XFree86 3.3.4,
 but has a number of enhancements including multi-head support and
-support for overlays (8-bit + 24-bit).  Further information can be found
-in the <tt>mga</tt> man page.
+support for overlays (8-bit + 24-bit).
+
+Option <tt>"overlay"</tt> when the server is started in 32bpp
+(<tt>-fbbpp&nbsp;32</tt>) will enable the 8+24 mode.  The current
+implementation doesn't optimize away unnecessary exposures yet so the
+performance of this option will be better in future snapshots.  The
+option is not supported on the G100 due to a missing hardware feature.
+By default, the color key for the overlays is 255, but this can be
+changed with the <tt>"ColorKey"</tt> option to work around problems in
+specific programs.  Valid values for the key are 2-255.
+
+Option <tt>"OverclockMem"</tt> will raise the memory clock on the G200.
+Matrox doesn't recommend deviating from the BIOS defaults but we find
+that some hardware shows static during graphics operations in high
+resolutions/depths when run at the regular clocks so this option is
+needed for some cards (it also improves performance).  Beware, some
+hardware experiences difficultly restoring the console when this option
+is used.
+
+Further information can be found in the <tt>mga</tt> man page.
+
+<sect2>ATI
+<p>
+
+Information about the ATI driver can be found in <url name="README.ati"
+url="ati.html">.  The current version is not accelerated.  Acceleration
+support is planned for a future snapshot.
+
 
 <sect>X libraries and clients
 <p>
@@ -875,11 +924,11 @@ License.
 <p>
 
 A new ``fontenc'' layer has been added to allow the scalable font backends
-to use a common method of font reencoding.  This reencoding makes it
+to use a common method of font re-encoding.  This re-encoding makes it
 possible to uses fonts in encodings other than their their native
 encoding.  This layer is used by the Type1 and Speedo backends and the
 `xfsft' version of the TrueType backend.  The `X-TrueType' version of
-the TrueType backend uses a different reencoding method based on loadable
+the TrueType backend uses a different re-encoding method based on loadable
 encoding modules.
 
 <sect1>Unicode support
