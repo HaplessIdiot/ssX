@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.115 2003/05/20 23:35:46 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.116 2003/05/25 03:12:21 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1662,7 +1662,7 @@ InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
  */
 #ifndef LinkFileList
 #define LinkFileList(step,list,dir,sub)					@@\
-step:: 								@@\
+step:: 									@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	echo "	cd" dir; cd dir && \					@@\
 	for i in list; do (set -x; $(LN) -f sub/$$i .); done
