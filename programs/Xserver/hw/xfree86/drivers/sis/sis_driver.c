@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.92tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -1742,21 +1742,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        BOOL found = FALSE;
        char name[10];
        CARD32 sisfbversion;
-       const char *osname;
-       BOOL checkit = FALSE;
 
-       LoaderGetOS(&osname, NULL, NULL, NULL);
-       if(osname) {
-          if(strcmp(osname, "linux") == 0) checkit = TRUE;
-	  xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	  	"Running on %s%s\n",
-		osname, checkit ? ", checking if sisfb is active" : "");
-       } else {
-          xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	  	"Could not determine operating system\n");
-	  checkit = TRUE;  /* Should we check then? Well, it shouldn't hurt... */
-       }
-       if(checkit) {
+       {
           i=0;
           do {
              sprintf(name, "/dev/fb%1d", i);
