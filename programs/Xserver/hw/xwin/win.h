@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.11 2001/06/25 08:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.12 2001/07/02 09:37:17 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -47,7 +47,7 @@
  */
 #define WIN_PSEUDO_SUPPORT	YES
 #define WIN_NATIVE_GDI_SUPPORT	YES
-#define WIN_LAYER_SUPPORT	NO
+#define WIN_LAYER_SUPPORT	YES
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
@@ -95,6 +95,7 @@
 #define WIN_DEFAULT_LINEBIAS	0
 #define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
 #define WIN_DEFAULT_DPI		75
+#define WIN_DEFAULT_REFRESH	0
 
 #define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winlayer.c,v 1.1 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -47,13 +47,24 @@ winLayerCreate (ScreenPtr pScreen)
   ErrorF ("winLayerCreate () - dwDepth %d\n",
 	  pScreenInfo->dwDepth);
 
-  dwLayerKind = LAYER_SHADOW;
-  pPixmap = 0;
+  /*
+   * LayerKind is really just an index into the array of layer kinds.
+   * LAYER_FB = 0 and LAYER_SHADOW = 1, but we only create one layer kind
+   * on Cygwin, so we use LAYER_FB here as an index to our one and only
+   * layer kind.  Check the code over in
+   * miext/layer/layerinit.c/LayerStartInit () for the Cygwin #ifdef's.
+   */
+  dwLayerKind = LAYER_FB;
+  pPixmap = LAYER_SCREEN_PIXMAP;
 
-  return LayerCreate (pScreen, dwLayerKind, pScreenInfo->dwDepth,
-		      pPixmap, pScreenPriv->pwinShadowUpdate, NULL, 0);
+ return LayerCreate (pScreen,
+		     dwLayerKind,
+ 		     pScreenInfo->dwDepth,
+ 		     pPixmap,
+ 		     pScreenPriv->pwinShadowUpdate,
+ 		     NULL, /* No ShadowWindowProc */
+ 		     0);
 }
-
 
 #ifdef RANDR
 /*
@@ -140,7 +151,8 @@ winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations)
   if (!pVisualGroup)
     return FALSE;
   
-  pGroupOfVisualGroup = RRCreateGroupOfVisualGroup (pScreen);
+  pGroupOfVisualGroup = RRRegisterGroupOfVisualGroup (pScreen,
+						      pGroupOfVisualGroup);
   
   /* You have to be kidding */
   if (!RRAddVisualGroupToGroupOfVisualGroup (pScreen,

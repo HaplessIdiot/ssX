@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -71,7 +71,7 @@ winUpdateFBPointer (ScreenPtr pScreen, void *pbits)
 
   /* Location of shadow framebuffer has changed */
   pScreenInfo->pfb = pbits;
-	      
+
   /* Update the screen pixmap */
   if (!(*pScreen->ModifyPixmapHeader)(pScreen->devPrivate,
 				      pScreen->width,

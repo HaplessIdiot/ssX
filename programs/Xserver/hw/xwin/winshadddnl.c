@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.11 2001/06/25 08:12:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.12 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -600,6 +600,14 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       ErrorF ("winInitVisualsDDNL () - Unknown screen depth\n");
       return FALSE;
     }
+
+#if WIN_LAYER_SUPPORT
+  miSetVisualTypesAndMasks (8,
+			    PseudoColorMask,
+			    8,
+			    -1,
+			    0, 0, 0);
+#endif
 
 #if CYGDEBUG
   ErrorF ("winInitVisualsShadowDDNL () - Returning\n");
