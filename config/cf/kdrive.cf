@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.117 1996/10/19 15:12:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.1 1999/11/19 13:53:22 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -6,14 +6,16 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.117 1996/10/19 15:12:31 dawes Exp $
  * Most of these settings can be overridden in a vendor.cf or the
  * BeforeVendor part of the site.def file.
  */
-XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
+XCOMM $XConsortium: $
 
 #undef BuildXprint
 #define BuildXprint 	NO
 #ifndef XTS300Server
 #define XTS300Server 	NO
 #endif
+#ifndef XfbdevServer
 #define XfbdevServer 	YES
+#endif
 #ifndef XIGSServer
 #define XIGSServer 	NO
 #endif
@@ -23,12 +25,23 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XSavageServer
 #define XSavageServer	NO
 #endif
+#ifndef XItsyServer
+#define XItsyServer	NO
+#endif
+
+#if XItsyServer
+#include <itsy.cf>
+#endif
+
 #define XprtServer	NO
 #define BuildXIE	NO
 #define BuildXInputExt	NO
 #define BuildPexExt	NO
 #ifndef BuildLBX
 #define BuildLBX	YES
+#endif
+#ifndef BuildPseudo8
+#define BuildPseudo8	NO
 #endif
 
 /*
@@ -66,7 +79,9 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define CompressAllFonts	YES
 #endif
 
+#ifndef GzipFontCompression
 #define GzipFontCompression	YES
+#endif
 
 #define DefaultFontPath built-ins,$(FONTDIR)/misc/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
 
@@ -128,6 +143,8 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #define NormalLibFont		YES
 #define SharedLibFont		NO
 
+#define DBMLibrary		/**/
+
 #define DDXOsColor YES
 
 #if FontServerAccess
@@ -135,8 +152,20 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 FONTSERVERACCESS=-DNOFONTSERVERACCESS
 #endif
 
+#if BuildPseudo8
+#define Pseudo8Defines -DPSEUDO8
+#else
+#define Pseudo8Defines
+#endif
+
+#ifndef KdriveServerExtraDefines
+#define KdriveServerExtraDefines
+#endif
+
+XF86COMSRC=.
+
 #undef ServerExtraDefines
-#define ServerExtraDefines -DKDRIVESERVER -DGCCUSESGAS -DDDXOSINIT -DSMART_SCHEDULE $(FONTSERVERACCESS)
+#define ServerExtraDefines -DKDRIVESERVER -DGCCUSESGAS -DDDXOSINIT -DSMART_SCHEDULE $(FONTSERVERACCESS) Pseudo8Defines KdriveServerExtraDefines
 #undef ServerOSDefines
 #define ServerOSDefines -DDDXOSINIT
 
