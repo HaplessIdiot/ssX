@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.2 2003/09/01 20:54:26 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -996,9 +996,10 @@ void NVLoadStateExt (
 #endif
 
     if(pNv->Architecture < NV_ARCH_10) {
-       pNv->PRAMIN[0x0824] |= 0x00020000;
-       pNv->PRAMIN[0x0826] += pNv->FbAddress;
-
+       if((pNv->Chipset & 0x0fff) == 0x0020) {
+           pNv->PRAMIN[0x0824] |= 0x00020000;
+           pNv->PRAMIN[0x0826] += pNv->FbAddress;
+       }
        pNv->PGRAPH[0x0080/4] = 0x000001FF;
        pNv->PGRAPH[0x0080/4] = 0x1230C000;
        pNv->PGRAPH[0x0084/4] = 0x72111101;
