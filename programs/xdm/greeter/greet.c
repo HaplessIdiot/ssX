@@ -1,4 +1,5 @@
-/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Mod $ */
+/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
