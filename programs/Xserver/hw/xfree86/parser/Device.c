@@ -254,7 +254,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 	{
 		fprintf (cf, "Section \"Device\"\n");
 		if (ptr->dev_comment)
-			fprintf (cf, "\t###         \"%s\"\n", ptr->dev_comment);
+			fprintf (cf, "\t### %s", ptr->dev_comment);
 		if (ptr->dev_identifier)
 			fprintf (cf, "\tIdentifier  \"%s\"\n", ptr->dev_identifier);
 		if (ptr->dev_driver)
