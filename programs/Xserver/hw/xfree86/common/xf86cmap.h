@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.5 1999/07/18 03:26:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.6 2000/05/11 18:14:28 tsi Exp $ */
 
 #ifndef _XF86CMAP_H
 #define _XF86CMAP_H
@@ -36,6 +36,26 @@ int
 xf86ChangeGamma(
    ScreenPtr pScreen,
    Gamma newGamma
+);
+
+int
+xf86ChangeGammaRamp(
+   ScreenPtr pScreen,
+   int size,
+   unsigned short *red,
+   unsigned short *green,
+   unsigned short *blue
+);
+
+int xf86GetGammaRampSize(ScreenPtr pScreen);
+
+int
+xf86GetGammaRamp(
+   ScreenPtr pScreen,
+   int size,
+   unsigned short *red,
+   unsigned short *green,
+   unsigned short *blue
 );
 
 #endif /* _XF86CMAP_H */

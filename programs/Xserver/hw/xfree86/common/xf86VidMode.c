@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.8 1999/12/13 01:39:46 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.10 2001/02/15 20:31:52 eich Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -542,6 +542,41 @@ VidModeGetGamma(int scrnIndex, float *red, float *green, float *blue)
     *green = pScrn->gamma.green;
     *blue = pScrn->gamma.blue;
     return TRUE;
+}
+
+Bool
+VidModeSetGammaRamp(int scrnIndex, int size, CARD16 *r, CARD16 *g, CARD16 *b)
+{
+    ScrnInfoPtr pScrn;
+
+    if (!VidModeAvailable(scrnIndex))
+        return FALSE;
+ 
+    pScrn = xf86Screens[scrnIndex];
+    xf86ChangeGammaRamp(pScrn->pScreen, size, r, g, b);
+    return TRUE;
+}
+
+Bool
+VidModeGetGammaRamp(int scrnIndex, int size, CARD16 *r, CARD16 *g, CARD16 *b)
+{
+    ScrnInfoPtr pScrn;
+
+    if (!VidModeAvailable(scrnIndex))
+        return FALSE;
+
+    pScrn = xf86Screens[scrnIndex];
+    xf86ChangeGammaRamp(pScrn->pScreen, size, r, g, b);
+    return TRUE;
+}
+
+int
+VidModeGetGammaRampSize(int scrnIndex)
+{
+    if (!VidModeAvailable(scrnIndex))
+        return 0;
+
+    return xf86GetGammaRampSize(xf86Screens[scrnIndex]->pScreen);
 }
 
 pointer
