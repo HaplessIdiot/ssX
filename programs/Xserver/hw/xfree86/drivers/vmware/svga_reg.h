@@ -9,7 +9,7 @@
  *
  * SVGA hardware definitions
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/svga_reg.h,v 1.6 2002/11/23 19:27:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/svga_reg.h,v 1.7 2002/12/10 04:17:19 dawes Exp $ */
 
 #ifndef _SVGA_REG_H_
 #define _SVGA_REG_H_
@@ -277,12 +277,6 @@ enum {
    height = (svga->reg[SVGA_REG_VRAM_SIZE] - \
                     svga->reg[SVGA_REG_FB_OFFSET]) / pitch; \
 }
-
-/*
- * Gets the offset to the first pixel of offscreen memory
- */
-#define SVGA_OFFSCREEN_START_OFFSET(fbOffset, height, pitch) \
-(fbOffset * 2 + height * pitch - fbOffset % pitch)
 
 /*
  *  Increment from one scanline to the next of a bitmap or pixmap

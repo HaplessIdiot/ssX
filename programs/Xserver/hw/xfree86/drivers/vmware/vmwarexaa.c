@@ -6,7 +6,7 @@
 char rcsId_vmwarexaa[] =
     "Id: $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.3 2002/12/10 04:17:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.4 2002/12/11 17:07:58 dawes Exp $ */
 
 #include "vmware.h"
 
@@ -82,11 +82,7 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
     XAAInfoRecPtr xaaInfo;
-    int offscreenOffset = SVGA_OFFSCREEN_START_OFFSET(pVMWARE->fbOffset,
-                                                      pScrn->virtualY,
-                                                      pVMWARE->fbPitch);
-    int scratchSizeBytes = OFFSCREEN_SCRATCH_SIZE / (pVMWARE->bitsPerPixel / 8);
-
+        
     pVMWARE->xaaInfo = XAACreateInfoRec();
     if (!pVMWARE->xaaInfo) {
         return FALSE;
@@ -133,13 +129,59 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
     }
 
     if (pVMWARE->vmwareCapability & SVGA_CAP_OFFSCREEN_1) {
+        int scratchSizeBytes = ((OFFSCREEN_SCRATCH_SIZE + pVMWARE->fbPitch - 1) /
+                                pVMWARE->fbPitch) * pVMWARE->fbPitch;
         BoxRec box;
         RegionRec region;
 
         box.x1 = 0;
-        box.y1 = (offscreenOffset + pVMWARE->fbPitch - 1) / pVMWARE->fbPitch;
+        box.y1 = (pVMWARE->FbSize + pVMWARE->fbPitch - 1) / pVMWARE->fbPitch;
         box.x2 = pScrn->displayWidth;
-        box.y2 = (pVMWARE->videoRam) / pVMWARE->fbPitch;
+        box.y2 = pVMWARE->videoRam / pVMWARE->fbPitch;
+
+#ifdef RENDER
+        if (pVMWARE->vmwareCapability & SVGA_CAP_ALPHA_BLEND &&
+            pScrn->bitsPerPixel > 8) {
+            if (box.y2 - (scratchSizeBytes / pVMWARE->fbPitch) > box.y1 + 4) {
+                CARD8* osPtr = pVMWARE->FbBase + pVMWARE->videoRam -
+                   scratchSizeBytes;
+                box.y2 -= scratchSizeBytes / pVMWARE->fbPitch;
+
+                VmwareLog(("Allocated %d bytes at offset %d for alpha scratch\n",
+                           scratchSizeBytes,
+                           pVMWARE->videoRam - scratchSizeBytes)); 
+
+                pVMWARE->heap = vmwareHeap_Create(osPtr,
+                                                  scratchSizeBytes,
+                                                  OFFSCREEN_SCRATCH_MAX_SLOTS,
+                                                  pVMWARE->videoRam - scratchSizeBytes,
+                                                  pScrn->virtualX,
+                                                  pScrn->virtualY,
+                                                  pVMWARE->bitsPerPixel,
+                                                  pVMWARE->fbPitch,
+                                                  pVMWARE->fbOffset);
+                pVMWARE->frontBuffer = vmwareHeap_GetFrontBuffer(pVMWARE->heap);
+
+                xaaInfo->SetupForCPUToScreenAlphaTexture =
+                   vmwareSetupForCPUToScreenAlphaTexture;
+                xaaInfo->SubsequentCPUToScreenAlphaTexture =
+                   vmwareSubsequentCPUToScreenTexture;
+                xaaInfo->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
+                   XAA_RENDER_NO_SRC_ALPHA;
+                xaaInfo->CPUToScreenAlphaTextureFormats = vmwareAlphaTextureFormats;
+
+                xaaInfo->SetupForCPUToScreenTexture =
+                   vmwareSetupForCPUToScreenTexture;
+                xaaInfo->SubsequentCPUToScreenTexture = 
+                   vmwareSubsequentCPUToScreenTexture;
+                xaaInfo->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
+                xaaInfo->CPUToScreenTextureFormats = vmwareTextureFormats;
+            } else {
+                xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Allocation of offscreen "
+                           "scratch area for alpha blending failed\n");
+            }
+        }
+#endif
 
         if (box.y2 > box.y1) {
             REGION_INIT(pScreen, &region, &box, 1);
@@ -159,60 +201,6 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
             REGION_UNINIT(pScreen, &region);
         }
     }
-
-#ifdef RENDER
-    if (xf86FBManagerRunning(pScreen) &&
-        pVMWARE->vmwareCapability & SVGA_CAP_ALPHA_BLEND &&
-        pScrn->bitsPerPixel > 8 &&
-        pVMWARE->videoRam - offscreenOffset > scratchSizeBytes) {
-
-        pVMWARE->offscreenScratch = 
-           xf86AllocateOffscreenLinear(pScreen, scratchSizeBytes, 0,
-                                       NULL, NULL, NULL);
-
-        if (pVMWARE->offscreenScratch != NULL) {
-            CARD8* osPtr;
-
-            /* xf86AllocOffscrLinear's size and offset are in PIXELS */
-            pVMWARE->offscreenScratch->size *= (pVMWARE->bitsPerPixel / 8);
-            pVMWARE->offscreenScratch->offset *= (pVMWARE->bitsPerPixel / 8);
-            osPtr = pVMWARE->offscreenScratch->offset + pVMWARE->FbBase;
-
-            VmwareLog(("Allocated %d bytes at offset %d for alpha scratch\n",
-                       pVMWARE->offscreenScratch->size,
-                       pVMWARE->offscreenScratch->offset)); 
-
-            pVMWARE->heap = vmwareHeap_Create(osPtr,
-                                        pVMWARE->offscreenScratch->size,
-                                        OFFSCREEN_SCRATCH_MAX_SLOTS,
-                                        pVMWARE->offscreenScratch->offset,
-                                        pScrn->virtualX, pScrn->virtualY,
-                                        pVMWARE->bitsPerPixel,
-                                        pVMWARE->fbPitch,
-                                        pVMWARE->fbOffset);
-            pVMWARE->frontBuffer = vmwareHeap_GetFrontBuffer(pVMWARE->heap);
-
-            xaaInfo->SetupForCPUToScreenAlphaTexture =
-               vmwareSetupForCPUToScreenAlphaTexture;
-            xaaInfo->SubsequentCPUToScreenAlphaTexture =
-               vmwareSubsequentCPUToScreenTexture;
-            xaaInfo->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE |
-               XAA_RENDER_NO_SRC_ALPHA;
-            xaaInfo->CPUToScreenAlphaTextureFormats = vmwareAlphaTextureFormats;
-
-            xaaInfo->SetupForCPUToScreenTexture =
-               vmwareSetupForCPUToScreenTexture;
-            xaaInfo->SubsequentCPUToScreenTexture = 
-               vmwareSubsequentCPUToScreenTexture;
-            xaaInfo->CPUToScreenTextureFlags = XAA_RENDER_NO_TILE;
-            xaaInfo->CPUToScreenTextureFormats = vmwareTextureFormats;
-        } else {
-            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Allocation of offscreen "
-                       "scratch area for alpha blending failed\n");
-        }
-    }
-#endif
-
 
     if (!XAAInit(pScreen, xaaInfo)) {
         DESTROY_XAA_INFO(pVMWARE);
