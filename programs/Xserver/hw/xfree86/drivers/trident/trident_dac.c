@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.37 2000/12/14 19:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.38 2000/12/28 15:03:46 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -349,9 +349,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    	pReg->tridentRegs3x4[PreEndFetch] = 0xFF;
 	    /* Fall Through */
 	case PROVIDIA9685:
+	case CYBER9385:
 	    pReg->tridentRegs3x4[Enhancement0] = 0x40;
 	    /* Fall Through */
 	case PROVIDIA9682:
+	case CYBER9382:
 	    if (pTrident->UsePCIRetry) 
 	    	pReg->tridentRegs3x4[PCIRetry] = 0xDF;
 	    else
