@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: linux.cf /main/26 1996/09/29 18:19:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.52 1996/12/23 05:50:26 dawes Exp $
+XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.53 1996/12/25 04:05:36 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -45,6 +45,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #ifndef BinUtilsMajorVersion
 #define BinUtilsMajorVersion	25
+#endif
+
+#if LinuxCLibMajorVersion >= 6
+#define SourceDefines		-D_POSIX_C_SOURCE=199309L \
+				-D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_SVID_SOURCE
+#else
+#define SourceDefines		-D_POSIX_SOURCE \
+				-D_BSD_SOURCE -D_SVID_SOURCE
 #endif
 
 #define HasGcc			YES
@@ -99,18 +108,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #else
 #ifdef AlphaArchitecture
 #define CcCmd			gcc -b alpha-linuxecoff
+#define CplusplusCmd		g++ -b alpha-linuxecoff
 #define AsCmd			/usr/alpha-linuxecoff/bin/as
 #define LdCmd			/usr/alpha-linuxecoff/bin/ld -m alpha
 #define AsmDefines		-DUSE_GAS -U__ELF__
 #endif /* AlphaArchitecture */
 #ifdef i386Architecture
 #define CcCmd			gcc -b i486-linuxaout
+#define CplusplusCmd		g++ -b i486-linuxaout
 #define AsCmd			/usr/i486-linuxaout/bin/as
 #define LdCmd			/usr/i486-linuxaout/bin/ld -m i386linux
 #define AsmDefines		-DUSE_GAS -U__ELF__
 #endif /* i386Architecture */
 #ifdef Mc68020Architecture
 #define CcCmd			gcc -b m68k-linuxaout
+#define CplusplusCmd		g++ -b m68k-linuxaout
 #define AsCmd			/usr/m68k-linuxaout/bin/as
 #define LdCmd			/usr/m68k-linuxaout/bin/ld -m m68klinux
 #define AsmDefines		-DUSE_GAS -U__ELF__
@@ -169,8 +181,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if LinuxCLibMajorVersion >= 6
 #undef HasLibCrypt
 #define HasLibCrypt		YES
-#define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE
+#define StandardDefines		SourceDefines -Dlinux -D__i386__
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #define HasPosixThreads		YES
 #define ThreadedX		YES
@@ -178,8 +189,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ThreadsLibraries	-lpthread
 #define SystemMTDefines		-D_REENTRANT
 #else /* LinuxCLibMajorVersion >= 6 */
-#define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
+#define StandardDefines		SourceDefines -Dlinux -D__i386__ \
+				-DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #endif /* LinuxCLibMajorVersion >= 6 */
 #define HasWChar32		YES
@@ -191,12 +202,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef AlphaArchitecture
 #define OptimizedCDebugFlags	-O2
 #if UseElfFormat
-#define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE
+#define StandardDefines		SourceDefines -Dlinux -D__alpha__
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #else
-#define StandardDefines		-Dlinux -D__alpha__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
+#define StandardDefines		SourceDefines -Dlinux -D__alpha__ \
+				-DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #endif
 #define HasWChar32		YES
@@ -207,8 +217,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifdef Mc68020Architecture
 #define OptimizedCDebugFlags	-O2
-#define StandardDefines		-Dlinux -D__mc68000__ -D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_GNU_SOURCE -DX_LOCALE
+#define StandardDefines		SourceDefines -Dlinux -D__mc68000__ \
+				-DX_LOCALE
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #define HasWChar32		YES
 #define StandardCppDefines	-traditional StandardDefines

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf /main/82 1996/12/04 10:10:30 swick $
+XCOMM platform:  $XConsortium: hp.cf /main/83 1996/12/26 08:52:54 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -59,15 +59,21 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #endif
 
 
-#define SystemV                YES
-#define Malloc0ReturnsNull     YES
+#define SystemV				YES
+#define Malloc0ReturnsNull		YES
 
 #ifdef __hp9000s800
-# define OptimizedCDebugFlags   +O1
-# define DefaultCCOptions       -Ae +ESlit
-# define SharedLibraryCCOptions -Ae
-# define StandardDefines        -Dhpux -DSYSV
-# define ServerExtraDefines	-DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags		+O1
+# endif
+# ifndef DefaultCCOptions
+#  define DefaultCCOptions		-Ae +ESlit
+# endif
+# ifndef SharedLibraryCCOptions
+#  define SharedLibraryCCOptions	-Ae
+# endif
+# define StandardDefines		-Dhpux -DSYSV
+# define ServerExtraDefines		-DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
 
 # if OSMajorVersion > 9
 #  include <hpLib.rules>

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.93 1996/12/09 11:48:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.94 1996/12/17 20:58:34 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -238,7 +238,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.93 1996/12/09 11:48:07 dawes Exp $
 /*
  * VGA2 driver in Mono server:
  *
-#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis tvga8900
+#define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
 				cirrus ncr77c22 oak cl64xx generic
  */
 

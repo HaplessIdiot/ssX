@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf /main/159 1996/12/04 10:10:52 swick $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.27 1996/03/03 03:55:27 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf /main/160 1996/12/26 08:52:18 kaleb $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.28 1996/12/23 05:50:32 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -242,10 +242,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 # if HasGcc2
-#  ifdef i386Architecture
+#  ifndef OptimizedCDebugFlags
+#   ifdef i386Architecture
 #    define OptimizedCDebugFlags DefaultGcc2i386Opt
-#  else
-#   define OptimizedCDebugFlags -O2
+#   else
+#    define OptimizedCDebugFlags -O2
+#   endif
 #  endif
 # else
 #  define SharedLibraryCcCmd cc
