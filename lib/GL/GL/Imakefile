@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.21 2003/10/31 02:19:14 torrey Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.22 2003/11/05 01:02:11 torrey Exp $
 
 #include <Threads.tmpl>
 
@@ -203,7 +203,7 @@ OTHERREQUIREDLIBS = \
 	-framework OpenGL
 #endif
 
-#if BuildXF86DRI || (defined(DarwinArchitecture) && BuildAppleDRI)
+#if BuildXF86DRI && BuildXF86VidModeExt
 VMODEREQUIREDLIBS = $(LDPRELIBS) $(XXF86VMLIB)
 #endif
 
