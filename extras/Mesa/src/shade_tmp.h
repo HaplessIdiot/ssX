@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -590,7 +590,7 @@ static void TAG(shade_fast_rgba_single)( struct vertex_buffer *VB )
 static void TAG(shade_fast_rgba)( struct vertex_buffer *VB )
 {
    GLcontext *ctx = VB->ctx;
-   GLfloat base[2][3];
+   GLfloat (*base)[3] = ctx->Light.BaseColor;
    GLubyte *sumA = ctx->Light.BaseAlpha;
    GLuint  nstride = VB->NormalPtr->stride; 
    const GLfloat *normal = VB->NormalPtr->start;
@@ -681,7 +681,6 @@ static void TAG(shade_fast_rgba)( struct vertex_buffer *VB )
 				       light->MatSpecular[side]);
 	       } 
 	    }
-
 	    if (LIGHT_FRONT(*mask)) {
 	       FLOAT_RGB_TO_UBYTE_RGB( Fcolor[j], sum[0] );
 	       Fcolor[j][3] = sumA[0];
@@ -710,10 +709,10 @@ static void TAG(shade_fast_rgba)( struct vertex_buffer *VB )
 	 NEXT_NORMAL;
       }
 
-      if ( flags[j] & cm_flags ) 
+      if ( flags[j] & cm_flags )
 	 gl_update_color_material( ctx, CMcolor[j] );
-      
-      if ( flags[j] & VERT_MATERIAL ) 
+
+      if ( flags[j] & VERT_MATERIAL )
 	 gl_update_material( ctx, new_material[j], new_material_mask[j] );
 
    } while (!(flags[j] & VERT_END_VB));
