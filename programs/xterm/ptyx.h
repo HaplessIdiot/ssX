@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.59 1999/06/27 14:08:42 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.60 1999/07/11 08:49:40 dawes Exp $
  */
 
 /*
@@ -494,16 +494,14 @@ typedef struct {
 #define COLOR_14	14
 #define COLOR_15	15
 #if OPT_256_COLORS
-#define COLOR_BD        256
-#define COLOR_UL        257
-#define COLOR_BL        258
-#define MAXCOLORS       259
+#define NUM_ANSI_COLORS 256
 #else /* ! OPT_256_COLORS */
-#define COLOR_BD	16	/* BOLD */
-#define COLOR_UL	17	/* UNDERLINE */
-#define COLOR_BL	18	/* BLINK */
-#define MAXCOLORS       19
+#define NUM_ANSI_COLORS 16
 #endif /* OPT_256_COLORS */
+#define COLOR_BD	(NUM_ANSI_COLORS)	/* BOLD */
+#define COLOR_UL	(NUM_ANSI_COLORS+1)	/* UNDERLINE */
+#define COLOR_BL	(NUM_ANSI_COLORS+2)	/* BLINK */
+#define MAXCOLORS	(NUM_ANSI_COLORS+3)
 #ifndef DFT_COLORMODE
 #define DFT_COLORMODE TRUE	/* default colorMode resource */
 #endif

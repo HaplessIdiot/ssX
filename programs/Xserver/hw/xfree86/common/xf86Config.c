@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.188 1999/07/17 05:30:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.189 1999/07/17 06:30:56 dawes Exp $ */
 
 
 /*
@@ -32,6 +32,12 @@ extern DeviceAssocRec mouse_assoc;
 #ifdef XKB
 #define XKB_IN_SERVER
 #include "XKBsrv.h"
+#endif
+
+#if (defined(i386) || defined(__i386__)) && \
+    (defined(__FreeBSD__) || defined(__NetBSD__) || defined(linux) || \
+     defined(SVR4))
+#define SUPPORT_PC98
 #endif
 
 /*
@@ -550,6 +556,23 @@ static OptionInfoRec FlagOptions[] = {
 };
 
 static Bool
+detectPC98()
+{
+#ifdef SUPPORT_PC98
+    unsigned char buf[2];
+
+    if (xf86ReadBIOS(0xf0000, 0x8e80, buf, 2) != 2)
+	return FALSE;
+    if ((buf[0] == 0x98) && (buf[1] == 0x21))
+	return TRUE;
+    else
+	return FALSE;
+#else
+    return FALSE;
+#endif
+}
+
+static Bool
 configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 {
     XF86OptionPtr optp, tmp;
@@ -674,7 +697,11 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	if (value) {
 	    xf86Msg(X_CONFIG, "Japanese PC98 architecture\n");
 	}
-    }
+    } else
+	if (detectPC98()) {
+	    xf86Info.pc98 = TRUE;
+	    xf86Msg(X_PROBED, "Japanese PC98 architecture\n");
+	}
 #endif
 
     return TRUE;

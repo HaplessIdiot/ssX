@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.19 1999/07/04 06:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.20 1999/07/11 08:49:26 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -223,9 +223,9 @@ void Permedia2ReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2WriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char Permedia2ReadData(ScrnInfoPtr pScrn);
 void Permedia2LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-    			  LOCO *colors, short visualClass);
+    			  LOCO *colors, VisualPtr pVisual);
 void Permedia2LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
-    			  LOCO *colors, short visualClass);
+    			  LOCO *colors, VisualPtr pVisual);
 void Permedia2I2CUDelay(I2CBusPtr b, int usec);
 void Permedia2I2CPutBits(I2CBusPtr b, int scl, int sda);
 void Permedia2I2CGetBits(I2CBusPtr b, int *scl, int *sda);

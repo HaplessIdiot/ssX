@@ -24,7 +24,7 @@
  * Permedia2OutIndReg() and Permedia2InIndReg() are used to access 
  * the indirect Permedia2 RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.8 1999/06/21 10:06:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.9 1999/07/04 06:39:02 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -101,7 +101,7 @@ void Permedia2LoadPalette(
     int numColors, 
     int *indices,
     LOCO *colors,
-    short visualClass
+    VisualPtr pVisual
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i, index, shift;
@@ -129,7 +129,7 @@ void Permedia2LoadPalette16(
     int numColors, 
     int *indices,
     LOCO *colors,
-    short visualClass
+    VisualPtr pVisual
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i, index;

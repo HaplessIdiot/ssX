@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.3 1999/06/13 13:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.4 1999/06/27 14:08:15 dawes Exp $ */
 
 #define FBDEVHW_PACKED_PIXELS		0	/* Packed Pixels	*/
 #define FBDEVHW_PLANES			1	/* Non interleaved planes */
@@ -31,7 +31,7 @@ void  fbdevHWSave(ScrnInfoPtr pScrn);
 void  fbdevHWRestore(ScrnInfoPtr pScrn);
 
 void  fbdevHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-		 LOCO *colors, short visualClass);
+		 LOCO *colors, VisualPtr pVisual);
 
 int   fbdevHWValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags);
 Bool  fbdevHWSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);

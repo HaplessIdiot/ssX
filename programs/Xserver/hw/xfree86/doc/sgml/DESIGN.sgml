@@ -30,7 +30,7 @@
 <date>Last modified 17 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.7 1999/07/11 08:49:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.8 1999/07/17 07:18:14 dawes Exp $
 </ident>
 
 
@@ -2887,7 +2887,7 @@ To use the colormap layer, a driver calls the
     </quote>
 
     &s.code;void LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
-		&f.indent;LOCO *colors, short visualClass)&e.code;
+		&f.indent;LOCO *colors, VisualPtr pVisual)&e.code;
     <quote><p>
       &s.code;LoadPalette()&e.code; is a driver-provide function for
       loading a colormap into hardware.  &s.code;colors&e.code; is the

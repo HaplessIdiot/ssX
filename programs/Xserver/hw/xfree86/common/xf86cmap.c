@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.13 1999/05/15 12:10:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.14 1999/07/06 11:38:16 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -480,7 +480,7 @@ CMapReinstallMap(ColormapPtr pmap)
 	CMapRefreshColors(pmap, cmapPriv->numColors, indices);
     else {
 	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, cmapPriv->numColors,
- 			indices, cmapPriv->colors, pmap->pVisual->class);
+ 			indices, cmapPriv->colors, pmap->pVisual);
 	if (pScreenPriv->SetOverscan) {
 #ifdef DEBUGOVERSCAN
 	    ErrorF("SetOverscan() called from CMapReinstallMap\n");
@@ -604,7 +604,7 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indices)
 
     if(LOAD_PALETTE(pmap, pmap->pScreen->myNum))
 	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, defs, indices,
- 					colors, pmap->pVisual->class);
+ 					colors, pmap->pVisual);
 
     if (pScreenPriv->SetOverscan)
 	CMapSetOverscan(pmap, defs, indices);

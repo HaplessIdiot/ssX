@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.28 1999/07/11 08:49:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.29 1999/07/17 07:18:17 dawes Exp $ */
 
 /*
  *
@@ -1700,7 +1700,7 @@ vgaHWUnlock(vgaHWPtr hwp)
 
 static void
 vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
-		 short visualClass)
+		 VisualPtr pVisual)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     int i, index;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.42 1999/06/20 08:41:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.43 1999/07/04 06:39:04 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -79,7 +79,7 @@ typedef struct {
     MessageType ClockFrom;
     MessageType MemClkFrom;
     Bool	SetMemClk;
-    void	(*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, short);
+    void	(*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, VisualPtr);
     void	(*PreInit)(ScrnInfoPtr);
     void	(*Save)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     void	(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);

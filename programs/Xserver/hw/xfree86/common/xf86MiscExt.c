@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.1 1999/07/10 12:17:23 dawes Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -19,6 +19,9 @@
 #include "xf86miscproc.h"
 #endif
 
+#define XF86_OS_PRIVS
+#include "xf86_OSlib.h"
+
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
@@ -28,9 +31,6 @@
 #else
 #include "inputstr.h"
 #endif
-
-#define XF86_OS_PRIVS
-#include "xf86_OSlib.h"
 
 #ifdef NEW_INPUT
 #include "xf86OSmouse.h"

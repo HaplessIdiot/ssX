@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.10 1999/06/20 07:14:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.11 1999/07/04 06:39:06 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -446,7 +446,7 @@ void TridentLoadPalette(
     int numColors, 
     int *indicies,
     LOCO *colors,
-    short visualClass
+    VisualPtr pVisual
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int i, index;

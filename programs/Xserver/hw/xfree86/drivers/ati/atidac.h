@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.3 1999/07/06 11:38:28 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -83,6 +83,6 @@ extern void  ATIDACSave    FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void  ATIDACSet     FunctionPrototype((ATIPtr, ATIHWPtr));
 
 extern void  ATILoadPalette FunctionPrototype((ScrnInfoPtr, int, int *, LOCO *,
-                                               short));
+                                               VisualPtr));
 
 #endif /* ___ATIDAC_H___ */

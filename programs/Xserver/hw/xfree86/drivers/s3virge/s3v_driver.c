@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.30 1999/07/10 12:17:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.31 1999/07/17 07:18:16 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -92,7 +92,7 @@ static Bool S3VSaveScreen(ScreenPtr pScreen, Bool unblank);
 static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode);
 /* s3v.h - static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags); */
 /* s3v.h - static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags); */
-static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
+static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
 
 #ifdef DPMSExtension
 static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
@@ -2936,7 +2936,7 @@ void S3VLoadPalette(
     int numColors, 
     int *indicies,
     LOCO *colors,
-    short visualClass
+    VisualPtr pVisual
 ){
     S3VPtr ps3v = S3VPTR(pScrn);
     int i, index;
